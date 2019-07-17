@@ -134,6 +134,13 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                                      TLorentzVector possibleJPsi );
 
                                 /**
+                                 * This function computes the acceptance
+                                 * value to fix the weight of the entry
+                                 * to the CosTheta in the helicity frame.
+                                 */
+        Double_t                AccEffCorrection( Double_t CosThetaToBeWeighted );
+
+                                /**
                                  * Use the class as a data member. It contains
                                  * the cuts for the muon track.
                                  */
@@ -300,15 +307,58 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * This histogram records the invariant mass
                                  * distribution of the dimuon system, only
                                  * coherent component, so as to say, only
+                                 * pt < 0.2 (MinusTwoShift) GeV/c for pt
+                                 * of the dimuon pair.
+                                 */
+        TH1F*                   fInvariantMassDistributionCoherentShiftMinusTwoH;       //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
+                                 * pt < 0.225 (MinusOneShift) GeV/c for
+                                 * pt of the dimuon pair.
+                                 */
+        TH1F*                   fInvariantMassDistributionCoherentShiftMinusOneH;       //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
+                                 * pt < 0.275 (PlusOneShift) GeV/c for
+                                 * pt of the dimuon pair.
+                                 */
+        TH1F*                   fInvariantMassDistributionCoherentShiftPlusOneH;       //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
+                                 * pt < 0.3 (PlusTwoShift) GeV/c for
+                                 * pt of the dimuon pair.
+                                 */
+        TH1F*                   fInvariantMassDistributionCoherentShiftPlusTwoH;       //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system, only
+                                 * coherent component, so as to say, only
                                  * pt > 0.25 GeV/c for pt of the dimuon pair.
                                  */
-        TH1F*                   fInvariantMassDistributionIncoherentH;     //!
+        TH1F*                   fInvariantMassDistributionIncoherentH;                   //!
+        TH1F*                   fInvariantMassDistributionIncoherentShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentShiftPlusTwoH;       //!
 
                                 /**
                                  * This histogram records the pt-ditribution
                                  * of the dimuon pairs.
+                                 *
+                                 * Shift +1 => 20 Mev/c shift
                                  */
-        TH1F*                   fDimuonPtDistributionH;         //!
+        TH1F*                   fDimuonPtDistributionH;                     //!
+        TH1F*                   fDimuonPtDistributionShiftPlusOneH;         //!
 
                                 /**
                                  * This histogram records the energy distri-
@@ -651,8 +701,18 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * pt < 0.25 GeV/c for pt of the dimuon pair.
                                  * The ZNC has 0 neutrons.
                                  * The ZNA has 0 neutrons.
+                                 *
+                                 * Shift -2 => pt < 0.200 GeV/c
+                                 * Shift -1 => pt < 0.225 GeV/c
+                                 * Shift +1 => pt < 0.275 GeV/c
+                                 * Shift +2 => pt < 0.300 GeV/c
                                  */
-        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroH;                   //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH;       //!
+
 
                                 /**
                                  * This histogram records the invariant mass
@@ -661,8 +721,17 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * pt < 0.25 GeV/c for pt of the dimuon pair.
                                  * The ZNC has 0 neutrons.
                                  * The ZNA has ANY neutrons.
+                                 *
+                                 * Shift -2 => pt < 0.200 GeV/c
+                                 * Shift -1 => pt < 0.225 GeV/c
+                                 * Shift +1 => pt < 0.275 GeV/c
+                                 * Shift +2 => pt < 0.300 GeV/c
                                  */
-        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyH;                   //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH;       //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -671,8 +740,17 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * pt < 0.25 GeV/c for pt of the dimuon pair.
                                  * The ZNC has ANY neutrons.
                                  * The ZNA has 0 neutrons.
+                                 *
+                                 * Shift -2 => pt < 0.200 GeV/c
+                                 * Shift -1 => pt < 0.225 GeV/c
+                                 * Shift +1 => pt < 0.275 GeV/c
+                                 * Shift +2 => pt < 0.300 GeV/c
                                  */
-        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroH;                   //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH;       //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -681,8 +759,17 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * pt < 0.25 GeV/c for pt of the dimuon pair.
                                  * The ZNC has ANY neutrons.
                                  * The ZNA has ANY neutrons.
+                                 *
+                                 * Shift -2 => pt < 0.200 GeV/c
+                                 * Shift -1 => pt < 0.225 GeV/c
+                                 * Shift +1 => pt < 0.275 GeV/c
+                                 * Shift +2 => pt < 0.300 GeV/c
                                  */
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH;       //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -691,8 +778,17 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * pt > 0.25 GeV/c for pt of the dimuon pair.
                                  * The ZNC has 0 neutrons.
                                  * The ZNA has 0 neutrons.
+                                 *
+                                 * Shift -2 => pt > 0.200 GeV/c
+                                 * Shift -1 => pt > 0.225 GeV/c
+                                 * Shift +1 => pt > 0.275 GeV/c
+                                 * Shift +2 => pt > 0.300 GeV/c
                                  */
-        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroH;                   //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH;       //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -701,8 +797,17 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * pt > 0.25 GeV/c for pt of the dimuon pair.
                                  * The ZNC has 0 neutrons.
                                  * The ZNA has ANY neutrons.
+                                 *
+                                 * Shift -2 => pt > 0.200 GeV/c
+                                 * Shift -1 => pt > 0.225 GeV/c
+                                 * Shift +1 => pt > 0.275 GeV/c
+                                 * Shift +2 => pt > 0.300 GeV/c
                                  */
-        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyH;                   //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH;       //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -711,8 +816,17 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * pt > 0.25 GeV/c for pt of the dimuon pair.
                                  * The ZNC has ANY neutrons.
                                  * The ZNA has 0 neutrons.
+                                 *
+                                 * Shift -2 => pt > 0.200 GeV/c
+                                 * Shift -1 => pt > 0.225 GeV/c
+                                 * Shift +1 => pt > 0.275 GeV/c
+                                 * Shift +2 => pt > 0.300 GeV/c
                                  */
-        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroH;                  //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH;       //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -721,40 +835,61 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * pt > 0.25 GeV/c for pt of the dimuon pair.
                                  * The ZNC has ANY neutrons.
                                  * The ZNA has ANY neutrons.
+                                 *
+                                 * Shift -2 => pt > 0.200 GeV/c
+                                 * Shift -1 => pt > 0.225 GeV/c
+                                 * Shift +1 => pt > 0.275 GeV/c
+                                 * Shift +2 => pt > 0.300 GeV/c
                                  */
-        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyH;                   //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH;      //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH;       //!
 
                                 /**
                                  * This histogram records the pt-ditribution
                                  * of the dimuon pairs. This is divided in
                                  * neutron emission classes.
                                  * ZNC=0n, ZNA=0n.
+                                 *
+                                 * Shift +1 => 20 MeV/c shift
                                  */
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroH;         //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroH;                     //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH;         //!
 
                                 /**
                                  * This histogram records the pt-ditribution
                                  * of the dimuon pairs. This is divided in
                                  * neutron emission classes.
                                  * ZNC=0n, ZNA=Xn.
+                                 *
+                                 * Shift +1 => 20 MeV/c shift
                                  */
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyH;         //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyH;                     //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH;         //!
 
                                 /**
                                  * This histogram records the pt-ditribution
                                  * of the dimuon pairs. This is divided in
                                  * neutron emission classes.
                                  * ZNC=Xn, ZNA=0n.
+                                 *
+                                 * Shift +1 => 20 MeV/c shift
                                  */
-        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroH;         //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroH;                     //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH;         //!
 
                                 /**
                                  * This histogram records the pt-ditribution
                                  * of the dimuon pairs. This is divided in
                                  * neutron emission classes and pt.
                                  * ZNC=Xn, ZNA=Xn.
+                                 *
+                                 * Shift +1 => 20 MeV/c shift
                                  */
-        TH1F*                   fDimuonPtDistributionZNCanyZNAanyH;         //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyH;                     //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH;         //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -1211,6 +1346,29 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyStrictVariableBinningH[15];  //!
 
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 * My variable binning 17 bins.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH[17];  //!
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution.
+                                 * Already corrected by ACCxEFF thanks to
+                                 * a weight...
+                                 *
+                                 * Plus the distributions in invariant mass
+                                 * for signal extraction.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameJPsiAlreadyCorrectedH;       //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH[50];  //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH[100];  //!
+
         //_______________________________
         // CUTS
         /*
@@ -1271,7 +1429,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 28);
+        ClassDef(AliAnalysisTaskUPCforward, 33);
 };
 
 #endif

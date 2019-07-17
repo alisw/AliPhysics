@@ -228,6 +228,8 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMCCosThetaHelicityFrameMyBinningH(0),
       fCosThetaHelicityFrameMyBinningSmallH(0),
       fMCCosThetaHelicityFrameMyBinningSmallH(0),
+      fCosThetaHelicityFrameMySeventeenBinningH(0),
+      fMCCosThetaHelicityFrameMySeventeenBinningH(0),
       fPhiHelicityFrameMyBinningH(0),
       fMCPhiHelicityFrameMyBinningH(0),
       fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -388,6 +390,8 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMCCosThetaHelicityFrameMyBinningH(0),
       fCosThetaHelicityFrameMyBinningSmallH(0),
       fMCCosThetaHelicityFrameMyBinningSmallH(0),
+      fCosThetaHelicityFrameMySeventeenBinningH(0),
+      fMCCosThetaHelicityFrameMySeventeenBinningH(0),
       fPhiHelicityFrameMyBinningH(0),
       fMCPhiHelicityFrameMyBinningH(0),
       fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1106,6 +1110,12 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   const Int_t XBINS4 = 9;
   Double_t MyVariableCosThetaBinning1Dv2[] = { -0.65, -0.45, -0.3, -0.15,  -0.05,
                                                 0.05,  0.15,  0.3,  0.45,   0.65 };
+  const Int_t XBINS5 = 17;
+  Double_t MyVariableCosThetaBinning1Dv3[] = { -0.65,  -0.5,  -0.425, -0.35,
+                                               -0.275, -0.2,  -0.125, -0.075,
+                                               -0.025,  0.025, 0.075,  0.125,
+                                                0.2,    0.275, 0.35,   0.425,
+                                                0.5,    0.65 };
   fCosThetaHelicityFrameMyBinningH =
         new TH1F( "fCosThetaHelicityFrameMyBinningH",
                   "fCosThetaHelicityFrameMyBinningH",
@@ -1133,6 +1143,20 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
                   XBINS4, MyVariableCosThetaBinning1Dv2
                   );
   fOutputList->Add(fMCCosThetaHelicityFrameMyBinningSmallH);
+
+  fCosThetaHelicityFrameMySeventeenBinningH =
+        new TH1F( "fCosThetaHelicityFrameMySeventeenBinningH",
+                  "fCosThetaHelicityFrameMySeventeenBinningH",
+                  XBINS5, MyVariableCosThetaBinning1Dv3
+                  );
+  fOutputList->Add(fCosThetaHelicityFrameMySeventeenBinningH);
+
+  fMCCosThetaHelicityFrameMySeventeenBinningH =
+        new TH1F( "fMCCosThetaHelicityFrameMySeventeenBinningH",
+                  "fMCCosThetaHelicityFrameMySeventeenBinningH",
+                  XBINS5, MyVariableCosThetaBinning1Dv3
+                  );
+  fOutputList->Add(fMCCosThetaHelicityFrameMySeventeenBinningH);
 
   fPhiHelicityFrameMyBinningH =
         new TH1F( "fPhiHelicityFrameMyBinningH",
@@ -1862,9 +1886,10 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
     if ( possibleJPsiCopy.Pt() < 0.25 ) {
           Double_t CosThetaHelicityFrameValue4 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
           Double_t PhiHelicityFrameValue4      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
-          fCosThetaHelicityFrameMyBinningH     ->Fill( CosThetaHelicityFrameValue4 );
-          fCosThetaHelicityFrameMyBinningSmallH->Fill( CosThetaHelicityFrameValue4 );
-          fPhiHelicityFrameMyBinningH          ->Fill( PhiHelicityFrameValue4      );
+          fCosThetaHelicityFrameMyBinningH         ->Fill( CosThetaHelicityFrameValue4 );
+          fCosThetaHelicityFrameMyBinningSmallH    ->Fill( CosThetaHelicityFrameValue4 );
+          fCosThetaHelicityFrameMySeventeenBinningH->Fill( CosThetaHelicityFrameValue4 );
+          fPhiHelicityFrameMyBinningH              ->Fill( PhiHelicityFrameValue4      );
           for(Int_t iCosThetaBins = 0; iCosThetaBins < 26; iCosThetaBins++) {
             if( controlFlag5 == 1) break;
             if( CosThetaHelicityFrameValue4 < MyVariableCosThetaBinning1D[iCosThetaBins + 1] ){
@@ -2165,6 +2190,11 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                          possibleJPsiMC
                                                                                          )
                                                                                         );
+                  fMCCosThetaHelicityFrameMySeventeenBinningH->Fill( CosThetaHelicityFrame(  muonsMCcopy[0],
+                                                                                             muonsMCcopy[1],
+                                                                                             possibleJPsiMC
+                                                                                             )
+                                                                                            );
                   fMCPhiHelicityFrameMyBinningH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
                                                                             muonsMCcopy[1],
                                                                             possibleJPsiMC
@@ -2329,6 +2359,11 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                          possibleJPsiMC
                                                                                          )
                                                                                         );
+                  fMCCosThetaHelicityFrameMySeventeenBinningH->Fill( CosThetaHelicityFrame(  muonsMCcopy[1],
+                                                                                             muonsMCcopy[0],
+                                                                                             possibleJPsiMC
+                                                                                             )
+                                                                                            );
                   fMCPhiHelicityFrameMyBinningH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],
                                                                             muonsMCcopy[0],
                                                                             possibleJPsiMC
