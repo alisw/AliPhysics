@@ -219,9 +219,26 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupJetContainersFromYAMLConfig()
       AliJetContainer* jetCont = AddJetContainer(collectionName.c_str(), acceptance.c_str(), R);
       jetCont->SetName(jetName.c_str());
 
+      // Jet area cut percentage
+      double jetAreaCut = -1;
+      bool res = fYAMLConfig.GetProperty({ baseName, jetName, "areaCutPercentage" }, jetAreaCut, false);
+      if (res) {
+        AliDebugStream(1) << "Setting jet area cut percentage of " << jetAreaCut << " for jet cont " << jetName
+                 << "\n";
+        jetCont->SetPercAreaCut(jetAreaCut);
+      }
+
+      // Rho name
+      std::string tempStr = "";
+      res = fYAMLConfig.GetProperty({ baseName, jetName, "rhoName" }, tempStr, false);
+      if (res) {
+        AliDebugStream(1) << "Setting rho name of " << tempStr << " for jet cont " << jetName << "\n";
+        jetCont->SetRhoName(tempStr.c_str());
+      }
+
       // Leading hadron type
       int leadingHadronType = -1;
-      bool res = fYAMLConfig.GetProperty({ baseName, jetName, "leadingHadronType" }, leadingHadronType, false);
+      res = fYAMLConfig.GetProperty({ baseName, jetName, "leadingHadronType" }, leadingHadronType, false);
       if (res) {
         AliDebugStream(1) << "Setting leading hadron type of " << leadingHadronType << " for jet cont "
                  << jetName << "\n";
