@@ -192,6 +192,7 @@ AliAnalysisTaskSE *AddTaskFemtoLX(bool fullBlastQA = false,
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
+  config->SetMassQA(true);
 
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
