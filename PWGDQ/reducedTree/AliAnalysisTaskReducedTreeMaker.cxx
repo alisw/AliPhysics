@@ -1961,6 +1961,9 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
   Float_t pileupTrackArrayP[20000];
   Float_t pileupTrackArrayM[20000];
   Int_t pileupCounterP = 0, pileupCounterM = 0;
+  Float_t pileupTrackArrayP2[20000];
+  Float_t pileupTrackArrayM2[20000];
+  Int_t pileupCounterP2 = 0, pileupCounterM2 = 0;
   AliTPCdEdxInfo tpcdEdxInfo;
   for(Int_t itrack=0; itrack<ntracks; ++itrack){
      
@@ -2067,6 +2070,10 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
          Double_t tgl = particle->Pz() / particle->Pt();
          if(tgl > 0.1) pileupTrackArrayP[++pileupCounterP] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
          if(tgl < -0.1) pileupTrackArrayM[++pileupCounterM] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
+         if(TMath::Abs(dcaZ)>10.0) {
+            if(tgl > 0.1) pileupTrackArrayP2[++pileupCounterP2] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
+            if(tgl < -0.1) pileupTrackArrayM2[++pileupCounterM2] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
+         }
       }
     }
     
@@ -2466,6 +2473,10 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
      eventInfo->fTPCpileupZ[1] = (pileupCounterM>0 ? -1.0*TMath::Median(pileupCounterM, pileupTrackArrayM) : 0.0);
      eventInfo->fTPCpileupContributors[0] = pileupCounterP;
      eventInfo->fTPCpileupContributors[1] = pileupCounterM;
+     eventInfo->fTPCpileupZ2[0] = (pileupCounterP2>0 ? TMath::Median(pileupCounterP2, pileupTrackArrayP2) : 0.0);
+     eventInfo->fTPCpileupZ2[1] = (pileupCounterM2>0 ? -1.0*TMath::Median(pileupCounterM2, pileupTrackArrayM2) : 0.0);
+     eventInfo->fTPCpileupContributors2[0] = pileupCounterP2;
+     eventInfo->fTPCpileupContributors2[1] = pileupCounterM2;
   }
 }
 
