@@ -299,7 +299,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
  
 	  //Set particle 1:
-	  dtc1etaphitpc[aniter]->SetPt(0.19,1.5);
+	  dtc1etaphitpc[aniter]->SetPt(0.19,0.45);
           dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc1etaphitpc[aniter]->SetMass(KaonMass);	  
 	  dtc1etaphitpc[aniter]->SetMostProbableKaon();
