@@ -7,7 +7,6 @@
 
 #pragma link C++ class   AliAnalysisTaskSEHFTreeCreator+;
 #pragma link C++ class   AliHFJet+;
-#pragma link C++ class   AliHFJetFinder+;
 #pragma link C++ class   AliHFTreeHandler+;
 #pragma link C++ class   AliHFTreeHandlerD0toKpi+; 
 #pragma link C++ class   AliHFTreeHandlerDplustoKpipi+;
@@ -20,5 +19,8 @@
 #pragma link C++ class   AliParticleTreeHandler+;
 #pragma link C++ class   AliTrackletTreeHandler+;
 
+#ifdef HAVE_FASTJET
+#pragma link C++ class   AliHFJetFinder+;
+#endif
 
 #endif

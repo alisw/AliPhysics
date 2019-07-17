@@ -43,7 +43,6 @@ set(SRCS
 
   AliAnalysisTaskSEHFTreeCreator.cxx
   AliHFJet.cxx
-  AliHFJetFinder.cxx
   AliHFTreeHandler.cxx
   AliHFTreeHandlerD0toKpi.cxx
   AliHFTreeHandlerDplustoKpipi.cxx
@@ -56,6 +55,12 @@ set(SRCS
   AliParticleTreeHandler.cxx
   AliTrackletTreeHandler.cxx
   )
+
+if(FASTJET_FOUND)
+    set(SRCS ${SRCS}
+        AliHFJetFinder.cxx
+	)
+endif(FASTJET_FOUND)
 
 if(FASTJET_FOUND)
 

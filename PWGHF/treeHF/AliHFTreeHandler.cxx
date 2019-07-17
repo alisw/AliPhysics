@@ -80,7 +80,6 @@ AliHFTreeHandler::AliHFTreeHandler():
   fNTracksJet(-9999.),
   fZgJet(-9999.),
   fRgJet(-9999.),
-  fFastJetWrapper(0x0),
   fFillJets(false),
   fDoJetSubstructure(false), 
   fJetRadius(0.4),
@@ -173,7 +172,6 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fNTracksJet(-9999.),
   fZgJet(-9999.),
   fRgJet(-9999.),
-  fFastJetWrapper(0x0),
   fFillJets(false),
   fDoJetSubstructure(false), 
   fJetRadius(0.4),
@@ -444,41 +442,46 @@ bool AliHFTreeHandler::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
 
 
 //________________________________________________________________
-bool AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand) {
-
+void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand) {
+#ifdef HAVE_FASTJET
   AliHFJetFinder hfjetfinder;
   SetJetParameters(hfjetfinder); 
   AliHFJet hfjet(hfjetfinder.GetHFJet(array,cand));
 	  
   SetJetTreeVars(hfjet);
-  
-  return true;
+#else
+  cout << "You need to have fastjet installed to get meaningful results" <<endl;
+#endif 
+
 }
 
 //________________________________________________________________
-bool AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF2Prong* cand) {
-
+void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF2Prong* cand) {
+#ifdef HAVE_FASTJET
   AliHFJetFinder hfjetfinder;
   SetJetParameters(hfjetfinder); 
   AliHFJet hfjet(hfjetfinder.GetHFJet(array,cand));
 	  
   SetJetTreeVars(hfjet);
-  
-  return true;
+#else
+  cout << "You need to have fastjet installed to get meaningful results" <<endl;
+#endif 
+
 }
 
 //________________________________________________________________
-bool AliHFTreeHandler::SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart) {
-
+void AliHFTreeHandler::SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart) {
+#ifdef HAVE_FASTJET
   AliHFJetFinder hfjetfinder;
   SetJetParameters(hfjetfinder);
   AliHFJet hfjet(hfjetfinder.GetHFMCJet(array,mcPart));
 	  
   SetJetTreeVars(hfjet);
-
-  return true;
+#else
+  cout << "You need to have fastjet installed to get meaningful results" <<endl;
+#endif 
 }
-
+#ifdef HAVE_FASTJET
 //________________________________________________________________
 void AliHFTreeHandler::SetJetParameters(AliHFJetFinder& hfjetfinder){
 
@@ -507,7 +510,7 @@ void AliHFTreeHandler::SetJetTreeVars(AliHFJet& hfjet){
   }
 
 }
-
+#endif
 
 //________________________________________________________________
 bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF) 

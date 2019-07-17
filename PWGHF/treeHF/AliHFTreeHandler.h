@@ -28,8 +28,11 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODMCParticle.h"
 #include "AliAODPidHF.h"
-#include "AliHFJetFinder.h"
 #include "AliHFJet.h"
+
+#ifdef HAVE_FASTJET
+#include "AliHFJetFinder.h"
+#endif
 
 class AliHFTreeHandler : public TObject
 {
@@ -83,11 +86,14 @@ class AliHFTreeHandler : public TObject
     //for MC gen --> common implementation
     TTree* BuildTreeMCGen(TString name, TString title);
     bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
-    bool SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand);
-    bool SetJetVars(TClonesArray *array, AliAODRecoDecayHF2Prong* cand);
-    bool SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart);
+
+    void SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand);
+    void SetJetVars(TClonesArray *array, AliAODRecoDecayHF2Prong* cand);
+    void SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart);
+#ifdef HAVE_FASTJET
     void SetJetParameters(AliHFJetFinder& hfjetfinder);
     void SetJetTreeVars(AliHFJet& hfjet);
+#endif
 
 
     void FillTree() { //to be called for each candidate!
@@ -255,7 +261,6 @@ class AliHFTreeHandler : public TObject
     float fNTracksJet;  //number of tracks in the jet
     float fZgJet; //zg
     float fRgJet; //Rg
-    AliFJWrapper *fFastJetWrapper;
     bool  fFillJets; //fill jets
     bool  fDoJetSubstructure; //fill jet substructure
     Double_t fJetRadius; //Jet finding radius
