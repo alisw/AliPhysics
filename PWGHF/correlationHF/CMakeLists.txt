@@ -24,6 +24,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/correlationHF)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
                     ${AliPhysics_SOURCE_DIR}/PWGHF/hfe
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
   )
@@ -61,6 +63,7 @@ set(SRCS
     AliHFCorrFitter.cxx
     AliHFCorrFitSystematics.cxx
     AliDhCorrelationExtraction.cxx
+    AliAnalysisTaskDHFeCorr.cxx
   ) 						
 
 # Headers from sources
