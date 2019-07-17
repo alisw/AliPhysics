@@ -511,7 +511,7 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
     // Jet pT
     std::string name = "QA/%s/fHistJetPt";
     std::string title = name + ";p_{T} (GeV)";
-    fHistManager.CreateTH1(TString::Format(name.c_str(), jetCont->GetName()), TString::Format(title.c_str(), jetCont->GetName()), 500, 0, 250);
+    fHistManager.CreateTH1(TString::Format(name.c_str(), jetCont->GetName()), TString::Format(title.c_str(), jetCont->GetName()), 600, -50, 250);
   }
 }
 
