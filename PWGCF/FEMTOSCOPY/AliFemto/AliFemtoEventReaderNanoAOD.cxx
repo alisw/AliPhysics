@@ -813,11 +813,25 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
 
      float bfield = 5 * fMagFieldSign;
      float globalPositionsAtRadiiPos[9][3];
+     for(int i=0; i<9; i++)
+        {
+         for(int j=0; j<3; j++)
+          {
+            globalPositionsAtRadiiPos[i][j] = 0;
+          }
+        }
      GetGlobalPositionAtGlobalRadiiThroughTPC(trackpos, bfield, globalPositionsAtRadiiPos);
      double tpcEntrancePos[3] = {globalPositionsAtRadiiPos[0][0], globalPositionsAtRadiiPos[0][1], globalPositionsAtRadiiPos[0][2]};
      double tpcExitPos[3] = {globalPositionsAtRadiiPos[8][0], globalPositionsAtRadiiPos[8][1], globalPositionsAtRadiiPos[8][2]};
 
      float globalPositionsAtRadiiNeg[9][3];
+     for(int i=0; i<9; i++)
+        {
+        for(int j=0; j<3; j++)
+          {
+            globalPositionsAtRadiiNeg[i][j] = 0;
+          }
+        }
      GetGlobalPositionAtGlobalRadiiThroughTPC(trackneg, bfield, globalPositionsAtRadiiNeg);
      double tpcEntranceNeg[3] = {globalPositionsAtRadiiNeg[0][0], globalPositionsAtRadiiNeg[0][1], globalPositionsAtRadiiNeg[0][2]};
      double tpcExitNeg[3] = {globalPositionsAtRadiiNeg[8][0], globalPositionsAtRadiiNeg[8][1], globalPositionsAtRadiiNeg[8][2]};
@@ -860,6 +874,20 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
    tmpVec.SetY(tpcExitNeg[1]);
    tmpVec.SetZ(tpcExitNeg[2]);
    tFemtoV0->SetNominalTpcExitPointNeg(tmpVec);
+
+   AliFemtoThreeVector vecTpcPos[9];
+   AliFemtoThreeVector vecTpcNeg[9];
+   for (int i = 0; i < 9; i++) {
+     vecTpcPos[i].SetX(globalPositionsAtRadiiPos[i][0]);
+     vecTpcPos[i].SetY(globalPositionsAtRadiiPos[i][1]);
+     vecTpcPos[i].SetZ(globalPositionsAtRadiiPos[i][2]);
+     vecTpcNeg[i].SetX(globalPositionsAtRadiiNeg[i][0]);
+     vecTpcNeg[i].SetY(globalPositionsAtRadiiNeg[i][1]);
+     vecTpcNeg[i].SetZ(globalPositionsAtRadiiNeg[i][2]);
+   }
+
+  tFemtoV0->SetNominalTpcPointPos(vecTpcPos);
+  tFemtoV0->SetNominalTpcPointNeg(vecTpcNeg);
 
    tFemtoV0->SetTPCMomentumPos(trackpos->GetTPCmomentum());
    tFemtoV0->SetTPCMomentumNeg(trackneg->GetTPCmomentum());
