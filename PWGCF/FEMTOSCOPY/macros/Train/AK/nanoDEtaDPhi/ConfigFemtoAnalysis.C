@@ -150,7 +150,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	TGrid::Connect("alien://");
 
 	int runmults[numOfMultBins] = {1};
-	int multbins[numOfMultBins+1] = {0, 1000};
+	int multbins[numOfMultBins+1] = {200, 500};
 	
 	int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1}; // 1 - wlacza czastki do analizy
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "V0LL", "V0ALAL", "V0LAL", "all", "plus", "minus", "mixed"};
@@ -249,7 +249,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 				{
 
 					aniter = ichg * numOfMultBins + imult;
-					anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, multbino, multbins[imult], multbins[imult+1]);
+					anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 6, multbins[imult], multbins[imult+1]);
 					anetaphitpc[aniter]->SetNumEventsToMix(3);
 					anetaphitpc[aniter]->SetMinSizePartCollection(1);
 					anetaphitpc[aniter]->SetVerboseMode(kFALSE);//~~~~~~~~~~~~~~~~
@@ -257,7 +257,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//*** Event cut ***
 					mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 					mecetaphitpc[aniter]->SetEventMult(0.001,100000);
-					mecetaphitpc[aniter]->SetVertZPos(-10,10);//cm
+					mecetaphitpc[aniter]->SetVertZPos(-7,7);//cm
 
 					//****** event monitors **********	
 					cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", chrgs[ichg], imult), 2000, 20000.5);
