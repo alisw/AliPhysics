@@ -1008,7 +1008,6 @@ void AddTask_GammaCaloMerged_pp(
     cuts.AddCutMergedCalo("00010113","111111106f532200000","111111106f522900001","0163300000000000"); // INT7
     cuts.AddCutMergedCalo("00052113","111111106f532200000","111111106f522900001","0163300000000000"); // EMC7
     cuts.AddCutMergedCalo("00081113","111111106f532200000","111111106f522900001","0163300000000000"); // EGA
-<<<<<<< 5de506830712fdd53e6e65f49e6f852a2b788b91
   } else if (trainConfig == 214){  // new standard with V1
     cuts.AddCutMergedCalo("00010113","111111106f032200000","111111106f022700002","0163300000000000"); // INT7
     cuts.AddCutMergedCalo("00052113","111111106f032200000","111111106f022700002","0163300000000000"); // EMC7
@@ -1017,6 +1016,10 @@ void AddTask_GammaCaloMerged_pp(
     cuts.AddCutMergedCalo("00010113","111111106f032200000","111111106f022700000","0163300000000000"); // INT7
     cuts.AddCutMergedCalo("00052113","111111106f032200000","111111106f022700000","0163300000000000"); // EMC7
     cuts.AddCutMergedCalo("00081113","111111106f032200000","111111106f022700000","0163300000000000"); // EGA
+  } else if (trainConfig == 215){  // new TB
+    cuts.AddCutMergedCalo("00010113","111110106f532200000","111110106f522900001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","111110106f532200000","111110106f522900001","0163300000000000"); // EMC7
+    cuts.AddCutMergedCalo("00081113","111110106f532200000","111110106f522900001","0163300000000000"); // EGA
   // systematics pp 8 TeV
   } else if (trainConfig == 220){ // M02 var 1
     cuts.AddCutMergedCalo("00081113","111111106f032200000","111111106f022600001","0163300000000000"); // min 0.3
@@ -1078,12 +1081,6 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 239){ // variation track matching to cluster & mass variations new defaults
     cuts.AddCutMergedCalo("00081113","111111106g032200000","111111106g022700001","0163300000000000"); // fEOverPMax = 1.5
     cuts.AddCutMergedCalo("00081113","111111106h032200000","111111106h022700001","0163300000000000"); // fEOverPMax = 1.25
-=======
-  } else if (trainConfig == 214){  // new standard with exotic cut 0.97 and open M02>0.1
-    cuts.AddCutMergedCalo("00010113","111110106f532200000","111110106f522900001","0163300000000000"); // INT7
-    cuts.AddCutMergedCalo("00052113","111110106f532200000","111110106f522900001","0163300000000000"); // EMC7
-    cuts.AddCutMergedCalo("00081113","111110106f532200000","111110106f522900001","0163300000000000"); // EGA
->>>>>>> PWGGA/GammaConv: Added configs for new TB NL and PCM cuts
 
   } else if (trainConfig == 250){  // EMCAL clusters 7 TeV LHC11 TM on
     cuts.AddCutMergedCalo("00010113","1111100067032200000","1111100067022700001","0163300000000000"); // INT7
