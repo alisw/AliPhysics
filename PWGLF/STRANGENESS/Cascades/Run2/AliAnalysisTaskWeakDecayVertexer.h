@@ -133,6 +133,11 @@ public:
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
     }
+    void SetUseStrictPileupCuts () {
+        //This will enable Ionut's pileup rejection in AliEventCuts
+        fEventCuts.fUseStrongVarCorrelationCut = true;
+        fEventCuts.fUseVariablesCorrelationCuts = true;
+    }
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters
     void SetV0VertexerMaxChisquare   ( Double_t lParameter ) {
