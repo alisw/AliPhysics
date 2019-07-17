@@ -493,7 +493,7 @@ void AliHFTreeHandler::SetJetParameters(AliHFJetFinder& hfjetfinder){
   hfjetfinder.SetDoJetSubstructure(fDoJetSubstructure);
 
 }
-
+#endif
 //________________________________________________________________
 void AliHFTreeHandler::SetJetTreeVars(AliHFJet& hfjet){
 
@@ -510,7 +510,7 @@ void AliHFTreeHandler::SetJetTreeVars(AliHFJet& hfjet){
   }
 
 }
-#endif
+
 
 //________________________________________________________________
 bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF) 

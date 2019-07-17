@@ -92,8 +92,8 @@ class AliHFTreeHandler : public TObject
     void SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart);
 #ifdef HAVE_FASTJET
     void SetJetParameters(AliHFJetFinder& hfjetfinder);
-    void SetJetTreeVars(AliHFJet& hfjet);
 #endif
+    void SetJetTreeVars(AliHFJet& hfjet);
 
 
     void FillTree() { //to be called for each candidate!
