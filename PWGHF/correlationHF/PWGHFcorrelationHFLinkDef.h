@@ -37,4 +37,5 @@
 #pragma link C++ class AliHFCorrFitter+;
 #pragma link C++ class AliHFCorrFitSystematics+;
 #pragma link C++ class AliDhCorrelationExtraction+;
+#pragma link C++ class AliAnalysisTaskDHFeCorr+;
 #endif
