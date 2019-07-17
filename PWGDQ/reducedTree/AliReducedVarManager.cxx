@@ -576,7 +576,13 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kTPCpileupContributorsAC] = event->TPCpileupContributors();
   values[kTPCpileupContributorsA]  = event->TPCpileupContributors(1);
   values[kTPCpileupContributorsC]  = event->TPCpileupContributors(2);
-    
+  values[kTPCpileupZAC2]         = event->TPCpileupZ2();
+  values[kTPCpileupZA2]          = event->TPCpileupZ2(1);
+  values[kTPCpileupZC2]          = event->TPCpileupZ2(2);
+  values[kTPCpileupContributorsAC2] = event->TPCpileupContributors2();
+  values[kTPCpileupContributorsA2]  = event->TPCpileupContributors2(1);
+  values[kTPCpileupContributorsC2]  = event->TPCpileupContributors2(2);  
+  
   for(Int_t iflag=0;iflag<32;++iflag) 
     values[kNTracksPerTrackingStatus+iflag] = event->TracksPerTrackingFlag(iflag);
   values[kNTracksTPCoutBeforeClean] = event->TracksWithTPCout();
@@ -2685,6 +2691,12 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTPCpileupContributorsAC] = "TPC pileup n-contributors from A&C sides"; fgVariableUnits[kTPCpileupContributorsAC] = "";
   fgVariableNames[kTPCpileupContributorsA]  = "TPC pileup n-contributors from A side"; fgVariableUnits[kTPCpileupContributorsA] = "";
   fgVariableNames[kTPCpileupContributorsC]  = "TPC pileup n-contributors from C side"; fgVariableUnits[kTPCpileupContributorsC] = "";
+  fgVariableNames[kTPCpileupZAC2]         = "TPC pileup Z (2) from A&C sides";     fgVariableUnits[kTPCpileupZAC2]         = "cm";
+  fgVariableNames[kTPCpileupZA2]          = "TPC pileup Z (2) from A side";        fgVariableUnits[kTPCpileupZA2]          = "cm";
+  fgVariableNames[kTPCpileupZC2]          = "TPC pileup Z (2) from C side";        fgVariableUnits[kTPCpileupZC2]          = "cm";
+  fgVariableNames[kTPCpileupContributorsAC2] = "TPC pileup n-contributors (2) from A&C sides"; fgVariableUnits[kTPCpileupContributorsAC2] = "";
+  fgVariableNames[kTPCpileupContributorsA2]  = "TPC pileup n-contributors (2) from A side"; fgVariableUnits[kTPCpileupContributorsA2] = "";
+  fgVariableNames[kTPCpileupContributorsC2]  = "TPC pileup n-contributors (2) from C side"; fgVariableUnits[kTPCpileupContributorsC2] = "";
   for(Int_t iflag=0; iflag<kNTrackingStatus; ++iflag) {
     fgVariableNames[kNTracksPerTrackingStatus+iflag] = Form("Tracks with %s on", fgkTrackingStatusNames[iflag]); 
     fgVariableUnits[kNTracksPerTrackingStatus+iflag] = ""; 
