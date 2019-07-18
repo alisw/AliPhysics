@@ -1476,7 +1476,7 @@ void AddTask_GammaCalo_pp(
   } else if( trainConfig == 705){ // DEFAULT 2018 oct 31 no NL
     cuts.AddCutCalo("00010113","2446600004012300000","0163103100000010"); //
     cuts.AddCutCalo("00062113","2446600004012300000","0163103100000010"); // PHI7
-  } else if( trainConfig == 706){ // DEFAULT 2019 june 21
+  } else if( trainConfig == 706){ // DEFAULT 2019 july 18
     cuts.AddCutCalo("00010113","244665107a012200000","0163103100000010"); //
     cuts.AddCutCalo("00010113","2446651070012200000","0163103100000010"); //
     cuts.AddCutCalo("000ap113","2446651070012200000","0163103100000010"); // PHI7
