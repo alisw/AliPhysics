@@ -96,11 +96,12 @@ bool HasTOF(AliVTrack *track) {
 
 AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::string name)
     : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fListHist{nullptr}, fTreeHyp3{nullptr},
-      fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false}, fHistNSigmaDeu{nullptr},
-      fHistNSigmaP{nullptr}, fHistNSigmaPi{nullptr}, fHistInvMass{nullptr}, fMinCanidatePtToSave{0.1},
-      fMaxCanidatePtToSave{100.}, fMinITSNcluster{1}, fMinTPCNcluster{70}, fMaxNSigmaTPCDeu{4.0}, fMaxNSigmaTPCP{4.0},
-      fMaxNSigmaTPCPi{3.0}, fMaxNSigmaTOFDeu{4.}, fMaxNSigmaTOFP{4.}, fMaxNSigmaTOFPi{4.}, fMinCosPA{0.9},
-      fMinDCA2PrimaryVtxDeu{0.05}, fMinDCA2PrimaryVtxP{0.05}, fMinDCA2PrimaryVtxPi{0.1}, fMaxPtPion{1.},
+      fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false}, fDownscaling{false},
+      fHistNSigmaDeu{nullptr}, fHistNSigmaP{nullptr}, fHistNSigmaPi{nullptr}, fHistInvMass{nullptr},
+      fDownscalingFactorByEvent{1.}, fDownscalingFactorByCandidate{1.}, fMinCanidatePtToSave{0.1},
+      fMaxCanidatePtToSave{100.}, fMinITSNcluster{0}, fMinTPCNcluster{70}, fMaxNSigmaTPCDeu{5.0}, fMaxNSigmaTPCP{5.0},
+      fMaxNSigmaTPCPi{5.0}, fMaxNSigmaTOFDeu{5.}, fMaxNSigmaTOFP{5.}, fMaxNSigmaTOFPi{5.}, fMinCosPA{0.995},
+      fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025}, fMinDCA2PrimaryVtxPi{0.05}, fMaxPtPion{1.},
       fSHypertriton{}, fRHypertriton{}, fREvent{}, fDeuVector{}, fPVector{}, fPiVector{} {
 
   // Standard output
@@ -287,7 +288,8 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     float nSigmaTPCDeu = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
     if (std::abs(nSigmaTPCDeu) < fMaxNSigmaTPCDeu && dcaNorm > fMinDCA2PrimaryVtxDeu) {
       if (HasTOF(track)) {
-        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron)) < fMaxNSigmaTOFDeu) fDeuVector.push_back(track);
+        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron)) < fMaxNSigmaTOFDeu)
+          fDeuVector.push_back(track);
       } else {
         fDeuVector.push_back(track);
       }
@@ -296,7 +298,8 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     float nSigmaTPCP = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
     if (std::abs(nSigmaTPCP) < fMaxNSigmaTPCP && dcaNorm > fMinDCA2PrimaryVtxP) {
       if (HasTOF(track)) {
-        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton)) < fMaxNSigmaTOFP) fPVector.push_back(track);
+        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton)) < fMaxNSigmaTOFP)
+          fPVector.push_back(track);
       } else {
         fPVector.push_back(track);
       }
@@ -305,11 +308,17 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     float nSigmaTPCPi = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
     if (std::abs(nSigmaTPCPi) < fMaxNSigmaTPCPi && dcaNorm > fMinDCA2PrimaryVtxPi && track->Pt() < fMaxPtPion) {
       if (HasTOF(track)) {
-        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion)) < fMaxNSigmaTOFPi) fPiVector.push_back(track);
+        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion)) < fMaxNSigmaTOFPi)
+          fPiVector.push_back(track);
       } else {
         fPiVector.push_back(track);
       }
     }
+  }
+
+  // downscaling the output tree saving only a fDownscalingFactorByEvent fraction of the events
+  if (!fMC && fDownscaling && ((int)fDeuVector.size() > 0)) {
+    if (gRandom->Rndm() > fDownscalingFactorByEvent) return;
   }
 
   for (const auto &deu : fDeuVector) {
@@ -318,6 +327,7 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     for (const auto &p : fPVector) {
       if (deu == p) continue;
       if (p->Charge() * deu->Charge() < 0) continue;
+
       float nSigmaP = fPIDResponse->NumberOfSigmasTPC(p, AliPID::kProton);
 
       for (const auto &pi : fPiVector) {
@@ -374,6 +384,11 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 
         if (fMC) {
           fSHypertriton[mcMap[momLab]].fRecoIndex = (fRHypertriton.size());
+        }
+
+        // downscaling the output tree saving only a fDownscalingFactorByCandidate fraction of the candidates
+        if (!fMC && fDownscaling) {
+          if (gRandom->Rndm() > fDownscalingFactorByCandidate) continue;
         }
 
         RHypertriton3 hyp3r;
