@@ -2877,7 +2877,7 @@ void AliAnalysisTaskXi1530::FillTrackToEventPool() {
     etl = &(ep->back());
     // Fill selected tracks
     for (UInt_t i = 0; i < goodtrackindices.size(); i++) {
-        goodtrack = (AliESDtrack*)fEvt->GetTrack(goodtrackindices[i]);
+        goodtrack = (AliVTrack*)fEvt->GetTrack(goodtrackindices[i]);
         if (!goodtrack)
             continue;
         etl->push_back((AliVTrack*)goodtrack->Clone());
