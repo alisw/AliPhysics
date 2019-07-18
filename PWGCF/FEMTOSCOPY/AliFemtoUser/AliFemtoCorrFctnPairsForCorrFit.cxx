@@ -101,7 +101,7 @@ void AliFemtoCorrFctnPairsForCorrFit::AddMixedPair( AliFemtoPair* pair){
   double tKStar = fabs(pair->KStar());
   hKstar->Fill(tKStar);
   int bin = hKstar->FindBin(tKStar);
-  if(tKStar<0.21 && hKstar->GetBinContent(bin) < 40000)
+  if(tKStar<0.21)
     mNtuple->Fill(px1, py1, pz1, e1, px2, py2, pz2, e2); 
  
 
