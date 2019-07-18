@@ -226,6 +226,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2D                        *fHistNmatchJet;
   THnSparse                   *fHistJetEtaCorr0;
   THnSparse                   *fHistJetEtaCorr1;
+  THnSparse                   *fHistJetEtaCorr2;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;
   TF1                         *fpythia_b;
