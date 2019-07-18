@@ -274,6 +274,10 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
       if(unsetvtx) d->UnsetOwnPrimaryVtx();
       continue;
     }
+      
+   //lc preliminary large pt cuts:
+   if(d->Pt()>fCutsPerPt[1] || d->Pt()<fCutsPerPt[2]) continue;
+      
     //Additional Cut on Lc 
     // d0p and d0pi of Lc
     //large pt cuts on the d0's of the Lc daughters //keep them out for the moment
@@ -295,9 +299,7 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
 
 void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesArray* arrayMC,AliAODEvent *ev,AliAODMCHeader *mcHeader){
   Int_t countLc=0;
-  //lc preliminary large pt cuts:
-  if(d->Pt()>fCutsPerPt[1] || d->Pt()<fCutsPerPt[2]) return;
-  
+ 
   //check ID d prongs
   Int_t idProng1 = d->GetProngID(0);
   Int_t idProng2 = d->GetProngID(1);
@@ -325,6 +327,10 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       continue;
     }
     if(HPiAODtrk->Charge()==0){
+      HPiAODtrk=0;
+      continue;
+    }
+    if(HPiAODtrk->Pt()>fCutsPerPt[3] || HPiAODtrk->Pt()<fCutsPerPt[4]){
       HPiAODtrk=0;
       continue;
     }
@@ -359,11 +365,6 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       continue;
     }
       
-    if(chargedHPi->Pt()>fCutsPerPt[3] || chargedHPi->Pt()<fCutsPerPt[4]){
-       HPiAODtrk=0;
-       delete chargedHPi;
-       continue;
-    }
        //out for the large pt cuts
     ((TH1F*)fOutput->FindObject("fDCALcBg"))->Fill(dAtDCALc);
     //further cuts on candidate charged track
