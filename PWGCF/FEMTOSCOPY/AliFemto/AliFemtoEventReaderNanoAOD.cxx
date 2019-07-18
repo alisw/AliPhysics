@@ -588,11 +588,12 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
   }
 }
 
-/*
+
   if (fReadCascade) {
     int count_pass = 0;
-    for (Int_t i = 0; i < fEvent->GetNumberOfCascades(); i++) {
-      AliAODcascade *aodxi = fEvent->GetCascade(i);
+    AliAODEvent* aod = dynamic_cast<AliAODEvent*> (fEvent);
+    for (Int_t i = 0; i < aod->GetNumberOfCascades(); i++) {
+      AliAODcascade *aodxi = aod->GetCascade(i);
       if (!aodxi) {
         continue;
       }
@@ -617,15 +618,12 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
       }
 
 
-
       AliFemtoXi *trackCopyXi = CopyAODtoFemtoXi(aodxi);
-
-
       tEvent->XiCollection()->push_back(trackCopyXi);
       count_pass++;
     }
   }
-*/
+
   return tEvent;
 }
 
@@ -979,8 +977,7 @@ AliFemtoXi *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
 
   tFemtoXi->SetidBac(tAODxi->GetBachID());
 
-  double tEtaXi = 0.5 * TMath::Log((TMath::Sqrt(tAODxi->Ptot2Xi()) + tAODxi->MomXiZ())
-                                    / (TMath::Sqrt(tAODxi->Ptot2Xi()) - tAODxi->MomXiZ() + 1.e-13));
+  double tEtaXi = 0.5 * TMath::Log((TMath::Sqrt(tAODxi->Ptot2Xi()) + tAODxi->MomXiZ()) / (TMath::Sqrt(tAODxi->Ptot2Xi()) - tAODxi->MomXiZ() + 1.e-13));
   tFemtoXi->SetEtaXi(tEtaXi);
   double tPhiXi = TMath::Pi() + TMath::ATan2(-tAODxi->MomXiY(), -tAODxi->MomXiX());
   tFemtoXi->SetPhiXi(tPhiXi);
@@ -995,15 +992,22 @@ AliFemtoXi *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
 
   if (trackbac) {
     tFemtoXi->SetptBac(trackbac->Pt()); //setting pt? px and py was set!
-
     tFemtoXi->SetEtaBac(trackbac->Eta());            //bac!
     tFemtoXi->SetTPCNclsBac(trackbac->GetTPCNcls()); //bac!
     tFemtoXi->SetNdofBac(trackbac->Chi2perNDF());    //bac!
-    tFemtoXi->SetStatusBac(trackbac->GetStatus());   //bac!
+  //  tFemtoXi->SetStatusBac(trackbac->GetStatus());   //bac!
 
-    tFemtoXi->SetBacNSigmaTPCK(fAODpidUtil->NumberOfSigmasTPC(trackbac, AliPID::kKaon));
-    tFemtoXi->SetBacNSigmaTPCP(fAODpidUtil->NumberOfSigmasTPC(trackbac, AliPID::kProton));
-    tFemtoXi->SetBacNSigmaTPCPi(fAODpidUtil->NumberOfSigmasTPC(trackbac, AliPID::kPion));
+    static const Int_t kcstNSigmaTPCPi  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kPion);
+    static const Int_t kcstNSigmaTPCK  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kKaon);
+    static const Int_t kcstNSigmaTPCPr = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kProton);
+
+    const float nsigmaTPCPibac = trackbac->GetVar(kcstNSigmaTPCPi);
+    const float nsigmaTPCKbac = trackbac->GetVar(kcstNSigmaTPCK);
+    const float nsigmaTPCPbac = trackbac->GetVar(kcstNSigmaTPCPr);
+
+    tFemtoXi->SetBacNSigmaTPCK(nsigmaTPCKbac);
+    tFemtoXi->SetBacNSigmaTPCP(nsigmaTPCPbac);
+    tFemtoXi->SetBacNSigmaTPCPi(nsigmaTPCPibac);
 
     //NEED TO ADD:
     //    tFemtoXi->SetNominalTpcEntrancePointBac(tmpVec);
@@ -1014,15 +1018,18 @@ AliFemtoXi *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
 
     float bfield = 5 * fMagFieldSign;
     float globalPositionsAtRadiiBac[9][3];
+    for(int i=0; i<9; i++)
+    {
+      for(int j=0; j<3; j++)
+      {
+        globalPositionsAtRadiiBac[i][j] = 0;
+      }
+    }
     GetGlobalPositionAtGlobalRadiiThroughTPC(trackbac, bfield, globalPositionsAtRadiiBac);
-    double tpcEntranceBac[3] = {globalPositionsAtRadiiBac[0][0],
-                                globalPositionsAtRadiiBac[0][1],
-                                globalPositionsAtRadiiBac[0][2]};
-    double tpcExitBac[3] = {globalPositionsAtRadiiBac[8][0],
-                            globalPositionsAtRadiiBac[8][1],
-                            globalPositionsAtRadiiBac[8][2]};
+    double tpcEntranceBac[3] = {globalPositionsAtRadiiBac[0][0], globalPositionsAtRadiiBac[0][1], globalPositionsAtRadiiBac[0][2]};
+    double tpcExitBac[3] = {globalPositionsAtRadiiBac[8][0], globalPositionsAtRadiiBac[8][1], globalPositionsAtRadiiBac[8][2]};
 
-    if (fPrimaryVertexCorrectionTPCPoints) {
+   if (fPrimaryVertexCorrectionTPCPoints) {
       tpcEntranceBac[0] -= fVe1[0];
       tpcEntranceBac[1] -= fVe1[1];
       tpcEntranceBac[2] -= fVe1[2];
@@ -1044,11 +1051,13 @@ AliFemtoXi *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
     tFemtoXi->SetNominalTpcExitPointBac(tmpVec);
 
     AliFemtoThreeVector vecTpcBac[9];
-    for (int i = 0; i < 9; i++) {
-      vecTpcBac[i].SetX(globalPositionsAtRadiiBac[i][0]);
-      vecTpcBac[i].SetY(globalPositionsAtRadiiBac[i][1]);
-      vecTpcBac[i].SetZ(globalPositionsAtRadiiBac[i][2]);
-    }
+    //cout<<"La"<<endl;
+  //  for (int i = 0; i < 9; i++) {
+      //cout<<globalPositionsAtRadiiBac[i][0]<<" "<<globalPositionsAtRadiiBac[i][1]<<" "<<globalPositionsAtRadiiBac[i][2]<<endl;
+      //vecTpcBac[i].SetX(globalPositionsAtRadiiBac[i][0]);
+      //vecTpcBac[i].SetY(globalPositionsAtRadiiBac[i][1]);
+      //vecTpcBac[i].SetZ(globalPositionsAtRadiiBac[i][2]);
+  //  }
 
     if (fPrimaryVertexCorrectionTPCPoints) {
       AliFemtoThreeVector tmpVertexVec;
@@ -1061,65 +1070,28 @@ AliFemtoXi *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
       }
     }
 
-    tFemtoXi->SetNominalTpcPointBac(vecTpcBac);
-
-    /*    if (fShiftPosition > 0.) {
-      Float_t posShiftedBac[3];
-      SetShiftedPositions(trackbac, bfield, posShiftedBac, fShiftPosition);
-      AliFemtoThreeVector tmpVecBac;
-      tmpVecBac.SetX(posShiftedBac[0]);
-      tmpVecBac.SetY(posShiftedBac[1]);
-      tmpVecBac.SetZ(posShiftedBac[2]);
-      tFemtoXi->SetNominalTpcPointBacShifted(tmpVecBac);
-    }
-    */
+    //tFemtoXi->SetNominalTpcPointBac(vecTpcBac);
     tFemtoXi->SetTPCMomentumBac(trackbac->GetTPCmomentum());
     tFemtoXi->SetdedxBac(trackbac->GetTPCsignal());
 
-    Float_t probMisBac = 1.0;
+    static const Int_t kcstNSigmaTOFPi  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kPion);
+    static const Int_t kcstNSigmaTOFK  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kKaon);
+    static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kProton);
 
-    if (((tFemtoXi->StatusBac() & AliVTrack::kTOFout) == AliVTrack::kTOFout)
-         && ((tFemtoXi->StatusBac() & AliVTrack::kTIME) == AliVTrack::kTIME)) {
-      // if (tFemtoXi->StatusBac() & AliESDtrack::kTOFout & AliESDtrack::kTIME) {  //AliESDtrack::kTOFpid=0x8000
-      probMisBac = fAODpidUtil->GetTOFMismatchProbability(trackbac);
-    }
+    const float nsigmaTOFPibac = trackbac->GetVar(kcstNSigmaTOFPi);
+    const float nsigmaTOFKbac = trackbac->GetVar(kcstNSigmaTOFK);
+    const float nsigmaTOFPbac = trackbac->GetVar(kcstNSigmaTOFPr);
 
-    // if(// (tFemtoXi->StatusPos()& AliESDtrack::kTOFpid)==0 ||
-    //    (tFemtoXi->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoXi->StatusPos()&AliESDtrack::kTOFout)==0 || probMisPos > 0.01)
+    tFemtoXi->SetBacNSigmaTOFK(nsigmaTOFKbac);
+    tFemtoXi->SetBacNSigmaTOFP(nsigmaTOFPbac);
+    tFemtoXi->SetBacNSigmaTOFPi(nsigmaTOFPibac);
 
-    if (!(((tFemtoXi->StatusBac() & AliVTrack::kTOFout) == AliVTrack::kTOFout)
-          && ((tFemtoXi->StatusBac() & AliVTrack::kTIME) == AliVTrack::kTIME))
-        || probMisBac > 0.01) {
-      tFemtoXi->SetBacNSigmaTOFK(-1000);
-      tFemtoXi->SetBacNSigmaTOFP(-1000);
-      tFemtoXi->SetBacNSigmaTOFPi(-1000);
-
-      tFemtoXi->SetTOFProtonTimeBac(-1000);
-      tFemtoXi->SetTOFPionTimeBac(-1000);
-      tFemtoXi->SetTOFKaonTimeBac(-1000);
-    } else {
-      if (((tFemtoXi->StatusBac() & AliVTrack::kTOFout) == AliVTrack::kTOFout)
-          && ((tFemtoXi->StatusBac() & AliVTrack::kTIME) == AliVTrack::kTIME)
-          && probMisBac < 0.01) {
-        tFemtoXi->SetBacNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackbac, AliPID::kKaon));
-        tFemtoXi->SetBacNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackbac, AliPID::kProton));
-        tFemtoXi->SetBacNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackbac, AliPID::kPion));
-      }
-
-      double TOFSignalBac = trackbac->GetTOFsignal();
-      TOFSignalBac -= fAODpidUtil->GetTOFResponse().GetStartTime(trackbac->P());
-      //double pidBac[5];
-      //trackbac->GetIntegratedTimes(pidBac);
-
-      //tFemtoXi->SetTOFPionTimeBac(TOFSignalBac - pidBac[2]);
-      //tFemtoXi->SetTOFKaonTimeBac(TOFSignalBac - pidBac[3]);
-      //tFemtoXi->SetTOFProtonTimeBac(TOFSignalBac - pidBac[4]);
-    }
-  } else {
-    tFemtoXi->SetStatusBac(999);
+    double TOFSignalBac = trackbac->GetTOFsignal();  //tego nie było, moze nie dzialac
+    tFemtoXi->SetTOFPionTimeBac(TOFSignalBac);
+    tFemtoXi->SetTOFKaonTimeBac(TOFSignalBac);
+    tFemtoXi->SetTOFProtonTimeBac(TOFSignalBac);
   }
-
-  return tFemtoXi;
+   return tFemtoXi;
 }
 
 void AliFemtoEventReaderNanoAOD::SetFilterBit(UInt_t ibit)
