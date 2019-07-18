@@ -188,6 +188,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetSwitchOffLHC15oFaultyBranches(Bool_t b)            { fSwitchOffLHC15oFaultyBranches = b                  ; }
 
   // Event selection
+  void                        SetWarnMissingCentrality(Bool_t doWarn)               { fWarnMissingCentrality = doWarn                     ; }
   void                        SetTriggerSelectionBitMap(UInt_t t)                   { fTriggerSelectionBitMap = t                         ; }
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent     = max      ; }
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz       = max      ; }
@@ -585,6 +586,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   // Service fields
   Bool_t                      fInhibit;                    //!<!inhibit execution of the task
   Bool_t                      fLocalInitialized;           //!<!whether or not the task has been already initialized
+  Bool_t                      fWarnMissingCentrality;      //!<!switch for verbosity in centrality information
   EDataType_t                 fDataType;                   //!<!data type (ESD or AOD)
   AliEMCALGeometry           *fGeom;                       //!<!emcal geometry
   AliVCaloCells              *fCaloCells;                  //!<!cells

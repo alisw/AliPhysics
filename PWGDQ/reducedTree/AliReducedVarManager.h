@@ -264,6 +264,12 @@ class AliReducedVarManager : public TObject {
     kTPCpileupContributorsAC,    // TPC pileup event contributors from A&C sides
     kTPCpileupContributorsA,     // TPC pileup event contributors from A side
     kTPCpileupContributorsC,     // TPC pileup event contributors from C side
+    kTPCpileupZAC2,      // TPC pileup event Z with larger DCAz selection from A&C sides  
+    kTPCpileupZA2,       // TPC pileup event Z with larger DCAz selection from A side
+    kTPCpileupZC2,       // TPC pileup event Z with larger DCAz selection from C side
+    kTPCpileupContributorsAC2,    // TPC pileup event contributors with larger DCAz selection from A&C sides
+    kTPCpileupContributorsA2,     // TPC pileup event contributors with larger DCAz selection from A side
+    kTPCpileupContributorsC2,     // TPC pileup event contributors with larger DCAz selection from C side
     kNTracksPerTrackingStatus,  // number of tracks with a given tracking flag
     kNTracksTPCoutBeforeClean=kNTracksPerTrackingStatus+kNTrackingStatus,      // TPCout tracks before ESD cleaning
     kNTracksTPCoutVsITSout,                              //  TPCout/ITSout

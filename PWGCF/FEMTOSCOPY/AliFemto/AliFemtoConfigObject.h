@@ -313,7 +313,7 @@ public:
     }
 
   #define ConstructorDef(__type, __tag, __dest) AliFemtoConfigObject(__type &&v): fTypeTag(__tag), __dest(std::move(v)), fPainter(nullptr) { }
-    FORWARD_STANDARD_TYPES(ConstructorDef);
+    FORWARD_STANDARD_TYPES(ConstructorDef)
   #undef ConstructorDef
 
 #endif // move-semantics
@@ -1008,7 +1008,7 @@ public:
     { return Popper(*this); }
 
   /// Return a pointer to new config object with values copied
-  virtual AliFemtoConfigObject* Clone(const char *) const
+  virtual AliFemtoConfigObject* Clone(const char *newname="") const
     { return new AliFemtoConfigObject(*this); }
 
   /// Return a new config object with values copied
