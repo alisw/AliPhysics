@@ -598,11 +598,11 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(12,"Is Selected Events");
   fOutputContainer->Add(fHistEventMultiplicity);
 
-  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",30000,-100,200);
-  hmult->GetXaxis()->SetTitle("kTrackletsITSTPC");
+  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",30000,-0.5,2999.5);
+  hmult->GetXaxis()->SetTitle("Number of tracklets");
   fOutputContainer->Add(hmult);
 
-  fHistCentrality = new TH1F("fHistCentrality", "Number of events", 20, 0., 100.);
+  fHistCentrality = new TH1F("fHistCentrality", "Number of events", 10001, -0.5, 100.5);
   fHistCentrality ->GetXaxis()->SetTitle("Centrality");
   fHistCentrality ->GetYaxis()->SetTitle("Entries");
   fOutputContainer->Add(fHistCentrality);
@@ -1027,6 +1027,20 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   }
   fHistEventMultiplicity->Fill(3);
 
+  //event must not be tagged as pileup
+  Bool_t isPileUpSpd=kFALSE;
+  isPileUpSpd=fAODevent->IsPileupFromSPD();
+  if(isPileUpSpd){ 
+    PostData(1,fOutputContainer );
+    PostData(2, fHistSparseSignal );
+    PostData(3, fHistSparseBkg );
+    return;
+  }
+  
+  fHistEventMultiplicity->Fill(4);
+
+
+
   Float_t lcentrality = -99.;
   
   //  AliMultSelection* centrality = 0x0;
@@ -1050,8 +1064,11 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     //    lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicity(); //run on phojet
     lcentrality = centrality->GetMultiplicityPercentile("V0M"); //FIXME : Also for pp? Test on kd
     //    cout<<"Centrality: "<<lcentrality<<endl;
-    hmult->Fill(lcentrality);
+    //    hmult->Fill(lcentrality);
+    
   }
+
+  //  cout<<"centrality: "<<lcentrality<<endl;
 
   if ( lcentrality > 199 ){
     //Event didn't pass Event Selections
@@ -1061,27 +1078,14 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     return;
   }
   
-  // cout<<lcentrality<<endl;
-
   if (lcentrality<fCentrLowLim||lcentrality>=fCentrUpLim){   
     PostData(1,fOutputContainer );
     PostData(2, fHistSparseSignal );
     PostData(3, fHistSparseBkg );
     return;
   }
-  fHistEventMultiplicity->Fill(4);
-  
-  //event must not be tagged as pileup
-  Bool_t isPileUpSpd=kFALSE;
-  isPileUpSpd=fAODevent->IsPileupFromSPD();
-  if(isPileUpSpd){ 
-    PostData(1,fOutputContainer );
-    PostData(2, fHistSparseSignal );
-    PostData(3, fHistSparseBkg );
-    return;
-  }
-  
   fHistEventMultiplicity->Fill(5);
+  
 
   Bool_t isSelectedCentral     = kFALSE;
   Bool_t isSelectedSemiCentral = kFALSE;
@@ -1099,6 +1103,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   }
   
   else if(fCollidingSystem == "pp"){
+  
     isSelectedCentral     = (mask & AliVEvent::kCentral);
     isSelectedSemiCentral = (mask & AliVEvent::kSemiCentral);
     isSelectedMB          = (mask & AliVEvent::kMB);
@@ -1106,6 +1111,14 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     isSelectedHM          = (mask & AliVEvent::kHighMultV0);
     isSelectedAny         = (mask & AliVEvent::kAnyINT);
     
+    // if(isSelectedHM)
+    // cout<<"isSelectedCentral    : "<<isSelectedCentral     <<endl;
+    // cout<<"isSelectedSemiCentral: "<<isSelectedSemiCentral <<endl;
+    // cout<<"isSelectedMB         : "<<isSelectedMB          <<endl;
+    // cout<<"isSelectedInt7       : "<<isSelectedInt7        <<endl;
+    // cout<<"isSelectedHM         : "<<isSelectedHM          <<endl;
+    // cout<<"isSelectedAny        : "<<isSelectedAny         <<endl;
+      
     if(fYear == 2010 && isSelectedMB )
       isSelected = kTRUE;
     else if(fYear != 2010 && fHMtrigger == kFALSE && isSelectedInt7)
@@ -1179,6 +1192,9 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 
   fHistEventMultiplicity->Fill(12); // is event selected for the analysis
   
+  if(fCollidingSystem == "pp") 
+    hmult->Fill(((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicityComb08());
+
   // cout<<"nTracks: "<<ntracks<<" centrality "<<lcentrality<<endl;
   Double_t fSphericityvalue = CalculateSphericityofEvent(fAODevent);
   fHistSphericity->Fill(fSphericityvalue);
