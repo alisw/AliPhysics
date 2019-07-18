@@ -28,8 +28,18 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   // daughter information
   void Setv0(const AliFemtoDreamBasePart &posDaughter,
              const AliFemtoDreamBasePart &negDaughter,
-             const bool ignoreFirstPos = false,
-             const bool ignoreFirstNeg = false, const bool setDaughter = true);
+             const bool ignoreFirstPos = false, const bool ignoreFirstNeg =
+                 false);
+  void Setv0(const AliFemtoDreamBasePart &posDaughter,
+             const AliFemtoDreamBasePart &negDaughter, AliAODEvent *evt,
+             const bool ignoreFirstPos = false, const bool ignoreFirstNeg =
+                 false,
+             const bool setDaughter = true);
+  void Setv0(const AliFemtoDreamBasePart &posDaughter,
+             const AliFemtoDreamBasePart &negDaughter, AliVEvent *evt,
+             const bool ignoreFirstPos = false, const bool ignoreFirstNeg =
+                 false,
+             const bool setDaughter = true);
   bool GetOnlinev0() const {
     return fOnlinev0;
   }
@@ -110,6 +120,9 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   void SetDaughter(AliAODv0 *v0);
   void SetDaughter(AliAODv0 *v0, AliVEvent *evt);
   void SetDaughter(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter);
+  void SetDaughter(const AliFemtoDreamBasePart &posDaughter,
+                   const AliFemtoDreamBasePart &negDaughter,
+                   AliVEvent *evt);
   void SetDaughter(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0);
   void SetDaughterInfo(AliAODv0 *v0);
   void SetDaughterInfo(AliESDv0 *v0);
@@ -127,7 +140,7 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   float fdcaPrimNeg;  // rphi impact params w.r.t. Primary Vtx [cm]
   float flenDecay;   // Decay Length
   float fTransRadius;   // Decay Length in xy
-ClassDef(AliFemtoDreamv0, 3)
+ClassDef(AliFemtoDreamv0, 4)
 };
 
 inline double AliFemtoDreamv0::DecayLengthV0(const double *DecayVtx,

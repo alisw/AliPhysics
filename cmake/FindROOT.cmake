@@ -182,31 +182,32 @@ if(ROOTSYS)
 
     # Assume AliEn support as external ROOT plugin.
     if(ALIEN)
-    add_definitions(-DWITHALIEN)
+        add_definitions(-DWITHALIEN)
 
-    # AliEn might bring some system libraries, we need to use them
-    if(EXISTS "${ALIEN}/lib")
-        link_directories(${ALIEN}/lib)
-    endif()
+        # AliEn might bring some system libraries, we need to use them
+        if(EXISTS "${ALIEN}/lib")
+            link_directories(${ALIEN}/lib)
+        endif()
 
-    # api/lib should always exists
-    if(EXISTS "${ALIEN}/api/lib")
-        link_directories(${ALIEN}/api/lib)
-    endif()
+        # api/lib should always exists
+        if(EXISTS "${ALIEN}/api/lib")
+            link_directories(${ALIEN}/api/lib)
+        endif()
 
-    # include for AliEn
-    if(EXISTS "${ALIEN}/include")
-        include_directories(SYSTEM ${ALIEN}/include)
-    endif()
+        # include for AliEn
+        if(EXISTS "${ALIEN}/include")
+            include_directories(SYSTEM ${ALIEN}/include)
+        endif()
 
-    # api/include always exists
-    if(EXISTS "${ALIEN}/api/include")
-        include_directories(SYSTEM ${ALIEN}/api/include)
-    endif()
+        # api/include always exists
+        if(EXISTS "${ALIEN}/api/include")
+            include_directories(SYSTEM ${ALIEN}/api/include)
+        endif()
 
-    set(ROOT_HASALIEN TRUE)
+        set(ROOT_HASALIEN TRUE)
     else(ALIEN)
-    message(FATAL_ERROR "ROOT was built with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
+        set(ROOT_HASALIEN FALSE)
+        message(WARNING "ROOT was built with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
     endif(ALIEN)
 
     # Checking for xml support

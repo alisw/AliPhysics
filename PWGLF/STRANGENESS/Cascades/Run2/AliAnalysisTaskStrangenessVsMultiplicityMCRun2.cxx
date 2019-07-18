@@ -2684,6 +2684,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //Copy VZERO information for this event
         fTreeVariableAmplitudeV0A = fAmplitudeV0A;
         fTreeVariableAmplitudeV0C = fAmplitudeV0C;
+
+        //This is the flag for ITS||TOF requirement cross-check 
+        Bool_t lITSorTOFsatisfied = kFALSE; 
+        if( 
+            (fTreeVariableNegTrackStatus & AliESDtrack::kITSrefit) ||
+            (fTreeVariablePosTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE; 
+        if( 
+            (TMath::Abs(fTreeVariableNegTOFExpTDiff+2500.) > 1e-6) || 
+            (TMath::Abs(fTreeVariablePosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;  
         
         //===============================================
         // V0 Monte Carlo Association starts here
@@ -3098,6 +3107,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 (
                  lV0Result->GetCutMinCrossedRowsOverLength()<0 ||
                  (lLeastNcrOverLength>lV0Result->GetCutMinCrossedRowsOverLength())
+                 )&&
+                //Check 17: ITS or TOF required 
+                (
+                 lV0Result->GetCutITSorTOF()==kFALSE || lITSorTOFsatisfied==kTRUE
                  )
                 )//end major if
             {
@@ -3163,208 +3176,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         }
     }
     
-    
-    //-----------------------------------------------
-    // Run on V0's to look for Siblings
-    //-----------------------------------------------
-    
-    // stores relevant tracks in another array
     Int_t nentr=(Int_t)lESDevent->GetNumberOfTracks();
     TArrayI IdxForSibTagging(nentr); Int_t ntr=0;
-    
-    for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //Looping on v0s for sibling tagging
-    {   // This is the begining of the V0 loop
-        AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iV0);
-        if (!v0) continue;
-        
-        //Skip on-the-fly V0s, use only offline for now
-        if ( v0->GetOnFlyStatus() ) continue;
-        
-        CheckChargeV0( v0 );
-        //Remove like-sign (will not affect offline V0 candidates!)
-        if( v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() > 0 ){
-            continue;
-        }
-        if( v0->GetParamN()->Charge() < 0 && v0->GetParamP()->Charge() < 0 ){
-            continue;
-        }
-        
-        Double_t tDecayVertexV0[3];
-        v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
-        
-        Double_t tV0mom[3];
-        v0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
-        Double_t lV0TotalMomentum = TMath::Sqrt(
-                                                tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
-        
-        lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
-        
-        lPt = v0->Pt();
-        lRapK0Short = v0->RapK0Short();
-        lRapLambda  = v0->RapLambda();
-        
-        UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
-        UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
-        
-        Double_t lMomPos[3];
-        v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
-        Double_t lMomNeg[3];
-        v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
-        
-        AliESDtrack *pTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyPos);
-        AliESDtrack *nTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyNeg);
-        
-        if (!pTrack || !nTrack) {
-            Printf("ERROR: Could not retreive one of the daughter track");
-            continue;
-        }
-        fTreeVariablePosPIDForTracking = pTrack->GetPIDForTracking();
-        fTreeVariableNegPIDForTracking = nTrack->GetPIDForTracking();
-        
-        const AliExternalTrackParam *innernegv0=nTrack->GetInnerParam();
-        const AliExternalTrackParam *innerposv0=pTrack->GetInnerParam();
-        Float_t lThisPosInnerP = -1;
-        Float_t lThisNegInnerP = -1;
-        if(innerposv0)  { lThisPosInnerP  = innerposv0 ->GetP(); }
-        if(innernegv0)  { lThisNegInnerP  = innernegv0 ->GetP(); }
-        Float_t lThisPosdEdx = pTrack -> GetTPCsignal();
-        Float_t lThisNegdEdx = nTrack -> GetTPCsignal();
-        
-        // Filter like-sign V0 (next: add counter and distribution)
-        if ( pTrack->GetSign() == nTrack->GetSign()) {
-            continue;
-        }
-        
-        //________________________________________________________________________
-        // Track quality cuts
-        Float_t lPosTrackCrossedRows = pTrack->GetTPCClusterInfo(2,1);
-        Float_t lNegTrackCrossedRows = nTrack->GetTPCClusterInfo(2,1);
-        fTreeVariableLeastNbrCrossedRows = (Int_t) lPosTrackCrossedRows;
-        if( lNegTrackCrossedRows < fTreeVariableLeastNbrCrossedRows )
-            fTreeVariableLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
-        
-        // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
-        if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-        if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-        
-        //GetKinkIndex condition
-        if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 ) continue;
-        
-        //Findable clusters > 0 condition
-        if( pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0 ) continue;
-        
-        //Compute ratio Crossed Rows / Findable clusters
-        //Note: above test avoids division by zero!
-        Float_t lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(pTrack->GetTPCNclsF()));
-        Float_t lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(nTrack->GetTPCNclsF()));
-        
-        fTreeVariableLeastRatioCrossedRowsOverFindable = lPosTrackCrossedRowsOverFindable;
-        if( lNegTrackCrossedRowsOverFindable < fTreeVariableLeastRatioCrossedRowsOverFindable )
-            fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
-        
-        //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
-        if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
-        
-        //Extra track quality: Chi2/cluster for cross-checks
-        Float_t lBiggestChi2PerCluster = -1;
-        
-        Float_t lPosChi2PerCluster = 1000;
-        Float_t lNegChi2PerCluster = 1000;
-        
-        if( pTrack->GetTPCNcls() > 0 ) lPosChi2PerCluster = pTrack->GetTPCchi2() / ((Float_t)pTrack->GetTPCNcls());
-        if( nTrack->GetTPCNcls() > 0 ) lNegChi2PerCluster = nTrack->GetTPCchi2() / ((Float_t)nTrack->GetTPCNcls());
-        
-        if ( lPosChi2PerCluster  > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lPosChi2PerCluster;
-        if ( lNegChi2PerCluster  > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lNegChi2PerCluster;
-        
-        fTreeVariableMaxChi2PerCluster = lBiggestChi2PerCluster;
-        
-        //Extra track quality: min track length
-        Float_t lSmallestTrackLength = 1000;
-        Float_t lPosTrackLength = -1;
-        Float_t lNegTrackLength = -1;
-        
-        if (pTrack->GetInnerParam()) lPosTrackLength = pTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-        if (nTrack->GetInnerParam()) lNegTrackLength = nTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-        
-        if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
-        if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
-        
-        //________________________________________________________________________
-        // Track quality cuts
-        Float_t lLeastNcrOverLength = 200;
-        Float_t lPosTrackNcrOverLength = pTrack->GetTPCClusterInfo(2,1)/(lPosTrackLength-TMath::Max(lV0Radius-85.,0.));
-        Float_t lNegTrackNcrOverLength = nTrack->GetTPCClusterInfo(2,1)/(lNegTrackLength-TMath::Max(lV0Radius-85.,0.));
-        
-        lLeastNcrOverLength = (Float_t) lPosTrackNcrOverLength;
-        if( lNegTrackNcrOverLength < lLeastNcrOverLength )
-            lLeastNcrOverLength = (Float_t) lNegTrackNcrOverLength;
-        
-        fTreeVariableMinTrackLength = lSmallestTrackLength;
-        
-        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80  && fkExtraCleanup) continue;
-        
-        //End track Quality Cuts
-        //________________________________________________________________________
-        
-        lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(lBestPrimaryVtxPos[0],
-                                                      lBestPrimaryVtxPos[1],
-                                                      lMagneticField) );
-        
-        lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(lBestPrimaryVtxPos[0],
-                                                      lBestPrimaryVtxPos[1],
-                                                      lMagneticField) );
-        
-        lDcaV0Daughters = v0->GetDcaV0Daughters();
-        lDcaV0ToPrimVertex = v0->GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-        lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-        
-        // Getting invariant mass infos directly from ESD
-        v0->ChangeMassHypothesis(310);
-        lInvMassK0s = v0->GetEffMass();
-        v0->ChangeMassHypothesis(3122);
-        lInvMassLambda = v0->GetEffMass();
-        v0->ChangeMassHypothesis(-3122);
-        lInvMassAntiLambda = v0->GetEffMass();
-        
-        //Here is the time to make cut selections!
-        
-        if( lV0CosineOfPointingAngle < fSibCutV0CosineOfPointingAngle) continue ;
-        if( lDcaV0ToPrimVertex       > fSibCutDcaV0ToPrimVertex      ) continue ;
-//        if( lDcaV0Daughters          > lSibCutDcaV0Daughters         ) continue ;
-        if( lV0Radius                > fSibCutV0Radius               ) continue ;
-        if( lDcaPosToPrimVertex      > fSibCutDcaPosToPrimVertex     ) continue ;
-        if( lDcaNegToPrimVertex      > fSibCutDcaNegToPrimVertex     ) continue ;
-        if( TMath::Abs( lInvMassK0s - 0.498 ) > fSibCutInvMassK0s    ) continue ;
-        //This V0 looks like one true K0s!
-        
-        //Official means of acquiring N-sigmas
-        Float_t NSigmasPosProton = TMath::Abs( fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ) );
-        Float_t NSigmasPosPion   = TMath::Abs( fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kPion ) );
-        Float_t NSigmasNegProton = TMath::Abs( fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ) );
-        Float_t NSigmasNegPion   = TMath::Abs( fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion ) );
-        
-        Float_t DeltaMassKaon = TMath::Abs( lInvMassK0s - .498 );
-        Float_t DeltaMassLamb = TMath::Abs( lInvMassLambda - 1.116);
-        Float_t DeltaMassALam = TMath::Abs( lInvMassAntiLambda - 1.116);
-        
-        if( ( NSigmasPosPion < 4 ) && ( NSigmasNegPion < 4 ) ){
-            //        if(1){
-            //This is a good V0 for Sibling Ancestor, testing if already on the list
-            Bool_t PosFlag = 0 ;
-            Bool_t NegFlag = 0 ;
-            
-            for(Int_t t = 0 ; t < ntr ; t++ ){
-                if(lKeyPos == IdxForSibTagging[t]) PosFlag = 1;
-                if(lKeyNeg == IdxForSibTagging[t]) NegFlag = 1;
-            }
-            if(PosFlag == 0 ) IdxForSibTagging[ntr++] = lKeyPos ;
-            if(NegFlag == 0 ) IdxForSibTagging[ntr++] = lKeyNeg ;
-        }
-    }
-    
-    // End of V0 loop for Siblings
-    
+
     //------------------------------------------------
     // MAIN CASCADE LOOP STARTS HERE
     //------------------------------------------------
@@ -5091,6 +4905,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarAmplitudeV0A = fAmplitudeV0A;
         fTreeCascVarAmplitudeV0C = fAmplitudeV0C;
         
+        //This is the flag for ITS||TOF requirement cross-check 
+        Bool_t lITSorTOFsatisfied = kFALSE; 
+        if( 
+            (fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit) ||
+            (fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit) ||
+            (fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE; 
+        if( 
+            (TMath::Abs(fTreeCascVarBachTOFExpTDiff+2500.) > 1e-6) || 
+            (TMath::Abs(fTreeCascVarNegTOFExpTDiff+2500.)  > 1e-6) ||  
+            (TMath::Abs(fTreeCascVarPosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;  
+        
         //Valid or not valid
         Bool_t lValidXiMinus, lValidXiPlus, lValidOmegaMinus, lValidOmegaPlus;
         lValidXiMinus = kTRUE;
@@ -5565,6 +5390,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 (
                  lCascadeResult->GetCutLeastNumberOfCrossedRows()<0 ||
                  (lLeastNbrCrossedRows>lCascadeResult->GetCutLeastNumberOfCrossedRows())
+                 )&&
+                //Check 20: ITS or TOF required 
+                (
+                 lCascadeResult->GetCutITSorTOF()==kFALSE || lITSorTOFsatisfied==kTRUE
                  )
                 )//end major if
             {
@@ -6664,8 +6493,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(
     //Explore TOF information use
     for(Int_t i = 0 ; i < lNPart ; i ++){
         //Create a new object from default
-        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_AtLeastOneTOF",lParticleNameV0[i].Data() ) );
-        lV0Result[lNV0]->SetCutAtLeastOneTOF(kTRUE);
+        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_ITSorTOF",lParticleNameV0[i].Data() ) );
+        lV0Result[lNV0]->SetCutITSorTOF(kTRUE);
         
         //Add result to pool
         lNV0++;
@@ -7743,8 +7572,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     
     //Explore TOF info use
     for(Int_t i = 0 ; i < 4 ; i ++){
-        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_AtLeastOneTOF",lParticleName[i].Data() ) );
-        lCascadeResult[lN] -> SetCutAtLeastOneTOF(kTRUE);
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSorTOF",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutITSorTOF(kTRUE);
         //Add result to pool
         lN++;
     }

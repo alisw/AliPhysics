@@ -17,28 +17,29 @@ AliLightNTrackHist::AliLightNTrackHist()
 ,fP_mass2_DCAxyHist(0)
 {
     for (int i=0;i<2;++i) {
-		fTrackCutQA[i]=0;
-		fpDist[i]=0;
-		fpTPCDist[i]=0;
-		fetaDist[i]=0;
-		fphiDist[i]=0;
-		fTPCCls[i]=0;
-		fTPCClsS[i]=0;
-		fShrdClsITS[i]=0;
-		fDCAxy[i]=0;
-		fDCAz[i]=0;
-		fMass2sqHist[i]=0;
-		fTPCCrossedRows[i]=0;
-		fTPCRatio[i]=0;
-		fTPCdedx[i]=0;
-		fTOFbeta[i]=0;
-		fNSigTPC[i]=0;
-		fNSigTOF[i]=0;
-		fTPCStatus[i]=0;
-		fTOFStatus[i]=0;
-		fTPCClsCPiluUp[i]=0;
-		fITShrdClsPileUp[i]=0;
-	}
+        fTrackCutQA[i]=0;
+        fpDist[i]=0;
+        fpTPCDist[i]=0;
+        fDiff_p_pTPC[i]=0;
+        fetaDist[i]=0;
+        fphiDist[i]=0;
+        fTPCCls[i]=0;
+        fTPCClsS[i]=0;
+        fShrdClsITS[i]=0;
+        fDCAxy[i]=0;
+        fDCAz[i]=0;
+        fMass2sqHist[i]=0;
+        fTPCCrossedRows[i]=0;
+        fTPCRatio[i]=0;
+        fTPCdedx[i]=0;
+        fTOFbeta[i]=0;
+        fNSigTPC[i]=0;
+        fNSigTOF[i]=0;
+        fTPCStatus[i]=0;
+        fTOFStatus[i]=0;
+        fTPCClsCPiluUp[i]=0;
+        fITShrdClsPileUp[i]=0;
+    }
 }
 AliLightNTrackHist::AliLightNTrackHist(bool DCADist,bool CombSig,bool PlotPmass2dca3D) {
     TString sName[2] = {"before", "after"};
@@ -117,10 +118,17 @@ AliLightNTrackHist::AliLightNTrackHist(bool DCADist,bool CombSig,bool PlotPmass2
         fTrackCutQA[i]->Add(fpDist[i]);
         
         TString pTPCName=Form("pTPCDist_%s", sName[i].Data());
-        fpTPCDist[i] = new TH1F(pTPCName.Data(), pTPCName.Data(), pBins, pmin, pmax);
+        fpTPCDist[i] = new TH1F(pTPCName.Data(), pTPCName.Data(), 45, pmin, pmax);
         fpTPCDist[i]->Sumw2();
         fpTPCDist[i]->GetXaxis()->SetTitle("p_{TPC}");
         fTrackCutQA[i]->Add(fpTPCDist[i]);
+        
+        TString Diff_p_pTPCName = Form("Diff_p_pTPC_%s", sName[i].Data());
+        fDiff_p_pTPC[i] = new TH2F(Diff_p_pTPCName.Data(), Diff_p_pTPCName.Data(), 45, pmin, pmax, 100, -0.3, 0.3);
+        fDiff_p_pTPC[i]->Sumw2();
+        fDiff_p_pTPC[i]->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+        fDiff_p_pTPC[i]->GetYaxis()->SetTitle("#it{p} - #it{p}_{TPC} (GeV/#it{c})");
+        fTrackCutQA[i]->Add(fDiff_p_pTPC[i]);
         
         TString etaName = Form("EtaDist_%s", sName[i].Data());
         fetaDist[i] = new TH1F(etaName.Data(), etaName.Data(), 200, -10., 10.);
@@ -385,6 +393,7 @@ AliLightNTrackHist::~AliLightNTrackHist() {
         delete fTrackCutQA[i];
         delete fpDist[i];
         delete fpTPCDist[i];
+        delete fDiff_p_pTPC[i];
         delete fetaDist[i];
         delete fphiDist[i];
         delete fTPCCls[i];

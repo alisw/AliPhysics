@@ -39,7 +39,8 @@ public:
   virtual Bool_t IsSelected(TObject* obj);  // TObject should be an AliAODv0
   virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
 
-  void SetOnFlyStatus(Bool_t flyStat)                { fSelectOnFly = true; fOnFlyStatus = flyStat; }
+  void SaveOnlyOnTheFly()                            { fSelectOnFly = true; fOnFlyStatus = kFALSE; }
+  void SaveOnlyOffline()                             { fSelectOnFly = true; fOnFlyStatus = kTRUE; }
   void Setv0pTMin(Float_t pTMin)                     { fv0pTMin = pTMin;  }
   void Setv0EtaMax(Float_t EtaMax)                   { fv0EtaMax = EtaMax; }
   void SetTransverseRadius(Float_t min, Float_t max) { fTransverseRadiusMin = min; fTransverseRadiusMax = max; }
@@ -50,6 +51,7 @@ public:
   void SetMinClsTPCDaughters(int minCls)             { fDaugMinClsTPC = minCls; }
   void SetLambdaDaugnSigTPCMax(Float_t maxnSig)      { fLambdaDaugnSigTPCMax = maxnSig; }
   void SetRequireTimingDaughters(Bool_t require)     { fCheckDaughterPileup = require; }
+  void SetRequireTPCRefitDaughters(Bool_t require)     { fCheckDaughterTPCRefit = require; }
   
 private:
   Bool_t fSelectOnFly;
@@ -65,6 +67,7 @@ private:
   Int_t fDaugMinClsTPC;
   Float_t fLambdaDaugnSigTPCMax;
   Bool_t fCheckDaughterPileup;
+  Bool_t fCheckDaughterTPCRefit;
 
   ClassDef(AliAnalysisNanoAODV0Cuts, 1); // track cut object for nano AOD filtering
 };
@@ -131,6 +134,7 @@ class AliAnalysisNanoAODCascadeCuts : public AliAnalysisCuts
   void SetDaughterEtaMax(Float_t EtaMax)            { fDaughEtaMax = EtaMax; }
   void SetLambdaDaugnSigTPCMax(Float_t maxnSig)     { fCascDaugnSigTPCMax = maxnSig; }
   void SetRequireTimingDaughters(Bool_t require)    { fCheckDaughterPileup = require; }
+  void SetRequireTPCRefitDaughters(Bool_t require)     { fCheckDaughterTPCRefit = require; }
  private:
   Float_t fCascpTMin;
   Float_t fDCADaugPrimVtxMin;
@@ -142,6 +146,7 @@ class AliAnalysisNanoAODCascadeCuts : public AliAnalysisCuts
   Float_t fDaughEtaMax;
   Float_t fCascDaugnSigTPCMax;
   bool fCheckDaughterPileup;
+  bool fCheckDaughterTPCRefit;
 
   ClassDef(AliAnalysisNanoAODCascadeCuts, 1); // track cut object for nano AOD filtering
 };

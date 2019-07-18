@@ -39,6 +39,7 @@ set(SRCS
   AliXiStar.cxx
   AliXiStarpp13TeV.cxx
   AliXiStarPbPb.cxx
+  AliXiStarPbPb_RUN2.cxx
   AliXiStarEventCollection.cxx
   AliXiStarpp13TeVEventCollection.cxx
   AliXiStarPbPbEventCollection.cxx
@@ -85,4 +86,5 @@ install(FILES AddTaskRsnf0f2.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskF01710fromAODtracks.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarpp13TeV.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarPbPb.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddTaskXiStarPbPb_RUN2.C DESTINATION PWGLF/RESONANCES/extra)
 

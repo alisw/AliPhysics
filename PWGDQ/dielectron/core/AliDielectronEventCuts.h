@@ -25,6 +25,7 @@
 
 #include <AliAnalysisUtils.h>
 #include <AliAnalysisCuts.h>
+#include <AliEventCuts.h>
 
 class AliTriggerAnalysis;
 class AliESDVertex;
@@ -56,6 +57,7 @@ public:
   void SetCutOnV0MultipicityNTrks(TF1* parMean, TF1* parSigma, Double_t cutSigma=3.) { fparMean=parMean; fparSigma=parSigma; fcutSigma=cutSigma; }
   void SetCutOnNVtxContributorsGloablTPC(TF1* parMin, TF1* parMax) { fparMinVtxContributors=parMin; fparMaxVtxContributors=parMax; }
   void SetRequire2013vertexandevent(Bool_t req13 = kTRUE) {fRequire13sel = req13; }
+  void SetRequireAliEventCuts(Bool_t reqAliEventCuts = kTRUE, Bool_t reqAliEventCutsCorrelated = kFALSE) {fRequireAliEventCuts = reqAliEventCuts; fAODeventCuts.fUseVariablesCorrelationCuts = reqAliEventCutsCorrelated;}
   void SetMinCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary=0);
   void SetMaxCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary=0);
 
@@ -105,6 +107,9 @@ private:
   const AliESDVertex *fkVertex;         //! current vertex
   const AliAODVertex *fkVertexAOD;      //! current vertex AOD
 
+  Bool_t  fRequireAliEventCuts;     // use AliEventCuts to reject events
+  AliEventCuts fAODeventCuts;       // use AliEventCuts to reject events
+  
   TH1D* fCorrCutMin[5];       //parametrization of lower limit correlation cut
   TH1D* fCorrCutMax[5];       //parametrization of upper limit correlation cut
 

@@ -206,12 +206,12 @@ struct CutConfig_Pion {
 
 /// Configuration for the pair
 struct CutConfig_Pair {
-  Bool_t use_avgsep = { kTRUE };
+  Bool_t use_avgsep = { kFALSE };
   Float_t min_delta_eta = { 0.01 },
           min_delta_phi = { 0.04 },
           phi_star_radius = { 1.2 };
 
-  Float_t min_avgsep = { 0.0 };
+  Float_t min_avgsep = { 3.0 };
 
   Float_t ee_min = { 0.0 };
 
@@ -382,6 +382,7 @@ AliFemtoAnalysisPionPion::DefaultConfig()
 AliFemtoAnalysisPionPion::CutParams::CutParams()
   : TNamed(AliFemtoAnalysisPionPion::make_random_string("cut_").Data(), "Cut Params")
   , cuts_use_attrs(false)
+  , mc_pion_only(false)
   , event_use_basic(false)
   , event_MultMin(default_event.multiplicity.first)
   , event_MultMax(default_event.multiplicity.second)
@@ -486,7 +487,8 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   }
 
   if (p.cuts_use_attrs) {
-    auto *cut = new AliFemtoTrackCutPionPionAK();
+    auto *cut = p.mc_pion_only ? new AliFemtoTrackCutPionPionIdealAK()
+                               : new AliFemtoTrackCutPionPionAK();
     cut->pt_range = {p.pion_1_PtMin, p.pion_1_PtMax};
     cut->eta_range = {p.pion_1_EtaMin, p.pion_1_EtaMax};
     cut->status = p.pion_1_status;
@@ -587,17 +589,14 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
   }
 
   if (p.event_use_basic) {
-  AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
+    AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
 
-  cut->SetEventMult(p.event_MultMin,
-                    p.event_MultMax);
-  cut->SetVertZPos(p.event_VertexZMin,
-                   p.event_VertexZMax);
-  cut->SetEPVZERO(p.event_EP_VZeroMin,
-                  p.event_EP_VZeroMax);
-  cut->SetTriggerSelection(p.event_TriggerSelection);
-  cut->SetAcceptBadVertex(p.event_AcceptBadVertex);
-  return cut;
+    cut->SetEventMult(p.event_MultMin, p.event_MultMax);
+    cut->SetVertZPos(p.event_VertexZMin, p.event_VertexZMax);
+    cut->SetEPVZERO(p.event_EP_VZeroMin, p.event_EP_VZeroMax);
+    cut->SetTriggerSelection(p.event_TriggerSelection);
+    cut->SetAcceptBadVertex(p.event_AcceptBadVertex);
+    return cut;
   }
 
   AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();
@@ -745,21 +744,16 @@ static TObjArray* GetPassFailOutputList(const TString &name,
   return res;
 }
 
-TList* AliFemtoAnalysisPionPion::GetOutputList()
+AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfiguration() const
 {
-  TList *outputlist = nullptr;
-  TSeqCollection *output = nullptr;
+  auto event_cut_cfg = GetConfigurationOf(*fEventCut);
+  auto track_cut_cfg = GetConfigurationOf(static_cast<const AliFemtoTrackCut&>(*fFirstParticleCut));
+  auto pair_cut_cfg = GetConfigurationOf(*fPairCut);
 
-  auto write_configobj = [&] (TCollection *output)
-    {
-      auto event_cut_cfg = GetConfigurationOf(*fEventCut);
-      auto track_cut_cfg = GetConfigurationOf(static_cast<const AliFemtoTrackCut&>(*fFirstParticleCut));
-      auto pair_cut_cfg = GetConfigurationOf(*fPairCut);
-
-      output->Add(
-        new AliFemtoConfigObject(AliFemtoConfigObject::BuildMap()
+  return AliFemtoConfigObject::BuildMap()
                   ("_class", "AliFemtoAnalysisPionPion")
                   ("is_mc", fMCAnalysis)
+                  ("track_filtermask", fFilterMask)
                   ("events_to_mix", NumEventsToMix())
                   ("collection_size_min", fMinSizePartCollection)
                   ("mix_vertex_z_bins", fVertexZBins)
@@ -768,8 +762,18 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
                   ("mix_mult_range", std::make_pair(fMult[0], fMult[1]))
                   ("event_cut", event_cut_cfg)
                   ("track_cut", track_cut_cfg)
-                  ("pair_cut", pair_cut_cfg))
-                );
+                  ("pair_cut", pair_cut_cfg);
+}
+
+TList* AliFemtoAnalysisPionPion::GetOutputList()
+{
+  TList *outputlist = nullptr;
+  TSeqCollection *output = nullptr;
+
+  auto write_configobj = [&] (TCollection *output)
+    {
+      auto cfg = GetConfiguration();
+      output->Add(new AliFemtoConfigObject(std::move(cfg)));
     };
 
   // get "standard" outputs - that's what we output

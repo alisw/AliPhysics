@@ -9,7 +9,7 @@
 #endif
 
 
-AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t OneTimeCheck, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC, Bool_t IsAOD, Bool_t IsHFE, Bool_t UseTender, Double_t EtaMax, Int_t ITSnCut, Float_t ITSSharedCluster,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut, Int_t PhotCorrCase, Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
+  AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Int_t MinNTr, Int_t MaxNTr, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t OneTimeCheck, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC, Bool_t IsAOD, Bool_t IsHFE, Bool_t UseTender, Bool_t UseEventWeights, Double_t EtaMax, Int_t ITSnCut, Float_t ITSSharedCluster,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut, Int_t PhotCorrCase, Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITSsa, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -38,11 +38,12 @@ AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEv
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHaHFECorrel.C");
   AliAnalysisTaskHaHFECorrel *taskMB = 
-    ConfigHaHFECorrel(period, MinPtEvent, MaxPtEvent, TRDQA, TagEff, RecEff, OneTimeCheck,  CorrHadron, CorrLP, MCTruth, IsMC, IsAOD, IsHFE, UseTender,EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut, PhotCorrCase, InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITS, SigmaITScut, SigmaTOFcut, SigmaTPCcut, ID);
+    ConfigHaHFECorrel(period, MinNTr, MaxNTr, TRDQA, TagEff, RecEff, OneTimeCheck,  CorrHadron, CorrLP, MCTruth, IsMC, IsAOD, IsHFE, UseTender, UseEventWeights, EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut, PhotCorrCase, InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITSsa, SigmaITScut, SigmaTOFcut, SigmaTPCcut, ID);
   if (!taskMB) {
     Error("AddTaskHaHFECorrel", "No task found.");
   }
-  taskMB->SelectCollisionCandidates(AliVEvent::kINT7);
+  //taskMB->SelectCollisionCandidates(AliVEvent::kINT7);
+
   
   // Load correction weights for pi0, eta
   if (IsMC) {
@@ -63,7 +64,7 @@ AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEv
     else printf("Could not open Pi0Eta correction file \n");
     TH1::AddDirectory(kTRUE);
   }
-
+  
 
 
 
@@ -111,6 +112,28 @@ AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEv
   }
   else printf("Could not open NonTag correction file \n");
   TH1::AddDirectory(kTRUE);
+
+  
+  TH1::AddDirectory(kFALSE);
+  printf("Loading EventWeightFile\n");
+  TString EventWeightFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/TriggerVtxEff.root";
+  TFile *EventWeightFile = TFile::Open(EventWeightFileName.Data());
+  EventWeightFile->ls();
+  if (EventWeightFile) {    
+    TH2F * TriggerWeight  = (TH2F*)EventWeightFile->Get("TrigEffPS");
+    if (TriggerWeight) taskMB->SetTriggerWeight(*TriggerWeight); 
+    TH1F * VtxWeight;
+    if (IsMC) VtxWeight = (TH1F*)EventWeightFile->Get("VtxWeightMC");
+    if (!IsMC || !VtxWeight) VtxWeight = (TH1F*)EventWeightFile->Get("VtxWeight");
+    if (VtxWeight) taskMB->SetVtxWeight(*VtxWeight);
+    if (!VtxWeight || !TriggerWeight) print("Could no open EventWeight hists");
+  }
+  else  printf("Could not open EventWeight file \n"); 
+  TH1::AddDirectory(kTRUE);
+  
+
+ 
+
 
 
 

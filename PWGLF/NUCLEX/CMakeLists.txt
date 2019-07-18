@@ -36,6 +36,7 @@ set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
+  Exotica/LambdaNN/AliAnalysisTaskLNNv0Bkg.cxx
   Exotica/Ps/AliAnalysisTaskPsEfficiency.cxx
   Exotica/dStar/AliAnalysisTaskdStar.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3Pi.cxx
@@ -48,6 +49,7 @@ set(SRCS
 	Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3ML.cxx
+  Hypernuclei/Vertexer2Body/AliVertexerHyperTriton2Body.cxx
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
   Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskLightN.cxx
@@ -79,6 +81,7 @@ set(SRCS
   Utils/CODEX/AliAnalysisCODEXtask.cxx
   Utils/NanoAOD/AliNanoFilterPID.cxx
   Utils/NanoAOD/AliNanoSkimmingPID.cxx
+  Utils/ChunkFilter/AliAnalysisTaskFilterHe3.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)

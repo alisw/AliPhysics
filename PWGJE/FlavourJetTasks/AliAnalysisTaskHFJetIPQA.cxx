@@ -36,7 +36,6 @@
 #include "AliVParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliJetContainer.h"
-#include "AliRDHFJetsCuts.h"
 #include "AliGenEventHeader.h"
 #include "AliVertexerTracks.h"
 #include "AliEmcalList.h"
@@ -65,7 +64,6 @@ ClassImp(AliAnalysisTaskHFJetIPQA)
 
 AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
 AliAnalysisTaskEmcalJet(),
-fh1dEventRejectionRDHFCuts(nullptr),
 fh1dTracksAccepeted(nullptr),
 fh1dCuts(nullptr),
 fh2dManifoldParton(nullptr),
@@ -109,7 +107,6 @@ fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
 cCuts(0),
 fMCArray(nullptr),
-fJetCutsHF(new AliRDHFJetsCuts()),
 fMCEvent(nullptr),
 fESDTrackCut(nullptr),
 fVertexer(nullptr),
@@ -119,7 +116,7 @@ fPUdsgJet(100),fPSJet(100),fPCJet(100),fPBJet(100),
 fJetCont(10),
 fHardProcess(0,SQuarks(0,0,0,0)),
 fQuarkVec(0,SQuarks(0,0,0,0)),
-fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 fCombined(nullptr),
 fXsectionWeightingFactor(1),
 fProductionNumberPtHard(-1),
@@ -160,7 +157,6 @@ fTREE_pt(-1.)
 }
 AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
 AliAnalysisTaskEmcalJet(name, kTRUE),
-fh1dEventRejectionRDHFCuts(nullptr),
 fh1dTracksAccepeted(nullptr),
 fh1dCuts(nullptr),
 fh2dManifoldParton(nullptr),
@@ -204,7 +200,6 @@ fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
 cCuts(0),
 fMCArray(nullptr),
-fJetCutsHF(new AliRDHFJetsCuts()),
 fMCEvent(nullptr),
 fESDTrackCut(nullptr),
 fVertexer(nullptr),
@@ -214,7 +209,7 @@ fPUdsgJet(100),fPSJet(100),fPCJet(100),fPBJet(100),
 fJetCont(10),
 fHardProcess(0,SQuarks(0,0,0,0)),
 fQuarkVec(0,SQuarks(0,0,0,0)),
-fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 fCombined(nullptr),
 fXsectionWeightingFactor(1.),
 fProductionNumberPtHard(-1),
@@ -285,6 +280,10 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultAnalysisCuts(){
     fAnalysisCuts[bAnalysisCut_MinTrackPt]      =1.;
     fAnalysisCuts[bAnalysisCut_MinTrackPtMC]    =.5;
     fAnalysisCuts[bAnalysisCut_MinTPCClus]      =100;
+    fAnalysisCuts[bAnalysisCut_MinJetPt]        =0;
+    fAnalysisCuts[bAnalysisCut_MaxJetPt]        =1000;
+    fAnalysisCuts[bAnalysisCut_MinJetEta]       =-0.9;
+    fAnalysisCuts[bAnalysisCut_MaxJetEta]       =0.9;
 }
 
 void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
@@ -529,6 +528,11 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         FillTrackHistograms(trackV,dca,cov,TrackWeight);
     }
     AliJetContainer *  jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+    fAnalysisCuts[bAnalysisCut_MinJetPt]=jetconrec->GetJetPtCut();
+    fAnalysisCuts[bAnalysisCut_MaxJetPt]=jetconrec->GetJetPtCutMax();
+    fAnalysisCuts[bAnalysisCut_MinJetEta]=jetconrec->GetMinEta();
+    fAnalysisCuts[bAnalysisCut_MaxJetEta]=jetconrec->GetMaxEta();
+    //printf("In Program %f < jetpt <%f, %f < jeteta < %f\n",fAnalysisCuts[bAnalysisCut_MinJetPt],fAnalysisCuts[bAnalysisCut_MaxJetPt],fAnalysisCuts[bAnalysisCut_MinJetEta],fAnalysisCuts[bAnalysisCut_MaxJetEta] );
     FillHist("fh1dNoJetsPerEvent",jetconrec->GetNJets(),1);
 
     if (!jetconrec) return kFALSE;
@@ -606,10 +610,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     else if(jetflavour==3)FillHist("fh1dJetRecPtb",           jetpt, 1);    //this->fXsectionWeightingFactor );
                     else if(jetflavour==4)FillHist("fh1dJetRecPts",           jetpt, 1);    //this->fXsectionWeightingFactor );
                 }
-                fJetCutsHF->SetMaxEtaJet(0.5);
-                fJetCutsHF->SetMinPtJet(-1);
-                fJetCutsHF->SetMaxPtJet(1000);
-                if(!(fJetCutsHF->IsJetSelected(jetrec))) continue;
 
                 RecursiveParents(jetrec, jetconrec);
                
@@ -1753,8 +1753,6 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
       printf("Adding Object %s\n",obj->GetName());
       fOutput->Add(obj);
     }
-
-    PrintSettings();
     PostData(1, fOutput);
 }
 
@@ -1766,19 +1764,17 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
 
     jetcuts+=version;
     jetcuts+="+";
-    jetcuts+=(fJetCutsHF->GetMaxEtaJet());
+    jetcuts+=fAnalysisCuts[bAnalysisCut_MinJetPt];
     jetcuts+="+";
-    jetcuts+=(fJetCutsHF->GetMinPtJet());
+    jetcuts+=fAnalysisCuts[bAnalysisCut_MaxJetPt];
     jetcuts+="+";
-    jetcuts+=(fJetCutsHF->GetMaxPtJet());
+    jetcuts+=fAnalysisCuts[bAnalysisCut_MinJetEta];
     jetcuts+="+";
-    jetcuts+=fJetCutsHF->GetUsePhysicsSelection();
-    jetcuts+="+";
-    jetcuts+=fJetCutsHF->GetOptPileUp();
+    jetcuts+=fAnalysisCuts[bAnalysisCut_MaxJetEta];
     jetcuts+="+";
     jetcuts+=fNoJetConstituents;
     jetcuts+="+";
-    jetcuts+=fDaughtersRadius*10;
+    jetcuts+=fDaughtersRadius;
     printf("Cut Settings: %s\n",jetcuts.Data());
 
     trackcuts+=version;
@@ -3175,7 +3171,7 @@ Int_t  AliAnalysisTaskHFJetIPQA::IsMCJetPartonFast(const AliEmcalJet *jet, Doubl
   }//end trackloop MC
 
   if(kPartonsPerJet>1){
-      printf("More than one, exactly %i partons matched to jet\n",kPartonsPerJet);
+      //printf("More than one, exactly %i partons matched to jet\n",kPartonsPerJet);
       fh2dManifoldParton->Fill(kPartonsPerJet,jet->Pt());
   }
 
@@ -3702,6 +3698,7 @@ void AliAnalysisTaskHFJetIPQA::Terminate(Option_t *){
       count++;
     }*/
     //printf("Overall %i objects in AliEmcalList\n",count);
+    PrintSettings();
 
     printf("\n*********************************\n");
     printf("Corrections:\n");

@@ -1,5 +1,7 @@
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AliAnalysisTrackingUncertaintiesAOT.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 #endif
 
 AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
@@ -18,7 +20,10 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           AliESDtrackCuts::ITSClusterRequirement spdReq=AliESDtrackCuts::kAny,
                                           Bool_t useGenPt = kFALSE,
                                           Bool_t DCAzOn= kFALSE,
-                                          Bool_t fTPConlyFIT=kFALSE) {
+                                          Bool_t fTPConlyFIT=kFALSE
+                                          ,Bool_t finerpTbin = kFALSE   // make the pT binning finer by a factor of 2
+                                          ,Bool_t applyTPCGeomCut = kFALSE  // geometrical cut for tracks in the TPC 
+                                          ) {
 
     
   //
@@ -67,6 +72,8 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
   task->SetMaxCentrality(maxCentrality);
   task->SetUseGeneratedPt(useGenPt);
   task->SetDCAzOn(DCAzOn);
+  task->SetFinerpTbin(finerpTbin);  // make the pT binning finer by a factor of 2
+  task->SetUseCutGeoNcrNcl(applyTPCGeomCut);  // geometrical cut for tracks in the TPC 
     
   mgr->AddTask(task);
   ULong64_t SPeciee = task->GetSpecie();
@@ -98,4 +105,5 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
   return task;
     
 }
+
 

@@ -77,7 +77,7 @@ public:
     }
   }
   void DumpTObjTable(const char* note);
-  
+
   
 private:
   AliAnalysisTaskSEpPbCorrelationsYS(
@@ -110,7 +110,7 @@ private:
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
-
+ Int_t      ConvertRunNumber(Int_t run);
 
 /*
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
@@ -234,7 +234,7 @@ private:
   TH1F *fHistzvertex;
   TH1F *fHistCentrality;
   TH1F *fHistCentrality_beforecut;
-
+  TH2F* fHistCentzvertex;
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
@@ -261,6 +261,12 @@ private:
   TH2F*  fh2_SPDtrack_multcorr;
   TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;
+  TH1F* fHist_NeventRun;
+  TH1F* fHist_V0AMultRun;
+  TH1F* fHist_V0CMultRun;
+  TH1F* fHist_FMDAMultRun;
+  TH1F* fHist_FMDCMultRun;
+
   TH2D*  fhistfmdphiacc;
   AliTHn* fhistfmd;
   THnSparseF* fhistits;

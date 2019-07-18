@@ -20,12 +20,12 @@
 
 /// * Instance of the AliESDtools allow usage of functions in the TTree formulas.
 /// ** Cache information (e.g mean event properties)
-/// ** Set of static function to access pre-calculated variables 
+/// ** Set of static function to access pre-calculated variables
 /// * enabling  ESD track functionality in TTree::Draw queries
 /// ** Double_t AliESDtools::LoadESD(Int_t entry, Int_t verbose)
 
 /// Example usage for Tree queries mode (used e.g in N-Dimensional analysis pipeline):
-/*   
+/*
   /// 0.) Initialize tool e.g:
   tree = AliXRDPROOFtoolkit::MakeChainRandom("esd.list","esdTree",0,10)
   //.L $AliPhysics_SRC/PWGPP/AliESDtools.cxx+
@@ -47,7 +47,8 @@
 
 
 #include "TStopwatch.h"
-#include "TTree.h" 
+#include "TTree.h"
+#include "TGrid.h"
 #include "TChain.h"
 #include "TVectorF.h"
 #include "AliStack.h"
@@ -66,8 +67,11 @@
 #include <stdarg.h>
 #include "AliNDLocalRegression.h"
 #include "AliESDEvent.h"
+#include "AliLumiTools.h"
 #include "AliPIDResponse.h"
 #include "TTreeStream.h"
+#include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "AliESDtools.h"
 
 
@@ -751,7 +755,7 @@ Double_t AliESDtools::LoadESD(Int_t entry, Int_t verbose) {
   fgInstance->fEvent->ConnectTracks();
   return 2;
 }
-/// Find (biggest) pile-up TPC vertex  - high eficiency for the PbPb - for pp should be still opimized
+/// Find (biggest) pile-up TPC vertex  - high efficiency for the PbPb - for pp should be still optimized
 /// Cache pileup vertex information into  fTPCVertexInfo
 /// \param entry
 /// \param verbose
@@ -777,11 +781,11 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
       if (TMath::Abs(dcaZ) < kMinDCAZ) continue;
       Double_t tgl = track->Pz() / track->Pt();
       if (tgl > 0.1) {
-        bufferP[++counterP] = track->GetZ();
+        bufferP[counterP++] = track->GetZ();
         fHisTPCVertexA->Fill(track->GetZ());
       }
       if (tgl < -0.1) {
-        bufferM[++counterM] = track->GetZ();
+        bufferM[counterM++] = track->GetZ();
         fHisTPCVertexC->Fill(track->GetZ());
       }
     }
@@ -795,14 +799,14 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
     (*fTPCVertexInfo)[4] = counterM;
     (*fTPCVertexInfo)[5] = (counterP+counterM);
     if (verbose > 0) {
-      ::Info("AliESDtools::CachePileupVertexTPC", "%f\t%f\t%f\t%f\t", counterP, counterM, posZA, posZC);
+      ::Info("AliESDtools::CachePileupVertexTPC", "%d\t%d\t%f\t%f\t", counterP, counterM, posZA, posZC);
     }
   }
   return 1;
 }
 
 
-/// DumpEvent varaibles ito the tree
+/// DumpEvent variables ito the tree
 /// \return
 Int_t AliESDtools::DumpEventVariables() {
   if (fStreamer== nullptr) {
@@ -810,7 +814,9 @@ Int_t AliESDtools::DumpEventVariables() {
     return 0;
   }
   Int_t tpcClusterMultiplicity   = fEvent->GetNumberOfTPCClusters();
+  Int_t tpcTrackBeforeClean=fEvent->GetNTPCTrackBeforeClean();
   const AliMultiplicity *multObj = fEvent->GetMultiplicity();
+
   Int_t itsNumberOfTracklets   = multObj->GetNumberOfTracklets();
 
   TVectorF phiCountA(36);
@@ -841,21 +847,29 @@ Int_t AliESDtools::DumpEventVariables() {
   for (Int_t i=0;i<64;i++) { vZeroMult[i] = fEvent->GetVZEROData()-> GetMultiplicity(i); }
   for (Int_t i=0;i<6;i++)  { itsClustersPerLayer[i] = multObj->GetNumberOfITSClusters(i); }
   Int_t runNumber=fEvent->GetRunNumber();
+  Double_t timeStampS=fEvent->GetTimeStamp();
   Double_t timeStamp= fEvent->GetTimeStampCTPBCCorr();
   Double_t bField=fEvent->GetMagneticField();
   ULong64_t orbitID      = (ULong64_t)fEvent->GetOrbitNumber();
   ULong64_t bunchCrossID = (ULong64_t)fEvent->GetBunchCrossNumber();
   ULong64_t periodID     = (ULong64_t)fEvent->GetPeriodNumber();
   ULong64_t gid = ((periodID << 36) | (orbitID << 12) | bunchCrossID);
-  Short_t   fEventMult = fEvent->GetNumberOfTracks();
-  /// centrality
-  //if (MultSelection) {
-  //    if (fUseCouts)  std::cout << " Info::marsland: Centralitity is taken from MultSelection " << std::endl;
-  //    fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
-  //  } else if (esdCentrality) {
-  //    if (fUseCouts)  std::cout << " Info::marsland: Centralitity is taken from esdCentrality " << std::endl;
-  //    fCentrality = esdCentrality->GetCentralityPercentile("V0M");
-  //  }
+  Short_t   eventMult = fEvent->GetNumberOfTracks();
+  ULong64_t triggerMask = fEvent->GetTriggerMask();
+  const Int_t  kNEstimators=27;
+  TVectorF centrality(kNEstimators);
+  //const char* centEstStr[] = {"V0M","CL0","CL1"};
+  const char* centEstStr[] = {"V0M","CL0","CL1","TRK","TKL","V0MvsFMD","TKLvsV0M","ZEMvsZDC","kV0A","V0C","ZNA","ZNC","ZPA","ZPC","CND","FMD","NPA","V0A0","V0A123","V0A23","V0C01","V0S","V0MEq","V0AEq","V0CEq","SPDClusters","SPDTracklets"};
+
+  AliMultSelection* MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
+  AliCentrality    *esdCentrality = fEvent->GetCentrality();
+
+  if (MultSelection) {
+    for (Int_t i=0;i<kNEstimators;i++) centrality[i]=MultSelection->GetMultiplicityPercentile(centEstStr[i]);
+  } else if (esdCentrality) {
+    for (Int_t i=0;i<kNEstimators;i++) centrality[i]=esdCentrality->GetCentralityPercentile(centEstStr[i]);
+  }
+
   const AliESDVertex *vertex = fEvent->GetPrimaryVertexTracks();
   const AliESDVertex *vertexSPD= fEvent->GetPrimaryVertexTracks();
   const AliESDVertex *vertexTPC= fEvent->GetPrimaryVertexTracks();
@@ -865,25 +879,49 @@ Int_t AliESDtools::DumpEventVariables() {
   fVz   =vertex->GetZ();
   Int_t primMult    = vertex->GetNContributors();
   Int_t TPCMult = 0;
-  Int_t eventMult = fEvent->GetNumberOfESDTracks();
-  for (Int_t iTrack=0;iTrack<eventMult;++iTrack){
+  Int_t eventMultESD = fEvent->GetNumberOfESDTracks();
+  Int_t nTracksStored   = fEvent->GetNumberOfTracks();
+  for (Int_t iTrack=0;iTrack<nTracksStored;++iTrack){
     AliESDtrack *track = fEvent->GetTrack(iTrack);
+    if (track== nullptr) continue;
     if (track->IsOn(AliESDtrack::kTPCin)) TPCMult++;
   }
 
+  // retrieve interaction rate
+  Float_t intrate=-1.;
+  static Int_t timeStampCache = -1;
+  if (timeStampCache!=Int_t(timeStampS)) timeStampCache=Int_t(timeStampS);
+  if (!gGrid && timeStampCache>0) {
+    AliInfo("Trying to connect to AliEn ...");
+    TGrid::Connect("alien://");
+  } else {
+    const char *ocdb = "raw://";
+    TGraph *grLumiGraph = (TGraph*)AliLumiTools::GetLumiFromCTP(runNumber,ocdb);
+    intrate   = grLumiGraph->Eval(timeStamp);
+    delete grLumiGraph;
+  }
+
+  // dump event variables into tree
   (*fStreamer)<<"events"<<
-                     "run="                  << runNumber                 <<  // run Number
-                     "bField="               << bField                   <<  // b field
-                     "gid="                  << gid              <<  // global event ID
-                     "timestamp="            << timeStamp             <<  // timestamp
+                     "run="                  << runNumber             <<  // run Number
+                     "intrate="              << intrate               <<  // run Number
+                     "bField="               << bField                <<  // b field
+                     "gid="                  << gid                   <<  // global event ID
+                     "timeStampS="           << timeStampS            <<  // time stamp in seconds -event building
+                     "timestamp="            << timeStamp             <<  // more precise timestamp based on LHC clock
+                     "triggerMask="          << triggerMask           <<  //trigger mask
                      "vz="                   << fVz                    <<  // vertex Z
                      "tpcvz="                << TPCvZ                 <<
                      "spdvz="                << SPDvZ                 <<
                      "tpcMult="              << TPCMult               <<  //  TPC multiplicity
-                     "eventMult="            << fEventMult             <<  //  event multiplicity
+                     "eventMult="            << eventMult             <<  //  event multiplicity
+                     "eventMultESD="         << eventMultESD           <<  //  event multiplicity ESD
+                     "nTracksStored="        << nTracksStored          <<  // number of sored tracks
                      "primMult="             << primMult         <<  //  #prim tracks
                      "tpcClusterMult="       << tpcClusterMultiplicity <<  // tpc cluster multiplicity
+                     "tpcTrackBeforeClean=" << tpcTrackBeforeClean <<   // tpc track before cleaning
                      "itsTracklets="         << itsNumberOfTracklets   <<  // number of ITS tracklets
+                     "centrality.="          <<&centrality<<                // vector of centrality estimators
                      //
                      "tZeroMult.="           << &tZeroMult             <<  // T0 multiplicity
                      "vZeroMult.="           << &vZeroMult             <<  // V0 multiplicity

@@ -99,6 +99,11 @@ public:
         fCutDCAz=DCAzCut;
     }
     
+    void SetHitsOnSPDLayers(Bool_t SPDBoth,Bool_t SPDAny, Bool_t SPDFirst)    {
+        fSPDBoth=SPDBoth;
+        if(!SPDBoth)fSPDAny=SPDAny;
+        if(!SPDBoth && !SPDAny)fSPDFirst=SPDFirst;
+    }
     //------------Setters for PID electron------------------
     void             SetTPCnsigma(Double_t TPCNSigMin,Double_t TPCNSigMax){
         fCutNsigmaEMin=TPCNSigMin;
@@ -130,6 +135,10 @@ private:
     Double_t         fCutDCAz;
     Double_t         fCutTrackEta;
     Double_t         fCutNsigmaTOF;//!
+    
+    Bool_t fSPDBoth;
+    Bool_t fSPDAny;
+    Bool_t fSPDFirst; 
     //--------------------PID Cut------------------
     
     Double_t         fCutNsigmaEMin;
@@ -212,7 +221,7 @@ private:
     TH1F*                 fInclsElecPt;//!
     TH1F*                 fInclsElecPtAll;//!
     TH1F*                 fInclsElecPtReco;//!
-   
+    
     TH2F*                 fHFElecPtAll;//!
     TH2F*                 fHFElecPtReco_wtrkcuts;//!
     TH2F*                 fHFElecPtReco_wTPCPID;//!

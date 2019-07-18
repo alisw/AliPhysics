@@ -84,7 +84,9 @@ public:
     kPCMv1 = 14,               // pure symmetric decay muon method 
     kPCMplusBTCv1 = 15,        // kPCMv1 convoluted with kBeamTestCorrectedv3
     kPCMsysv1 = 16,            // variation of kPCMv1 to calculate systematics
-    kBeamTestCorrectedv4 = 17  // Different parametrization of v3 but similar, improve E>100 GeV linearity
+    kBeamTestCorrectedv4 = 17, // Different parametrization of v3 but similar, improve E>100 GeV linearity
+    kBeamTestNS = 18,          // Custom fit of all avail. TB points and E>100 GeV data
+    kPi0MCNS = 19              // Custom fit of all avail. TB points and E>100 GeV MC
   };
 
   /// Cluster position enum list of possible algoritms
@@ -559,7 +561,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 28) ;
+  ClassDef(AliEMCALRecoUtils, 29) ;
   /// \endcond
 
 };

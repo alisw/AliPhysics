@@ -51,6 +51,12 @@ AliHFVnVsMassFitter::AliHFVnVsMassFitter()
   ,fChiSquare(0.)
   ,fNDF(0)
   ,fProb(0.)
+  ,fSBVnPrefitChiSquare(0.)
+  ,fSBVnPrefitNDF(0)
+  ,fSBVnPrefitProb(0.)
+  ,fMassPrefitChiSquare(0.)
+  ,fMassPrefitNDF(0)
+  ,fMassPrefitProb(0.)
   ,fNSigmaForSB(3.)
   ,fSigmaInit(0.012)
   ,fMeanInit(1.870)
@@ -129,7 +135,13 @@ AliHFVnVsMassFitter::AliHFVnVsMassFitter(TH1F* hMass, TH1F* hvn, Double_t min, D
   ,fRawYieldUncertainty(0.)
   ,fChiSquare(0.)
   ,fNDF(0)
-  ,fProb(0)
+  ,fProb(0.)
+  ,fSBVnPrefitChiSquare(0.)
+  ,fSBVnPrefitNDF(0)
+  ,fSBVnPrefitProb(0.)
+  ,fMassPrefitChiSquare(0.)
+  ,fMassPrefitNDF(0)
+  ,fMassPrefitProb(0.)
   ,fNSigmaForSB(3.)
   ,fSigmaInit(0.012)
   ,fMeanInit(1.870)
@@ -500,6 +512,9 @@ Bool_t AliHFVnVsMassFitter::MassPrefit() {
   if(status) {
     fMassFuncFromPrefit = (TF1*)fMassFitter->GetMassFunc();
     fMassFuncFromPrefit->SetName("fMassFuncFromPrefit");
+    fMassPrefitChiSquare = fMassFitter->GetChiSquare();
+    fMassPrefitNDF       = fMassFitter->GetMassFunc()->GetNDF();
+    fMassPrefitProb      = fMassFitter->GetFitProbability();
   }
   if(fReflections) fRawYieldHelp=fMassFitter->GetRawYield();
 
@@ -549,6 +564,11 @@ Bool_t AliHFVnVsMassFitter::VnSBPrefit() {
       break;
   }
   Int_t status = gVnVsMassSB->Fit(fVnBkgFuncSb,"","",fMassMin,fMassMax);
+
+  fSBVnPrefitChiSquare = fVnBkgFuncSb->GetChisquare();
+  fSBVnPrefitNDF       = fVnBkgFuncSb->GetNDF();
+  fSBVnPrefitProb      = fVnBkgFuncSb->GetProb();
+
   delete gVnVsMassSB;
 
   if(status==0) return kTRUE;

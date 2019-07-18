@@ -2687,7 +2687,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
               fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data()),
          Form("#Delta #varphi vs #Delta #eta vs #it{p}_{T}^{trig} for associated #it{p}_{T} bin [%2.1f,%2.1f]%s", 
               fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data()),
-         fNTrigPtBins ,fTrigPtBinLimit[0] , fTrigPtBinLimit[fNTrigPtBins], 
+         nptbins      ,ptmin      ,ptmax      , 
          ndeltaphibins,deltaphimin,deltaphimax,
          ndeltaetabins,deltaetamin,deltaetamax);
         fhDeltaPhiDeltaEtaAssocPtBin[bin]->SetYTitle("#Delta #varphi (rad)");
@@ -4870,10 +4870,12 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliCaloTrackPart
       Int_t   n=0, nfrac = 0;
       Bool_t  isolated = kFALSE;
       Float_t coneptsum = 0, coneptlead = 0;
-      GetIsolationCut()->MakeIsolationCut(bgTracks,bgCalo,
-                                          GetReader(), GetCaloPID(),
-                                          kFALSE, aodParticle, "",
-                                          n,nfrac,coneptsum,coneptlead,isolated);
+      
+      GetIsolationCut()->MakeIsolationCut(aodParticle, GetReader(),
+                                          kFALSE, kFALSE, "",
+                                          bgTracks,bgCalo,
+                                          GetCalorimeter(), GetCaloPID(),
+                                          n, nfrac, coneptsum, coneptlead, isolated); 
       
       //printf("AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation() - Isolated? %d - cone %f, ptthres %f",
       //       isolated,GetIsolationCut()->GetConeSize(),GetIsolationCut()->GetPtThreshold());

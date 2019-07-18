@@ -988,6 +988,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Double_t massKK_piKK = 0.;
     Double_t massKp = 0;
     Double_t masspK = 0;
+    Double_t invMass_KKpi = 0.;
+    Double_t invMass_piKK = 0.;
 
     if (isFidAcc)
     {
@@ -1006,15 +1008,21 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
       { //KKpi
         massKK_KKpi = d->InvMass2Prongs(0, 1, 321, 321);
         massKp = d->InvMass2Prongs(1, 2, 321, 211);
+        invMass_KKpi = d->InvMassDsKKpi();
         fMassHistKK[iPtBin]->Fill(massKK_KKpi);
         fMassHistKpi[iPtBin]->Fill(massKp);
+        fMassHistKKVsKKpi[iPtBin]->Fill(invMass_KKpi, massKK_KKpi);
+        fMassHistKpiVsKKpi[iPtBin]->Fill(invMass_KKpi, massKp);
       }
       if (retCodeNoRes & 2)
       { //piKK
         massKK_piKK = d->InvMass2Prongs(1, 2, 321, 321);
         masspK = d->InvMass2Prongs(0, 1, 211, 321);
+        invMass_piKK = d->InvMassDspiKK();
         fMassHistKK[iPtBin]->Fill(massKK_piKK);
         fMassHistKpi[iPtBin]->Fill(masspK);
+        fMassHistKKVsKKpi[iPtBin]->Fill(invMass_piKK, massKK_piKK);
+        fMassHistKpiVsKKpi[iPtBin]->Fill(invMass_piKK, masspK);
       }
 
       Int_t isKKpi = retCodeAnalysisCuts & 1;
@@ -1057,8 +1065,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         fChanHist[0]->Fill(retCodeAnalysisCuts);
 
         const Int_t nProng = 3;
-        Double_t invMass_KKpi = 0.;
-        Double_t invMass_piKK = 0.;
         Int_t indexMCKKpi = -1;
         Int_t indexMCpiKK = -1;
         Int_t labDs = -1;
@@ -1135,11 +1141,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           if (fDoRotBkg && TMath::Abs(massKK_KKpi - massPhi) <= fMaxDeltaPhiMass4Rot)
             GenerateRotBkg(d, 1, iPtBin);
 
-          invMass_KKpi = d->InvMassDsKKpi();
           fMassHist[index]->Fill(invMass_KKpi, weightKKpi);
           fPtVsMass->Fill(invMass_KKpi, ptCand, weightKKpi);
-          fMassHistKKVsKKpi[iPtBin]->Fill(invMass_KKpi, massKK_KKpi);
-          fMassHistKpiVsKKpi[iPtBin]->Fill(invMass_KKpi, massKp);
 
           if (fDoBkgPhiSB && (0.010 < TMath::Abs(massKK_KKpi - massPhi)) && (TMath::Abs(massKK_KKpi - massPhi) < 0.030))
           {
@@ -1199,11 +1202,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           if (fDoRotBkg && TMath::Abs(massKK_piKK - massPhi) <= fMaxDeltaPhiMass4Rot)
             GenerateRotBkg(d, 2, iPtBin);
 
-          invMass_piKK = d->InvMassDspiKK();
           fMassHist[index]->Fill(invMass_piKK, weightpiKK);
           fPtVsMass->Fill(invMass_piKK, ptCand, weightpiKK);
-          fMassHistKKVsKKpi[iPtBin]->Fill(invMass_piKK, massKK_piKK);
-          fMassHistKpiVsKKpi[iPtBin]->Fill(invMass_piKK, masspK);
 
           if (fDoBkgPhiSB && (0.010 < TMath::Abs(massKK_piKK - massPhi)) && (TMath::Abs(massKK_piKK - massPhi) < 0.030))
           {

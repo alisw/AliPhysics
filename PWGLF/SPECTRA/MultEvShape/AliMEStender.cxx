@@ -492,17 +492,6 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     val[6] = 0.;
     if(H) H->Fill(val);
 
-    // define matching with ESD track array
-    // printf("New particle\n");
-    for(Int_t iesd(0); iesd<fTracks->GetEntries(); iesd++){
-      if(!( tmesRec = (AliMEStrackInfo*)fTracks->At(iesd))) continue;
-      // printf("tmesRec->GetLabel() = %i \t ipart = %i\n", tmesRec->GetLabel(), ipart);
-      if(tmesRec->GetLabel()!=ipart) continue;
-      tmesRec->SetLabel(fMCtracks->GetEntries()-1);
-      tmes->SetLabel(iesd);
-      // printf("tmesRec label = fMCtracks->GetEntries()-1 = %i \t pT = %f \n", fMCtracks->GetEntries()-1, tmesRec->Pt());
-      // printf("tmes label = iesd = %i \t pT = %f \n", iesd, tmes->Pt());
-    }
   }
 
   // leading particle
@@ -519,18 +508,20 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   val[3] = fMCevInfo->GetEventShape()->GetDirectivity(kFALSE);
   if(H) H->Fill(val);
 
-/*
-  for(Int_t iesd(0); iesd<fTracks->GetEntries(); iesd++){
-    if(!( tmesRec = (AliMEStrackInfo*)fTracks->At(iesd))) continue;
-    if( !(tmes= (AliMEStrackInfo*)fMCtracks->At(tmesRec->GetLabel())) ) continue;
-    // if(TMath::Abs((tmes->Pt() - tmesRec->Pt())) > 0.05){
-        // printf("\n\nshit\n\n");
-        printf("tmesRec label = fMCtracks->GetEntries()-1 = %i \t pT = %f \n", tmesRec->GetLabel(), tmesRec->Pt());
-        printf("tmes label = iesd = %i \t pT = %f \n", tmes->GetLabel(), tmes->Pt());
-        // exit(1);
-    // }
+  // define matching with ESD track array
+  std::vector< Int_t > alreadyMatched;
+  for (Int_t ipart=0; ipart<fMCtracks->GetEntries(); ipart++) {
+    if( !(tmes= (AliMEStrackInfo*)fMCtracks->At(ipart)) ) continue;
+    for(Int_t iesd(0); iesd<fTracks->GetEntries(); iesd++){
+      if(!( tmesRec = (AliMEStrackInfo*)fTracks->At(iesd))) continue;
+      if (std::find(alreadyMatched.begin(), alreadyMatched.end(), iesd) != alreadyMatched.end()) continue;
+      if(tmesRec->GetLabel() != tmes->GetLabel()) continue;
+      alreadyMatched.push_back(iesd);
+      tmesRec->SetLabel(ipart);
+      tmes->SetLabel(iesd);
+      break;
+    }
   }
-*/
   
   // fill debug
   if(DebugLevel()>0){

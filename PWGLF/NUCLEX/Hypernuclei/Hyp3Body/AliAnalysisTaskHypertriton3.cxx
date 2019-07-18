@@ -480,9 +480,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *) {
       AliVParticle *vMotherPart = mcEvent->GetTrack(lLabelMother);
 
       /// PID for hypertriton daughter tracks
-      float nSigmaDeu = std::abs(fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kDeuteron));
-      float nSigmaP   = std::abs(fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kProton));
-      float nSigmaPi  = std::abs(fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kPion));
+      float nSigmaDeu = fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kDeuteron);
+      float nSigmaP   = fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kProton);
+      float nSigmaPi  = fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kPion);
 
       TrackMC tmc{esdTrack, vMotherPart, vPart, lLabelMother, iTrack};
 
@@ -626,13 +626,13 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *) {
     fTreeHyp3BodyVarNsigmaTPC[2] = std::abs(fPIDResponse->NumberOfSigmasTPC(cand.track_pi, AliPID::kPion));
 
     HasTOF(cand.track_deu)
-        ? fTreeHyp3BodyVarNsigmaTOF[0] = std::abs(fPIDResponse->NumberOfSigmasTOF(cand.track_deu, AliPID::kDeuteron))
+        ? fTreeHyp3BodyVarNsigmaTOF[0] = fPIDResponse->NumberOfSigmasTOF(cand.track_deu, AliPID::kDeuteron)
         : fTreeHyp3BodyVarNsigmaTOF[0] = -1.0;
     HasTOF(cand.track_p)
-        ? fTreeHyp3BodyVarNsigmaTOF[1] = std::abs(fPIDResponse->NumberOfSigmasTOF(cand.track_p, AliPID::kProton))
+        ? fTreeHyp3BodyVarNsigmaTOF[1] = fPIDResponse->NumberOfSigmasTOF(cand.track_p, AliPID::kProton)
         : fTreeHyp3BodyVarNsigmaTOF[1] = -1.0;
     HasTOF(cand.track_pi)
-        ? fTreeHyp3BodyVarNsigmaTOF[2] = std::abs(fPIDResponse->NumberOfSigmasTOF(cand.track_pi, AliPID::kPion))
+        ? fTreeHyp3BodyVarNsigmaTOF[2] = fPIDResponse->NumberOfSigmasTOF(cand.track_pi, AliPID::kPion)
         : fTreeHyp3BodyVarNsigmaTOF[2] = -1.0;
 
     fTreeHyp3BodyVarFlags[0] = (ULong64_t)cand.track_deu->GetStatus();

@@ -15,6 +15,9 @@
 #include "AliAnalysisTaskFemtoNu.h"
 
 
+/// \class MacroCfg
+/// \brief All parameters for this macro
+///
 struct MacroCfg : public TNamed {
 
   TString macro = "%%/ConfigNuFemtoAnalysisR6.C",
@@ -142,11 +145,11 @@ AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
     container += "_" + subwagon_suffix;
   }
 
-  cout << "[AddTaskPionPion]\n"
-          "   container: " << container << "\n"
-          "   output: '" << cfg.output_filename << "'\n"
-          "   macro: '" << cfg.macro << "'\n"
-          "   params: '" << params << "'\n";
+  std::cout << "[AddTaskPionPion]\n"
+               "   container: " << container << "\n"
+               "   output: '" << cfg.output_filename << "'\n"
+               "   macro: '" << cfg.macro << "'\n"
+               "   params: '" << params << "'\n";
 
   // The analysis config macro for PionPionFemto accepts a single string
   // argument, which it interprets.
@@ -157,6 +160,8 @@ AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
                                               .ReplaceAll("\n", "\\n")
                                               .ReplaceAll("\"", "\\\"")
                                               .ReplaceAll("\t", "\\t") + '"';
+
+  std::cout << "   params-normalized: '" << analysis_params << "'\n";
 
   AliAnalysisTaskFemto *femtotask = new AliAnalysisTaskFemtoNu(
     container,

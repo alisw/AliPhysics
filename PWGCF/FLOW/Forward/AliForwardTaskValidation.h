@@ -32,7 +32,6 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
       kNoEventCut,
       kIsAODEvent,
       kTrigger,
-      kHasTracklets,
       kHasFMD,
       kHasEntriesFMD,
       kHasValidFMD,

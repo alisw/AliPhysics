@@ -43,6 +43,7 @@ set(SRCS
     AliAnalysisTaskEmcalJetSample.cxx
     AliAnalysisTaskEmcalJetQA.cxx
     AliAnalysisTaskEmcalJetSpectraQA.cxx
+    AliAnalysisTaskEmcalJetTagger.cxx
     AliAnalysisTaskPWGJEQA.cxx
     AliAnalysisTaskLocalRho.cxx
     AliAnalysisTaskRhoAverage.cxx
@@ -59,6 +60,7 @@ set(SRCS
     AliAnalysisTaskRhoTransDev.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
+    AliEmcalJetTaggerTaskFast.cxx
     AliEmcalPicoTrackInGridMaker.cxx
     AliJetConstituentTagCopier.cxx
     AliJetEmbeddingFromGenTask.cxx
@@ -139,6 +141,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalTriggerJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJetsIDcorr.cxx
     Tracks/AliAnalysisTaskEmcalJetConstituentQA.cxx
+    Tracks/AliAnalysisEmcalTriggerSelectionHelper.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
     Tracks/AliAnalysisTaskEmcalResponseOutliers.cxx
@@ -146,8 +149,10 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
     Tracks/AliAnalysisTaskEmcalClustersInJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerCorrelationMC.cxx
+    Tracks/AliAnalysisTaskEmcalHighEClusterTree.cxx
     Tracks/AliAnalysisTaskEmcalEG1Correlation.cxx
     Tracks/AliAnalysisTaskEmcalTriggerBackground.cxx
+    Tracks/AliAnalysisTaskEmcalJetIterativeDeclustering.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
@@ -187,7 +192,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
-    UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
     UserTasks/AliAnalysisTaskEmcalJetTriggerMatcher.cxx
     UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
@@ -222,7 +226,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
-    UserTasks/AliEmcalJetTaggerTaskFast.cxx
     UserTasks/AliAnalysisTaskPi0Hadron.cxx
     UserTasks/AliAnalysisTaskEmcalJetTree.cxx
     UserTasks/AliJetEmbeddingSelRhoTask.cxx
@@ -251,7 +254,9 @@ if(FASTJET_FOUND)
         AliJetEmbeddingFromAODTask.cxx
 	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
+        AliLundPlaneHelper.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
+	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
 	    UserTasks/AliAnalysisTaskFullpAJets.cxx

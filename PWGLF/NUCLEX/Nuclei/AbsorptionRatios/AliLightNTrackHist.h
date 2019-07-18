@@ -25,6 +25,7 @@ public:
     void FillTrackCounter(int iBin){fCutCounter->Fill(iBin);};
     void FillpCut(int i, double p){fpDist[i]->Fill(p);};
     void FillpTPCCut(int i, double pTPC){fpTPCDist[i]->Fill(pTPC);};
+    void FillpDiff_p_pTPC(int i, double p, double difference){fDiff_p_pTPC[i]->Fill(p,difference);};
     void FilletaCut(int i, double eta){fetaDist[i]->Fill(eta);};
     void FillrapidityCut(int i, double rapidity){fRapidityDist[i]->Fill(rapidity);};
     void FillphiCut(int i, double phi){fphiDist[i]->Fill(phi);};
@@ -79,13 +80,14 @@ public:
     }
     void SetName(TString name){fHistList->SetName(name.Data());};
     TList *GetHistList(){return fHistList;};
- private:
+private:
     TList *fHistList;         //!
     TList *fTrackCutQA[2];    //!
     TProfile *fConfig;        //!
     TH1F *fCutCounter;        //!
     TH1F *fpDist[2];         //!
     TH1F *fpTPCDist[2];       //!
+    TH2F *fDiff_p_pTPC[2];        //!
     TH1F *fetaDist[2];        //!
     TH1F *fphiDist[2];        //!
     TH1F *fTPCCls[2];         //!

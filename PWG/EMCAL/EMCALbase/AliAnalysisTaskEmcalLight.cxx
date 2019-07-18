@@ -103,6 +103,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fMaximumEventWeight(1e6),
   fInhibit(kFALSE),
   fLocalInitialized(kFALSE),
+  fWarnMissingCentrality(kTRUE),
   fDataType(kAOD),
   fGeom(0),
   fCaloCells(0),
@@ -181,6 +182,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fMaximumEventWeight(1e6),
   fInhibit(kFALSE),
   fLocalInitialized(kFALSE),
+  fWarnMissingCentrality(kTRUE),
   fDataType(kAOD),
   fGeom(0),
   fCaloCells(0),
@@ -1053,7 +1055,7 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
       fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
     }
     else {
-      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+      if(fWarnMissingCentrality) AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
     }
   }
   else if (fCentralityEstimation == kOldCentrality) {
@@ -1063,7 +1065,7 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
       fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
     }
     else {
-      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+      if(fWarnMissingCentrality) AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
     }
   }
   if (!fCentBins.empty() && fCentralityEstimation != kNoCentrality) {
@@ -1130,8 +1132,14 @@ AliParticleContainer* AliAnalysisTaskEmcalLight::AddParticleContainer(EMCAL_STRI
 
   AliParticleContainer* cont = 0;
 
-  if (branchName == "tracks" || branchName == "Tracks") cont = new AliTrackContainer(branchName.data());
-  else if (branchName == "mcparticles") cont = new AliMCParticleContainer(branchName.data());
+#if ROOT_VERSION_CODE > ROOT_VERSION(6,10,0) 
+#define EMCAL_STRINGVIEW_NONCONST std::string_view
+#else 
+#define EMCAL_STRINGVIEW_NONCONST std::string
+#endif
+
+  if (branchName == EMCAL_STRINGVIEW_NONCONST("tracks") || branchName == EMCAL_STRINGVIEW_NONCONST("Tracks")) cont = new AliTrackContainer(branchName.data());
+  else if (branchName == EMCAL_STRINGVIEW_NONCONST("mcparticles")) cont = new AliMCParticleContainer(branchName.data());
   else cont = new AliParticleContainer(branchName.data());
 
   if (contName.size() > 0) cont->SetName(contName.data());

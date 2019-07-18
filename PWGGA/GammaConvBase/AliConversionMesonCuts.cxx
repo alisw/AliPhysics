@@ -2490,6 +2490,22 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     fAlphaCutMeson      = 0.1;
     fAlphaPtDepCut      = kFALSE;
     break;
+  case 14:  //e 0-0.3
+    fAlphaMinCutMeson   = 0.0;
+    fAlphaCutMeson      = 0.3;
+    fAlphaPtDepCut      = kFALSE;
+    break;
+  case 15:  //f 0-0.4
+    fAlphaMinCutMeson   = 0.0;
+    fAlphaCutMeson      = 0.4;
+    fAlphaPtDepCut      = kFALSE;
+    break;
+  case 16:  //g 0-0.5
+    fAlphaMinCutMeson   = 0.0;
+    fAlphaCutMeson      = 0.5;
+    fAlphaPtDepCut      = kFALSE;
+    break;
+
   default:
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
     return kFALSE;
@@ -2961,6 +2977,24 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPBremSmearing    = 1.;
       fPSigSmearing     = 0.075;
       fPSigSmearingCte  = 0.050;
+      break;
+    case 10:     //a
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.020;
+      fPSigSmearingCte  = 0.030;
+      break;
+    case 11:     //b
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.025;
+      fPSigSmearingCte  = 0.030;
+      break;
+    case 12:     //c
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.020;
+      fPSigSmearingCte  = 0.025;
       break;
 
     default:

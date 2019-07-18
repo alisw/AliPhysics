@@ -7,7 +7,7 @@ class AliVCaloCells;
 
 /**
  * @class AliEmcalCorrectionCellCombineCollections
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Combines two cell collections into one collection
  *
  * The internal cell branch should be set by the correction task! Then, the

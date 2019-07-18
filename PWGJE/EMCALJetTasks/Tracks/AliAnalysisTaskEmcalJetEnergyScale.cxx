@@ -43,9 +43,9 @@
 #include "AliLog.h"
 #include "AliVEventHandler.h"
 
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale)
 
-using namespace EmcalTriggerJets;
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   AliAnalysisTaskEmcalJet(),
@@ -56,6 +56,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fFractionResponseClosure(0.8),
   fFillHSparse(false),
+  fScaleShift(0.),
   fSampleSplitter(nullptr)
 {
 }
@@ -69,6 +70,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fFractionResponseClosure(0.8),
   fFillHSparse(false),
+  fScaleShift(0.),
   fSampleSplitter(nullptr)
 {
   SetUseAliAnaUtils(true);
@@ -99,6 +101,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos = new THistManager("energyScaleHistos");
   fHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
   fHistos->CreateTH2("hJetEnergyScale", "Jet Energy scale; p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleDet", "Jet Energy scale (det); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
   fHistos->CreateTH2("hJetResponseFine", "Response matrix, fine binning", 350, 0., 350., 800, 0., 800.);
   fHistos->CreateTH2("hJetResponseFineClosure", "Response matrix, fine binning, for closure test", 350, 0., 350., 800, 0., 800.);
   fHistos->CreateTH2("hJetResponseFineNoClosure", "Response matrix, fine binning, for closure test", 350, 0., 350., 800, 0., 800.);
@@ -173,24 +176,29 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       continue;
     }
     bool isClosure = fSampleSplitter->Uniform() < fFractionResponseClosure;
+    Double_t detpt = detjet->Pt();
+    if(TMath::Abs(fScaleShift) > DBL_EPSILON){
+      detpt += fScaleShift * detpt;
+    }
     if(fFillHSparse) {
       Bool_t acceptancematch = false;
       if (partjet->GetJetAcceptanceType() & detjets->GetAcceptanceType()) acceptancematch = true;
       TVector3 basevec, tagvec;
       basevec.SetPtEtaPhi(detjet->Pt(), detjet->Eta(), detjet->Phi());
       tagvec.SetPtEtaPhi(partjet->Pt(), partjet->Eta(), partjet->Phi());
-      double pointCorr[6] = {partjet->Pt(), detjet->Pt(), detjet->NEF(), basevec.DeltaR(tagvec), acceptancematch ? 1. : 0.,  isClosure ? 0. : 1.},
-             pointDiff[3] = {partjet->Pt(), detjet->NEF(), (detjet->Pt()-partjet->Pt())/partjet->Pt()};
+      double pointCorr[6] = {partjet->Pt(), detpt, detjet->NEF(), basevec.DeltaR(tagvec), acceptancematch ? 1. : 0.,  isClosure ? 0. : 1.},
+             pointDiff[3] = {partjet->Pt(), detjet->NEF(), (detpt-partjet->Pt())/partjet->Pt()};
       fHistos->FillTHnSparse("hPtDiff", pointDiff);
       fHistos->FillTHnSparse("hPtCorr", pointCorr);
     }
-    fHistos->FillTH2("hJetResponseFine", detjet->Pt(), partjet->Pt());
-    fHistos->FillTH1("hJetEnergyScale", partjet->Pt(), (detjet->Pt() - partjet->Pt())/partjet->Pt());
+    fHistos->FillTH2("hJetResponseFine", detpt, partjet->Pt());
+    fHistos->FillTH1("hJetEnergyScale", partjet->Pt(), (detpt - partjet->Pt())/partjet->Pt());
+    fHistos->FillTH1("hJetEnergyScaleDet", detpt, (detpt - partjet->Pt())/partjet->Pt());
     // splitting for closure test
     if(isClosure) {
-      fHistos->FillTH2("hJetResponseFineClosure", detjet->Pt(), partjet->Pt());
+      fHistos->FillTH2("hJetResponseFineClosure", detpt, partjet->Pt());
     } else {
-      fHistos->FillTH2("hJetResponseFineNoClosure", detjet->Pt(), partjet->Pt());
+      fHistos->FillTH2("hJetResponseFineNoClosure", detpt, partjet->Pt());
     }
   }
 
@@ -202,6 +210,9 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       if(detjet) {
         // Found a match
         effvec[1] = detjet->Pt();
+        if(TMath::Abs(fScaleShift) > DBL_EPSILON){
+          effvec[1] += fScaleShift * effvec[1];
+        }
         effvec[2] = 1;    // Tagged
         if(std::find(acceptedjets.begin(), acceptedjets.end(), detjet) != acceptedjets.end()) effvec[2] = 2;
       }
@@ -239,6 +250,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
 
   std::string jettypename;
   AliJetContainer::JetAcceptanceType acceptance(AliJetContainer::kTPCfid);
+  AliJetContainer::EJetType_t mcjettype(jettype);
   bool addClusterContainer(false), addTrackContainer(false);
   switch(jettype){
     case AliJetContainer::kFullJet:
@@ -250,11 +262,13 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
         jettypename = "ChargedJet";
         acceptance = AliJetContainer::kTPCfid;
         addTrackContainer = true;
+        mcjettype = AliJetContainer::kFullJet;    // Correct back neutral detector-level jets to full particle level jets
         break;
     case AliJetContainer::kNeutralJet:
         jettypename = "NeutralJet";
         acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
         addClusterContainer = true;
+        mcjettype = AliJetContainer::kFullJet;    // Correct back neutral detector-level jets to full particle level jets
         break;
     case AliJetContainer::kUndefinedJetType:
         break;
@@ -295,7 +309,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
     tracks = energyscaletask->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
   }
 
-  auto contpartjet = energyscaletask->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
+  auto contpartjet = energyscaletask->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
                                                       acceptance, partcont, nullptr);
   contpartjet->SetName("particleLevelJets");
   energyscaletask->SetNamePartJetContainer("particleLevelJets");

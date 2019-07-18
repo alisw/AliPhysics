@@ -70,6 +70,9 @@
 #include "AliKFVertex.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDUtils.h"
+#include <TMVA/Tools.h>
+#include <TMVA/Reader.h>
+#include <TMVA/MethodCuts.h>
 
 #include "IClassifierReader.h"
 
@@ -194,6 +197,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fNTracklets_All(0),
   fCentrality(0),
   fFillTree(0),
+  fUseWeightsLibrary(kFALSE),
   fBDTReader(0),
   fTMVAlibName(""),
   fTMVAlibPtBin(""),
@@ -208,11 +212,26 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fBDTHistoVsCosPAK0S(0),
   fBDTHistoVsSignd0(0),
   fBDTHistoVsCosThetaStar(0),
+  fBDTHistoVsnSigmaTPCpr(0),
+  fBDTHistoVsnSigmaTOFpr(0),
+  fBDTHistoVsnSigmaTPCpi(0),
+  fBDTHistoVsnSigmaTPCka(0),
+  fBDTHistoVsBachelorP(0),
+  fBDTHistoVsBachelorTPCP(0),
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
   fAODProtection(1),
-  fUsePIDresponseForNsigma(kFALSE)
+  fUsePIDresponseForNsigma(kFALSE),
+  fNVars(14),
+  fTimestampCut(0),
+  fUseXmlWeightsFile(kTRUE),
+  fReader(0),
+  fVarsTMVA(0),
+  fNVarsSpectators(0),
+  fVarsTMVASpectators(0),
+  fXmlWeightsFile(""),
+  fBDTHistoTMVA(0)  
 {
   /// Default ctor
   //
@@ -330,6 +349,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fNTracklets_All(0),
   fCentrality(0),  
   fFillTree(0),
+  fUseWeightsLibrary(kFALSE),
   fBDTReader(0),
   fTMVAlibName(""),
   fTMVAlibPtBin(""),
@@ -344,12 +364,27 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fBDTHistoVsCosPAK0S(0),
   fBDTHistoVsSignd0(0),
   fBDTHistoVsCosThetaStar(0),
+  fBDTHistoVsnSigmaTPCpr(0),
+  fBDTHistoVsnSigmaTOFpr(0),
+  fBDTHistoVsnSigmaTPCpi(0),
+  fBDTHistoVsnSigmaTPCka(0),
+  fBDTHistoVsBachelorP(0),
+  fBDTHistoVsBachelorTPCP(0),
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
   fAODProtection(1),
-  fUsePIDresponseForNsigma(kFALSE)
-
+  fUsePIDresponseForNsigma(kFALSE),
+  fNVars(14),
+  fTimestampCut(0),
+  fUseXmlWeightsFile(kTRUE),
+  fReader(0),
+  fVarsTMVA(0),
+  fNVarsSpectators(0),
+  fVarsTMVASpectators(0),
+  fNamesTMVAVarSpectators(""),
+  fXmlWeightsFile(""),
+  fBDTHistoTMVA(0)  
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -435,6 +470,20 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::~AliAnalysisTaskSELc2V0bachelorTMVAApp() 
     fBDTReader = 0;
   }
 
+  if (fReader) {
+    delete fReader;
+    fReader = 0;
+  }
+
+  if (fVarsTMVA) {
+    delete fVarsTMVA;
+    fVarsTMVA = 0;
+  }
+
+  if (fVarsTMVASpectators) {
+    delete fVarsTMVASpectators;
+    fVarsTMVASpectators = 0;
+  }
 }
 //_________________________________________________
 void AliAnalysisTaskSELc2V0bachelorTMVAApp::Init() {
@@ -519,7 +568,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
 
   Int_t nVar; 
   if (fUseMCInfo)  nVar = 52; //"full" tree if MC
-  else nVar = 33; //"reduced" tree if data
+  else nVar = 35; //"reduced" tree if data
   
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
@@ -557,7 +606,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[29] = "V0positiveP";
     fCandidateVariableNames[30] = "V0negativeP";
     fCandidateVariableNames[31] = "v0Eta";
-    fCandidateVariableNames[32] = "DecayLengthLc";
+    fCandidateVariableNames[32] = "LcPtMC";
     fCandidateVariableNames[33] = "DecayLengthK0S";
     fCandidateVariableNames[34] = "bachCode";
     fCandidateVariableNames[35] = "k0SCode";
@@ -580,7 +629,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   }
   else {   // "light mode"
     fCandidateVariableNames[0] = "massLc2K0Sp";
-    fCandidateVariableNames[1] = "massLc2Lambdapi";
+    fCandidateVariableNames[1] = "alphaArm";
     fCandidateVariableNames[2] = "massK0S";
     fCandidateVariableNames[3] = "massLambda";
     fCandidateVariableNames[4] = "massLambdaBar";
@@ -612,7 +661,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[30] = "signd0";        
     fCandidateVariableNames[31] = "centrality"; 
     fCandidateVariableNames[32] = "NtrkAll";
- }
+    fCandidateVariableNames[33] = "origin";
+    fCandidateVariableNames[34] = "ptArm";
+  }
   
   for(Int_t ivar=0; ivar < nVar; ivar++){
     fVariablesTreeSgn->Branch(fCandidateVariableNames[ivar].Data(), &fCandidateVariables[ivar], Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -621,8 +672,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   
   fHistoCentrality = new TH1F("fHistoCentrality", "fHistoCentrality", 100, 0., 100.);
 
-  fHistoEvents = new TH1F("fHistoEvents", "fHistoEvents", 4, -0.5, 3.5);
-  TString labelEv[4] = {"RejectedDeltaMismatch", "AcceptedDeltaMismatch", "NotSelected", "Selected"};
+  fHistoEvents = new TH1F("fHistoEvents", "fHistoEvents", 5, -0.5, 4.5);
+  TString labelEv[5] = {"RejectedDeltaMismatch", "AcceptedDeltaMismatch", "NotSelected", "TimeStampCut", "Selected"};
   for (Int_t ibin = 1; ibin <= fHistoEvents->GetNbinsX(); ibin++){
     fHistoEvents->GetXaxis()->SetBinLabel(ibin, labelEv[ibin-1].Data());
   }
@@ -703,16 +754,23 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   
 
   fBDTHisto = new TH2D("fBDTHisto", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
+  fBDTHistoTMVA = new TH2D("fBDTHistoTMVA", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
   if (fDebugHistograms) {    
     fBDTHistoVsMassK0S = new TH2D("fBDTHistoVsMassK0S", "K0S inv mass vs bdt output; bdt; m_{inv}(#pi^{+}#pi^{#minus})[GeV/#it{c}^{2}]", 1000, -1, 1, 1000, 0.485, 0.51);
     fBDTHistoVstImpParBach = new TH2D("fBDTHistoVstImpParBach", "d0 bachelor vs bdt output; bdt; d_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
     fBDTHistoVstImpParV0 = new TH2D("fBDTHistoVstImpParV0", "d0 K0S vs bdt output; bdt; d_{0, V0}[cm]", 1000, -1, 1, 100, -1, 1);
     fBDTHistoVsBachelorPt = new TH2D("fBDTHistoVsBachelorPt", "bachelor pT vs bdt output; bdt; p_{T, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
     fBDTHistoVsCombinedProtonProb = new TH2D("fBDTHistoVsCombinedProtonProb", "combined proton probability vs bdt output; bdt; Bayesian PID_{bachelor}", 1000, -1, 1, 100, 0, 1);
-    fBDTHistoVsCtau = new TH2D("fBDTHistoVsCtau", "K0S ctau vs bdt output; bdt; c#tau_{V0}[cm]",  1000, -1, 1, 100, -2, 2);
+    fBDTHistoVsCtau = new TH2D("fBDTHistoVsCtau", "K0S ctau vs bdt output; bdt; c#tau_{V0}[cm]",  1000, -1, 1, 1000, 0, 100);
     fBDTHistoVsCosPAK0S = new TH2D("fBDTHistoVsCosPAK0S", "V0 cosine pointing angle vs bdt output; bdt; CosPAK^{0}_{S}", 1000, -1, 1, 100, 0.9, 1);
     fBDTHistoVsCosThetaStar = new TH2D("fBDTHistoVsCosThetaStar", "proton emission angle in pK0s pair rest frame vs bdt output; bdt; Cos#Theta*", 1000, -1, 1, 100, -1, 1);
     fBDTHistoVsSignd0 = new TH2D("fBDTHistoVsSignd0", "signed d0 bachelor vs bdt output; bdt; signd_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
+    fBDTHistoVsnSigmaTPCpr = new TH2D("fBDTHistoVsnSigmaTPCpr", "nSigmaTPCpr vs bdt output; bdt; n_{#sigma}^{TPC}_{pr}", 1000, -1, 1, 1000, -10, 10);
+    fBDTHistoVsnSigmaTOFpr = new TH2D("fBDTHistoVsnSigmaTOFpr", "nSigmaTOFpr vs bdt output; bdt; n_{#sigma}^{TOF}_{pr}", 1000, -1, 1, 1000, -10, 10);
+    fBDTHistoVsnSigmaTPCpi = new TH2D("fBDTHistoVsnSigmaTPCpi", "nSigmaTPCpi vs bdt output; bdt; n_{#sigma}^{TPC}_{pi}", 1000, -1, 1, 1000, -10, 10);
+    fBDTHistoVsnSigmaTPCka = new TH2D("fBDTHistoVsnSigmaTPCka", "nSigmaTPCka vs bdt output; bdt; n_{#sigma}^{TPC}_{ka}", 1000, -1, 1, 1000, -10, 10);
+    fBDTHistoVsBachelorP = new TH2D("fBDTHistoVsBachelorP", "bachelor p vs bdt output; bdt; p_{bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
+    fBDTHistoVsBachelorTPCP = new TH2D("fBDTHistoVsBachelorTPCP", "bachelor TPC momentum vs bdt output; bdt; p_{TPC, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
     fHistoNsigmaTPC = new TH2D("fHistoNsigmaTPC", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TPC} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
     fHistoNsigmaTOF = new TH2D("fHistoNsigmaTOF", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TOF} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
   }
@@ -735,6 +793,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fOutput->Add(fHistoMCLcK0SpGenLimAcc);
   fOutput->Add(fHistoCentrality);
   fOutput->Add(fBDTHisto);
+  fOutput->Add(fBDTHistoTMVA);
   if (fDebugHistograms) {    
     fOutput->Add(fBDTHistoVsMassK0S);
     fOutput->Add(fBDTHistoVstImpParBach);
@@ -745,6 +804,12 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fOutput->Add(fBDTHistoVsCosPAK0S);
     fOutput->Add(fBDTHistoVsCosThetaStar);
     fOutput->Add(fBDTHistoVsSignd0);
+    fOutput->Add(fBDTHistoVsnSigmaTPCpr);
+    fOutput->Add(fBDTHistoVsnSigmaTOFpr);
+    fOutput->Add(fBDTHistoVsnSigmaTPCpi);
+    fOutput->Add(fBDTHistoVsnSigmaTPCka);
+    fOutput->Add(fBDTHistoVsBachelorP);
+    fOutput->Add(fBDTHistoVsBachelorTPCP);
     fOutput->Add(fHistoNsigmaTPC);
     fOutput->Add(fHistoNsigmaTOF);
   }
@@ -950,20 +1015,37 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
  
   PostData(7, fListWeight);
 
-  // creating the BDT reader
-  if(!fFillTree){
+  if (!fFillTree) {
+    Printf("Booking methods");
+    // creating the BDT and TMVA reader
+    fVarsTMVA = new Float_t[fNVars];
+    fVarsTMVASpectators = new Float_t[fNVarsSpectators];
+    fReader = new TMVA::Reader( "!Color:!Silent" );
     std::vector<std::string> inputNamesVec;
     TObjArray *tokens = fNamesTMVAVar.Tokenize(",");
     for(Int_t i = 0; i < tokens->GetEntries(); i++){
       TString variable = ((TObjString*)(tokens->At(i)))->String();
       std::string tmpvar = variable.Data();
       inputNamesVec.push_back(tmpvar);
+      if (fUseXmlWeightsFile) fReader->AddVariable(variable.Data(), &fVarsTMVA[i]);
+    }      
+    delete tokens;
+    TObjArray *tokensSpectators = fNamesTMVAVarSpectators.Tokenize(",");
+    for(Int_t i = 0; i < tokensSpectators->GetEntries(); i++){
+      TString variable = ((TObjString*)(tokensSpectators->At(i)))->String();
+      if (fUseXmlWeightsFile) fReader->AddSpectator(variable.Data(), &fVarsTMVASpectators[i]);
     }
-    void* lib = dlopen(fTMVAlibName.Data(), RTLD_NOW);
-    void* p = dlsym(lib, Form("ReadBDT_Default_maker%s", fTMVAlibPtBin.Data()));
-    IClassifierReader* (*maker1)(std::vector<std::string>&) = (IClassifierReader* (*)(std::vector<std::string>&)) p;
-    fBDTReader = maker1(inputNamesVec);
+    delete tokensSpectators;
+    if (fUseWeightsLibrary) {
+      void* lib = dlopen(fTMVAlibName.Data(), RTLD_NOW);
+      void* p = dlsym(lib, Form("%s", fTMVAlibPtBin.Data()));
+      IClassifierReader* (*maker1)(std::vector<std::string>&) = (IClassifierReader* (*)(std::vector<std::string>&)) p;
+      fBDTReader = maker1(inputNamesVec);
+    }
+    
+    if (fUseXmlWeightsFile) fReader->BookMVA("BDT method", fXmlWeightsFile);
   }
+  
   return;
 }
 
@@ -1082,7 +1164,20 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
     fHistoEvents->Fill(2);
     return; // don't take into account not selected events
   }
-  fHistoEvents->Fill(3);
+
+  // check on the timestamp
+  AliVHeader* h = aodEvent->GetHeader();
+  UInt_t timestamp = h->GetTimeStamp();
+  //Printf("timestamp = %d, cut = %u", timestamp, fTimestampCut);
+  if (fTimestampCut != 0) {
+    //Printf("timestamp = %d, cut = %u", timestamp, fTimestampCut);
+    if (timestamp > fTimestampCut) {
+      fHistoEvents->Fill(3);
+      return;
+    }
+  }
+
+  fHistoEvents->Fill(4);
 
   fHistoTracklets_1->Fill(fNTracklets_1);
   fHistoTracklets_All->Fill(fNTracklets_All);
@@ -1261,7 +1356,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
 
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
   for (Int_t iLctopK0s = 0; iLctopK0s < nCascades; iLctopK0s++) {
-    
+
     // Lc candidates and K0s from Lc
     AliAODRecoCascadeHF* lcK0spr = dynamic_cast<AliAODRecoCascadeHF*>(arrayLctopKos->At(iLctopK0s));
     if (!lcK0spr) {
@@ -1855,7 +1950,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[29] = v0pos->P();
       fCandidateVariables[30] = v0neg->P();
       fCandidateVariables[31] = v0part->Eta();
-      fCandidateVariables[32] = part->DecayLength();
+      fCandidateVariables[32] = ptLcMC;
       fCandidateVariables[33] = part->DecayLengthV0();
       fCandidateVariables[34] = bachCode;
       fCandidateVariables[35] = k0SCode;
@@ -1883,7 +1978,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     }      
     else { //remove MC-only variables from tree if data
       fCandidateVariables[0] = invmassLc;
-      fCandidateVariables[1] = invmassLc2Lpi;
+      fCandidateVariables[1] = v0part->AlphaV0();
       fCandidateVariables[2] = invmassK0s;
       fCandidateVariables[3] = invmassLambda;
       fCandidateVariables[4] = invmassLambdaBar;
@@ -1915,6 +2010,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[30] = signd0;       
       fCandidateVariables[31] = fCentrality;
       fCandidateVariables[32] = fNTracklets_All;
+      fCandidateVariables[33] = -1;
+      fCandidateVariables[34] = v0part->PtArmV0();
     }
     
     // fill multiplicity histograms for events with a candidate   
@@ -1940,23 +2037,63 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     
     
     if(!fFillTree){
-      
-      std::vector<Double_t> inputVars(9);
-      inputVars[0] = invmassK0s;
-      inputVars[1] = part->Getd0Prong(0);
-      inputVars[2] = part->Getd0Prong(1);
-      inputVars[3] = bachelor->Pt();
-      inputVars[4] = probProton;
-      inputVars[5] = (part->DecayLengthV0())*0.497/(v0part->P());
-      inputVars[6] = part->CosV0PointingAngle();
-      inputVars[7] = cts;
-      inputVars[8] = signd0;
-      
+      std::vector<Double_t> inputVars(fNVars);
+      if (fNVars == 14) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = bachelor->Pt();
+	inputVars[4] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[5] = part->CosV0PointingAngle();
+	inputVars[6] = cts;
+	inputVars[7] = signd0;
+	inputVars[8] = bachelor->P();
+	inputVars[9] = nSigmaTOFpr;
+	inputVars[10] = nSigmaTPCpr;
+	inputVars[11] = nSigmaTPCpi;
+	inputVars[12] = nSigmaTPCka;
+	inputVars[13] = bachelor->GetTPCmomentum();
+      }
+      else if (fNVars == 11) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = cts;
+	inputVars[6] = signd0;
+	inputVars[7] = nSigmaTOFpr;
+	inputVars[8] = nSigmaTPCpr;
+	inputVars[9] = nSigmaTPCpi;
+	inputVars[10] = nSigmaTPCka;
+      }
+      else if (fNVars == 10) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = signd0;
+	inputVars[6] = nSigmaTOFpr;
+	inputVars[7] = nSigmaTPCpr;
+	inputVars[8] = nSigmaTPCpi;
+	inputVars[9] = nSigmaTPCka;
+      }
+
+      for (Int_t i = 0; i < fNVars; i++) {
+	fVarsTMVA[i] = inputVars[i];
+      }
       
       Double_t BDTResponse = -1;
-      BDTResponse = fBDTReader->GetMvaValue(inputVars);
+      Double_t tmva = -1;
+      if (fUseXmlWeightsFile) tmva = fReader->EvaluateMVA("BDT method");
+      if (fUseWeightsLibrary) BDTResponse = fBDTReader->GetMvaValue(inputVars);
+      //Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc);
+      //Printf("tmva = %f", tmva); 
       fBDTHisto->Fill(BDTResponse, invmassLc); 
-      if (fDebugHistograms) {    
+      fBDTHistoTMVA->Fill(tmva, invmassLc); 
+      if (fDebugHistograms) {
+	if (fUseXmlWeightsFile) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
 	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
 	fBDTHistoVstImpParBach->Fill(BDTResponse, part->Getd0Prong(0));
 	fBDTHistoVstImpParV0->Fill(BDTResponse, part->Getd0Prong(1));
@@ -1966,7 +2103,12 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 	fBDTHistoVsCosPAK0S->Fill(BDTResponse, part->CosV0PointingAngle());
 	fBDTHistoVsSignd0->Fill(BDTResponse, signd0);
 	fBDTHistoVsCosThetaStar->Fill(BDTResponse, cts);
-	
+	fBDTHistoVsnSigmaTPCpr->Fill(BDTResponse, nSigmaTPCpr);
+	fBDTHistoVsnSigmaTOFpr->Fill(BDTResponse, nSigmaTOFpr);
+	fBDTHistoVsnSigmaTPCpi->Fill(BDTResponse, nSigmaTPCpi);
+	fBDTHistoVsnSigmaTPCka->Fill(BDTResponse, nSigmaTPCka);
+	fBDTHistoVsBachelorP->Fill(BDTResponse, bachelor->P());
+	fBDTHistoVsBachelorTPCP->Fill(BDTResponse, bachelor->GetTPCmomentum());
 	fHistoNsigmaTPC->Fill(bachelor->P(), nSigmaTPCpr);
 	fHistoNsigmaTOF->Fill(bachelor->P(), nSigmaTOFpr);
       }

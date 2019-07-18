@@ -13,6 +13,7 @@ class LMEECutLib {
     kV0_trackCuts,
     kPdgSel,
     kMCsel,
+    kV0_allAcc,
     kResolutionTrackCuts,
     // Linearly increasing cuts over MVA output
     kPIDcut1,
@@ -60,7 +61,13 @@ class LMEECutLib {
     kCutVar19,
     kCutVar20,
     // Cut set used by Sebastian Scheid (also pPb at 5 TeV analysis)
-    kScheidCuts
+    kScheidCuts,
+    // Five different R factor binning schemes
+    kMixScheme1,
+    kMixScheme2,
+    kMixScheme3,
+    kMixScheme4,
+    kMixScheme5
   };
 
 
@@ -319,6 +326,9 @@ static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim
 // Eta correction for the centroid and width of electron sigmas in the ITS, can be one/two/three-dimensional
 TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection, Bool_t hasMC){
 
+  if(!wSDD){
+    return;
+  }
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionITSTTree() >>>>>>>>>>>>>>>>>>>>>> ");
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionITSTTree()\n";
@@ -585,7 +595,7 @@ AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
 }
 
 
-AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
+AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet){
   AliDielectronMixingHandler* mixingHandler = 0x0;
   switch (cutSet) {
     case kAllSpecies:
@@ -597,10 +607,43 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
       mixingHandler->SetDepth(60);
       mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
       break;
-    //[...]
-    case kTTreeCuts:
+    case kMixScheme1:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 5, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
       break;
-    default: cout << "No Mixer defined" << endl;
+    case kMixScheme2:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    case kMixScheme3:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 5, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    case kMixScheme4:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., 0., 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    case kMixScheme5:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 20, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    default:
+      std::cout << "No Mixer defined" << std::endl;
   }
   return mixingHandler;
 }
@@ -1181,26 +1224,26 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       trackCuts->AddCut(GetPIDCuts(PIDcuts));
       trackCuts->Print();
       return trackCuts;
-    case kV0_trackCuts:
+    case kV0_trackCuts: // Does not work for MC (checked 2019.05.08)
       // V0 specific track cuts
       gammaV0cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);
       // Cut on the angle between the total momentum vector of the daughter
       // tracks and a line connecting the primary and secondary vertices
-      gammaV0cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02), 1.0,  kFALSE);
-      gammaV0cuts->AddCut(AliDielectronVarManager::kChi2NDF, 0.0, 10.0, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02), 1.0);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kChi2NDF, 0.0, 10.0);
       // Restrict distance between legs
-      gammaV0cuts->AddCut(AliDielectronVarManager::kLegDist, 0.0, 0.25, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kLegDist, 0.0, 0.25);
       // Require minimum distance to secondary vertex
-      gammaV0cuts->AddCut(AliDielectronVarManager::kR, 3.0, 90.0, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kR, 3.0, 90.0);
       // Angle between daughter momentum plane and plane perpendicular to magnetic field
-      gammaV0cuts->AddCut(AliDielectronVarManager::kPsiPair, 0.0, 0.05, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kPsiPair, 0.0, 0.05);
       // Mass cut on V0 (mother) particle
-      gammaV0cuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.05, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.05);
       // Armenteros-Podolanksi variables
       // Pt
-      gammaV0cuts->AddCut(AliDielectronVarManager::kArmPt, 0.0, 0.05, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kArmPt, 0.0, 0.05);
       // Longitudinal momentum asymmentry between daughter particles
-      gammaV0cuts->AddCut(AliDielectronVarManager::kArmAlpha, -0.35, 0.35, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kArmAlpha, -0.35, 0.35);
       // Default setting is to exclude V0 tracks
       gammaV0cuts->SetExcludeTracks(kFALSE);
       // Standard track cut variables
@@ -1211,6 +1254,20 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       trackCuts->AddCut(gammaV0cuts);
       trackCuts->AddCut(trackCutsV0);
       trackCuts->AddCut(GetPIDCuts(PIDcuts));
+      trackCuts->Print();
+      return trackCuts;
+    case kV0_allAcc: // Cut setting to check MC V0 features
+      // No V0 track cuts applied as want to see distributions
+      gammaV0cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);
+      // Default setting is to exclude V0 tracks
+      gammaV0cuts->SetExcludeTracks(kFALSE);
+      /* // Standard track cut variables */
+      trackCutsV0->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0.0, 4.0);
+      trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCr, 100.0, 160.0);
+      trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1);
+      trackCuts->AddCut(gammaV0cuts);
+      trackCuts->AddCut(trackCutsV0);
+      /* trackCuts->AddCut(GetPIDCuts(PIDcuts)); */
       trackCuts->Print();
       return trackCuts;
     case kMCsel:

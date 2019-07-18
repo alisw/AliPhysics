@@ -88,6 +88,8 @@
 #pragma link C++ class AliAnalysisTaskSEMonitNorm+;
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignD0+;
 #pragma link C++ class AliAnalysisTaskSEImproveITS+;
+#pragma link C++ class AliAnalysisTaskSEImproveITS3+;
+#pragma link C++ class AliAnalysisTaskSEImproveITSCVMFS+;
 #pragma link C++ class AliAnalysisTaskCombinHF+;
 #pragma link C++ class AliEventPlaneResolutionHandler+;
 #pragma link C++ class AliAnalysisTaskSEHFvn+;
@@ -119,5 +121,6 @@
 #pragma link C++ class AliAnalysisTaskSEHFSystPID+;
 #pragma link C++ class AliAnalysisTaskSEDmesonPIDSysProp+;
 #pragma link C++ class IClassifierReader+;
+#pragma link C++ class AliAnalysisTaskSELbtoLcpi4+;
 
 #endif

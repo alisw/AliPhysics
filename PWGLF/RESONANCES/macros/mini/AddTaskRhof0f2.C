@@ -4,21 +4,6 @@
 
 ****************************************************************************/
 
-Bool_t Config_pipi(
-                   AliRsnMiniAnalysisTask *task,
-                   TString     lname="pipi",
-                   Bool_t      isMC=kFALSE,
-                   Int_t       system=1,
-                   Int_t       EventCuts=0,
-                   Int_t       isAOD=0,
-                   Int_t       Strcut =2011,
-                   Int_t       customQualityCutsID=0,
-                   Int_t       TrackCutsPi=0,
-                   Int_t       TrackCuts2=0
-                   );
-
-Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t isAOD=0, Int_t customQualityCutsID = 0,Int_t trCut = 2011);
-
 AliRsnMiniAnalysisTask* AddTaskRhof0f2(
   TString lname,
   Bool_t isMC,
