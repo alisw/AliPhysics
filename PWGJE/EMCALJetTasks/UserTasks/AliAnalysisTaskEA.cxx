@@ -334,6 +334,12 @@ fRandom(0)
       fhDeltaPtTTHinMB_RC_V0Mnorm2_PartLevel[i] = 0x0;  
       fhDeltaPtTTCinMB_RC_V0Mnorm1_PartLevel[i] = 0x0;
       fhDeltaPtTTCinMB_RC_V0Mnorm2_PartLevel[i] = 0x0;
+
+
+      fhJetPtPartLevelCorrTTHpl[i] = 0x0;
+      fhJetPtPartLevelCorrTTHdl[i] = 0x0;
+      fhJetPtPartLevelVsJetPtDetLevelCorrTTHpl[i] = 0x0;
+      fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[i] = 0x0;
    }
 
    for(Int_t i=0; i<fkTTbins;i++){
@@ -671,6 +677,12 @@ fRandom(0)
       fhDeltaPtTTHinMB_RC_V0Mnorm2_PartLevel[i] = 0x0;  
       fhDeltaPtTTCinMB_RC_V0Mnorm1_PartLevel[i] = 0x0;
       fhDeltaPtTTCinMB_RC_V0Mnorm2_PartLevel[i] = 0x0;
+
+
+      fhJetPtPartLevelCorrTTHpl[i] = 0x0;
+      fhJetPtPartLevelCorrTTHdl[i] = 0x0;
+      fhJetPtPartLevelVsJetPtDetLevelCorrTTHpl[i] = 0x0;
+      fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[i] = 0x0;
    }
 
    for(Int_t i=0; i<fkTTbins;i++){
@@ -1455,6 +1467,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    fMultV0Mnorm_PartLevel = 0.;
    fMultV0AV0Cnorm_PartLevel = 0.;
 
+   Double_t jetPtCorrPart = 0.; //particle level jet pt corrected for rho
+   Double_t jetPtCorrDet  = 0.;  //detector level jet pt corrected for rho
 
    if(fMC){
  
@@ -1675,8 +1689,6 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       //__________________________________________________________
       //  FILL JET RESPONSE MATRIX
 
-      Double_t jetPtCorrPart = 0.; //particle level jet pt corrected for rho
-      Double_t jetPtCorrDet  = 0.;  //detector level jet pt corrected for rho
 
       //Response matrix normalization - spectrum of all generator level jets in acceptance
       if(fJetContainerPartLevel){
@@ -1688,6 +1700,12 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
             fhJetPtPartLevelCorr->Fill(jetPtCorrPart);
             fhJetPtPartLevelZero->Fill(jetMC->Pt());
+
+            for(Int_t itt=0; itt<fnHadronTTBins; itt++){ //event contains a particle level trigger
+               if(fHadronTT_PartLevel[itt]>0){
+                  fhJetPtPartLevelCorrTTHpl[itt]->Fill(jetPtCorrPart);
+               }
+            }
          }
       }
 
@@ -1737,13 +1755,19 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             //Fill Response matrix
             jetMC =  jet->ClosestJet();
             if(!jetMC) continue;
-            if(jetMC->Pt()<1e-3) continue;
+            if(jetMC->Pt()<1e-3) continue; //prevents matching with a ghost
 
             jetPtCorrPart =  jetMC->Pt() - jetMC->Area()*rhoMC; 
             jetPtCorrDet  =  jet->Pt() - jet->Area()*rho; 
  
             fhJetPtPartLevelVsJetPtDetLevelCorr->Fill(jetPtCorrDet,jetPtCorrPart); //response matrix
             fhJetPtPartLevelVsJetPtDetLevelZero->Fill(jet->Pt(),jetMC->Pt()); //response matrix
+
+            for(Int_t itt=0; itt<fnHadronTTBins; itt++){//event contains a particle level trigger
+               if(fHadronTT_PartLevel[itt]>0){
+                  fhJetPtPartLevelVsJetPtDetLevelCorrTTHpl[itt]->Fill(jetPtCorrDet,jetPtCorrPart);  
+               }
+            } 
 
             if(jetPtCorrPart>0){
                fhJetPtResolutionVsPtPartLevel->Fill(jetPtCorrPart,(jetPtCorrDet-jetPtCorrPart)/jetPtCorrPart); //jet pT resolution
@@ -2163,6 +2187,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       }
    }
 
+
    if(fIsMinBiasTrig){ 
       for(Int_t itt=0; itt<fnHadronTTBins; itt++){
       
@@ -2307,6 +2332,49 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             } 
          }
 
+      }
+   }
+
+
+   if(fMC){ //Fill response matrix in events with detector level TT
+      //Response matrix normalization - spectrum of all generator level jets in acceptance
+      if(fJetContainerPartLevel){
+         for(auto jetPartIterator : fJetContainerPartLevel->accepted_momentum() ){
+            jetMC = jetPartIterator.second;  // Get the pointer to mc particle object
+            if(!jetMC)  continue; 
+
+            jetPtCorrPart = jetMC->Pt() - jetMC->Area()*rhoMC;
+
+            for(Int_t itt=0; itt<fnHadronTTBins; itt++){ //event contains a particle level trigger
+               if(fHadronTT[itt]>0){
+                  fhJetPtPartLevelCorrTTHdl[itt]->Fill(jetPtCorrPart);
+               }
+            }
+         }
+      }
+
+      if(fJetContainerDetLevel){
+         //When event contains a detector level trigger
+         //Find closest particle level and detector level jets 
+         //Fill Response matrix
+
+         for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+            jet = jetIterator.second;  // Get the pointer to jet object
+            if(!jet)  continue; 
+ 
+            jetMC =  jet->ClosestJet();
+            if(!jetMC) continue;
+            if(jetMC->Pt()<1e-3) continue; //prevents matching with a ghost
+
+            jetPtCorrPart =  jetMC->Pt() - jetMC->Area()*rhoMC; 
+            jetPtCorrDet  =  jet->Pt() - jet->Area()*rho; 
+ 
+            for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+               if(fHadronTT[itt]>0){
+                  fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[itt]->Fill(jetPtCorrDet,jetPtCorrPart);  
+               }
+            }
+         }
       }
    }
 
@@ -4733,6 +4801,24 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
  
       fhJetPtResolutionVsPtPartLevel = new TH2D("fhJetPtResolutionVsPtPartLevel","fhJetPtResolutionVsPtPartLevel",100,0,100,50,0,2);
       fOutput->Add((TH2D*) fhJetPtResolutionVsPtPartLevel);
+
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+         name = Form("fhJetPtPartLevelCorr_TTHpl%d_%d", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhJetPtPartLevelCorrTTHpl[itt] = (TH1D*)  fhJetPtPartLevelCorr->Clone(name.Data());
+         fOutput->Add((TH1D*) fhJetPtPartLevelCorrTTHpl[itt]); //Norm spectrum for particle level TTH
+
+         name = Form("fhJetPtPartLevelCorr_TTHdl%d_%d", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhJetPtPartLevelCorrTTHdl[itt] = (TH1D*)  fhJetPtPartLevelCorr->Clone(name.Data());
+         fOutput->Add((TH1D*) fhJetPtPartLevelCorrTTHdl[itt]); //Norm spectrum for detector level TTH
+
+         name = Form("fhJetPtPartLevelVsJetPtDetLevelCorr_TTHpl%d_%d", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhJetPtPartLevelVsJetPtDetLevelCorrTTHpl[itt] = (TH2D*) fhJetPtPartLevelVsJetPtDetLevelCorr->Clone(name.Data());
+         fOutput->Add((TH2D*) fhJetPtPartLevelVsJetPtDetLevelCorrTTHpl[itt]); //ReMx for particle level TTH
+
+         name = Form("fhJetPtPartLevelVsJetPtDetLevelCorr_TTHdl%d_%d", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[itt] = (TH2D*) fhJetPtPartLevelVsJetPtDetLevelCorr->Clone(name.Data());
+         fOutput->Add((TH2D*) fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[itt]); //ReMx for detector level TTH
+      }
    }
 
 

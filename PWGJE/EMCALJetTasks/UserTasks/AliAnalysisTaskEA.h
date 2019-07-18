@@ -424,9 +424,14 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    TH1D* fhJetPtPartLevelCorr;                          //! response matrix normalization spectrum, jet pT corrected on rho
    TH1D* fhJetPtPartLevelZero;                          //! response matrix normalization spectrum, jet pT is not corrected on rho
+   TH1D* fhJetPtPartLevelCorrTTHpl[fkTTbins];           //! response matrix normalization spectrum, events with part. level TTH 
+   TH1D* fhJetPtPartLevelCorrTTHdl[fkTTbins];           //! response matrix normalization spectrum, events with det. level TTH 
 
    TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr;           //! response matrix jet pT corrected on rho
    TH2D* fhJetPtPartLevelVsJetPtDetLevelZero;           //! response matrix jet pT not corrected on rho
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorrTTHpl[fkTTbins];  //! response matrix events with particle level TTH
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[fkTTbins];  //! response matrix events with detector level TTH
+
    TH2D* fhJetPtResolutionVsPtPartLevel;                //! resolution of jet pT
 
    TH2D* fhOneOverPtVsPhiNeg;                           //! 1/p_T,track  versus phi for negative tracks //AID//             
@@ -505,7 +510,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 13); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 14); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 #endif
