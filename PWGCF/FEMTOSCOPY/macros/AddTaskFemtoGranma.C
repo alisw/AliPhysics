@@ -7,7 +7,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
     bool DCAPlots = false,//3
     bool CPAPlots = false,//4
     bool MomReso = false,//5 to set to true only when running on MC
-    bool etaPhiPlotsAtTPCRadii=true,//6 to set to true only when running on MC
+    bool etaPhiPlotsAtTPCRadii=true,//6 to set to true only when running on MC but very Mem. Consuming
     bool CombSigma = false,//7
     bool PileUpRej=true,//8
     bool dPhidEtaPlots=true,//9
@@ -214,7 +214,7 @@ else
   MultBins.push_back(100);
   config->SetMultBins(MultBins);
 
-  std::vector<float> centBins;
+  std::vector<int> centBins;
   centBins.push_back(20);
   centBins.push_back(40);
   centBins.push_back(90);
