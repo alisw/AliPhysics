@@ -847,8 +847,8 @@ AliAnalysisTaskEmcalLight::EBeamType_t AliAnalysisTaskEmcalLight::GetBeamType()
 }
 
 Bool_t AliAnalysisTaskEmcalLight::IsEventSelected(){
-  if(fUseBuiltinEventSelection) return IsEventSelectedInternal();
   if(!IsTriggerSelected()) return false;
+  if(fUseBuiltinEventSelection) return IsEventSelectedInternal();
   if(!CheckMCOutliers()) return false;
   return fAliEventCuts.AcceptEvent(fInputEvent);
 }
