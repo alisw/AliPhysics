@@ -424,7 +424,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator = ( const AliAnalysisTaskEMCALPhotonIsolation & ); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 27);            // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 28);            // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif
