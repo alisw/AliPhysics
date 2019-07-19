@@ -8,7 +8,7 @@
 #include "AliFemtoDreamCollConfig.h"
 
 AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
-                                     bool phiSpinning = false,
+                                     int phiSpinning = 0,
                                      int nSpins = 1,
                                      double corrRange = 0.1,
                                      const char *cutVariation = "0") {
@@ -70,7 +70,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   Antiv0Cuts->SetPDGCodeNegDaug(2212);  //Proton
   Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
 
-  if (suffix != "0" && suffix != "999") {
+  if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);
     TrackCuts->SetMinimalBooking(true);
     AntiTrackCuts->SetMinimalBooking(true);
@@ -107,7 +107,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
-    if (suffix == "0") {
+    if (fullBlastQA) {
       NBins.push_back(1500);
       kMin.push_back(0.);
       kMax.push_back(6.);
@@ -136,13 +136,27 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
 
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
-  if (phiSpinning) {
+  if (phiSpinning == 0) {
+    config->SetUseEventMixing(true);
+  } else if (phiSpinning == 1) {
+    config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
     config->SetCorrelationRange(corrRange);
     config->SetSpinningDepth(nSpins);
+  } else if (phiSpinning == 2) {
+    config->SetUseEventMixing(false);
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kStravinsky);
+    config->SetSpinningDepth(1);
+  } else if (phiSpinning == 3) {
+    config->SetUseEventMixing(false);
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
+    config->SetSpinningDepth(nSpins);
   }
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+
   std::vector<int> MultBins;
   MultBins.push_back(0);
   MultBins.push_back(4);
@@ -189,23 +203,23 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   config->SetZBins(ZVtxBins);
 
   config->SetMultBinning(true);
+  config->SetmTBinning(true);
+
   config->SetdPhidEtaPlotsSmallK(false);
   config->SetdPhidEtaPlots(false);
-
   config->SetPhiEtaBinnign(false);
 
-  if (suffix == "0" && fullBlastQA) {
+  if (fullBlastQA) {
     config->SetkTBinning(true);
-    config->SetmTBinning(true);
     config->SetPtQA(true);
   }
 
-  if (suffix != "0") {
+  if (!fullBlastQA) {
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
   AliAnalysisTaskNanoLoton* task = new AliAnalysisTaskNanoLoton("femtoLoton");
-  if (suffix != "0" && suffix != "999") {
+  if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
   }
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
