@@ -477,9 +477,9 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 	trackCopy->SetNSigmaTPCP(nsigmaTPCP);
 	trackCopy->SetNSigmaTPCE(nsigmaTPCE);
 
-	trackCopy->SetTPCsignal(aodtrack->GetTPCsignal());
-	trackCopy->SetTPCsignalS(1);
-	trackCopy->SetTPCsignalN(aodtrack->GetTPCsignalN());
+//	trackCopy->SetTPCsignal(aodtrack->GetTPCsignal());
+//	trackCopy->SetTPCsignalS(1);
+//	trackCopy->SetTPCsignalN(aodtrack->GetTPCsignalN());
 
 
 	trackCopy->SetITSchi2(aodtrack->GetITSchi2());
@@ -506,7 +506,7 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 	trackCopy->SetNSigmaTOFP(nsigmaTOFP);
 	trackCopy->SetNSigmaTOFE(nsigmaTOFE);
 
-	trackCopy->SetTOFsignal(aodtrack->GetTOFsignal());
+//	trackCopy->SetTOFsignal(aodtrack->GetTOFsignal());
 
       }
 
@@ -664,8 +664,8 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   tFemtoTrack->SetLabel(tAodTrack->GetLabel());
 
   // Track quality information
-  Double_t covmat[21];
-  tAodTrack->GetCovarianceXYZPxPyPz(covmat);
+  //Double_t covmat[21];
+  //tAodTrack->GetCovarianceXYZPxPyPz(covmat);
 
   if (fDCAglobalTrack == 0) {
     tFemtoTrack->SetImpactD(tAodTrack->DCA());
@@ -683,7 +683,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   tFemtoTrack->SetTPCchi2(tAodTrack->GetTPCchi2());
   tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
   tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNclsF());
-  tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
+  //tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
   //tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   //tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
 
@@ -889,8 +889,8 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
 
    tFemtoV0->SetTPCMomentumPos(trackpos->GetTPCmomentum());
    tFemtoV0->SetTPCMomentumNeg(trackneg->GetTPCmomentum());
-   tFemtoV0->SetdedxPos(trackpos->GetTPCsignal());
-   tFemtoV0->SetdedxNeg(trackneg->GetTPCsignal());
+  // tFemtoV0->SetdedxPos(trackpos->GetTPCsignal());
+  // tFemtoV0->SetdedxNeg(trackneg->GetTPCsignal());
 
   static const Int_t kcstNSigmaTOFPi  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kPion);
  	static const Int_t kcstNSigmaTOFK  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kKaon);
@@ -911,7 +911,7 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   tFemtoV0->SetNegNSigmaTOFP(nsigmaTOFPneg);
 
 
-  double TOFSignalPos = trackpos->GetTOFsignal();
+  /*double TOFSignalPos = trackpos->GetTOFsignal();
   double TOFSignalNeg = trackneg->GetTOFsignal();
   tFemtoV0->SetTOFPionTimePos(TOFSignalPos);
   tFemtoV0->SetTOFKaonTimePos(TOFSignalPos);
@@ -919,7 +919,7 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   tFemtoV0->SetTOFPionTimeNeg(TOFSignalNeg);
   tFemtoV0->SetTOFKaonTimeNeg(TOFSignalNeg);
   tFemtoV0->SetTOFProtonTimeNeg(TOFSignalNeg);
-
+*/
    }
 
   tFemtoV0->SetOnFlyStatusV0(tAODv0->GetOnFlyStatus());
@@ -1072,7 +1072,7 @@ AliFemtoXi *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
 
     //tFemtoXi->SetNominalTpcPointBac(vecTpcBac);
     tFemtoXi->SetTPCMomentumBac(trackbac->GetTPCmomentum());
-    tFemtoXi->SetdedxBac(trackbac->GetTPCsignal());
+    //tFemtoXi->SetdedxBac(trackbac->GetTPCsignal());
 
     static const Int_t kcstNSigmaTOFPi  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kPion);
     static const Int_t kcstNSigmaTOFK  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kKaon);
@@ -1086,10 +1086,10 @@ AliFemtoXi *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
     tFemtoXi->SetBacNSigmaTOFP(nsigmaTOFPbac);
     tFemtoXi->SetBacNSigmaTOFPi(nsigmaTOFPibac);
 
-    double TOFSignalBac = trackbac->GetTOFsignal();  //tego nie było, moze nie dzialac
+  /*  double TOFSignalBac = trackbac->GetTOFsignal();  //tego nie było, moze nie dzialac
     tFemtoXi->SetTOFPionTimeBac(TOFSignalBac);
     tFemtoXi->SetTOFKaonTimeBac(TOFSignalBac);
-    tFemtoXi->SetTOFProtonTimeBac(TOFSignalBac);
+    tFemtoXi->SetTOFProtonTimeBac(TOFSignalBac);*/
   }
    return tFemtoXi;
 }
