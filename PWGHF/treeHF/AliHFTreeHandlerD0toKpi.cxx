@@ -98,7 +98,8 @@ TTree* AliHFTreeHandlerD0toKpi::BuildTree(TString name, TString title)
 
   //set single-track variables
   AddSingleTrackBranches();
-
+  if (fFillJets) AddJetBranches();
+  
   //set PID variables
   if(fPidOpt!=kNoPID) AddPidBranches(true,true,false,true,true);
 
