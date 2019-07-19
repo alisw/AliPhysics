@@ -455,19 +455,6 @@ void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand) 
 
 }
 
-//________________________________________________________________
-void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF2Prong* cand) {
-#ifdef HAVE_FASTJET
-  AliHFJetFinder hfjetfinder;
-  SetJetParameters(hfjetfinder); 
-  AliHFJet hfjet(hfjetfinder.GetHFJet(array,cand));
-	  
-  SetJetTreeVars(hfjet);
-#else
-  cout << "You need to have fastjet installed to get meaningful results" <<endl;
-#endif 
-
-}
 
 //________________________________________________________________
 void AliHFTreeHandler::SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart) {

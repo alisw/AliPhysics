@@ -16,12 +16,12 @@
 #include "TObject.h"
 #include "AliAODTrack.h"
 #include "AliAODRecoDecayHF.h"
-#include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODMCParticle.h"
 #include "AliHFJet.h"
 #include "AliFJWrapper.h"
 #include "FJ_includes.h"
 
+class AliFJWrapper;
 
 class AliHFJetFinder : public TObject
 {
@@ -54,29 +54,26 @@ class AliHFJetFinder : public TObject
 
   void SetFJWrapper(); 
   AliHFJet GetHFJet(TClonesArray *array, AliAODRecoDecayHF *cand);
-  AliHFJet GetHFJet(TClonesArray *array, AliAODRecoDecayHF2Prong *cand);
   AliHFJet GetHFMCJet(TClonesArray *array, AliAODMCParticle *mcpart);
   std::vector<AliHFJet> GetHFJets(TClonesArray *array, AliAODRecoDecayHF *cand);
-  std::vector<AliHFJet> GetHFJets(TClonesArray *array, AliAODRecoDecayHF2Prong *cand);
   std::vector<AliHFJet> GetHFMCJets(TClonesArray *array, AliAODMCParticle *mcpart);
   std::vector<AliHFJet> GetJets(TClonesArray *array);
   std::vector<AliHFJet> GetMCJets(TClonesArray *array);
   void FindJets(TClonesArray *array, AliAODRecoDecayHF *cand=nullptr);
-  void FindJets(TClonesArray *array, AliAODRecoDecayHF2Prong *cand=nullptr);
   void FindMCJets(TClonesArray *array, AliAODMCParticle *mcpart=nullptr);
+  #if !defined(__CINT__) && !defined(__MAKECINT__)
   void SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODRecoDecayHF *cand=nullptr);
-  void SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODRecoDecayHF2Prong *cand=nullptr);
   void SetMCJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODMCParticle *mcpart=nullptr);
   void SetJetSubstructureVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents);
-  Bool_t CheckTrack(AliAODTrack *track);
-  Bool_t CheckParticle(AliAODMCParticle *particle);
-  Int_t Find_Candidate_Jet();
-  Float_t RelativePhi(Float_t phi_1, Float_t phi_2);
-  #if !defined(__CINT__) && !defined(__MAKECINT__)
   fastjet::JetFinder JetAlgorithm(Int_t jetalgo);
   fastjet::RecombinationScheme RecombinationScheme(Int_t recombscheme);
   fastjet::AreaType AreaType(Int_t area);
   #endif
+  Bool_t CheckTrack(AliAODTrack *track);
+  Bool_t CheckParticle(AliAODMCParticle *particle);
+  Int_t Find_Candidate_Jet();
+  Float_t RelativePhi(Float_t phi_1, Float_t phi_2);
+
 
   void SetDoJetSubstructure(Bool_t b)      {fDoJetSubstructure=b;}
   void SetMinJetPt(Float_t f)              {fMinJetPt = f;}

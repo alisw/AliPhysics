@@ -126,28 +126,6 @@ AliHFJet AliHFJetFinder::GetHFJet(TClonesArray *array, AliAODRecoDecayHF *cand){
 
 
 //________________________________________________________________
-//returns jet clustered with heavy flavour candidate
-AliHFJet AliHFJetFinder::GetHFJet(TClonesArray *array, AliAODRecoDecayHF2Prong *cand){ 
-
-  SetFJWrapper();
-  AliHFJet hfjet;
-  if (!cand) return hfjet;
-  FindJets(array,cand);
-  Int_t jet_index=Find_Candidate_Jet();
-  if (jet_index==-1) return hfjet;
- 
-  std::vector<fastjet::PseudoJet> inclusive_jets = fFastJetWrapper->GetInclusiveJets();
-  fastjet::PseudoJet jet = inclusive_jets[jet_index];
-  if (jet.perp() < fMinJetPt) return hfjet;
-  std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(jet_index));
-
-  SetJetVariables(hfjet, constituents, jet, 0, cand); 
-
-  return hfjet;
-}
-
-
-//________________________________________________________________
 //returns jet clustered with heavy flavour particle (MC)
 AliHFJet AliHFJetFinder::GetHFMCJet(TClonesArray *array, AliAODMCParticle *mcpart){
   SetFJWrapper();
@@ -172,7 +150,7 @@ AliHFJet AliHFJetFinder::GetHFMCJet(TClonesArray *array, AliAODMCParticle *mcpar
 //________________________________________________________________
 //returns vector of jets, including the jet with the heavy flavour candidate
 std::vector<AliHFJet> AliHFJetFinder::GetHFJets(TClonesArray *array, AliAODRecoDecayHF *cand) {
-  AliAODRecoDecayHF *nullcand=nullptr;
+  
   SetFJWrapper();
   std::vector<AliHFJet> hfjet_vec;
   hfjet_vec.clear();
@@ -191,40 +169,13 @@ std::vector<AliHFJet> AliHFJetFinder::GetHFJets(TClonesArray *array, AliAODRecoD
     AliHFJet hfjet;
 
     if (i==jet_index) SetJetVariables(hfjet, constituents, jet, i, cand); 
-    else SetJetVariables(hfjet, constituents, jet, i, nullcand); 
+    else SetJetVariables(hfjet, constituents, jet, i, nullptr); 
     hfjet_vec.push_back(hfjet);
   }
   return hfjet_vec;
 }
 
 
-//________________________________________________________________
-//returns vector of jets, including the jet with the heavy flavour candidate
-std::vector<AliHFJet> AliHFJetFinder::GetHFJets(TClonesArray *array, AliAODRecoDecayHF2Prong *cand) {
-  AliAODRecoDecayHF2Prong *nullcand=nullptr;
-  SetFJWrapper();
-  std::vector<AliHFJet> hfjet_vec;
-  hfjet_vec.clear();
-  if (!cand) return hfjet_vec;
-  FindJets(array, cand);
-  Int_t jet_index=Find_Candidate_Jet();
-  if (jet_index==-1) return hfjet_vec;
-
-  std::vector<fastjet::PseudoJet> inclusive_jets = fFastJetWrapper->GetInclusiveJets();
-  
-  for (Int_t i=0; i<inclusive_jets.size(); i++){
-    fastjet::PseudoJet jet = inclusive_jets[i];
-    if (jet.perp() < fMinJetPt) continue;
-    std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(i));
-
-    AliHFJet hfjet;
-
-    if (i==jet_index) SetJetVariables(hfjet, constituents, jet, i, cand); 
-    else SetJetVariables(hfjet, constituents, jet, i, nullcand); 
-    hfjet_vec.push_back(hfjet);
-  }
-  return hfjet_vec;
-}
 //________________________________________________________________
 //returns vector of jets, including the jet with the heavy flavour particle (MC)
 std::vector<AliHFJet> AliHFJetFinder::GetHFMCJets(TClonesArray *array, AliAODMCParticle *mcpart) {
@@ -258,12 +209,12 @@ std::vector<AliHFJet> AliHFJetFinder::GetHFMCJets(TClonesArray *array, AliAODMCP
 //________________________________________________________________
 //returns vector of jets
 std::vector<AliHFJet> AliHFJetFinder::GetJets(TClonesArray *array) {
-  AliAODRecoDecayHF *nullcand=nullptr;
+
   //Jet is clustered with heavy flavour meson and the corresponding variables are set
   SetFJWrapper();
   std::vector<AliHFJet> hfjet_vec;
   hfjet_vec.clear();
-  FindJets(array,nullcand);
+  FindJets(array,nullptr);
 
   std::vector<fastjet::PseudoJet> inclusive_jets = fFastJetWrapper->GetInclusiveJets();
   for (Int_t i=0; i<inclusive_jets.size(); i++){
@@ -273,7 +224,7 @@ std::vector<AliHFJet> AliHFJetFinder::GetJets(TClonesArray *array) {
 
     AliHFJet hfjet;
 
-    SetJetVariables(hfjet, constituents, jet, i, nullcand);
+    SetJetVariables(hfjet, constituents, jet, i, nullptr);
   
     hfjet_vec.push_back(hfjet);
   }
@@ -345,47 +296,6 @@ void AliHFJetFinder::FindJets(TClonesArray *array, AliAODRecoDecayHF *cand) {
   fFastJetWrapper->Run();
   //delete track;
 }
-//________________________________________________________________
-//Do jet finding, including replacing the daughters of the heavy flavour candidate with the candidiate itself, if needed
-void AliHFJetFinder::FindJets(TClonesArray *array, AliAODRecoDecayHF2Prong *cand) {
-  //Performs jet finding. Jets are stored in the fFastJetWrapper object
-
-  std::vector<Int_t> daughter_vec;
-  if (cand){
-  
-    daughter_vec.clear();
-
-    AliVTrack *daughter;
-    for (Int_t i = 0; i < cand->GetNDaughters(); i++) {
-      daughter = dynamic_cast<AliVTrack *>(cand->GetDaughter(i));   
-      if (!daughter) continue;
-      daughter_vec.push_back(daughter->GetID());
-    }
-    fFastJetWrapper->AddInputVector(cand->Px(), cand->Py(), cand->Pz(), cand->E(cand->PdgCode()),0); 
-  }
-
-    
-  bool isdaughter;
-  AliAODTrack *track=NULL;
-  for (Int_t i=0; i<array->GetEntriesFast(); i++) {
- 
-    track= dynamic_cast<AliAODTrack*>(array->At(i));
-    if(!CheckTrack(track)) continue; 
-    isdaughter=false;
-    if (cand){
-      for (Int_t j=0; j<daughter_vec.size(); j++){
-	if (track->GetID()==daughter_vec[j]) isdaughter=true;
-      }
-      if(isdaughter) continue;
-    }
-    fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(),i+100); 
-  }
-  fFastJetWrapper->Run();
-  //delete track;
-}
-
-
-
 
 
 
@@ -432,28 +342,6 @@ void AliHFJetFinder::FindMCJets(TClonesArray *array, AliAODMCParticle *mcpart) {
 //________________________________________________________________
 //Set the jet parameters in the AliHFJet object
 void AliHFJetFinder::SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODRecoDecayHF *cand) {
-
-  hfjet.fID=jetID;
-  if (cand)hfjet.fHFMeson=1;
-  else hfjet.fHFMeson=0;
-  hfjet.fPt=jet.perp();
-  hfjet.fEta=jet.pseudorapidity();
-  hfjet.fPhi=jet.phi();
-  if (cand) hfjet.fDeltaEta=jet.pseudorapidity()-cand->Eta();
-  else hfjet.fDeltaEta=-99;
-  if (cand) hfjet.fDeltaPhi=RelativePhi(jet.phi(),cand->Phi());
-  else hfjet.fDeltaPhi=-99;
-  if (cand) hfjet.fDeltaR=TMath::Sqrt(hfjet.fDeltaEta*hfjet.fDeltaEta + hfjet.fDeltaPhi*hfjet.fDeltaPhi);
-  else hfjet.fDeltaR=-99;
-  hfjet.fN=constituents.size();
-
-  if (fDoJetSubstructure) SetJetSubstructureVariables(hfjet,constituents);
-  
-}
-
-//________________________________________________________________
-//Set the jet parameters in the AliHFJet object
-void AliHFJetFinder::SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODRecoDecayHF2Prong *cand) {
 
   hfjet.fID=jetID;
   if (cand)hfjet.fHFMeson=1;
@@ -598,7 +486,6 @@ Float_t AliHFJetFinder::RelativePhi(Float_t phi_1, Float_t phi_2){
   else if (deltaphi > TMath::Pi()) deltaphi -= (2*TMath::Pi());
   return deltaphi;
 }
-#if !defined(__CINT__) && !defined(__MAKECINT__)
 //________________________________________________________________________
 //Returning fastjet jet or subjet algorithm
 fastjet::JetFinder AliHFJetFinder::JetAlgorithm(Int_t jetalgo){
@@ -619,4 +506,4 @@ fastjet::AreaType AliHFJetFinder::AreaType(Int_t area){
   if (area==AreaType::voronoi) return fastjet::voronoi_area;
   else return fastjet::active_area;
 }
-#endif
+

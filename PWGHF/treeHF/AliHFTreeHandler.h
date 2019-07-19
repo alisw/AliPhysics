@@ -88,7 +88,6 @@ class AliHFTreeHandler : public TObject
     bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
 
     void SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand);
-    void SetJetVars(TClonesArray *array, AliAODRecoDecayHF2Prong* cand);
     void SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart);
 #ifdef HAVE_FASTJET
     void SetJetParameters(AliHFJetFinder& hfjetfinder);
