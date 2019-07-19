@@ -128,6 +128,9 @@ public:
 
   void SetDownscaling(bool down) { fDownscaling = down; }
 
+  void SetDownscalingFactorByEvent(bool fraction) { fDownscalingFactorByEvent = fraction; }
+  void SetDownscalingFactorByCandidate(bool fraction) { fDownscalingFactorByCandidate = fraction; }
+
   void SetOnlyTrueCandidates(bool trueCand) { fOnlyTrueCandidates = trueCand; }
 
   void SetMinCandidatePt(float lPtMin) { fMinCanidatePtToSave = lPtMin; }
