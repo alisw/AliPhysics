@@ -12,6 +12,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
                                      int nSpins = 1,
                                      double corrRange = 0.1,
                                      const char *cutVariation = "0") {
+
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -79,7 +80,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
-                                                                "Femto",false);
+                                                                "Femto", false);
   // Femto Collection
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
@@ -107,15 +108,9 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
-    if (fullBlastQA) {
-      NBins.push_back(1500);
-      kMin.push_back(0.);
-      kMax.push_back(6.);
-    } else {
-      NBins.push_back(250);
-      kMin.push_back(0.);
-      kMax.push_back(1.);
-    }
+    NBins.push_back(1500);
+    kMin.push_back(0.);
+    kMax.push_back(6.);
   }
   pairQA[0] = 11;
   pairQA[4] = 11;
@@ -263,8 +258,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   coutputv0Cuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       v0CutsName.Data(),
-      TList::Class(),
-      AliAnalysisManager::kOutputContainer,
+      TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), v0CutsName.Data()));
   mgr->ConnectOutput(task, 4, coutputv0Cuts);
 
@@ -298,16 +292,19 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   mgr->ConnectOutput(task, 7, coutputResultsQA);
 
   AliAnalysisDataContainer *coutputResultsSample;
-  TString ResultsSampleName = Form("%sResultsSample%s", addon.Data(), suffix.Data());
+  TString ResultsSampleName = Form("%sResultsSample%s", addon.Data(),
+                                   suffix.Data());
   coutputResultsSample = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsSampleName.Data(),
-      TList::Class(), AliAnalysisManager::kOutputContainer,
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsSampleName.Data()));
   mgr->ConnectOutput(task, 8, coutputResultsSample);
 
   AliAnalysisDataContainer *coutputResultsSampleQA;
-  TString ResultsSampleQAName = Form("%sResultsSampleQA%s", addon.Data(), suffix.Data());
+  TString ResultsSampleQAName = Form("%sResultsSampleQA%s", addon.Data(),
+                                     suffix.Data());
   coutputResultsSampleQA = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsSampleQAName.Data(),
