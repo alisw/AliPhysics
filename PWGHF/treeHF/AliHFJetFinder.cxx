@@ -598,7 +598,7 @@ Float_t AliHFJetFinder::RelativePhi(Float_t phi_1, Float_t phi_2){
   else if (deltaphi > TMath::Pi()) deltaphi -= (2*TMath::Pi());
   return deltaphi;
 }
-
+#if !defined(__CINT__) && !defined(__MAKECINT__)
 //________________________________________________________________________
 //Returning fastjet jet or subjet algorithm
 fastjet::JetFinder AliHFJetFinder::JetAlgorithm(Int_t jetalgo){
@@ -619,3 +619,4 @@ fastjet::AreaType AliHFJetFinder::AreaType(Int_t area){
   if (area==AreaType::voronoi) return fastjet::voronoi_area;
   else return fastjet::active_area;
 }
+#endif

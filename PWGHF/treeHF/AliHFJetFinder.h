@@ -72,10 +72,11 @@ class AliHFJetFinder : public TObject
   Bool_t CheckParticle(AliAODMCParticle *particle);
   Int_t Find_Candidate_Jet();
   Float_t RelativePhi(Float_t phi_1, Float_t phi_2);
+  #if !defined(__CINT__) && !defined(__MAKECINT__)
   fastjet::JetFinder JetAlgorithm(Int_t jetalgo);
   fastjet::RecombinationScheme RecombinationScheme(Int_t recombscheme);
   fastjet::AreaType AreaType(Int_t area);
-
+  #endif
 
   void SetDoJetSubstructure(Bool_t b)      {fDoJetSubstructure=b;}
   void SetMinJetPt(Float_t f)              {fMinJetPt = f;}
