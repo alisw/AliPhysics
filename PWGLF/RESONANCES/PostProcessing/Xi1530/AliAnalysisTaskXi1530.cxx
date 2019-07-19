@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/07/16
+//  Last Modified Date: 2019/07/20
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -775,8 +775,10 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
 
         goodtrackindices.push_back(it);
         // Event mixing pool
-        if (fsetmixing)
-            etl->push_back((AliVTrack*)track->Clone());
+        if (fsetmixing){
+            AliVTrack* track_mix = (AliVTrack*)fEvt->GetTrack(it);
+            etl->push_back((AliVTrack*)track_mix->Clone());
+        }
     }
 
     if (fsetmixing) {
