@@ -65,29 +65,29 @@ public:
     virtual void  SetMeanCh(const Double_t MeanCh) { fMeanChT = MeanCh; }
     
 private:
-
-
+    
+    
     AliESDtrack* GetLeadingTrack();
     TParticle* GetLeadingTrackMC(TObjArray* fTrks);
     TObjArray* SortRegions(AliESDtrack* Ltrk);
     TObjArray* SortRegionsMC(TObjArray* TrksArray, TParticle* Ltrk);
     virtual Double_t DeltaPhi(Double_t phi, Double_t lphi,
                               Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
-    Int_t GetBinRT(TList* lt);
-    virtual void ProduceArrayTrksESD(const int r, TList* lt, const Int_t cent);
-    virtual void ProduceArrayV0ESD(AliESDEvent* event, const Int_t cent );
-    Short_t   GetPidCode(Int_t pdgCode) const;
+    int GetBinRT(TList* lt);
+    virtual void ProduceArrayTrksESD(const int& r, TList* lt, const int& cent);
+    virtual void ProduceArrayV0ESD(AliESDEvent* event, const int& cent );
+    short   GetPidCode(Int_t pdgCode) const;
     virtual void ProcessMCTruthESD();
     
-    Bool_t selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
-    Bool_t IsGoodSPDvertexRes(const AliESDVertex* spdVertex = NULL);
-    Bool_t IsGoodZvertexPos(AliESDEvent *esd);
-    Bool_t PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
-    Float_t GetMaxDCApTDep( TF1 *fcut, Double_t pt );
+    bool selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
+    bool IsGoodSPDvertexRes(const AliESDVertex* spdVertex = NULL);
+    bool IsGoodZvertexPos(AliESDEvent *esd);
+    bool PhiCut(const double& pt, double phi, const double& q, const float& mag, TF1* phiCutLow, TF1* phiCutHigh);
+    float GetMaxDCApTDep( TF1 *fcut, Double_t pt );
     virtual void SetTrackCuts(AliAnalysisFilter* fTrackFilter);
-    Double_t EtaCalibration(const Int_t centrality, const Double_t Eta);
-    Double_t EtaCalibrationEl(const Int_t centrality, const Double_t Eta);
-    Int_t GetIndex();
+    double EtaCalibration(const int &centrality, const double &Eta);
+    double EtaCalibrationEl(const int &centrality, const double &Eta);
+    int GetIndex();
     
     static const Double_t fgkClight;   // Speed of light (cm/ps)
     
@@ -145,7 +145,6 @@ private:
     Bool_t       fdEdxCalibrated;
     Bool_t       fMakePid;
     Bool_t       fLowPt;
-//    Int_t  fLHC16l;
     TH1F* fMultN;
     TH1F* fPtN;
     TH1F* fDphiN;

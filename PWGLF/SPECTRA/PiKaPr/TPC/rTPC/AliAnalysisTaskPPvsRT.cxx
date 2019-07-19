@@ -67,8 +67,6 @@
 #include <AliAODPid.h>
 #include <AliAODMCHeader.h>
 
-
-// STL includes
 #include <iostream>
 using namespace std;
 
@@ -160,12 +158,12 @@ fcutHigh(0x0)
 {
     
     for(Int_t i = 0; i<nRt; ++i){
-
-    for(Int_t r= 0; r < 3; r++){
-        hMIPVsEta[r][i]=0;
-        pMIPVsEta[r][i]=0;
-        hPtAll[r][i]=0;
-	}
+        
+        for(Int_t r= 0; r < 3; r++){
+            hMIPVsEta[r][i]=0;
+            pMIPVsEta[r][i]=0;
+            hPtAll[r][i]=0;
+        }
         
         hMIPVsEtaV0s[i]=0;
         pMIPVsEtaV0s[i]=0;
@@ -178,10 +176,10 @@ fcutHigh(0x0)
         hDCAxyVsPtpC[i]=0;
         
         for(Int_t j=0; j<nHists; ++j){
-	
-        for(Int_t r= 0; r < 3; r++)
-        hDeDxVsP[r][i][j]=0;//TH2D, DeDx vs P
-	
+            
+            for(Int_t r= 0; r < 3; r++)
+                hDeDxVsP[r][i][j]=0;//TH2D, DeDx vs P
+            
             hMIPVsPhi[i][j]=0;//TH2D, MIP vs phi for different eta intervals
             pMIPVsPhi[i][j]=0;//TProfile, MIP vs phi for different eta intervals
             hPlateauVsPhi[i][j]=0;//TH2D, dE/dx vs Phi, electrons 0.4<p<0.6 GeV/c
@@ -288,12 +286,12 @@ fcutHigh(0x0)
 {
     
     for(Int_t i = 0; i<nRt; ++i){
-
-    for(Int_t r= 0; r < 3; r++){
-        hMIPVsEta[r][i]=0;
-        pMIPVsEta[r][i]=0;
-        hPtAll[r][i]=0;
-	}
+        
+        for(Int_t r= 0; r < 3; r++){
+            hMIPVsEta[r][i]=0;
+            pMIPVsEta[r][i]=0;
+            hPtAll[r][i]=0;
+        }
         
         hMIPVsEtaV0s[i]=0;
         pMIPVsEtaV0s[i]=0;
@@ -306,9 +304,9 @@ fcutHigh(0x0)
         hDCAxyVsPtpC[i]=0;
         
         for(Int_t j=0; j<nHists; ++j){
-
-        for(Int_t r= 0; r < 3; r++)
-        hDeDxVsP[r][i][j]=0;//TH2D, DeDx vs P
+            
+            for(Int_t r= 0; r < 3; r++)
+                hDeDxVsP[r][i][j]=0;//TH2D, DeDx vs P
             
             hMIPVsPhi[i][j]=0;//TH2D, MIP vs phi for different eta intervals
             pMIPVsPhi[i][j]=0;//TProfile, MIP vs phi for different eta intervals
@@ -523,13 +521,13 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
     Int_t nPhiBins = 36;
     
     for(Int_t i = 0; i<nRt; ++i){
-
-    for(Int_t r = 0; r<3; ++r){
-        hMIPVsEta[r][i] = new TH2D(Form("hMIPVsEta_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #eta; dE/dx_{MIP, primary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
-        pMIPVsEta[r][i] = new TProfile(Form("pMIPVsEta_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #eta; #LT dE/dx #GT_{MIP, primary tracks}",50,-0.8,0.8, fDeDxMIPMin, fDeDxMIPMax);
-        hPtAll[r][i] = new TH1D(Form("hPt_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),";#it{p}_{T};Counts",nPtBins,ptBins);
-        hPtAll[r][i]->Sumw2();
-		}
+        
+        for(Int_t r = 0; r<3; ++r){
+            hMIPVsEta[r][i] = new TH2D(Form("hMIPVsEta_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #eta; dE/dx_{MIP, primary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
+            pMIPVsEta[r][i] = new TProfile(Form("pMIPVsEta_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #eta; #LT dE/dx #GT_{MIP, primary tracks}",50,-0.8,0.8, fDeDxMIPMin, fDeDxMIPMax);
+            hPtAll[r][i] = new TH1D(Form("hPt_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),";#it{p}_{T};Counts",nPtBins,ptBins);
+            hPtAll[r][i]->Sumw2();
+        }
         
         hMIPVsEtaV0s[i] = new TH2D(Form("hMIPVsEtaV0s_%d_%d",CentMin[i],CentMax[i]),"; #eta; dE/dx_{MIP, secondary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
         pMIPVsEtaV0s[i] = new TProfile(Form("pMIPVsEtaV0s_%d_%d",CentMin[i],CentMax[i]),"; #eta; #LT dE/dx #GT_{MIP, secondary tracks}",50,-0.8,0.8,fDeDxMIPMin, fDeDxMIPMax);
@@ -550,11 +548,11 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
         
         for(Int_t j=0; j<nHists; j++) {
             
-
-        for(Int_t r = 0; r<3; ++r){
-            hDeDxVsP[r][i][j] = new TH2D( Form("hDeDxVsP_%s_%d_%d_%s",Region[r],CentMin[i],CentMax[i],ending[j]), ";#it{p} [GeV/c]; dE/dx", nPtBins, ptBins, fdEdxHigh-fdEdxLow, fdEdxLow, fdEdxHigh);
-            hDeDxVsP[r][i][j]->Sumw2();
-	}
+            
+            for(Int_t r = 0; r<3; ++r){
+                hDeDxVsP[r][i][j] = new TH2D( Form("hDeDxVsP_%s_%d_%d_%s",Region[r],CentMin[i],CentMax[i],ending[j]), ";#it{p} [GeV/c]; dE/dx", nPtBins, ptBins, fdEdxHigh-fdEdxLow, fdEdxLow, fdEdxHigh);
+                hDeDxVsP[r][i][j]->Sumw2();
+            }
             
             hnSigmaPi[i][j] = new TH2D(Form("hnSigmaPi_%d_%d_%s",CentMin[i],CentMax[i],ending[j]), ";#it{p}_{T};nSigmaPi", nPtBins, ptBins, 40, -10, 10);
             hnSigmaPi[i][j]->Sumw2();
@@ -595,12 +593,12 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
     
     if(!fAnalysisMC){
         for(Int_t i=0; i<nRt; ++i ){
-
-	for(Int_t r =0; r < 3; r++){
-            fListOfObjects->Add(hMIPVsEta[r][i]);
-            fListOfObjects->Add(pMIPVsEta[r][i]);
-		}
-
+            
+            for(Int_t r =0; r < 3; r++){
+                fListOfObjects->Add(hMIPVsEta[r][i]);
+                fListOfObjects->Add(pMIPVsEta[r][i]);
+            }
+            
             fListOfObjects->Add(hPlateauVsEta[i]);
             fListOfObjects->Add(pPlateauVsEta[i]);
             fListOfObjects->Add(hPhi[i]);
@@ -613,8 +611,8 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
             }
             
             if(fMakePid){
-		for(Int_t r =0; r < 3; r++)
-                fListOfObjects->Add(hPtAll[r][i]);
+                for(Int_t r =0; r < 3; r++)
+                    fListOfObjects->Add(hPtAll[r][i]);
                 if(fLowPt){
                     fListOfObjects->Add(hDCAxyVsPtPi[i]);
                     fListOfObjects->Add(hDCAxyVsPtp[i]);
@@ -630,9 +628,9 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
                         fListOfObjects->Add(hnSigmap[i][j]);
                     }
                     
-		for(Int_t r =0; r < 3; r++)
-                    fListOfObjects->Add(hDeDxVsP[r][i][j]);
-
+                    for(Int_t r =0; r < 3; r++)
+                        fListOfObjects->Add(hDeDxVsP[r][i][j]);
+                    
                     if(i!=5) continue;
                     fListOfObjects->Add(histPiV0[i][j]);
                     fListOfObjects->Add(histPiTof[i][j]);
@@ -642,11 +640,11 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
             } //	if(MakePID)
         } //	Cent
         
-        for(Int_t j=0; j<nHists; j++){ 
+        for(Int_t j=0; j<nHists; j++){
             hPtVsP[j] = new TH2D(Form("hPtVsP_%s",ending[j]),";#it{p} [GeV/c]; #it{p}_{T}",nPtBins,ptBins,nPtBins,ptBins);
             hPtVsP[j]->Sumw2();
             fListOfObjects->Add(hPtVsP[j]);
-        }    
+        }
     } //	!fAnalysisMC
     
     
@@ -818,17 +816,22 @@ void AliAnalysisTaskPPvsRT::UserExec(Option_t *)
     
     if (fAnalysisType == "ESD"){
         
-
+        
         AliESDtrack* LeadingTrack = GetLeadingTrack();
         if(!LeadingTrack)
             return;
-
-        TObjArray* RegionsArray = SortRegions(LeadingTrack);
-        TList *listToward = (TList*)RegionsArray->At(0);
-        TList *listAway   = (TList*)RegionsArray->At(1);
-        TList *listTrans  = (TList*)RegionsArray->At(2);
         
-        printf(" %d tracks in the Transverse region\n",listTrans->GetEntries());
+        TObjArray* RegionsArray = new TObjArray(3);
+        RegionsArray = SortRegions(LeadingTrack);
+
+        TList* listToward = new TList();
+        TList* listAway   = new TList();
+        TList* listTrans  = new TList();
+
+        listToward = (TList*)RegionsArray->At(0);
+        listAway   = (TList*)RegionsArray->At(1);
+        listTrans  = (TList*)RegionsArray->At(2);
+        
         Double_t Rt = ((double)listTrans->GetEntries())/fMeanChT;
         
         fRT->Fill(Rt);
@@ -839,14 +842,26 @@ void AliAnalysisTaskPPvsRT::UserExec(Option_t *)
         ProduceArrayTrksESD(1,listAway,BinRT);
         ProduceArrayTrksESD(2,listTrans,BinRT);
         ProduceArrayV0ESD( fESD, 0);
-
-
-	printf("********* Info about Event **********\n");
+        
+        printf("********* Info about Event **********\n");
+        printf(" %d Nch in the Near region\n",listToward->GetEntries());
+        printf(" %d Nch in the Away region\n",listAway->GetEntries());
+        printf(" %d Nch in Trans region\n",listTrans->GetEntries());
         printf("pT_Leading :: %f\n", LeadingTrack->Pt());
         cout << "Bin_RT    :: " << BinRT << endl;
-	cout << "MeanChT   :: " << fMeanChT << endl;
-	cout << "Period    :: " << fPeriod << endl;
-	printf("*************************************\n");
+        cout << "MeanChT   :: " << fMeanChT << endl;
+        cout << "Period    :: " << fPeriod << endl;
+        printf("*************************************\n");
+        
+        delete listToward;
+        delete listAway;
+        delete listTrans;
+        delete RegionsArray;
+        
+        listToward   = 0x0;
+        listAway     = 0x0;
+        listTrans    = 0x0;
+        RegionsArray = 0x0;
         
         if(fAnalysisMC)
             ProcessMCTruthESD();
@@ -868,7 +883,7 @@ AliESDtrack* AliAnalysisTaskPPvsRT::GetLeadingTrack(){
         
         if(TMath::Abs(esdTrack->Eta()) > fEtaCut)
             continue;
-         
+        
         if(esdTrack->Pt() < 0.15)
             continue;
         
@@ -894,18 +909,19 @@ AliESDtrack* AliAnalysisTaskPPvsRT::GetLeadingTrack(){
     if(!nAccTrks)
         return 0x0;
     
-    Double_t PtTrks[nAccTrks];
+    double *PtTrks = new double[nAccTrks];
     for(Int_t it=0; it<nAccTrks; it++){
         
         AliESDtrack* trk = (AliESDtrack*)(fTrks->At(it));
         if(!trk)
             continue;
-
+        
         PtTrks[it] = trk->Pt();
     }
     
     Double_t LeadingPt = TMath::MaxElement(nAccTrks, PtTrks);
     AliESDtrack *LeadingTrk=0x0;
+    
     for(Int_t it = 0; it < nAccTrks; ++it){
         
         AliESDtrack* trk = (AliESDtrack*)(fTrks->At(it));
@@ -917,6 +933,11 @@ AliESDtrack* AliAnalysisTaskPPvsRT::GetLeadingTrack(){
             break;
         }
     }
+     
+    delete[] PtTrks;
+    delete fTrks;
+    PtTrks = 0x0;
+    fTrks = 0x0;
     
     if(LeadingTrk->Pt() < 5.0)
         return 0x0;
@@ -977,7 +998,6 @@ TObjArray* AliAnalysisTaskPPvsRT::SortRegions(AliESDtrack* Ltrk)
     TList *transverse = new TList();
     
     TObjArray* ArrayRegions = new TObjArray;
-    ArrayRegions->SetOwner(kTRUE); 
     ArrayRegions->AddLast(near);
     ArrayRegions->AddLast(away);
     ArrayRegions->AddLast(transverse);
@@ -1046,7 +1066,6 @@ TObjArray* AliAnalysisTaskPPvsRT::SortRegions(AliESDtrack* Ltrk)
     
     return ArrayRegions;
     
-    
 }
 //_____________________________________________________________________________
 TObjArray* AliAnalysisTaskPPvsRT::SortRegionsMC(TObjArray* TrksArray, TParticle* Ltrk){
@@ -1110,7 +1129,7 @@ TObjArray* AliAnalysisTaskPPvsRT::SortRegionsMC(TObjArray* TrksArray, TParticle*
 }
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskPPvsRT::DeltaPhi(Double_t phi, Double_t Lphi,
-                                         Double_t rangeMin, Double_t rangeMax)
+                                           Double_t rangeMin, Double_t rangeMax)
 {
     
     Double_t dphi = -999;
@@ -1131,19 +1150,17 @@ Double_t AliAnalysisTaskPPvsRT::DeltaPhi(Double_t phi, Double_t Lphi,
 //_____________________________________________________________________________
 Int_t AliAnalysisTaskPPvsRT::GetBinRT(TList* listT){
     
-    Double_t rt = -999;
+    double rt = -999.0;
     rt = (double)listT->GetEntries()/fMeanChT;
     
-    if(rt < 1)
+    if(rt < 1.0)
         rt = 0;
-    else if(rt >= 1 && rt < 2)
+    else if(rt >= 1.0 && rt < 2.0)
         rt = 1;
-    else if(rt >= 2 && rt < 3)
+    else if(rt >= 2.0 && rt < 3.0)
         rt = 2;
-    else if(rt >= 3 && rt < 4)
-        rt = 3;
     else
-        rt = 4;
+        rt = 3;
     
     return rt;
 }
@@ -1211,14 +1228,14 @@ void AliAnalysisTaskPPvsRT::ProcessMCTruthESD()
     
     TParticle* Ltrk = GetLeadingTrackMC(fTrks);
     if(!Ltrk)
-        return;	
+        return;
     
     RegionsArray = SortRegionsMC(fTrks,Ltrk);
     if(!RegionsArray)
-        return;	
+        return;
     
-//    TList *listToward = (TList*)RegionsArray->At(0);
-//    TList *listAway   = (TList*)RegionsArray->At(1);
+    //    TList *listToward = (TList*)RegionsArray->At(0);
+    //    TList *listAway   = (TList*)RegionsArray->At(1);
     TList *listTrans  = (TList*)RegionsArray->At(2);
     
     Double_t Rt = ((double)listTrans->GetEntries())/fMeanChT;
@@ -1251,16 +1268,16 @@ void AliAnalysisTaskPPvsRT::ProcessMCTruthESD()
     
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int region, TList *lt, const Int_t Cent ){
+void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int& region, TList *lt, const int& Cent ){
     
     Int_t nESDTracks = lt->GetEntries();
     for(Int_t iT = 0; iT < nESDTracks; iT++) {
         
         AliESDtrack* esdTrack = (AliESDtrack*)lt->At(iT);
-
+        
         if(TMath::Abs(esdTrack->Eta()) > fEtaCut)
             continue;
-
+        
         if(esdTrack->GetTPCsignalN() < fNcl)
             continue;
         
@@ -1287,13 +1304,12 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int region, TList *lt, con
         
         if(!PhiCut(esdTrack->Pt(), phi, esdTrack->Charge(), Magf, fcutLow, fcutHigh))
             continue;
-
+        
         if(fdEdxCalibrated){
-	Int_t index = -1;    
-	index = GetIndex();
-                dedx *= 50/EtaCalibration(index,eta);
-        printf("Index -----> %d\n",index);
-		}
+            Int_t index = -1;
+            index = GetIndex();
+            dedx *= 50/EtaCalibration(index,eta);
+        }
         
         Short_t pidCode     = 0;
         if(fAnalysisMC) {
@@ -1461,7 +1477,7 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int region, TList *lt, con
     
 }
 //________________________________________________________________________
-void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_t Cent ){
+void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const int& Cent ){
     
     Int_t nv0s = ESDevent->GetNumberOfV0s();
     
@@ -1490,7 +1506,7 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
     for (Int_t iV0=0; iV0<nv0s; iV0++) {
         
         AliESDv0 *esdV0 = ESDevent->GetV0(iV0);
-        if ( !esdV0 ) 
+        if ( !esdV0 )
             continue;
         
         //check onfly status
@@ -1665,11 +1681,11 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                         Double_t dedx     = track->GetTPCsignal();
                         Double_t dedxUnc  = track->GetTPCsignal();
                         
-                      
+                        
                         if(fdEdxCalibrated){
-				Int_t index = -1;    
-				index = GetIndex();
-                                dedx   *= 50.0/EtaCalibration(index,eta);
+                            Int_t index = -1;
+                            index = GetIndex();
+                            dedx   *= 50.0/EtaCalibration(index,eta);
                         }
                         
                         if(fillPos&&fillNeg){
@@ -1719,10 +1735,10 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                     
                     if( dmassK>0.01 && dmassL>0.01 && dmassAL>0.01 ) {
                         if( dmassG<0.01 && dmassG>0.0001 ) {
-				Int_t index = -1;    
-				index = GetIndex();
-                                if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationEl(index,nTrack->Eta())) < 5)
-                                    fillPos = kTRUE;
+                            Int_t index = -1;
+                            index = GetIndex();
+                            if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationEl(index,nTrack->Eta())) < 5)
+                                fillPos = kTRUE;
                         } else {
                             continue;
                         }
@@ -1745,9 +1761,9 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                     Double_t momentum = track->P();
                     
                     if(fdEdxCalibrated){
-				Int_t index = -1;    
-				index = GetIndex();
-                            dedx *= 50/EtaCalibration(index,eta);
+                        Int_t index = -1;
+                        index = GetIndex();
+                        dedx *= 50/EtaCalibration(index,eta);
                     }
                     
                     if(!PhiCut(track->Pt(), phi, track->Charge(), Magf, fcutLow, fcutHigh))
@@ -1789,13 +1805,13 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
     }
     
     delete myPrimaryVertex;
-
+    
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskPPvsRT::selectVertex2015pp(AliESDEvent *esd,
-                                                 Bool_t checkSPDres, //enable check on vtx resolution
-                                                 Bool_t requireSPDandTrk, //ask for both trk and SPD vertex
-                                                 Bool_t checkProximity) //apply cut on relative position of spd and trk verteces
+                                                   Bool_t checkSPDres, //enable check on vtx resolution
+                                                   Bool_t requireSPDandTrk, //ask for both trk and SPD vertex
+                                                   Bool_t checkProximity) //apply cut on relative position of spd and trk verteces
 {
     
     if (!esd) return kFALSE;
@@ -1848,7 +1864,7 @@ Bool_t AliAnalysisTaskPPvsRT::IsGoodZvertexPos(AliESDEvent *esd)
     return kTRUE;
 }
 //________________________________________________________________________
-Bool_t AliAnalysisTaskPPvsRT::PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh)
+Bool_t AliAnalysisTaskPPvsRT::PhiCut(const double& pt, double phi, const double& q, const float& mag, TF1* phiCutLow, TF1* phiCutHigh)
 {
     if(pt < 2.0)
         return kTRUE;
@@ -1887,25 +1903,25 @@ void AliAnalysisTaskPPvsRT::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
     fTrackFilter->AddCuts(esdTrackCuts);
 }
 //________________________________________________________________________
-Double_t AliAnalysisTaskPPvsRT::EtaCalibration( const Int_t indx, const Double_t eta){
-
-    const Double_t aPos[nRt+2]      = {0,0,0,49.9799,49.9659,0,0};
-    const Double_t bPos[nRt+2]      = {0,0,0,2.99619,2.91366,0,0};
-    const Double_t cPos[nRt+2]      = {0,0,0,-45.718,-45.5994,0,0};
-    const Double_t dPos[nRt+2]      = {0,0,0,290.013,290.042,0,0};
-    const Double_t ePos[nRt+2]      = {0,0,0,-1018.42,-1014.49,0,0};
-    const Double_t fPos[nRt+2]      = {0,0,0,1948.68,1931.84,0,0};
-    const Double_t gPos[nRt+2]      = {0,0,0,-1864.06,-1839.36,0,0};
-    const Double_t hPos[nRt+2]      = {0,0,0,692.752,680.421,0,0};
+Double_t AliAnalysisTaskPPvsRT::EtaCalibration( const Int_t &indx, const Double_t &eta){
     
-    const Double_t aNeg[nRt+2]      = {0,0,0,50.078,50.046,0,0};
-    const Double_t bNeg[nRt+2]      = {0,0,0,6.67199,6.79992,0,0};
-    const Double_t cNeg[nRt+2]      = {0,0,0,103.662,109.86,0,0};
-    const Double_t dNeg[nRt+2]      = {0,0,0,611.034,668.241,0,0};
-    const Double_t eNeg[nRt+2]      = {0,0,0,1695.63,1916.44,0,0};
-    const Double_t fNeg[nRt+2]      = {0,0,0,2395.88,2815.04,0,0};
-    const Double_t gNeg[nRt+2]      = {0,0,0,1669.22,2057.21,0,0};
-    const Double_t hNeg[nRt+2]      = {0,0,0,455.362,595.391,0,0};
+    const Double_t aPos[nRt+2]      = {49.9044,50.0841,0,49.9799,49.9659,0,0};
+    const Double_t bPos[nRt+2]      = {4.05075,-0.743724,0,2.99619,2.91366,0,0};
+    const Double_t cPos[nRt+2]      = {-58.1027,-13.8508,0,-45.718,-45.5994,0,0};
+    const Double_t dPos[nRt+2]      = {342.297,141.269,0,290.013,290.042,0,0};
+    const Double_t ePos[nRt+2]      = {-1098.19,-567.054,0,-1018.42,-1014.49,0,0};
+    const Double_t fPos[nRt+2]      = {1944.32,1105.63,0,1948.68,1931.84,0,0};
+    const Double_t gPos[nRt+2]      = {-1749.14,-1022.19,0,-1864.06,-1839.36,0,0};
+    const Double_t hPos[nRt+2]      = {617.929,355.158,0,692.752,680.421,0,0};
+    
+    const Double_t aNeg[nRt+2]      = {49.9261,50.0561,0,50.078,50.046,0,0};
+    const Double_t bNeg[nRt+2]      = {2.92422,4.68965,0,6.67199,6.79992,0,0};
+    const Double_t cNeg[nRt+2]      = {61.6661,65.891,0,103.662,109.86,0,0};
+    const Double_t dNeg[nRt+2]      = {421.545,394.542,0,611.034,668.241,0,0};
+    const Double_t eNeg[nRt+2]      = {1283.04,1100.56,0,1695.63,1916.44,0,0};
+    const Double_t fNeg[nRt+2]      = {1944.85,1516.21,0,2395.88,2815.04,0,0};
+    const Double_t gNeg[nRt+2]      = {1442.98,989.24,0,1669.22,2057.21,0,0};
+    const Double_t hNeg[nRt+2]      = {419.491,238.333,0,455.362,595.391,0,0};
     
     
     for(Int_t i=0; i<8; ++i)
@@ -1936,19 +1952,19 @@ Double_t AliAnalysisTaskPPvsRT::EtaCalibration( const Int_t indx, const Double_t
     
 }
 //________________________________________________________________________
-Double_t AliAnalysisTaskPPvsRT::EtaCalibrationEl(const Int_t indx, const Double_t eta){
+Double_t AliAnalysisTaskPPvsRT::EtaCalibrationEl(const Int_t &indx, const Double_t &eta){
     
-    const Double_t aPosEl[nRt+2]    = {0,0,0,80.1263,79.9957,0,0};
-    const Double_t bPosEl[nRt+2]    = {0,0,0,5.28525,7.03079,0,0};
-    const Double_t cPosEl[nRt+2]    = {0,0,0,-32.7731,-42.9098,0,0};
-    const Double_t dPosEl[nRt+2]    = {0,0,0,68.4524,88.7057,0,0};
-    const Double_t ePosEl[nRt+2]    = {0,0,0,-44.1566,-56.6554,0,0};
+    const Double_t aPosEl[nRt+2]    = {79.8647 ,79.6737 ,0,80.1263 ,79.9957 ,0,0};
+    const Double_t bPosEl[nRt+2]    = {6.50512 ,16.0745 ,0,5.28525 ,7.03079 ,0,0};
+    const Double_t cPosEl[nRt+2]    = {-35.9277,-80.5639,0,-32.7731,-42.9098,0,0};
+    const Double_t dPosEl[nRt+2]    = {73.1535 ,148.866 ,0,68.4524 ,88.7057 ,0,0};
+    const Double_t ePosEl[nRt+2]    = {-47.1041,-90.3376,0,-44.1566,-56.6554,0,0};
     
-    const Double_t aNegEl[nRt+2]    = {0,0,0,79.8351,79.7387,0,0};
-    const Double_t bNegEl[nRt+2]    = {0,0,0,-8.46921,-8.60021,0,0};
-    const Double_t cNegEl[nRt+2]    = {0,0,0,-44.5947,-44.1718,0,0};
-    const Double_t dNegEl[nRt+2]    = {0,0,0,-86.2242,-84.4984,0,0};
-    const Double_t eNegEl[nRt+2]    = {0,0,0,-53.6285,-51.945,0,0};
+    const Double_t aNegEl[nRt+2]    = {79.6366 ,80.0767 ,0,79.8351 ,79.7387 ,0,0};
+    const Double_t bNegEl[nRt+2]    = {-11.3437,-2.51009,0,-8.46921,-8.60021,0,0};
+    const Double_t cNegEl[nRt+2]    = {-65.1353,-23.6188,0,-44.5947,-44.1718,0,0};
+    const Double_t dNegEl[nRt+2]    = {-134.447,-65.5053,0,-86.2242,-84.4984,0,0};
+    const Double_t eNegEl[nRt+2]    = {-87.7848,-51.1463,0,-53.6285,-51.945 ,0,0};
     
     
     for(Int_t i=0; i<5; ++i)
@@ -1975,24 +1991,24 @@ Double_t AliAnalysisTaskPPvsRT::EtaCalibrationEl(const Int_t indx, const Double_
 //________________________________________________________________________
 Int_t AliAnalysisTaskPPvsRT::GetIndex()
 {
-
-Int_t indx = -1;
-
-if(fPeriod=="h")
-indx = 0;
-else if(fPeriod=="i")
-indx = 1;
-else if(fPeriod=="j")
-indx = 2;
-else if(fPeriod=="l")
-indx = 3;
-else if(fPeriod=="k")
-indx = 4;
-else if(fPeriod=="o")
-indx = 5;
-else
-indx = 6;
-
-return indx;
-
+    
+    Int_t indx = -1;
+    
+    if(fPeriod=="h")
+        indx = 0;
+    else if(fPeriod=="i")
+        indx = 1;
+    else if(fPeriod=="j")
+        indx = 2;
+    else if(fPeriod=="l")
+        indx = 3;
+    else if(fPeriod=="k")
+        indx = 4;
+    else if(fPeriod=="o")
+        indx = 5;
+    else
+        indx = 6;
+    
+    return indx;
+    
 }
