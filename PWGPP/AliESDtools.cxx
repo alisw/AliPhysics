@@ -891,13 +891,13 @@ Int_t AliESDtools::DumpEventVariables() {
   Float_t intrate=-1.;
   static Int_t timeStampCache = -1;
   if (timeStampCache!=Int_t(timeStampS)) timeStampCache=Int_t(timeStampS);
-  if (!gGrid && timeStampCache>0) {
-    AliInfo("Trying to connect to AliEn ...");
+  if (!gSystem->Getenv("OCDB_PATH") && !gGrid && timeStampCache > 0) {
+    AliInfo("Trying to connect to AliEn...");
     TGrid::Connect("alien://");
   } else {
     const char *ocdb = "raw://";
-    TGraph *grLumiGraph = (TGraph*)AliLumiTools::GetLumiFromCTP(runNumber,ocdb);
-    intrate   = grLumiGraph->Eval(timeStamp);
+    TGraph *grLumiGraph = (TGraph*)AliLumiTools::GetLumiFromCTP(runNumber, ocdb);
+    intrate = grLumiGraph->Eval(timeStamp);
     delete grLumiGraph;
   }
 
