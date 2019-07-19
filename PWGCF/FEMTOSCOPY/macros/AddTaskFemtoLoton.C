@@ -129,9 +129,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
 
-  config->SetMixingDepth(10);
-  config->SetUseEventMixing(true);
   if (phiSpinning == 0) {
+    config->SetMixingDepth(10);
     config->SetUseEventMixing(true);
   } else if (phiSpinning == 1) {
     config->SetUseEventMixing(false);
