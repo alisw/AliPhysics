@@ -159,10 +159,14 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 //	Double1D varcentbin = {0,0.001,0.01,0.1,0.5,1,5,10,15,20,30,40,50,70,100};
 //	alice official
 
-	Double1D varcentbin = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1,2,5,10,15,20,30,40,50,70,82,100};
+	Double1D varcentbinHigh = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1};
+        Double1D varcentbin = {0,1,2,5,10,15,20,30,40,50,70,82,100};
+
 	Double1D varcentbinHeavy = {0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
 
-	binCent = AxisVar("Cent", IsAA ? varcentbinHeavy : varcentbin);
+	if( IsAA ) binCent = AxisVar("Cent",varcentbinHeavy);
+	if( fOption.Contains("HighMult") ){ binCent = AxisVar("Cent",varcentbinHigh); }
+	else{ binCent = AxisVar("Cent",varcentbin); }
 
 	Double1D ptbin = {0.1,0.5,1.0,1.5,2.0,2.5,3.0,4.0,6.0,14.0,100};
 
@@ -206,11 +210,11 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	binLtpt = AxisVar("LPPt",ltpttrackbin);
 	binJetpT = AxisVar("JetPt",jetptbin);
 
-//	Double1D verzbin = {-15,-10,-8,-6,6,8,10,15};
+	Double1D verzbin = {-8,-6,-4,-2,0,2,4,6,8};
 
-	Double1D verzbin = {
-	-15,-10, -8, -7, -6, -5, -4, -3, -2,
-	  2,  3,  4,  5,  6,  7,  8, 10, 15};
+//	Double1D verzbin = {
+//	 -8, -7, -6, -5, -4, -3, -2,
+//	  2,  3,  4,  5,  6,  7,  8};
 
 	binZ = AxisVar("Z",verzbin);
 

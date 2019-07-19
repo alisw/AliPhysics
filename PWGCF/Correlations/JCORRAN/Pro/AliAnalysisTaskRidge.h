@@ -225,6 +225,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 	TAxis				binNtrig;
 	TAxis				binLtpt;
 	TAxis				binJetpT;
+	TAxis				binEta;
 
         Int_t                           centbin = -1 ;
         Int_t                           zbin = -1 ;
