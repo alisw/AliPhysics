@@ -1452,7 +1452,7 @@ void AliAnalysisTaskSEImproveITSCVMFS::OpenImproverHistos(AliVEvent* event) {
     if ( run >= 252235 && run <= 252375 ) lProductionName = "LHC16d";
     if ( run >= 252603 && run <= 253591 ) lProductionName = "LHC16e";
     if ( run >= 254124 && run <= 254332 ) lProductionName = "LHC16g";
-    if ( run >= 254378 && run <= 255467 ) lProductionName = "LHC16h";
+    if ( run >= 254378 && run <= 255469 ) lProductionName = "LHC16h";
     if ( run >= 256146 && run <= 256420 ) lProductionName = "LHC16j";
     if ( run >= 256504 && run <= 258537 ) lProductionName = "LHC16k";
     if ( run >= 258883 && run <= 260187 ) lProductionName = "LHC16l";
