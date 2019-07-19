@@ -206,12 +206,14 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fMCMomentum(0),
   fMCProdVtx(0),
   fMCGeneratorIndex(0),
+  fMCGeneratorName(0),
   fMCIndex(0),
   fMCPdgCode(0),
   fMCMotherIndex(0),
   fMCMotherPdgCode(0),
   fMCFirstMotherIndex(0),
-  fMCFirstMotherPdgCode(0)
+  fMCFirstMotherPdgCode(0),
+  fMCFirstMotherMomentum(0)
 {
   for(Int_t i=0;i<3;i++) fVertex[i] = 0;
   for(Int_t i=0;i<3;i++) fMCVertex[i] = 0;
@@ -368,12 +370,14 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fMCMomentum(0),
   fMCProdVtx(0),
   fMCGeneratorIndex(0),
+  fMCGeneratorName(0),
   fMCIndex(0),
   fMCPdgCode(0),
   fMCMotherIndex(0),
   fMCMotherPdgCode(0),
   fMCFirstMotherIndex(0),
-  fMCFirstMotherPdgCode(0)
+  fMCFirstMotherPdgCode(0),
+  fMCFirstMotherMomentum(0)
 {
   for(Int_t i=0;i<3;i++) fVertex[i] = 0;
   for(Int_t i=0;i<3;i++) fMCVertex[i] = 0;
@@ -554,12 +558,14 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fMCMomentum",&fMCMomentum);
   fTree->Branch("fMCProdVtx",&fMCProdVtx);
   fTree->Branch("fMCGeneratorIndex",&fMCGeneratorIndex);
+  fTree->Branch("fMCGeneratorName",&fMCGeneratorName);
   fTree->Branch("fMCIndex",&fMCIndex);
   fTree->Branch("fMCPdgCode",&fMCPdgCode);
   fTree->Branch("fMCMotherIndex",&fMCMotherIndex);
   fTree->Branch("fMCMotherPdgCode",&fMCMotherPdgCode);
   fTree->Branch("fMCFirstMotherIndex",&fMCFirstMotherIndex);
   fTree->Branch("fMCFirstMotherPdgCode",&fMCFirstMotherPdgCode);
+  fTree->Branch("fMCFirstMotherMomentum",&fMCFirstMotherMomentum);
 
   fPIDResponse = dynamic_cast<AliPIDResponse*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetPIDResponse());
   if(!fPIDResponse){
@@ -1294,7 +1300,7 @@ void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
   AliAODMCHeader* mcHeader = (AliAODMCHeader*)fAODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
   TList *headerList = mcHeader->GetCocktailHeaders();
   const Int_t Ngen = headerList->GetEntries();
-  AliInfo(Form("N generators = %d",Ngen)); 
+  //AliInfo(Form("N generators = %d",Ngen)); 
 
   Int_t begin = 0;
   Int_t end   = 0; 
@@ -1306,6 +1312,7 @@ void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
     TString genname = gh->GetName();
     AliInfo(Form("Generator name = %s , NProduced = %d.",genname.Data(),gh->NProduced()));
     //printf("particle loop runs from %d to %d\n",begin,end);
+    fMCGeneratorName.push_back(genname);
 
     for(Int_t itrack=begin;itrack<end;itrack++){
       AliAODMCParticle *p = (AliAODMCParticle*)fMCArray->At(itrack);
@@ -1361,12 +1368,21 @@ void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
         //check first mother
         first_mother_index = GetFirstMother(p);
         first_mother_pdg   = mp->GetPdgCode();
+        AliAODMCParticle *fmp = mp;
         if(first_mother_index > -1){
-          AliAODMCParticle *fmp = (AliAODMCParticle*)fMCArray->At(first_mother_index);
+          fmp = (AliAODMCParticle*)fMCArray->At(first_mother_index);
           first_mother_pdg = fmp->GetPdgCode();
         } 
         fMCFirstMotherIndex.push_back(first_mother_index);
         fMCFirstMotherPdgCode.push_back(first_mother_pdg);
+
+        vector<Float_t> fmvec(3,0);
+        fmvec[0] = fmp->Pt();
+        fmvec[1] = fmp->Eta();
+        fmvec[2] = fmp->Phi();
+        if(fmvec[2] < 0) fmvec[2] += TMath::TwoPi();
+        fMCFirstMotherMomentum.push_back(fmvec);
+        fmvec.clear();
       }
       else{//no mother, i.e. no first mother, too.
         fMCMotherIndex.push_back(mother_index);
@@ -1374,6 +1390,13 @@ void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
 
         fMCFirstMotherIndex.push_back(mother_index);
         fMCFirstMotherPdgCode.push_back(mother_pdg);//pdgcode 0 does not exist.
+
+        vector<Float_t> fmvec(3,0);
+        fmvec[0] = -999;
+        fmvec[1] = -999;
+        fmvec[2] = -999;
+        fMCFirstMotherMomentum.push_back(fmvec);
+        fmvec.clear();
       }
       //printf("genID = %d , id = %d (PDG=%d) , mother_id = %d (PDG=%d) , first_mother_id = %d (PDG=%d)\n",igen,itrack,pdg,mother_index,mother_pdg,first_mother_index,first_mother_pdg);
 
@@ -1623,7 +1646,7 @@ Double_t AliAnalysisTaskReducedTreeDS::PhivPair(AliAODv0 *v0, Float_t Bz)
 //_______________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
 {
-  AliInfo("Number of elements of vectors is cleared.");
+  //AliInfo("Number of elements of vectors is cleared.");
 
   //clear track variables
   fTrackMomentum.clear();
@@ -1718,19 +1741,21 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
   fMCMomentum.clear();
   fMCProdVtx.clear();
   fMCGeneratorIndex.clear();
+  fMCGeneratorName.clear();
   fMCIndex.clear();
   fMCPdgCode.clear();
   fMCMotherIndex.clear();
   fMCMotherPdgCode.clear();
   fMCFirstMotherIndex.clear();
   fMCFirstMotherPdgCode.clear();
-  AliInfo("Number of elements of vectors is cleared. DONE!");
+  fMCFirstMotherMomentum.clear();
+  //AliInfo("Number of elements of vectors is cleared. DONE!");
 
 }
 //_______________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
 {
-  AliInfo("Memories for vector objects are swapped with null.");
+  //AliInfo("Memories for vector objects are swapped with null.");
 
   vector<vector<Float_t>>().swap(fTrackMomentum);
   vector<Int_t>().swap(fTrackCharge);
@@ -1825,13 +1850,16 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
   vector<vector<Float_t>>().swap(fMCMomentum);
   vector<vector<Float_t>>().swap(fMCProdVtx);
   vector<Int_t>().swap(fMCGeneratorIndex);
+  vector<TString>().swap(fMCGeneratorName);
   vector<Int_t>().swap(fMCIndex);
   vector<Int_t>().swap(fMCPdgCode);
   vector<Int_t>().swap(fMCMotherIndex);
   vector<Int_t>().swap(fMCMotherPdgCode);
   vector<Int_t>().swap(fMCFirstMotherIndex);
   vector<Int_t>().swap(fMCFirstMotherPdgCode);
-  AliInfo("Memories for vector objects are swapped with null. DONE!");
+  vector<vector<Float_t>>().swap(fMCFirstMotherMomentum);
+
+  //AliInfo("Memories for vector objects are swapped with null. DONE!");
 }
 //_______________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeDS::ExtractQnVectors()

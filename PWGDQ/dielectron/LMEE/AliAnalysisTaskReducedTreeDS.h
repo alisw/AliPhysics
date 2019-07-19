@@ -206,17 +206,19 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     vector<vector<Float_t>> fMCMomentum;
     vector<vector<Float_t>> fMCProdVtx;//production vertex of true electrons
     vector<Int_t> fMCGeneratorIndex;
+    vector<TString> fMCGeneratorName;
     vector<Int_t> fMCIndex;
     vector<Int_t> fMCPdgCode;
     vector<Int_t> fMCMotherIndex;
     vector<Int_t> fMCMotherPdgCode;
     vector<Int_t> fMCFirstMotherIndex;
     vector<Int_t> fMCFirstMotherPdgCode;
+    vector<vector<Float_t>> fMCFirstMotherMomentum;
 
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 9);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 10);
 
 };
 
