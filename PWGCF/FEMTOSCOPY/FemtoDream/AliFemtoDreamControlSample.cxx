@@ -314,7 +314,7 @@ void AliFemtoDreamControlSample::Randomizer(
     Part2Mom += Part1Mom;
     // give the first particle a phi kick
     Part1Mom.SetPhi(
-        Part2Mom.Phi()
+        Part1Mom.Phi()
             + fRandom.Uniform(-fCorrelationRange, fCorrelationRange));
     Part2Mom -= Part1Mom;
     (*itPart1)->SetMomentum(Part1Mom);
