@@ -695,8 +695,6 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             else
                 this->FillTracksAOD();  // Fill the histogram(AOD)
         }
-        if (fsetmixing && goodtrackindices.size())
-            FillTrackToEventPool();  // use only pion track pool.
     }
     // ***********************************************************************
 
@@ -719,6 +717,15 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
     const UInt_t ntracks = fEvt->GetNumberOfTracks();
     goodtrackindices.clear();
     AliVTrack* track;
+    tracklist* etl;
+    eventpool* ep;
+    // Event mixing pool
+    if (fsetmixing) {
+        ep = &fEMpool[centbin][zbin];
+        ep->push_back(tracklist());
+        etl = &(ep->back());
+    }
+
     fTrackCuts->SetMaxDCAToVertexZ(fXi1530PionZVertexCut_loose);
 
     Float_t b[2];
@@ -767,7 +774,21 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
         }  // After default cut
 
         goodtrackindices.push_back(it);
+        // Event mixing pool
+        if (fsetmixing)
+            etl->push_back((AliVTrack*)track->Clone());
     }
+
+    if (fsetmixing) {
+        if (!goodtrackindices.size())
+            ep->pop_back();
+        if (ep->size() > 5) {
+            for (auto it : ep->front())
+                delete it;
+            ep->pop_front();
+        }
+    }
+
     return goodtrackindices.size();
 }
 
@@ -1678,11 +1699,16 @@ void AliAnalysisTaskXi1530::FillTracks() {
     // Event Mixing
     if (fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
-        if ((int)ep.size() < (int)fnMix)
+        int epsize = ep.size();
+        if (epsize < (int)fnMix)
             return;
+        int nForSkipSameEvent = 0;
         for (auto pool : ep) {
+            if (nForSkipSameEvent == (ep.size() - 1))
+                continue; // same event
             for (auto track : pool)
                 trackpool.push_back((AliVTrack*)track);
+            nForSkipSameEvent++;
         }
         for (UInt_t i = 0; i < ncascade; i++) {
             Xicandidate =
@@ -2863,32 +2889,6 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi(UInt_t xiIndex) {
         }
     }
     return TrueXi;
-}
-void AliAnalysisTaskXi1530::FillTrackToEventPool() {
-    // Fill Selected tracks to event mixing pool
-    AliVTrack* goodtrack;
-
-    tracklist* etl;
-    eventpool* ep;
-    // Event mixing pool
-
-    ep = &fEMpool[centbin][zbin];
-    ep->push_back(tracklist());
-    etl = &(ep->back());
-    // Fill selected tracks
-    for (UInt_t i = 0; i < goodtrackindices.size(); i++) {
-        goodtrack = (AliVTrack*)fEvt->GetTrack(goodtrackindices[i]);
-        if (!goodtrack)
-            continue;
-        etl->push_back((AliVTrack*)goodtrack->Clone());
-    }
-    if (!goodtrackindices.size())
-        ep->pop_back();
-    if ((int)ep->size() > (int)fnMix) {
-        for (auto it : ep->front())
-            delete it;
-        ep->pop_front();
-    }
 }
 double AliAnalysisTaskXi1530::GetTPCnSigma(AliVTrack* track,
                                            AliPID::EParticleType type) {
