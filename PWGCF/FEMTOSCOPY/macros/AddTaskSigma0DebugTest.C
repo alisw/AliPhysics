@@ -72,6 +72,61 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     v0Cuts->SetMinimalBooking(true);
     antiv0Cuts->SetMinimalBooking(true);
   }
+  if (suffix == "2") {
+    v0Cuts->SetCutTransverseRadius(0.375, 100);
+    antiv0Cuts->SetCutTransverseRadius(0.375, 100);
+  } else if (suffix == "3") {
+    v0Cuts->SetCutTransverseRadius(0.5, 100);
+    antiv0Cuts->SetCutTransverseRadius(0.5, 100);
+  } else if (suffix == "4") {
+    v0Cuts->SetCutTransverseRadius(0.75, 100);
+    antiv0Cuts->SetCutTransverseRadius(0.75, 100);
+  } else if (suffix == "5") {
+    v0Cuts->SetCutTransverseRadius(1, 100);
+    antiv0Cuts->SetCutTransverseRadius(1, 100);
+  } else if (suffix == "6") {
+    v0Cuts->SetCutTransverseRadius(1.5, 100);
+    antiv0Cuts->SetCutTransverseRadius(1.5, 100);
+  } else if (suffix == "7") {
+    v0Cuts->SetCutTransverseRadius(2, 100);
+    antiv0Cuts->SetCutTransverseRadius(2, 100);
+  } else if (suffix == "8") {
+    v0Cuts->SetCutTransverseRadius(2.5, 100);
+    antiv0Cuts->SetCutTransverseRadius(2.5, 100);
+  } else if (suffix == "9") {
+    v0Cuts->SetCutTransverseRadius(3, 100);
+    antiv0Cuts->SetCutTransverseRadius(3, 100);
+  } else if (suffix == "10") {
+    v0Cuts->SetCutTransverseRadius(3.5, 100);
+    antiv0Cuts->SetCutTransverseRadius(3.5, 100);
+  } else if (suffix == "11") {
+    v0Cuts->SetCutTransverseRadius(5, 100);
+    antiv0Cuts->SetCutTransverseRadius(5, 100);
+  } else if (suffix == "12") {
+    v0Cuts->SetCutTransverseRadius(0.2, 90);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 90);
+  } else if (suffix == "13") {
+    v0Cuts->SetCutTransverseRadius(0.2, 80);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 80);
+  } else if (suffix == "14") {
+    v0Cuts->SetCutTransverseRadius(0.2, 70);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 70);
+  } else if (suffix == "15") {
+    v0Cuts->SetCutTransverseRadius(0.2, 60);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 60);
+  } else if (suffix == "16") {
+    v0Cuts->SetCutTransverseRadius(0.2, 50);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 50);
+  } else if (suffix == "17") {
+    v0Cuts->SetCutTransverseRadius(0.2, 40);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 40);
+  } else if (suffix == "18") {
+    v0Cuts->SetCutTransverseRadius(0.2, 30);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 30);
+  } else if (suffix == "19") {
+    v0Cuts->SetCutTransverseRadius(0.2, 20);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 20);
+  }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
@@ -102,59 +157,8 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiSigmaCuts->SetLightweight(true);
   }
   if (suffix == "1") {
-    sigmaCuts->SetSigmaSideband(0.003, 0.01);
-    antiSigmaCuts->SetSigmaSideband(0.003, 0.01);
-  } else if (suffix == "2") {
-    sigmaCuts->SetSigmaSideband(0.003, 0.05);
-    antiSigmaCuts->SetSigmaSideband(0.003, 0.05);
-  } else if (suffix == "3") {
-    sigmaCuts->SetSigmaSideband(0.003, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.003, 0.1);
-  } else if (suffix == "4") {
-    sigmaCuts->SetSigmaSideband(0.002, 0.01);
-    antiSigmaCuts->SetSigmaSideband(0.002, 0.01);
-  } else if (suffix == "5") {
-    sigmaCuts->SetSigmaSideband(0.002, 0.05);
-    antiSigmaCuts->SetSigmaSideband(0.002, 0.05);
-  } else if (suffix == "6") {
-    sigmaCuts->SetSigmaSideband(0.002, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.002, 0.1);
-  } else if (suffix == "7") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.01);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.01);
-  } else if (suffix == "8") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.05);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.05);
-  } else if (suffix == "9") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.1);
-  } else if (suffix == "10") {
-    sigmaCuts->SetSigmaSideband(0.01, 0.01);
-    antiSigmaCuts->SetSigmaSideband(0.01, 0.01);
-  } else if (suffix == "11") {
-    sigmaCuts->SetSigmaSideband(0.01, 0.05);
-    antiSigmaCuts->SetSigmaSideband(0.01, 0.05);
-  } else if (suffix == "12") {
-    sigmaCuts->SetSigmaSideband(0.01, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.01, 0.1);
-  } else if (suffix == "13") {
-    sigmaCuts->SetSigmaSideband(0.025, 0.01);
-    antiSigmaCuts->SetSigmaSideband(0.025, 0.01);
-  } else if (suffix == "14") {
-    sigmaCuts->SetSigmaSideband(0.025, 0.05);
-    antiSigmaCuts->SetSigmaSideband(0.025, 0.05);
-  } else if (suffix == "15") {
-    sigmaCuts->SetSigmaSideband(0.025, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.025, 0.1);
-  } else if (suffix == "16") {
-    sigmaCuts->SetSigmaSideband(0.05, 0.01);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.01);
-  } else if (suffix == "17") {
-    sigmaCuts->SetSigmaSideband(0.05, 0.05);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.05);
-  } else if (suffix == "18") {
-    sigmaCuts->SetSigmaSideband(0.05, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.05, 0.1);
+    sigmaCuts->SetSigmaSideband(0.0035, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.0035, 0.1);
   }
 
   // Femto Collection
