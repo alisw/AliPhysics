@@ -274,6 +274,6 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented
 
   //ClassDef(AliAnalysisHFjetTagHFE, 7) // jet sample analysis task
-  ClassDef(AliAnalysisHFjetTagHFE, 10) // jet sample analysis task
+  ClassDef(AliAnalysisHFjetTagHFE, 11) // jet sample analysis task
 };
 #endif
