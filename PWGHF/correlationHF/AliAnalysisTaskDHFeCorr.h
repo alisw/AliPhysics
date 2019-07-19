@@ -405,8 +405,7 @@ public:
     const std::vector<std::string> fgkMultiplicityEstimators = {"ZNA", "V0A"}; ////< Multiplicity estimator supported
 
     bool Configure(std::string config_file, std::string config_name = "custom_config",
-                   //std::string default_file = "$ALICE_PHYSICS/PWGHF/correlationHF/macros/default_config_d_hfe.yaml");
-                   std::string default_file = "default_config_d_hfe.yaml");
+                   std::string default_file = "$ALICE_PHYSICS/PWGHF/correlationHF/macros/default_config_d_hfe.yaml");
 
 private:
     TList fOptEvent; ///< List with histograms from the event QA
