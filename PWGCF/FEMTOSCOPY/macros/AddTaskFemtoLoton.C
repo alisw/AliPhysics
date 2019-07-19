@@ -79,7 +79,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
-                                                                "Femto",true);
+                                                                "Femto",false);
   // Femto Collection
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
@@ -119,8 +119,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   }
   pairQA[0] = 11;
   pairQA[4] = 11;
-  pairQA[2] = 13;
-  pairQA[6] = 13;
+  pairQA[2] = 12;
+  pairQA[6] = 12;
 
   closeRejection[0] = true;  // pp
   closeRejection[4] = true;  // barp barp
