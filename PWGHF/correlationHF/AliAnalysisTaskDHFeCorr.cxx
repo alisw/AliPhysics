@@ -425,7 +425,7 @@ void AliAnalysisTaskDHFeCorr::FillElectronMCInfo(std::vector<AliDHFeCorr::AliEle
             if (mc_mother->GetMother()>0) {
                 const auto mc_grandmother = dynamic_cast<AliAODMCParticle *>(mc_information->At(mc_mother->GetMother()));
                 candidate.fSecondMotherPDG = mc_grandmother->GetPdgCode();
-                candidate.fSecondMotherPt = mc_mother->Pt();
+                candidate.fSecondMotherPt = mc_grandmother->Pt();
             }
         }
     }
