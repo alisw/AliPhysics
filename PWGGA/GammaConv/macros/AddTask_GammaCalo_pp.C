@@ -1691,11 +1691,11 @@ void AddTask_GammaCalo_pp(
 
 // EDC 13 TeV 2016 & 2017 settings with MC fine tuning correction
   } else if (trainConfig == 2020){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM
-    cuts.AddCutCalo("00010113","4117921067032230000","01631031000000d0"); // INT7 NL21
+    cuts.AddCutCalo("00010113","4117901067032230000","01631031000000d0"); // INT7 test beam NL
   } else if (trainConfig == 2021){ // EMCAL+DCAL clusters standard cuts, EG2, NL , std TM
-    cuts.AddCutCalo("0008e113","4117921067032230000","01631031000000d0"); // EG2  NL21
+    cuts.AddCutCalo("0008e113","4117901067032230000","01631031000000d0"); // EG2  test beam NL
   } else if (trainConfig == 2022){ // EMCAL+DCAL clusters standard cuts, EG1, NL , std TM
-    cuts.AddCutCalo("0008d113","4117921067032230000","01631031000000d0"); // EG1  NL21
+    cuts.AddCutCalo("0008d113","4117901067032230000","01631031000000d0"); // EG1  test beam NL
   } else if (trainConfig == 2023){ //EMCal + DCal INT7 cut var.
     cuts.AddCutCalo("00010113","4117911067032230000","01631031000000d0"); // INT7 NL11
     cuts.AddCutCalo("00010113","4117912067032230000","01631031000000d0"); // INT7 NL12
