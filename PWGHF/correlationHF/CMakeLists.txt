@@ -63,8 +63,14 @@ set(SRCS
     AliHFCorrFitter.cxx
     AliHFCorrFitSystematics.cxx
     AliDhCorrelationExtraction.cxx
-    AliAnalysisTaskDHFeCorr.cxx
-  ) 						
+  )
+
+# Tasks that should only be compiled in ROOT 6
+if(ROOT_VERSION_MAJOR EQUAL 6)
+    set(SRCS ${SRCS}
+	AliAnalysisTaskDHFeCorr.cxx
+	)						
+endif(ROOT_VERSION_MAJOR EQUAL 6)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
