@@ -212,7 +212,6 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void FillMCinputAOD(AliMCEvent* fMCEvent, Int_t check);
     void FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check);
     void FillMCinputdXiAOD(AliMCEvent* fMCEvent, Int_t check);
-    void FillTrackToEventPool();
     double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
 
     TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
@@ -347,7 +346,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 24);
+    ClassDef(AliAnalysisTaskXi1530, 25);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -374,6 +373,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 22: Remove some function thanks to AliEventCuts
     // 23: Integrate true Xi checker(ESD/AOD)
     // 24: Add IsNano boolean variable
+    // 25: Remove Fill event mix function
 };
 
 #endif
