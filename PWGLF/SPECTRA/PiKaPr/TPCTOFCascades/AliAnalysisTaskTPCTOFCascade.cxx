@@ -810,7 +810,7 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
     fAnalysisParticleArray->Clear();
     
     /* loop over primary particles */
-    Int_t nPrimaries = fMCEvent->GetNumberOfParticles();//fMCStack->GetNprimary();
+    Int_t nPrimaries = fMCEvent->GetNumberOfTracks();//fMCStack->GetNprimary();
     TParticle *particle;
     TParticlePDG *particlePDG;
     /* loop over primary particles */
