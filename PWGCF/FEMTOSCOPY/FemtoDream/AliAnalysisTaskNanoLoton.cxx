@@ -202,26 +202,36 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
   fResultsQA = new TList();
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
-  if (!fConfig->GetMinimalBookingME()) {
+
+  if (fConfig->GetUseEventMixing()) {
     fResults = fPartColl->GetHistList();
-    fResultsQA->Add(fPartColl->GetQAList());
-    fResultsQA->Add(fPairCleaner->GetHistList());
+    if (!fConfig->GetMinimalBookingME()) {
+      fResultsQA->Add(fPartColl->GetQAList());
+      fResultsQA->Add(fPairCleaner->GetHistList());
+    }
   } else {
     fResults = new TList();
     fResults->SetOwner();
     fResults->SetName("Results");
   }
+
   fResultsSampleQA = new TList();
   fResultsSampleQA->SetOwner();
   fResultsSampleQA->SetName("ResultsSampleQA");
-  if (fConfig->GetUsePhiSpinning() && !fConfig->GetMinimalBookingSample()) {
+
+  if (fConfig->GetUsePhiSpinning()) {
     fResultsSample = fSample->GetHistList();
-    fResultsSampleQA->Add(fSample->GetQAList());
+
+    if (!fConfig->GetMinimalBookingSample()) {
+      fResultsSampleQA->Add(fSample->GetQAList());
+      fResultsQA->Add(fPairCleaner->GetHistList());
+    }
   } else {
     fResultsSample = new TList();
     fResultsSample->SetOwner();
-    fResultsSample->SetName("Results");
+    fResultsSample->SetName("ResultsSample");
   }
+
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
@@ -297,8 +307,11 @@ void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
   fPairCleaner->StoreParticle(Lambdas);
   fPairCleaner->StoreParticle(AntiLambdas);
   if (fPairCleaner->GetCounter() > 0) {
-    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
-                        fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
+    if (fConfig->GetUseEventMixing()) {
+      fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
+                          fEvent->GetZVertex(), fEvent->GetMultiplicity(),
+                          fEvent->GetV0MCentrality());
+    }
     if (fConfig->GetUsePhiSpinning()) {
       fSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
     }

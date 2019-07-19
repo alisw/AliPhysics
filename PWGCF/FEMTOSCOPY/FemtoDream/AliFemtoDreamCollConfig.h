@@ -221,7 +221,7 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fSpinningDepth;
   }
   ;
-  int GetCorrelationRange() {
+  float GetCorrelationRange() {
     return fCorrelationRange;
   }
   ;
@@ -280,7 +280,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   std::vector<bool> fClosePairRej;       //
   int fMixingDepth;             //
   int fSpinningDepth;			      //
-  int fCorrelationRange;	      //
+  float fCorrelationRange;	      //
   bool fkTCentrality;           //
   bool fmTdEtadPhi;             //
   AliFemtoDreamEvent::MultEstimator fEst;  //
