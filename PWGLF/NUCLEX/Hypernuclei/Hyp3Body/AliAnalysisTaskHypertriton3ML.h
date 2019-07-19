@@ -126,6 +126,11 @@ public:
 
   static AliAnalysisTaskHypertriton3ML *AddTask(bool isMC = false, TString suffix = "");
 
+  void SetDownscaling(bool down) { fDownscaling = down; }
+
+  void SetDownscalingFactorByEvent(bool fraction) { fDownscalingFactorByEvent = fraction; }
+  void SetDownscalingFactorByCandidate(bool fraction) { fDownscalingFactorByCandidate = fraction; }
+
   void SetOnlyTrueCandidates(bool trueCand) { fOnlyTrueCandidates = trueCand; }
 
   void SetMinCandidatePt(float lPtMin) { fMinCanidatePtToSave = lPtMin; }
@@ -167,12 +172,16 @@ private:
 
   bool fMC;
   bool fOnlyTrueCandidates;
+  bool fDownscaling;
 
   /// Control histograms to monitor the filtering
   TH2D *fHistNSigmaDeu; //! # sigma TPC for the deuteron
   TH2D *fHistNSigmaP;   //! # sigma TPC proton for the positive prong
   TH2D *fHistNSigmaPi;  //! # sigma TPC pion for the negative prong
   TH2D *fHistInvMass;   //! # Invariant mass histogram
+
+  float fDownscalingFactorByEvent;     // fraction of the events saved in the tree
+  float fDownscalingFactorByCandidate; // fraction of the candidates saved in the tree
 
   float fMinCanidatePtToSave; // min candidate pt to save
   float fMaxCanidatePtToSave; // max candidate pt to save

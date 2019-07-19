@@ -12,12 +12,14 @@
 Bool_t ConfigKStarPlusMinusRun2sp_bin
 (
  AliRsnMiniAnalysisTask *task,
- Int_t                  binning_sphero,
- Double_t               min_sphero,
- Double_t               max_sphero,
- Int_t                  mult_binning,
- Double_t               mult_min,
- Double_t               mult_max,
+ //=============
+    Int_t                  binning_sphero,
+    Double_t               min_sphero,
+    Double_t               max_sphero,
+    Int_t                  mult_binning,
+    Double_t               mult_min,
+    Double_t               mult_max,
+ //==============
  Bool_t                 HIST, //ST
  Bool_t                  isPP,
  Bool_t                  isMC,
@@ -219,7 +221,7 @@ Bool_t ConfigKStarPlusMinusRun2sp_bin
     Char_t  charge2 [6] = {'+'             ,'-'              ,'+'                ,'-'                 ,'+'              ,'-'               };
     Int_t   cutID1  [6] = { iCutK0s      ,iCutK0s           ,iCutK0s            ,iCutK0s            ,iCutK0s          ,iCutK0s             };
     Int_t   cutID2  [6] = { iCutPi         ,iCutPi           ,iCutPi             ,iCutPi              ,iCutPi           ,iCutPi            };
-    TString outputh [11]={"HIST","HIST","HIST","HIST","HIST","HIST"}; //ST
+     TString outputh [11]={"HIST","HIST","HIST","HIST","HIST","HIST","HIST","HIST","HIST","HIST" ,"HIST"}; //ST
     Int_t   ipdg    [6] = {323             ,-323             ,323                ,-323                ,323              ,-323              };
     Double_t mass   [6] = { 0.89166        ,0.89166          ,0.89166            ,0.89166             ,0.89166          ,0.89166           };
     AliRsnCutSet* paircuts[6] = {PairCutsSame,  PairCutsSame,   PairCutsMix,    PairCutsMix,    PairCutsSame,   PairCutsSame              };
@@ -252,8 +254,8 @@ Bool_t ConfigKStarPlusMinusRun2sp_bin
 
         //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
         if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
-        else out->AddAxis(centID, mult_binning, mult_min, mult_max);
-	out->AddAxis(SpherocityID, binning_sphero,min_sphero, max_sphero);
+        else out->AddAxis(centID, mult_binning, mult_min, mult_max);//out->AddAxis(centID, 100, 0.0, 100.);
+	out->AddAxis(SpherocityID, binning_sphero,min_sphero, max_sphero);//out->AddAxis(SpherocityID,1000,0.,1.); //ST
         if(isGT) out->AddAxis(sdpt,100,0.,10.);
     }
 
@@ -297,8 +299,8 @@ Bool_t ConfigKStarPlusMinusRun2sp_bin
         //out->AddAxis(k0sDCA, 10, 0.0, 1.0);
 
         if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
-        else out->AddAxis(centID, mult_binning, mult_min, mult_max);
-	out->AddAxis(SpherocityID, binning_sphero,min_sphero, max_sphero);
+        else out->AddAxis(centID, mult_binning, mult_min, mult_max);//out->AddAxis(centID, 100, 0.0, 100.);
+	out->AddAxis(SpherocityID, binning_sphero,min_sphero, max_sphero);//out->AddAxis(SpherocityID,1000,0.,1.); //ST
         //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
         if(isGT)  out->AddAxis(sdpt,100,0.,10.);
 
@@ -318,8 +320,8 @@ Bool_t ConfigKStarPlusMinusRun2sp_bin
         //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
 
         if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
-        else out->AddAxis(centID, mult_binning, mult_min, mult_max);
-        out->AddAxis(SpherocityID, binning_sphero,min_sphero, max_sphero);
+        else out->AddAxis(centID, mult_binning, mult_min, mult_max);//out->AddAxis(centID, 100, 0.0, 100.);
+        out->AddAxis(SpherocityID, binning_sphero,min_sphero, max_sphero);//out->AddAxis(SpherocityID,1000,0.,1.); //ST
         if(isGT)  out->AddAxis(sdpt,100,0.,10.);
 
 
@@ -338,8 +340,8 @@ Bool_t ConfigKStarPlusMinusRun2sp_bin
         outps->AddAxis(fdpt,100,0.,10.);
         outps->AddAxis(sdpt,100,0.,10.);
         outps->AddAxis(ptID,200,0.,20.);
-	else outps->AddAxis(centID, mult_binning, mult_min, mult_max);
-        outps->AddAxis(SpherocityID, binning_sphero,min_sphero, max_sphero);
+	//else outps->AddAxis(centID, mult_binning, mult_min, mult_max);//outps->AddAxis(centID,400,0.5,400.5);//ST
+        //outps->AddAxis(SpherocityID, binning_sphero,min_sphero, max_sphero);//outps->AddAxis(SpherocityID,1000,0.,1.); //ST
 
         AliRsnMiniOutput* outpsf=task->CreateOutput(Form("K*_phaseSpaceFine%s", suffix),"HIST","TRUE");
         outpsf->SetDaughter(0,AliRsnDaughter::kKaon0);
@@ -352,8 +354,10 @@ Bool_t ConfigKStarPlusMinusRun2sp_bin
         outpsf->AddAxis(fdpt,30,0.,3.);
         outpsf->AddAxis(sdpt,30,0.,3.);
         outpsf->AddAxis(ptID,300,0.,3.);
-	else outpsf->AddAxis(centID, mult_binning, mult_min, mult_max);
-         outpsf->AddAxis(SpherocityID, binning_sphero,min_sphero, max_sphero);
+	//else outpsf->AddAxis(centID, mult_binning, mult_min, mult_max);//outpsf->AddAxis(centID,400,0.5,400.5);//ST
+	//outpsf->AddAxis(SpherocityID, binning_sphero,min_sphero, max_sphero);//outpsf->AddAxis(SpherocityID,1000,0.,1.); //ST
+
+
     }
 
     return kTRUE;

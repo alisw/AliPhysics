@@ -659,22 +659,22 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
 
   // Femto Collection
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212);
-  PDGParticles.push_back(2212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
+  PDGParticles.push_back(2212); // 0
+  PDGParticles.push_back(2212); // 1
+  PDGParticles.push_back(3212); // 2
+  PDGParticles.push_back(3212); // 3
+  PDGParticles.push_back(3212); // 4
+  PDGParticles.push_back(3212); // 5
+  PDGParticles.push_back(3212); // 6
+  PDGParticles.push_back(3212); // 7
   if (suffix == "0" && fullBlastQA) {
-    PDGParticles.push_back(3122);
-    PDGParticles.push_back(3122);
-    PDGParticles.push_back(3122);
-    PDGParticles.push_back(3122);
-    PDGParticles.push_back(22);
-    PDGParticles.push_back(22);
-    PDGParticles.push_back(22);
+    PDGParticles.push_back(3122); // 8
+    PDGParticles.push_back(3122); // 9
+    PDGParticles.push_back(3122); // 10
+    PDGParticles.push_back(3122); // 11
+    PDGParticles.push_back(22); // 12
+    PDGParticles.push_back(22); // 13
+    PDGParticles.push_back(22); // 14
   }
 
   std::vector<float> ZVtxBins;

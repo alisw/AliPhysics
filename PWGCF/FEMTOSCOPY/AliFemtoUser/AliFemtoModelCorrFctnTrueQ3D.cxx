@@ -66,7 +66,7 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix
     {
       return new TH3F(prefix + name,
                       title + "; q_{out} (GeV); q_{side} (GeV); q_{long} (Gev)",
-                      nbins, qmin, qmax,
+                      nbins / 2 + 1, 0.0, qmax,
                       nbins, qmin, qmax,
                       nbins, qmin, qmax);
     };
@@ -234,14 +234,16 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
   const AliFemtoLorentzVector p = p1 + p2,
                               d = p1 - p2;
 
+  #define FAST_DIVIDE(num, den) __builtin_expect(den == 0.0, false) ? 0.0 : num / den
+
   Double_t k1 = p.Perp(),
            k2 = d.x()*p.x() + d.y()*p.y();
 
   // relative momentum out component in lab frame
-  Double_t qout = (k1 == 0) ? 0.0 : k2/k1;
+  Double_t qout = FAST_DIVIDE(k2, k1);
 
   // relative momentum side component in lab frame
-  Double_t qside = (k1 == 0) ? 0.0 : 2.0 * (p2.x()*p1.y() - p1.x()*p2.y())/k1;
+  Double_t qside = FAST_DIVIDE(2.0 * (p2.x()*p1.y() - p1.x()*p2.y()), k1);
 
   // relative momentum component in lab frame
   Double_t beta = p.z()/p.t(),
@@ -249,7 +251,13 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
 
   Double_t qlong = gamma * (d.z() - beta*d.t());
 
-  // double qlong = (p.t()*d.z() - p.z()*d.t()) / TMath::Sqrt(p.t()*p.t() - p.z()*p.z());
+  #undef FAST_DIVIDE
+
+  // "flip" into positive qout region
+  Double_t factor = std::copysign(1.0, qout);
+  qout *= factor;
+  qside *= factor;
+  qlong *= factor;
 
   return std::make_tuple(qout, qside, qlong);
 }

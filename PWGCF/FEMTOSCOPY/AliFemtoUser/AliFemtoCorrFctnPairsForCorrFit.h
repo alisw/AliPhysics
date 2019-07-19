@@ -10,7 +10,7 @@
 #ifndef ALIFEMTOCORRFCTNPAIRSFORCORRFIT_H
 #define ALIFEMTOCORRFCTNPAIRSFORCORRFIT_H
 
-#include "TH2D.h"
+#include "TH1F.h"
 #include "TNtuple.h"
 #include "AliFemtoCorrFctn.h"
 
@@ -31,10 +31,11 @@ public:
   void WriteHistos();
   virtual TList* GetOutputList();
   virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnPairsForCorrFit(*this); }
-
+ 
 private:
 
   TNtuple* mNtuple;
+  TH1F* hKstar; 
 
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnPairsForCorrFit, 1)

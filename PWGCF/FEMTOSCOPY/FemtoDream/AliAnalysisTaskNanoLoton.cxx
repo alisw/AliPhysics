@@ -216,7 +216,7 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
   fResultsSampleQA->SetName("ResultsSampleQA");
   if (fConfig->GetUsePhiSpinning() && !fConfig->GetMinimalBookingSample()) {
     fResultsSample = fSample->GetHistList();
-    fResultsQA->Add(fSample->GetQAList());
+    fResultsSampleQA->Add(fSample->GetQAList());
   } else {
     fResultsSample = new TList();
     fResultsSample->SetOwner();

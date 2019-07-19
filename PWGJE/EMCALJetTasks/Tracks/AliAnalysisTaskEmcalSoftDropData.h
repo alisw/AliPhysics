@@ -28,7 +28,7 @@
 #define ALIANALYSISTASKEMCALSOFTDROPDATA_H
 
 #include <AliAnalysisTaskEmcalJet.h>
-#include <TString.h>
+#include <string>
 #include <vector>
 
 class TBinning;
@@ -52,7 +52,7 @@ public:
   };
 
   AliAnalysisTaskEmcalSoftDropData();
-  AliAnalysisTaskEmcalSoftDropData(const char *name);
+  AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalSoftDropData();
 
   void SetBinningMode(EBinningMode_t binmode) {}
@@ -65,7 +65,7 @@ public:
   void SetSelectTrigger(UInt_t triggerbits, const char *triggerstring) { fTriggerBits = triggerbits; fTriggerString = triggerstring; }
   void SetUseDownscaleWeight(Bool_t doUse) { fUseDownscaleWeight = doUse; }
 
-  static AliAnalysisTaskEmcalSoftDropData *AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger);
+  static AliAnalysisTaskEmcalSoftDropData *AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, EMCAL_STRINGVIEW trigger);
 
 protected:
   virtual void UserCreateOutputObjects();
@@ -82,7 +82,7 @@ protected:
 private:
   EBinningMode_t                fBinningMode;               ///< Binning adapted to trigger
   UInt_t                        fTriggerBits;               ///< Trigger selection bits
-  TString                       fTriggerString;             ///< Trigger selection string
+  std::string                   fTriggerString;             ///< Trigger selection string
   Bool_t                        fUseDownscaleWeight;        ///< Usage of downscale weights
   Double_t                      fBeta;                      ///< Beta
   Double_t                      fZcut;                      ///< Zcut

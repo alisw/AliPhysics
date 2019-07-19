@@ -571,7 +571,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
     for (const auto &v0 : fRHyperTriton)
     {
-      const double cosp = (v0.fDecayX * cx + v0.fDecayY * cy + v0.fDecayY * cz) / std::sqrt(v0.fDecayX * v0.fDecayX + v0.fDecayY * v0.fDecayY + v0.fDecayZ * v0.fDecayZ);
+      const double cosp = (v0.fDecayX * cx + v0.fDecayY * cy + v0.fDecayZ * cz) / std::sqrt(v0.fDecayX * v0.fDecayX + v0.fDecayY * v0.fDecayY + v0.fDecayZ * v0.fDecayZ);
       fHistTrackletCosP->Fill(cosp);
       if (cosp > fMinTrackletCosP)
       {
