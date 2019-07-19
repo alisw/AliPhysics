@@ -79,7 +79,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
-                                                                "Femto",true);
+                                                                "Femto",false);
   // Femto Collection
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
