@@ -6905,7 +6905,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
 
   //pp 13 TeV anchored to LHC18
   } else if ( periodName.CompareTo("LHC18P1Pyt8NomB") == 0 ||
-              periodName.CompareTo("LHC18g4") ==0 || periodName.CompareTo("LHC18g5") ==0  || periodName.CompareTo("LHC18g6") == 0
+              periodName.CompareTo("LHC18g4") ==0 || periodName.CompareTo("LHC18g5") ==0  || periodName.CompareTo("LHC18g6") == 0 || 
+	      periodName.CompareTo("LHC18h2") ==0 || periodName.CompareTo("LHC18h4") ==0  || 
+	      periodName.CompareTo("LHC18j1") ==0 || periodName.CompareTo("LHC18j4") == 0 || 
+	      periodName.CompareTo("LHC18k1") ==0 || periodName.CompareTo("LHC18k2") == 0 || periodName.CompareTo("LHC18k3") == 0
   ){
     fPeriodEnum = kLHC18P1Pyt8NomB;
     fEnergyEnum = k13TeV;
