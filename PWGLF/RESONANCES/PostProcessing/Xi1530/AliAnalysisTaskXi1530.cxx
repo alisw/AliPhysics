@@ -784,7 +784,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
     if (fsetmixing) {
         if (!goodtrackindices.size())
             ep->pop_back();
-        if (ep->size() > 5) {
+        if (ep->size() > (int)fnMix) {
             for (auto it : ep->front())
                 delete it;
             ep->pop_front();
@@ -1248,7 +1248,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
     // for DCA value
     Float_t b[2];
     Float_t bCov[3];
-    Double_t pionZ;
+    Double_t pionZ = 999;
 
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
@@ -1342,7 +1342,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // Xi1530Pion DCA zVetex Check
                 ((AliESDtrack*)track1)->GetImpactParameters(b, bCov);
-                Double_t pionZ = b[1];
+                pionZ = b[1];
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
                     (pionZ > fXi1530PionZVertexCut)) {
                     AliInfo(Form("pionZ! %f %s", pionZ,
@@ -1706,7 +1706,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
             return;
         int nForSkipSameEvent = 0;
         for (auto pool : ep) {
-            if (nForSkipSameEvent == (ep.size() - 1))
+            if ((int)nForSkipSameEvent == (epsize - 1))
                 continue; // same event
             for (auto track : pool)
                 trackpool.push_back((AliVTrack*)track);
@@ -1771,7 +1771,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // Xi1530Pion DCA zVetex Check
                 ((AliESDtrack*)track1)->GetImpactParameters(b, bCov);
-                Double_t pionZ = b[1];
+                pionZ = b[1];
                 if (pionZ > fXi1530PionZVertexCut)
                     continue;
 
@@ -1825,7 +1825,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     // for DCA value
     Float_t b[2];
     Float_t bCov[3];
-    Double_t pionZ;
+    Double_t pionZ = 999;
 
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
@@ -1914,7 +1914,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 // Xi1530Pion DCA zVetex Check
                 ((AliAODTrack*)track1)->GetImpactParameters(b, bCov);
-                Double_t pionZ = b[1];
+                pionZ = b[1];
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
                     (pionZ > fXi1530PionZVertexCut)){
                     AliInfo(Form("pionZ! %f %s", pionZ,
@@ -2277,11 +2277,16 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     // Event Mixing
     if (fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
-        if ((int)ep.size() < (int)fnMix)
+        int epsize = ep.size();
+        if (epsize < (int)fnMix)
             return;
+        int nForSkipSameEvent = 0;
         for (auto pool : ep) {
+            if ((int)nForSkipSameEvent == (epsize - 1))
+                continue;  // same event
             for (auto track : pool)
                 trackpool.push_back((AliVTrack*)track);
+            nForSkipSameEvent++;
         }
         for (UInt_t i = 0; i < ncascade; i++) {
             Xicandidate =
@@ -2338,7 +2343,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 // Xi1530Pion DCA zVetex Check
                 ((AliAODTrack*)track1)->GetImpactParameters(b, bCov);
-                Double_t pionZ = b[1];
+                pionZ = b[1];
                 if (pionZ > fXi1530PionZVertexCut)
                     continue;
 
