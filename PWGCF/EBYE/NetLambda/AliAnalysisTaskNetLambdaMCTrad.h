@@ -43,6 +43,9 @@ protected:
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
+    TH1F*  fHistPA;
+    TH1F*  fHistPAparLambda;
+    TH1F*  fHistPAparLambdabar;
     
     TH2F*  f2fHistGenCentVsPtLambda;
     TH2F*  f2fHistGenCentVsPtAntiLambda;
@@ -53,8 +56,8 @@ protected:
     TH2F*  f2fHistGenCentVsPtAntiLambdaRap;
     TH2F*  f2fHistXiPlusRap;
     TH2F*  f2fHistXiMinusRap;
-
-
+    
+    
     
     TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthree;
     TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourloose;
@@ -75,13 +78,16 @@ protected:
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFournegtight;
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourposloose;
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourpostight;
-
-
+    
+    
     
     TH2F*  f2fHistRecSecCentVsPtLambdaFourSigthree;
     TH2F*  f2fHistRecSecCentVsPtAntiLambdaFourSigthree;
     
-
+    TH2F*  f2fHistRecMatCentVsPtLambdaFourSigthree;
+    TH2F*  f2fHistRecMatCentVsPtAntiLambdaFourSigthree;
+    
+    
     TH3F*  f3fHistLambdafromXiFourSigthree;
     TH3F*  f3fHistLambdafromXiFourloose;
     TH3F*  f3fHistLambdafromXiFourtight;
@@ -96,24 +102,24 @@ protected:
     TH3F*  f3fHistAntiLambdafromXiFournegtight;
     TH3F*  f3fHistAntiLambdafromXiFourposloose;
     TH3F*  f3fHistAntiLambdafromXiFourpostight;
-
+    
     
     TH3F*  f3fHistLambdafromXiFourSigthreeRap;
     TH3F*  f3fHistAntiLambdafromXiFourSigthreeRap;
     
-
+    
     TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag;
     TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut;
     TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag;
     TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut;
-
+    
     TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthree;
     TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree;
-
     
-
-
-
+    
+    
+    
+    
     Float_t fCentrality;
     Int_t fTreeVariablePID;
     Int_t fTreeVariablePIDParent;
@@ -123,20 +129,20 @@ protected:
     
     Int_t fTreeVariableLeastNbrCrossedRows;
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;
-
+    
     Bool_t fIsMC;
     UInt_t fEvSel;
     Int_t  fNptBins;
     
-        THnSparse *fPtBinNplusNminusChTruth;
+    THnSparse *fPtBinNplusNminusChTruth;
     
-        THnSparse *fPtBinNplusNminusChRec;
-        THnSparse *fPtBinNplusNminusChRecTag;
-
+    THnSparse *fPtBinNplusNminusChRec;
+    THnSparse *fPtBinNplusNminusChRecTag;
+    
     Int_t    GetPtBin(Double_t pt);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
-
-
+    
+    
     ClassDef(AliAnalysisTaskNetLambdaMCTrad,4);
 };
 
