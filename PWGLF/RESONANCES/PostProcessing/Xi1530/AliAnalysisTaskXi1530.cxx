@@ -784,7 +784,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
     if (fsetmixing) {
         if (!goodtrackindices.size())
             ep->pop_back();
-        if (ep->size() > 5) {
+        if (ep->size() > (int)fnMix) {
             for (auto it : ep->front())
                 delete it;
             ep->pop_front();
@@ -1706,7 +1706,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
             return;
         int nForSkipSameEvent = 0;
         for (auto pool : ep) {
-            if ((int)nForSkipSameEvent == (int)(ep.size() - 1))
+            if ((int)nForSkipSameEvent == (epsize - 1))
                 continue; // same event
             for (auto track : pool)
                 trackpool.push_back((AliVTrack*)track);
@@ -2282,7 +2282,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
             return;
         int nForSkipSameEvent = 0;
         for (auto pool : ep) {
-            if ((int)nForSkipSameEvent == (int)(ep.size() - 1))
+            if ((int)nForSkipSameEvent == (epsize - 1))
                 continue;  // same event
             for (auto track : pool)
                 trackpool.push_back((AliVTrack*)track);
