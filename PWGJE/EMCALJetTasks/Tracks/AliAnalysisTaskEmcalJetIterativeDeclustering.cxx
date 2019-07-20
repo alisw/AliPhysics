@@ -70,7 +70,7 @@ AliAnalysisTaskEmcalJetIterativeDeclustering::~AliAnalysisTaskEmcalJetIterativeD
 {
 }
 
-void AliAnalysisTaskEmcalJetIterativeDeclustering::UserCreateOutputObject()
+void AliAnalysisTaskEmcalJetIterativeDeclustering::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
@@ -86,6 +86,8 @@ void AliAnalysisTaskEmcalJetIterativeDeclustering::UserCreateOutputObject()
   const TAxis *binnings[5] = {&fJetPtBinning, &fJetPtBinning, &fLnDeltaRBinning, &fLnPtRelBinning, &fNSplittingsBinning};
 
   fHistos = new THistManager(Form("Histos%s", GetName()));
+  fHistos->CreateTH1("hEventCounter", "Number of events", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hEventCounterWeighted", "Number of events", 1, 0.5, 1.5);
   fHistos->CreateTH2("hNSplittings", "Number of splittings", 300, 0., 300., 100, 0., 100.);
   fHistos->CreateTHnSparse("hSplittings", "Splittings", 5, binnings);
 
@@ -115,7 +117,7 @@ Bool_t AliAnalysisTaskEmcalJetIterativeDeclustering::Run()
   }
 
   Double_t weight = fUseDownscaleWeight ? GetDownscaleWeight() : 1.;
-  fHistos->FillTH1("hEventCounter", 1., weight);
+  fHistos->FillTH1("hEventCounter", 1.);
   if (fUseDownscaleWeight)
     fHistos->FillTH1("hEventCounterWeighted", 1., weight);
 
@@ -226,7 +228,7 @@ AliAnalysisTaskEmcalJetIterativeDeclustering *AliAnalysisTaskEmcalJetIterativeDe
       jetradius,
       ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPCfid,
       tracks, clusters);
-  datajets->SetName("detLevel");
+  datajets->SetName("datajets");
   datajets->SetJetPtCut(0.);
   datajets->SetMaxTrackPt(1000.);
 

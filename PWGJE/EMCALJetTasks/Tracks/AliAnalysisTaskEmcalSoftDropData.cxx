@@ -313,7 +313,7 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
                               jetradius,
                               ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPCfid,
                               tracks, clusters);
-  datajets->SetName("detLevel");
+  datajets->SetName("datajets");
   datajets->SetJetPtCut(0.);
   datajets->SetMaxTrackPt(1000.);
 
