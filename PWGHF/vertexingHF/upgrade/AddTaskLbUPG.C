@@ -1,4 +1,4 @@
-AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",Int_t ndebug=0, Bool_t lccuts=kFALSE,  Double_t *lccutvalues=NULL, Double_t *ptcutvalues=NULL,const char*  postname="")
+AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",Int_t ndebug=0,const char*  postname="")
  {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -33,13 +33,9 @@ AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",I
                                      analysiscuts,
                                      prodcuts,
                                      ndebug);
-
-  task->SetCutsond0Lcdaughters(lccuts);
-  if (lccuts){
-  task->ApplyD0CutLcdaughters(lccutvalues);
-  }
-  task->SetPtConfiguration(ptcutvalues);
-
+     
+  task->SetCutsond0Lcdaughters(kFALSE);
+  task->SetPtConfiguration(0.,30.,2.,14.,0.,999.,4.);
   mgr->AddTask(task);
 
   
