@@ -522,6 +522,10 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
   Double_t chi2 = 0.;
 
   const AliESDVertex* vtx = esd.GetPrimaryVertex();
+  Float_t lPVpos[3];
+  lPVpos[0]=vtx->GetX();
+  lPVpos[1]=vtx->GetY();
+  lPVpos[2]=vtx->GetZ();
   Double_t pos[3] = { 0. };
   Double_t covVtx[6] = { 0. };
   Double_t momBach[3]={0.};
@@ -895,6 +899,14 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 
     esdCascade->GetBPxPyPz(momBachAtCascadeVtx[0], momBachAtCascadeVtx[1], momBachAtCascadeVtx[2]);
 
+    //Add background rejection variable needed for cascades in Pb-Pb
+    Double_t lBachBaryonCosPA = 0;
+    if(esdCascade->Charge()<0.){
+      lBachBaryonCosPA = GetCosPA(esdCascadePos,esdCascadeBach,esd.GetMagneticField(), lPVpos);
+    }else{
+      lBachBaryonCosPA = GetCosPA(esdCascadeNeg,esdCascadeBach,esd.GetMagneticField(), lPVpos);
+    }
+    
     aodCascade = new(cascadesArray[fNumberOfCascades++]) AliAODcascade(vCascade,
 								       esdCascade->Charge(),
 								       esdCascade->GetDcaXiDaughters(),
@@ -904,7 +916,8 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 								       // See AODcascade::DcaXiToPrimVertex(Double, Double, Double)
 								       dcaBachToPrimVertexXY,
 								       momBachAtCascadeVtx,
-								       *aodV0);
+								       *aodV0,
+                       lBachBaryonCosPA);
     aodCascade->SetBit(AliAODcascade::kOnFlyCascadesFixed);
     if (fDebug > 10) {
       printf("---- Cascade / AOD cascade : \n\n");
@@ -2845,4 +2858,29 @@ void AliAnalysisTaskESDfilter::AdjustCutsForEvent(const AliESDEvent& esd, TList&
     }
   }
 
+}
+
+//________________________________________________________________________
+Float_t AliAnalysisTaskESDfilter::GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, Float_t lB, Float_t *lVtx)
+//Encapsulation of CosPA calculation (warning: considers AliESDtrack clones)
+{
+  Float_t lCosPA = -1;
+  
+  //Copy AliExternalParam for handling
+  AliExternalTrackParam nt(*lNegTrack), pt(*lPosTrack), *lNegClone=&nt, *lPosClone=&pt;
+  
+  //Find DCA
+  Double_t xn, xp, dca=lNegClone->GetDCA(lPosClone,lB,xn,xp);
+  
+  //Propagate to it
+  nt.PropagateTo(xn,lB); pt.PropagateTo(xp,lB);
+  
+  //Create V0 object to do propagation
+  AliESDv0 vertex(nt,1,pt,2); //Never mind indices, won't use
+  
+  //Get CosPA
+  lCosPA=vertex.GetV0CosineOfPointingAngle(lVtx[0], lVtx[1], lVtx[2]);
+  
+  //Return value
+  return lCosPA;
 }
