@@ -65,6 +65,8 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData() :
   fReclusterizer(kCAAlgo),
   fUseChargedConstituents(kTRUE),
   fUseNeutralConstituents(kTRUE),
+  fJetPtMin(0),
+  fJetPtMax(1000),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
@@ -82,6 +84,8 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGV
   fReclusterizer(kCAAlgo),
   fUseChargedConstituents(kTRUE),
   fUseNeutralConstituents(kTRUE),
+  fJetPtMin(0),
+  fJetPtMax(1000),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
