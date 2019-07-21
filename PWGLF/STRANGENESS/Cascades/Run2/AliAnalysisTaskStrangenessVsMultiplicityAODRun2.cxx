@@ -344,16 +344,6 @@ fTreeCascVarBachITSNSigmaKaon(0),
 fTreeCascVarChiSquareV0(1e+3),
 fTreeCascVarChiSquareCascade(1e+3),
 
-fTreeCascVarBachDCAPVSigmaX2(0),
-fTreeCascVarBachDCAPVSigmaY2(0),
-fTreeCascVarBachDCAPVSigmaZ2(0),
-fTreeCascVarPosDCAPVSigmaX2(0),
-fTreeCascVarPosDCAPVSigmaY2(0),
-fTreeCascVarPosDCAPVSigmaZ2(0),
-fTreeCascVarNegDCAPVSigmaX2(0),
-fTreeCascVarNegDCAPVSigmaY2(0),
-fTreeCascVarNegDCAPVSigmaZ2(0),
-
 fTreeCascVarPosPIDForTracking(-1),
 fTreeCascVarNegPIDForTracking(-1),
 fTreeCascVarBachPIDForTracking(-1),
@@ -469,9 +459,6 @@ fkSelectCharge(0),
 fTreeCascVarPrimVertexX(0),
 fTreeCascVarPrimVertexY(0),
 fTreeCascVarPrimVertexZ(0),
-fTreeCascVarBachTrack(0x0),
-fTreeCascVarPosTrack(0x0),
-fTreeCascVarNegTrack(0x0),
 fTreeCascVarMagneticField(0),
 
 
@@ -700,16 +687,6 @@ fTreeCascVarBachTOFNSigmaKaon(0),
 fTreeCascVarChiSquareV0(1e+3),
 fTreeCascVarChiSquareCascade(1e+3),
 
-fTreeCascVarBachDCAPVSigmaX2(0),
-fTreeCascVarBachDCAPVSigmaY2(0),
-fTreeCascVarBachDCAPVSigmaZ2(0),
-fTreeCascVarPosDCAPVSigmaX2(0),
-fTreeCascVarPosDCAPVSigmaY2(0),
-fTreeCascVarPosDCAPVSigmaZ2(0),
-fTreeCascVarNegDCAPVSigmaX2(0),
-fTreeCascVarNegDCAPVSigmaY2(0),
-fTreeCascVarNegDCAPVSigmaZ2(0),
-
 fTreeCascVarPosPIDForTracking(-1),
 fTreeCascVarNegPIDForTracking(-1),
 fTreeCascVarBachPIDForTracking(-1),
@@ -825,9 +802,6 @@ fkSelectCharge(0),
 fTreeCascVarPrimVertexX(0),
 fTreeCascVarPrimVertexY(0),
 fTreeCascVarPrimVertexZ(0),
-fTreeCascVarBachTrack(0x0),
-fTreeCascVarPosTrack(0x0),
-fTreeCascVarNegTrack(0x0),
 fTreeCascVarMagneticField(0),
 //Histos
 fHistEventCounter(0),
@@ -1083,8 +1057,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserCreateOutputObjects()
             fTreeV0->Branch("fTreeVariablePrimVertexX",&fTreeVariablePrimVertexX,"fTreeVariablePrimVertexX/F");
             fTreeV0->Branch("fTreeVariablePrimVertexY",&fTreeVariablePrimVertexY,"fTreeVariablePrimVertexY/F");
             fTreeV0->Branch("fTreeVariablePrimVertexZ",&fTreeVariablePrimVertexZ,"fTreeVariablePrimVertexZ/F");
-            fTreeV0->Branch("fTreeVariableNegTrack", &fTreeVariableNegTrack,16000,99);
-            fTreeV0->Branch("fTreeVariablePosTrack", &fTreeVariablePosTrack,16000,99);
             fTreeV0->Branch("fTreeVariableMagneticField",&fTreeVariableMagneticField,"fTreeVariableMagneticField/F");
         }
         //------------------------------------------------
@@ -1209,20 +1181,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarBachIndex",&fTreeCascVarBachIndex,"fTreeCascVarBachIndex/I");
             //Event Number (check same-event index mixups)
             fTreeCascade->Branch("fTreeCascVarEventNumber",&fTreeCascVarEventNumber,"fTreeCascVarEventNumber/l");
-        }
-        if ( fkSandboxMode ){
-            //Full track info for DCA minim optimization
-            fTreeCascade->Branch("fTreeCascVarBachTrack", &fTreeCascVarBachTrack,16000,99);
-            fTreeCascade->Branch("fTreeCascVarPosTrack", &fTreeCascVarPosTrack,16000,99);
-            fTreeCascade->Branch("fTreeCascVarNegTrack", &fTreeCascVarNegTrack,16000,99);
-            
-            //for sandbox mode
-            fTreeCascade->Branch("fTreeCascVarMagneticField",&fTreeCascVarMagneticField,"fTreeCascVarMagneticField/F");
-            
-            //Cascade decay position calculation metrics
-            fTreeCascade->Branch("fTreeCascVarPrimVertexX",&fTreeCascVarPrimVertexX,"fTreeCascVarPrimVertexX/F");
-            fTreeCascade->Branch("fTreeCascVarPrimVertexY",&fTreeCascVarPrimVertexY,"fTreeCascVarPrimVertexY/F");
-            fTreeCascade->Branch("fTreeCascVarPrimVertexZ",&fTreeCascVarPrimVertexZ,"fTreeCascVarPrimVertexZ/F");
         }
         if ( fkDebugOOBPileup ) {
             fTreeCascade->Branch("fTreeCascVarPosITSClusters0",&fTreeCascVarPosITSClusters0,"fTreeCascVarPosITSClusters0/O");
@@ -1472,7 +1430,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     
     // Main loop
     // Called for each event
-    AliAODEvent *lAODEvent = 0x0;
+    AliAODEvent *lAODevent = 0x0;
     lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
     if (!lAODevent) {
         AliWarning("ERROR: lAODevent not available \n");
@@ -1490,7 +1448,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     //------------------------------------------------
     
     //classical Proton-proton like selection
-    const AliESDVertex *lPrimaryBestESDVtx     = lAODevent->GetPrimaryVertex();
+    const AliAODVertex *lPrimaryBestESDVtx     = lAODevent->GetPrimaryVertex();
     
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
@@ -1677,11 +1635,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         
         //CheckChargeV0( v0 ); //FIXME this won't work for AOD as is
         
-        Double_t tDecayVertexV0[3];
-        v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
+        Double_t tDecayVertexV0[3]; v0->GetXYZ(tDecayVertexV0);
+        Double_t tV0mom[3]; v0->GetPxPyPz( tV0mom );
         
-        Double_t tV0mom[3];
-        v0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
         Double_t lV0TotalMomentum = TMath::Sqrt(
                                                 tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
         
@@ -1700,9 +1656,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         }
         
         Double_t lMomPos[3];
-        pTrack->GetPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
+        pTrack->GetPxPyPz(lMomPos);
         Double_t lMomNeg[3];
-        nTrack->GetPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
+        nTrack->GetPxPyPz(lMomNeg);
         
         //Provisions for cowboy/sailor check
         Double_t lModp1 = TMath::Sqrt( lMomPos[0]*lMomPos[0] + lMomPos[1]*lMomPos[1] );
@@ -1715,9 +1671,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         
         fTreeVariableIsCowboy = kFALSE;
         if (lVecProd < 0) fTreeVariableIsCowboy = kTRUE;
-        
-        fTreeVariablePosTrack = pTrack;
-        fTreeVariableNegTrack = nTrack;
         
         fTreeVariablePosPIDForTracking = pTrack->GetPIDForTracking();
         fTreeVariableNegPIDForTracking = nTrack->GetPIDForTracking();
@@ -1794,8 +1747,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
             fTreeVariableLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
         
         // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
-        if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-        if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        if( !(pTrack->GetStatus() & AliAODTrack::kTPCrefit)) continue;
+        if( !(nTrack->GetStatus() & AliAODTrack::kTPCrefit)) continue;
         
         //Get status flags
         fTreeVariablePosTrackStatus = pTrack->GetStatus();
@@ -1841,8 +1794,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         Float_t lPosTrackLength = -1;
         Float_t lNegTrackLength = -1;
         
-        if (pTrack->GetInnerParam()) lPosTrackLength = pTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-        if (nTrack->GetInnerParam()) lNegTrackLength = nTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        //URGENT FIXME
+        //if (pTrack->GetInnerParam()) lPosTrackLength = pTrack->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
+        //if (nTrack->GetInnerParam()) lNegTrackLength = nTrack->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
+        lPosTrackLength = 200;
+        lNegTrackLength = 200;
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
@@ -1868,7 +1824,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         lDcaNegToPrimVertex = v0->DcaNegToPrimVertex();
         
         lOnFlyStatus = v0->GetOnFlyStatus();
-        lChi2V0 = v0->GetChi2V0();
+        lChi2V0 = v0->Chi2V0();
         lDcaV0Daughters = v0->DcaV0Daughters();
         lDcaV0ToPrimVertex = v0->DcaV0ToPrimVertex();
         lV0CosineOfPointingAngle = v0->CosPointingAngle(lBestPrimaryVtxPos);
@@ -1917,12 +1873,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         fTreeVariableCentrality = fCentrality;
         
         //Info for pileup studies
-        fTreeVariableNegTOFExpTDiff = nTrack->GetTOFExpTDiff( lAODEvent->GetMagneticField() );
-        fTreeVariablePosTOFExpTDiff = pTrack->GetTOFExpTDiff( lAODEvent->GetMagneticField() );
+        fTreeVariableNegTOFExpTDiff = nTrack->GetTOFExpTDiff( lAODevent->GetMagneticField() );
+        fTreeVariablePosTOFExpTDiff = pTrack->GetTOFExpTDiff( lAODevent->GetMagneticField() );
         fTreeVariableNegTOFSignal = nTrack->GetTOFsignal() * 1.e-3; // in ns
         fTreeVariablePosTOFSignal = pTrack->GetTOFsignal() * 1.e-3; // in ns
-        fTreeVariableNegTOFBCid = nTrack->GetTOFBunchCrossing( lAODEvent->GetMagneticField() );
-        fTreeVariablePosTOFBCid = pTrack->GetTOFBunchCrossing( lAODEvent->GetMagneticField() );
+        fTreeVariableNegTOFBCid = nTrack->GetTOFBunchCrossing( lAODevent->GetMagneticField() );
+        fTreeVariablePosTOFBCid = pTrack->GetTOFBunchCrossing( lAODevent->GetMagneticField() );
         //Copy OOB pileup flag for this event
         fTreeVariableOOBPileupFlag = fOOBPileupFlag;
         //Copy VZERO information for this event
@@ -2109,8 +2065,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
                 
                 //Check 7: kITSrefit track selection if requested
                 (
-                 ( (fTreeVariableNegTrackStatus & AliESDtrack::kITSrefit) &&
-                  (fTreeVariablePosTrackStatus & AliESDtrack::kITSrefit) )
+                 ( (fTreeVariableNegTrackStatus & AliAODTrack::kITSrefit) &&
+                  (fTreeVariablePosTrackStatus & AliAODTrack::kITSrefit) )
                  ||
                  !lV0Result->GetCutUseITSRefitTracks()
                  )&&
@@ -2176,38 +2132,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     }// This is the end of the V0 loop
     
     //------------------------------------------------
-    // Rerun cascade vertexer!
-    //------------------------------------------------
-    
-    if( fkRunVertexers ) {
-        //Remove existing cascades
-        lESDevent->ResetCascades();
-        
-        //Decide between regular and light vertexer (default: light)
-        if ( ! fkUseLightVertexer ){
-            //Instantiate vertexer object
-            AliCascadeVertexer lCascVtxer;
-            lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
-            lCascVtxer.SetCuts(fCascadeVertexerSels);
-            lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
-        } else {
-            AliLightCascadeVertexer lCascVtxer;
-            lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
-            lCascVtxer.SetCuts(fCascadeVertexerSels);
-            if( fkUseOnTheFlyV0Cascading ) lCascVtxer.SetUseOnTheFlyV0(kTRUE);
-            lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
-        }
-    }
-    
-    //------------------------------------------------
     // MAIN CASCADE LOOP STARTS HERE
     //------------------------------------------------
     // Code Credit: Antonin Maire (thanks^100)
     // ---> This is an adaptation
     
-    /*
+    
     Long_t ncascades = 0;
-    ncascades = lESDevent->GetNumberOfCascades();
+    ncascades = lAODevent->GetNumberOfCascades();
     
     Bool_t lValidXiMinus, lValidXiPlus, lValidOmegaMinus, lValidOmegaPlus;
     
@@ -2296,27 +2228,24 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         // -------------------------------------
         // II.ESD - Calculation Part dedicated to Xi vertices (ESD)
         
-        AliESDcascade *xi = lESDevent->GetCascade(iXi);
+        const AliAODcascade *xi = lAODevent->GetCascade(iXi);
         if (!xi) continue;
         
-        // - II.Step 2 : Assigning the necessary variables for specific AliESDcascade data members (ESD)
-        //-------------
-        lV0quality = 0.;
-        xi->ChangeMassHypothesis(lV0quality , 3312); // default working hypothesis : cascade = Xi- decay
-        
-        lEffMassXi  			= xi->GetEffMassXi();
+        lEffMassXi  			= xi->MassXi();
         
         //ChiSquare implementation
-        fTreeCascVarChiSquareV0      = xi->GetChi2V0();
-        fTreeCascVarChiSquareCascade = xi->GetChi2Xi();
+        fTreeCascVarChiSquareV0      = xi->Chi2V0();
+        fTreeCascVarChiSquareCascade = xi->Chi2Xi();
         
-        lDcaXiDaughters 	= xi->GetDcaXiDaughters();
-        lXiCosineOfPointingAngle 	            = xi->GetCascadeCosineOfPointingAngle( lBestPrimaryVtxPos[0],
-                                                                                      lBestPrimaryVtxPos[1],
-                                                                                      lBestPrimaryVtxPos[2] );
-        // Take care : the best available vertex should be used (like in AliCascadeVertexer)
+        lDcaXiDaughters 	= xi->DcaXiDaughters();
+        lXiCosineOfPointingAngle 	            =
+        xi->CosPointingAngleXi( lBestPrimaryVtxPos[0],
+                                lBestPrimaryVtxPos[1],
+                                lBestPrimaryVtxPos[2] );
         
-        xi->GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] );
+        lPosXi[0] = xi->DecayVertexXiX();
+        lPosXi[1] = xi->DecayVertexXiY();
+        lPosXi[2] = xi->DecayVertexXiZ();
         lXiRadius			= TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );
         
         fTreeCascVarCascadeDecayX = lPosXi[0];
@@ -2327,40 +2256,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         // ~ Necessary variables for ESDcascade data members coming from the ESDv0 part (inheritance)
         //-------------
         
-        UInt_t lIdxPosXi 	= (UInt_t) TMath::Abs( xi->GetPindex() );
-        UInt_t lIdxNegXi 	= (UInt_t) TMath::Abs( xi->GetNindex() );
-        UInt_t lBachIdx 	= (UInt_t) TMath::Abs( xi->GetBindex() );
-        
-        // Care track label can be negative in MC production (linked with the track quality)
-        // However = normally, not the case for track index ...
-        
-        // FIXME : rejection of a double use of a daughter track (nothing but just a crosscheck of what is done in the cascade vertexer)
-        if(lBachIdx == lIdxNegXi) {
-            AliWarning("Pb / Idx(Bach. track) = Idx(Neg. track) ... continue!");
-            continue;
-        }
-        if(lBachIdx == lIdxPosXi) {
-            AliWarning("Pb / Idx(Bach. track) = Idx(Pos. track) ... continue!");
-            continue;
-        }
-        
-        AliESDtrack *pTrackXi		= lESDevent->GetTrack( lIdxPosXi );
-        AliESDtrack *nTrackXi		= lESDevent->GetTrack( lIdxNegXi );
-        AliESDtrack *bachTrackXi	= lESDevent->GetTrack( lBachIdx );
-        
-        //Sandbox information: always, regardless of status
-        fTreeCascVarBachTrack = bachTrackXi;
-        fTreeCascVarPosTrack = pTrackXi;
-        fTreeCascVarNegTrack = nTrackXi;
-        
-        fTreeCascVarNegIndex  = lIdxNegXi;
-        fTreeCascVarPosIndex  = lIdxPosXi;
-        fTreeCascVarBachIndex = lBachIdx;
-        
+        AliAODTrack *pTrackXi    = dynamic_cast<AliAODTrack*>( xi->GetDaughter(0) );
+        AliAODTrack *nTrackXi    = dynamic_cast<AliAODTrack*>( xi->GetDaughter(1) );
+        AliAODTrack *bachTrackXi = dynamic_cast<AliAODTrack*>( xi->GetDecayVertexXi()->GetDaughter(0) );
         if (!pTrackXi || !nTrackXi || !bachTrackXi ) {
-            AliWarning("ERROR: Could not retrieve one of the 3 ESD daughter tracks of the cascade ...");
+            AliWarning("ERROR: Could not retrieve one of the 3 AOD daughter tracks of the cascade ...");
             continue;
         }
+        
+        fTreeCascVarNegIndex  = 0;
+        fTreeCascVarPosIndex  = 0;
+        fTreeCascVarBachIndex = 0;
         
         fTreeCascVarPosEta = pTrackXi->Eta();
         fTreeCascVarNegEta = nTrackXi->Eta();
@@ -2415,28 +2321,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         if( pTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarPosIsKink = kTRUE;
         if( nTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarNegIsKink = kTRUE;
         
-        //Get track uncertainties
-        //WARNING: THIS REFERS TO THE UNCERTAINTIES CLOSEST TO THE PV
-        fTreeCascVarNegDCAPVSigmaX2 = TMath::Power(TMath::Sin(nTrackXi->GetAlpha()),2)*nTrackXi->GetSigmaY2();
-        fTreeCascVarNegDCAPVSigmaY2 = TMath::Power(TMath::Cos(nTrackXi->GetAlpha()),2)*nTrackXi->GetSigmaY2();
-        fTreeCascVarNegDCAPVSigmaZ2 = nTrackXi->GetSigmaZ2();
-        
-        fTreeCascVarPosDCAPVSigmaX2 = TMath::Power(TMath::Sin(pTrackXi->GetAlpha()),2)*pTrackXi->GetSigmaY2();
-        fTreeCascVarPosDCAPVSigmaY2 = TMath::Power(TMath::Cos(pTrackXi->GetAlpha()),2)*pTrackXi->GetSigmaY2();
-        fTreeCascVarPosDCAPVSigmaZ2 = pTrackXi->GetSigmaZ2();
-        
-        fTreeCascVarBachDCAPVSigmaX2 = TMath::Power(TMath::Sin(bachTrackXi->GetAlpha()),2)*bachTrackXi->GetSigmaY2();
-        fTreeCascVarBachDCAPVSigmaY2 = TMath::Power(TMath::Cos(bachTrackXi->GetAlpha()),2)*bachTrackXi->GetSigmaY2();
-        fTreeCascVarBachDCAPVSigmaZ2 = bachTrackXi->GetSigmaZ2();
-        
-        Double_t lBMom[3], lNMom[3], lPMom[3];
-        xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
-        xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
-        xi->GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
-        
-        //fTreeCascVarBachTotMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2] );
-        //fTreeCascVarPosTotMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] + lPMom[2]*lPMom[2] );
-        //fTreeCascVarNegTotMom  = TMath::Sqrt( lNMom[0]*lNMom[0] + lNMom[1]*lNMom[1] + lNMom[2]*lNMom[2] );
+        Double_t lBMom[3], lNMom[3], lPMom[3]; //xxxxx
+        bachTrackXi->GetPxPyPz( lBMom );
+        pTrackXi->GetPxPyPz( lPMom );
+        nTrackXi->GetPxPyPz( lNMom );
         
         fTreeCascVarNegPx = lNMom[0];
         fTreeCascVarNegPy = lNMom[1];
@@ -2532,15 +2420,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //fTreeCascVarkITSRefitNegative = kTRUE;
         //fTreeCascVarkITSRefitPositive = kTRUE;
         
-        if ((pStatus&AliESDtrack::kTPCrefit)    == 0) {
+        if ((pStatus&AliAODTrack::kTPCrefit)    == 0) {
             AliDebug(1, "Pb / V0 Pos. track has no TPCrefit ... continue!");
             continue;
         }
-        if ((nStatus&AliESDtrack::kTPCrefit)    == 0) {
+        if ((nStatus&AliAODTrack::kTPCrefit)    == 0) {
             AliDebug(1, "Pb / V0 Neg. track has no TPCrefit ... continue!");
             continue;
         }
-        if ((bachStatus&AliESDtrack::kTPCrefit) == 0) {
+        if ((bachStatus&AliAODTrack::kTPCrefit) == 0) {
             AliDebug(1, "Pb / Bach.   track has no TPCrefit ... continue!");
             continue;
         }
@@ -2551,7 +2439,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         fTreeCascVarBachTrackStatus = bachTrackXi->GetStatus();
         
         //Sandbox mode information, please
-        fTreeCascVarMagneticField = lESDevent->GetMagneticField();
+        fTreeCascVarMagneticField = lAODevent->GetMagneticField();
         fTreeCascVarPosDCAz = GetDCAz(pTrackXi);
         fTreeCascVarNegDCAz = GetDCAz(nTrackXi);
         fTreeCascVarBachDCAz = GetDCAz(bachTrackXi);
@@ -2591,16 +2479,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         Float_t lNegTrackLength = -1;
         Float_t lBachTrackLength = -1;
         
-        if (pTrackXi->GetInnerParam()) lPosTrackLength = pTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-        if (nTrackXi->GetInnerParam()) lNegTrackLength = nTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-        if (bachTrackXi->GetInnerParam()) lBachTrackLength = bachTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        //if (pTrackXi->GetInnerParam()) lPosTrackLength = pTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
+        //if (nTrackXi->GetInnerParam()) lNegTrackLength = nTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
+        //if (bachTrackXi->GetInnerParam()) lBachTrackLength = bachTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
+        lPosTrackLength = 200;
+        lNegTrackLength = 200;
+        lBachTrackLength = 200;
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
         if ( lBachTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lBachTrackLength;
         
         fTreeCascVarMinTrackLength = lSmallestTrackLength;
-        
         
         // 2 - Poor quality related to TPC clusters: lowest cut of 70 clusters
         if(lPosTPCClusters  < 70 && lSmallestTrackLength < 80 && fkExtraCleanup) {
@@ -2616,30 +2506,22 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
             continue;
         }
         
-        lInvMassLambdaAsCascDghter	= xi->GetEffMass();
+        if ( lChargeXi < 0)
+            lInvMassLambdaAsCascDghter    = xi->MassLambda();
+        else
+            lInvMassLambdaAsCascDghter    = xi->MassAntiLambda();
+
         // This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
-        lDcaV0DaughtersXi 		= xi->GetDcaV0Daughters();
-        //lV0Chi2Xi 			= xi->GetChi2V0();
-        
-        
-        lV0CosineOfPointingAngleXi 	= xi->GetV0CosineOfPointingAngle( lBestPrimaryVtxPos[0],
-                                                                     lBestPrimaryVtxPos[1],
-                                                                     lBestPrimaryVtxPos[2] );
+        lDcaV0DaughtersXi 		= xi->DcaV0Daughters();
+        lV0CosineOfPointingAngleXi 	= xi->CosPointingAngle( lBestPrimaryVtxPos );
         //Modification: V0 CosPA wrt to Cascade decay vertex
-        lV0CosineOfPointingAngleXiSpecial 	= xi->GetV0CosineOfPointingAngle( lPosXi[0],
-                                                                             lPosXi[1],
-                                                                             lPosXi[2] );
+        lV0CosineOfPointingAngleXiSpecial 	= xi->CosPointingAngle( xi->GetDecayVertexXi() );
         
-        lDcaV0ToPrimVertexXi 		= xi->GetD( lBestPrimaryVtxPos[0],
-                                               lBestPrimaryVtxPos[1],
-                                               lBestPrimaryVtxPos[2] );
-        
-        lDcaBachToPrimVertexXi = TMath::Abs( bachTrackXi->GetD(	lBestPrimaryVtxPos[0],
-                                                               lBestPrimaryVtxPos[1],
-                                                               lMagneticField  ) );
+        lDcaV0ToPrimVertexXi 		= xi->DcaV0ToPrimVertex();
+        lDcaBachToPrimVertexXi = xi->DcaBachToPrimVertex();
         // Note : AliExternalTrackParam::GetD returns an algebraic value ...
         
-        xi->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] );
+        xi->GetXYZ( lPosV0Xi );
         lV0RadiusXi		= TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] );
         
         fTreeCascVarPrimVertexX = lBestPrimaryVtxPos[0];
@@ -2714,90 +2596,31 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         fTreeCascVarCascadeCowboyness = lVecProdXi;
         //========================================================================================
         
-        lDcaPosToPrimVertexXi 	= TMath::Abs( pTrackXi	->GetD(	lBestPrimaryVtxPos[0],
-                                                               lBestPrimaryVtxPos[1],
-                                                               lMagneticField  )     );
-        
-        lDcaNegToPrimVertexXi 	= TMath::Abs( nTrackXi	->GetD(	lBestPrimaryVtxPos[0],
-                                                               lBestPrimaryVtxPos[1],
-                                                               lMagneticField  )     );
-        
+        lDcaPosToPrimVertexXi        = xi->DcaPosToPrimVertex();
+        lDcaNegToPrimVertexXi        = xi->DcaNegToPrimVertex();
+
         // - II.Step 4 : around effective masses (ESD)
         // ~ change mass hypotheses to cover all the possibilities :  Xi-/+, Omega -/+
         
-        if( bachTrackXi->Charge() < 0 )	{
-            lV0quality = 0.;
-            xi->ChangeMassHypothesis(lV0quality , 3312);
-            // Calculate the effective mass of the Xi- candidate.
-            // pdg code 3312 = Xi-
-            lInvMassXiMinus = xi->GetEffMassXi();
-            
-            lV0quality = 0.;
-            xi->ChangeMassHypothesis(lV0quality , 3334);
-            // Calculate the effective mass of the Xi- candidate.
-            // pdg code 3334 = Omega-
-            lInvMassOmegaMinus = xi->GetEffMassXi();
-            
-            lV0quality = 0.;
-            xi->ChangeMassHypothesis(lV0quality , 3312); 	// Back to default hyp.
-        }// end if negative bachelor
-        
-        
-        if( bachTrackXi->Charge() >  0 ) {
-            lV0quality = 0.;
-            xi->ChangeMassHypothesis(lV0quality , -3312);
-            // Calculate the effective mass of the Xi+ candidate.
-            // pdg code -3312 = Xi+
-            lInvMassXiPlus = xi->GetEffMassXi();
-            
-            lV0quality = 0.;
-            xi->ChangeMassHypothesis(lV0quality , -3334);
-            // Calculate the effective mass of the Xi+ candidate.
-            // pdg code -3334  = Omega+
-            lInvMassOmegaPlus = xi->GetEffMassXi();
-            
-            lV0quality = 0.;
-            xi->ChangeMassHypothesis(lV0quality , -3312); 	// Back to "default" hyp.
-        }// end if positive bachelor
-        
-        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        //Recalculate from scratch, please
-        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        
-        //WARNING: This will not be checked for correctness (charge-wise, etc)
-        //         It will be up to the user to use the correct variable whenever needed!
-        
-        //+-+ Recalculate Xi Masses from scratch: will not change with lambda mass as
-        //the perfect lambda mass is always assumed
-        
-        //+-+ Recalculate Lambda mass from scratch
-        //Under Lambda hypothesis, the positive daughter is the proton, negative pion
-        Double_t m1 = TDatabasePDG::Instance()->GetParticle(kProton)->Mass();
-        Double_t m2 = TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass();
-        Double_t e12   = m1*m1+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2];
-        Double_t e22   = m2*m2+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2];
-        fTreeCascVarV0MassLambda = TMath::Sqrt(TMath::Max(m1*m1+m2*m2
-                                                          +2.*(TMath::Sqrt(e12*e22)-lPMom[0]*lNMom[0]-lPMom[1]*lNMom[1]-lPMom[2]*lNMom[2]),0.));
-        
-        //+-+ Recalculate AntiLambda mass from scratch
-        //Under Lambda hypothesis, the positive daughter is the pion, negative antiproton
-        m1 = TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass();
-        m2 = TDatabasePDG::Instance()->GetParticle(kProton)->Mass();
-        e12   = m1*m1+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2];
-        e22   = m2*m2+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2];
-        fTreeCascVarV0MassAntiLambda = TMath::Sqrt(TMath::Max(m1*m1+m2*m2
-                                                              +2.*(TMath::Sqrt(e12*e22)-lPMom[0]*lNMom[0]-lPMom[1]*lNMom[1]-lPMom[2]*lNMom[2]),0.));
-        
-        
+        if ( lChargeXi < 0 )        lInvMassXiMinus     = xi->MassXi();
+        if ( lChargeXi > 0 )        lInvMassXiPlus         = xi->MassXi();
+        if ( lChargeXi < 0 )        lInvMassOmegaMinus     = xi->MassOmega();
+        if ( lChargeXi > 0 )        lInvMassOmegaPlus     = xi->MassOmega();
         
         // - II.Step 6 : extra info for QA (ESD)
         // miscellaneous pieces of info that may help regarding data quality assessment.
         //-------------
-        xi->GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
+        Double_t lXiMomVec[3];
+        xi->GetPxPyPz( lXiMomVec );
+        lXiMomX = lXiMomVec[0];
+        lXiMomY = lXiMomVec[1];
+        lXiMomZ = lXiMomVec[2];
         lXiTransvMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
         lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY   + lXiMomZ*lXiMomZ );
         
-        xi->GetBPxPyPz(  lBachMomX,  lBachMomY,  lBachMomZ );
+        //lBachMomX = lBMom[0];
+        //lBachMomY = lBMom[1];
+        //lBachMomZ = lBMom[2];
         //lBachTransvMom  = TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY );
         //lBachTotMom  	= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY  +  lBachMomZ*lBachMomZ  );
         
@@ -2823,8 +2646,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
         for(Int_t ii=0;ii<21;ii++) cvCascade[ii]=0.0; //something small
         
-        xi->GetXYZcascade( xyzCascade[0],  xyzCascade[1], xyzCascade[2] );
-        xi->GetPxPyPz( pxpypzCascade[0], pxpypzCascade[1], pxpypzCascade[2] );
+        xyzCascade[0] = xi->DecayVertexXiX();
+        xyzCascade[1] = xi->DecayVertexXiY();
+        xyzCascade[2] = xi->DecayVertexXiZ();
+        
+        xi->GetPxPyPz( pxpypzCascade );
         
         AliExternalTrackParam lCascTrajObject(xyzCascade,pxpypzCascade,cvCascade,lChargeCascade), *hCascTraj = &lCascTrajObject;
         
@@ -2839,38 +2665,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         fTreeCascVarCascDCAtoPVxy = lCascDCAtoPVxy;
         fTreeCascVarCascDCAtoPVz  = lCascDCAtoPVz;
         
-        //----------------------------------------
-        // Bump studies: perform propagation
-        //----------------------------------------
-        
-        AliESDtrack *lBaryonTrack = 0x0;
-        AliESDtrack *lBachelorTrack = 0x0;
-        if ( lChargeXi == -1 ){
-            lBaryonTrack = pTrackXi;
-            lBachelorTrack = bachTrackXi;
-        }
-        if ( lChargeXi == +1 ){
-            lBaryonTrack = nTrackXi;
-            lBachelorTrack = bachTrackXi;
-        }
-        
-        fTreeCascVarDCABachToBaryon = -100;
-        
-        Double_t bMag = lESDevent->GetMagneticField();
-        Double_t xn, xp;
-        
-        //Care has to be taken here
-        if ( lBaryonTrack && lBachelorTrack ){
-            //Attempt zero: Calculate DCA between bachelor and baryon daughter
-            fTreeCascVarDCABachToBaryon = lBaryonTrack->GetDCA(lBachelorTrack, bMag, xn, xp);
-        }
-        
+        //WARNING: This requires a recent AliRoot version...
+        //FIXME: Not yet implemented ...
         fTreeCascVarWrongCosPA = -1;
-        if( bachTrackXi->Charge() < 0 )
-            fTreeCascVarWrongCosPA = GetCosPA( bachTrackXi , pTrackXi, lESDevent );
-        if( bachTrackXi->Charge() > 0 )
-            fTreeCascVarWrongCosPA = GetCosPA( bachTrackXi , nTrackXi, lESDevent );
-        
         
         //------------------------------------------------
         // Set Variables for adding to tree
@@ -2918,6 +2715,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         fTreeCascVarDistOverTotMom /= (lXiTotMom+1e-13);
         
         //Info for pileup studies
+        Float_t bMag = lAODevent->GetMagneticField();
         fTreeCascVarBachTOFExpTDiff = bachTrackXi->GetTOFExpTDiff( bMag );
         fTreeCascVarNegTOFExpTDiff = nTrackXi->GetTOFExpTDiff( bMag );
         fTreeCascVarPosTOFExpTDiff = pTrackXi->GetTOFExpTDiff( bMag );
@@ -2938,9 +2736,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //This is the flag for ITS||TOF requirement cross-check
         Bool_t lITSorTOFsatisfied = kFALSE;
         if(
-           (fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit) ||
-           (fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit) ||
-           (fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE;
+           (fTreeCascVarPosTrackStatus & AliAODTrack::kITSrefit) ||
+           (fTreeCascVarNegTrackStatus & AliAODTrack::kITSrefit) ||
+           (fTreeCascVarBachTrackStatus & AliAODTrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE;
         if(
            (TMath::Abs(fTreeCascVarBachTOFExpTDiff+2500.) > 1e-6) ||
            (TMath::Abs(fTreeCascVarNegTOFExpTDiff+2500.)  > 1e-6) ||
@@ -3341,9 +3139,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
                 
                 //Check 9: kITSrefit track selection if requested
                 (
-                 ( (fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit) &&
-                  (fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit) &&
-                  (fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit)
+                 ( (fTreeCascVarPosTrackStatus & AliAODTrack::kITSrefit) &&
+                  (fTreeCascVarNegTrackStatus & AliAODTrack::kITSrefit) &&
+                  (fTreeCascVarBachTrackStatus & AliAODTrack::kITSrefit)
                   )
                  ||
                  !lCascadeResult->GetCutUseITSRefitTracks()
@@ -3387,9 +3185,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
                 
                 //Check 15: check each prong for ITS refit
                 (
-                 ( lCascadeResult->GetCutUseITSRefitNegative()==kFALSE || fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit ) &&
-                 ( lCascadeResult->GetCutUseITSRefitPositive()==kFALSE || fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit ) &&
-                 ( lCascadeResult->GetCutUseITSRefitBachelor()==kFALSE || fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit )
+                 ( lCascadeResult->GetCutUseITSRefitNegative()==kFALSE || fTreeCascVarNegTrackStatus & AliAODTrack::kITSrefit ) &&
+                 ( lCascadeResult->GetCutUseITSRefitPositive()==kFALSE || fTreeCascVarPosTrackStatus & AliAODTrack::kITSrefit ) &&
+                 ( lCascadeResult->GetCutUseITSRefitBachelor()==kFALSE || fTreeCascVarBachTrackStatus & AliAODTrack::kITSrefit )
                  )&&
                 
                 //Check 16: cowboy/sailor for V0
@@ -3432,7 +3230,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
     }// end of the Cascade loop (ESD or AOD)
-     */
+    
     
     // Post output data.
     //Regular Output: Slots 1-8
@@ -6316,7 +6114,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddCascadeConfigurationPre
 
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskStrangenessVsMultiplicityAODRun2::GetDCAz(AliESDtrack *lTrack)
+Float_t AliAnalysisTaskStrangenessVsMultiplicityAODRun2::GetDCAz(AliAODTrack *lTrack)
 //Encapsulation of DCAz calculation
 {
     Float_t b[2];
@@ -6330,39 +6128,6 @@ Float_t AliAnalysisTaskStrangenessVsMultiplicityAODRun2::GetDCAz(AliESDtrack *lT
     Float_t dcaToVertexZ = b[1];
     
     return dcaToVertexZ;
-}
-
-
-//________________________________________________________________________
-Float_t AliAnalysisTaskStrangenessVsMultiplicityAODRun2::GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent)
-//Encapsulation of CosPA calculation (warning: considers AliESDtrack clones)
-{
-    Float_t lCosPA = -1;
-    
-    //Get Magnetic field and primary vertex
-    Double_t b=lEvent->GetMagneticField();
-    const AliESDVertex *vtxT3D=lEvent->GetPrimaryVertex();
-    Double_t xPrimaryVertex=vtxT3D->GetX();
-    Double_t yPrimaryVertex=vtxT3D->GetY();
-    Double_t zPrimaryVertex=vtxT3D->GetZ();
-    
-    //Copy AliExternalParam for handling
-    AliExternalTrackParam nt(*lNegTrack), pt(*lPosTrack), *lNegClone=&nt, *lPosClone=&pt;
-    
-    //Find DCA
-    Double_t xn, xp, dca=lNegClone->GetDCA(lPosClone,b,xn,xp);
-    
-    //Propagate to it
-    nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
-    
-    //Create V0 object to do propagation
-    AliESDv0 vertex(nt,1,pt,2); //Never mind indices, won't use
-    
-    //Get CosPA
-    lCosPA=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
-    
-    //Return value
-    return lCosPA;
 }
 
 //________________________________________________________________________
