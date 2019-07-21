@@ -15,6 +15,12 @@
 
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //
+// AOD version of strangeness analysis task
+// WARNING: development version!
+// WIP on the 21st July 2019
+//     please report any bugs, etc to:
+//     david.dobrigkeit.chinellato@cern.ch
+//
 // This task is meant to provide a lightweight alternative to the regular
 // V0 and cascade analysis tasks that were used in Run 1, which produced full-size
 // TTree objects for V0 and cascade candidates. Instead of that, the output
@@ -1466,83 +1472,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     
     // Main loop
     // Called for each event
-    
-    AliESDEvent *lESDevent = 0x0;
-    
-    // Connect to the InputEvent
-    // After these lines, we should have an ESD/AOD event + the number of V0s in it.
-    
-    // Appropriate for ESD analysis!
-    
-    lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
-    if (!lESDevent) {
-        AliWarning("ERROR: lESDevent not available \n");
-        return;
-    }
-    
-    //Get VZERO Information for multiplicity later
-    AliVVZERO* esdV0 = lESDevent->GetVZEROData();
-    if (!esdV0) {
-        AliError("AliVVZERO not available");
+    AliAODEvent *lAODEvent = 0x0;
+    lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
+    if (!lAODevent) {
+        AliWarning("ERROR: lAODevent not available \n");
         return;
     }
     
     Double_t lMagneticField = -10;
-    lMagneticField = lESDevent->GetMagneticField( );
-    
-    //------------------------------------------------
-    // Retrieving IR info for OOB Pileup rejection
-    //------------------------------------------------
-    if( fkDebugOOBPileup ) {
-        fClosestNonEmptyBC = 10*3564; // start with an isolated event
-        AliESDHeader* lESDHeader = (AliESDHeader*)lESDevent->GetHeader();
-        Int_t    nIRs       = lESDHeader->GetTriggerIREntries();
-        Long64_t lThisOrbit = lESDHeader->GetOrbitNumber();
-        Int_t    lThisBC    = lESDHeader->GetBunchCrossNumber();
-        
-        const AliTriggerIR* lIR;
-        for(Int_t i=0; i<nIRs; i++) {
-            
-            lIR = lESDHeader->GetTriggerIR(i);
-            Long64_t lOrbit     = lIR->GetOrbit();
-            UInt_t   lNWord     = lIR->GetNWord();
-            UShort_t *lBCsForIR = lIR->GetBCs();
-            Bool_t   *lInt1     = lIR->GetInt1s();
-            Bool_t   *lInt2     = lIR->GetInt2s();
-            
-            for(UInt_t j=0; j<lNWord; j++) {
-                
-                if( (lInt1[j]) || (lInt2[j]) ) {
-                    
-                    Int_t lBC = lBCsForIR[j];
-                    
-                    if((lOrbit == lThisOrbit) && (lBC != lThisBC)) {
-                        Int_t lClosestNonEmptyBC = lBC - lThisBC;
-                        if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
-                    }
-                    
-                    if(lOrbit == (lThisOrbit+1)) {
-                        Int_t lClosestNonEmptyBC = (lBC+3564) - lThisBC;
-                        if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
-                    }
-                    
-                    if(lOrbit == (lThisOrbit-1)) {
-                        Int_t lClosestNonEmptyBC = (lBC-3564) - lThisBC;
-                        if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
-                    }
-                }
-            }
-        }
-    }
-    // done with IR ----------------------------------
-    
-    //------------------------------------------------
-    // Event Selection ---
-    //  --- Performed entirely via AliPPVsMultUtils
-    // (except removal of incomplete events and SPDClusterVsTracklets cut)
-    //------------------------------------------------
-    
-    //Copy-paste of steps done in AliAnalysisTaskSkeleton
+    lMagneticField = lAODevent->GetMagneticField( );
     
     fHistEventCounter->Fill(0.5);
     
@@ -1552,9 +1490,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     //------------------------------------------------
     
     //classical Proton-proton like selection
-    const AliESDVertex *lPrimaryBestESDVtx     = lESDevent->GetPrimaryVertex();
-    const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
-    const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
+    const AliESDVertex *lPrimaryBestESDVtx     = lAODevent->GetPrimaryVertex();
     
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
@@ -1575,7 +1511,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     
     Float_t lPercentile = 500;
     Int_t lEvSelCode = 100;
-    AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
+    AliMultSelection *MultSelection = (AliMultSelection*) lAODevent -> FindListObject("MultSelection");
     if( !MultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
         AliWarning("AliMultSelection object not found!");
@@ -1596,7 +1532,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     //Override centrality with equivalent run 1 info if requested, please
     if (fkUseOldCentrality) {
         AliCentrality* centrality;
-        centrality = lESDevent->GetCentrality();
+        centrality = lAODevent->GetCentrality();
         if ( centrality ) {
             fCentrality = centrality->GetCentralityPercentile( "V0M" );
         }
@@ -1700,41 +1636,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     fHistEventCounter->Fill(1.5);
     
     //Bookkeep event number for debugging
-    fTreeCascVarEventNumber =
-    ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
-     ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
-     ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
-    
-    //Save info for pileup study (high multiplicity triggers pp 13 TeV - 2016 data)
-    if( fkDebugOOBPileup ) {
-        fOOBPileupFlag     = !fUtils->IsOutOfBunchPileUp(ev);
-        fNTOFClusters      = lESDevent->GetESDTOFClusters()->GetEntriesFast();
-        fNTOFMatches       = lESDevent->GetESDTOFMatches()->GetEntriesFast();
-        fNTracksITSsa2010  = 0;
-        fNTracksGlobal2015 = 0;
-        fNTracksGlobal2015TriggerPP = 0;
-        //Count tracks with various selections
-        for(Long_t itrack = 0; itrack<lESDevent->GetNumberOfTracks(); itrack++) {
-            AliVTrack *track = lESDevent -> GetVTrack( itrack );
-            if( !track ) continue;
-            //Only ITSsa tracks
-            if( fESDtrackCutsITSsa2010->AcceptVTrack(track) ) fNTracksITSsa2010++;
-            if( !fESDtrackCutsGlobal2015->AcceptVTrack(track) ) continue;
-            //Only for accepted tracks
-            fNTracksGlobal2015++;
-            //Count accepted + TOF time window (info from Alberica)
-            //Warning: 12.5 is appropriate for pp (for Pb-Pb use 30)
-            if( TMath::Abs( track->GetTOFExpTDiff() ) < 12.5 ) fNTracksGlobal2015TriggerPP++;
-        }
-        
-        //VZERO info
-        AliMultEstimator *fEstV0A = 0x0, *fEstV0C = 0x0;
-        fEstV0A = (AliMultEstimator*)MultSelection->GetEstimator("V0A");
-        fEstV0C = (AliMultEstimator*)MultSelection->GetEstimator("V0C");
-        if ( fEstV0A ) fAmplitudeV0A = fEstV0A->GetValue();
-        if ( fEstV0C ) fAmplitudeV0C = fEstV0C->GetValue();
-        
-    }
+    fTreeCascVarEventNumber = 0.; //not functional FIXME
     
     //Fill centrality histogram
     fHistCentrality->Fill(fCentrality);
@@ -1745,7 +1647,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     if ( fkSaveEventTree && lKeepEventEntry ) fTreeEvent->Fill() ;
     
     //STOP HERE if skipping event selections (no point in doing the rest...)
-    
     //------------------------------------------------
     
     //------------------------------------------------
@@ -1766,56 +1667,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     Double_t fMinV0Pt = 0;
     Double_t fMaxV0Pt = 100;
     
-    //------------------------------------------------
-    // Rerun V0 Vertexer!
-    // WARNING: this will only work if the
-    // special "use on the fly cascading" flag
-    // is disabled!
-    //------------------------------------------------
-    
-    if( fkRunVertexers && !fkUseOnTheFlyV0Cascading ) {
-        //Only reset if not using on-the-fly (or else nothing passes)
-        lESDevent->ResetV0s();
-        
-        //Decide between regular and light vertexer (default: light)
-        if ( ! fkUseLightVertexer ){
-            //Instantiate vertexer object
-            AliV0vertexer lV0vtxer;
-            //Set Cuts
-            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-            lV0vtxer.SetCuts(fV0VertexerSels);
-            //Redo
-            lV0vtxer.Tracks2V0vertices(lESDevent);
-        } else {
-            //Instantiate vertexer object
-            AliLightV0vertexer lV0vtxer;
-            //Set do or don't do V0 refit for improved precision
-            lV0vtxer.SetDoRefit( kFALSE );
-            if (fkDoV0Refit) lV0vtxer.SetDoRefit(kTRUE);
-            //Set Cuts
-            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-            lV0vtxer.SetCuts(fV0VertexerSels);
-            //Redo
-            lV0vtxer.Tracks2V0vertices(lESDevent);
-        }
-    }
-    
     Int_t nv0s = 0;
-    nv0s = lESDevent->GetNumberOfV0s();
+    nv0s = lAODevent->GetNumberOfV0s();
     
     for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //extra-crazy test
     {   // This is the begining of the V0 loop
-        AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iV0);
+        AliAODv0 *v0 = lAODevent->GetV0(iV0);
         if (!v0) continue;
         
-        CheckChargeV0( v0 );
-        //Remove like-sign (will not affect offline V0 candidates!)
-        if( v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() > 0 ){
-            continue;
-        }
-        if( v0->GetParamN()->Charge() < 0 && v0->GetParamP()->Charge() < 0 ){
-            continue;
-        }
+        //CheckChargeV0( v0 ); //FIXME this won't work for AOD as is
         
         Double_t tDecayVertexV0[3];
         v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
@@ -1832,13 +1692,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         lRapLambda  = v0->RapLambda();
         if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
         
-        UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
-        UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
+        AliAODTrack *pTrack=(AliAODTrack *)v0->GetDaughter(0); //0->Positive Daughter
+        AliAODTrack *nTrack=(AliAODTrack *)v0->GetDaughter(1); //1->Negative Daughter
+        if (!pTrack || !nTrack) {
+            Printf("ERROR: Could not retreive one of the daughter tracks");
+            continue;
+        }
         
         Double_t lMomPos[3];
-        v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
+        pTrack->GetPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
         Double_t lMomNeg[3];
-        v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
+        nTrack->GetPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
         
         //Provisions for cowboy/sailor check
         Double_t lModp1 = TMath::Sqrt( lMomPos[0]*lMomPos[0] + lMomPos[1]*lMomPos[1] );
@@ -1852,16 +1716,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         fTreeVariableIsCowboy = kFALSE;
         if (lVecProd < 0) fTreeVariableIsCowboy = kTRUE;
         
-        AliESDtrack *pTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyPos);
-        AliESDtrack *nTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyNeg);
-        
         fTreeVariablePosTrack = pTrack;
         fTreeVariableNegTrack = nTrack;
         
-        if (!pTrack || !nTrack) {
-            Printf("ERROR: Could not retreive one of the daughter track");
-            continue;
-        }
         fTreeVariablePosPIDForTracking = pTrack->GetPIDForTracking();
         fTreeVariableNegPIDForTracking = nTrack->GetPIDForTracking();
         
@@ -2007,28 +1864,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //End track Quality Cuts
         //________________________________________________________________________
         
-        lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(lBestPrimaryVtxPos[0],
-                                                      lBestPrimaryVtxPos[1],
-                                                      lMagneticField) );
-        
-        lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(lBestPrimaryVtxPos[0],
-                                                      lBestPrimaryVtxPos[1],
-                                                      lMagneticField) );
+        lDcaPosToPrimVertex = v0->DcaPosToPrimVertex();
+        lDcaNegToPrimVertex = v0->DcaNegToPrimVertex();
         
         lOnFlyStatus = v0->GetOnFlyStatus();
         lChi2V0 = v0->GetChi2V0();
-        lDcaV0Daughters = v0->GetDcaV0Daughters();
-        lDcaV0ToPrimVertex = v0->GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-        lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
+        lDcaV0Daughters = v0->DcaV0Daughters();
+        lDcaV0ToPrimVertex = v0->DcaV0ToPrimVertex();
+        lV0CosineOfPointingAngle = v0->CosPointingAngle(lBestPrimaryVtxPos);
         fTreeVariableV0CosineOfPointingAngle=lV0CosineOfPointingAngle;
         
         // Getting invariant mass infos directly from ESD
-        v0->ChangeMassHypothesis(310);
-        lInvMassK0s = v0->GetEffMass();
-        v0->ChangeMassHypothesis(3122);
-        lInvMassLambda = v0->GetEffMass();
-        v0->ChangeMassHypothesis(-3122);
-        lInvMassAntiLambda = v0->GetEffMass();
+        lInvMassK0s        = v0->MassK0Short();
+        lInvMassLambda     = v0->MassLambda();
+        lInvMassAntiLambda = v0->MassAntiLambda();
         lAlphaV0 = v0->AlphaV0();
         lPtArmV0 = v0->PtArmV0();
         
@@ -2068,12 +1917,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         fTreeVariableCentrality = fCentrality;
         
         //Info for pileup studies
-        fTreeVariableNegTOFExpTDiff = nTrack->GetTOFExpTDiff( lESDevent->GetMagneticField() );
-        fTreeVariablePosTOFExpTDiff = pTrack->GetTOFExpTDiff( lESDevent->GetMagneticField() );
+        fTreeVariableNegTOFExpTDiff = nTrack->GetTOFExpTDiff( lAODEvent->GetMagneticField() );
+        fTreeVariablePosTOFExpTDiff = pTrack->GetTOFExpTDiff( lAODEvent->GetMagneticField() );
         fTreeVariableNegTOFSignal = nTrack->GetTOFsignal() * 1.e-3; // in ns
         fTreeVariablePosTOFSignal = pTrack->GetTOFsignal() * 1.e-3; // in ns
-        fTreeVariableNegTOFBCid = nTrack->GetTOFBunchCrossing( lESDevent->GetMagneticField() );
-        fTreeVariablePosTOFBCid = pTrack->GetTOFBunchCrossing( lESDevent->GetMagneticField() );
+        fTreeVariableNegTOFBCid = nTrack->GetTOFBunchCrossing( lAODEvent->GetMagneticField() );
+        fTreeVariablePosTOFBCid = pTrack->GetTOFBunchCrossing( lAODEvent->GetMagneticField() );
         //Copy OOB pileup flag for this event
         fTreeVariableOOBPileupFlag = fOOBPileupFlag;
         //Copy VZERO information for this event
@@ -2082,14 +1931,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //Copy IR information for this event
         fTreeVariableClosestNonEmptyBC = fClosestNonEmptyBC;
         
-        //This is the flag for ITS||TOF requirement cross-check 
-        Bool_t lITSorTOFsatisfied = kFALSE; 
-        if( 
-            (fTreeVariableNegTrackStatus & AliESDtrack::kITSrefit) ||
-            (fTreeVariablePosTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE; 
-        if( 
-            (TMath::Abs(fTreeVariableNegTOFExpTDiff+2500.) > 1e-6) || 
-            (TMath::Abs(fTreeVariablePosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;  
+        //This is the flag for ITS||TOF requirement cross-check
+        Bool_t lITSorTOFsatisfied = kFALSE;
+        if(
+           (fTreeVariableNegTrackStatus & AliAODTrack::kITSrefit) ||
+           (fTreeVariablePosTrackStatus & AliAODTrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE;
+        if(
+           (TMath::Abs(fTreeVariableNegTOFExpTDiff+2500.) > 1e-6) ||
+           (TMath::Abs(fTreeVariablePosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;
         
         //------------------------------------------------
         // Fill Tree!
@@ -2310,7 +2159,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
                  lV0Result->GetCutMinCrossedRowsOverLength()<0 ||
                  (lLeastNcrOverLength>lV0Result->GetCutMinCrossedRowsOverLength())
                  )&&
-                //Check 17: ITS or TOF required 
+                //Check 17: ITS or TOF required
                 (
                  lV0Result->GetCutITSorTOF()==kFALSE || lITSorTOFsatisfied==kTRUE
                  )
@@ -2356,6 +2205,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     // Code Credit: Antonin Maire (thanks^100)
     // ---> This is an adaptation
     
+    /*
     Long_t ncascades = 0;
     ncascades = lESDevent->GetNumberOfCascades();
     
@@ -3085,16 +2935,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //Copy IR information for this event
         fTreeCascVarClosestNonEmptyBC = fClosestNonEmptyBC;
         
-        //This is the flag for ITS||TOF requirement cross-check 
-        Bool_t lITSorTOFsatisfied = kFALSE; 
-        if( 
-            (fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit) ||
-            (fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit) ||
-            (fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE; 
-        if( 
-            (TMath::Abs(fTreeCascVarBachTOFExpTDiff+2500.) > 1e-6) || 
-            (TMath::Abs(fTreeCascVarNegTOFExpTDiff+2500.)  > 1e-6) ||  
-            (TMath::Abs(fTreeCascVarPosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;  
+        //This is the flag for ITS||TOF requirement cross-check
+        Bool_t lITSorTOFsatisfied = kFALSE;
+        if(
+           (fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit) ||
+           (fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit) ||
+           (fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE;
+        if(
+           (TMath::Abs(fTreeCascVarBachTOFExpTDiff+2500.) > 1e-6) ||
+           (TMath::Abs(fTreeCascVarNegTOFExpTDiff+2500.)  > 1e-6) ||
+           (TMath::Abs(fTreeCascVarPosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;
         
         //Valid or not valid
         lValidXiMinus = kTRUE;
@@ -3544,10 +3394,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
                 
                 //Check 16: cowboy/sailor for V0
                 (
-                    lCascadeResult->GetCutIsCowboy()==0 ||
+                 lCascadeResult->GetCutIsCowboy()==0 ||
                  (lCascadeResult->GetCutIsCowboy()== 1 && fTreeCascVarIsCowboy==kTRUE ) ||
                  (lCascadeResult->GetCutIsCowboy()==-1 && fTreeCascVarIsCowboy==kFALSE)
-                )&&//end cowboy/sailor
+                 )&&//end cowboy/sailor
                 
                 //Check 17: cowboy/sailor for cascade
                 (
@@ -3566,7 +3416,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
                  lCascadeResult->GetCutLeastNumberOfCrossedRows()<0 ||
                  (lLeastNbrCrossedRows>lCascadeResult->GetCutLeastNumberOfCrossedRows())
                  )&&
-                //Check 20: ITS or TOF required 
+                //Check 20: ITS or TOF required
                 (
                  lCascadeResult->GetCutITSorTOF()==kFALSE || lITSorTOFsatisfied==kTRUE
                  )
@@ -3582,6 +3432,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
     }// end of the Cascade loop (ESD or AOD)
+     */
     
     // Post output data.
     //Regular Output: Slots 1-8
@@ -4008,11 +3859,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddTopologicalQACascade(In
                                                              -0.813472,
                                                              0.0480962);
         }
-//        lCascadeResult[lN]->SetCutDCACascadeToPV        ( 0.8 );
+        //        lCascadeResult[lN]->SetCutDCACascadeToPV        ( 0.8 );
         if(i >= 2){
             lCascadeResult[lN]->SetCutDCACascDaughters  ( 0.6 ) ;
             lCascadeResult[lN]->SetCutCascRadius        ( 1.0 ) ;
-//            lCascadeResult[lN]->SetCutDCACascadeToPV    ( 0.6 ) ;
+            //            lCascadeResult[lN]->SetCutDCACascadeToPV    ( 0.6 ) ;
         }
         lCascadeResult[lN]->SetCutVarDCACascDau ( TMath::Exp(0.0470076), -0.917006, 0, 1, 0.5 );
         //Miscellaneous
@@ -4041,43 +3892,43 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddTopologicalQACascade(In
     // Variable 1: DCA Neg to PV
     Float_t lMaxDCANegToPV = 1.5;
     if( lSweepOptions == "" || lSweepOptions.Contains("DCANegToPV") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCANegToPVSweep",icut) );
-          //Add result to pool
-          Float_t lThisCut = ((Float_t)icut+1)*lMaxDCANegToPV / ((Float_t) lNumberOfSteps) ;
-          lCascadeResult[lN] -> SetCutDCANegToPV ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCANegToPVSweep",icut) );
+                //Add result to pool
+                Float_t lThisCut = ((Float_t)icut+1)*lMaxDCANegToPV / ((Float_t) lNumberOfSteps) ;
+                lCascadeResult[lN] -> SetCutDCANegToPV ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 2: DCA Pos to PV
     Float_t lMaxDCAPosToPV = 1.5;
     if( lSweepOptions == "" || lSweepOptions.Contains("DCAPosToPV") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAPosToPVSweep",icut) );
-          //Add result to pool
-          Float_t lThisCut = ((Float_t)icut+1)*lMaxDCAPosToPV / ((Float_t) lNumberOfSteps) ;
-          lCascadeResult[lN] -> SetCutDCAPosToPV ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAPosToPVSweep",icut) );
+                //Add result to pool
+                Float_t lThisCut = ((Float_t)icut+1)*lMaxDCAPosToPV / ((Float_t) lNumberOfSteps) ;
+                lCascadeResult[lN] -> SetCutDCAPosToPV ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 3: DCA V0 Daughters
     Float_t lMaxDCAV0Daughters = 1.40;
     if( lSweepOptions == "" || lSweepOptions.Contains("DCAV0Daughters") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAV0DaughtersSweep",icut) );
-          //Add result to pool
-          Float_t lThisCut = ((Float_t)icut+1)*lMaxDCAV0Daughters / ((Float_t) lNumberOfSteps) ;
-          lCascadeResult[lN] -> SetCutDCAV0Daughters ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAV0DaughtersSweep",icut) );
+                //Add result to pool
+                Float_t lThisCut = ((Float_t)icut+1)*lMaxDCAV0Daughters / ((Float_t) lNumberOfSteps) ;
+                lCascadeResult[lN] -> SetCutDCAV0Daughters ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 4: V0 CosPA
@@ -4088,91 +3939,91 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddTopologicalQACascade(In
     Double_t lMaxV0PA = TMath::ACos(lMinV0CosPA);
     Double_t lDeltaV0PA = lMaxV0PA / ((Double_t)(lNumberOfSteps));
     for(Int_t iStep = 0; iStep<lNumberOfSteps; iStep++){
-      lV0CosPAVals[iStep] = TMath::Cos( ((Float_t)(iStep+1))*lDeltaV0PA );
+        lV0CosPAVals[iStep] = TMath::Cos( ((Float_t)(iStep+1))*lDeltaV0PA );
     }
     if( lSweepOptions == "" || lSweepOptions.Contains("V0CosPA") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0CosPASweep",icut) );
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutUseVarV0CosPA( kFALSE );
-          lCascadeResult[lN] -> SetCutV0CosPA ( lV0CosPAVals[icut] );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0CosPASweep",icut) );
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutUseVarV0CosPA( kFALSE );
+                lCascadeResult[lN] -> SetCutV0CosPA ( lV0CosPAVals[icut] );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 5: V0 Radius
     Float_t lMinV0Radius = 0.0;
     Float_t lMaxV0Radius = 20.00;
     if( lSweepOptions == "" || lSweepOptions.Contains("V0Radius") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0RadiusSweep",icut) );
-          //Add result to pool
-          Float_t lThisCut = lMinV0Radius + (lMaxV0Radius-lMinV0Radius)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
-          lCascadeResult[lN] -> SetCutV0Radius ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0RadiusSweep",icut) );
+                //Add result to pool
+                Float_t lThisCut = lMinV0Radius + (lMaxV0Radius-lMinV0Radius)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+                lCascadeResult[lN] -> SetCutV0Radius ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 6: DCA V0 To PV
     Float_t lMaxDCAV0ToPV = 0.5;
     if( lSweepOptions == "" || lSweepOptions.Contains("DCAV0ToPV") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAV0ToPVSweep",icut) );
-          //Add result to pool
-          Float_t lThisCut = ((Float_t)icut+1)*lMaxDCAV0ToPV / ((Float_t) lNumberOfSteps) ;
-          lCascadeResult[lN] -> SetCutDCAV0ToPV ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAV0ToPVSweep",icut) );
+                //Add result to pool
+                Float_t lThisCut = ((Float_t)icut+1)*lMaxDCAV0ToPV / ((Float_t) lNumberOfSteps) ;
+                lCascadeResult[lN] -> SetCutDCAV0ToPV ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 7: DCA Bach To PV
     Float_t lMaxDCABachToPV = 0.5;
     if( lSweepOptions == "" || lSweepOptions.Contains("DCABachToPV") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCABachToPVSweep",icut) );
-          //Add result to pool
-          Float_t lThisCut = ((Float_t)icut+1)*lMaxDCABachToPV / ((Float_t) lNumberOfSteps) ;
-          lCascadeResult[lN] -> SetCutDCABachToPV ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCABachToPVSweep",icut) );
+                //Add result to pool
+                Float_t lThisCut = ((Float_t)icut+1)*lMaxDCABachToPV / ((Float_t) lNumberOfSteps) ;
+                lCascadeResult[lN] -> SetCutDCABachToPV ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 8: DCA Casc Daughters
     Float_t lMaxDCACascDaughters = 1.40;
     if( lSweepOptions == "" || lSweepOptions.Contains("DCACascDaughters") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCACascDaughtersSweep",icut) );
-          //Add result to pool
-          Float_t lThisCut = ((Float_t)icut+1)*lMaxDCACascDaughters / ((Float_t) lNumberOfSteps) ;
-          lCascadeResult[lN] -> SetCutUseVarDCACascDau ( kFALSE );
-          lCascadeResult[lN] -> SetCutDCACascDaughters ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCACascDaughtersSweep",icut) );
+                //Add result to pool
+                Float_t lThisCut = ((Float_t)icut+1)*lMaxDCACascDaughters / ((Float_t) lNumberOfSteps) ;
+                lCascadeResult[lN] -> SetCutUseVarDCACascDau ( kFALSE );
+                lCascadeResult[lN] -> SetCutDCACascDaughters ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 9: Cascade Radius
     Float_t lMinCascRadius = 0.5;
     Float_t lMaxCascRadius = 7.0;
     if( lSweepOptions == "" || lSweepOptions.Contains("CascRadius") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascRadiusSweep",icut) );
-          //Add result to pool
-          Float_t lThisCut = lMinCascRadius + (lMaxCascRadius-lMinCascRadius)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
-          lCascadeResult[lN] -> SetCutCascRadius ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascRadiusSweep",icut) );
+                //Add result to pool
+                Float_t lThisCut = lMinCascRadius + (lMaxCascRadius-lMinCascRadius)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+                lCascadeResult[lN] -> SetCutCascRadius ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 10: Cascade CosPA
@@ -4183,18 +4034,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddTopologicalQACascade(In
     Double_t lMaxCascPA = TMath::ACos(lMinCascCosPA);
     Double_t lDeltaCascPA = lMaxCascPA / ((Double_t)(lNumberOfSteps));
     if( lSweepOptions == "" || lSweepOptions.Contains("CascCosPA") ){
-      for(Int_t iStep = 0; iStep<lNumberOfSteps; iStep++){
-        lCascCosPAVals[iStep] = TMath::Cos( ((Float_t)(iStep+1))*lDeltaCascPA );
-      }
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascCosPASweep",icut) );
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutUseVarCascCosPA( kFALSE );
-          lCascadeResult[lN] -> SetCutCascCosPA ( lCascCosPAVals[icut] );
-          lN++;
+        for(Int_t iStep = 0; iStep<lNumberOfSteps; iStep++){
+            lCascCosPAVals[iStep] = TMath::Cos( ((Float_t)(iStep+1))*lDeltaCascPA );
         }
-      }
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascCosPASweep",icut) );
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutUseVarCascCosPA( kFALSE );
+                lCascadeResult[lN] -> SetCutCascCosPA ( lCascCosPAVals[icut] );
+                lN++;
+            }
+        }
     }
     //________________________________________________________
     // Variable 11: Bach-Baryon CosPA
@@ -4205,35 +4056,35 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddTopologicalQACascade(In
     Double_t lMaxBBPA = TMath::ACos(lMinBBCosPA);
     Double_t lDeltaBBPA = lMaxBBPA / ((Double_t)(lNumberOfSteps));
     if( lSweepOptions == "" || lSweepOptions.Contains("BBCosPA") ){
-      for(Int_t iStep = 0; iStep<lNumberOfSteps; iStep++){
-        lBBCosPAVals[iStep] = TMath::Cos( ((Float_t)(iStep+1))*lDeltaBBPA );
-      }
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"BBCosPASweep",icut) );
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutUseVarBBCosPA( kFALSE );
-          lCascadeResult[lN] -> SetCutBachBaryonCosPA ( lBBCosPAVals[icut] );
-          lN++;
+        for(Int_t iStep = 0; iStep<lNumberOfSteps; iStep++){
+            lBBCosPAVals[iStep] = TMath::Cos( ((Float_t)(iStep+1))*lDeltaBBPA );
         }
-      }
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"BBCosPASweep",icut) );
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutUseVarBBCosPA( kFALSE );
+                lCascadeResult[lN] -> SetCutBachBaryonCosPA ( lBBCosPAVals[icut] );
+                lN++;
+            }
+        }
     }
     //________________________________________________________
     // Variable 12: Cascade Lifetime Sweep
     
     Int_t lLifetimeSteps = 15;
     if( lSweepOptions == "" || lSweepOptions.Contains("CascLifetime") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        Float_t lMinLifetime = 5.00;
-        Float_t lMaxLifetime = 20.00;
-        for(Int_t icut = 0; icut<lLifetimeSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascLifetimeSweep",icut) );
-          Float_t lThisCut = lMinLifetime + (lMaxLifetime-lMinLifetime)*(((Float_t)icut)+1)/((Float_t)lLifetimeSteps);
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutProperLifetime ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            Float_t lMinLifetime = 5.00;
+            Float_t lMaxLifetime = 20.00;
+            for(Int_t icut = 0; icut<lLifetimeSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascLifetimeSweep",icut) );
+                Float_t lThisCut = lMinLifetime + (lMaxLifetime-lMinLifetime)*(((Float_t)icut)+1)/((Float_t)lLifetimeSteps);
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutProperLifetime ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 13: V0 Lifetime Sweep
@@ -4241,119 +4092,119 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddTopologicalQACascade(In
     Float_t lMaxV0Lifetime = 40.00;
     Int_t lV0LifetimeSteps = 32;
     if( lSweepOptions == "" || lSweepOptions.Contains("V0Lifetime") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lV0LifetimeSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"MaxV0LifetimeSweep",icut) );
-          Float_t lThisCut = lMinV0Lifetime + (lMaxV0Lifetime-lMinV0Lifetime)*(((Float_t)icut)+1)/((Float_t)lV0LifetimeSteps);
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutMaxV0Lifetime ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lV0LifetimeSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"MaxV0LifetimeSweep",icut) );
+                Float_t lThisCut = lMinV0Lifetime + (lMaxV0Lifetime-lMinV0Lifetime)*(((Float_t)icut)+1)/((Float_t)lV0LifetimeSteps);
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutMaxV0Lifetime ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 14: Xi Rejection Sweep (Omega only)
     Float_t lMaxXiRejection = 0.015;
     if( lSweepOptions == "" || lSweepOptions.Contains("XiRejection") ){
-      for(Int_t i = 2 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"XiRejectionSweep",icut) );
-          Float_t lThisCut = ((Float_t)icut+1)*lMaxXiRejection / ((Float_t) lNumberOfSteps) ;
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutXiRejection ( lThisCut );
-          lN++;
+        for(Int_t i = 2 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"XiRejectionSweep",icut) );
+                Float_t lThisCut = ((Float_t)icut+1)*lMaxXiRejection / ((Float_t) lNumberOfSteps) ;
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutXiRejection ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 15: V0 Mass Window
     Float_t lMinV0Mass = 0.002;
     Float_t lMaxV0Mass = 0.010;
     if( lSweepOptions == "" || lSweepOptions.Contains("XiRejection") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0MassWindow",icut) );
-          Float_t lThisCut = lMinV0Mass + (lMaxV0Mass-lMinV0Mass)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutV0Mass ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0MassWindow",icut) );
+                Float_t lThisCut = lMinV0Mass + (lMaxV0Mass-lMinV0Mass)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutV0Mass ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 16: DCA Cascade To PV
     Float_t lMinDCACascToPV = 0.2;
     Float_t lMaxDCACascToPV = 1.2;
     if( lSweepOptions == "" || lSweepOptions.Contains("DCACascToPV") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCACascadeToPV",icut) );
-          Float_t lThisCut = lMinDCACascToPV + (lMaxDCACascToPV-lMinDCACascToPV)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutDCACascadeToPV ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCACascadeToPV",icut) );
+                Float_t lThisCut = lMinDCACascToPV + (lMaxDCACascToPV-lMinDCACascToPV)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutDCACascadeToPV ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 17: TPC dE/dx
     Float_t lMinTPCnSigma = 2.5;
     Float_t lMaxTPCnSigma = 5.0;
     if( lSweepOptions == "" || lSweepOptions.Contains("TPCnSigma") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"TPCnSigma",icut) );
-          Float_t lThisCut = lMinTPCnSigma + (lMaxTPCnSigma-lMinTPCnSigma)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutTPCdEdx ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"TPCnSigma",icut) );
+                Float_t lThisCut = lMinTPCnSigma + (lMaxTPCnSigma-lMinTPCnSigma)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutTPCdEdx ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 18: Minimum Track Length
     Float_t lMinTrackLength = 60;
     Float_t lMaxTrackLength = 140;
     if( lSweepOptions == "" || lSweepOptions.Contains("MinimumTrackLength") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"MinimumTrackLength",icut) );
-          Float_t lThisCut = lMinTrackLength + (lMaxTrackLength-lMinTrackLength)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutMinTrackLength ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"MinimumTrackLength",icut) );
+                Float_t lThisCut = lMinTrackLength + (lMaxTrackLength-lMinTrackLength)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutMinTrackLength ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 19: Least Number of Crossed Rows
     Float_t lMinNbrCrssRows = 60;
     Float_t lMaxNbrCrssRows = 120;
     if( lSweepOptions == "" || lSweepOptions.Contains("LeastNumberOfCrossedRows") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"LeastNumberOfCrossedRows",icut) );
-          Float_t lThisCut = lMinNbrCrssRows + (lMaxNbrCrssRows-lMinNbrCrssRows)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutLeastNumberOfCrossedRows ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"LeastNumberOfCrossedRows",icut) );
+                Float_t lThisCut = lMinNbrCrssRows + (lMaxNbrCrssRows-lMinNbrCrssRows)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutLeastNumberOfCrossedRows ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     //________________________________________________________
     // Variable 20: Minimum Crossed Rows Over Length
     Float_t lMinCrssRowsOvLen = .6;
     Float_t lMaxCrssRowsOvLen = 1.2;
     if( lSweepOptions == "" || lSweepOptions.Contains("MinCrossedRowsOverLength") ){
-      for(Int_t i = 0 ; i < 4 ; i ++){
-        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
-          lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"MinCrossedRowsOverLength",icut) );
-          Float_t lThisCut = lMinCrssRowsOvLen + (lMaxCrssRowsOvLen-lMinCrssRowsOvLen)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
-          //Add result to pool
-          lCascadeResult[lN] -> SetCutMinCrossedRowsOverLength ( lThisCut );
-          lN++;
+        for(Int_t i = 0 ; i < 4 ; i ++){
+            for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+                lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"MinCrossedRowsOverLength",icut) );
+                Float_t lThisCut = lMinCrssRowsOvLen + (lMaxCrssRowsOvLen-lMinCrssRowsOvLen)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+                //Add result to pool
+                lCascadeResult[lN] -> SetCutMinCrossedRowsOverLength ( lThisCut );
+                lN++;
+            }
         }
-      }
     }
     
     for (Int_t iconf = 0; iconf<lN; iconf++)
