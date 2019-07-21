@@ -165,7 +165,8 @@ public:
     {
       const AliFemtoModelHiddenInfo *info = static_cast<AliFemtoModelHiddenInfo*>(track->GetHiddenInfo());
       const Int_t pid = info->GetPDGPid();
-      if (std::abs(pid) != 211) {
+
+      if (pid != std::copysign(211, charge)) {
         return false;
       }
       return AliFemtoTrackCutPionPionAK::Pass(track);
