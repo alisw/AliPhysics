@@ -221,8 +221,7 @@ public:
     void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
     void AddCascadeConfigurationPreliminaryCrosscheck(); //
 //---------------------------------------------------------------------------------------
-    Float_t GetDCAz(AliESDtrack *lTrack);
-    Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
+    Float_t GetDCAz(AliAODTrack *lTrack);
 //---------------------------------------------------------------------------------------
     void SetSaveSpecificCascadeConfig(TString lConfig){
         fkConfigToSave = lConfig;
