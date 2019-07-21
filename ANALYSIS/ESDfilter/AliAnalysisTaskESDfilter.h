@@ -83,6 +83,9 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   void SetRefitVertexTracks(Int_t algo=6, Double_t* cuts=0);
   void SetMuonCaloPass();
   void SetAddPCMv0s(Bool_t addPCMv0s) {fAddPCMv0s=addPCMv0s;}
+  
+  //helper
+  Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, Float_t lB, Float_t *lVtx);
 
   AliAnalysisFilter* GetTrackFilter() const { return fTrackFilter;}
 
