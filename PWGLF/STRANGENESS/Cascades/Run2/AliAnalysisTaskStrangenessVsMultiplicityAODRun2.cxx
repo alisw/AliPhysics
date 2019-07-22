@@ -1794,11 +1794,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         Float_t lPosTrackLength = -1;
         Float_t lNegTrackLength = -1;
         
-        //URGENT FIXME
-        //if (pTrack->GetInnerParam()) lPosTrackLength = pTrack->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
-        //if (nTrack->GetInnerParam()) lNegTrackLength = nTrack->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
-        lPosTrackLength = 200;
-        lNegTrackLength = 200;
+        lPosTrackLength = AliESDtrack::GetLengthInActiveZone( pTrack->GetInnerParam(), /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
+        lNegTrackLength = AliESDtrack::GetLengthInActiveZone( nTrack->GetInnerParam(), /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
+        
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
@@ -2479,12 +2477,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         Float_t lNegTrackLength = -1;
         Float_t lBachTrackLength = -1;
         
-        //if (pTrackXi->GetInnerParam()) lPosTrackLength = pTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
-        //if (nTrackXi->GetInnerParam()) lNegTrackLength = nTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
-        //if (bachTrackXi->GetInnerParam()) lBachTrackLength = bachTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
-        lPosTrackLength = 200;
-        lNegTrackLength = 200;
-        lBachTrackLength = 200;
+        lPosTrackLength = AliESDtrack::GetLengthInActiveZone( pTrackXi->GetInnerParam(), /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
+        lNegTrackLength = AliESDtrack::GetLengthInActiveZone( nTrackXi->GetInnerParam(), /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
+        lBachTrackLength = AliESDtrack::GetLengthInActiveZone( bachTrackXi->GetInnerParam(), /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
