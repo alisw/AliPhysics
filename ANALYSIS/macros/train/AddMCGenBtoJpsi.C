@@ -1,4 +1,4 @@
-AliGenerator* AddMCGenBtoJpsi(Bool_t useEvtGenForB=kFALSE){
+AliGenerator* AddMCGenBtoJpsi(Bool_t useEvtGenForB=kFALSE, Double_t energyConfig){
   gSystem->Load("liblhapdf"); 
   gSystem->Load("libpythia6.so"); 
   gSystem->Load("libAliPythia6");  
@@ -37,7 +37,7 @@ AliGenerator* AddMCGenBtoJpsi(Bool_t useEvtGenForB=kFALSE){
   if(useEvtGenForB) gene->SetParticleSwitchedOff(AliGenEvtGen::kHFPart);
   else gene->SetParticleSwitchedOff(AliGenEvtGen::kCharmPart);
 
-  gener->AddGenerator(pythia,         "Pythia",         bfrac);
+  gener->AddGenerator(pythia,         "Pythia",         1.);
   gener->AddGenerator(gene, "EvtGen", 1.);
   //
   return gener;
