@@ -25,6 +25,7 @@
 #include "AliFemtoPairCutDetaDphi.h"
 #include "AliFemtoPairCutAntiGamma.h"
 #include "AliFemtoDummyPairCut.h"
+#include "AliFemtoPairCutRejectAll.h"
 #include "AliFemtoPairCutPt.h"
 
 #include "AliFemtoAnalysisPionPionCuts.h"
@@ -314,6 +315,7 @@ AliFemtoConfigObject::From<AliFemtoPairCut>(const AliFemtoPairCut &obj)
   RETURN_IF_CAST(AliFemtoPairCutDetaDphi)
   RETURN_IF_CAST(AliFemtoShareQualityPairCut)
   RETURN_IF_CAST(AliFemtoDummyPairCut)
+  RETURN_IF_CAST(AliFemtoPairCutRejectAll)
 
   std::string classname = "AliFemtoPairCut";
   auto *cut_tclass = TClass::GetClass(classname.c_str());
@@ -344,6 +346,7 @@ AliFemtoConfigObject::Into<AliFemtoPairCut>(bool)
   TRY_CONSTRUCTING_CLASS(AliFemtoPairCutDetaDphi)
   TRY_CONSTRUCTING_CLASS(AliFemtoShareQualityPairCut)
   TRY_CONSTRUCTING_CLASS(AliFemtoDummyPairCut)
+  TRY_CONSTRUCTING_CLASS(AliFemtoPairCutRejectAll)
 
   Warning("AliFemtoConfigObject::Construct<ConstructAliFemtoPairCut>",
           "Could not load class %s", classname.c_str());
