@@ -418,8 +418,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fGoodRegionAMax;                      ///<
     Double_t          fBadRegionCMax;                       ///<
     Double_t          fBadRegionAMax;                       ///<
-    Double_t          fExcludeMaxR;                         ///< r cut exclude region
     Double_t          fExcludeMinR;                         ///< r cut exclude region
+    Double_t          fExcludeMaxR;                         ///< r cut exclude region
 
   private:
     /// \cond CLASSIMP
