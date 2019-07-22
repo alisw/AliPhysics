@@ -782,7 +782,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 		if( track->Pt() < fptcut ) continue;
 		if( fabs( track->Eta() ) > fetacut ) continue;
 
-		FillTHnSparse("hSinglePion", {fCent,track->Pt(),track->Charge(),track->Eta()},1.0 );
+		FillTHnSparse("hSinglePion", {fCent,track->Pt(),static_cast<double>(track->Charge()),track->Eta()},1.0 );
 	}
 
 	goodtrackindices.push_back(it);
