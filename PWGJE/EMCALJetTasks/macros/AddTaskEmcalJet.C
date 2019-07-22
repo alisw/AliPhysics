@@ -11,9 +11,10 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const char *tag                            = "Jet",
   const Double_t minJetPt                    = 0.,
   const Bool_t lockTask                      = kTRUE,
-  const Bool_t bFillGhosts                   = kFALSE
+  const Bool_t bFillGhosts                   = kFALSE,
+  const char *suffix                         = ""
 )
 {
   return AliEmcalJetTask::AddTaskEmcalJet(nTracks, nClusters, jetAlgo, radius, jetType, minTrPt, minClPt, ghostArea,
-                                          reco, tag, minJetPt, lockTask, bFillGhosts);
+                                          reco, tag, minJetPt, lockTask, bFillGhosts, suffix);
 }
