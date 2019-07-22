@@ -381,7 +381,7 @@ AliFemtoAnalysisPionPion::DefaultConfig()
 
 AliFemtoAnalysisPionPion::CutParams::CutParams()
   : TNamed(AliFemtoAnalysisPionPion::make_random_string("cut_").Data(), "Cut Params")
-  , cuts_use_attrs(false)
+  , cuts_use_attrs(true)
   , mc_pion_only(false)
   , event_use_basic(false)
   , event_MultMin(default_event.multiplicity.first)
