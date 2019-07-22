@@ -1970,6 +1970,13 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","411791106032220000","0163103100a00010"); // smearing
     cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","411791106032220000","0163103100b00010"); // smearing
     cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","411791106032220000","0163103100c00010"); // smearing
+} else if (trainConfig == 2036) {
+    cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","411790106032220000","0163103100500010"); // smearing
+    cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","411790206032220000","0163103100500010"); // smearing
+    cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","411790306032220000","0163103100500010"); // smearing
+    cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","411790406032220000","0163103100500010"); // smearing
+    cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","411790506032220000","0163103100500010"); // smearing
+    cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","411790606032220000","0163103100500010"); // smearing
 
   // configs with MC finetuning
   } else if (trainConfig == 2100){  // EMCal+DCAL clusters standard cuts, triggers, NL kSDM, tight timing, E/p TM
@@ -1984,7 +1991,7 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","4117901077032230000","0163103100000010"); // INT7
   } else if (trainConfig == 2105){  // EMCal+DCAL clusters standard cuts, triggers, NL kSDM, tight timing, E/p TM E>0.6 for NL
     cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","4117901077022230000","0163103100000010"); // INT7
- 
+
   } else if (trainConfig == 2110){  // EMCal+DCAL clusters standard cuts, triggers, NL kSDM, tight timing, E/p TM  // with eta<0.8
     cuts.AddCutPCMCalo("00010113","0d200009327000008250400000","4117918077032230000","0163103100000010"); // INT7
   } else if (trainConfig == 2111){  // EMCal+DCAL clusters standard cuts, triggers, NL kSDM, tight timing, E/p TM  // with eta<0.8
