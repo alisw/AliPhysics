@@ -170,6 +170,7 @@ AliFemtoConfigObject
 AliFemtoConfigObject::From<AliFemtoTrackCut>(const AliFemtoTrackCut &obj)
 {
   RETURN_IF_CAST_FROM(AliFemtoTrackCutPionPionIdealAK);
+  RETURN_IF_CAST_FROM(AliFemtoTrackCutPionPionMisidentAK);
   RETURN_IF_CAST_FROM(AliFemtoTrackCutPionPionAK);
   RETURN_IF_CAST(AliFemtoESDTrackCut);
   RETURN_IF_CAST(AliFemtoAODTrackCut);
@@ -211,6 +212,7 @@ AliFemtoConfigObject::Into<AliFemtoTrackCut>(bool)
 
   TRY_CONSTRUCTING_INTO(AliFemtoTrackCutPionPionAK);
   TRY_CONSTRUCTING_INTO(AliFemtoTrackCutPionPionIdealAK);
+  TRY_CONSTRUCTING_INTO(AliFemtoTrackCutPionPionMisidentAK);
   TRY_CONSTRUCTING_CLASS(AliFemtoAODTrackCut);
   TRY_CONSTRUCTING_CLASS(AliFemtoESDTrackCut);
 
@@ -288,6 +290,7 @@ AliFemtoConfigObject::Into<AliFemtoParticleCut>(bool)
 
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoTrackCutPionPionAK);
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoTrackCutPionPionIdealAK);
+  FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoTrackCutPionPionMisidentAK);
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoESDTrackCut);
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoAODTrackCut);
   FORWARD_TO_BUILDER(AliFemtoV0TrackCut, AliFemtoV0TrackCut);
