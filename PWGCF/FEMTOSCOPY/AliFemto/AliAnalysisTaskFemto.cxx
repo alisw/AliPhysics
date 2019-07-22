@@ -41,6 +41,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
+  fVEvent(NULL),
   fAOD(NULL),
   fAODpidUtil(NULL),
   fAODheader(NULL),
@@ -86,6 +87,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
+  fVEvent(NULL),
   fAOD(NULL),
   fAODpidUtil(NULL),
   fAODheader(NULL),
@@ -129,6 +131,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto &aFemtoTas
   AliAnalysisTaskSE(aFemtoTask), //AliAnalysisTask(aFemtoTask),
   fESD(aFemtoTask.fESD),
   fESDpid(aFemtoTask.fESDpid),
+  fVEvent(aFemtoTask.fVEvent),
   fAOD(aFemtoTask.fAOD),
   fAODpidUtil(aFemtoTask.fAODpidUtil),
   fAODheader(aFemtoTask.fAODheader),
@@ -410,7 +413,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
 
   if (auto *femtoReaderNanoAOD = dynamic_cast<AliFemtoEventReaderNanoAODChain *>(fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    AliAnalysisTaskSE::ConnectInputData();    
+    AliAnalysisTaskSE::ConnectInputData();
     if (!aodH) {
       TObject *handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
       if (fVerbose) {
@@ -427,7 +430,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
 	if (!fNanoAODheader) AliFatal("Not a standard NanoAOD");
 	femtoReaderNanoAOD->SetAODheader(fNanoAODheader);
 
-	
+
         fAnalysisType = 3;
       } else {
         if (fVerbose)
@@ -438,7 +441,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
       if (fVerbose)
         AliInfo("Selected NanoAOD analysis");
       fAnalysisType = 3;
-    
+
 
     }
   }
@@ -675,7 +678,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
   }
 
     if (fAnalysisType == 3) {
-      
+
       if (auto *faodc = dynamic_cast<AliFemtoEventReaderNanoAODChain *>(fReader)) {
 	// Process the event
 	if (!fInputEvent)
@@ -691,7 +694,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
       // Post the output histogram list
       PostData(0, fOutputList);
     }
-  
+
 }
 
 //________________________________________________________________________
@@ -920,4 +923,3 @@ void AliAnalysisTaskFemto::Set4DCorrectionsLambdasMinus(THnSparse *h1)
 {
   f4DcorrectionsLambdasMinus = h1;
 }
-
