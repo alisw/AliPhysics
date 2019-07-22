@@ -152,6 +152,7 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
   AliAnalysisTaskSEHFSystPID.cxx
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
+  AliAnalysisTaskSEXicTopKpi.cxx
    )
 
 # Headers from sources

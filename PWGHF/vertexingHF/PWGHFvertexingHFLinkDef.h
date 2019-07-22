@@ -122,5 +122,6 @@
 #pragma link C++ class AliAnalysisTaskSEDmesonPIDSysProp+;
 #pragma link C++ class IClassifierReader+;
 #pragma link C++ class AliAnalysisTaskSELbtoLcpi4+;
+#pragma link C++ class AliAnalysisTaskSEXicTopKpi+;
 
 #endif
