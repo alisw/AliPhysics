@@ -232,7 +232,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fEnableSortForClusMC(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fDoDetailedM02(NULL),
+  fDoDetailedM02(kFALSE),
   fTrackMatcherRunningMode(0),
   fMaxAllowedPi0OverlapsMC(-1)
 {
@@ -410,7 +410,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fEnableSortForClusMC(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fDoDetailedM02(NULL),
+  fDoDetailedM02(kFALSE),
   fTrackMatcherRunningMode(0),
   fMaxAllowedPi0OverlapsMC(-1)
 {
