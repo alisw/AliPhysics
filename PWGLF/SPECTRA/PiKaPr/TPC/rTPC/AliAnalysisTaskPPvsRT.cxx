@@ -473,12 +473,22 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
     fDphi->Sumw2();
     fListOfObjects->Add(fDphi);
     
+   /*
+   h: fMeanChT = 7.269
+   i: fMeanChT = 7.257
+   j: fMeanChT = 7.265
+   k: fMeanChT = 7.261
+   l: fMeanChT = 7.266
+   o: fMeanChT = 7.211
+   p: fMeanChT = 7.216
+ 
+  */
     
     const Int_t nBinsRT = 80;
     Double_t binsRT[nBinsRT+1] = {0};
     
     for(Int_t i = 0; i <= nBinsRT; ++i){
-        binsRT[i] = (double)(i-1)/fMeanChT;
+        binsRT[i] = (double)(i-1)/8.0;
     }
     
     fRT = new TH1D("hRT","hRT; R_{T}; Entries",nBinsRT,binsRT);
@@ -631,7 +641,6 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
                     for(Int_t r =0; r < 3; r++)
                         fListOfObjects->Add(hDeDxVsP[r][i][j]);
                     
-                    if(i!=5) continue;
                     fListOfObjects->Add(histPiV0[i][j]);
                     fListOfObjects->Add(histPiTof[i][j]);
                     fListOfObjects->Add(histEV0[i][j]);
@@ -1904,24 +1913,24 @@ void AliAnalysisTaskPPvsRT::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
 }
 //________________________________________________________________________
 Double_t AliAnalysisTaskPPvsRT::EtaCalibration( const Int_t &indx, const Double_t &eta){
+                                    //    h        i         j        l      k        o          p
+    const Double_t aPos[nRt+2]      = {49.9044 ,50.0841  ,49.8419 ,49.9799 ,49.9659 ,50.0535 ,50.0649};
+    const Double_t bPos[nRt+2]      = {4.05075 ,-0.743724,10.3952 ,2.99619 ,2.91366 ,-2.87404,-4.3589};
+    const Double_t cPos[nRt+2]      = {-58.1027,-13.8508 ,-151.227,-45.718 ,-45.5994,31.159  ,66.268 };
+    const Double_t dPos[nRt+2]      = {342.297 ,141.269  ,900.83  ,290.013 ,290.042 ,-151.257,-435.715};
+    const Double_t ePos[nRt+2]      = {-1098.19,-567.054 ,-2833.25,-1018.42,-1014.49,282.703 ,1325.24};
+    const Double_t fPos[nRt+2]      = {1944.32 ,1105.63  ,4884.59 ,1948.68 ,1931.84 ,-98.8756,-2030.25};
+    const Double_t gPos[nRt+2]      = {-1749.14,-1022.19 ,-4318.99,-1864.06,-1839.36,-230.114,1542.09};
+    const Double_t hPos[nRt+2]      = {617.929 ,355.158  ,1521.66 ,692.752 ,680.421 ,172.854 ,-468.577};
     
-    const Double_t aPos[nRt+2]      = {49.9044 ,50.0841  ,0,49.9799,49.9659,0,0};
-    const Double_t bPos[nRt+2]      = {4.05075 ,-0.743724,0,2.99619,2.91366,0,0};
-    const Double_t cPos[nRt+2]      = {-58.1027,-13.8508 ,0,-45.718,-45.5994,0,0};
-    const Double_t dPos[nRt+2]      = {342.297 ,141.269  ,0,290.013,290.042,0,0};
-    const Double_t ePos[nRt+2]      = {-1098.19,-567.054 ,0,-1018.42,-1014.49,0,0};
-    const Double_t fPos[nRt+2]      = {1944.32 ,1105.63  ,0,1948.68,1931.84,0,0};
-    const Double_t gPos[nRt+2]      = {-1749.14,-1022.19 ,0,-1864.06,-1839.36,0,0};
-    const Double_t hPos[nRt+2]      = {617.929 ,355.158  ,0,692.752,680.421,0,0};
-    
-    const Double_t aNeg[nRt+2]      = {49.9261,50.0561,0,50.078 ,50.046 ,0,0};
-    const Double_t bNeg[nRt+2]      = {2.92422,4.68965,0,6.67199,6.79992,0,0};
-    const Double_t cNeg[nRt+2]      = {61.6661,65.891 ,0,103.662,109.86 ,0,0};
-    const Double_t dNeg[nRt+2]      = {421.545,394.542,0,611.034,668.241,0,0};
-    const Double_t eNeg[nRt+2]      = {1283.04,1100.56,0,1695.63,1916.44,0,0};
-    const Double_t fNeg[nRt+2]      = {1944.85,1516.21,0,2395.88,2815.04,0,0};
-    const Double_t gNeg[nRt+2]      = {1442.98,989.24 ,0,1669.22,2057.21,0,0};
-    const Double_t hNeg[nRt+2]      = {419.491,238.333,0,455.362,595.391,0,0};
+    const Double_t aNeg[nRt+2]      = {49.9261,50.0561,49.9583,50.078 ,50.046 ,49.9496,50.1258};
+    const Double_t bNeg[nRt+2]      = {2.92422,4.68965,3.38038,6.67199,6.79992,2.45301,12.7977};
+    const Double_t cNeg[nRt+2]      = {61.6661,65.891 ,53.1256,103.662,109.86 ,53.654 ,190.076};
+    const Double_t dNeg[nRt+2]      = {421.545,394.542,314.489,611.034,668.241,363.689,1144.11};
+    const Double_t eNeg[nRt+2]      = {1283.04,1100.56,825.296,1695.63,1916.44,1115.13,3411.98};
+    const Double_t fNeg[nRt+2]      = {1944.85,1516.21,1021.01,2395.88,2815.04,1762.18,5402.99};
+    const Double_t gNeg[nRt+2]      = {1442.98,989.24 ,548.44 ,1669.22,2057.21,1421.46,4379.16};
+    const Double_t hNeg[nRt+2]      = {419.491,238.333,84.7945,455.362,595.391,469.45 ,1436.76};
     
     
     for(Int_t i=0; i<8; ++i)
@@ -1954,17 +1963,17 @@ Double_t AliAnalysisTaskPPvsRT::EtaCalibration( const Int_t &indx, const Double_
 //________________________________________________________________________
 Double_t AliAnalysisTaskPPvsRT::EtaCalibrationEl(const Int_t &indx, const Double_t &eta){
     
-    const Double_t aPosEl[nRt+2]    = {79.8647 ,79.6737 ,0,80.1263 ,79.9957 ,0,0};
-    const Double_t bPosEl[nRt+2]    = {6.50512 ,16.0745 ,0,5.28525 ,7.03079 ,0,0};
-    const Double_t cPosEl[nRt+2]    = {-35.9277,-80.5639,0,-32.7731,-42.9098,0,0};
-    const Double_t dPosEl[nRt+2]    = {73.1535 ,148.866 ,0,68.4524 ,88.7057 ,0,0};
-    const Double_t ePosEl[nRt+2]    = {-47.1041,-90.3376,0,-44.1566,-56.6554,0,0};
+    const Double_t aPosEl[nRt+2]    = {79.8647 ,79.6737 ,80.3915 ,80.1263 ,79.9957 ,79.6537 ,80.6434 };
+    const Double_t bPosEl[nRt+2]    = {6.50512 ,16.0745 ,9.53925 ,5.28525 ,7.03079 ,15.0221 ,0.40293 };
+    const Double_t cPosEl[nRt+2]    = {-35.9277,-80.5639,-69.3773,-32.7731,-42.9098,-83.6391,-21.8162};
+    const Double_t dPosEl[nRt+2]    = {73.1535 ,148.866 ,143.956 ,68.4524 ,88.7057 ,168.5   ,61.9147 };
+    const Double_t ePosEl[nRt+2]    = {-47.1041,-90.3376,-89.5518,-44.1566,-56.6554,-107.999,-44.6593};
     
-    const Double_t aNegEl[nRt+2]    = {79.6366 ,80.0767 ,0,79.8351 ,79.7387 ,0,0};
-    const Double_t bNegEl[nRt+2]    = {-11.3437,-2.51009,0,-8.46921,-8.60021,0,0};
-    const Double_t cNegEl[nRt+2]    = {-65.1353,-23.6188,0,-44.5947,-44.1718,0,0};
-    const Double_t dNegEl[nRt+2]    = {-134.447,-65.5053,0,-86.2242,-84.4984,0,0};
-    const Double_t eNegEl[nRt+2]    = {-87.7848,-51.1463,0,-53.6285,-51.945 ,0,0};
+    const Double_t aNegEl[nRt+2]    = {79.6366 ,80.0767 ,79.6157 ,79.8351 ,79.7387 ,79.3638 ,79.9111 };
+    const Double_t bNegEl[nRt+2]    = {-11.3437,-2.51009,-16.2468,-8.46921,-8.60021,-17.1977,-1.66066};
+    const Double_t cNegEl[nRt+2]    = {-65.1353,-23.6188,-92.0783,-44.5947,-44.1718,-82.7998,-6.96109};
+    const Double_t dNegEl[nRt+2]    = {-134.447,-65.5053,-180.753,-86.2242,-84.4984,-143.394,-16.0465};
+    const Double_t eNegEl[nRt+2]    = {-87.7848,-51.1463,-112.997,-53.6285,-51.945 ,-81.3439,-10.3587};
     
     
     for(Int_t i=0; i<5; ++i)
