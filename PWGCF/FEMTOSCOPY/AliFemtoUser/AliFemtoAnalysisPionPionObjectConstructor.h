@@ -909,6 +909,40 @@ struct Configuration<AliFemtoDummyPairCut> : AbstractConfiguration<AliFemtoPairC
 };
 #endif
 
+#if defined(ALIFEMTOPAIRCUTREJECTALL_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOPAIRCUTREJECTALL_H)
+#define ALIFEMTOCONSTRUCTOR_ALIFEMTOPAIRCUTREJECTALL_H
+template<>
+struct Configuration<AliFemtoPairCutRejectAll> : AbstractConfiguration<AliFemtoPairCut> {
+
+  Configuration(AliFemtoConfigObject &)
+    {
+    }
+
+  virtual operator AliFemtoPairCut*() const
+    {
+      return static_cast<AliFemtoPairCutRejectAll*>(*this);
+    }
+
+  virtual operator AliFemtoPairCutRejectAll*() const
+    {
+      return new AliFemtoPairCutRejectAll();
+    }
+
+  operator AliFemtoConfigObject() const
+    {
+      return AliFemtoConfigObject::BuildMap()
+        ("_class", "AliFemtoPairCutRejectAll");
+    }
+
+  static AliFemtoConfigObject
+  GetConfigurationOf(const AliFemtoPairCutRejectAll &_cut)
+    {
+      AliFemtoConfigObject result = AliFemtoConfigObject::BuildMap()
+        ("_class", "AliFemtoPairCutRejectAll");
+      return result;
+    }
+};
+#endif
 
 #if defined(ALIFEMTOPAIRCUTPT_H) && !defined(ALIFEMTOCONSTRUCTOR_ALIFEMTOPAIRCUTPT_H)
 #define ALIFEMTOCONSTRUCTOR_ALIFEMTOPAIRCUTPT_H

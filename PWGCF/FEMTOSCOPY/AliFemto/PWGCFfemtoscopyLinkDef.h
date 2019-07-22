@@ -28,6 +28,7 @@
 #pragma link C++ class AliFemtoEventReaderStandard+;
 #pragma link C++ class AliFemtoKinkCut+;
 #pragma link C++ class AliFemtoPairCut+;
+#pragma link C++ class AliFemtoPairCutRejectAll;
 #pragma link C++ class AliFemtoKTPairCut+;
 #pragma link C++ class AliFemtoParticleCut+;
 #pragma link C++ class AliFemtoTrackCut+;
