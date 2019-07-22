@@ -1391,6 +1391,14 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 1090) { //Standard cut for pp 5 TeV analysis VAND
     cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); //
 
+  } else if (trainConfig == 1100) { //new cut for pp 8 TeV analysis VAND triggers and MB for RpA calcluation
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0152103500000000","1111101060032230000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
+  } else if (trainConfig == 1101) { //new cut for pp 8 TeV analysis VAND triggers and MB for RpA calcluation
+    cuts.AddCutPCM("00052113", "00200009f9730000dge0400000", "0152103500000000","1111101060032230000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
+    cuts.AddCutPCM("00081113", "00200009f9730000dge0400000", "0152103500000000","1111101060032230000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
+
+
+
   } else if (trainConfig == 2001) { // Double Gap event selection  special trigger 11
     cuts.AddCutPCM("000b0113", "0d200009267300008250404000", "0152103500000000"); // eta < 0.8
 
@@ -1668,8 +1676,9 @@ if(!cuts.AreValid()){
 
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-
-    if ( (trainConfig > 24 && trainConfig < 29) || ( trainConfig > 69 && trainConfig < 73 ) || (trainConfig > 319 && trainConfig < 350 ) || (trainConfig >= 1070 && trainConfig <= 1079)){
+    if(!cuts.GetClusterCut(i).CompareTo("")){
+      cout << "\nNo cluster cut set, not filling cluster histograms for triggers ...\n" << endl;
+    } else {
         TString caloCutPos = cuts.GetClusterCut(i);
         caloCutPos.Resize(1);
         TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
