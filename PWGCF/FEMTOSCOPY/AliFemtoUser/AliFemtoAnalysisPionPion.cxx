@@ -23,6 +23,7 @@
 // pair cuts
 #include "AliFemtoPairCutAntiGamma.h"
 #include "AliFemtoPairCutDetaDphi.h"
+#include "AliFemtoPairCutRejectAll.h"
 
 // correlation functions
 #include "AliFemtoAvgSepCorrFctn.h"
@@ -383,6 +384,7 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
   : TNamed(AliFemtoAnalysisPionPion::make_random_string("cut_").Data(), "Cut Params")
   , cuts_use_attrs(true)
   , mc_pion_only(false)
+  , mc_nonpion_only(false)
   , event_use_basic(false)
   , event_MultMin(default_event.multiplicity.first)
   , event_MultMax(default_event.multiplicity.second)
@@ -487,8 +489,9 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   }
 
   if (p.cuts_use_attrs) {
-    auto *cut = p.mc_pion_only ? new AliFemtoTrackCutPionPionIdealAK()
-                               : new AliFemtoTrackCutPionPionAK();
+    auto *cut = p.mc_nonpion_only ? new AliFemtoTrackCutPionPionMisidentAK()
+              :    p.mc_pion_only ? new AliFemtoTrackCutPionPionIdealAK()
+                                  : new AliFemtoTrackCutPionPionAK();
     cut->pt_range = {p.pion_1_PtMin, p.pion_1_PtMax};
     cut->eta_range = {p.pion_1_EtaMin, p.pion_1_EtaMax};
     cut->status = p.pion_1_status;
@@ -618,6 +621,9 @@ AliFemtoPairCut*
 AliFemtoAnalysisPionPion::BuildPairCut(const CutParams &p) const
 {
   if (p.cuts_use_attrs) {
+    if (p.mc_nonpion_only) {
+      return new AliFemtoPairCutRejectAll();
+    }
     if (p.pair_use_avgsep) {
       auto *pair_cut = new AliFemtoPairCutPionPionAKAvgSep();
       pair_cut->remove_same_label = p.pair_remove_same_label;

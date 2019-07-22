@@ -119,6 +119,8 @@ struct MacroParams : public TNamed {
   Float_t ylm_vmax { 0.3 };
   Bool_t ylm_useLCMS { true };
 
+  bool do_mc_misident_analysis { false };
+
   bool do_deltaeta_deltaphi_cf { false };
   bool do_avg_sep_cf { false };
   bool do_kt_avg_sep_cf { false };
@@ -701,6 +703,26 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       manager->AddAnalysis(analysis);
+
+      if (macro_config.do_mc_misident_analysis) {
+        if (!analysis_config.is_mc_analysis) {
+          throw std::runtime_error("do_mc_misident_analysis requested for non-mc analysis");
+        }
+        if (!cut_config.cuts_use_attrs) {
+          throw std::runtime_error("do_mc_misident_analysis requested for non 'attrs' cut");
+        }
+
+        TString misident_name = analysis_name + "_misident";
+        AFAPP::AnalysisParams misident_config(analysis_config);
+        AFAPP::CutParams misident_cut_config(cut_config);
+        misident_cut_config.mc_nonpion_only = true;
+
+        auto *misident_analysis = new AliFemtoAnalysisPionPion(misident_name, misident_config, misident_cut_config);
+        misident_analysis->SetTrackFilter(filter_mask);
+        misident_analysis->AddStanardCutMonitors();
+
+        manager->AddAnalysis(misident_analysis);
+      }
     }
   }
 
