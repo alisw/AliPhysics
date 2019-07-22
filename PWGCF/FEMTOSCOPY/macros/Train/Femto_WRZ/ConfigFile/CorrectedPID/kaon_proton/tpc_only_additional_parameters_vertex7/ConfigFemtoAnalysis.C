@@ -242,7 +242,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  //Select basic cuts:
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 	  mecetaphitpc[aniter]->SetEventMult(0,100000);
-	  mecetaphitpc[aniter]->SetVertZPos(-10,10);
+	  mecetaphitpc[aniter]->SetVertZPos(-7,7);
 
 	  //Study the multiplicity distribution:
 	  if(turnOnMonitors == 1) {
