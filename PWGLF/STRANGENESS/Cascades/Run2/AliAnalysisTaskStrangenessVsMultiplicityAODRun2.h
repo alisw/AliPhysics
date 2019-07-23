@@ -222,6 +222,7 @@ public:
     void AddCascadeConfigurationPreliminaryCrosscheck(); //
 //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliAODTrack *lTrack);
+    Float_t GetLengthInActiveZone( AliAODTrack *gt, Float_t deltaY, Float_t deltaZ, Float_t b );
 //---------------------------------------------------------------------------------------
     void SetSaveSpecificCascadeConfig(TString lConfig){
         fkConfigToSave = lConfig;
