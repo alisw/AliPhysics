@@ -3282,9 +3282,12 @@ Bool_t AliAnalysisTaskGammaCaloMerged::NumberOfMCEventNeutralPionOverlapInEMCal(
       AliMCParticle* particle1 = (AliMCParticle*) mcEvent->GetTrack(i);
       if (!particle1) continue;
       if (TMath::Abs(particle1->PdgCode()) == 111){
-        if(TMath::Abs(particle1->Eta()) > 0.67 || !( (particle1->Phi() > 1.396 && particle1->Phi() < 3.28) || (particle1->Phi() > 4.55 && particle1->Phi() < 5.70) )){
-          continue;
-        }
+        if(TMath::Abs(particle1->Eta()) > 0.67) continue;
+
+        if ( (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) && !(particle1->Phi() > 1.396 && particle1->Phi() < 3.28)) continue;
+        if ( (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 3) && !(particle1->Phi() > 4.55 && particle1->Phi() < 5.70)) continue;
+        if ( (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 4) && !( (particle1->Phi() > 1.396 && particle1->Phi() < 3.28) || (particle1->Phi() > 4.55 && particle1->Phi() < 5.70) )) continue;
+
         for(Long_t j = i+1; j < mcEvent->GetNumberOfPrimaries(); j++) {
           AliMCParticle* particle2 = (AliMCParticle*) mcEvent->GetTrack(j);
           if (!particle2) continue;
