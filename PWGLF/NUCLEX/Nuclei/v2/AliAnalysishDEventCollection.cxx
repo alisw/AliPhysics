@@ -14,7 +14,7 @@
 
 //_____________________________________________________________________________
 // Default constructor 
-AliReconstructedFirst::AliReconstructedFirst() :
+AliReconstructed2pcFirst::AliReconstructed2pcFirst() :
   fPt(0),
   fEta(0),
   fTheta(0),
@@ -49,7 +49,7 @@ AliReconstructedFirst::AliReconstructedFirst() :
   // default constructor constructor
 }
 // //_____________________________________________________________________________
-// AliReconstructedFirst::AliReconstructedFirst(const AliReconstructedFirst &obj) :
+// AliReconstructed2pcFirst::AliReconstructed2pcFirst(const AliReconstructed2pcFirst &obj) :
 //   fPt(0),
 //   fEta(0),
 //   fTheta(0),
@@ -77,7 +77,7 @@ AliReconstructedFirst::AliReconstructedFirst() :
 //   // copy constructor
 // }
 // //_____________________________________________________________________________
-// AliReconstructedFirst &AliReconstructedFirst::operator=(const AliReconstructedFirst &obj)
+// AliReconstructed2pcFirst &AliReconstructed2pcFirst::operator=(const AliReconstructed2pcFirst &obj)
 // {
 //   //Assignment operator
 //   if(this == &obj) return *this;
@@ -111,7 +111,7 @@ AliReconstructedFirst::AliReconstructedFirst() :
 
 //_____________________________________________________________________________
 
-AliReconstructedFirst::~AliReconstructedFirst()
+AliReconstructed2pcFirst::~AliReconstructed2pcFirst()
 
 {
 
@@ -119,7 +119,7 @@ AliReconstructedFirst::~AliReconstructedFirst()
 
 //_____________________________________________________________________________
 
-AliReconstructedSecond::AliReconstructedSecond() :
+AliReconstructed2pcSecond::AliReconstructed2pcSecond() :
   sPt(0),
   sEta(0),
   sTheta(0),
@@ -155,7 +155,7 @@ AliReconstructedSecond::AliReconstructedSecond() :
 
 }
 // //_____________________________________________________________________________
-// AliReconstructedSecond::AliReconstructedSecond(const AliReconstructedSecond &obj) :
+// AliReconstructed2pcSecond::AliReconstructed2pcSecond(const AliReconstructed2pcSecond &obj) :
 //   sPt(0),
 //   sEta(0),
 //   sTheta(0),
@@ -183,7 +183,7 @@ AliReconstructedSecond::AliReconstructedSecond() :
 //   // copy constructor
 // }
 // //_____________________________________________________________________________
-// AliReconstructedSecond &AliReconstructedSecond::operator=(const AliReconstructedSecond &obj)
+// AliReconstructed2pcSecond &AliReconstructed2pcSecond::operator=(const AliReconstructed2pcSecond &obj)
 // {
 //   //Assignment operator
 //   if(this == &obj) return *this;
@@ -217,7 +217,7 @@ AliReconstructedSecond::AliReconstructedSecond() :
 
 //_____________________________________________________________________________
 
-AliReconstructedSecond::~AliReconstructedSecond()
+AliReconstructed2pcSecond::~AliReconstructed2pcSecond()
 
  {
 
@@ -286,14 +286,14 @@ AliAnalysishDEventCollection::AliAnalysishDEventCollection(Short_t eventBuffSize
 
     (fEvt + ii)->fNumberCandidateFirst = 0;
 
-    (fEvt + ii)->fReconstructedFirst = new AliReconstructedFirst[maxFirstMult];
+    (fEvt + ii)->fReconstructedFirst = new AliReconstructed2pcFirst[maxFirstMult];
 
 
     (fEvt + ii)->fReconstructedSecond = NULL;
 
     (fEvt + ii)->fNumberCandidateSecond = 0;
 
-    (fEvt + ii)->fReconstructedSecond = new AliReconstructedSecond[maxSecondMult];
+    (fEvt + ii)->fReconstructedSecond = new AliReconstructed2pcSecond[maxSecondMult];
 
 
   }
