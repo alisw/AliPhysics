@@ -74,6 +74,10 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fCutLambdaV(-1),
   fCutPhiV(-1),
   fCutRhoV(-1),
+  fCutCustomMass(-1),
+  fCutCustomFirst(-1),
+  fCutCustomSecond(-1),
+  fCutCustomV(-1),
   fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
   fOnlyOneAssocEtaSide(0),
@@ -212,7 +216,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   
   fITSClusterMap = new TH3F("fITSClusterMap", "; its cluster map; centrality; pT", 256, -0.5, 255.5, 20, 0, 100.001, 100, 0, 20);
   
-  fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 5, -0.5, 4.5, 500, -0.5, 0.5);
+  fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 6, -0.5, 5.5, 500, -0.5, 0.5);
   
   TH1::AddDirectory(oldStatus);
 }
@@ -251,6 +255,10 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCutLambdaV(-1),
   fCutPhiV(-1),
   fCutRhoV(-1),
+  fCutCustomMass(-1),
+  fCutCustomFirst(-1),
+  fCutCustomSecond(-1),
+  fCutCustomV(-1),
   fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
   fOnlyOneAssocEtaSide(0),
@@ -891,6 +899,22 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  }
 	}
 
+        // User-defined cut
+	if (fCutCustomMass > 0 && fCutCustomFirst > 0 && fCutCustomSecond > 0 && fCutCustomV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+        {
+	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), fCutCustomFirst, fCutCustomSecond);
+	  
+	  if (TMath::Abs(mass - fCutCustomMass*fCutCustomMass) < fCutCustomV * 5)
+          {
+	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), fCutCustomFirst, fCutCustomSecond);
+	    
+	    fControlConvResoncances->Fill(5, mass - fCutCustomMass*fCutCustomMass);
+	    
+	    if (mass > (fCutCustomMass-fCutCustomV)*(fCutCustomMass-fCutCustomV) && mass < (fCutCustomMass+fCutCustomV)*(fCutCustomMass+fCutCustomV))
+	      continue;
+	  }
+	}
+
 	if (twoTrackEfficiencyCut)
 	{
 	  // the variables & cuthave been developed by the HBT group 
@@ -1337,6 +1361,10 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fCutLambdaV = fCutLambdaV;
   target.fCutPhiV = fCutPhiV;
   target.fCutRhoV = fCutRhoV;
+  target.fCutCustomMass = fCutCustomMass;
+  target.fCutCustomFirst = fCutCustomFirst;
+  target.fCutCustomSecond = fCutCustomSecond;
+  target.fCutCustomV = fCutCustomV;
   target.fOnlyOneEtaSide = fOnlyOneEtaSide;
   target.fOnlyOneAssocEtaSide = fOnlyOneAssocEtaSide;
   target.fWeightPerEvent = fWeightPerEvent;
