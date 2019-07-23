@@ -51,6 +51,37 @@ AliFemtoCorrFctn3DLCMSPosQuad::AliFemtoCorrFctn3DLCMSPosQuad(const TString &pref
   fQinvWeight->Sumw2();
 }
 
+
+AliFemtoCorrFctn3DLCMSPosQuad
+  ::AliFemtoCorrFctn3DLCMSPosQuad(const TString &prefix,
+                                  const TString &suffix,
+                                  const std::vector<double> &out_bins,
+                                  const std::vector<double> &side_bins,
+                                  const std::vector<double> &long_bins)
+  : AliFemtoCorrFctn()
+  , fNumerator(nullptr)
+  , fDenominator(nullptr)
+  , fQinvWeight(nullptr)
+{
+  auto hist_name = [&] (TString name)
+    {
+      return prefix + name + suffix;
+    };
+
+  auto new_hist = [&] (TString name, TString title)
+    {
+      return new TH3F(hist_name(name), title,
+                      out_bins.size() - 1, out_bins.data(),
+                      side_bins.size() - 1, side_bins.data(),
+                      long_bins.size() - 1, long_bins.data());
+    };
+
+  fNumerator = new_hist("Num", "Numerator; q_{out}; q_{side}; q_{long}");
+  fDenominator = new_hist("Den", "Denominator; q_{out}; q_{side}; q_{long}");
+  fQinvWeight = new_hist("Qinv", "q_{inv} Weighted Denominator; q_{out}; q_{side}; q_{long}");
+  fQinvWeight->Sumw2();
+}
+
 AliFemtoCorrFctn3DLCMSPosQuad::AliFemtoCorrFctn3DLCMSPosQuad(const AliFemtoCorrFctn3DLCMSPosQuad &orig)
   : AliFemtoCorrFctn(orig)
   , fNumerator(new TH3F(*orig.fNumerator))
