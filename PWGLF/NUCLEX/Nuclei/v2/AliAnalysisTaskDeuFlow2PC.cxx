@@ -1400,8 +1400,8 @@ void AliAnalysisTaskDeuFlow2PC::UserExec(Option_t *) {
   int sCount = 0;
 
   // Float_t pMomentumTruth[3];
-  AliReconstructedFirst::MCFirstOrigin_t mcFirstOrigin = AliReconstructedFirst::kUnassigned;
-  AliReconstructedSecond::MCSecondOrigin_t mcSecondOrigin = AliReconstructedSecond::kUnassigned;
+  AliReconstructed2pcFirst::MCFirstOrigin_t mcFirstOrigin = AliReconstructed2pcFirst::kUnassigned;
+  AliReconstructed2pcSecond::MCSecondOrigin_t mcSecondOrigin = AliReconstructed2pcSecond::kUnassigned;
   
   Bool_t isP = kFALSE;  // particle
   Bool_t isaP = kFALSE; // anti-particle 

@@ -61,8 +61,8 @@
 #pragma link C++ class AliAnalysisTaskNucleiv2pPb+;
 #pragma link C++ class AliAnalysisTaskAllPtcv2+;
 #pragma link C++ class AliAnalysishDEventCollection+;  
-#pragma link C++ class AliReconstructedFirst+;
-#pragma link C++ class AliReconstructedSecond+;
+#pragma link C++ class AliReconstructed2pcFirst+;
+#pragma link C++ class AliReconstructed2pcSecond+;
 #pragma link C++ class AliAnalysishDEvent+;
 #pragma link C++ class AliAnalysishDEventCollection+;
 #pragma link C++ class AliAnalysisTaskDeuFlow2PC+;

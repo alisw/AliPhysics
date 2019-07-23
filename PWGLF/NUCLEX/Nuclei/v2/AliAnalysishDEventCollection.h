@@ -13,13 +13,13 @@
 
 using namespace std;
 
-class AliReconstructedFirst {
+class AliReconstructed2pcFirst {
   
  public:
-  AliReconstructedFirst();
-  virtual ~AliReconstructedFirst();
-  /* AliReconstructedFirst(const AliReconstructedFirst &obj); */
-  /* AliReconstructedFirst & operator=(const AliReconstructedFirst &obj); */
+  AliReconstructed2pcFirst();
+  virtual ~AliReconstructed2pcFirst();
+  /* AliReconstructed2pcFirst(const AliReconstructed2pcFirst &obj); */
+  /* AliReconstructed2pcFirst & operator=(const AliReconstructed2pcFirst &obj); */
   
   enum MCFirstOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
   Double_t fMomentum[3]; // 3 reconstructed momentum
@@ -54,18 +54,18 @@ class AliReconstructedFirst {
   Bool_t   isP;
   Bool_t   isaP;
   
-  ClassDef(AliReconstructedFirst, 1);   
+  ClassDef(AliReconstructed2pcFirst, 1);   
 
 };
 
-class AliReconstructedSecond {
+class AliReconstructed2pcSecond {
 
   
  public:
-  AliReconstructedSecond();
-  virtual ~AliReconstructedSecond();
-  /* AliReconstructedSecond(const AliReconstructedSecond &obj); */
-  /* AliReconstructedSecond & operator=(const AliReconstructedSecond &obj); */
+  AliReconstructed2pcSecond();
+  virtual ~AliReconstructed2pcSecond();
+  /* AliReconstructed2pcSecond(const AliReconstructed2pcSecond &obj); */
+  /* AliReconstructed2pcSecond & operator=(const AliReconstructed2pcSecond &obj); */
   
   enum MCSecondOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
   Double_t sMomentum[3]; // 3 reconstructed momentum
@@ -100,7 +100,7 @@ class AliReconstructedSecond {
   Bool_t   isP;
   Bool_t   isaP;
   
-  ClassDef(AliReconstructedSecond, 1);   
+  ClassDef(AliReconstructed2pcSecond, 1);   
   
 };
 
@@ -116,8 +116,8 @@ class AliAnalysishDEvent {
   Int_t  fNumberCandidateSecond; 
   Double_t fPrimaryVertex[3]; //Location of the primary vertex
   
-  AliReconstructedFirst *fReconstructedFirst;
-  AliReconstructedSecond *fReconstructedSecond;
+  AliReconstructed2pcFirst *fReconstructedFirst;
+  AliReconstructed2pcSecond *fReconstructedSecond;
   
   ClassDef(AliAnalysishDEvent, 1);
   
