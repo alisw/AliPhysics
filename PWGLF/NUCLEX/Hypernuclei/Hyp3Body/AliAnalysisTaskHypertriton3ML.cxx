@@ -176,6 +176,7 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   if (!fEventCuts.AcceptEvent(esdEvent)) {
     PostData(1, fListHist);
     PostData(2, fTreeHyp3);
+    return;
   }
 
   fREvent.fCent = fEventCuts.GetCentrality();
