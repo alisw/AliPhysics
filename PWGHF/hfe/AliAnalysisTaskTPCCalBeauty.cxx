@@ -143,6 +143,8 @@ fDWeight(0),
 fDWeightNew(0),
 fDWeightVar1(0),
 fDWeightVar2(0),
+fLcWeightVar1(0),
+fLcWeightVar2(0),
 fBWeight(0),
 fBWeightNew(0),
 fBWeightVar1(0),
@@ -363,6 +365,8 @@ fDWeight(0),
 fDWeightNew(0),
 fDWeightVar1(0),
 fDWeightVar2(0),
+fLcWeightVar1(0),
+fLcWeightVar2(0),
 fBWeight(0),
 fBWeightNew(0),
 fBWeightVar1(0),
@@ -768,6 +772,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fDWeightNew = new TH1F("fDWeightNew","D^{0}_data/AllD_MCNew;p_{T} (GeV/c);Weight;",nbins,xbins);
     fDWeightVar1 = new TH1F("fDWeightVar1","D^{0}_data/AllD_MC;p_{T} (GeV/c);Weight Var1;",nbins,xbins);
     fDWeightVar2 = new TH1F("fDWeightVar2","D^{0}_data/AllD_MC;p_{T} (GeV/c);Weight Var2;",nbins,xbins);
+    fLcWeightVar1 = new TH1F("fLcWeightVar1","Lc weight, Lc/D0 from model;p_{T} (GeV/c);Weight Var1;",nbins,xbins);
+    fLcWeightVar2 = new TH1F("fLcWeightVar2","Lc weight, Lc/D0 from data;p_{T} (GeV/c);Weight Var2;",nbins,xbins);
     //Double_t ratio[13] = {2.03552,1.0201,0.45925,0.211574,0.11987,0.0898116,0.0631282,0.0546798,0.0477205,0.0410021,0.0307936,0.0398483,0.0175335};
     //Double_t err[13] = {0.541651,0.146443,0.0498454,0.024907,0.01438,0.0107908,0.00848616,0.0061723,0.00587082,0.00566712,0.00597994,0.00811015,0.00693105};
     
@@ -791,6 +797,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         Double_t ratioNew[13] = {0.079428,0.0402934,0.0258836,0.0165168,0.0117076,0.00807683,0.00545914,0.00413535,0.00218055,0.00147282,0.000578039,0.000286482,0.000286482};
         Double_t ratioVar1[13] = {0.0915569,0.0426736,0.0268534,0.0170434,0.0119796,0.00818737,0.00545914,0.00409031,0.00211737,0.00141322,0.00053284,0.000239136,0.000239136};
         Double_t ratioVar2[13] = {0.0672991,0.0379131,0.0249139,0.0159903,0.0114355,0.00796629,0.00545914,0.0041804,0.00224373,0.00153242,0.000623238,0.000333829,0.000333829};
+        Double_t wLcVar1[13] = {4.3342,2.37276,1.48625,0.868762,0.534275,0.317682,0.183146,0.108728,0.0428397,0.0183961,0.0035457,0.000727648,0.000727648};
+        Double_t wLcVar2[13] = {3.04014,1.37538,0.818956,0.496787,0.334641,0.225084,0.149481,0.111404,0.0596543,0.039542,0.0158581,0.00798883,0.00798883};
         /*Double_t ratio[13] = {0.566977,0.233989,0.0909109,0.0346338,0.0155742,0.00734675,0.00362088,0.00189595,0.000670163,0.000284606,5.13181e-05,8.84883e-06,8.84883e-06};
         Double_t err[13] = {0.0804276,0.0123637,0.00326455,0.0013947,0.000671652,0.000375317,0.000216074,9.65006e-05,4.67481e-05,2.13019e-05,5.85888e-06,1.75491e-06,0};
         Double_t ratioNew[13] = {0.566977,0.233989,0.0909109,0.0346338,0.0155742,0.00734675,0.00362088,0.00189595,0.000670163,0.000284606,5.13181e-05,8.84883e-06,8.84883e-06};
@@ -802,6 +810,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
             fDWeightNew->SetBinContent(idata,ratioNew[idata-1]);
             fDWeightVar1->SetBinContent(idata,ratioVar1[idata-1]);
             fDWeightVar2->SetBinContent(idata,ratioVar2[idata-1]);
+            fLcWeightVar1->SetBinContent(idata,wLcVar1[idata-1]);
+            fLcWeightVar2->SetBinContent(idata,wLcVar2[idata-1]);
         }
     }else{
         Double_t ratio[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
@@ -809,6 +819,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         Double_t ratioNew[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
         Double_t ratioVar1[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
         Double_t ratioVar2[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+        Double_t wLcVar1[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+        Double_t wLcVar2[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
         
         for (int idata=1; idata<14; idata++) {
             fDWeight->SetBinContent(idata,ratio[idata-1]);
@@ -816,6 +828,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
             fDWeightNew->SetBinContent(idata,ratioNew[idata-1]);
             fDWeightVar1->SetBinContent(idata,ratioVar1[idata-1]);
             fDWeightVar2->SetBinContent(idata,ratioVar2[idata-1]);
+            fLcWeightVar1->SetBinContent(idata,wLcVar1[idata-1]);
+            fLcWeightVar2->SetBinContent(idata,wLcVar2[idata-1]);
         }
     }
     
@@ -824,6 +838,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fOutputList->Add(fDWeightNew);
     fOutputList->Add(fDWeightVar1);
     fOutputList->Add(fDWeightVar2);
+    fOutputList->Add(fLcWeightVar1);
+    fOutputList->Add(fLcWeightVar2);
     
     
     //B Meson pt weighting
@@ -1986,6 +2002,16 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 
                                 dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(momPt));
                                 //fDTemplateWeightVar2->Fill(track->Pt(), DCA, dWeight);
+                                fSprsTemplatesWeightVar2->Fill(tempValue,dWeight);
+                            }
+                        }
+                        else if (fpidSort==17) { //if from Lc
+                            fSprsTemplatesWeight->Fill(tempValue); //no weight still in default
+                            if (momPt>1 && momPt<50.) { //in proper pt range
+                                dWeight = fLcWeightVar1->GetBinContent(fLcWeightVar1->FindBin(momPt));
+                                fSprsTemplatesWeightVar1->Fill(tempValue,dWeight);
+                                
+                                dWeight = fLcWeightVar2->GetBinContent(fLcWeightVar2->FindBin(momPt));
                                 fSprsTemplatesWeightVar2->Fill(tempValue,dWeight);
                             }
                         }
