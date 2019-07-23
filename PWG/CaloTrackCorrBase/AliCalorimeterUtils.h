@@ -394,7 +394,7 @@ class AliCalorimeterUtils : public TObject {
   void          SetRunNumber(Int_t run)                         { fRunNumber  = run             ; }
   Int_t         GetRunNumber()                            const { return fRunNumber             ; }
 
-  void		SetUseOneHistForAllBCs(Bool_t useOneHist) 	{ fDoUseMergedBCs = useOneHist  ; fEMCALRecoUtils->SetUseOneHistForAllBCs(useOneHist) ; }
+  void         SetUseOneHistForAllBCs(Bool_t useOneHist)        { fDoUseMergedBCs = useOneHist  ; fEMCALRecoUtils->SetUseOneHistForAllBCs(useOneHist) ; }
   
  private:
 
@@ -483,7 +483,7 @@ class AliCalorimeterUtils : public TObject {
   
   Float_t            fMCECellClusFracCorrParam[4]; ///<  Parameters for the function correcting the weight of the cells in the cluster.
 
-  Bool_t	     fDoUseMergedBCs;		///< flag to use one histo for all BCs
+  Bool_t             fDoUseMergedBCs;           ///< flag to use one histo for all BCs
   
   /// Copy constructor not implemented.
   AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ;

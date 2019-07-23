@@ -51,8 +51,7 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fRecoUtils(0),
   fOutput(0),
   fBasePath(""),
-  fCustomBadChannelFilePath(""),
-  fDoMergedBCs(kFALSE)
+  fCustomBadChannelFilePath("")
 
 {
   fVertex[0] = 0;
@@ -87,8 +86,7 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fRecoUtils(0),
   fOutput(0),
   fBasePath(""),
-  fCustomBadChannelFilePath(""),
-  fDoMergedBCs(kFALSE)
+  fCustomBadChannelFilePath("")
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -284,7 +282,7 @@ void AliEmcalCorrectionComponent::GetPass()
   }
 }
 
-/*
+/**
  * Fills the Cell QA histograms
  */
 void AliEmcalCorrectionComponent::FillCellQA(TH1F* h){

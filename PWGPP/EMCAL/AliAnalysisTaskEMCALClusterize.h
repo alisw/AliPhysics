@@ -452,7 +452,7 @@ private:
   
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
 
-  Bool_t		 fDoMergedBCs;		  // flag whether to load four histos for the time calib or one merged histo
+  Bool_t                fDoMergedBCs;              ///< flag whether to load four histos for the time calib or one merged histo
   
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&) ;

@@ -190,7 +190,7 @@ public:
   void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
                                                            SwitchOnRecalibration()           ; }      
   // Time Recalibration
-  void	   SetUseOneHistForAllBCs(Bool_t useOneHist)     { fDoUseMergedBC = useOneHist ; }
+  void     SetUseOneHistForAllBCs(Bool_t useOneHist)     { fDoUseMergedBC = useOneHist ; }
   void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
 
   void     RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & time,Bool_t isLGon = kFALSE) const;
@@ -207,7 +207,7 @@ public:
       if(fDoUseMergedBC)
         return (Float_t) ((TH1S*)fEMCALTimeRecalibrationFactors->At(1*isLGon))->GetBinContent(absID); 
       else 
-	return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->GetBinContent(absID);
+        return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->GetBinContent(absID);
     } else return 0 ; } 
   void     SetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Double_t c = 0, Bool_t isLGon=kFALSE) { 
     if(!fEMCALTimeRecalibrationFactors) InitEMCALTimeRecalibrationFactors() ;
@@ -216,7 +216,7 @@ public:
     else
       ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->SetBinContent(absID,c) ; }  
   
-  TH1  *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)const       { return (TH1*)fEMCALTimeRecalibrationFactors->At(bc) ; }	
+  TH1  *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)const       { return (TH1*)fEMCALTimeRecalibrationFactors->At(bc) ; }
   void     SetEMCALChannelTimeRecalibrationFactors(const TObjArray *map);
   void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , const TH1* h);
 
@@ -495,7 +495,7 @@ private:
   // Time Recalibration with L1 phase 
   Bool_t     fUseL1PhaseInTimeRecalibration;   ///< Switch on or off the L1 phase in time recalibration
   TObjArray* fEMCALL1PhaseInTimeRecalibration; ///< Histogram with map of L1 phase per SM, EMCAL
-  Bool_t     fDoUseMergedBC;		       ///< flag for using one histo for all BCs
+  Bool_t     fDoUseMergedBC;                   ///< flag for using one histo for all BCs
 
   // Recalibrate with run dependent corrections, energy
   Bool_t     fUseRunCorrectionFactors;   ///< Use Run Dependent Correction

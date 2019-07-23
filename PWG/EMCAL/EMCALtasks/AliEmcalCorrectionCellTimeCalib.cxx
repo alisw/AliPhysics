@@ -29,6 +29,7 @@ AliEmcalCorrectionCellTimeCalib::AliEmcalCorrectionCellTimeCalib() :
   ,fCellTimeDistAfter(0)
   ,fCalibrateTime(kFALSE)
   ,fCalibrateTimeL1Phase(kFALSE)
+  ,fDoMergedBCs(kFALSE)
   ,fUseAutomaticTimeCalib(1)
 {
 }
@@ -55,7 +56,8 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
   // init reco utils
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
-    
+
+  GetProperty("doMergedBCs", fDoMergedBCs);    
 
   if (fDoMergedBCs)
     fRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);

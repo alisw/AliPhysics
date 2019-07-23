@@ -100,7 +100,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   // Set
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetNeedEmcalGeometry(Bool_t b)                        { fNeedEmcalGeom     = b                              ; }
-  void			      SetUseOneHistForAllBCs(Bool_t b)			    { fDoUseMergedBCs	 = b				  ; }
   // Centrality options
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
   void                        SetCentralityEstimator(const char * c)                { fCentEst           = c                              ; }
@@ -244,8 +243,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   Bool_t                      fNeedEmcalGeom;              ///< whether or not the task needs the emcal geometry
   AliEMCALGeometry           *fGeom;                       //!<! Emcal geometry
 
-  Bool_t		      fDoUseMergedBCs;		   ///< flag to use one histo for all BCs
-
   TObjArray                   fParticleCollArray;          ///< Particle/track collection array
   TObjArray                   fClusterCollArray;           ///< Cluster collection array
   std::vector <AliEmcalCorrectionCellContainer *> fCellCollArray; ///< Cells collection array
@@ -253,7 +250,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   TList *                     fOutput;                     //!<! Output for histograms
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionTask, 7); // EMCal correction task
+  ClassDef(AliEmcalCorrectionTask, 6); // EMCal correction task
   /// \endcond
 };
 
