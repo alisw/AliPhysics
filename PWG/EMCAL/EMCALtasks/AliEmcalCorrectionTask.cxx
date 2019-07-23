@@ -62,7 +62,6 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   fForceBeamType(kNA),
   fNeedEmcalGeom(kTRUE),
   fGeom(0),
-  fDoUseMergedBCs(kFALSE),
   fParticleCollArray(),
   fClusterCollArray(),
   fCellCollArray(),
@@ -109,7 +108,6 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   fForceBeamType(kNA),
   fNeedEmcalGeom(kTRUE),
   fGeom(0),
-  fDoUseMergedBCs(kFALSE),
   fParticleCollArray(),
   fClusterCollArray(),
   fCellCollArray(),
@@ -156,7 +154,6 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const AliEmcalCorrectionTask & ta
   fForceBeamType(task.fForceBeamType),
   fNeedEmcalGeom(task.fNeedEmcalGeom),
   fGeom(task.fGeom),
-  fDoUseMergedBCs(task.fDoUseMergedBCs),
   fParticleCollArray(*(static_cast<TObjArray *>(task.fParticleCollArray.Clone()))),
   fClusterCollArray(*(static_cast<TObjArray *>(task.fClusterCollArray.Clone()))),
   fOutput(task.fOutput)                           // TODO: More care is needed here!
@@ -221,7 +218,6 @@ void swap(AliEmcalCorrectionTask & first, AliEmcalCorrectionTask & second)
   swap(first.fForceBeamType, second.fForceBeamType);
   swap(first.fNeedEmcalGeom, second.fNeedEmcalGeom);
   swap(first.fGeom, second.fGeom);
-  swap(first.fDoUseMergedBCs, second.fDoUseMergedBCs);
   swap(first.fParticleCollArray, second.fParticleCollArray);
   swap(first.fClusterCollArray, second.fClusterCollArray);
   swap(first.fCellCollArray, second.fCellCollArray);
@@ -1325,7 +1321,6 @@ Bool_t AliEmcalCorrectionTask::Run()
     component->SetCentralityBin(fCentBin);
     component->SetCentrality(fCent);
     component->SetVertex(fVertex);
-    component->SetUseMergedBCs(fDoUseMergedBCs);
 
     component->Run();
   }

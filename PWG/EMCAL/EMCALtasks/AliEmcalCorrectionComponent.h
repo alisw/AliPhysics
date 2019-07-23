@@ -104,8 +104,6 @@ class AliEmcalCorrectionComponent : public TNamed {
   void SetIsESD(Bool_t isESD) {fEsdMode = isESD; }
   void SetCustomBadChannels(TString customBC) {fCustomBadChannelFilePath = customBC; }
 
-  void SetUseMergedBCs(Bool_t useOneHist) {fDoMergedBCs = useOneHist; }
-
   /// Set %YAML Configuration
   void SetYAMLConfiguration(PWG::Tools::AliYAMLConfiguration config) { fYAMLConfig = config; }
 
@@ -138,14 +136,12 @@ class AliEmcalCorrectionComponent : public TNamed {
   TString                fBasePath;                       ///< Base folder path to get root files
   TString                fCustomBadChannelFilePath;       ///< Custom path to bad channel map OADB file
 
-  Bool_t 		 fDoMergedBCs;			  ///< flag to use one histo for all BCs
-
  private:
   AliEmcalCorrectionComponent(const AliEmcalCorrectionComponent &);               // Not implemented
   AliEmcalCorrectionComponent &operator=(const AliEmcalCorrectionComponent &);    // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionComponent, 7); // EMCal correction component
+  ClassDef(AliEmcalCorrectionComponent, 8); // EMCal correction component
   /// \endcond
 };
 

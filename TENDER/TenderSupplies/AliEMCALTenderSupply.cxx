@@ -433,7 +433,7 @@ void AliEMCALTenderSupply::Init()
   // Use one histogram for all BCs
   if (fDoMergedBCs)
     fEMCALRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
-	
+
   // digits array
   fDigitsArr       = new TClonesArray("AliEMCALDigit",1000);
 

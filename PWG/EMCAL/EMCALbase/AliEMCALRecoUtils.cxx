@@ -204,7 +204,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fUseL1PhaseInTimeRecalibration   = reco.fUseL1PhaseInTimeRecalibration;
   fEMCALL1PhaseInTimeRecalibration = reco.fEMCALL1PhaseInTimeRecalibration;
 
-  fDoUseMergedBC	     = reco.fDoUseMergedBC;
+  fDoUseMergedBC             = reco.fDoUseMergedBC;
   
   fUseRunCorrectionFactors   = reco.fUseRunCorrectionFactors;
   
@@ -1642,10 +1642,10 @@ void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
 
     if(fLowGain) {
       fEMCALTimeRecalibrationFactors->Add(new TH1F("hAllTimeAvLG",
-						   "hAllTimeAvLG",  
-						   48*24*22,0.,48*24*22)        );
+                                                   "hAllTimeAvLG",  
+                                                    48*24*22,0.,48*24*22)        );
       for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
-  	SetEMCALChannelTimeRecalibrationFactor(1,iCh,0.,kTRUE);
+        SetEMCALChannelTimeRecalibrationFactor(1,iCh,0.,kTRUE);
     }
 
   }else{
@@ -1666,10 +1666,10 @@ void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
     if(fLowGain) {
       for (int iBC = 0; iBC < 4; iBC++) {
         fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvLGBC%d",iBC),
-						   Form("hAllTimeAvLGBC%d",iBC),  
-						   48*24*22,0.,48*24*22)        );
+                                                     Form("hAllTimeAvLGBC%d",iBC),  
+                                                     48*24*22,0.,48*24*22)        );
         for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
-  	  SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kTRUE);
+          SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kTRUE);
       }
     }
 
@@ -3798,9 +3798,15 @@ void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(Int_t bc, const
   }
   if(fEMCALTimeRecalibrationFactors->GetEntries() <= bc) fEMCALTimeRecalibrationFactors->Expand(bc+1);
   if(fEMCALTimeRecalibrationFactors->At(bc)) fEMCALTimeRecalibrationFactors->RemoveAt(bc);
-  TH1F *clone = new TH1F(*(TH1F*)h);
-  clone->SetDirectory(NULL);
-  fEMCALTimeRecalibrationFactors->AddAt(clone,bc); 
+  if(fDoUseMergedBC){
+    TH1S *clone = new TH1S(*(TH1S*)h);
+    clone->SetDirectory(NULL);
+    fEMCALTimeRecalibrationFactors->AddAt(clone,bc); 
+  }else{
+    TH1F *clone = new TH1F(*(TH1F*)h);
+    clone->SetDirectory(NULL);
+    fEMCALTimeRecalibrationFactors->AddAt(clone,bc); 
+  }
 }
 
 void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TObjArray *map) { 

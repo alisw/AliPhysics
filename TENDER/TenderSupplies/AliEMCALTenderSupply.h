@@ -279,7 +279,7 @@ private:
   Float_t                fExoticCellFraction;     // good cell if fraction < 1-ecross/ecell
   Float_t                fExoticCellDiffTime;     // if time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
   Float_t                fExoticCellMinAmplitude; // check for exotic only if amplitud is larger than this value
-  Bool_t		 fDoMergedBCs;		  // flag whether to load four histos for the time calib or one merged histo
+  Bool_t                 fDoMergedBCs;            // flag whether to load four histos for the time calib or one merged histo
 
   // MC labels
   static const Int_t     fgkTotalCellNumber = 17664 ; // Maximum number of cells in EMCAL/DCAL: (48*24)*(10+4/3.+6*2/3.)
