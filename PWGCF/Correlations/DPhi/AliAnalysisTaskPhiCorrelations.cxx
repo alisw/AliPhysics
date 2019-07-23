@@ -166,6 +166,10 @@ fTriggerRestrictEta(-1),
 fEtaOrdering(kFALSE),
 fCutConversionsV(-1),
 fCutResonancesV(-1),
+fCutOnCustomMass(-1),
+fCutOnCustomFirst(-1),
+fCutOnCustomSecond(-1),
+fCutOnCustomV(-1),
 fCutOnPhi(kFALSE),
 fCutOnPhiV(-1),
 fCutOnRho(kFALSE),
@@ -340,6 +344,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 
   fHistos->SetPairCuts(fCutConversionsV, fCutResonancesV);
   fHistosMixed->SetPairCuts(fCutConversionsV, fCutResonancesV);
+  
+  fHistos->SetCustomCut(fCutOnCustomMass, fCutOnCustomFirst, fCutOnCustomSecond, fCutOnCustomV);
+  fHistosMixed->SetCustomCut(fCutOnCustomMass, fCutOnCustomFirst, fCutOnCustomSecond, fCutOnCustomV);
 
   fHistos->SetCutOnPhi(fCutOnPhi);
   fHistosMixed->SetCutOnPhi(fCutOnPhi);
@@ -593,6 +600,10 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fEtaOrdering", &fEtaOrdering,"EtaOrdering/O");
   settingsTree->Branch("fCutConversionsV", &fCutConversionsV,"CutConversionsV/D");
   settingsTree->Branch("fCutResonancesV", &fCutResonancesV,"CutResonancesV/D");
+  settingsTree->Branch("fCutOnCustomMass", &fCutOnCustomMass,"CutOnCustomMass/D");
+  settingsTree->Branch("fCutOnCustomFirst", &fCutOnCustomFirst,"CutOnCustomFirst/D");
+  settingsTree->Branch("fCutOnCustomSecond", &fCutOnCustomSecond,"CutOnCustomSecond/D");
+  settingsTree->Branch("fCutOnCustomV", &fCutOnCustomV,"CutOnCustomV/D");
   settingsTree->Branch("fCutOnPhi", &fCutOnPhi,"CutOnPhi/O");
   settingsTree->Branch("fCutOnPhiV", &fCutOnPhiV,"CutOnPhiV/D");
   settingsTree->Branch("fCutOnRho", &fCutOnRho,"CutOnRho/O");
