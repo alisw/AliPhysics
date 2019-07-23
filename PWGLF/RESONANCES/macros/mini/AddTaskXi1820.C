@@ -201,6 +201,7 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
         Config_Lambdak0(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
     }else if(d2==AliRsnDaughter::kLambda && d1==AliRsnDaughter::kKaon0){
         Config_Lambdak0(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
+    }
         
     cerr<<"done configuring"<<endl;
     

@@ -482,7 +482,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
         {
           AliInfo("Time Recalibrate EMCAL");
 
-	  if(fDoMergedBCs){
+          if(fDoMergedBCs){
 
             TH1S *h = (TH1S*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(0);
             
@@ -498,7 +498,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
 
             fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(0,h);
 
-	  }else{
+          }else{
             for (Int_t ibc = 0; ibc < 4; ++ibc) 
             {
               TH1F *h = (TH1F*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(ibc);
@@ -518,7 +518,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
           
               fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(ibc,h);
             } // bunch crossing loop
-	  }
+          }
       } else AliInfo("Do NOT recalibrate time EMCAL, no params for pass"); // array pass ok
     } else AliInfo("Do NOT recalibrate time EMCAL, no params for run");  // run number array ok
     

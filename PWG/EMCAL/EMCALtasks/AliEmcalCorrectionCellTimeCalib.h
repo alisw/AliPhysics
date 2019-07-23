@@ -43,6 +43,7 @@ private:
   
   Bool_t                 fCalibrateTime;          ///< flag cell time calibration
   Bool_t                 fCalibrateTimeL1Phase;   ///< flag cell time calibration with L1phase shift
+  Bool_t                 fDoMergedBCs;            ///< flag to use one histogram for all BCs
   
   // Change to false if experts
   Bool_t                 fUseAutomaticTimeCalib;     ///< On by default the check in the OADB of the time recalibration
@@ -54,7 +55,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellTimeCalib> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellTimeCalib, 1); // EMCal cell time calibration component
+  ClassDef(AliEmcalCorrectionCellTimeCalib, 2); // EMCal cell time calibration component
   /// \endcond
 };
 
