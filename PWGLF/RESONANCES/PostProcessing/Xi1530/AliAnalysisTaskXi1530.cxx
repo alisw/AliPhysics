@@ -720,7 +720,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
     tracklist* etl;
     eventpool* ep;
     // Event mixing pool
-    if (fsetmixing) {
+    if ( (centbin >= 0) && (zbin >= 0) && fsetmixing) {
         ep = &fEMpool[centbin][zbin];
         ep->push_back(tracklist());
         etl = &(ep->back());
@@ -1797,7 +1797,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
     }
 
     // Event Mixing
-    if (fsetmixing) {
+    if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
         int epsize = ep.size();
         if (epsize < (int)fnMix)
@@ -2373,7 +2373,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     }
 
     // Event Mixing
-    if (fsetmixing) {
+    if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
         int epsize = ep.size();
         if (epsize < (int)fnMix)
