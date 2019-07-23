@@ -48,6 +48,7 @@ void AddTask_GammaCaloMerged_pp(
   Double_t  minEnergyForExoticsCut        = 1.0,      // minimum energy to be used for exotics CutHandler
   Bool_t    enableExoticsQA               = kFALSE,   // switch to run QA for exotic clusters
   Bool_t    runDetailedM02                = kFALSE,   // switch on very detailed M02 distribution
+  Int_t     maxAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ) {
@@ -1643,6 +1644,7 @@ void AddTask_GammaCaloMerged_pp(
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
+  if(maxAllowedPi0Overlaps>-1){ task->SetMaxNeutralPionOverlapsMC(maxAllowedPi0Overlaps);}
   task->SetEnableDetailedM02Distribtuon(runDetailedM02);
   task->SetSelectedMesonID(selectedMeson);
   task->SetCorrectionTaskSetting(corrTaskSetting);

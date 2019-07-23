@@ -233,7 +233,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
   fDoDetailedM02(NULL),
-  fTrackMatcherRunningMode(0)
+  fTrackMatcherRunningMode(0),
+  fMaxAllowedPi0OverlapsMC(-1)
 {
 
 }
@@ -410,7 +411,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
   fDoDetailedM02(NULL),
-  fTrackMatcherRunningMode(0)
+  fTrackMatcherRunningMode(0),
+  fMaxAllowedPi0OverlapsMC(-1)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1486,6 +1488,12 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
       fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
       if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
 
+      continue;
+    }
+    // reject events if there are more overlaps of pi0 in R<0.05 than allowed
+    if(fIsMC> 0 && NumberOfMCEventNeutralPionOverlapInEMCal(fMCEvent)){
+      fHistoNEvents[iCut]->Fill(3, fWeightJetJetMC);
+      if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(3);
       continue;
     }
     if (triggered == kTRUE) {
@@ -3264,4 +3272,38 @@ Int_t AliAnalysisTaskGammaCaloMerged::GetSourceClassification(Int_t daughter, In
   }
   return 15;
 
+}
+
+
+Bool_t AliAnalysisTaskGammaCaloMerged::NumberOfMCEventNeutralPionOverlapInEMCal(AliMCEvent *mcEvent){
+  Int_t nOverlapsFound = 0;
+  if (mcEvent && fMaxAllowedPi0OverlapsMC>-1){
+    for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
+      AliMCParticle* particle1 = (AliMCParticle*) mcEvent->GetTrack(i);
+      if (!particle1) continue;
+      if (TMath::Abs(particle1->PdgCode()) == 111){
+        if(TMath::Abs(particle1->Eta()) > 0.67 || !( (particle1->Phi() > 1.396 && particle1->Phi() < 3.28) || (particle1->Phi() > 4.55 && particle1->Phi() < 5.70) )){
+          continue;
+        }
+        for(Long_t j = i+1; j < mcEvent->GetNumberOfPrimaries(); j++) {
+          AliMCParticle* particle2 = (AliMCParticle*) mcEvent->GetTrack(j);
+          if (!particle2) continue;
+          if(i==j) continue;
+          if(TMath::Abs(particle2->Eta()) > 0.7) continue;
+          if(TMath::Abs(particle2->PdgCode()) == 111){
+            Double_t DeltaEta = particle1->Eta()-particle2->Eta();
+            Double_t DeltaPhi = abs(particle1->Phi()-particle2->Phi());
+            Double_t RneutralParts = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+            if(RneutralParts<0.05){
+              nOverlapsFound++;
+              if(nOverlapsFound>fMaxAllowedPi0OverlapsMC){
+                return kTRUE;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return kFALSE;
 }
