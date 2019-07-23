@@ -14,7 +14,7 @@
 #include "AliAODEvent.h"
 #include "AliHFQnVectorHandler.h"
 #include "AliAnalysisVertexingHF.h"
-
+#include <TString.h>
 
 //class AliAODMCParticle;
 //class AliAODMCHeader;
@@ -47,7 +47,7 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		void SetHarmonic(int harmonic)       {fHarmonic = harmonic;}
 		void SetCalibraionType(int calibtype) {fCalibType = calibtype;}
 		void SetNormMethod(int norm) {fNormMethod = norm;}
-		void SetOADBFileName(TString filename) {fOADBFileName = filename;}
+		void SetOADBFileName(TString filename) {fOADBFileName = filename; cout << "++++++++++++ "<< filename << endl;}
 
 		void SetFlowMethod(int meth) {fFlowMethod = meth;}
 		void SetEventPlaneDetector(int det) {fEvPlaneDet = det;}
@@ -57,7 +57,8 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		void SetTPCHalvesEtaGap(double etagap = 0.2) {fEtaGapInTPCHalves=etagap;}
 
 		void GetTrkClsEtaPhiDiff(AliVTrack *t,AliVCluster *v,Double_t &phidiff, Double_t &etadiff);
-		void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Double_t TrkPt, Double_t DCAxy, Int_t Bsign);
+		//void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Double_t TrkPt, Double_t DCAxy, Int_t Bsign);
+		void SelectPhotonicElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Double_t TrkPt, Double_t DCAxy, Int_t Bsign);
 		void CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
 		void SetDCA(Double_t xy, Double_t z){DCAxy = xy, DCAz = z;};
 
@@ -129,6 +130,9 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH1F* fInvmassULS;
 		TH2F* fInvmassLS_2D;
 		TH2F* fInvmassULS_2D;
+
+                TClonesArray  *fTracks_tender;//Tender tracks
+                TClonesArray  *fCaloClusters_tender;//Tender cluster
 
 		//=====MC output=======
 		AliAODMCParticle* fMCparticle;

@@ -6,7 +6,10 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 //class AliRDHFCuts;
-AliAnalysisTask *AddTaskFlowTPCEMCalRun2(TString ContNameExt= "semicentral")
+AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
+    TString OADBfilename="",
+    TString Splinefilename="", 
+    TString ContNameExt= "semicentral")
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -23,6 +26,8 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(TString ContNameExt= "semicentral")
     AliAnalysisTaskFlowTPCEMCalRun2* task = new AliAnalysisTaskFlowTPCEMCalRun2("task");   
     if(!task) return 0x0;
     // add your task to the manager
+    task->SetOADBFileName(OADBfilename);
+    task->SetqnPercentileSelection(Splinefilename);
     mgr->AddTask(task);
 
     TString containerName = mgr->GetCommonFileName();
