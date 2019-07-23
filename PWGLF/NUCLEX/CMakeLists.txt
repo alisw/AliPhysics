@@ -75,6 +75,8 @@ set(SRCS
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx
   Nuclei/v2/AliAnalysisTaskAllPtcv2.cxx
+  Nuclei/v2/AliAnalysishDEventCollection.cxx
+  Nuclei/v2/AliAnalysisTaskDeuFlow2PC.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKine.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKineCor.cxx
   Utils/CODEX/AliAnalysisCODEX.cxx
