@@ -1794,8 +1794,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         Float_t lPosTrackLength = -1;
         Float_t lNegTrackLength = -1;
         
-        lPosTrackLength = AliESDtrack::GetLengthInActiveZone( pTrack->GetInnerParam(), /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
-        lNegTrackLength = AliESDtrack::GetLengthInActiveZone( nTrack->GetInnerParam(), /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
+        lPosTrackLength = GetLengthInActiveZone( pTrack, /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
+        lNegTrackLength = GetLengthInActiveZone( nTrack, /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
         
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
