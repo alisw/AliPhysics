@@ -838,6 +838,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fOutputList->Add(fDWeightNew);
     fOutputList->Add(fDWeightVar1);
     fOutputList->Add(fDWeightVar2);
+    fOutputList->Add(fLcWeightVar1);
+    fOutputList->Add(fLcWeightVar2);
     
     
     //B Meson pt weighting
