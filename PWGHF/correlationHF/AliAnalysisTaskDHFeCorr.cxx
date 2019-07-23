@@ -124,7 +124,6 @@ void AliAnalysisTaskDHFeCorr::AddDMesonVariables(std::unique_ptr<TTree> &tree,
     tree->Branch("Phi", &fDmeson.fPhi);
     tree->Branch("Y", &fDmeson.fY);
     tree->Branch("InvMass", &fDmeson.fInvMass);
-    tree->Branch("InvMass", &fDmeson.fInvMass);
     tree->Branch("ReducedChi2", &fDmeson.fReducedChi2);
 
     //Topological information
