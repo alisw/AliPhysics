@@ -7,6 +7,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 Bool_t doPairing       = kTRUE,
                                 Bool_t applyPairCuts   = kTRUE,
                                 Bool_t doMixing        = kTRUE, // Do event mixing for R fac.
+                                Bool_t rejectPileUp    = kTRUE, // SPDinMultBins
                                 Bool_t trackVarPlots   = kTRUE, // Simple track QA plots
                                 Int_t whichDetPlots    = 0,     // 0=None,1=ITS,2=TPC,4=TOF,7=All3
                                 Bool_t v0plots         = kTRUE, // Plots for PID cal.
@@ -103,6 +104,10 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     Int_t triggerNames = (AliVEvent::kINT7);
     task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
+    if(rejectPileUp){
+      task->SetRejectPileup(kTRUE);
+      task->SetPileupRejTool(AliDielectronEventCuts::kSPDInMultBins);
+    }
 
     // Event cuts are the same for all cut settings regardless
     // of config setup
