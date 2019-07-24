@@ -205,6 +205,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 //Histograms for the analysis
 ,fNevent(0)
+,fNevent2(0)
 ,fPDG_values(0)
 ,fNevent_SPD_multi(0)
 ,fNevent_V0_multi(0)
@@ -497,6 +498,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 //Histograms for the analysis
 ,fNevent(0)
+,fNevent2(0)
 ,fPDG_values(0)
 ,fNevent_SPD_multi(0)
 ,fNevent_V0_multi(0)
@@ -773,10 +775,12 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 //Store the number of events
 	//Define the histo
 	fNevent = new TH1F("fNevent","Number of Events",20,-0.5,19.5);
+    fNevent2 = new TH1F("fNevent2","Number of Events",20,-0.5,19.5);
     fPDG_values = new TH1F("fPDG_values","PDG of generated particles",6000,-3000,3000);
    
 	//And then, add to the output list
 	fOutputList->Add(fNevent);
+    fOutputList->Add(fNevent2);
     fOutputList->Add(fPDG_values);
     
     fNevent_SPD_multi = new TH1F("fNevent_SPD_multi","Number of Events in SPD bins",10,-0.5,9.5);
@@ -1176,10 +1180,18 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		    Float_t zvtx = trkVtx->GetZ();
 			fZvtx = zvtx;
 			const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
-			//Any vertex
+			
+            //all events with reconstructed vertex:
+            fVtxZ[0]->Fill(zvtx);
+           //Any vertex
             if((!trkVtx || trkVtx->GetNContributors()<=0) && (spdVtx->GetNContributors()<=0)) return;
             fNevent->Fill(9);
+            //any vertex (spd or tracks):
+            fVtxZ[1]->Fill(zvtx);
+        
 		    if(TMath::Abs(zvtx) > fVertexCut) return;
+            //all events with reconstructed vertex, any ver:
+            fVtxZ[2]->Fill(zvtx);
 	}
 	else
 	{
@@ -1285,10 +1297,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         fV0Mult_corr2 =fV0Mult_corr;
     }
 
-    
-    
+ 
     //printf("V0 =%d, V0_corrected =%f,  V0_corrected2 =%f\n", V0Mult, fV0Mult_corr, fV0Mult_corr2);
-   
     
     if(fAOD->IsPileupFromSPDInMultBins()){
         //printf("This event is pileUp from AOD\n");
@@ -1551,8 +1561,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
             //===========
             //Generated MC charged particle sin eta < 1
             
-            
-            
+ 
             
             // loop over all tracks
             for (Int_t igen = 0; igen < fMCarray->GetEntriesFast(); igen++){
@@ -1576,6 +1585,13 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	}//close isMC
     
   //only fill after all event selection
+  
+    //reject event if SPD tracklet is less than 1
+    if(fSPDMult_corr<=0){
+        fNevent2->Fill(0);
+        return;
+    }
+    
     
     fvalueMulti[0] = fZvtx;
     fvalueMulti[1] = fV0Mult_corr;
@@ -1605,17 +1621,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     fNevent->Fill(0);
     
     
-    if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fNevent_SPD_multi->Fill(1);
-    if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fNevent_SPD_multi->Fill(2);
-    if(fSPDMult_corr>=25 && fSPDMult_corr < 35) fNevent_SPD_multi->Fill(3);
-    if(fSPDMult_corr>=35 && fSPDMult_corr < 45) fNevent_SPD_multi->Fill(4);
-    if(fSPDMult_corr>=45 && fSPDMult_corr < 88) fNevent_SPD_multi->Fill(5);
+    if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fNevent_SPD_multi->Fill(1);
+    if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fNevent_SPD_multi->Fill(2);
+    if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fNevent_SPD_multi->Fill(3);
+    if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fNevent_SPD_multi->Fill(4);
+    if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fNevent_SPD_multi->Fill(5);
     
-    if(fV0Mult_corr2>0 && fV0Mult_corr2<75)     fNevent_V0_multi->Fill(1);
-    if(fV0Mult_corr2>=75 && fV0Mult_corr2<150)  fNevent_V0_multi->Fill(2);
-    if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fNevent_V0_multi->Fill(3);
-    if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fNevent_V0_multi->Fill(4);
-    if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fNevent_V0_multi->Fill(5);
+    if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fNevent_V0_multi->Fill(1);
+    if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fNevent_V0_multi->Fill(2);
+    if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fNevent_V0_multi->Fill(3);
+    if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fNevent_V0_multi->Fill(4);
+    if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fNevent_V0_multi->Fill(5);
     
     
 
@@ -1662,17 +1678,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 						fEtaPhi_emcal->Fill(cphi,ceta);
 						fECluster_pure_emcal->Fill(clust->E());
                         
-                        if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fECluster_pure_emcal_SPD1->Fill(clust->E());
-                        if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fECluster_pure_emcal_SPD2->Fill(clust->E());
-                        if(fSPDMult_corr>=25 && fSPDMult_corr < 35) fECluster_pure_emcal_SPD3->Fill(clust->E());
-                        if(fSPDMult_corr>=35 && fSPDMult_corr < 45) fECluster_pure_emcal_SPD4->Fill(clust->E());
-                        if(fSPDMult_corr>=45 && fSPDMult_corr < 88) fECluster_pure_emcal_SPD5->Fill(clust->E());
+                        if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fECluster_pure_emcal_SPD1->Fill(clust->E());
+                        if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fECluster_pure_emcal_SPD2->Fill(clust->E());
+                        if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fECluster_pure_emcal_SPD3->Fill(clust->E());
+                        if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fECluster_pure_emcal_SPD4->Fill(clust->E());
+                        if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fECluster_pure_emcal_SPD5->Fill(clust->E());
                         
-                        if(fV0Mult_corr2>0 && fV0Mult_corr2<75)      fECluster_pure_emcal_V01->Fill(clust->E());
-                        if(fV0Mult_corr2>=75 && fV0Mult_corr2<150)   fECluster_pure_emcal_V02->Fill(clust->E());
-                        if(fV0Mult_corr2>=150 && fV0Mult_corr2<225)  fECluster_pure_emcal_V03->Fill(clust->E());
-                        if(fV0Mult_corr2>=225 && fV0Mult_corr2<300)  fECluster_pure_emcal_V04->Fill(clust->E());
-                        if(fV0Mult_corr2>=300 && fV0Mult_corr2<680)  fECluster_pure_emcal_V05->Fill(clust->E());
+                        if(fV0Mult_corr2>0 && fV0Mult_corr2<100)      fECluster_pure_emcal_V01->Fill(clust->E());
+                        if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)   fECluster_pure_emcal_V02->Fill(clust->E());
+                        if(fV0Mult_corr2>=200 && fV0Mult_corr2<300)  fECluster_pure_emcal_V03->Fill(clust->E());
+                        if(fV0Mult_corr2>=300 && fV0Mult_corr2<400)  fECluster_pure_emcal_V04->Fill(clust->E());
+                        if(fV0Mult_corr2>=400 && fV0Mult_corr2<800)  fECluster_pure_emcal_V05->Fill(clust->E());
                         
  
 					}
@@ -1738,17 +1754,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 					fEtaPhi_emcal->Fill(cphi,ceta);
 					fECluster_pure_emcal->Fill(clust->E());
                     
-                    if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fECluster_pure_emcal_SPD1->Fill(clust->E());
-                    if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fECluster_pure_emcal_SPD2->Fill(clust->E());
-                    if(fSPDMult_corr>=25 && fSPDMult_corr < 35) fECluster_pure_emcal_SPD3->Fill(clust->E());
-                    if(fSPDMult_corr>=35 && fSPDMult_corr < 45) fECluster_pure_emcal_SPD4->Fill(clust->E());
-                    if(fSPDMult_corr>=45 && fSPDMult_corr < 88) fECluster_pure_emcal_SPD5->Fill(clust->E());
+                    if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fECluster_pure_emcal_SPD1->Fill(clust->E());
+                    if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fECluster_pure_emcal_SPD2->Fill(clust->E());
+                    if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fECluster_pure_emcal_SPD3->Fill(clust->E());
+                    if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fECluster_pure_emcal_SPD4->Fill(clust->E());
+                    if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fECluster_pure_emcal_SPD5->Fill(clust->E());
                     
-                    if(fV0Mult_corr2>0 && fV0Mult_corr2<75)      fECluster_pure_emcal_V01->Fill(clust->E());
-                    if(fV0Mult_corr2>=75 && fV0Mult_corr2<150)   fECluster_pure_emcal_V02->Fill(clust->E());
-                    if(fV0Mult_corr2>=150 && fV0Mult_corr2<225)  fECluster_pure_emcal_V03->Fill(clust->E());
-                    if(fV0Mult_corr2>=225 && fV0Mult_corr2<300)  fECluster_pure_emcal_V04->Fill(clust->E());
-                    if(fV0Mult_corr2>=300 && fV0Mult_corr2<680)  fECluster_pure_emcal_V05->Fill(clust->E());
+                    if(fV0Mult_corr2>0 && fV0Mult_corr2<100)      fECluster_pure_emcal_V01->Fill(clust->E());
+                    if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)   fECluster_pure_emcal_V02->Fill(clust->E());
+                    if(fV0Mult_corr2>=200 && fV0Mult_corr2<300)  fECluster_pure_emcal_V03->Fill(clust->E());
+                    if(fV0Mult_corr2>=300 && fV0Mult_corr2<400)  fECluster_pure_emcal_V04->Fill(clust->E());
+                    if(fV0Mult_corr2>=400 && fV0Mult_corr2<800)  fECluster_pure_emcal_V05->Fill(clust->E());
                     
 				}
 				
@@ -1903,7 +1919,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
             }
         }
         
-        fVtxZ[0]->Fill(fZvtx);
+       // fVtxZ[0]->Fill(fZvtx);
 		fTracksPt[0]->Fill(fPt);
 		fTracksQAPt[0]->Fill(fPt);
 		
@@ -2127,7 +2143,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			}
 		}
 		
-		fVtxZ[1]->Fill(fZvtx);
+		//fVtxZ[1]->Fill(fZvtx);
 		
 
 			
@@ -2436,30 +2452,30 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                               if(charge1*charge2 <0){
                                   
                                 //  printf("track1: fSPDMult = %f, fVOMult = %f", fSPDMult,fV0Mult );
-                                  if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
-                                  if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
-                                  if(fSPDMult_corr>=25 && fSPDMult_corr < 35) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
-                                  if(fSPDMult_corr>=35 && fSPDMult_corr < 45) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
-                                  if(fSPDMult_corr>=45 && fSPDMult_corr < 88) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
+                                  if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
+                                  if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
+                                  if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
+                                  if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
+                                  if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
                                   
-                                  if(fV0Mult_corr2>0 && fV0Mult_corr2<75)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
-                                  if(fV0Mult_corr2>=75 && fV0Mult_corr2<150)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
-                                  if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
-                                  if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
-                                  if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
+                                  if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
+                                  if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
+                                  if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
+                                  if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
+                                  if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
                                   /*
                                   //with weight
-                                  if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
-                                  if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
-                                  if(fSPDMult_corr>=25 && fSPDMult_corr < 35) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight);
-                                  if(fSPDMult_corr>=35 && fSPDMult_corr < 45) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight);
-                                  if(fSPDMult_corr>=45 && fSPDMult_corr < 88) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight);
+                                  if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
+                                  if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
+                                  if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight);
+                                  if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight);
+                                  if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight);
                                   
-                                  if(fV0Mult_corr2>0 && fV0Mult_corr2<75)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight);
-                                  if(fV0Mult_corr2>=75 && fV0Mult_corr2<150)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight);
-                                  if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
-                                  if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
-                                  if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
+                                  if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight);
+                                  if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight);
+                                  if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
+                                  if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
+                                  if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
                                    */
                                   
                                   
@@ -2612,30 +2628,30 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                              //multiplicity bins histos (only ULS for SPDmulti and V0multi)
                              if(charge1*charge2 <0){
                                  //printf("track2: fSPDMult = %f, fVOMult = %f", fSPDMult,fV0Mult );
-                                 if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
-                                 if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
-                                 if(fSPDMult_corr>=25 && fSPDMult_corr < 35) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
-                                 if(fSPDMult_corr>=35 && fSPDMult_corr < 45) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
-                                 if(fSPDMult_corr>=45 && fSPDMult_corr < 88) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
+                                 if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
+                                 if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
+                                 if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
+                                 if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
+                                 if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
                                  
-                                 if(fV0Mult_corr2>0 && fV0Mult_corr2<75)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
-                                 if(fV0Mult_corr2>=75 && fV0Mult_corr2<150)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
-                                 if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
-                                 if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
-                                 if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
+                                 if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
+                                 if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
+                                 if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
+                                 if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
+                                 if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
                                  /*
                                  //with weight
-                                 if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
-                                 if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
-                                 if(fSPDMult_corr>=25 && fSPDMult_corr < 35) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight);
-                                 if(fSPDMult_corr>=35 && fSPDMult_corr < 45) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight);
-                                 if(fSPDMult_corr>=45 && fSPDMult_corr < 88) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight);
+                                 if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
+                                 if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
+                                 if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight);
+                                 if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight);
+                                 if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight);
                                  
-                                 if(fV0Mult_corr2>0 && fV0Mult_corr2<75)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight);
-                                 if(fV0Mult_corr2>=75 && fV0Mult_corr2<150)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight);
-                                 if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
-                                 if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
-                                 if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
+                                 if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight);
+                                 if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight);
+                                 if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
+                                 if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
+                                 if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
                                  */
                                  
                                  
@@ -2784,31 +2800,31 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                             //multiplicity bins histos (only ULS for SPDmulti and V0multi)
                             if(charge1*charge2 <0){
                                // printf("both tracks: fSPDMult = %f, fVOMult = %f", fSPDMult,fV0Mult );
-                                if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
-                                if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
-                                if(fSPDMult_corr>=25 && fSPDMult_corr < 35) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
-                                if(fSPDMult_corr>=35 && fSPDMult_corr < 45) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
-                                if(fSPDMult_corr>=45 && fSPDMult_corr < 88) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
+                                if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
+                                if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
+                                if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
+                                if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
+                                if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
                                 
-                                if(fV0Mult_corr2>0 && fV0Mult_corr2<75)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
-                                if(fV0Mult_corr2>=75 && fV0Mult_corr2<150)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
-                                if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
-                                if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
-                                if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
+                                if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
+                                if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
+                                if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
+                                if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
+                                if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
                                 
                                 /*
                                 //with weight
-                                if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
-                                if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
-                                if(fSPDMult_corr>=25 && fSPDMult_corr < 35) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight);
-                                if(fSPDMult_corr>=35 && fSPDMult_corr < 45) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight);
-                                if(fSPDMult_corr>=45 && fSPDMult_corr < 88) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight);
+                                if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
+                                if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
+                                if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight);
+                                if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight);
+                                if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight);
                                 
-                                if(fV0Mult_corr2>0 && fV0Mult_corr2<75)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight);
-                                if(fV0Mult_corr2>=75 && fV0Mult_corr2<150)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight);
-                                if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
-                                if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
-                                if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
+                                if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight);
+                                if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight);
+                                if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
+                                if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
+                                if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
                                  */
                                 
                                 
@@ -2936,7 +2952,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 			
-		fVtxZ[2]->Fill(fZvtx);
+		//fVtxZ[2]->Fill(fZvtx);
 		
 		
 		
