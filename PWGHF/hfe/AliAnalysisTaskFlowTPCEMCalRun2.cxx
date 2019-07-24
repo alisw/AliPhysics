@@ -158,8 +158,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	//fTrkPhicos2(0),
 	//fInplane(0),
 	//fOutplane(0),
-	DCAxy(0),
-	DCAz(0),
+	DCAxy(3.0),
+	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
 	massMin(0),
@@ -320,8 +320,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	//fTrkPhicos2(0),
 	//fInplane(0),
 	//fOutplane(0),
-	DCAxy(0),
-	DCAz(0),
+	DCAxy(3.0),
+	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
 	massMin(0),
@@ -1575,6 +1575,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
         Int_t EMCalIndex = -1;
         EMCalIndex = track->GetEMCALcluster();  // get index of EMCal cluster which matched to track
+        cout << "EMCalIndex = " << EMCalIndex << endl;
 
 	//cout << "EMCal Index = " << EMCalIndex << endl;
 
@@ -1588,7 +1589,8 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		//cout << "DCA[0] = "<< DCA[0] << endl;
 		//cout << "DCA[1] = "<< DCA[1] << endl;
 
-		if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz)continue;
+		//if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz)continue;
+		if(TMath::Abs(DCA[0]) > 2.4 || TMath::Abs(DCA[1]) > 3.2)continue;
 
 	}
 
@@ -1612,6 +1614,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 	Bool_t iEmbPi0 = kFALSE;
 	Bool_t iEmbEta = kFALSE;
+
 
 	if(ilabel>0 && fMCarray){
 
@@ -1645,7 +1648,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 			}
 
-		}
+		} //pid_eleD
 
 		if(pid_eleD || pid_eleB)fNDB->Fill(1);
 
@@ -1679,13 +1682,14 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 			}
 
-		}
+		} //pidM = 22
 
 		fMCcheckMother->Fill(abs(pidM));
 	}
 
-	if(pidM==443)continue;
-	if(pidM==-99)continue;
+
+	//if(pidM==443)continue;
+	//if(pidM==-99)continue;
 
 	if(pid_eleB || pid_eleD) {
 
@@ -1720,7 +1724,6 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	//if(EMCalIndex>=0)clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex); // address cluster matched to track
         if(EMCalIndex>=0) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 
-	//cout << "clustMatch = " << clustMatch << endl;
 	//cout << "Charge = " << track -> Charge() << endl;
 	
 	Double_t emcphi = -999, emceta = -999;        
@@ -1733,6 +1736,8 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		GetTrkClsEtaPhiDiff(track,clustMatch,fPhiDiff,fEtaDiff);
 		fEMCTrkMatchPhi->Fill(fPhiDiff);
 		fEMCTrkMatchEta->Fill(fEtaDiff);
+
+                cout << "fPhiDiff = "<< fPhiDiff << endl;
 
 		if(TMath::Abs(fPhiDiff)>0.05 || TMath::Abs(fEtaDiff)>0.05)continue;
 
