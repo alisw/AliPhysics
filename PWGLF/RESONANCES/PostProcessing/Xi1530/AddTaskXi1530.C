@@ -1,6 +1,6 @@
 AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
                                      , const char *option = "SYS"
-                                     , int nmix=20
+                                     , int nmix=10
                                      , const char* suffix = "MB")
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
