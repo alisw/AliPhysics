@@ -792,13 +792,13 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
 
         goodtrackindices.push_back(it);
         // Event mixing pool
-        if (fsetmixing){
+        if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
             AliVTrack* track_mix = (AliVTrack*)fEvt->GetTrack(it);
             etl->push_back((AliVTrack*)track_mix->Clone());
         }
     }
 
-    if (fsetmixing) {
+    if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         if (!goodtrackindices.size())
             ep->pop_back();
         if (ep->size() > (int)fnMix) {
