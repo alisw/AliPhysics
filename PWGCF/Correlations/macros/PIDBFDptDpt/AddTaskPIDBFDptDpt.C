@@ -53,8 +53,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  bool   PurePIDinMC             = 0,   // 0: MisID in MCAODreco;       1: No MisID in MCAODreco
  bool   PureNoWeakinMC          = 0,   // 0: No MisID but Secondaries from weak decays in MCAODreco;       1: No MisID and No Secondaries from weak decays in MCAODreco
  bool   PureNoWeakMaterialinMC  = 0,   // 0: No MisID and No Secondaries from weak decays but Secondaries from material in MCAODreco;       1: No MisID and No Secondaries from weak decays and material in MCAODreco
- bool   NoWeakinMC              = 0,   // 0: Secondaries from weak decays in MCAODreco;       1: No Secondaries from weak decays in MCAODreco
- bool   NoMaterialinMC          = 0,   // 0: Secondaries from material in MCAODreco;          1: No Secondaries from material in MCAODreco
+ bool   NoMisIDWeakMaterialInClosure = 0,   // 0: allow MisID and No Secondaries from weak decays and material in MC Closure test       1: No MisID and Secondaries from weak decays and material in MC Closure test
  double SharedFractionPairCut   = 0.2, // check track splitting
  const char* taskname           = "ChPM",
  TString inputHistogramFileName = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
@@ -452,8 +451,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       task->SetIfContaminationInMC(   PurePIDinMC   );
       task->SetIfContaminationWeakInMC( PureNoWeakinMC );
       task->SetIfContaminationWeakMaterialInMC( PureNoWeakMaterialinMC );
-      task->SetIfWeakInMC( NoWeakinMC );
-      task->SetIfMaterialInMC( NoMaterialinMC );
+      task->SetIfMisIDWeakMaterialInMCClosure( NoMisIDWeakMaterialInClosure );
       task->SetUseWeights(          useWeights      );
       task->SetUseRapidity(         useRapidity     );
       task->SetEventPlane(         useEventPlane     );
