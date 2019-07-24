@@ -992,8 +992,10 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             }
 
             // CPA cut
+            Double_t cX, cY, cZ;
+            Xicandidate->GetXYZcascade(cX, cY, cZ);
             Double_t fLambdaCPA =
-                Xicandidate->GetV0CosineOfPointingAngle();
+                Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
             Double_t fXiCPA =
                 Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
             if (fQA) {
@@ -1038,8 +1040,6 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             // if(sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > 100)
             // StandardXi=kFALSE; // NOT USING
 
-            Double_t cX, cY, cZ;
-            Xicandidate->GetXYZcascade(cX, cY, cZ);
             if (fQA)
                 fHistos->FillTH2("hXi_Rxy", cX, cY);
             if ((sqrt(pow(cX, 2) + pow(cY, 2)) > 12) && fExoticFinder) {
@@ -1493,9 +1493,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
 
                 // CPA Check
-
+                Double_t cX, cY, cZ;
+                Xicandidate->GetXYZcascade(cX, cY, cZ);
                 Double_t fLambdaCPA =
-                    Xicandidate->GetV0CosineOfPointingAngle();
+                    Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
                 Double_t fXiCPA =
                     Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
 
@@ -1580,8 +1581,6 @@ void AliAnalysisTaskXi1530::FillTracks() {
                                        (double)fCent, vecsum.Pt(), vecsum.M()});
                         Double_t LambdaX, LambdaY, LambdaZ;
                         Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
-                        Double_t cX, cY, cZ;
-                        Xicandidate->GetXYZcascade(cX, cY, cZ);
 
                         if (fQA) {
                             fHistos->FillTH1("hMC_reconstructed_Y",
@@ -1889,8 +1888,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
 
                 // CPA Check
+                Double_t cX, cY, cZ;
+                Xicandidate->GetXYZcascade(cX, cY, cZ);
                 Double_t fLambdaCPA =
-                    Xicandidate->GetV0CosineOfPointingAngle();
+                    Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
                 Double_t fXiCPA =
                     Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
 
