@@ -1150,6 +1150,8 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   Double_t nTrAccCorrMean=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMeanSPD);
 
 
+
+  
   // Multiplicity estimates
    // Old get Multitplicity
   Double_t fMultV0Per, fMultSPDPer, fMultV0Tot, fMultSPD;
@@ -1173,25 +1175,41 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   Double_t TriggerWeight = GetTriggerWeight(minV0, nTrAcc);
   Double_t VtxWeight = GetVtxWeight(1.*nTrAcc);
   Double_t EventWeight = TriggerWeight*VtxWeight;
+
+  Int_t RunNumber = fVevent->GetRunNumber();
+  if (kTRUE) { // remove runs with different SPD configuration (active staves) and too low statistic to correct for
+    if (RunNumber==254983 || RunNumber==254984) return; //SPDConfig 33440011
+    if (RunNumber==257960) return; //SPDConfig 22441122
+    if (RunNumber==263331 || RunNumber==263332) return; //SPDConfig 22442211
+    if (RunNumber==275149) return; //SPDConfig 4445511;
+    if (RunNumber==277194 || RunNumber==282607) return; //SPDConfig 22551122
+    if (RunNumber==280405) return; //SPDConfig 22661111
+    if (RunNumber==281920) return; //SPDConfig 22551121
+  }
   
+  fNoEvents->Fill(0);
+
   if (fIsMC) fDiffractiveType->Fill(0., 1.*fMCheader->GetEventType(), nTrMCAcc);
   Bool_t IsTrueInelastic=kTRUE;
   if (fIsMC) {
     IsTrueInelastic=fEventCuts.IsTrueINELgtZero(fVevent); // MC True INEL>0
     fHFENoEvents->Fill(nTrMCAcc, 0 );
     fMCNoEvents->Fill(nTrMCAcc, 0);
+    Double_t mcVtx[3];
+    fMCheader->GetVertex(mcVtx);
     if (IsTrueInelastic) {
+      fNoEvents->Fill(1);
       fHFENoEvents->Fill(nTrMCAcc, 1);
       fMCNoEvents->Fill(nTrMCAcc, 1);
       fDiffractiveType->Fill(1., 1.*fMCheader->GetEventType(), minV0);      
       fV0ACTrueInel->Fill(multV0A, multV0C);
-      fV0TrueMinInel->Fill(minV0);
-      fV0TrueMinInelNTr->Fill(minV0, nTrAcc);
-      fnTrAccGenTrueInel->Fill(nTrAcc, nTrMCAcc);
+      fV0TrueMinInel->Fill(minV0, mcVtx[2]);
+      fV0TrueMinInelNTr->Fill(minV0, nTrAcc, mcVtx[2]);
+      fnTrAccGenTrueInel->Fill(nTrAcc, nTrMCAcc, mcVtx[2]);
     }
     if (IsTrueInelastic && EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 2);    
   } 
-  fNoEvents->Fill(0);
+
 
   fEventCuts.SetManualMode();
   fEventCuts.fRequireTrackVertex = false; // not in default pp cuts
@@ -1203,7 +1221,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   fEventCuts.fMaxResolutionSPDvertex = 0.25f;
   fEventCuts.fTriggerMask = AliVEvent::kINT7;
   fEventCuts.fRejectDAQincomplete = true;
-  fEventCuts.fRequiredSolenoidPolarity = 0;
+  fEventCuts.fRequiredSolenoidPolarity = 0; // chose polarity (0 cut off)
 
   fEventCuts.fUseMultiplicityDependentPileUpCuts= true;
   //fEventCuts.fSPDpileupMinContributors = 3;
@@ -1242,19 +1260,19 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 	  fDiffractiveType->Fill(5., 1.*fMCheader->GetEventType(), minV0, TriggerWeight);
 	  if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 3, TriggerWeight);
 	  fMCNoEvents->Fill(nTrMCAcc, 3, TriggerWeight);
+	  Double_t mcVtx[3];
+	  fMCheader->GetVertex(mcVtx);
 	  fV0ACTriggered->Fill(multV0A, multV0C);
-	  fV0MinTriggered->Fill(minV0);
-	  fV0MinTriggeredNTr->Fill(minV0, nTrAcc);
+	  fV0MinTriggered->Fill(minV0, mcVtx[2]);
+	  fV0MinTriggeredNTr->Fill(minV0, nTrAcc, mcVtx[2]);
 	}
       }
       else {
 	fV0ACTriggered->Fill(multV0A, multV0C);
-	fV0MinTriggered->Fill(minV0);
-	fV0MinTriggeredNTr->Fill(minV0, nTrAcc);
+	fV0MinTriggered->Fill(minV0, pVtx->GetZ());
+	fV0MinTriggeredNTr->Fill(minV0, nTrAcc, pVtx->GetZ());
       }
-      fNoEvents->Fill(3, TriggerWeight);
-
-   
+      fNoEvents->Fill(3, TriggerWeight);  
     }
   }
   
@@ -1273,8 +1291,8 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     //  fnTrAccGenTrueInelTrig->Fill(nTrAcc, nTrMCAcc);
   }
 
-  if (fEventCuts.CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex) &&nTr>0.5) { // + VertexExistence, VertexQuality
-    if (fIsMC && nTrAcc>0) {// && IsTrueInelastic) {
+  if (fEventCuts.CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex) && nTr>0.5) { // + VertexExistence, VertexQuality
+    if (fIsMC) {// && IsTrueInelastic) {
       if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 5, TriggerWeight);
       fMCNoEvents->Fill(nTrMCAcc, 5, TriggerWeight);
     }
@@ -1741,7 +1759,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     }
   }
 
-  fNoEventsNTr = new TH2F("fNoEventsNtr","ControlHist for 0Bin; EventSelection; Ntr > 0 ?", 6, -0.5, 5.5, 2, -0.5, 1.5);
+  fNoEventsNTr = new TH2F("fNoEventsNtr","ControlHist for 0Bin; EventSelection; NCh > 0 ?", 6, -0.5, 5.5, 2, -0.5, 1.5);
   fOutputListMain->Add(fNoEventsNTr);
   TString BinLabelsEventsNTr[6]={"Trigger", "Trigger (wTI)", "+Ntr", "+Ntr (wTI)", "+NtrAcc", "+NtrAcc (wTI)"}; //
   for (Int_t i=1; i<=6; i++) {
@@ -1758,20 +1776,20 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fV0ACTrueInel = new TH2F("fV0ACTrueInel", "V0 true inelastic; V0A; V0C", 200, 0, 40, 200, 0, 40);
     fOutputListMain->Add(fV0ACTrueInel);
 
-    fV0TrueMinInel = new TH1F("fV0TrueMinInel", "V0min for true inelastic; Min(V0A, V0C)", 100, 0, 20);
+    fV0TrueMinInel = new TH2F("fV0TrueMinInel", "V0min for true inelastic; Min(V0A, V0C)", 100, 0, 20, 40, -20, 20);
     fOutputListMain->Add(fV0TrueMinInel);
 
-    fV0TrueMinInelNTr = new TH2F("fV0TrueMinInelNTr", "V0min for true inelastic; Min(V0A, V0C); nTrAcc SPD", 100, 0, 20, 25, -0.5, 24.5);
+    fV0TrueMinInelNTr = new TH3F("fV0TrueMinInelNTr", "V0min for true inelastic; Min(V0A, V0C); nTrAcc SPD; zVtx", 100, 0, 20, 25, -0.5, 24.5, 4, -20, 20);
     fOutputListMain->Add(fV0TrueMinInelNTr);
   }
     
   fV0ACTriggered = new TH2F("fV0ACTriggered", "V0 kINT7 + trueInel; V0A; V0C", 200, 0, 40, 200, 0, 40);
   fOutputListMain->Add(fV0ACTriggered);
 
-  fV0MinTriggered = new TH1F("fV0MinTriggered", "V0min kINT7 + trueInel; Min(V0A, V0C)", 100, 0, 20);
+  fV0MinTriggered = new TH2F("fV0MinTriggered", "V0min kINT7 + trueInel; Min(V0A, V0C); zVtx", 100, 0, 20, 40, -20, 20);
   fOutputListMain->Add(fV0MinTriggered);
 
-  fV0MinTriggeredNTr = new TH2F("fV0MinTriggeredNTr", "V0min kINT7 + trueInel; Min(V0A, V0C); nTrAcc SPD", 100, 0, 20, 25, -0.5,24.5);
+  fV0MinTriggeredNTr = new TH3F("fV0MinTriggeredNTr", "V0min kINT7 + trueInel; Min(V0A, V0C); nTrAcc SPD; zVtx", 100, 0, 20, 25, -0.5,24.5, 4, -20, 20);
   fOutputListMain->Add(fV0MinTriggeredNTr);
   
   
@@ -2136,9 +2154,12 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
   // Track Cuts
   const char*  ElecTrackCutsLabels[15]= {"All", "FilterBit", "PtCut", "EtaCut", "TPCNcls", "TPCNclsdEdx", "TPCrefit", "TPCfrac", "KinkCut", "ITSNcls", "ITSrefit", "SPDAny", "SPDBoth", "DCACut", "ITSSCluster"};
-  fElectronTrackCuts = new TH2F("fElectronTrackCuts", "fElectronTrackCuts", 20, 0, 10, 15, 0,15);
+
+ fElectronTrackCuts = new TH2F("fElectronTrackCuts", "fElectronTrackCuts", 20, 0, 10, 15, 0,15);
   for (Int_t i=0; i<15; i++) fElectronTrackCuts->GetYaxis()->SetBinLabel(i+1, ElecTrackCutsLabels[i]);
   fOutputListQA->Add(fElectronTrackCuts);
+
+
 
   
   fElectronTrackTPCChi2 = new TH2F("fElectronTrackTPCChi2", "fElectronTrackTPCChi2", 20, 0, 10,50, 0, 10);
@@ -2191,6 +2212,11 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   */
  
 
+  const char*  HadTrackCutsLabels[10]= {"All", "FilterBit", "PtCut", "EtaCut",  "KinkCut", "TPCNcls",  "TPCrefit", "ITSrefit", "DCACut", "SPDAny"};
+   fHadronTrackCuts = new TH2F("fHadronTrackCuts", "fHadronTrackCuts", 20, 0, 10, 10, 0,10);
+   for (Int_t i=0; i<10; i++) fHadronTrackCuts->GetYaxis()->SetBinLabel(i+1, HadTrackCutsLabels[i]);
+   fOutputListQA->Add(fHadronTrackCuts);
+
   fHadronTrackTPCNcls = new TH2F("fHadronTrackTPCNcls", "fHadronTrackTPCNcls", 20, 0, 10,170, 0, 170);
   fOutputListQA->Add(fHadronTrackTPCNcls);
 
@@ -2199,6 +2225,14 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
   fHadronTrackDCA = new TH3F("fHadronTrackDCA", "fHadronTrackDCA: pt, r, z", 20, 0, 10,  60, -3.0, 3.0, 60, -3.0, 3.0);
   fOutputListQA->Add(fHadronTrackDCA);
+
+  
+  fHadronTrackDCA_woITSAny = new TH3F("fHadronTrackDCA_woITSAny", "fHadronTrackDCA_woITSAny: pt, r, z", 20, 0, 10,  60, -3.0, 3.0, 60, -3.0, 3.0);
+  fOutputListQA->Add(fHadronTrackDCA_woITSAny);
+
+  fHadronTrackDCA_wITSAny = new TH3F("fHadronTrackDCA_wITSAny", "fHadronTrackDCA_wITSAny: pt, r, z", 20, 0, 10,  60, -3.0, 3.0, 60, -3.0, 3.0);
+  fOutputListQA->Add(fHadronTrackDCA_wITSAny);
+
 
   fHistITSnSig = new TH2F("fHistITSnSig","fHistITSnSig",50,0.3,5,200,-10,10);
   BinLogX(fHistITSnSig->GetXaxis());
@@ -2276,7 +2310,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
       Int_t    binHMC[4] = {NBinsElectron  , 7,  20, 100}; // p PDG ITS, TPC
       Double_t xminHMC[4] = {XminElectron   , 0, -10, -10};
       Double_t xmaxHMC[4] = {XmaxElectron   , 7,  10,  10};
-      fHadContMC = new THnSparseF("fHadContMC", "HadContMC; P; PDG; ITS; TPC;Bla", 4, binHMC, xminHMC, xmaxHMC);
+      fHadContMC = new THnSparseF("fHadContMC", "HadContMC; P; PDG; ITS; TPC;", 4, binHMC, xminHMC, xmaxHMC);
       fOutputListMain->Add(fHadContMC);
       // fHadContMCPt = new THnSparseF("fHadContMCPt", "HadCont: Pt, PDG, ITS, TPC", 4, binHMC, xminHMC, xmaxHMC);
       // fOutputListMain->Add(fHadContMCPt);
@@ -5100,6 +5134,8 @@ Bool_t AliAnalysisTaskHaHFECorrel::PhotElecTrackCuts(const AliVVertex *pVtx,AliV
 
 Bool_t AliAnalysisTaskHaHFECorrel::ChargedHadronTrackCuts(const AliVVertex *pVtx,AliVTrack *Vtrack,Int_t nMother, Int_t listMother[], Double_t EventWeight)
  {
+
+   fHadronTrackCuts->Fill(Vtrack->Pt(), 1, EventWeight);
    AliAODTrack *AODtrack=0;
    AliESDtrack *ESDtrack=0;
    if (fIsAOD) {
@@ -5112,10 +5148,20 @@ Bool_t AliAnalysisTaskHaHFECorrel::ChargedHadronTrackCuts(const AliVVertex *pVtx
      if(!ESDtrack) return kFALSE;
      if(!ESDkTrkGlobalNoDCA(Vtrack)) return kFALSE;
    }
+   fHadronTrackCuts->Fill(Vtrack->Pt(), 2, EventWeight);
 
    if(Vtrack->Pt()<0.25) return kFALSE;
+   fHadronTrackCuts->Fill(Vtrack->Pt(), 3, EventWeight);
+    
    if(Vtrack->Eta()>fMaxHadronEta) return kFALSE;
    if(Vtrack->Eta()<fMinHadronEta) return kFALSE;
+   fHadronTrackCuts->Fill(Vtrack->Pt(), 4, EventWeight);
+
+   Bool_t ITSPointOnLayer0=kFALSE;
+   Bool_t ITSPointOnLayer1=kFALSE;
+   ITSPointOnLayer0=Vtrack->HasPointOnITSLayer(0);
+   ITSPointOnLayer1=Vtrack->HasPointOnITSLayer(1);
+  
 
     // quality track cuts for charged hadrons
 
@@ -5139,6 +5185,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::ChargedHadronTrackCuts(const AliVVertex *pVtx
      if(ESDtrack->GetKinkIndex(0) != 0) return kFALSE;
      ESDtrack->GetImpactParameters(DCAr, DCAz);
    }
+   fHadronTrackCuts->Fill(Vtrack->Pt(), 5, EventWeight);
    //   cout << DCAr << "\t" << DCAz << endl;
 
    fHadronTrackTPCNcls->Fill(Vtrack->Pt(), Vtrack->GetTPCNcls(), EventWeight);
@@ -5146,16 +5193,28 @@ Bool_t AliAnalysisTaskHaHFECorrel::ChargedHadronTrackCuts(const AliVVertex *pVtx
    fHadronTrackDCA->Fill(Vtrack->Pt(), DCAr, DCAz, EventWeight);
 
 
-   if(fHITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kITSrefit)) return kFALSE;
-   if(fHTPCrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kTPCrefit)) return kFALSE;
-   
    if(Vtrack->GetTPCNcls() < fHTPCnCut) return kFALSE;
+   fHadronTrackCuts->Fill(Vtrack->Pt(), 6, EventWeight);
+   
+   if(fHTPCrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kTPCrefit)) return kFALSE;
+   fHadronTrackCuts->Fill(Vtrack->Pt(), 7, EventWeight);
+   
+   if(fHITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kITSrefit)) return kFALSE;
+   fHadronTrackCuts->Fill(Vtrack->Pt(), 8, EventWeight);
    
    if(TMath::Abs(DCAr) > 0.25 || TMath::Abs(DCAz) > 1) {
      //   cout << "Hadron fails DCA cut " << Vtrack->Pt() << endl;
      return kFALSE;
-   }  
+   }
+   fHadronTrackCuts->Fill(Vtrack->Pt(), 9, EventWeight);
 
+   fHadronTrackDCA_woITSAny->Fill(Vtrack->Pt(), DCAr, DCAz, EventWeight);
+   
+   if(!(ITSPointOnLayer0 || ITSPointOnLayer1)) return kFALSE; // now kAny
+   fHadronTrackCuts->Fill(Vtrack->Pt(), 10, EventWeight);
+
+   fHadronTrackDCA_wITSAny->Fill(Vtrack->Pt(), DCAr, DCAz, EventWeight);
+   
    return kTRUE;   
 }
 

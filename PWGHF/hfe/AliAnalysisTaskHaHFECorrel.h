@@ -321,11 +321,11 @@ public:
     TH2F                  *fHFENoEvents;            //! no of events for different cuts
     TH3F                  *fDiffractiveType;        //!
     TH2F                  *fV0ACTrueInel;           //!
-    TH1F                  *fV0TrueMinInel;          //!
-    TH2F                  *fV0TrueMinInelNTr;          //!
+    TH2F                  *fV0TrueMinInel;          //!
+    TH3F                  *fV0TrueMinInelNTr;          //!
     TH2F                  *fV0ACTriggered;          //!
-    TH1F                  *fV0MinTriggered;         //!
-    TH2F                  *fV0MinTriggeredNTr;         //!
+    TH2F                  *fV0MinTriggered;         //!
+    TH3F                  *fV0MinTriggeredNTr;         //!
     TH2F                  fTriggerWeight;
     TH2F                  *fVtxEtaNTr;              //!
     TH2F                  *fVtxBeforeNTrAcc;        //!
@@ -438,10 +438,12 @@ public:
     TH3F                  *fElectronTrackDCA;       //! 
     THnSparseF*           fElectronTrackITSCuts;    //!
     THnSparseF*           fPhotTrackITSCuts;        //!
+    TH2F                  *fHadronTrackCuts;        //!
     TH2F                  *fHadronTrackTPCNcls;     //! 
     TH3F                  *fHadronTrackRefit;       //!
     TH3F                  *fHadronTrackDCA;         //! 
-
+    TH3F                  *fHadronTrackDCA_woITSAny;//!
+    TH3F                  *fHadronTrackDCA_wITSAny; //!
 
 
    

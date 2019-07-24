@@ -21,7 +21,7 @@ AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Int_t MinNTr, Int_t
   cout << "ConfigList" << endl;
   //GeneralSettings
   TString Config;
-  Config= Form("%i, %i, %i, %s, %s, %s, %s ", period, MinNTr, MaxNTr, TRDQA ? "kTRUE" : "kFALSE",  TagEff  ? "kTRUE" : "kFALSE",  RecEff ? "kTRUE" : "kFALSE",  OneTimeCheck ? "kTRUE" : "kFALSE");
+  Config= Form("%i, %i, %i, %s, %s, %s, %s", period, MinNTr, MaxNTr, TRDQA ? "kTRUE" : "kFALSE",  TagEff  ? "kTRUE" : "kFALSE",  RecEff ? "kTRUE" : "kFALSE",  OneTimeCheck ? "kTRUE" : "kFALSE");
   Config+=Form(", %s, %s, %s, %s, %s, %s, %s, %s",  CorrHadron ? "kTRUE" : "kFALSE",  CorrLP ? "kTRUE" : "kFALSE",  MCTruth ? "kTRUE" : "kFALSE",  IsMC ? "kTRUE" : "kFALSE",  IsAOD ? "kTRUE" : "kFALSE",  IsHFE ? "kTRUE" : "kFALSE", UseTender ? "kTRUE" : "kFALSE", UseEventWeights ? "kTRUE" : "kFALSE");
   Config+=Form(", %4.2f, %i, %4.2f, %i, %i, %4.2f, %i, %s, %i, %4.2f, %i, %s, %s, %s, %4.2f, %4.2f, %4.2f, %s", EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut, PhotElecTPCnCut, PhotElecITSrefitCut ? "kTRUE" : "kFALSE", PhotCorrCase, InvmassCut, HTPCnCut, HITSrefitCut ? "kTRUE" : "kFALSE", HTPCrefitCut ? "kTRUE" : "kFALSE", UseITSsa ? "kTRUE" : "kFALSE", SigmaITScut, SigmaTOFcut, SigmaTPCcut, ID );
   cout << Config << endl;
@@ -30,7 +30,7 @@ AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Int_t MinNTr, Int_t
   task->SetTRDQA(TRDQA);
   if (TagEff) printf ("\nGenerate TagEff Histograms");
   task->SetTagEff(TagEff);
-  if (RecEff) printf ("\nGenerate RecEff histograms");
+ if (RecEff) printf ("\nGenerate RecEff histograms");
   task->SetRecEff(RecEff);
   if (OneTimeCheck) printf ("\nGenerate OneTimeCheck histograms for the chossen setting");
   task->SetOneTimeCheck(OneTimeCheck);

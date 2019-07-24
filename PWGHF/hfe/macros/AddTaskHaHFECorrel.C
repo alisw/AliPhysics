@@ -22,7 +22,7 @@
     return 0x0;
   }
 
-  TString type = mgr->GetInputEventHandler()->GetDataType();
+ 
 
   /*
   AliMCEventHandler* mcHand = new AliMCEventHandler();
@@ -76,6 +76,7 @@
   TFile *SPDnTrFile  = TFile::Open(SPDnTrFileName.Data());
   if (SPDnTrFile) {    
     TProfile* SPDnTrAvg = (TProfile*)SPDnTrFile->Get("SPDnTrAvg");
+    // TH1F* SPDnTrConfig = (TH1F*) SPDnTrConfig->Get("SPDnTrConfig");
     if (SPDnTrAvg) taskMB->SetSPDnTrAvg(*SPDnTrAvg);
     else printf("Could not load SPDnTrAvg\n");
     }
