@@ -76,7 +76,8 @@ ClassImp(AliAnalysisTaskSELbtoLcpi4);
   fFillNtupleSignal(kFALSE), 
   fFillNtupleBackgroundRotated(kFALSE),
   fFillNtupleBackgroundNonRotated(kFALSE),
-  fCutsond0Lcdaughters(kFALSE)
+  fCutsond0Lcdaughters(kFALSE),
+  fIsPromptLc(kFALSE)
 {
   //
   // Default constructor.
@@ -115,7 +116,8 @@ AliAnalysisTaskSELbtoLcpi4::AliAnalysisTaskSELbtoLcpi4(const char *name,
   fFillNtupleSignal(kFALSE), 
   fFillNtupleBackgroundRotated(kFALSE),
   fFillNtupleBackgroundNonRotated(kFALSE),
-  fCutsond0Lcdaughters(kFALSE)
+  fCutsond0Lcdaughters(kFALSE),
+  fIsPromptLc(kFALSE)
 {
   //SetPtBinLimit(fRDCutsAnalysisLc->GetNPtBins()+1,fRDCutsAnalysisLc->GetPtBinLimits());
     for(Int_t icut=0; icut<2; icut++) fCutD0Daughter[icut]=0.;
@@ -306,9 +308,9 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
   Int_t idProng3 = d->GetProngID(2);
 
   Int_t lc=0;
-
+  fIsPromptLc=kFALSE;
   Int_t labLb=CheckMCLc(d,arrayMC);//after track cuts
-
+  //here we know if it is a prompt Lc
   AliExternalTrackParam *LcCand = new AliExternalTrackParam;
   LcCand->CopyFromVTrack(d);
 
@@ -493,7 +495,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
         dgLabelsnr[i] = trknr->GetLabel();
       }
       Int_t LabelPionnr= HPiAODtrk->GetLabel();
-      FillLbHistsnr(lbcandProng,lb,mcHeader,arrayMC,HPiAODtrk,d, lc, ev);
+      FillLbHistsnr(lbcandProng,lb,mcHeader,arrayMC,HPiAODtrk,d, lc, ev, fIsPromptLc);
     }
     lbcandProng->UnsetOwnPrimaryVtx();
    
@@ -549,7 +551,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       }
       Int_t LabelPion= HPiAODtrk->GetLabel();
       // if(CountLc(d,HPiAODtrk,arrayMC,labPi2,labLb))countLc++;
-      FillLbHists(lb2,lb,mcHeader,arrayMC,HPiAODtrk,d, lc, ev);
+      FillLbHists(lb2,lb,mcHeader,arrayMC,HPiAODtrk,d, lc, ev, fIsPromptLc);
 
 //      cout << "__________________________________________*Done*__________________________________________" << endl;
       lb2->UnsetOwnPrimaryVtx();
@@ -631,7 +633,7 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fOutput->Add(fInvMassLbSign4);
   fOutput->Add(fInvMassLbSign5);
 
-    fNtupleLambdabUPG = new TNtuple("fNtupleLambdabUPG"," Lb ","massCand:ptLb:pt_Prong0:pt_Prong1:d0_Prong1:d0_Prong0:cosThetaStar:Ct:Prodd0:cosp:cospXY:NormDL:ImpPar:dca:signal:rotated:ptLc:d0_Prong0Lc:d0_Prong1Lc:d0_Prong2Lc:pt_Prong0Lc:pt_Prong1Lc:pt_Prong2Lc:dist12Lc:sigmavertLc:distprimsecLc:costhetapointLc:dcaLc:signalLc");
+    fNtupleLambdabUPG = new TNtuple("fNtupleLambdabUPG"," Lb ","massCand:ptLb:pt_Prong0:pt_Prong1:d0_Prong1:d0_Prong0:cosThetaStar:Ct:Prodd0:cosp:cospXY:NormDL:ImpPar:dca:signal:rotated:ptLc:d0_Prong0Lc:d0_Prong1Lc:d0_Prong2Lc:pt_Prong0Lc:pt_Prong1Lc:pt_Prong2Lc:dist12Lc:sigmavertLc:distprimsecLc:costhetapointLc:dcaLc:signalLc:promptLc");
   PostData(2,fNtupleLambdabUPG);
 
   /*fNtupleLambdacUPG = new TNtuple("fNtupleLambdacUPG"," Lc ","ptLc:d0_Prong0:d0_Prong1:d0_Prong2:pt_Prong0:pt_Prong1:pt_Prong2:dist12:sigmavert:distprimsec:costhetapoint:dca:signal");
@@ -969,9 +971,10 @@ void AliAnalysisTaskSELbtoLcpi4::Terminate(Option_t */*option*/)
   return;
 }
 //------------------------------------------------------------------------
-void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC, AliAODTrack *pion,AliAODRecoDecayHF3Prong *d, Int_t lc, AliAODEvent *ev){
+void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC, AliAODTrack *pion,AliAODRecoDecayHF3Prong *d, Int_t lc, AliAODEvent *ev, Bool_t IsPromptLc){
   //ptlb cut
-
+  Int_t promptLc=0;
+  if (IsPromptLc) promptLc=1;
   Bool_t gen = CheckGenerator(pion,d,mcHeader,arrayMC);
   Double_t massTrueLB = 5.641;
   Double_t massCandLb = 0;
@@ -991,7 +994,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
   if(ptCandlb>=14.) iPtBinlb=5;
 
   //fill ntuple
-  Float_t lbVarC[29] = {0};
+  Float_t lbVarC[30] = {0};
   lbVarC[0] = massCandLb;
   lbVarC[1] = ptCandlb;
   lbVarC[2] = part->PtProng(0);
@@ -1021,6 +1024,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
   lbVarC[26] = d->CosPointingAngle();
   lbVarC[27] = d->GetDCA();
   lbVarC[28] = lc;
+  lbVarC[29] = promptLc;
 
   if(lb==1){ //
     if(iPtBinlb==0)((TH1F*)fOutput->FindObject("fMassUpg_pt0lb"))->Fill(massCandLb);
@@ -1200,7 +1204,7 @@ Int_t AliAnalysisTaskSELbtoLcpi4::CheckMCLc(AliAODRecoDecayHF3Prong *d,TClonesAr
   AliAODMCParticle *partLc= (AliAODMCParticle*)arrayMC->At(labDpL);
   if(!partLc)return 999;
   Int_t labMLc = partLc->GetMother();//mother Lc
-  if(labMLc<0) return 999;
+  if(labMLc<0) {fIsPromptLc=kTRUE; return 999;}
   fSelMC->Fill(4);
   AliAODMCParticle *partMLc= (AliAODMCParticle*)arrayMC->At(labMLc);//MC mother Lc
   if(!partMLc) return 999;
@@ -1670,10 +1674,11 @@ AliAODVertex* AliAnalysisTaskSELbtoLcpi4::RecalculateVertex(const AliVVertex *pr
 }
 
 //___________________________
-void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC, AliAODTrack *pion,AliAODRecoDecayHF3Prong *d, Int_t lc,AliAODEvent *ev){
+void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC, AliAODTrack *pion,AliAODRecoDecayHF3Prong *d, Int_t lc,AliAODEvent *ev, Bool_t IsPromptLc){
   //ptlb cut
 
-
+  Int_t promptLc=0;
+  if (IsPromptLc) promptLc=1;
   Bool_t gen = CheckGenerator(pion,d,mcHeader,arrayMC);
   Double_t massTrueLB = 5.641;
   Double_t massCandLb = 0;
@@ -1696,7 +1701,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
   if(ptCandlb<2. || ptCandlb>999.) return;
 
   //fill ntuple
-  Float_t lbVarC[29] = {0};
+  Float_t lbVarC[30] = {0};
   lbVarC[0] = massCandLb;
   lbVarC[1] = ptCandlb;
   lbVarC[2] = part->PtProng(0);
@@ -1726,6 +1731,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
   lbVarC[26] = d->CosPointingAngle();
   lbVarC[27] = d->GetDCA();
   lbVarC[28] = lc;
+  lbVarC[29] = promptLc;
 
   if(lb==1){
     if(iPtBinlb==0)fInvMassLbSign0->Fill(massCandLb);
