@@ -280,7 +280,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   /* @} */
 
  protected:
-  void            RetrieveTaskPropertiesFromYAMLConfig();
+  virtual void    RetrieveTaskPropertiesFromYAMLConfig();
   bool            GetFilenames()        ;
   void            DeterminePythiaXSecFilename();
   bool            IsRunInRunlist(const std::string & path) const;
@@ -296,7 +296,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
   Bool_t          IsEventSelected()     ;
-  Bool_t          CheckIsEmbeddedEventSelected();
+  virtual Bool_t  CheckIsEmbeddedEventSelected();
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
