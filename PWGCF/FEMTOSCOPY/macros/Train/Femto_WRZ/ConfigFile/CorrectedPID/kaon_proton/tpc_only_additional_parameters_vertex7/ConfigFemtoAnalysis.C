@@ -415,7 +415,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 	  //Spherical harmonics (without kT bins)
 	  if(runSHCorrFctn == 1) {
-	    cylmetaphitpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),3,nbinssh,0.0,shqmax,runshlcms);
+	    cylmetaphitpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),1,nbinssh,0.0,shqmax,runshlcms);
 	    anetaphitpc[aniter]->AddCorrFctn(cylmetaphitpc[aniter]);
 	  }
 
