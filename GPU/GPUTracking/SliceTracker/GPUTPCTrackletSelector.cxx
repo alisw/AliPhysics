@@ -82,7 +82,9 @@ GPUd() void GPUTPCTrackletSelector::Thread<0>(int nBlocks, int nThreads, int iBl
             s.fHits[iThread][nHits].Set(irow, ih);
           } else
 #endif // GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE != 0
+          {
             trackHits[nHits - GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE].Set(irow, ih);
+          }
           nHits++;
           if (!own) {
             nShared++;
@@ -116,8 +118,9 @@ GPUd() void GPUTPCTrackletSelector::Thread<0>(int nBlocks, int nThreads, int iBl
               tracker.TrackHits()[nFirstTrackHit + jh] = s.fHits[iThread][jh];
             } else
 #endif // GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE != 0
-
+            {
               tracker.TrackHits()[nFirstTrackHit + jh] = trackHits[jh - GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE];
+            }
           }
         }
         nHits = 0;

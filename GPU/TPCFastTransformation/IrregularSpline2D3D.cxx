@@ -1,18 +1,12 @@
-//**************************************************************************\
-//* This file is property of and copyright by the ALICE Project            *\
-//* ALICE Experiment at CERN, All rights reserved.                         *\
-//*                                                                        *\
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *\
-//*                  for The ALICE HLT Project.                            *\
-//*                                                                        *\
-//* Permission to use, copy, modify and distribute this software and its   *\
-//* documentation strictly for non-commercial purposes is hereby granted   *\
-//* without fee, provided that the above copyright notice appears in all   *\
-//* copies and that both the copyright notice and this permission notice   *\
-//* appear in the supporting documentation. The authors make no claims     *\
-//* about the suitability of this software for any purpose. It is          *\
-//* provided "as is" without express or implied warranty.                  *\
-//**************************************************************************
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 /// \file  IrregularSpline2D3D.cxx
 /// \brief Implementation of IrregularSpline2D3D class
@@ -40,17 +34,6 @@ void IrregularSpline2D3D::destroy()
   FlatObject::destroy();
 }
 
-void IrregularSpline2D3D::relocateBufferPointers(const char* oldBuffer, char* actualBuffer)
-{
-  /// relocate pointers from old to new buffer location
-
-  char* bufferU = FlatObject::relocatePointer(oldBuffer, actualBuffer, mGridU.getFlatBufferPtr());
-  mGridU.setActualBufferAddress(bufferU);
-
-  char* bufferV = FlatObject::relocatePointer(oldBuffer, actualBuffer, mGridV.getFlatBufferPtr());
-  mGridV.setActualBufferAddress(bufferV);
-}
-
 void IrregularSpline2D3D::cloneFromObject(const IrregularSpline2D3D& obj, char* newFlatBufferPtr)
 {
   /// See FlatObject for description
@@ -69,17 +52,17 @@ void IrregularSpline2D3D::cloneFromObject(const IrregularSpline2D3D& obj, char* 
 void IrregularSpline2D3D::moveBufferTo(char* newFlatBufferPtr)
 {
   /// See FlatObject for description
-  const char* oldFlatBufferPtr = mFlatBufferPtr;
   FlatObject::moveBufferTo(newFlatBufferPtr);
-  relocateBufferPointers(oldFlatBufferPtr, mFlatBufferPtr);
+  setActualBufferAddress(mFlatBufferPtr);
 }
 
 void IrregularSpline2D3D::setActualBufferAddress(char* actualFlatBufferPtr)
 {
   /// See FlatObject for description
-  const char* oldFlatBufferPtr = mFlatBufferPtr;
   FlatObject::setActualBufferAddress(actualFlatBufferPtr);
-  relocateBufferPointers(oldFlatBufferPtr, mFlatBufferPtr);
+  size_t vOffset = alignSize(mGridU.getFlatBufferSize(), mGridV.getBufferAlignmentBytes());
+  mGridU.setActualBufferAddress(mFlatBufferPtr);
+  mGridV.setActualBufferAddress(mFlatBufferPtr + vOffset);
 }
 
 void IrregularSpline2D3D::setFutureBufferAddress(char* futureFlatBufferPtr)

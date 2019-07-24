@@ -34,7 +34,6 @@
 #include "GPUTRDTrack.h"
 #include "GPUTRDTracker.h"
 #include "AliHLTTPCRawCluster.h"
-#include "ClusterNativeAccessExt.h"
 #include "GPUTRDTrackletLabels.h"
 #include "GPUMemoryResource.h"
 #include "GPUConstantMem.h"
@@ -120,8 +119,10 @@ int GPUReconstructionCPU::GetThread()
 int GPUReconstructionCPU::InitDevice()
 {
   if (mDeviceProcessingSettings.memoryAllocationStrategy == GPUMemoryResource::ALLOCATION_GLOBAL) {
-    mHostMemoryPermanent = mHostMemoryBase = operator new(GPUCA_HOST_MEMORY_SIZE);
-    mHostMemorySize = GPUCA_HOST_MEMORY_SIZE;
+    if (mDeviceMemorySize > mHostMemorySize) {
+      mHostMemorySize = mDeviceMemorySize;
+    }
+    mHostMemoryPermanent = mHostMemoryBase = operator new(mHostMemorySize);
     ClearAllocatedMemory();
   }
   SetThreadCounts();
@@ -167,13 +168,6 @@ int GPUReconstructionCPU::RunChains()
     int retVal = mChains[i]->RunChain();
     if (retVal) {
       return retVal;
-    }
-  }
-
-  if (GetDeviceProcessingSettings().debugLevel >= 1) {
-    if (GetDeviceProcessingSettings().memoryAllocationStrategy == GPUMemoryResource::ALLOCATION_GLOBAL) {
-      printf("Memory Allocation: Host %'lld / %'lld, Device %'lld / %'lld, %d chunks\n", (long long int)((char*)mHostMemoryPool - (char*)mHostMemoryBase), (long long int)mHostMemorySize, (long long int)((char*)mDeviceMemoryPool - (char*)mDeviceMemoryBase),
-             (long long int)mDeviceMemorySize, (int)mMemoryResources.size());
     }
   }
 

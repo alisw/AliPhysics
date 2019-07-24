@@ -1,18 +1,12 @@
-//**************************************************************************\
-//* This file is property of and copyright by the ALICE Project            *\
-//* ALICE Experiment at CERN, All rights reserved.                         *\
-//*                                                                        *\
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *\
-//*                  for The ALICE HLT Project.                            *\
-//*                                                                        *\
-//* Permission to use, copy, modify and distribute this software and its   *\
-//* documentation strictly for non-commercial purposes is hereby granted   *\
-//* without fee, provided that the above copyright notice appears in all   *\
-//* copies and that both the copyright notice and this permission notice   *\
-//* appear in the supporting documentation. The authors make no claims     *\
-//* about the suitability of this software for any purpose. It is          *\
-//* provided "as is" without express or implied warranty.                  *\
-//**************************************************************************
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 /// \file  TPCFastTransformQA.cxx
 /// \brief Implementation of TPCFastTransformQA class
@@ -78,8 +72,8 @@ int TPCFastTransformQA::doQA(const TPCFastTransform& fastTransform)
         Int_t nPads = tpcParam->GetNPads(iSec, iRow);
         for (float pad = 0.5; pad < nPads; pad += 1.) {
           for (float time = 0; time < lastTimeBin; time++) {
-            Int_t is[] = { iSec };
-            double orig[3] = { static_cast<Double_t>(iRow), pad, time };
+            Int_t is[] = {iSec};
+            double orig[3] = {static_cast<Double_t>(iRow), pad, time};
             origTransform->Transform(orig, is, 0, 1);
             nCalls1++;
             sum1 += orig[0] + orig[1] + orig[2];
@@ -139,12 +133,12 @@ int TPCFastTransformQA::doQA(const TPCFastTransform& fastTransform)
         AliHLTTPCGeometry::Sector2Slice(slice, slicerow, iSec, iRow);
         for (float pad = 0.5; pad < nPads; pad += 1.) {
           for (float time = 0; time < lastTimeBin; time++) {
-            Int_t is[] = { iSec };
-            double orig[3] = { static_cast<Double_t>(iRow), pad, time };
+            Int_t is[] = {iSec};
+            double orig[3] = {static_cast<Double_t>(iRow), pad, time};
             float fast[3];
             origTransform->Transform(orig, is, 0, 1);
             fastTransform.Transform(slice, slicerow, pad, time, fast[0], fast[1], fast[2]);
-            float entry[] = { (float)iSec, (float)iRow, pad, time, (float)orig[0], (float)orig[1], (float)orig[2], fast[0], fast[1], fast[2] };
+            float entry[] = {(float)iSec, (float)iRow, pad, time, (float)orig[0], (float)orig[1], (float)orig[2], fast[0], fast[1], fast[2]};
             nt->Fill(entry);
           }
         }

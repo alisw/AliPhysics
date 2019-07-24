@@ -39,8 +39,8 @@ class GPUChain
   using krnlExec = GPUReconstruction::krnlExec;
   using krnlEvent = GPUReconstruction::krnlEvent;
   using deviceEvent = GPUReconstruction::deviceEvent;
-  static constexpr krnlRunRange krnlRunRangeNone{ 0, -1 };
-  static constexpr krnlEvent krnlEventNone = krnlEvent{ nullptr, nullptr, 0 };
+  static constexpr krnlRunRange krnlRunRangeNone{0, -1};
+  static constexpr krnlEvent krnlEventNone = krnlEvent{nullptr, nullptr, 0};
 
   virtual ~GPUChain() = default;
   virtual void RegisterPermanentMemoryAndProcessors() = 0;
@@ -50,6 +50,7 @@ class GPUChain
   virtual int Finalize() = 0;
   virtual int RunChain() = 0;
   virtual void MemorySize(size_t& gpuMem, size_t& pageLockedHostMem) = 0;
+  virtual void PrintMemoryStatistics(){};
 
   constexpr static int NSLICES = GPUReconstruction::NSLICES;
 
@@ -85,8 +86,7 @@ class GPUChain
   void SynchronizeEvents(deviceEvent* evList, int nEvents = 1) { mRec->SynchronizeEvents(evList, nEvents); }
   bool IsEventDone(deviceEvent* evList, int nEvents = 1) { return mRec->IsEventDone(evList, nEvents); }
   void RecordMarker(deviceEvent* ev, int stream) { mRec->RecordMarker(ev, stream); }
-  void ActivateThreadContext() { mRec->ActivateThreadContext(); }
-  void ReleaseThreadContext() { mRec->ReleaseThreadContext(); }
+  virtual std::unique_ptr<GPUReconstruction::GPUThreadContext> GetThreadContext() { return mRec->GetThreadContext(); }
   void SynchronizeGPU() { mRec->SynchronizeGPU(); }
   void ReleaseEvent(deviceEvent* ev) { mRec->ReleaseEvent(ev); }
   template <class T>

@@ -1,18 +1,12 @@
-//**************************************************************************\
-//* This file is property of and copyright by the ALICE Project            *\
-//* ALICE Experiment at CERN, All rights reserved.                         *\
-//*                                                                        *\
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *\
-//*                  for The ALICE HLT Project.                            *\
-//*                                                                        *\
-//* Permission to use, copy, modify and distribute this software and its   *\
-//* documentation strictly for non-commercial purposes is hereby granted   *\
-//* without fee, provided that the above copyright notice appears in all   *\
-//* copies and that both the copyright notice and this permission notice   *\
-//* appear in the supporting documentation. The authors make no claims     *\
-//* about the suitability of this software for any purpose. It is          *\
-//* provided "as is" without express or implied warranty.                  *\
-//**************************************************************************
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 /// \file  TPCDistortionIRS.h
 /// \brief Definition of TPCDistortionIRS class
@@ -115,7 +109,6 @@ class TPCDistortionIRS : public FlatObject
   /// Gives pointer to spline data
   GPUd() const float* getSplineData(int slice, int row) const;
 
-
   /// _______________ The main method: cluster distortion  _______________________
   ///
   GPUd() int getDistortion(int slice, int row, float u, float v, float& dx, float& du, float& dv) const;
@@ -144,8 +137,8 @@ class TPCDistortionIRS : public FlatObject
 
   /// _______________  Construction control  _______________________________________________
 
-  RowSplineInfo* mConstructionRowSplineInfos = nullptr;  ///< Temporary container of the row infos during construction
-  IrregularSpline2D3D* mConstructionScenarios = nullptr; ///< Temporary container for spline scenarios
+  RowSplineInfo* mConstructionRowSplineInfos = nullptr;  //! (transient!!) Temporary container of the row infos during construction
+  IrregularSpline2D3D* mConstructionScenarios = nullptr; //! (transient!!) Temporary container for spline scenarios
 
   /// _______________  Geometry  _______________________________________________
 
@@ -153,14 +146,14 @@ class TPCDistortionIRS : public FlatObject
 
   int mNumberOfScenarios; ///< Number of approximation spline scenarios
 
-  RowSplineInfo* mRowSplineInfoPtr;  ///< pointer to RowInfo array inside the mFlatBufferPtr buffer
-  IrregularSpline2D3D* mScenarioPtr; ///< Pointer to spline scenarios
+  RowSplineInfo* mRowSplineInfoPtr;  //! (transient!!) pointer to RowInfo array inside the mFlatBufferPtr buffer
+  IrregularSpline2D3D* mScenarioPtr; //! (transient!!) pointer to spline scenarios
 
   /// _______________  Calibration data  _______________________________________________
 
   long int mTimeStamp; ///< time stamp of the current calibration
 
-  char* mSplineData;          ///< pointer to the spline data in the flat buffer
+  char* mSplineData;          //! (transient!!) pointer to the spline data in the flat buffer
   size_t mSliceDataSizeBytes; ///< size of the data for one slice in the flat buffer
 };
 

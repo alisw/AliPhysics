@@ -19,7 +19,7 @@
 
 #include "GPUTPCCompression.h"
 #include "GPUReconstruction.h"
-#include "ClusterNativeAccessExt.h"
+#include "GPUO2DataTypes.h"
 
 using namespace GPUCA_NAMESPACE::gpu;
 

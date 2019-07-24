@@ -27,7 +27,7 @@ namespace o2
 {
 namespace tpc
 {
-struct ClusterNativeAccessFullTPC;
+struct ClusterNativeAccess;
 struct ClusterNative;
 } // namespace tpc
 } // namespace o2
@@ -37,7 +37,6 @@ namespace GPUCA_NAMESPACE
 namespace gpu
 {
 struct GPUTPCClusterData;
-struct ClusterNativeAccessExt;
 class TPCFastTransform;
 
 class GPUTPCConvert : public GPUProcessor
@@ -55,13 +54,13 @@ class GPUTPCConvert : public GPUProcessor
   void* SetPointersOutput(void* mem);
   void* SetPointersMemory(void* mem);
 
-  void set(ClusterNativeAccessExt* clustersNative, const TPCFastTransform* transform)
+  void set(o2::tpc::ClusterNativeAccess* clustersNative, const TPCFastTransform* transform)
   {
     mClustersNative = clustersNative;
     mTransform = transform;
   }
 #endif
-  GPUd() const ClusterNativeAccessExt* getClustersNative()
+  GPUd() const o2::tpc::ClusterNativeAccess* getClustersNative()
   {
     return mClustersNative;
   }
@@ -73,8 +72,8 @@ class GPUTPCConvert : public GPUProcessor
   };
 
  protected:
-  ClusterNativeAccessExt* mClustersNative = nullptr;
-  ClusterNativeAccessExt* mClustersNativeBuffer;
+  o2::tpc::ClusterNativeAccess* mClustersNative = nullptr;
+  o2::tpc::ClusterNativeAccess* mClustersNativeBuffer;
 
   const TPCFastTransform* mTransform = nullptr;
   Memory* mMemory = nullptr;

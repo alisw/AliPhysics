@@ -19,7 +19,7 @@
 
 #include "GPUTPCCompressionKernels.h"
 #include "GPUConstantMem.h"
-#include "ClusterNativeAccessExt.h"
+#include "GPUO2DataTypes.h"
 #include "GPUTPCGMMerger.h"
 #include "GPUParam.h"
 #include "GPUCommonAlgorithm.h"
@@ -34,7 +34,7 @@ template <>
 GPUd() void GPUTPCCompressionKernels::Thread<0>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() GPUTPCSharedMemory& smem, processorType& processors)
 {
   GPUTPCGMMerger& merger = processors.tpcMerger;
-  const ClusterNativeAccessExt* clusters = processors.tpcConverter.getClustersNative();
+  const o2::tpc::ClusterNativeAccess* clusters = processors.tpcConverter.getClustersNative();
   GPUTPCCompression& compressor = processors.tpcCompressor;
   GPUParam& param = processors.param;
 
@@ -178,7 +178,7 @@ template <>
 GPUd() void GPUTPCCompressionKernels::Thread<1>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() GPUTPCSharedMemory& smem, processorType& processors)
 {
   GPUTPCGMMerger& merger = processors.tpcMerger;
-  const ClusterNativeAccessExt* clusters = processors.tpcConverter.getClustersNative();
+  const o2::tpc::ClusterNativeAccess* clusters = processors.tpcConverter.getClustersNative();
   GPUTPCCompression& compressor = processors.tpcCompressor;
   GPUParam& param = processors.param;
   unsigned int* sortBuffer = compressor.mClusterSortBuffer + iBlock * compressor.mNMaxClusterSliceRow;

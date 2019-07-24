@@ -32,10 +32,6 @@ namespace base
 {
 struct MatBudget;
 class MatLayerCylSet;
-#ifndef HAVE_O2HEADERS
-struct MatBudget {
-};
-#endif
 } // namespace base
 } // namespace o2
 
