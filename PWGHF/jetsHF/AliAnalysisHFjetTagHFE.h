@@ -163,14 +163,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistULSjet_DCA;
   TH2F                        *fHistLSjet_DCA;
   TH2F                        *fHistHadjet_DCA; 
-  TH2F                        *fHistHFjet_dR;
-  TH2F                        *fHistULSjet_dR;
-  TH2F                        *fHistLSjet_dR;
-  TH2F                        *fHistHadjet_dR; 
-  TH2F                        *fHistHFjet_dphi;
-  TH2F                        *fHistULSjet_dphi;
-  TH2F                        *fHistLSjet_dphi;
-  TH2F                        *fHistHadjet_dphi; 
+  THnSparse                   *fHistHFjet_ridge;
   TH2F                        *fHistHFjetOrder;
   TH2F                        *fHistDiJetPhi; 
   TH2F                        *fHistDiJetMomBalance; 
@@ -274,6 +267,6 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented
 
   //ClassDef(AliAnalysisHFjetTagHFE, 7) // jet sample analysis task
-  ClassDef(AliAnalysisHFjetTagHFE, 11) // jet sample analysis task
+  ClassDef(AliAnalysisHFjetTagHFE, 12) // jet sample analysis task
 };
 #endif
