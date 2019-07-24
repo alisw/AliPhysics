@@ -71,24 +71,24 @@ void SetupCuts(AliDielectron* die, Int_t cutDefinition)
   // Default is kTRUE...but will mess up results
   die->SetUseKF(kFALSE);
 
-   AliDielectronCutGroup* allCuts  = new AliDielectronCutGroup("allCuts", "allCuts", AliDielectronCutGroup::kCompOR);
+   /* AliDielectronCutGroup* allCuts  = new AliDielectronCutGroup("allCuts", "allCuts", AliDielectronCutGroup::kCompOR); */
 
-  // AND cut group to select low mass pairs with large opening angle
-  AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND);
-  AliDielectronVarCuts* convMassCut = new AliDielectronVarCuts("convMassCut", "convMassCut");
-  AliDielectronVarCuts* convPhiVCut = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut");
-  convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.1);
-  convPhiVCut->AddCut(AliDielectronVarManager::kPhivPair, 0., 2.);
-  convRejCut->AddCut(convMassCut);
-  convRejCut->AddCut(convPhiVCut);
+  /* // AND cut group to select low mass pairs with large opening angle */
+  /* AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND); */
+  /* AliDielectronVarCuts* convMassCut = new AliDielectronVarCuts("convMassCut", "convMassCut"); */
+  /* AliDielectronVarCuts* convPhiVCut = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut"); */
+  /* convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.1); */
+  /* convPhiVCut->AddCut(AliDielectronVarManager::kPhivPair, 0., 2.); */
+  /* convRejCut->AddCut(convMassCut); */
+  /* convRejCut->AddCut(convPhiVCut); */
 
-  // Mass cut to include any pairs with mass greater than 0.1 GeV
-  AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut");
-  pairMassCut->AddCut(AliDielectronVarManager::kM, 0.1, 5.0);
+  /* // Mass cut to include any pairs with mass greater than 0.1 GeV */
+  /* AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut"); */
+  /* pairMassCut->AddCut(AliDielectronVarManager::kM, 0.1, 5.0); */
 
   if(cutDefinition == 0){
-    allCuts->AddCut(convRejCut);
-    allCuts->AddCut(pairMassCut);
+    /* allCuts->AddCut(convRejCut); */
+    /* allCuts->AddCut(pairMassCut); */
 
     die->GetPairFilter().AddCuts(allCuts);
 
@@ -171,12 +171,12 @@ AliESDtrackCuts* SetupESDtrackCuts(Int_t cutDefinition){
   fesdTrackCuts->SetRequireITSRefit(kTRUE);
 
   if(cutDefinition == 0){
-    fesdTrackCuts->SetMinNClustersITS(5);
+    fesdTrackCuts->SetMinNClustersITS(4);
     fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
   }
   return fesdTrackCuts;
