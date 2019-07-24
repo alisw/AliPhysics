@@ -844,7 +844,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
 
       if ( fSetCellMCLabelFromEdepFrac && fDebug > 1 )
       {
-        for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) 
+        for(UInt_t imc = 0; imc < clus->GetNLabels(); imc++) 
         {
           printf("\t mc %d) Label %d, E dep frac %1.3f; ",
                  imc, clus->GetLabelAt(imc),clus->GetClusterMCEdepFraction(imc));
