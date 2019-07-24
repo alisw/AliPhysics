@@ -2693,9 +2693,9 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
 {
   // Centrality Selection
   if(!fIsHeavyIon){
-    if ((fCentralityMin == 0 && fCentralityMax == 0) || (fCentralityMin > fCentralityMax) ){
+    if ((fCentralityMin == 0 && fCentralityMax == 0) || (fCentralityMin > fCentralityMax) || (fUseSphericity > 0) ){
       return kTRUE;
-    } else if (fUseSphericity == 0 && fDetectorCentrality == -1){
+    } else if (fDetectorCentrality == -1){
       Int_t primaryTracksPP[9] = { 0,   2,   5,    10,   15,
                                   30,  50,  100,  1000
                                   };
