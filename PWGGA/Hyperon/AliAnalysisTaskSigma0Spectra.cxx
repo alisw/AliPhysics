@@ -304,10 +304,10 @@ void AliAnalysisTaskSigma0Spectra::FillRealMixed(){
     Int_t izvtx = (Int_t)((fZvtx+10.)/2.) ;
     if(izvtx<0)izvtx=0 ;
     if(izvtx>9)izvtx=9 ;
-    TList * prevPHOS = fPHOSEvents[izvtx] ; 
+    //    TList * prevPHOS = fPHOSEvents[izvtx] ; 
     TList * prevConv = fConvEvents[izvtx] ;
 
-    Double_t fCentCuts[5] = {0, 20, 40, 60, 100 }; 
+    //    Double_t fCentCuts[5] = {0, 20, 40, 60, 100 }; 
     
     //    if( fPHOSEvent->GetEntriesFast() )  printf("PHOS clusters = %d \n",fPHOSEvent->GetEntriesFast()) ;
     char key[55] ;
@@ -624,7 +624,7 @@ void AliAnalysisTaskSigma0Spectra::FillRealMixed(){
 
 	    GetArPod( posr, negr, mothr, arpodr );
 	    if( !( fabs(  arpodr[1] ) > 0.6 && arpodr[0]< 0.12 ) ) continue ;	    
-	    Double_t rapmix = Rapidity(  ptrec,  sig0prec.Pz(),  mrec );
+	    //	    Double_t rapmix = Rapidity(  ptrec,  sig0prec.Pz(),  mrec );
 	    // char key[55] ;
 	    //printf("MIX Sig0mix-CC  M %f PT %f E %f nLam %d Centr %f \n",sig0mix.M(),sig0mix.Pt(),sig0mix.E(),nLam,fCentr);
 
