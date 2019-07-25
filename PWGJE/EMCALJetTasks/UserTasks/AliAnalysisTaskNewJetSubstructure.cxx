@@ -152,7 +152,7 @@ AliAnalysisTaskNewJetSubstructure::~AliAnalysisTaskNewJetSubstructure()
    const Int_t dimSpec   = 7;
    const Int_t nBinsSpec[7]     = {50,100,100,20,100,50,100};
    const Double_t lowBinSpec[7] = {0.,-10,0,0,0,0,0};
-   const Double_t hiBinSpec[7]  = {5.,10.,100,20,200,100,50};
+   const Double_t hiBinSpec[7]  = {5.,10.,200,20,200,100,50};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
