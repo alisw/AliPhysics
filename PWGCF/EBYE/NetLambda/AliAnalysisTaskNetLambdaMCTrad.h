@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//Update jun 29
+//Update jul 24
 
 #ifndef AliAnalysisTaskNetLambdaMCTrad_h
 #define AliAnalysisTaskNetLambdaMCTrad_h
@@ -60,26 +60,12 @@ protected:
     
     
     TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthree;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourloose;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourtight;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFournegloose;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFournegtight;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourposloose;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourpostight;
     
     TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreeRap;
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreeRap;
     
     
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourloose;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourtight;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFournegloose;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFournegtight;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourposloose;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourpostight;
-    
-    
     
     TH2F*  f2fHistRecSecCentVsPtLambdaFourSigthree;
     TH2F*  f2fHistRecSecCentVsPtAntiLambdaFourSigthree;
@@ -89,20 +75,8 @@ protected:
     
     
     TH3F*  f3fHistLambdafromXiFourSigthree;
-    TH3F*  f3fHistLambdafromXiFourloose;
-    TH3F*  f3fHistLambdafromXiFourtight;
-    TH3F*  f3fHistLambdafromXiFournegloose;
-    TH3F*  f3fHistLambdafromXiFournegtight;
-    TH3F*  f3fHistLambdafromXiFourposloose;
-    TH3F*  f3fHistLambdafromXiFourpostight;
+
     TH3F*  f3fHistAntiLambdafromXiFourSigthree;
-    TH3F*  f3fHistAntiLambdafromXiFourloose;
-    TH3F*  f3fHistAntiLambdafromXiFourtight;
-    TH3F*  f3fHistAntiLambdafromXiFournegloose;
-    TH3F*  f3fHistAntiLambdafromXiFournegtight;
-    TH3F*  f3fHistAntiLambdafromXiFourposloose;
-    TH3F*  f3fHistAntiLambdafromXiFourpostight;
-    
     
     TH3F*  f3fHistLambdafromXiFourSigthreeRap;
     TH3F*  f3fHistAntiLambdafromXiFourSigthreeRap;
@@ -148,5 +122,6 @@ protected:
 
 
 #endif
+
 
 
