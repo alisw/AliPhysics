@@ -860,7 +860,7 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
     Double_t Nonlin=0.;
     const Double_t x0=5.17 ;
     const Double_t a= 1.02165   ; 
-    const Double_t b=-0.2608 ; 
+    const Double_t b=-0.27678 ; 
     const Double_t c= 6.483e-01 ;     
     const Double_t d=-4.775e-01 ;    
     const Double_t e= 1.205e-01 ;
@@ -873,10 +873,11 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
       Nonlin = 1.02384*(alpha*en+beta*TMath::Sqrt(en))/en ;  
     }
 
-    Double_t aM=-0.034 ;    
-    Double_t bM= 0.425 ;    
+    Double_t aM=-0.035 ;    
+    Double_t bM= 0.375 ;    
     Double_t cM= 0.08 ;
     return en * Nonlin*(1.+aM*(1.-TMath::TanH((en-bM)/cM))) ;    
+    
   }
 
   return en ;
