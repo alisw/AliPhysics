@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//update Apr 2019
+//update Jul 24
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -39,6 +39,9 @@ protected:
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
+    TH1F*  fHistPA;
+    TH1F*  fHistPAparLambda;
+    TH1F*  fHistPAparLambdabar;
     
     
     
