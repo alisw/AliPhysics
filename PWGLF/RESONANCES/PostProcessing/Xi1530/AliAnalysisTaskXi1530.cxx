@@ -730,7 +730,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
 
     Float_t b[2];
     Float_t bCov[3];
-    Double_t pionZ;
+    Double_t pionZ = -999;
 
     for (UInt_t it = 0; it < ntracks; it++) {
         if (fEvt->IsA() == AliESDEvent::Class()) {
@@ -757,6 +757,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
             }
             ((AliAODTrack*)track)->GetImpactParameters(b, bCov);
             Double_t pionPt = track->Pt();
+            pionZ = b[1];
 
             if (abs(track->Eta()) > fXi1530PionEtaCut) {
                 AliInfo(Form("Eta cut failed: track eta: %f, cut: %f",
@@ -773,7 +774,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
                 continue;
             }
         }  // AOD Case
-        pionZ = b[1];
         Double_t fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
 
         if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_loose) {
@@ -1347,7 +1347,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
     // for DCA value
     Float_t b[2];
     Float_t bCov[3];
-    Double_t pionZ = 999;
+    Double_t pionZ = -999;
 
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
