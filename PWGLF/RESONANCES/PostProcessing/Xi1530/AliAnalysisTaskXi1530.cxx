@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/07/24
+//  Last Modified Date: 2019/07/25
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -730,7 +730,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
 
     Float_t b[2];
     Float_t bCov[3];
-    Double_t pionZ;
+    Double_t pionZ = -999;
 
     for (UInt_t it = 0; it < ntracks; it++) {
         if (fEvt->IsA() == AliESDEvent::Class()) {
@@ -757,6 +757,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
             }
             ((AliAODTrack*)track)->GetImpactParameters(b, bCov);
             Double_t pionPt = track->Pt();
+            pionZ = b[1];
 
             if (abs(track->Eta()) > fXi1530PionEtaCut) {
                 AliInfo(Form("Eta cut failed: track eta: %f, cut: %f",
@@ -773,7 +774,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
                 continue;
             }
         }  // AOD Case
-        pionZ = b[1];
         Double_t fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
 
         if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_loose) {
@@ -801,10 +801,11 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
     if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         if (!goodtrackindices.size())
             ep->pop_back();
-        if (ep->size() > (int)fnMix) {
-            for (auto it : ep->front())
-                delete it;
-            ep->pop_front();
+            Int_t epsize = ep->size();
+            if (epsize > fnMix) {
+                for (auto it : ep->front())
+                    delete it;
+                ep->pop_front();
         }
     }
 
@@ -1346,7 +1347,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
     // for DCA value
     Float_t b[2];
     Float_t bCov[3];
-    Double_t pionZ = 999;
+    Double_t pionZ = -999;
 
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
@@ -1798,12 +1799,12 @@ void AliAnalysisTaskXi1530::FillTracks() {
     // Event Mixing
     if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
-        int epsize = ep.size();
-        if (epsize < (int)fnMix)
+        Int_t epsize = ep.size();
+        if (epsize < fnMix)
             return;
-        int nForSkipSameEvent = 0;
+        Int_t nForSkipSameEvent = 0;
         for (auto pool : ep) {
-            if ((int)nForSkipSameEvent == (epsize - 1))
+            if (nForSkipSameEvent == (epsize - 1))
                 continue; // same event
             for (auto track : pool)
                 trackpool.push_back((AliVTrack*)track);
@@ -2376,12 +2377,12 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     // Event Mixing
     if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
-        int epsize = ep.size();
-        if (epsize < (int)fnMix)
+        Int_t epsize = ep.size();
+        if (epsize < fnMix)
             return;
-        int nForSkipSameEvent = 0;
+        Int_t nForSkipSameEvent = 0;
         for (auto pool : ep) {
-            if ((int)nForSkipSameEvent == (epsize - 1))
+            if (nForSkipSameEvent == (epsize - 1))
                 continue;  // same event
             for (auto track : pool)
                 trackpool.push_back((AliVTrack*)track);
