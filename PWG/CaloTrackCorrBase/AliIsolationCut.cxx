@@ -603,7 +603,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
       
       if ( fillPerp )
       {
-        perpConePtSumTrack+=track->Pt();
+        perpConePtSumTrack+=ptTrack;
         
         if ( fFillHistograms )
         {
