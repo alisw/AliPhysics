@@ -276,7 +276,7 @@ fill_hists(TH3 *dest,
   Double_t q_out, q_side, q_long;
   std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
 
-  TH3 *hist = dest ?: dest_unweighted;
+  TH3 *hist = dest ? dest : dest_unweighted;
 
   const Int_t dest_bin = hist->FindBin(q_out, q_long, q_side);
 
