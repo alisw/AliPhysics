@@ -20,6 +20,9 @@
 //
 // --- David Dobrigkeit Chinellato
 //
+// For questions, comments, etc, please write to:
+//      david.dobrigkeit.chinellato@cern.ch
+//
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 #ifndef AliAnalysisTaskWeakDecayVertexer_H
