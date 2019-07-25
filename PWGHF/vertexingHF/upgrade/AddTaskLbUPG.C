@@ -42,8 +42,10 @@ AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",I
   char* outputFileName=(char*)AliAnalysisManager::GetCommonFileName();
   TString container1;
   TString container2;
+  TString filename;
   container1.Form("HistosUPG%s", (char*)postname);
   container2.Form("ntupleUPGLb%s",(char*)postname);
+  filename.Form("ntupleUPGLb%s%s",(char*)postname,".root");
   
 
   AliAnalysisDataContainer *coutput1
@@ -57,8 +59,9 @@ AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",I
      =mgr->CreateContainer(container2,
                            TNtuple::Class(),
                            AliAnalysisManager::kOutputContainer,
-                           Form("%s:%s",outputFileName, "ITSImproverUpg"));
-
+                           filename);
+ 
+  coutput2->SetSpecialOutput();
 
 
   mgr->ConnectInput (task,0,mgr->GetCommonInputContainer());
