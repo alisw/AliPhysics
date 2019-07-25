@@ -119,7 +119,7 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   Bool_t fCutsond0Lcdaughters;
   Double_t fCutsPerPt[7];
   Bool_t fIsPromptLc;
-  ClassDef(AliAnalysisTaskSELbtoLcpi4,2);
+  ClassDef(AliAnalysisTaskSELbtoLcpi4,3);
 };
 
 #endif
