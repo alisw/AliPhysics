@@ -666,8 +666,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
         
         //Select on single-track to PV DCA here, do not call that O(N^2)
-        if (esdTrack->GetSign() < 0. && TMath::Abs(d)<fV0VertexerSels[1]) neg[nneg++]=i;
-        if (esdTrack->GetSign() > 0. && TMath::Abs(d)<fV0VertexerSels[2]) pos[npos++]=i;
+        if (esdTrack->GetSign() < 0. && TMath::Abs(d)>fV0VertexerSels[1]) neg[nneg++]=i;
+        if (esdTrack->GetSign() > 0. && TMath::Abs(d)>fV0VertexerSels[2]) pos[npos++]=i;
     }
     
     for (i=0; i<nneg; i++) {
