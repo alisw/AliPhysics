@@ -90,5 +90,7 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20190617: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated calibs for LHC15o (with BC maps and good runs)
 - 20190626: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC18q and r (second update)
 - 20190716: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC18g (split in three ranges) and LHC18n
+- 20190722: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated calibs for LHC17f and new calibs for LHC16f_lowB
+- 20190722: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC17g and LHC18c
 
 */
