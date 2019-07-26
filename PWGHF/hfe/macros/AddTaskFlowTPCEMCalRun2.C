@@ -28,6 +28,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
     // add your task to the manager
     task->SetOADBFileName(OADBfilename);
     task->SetqnPercentileSelection(Splinefilename);
+    task->SelectCollisionCandidates(AliVEvent::AliVEvent::kSemiCentral);
     mgr->AddTask(task);
 
     TString containerName = mgr->GetCommonFileName();
