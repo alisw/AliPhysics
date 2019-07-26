@@ -131,7 +131,7 @@ class AliFemtoDreamEventHist {
   TH2F *fCentVsV0M;         //!
   TH2F *fCentVsV0C;         //!
   TH2F *fCentVsRefMult;     //!
-ClassDef(AliFemtoDreamEventHist,4)
+ClassDef(AliFemtoDreamEventHist,5)
 };
 
 #endif /* ALIFEMTODREAMEVENTHIST_H_ */

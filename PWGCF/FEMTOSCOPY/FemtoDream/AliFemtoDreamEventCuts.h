@@ -152,7 +152,7 @@ class AliFemtoDreamEventCuts {
   bool fDoSpheroCuts;       //
   float fSpheroCutsLow;      //
   float fSpheroCutsUp;      //
-ClassDef(AliFemtoDreamEventCuts,6)
+ClassDef(AliFemtoDreamEventCuts,7)
 };
 
 #endif /* ALIFEMTODREAMEVENTCUTS_H_ */

@@ -69,7 +69,7 @@ class AliAnalysisTaskNanoAODFemtoDreamPhi : public AliAnalysisTaskSE {
   AliFemtoDreamPartCollection *fPartColl;  //!
   AliVTrack **fGTI;                        //!
   int fTrackBufferSize;                    //
-  ClassDef(AliAnalysisTaskNanoAODFemtoDreamPhi, 2)
+  ClassDef(AliAnalysisTaskNanoAODFemtoDreamPhi, 3)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskNanoAODFemtoDreamPhi_H_ */
