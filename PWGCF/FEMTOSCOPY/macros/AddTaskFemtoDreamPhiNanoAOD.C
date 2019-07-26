@@ -17,8 +17,22 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-  evtCuts->SetSphericityCuts(0.7,1);
 
+    if (suffix == "1") {
+        evtCuts->SetSphericityCuts(0.5,1);
+    }
+
+    if (suffix == "2") {
+        evtCuts->SetSphericityCuts(0.6,1);
+    }
+
+    if (suffix == "3") {
+        evtCuts->SetSphericityCuts(0.7,1);
+    }
+
+    if (suffix == "4") {
+        evtCuts->SetSphericityCuts(0.8,1);
+    }
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   TrackCuts->SetCutCharge(1);
