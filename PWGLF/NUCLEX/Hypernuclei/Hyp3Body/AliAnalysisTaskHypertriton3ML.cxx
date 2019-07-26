@@ -99,10 +99,15 @@ AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::strin
       fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false}, fDownscaling{false},
       fHistNSigmaDeu{nullptr}, fHistNSigmaP{nullptr}, fHistNSigmaPi{nullptr}, fHistInvMass{nullptr},
       fDownscalingFactorByEvent{1.}, fDownscalingFactorByCandidate{1.}, fMinCanidatePtToSave{0.1},
-      fMaxCanidatePtToSave{100.}, fMinITSNcluster{0}, fMinTPCNcluster{70}, fMaxNSigmaTPCDeu{5.0}, fMaxNSigmaTPCP{5.0},
-      fMaxNSigmaTPCPi{5.0}, fMaxNSigmaTOFDeu{5.}, fMaxNSigmaTOFP{5.}, fMaxNSigmaTOFPi{5.}, fMinCosPA{0.995},
+      fMaxCanidatePtToSave{100.}, fMinITSNcluster{0}, fMinTPCNcluster{70}, fMaxNSigmaTPCDeu{5.}, fMaxNSigmaTPCP{5.},
+      fMaxNSigmaTPCPi{5.}, fMaxNSigmaTOFDeu{5.}, fMaxNSigmaTOFP{5.}, fMaxNSigmaTOFPi{5.},
+      fVertexerToleranceGuessCompatibility{0}, fVertexerMaxDistanceInit{100.}, fMinCosPA{0.993},
       fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025}, fMinDCA2PrimaryVtxPi{0.05}, fMaxPtPion{1.},
       fSHypertriton{}, fRHypertriton{}, fREvent{}, fDeuVector{}, fPVector{}, fPiVector{} {
+
+  // Settings for the custom vertexer
+  fVertexer.SetToleranceGuessCompatibility(fVertexerToleranceGuessCompatibility);
+  fVertexer.SetMaxDinstanceInit(fVertexerMaxDistanceInit);
 
   // Standard output
   DefineInput(0, TChain::Class());
@@ -145,7 +150,7 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   fHistNSigmaPi =
       new TH2D("fHistNSigmaPi", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Pion; Counts", 100, 0., 10., 80, -5.0, 5.0);
 
-  fHistInvMass = new TH2D("fHistInvMass", ";Invariant Mass(GeV/#it{c^2}); #it{p}_{T} (GeV/#it{c}); Counts", 30, 2.96,
+  fHistInvMass = new TH2D("fHistInvMass", ";m_{dp#pi}(GeV/#it{c^2}); #it{p}_{T} (GeV/#it{c}); Counts", 30, 2.96,
                           3.05, 100, 0, 10);
 
   fListHist->Add(fHistNSigmaDeu);
@@ -372,8 +377,6 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         if ((hypPt < fMinCanidatePtToSave) || (fMaxCanidatePtToSave < hypPt)) continue;
         if (hypM < 2.9 || hypM > 3.2) continue;
 
-        fHistInvMass->Fill(hypM, hypPt);
-
         double dTotHyper = std::sqrt(decayLenght[0] * decayLenght[0] + decayLenght[1] * decayLenght[1] +
                                      decayLenght[2] * decayLenght[2]);
 
@@ -457,14 +460,24 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         fHistNSigmaDeu->Fill(deu->Pt(), nSigmaDeu);
         fHistNSigmaP->Fill(p->Pt(), nSigmaP);
         fHistNSigmaPi->Fill(pi->Pt(), nSigmaPi);
+
+        fHistInvMass->Fill(hypM, hypPt);
       }
     }
   }
 
-  fTreeHyp3->Fill();
+  if (fMC) {
+    fTreeHyp3->Fill();
 
-  PostData(1, fListHist);
-  PostData(2, fTreeHyp3);
+    PostData(1, fListHist);
+    PostData(2, fTreeHyp3);
+  }
+  if (!fMC && (int)fRHypertriton.size() > 0) {
+    fTreeHyp3->Fill();
+
+    PostData(1, fListHist);
+    PostData(2, fTreeHyp3);
+  }
 }
 
 void AliAnalysisTaskHypertriton3ML::Terminate(Option_t *) {}
