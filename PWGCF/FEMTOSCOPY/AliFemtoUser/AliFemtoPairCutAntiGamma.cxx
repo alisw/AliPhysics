@@ -144,7 +144,7 @@ bool AliFemtoPairCutAntiGamma::Pass(const AliFemtoPair* pair)
         avgsepCheck = avgSep > fMinAvgsep;
     }
 
-    if(temp) std::cout<<"avgsepCheck: "<<avgsepCheck<<std::endl;
+    
 
     if (temp && tempTPCEntrance && avgsepCheck)
     {
