@@ -222,6 +222,26 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
   const double PionMass = 0.13956995;
 
+  // default parameters for 3D hists with variable binsize (macro config: do_q3d_varbins)
+  const std::vector<double>
+    DEFAULT_OBINS = {0.        , 0.005     , 0.01028325, 0.01584975, 0.02169951,
+                     0.02783251, 0.03424877, 0.04094828, 0.04793103, 0.05519704,
+                     0.06274631, 0.07057882, 0.07869458, 0.08709360, 0.09577586,
+                     0.10474138, 0.11399015, 0.12352217, 0.13333744, 0.14343596,
+                     0.15381773, 0.16448276, 0.17543103, 0.18666256, 0.19817734,
+                     0.20997537, 0.22205665, 0.23442118, 0.24706897, 0.26},
+    DEFAULT_SBINS = {-0.26      , -0.24519231, -0.23077692, -0.21675385, -0.20312308,
+                     -0.18988462, -0.17703846, -0.16458462, -0.15252308, -0.14085385,
+                     -0.12957692, -0.11869231, -0.1082    , -0.0981    , -0.08839231,
+                     -0.07907692, -0.07015385, -0.06162308, -0.05348462, -0.04573846,
+                     -0.03838462, -0.03142308, -0.02485385, -0.01867692, -0.01289231,
+                     -0.0075    , -0.0025    ,  0.0025    ,  0.0075    ,  0.01289231,
+                      0.01867692,  0.02485385,  0.03142308,  0.03838462,  0.04573846,
+                      0.05348462,  0.06162308,  0.07015385,  0.07907692,  0.08839231,
+                      0.0981    ,  0.1082    ,  0.11869231,  0.12957692,  0.14085385,
+                      0.15252308,  0.16458462,  0.17703846,  0.18988462,  0.20312308,
+                      0.21675385,  0.23077692,  0.24519231,  0.26};
+
   // Get the default configurations
   AFAPP::AnalysisParams analysis_config = AFAPP::DefaultConfig();
   AFAPP::CutParams cut_config = AFAPP::DefaultCutConfig();
@@ -553,23 +573,13 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_pqq3d_cf) {
-
         const std::vector<double>
           obins = macro_config.obins.empty()
-                ? std::vector<double>{0.0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03,
-                    0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08,
-                    0.085, 0.09, 0.095, 0.1, 0.1107, 0.1214, 0.1321, 0.1429, 0.1536, 0.1643,
-                    0.175, 0.1857, 0.1964, 0.2071, 0.2179, 0.2286, 0.2393, 0.25}
+                ? DEFAULT_OBINS
                 : macro_config.obins,
 
           slbins = macro_config.slbins.empty()
-                 ? std::vector<double>{-0.25, -0.234, -0.219, -0.204, -0.188, -0.172,
-                   -0.157, -0.142, -0.126, -0.11, -0.095, -0.09, -0.085, -0.08, -0.075,
-                   -0.069, -0.064, -0.059, -0.054, -0.049, -0.044, -0.039, -0.033, -0.028,
-                   -0.023, -0.018, -0.013, -0.008, -0.003, 0.003, 0.008, 0.013, 0.018,
-                   0.023, 0.028, 0.033, 0.039, 0.044, 0.049, 0.054, 0.059, 0.064, 0.069,
-                   0.075, 0.08, 0.085, 0.09, 0.095, 0.111, 0.126, 0.142, 0.157, 0.172,
-                   0.188, 0.204, 0.219, 0.235, 0.25}
+                 ? DEFAULT_SBINS
                  : macro_config.slbins;
 
         auto *pq_cf = macro_config.do_q3d_varbins
@@ -587,13 +597,24 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_trueq3d_cf) {
-        AliFemtoModelCorrFctnTrueQ3D *kt_trueq3d_cf = AliFemtoModelCorrFctnTrueQ3D::Build()
-                                                          .NamePrefix("")
-                                                          .BinCount(macro_config.q3d_bin_count)
-                                                          .QRange(macro_config.q3d_maxq)
-                                                          .EnableExtraHists(macro_config.trueq3d_extra_bins)
-                                                          .EnableWeightedDenominators(macro_config.trueq3d_weighted_denoms)
-                                                          .Manager(model_manager);
+        const std::vector<double>
+          obins = macro_config.obins.empty()
+                ? DEFAULT_OBINS
+                : macro_config.obins,
+
+          slbins = macro_config.slbins.empty()
+                 ? DEFAULT_SBINS
+                 : macro_config.slbins;
+
+        auto *kt_trueq3d_cf = macro_config.do_q3d_varbins
+                            ? new AliFemtoModelCorrFctnTrueQ3D("", obins, slbins, slbins, model_manager)
+                            : AliFemtoModelCorrFctnTrueQ3D::Build()
+                                  .NamePrefix("")
+                                  .BinCount(macro_config.q3d_bin_count)
+                                  .QRange(macro_config.q3d_maxq)
+                                  .EnableExtraHists(macro_config.trueq3d_extra_bins)
+                                  .EnableWeightedDenominators(macro_config.trueq3d_weighted_denoms)
+                                  .Manager(model_manager).into_ptr();
 
         AliFemtoKtBinnedCorrFunc *kt_trueq3d_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D", kt_trueq3d_cf);
 
