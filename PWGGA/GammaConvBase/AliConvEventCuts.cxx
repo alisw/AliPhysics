@@ -176,7 +176,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fTriggersEMCAL(0),
   fTriggersEMCALSelected(-1),
   fEMCALTrigInitialized(kFALSE),
-  fHistoTriggThresh(0),
+  fHistoTriggThresh(NULL),
+  fRunNumberTriggerOADB(-1),
   fSecProdBoundary(1.0),
   fMaxPtJetMC(0),
   fMinFacPtHard(-1),
@@ -304,6 +305,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fTriggersEMCALSelected(ref.fTriggersEMCALSelected),
   fEMCALTrigInitialized(kFALSE),
   fHistoTriggThresh(ref.fHistoTriggThresh),
+  fRunNumberTriggerOADB(ref.fRunNumberTriggerOADB),
   fSecProdBoundary(ref.fSecProdBoundary),
   fMaxPtJetMC(ref.fMaxPtJetMC),
   fMinFacPtHard(ref.fMinFacPtHard),
@@ -3966,14 +3968,14 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     if(nclus == 0)  return kFALSE;
 
     // Loading trigger thresholds from OADB
-    // Only load histo if is not loaded already!
+    // Only load histo if is not loaded already or if the runnumber has changed!
     Int_t runnumber = event->GetRunNumber();
-    if(!fHistoTriggThresh){
+    if(!fHistoTriggThresh || fRunNumberTriggerOADB != runnumber){
+      fRunNumberTriggerOADB = runnumber;
       TFile *fileTriggThresh=new TFile(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"read");
       if (!fileTriggThresh || fileTriggThresh->IsZombie())
       {
-        AliWarning("OADB/PWGGA/EMCalTriggerMimicOADB.root was not found");
-        return kFALSE;
+        AliFatal("OADB/PWGGA/EMCalTriggerMimicOADB.root was not found");
       }
       if (fileTriggThresh) delete fileTriggThresh;
       AliOADBContainer *contfileTriggThresh = new AliOADBContainer("");
@@ -3981,9 +3983,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       TObjArray *arrayTriggThresh=(TObjArray*)contfileTriggThresh->GetObject(runnumber);
       if (!arrayTriggThresh)
       {
-        AliWarning(Form("No Trigger threshold found for run number: %d", runnumber));
-        delete contfileTriggThresh;
-        return kFALSE;
+        AliFatal(Form("No Trigger threshold found for run number: %d", runnumber));
       }
 
       // EMCal L0 trigger
@@ -3996,8 +3996,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       else return kTRUE;
 
       if(!fHistoTriggThresh){
-        AliWarning(Form("No histogram for trigger threshold found for run number: %d", runnumber));
-        return kFALSE;
+        AliFatal(Form("No histogram for trigger threshold found for run number: %d", runnumber));
       }
     }
 
@@ -4011,9 +4010,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
 
   // Loop over EMCal clusters
-  Bool_t eventIsAccepted = kFALSE;
   for(Int_t i = 0; i < nclus; i++){
-    if (eventIsAccepted) continue;
     AliVCluster* clus = NULL;
     std::unique_ptr<AliVCluster> tmpcluster;  // takes care about deleting clusters constructed with new
     if(event->IsA()==AliESDEvent::Class()){
@@ -4050,16 +4047,14 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
       fGeomEMCAL->SuperModuleNumberFromEtaPhi(clusterVector.Eta(),clusterVector.Phi(),iSuperModule);
       if(iSuperModule >= fHistoTriggThresh->GetNbinsX() ){
-        AliWarning("Supermodule nr. does not match with input histogramm");
-        return kFALSE;
+        AliFatal("Supermodule nr. does not match with input histogramm");
       }
     }
     if (clus->E() > fTriggThresh[iSuperModule]){
-      eventIsAccepted = kTRUE;
-      break;
+      return kTRUE;
     }
   }
-  return eventIsAccepted;
+  return kFALSE;
 }
 
 //________________________________________________________________________

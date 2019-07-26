@@ -696,6 +696,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       ULong_t                     fTriggersEMCALSelected;                 ///< list of accepted triggers
       Bool_t                      fEMCALTrigInitialized;                  ///< EMCAL triggers initialized
       TH1S*                       fHistoTriggThresh;                      ///< EMCal trigger thresholds
+      Int_t                       fRunNumberTriggerOADB;                  ///< last used runnumber of OADB trigger object
       // Primary secondary distinction
       Double_t                    fSecProdBoundary;                       ///< 3D radius of production (cm) for primary-secodary distinction
       Float_t                     fMaxPtJetMC;                            ///< maximum jet pt in event
@@ -715,7 +716,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,70)
+      ClassDef(AliConvEventCuts,71)
       /// \endcond
 };
 
