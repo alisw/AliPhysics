@@ -416,7 +416,7 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 
     norm_mult = tracksPrim;
 
-    
+
     char fEstEventMult_cstr[fEstEventMult.size() + 1];
     strcpy(fEstEventMult_cstr, fEstEventMult.c_str());
     if (fEstEventMult.find("MultSelection.") != std::string::npos)
@@ -1040,7 +1040,8 @@ AliFemtoXi *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
         globalPositionsAtRadiiBac[i][j] = 0;
       }
     }
-    GetGlobalPositionAtGlobalRadiiThroughTPC(trackbac, bfield, globalPositionsAtRadiiBac);
+    if(fCovMatPresent)
+      GetGlobalPositionAtGlobalRadiiThroughTPC(trackbac, bfield, globalPositionsAtRadiiBac);
     double tpcEntranceBac[3] = {globalPositionsAtRadiiBac[0][0], globalPositionsAtRadiiBac[0][1], globalPositionsAtRadiiBac[0][2]};
     double tpcExitBac[3] = {globalPositionsAtRadiiBac[8][0], globalPositionsAtRadiiBac[8][1], globalPositionsAtRadiiBac[8][2]};
 

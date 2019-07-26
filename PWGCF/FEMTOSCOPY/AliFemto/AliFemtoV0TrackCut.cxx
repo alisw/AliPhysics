@@ -436,8 +436,8 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
       }
     }
   }
-
   if (!pid_check) return false;
+
   return true;
 }
 //------------------------------
