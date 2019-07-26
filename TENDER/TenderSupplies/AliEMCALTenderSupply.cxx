@@ -102,6 +102,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
   ,fExoticCellFraction(-1)
   ,fExoticCellDiffTime(-1)
   ,fExoticCellMinAmplitude(-1)
+  ,fDoMergedBCs(kFALSE)
   ,fSetCellMCLabelFromCluster(0)
   ,fSetCellMCLabelFromEdepFrac(0)
   ,fTempClusterArr(0)
@@ -176,6 +177,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
   ,fExoticCellFraction(-1)
   ,fExoticCellDiffTime(-1)
   ,fExoticCellMinAmplitude(-1)
+  ,fDoMergedBCs(kFALSE)
   ,fSetCellMCLabelFromCluster(0)
   ,fSetCellMCLabelFromEdepFrac(0)
   ,fTempClusterArr(0)
@@ -250,6 +252,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *
   ,fExoticCellFraction(-1)
   ,fExoticCellDiffTime(-1)
   ,fExoticCellMinAmplitude(-1)
+  ,fDoMergedBCs(kFALSE)
   ,fSetCellMCLabelFromCluster(0)
   ,fSetCellMCLabelFromEdepFrac(0)
   ,fTempClusterArr(0)
@@ -426,6 +429,10 @@ void AliEMCALTenderSupply::Init()
   // init geometry if requested
   if (fEMCALGeoName.Length()>0) 
     fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName) ;
+
+  // Use one histogram for all BCs
+  if (fDoMergedBCs)
+    fEMCALRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
 
   // digits array
   fDigitsArr       = new TClonesArray("AliEMCALDigit",1000);
@@ -1511,29 +1518,45 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
 
   if (fDebugLevel>0) arrayBCpass->Print();
 
-  for(Int_t i = 0; i < 4; i++)
-  {
-    TH1F *h = fEMCALRecoUtils->GetEMCALChannelTimeRecalibrationFactors(i);
+  if(!fDoMergedBCs){
+    for(Int_t i = 0; i < 4; i++)
+    {
+      TH1F *h = (TH1F*)fEMCALRecoUtils->GetEMCALChannelTimeRecalibrationFactors(i);
+      if (h)
+        delete h;
+    
+      h = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvBC%d",i));
+
+      if (!h)
+      {
+        AliError(Form("Can not get hAllTimeAvBC%d",i));
+        continue;
+      }
+   
+      // Shift parameters for bc0 and bc1 in this pass
+      if ( fFilepass=="spc_calo" && (i==0 || i==1) ) 
+      {
+        for(Int_t icell = 0; icell < h->GetNbinsX(); icell++) 
+          h->SetBinContent(icell,h->GetBinContent(icell)-100);
+      }
+    
+      h->SetDirectory(0);
+      fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
+    }
+  }else{
+
+    TH1S *h = (TH1S*)fEMCALRecoUtils->GetEMCALChannelTimeRecalibrationFactors(0);
     if (h)
       delete h;
     
-    h = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvBC%d",i));
+    h = (TH1S*)arrayBCpass->FindObject("hAllTimeAv"); //only HG cells
 
     if (!h)
-    {
-      AliError(Form("Can not get hAllTimeAvBC%d",i));
-      continue;
-    }
-   
-    // Shift parameters for bc0 and bc1 in this pass
-    if ( fFilepass=="spc_calo" && (i==0 || i==1) ) 
-    {
-      for(Int_t icell = 0; icell < h->GetNbinsX(); icell++) 
-        h->SetBinContent(icell,h->GetBinContent(icell)-100);
-    }
+      AliError("Can not get hAllTimeAv");
     
     h->SetDirectory(0);
-    fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
+    fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(0,h);
+
   }
   
   delete contBC;

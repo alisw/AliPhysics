@@ -105,14 +105,14 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   TArrayD edgesPt;
   fPtBinning->CreateBinEdges(edgesPt);
   fJetPtMin = edgesPt[0];
-  fJetPtMax = edgesPt[edgesPt.GetSize()];
+  fJetPtMax = edgesPt[edgesPt.GetSize()-1];
 
   fHistos = new THistManager("histosSoftdrop");
-  fHistos->CreateTH1("hEventCounter", "EventCounter", 1, 0., 1);
+  fHistos->CreateTH1("hEventCounter", "EventCounter", 1, 0.5, 1.5);
   fHistos->CreateTH2("hZgVsPt", "zg vs pt", *zgBinning, *fPtBinning);
   if(fUseDownscaleWeight){
     fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt", *zgBinning, *fPtBinning);
-    fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0., 1.);
+    fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0.5, 1.5);
   }
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
@@ -151,13 +151,17 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
   Double_t weight = fUseDownscaleWeight ? GetDownscaleWeight() : 1.;
   fHistos->FillTH1("hEventCounter", 1., weight);
   if(fUseDownscaleWeight) fHistos->FillTH1("hEventCounterWeighted", 1., weight);
+  AliDebugStream(1) << fTriggerString << ": Using pt ranges " << fJetPtMin << " to " << fJetPtMax << std::endl;
 
   for(auto jet : jets->accepted()){
+    AliDebugStream(2) << "Next accepted jet with pt " << jet->Pt() << std::endl;
     if(jet->Pt() < fJetPtMin || jet->Pt() > fJetPtMax) continue;
     auto zgparams = MakeSoftdrop(*jet, jets->GetJetRadius(), tracks, clusters);
+    AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << zgparams[0] << std::endl;
     fHistos->FillTH2("hZgVsPt", zgparams[0], jet->Pt());
     if(fUseDownscaleWeight) fHistos->FillTH2("hZgVsPtWeighted",  zgparams[0], jet->Pt(), weight);
   }
+  return true;
 }
 
 Double_t AliAnalysisTaskEmcalSoftDropData::GetDownscaleWeight() const {
@@ -332,10 +336,13 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
   EBinningMode_t binmode(kSDModeINT7);
   ULong_t triggerbits(AliVEvent::kINT7);
   std::string triggerstring(trigger);
+  std::cout << "Found trigger " << triggerstring << std::endl;
   if(triggerstring == "EJ1") {
+    std::cout << "Setting binning mode for EJ1" << std::endl;
     binmode = kSDModeEJ1;
     triggerbits = AliVEvent::kEMCEJE;
   } else if(triggerstring == "EJ2") {
+    std::cout << "Setting binning mode for EJ2" << std::endl;
     binmode = kSDModeEJ2;
     triggerbits = AliVEvent::kEMCEJE;
   }

@@ -75,6 +75,9 @@ struct MacroParams : public TNamed {
   std::vector<unsigned char> pair_codes;
   std::vector<float> kt_ranges;
 
+  std::vector<double> obins;
+  std::vector<double> slbins;
+
   // monte carlo weight generator
   bool mcwg_lednicky { true };
   bool mcwg_square { false };
@@ -124,6 +127,8 @@ struct MacroParams : public TNamed {
   bool do_deltaeta_deltaphi_cf { false };
   bool do_avg_sep_cf { false };
   bool do_kt_avg_sep_cf { false };
+
+  bool do_q3d_varbins { false };
 
   bool do_qinv_cf { false };
   bool do_kt_qinv_cf { false };
@@ -548,8 +553,30 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_pqq3d_cf) {
-        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_PQ3D",
-          new AliFemtoCorrFctn3DLCMSPosQuad("", macro_config.q3d_bin_count, macro_config.q3d_maxq));
+
+        const std::vector<double>
+          obins = macro_config.obins.empty()
+                ? std::vector<double>{0.0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03,
+                    0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08,
+                    0.085, 0.09, 0.095, 0.1, 0.1107, 0.1214, 0.1321, 0.1429, 0.1536, 0.1643,
+                    0.175, 0.1857, 0.1964, 0.2071, 0.2179, 0.2286, 0.2393, 0.25}
+                : macro_config.obins,
+
+          slbins = macro_config.slbins.empty()
+                 ? std::vector<double>{-0.25, -0.234, -0.219, -0.204, -0.188, -0.172,
+                   -0.157, -0.142, -0.126, -0.11, -0.095, -0.09, -0.085, -0.08, -0.075,
+                   -0.069, -0.064, -0.059, -0.054, -0.049, -0.044, -0.039, -0.033, -0.028,
+                   -0.023, -0.018, -0.013, -0.008, -0.003, 0.003, 0.008, 0.013, 0.018,
+                   0.023, 0.028, 0.033, 0.039, 0.044, 0.049, 0.054, 0.059, 0.064, 0.069,
+                   0.075, 0.08, 0.085, 0.09, 0.095, 0.111, 0.126, 0.142, 0.157, 0.172,
+                   0.188, 0.204, 0.219, 0.235, 0.25}
+                 : macro_config.slbins;
+
+        auto *pq_cf = macro_config.do_q3d_varbins
+                    ? new AliFemtoCorrFctn3DLCMSPosQuad("", "", obins, slbins, slbins)
+                    : new AliFemtoCorrFctn3DLCMSPosQuad("", macro_config.q3d_bin_count, macro_config.q3d_maxq);
+
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_PQ3D", pq_cf);
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],

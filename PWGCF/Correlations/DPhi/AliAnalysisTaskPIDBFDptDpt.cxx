@@ -107,8 +107,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   NoContamination   ( 0),
   NoContaminationWeak   ( 0),
   NoContaminationWeakMaterial   ( 0),
-  NoWeak   ( 0),
-  NoMaterial   ( 0),
+  Closure_NoMisIDWeakMaterial   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
   _useEventPlane   ( 0),
@@ -516,8 +515,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   NoContamination   ( 0),
   NoContaminationWeak   ( 0),
   NoContaminationWeakMaterial   ( 0),
-  NoWeak   ( 0),
-  NoMaterial   ( 0),
+  Closure_NoMisIDWeakMaterial   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
   _useEventPlane   ( 0),
@@ -1848,10 +1846,9 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  if ( _singlesOnly )
 		    {
 		      __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
-		      __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl; 
-			  
-		      // This block of code used to get PdgCode for MC reco tracks
-                      if ( fAnalysisType == "MCAODreco" )
+		      
+		      if ( fAnalysisType == "RealData" ) { __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
+                      else if ( fAnalysisType == "MCAODreco" )  // This block of code used to get PdgCode for MC reco tracks
                         {
                           Int_t lab =  t -> GetLabel();
                           TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
@@ -1878,25 +1875,36 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                                     {
                                      if( particle -> IsSecondaryFromMaterial() )  continue;
                                      __n1_1_vsPt_pdg_Weak_Material[iPt]  += corr;
+				     
+				     if ( Closure_NoMisIDWeakMaterial ) { __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
                                     }
                                  }
                               }
               
-                          if ( NoWeak )
-                            {
-                              if( particle -> IsSecondaryFromWeakDecay() )  continue;
-                              __n1_1_vsPt_Weak[iPt]   += corr;
-                            }
-              
-                          if ( NoMaterial )
-                            {
-                              if( particle -> IsSecondaryFromMaterial() )  continue;
-                              __n1_1_vsPt_Material[iPt]   += corr;
-                            }
+                          if ( !Closure_NoMisIDWeakMaterial ) { __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
+			      
                          }
 		    }
 		  else
 		    {
+		      if ( fAnalysisType == "MCAODreco" ) // This block of code used to get PdgCode for MC reco tracks
+                        {
+                          Int_t lab =  t -> GetLabel();
+                          TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
+              		  if( !arr ) continue;
+              		  AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
+             
+                          if ( Closure_NoMisIDWeakMaterial )
+                            {
+                              if( particleSpecies == 0 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
+                              else if( particleSpecies == 1 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
+                              else if( particleSpecies == 2 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
+                
+                              if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                              if( particle -> IsSecondaryFromMaterial() )  continue;
+                            }
+                         }
+			  
                       __n1_1_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_1[k1]                   = iTrack;
@@ -1962,10 +1970,9 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  if (_singlesOnly)
 		    {
 		      __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
-		      __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
-			  
-	          // This block of code used to get PdgCode for MC reco tracks
-                      if ( fAnalysisType == "MCAODreco" )
+		      
+		      if ( fAnalysisType == "RealData" ) { __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
+                      else if ( fAnalysisType == "MCAODreco" )  // This block of code used to get PdgCode for MC reco tracks
                         {
                           Int_t lab =  t -> GetLabel();
                           TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
@@ -1992,26 +1999,37 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                                    {
                                     if( particle -> IsSecondaryFromMaterial() )  continue;
                                     __n1_2_vsPt_pdg_Weak_Material[iPt]  += corr;
+					 
+				    if ( Closure_NoMisIDWeakMaterial ) { __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
                                    }
                                 }
                             }
               
-                          if ( NoWeak )
-                            {
-                             if( particle -> IsSecondaryFromWeakDecay() )  continue;
-                             __n1_2_vsPt_Weak[iPt]   += corr;
-			    }
+                          if ( !Closure_NoMisIDWeakMaterial ) { __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
               
-                          if ( NoMaterial )
-                            {
-                             if( particle -> IsSecondaryFromMaterial() )  continue;
-                             __n1_2_vsPt_Material[iPt]   += corr;
-                            }
                         }	  
 		    }
 		  else
 		    {
-          __n1_2_vsPt[iPt]            += corr;
+		      if ( fAnalysisType == "MCAODreco" ) // This block of code used to get PdgCode for MC reco tracks
+                        {
+                          Int_t lab =  t -> GetLabel();
+                          TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
+              		  if( !arr ) continue;
+              		  AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
+             
+                          if ( Closure_NoMisIDWeakMaterial )
+                            {
+                              if( particleSpecies == 0 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
+                              else if( particleSpecies == 1 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
+                              else if( particleSpecies == 2 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
+                
+                              if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                              if( particle -> IsSecondaryFromMaterial() )  continue;
+                            }
+                         }
+			  
+          	      __n1_2_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_2[k2]                   = iTrack;         //cout << "step 1" << endl;
 		      _charge_2[k2]               = charge;         //cout << "step 2" << endl;

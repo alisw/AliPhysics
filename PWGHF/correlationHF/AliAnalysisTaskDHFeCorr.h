@@ -79,7 +79,7 @@ namespace AliDHFeCorr {
         AliAODRecoDecayHF *fRecoObj{nullptr};
         Int_t fGridPID{0}; ///<PID of the grid job used to create the tree
         Int_t fEventNumber{0}; ///< Number of the event
-        UInt_t fID; ///< D meson id in the event
+        UInt_t fID{0}; ///< D meson id in the event
         Bool_t fIsParticleCandidate{kFALSE}; ///< Particle hypotheses at reconstruction level
         
         //Basic Information
@@ -136,8 +136,8 @@ namespace AliDHFeCorr {
         
         UInt_t fGridPID{0};
         UInt_t fEventNumber{0};
-        Float_t fCentrality;
-        Float_t fVtxZ;
+        Float_t fCentrality{-1.};
+        Float_t fVtxZ{-999.};
         
         Char_t fCharge{0};
         Float_t fPt{-999.};
@@ -270,12 +270,12 @@ namespace AliDHFeCorr {
 
     typedef struct AliConfigureDMesonOpt {
         std::vector<Float_t> fPtBins;
-        Float_t fInvMassMin;
-        Float_t fInvMassMax;
-        Int_t fNBinsInvMass;
+        Float_t fInvMassMin{1.3};
+        Float_t fInvMassMax{2.5};
+        Int_t fNBinsInvMass{100};
 
-        Int_t fNBinsPhi;
-        Int_t fNBinsEta;
+        Int_t fNBinsPhi{40};
+        Int_t fNBinsEta{16};
     } AliConfigureDMesonOpt;
 
     namespace Utils {

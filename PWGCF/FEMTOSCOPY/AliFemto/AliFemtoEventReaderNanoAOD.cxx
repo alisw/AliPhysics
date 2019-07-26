@@ -97,7 +97,8 @@ AliFemtoEventReaderNanoAOD::AliFemtoEventReaderNanoAOD():
   fDCAglobalTrack(0),
   fFlatCent(kFALSE),
   fPrimaryVertexCorrectionTPCPoints(kFALSE),
-  fShiftPosition(0.)
+  fShiftPosition(0.),
+  fCovMatPresent(kTRUE)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -146,7 +147,8 @@ AliFemtoEventReaderNanoAOD::AliFemtoEventReaderNanoAOD(const AliFemtoEventReader
   fDCAglobalTrack(aReader.fDCAglobalTrack),
   fFlatCent(aReader.fFlatCent),
   fPrimaryVertexCorrectionTPCPoints(aReader.fPrimaryVertexCorrectionTPCPoints),
-  fShiftPosition(aReader.fShiftPosition)
+  fShiftPosition(aReader.fShiftPosition),
+  fCovMatPresent(kTRUE)
 {
   // copy constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -219,6 +221,7 @@ AliFemtoEventReaderNanoAOD &AliFemtoEventReaderNanoAOD::operator=(const AliFemto
   fFlatCent = aReader.fFlatCent;
   fPrimaryVertexCorrectionTPCPoints = aReader.fPrimaryVertexCorrectionTPCPoints;
   fShiftPosition = aReader.fShiftPosition;
+  fCovMatPresent = aReader.fCovMatPresent;
 
   return *this;
 }
@@ -413,10 +416,13 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 
     norm_mult = tracksPrim;
 
-    if(fEstEventMult == "RefMult08")
+
+    char fEstEventMult_cstr[fEstEventMult.size() + 1];
+    strcpy(fEstEventMult_cstr, fEstEventMult.c_str());
+    if (fEstEventMult.find("MultSelection.") != std::string::npos)
       {
-	static const Int_t kRefMult = fAODheader->GetVarIndex("MultSelection.RefMult08");
-	norm_mult  = fAODheader->GetVar(kRefMult);
+	static const Int_t kMult = fAODheader->GetVarIndex(fEstEventMult_cstr);
+	norm_mult  = fAODheader->GetVar(kMult);
       }
     else if(fEstEventMult == "TRK")
       {
@@ -433,6 +439,10 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
     else if(fEstEventMult == "V0M")
       {
 	norm_mult = 10*fAODheader->GetCentr("V0M");
+      }
+    else
+      {
+	norm_mult = 10*fAODheader->GetCentr(fEstEventMult_cstr);
       }
 
     tEvent->SetNormalizedMult(norm_mult);
@@ -683,6 +693,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   tFemtoTrack->SetTPCchi2(tAodTrack->GetTPCchi2());
   tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
   tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNclsF());
+
   //tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
   //tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   //tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
@@ -690,10 +701,12 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   float globalPositionsAtRadii[9][3];
   float bfield = 5 * fMagFieldSign;
 
-  GetGlobalPositionAtGlobalRadiiThroughTPC(tAodTrack, bfield, globalPositionsAtRadii);
+  if(fCovMatPresent)
+     GetGlobalPositionAtGlobalRadiiThroughTPC(tAodTrack, bfield, globalPositionsAtRadii);
 
   AliFemtoThreeVector tpcPositions[9];
-  std::copy_n(globalPositionsAtRadii, 9, tpcPositions);
+  if(fCovMatPresent)
+    std::copy_n(globalPositionsAtRadii, 9, tpcPositions);
 
   if (fPrimaryVertexCorrectionTPCPoints) {
     for (int i = 0; i < 9; i++) {
@@ -818,7 +831,8 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
             globalPositionsAtRadiiPos[i][j] = 0;
           }
         }
-     GetGlobalPositionAtGlobalRadiiThroughTPC(trackpos, bfield, globalPositionsAtRadiiPos);
+     if(fCovMatPresent)
+       GetGlobalPositionAtGlobalRadiiThroughTPC(trackpos, bfield, globalPositionsAtRadiiPos);
      double tpcEntrancePos[3] = {globalPositionsAtRadiiPos[0][0], globalPositionsAtRadiiPos[0][1], globalPositionsAtRadiiPos[0][2]};
      double tpcExitPos[3] = {globalPositionsAtRadiiPos[8][0], globalPositionsAtRadiiPos[8][1], globalPositionsAtRadiiPos[8][2]};
 
@@ -830,7 +844,8 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
             globalPositionsAtRadiiNeg[i][j] = 0;
           }
         }
-     GetGlobalPositionAtGlobalRadiiThroughTPC(trackneg, bfield, globalPositionsAtRadiiNeg);
+     if(fCovMatPresent)
+       GetGlobalPositionAtGlobalRadiiThroughTPC(trackneg, bfield, globalPositionsAtRadiiNeg);
      double tpcEntranceNeg[3] = {globalPositionsAtRadiiNeg[0][0], globalPositionsAtRadiiNeg[0][1], globalPositionsAtRadiiNeg[0][2]};
      double tpcExitNeg[3] = {globalPositionsAtRadiiNeg[8][0], globalPositionsAtRadiiNeg[8][1], globalPositionsAtRadiiNeg[8][2]};
 
@@ -1025,7 +1040,8 @@ AliFemtoXi *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
         globalPositionsAtRadiiBac[i][j] = 0;
       }
     }
-    GetGlobalPositionAtGlobalRadiiThroughTPC(trackbac, bfield, globalPositionsAtRadiiBac);
+    if(fCovMatPresent)
+      GetGlobalPositionAtGlobalRadiiThroughTPC(trackbac, bfield, globalPositionsAtRadiiBac);
     double tpcEntranceBac[3] = {globalPositionsAtRadiiBac[0][0], globalPositionsAtRadiiBac[0][1], globalPositionsAtRadiiBac[0][2]};
     double tpcExitBac[3] = {globalPositionsAtRadiiBac[8][0], globalPositionsAtRadiiBac[8][1], globalPositionsAtRadiiBac[8][2]};
 

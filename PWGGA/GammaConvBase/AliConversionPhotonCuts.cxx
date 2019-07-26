@@ -2007,7 +2007,7 @@ Bool_t AliConversionPhotonCuts::PIDProbabilityCut(AliConversionPhotonBase *photo
     AliESDtrack* negTrack   = esdEvent->GetTrack(photon->GetTrackLabelNegative());
     AliESDtrack* posTrack   = esdEvent->GetTrack(photon->GetTrackLabelPositive());
 
-    if(negProbArray && posProbArray){
+    if(negTrack && posTrack){
 
       negTrack->GetTPCpid(negProbArray);
       posTrack->GetTPCpid(posProbArray);

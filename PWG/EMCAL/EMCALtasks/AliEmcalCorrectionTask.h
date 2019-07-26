@@ -250,7 +250,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   TList *                     fOutput;                     //!<! Output for histograms
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionTask, 6); // EMCal correction task
+  ClassDef(AliEmcalCorrectionTask, 8); // EMCal correction task
   /// \endcond
 };
 

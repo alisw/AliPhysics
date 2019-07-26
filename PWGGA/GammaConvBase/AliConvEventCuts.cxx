@@ -2693,9 +2693,9 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
 {
   // Centrality Selection
   if(!fIsHeavyIon){
-    if ((fCentralityMin == 0 && fCentralityMax == 0) || (fCentralityMin > fCentralityMax) ){
+    if ((fCentralityMin == 0 && fCentralityMax == 0) || (fCentralityMin > fCentralityMax) || (fUseSphericity > 0) ){
       return kTRUE;
-    } else if (fUseSphericity == 0 && fDetectorCentrality == -1){
+    } else if (fDetectorCentrality == -1){
       Int_t primaryTracksPP[9] = { 0,   2,   5,    10,   15,
                                   30,  50,  100,  1000
                                   };
@@ -4062,7 +4062,6 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     0.5,
                                     /*0.4*/ 0.6,
                                     0.0,                        // LS1
-                                    1.2, 0.8,                   // LHC16r (265589-266318)
                                     0.0,                        // LHC15a-h
                                     1.0,                        // LHC15i-m
                                     1.0,                        // LHC15n
@@ -4071,6 +4070,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     0.8,                        // LHC16l (258883-260187)
                                     0.7,                        // LHC16m-p (260216-)
                                     1.0, 1.2,                   // LHC16q (265015-265525)
+                                    1.2, 0.8,                   // LHC16r (265589-266318)
                                     0.9,                        // LHC16s (266405-267131)
                                     0.9,                        // LHC16t (267161-267166)
                                     0.7,                        // LHC17c-o (270531-281961)

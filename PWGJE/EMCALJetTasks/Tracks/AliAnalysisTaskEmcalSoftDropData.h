@@ -55,7 +55,7 @@ public:
   AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalSoftDropData();
 
-  void SetBinningMode(EBinningMode_t binmode) {}
+  void SetBinningMode(EBinningMode_t binmode) { fBinningMode = binmode; }
   void SetCustomPtBinning(TBinning *binning) { fPtBinning = binning; }
   void SetBeta(double beta) { fBeta = beta; }
   void SetZcut(double zcut) { fZcut = zcut; }
@@ -89,8 +89,8 @@ private:
   EReclusterizer_t              fReclusterizer;             ///< Reclusterizer
   Bool_t                        fUseChargedConstituents;    ///< Use also charged constituents
   Bool_t                        fUseNeutralConstituents;    ///< Use also neutral constituents
-  Double_t                      fJetPtMin;                  //!<! Min. jet pt (truncation)
-  Double_t                      fJetPtMax;                  //!<! Max. jet pt (truncation)
+  Double_t                      fJetPtMin;                  ///< Min. jet pt (truncation)
+  Double_t                      fJetPtMax;                  ///< Max. jet pt (truncation)
   THistManager                  *fHistos;                   //!<! Histogram handler
   TBinning                      *fPtBinning;                ///< Detector level pt binning
 

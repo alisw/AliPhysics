@@ -857,15 +857,27 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
   if(fNonlinearityVersion=="Run2TuneMCNoNcell"){ //Improved Run2 tune for MC in the case of loose cluster cuts (no Ncell>2 cut)
     if(en<=0.) return 0.;
     
-    const Double_t p0 = 1.04397;
-    const Double_t p1 = 0.512307;
-    const Double_t p2 = 0.131812;
-    const Double_t p3 = -0.150093;
-    const Double_t p4 = -0.455062;
+    Double_t Nonlin=0.;
+    const Double_t x0=5.17 ;
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-0.27678 ; 
+    const Double_t c= 6.483e-01 ;     
+    const Double_t d=-4.775e-01 ;    
+    const Double_t e= 1.205e-01 ;
+    const Double_t beta= b+2.*c/TMath::Sqrt(x0)+3.*d/x0+4.*e/x0/TMath::Sqrt(x0) ;
+    const Double_t alpha = a+b/TMath::Sqrt(x0)+c/x0+d/x0/TMath::Sqrt(x0)+e/(x0*x0)-beta/TMath::Sqrt(x0) ;
+    if(en<x0){
+      Nonlin= 1.02384*(a*en+b*TMath::Sqrt(en)+c+d/TMath::Sqrt(en)+e/en)/en ;
+    }
+    else{
+      Nonlin = 1.02384*(alpha*en+beta*TMath::Sqrt(en))/en ;  
+    }
 
-    Double_t Nonlin = (1.-0.0125*(1.-TMath::TanH((en-0.417)/0.04)))*(p0+p1/en+p2/en/en+p3/TMath::Sqrt(en)+p4/en/TMath::Sqrt(en));
-
-    return en * Nonlin;
+    Double_t aM=-0.035 ;    
+    Double_t bM= 0.375 ;    
+    Double_t cM= 0.08 ;
+    return en * Nonlin*(1.+aM*(1.-TMath::TanH((en-bM)/cM))) ;    
+    
   }
 
   return en ;

@@ -212,6 +212,8 @@ private:
     TH1F                *fDWeightNew; //!
     TH1F                *fDWeightVar1; //!
     TH1F                *fDWeightVar2; //!
+    TH1F                *fLcWeightVar1; //!
+    TH1F                *fLcWeightVar2; //!
     TH1F                *fBWeight; //!
     TH1F                *fBWeightNew; //!
     TH1F                *fBWeightVar1; //!

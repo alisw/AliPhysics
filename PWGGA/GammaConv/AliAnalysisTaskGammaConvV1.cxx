@@ -1318,7 +1318,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
 
     if ((fDoPhotonQA == 2)||(fDoPhotonQA == 5)){
-      tESDConvGammaPtDcazCat[iCut]= new TTree(Form("%s_%s_%s Photon DCA tree", cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()), "ESD_ConvGamma_Pt_Dcaz_R_Eta_Cat");
+      if(fDoMaterialBudgetWeightingOfGammasForTrueMesons && fIsMC > 0){
+	tESDConvGammaPtDcazCat[iCut]= new TTree(Form("%s_%s_%s MBW Photon DCA tree", cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()), "ESD_ConvGamma_Pt_Dcaz_R_Eta_Cat");
+       }else {
+	tESDConvGammaPtDcazCat[iCut]= new TTree(Form("%s_%s_%s Photon DCA tree", cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()), "ESD_ConvGamma_Pt_Dcaz_R_Eta_Cat");
+      }
       tESDConvGammaPtDcazCat[iCut]->Branch("Pt",&fPtGamma,"fPtGamma/F");
       tESDConvGammaPtDcazCat[iCut]->Branch("DcaZPhoton",&fDCAzPhoton,"fDCAzPhoton/F");
       tESDConvGammaPtDcazCat[iCut]->Branch("cat",&iCatPhoton,"iCatPhoton/b");
@@ -1370,7 +1374,12 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       }
 
       if(fDoMesonQA == 2){
-        tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut] = new TTree(Form("%s_%s_%s Meson DCA tree",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()), "ESD_Mesons_InvMass_Pt_DcazMin_DcazMax_Flag");
+	if(fDoMaterialBudgetWeightingOfGammasForTrueMesons && fIsMC > 0){
+	  tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut] = new TTree(Form("%s_%s_%s MBW Meson DCA tree",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()), "ESD_Mesons_InvMass_Pt_DcazMin_DcazMax_Flag");
+	}else {
+	  tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut] = new TTree(Form("%s_%s_%s Meson DCA tree",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()), "ESD_Mesons_InvMass_Pt_DcazMin_DcazMax_Flag");
+	}
+
         tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]->Branch("InvMass",&fInvMass,"fInvMass/F");
         tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]->Branch("Pt",&fPt,"fPt/F");
         tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]->Branch("DcaZMin",&fDCAzGammaMin,"fDCAzGammaMin/F");

@@ -29,6 +29,7 @@
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliAnalysisEmcalTriggerSelectionHelper.h"
+#include "AliVCluster.h"
 #include <vector>
 #include <TArrayD.h>
 
@@ -79,7 +80,16 @@ public:
   void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; } 
 
 
-  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix = "");
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(
+    Bool_t isMC, 
+    AliJetContainer::EJetType_t jettype, 
+    AliJetContainer::ERecoScheme_t recoscheme, 
+    AliVCluster::VCluUserDefEnergy_t energydef, 
+    double radius, 
+    EMCAL_STRINGVIEW namepartcont, 
+    EMCAL_STRINGVIEW trigger, 
+    EMCAL_STRINGVIEW suffix = ""
+  );
 
 protected:
   virtual void UserCreateOutputObjects();

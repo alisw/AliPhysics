@@ -128,8 +128,8 @@ public:
 
   void SetDownscaling(bool down) { fDownscaling = down; }
 
-  void SetDownscalingFactorByEvent(bool fraction) { fDownscalingFactorByEvent = fraction; }
-  void SetDownscalingFactorByCandidate(bool fraction) { fDownscalingFactorByCandidate = fraction; }
+  void SetDownscalingFactorByEvent(float fraction) { fDownscalingFactorByEvent = fraction; }
+  void SetDownscalingFactorByCandidate(float fraction) { fDownscalingFactorByCandidate = fraction; }
 
   void SetOnlyTrueCandidates(bool trueCand) { fOnlyTrueCandidates = trueCand; }
 
@@ -154,10 +154,17 @@ public:
     fMinDCA2PrimaryVtxPi  = dcaPi;
   }
 
-  void SetMinITSnCluster(float nClsMin) { fMinITSNcluster = nClsMin; }
+  void SetMinITSnCluster(unsigned char nClsMin) { fMinITSNcluster = nClsMin; }
   void SetMinTPCcluster(unsigned char minCls) { fMinTPCNcluster = minCls; }
 
   void SetMaxPtPion(float piPtMax) { fMaxPtPion = piPtMax; }
+
+  void SetVertexerToleranceGuessCompatibility(int nGuessCompatibility) {
+    fVertexerToleranceGuessCompatibility = nGuessCompatibility;
+  }
+  void SetVertexerMaxDistanceInit(float vtxMaxDistanceInit) { fVertexerMaxDistanceInit = vtxMaxDistanceInit; }
+
+  void SetMinCosPointingAngle(float minCosPA) { fMinCosPA = minCosPA; }
 
   AliEventCuts fEventCuts; /// Event cuts class
 
@@ -196,6 +203,9 @@ private:
   float fMaxNSigmaTOFDeu; // nSigma TOF limit for deuteron
   float fMaxNSigmaTOFP;   // nSigma TOF limit for proton
   float fMaxNSigmaTOFPi;  // nSigma TOF limit for pion
+
+  int fVertexerToleranceGuessCompatibility; // minimum number of compatible tracks with the guess of the decay vertex
+  float fVertexerMaxDistanceInit;           // max distance from the guess vertex for the compatible tracks
 
   float fMinCosPA; // minimum cos(poninting angle) accepted
 

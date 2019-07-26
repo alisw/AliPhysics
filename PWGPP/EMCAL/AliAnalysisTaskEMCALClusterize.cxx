@@ -100,6 +100,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fTCardCorrMinAmp(0.01), fTCardCorrMinInduced(0) 
 , fTCardCorrMaxInducedLowE(0), fTCardCorrMaxInduced(100)
 , fPrintOnce(0)
+, fDoMergedBCs(0x0)
 
 {
   for(Int_t i = 0; i < 22;    i++)  
@@ -165,6 +166,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fTCardCorrMinAmp(0.01),   fTCardCorrMinInduced(0)
 , fTCardCorrMaxInducedLowE(0), fTCardCorrMaxInduced(100)
 , fPrintOnce(0)
+, fDoMergedBCs(0x0)
 {
   for(Int_t i = 0; i < 22;    i++)  
   {
@@ -476,28 +478,47 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
 
       TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
 
-      if(trecalpass)
-      {
-        AliInfo("Time Recalibrate EMCAL");
-        for (Int_t ibc = 0; ibc < 4; ++ibc) 
+        if(trecalpass)
         {
-          TH1F *h = fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(ibc);
+          AliInfo("Time Recalibrate EMCAL");
+
+          if(fDoMergedBCs){
+
+            TH1S *h = (TH1S*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(0);
+            
+            if (h)
+              delete h;
           
-          if (h)
-            delete h;
+            h = (TH1S*)trecalpass->FindObject("hAllTimeAv");// High Gain only
           
-          h = (TH1F*)trecalpass->FindObject(Form("hAllTimeAvBC%d",ibc));
+            if (!h) 
+              AliError("Could not load hAllTimeAv");
+            
+            h->SetDirectory(0);
+
+            fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(0,h);
+
+          }else{
+            for (Int_t ibc = 0; ibc < 4; ++ibc) 
+            {
+              TH1F *h = (TH1F*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(ibc);
           
-          if (!h) 
-          {
-            AliError(Form("Could not load hAllTimeAvBC%d",ibc));
-            continue;
+              if (h)
+                delete h;
+          
+              h = (TH1F*)trecalpass->FindObject(Form("hAllTimeAvBC%d",ibc));
+          
+              if (!h) 
+              {
+                AliError(Form("Could not load hAllTimeAvBC%d",ibc));
+                continue;
+              }
+          
+              h->SetDirectory(0);
+          
+              fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(ibc,h);
+            } // bunch crossing loop
           }
-          
-          h->SetDirectory(0);
-          
-          fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(ibc,h);
-        } // bunch crossing loop
       } else AliInfo("Do NOT recalibrate time EMCAL, no params for pass"); // array pass ok
     } else AliInfo("Do NOT recalibrate time EMCAL, no params for run");  // run number array ok
     
@@ -823,7 +844,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
 
       if ( fSetCellMCLabelFromEdepFrac && fDebug > 1 )
       {
-        for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) 
+        for(UInt_t imc = 0; imc < clus->GetNLabels(); imc++) 
         {
           printf("\t mc %d) Label %d, E dep frac %1.3f; ",
                  imc, clus->GetLabelAt(imc),clus->GetClusterMCEdepFraction(imc));
@@ -1146,6 +1167,10 @@ void AliAnalysisTaskEMCALClusterize::ConfigureEMCALRecoUtils
     fRecoUtils->SwitchOnRunDepCorrection();    
   } 
   
+  // Use one histogram for all BCs
+  if (fDoMergedBCs)
+    fRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
+
   // Remove EMCAL hot channels 
   
   if(bBad)
@@ -1492,6 +1517,10 @@ void AliAnalysisTaskEMCALClusterize::Init()
   
   if(!fRecParam)     fRecParam  = new AliEMCALRecParam;
   if(!fRecoUtils)    fRecoUtils = new AliEMCALRecoUtils();  
+
+  // Use one histogram for all BCs
+  if (fDoMergedBCs)
+    fRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
   
   if(fMaxEvent          <= 0) fMaxEvent          = 1000000000;
   if(fSelectCellMinE    <= 0) fSelectCellMinE    = 0.005;     

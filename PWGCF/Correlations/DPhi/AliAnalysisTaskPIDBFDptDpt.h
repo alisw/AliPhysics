@@ -123,8 +123,7 @@ public:
     virtual     void    SetIfContaminationInMC( bool v )    { NoContamination   = v; }
     virtual     void    SetIfContaminationWeakInMC( bool v )    { NoContaminationWeak   = v; }
     virtual     void    SetIfContaminationWeakMaterialInMC( bool v )    { NoContaminationWeakMaterial   = v; }
-    virtual     void    SetIfWeakInMC( bool v )             { NoWeak   = v; }
-    virtual     void    SetIfMaterialInMC( bool v )         { NoMaterial   = v; }
+    virtual     void    SetIfMisIDWeakMaterialInMCClosure( bool v )     { Closure_NoMisIDWeakMaterial   = v; }
     virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
     virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
     virtual     void    SetEventPlane(bool v)               { _useEventPlane  = v; }
@@ -223,8 +222,7 @@ protected:
     bool      NoContamination;
     bool      NoContaminationWeak;
     bool      NoContaminationWeakMaterial;
-    bool      NoWeak;
-    bool      NoMaterial;
+    bool      Closure_NoMisIDWeakMaterial;
     int      _useWeights;
     int      _useRapidity;
     bool     _useEventPlane;

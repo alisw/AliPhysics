@@ -123,6 +123,7 @@ public:
   void   SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
   void   SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
   void   SetPairCuts(Float_t conversions = 0.004, Float_t resonances = 0.005) { fCutConversionsV = conversions; fCutResonancesV = resonances; fCutOnLambdaV = resonances; fCutOnK0sV = resonances; }
+  void   SetCustomCut(Float_t cutOnCustomMass, Float_t cutOnCustomFirst, Float_t cutOnCustomSecond, Float_t cutOnCustomV) { fCutOnCustomMass = cutOnCustomMass; fCutOnCustomFirst = cutOnCustomFirst; fCutOnCustomSecond = cutOnCustomSecond; fCutOnCustomV = cutOnCustomV; }
   void   SetCutOnPhi(bool cutOnPhi) { fCutOnPhi = cutOnPhi; }
   void   SetCutOnPhi(Float_t cutOnPhi) { fCutOnPhiV = cutOnPhi; }
   void   SetCutOnRho(bool cutOnRho) { fCutOnRho = cutOnRho; }
@@ -297,6 +298,10 @@ private:
   Float_t fCutOnPhiV;             // cut on Phi (inv mass)
   Bool_t fCutOnRho;               // cut on Rho
   Float_t fCutOnRhoV;             // cut on Rho (inv mass)
+  Float_t fCutOnCustomMass;      // user-defined inv mass value
+  Float_t fCutOnCustomFirst;     // user-defined mass of the 1st particle
+  Float_t fCutOnCustomSecond;    // user-defined mass of the 2nd particle
+  Float_t fCutOnCustomV;         // cut on user-defined value (inv mass)
   Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
   Bool_t fFillOnlyStep0; 	   // fill only step 0
   Bool_t fSkipStep6;		   // skip step 6 when filling

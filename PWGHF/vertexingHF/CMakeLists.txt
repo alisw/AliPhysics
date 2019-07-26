@@ -227,4 +227,5 @@ install(DIRECTORY
             macros
         DESTINATION PWGHF/vertexingHF/)
 
+install(DIRECTORY upgrade DESTINATION PWGHF/vertexingHF)
 install(DIRECTORY charmFlow DESTINATION PWGHF/vertexingHF)

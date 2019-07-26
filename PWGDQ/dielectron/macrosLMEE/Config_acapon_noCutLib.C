@@ -3,6 +3,8 @@
 
 void InitHistograms(AliDielectron* die, Int_t cutDefinition, Bool_t doPairing);
 void SetupCuts(AliDielectron* die, Int_t cutDefinition);
+AliDielectronVarCuts* SetupITSsharedCut();
+AliDielectronV0Cuts* SetupV0finder();
 AliESDtrackCuts* SetupESDtrackCuts(Int_t cutDefinition);
 AliDielectronPID* SetPIDcuts(Int_t cutDefinition);
 const AliDielectronEventCuts* GetEventCuts();
@@ -37,7 +39,7 @@ AliDielectron* Config_acapon(TString name,
   else if(name = "kDCAdists"){
     cutDefinition = 1; // Basic cuts for AODs
     SetSignalsMC(die);
-  
+
   }
   else{
     std::cout << "Invalid cut set specified!!!!" << std::endl;
@@ -69,29 +71,32 @@ void SetupCuts(AliDielectron* die, Int_t cutDefinition)
   // Default is kTRUE...but will mess up results
   die->SetUseKF(kFALSE);
 
-   AliDielectronCutGroup* allCuts  = new AliDielectronCutGroup("allCuts", "allCuts", AliDielectronCutGroup::kCompOR);
+   /* AliDielectronCutGroup* allCuts  = new AliDielectronCutGroup("allCuts", "allCuts", AliDielectronCutGroup::kCompOR); */
 
-  // AND cut group to select low mass pairs with large opening angle
-  AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND);
-  AliDielectronVarCuts* convMassCut = new AliDielectronVarCuts("convMassCut", "convMassCut");
-  AliDielectronVarCuts* convPhiVCut = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut");
-  convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.1);
-  convPhiVCut->AddCut(AliDielectronVarManager::kPhivPair, 0., 2.);
-  convRejCut->AddCut(convMassCut);
-  convRejCut->AddCut(convPhiVCut);
+  /* // AND cut group to select low mass pairs with large opening angle */
+  /* AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND); */
+  /* AliDielectronVarCuts* convMassCut = new AliDielectronVarCuts("convMassCut", "convMassCut"); */
+  /* AliDielectronVarCuts* convPhiVCut = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut"); */
+  /* convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.1); */
+  /* convPhiVCut->AddCut(AliDielectronVarManager::kPhivPair, 0., 2.); */
+  /* convRejCut->AddCut(convMassCut); */
+  /* convRejCut->AddCut(convPhiVCut); */
 
-  // Mass cut to include any pairs with mass greater than 0.1 GeV
-  AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut");
-  pairMassCut->AddCut(AliDielectronVarManager::kM, 0.1, 5.0);
+  /* // Mass cut to include any pairs with mass greater than 0.1 GeV */
+  /* AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut"); */
+  /* pairMassCut->AddCut(AliDielectronVarManager::kM, 0.1, 5.0); */
 
   if(cutDefinition == 0){
-    allCuts->AddCut(convRejCut);
-    allCuts->AddCut(pairMassCut);
+    /* allCuts->AddCut(convRejCut); */
+    /* allCuts->AddCut(pairMassCut); */
 
     die->GetPairFilter().AddCuts(allCuts);
 
     die->GetTrackFilter().AddCuts(SetPIDcuts(cutDefinition));
     die->GetTrackFilter().AddCuts(SetupESDtrackCuts(cutDefinition));
+    die->GetTrackFilter().AddCuts(SetupITSsharedCut());
+    die->GetTrackFilter().AddCuts(SetupV0finder());
+
   }else if(cutDefinition == 1){
     die->GetTrackFilter().AddCuts(SetupAODtrackCuts(cutDefinition));
   }
@@ -113,6 +118,41 @@ AliDielectronPID* SetPIDcuts(Int_t cutDefinition){
  return pid;
 }
 
+AliDielectronVarCuts* SetupITSsharedCut(){
+
+  // ITS shared cluster cut
+  AliDielectronVarCuts* ITSsharedCut  = new AliDielectronVarCuts("ITSsharedCut","ITSsharedCut");
+  std::cout << "Adding ITS shared cluster cut!" << std::endl;
+  ITSsharedCut->AddCut(AliDielectronVarManager::kNclsSITS, -0.5, 0.5);
+
+  return ITSsharedCut;
+}
+
+AliDielectronV0Cuts* SetupV0finder(){
+
+  // V0 finder
+  AliDielectronV0Cuts* noConversions = new AliDielectronV0Cuts("IsGamma","IsGamma");
+  std::cout << "Adding V0 conversion cut!" << std::endl;
+  // which V0 finder you want to use
+  noConversions->SetV0finder(AliDielectronV0Cuts::kAll);  // kAll(default), kOffline or kOnTheFly
+  // add some pdg codes (they are used then by the KF package and important for gamma conversions)
+  noConversions->SetPdgCodes(22,11,11); // mother, daughter1 and 2
+  // add default PID cuts (defined in AliDielectronPID)
+  // requirement can be set to at least one(kAny) of the tracks or to both(kBoth)
+  noConversions->SetDefaultPID(16, AliDielectronV0Cuts::kAny);
+  // add the pair cuts for V0 candidates
+  noConversions->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.00, kFALSE);
+  noConversions->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.00, kFALSE);
+  noConversions->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+  noConversions->AddCut(AliDielectronVarManager::kR,                             3.0,  90.00, kFALSE);
+  noConversions->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
+  noConversions->AddCut(AliDielectronVarManager::kM,                             0.0,   0.10, kFALSE);
+  noConversions->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
+  // selection or rejection of V0 tracks
+  noConversions->SetExcludeTracks(kTRUE);
+
+  return noConversions;
+}
 //______________________________________________________________________________________
 //----------------------------------- Track Cuts ---------------------------------------
 AliESDtrackCuts* SetupESDtrackCuts(Int_t cutDefinition){
@@ -131,12 +171,12 @@ AliESDtrackCuts* SetupESDtrackCuts(Int_t cutDefinition){
   fesdTrackCuts->SetRequireITSRefit(kTRUE);
 
   if(cutDefinition == 0){
-    fesdTrackCuts->SetMinNClustersITS(5);
+    fesdTrackCuts->SetMinNClustersITS(4);
     fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
     fesdTrackCuts->SetMinNClustersTPC(80);
     fesdTrackCuts->SetMinNCrossedRowsTPC(100);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
   }
   return fesdTrackCuts;

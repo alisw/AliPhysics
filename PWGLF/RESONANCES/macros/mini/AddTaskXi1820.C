@@ -1,3 +1,7 @@
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
+#endif
 /***************************************************************************
  Anders Knospe: anders.knospe@cern.ch
  Macro to configure the resonance package for searches for rare resonances.
@@ -13,8 +17,24 @@
  Bool_t Config_pkx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
  Bool_t Config_pk0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
  Bool_t Config_Lambdapi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);*/
- Bool_t Config_Lambdakx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
- Bool_t Config_Lambdak0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);/*
+ Bool_t Config_Lambdakx(
+                       AliRsnMiniAnalysisTask *task,
+                       TString     lname="Lambdakx",
+                       Bool_t      isMC=kFALSE,
+                       Int_t       system=0,
+                       Int_t       EventCuts=0,
+                       Int_t       TrackCutsLambda=0,
+                       Int_t       TrackCutsK=0
+                       );
+ Bool_t Config_Lambdak0(
+                       AliRsnMiniAnalysisTask *task,
+                       TString     lname="Lambdak0",
+                       Bool_t      isMC=kFALSE,
+                       Int_t       system=0,
+                       Int_t       EventCuts=0,
+                       Int_t       TrackCutsLambda=0,
+                       Int_t       TrackCutsK=0
+                       );/*
  Bool_t Config_Lambdap(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
  */
 
@@ -92,7 +112,7 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
     task->SetNMix(nmix);
     task->SetMaxDiffVz(maxDiffVzMix);
     task->SetMaxDiffMult(maxDiffMultMix);
-    ::Info("AddTaskXi1820", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
+    ::Info("AddTaskXi1820", "%s", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
     
     // vertex cuts
     float vtxZcut=10;
@@ -124,7 +144,7 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
     // set the check for pileup
     if(isPP && (!isMC) && cutVertex){
         cutVertex->SetCheckPileUp(rejectPileUp);
-        ::Info("AddTaskXi1820", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
+        ::Info("AddTaskXi1820", "%s", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
     }
     
     // define and fill cut set for event cuts
@@ -201,6 +221,7 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
         Config_Lambdak0(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
     }else if(d2==AliRsnDaughter::kLambda && d1==AliRsnDaughter::kKaon0){
         Config_Lambdak0(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
+    }
         
     cerr<<"done configuring"<<endl;
     
@@ -221,16 +242,13 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
 
 //=============================
 
-
-Bool_t Config_Lambdakx(
-                       AliRsnMiniAnalysisTask *task,
-                       TString     lname="Lambdakx",
-                       Bool_t      isMC=kFALSE,
-                       Int_t       system=0,
-                       Int_t       EventCuts=0,
-                       Int_t       TrackCutsLambda=0,
-                       Int_t       TrackCutsK=0
-                       ){
+Bool_t Config_Lambdakx(AliRsnMiniAnalysisTask* task,
+                       TString lname,
+                       Bool_t isMC,
+                       Int_t system,
+                       Int_t EventCuts,
+                       Int_t TrackCutsLambda,
+                       Int_t TrackCutsK) {
     bool isPP=false;
     if(!system) isPP=true;
     int trigger=EventCuts%10;
@@ -366,10 +384,13 @@ Bool_t Config_Lambdakx(
     TString pname="lambdap";
     if(enableMonitor){
         Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
-        gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
-        AddMonitorOutput(isMC,cutSetQ->GetMonitorOutput());
-        AddMonitorOutput(isMC,cutSetK->GetMonitorOutput());
-        
+#ifdef __CINT__
+        gROOT->LoadMacro(
+            "$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+#endif
+        AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput());
+        AddMonitorOutput(isMC, cutSetK->GetMonitorOutput());
+
         AddMonitorOutput_P(pname,cutSetLambda->GetMonitorOutput());
         AddMonitorOutput_Pt(pname,cutSetLambda->GetMonitorOutput());
         AddMonitorOutput_V0NPt(pname,cutSetLambda->GetMonitorOutput());
@@ -695,16 +716,13 @@ Bool_t Config_Lambdakx(
 
 //=============================
 
-
-Bool_t Config_Lambdak0(
-                       AliRsnMiniAnalysisTask *task,
-                       TString     lname="Lambdak0",
-                       Bool_t      isMC=kFALSE,
-                       Int_t       system=0,
-                       Int_t       EventCuts=0,
-                       Int_t       TrackCutsLambda=0,
-                       Int_t       TrackCutsK=0
-                       ){
+Bool_t Config_Lambdak0(AliRsnMiniAnalysisTask* task,
+                       TString lname,
+                       Bool_t isMC,
+                       Int_t system,
+                       Int_t EventCuts,
+                       Int_t TrackCutsLambda,
+                       Int_t TrackCutsK) {
     bool isPP=false;
     if(!system) isPP=true;
     int trigger=EventCuts%10;

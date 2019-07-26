@@ -56,6 +56,9 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
   evtCuts->SetDoSphericityCuts(DoSphericityCuts);
+  if(isMC && CentEst=="kHM"){
+    evtCuts->SetMultiplicityPercentileMax(5);
+  }
 
   if(DoSphericityCuts){
   if (suffix=="1") {

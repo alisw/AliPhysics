@@ -85,6 +85,8 @@ public:
 
   void SetInputEvent(AliVEvent *inputEvent){fEvent = inputEvent;};
 
+  void SetCovMatPresent(Bool_t pres){fCovMatPresent = pres;}
+
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
   virtual AliFemtoTrack *CopyAODtoFemtoTrack(AliNanoAODTrack *tAodTrack
@@ -142,6 +144,7 @@ private:
   Bool_t fFlatCent;        ///< Boolean determining if the user should flatten the centrality
   Bool_t fPrimaryVertexCorrectionTPCPoints; ///< Boolean determining if the reader should shift all TPC points to be relative to event vertex
   Double_t fShiftPosition; ///< radius at which the spatial position of the track in the shifted coordinate system is calculated
+  Bool_t fCovMatPresent; /// flag if covariance matrix is not present in NanoAOD
 
 
 

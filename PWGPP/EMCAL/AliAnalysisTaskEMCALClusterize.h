@@ -314,6 +314,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SetInducedTCardMaximumLowE(Float_t ma)         { fTCardCorrMaxInducedLowE = ma ; }
   
   void           PrintTCardParam();
+
+  void     SwitchUseMergedBCs(Bool_t doUseMergedBC)     { fDoMergedBCs     = doUseMergedBC; }
   
   //------------------------------------------
   
@@ -449,6 +451,8 @@ private:
   Float_t               fTCardCorrMaxInduced;      ///<  Maximum induced energy signal on adjacent cells
   
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
+
+  Bool_t                fDoMergedBCs;              ///< flag whether to load four histos for the time calib or one merged histo
   
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&) ;
@@ -457,7 +461,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 43) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 44) ;
   /// \endcond
 
 };

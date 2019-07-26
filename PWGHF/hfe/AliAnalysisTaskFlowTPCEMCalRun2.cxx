@@ -18,6 +18,7 @@
  */
 #include <TGrid.h>
 #include <TSpline.h>
+#include <TString.h>
 #include "TChain.h"
 #include "TMath.h"
 #include "TH1F.h"
@@ -107,7 +108,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fInvmassLS_2D(0),
 	fInvmassULS_2D(0),
 	//fUseTender(kTRUE),
-	//fTracks_tender(0)
+	fTracks_tender(0),
+        fCaloClusters_tender(0),
 	fMCparticle(0),
 	fMCcheckMother(0),
 	fMCarray(0),
@@ -156,8 +158,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	//fTrkPhicos2(0),
 	//fInplane(0),
 	//fOutplane(0),
-	DCAxy(0),
-	DCAz(0),
+	DCAxy(3.0),
+	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
 	massMin(0),
@@ -183,16 +185,17 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	//fCalibType(AliHFQnVectorHandler::kQnFrameworkCalib),
 	fCalibType(AliHFQnVectorHandler::kQnCalib),
 	fNormMethod(AliHFQnVectorHandler::kQoverM),
-	fOADBFileName("alien:////alice/cern.ch/user/f/fgrosa/QnVectorCalibrations/calibV0TrklTPCNoEtaCutRun218rVtx14MRP2New.root"),
+	//fOADBFileName("alien:////alice/cern.ch/user/f/fgrosa/QnVectorCalibrations/calibV0TrklTPCNoEtaCutRun218rVtx14MRP2New.root"),
+	fOADBFileName(""),
 	fFlowMethod(kEvShapeEP),
 	fEvPlaneDet(kFullV0),
 	fSubEvDetA(kPosTPC),
 	fSubEvDetB(kNegTPC),
 	//fRDCuts(nullptr),
 	fqnMeth(kq2TPC),
-	//fTenderTaskName("HFTenderQnVectors"),
 	fTenderTaskName("HFTenderQnVectorsV2"),
-	fqnSplineFileName("alien:///alice/cern.ch/user/f/fgrosa/q2Splines/Splines_q2_3050_1centbin_LHC18r.root"),
+	//fqnSplineFileName("alien:///alice/cern.ch/user/f/fgrosa/q2Splines/Splines_q2_3050_1centbin_LHC18r.root"),
+	fqnSplineFileName(""),
 	fEtaGapInTPCHalves(0),
 	fScalProdLimit(0.4),
 	fMinCentr(0.),
@@ -267,7 +270,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fInvmassLS_2D(0),
 	fInvmassULS_2D(0),
 	//fUseTender(kTRUE),
-	//fTracks_tender(0)
+	fTracks_tender(0),
+        fCaloClusters_tender(0),
 	fMCparticle(0),
 	fMCcheckMother(0),
 	fMCarray(0),
@@ -316,8 +320,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	//fTrkPhicos2(0),
 	//fInplane(0),
 	//fOutplane(0),
-	DCAxy(0),
-	DCAz(0),
+	DCAxy(3.0),
+	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
 	massMin(0),
@@ -343,16 +347,18 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	//fCalibType(AliHFQnVectorHandler::kQnFrameworkCalib),
 	fCalibType(AliHFQnVectorHandler::kQnCalib),
 	fNormMethod(AliHFQnVectorHandler::kQoverM),
-	fOADBFileName("alien:////alice/cern.ch/user/f/fgrosa/QnVectorCalibrations/calibV0TrklTPCNoEtaCutRun218rVtx14MRP2New.root"),
+	//fOADBFileName("alien:////alice/cern.ch/user/f/fgrosa/QnVectorCalibrations/calibV0TrklTPCNoEtaCutRun218rVtx14MRP2New.root"),
+	fOADBFileName(""),
 	fFlowMethod(kEvShapeEP),
 	fEvPlaneDet(kFullV0),
 	fSubEvDetA(kPosTPC),
 	fSubEvDetB(kNegTPC),
 	//fRDCuts(rdCuts),
 	fqnMeth(kq2TPC),
-	//fTenderTaskName("HFTenderQnVectors"),
 	fTenderTaskName("HFTenderQnVectorsV2"),
-	fqnSplineFileName("alien:///alice/cern.ch/user/f/fgrosa/q2Splines/Splines_q2_3050_1centbin_LHC18r.root"),
+	//fTenderTaskName(""),
+	//fqnSplineFileName("alien:///alice/cern.ch/user/f/fgrosa/q2Splines/Splines_q2_3050_1centbin_LHC18r.root"),
+	fqnSplineFileName(""),
 	fEtaGapInTPCHalves(0),
 	fScalProdLimit(0.4),
 	fMinCentr(0.),
@@ -880,6 +886,9 @@ Double_t CutEopHad = -3.5;
 //fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
 //}
 
+    fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("tracks"));
+    fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
+
 ////////////PID initialised///////
     fpidResponse = fInputHandler->GetPIDResponse();
 
@@ -1089,11 +1098,11 @@ Double_t CutEopHad = -3.5;
 	//Get Qn-vectors from tender task
     AliHFQnVectorHandler *HFQnVectorHandler = nullptr; 
     bool isHandlerFound = false;
-
+  
+    cout << "<----------- fTenderTaskName = " << fTenderTaskName << endl;
     AliAnalysisTaskSEHFTenderQnVectors *HFQnVectorTask = dynamic_cast<AliAnalysisTaskSEHFTenderQnVectors*>(AliAnalysisManager::GetAnalysisManager()->GetTask(fTenderTaskName.Data()));
-
  
-	    //cout << "HFQnVectorTask = " << HFQnVectorTask << endl; 
+    cout << "<----------- HFQnVectorTask = " << HFQnVectorTask << endl; 
 
     if(HFQnVectorTask){
 
@@ -1395,7 +1404,8 @@ int NclustE3 = 0;//Number of cluster E>0.5
 for(Int_t icl=0; icl<Nclust; icl++)
 {
 	AliVCluster *clust = 0x0;     
-	clust = (AliVCluster*)fVevent->GetCaloCluster(icl); // address cluster matched to track
+	//clust = (AliVCluster*)fVevent->GetCaloCluster(icl); // address cluster matched to track
+        clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(icl));
 
 	if(clust && clust->IsEMCAL())
 	{
@@ -1449,10 +1459,12 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 /////////////////////////////////Track loop///////////////////////////////
 
 
-    Int_t iTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
+    //Int_t iTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
+    Int_t iTracks(fTracks_tender->GetEntries());           // see how many tracks there are in the event
     for(Int_t i = 0; i < iTracks; i++) {                 // loop over all these tracks
      
-	AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
+	//AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
+	AliAODTrack* track = dynamic_cast<AliAODTrack*>(fTracks_tender->At(i));         // get a track (type AliAODTrack) from the event
 
 	if(!track) continue;                            // if we failed, skip this track
 	fHistPt->Fill(track->Pt());                     // plot the pt value of the track in a histogram
@@ -1563,6 +1575,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
         Int_t EMCalIndex = -1;
         EMCalIndex = track->GetEMCALcluster();  // get index of EMCal cluster which matched to track
+        cout << "EMCalIndex = " << EMCalIndex << endl;
 
 	//cout << "EMCal Index = " << EMCalIndex << endl;
 
@@ -1576,7 +1589,8 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		//cout << "DCA[0] = "<< DCA[0] << endl;
 		//cout << "DCA[1] = "<< DCA[1] << endl;
 
-		if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz)continue;
+		//if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz)continue;
+		if(TMath::Abs(DCA[0]) > 2.4 || TMath::Abs(DCA[1]) > 3.2)continue;
 
 	}
 
@@ -1600,6 +1614,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 	Bool_t iEmbPi0 = kFALSE;
 	Bool_t iEmbEta = kFALSE;
+
 
 	if(ilabel>0 && fMCarray){
 
@@ -1633,7 +1648,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 			}
 
-		}
+		} //pid_eleD
 
 		if(pid_eleD || pid_eleB)fNDB->Fill(1);
 
@@ -1667,13 +1682,14 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 			}
 
-		}
+		} //pidM = 22
 
 		fMCcheckMother->Fill(abs(pidM));
 	}
 
-	if(pidM==443)continue;
-	if(pidM==-99)continue;
+
+	//if(pidM==443)continue;
+	//if(pidM==-99)continue;
 
 	if(pid_eleB || pid_eleD) {
 
@@ -1705,9 +1721,9 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 	AliVCluster *clustMatch=0x0;
 	//cout << "EMCalIndex = " << EMCalIndex << endl;
-	if(EMCalIndex>=0)clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex); // address cluster matched to track
+	//if(EMCalIndex>=0)clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex); // address cluster matched to track
+        if(EMCalIndex>=0) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 
-	//cout << "clustMatch = " << clustMatch << endl;
 	//cout << "Charge = " << track -> Charge() << endl;
 	
 	Double_t emcphi = -999, emceta = -999;        
@@ -1720,6 +1736,8 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		GetTrkClsEtaPhiDiff(track,clustMatch,fPhiDiff,fEtaDiff);
 		fEMCTrkMatchPhi->Fill(fPhiDiff);
 		fEMCTrkMatchEta->Fill(fEtaDiff);
+
+                cout << "fPhiDiff = "<< fPhiDiff << endl;
 
 		if(TMath::Abs(fPhiDiff)>0.05 || TMath::Abs(fEtaDiff)>0.05)continue;
 
@@ -1885,7 +1903,8 @@ void AliAnalysisTaskFlowTPCEMCalRun2::GetTrkClsEtaPhiDiff(AliVTrack *t,AliVClust
 	phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlowTPCEMCalRun2::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Double_t TrkPt, Double_t DCAxy, Int_t Bsign)
+//void AliAnalysisTaskFlowTPCEMCalRun2::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Double_t TrkPt, Double_t DCAxy, Int_t Bsign)
+void AliAnalysisTaskFlowTPCEMCalRun2::SelectPhotonicElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Double_t TrkPt, Double_t DCAxy, Int_t Bsign)
 {
 	///////////////////////////////////////////
 	//////Non-HFE - Invariant mass method//////
@@ -1900,25 +1919,16 @@ Double_t CutmassMin = massMin;
 
 
 
-	//AliESDtrackCuts* esdTrackCutsAsso = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-	//esdTrackCutsAsso->SetAcceptkinkDaughters(kFALSE);
-	//esdTrackCutsAsso->SetRequireTPCRefit(kTRUE);
-	//esdTrackCutsAsso->SetRequireITSRefit(kTRUE);
-	//esdTrackCutsAsso->SetEtaRange(-0.9,0.9);
-	//esdTrackCutsAsso->SetMaxChi2PerClusterTPC(4);
-	//esdTrackCutsAsso->SetMinNClustersTPC(70);
-	//esdTrackCutsAsso->SetMaxDCAToVertexZ(3.2);
-	//esdTrackCutsAsso->SetMaxDCAToVertexXY(2.4);
-	//esdTrackCutsAsso->SetDCAToVertex2D(kTRUE);
-
 	Bool_t flagPhotonicElec = kFALSE;
 
 	Int_t ntracks = -999;
-	ntracks = fVevent->GetNumberOfTracks();
+	//ntracks = fVevent->GetNumberOfTracks();
+	ntracks = fTracks_tender->GetEntries();
 
 	for (Int_t jtrack = 0; jtrack < ntracks; jtrack++) {
 		AliVParticle* VAssotrack = 0x0;
-	 VAssotrack  = fVevent->GetTrack(jtrack);
+	        // VAssotrack  = fVevent->GetTrack(jtrack);
+                 VAssotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
 
         if (!VAssotrack) {
             printf("ERROR: Could not receive track %d\n", jtrack);
@@ -1926,7 +1936,6 @@ Double_t CutmassMin = massMin;
         }
 
         AliVTrack *Assotrack = dynamic_cast<AliVTrack*>(VAssotrack);
-        AliESDtrack *eAssotrack = dynamic_cast<AliESDtrack*>(VAssotrack);
         AliAODTrack *aAssotrack = dynamic_cast<AliAODTrack*>(VAssotrack);
 
         //------reject same track
@@ -1952,7 +1961,6 @@ Double_t CutmassMin = massMin;
             if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         }
         //else{
-        //    if(!esdTrackCutsAsso->AcceptTrack(eAssotrack)) continue;
         //}
 
         //-------loose cut on partner electron
@@ -2182,6 +2190,10 @@ bool AliAnalysisTaskFlowTPCEMCalRun2::LoadSplinesForqnPercentile()
 		TGrid::Connect("alien//");
 
 	}
+
+        cout << "fqnSplineFileName = "<< fqnSplineFileName << endl;
+        cout << "fqnSplineFileName = "<< fqnSplineFileName.Data() << endl;
+        cout << "fOADBFileName = "<< fOADBFileName << endl;
 
 	TFile* splinesfile = TFile::Open(fqnSplineFileName.Data());
 	if(!splinesfile){

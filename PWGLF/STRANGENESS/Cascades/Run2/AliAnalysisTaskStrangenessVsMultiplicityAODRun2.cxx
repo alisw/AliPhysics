@@ -1794,11 +1794,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         Float_t lPosTrackLength = -1;
         Float_t lNegTrackLength = -1;
         
-        //URGENT FIXME
-        //if (pTrack->GetInnerParam()) lPosTrackLength = pTrack->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
-        //if (nTrack->GetInnerParam()) lNegTrackLength = nTrack->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
-        lPosTrackLength = 200;
-        lNegTrackLength = 200;
+        lPosTrackLength = GetLengthInActiveZone( pTrack, /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
+        lNegTrackLength = GetLengthInActiveZone( nTrack, /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
+        
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
@@ -2479,12 +2477,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         Float_t lNegTrackLength = -1;
         Float_t lBachTrackLength = -1;
         
-        //if (pTrackXi->GetInnerParam()) lPosTrackLength = pTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
-        //if (nTrackXi->GetInnerParam()) lNegTrackLength = nTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
-        //if (bachTrackXi->GetInnerParam()) lBachTrackLength = bachTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lAODevent->GetMagneticField());
-        lPosTrackLength = 200;
-        lNegTrackLength = 200;
-        lBachTrackLength = 200;
+        lPosTrackLength = GetLengthInActiveZone( pTrackXi, /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
+        lNegTrackLength = GetLengthInActiveZone( nTrackXi, /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
+        lBachTrackLength = GetLengthInActiveZone( bachTrackXi, /*1,*/ 2.0, 220.0, lAODevent->GetMagneticField());
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
@@ -6193,4 +6188,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::CheckChargeV0(AliESDv0 *v0
     return;
 }
 
-
+//________________________________________________________________________
+Float_t AliAnalysisTaskStrangenessVsMultiplicityAODRun2::GetLengthInActiveZone( AliAODTrack *gt, Float_t deltaY, Float_t deltaZ, Float_t b ){
+    AliESDtrack esdTrack( gt );
+    esdTrack.SetESDEvent((AliESDEvent*) gt->GetEvent() );
+    AliExternalTrackParam etp;
+    etp.CopyFromVTrack(gt);
+    esdTrack.ResetTrackParamIp(&etp);
+    return esdTrack.GetLengthInActiveZone(1, deltaY, deltaZ, b);
+}
