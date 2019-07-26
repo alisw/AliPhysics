@@ -1,6 +1,7 @@
-AliGenerator* AddMCGenBtoJpsi(Bool_t useEvtGenForB=kFALSE, Double_t energyConfig){
+AliGenerator* AddMCGenBtoJpsi(Bool_t useEvtGenForB=kFALSE, Double_t energyConfig=13000.){
   gSystem->Load("liblhapdf"); 
-  gSystem->Load("libpythia6.so"); 
+  gSystem->Load("libpythia6_4_25");
+  gSystem->Load("libEGPythia6");
   gSystem->Load("libAliPythia6");  
   // load libraries to use Evtgen
   gSystem->Load("libPhotos");
@@ -19,7 +20,7 @@ AliGenerator* AddMCGenBtoJpsi(Bool_t useEvtGenForB=kFALSE, Double_t energyConfig
   pythia->SetPtRange(0, 1000.);
   pythia->SetProcess(kPyBeautyppMNRwmi);
   pythia->SetEnergyCMS(energyConfig);
-  pythia->SetTune(kPythia6Tune_Perugia0);
+  pythia->SetTune(320); // Perugia0 tune
   pythia->UseNewMultipleInteractionsScenario();
   if(useEvtGenForB) pythia->SetForceDecay(kNoDecayBeauty);
   else {
