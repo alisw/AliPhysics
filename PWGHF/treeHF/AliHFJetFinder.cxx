@@ -445,7 +445,7 @@ Bool_t AliHFJetFinder::CheckTrack(AliAODTrack *track) {
 //Apply quality check on particles (MC)
 Bool_t AliHFJetFinder::CheckParticle(AliAODMCParticle *particle) {
   if(!particle) return false;
-  if(!particle->IsPrimary()) return false;
+  if(!particle->IsPhysicalPrimary()) return false;
   if(particle->Pt() > fMaxParticlePt) return false;
   if(particle->Pt() < fMinParticlePt) return false;
   if(TMath::Abs(particle->Eta()) > fMaxParticleEta) return false;
