@@ -108,29 +108,38 @@ AliAnalysisTaskDeuFlow2PC::AliAnalysisTaskDeuFlow2PC():AliAnalysisTaskSE(),
   fFilterBit(128),
   fFirstpart(kKaon),
   fSecondpart(kProton),
+
   fnSigmaTPCPIDfirstParticle(3.),
   fnSigmaTPCTOFPIDfirstParticle(3.),
   fnSigmaTPCPIDsecondParticle(3.),
   fnSigmaTPCTOFPIDsecondParticle(3.),
+
   fReadMCTruth(kFALSE),
   fUseContainer(kFALSE),
   fUseStandardCuts(0),
   fkApplyTtc(0),
+
   fDphisMin(0),
   fDetasMin(0),
+						       
   fMomemtumLimitForTOFPIDfirst(0.4),
   fMomemtumLimitForTOFPIDsecond(0.8),
+
   fkApplyRatioCrRnFindCut(kFALSE),
   fkCutOnTPCIP(kTRUE),  
+
   fIPCutxyPrim(0.1),
   fIPCutzPrim(0.15),
   fIPCutxySec(0.1),
   fIPCutzSec(0.15),
+
   fMinPtForPrim(0.7),
   fMaxPtForPrim(4.),
   fMinPtForSec(0.8),
   fMaxPtForSec(10.),
+  
   fRadius(1.2),
+  
   fkDoSphericity(kFALSE),
   fkPropagateGlobal(kFALSE),
   
@@ -140,12 +149,16 @@ AliAnalysisTaskDeuFlow2PC::AliAnalysisTaskDeuFlow2PC():AliAnalysisTaskSE(),
   fCentrLowLim(0),
   fCentrUpLim(0),
 
-  farrGT(0),fTrackBufferSize(20200), // was 18k
+  farrGT(0),
+  fTrackBufferSize(20200), // was 18k
+  
   fEventColl(0x0),
   fEventCollwSp(0x0),
   fEvt(0x0),
+  
   fMaxFirstMult(3000), // 1000 for protons 
   fMaxSecondMult(20),  // was 100
+  
   fPDGp(0.938272046),
   fPDGk(0.493677),
   fPDGd(1.875612762),
@@ -153,12 +166,14 @@ AliAnalysisTaskDeuFlow2PC::AliAnalysisTaskDeuFlow2PC():AliAnalysisTaskSE(),
 
   fPDGfirst(0.),
   fPDGsecond(0.),
+  
   fPDGCodefirst(0.),
   fPDGCodesecond(0.),
 
   fzVertexBins(10),
   fnCentBins(20),
   fnSphericityBins(3),
+  
   fnEventsToMix(7),
   
   fHistEventMultiplicity(0), 
@@ -166,23 +181,26 @@ AliAnalysisTaskDeuFlow2PC::AliAnalysisTaskDeuFlow2PC():AliAnalysisTaskSE(),
   fHistCentrality(0),                       
   fHistVertexDistribution(0),                         
   fHistSphericity(0),               
-  fHistMultiplicityOfMixedEvent(0),
-         
+  fHistMultiplicityOfMixedEvent(0),     
+  
+  fHistTriggptvsCentrality(0),
+  
   fHistTPCdEdx(0),
   fHistFirstTPCdEdx(0),
+  fHistSecondTPCdEdx(0),
+  
   fHistnTPCCrossedRFirst(0),                
   fHistRationTPCCrossedRnFindFirst(0),      
   fHistSharedFrTPCclFirst(0),               
 
-  fHistSecondTPCdEdx(0),
   fHistnTPCCrossedRSecond(0),               
   fHistRationTPCCrossedRnFindSecond(0),     
   fHistSharedFrTPCclSecond(0),              
 
   fHistyptFirst(0),                         
-  fHistphietaFirst(0),                      
-
   fHistyptSecond(0),                        
+ 
+  fHistphietaFirst(0),                      
   fHistphietaSecond(0),                     
 
   fHistIPtoPVxyzTPCFirst(0),                
@@ -200,7 +218,7 @@ AliAnalysisTaskDeuFlow2PC::AliAnalysisTaskDeuFlow2PC():AliAnalysisTaskSE(),
   
   fHistFirstTOFTPCsignalvspt(0),            
   fHistFirstMultvsCent(0),               
-
+  
   fHistSecondTOFmisvspt(0),                 
   fHistSecondTOFmisvsp(0),                  
   fHistSecondTOFnsigmavspt(0),              
@@ -211,17 +229,17 @@ AliAnalysisTaskDeuFlow2PC::AliAnalysisTaskDeuFlow2PC():AliAnalysisTaskSE(),
   fHistSecondTOFTPCsignalvspt(0),           
   fHistSecondMultvsCent(0),                
 
-  fHistFirstTPCdEdxAfter(0),           
+  fHistFirstTPCdEdxAfter(0),
   fHistSecondTPCdEdxAfter(0),     
   fHistFirstTOFTPCsignalvsptAfter(0), 
   fHistSecondTOFTPCsignalvsptAfter(0), 
  
   fHistFirstMassTOFvsPt3sTPC(0), 
   fHistSecondMassTOFvsPt3sTPC(0),  
+
   fHistFirstMassTOFvsPt3sTPC3sTOF(0), 
   fHistSecondMassTOFvsPt3sTPC3sTOF(0),  
-   
-   
+
   fHistSparseSignal(0),  
   fHistSparseBkg(0),      
   
@@ -284,44 +302,57 @@ AliAnalysisTaskDeuFlow2PC::AliAnalysisTaskDeuFlow2PC(const char *name):
   fFilterBit(128),
   fFirstpart(kKaon),
   fSecondpart(kProton),
+
   fnSigmaTPCPIDfirstParticle(3.),
   fnSigmaTPCTOFPIDfirstParticle(3.),
   fnSigmaTPCPIDsecondParticle(3.),
   fnSigmaTPCTOFPIDsecondParticle(3.),
+
   fReadMCTruth(kFALSE),
   fUseContainer(kFALSE),
   fUseStandardCuts(0),
   fkApplyTtc(0),
+
   fDphisMin(0),
   fDetasMin(0),
+						       
   fMomemtumLimitForTOFPIDfirst(0.4),
   fMomemtumLimitForTOFPIDsecond(0.8),
+
   fkApplyRatioCrRnFindCut(kFALSE),
-  fkCutOnTPCIP(kFALSE),  
+  fkCutOnTPCIP(kTRUE),  
+
   fIPCutxyPrim(0.1),
   fIPCutzPrim(0.15),
   fIPCutxySec(0.1),
   fIPCutzSec(0.15),
+
   fMinPtForPrim(0.7),
   fMaxPtForPrim(4.),
   fMinPtForSec(0.8),
   fMaxPtForSec(10.),
+  
   fRadius(1.2),
+  
   fkDoSphericity(kFALSE),
   fkPropagateGlobal(kFALSE),
-
+  
   fESDtrackCuts(0),
   fPIDResponse(0),
 
   fCentrLowLim(0),
   fCentrUpLim(0),
 
-  farrGT(0),fTrackBufferSize(20200), // was 18k
+  farrGT(0),
+  fTrackBufferSize(20200), // was 18k
+  
   fEventColl(0x0),
   fEventCollwSp(0x0),
   fEvt(0x0),
+  
   fMaxFirstMult(3000), // 1000 for protons 
   fMaxSecondMult(20),  // was 100
+  
   fPDGp(0.938272046),
   fPDGk(0.493677),
   fPDGd(1.875612762),
@@ -329,35 +360,41 @@ AliAnalysisTaskDeuFlow2PC::AliAnalysisTaskDeuFlow2PC(const char *name):
 
   fPDGfirst(0.),
   fPDGsecond(0.),
+  
   fPDGCodefirst(0.),
   fPDGCodesecond(0.),
+
   fzVertexBins(10),
   fnCentBins(20),
   fnSphericityBins(3),
+  
   fnEventsToMix(7),
- 
+  
   fHistEventMultiplicity(0), 
   hmult(0),  
   fHistCentrality(0),                       
   fHistVertexDistribution(0),                         
-  fHistSphericity(0),                       
-  fHistMultiplicityOfMixedEvent(0),      
-  fHistTPCdEdx(0),        
-
+  fHistSphericity(0),               
+  fHistMultiplicityOfMixedEvent(0),     
+  
+  fHistTriggptvsCentrality(0),
+  
+  fHistTPCdEdx(0),
   fHistFirstTPCdEdx(0),
+  fHistSecondTPCdEdx(0),
+  
   fHistnTPCCrossedRFirst(0),                
   fHistRationTPCCrossedRnFindFirst(0),      
   fHistSharedFrTPCclFirst(0),               
 
-  fHistSecondTPCdEdx(0),
   fHistnTPCCrossedRSecond(0),               
   fHistRationTPCCrossedRnFindSecond(0),     
   fHistSharedFrTPCclSecond(0),              
 
   fHistyptFirst(0),                         
-  fHistphietaFirst(0),                      
-
   fHistyptSecond(0),                        
+ 
+  fHistphietaFirst(0),                      
   fHistphietaSecond(0),                     
 
   fHistIPtoPVxyzTPCFirst(0),                
@@ -375,7 +412,7 @@ AliAnalysisTaskDeuFlow2PC::AliAnalysisTaskDeuFlow2PC(const char *name):
   
   fHistFirstTOFTPCsignalvspt(0),            
   fHistFirstMultvsCent(0),               
-
+  
   fHistSecondTOFmisvspt(0),                 
   fHistSecondTOFmisvsp(0),                  
   fHistSecondTOFnsigmavspt(0),              
@@ -386,16 +423,17 @@ AliAnalysisTaskDeuFlow2PC::AliAnalysisTaskDeuFlow2PC(const char *name):
   fHistSecondTOFTPCsignalvspt(0),           
   fHistSecondMultvsCent(0),                
 
-  fHistFirstTPCdEdxAfter(0),           
+  fHistFirstTPCdEdxAfter(0),
   fHistSecondTPCdEdxAfter(0),     
   fHistFirstTOFTPCsignalvsptAfter(0), 
   fHistSecondTOFTPCsignalvsptAfter(0), 
-
+ 
   fHistFirstMassTOFvsPt3sTPC(0), 
   fHistSecondMassTOFvsPt3sTPC(0),  
+
   fHistFirstMassTOFvsPt3sTPC3sTOF(0), 
   fHistSecondMassTOFvsPt3sTPC3sTOF(0),  
-  
+
   fHistSparseSignal(0),  
   fHistSparseBkg(0),      
   
@@ -428,9 +466,10 @@ AliAnalysisTaskDeuFlow2PC::AliAnalysisTaskDeuFlow2PC(const char *name):
   tpdgcodeP1(0), 
   tpdgcodeP2(0),
   tKstarGen(0),
-    
+
   fHistTrackBufferOverflow(0),             
   fOutputContainer(NULL)
+
   
 {
   fPDGp  = TDatabasePDG::Instance()->GetParticle(2212)->Mass(); 
@@ -552,6 +591,7 @@ void AliAnalysisTaskDeuFlow2PC::UserCreateOutputObjects() {
   else if (fSecondpart == kProton) fPDGsecond = fPDGp;
   else if (fSecondpart == kKaon) fPDGsecond = fPDGk;
   else if (fSecondpart == kDeuteron) fPDGsecond = fPDGd;
+  else if (fSecondpart == kAny) fPDGsecond = 0;
   else { cout<<" Second particle not known or not possible to deal with in this task for the moment! "<<endl; return;}
 
   //SetPDGCode for first and second particle
@@ -570,6 +610,7 @@ void AliAnalysisTaskDeuFlow2PC::UserCreateOutputObjects() {
   else if (fSecondpart == kKaon)    fPDGCodesecond = 321;       
   else if (fSecondpart == kProton)  fPDGCodesecond = 2212;      
   else if (fSecondpart == kDeuteron)fPDGCodesecond = 1000010020;
+  else if (fSecondpart == kAny)     fPDGCodesecond = 0;
   else { cout<<" Second particle not known or not possible to deal with in this task for the moment! "<<endl; return;}
   
   
@@ -617,63 +658,80 @@ void AliAnalysisTaskDeuFlow2PC::UserCreateOutputObjects() {
   fHistSphericity ->GetYaxis()->SetTitle("Entries");
   fOutputContainer->Add(fHistSphericity); 
    
-  fHistTPCdEdx = new TH2F("fHistTPCdEdx", "fHistTPCdEdx", 400, -6.0, 6.0, 500, 0.0, 2000);
-  fOutputContainer->Add(fHistTPCdEdx);
-   
   fHistMultiplicityOfMixedEvent = new TH1F("fHistMultiplicityOfMixedEvent","fHistMultiplicityOfMixedEvent",100, 0.,100.);
   fOutputContainer->Add(fHistMultiplicityOfMixedEvent);
+     
+  fHistTriggptvsCentrality = new TH2F("fHistTriggptvsCentrality","fHistTriggptvsCentrality",600,-30,30,100,0,100);
+  fOutputContainer->Add(fHistTriggptvsCentrality);
+
+  fHistTPCdEdx = new TH2F("fHistTPCdEdx", "fHistTPCdEdx", 400, -6.0, 6.0, 500, 0.0, 2000);
+  fOutputContainer->Add(fHistTPCdEdx);
 
   fHistFirstTPCdEdx = new TH2F("fHistFirstTPCdEdx", "fHistFirstTPCdEdx", 400, -6.0, 6.0, 500, 0.0, 2000);
   fOutputContainer->Add(fHistFirstTPCdEdx);
 
+  fHistSecondTPCdEdx = new TH2F("fHistSecondTPCdEdx", "fHistSecondTPCdEdx", 400, -6.0, 6.0, 500, 0.0, 2000);
+  fOutputContainer->Add(fHistSecondTPCdEdx);
+
   fHistnTPCCrossedRFirst = new TH1F("fHistnTPCCrossedRFirst","fHistnTPCCrossedRFirst",200, 0.,200.);
   fOutputContainer->Add(fHistnTPCCrossedRFirst);
+ 
   fHistRationTPCCrossedRnFindFirst = new TH1F("fHistRationTPCCrossedRnFindFirst","fHistRationTPCCrossedRnFindFirst",2000, 0.,170.);
   fOutputContainer->Add(fHistRationTPCCrossedRnFindFirst);
+  
   fHistSharedFrTPCclFirst = new TH1F("fHistSharedFrTPCclFirst","fHistSharedFrTPCclFirst",400, 0.,2.);
   fOutputContainer->Add(fHistSharedFrTPCclFirst);
 
-  fHistSecondTPCdEdx = new TH2F("fHistSecondTPCdEdx", "fHistSecondTPCdEdx", 400, -6.0, 6.0, 500, 0.0, 2000);
-  fOutputContainer->Add(fHistSecondTPCdEdx);
   fHistnTPCCrossedRSecond = new TH1F("fHistnTPCCrossedRSecond","fHistnTPCCrossedRSecond",200, 0.,200.);
   fOutputContainer->Add(fHistnTPCCrossedRSecond);
+  
   fHistRationTPCCrossedRnFindSecond = new TH1F("fHistRationTPCCrossedRnFindSecond","fHistRationTPCCrossedRnFindSecond",2000, 0.,170.);
   fOutputContainer->Add(fHistRationTPCCrossedRnFindSecond);
+  
   fHistSharedFrTPCclSecond = new TH1F("fHistSharedFrTPCclSecond","fHistSharedFrTPCclSecond",400, 0.,2.);
   fOutputContainer->Add(fHistSharedFrTPCclSecond);
 
   fHistyptFirst = new TH3F("fHistyptFirst","fHistyptFirst",100,0.,10.,40,-2.,2.,10,0.,100.);
   fOutputContainer->Add(fHistyptFirst);
+  
+  fHistyptSecond = new TH3F("fHistyptSecond","fHistyptSecond",100,0.,10.,40,-2.,2.,10,0.,100.);
+  fOutputContainer->Add(fHistyptSecond);
+  
   fHistphietaFirst = new TH2F("fHistphietaFirst","fHistphietaFirst",400,0.,2*TMath::Pi(),100, -2, 2.);
   fOutputContainer->Add(fHistphietaFirst);
 
-  fHistyptSecond = new TH3F("fHistyptSecond","fHistyptSecond",100,0.,10.,40,-2.,2.,10,0.,100.);
-  fOutputContainer->Add(fHistyptSecond);
   fHistphietaSecond = new TH2F("fHistphietaSecond","fHistphietaSecond",400,0.,2*TMath::Pi(),100, -2, 2.);
   fOutputContainer->Add(fHistphietaSecond);
 
   fHistIPtoPVxyzTPCFirst = new TH2F("fHistIPtoPVxyzTPCFirst","fHistIPtoPVxyzTPCFirst",200, -5.,5., 200, -5., 5.);
   fOutputContainer->Add(fHistIPtoPVxyzTPCFirst);
+
   fHistIPtoPVxyzGlobalFirst = new TH2F("fHistIPtoPVxyzGlobalFirst","fHistIPtoPVxyzGlobalFirst",200, -5.,5., 200, -5., 5.);
   fOutputContainer->Add(fHistIPtoPVxyzGlobalFirst);
 
   fHistIPtoPVxyzTPCSecond = new TH2F("fHistIPtoPVxyzTPCSecond","fHistIPtoPVxyzTPCSecond",200, -5.,5., 200, -5., 5.);
   fOutputContainer->Add(fHistIPtoPVxyzTPCSecond);
+
   fHistIPtoPVxyzGlobalSecond = new TH2F("fHistIPtoPVxyzGlobalSecond","fHistIPtoPVxyzGlobalSecond",200, -5.,5., 200, -5., 5.);
   fOutputContainer->Add(fHistIPtoPVxyzGlobalSecond);
 
   fHistFirstTOFmisvspt = new TH2F("fHistFirstTOFmisvspt", "fHistFirstTOFmisvspt", 200, 0., 10., 101, 0.0, 1.01);
   fOutputContainer->Add(fHistFirstTOFmisvspt);
+  
   fHistFirstTOFmisvsp = new TH2F("fHistFirstTOFmisvsp", "fHistFirstTOFmisvsp", 200, 0., 10., 101, 0.0, 1.01);
   fOutputContainer->Add(fHistFirstTOFmisvsp);
+  
   fHistFirstTOFnsigmavspt = new TH2F("fHistFirstTOFnsigmavspt", "fHistFirstTOFnsigmavspt", 200, 0., 10., 100, -5. , 5);
   fOutputContainer->Add(fHistFirstTOFnsigmavspt);
+  
   fHistFirstTOFnsigmavsp = new TH2F("fHistFirstTOFnsigmavsp", "fHistFirstTOFnsigmavsp", 200, 0., 10., 100, -5., 5.);
   fOutputContainer->Add(fHistFirstTOFnsigmavsp);
+  
   fHistFirstTOFsignalvsp = new TH2F("fHistFirstTOFsignalvsp", "fHistFirstTOFsignalvsp", 200, 0., 10, 100,-3000,3000);//1000 , 0., 2.);
   fHistFirstTOFsignalvsp->GetYaxis()->SetTitle("t_{meas}-t_{0}-t_{exoected} (ps)");
   fHistFirstTOFsignalvsp->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
   fOutputContainer->Add(fHistFirstTOFsignalvsp);
+  
   fHistFirstTOFsignalvspt = new TH2F("fHistFirstTOFsignalvspt", "fHistFirstTOFsignalvspt", 200, 0., 10., 100,-3000,3000);//1000, 0.0, 2.);
   fHistFirstTOFsignalvspt->GetYaxis()->SetTitle("t_{meas}-t_{0}-t_{expected} (ps)");
   fHistFirstTOFsignalvspt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})"); 
@@ -681,21 +739,27 @@ void AliAnalysisTaskDeuFlow2PC::UserCreateOutputObjects() {
 
   fHistFirstTOFTPCsignalvspt = new TH2F("fHistFirstTOFTPCsignalvspt","fHistFirstTOFTPCsignalvspt",200, 0., 10., 100, 0., 20);
   fOutputContainer->Add(fHistFirstTOFTPCsignalvspt);
+
   fHistFirstMultvsCent = new TH2F("fHistFirstMultvsCent","fHistFirstMultvsCent",400,0.,2000.,10,0.,100.);
   fOutputContainer->Add(fHistFirstMultvsCent);
  
   fHistSecondTOFmisvspt = new TH2F("fHistSecondTOFmisvspt", "fHistSecondTOFmisvspt", 200, 0., 10., 101, 0.0, 1.01);
   fOutputContainer->Add(fHistSecondTOFmisvspt);
+  
   fHistSecondTOFmisvsp = new TH2F("fHistSecondTOFmisvsp", "fHistSecondTOFmisvsp", 200, 0., 10., 101, 0.0, 1.01);
   fOutputContainer->Add(fHistSecondTOFmisvsp);
+  
   fHistSecondTOFnsigmavspt = new TH2F("fHistSecondTOFnsigmavspt", "fHistSecondTOFnsigmavspt", 200, 0., 10., 100, -5. , 5);
   fOutputContainer->Add(fHistSecondTOFnsigmavspt);
+  
   fHistSecondTOFnsigmavsp = new TH2F("fHistSecondTOFnsigmavsp", "fHistSecondTOFnsigmavsp", 200, 0., 10., 100, -5., 5.);
   fOutputContainer->Add(fHistSecondTOFnsigmavsp);
+  
   fHistSecondTOFsignalvsp = new TH2F("fHistSecondTOFsignalvsp", "fHistSecondTOFsignalvsp", 200, 0., 10, 100,-3000,3000);//1000 , 0., 2.);
   fHistSecondTOFsignalvsp->GetYaxis()->SetTitle("t_{meas}-t_{0}-t_{exoected} (ps)");
   fHistSecondTOFsignalvsp->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
   fOutputContainer->Add(fHistSecondTOFsignalvsp);
+  
   fHistSecondTOFsignalvspt = new TH2F("fHistSecondTOFsignalvspt", "fHistSecondTOFsignalvspt", 200, 0., 10., 100,-3000,3000);//1000, 0.0, 2.);
   fHistSecondTOFsignalvspt->GetYaxis()->SetTitle("t_{meas}-t_{0}-t_{expected} (ps)");
   fHistSecondTOFsignalvspt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})"); 
@@ -703,24 +767,27 @@ void AliAnalysisTaskDeuFlow2PC::UserCreateOutputObjects() {
 
   fHistSecondTOFTPCsignalvspt = new TH2F("fHistSecondTOFTPCsignalvspt","fHistSecondTOFTPCsignalvspt",200, 0., 10., 100, 0., 20);
   fOutputContainer->Add(fHistSecondTOFTPCsignalvspt);
+  
   fHistSecondMultvsCent = new TH2F("fHistSecondMultvsCent","fHistSecondMultvsCent",400,0.,2000.,10,0.,100.);
   fOutputContainer->Add(fHistSecondMultvsCent);
 
   fHistFirstTPCdEdxAfter = new TH2F("fHistFirstTPCdEdxAfter", "fHistFirstTPCdEdxAfter", 400, -6.0, 6.0, 500, 0.0, 2000);
   fOutputContainer->Add(fHistFirstTPCdEdxAfter);
+  
   fHistSecondTPCdEdxAfter = new TH2F("fHistSecondTPCdEdxAfter", "fHistSecondTPCdEdxAfter", 400, -6.0, 6.0, 500, 0.0, 2000);
   fOutputContainer->Add(fHistSecondTPCdEdxAfter);
   
   fHistFirstTOFTPCsignalvsptAfter = new TH2F("fHistFirstTOFTPCsignalvsptAfter","fHistFirstTOFTPCsignalvsptAfter",200, 0., 10., 100, 0., 20);
   fOutputContainer->Add(fHistFirstTOFTPCsignalvsptAfter);
+  
   fHistSecondTOFTPCsignalvsptAfter = new TH2F("fHistSecondTOFTPCsignalvsptAfter","fHistSecondTOFTPCsignalvsptAfter",200, 0., 10., 100, 0., 20);
   fOutputContainer->Add(fHistSecondTOFTPCsignalvsptAfter);
 
-  fHistFirstMassTOFvsPt3sTPC       = new TH2F("fHistFirstMassTOFvsPt3sTPC", "fHistFirstMassTOFvsPt3sTPC"  , 200, -2.5, 2.5, 100, 0.0, 10); 
-  fHistSecondMassTOFvsPt3sTPC      = new TH2F("fHistSecondMassTOFvsPt3sTPC", "fHistSecondMassTOFvsPt3sTPC", 200, -2.5, 2.5, 100, 0.0, 10);  
+  fHistFirstMassTOFvsPt3sTPC       = new TH2F("fHistFirstMassTOFvsPt3sTPC", "fHistFirstMassTOFvsPt3sTPC"  , 200, -2.5, 2.5, 200, -10.0, 10); 
+  fHistSecondMassTOFvsPt3sTPC      = new TH2F("fHistSecondMassTOFvsPt3sTPC", "fHistSecondMassTOFvsPt3sTPC", 200, -2.5, 2.5, 200, -10.0, 10);  
 
-  fHistFirstMassTOFvsPt3sTPC3sTOF  = new TH2F("fHistFirstMassTOFvsPt3sTPC3sTOF", "fHistFirstMassTOFvsPt3sTPC3sTOF"  , 200, -2.5 , 2.5, 100, 0.0, 10); 
-  fHistSecondMassTOFvsPt3sTPC3sTOF = new TH2F("fHistSecondMassTOFvsPt3sTPC3sTOF", "fHistSecondMassTOFvsPt3sTPC3sTOF", 200, -2.5 , 2.5, 100, 0.0, 10);  
+  fHistFirstMassTOFvsPt3sTPC3sTOF  = new TH2F("fHistFirstMassTOFvsPt3sTPC3sTOF", "fHistFirstMassTOFvsPt3sTPC3sTOF"  , 200, -2.5 , 2.5, 200, -10.0, 10); 
+  fHistSecondMassTOFvsPt3sTPC3sTOF = new TH2F("fHistSecondMassTOFvsPt3sTPC3sTOF", "fHistSecondMassTOFvsPt3sTPC3sTOF", 200, -2.5 , 2.5, 200, -10.0, 10);  
  
   fOutputContainer->Add(fHistFirstMassTOFvsPt3sTPC);
   fOutputContainer->Add(fHistSecondMassTOFvsPt3sTPC);
@@ -1627,6 +1694,8 @@ void AliAnalysisTaskDeuFlow2PC::UserExec(Option_t *) {
     
     AliAODMCParticle *tparticle = 0x0;
     
+    if(fSecondpart == kAny) fnSigmaTPCPIDsecondParticle = 0;
+
     //if (TMath::Abs(nsigmaTPCf)> fnSigmaTPCPIDsecondParticle) {
     if (TMath::Abs(nsigmaTPCs)> fnSigmaTPCPIDsecondParticle) { 
       // exclude all POI candidates 
@@ -1786,6 +1855,8 @@ void AliAnalysisTaskDeuFlow2PC::UserExec(Option_t *) {
 	fHistnTPCCrossedRFirst->Fill(nTPCCrossedRows);
 	fHistRationTPCCrossedRnFindFirst->Fill(rationCrnFind);
 	fHistSharedFrTPCclFirst->Fill(sharedFractionTPCcl);
+      
+	fHistTriggptvsCentrality->Fill(track->Pt()*charge,lcentrality);
       }
       
     } //3 sigma
@@ -1798,8 +1869,9 @@ void AliAnalysisTaskDeuFlow2PC::UserExec(Option_t *) {
     }
   
     //Second particle
-    
-    if (fFirstpart != fSecondpart && TMath::Abs(nsigmaTPCs) < fnSigmaTPCPIDsecondParticle) { 
+    //if(fSecondpart == kAny) fnSigmaTPCPIDsecondParticle = 0;
+
+    if (fFirstpart != fSecondpart && TMath::Abs(nsigmaTPCs) < fnSigmaTPCPIDsecondParticle && fSecondpart != kAny) { 
       
       if(fReadMCTruth == kTRUE){
 	label = track->GetLabel();
@@ -2026,7 +2098,7 @@ void AliAnalysisTaskDeuFlow2PC::UserExec(Option_t *) {
 	  if(TMath::Abs(mass) < 1.05)continue;
 	}
 
-	fHistSecondMassTOFvsPt3sTPC->Fill(mass-fPDGsecond,track->Pt());
+	fHistSecondMassTOFvsPt3sTPC->Fill(mass-fPDGsecond,track->Pt()*charge);
 	
 	if (TMath::Abs(nsigmaTOFs)< fnSigmaTPCTOFPIDsecondParticle && tTOF > 0. /*&&length>350*/) {
 	  
@@ -2035,7 +2107,7 @@ void AliAnalysisTaskDeuFlow2PC::UserExec(Option_t *) {
 	  else if(fReadMCTruth == kFALSE)
 	    fHistSecondTPCdEdx->Fill(globaltrack->GetTPCmomentum()*charge, globaltrack->GetTPCsignal());
 
-	  fHistSecondMassTOFvsPt3sTPC3sTOF->Fill(mass-fPDGsecond,track->Pt());
+	  fHistSecondMassTOFvsPt3sTPC3sTOF->Fill(mass-fPDGsecond,track->Pt()*charge);
 	  
 	  //------------------------------ Save second particle information
 	  fEvt->fReconstructedSecond[sCount].sCharge = charge;
@@ -2141,9 +2213,135 @@ void AliAnalysisTaskDeuFlow2PC::UserExec(Option_t *) {
 	  fHistRationTPCCrossedRnFindSecond->Fill(rationCrnFind);
 	  fHistSharedFrTPCclSecond->Fill(sharedFractionTPCcl);
 	}//nsigma tof
-      }//tod
+      }//tof
     }//3sigma 2 ptc
-    
+   
+    else if(fSecondpart == kAny){
+      
+      // if( TMath::Abs(globaltrack->GetID() )
+
+      // fEvt->fReconstructedSecond[sCount].index = TMath::Abs(globaltrack->GetID());
+  
+      
+      //ramonaANY
+      fHistSecondMassTOFvsPt3sTPC->Fill(mass-fPDGsecond,track->Pt()*charge);
+      
+	  
+      if(fReadMCTruth == kTRUE)
+	fHistSecondTPCdEdx->Fill(globaltrack->Pt()*charge, globaltrack->GetTPCsignal());
+      else if(fReadMCTruth == kFALSE)
+	fHistSecondTPCdEdx->Fill(globaltrack->GetTPCmomentum()*charge, globaltrack->GetTPCsignal());
+      
+      fHistSecondMassTOFvsPt3sTPC3sTOF->Fill(mass-fPDGsecond,track->Pt()*charge);
+      
+      //------------------------------ Save second particle information
+      fEvt->fReconstructedSecond[sCount].sCharge = charge;
+      //cout<<"Charge of pion "<<fEvt->fReconstructedSecond[sCount].fCharge<<endl;
+      
+      if(fReadMCTruth == kTRUE){
+	fEvt->fReconstructedSecond[sCount].sMomentumTruth[0]  = tparticle->Px();
+	fEvt->fReconstructedSecond[sCount].sMomentumTruth[1]  = tparticle->Py();
+	fEvt->fReconstructedSecond[sCount].sMomentumTruth[2]  = tparticle->Pz();
+	//   fEvt->fReconstructedSecond[sCount].fPt           = tparticle->Pt();
+	//   fEvt->fReconstructedSecond[sCount].fEta          = tparticle->Eta();
+	//   fEvt->fReconstructedSecond[sCount].fPhi          = tparticle->Phi();
+      }
+      
+      else{
+	fEvt->fReconstructedSecond[sCount].sMomentumTruth[0]  = 0.;
+	fEvt->fReconstructedSecond[sCount].sMomentumTruth[1]  = 0.;
+	fEvt->fReconstructedSecond[sCount].sMomentumTruth[2]  = 0.;
+      }
+      
+      
+      fEvt->fReconstructedSecond[sCount].sMomentum[0]  = track->Px();
+      fEvt->fReconstructedSecond[sCount].sMomentum[1]  = track->Py();
+      fEvt->fReconstructedSecond[sCount].sMomentum[2]  = track->Pz();
+      fEvt->fReconstructedSecond[sCount].sPt           = track->Pt();
+      fEvt->fReconstructedSecond[sCount].sEta          = track->Eta();
+      fEvt->fReconstructedSecond[sCount].sPhi          = track->Phi();
+      fEvt->fReconstructedSecond[sCount].sTheta        = track->Theta();
+      fEvt->fReconstructedSecond[sCount].sTOFMass      = mass;
+      
+      //	  }
+      
+      // for (int pIndex = 0; pIndex <5; pIndex++) {
+      //   fEvt->fReconstructedSecond[sCount].nSigmaSecondTPC[pIndex]  = pullsTPC[pIndex];
+      //   fEvt->fReconstructedSecond[sCount].nSigmaSecondTOF[pIndex]  = pullsTOF[pIndex];
+      // } 
+      
+      //   for (int pIndex = 0; pIndex <3; pIndex++) {
+      //   fEvt->fReconstructedSecond[sCount].sMomentumTruth[pIndex]  = pMomentumTruth[pIndex];
+      // }
+      
+      fEvt->fReconstructedSecond[sCount].sRap    = rapiditySecond; 
+      fEvt->fReconstructedSecond[sCount].mcSecondOriginType = mcSecondOrigin;
+      fEvt->fReconstructedSecond[sCount].isMCptc = isMCsecond;
+      fEvt->fReconstructedSecond[sCount].sMCcode = MCptcCodeP2;
+      fEvt->fReconstructedSecond[sCount].sPDGcode = PDGcode;
+      
+      fEvt->fReconstructedSecond[sCount].sDCAxy = dz[0];
+      fEvt->fReconstructedSecond[sCount].sDCAz  = dz[1];
+      
+      fEvt->fReconstructedSecond[sCount].sMCmumIdx = MCmumIDP2;
+      fEvt->fReconstructedSecond[sCount].sMCmumPDG  = MCmumPDGP2;
+      fEvt->fReconstructedSecond[sCount].sMCgrandmumIdx  = MCgrammaIDP2;
+      fEvt->fReconstructedSecond[sCount].sMCgrandmumPDG  = MCgrammaPDGP2;
+      
+      //	  cout<<"2b:------------------------------MCmumIDP2: "<<MCmumIDP2<<"   ----------------------------------MCmumPDGP2: "<<MCmumPDGP2<<endl;
+      
+      if (isP){
+	fEvt->fReconstructedSecond[sCount].isP  = kTRUE; 
+	fEvt->fReconstructedSecond[sCount].isaP = kFALSE;
+      }
+      else if (isaP){
+	fEvt->fReconstructedSecond[sCount].isP  = kFALSE;
+	fEvt->fReconstructedSecond[sCount].isaP = kTRUE; 
+      }
+      
+      fEvt->fReconstructedSecond[sCount].index = TMath::Abs(globaltrack->GetID());
+      
+      //      cout<<" Pos 125 cm before set "<<fEvt->fReconstructedSecond[sCount].sShiftedGlobalPosition[0]<<" "<<fEvt->fReconstructedSecond[sCount].sShiftedGlobalPosition[1]<<" "<<fEvt->fReconstructedSecond[sCount].sShiftedGlobalPosition[2]<<endl;
+      if (fkPropagateGlobal) SetSftPosR125(vtrackg, bfield, lBestPrimaryVtxPos, fEvt->fReconstructedSecond[sCount].sShiftedGlobalPosition); // FIXME: Hans popagates the TPC tracks, I try both, flag to choose 
+      else SetSftPosR125(vtrack, bfield, lBestPrimaryVtxPos, fEvt->fReconstructedSecond[sCount].sShiftedGlobalPosition);
+      //      cout<<" Pos set 125 cm "<<fEvt->fReconstructedSecond[sCount].sShiftedGlobalPosition[0]<<" "<<fEvt->fReconstructedSecond[sCount].sShiftedGlobalPosition[1]<<" "<<fEvt->fReconstructedSecond[sCount].sShiftedGlobalPosition[2]<<endl; 
+      fEvt->fReconstructedSecond[sCount].sEtaS = EtaS(fEvt->fReconstructedSecond[sCount].sShiftedGlobalPosition); 
+      //      cout<<" Etas "<<fEvt->fReconstructedSecond[sCount].sEtaS<<endl;
+      
+      //    cout<<" This proton in the stack with pt "<<fEvt->fReconstructedProton[sCount].sPt<<endl;
+      
+      sCount++;
+      
+      //------------------------------ Save second particle information
+      //}
+      // }
+      
+      // else { 
+      //   continue; 
+      // }
+      
+      
+      //if (track->TestBit(AliAODTrack::kIsDCA)) {fHistIPtoPVxyzTPCSecond->Fill(dz[0],dz[1]); } else { /*cout<<"Bit is not DCA!!!!!!!!!!!"<<endl;*/ }
+      fHistIPtoPVxyzTPCSecond->Fill(dz[0],dz[1]);
+      fHistIPtoPVxyzGlobalSecond->Fill(dzg[0],dzg[1]);
+      
+      if(fReadMCTruth == kTRUE && isMCsecond == kTRUE)
+	fHistSecondTPCdEdxAfter->Fill(globaltrack->Pt()*charge, globaltrack->GetTPCsignal());
+      else if(fReadMCTruth == kFALSE)
+	fHistSecondTPCdEdxAfter->Fill(globaltrack->GetTPCmomentum()*charge, globaltrack->GetTPCsignal());
+      
+      fHistSecondTOFTPCsignalvsptAfter->Fill(track->Pt(),TMath::Sqrt(nsigmaTOFs*nsigmaTOFs+nsigmaTPCs*nsigmaTPCs));
+      
+      fHistyptSecond->Fill(track->Pt(),rapiditySecond,lcentrality);
+      fHistphietaSecond->Fill(track->Phi(),track->Eta());
+      
+      fHistnTPCCrossedRSecond->Fill(nTPCCrossedRows);
+      fHistRationTPCCrossedRnFindSecond->Fill(rationCrnFind);
+      fHistSharedFrTPCclSecond->Fill(sharedFractionTPCcl);
+    }
+   
+  
+ 
     if (fMaxSecondMult <= sCount){
       cerr<<"Proton counts exceeded "<<fMaxSecondMult<<"!"<<endl;
       break;
@@ -2167,7 +2365,7 @@ void AliAnalysisTaskDeuFlow2PC::UserExec(Option_t *) {
   
   // cout<<"Number first: "<<fEvt->fNumberCandidateFirst <<endl;
   // cout<<"Number second: "<<fEvt->fNumberCandidateSecond<<endl;
-  if(fFirstpart == fSecondpart)
+  if(fFirstpart == fSecondpart || fSecondpart == kAny)
     // DoPairshh(lcentrality, fieldsign);  
     //    DoPairshh(lcentrality, fieldsign,fSphericityvalue);  
     DoPairshh(centralityBin, fieldsign,fSphericityvalue);  
@@ -2177,6 +2375,7 @@ void AliAnalysisTaskDeuFlow2PC::UserExec(Option_t *) {
       for (int j=0; j<fEvt->fNumberCandidateSecond; j++) {
 	if (fEvt->fReconstructedFirst[i].index == fEvt->fReconstructedSecond[j].index) {
 	  // cout<<"the track can be both tracks!"<<endl;
+	  // cout<<"i: "<<i<<" j: "<<j<<" idxi: "<<fEvt->fReconstructedFirst[i].index<<" idxj: "<<fEvt->fReconstructedSecond[j].index<<endl;
 	  fEvt->fReconstructedFirst[i].doSkipOver = kTRUE;
 	  fEvt->fReconstructedSecond[j].doSkipOver = kTRUE;
 	}
@@ -2479,8 +2678,305 @@ void AliAnalysisTaskDeuFlow2PC::DoPairsh1h2 ( const Float_t lcentrality, int fie
 
 //----------------------------------------------------------------------------------------------
 //void AliAnalysisTaskDeuFlow2PC::DoPairshh (const Float_t lcentrality, int fieldsign) {
-void AliAnalysisTaskDeuFlow2PC::DoPairshh (const Int_t lcentrality, int fieldsign, const Double_t fSphericityvalue) {
-  return;
+void AliAnalysisTaskDeuFlow2PC::DoPairshh (const Float_t lcentrality, int fieldsign, const Double_t fSphericityvalue) {
+
+  //-----------
+  double DCAxyP1  = -999. ;
+  double DCAzP1   = -999. ;  
+  double DCAxyP2  = -999. ; 
+  double DCAzP2   = -999. ;  
+
+  double  ptP1 = -999.;
+  double  ptP2 = -999.;
+
+  // Short_t chargeP1 = -999.;
+  // Short_t chargeP2 = -999.;
+
+  bool isP1  = kFALSE;
+  bool isaP1 = kFALSE;
+  bool isP2  = kFALSE;
+  bool isaP2 = kFALSE;
+
+  Int_t  SignP1 = -999;
+  Int_t  SignP2 = -999;
+
+  double dphi  = -999.;
+  double dphis = -999.;
+  double deta  = -999.;
+  //  double detas = -999.;
+  double dtheta = -999.;
+  
+  bool isMC1 = kFALSE;
+  bool isMC2 = kFALSE;
+
+  bool isMCvector = kFALSE;
+  bool sameMother = kFALSE;
+  bool sameGrandMother = kFALSE;
+  
+  Int_t mcMotherLabelP1 = -999;
+  Int_t mcMotherLabelP2 = -999;
+
+  // Int_t mcGrandMotherLabelP1 = -999;
+  // Int_t mcGrandMotherLabelP2 = -999;
+ 
+  Int_t typeP1 = -999;
+  Int_t typeP2 = -999;
+ 
+  Int_t mcPDGMotherP1 = 0;
+  Int_t mcPDGMotherP2 = 0;
+  //  Int_t mcMotherBin = 0;
+ 
+  //  Int_t mcPDGGrandMother = 0;
+  Int_t mcGrandMotherBin = 0;
+
+  Int_t mcPDGcodeP1 = 0;
+  Int_t mcPDGcodeP2 = 0;
+  // Int_t mcPDG1Bin = 0;
+  // Int_t mcPDG2Bin = 0;
+
+  int evmultmixed = 0;
+  bool multmixedcounted = kFALSE;
+ 
+  double pairKstar   = 0.;
+  double pairKstarMC = 0.;
+  double pairMass  = 0.;
+  //  double pairMassE = 0.;
+  double pairKt    = 0.;
+
+  double massS = 0;
+
+  int idx1 = 0;
+  int idx2 = 0;
+
+  //fEvt->fReconstructedSecond[sCount].index = TMath::Abs(globaltrack->GetID());
+
+
+  for (int i=0; i<fEvt->fNumberCandidateFirst; i++) {
+
+    //    if (fEvt->fReconstructedFirst[i].doSkipOver) continue;
+    
+    DCAxyP1         = fEvt->fReconstructedFirst[i].fDCAxy;
+    DCAzP1          = fEvt->fReconstructedFirst[i].fDCAz;
+    ptP1            = fEvt->fReconstructedFirst[i].fPt;
+    
+    if(ptP1 < fMinPtForPrim)continue;
+    
+    //    chargeP1        = fEvt->fReconstructedFirst[i].fCharge;
+    isMC1           = fEvt->fReconstructedFirst[i].isMCptc;
+    mcMotherLabelP1 = fEvt->fReconstructedFirst[i].fMCmumIdx;
+    typeP1          = fEvt->fReconstructedFirst[i].fMCcode;
+    //  if(typeP1 < 0) continue;
+    //    mcGrandMotherLabelP1 = fEvt->fReconstructedFirst[i].fMCgrandmumIdx;
+    mcPDGcodeP1          = fEvt->fReconstructedFirst[i].fPDGcode;
+
+    
+    isP1  = fEvt->fReconstructedFirst[i].isP;
+    isaP1 = fEvt->fReconstructedFirst[i].isaP;
+
+    if(isP1) SignP1 = 1;
+    else if (isaP1) SignP1 = -1;
+
+    mcPDGMotherP1    = fEvt->fReconstructedFirst[i].fMCmumPDG;
+    //    mcPDGGrandMother = fEvt->fReconstructedFirst[i].fMCgrandmumPDG;
+    
+    idx1 = fEvt->fReconstructedFirst[i].index;
+
+    for (int eventNumber=0; eventNumber<fnEventsToMix+1; eventNumber++) { 
+      // For same event pairs
+      // if (!multmixedcounted && eventNumber!=0 && ((fEvt+eventNumber)->fNumberCandidateFirst)!=0.) evmultmixed++; 
+      if (!multmixedcounted && eventNumber!=0 && ((fEvt+eventNumber)->fNumberCandidateSecond)!=0.) evmultmixed++; 
+
+      
+      for (int j=0; j<(fEvt+eventNumber)->fNumberCandidateSecond; j++) {
+
+	/*// Ramona
+	if ( (eventNumber == 0) && (j<=i)) continue; 
+	
+	// Instead of loop variables use im and jn to do the swapping in a clean way  
+        Int_t tmpi = 0;
+        // Pair ramdomization 
+        if (eventNumber == 0) {
+          if (gRandom->Rndm()>=0.5) { 
+	    tmpi = i;
+	    i = j;
+	    j = tmpi;
+	    //            im = j; jn = i;     
+          }  
+        }
+	*/
+
+	// cout<<"Ramona event number "<<eventNumber<<endl;
+	// cout<<"eventNumber: "<<eventNumber<<" j: "<<j<<" i: "<<i<<" fEvt+eventNumber: "<<(fEvt+eventNumber)<<endl;
+	
+	//	if ((fEvt+eventNumber)->fReconstructedSecond[j].doSkipOver) continue;
+        
+	idx2 = (fEvt+eventNumber)->fReconstructedSecond[j].index;
+	
+	if ( (eventNumber == 0) && (j<=i) && idx1 == idx2) continue; 
+	
+	//	cout<<"Ramona Doing stuff Second Ptc"<<endl;
+	
+	DCAxyP2         = (fEvt+eventNumber)->fReconstructedSecond[j].sDCAxy;
+	DCAzP2          = (fEvt+eventNumber)->fReconstructedSecond[j].sDCAz;
+	ptP2            = (fEvt+eventNumber)->fReconstructedSecond[j].sPt;
+	if(ptP2< fMinPtForSec)continue;
+	//chargeP2        = (fEvt+eventNumber)->fReconstructedSecond[j].sCharge;
+	isMC2           = (fEvt+eventNumber)->fReconstructedSecond[j].isMCptc;
+	mcMotherLabelP2 = (fEvt+eventNumber)->fReconstructedSecond[j].sMCmumIdx;
+	typeP2          = (fEvt+eventNumber)->fReconstructedSecond[j].sMCcode;
+	//	if(typeP2 < 0) continue;
+	//	mcGrandMotherLabelP2 = (fEvt+eventNumber)->fReconstructedSecond[j].sMCgrandmumIdx;
+  	mcPDGcodeP2     = (fEvt+eventNumber)->fReconstructedSecond[j].sPDGcode;
+	massS           = (fEvt+eventNumber)->fReconstructedSecond[j].sTOFMass;
+
+	isP2  = (fEvt+eventNumber)->fReconstructedSecond[j].isP;
+        isaP2 = (fEvt+eventNumber)->fReconstructedSecond[j].isaP;
+	
+	mcPDGMotherP2 = (fEvt+eventNumber)->fReconstructedSecond[j].sMCmumPDG;
+	
+	if(isP2) SignP2 = 1;
+	else if (isaP2) SignP2 = -1;
+
+	if(isMC1 && isMC2) isMCvector = kTRUE;
+	else isMCvector = kFALSE;
+	
+	if(mcMotherLabelP1 == mcMotherLabelP2 && mcMotherLabelP1!=-999)sameMother = kTRUE;
+	else sameMother = kFALSE;
+	
+	//Calculate k* for the pair
+        pairKstar = CalculateKstar(fEvt->fReconstructedFirst[i].fMomentum, (fEvt+eventNumber)->fReconstructedSecond[j].sMomentum,fPDGfirst, fPDGsecond);
+	
+	//mc kstar
+	pairKstarMC = CalculateKstar(fEvt->fReconstructedFirst[i].fMomentumTruth, (fEvt+eventNumber)->fReconstructedSecond[j].sMomentumTruth,fPDGfirst, fPDGsecond);
+	
+	//Invariant Mass of the pair
+	pairMass  = CalculateMass(fEvt->fReconstructedFirst[i].fMomentum, (fEvt+eventNumber)->fReconstructedSecond[j].sMomentum,fPDGfirst, fPDGsecond);
+
+	//	pairMassE  = CalculateMass(fEvt->fReconstructedFirst[i].fMomentum, (fEvt+eventNumber)->fReconstructedSecond[j].sMomentum,5.11e-4, 5.11e-4);
+	
+	//Kt
+	pairKt = pow(fEvt->fReconstructedFirst[i].fMomentum[0] + (fEvt+eventNumber)->fReconstructedSecond[j].sMomentum[0],2.);
+	pairKt+= pow(fEvt->fReconstructedFirst[i].fMomentum[1] + (fEvt+eventNumber)->fReconstructedSecond[j].sMomentum[1],2.);
+	pairKt = sqrt(pairKt)/2.;
+	
+        // Pair histogramming
+     
+	//dphis = CalculateDphiSatR12m(fEvt->fReconstructedFirst[i].fCharge, (fEvt+eventNumber)->fReconstructedSecond[j].sCharge, fieldsign,fEvt->fReconstructedFirst[i].fPt , (fEvt+eventNumber)->fReconstructedSecond[j].sPt, fEvt->fReconstructedFirst[i].fPhi, (fEvt+eventNumber)->fReconstructedSecond[j].sPhi); // 2 - 1
+	//deta = (fEvt+eventNumber)->fReconstructedSecond[j].sEta - fEvt->fReconstructedFirst[i].fEta; // 2 - 1
+	
+	dphi = CalculateDPhiStar(fEvt->fReconstructedFirst[i].fCharge, (fEvt+eventNumber)->fReconstructedSecond[j].sCharge, fieldsign,fEvt->fReconstructedFirst[i].fPt , (fEvt+eventNumber)->fReconstructedSecond[j].sPt, fEvt->fReconstructedFirst[i].fPhi, (fEvt+eventNumber)->fReconstructedSecond[j].sPhi,0); // 2 - 1
+	
+	dphis = CalculateDPhiStar(fEvt->fReconstructedFirst[i].fCharge, (fEvt+eventNumber)->fReconstructedSecond[j].sCharge, fieldsign,fEvt->fReconstructedFirst[i].fPt , (fEvt+eventNumber)->fReconstructedSecond[j].sPt, fEvt->fReconstructedFirst[i].fPhi, (fEvt+eventNumber)->fReconstructedSecond[j].sPhi,fRadius); // 2 - 1
+
+	deta   = CalculateDeltaEta(fEvt->fReconstructedFirst[i].fEta, (fEvt+eventNumber)->fReconstructedSecond[j].sEta);
+	dtheta = CalculateDeltaTheta(fEvt->fReconstructedFirst[i].fTheta, (fEvt+eventNumber)->fReconstructedSecond[j].sTheta);
+	//detas = fEvt->fReconstructedFirst[i].fEtaS-(fEvt+eventNumber)->fReconstructedFirst[j].fEtaS;
+	
+	// // Apply two-track cuts //RAMONA
+	if (fkApplyTtc) {
+	  //	  if (TMath::Abs(dphis)<fDphisMin && TMath::Abs(deta)<fDetasMin) continue;  
+	  if (TMath::Abs(dphi)<fDphisMin && TMath::Abs(deta)<fDetasMin) continue;  
+	}
+
+	if (eventNumber==0) {//Same event pair histogramming
+
+	  tSignP1             = SignP1;
+	  tSignP2             = SignP2;                                  
+	  tCentrality         = lcentrality;		                      
+	  tDCAxyP1            = DCAxyP1;			                   
+	  tDCAzP1             = DCAzP1;  			                   
+	  tDCAxyP2            = DCAxyP2; 			                    
+	  tDCAzP2             = DCAzP2;  			                   
+	  tKtpair             = pairKt;			                  
+	  tkStar              = pairKstar;		                 
+	  tptP1               = ptP1;			                
+	  tptP2               = ptP2;			                
+	  tDEta               = deta; 			                
+	  tDPhiStar           = dphis;			                    
+	  tDPhi               = dphi;			                
+	  tMassPair           = pairMass;			                    
+	  tSphericity         = fSphericityvalue;		                      
+	  tMassS              = massS;		                              
+	  tDTheta             = dtheta;                                     
+  
+	  if(fReadMCTruth == kTRUE){
+	    tMCtruepair    =  isMCvector;		
+	    tMCSameMother  =  sameMother;		
+	    tMCMotherP1    =  mcPDGMotherP1;//mcMotherBin;		
+	    tMCMotherP2    =  mcPDGMotherP2;//mcMotherBin;		
+	    tMCptcTypeP1   =  typeP1 ;		
+	    tMCptcTypeP2   =  typeP2 ;		
+	    tMCSameGM	   =  sameGrandMother;	
+	    tMotherPDG	   =  mcGrandMotherBin;	
+	    tpdgcodeP1 	   =  mcPDGcodeP1;//mcPDG1Bin;		
+	    tpdgcodeP2	   =  mcPDGcodeP2;//mcPDG2Bin;		 
+	    tKstarGen      =  pairKstarMC;            
+	  }
+	  
+	  //	  fHistSparseSignal->Fill();  
+	  if(ptP2<1.5)   
+	    fHistSparseSignal->Fill();
+	  else
+	    if(massS>=1)
+	      fHistSparseSignal->Fill();
+	}
+
+	else {//Mixed-event pair histogramming
+	  
+	  tSignP1             = SignP1;
+	  tSignP2             = SignP2;                                  
+	  tCentrality         = lcentrality;		                      
+	  tDCAxyP1            = DCAxyP1;			                   
+	  tDCAzP1             = DCAzP1;  			                   
+	  tDCAxyP2            = DCAxyP2; 			                    
+	  tDCAzP2             = DCAzP2;  			                   
+	  tKtpair             = pairKt;			                  
+	  tkStar              = pairKstar;		                 
+	  tptP1               = ptP1;			                
+	  tptP2               = ptP2;			                
+	  tDEta               = deta; 			                
+	  tDPhiStar           = dphis;			                    
+	  tDPhi               = dphi;			                
+	  tMassPair           = pairMass;			                    
+	  tSphericity         = fSphericityvalue;		                      
+	  tMassS              = massS;		    	                     
+	  tDTheta             = dtheta;                                     
+
+	  if(fReadMCTruth == kTRUE){
+	    tMCtruepair    =  isMCvector;		
+	    tMCSameMother  =  sameMother;		
+	    tMCMotherP1    =  mcPDGMotherP1;//mcMotherBin;		
+	    tMCMotherP2    =  mcPDGMotherP2;//mcMotherBin;		
+	    tMCptcTypeP1   =  typeP1 ;		
+	    tMCptcTypeP2   =  typeP2 ;		
+	    tMCSameGM	   =  sameGrandMother;	
+	    tMotherPDG	   =  mcGrandMotherBin;	
+	    tpdgcodeP1 	   =  mcPDGcodeP1;//mcPDG1Bin;		
+	    tpdgcodeP2	   =  mcPDGcodeP2;//mcPDG2Bin;		 
+	    tKstarGen      =  pairKstarMC;            
+	  }
+	  
+	  // fHistSparseBkg->Fill();  
+	  if(ptP2<1.5)   
+	    fHistSparseBkg->Fill();
+	  else
+	    if(massS>=1)
+	      fHistSparseBkg->Fill();
+        } //mixed
+	
+      } // second part
+
+    }//end event loop
+
+    if (evmultmixed!=0) multmixedcounted = kTRUE;
+    
+  } // first part
+  
+  if  (multmixedcounted) 
+    fHistMultiplicityOfMixedEvent->Fill(evmultmixed);
+  
+  //return;
+  
 }
 
 //-----------------------------------------------------------------------------------------------

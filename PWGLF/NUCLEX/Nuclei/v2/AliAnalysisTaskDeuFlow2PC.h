@@ -27,7 +27,7 @@ class AliAnalysisTaskDeuFlow2PC : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(const Option_t*);
 
-  enum firstpart_t {kElectron,kMuon,kPion,kKaon,kProton,kDeuteron};
+  enum firstpart_t {kElectron,kMuon,kPion,kKaon,kProton,kDeuteron,kAny};
 
   void SetAnalysisType (const char* analysisType = "ESD")   { fAnalysisType = analysisType; }
   void SetUseStandardCuts (Bool_t usestandardesdtrackcuts) {fUseStandardCuts = usestandardesdtrackcuts;}
@@ -41,7 +41,7 @@ class AliAnalysisTaskDeuFlow2PC : public AliAnalysisTaskSE {
 
   // void DoPairshh    (const Float_t centralityBin, int fieldsign);
   // void DoPairsh1h2    (const Float_t centralityBin, int fieldsign,Float_t );
-  void DoPairshh    (const Int_t lcentrality, int fieldsign, const Double_t fSphericityvalue);
+  void DoPairshh      (const Float_t lcentrality, int fieldsign, const Double_t fSphericityvalue);
   void DoPairsh1h2    (const Float_t lcentrality, int fieldsign, const Double_t fSphericityvalue);
 
   double CalculateKstar(double momentum1[3], double momentum2[3], double mass1, double mass2); 
@@ -100,25 +100,31 @@ class AliAnalysisTaskDeuFlow2PC : public AliAnalysisTaskSE {
   Int_t       fFilterBit;
   firstpart_t fFirstpart;
   firstpart_t fSecondpart;
+  
   Float_t     fnSigmaTPCPIDfirstParticle;
   Float_t     fnSigmaTPCTOFPIDfirstParticle;
   Float_t     fnSigmaTPCPIDsecondParticle;
   Float_t     fnSigmaTPCTOFPIDsecondParticle;
+  
   Bool_t      fReadMCTruth;                            // if read MC truth
   Bool_t      fUseContainer;
   Bool_t      fUseStandardCuts;                        // if to use standard ESD track cuts or user-defined ones 
   Bool_t      fkApplyTtc;
+
   Float_t     fDphisMin;
   Float_t     fDetasMin; 
 
   Float_t     fMomemtumLimitForTOFPIDfirst;
   Float_t     fMomemtumLimitForTOFPIDsecond;
+  
   Bool_t      fkApplyRatioCrRnFindCut;
   Bool_t      fkCutOnTPCIP;
+  
   Float_t     fIPCutxyPrim;
   Float_t     fIPCutzPrim;
   Float_t     fIPCutxySec;
   Float_t     fIPCutzSec;
+  
   Float_t     fMinPtForPrim;
   Float_t     fMaxPtForPrim;
   Float_t     fMinPtForSec;
@@ -172,21 +178,25 @@ class AliAnalysisTaskDeuFlow2PC : public AliAnalysisTaskSE {
   TH1F  *fHistSphericity;                       //! Sphericity distibution
   TH1F  *fHistMultiplicityOfMixedEvent;         //!
 
-  TH2F  *fHistTPCdEdx;
-  TH2F  *fHistFirstTPCdEdx;
+  TH2F  *fHistTriggptvsCentrality;              //!
+
+  TH2F  *fHistTPCdEdx;                          //!   
+  TH2F  *fHistFirstTPCdEdx;                     //!
+  TH2F  *fHistSecondTPCdEdx;                    //!
+  
   TH1F  *fHistnTPCCrossedRFirst;                //!
   TH1F  *fHistRationTPCCrossedRnFindFirst;      //!
   TH1F  *fHistSharedFrTPCclFirst;               //!
   
-  TH2F  *fHistSecondTPCdEdx;
-  TH1F  *fHistnTPCCrossedRSecond;                //!
-  TH1F  *fHistRationTPCCrossedRnFindSecond;      //!
-  TH1F  *fHistSharedFrTPCclSecond;               //!
-  TH3F  *fHistyptFirst;
+  TH1F  *fHistnTPCCrossedRSecond;               //!
+  TH1F  *fHistRationTPCCrossedRnFindSecond;     //!
+  TH1F  *fHistSharedFrTPCclSecond;              //!
 
+  TH3F  *fHistyptFirst;                         //!
+  TH3F  *fHistyptSecond;                        //!
+ 
   TH2F  *fHistphietaFirst;                      //!
-  TH3F  *fHistyptSecond;                         //!
-  TH2F  *fHistphietaSecond;                      //!
+  TH2F  *fHistphietaSecond;                     //!
   
   TH2F  *fHistIPtoPVxyzTPCFirst;                //!
   TH2F  *fHistIPtoPVxyzGlobalFirst;             //!
@@ -194,12 +204,12 @@ class AliAnalysisTaskDeuFlow2PC : public AliAnalysisTaskSE {
   TH2F  *fHistIPtoPVxyzTPCSecond;               //!
   TH2F  *fHistIPtoPVxyzGlobalSecond;            //!
 
-  TH2F  *fHistFirstTOFmisvspt;                   //!
-  TH2F  *fHistFirstTOFmisvsp;                    //!
-  TH2F  *fHistFirstTOFnsigmavspt;                //!
-  TH2F  *fHistFirstTOFnsigmavsp;                 //!
-  TH2F  *fHistFirstTOFsignalvsp;                 //!
-  TH2F  *fHistFirstTOFsignalvspt;                //!
+  TH2F  *fHistFirstTOFmisvspt;                  //!
+  TH2F  *fHistFirstTOFmisvsp;                   //!
+  TH2F  *fHistFirstTOFnsigmavspt;               //!
+  TH2F  *fHistFirstTOFnsigmavsp;                //!
+  TH2F  *fHistFirstTOFsignalvsp;                //!
+  TH2F  *fHistFirstTOFsignalvspt;               //!
 
   TH2F  *fHistFirstTOFTPCsignalvspt;            //!
   TH2F  *fHistFirstMultvsCent;                  //!
@@ -214,16 +224,16 @@ class AliAnalysisTaskDeuFlow2PC : public AliAnalysisTaskSE {
   TH2F  *fHistSecondTOFTPCsignalvspt;           //!
   TH2F  *fHistSecondMultvsCent;                 //!
  
-  TH2F  *fHistFirstTPCdEdxAfter;           
-  TH2F  *fHistSecondTPCdEdxAfter;     
-  TH2F  *fHistFirstTOFTPCsignalvsptAfter; 
-  TH2F  *fHistSecondTOFTPCsignalvsptAfter; 
+  TH2F  *fHistFirstTPCdEdxAfter;                //!
+  TH2F  *fHistSecondTPCdEdxAfter;               //! 
+  TH2F  *fHistFirstTOFTPCsignalvsptAfter;       //! 
+  TH2F  *fHistSecondTOFTPCsignalvsptAfter;      //! 
   
-  TH2F *fHistFirstMassTOFvsPt3sTPC; 
-  TH2F *fHistSecondMassTOFvsPt3sTPC;
+  TH2F *fHistFirstMassTOFvsPt3sTPC;             //!  
+  TH2F *fHistSecondMassTOFvsPt3sTPC;            //!
   
-  TH2F *fHistFirstMassTOFvsPt3sTPC3sTOF; 
-  TH2F *fHistSecondMassTOFvsPt3sTPC3sTOF; 
+  TH2F *fHistFirstMassTOFvsPt3sTPC3sTOF;        //!
+  TH2F *fHistSecondMassTOFvsPt3sTPC3sTOF;       //! 
    
   //----------------
   
