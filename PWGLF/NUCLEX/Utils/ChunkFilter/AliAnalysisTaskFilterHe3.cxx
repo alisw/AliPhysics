@@ -160,6 +160,7 @@ void AliAnalysisTaskFilterHe3::UserCreateOutputObjects()
   //
   fESDtrackCutsPrimary = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
   fESDtrackCutsPrimary->SetMaxDCAToVertexXY(0.5);
+  fESDtrackCutsPrimary->SetMaxDCAToVertexZ(2.0);
   fESDtrackCutsPrimary->SetEtaRange(-0.8,0.8);
   //
   //
@@ -307,16 +308,22 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t*) {
     if (!mcTrue || pdgCode == 1000010020) fHistdEdxDeuteronParam->Fill(ptot, nSigmaDeut, mass*mass - massD*massD); // QA histogram    
     if (!mcTrue || TMath::Abs(pdgCode) == 1000020030) fHistdEdxHe3Param->Fill(ptot, nSigmaHe3, mass*mass - massHe3*massHe3); // QA histogram
   	//
+    // TRIGGER CONDITION
+    //
   	if (hasTOF && nSigmaHe3 < 10.0 && nSigmaHe3 > -4.0) {
       fHistTof->Fill(ptot*sign,mass);
       //
-      // TRIGGER CONDITION
-      //
-      if (1.0 < mass && mass < 2.3) {
+      if (1.0 < mass && mass < 2.3 && track->GetTPCsignalN() > 80) {
         if (sign < 0 && ptot > 0.5 && ptot < 20.0) isTriggered = kTRUE;
         if (sign > 0 && ptot > 1.5 && ptot < 20.0) isTriggered = kTRUE;
       }
     }
+    if (sign < 0 && ptot > 0.5 && ptot < 20.0 && 
+        track->GetTPCsignalN() > 80 && 
+        fESDtrackCutsPrimary->AcceptTrack(track) && nSigmaHe3 < 10.0 && nSigmaHe3 > -4.0) isTriggered = kTRUE;
+    if (sign > 0 && ptot > 2.0 && ptot < 20.0 && 
+        track->GetTPCsignalN() > 80 && 
+        fESDtrackCutsPrimary->AcceptTrack(track) && nSigmaHe3 < 10.0 && nSigmaHe3 > -4.0) isTriggered = kTRUE;  
 
   } // end track loop
   //

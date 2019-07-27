@@ -18,16 +18,12 @@ AliAnalysisTaskFilterHe3 *AddTask_FilterHe3(){
 
   //========= Add task to the ANALYSIS manager =====
   AliAnalysisTaskFilterHe3* task = new AliAnalysisTaskFilterHe3("akalweitTaskFilterHe3");
-  task->SelectCollisionCandidates(AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral);
+  //task->SelectCollisionCandidates(AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral);
 
    
   //================================================
   //              data containers
   //================================================
-  //            find input container
-  //below the trunk version
-  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-
 
 
   //dumm output container
