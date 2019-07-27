@@ -185,6 +185,12 @@ public:
                                Bool_t enable_extra_hists,
                                Bool_t enable_extra_denoms);
 
+  AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
+                               const std::vector<double> &obins,
+                               const std::vector<double> &sbins,
+                               const std::vector<double> &lbins,
+                               AliFemtoModelManager *mc_manager=nullptr);
+
   /// Unnamed, q-symmetric constructor
   ///
   AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_t qmax);

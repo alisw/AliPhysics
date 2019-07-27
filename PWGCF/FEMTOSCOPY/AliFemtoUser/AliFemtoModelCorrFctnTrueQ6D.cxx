@@ -270,6 +270,51 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const Builder &params
 }
 
 
+AliFemtoModelCorrFctnTrueQ6D::
+  AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                               const std::vector<double> &obins,
+                               const std::vector<double> &sbins,
+                               const std::vector<double> &lbins,
+                               BinMethod binning)
+  : AliFemtoCorrFctn()
+  , fHistogram(nullptr)
+  , fBinMethod(binning)
+  , fIgnoreZeroMassParticles(true)
+{
+  const Int_t
+    nobins = obins.size()-1,
+    nsbins = sbins.size()-1,
+    nlbins = lbins.size()-1;
+
+  auto nbins_v = sort_q(fBinMethod, nobins, nsbins, nlbins,
+                                    nobins, nsbins, nlbins);
+
+  auto hist_min = sort_q(fBinMethod, obins.front(), sbins.front(), lbins.front(),
+                                     obins.front(), sbins.front(), lbins.front());
+
+  auto hist_max = sort_q(fBinMethod, obins.front(), sbins.front(), lbins.front(),
+                                     obins.front(), sbins.front(), lbins.front());
+
+  auto axis_titles = sort_q(fBinMethod, "q_{o}", "q_{s}", "q_{l}", "q_{t,o}", "q_{t,s}", "q_{t,l}");
+
+  TString title = "Momentum Correction Hypercube Histogram;";
+
+  for (const TString &axis_title : axis_titles) {
+    title += axis_title + ";";
+  }
+
+  fHistogram = new HistType(prefix + "HyperCube", title, 6, nbins_v.data(), hist_min.data(), hist_max.data());
+
+  auto varbins = sort_q(fBinMethod, obins, sbins, lbins, obins, sbins, lbins);
+
+  // change axis bins after histogram created... that's ok, right?
+  for (int i=0; i<6; ++i) {
+    fHistogram->GetAxis(i)->Set(varbins[i].size()-1, varbins[i].data());
+  }
+
+  UpdateQlimits();
+}
+
 AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const AliFemtoModelCorrFctnTrueQ6D &orig)
   : AliFemtoCorrFctn(orig)
   , fHistogram(reinterpret_cast<decltype(fHistogram)>(orig.fHistogram->Clone()))

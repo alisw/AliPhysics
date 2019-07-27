@@ -218,6 +218,12 @@ public:
                                Double_t qlong_hi_true,
                                BinMethod binning=kRecGenOSL);
 
+  AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                               const std::vector<double> &obins,
+                               const std::vector<double> &sbins,
+                               const std::vector<double> &lbins,
+                               BinMethod binning=kRecGenOSL);
+
   /// Construct from parameter object
   ///
   AliFemtoModelCorrFctnTrueQ6D(const Builder &);
