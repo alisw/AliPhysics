@@ -283,7 +283,14 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fCosThetaHelicityFrameJPsiAlreadyCorrectedH(0),
       fDcaAgainstPtOfVectorMesonH(0),
       fInvariantMassDistributionStrictPtStrictDcaH(0),
-      fInvariantMassDistributionVsPtStrictDcaH(0)
+      fInvariantMassDistributionVsPtStrictDcaH(0),
+      fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                               0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0 }
+
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -461,7 +468,13 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fCosThetaHelicityFrameJPsiAlreadyCorrectedH(0),
       fDcaAgainstPtOfVectorMesonH(0),
       fInvariantMassDistributionStrictPtStrictDcaH(0),
-      fInvariantMassDistributionVsPtStrictDcaH(0)
+      fInvariantMassDistributionVsPtStrictDcaH(0),
+      fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                               0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0 }
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -1333,6 +1346,25 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   fInvariantMassDistributionVsPtStrictDcaH = new TH2F("fInvariantMassDistributionVsPtStrictDcaH", "fInvariantMassDistributionVsPtStrictDcaH", 2000, 0, 20, 1000, 0, 10);
   fOutputList->Add(fInvariantMassDistributionVsPtStrictDcaH);
+
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 25; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[iCosThetaBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 25; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[iPhiBins]);
+  }
+
 
   //_______________________________
   // - End of the function
@@ -2789,6 +2821,30 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
           if( (CosThetaHelicityFrameValue6 + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/100. ) {
             fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
             controlFlag12 = 1;
+          }
+        }
+  }
+
+  /* - NEW:
+     -
+   */
+  Bool_t controlFlag13 = 0;
+  Bool_t controlFlag14 = 0;
+  if ( possibleJPsiCopy.Pt() < 0.25 ) {
+        Double_t CosThetaHelicityFrameValue7 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t PhiHelicityFrameValue7      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 25; iCosThetaBins++) {
+          if( controlFlag13 == 1) break;
+          if( (CosThetaHelicityFrameValue7 + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/25. ){
+            fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+            controlFlag13 = 1;
+          }
+        }
+        for(Int_t iPhiBins = 0; iPhiBins < 25; iPhiBins++) {
+          if( controlFlag14 == 1) break;
+          if( (PhiHelicityFrameValue7 + 3.14) < 6.28*((Double_t)iPhiBins + 1.)/25. ){
+            fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[iPhiBins]->Fill(possibleJPsiCopyMag);
+            controlFlag14 = 1;
           }
         }
   }
