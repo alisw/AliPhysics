@@ -171,8 +171,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       // fVectorCosThetaReconstructed(0),
       fCosThetaGeneratedHelicityFrame(0),
       fCosThetaReconHelicityFrame(0),
+      fPhiGeneratedHelicityFrame(0),
+      fPhiReconHelicityFrame(0),
       fCounterUPCevent(0),
       fBinMigrationHelicityH(0),
+      fBinMigrationForPhiHelicityH(0),
       fCheckHelicityRestFrameJPsiH(0),
       fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
       fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
@@ -230,6 +233,10 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMCCosThetaHelicityFrameMyBinningSmallH(0),
       fCosThetaHelicityFrameMySeventeenBinningH(0),
       fMCCosThetaHelicityFrameMySeventeenBinningH(0),
+      fCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fMCCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fPhiHelicityFrameTwentyfiveBinsH(0),
+      fMCPhiHelicityFrameTwentyfiveBinsH(0),
       fPhiHelicityFrameMyBinningH(0),
       fMCPhiHelicityFrameMyBinningH(0),
       fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -333,8 +340,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       // fVectorCosThetaReconstructed(0),
       fCosThetaGeneratedHelicityFrame(0),
       fCosThetaReconHelicityFrame(0),
+      fPhiGeneratedHelicityFrame(0),
+      fPhiReconHelicityFrame(0),
       fCounterUPCevent(0),
       fBinMigrationHelicityH(0),
+      fBinMigrationForPhiHelicityH(0),
       fCheckHelicityRestFrameJPsiH(0),
       fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
       fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
@@ -392,6 +402,10 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMCCosThetaHelicityFrameMyBinningSmallH(0),
       fCosThetaHelicityFrameMySeventeenBinningH(0),
       fMCCosThetaHelicityFrameMySeventeenBinningH(0),
+      fCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fMCCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fPhiHelicityFrameTwentyfiveBinsH(0),
+      fMCPhiHelicityFrameTwentyfiveBinsH(0),
       fPhiHelicityFrameMyBinningH(0),
       fMCPhiHelicityFrameMyBinningH(0),
       fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -585,6 +599,8 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fBinMigrationHelicityH = new TH2F("fBinMigrationHelicityH", "fBinMigrationHelicityH", 1000, -1., 1., 1000, -1., 1.);
   fOutputList->Add(fBinMigrationHelicityH);
 
+  fBinMigrationForPhiHelicityH = new TH2F("fBinMigrationForPhiHelicityH", "fBinMigrationForPhiHelicityH", 1000, -3.14, 3.14, 1000, -3.14, 3.14);
+  fOutputList->Add(fBinMigrationForPhiHelicityH);
 
   //_______________________________
   // - MC-only plots
@@ -1190,7 +1206,33 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
     fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins]);
   }
 
+  fCosThetaHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fCosThetaHelicityFrameTwentyfiveBinsH",
+                  "fCosThetaHelicityFrameTwentyfiveBinsH",
+                  25, -1, 1
+                  );
+  fOutputList->Add(fCosThetaHelicityFrameTwentyfiveBinsH);
 
+  fMCCosThetaHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fMCCosThetaHelicityFrameTwentyfiveBinsH",
+                  "fMCCosThetaHelicityFrameTwentyfiveBinsH",
+                  25, -1, 1
+                  );
+  fOutputList->Add(fMCCosThetaHelicityFrameTwentyfiveBinsH);
+
+  fPhiHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fPhiHelicityFrameTwentyfiveBinsH",
+                  "fPhiHelicityFrameTwentyfiveBinsH",
+                  25, -3.14, 3.14
+                  );
+  fOutputList->Add(fPhiHelicityFrameTwentyfiveBinsH);
+
+  fMCPhiHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fMCPhiHelicityFrameTwentyfiveBinsH",
+                  "fMCPhiHelicityFrameTwentyfiveBinsH",
+                  25, -3.14, 3.14
+                  );
+  fOutputList->Add(fMCPhiHelicityFrameTwentyfiveBinsH);
 
   //_______________________________
   // - End of the function
@@ -1863,6 +1905,16 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
 
     }
 
+    /* - NEW: analysis with purity of the binning
+     * - above 80% in CosTheta.
+     */
+    if ( (possibleJPsiCopy.Pt() < 0.25) && (possibleJPsiCopy.Mag() < 3.35) && (possibleJPsiCopy.Mag() > 2.85) ) {
+          Double_t CosThetaHelicityFrameValue10 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          Double_t PhiHelicityFrameValue10      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          fCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrameValue10 );
+          fPhiHelicityFrameTwentyfiveBinsH     ->Fill( PhiHelicityFrameValue10 );
+    }
+
     /* - NEW:
      * - 1D analysis with
      * - my variable binning.
@@ -1985,7 +2037,13 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
   }
 
   // fVectorCosThetaReconstructed.push_back(cosThetaMuonsRestFrame[0]);
+  fCosThetaReconHelicityFrame = 0;
   fCosThetaReconHelicityFrame = cosThetaMuonsRestFrame[0];
+  fPhiReconHelicityFrame      = 0;
+  fPhiReconHelicityFrame      = CosPhiHelicityFrame( muonsCopy2[0],
+                                                     muonsCopy2[1],
+                                                     possibleJPsiCopy
+                                                     );
   /* - Mind that it could generate segmentation fault without
      - fCounterUPCevent-1, because we are incrementing the counter right after
      - it processes the MC events at Generated level...
@@ -2003,6 +2061,11 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
         fBinMigrationHelicityH->Fill( fCosThetaGeneratedHelicityFrame,
                                       fCosThetaReconHelicityFrame
                                     );
+  }
+  if ( fPhiReconHelicityFrame ) {
+        fBinMigrationForPhiHelicityH->Fill( fPhiGeneratedHelicityFrame,
+                                            fPhiReconHelicityFrame
+                                            );
   }
 
 
@@ -2147,6 +2210,10 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
                   // fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[0]);
                   fCosThetaGeneratedHelicityFrame = cosThetaMuonsRestFrameMC[0];
+                  fPhiGeneratedHelicityFrame      = CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                         muonsMCcopy[1],
+                                                                         possibleJPsiMC
+                                                                       );
                   /* - New part: filling all possible histograms!
                      -
                    */
@@ -2185,6 +2252,16 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                    possibleJPsiMC
                                                                                    )
                                                                                   );
+                  fMCCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                        muonsMCcopy[1],
+                                                                                        possibleJPsiMC
+                                                                                        )
+                                                                                       );
+                  fMCPhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                 muonsMCcopy[1],
+                                                                                 possibleJPsiMC
+                                                                                 )
+                                                                                );
                   fMCCosThetaHelicityFrameMyBinningSmallH->Fill( CosThetaHelicityFrame(  muonsMCcopy[0],
                                                                                          muonsMCcopy[1],
                                                                                          possibleJPsiMC
@@ -2316,6 +2393,10 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
                   // fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[1]);
                   fCosThetaGeneratedHelicityFrame = cosThetaMuonsRestFrameMC[1];
+                  fPhiGeneratedHelicityFrame      = CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                         muonsMCcopy[0],
+                                                                         possibleJPsiMC
+                                                                         );
                   /* - New part: filling all possible histograms!
                      -
                    */
@@ -2354,6 +2435,16 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                    possibleJPsiMC
                                                                                    )
                                                                                   );
+                  fMCCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                        muonsMCcopy[1],
+                                                                                        possibleJPsiMC
+                                                                                        )
+                                                                                       );
+                  fMCPhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                 muonsMCcopy[1],
+                                                                                 possibleJPsiMC
+                                                                                 )
+                                                                                );
                   fMCCosThetaHelicityFrameMyBinningSmallH->Fill( CosThetaHelicityFrame(  muonsMCcopy[1],
                                                                                          muonsMCcopy[0],
                                                                                          possibleJPsiMC
