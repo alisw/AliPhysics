@@ -778,10 +778,10 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
       if (track->IsOn(0x1)) continue;
       if (track->HasPointOnITSLayer(0)) continue;
       if (track->HasPointOnITSLayer(1)) continue;
-      AliExternalTrackParam *param = track->GetInnerParam();
+      const AliExternalTrackParam *param = track->GetInnerParam();
       if (!param) continue;
       // A-side c side cut
-      if (param->GetTgl()*param->GeATO-538, ATO-529 -  tZ()<0) continue;
+      if (param->GetTgl()*param->GetZ()<0) continue;
       track->GetImpactParameters(dcaXY, dcaZ);
       if (TMath::Abs(dcaXY) > kMinDCA) continue;
       if (TMath::Abs(dcaZ) < kMinDCAZ) continue;
