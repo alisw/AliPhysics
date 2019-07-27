@@ -776,15 +776,22 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
       AliESDtrack *track = fEvent->GetTrack(iTrack);
       if (track == nullptr) continue;
       if (track->IsOn(0x1)) continue;
+      if (track->HasPointOnITSLayer(0)) continue;
+      if (track->HasPointOnITSLayer(1)) continue;
+      AliExternalTrackParam *param = track->GetInnerParam();
+      if (!param) continue;
+      // A-side c side cut
+      if (param->GetTgl()*param->GeATO-538, ATO-529 -  tZ()<0) continue;
       track->GetImpactParameters(dcaXY, dcaZ);
       if (TMath::Abs(dcaXY) > kMinDCA) continue;
       if (TMath::Abs(dcaZ) < kMinDCAZ) continue;
+
       Double_t tgl = track->Pz() / track->Pt();
-      if (tgl > 0.1) {
+      if (tgl > 0.0) {
         bufferP[counterP++] = track->GetZ();
         fHisTPCVertexA->Fill(track->GetZ());
       }
-      if (tgl < -0.1) {
+      if (tgl < -0.0) {
         bufferM[counterM++] = track->GetZ();
         fHisTPCVertexC->Fill(track->GetZ());
       }
@@ -794,7 +801,7 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
     Double_t posZC = (counterM > 0) ? TMath::Median(counterM, bufferM) : 0;
     (*fTPCVertexInfo)[0] = posZA;
     (*fTPCVertexInfo)[1] = -posZC;
-    (*fTPCVertexInfo)[2] = (posZC+posZA)*0.5;
+    (*fTPCVertexInfo)[2] = (-posZC+posZA)*0.5;
     (*fTPCVertexInfo)[3] = counterP;
     (*fTPCVertexInfo)[4] = counterM;
     (*fTPCVertexInfo)[5] = (counterP+counterM);
@@ -873,6 +880,12 @@ Int_t AliESDtools::DumpEventVariables() {
   const AliESDVertex *vertex = fEvent->GetPrimaryVertexTracks();
   const AliESDVertex *vertexSPD= fEvent->GetPrimaryVertexTracks();
   const AliESDVertex *vertexTPC= fEvent->GetPrimaryVertexTracks();
+  // additional counters
+  Int_t nCaloClusters= fEvent->GetNumberOfCaloClusters();
+  Int_t nTOFclusters = (fEvent->GetESDTOFClusters()!= nullptr) ?  fEvent->GetESDTOFClusters()->GetEntries():0;
+  Int_t nTOFhits = (fEvent->GetESDTOFHits()!= nullptr) ?  fEvent->GetESDTOFHits()->GetEntries():0;
+  Int_t nTOFmatches = (fEvent->GetESDTOFMatches()!= nullptr) ?  fEvent->GetESDTOFMatches()->GetEntries():0;
+
   Double_t TPCvZ,fVz, SPDvZ;
   TPCvZ=vertexTPC->GetZ();
   SPDvZ=vertexSPD->GetZ();
@@ -940,6 +953,11 @@ Int_t AliESDtools::DumpEventVariables() {
                      "phiCountCITSOnly.="    << &phiCountCITSOnly      <<  // track count only ITS on C side
                      //
                      "tpcVertexInfo.="<<fTPCVertexInfo<<                   // TPC vertex information
+                     //
+                     "nTOFclusters="<<nTOFclusters<<                       // tof mutliplicity estimators
+                     "nTOFhits="<<nTOFhits<<
+                     "nTOFmatches="<<nTOFmatches<<
+                     "nCaloClusters="<<nCaloClusters<<                     // calorimeter mutltiplicity estimators
                      "\n";
 
   return 0;
