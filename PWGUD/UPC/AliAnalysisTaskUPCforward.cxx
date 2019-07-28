@@ -2848,6 +2848,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   if ( possibleJPsiCopy.Pt() < 0.25 ) {
         Double_t CosThetaHelicityFrameValue7 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
         Double_t PhiHelicityFrameValue7      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        // Double_t TildePhiPositiveCosTheta    = CosThetaHelicityFrameValue7 - 0.25 * TMath::Pi();
+        // Double_t TildePhiNegativeCosTheta    = CosThetaHelicityFrameValue7 - 0.75 * TMath::Pi();
+        Double_t TildePhiPositiveCosTheta    = CosThetaHelicityFrameValue7 - 0.25 * 3.14;
+        Double_t TildePhiNegativeCosTheta    = CosThetaHelicityFrameValue7 - 0.75 * 3.14;
         for(Int_t iCosThetaBins = 0; iCosThetaBins < 25; iCosThetaBins++) {
           if( controlFlag13 == 1) break;
           if( (CosThetaHelicityFrameValue7 + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/25. ){
@@ -2864,10 +2868,69 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
         }
         for(Int_t iTildePhiBins = 0; iTildePhiBins < 25; iTildePhiBins++) {
           if( controlFlag15 == 1) break;
-          // if( (PhiHelicityFrameValue7 + 3.14) < 6.28*((Double_t)iTildePhiBins + 1.)/25. ){
-          //   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[iTildePhiBins]->Fill(possibleJPsiCopyMag);
-          //   controlFlag15 = 1;
-          // }
+          if( CosThetaHelicityFrameValue7 > 0 ){
+            // if( (TildePhiPositiveCosTheta + 3.14*7.0*0.25) < (6.28*10.0*0.25)*((Double_t)iTildePhiBins + 1.)/25. ){
+            //   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[iTildePhiBins]->Fill(possibleJPsiCopyMag);
+            //   controlFlag15 = 1;
+            // }
+            if( TildePhiPositiveCosTheta > -3.14*7*0.25 && TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*1/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[0] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*2/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[1] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*3/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[2] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*4/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[3] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*5/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[4] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*6/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[5] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*7/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[6] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*8/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[7] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*9/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[8] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*10/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[9] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*11/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[10]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*12/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[11]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*13/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[12]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*14/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[13]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*15/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[14]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*16/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[15]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*17/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[16]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*18/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[17]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*19/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[18]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*20/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[19]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*21/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[20]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*22/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[21]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*23/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[22]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*24/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[23]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiPositiveCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*25/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[24]->Fill(possibleJPsiCopyMag);}
+
+          } else if( CosThetaHelicityFrameValue7 < 0 ){
+            // if( (TildePhiNegativeCosTheta + 3.14*4.0*0.25) < (6.28*10.0*0.25)*((Double_t)iTildePhiBins + 1.)/25. ){
+            //   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[iTildePhiBins]->Fill(possibleJPsiCopyMag);
+            //   controlFlag15 = 1;
+            // }
+            if( TildePhiNegativeCosTheta > -3.14*7*0.25 && TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*1/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[0] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*2/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[1] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*3/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[2] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*4/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[3] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*5/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[4] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*6/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[5] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*7/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[6] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*8/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[7] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*9/25 ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[8] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*10/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[9] ->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*11/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[10]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*12/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[11]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*13/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[12]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*14/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[13]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*15/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[14]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*16/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[15]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*17/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[16]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*18/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[17]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*19/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[18]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*20/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[19]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*21/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[20]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*22/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[21]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*23/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[22]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*24/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[23]->Fill(possibleJPsiCopyMag);}
+            else if(                                       TildePhiNegativeCosTheta < ( -3.14*7*0.25 + 3.14*10*0.25*25/25) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[24]->Fill(possibleJPsiCopyMag);}
+
+          }
         }
   }
 
