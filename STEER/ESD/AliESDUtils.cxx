@@ -29,6 +29,7 @@
 #include "AliESDEvent.h"
 #include "AliESDVZERO.h"
 #include "AliVertexerTracks.h"
+#include "TClonesArray.h"
 
 //______________________________________________________________________________
 Float_t AliESDUtils::GetCorrV0(const AliVEvent* esd, Float_t &v0CorrResc, Float_t *v0multChCorr, Float_t *v0multChCorrResc)
@@ -153,7 +154,8 @@ Float_t AliESDUtils::GetCorrSPD2(Float_t spd2raw,Float_t zv)
 }  
 
 //______________________________________________________________________________
-TObjArray*  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, const Double_t *cuts)
+TObjArray*  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, const Double_t *cuts,
+					      TClonesArray* extDest)
 {
   // Refit ESD VertexTracks and redo tracks->RelateToVertex
   // Default vertexin algorithm is 6 (multivertexer). To use old vertexed, use algo=1
@@ -211,18 +213,26 @@ TObjArray*  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, co
     initVertex.Print();
   }
   //
-  // reset old vertex info
-  if (esdEv->GetPileupVerticesTracks()) esdEv->GetPileupVerticesTracks()->Clear();
-  ((AliESDVertex*)esdEv->GetPrimaryVertexTracks())->SetNContributors(-1);
-  //
+  if (extDest) {
+    vtFinder->SetExternalDestination(extDest);
+  }
+  else { // will modify esdEvent
+    // reset old vertex info
+    if (esdEv->GetPileupVerticesTracks()) esdEv->GetPileupVerticesTracks()->Clear();
+    ((AliESDVertex*)esdEv->GetPrimaryVertexTracks())->SetNContributors(-1);
+    //
+  }
   AliESDVertex *pvtx=vtFinder->FindPrimaryVertex(esdEv);
+  vtFinder->SetExternalDestination(0); // detach external array
   if (pvtx) {
-    if (pvtx->GetStatus()) {
-      esdEv->SetPrimaryVertexTracks(pvtx);
-      for (Int_t i=esdEv->GetNumberOfTracks(); i--;) {
-	AliESDtrack *t = esdEv->GetTrack(i);
-	Double_t x[3]; t->GetXYZ(x);
-	t->RelateToVertex(pvtx, bkgauss, kVeryBig);
+    if (!extDest) {
+      if (pvtx->GetStatus()) {
+	esdEv->SetPrimaryVertexTracks(pvtx);
+	for (Int_t i=esdEv->GetNumberOfTracks(); i--;) {
+	  AliESDtrack *t = esdEv->GetTrack(i);
+	  Double_t x[3]; t->GetXYZ(x);
+	  t->RelateToVertex(pvtx, bkgauss, kVeryBig);
+	}
       }
     }
     delete pvtx;
