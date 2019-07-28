@@ -90,7 +90,8 @@ fMVVertices(0),
 fDisableBCInCPass0(kTRUE),
 fClusterize(kFALSE),
 fDeltaZCutForCluster(0.1),
-fnSigmaZCutForCluster(999999.)
+fnSigmaZCutForCluster(999999.),
+fExtDest(0)
 {
 //
 // Default constructor
@@ -144,7 +145,8 @@ fMVVertices(0),
 fDisableBCInCPass0(kTRUE),
 fClusterize(kFALSE),
 fDeltaZCutForCluster(0.1),
-fnSigmaZCutForCluster(999999.)
+fnSigmaZCutForCluster(999999.),
+fExtDest(0)
 {
 //
 // Standard constructor
@@ -180,7 +182,11 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
 
   if(inputAOD && fMode==1) {
     printf("Error : AliVertexerTracks: no TPC-only vertex from AOD\n"); 
-    TooFewTracks(); 
+    TooFewTracks();
+    if (fExtDest) {
+      fExtDest->Clear("C");
+      new ((*fExtDest)[fExtDest->GetEntriesFast()]) AliESDVertex(*fCurrentVertex);
+    }
     return fCurrentVertex;
   }
 
@@ -270,6 +276,12 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
   if(fClusterize) FindAllVertices(nTrksOrig,&trkArrayOrig,zTr,err2zTr,idOrig);
   else FindPrimaryVertex(&trkArrayOrig,idOrig);
   if(!inputAOD) AnalyzePileUp((AliESDEvent*)vEvent);
+  else {
+    if (fExtDest) {
+      fExtDest->Clear("C");
+      new ((*fExtDest)[fExtDest->GetEntriesFast()]) AliESDVertex(*fCurrentVertex);
+    }
+  }
 
   if(fMode==0) trkArrayOrig.Delete();
   delete [] idOrig; idOrig=NULL;
@@ -285,7 +297,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
   */
   // set vertex ID for tracks used in the fit
   // (only for ESD)
-  if(!inputAOD && fCurrentVertex) {
+  if(!inputAOD && fCurrentVertex && !fExtDest) { // modify original event only if the external destination is not provided
     Int_t nIndices = fCurrentVertex->GetNIndices();
     UShort_t *indices = fCurrentVertex->GetIndices();
     for(Int_t ind=0; ind<nIndices; ind++) {
@@ -2101,6 +2113,12 @@ void AliVertexerTracks::AnalyzePileUp(AliESDEvent* esdEv)
   }
   fCurrentVertex->SetID(-1);
   //
+  
+  if (fExtDest) {
+    fExtDest->Clear("C");
+    new ((*fExtDest)[fExtDest->GetEntriesFast()]) AliESDVertex(*fCurrentVertex);
+  }
+  
   // add pileup vertices
   int nadd = 0;
   for (int iv0=0;iv0<nFND;iv0++) {
@@ -2108,7 +2126,12 @@ void AliVertexerTracks::AnalyzePileUp(AliESDEvent* esdEv)
     AliESDVertex* fndI = (AliESDVertex*)fMVVertices->At(iv);
     if (!fndI) continue;
     fndI->SetID(++nadd);
-    esdEv->AddPileupVertexTracks(fndI);
+    if (fExtDest) {
+      new ((*fExtDest)[fExtDest->GetEntriesFast()]) AliESDVertex(*fndI);
+    }
+    else {
+      esdEv->AddPileupVertexTracks(fndI);
+    }
   }
   //
   fMVVertices->Delete();

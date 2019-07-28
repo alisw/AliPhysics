@@ -160,7 +160,9 @@ class AliVertexerTracks : public TObject {
   Double_t GetDeltaZCutForCluster() const {return fDeltaZCutForCluster;}
   Double_t GetnSigmaZCutForCluster() const {return fnSigmaZCutForCluster;}
 
-
+  void SetExternalDestination(TClonesArray* arr) { fExtDest = arr; }
+  TClonesArray* GetExternalDestination() { return fExtDest; }
+  
   //
  protected:
   void     HelixVertexFinder();
@@ -246,6 +248,8 @@ class AliVertexerTracks : public TObject {
   Double_t fDeltaZCutForCluster;       // minimum distance in z between tracks to create new cluster
   Double_t fnSigmaZCutForCluster;      // minimum distacnce in number of sigma along z to create new cluster
   //
+  TClonesArray* fExtDest;              //! optional externally set destination array for vertices
+  
  private:
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
