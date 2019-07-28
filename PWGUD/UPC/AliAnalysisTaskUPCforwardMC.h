@@ -442,39 +442,6 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[8];
 
                                 /**
-                                 * This is the vector containing the GENERATED
-                                 * values of the cos(theta). It should be
-                                 * needed for the "bin migration" study...
-                                 * As far as I can imagine, in each event there
-                                 * should only be a single J/Psi because these
-                                 * are all UPC events, as such I should record
-                                 * all possible values for cos(theta) and plot
-                                 * only when the corresponding J/Psi falls
-                                 * inside the detector acceptance...
-                                 * The resulting plot should be TH2F and be like
-                                 * a lego plot. See for an example:
-                                 *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
-                                 */
-        // std::vector<Double_t>   fVectorCosThetaGenerated;           //!
-
-                                /**
-                                 * This is the vector containing the
-                                 * RECONSTRUCTED
-                                 * values of the cos(theta). It should be
-                                 * needed for the "bin migration" study...
-                                 * Actually if I fill everytime the TH2F
-                                 * as soon as I compute the cos(theta)
-                                 * there should be no real need for it...
-                                 * The only thing that matters is a counter to
-                                 * give me the proper value of the vector for
-                                 * the generated value I should consider inside
-                                 * the vector of the GENERATED level.
-                                 * It is important to remember there is at MOST
-                                 * a single J/Psi for UPC event!!!
-                                 */
-        // std::vector<Double_t>   fVectorCosThetaReconstructed;           //!
-
-                                /**
                                  * This is the GENERATED
                                  * value of the cos(theta) in the HELICITY
                                  * frame. It should be
@@ -490,6 +457,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
                                  */
         Double_t                fCosThetaGeneratedHelicityFrame;           //!
+        Double_t                fPhiGeneratedHelicityFrame;           //!
 
                                 /**
                                  * This is the RECONSTRUCTED
@@ -507,6 +475,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
                                  */
         Double_t                fCosThetaReconHelicityFrame;           //!
+        Double_t                fPhiReconHelicityFrame;           //!
 
                                 /**
                                  * Counter for the UPC events to access vectors.
@@ -522,8 +491,16 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                 /**
                                  * This histogram shows the bin migration for
                                  * the helicity Analysis...
+                                 * NOTE: this is only in CosTheta.
                                  */
         TH2F*                   fBinMigrationHelicityH;           //!
+
+                                /**
+                                 * This histogram shows the bin migration for
+                                 * the helicity Analysis...
+                                 * NOTE: this is only in Phi.
+                                 */
+        TH2F*                   fBinMigrationForPhiHelicityH;           //!
 
         //_______________________________
         // HELICITY AND COLLINS-SOPER
@@ -1039,6 +1016,54 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fMCCosThetaHelicityFrameMyBinningSmallH;   //!
 
                                 /**
+                                 * This histogram shows CosTheta
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80%.
+                                 * RECON level.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80%.
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCCosThetaHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows Phi
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80% (?).
+                                 * RECON level.
+                                 */
+        TH1F*                   fPhiHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows Phi
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80% (?).
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCPhiHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows the TildePhi
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80% (?).
+                                 * RECON level.
+                                 */
+        TH1F*                   fTildePhiHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows the TildePhi
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80% (?).
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCTildePhiHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
                                  * This histogram shows  Phi
                                  * distribution with my variable binning.
                                  * RECON level.
@@ -1155,7 +1180,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 26);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 28);
 };
 
 #endif
