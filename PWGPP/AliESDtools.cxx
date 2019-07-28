@@ -801,8 +801,8 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
     Double_t posZA = (counterP > 0) ? TMath::Median(counterP, bufferP) : 0;
     Double_t posZC = (counterM > 0) ? TMath::Median(counterM, bufferM) : 0;
     Double_t posZALTM=0,posZCLTM=0, rmsZALTM=0,rmsZCLTM=0;
-    if (counterP>2) AliMathBase::EvaluateUni(counterP, bufferP, posZALTM, rmsZALTM, int(counterP*0.8));
-    if (counterM>2) AliMathBase::EvaluateUni(counterM, bufferM, posZCLTM, rmsZCLTM, int(counterM*0.8));
+    if (counterP>4) AliMathBase::EvaluateUni(counterP, bufferP, posZALTM, rmsZALTM, int(counterP*0.65));
+    if (counterM>4) AliMathBase::EvaluateUni(counterM, bufferM, posZCLTM, rmsZCLTM, int(counterM*0.65));
     (*fTPCVertexInfo)[0] = posZA;
     (*fTPCVertexInfo)[1] = -posZC;
     (*fTPCVertexInfo)[2] = (-posZC+posZA)*0.5;
