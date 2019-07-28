@@ -1048,6 +1048,22 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fMCPhiHelicityFrameTwentyfiveBinsH;   //!
 
                                 /**
+                                 * This histogram shows the TildePhi
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80% (?).
+                                 * RECON level.
+                                 */
+        TH1F*                   fTildePhiHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows the TildePhi
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80% (?).
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCTildePhiHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
                                  * This histogram shows  Phi
                                  * distribution with my variable binning.
                                  * RECON level.
@@ -1164,7 +1180,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 27);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 28);
 };
 
 #endif
