@@ -768,7 +768,7 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
     Int_t nNumberOfTracks = fEvent->GetNumberOfTracks();
     const Int_t bufSize = 20000;
     const Float_t kMinDCA = 3;
-    const Float_t kMinDCAZ = 4;
+    const Float_t kMinDCAZ = 5;
     Float_t bufferP[bufSize], bufferM[bufSize];
     Int_t counterP = 0, counterM = 0;
     Float_t dcaXY, dcaZ;
@@ -776,6 +776,7 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
       AliESDtrack *track = fEvent->GetTrack(iTrack);
       if (track == nullptr) continue;
       if (track->IsOn(0x1)) continue;
+      if (TMath::Abs(track->GetTgl())>1) continue;
       if (track->HasPointOnITSLayer(0)) continue;
       if (track->HasPointOnITSLayer(1)) continue;
       const AliExternalTrackParam *param = track->GetInnerParam();
