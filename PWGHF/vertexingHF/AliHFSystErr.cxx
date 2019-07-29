@@ -8243,8 +8243,11 @@ void AliHFSystErr::InitLctopK0S2016pPbBDT() {
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
   //for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.07); // 3%+4% (3%->bachelor, 4%->V0)
-  for(Int_t i=1;i<=8;i++) fTrackingEff->SetBinContent(i,0.03);
-  for(Int_t i=9;i<=24;i++) fTrackingEff->SetBinContent(i,0.06);
+
+  fTrackingEff->SetBinContent(2,0.05);
+  for(Int_t i=3;i<=6;i++) fTrackingEff->SetBinContent(i,0.04);
+  for(Int_t i=7;i<=24;i++) fTrackingEff->SetBinContent(i,0.05);
+
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
