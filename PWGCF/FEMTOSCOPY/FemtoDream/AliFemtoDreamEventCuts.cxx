@@ -28,7 +28,10 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts()
       fCentVsMultPlots(false),
       fDoSpherCuts(false),
       fSpherCutsLow(0.f),
-      fSpherCutsUp(1.f) {
+      fSpherCutsUp(1.f),
+      fDoSpheroCuts(false),
+      fSpheroCutsLow(0.f),
+      fSpheroCutsUp(1.f){
 }
 
 AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(
@@ -53,7 +56,10 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(
       fCentVsMultPlots(cuts.fCentVsMultPlots),
       fDoSpherCuts(cuts.fDoSpherCuts),
       fSpherCutsLow(cuts.fSpherCutsLow),
-      fSpherCutsUp(cuts.fSpherCutsUp) {
+      fSpherCutsUp(cuts.fSpherCutsUp),
+      fDoSpheroCuts(cuts.fDoSpheroCuts),
+      fSpheroCutsLow(cuts.fSpheroCutsLow),
+      fSpheroCutsUp(cuts.fSpheroCutsUp){
 }
 
 AliFemtoDreamEventCuts& AliFemtoDreamEventCuts::operator=(
@@ -82,6 +88,9 @@ AliFemtoDreamEventCuts& AliFemtoDreamEventCuts::operator=(
   this->fDoSpherCuts = cuts.fDoSpherCuts;
   this->fSpherCutsLow = cuts.fSpherCutsLow;
   this->fSpherCutsUp = cuts.fSpherCutsUp;
+  this->fDoSpheroCuts = cuts.fDoSpheroCuts;
+  this->fSpheroCutsLow = cuts.fSpheroCutsLow;
+  this->fSpheroCutsUp = cuts.fSpheroCutsUp;
   return *this;
 }
 
@@ -171,7 +180,6 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
       }
     }
   }
-
   if (pass && fDoSpherCuts) {
     if (evt->GetSpher() <= fSpherCutsLow || evt->GetSpher() >= fSpherCutsUp) {
       pass = false;
@@ -190,6 +198,15 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
       }
     }
   }
+  if (pass && fDoSpheroCuts) {
+    if (evt->GetSphero() <= fSpheroCutsLow || evt->GetSphero() >= fSpheroCutsUp) {
+      pass = false;
+    } else {
+      if (!fMinimalBooking)
+        fHist->FillEvtCounter(12);
+    }
+  }
+
 
   evt->SetSelectionStatus(pass);
   BookQA(evt);
@@ -243,6 +260,7 @@ void AliFemtoDreamEventCuts::BookQA(AliFemtoDreamEvent *evt) {
                                      evt->GetZVertexTracks());
         fHist->FillMagneticField(i, evt->GetBField());
         fHist->FillEvtSpher(i, evt->GetSpher());
+        fHist->FillEvtSphero(i, evt->GetSphero());
       }
     }
 
@@ -323,6 +341,13 @@ void AliFemtoDreamEventCuts::BookCuts() {
       fHist->FillCuts(13, fMultPercentileMax);
     } else {
       fHist->FillCuts(13, 0);
+    }
+    if (fDoSpheroCuts) {
+      fHist->FillCuts(14, fSpheroCutsLow);
+      fHist->FillCuts(15, fSpheroCutsUp);
+    } else {
+      fHist->FillCuts(14, 0);
+      fHist->FillCuts(15, 0);
     }
   }
 }

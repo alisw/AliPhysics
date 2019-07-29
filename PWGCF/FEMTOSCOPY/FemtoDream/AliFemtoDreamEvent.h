@@ -192,11 +192,23 @@ class AliFemtoDreamEvent {
     return fspher;
   }
   ;
+  void SetSphero(double sphero) {
+    fsphero = sphero;
+  }
+  float GetSphero() const {
+    return fsphero;
+  }
+  void SetCalcSpherocity(bool calcsphero) {
+      fcalcsphero=calcsphero;
+  }
+
  private:
   AliFemtoDreamEvent(const AliFemtoDreamEvent&);
   int CalculateITSMultiplicity(AliAODEvent *evt);
   double CalculateSphericityEvent(AliAODEvent *evt);
   double CalculateSphericityEvent(AliVEvent *evt);
+  double CalculateSpherocityEvent(AliAODEvent *evt);
+  double CalculateSpherocityEvent(AliVEvent *evt);
   AliAnalysisUtils *fUtils;   //!
   AliEventCuts *fEvtCuts;     //!
   bool fuseAliEvtCuts;        //!
@@ -222,7 +234,9 @@ class AliFemtoDreamEvent {
   bool fisSelected;           //!
   MultEstimator fEstimator;   //!
   double fspher;            //!
-ClassDef(AliFemtoDreamEvent,5)
+  double fsphero;            //!
+  bool fcalcsphero;         //!
+ClassDef(AliFemtoDreamEvent,6)
 };
 
 #endif /* ALIFEMTODREAMEVENT_H_ */
