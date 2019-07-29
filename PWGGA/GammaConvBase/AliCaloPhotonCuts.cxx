@@ -6087,7 +6087,58 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       }
       break;
 // *************** 30 + x **** modified tender Settings 2 - pp
-
+    // PCM-EDC based nonlinearity kSDM
+    case 31:
+      // apply testbeam nonlinearity (same as case 1)
+      energy /= FunctionNL_MartinTB_100MeV_Data(energy);
+      if(isMC>0){
+        // pp 8 TeV testbeam+kSDM
+        if( fCurrentMC==kPP8T12P2Pyt8 || fCurrentMC==kPP8T12P2Pho ||  fCurrentMC==kPP8T12P2JJ) {
+          if(fClusterType==1 || fClusterType==4){
+            energy /= (FunctionNL_kSDM(energy, 0.90687, -2.99028, -0.127349));
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
+    // EDC based nonlinearity kSDM
+    case 32:
+      // apply testbeam nonlinearity (same as case 1)
+      energy /= FunctionNL_MartinTB_100MeV_Data(energy);
+      if(isMC>0){
+        // pp 8 TeV testbeam+kSDM
+        if( fCurrentMC==kPP8T12P2Pyt8 || fCurrentMC==kPP8T12P2Pho ||  fCurrentMC==kPP8T12P2JJ) {
+          if(fClusterType==1 || fClusterType==4){
+            energy /= (FunctionNL_kSDM(energy, 0.932175, -3.58485, -0.161873));
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
+    // PCM-EDC based nonlinearity DExp or DPow
+    case 33:
+      // apply testbeam nonlinearity (same as case 1)
+      energy /= FunctionNL_MartinTB_100MeV_Data(energy);
+      if(isMC>0){
+        // pp 8 TeV testbeam+kSDM
+        if( fCurrentMC==kPP8T12P2Pyt8 || fCurrentMC==kPP8T12P2Pho ||  fCurrentMC==kPP8T12P2JJ) {
+          if(fClusterType==1 || fClusterType==4){
+            energy /= (FunctionNL_DPOW(energy, 1.0320567082, -0.0196079136, -0.4999999960, 1.1933084758, -0.1333934744, -0.1897894019));
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
+    // EDC based nonlinearity DExp or DPow
+    case 34:
+      // apply testbeam nonlinearity (same as case 1)
+      energy /= FunctionNL_MartinTB_100MeV_Data(energy);
+      if(isMC>0){
+        // pp 8 TeV testbeam+kSDM
+        if( fCurrentMC==kPP8T12P2Pyt8 || fCurrentMC==kPP8T12P2Pho ||  fCurrentMC==kPP8T12P2JJ) {
+          if(fClusterType==1 || fClusterType==4){
+            energy /= (FunctionNL_DPOW(energy, 1.0463993764, -0.0357855893, -0.1115397069, 1.2114598392, -0.1559063497, -0.0800000130));
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
 // *************** 40 + x **** default tender Settings - pPb
     // NonLinearity LHC13 pPb ConvCalo  - only shifting MC
     case 41:
