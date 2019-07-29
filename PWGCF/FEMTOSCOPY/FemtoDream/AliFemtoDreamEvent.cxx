@@ -490,12 +490,15 @@ double AliFemtoDreamEvent::CalculateSpherocityEvent(AliAODEvent *evt) {
     if (numOfTracks < 3) return -9999.;
 
     for (int iTrack = 0; iTrack < numOfTracks; iTrack++) {
-      AliNanoAODTrack *track =
-          dynamic_cast<AliNanoAODTrack *>(evt->GetTrack(iTrack));
+      AliAODTrack *track =
+          dynamic_cast<AliAODTrack *>(evt->GetTrack(iTrack));
       if (!track->TestFilterBit(96)) continue;
       double pt = track->Pt();
       pTtot += pt;
     }
+
+    if (pTtot == 0.)
+      return -9999.;
 
     for (int i = 0; i < 360 / 0.1; ++i) {
       Float_t numerator = 0;
@@ -508,8 +511,8 @@ double AliFemtoDreamEvent::CalculateSpherocityEvent(AliAODEvent *evt) {
       ny = TMath::Sin(phiparam);  // y component of an unitary vector n
 
       for (int iTrack = 0; iTrack < numOfTracks; iTrack++) {
-        AliNanoAODTrack *track =
-            dynamic_cast<AliNanoAODTrack *>(evt->GetTrack(iTrack));
+        AliAODTrack *track =
+            dynamic_cast<AliAODTrack *>(evt->GetTrack(iTrack));
         if (!track->TestFilterBit(96)) continue;
         double px = track->Px();
         double py = track->Py();
@@ -546,6 +549,9 @@ double AliFemtoDreamEvent::CalculateSpherocityEvent(AliVEvent *evt) {
     double pt = track->Pt();
     pTtot += pt;
   }
+
+  if (pTtot == 0.)
+    return -9999.;
 
   for (int i = 0; i < 360 / 0.1; ++i) {
     Float_t numerator = 0;
