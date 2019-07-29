@@ -213,6 +213,10 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoGammaGammaInvMassPtBeforeCuts;                //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
     TH2F**                            fHistoMotherInvMassPt;                              //!<! array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             //!<! array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
+    TH2F**                            fHistoDalitzPlotPosFixedPzNDM;                     //!<! 
+    TH2F**                            fHistoDalitzPlotNegFixedPzNDM;                     //!<!
+    TH2F**                            fHistoDalitzPlotPosSubNDM;                         //!<!
+    TH2F**                            fHistoDalitzPlotNegSubNDM;                         //!<!
     TH2F**                            fHistoBackInvMassPtGroup1;                          //!<! Event mixing background group 1 (pi+ and pi- from same event)
     TH2F**                            fHistoBackInvMassPtGroup2;                          //!<! Event mixing background group 2 (pi+ and pi0 from same event)
     TH2F**                            fHistoBackInvMassPtGroup3;                          //!<! Event mixing background group 3 (pi- and pi0 from same event)
@@ -315,6 +319,10 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt;                 //!<! histos with reconstructed validated eta or omega, inv mass, pT
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM;           //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM;       //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM;   //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM;   //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM;       //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM;       //!<!
     TH2F**                          fHistoTrueMotherGammaGammaInvMassPt;                  //!<! histos with reconstructed validated pi0, inv mass, pT
     TH2F**                          fHistoTrueMotherGammaGammaFromHNMInvMassPt;           //!<! histos with reconstructed validated pi0, inv mass, pT
     TH1F**                          fHistoTrueConvGammaPt;                                //!<! histos with reconstructed validated conv gamma, pT

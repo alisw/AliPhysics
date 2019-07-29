@@ -81,11 +81,13 @@ class AliAnalysisTaskConversionTree : public AliAnalysisTaskSE{
     Bool_t                      fIsHeavyIon;                //
     Double_t                    ffillTree;                  //
     TList*                      fOutputList;                //
+    TH1F*                       hInvMass;
     Int_t                       fBuffer_NConversionCandidates; //
     Float_t*                    fBuffer_ConversionCandidate_E; //
     Float_t*                    fBuffer_ConversionCandidate_Px; //
     Float_t*                    fBuffer_ConversionCandidate_Py; //
     Float_t*                    fBuffer_ConversionCandidate_Pz; //
+    Float_t*                    fBuffer_ConversionCandidate_Pt; //
     Float_t*                    fBuffer_ConversionCandidate_Qt; //
     Float_t*                    fBuffer_ConversionCandidate_Alpha; //
     Float_t*                    fBuffer_ConversionCandidate_PsiPair; //
@@ -107,7 +109,7 @@ class AliAnalysisTaskConversionTree : public AliAnalysisTaskSE{
     Int_t*                      fMCStackPos;                //[fnGammaCandidates]
     Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
     
-    ClassDef(AliAnalysisTaskConversionTree, 1);
+    ClassDef(AliAnalysisTaskConversionTree, 2);
 };
 const Int_t kMaxConvCandidates = 200;
 
