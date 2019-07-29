@@ -111,6 +111,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoConvGammaEta(nullptr),
   fHistoClusterGammaPt(nullptr),
   fHistoClusterGammaEta(nullptr),
+  fHistoClusterGammaE(nullptr),
   fHistoNegPionPt(nullptr),
   fHistoPosPionPt(nullptr),
   fHistoNegPionPhi(nullptr),
@@ -348,6 +349,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoConvGammaEta(nullptr),
   fHistoClusterGammaPt(nullptr),
   fHistoClusterGammaEta(nullptr),
+  fHistoClusterGammaE(nullptr),
   fHistoNegPionPt(nullptr),
   fHistoPosPionPt(nullptr),
   fHistoNegPionPhi(nullptr),
@@ -786,6 +788,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     if (fNDMRecoMode > 0){
       fHistoClusterGammaPt        = new TH1F*[fnCuts];
       fHistoClusterGammaEta       = new TH1F*[fnCuts];
+      fHistoClusterGammaE         = new TH1F*[fnCuts];
     }
     fHistoNegPionPt               = new TH1F*[fnCuts];
     fHistoPosPionPt               = new TH1F*[fnCuts];
@@ -968,6 +971,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoClusterGammaEta[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
         fHistoClusterGammaEta[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoClusterGammaEta[iCut]);
+        fHistoClusterGammaE[iCut]  = new TH1F("ESD_ClusterGamma_E","ESD_ClusterGamma_E",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+        fHistoClusterGammaE[iCut]->GetXaxis()->SetTitle("E (GeV)");
+        fHistoClusterGammaE[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
+        fHistoClusterGammaE[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoClusterGammaE[iCut]);
       }
       
       fHistoNegPionPt[iCut]         = new TH1F("ESD_PrimaryNegPions_Pt","ESD_PrimaryNegPions_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
@@ -2312,6 +2320,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessCaloPhotonCandida
     if (fIsFromMBHeader && (!fDoLightOutput)){
       fHistoClusterGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), tempPhotonWeight);
       fHistoClusterGammaEta[fiCut]->Fill(PhotonCandidate->Eta(), tempPhotonWeight);
+      fHistoClusterGammaE[fiCut]->Fill(PhotonCandidate->E(), tempPhotonWeight);
     }
     fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
 

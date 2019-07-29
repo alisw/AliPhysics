@@ -195,6 +195,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                            fHistoConvGammaEta;                                 //!<! array of histos of conversion photon, eta
     TH1F**                            fHistoClusterGammaPt;                               //!<! array of histos of Cluster photon, pt
     TH1F**                            fHistoClusterGammaEta;                              //!<! array of histos of Cluster photon, eta
+    TH1F**                            fHistoClusterGammaE;                              //!<! array of histos of Cluster photon, energy
     TH1F**                            fHistoNegPionPt;                                    //!<! array of histos of negative pion, pt
     TH1F**                            fHistoPosPionPt;                                    //!<! array of histos of positive pion, pt
     TH1F**                            fHistoNegPionPhi;                                   //!<! array of histos of negative pion, phi
@@ -405,7 +406,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 6);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 7);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
