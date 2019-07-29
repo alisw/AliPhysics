@@ -195,12 +195,10 @@ class AliFemtoDreamEvent {
   void SetSphero(double sphero) {
     fsphero = sphero;
   }
-  ;
   float GetSphero() const {
     return fsphero;
   }
-  ;
-  void SetCalcSpherocity(double calcsphero) {
+  void SetCalcSpherocity(bool calcsphero) {
       fcalcsphero=calcsphero;
   }
 
