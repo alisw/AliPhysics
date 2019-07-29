@@ -8,25 +8,39 @@
 #include "AliEmcalList.h"
 #include "AliAnalysisManager.h"
 
+#include "TClonesArray.h"
+#include "AliEmcalTrackSelectionAOD.h"
+#include "AliTrackContainer.h"
+#include "TObjArray.h"
+
+
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEmcalEmbeddingHelperData);
 /// \endcond
 
 AliAnalysisTaskEmcalEmbeddingHelperData::AliAnalysisTaskEmcalEmbeddingHelperData():
   AliAnalysisTaskEmcalEmbeddingHelper(),
-  fPtSelection()
+  fPtSelection(),
+  fTrackContainer(0x0)
 {
 }
 
 
 AliAnalysisTaskEmcalEmbeddingHelperData::AliAnalysisTaskEmcalEmbeddingHelperData(const char *name):
   AliAnalysisTaskEmcalEmbeddingHelper(name),
-  fPtSelection()
+  fPtSelection(),
+  fTrackContainer(0x0)
 {
 }
 
 AliAnalysisTaskEmcalEmbeddingHelperData::~AliAnalysisTaskEmcalEmbeddingHelperData()
 {
+}
+
+void AliAnalysisTaskEmcalEmbeddingHelperData::ExecOnce()
+{
+//
+
 }
 
 void AliAnalysisTaskEmcalEmbeddingHelperData::UserCreateOutputObjects() 
@@ -45,6 +59,11 @@ void AliAnalysisTaskEmcalEmbeddingHelperData::UserCreateOutputObjects()
 
   PostData(1, fOutput);
 
+  // set track container array
+  if(fTrackContainer) fTrackContainer->SetArray(InputEvent());
+  else {
+    AliFatal("must set track container to use this task");
+  }
 
 }
 
@@ -55,14 +74,14 @@ void AliAnalysisTaskEmcalEmbeddingHelperData::UserCreateOutputObjects()
 
 Bool_t AliAnalysisTaskEmcalEmbeddingHelperData::CheckIsEmbeddedEventSelected()
 {
+  fTrackContainer->NextEvent(InputEvent());
 
   if(!AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventSelected()) return kFALSE;
 
-  Int_t nTracks = fExternalEvent->GetNumberOfTracks();
   Int_t nTracksInRange = 0;
   Double_t ptMax = 0;
-  for(Int_t i=0;i<nTracks;i++) {
-    Double_t pt = fExternalEvent->GetTrack(i)->Pt();
+  for(auto track : fTrackContainer->accepted()) {
+    Double_t pt = track->Pt();
     if(pt>ptMax) ptMax = pt;
     //now check set windows
     Int_t npt = fPtSelection.size();
@@ -150,6 +169,11 @@ AliAnalysisTaskEmcalEmbeddingHelperData *AliAnalysisTaskEmcalEmbeddingHelperData
 
   // Create the task that manages
   AliAnalysisTaskEmcalEmbeddingHelperData * embeddingHelper = new AliAnalysisTaskEmcalEmbeddingHelperData(name.Data());
+
+  // set embedded track container
+  AliTrackContainer *contEmb = new AliTrackContainer("tracks");
+  contEmb->SetTrackCutsPeriod("LHC17p");
+  embeddingHelper->SetEmbeddedTrackContainer(contEmb);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
