@@ -17,7 +17,6 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 Bool_t useTOFcorr      = kTRUE,
                                 Bool_t plots3D         = kFALSE,
                                 Bool_t useRun1binning  = kFALSE, // Match run1 pPb prelim. binning
-                                Bool_t useCutLibrary   = kTRUE, // Use simple config instead?
                                 Bool_t getFromAlien    = kFALSE)
 {
 
@@ -30,25 +29,20 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     // to print them out.
     std::cout << "Output file name: " << outputFileName << std::endl;
     std::cout << "Cut set         : " << names          << std::endl;
-    if(useCutLibrary){
-      std::cout << "Use SDD         : " << SDDstatus      << std::endl;
-    }
+    std::cout << "Use SDD         : " << SDDstatus      << std::endl;
     std::cout << "Monte Carlo     : " << hasMC          << std::endl;
     std::cout << "Wagon number    : " << wagonNum       << std::endl;
     std::cout << "Pairing         : " << doPairing      << std::endl;
     std::cout << "Event mixing    : " << doMixing       << std::endl;
-    if(useCutLibrary){
-      std::cout << "Pair cuts       : " << applyPairCuts  << std::endl;
-      std::cout << "Track plots     : " << trackVarPlots  << std::endl;
-      std::cout << "Which det plots : " << whichDetPlots  << std::endl;
-      std::cout << "v0 plots        : " << v0plots        << std::endl;
-      std::cout << "Use ITScorr     : " << useITScorr     << std::endl;
-      std::cout << "Use TPCcorr     : " << useTPCcorr     << std::endl;
-      std::cout << "Use TOFcorr     : " << useTOFcorr     << std::endl;
-      std::cout << "3D plots        : " << plots3D        << std::endl;
-      std::cout << "Using Run1 bins : " << useRun1binning << std::endl;
-    }
-    std::cout << "Using cutLib    : " << useCutLibrary  << std::endl;
+    std::cout << "Pair cuts       : " << applyPairCuts  << std::endl;
+    std::cout << "Track plots     : " << trackVarPlots  << std::endl;
+    std::cout << "Which det plots : " << whichDetPlots  << std::endl;
+    std::cout << "v0 plots        : " << v0plots        << std::endl;
+    std::cout << "Use ITScorr     : " << useITScorr     << std::endl;
+    std::cout << "Use TPCcorr     : " << useTPCcorr     << std::endl;
+    std::cout << "Use TOFcorr     : " << useTOFcorr     << std::endl;
+    std::cout << "3D plots        : " << plots3D        << std::endl;
+    std::cout << "Using Run1 bins : " << useRun1binning << std::endl;
 
     // Get the current analysis manager
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -59,7 +53,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
 
     TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
     TString configLMEECutLib("LMEECutLib_acapon.C");
-    TString configFile = (useCutLibrary ? "Config_acapon.C" : "Config_acapon_noCutLib.C");
+    TString configFile = "Config_acapon.C";
 
     // Load updated macros from private ALIEN path
     TString myConfig = "alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/Config_acapon.C .";
@@ -87,9 +81,6 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
       ::Info("AddTask_acapon", "AOD configuration");
     }
     else if(mgr->GetInputEventHandler()->IsA() == AliESDInputHandler::Class()){
-      if(useCutLibrary){
-        ::Error("AddTask_acapon", "CutLibrary only tested for AODs");
-      }
       ::Info("AddTask_acapon","ESD configuration");
     }
 
@@ -111,14 +102,8 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
 
     // Event cuts are the same for all cut settings regardless
     // of config setup
-    LMEECutLib* cutLib = 0x0;
-    if(useCutLibrary){
-      cutLib = new LMEECutLib(SDDstatus);
-      task->SetEventFilter(cutLib->GetEventCuts());
-    }else{
-      task->SetEventFilter(GetEventCuts());
-    }
-    //task->SetRejectPileup(); //Rejection applied via train dependancy
+    LMEECutLib* cutLib = new LMEECutLib(SDDstatus);
+    task->SetEventFilter(cutLib->GetEventCuts());
 
     // Add the task to the manager
     mgr->AddTask(task);
@@ -127,15 +112,11 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
       TString dielTaskName(arrNames->At(i)->GetName());
       AliDielectron* diel_low = 0x0;
 
-      if(useCutLibrary){
-        diel_low = Config_acapon(dielTaskName, hasMC, SDDstatus,
-                                 doPairing, applyPairCuts, doMixing,
-                                 trackVarPlots, whichDetPlots, v0plots,
-                                 useITScorr, useTPCcorr, useTOFcorr,
-                                 plots3D, useRun1binning);
-      }else{
-        diel_low = Config_acapon(dielTaskName, hasMC, doPairing, doMixing);
-      }
+      diel_low = Config_acapon(dielTaskName, hasMC, SDDstatus,
+                                doPairing, applyPairCuts, doMixing,
+                                trackVarPlots, whichDetPlots, v0plots,
+                                useITScorr, useTPCcorr, useTOFcorr,
+                                plots3D, useRun1binning);
       if(!diel_low){
         continue;
       }
