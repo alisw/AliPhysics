@@ -490,6 +490,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00061113","2446600044012300000","32c51070a","0103603n00000000","0153503000000000"); // PHI1
     cuts.AddCutHeavyMesonCalo("00062113","2446600044012300000","32c51070a","0103603n00000000","0153503000000000"); // PHI7
     cuts.AddCutHeavyMesonCalo("00063113","2446600044012300000","32c51070a","0103603n00000000","0153503000000000"); // PHI8
+  } else if(trainConfig == 405)  { // EDC 13 TeV
+    cuts.AddCutHeavyMesonCalo("00010113","4117900067032220000","32c51070a","0103603n00000000","0153503000000000"); // INT7
+  } else if(trainConfig == 406)  { // EDC 13 TeV + Triggers
+    cuts.AddCutHeavyMesonCalo("00010113","4117900067032220000","32c51070a","0103603n00000000","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("0008e113","4117900067032220000","32c51070a","0103603n00000000","0153503000000000"); // EMC7
+    cuts.AddCutHeavyMesonCalo("0008d113","4117900067032220000","32c51070a","0103603n00000000","0153503000000000"); // EMC7
+    cuts.AddCutHeavyMesonCalo("0009b113","4117900067032220000","32c51070a","0103603n00000000","0153503000000000"); // EMC7
   } else {
     Error(Form("GammaConvNeutralMeson_CaloMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
