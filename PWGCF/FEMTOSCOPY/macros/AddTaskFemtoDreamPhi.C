@@ -17,7 +17,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-  evtCuts->SetSpherocityCuts(0.7,1);
+  evtCuts->SetSphericityCuts(0.7,1);
 
 
   AliFemtoDreamTrackCuts *TrackCuts =
@@ -35,13 +35,13 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackPosKaonCuts->SetCutCharge(1);
-  TrackPosKaonCuts->SetPID(AliPID::kKaon, 999, 5);
-  TrackPosKaonCuts->SetPlotTOFMass(true);
+//  TrackPosKaonCuts->SetPID(AliPID::kKaon, 999, 5);
+//  TrackPosKaonCuts->SetPlotTOFMass(true);
 
   AliFemtoDreamTrackCuts *TrackNegKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackNegKaonCuts->SetCutCharge(-1);
-  TrackNegKaonCuts->SetPID(AliPID::kKaon, 999, 5);
-  TrackNegKaonCuts->SetPlotTOFMass(true);
+//  TrackNegKaonCuts->SetPID(AliPID::kKaon, 999, 5);
+//  TrackNegKaonCuts->SetPlotTOFMass(true);
 
 //  if (suffix != "0") {
 //    TrackPosKaonCuts->SetMinimalBooking(true);
