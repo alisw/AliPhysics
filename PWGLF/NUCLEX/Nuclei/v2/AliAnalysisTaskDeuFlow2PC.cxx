@@ -2616,7 +2616,7 @@ void AliAnalysisTaskDeuFlow2PC::DoPairsh1h2 ( const Float_t lcentrality, int fie
 	  if(ptP2<1.5)   
 	    fHistSparseSignal->Fill();
 	  else
-	    if(massS>=1)
+	    if(massS>=1 )
 	      fHistSparseSignal->Fill();
 	}
 
@@ -2659,7 +2659,7 @@ void AliAnalysisTaskDeuFlow2PC::DoPairsh1h2 ( const Float_t lcentrality, int fie
 	  if(ptP2<1.5)   
 	    fHistSparseBkg->Fill();
 	  else
-	    if(massS>=1)
+	    if(massS>=1 )
 	      fHistSparseBkg->Fill();
         } //mixed
 	
@@ -2914,11 +2914,11 @@ void AliAnalysisTaskDeuFlow2PC::DoPairshh (const Float_t lcentrality, int fields
 	  }
 	  
 	  //	  fHistSparseSignal->Fill();  
-	  if(ptP2<1.5)   
-	    fHistSparseSignal->Fill();
-	  else
-	    if(massS>=1)
-	      fHistSparseSignal->Fill();
+	  //	  if(ptP2<1.5)   
+	  fHistSparseSignal->Fill();
+	  // else
+	  //   if(massS>=1)
+	  //     fHistSparseSignal->Fill();
 	}
 
 	else {//Mixed-event pair histogramming
@@ -2956,12 +2956,12 @@ void AliAnalysisTaskDeuFlow2PC::DoPairshh (const Float_t lcentrality, int fields
 	    tKstarGen      =  pairKstarMC;            
 	  }
 	  
-	  // fHistSparseBkg->Fill();  
-	  if(ptP2<1.5)   
-	    fHistSparseBkg->Fill();
-	  else
-	    if(massS>=1)
-	      fHistSparseBkg->Fill();
+	  fHistSparseBkg->Fill();  
+	  // if(ptP2<1.5)   
+	  //   fHistSparseBkg->Fill();
+	  // else
+	  //   if(massS>=1)
+	  //     fHistSparseBkg->Fill();
         } //mixed
 	
       } // second part
