@@ -225,6 +225,14 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   kMax.push_back(3.);
   kMax.push_back(3.);
 
+  std::vector<int> pairQA;
+  pairQA.push_back(11);
+  pairQA.push_back(0);
+  pairQA.push_back(12);
+  pairQA.push_back(11);
+  pairQA.push_back(12);
+  pairQA.push_back(0);
+
   AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
   config->SetZBins(ZVtxBins);
@@ -235,6 +243,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
+  config->SetExtendedQAPairs(pairQA);
   /*
   //This is just to show off what would be possible in case you are interested,
   don't be confused by this at the beginning
@@ -250,12 +259,14 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
     config->SetCentBins(centBins);
     config->SetZBins(ZVtxBins);
 
+    */
     if (isMC) {
       config->SetMomentumResolution(true);
     } else {
-      std::cout << "You are trying to request the Momentum Resolution without MC
-  Info; fix it wont work! \n";
+      std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
     }
+
+    /*
     if (isMC) {
       config->SetPhiEtaBinnign(true);
     } else {
