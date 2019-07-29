@@ -412,12 +412,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 190)  { // Standard PHOS  with TPC refit + ITS requirement
     cuts.AddCutHeavyMesonCalo("00010113","2444411044012300000","32c01070a","0103603n00000000","0153503000000000"); // INT7
     cuts.AddCutHeavyMesonCalo("00062113","2444411044012300000","32c01070a","0103603n00000000","0153503000000000"); // PHI7
-    // PHOS pp 13 TeV
-  } else if(trainConfig == 191)  { // Standard PHOS  with TPC refit + ITS requirement
-    cuts.AddCutHeavyMesonCalo("00010113","2444411044012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
-    cuts.AddCutHeavyMesonCalo("00062113","2444411044012300000","32c010708","0103603n00000000","0153503000000000"); // PHI7
-  } else if(trainConfig == 192)  { // AOD and ESD Comparison
-    cuts.AddCutHeavyMesonCalo("00010113","2444411044012300000","32c510708","0103603n00000000","0153503000000000"); // INT7
+
     // PHOS LHC11 pp 7 TeV
   } else if(trainConfig == 195)  { // with TPC refit + ITS requirement
     cuts.AddCutHeavyMesonCalo("00010113","2444400053012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
@@ -482,7 +477,19 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     // same as 102 but only MB
     cuts.AddCutHeavyMesonCalo("00010113","1111100047032230000","30a330708","0103503400000000","0153503000000000"); // all of the above
     
-     
+    // PHOS pp 13 TeV
+  } else if(trainConfig == 400)  { // AOD and ESD Comparison
+    cuts.AddCutHeavyMesonCalo("00010113","2444411044012300000","32c510708","0103603n00000000","0153503000000000"); // INT7
+  } else if(trainConfig == 401)  { //Standard PHOS 13TeV
+    cuts.AddCutHeavyMesonCalo("00010113","2446600044012300000","32c51070a","0103603n00000000","0153503000000000"); // INT7
+  } else if(trainConfig == 402)  { //Standard PHOS 13TeV + PHI7
+    cuts.AddCutHeavyMesonCalo("00010113","2446600044012300000","32c51070a","0103603n00000000","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00062113","2446600044012300000","32c51070a","0103603n00000000","0153503000000000"); // PHI7
+  } else if(trainConfig == 403)  { //Standard PHOS 13TeV + Triggers
+    cuts.AddCutHeavyMesonCalo("00010113","2446600044012300000","32c51070a","0103603n00000000","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00061113","2446600044012300000","32c51070a","0103603n00000000","0153503000000000"); // PHI1
+    cuts.AddCutHeavyMesonCalo("00062113","2446600044012300000","32c51070a","0103603n00000000","0153503000000000"); // PHI7
+    cuts.AddCutHeavyMesonCalo("00063113","2446600044012300000","32c51070a","0103603n00000000","0153503000000000"); // PHI8
   } else {
     Error(Form("GammaConvNeutralMeson_CaloMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
