@@ -706,7 +706,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "00200089297000001280000000", "0152103500000000"); // Min Bias more open cuts
     cuts.AddCutPCM("00010113", "00200089227300008250400000", "0152101500000000"); // Min Bias default cuts 2.76 TeV
   } else if (trainConfig == 302) { //MB JL.
-    cuts.AddCutPCM("00010113", "00200009327000008250400000", "0163103100000010"); // Min Bias Same Cuts as PCMCalo for PHOS
+    cuts.AddCutPCM("00010113", "0d200009327000008250404000", "0163103100000010"); // Min Bias Same Cuts as PCMCalo for PHOS
   } else if (trainConfig == 303) { // low B optimized chi2,PsiPair,qt
     cuts.AddCutPCM("00010113", "00200089297000001280000000", "0152103500000000"); // pt dep Qt, chi2-psipair exp
     cuts.AddCutPCM("00010113", "0020008929700000iih0400000", "0152103500000000"); // pt dep Qt, chi2-psipair exp
