@@ -187,10 +187,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetFilterMask(filterbit);
 	Reader->SetCovMatPresent(false);
 	Reader->SetDCAglobalTrack(1); //false for FB7, true for the rest //we do not use DCA at all
-	Reader->SetUseMultiplicity("MultSelection.RefMult08");
+	Reader->SetUseMultiplicity("MultSelection.RefMult08.Value");
 
- Reader->SetReadV0(kTRUE);
- Reader->SetReadCascade(kTRUE);
+	Reader->SetReadV0(kTRUE);
+	Reader->SetReadCascade(kTRUE);
 
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
