@@ -123,7 +123,7 @@ void AliAnalysisTaskEmcalEmbeddingHelperData::RetrieveTaskPropertiesFromYAMLConf
       AliErrorStream() << "Passed pt selection min with size" << ptSelectionMin.size() << " entries and pt selection max with size " << ptSelectionMax.size() << " - need same size arrays\n";
     }
     else {
-      for(int i = 0; i < ptSelectionMin.size(); i++) {
+      for(std::size_t i = 0; i < ptSelectionMin.size(); i++) {
         AliDebugStream(1) << "Setting pt selection [" << ptSelectionMin.at(i) << ", " << ptSelectionMax.at(i) << "]\n";
         fPtSelection.push_back(std::make_pair(ptSelectionMin.at(i), ptSelectionMax.at(i)));
       }
