@@ -614,6 +614,23 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00052113","111110106f022230000","01631031000000d0"); // std
     cuts.AddCutCalo("00081113","111110106f022230000","01631031000000d0"); // std
 
+  } else if (trainConfig == 172){ // EMCAL clusters pp 8 TeV, TB+finetuning CCRF
+    cuts.AddCutCalo("00010113","111113106f032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00052113","111113106f032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00081113","111113106f032230000","01631031000000d0"); // std
+  } else if (trainConfig == 173){ // EMCAL clusters pp 8 TeV, TB+finetuning CRF
+    cuts.AddCutCalo("00010113","111113206f032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00052113","111113206f032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00081113","111113206f032230000","01631031000000d0"); // std
+  } else if (trainConfig == 174){ // EMCAL clusters pp 8 TeV, TB+finetuning CCMF
+    cuts.AddCutCalo("00010113","111113306f032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00052113","111113306f032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00081113","111113306f032230000","01631031000000d0"); // std
+  } else if (trainConfig == 175){ // EMCAL clusters pp 8 TeV, TB+finetuning CMF
+    cuts.AddCutCalo("00010113","111113406f032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00052113","111113406f032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00081113","111113406f032230000","01631031000000d0"); // std
+
   //multiple std dirGAMMA cuts for different studies
   } else if (trainConfig == 181){ // EMCAL clusters pp 8 TeV
     cuts.AddCutCalo("00010113","11111110670322l0000","01631031000000d0"); // std
