@@ -789,7 +789,7 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
     if(cutDefinition == "kV0_allAcc"){
       histos->UserHistogram("Pair", "CosPointingAngle", "", BinsToVector(100, 0, 1),    AliDielectronVarManager::kCosPointingAngle);
       histos->UserHistogram("Pair", "Chi2NDF",          "", BinsToVector(100, 0, 100),  AliDielectronVarManager::kChi2NDF);
-      histos->UserHistogram("Pair", "LegDist",          "", BinsToVector(400, 0, 1),    AliDielectronVarManager::kLegDist);
+      histos->UserHistogram("Pair", "LegDist",          "", BinsToVector(400, 0, 0.1),    AliDielectronVarManager::kLegDist);
       histos->UserHistogram("Pair", "R",                "", BinsToVector(1000, 0, 200), AliDielectronVarManager::kR);
       histos->UserHistogram("Pair", "PsiTrack",         "", BinsToVector(100, 0, TMath::Pi()), AliDielectronVarManager::kPsiPair);
       histos->UserHistogram("Pair", "kM",               "", BinsToVector(2000, 0, 20),  AliDielectronVarManager::kM);
