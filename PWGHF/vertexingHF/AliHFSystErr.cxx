@@ -8032,7 +8032,7 @@ void AliHFSystErr::InitLctopK0S2013pPb() {
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitLctopK0S2016pPb() {
   //
-  // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno
+  // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno, L. Dello Stritto
   //  2016 p-Pb sample
   //
   SetNameTitle("AliHFSystErr","SystErrLctopK0S2013pPb");
@@ -8046,58 +8046,58 @@ void AliHFSystErr::InitLctopK0S2016pPb() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nBins,limits);
-  fTrackingEff->SetBinContent(1,0.03); //dummy
-  fTrackingEff->SetBinContent(2,0.03); //dummy
-  fTrackingEff->SetBinContent(3,0.03); //dummy
-  fTrackingEff->SetBinContent(4,0.03); //dummy
-  fTrackingEff->SetBinContent(5,0.06); //dummy
-  fTrackingEff->SetBinContent(6,0.06); //dummy
-  fTrackingEff->SetBinContent(7,0.06); //dummy
-  fTrackingEff->SetBinContent(8,0.06); //dummy
+  fTrackingEff->SetBinContent(1,0.05);
+  fTrackingEff->SetBinContent(2,0.04);
+  fTrackingEff->SetBinContent(3,0.04);
+  fTrackingEff->SetBinContent(4,0.04);
+  fTrackingEff->SetBinContent(5,0.04);
+  fTrackingEff->SetBinContent(6,0.05);
+  fTrackingEff->SetBinContent(7,0.05);
+  fTrackingEff->SetBinContent(8,0.05);
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",nBins,limits);
-  fRawYield->SetBinContent(1,0.13);
-  fRawYield->SetBinContent(2,0.13);
-  fRawYield->SetBinContent(3,0.10);
-  fRawYield->SetBinContent(4,0.10);
-  fRawYield->SetBinContent(5,0.10);
-  fRawYield->SetBinContent(6,0.10);
-  fRawYield->SetBinContent(7,0.13);
-  fRawYield->SetBinContent(8,0.13);
+  fRawYield->SetBinContent(1,0.11);
+  fRawYield->SetBinContent(2,0.08);
+  fRawYield->SetBinContent(3,0.07);
+  fRawYield->SetBinContent(4,0.06);
+  fRawYield->SetBinContent(5,0.07);
+  fRawYield->SetBinContent(6,0.06);
+  fRawYield->SetBinContent(7,0.07);
+  fRawYield->SetBinContent(8,0.08);
 
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",nBins,limits);
-  fCutsEff->SetBinContent(1,0.05); //dummy
-  fCutsEff->SetBinContent(2,0.05); //dummy
-  fCutsEff->SetBinContent(3,0.05); //dummy
-  fCutsEff->SetBinContent(4,0.05); //dummy
-  fCutsEff->SetBinContent(5,0.04); //dummy
-  fCutsEff->SetBinContent(6,0.04); //dummy
-  fCutsEff->SetBinContent(7,0.04); //dummy
-  fCutsEff->SetBinContent(8,0.04); //dummy
+  fCutsEff->SetBinContent(1,0.04);
+  fCutsEff->SetBinContent(2,0.03);
+  fCutsEff->SetBinContent(3,0.03);
+  fCutsEff->SetBinContent(4,0.03);
+  fCutsEff->SetBinContent(5,0.03);
+  fCutsEff->SetBinContent(6,0.03);
+  fCutsEff->SetBinContent(7,0.04);
+  fCutsEff->SetBinContent(8,0.04);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",nBins,limits);
-  fPIDEff->SetBinContent(1,0.03); //dummy
-  fPIDEff->SetBinContent(2,0.03); //dummy
-  fPIDEff->SetBinContent(3,0.03); //dummy
-  fPIDEff->SetBinContent(4,0.04); //dummy
-  fPIDEff->SetBinContent(5,0.04); //dummy
-  fPIDEff->SetBinContent(6,0.04); //dummy
-  fPIDEff->SetBinContent(7,0.04); //dummy
-  fPIDEff->SetBinContent(8,0.04); //dummy
+  fPIDEff->SetBinContent(1,0.03);
+  fPIDEff->SetBinContent(2,0.03);
+  fPIDEff->SetBinContent(3,0.03);
+  fPIDEff->SetBinContent(4,0.03);
+  fPIDEff->SetBinContent(5,0.03);
+  fPIDEff->SetBinContent(6,0.03);
+  fPIDEff->SetBinContent(7,0.03);
+  fPIDEff->SetBinContent(8,0.03);
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nBins,limits); // quadratic sum of ptshape and multiplicity dependence
-  fMCPtShape->SetBinContent(1,0.01); //dummy
-  fMCPtShape->SetBinContent(2,0.01); //dummy
-  fMCPtShape->SetBinContent(3,0.01); //dummy
-  fMCPtShape->SetBinContent(4,0.01); //dummy
-  fMCPtShape->SetBinContent(5,0.01); //dummy
-  fMCPtShape->SetBinContent(6,0.01); //dummy
-  fMCPtShape->SetBinContent(7,0.01); //dummy
-  fMCPtShape->SetBinContent(8,0.01); //dummy
+  fMCPtShape->SetBinContent(1,0.01);
+  fMCPtShape->SetBinContent(2,0.01);
+  fMCPtShape->SetBinContent(3,0.01);
+  fMCPtShape->SetBinContent(4,0.01);
+  fMCPtShape->SetBinContent(5,0.01);
+  fMCPtShape->SetBinContent(6,0.01);
+  fMCPtShape->SetBinContent(7,0.01);
+  fMCPtShape->SetBinContent(8,0.01);
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",nBins,limits);
@@ -8107,8 +8107,8 @@ void AliHFSystErr::InitLctopK0S2016pPb() {
 //-------------------------------------------------------------------------
 void AliHFSystErr::InitLctopK0S2017pp5TeV() {
   //
-  // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno
-  //  2015 pp 5 TeV sample
+  // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno, L. Dello Stritto
+  //  2017 pp 5 TeV sample
   //
   SetNameTitle("AliHFSystErr","SystErrLctopK0S2017pp5TeV");
 
@@ -8121,58 +8121,58 @@ void AliHFSystErr::InitLctopK0S2017pp5TeV() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nBins,limits);
-  fTrackingEff->SetBinContent(1,0.03); //dummy
-  fTrackingEff->SetBinContent(2,0.03); //dummy
-  fTrackingEff->SetBinContent(3,0.03); //dummy
-  fTrackingEff->SetBinContent(4,0.03); //dummy
-  fTrackingEff->SetBinContent(5,0.06); //dummy
-  fTrackingEff->SetBinContent(6,0.06); //dummy
-  fTrackingEff->SetBinContent(7,0.06); //dummy
-  fTrackingEff->SetBinContent(8,0.06); //dummy
+  fTrackingEff->SetBinContent(1,0.03);
+  fTrackingEff->SetBinContent(2,0.03);
+  fTrackingEff->SetBinContent(3,0.04);
+  fTrackingEff->SetBinContent(4,0.04);
+  fTrackingEff->SetBinContent(5,0.04);
+  fTrackingEff->SetBinContent(6,0.04);
+  fTrackingEff->SetBinContent(7,0.05);
+  fTrackingEff->SetBinContent(8,0.06);
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",nBins,limits);
-  fRawYield->SetBinContent(1,0.09);
-  fRawYield->SetBinContent(2,0.12);
-  fRawYield->SetBinContent(3,0.12);
-  fRawYield->SetBinContent(4,0.09);
-  fRawYield->SetBinContent(5,0.06);
-  fRawYield->SetBinContent(6,0.11);
-  fRawYield->SetBinContent(7,0.11);
-  fRawYield->SetBinContent(8,0.13);
+  fRawYield->SetBinContent(1,0.08);
+  fRawYield->SetBinContent(2,0.08);
+  fRawYield->SetBinContent(3,0.06);
+  fRawYield->SetBinContent(4,0.07);
+  fRawYield->SetBinContent(5,0.10);
+  fRawYield->SetBinContent(6,0.07);
+  fRawYield->SetBinContent(7,0.07);
+  fRawYield->SetBinContent(8,0.09);
 
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",nBins,limits);
-  fCutsEff->SetBinContent(1,0.05);
-  fCutsEff->SetBinContent(2,0.05);
-  fCutsEff->SetBinContent(3,0.05);
-  fCutsEff->SetBinContent(4,0.05);
-  fCutsEff->SetBinContent(5,0.05);
-  fCutsEff->SetBinContent(6,0.05);
-  fCutsEff->SetBinContent(7,0.05);
-  fCutsEff->SetBinContent(8,0.05);
+  fCutsEff->SetBinContent(1,0.03);
+  fCutsEff->SetBinContent(2,0.03);
+  fCutsEff->SetBinContent(3,0.03);
+  fCutsEff->SetBinContent(4,0.03);
+  fCutsEff->SetBinContent(5,0.03);
+  fCutsEff->SetBinContent(6,0.03);
+  fCutsEff->SetBinContent(7,0.03);
+  fCutsEff->SetBinContent(8,0.04);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",nBins,limits);
   fPIDEff->SetBinContent(1,0.02);
-  fPIDEff->SetBinContent(2,0.02);
-  fPIDEff->SetBinContent(3,0.02);
-  fPIDEff->SetBinContent(4,0.03);
-  fPIDEff->SetBinContent(5,0.05);
-  fPIDEff->SetBinContent(6,0.08);
-  fPIDEff->SetBinContent(7,0.08);
-  fPIDEff->SetBinContent(8,0.08);
+  fPIDEff->SetBinContent(2,0.03);
+  fPIDEff->SetBinContent(3,0.03);
+  fPIDEff->SetBinContent(4,0.04);
+  fPIDEff->SetBinContent(5,0.04);
+  fPIDEff->SetBinContent(6,0.04);
+  fPIDEff->SetBinContent(7,0.04);
+  fPIDEff->SetBinContent(8,0.04);
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nBins,limits); // quadratic sum of ptshape and multiplicity dependence
-  fMCPtShape->SetBinContent(1,0.01); //dummy
-  fMCPtShape->SetBinContent(2,0.01); //dummy
-  fMCPtShape->SetBinContent(3,0.01); //dummy
-  fMCPtShape->SetBinContent(4,0.01); //dummy
-  fMCPtShape->SetBinContent(5,0.01); //dummy
-  fMCPtShape->SetBinContent(6,0.01); //dummy
-  fMCPtShape->SetBinContent(7,0.01); //dummy
-  fMCPtShape->SetBinContent(8,0.01); //dummy
+  fMCPtShape->SetBinContent(1,0.00);
+  fMCPtShape->SetBinContent(2,0.00);
+  fMCPtShape->SetBinContent(3,0.00);
+  fMCPtShape->SetBinContent(4,0.00);
+  fMCPtShape->SetBinContent(5,0.00);
+  fMCPtShape->SetBinContent(6,0.00);
+  fMCPtShape->SetBinContent(7,0.00);
+  fMCPtShape->SetBinContent(8,0.00);
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",nBins,limits);
