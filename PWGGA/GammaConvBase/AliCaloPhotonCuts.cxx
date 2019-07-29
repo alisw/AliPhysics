@@ -6557,7 +6557,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           }
         } else if( fCurrentMC==kPbPb5T18HIJING ){
           if (fClusterType == 2 ){
-            energy /= FunctionNL_DPOW(energy, 0.9998079211, 0.0090667260, -2.2864021685, 0.9941384481, -0.0021830957, -1.1672607963) ; // added on 2019 06 18 , based on PHOS peri
+            energy /= FunctionNL_kSDM(energy, 0.991778, -2.60609, -1.63899); // added on 2019 07 29 , based on pp 5TeV
           }
         } else if( fCurrentMC==kXeXe5T17HIJING ){
           if (fClusterType == 1 ){
