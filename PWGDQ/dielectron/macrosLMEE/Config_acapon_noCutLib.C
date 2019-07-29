@@ -90,7 +90,7 @@ void SetupCuts(AliDielectron* die, Int_t cutDefinition)
     /* allCuts->AddCut(convRejCut); */
     /* allCuts->AddCut(pairMassCut); */
 
-    die->GetPairFilter().AddCuts(allCuts);
+    /* die->GetPairFilter().AddCuts(allCuts); */
 
     die->GetTrackFilter().AddCuts(SetPIDcuts(cutDefinition));
     die->GetTrackFilter().AddCuts(SetupESDtrackCuts(cutDefinition));
