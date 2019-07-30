@@ -82,10 +82,16 @@ AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
     // create the task and configure
     AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(lname,isMC);
     
+    // AODs
+    bool isAOD=(system>=100);
+    system=system%100;
+    
     // trigger
     int trigger=EventCuts%10;
-    if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
-    else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+    unsigned int triggerMask=AliVEvent::kINT7;
+    if(trigger==1) triggerMask=AliVEvent::kHighMultV0;
+    if(!isAOD) task->UseESDTriggerMask(triggerMask);
+    else task->SelectCollisionCandidates(triggerMask);
     
     // multiplicity
     bool isPP=false;
