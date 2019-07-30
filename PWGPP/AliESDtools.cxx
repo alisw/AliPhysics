@@ -760,9 +760,14 @@ Double_t AliESDtools::LoadESD(Int_t entry, Int_t verbose) {
 /// \param entry
 /// \param verbose
 /// \return
-Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
+Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t doReset, Int_t verbose) {
   static Int_t oldEntry = -1;
+
   if (oldEntry != entry) {
+    if (doReset>0) {
+      fHisTPCVertexA->Reset();
+      fHisTPCVertexC->Reset();
+    }
     if (!fTaskMode) LoadESD(entry);
     oldEntry = entry;
     Int_t nNumberOfTracks = fEvent->GetNumberOfTracks();
