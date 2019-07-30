@@ -174,12 +174,12 @@ public:
   void     InitEMCALRecalibrationFactors() ;
   TObjArray* GetEMCALRecalibrationFactorsArray()   const { return fEMCALRecalibrationFactors ; }
   TH2F *   GetEMCALChannelRecalibrationFactors(Int_t iSM)     const { return (TH2F*)fEMCALRecalibrationFactors->At(iSM) ; }	
-  void     SetEMCALChannelRecalibrationFactors(const TObjArray *map);
-  void     SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH2F* h);
-  Float_t  GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
+  Float_t  GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const {
     if(fEMCALRecalibrationFactors) 
       return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
-    else return 1 ; } 
+    else return 1 ; }
+  void     SetEMCALChannelRecalibrationFactors(const TObjArray *map);
+  void     SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH2F* h);     
   void     SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
     if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors() ;
     ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
@@ -189,6 +189,24 @@ public:
   void     SwitchOffRunDepCorrection()                   { fUseRunCorrectionFactors = kFALSE ; }
   void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
                                                            SwitchOnRecalibration()           ; }      
+  // Single Channel Calibration
+  Bool_t   IsSingleChannelRecalibrationOn()                     const { return fSingleChannelRecalibration ; }
+  void     SwitchOffSingleChannelRecalibration()                      { fSingleChannelRecalibration = kFALSE ; }
+  void     SwitchOnSingleChannelRecalibration()                       { fSingleChannelRecalibration = kTRUE  ; 
+                                                                        if(!fEMCALSingleChannelRecalibrationFactors)InitEMCALSingleChannelRecalibrationFactors() ; }
+  void     InitEMCALSingleChannelRecalibrationFactors() ;
+  TObjArray* GetEMCALSingleChannelRecalibrationFactorsArray()   const { return fEMCALSingleChannelRecalibrationFactors ; }
+  TH2F *   GetEMCALSingleChannelRecalibrationFactors(Int_t iSM)     const { return (TH2F*)fEMCALSingleChannelRecalibrationFactors->At(iSM) ; }	
+  Float_t  GetEMCALSingleChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
+    if(fEMCALSingleChannelRecalibrationFactors) 
+      return (Float_t) ((TH2F*)fEMCALSingleChannelRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
+    else return 1 ; } 
+  void     SetEMCALSingleChannelRecalibrationFactors(const TObjArray *map);
+  void     SetEMCALSingleChannelRecalibrationFactors(Int_t iSM , const TH2F* h);
+  void     SetEMCALSingleChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
+    if(!fEMCALSingleChannelRecalibrationFactors) InitEMCALSingleChannelRecalibrationFactors() ;
+    ((TH2F*)fEMCALSingleChannelRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
+  
   // Time Recalibration
   void     SetUseOneHistForAllBCs(Bool_t useOneHist)     { fDoUseMergedBC = useOneHist ; }
   void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
@@ -492,7 +510,12 @@ private:
   Bool_t     fCellsRecalibrated;         ///< Internal bool to check if cells (time/energy) where recalibrated and not recalibrate them when recalculating different things
   Bool_t     fRecalibration;             ///< Switch on or off the recalibration
   TObjArray* fEMCALRecalibrationFactors; ///< Array of histograms with map of recalibration factors, EMCAL
-    
+
+  // Single Channel Energy Recalibration 
+  Bool_t     fCellsSingleChannelRecalibrated;         ///< Internal bool to check if cells (time/energy) where recalibrated and not recalibrate them when recalculating different things
+  Bool_t     fSingleChannelRecalibration;             ///< Switch on or off the single channel calibration
+  TObjArray* fEMCALSingleChannelRecalibrationFactors; ///< Array of histograms with map of single channel calibration factors, EMCAL and DCAL
+  
   // Time Recalibration 
   Float_t    fConstantTimeShift;         ///< Apply a 600 ns (+15.8) time shift in case of simulation, shift in ns.
   Bool_t     fTimeRecalibration;         ///< Switch on or off the time recalibration
