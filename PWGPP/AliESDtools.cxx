@@ -73,7 +73,7 @@
 #include "AliCentrality.h"
 #include "AliMultSelection.h"
 #include "AliESDtools.h"
-
+#include "AliMathBase.h"
 
 ClassImp(AliESDtools)
 AliESDtools*  AliESDtools::fgInstance;
@@ -137,7 +137,7 @@ void AliESDtools::Init(TTree *tree, AliESDEvent *event) {
     tools.fHisTPCVertexC->SetLineColor(4);
     tools.fHisTPCVertexACut->SetLineColor(3);
     tools.fHisTPCVertexCCut->SetLineColor(6);
-    tools.fTPCVertexInfo = new TVectorF(6);
+    tools.fTPCVertexInfo = new TVectorF(10);
     tools.fCacheTrackCounters = new TVectorF(20);
     tools.fCacheTrackTPCCountersZ = new TVectorF(8);
     tools.fCacheTrackdEdxRatio = new TVectorF(27);
@@ -760,22 +760,28 @@ Double_t AliESDtools::LoadESD(Int_t entry, Int_t verbose) {
 /// \param entry
 /// \param verbose
 /// \return
-Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
+Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t doReset, Int_t verbose) {
   static Int_t oldEntry = -1;
+
   if (oldEntry != entry) {
+    if (doReset>0) {
+      fHisTPCVertexA->Reset();
+      fHisTPCVertexC->Reset();
+    }
     if (!fTaskMode) LoadESD(entry);
     oldEntry = entry;
     Int_t nNumberOfTracks = fEvent->GetNumberOfTracks();
     const Int_t bufSize = 20000;
     const Float_t kMinDCA = 3;
-    const Float_t kMinDCAZ = 4;
-    Float_t bufferP[bufSize], bufferM[bufSize];
+    const Float_t kMinDCAZ = 5;
+    Double_t bufferP[bufSize], bufferM[bufSize];
     Int_t counterP = 0, counterM = 0;
     Float_t dcaXY, dcaZ;
     for (Int_t iTrack = 0; iTrack < nNumberOfTracks; iTrack++) {
       AliESDtrack *track = fEvent->GetTrack(iTrack);
       if (track == nullptr) continue;
       if (track->IsOn(0x1)) continue;
+      //if (TMath::Abs(track->GetTgl())>1) continue;
       if (track->HasPointOnITSLayer(0)) continue;
       if (track->HasPointOnITSLayer(1)) continue;
       const AliExternalTrackParam *param = track->GetInnerParam();
@@ -799,12 +805,19 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
     (*fTPCVertexInfo)*=0;
     Double_t posZA = (counterP > 0) ? TMath::Median(counterP, bufferP) : 0;
     Double_t posZC = (counterM > 0) ? TMath::Median(counterM, bufferM) : 0;
+    Double_t posZALTM=0,posZCLTM=0, rmsZALTM=0,rmsZCLTM=0;
+    if (counterP>4) AliMathBase::EvaluateUni(counterP, bufferP, posZALTM, rmsZALTM, int(counterP*0.65));
+    if (counterM>4) AliMathBase::EvaluateUni(counterM, bufferM, posZCLTM, rmsZCLTM, int(counterM*0.65));
     (*fTPCVertexInfo)[0] = posZA;
     (*fTPCVertexInfo)[1] = -posZC;
     (*fTPCVertexInfo)[2] = (-posZC+posZA)*0.5;
     (*fTPCVertexInfo)[3] = counterP;
     (*fTPCVertexInfo)[4] = counterM;
     (*fTPCVertexInfo)[5] = (counterP+counterM);
+    (*fTPCVertexInfo)[6] = posZALTM;
+    (*fTPCVertexInfo)[7] = posZCLTM;
+    (*fTPCVertexInfo)[8] = rmsZALTM;
+    (*fTPCVertexInfo)[9] = rmsZCLTM;
     if (verbose > 0) {
       ::Info("AliESDtools::CachePileupVertexTPC", "%d\t%d\t%f\t%f\t", counterP, counterM, posZA, posZC);
     }
