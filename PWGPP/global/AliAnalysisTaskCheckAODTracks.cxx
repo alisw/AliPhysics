@@ -7,6 +7,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliAODTracklets.h"
+#include "AliMultSelection.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
@@ -71,6 +72,13 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistNtracksFb5VsV0befEvSel{nullptr},
   fHistNtracksFb4VsV0aftEvSel{nullptr},
   fHistNtracksFb5VsV0aftEvSel{nullptr},
+  fHistNtracksFb0{nullptr},
+  fHistNtracksFb1{nullptr},
+  fHistNtracksFb4{nullptr},
+  fHistNtracksFb5{nullptr},
+  fHistNtracksFb6{nullptr},
+  fHistNtracksFb7{nullptr},
+  fHistNtracksFb8{nullptr},
   fHistEtaPhiPtTPCsel{nullptr},
   fHistEtaPhiPtTPCselITSref{nullptr},
   fHistEtaPhiPtTPCselSPDany{nullptr},
@@ -134,6 +142,10 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fUsePhysSel(kTRUE),
   fUsePileupCut(kTRUE),
   fTriggerMask(AliVEvent::kAnyINT),
+  fSelectOnCentrality(kFALSE),
+  fMinCentrality(-1.),
+  fMaxCentrality(110.),
+  fCentrEstimator("V0M"),
   fNEtaBins(10),
   fNPhiBins(144),
   fNPtBins(100),
@@ -202,6 +214,13 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistNtracksFb5VsV0befEvSel;
     delete fHistNtracksFb4VsV0aftEvSel;
     delete fHistNtracksFb5VsV0aftEvSel;
+    delete fHistNtracksFb0;
+    delete fHistNtracksFb1;
+    delete fHistNtracksFb4;
+    delete fHistNtracksFb5;
+    delete fHistNtracksFb6;
+    delete fHistNtracksFb7;
+    delete fHistNtracksFb8;
     delete fHistEtaPhiPtTPCsel;
     delete fHistEtaPhiPtTPCselITSref;
     delete fHistEtaPhiPtTPCselSPDany;
@@ -347,10 +366,11 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"PhysSel");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"Good vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"Pass zSPD-zTrk vert sel");
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"|zvert|<10");
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"Pileup cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"Centrality");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Good vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Pass zSPD-zTrk vert sel");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"|zvert|<10");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"Pileup cut");
   fOutput->Add(fHistNEvents);
 
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in AOD events ; N_{tracks}",(Int_t)(fMaxMult+1.00001),-0.5,fMaxMult+0.5);
@@ -392,7 +412,23 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistNtracksFb5VsV0befEvSel);
   fOutput->Add(fHistNtracksFb4VsV0aftEvSel);
   fOutput->Add(fHistNtracksFb5VsV0aftEvSel);
-  
+
+  Int_t nMultBins=(Int_t)(fMaxMult+1.00001);
+  if(fMaxMult>1000.) nMultBins=500;
+  fHistNtracksFb0=new TH1F("hNtracksFb0"," ; N_{tracks,FilBit0}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb1=new TH1F("hNtracksFb1"," ; N_{tracks,FilBit1}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb4=new TH1F("hNtracksFb4"," ; N_{tracks,FilBit4}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb5=new TH1F("hNtracksFb5"," ; N_{tracks,FilBit5}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb6=new TH1F("hNtracksFb6"," ; N_{tracks,FilBit6}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb7=new TH1F("hNtracksFb7"," ; N_{tracks,FilBit7}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb8=new TH1F("hNtracksFb8"," ; N_{tracks,FilBit8}",nMultBins,-0.5,fMaxMult+0.5);
+  fOutput->Add(fHistNtracksFb0);
+  fOutput->Add(fHistNtracksFb1);
+  fOutput->Add(fHistNtracksFb4);
+  fOutput->Add(fHistNtracksFb5);
+  fOutput->Add(fHistNtracksFb6);
+  fOutput->Add(fHistNtracksFb7);
+  fOutput->Add(fHistNtracksFb8);
 
   fHistEtaPhiPtTPCsel = new TH3F("hEtaPhiPtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistEtaPhiPtTPCselITSref = new TH3F("hEtaPhiPtTPCselITSref"," ; #eta ; #varphi ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
@@ -591,13 +627,22 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     }
   }
 
-
+  
   fHistNEvents->Fill(0);
   if(fUsePhysSel){
     Bool_t isPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
     if(!isPhysSel) return;
   }
   fHistNEvents->Fill(1);
+
+  if(fSelectOnCentrality){
+    AliMultSelection* mulSel = (AliMultSelection*)aod->FindListObject("MultSelection");
+    if(mulSel){
+      Double_t centr=mulSel->GetMultiplicityPercentile(fCentrEstimator.Data());
+      if(centr<fMinCentrality || centr>fMaxCentrality) return;
+    }
+  }
+  fHistNEvents->Fill(2);
 
   Int_t ntracks = aod->GetNumberOfTracks();
   Int_t ntracklets = 0;
@@ -607,13 +652,23 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   Int_t totITSclusters=0;
   for(Int_t il=0; il<6; il++) totITSclusters+=aod->GetNumberOfITSClusters(il);
   Int_t totTPCclusters=aod->GetNumberOfTPCClusters();
+  Int_t ntracksFB0=0;
+  Int_t ntracksFB1=0;
   Int_t ntracksFB4=0;
   Int_t ntracksFB5=0;
+  Int_t ntracksFB6=0;
+  Int_t ntracksFB7=0;
+  Int_t ntracksFB8=0;
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
     AliAODTrack * track = (AliAODTrack*)aod->GetTrack(iTrack);
     if (!track) continue;
+    if(track->TestFilterBit(1)) ntracksFB0++;
+    if(track->TestFilterBit(1<<1)) ntracksFB1++;
     if(track->TestFilterBit(1<<4)) ntracksFB4++;
     if(track->TestFilterBit(1<<5)) ntracksFB5++;
+    if(track->TestFilterBit(1<<6)) ntracksFB6++;
+    if(track->TestFilterBit(1<<7)) ntracksFB7++;
+    if(track->TestFilterBit(1<<8)) ntracksFB8++;
   }
   Double_t vZEROampl=0;
   for(Int_t i=0;i<64;i++) vZEROampl+=aod->GetVZEROData()->GetMultiplicity(i);
@@ -625,7 +680,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   TString titTrc=vtTrc->GetTitle();
   if(titTrc.IsNull() || titTrc=="vertexer: 3D" || titTrc=="vertexer: Z") return;
   if (vtSPD->GetNContributors()<1) return;
-  fHistNEvents->Fill(2);
+  fHistNEvents->Fill(3);
 
   double covTrc[6],covSPD[6];
   vtTrc->GetCovarianceMatrix(covTrc);
@@ -635,13 +690,13 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   double errTrc = TMath::Sqrt(covTrc[5]);
   double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
   if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
-  fHistNEvents->Fill(3);
+  fHistNEvents->Fill(4);
 
   Float_t xvert=vtTrc->GetX();
   Float_t yvert=vtTrc->GetY();
   Float_t zvert=vtTrc->GetZ();
   if(TMath::Abs(zvert)>10) return;
-  fHistNEvents->Fill(4);
+  fHistNEvents->Fill(5);
 
   if(fUsePileupCut){
     AliAnalysisUtils utils;
@@ -651,12 +706,23 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     utils.SetCheckPlpFromDifferentBCMV(kTRUE);
     Bool_t isPUMV = utils.IsPileUpMV(aod);
     if(isPUMV) return;
-    fHistNEvents->Fill(5);
+    fHistNEvents->Fill(6);
   }
 
   fHistNtracksFb4VsV0aftEvSel->Fill(vZEROampl,ntracksFB4);
   fHistNtracksFb5VsV0aftEvSel->Fill(vZEROampl,ntracksFB5);
 
+  Bool_t iskINT7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
+  if(iskINT7){
+    fHistNtracksFb0->Fill(ntracksFB0);
+    fHistNtracksFb1->Fill(ntracksFB1);
+    fHistNtracksFb4->Fill(ntracksFB4);
+    fHistNtracksFb5->Fill(ntracksFB5);
+    fHistNtracksFb6->Fill(ntracksFB6);
+    fHistNtracksFb7->Fill(ntracksFB7);
+    fHistNtracksFb8->Fill(ntracksFB8);
+  }
+  
   Double_t pos[3],cov[6];
   vtTrc->GetXYZ(pos);
   vtTrc->GetCovarianceMatrix(cov);

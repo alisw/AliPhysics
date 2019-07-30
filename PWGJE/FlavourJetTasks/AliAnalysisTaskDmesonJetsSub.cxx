@@ -2219,6 +2219,356 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractRecoDecayAttributes(
   }
 }
 
+Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractEfficiencies(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef,UInt_t i)
+{
+  if (fCandidateType == kD0toKpi || fCandidateType == kD0toKpiLikeSign) { // D0 candidate
+   
+    return ExtractD0Efficiencies(Dcand, DmesonJet, jetDef, i);
+  }
+    else {
+    return kFALSE;
+  }
+}
+
+Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet,AliHFJetDefinition& jetDef, UInt_t i)
+{
+  AliDebug(10,"Checking if D0 meson is selected");
+  Int_t isSelected = fRDHFCuts->IsSelected(const_cast<AliAODRecoDecayHF2Prong*>(Dcand), AliRDHFCuts::kAll, fAodEvent);
+  if (isSelected == 0) return kFALSE;
+  TString hname1;
+  TString hname2;
+ 
+  Int_t MCtruthPdgCode = 0;
+ 
+  Int_t myflag=0;
+  Double_t jeteta=0;
+  Double_t jetpt=0;
+  hname1 = TString::Format("%s/EfficiencyMatchesPrompt", fName.Data());
+  TH2* EfficiencyMatchesPrompt = static_cast<TH2*>(fHistManager->FindObject(hname1));
+  AliAODMCParticle* aodMcPart; 
+  
+  
+  hname2 = TString::Format("%s/EfficiencyMatchesNonPrompt", fName.Data());
+  TH2* EfficiencyMatchesNonPrompt = static_cast<TH2*>(fHistManager->FindObject(hname2));
+  
+  // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
+  // Checks also the origin, and if it matches the rejected origin mask, return false
+ Double_t jetPtdet = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt();
+ Double_t jetEtadet=  DmesonJet.fJets[jetDef.GetName()].fMomentum.Eta();
+ if(TMath::Abs(jetEtadet)>0.5) return kFALSE;
+ if(jetPtdet>100) return kFALSE;
+
+ 
+   if (fMCMode != kNoMC) {
+    Int_t mcLab = Dcand->MatchToMC(fCandidatePDG, fMCContainer->GetArray(), fNDaughters, fPDGdaughters.GetArray());
+    DmesonJet.fMCLabel = mcLab;
+
+    // Retrieve the generated particle (if exists) and its PDG code
+    if (mcLab >= 0) {
+      aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
+
+      if (aodMcPart) {
+        // Check origin and return false if it matches the rejected origin mask
+        if (fRejectedOrigin) {
+          auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
+          if ((origin.first & fRejectedOrigin) == origin.first) return kFALSE;
+        }
+        MCtruthPdgCode = aodMcPart->PdgCode();
+      }
+    }
+  }
+  
+
+ if(fMCMode==kSignalOnly){
+
+    fFastJetWrapper->Clear();
+    fFastJetWrapper->SetR(jetDef.fRadius);
+    fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
+    fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
+    AddInputVectors(fMCContainer, 100);
+    fFastJetWrapper->Run();
+    std::vector<fastjet::PseudoJet> jets_incl = sorted_by_pt(fFastJetWrapper->GetInclusiveJets());
+
+    for (auto jet : jets_incl) {
+      std::vector<fastjet::PseudoJet> constituents = jet.constituents();
+      // if(constituents.size()<2) continue;
+          for (auto constituent : jet.constituents()) {
+             Int_t iPart = constituent.user_index() - 100;
+             if (constituent.perp() < 1e-6) continue; // reject ghost particles
+        AliAODMCParticle* part = fMCContainer->GetMCParticle(iPart);
+        if (!part) {
+          ::Error("AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunParticleLevelAnalysis", "Could not find jet constituent %d!", iPart);
+          continue;
+        }
+	if(part==aodMcPart){myflag=1;
+	       jetpt=jet.perp();
+	       jeteta=jet.eta();
+	  break;}
+
+	  }}
+    if(myflag==0) return kFALSE;
+    if(TMath::Abs(jeteta)>0.5) return kFALSE;
+  
+ 
+   
+    if (isSelected == 1) { // selected as a D0
+    if (i != 0) return kFALSE; // only one mass hypothesis thanks to PID
+   
+      if(MCtruthPdgCode == fCandidatePDG){
+         auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
+
+	 if(origin.first == kFromCharm) {
+	   if(TMath::Abs(aodMcPart->Eta())<=0.9) EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
+          if(origin.first == kFromBottom) {
+	    if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}
+      }
+
+  }
+  else if (isSelected == 2) { // selected as a D0bar
+    if (i != 1) return kFALSE; // only one mass hypothesis thanks to PID
+
+      
+      if(MCtruthPdgCode == -fCandidatePDG){
+      auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
+      if(origin.first == kFromCharm){
+	if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
+        if(origin.first == kFromBottom){
+	  if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}
+  }
+
+  }
+
+  else if (isSelected == 3) { // selected as either a D0bar or a D0 (PID on K and pi undecisive)
+  
+
+    // Accept the correct mass hypothesis for signal-only and the wrong one for background-only
+    if (MCtruthPdgCode == fCandidatePDG){
+      
+      if (i == 0){
+      auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
+      if(origin.first == kFromCharm){
+	if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
+        if(origin.first == kFromBottom){
+	  if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}}
+    }
+    else if (MCtruthPdgCode == -fCandidatePDG){
+      if (i == 1){
+
+       auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
+      if(origin.first == kFromCharm){
+	if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
+        if(origin.first == kFromBottom){
+	  if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}}
+      
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+ }
+  return kTRUE;
+}
+
+
+Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominator(AliHFJetDefinition& jetDef)
+{
+  
+  TString hname;
+  TString hname1;
+  TString hname2;
+  
+  Double_t jeteta=0;
+  Double_t jetpt=0;
+  Int_t TheTrueCode = 0;
+
+  fMCContainer->SetSpecialPDG(fCandidatePDG);
+  fMCContainer->SetRejectedOriginMap(fRejectedOrigin);
+  fMCContainer->SetAcceptedDecayMap(fAcceptedDecay);
+  fMCContainer->SetRejectISR(fRejectISR);
+  fMCContainer->SetSpecialPDG(fCandidatePDG);
+  fMCContainer->SetCharge(AliParticleContainer::EChargeCut_t::kCharged);
+  
+     if (!fMCContainer->IsSpecialPDGFound()) return kFALSE;
+  
+  hname1 = TString::Format("%s/EfficiencyGeneratorPrompt", fName.Data());
+  TH2* EfficiencyGeneratorPrompt = static_cast<TH2*>(fHistManager->FindObject(hname1));
+ 
+  
+  
+  hname2 = TString::Format("%s/EfficiencyGeneratorNonPrompt", fName.Data());
+  TH2* EfficiencyGeneratorNonPrompt = static_cast<TH2*>(fHistManager->FindObject(hname2));
+  if(fMCMode==kSignalOnly){
+   
+    fFastJetWrapper->Clear();
+    fFastJetWrapper->SetR(jetDef.fRadius);
+    fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
+    fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
+     hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", GetName(), jetDef.GetName());
+     AddInputVectors(fMCContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname))); 
+    
+    fFastJetWrapper->Run();
+    std::vector<fastjet::PseudoJet> jets_incl =  sorted_by_pt(fFastJetWrapper->GetInclusiveJets());
+   
+ 
+     
+      for (auto jet : jets_incl) {
+      jetpt=0;
+      jeteta=0;
+        std::vector<fastjet::PseudoJet> constituents = jet.constituents();
+    
+            for (auto constituent : jet.constituents()) {
+             Int_t iPart = constituent.user_index() - 100;
+             if (constituent.perp() < 1e-6) continue; // reject ghost particles
+             AliAODMCParticle* part = fMCContainer->GetMCParticle(iPart);
+             if (!part) {
+	       ::Error("AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunParticleLevelAnalysis", "Could not find jet constituent %d!", iPart);
+              continue;
+                         }
+
+	     TheTrueCode=part->PdgCode();
+	     //  Int_t mother=part->GetMother();
+	     // AliAODMCParticle* mypart = fMCContainer->GetMCParticle(mother);
+	     if(TMath::Abs(TheTrueCode)==fCandidatePDG){
+	  
+      	  jetpt=jet.perp();
+	  jeteta=jet.eta();
+          if(TMath::Abs(jeteta)>0.5) continue;
+	  
+          auto origin = IsPromptCharm(part, fMCContainer->GetArray());
+     
+      if(origin.first == kFromCharm){
+	if(TMath::Abs(part->Eta())<=0.9) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);}
+        if(origin.first == kFromBottom){ 
+	  if(TMath::Abs(part->Eta())<=0.9) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);}
+       
+	     }
+
+  
+   
+	    }}
+     
+  }
+ 
+  return kTRUE;
+}
+
+Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOneByOne(AliHFJetDefinition& jetDef)
+{
+  
+  TString hname;
+  TString hname1;
+  TString hname2;
+ 
+  Double_t jeteta=0;
+  Double_t jetpt=0;
+  Int_t TheTrueCode = 0;
+ 
+  vector<int> dlabel;
+  fMCContainer->SetSpecialPDG(fCandidatePDG);
+  fMCContainer->SetRejectedOriginMap(fRejectedOrigin);
+  fMCContainer->SetAcceptedDecayMap(fAcceptedDecay);
+  fMCContainer->SetRejectISR(fRejectISR);
+  fMCContainer->SetSpecialPDG(fCandidatePDG);
+  fMCContainer->SetSpecialIndex(-10);
+  fMCContainer->SetCharge(AliParticleContainer::EChargeCut_t::kCharged);
+     if (!fMCContainer->IsSpecialPDGFound()) return kFALSE;
+   
+    
+  hname1 = TString::Format("%s/EfficiencyGeneratorPrompt", fName.Data());
+  TH2* EfficiencyGeneratorPrompt = static_cast<TH2*>(fHistManager->FindObject(hname1));
+ 
+  
+  
+  hname2 = TString::Format("%s/EfficiencyGeneratorNonPrompt", fName.Data());
+  TH2* EfficiencyGeneratorNonPrompt = static_cast<TH2*>(fHistManager->FindObject(hname2));
+  if(fMCMode==kSignalOnly){
+   
+    //here I loop over the container and count the D mesons and store their indexes
+    auto cont = fMCContainer->all();
+    for (auto it = cont.begin(); it != cont.end(); ++it) {
+    UInt_t rejectionReason = 0;
+    if((*it)->PdgCode()==fCandidatePDG){
+    
+      dlabel.push_back(it.current_index());}
+      
+ 
+     if (!fMCContainer->AcceptObject(it.current_index(), rejectionReason)) {
+      
+      continue;
+     }
+
+     
+     }
+   
+     // then, for each D meson I replace only its decays (not other D decays) and I  only keep for the jet finding the given D meson
+    for(Int_t j=0;j<dlabel.size();j++){
+     
+          fMCContainer->SetSpecialPDG(-10);
+          fMCContainer->SetSpecialIndex(dlabel[j]);
+	 
+    fFastJetWrapper->Clear();
+    fFastJetWrapper->SetR(jetDef.fRadius);
+    fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
+    fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
+     hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", GetName(), jetDef.GetName());
+     AddInputVectors(fMCContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname))); 
+     fFastJetWrapper->Run();
+    std::vector<fastjet::PseudoJet> jets_incl =  sorted_by_pt(fFastJetWrapper->GetInclusiveJets());
+   
+ 
+     
+      for (auto jet : jets_incl) {
+      jetpt=0;
+      jeteta=0;
+        std::vector<fastjet::PseudoJet> constituents = jet.constituents();
+    
+            for (auto constituent : jet.constituents()) {
+             Int_t iPart = constituent.user_index() - 100;
+             if (constituent.perp() < 1e-6) continue; // reject ghost particles
+             AliAODMCParticle* part = fMCContainer->GetMCParticle(iPart);
+             if (!part) {
+	       ::Error("AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunParticleLevelAnalysis", "Could not find jet constituent %d!", iPart);
+              continue;
+                         }
+
+	     TheTrueCode=part->PdgCode();
+	    
+	     if(TMath::Abs(TheTrueCode)==fCandidatePDG){
+	  
+      	  jetpt=jet.perp();
+	  jeteta=jet.eta();
+          if(TMath::Abs(jeteta)>0.5) continue;
+	  
+          auto origin = IsPromptCharm(part, fMCContainer->GetArray());
+     
+      if(origin.first == kFromCharm){
+	if(TMath::Abs(part->Eta())<=0.9)EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);}
+        if(origin.first == kFromBottom){ 
+	  if(TMath::Abs(part->Eta())<=0.9)EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);}
+      
+	     }
+
+  
+   
+	    }}
+     
+    }
+    dlabel.clear();
+  }
+ 
+  return kTRUE;
+}
+
+
+
+
 /// Extract attributes of the D0 meson candidate.
 ///
 /// \param Dcand Pointer to a AliAODRecoDecayHF2Prong representing the D0 meson candidate
@@ -2231,11 +2581,15 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
   AliDebug(10,"Checking if D0 meson is selected");
   Int_t isSelected = fRDHFCuts->IsSelected(const_cast<AliAODRecoDecayHF2Prong*>(Dcand), AliRDHFCuts::kAll, fAodEvent);
   if (isSelected == 0) return kFALSE;
-
+  TString hname;
+  TString hname2;
   Int_t MCtruthPdgCode = 0;
-
+  
   Double_t invMassD = 0;
 
+  AliAODMCParticle* aodMcPart; 
+
+  
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
   if (fMCMode != kNoMC) {
@@ -2244,7 +2598,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
 
     // Retrieve the generated particle (if exists) and its PDG code
     if (mcLab >= 0) {
-      AliAODMCParticle* aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
+      aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
 
       if (aodMcPart) {
         // Check origin and return false if it matches the rejected origin mask
@@ -2256,7 +2610,9 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
       }
     }
   }
+  
 
+  
   if (isSelected == 1) { // selected as a D0
     if (i != 0) return kFALSE; // only one mass hypothesis thanks to PID
 
@@ -2271,6 +2627,10 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
+   
+    
+
+
   }
   else if (isSelected == 2) { // selected as a D0bar
     if (i != 1) return kFALSE; // only one mass hypothesis thanks to PID
@@ -2286,6 +2646,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
+   
   }
   else if (isSelected == 3) { // selected as either a D0bar or a D0 (PID on K and pi undecisive)
     AliDebug(10,"Selected as either D0 or D0bar");
@@ -2403,8 +2764,8 @@ AliAnalysisTaskDmesonJetsSub::EMesonDecayChannel_t AliAnalysisTaskDmesonJetsSub:
 
   if (part->GetNDaughters() == 2) {
 
-    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(0)));
-    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(1)));
+    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(0)));
+    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(1)));
 
     if (!d1 || !d2) {
       return decay;
@@ -2555,12 +2916,20 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
   std::array<int, 3> nAccCharm = {0};
   std::array<std::array<int, 3>, 5> nAccCharmPt = {{{0}}};
 
+
+   //fill the mc efficiency//
+  for (auto& def : fJetDefinitions)GetEfficiencyDenominator(def);
+
+  
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
     AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(icharm)); // D candidates
     if (!charmCand) continue;
     if(!(vHF.FillRecoCand(fAodEvent,charmCand))) continue;
 
-    // region of interest + cuts
+
+   
+   
+    //region of interest + cuts
     if (!fRDHFCuts->IsInFiducialAcceptance(charmCand->Pt(), charmCand->Y(fCandidatePDG))) continue;
     Int_t nMassHypo = 0; // number of mass hypothesis accepted for this D meson
     if (charmCand->Pt() > maxDPt) maxDPt = charmCand->Pt();
@@ -2572,6 +2941,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
         for (auto& def : fJetDefinitions) {
           if (FindJet(charmCand, DmesonJet, def,im)) {
             Double_t jetPt = DmesonJet.fJets[def.GetName()].fMomentum.Pt();
+	    ExtractEfficiencies(charmCand,DmesonJet,def,im);
             if (jetPt > maxJetPt[&def]) maxJetPt[&def] = jetPt;
           }
           else {
@@ -2769,10 +3139,11 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::AddInputVectors(AliEmcalConta
   auto itcont = cont->all_momentum();
   for (AliEmcalIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
     UInt_t rejectionReason = 0;
-    if (!cont->AcceptObject(it.current_index(), rejectionReason)) {
+    //only physical primaries are accepted for the jet finding
+     if (!cont->AcceptObject(it.current_index(), rejectionReason)) {
       if (rejectHist) rejectHist->Fill(AliEmcalContainer::GetRejectionReasonBitPosition(rejectionReason), it->first.Pt());
       continue;
-    }
+     }
     if (fRandomGen && eff > 0 && eff < 1) {
       Double_t rnd = fRandomGen->Rndm();
       if (eff < rnd) {
@@ -2781,22 +3152,28 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::AddInputVectors(AliEmcalConta
       }
     }
     Int_t uid = offset >= 0 ? it.current_index() + offset: -it.current_index() - offset;
+   
     fFastJetWrapper->AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
   }
 }
 
+
 void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t ijet,Double_t type,AliHFJetDefinition& jetDef, Double_t invmass)
 {
-   double nsd = 0;        
+  
    double nall = 0;        
    double zg = 0.;         
    double flagSubjet=0;
    double xconstperp=0;
-   TString hname; 
+   TString hname;
+   TString hname2;
    fastjet::JetAlgorithm jet_algo(fastjet::cambridge_algorithm);
    double jet_radius_ca = 1.0;
    fastjet::JetDefinition jet_def(jet_algo, jet_radius_ca,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
-  
+   hname = TString::Format("%s/%s/LundIterative", GetName(), jetDef.GetName());
+   THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname)); 
+   hname2 = TString::Format("%s/%s/AngleDifference", GetName(), jetDef.GetName());
+   TH2* hdiffangle = static_cast<TH2*>(fHistManager->FindObject(hname2)); 	    
       try{
       std::vector<fastjet::PseudoJet> particles(fFastJetWrapper->GetJetConstituents(ijet));
       fastjet::ClusterSequence cs_ca(particles, jet_def);
@@ -2807,7 +3184,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
       fastjet::PseudoJet jj = output_jets[0];
       fastjet::PseudoJet j1; 
       fastjet::PseudoJet j2;  
-    
+      
       while(jj.has_parents(j1,j2)){
          nall = nall + 1;
          if(j1.perp() < j2.perp()) std::swap(j1,j2);
@@ -2821,20 +3198,21 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
 
 	 
          double delta_R = j1.delta_R(j2);
+	 double delta_Raxis=j2.delta_R(output_jets[0]);
          zg = j2.perp()/(j1.perp()+j2.perp());   
-                     
+         double yh=j1.e()+j2.e();            
          double y = log(1.0/delta_R);
-         double lnpt_rel = log(zg*delta_R);
-	 double frac=j1.perp()/output_jets[0].perp();
-	 double lundEntries[9] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,frac};
-	   hname = TString::Format("%s/LundIterative", jetDef.GetName());
-           THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname)); 
-	   //   if(!h) cout<<"caca"<<endl;
-	   h->Fill(lundEntries);
+         double lnpt_rel = log(j2.perp()*delta_R);
+
+	 double lundEntries[10] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,yh,TMath::Abs(output_jets[0].eta())};
+         h->Fill(lundEntries);
+	 hdiffangle->Fill(delta_R, delta_Raxis);
                 jj=j1;
       }
 
-         
+      if(nall==0){ double lundEntrieszero[10]={0,0,output_jets[0].perp(),0,type,0,0,invmass,0,TMath::Abs(output_jets[0].eta())};
+	h->Fill(lundEntrieszero);}
+      
       } catch (fastjet::Error) { /*return -1;*/ }
                        
 }
@@ -3198,11 +3576,11 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
     maxTracks = 500;
   }
 
-      Int_t dimx   = 9;
-      Int_t nbinsx[9]   = {50,50,10,20,2,2,20,20,10};
-      Double_t minx[9] =  {0,-10,0,0,0,0,0,1.4,0};
-      Double_t maxx[9]  = {5,0,100,20,2,2,20,2.4,1};
-      TString titlex[9]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac"};
+      Int_t dimx   = 10;
+      Int_t nbinsx[10]   = {50,100,10,20,2,2,200,150,100,9};
+      Double_t minx[10] =  {0,-10,0,0,0,0,0,1.6,0,0};
+      Double_t maxx[10]  = {5,10,100,20,2,2,100,2.3,100,0.9};
+      TString titlex[10]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac","abs(eta)"};
 
 
 
@@ -3292,6 +3670,22 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
     hname = TString::Format("%s/fHistRejectedDMesonPhi", param.GetName());
     htitle = hname + ";#it{#phi}_{D};counts";
     fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
+
+     hname = TString::Format("%s/EfficiencyMatchesPrompt",param.GetName());
+      htitle = hname + ";D meson matches prompt";
+      fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
+
+      hname = TString::Format("%s/EfficiencyGeneratorPrompt",param.GetName());
+      htitle = hname + ";D meson part level prompt";
+      fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
+
+      hname = TString::Format("%s/EfficiencyMatchesNonPrompt",param.GetName());
+      htitle = hname + ";D meson matches non prompt";
+      fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
+
+      hname = TString::Format("%s/EfficiencyGeneratorNonPrompt",param.GetName());
+      htitle = hname + ";D meson part level non prompt";
+      fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
 
     if (param.fMCMode != kMCTruth) {
       if (param.fCandidateType == kD0toKpi || param.fCandidateType == kD0toKpiLikeSign) {
@@ -3422,10 +3816,18 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
         htitle = hname + ";no. of tracks;#it{p}_{T,D} (GeV/#it{c});counts";
         fHistManager.CreateTH2(hname, htitle, 200, 0, maxTracks, 300, 0, 150);
       }
-       hname = TString::Format("%s/LundIterative",jetDef.GetName());
+      hname = TString::Format("%s/%s/LundIterative",param.GetName(),jetDef.GetName());
+      cout<<"at the begining"<<hname<<endl;
       THnSparse* h = fHistManager.CreateTHnSparse(hname,hname,dimx,nbinsx,minx,maxx);
       for (Int_t j = 0; j < dimx; j++) {
       h->GetAxis(j)->SetTitle(titlex[j]);}
+
+     
+      
+      hname = TString::Format("%s/%s/AngleDifference",param.GetName(),jetDef.GetName());
+      htitle = hname + ";angle iterative declustering;angle to axis";
+      fHistManager.CreateTH2(hname,htitle,100,0.,2*3.1416,100,0,2*3.1416);
+      
     }
     switch (fOutputType) {
     case kTreeOutput:
@@ -3720,7 +4122,7 @@ void AliAnalysisTaskDmesonJetsSub::FillPartonLevelHistograms()
 
     Bool_t lastInPartonShower = kTRUE;
     Bool_t hadronDaughter = kFALSE;
-    for (Int_t daughterIndex = part.second->GetFirstDaughter(); daughterIndex <= part.second->GetLastDaughter(); daughterIndex++){
+    for (Int_t daughterIndex = part.second->GetDaughterFirst(); daughterIndex <= part.second->GetDaughterLast(); daughterIndex++){
       if (daughterIndex < 0) {
         AliDebugStream(5) << "Could not find daughter index!" << std::endl;
         continue;

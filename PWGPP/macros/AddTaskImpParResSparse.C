@@ -1,3 +1,14 @@
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+
+#include "AliAnalysisTaskSEImpParResSparse.h"
+#include "AliAnalysisManager.h"
+#include "AliESDtrackCuts.h"
+#include "AliAnalysisDataContainer.h"
+#include "TChain.h"
+
+
+#endif
+
 AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
                                                          Int_t selPdg=-1,
                                                          Bool_t diamond=kTRUE,
@@ -12,7 +23,22 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
                                                          Bool_t useCutGeoNcrNcl=kFALSE,
                                                          Bool_t fillexpertSparse=kFALSE,
                                                          Bool_t usetriggersel=kFALSE,
-                                          							 Int_t species=-1)
+                                                         Int_t species=-1,
+                                                         Bool_t finebinphi = kFALSE,
+                                                         Bool_t checkSPDmod = kFALSE
+                                                         ,Bool_t switchImpParrphiSparsePtBchargePhi = kTRUE
+                                                         ,Bool_t switchImpParrphiSparsePtzVtxEtaPhi = kTRUE
+                                                         ,Bool_t switchImpParrphiSparsePtEtaPhi = kTRUE 
+                                                         ,Bool_t switchImpParPullrphiSparsePtEtaPhi = kTRUE
+                                                         ,Bool_t switchImpParPullrphiSparsePtBchargePhi = kTRUE
+                                                         ,Bool_t switchImpParzSparsePtBchargePhi = kTRUE
+                                                         ,Bool_t switchImpParzSparsePtzVtxEtaPhi = kTRUE
+                                                         ,Bool_t switchImpParzSparsePtEtaPhi = kTRUE
+                                                         ,Bool_t switchImpParPullzSparsePtEtaPhi = kTRUE
+                                                         ,Bool_t switchImpParPullzSparsePtBchargePhi = kTRUE
+                                                         ,Bool_t useITSrefitTrks_highMev = kFALSE
+                                          				 )
+
 {
     
     // Get the pointer to the existing analysis manager via the static access method.
@@ -36,7 +62,7 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
     d0ResTask->SetUseDiamond(diamond);
     d0ResTask->SetSkipTrack(skipTrack);
     d0ResTask->SetMultiplicityRange(minmult,maxmult);
-    d0ResTask->SetFillSparseForExpert(fillexpertSparse);
+    //d0ResTask->SetFillSparseForExpert(fillexpertSparse);
     d0ResTask->SetUsePtWeights(0,1.);
     d0ResTask->SetCheckSDDIsIn(checkSDDIsIn);
     d0ResTask->SetParticleSpecies(species);
@@ -47,6 +73,24 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
         //d0ResTask->SetTriggerMask(0);
     }
     d0ResTask->SetTrackType(tracktype);
+    // mfaggin
+    d0ResTask->SetUseFinerPhiBins(finebinphi);
+    d0ResTask->SetStoreSPDmodulesInfo(checkSPDmod);
+    d0ResTask->SetFillSparse_ImpParrphiSparsePtBchargePhi(switchImpParrphiSparsePtBchargePhi);
+    d0ResTask->SetFillSparse_ImpParrphiSparsePtzVtxEtaPhi(switchImpParrphiSparsePtzVtxEtaPhi);
+    d0ResTask->SetFillSparse_ImpParrphiSparsePtEtaPhi(switchImpParrphiSparsePtEtaPhi);
+    d0ResTask->SetFillSparse_ImpParPullrphiSparsePtEtaPhi(switchImpParPullrphiSparsePtEtaPhi);
+    d0ResTask->SetFillSparse_ImpParPullrphiSparsePtBchargePhi(switchImpParPullrphiSparsePtBchargePhi);
+    d0ResTask->SetFillSparse_ImpParzSparsePtBchargePhi(switchImpParzSparsePtBchargePhi);
+    d0ResTask->SetFillSparse_ImpParzSparsePtzVtxEtaPhi(switchImpParzSparsePtzVtxEtaPhi);
+    d0ResTask->SetFillSparse_ImpParzSparsePtEtaPhi(switchImpParzSparsePtEtaPhi);
+    d0ResTask->SetFillSparse_ImpParPullzSparsePtEtaPhi(switchImpParPullzSparsePtEtaPhi);
+    d0ResTask->SetFillSparse_ImpParPullzSparsePtBchargePhi(switchImpParPullzSparsePtBchargePhi);
+
+    d0ResTask->SetFillSparseForExpert(fillexpertSparse);
+
+    // mfaggin
+    d0ResTask->SetEstimatorHighMultEv(useITSrefitTrks_highMev);
     
     AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("d0ResAnalysisESDTrackCuts");
     esdTrackCuts->SetRequireTPCRefit(kTRUE);

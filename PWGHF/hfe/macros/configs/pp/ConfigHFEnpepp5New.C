@@ -37,7 +37,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                                     Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL,
                                     Double_t assITSpid=-3., Double_t assTOFs=3.,
                                     Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE, Int_t weightlevelback = -1,
-                                    Int_t HadronContFunc=0, Int_t PrimaryVertexTyp)
+                                    Int_t HadronContFunc=0, Int_t PrimaryVertexTyp=0)
 {
 
    Bool_t etacor = false;
@@ -624,15 +624,15 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
        // new parametrisation function of the electron mean (18.September 2018)
     cutmodel="min(pol1(0),pol0(2))";
     Double_t params[3];
-    params[0] = 0.008 + paramsTPCdEdxcutlow[0];
-    params[1] = 0.078;
+    params[0] = 0.017 + paramsTPCdEdxcutlow[0];
+    params[1] = 0.071;
     params[2] = 0.12 + paramsTPCdEdxcutlow[0];
     pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
 
    }
 
    if(!useMC){
-      AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
+      AliHFEpidTPC *tpcpid = (AliHFEpidTPC*) pid->GetDetPID(AliHFEpid::kTPCpid);
       if(etacor){
          printf("CONFIGURATION FILE: Eta correction of electrons in the TPC \n");
          // Apply eta correction
@@ -652,7 +652,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
    // Configure TOF PID
    if (usetof){
       pid->ConfigureTOF(TOFs);
-      AliHFEpidTOF *tofpid = pid->GetDetPID(AliHFEpid::kTOFpid);
+      AliHFEpidTOF *tofpid = (AliHFEpidTOF*) pid->GetDetPID(AliHFEpid::kTOFpid);
       if (kTOFmis){
          tofpid->SetRejectTOFmismatch();
       }

@@ -14,8 +14,17 @@
 #include "AliConversionMesonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "TProfile2D.h"
+#include "TH3F.h"
 #include <vector>
+#include <memory>
+using  std::unique_ptr;
+#include "AliDalitzAODESD.h"
+#include "AliDalitzData.h"
+#include "AliDalitzAODESDMC.h"
+#include "AliDalitzEventMC.h"
 
+class AliVEvent;
+class AliVTrack;
 class AliESDInputHandler;
 class AliMCEventHandler;
 class AliESDEvent;
@@ -25,6 +34,11 @@ class AliESDpidCuts;
 class AliV0Reader;
 class AliGammaConversionHistograms;
 class AliTriggerAnalysis;
+class AliAODEvent;
+class AliAODtrack;
+class AliAODtrackCuts;
+class AliAODpidCuts;
+
 
 class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
   public:
@@ -85,10 +99,11 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     void CalculateBackground();
     void UpdateEventByEventData();
     void FillElectronQAHistos(AliAODConversionPhoton *Vgamma) const;
-    Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
-    Double_t GetPsiPairMC(const TParticle *fMCPosParticle, const TParticle *fMCNegParticle) const;
+    Double_t GetPsiPair(AliDalitzAODESD *trackPos, AliDalitzAODESD *trackNeg ) const;
+    Double_t GetPsiPairMC( AliDalitzAODESDMC *fMCPosParticle, AliDalitzAODESDMC *fMCNegParticle) const;
+    Double_t GetdeltaPhi(AliDalitzAODESD *trackelectronVgamma, AliDalitzAODESD *trackpositronVgamma ) const;
 
-    Bool_t IsDalitz(TParticle *fMCMother) const;
+    Bool_t IsDalitz(AliDalitzAODESDMC *fMCMother) const;
     Bool_t IsPi0DalitzDaughter( Int_t label ) const;
     Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 
@@ -96,8 +111,12 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TString                           fV0ReaderName;
     AliDalitzElectronSelector         *fElecSelector;
     AliGammaConversionAODBGHandler    **fBGHandler;
+    AliVEvent                         *fDataEvent;
+    AliDalitzData                     *fAODESDEvent;
     AliESDEvent                       *fESDEvent;
     AliMCEvent                        *fMCEvent;
+    AliAODEvent                       *fAODEvent;
+    AliDalitzEventMC                  *fAODESDEventMC;
     TList                             **fCutFolder;
     TList                             **fESDList;
     TList                             **fBackList;
@@ -274,6 +293,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TH2F                              **hNGoodESDTracksVsNGoodVGammas;
     TH2F                              **fHistoSPDClusterTrackletBackground;        //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1I                              **hNV0Tracks;
+    TH3F                              **hESDEposEnegPsiPairpTleptonsDPhi;
     TProfile                          **hEtaShift;
     TH2F                              **fHistoDoubleCountTruePi0InvMassPt;      //! array of histos with double counted pi0s, invMass, pT
     TH2F                              **fHistoDoubleCountTrueEtaInvMassPt;      //! array of histos with double counted etas, invMass, pT

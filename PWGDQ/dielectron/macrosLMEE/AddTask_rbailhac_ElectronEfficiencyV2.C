@@ -39,19 +39,19 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2(TStri
   // ROOT6-specific code here....
   printf("ROOT6\n");
 
-  TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
-  TString configFile("Config_rbailhac_ElectronEfficiencyV2.C");
-  TString configFilePath(configBasePath+configFile);
+  //TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
+  //TString configFile("Config_rbailhac_ElectronEfficiencyV2.C");
+  //TString configFilePath(configBasePath+configFile);
   
   //load dielectron configuration files
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data())) {
+  //if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data())) {
 
-    Bool_t err=kFALSE;
-    err |= gROOT->LoadMacro(configFilePath.Data());
-    if (err) { Error("AddTask_rbailhac_ElectronEfficiencyV2","Config(s) could not be loaded!"); return 0x0; }
-  }
+  //   Bool_t err=kFALSE;
+  //  err |= gROOT->LoadMacro(configFilePath.Data());
+  //  if (err) { Error("AddTask_rbailhac_ElectronEfficiencyV2","Config(s) could not be loaded!"); return 0x0; }
+  // }
 
-  std::cout << "Configpath:  " << configFilePath << std::endl;
+  //std::cout << "Configpath:  " << configFilePath << std::endl;
   
 #elif defined(__CINT__)
   // ROOT5-specific code here ...

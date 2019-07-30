@@ -7,12 +7,15 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
     bool DCAPlots = false,//3
     bool CPAPlots = false,//4
     bool MomReso = false,//5 to set to true only when running on MC
-    bool etaPhiPlotsAtTPCRadii=false,//6 to set to true only when running on MC
+    bool etaPhiPlotsAtTPCRadii=true,//6 to set to true only when running on MC but very Mem. Consuming
     bool CombSigma = false,//7
     bool PileUpRej=true,//8
-    bool dPhidEtaPlots=false,//9
+    bool dPhidEtaPlots=true,//9
     bool ContributionSplitting = false,//10
     bool InvMassPairs=false, //11
+    bool kTCentBins=false,//12
+    bool DeltaEtaDeltaPhiCut=false,//13
+    bool DoSphericityCuts=false, //14
     const char *swuffix = "") {
 
 
@@ -52,23 +55,39 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
+  evtCuts->SetDoSphericityCuts(DoSphericityCuts);
+  if(isMC && CentEst=="kHM"){
+    evtCuts->SetMultiplicityPercentileMax(5);
+  }
 
+  if(DoSphericityCuts){
   if (suffix=="1") {
     evtCuts->SetSphericityCuts(0.,0.3);
   }
-
   if (suffix=="2") {
     evtCuts->SetSphericityCuts(0.3,0.7);
   }
-
   if (suffix=="3") {
     evtCuts->SetSphericityCuts(0.7,1.0);
+  }//4 is reserved to the full sphericity range
+  if (suffix=="5") {
+    evtCuts->SetSphericityCuts(0.7,0.8);
+  }
+  if (suffix=="6") {
+    evtCuts->SetSphericityCuts(0.8,0.9);
+  }
+  if (suffix=="7") {
+    evtCuts->SetSphericityCuts(0.9,1.0);
+  }
+}
+else
+  {
+    suffix="4";
+    evtCuts->SetSphericityCuts(0.,1.0);
   }
 
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
                                                             isMC);
-//  task->SetTrackBufferSize(2000);
-//  task->SetEventCuts(evtCuts);
 
 //Track cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
@@ -76,12 +95,10 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   TrackCuts->SetCutCharge(1);
 //wanna change something? Do it like this: TrackCuts->SetPtRange(0.3, 4.05);
 //  task->SetTrackCuts(TrackCuts);
-
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, CombSigma, ContributionSplitting);
   AntiTrackCuts->SetCutCharge(-1);
 //  task->SetAntiTrackCuts(AntiTrackCuts);
-
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(
       isMC,CPAPlots,ContributionSplitting);
   AliFemtoDreamTrackCuts *Posv0Daug=AliFemtoDreamTrackCuts::DecayProtonCuts(
@@ -94,7 +111,6 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   v0Cuts->SetPDGCodeNegDaug(211);//Pion
   v0Cuts->SetPDGCodev0(3122);//Lambda
 //  task->Setv0Cuts(v0Cuts);
-
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(
       isMC, CPAPlots,ContributionSplitting);
   AliFemtoDreamTrackCuts *PosAntiv0Daug=AliFemtoDreamTrackCuts::DecayPionCuts(
@@ -113,6 +129,42 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");
+
+  std::vector<int> PairQA;
+  PairQA.push_back(0);        // p p
+  PairQA.push_back(11);         // p barp
+  PairQA.push_back(0);        // p Lambda
+  PairQA.push_back(12);         // p barLambda
+  // PairQA.push_back(0);         // p Xi
+  // PairQA.push_back(0);         // p barXi
+  PairQA.push_back(0);        // barp barp
+  PairQA.push_back(12);         // barp Lambda
+  PairQA.push_back(0);        // barp barLambda
+  // PairQA.push_back(0);         // barp Xi
+  // PairQA.push_back(0);         // barp barXi
+  PairQA.push_back(0);         // Lambda Lambda
+  PairQA.push_back(22);         // Lambda barLambda
+  // PairQA.push_back(0);         // Lambda Xi
+  // PairQA.push_back(0);         // Lambda barXi
+  PairQA.push_back(0);         // barLambda barLamb
+  // PairQA.push_back(0);         // barLambda Xi
+  // PairQA.push_back(0);         // barLambda barXi
+  // PairQA.push_back(0);         // Xi Xi
+  // PairQA.push_back(0);         // Xi barXi
+  // PairQA.push_back(0);         // barXi barXi
+
+  // PairQA.push_back(0);        // p p
+  // PairQA.push_back(11);         // p barp
+  // PairQA.push_back(0);        // p Lambda
+  // PairQA.push_back(12);         // p barLambda
+  // PairQA.push_back(0);        // barp barp
+  // PairQA.push_back(12);         // barp Lambda
+  // PairQA.push_back(0);        // barp barLambda
+  // PairQA.push_back(0);         // Lambda Lambda
+  // PairQA.push_back(0);         // Lambda barLambda
+  // PairQA.push_back(0);        // barLambda barLamb
+  config->SetExtendedQAPairs(PairQA);
+
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
@@ -165,14 +217,21 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   MultBins.push_back(100);
   config->SetMultBins(MultBins);
 
-  std::vector<float> centBins;
+  std::vector<int> centBins;
   centBins.push_back(20);
   centBins.push_back(40);
   centBins.push_back(90);
   config->SetCentBins(centBins);
-  config->SetkTCentralityBinning(false);
+  config->SetkTCentralityBinning(kTCentBins);
 
-  config->SetInvMassPairs(InvMassPairs);
+
+if(isMC)
+  {
+  config->SetdPhidEtaPlots(dPhidEtaPlots);  // warsaw like plots
+  std::cout<<"in MC to make dETAdPHI plots"<<dPhidEtaPlots<<std::endl;
+} else{
+  config->SetdPhidEtaPlots(dPhidEtaPlots);  // warsaw like plots
+}
 
 if (MomReso) {
   if (isMC) {
@@ -182,19 +241,15 @@ if (MomReso) {
         << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
   }
 }
-  if (etaPhiPlotsAtTPCRadii) {
+if (etaPhiPlotsAtTPCRadii) {
   if (isMC) {
-    config->SetPhiEtaBinnign(true);  // check for track splitting/merging at various TPC Radii
+    config->SetPhiEtaBinnign(true);
   } else {
     std::cout
         << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
   }
 }
-//  if (DeltaEtaDeltaPhiCut) {
-//    config->SetDeltaEtaMax(0.01);
-//    config->SetDeltaPhiMax(0.01);
-//  }
-  config->SetdPhidEtaPlots(dPhidEtaPlots);  // warsaw like plots
+
 
   std::vector<int> NBins;
   NBins.push_back(750);  // p p
@@ -309,6 +364,7 @@ if (MomReso) {
         << "====================================================================="
         << std::endl;
   }
+
   task->SetEvtCutQA(true);
   task->SetTrackBufferSize(2000);
   task->SetEventCuts(evtCuts);

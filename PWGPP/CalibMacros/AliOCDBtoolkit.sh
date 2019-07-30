@@ -3,7 +3,7 @@
 # Shell script to compare content of the OCDB entries.
 # Usage:
 # 1) source functios 
-# source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh -h
+# source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh
 
 # ocdbMakeTable() 
 #       Usage: bash $inputFile $flag $outputFile
@@ -43,8 +43,66 @@ if [ "$1" == "-h" ]; then
   echo "==============================="
   echo Example usage ocdbDiffTable
   echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable  $outputDirMC/OCDBrec.list $outputDir/OCDBrec.list TPC 2)'
-  exit 0
 fi
+
+AliOCDBtoolkit_INIT=1
+[ -z "$ALILOG_HOST" ] && source $ALICE_ROOT/libexec/alilog4bash.sh
+
+
+dumpOCDBXML(){
+   [ -z $1 ] && cat <<HELP_USAGE
+   dumpOCDBXML - Dump OCDB file as an xml file
+   # * param1: Input OCDB snapshot
+   # * param2: Input object
+   # * param3: Output XML path
+   # Example usage:
+   #  dump object TPC*Calib*RecoParam  from OCDB snapshot
+   #  dumpOCDBXML /lustre/nyx/alice/users/miranov/NOTESData/alice-tpc-notes/JIRA/ALIROOT-7077/test1211_PbPb_MCTail_2_2/OCDB/OCDBrec.root TPC*Calib*RecoParam TPC_Calib_RecoParam.xml
+HELP_USAGE
+   [ -z $1 ] && return
+    alilog_info "dumpOCDBXML Begin $1 $2 $3"
+    lambdaOCDB $1 $3  $2 "" >>/dev/null
+    alilog_info "dumpOCDBXML End  $1 $2 $3"
+}
+
+lambdaOCDB(){
+    [ -z $1 ] && cat <<HELP_USAGE
+# lambdaOCDB - modify OCDB entry with user defined code segment
+# modification macro lambdaOCDB.C created
+# Usage:
+# lambdaOCD  param1 [param2]
+# * param1: Input OCDB path
+# * param2: Output file name
+# * param3: object name
+# * param4: Object lambda
+
+#  * Example 1: print content of the Reco param and save object to another file
+    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml AliCDBEntry  o.Print\(\"all\"\)\;
+#  * Example 2: create lambda code and execute it:
+    lambdaCode='AliTPCRecoParam*p=o;p->Dump();'
+    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml  AliCDBEntry \$lambdaCode;
+#  * Example 4: create lambda code to change ion tail
+    lambdaCode='TObjArray*p=(TObjArray*)o;for(i=0;i<4;i++)((AliTPCRecoParam*)p->At(i))->SetCrosstalkCorrection(1.5);'
+    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml AliCDBEntry  \$lambdaCode;
+HELP_USAGE
+[ -z $1 ] && return
+
+cat  << LambdaOCDB   > lambdaOCDB.C
+    {
+        TFile *fin = TFile::Open("$1");
+        AliCDBEntry* entry=(AliCDBEntry*)fin->Get("$3");
+        TObject * o=(TObject*)entry->GetObject();
+        $4
+        TFile *fout= TFile::Open("$2","recreate");
+        entry->Write("AliCDBEntry");
+        delete fout;
+    }
+LambdaOCDB
+      alilog_info "lambdaOCD  $1 $2 $3 $4"
+    root -b -q lambdaOCDB.C
+}
+
+
 
 ocdbMakeTable(){
 #

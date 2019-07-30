@@ -53,6 +53,8 @@ public:
 		kNoContributors,kDeltaVertexZ,kNoVertexTracks,kVertexZResolution,kMVPileup,kSPDClusterCut,kZVtxSPDOutFid,kCentralityFlattening,kSelPtHardBin};
 	Bool_t IsSelected(Int_t &WhyRejected,ULong_t &RejectionBits);
         void DoJetProbabilityAnalysis(Bool_t val=true){fDoJetProbabilityAnalysis=val;}
+        void DoJetMassAnalysis(Bool_t val=true){fDoJetMass=val;}
+        void DoSVEnergyFractionAnalysis(Bool_t val=true){fDoSVEnergyFraction=val;}
         void DoPtRelAnalysis(Bool_t val=true){fDoPtRelAnalysis=val;}
         void DoPtRelEventSelection(Bool_t val=true){fDoSelectionPtRel=val;}
 
@@ -92,6 +94,18 @@ public:
 	    fResolutionFunction[j] = f;
 	    return kTRUE;
 	}
+	Bool_t SetResFunctionb(TF1 *f, Int_t j){
+	    fResolutionFunctionb[j] = f;
+	    return kTRUE;
+	}
+	Bool_t SetResFunctionc(TF1 *f, Int_t j){
+	    fResolutionFunctionc[j] = f;
+	    return kTRUE;
+	}
+	Bool_t SetResFunctionlf(TF1 *f, Int_t j){
+	    fResolutionFunctionlf[j] = f;
+	    return kTRUE;
+	}
 
 	void ApplyV0Reconstruction(Bool_t val = kTRUE) {fApplyV0Rec = val;}
 	void ApplyV0RejectionAll(Bool_t val = kTRUE) {fApplyV0RejectionAll = val;}
@@ -116,6 +130,29 @@ public:
 
 	void SetDoTaggedJetsDRM(Bool_t value){fDoTaggedDRM = value;}
 
+        Int_t FindVertices6Prong(const AliEmcalJet* jet,
+                                           TClonesArray*      fTrackArrayIn,
+                                           AliAODEvent*       aodEvent,
+                                           AliESDVertex*      primaryESDVertex,
+                                           Double_t           magZkG,
+                                           TClonesArray*      arrayVtxHF,
+                                           Int_t&             nDauRejCount);
+
+        Int_t FindVertices5Prong(const AliEmcalJet* jet,
+                                           TClonesArray*      fTrackArrayIn,
+                                           AliAODEvent*       aodEvent,
+                                           AliESDVertex*      primaryESDVertex,
+                                           Double_t           magZkG,
+                                           TClonesArray*      arrayVtxHF,
+                                           Int_t&             nDauRejCount);
+
+        Int_t FindVertices4Prong(const AliEmcalJet* jet,
+                                           TClonesArray*      fTrackArrayIn,
+                                           AliAODEvent*       aodEvent,
+                                           AliESDVertex*      primaryESDVertex,
+                                           Double_t           magZkG,
+                                           TClonesArray*      arrayVtxHF,
+                                           Int_t&             nDauRejCount);
 	// B jet tracks selection
 	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
 	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
@@ -148,9 +185,9 @@ private:
 	void   DoJetLoop(); //jet matching function 2/4
 	void   SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching=0); //jet matching function 3/4
 	void   GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const; //jet matching function 4/4
-  	Double_t CalculateTrackProb(Double_t significance, Int_t trclass);
-  	Double_t CalculateJetProb(AliEmcalJet * jet);//!
-  	void FillResolutionFunctionHists(AliAODTrack * track,AliEmcalJet * jet);
+  	Double_t CalculateTrackProb(Double_t significance, Int_t trclass, Int_t jetFlavor);
+  	Double_t CalculateJetProb(AliEmcalJet * jet, Int_t jetFlavor);//!
+  	void FillResolutionFunctionHists(AliAODTrack * track,AliEmcalJet * jet, Int_t jetFlavor);
 
 	AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);
 
@@ -284,22 +321,98 @@ private:
         TH2D * fh2dJetSignedImpParXYZ_Class1;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class1;//!
 
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class1;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class1;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class1;//!
+
         TH2D * fh2dJetSignedImpParXY_Class2;//!
         TH2D * fh2dJetSignedImpParXYSignificance_Class2;//!
         TH2D * fh2dJetSignedImpParXYZ_Class2;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class2;//!
+
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class2;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class2;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class2;//!
 
         TH2D * fh2dJetSignedImpParXY_Class3;//!
         TH2D * fh2dJetSignedImpParXYSignificance_Class3;//!
         TH2D * fh2dJetSignedImpParXYZ_Class3;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class3;//!
 
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class3;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class3;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class3;//!
+
         TH2D * fh2dJetSignedImpParXY_Class4;//!
         TH2D * fh2dJetSignedImpParXYSignificance_Class4;//!
         TH2D * fh2dJetSignedImpParXYZ_Class4;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class4;//!
 
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class4;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class4;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class4;//!
 
+
+	//Jet Mass Histograms
+	TH2D * fhistJetMass;//!
+        TH2D * fhistJetMass_Unidentified;//!
+        TH2D * fhistJetMass_udsg;//!
+        TH2D * fhistJetMass_c;//!
+        TH2D * fhistJetMass_b;//!
+
+        TH2D * fhistJetMassFirst;//!
+        TH2D * fhistJetMassSecond;//!
+        TH2D * fhistJetMassThird;//!
+
+        TH2D * fhistJetMass_UnidentifiedFirst;//!
+        TH2D * fhistJetMass_udsgFirst;//!
+        TH2D * fhistJetMass_cFirst;//!
+        TH2D * fhistJetMass_bFirst;//!
+
+        TH2D * fhistJetMass_UnidentifiedSecond;//!
+        TH2D * fhistJetMass_udsgSecond;//!
+        TH2D * fhistJetMass_cSecond;//!
+        TH2D * fhistJetMass_bSecond;//!
+
+        TH2D * fhistJetMass_UnidentifiedThird;//!
+        TH2D * fhistJetMass_udsgThird;//!
+        TH2D * fhistJetMass_cThird;//!
+        TH2D * fhistJetMass_bThird;//!
+
+
+	//Secondary Vertex energy fraction
+        TH2D * fhistSVEnergyFraction;//!
+        TH2D * fhistSVEnergyFraction_Unidentified;//!
+        TH2D * fhistSVEnergyFraction_udsg;//!
+        TH2D * fhistSVEnergyFraction_c;//!
+        TH2D * fhistSVEnergyFraction_b;//!
+
+        TH2D * fhistSVEnergyFractionFirst;//!
+        TH2D * fhistSVEnergyFraction_UnidentifiedFirst;//!
+        TH2D * fhistSVEnergyFraction_udsgFirst;//!
+        TH2D * fhistSVEnergyFraction_cFirst;//!
+        TH2D * fhistSVEnergyFraction_bFirst;//!
+
+        TH2D * fhistSVEnergyFractionSecond;//!
+        TH2D * fhistSVEnergyFraction_UnidentifiedSecond;//!
+        TH2D * fhistSVEnergyFraction_udsgSecond;//!
+        TH2D * fhistSVEnergyFraction_cSecond;//!
+        TH2D * fhistSVEnergyFraction_bSecond;//!
+
+        TH2D * fhistSVEnergyFractionThird;//!
+        TH2D * fhistSVEnergyFraction_UnidentifiedThird;//!
+        TH2D * fhistSVEnergyFraction_udsgThird;//!
+        TH2D * fhistSVEnergyFraction_cThird;//!
+        TH2D * fhistSVEnergyFraction_bThird;//!
+
+        TH2D * fhistSVnProngs;//!
+        TH2D * fhistSVnProngs_Unidentified;//!
+        TH2D * fhistSVnProngs_udsg;//!
+        TH2D * fhistSVnProngs_c;//!
+        TH2D * fhistSVnProngs_b;//!
+
+
+	//Jet Probability Histograms
 	TH2D * fhistJetProbability;//!
         TH2D * fhistJetProbability_Unidentified;//!
         TH2D * fhistJetProbability_udsg;//!
@@ -465,6 +578,8 @@ private:
     	TClonesArray  *fCaloClusters;//! Tender cluster
 	AliAnalysisUtils *fUtils;//!
   	Bool_t fDoJetProbabilityAnalysis;//
+	Bool_t fDoJetMass;//
+	Bool_t fDoSVEnergyFraction;//
 	Bool_t fDoPtRelAnalysis;//
 	Bool_t fDoSelectionPtRel;//
 	Bool_t fUsePicoTracks;//!
@@ -575,6 +690,9 @@ private:
   AliAODVertex*		fPrimaryVertex; //! Event Primary Vertex
 
   TF1* fResolutionFunction[7];//
+  TF1* fResolutionFunctionb[7];//
+  TF1* fResolutionFunctionc[7];//
+  TF1* fResolutionFunctionlf[7];//
 
   //Secondary Vertex
   Bool_t fDoSVAnalysis;//
@@ -582,6 +700,13 @@ private:
 
   AliHFJetsTaggingVertex*  fVtxTagger3Prong;//!
   AliHFJetsTaggingVertex*  fVtxTagger2Prong;//!
+
+  AliRDHFJetsCutsVertex* fjetCuts3Prong;//! SV cuts
+  AliRDHFJetsCutsVertex* fjetCuts2Prong;//! SV cuts
+
+  TObjArray* fTrackArray;//! Tracks selected for the SV reconstruction
+
+  AliESDtrackCuts* fEsdTrackCuts;//! cuts used on the track selected for the SV reconstruction
 
   TH3D* fHistSV2Prong;//!
   TH3D* fHistSV2ProngUnidentified;//!
@@ -627,7 +752,7 @@ private:
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-	ClassDef(AliAnalysisTaskBJetTC, 54)
+	ClassDef(AliAnalysisTaskBJetTC, 59)
 };
 #endif
  //

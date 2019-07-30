@@ -11,6 +11,9 @@ AliAnalysisTaskCheckEvSel *AddTaskCheckEvSel(TString suffix="",
 					     Int_t minContPileup=3,
 					     Double_t minDzPileup=0.6,
 					     Bool_t multDepPileup=kFALSE,
+					     Int_t optForOOBPileupInPbPb=0,
+					     Bool_t useCentrCorrelCuts=kFALSE,
+					     Bool_t doEvPrNtuple=kFALSE,
 					     Bool_t doVtxNtuple=kFALSE)
 {
   
@@ -33,26 +36,30 @@ AliAnalysisTaskCheckEvSel *AddTaskCheckEvSel(TString suffix="",
     }
     evselCuts->SetOptPileup(optPileup);
     if(optPileup==AliRDHFCuts::kRejectPileupEvent){
-      evselCuts->ConfigurePileupCuts(minContPileup,minDzPileup);
+      evselCuts->ConfigureSPDPileupCuts(minContPileup,minDzPileup);
       evselCuts->SetUseMultDepPileupCut(multDepPileup);
     }
     else if(optPileup==AliRDHFCuts::kRejectMVPileupEvent){
-      evselCuts->ConfigurePileupCuts(minContPileup,minDzPileup);
+      evselCuts->SetMinContribPileupMV(minContPileup);
     }
     evselCuts->SetCutOnzVertexSPD(cutOnZVertexSPD);
+    evselCuts->SetUseCentralityCorrelationCuts(useCentrCorrelCuts);
+    evselCuts->SetUsePbPbOutOfBunchPileupCut(optForOOBPileupInPbPb);
   }else{
     TFile* filecuts=TFile::Open(filecutName.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      AliFatal("Input file with cuts not found");
+      ::Fatal("AddTaskCheckEvSel","Input file with cuts not found");
     }
     evselCuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutObjname.Data());
     if(!evselCuts){
-      AliFatal("Cut object not found");
+      ::Fatal("AddTaskCheckEvSel","Cut object not found");
     }
   }
+  
   AliAnalysisTaskCheckEvSel *dTask = new AliAnalysisTaskCheckEvSel(readMC,system,evselCuts);
   dTask->SetCutOnzVertexSPD(cutOnZVertexSPD);
   dTask->SetEnableVertexNtuple(doVtxNtuple);
+  dTask->SetEnableEvPropNtuple(doEvPrNtuple);
   mgr->AddTask(dTask);
   
   
@@ -61,11 +68,15 @@ AliAnalysisTaskCheckEvSel *AddTaskCheckEvSel(TString suffix="",
   TString inname = "cinpEvSelCheck";
   TString outname = "coutEvSelCheck";
   TString normname = "coutNorm";
+  TString nt1name = "coutEvPropNtuple";
+  TString nt2name = "coutZvertNtuple";
 
   inname += suffix.Data();
   outname += suffix.Data();
   normname += suffix.Data();
-
+  nt1name += suffix.Data();
+  nt2name += suffix.Data();
+  
   AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),
                                                           AliAnalysisManager::kInputContainer);
   TString outputfile = AliAnalysisManager::GetCommonFileName();
@@ -80,12 +91,22 @@ AliAnalysisTaskCheckEvSel *AddTaskCheckEvSel(TString suffix="",
   AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname,AliNormalizationCounter::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
+  AliAnalysisDataContainer *coutputNt1 = mgr->CreateContainer(nt1name,TNtuple::Class(),
+							      AliAnalysisManager::kOutputContainer,
+							      outputfile.Data());
+  coutputNt1->SetSpecialOutput();
 
+  AliAnalysisDataContainer *coutputNt2 = mgr->CreateContainer(nt2name,TNtuple::Class(),
+							      AliAnalysisManager::kOutputContainer,
+							      outputfile.Data());
+  coutputNt2->SetSpecialOutput();
+  
   mgr->ConnectInput(dTask,0,mgr->GetCommonInputContainer());
   
   mgr->ConnectOutput(dTask,1,coutput);
   mgr->ConnectOutput(dTask,2,coutputNorm);
-  
+  mgr->ConnectOutput(dTask,3,coutputNt1);
+  mgr->ConnectOutput(dTask,4,coutputNt2);
   
   return dTask;
 }

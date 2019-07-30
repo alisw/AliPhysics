@@ -36,6 +36,7 @@
 #include "AliMCEventHandler.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliVEvent.h"
 #include "AliMCEvent.h"
 
 //#include "AliAnalysisTask.h"
@@ -46,6 +47,7 @@
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
 #include "AliFemtoEventReaderAODChain.h"
+#include "AliFemtoEventReaderNanoAODChain.h"
 #include "AliFemtoEventReaderStandard.h"
 #include "AliFemtoEventReaderKinematicsChain.h"
 #include "AliFemtoEventReaderKinematicsChainESD.h"
@@ -73,7 +75,7 @@ public:
   /// Construct with task name, configuration filename, and verbosity flag.
   ///
   /// The paramters are set to the empty string.
-  AliAnalysisTaskFemto(TString name, TString aConfigMacro, Bool_t aVerbose=kFALSE);
+  AliAnalysisTaskFemto(TString name, TString aConfigMacro="ConfigFemtoAnalysis.C", Bool_t aVerbose=kFALSE);
 
   /// Copy Constructor - should not be used
   AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask);
@@ -94,6 +96,7 @@ public:
   void SetFemtoReaderESD(AliFemtoEventReaderESDChain *aReader);
   void SetFemtoReaderESDKine(AliFemtoEventReaderESDChainKine *aReader);
   void SetFemtoReaderAOD(AliFemtoEventReaderAODChain *aReader);
+  void SetFemtoReaderNanoAOD(AliFemtoEventReaderNanoAODChain *aReader);
   void SetFemtoReaderStandard(AliFemtoEventReaderStandard *aReader);
   void SetFemtoReaderKinematics(AliFemtoEventReaderKinematicsChain *aReader);
   void SetFemtoReaderKinematicsESD(AliFemtoEventReaderKinematicsChainESD *aReader);
@@ -122,9 +125,11 @@ public:
 protected:
   AliESDEvent          *fESD;          //!<! ESD object
   AliESDpid            *fESDpid;       //!<! ESDpid object
+  AliVEvent            *fVEvent;       //!<! AliVEvent object
   AliAODEvent          *fAOD;          //!<! AOD object
   AliAODpidUtil        *fAODpidUtil;   ///<  AliAODpidUtil object
-  AliAODHeader         *fAODheader;    ///<  AliAODHeader object (to get reference multiplicity in pp)
+  AliAODHeader         *fAODheader;     ///< AliAODHeader object (to get reference multiplicity in pp)
+  AliNanoAODHeader     *fNanoAODheader; //!<! AliNanoAODHeader object
 
   AliStack             *fStack;        //!<! Stack from Kinematics
   TList                *fOutputList;   ///<  AliFemto results list
@@ -165,9 +170,11 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto():
   AliAnalysisTaskSE(),
   fESD(NULL),
   fESDpid(NULL),
+  fVEvent(NULL),
   fAOD(NULL),
   fAODpidUtil(NULL),
   fAODheader(NULL),
+  fNanoAODheader(NULL),
   fStack(NULL),
   fOutputList(NULL),
   fReader(NULL),

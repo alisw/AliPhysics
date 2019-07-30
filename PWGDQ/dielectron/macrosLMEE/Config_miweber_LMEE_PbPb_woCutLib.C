@@ -2,7 +2,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void SetTPCCorr(AliDielectron *die);
 void SetupMCsignals(AliDielectron* die);
 void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA);
-AliDielectronEventCuts *GetEventCuts();
+AliDielectronEventCuts *GetEventCuts(Double_t centMin, Double_t centMax, Bool_t reqAliEventCuts, Bool_t reqAliEventCutsCorrelated);
 AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
 AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition);
 AliESDtrackCuts *SetupPreFilterESDtrackCuts(Int_t cutDefinition);
@@ -23,10 +23,6 @@ void SetupAODtrackCutsRun3_FT2_noPID_ESD(AliDielectron *die);
 
 
 Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
-Bool_t kRot = kFALSE;
-Bool_t kMix = kTRUE;
-Bool_t kNoPairing   = kFALSE;
-Bool_t randomizeDau = kTRUE;
 
 // available cut defintions
 const Int_t nPF       = 2; // use prefiltering for cuts < nPF
@@ -39,6 +35,9 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
 						 Bool_t bCutQA = kFALSE,
 						 Bool_t isRandomRej=kFALSE,
 						 Bool_t useTPCCorr=kFALSE,
+						 Bool_t useRotation=kFALSE,
+						 Bool_t useMixing=kTRUE,
+						 Bool_t noPairing=kFALSE,
 						 Bool_t hasMC=kFALSE
 						 )
 {
@@ -79,14 +78,15 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
     die->SetCutQA(bCutQA);
   }
   
-  if(kRot){
+  if(useRotation){
     AliDielectronTrackRotator *rot = new AliDielectronTrackRotator;
     rot->SetConeAnglePhi(TMath::Pi());
     rot->SetIterations(10);
     die->SetTrackRotator(rot);
-  }//kRot
+  }//useRotation
   
-  if(kMix && !(die->GetHasMC())){ // need second since there is a problem when mixing MC events (TRef?)
+  if(useMixing){
+    
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
     
     mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
@@ -100,7 +100,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
     }
     
     die->SetMixingHandler(mix);
-  }//kMix
+  }//useMixing
 
   // set track cuts
   SetupCuts(die,cutDefinition,bESDANA);
@@ -117,7 +117,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
  InitHistograms(die,cutDefinition);
  //  InitCF(die,cutDefinition);
  
- die->SetNoPairing(kNoPairing);
+ die->SetNoPairing(noPairing);
  
  return die;
 
@@ -1475,6 +1475,34 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Event","Centrality","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentrality);
   histos->UserHistogram("Event","CentralityNew","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentralityNew);
   histos->UserHistogram("Event","nEvTPC_eventplaneents",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnTPCrpH2);
+  histos->UserHistogram("Event","nEvZDCA_eventplaneents",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnZDCArpH1);
+  histos->UserHistogram("Event","nEvZDCC_eventplaneents",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnZDCCrpH1);
+  
+  histos->UserHistogram("Event","nEvZDCAX_Centrality",";;Centrality;ZDCAX;",202,-1.,100., 200, -1.,1.,AliDielectronVarManager::kCentralityNew,AliDielectronVarManager::kQnZDCAX);
+  histos->UserHistogram("Event","nEvZDCAY_Centrality",";;Centrality;ZDCAY;",202,-1.,100., 200, -1.,1.,AliDielectronVarManager::kCentralityNew,AliDielectronVarManager::kQnZDCAY);
+   histos->UserHistogram("Event","nEvZDCCX_Centrality",";;Centrality;ZDCCX;",202,-1.,100., 200, -1.,1.,AliDielectronVarManager::kCentralityNew,AliDielectronVarManager::kQnZDCCX);
+  histos->UserHistogram("Event","nEvZDCCY_Centrality",";;Centrality;ZDCCY;",202,-1.,100., 200, -1.,1.,AliDielectronVarManager::kCentralityNew,AliDielectronVarManager::kQnZDCCY);
+
+  histos->UserHistogram("Event","nEvZDCAX_Vx",";;Vx;ZDCAX;",200,0.06,0.09,200, -1.,1.,AliDielectronVarManager::kXvPrim,AliDielectronVarManager::kQnZDCAX);
+  histos->UserHistogram("Event","nEvZDCAY_Vx",";;Vx;ZDCAY;",200,0.06,0.09,200, -1.,1.,AliDielectronVarManager::kXvPrim,AliDielectronVarManager::kQnZDCAY);
+   histos->UserHistogram("Event","nEvZDCCX_Vx",";;Vx;ZDCCX;",200,0.06,0.09,200, -1.,1.,AliDielectronVarManager::kXvPrim,AliDielectronVarManager::kQnZDCCX);
+  histos->UserHistogram("Event","nEvZDCCY_Vx",";;Vx;ZDCCY;",200,0.06,0.09,200, -1.,1.,AliDielectronVarManager::kXvPrim,AliDielectronVarManager::kQnZDCCY);
+
+  histos->UserHistogram("Event","nEvZDCAX_Vy",";;Vy;ZDCAX;",200,0.32,0.35,200, -1.,1.,AliDielectronVarManager::kYvPrim,AliDielectronVarManager::kQnZDCAX);
+  histos->UserHistogram("Event","nEvZDCAY_Vy",";;Vy;ZDCAY;",200,0.32,0.35,200, -1.,1.,AliDielectronVarManager::kYvPrim,AliDielectronVarManager::kQnZDCAY);
+   histos->UserHistogram("Event","nEvZDCCX_Vy",";;Vy;ZDCCX;",200,0.32,0.35,200, -1.,1.,AliDielectronVarManager::kYvPrim,AliDielectronVarManager::kQnZDCCX);
+  histos->UserHistogram("Event","nEvZDCCY_Vy",";;Vy;ZDCCY;",200,0.32,0.35,200, -1.,1.,AliDielectronVarManager::kYvPrim,AliDielectronVarManager::kQnZDCCY);
+
+  histos->UserHistogram("Event","nEvZDCAX_Vz",";;Vz;ZDCAX;",200,-10.,10.,200, -1.,1.,AliDielectronVarManager::kZvPrim,AliDielectronVarManager::kQnZDCAX);
+  histos->UserHistogram("Event","nEvZDCAY_Vz",";;Vz;ZDCAY;",200,-10.,10.,200, -1.,1.,AliDielectronVarManager::kZvPrim,AliDielectronVarManager::kQnZDCAY);
+   histos->UserHistogram("Event","nEvZDCCX_Vz",";;Vz;ZDCCX;",200,-10.,10.,200, -1.,1.,AliDielectronVarManager::kZvPrim,AliDielectronVarManager::kQnZDCCX);
+  histos->UserHistogram("Event","nEvZDCCY_Vz",";;Vz;ZDCCY;",200,-10.,10.,200, -1.,1.,AliDielectronVarManager::kZvPrim,AliDielectronVarManager::kQnZDCCY);
+  
+
+  
+  histos->UserHistogram("Event","NTPCclsEvent","kNTPCclsEvent;Centrality/%;kNTPCclsEvent",202,-1.,100.,500,0,5000000,AliDielectronVarManager::kCentralityNew,AliDielectronVarManager::kNTPCclsEvent);
+  histos->UserHistogram("Event","NTPCtrkswITSout","kNTPCtrkswITSout;Centrality/%;kNTPCtrkswITSout",202,-1.,100.,500,0,15000,AliDielectronVarManager::kCentralityNew,AliDielectronVarManager::kNTPCtrkswITSout);
+
 
   //add histograms to track class
   histos->UserHistogram("Track","Centrality","Centrality;Centrality (%);#tracks",100,0.,100.,AliDielectronVarManager::kCentralityNew);
@@ -1503,6 +1531,17 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","TOFnSigma_MomEle","TOF number of sigmas Electrons vs Momentum;Mom;TOFsigmaEle"                           ,     200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
 
   //add histograms to pair classes
+
+  histos->UserHistogram("Pair", 
+			"InvMass_QnTPCrpH2","Inv.Mass:QnTPCrpH2;Inv. Mass (GeV/c^{2}); QnTPCrpH2",
+			500,0.,5.,200,-TMath::Pi(),TMath::Pi(),
+			AliDielectronVarManager::kM, AliDielectronVarManager::kQnTPCrpH2);
+  
+  histos->UserHistogram("Pair", 
+			"InvMass_PairPlaneMagInProZDC","Inv.Mass:PairPlaneMagInProZDC;Inv. Mass (GeV/c^{2}); kPairPlaneMagInProZDC",
+			500,0.,5.,200,-1,1,
+			AliDielectronVarManager::kM, AliDielectronVarManager::kPairPlaneMagInProZDC);
+  
   histos->UserHistogram("Pair", 
 			"InvMass_QnTPCDelta","Inv.Mass:QnTPC;Inv. Mass (GeV/c^{2}); kQnDeltaPhiTPCrpH2",
 			500,0.,5.,200,-TMath::Pi(),TMath::Pi(),
@@ -1575,18 +1614,25 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 }
 
-AliDielectronEventCuts *GetEventCuts(){
+AliDielectronEventCuts *GetEventCuts(Double_t centMin, Double_t centMax, Bool_t reqAliEventCuts, Bool_t reqAliEventCutsCorrelated){
 
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex SPD && |vtxZ|<10 && ncontrib>0");
   eventCuts->SetRequireVertex();
   eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
   eventCuts->SetVertexZ(-10.,10.);
-  eventCuts->SetMinVtxContributors(1); 
+  eventCuts->SetMinVtxContributors(1);
 
-  //no centrality cuts for the moment
-  //Bool_t isRun2 = kTRUE;
-  //eventCuts->SetCentralityRange(0,80,isRun2);
+  //centrality cuts if required
+  if(centMin > -1 && centMax > -1 && centMin < centMax){
+    Bool_t isRun2 = kTRUE;
+    eventCuts->SetCentralityRange(centMin,centMax,isRun2);
+  }
 
+  // AliEventCuts if required
+  if(reqAliEventCuts){
+    eventCuts->SetRequireAliEventCuts(reqAliEventCuts,reqAliEventCutsCorrelated);
+  }
+  
   return eventCuts;
 }
 

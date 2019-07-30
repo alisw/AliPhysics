@@ -1,5 +1,5 @@
 
-AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "name", Bool_t isAOD, Bool_t getFromAlien = kFALSE, TString configFile="Config_jjung_lowmass.C", Bool_t DoCentralityCorrection = kFALSE) {
+AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "name", Bool_t isAOD, Bool_t getFromAlien = kFALSE, TString configFile="Config_jjung_lowmass.C", Bool_t DoCentralityCorrection = kFALSE, Int_t wagonnr = 0) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
@@ -53,7 +53,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "na
   task->SetEnablePhysicsSelection(kTRUE);
  
   task->SetTriggerMask(triggerNames); 
-  task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config.
+  task->SetEventFilter(SetupEventCuts(wagonnr)); //returns eventCuts from Config.
   task->SetCentrality(centMin, centMax);
   
 
@@ -66,6 +66,23 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "na
   task->SetMinEtaGen(minGenEta);
   task->SetMaxEtaGen(maxGenEta);
 
+  // #########################################################
+  // #########################################################
+  // 4D single efficiency from pairs
+  task->SetWriteLegsFromPair(WriteLegsFromPair);
+  task->SetPtMinLegsFromPair(ptMinLegsFromPair);
+  task->SetPtMaxLegsFromPair(ptMaxLegsFromPair);
+  task->SetPtNBinsLegsFromPair(ptNBinsLegsFromPair);
+  task->SetEtaMinLegsFromPair(etaMinLegsFromPair);
+  task->SetEtaMaxLegsFromPair(etaMaxLegsFromPair);
+  task->SetEtaNBinsLegsFromPair(etaNBinsLegsFromPair);
+  task->SetPhiMinLegsFromPair(phiMinLegsFromPair);
+  task->SetPhiMaxLegsFromPair(phiMaxLegsFromPair);
+  task->SetPhiNBinsLegsFromPair(phiNBinsLegsFromPair);
+  task->SetOpAngleMinLegsFromPair(opAngleMinLegsFromPair);
+  task->SetOpAngleMaxLegsFromPair(opAngleMaxLegsFromPair);
+  task->SetOpAngleNBinsLegsFromPair(opAngleNBinsLegsFromPair);
+
 
   // #########################################################
   // #########################################################
@@ -75,7 +92,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "na
   // #########################################################
   // #########################################################
   // Set Binning
-  task->SetPtBinsLinear   (minPtBin,  maxPtBin, stepsPtBin);
+  if (usePtVector == true) {
+    std::vector<double> ptBinsVec;
+    for (unsigned int i = 0; i < nBinsPt+1; ++i){
+      ptBinsVec.push_back(PtBins[i]);
+    }
+    task->SetPtBins(ptBinsVec);
+  }
+  else task->SetPtBinsLinear   (minPtBin,  maxPtBin, stepsPtBin);
   task->SetEtaBinsLinear  (minEtaBin, maxEtaBin, stepsEtaBin);
   task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);

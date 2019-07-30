@@ -687,8 +687,8 @@ void AliAnalysisTaskSDMGammaMC::UserExec(Option_t *)
       if(mcP->Eta()<-1.0 || mcP->Eta()>1.0)
 	continue;
       
-      Int_t DecayPhotonLabel[2] = {mcP->GetFirstDaughter(),
-				   mcP->GetLastDaughter() };
+      Int_t DecayPhotonLabel[2] = {mcP->GetDaughterFirst(),
+				   mcP->GetDaughterLast() };
       
       if (DecayPhotonLabel[0]<0)  continue;
       if (DecayPhotonLabel[1]<0)  DecayPhotonLabel[1]=DecayPhotonLabel[0];      
@@ -714,8 +714,8 @@ void AliAnalysisTaskSDMGammaMC::UserExec(Option_t *)
 	if( ((TParticle*)dmc->Particle())->GetNDaughters() != 2 )  isConv[daughter_index] = 0;
 	else{//if photon has 2 daughters. 
 	  
-	  Int_t dd1 = dmc->GetFirstDaughter();
-	  Int_t dd2 = dmc->GetLastDaughter();
+	  Int_t dd1 = dmc->GetDaughterFirst();
+	  Int_t dd2 = dmc->GetDaughterLast();
 	  if (dd2-dd1 != 1)  cout << "How can this happen???? " << endl;
 	  const AliMCParticle *dd1mc = static_cast<const AliMCParticle *>(mcEvent->GetTrack(dd1));
 	  const AliMCParticle *dd2mc = static_cast<const AliMCParticle *>(mcEvent->GetTrack(dd2));

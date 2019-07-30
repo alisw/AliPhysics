@@ -277,9 +277,9 @@ class AliCalorimeterUtils : public TObject {
   void         SetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Double_t c = 0)
   { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactor(bc, absID, c) ; }  
   
-  TH1F *       GetEMCALChannelTimeRecalibrationFactors(Int_t bc) const     { return fEMCALRecoUtils-> GetEMCALChannelTimeRecalibrationFactors(bc) ; }
+  TH1*         GetEMCALChannelTimeRecalibrationFactors(Int_t bc) const     { return (TH1*)fEMCALRecoUtils-> GetEMCALChannelTimeRecalibrationFactors(bc) ; }
   void         SetEMCALChannelTimeRecalibrationFactors(TObjArray *map)     { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(map)        ; }
-  void         SetEMCALChannelTimeRecalibrationFactors(Int_t bc , TH1F* h) { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(bc , h)     ; }
+  void         SetEMCALChannelTimeRecalibrationFactors(Int_t bc , TH1* h)  { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(bc , h)     ; }
 
   //------------------------------
   // Time Recalibration - L1 phase (EMCAL)
@@ -393,6 +393,8 @@ class AliCalorimeterUtils : public TObject {
   
   void          SetRunNumber(Int_t run)                         { fRunNumber  = run             ; }
   Int_t         GetRunNumber()                            const { return fRunNumber             ; }
+
+  void         SetUseOneHistForAllBCs(Bool_t useOneHist)        { fDoUseMergedBCs = useOneHist  ; fEMCALRecoUtils->SetUseOneHistForAllBCs(useOneHist) ; }
   
  private:
 
@@ -480,6 +482,8 @@ class AliCalorimeterUtils : public TObject {
   Bool_t             fMCECellClusFracCorrOn;    ///<  Correct or not the weight of cells in cluster.
   
   Float_t            fMCECellClusFracCorrParam[4]; ///<  Parameters for the function correcting the weight of the cells in the cluster.
+
+  Bool_t             fDoUseMergedBCs;           ///< flag to use one histo for all BCs
   
   /// Copy constructor not implemented.
   AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ;
@@ -488,7 +492,7 @@ class AliCalorimeterUtils : public TObject {
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCalorimeterUtils,20) ;
+  ClassDef(AliCalorimeterUtils,21) ;
   /// \endcond
 
 } ;

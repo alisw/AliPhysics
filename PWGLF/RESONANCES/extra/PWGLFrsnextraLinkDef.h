@@ -5,11 +5,10 @@
 #pragma link C++ class AliRsnAnalysisPhi900GeV+;
 #pragma link C++ class AliRsnAnalysisPhi7TeV+;
 #pragma link C++ class AliAnalysisTaskSigma1385+;
-#pragma link C++ class AliAnalysisTaskXi1530+;
-#pragma link C++ class AliAnalysisTaskXi1530RunTable+;
 #pragma link C++ class AliXiStar+;
 #pragma link C++ class AliXiStarpp13TeV+;
 #pragma link C++ class AliXiStarPbPb+;
+#pragma link C++ class AliXiStarPbPb_RUN2+;
 #pragma link C++ class AliXiStarEventCollection+;
 #pragma link C++ class AliXiStarpp13TeVEventCollection+;
 #pragma link C++ class AliXiStarPbPbEventCollection+;

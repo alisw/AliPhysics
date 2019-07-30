@@ -1,10 +1,7 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoCorrFctn3DSpherical: a class to calculate 3D correlation      //
-// for pairs of identical particles, binned in spherical coordinates     //
-// (q_inv, phi, cos(theta))
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFmeto/AliFemtoCorrFctn3DSpherical.h
+///
+
 
 #ifndef ALIFEMTOCORRFCTN3DSPHERICAL_H
 #define ALIFEMTOCORRFCTN3DSPHERICAL_H
@@ -13,15 +10,19 @@
 #include "AliFemtoPairCut.h"
 #include "TH3D.h"
 
+/// \class AliFemtoCorrFctn3DSpherical
+/// \brief 3D correlation for pairs of identical particles, binned
+///        in spherical coordinates (q_inv, phi, cos(theta))
+///
 class AliFemtoCorrFctn3DSpherical : public AliFemtoCorrFctn {
 public:
 
   AliFemtoCorrFctn3DSpherical(const char* title,
-                              const int& nqbins,
-                              const float& QLo,
-                              const float& QHi,
-                              const int& nphibins,
-                              const int& ncthetabins);
+                              const int nqbins,
+                              const float QLo,
+                              const float QHi,
+                              const int nphibins,
+                              const int ncthetabins);
 
   AliFemtoCorrFctn3DSpherical(const AliFemtoCorrFctn3DSpherical& aCorrFctn);
   virtual ~AliFemtoCorrFctn3DSpherical();
@@ -38,14 +39,14 @@ public:
   virtual TList* GetOutputList();
   virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctn3DSpherical(*this); }
 
-  //  void SetSpecificPairCut(AliFemtoPairCut* aCut);
 
 private:
-  // here are a whole bunch of histos that get filled if we do resolution correction
-  TH3D* fNumerator;         // numerator
-  TH3D* fDenominator;       // denominator
 
-  //  AliFemtoPairCut* fPairCut;    //! this is a PairCut specific to THIS CorrFctn, not the Analysis
+  /// numerator
+  TH3D* fNumerator;
+
+  /// denominator
+  TH3D* fDenominator;
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -54,6 +55,5 @@ private:
 #endif
 };
 
-//inline  void AliFemtoCorrFctn3DSpherical::SetSpecificPairCut(AliFemtoPairCut* pc){fPairCut=pc;}
 
 #endif

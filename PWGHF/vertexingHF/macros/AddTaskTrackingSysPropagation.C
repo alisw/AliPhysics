@@ -1,5 +1,5 @@
 AliAnalysisTaskTrackingSysPropagation *AddTaskTrackingSysPropagation(Int_t system=0 /*0=pp,1=PbPb*/,
-                                                                     AliAnalysisTaskTrackingSysPropagation::DecChannel ch,
+                                                                     AliAnalysisTaskTrackingSysPropagation::DecChannel ch=AliAnalysisTaskTrackingSysPropagation::kD0toKpi,
                                                                      TString filename = "",
                                                                      TString filenameHistME = "",
                                                                      TString filenameHistTrEff = "",
@@ -27,7 +27,7 @@ AliAnalysisTaskTrackingSysPropagation *AddTaskTrackingSysPropagation(Int_t syste
   } else {
     filecuts=TFile::Open(filename.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      AliFatal("Cut object not found: analysis will not start!\n");
+      Printf("FATAL: Cut object not found: analysis will not start!\n"); return NULL;
     }
     else printf("Cut object correctly found\n");
   }
@@ -42,28 +42,28 @@ AliAnalysisTaskTrackingSysPropagation *AddTaskTrackingSysPropagation(Int_t syste
     
   TFile* fileMESys;
   if( filenameHistME.EqualTo("") ) {
-    AliFatal("Histo with ME syst. not found: analysis will not start!\n");
+    Printf("FATAL: Histo with ME syst. not found: analysis will not start!\n"); return NULL;
   } else {
     fileMESys=TFile::Open(filenameHistME.Data());
     if(!fileMESys ||(fileMESys&& !fileMESys->IsOpen())){
-      AliFatal("Histo with ME syst. not found: analysis will not start!\n");
+      Printf("FATAL: Histo with ME syst. not found: analysis will not start!\n"); return NULL;
     }
   }
   TH1F *histoME = (TH1F*)fileMESys->Get("h");
-  if(!histoME) AliFatal("Histo with ME syst. not found: analysis will not start!\n");
+  if(!histoME){ Printf("FATAL: Histo with ME syst. not found: analysis will not start!\n"); return NULL;}
     
     
   TFile* fileTrEffSys;
   if( filenameHistTrEff.EqualTo("") ) {
-    AliFatal("Histo with TrEff syst. not found: analysis will not start!\n");
+    Printf("FATAL: Histo with TrEff syst. not found: analysis will not start!\n"); return NULL;
   } else {
     fileTrEffSys=TFile::Open(filenameHistTrEff.Data());
     if(!fileTrEffSys ||(fileTrEffSys&& !fileTrEffSys->IsOpen())){
-      AliFatal("Histo with TrEff syst. not found: analysis will not start!\n");
+      Printf("FATAL: Histo with TrEff syst. not found: analysis will not start!\n"); return NULL;
     }
   }
   TH1F *histoTrEff = (TH1F*)fileTrEffSys->Get("hTrEff");
-  if(!histoTrEff) AliFatal("Histo TrEff not found: analysis will not start!\n");
+  if(!histoTrEff) {Printf("FATAL: Histo TrEff not found: analysis will not start!\n"); return NULL;}
     
     
   AliAnalysisTaskTrackingSysPropagation *Task = new AliAnalysisTaskTrackingSysPropagation(ch, analysiscuts, histoME, histoTrEff);

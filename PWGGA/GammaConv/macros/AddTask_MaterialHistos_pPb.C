@@ -156,11 +156,6 @@ void AddTask_MaterialHistos_pPb(
       }
     }
 
-
-    if(inputHandler->IsA()==AliAODInputHandler::Class()){
-      // AOD mode
-      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
-    }
     fV0ReaderV1->Init();
 
     AliLog::SetGlobalLogLevel(AliLog::kInfo);
@@ -259,25 +254,18 @@ void AddTask_MaterialHistos_pPb(
     analysisEventCuts[i]->SetFillCutHistograms("", kTRUE);
 
     analysisCuts[i] = new AliConversionPhotonCuts();
-    if (enableElecDeDxPostCalibration > 0)
-    {
-      if (isMC == 0)
-      {
-        if (analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNameElecDeDxPostCalibration))
-        {
-          analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+    if (enableElecDeDxPostCalibration){
+      if (isMC == 0){
+        if(fileNamedEdxPostCalib.CompareTo("") != 0){
+          analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
+          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
         }
-        else
-        {
-          enableElecDeDxPostCalibration = kFALSE;
-          analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
-        }
-      }
-      else
-      {
-        cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0" << endl;
-        enableElecDeDxPostCalibration = kFALSE;
         analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        cout << "Enabled TPC dEdx recalibration." << endl;
+      } else{
+        cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+        enableElecDeDxPostCalibration=kFALSE;
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
       }
     }
 

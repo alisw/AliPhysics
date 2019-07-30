@@ -11,6 +11,9 @@
 #include <TString.h>
 #include <vector>
 
+class TH1D;
+
+
 /// \class AliFemtoKtBinnedCorrFunc
 /// \brief A "wrapper class" that wraps a correlation function
 ///        with code that checks the kt of the pair.
@@ -54,9 +57,11 @@ public:
   ///
   void AddKtRanges(const float data[], float stop_at = -1.0);
 
-  /// Add low-high kt ranges in vector
-  template <typename T>
-  void AddKtRanges(const T &start, const T &stop);
+  // /// Add low-high kt ranges in vector
+  // template <typename T>
+  // void AddKtRanges(const T &start, const T &stop);
+  void AddKtRanges(const std::vector<std::pair<float, float>>::const_iterator start,
+                   const std::vector<std::pair<float, float>>::const_iterator stop);
 
   /// Add low-high kt ranges in vector
   void AddKtRanges(const std::vector<std::pair<float, float>> &data)
@@ -88,6 +93,7 @@ public:
 
   /// Return TList of output objects
   virtual TList* GetOutputList();
+  virtual void AddOutputObjectsTo(TCollection &);
 
   virtual AliFemtoString Report() { return ""; };
 
@@ -101,7 +107,11 @@ public:
 private:
   AliFemtoKtBinnedCorrFunc(const AliFemtoKtBinnedCorrFunc&);
   AliFemtoKtBinnedCorrFunc& operator=(const AliFemtoKtBinnedCorrFunc&);
+
 protected:
+
+  void AddPair(AliFemtoPair *, bool);
+
   /// Name of the output TObjArray
   TString fName;
 
@@ -112,55 +122,26 @@ protected:
   /// The vector of correlation functions
   std::vector<AliFemtoCorrFctn*> fCFBuffer;
 
-  std::vector<UInt_t> fIndexMap;
-
   /// Internal vector of ranges.
   std::vector<std::pair<Float_t, Float_t> > fRanges;
 
+  /// Histogram monitoring kT distribution
+  TH1D* fKtMonitor;
 };
 
-inline UInt_t AliFemtoKtBinnedCorrFunc::FindKtBin(const AliFemtoPair *pair)
-{
-  const Float_t kt = pair->KT();
+  // std::vector<std::pair<std::pair<Float_t, Float_t>, A >> fRanges;
 
-  for (UInt_t i = 0; i < fRanges.size(); ++i) {
-    const std::pair<Float_t, Float_t> &tmp = fRanges[i];
-    if (tmp.first <= kt && kt < tmp.second) {
-      return fIndexMap[i];
-    }
-    if (kt < tmp.first) {
-      break;
-    }
-  }
-
-  return NPos;
-
-  // TODO: implement binary search
-  //
-  // UInt_t start = 0,
-  //        stop = fRanges.size(),
-  //        i = stop / 2;
-  //
-  // do {
-  //   const std::pair<Float_t, Float_t> &tmp = fRanges[i];
-  //
-  //   // We have found a matching range - return this index
-  //   if (tmp.first <= kt && kt < tmp.second) {
-  //     return i;
-  //   }
-  //
-  //   //
-  //   if (kt < tmp.first) {
-  //     break;
-  //   }
-  // } while (start != stop);
-
-}
-
+/*
 template <typename T>
 void AliFemtoKtBinnedCorrFunc::AddKtRanges(const T &start, const T &stop)
+*/
+inline
+void AliFemtoKtBinnedCorrFunc::AddKtRanges(
+  const std::vector<std::pair<float, float>>::const_iterator start,
+  const std::vector<std::pair<float, float>>::const_iterator stop)
 {
-  for (auto it = start; it != stop; ++it) {
+  std::vector<std::pair<float, float>>::const_iterator it = start;
+  for (; it != stop; ++it) {
     AddKtRange(it->first, it->second);
   }
 }

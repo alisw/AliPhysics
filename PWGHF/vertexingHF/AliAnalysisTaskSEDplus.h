@@ -71,6 +71,9 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
     fNtrcklMax=Ntrckmax;
   }
   
+  void SetFillOnlySignalSparses(bool fillonlysig=kTRUE) {fFillOnlySignalSparses=fillonlysig;}
+  void SetUseFinePtBinsForSparse(bool usefinebins=kTRUE) {fUseFinPtBinsForSparse=kTRUE;} //use only in case of few candidates (e.g. MC signal only)
+
   Float_t GetUpperMassLimit(){return fUpmasslimit;}
   Float_t GetLowerMassLimit(){return fLowmasslimit;}
   Int_t GetNBinsPt(){return fNPtBins;}
@@ -187,9 +190,11 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t fNtrcklMin;   ///minimum number of tracklets
   Int_t fNtrcklMax;   ///maximum number of tracklets
   Bool_t fCutOnTrckl;  ///flag to activate the cut on the number of tracklets
+  Bool_t fFillOnlySignalSparses; ///flag to fill only signal sparses in case of MC
+  Bool_t fUseFinPtBinsForSparse; ///flag to fill pt axis of sparse with 0.1 GeV/c wide bins
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,31); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,32); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 

@@ -25,14 +25,12 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
   
   
   AliRDHFCuts* analysiscuts=0x0;
-  AliAODPidHF* pid=0x0;
   AliESDtrackCuts* esdc = 0x0;
   if(!cutObjFile.IsNull()){
     TFile *f=TFile::Open(cutObjFile.Data(),"READ");
     if(f){
       analysiscuts=(AliRDHFCuts*)f->Get(cutObjNam.Data());
       esdc=analysiscuts->GetTrackCuts();
-      pid=analysiscuts->GetPidHF();
     }
   }
   else {
@@ -40,7 +38,7 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
     else if(meson==1) analysiscuts=new AliRDHFCutsDplustoKpipi();
     else if(meson==3) analysiscuts=new AliRDHFCutsDstoKKpi();
     analysiscuts->SetStandardCutsPP2010();
-    pid=new AliAODPidHF();
+    AliAODPidHF* pid=new AliAODPidHF();
     pid->SetMatch(5);
     pid->SetTPCnSigmaRangeForPions(-3.,3.);
     pid->SetTPCnSigmaRangeForKaons(-2.,3.);
@@ -48,7 +46,7 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
     pid->SetTOFnSigmaRangeForPions(-3.,3.);
     pid->SetTOFnSigmaRangeForKaons(-2.,2.);
     pid->SetTOFnSigmaRangeForProtons(-3.,3.);
-    
+    analysiscuts->SetPidHF(pid);
   }
   if(!analysiscuts){
     Printf("Wrong file or cut object name set");
@@ -74,7 +72,6 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
   dTask->SetPtBinWidth(ptBinWidth);
   
   // PID settings
-  dTask->SetPIDHF(pid);
   dTask->SetPIDstrategy(pidStrategy);
   dTask->SetPIDselCaseZero(casePID);
   dTask->SetBayesThres(bayesThresKaon, bayesThresPion);
@@ -91,6 +88,7 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
   TString inname = Form("cinput%s%s",mesname.Data(),containerStr.Data());
   TString outname = Form("coutput%s%s",mesname.Data(),containerStr.Data());
   TString normname = Form("coutput%sNorm%s",mesname.Data(),containerStr.Data());
+  TString cutname = Form("coutput%sCuts%s",mesname.Data(),containerStr.Data());
   
   AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),
                                                           AliAnalysisManager::kInputContainer);
@@ -104,12 +102,16 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
   AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname,AliNormalizationCounter::Class(),
                                                                AliAnalysisManager::kOutputContainer,
                                                                outputfile.Data());
-  
+  AliAnalysisDataContainer* coutputCuts = mgr->CreateContainer(cutname,
+							       TList::Class(),
+							       AliAnalysisManager::kParamContainer,
+							       outputfile.Data() ); 
+
   mgr->ConnectInput(dTask,0,mgr->GetCommonInputContainer());
   
   mgr->ConnectOutput(dTask,1,coutput);
-  
   mgr->ConnectOutput(dTask,2,coutputNorm);  
+  mgr->ConnectOutput(dTask,3,coutputCuts);
   
   return dTask;
 }

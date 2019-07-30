@@ -36,7 +36,8 @@ public:
 
    Int_t               CountParticles(TArrayI &found, Char_t charge = 0, Int_t cutID = -1);
    AliRsnMiniParticle *GetParticle(Int_t i);
-   AliRsnMiniParticle *LeadingParticle();
+   AliRsnMiniParticle *LeadingParticle(Bool_t mc);
+   void                SelectLeadingParticle(Bool_t mc);
    void                AddParticle(AliRsnMiniParticle copy);
    AliRsnMiniParticle  *AddParticle();
    

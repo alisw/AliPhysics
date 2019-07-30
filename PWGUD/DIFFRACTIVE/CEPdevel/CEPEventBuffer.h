@@ -37,8 +37,8 @@ class CEPEventBuffer : public TObject {
                                // and number of offline fired chips
     Short_t fFiredChips[4];    // Number of FastOR chips in the two SPD layers
                                // and number of offline fired chips
-    TBits  fSPD_0STG_Online;   //! using FastOrMap    (online)
-    TBits  fSPD_0STG_Offline;  //! using FiredChipMap (offline)
+    TBits  fSPD_0STG_Online;   // using FastOrMap    (online)
+    TBits  fSPD_0STG_Offline;  // using FiredChipMap (offline)
 
 
     Bool_t fisDGTrigger;

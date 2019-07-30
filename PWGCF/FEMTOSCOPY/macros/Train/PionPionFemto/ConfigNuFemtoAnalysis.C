@@ -1,5 +1,5 @@
 ///
-/// \file PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto/ConfigNuFemtoAnalysisRun.C
+/// \file PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto/ConfigNuFemtoAnalysis.C
 ///
 /// \brief The configuration macro which sets up identical pion-pion analyses
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
@@ -18,8 +18,31 @@
 #include "AliFemtoCutMonitorParticleYPt.h"
 
 #include "AliFemtoCorrFctnKStar.h"
+#include "AliFemtoCorrFctnDEtaDPhiSimple.h"
+
+#include "AliFemtoAvgSepCorrFctn.h"
+#include "AliFemtoCorrFctnDPhiStarDEta.h"
+#include "AliFemtoQinvCorrFctn.h"
+#include "AliFemtoModelWeightGeneratorBasic.h"
+#include "AliFemtoModelWeightGeneratorLednicky.h"
+
+#include "AliFemtoModelCorrFctnDEtaDPhiStar.h"
+#include "AliFemtoModelCorrFctnDEtaDPhiAK.h"
+#include "AliFemtoCorrFctn3DLCMSPosQuad.h"
+#include "AliFemtoCorrFctn3DLCMSSym.h"
+#include "AliFemtoModelCorrFctnTrueQ6D.h"
+#include "AliFemtoQinvCorrFctn.h"
+
+#include "AliFemtoCorrFctnDirectYlm.h"
+#include "AliFemtoCorrFctnQ3D.h"
+
+#include "AliFemtoModelCorrFctnTrueQ3D.h"
+#include "AliFemtoModelCorrFctnTrueQ3DByParent.h"
+#include "AliFemtoKtBinnedCorrFunc.h"
+#include "AliFemtoModelCorrFctnTrueQ.h"
 
 #include <TROOT.h>
+#include <TBase64.h>
 
 #endif
 
@@ -31,6 +54,13 @@ struct MacroParams {
   std::vector<int> centrality_ranges;
   std::vector<unsigned char> pair_codes;
   std::vector<float> kt_ranges;
+
+  // monte carlo weight generator
+  bool mcwg_lednicky;
+  bool mcwg_square;
+  bool mcwg_coul;
+  bool mcwg_strong;
+  bool mcwg_3body;
 
   int eventreader_filter_bit;
   bool eventreader_epvzero;
@@ -83,6 +113,11 @@ struct MacroParams {
   bool do_trueq3dbp_cf;
   bool do_kt_trueq3dbp_cf;
 
+  bool do_truedetadphi_cf;
+  bool do_kt_truedetadphi_cf;
+
+  bool do_detadphi_simple_cf;
+  bool do_kt_detadphi_simple_cf;
 };
 
 void
@@ -98,7 +133,7 @@ AliFemtoManager*
 ConfigFemtoAnalysis(const AliFemtoConfigObject& cfg)
 {
   AliFemtoConfigObject evreader_cfg = AliFemtoConfigObject::BuildMap()
-    ("class", "AliFemtoEventReaderAODMultSelection")
+    ("_class", "AliFemtoEventReaderAODMultSelection")
     ("filter_bit", 7)
     ("epvzero", true)
     ("dca_globaltrack", true)
@@ -123,6 +158,12 @@ ConfigFemtoAnalysis(const TString& param_str="")
   AFAPP::CutParams cut_config = AFAPP::DefaultCutConfig();
   MacroParams macro_config;
 
+  macro_config.mcwg_lednicky = true;
+  macro_config.mcwg_square = false;
+  macro_config.mcwg_coul = true;
+  macro_config.mcwg_strong = true;
+  macro_config.mcwg_3body = true;
+
   // default
   macro_config.do_qinv_cf = false;
   macro_config.do_kt_qinv_cf = false;
@@ -144,6 +185,10 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_kt_trueq3d_cf = false;
   macro_config.do_trueq3dbp_cf = false;
   macro_config.do_kt_trueq3dbp_cf = false;
+  macro_config.do_truedetadphi_cf = false;
+  macro_config.do_kt_truedetadphi_cf = false;
+  macro_config.do_detadphi_simple_cf = false;
+  macro_config.do_kt_detadphi_simple_cf = false;
 
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
@@ -180,7 +225,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
-  AliFemtoEventReaderAOD::EstEventMult multest = macro_config.eventreader_use_multiplicity;
+  AliFemtoEventReaderAOD::EstEventMult multest = static_cast<AliFemtoEventReaderAOD::EstEventMult>(macro_config.eventreader_use_multiplicity);
   AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODMultSelection();
     rdr->SetFilterBit(macro_config.eventreader_filter_bit);
     rdr->SetEPVZERO(macro_config.eventreader_epvzero);
@@ -237,7 +282,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         type_2 = PI_MINUS;
         break;
       default:
-        cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
+        std::cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
         continue;
       }
 
@@ -282,15 +327,30 @@ ConfigFemtoAnalysis(const TString& param_str="")
       const int QINV_BIN_COUNT = TMath::Abs((QINV_MAX_VAL - QINV_MIN_VAL) * 1000 / macro_config.qinv_bin_size_MeV);
 
       if (macro_config.do_qinv_cf) {
-        TString cf_title("_qinv");
-        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title, QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
-        analysis->AddCorrFctn(cf);
+        AliFemtoCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn("_qinv", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        analysis->AddCorrFctn(qinv_cf);
       }
 
       if (analysis_config.is_mc_analysis) {
           model_manager = new AliFemtoModelManager();
-          AliFemtoModelWeightGeneratorBasic *weight_gen = new AliFemtoModelWeightGeneratorBasic();
-          weight_gen->ShouldPrintEmptyParticleNotification(kFALSE);
+          AliFemtoModelWeightGenerator *weight_gen = NULL;
+
+          if (macro_config.mcwg_lednicky) {
+            AliFemtoModelWeightGeneratorLednicky *led_weight_gen = new AliFemtoModelWeightGeneratorLednicky();
+
+            if (macro_config.mcwg_square) { led_weight_gen->SetSquare(); } else { led_weight_gen->SetSphere(); }
+            if (macro_config.mcwg_coul) { led_weight_gen->SetCoulOn(); } else { led_weight_gen->SetCoulOff(); }
+            if (macro_config.mcwg_strong) { led_weight_gen->SetStrongOn(); } else { led_weight_gen->SetStrongOff(); }
+            if (macro_config.mcwg_3body) { led_weight_gen->Set3BodyOn(); } else { led_weight_gen->Set3BodyOff(); }
+
+            weight_gen = led_weight_gen;
+          }
+          else {
+            AliFemtoModelWeightGeneratorBasic *basic_weight_gen = new AliFemtoModelWeightGeneratorBasic();
+            basic_weight_gen->ShouldPrintEmptyParticleNotification(kFALSE);
+            weight_gen = basic_weight_gen;
+          }
+
           weight_gen->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionPlus());
           model_manager->AcceptWeightGenerator(weight_gen);
       }
@@ -309,41 +369,35 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_trueq_cf) {
-        AliFemtoModelCorrFctn *model_cf = new AliFemtoModelCorrFctnTrueQ("_MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
-        model_cf->ConnectToManager(model_manager);
-        analysis->AddCorrFctn(model_cf);
+        AliFemtoModelCorrFctn *trueq_cf = new AliFemtoModelCorrFctnTrueQ("_MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        trueq_cf->ConnectToManager(model_manager);
+        analysis->AddCorrFctn(trueq_cf);
       }
-
       if (macro_config.do_q3d_cf) {
-        TString cf_title("_q3D");
-        analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq));
+        analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym("Q3D", macro_config.q3d_bin_count, macro_config.q3d_maxq));
       }
 
       if (macro_config.do_trueq3d_cf) {
-        TString cf_title("Trueq3D_");
-        AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
-        m_cf->SetManager(model_manager);
-        analysis->AddCorrFctn(m_cf);
+        AliFemtoModelCorrFctnTrueQ3D *trueq3d_cf = new AliFemtoModelCorrFctnTrueQ3D("", macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        trueq3d_cf->SetManager(model_manager);
+        analysis->AddCorrFctn(trueq3d_cf);
       }
 
       if (macro_config.do_moco6_cf) {
-        TString cf_title("MRC6D");
-        AliFemtoModelCorrFctnTrueQ6D *m_cf = new AliFemtoModelCorrFctnTrueQ6D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
-        m_cf->SetManager(model_manager);
-        analysis->AddCorrFctn(m_cf);
+        AliFemtoModelCorrFctnTrueQ6D *moco6_cf = new AliFemtoModelCorrFctnTrueQ6D("MRC6D", macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        analysis->AddCorrFctn(moco6_cf);
       }
 
       if (macro_config.do_kt_qinv_cf) {
-        TString cf_title("_qinv");
-        AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title, QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
-        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_Qinv", qinv_cf);
+        AliFemtoQinvCorrFctn *kt_qinv_cf = new AliFemtoQinvCorrFctn("_qinv", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        AliFemtoKtBinnedCorrFunc *kt_qinv_cfs = new AliFemtoKtBinnedCorrFunc("KT_Qinv", kt_qinv_cf);
         // loop over (low,high) pairs in the kt_ranges vector
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],
                 high = macro_config.kt_ranges[kt_idx+1];
-          kt_binned_cfs->AddKtRange(low, high);
+          kt_qinv_cfs->AddKtRange(low, high);
         }
-        analysis->AddCorrFctn(kt_binned_cfs);
+        analysis->AddCorrFctn(kt_qinv_cfs);
       }
 
       if (macro_config.do_kt_q3d_cf && !macro_config.do_kt_trueq3d_cf) {
@@ -357,7 +411,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
         }
         analysis->AddCorrFctn(kt_binned_cfs);
       }
-
       if (macro_config.do_kt_lcms_cf && !macro_config.do_kt_trueq3d_cf) {
         AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_Q3D_LCMS",
           new AliFemtoCorrFctnQ3DLCMS("", macro_config.q3d_bin_count, macro_config.q3d_maxq));
@@ -383,14 +436,13 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_pqq3d_cf) {
-        AliFemtoCorrFctn3DLCMSPosQuad *cf = AliFemtoCorrFctn3DLCMSPosQuad(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        AliFemtoCorrFctn3DLCMSPosQuad *cf = new AliFemtoCorrFctn3DLCMSPosQuad("PQ3D", macro_config.q3d_bin_count, macro_config.q3d_maxq);
         analysis->AddCorrFctn(cf);
       }
 
       if (macro_config.do_kt_pqq3d_cf) {
-        TString q3d_cf_name("_q3d");
         AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_PQ3D",
-          new AliFemtoCorrFctn3DLCMSPosQuad(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
+          new AliFemtoCorrFctn3DLCMSPosQuad("", macro_config.q3d_bin_count, macro_config.q3d_maxq));
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],
@@ -403,39 +455,81 @@ ConfigFemtoAnalysis(const TString& param_str="")
       if (macro_config.do_kt_trueq3d_cf) {
         TString q3d_cf_name("Trueq3D");
 
-        AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq);
-        m_cf->SetManager(model_manager);
+        AliFemtoModelCorrFctnTrueQ3D *kt_trueq3d_cf = new AliFemtoModelCorrFctnTrueQ3D(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        kt_trueq3d_cf->SetManager(model_manager);
 
-        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D", m_cf);
+        AliFemtoKtBinnedCorrFunc *kt_trueq3d_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D", kt_trueq3d_cf);
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],
                 high = macro_config.kt_ranges[kt_idx+1];
-          kt_binned_cfs->AddKtRange(low, high);
+          kt_trueq3d_cfs->AddKtRange(low, high);
         }
-        analysis->AddCorrFctn(kt_binned_cfs);
+        analysis->AddCorrFctn(kt_trueq3d_cfs);
       }
 
       if (macro_config.do_trueq3dbp_cf) {
-        AliFemtoModelCorrFctnTrueQ3DByParent *m_cf = new AliFemtoModelCorrFctnTrueQ3DByParent(macro_config.q3d_bin_count,
+        AliFemtoModelCorrFctnTrueQ3DByParent *trueq3dbp_cf = new AliFemtoModelCorrFctnTrueQ3DByParent(macro_config.q3d_bin_count,
                                                                                               macro_config.q3d_maxq);
-        m_cf->SetManager(model_manager);
-        analysis->AddCorrFctn(m_cf);
+        trueq3dbp_cf->SetManager(model_manager);
+        analysis->AddCorrFctn(trueq3dbp_cf);
       }
 
       if (macro_config.do_kt_trueq3dbp_cf) {
-        AliFemtoModelCorrFctnTrueQ3DByParent *m_cf = new AliFemtoModelCorrFctnTrueQ3DByParent(macro_config.q3d_bin_count,
+        AliFemtoModelCorrFctnTrueQ3DByParent *kt_trueq3dbp_cf = new AliFemtoModelCorrFctnTrueQ3DByParent(macro_config.q3d_bin_count,
                                                                                               macro_config.q3d_maxq);
-        m_cf->SetManager(model_manager);
+        kt_trueq3dbp_cf->SetManager(model_manager);
 
-        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3DByP", m_cf);
+        AliFemtoKtBinnedCorrFunc *kt_trueq3dbp_cf_container = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3DByP", kt_trueq3dbp_cf);
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],
                 high = macro_config.kt_ranges[kt_idx+1];
-          kt_binned_cfs->AddKtRange(low, high);
+          kt_trueq3dbp_cf_container->AddKtRange(low, high);
         }
-        analysis->AddCorrFctn(kt_binned_cfs);
+        analysis->AddCorrFctn(kt_trueq3dbp_cf_container);
+      }
+
+      if (macro_config.do_truedetadphi_cf) {
+        AliFemtoModelCorrFctnDEtaDPhiAK *truedetadphi_cf = new AliFemtoModelCorrFctnDEtaDPhiAK("", macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        analysis->AddCorrFctn(truedetadphi_cf);
+      }
+
+      if (macro_config.do_kt_truedetadphi_cf) {
+        AliFemtoModelCorrFctnDEtaDPhiAK *kt_truedetadphi_cf =
+          new AliFemtoModelCorrFctnDEtaDPhiAK("",
+                                              macro_config.q3d_bin_count,
+                                              macro_config.q3d_maxq);
+        kt_truedetadphi_cf->ConnectToManager(model_manager);
+
+        AliFemtoKtBinnedCorrFunc *kt_truedetadphi_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueDetaDphi", kt_truedetadphi_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_truedetadphi_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_truedetadphi_cfs);
+      }
+
+      if (macro_config.do_detadphi_simple_cf) {
+        AliFemtoCorrFctnDEtaDPhiSimple *detadphi_simple_cf = new AliFemtoCorrFctnDEtaDPhiSimple("", macro_config.delta_phi_bin_count, macro_config.delta_eta_bin_count);
+        detadphi_simple_cf->SetReadHiddenInfo(analysis_config.is_mc_analysis);
+        analysis->AddCorrFctn(detadphi_simple_cf);
+      }
+
+      if (macro_config.do_kt_detadphi_simple_cf) {
+        AliFemtoCorrFctnDEtaDPhiSimple *kt_detadphi_simple_cf = new AliFemtoCorrFctnDEtaDPhiSimple("", macro_config.delta_phi_bin_count, macro_config.delta_eta_bin_count);
+        kt_detadphi_simple_cf->SetReadHiddenInfo(analysis_config.is_mc_analysis);
+
+        AliFemtoKtBinnedCorrFunc *kt_detadphi_simple_cfs = new AliFemtoKtBinnedCorrFunc("KT_DetaDphiSimple", kt_detadphi_simple_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_detadphi_simple_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_detadphi_simple_cfs);
       }
 
       if (macro_config.do_ylm_cf) {
@@ -460,14 +554,14 @@ ConfigFemtoAnalysis(const TString& param_str="")
             macro_config.ylm_useLCMS
           );
 
-        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_DirectYlm", ylm_cf);
+        AliFemtoKtBinnedCorrFunc *ylm_cfs = new AliFemtoKtBinnedCorrFunc("KT_DirectYlm", ylm_cf);
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float lo = macro_config.kt_ranges[kt_idx],
                 hi = macro_config.kt_ranges[kt_idx+1];
-          kt_binned_cfs->AddKtRange(lo, hi);
+          ylm_cfs->AddKtRange(lo, hi);
         }
-        analysis->AddCorrFctn(kt_binned_cfs);
+        analysis->AddCorrFctn(ylm_cfs);
       }
 
       manager->AddAnalysis(analysis);
@@ -610,7 +704,7 @@ BuildConfiguration(const TString &text,
 
     cmd += ";";
 
-    cout << "I-BuildConfiguration: `" << cmd << "`\n";
+    std::cout << "I-BuildConfiguration: `" << cmd << "`\n";
     gROOT->ProcessLineFast(cmd);
   }
 }

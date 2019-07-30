@@ -127,7 +127,8 @@ fTimeStampEventCTPBCCorrExclude(0),
 fTimeStampEventCTPBCCorrMin(0), fTimeStampEventCTPBCCorrMax(0),
 fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
 fVertexBC(-200),             fRecalculateVertexBC(0),
-fUseAliCentrality(0),        fCentralityClass(""),            fCentralityOpt(0),
+fUseAliCentrality(0),        fMultWithEventSel(0),
+fCentralityClass(""),        fCentralityOpt(0),
 fEventPlaneMethod(""),
 fFillInputNonStandardJetBranch(kFALSE),
 fNonStandardJets(new TClonesArray("AliAODJet",100)),          fInputNonStandardJetBranchName("jets"),
@@ -905,8 +906,9 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
     parList+=onePar ;
   }
   
-  snprintf(onePar,buffersize,"Centrality: Class %s, Option %d, Bin [%d,%d]; New centrality %d; Event plane method %s; ", 
-           fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1],fUseAliCentrality,fEventPlaneMethod.Data()) ;
+  snprintf(onePar,buffersize,"Centrality: Class %s, Option %d, Bin [%d,%d]; New centrality %d; Mult. PS %d; Event plane method %s; ", 
+           fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1],
+           fUseAliCentrality,fMultWithEventSel,fEventPlaneMethod.Data()) ;
   parList+=onePar ;
   
   return new TObjString(parList) ;
@@ -1096,6 +1098,7 @@ void AliCaloTrackReader::InitParameters()
   
   //Centrality
   fUseAliCentrality = kFALSE;
+  fMultWithEventSel = kTRUE;
   fCentralityClass  = "V0M";
   fCentralityOpt    = 100;
   fCentralityBin[0] = fCentralityBin[1]=-1;
@@ -1607,7 +1610,7 @@ Int_t AliCaloTrackReader::GetEventCentrality() const
                     GetMultSelCen()->GetMultiplicityPercentile("CL1",1), 
                     fCentralityClass.Data()));
     
-    return GetMultSelCen()->GetMultiplicityPercentile(fCentralityClass, kTRUE); // returns centrality only for events used in calibration
+    return (Int_t) GetMultSelCen()->GetMultiplicityPercentile(fCentralityClass, fMultWithEventSel); // returns centrality only for events used in calibration
     
     // equivalent to
     //GetMultSelCen()->GetMultiplicityPercentile("V0M", kFALSE); // returns centrality for any event

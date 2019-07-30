@@ -37,6 +37,7 @@
 #include "AliAnaParticleHadronCorrelation.h"
 #include "AliAnaChargedParticles.h"
 #include "AliAnaCalorimeterQA.h"
+#include "AliAnaCaloExotics.h"
 #include "AliAnaClusterShapeCorrelStudies.h"
 #include "AliAnaGeneratorKine.h"
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
@@ -47,7 +48,7 @@
 TString kAnaCaloTrackCorr = "";
 
 /// Global name to be composed of the analysis components chain and some internal settings
-// Some examples of strings: "Photon_MergedPi0_DecayPi0_Isolation_Correlation_Bkg_QA_Charged_HighMult_MultiIso_PerSM_PerTCard",
+// Some examples of strings: "Photon_MergedPi0_DecayPi0_Isolation_FixIsoConeExcess_Correlation_Bkg_QA_Charged_HighMult_MultiIso_PerSM_PerTCard",
 TString kAnaCutsString = ""; 
 
 ///
@@ -192,6 +193,13 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   else
     ana->SwitchOnFillHighMultiplicityHistograms();
   
+  // Consider real calo acceptance (borders, bad map holes)
+  // at generator level
+  if ( kAnaCutsString.Contains("MCRealCaloAcc") )
+    ana->SwitchOnRealCaloAcceptance();
+  else
+    ana->SwitchOffRealCaloAcceptance();
+  
   //
   // Debug
   //
@@ -221,14 +229,30 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   AliAnaPhoton *ana = new AliAnaPhoton();
   
   // cluster selection cuts
-  
-  ana->SwitchOffRealCaloAcceptance();
-  
+
   ana->SwitchOnFiducialCut(); 
-  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC  
   
-  if ( calorimeter.Contains("CAL") ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
+  if      ( calorimeter == "EMCAL" )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 185.8) ; //12 SM
+    else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 178.8) ; //10 SM
+    else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 118.8) ; // 4 SM
+  }
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  else if ( calorimeter == "PHOS"  )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
+    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ;
+  }
+  
+
+//  if ( kAnaCutsString.Contains("TightAcc") )
+//  {
+//    if ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.27, 103, 157) ; // EMC 
+//  }
+  
+  if ( calorimeter.Contains("CAL" ) ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
+  if ( calorimeter.Contains("PHOS") ) ana->GetFiducialCut()->DoPHOSFiducialCut (kTRUE);  
   
   ana->SetCalorimeter(calorimeter);
   if(calorimeter == "DCAL") 
@@ -238,7 +262,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   }
   
   ana->SwitchOnFillShowerShapeHistograms();  // Filled before photon shower shape selection
-  if( kAnaCutsString.Contains("MultiIso") ) ana->SwitchOffFillShowerShapeHistograms();
+  if ( kAnaCutsString.Contains("MultiIso") ) ana->SwitchOffFillShowerShapeHistograms();
     
   if ( kAnaCutsString.Contains("PerSM") ) 
     ana->SwitchOnFillShowerShapeHistogramsPerSM(); 
@@ -255,6 +279,11 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SwitchOnTMHistoFill() ;
     if(tm > 1) ana->SwitchOnTMTrackPtHistoFill() ;
   }
+  else
+  {
+    ana->SwitchOffTMHistoFill() ;
+    ana->SwitchOffTMTrackPtHistoFill() ;
+  }
   
   if(calorimeter == "PHOS")
   {
@@ -266,7 +295,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   else
   {//EMCAL
     ana->SetNCellCut(1);// At least 2 cells
-    ana->SetMinEnergy(0.3); // avoid mip peak at E = 260 MeV
+    ana->SetMinEnergy(0.5); 
     ana->SetMaxEnergy(100);
     ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off
                                  // restrict to less than 100 ns when time calibration is on
@@ -289,12 +318,20 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   caloPID->SetEMCALLambda0CutMin(0.10);
   
   // Track matching
+  
+  // E/p
+  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+  
   // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.025);
+  caloPID->SetEMCALDEtaCut(0.020);
   caloPID->SetEMCALDPhiCut(0.030);
   
   // pT track dependent cuts
-  if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
+  if ( tm > 1 ) caloPID->SwitchOnEMCTrackPtDepResMatching();
   
   // PHOS
   caloPID->SetPHOSDispersionCut(2.5);
@@ -341,10 +378,21 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
   AliAnaElectron *ana = new AliAnaElectron();
   ana->SetDebug(debug); //10 for lots of messages
   
-  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC  
+  if      ( calorimeter == "EMCAL" )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 185.8) ; //12 SM
+    else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 178.8) ; //10 SM
+    else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 118.8) ; // 4 SM
+  }
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  else if ( calorimeter == "PHOS"  )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
+    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ;
+  }
   
-  if ( calorimeter.Contains("CAL") ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
+  if ( calorimeter.Contains("CAL")  ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
+  if ( calorimeter.Contains("PHOS") ) ana->GetFiducialCut()->DoPHOSFiducialCut (kTRUE);  
   
   ana->SetCalorimeter(calorimeter);
   if(calorimeter == "DCAL") 
@@ -367,7 +415,7 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
   else 
   {// EMCAL
     ana->SetNCellCut(1);// At least 2 cells
-    ana->SetMinPt(0.7); // no effect minium EMCAL cut.
+    ana->SetMinPt(0.5); // no effect minium EMCAL cut.
     ana->SetMaxPt(100); 
     //ana->SetTimeCut(400,900);// Time window of [400-900] ns
     ana->SetMinDistanceToBadChannel(2);
@@ -527,6 +575,22 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   }
   else  ///////////////////////////////////
   {
+    ana->SwitchOnFiducialCut(); 
+    if      ( calorimeter == "EMCAL" )
+    {
+      if      ( year > 2014 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 185.8) ; //12 SM
+      else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 178.8) ; //10 SM
+      else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 118.8) ; // 4 SM
+    }
+    else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+    
+    if ( kAnaCutsString.Contains("TightAcc") )
+    {
+      if ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.27, 103, 157) ; // EMC 
+    }
+    
+    if ( calorimeter.Contains("CAL") ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
+    
     // cluster splitting settings
     ana->SetMinEnergy(6);
     ana->SetMaxEnergy(100.);
@@ -546,8 +610,16 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     AliCaloPID* caloPID = ana->GetCaloPID();
     
     // Track matching
+    
+    // E/p
+    if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+    if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+    if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+    if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+    if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+    
     // tm = 1, fixed cuts
-    caloPID->SetEMCALDEtaCut(0.025);
+    caloPID->SetEMCALDEtaCut(0.020);
     caloPID->SetEMCALDPhiCut(0.030);
     
     // pT track dependent cuts
@@ -669,12 +741,21 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   
   // Acceptance plots
   ana->SwitchOnFiducialCut(); 
-  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC  
+  if      ( calorimeter == "EMCAL" )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 185.8) ; //12 SM
+    else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 178.8) ; //10 SM
+    else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 118.8) ; // 4 SM
+  }
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  else if ( calorimeter == "PHOS"  )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
+    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ;
+  }
   
-  if ( calorimeter.Contains("CAL") ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
-
-  ana->SwitchOffRealCaloAcceptance();
+  if ( calorimeter.Contains("CAL" ) ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
+  if ( calorimeter.Contains("PHOS") ) ana->GetFiducialCut()->DoPHOSFiducialCut(kTRUE);  
   
   // settings for pp collision mixing
   if(mixOn) ana->SwitchOnOwnMix();
@@ -783,19 +864,16 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     TString calo = "EMCAL";
     ana->SetCalorimeter(calo);
   }
-  
-  ana->SwitchOnUEBandSubtractionHistoFill();
-  ana->SwitchOffCellHistoFill() ;
-  
+    
   ana->SwitchOffLeadingOnly();
   ana->SwitchOffCheckNeutralClustersForLeading();
   if( leading > 0 )   ana->SwitchOnLeadingOnly();
   if( leading == 2 ||
      leading == 4)   ana->SwitchOnCheckNeutralClustersForLeading();
   
-  // MC
-  ana->SwitchOnPrimariesInConeSelection();
-  ana->SwitchOnPrimariesPi0DecayStudy() ;
+  // Do at generation level detector cuts and effects
+  ana->SwitchOffPrimariesInConeSelection();
+  ana->SwitchOffPrimariesPi0DecayStudy() ;
   
   ana->SwitchOffSSHistoFill();
 
@@ -837,11 +915,26 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
   
   // Avoid borders of calorimeter
-  ana->SwitchOffRealCaloAcceptance();
   ana->SwitchOnFiducialCut();
-  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60,  86, 174) ;
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60, 266, 314) ; 
-  else if ( calorimeter == "PHOS"  ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 266, 314) ; 
+  
+  // Set isolation candidate acceptance cuts similar as in p-Pb Erwann's analysis
+  if      ( calorimeter == "EMCAL" )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 90.5, 176.5) ;
+    else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 90.5, 169.5) ;
+    else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 90.5, 109.5) ;
+  }
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 270.7, 316.5) ; 
+  else if ( calorimeter == "PHOS"  )
+  {
+    if    ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 260.5, 309.5) ; 
+    else                  ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 270.5, 309.5) ; 
+  }
+  
+  if ( kAnaCutsString.Contains("TightAcc") ) // pp 7 TeV analysis cut
+  {
+    if ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.27, 103, 157) ; // EMC 
+  }
   
   // Same Eta as EMCal, cut in phi if EMCAL was triggering
   if(particle=="Hadron"  || particle.Contains("CTS"))
@@ -904,6 +997,12 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     }
   }
   
+  //ic->SwitchOnFillEtaPhiHistograms();
+  
+  if( kAnaCutsString.Contains("FixIsoConeExcess") ) 
+    ic->SwitchOnConeExcessCorrectionHistograms();
+  else                                         
+    ic->SwitchOffConeExcessCorrectionHistograms();
   
   // Do or not do isolation with previously produced AODs.
   // No effect if use of SwitchOnSeveralIsolation()
@@ -934,17 +1033,36 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   else
     ana->SwitchOffSeveralIsolation() ;
   
-  AliCaloPID* caloPID = ana->GetCaloPID();
-  
   // Track matching 
-  // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.025);
-  caloPID->SetEMCALDPhiCut(0.030);
+  //
+  // By default apply always a TM cut in cone if charged and neutrals
+  // in isolation cone
+  if ( partInCone == AliIsolationCut::kNeutralAndCharged )
+  {
+    AliCaloPID* caloPID = ana->GetCaloPID();
+    
+    // E/p
+    if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+    if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+    if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+    if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+    if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+    
+    if ( tm == 1 )
+    {
+      // tm = 1, fixed cuts
+      
+      caloPID->SetEMCALDEtaCut(0.020);
+      caloPID->SetEMCALDPhiCut(0.030);
+    }
+    else
+    {
+      // pT track dependent cuts
+      caloPID->SwitchOnEMCTrackPtDepResMatching();
+    }
+  }
   
-  // pT track dependent cuts
-  if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
-  
-  //Set Histograms name tag, bins and ranges
+  // Set Histograms name tag, bins and ranges
   
 //  if(!multi) ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_"     ,particle.Data(),tm));
 //  else       ana->AddToHistogramsName(Form("AnaMultiIsol%s_TM%d_",particle.Data(),tm));  
@@ -953,13 +1071,13 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   
   SetAnalysisCommonParameters(ana,histoString, calorimeter,year,col,simulation,printSettings,debug); // see method below
   
-  if(particle=="Hadron"  || particle.Contains("CTS"))
+  if ( particle=="Hadron"  || particle.Contains("CTS") )
   {
     ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
     ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
   }
   
-  if(printSettings) ic ->Print("");
+  if ( printSettings ) ic ->Print("");
   
   return ana;
 }
@@ -1161,15 +1279,39 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   // Avoid borders of calorimeter, same as for isolation
   //
   ana->SwitchOnFiducialCut();
-  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60,  86, 174) ;
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60, 266, 314) ; 
-  else if ( calorimeter == "PHOS"  ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 266, 314) ; 
+  
+  // Set candidate acceptance cuts similar as in p-Pb Isolation Erwann's analysis
+  if      ( calorimeter == "EMCAL" )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 90.5, 176.5) ;
+    else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 90.5, 169.5) ;
+    else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 90.5, 109.5) ;
+  }
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 270.7, 316.5) ; 
+  else if ( calorimeter == "PHOS"  )
+  {
+    if    ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 260.5, 309.5) ; 
+    else                  ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 270.5, 309.5) ; 
+  }
+  
+  if ( kAnaCutsString.Contains("TightAcc") ) // pp 7 TeV isolation  analysis cut
+  {
+    if ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.27, 103, 157) ; // EMC 
+  }
   
   // Track matching, in case of mixing and specially in isolation case
   //
   AliCaloPID* caloPID = ana->GetCaloPID();
+  
+  // E/p
+  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+  
   // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.025);
+  caloPID->SetEMCALDEtaCut(0.020);
   caloPID->SetEMCALDPhiCut(0.030);
   
   // pT track dependent cuts
@@ -1294,6 +1436,13 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
   
+  // E/p
+  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+  
   if(tm > 1)
   {
     // track pT dependent cut
@@ -1306,7 +1455,7 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   {
     // Fix
     caloPID->SwitchOffEMCTrackPtDepResMatching();
-    caloPID->SetEMCALDEtaCut(0.025);
+    caloPID->SetEMCALDEtaCut(0.020);
     caloPID->SetEMCALDPhiCut(0.030);
     
     // Begining of histograms name
@@ -1349,9 +1498,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   ana->SetTimeCut(-1e10,1e10); // Open time cut
   
   ana->SwitchOffCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
-  
-  ana->SwitchOffRealCaloAcceptance();
-  
+    
   ana->SwitchOffFiducialCut();
   ana->SwitchOffFillAllTH3Histogram();
   ana->SwitchOffFillAllPositionHistogram();
@@ -1362,6 +1509,47 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   ana->SwitchOnFillAllTrackMatchingHistogram();
   
   ana->AddToHistogramsName("QA_"); // Begining of histograms name
+  
+  SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
+  
+  return ana;
+}
+
+///
+/// Configure the task doing exotic cluster/cell checks
+///
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
+///
+AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simulation,
+                                           TString calorimeter,   Int_t   year,
+                                           Bool_t  printSettings, Int_t   debug, 
+                                           TString histoString  )
+{
+  AliAnaCaloExotics *ana = new AliAnaCaloExotics();
+  
+  ana->SetCalorimeter(calorimeter);
+  if(calorimeter == "DCAL") 
+  {
+    TString calo = "EMCAL";
+    ana->SetCalorimeter(calo);
+  }
+  
+  ana->SwitchOnFill1CellHisto(); 
+  
+  if ( simulation ) 
+    ana->SetConstantTimeShift(615);
+  
+  ana->SetEMinForExo(6);
+
+  ana->SetCellAmpMin(0.3);
+    
+  ana->AddToHistogramsName("Exo_"); // Begining of histograms name
   
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
   
@@ -1401,10 +1589,18 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t pth
   }
   
   ana->SetMinPt(2); // Trigger photon, pi0 minimum pT
-  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.60,  86, 174) ;
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.60, 266, 314) ; 
-  else if ( calorimeter == "PHOS"  ) ana->GetFiducialCutForTrigger()->SetSimplePHOSFiducialCut (0.10, 266, 314) ; 
-  
+  if      ( calorimeter == "EMCAL" )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.67,  81.2, 185.8) ; //12 SM
+    else if ( year > 2010 ) ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.67,  81.2, 178.8) ; //10 SM
+    else                    ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.67,  81.2, 118.8) ; // 4 SM
+  }
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  else if ( calorimeter == "PHOS"  )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCutForTrigger()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
+    else                    ana->GetFiducialCutForTrigger()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ;
+  }
   // Particles associated to trigger or isolation cone acceptance and pT cut
   ana->SetCalorimeter(calorimeter);
   if(calorimeter == "DCAL") 
@@ -1414,11 +1610,21 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t pth
   }
   
   ana->SetMinChargedPt(0.2);
-  ana->SetMinNeutralPt(0.3);
+  ana->SetMinNeutralPt(0.5);
   
-  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70,  80, 174) ;
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70, 260, 327) ; 
-  else if ( calorimeter == "PHOS"  ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250, 320) ;   
+  if      ( calorimeter == "EMCAL" )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 185.8) ; //12 SM
+    else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 178.8) ; //10 SM
+    else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 118.8) ; // 4 SM
+  }
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  else if ( calorimeter == "PHOS"  )
+  {
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
+    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ;
+  }
+  
   ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.9, 0, 360);
   
   // Isolation paramters
@@ -1427,7 +1633,7 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t pth
   ic->SetPtThreshold(pth);
   ic->SetConeSize(cone);
   ic->SetMinDistToTrigger(coneMin);    
-  ic->SetSumPtThreshold(1.0) ;
+  ic->SetSumPtThreshold(pth) ;
   ic->SetICMethod(thresType);
   
   ana->AddToHistogramsName("AnaGenKine_");
@@ -1643,6 +1849,12 @@ void ConfigureCaloTrackCorrAnalysis
   if ( analysisString.Contains("QA") ) 
   { 
     anaList->AddAt(ConfigureQAAnalysis(col,simulation,calorimeter,year,printSettings,debug,histoString) , n++);
+  }
+  
+  // Exotics
+  if ( analysisString.Contains("Exo") ) 
+  { 
+    anaList->AddAt(ConfigureExoticAnalysis(col,simulation,calorimeter,year,printSettings,debug,histoString) , n++);
   }
   
   printf("ConfigureCaloTrackCorrAnalysis() << End configuration for %s with total analysis %d>>\n",

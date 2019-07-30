@@ -40,7 +40,7 @@ ClassImp(AliAnalysisTaskChargedJetsHadronToy)
 /// \endcond
 //_____________________________________________________________________________________________________
 AliAnalysisTaskChargedJetsHadronToy::AliAnalysisTaskChargedJetsHadronToy() :
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskChargedJetsHadronToy", kTRUE), fAddTracksFromInputEvent(1), fAddTracksFromPicoTracks(0), fAddTracksFromToy(0), fAddTracksFromMixedEvent(0), fTrackEfficiency_InputEvent(1.0), fTrackEfficiency_Toy(1.0), fTrackEfficiency_ME(1.0), fTrackEfficiency_PicoTracks(1.0), fLabelOffset_InputEvent(0), fLabelOffset_Toy(500000), fLabelOffset_ME(600000), fLabelOffset_PicoTracks(700000), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fMaxEta(0.9), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fMixedEvent_Tree(0), fMixedEvent_CurrentFile(0), fMixedEvent_CurrentFileID(-1), fMixedEvent_BaseFolder(""), fMixedEvent_TreeName("ME_tree"), fMixedEvent_CurrentEventID(0), fMixedEvent_NumTotalFiles(30), fBuffer_NumTracks(0), fBuffer_TrackPt(0), fBuffer_TrackPhi(0), fBuffer_TrackEta(0), fBuffer_TrackCharge(0), fPicoTracksArrayName(""), fPicoTracksArray(0), fEventTracksArrayName(""), fEventTracksArray(0), fOutputArrayName(""), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskChargedJetsHadronToy", kTRUE), fAddTracksFromInputEvent(0), fAddTracksFromPicoTracks(0), fAddTracksFromToy(0), fAddTracksFromMixedEvent(0), fTrackEfficiency_InputEvent(1.0), fTrackEfficiency_Toy(1.0), fTrackEfficiency_ME(1.0), fTrackEfficiency_PicoTracks(1.0), fLabelOffset_InputEvent(0), fLabelOffset_Toy(500000), fLabelOffset_ME(600000), fLabelOffset_PicoTracks(700000), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fMaxEta(0.9), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fMixedEvent_Tree(0), fMixedEvent_CurrentFile(0), fMixedEvent_CurrentFileID(-1), fMixedEvent_BaseFolder(""), fMixedEvent_TreeName("ME_tree"), fMixedEvent_CurrentEventID(0), fMixedEvent_NumTotalFiles(30), fBuffer_NumTracks(0), fBuffer_TrackPt(0), fBuffer_TrackPhi(0), fBuffer_TrackEta(0), fBuffer_TrackCharge(0), fPicoTracksArrayName(""), fPicoTracksArray(0), fEventTracksArrayName(""), fEventTracksArray(0), fOutputArrayName(""), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
 {
   // constructor
   fBuffer_TrackPt = new Float_t[10000];
@@ -53,7 +53,7 @@ AliAnalysisTaskChargedJetsHadronToy::AliAnalysisTaskChargedJetsHadronToy() :
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskChargedJetsHadronToy::AliAnalysisTaskChargedJetsHadronToy(const char* name) :
-  AliAnalysisTaskEmcalJet(name, kTRUE), fAddTracksFromInputEvent(1), fAddTracksFromPicoTracks(0), fAddTracksFromToy(0), fAddTracksFromMixedEvent(0), fTrackEfficiency_InputEvent(1.0), fTrackEfficiency_Toy(1.0), fTrackEfficiency_ME(1.0), fTrackEfficiency_PicoTracks(1.0), fLabelOffset_InputEvent(0), fLabelOffset_Toy(500000), fLabelOffset_ME(600000), fLabelOffset_PicoTracks(700000), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fMaxEta(0.9), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fMixedEvent_Tree(0), fMixedEvent_CurrentFile(0), fMixedEvent_CurrentFileID(-1), fMixedEvent_BaseFolder(""), fMixedEvent_TreeName("ME_tree"), fMixedEvent_CurrentEventID(0), fMixedEvent_NumTotalFiles(30), fBuffer_NumTracks(0), fBuffer_TrackPt(0), fBuffer_TrackPhi(0), fBuffer_TrackEta(0), fBuffer_TrackCharge(0), fPicoTracksArrayName(""), fPicoTracksArray(0), fEventTracksArrayName(""), fEventTracksArray(0), fOutputArrayName(""), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
+  AliAnalysisTaskEmcalJet(name, kTRUE), fAddTracksFromInputEvent(0), fAddTracksFromPicoTracks(0), fAddTracksFromToy(0), fAddTracksFromMixedEvent(0), fTrackEfficiency_InputEvent(1.0), fTrackEfficiency_Toy(1.0), fTrackEfficiency_ME(1.0), fTrackEfficiency_PicoTracks(1.0), fLabelOffset_InputEvent(0), fLabelOffset_Toy(500000), fLabelOffset_ME(600000), fLabelOffset_PicoTracks(700000), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fMaxEta(0.9), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fMixedEvent_Tree(0), fMixedEvent_CurrentFile(0), fMixedEvent_CurrentFileID(-1), fMixedEvent_BaseFolder(""), fMixedEvent_TreeName("ME_tree"), fMixedEvent_CurrentEventID(0), fMixedEvent_NumTotalFiles(30), fBuffer_NumTracks(0), fBuffer_TrackPt(0), fBuffer_TrackPhi(0), fBuffer_TrackEta(0), fBuffer_TrackCharge(0), fPicoTracksArrayName(""), fPicoTracksArray(0), fEventTracksArrayName(""), fEventTracksArray(0), fOutputArrayName(""), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
 {
   // constructor
   fBuffer_TrackPt = new Float_t[10000];
@@ -197,7 +197,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   // ################# 2. Add event tracks
   if(fAddTracksFromInputEvent)
   {
-    for(Int_t i=0; i<fEventTracksArray->GetEntries(); i++)
+    for(Int_t i=0; i<fEventTracksArray->GetEntriesFast(); i++)
     {
       // Discard tracks due to lowered tracking efficiency
       if (fTrackEfficiency_InputEvent < 1.0)
@@ -251,7 +251,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   if(fAddTracksFromMixedEvent) // get underlying event from mixed event files
   {
     // if input tree not loaded or index at the end, get next tree file
-    if( !fMixedEvent_Tree || (fMixedEvent_CurrentEventID >= fMixedEvent_Tree->GetEntries()) )
+    if( !fMixedEvent_Tree || (fMixedEvent_CurrentEventID >= fMixedEvent_Tree->GetEntriesFast()) )
     {
       fMixedEvent_Tree = GetNextMixedEventTree();
       if (!fMixedEvent_Tree)
@@ -338,7 +338,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   // ################# 5. Add further external tracks: Picotracks (from old embedding framework)
   if(fAddTracksFromPicoTracks)
   {
-    for(Int_t i=0; i<fPicoTracksArray->GetEntries(); i++)
+    for(Int_t i=0; i<fPicoTracksArray->GetEntriesFast(); i++)
     {
       // Discard tracks due to lowered tracking efficiency
       if (fTrackEfficiency_PicoTracks < 1.0)
@@ -374,7 +374,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
 void AliAnalysisTaskChargedJetsHadronToy::CreateQAPlots()
 {
   Int_t hybridMult = 0;
-  for(Int_t iTrack=0; iTrack<fOutputArray->GetEntries(); iTrack++)
+  for(Int_t iTrack=0; iTrack<fOutputArray->GetEntriesFast(); iTrack++)
   {
     AliAODTrack* track = static_cast<AliAODTrack*>(fOutputArray->At(iTrack));
     if(!track->IsHybridGlobalConstrainedGlobal())

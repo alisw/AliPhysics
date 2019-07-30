@@ -1,14 +1,14 @@
 //
-// Helper class to calculate Q cumulant in forward & central regions 
+// Helper class to calculate Q cumulant in forward & central regions
 //
 #ifndef AliForwardQCumulantRun2_H
 #define AliForwardQCumulantRun2_H
 /**
  * @file AliForwardQCumulantRun2.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
- * 
+ *
  * @brief
- * 
+ *
  * @ingroup pwgcf_forward_flow
  */
 #include <TObject.h>
@@ -21,7 +21,7 @@
 #include "TRandom.h"
 #include <THn.h>
 #include "TString.h"
-#include "AliForwardFlowRun2Settings.h"
+#include "AliForwardSettings.h"
 #include "TComplex.h"
 /**
  * Class to handle cumulant calculations.
@@ -35,21 +35,21 @@ public:
   AliForwardQCumulantRun2();
 
   /**
-   * Destructor 
+   * Destructor
    */
   virtual ~AliForwardQCumulantRun2(){}
-    
-    
-  AliForwardFlowRun2Settings fSettings;
+
+
+  AliForwardSettings fSettings;
   /**
-   * Do cumulants calculations for current event with 
+   * Do cumulants calculations for current event with
    * centrality cent
-   * 
+   *
    * @param cent Event centrality
    */
-  void CumulantsAccumulate(TH2D& dNdetadphi, TList* outputList, double cent,double vertexpos, UInt_t r,TString detType);
+  void CumulantsAccumulate(TH2D& dNdetadphi, TList* outputList, double cent,double vertexpos, TString detType);
 
-void saveEvent(TH2D& dNdetadphi, TList* outputList, double cent, double vertexpos,UInt_t r, TString detType);
+  void saveEvent(TList* outputList, double cent, double vertexpos,UInt_t r);
 
   /**
    * Constants
@@ -86,7 +86,7 @@ void saveEvent(TH2D& dNdetadphi, TList* outputList, double cent, double vertexpo
 
   /**
    * Do 4' calculation
-   * 
+   *
    * @param dQnReA Real part of the Q vector
    * @param dQnImA Imaginary part of the Q vector
    * @param qnRe Real part of the q vector (vector made from POIs which are also RPs)
@@ -109,12 +109,12 @@ void saveEvent(TH2D& dNdetadphi, TList* outputList, double cent, double vertexpo
     - pnRe*(dQnReA*dQ2nReA+dQnImA*dQ2nImA)
     + pnIm*(dQnImA*dQ2nReA-dQnReA*dQ2nImA)
     - 2.*multA*(pnRe*dQnReA+pnIm*dQnImA)
-    - 2.*(TMath::Power(dQnReA,2.)+TMath::Power(dQnImA,2.))*mq 
+    - 2.*(TMath::Power(dQnReA,2.)+TMath::Power(dQnImA,2.))*mq
     + 6.*(qnRe*dQnReA+qnIm*dQnImA)
     + 1.*(q2nRe*dQ2nReA+q2nIm*dQ2nImA)
-    + 2.*(pnRe*dQnReA+pnIm*dQnImA) 
-    + 2.*mq*multA 
-    - 6.*mq; 
+    + 2.*(pnRe*dQnReA+pnIm*dQnImA)
+    + 2.*mq*multA
+    - 6.*mq;
     return temp;
   };
 
@@ -136,7 +136,7 @@ void saveEvent(TH2D& dNdetadphi, TList* outputList, double cent, double vertexpo
   Double_t calcCosPsi1Phi2Phi3p(double pnRe, double dQnImA, double dQnReA, double multA, double q2nRe, double q2nIm, double mq, double qnRe) const {
     Double_t temp;
     temp = pnRe*(TMath::Power(dQnImA,2.)+TMath::Power(dQnReA,2.)-multA)
-    - 1.*(q2nRe*dQnReA+q2nIm*dQnImA)  
+    - 1.*(q2nRe*dQnReA+q2nIm*dQnImA)
     - mq*dQnReA+2.*qnRe;
     return temp;
   };
@@ -158,8 +158,8 @@ void saveEvent(TH2D& dNdetadphi, TList* outputList, double cent, double vertexpo
   Double_t calcSinPsi1Phi2Phi3p(double pnIm, double dQnImA, double dQnReA, double multA,double  mq, double qnIm, double q2nIm, double q2nRe) const {
     Double_t temp;
     temp = pnIm*(TMath::Power(dQnImA,2.)+TMath::Power(dQnReA,2.)-multA)
-    - 1.*(q2nIm*dQnReA-q2nRe*dQnImA)  
-    - mq*dQnImA+2.*qnIm; 
+    - 1.*(q2nIm*dQnReA-q2nRe*dQnImA)
+    - mq*dQnImA+2.*qnIm;
     return temp;
   };
 
@@ -181,7 +181,7 @@ void saveEvent(TH2D& dNdetadphi, TList* outputList, double cent, double vertexpo
   Double_t calcCosPsi1Phi2Phi3m(double pnRe, double dQnReA, double dQnImA, double pnIm,double  dQ2nReA,double  dQ2nImA,double mq, double qnRe) const {
     Double_t temp;
     temp = pnRe*(TMath::Power(dQnReA,2.)-TMath::Power(dQnImA,2.))+2.*pnIm*dQnReA*dQnImA
-    - 1.*(pnRe*dQ2nReA+pnIm*dQ2nImA)  
+    - 1.*(pnRe*dQ2nReA+pnIm*dQ2nImA)
     - 2.*mq*dQnReA+2.*qnRe;
     return temp;
   };
@@ -240,7 +240,7 @@ void saveEvent(TH2D& dNdetadphi, TList* outputList, double cent, double vertexpo
    */
   Double_t calcSinPhi1Phi2Phi3m(double dQnReA, double dQnImA,double  dQ2nReA, double dQ2nImA,double  multA) const {
     return (-dQnImA*(TMath::Power(dQnReA,2)+TMath::Power(dQnImA,2))
-      + dQnReA*dQ2nImA - dQnImA*dQ2nReA + 2.*(multA-1)*dQnImA); 
+      + dQnReA*dQ2nImA - dQnImA*dQ2nReA + 2.*(multA-1)*dQnImA);
   };
 
 
@@ -253,10 +253,6 @@ void saveEvent(TH2D& dNdetadphi, TList* outputList, double cent, double vertexpo
 
   TH2D fCumuRef;     // Accumulated reference particles
   TH2D fCumuDiff;    // Accumulated differential particles
-  TH3D fCumuNUARef;  // Accumulated NUA reference terms
-  TH3D fCumuNUADiff; // Accumulated NUA differential terms
-  Double_t fSumOfWeights;
-  Double_t fSumOfWeightsSquared;
   bool useEvent;
 
 

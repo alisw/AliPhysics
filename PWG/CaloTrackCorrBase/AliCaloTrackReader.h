@@ -586,6 +586,8 @@ public:
     if(fDataType!=kMC) return (AliMultSelection * ) fInputEvent->FindListObject("MultSelection") ; 
     else               return 0x0                                                                ; } 
 
+  void             SetMultiplicityWithPhysSel( Bool_t ps ) { fMultWithEventSel  = ps             ; }
+  
   virtual void     SwitchOnAliCentrality ()                { fUseAliCentrality  = kTRUE          ; }
   virtual void     SwitchOffAliCentrality()                { fUseAliCentrality  = kFALSE         ; }
   
@@ -968,6 +970,7 @@ public:
   
   // Centrality/Event plane
   Bool_t           fUseAliCentrality;              ///<  Select as centrality estimator AliCentrality (Run1) or AliMultSelection (Run1 and Run2)
+  Bool_t           fMultWithEventSel;              ///<  Embedded event selection in multiplicity task activated
   TString          fCentralityClass;               ///<  Name of selected centrality class.     
   Int_t            fCentralityOpt;                 ///<  Option for the returned value of the centrality, possible options 5, 10, 100.
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
@@ -1021,7 +1024,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,81) ;
+  ClassDef(AliCaloTrackReader,82) ;
   /// \endcond
 
 } ;

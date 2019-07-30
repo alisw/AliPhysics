@@ -1,20 +1,17 @@
 #include "TROOT.h"
 #include "TSystem.h"
 #include <stdio.h>
+
 AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
                                            bool isESD = false, TString CentEst =
                                                "kInt7",
                                            bool notpp = true,  //1
                                            bool fineBinning = true,  //2
-                                           bool PileUpRej = true,  //3
-                                           bool multBinning = true,  //4
-                                           bool kTBinning = false,  //5
-                                           bool kTCentBinning = false,  //6
-                                           bool mTBinning = false,  //7
-                                           bool eventMixing = true,  //8
-                                           bool phiSpin = true,  //9
-                                           bool minimalBooking = true,  // 10
-                                           const char *swuffix = "")  //11
+                                           bool kTBinning = false,  //3
+                                           bool kTCentBinning = false,  //4
+                                           bool mTBinning = false,  //5
+                                           bool minimalBooking = true,  // 6
+                                           const char *swuffix = "")  //7
                                            {
   TString suffix = Form("%s", swuffix);
   bool DCAPlots = false;
@@ -22,7 +19,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   bool CombSigma = false;
   bool ContributionSplitting = false;
   bool ContributionSplittingDaug = false;
-
+  bool PileUpRej = true;
+  bool eventMixing = true;
+  bool phiSpin = false;
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -65,34 +64,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
                                              ContributionSplitting);
   AntiTrackCuts->SetCutCharge(-1);
   AntiTrackCuts->SetMinimalBooking(minimalBooking);
-  if (suffix == "1") {
-    TrackCuts->SetPtRange(0.4, 4.05);
-    AntiTrackCuts->SetPtRange(0.4, 4.05);
-  } else if (suffix == "2") {
-    TrackCuts->SetPtRange(0.5, 4.05);
-    AntiTrackCuts->SetPtRange(0.5, 4.05);
-  } else if (suffix == "3") {
-    TrackCuts->SetEtaRange(-0.7, 0.7);
-    AntiTrackCuts->SetEtaRange(-0.7, 0.7);
-  } else if (suffix == "4") {
-    TrackCuts->SetEtaRange(-0.9, 0.9);
-    AntiTrackCuts->SetEtaRange(-0.9, 0.9);
-  } else if (suffix == "5") {
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2);
-  } else if (suffix == "6") {
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 5);
-  } else if (suffix == "7") {
-    TrackCuts->SetFilterBit(96);
-    AntiTrackCuts->SetFilterBit(96);
-  } else if (suffix == "8") {
-    TrackCuts->SetNClsTPC(70);
-    AntiTrackCuts->SetNClsTPC(70);
-  } else if (suffix == "9") {
-    TrackCuts->SetNClsTPC(90);
-    AntiTrackCuts->SetNClsTPC(90);
-  }
 
   AliFemtoDreamv0Cuts *v0Cuts;
   AliFemtoDreamv0Cuts *Antiv0Cuts;
@@ -116,43 +87,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   AliFemtoDreamTrackCuts *NegAntiv0Daug =
       AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, PileUpRej, false);
   NegAntiv0Daug->SetCutCharge(-1);
-
-  if (suffix == "10") {
-    v0Cuts->SetPtRange(0.24, 999.9);
-    Antiv0Cuts->SetPtRange(0.24, 999.9);
-  } else if (suffix == "11") {
-    v0Cuts->SetPtRange(0.36, 999.9);
-    Antiv0Cuts->SetPtRange(0.36, 999.9);
-  } else if (suffix == "12") {
-    v0Cuts->SetCutCPA(0.998);
-    Antiv0Cuts->SetCutCPA(0.998);
-  } else if (suffix == "13") {
-    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-  } else if (suffix == "14") {
-    Posv0Daug->SetNClsTPC(80);
-    Negv0Daug->SetNClsTPC(80);
-    PosAntiv0Daug->SetNClsTPC(80);
-    NegAntiv0Daug->SetNClsTPC(80);
-  } else if (suffix == "15") {
-    Posv0Daug->SetEtaRange(-0.7, 0.7);
-    Negv0Daug->SetEtaRange(-0.7, 0.7);
-    PosAntiv0Daug->SetEtaRange(-0.7, 0.7);
-    NegAntiv0Daug->SetEtaRange(-0.7, 0.7);
-  } else if (suffix == "16") {
-    Posv0Daug->SetEtaRange(-0.9, 0.9);
-    Negv0Daug->SetEtaRange(-0.9, 0.9);
-    PosAntiv0Daug->SetEtaRange(-0.9, 0.9);
-    NegAntiv0Daug->SetEtaRange(-0.9, 0.9);
-  } else if (suffix == "17") {
-    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-  } else if (suffix == "18") {
-    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-  }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
@@ -190,119 +124,35 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   AliFemtoDreamTrackCuts *AntiXiBachCuts =
       AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, PileUpRej, false);
   AntiXiBachCuts->SetCutCharge(1);
-  if (suffix == "19") {
-    CascadeCuts->SetCutXiDaughterDCA(1.3);
-    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
-  } else if (suffix == "20") {
-    CascadeCuts->SetCutXiDaughterDCA(1.9);
-    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
-  } else if (suffix == "21") {
-    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
-    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
-  } else if (suffix == "22") {
-    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
-    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
-  } else if (suffix == "23") {
-    CascadeCuts->SetCutXiCPA(0.99);
-    AntiCascadeCuts->SetCutXiCPA(0.99);
-  } else if (suffix == "24") {
-    CascadeCuts->SetCutXiCPA(0.985);
-    AntiCascadeCuts->SetCutXiCPA(0.985);
-  } else if (suffix == "25") {
-    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
-    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
-  } else if (suffix == "26") {
-    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
-    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
-  } else if (suffix == "27") {
-    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
-    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
-  } else if (suffix == "28") {
-    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
-    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
-  } else if (suffix == "29") {
-    CascadeCuts->SetCutv0CPA(0.96);
-    AntiCascadeCuts->SetCutv0CPA(0.96);
-  } else if (suffix == "30") {
-    CascadeCuts->SetCutv0CPA(0.99);
-    AntiCascadeCuts->SetCutv0CPA(0.99);
-  } else if (suffix == "31") {
-    CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
-    AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
-  } else if (suffix == "32") {
-    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
-    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
-  } else if (suffix == "33") {
-    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
-    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
-  } else if (suffix == "34") {
-    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
-    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
-  } else if (suffix == "35") {
-    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
-    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
-  } else if (suffix == "36") {
-    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
-    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
-  } else if (suffix == "37") {
-    XiNegCuts->SetEtaRange(-0.7, 0.7);
-    XiPosCuts->SetEtaRange(-0.7, 0.7);
-    XiBachCuts->SetEtaRange(-0.7, 0.7);
-    AntiXiNegCuts->SetEtaRange(-0.7, 0.7);
-    AntiXiPosCuts->SetEtaRange(-0.7, 0.7);
-    AntiXiBachCuts->SetEtaRange(-0.7, 0.7);
-  } else if (suffix == "38") {
-    XiNegCuts->SetEtaRange(-0.9, 0.9);
-    XiPosCuts->SetEtaRange(-0.9, 0.9);
-    XiBachCuts->SetEtaRange(-0.9, 0.9);
-    AntiXiNegCuts->SetEtaRange(-0.9, 0.9);
-    AntiXiPosCuts->SetEtaRange(-0.9, 0.9);
-    AntiXiBachCuts->SetEtaRange(-0.9, 0.9);
-  } else if (suffix == "39") {
-    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
-    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
-    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
-    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
-  } else if (suffix == "40") {
-    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
-    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
-    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
-    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
-    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
-    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
-  } else if (suffix == "41") {
-    CascadeCuts->SetPtRangeXi(0.1, 999.5);
-    AntiCascadeCuts->SetPtRangeXi(0.1, 999.5);
-    //wide wariation
-  } else if (suffix == "42") {
-    CascadeCuts->SetXiMassRange(1.368, 0.028);
-    AntiCascadeCuts->SetXiMassRange(1.368, 0.028);
-  } else if (suffix == "43") {
-    CascadeCuts->SetXiMassRange(1.282, 0.028);
-    AntiCascadeCuts->SetXiMassRange(1.282, 0.028);
+
+  //wide wariation
+  if (suffix == "101") {
+    CascadeCuts->SetXiMassRange(1.360, 0.028);
+    AntiCascadeCuts->SetXiMassRange(1.360, 0.028);
+  } else if (suffix == "102") {
+    CascadeCuts->SetXiMassRange(1.284, 0.028);
+    AntiCascadeCuts->SetXiMassRange(1.284, 0.028);
     //thinner wariation
-  } else if (suffix == "44") {
-    CascadeCuts->SetXiMassRange(1.354, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.354, 0.014);
-  } else if (suffix == "45") {
-    CascadeCuts->SetXiMassRange(1.296, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.296, 0.014);
+  } else if (suffix == "103") {
+    CascadeCuts->SetXiMassRange(1.346, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.346, 0.014);
+  } else if (suffix == "104") {
+    CascadeCuts->SetXiMassRange(1.298, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.298, 0.014);
     //Further away from the peak
-  } else if (suffix == "46") {
-    CascadeCuts->SetXiMassRange(1.368, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.368, 0.014);
-  } else if (suffix == "47") {
-    CascadeCuts->SetXiMassRange(1.282, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.282, 0.014);
+  } else if (suffix == "105") {
+    CascadeCuts->SetXiMassRange(1.360, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.360, 0.014);
+  } else if (suffix == "106") {
+    CascadeCuts->SetXiMassRange(1.284, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.284, 0.014);
     //furthest away from the peak
-  } else if (suffix == "48") {
-    CascadeCuts->SetXiMassRange(1.382, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.382, 0.014);
-  } else if (suffix == "49") {
-    CascadeCuts->SetXiMassRange(1.268, 0.014);
-    AntiCascadeCuts->SetXiMassRange(1.268, 0.014);
+  } else if (suffix == "107") {
+    CascadeCuts->SetXiMassRange(1.374, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.374, 0.014);
+  } else if (suffix == "108") {
+    CascadeCuts->SetXiMassRange(1.270, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.270, 0.014);
   }
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
@@ -481,7 +331,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     MultBins.push_back(80);
     config->SetMultBins(MultBins);
   }
-  config->SetMultBinning(multBinning);
+  config->SetMultBinning(true);
   config->SetZBins(ZVtxBins);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -491,9 +341,15 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   config->SetSpinningDepth(10);
   config->SetkTBinning(kTBinning);
   config->SetkTCentralityBinning(kTCentBinning);
-  config->SetmTBinning(mTBinning);
+  config->SetmTBinning(true);
+  config->SetExtendedQAPairs(config->GetStandardPairs());
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
+
+  config->SetDeltaEtaMax(0.010);
+  config->SetDeltaPhiMax(0.010);
+
+  config->SetClosePairRejection(config->GetStandardPairRejection());
   if (minimalBooking) {
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
@@ -540,6 +396,2166 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   task->SetEvtCutQA(false);
   task->SetTrackBufferSize(2000);
   task->SetEventCuts(evtCuts);
+
+  if (suffix == "1") {
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.83);
+    XiPosCuts->SetEtaRange(-0.83, 0.83);
+    XiBachCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.83);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+
+  } else if (suffix == "2") {
+    TrackCuts->SetPtRange(0.6, 4.05);
+    AntiTrackCuts->SetPtRange(0.6, 4.05);
+
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+  } else if (suffix == "3") {
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+
+  } else if (suffix == "4") {
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+  } else if (suffix == "5") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+  } else if (suffix == "6") {
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+  } else if (suffix == "7") {
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+
+  } else if (suffix == "8") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+  } else if (suffix == "9") {
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+
+  } else if (suffix == "10") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.87, 0.87);
+    XiPosCuts->SetEtaRange(-0.87, 0.87);
+    XiBachCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.87, 0.87);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+  } else if (suffix == "11") {
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.87);
+    XiPosCuts->SetEtaRange(-0.83, 0.87);
+    XiBachCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+  } else if (suffix == "12") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+
+  } else if (suffix == "13") {
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiCPA(0.985);
+    AntiCascadeCuts->SetCutXiCPA(0.985);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+
+  } else if (suffix == "14") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.87);
+    XiPosCuts->SetEtaRange(-0.83, 0.87);
+    XiBachCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+
+  } else if (suffix == "15") {
+    TrackCuts->SetPtRange(0.6, 4.05);
+    AntiTrackCuts->SetPtRange(0.6, 4.05);
+
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+    CascadeCuts->SetCutXiCPA(0.985);
+    AntiCascadeCuts->SetCutXiCPA(0.985);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.87);
+    XiPosCuts->SetEtaRange(-0.83, 0.87);
+    XiBachCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+
+  } else if (suffix == "16") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+
+  } else if (suffix == "17") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+  } else if (suffix == "18") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+
+  } else if (suffix == "19") {
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.87);
+    XiPosCuts->SetEtaRange(-0.83, 0.87);
+    XiBachCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+
+  } else if (suffix == "20") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiCPA(0.985);
+    AntiCascadeCuts->SetCutXiCPA(0.985);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.87, 0.87);
+    XiPosCuts->SetEtaRange(-0.87, 0.87);
+    XiBachCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.87, 0.87);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+  } else if (suffix == "21") {
+
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+  } else if (suffix == "22") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.87);
+    XiPosCuts->SetEtaRange(-0.83, 0.87);
+    XiBachCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+  } else if (suffix == "23") {
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiCPA(0.985);
+    AntiCascadeCuts->SetCutXiCPA(0.985);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.87);
+    XiPosCuts->SetEtaRange(-0.83, 0.87);
+    XiBachCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+
+  } else if (suffix == "24") {
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    //XI
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+  } else if (suffix == "25") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetEtaRange(-0.83, 0.83);
+    AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.87);
+    XiPosCuts->SetEtaRange(-0.83, 0.87);
+    XiBachCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+  } else if (suffix == "26") {
+    TrackCuts->SetPtRange(0.6, 4.05);
+    AntiTrackCuts->SetPtRange(0.6, 4.05);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+
+  } else if (suffix == "27") {
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.87);
+    XiPosCuts->SetEtaRange(-0.83, 0.87);
+    XiBachCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+
+  } else if (suffix == "28") {
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+
+  } else if (suffix == "29") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.87);
+    XiPosCuts->SetEtaRange(-0.83, 0.87);
+    XiBachCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+  } else if (suffix == "30") {
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.83);
+    XiPosCuts->SetEtaRange(-0.83, 0.83);
+    XiBachCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.83);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+
+  } else if (suffix == "31") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiCPA(0.985);
+    AntiCascadeCuts->SetCutXiCPA(0.985);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+
+  } else if (suffix == "32") {
+
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.99);
+    AntiCascadeCuts->SetCutv0CPA(0.99);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+  } else if (suffix == "33") {
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    CascadeCuts->SetCutXiCPA(0.985);
+    AntiCascadeCuts->SetCutXiCPA(0.985);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+  } else if (suffix == "34") {
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiCPA(0.985);
+    AntiCascadeCuts->SetCutXiCPA(0.985);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.83);
+    XiPosCuts->SetEtaRange(-0.83, 0.83);
+    XiBachCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.83);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+
+  } else if (suffix == "35") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.83);
+    XiPosCuts->SetEtaRange(-0.83, 0.83);
+    XiBachCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.83);
+  } else if (suffix == "36") {
+    TrackCuts->SetPtRange(0.6, 4.05);
+    AntiTrackCuts->SetPtRange(0.6, 4.05);
+
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+
+  } else if (suffix == "37") {
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+
+  } else if (suffix == "38") {
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    CascadeCuts->SetPtRangeXi(1.2, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+
+  } else if (suffix == "39") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    TrackCuts->SetNClsTPC(90);
+    AntiTrackCuts->SetNClsTPC(90);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+    CascadeCuts->SetCutXiCPA(0.985);
+    AntiCascadeCuts->SetCutXiCPA(0.985);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+  } else if (suffix == "40") {
+    TrackCuts->SetPtRange(0.6, 4.05);
+    AntiTrackCuts->SetPtRange(0.6, 4.05);
+
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+
+    XiNegCuts->SetEtaRange(-0.83, 0.83);
+    XiPosCuts->SetEtaRange(-0.83, 0.83);
+    XiBachCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.9);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+  } else if (suffix == "41") {
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
+
+    TrackCuts->SetEtaRange(-0.77, 0.77);
+    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+
+  } else if (suffix == "42") {
+    TrackCuts->SetPtRange(0.6, 4.05);
+    AntiTrackCuts->SetPtRange(0.6, 4.05);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiCPA(0.99);
+    AntiCascadeCuts->SetCutXiCPA(0.99);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+  } else if (suffix == "43") {
+    TrackCuts->SetPtRange(0.6, 4.05);
+    AntiTrackCuts->SetPtRange(0.6, 4.05);
+
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+
+    CascadeCuts->SetCutXiCPA(0.985);
+    AntiCascadeCuts->SetCutXiCPA(0.985);
+
+    CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+    AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+
+    CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+    AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+  } else if (suffix == "44") {
+    TrackCuts->SetEtaRange(-0.85, 0.85);
+    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
+
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+
+    CascadeCuts->SetCutXiDaughterDCA(1.9);
+    AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+
+    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+
+    CascadeCuts->SetCutv0CPA(0.96);
+    AntiCascadeCuts->SetCutv0CPA(0.96);
+
+    XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+
+    CascadeCuts->SetPtRangeXi(0.8, 999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+
+  }
+
   task->SetTrackCuts(TrackCuts);
   task->SetAntiTrackCuts(AntiTrackCuts);
   task->Setv0Cuts(v0Cuts);
@@ -748,3 +2764,156 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   return task;
 }
 
+//
+//if (suffix == "1") {
+//    TrackCuts->SetPtRange(0.4, 4.05);
+//    AntiTrackCuts->SetPtRange(0.4, 4.05);
+//  } else if (suffix == "2") {
+//    TrackCuts->SetPtRange(0.6, 4.05);
+//    AntiTrackCuts->SetPtRange(0.6, 4.05);
+//  } else if (suffix == "3") {
+//    TrackCuts->SetEtaRange(-0.7, 0.7);
+//    AntiTrackCuts->SetEtaRange(-0.7, 0.7);
+//  } else if (suffix == "4") {
+//    TrackCuts->SetEtaRange(-0.9, 0.9);
+//    AntiTrackCuts->SetEtaRange(-0.9, 0.9);
+//  } else if (suffix == "5") {
+//    TrackCuts->SetPID(AliPID::kProton, 0.75, 2);
+//    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2);
+//  } else if (suffix == "6") {
+//    TrackCuts->SetPID(AliPID::kProton, 0.75, 5);
+//    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 5);
+//  } else if (suffix == "7") {
+//    TrackCuts->SetFilterBit(96);
+//    AntiTrackCuts->SetFilterBit(96);
+//  } else if (suffix == "8") {
+//    TrackCuts->SetNClsTPC(70);
+//    AntiTrackCuts->SetNClsTPC(70);
+//  } else if (suffix == "9") {
+//    TrackCuts->SetNClsTPC(90);
+//    AntiTrackCuts->SetNClsTPC(90);
+//  }
+// if (suffix == "10") {
+//   v0Cuts->SetPtRange(0.24, 999.9);
+//   Antiv0Cuts->SetPtRange(0.24, 999.9);
+// } else if (suffix == "11") {
+//   v0Cuts->SetPtRange(0.36, 999.9);
+//   Antiv0Cuts->SetPtRange(0.36, 999.9);
+// } else if (suffix == "12") {
+//   v0Cuts->SetCutCPA(0.998);
+//   Antiv0Cuts->SetCutCPA(0.998);
+// } else if (suffix == "13") {
+//   Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+//   Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+//   PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+//   NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+// } else if (suffix == "14") {
+//   Posv0Daug->SetNClsTPC(80);
+//   Negv0Daug->SetNClsTPC(80);
+//   PosAntiv0Daug->SetNClsTPC(80);
+//   NegAntiv0Daug->SetNClsTPC(80);
+// } else if (suffix == "15") {
+//   Posv0Daug->SetEtaRange(-0.7, 0.7);
+//   Negv0Daug->SetEtaRange(-0.7, 0.7);
+//   PosAntiv0Daug->SetEtaRange(-0.7, 0.7);
+//   NegAntiv0Daug->SetEtaRange(-0.7, 0.7);
+// } else if (suffix == "16") {
+//   Posv0Daug->SetEtaRange(-0.9, 0.90.83)/   Negv0Daug->SetEtaRange(-0.9, 0.9);
+//   PosAntiv0Daug->SetEtaRange(-0.9, 0.9);
+//   NegAntiv0Daug->SetEtaRange(-0.9, 0.9);
+// } else if (suffix == "17") {
+//   v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+//   Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+// } else if (suffix == "18") {
+//   v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+//   Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+// }
+//if (suffix == "19") {
+//  CascadeCuts->SetCutXiDaughterDCA(1.3);
+//  AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
+//} else if (suffix == "20") {
+//  CascadeCuts->SetCutXiDaughterDCA(1.9);
+//  AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
+//} else if (suffix == "21") {
+//  CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+//  AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
+//} else if (suffix == "22") {
+//  CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+//  AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+//} else if (suffix == "23") {
+//  CascadeCuts->SetCutXiCPA(0.99);
+//  AntiCascadeCuts->SetCutXiCPA(0.99);
+//} else if (suffix == "24") {
+//  CascadeCuts->SetCutXiCPA(0.985);
+//  AntiCascadeCuts->SetCutXiCPA(0.985);
+//} else if (suffix == "25") {
+//  CascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+//  AntiCascadeCuts->SetCutXiTransverseRadius(0.6, 200);
+//} else if (suffix == "26") {
+//  CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+//  AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
+//} else if (suffix == "27") {
+//  CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+//  AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
+//} else if (suffix == "28") {
+//  CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+//  AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
+//} else if (suffix == "29") {
+//  CascadeCuts->SetCutv0CPA(0.96);
+//  AntiCascadeCuts->SetCutv0CPA(0.96);
+//} else if (suffix == "30") {
+//  CascadeCuts->SetCutv0CPA(0.99);
+//  AntiCascadeCuts->SetCutv0CPA(0.99);
+//} else if (suffix == "31") {
+//  CascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+//  AntiCascadeCuts->SetCutv0TransverseRadius(1.1, 200);
+//} else if (suffix == "32") {
+//  CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+//  AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
+//} else if (suffix == "33") {
+//  CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+//  AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
+//} else if (suffix == "34") {
+//  CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+//  AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
+//} else if (suffix == "35") {
+//  CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
+//  AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
+//} else if (suffix == "36") {
+//  CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+//  AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+//} else if (suffix == "37") {
+//  XiNegCuts->SetEtaRange(-0.7, 0.7);
+//  XiPosCuts->SetEtaRange(-0.7, 0.7);
+//  XiBachCuts->SetEtaRange(-0.7, 0.7);
+//  AntiXiNegCuts->SetEtaRange(-0.7, 0.7);
+//  AntiXiPosCuts->SetEtaRange(-0.7, 0.7);
+//  AntiXiBachCuts->SetEtaRange(-0.7, 0.7);
+//} else if (suffix == "38") {
+//  XiNegCuts->SetEtaRange(-0.9, 0.9);
+//  XiPosCuts->SetEtaRange(-0.9, 0.9);
+//  XiBachCuts->SetEtaRange(-0.9, 0.9);
+//  AntiXiNegCuts->SetEtaRange(-0.9, 0.9);
+//  AntiXiPosCuts->SetEtaRange(-0.9, 0.9);
+//  AntiXiBachCuts->SetEtaRange(-0.9, 0.9);
+//} else if (suffix == "39") {
+//  XiNegCuts->SetPID(AliPID::kPion, 999, 3);
+//  XiPosCuts->SetPID(AliPID::kProton, 999, 3);
+//  XiBachCuts->SetPID(AliPID::kPion, 999, 3);
+//  AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
+//  AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
+//  AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+//} else if (suffix == "40") {
+//  XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
+//  XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
+//  XiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+//  AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
+//  AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
+//  AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
+//} else if (suffix == "41") {
+//  CascadeCuts->SetPtRangeXi(0.8, 999.5);
+//  AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
+//} else if (suffix == "42") {
+//  CascadeCuts->SetPtRangeXi(1.2, 999.5);
+//  AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
+//}

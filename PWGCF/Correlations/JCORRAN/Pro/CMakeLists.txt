@@ -36,6 +36,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
 	AliBSDiJetTask.cxx
+	AliAnalysisTaskBSEmbedding.cxx
 	AliJDiJetAnalysis.cxx
 	AliJDiJetTask.cxx
 	AliJEbECORRTask.cxx
@@ -48,12 +49,14 @@ set(SRCS
 	AliJJetJtAnalysis.cxx
 	AliJJetJtTask.cxx
 	AliJJetTask.cxx
+	AliAnalysisTaskRidge.cxx
 )
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
         AliJCDijetHistos.cxx
         AliJCDijetTask.cxx
+        AliJCDijetAna.cxx
         )
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
@@ -70,7 +73,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW EMCALUtils PHOSUtils PWGJETFW PWGCFCorrelationsJCORRAN)
+set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW  EMCALUtils PHOSUtils PWGJETFW PWGCFCorrelationsJCORRAN)
 
 # Generate the ROOT map
 # Dependecies

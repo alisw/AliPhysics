@@ -1,0 +1,298 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252"
+      http-equiv="content-type">
+    <title>Readme</title>
+  </head>
+  <body>
+    <br>
+    <h2>Readme</h2>
+    <div style="margin-left: 40px;">This is the readme file for the new
+      code to analyze van-der-Meer scans. <br>
+      <ul>
+        <li><a href="#Overview">Overview</a></li>
+        <li><a href="#Instructions">Instructions</a></li>
+        <li><a href="#Example">Example</a><br>
+        </li>
+      </ul>
+    </div>
+    <br>
+    <hr size="2" width="100%">
+    <h2><a name="Overview"></a>Overview</h2>
+    <blockquote>
+      <p>The goal of a van der Meer (vdM) scan is to measure reference
+        cross sections for some configuration of detectors. In ALICE the
+        standard luminometers are provided by (i) the V0 and (ii) the T0
+        detectors, but other detectors can also be used as luminometers,
+        e.g.&nbsp; ZDC or AD. <br>
+      </p>
+      <p>A vdM scan consist of two parts: the horizontal and the
+        vertical scans.&nbsp; In the first one the distance along the
+        x-coordinate of the beams is varied in steps, the rate being
+        measured at each step, while the beams are kept at a zero
+        distance (head-on) in the y-coordinate. The second scan is
+        similar but the beams collide head-on in the x-coordinate and
+        move in the y-coordinate. There are also so-called offset scans
+        where the beams do not collide head-on in the fixed direction,
+        but with an offset. A data taking session where van der Meer
+        scans are taking (confusingly, also known as van der Meer scan)
+        consists, at least in ALICE during Run 2 at the LHC,&nbsp; of
+        two full scans and on ocasions an offset scan. In all cases,
+    there is also a so-called length-scale calibration run. <br>
+    (Note that in 2018 we also had diagonal scans, these are not taken
+    into account yet in the macros described below.)<br>
+      </p>
+    </blockquote>
+    <div style="margin-left: 40px;">The basic formula for the luminosity
+      L of one interacting bunch crossing is<br>
+      <div style="margin-left: 40px;"><span style="color: rgb(51, 51,
+          255);">L=N</span><sub style="color: rgb(51, 51, 255);">1</sub><span
+          style="color: rgb(51, 51, 255);">N</span><sub style="color:
+          rgb(51, 51, 255);">2</sub><span style="color: rgb(51, 51,
+          255);">f</span><sub style="color: rgb(51, 51, 255);">rev</sub><span
+          style="color: rgb(51, 51, 255);">/(h</span><sub style="color:
+          rgb(51, 51, 255);">x</sub><span style="color: rgb(51, 51,
+          255);">h</span><sub style="color: rgb(51, 51, 255);">y</sub><span
+          style="color: rgb(51, 51, 255);">)</span><br>
+      </div>
+      while for the cross section is:<br>
+      <div style="margin-left: 40px;"><span style="color: rgb(51, 51,
+          255);">&#963;</span><sub style="color: rgb(51, 51, 255);">ref</sub><span
+          style="color: rgb(51, 51, 255);">=R(0,0)/L</span>.<br>
+      </div>
+      here, the effective beam widths are defined as <br>
+      <div style="margin-left: 40px;"><span style="color: rgb(51, 51,
+          255);">h</span><sub style="color: rgb(51, 51, 255);">x</sub><span
+          style="color: rgb(51, 51, 255);"> = [&#8747; d&#916;x R(&#916;x,0)]/R(0,0)</span>
+        and <span style="color: rgb(51, 51, 255);"> h<sub>y</sub> = [&#8747;
+          d&#916;y R(0,&#916;y)]/R(0,0)</span> </div>
+      N<sub>1,2</sub> are the&nbsp; intensities of the colliding bunches
+      in beam 1 and beam 2, f<sub>rev</sub> is the revolution frequency
+      of the accelerator, and R is the rate at a given separation of the
+      bunches in the x and y directions.<br>
+      <br>
+      The measurement of a reference cross section requires then:<br>
+      <ul>
+        <li>The bunch intensities:<br>
+          The bunch intensities are assumed constant in time in the
+          above formalism. In real life this is not so. Specially, the
+          intensity of lead beams decays substantially during a vdM
+          scan. Thus, a time in between the x and y scans is chosen to
+          measure the bunch intensities. Two different devices are
+          normally used to measure the intensities. The BPTX and the
+          fBCT. Both of them are calibrated with another device, the
+          DCCT.<br>
+          <br>
+        </li>
+        <li>The rate of the reference process at each step:<br>
+          The measured rates have to be corrected for the effects of
+          pile-up, background and the above mentioned intensity decay.<br>
+          <br>
+        </li>
+        <li>The separations at each step:<br>
+          The separations have to be corrected for beam drift and
+          beam-beam deflections. To compute these corrections a first
+          estimation of the reference cross section, using the nominal
+          separations, is needed.</li>
+      </ul>
+      There are other potential corrections and cross checks that have
+      to be performed.<br>
+      <br>
+    </div>
+    <hr style="width: 100%; height: 2px;">
+    <h2><a name="Instructions"></a>Instructions</h2>
+    <ol>
+      <li>Preliminaries</li>
+      <ol type="a">
+        <li>The programs assume that there exist one work directory with
+          the following structure<br>
+        </li>
+        <ul>
+          <li>In the work directory there is one directory to store the
+            input files of each fill, with name Fill-####. <br>
+            The input files are produced by Ivan Kralik and are stored
+            in <br>
+            <a href="http://home.saske.sk/%7Ekralik/VdM/VdM-allin1file/">http://home.saske.sk/~kralik/VdM/VdM-allin1file/</a><br>
+          </li>
+          <li>In the work directory there should be a directory
+            containing the souce files mentioned below. These files are
+            obtained from:<br>
+            <a
+              href="https://github.com/alisw/AliPhysics/tree/master/PWGMM/Lumi">https://github.com/alisw/AliPhysics/tree/master/PWGMM/Lumi</a><br>
+          </li>
+        </ul>
+        <li>At the beginning of the analysis, the user has to write a
+          function in <span style="color: rgb(0, 0, 250);">InputFromUser.h</span>
+          for the corresponding fill. <br>
+          There, one defines the number of scans and the names of the
+          input files provided by Ivan. <br>
+          The variables are declared in <span style="color: rgb(0, 0,
+            250);">GlobalVariables.h</span>. <br>
+        </li>
+        <li>All macros are suposed to be compiled and then used:<br>
+          root [0] .L Macro.C+g<br>
+          root [1] Macro(---) <br>
+        </li>
+        <li>One can perform some checks of the input files using the
+          functions in <span style="color: rgb(0, 0, 250);">Checks.C</span>.
+          <br>
+          The auxiliary functions are defined in <span style="color:
+            rgb(0, 0, 250);"> vdmUtilities.h</span>.</li>
+      </ol>
+      <li>Create basic files<br>
+        The strategy is to create independent root files at each step
+        with a specific naming convention so that the cross section can
+        be computed for any combination of intensities, separations and
+        rates.<br>
+      </li>
+      <ol type="a">
+        <li>Compile and run <span style="color: rgb(0, 0, 250);">Create_nominal_separation_file.C</span>
+          to produce files with the nominal separations for each partial
+          scan.<br>
+          These files are stored in the Fill-#### directory with names
+          like NomSep_x_Scan_0.root. Check them!<br>
+        </li>
+        <li>Compile and run&nbsp;<font color="blue">Create_beam_intensity_file.C</font>
+          to produce files with the intensity at a given time. It takes
+          options for BPTX (opt == 1) and fBCT (opt == 0) files.<br>
+          It produces files with names like FBCT_Scan_0.root, which
+          contain the intensity of each bunch at the normalization time
+          (averaged over a range sorrounding this time) and the
+          correction factors of the intensities w.r.t. DDCT.<br>
+        </li>
+        <li>Compile and run <font color="blue">Create_raw_rate_file.C</font>
+          to produce files with the raw rate.<br>
+          As input takes the fill number and a string containing the
+          name of a luminometer as stored in the input file. For
+          example: VBAandVBC, TVX or UBAandUBC. <br>
+          This program is quite slow ... be patient ... for large number
+          of interacting bunches it may take ~15-20 min per scan ... the
+          program prints the current status to show that it is doing
+          something ...<br>
+          The output files are stored in the Fill-#### directory with
+          names like RawRate_VBAandVBC_x_Scan_0.root. Check them!</li>
+      </ol>
+      <li>Create corrected rate files<br>
+        There are three corrections: background, pile-up and intensity
+        correction. For the background correction the information is in
+        the input file only for the T0 and the V0 reference process. For
+        other process an ad-hoc solution has to be provided. <br>
+      </li>
+      <ol type="a">
+        <li>Compile and run <font color="blue">Create_bkgd_correction_file_V0T0.C</font>
+          to create the correction factors for V0 and T0 processes.<br>
+          The program takes as input the fill number and the rate type:
+          V0 (rate_type == 1) or T0 (rate_type == 2). This program is
+          also quite slow. The output is stored in the Fill-####
+          directory with names like BkgdCorr_T0_x_Scan_0.root. Check
+          them!</li>
+        <li>Compile and run <font color="blue">Create_bkgd_corrected_rate_file.C</font>
+          to create the rate after background correction. The program
+          takes as input the fill number, and strings related to the
+          rate name and the correction. The rate names are for example
+          VBAandVBC, TVX or UBAandUBC.The background correction is
+          currently tagged as V0 or T0. <br>
+          The output is stored in the Fill-#### directory with names
+          like BkgdCorrRate_VBAandVBC_x_Scan_0.root. Check them!</li>
+        <li>Compile and run <font color="blue">Create_pileup_corrected_rate_file.C</font>
+          to create the rate after pileup correction. The program takes
+          as input the fill number, the rate name and the ratios in the
+          A and C side used to compute the pileup. <br>
+          The output is stored in the Fill-#### directory with names
+          like PileupCorrRate_VBAandVBC_x_Scan_0.root. The ratios used
+          in the analysis are also stored in the output file.</li>
+        <li>Compile and run <font color="blue">Create_intensity_correction_file.C</font>
+          to compute the correction factors for the intensity
+          correction. The program takes as arguments the fill number and
+          an integer to select the device measuring the intensity:
+          intensity_type == 1 for BPTX and == 2 for FBCT. <br>
+          The output is stored in the Fill-#### directory with names
+          like BPTXCorr_x_Scan_0.root.</li>
+        <li>Compile and run <font color="blue">Create_intensity_corrected_rate_file.C</font>
+          to create the rate after intensity correction. The arguments
+          are the fill number, the rate name and the name of the
+          intensity correction.<br>
+          The output is stored in the Fill-#### directory with names
+          like IntensityCorrRate_VBAandVBC_FBCT_x_Scan_0.root</li>
+      </ol>
+      <li>Compute first cross section<br>
+        A first estimation of the cross section is needed to compute the
+        corrections for orbit drift and beam-beam deflection to the
+        nominal separations. Before computing the cross section one has
+        to compute the value of hx and hy as well as set up the global
+        correction factors.<br>
+      </li>
+      <ol type="a">
+        <li>Compile and run <font color="blue">Create_hxhy_file.C</font>
+          to create the effective beam widths. As arguments one has to
+          provide the fill run, the name of the rate, the type of the
+          rate (Raw,IntensityCorr,...), the type of separation and the
+          type of fit. At this moment, one has only the nominal (Nom)
+          separations; later on there will be orbit-drift and
+          beam-beam-deflection corrected separations. The type of fit is
+	defined in <font color="blue">FitUtils.h</font>. <br>
+	(One should
+	use the numeric integration to produce the files
+	needed for the correction for beam-beam deflection; this is
+	so, because this always works, while a fit may not converge in
+	some cases. Of course one could/should also use fits, but not
+	to produced the files needed by Ivan, see below.) <br> The type is given by an integer corresponding to the
+          entry in the arrays defined in FitUtils.h. Note that the
+          initial conditions for a fit may have to be fine-tuned by
+          hand.<br>
+        </li>
+        <li>Compile and run <font color="blue">Create_xs_file.C</font>
+          to create the file with the reference cross sections. As
+          arguments one has to provide the fill run, the name of the
+          rate ("TVX","VBAandVBC"), the type of the rate
+          ("Raw","IntensityCorrFBCT",...), the type of separation,
+          ("Raw")&nbsp; the type of fit, and the correction factors for
+          LSC, ghost, satellite and non-factorisation.</li>
+	</ol>
+	<li> Corrections for separations </li>
+	<ol type="a">
+	  <li> Orbit-drift corrections: <br>
+	  Martino provides a file with
+	  the orbit drift. Using the information in this file
+	  corresponding to timestamps outside the scan itself on fits
+	  some function that describes the data.<br>
+	  This function is programed into <font
+	  color="blue">Create_ODC_separation_file.C</font>. Then this
+	  macro is ran, followed by (with numerical
+	  integration!) Create_hxhy_file.C and
+	  Create_xs_file.C. This produces cross sections with
+	  orbit-drift corrected separations. </li>
+	  <li> Beam-beam deflection: <br>
+	  One runs the macro <font
+	  color="blue">Create_bbd_file.C</font> to create input files
+	  with numerical integration and two types of separations:
+	  nominal and orbit-drift corrected. The output of this
+	  program is sent to Ivan Kralik. He uses the information to
+	  compute the correction for beam-beam deflection. <br>
+	  (Note: the beta values and the tunes are needed for each new
+	  fill; see the Init_parameters function in Create_bbd_file.C)
+	  </li>
+	  <li> Once that Ivan sends back the corrections, one runs
+	  <font color="blue">Create_BBD_separation_file.C</font>
+	  followed by
+	  Create_hxhy_file.C and
+	  Create_xs_file.C. <br>
+	  (Note: if the fill has not been implemented, you will need
+	  to modify the source file to add the correct paths.) </li>
+	</ol>
+	<li> Quality assurance. <br> There are a series of macros to
+	check the output at each stage. See example below. </li>
+	<li> The whole procedure has to be repeated for systematic
+	studies. </li>
+    </ol>
+    <hr size="2" width="100%">
+    <h2><a name="Example"></a>Example</h2>
+      <blockquote>
+      <p> An example of the instructions performed for the analysis of
+    fill 7483 (second vdM scan in Pb-Pb 2018) is <a
+href="Readme_V0M_7483.txt">here</a> <br>
+      </p>
+    </blockquote>  
+   </body>
+</html>

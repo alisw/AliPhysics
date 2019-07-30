@@ -49,10 +49,12 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   int CheckGenerator(int Index);
   
-  void SetCorrWidthMean(TH3D* width, TH3D* mean){
-      fmean=mean;
-      fwidth=width;
+  void SetCorrWidthMean(Int_t det, TH3D* width, TH3D* mean){
+    if(det==1){  fmeanITS=mean; fwidthITS=width;}
+    if(det==2){  fmeanTPC=mean; fwidthTPC=width;}
+    if(det==3){  fmeanTOF=mean; fwidthTOF=width;}   
   };
+
   void SetupTrackCuts(AliDielectronCutGroup* f);
   void SetupEventCuts(AliDielectronEventCuts* f);
   void SetupTMVAReader(TString TMVAweight);
@@ -175,11 +177,21 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Int_t runn;
   Int_t n;
   Double_t cent;
+  Double_t ZDCepA;
+  Double_t ZDCepC;
+  Double_t TPCep;
+  Double_t TPCepA;
+  Double_t TPCepC;
+  
+  TList* fQnList;
+  AliAnalysisManager *man;
+
   
   Double_t IsEventAccepted(AliVEvent *event);
   Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
   Bool_t GetDCA(const AliVEvent* event, const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0);
-  
+  Bool_t FillZDCEventPlane(Double_t* ZDCevArr);
+  void FillQnEventplanes(TList* qnlist);
   AliAnalysisTaskMLTreeMaker(const AliAnalysisTaskMLTreeMaker&); // not implemented
 
   AliAnalysisTaskMLTreeMaker& operator=(const AliAnalysisTaskMLTreeMaker&); // not implemented
@@ -306,8 +318,12 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   
   TString TMVAWeightFileName;
   
-  TH3D* fwidth;
-  TH3D* fmean;
+  TH3D* fwidthTPC;
+  TH3D* fmeanTPC;
+  TH3D* fwidthITS;
+  TH3D* fmeanITS;
+  TH3D* fwidthTOF;
+  TH3D* fmeanTOF;
   
   Bool_t fuseCorr;
   Bool_t fIsTMVAInit;

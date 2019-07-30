@@ -62,6 +62,9 @@ class AliFemtoDreamEventCuts {
     fUseAliEvtCuts = apply;
   }
   ;
+  bool GetUseAliEventCuts () const {
+    return fUseAliEvtCuts;
+  }
   void SetMultVsCentPlots(bool doIt) {
     fCentVsMultPlots = doIt;
   }
@@ -85,12 +88,39 @@ class AliFemtoDreamEventCuts {
     fDoSpherCuts = true;
   }
   ;
+
+  void SetMultiplicityPercentileMax(float multMax) {
+    fUseMultPercentileCut = true;
+    fMultPercentileMax = multMax;
+  }
   float GetSphericityCutsLow() const {
     return fSpherCutsLow;
   }
   ;
   float GetSphericityCutsUp() const {
     return fSpherCutsUp;
+  }
+  ;
+  void SetDoSpherocityCuts(bool doIt) {
+    fDoSpheroCuts = doIt;
+  }
+  ;
+  bool GetDoSpherocityCuts() const {
+    return fDoSpheroCuts;
+  }
+  ;
+  void SetSpherocityCuts(float spherolow, float spheroup) {
+    fSpheroCutsLow = spherolow;
+    fSpheroCutsUp = spheroup;
+    fDoSpheroCuts = true;
+  }
+  ;
+  float GetSpherocityCutsLow() const {
+    return fSpheroCutsLow;
+  }
+  ;
+  float GetSpherocityCutsUp() const {
+    return fSpheroCutsUp;
   }
   ;
 
@@ -111,13 +141,18 @@ class AliFemtoDreamEventCuts {
   bool fUseV0AMult;               //
   bool fUseV0CMult;               //
   bool fUseRef08Mult;             //
+  bool fUseMultPercentileCut;     //
+  float fMultPercentileMax;	      //
   //Use evt cuts tuned by expert(don't worry solution)
   bool fUseAliEvtCuts;            //
   bool fCentVsMultPlots;    //
   bool fDoSpherCuts;       //
   float fSpherCutsLow;      //
   float fSpherCutsUp;      //
-ClassDef(AliFemtoDreamEventCuts,5)
+  bool fDoSpheroCuts;       //
+  float fSpheroCutsLow;      //
+  float fSpheroCutsUp;      //
+ClassDef(AliFemtoDreamEventCuts,7)
 };
 
 #endif /* ALIFEMTODREAMEVENTCUTS_H_ */

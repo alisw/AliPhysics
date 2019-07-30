@@ -141,6 +141,9 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   
   //PID
   if(PID){
+  if(systemType == AliAnalysisTaskAccCont::kpPb)
+  task[iCentralityBin]->SetUseNSigmaPIDNewTrial();
+  else
   task[iCentralityBin]->UsePID();
   //task[iCentralityBin]->SetNSigmaPID(nsigma);
   task[iCentralityBin]->setParticleType(particleType);

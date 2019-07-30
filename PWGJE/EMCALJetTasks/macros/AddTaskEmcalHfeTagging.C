@@ -15,9 +15,9 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
 						     TString     trigClass      = "",
 						     TString     kEmcalTriggers = "",
 						     TString     tag            = "",
-                             AliAnalysisTaskEmcalHfeTagging::JetShapeType jetShapeType,
-                             AliAnalysisTaskEmcalHfeTagging::JetShapeSub jetShapeSub,
-                             AliAnalysisTaskEmcalHfeTagging::JetSelectionType jetSelection,
+                             AliAnalysisTaskEmcalHfeTagging::JetShapeType jetShapeType = AliAnalysisTaskEmcalHfeTagging::kData,
+                             AliAnalysisTaskEmcalHfeTagging::JetShapeSub jetShapeSub = AliAnalysisTaskEmcalHfeTagging::kNoSub,
+                             AliAnalysisTaskEmcalHfeTagging::JetSelectionType jetSelection = AliAnalysisTaskEmcalHfeTagging::kInclusive,
                  Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., Int_t derivSubtrOrder = 0, Int_t     MCweight = 0) {
  
 

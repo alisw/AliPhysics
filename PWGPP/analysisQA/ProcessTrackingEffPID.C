@@ -47,7 +47,8 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
 			     "Reconstructed+PID/(Generated in selected events)",
 			     "Reconstructed+PID/(Reconstrcuted+TOF)"};
   Int_t markerStep[nRatios]={28,20,29,27,25};
-
+  TString multVar="N_{tracklets}";
+  
   // different projection variables
   TString varname[5]={"Eta","Phi","Pt","Mult","Zvert"};
   const Int_t nProjections=9;
@@ -123,6 +124,8 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
       THnSparseF* hSpRec=(THnSparseF*)l->FindObject(nameSpRec.Data());
       printf("%s %s \n",nameSpRec.Data(),nameSpGen.Data());
       maxMult=hSpRec->GetAxis(3)->GetXmax();
+      TString tit3=hSpRec->GetAxis(3)->GetTitle();
+      if(tit3.Contains("b (fm")) multVar="b (fm)";
       for(Int_t iP=0; iP<nProjections; iP++){
 	Int_t iVar=theVar[iP];
 	Int_t iPt=thePtBin[iP];
@@ -196,7 +199,7 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
   hFrameZvert->GetYaxis()->SetTitleOffset(1.2);
 
   TH2F* hFrameMult=new TH2F("hFrameMult","",10000,0.,maxMult,100.,0.,1.2);
-  hFrameMult->GetXaxis()->SetTitle("N_{tracklets}");
+  hFrameMult->GetXaxis()->SetTitle(multVar.Data());
   hFrameMult->GetYaxis()->SetTitle("Efficiency");
   hFrameMult->GetYaxis()->SetTitleOffset(1.2);
 
@@ -480,4 +483,5 @@ int GetEmptyMarker(int mar){
   if(mar==29) return 30;
   if(mar==33) return 27;
   if(mar==34) return 28;
+  return 24;
 }

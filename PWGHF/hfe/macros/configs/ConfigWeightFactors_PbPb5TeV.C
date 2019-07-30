@@ -27,11 +27,13 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
   printf("collType %d\n",collType);
   TFile *weightFile = TFile::Open(Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
 */
+
         // GRID version
     printf("Take the weights from %s\n",Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
   printf("collType %d\n",collType);
 //  TFile *weightFile = TFile::Open(Form("%s/PWGHF/hfe/macros/configs/PbPb/%s", gSystem->Getenv("ALICE_PHYSICS"),filename.Data()));
     TFile *weightFile = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
+
 
   if(weightFile){
     if(syst){
@@ -274,6 +276,16 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
           cout << "     PbPb LHC18e1 minimum bias MC with fixed HIJING issue on pi0 decay                                             ";
           cout << "\n------------------------------------------------------------------------------------------------------------------\n";
           cout << "------------------------------------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        // 81: PbPb LHC18e1 minimum bias MC with fixed HIJING issue on pi0 decay - pi charged spectrum from data cooked from the 2.76TeV one
+        else if(collType == 81){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_18e1_fixedHIJING_chpionsCookedFrom276_%s_%d",backNameMC[iSpecies],iCent));
+          cout << "\n------------------------------------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------------------------------\n";
+          cout << "     PbPb LHC18e1 minimum bias MC with fixed HIJING issue on pi0 decay, BUT pi charged spectrum from data cooked from the 2.76TeV one";
+          cout << "\n------------------------------------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------------------------------\n";
           cout << hRatio->GetName() << endl;
         }
 

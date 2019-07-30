@@ -58,7 +58,7 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
     }
     else if(L0input > 0)    TriggerName = TriggerName + "_" + "L0";
     else{
-      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least 1 trigger input (L0 or L1[H,M,L]).");
+      ::Error("AddTaskPHOSEmbeddingEfficiency", "PHOS trigger analysis requires at least 1 trigger input (L0 or L1[H,M,L]).");
       return NULL;
     }
   }
@@ -80,7 +80,7 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
   TString taskname = "";
   if(FlowTask){
     if(harmonics <= 0){
-      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "Qn flow vector correction is ON, but you do not set harmonics.");
+      ::Error("AddTaskPHOSEmbeddingEfficiency", "Qn flow vector correction is ON, but you do not set harmonics.");
       return NULL;
     }
 
@@ -236,14 +236,14 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
       TObjArray *farray_Gamma = new TObjArray(Ncen_Gamma-1);
       TF1 *f1weightGamma[Ncen_Gamma-1];
 
-      const Double_t p0[Ncen_Gamma-1] = {2.39991e+02, 1.78111e+02, 1.21109e+02, 6.91786e+01, 4.07880e+01, 2.05577e+01, 1.08079e+01, 4.98463e+00, 2.23119e+00, 1.16590e+00};//Ae
-      const Double_t p1[Ncen_Gamma-1] = {3.84238e-01, 3.90424e-01, 3.96450e-01, 4.05978e-01, 4.11701e-01, 4.22538e-01, 4.23961e-01, 4.31410e-01, 4.28510e-01, 3.85667e-01};//Te
-      const Double_t p2[Ncen_Gamma-1] = {1.16561e+03, 9.25084e+02, 7.15782e+02, 5.01254e+02, 3.55730e+02, 2.36175e+02, 1.49593e+02, 8.91887e+01, 4.56253e+01, 1.97146e+01};//A
-      const Double_t p3[Ncen_Gamma-1] = {3.06202e-01, 3.12875e-01, 3.13599e-01, 3.14247e-01, 3.05660e-01, 3.01051e-01, 2.89748e-01, 2.75489e-01, 2.64481e-01, 2.50078e-01};//T
-      const Double_t p4[Ncen_Gamma-1] = {2.73068e+00, 2.72595e+00, 2.70812e+00, 2.68939e+00, 2.64558e+00, 2.61370e+00, 2.56506e+00, 2.53088e+00, 2.51428e+00, 2.43636e+00};//n
+      const Double_t p0[Ncen_Gamma-1] = {4.12097e+02 , 2.72720e+02, 1.85512e+02, 6.40594e+01, 6.40594e+01, 6.71162e+00, 6.71162e+00, 5.94487e+02, 5.94487e+02, 5.94487e+02};//Ae
+      const Double_t p1[Ncen_Gamma-1] = {3.19655e-01 , 3.28095e-01, 3.31559e-01, 3.42014e-01, 3.42014e-01, 4.27787e-02, 4.27787e-02, 1.16145e-01, 1.16145e-01, 1.16145e-01};//Te
+      const Double_t p2[Ncen_Gamma-1] = {5.26532e+03 , 3.86198e+03, 2.22781e+03, 8.59703e+02, 8.59703e+02, 1.74914e+02, 1.74914e+02, 1.32598e+01, 1.32598e+01, 1.32598e+01};//A
+      const Double_t p3[Ncen_Gamma-1] = {2.25277e-01 , 2.38582e-01, 2.56551e-01, 2.93980e-01, 2.93980e-01, 3.75784e-01, 3.75784e-01, 4.84576e-01, 4.84576e-01, 4.84576e-01};//T
+      const Double_t p4[Ncen_Gamma-1] = {2.76231e+00 , 2.79069e+00, 2.80401e+00, 2.86491e+00, 2.86491e+00, 3.02951e+00, 3.02951e+00, 3.09311e+00, 3.09311e+00, 3.09311e+00};//n
 
       for(Int_t icen=0;icen<Ncen_Gamma-1;icen++){
-        f1weightGamma[icen] = new TF1(Form("f1weightGamma_%d",icen),"[0] * TMath::Exp(-(TMath::Sqrt(x*x + 0.139*0.139) - 0.139) / [1]) + [2] * TMath::Power(1 + (x*x)/([3]*[3]*[4]) , -[4])",0,100);//TCM fit to PbPb
+        f1weightGamma[icen] = new TF1(Form("f1weightGamma_%d",icen),"[0] * TMath::Exp(-(TMath::Sqrt(x*x + 0*0) - 0) / [1]) + [2] * TMath::Power(1 + (x*x)/([3]*[3]*[4]) , -[4])",0,100);//TCM fit to PbPb
         f1weightGamma[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
         f1weightGamma[icen]->SetNpx(1000);
         farray_Gamma->Add(f1weightGamma[icen]);

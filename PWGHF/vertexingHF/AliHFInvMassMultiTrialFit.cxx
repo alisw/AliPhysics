@@ -45,7 +45,8 @@ AliHFInvMassMultiTrialFit::AliHFInvMassMultiTrialFit() :
   fnSigmaBinCSteps(0x0),
   fnSigmaForBkgEval(3),
   fSigmaGausMC(0.010),
-  fSigmaMCVariation(0.15),
+  fSigmaMCVariationUp(0.1),
+  fSigmaMCVariationDw(0.1),
   fMassD(1.86484),
   fSuffix(""),
   fFitOption(0),
@@ -367,10 +368,10 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 		  fitter->SetFixGaussianSigma(fSigmaGausMC);
 		  xnt[6]=1;
 		}else if(igs==kFixSigUpFreeMean){
-		  fitter->SetFixGaussianSigma(fSigmaGausMC*(1.+fSigmaMCVariation));
+		  fitter->SetFixGaussianSigma(fSigmaGausMC*(1.+fSigmaMCVariationUp));
 		  xnt[6]=2;
 		}else if(igs==kFixSigDownFreeMean){
-		  fitter->SetFixGaussianSigma(fSigmaGausMC*(1.-fSigmaMCVariation));
+		  fitter->SetFixGaussianSigma(fSigmaGausMC*(1.-fSigmaMCVariationDw));
 		  xnt[6]=3;
 		}else if(igs==kFreeSigFreeMean){
 		  xnt[6]=0;
@@ -629,8 +630,8 @@ Bool_t AliHFInvMassMultiTrialFit::DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  h
   fSB->SetParameter(2,fSigmaGausMC);
   for(Int_t j=0; j<4; j++) fSB->SetParameter(j+3,f3->GetParameter(j));
   if(iCase==0) fSB->FixParameter(2,fSigmaGausMC);
-  else if(iCase==1) fSB->FixParameter(2,fSigmaGausMC*(1.+fSigmaMCVariation));
-  else if(iCase==2) fSB->FixParameter(2,fSigmaGausMC*(1.-fSigmaMCVariation));
+  else if(iCase==1) fSB->FixParameter(2,fSigmaGausMC*(1.+fSigmaMCVariationUp));
+  else if(iCase==2) fSB->FixParameter(2,fSigmaGausMC*(1.-fSigmaMCVariationDw));
   else if(iCase==4){ 
     fSB->FixParameter(1,fMassD);
     fSB->FixParameter(2,fSigmaGausMC);

@@ -58,6 +58,7 @@ AliAnalysisTaskSVtaskMCFilter::AliAnalysisTaskSVtaskMCFilter() :
 fFilteredTracksArray(0x0),
 fFilteredTracksName("mytracks"),
 fInputTracksName("tracks"),
+fFilterType(1),
 fAodEvent(0x0),
 fMCHeader(0x0),
 fMCPartArray(0x0)
@@ -68,9 +69,11 @@ fMCPartArray(0x0)
 }
 //_______________________________________________________________________________
 AliAnalysisTaskSVtaskMCFilter::AliAnalysisTaskSVtaskMCFilter(const char *name) :
+AliAnalysisTaskEmcal(name),
 fFilteredTracksArray(0x0),
 fFilteredTracksName("mytracks"),
 fInputTracksName("tracks"),
+fFilterType(1),
 fAodEvent(0x0),
 fMCHeader(0x0),
 fMCPartArray(0x0)
@@ -123,12 +126,15 @@ void AliAnalysisTaskSVtaskMCFilter::ExecOnce()
 
   // add the filtered tracks to event if not yet there
   if (!(InputEvent()->FindListObject(fFilteredTracksName))) {
-     fFilteredTracksArray = new TClonesArray("AliAODTrack");
+     if(fFilterType){
+        fFilteredTracksArray = new TClonesArray("AliAODTrack");
+     }else{
+        fFilteredTracksArray = new TClonesArray("AliAODMCParticle");
+     }  
      fFilteredTracksArray->SetName(fFilteredTracksName);
      ::Info("AliAnalysisTaskSVtaskMCFilter::ExecOnce", "track collection with name '%s' has been added to the event.", fFilteredTracksName.Data());
      InputEvent()->AddObject(fFilteredTracksArray);
-  }
-  else {
+  }else{
     AliError(Form("%s: Object with name %s already in event! Returning", GetName(), fFilteredTracksName.Data()));
     return;
   }
@@ -151,46 +157,81 @@ Bool_t AliAnalysisTaskSVtaskMCFilter::Run()
    // the AODs with null vertex pointer didn't pass the PhysSel
    if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return kFALSE;
 
- 
-
-   AliAODTrack* track = 0;
    TString nameGen;
    Int_t lab, mother;
    AliAODMCParticle *mcpart = NULL;
    Int_t n = fFilteredTracksArray->GetEntriesFast();
+	
+   if (fFilterType) { //detector level tracks
+     AliAODTrack* track = 0;
+     AliTrackContainer * tracks = dynamic_cast<AliTrackContainer *>(GetParticleContainer(fInputTracksName.Data()));
+     // Iterable approach (using C++11)  loop over detector level tracks
+     for(auto trackIterator : tracks->accepted_momentum()){ 
+		 
+        track = dynamic_cast<AliAODTrack *>(trackIterator.second);  // Get the full track
+        if(track){
+           lab     = TMath::Abs(track->GetLabel());
+           nameGen = AliVertexingHFUtils::GetGenerator(lab,fMCHeader);
+           
+           while(nameGen.IsWhitespace()){    //if this particle does not have any generator name execute this loop
+              mcpart = (AliAODMCParticle*) fMCPartArray->At(lab);  //find the corresponding MC particle
+              if(!mcpart){
+                 printf("AliAnalysisTaskMultCheck::IsTrackInjected - BREAK: No valid AliAODMCParticle at label %i\n",lab);
+                 break;
+              }
+              mother = mcpart->GetMother(); //find the index of the corresponding mother
+              if(mother<0){   //the mother does not exist
+                 printf("AliAnalysisTaskMultCheck::IsTrackInjected - BREAK: Reached primary particle without valid mother\n");
+                 break;
+              }
+              lab = mother;   // change label to the mother   
+              nameGen = AliVertexingHFUtils::GetGenerator(mother,fMCHeader); //change the name of generator to mother
+           }
+           if(!(nameGen.IsWhitespace() || nameGen.Contains("EPOS"))){
+             new ((*fFilteredTracksArray)[n]) AliAODTrack(*track);
+             n++;
+           }
+        }
+     }
+   }else{  //particle level particles
+      AliAODMCParticle* mcParticle = NULL;
+      AliAODMCParticle* initialmcParticle = NULL;
+      AliMCParticleContainer *mcParticles = dynamic_cast<AliMCParticleContainer*>(GetMCParticleContainer(fInputTracksName.Data()));
 
-   AliTrackContainer * tracks = dynamic_cast<AliTrackContainer *>(GetParticleContainer(fInputTracksName.Data()));
-   // Iterable approach (using C++11)  loop over detector level tracks
-   for(auto trackIterator : tracks->accepted_momentum()){
+      Int_t index=0;
 
-      track = dynamic_cast<AliAODTrack *>(trackIterator.second);  // Get the full track
-
-      lab     = TMath::Abs(track->GetLabel());
-      nameGen = AliVertexingHFUtils::GetGenerator(lab,fMCHeader);
-
-      while(nameGen.IsWhitespace()){    //if this particle does not have any generator name execute this loop
-         mcpart = (AliAODMCParticle*) fMCPartArray->At(lab);  //find the corresponding MC particle
-         if(!mcpart){
-            printf("AliAnalysisTaskMultCheck::IsTrackInjected - BREAK: No valid AliAODMCParticle at label %i\n",lab);
-            break;
+      // Iterable approach (using C++11)  loop over detector level mcParticle
+      for(auto trackIterator : mcParticles->all_momentum()){  
+	 initialmcParticle = dynamic_cast<AliAODMCParticle*>(trackIterator.second);  // Get the full track
+         if(initialmcParticle){
+            lab     = index;//TMath::Abs(initialmcParticle->GetLabel());
+            nameGen = AliVertexingHFUtils::GetGenerator(lab,fMCHeader);
+             
+            while(nameGen.IsWhitespace()){    //if this particle does not have any generator name execute this loop
+               mcParticle = (AliAODMCParticle*) fMCPartArray->At(lab);  //find the corresponding MC particle
+               if(!mcParticle){
+                  printf("AliAnalysisTaskMultCheck::IsTrackInjected - BREAK: No valid AliAODMCParticle at label %i\n",lab);
+                  break;
+               }
+              
+               mother = mcParticle->GetMother(); //find the index of the corresponding mother
+               if(mother<0){   //the mother does not exist
+                  printf("AliAnalysisTaskMultCheck::IsTrackInjected - BREAK: Reached primary particle without valid mother\n");
+                  break;
+               }
+               lab = mother;   // change label to the mother   
+               nameGen = AliVertexingHFUtils::GetGenerator(mother,fMCHeader); //change the name of generator to mother
+            }
+           
+            if(!(nameGen.IsWhitespace() || nameGen.Contains("EPOS"))){
+               new ((*fFilteredTracksArray)[n]) AliAODMCParticle(*initialmcParticle);
+               n++;
+            }
          }
-
-         mother = mcpart->GetMother(); //find the index of the corresponding mother
-         if(mother<0){   //the mother does not exist
-            printf("AliAnalysisTaskMultCheck::IsTrackInjected - BREAK: Reached primary particle without valid mother\n");
-            break;
-         }
-
-         lab = mother;   // change label to the mother   
-         nameGen = AliVertexingHFUtils::GetGenerator(mother,fMCHeader); //change the name of generator to mother
+         index++;
       }
-
-      if(!(nameGen.IsWhitespace() || nameGen.Contains("EPOS"))){
-          new ((*fFilteredTracksArray)[n]) AliAODTrack(*track);
-          n++;
-
-      }
-   }
+   }	   
+	   
 
    return kTRUE;
 }

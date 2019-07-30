@@ -225,6 +225,24 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(
   return XiCuts;
 }
 
+AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiFor1530Cuts(
+    bool isMC, bool contribSplitting) {
+  AliFemtoDreamCascadeCuts *XiCuts = new AliFemtoDreamCascadeCuts();
+  XiCuts->SetIsMonteCarlo(isMC);
+  XiCuts->SetContributionSplitting(contribSplitting);
+  XiCuts->SetXiMassRange(1.322, 0.007);
+  XiCuts->SetCutXiDaughterDCA(1.9);
+  XiCuts->SetCutXiMinDistBachToPrimVtx(0.015);
+  XiCuts->SetCutXiCPA(0.981);
+  XiCuts->SetCutXiTransverseRadius(0., 100);
+
+  XiCuts->SetCutv0MaxDaughterDCA(1.4);
+  XiCuts->SetCutv0CPA(0.875);
+  XiCuts->SetCutv0MinDistToPrimVtx(0.015);
+  XiCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+  return XiCuts;
+}
+
 AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::OmegaCuts(
     bool isMC, bool contribSplitting) {
   AliFemtoDreamCascadeCuts *OmegaCuts = new AliFemtoDreamCascadeCuts();
@@ -349,7 +367,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
     }
     if (pass) {
       if (!fMinimalBooking)
-        fHist->FillInvMassPtv0(casc->GetPt(), casc->Getv0Mass());
+        fHist->FillInvMassPtv0(casc->Getv0Pt(), casc->Getv0Mass());
     }
     if (pass && fcutv0Mass) {
       if ((casc->Getv0Mass() < (fv0Mass - fv0Width))

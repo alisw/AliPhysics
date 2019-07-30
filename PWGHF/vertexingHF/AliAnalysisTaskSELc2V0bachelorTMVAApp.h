@@ -35,6 +35,10 @@
 #include "AliVertexingHFUtils.h"
 #include "AliAODRecoCascadeHF.h"
 
+#include <TMVA/Tools.h>
+#include <TMVA/Reader.h>
+#include <TMVA/MethodCuts.h>
+
 /// \class AliAnalysisTaskSELc2V0bachelorTMVAApp
 
 class IClassifierReader;
@@ -94,7 +98,13 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   
   void SetMVReader(IClassifierReader* r) {fBDTReader = r;}
   IClassifierReader* const GetMVReader() {return fBDTReader;}
-
+  void SetTMVAlibName(const char* libName) {fTMVAlibName = libName;}
+  TString GetTMVAlibName() {return fTMVAlibName;}
+  void SetTMVAlibPtBin(const char* libPtBin) {fTMVAlibPtBin = libPtBin;}
+  TString GetTMVAlibPtBin() {return fTMVAlibPtBin;}
+  void SetNamesTMVAVariables(TString names) {fNamesTMVAVar = names;}
+  TString GetNamesTMVAVariables() {return fNamesTMVAVar;}
+  
   /// set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
@@ -114,7 +124,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   void SetCallKFVertexing(Bool_t a) { fCallKFVertexing=a; }
   Bool_t GetCallKFVertexing() { return fCallKFVertexing; }
 
-  void SetKeepingKeepingOnlyHIJINGBkg(Bool_t a) { fKeepingOnlyHIJINGBkg = a;}
+  void SetKeepingOnlyHIJINGBkg(Bool_t a) { fKeepingOnlyHIJINGBkg = a;}
   Bool_t GetKeepingOnlyHIJINGBkg() {return fKeepingOnlyHIJINGBkg;}
 
   void SetKFCutChi2NDF(Float_t a) {fCutKFChi2NDF = a;}
@@ -126,7 +136,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   void SetKFCutDeviationFromVtxV0(Float_t a) {fCutKFDeviationFromVtxV0 = a;}
   Float_t GetKFCutDeviationFromVtxV0() {return fCutKFDeviationFromVtxV0;}
 
-  void SetKeepingKeepingOnlyPYTHIABkg(Bool_t a) { fKeepingOnlyPYTHIABkg = a;}
+  void SetKeepingOnlyPYTHIABkg(Bool_t a) { fKeepingOnlyPYTHIABkg = a;}
   Bool_t GetKeepingOnlyPYTHIABkg() {return fKeepingOnlyPYTHIABkg;}
   
   void SetTriggerMask(ULong64_t c) { fTriggerMask = c;}	
@@ -138,6 +148,38 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
     fHistoMCNch = new TH1F(*h);
   }
     
+  void SetDebugHistograms(Bool_t flag) {fDebugHistograms = flag;}
+  Bool_t GetDebugHistograms() const {return fDebugHistograms;}
+
+  void SetAODMismatchProtection(Int_t opt = 1) {fAODProtection = opt;}
+  Int_t GetAODMismatchProtection() const {return fAODProtection;}
+
+  void SetUsePIDresponseForNsigma(Bool_t flag) {fUsePIDresponseForNsigma = flag;}
+  Bool_t GetUsePIDresponseForNsigma() const {return fUsePIDresponseForNsigma;}
+
+  void SetNVars(Int_t n) {fNVars = n;}
+  Int_t GetNVars() const {return fNVars;}
+
+  void SetTimestampCut(UInt_t value) {fTimestampCut = value;}
+  UInt_t GetTimestampCut() const {return fTimestampCut;}
+
+  void SetTMVAReader(TMVA::Reader* r) {fReader = r;}
+  TMVA::Reader* GetTMVAReader() const {return fReader;}
+
+  void SetNVarsSpectators(Int_t n) {fNVarsSpectators = n;}
+  Int_t GetNVarsSpectators() const {return fNVarsSpectators;}
+
+  void SetNamesTMVAVariablesSpectators(TString names) {fNamesTMVAVarSpectators = names;}
+  TString GetNamesTMVAVariablesSpectators() {return fNamesTMVAVarSpectators;}
+
+  void SetUseXmlWeightsFile(Bool_t flag) {fUseXmlWeightsFile = flag;}
+  Bool_t GetUseXmlWeightsFile() const {return fUseXmlWeightsFile;}
+
+  void SetUseWeightsLibrary(Bool_t flag) {fUseWeightsLibrary = flag;}
+  Bool_t GetUseWeightsLibrary() const {return fUseWeightsLibrary;}
+
+  void SetXmlWeightsFile(TString fileName) {fXmlWeightsFile = fileName;}
+  TString GetXmlWeightsFile() const {return fXmlWeightsFile;}
 
  private:
   
@@ -159,7 +201,6 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TList *fOutput;             //!<! User output1: list of trees
 
   // define the histograms
-  TH1F *fCEvents;                     //!<! Histogram to check selected events
   AliPIDResponse *fPIDResponse;       //!<! PID response object
   AliPIDCombined *fPIDCombined;       //!<! combined PID response object
   Bool_t fIsK0sAnalysis;              /// switch between Lpi and K0sp
@@ -178,6 +219,10 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   TH1F* fHistoCentrality;             //!<! histogram with centrality from AliRDHFCuts
   TH1F* fHistoEvents;                 //!<! histogram with number of events analyzed
+  TH1F* fHistoTracklets_1;            //!<! histogram with number of tracklets in the event in eta [-1, 1]
+  TH2F* fHistoTracklets_1_cent;       //!<! histogram with number of tracklets in the event in eta [-1, 1] vs centrality
+  TH1F* fHistoTracklets_All;          //!<! histogram with number of tracklets in the event in eta [-999, 999]
+  TH2F* fHistoTracklets_All_cent;     //!<! histogram with number of tracklets in the event in eta [-999, 999] vs centrality
   TH1F* fHistoLc;                     //!<! histogram with number of Lc
   TH1F* fHistoLcOnTheFly;             //!<! histogram with number of Lc with on-the-fly V0
   Bool_t fFillOnlySgn;                /// flag to fill only signal (speeding up processing)
@@ -285,12 +330,17 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TF1 *fFuncWeightFONLL5overLHC13d3Lc; //!<! weight function for FONLL vs pPb prod.
   TH1F* fHistoMCNch;                   //!<! histogram with Nch distribution from MC production
  
-  Int_t fNTracklets;                   /// tracklet multiplicity in event
+  Int_t fNTracklets_1;                 /// tracklet multiplicity in event in [-1. 1]
+  Int_t fNTracklets_All;               /// tracklet multiplicity in event without eta cut
   Float_t fCentrality;                 /// centrality
   
   Bool_t fFillTree;                    /// flag to decide whether to fill the sgn and bkg trees
 
-  IClassifierReader *fBDTReader;       /// BDT reader
+  Bool_t fUseWeightsLibrary;           // flag to decide whether to use or not the BDT class
+  IClassifierReader *fBDTReader;       //!<! BDT reader using BDT class
+  TString fTMVAlibName;                /// Name of the library to load to have the TMVA weights
+  TString fTMVAlibPtBin;               /// Pt bin that will be in the library to be loaded for the TMVA
+  TString fNamesTMVAVar;               /// vector of the names of the input variables
   TH2D *fBDTHisto;                     //!<!
   TH2D *fBDTHistoVsMassK0S;            //!<! BDT classifier vs mass (pi+pi-) pairs
   TH2D *fBDTHistoVstImpParBach;        //!<! BDT classifier vs proton d0
@@ -301,12 +351,37 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2D *fBDTHistoVsCosPAK0S;           //!<! BDT classifier vs V0 cosine of pointing angle
   TH2D *fBDTHistoVsSignd0;             //!<! BDT classifier vs V0 proton signed d0
   TH2D *fBDTHistoVsCosThetaStar;       //!<! BDT classifier vs proton emission angle in pK0s pair rest frame
+  TH2D* fBDTHistoVsnSigmaTPCpr;       //!<! BDT classifier vs nSigmaTPCpr
+  TH2D* fBDTHistoVsnSigmaTOFpr;       //!<! BDT classifier vs nSigmaTOFpr
+  TH2D* fBDTHistoVsnSigmaTPCpi;       //!<! BDT classifier vs nSigmaTPCpi
+  TH2D* fBDTHistoVsnSigmaTPCka;       //!<! BDT classifier vs nSigmaTPCka
+  TH2D* fBDTHistoVsBachelorP;       //!<! BDT classifier vs bachelor p
+  TH2D* fBDTHistoVsBachelorTPCP;       //!<! BDT classifier vs bachelor p at TPC wall
   TH2D *fHistoNsigmaTPC;               //!<! 
   TH2D *fHistoNsigmaTOF;               //!<! 
 
+  Bool_t fDebugHistograms;             /// flag to decide whether or not to have extra histograms (useful mainly for debug)
 
+  Int_t fAODProtection;       /// flag to activate protection against AOD-dAOD mismatch.
+                                  /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+
+  Bool_t fUsePIDresponseForNsigma;  /// flag to decide if to take the nSigma from the PIDresponse or from AliAODPidHF
+
+  Int_t fNVars;  /// Number of training variables
+
+  UInt_t fTimestampCut; // cut on timestamp
+
+  Bool_t fUseXmlWeightsFile;                   // flag to decide whether to use or not the xml file
+  TMVA::Reader *fReader;                // TMVA reader using xml file
+  Float_t* fVarsTMVA;                   //[fNVars] // variables to be used by TMVA
+  Int_t fNVarsSpectators;               // number of spectator variables
+  Float_t* fVarsTMVASpectators;         //[fNVarsSpectators] // variables to be used by TMVA
+  TString fNamesTMVAVarSpectators;      // vector of the names of the spectators variables
+  TString fXmlWeightsFile;              // file with TMVA weights
+  TH2D *fBDTHistoTMVA;                  //!<! BDT histo file for the case in which the xml file is used
+  
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 1); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 9); /// class for Lc->p K0
   /// \endcond    
 };
 

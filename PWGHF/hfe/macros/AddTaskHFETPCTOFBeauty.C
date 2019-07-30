@@ -108,18 +108,7 @@ AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t 
 	task->SetEtaCut(EtaMin, EtaMax);
     //-----------------------------------------
     
-    //______________________________________
-    //Particle identification
-    AliHFEpid *pid = task->GetPID();
     
-    //______________________________________
-    //In the case of a simulation
-    if(isMCc)
-    {
-        pid->SetHasMCData(kTRUE);
-        task->SetMCanalysis();
-    }
-    //______________________________________
     
     if(isMCc){
     ///RAA model for B correction
@@ -359,11 +348,26 @@ AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t 
 	}
 	
     
+    //______________________________________
+    //Particle identification
+    AliHFEpid *pid = task->GetPID();
+    
+    //______________________________________
+    //In the case of a simulation
+    if(isMCc)
+    {
+        pid->SetHasMCData(kTRUE);
+        task->SetMCanalysis();
+    }
+    //______________________________________
+    
+    
+    /*
     ///Configure PID
     //_________________________
     //TPC PID
     pid->AddDetector("TPC", 0);				
-    
+
     //_________________________
     ///Configure TPC cut
     //Defaul = -1 to 3 sigmas
@@ -380,11 +384,13 @@ AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t 
     ///TOF PID
     pid->AddDetector("TOF", 1);
     pid->ConfigureTOF(tofPID);
+    */
     
     printf("*************************************\n");
     printf("Configuring standard Task:\n");
     pid->PrintStatus();
     printf("*************************************\n");
+    
     
     return task;
 }

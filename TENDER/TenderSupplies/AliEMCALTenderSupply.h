@@ -199,7 +199,8 @@ public:
   void     SwitchOffUseAutomaticTimeCalibParam()           { fUseAutomaticTimeCalib     = kFALSE ; }
   void     SwitchOffUseAutomaticRecParam()                 { fUseAutomaticRecParam      = kFALSE ; }
 
-  void     SwitchUseRunDepTempCalibRun2(Bool_t doUseTC)    { fUseRunDepTempCalibRun2    = doUseTC; }
+  void     SwitchUseNewRunDepTempCalib(Bool_t doUseTC)     { fUseNewRunDepTempCalib     = doUseTC; }
+  void     SwitchUseMergedBCs(Bool_t doUseMergedBC)     { fDoMergedBCs     = doUseMergedBC; }
 
 private:
 
@@ -278,6 +279,7 @@ private:
   Float_t                fExoticCellFraction;     // good cell if fraction < 1-ecross/ecell
   Float_t                fExoticCellDiffTime;     // if time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
   Float_t                fExoticCellMinAmplitude; // check for exotic only if amplitud is larger than this value
+  Bool_t                 fDoMergedBCs;            // flag whether to load four histos for the time calib or one merged histo
 
   // MC labels
   static const Int_t     fgkTotalCellNumber = 17664 ; // Maximum number of cells in EMCAL/DCAL: (48*24)*(10+4/3.+6*2/3.)
@@ -298,13 +300,13 @@ private:
   // Change to false if experts
   Bool_t                 fUseAutomaticRecalib;       // On by default the check in the OADB of the energy recalibration
   Bool_t                 fUseAutomaticRunDepRecalib; // On by default the check in the OADB of the run dependent energy recalibration
-  Bool_t                 fUseRunDepTempCalibRun2;    // Off by default the check in the OADB of the run dependent temperature calib Run2
+  Bool_t                 fUseNewRunDepTempCalib;     // Off by default the check in the OADB of the new run dependent temperature calib which covers Run1 and Run2
   Bool_t                 fUseAutomaticTimeCalib;     // On by default the check in the OADB of the time recalibration
   Bool_t                 fUseAutomaticRecParam;      // On the auto setting of the rec param
   
   AliEMCALTenderSupply(            const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 21); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 23); // EMCAL tender task
 };
 #endif

@@ -18,8 +18,11 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   AliFemtoDreamTrack();
   virtual ~AliFemtoDreamTrack();
   void SetTrack(AliAODTrack *track, const int multiplicity = -1);
+  void SetTrack(AliVTrack *track, AliVEvent *event,
+                const int multiplicity = -1);
   void SetTrack(AliESDtrack *track, AliMCEvent *mcEvent = nullptr,
-                const int multiplicity = -1, const bool TPCOnlyTrack = true);
+                const int multiplicity = -1, const bool TPCOnlyTrack = true,
+                const bool IsOmegaTrack = false);
   UInt_t GetilterMap() const {
     return fFilterMap;
   }
@@ -72,6 +75,9 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
     return fTPCClsS;
   }
   ;
+  std::vector<bool> GetSharedClusterITS() const {
+    return fSharedClsITSLayer;
+  }
   bool GetSharedClusterITS(int i) const {
     return fSharedClsITSLayer.at(i);
   }
@@ -80,10 +86,15 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
     return fHasSharedClsITSLayer;
   }
   ;
+  bool GetHasSPDHit() const {
+    return (fITSHit.at(0) || fITSHit.at(1)) ? true : false;
+  }
+  ;
   bool GetHasITSHit() const {
     return fHasITSHit;
   }
   ;
+  std::vector<bool> GetITSHits() const { return fITSHit; }
   bool GetITSHit(int i) const {
     return fITSHit.at(i);
   }
@@ -105,12 +116,20 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
     return fstatusTPC;
   }
   ;
+  AliPIDResponse::EDetPidStatus GetstatusITS() const {
+    return fstatusITS;
+  }
+  ;
   float GetdEdxTPC() const {
     return fdEdxTPC;
   }
   ;
   float GetbetaTOF() const {
     return fbetaTOF;
+  }
+  ;
+  float GetnSigmaITS(Int_t i) const {
+    return fnSigmaITS[i];
   }
   ;
   float GetnSigmaTPC(Int_t i) const {
@@ -132,15 +151,20 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   float GetBeta(AliAODTrack *track);
   float GetBeta(AliESDtrack *track);
   bool CheckGlobalTrack(const Int_t TrackID);
+  bool CheckGlobalVTrack(const Int_t TrackID);
   void SetAODTrackingInformation();
-  void ApplyESDtoAODFilter(const bool TPCOnlyTrack=true);
-  void SetESDTrackingInformation(const bool TPCOnlyTrack=true);
+  void SetVInformation(AliVEvent *event);
+  void ApplyESDtoAODFilter(const bool TPCOnlyTrack = true);
+  void SetESDTrackingInformation(const bool TPCOnlyTrack = true);
+  void SetESDTrackingInformationOmega();
   void SetPhiAtRadii(const float bfield);
+  void SetGlobalCoordAtRadii(const float bfield);
   void SetAODPIDInformation();
   void SetESDPIDInformation();
   void SetMCInformation();
   void SetMCInformation(AliMCEvent *mcEvent);
   AliPIDResponse *fPIDResponse;
+  AliPIDResponse::EDetPidStatus fstatusITS;
   AliPIDResponse::EDetPidStatus fstatusTPC;
   AliPIDResponse::EDetPidStatus fstatusTOF;
   UInt_t fFilterMap;
@@ -166,16 +190,20 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   std::vector<bool> fITSHit;
   bool fTOFTiming;
   bool fTPCRefit;
-  float fnSigmaTPC[5];
-  float fnSigmaTOF[5];
+  float fnSigmaITS[6];
+  float fnSigmaTPC[6];
+  float fnSigmaTOF[6];
   ULong_t fESDStatus;
   int fESDnClusterITS;
   int fESDnClusterTPC;
   AliESDtrack *fESDTrack;
   AliESDtrack *fESDTPCOnlyTrack;
   AliESDtrackCuts *fESDTrackCuts;
+  AliVTrack *fVTrack;
+  AliVTrack *fVGlobalTrack;
   AliAODTrack *fAODTrack;
-  AliAODTrack *fAODGlobalTrack;ClassDef(AliFemtoDreamTrack,3)
+  AliAODTrack *fAODGlobalTrack;
+  ClassDef(AliFemtoDreamTrack,5)
 };
 
 #endif /* ALIFEMTODREAMTRACK_H_ */

@@ -18,8 +18,8 @@ class AliSigma0ParticleBase {
   double ComputeRelK(const AliSigma0ParticleBase &part2,
                      bool debug = false) const;
   double ComputeRelKMC(const AliSigma0ParticleBase &part2) const;
-  double ComputePhiStar(const AliVTrack &track, const float magneticField,
-                        const float radius) const;
+  float ComputePhiStar(const AliESDtrack *track, const float magneticField,
+                       const float radius) const;
   void ProcessMCInfo(AliMCParticle *mcParticle, AliMCEvent *mcEvent);
 
   void SetMass(double mass) { fMass = mass; }
@@ -65,6 +65,8 @@ class AliSigma0ParticleBase {
   double GetDCAr() { return fDCAr; }
   double GetDCAz() { return fDCAz; }
   double GetPhiStar(int iRadius) const { return fPhistar[iRadius]; }
+  double GetAveragePhiStar() const { return fAveragePhistar; }
+  const std::vector<float> &GetPhiStar() const { return fPhistar; }
   int GetMCLabel() const { return fMClabel; }
 
  protected:
@@ -89,10 +91,11 @@ class AliSigma0ParticleBase {
   double fDCAr;
   bool fUse;
 
-  double fPhistar[9];
+  std::vector<float> fPhistar;
+  float fAveragePhistar;
 
  private:
-  ClassDef(AliSigma0ParticleBase, 3)
+  ClassDef(AliSigma0ParticleBase, 5)
 };
 
 #endif

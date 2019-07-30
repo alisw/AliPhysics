@@ -146,7 +146,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
     //***************************************//
     
     // Define PID
-    AliHFEpid *pid = task->GetPID();
+    AliHFEpid *pid = (AliHFEpid*) task->GetPID();
     if(useMC) pid->SetHasMCData(kTRUE);
     
     if (usetof){
@@ -186,7 +186,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
     // Configure TOF PID
     if (usetof){
         pid->ConfigureTOF(TOFs);
-        AliHFEpidTOF *tofpid = pid->GetDetPID(AliHFEpid::kTOFpid);
+        AliHFEpidTOF *tofpid = (AliHFEpidTOF*) pid->GetDetPID(AliHFEpid::kTOFpid);
         if (kTOFmis){
             tofpid->SetRejectTOFmismatch();
         }

@@ -22,12 +22,16 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist()
     fEvtVtxX[i] = nullptr;
     fEvtVtxY[i] = nullptr;
     fEvtVtxZ[i] = nullptr;
-    fSPDTrklCls[i] = nullptr;
+    fSPDTrklClsLy0[i] = nullptr;
+    fSPDTrklClsLy1[i] = nullptr;
+    fSPDTrklClsLySum[i] = nullptr;
+    fSPDTrklClsLySum[i] = nullptr;
     fMultDistSPD[i] = nullptr;
     fMultDistV0A[i] = nullptr;
     fMultDistV0C[i] = nullptr;
     fMultDistRef08[i] = nullptr;
     fEvtSpher[i] = nullptr;
+    fEvtSphero[i] = nullptr;
   }
 }
 AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
@@ -35,7 +39,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fEventCutList->SetName("Event Cuts");
   fEventCutList->SetOwner();
 
-  fEvtCounter = new TH1F("EventCounter", "Event Counter", 11, 0, 11);
+  fEvtCounter = new TH1F("EventCounter", "Event Counter", 13, 0, 13);
   fEvtCounter->GetXaxis()->SetBinLabel(1, "Events");
   fEvtCounter->GetXaxis()->SetBinLabel(2, "AliEventCuts");
   fEvtCounter->GetXaxis()->SetBinLabel(3, "Phys. Sel.");
@@ -47,9 +51,12 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fEvtCounter->GetXaxis()->SetBinLabel(9, "V0C Mult Cleanup");
   fEvtCounter->GetXaxis()->SetBinLabel(10, "RefMult08 Cleanup");
   fEvtCounter->GetXaxis()->SetBinLabel(11, "Sphericity");
+  fEvtCounter->GetXaxis()->SetBinLabel(12, "Mult. percentile");
+  fEvtCounter->GetXaxis()->SetBinLabel(13, "Spherocity");
+
   fEventCutList->Add(fEvtCounter);
 
-  fCutConfig = new TProfile("CutConfig", "Cut Config", 20, 0, 20);
+  fCutConfig = new TProfile("CutConfig", "Cut Config", 21, 0, 21);
   fCutConfig->GetXaxis()->SetBinLabel(1, "Min Contrib");
   fCutConfig->GetXaxis()->SetBinLabel(2, "CutZvtx");
   fCutConfig->GetXaxis()->SetBinLabel(3, "Min Zvtx");
@@ -63,28 +70,30 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fCutConfig->GetXaxis()->SetBinLabel(11, "AliEvtCuts");
   fCutConfig->GetXaxis()->SetBinLabel(12, "Low Spher");
   fCutConfig->GetXaxis()->SetBinLabel(13, "Up Spher");
+  fCutConfig->GetXaxis()->SetBinLabel(14, "Mult. percentile");
+  fCutConfig->GetXaxis()->SetBinLabel(15, "Low Sphero");
+  fCutConfig->GetXaxis()->SetBinLabel(16, "Up Sphero");
   fEventCutList->Add(fCutConfig);
 
   fCentVsMultPlots = centVsMultPlot;
   if (fCentVsMultPlots) {
     TString vsV0AName = Form("CentvsV0A");
-    fCentVsV0A = new TH2F(vsV0AName.Data(), vsV0AName.Data(), 100, 0.5, 100,
+    fCentVsV0A = new TH2F(vsV0AName.Data(), vsV0AName.Data(), 200, -0.5, 99.5,
                           300, 0.5, 600.5);
     fEventCutList->Add(fCentVsV0A);
 
     TString vsV0MName = Form("CentvsV0M");
-    fCentVsV0M = new TH2F(vsV0MName.Data(), vsV0MName.Data(), 100, 0.5, 100,
+    fCentVsV0M = new TH2F(vsV0MName.Data(), vsV0MName.Data(), 200, -0.5, 99.5,
                           300, 0.5, 600.5);
     fEventCutList->Add(fCentVsV0M);
 
     TString vsV0CName = Form("CentvsV0C");
-    fCentVsV0C = new TH2F(vsV0CName.Data(), vsV0CName.Data(), 100, 0.5, 100,
+    fCentVsV0C = new TH2F(vsV0CName.Data(), vsV0CName.Data(), 200, -0.5, 99.5,
                           300, 0.5, 600.5);
     fEventCutList->Add(fCentVsV0C);
 
     TString vsV0RefName = Form("CentvsRefMult");
-    fCentVsRefMult = new TH2F(vsV0RefName.Data(), vsV0RefName.Data(), 100, 0.5,
-                              100, 100, 0.5, 200.5);
+    fCentVsRefMult = new TH2F(vsV0RefName.Data(), vsV0RefName.Data(), 200, -0.5, 99.5, 100, 0.5, 200.5);
     fEventCutList->Add(fCentVsRefMult);
   } else {
     fCentVsV0A = 0;
@@ -151,12 +160,32 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
     fMultDistRef08[i]->GetXaxis()->SetTitle("Multiplicity (RefMult08)");
     fEvtCutQA[i]->Add(fMultDistRef08[i]);
 
-    TString SPDtrklClsName = Form("SPDTrackletsVsCluster_%s", sName[i].Data());
-    fSPDTrklCls[i] = new TH2F(SPDtrklClsName.Data(), SPDtrklClsName.Data(), 250,
-                              0, 250, 1000, 0, 1000);
-    fSPDTrklCls[i]->GetXaxis()->SetTitle("SPD Tracklets");
-    fSPDTrklCls[i]->GetYaxis()->SetTitle("SPD Cluster");
-    fEvtCutQA[i]->Add(fSPDTrklCls[i]);
+    TString SPDtrklClsLy0Name = Form("SPDTrackletsVsClusterL0_%s",
+                                     sName[i].Data());
+    fSPDTrklClsLy0[i] = new TH2F(SPDtrklClsLy0Name.Data(),
+                                 SPDtrklClsLy0Name.Data(), 250, 0, 250, 1000, 0,
+                                 1000);
+    fSPDTrklClsLy0[i]->GetXaxis()->SetTitle("SPD Tracklets");
+    fSPDTrklClsLy0[i]->GetYaxis()->SetTitle("SPD Cluster L0");
+    fEvtCutQA[i]->Add(fSPDTrklClsLy0[i]);
+
+    TString SPDtrklClsLy1Name = Form("SPDTrackletsVsClusterL1_%s",
+                                     sName[i].Data());
+    fSPDTrklClsLy1[i] = new TH2F(SPDtrklClsLy1Name.Data(),
+                                 SPDtrklClsLy1Name.Data(), 250, 0, 250, 1000, 0,
+                                 1000);
+    fSPDTrklClsLy1[i]->GetXaxis()->SetTitle("SPD Tracklets");
+    fSPDTrklClsLy1[i]->GetYaxis()->SetTitle("SPD Cluster L1");
+    fEvtCutQA[i]->Add(fSPDTrklClsLy1[i]);
+
+    TString SPDtrklClsSumName = Form("SPDTrackletsVsClusterL01Sum_%s",
+                                     sName[i].Data());
+    fSPDTrklClsLySum[i] = new TH2F(SPDtrklClsSumName.Data(),
+                                   SPDtrklClsSumName.Data(), 250, 0, 250, 1000,
+                                   0, 1000);
+    fSPDTrklClsLySum[i]->GetXaxis()->SetTitle("SPD Tracklets");
+    fSPDTrklClsLySum[i]->GetYaxis()->SetTitle("SPD Cluster Sum (L0+L1)");
+    fEvtCutQA[i]->Add(fSPDTrklClsLySum[i]);
 
     TString SPDvsTrkZVtxName = Form("SPDvsTrackZVtxPos_%s", sName[i].Data());
     fSPDTrackZVtx[i] = new TH2F(SPDvsTrkZVtxName.Data(),
@@ -173,15 +202,21 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
     fSPDTrkZVtxDispl[i]->GetXaxis()->SetTitle("zVtx Position |SPD - Tracks|");
     fEvtCutQA[i]->Add(fSPDTrkZVtxDispl[i]);
 
-    TString BFieldName = Form("MagneticFieldkGauss_%s",sName[i].Data());
-    fBField[i] = new TH1F(BFieldName.Data(),BFieldName.Data(),20,-10,10);
+    TString BFieldName = Form("MagneticFieldkGauss_%s", sName[i].Data());
+    fBField[i] = new TH1F(BFieldName.Data(), BFieldName.Data(), 20, -10, 10);
     fEvtCutQA[i]->Add(fBField[i]);
 
     TString EvtSpherName = Form("Sphericity_%s", sName[i].Data());
     fEvtSpher[i] = new TH1F(EvtSpherName.Data(), EvtSpherName.Data(), 50, 0.,
-                           1.);
+                            1.);
     fEvtSpher[i]->GetXaxis()->SetTitle("Sphericity S_{T}");
     fEvtCutQA[i]->Add(fEvtSpher[i]);
+
+    TString EvtSpheroName = Form("Spherocity_%s", sName[i].Data());
+    fEvtSphero[i] = new TH1F(EvtSpheroName.Data(), EvtSpheroName.Data(), 50, 0.,
+                            1.);
+    fEvtSphero[i]->GetXaxis()->SetTitle("Spherocity S_{0}");
+    fEvtCutQA[i]->Add(fEvtSphero[i]);
 
   }
 }
@@ -201,13 +236,16 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(
     fEvtVtxX[i] = hists.fEvtVtxX[i];
     fEvtVtxY[i] = hists.fEvtVtxY[i];
     fEvtVtxZ[i] = hists.fEvtVtxZ[i];
-    fSPDTrklCls[i] = hists.fSPDTrklCls[i];
+    fSPDTrklClsLy0[i] = hists.fSPDTrklClsLy0[i];
+    fSPDTrklClsLy1[i] = hists.fSPDTrklClsLy1[i];
+    fSPDTrklClsLySum[i] = hists.fSPDTrklClsLySum[i];
     fMultDistSPD[i] = hists.fMultDistSPD[i];
     fMultDistV0A[i] = hists.fMultDistV0A[i];
     fMultDistV0C[i] = hists.fMultDistV0C[i];
     fMultDistRef08[i] = hists.fMultDistRef08[i];
     fBField[i] = hists.fBField[i];
     fEvtSpher[i] = hists.fEvtSpher[i];
+    fEvtSphero[i] = hists.fEvtSphero[i];
   }
 }
 AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
@@ -226,13 +264,16 @@ AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
       this->fEvtVtxX[i] = hists.fEvtVtxX[i];
       this->fEvtVtxY[i] = hists.fEvtVtxY[i];
       this->fEvtVtxZ[i] = hists.fEvtVtxZ[i];
-      this->fSPDTrklCls[i] = hists.fSPDTrklCls[i];
+      this->fSPDTrklClsLy0[i] = hists.fSPDTrklClsLy0[i];
+      this->fSPDTrklClsLy1[i] = hists.fSPDTrklClsLy1[i];
+      this->fSPDTrklClsLySum[i] = hists.fSPDTrklClsLySum[i];
       this->fMultDistSPD[i] = hists.fMultDistSPD[i];
       this->fMultDistV0A[i] = hists.fMultDistV0A[i];
       this->fMultDistV0C[i] = hists.fMultDistV0C[i];
       this->fMultDistRef08[i] = hists.fMultDistRef08[i];
-      this->fBField[i]=hists.fBField[i];
-      this->fEvtSpher[i]=hists.fEvtSpher[i];
+      this->fBField[i] = hists.fBField[i];
+      this->fEvtSpher[i] = hists.fEvtSpher[i];
+      this->fEvtSphero[i] = hists.fEvtSphero[i];
     }
   }
   return *this;

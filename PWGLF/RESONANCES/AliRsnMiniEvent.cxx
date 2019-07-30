@@ -77,7 +77,7 @@ void AliRsnMiniEvent::Clear(Option_t *)
     fTracklets = 0;
     fAngle = 0;
     fQnVector = 0;
-    fLeading = 0;
+    fLeading = -1;
     fRef = 0;
     fRefMC = 0;
 
@@ -121,16 +121,40 @@ AliRsnMiniParticle *AliRsnMiniEvent::GetParticle(Int_t i)
 }
 
 //__________________________________________________________________________________________________
-AliRsnMiniParticle *AliRsnMiniEvent::LeadingParticle()
+AliRsnMiniParticle *AliRsnMiniEvent::LeadingParticle(Bool_t mc)
 {
 //
 // Return the leading particle
 //
 
-   if (fLeading < 0) return 0x0;
+   if (fLeading == -1 ) SelectLeadingParticle(mc);
+   if (fLeading == -2) return 0x0;
    if (fLeading >= fParticles.GetEntriesFast()) return 0x0;
 
    return (AliRsnMiniParticle *)fParticles[fLeading];
+}
+
+
+//_____________________________________________________________________________
+void AliRsnMiniEvent::SelectLeadingParticle(Bool_t mc)
+{
+//
+// Searches for leading particle (particle with maximum Pt in event)
+//
+
+   Double_t ptMax = 0.0;
+   Double_t pt;
+   Int_t i;
+   AliRsnMiniParticle *part = 0x0;
+   fLeading = -2;
+   for (i = 0; i < fParticles.GetEntriesFast(); i++) {
+      part = (AliRsnMiniParticle *)fParticles[i];
+      pt = TMath::Sqrt(TMath::Power(part->Px(mc),2)+TMath::Power(part->Py(mc),2));
+      if (pt > ptMax) {
+         ptMax = pt;
+         fLeading = i;
+      }
+   }
 }
 
 //__________________________________________________________________________________________________

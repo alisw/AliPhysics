@@ -1,6 +1,6 @@
 /***************************************************************************
               fbellini@cern.ch - last modified on 28/11/2013
-//
+//Arvind Khuntia - last modified on 12/06/2019
 //Lauches KStar analysis with rsn mini package
 //Allows basic configuration of pile-up check and event cuts
 //
@@ -31,8 +31,15 @@ enum eventMixConfig { kDisabled = -1,
 
 AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
 (
- Bool_t      useHIST = kTRUE,
- Bool_t      Sp = kFALSE,
+ Int_t       sp_bin=100,
+ Double_t    sp_min=0.0,
+ Double_t    sp_max=1.0,
+ Int_t       m_bin=11,
+ Double_t    m_min=0.0,
+ Double_t    m_max=11.0,
+ Bool_t      useESD = kFALSE,
+ Bool_t      useHIST = kFALSE,
+ Bool_t      Sp = kTRUE,
  Bool_t      isMC = kFALSE,
  Bool_t      isPP = kTRUE,
  TString     outNameSuffix = "tpc2stof3sveto",
@@ -51,7 +58,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
  Bool_t      useMixLS = 0,
  Bool_t      checkReflex = 0,
  AliRsnMiniValue::EType yaxisvar = AliRsnMiniValue::kPt
-)
+ )
 {  
 
   
@@ -116,8 +123,15 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    //task->UseESDTriggerMask(triggerMask); //ESD
    //task->SelectCollisionCandidates(triggerMask); //AOD
-   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->SelectCollisionCandidates(triggerMask); //AOD
 
+   if(useESD)
+     
+     {
+       if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->UseESDTriggerMask(triggerMask); //ESD
+     }
+   else {
+     if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->SelectCollisionCandidates(triggerMask); //AOD
+   }
    
     if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
@@ -220,8 +234,9 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
 
     //-------------------------------Arvind Spherocity QA-------------------------------------------
 
-  if (Sp) AliRsnMiniAnalysisTask::SetComputeSpherocity();
-  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 200,0.,1.5);
+  //  if (Sp) AliRsnMiniAnalysisTask::SetComputeSpherocity();
+  
+  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 500,0.,1.0);
   task->SetEventQAHist("spherocitycent",hsp);//plugs this histogram into the fHASpherocityCent data member
    
    //
@@ -243,7 +258,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPP13TeV_PID_sp.C");
     //gROOT->LoadMacro("ConfigKStarPP13TeV_PID_sp.C");
    
-   if (!ConfigKStarPP13TeV_PID_sp(task,useHIST, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
+    if (!ConfigKStarPP13TeV_PID_sp(task,sp_bin,sp_min,sp_max,m_bin,m_min,m_max,useHIST, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
    
    
    //

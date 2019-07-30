@@ -60,6 +60,7 @@ set(SRCS
   Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityAODRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2pPb.cxx
@@ -68,6 +69,7 @@ set(SRCS
   Cascades/AliAnalysisTaskpANormalizationCheckMC.cxx
   Correlations/AliAnalysisTaskLambdaOverK0sJets.cxx
   Correlations/AliAnalysisTaskV0ChCorrelations.cxx
+  Correlations/AliAnalysisTaskhStrCorr.cxx
   Cascades/AliAnalysisTaskCheckCascadepp.cxx
   Cascades/AliAnalysisTaskCheckPerformanceCascadepp.cxx
   Cascades/lightvertexers/AliLightV0vertexer.cxx
@@ -81,14 +83,17 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskWeakDecayVertexer.cxx
   Cascades/Run2/AliAnalysisTaskStrEffStudy.cxx
   Cascades/Run2/AliAnalysisTaskMCPredictions.cxx
+  Cascades/Run2/AliAnalysisTaskStrangeCascadesDiscrete.cxx
   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Add header only files
-set(HDRS 
+set(HDRS
   ${HDRS}
+  Lifetimes/MiniEvent.h
+  Lifetimes/HyperTriton2Body.h
   Lifetimes/MCparticle.h
   Lifetimes/MiniV0.h
   Lifetimes/Utils.h

@@ -135,7 +135,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     Int_t*                      fMCStackPos;                //[fnGammaCandidates]
     Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
     
-    ClassDef(AliAnalysisTaskConversionQA, 9);
+    ClassDef(AliAnalysisTaskConversionQA, 11);
 };
 
 #endif

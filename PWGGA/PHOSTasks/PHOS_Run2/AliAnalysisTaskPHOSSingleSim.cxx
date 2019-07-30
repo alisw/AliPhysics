@@ -166,6 +166,7 @@ void AliAnalysisTaskPHOSSingleSim::UserExec(Option_t *option)
     AliInfo("event is rejected. IsPHI7 = kFALSE.");
     return;
   }
+  fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);//only to set event in fPHOSTriggerHelper. //do nothing. just return kTRUE/kFALSE
 
   FillHistogramTH1(fOutputContainer,"hVertexZSelectEvent" ,fVertex[2]);
   FillHistogramTH1(fOutputContainer,"hEventSummary",2);//selected event
@@ -438,6 +439,7 @@ void AliAnalysisTaskPHOSSingleSim::FillMgg()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
+    if(IsFrom(ph1->GetPrimary(),TruePt,11)) continue;//reject cluster from dalitz decay
     if(fParticleName.Contains("Eta") && (IsFrom(ph1->GetPrimary(),TruePt,111) || IsFrom(ph1->GetPrimary(),TruePt,211))) continue;//reject cluster from eta->3pi
 
     for(Int_t i2=i1+1;i2<multClust;i2++){
@@ -445,6 +447,7 @@ void AliAnalysisTaskPHOSSingleSim::FillMgg()
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
 
+      if(IsFrom(ph2->GetPrimary(),TruePt,11)) continue;//reject cluster from dalitz decay
       if(fParticleName.Contains("Eta") && (IsFrom(ph2->GetPrimary(),TruePt,111) || IsFrom(ph2->GetPrimary(),TruePt,211))) continue;//reject cluster from eta->3pi
 
       if(fIsPHOSTriggerAnalysis){

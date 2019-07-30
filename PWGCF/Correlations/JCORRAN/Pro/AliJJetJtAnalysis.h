@@ -77,6 +77,7 @@ class AliJJetJtAnalysis{
     void SetInputList(TObjArray * ilist){ fInputList = ilist;}
     void SetTrackOrMCParticle( UInt_t i, int v ){ fTrackOrMCParticle[i] = v; }
     void SetLeadingJets(UInt_t i){fLeadingJets = i;}
+    void SetMaxDeltaRCorr(double maxDeltaR){fMaxDeltaRCorr = maxDeltaR;}
     int  GetTrackOrMCParticle( UInt_t i ){ return fTrackOrMCParticle.at( i ); }
     double  GetConeSize( UInt_t i ){ return fConeSizes.at( i ); }
     //void SetTrackJetMap(std::vector<int> * v){ fTrackJetMap=v;}
@@ -152,6 +153,7 @@ class AliJJetJtAnalysis{
     TClonesArray     fpythiaJets;
     double fJetEtaCut;
     int fLeadingJets;
+    double fMaxDeltaRCorr;
     TRandom3 *frandom; // comment me
 
     TVector  *fJetTriggPtBorders; ///< Jet pT bin borders
@@ -187,6 +189,10 @@ class AliJJetJtAnalysis{
     TVector *fConstPt; ///< Store constituent jT values
     TVector *fConstLabels;
     TVector *fJetPt; ///< Store jet pT values
+    TVector *fLeadJetPhi; ///< Store phi of leading jet
+    TVector *fLeadJetEta; ///< Store eta of leading jet
+    TVector *fSubLeadJetPhi; ///< Store phi of subleading jet
+    TVector *fSubLeadJetEta; ///< Store eta of subleading jet
     TVector *fDiJetMjj; ///< Store di-jet invariant mass values
     TVector *fDiJetMjjSubtr; ///< Store di-jet bg-subtracted invariant mass values
     TVector *fTrackFound; ///< Keep track of which tracks were matched with MC tracks

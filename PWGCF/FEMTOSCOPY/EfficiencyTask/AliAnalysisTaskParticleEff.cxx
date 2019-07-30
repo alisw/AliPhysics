@@ -44,8 +44,8 @@ double fV1[3];
 
 //_______________________________________________________
 
-AliAnalysisTaskParticleEff::AliAnalysisTaskParticleEff(const Char_t *partName) :
-  AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fEtaLambda(0),fPtLambda(0), fEtaAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fEtaXim(0),fPtXim(0), fEtaXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kRefMult),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
+AliAnalysisTaskParticleEff::AliAnalysisTaskParticleEff(TString name, int pidMethod, int filterbit) :
+  AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fEtaLambda(0),fPtLambda(0), fEtaAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fEtaXim(0),fPtXim(0), fEtaXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kNSigma),  fEstEventMult(kRefMult),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 {
   for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
     for(Int_t chg=0;chg<2;chg++){
@@ -82,7 +82,9 @@ AliAnalysisTaskParticleEff::AliAnalysisTaskParticleEff(const Char_t *partName) :
   /*fTrackCuts =  AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     if( !fTrackCuts ) return;
     fTrackCuts->SetMinNClustersTPC(70);*/
-
+  
+  if(pidMethod!=-1) SetPidMethod(pidMethod);
+  SetFB(filterbit);
 
 
 
@@ -820,6 +822,7 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
   AliAODEvent *fAOD = aodH->GetEvent();
   
 
+ // std::cout<<GetPidMethod()<<std::endl;
 
   /***Get Event****/
   //AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
@@ -1200,9 +1203,9 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
     fHistQAPIDFail[4][0][charge]->Fill(nSigmaTPCPi,nSigmaTOFPi);
 
 
-    bool isPionNsigma = 0;
-    bool isKaonNsigma = 0;
-    bool isProtonNsigma  = 0;
+    bool isPionNsigma = false;
+    bool isKaonNsigma = false;
+    bool isProtonNsigma  = false;
 
     if(fPidMethod==kNSigma){
     //******** With double counting *******************
@@ -1213,27 +1216,26 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
     else if(fPidMethod==kNSigmaNoDoubleCounting){
       //******** Without double counting *******************
       double nSigmaPIDPi = 0, nSigmaPIDK = 0, nSigmaPIDP = 0;
-      nSigmaPIDPi = IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]);
-      nSigmaPIDK = IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]);
-      nSigmaPIDP = IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]);
+
       if(track->Pt()<0.5){
 	nSigmaPIDPi = abs(nSigmaTPCPi);
 	nSigmaPIDK  = abs(nSigmaTPCK);
 	nSigmaPIDP  = abs(nSigmaTPCP);
       }
       else{
-	nSigmaPIDPi = TMath::Hypot(nSigmaTOFPi, nSigmaTPCPi);
-	nSigmaPIDK= TMath::Hypot(nSigmaTOFK, nSigmaTPCK);
-	nSigmaPIDP= TMath::Hypot(nSigmaTOFP, nSigmaTPCP);
+	nSigmaPIDPi = TMath::Hypot(nSigmaTPCPi,nSigmaTOFPi);
+	nSigmaPIDK= TMath::Hypot(nSigmaTPCK,nSigmaTOFK);
+	nSigmaPIDP= TMath::Hypot(nSigmaTPCP,nSigmaTOFP);
       }
+      
       if(nSigmaPIDPi<nSigmaPIDK && nSigmaPIDPi<nSigmaPIDP){
-	isPionNsigma = nSigmaPIDPi;
+	isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
       }
       else if(nSigmaPIDK<nSigmaPIDPi && nSigmaPIDK<nSigmaPIDP){
-	isKaonNsigma = nSigmaPIDK;
+	isKaonNsigma = (IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
       }
       else if(nSigmaPIDP<nSigmaPIDPi && nSigmaPIDP<nSigmaPIDK){
-	isProtonNsigma = nSigmaPIDP;
+	isProtonNsigma = (IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
       }
     }
     else if(fPidMethod==kExclusivePID){
@@ -2071,6 +2073,27 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
 //{}
 
 
+AliAnalysisTaskParticleEff & AliAnalysisTaskParticleEff::operator=(const AliAnalysisTaskParticleEff &copy)
+{
+
+   if (this == &copy)
+    return *this;
+   
+  centrality = copy.centrality;
+  fPidMethod = copy.fPidMethod;
+  fFB = copy.fFB;
+  fEstEventMult = copy.fEstEventMult;
+  fIfXiAnalysis = copy.fIfXiAnalysis;
+  
+   return *this;
+}
+
+AliAnalysisTaskParticleEff::AliAnalysisTaskParticleEff(const AliAnalysisTaskParticleEff &copy)
+{
+  fPidMethod = copy.fPidMethod;
+  fFB = copy.fFB;
+ 
+}
 
 void AliAnalysisTaskParticleEff::AnalyseCascades(int fcent, AliAODEvent* aodEvent, TClonesArray  *arrayMC)
 {
@@ -2602,6 +2625,27 @@ void AliAnalysisTaskParticleEff::SetPidMethod(PidMethod method)
 {
   fPidMethod = method;
 }
+
+int AliAnalysisTaskParticleEff::GetPidMethod()
+{
+  return (int)fPidMethod;
+}
+
+void AliAnalysisTaskParticleEff::SetPidMethod(int method)
+{
+  switch(method){
+  case 0: fPidMethod=kNSigma;
+    break;
+  case 1: fPidMethod=kNSigmaNoDoubleCounting;
+    break;
+  case 2: fPidMethod=kExclusivePID;
+    break;
+  case 3: fPidMethod=kExclusivePIDDiffRejection;
+    break;
+  }
+
+}
+
 
 void AliAnalysisTaskParticleEff::SetMultMethod(EventMult method)
 {

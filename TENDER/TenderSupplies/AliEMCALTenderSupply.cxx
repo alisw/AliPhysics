@@ -102,13 +102,14 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
   ,fExoticCellFraction(-1)
   ,fExoticCellDiffTime(-1)
   ,fExoticCellMinAmplitude(-1)
+  ,fDoMergedBCs(kFALSE)
   ,fSetCellMCLabelFromCluster(0)
   ,fSetCellMCLabelFromEdepFrac(0)
   ,fTempClusterArr(0)
   ,fRemapMCLabelForAODs(0)
   ,fUseAutomaticRecalib(1)
   ,fUseAutomaticRunDepRecalib(1)
-  ,fUseRunDepTempCalibRun2(0)
+  ,fUseNewRunDepTempCalib(0)
   ,fUseAutomaticTimeCalib(1)
   ,fUseAutomaticRecParam(1)
 {
@@ -176,13 +177,14 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
   ,fExoticCellFraction(-1)
   ,fExoticCellDiffTime(-1)
   ,fExoticCellMinAmplitude(-1)
+  ,fDoMergedBCs(kFALSE)
   ,fSetCellMCLabelFromCluster(0)
   ,fSetCellMCLabelFromEdepFrac(0)
   ,fTempClusterArr(0)
   ,fRemapMCLabelForAODs(0)
   ,fUseAutomaticRecalib(1)
   ,fUseAutomaticRunDepRecalib(1)
-  ,fUseRunDepTempCalibRun2(0)
+  ,fUseNewRunDepTempCalib(0)
   ,fUseAutomaticTimeCalib(1)
   ,fUseAutomaticRecParam(1)
 {
@@ -250,13 +252,14 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *
   ,fExoticCellFraction(-1)
   ,fExoticCellDiffTime(-1)
   ,fExoticCellMinAmplitude(-1)
+  ,fDoMergedBCs(kFALSE)
   ,fSetCellMCLabelFromCluster(0)
   ,fSetCellMCLabelFromEdepFrac(0)
   ,fTempClusterArr(0)
   ,fRemapMCLabelForAODs(0)
   ,fUseAutomaticRecalib(1)
   ,fUseAutomaticRunDepRecalib(1)
-  ,fUseRunDepTempCalibRun2(0)
+  ,fUseNewRunDepTempCalib(0)
   ,fUseAutomaticTimeCalib(1)
   ,fUseAutomaticRecParam(1)
 {
@@ -426,6 +429,10 @@ void AliEMCALTenderSupply::Init()
   // init geometry if requested
   if (fEMCALGeoName.Length()>0) 
     fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName) ;
+
+  // Use one histogram for all BCs
+  if (fDoMergedBCs)
+    fEMCALRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
 
   // digits array
   fDigitsArr       = new TClonesArray("AliEMCALDigit",1000);
@@ -1202,9 +1209,7 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
   // opening the OADB container
   // 
   // For more information see https://alice.its.cern.ch/jira/browse/EMCAL-135
-  if(event->GetRunNumber() > 197692){
-    if(!fUseRunDepTempCalibRun2)
-      return 0;
+  if(fUseNewRunDepTempCalib){
 
     if (fDebugLevel>0)
       AliInfo("Initialising Run2 temperature recalibration factors");
@@ -1333,6 +1338,10 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
 
     // Run1 treatment with old calibration
   } else {
+    if(event->GetRunNumber() > 197692){
+      AliInfo("Temperature calibration could not be loaded. Please use useNewRWTempCalib = kTRUE in the AddTaskEMCALTender for Run2 data!");
+      return 0;
+    }
 
     if (fDebugLevel>0)
       AliInfo("Initialising Run1 recalibration factors");
@@ -1509,29 +1518,45 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
 
   if (fDebugLevel>0) arrayBCpass->Print();
 
-  for(Int_t i = 0; i < 4; i++)
-  {
-    TH1F *h = fEMCALRecoUtils->GetEMCALChannelTimeRecalibrationFactors(i);
+  if(!fDoMergedBCs){
+    for(Int_t i = 0; i < 4; i++)
+    {
+      TH1F *h = (TH1F*)fEMCALRecoUtils->GetEMCALChannelTimeRecalibrationFactors(i);
+      if (h)
+        delete h;
+    
+      h = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvBC%d",i));
+
+      if (!h)
+      {
+        AliError(Form("Can not get hAllTimeAvBC%d",i));
+        continue;
+      }
+   
+      // Shift parameters for bc0 and bc1 in this pass
+      if ( fFilepass=="spc_calo" && (i==0 || i==1) ) 
+      {
+        for(Int_t icell = 0; icell < h->GetNbinsX(); icell++) 
+          h->SetBinContent(icell,h->GetBinContent(icell)-100);
+      }
+    
+      h->SetDirectory(0);
+      fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
+    }
+  }else{
+
+    TH1S *h = (TH1S*)fEMCALRecoUtils->GetEMCALChannelTimeRecalibrationFactors(0);
     if (h)
       delete h;
     
-    h = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvBC%d",i));
+    h = (TH1S*)arrayBCpass->FindObject("hAllTimeAv"); //only HG cells
 
     if (!h)
-    {
-      AliError(Form("Can not get hAllTimeAvBC%d",i));
-      continue;
-    }
-   
-    // Shift parameters for bc0 and bc1 in this pass
-    if ( fFilepass=="spc_calo" && (i==0 || i==1) ) 
-    {
-      for(Int_t icell = 0; icell < h->GetNbinsX(); icell++) 
-        h->SetBinContent(icell,h->GetBinContent(icell)-100);
-    }
+      AliError("Can not get hAllTimeAv");
     
     h->SetDirectory(0);
-    fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
+    fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(0,h);
+
   }
   
   delete contBC;
@@ -2061,8 +2086,7 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     if (parentMult > 0)
     {
       c->SetLabel(parentList, parentMult);
-      if(fSetCellMCLabelFromEdepFrac)
-        c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
     }
     
     //

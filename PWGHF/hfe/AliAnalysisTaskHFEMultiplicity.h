@@ -95,6 +95,10 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
     			}
 
   void 			SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;};
+  void        		Setzvtxcut(Bool_t zvtxcut){fzvtxcut=zvtxcut;};
+  void                  SetzvtxQA(Bool_t zvtxQA){fzvtxQA=zvtxQA;};
+    
+    
   void    		SwitchPi0EtaWeightCalc(Bool_t fSwitch) {fCalculateWeight = fSwitch;};
 
   void 			SetNcontVCut(Int_t NcontV){fCutNcontV=NcontV;}
@@ -205,11 +209,8 @@ private:
   TH1F*			fClusPhi;//! Cluster Phi
   TH1F*			fClusEta;//! Cluster Eta
   TH2F*			fClusEtaPhi;//! Cluster Eta Phi
-  TH1F*			fNCells;//! Number of cells in a cluster
   TH1F*			fClusE;//! Cluster Energy
   TH1F*			fClusT;//! Cluster Time
-  TH1F*			fCellE;//! Cell Energy
-  TH1F*			fCellT;//! Cell Time
   TH1F*			fVtxZ;//! Vertex z
   TH1F*			fVtxX;//! Vertex x
   TH1F*			fVtxY;//! Vertex y
@@ -258,6 +259,9 @@ private:
   TH1F*                	fRecoEtaULSeEmbWeightTrkPt;//!
 
   Bool_t 		fReadMC;    //flag for access to MC
+  Bool_t        fzvtxcut;    //flag for access to MC
+  Bool_t        fzvtxQA;    //flag for access to MC
+   
   Bool_t                fIsFrmEmbPi0;//!
   Bool_t                fIsFrmEmbEta;//!
   Int_t                 ftype;//!
@@ -284,21 +288,11 @@ private:
   TH1F*                	fNonHFewPIDTrkPt;//!
   TH1F*                	fNonHFeEmbwPIDTrkPt;//!
   TH1F*                	fNonHFeEmbWeightwPIDTrkPt;//!
-  TH1F*                	fNonHFeEmbWeightTrkPt_121_300;//!
-  TH1F*                	fNonHFeEmbWeightTrkPt_95_121;//!
-  TH1F*                	fNonHFeEmbWeightTrkPt_55_95;//!
-  TH1F*                	fNonHFeEmbWeightTrkPt_38_55;//!
-  TH1F*                	fNonHFeEmbWeightTrkPt_0_38;//!
   TH1F*                	fPi0eEmbWeightwPIDTrkPt;//!
   TH1F*                	fEtaeEmbWeightwPIDTrkPt;//!
   TH1F*                	fRecoNonHFeTrkPt;//!
   TH1F*                	fRecoNonHFeEmbTrkPt;//!
   TH1F*                	fRecoNonHFeEmbWeightTrkPt;//!
-  TH1F*                	fRecoNonHFeEmbWeightTrkPt_121_300;//!
-  TH1F*                	fRecoNonHFeEmbWeightTrkPt_95_121;//!
-  TH1F*                	fRecoNonHFeEmbWeightTrkPt_55_95;//!
-  TH1F*                	fRecoNonHFeEmbWeightTrkPt_38_55;//!
-  TH1F*                	fRecoNonHFeEmbWeightTrkPt_0_38;//!
   TH1F*                	fRecoPi0eEmbWeightTrkPt;//!
   TH1F*                	fRecoEtaeEmbWeightTrkPt;//!
 

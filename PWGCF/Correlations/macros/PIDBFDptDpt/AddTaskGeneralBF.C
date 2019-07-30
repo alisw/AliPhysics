@@ -28,7 +28,6 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
- double zMin                    = -6.,  // |zMin| should = zMax due to the design of the code
  double zMax                    =  6.,  // set vertexZ cut
  double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
  int    trackFilterBit          =  1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
@@ -56,6 +55,8 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
  double ptMax                   =  3.0, // pt range upper limit for histos; NOT pt cut!!!
  double ptWidthBin              =  0.1, // pt bin width in histos
  int nBinsPhi                   =  36,  // 36 is default value
+ bool Lambda_Cut                =  1,   // 0: No Lambda_Cut       1: Lambda_Cut
+ bool Lambda_Sideband_Cut_left  =  1,   // 0: No Lambda_Sideband_Cut_left       1: Lambda_Sideband_Cut_left
  const char* taskname           = "ChPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
 
@@ -86,7 +87,7 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
   double dcaXYMin_1             = -dcaXYMax_1;
   double dcaZMin_2              = -dcaZMax_2;
   double dcaXYMin_2             = -dcaXYMax_2;
-  
+  double zMin                   = -zMax;  // |zMin| should = zMax due to the design of the code
   
   if      ( System == "PbPb" )                { centralityMethod = 4; trigger = kFALSE; }
   else if ( System == "PbPb_2015_kTRUE" )     { centralityMethod = 4; trigger = kTRUE;  }
@@ -281,6 +282,21 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
   { minCentrality[0] = 0;       maxCentrality[0]  = 20.;
     minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
     minCentrality[2] = 40.;     maxCentrality[2]  = 90.; }
+  else if ( CentralityGroup == 34 )
+  { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+    minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+    minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+    minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+    minCentrality[4] = 40.;     maxCentrality[4]  = 50.;
+    minCentrality[5] = 50.;     maxCentrality[5]  = 60.;
+    minCentrality[6] = 60.;     maxCentrality[6]  = 90.; }
+  else if ( CentralityGroup == 35 )
+  { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+    minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+    minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+    minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+    minCentrality[4] = 40.;     maxCentrality[4]  = 60.;
+    minCentrality[5] = 60.;     maxCentrality[5]  = 90.; }
   else    return 0;
   
   double dedxMin                =  0.0;
@@ -421,6 +437,8 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     task->SetSinglesOnly(         singlesOnly     );
     task->SetPIDparticle(         pidparticle     );
     task->SetUse_pT_cut(          Use_PT_Cut      );
+    task->SetVetoLambdaCut(        Lambda_Cut     );
+    task->SetVetoLambdaSidebandLeft( Lambda_Sideband_Cut_left );
     task->SetIfContaminationInMC(   PurePIDinMC   );
     task->SetUseWeights(          useWeights      );
     task->SetUseRapidity(         useRapidity     );

@@ -45,7 +45,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   std::vector<Double_t> GetVectorJetPz()  {return fVectorJetPz;}
   std::vector<Double_t> GetVectorJetEta() {return fVectorJetEta;}
   std::vector<Double_t> GetVectorJetPhi() {return fVectorJetPhi;}
-  std::vector<Double_t> GetVectorJetR()   {return fVectorJetR;}
+  std::vector<Double_t> GetVectorJetArea() {return fVectorJetR;}
 
   Double_t GetTrueNJets() {return fTrueNJets;}
   std::vector<Double_t> GetTrueVectorJetPt()  {return fTrueVectorJetPt;}
@@ -54,7 +54,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   std::vector<Double_t> GetTrueVectorJetPz()  {return fTrueVectorJetPz;}
   std::vector<Double_t> GetTrueVectorJetEta() {return fTrueVectorJetEta;}
   std::vector<Double_t> GetTrueVectorJetPhi() {return fTrueVectorJetPhi;}
-  std::vector<Double_t> GetTrueVectorJetR()   {return fTrueVectorJetR;}
+  std::vector<Double_t> GetTrueVectorJetArea()   {return fTrueVectorJetR;}
 
   Double_t Get_Jet_Radius(){
       AliJetContainer* jetCont = 0;
@@ -67,36 +67,36 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
  }
 
  protected:
-  void                        ExecOnce()                                        ;
-  Bool_t                      FillHistograms()                                  ;
-  Bool_t                      Run()                                             ;
+  void                        ExecOnce();
+  Bool_t                      FillHistograms();
+  Bool_t                      Run();
 
-  void                        DoJetLoop()                                       ;
+  void                        DoJetLoop();
 
-  Double_t                    fNJets                                            ;
-  std::vector<Double_t>            fVectorJetPt                                      ;
-  std::vector<Double_t>            fVectorJetPx                                      ;
-  std::vector<Double_t>            fVectorJetPy                                      ;
-  std::vector<Double_t>            fVectorJetPz                                      ;
-  std::vector<Double_t>            fVectorJetEta                                     ;
-  std::vector<Double_t>            fVectorJetPhi                                     ;
-  std::vector<Double_t>            fVectorJetR                                       ;
+  Double_t                    fNJets;                          // Number of reconstructed jets
+  std::vector<Double_t>       fVectorJetPt;                    // Vector for the pt of the reconstructed jets
+  std::vector<Double_t>       fVectorJetPx;                    // Vector for the px of the reconstructed jets
+  std::vector<Double_t>       fVectorJetPy;                    // Vector for the py of the reconstructed jets
+  std::vector<Double_t>       fVectorJetPz;                    // Vector for the pz of the reconstructed jets
+  std::vector<Double_t>       fVectorJetEta;                   // Vector for the eta of the reconstructed jets
+  std::vector<Double_t>       fVectorJetPhi;                   // Vector for the phi of the reconstructed jets
+  std::vector<Double_t>       fVectorJetR;                     // Vector for the radius of the reconstructed jets
 
-  Double_t                    fTrueNJets                                        ;
-  std::vector<Double_t>            fTrueVectorJetPt                                  ;
-  std::vector<Double_t>            fTrueVectorJetPx                                  ;
-  std::vector<Double_t>            fTrueVectorJetPy                                  ;
-  std::vector<Double_t>            fTrueVectorJetPz                                  ;
-  std::vector<Double_t>            fTrueVectorJetEta                                 ;
-  std::vector<Double_t>            fTrueVectorJetPhi                                 ;
-  std::vector<Double_t>            fTrueVectorJetR                                   ;
+  Double_t                    fTrueNJets;                      // Number of true jets
+  std::vector<Double_t>       fTrueVectorJetPt;                // Vector for the pt of the true jets
+  std::vector<Double_t>       fTrueVectorJetPx;                // Vector for the px of the true jets
+  std::vector<Double_t>       fTrueVectorJetPy;                // Vector for the py of the true jets
+  std::vector<Double_t>       fTrueVectorJetPz;                // Vector for the pz of the true jets
+  std::vector<Double_t>       fTrueVectorJetEta;               // Vector for the eta of the true jets
+  std::vector<Double_t>       fTrueVectorJetPhi;               // Vector for the phi of the true jets
+  std::vector<Double_t>       fTrueVectorJetR;                 // Vector for the radius of the true jets
 
  private:
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&)           ;
   AliAnalysisTaskConvJet &operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 4);
+  ClassDef(AliAnalysisTaskConvJet, 11);
   /// \endcond
 };
 #endif

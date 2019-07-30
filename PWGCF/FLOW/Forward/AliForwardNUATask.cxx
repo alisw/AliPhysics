@@ -14,17 +14,19 @@
 #include <TInterpreter.h>
 #include <TList.h>
 #include <THn.h>
-
+#include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
 #include "AliLog.h"
 #include "AliForwardNUATask.h"
 #include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
-
+#include "AliForwardFlowRun2Task.h"
+#include "TObjectTable.h"
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
 
-#include "AliForwardUtil.h"
+#include "AliForwardFlowUtil.h"
 
 #include "AliVVZERO.h"
 #include "AliAODVertex.h"
@@ -46,7 +48,7 @@
 using namespace std;
 ClassImp(AliForwardNUATask)
 #if 0
-; // For emacs 
+; // For emacs
 #endif
 
 //_____________________________________________________________________
@@ -54,11 +56,15 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
   fAOD(0),           // input event
   fOutputList(0),    // output list
   fEventList(0),
+  centralDist(),
+  refDist(),
+  forwardDist(),
+  nua_cen(),
+  nua_fmd(),
+  dNdeta(),
+  ev_val(),
   fSettings(),
-  fEventCuts(),
-  fMultTOFLowCut(),
-  fMultTOFHighCut(),
-  fMultCentLowCut()
+  fUtil()
   {
   //
   //  Default constructor
@@ -70,52 +76,59 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
   fAOD(0),           // input event
   fOutputList(0),
   fEventList(0),
+  centralDist(),
+  refDist(),
+  forwardDist(),
+  nua_cen(),
+  nua_fmd(),
+  dNdeta(),
+  ev_val(),
   fSettings(),
-  fEventCuts(),
-  fMultTOFLowCut(),
-  fMultTOFHighCut(),
-  fMultCentLowCut()
+  fUtil()
   {
-  // 
+  //
   //  Constructor
   //
   //  Parameters:
   //   name: Name of task
   //
-    DefineOutput(1, TList::Class());
+
+
+  DefineInput(1, AliForwardTaskValidation::Class());
+  DefineOutput(1, TList::Class());
   }
 
 //_____________________________________________________________________
   void AliForwardNUATask::UserCreateOutputObjects()
   {
+
   //
   //  Create output objects
   //
     fOutputList = new TList();          // the final output list
-
     fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
-    
-
-    //..adding QA plots from AliEventCuts class
-  fEventCuts.AddQAplotsToList(fOutputList);
 
     fEventList = new TList();
 
-    fEventList->Add(new TH1D("Centrality","Centrality",100,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
-    fEventList->Add(new TH2F("hOutliers","Maximum #sigma from mean N_{ch} pr. bin", 
-     20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram 
-    fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
-    fEventList->Add(new TH2D("hybrid","hybrid",200,-4.0,6.0, 200, 0, 2*TMath::Pi()));
-
-
-
     fEventList->SetName("EventInfo");
 
-    fOutputList->Add(new TH3F("NUAforward","NUAforward", 200, -4.0, 6.0, 20, 0., 2*TMath::Pi(),20,-10,10));
-    fOutputList->Add(new TH3F("NUAhist","NUAhist", 200, -4.0, 6.0, 20, 0., 2*TMath::Pi(),20,-10,10));
-    //fOutputList->Add(fEventList);
-    fOutputList->Add(new TH3F("NUAcentral","NUAcentral", 400, -1.5, 1.5, 400, 0., 2*TMath::Pi(),20,-10,10));
+    Int_t   centralEtaBins = (fSettings.useITS ? 200 : 400);
+    Int_t   centralPhiBins = (fSettings.useITS ? 20 : 400);
+    Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.5);
+    Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.5);
+
+    Int_t forwardBinsEta = (fSettings.use_primaries_fwd ? 200 : 200);
+    Int_t forwardBinsPhi = (fSettings.use_primaries_fwd ? 20 : 20);
+
+    nua_cen = new TH3D("NUA_cen","NUA_cen", centralEtaBins, centralEtaMin, centralEtaMax, centralPhiBins, 0., 2*TMath::Pi(),fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge);
+    nua_fmd = new TH3D("NUA_fwd","NUA_fwd", forwardBinsEta, -4.0, 6.0, forwardBinsPhi, 0., 2*TMath::Pi(),fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge);
+    fOutputList->Add(nua_fmd);
+
+    fOutputList->Add(nua_cen);
+
+    dNdeta = new TH1F("dNdeta","dNdeta",100 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge);
+    fOutputList->Add(dNdeta);
     fOutputList->Add(fEventList);
 
     PostData(1, fOutputList);
@@ -123,192 +136,201 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
 
 
 //_____________________________________________________________________
-void AliForwardNUATask::UserExec(Option_t */*option*/)
+void AliForwardNUATask::UserExec(Option_t *)
 {
+
+
+  //gObjectTable->Print();
+
   //
   //  Analyses the event with use of the helper class AliForwardQCumulantRun2
   //
   //  Parameters:
   //   option: Not used
   //
-
-  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  
-  //..check if I have AOD
-  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  if(!fAOD){
-    Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
+  // Get the event validation object
+  ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
+  if (!ev_val->IsValidEvent()){
+     PostData(1, this->fOutputList);
     return;
   }
-  
-  //..AliEventCuts selection
-  if(!fEventCuts.AcceptEvent(fInputEvent)) {
-    PostData(1, fOutputList);
-    return;
-  }  
+  if (!fSettings.esd) {
+    fUtil.fAODevent =  dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!fUtil.fAODevent) throw std::runtime_error("Not AOD as expected");
+  }
 
-  //..get variables for additional event selection cuts (from Alex)
-  float v0Centr = 0;
+  fUtil.fevent = fInputEvent;
+  fUtil.fSettings = fSettings;
+  if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
 
+  Int_t   centralEtaBins = (fSettings.useITS ? 200 : 400);
+  Int_t   centralPhiBins = (fSettings.useITS ? 20 : 400);
+  Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.5);
+  Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.5);
 
-  AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
+  TH2D centralDist_tmp = TH2D("c","",centralEtaBins,centralEtaMin,centralEtaMax,centralPhiBins,0,2*TMath::Pi());
+  centralDist_tmp.SetDirectory(0);
+  TH2D refDist_tmp = TH2D("c","",centralEtaBins,centralEtaMin,centralEtaMax,centralPhiBins,0,2*TMath::Pi());
+  refDist_tmp.SetDirectory(0);
 
-  // Get detector objects
-  AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
+  TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
+  TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
+  forwardTrRef.SetDirectory(0);
+  forwardPrim.SetDirectory(0);
+  forwardDist = (fSettings.use_primaries_fwd ? &forwardPrim : &forwardTrRef);
+  forwardDist->SetDirectory(0);
 
-  //AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(fAOD->FindListObject("CentralClusters")); // only exists if created by user from ESDs
-  TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-4.0,6.0,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
+  centralDist = &centralDist_tmp;
+  centralDist->SetDirectory(0);
+  refDist = &refDist_tmp;
+  refDist->SetDirectory(0);
 
-  TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
-  TH3F* nuahist = static_cast<TH3F*>(fOutputList->FindObject("NUAhist"));
-  TH3F* nuaforward = static_cast<TH3F*>(fOutputList->FindObject("NUAforward"));
-  TH3F* nuacentral = static_cast<TH3F*>(fOutputList->FindObject("NUAcentral"));
-  TH2F* fOutliers = static_cast<TH2F*>(eventList->FindObject("hOutliers"));
-  TH1D* fFMDHits = static_cast<TH1D*>(eventList->FindObject("FMDHits"));
-  TH2D* fHybrid = static_cast<TH2D*>(eventList->FindObject("hybrid"));
-
-  Int_t  iTracks(fAOD->GetNumberOfTracks());
-
-  double cent = v0Centr;
-  //const AliAODTracklets* spdmult = fAOD->GetMultiplicity();
-
-  TH2D& dNdetadphi = aodfmult->GetHistogram(); // also known as dNdetadphi
-  AliAODVertex* aodVtx = fAOD->GetPrimaryVertex();
-
-
-  //AliAODTracklets* aodTracklets = fAOD->GetTracklets();
-  //Int_t noTracklets = aodTracklets->GetNumberOfTracklets();
-  
- 
-
-  bool useEvent = kTRUE;
-
-  if (iTracks < 10) useEvent = kFALSE;
+  fUtil.dodNdeta = kTRUE;
+  fUtil.dNdeta = dNdeta;
+  fUtil.FillData(refDist,centralDist,forwardDist);
 
 
-  Int_t nBadBins = 0;
-  //Double_t limit = 9999.;
-  Int_t phibins = dNdetadphi.GetNbinsY();
-  TString detType = "forward";
-  Double_t totalFMDpar = 0;
-
-  for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
-  
-    Double_t acceptance = 1.;
-    Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
-    Double_t runAvg = 0;
-    Double_t avgSqr = 0;
-    Double_t max = 0;
-    Int_t nInAvg = 0;
-
-    if (fabs(eta) > 1.7 && detType == "forward"){
-      acceptance = dNdetadphi.GetBinContent(etaBin, kphiAcceptanceBin);
-      if (acceptance == 0 || acceptance > 2.0) continue;
+  if (fUtil.dodNdeta){
+    for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
+      for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsX(); phiBin++) {
+        dNdeta->Fill(centralDist->GetXaxis()->GetBinCenter(etaBin),centralDist->GetBinContent(etaBin, phiBin));
+      }
     }
-
-    for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
-  
-      // Check for acceptance
-      if ( fabs(eta) > 1.7) {
-        if (phiBin == 0 && dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
-      }
-      //Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
-      Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
-      if (!weight){
-        weight = 0;
-      }
-      totalFMDpar += weight;
-      
-      // We calculate the average Nch per. bin
-      avgSqr += weight*weight;
-      runAvg += weight;
-      nInAvg++;
-      if (weight == 0) continue;
-      if (weight > max) {
-        max = weight;
-      }
-    } // End of phi loop
-
-    // Outlier cut calculations
-    double fSigmaCut = 4.0;
-    if (nInAvg > 0) {
-      runAvg /= nInAvg;
-      avgSqr /= nInAvg;
-      Double_t stdev = (nInAvg > 1 ? TMath::Sqrt(nInAvg/(nInAvg-1))*TMath::Sqrt(avgSqr - runAvg*runAvg) : 0);
-      Double_t nSigma = (stdev == 0 ? 0 : (max-runAvg)/stdev);
-      if (fSigmaCut > 0. && nSigma >= fSigmaCut && cent < 60) nBadBins++;
-      else nBadBins = 0;
-      fOutliers->Fill(cent, nSigma);
-      // We still finish the loop, for fOutliers to make sense, 
-      // but we do no keep the event for analysis 
-      if (nBadBins > 3) useEvent = kFALSE;
-      //if (nBadBins > 3) std::cout << "BAD EVENT" << std::endl;
-    }
-  } // End of eta bin
-  if (totalFMDpar < 10) useEvent = kFALSE;
-
-  if (useEvent){ 
-
-
-    // loop  over  all  the  tracks
-    /*
-for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
-    spddNdedp.Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
-        fHybrid->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
-        nuacentral->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i),aodVtx->GetZ(),1);
-        nuahist->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i),aodVtx->GetZ(),1);
-  }*/
-
-  for(Int_t i(0); i < iTracks; i++) {
-
-    AliAODTrack* track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
-    if (track->TestFilterBit(kHybrid)){
-      if (track->Pt() >= 0.2 && track->Pt() <= 5){
-        spddNdedp.Fill(track->Eta(),track->Phi(), 1);
-        fHybrid->Fill(track->Eta(),track->Phi(), 1);
-        nuacentral->Fill(track->Eta(),track->Phi(),aodVtx->GetZ(),1);
-        nuahist->Fill(track->Eta(),track->Phi(),aodVtx->GetZ(),1);
+    for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+      for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
+        dNdeta->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin));
       }
     }
   }
 
-  for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
-    
-      Double_t acceptance = 1.;
-      Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
+  Double_t zvertex = fUtil.GetZ();
 
-      if (fabs(eta) > 1.7 && detType == "forward"){
-        acceptance = dNdetadphi.GetBinContent(etaBin, kphiAcceptanceBin);
-        if (acceptance == 0 || acceptance > 2.0) continue;
+  //TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
+  static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
+
+
+    // loop for the TPC
+    for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
+      for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsY(); phiBin++) {
+        if (centralDist->GetBinContent(etaBin,phiBin) == 0) continue;//TH2D
+        nua_cen->Fill(centralDist->GetXaxis()->GetBinCenter(etaBin),centralDist->GetYaxis()->GetBinCenter(phiBin),zvertex,centralDist->GetBinContent(etaBin,phiBin)); //TH3D
       }
+    }
 
-      for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
-    
-        // Check for acceptance
-        if ( fabs(eta) > 1.7) {
-          if (phiBin == 0 && dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
-        }
-        Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
-        Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
+    if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
+    // loop for the FMD
+    for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+      for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsY(); phiBin++) {
+        Double_t weight = forwardDist->GetBinContent(etaBin,phiBin);
 
-        // We calculate the average Nch per. bin
+        if (fSettings.nua_mode & fSettings.kInterpolate)
+          weight = InterpolateWeight(*forwardDist,phiBin,etaBin,weight);
+
         if (weight == 0) continue;
-        
-        // Fill into Cos() and Sin() hists
-        fFMDHits->Fill(weight);
-        nuaforward->Fill(eta,phi,aodVtx->GetZ(),weight);
-        nuahist->Fill(eta,phi,aodVtx->GetZ(),weight);
-      } // End of phi loop
-    } // End of eta bin
-  } // End of useEvent
 
-  if(!fAOD) return;              
+        nua_fmd->Fill(forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetYaxis()->GetBinCenter(phiBin),zvertex,weight);
+      }
+    }
 
-  PostData(1, fOutputList); 
+  PostData(1, fOutputList);
   return;
 }
 
+
+
+Double_t AliForwardNUATask::InterpolateWeight(TH2D& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight)
+{
+  if ((phiBin == 17) && (etaBin >= 125 && etaBin <= 137)){
+
+    if (weight > 0 || forwarddNdedp.GetBinContent(etaBin, 18) > 0) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 3, phiBin) > 0 ) return weight;
+
+    // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+ //    if (detType == "forward") weight = 1.;
+     Double_t up = forwarddNdedp.GetBinContent(etaBin, 19);
+     Double_t low = forwarddNdedp.GetBinContent(etaBin, 16);
+     weight = ((up+low)/2+low)/2;
+     return weight;
+    //std::cout << weight << std::endl;
+
+   }
+  if ((phiBin == 18) && (etaBin >= 125 && etaBin <= 137)){
+    if (weight > 0 || forwarddNdedp.GetBinContent(etaBin, 17) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 3, phiBin) > 0 ) return weight;
+
+    // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+     Double_t up = forwarddNdedp.GetBinContent(etaBin, 19);
+     Double_t low = forwarddNdedp.GetBinContent(etaBin, 16);
+     weight = ((up+low)/2+up)/2;
+    //std::cout << weight << std::endl;
+  }
+  if ((phiBin == 14) && (etaBin >= 168 && etaBin <= 185)){
+    if (weight > 0) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin + 1, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin + 2, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin + 3, phiBin) > 0 ) return weight;
+    // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+    Double_t  up = forwarddNdedp.GetBinContent(etaBin, 15);
+    Double_t  low = forwarddNdedp.GetBinContent(etaBin, 13);
+     weight = (up+low)/2;
+    //std::cout << weight << std::endl;
+
+   }
+   return weight;
+}
+
+
+
+
+
+Double_t AliForwardNUATask::InterpolateWeight(TH2D*& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight)
+{
+  if ((phiBin == 17) && (etaBin >= 125 && etaBin <= 137)){
+
+    if (weight > 0 || forwarddNdedp->GetBinContent(etaBin, 18) > 0) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 3, phiBin) > 0 ) return weight;
+
+    // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+ //    if (detType == "forward") weight = 1.;
+     Double_t up = forwarddNdedp->GetBinContent(etaBin, 19);
+     Double_t low = forwarddNdedp->GetBinContent(etaBin, 16);
+     weight = ((up+low)/2+low)/2;
+     return weight;
+    //std::cout << weight << std::endl;
+
+   }
+  if ((phiBin == 18) && (etaBin >= 125 && etaBin <= 137)){
+    if (weight > 0 || forwarddNdedp->GetBinContent(etaBin, 17) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin - 3, phiBin) > 0 ) return weight;
+
+    // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+     Double_t up = forwarddNdedp->GetBinContent(etaBin, 19);
+     Double_t low = forwarddNdedp->GetBinContent(etaBin, 16);
+     weight = ((up+low)/2+up)/2;
+    //std::cout << weight << std::endl;
+  }
+  if ((phiBin == 14) && (etaBin >= 168 && etaBin <= 185)){
+    if (weight > 0) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin + 1, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin + 2, phiBin) > 0 ) return weight;
+    //if (forwarddNdedp.GetBinContent(etaBin + 3, phiBin) > 0 ) return weight;
+    // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+    Double_t  up = forwarddNdedp->GetBinContent(etaBin, 15);
+    Double_t  low = forwarddNdedp->GetBinContent(etaBin, 13);
+     weight = (up+low)/2;
+    //std::cout << weight << std::endl;
+
+   }
+   return weight;
+}
 
 
 

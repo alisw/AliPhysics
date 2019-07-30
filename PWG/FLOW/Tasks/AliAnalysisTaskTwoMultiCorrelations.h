@@ -6,30 +6,42 @@
 //--------------------------------------------------------------------------------------//
 
 //--------------------------------------------------------------------------------------//
-// Analysis task for the data analysis of the correlations between the anisotropic flow //
-// harmonics v_n with the Pb-Pb data taken by the ALICE experiment.                     //
-// The current script computes the multiparticle correlators using the method of the    //
-// Q-vectors for a maximum of 6 different harmonics and 8 particles).                   //
+// Analysis task for the computation of the multiparticle correlations for the flow     //
+// harmonics v_1 to v_6. This version of the script compute the 2-, 4- and 6- particle  //
+// correlations for all the useful combinations of these six harmonics. It can take     //
+// Monte Carlo simulations data (e.g. HIJING), as well as the experimental Pb-Pb data   //
+// taken by the ALICE experiment.                                                       //
+// The method used to compute the multiparticle correlations is the Generic Framework   //
+// based on Q-vectors. A setter lets open the possibility to cross-check the results    //
+// with nested loops.                                                                   //
 //                                                                                      //
 // Author: Cindy Mordasini (cindy.mordasini@cern.ch)                                    //
+// Version: 11.06.2019                                                                  //
 //--------------------------------------------------------------------------------------//
 
 #ifndef ALIANALYSISTASKTWOMULTICORRELATIONS_H
 #define ALIANALYSISTASKTWOMULTICORRELATIONS_H
 
 #include "AliAnalysisTaskSE.h"
-#include "AliAODTrack.h"
 #include "AliAODEvent.h"
+#include "AliMCEvent.h"
 #include "AliVEvent.h"
-#include "TProfile.h"
+#include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
+#include "TList.h"
 #include "TComplex.h"
+#include "TH2I.h"
 #include "TH1D.h"
+#include "TH1I.h"
+#include "TProfile.h"
 
+//######################################################################################//
+// Definition of the class.
 //======================================================================================//
-
-class AliAnalysisTaskTwoMultiCorrelations : public AliAnalysisTaskSE{
+class AliAnalysisTaskTwoMultiCorrelations : public AliAnalysisTaskSE
+{
 public:
-// The six following functions are mandatory for AliAnalysisTaskSE to use the class properly
+/* These six functions are mandatory for the class to work properly. */
   AliAnalysisTaskTwoMultiCorrelations();
   AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights=kFALSE);
   virtual ~AliAnalysisTaskTwoMultiCorrelations();
@@ -38,155 +50,334 @@ public:
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *);
 
+//--------------------------------------------------------------------------------------//
+// Setters and getters for the data members.
+  void SetMultiplicityList(TList* const sml) {this->fMultiplicityList = sml;};
+  TList* GetMultiplcityList() const {return this->fMultiplicityList;}
+  void SetEventSelectionList(TList* const sesl) {this->fEventSelectionList = sesl;};
+  TList* GetEventSelectionList() const {return this->fEventSelectionList;}
+  void SetTrackSelectionList(TList* const stsl) {this->fTrackSelectionList = stsl;};
+  TList* GetTrackSelectionList() const {return this->fTrackSelectionList;}
+  void SetMultiParticleCorrelationsList(TList* const smpcl) {this->fMultiParticleCorrelationsList = smpcl;};
+  TList* GetMultiParticleCorrelationsList() const {return this->fMultiParticleCorrelationsList;}
+  void SetTwoParticleCorrelationsWithEtaGapsList(TList* const stpcl) {this->fTwoParticleCorrelationsWithEtaGapsList = stpcl;};
+  TList* GetTwoParticleCorrelationsWithEtaGapsList() const {return this->fTwoParticleCorrelationsWithEtaGapsList;}
 
-// Organisation of the methods
-/// Setters and getters for the data members
-/// Methods called in the constructor
-/// Methods called in UserCreateOutputObjects()
-/// Methods called in UserExec(Option_t *)
-/// Methods called in Terminate(Option_t *)
-
-// Setters and getters for the data members
-  void SetGeneralParameters(Int_t maxNumberCorrelations, Int_t highestHarmonic, Int_t nbHarmonics, Bool_t useParticleWeights, Bool_t computeNestedLoops, Bool_t computeSine)
+/// Configure the general parameters of the analysis.
+  void SetAnalysisDimensions(Int_t maxFlowHarmonic, Int_t maxCorrelatedParticles)
   {
-    this->fMaxNumberCorrelations = maxNumberCorrelations;
-    this->fHighHarmonic = highestHarmonic;
-    this->fNumberDifferentHarmonics = nbHarmonics;
-    this->fUseParticleWeights = useParticleWeights;
-    this->fComputeNestedLoops = computeNestedLoops;
-    this->fComputeSine = computeSine;
-  };  // End: void SetGeneralParameters(Int_t, Bool_t, Bool_t, Bool_t)
+    this->fHighestFlowHarmonic = maxFlowHarmonic;
+    this->fMaxNumberOfParticlesInCorrelations = maxCorrelatedParticles;
+  }
 
-  void SetHarmonics(Int_t nOne, Int_t nTwo, Int_t nThree, Int_t nFour, Int_t nFive, Int_t nSix, Int_t nSeven, Int_t nEight)
+  void SetTypeOfFiles(Bool_t aodFiles, Bool_t mcFiles, Bool_t bothFiles)
   {
-    this->fHarmonicOne = nOne;
-    this->fHarmonicTwo = nTwo;
-    this->fHarmonicThree = nThree;
-    this->fHarmonicFour = nFour;
-    this->fHarmonicFive = nFive;
-    this->fHarmonicSix = nSix;
-    this->fHarmonicSeven = nSeven;
-    this->fHarmonicEight = nEight;
-  };  // End: void SetHarmonics(Int_t, Int_t, Int_t, Int_t, Int_t, Int_t, Int_t, Int_t)
+    this->fProcessOnlyAOD = aodFiles;
+    this->fProcessOnlyMC = mcFiles;
+    this->fProcessBothMCandAOD = bothFiles;
+  }
 
-  void SetCentralityRange(Int_t const nBins, Float_t minCentrality, Float_t maxCentrality)
+  void SetGeneralParameters(Bool_t computeEtaGaps, Bool_t crosscheckWithNestedLoops, Bool_t doCorrelationPlot, Bool_t useNonUnitWeights)
   {
-    this->fMinCentrality = minCentrality;
-    this->fMaxCentrality = maxCentrality;
-  };  // End: void SetCentralityRange(Int_t const, Float_t, Float_t)
+    this->fComputeEtaGaps = computeEtaGaps;
+    this->fCrosscheckWithNestedLoops = crosscheckWithNestedLoops;
+    this->fDoTDCorrelationHisto = doCorrelationPlot;
+    this->fUseParticleWeights = useNonUnitWeights;
+  }
 
-  void SetCutsRange(Float_t minPtCut, Float_t maxPtCut, Float_t minEtaCut, Float_t maxEtaCut)
+/// Configure the parameters related to the number of tracks.
+  void SetCentralityDetermination(Bool_t useVZero, Bool_t useSPD, Int_t const nBins, Double_t minCentrality, Double_t maxCentrality)
   {
-    this->fMinPtCut = minPtCut;
-    this->fMaxPtCut = maxPtCut;
-    this->fMinEtaCut = minEtaCut;
-    this->fMaxEtaCut = maxEtaCut;
-  };  // End: void SetCutsRange(Float_t, Float_t, Float_t, Float_t)
+    this->fCentralityFromVZero = useVZero;
+    this->fCentralityFromSPD = useSPD;
+    this->fCentralityMin = minCentrality;
+    this->fCentralityMax = maxCentrality;
+  }
 
-  void SetPreCutControlList(TList* const pccl) {this->fPreCutControlList = pccl;};
-  TList* GetPreCutControlList() const {return this->fPreCutControlList;}
-  void SetPostCutControlList(TList* const poccl) {this->fPostCutControlList = poccl;};
-  TList* GetPostCutControlList() const {return this->fPostCutControlList;}
-  void SetCorrelationResultsList(TList* const crl) {this->fCorrelationResultsList = crl;};
-  TList* GetCorrelationResultsList() const {return this->fCorrelationResultsList;}
+  void SetHistoParameters(Int_t HNOTbins, Double_t HNOTmax, Int_t HFNOTbins, Double_t HFNOTmax, Int_t HFCbins, Double_t HFCmax)
+  {
+    this->fNumberOfBinsHINOT = HNOTbins;
+    this->fMaxBinHINOT = HNOTmax;
+    this->fNumberOfBinsHFNOT = HFNOTbins;
+    this->fMaxBinHFNOT = HFNOTmax;
+    this->fNumberOfBinsHFC = HFCbins;
+    this->fMaxBinHFC = HFCmax;
+  }
 
-// Methods called in the constructor
+/// Configure the parameters related to the event selection criteria.
+  void SetPVSelection(Bool_t cutOnVertexX, Double_t minVertexX, Double_t maxVertexX, Bool_t cutOnVertexY, Double_t minVertexY, Double_t maxVertexY, Bool_t cutOnVertexZ, Double_t minVertexZ, Double_t maxVertexZ)
+  {
+    this->fCutOnPVX = cutOnVertexX;
+    this->fPVXMin = minVertexX;
+    this->fPVXMax = maxVertexX;
+    this->fCutOnPVY = cutOnVertexY;
+    this->fPVYMin = minVertexY;
+    this->fPVYMax = maxVertexY;
+    this->fCutOnPVZ = cutOnVertexZ;
+    this->fPVZMin = minVertexZ;
+    this->fPVZMax = maxVertexZ;
+  }
+
+// Configure the parameters related to the track selection criteria.
+  void SetFiltersSelection(Int_t firstFilter, Int_t globalFilter)
+  {
+    this->fMainFilter = firstFilter;
+    this->fGlobalFilter = globalFilter;
+  }
+
+  void SetCorrelationSelection(Int_t minNumberOfTracks, Bool_t removeOutliers, Double_t minA, Double_t minB, Double_t maxA, Double_t maxB)
+  {
+    this->fMultiplicityMin = minNumberOfTracks;
+    this->fCutOnTDCorrelations = removeOutliers;
+    this->fMultiplicityMinA = minA;
+    this->fMultiplicityMinB = minB;
+    this->fMultiplicityMaxA = maxA;
+    this->fMultiplicityMaxB = maxB;
+  }
+
+  void SetPtSelection(Bool_t cutOnPt, Double_t minPt, Double_t maxPt)
+  {
+    this->fCutOnPt = cutOnPt;
+    this->fPtMin = minPt;
+    this->fPtMax = maxPt;
+  }
+
+  void SetEtaSelection(Bool_t cutOnEta, Double_t minEta, Double_t maxEta)
+  {
+    this->fCutOnEta = cutOnEta;
+    this->fEtaMin = minEta;
+    this->fEtaMax = maxEta;
+  }
+
+  void SetTPCSelection(Bool_t cutOnTPC, Int_t minNumberOfClustersTPC, Bool_t cutOnChiSquareTPC, Double_t minChiSquareTPC, Double_t maxChiSquareTPC)
+  {
+    this->fCutOnNumberOfTPC = cutOnTPC;
+    this->fNumberOfTPCMin = minNumberOfClustersTPC;
+    this->fCutOnChiSquarePInTPC = cutOnChiSquareTPC;
+    this->fChiSquarePInTPCMin = minChiSquareTPC;
+    this->fChiSquarePInTPCMax = maxChiSquareTPC;
+  }
+
+  void SetDCASelection(Bool_t cutOnDCAxy, Double_t maxDCAxy, Bool_t cutOnDCAz, Double_t maxDCAz)
+  {
+    this->fCutOnDCAxy = cutOnDCAxy;
+    this->fDCAxyMax = maxDCAxy;
+    this->fCutOnDCAz = cutOnDCAz;
+    this->fDCAzMax = maxDCAz;
+  }
+
+  void SetChargeSelection(Bool_t cutOnElectricCharge, Int_t electricCharge)
+  {
+    this->fCutOnCharge = cutOnElectricCharge;
+    this->fCharge = electricCharge;
+  }
+
+  void SetITSSelection(Bool_t cutOnITS, Int_t minNumberOfClustersITS)
+  {
+    this->fCutOnNumberOfITS = cutOnITS;
+    this->fNumberOfITSMin = minNumberOfClustersITS;
+  }
+
+  void SetEventTracksSelection(Bool_t cutMaxNumberOfTracks, Int_t maxTracksZero, Int_t maxTracksFive, Int_t maxTracksTen, Int_t maxTracksTwenty, Int_t maxTracksThirty, Int_t maxTracksForty, Int_t maxTracksFifty, Int_t maxTracksSixty, Int_t maxTracksSeventy)
+  {
+    this->fCutOnTracksMax = cutMaxNumberOfTracks;
+    this->fNumberOfTracksMaxZero = maxTracksZero;
+    this->fNumberOfTracksMaxFive = maxTracksFive;
+    this->fNumberOfTracksMaxTen = maxTracksTen;
+    this->fNumberOfTracksMaxTwenty = maxTracksTwenty;
+    this->fNumberOfTracksMaxThirty = maxTracksThirty;
+    this->fNumberOfTracksMaxForty = maxTracksForty;
+    this->fNumberOfTracksMaxFifty = maxTracksFifty;
+    this->fNumberOfTracksMaxSixty = maxTracksSixty;
+    this->fNumberOfTracksMaxSeventy = maxTracksSeventy;
+  } 
+
+// Configure the parameters related to the multi-particle correlations.
+// Configure the parameters related to the 2-particle correlations with eta gaps.
+
+//--------------------------------------------------------------------------------------//
+// Methods called in the constructors.
   virtual void InitialiseArraysOfQvectors();
   virtual void InitialiseArraysOfTProfiles();
 
-// Methods called in UserCreateOutputObjects()
-  virtual void BookAndNestAllLists();
-  virtual void BookPreCutControlList();
-  virtual void BookPostCutControlList();
-  virtual void BookCorrelationResultsList();
+//--------------------------------------------------------------------------------------//
+// Methods called in 'UserCreateOutputObjects'.
+  virtual void BookAllLists();
+  virtual void BookMultiplicityList();
+  virtual void BookEventSelectionList();
+  virtual void BookTrackSelectionList();
+  virtual void BookMultiParticleCorrelationsList();
+  virtual void BookTwoParticleCorrelationsWithEtaGapsList();
 
-// Methods called in UserExec(Option_t *)
-  virtual void CalculateQvectors(Int_t nParticles, Double_t phi[], Double_t particleWeight[]);
+//--------------------------------------------------------------------------------------//
+// Methods called in 'UserExec'.
+  virtual void AnalyseAODevent(AliAODEvent *inputAODevent);
+  virtual void AnalyseMCevent(AliMCEvent *inputMCevent);
+  Bool_t ApplyEventSelectionAOD(AliAODEvent *aAODevent);
+  Bool_t ApplyEventSelectionMC(AliMCEvent *aMCevent);
+  Bool_t ApplyTrackSelectionAOD(AliAODTrack *aAODtrack);
+  Bool_t ApplyTrackSelectionMC(AliAODMCParticle *aMCtrack);
+  virtual void CalculateQvectors(long long numberOfParticles, Double_t angles[], Double_t pWeights[]);
   TComplex Q(Int_t n, Int_t p);
-  TComplex CalculateRecursionWithQvectors(Int_t nPartCorr, Int_t harmonics[], Int_t p=1, Int_t skip=0);
-  virtual void ComputeTwoParticleCorrelationWithQvectors(Int_t numeratorFirstTwoParticleHarmonics[], Int_t numeratorLastTwoParticleHarmonics[], Int_t indexTProfile);
-  virtual void ComputeFourParticleCorrelationWithQvectors(Int_t numeratorFourParticleHarmonics[], Int_t indexTProfile);
-  virtual void ComputeSixParticleCorrelationWithQvectors(Int_t numeratorSixParticleHarmonics[], Int_t indexTProfile);
-  virtual void ComputeEightParticleCorrelationWithQvectors(Int_t numeratorEightParticleHarmonics[]);
-  virtual void ComputeCorrelationsWithTwoNestedLoops(Int_t numeratorTwoParticleHarmonics[], Int_t numeratorTwoLastParticleHarmonics[], Int_t indexTProfile, Int_t nParticles, Double_t phi[], Double_t particleWeight[]);
-  virtual void ComputeCorrelationsWithFourNestedLoops(Int_t numeratorFourParticleHarmonics[], Int_t indexTProfile, Int_t nParticles, Double_t phi[], Double_t particleWeight[]);
+  virtual void ComputeMultiparticleCorrelations(long long numberOfParticles, Double_t angles[], Double_t pWeights[]);
+  TComplex CalculateRecursion(Int_t n, Int_t *harmonic, Int_t mult=1, Int_t skip=0);
+  virtual void ComputeTwoNestedLoops(long long nParticles, Int_t *harmonic, Double_t aAngles[], Double_t weights[], TProfile *profile, Double_t middleBin);
+  virtual void ComputeFourNestedLoops(long long nParticles, Int_t *harmonic, Double_t aAngles[], Double_t weights[], TProfile *profile, Double_t middleBin);
+  virtual void ComputeTwoParticleEtaGaps(long long nParticles, Double_t angles[], Double_t pWeights[], Double_t pseudorapidity[]);
 
-// Methods called in Terminate(Option_t *)
+//--------------------------------------------------------------------------------------//
+// Methods called in 'Terminate'.
 
 
+//======================================================================================//
+// Data members.
+//--------------------------------------------------------------------------------------//
 private:
   AliAnalysisTaskTwoMultiCorrelations(const AliAnalysisTaskTwoMultiCorrelations& aattmc);
   AliAnalysisTaskTwoMultiCorrelations& operator=(const AliAnalysisTaskTwoMultiCorrelations& aattmc);
 
-// Organisation of the data members
-/// General parameters for the analysis
-/// Harmonics
-/// Ranges for the centrality and cuts
-/// Structure of the output
-/// Histograms and TProfiles
+// General parameters of the analysis.
+  TList     *fMainList;                             // Mother list in the output file.
 
-// General parameters
-  Int_t fMaxNumberCorrelations;  // Maximum number of particles in the correlator (not going than 4-harmonic 8-particle symmetric cumulants)
-  Int_t fHighHarmonic; // Maximum harmonic n for v_n (not going higher than v6)
-  TComplex fQvectors[49][9];  // All needed combinations of Q-vectors (size: [fHighHarmonic*fMaxNumberCorrelations+1][fMaxNumberCorrelations+1])
-  Int_t fNumberDifferentHarmonics;  // Number of different harmonics (2-4)
-  Bool_t fUseParticleWeights; // kTRUE: enable the use of non-unit particle weights
-  Bool_t fComputeNestedLoops; // kTRUE: enable the computation of the nested loops for validation
-  Bool_t fComputeSine;  // kTRUE: enable the computation and save of the sine component
+  Int_t     fHighestFlowHarmonic;                   // Highest flow harmonic taken into account (v_6).
+  Int_t     fMaxNumberOfParticlesInCorrelations;    // Maximum number of particles used in the correlators (8-particle correlations).
+  TComplex  fQvectors[49][9];                       // All needed combinations of Q-vectors. (size: [fHighestFlowHarmonic*fMaxNumberOfParticlesInCorrelations+1][fMaxNumberOfParticlesInCorrelations+1])
 
-// Harmonics
-  Int_t fHarmonicOne; // Harmonic n_1
-  Int_t fHarmonicTwo; // Harmonic n_2
-  Int_t fHarmonicThree; // Harmonic n_3
-  Int_t fHarmonicFour;  // Harmonic n_4
-  Int_t fHarmonicFive;  // Harmonic n_5
-  Int_t fHarmonicSix; // Harmonic n_6
-  Int_t fHarmonicSeven; // Harmonic n_7
-  Int_t fHarmonicEight; // Harmonic n_8
+  Bool_t    fProcessOnlyAOD;                        // Process only AOD files (or Reco)?
+  Bool_t    fProcessOnlyMC;                         // Process only MC files (or Kine)?
+  Bool_t    fProcessBothMCandAOD;                   // Process both MC and AOD files?
 
-// Ranges for the centrality and cuts
-  Float_t fMinCentrality; // Minimum of the centrality
-  Float_t fMaxCentrality; // Maximum of the centrality
-  Float_t fMinPtCut;  // Minimum of the range for the transverse momentum
-  Float_t fMaxPtCut;  // Maximum of the range for the transverse momentum
-  Float_t fMinEtaCut; // Minimum of the range for the pseudorapidity
-  Float_t fMaxEtaCut; // Maximum of the range for the pseudorapidity
+  Bool_t    fComputeEtaGaps;                        // Compute the eta gaps method for the 2-particle correlations?
+  Bool_t    fCrosscheckWithNestedLoops;             // Crosscheck the results with the nested loops for the 2- and 4-particle correlations?
+  Bool_t    fDoTDCorrelationHisto;                  // Fill the 2D correlation histograms? (select this option only to set and check the cut as it is memory-greedy)
+  Bool_t    fUseParticleWeights;                    // Use non-unit particle weights? [TBA: full gestion of the non-unit weights in the task.]
 
-// Structure of the output file
-  TList* fOutputMainList; // Main list holding all the output objects
-  TList* fPreCutControlList;  // List holding all the control histograms before the cuts
-  TList* fPostCutControlList; // List holding all the control histograms after the cuts
-  TList* fCorrelationResultsList;  // List holding all the multiparticle correlations
+// Parameters related to the number of tracks.
+  TList     *fMultiplicityList;                     // Daughter list for the histograms containing the number of tracks.
+  TH1D      *fHistoInitialCentrality;               //! Centrality before the event selection.
+  TH1D      *fHistoFinalCentrality;                 //! Centrality after the event selection.
+  TH1I      *fHistoInitialNumberOfTracks;           //! Initial number of tracks without filter.
+  TH1I      *fHistoInitialNumberOfTracksMain;       //! Number of tracks before the removal of the outliers for the main filter bit.
+  TH1I      *fHistoInitialNumberOfTracksGlobal;     //! Number of tracks before the removal of the outliers for the global filter bit.
+  TH1I      *fHistoFinalNumberOfTracksMain;         //! Number of tracks after the removal of the outliers for the main filter bit.
+  TH1I      *fHistoFinalNumberOfTracksGlobal;       //! Number of tracks after the removal of the outliers for the global filter bit.
+  TH1I      *fHistoFinalNumberOfTracks;             //! Number of tracks after the track selection for the main filter bit.
+  TH2I      *fHistoInitialFilterCorrelations;       //! 2D correlation histogram with multiplicity for two filter bits before the outliers cuts.
+  TH2I      *fHistoFinalFilterCorrelations;         //! 2D correlation histogram with multiplicity for two filter bits after the outliers cuts.
 
-// Control histograms before the application of the cuts
-  TH1D *fCentralityPreCutHisto; //! Centrality distribution
-  TH1D *fMultiplicityPreCutHisto;  //! Multiplicity distribution
-  TH1D *fPtPreCutControlHisto;  //! Transverse momentum distribution
-  TH1D *fEtaPreCutControlHisto; //! Pseudorapidity distribution
-  TH1D *fPhiPreCutHisto; //! Azimuthal angles distribution
+  Bool_t    fCentralityFromVZero;                   // Use the V0 detector to estimate the centrality of the events?
+  Bool_t    fCentralityFromSPD;                     // Use the SPD detector to estimate the centrality of the events? 
+  Double_t  fCentralityMin;                         // Minimum value of the centrality percentile.
+  Double_t  fCentralityMax;                         // Maximum value of the centrality percentile.
 
-// Control histograms after the application of the cuts
-  TH1D *fMultiplicityPostCutHisto;  //! Multiplicity distribution
-  TH1D *fPtPostCutControlHisto;  //! Transverse momentum distribution
-  TH1D *fEtaPostCutControlHisto; //! Pseudorapidity distribution
-  TH1D *fPhiPostCutHisto; //! Azimuthal angles distribution
+  Int_t     fNumberOfBinsHINOT;                     // Number of bins for the TH1I with the initial numbers of tracks.
+  Double_t  fMaxBinHINOT;                           // Last bin for the TH1I with the initial numbers of tracks.
+  Int_t     fNumberOfBinsHFNOT;                     // Number of bins for the TH1I with the final numbers of tracks.
+  Double_t  fMaxBinHFNOT;                           // Last bin for the TH1I with the final numbers of tracks.
+  Int_t     fNumberOfBinsHFC;                       // Number of bins for the TH2I with the correlations between the filters.
+  Double_t  fMaxBinHFC;                             // Last bin for the TH2I with the correlations between the filters.
 
-// Results histograms for the multiparticle correlations
-  TProfile *fTwoParticleCorrelationProfile[2][4]; //! 2-p correlations ([cos,sin][m,n,p,q]) with Q-vectors
-  TProfile *fFourParticleCorrelationProfile[2][6];  //! 4-p correlations ([cos,sin][max number of combinations of 2 elements out of 4]) with Q-vectors
-  TProfile *fSixParticleCorrelationProfile[2][4];  //! 6-p correlations ([cos,sin][max number of combinations of 3 elements out of 4]) with Q-vectors
-  TProfile *fEightParticleCorrelationProfile[2];  //! 8-p correlations ([cos,sin]) with Q-vectors
-  TProfile *fTwoCosineAverageProfile[2][4];  //! [<<cos(m(phi1-phi2))><cos(n(phi1-phi2))>>,<<sin(m(phi1-phi2))><sin(n(phi1-phi2))>>][6] with Q-vectors
-  TProfile *fTwoNestedCorrelationProfile[2][4];  //! 2-p correlations ([cos,sin][m,n,p,q]) with nested loops
-  TProfile *fFourNestedCorrelationProfile[2][6]; //! 4-p correlations ([cos,sin][max number of combinations of 2 elements out of 4]) with nested loops
-  TProfile *fTwoCosineAverageNestedProfile[2][4];  //! [<<cos(m(phi1-phi2))><cos(n(phi1-phi2))>>,<<sin(m(phi1-phi2))><sin(n(phi1-phi2))>>][4] with nested loops
+// Parameters related to the event selection criteria.
+  TList     *fEventSelectionList;                   // Daughter list for the histograms containing the event selection criteria.
+  TH1D      *fHistoInitialPVX;                      //! x-position of the PV before the event selection.
+  TH1D      *fHistoFinalPVX;                        //! x-position of the PV after the event selection.
+  TH1D      *fHistoInitialPVY;                      //! y-position of the PV before the event selection.
+  TH1D      *fHistoFinalPVY;                        //! y-position of the PV after the event selection.
+  TH1D      *fHistoInitialPVZ;                      //! z-position of the PV before the event selection.
+  TH1D      *fHistoFinalPVZ;                        //! z-position of the PV after the event selection.
 
-// Version counter for the submissions on Grid
-/// Increase the counter by one when the latest version changes the structure
-/// of the output file (version of the 2018-10-09, counter: 4)
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations,4);
+  Bool_t    fCutOnPVX;                              // Apply the cuts on the x-position of the PV?
+  Bool_t    fCutOnPVY;                              // Apply the cuts on the y-position of the PV?
+  Bool_t    fCutOnPVZ;                              // Apply the cuts on the z-position of the PV?
 
-}; // End of the definition of the class AliAnalysisTaskTwoMultiCorrelations
+  Double_t  fPVXMin;                                // Minimum cut on the x-position of the PV.
+  Double_t  fPVXMax;                                // Maximum cut on the x-position of the PV.
+  Double_t  fPVYMin;                                // Minimum cut on the y-position of the PV.
+  Double_t  fPVYMax;                                // Maximum cut on the y-position of the PV.
+  Double_t  fPVZMin;                                // Minimum cut on the z-position of the PV.
+  Double_t  fPVZMax;                                // Maximum cut on the z-position of the PV.
+
+// Parameters related to the track selection criteria.
+  TList     *fTrackSelectionList;                   // Daughter list for the histograms containing the track selection criteria.
+  TH1D      *fHistoInitialPt;                       //! Distribution of the transverse momentum before the track selection.
+  TH1D      *fHistoFinalPt;                         //! Distribution of the transverse momentum after the track selection.
+  TH1D      *fHistoInitialEta;                      //! Distribution of the pseudorapidity before the track selection.
+  TH1D      *fHistoFinalEta;                        //! Distribution of the pseudorapidity after the track selection.
+  TH1D      *fHistoInitialPhi;                      //! Distribution of the azimuthal angles before the track selection.
+  TH1D      *fHistoFinalPhi;                        //! Distribution of the azimuthal angles after the track selection.
+  TH1I      *fHistoInitialNumberOfTPC;              //! Distribution of the number of TPC clusters before the track selection.
+  TH1I      *fHistoFinalNumberOfTPC;                //! Distribution of the number of TPC clusters after the track selection.
+  TH1D      *fHistoInitialChiSquare;                //! Distribution of the chi^2 in TPC before the track selection.
+  TH1D      *fHistoFinalChiSquare;                  //! Distribution of the chi^2 in TPC after the track selection.
+  TH1D      *fHistoInitialDCAxy;                    //! Distribution of the xy-coordinate of the DCA before the track selection.
+  TH1D      *fHistoFinalDCAxy;                      //! Distribution of the xy-coordinate of the DCA after the track selection.
+  TH1D      *fHistoInitialDCAz;                     //! Distribution of the z-coordinate of the DCA before the track selection.
+  TH1D      *fHistoFinalDCAz;                       //! Distribution of the z-coordinate of the DCA after the track selection.
+  TH1I      *fHistoInitialCharge;                   //! Distribution of the electric charge of the tracks before the track selection.
+  TH1I      *fHistoFinalCharge;                     //! Distribution of the electric charge of the tracks after the track selection.
+  TH1I      *fHistoInitialNumberOfITS;              //! Distribution of the number of clusters in the ITS before the track selection.
+  TH1I      *fHistoFinalNumberOfITS;                //! Distribution of the number of clusters in the ITS after the track selection.
+
+  Bool_t    fCutOnTDCorrelations;                   // Apply the cuts on the number of tracks to remove high multiplicity outliers before the track selection?
+  Bool_t    fCutOnPt;                               // Apply the cuts on the transverse momentum?
+  Bool_t    fCutOnEta;                              // Apply the cuts on the pseudorapidity?
+  Bool_t    fCutOnNumberOfTPC;                      // Apply the cut on the number of TPC clusters?
+  Bool_t    fCutOnChiSquarePInTPC;                  // Apply the cuts on chi^2 of the track momentum in TPC?
+  Bool_t    fCutOnDCAxy;                            // Apply the cut on the xy-coordinate of the DCA?
+  Bool_t    fCutOnDCAz;                             // Apply the cut on the z-coordinate of the DCA?
+  Bool_t    fCutOnCharge;                           // Apply the cut on the electric charge of the tracks?
+  Bool_t    fCutOnNumberOfITS;                      // Apply the cut on the number of ITS clusters?
+
+  Int_t     fMainFilter;                            // Main filter bit used in the analysis.
+  Int_t     fGlobalFilter;                          // Second filter bit used to remove high multiplicity outliers.
+  Int_t     fMultiplicityMin;                       // Strict minimum of the number of tracks required in an event to do the analysis.
+  Double_t  fMultiplicityMinA;                      // a in 'a(global multiplicity) + b' for the minimum boundary.
+  Double_t  fMultiplicityMinB;                      // b in 'a(global multiplicity) + b' for the minimum boundary.
+  Double_t  fMultiplicityMaxA;                      // a in 'a(global multiplicity) + b' for the maximum boundary.
+  Double_t  fMultiplicityMaxB;                      // b in 'a(global multiplicity) + b' for the maximum boundary.
+
+  Double_t  fPtMin;                                 // Minimum cut on the transverse momentum.
+  Double_t  fPtMax;                                 // Maximum cut on the transverse momentum.
+  Double_t  fEtaMin;                                // Minimum cut on the pseudorapidity.
+  Double_t  fEtaMax;                                // Maximum cut on the pseudorapidity.
+  Int_t     fNumberOfTPCMin;                        // Minimum number of TPC clusters.
+  Double_t  fChiSquarePInTPCMin;                    // Minimum cut on chi^2 of the track momentum in TPC.
+  Double_t  fChiSquarePInTPCMax;                    // Maximum cut on chi^2 of the track momentum in TPC.
+  Double_t  fDCAxyMax;                              // Maximum cut on the xy-coordinate of the DCA.
+  Double_t  fDCAzMax;                               // Maximum cut on the z-coordinate of the DCA.
+  Int_t     fCharge;                                // Electric charge of all the tracks.
+  Int_t     fNumberOfITSMin;                        // Minimum number of ITS clusters.
+
+/// Brute-force method to remove the HM outliers.
+  Bool_t    fCutOnTracksMax;                        // Apply maximum limits on the multiplicity to remove high multiplicity outliers?
+  Int_t     fNumberOfTracksMaxZero;                 // Strict maximum number of tracks needed in one event for 0-5% centrality.
+  Int_t     fNumberOfTracksMaxFive;                 // Strict maximum number of tracks needed in one event for 5-10% centrality.
+  Int_t     fNumberOfTracksMaxTen;                  // Strict maximum number of tracks needed in one event for 10-20% centrality.
+  Int_t     fNumberOfTracksMaxTwenty;               // Strict maximum number of tracks needed in one event for 20-30% centrality.
+  Int_t     fNumberOfTracksMaxThirty;               // Strict maximum number of tracks needed in one event for 30-40% centrality.
+  Int_t     fNumberOfTracksMaxForty;                // Strict maximum number of tracks needed in one event for 40-50% centrality.
+  Int_t     fNumberOfTracksMaxFifty;                // Strict maximum number of tracks needed in one event for 50-60% centrality.
+  Int_t     fNumberOfTracksMaxSixty;                // Strict maximum number of tracks needed in one event for 60-70% centrality.
+  Int_t     fNumberOfTracksMaxSeventy;              // Strict maximum number of tracks needed in one event for 70-80% centrality.
+
+// Parameters related to the multi-particle correlations.
+  TList     *fMultiParticleCorrelationsList;        // Daughter list with the multi-particle correlations.
+  TProfile  *fProfileTwoParticleCorrelations;       //! <2>_{j,-j} for j = 1..6. (6 bins)
+  TProfile  *fProfileFourParticleCorrelations;      //! <4>_{j,k,-j,-k} for j = 1..6, k = j..6. (21 bins)
+  TProfile  *fProfileFourParticleCorrelationsCrossCheck;    //! <4>_{j,k,-j,-k} for j = 2..6, k = 1..j-1. (15 bins)
+  TProfile  *fProfileSixParticleCorrelations;       //! <6>_{j,k,l,-j,-k,-l} for j = 1..4, k = 2..5 (k > j), l = 3..6 (l > k). (20 bins)
+  TProfile  *fProfileTwoParticleCorrelationsNestedLoops;    //! <2>_{j,-j} for j = 1..6 with nested loops. (6 bins)
+  TProfile  *fProfileFourParticleCorrelationsNestedLoops;   //! <4>_{j,k,-j,-k} for j = 1..6, k = j..6 with nested loops. (21 bins)
+
+// Parameters related to the 2-particle correlations with eta gaps.
+  TList     *fTwoParticleCorrelationsWithEtaGapsList;       // Daughter list with the 2-p correlations calculated with eta gaps.
+  TProfile  *fProfileTwoParticleCorrelationsWithEtaGaps[6]; //! <2>_{j,-j} for j = 1..6 with the eta gaps method. (11 bins per profile).
+
+//--------------------------------------------------------------------------------------//
+// Version number to handle properly objects written before and after the changes.
+// Version 13, date: 2019-06-11.
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 13);
+
+};  // End: class AliAnalysisTaskTwoMultiCorrelations.
 
 #endif
-

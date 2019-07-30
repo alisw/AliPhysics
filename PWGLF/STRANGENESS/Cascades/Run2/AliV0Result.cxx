@@ -46,6 +46,8 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutMinCrossedRowsOverLength(-1),
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
@@ -54,7 +56,9 @@ fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
 fCut276TeVLikedEdx(kFALSE),
-fCutAtLeastOneTOF(kFALSE)
+fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE), 
+fCutIsCowboy(0)
 {
     // Dummy Constructor - not to be used!
     fhNCentBounds = 21;
@@ -107,6 +111,8 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutMinCrossedRowsOverLength(-1),
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
@@ -115,7 +121,9 @@ fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
 fCut276TeVLikedEdx(kFALSE),
-fCutAtLeastOneTOF(kFALSE)
+fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE), 
+fCutIsCowboy(0)
 {
     // Named constructor
     fhNCentBounds = 21;
@@ -168,6 +176,8 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutMinCrossedRowsOverLength(-1),
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
@@ -176,7 +186,9 @@ fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
 fCut276TeVLikedEdx(kFALSE),
-fCutAtLeastOneTOF(kFALSE)
+fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE), 
+fCutIsCowboy(0)
 {
     //centrality binning assignment
     fhNCentBounds = lNCentBins+1;
@@ -229,6 +241,8 @@ fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
 fCutMaxChi2PerCluster(1e+5),
 fCutMinTrackLength(-1),
+fCutUseParametricLength(kFALSE),
+fCutMinCrossedRowsOverLength(-1),
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
 fCutVarV0CosPA_Exp0Slope(0),
@@ -237,7 +251,9 @@ fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
 fCut276TeVLikedEdx(kFALSE),
-fCutAtLeastOneTOF(kFALSE)
+fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE), 
+fCutIsCowboy(0)
 {
     //centrality binning assignment
     fhNCentBounds = lNCentBins+1;
@@ -294,6 +310,8 @@ fCutMinEtaTracks(lCopyMe.fCutMinEtaTracks),
 fCutMaxEtaTracks(lCopyMe.fCutMaxEtaTracks),
 fCutMaxChi2PerCluster(lCopyMe.fCutMaxChi2PerCluster),
 fCutMinTrackLength(lCopyMe.fCutMinTrackLength),
+fCutUseParametricLength(lCopyMe.fCutUseParametricLength),
+fCutMinCrossedRowsOverLength(lCopyMe.fCutMinCrossedRowsOverLength),
 
 fCutUseVariableV0CosPA(lCopyMe.fCutUseVariableV0CosPA),
 fCutVarV0CosPA_Exp0Const(lCopyMe.fCutVarV0CosPA_Exp0Const),
@@ -303,7 +321,9 @@ fCutVarV0CosPA_Exp1Slope(lCopyMe.fCutVarV0CosPA_Exp1Slope),
 fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const),
 fUseOnTheFly(lCopyMe.fUseOnTheFly),
 fCut276TeVLikedEdx(lCopyMe.fCut276TeVLikedEdx),
-fCutAtLeastOneTOF(lCopyMe.fCutAtLeastOneTOF)
+fCutAtLeastOneTOF(lCopyMe.fCutAtLeastOneTOF),
+fCutITSorTOF(lCopyMe.fCutITSorTOF), 
+fCutIsCowboy(lCopyMe.fCutIsCowboy)
 {
     SetName( lNewName.Data() );
     
@@ -390,6 +410,8 @@ fHisto(0)
     fCutMaxEtaTracks = lCopyMe -> GetCutMaxEtaTracks();
     fCutMaxChi2PerCluster = lCopyMe -> GetCutMaxChi2PerCluster();
     fCutMinTrackLength = lCopyMe -> GetCutMinTrackLength();
+    fCutUseParametricLength = lCopyMe -> GetCutUseParametricLength();
+    fCutMinCrossedRowsOverLength = lCopyMe->GetCutMinCrossedRowsOverLength();
     
     //Variable V0CosPA
     fCutUseVariableV0CosPA = lCopyMe -> GetCutUseVarV0CosPA();
@@ -406,6 +428,9 @@ fHisto(0)
     fCut276TeVLikedEdx = lCopyMe -> GetCut276TeVLikedEdx();
     
     fCutAtLeastOneTOF = lCopyMe -> GetCutAtLeastOneTOF();
+    fCutITSorTOF = lCopyMe -> GetCutITSorTOF(); 
+    
+    fCutIsCowboy = lCopyMe -> GetCutIsCowboy();
     
     // Constructor
     Double_t lThisMass = GetMass();
@@ -509,6 +534,8 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutMaxEtaTracks = lCopyMe.GetCutMaxEtaTracks();
     fCutMaxChi2PerCluster = lCopyMe.GetCutMaxChi2PerCluster();
     fCutMinTrackLength = lCopyMe.GetCutMinTrackLength();
+    fCutUseParametricLength = lCopyMe.GetCutUseParametricLength();
+    fCutMinCrossedRowsOverLength = lCopyMe.GetCutMinCrossedRowsOverLength();
     
     //Variable V0CosPA
     fCutUseVariableV0CosPA = lCopyMe.GetCutUseVarV0CosPA();
@@ -525,6 +552,9 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCut276TeVLikedEdx = lCopyMe.GetCut276TeVLikedEdx();
     
     fCutAtLeastOneTOF = lCopyMe.GetCutAtLeastOneTOF();
+    fCutITSorTOF = lCopyMe.GetCutITSorTOF();
+    
+    fCutIsCowboy = lCopyMe.GetCutIsCowboy();
     
     if (fHisto) {
         delete fHisto;
@@ -654,6 +684,8 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     if( TMath::Abs( fCutMaxEtaTracks - lCompareV0->GetCutMaxEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMaxChi2PerCluster - lCompareV0->GetCutMaxChi2PerCluster() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMinTrackLength - lCompareV0->GetCutMinTrackLength() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutUseParametricLength - lCompareV0->GetCutUseParametricLength() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMinCrossedRowsOverLength - lCompareV0->GetCutMinCrossedRowsOverLength() ) > 1e-6 ) lReturnValue = kFALSE;
     
     //Variable V0CosPA
     if ( TMath::Abs(fCutUseVariableV0CosPA - lCompareV0->GetCutUseVarV0CosPA()) > 1e-6 ) lReturnValue = kFALSE;
@@ -670,6 +702,9 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     if( fCut276TeVLikedEdx != lCompareV0->GetCut276TeVLikedEdx() ) lReturnValue = kFALSE;
     
     if( fCutAtLeastOneTOF != lCompareV0->GetCutAtLeastOneTOF() ) lReturnValue = kFALSE;
+    if( fCutITSorTOF != lCompareV0->GetCutITSorTOF() ) lReturnValue = kFALSE;
+    
+    if( fCutIsCowboy != lCompareV0->GetCutIsCowboy() ) lReturnValue = kFALSE;
     
     return lReturnValue;
 }
@@ -723,6 +758,9 @@ void AliV0Result::Print()
     cout<<" Max track eta......: "<<fCutMaxEtaTracks<<endl;
     cout<<" Max chi2/clusters..: "<<fCutMaxChi2PerCluster<<endl;
     cout<<" Min Track Length...: "<<fCutMinTrackLength<<endl;
+    cout<<" At least 1 tof.....: "<<fCutAtLeastOneTOF<<endl;
+    cout<<" ITS||TOF...........: "<<fCutITSorTOF<<endl; 
+    cout<<" Is cowboy..........: "<<fCutIsCowboy<<endl;
     cout<<"========================================"<<endl;
     return;
 }

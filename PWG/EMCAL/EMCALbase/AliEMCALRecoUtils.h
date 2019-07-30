@@ -84,7 +84,9 @@ public:
     kPCMv1 = 14,               // pure symmetric decay muon method 
     kPCMplusBTCv1 = 15,        // kPCMv1 convoluted with kBeamTestCorrectedv3
     kPCMsysv1 = 16,            // variation of kPCMv1 to calculate systematics
-    kBeamTestCorrectedv4 = 17  // Different parametrization of v3 but similar, improve E>100 GeV linearity
+    kBeamTestCorrectedv4 = 17, // Different parametrization of v3 but similar, improve E>100 GeV linearity
+    kBeamTestNS = 18,          // Custom fit of all avail. TB points and E>100 GeV data
+    kPi0MCNS = 19              // Custom fit of all avail. TB points and E>100 GeV MC
   };
 
   /// Cluster position enum list of possible algoritms
@@ -187,7 +189,8 @@ public:
   void     SwitchOffRunDepCorrection()                   { fUseRunCorrectionFactors = kFALSE ; }
   void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
                                                            SwitchOnRecalibration()           ; }      
-  // Time Recalibration  
+  // Time Recalibration
+  void     SetUseOneHistForAllBCs(Bool_t useOneHist)     { fDoUseMergedBC = useOneHist ; }
   void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
 
   void     RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & time,Bool_t isLGon = kFALSE) const;
@@ -200,16 +203,22 @@ public:
   TObjArray* GetEMCALTimeRecalibrationFactorsArray() const { return fEMCALTimeRecalibrationFactors ; }
 
   Float_t  GetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Bool_t isLGon = kFALSE) const { 
-    if(fEMCALTimeRecalibrationFactors) 
-      return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->GetBinContent(absID); 
-    else return 0 ; } 
+    if(fEMCALTimeRecalibrationFactors){
+      if(fDoUseMergedBC)
+        return (Float_t) ((TH1S*)fEMCALTimeRecalibrationFactors->At(1*isLGon))->GetBinContent(absID); 
+      else 
+        return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->GetBinContent(absID);
+    } else return 0 ; } 
   void     SetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Double_t c = 0, Bool_t isLGon=kFALSE) { 
     if(!fEMCALTimeRecalibrationFactors) InitEMCALTimeRecalibrationFactors() ;
-    ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->SetBinContent(absID,c) ; }  
+    if(fDoUseMergedBC)
+      ((TH1S*)fEMCALTimeRecalibrationFactors->At(isLGon))->SetBinContent(absID,c) ;
+    else
+      ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->SetBinContent(absID,c) ; }  
   
-  TH1F *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)const       { return (TH1F*)fEMCALTimeRecalibrationFactors->At(bc) ; }	
+  TH1  *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)const       { return (TH1*)fEMCALTimeRecalibrationFactors->At(bc) ; }
   void     SetEMCALChannelTimeRecalibrationFactors(const TObjArray *map);
-  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , const TH1F* h);
+  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , const TH1* h);
 
   Bool_t   IsLGOn()const { return fLowGain   ; }
   void     SwitchOffLG() { fLowGain = kFALSE ; }
@@ -382,8 +391,9 @@ public:
   void     SetMaxDCAToVertexXY(Float_t dist=1e10)    { fCutMaxDCAToVertexXY     = dist ; }
   void     SetMaxDCAToVertexZ(Float_t dist=1e10)     { fCutMaxDCAToVertexZ      = dist ; }
   void     SetDCAToVertex2D(Bool_t b=kFALSE)         { fCutDCAToVertex2D        = b    ; }
-  void     SetRequireITSStandAlone(Bool_t b=kFALSE)    {fCutRequireITSStandAlone = b;} //Marcel
-  void     SetRequireITSPureStandAlone(Bool_t b=kFALSE){fCutRequireITSpureSA     = b;}
+  void     SetRequireITSStandAlone(Bool_t b=kFALSE)    {fCutRequireITSStandAlone= b    ; } //Marcel
+  void     SetRequireITSPureStandAlone(Bool_t b=kFALSE){fCutRequireITSpureSA    = b    ; }
+  void     SetRequireTrackDCA(Bool_t b=kFALSE)       { fUseTrackDCA             = b    ; }
   
   // getters								
   Double_t GetMinTrackPt()                     const { return fCutMinTrackPt           ; }
@@ -397,7 +407,8 @@ public:
   Float_t  GetMaxDCAToVertexXY()               const { return fCutMaxDCAToVertexXY     ; }
   Float_t  GetMaxDCAToVertexZ()                const { return fCutMaxDCAToVertexZ      ; }
   Bool_t   GetDCAToVertex2D()                  const { return fCutDCAToVertex2D        ; }
-  Bool_t   GetRequireITSStandAlone()           const { return fCutRequireITSStandAlone ; } //Marcel	
+  Bool_t   GetRequireITSStandAlone()           const { return fCutRequireITSStandAlone ; } //Marcel  
+  Bool_t   GetRequireTrackDCA()                const { return fUseTrackDCA             ; } 
 
   //----------------------------------------------------
   // Exotic cells / clusters
@@ -484,6 +495,7 @@ private:
   // Time Recalibration with L1 phase 
   Bool_t     fUseL1PhaseInTimeRecalibration;   ///< Switch on or off the L1 phase in time recalibration
   TObjArray* fEMCALL1PhaseInTimeRecalibration; ///< Histogram with map of L1 phase per SM, EMCAL
+  Bool_t     fDoUseMergedBC;                   ///< flag for using one histo for all BCs
 
   // Recalibrate with run dependent corrections, energy
   Bool_t     fUseRunCorrectionFactors;   ///< Use Run Dependent Correction
@@ -531,6 +543,7 @@ private:
   Double_t   fStepSurface;               ///< Length of step to extrapolate tracks to EMCal surface
   Double_t   fStepCluster;               ///< Length of step to extrapolate tracks to clusters
   Bool_t     fITSTrackSA;                ///< If track matching is to be done with ITS tracks standing alone, ESDs	
+  Bool_t     fUseTrackDCA;               ///< Activate use of aodtrack->GetXYZ or XvYxZv like in AliEMCALRecoUtilsBase::ExtrapolateTrackToEMCalSurface 
   Bool_t     fUseOuterTrackParam;        ///< Use OuterTrackParam not InnerTrackParam, ESDs
   Double_t   fEMCalSurfaceDistance;      ///< EMCal surface distance (= 430 by default, the last 10 cm are propagated on a cluster-track pair basis)
  
@@ -556,7 +569,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 27) ;
+  ClassDef(AliEMCALRecoUtils, 30) ;
   /// \endcond
 
 };

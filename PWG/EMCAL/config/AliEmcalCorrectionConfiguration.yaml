@@ -59,7 +59,7 @@ sharedParameters:
 CellEnergy:                                         # Cell Energy correction component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    enableRun2TempCalib: false                      # Whether the temperature calibration should be done for Run2
+    enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
@@ -75,6 +75,7 @@ CellBadChannel:                                     # Bad channel removal at the
 CellTimeCalib:                                      # Cell Time Calibration component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    doMergedBCs: false                              # Whether the task should create output histograms
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellEmulateCrosstalk:                               # Component to emulate crosstalk
@@ -156,7 +157,7 @@ CellCombineCollections:                             # Utility task to combine tw
 Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    clusterizer: kClusterizerv2                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
+    clusterizer: kClusterizerv3                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
     unfold: false                                   # Activate cluster unfolding
     unfoldRejectBelowThreshold: false               #  split (false-default) or reject (true) cell energy below threshold after UF
     unfoldMinCellE: 0.015                           #  apply an energy cut on the cells after unfolding
@@ -201,11 +202,22 @@ ClusterNonLinearity:                                # Cluster non-linearity corr
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
         - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
+ClusterNonLinearityMCAfterburner:                   # MC Cluster additional non-linearity afterburner correction component - To be applied after the standard non-linearity correction
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    afterburnerVersion: kNoCorrection               # Sets the version of the correction to be used. kPCM_EMCal=Standard, kEMCal_EMCal, kPCM_EMCalFunctionRatio, kEMCal_EMCalFunctionRatio=systematic variations 
+    setMCPeriod: ""                                 # Set here the MC production name. Only specific productions have corrections
+    setForceClusterE: false                         # Only for backwards compatibility, force cluster->E() to be set to the cluster non-linearity corrected energy. Off by default. For the standard methods, see: http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerClusterEnergyCorrections
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
 ClusterTrackMatcher:                                # Cluster-track matcher component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     maxDist: 0.1                                    # Max distance between a matched cluster and track
     useDCA: true                                    # Use DCA as starting point for track propagation, rather than primary vertex
+    useOuterParamInESDs: false                      # Use TPC outer parameters instead of inner for track propagation, ESDs only, it does nothing on AODs
     usePIDmass: true                                # Use PID-based mass hypothesis for track propagation, rather than pion mass hypothesis
     enableFracEMCRecalc: "sharedParameters:enableFracEMCRecalc"
     removeNMCGenerators: "sharedParameters:removeNMCGenerators"
@@ -240,6 +252,16 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
         - defaultClusterContainer_2                 # This object is defined above in the cluster section of the input objects
     trackContainersNames:                           # Names of the track input objects which should be attached to the correection
         - defaultTrackContainer_1                   # This object is defined above in the track section of the input objects
+CellEnergyVariation:                                # Cell energy shift correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    minCellE: 0.                                    # Min cell E to perform scaling on
+    maxCellE: 150.                                  # Max cell E to perform scaling on
+    energyScaleFactorConstant: 1.                   # Constant factor to scale cell energy by
+    energyScaleFunctionPath: ""                     # Path to file containing TF1 to scale cell energy by, as a function of cell E
+    energyScaleFunctionName: ""                     # Name of TF1 describing factor to scale cell energy by, as a function of cell E
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
 ClusterEnergyVariation:                             # Cluster energy shift correction component (for systematics studies)
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
@@ -258,12 +280,14 @@ PHOSCorrections:                                    # PHOS recalibration compone
 executionOrder:
     - CellEmulateCrosstalk
     - CellEnergy
+    - CellEnergyVariation
     - CellBadChannel
     - CellTimeCalib
     - CellCombineCollections
     - Clusterizer
     - ClusterExotics
     - ClusterNonLinearity
+    - ClusterNonLinearityMCAfterburner
     - ClusterTrackMatcher
     - ClusterHadronicCorrection
     - ClusterEnergyVariation

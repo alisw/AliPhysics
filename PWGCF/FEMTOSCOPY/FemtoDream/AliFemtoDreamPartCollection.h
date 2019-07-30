@@ -45,7 +45,6 @@ class AliFemtoDreamPartCollection {
   void FindBin(float ZVtxPos, float Multiplicity, int *returnBins);
   AliFemtoDreamCorrHists *fResults;
   unsigned int fNSpecies;
-  bool fDoMCAncestorCheck;
   std::vector<std::vector<AliFemtoDreamZVtxMultContainer>> fZVtxMultBuffer;
   std::vector<float> fValuesZVtxBins;
   std::vector<int> fValuesMultBins;ClassDef(AliFemtoDreamPartCollection,2)

@@ -22,8 +22,11 @@ class AliCutHandlerPCM{
     void AddCutHeavyMesonPCM(TString eventCut, TString photonCut, TString pionCut, TString ndmCut, TString mesonCut);
     void AddCutHeavyMesonCalo(TString eventCut, TString clusterCut, TString pionCut, TString ndmCut, TString mesonCut);
     void AddCutHeavyMesonPCMCalo(TString eventCut, TString photonCut, TString clusterCut, TString pionCut, TString ndmCut, TString mesonCut);
-
-    TString GetSpecialSettingFromAddConfig (TString additionalTrainConfig, TString configString, TString fileNameMatBudWeights);
+    void AddCutPCMMaterial(TString eventCut, TString photonCut);
+    void AddCutTrackQA(TString eventCut, TString pionCut, TString kaonCut, TString protonCut, TString deuteronCut); 
+    void AddCutTrackQAPion(TString eventCut, TString pionCut); 
+ 
+    TString GetSpecialSettingFromAddConfig (TString additionalTrainConfig, TString configString, TString fileNameMatBudWeights, TString addTaskName);
     TString GetSpecialFileNameFromString (TString fileNameExternalInputs, TString configString);
 
     Bool_t AreValid(){return fValidCuts;}
@@ -36,6 +39,11 @@ class AliCutHandlerPCM{
     TString GetElectronCut(Int_t i);
     TString GetNDMCut(Int_t i);
     TString GetPionCut(Int_t i);
+    TString GetKaonCut(Int_t i);
+    TString GetProtonCut(Int_t i);
+    TString GetDeuteronCut(Int_t i);
+
+
   protected:
     Int_t fMode;
     Int_t fNCuts;
@@ -49,6 +57,9 @@ class AliCutHandlerPCM{
     Bool_t fValidCutsElectron;
     Bool_t fValidCutsNDM;
     Bool_t fValidCutsChargedPion;
+    Bool_t fValidCutsChargedKaon;
+    Bool_t fValidCutsProton;
+    Bool_t fValidCutsDeuteron;
     TString* fEventCutArray;
     TString* fPhotonCutArray;
     TString* fMesonCutArray;
@@ -57,12 +68,15 @@ class AliCutHandlerPCM{
     TString* fElectronCutArray;
     TString* fNeutralDecayMesonCutArray;
     TString* fChargedPionCutArray;
+    TString* fChargedKaonCutArray;
+    TString* fProtonCutArray;
+    TString* fDeuteronCutArray;
 
   private:
     AliCutHandlerPCM(const AliCutHandlerPCM&);                  // Prevent copy-construction
     AliCutHandlerPCM &operator=(const AliCutHandlerPCM&);       // Prevent assignment
 
-    ClassDef(AliCutHandlerPCM,2);
+    ClassDef(AliCutHandlerPCM,4);
 };
 
 #endif

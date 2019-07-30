@@ -159,7 +159,8 @@ AliMEStrackInfo::AliMEStrackInfo(AliESDtrack *t, AliPIDResponse *rpid, AliPIDCom
 //______________________________________________________________
 AliMEStrackInfo::AliMEStrackInfo(AliMCParticle *t, AliStack *mc)
   : AliVParticle()
-  ,fTrackId(-1)
+  // ,fTrackId(-1)
+  ,fTrackId(t->GetLabel())
   ,fOrigin(0)
   ,fTOFbc(0.)
   ,fFilterId(0)

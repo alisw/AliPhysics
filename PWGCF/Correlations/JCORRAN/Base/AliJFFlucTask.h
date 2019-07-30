@@ -22,12 +22,6 @@
 #include <AliAnalysisTaskSE.h>
 #include <AliAODMCParticle.h>
 #include "AliJHistManager.h"
-#include <AliESDpid.h>
-#include <AliPHOSGeoUtils.h>
-#include <AliPIDResponse.h>
-#include <AliPIDCombined.h>
-#include <AliAnalysisUtils.h>
-#include <AliVVertex.h>
 #include "AliJConst.h"
 #include "AliJFFlucAnalysis.h"
 
@@ -90,9 +84,8 @@ public:
 	Bool_t IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy);
 	Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
 	void SetEffConfig( int effMode, int FilterBit );
-	void EnableCentFlat(const TString);
-	void EnablePhiModule(const TString);
 	void EnablePhiCorrection(const TString);
+	TH1 * GetCorrectionMap(UInt_t, UInt_t);
 	//void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ;
 					//cout << "setting phi modulation = " << isphi << endl; }
 	void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
@@ -115,6 +108,14 @@ public:
 	void SetQCetaCut( Double_t QC_eta_min, Double_t QC_eta_max){
 					fQC_eta_min=QC_eta_min; fQC_eta_max=QC_eta_max;
 					cout << "setting : QC eta range " << fQC_eta_min << "~" << fQC_eta_max << endl;}
+	enum SUBEVENT{
+		SUBEVENT_A = 0x1,
+		SUBEVENT_B = 0x2
+	};
+	void SelectSubevents(UInt_t nsubeventMask){
+		subeventMask = nsubeventMask;
+		cout << "setting subevent mask = " << hex << subeventMask << endl;
+	}
 
 	enum{
 		FLUC_MC = 0x1,
@@ -123,10 +124,10 @@ public:
 		//FLUC_PHI_MODULATION = 0x8,
 		//FLUC_PHI_INVERSE = 0x10,
 		FLUC_PHI_CORRECTION = 0x10,
-		FLUC_PHI_REJECTION = 0x20,
+		//FLUC_PHI_REJECTION = 0x20,
 		FLUC_SCPT = 0x40,
 		FLUC_EBE_WEIGHTING = 0x80,
-		FLUC_CENT_FLATTENING = 0x100,
+		//FLUC_CENT_FLATTENING = 0x100,
 		FLUC_CUT_OUTLIERS = 0x200,
 		FLUC_ALICE_IPINFO = 0x400,
 	};
@@ -135,15 +136,11 @@ public:
 	}
 
 private:
-	 //TF1 *pfOutlierLowCut, *pfOutlierHighCut;
 	 TClonesArray *fInputList;  // tracklist
 	 TDirectory *fOutput;     // output
 	 AliJFFlucAnalysis *fFFlucAna; // analysis code
-	 TH1D *h_ratio;
-	 TH1D *h_ModuledPhi[CENTN_NAT][2]; // cent7, sub2
-	 TFile *pDataFile[2];
 	 //std::unordered_map<UInt_t, TH2D *> PhiWeightMap[CENTN];
-	 std::map<UInt_t, TH3D *> PhiWeightMap[CENTN_NAT];
+	 std::map<UInt_t, TH1 *> PhiWeightMap[CENTN_NAT];
 
 	 TString fTaskName;
 	 int fEvtNum;
@@ -164,6 +161,8 @@ private:
 
 	 Double_t fQC_eta_min;
 	 Double_t fQC_eta_max;
+
+	 UInt_t subeventMask;
 
 	 TString fCentDetName;
 	 //TString fInFileName;

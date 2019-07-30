@@ -18,7 +18,7 @@
 class AliFemtoDreamTrackHist {
  public:
   AliFemtoDreamTrackHist();
-  AliFemtoDreamTrackHist(bool DCADist, bool CombSig);
+  AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM);
   AliFemtoDreamTrackHist(TString MinimalBooking);
   virtual ~AliFemtoDreamTrackHist();
   void FillConfig(int iBin, float val) {
@@ -64,6 +64,16 @@ class AliFemtoDreamTrackHist {
   void FillDCAzCut(int i, float pT, float dcaz) {
     if (!fMinimalBooking)
       fDCAz[i]->Fill(pT, dcaz);
+  }
+  ;
+  void FillDCAxyPropCut(int i, float pT, float dcaxy) {
+    if (!fMinimalBooking)
+      fDCAxyProp[i]->Fill(pT, dcaxy);
+  }
+  ;
+  void FillDCAzPropCut(int i, float pT, float dcaz) {
+    if (!fMinimalBooking)
+      fDCAzProp[i]->Fill(pT, dcaz);
   }
   ;
   void FillTPCCrossedRowCut(int i, float Crossed) {
@@ -131,6 +141,17 @@ class AliFemtoDreamTrackHist {
 
 
   void FillDCAXYPtBins(float pT, float dcaxy, int multiplicity);
+
+  void FillTOFMass(float mom, float beta) {
+    if (fTOFMass) {
+      if (beta > 0 && beta <= 1) {
+        fTOFMass->Fill(mom, mom / beta * TMath::Sqrt(1 - beta * beta));
+      } else {
+        fTOFMass->Fill(0., -999.);
+      }
+    }
+  }
+
   void FillTPCClsCPileUp(int i, int iCrit, float TPCClsC) {
     if (!fMinimalBooking)
       fTPCClsCPiluUp[i]->Fill(iCrit, TPCClsC);
@@ -177,12 +198,15 @@ class AliFemtoDreamTrackHist {
   TH2F *fShrdClsITS[2];     //!
   TH2F *fDCAxy[2];          //!
   TH2F *fDCAz[2];           //!
+  TH2F *fDCAxyProp[2];      //!
+  TH2F *fDCAzProp[2];       //!
   TH2F *fDCAXYPtBins;       //!
-  TH2F *fDCAXYPtBinsMult[3];  //!
-  TH1F *fTPCCrossedRows[2];  //!
+  TH2F *fTOFMass;           //!
+  TH2F *fDCAXYPtBinsMult[3];//!
+  TH1F *fTPCCrossedRows[2]; //!
   TH1F *fTPCRatio[2];       //!
   TH1F *fTPCClsS[2];        //!
-  TH2F *fTrackChi2[2];        //!
+  TH2F *fTrackChi2[2];      //!
   TH2F *fTPCdedx[2];        //!
   TH2F *fTOFbeta[2];        //!
   TH2F *fNSigTPC[2];        //!

@@ -51,6 +51,12 @@ AliHFVnVsMassFitter::AliHFVnVsMassFitter()
   ,fChiSquare(0.)
   ,fNDF(0)
   ,fProb(0.)
+  ,fSBVnPrefitChiSquare(0.)
+  ,fSBVnPrefitNDF(0)
+  ,fSBVnPrefitProb(0.)
+  ,fMassPrefitChiSquare(0.)
+  ,fMassPrefitNDF(0)
+  ,fMassPrefitProb(0.)
   ,fNSigmaForSB(3.)
   ,fSigmaInit(0.012)
   ,fMeanInit(1.870)
@@ -129,7 +135,13 @@ AliHFVnVsMassFitter::AliHFVnVsMassFitter(TH1F* hMass, TH1F* hvn, Double_t min, D
   ,fRawYieldUncertainty(0.)
   ,fChiSquare(0.)
   ,fNDF(0)
-  ,fProb(0)
+  ,fProb(0.)
+  ,fSBVnPrefitChiSquare(0.)
+  ,fSBVnPrefitNDF(0)
+  ,fSBVnPrefitProb(0.)
+  ,fMassPrefitChiSquare(0.)
+  ,fMassPrefitNDF(0)
+  ,fMassPrefitProb(0.)
   ,fNSigmaForSB(3.)
   ,fSigmaInit(0.012)
   ,fMeanInit(1.870)
@@ -224,6 +236,7 @@ Bool_t AliHFVnVsMassFitter::SimultaneusFit(Bool_t drawFit) {
   Bool_t massprefit=MassPrefit();
   if(!massprefit) {AliError("Impossible to perform the mass prefit"); return kFALSE;}
   Bool_t vnprefit=VnSBPrefit();
+  if(!vnprefit) {AliError("Impossible to perform the bkg vn prefit"); return kFALSE;}
 
   std::vector<Double_t> initpars;
   for(Int_t iBkgPar=0; iBkgPar<fNParsMassBkg; iBkgPar++) {
@@ -293,7 +306,9 @@ Bool_t AliHFVnVsMassFitter::SimultaneusFit(Bool_t drawFit) {
   for(Int_t iPar=0; iPar<nparsvn; iPar++) {fitter.Config().ParSettings(iPar).SetName(fVnTotFunc->GetParName(iPar));}
   // fit FCN function directly
   // (specify optionally data size and flag to indicate that is a chi2 fit
-  fitter.FitFCN(nparsvn,globalChi2,0,dataMass.Size()+dataVn.Size(),kFALSE);
+  Bool_t isFitOk = fitter.FitFCN(nparsvn,globalChi2,0,dataMass.Size()+dataVn.Size(),kFALSE);
+  if(!isFitOk) return kFALSE;
+
   ROOT::Fit::FitResult result = fitter.Result();
   result.Print(std::cout);
 
@@ -497,6 +512,9 @@ Bool_t AliHFVnVsMassFitter::MassPrefit() {
   if(status) {
     fMassFuncFromPrefit = (TF1*)fMassFitter->GetMassFunc();
     fMassFuncFromPrefit->SetName("fMassFuncFromPrefit");
+    fMassPrefitChiSquare = fMassFitter->GetChiSquare();
+    fMassPrefitNDF       = fMassFitter->GetMassFunc()->GetNDF();
+    fMassPrefitProb      = fMassFitter->GetFitProbability();
   }
   if(fReflections) fRawYieldHelp=fMassFitter->GetRawYield();
 
@@ -545,12 +563,16 @@ Bool_t AliHFVnVsMassFitter::VnSBPrefit() {
       AliError("Error in setting signal par names: check fVnBkgFuncType");
       break;
   }
-  gVnVsMassSB->Fit(fVnBkgFuncSb,"","",fMassMin,fMassMax);
-  Bool_t status=kFALSE;
-  if(fVnBkgFuncSb->GetChisquare()<1000) status=kTRUE;
+  Int_t status = gVnVsMassSB->Fit(fVnBkgFuncSb,"","",fMassMin,fMassMax);
+
+  fSBVnPrefitChiSquare = fVnBkgFuncSb->GetChisquare();
+  fSBVnPrefitNDF       = fVnBkgFuncSb->GetNDF();
+  fSBVnPrefitProb      = fVnBkgFuncSb->GetProb();
 
   delete gVnVsMassSB;
-  return status;
+
+  if(status==0) return kTRUE;
+  return kFALSE;
 }
 
 //________________________________________________________________
@@ -668,7 +690,7 @@ void AliHFVnVsMassFitter::SetParNames() {
     case 2: //pol2
       fVnTotFunc->SetParName(0,"BkgInt");
       fVnTotFunc->SetParName(1,"Coef1");
-      fVnTotFunc->SetParName(2,"Coef1");
+      fVnTotFunc->SetParName(2,"Coef2");
       break;
     case 3: //no bkg
       fVnTotFunc->SetParName(0,"Const");
@@ -813,7 +835,7 @@ Double_t AliHFVnVsMassFitter::GetGausPDF(Double_t x, Double_t mean, Double_t sig
 Double_t AliHFVnVsMassFitter::GetExpoPDF(Double_t x, Double_t coeff, Bool_t isnorm) {
 
   if(isnorm) {return TMath::Exp(x/coeff)/(coeff*(TMath::Exp(fMassMax/coeff)-TMath::Exp(fMassMin/coeff)));}
-  else TMath::Exp(x/coeff);
+  else return TMath::Exp(x/coeff);
 }
 
 //________________________________________________________________

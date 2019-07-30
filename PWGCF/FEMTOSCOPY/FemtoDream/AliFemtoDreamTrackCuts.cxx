@@ -17,6 +17,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fMinimalBooking(false),
       fMCData(false),
       fDCAPlots(false),
+      fTOFM(false),
       fDoMultBinning(false),
       fCheckMother(false),
       fCombSigma(false),
@@ -25,6 +26,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fCheckFilterBit(false),
       fCheckESDFiltering(false),
       fCheckPileUpITS(false),
+      fCheckPileUpSPDTOF(false),
       fCheckPileUpTOF(false),
       fCheckPileUp(false),
       fFilterBit(0),
@@ -54,9 +56,11 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fCrossedRows(70),
       fRatioCrossedRows(0.83),
       fCutPID(false),
+      fAllowITSonly(false),
       fCutHighPtSig(false),
       fParticleID(AliPID::kUnknown),
       fNSigValue(3.),
+      fNSigValueITS(3.),
       fPIDPTPCThreshold(0),
       fRejectPions(false) {
 }
@@ -68,6 +72,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fMinimalBooking(cuts.fMinimalBooking),
       fMCData(cuts.fMCData),
       fDCAPlots(cuts.fDCAPlots),
+      fTOFM(cuts.fTOFM),
       fDoMultBinning(cuts.fDoMultBinning),
       fCheckMother(cuts.fCheckMother),
       fCombSigma(cuts.fCombSigma),
@@ -76,6 +81,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fCheckFilterBit(cuts.fCheckFilterBit),
       fCheckESDFiltering(cuts.fCheckESDFiltering),
       fCheckPileUpITS(cuts.fCheckPileUpITS),
+      fCheckPileUpSPDTOF(cuts.fCheckPileUpSPDTOF),
       fCheckPileUpTOF(cuts.fCheckPileUpTOF),
       fCheckPileUp(cuts.fCheckPileUp),
       fFilterBit(cuts.fFilterBit),
@@ -105,9 +111,11 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fCrossedRows(cuts.fCrossedRows),
       fRatioCrossedRows(cuts.fRatioCrossedRows),
       fCutPID(cuts.fCutPID),
+      fAllowITSonly(false),
       fCutHighPtSig(cuts.fCutHighPtSig),
       fParticleID(cuts.fParticleID),
       fNSigValue(cuts.fNSigValue),
+      fNSigValueITS(cuts.fNSigValueITS),
       fPIDPTPCThreshold(cuts.fPIDPTPCThreshold),
       fRejectPions(cuts.fRejectPions) {
 }
@@ -122,6 +130,7 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fMinimalBooking = cuts.fMinimalBooking;
   this->fMCData = cuts.fMCData;
   this->fDCAPlots = cuts.fDCAPlots;
+  this->fTOFM= cuts.fTOFM;
   this->fDoMultBinning = cuts.fDoMultBinning;
   this->fCheckMother = cuts.fCheckMother;
   this->fCombSigma = cuts.fCombSigma;
@@ -130,6 +139,7 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fCheckFilterBit = cuts.fCheckFilterBit;
   this->fCheckESDFiltering = cuts.fCheckESDFiltering;
   this->fCheckPileUpITS = cuts.fCheckPileUpITS;
+  this->fCheckPileUpSPDTOF = cuts.fCheckPileUpSPDTOF;
   this->fCheckPileUpTOF = cuts.fCheckPileUpTOF;
   this->fCheckPileUp = cuts.fCheckPileUp;
   this->fFilterBit = cuts.fFilterBit;
@@ -159,9 +169,11 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fCrossedRows = cuts.fCrossedRows;
   this->fRatioCrossedRows = cuts.fRatioCrossedRows;
   this->fCutPID = cuts.fCutPID;
+  this->fAllowITSonly = cuts.fAllowITSonly;
   this->fCutHighPtSig = cuts.fCutHighPtSig;
   this->fParticleID = cuts.fParticleID;
   this->fNSigValue = cuts.fNSigValue;
+  this->fNSigValueITS = cuts.fNSigValueITS;
   this->fPIDPTPCThreshold = cuts.fPIDPTPCThreshold;
   this->fRejectPions = cuts.fRejectPions;
   return *this;
@@ -197,7 +209,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(21);
+        fHists->FillTrackCounter(22);
     }
   }
   if (pass) {
@@ -268,12 +280,20 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
         fHists->FillTrackCounter(5);
     }
   }
+  if (pass && fCheckPileUpSPDTOF) {
+    if (!(Track->GetTOFTimingReuqirement() || Track->GetHasSPDHit())) {
+      pass = false;
+    } else {
+      if (!fMinimalBooking)
+        fHists->FillTrackCounter(6);
+    }
+  }
   if (pass && fCheckPileUpTOF) {
     if (!Track->GetTOFTimingReuqirement()) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(6);
+        fHists->FillTrackCounter(7);
     }
   }
   if (pass && fCheckPileUp) {
@@ -281,7 +301,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(7);
+        fHists->FillTrackCounter(8);
     }
   }
   if (pass && fcutnTPCCls) {
@@ -289,7 +309,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(8);
+        fHists->FillTrackCounter(9);
     }
   }
   if (pass && fCutSharedClsTPC) {
@@ -297,7 +317,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(9);
+        fHists->FillTrackCounter(10);
     }
   }
   if (pass && fCutSharedCls) {
@@ -305,7 +325,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(10);
+        fHists->FillTrackCounter(11);
     }
   }
   if (pass && fCheckTPCRefit) {
@@ -313,7 +333,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(11);
+        fHists->FillTrackCounter(12);
     }
   }
   if (pass && fCutTPCCrossedRows) {
@@ -321,14 +341,14 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(12);
+        fHists->FillTrackCounter(13);
     }
     if (pass) {
       if (Track->GetRatioCr() < fRatioCrossedRows) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(13);
+          fHists->FillTrackCounter(14);
       }
     }
   }
@@ -338,7 +358,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(14);
+        fHists->FillTrackCounter(15);
     }
   }
 
@@ -350,9 +370,13 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
   //PID Method with an nSigma cut, just use the TPC below threshold,
   //and above TPC and TOF Combined
   //there must be TPC & TOF signal (TOF for P>0.75 GeV/c)
+  bool ITSisthere = false;
   bool TPCisthere = false;
   bool TOFisthere = false;
 
+  if (Track->GetstatusITS() == AliPIDResponse::kDetPidOk) {
+    ITSisthere = true;
+  }
   if (Track->GetstatusTPC() == AliPIDResponse::kDetPidOk) {
     TPCisthere = true;
   }
@@ -365,42 +389,87 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
   //particle species doesn't have a smaller sigma value
 
   if (Track->GetMomTPC() < fPIDPTPCThreshold) {
-    if (!TPCisthere) {
-      pass = false;
-    } else {
-      if (!fMinimalBooking)
-        fHists->FillTrackCounter(15);
-      if (fRejectPions && TOFisthere) {
-        float nSigTOF = (Track->GetnSigmaTOF((int) (AliPID::kPion)));
-        if (TMath::Abs(nSigTOF) < fNSigValue) {
-          if (fParticleID == AliPID::kPion) {
-            AliWarning(
-                "Sure you want to use this method? Propably want to set"
-                " SetRejLowPtPionsTOF(kFALSE), since you are selecting Pions");
+    if (!fAllowITSonly) {
+      if (!TPCisthere) {
+        pass = false;
+      } else {
+        if (!fMinimalBooking)
+          fHists->FillTrackCounter(16);
+        if (fRejectPions && TOFisthere) {
+          float nSigTOF = (Track->GetnSigmaTOF((int) (AliPID::kPion)));
+          if (TMath::Abs(nSigTOF) < fNSigValue) {
+            if (fParticleID == AliPID::kPion) {
+              AliWarning(
+                  "Sure you want to use this method? Propably want to set"
+                  " SetRejLowPtPionsTOF(kFALSE), since you are selecting Pions");
+            }
+            //if the particle is a Pion according to the TOF, reject it!
+            pass = false;
+          } else {
+            if (!fMinimalBooking)
+              fHists->FillTrackCounter(17);
           }
-          //if the particle is a Pion according to the TOF, reject it!
-          pass = false;
-        } else {
-          if (!fMinimalBooking)
-            fHists->FillTrackCounter(16);
+        }
+        if (pass) {
+          float nSigTPC = (Track->GetnSigmaTPC((int) (fParticleID)));
+          if (!(TMath::Abs(nSigTPC) < fNSigValue)) {
+            pass = false;
+          } else {
+            if (!fMinimalBooking)
+              fHists->FillTrackCounter(18);
+          }
         }
       }
-      if (pass) {
-        float nSigTPC = (Track->GetnSigmaTPC((int) (fParticleID)));
-        if (!(TMath::Abs(nSigTPC) < fNSigValue)) {
-          pass = false;
-        } else {
-          if (!fMinimalBooking)
-            fHists->FillTrackCounter(17);
+    } else {  //exception for omega bachelor: enable use of ITS pid
+      if (!ITSisthere && !TPCisthere) {
+        pass = false;
+      } else {
+        if (!fMinimalBooking)
+          fHists->FillTrackCounter(16);
+        if (fRejectPions && TOFisthere) {
+          float nSigTOF = (Track->GetnSigmaTOF((int) (AliPID::kPion)));
+          if (TMath::Abs(nSigTOF) < fNSigValue) {
+            if (fParticleID == AliPID::kPion) {
+              AliWarning(
+                  "Sure you want to use this method? Propably want to set"
+                  " SetRejLowPtPionsTOF(kFALSE), since you are selecting Pions");
+            }
+            //if the particle is a Pion according to the TOF, reject it!
+            pass = false;
+          } else {
+            if (!fMinimalBooking)
+              fHists->FillTrackCounter(17);
+          }
+        }
+        if (pass) {
+          if (TPCisthere) {  //tpc prevails
+            float nSigTPC = (Track->GetnSigmaTPC((int) (fParticleID)));
+            if (!(TMath::Abs(nSigTPC) < fNSigValue)) {
+              pass = false;
+            } else {
+              if (!fMinimalBooking)
+                fHists->FillTrackCounter(18);
+            }
+          } else {
+            if (ITSisthere) {  //if there is no tpc, check its
+              float nSigITS = (Track->GetnSigmaITS((int) (fParticleID)));
+              if (!(TMath::Abs(nSigITS) < fNSigValueITS)) {
+                pass = false;
+              } else {
+                if (!fMinimalBooking)
+                  fHists->FillTrackCounter(19);
+              }
+            }
+          }
         }
       }
-    }
+    }  // if fallowitsonly
   } else {
     if (!(TPCisthere && TOFisthere)) {
       pass = false;
     } else {
       if (!fMinimalBooking)
-        fHists->FillTrackCounter(18);
+        fHists->FillTrackCounter(20);
       float nSigTPC = (Track->GetnSigmaTPC((int) (fParticleID)));
       float nSigTOF = (Track->GetnSigmaTOF((int) (fParticleID)));
       float nSigComb = TMath::Sqrt(nSigTPC * nSigTPC + nSigTOF * nSigTOF);
@@ -408,13 +477,13 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(19);
+          fHists->FillTrackCounter(21);
         if (fCutHighPtSig) {
           if (!SmallestNSig(Track)) {
             pass = false;
           } else {
             if (!fMinimalBooking)
-              fHists->FillTrackCounter(20);
+              fHists->FillTrackCounter(22);
           }
         }
       }
@@ -427,16 +496,16 @@ bool AliFemtoDreamTrackCuts::SmallestNSig(AliFemtoDreamTrack *Track) {
   bool pass = true;
   //check before if TPC and TOF PID are available
   //This should just be for PID of high pT particles
-  AliPID::EParticleType type[5] = { AliPID::kElectron, AliPID::kMuon,
-      AliPID::kPion, AliPID::kKaon, AliPID::kProton };
-  float nSigmaComb[5];
+  AliPID::EParticleType type[6] = { AliPID::kElectron, AliPID::kMuon,
+      AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron };
+  float nSigmaComb[6];
   //Form the combination:
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 6; ++i) {
     nSigmaComb[i] = TMath::Sqrt(
         pow((Track->GetnSigmaTPC(i)), 2.) + pow((Track->GetnSigmaTOF(i)), 2.));
   }
   int index = 0;
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 6; ++i) {
     if (nSigmaComb[index] > nSigmaComb[i]) {
       index = i;
     }
@@ -455,14 +524,14 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(22);
+          fHists->FillTrackCounter(24);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAZ()) < fDCAToVertexZ)) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(22);
+          fHists->FillTrackCounter(24);
       }
     }
   }
@@ -496,14 +565,14 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(23);
+          fHists->FillTrackCounter(25);
       }
     } else {
       if (!(TMath::Abs(Track->GetDCAXY()) < fDCAToVertexXY)) {
         pass = false;
       } else {
         if (!fMinimalBooking)
-          fHists->FillTrackCounter(23);
+          fHists->FillTrackCounter(25);
       }
     }
   }
@@ -512,7 +581,7 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
 
 void AliFemtoDreamTrackCuts::Init(TString name) {
   if (!fMinimalBooking) {
-    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma);
+    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM);
     if (fMCData) {
       fMCHists = new AliFemtoDreamTrackMCHist(fContribSplitting, fDCAPlots,
                                               fDoMultBinning, fCheckMother);
@@ -529,6 +598,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
     std::vector<float> phi = Track->GetPhi();
     float pT = Track->GetPt();
     float p = Track->GetMomTPC();
+    float Pprim = Track->GetP();
     for (int i = 0; i < 2; ++i) {
       if (i == 0 || (i == 1 && Track->UseParticle())) {
         fHists->FilletaCut(i, eta.at(0));
@@ -537,17 +607,14 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         fHists->FillpTPCCut(i, p);
         fHists->FillTPCclsCut(i, Track->GetNClsTPC());
         fHists->FillTrackChiSquare(i, pT, Track->GetChiSquare());
-        if (fDCAProp) {
-          fHists->FillDCAxyCut(i, pT, Track->GetDCAXYProp());
-          fHists->FillDCAzCut(i, pT, Track->GetDCAZProp());
-        } else {
-          fHists->FillDCAxyCut(i, pT, Track->GetDCAXY());
-          fHists->FillDCAzCut(i, pT, Track->GetDCAZ());
-        }
+        fHists->FillDCAxyCut(i, pT, Track->GetDCAXY());
+        fHists->FillDCAzCut(i, pT, Track->GetDCAZ());
+        fHists->FillDCAxyPropCut(i, pT, Track->GetDCAXYProp());
+        fHists->FillDCAzPropCut(i, pT, Track->GetDCAZProp());
         fHists->FillTPCCrossedRowCut(i, Track->GetTPCCrossedRows());
         fHists->FillTPCRatioCut(i, Track->GetRatioCr());
         fHists->FillTPCClsS(i, Track->GetTPCClsC());
-        for (int j = 0; j < 6; ++j) {
+        for (size_t j = 0; j < Track->GetITSHits().size(); ++j) {
           if (Track->GetITSHit(j)) {
             fHists->FillTPCClsCPileUp(i, j, Track->GetTPCClsC());
           } else if (Track->GetHasITSHit()
@@ -563,7 +630,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
           fHists->FillTPCClsCPileUp(i, 14, Track->GetTPCClsC());
         }
 
-        for (int j = 0; j < 6; ++j) {
+        for (size_t j = 0; j < Track->GetSharedClusterITS().size(); ++j) {
           if (Track->GetSharedClusterITS(j)) {
             fHists->FillHasSharedClsITS(i, j + 1, 0);
           } else {
@@ -607,17 +674,22 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         }
         fHists->FillTPCdedx(i, p, Track->GetdEdxTPC());
         fHists->FillTOFbeta(i, p, Track->GetbetaTOF());
+
         fHists->FillNSigTPC(i, p, (Track->GetnSigmaTPC(fParticleID)));
-        fHists->FillNSigTPCMod(i,p,(Track->GetnSigmaTPC(fParticleID)));
+        fHists->FillNSigTPCMod(i, p, (Track->GetnSigmaTPC(fParticleID)));
         fHists->FillNSigTOF(i, p, (Track->GetnSigmaTOF(fParticleID)));
         fHists->FillTPCStatus(i, Track->GetstatusTPC());
         fHists->FillTOFStatus(i, Track->GetstatusTOF());
-        fHists->FillNSigComTPCTOF(i,p,Track->GetnSigmaTPC(fParticleID),
-                             Track->GetnSigmaTOF(fParticleID));
+        fHists->FillNSigComTPCTOF(i, p, Track->GetnSigmaTPC(fParticleID),
+                                  Track->GetnSigmaTOF(fParticleID));
         //Fill These Before
         if (i == 0 && fCombSigma) {
           fHists->FillNSigComb(pT, Track->GetnSigmaTPC(fParticleID),
                                Track->GetnSigmaTOF(fParticleID));
+        }
+        //Fill These After
+        if (i == 1 && fTOFM) {
+            fHists->FillTOFMass(Pprim, Track->GetbetaTOF());
         }
       }
     }
@@ -630,7 +702,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
 
 void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
   if (!fMinimalBooking) {
-    Int_t PDGcode[5] = { 11, 13, 211, 321, 2212 };
+    Int_t PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020 };
     //this is not the correct way to do it, since there might be float counting
     if (fpTmin < Track->GetPt() && Track->GetPt() < fpTmax) {
       if (fetamin < Track->GetEta().at(0) && Track->GetEta().at(0) < fetamax) {
@@ -648,8 +720,8 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
     }
     if (Track->UseParticle()) {
       float pT = Track->GetPt();
-      int PDGcode[5] = { 11, 13, 211, 321, 2212 };
-      //Fill Identified
+      int PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020};
+//Fill Identified
       fMCHists->FillMCIdent(pT);
       AliFemtoDreamBasePart::PartOrigin tmpOrg = Track->GetParticleOrigin();
       if (!fcutCharge) {
@@ -699,7 +771,8 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
         FillMCContributions(Track);
       }
       Track->SetParticleOrigin(tmpOrg);
-	    if(fCheckMother) fMCHists->FillMCMother(Track->GetPt(), Track->GetMotherPDG());
+      if (fCheckMother)
+        fMCHists->FillMCMother(Track->GetPt(), Track->GetMotherPDG());
     }
   }
 }
@@ -810,40 +883,49 @@ void AliFemtoDreamTrackCuts::BookTrackCuts() {
     if (fCutPID) {
       fHists->FillConfig(14, fPIDPTPCThreshold);
       fHists->FillConfig(15, fNSigValue);
-      if (fRejectPions) {
-        fHists->FillConfig(16, 1);
+      if (fAllowITSonly) {
+        fHists->FillConfig(16, fNSigValueITS);
       } else {
         fHists->FillConfig(16, 0);
       }
-      if (fCutHighPtSig) {
+      if (fRejectPions) {
         fHists->FillConfig(17, 1);
       } else {
         fHists->FillConfig(17, 0);
+      }
+      if (fCutHighPtSig) {
+        fHists->FillConfig(18, 1);
+      } else {
+        fHists->FillConfig(18, 0);
       }
     } else {
       fHists->FillConfig(14, 0);
       fHists->FillConfig(15, 0);
       fHists->FillConfig(16, 0);
       fHists->FillConfig(17, 0);
+      fHists->FillConfig(18, 0);
     }
     if (fCheckPileUpITS) {
-      fHists->FillConfig(18, 1);
-    }
-    if (fCheckPileUpTOF) {
       fHists->FillConfig(19, 1);
     }
-    if (fCheckPileUp) {
+    if (fCheckPileUpSPDTOF) {
       fHists->FillConfig(20, 1);
     }
-    if (fCheckTPCRefit) {
+    if (fCheckPileUpTOF) {
       fHists->FillConfig(21, 1);
     }
+    if (fCheckPileUp) {
+      fHists->FillConfig(22, 1);
+    }
+    if (fCheckTPCRefit) {
+      fHists->FillConfig(23, 1);
+    }
     if (fCutChi2) {
-      fHists->FillConfig(22, fMinCutChi2);
-      fHists->FillConfig(23, fMaxCutChi2);
+      fHists->FillConfig(24, fMinCutChi2);
+      fHists->FillConfig(25, fMaxCutChi2);
     }
     if (fCheckESDFiltering) {
-      fHists->FillConfig(24, 1);
+      fHists->FillConfig(26, 1);
     }
   }
 }
@@ -868,6 +950,56 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimProtonCuts(
   trackCuts->SetCutSharedCls(true);
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   trackCuts->SetPID(AliPID::kProton, 0.75);
+  trackCuts->SetRejLowPtPionsTOF(true);
+  trackCuts->SetCutSmallestSig(true);
+
+  return trackCuts;
+}
+
+AliFemtoDreamTrackCuts *AliFemtoDreamTrackCuts::PrimKaonCuts(
+    bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting) {
+  AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
+  trackCuts->SetPlotDCADist(DCAPlots);
+  trackCuts->SetPlotCombSigma(CombSigma);
+  trackCuts->SetPlotContrib(ContribSplitting);
+  trackCuts->SetIsMonteCarlo(isMC);
+
+  trackCuts->SetFilterBit(96);
+  trackCuts->SetPtRange(0.15, 999);
+  trackCuts->SetEtaRange(-0.8, 0.8);
+  trackCuts->SetNClsTPC(80);
+  trackCuts->SetDCAReCalculation(true);
+  trackCuts->SetDCAVtxZ(0.2);
+  trackCuts->SetDCAVtxXY(0.1);
+  trackCuts->SetCutSharedCls(true);
+  trackCuts->SetCutTPCCrossedRows(true, 70, 0.80);
+  trackCuts->SetPID(AliPID::kKaon, 0.4, 5);
+  // trackCuts->SetRejLowPtPionsTOF(false);
+  trackCuts->SetCutSmallestSig(true);
+
+  return trackCuts;
+}
+
+AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+    bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting) {
+  AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
+  //you can leave DCA cut active, this will still be filled
+  //over the whole DCA_xy range
+  trackCuts->SetPlotDCADist(DCAPlots);
+  trackCuts->SetPlotCombSigma(CombSigma);
+  trackCuts->SetPlotContrib(ContribSplitting);
+  trackCuts->SetIsMonteCarlo(isMC);
+
+  trackCuts->SetFilterBit(128);
+  trackCuts->SetPtRange(0.4, 4.);
+  trackCuts->SetEtaRange(-0.8, 0.8);
+  trackCuts->SetNClsTPC(80);
+  trackCuts->SetDCAReCalculation(true);  //Get the dca from the PropagateToVetex
+  trackCuts->SetDCAVtxZ(0.2);
+  trackCuts->SetDCAVtxXY(0.1);
+  trackCuts->SetCutSharedCls(true);
+  trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
+  trackCuts->SetPID(AliPID::kDeuteron, 1.4);
   trackCuts->SetRejLowPtPionsTOF(true);
   trackCuts->SetCutSmallestSig(true);
 
@@ -997,8 +1129,8 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::OmegaBachKaonCuts(
 }
 
 int AliFemtoDreamTrackCuts::GetPDGCode() {
-  int PDGcode[5] = { 11, 13, 211, 321, 2212 };
-  if (fParticleID < 5) {
+  int PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020 };
+  if (fParticleID < 6) {
     return fCharge * PDGcode[fParticleID];
   } else {
     return 0;

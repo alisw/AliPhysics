@@ -1,5 +1,5 @@
 #ifdef __CINT__
- 
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -12,6 +12,7 @@
 #pragma link C++ class AliLatexTable+;
 #pragma link C++ class AliNamedArrayI+;
 #pragma link C++ class AliNamedString+;
+#pragma link C++ class AliMCSpectraWeights+;
 #pragma link C++ class AliPWGFunc+;
 #pragma link C++ class AliPWGHistoTools+;
 #pragma link C++ typedef AliTHn;
@@ -40,6 +41,10 @@
 #pragma link C++ namespace PWG::Tools+;
 #pragma link C++ class PWG::Tools::AliYAMLConfiguration+;
 #pragma link C++ namespace TestTHistManager;
+#pragma link C++ class TBinning+;
+#pragma link C++ class TCustomBinning+;
+#pragma link C++ class TLinearBinning+;
+#pragma link C++ class TVariableBinning+;
 #pragma link C++ class TestTHistManager::THistManagerTestSuite;
 #pragma link C++ function TestTHistManager::TestRunAll();
 #pragma link C++ function TestTHistManager::TestRunBuildSimple();

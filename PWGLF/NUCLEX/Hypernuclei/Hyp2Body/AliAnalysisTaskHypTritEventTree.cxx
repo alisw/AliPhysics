@@ -50,6 +50,8 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fHistdEdx(0),
   fHistdEdxV0(0),
   fHistNumEvents(0),
+  fHistTrigger(0),
+  fHistV0(0),
   fHistMcGen(0),
   fHistMcRec(0),
   fTree(0),
@@ -63,15 +65,16 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fMagneticField(),
   fNV0Cand(),
   fMcGenRecCounter(),
-  fMCtrue(0),
-  fEventCuts(),
-  fPeriod(),
-  fBetheSplines(),
-  fBetheParamsHe(),
-  fBetheParamsT(),
   fPidQa(0),
   fUseAnalysisTrkSel(kTRUE),
-  fPIDCheckOnly(kFALSE) {
+  fPIDCheckOnly(kFALSE),
+  fMCtrue(0),
+  fEventCuts(),
+  fPeriod(0),
+  fTriggerMask(0),
+  fBetheSplines(),
+  fBetheParamsHe(),
+  fBetheParamsT() {
 
   }
 
@@ -89,6 +92,8 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fHistdEdx(0),
   fHistdEdxV0(0),
   fHistNumEvents(0),
+  fHistTrigger(0),
+  fHistV0(0),
   fHistMcGen(0),
   fHistMcRec(0),
   fTree(0),
@@ -102,15 +107,17 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fMagneticField(),
   fNV0Cand(),
   fMcGenRecCounter(),
-  fMCtrue(0),
-  fEventCuts(),
-  fPeriod(),
-  fBetheSplines(),
-  fBetheParamsHe(),
-  fBetheParamsT(),
   fPidQa(0),
   fUseAnalysisTrkSel(kTRUE),
-  fPIDCheckOnly(kFALSE) {
+  fPIDCheckOnly(kFALSE),
+  fMCtrue(0),
+  fEventCuts(),
+  fPeriod(00),
+  fTriggerMask(),
+  fBetheSplines(),
+  fBetheParamsHe(),
+  fBetheParamsT()
+  {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
     DefineOutput(2, TTree::Class());
@@ -134,11 +141,29 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
     AliError("Could not get PID response.\n");
     return;
   }
-  fHistdEdx = new TH2F("fHistdEdX","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",1000,-8.0,8.0,1000,0.0,1200);
-  fHistdEdxV0 = new TH2F("fHistdEdXV0","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",1000,-8.0,8.0,1000,0.0,1200);
+  fHistdEdx = new TH2F("fHistdEdX","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",1000,-5.0,5.0,1000,0.0,1500);
+  fHistdEdxV0 = new TH2F("fHistdEdXV0","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",1000,-5.0,5.0,1000,0.0,1500);
+
   fHistNumEvents = new TH1F("fHistNumEvents","Number of Events",2,0,2);
   fHistNumEvents->GetXaxis()->SetBinLabel(1,"before PhysSel");
   fHistNumEvents->GetXaxis()->SetBinLabel(2,"after PhysSel");
+
+  fHistTrigger = new TH1F("fHistTrigger","Trigger",7,0,7);
+  fHistTrigger->GetXaxis()->SetBinLabel(1,"other");
+  fHistTrigger->GetXaxis()->SetBinLabel(2,"kINT7");
+  fHistTrigger->GetXaxis()->SetBinLabel(3,"kHighMultV0");
+  fHistTrigger->GetXaxis()->SetBinLabel(4,"kHighMultSPD");
+  fHistTrigger->GetXaxis()->SetBinLabel(5,"HNU");
+  fHistTrigger->GetXaxis()->SetBinLabel(6,"HQU");
+  fHistTrigger->GetXaxis()->SetBinLabel(7,"HJT");
+  fHistV0 = new TH1F("fHistV0","Trigger V0s",7,0,7);
+  fHistV0->GetXaxis()->SetBinLabel(1,"other");
+  fHistV0->GetXaxis()->SetBinLabel(2,"kINT7");
+  fHistV0->GetXaxis()->SetBinLabel(3,"kHighMultV0");
+  fHistV0->GetXaxis()->SetBinLabel(4,"kHighMultSPD");
+  fHistV0->GetXaxis()->SetBinLabel(5,"HNU");
+  fHistV0->GetXaxis()->SetBinLabel(6,"HQU");
+  fHistV0->GetXaxis()->SetBinLabel(7,"HJT");
 
   fHistMcGen = new TH1F("fHistMcGen","mc generated; ct (cm);counts",40,0,40);
   fHistMcRec = new TH1F("fHistMcRec","mc reconstructed; ct (cm);counts",40,0,40);
@@ -175,6 +200,8 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistogramList->Add(fHistdEdx);
   fHistogramList->Add(fHistdEdxV0);
   fHistogramList->Add(fHistNumEvents);
+  fHistogramList->Add(fHistTrigger);
+  fHistogramList->Add(fHistV0);
   fHistogramList->Add(fHistMcGen);
   fHistogramList->Add(fHistMcRec);
   //fHistogramList->Add(tBethe);
@@ -231,6 +258,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   fHistNumEvents->Fill(0);
   Float_t centrality = -1;
   const AliESDVertex *vertex = fESDevent->GetPrimaryVertexTracks();
+  fEventCuts.OverrideAutomaticTriggerSelection(fTriggerMask);
   if (fPeriod == 2010 || fPeriod == 2011) {
       if (vertex->GetNContributors() < 1) {
         vertex = fESDevent->GetPrimaryVertexSPD();
@@ -263,7 +291,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
       }
     }
   }
-  if (fPeriod == 2016 || fPeriod == 2017) {
+  if (fPeriod == 2016 || fPeriod == 2017 || fPeriod == 2018) {
     if(!fEventCuts.AcceptEvent(fESDevent)) {
       PostData(1,fHistogramList);
       return;
@@ -320,6 +348,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
 
   // V0 loop
   for (Int_t ivertex = 0; ivertex < fESDevent->GetNumberOfV0s(); ivertex++) {
+	fHistV0->Fill(fReducedEvent->fTrigger);
     fV0 = fESDevent->GetV0(ivertex);
     Bool_t v0ChargeCorrect = kTRUE;
     AliESDtrack* trackN = fESDevent->GetTrack(fV0->GetIndex(0));
@@ -336,15 +365,15 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     fHistdEdxV0->Fill(trackN->GetInnerParam()->GetP() * trackN->GetSign(), trackN->GetTPCsignal());
     if(fPIDCheckOnly) continue;
     if (trackN->GetTPCsignal() > 1500 || trackP->GetTPCsignal() > 1500) continue;
-    if (trackN->GetInnerParam()->GetP() > 10 || trackP->GetInnerParam()->GetP() > 10) continue;
+    if (trackN->GetInnerParam()->GetP() > 5 || trackP->GetInnerParam()->GetP() > 5) continue;
     Bool_t pionPositive     = kFALSE;
     Bool_t pionNegative     = kFALSE;
-    Bool_t protonPositive   = kFALSE;
-    Bool_t protonNegative   = kFALSE;
-    Bool_t deuteronPositive = kFALSE;
-    Bool_t deuteronNegative = kFALSE;
-    Bool_t tritonPositive   = kFALSE;
-    Bool_t tritonNegative   = kFALSE;
+    // Bool_t protonPositive   = kFALSE;
+    // Bool_t protonNegative   = kFALSE;
+    // Bool_t deuteronPositive = kFALSE;
+    // Bool_t deuteronNegative = kFALSE;
+    // Bool_t tritonPositive   = kFALSE;
+    // Bool_t tritonNegative   = kFALSE;
     Bool_t helium3Positive  = kFALSE;
     Bool_t helium3Negative  = kFALSE;
     if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kPion)) < 3) {
@@ -386,7 +415,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     }
   }
   fReducedEvent->fNumberV0s = (fNV0Cand);
-  fTree->Fill();
+  if (fNV0Cand) fTree->Fill();
   fReducedEvent->ClearEvent();
   if (fMCtrue) {
     const AliMCVertex* mcVertex = (const AliMCVertex*) mcEvent->GetPrimaryVertex();
@@ -453,6 +482,9 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
   AliReducedHypTritTrack* reducedPi = reducedV0->Pi();
   AliReducedHypTritTrack* reducedHe = reducedV0->He();
   reducedV0->fPosition = secondaryVertex;
+  TVector3 momentumVector(0,0,0);
+  fV0->GetPxPyPz(momentumVector(0), momentumVector(1), momentumVector(2));
+  reducedV0->fPvect = momentumVector;
   reducedV0->fCharge = charge;
   reducedV0->fM = v0M;
   reducedV0->fP= v0P;
@@ -621,11 +653,14 @@ void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliStack *stack) {
 Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection() {
   fReducedEvent->fTrigger = 0;
   TString classes = fESDevent->GetFiredTriggerClasses();
-
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kINT7)) fReducedEvent->fTrigger = 1;
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kCentral)) fReducedEvent->fTrigger = 2;
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)) fReducedEvent->fTrigger =  3;
-  if(classes.Contains("HNU") || classes.Contains("HQU") || classes.Contains("HSE")) fReducedEvent->fTrigger = 4;
+  fReducedEvent->fTriggerClasses = classes;
+  if (classes.Contains("CINT7")) fReducedEvent->fTrigger = 1;
+  if (classes.Contains("CVHMV0M")) fReducedEvent->fTrigger = 2;
+  if (classes.Contains("CVHMSH2") || classes.Contains("CSHM")) fReducedEvent->fTrigger = 3;
+  if (classes.Contains("HNU")) fReducedEvent->fTrigger = 4;
+  if (classes.Contains("HQU")) fReducedEvent->fTrigger = 5;
+  if (classes.Contains("HJT")) fReducedEvent->fTrigger = 6;
+  fHistTrigger->Fill(fReducedEvent->fTrigger);
   Bool_t isTriggered = kTRUE;
   if (fReducedEvent->fTrigger == 0) isTriggered = kFALSE;
   return isTriggered;

@@ -153,7 +153,7 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2012MCPP(const char *dataset) con
 }
 
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2016MCPP(const char *dataset) const {
-  std::vector<TString> supportedProductions = {"lhc17f8", "lhc18f5"};
+  std::vector<TString> supportedProductions = {"lhc17f8", "lhc18f5", "lhc18g2", "lhc19a1"};
   return IsSupportedMCSample(dataset, supportedProductions);
 }
 

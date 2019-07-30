@@ -1,4 +1,4 @@
-AliAnalysisTaskHadronPhiCorr *AddTaskHadronPhiCorr(Bool_t isHH = kFALSE, Float_t multLow = 0.0, Float_t multHigh = 100.0){
+AliAnalysisTaskHadronPhiCorr *AddTaskHadronPhiCorr(Bool_t isHH = kFALSE, Float_t multLow = 0.0, Float_t multHigh = 100.0, const char* suffix=""){
     //get the current analysis manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -12,7 +12,7 @@ AliAnalysisTaskHadronPhiCorr *AddTaskHadronPhiCorr(Bool_t isHH = kFALSE, Float_t
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
         
     stringstream taskStream;
-    taskStream << "hPhiCorr_mult_" << multLow << "_" << multHigh;
+    taskStream << "hPhiCorr_mult_" << multLow << "_" << multHigh << suffix;
 
     TString taskName = taskStream.str();
 
@@ -26,10 +26,11 @@ AliAnalysisTaskHadronPhiCorr *AddTaskHadronPhiCorr(Bool_t isHH = kFALSE, Float_t
     }else{
         containerStream << "phiCorr_mult_" << multLow << "_" << multHigh;
     }
+    containerStream << suffix;
     TString containerName = containerStream.str();
 
     AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containerName, TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data());
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containerName, TList::Class(), AliAnalysisManager::kOutputContainer, filename.Data());
     mgr->ConnectInput(hPhiCorr, 0, cinput);
     mgr->ConnectOutput(hPhiCorr, 1, coutput1);
     mgr->AddTask(hPhiCorr);

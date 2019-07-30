@@ -5,7 +5,7 @@
 
 /**
  * @class AliEmcalCorrectionCellEnergy
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Energy calibration correction component in the EMCal correction framework.
  *
  * Performs energy calibration of cells, using OADB calibration. The original cell information in the event **will be overwritten**.
@@ -44,7 +44,7 @@ private:
   // Change to false if experts
   Bool_t                 fUseAutomaticRecalib;       ///< On by default the check in the OADB of the energy recalibration
   Bool_t                 fUseAutomaticRunDepRecalib; ///< On by default the check in the OADB of the run dependent energy recalibration
-  Bool_t                 fUseRunDepTempCalibRun2;    ///< Off by default the check in the OADB of the run dependent temp calib Run2
+  Bool_t                 fUseNewRunDepTempCalib;     ///< Off by default the check in the OADB of the new run dependent temp calib Run1/Run2
   TString                fCustomRecalibFilePath;     ///< Empty string by default the path to the OADB file of the custom energy recalibration
   
   AliEmcalCorrectionCellEnergy(const AliEmcalCorrectionCellEnergy &);               // Not implemented
@@ -54,7 +54,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellEnergy> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellEnergy, 3); // EMCal cell energy correction component
+  ClassDef(AliEmcalCorrectionCellEnergy, 4); // EMCal cell energy correction component
   /// \endcond
 };
 

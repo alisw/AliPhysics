@@ -25,8 +25,9 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     // setters
     void SetMaxY(Double_t maxy){fMaxY = maxy;}
     void SetMaxEta(Double_t maxeta){fMaxEta = maxeta;}
+    void SetMaxPt(Double_t maxpt){fMaxPt = maxpt;}
+    void SetPtBinWidth(Double_t widthpt){fPtBinWidth = widthpt;}
     void SetLightOutput(Bool_t flag) {fDoLightOutput = flag;}
-    void SetWideBinning(Bool_t doWideBinning){fWideBinning = doWideBinning;}
     void SetAnalyzedParticle(Int_t flag);
     void SetHasMother(UInt_t selectedMothers);
     TH1* SetHist1D(TH1* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Bool_t optSumw2);
@@ -58,7 +59,6 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     Bool_t                      fAnalyzeNeutralPi;                // switch for pi0 analysis
     Bool_t                      fAnalyzeChargedPi;                // switch for pi+- analysis
     Bool_t                      fDoLightOutput;                   // switch for running light
-    Bool_t                      fWideBinning;                     // switch for 500 pT bins
     Bool_t                      fHasMother[24];                   // mother i produced
   
     // nEvent histogram
@@ -99,13 +99,15 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     Int_t                       fIsMC;                            // MC flag
     Double_t                    fMaxY;                            // Max y
     Double_t                    fMaxEta;                          // Max Eta
+    Double_t                    fMaxPt;                           // Max Pt
+    Double_t                    fPtBinWidth;                       // Pt binning
 
   
   private:
     AliAnalysisTaskHadronicCocktailMC(const AliAnalysisTaskHadronicCocktailMC&);              // Prevent copy-construction
     AliAnalysisTaskHadronicCocktailMC &operator=(const AliAnalysisTaskHadronicCocktailMC&);   // Prevent assignment
   
-    ClassDef(AliAnalysisTaskHadronicCocktailMC, 10);
+    ClassDef(AliAnalysisTaskHadronicCocktailMC, 12);
 };
 
 #endif

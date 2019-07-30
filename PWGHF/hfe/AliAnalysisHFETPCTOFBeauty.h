@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//      Task for Beauty analysis in Pb-Pb collisions   				  //
+//      Task for Beauty analysis in central Pb-Pb collisions   				  //
 //      															  //
 //																	  //
 //		v1.0														  //
@@ -33,11 +33,12 @@ class AliCentrality;
 class AliAODEvent;
 class AliVEvent;
 class AliAODMCHeader;
-class AliSelectNonHFE;
+class AliHFEextraCuts;
 class AliEventPoolManager;
 class AliEventPool;
 class TObjArray;
 class AliGenEventHeader;
+class AliHFEV0taginfo;
 
 //______________________________________________________________________
 //Library
@@ -172,7 +173,8 @@ private:
     AliVEvent 		      	*fVevent;			
     TList       			*fOutputList;
     AliPIDResponse 			*fPidResponse;
-    AliSelectNonHFE 		*fNonHFE;
+    AliHFEextraCuts 		*fExtraCuts;
+	AliHFEV0taginfo			*fV0Tagger;  // Tags v0 tracks per Event
     
     
     //For the case of AOD analysis
@@ -225,7 +227,9 @@ private:
     TH2F                *fTPCnsigma_TOFnsigma1;//!
     TH2F                *fTPCnsigma_TOFnsigma2;//!
     TH2F                *fTPCnsigma_TOFnsigma3;//!
+    TH2F				*fTPCnsigma_p_after_V0selection;//!
     TH2F                *fTPCnsigma_p_after_tof;//!
+    TH2F                *fTPCnsigma_p_after_tof_v2;//!
     TH2F                *fTPCnsigma_p_after_tof_p;//!
     TH2F                *fTPCnsigma_p_after_tof_pion;//!
     TH2F                *fTPCnsigma_p_after_tof_k;//!
@@ -262,6 +266,9 @@ private:
 	TH1F				*fPtBeautyReconstructedTracksPID;//!
 	TH1F				*fPtBeautyReconstructedTracksPIDTPC;//!
 	TH1F				*fPtBeautyReconstructedTracksPIDTOF;//!
+	TH1F				*fPtBeautyReconstructedTracksPIDITS;//!
+	TH1F				*hTOFEffDen;
+	TH1F				*hTOFEffNum;
     
     TH2F				*fPtBeautyPtrecVsPtparticle;//!
     TH2F				*hCharmMotherPt_vsElecPt;//!

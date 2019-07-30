@@ -69,6 +69,7 @@ using std::endl;
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2()
   : AliAnalysisTaskSE(),
+    fEventCuts(0),
     fESDevent(0),                         //! 
     fAODevent(0),                         //! 
     fevent(0),   
@@ -116,6 +117,8 @@ AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2()
     hCos2DeltaVzMTPCnvsCentrality(0),
     hCos2DeltaTPCpTPCnvsCentrality(0),
     hQVzAQVzCvsCentrality(0),
+    hQVzAQTPCvsCentrality(0),
+    hQVzCQTPCvsCentrality(0),
     hQxVzAvsCentrality(0),
     hQyVzAvsCentrality(0),
     hQxVzCvsCentrality(0),
@@ -141,8 +144,7 @@ AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2()
     tphi(0),
     fESDtrackCuts(0),
     fESDtrackCutsEP(0),
-    fPIDResponse(0),
-    fEventCuts(0)
+    fPIDResponse(0)
 {
   cout<<"Dummy constructor"<<endl;
 
@@ -154,7 +156,8 @@ AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2()
 
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2(const char *name) 
-  : AliAnalysisTaskSE(name),   
+  : AliAnalysisTaskSE(name), 
+    fEventCuts(0),  
     fESDevent(0),                         //! 
     fAODevent(0),                           //! 
     fevent(0),   
@@ -202,6 +205,8 @@ AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2(const char *name)
     hCos2DeltaVzMTPCnvsCentrality(0),
     hCos2DeltaTPCpTPCnvsCentrality(0),
     hQVzAQVzCvsCentrality(0),
+    hQVzAQTPCvsCentrality(0),
+    hQVzCQTPCvsCentrality(0),
     hQxVzAvsCentrality(0),
     hQyVzAvsCentrality(0),
     hQxVzCvsCentrality(0),
@@ -440,11 +445,21 @@ void AliAnalysisTaskNucleiv2::UserCreateOutputObjects()
   fListHist->Add(hCos2DeltaVzMTPCnvsCentrality); 
   fListHist->Add(hCos2DeltaTPCpTPCnvsCentrality);
 
-  if(fHarmonic < 3)
+  if(fHarmonic < 3){
     hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-100,100,105,0,105);
-  else
-    hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",5000,-1000,1000,105,0,105);
+    hQVzAQTPCvsCentrality = new TH2F("hQVzAQTPCvsCentrality","hQVzAQTPCvsCentrality",1000,-100,100,105,0,105);
+    hQVzCQTPCvsCentrality = new TH2F("hQVzCQTPCvsCentrality","hQVzCQTPCvsCentrality",1000,-100,100,105,0,105);
+  }
+   
+  else{
+    hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",5000,-5000,5000,105,0,105);
+    hQVzAQTPCvsCentrality = new TH2F("hQVzAQTPCvsCentrality","hQVzAQTPCvsCentrality",5000,-5000,5000,105,0,105);
+    hQVzCQTPCvsCentrality = new TH2F("hQVzCQTPCvsCentrality","hQVzCQTPCvsCentrality",5000,-5000,5000,105,0,105);
+  }
+
   fListHist->Add(hQVzAQVzCvsCentrality);
+  fListHist->Add(hQVzAQTPCvsCentrality);
+  fListHist->Add(hQVzCQTPCvsCentrality);
 
   if(fHarmonic < 3){
     hQxVzAvsCentrality = new TH2F("hQxVzAvsCentrality","hQxVzAvsCentrality",100,-20,20,105,0,105);
@@ -560,7 +575,7 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
   fPIDResponse=inputHandler->GetPIDResponse(); 
 
   Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
-  AliCentrality* centrality = 0x0;
+  //  AliCentrality* centrality = 0x0;
   
   //=================================================================
   
@@ -569,8 +584,8 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
   
   ULong_t  status=0;
  
-  Double_t pmax  = 10.;
-  Double_t ptmax = 6.2;
+  //  Double_t pmax  = 10.;
+  //  Double_t ptmax = 6.2;
 
   // Primary vertex cut
 
@@ -710,7 +725,7 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
 
   TString fDetTPCConfName[3];
   TString fDetV0ConfName[3];
-  TString fNormMethod="QoverQlength";
+  TString fNormMethod="QoverM";//"QoverQlength";
 
   fDetTPCConfName[0] = "TPC";
   fDetTPCConfName[1] = "TPCNegEta";
@@ -744,23 +759,24 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
   Double_t qxEP =  0, qyEP  = 0;
 
   Double_t Qx2  = 0, Qy2  = 0;
-  Double_t Qx2p = 0, Qy2p = 0;
-  Double_t Qx2n = 0, Qy2n = 0;
-
+  // Double_t Qx2p = 0, Qy2p = 0;
+  // Double_t Qx2n = 0, Qy2n = 0;
+  /*
   const AliQnCorrectionsQnVector* QnVectTPC  = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[0].Data()), "latest", "plain");     
-  const AliQnCorrectionsQnVector* QnVectTPCn = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[1].Data()), "latest", "plain");     
-  const AliQnCorrectionsQnVector* QnVectTPCp = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[2].Data()), "latest", "plain");     
+  // const AliQnCorrectionsQnVector* QnVectTPCn = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[1].Data()), "latest", "plain");     
+  // const AliQnCorrectionsQnVector* QnVectTPCp = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[2].Data()), "latest", "plain");     
   const AliQnCorrectionsQnVector* QnVectV0   = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[0].Data()), "latest", "raw");	   
   const AliQnCorrectionsQnVector* QnVectV0A  = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[1].Data()), "latest", "raw");	   
   const AliQnCorrectionsQnVector* QnVectV0C  = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[2].Data()), "latest", "raw");        
+  
   Qx2 = QnVectTPC->Qx(fHarmonic);
   Qy2 = QnVectTPC->Qy(fHarmonic);
 
-  Qx2p  = QnVectTPCp->Qx(fHarmonic);
-  Qy2p  = QnVectTPCp->Qy(fHarmonic);
+  // Qx2p  = QnVectTPCp->Qx(fHarmonic);
+  // Qy2p  = QnVectTPCp->Qy(fHarmonic);
 
-  Qx2n  = QnVectTPCn->Qx(fHarmonic);
-  Qy2n  = QnVectTPCn->Qy(fHarmonic);
+  // Qx2n  = QnVectTPCn->Qx(fHarmonic);
+  // Qy2n  = QnVectTPCn->Qy(fHarmonic);
 
   
   qxEPa = QnVectV0A->Qx(fHarmonic);
@@ -771,8 +787,21 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
   	  
   qxEP  = QnVectV0->Qx(fHarmonic);
   qyEP  = QnVectV0->Qy(fHarmonic);
+  */
 
-
+  //test different Q normalization
+  Qx2 = qnVectTPC[0]->Qx(fHarmonic);
+  Qy2 = qnVectTPC[0]->Qy(fHarmonic);
+  
+  qxEPa = qnVectV0[1]->Qx(fHarmonic); //V0A
+  qyEPa = qnVectV0[1]->Qy(fHarmonic);
+  	  
+  qxEPc = qnVectV0[2]->Qx(fHarmonic); //V0C
+  qyEPc = qnVectV0[2]->Qy(fHarmonic);
+  	  
+  qxEP  = qnVectV0[0]->Qx(fHarmonic); //V0
+  qyEP  = qnVectV0[0]->Qy(fHarmonic);
+  
   Double_t evPlAngV0A = eventplaneqncorrVZERO[1];
   Double_t evPlAngV0C = eventplaneqncorrVZERO[2];
   Double_t evPlAngV0  = eventplaneqncorrVZERO[0];
@@ -823,7 +852,13 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
   //Scalar Product
   
   Double_t  QV0AQV0C = qxEPa * qxEPc + qyEPa*qyEPc;
+ 
+  Double_t corV0ATPCvn = qxEPa*Qx2 + qyEPa*Qy2;
+  Double_t corV0CTPCvn = qxEPc*Qx2 + qyEPc*Qy2;
+
   hQVzAQVzCvsCentrality->Fill(QV0AQV0C,percentile);
+  hQVzAQTPCvsCentrality->Fill(corV0ATPCvn,percentile);
+  hQVzCQTPCvsCentrality->Fill(corV0CTPCvn,percentile);
   
   //NUA correction
  
@@ -836,17 +871,17 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
 
   //====================================================================================================================
   
-  Double_t ptcExp  = -999;
+  //  Double_t ptcExp  = -999;
   Double_t pullTPC = -999;
-  Double_t expbeta = -999;
+  //  Double_t expbeta = -999;
   Float_t deltaphiTPC = -3;
   Float_t deltaphiV0  = -3;
   Float_t deltaphiV0A = -3;
   Float_t deltaphiV0C = -3;
 
-  Double_t massd   = 1.875612859;
-  Double_t masst   = 2.808939;
-  Double_t mass3he = 2.80892;
+  // Double_t massd   = 1.875612859;
+  // Double_t masst   = 2.808939;
+  // Double_t mass3he = 2.80892;
 
   Float_t  uqV0A = -999;
   Float_t  uqV0C = -999; 
@@ -906,10 +941,10 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
       impactXY = d[0];
       impactZ  = d[1];
     }
-    
+    /*
     ptcExp = -999;
    
-    /*
+    
       if(fptc==1)
       ptcExp  = AliExternalTrackParam::BetheBlochAleph(ptpc/(0.938*2),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
       if(fptc==2)
@@ -936,12 +971,12 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
     Float_t  gamma = 0;
     Float_t  mass  = -99;
     
-    if(fptc==1)
-      expbeta = TMath::Sqrt(1-((massd*massd)/(p*p+massd*massd))); 
-    if(fptc==2)
-      expbeta = TMath::Sqrt(1-((masst*masst)/(p*p+masst*masst))); 
-    if(fptc==3)
-      expbeta = TMath::Sqrt(1-((mass3he*mass3he)/(p*p+mass3he*mass3he))); 
+    // if(fptc==1)
+    //   expbeta = TMath::Sqrt(1-((massd*massd)/(p*p+massd*massd))); 
+    // if(fptc==2)
+    //   expbeta = TMath::Sqrt(1-((masst*masst)/(p*p+masst*masst))); 
+    // if(fptc==3)
+    //   expbeta = TMath::Sqrt(1-((mass3he*mass3he)/(p*p+mass3he*mass3he))); 
         
     if(fptc==3)
       pt = 2*pt;

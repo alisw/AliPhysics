@@ -19,7 +19,7 @@ class AliVEvent;
 
 /**
  * @class AliEmcalCorrectionTask
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Steering task for the EMCal correction framework
  *
  * This class is the steering class for the cell and cluster level corrections
@@ -250,7 +250,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   TList *                     fOutput;                     //!<! Output for histograms
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionTask, 6); // EMCal correction task
+  ClassDef(AliEmcalCorrectionTask, 8); // EMCal correction task
   /// \endcond
 };
 

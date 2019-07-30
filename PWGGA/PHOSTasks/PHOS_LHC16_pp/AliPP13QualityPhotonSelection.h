@@ -32,7 +32,6 @@ public:
 		fClusterTimeMap(0),
 		fClusterIdN(),
 		fClusterIdE(),
-		fMassPtA(),
 		fAsymmetry(0),
 		fZvertex(0),
 		fNcellsE(0),
@@ -51,7 +50,6 @@ public:
 		fClusterTimeMap(0),
 		fClusterIdN(),
 		fClusterIdE(),
-		fMassPtA(),
 		fAsymmetry(0),
 		fZvertex(0),
 		fNcellsE(0),
@@ -100,7 +98,6 @@ private:
 	TH1F * fClusterIdN[2]; //!
 	TH1F * fClusterIdE[2]; //!
 
-	TH3F * fMassPtA[2]; //!
 	TH1F * fAsymmetry; //!
 	TH1F * fZvertex; //!
 	TH2F * fNcellsE; //!

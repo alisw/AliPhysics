@@ -44,9 +44,10 @@ AliAnalysisTaskGammaConvDtrue::AliAnalysisTaskGammaConvDtrue():
 }
 
 AliAnalysisTaskGammaConvDtrue::AliAnalysisTaskGammaConvDtrue(const char *name):
-  AliAnalysisTaskEmcal(name),
+  AliAnalysisTaskEmcal(name, true),
   fHistos(nullptr)
 {
+  this->SetMakeGeneralHistograms(true);
   DefineOutput(1, TList::Class());
 }
 
@@ -104,7 +105,7 @@ AliAnalysisTaskGammaConvDtrue::D03PionDecay AliAnalysisTaskGammaConvDtrue::Check
   decay.fPiMidaughter = nullptr;
   AliDebug(1, "Found D0\n");
   int did = 0;
-  for(auto idaughter = d0mother->GetFirstDaughter(); idaughter <= d0mother->GetLastDaughter(); idaughter++){
+  for(auto idaughter = d0mother->GetDaughterFirst(); idaughter <= d0mother->GetDaughterLast(); idaughter++){
     auto daughterpart = fMCEvent->GetTrack(idaughter);
     AliDebug(2, Form("Daughter %d: %d\n", did, daughterpart->PdgCode()));
     if(TMath::Abs(daughterpart->PdgCode()) == 111)  decay.fPi0daughter = daughterpart;  

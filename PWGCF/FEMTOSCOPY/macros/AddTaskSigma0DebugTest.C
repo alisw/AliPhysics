@@ -1,103 +1,45 @@
+#include <vector>
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliFemtoDreamEventCuts.h"
+#include "AliFemtoDreamTrackCuts.h"
+#include "AliFemtoDreamv0Cuts.h"
+#include "AliSigma0PhotonCuts.h"
+#include "AliSigma0AODPhotonMotherCuts.h"
+#include "AliFemtoDreamCollConfig.h"
+#include "AliAnalysisTaskNanoAODSigma0Femto.h"
+
 AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
-                                          bool isHeavyIon = false,
                                           bool MomRes = false,
-                                          bool etaPhiPlotsAtTPCRadii = false,
+                                          bool fullBlastQA = false,
                                           TString trigger = "kINT7",
                                           const char *cutVariation = "0") {
-  TString suffix;
-  suffix.Form("%s", cutVariation);
+  TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskSigma0Run2()", "No analysis manager found.");
+    Error("AddTaskSigma0DebugTest()", "No analysis manager found.");
     return 0x0;
   }
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler = mgr->GetInputEventHandler();
-
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
-  //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton;
-  cutnumberPhoton = "00200008400000002280920000";
-  TString cutnumberEvent = "00000000";
-  TString periodNameV0Reader = "";
-  Bool_t enableV0findingEffi = kFALSE;
-  Bool_t runLightOutput = kFALSE;
-  if (suffix != "0" && suffix != "999") {
-    runLightOutput = kTRUE;
-  }
-
-  //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  TString V0ReaderName =
-      Form("V0ReaderV1_%s_%s", cutnumberEvent.Data(), cutnumberPhoton.Data());
-  AliConvEventCuts *fEventCuts = NULL;
-
-  if (!(AliV0ReaderV1 *)mgr->GetTask(V0ReaderName.Data())) {
-    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
-    if (periodNameV0Reader.CompareTo("") != 0)
-      fV0ReaderV1->SetPeriodName(periodNameV0Reader);
-    fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
-    fV0ReaderV1->SetCreateAODs(kFALSE);  // AOD Output
-    fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-    fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
-
-    if (!mgr) {
-      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return nullptr;
-    }
-
-    if (cutnumberEvent != "") {
-      fEventCuts =
-          new AliConvEventCuts(cutnumberEvent.Data(), cutnumberEvent.Data());
-      fEventCuts->SetPreSelectionCutFlag(kTRUE);
-      fEventCuts->SetV0ReaderName(V0ReaderName);
-      fEventCuts->SetLightOutput(runLightOutput);
-      if (periodNameV0Reader.CompareTo("") != 0)
-        fEventCuts->SetPeriodEnum(periodNameV0Reader);
-      fV0ReaderV1->SetEventCuts(fEventCuts);
-      fEventCuts->SetFillCutHistograms("", kTRUE);
-    }
-
-    // Set AnalysisCut Number
-    AliConversionPhotonCuts *fCuts = NULL;
-    if (cutnumberPhoton != "") {
-      fCuts = new AliConversionPhotonCuts(cutnumberPhoton.Data(),
-                                          cutnumberPhoton.Data());
-      fCuts->SetPreSelectionCutFlag(kTRUE);
-      fCuts->SetIsHeavyIon(isHeavyIon);
-      fCuts->SetV0ReaderName(V0ReaderName);
-      fCuts->SetLightOutput(runLightOutput);
-      if (fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())) {
-        fV0ReaderV1->SetConversionCuts(fCuts);
-        fCuts->SetFillCutHistograms("", kTRUE);
-      }
-    }
-
-    fV0ReaderV1->Init();
-
-    AliLog::SetGlobalLogLevel(AliLog::kFatal);
-
-    // connect input V0Reader
-    mgr->AddTask(fV0ReaderV1);
-    mgr->ConnectInput(fV0ReaderV1, 0, cinput);
-  }
-
   //========= Init subtasks and start analyis ============================
+  // Event Cuts
+  AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
+  evtCuts->CleanUpMult(false, false, false, true);
+
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
-  TrackCuts->SetCheckFilterBit(false);
-  TrackCuts->SetCheckESDFiltering(true);
-  TrackCuts->SetDCAReCalculation(false);
+  TrackCuts->SetFilterBit(128);
   TrackCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
-  AntiTrackCuts->SetCheckFilterBit(false);
-  AntiTrackCuts->SetCheckESDFiltering(true);
-  AntiTrackCuts->SetDCAReCalculation(false);
+  AntiTrackCuts->SetFilterBit(128);
   AntiTrackCuts->SetCutCharge(-1);
 
   if (suffix != "0" && suffix != "999") {
@@ -105,62 +47,118 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     AntiTrackCuts->SetMinimalBooking(true);
   }
 
-  AliSigma0V0Cuts *v0Cuts = AliSigma0V0Cuts::LambdaCuts();
-  v0Cuts->SetIsMC(isMC);
-  v0Cuts->SetPID(3122);
-  v0Cuts->SetPosPID(AliPID::kProton, 2212);
-  v0Cuts->SetNegPID(AliPID::kPion, -211);
-  AliSigma0V0Cuts *antiv0Cuts = AliSigma0V0Cuts::LambdaCuts();
-  antiv0Cuts->SetIsMC(isMC);
-  antiv0Cuts->SetPID(-3122);
-  antiv0Cuts->SetPosPID(AliPID::kPion, 211);
-  antiv0Cuts->SetNegPID(AliPID::kProton, -2212);
+  // Lambda Cuts
+  AliFemtoDreamv0Cuts *v0Cuts =
+      AliFemtoDreamv0Cuts::LambdaSigma0Cuts(isMC, false, false);
+  AliFemtoDreamTrackCuts *Posv0Daug =
+      AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, false, false);
+  Posv0Daug->SetEtaRange(-0.9, 0.9);
+  AliFemtoDreamTrackCuts *Negv0Daug =
+      AliFemtoDreamTrackCuts::DecayPionCuts(isMC, false, false);
+  Negv0Daug->SetEtaRange(-0.9, 0.9);
+
+  AliFemtoDreamv0Cuts *antiv0Cuts =
+      AliFemtoDreamv0Cuts::LambdaSigma0Cuts(isMC, false, false);
+  AliFemtoDreamTrackCuts *PosAntiv0Daug =
+      AliFemtoDreamTrackCuts::DecayPionCuts(isMC, false, false);
+  PosAntiv0Daug->SetCutCharge(1);
+  PosAntiv0Daug->SetEtaRange(-0.9, 0.9);
+  AliFemtoDreamTrackCuts *NegAntiv0Daug =
+      AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, false, false);
+  NegAntiv0Daug->SetCutCharge(-1);
+  NegAntiv0Daug->SetEtaRange(-0.9, 0.9);
 
   if (suffix != "0") {
-    v0Cuts->SetLightweight(true);
-    antiv0Cuts->SetLightweight(true);
+    v0Cuts->SetMinimalBooking(true);
+    antiv0Cuts->SetMinimalBooking(true);
   }
-  if (suffix == "1") {
-    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-  } else if (suffix == "2") {
-    v0Cuts->SetV0OnFlyStatus(false);
-    antiv0Cuts->SetV0OnFlyStatus(false);
+  if (suffix == "2") {
+    v0Cuts->SetCutTransverseRadius(0.375, 100);
+    antiv0Cuts->SetCutTransverseRadius(0.375, 100);
   } else if (suffix == "3") {
-    v0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.01, 1.115683 + 0.01);
+    v0Cuts->SetCutTransverseRadius(0.5, 100);
+    antiv0Cuts->SetCutTransverseRadius(0.5, 100);
+  } else if (suffix == "4") {
+    v0Cuts->SetCutTransverseRadius(0.75, 100);
+    antiv0Cuts->SetCutTransverseRadius(0.75, 100);
+  } else if (suffix == "5") {
+    v0Cuts->SetCutTransverseRadius(1, 100);
+    antiv0Cuts->SetCutTransverseRadius(1, 100);
+  } else if (suffix == "6") {
+    v0Cuts->SetCutTransverseRadius(1.5, 100);
+    antiv0Cuts->SetCutTransverseRadius(1.5, 100);
+  } else if (suffix == "7") {
+    v0Cuts->SetCutTransverseRadius(2, 100);
+    antiv0Cuts->SetCutTransverseRadius(2, 100);
+  } else if (suffix == "8") {
+    v0Cuts->SetCutTransverseRadius(2.5, 100);
+    antiv0Cuts->SetCutTransverseRadius(2.5, 100);
+  } else if (suffix == "9") {
+    v0Cuts->SetCutTransverseRadius(3, 100);
+    antiv0Cuts->SetCutTransverseRadius(3, 100);
+  } else if (suffix == "10") {
+    v0Cuts->SetCutTransverseRadius(3.5, 100);
+    antiv0Cuts->SetCutTransverseRadius(3.5, 100);
+  } else if (suffix == "11") {
+    v0Cuts->SetCutTransverseRadius(5, 100);
+    antiv0Cuts->SetCutTransverseRadius(5, 100);
+  } else if (suffix == "12") {
+    v0Cuts->SetCutTransverseRadius(0.2, 90);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 90);
+  } else if (suffix == "13") {
+    v0Cuts->SetCutTransverseRadius(0.2, 80);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 80);
+  } else if (suffix == "14") {
+    v0Cuts->SetCutTransverseRadius(0.2, 70);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 70);
+  } else if (suffix == "15") {
+    v0Cuts->SetCutTransverseRadius(0.2, 60);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 60);
+  } else if (suffix == "16") {
+    v0Cuts->SetCutTransverseRadius(0.2, 50);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 50);
+  } else if (suffix == "17") {
+    v0Cuts->SetCutTransverseRadius(0.2, 40);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 40);
+  } else if (suffix == "18") {
+    v0Cuts->SetCutTransverseRadius(0.2, 30);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 30);
+  } else if (suffix == "19") {
+    v0Cuts->SetCutTransverseRadius(0.2, 20);
+    antiv0Cuts->SetCutTransverseRadius(0.2, 20);
   }
 
-  if (suffix == "999") {
-    v0Cuts->SetCheckCutsMC(true);
-    antiv0Cuts->SetCheckCutsMC(true);
-    v0Cuts->SetLightweight(false);
-    antiv0Cuts->SetLightweight(false);
-  }
+  v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
+  v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
+  v0Cuts->SetPDGCodePosDaug(2212);  // Proton
+  v0Cuts->SetPDGCodeNegDaug(211);   // Pion
+  v0Cuts->SetPDGCodev0(3122);       // Lambda
+  antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
+  antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
+  antiv0Cuts->SetPDGCodePosDaug(211);   // Pion
+  antiv0Cuts->SetPDGCodeNegDaug(2212);  // Proton
+  antiv0Cuts->SetPDGCodev0(-3122);      // Lambda
 
-  AliSigma0PhotonMotherCuts *sigmaCuts =
-      AliSigma0PhotonMotherCuts::DefaultCuts();
+  AliSigma0PhotonCuts *photon = AliSigma0PhotonCuts::PhotonCuts();
+
+  AliSigma0AODPhotonMotherCuts *sigmaCuts =
+      AliSigma0AODPhotonMotherCuts::DefaultCuts();
   sigmaCuts->SetIsMC(isMC);
   sigmaCuts->SetPDG(3212, 3122, 22);
-  sigmaCuts->SetLambdaCuts(v0Cuts);
-  sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
   }
 
-  AliSigma0PhotonMotherCuts *antiSigmaCuts =
-      AliSigma0PhotonMotherCuts::DefaultCuts();
+  AliSigma0AODPhotonMotherCuts *antiSigmaCuts =
+      AliSigma0AODPhotonMotherCuts::DefaultCuts();
   antiSigmaCuts->SetIsMC(isMC);
   antiSigmaCuts->SetPDG(-3212, -3122, 22);
-  antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
-  antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
   }
-
-  if (suffix == "4") {
-    sigmaCuts->SetSigmaMassCut(0.01);
-    antiSigmaCuts->SetSigmaMassCut(0.01);
+  if (suffix == "1") {
+    sigmaCuts->SetSigmaSideband(0.0035, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.0035, 0.1);
   }
 
   // Femto Collection
@@ -173,10 +171,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
-  PDGParticles.push_back(3122);
-  PDGParticles.push_back(22);
-  PDGParticles.push_back(3122);
-  PDGParticles.push_back(22);
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -194,11 +188,35 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   std::vector<int> NBins;
   std::vector<float> kMin;
   std::vector<float> kMax;
-  for (int i = 0; i < 78; ++i) {
-    NBins.push_back(500);
-    kMin.push_back(0.);
-    kMax.push_back(2.);
+  std::vector<int> pairQA;
+  std::vector<bool> closeRejection;
+  const int nPairs = 36;
+  for (int i = 0; i < nPairs; ++i) {
+    pairQA.push_back(0);
+    closeRejection.push_back(false);
+    if (suffix == "0") {
+      NBins.push_back(600);
+      kMin.push_back(0.);
+      kMax.push_back(3.);
+    } else {
+      NBins.push_back(200);
+      kMin.push_back(0.);
+      kMax.push_back(1.);
+    }
   }
+
+  NBins[0] = 250;  // pp
+  NBins[8] = 250;  // barp barp
+
+  // do extended QA for the pairs in default mode
+  if (suffix == "0") {
+    NBins[0] = 750;  // pp
+    NBins[8] = 750;  // barp barp
+  }
+  pairQA[0] = 11;   // pp
+  pairQA[2] = 14;   // pSigma
+  pairQA[8] = 11;   // barp barp
+  pairQA[10] = 14;  // barp bSigma
 
   AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
@@ -251,23 +269,28 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   }
   config->SetMultBinning(true);
 
+  config->SetExtendedQAPairs(pairQA);
+  config->SetdPhidEtaPlotsSmallK(false);
   config->SetZBins(ZVtxBins);
-  if (MomRes) {
-    if (isMC) {
-      config->SetMomentumResolution(true);
-    } else {
-      std::cout << "You are trying to request the Momentum Resolution without "
-                   "MC Info; fix it wont work! \n";
-    }
+  if (MomRes && isMC) {
+    config->SetMomentumResolution(true);
   }
-  if (etaPhiPlotsAtTPCRadii) {
-    if (isMC) {
-      config->SetPhiEtaBinnign(true);
-    } else {
-      std::cout << "You are trying to request the Eta Phi Plots without MC "
-                   "Info; fix it wont work! \n";
-    }
+
+  if (trigger == "kHighMultV0") {
+    // no close pair rejection since we don't care about pp
+    config->SetDeltaEtaMax(0.);
+    config->SetDeltaPhiMax(0.);
+    config->SetClosePairRejection(closeRejection);
   }
+
+  if (suffix == "0" && fullBlastQA) {
+    config->SetPhiEtaBinnign(true);
+    config->SetkTBinning(true);
+    config->SetmTBinning(true);
+  }
+  config->SetUsePhiSpinning(false);
+  config->SetPtQA(true);
+  config->SetMassQA(true);
   config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -275,27 +298,18 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
-  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
-  if (suffix != "0") {
-    config->SetMinimalBookingME(true);
-  }
+  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+  config->SetMinimalBookingME(false);
 
-  AliAnalysisTaskSigma0Femto *task =
-      new AliAnalysisTaskSigma0Femto("AnalysisTaskSigma0Femto");
-  if (trigger == "kINT7") {
-    task->SetTrigger(AliVEvent::kINT7);
-    task->SelectCollisionCandidates(AliVEvent::kINT7);
-  } else if (trigger == "kHighMultV0") {
-    task->SetTrigger(AliVEvent::kHighMultV0);
-    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-  }
-  task->SetV0ReaderName(V0ReaderName.Data());
-  task->SetIsHeavyIon(isHeavyIon);
-  task->SetIsMC(isMC);
+  AliAnalysisTaskNanoAODSigma0Femto *task =
+      new AliAnalysisTaskNanoAODSigma0Femto("AliAnalysisTaskNanoAODSigma0Femto", isMC);
+
+  task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetV0Cuts(v0Cuts);
   task->SetAntiV0Cuts(antiv0Cuts);
+  task->SetPhotonCuts(photon);
   task->SetSigmaCuts(sigmaCuts);
   task->SetAntiSigmaCuts(antiSigmaCuts);
   task->SetCollectionConfig(config);
@@ -304,34 +318,148 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     task->SetLightweight(true);
   }
 
-  if (suffix == "5") {
-    task->SetPhotonLegPileUpCut(true);
-  }
-
   mgr->AddTask(task);
 
-  TString containerName = mgr->GetCommonFileName();
-  containerName += ":Sigma0_Femto_";
-  if (trigger == "kHighMultV0") containerName += "HighMultV0_";
-  containerName += suffix;
+  TString addon = "";
+  if (trigger == "kINT7") {
+    addon += "MBSigma0";
+  } else if (trigger == "kHighMultV0") {
+    addon += "HMSigma0";
+  }
 
-  TString name = "histo_";
-  if (trigger == "kHighMultV0") name += "HighMultV0_";
-  name += suffix;
-  AliAnalysisDataContainer *cOutputList = mgr->CreateContainer(
-      name, TList::Class(), AliAnalysisManager::kOutputContainer,
-      containerName.Data());
-
-  name = "femto_";
-  if (trigger == "kHighMultV0") name += "HighMultV0_";
-  name += suffix;
-  AliAnalysisDataContainer *cFemtoOutputList = mgr->CreateContainer(
-      name, TList::Class(), AliAnalysisManager::kOutputContainer,
-      containerName.Data());
+  TString file = AliAnalysisManager::GetCommonFileName();
 
   mgr->ConnectInput(task, 0, cinput);
-  mgr->ConnectOutput(task, 1, cOutputList);
-  mgr->ConnectOutput(task, 2, cFemtoOutputList);
+
+  TString QAName = Form("%sQA%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      QAName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), QAName.Data()));
+  mgr->ConnectOutput(task, 1, coutputQA);
+
+  TString EvtCutsName = Form("%sEvtCuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
+      EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), EvtCutsName.Data()));
+  mgr->ConnectOutput(task, 2, coutputEvtCuts);
+
+  TString TrackCutsName = Form("%sTrackCuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *couputTrkCuts =
+      mgr->CreateContainer(TrackCutsName.Data(), TList::Class(),
+                           AliAnalysisManager::kOutputContainer,
+                           Form("%s:%s", file.Data(), TrackCutsName.Data()));
+  mgr->ConnectOutput(task, 3, couputTrkCuts);
+
+  TString AntiTrackCutsName =
+      Form("%sAntiTrackCuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputAntiTrkCuts = mgr->CreateContainer(
+      AntiTrackCutsName.Data(), TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
+  mgr->ConnectOutput(task, 4, coutputAntiTrkCuts);
+
+  TString v0CutsName = Form("%sv0Cuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputv0Cuts = mgr->CreateContainer(
+      v0CutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), v0CutsName.Data()));
+  mgr->ConnectOutput(task, 5, coutputv0Cuts);
+
+  TString Antiv0CutsName = Form("%sAntiv0Cuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputAntiv0Cuts =
+      mgr->CreateContainer(Antiv0CutsName.Data(), TList::Class(),
+                           AliAnalysisManager::kOutputContainer,
+                           Form("%s:%s", file.Data(), Antiv0CutsName.Data()));
+  mgr->ConnectOutput(task, 6, coutputAntiv0Cuts);
+
+  TString Photonv0CutsName =
+      Form("%sPhotonCuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputPhotonv0Cuts =
+      mgr->CreateContainer(Photonv0CutsName.Data(), TList::Class(),
+                           AliAnalysisManager::kOutputContainer,
+                           Form("%s:%s", file.Data(), Photonv0CutsName.Data()));
+  mgr->ConnectOutput(task, 7, coutputPhotonv0Cuts);
+
+  TString SigmaCutsName = Form("%sSigma0Cuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputSigmaCuts =
+      mgr->CreateContainer(SigmaCutsName.Data(), TList::Class(),
+                           AliAnalysisManager::kOutputContainer,
+                           Form("%s:%s", file.Data(), SigmaCutsName.Data()));
+  mgr->ConnectOutput(task, 8, coutputSigmaCuts);
+
+  TString AntiSigmaCutsName =
+      Form("%sAntiSigma0Cuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputAntiSigmaCuts = mgr->CreateContainer(
+      AntiSigmaCutsName.Data(), TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), AntiSigmaCutsName.Data()));
+  mgr->ConnectOutput(task, 9, coutputAntiSigmaCuts);
+
+  AliAnalysisDataContainer *coutputResults;
+  TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
+  coutputResults = mgr->CreateContainer(
+      ResultsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsName.Data()));
+  mgr->ConnectOutput(task, 10, coutputResults);
+
+  AliAnalysisDataContainer *coutputResultQA;
+  TString ResultQAName = Form("%sResultQA%s", addon.Data(), suffix.Data());
+  coutputResultQA = mgr->CreateContainer(
+      ResultQAName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultQAName.Data()));
+  mgr->ConnectOutput(task, 11, coutputResultQA);
+
+  AliAnalysisDataContainer *coutputResultsSample;
+  TString ResultsSampleName = Form("%sResultsSample%s", addon.Data(), suffix.Data());
+  coutputResultsSample = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleName.Data()));
+  mgr->ConnectOutput(task, 12, coutputResultsSample);
+
+  AliAnalysisDataContainer *coutputResultsSampleQA;
+  TString ResultsSampleQAName = Form("%sResultsSampleQA%s", addon.Data(), suffix.Data());
+  coutputResultsSampleQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleQAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
+  mgr->ConnectOutput(task, 13, coutputResultsSampleQA);
+
+  if (isMC) {
+    TString TrkCutsMCName =
+        Form("%sTrackCutsMC%s", addon.Data(), suffix.Data());
+    AliAnalysisDataContainer *coutputTrkCutsMC =
+        mgr->CreateContainer(TrkCutsMCName.Data(), TList::Class(),
+                             AliAnalysisManager::kOutputContainer,
+                             Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
+    mgr->ConnectOutput(task, 14, coutputTrkCutsMC);
+
+    TString AntiTrkCutsMCName =
+        Form("%sAntiTrackCutsMC%s", addon.Data(), suffix.Data());
+    AliAnalysisDataContainer *coutputAntiTrkCutsMC = mgr->CreateContainer(
+        AntiTrkCutsMCName.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
+    mgr->ConnectOutput(task, 15, coutputAntiTrkCutsMC);
+
+    TString V0CutsMCName = Form("%sv0CutsMC%s", addon.Data(), suffix.Data());
+    AliAnalysisDataContainer *coutputV0CutsMC =
+        mgr->CreateContainer(V0CutsMCName.Data(), TList::Class(),
+                             AliAnalysisManager::kOutputContainer,
+                             Form("%s:%s", file.Data(), V0CutsMCName.Data()));
+    mgr->ConnectOutput(task, 16, coutputV0CutsMC);
+
+    TString AntiV0CutsMCName =
+        Form("%sAntiv0CutsMC%s", addon.Data(), suffix.Data());
+    AliAnalysisDataContainer *coutputAntiV0CutsMC = mgr->CreateContainer(
+        AntiTrkCutsMCName.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiV0CutsMCName.Data()));
+    mgr->ConnectOutput(task, 17, coutputAntiV0CutsMC);
+  }
 
   return task;
 }

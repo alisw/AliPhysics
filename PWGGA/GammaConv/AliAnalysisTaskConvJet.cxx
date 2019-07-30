@@ -38,7 +38,7 @@ ClassImp(AliAnalysisTaskConvJet);
 /// \endcond
 
 
-AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : 
+AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() :
   AliAnalysisTaskEmcalJet(),
   fNJets(0),
   fVectorJetPt(0),
@@ -59,7 +59,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() :
 {
 }
 
-AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char *name) : 
+AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fNJets(0),
   fVectorJetPt(0),

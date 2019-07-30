@@ -69,7 +69,6 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
   task->SetSubJetMinPt(SubJetMinPt);
   task->SetJetRadius(R);
   task->SetSharedFractionPtMin(fSharedFractionPtMin);
-  task->SetDerivativeSubtractionOrder(derivSubtrOrder);
   if (jetSelection == AliAnalysisTaskRecoilJetYield::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
 
   // TString thename(njetsBase);
@@ -272,14 +271,6 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
   if (jetShapeSub == AliAnalysisTaskRecoilJetYield::kConstSub){
     contName1 += "_ConstSub";
     contName2 += "_ConstSub";
-  }
-  if (jetShapeSub == AliAnalysisTaskRecoilJetYield::kDerivSub && derivSubtrOrder == 0){
-    contName1 += "_DerivSubSecondOrder";
-    contName2 += "_DerivSubSecondOrder";
-  }
-  if (jetShapeSub == AliAnalysisTaskRecoilJetYield::kDerivSub && derivSubtrOrder == 1){
-    contName1 += "_DerivSubFirstOrder";
-    contName2 += "_DerivSubFirstOrder";
   }
   if (jetSelection == AliAnalysisTaskRecoilJetYield::kInclusive){
     contName1 += "_Incl";

@@ -6,27 +6,29 @@
 /**
  * @file AliForwardFlowRun2Task.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
- * 
+ *
  * @brief
- * 
+ *
  * @ingroup pwgcf_forward_flow
  */
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
 #include <TH2D.h>
-#include <TH3F.h>
 #include "TRandom.h"
-#include "AliForwardFlowRun2Settings.h"
+#include "AliForwardSettings.h"
 #include "AliEventCuts.h"
-#include <TF1.h>
+#include "AliForwardGenericFramework.h"
+#include "AliForwardFlowUtil.h"
+#include "AliForwardTaskValidation.h"
+#include "AliForwardFlowResultStorage.h"
 
-class AliAODForwardMult;
 class TH2D;
-class AliESDEvent;
+class THn;
+
 /**
- * @defgroup pwglf_forward_tasks_flow Flow tasks 
+ * @defgroup pwglf_forward_tasks_flow Flow tasks
  *
- * Code to do flow 
+ * Code to do flow
  *
  * @ingroup pwglf_forward_tasks
  */
@@ -45,14 +47,14 @@ class AliESDEvent;
 class AliForwardFlowRun2Task : public AliAnalysisTaskSE
 {
 public:
-  /** 
-   * Constructor 
+  /**
+   * Constructor
    */
   AliForwardFlowRun2Task();
-  /** 
+  /**
    * Constructor
-   * 
-   * @param name Name of task 
+   *
+   * @param name Name of task
    */
   AliForwardFlowRun2Task(const char* name);
   /**
@@ -60,65 +62,68 @@ public:
    */
   virtual ~AliForwardFlowRun2Task() {}
 
-  /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
+  /**
+   * Copy constructor
+   *
+   * @param o Object to copy from
    */
   AliForwardFlowRun2Task(const AliForwardFlowRun2Task& o);
 
-  /** 
-   * @{ 
-   * @name Task interface methods 
+  /**
+   * @{
+   * @name Task interface methods
    */
 
-  /** 
-   * Create output objects 
+  /**
+   * Create output objects
    */
   virtual void UserCreateOutputObjects();
-  
-  /** 
-   * Process each event 
+
+  /**
+   * Process each event
    *
    * @param option Not used
-   */  
+   */
   virtual void UserExec(Option_t *option);
 
-  /** 
+  /**
    * End of job
-   * 
-   * @param option Not used 
+   *
+   * @param option Not used
    */
   virtual void Terminate(Option_t *option);
 
   //private:
-  AliAODEvent*            fAOD;           //! input event
-  TList*                  fOutputList;    //! output list
-  TList*    fStdQCList; //! 
-  TList*    fGFList; //!
-  //TList* fRefList; //!
-  //TList* fDiffList; //! 
-  TList* fEventList; //! 
-  TRandom fRandom;
-  
+  AliVEvent* fAOD;      //! input event
+  TList* fOutputList;   //! output list
+  TList* fAnalysisList; //!
+  TList* fEventList;    //!
+
+  TRandom fRandom; //!
+
+  TH2D*   centralDist; //!
+  TH2D*   refDist;     //!
+  TH2D*   forwardDist; //!
+
+  AliForwardFlowResultStorage* fStorage; //!
+
+  //TH2D* fdNdeta; //!
+  //TH1D* fCent;   //!
+  //TH1D* fVertex; //!
+
   // A class combining all the settings for this analysis
-  AliForwardFlowRun2Settings fSettings;
+  AliForwardSettings fSettings;
 
-AliEventCuts fEventCuts;
-TF1 *fMultTOFLowCut; //!
-TF1 *fMultTOFHighCut; //!
-TF1 *fMultCentLowCut; //!
-
-  enum {
-    kTPCOnly = 128, // TPC only tracks
-    kHybrid = 768, // TPC only tracks
-    kphiAcceptanceBin = 21 // phi acceptance bin in the FMD histogram (dNdetadphi)
-  };
+  // Utility class for filling histograms
+  AliForwardFlowUtil fUtil;
+  
+  // Class for flow calculations using the Generic Framework
+  AliForwardGenericFramework fCalculator;
 
   ClassDef(AliForwardFlowRun2Task, 1); // Analysis task for flow analysis
 };
 
 #endif
 // Local Variables:
-//   mode: C++ 
+//   mode: C++
 // End:

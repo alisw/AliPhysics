@@ -38,7 +38,11 @@ public:
   virtual void FinishTaskOutput();
   
   void SetReadMC(Bool_t read){fReadMC=read;}
+  void UseOnlySignalInMC(Bool_t opt){fSignalOnlyMC=opt;}
+  void UseMBTrigMaskInMC(){fEnforceMBTrigMaskInMC=kTRUE;}
+  void UseTrigMaskFromCutFileInMC(){fEnforceMBTrigMaskInMC=kFALSE;}
 
+  
   void SetEventMixingWithCuts(Double_t maxDeltaVz, Double_t maxDeltaMult){
     fDoEventMixing=2; fMaxzVertDistForMix=maxDeltaVz; fMaxMultDiffForMix=maxDeltaMult;
   }
@@ -62,6 +66,14 @@ public:
     if(fTrackCutsKaon) delete fTrackCutsKaon;
     fTrackCutsKaon=new AliESDtrackCuts(*cuts);
   }
+  void SetCutOnCosThetaStar(Double_t cut){
+    if(cut>0 && cut<1) fApplyCutCosThetaStar=kTRUE;
+    else fApplyCutCosThetaStar=kFALSE;
+    fCutCosThetaStar=cut;
+  }
+  void EnableHistosVsCosThetaStar(Bool_t opt){
+    fFillHistosVsCosThetaStar=opt;
+  }
   void SetCutOnKKInvMass(Double_t cut){
     fPhiMassCut=cut;
   }
@@ -71,10 +83,7 @@ public:
   void SetCutCosPiDsLabFrame(Double_t cut){
     fCutCosPiDsLabFrame=cut;
   }
-  void SetPIDHF(AliAODPidHF* pid){
-    if(fPidHF) delete fPidHF;
-    fPidHF=new AliAODPidHF(*pid);
-  }
+
   void SetRDHFCuts(AliRDHFCuts* cuts){
     fAnalysisCuts=cuts;
   }
@@ -114,11 +123,11 @@ public:
   Bool_t IsPion(AliAODTrack* track);
   Bool_t SelectAODTrack(AliAODTrack *track, AliESDtrackCuts *cuts);
   
-  Bool_t FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, Int_t* dgLabels);
+  Bool_t FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t* dgLabels);
   void FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
   void FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau);
   void FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
-  void FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSel);
+  void FillGenHistos(TClonesArray* arrayMC, AliAODMCHeader *mcHeader, Bool_t isEvSel);
   Bool_t CheckAcceptance(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau); 
   Int_t GetPoolIndex(Double_t zvert, Double_t mult);
   void ResetPool(Int_t poolIndex);
@@ -138,13 +147,18 @@ private:
   Double_t CosPiKPhiRFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const;
   Double_t CosPiDsLabFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const;
 
-  TList   *fOutput; //!<! list send on output slot 0
+  TList *fOutput;             //!<! list with output histograms
+  TList *fListCuts;           //!<! list with cut values 
   TH1F *fHistNEvents;         //!<!hist. for No. of events
+  TH2F *fHistEventMultCent;      //!<!hist. for evnt Mult vs. centrality (all)
+  TH2F *fHistEventMultCentEvSel; //!<!hist. for evnt Mult vs. centrality (sel)
   TH2F *fHistEventMultZv;       //!<!hist. of evnt Mult vs. Zv for all events
   TH2F *fHistEventMultZvEvSel;  //!<!hist. of evnt Mult vs. Zv for selected ev
   TH1F *fHistTrackStatus;     //!<!hist. of status of tracks
   TH3F* fHistTrackEtaMultZv;  // track distribution vs. era z vertex and mult
-  TH1F *fHistCheckOrigin;     //!<!hist. of origin (c/b) of D meson
+  TH2F *fHistCheckOrigin;          //!<!hist. of origin (c/b) of D meson (gen)
+  TH2F *fHistCheckOriginRecoD;     //!<!hist. of origin (c/b) of D meson (reco)
+  TH2F *fHistCheckOriginRecoVsGen; //!<!hist. of origin (c/b) of D meson
   TH1F *fHistCheckDecChan;    //!<!hist. of decay channel of D meson
   TH1F *fHistCheckDecChanAcc; //!<!hist. of decay channel of D meson in acc.
   TH3F *fPtVsYVsMultGenPrompt;         //!<! hist. of Y vs. Pt vs. Mult generated (all D)
@@ -166,6 +180,7 @@ private:
   TH3F *fMassVsPtVsYSig;   //!<! hist. of Y vs. Pt vs. Mass (signal)
   TH3F *fMassVsPtVsYRefl;  //!<! hist. of Y vs. Pt vs. Mass (reflections)
   TH3F *fMassVsPtVsYBkg;   //!<! hist. of Y vs. Pt vs. Mass (background)
+  TH1F *fBMohterPtGen;     //!<! hist. of beauty mother pt
   TH1F *fNSelected;        //!<! hist. of n. of selected D+
   TH1F *fNormRotated;      //!<! hist. rotated/selected D+
   TH1F *fDeltaMass;        //!<! hist. mass difference after rotations
@@ -174,11 +189,30 @@ private:
   TH3F *fMassVsPtVsYMELSpp;   //!<! hist. of Y vs. Pt vs. Mass (mixedevents)
   TH3F *fMassVsPtVsYMELSmm;   //!<! hist. of Y vs. Pt vs. Mass (mixedevents)
   TH2F* fEventsPerPool;   //!<! hist with number of events per pool  
-  TH2F* fMixingsPerPool;    //!<! hist with number of mixings per pool  
+  TH2F* fMixingsPerPool;    //!<! hist with number of mixings per pool
+  TH3F *fMassVsPtVsCosthSt;         //!<! hist. of Pt vs. Mass vs. cos(th*) (all cand)
+  TH3F *fMassVsPtVsCosthStRot;      //!<! hist. of Pt vs. Mass vs. cos(th*) (rotations)
+  TH3F *fMassVsPtVsCosthStLSpp;     //!<! hist. of Pt vs. Mass vs. cos(th*) (like sign ++)
+  TH3F *fMassVsPtVsCosthStLSmm;     //!<! hist. of Pt vs. Mass vs. cos(th*) (like sign --)
+  TH3F *fMassVsPtVsCosthStSig;      //!<! hist. of Pt vs. Mass vs. cos(th*) (signal)
+  TH3F *fMassVsPtVsCosthStRefl;     //!<! hist. of Pt vs. Mass vs. cos(th*) (reflections)
+  TH3F *fMassVsPtVsCosthStBkg;      //!<! hist. of Pt vs. Mass vs. cos(th*) (background)
+  TH3F *fMassVsPtVsCosthStME;       //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
+  TH3F *fMassVsPtVsCosthStMELSpp;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
+  TH3F *fMassVsPtVsCosthStMELSmm;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
+  TH2F *fHistonSigmaTPCPion;        //!<! hist. of nSigmaTPC pion
+  TH2F *fHistonSigmaTPCPionGoodTOF; //!<! hist. of nSigmaTPC pion
+  TH2F *fHistonSigmaTOFPion;        //!<! hist. of nSigmaTOF pion
+  TH2F *fHistonSigmaTPCKaon;        //!<! hist. of nSigmaTPC kaon
+  TH2F *fHistonSigmaTPCKaonGoodTOF; //!<! hist. of nSigmaTPC kaon
+  TH2F *fHistonSigmaTOFKaon;        //!<! hist. of nSigmaTOF kaon
   UInt_t fFilterMask; /// FilterMask
   AliESDtrackCuts* fTrackCutsAll; //// track selection
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
   AliESDtrackCuts* fTrackCutsKaon; /// kaon track selection
+  Bool_t fFillHistosVsCosThetaStar; /// flag to control cos(theta*) cut
+  Bool_t fApplyCutCosThetaStar; /// flag to control cos(theta*) cut
+  Double_t fCutCosThetaStar;    /// cos(theta*) cut
   Double_t fPhiMassCut;   /// cut on the KK inv mass for phi selection
   Double_t fCutCos3PiKPhiRFrame; // cut on the Ds decay angles
   Double_t fCutCosPiDsLabFrame;  // cut on the Ds decay angles
@@ -203,8 +237,10 @@ private:
   
   Int_t fMeson;          /// mesonSpecies (see enum)
   Bool_t  fReadMC;       ///  flag for access to MC
+  Bool_t  fEnforceMBTrigMaskInMC;  /// if true force the MC to use
   Bool_t fGoUpToQuark;   /// flag for definition of c,b origin
   Int_t fFullAnalysis;   /// flag to set analysis level (0 is the fastest)
+  Bool_t fSignalOnlyMC;  /// flag to speed up the MC 
   
   Int_t    fPIDstrategy;   /// knSigma, kBayesianMaxProb, kBayesianThres
   Double_t fmaxPforIDPion; /// flag for upper p limit for id band for pion
@@ -213,6 +249,7 @@ private:
   Int_t    fPIDselCaseZero;  /// flag to change PID strategy
   Double_t fBayesThresKaon;  /// threshold for kaon identification via Bayesian PID
   Double_t fBayesThresPion;  /// threshold for pion identification via Bayesian PID
+  Int_t  fOrigContainer[200000]; /// container for checks
 
   Int_t fDoEventMixing; /// flag for event mixing
   Int_t  fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
@@ -233,9 +270,9 @@ private:
   Double_t fMaxMultiplicity; /// upper limit for multiplcities in MC histos
   TObjArray* fKaonTracks; /// array of kaon-compatible tracks (TLorentzVectors)
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
-
+    
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,14); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,25); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

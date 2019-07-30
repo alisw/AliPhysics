@@ -23,7 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES/extra)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-		    ${AliPhysics_SOURCE_DIR}/OADB
+		                ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
@@ -36,10 +36,10 @@ set(SRCS
   AliRsnAnalysisPhi900GeV.cxx 
   AliRsnAnalysisPhi7TeV.cxx 
   AliAnalysisTaskSigma1385.cxx
-  AliAnalysisTaskXi1530.cxx
   AliXiStar.cxx
   AliXiStarpp13TeV.cxx
   AliXiStarPbPb.cxx
+  AliXiStarPbPb_RUN2.cxx
   AliXiStarEventCollection.cxx
   AliXiStarpp13TeVEventCollection.cxx
   AliXiStarPbPbEventCollection.cxx
@@ -80,11 +80,11 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
-install(FILES AddTaskXi1530.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStar.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskLambda.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskRsnf0f2.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskF01710fromAODtracks.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarpp13TeV.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarPbPb.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddTaskXiStarPbPb_RUN2.C DESTINATION PWGLF/RESONANCES/extra)
 

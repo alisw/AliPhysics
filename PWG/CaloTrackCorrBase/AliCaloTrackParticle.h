@@ -82,6 +82,7 @@ class AliCaloTrackParticle : public AliVParticle {
   virtual Int_t   GetIdentifiedParticleType() const { return fPdg     ; }
 
   virtual Int_t   GetLabel()             const { return fLabel        ; }
+  virtual Float_t GetWeight()            const { return fWeight       ; }
   virtual Int_t   GetCaloLabel (Int_t i) const { return fCaloLabel[i] ; }
   virtual Int_t   GetTrackLabel(Int_t i) const { return fTrackLabel[i]; }
   virtual UInt_t  GetDetectorTag()       const { return fDetectorTag  ; }
@@ -108,18 +109,33 @@ class AliCaloTrackParticle : public AliVParticle {
   virtual Int_t   GetSModNumber()        const { return fSuperModule  ; }
   virtual Int_t   GetCellAbsIdMax()      const { return fCellAbsIdMax ; }
   
-  // Isolation cone background info
+  // Isolation cone and UE background info
   virtual Float_t GetChargedLeadPtInCone() const { return fIsoConePtLead[0] ; } 
   virtual Float_t GetNeutralLeadPtInCone() const { return fIsoConePtLead[1] ; }   
   
   virtual Float_t GetChargedPtSumInCone () const { return fIsoConeSumPt[0]  ; } 
   virtual Float_t GetNeutralPtSumInCone () const { return fIsoConeSumPt[1]  ; }   
   
+  virtual Float_t GetChargedPtSumInPerpCone() const { return fIsoPerpConeSumPt; } 
+  
+  virtual Float_t GetChargedPtSumEtaBand() const { return fIsoEtaBandSumPt[0] ; } 
+  virtual Float_t GetNeutralPtSumEtaBand() const { return fIsoEtaBandSumPt[1] ; }   
+  
+  virtual Float_t GetChargedPtSumPhiBand() const { return fIsoPhiBandSumPt[0] ; } 
+  virtual Float_t GetNeutralPtSumPhiBand() const { return fIsoPhiBandSumPt[1] ; } 
+ 
+  virtual Float_t GetChargedConeExcessAreaEta() const { return fIsoConeExcessAreaEta[0] ; } 
+  virtual Float_t GetNeutralConeExcessAreaEta() const { return fIsoConeExcessAreaEta[1] ; }   
+  
+  virtual Float_t GetChargedConeExcessAreaPhi() const { return fIsoConeExcessAreaPhi[0] ; } 
+  virtual Float_t GetNeutralConeExcessAreaPhi() const { return fIsoConeExcessAreaPhi[1] ; } 
+  
   //
   // Specific setters
   virtual void SetIdentifiedParticleType(Int_t pdg) { fPdg = pdg ; }
 
-  virtual void SetLabel(Int_t l)         { fLabel = l ; }
+  virtual void SetLabel(Int_t l)         { fLabel  = l ; }
+  virtual void SetWeight(Float_t w)      { fWeight = w ; }
   virtual void SetCaloLabel (Int_t a, Int_t b) { fCaloLabel [0] = a; fCaloLabel [1] = b  ; }
   virtual void SetTrackLabel(Int_t a, Int_t b) { fTrackLabel[0] = a; fTrackLabel[1] = b  ; }
   virtual void SetTrackLabel(Int_t a, Int_t b, Int_t c, Int_t d) 
@@ -149,12 +165,26 @@ class AliCaloTrackParticle : public AliVParticle {
   virtual void SetSModNumber(Int_t sm)   { fSuperModule = sm   ; }
   virtual void SetCellAbsIdMax(Int_t absid)   { fCellAbsIdMax = absid ; }
   
-  // Isolation cone background info
+  // Isolation cone and UE background info
   virtual void SetChargedLeadPtInCone(Float_t ptl) { fIsoConePtLead[0] = ptl ; } 
   virtual void SetNeutralLeadPtInCone(Float_t ptl) { fIsoConePtLead[1] = ptl ; }   
 
   virtual void SetChargedPtSumInCone (Float_t pts) { fIsoConeSumPt[0]  = pts ; } 
-  virtual void SetNeutralPtSumInCone (Float_t pts) { fIsoConeSumPt[1]  = pts ; }   
+  virtual void SetNeutralPtSumInCone (Float_t pts) { fIsoConeSumPt[1]  = pts ; }     
+ 
+  virtual void SetChargedPtSumInPerpCone(Float_t s){ fIsoPerpConeSumPt   = s ; } 
+
+  virtual void SetChargedPtSumEtaBand(Float_t s)   { fIsoEtaBandSumPt[0] = s ; } 
+  virtual void SetNeutralPtSumEtaBand(Float_t s)   { fIsoEtaBandSumPt[1] = s ; }   
+ 
+  virtual void SetChargedPtSumPhiBand(Float_t s)   { fIsoPhiBandSumPt[0] = s ; } 
+  virtual void SetNeutralPtSumPhiBand(Float_t s)   { fIsoPhiBandSumPt[1] = s ; }   
+
+  virtual void SetChargedConeExcessAreaEta(Float_t s) { fIsoConeExcessAreaEta[0] = s ; } 
+  virtual void SetNeutralConeExcessAreaEta(Float_t s) { fIsoConeExcessAreaEta[1] = s ; } 
+  
+  virtual void SetChargedConeExcessAreaPhi(Float_t s) { fIsoConeExcessAreaPhi[0] = s ; }   
+  virtual void SetNeutralConeExcessAreaPhi(Float_t s) { fIsoConeExcessAreaPhi[1] = s ; }   
   
   //
   /// BTagging (not in use)
@@ -183,6 +213,7 @@ class AliCaloTrackParticle : public AliVParticle {
   Int_t      fCaloLabel[2];     ///< CaloCluster index, 1 for photons, 2 for pi0.
   Int_t      fTrackLabel[4];    ///< Track lable, 1 for pions, 2 for conversion photons 
   UInt_t     fDetectorTag ;     ///< Detector where particle was measured, integer
+  Float_t    fWeight;           ///< Weight to be applied to histogram
   
   // Calo specific
   Int_t      fBadDist ;         ///< Distance to calorimeter bad cell in cell units
@@ -201,6 +232,13 @@ class AliCaloTrackParticle : public AliVParticle {
 
   Float_t    fIsoConePtLead[2]; ///< Pt of track [0] and calo cluster [1] with highest energy in the isolation cone
   Float_t    fIsoConeSumPt [2]; ///< Sum of Pt of tracks [0] and calo clusters [1] in the isolation cone
+
+  Float_t    fIsoPerpConeSumPt;   ///< Sum of Pt of tracks in perpendicular cones to isolation candidate
+  Float_t    fIsoEtaBandSumPt[2]; ///< Sum of Pt in UE eta band of tracks [0] and calo clusters [1] for isolation 
+  Float_t    fIsoPhiBandSumPt[2]; ///< Sum of Pt in UE phi band of tracks [0] and calo clusters [1] for isolation
+
+  Float_t    fIsoConeExcessAreaEta[2]; ///< Fraction of cone area out of acceptance in eta for tracks [0] and calo clusters [1]
+  Float_t    fIsoConeExcessAreaPhi[2]; ///< Fraction of cone area out of acceptance in phi for tracks [0] and calo clusters [1]
   
   // PID bits
   Bool_t     fDisp ;            ///< Dispersion bit
@@ -214,7 +252,7 @@ class AliCaloTrackParticle : public AliVParticle {
   Int_t      fBtag;             ///< tag particle from B.
 
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackParticle, 2);
+  ClassDef(AliCaloTrackParticle, 4);
   /// \endcond
 
 };

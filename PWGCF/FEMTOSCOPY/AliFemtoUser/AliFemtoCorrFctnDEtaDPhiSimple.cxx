@@ -21,308 +21,215 @@ ClassImp(AliFemtoCorrFctnDEtaDPhiSimple)
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
 
-//____________________________
-AliFemtoCorrFctnDEtaDPhiSimple::AliFemtoCorrFctnDEtaDPhiSimple(const char* title, const int& aPhiBins=20, const int& aEtaBins=20):
-  AliFemtoCorrFctn(),
-  fDPhiDEtaNumerator(0),
-  fDPhiDEtaDenominator(0),
-  fDPhiDEtaHiddenNumerator(0),
-  fDPhiDEtaHiddenDenominator(0),
-  fDPhiDEtaHiddenPrimaryNumerator(0),
-  fDPhiDEtaHiddenPrimaryDenominator(0),
-  fDPhiDEtaHiddenSecWeakNumerator(0),
-  fDPhiDEtaHiddenSecWeakDenominator(0),
-  fDPhiDEtaHiddenSecMatNumerator(0),
-  fDPhiDEtaHiddenSecMatDenominator(0),
-  fDPhiDEtaHiddenPrimaryNumeratorData(0),
-  fDPhiDEtaHiddenPrimaryDenominatorData(0),
-  fDPhiDEtaHiddenSecWeakNumeratorData(0),
-  fDPhiDEtaHiddenSecWeakDenominatorData(0),
-  fDPhiDEtaHiddenSecMatNumeratorData(0),
-  fDPhiDEtaHiddenSecMatDenominatorData(0),
-  fphiL(0),
-  fphiT(0),
-  fEtaBins(0),
-  fPhiBins(0),
-  fTitle(title),
-  fReadHiddenInfo(false)
+AliFemtoCorrFctnDEtaDPhiSimple
+  ::AliFemtoCorrFctnDEtaDPhiSimple(const char *title,
+                                   const int aPhiBins,
+                                   const int aEtaBins)
+  : AliFemtoCorrFctn()
+  , fDPhiDEtaNumerator(nullptr)
+  , fDPhiDEtaDenominator(nullptr)
+  , fDPhiDEtaHiddenNumerator(nullptr)
+  , fDPhiDEtaHiddenDenominator(nullptr)
+  , fDPhiDEtaHiddenPrimaryNumerator(nullptr)
+  , fDPhiDEtaHiddenPrimaryDenominator(nullptr)
+  , fDPhiDEtaHiddenSecWeakNumerator(nullptr)
+  , fDPhiDEtaHiddenSecWeakDenominator(nullptr)
+  , fDPhiDEtaHiddenSecMatNumerator(nullptr)
+  , fDPhiDEtaHiddenSecMatDenominator(nullptr)
+  , fDPhiDEtaHiddenPrimaryNumeratorData(nullptr)
+  , fDPhiDEtaHiddenPrimaryDenominatorData(nullptr)
+  , fDPhiDEtaHiddenSecWeakNumeratorData(nullptr)
+  , fDPhiDEtaHiddenSecWeakDenominatorData(nullptr)
+  , fDPhiDEtaHiddenSecMatNumeratorData(nullptr)
+  , fDPhiDEtaHiddenSecMatDenominatorData(nullptr)
+  , fphiL(0.0)
+  , fphiT(0.0)
+  , fEtaBins(aEtaBins)
+  , fPhiBins(aPhiBins)
+  , fTitle(title)
+  , fReadHiddenInfo(false)
 {
+  fphiL = (-(int)(aPhiBins / 4) + 0.5) * 2. * TMath::Pi() / aPhiBins;
+  fphiT = 2 * TMath::Pi() + (-(int)(aPhiBins / 4) + 0.5) * 2. * TMath::Pi() / aPhiBins;
 
-  fphiL = (-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
-  fphiT = 2*TMath::Pi()+(-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
+  fDPhiDEtaNumerator = new TH2D("NumDPhiDEta" + fTitle,
+                                "Numerator; #Delta#phi; #Delta#eta;",
+                                aPhiBins, fphiL, fphiT,
+                                aEtaBins, -2.0, 2.0);
 
-  fEtaBins = aEtaBins;
-  fPhiBins = aPhiBins;
+  fDPhiDEtaDenominator = new TH2D("DenDPhiDEta" + fTitle,
+                                  "Denominator; #Delta #phi; #Delta#eta",
+                                  aPhiBins, fphiL, fphiT,
+                                  aEtaBins, -2.0, 2.0);
 
-  // set up numerator
-  char tTitNumD[101] = "NumDPhiDEta";
-  strncat(tTitNumD,title, 100);
-  fDPhiDEtaNumerator = new TH2D(tTitNumD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
-  // set up denominator
-  char tTitDenD[101] = "DenDPhiDEta";
-  strncat(tTitDenD,title, 100);
-  fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
-
-
-  // to enable error bar calculation...
   fDPhiDEtaNumerator->Sumw2();
-  fDPhiDEtaDenominator->Sumw2();
-
-
-
 }
 
 //____________________________
-AliFemtoCorrFctnDEtaDPhiSimple::AliFemtoCorrFctnDEtaDPhiSimple(const AliFemtoCorrFctnDEtaDPhiSimple& aCorrFctn) :
-  AliFemtoCorrFctn(),
-  fDPhiDEtaNumerator(0),
-  fDPhiDEtaDenominator(0),
-  fDPhiDEtaHiddenNumerator(0),
-  fDPhiDEtaHiddenDenominator(0),
-  fDPhiDEtaHiddenPrimaryNumerator(0),
-  fDPhiDEtaHiddenPrimaryDenominator(0),
-  fDPhiDEtaHiddenSecWeakNumerator(0),
-  fDPhiDEtaHiddenSecWeakDenominator(0),
-  fDPhiDEtaHiddenSecMatNumerator(0),
-  fDPhiDEtaHiddenSecMatDenominator(0),
-  fDPhiDEtaHiddenPrimaryNumeratorData(0),
-  fDPhiDEtaHiddenPrimaryDenominatorData(0),
-  fDPhiDEtaHiddenSecWeakNumeratorData(0),
-  fDPhiDEtaHiddenSecWeakDenominatorData(0),
-  fDPhiDEtaHiddenSecMatNumeratorData(0),
-  fDPhiDEtaHiddenSecMatDenominatorData(0),
-  fphiL(0),
-  fphiT(0),
-  fEtaBins(0),
-  fPhiBins(0),
-  fTitle(aCorrFctn.fTitle),
-  fReadHiddenInfo(false)
+AliFemtoCorrFctnDEtaDPhiSimple
+  ::AliFemtoCorrFctnDEtaDPhiSimple(const AliFemtoCorrFctnDEtaDPhiSimple &aCorrFctn)
+  : AliFemtoCorrFctn(aCorrFctn)
+  , fDPhiDEtaNumerator(new TH2D(*aCorrFctn.fDPhiDEtaNumerator))
+  , fDPhiDEtaDenominator(new TH2D(*aCorrFctn.fDPhiDEtaDenominator))
+  , fDPhiDEtaHiddenNumerator(nullptr)
+  , fDPhiDEtaHiddenDenominator(nullptr)
+  , fDPhiDEtaHiddenPrimaryNumerator(nullptr)
+  , fDPhiDEtaHiddenPrimaryDenominator(nullptr)
+  , fDPhiDEtaHiddenSecWeakNumerator(nullptr)
+  , fDPhiDEtaHiddenSecWeakDenominator(nullptr)
+  , fDPhiDEtaHiddenSecMatNumerator(nullptr)
+  , fDPhiDEtaHiddenSecMatDenominator(nullptr)
+  , fDPhiDEtaHiddenPrimaryNumeratorData(nullptr)
+  , fDPhiDEtaHiddenPrimaryDenominatorData(nullptr)
+  , fDPhiDEtaHiddenSecWeakNumeratorData(nullptr)
+  , fDPhiDEtaHiddenSecWeakDenominatorData(nullptr)
+  , fDPhiDEtaHiddenSecMatNumeratorData(nullptr)
+  , fDPhiDEtaHiddenSecMatDenominatorData(nullptr)
+  , fphiL(aCorrFctn.fphiL)
+  , fphiT(aCorrFctn.fphiT)
+  , fEtaBins(aCorrFctn.fEtaBins)
+  , fPhiBins(aCorrFctn.fPhiBins)
+  , fTitle(aCorrFctn.fTitle)
+  , fReadHiddenInfo(aCorrFctn.fReadHiddenInfo)
 {
-  // copy constructor
+  if (fReadHiddenInfo) {
+    fDPhiDEtaHiddenNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenNumerator);
+    fDPhiDEtaHiddenDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenDenominator);
 
-  fEtaBins = aCorrFctn.fEtaBins;
-  fPhiBins = aCorrFctn.fPhiBins;
+    fDPhiDEtaHiddenPrimaryNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryNumerator);
+    fDPhiDEtaHiddenPrimaryDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryDenominator);
 
-  // copy constructor
-  if (aCorrFctn.fDPhiDEtaNumerator)
-    fDPhiDEtaNumerator = new TH2D(*aCorrFctn.fDPhiDEtaNumerator);
-  else
-    fDPhiDEtaNumerator = 0;
-  if (aCorrFctn.fDPhiDEtaDenominator)
-    fDPhiDEtaDenominator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
-  else
-    fDPhiDEtaDenominator = 0;
+    fDPhiDEtaHiddenSecWeakNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakNumerator);
+    fDPhiDEtaHiddenSecWeakDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakDenominator);
 
-  fReadHiddenInfo = aCorrFctn.fReadHiddenInfo;
-  if(fReadHiddenInfo)
-    {
+    fDPhiDEtaHiddenSecMatNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatNumerator);
+    fDPhiDEtaHiddenSecMatDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatDenominator);
 
-      if (aCorrFctn.fDPhiDEtaHiddenNumerator)
-	fDPhiDEtaHiddenNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenNumerator);
-      else
-	fDPhiDEtaHiddenNumerator = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenDenominator)
-	fDPhiDEtaHiddenDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenDenominator);
-      else
-	fDPhiDEtaHiddenDenominator = 0;
+    fDPhiDEtaHiddenPrimaryNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryNumeratorData);
+    fDPhiDEtaHiddenPrimaryDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryDenominatorData);
 
+    fDPhiDEtaHiddenSecWeakNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakNumeratorData);
+    fDPhiDEtaHiddenSecWeakDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakDenominatorData);
 
-      if (aCorrFctn.fDPhiDEtaHiddenPrimaryNumerator)
-	fDPhiDEtaHiddenPrimaryNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryNumerator);
-      else
-	fDPhiDEtaHiddenPrimaryNumerator = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenPrimaryDenominator)
-	fDPhiDEtaHiddenPrimaryDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryDenominator);
-      else
-	fDPhiDEtaHiddenPrimaryDenominator = 0;
-
-
-      if (aCorrFctn.fDPhiDEtaHiddenSecWeakNumerator)
-	fDPhiDEtaHiddenSecWeakNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakNumerator);
-      else
-	fDPhiDEtaHiddenSecWeakNumerator = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenSecWeakDenominator)
-	fDPhiDEtaHiddenSecWeakDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakDenominator);
-      else
-	fDPhiDEtaHiddenSecWeakDenominator = 0;
-
-      if (aCorrFctn.fDPhiDEtaHiddenSecMatNumerator)
-	fDPhiDEtaHiddenSecMatNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatNumerator);
-      else
-	fDPhiDEtaHiddenSecMatNumerator = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenSecMatDenominator)
-	fDPhiDEtaHiddenSecMatDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatDenominator);
-      else
-	fDPhiDEtaHiddenSecMatDenominator = 0;
-
-
-
-
-      if (aCorrFctn.fDPhiDEtaHiddenPrimaryNumeratorData)
-	fDPhiDEtaHiddenPrimaryNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryNumeratorData);
-      else
-	fDPhiDEtaHiddenPrimaryNumeratorData = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenPrimaryDenominatorData)
-	fDPhiDEtaHiddenPrimaryDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryDenominatorData);
-      else
-	fDPhiDEtaHiddenPrimaryDenominatorData = 0;
-
-
-      if (aCorrFctn.fDPhiDEtaHiddenSecWeakNumeratorData)
-	fDPhiDEtaHiddenSecWeakNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakNumeratorData);
-      else
-	fDPhiDEtaHiddenSecWeakNumeratorData = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenSecWeakDenominatorData)
-	fDPhiDEtaHiddenSecWeakDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakDenominatorData);
-      else
-	fDPhiDEtaHiddenSecWeakDenominatorData = 0;
-
-      if (aCorrFctn.fDPhiDEtaHiddenSecMatNumeratorData)
-	fDPhiDEtaHiddenSecMatNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatNumeratorData);
-      else
-	fDPhiDEtaHiddenSecMatNumeratorData = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenSecMatDenominatorData)
-	fDPhiDEtaHiddenSecMatDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatDenominatorData);
-      else
-	fDPhiDEtaHiddenSecMatDenominatorData = 0;
-    }
-
-
-
+    fDPhiDEtaHiddenSecMatNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatNumeratorData);
+    fDPhiDEtaHiddenSecMatDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatDenominatorData);
+  }
 }
-//____________________________
-AliFemtoCorrFctnDEtaDPhiSimple::~AliFemtoCorrFctnDEtaDPhiSimple(){
+
+AliFemtoCorrFctnDEtaDPhiSimple::~AliFemtoCorrFctnDEtaDPhiSimple()
+{
   // destructor
 
   delete fDPhiDEtaNumerator;
   delete fDPhiDEtaDenominator;
-  if(fReadHiddenInfo)
-    {
-      delete fDPhiDEtaHiddenNumerator;
-      delete fDPhiDEtaHiddenDenominator;
-      delete fDPhiDEtaHiddenPrimaryNumerator;
-      delete fDPhiDEtaHiddenPrimaryDenominator;
-      delete fDPhiDEtaHiddenSecWeakNumerator;
-      delete fDPhiDEtaHiddenSecWeakDenominator;
-      delete fDPhiDEtaHiddenSecMatNumerator;
-      delete fDPhiDEtaHiddenSecMatDenominator;
-      delete fDPhiDEtaHiddenPrimaryNumeratorData;
-      delete fDPhiDEtaHiddenPrimaryDenominatorData;
-      delete fDPhiDEtaHiddenSecWeakNumeratorData;
-      delete fDPhiDEtaHiddenSecWeakDenominatorData;
-      delete fDPhiDEtaHiddenSecMatNumeratorData;
-      delete fDPhiDEtaHiddenSecMatDenominatorData;
-    }
 
-
-
-
-
+  if (fReadHiddenInfo) {
+    delete fDPhiDEtaHiddenNumerator;
+    delete fDPhiDEtaHiddenDenominator;
+    delete fDPhiDEtaHiddenPrimaryNumerator;
+    delete fDPhiDEtaHiddenPrimaryDenominator;
+    delete fDPhiDEtaHiddenSecWeakNumerator;
+    delete fDPhiDEtaHiddenSecWeakDenominator;
+    delete fDPhiDEtaHiddenSecMatNumerator;
+    delete fDPhiDEtaHiddenSecMatDenominator;
+    delete fDPhiDEtaHiddenPrimaryNumeratorData;
+    delete fDPhiDEtaHiddenPrimaryDenominatorData;
+    delete fDPhiDEtaHiddenSecWeakNumeratorData;
+    delete fDPhiDEtaHiddenSecWeakDenominatorData;
+    delete fDPhiDEtaHiddenSecMatNumeratorData;
+    delete fDPhiDEtaHiddenSecMatDenominatorData;
+  }
 }
 
-//_________________________
-AliFemtoCorrFctnDEtaDPhiSimple& AliFemtoCorrFctnDEtaDPhiSimple::operator=(const AliFemtoCorrFctnDEtaDPhiSimple& aCorrFctn)
+AliFemtoCorrFctnDEtaDPhiSimple&
+AliFemtoCorrFctnDEtaDPhiSimple::operator=(const AliFemtoCorrFctnDEtaDPhiSimple &aCorrFctn)
 {
   // assignment operator
-  if (this == &aCorrFctn)
+  if (this == &aCorrFctn) {
     return *this;
+  }
+
+  AliFemtoCorrFctn::operator=(aCorrFctn);
 
   fEtaBins = aCorrFctn.fEtaBins;
   fPhiBins = aCorrFctn.fPhiBins;
 
   fTitle = aCorrFctn.fTitle;
 
-  if (aCorrFctn.fDPhiDEtaNumerator)
-    fDPhiDEtaNumerator = new TH2D(*aCorrFctn.fDPhiDEtaNumerator);
-  else
-    fDPhiDEtaNumerator = 0;
-  if (aCorrFctn.fDPhiDEtaDenominator)
-    fDPhiDEtaDenominator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
-  else
-    fDPhiDEtaDenominator = 0;
+  *fDPhiDEtaNumerator = *aCorrFctn.fDPhiDEtaNumerator;
+  *fDPhiDEtaDenominator = *aCorrFctn.fDPhiDEtaDenominator;
+
+  if (aCorrFctn.fReadHiddenInfo) {
+    if (fReadHiddenInfo) {
+      *fDPhiDEtaHiddenNumerator = *aCorrFctn.fDPhiDEtaHiddenNumerator;
+      *fDPhiDEtaHiddenDenominator = *aCorrFctn.fDPhiDEtaHiddenDenominator;
+      *fDPhiDEtaHiddenPrimaryNumerator = *aCorrFctn.fDPhiDEtaHiddenPrimaryNumerator;
+      *fDPhiDEtaHiddenPrimaryDenominator = *aCorrFctn.fDPhiDEtaHiddenPrimaryDenominator;
+      *fDPhiDEtaHiddenSecWeakNumerator = *aCorrFctn.fDPhiDEtaHiddenSecWeakNumerator;
+      *fDPhiDEtaHiddenSecWeakDenominator = *aCorrFctn.fDPhiDEtaHiddenSecWeakDenominator;
+      *fDPhiDEtaHiddenSecMatNumerator = *aCorrFctn.fDPhiDEtaHiddenSecMatNumerator;
+      *fDPhiDEtaHiddenSecMatDenominator = *aCorrFctn.fDPhiDEtaHiddenSecMatDenominator;
+      *fDPhiDEtaHiddenPrimaryNumeratorData = *aCorrFctn.fDPhiDEtaHiddenPrimaryNumeratorData;
+      *fDPhiDEtaHiddenPrimaryDenominatorData = *aCorrFctn.fDPhiDEtaHiddenPrimaryDenominatorData;
+      *fDPhiDEtaHiddenSecWeakNumeratorData = *aCorrFctn.fDPhiDEtaHiddenSecWeakNumeratorData;
+      *fDPhiDEtaHiddenSecWeakDenominatorData = *aCorrFctn.fDPhiDEtaHiddenSecWeakDenominatorData;
+      *fDPhiDEtaHiddenSecMatNumeratorData = *aCorrFctn.fDPhiDEtaHiddenSecMatNumeratorData;
+      *fDPhiDEtaHiddenSecMatDenominatorData = *aCorrFctn.fDPhiDEtaHiddenSecMatDenominatorData;
+    } else {
+      fDPhiDEtaHiddenNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenNumerator);
+      fDPhiDEtaHiddenDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenDenominator);
+      fDPhiDEtaHiddenPrimaryNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryNumerator);
+      fDPhiDEtaHiddenPrimaryDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryDenominator);
+      fDPhiDEtaHiddenSecWeakNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakNumerator);
+      fDPhiDEtaHiddenSecWeakDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakDenominator);
+      fDPhiDEtaHiddenSecMatNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatNumerator);
+      fDPhiDEtaHiddenSecMatDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatDenominator);
+      fDPhiDEtaHiddenPrimaryNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryNumeratorData);
+      fDPhiDEtaHiddenPrimaryDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryDenominatorData);
+      fDPhiDEtaHiddenSecWeakNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakNumeratorData);
+      fDPhiDEtaHiddenSecWeakDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakDenominatorData);
+      fDPhiDEtaHiddenSecMatNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatNumeratorData);
+      fDPhiDEtaHiddenSecMatDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatDenominatorData);
+    }
+  } else if (fReadHiddenInfo) {
+    delete fDPhiDEtaHiddenNumerator;
+    delete fDPhiDEtaHiddenDenominator;
+    delete fDPhiDEtaHiddenPrimaryNumerator;
+    delete fDPhiDEtaHiddenPrimaryDenominator;
+    delete fDPhiDEtaHiddenSecWeakNumerator;
+    delete fDPhiDEtaHiddenSecWeakDenominator;
+    delete fDPhiDEtaHiddenSecMatNumerator;
+    delete fDPhiDEtaHiddenSecMatDenominator;
+    delete fDPhiDEtaHiddenPrimaryNumeratorData;
+    delete fDPhiDEtaHiddenPrimaryDenominatorData;
+    delete fDPhiDEtaHiddenSecWeakNumeratorData;
+    delete fDPhiDEtaHiddenSecWeakDenominatorData;
+    delete fDPhiDEtaHiddenSecMatNumeratorData;
+    delete fDPhiDEtaHiddenSecMatDenominatorData;
+
+    fDPhiDEtaHiddenNumerator = nullptr;
+    fDPhiDEtaHiddenDenominator = nullptr;
+    fDPhiDEtaHiddenPrimaryNumerator = nullptr;
+    fDPhiDEtaHiddenPrimaryDenominator = nullptr;
+    fDPhiDEtaHiddenSecWeakNumerator = nullptr;
+    fDPhiDEtaHiddenSecWeakDenominator = nullptr;
+    fDPhiDEtaHiddenSecMatNumerator = nullptr;
+    fDPhiDEtaHiddenSecMatDenominator = nullptr;
+    fDPhiDEtaHiddenPrimaryNumeratorData = nullptr;
+    fDPhiDEtaHiddenPrimaryDenominatorData = nullptr;
+    fDPhiDEtaHiddenSecWeakNumeratorData = nullptr;
+    fDPhiDEtaHiddenSecWeakDenominatorData = nullptr;
+    fDPhiDEtaHiddenSecMatNumeratorData = nullptr;
+    fDPhiDEtaHiddenSecMatDenominatorData = nullptr;
+  }
 
   fReadHiddenInfo = aCorrFctn.fReadHiddenInfo;
-  if(fReadHiddenInfo)
-    {
-
-      if (aCorrFctn.fDPhiDEtaHiddenNumerator)
-	fDPhiDEtaHiddenNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenNumerator);
-      else
-	fDPhiDEtaHiddenNumerator = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenDenominator)
-	fDPhiDEtaHiddenDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenDenominator);
-      else
-	fDPhiDEtaHiddenDenominator = 0;
-
-
-
-      if (aCorrFctn.fDPhiDEtaHiddenPrimaryNumerator)
-	fDPhiDEtaHiddenPrimaryNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryNumerator);
-      else
-	fDPhiDEtaHiddenPrimaryNumerator = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenPrimaryDenominator)
-	fDPhiDEtaHiddenPrimaryDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryDenominator);
-      else
-	fDPhiDEtaHiddenPrimaryDenominator = 0;
-
-
-      if (aCorrFctn.fDPhiDEtaHiddenSecWeakNumerator)
-	fDPhiDEtaHiddenSecWeakNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakNumerator);
-      else
-	fDPhiDEtaHiddenSecWeakNumerator = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenSecWeakDenominator)
-	fDPhiDEtaHiddenSecWeakDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakDenominator);
-      else
-	fDPhiDEtaHiddenSecWeakDenominator = 0;
-
-      if (aCorrFctn.fDPhiDEtaHiddenSecMatNumerator)
-	fDPhiDEtaHiddenSecMatNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatNumerator);
-      else
-	fDPhiDEtaHiddenSecMatNumerator = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenSecMatDenominator)
-	fDPhiDEtaHiddenSecMatDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatDenominator);
-      else
-	fDPhiDEtaHiddenSecMatDenominator = 0;
-
-
-
-
-      if (aCorrFctn.fDPhiDEtaHiddenPrimaryNumeratorData)
-	fDPhiDEtaHiddenPrimaryNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryNumeratorData);
-      else
-	fDPhiDEtaHiddenPrimaryNumeratorData = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenPrimaryDenominatorData)
-	fDPhiDEtaHiddenPrimaryDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenPrimaryDenominatorData);
-      else
-	fDPhiDEtaHiddenPrimaryDenominatorData = 0;
-
-
-      if (aCorrFctn.fDPhiDEtaHiddenSecWeakNumeratorData)
-	fDPhiDEtaHiddenSecWeakNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakNumeratorData);
-      else
-	fDPhiDEtaHiddenSecWeakNumeratorData = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenSecWeakDenominatorData)
-	fDPhiDEtaHiddenSecWeakDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecWeakDenominatorData);
-      else
-	fDPhiDEtaHiddenSecWeakDenominatorData = 0;
-
-      if (aCorrFctn.fDPhiDEtaHiddenSecMatNumeratorData)
-	fDPhiDEtaHiddenSecMatNumeratorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatNumeratorData);
-      else
-	fDPhiDEtaHiddenSecMatNumeratorData = 0;
-      if (aCorrFctn.fDPhiDEtaHiddenSecMatDenominatorData)
-	fDPhiDEtaHiddenSecMatDenominatorData = new TH2D(*aCorrFctn.fDPhiDEtaHiddenSecMatDenominatorData);
-      else
-	fDPhiDEtaHiddenSecMatDenominatorData = 0;
-
-
-    }
-
 
   return *this;
 }
 //_________________________
-void AliFemtoCorrFctnDEtaDPhiSimple::Finish(){
+void AliFemtoCorrFctnDEtaDPhiSimple::Finish()
+{
   // here is where we should normalize, fit, etc...
   // we should NOT Draw() the histos (as I had done it below),
   // since we want to insulate ourselves from root at this level
@@ -330,406 +237,370 @@ void AliFemtoCorrFctnDEtaDPhiSimple::Finish(){
   //  mShareNumerator->Draw();
   //mShareDenominator->Draw();
   //mRatio->Draw();
-
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnDEtaDPhiSimple::Report(){
+AliFemtoString AliFemtoCorrFctnDEtaDPhiSimple::Report()
+{
   // create report
-  string stemp = "TPC Ncls Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fDPhiDEtaNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDPhiDEtaDenominator->GetEntries());
-  stemp += ctemp;
+  AliFemtoString report = "TPC Ncls Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n", fDPhiDEtaNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n", fDPhiDEtaDenominator->GetEntries());
 
-  if(fReadHiddenInfo)
-    {
-      snprintf(ctemp , 100, "Number of entries in hidden numerator:\t%E\n",fDPhiDEtaHiddenNumerator->GetEntries());
-      stemp += ctemp;
-      snprintf(ctemp , 100, "Number of entries in hidden denominator:\t%E\n",fDPhiDEtaHiddenDenominator->GetEntries());
-      stemp += ctemp;
+  if (fReadHiddenInfo)
+  {
+    report += Form("Number of entries in hidden numerator:\t%E\n", fDPhiDEtaHiddenNumerator->GetEntries());
+    report += Form("Number of entries in hidden denominator:\t%E\n", fDPhiDEtaHiddenDenominator->GetEntries());
 
-      snprintf(ctemp , 100, "Number of entries in hidden primary numerator:\t%E\n",fDPhiDEtaHiddenPrimaryNumerator->GetEntries());
-      stemp += ctemp;
-      snprintf(ctemp , 100, "Number of entries in hidden primary denominator:\t%E\n",fDPhiDEtaHiddenPrimaryDenominator->GetEntries());
-      stemp += ctemp;
+    report += Form("Number of entries in hidden primary numerator:\t%E\n", fDPhiDEtaHiddenPrimaryNumerator->GetEntries());
+    report += Form("Number of entries in hidden primary denominator:\t%E\n", fDPhiDEtaHiddenPrimaryDenominator->GetEntries());
 
-      snprintf(ctemp , 100, "Number of entries in hidden second. weak numerator:\t%E\n",fDPhiDEtaHiddenSecWeakNumerator->GetEntries());
-      stemp += ctemp;
-      snprintf(ctemp , 100, "Number of entries in hidden second. weak denominator:\t%E\n",fDPhiDEtaHiddenSecWeakDenominator->GetEntries());
-      stemp += ctemp;
+    report += Form("Number of entries in hidden second. weak numerator:\t%E\n", fDPhiDEtaHiddenSecWeakNumerator->GetEntries());
+    report += Form("Number of entries in hidden second. weak denominator:\t%E\n", fDPhiDEtaHiddenSecWeakDenominator->GetEntries());
 
-      snprintf(ctemp , 100, "Number of entries in hidden second. material numerator:\t%E\n",fDPhiDEtaHiddenSecMatNumerator->GetEntries());
-      stemp += ctemp;
-      snprintf(ctemp , 100, "Number of entries in hidden second. material denominator:\t%E\n",fDPhiDEtaHiddenSecMatDenominator->GetEntries());
-      stemp += ctemp;
+    report += Form("Number of entries in hidden second. material numerator:\t%E\n", fDPhiDEtaHiddenSecMatNumerator->GetEntries());
+    report += Form("Number of entries in hidden second. material denominator:\t%E\n", fDPhiDEtaHiddenSecMatDenominator->GetEntries());
 
+    report += Form("Number of entries in hidden primary numerator data:\t%E\n", fDPhiDEtaHiddenPrimaryNumeratorData->GetEntries());
+    report += Form("Number of entries in hidden primary denominator data:\t%E\n", fDPhiDEtaHiddenPrimaryDenominatorData->GetEntries());
 
-      snprintf(ctemp , 100, "Number of entries in hidden primary numerator data:\t%E\n",fDPhiDEtaHiddenPrimaryNumeratorData->GetEntries());
-      stemp += ctemp;
-      snprintf(ctemp , 100, "Number of entries in hidden primary denominator data:\t%E\n",fDPhiDEtaHiddenPrimaryDenominatorData->GetEntries());
-      stemp += ctemp;
+    report += Form("Number of entries in hidden second. weak numerator data:\t%E\n", fDPhiDEtaHiddenSecWeakNumeratorData->GetEntries());
+    report += Form("Number of entries in hidden second. weak denominator data:\t%E\n", fDPhiDEtaHiddenSecWeakDenominatorData->GetEntries());
 
-      snprintf(ctemp , 100, "Number of entries in hidden second. weak numerator data:\t%E\n",fDPhiDEtaHiddenSecWeakNumeratorData->GetEntries());
-      stemp += ctemp;
-      snprintf(ctemp , 100, "Number of entries in hidden second. weak denominator data:\t%E\n",fDPhiDEtaHiddenSecWeakDenominatorData->GetEntries());
-      stemp += ctemp;
+    report += Form("Number of entries in hidden second. material numerator data:\t%E\n", fDPhiDEtaHiddenSecMatNumeratorData->GetEntries());
+    report += Form("Number of entries in hidden second. material denominator data:\t%E\n", fDPhiDEtaHiddenSecMatDenominatorData->GetEntries());
+  }
 
-      snprintf(ctemp , 100, "Number of entries in hidden second. material numerator data:\t%E\n",fDPhiDEtaHiddenSecMatNumeratorData->GetEntries());
-      stemp += ctemp;
-      snprintf(ctemp , 100, "Number of entries in hidden second. material denominator data:\t%E\n",fDPhiDEtaHiddenSecMatDenominatorData->GetEntries());
-      stemp += ctemp;
-    }
-
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  return report;
 }
-//____________________________
-void AliFemtoCorrFctnDEtaDPhiSimple::AddRealPair( AliFemtoPair* pair){
+
+inline
+void AddPair(const AliFemtoPair &pair,
+             bool read_hidden_info,
+             TH2D &data_hist,
+             TH2D *mc_hist,
+             TH2D *primary_hist,
+             TH2D *primary_data_hist,
+             TH2D *secweak_hist,
+             TH2D *secweak_data_hist,
+             TH2D *secmat_hist,
+             TH2D *secmat_data_hist)
+{
+  const auto &track1 = *pair.Track1(),
+             &track2 = *pair.Track2();
+
+  const double PHI_LO = data_hist.GetXaxis()->GetXmin(),
+               PHI_HI = data_hist.GetXaxis()->GetXmax();
+
+  // Calculates the difference in phi and shifts to within the histogram axis
+  auto calc_delta_phi = [&] (const AliFemtoThreeVector &p1, const AliFemtoThreeVector &p2) {
+    double delta_phi = p1.Phi() - p2.Phi();
+    while (delta_phi < PHI_LO) {
+      delta_phi += PIT;
+    }
+    while (delta_phi > PHI_HI) {
+      delta_phi -= PIT;
+    }
+    return delta_phi;
+  };
+
+
+  const auto &P1 = track1.FourMomentum(),
+             &P2 = track2.FourMomentum();
+
+  const double dphi = calc_delta_phi(P1.vect(), P2.vect()),
+               deta = P1.PseudoRapidity() - P2.PseudoRapidity();
+
+  data_hist.Fill(dphi, deta);
+
+  if (read_hidden_info) {
+
+    // tries to get the
+    auto get_track_info = [] (const AliFemtoParticle &particle) {
+      AliFemtoModelHiddenInfo *result = nullptr;
+
+      if (auto *track = particle.Track()) {
+        result = static_cast<AliFemtoModelHiddenInfo *>(track->GetHiddenInfo());
+      } else if (auto *v0 = particle.V0()) {
+        result = static_cast<AliFemtoModelHiddenInfo*>(v0->GetHiddenInfo());
+      }
+
+      return result;
+    };
+
+    AliFemtoModelHiddenInfo const *hInfo1 = get_track_info(track1),
+                                  *hInfo2 = get_track_info(track2);
+
+    if (hInfo1 && hInfo2) {
+
+      const AliFemtoThreeVector
+        &v1 = *hInfo1->GetTrueMomentum(),
+        &v2 = *hInfo2->GetTrueMomentum();
+
+      const double
+        dhphi = calc_delta_phi(v1, v2),
+        dheta = v1.PseudoRapidity() - v2.PseudoRapidity();
+
+      const int
+        origin_1 = hInfo1->GetOrigin(),
+        origin_2 = hInfo2->GetOrigin();
+
+      mc_hist->Fill(dhphi, dheta);
+      if (origin_1 == 0 && origin_2 == 0) {
+        primary_hist->Fill(dhphi, dheta);
+        primary_data_hist->Fill(dphi, deta);
+      }
+      else if (origin_1 == 1 || origin_2 == 1) {
+        secweak_hist->Fill(dhphi, dheta);
+        secweak_data_hist->Fill(dphi, deta);
+      }
+      else if (origin_1 == 2 || origin_2 == 2) {
+        secmat_hist->Fill(dhphi, dheta);
+        secmat_data_hist->Fill(dphi, deta);
+      }
+    }
+  }
+}
+
+void AliFemtoCorrFctnDEtaDPhiSimple::AddRealPair(AliFemtoPair *pair)
+{
   // add real (effect) pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }
 
-  /*double phi1 = pair->Track1()->Track()->P().Phi();
-    double phi2 = pair->Track2()->Track()->P().Phi();
-    double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
-    double eta2 = pair->Track2()->Track()->P().PseudoRapidity();*/
-
-  double phi1 = pair->Track1()->FourMomentum().Phi();
-  double phi2 = pair->Track2()->FourMomentum().Phi();
-  double eta1 = pair->Track1()->FourMomentum().PseudoRapidity();
-  double eta2 = pair->Track2()->FourMomentum().PseudoRapidity();
-
-  double dphi = phi1 - phi2;
-  while (dphi<fphiL) dphi+=PIT;
-  while (dphi>fphiT) dphi-=PIT;
-
-  double deta = eta1 - eta2;
-
-
-  fDPhiDEtaNumerator->Fill(dphi, deta);
-
-   if(fReadHiddenInfo)
-    {
-      AliFemtoModelHiddenInfo* hInfo1 = 0;
-      AliFemtoModelHiddenInfo* hInfo2 = 0;
-      if(pair->Track1()->Track())
-	{
-	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track1()->Track()->GetHiddenInfo();
-	}
-      if(pair->Track1()->V0())
-	{
-	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track1()->V0()->GetHiddenInfo();
-	}
-
-      if(pair->Track2()->Track())
-	{
-	    hInfo2 = (AliFemtoModelHiddenInfo*)pair->Track2()->Track()->GetHiddenInfo();
-	}
-      if(pair->Track2()->V0())
-	{
-	    hInfo2 = (AliFemtoModelHiddenInfo*)pair->Track2()->V0()->GetHiddenInfo();
-	}
-
-      if(hInfo1 && hInfo2)
-	{
-	  AliFemtoThreeVector *v1 = hInfo1->GetTrueMomentum();
-	  AliFemtoThreeVector *v2 = hInfo2->GetTrueMomentum();
-
-	  double hphi1 = v1->Phi();
-	  double hphi2 = v2->Phi();
-	  double heta1 = v1->PseudoRapidity();
-	  double heta2 = v2->PseudoRapidity();
-
-
-	  double dhphi = hphi1 - hphi2;
-	  while (dhphi<fphiL) dhphi+=PIT;
-	  while (dhphi>fphiT) dhphi-=PIT;
-
-	  double dheta = heta1 - heta2;
-
-	  fDPhiDEtaHiddenNumerator->Fill(dhphi, dheta);
-	  if(hInfo1->GetOrigin()==0 && hInfo2->GetOrigin()==0)
-	    {
-	      fDPhiDEtaHiddenPrimaryNumerator->Fill(dhphi,dheta);
-	      fDPhiDEtaHiddenPrimaryNumeratorData->Fill(dphi,deta);
-	    }
-	  else if(hInfo1->GetOrigin()==1 || hInfo2->GetOrigin()==1)
-	    {
-	      fDPhiDEtaHiddenSecWeakNumerator->Fill(dhphi,dheta);
-	      fDPhiDEtaHiddenSecWeakNumeratorData->Fill(dphi,deta);
-	    }
-	  else if(hInfo1->GetOrigin()==2 || hInfo2->GetOrigin()==2)
-	    {
-	      fDPhiDEtaHiddenSecMatNumerator->Fill(dhphi,dheta);
-	      fDPhiDEtaHiddenSecMatNumeratorData->Fill(dphi,deta);
-	    }
-
-	}
-    }
-
-
-
+  // call with numerator targets
+  AddPair(*pair,
+          fReadHiddenInfo,
+          *fDPhiDEtaNumerator,
+          fDPhiDEtaHiddenNumerator,
+          fDPhiDEtaHiddenPrimaryNumerator,
+          fDPhiDEtaHiddenPrimaryNumeratorData,
+          fDPhiDEtaHiddenSecWeakNumerator,
+          fDPhiDEtaHiddenSecWeakNumeratorData,
+          fDPhiDEtaHiddenSecMatNumerator,
+          fDPhiDEtaHiddenSecMatNumeratorData);
 }
-//____________________________
-void AliFemtoCorrFctnDEtaDPhiSimple::AddMixedPair( AliFemtoPair* pair){
+
+void AliFemtoCorrFctnDEtaDPhiSimple::AddMixedPair(AliFemtoPair *pair)
+{
   // add mixed (background) pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }
 
-  /*double phi1 = pair->Track1()->Track()->P().Phi();
-  double phi2 = pair->Track2()->Track()->P().Phi();
-  double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
-  double eta2 = pair->Track2()->Track()->P().PseudoRapidity();*/
-
-  double phi1 = pair->Track1()->FourMomentum().Phi();
-  double phi2 = pair->Track2()->FourMomentum().Phi();
-  double eta1 = pair->Track1()->FourMomentum().PseudoRapidity();
-  double eta2 = pair->Track2()->FourMomentum().PseudoRapidity();
-
-  double dphi = phi1 - phi2;
-  while (dphi<fphiL) dphi+=PIT;
-  while (dphi>fphiT) dphi-=PIT;
-
-  double deta = eta1 - eta2;
-
-  fDPhiDEtaDenominator->Fill(dphi, deta);
-
-
-  if(fReadHiddenInfo)
-    {
-      AliFemtoModelHiddenInfo* hInfo1 = 0;
-      AliFemtoModelHiddenInfo* hInfo2 = 0;
-      if(pair->Track1()->Track())
-	{
-	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track1()->Track()->GetHiddenInfo();
-	}
-      if(pair->Track1()->V0())
-	{
-	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track1()->V0()->GetHiddenInfo();
-	}
-
-      if(pair->Track2()->Track())
-	{
-	    hInfo2 = (AliFemtoModelHiddenInfo*)pair->Track2()->Track()->GetHiddenInfo();
-	}
-      if(pair->Track2()->V0())
-	{
-	    hInfo2 = (AliFemtoModelHiddenInfo*)pair->Track2()->V0()->GetHiddenInfo();
-	}
-
-
-      if(hInfo1 && hInfo2)
-	{
-	  AliFemtoThreeVector *v1 = hInfo1->GetTrueMomentum();
-	  AliFemtoThreeVector *v2 = hInfo2->GetTrueMomentum();
-
-
-	  double hphi1 = v1->Phi();
-	  double hphi2 = v2->Phi();
-	  double heta1 = v1->PseudoRapidity();
-	  double heta2 = v2->PseudoRapidity();
-
-
-	  double dhphi = hphi1 - hphi2;
-	  while (dhphi<fphiL) dhphi+=PIT;
-	  while (dhphi>fphiT) dhphi-=PIT;
-
-	  double dheta = heta1 - heta2;
-
-
-	  fDPhiDEtaHiddenDenominator->Fill(dhphi, dheta);
-	  if(hInfo1->GetOrigin()==0 && hInfo2->GetOrigin()==0)
-	    {
-	      fDPhiDEtaHiddenPrimaryDenominator->Fill(dhphi,dheta);
-	      fDPhiDEtaHiddenPrimaryDenominatorData->Fill(dphi,deta);
-	    }
-	  else if(hInfo1->GetOrigin()==1 || hInfo2->GetOrigin()==1)
-	    {
-	      fDPhiDEtaHiddenSecWeakDenominator->Fill(dhphi,dheta);
-	      fDPhiDEtaHiddenSecWeakDenominatorData->Fill(dphi,deta);
-	    }
-	  else if(hInfo1->GetOrigin()==2 || hInfo2->GetOrigin()==2)
-	    {
-	      fDPhiDEtaHiddenSecMatDenominator->Fill(dhphi,dheta);
-	      fDPhiDEtaHiddenSecMatDenominator->Fill(dphi,deta);
-	    }
-
-
-	}
-    }
-
-
+  // call with denominator targets
+  AddPair(*pair,
+          fReadHiddenInfo,
+          *fDPhiDEtaDenominator,
+          fDPhiDEtaHiddenDenominator,
+          fDPhiDEtaHiddenPrimaryDenominator,
+          fDPhiDEtaHiddenPrimaryDenominatorData,
+          fDPhiDEtaHiddenSecWeakDenominator,
+          fDPhiDEtaHiddenSecWeakDenominatorData,
+          fDPhiDEtaHiddenSecMatDenominator,
+          fDPhiDEtaHiddenSecMatDenominatorData);
 }
-
 
 void AliFemtoCorrFctnDEtaDPhiSimple::WriteHistos()
 {
   // Write out result histograms
   fDPhiDEtaNumerator->Write();
   fDPhiDEtaDenominator->Write();
-    if(fReadHiddenInfo)
-    {
-      fDPhiDEtaHiddenNumerator->Write();
-      fDPhiDEtaHiddenDenominator->Write();
+  if (fReadHiddenInfo) {
+    fDPhiDEtaHiddenNumerator->Write();
+    fDPhiDEtaHiddenDenominator->Write();
 
-      fDPhiDEtaHiddenPrimaryNumerator->Write();
-      fDPhiDEtaHiddenPrimaryDenominator->Write();
+    fDPhiDEtaHiddenPrimaryNumerator->Write();
+    fDPhiDEtaHiddenPrimaryDenominator->Write();
 
-      fDPhiDEtaHiddenSecWeakNumerator->Write();
-      fDPhiDEtaHiddenSecWeakDenominator->Write();
+    fDPhiDEtaHiddenSecWeakNumerator->Write();
+    fDPhiDEtaHiddenSecWeakDenominator->Write();
 
-      fDPhiDEtaHiddenSecMatNumerator->Write();
-      fDPhiDEtaHiddenSecMatDenominator->Write();
+    fDPhiDEtaHiddenSecMatNumerator->Write();
+    fDPhiDEtaHiddenSecMatDenominator->Write();
 
-      fDPhiDEtaHiddenPrimaryNumeratorData->Write();
-      fDPhiDEtaHiddenPrimaryDenominatorData->Write();
+    fDPhiDEtaHiddenPrimaryNumeratorData->Write();
+    fDPhiDEtaHiddenPrimaryDenominatorData->Write();
 
-      fDPhiDEtaHiddenSecWeakNumeratorData->Write();
-      fDPhiDEtaHiddenSecWeakDenominatorData->Write();
+    fDPhiDEtaHiddenSecWeakNumeratorData->Write();
+    fDPhiDEtaHiddenSecWeakDenominatorData->Write();
 
-      fDPhiDEtaHiddenSecMatNumeratorData->Write();
-      fDPhiDEtaHiddenSecMatDenominatorData->Write();
-    }
-
+    fDPhiDEtaHiddenSecMatNumeratorData->Write();
+    fDPhiDEtaHiddenSecMatDenominatorData->Write();
+  }
 }
 
-TList* AliFemtoCorrFctnDEtaDPhiSimple::GetOutputList()
+TList *AliFemtoCorrFctnDEtaDPhiSimple::GetOutputList()
 {
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
   tOutputList->Add(fDPhiDEtaNumerator);
   tOutputList->Add(fDPhiDEtaDenominator);
-    if(fReadHiddenInfo)
-    {
-      tOutputList->Add(fDPhiDEtaHiddenNumerator);
-      tOutputList->Add(fDPhiDEtaHiddenDenominator);
+  if (fReadHiddenInfo) {
+    tOutputList->Add(fDPhiDEtaHiddenNumerator);
+    tOutputList->Add(fDPhiDEtaHiddenDenominator);
 
-      tOutputList->Add(fDPhiDEtaHiddenPrimaryNumerator);
-      tOutputList->Add(fDPhiDEtaHiddenPrimaryDenominator);
+    tOutputList->Add(fDPhiDEtaHiddenPrimaryNumerator);
+    tOutputList->Add(fDPhiDEtaHiddenPrimaryDenominator);
 
-      tOutputList->Add(fDPhiDEtaHiddenSecWeakNumerator);
-      tOutputList->Add(fDPhiDEtaHiddenSecWeakDenominator);
+    tOutputList->Add(fDPhiDEtaHiddenSecWeakNumerator);
+    tOutputList->Add(fDPhiDEtaHiddenSecWeakDenominator);
 
-      tOutputList->Add(fDPhiDEtaHiddenSecMatNumerator);
-      tOutputList->Add(fDPhiDEtaHiddenSecMatDenominator);
+    tOutputList->Add(fDPhiDEtaHiddenSecMatNumerator);
+    tOutputList->Add(fDPhiDEtaHiddenSecMatDenominator);
 
-      tOutputList->Add(fDPhiDEtaHiddenPrimaryNumeratorData);
-      tOutputList->Add(fDPhiDEtaHiddenPrimaryDenominatorData);
+    tOutputList->Add(fDPhiDEtaHiddenPrimaryNumeratorData);
+    tOutputList->Add(fDPhiDEtaHiddenPrimaryDenominatorData);
 
-      tOutputList->Add(fDPhiDEtaHiddenSecWeakNumeratorData);
-      tOutputList->Add(fDPhiDEtaHiddenSecWeakDenominatorData);
+    tOutputList->Add(fDPhiDEtaHiddenSecWeakNumeratorData);
+    tOutputList->Add(fDPhiDEtaHiddenSecWeakDenominatorData);
 
-      tOutputList->Add(fDPhiDEtaHiddenSecMatNumeratorData);
-      tOutputList->Add(fDPhiDEtaHiddenSecMatDenominatorData);
-    }
+    tOutputList->Add(fDPhiDEtaHiddenSecMatNumeratorData);
+    tOutputList->Add(fDPhiDEtaHiddenSecMatDenominatorData);
+  }
 
   return tOutputList;
-
 }
-
-
-
-
-
 
 void AliFemtoCorrFctnDEtaDPhiSimple::SetParticleTypes(ParticleType partType1, ParticleType partType2)
 {
-  part1=partType1;
-  part2=partType2;
+  part1 = partType1;
+  part2 = partType2;
 }
-
 
 void AliFemtoCorrFctnDEtaDPhiSimple::SetParticle1Type(ParticleType partType)
 {
-  part1=partType;
+  part1 = partType;
 }
 
 void AliFemtoCorrFctnDEtaDPhiSimple::SetParticle2Type(ParticleType partType)
 {
-  part2=partType;
+  part2 = partType;
 }
 
 void AliFemtoCorrFctnDEtaDPhiSimple::SetReadHiddenInfo(bool read)
 {
+  if (read == fReadHiddenInfo) {
+    return;
+  }
   fReadHiddenInfo = read;
+
+  // we had hidden-info, now we don't - delete the
+  if (!fReadHiddenInfo) {
+    delete fDPhiDEtaHiddenNumerator;
+    delete fDPhiDEtaHiddenDenominator;
+    delete fDPhiDEtaHiddenPrimaryNumerator;
+    delete fDPhiDEtaHiddenPrimaryDenominator;
+    delete fDPhiDEtaHiddenSecWeakNumerator;
+    delete fDPhiDEtaHiddenSecWeakDenominator;
+    delete fDPhiDEtaHiddenSecMatNumerator;
+    delete fDPhiDEtaHiddenSecMatDenominator;
+    delete fDPhiDEtaHiddenPrimaryNumeratorData;
+    delete fDPhiDEtaHiddenPrimaryDenominatorData;
+    delete fDPhiDEtaHiddenSecWeakNumeratorData;
+    delete fDPhiDEtaHiddenSecWeakDenominatorData;
+    delete fDPhiDEtaHiddenSecMatNumeratorData;
+    delete fDPhiDEtaHiddenSecMatDenominatorData;
+
+    fDPhiDEtaHiddenNumerator = nullptr;
+    fDPhiDEtaHiddenDenominator = nullptr;
+    fDPhiDEtaHiddenPrimaryNumerator = nullptr;
+    fDPhiDEtaHiddenPrimaryDenominator = nullptr;
+    fDPhiDEtaHiddenSecWeakNumerator = nullptr;
+    fDPhiDEtaHiddenSecWeakDenominator = nullptr;
+    fDPhiDEtaHiddenSecMatNumerator = nullptr;
+    fDPhiDEtaHiddenSecMatDenominator = nullptr;
+    fDPhiDEtaHiddenPrimaryNumeratorData = nullptr;
+    fDPhiDEtaHiddenPrimaryDenominatorData = nullptr;
+    fDPhiDEtaHiddenSecWeakNumeratorData = nullptr;
+    fDPhiDEtaHiddenSecWeakDenominatorData = nullptr;
+    fDPhiDEtaHiddenSecMatNumeratorData = nullptr;
+    fDPhiDEtaHiddenSecMatDenominatorData = nullptr;
+
+    return;
+  }
 
   int aEtaBins = fEtaBins;
   int aPhiBins = fPhiBins;
 
-  // set up numerator
-  TString tTitHNumD = "NumDPhiDEtaHidden" + fTitle;
-  fDPhiDEtaHiddenNumerator = new TH2D(tTitHNumD,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
-  // set up denominator
-  TString tTitHDenD = "DenDPhiDEtaHidden" + fTitle;
-  fDPhiDEtaHiddenDenominator = new TH2D(tTitHDenD,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+  TString ax_title = "; #Delta#Phi; #Delta#eta";
 
-  // set up numerator
-  TString tTitHPrimNumD = "NumDPhiDEtaHiddenPrimary" + fTitle;
-  fDPhiDEtaHiddenPrimaryNumerator = new TH2D(tTitHPrimNumD,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
-  // set up denominator
-  TString tTitHPrimDenD = "DenDPhiDEtaHiddenPrimary" + fTitle;
-  fDPhiDEtaHiddenPrimaryDenominator = new TH2D(tTitHPrimDenD,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+  fDPhiDEtaHiddenNumerator = new TH2D("NumDPhiDEtaHidden" + fTitle,
+                                      "Numerator - All pairs (MonteCarlo Momentum)" + ax_title,
+                                      aPhiBins, fphiL, fphiT,
+                                      aEtaBins, -2.0, 2.0);
+  fDPhiDEtaHiddenDenominator = new TH2D("DenDPhiDEtaHidden" + fTitle,
+                                        "Denominator - All pairs (MonteCarlo Momentum)" + ax_title,
+                                        aPhiBins, fphiL, fphiT,
+                                        aEtaBins, -2.0, 2.0);
 
-  // set up numerator
-  TString tTitHSWNumD = "NumDPhiDEtaHiddenSecWeak" + fTitle;
-  fDPhiDEtaHiddenSecWeakNumerator = new TH2D(tTitHSWNumD,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
-  // set up denominator
-  TString tTitHSWDenD = "DenDPhiDEtaHiddenSecWeak" + fTitle;
-  fDPhiDEtaHiddenSecWeakDenominator = new TH2D(tTitHSWDenD,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+  fDPhiDEtaHiddenPrimaryNumerator = new TH2D("NumDPhiDEtaHiddenPrimary" + fTitle,
+                                             "Numerator - Pairs of Primary Particles (MonteCarlo Momentum)" + ax_title,
+                                             aPhiBins, fphiL, fphiT,
+                                             aEtaBins, -2.0, 2.0);
 
+  fDPhiDEtaHiddenPrimaryDenominator = new TH2D("DenDPhiDEtaHiddenPrimary" + fTitle,
+                                               "Denominator - Pairs of Primary Particles (MonteCarlo Momentum)" + ax_title,
+                                               aPhiBins, fphiL, fphiT,
+                                               aEtaBins, -2.0, 2.0);
 
-  // set up numerator
-  TString tTitHSMNumD = "NumDPhiDEtaHiddenSecMat" + fTitle;
-  fDPhiDEtaHiddenSecMatNumerator = new TH2D(tTitHSMNumD,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
-  // set up denominator
-  TString tTitHSMDenD = "DenDPhiDEtaHiddenSecMat" + fTitle;
-  fDPhiDEtaHiddenSecMatDenominator = new TH2D(tTitHSMDenD,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+  fDPhiDEtaHiddenSecWeakNumerator = new TH2D("NumDPhiDEtaHiddenSecWeak" + fTitle,
+                                             "Numerator - Pairs With a Secondary (weak) Particle (MonteCarlo Momentum)" + ax_title,
+                                             aPhiBins, fphiL, fphiT,
+                                             aEtaBins, -2.0, 2.0);
 
+  fDPhiDEtaHiddenSecWeakDenominator = new TH2D("DenDPhiDEtaHiddenSecWeak" + fTitle,
+                                               "Denominator - Pairs With a Secondary (weak) Particle (MonteCarlo Momentum)" + ax_title,
+                                               aPhiBins, fphiL, fphiT,
+                                               aEtaBins, -2.0, 2.0);
 
+  fDPhiDEtaHiddenSecMatNumerator = new TH2D("NumDPhiDEtaHiddenSecMat" + fTitle,
+                                            "Numerator - Pairs With a Secondary (material) Particle (MonteCarlo momentum)" + ax_title,
+                                            aPhiBins, fphiL, fphiT,
+                                            aEtaBins, -2.0, 2.0);
 
+  fDPhiDEtaHiddenSecMatDenominator = new TH2D("DenDPhiDEtaHiddenSecMat" + fTitle,
+                                              "Denominator - Pairs With a Secondary (material) Particle (MonteCarlo momentum)" + ax_title,
+                                              aPhiBins, fphiL, fphiT,
+                                              aEtaBins, -2.0, 2.0);
 
-  // set up numerator
-  TString tTitHPrimNumDData = "NumDPhiDEtaHiddenPrimaryData" + fTitle;
-  fDPhiDEtaHiddenPrimaryNumeratorData = new TH2D(tTitHPrimNumDData,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
-  // set up denominator
-  TString tTitHPrimDenDData = "DenDPhiDEtaHiddenPrimaryData" + fTitle;
-  fDPhiDEtaHiddenPrimaryDenominatorData = new TH2D(tTitHPrimDenDData,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+  fDPhiDEtaHiddenPrimaryNumeratorData = new TH2D("NumDPhiDEtaHiddenPrimaryData" + fTitle,
+                                                 "Numerator - Pairs of Primary Particles (Reconstructed Momentum)" + ax_title,
+                                                  aPhiBins, fphiL, fphiT,
+                                                  aEtaBins, -2.0, 2.0);
 
-  // set up numerator
-  TString tTitHSWNumDData = "NumDPhiDEtaHiddenSecWeakData" + fTitle;
-  fDPhiDEtaHiddenSecWeakNumeratorData = new TH2D(tTitHSWNumDData,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
-  // set up denominator
-  TString tTitHSWDenDData = "DenDPhiDEtaHiddenSecWeakData" + fTitle;
-  fDPhiDEtaHiddenSecWeakDenominatorData = new TH2D(tTitHSWDenDData,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+  fDPhiDEtaHiddenPrimaryDenominatorData = new TH2D("DenDPhiDEtaHiddenPrimaryData" + fTitle,
+                                                   "Denominator - Pairs of Primary Particles (Reconstructed Momentum)" + ax_title,
+                                                   aPhiBins, fphiL, fphiT,
+                                                   aEtaBins, -2.0, 2.0);
 
+  fDPhiDEtaHiddenSecWeakNumeratorData = new TH2D("NumDPhiDEtaHiddenSecWeakData" + fTitle,
+                                                 "Numerator - Pairs With a Secondary (weak) Particle (Reconstructed Momentum)" + ax_title,
+                                                 aPhiBins, fphiL, fphiT,
+                                                 aEtaBins, -2.0, 2.0);
 
-  // set up numerator
-  TString tTitHSMNumDData = "NumDPhiDEtaHiddenSecMatData" + fTitle;
-  fDPhiDEtaHiddenSecMatNumeratorData = new TH2D(tTitHSMNumDData,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
-  // set up denominator
-  TString tTitHSMDenDData = "DenDPhiDEtaHiddenSecMatData" + fTitle;
-  fDPhiDEtaHiddenSecMatDenominatorData = new TH2D(tTitHSMDenDData,fTitle,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+  fDPhiDEtaHiddenSecWeakDenominatorData = new TH2D("DenDPhiDEtaHiddenSecWeakData" + fTitle,
+                                                   "Denominator - Pairs With a Secondary (weak) Particle (Reconstructed Momentum)" + ax_title,
+                                                   aPhiBins, fphiL, fphiT,
+                                                   aEtaBins, -2.0, 2.0);
 
+  fDPhiDEtaHiddenSecMatNumeratorData = new TH2D("NumDPhiDEtaHiddenSecMatData" + fTitle,
+                                                "Numerator - Pairs of Seconadry (material) Particle (Reconstructed momentum)" + ax_title,
+                                                aPhiBins, fphiL, fphiT,
+                                                aEtaBins, -2.0, 2.0);
+
+  fDPhiDEtaHiddenSecMatDenominatorData = new TH2D("DenDPhiDEtaHiddenSecMatData" + fTitle,
+                                                  "Denominator - Pairs With a Secondary (material) Particle (Reconstructed momentum)" + ax_title,
+                                                  aPhiBins, fphiL, fphiT,
+                                                  aEtaBins, -2.0, 2.0);
 
   fDPhiDEtaHiddenNumerator->Sumw2();
-  fDPhiDEtaHiddenDenominator->Sumw2();
   fDPhiDEtaHiddenPrimaryNumerator->Sumw2();
-  fDPhiDEtaHiddenPrimaryDenominator->Sumw2();
   fDPhiDEtaHiddenSecWeakNumerator->Sumw2();
-  fDPhiDEtaHiddenSecWeakDenominator->Sumw2();
   fDPhiDEtaHiddenSecMatNumerator->Sumw2();
-  fDPhiDEtaHiddenSecMatDenominator->Sumw2();
   fDPhiDEtaHiddenPrimaryNumeratorData->Sumw2();
-  fDPhiDEtaHiddenPrimaryDenominatorData->Sumw2();
   fDPhiDEtaHiddenSecWeakNumeratorData->Sumw2();
-  fDPhiDEtaHiddenSecWeakDenominatorData->Sumw2();
   fDPhiDEtaHiddenSecMatNumeratorData->Sumw2();
-  fDPhiDEtaHiddenSecMatDenominatorData->Sumw2();
-
 }

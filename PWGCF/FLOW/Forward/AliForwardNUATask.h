@@ -6,27 +6,29 @@
 /**
  * @file AliForwardNUATask.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
- * 
+ *
  * @brief
- * 
+ *
  * @ingroup pwgcf_forward_flow
  */
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
 #include <TH2D.h>
-#include <TH3F.h>
+#include <TH3D.h>
 #include "TRandom.h"
-#include "AliForwardFlowRun2Settings.h"
+#include "AliForwardSettings.h"
 #include "AliEventCuts.h"
 #include <TF1.h>
+#include "AliForwardFlowUtil.h"
+#include <AliForwardTaskValidation.h>
 
 class AliAODForwardMult;
 class TH2D;
 class AliESDEvent;
 /**
- * @defgroup pwglf_forward_tasks_flow Flow tasks 
+ * @defgroup pwglf_forward_tasks_flow Flow tasks
  *
- * Code to do flow 
+ * Code to do flow
  *
  * @ingroup pwglf_forward_tasks
  */
@@ -45,14 +47,14 @@ class AliESDEvent;
 class AliForwardNUATask : public AliAnalysisTaskSE
 {
 public:
-  /** 
-   * Constructor 
+  /**
+   * Constructor
    */
   AliForwardNUATask();
-  /** 
+  /**
    * Constructor
-   * 
-   * @param name Name of task 
+   *
+   * @param name Name of task
    */
   AliForwardNUATask(const char* name);
   /**
@@ -60,53 +62,63 @@ public:
    */
   virtual ~AliForwardNUATask() {}
 
-  /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
+  /**
+   * Copy constructor
+   *
+   * @param o Object to copy from
    */
   AliForwardNUATask(const AliForwardNUATask& o);
 
-  /** 
-   * @{ 
-   * @name Task interface methods 
+  /**
+   * @{
+   * @name Task interface methods
    */
 
-  /** 
-   * Create output objects 
+  /**
+   * Create output objects
    */
   virtual void UserCreateOutputObjects();
-  
-  /** 
-   * Process each event 
+
+  /**
+   * Process each event
    *
    * @param option Not used
-   */  
+   */
   virtual void UserExec(Option_t *option);
 
-  /** 
+  static Double_t InterpolateWeight(TH2D& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight);
+  static Double_t InterpolateWeight(TH2D*& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight);
+  //void MakeFakeHoles(TH2D& forwarddNdedp);
+
+  /**
    * End of job
-   * 
-   * @param option Not used 
+   *
+   * @param option Not used
    */
   virtual void Terminate(Option_t *option);
 
   //private:
   AliAODEvent*            fAOD;           //! input event
   TList*                  fOutputList;    //! output list
-  TList* fEventList; //! 
-  
-  // A class combining all the settings for this analysis
-  AliForwardFlowRun2Settings fSettings;
+  TList* fEventList; //!
+  TH2D*   centralDist;//!
+  TH2D*   refDist;//!
+  TH2D*   forwardDist;//!
+  TH3D* nua_cen; //!
+  TH3D* nua_fmd; //!
+  TH1F* dNdeta;//!
 
-AliEventCuts fEventCuts;
-TF1 *fMultTOFLowCut; //!
-TF1 *fMultTOFHighCut; //!
-TF1 *fMultCentLowCut; //!
+  AliForwardTaskValidation* ev_val; //!
+
+  // A class combining all the settings for this analysis
+  AliForwardSettings fSettings;
+  AliForwardFlowUtil fUtil;
 
   enum {
     kTPCOnly = 128, // TPC only tracks
-    kHybrid = 768, // TPC only tracks
+    kHybrid = 768, // Hybrid tracks
+    kGlobalOnly = 32, // Global tracks
+    kGlobal = 96, // Global tracks
     kphiAcceptanceBin = 21 // phi acceptance bin in the FMD histogram (dNdetadphi)
   };
 
@@ -115,5 +127,5 @@ TF1 *fMultCentLowCut; //!
 
 #endif
 // Local Variables:
-//   mode: C++ 
+//   mode: C++
 // End:

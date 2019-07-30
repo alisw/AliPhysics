@@ -1,6 +1,8 @@
 //_____________________________________________________________________
 AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
                                     Bool_t isMC,
+                                    TString sJCatalyst        = "JCatalystTask",
+                                    TString sJCatalystDetMC   = "JCatalystDetMCTask",
                                     TString centBins          = "0.0 5.0 10.0 20.0 30.0 40.0 50.0 60.0 70.0",
                                     double jetCone            = 0.4,
                                     double ktjetCone          = 0.4,
@@ -57,11 +59,13 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
         ::Error("AddTaskJCDijetTask", "Invalid ktScheme set. Please choose a setting from 0 till 6. Terminating.");
         return NULL;
     }
+    cout << "MC: " << isMC << endl;
 
     //==== Set up the dijet task ====
     AliJCDijetTask *dijetTask = new AliJCDijetTask(taskName.Data(),"AOD");
     dijetTask->SetDebugLevel(5);
-    dijetTask->SetJCatalystTaskName("JCatalystTask");  // AliJCatalystTask has this name hard coded
+    dijetTask->SetJCatalystTaskName(sJCatalyst.Data());
+    dijetTask->SetJCatalystTaskNameDetMC(sJCatalystDetMC.Data());
     dijetTask->SetCentralityBins(vecCentBins);
     dijetTask->SetJetConeSize(jetCone, ktjetCone);
     dijetTask->SetBGSubtrSettings(ktScheme, usePionMassInkt, useDeltaPhiBGSubtr);

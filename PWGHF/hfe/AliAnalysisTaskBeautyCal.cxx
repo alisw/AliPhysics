@@ -214,6 +214,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistHFEcorr(0),
   fHistResD(0),
   fHistResB(0),
+  fHistEffde(0),
+  fHistEffbe(0),
   fHistHFEpos(0),
   fHistHFEneg(0),
   fHistHFmcCheck(0), 
@@ -386,6 +388,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistHFEcorr(0),
   fHistResD(0),
   fHistResB(0),
+  fHistEffde(0),
+  fHistEffbe(0),
   fHistHFEpos(0),
   fHistHFEneg(0),
   fHistHFmcCheck(0),
@@ -839,6 +843,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistResB = new TH2D("fHistResB", "B->e pT corr", 400,0.0,40.0,400,0.0,40.0);
   fOutputList->Add(fHistResB);
+
+  fHistEffde = new TH2D("fHistEffde", "step by step eff (D to e)", 10,-0.5,9.5,40,0,40);
+  fOutputList->Add(fHistEffde);
+ 
+  fHistEffbe = new TH2D("fHistEffbe", "step by step eff (B to e)", 10,-0.5,9.5,40,0,40);
+  fOutputList->Add(fHistEffbe);
 
   fHistHFEpos = new TH1D("fHistHFEpos", "HFE postive", 40,0,40);
   fOutputList->Add(fHistHFEpos);
@@ -1311,18 +1321,19 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       Double_t nTPCstand = 80;
       Double_t nITSstand = 3;
-
+     
       // applied lose cut first
       if(atrack->GetTPCNcls() < 60) continue;
       if(atrack->GetITSNcls() < 2) continue;
       if(atrack->GetTPCNCrossedRows() < 80) continue; 
-
+      
       /*
-      if(atrack->GetTPCNcls() < nTPCstand) continue;
-      if(atrack->GetITSNcls() < nITSstand) continue;
+      if(atrack->GetTPCNcls() < 80) continue;
+      if(atrack->GetITSNcls() < 3) continue;
       if(atrack->GetTPCNCrossedRows() < 120) continue; // add
-      if(atrack->GetTPCchi2() > 4) continue; // add
-      if(atrack->GetITSchi2() > 36) continue; // add
+      if(atrack->GetITSchi2() > fitschi2) continue; 
+      // vAN06212019 - vAN07032019 (for cross check with b->e)
+
       */
       if(fetarange==0)
         {
@@ -1437,6 +1448,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   
         if(pid_eleD)fHistResD->Fill(track->Pt(),fMCparticle->Pt());
         if(pid_eleB)fHistResB->Fill(track->Pt(),fMCparticle->Pt()); 
+
+        if(pid_eleD)fHistEffde->Fill(1,track->Pt());
+        if(pid_eleB)fHistEffbe->Fill(1,track->Pt());
 
     //if(abs(pdg)==11 && pid_eleD)cout << " pid_ele from D = " << pid_ele << " ; pidM = " << pidM << endl;
     //if(abs(pdg)==11 && pid_eleB)cout << " pid_ele from B = " << pid_ele << " ; pidM = " << pidM << endl;
@@ -1592,6 +1606,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       MatchR = sqrt(pow(clustMatch->GetTrackDx(),2)+pow(clustMatch->GetTrackDz(),2));
       if(MatchR>0.03)continue;
 
+
       /////////////////////////////////
       //Select EMCAL or DCAL clusters//
       /////////////////////////////////
@@ -1610,6 +1625,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+
+        if(pid_eleD)fHistEffde->Fill(2,track->Pt());
+        if(pid_eleB)fHistEffbe->Fill(2,track->Pt());
 
       // remove some bad runs
       //if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
@@ -1659,11 +1677,17 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
            }
          else if(centrality>=30 && centrality<50)
            {
-            eop += 0.04; //30-50% 
+            if(iCorr==0)
+              { 
+               eop += 0.04; //30-50% 
+              }
            } 
          else if(centrality>=60 && centrality<80)
            {
-            eop += 0.045; //60-80% (tuned up to 18 GeV/c) 
+            if(iCorr==0)
+              { 
+               eop += 0.045; //60-80% (tuned up to 18 GeV/c) 
+              }
            } 
          else
            {
@@ -1727,7 +1751,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         fHistIncTPCchi2->Fill(track->Pt(),atrack->GetTPCchi2());
         fHistIncITSchi2->Fill(track->Pt(),atrack->GetITSchi2());
      
-
+      
       // track cut + eID
       if(atrack->GetTPCNcls() < 80) continue;
       if(atrack->GetITSNcls() < 3) continue;
@@ -1737,7 +1761,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       //if(atrack->GetITSchi2() > 26) continue; 
       //cout << "itschi2 = " << fitschi2 << endl;
       if(atrack->GetITSchi2() > fitschi2) continue; 
- 
+    
+  
       // SM
       if(iSelSM>-0.5)
          {
@@ -1798,7 +1823,21 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fM20->Fill(track->Pt(),clustMatch->GetM20());
       if(pid_eleD || pid_eleB)fM20MC->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
-
+  
+      if(fTPCnSigma > fmimSig && fTPCnSigma < fmaxSig)
+        {
+         if(eop>fmimEop && eop<1.3)
+            {
+             if(pid_eleD)fHistEffde->Fill(3,track->Pt());
+             if(pid_eleB)fHistEffbe->Fill(3,track->Pt());
+            }
+         if(m20>m20mim && m20<m20max)
+           {
+            if(pid_eleD)fHistEffde->Fill(4,track->Pt());
+            if(pid_eleB)fHistEffbe->Fill(4,track->Pt());
+           }
+        }
+      
       //if(fTPCnSigma > fmimSig && fTPCnSigma < fmaxSig && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max)
       if(fTPCnSigma > fmimSig && fTPCnSigma < fmaxSig && eop>fmimEop && eop<1.3 && m20>m20mim && m20<m20max)
         {

@@ -76,7 +76,8 @@ fImportGeometryFromFile(0),       fImportGeometryFilePath(""),
 fNSuperModulesUsed(0),            
 fFirstSuperModuleUsed(-1),        fLastSuperModuleUsed(-1),
 fRunNumber(0),
-fMCECellClusFracCorrOn(0),        fMCECellClusFracCorrParam()
+fMCECellClusFracCorrOn(0),        fMCECellClusFracCorrParam(),
+fDoUseMergedBCs(kFALSE)
 {
   InitParameters();
   for(Int_t i = 0; i < 22; i++) fEMCALMatrix[i] = 0 ;
@@ -309,25 +310,44 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
         if(trecalpass)
         {
           AliInfo("Time Recalibrate EMCAL");
-          for (Int_t ibc = 0; ibc < 4; ++ibc) 
-          {
-            TH1F *h = GetEMCALChannelTimeRecalibrationFactors(ibc);
+
+	  if(fDoUseMergedBCs){
+
+            TH1S *h = (TH1S*)GetEMCALChannelTimeRecalibrationFactors(0);
             
             if (h)
               delete h;
-            
-            h = (TH1F*)trecalpass->FindObject(Form("hAllTimeAvBC%d",ibc));
-            
+          
+            h = (TH1S*)trecalpass->FindObject("hAllTimeAv");// High Gain only
+          
             if (!h) 
-            {
-              AliError(Form("Could not load hAllTimeAvBC%d",ibc));
-              continue;
-            }
+              AliError("Could not load hAllTimeAv");
             
             h->SetDirectory(0);
+          
+            SetEMCALChannelTimeRecalibrationFactors(0,h);
+
+	  }else{
+            for (Int_t ibc = 0; ibc < 4; ++ibc) 
+            {
+              TH1F *h = (TH1F*)GetEMCALChannelTimeRecalibrationFactors(ibc);
             
-            SetEMCALChannelTimeRecalibrationFactors(ibc,h);
-          } // bunch crossing loop
+              if (h)
+                delete h;
+            
+              h = (TH1F*)trecalpass->FindObject(Form("hAllTimeAvBC%d",ibc));
+            
+              if (!h) 
+              {
+                AliError(Form("Could not load hAllTimeAvBC%d",ibc));
+                continue;
+              }
+            
+              h->SetDirectory(0);
+            
+              SetEMCALChannelTimeRecalibrationFactors(ibc,h);
+            } // bunch crossing loop
+	  }
         } else AliInfo("Do NOT recalibrate time EMCAL, no params for pass"); // array pass ok
       } else AliInfo("Do NOT recalibrate time EMCAL, no params for run");  // run number array ok
       

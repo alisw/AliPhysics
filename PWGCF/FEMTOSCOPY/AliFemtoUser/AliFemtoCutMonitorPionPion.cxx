@@ -5,7 +5,7 @@
 
 #include "AliFemtoCutMonitorPionPion.h"
 #include "AliFemtoModelHiddenInfo.h"
-#include "AliFemtoAvgSepCalculator.h"
+// #include "AliFemtoAvgSepCalculator.h"
 
 #include "AliFemtoPairCutDetaDphi.h"
 
@@ -225,14 +225,23 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                                        const bool is_mc_analysis,
                                        const bool suffix_output):
   AliFemtoCutMonitor()
+  , fAllowCharge(0)
   , fYPt(nullptr)
   , fPtPhi(nullptr)
   , fEtaPhi(nullptr)
   , fChi2Tpc(nullptr)
-//  , fChiTpcIts(nullptr)
+  , fChi2Its(nullptr)
+  , fChiTpcIts(nullptr)
+  , fClsTpcIts(nullptr)
   , fdEdX(nullptr)
+  , fTofVsP(nullptr)
+  , fNsigTof(nullptr)
+  , fNsigTpc(nullptr)
+  , fImpact(nullptr)
+  , fEtaY(nullptr)
   , fMC_mass(nullptr)
   , fMC_pt(nullptr)
+  , fMC_rap(nullptr)
   , fMC_type(nullptr)
   , fMC_parent(nullptr)
 {
@@ -243,13 +252,18 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                                                (passing ? "(PASS)" : "(FAIL)"));
   const TString pf(suffix_output ? passing ? "_P" : "_F" : "");
 
-  const auto hist_name = [&] (const TString &name) { return name + pf; };
-  const auto hist_title = [&] (const char *title, const char *axes) {
-    return TString::Format(title_format, title, axes);
-  };
+  const auto hist_name = [&] (const TString &name)
+    {
+      return name + pf;
+    };
+
+  const auto hist_title = [&] (const char *title, const char *axes)
+    {
+      return TString::Format(title_format, title, axes);
+    };
 
   fYPt = new TH2F(
-    hist_name("eta_Pt"),
+    hist_name("EtaPt"),
     hist_title("#eta  vs  p_{T}",
                 /*X*/  "#eta;"
                 /*Y*/  "p_{T} (GeV);"
@@ -276,15 +290,26 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   fChi2Tpc = new TH1F(
     hist_name("Chi2Tpc"),
     hist_title("#chi^{2} / N_{cls} TPC", "TPC"),
-    144, 0.0, 0.1
+    144, 0.0, 5.0
   );
-  // fChiTpcIts = new TH2F(
-  //   "ChiTpcIts" + pf,
-  //   TString::Format(title_format,
-  //                   "#chi^{2} / N_{cls} TPC vs ITS",
-  //                   "TPC; ITS;"),
-  //   144, 0.0, 0.1,
-  //   144, 0.0, 0.1);
+
+  fChi2Its = new TH1F(
+    hist_name("Chi2Its"),
+    hist_title("#chi^{2} / N_{cls} ITS", "ITS"),
+    144, 0.0, 5.0
+  );
+
+  fChiTpcIts = new TH2F(
+    hist_name("ChiTpcIts"),
+    hist_title("#chi^{2} / N_{DoF} TPC vs ITS", "TPC; ITS;"),
+    144, 0.0, 6.1,
+    144, 0.0, 7.1);
+
+  fClsTpcIts = new TH2F(
+    hist_name("ClsTpcIts"),
+    hist_title("N-Clusters ITS vs TPC", "TPC; ITS;"),
+    161, -0.5, 160.5,
+    11, -0.5, 10.5);
 
   fdEdX = new TH2F(
     hist_name("dEdX"),
@@ -296,15 +321,55 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     128, 0, 500.0
   );
 
+  fTofVsP = new TH2F(
+    hist_name("TofVsP"),
+    hist_title("TOF Time vs p",
+               "p (GeV);"
+               "TOF Time;"
+               "N_{tracks}"),
+    256, 0, 6.0,
+    128, -2000.0, 2000.0
+  );
+
+  const int sig_nbins_per_unit = 13;
+  const double sig_target_range = 5,
+               sig_binsize = 1.0 / sig_nbins_per_unit,
+               sig_nbins = std::ceil(sig_target_range * 2 * sig_nbins_per_unit),
+               sig_max = sig_binsize * sig_nbins / 2;
+
+  fNsigTof = new TH2F(
+    hist_name("NsigTof"),
+    hist_title("TOF NSigma vs p",
+               "p (GeV);"
+               "TOF #sigma;"
+               "N_{tracks}"),
+    128, 0, 6.0,
+    sig_nbins, -sig_max, sig_max);
+
+  fNsigTpc = new TH2F(
+    hist_name("NsigTpc"),
+    hist_title("TPC NSigma vs p",
+               "p (GeV);"
+               "TPC #sigma;"
+               "N_{tracks}"),
+    128, 0, 6.0,
+    sig_nbins, -sig_max, sig_max);
+
   fImpact = new TH2F(
     hist_name("impact"),
     hist_title("Track impact parameter components",
                 "z (cm); "
                 "r (cm); "
-                "N_{#pi}  "),
+                "N_{#pi} "),
     256, -0.25, 0.25,
     128, 0, 0.25
   );
+
+  fEtaY = new TH2F(hist_name("eta_y"),
+                   hist_title("Rapidity vs PseudoRapidity",
+                              "pseudorapidity, #eta; rapidity, y"),
+                   400, -2.1, 2.1,
+                   400, -2.1, 2.1);
 
   if (is_mc_analysis) {
     fMC_mass = new TH1F(
@@ -334,6 +399,13 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                  "N_{code};"),
       codes.size(), -0.5, codes.size() - 0.5
     );
+
+    fMC_rap = new TH2F(
+      hist_name("mc_rapidity"),
+      hist_title("Ideal Rapidity vs Rapidity",
+                 "rapidity (assumed pion mass); ideal rapidity (true mass)"),
+      400, -2.1, 2.1,
+      400, -2.1, 2.1);
 
     for (UInt_t bin = 0; bin < codes.size(); bin++) {
       Int_t code = codes[bin];
@@ -385,6 +457,29 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
 
 }
 
+AliFemtoCutMonitorPionPion::Pion::Pion(const Pion &orig):
+  AliFemtoCutMonitor()
+  , fAllowCharge(orig.fAllowCharge)
+  , fYPt(static_cast<TH2F*>(orig.fYPt->Clone()))
+  , fPtPhi(static_cast<TH2F*>(orig.fPtPhi->Clone()))
+  , fEtaPhi(static_cast<TH2F*>(orig.fEtaPhi->Clone()))
+  , fChi2Tpc(static_cast<TH1F*>(orig.fChi2Tpc->Clone()))
+  , fChi2Its(static_cast<TH1F*>(orig.fChi2Its->Clone()))
+  , fChiTpcIts(static_cast<TH2F*>(orig.fChiTpcIts->Clone()))
+  , fClsTpcIts(static_cast<TH2F*>(orig.fClsTpcIts->Clone()))
+  , fdEdX(static_cast<TH2F*>(orig.fdEdX->Clone()))
+  , fTofVsP(static_cast<TH2F*>(orig.fTofVsP->Clone()))
+  , fNsigTof(static_cast<TH2F*>(orig.fNsigTof->Clone()))
+  , fNsigTpc(static_cast<TH2F*>(orig.fNsigTpc->Clone()))
+  , fImpact(static_cast<TH2F*>(orig.fImpact->Clone()))
+  , fEtaY(static_cast<TH2F*>(orig.fEtaY->Clone()))
+  , fMC_mass(static_cast<TH1F*>(orig.fMC_mass ? orig.fMC_mass->Clone(): nullptr))
+  , fMC_pt(static_cast<TH2F*>(orig.fMC_pt ? orig.fMC_pt->Clone(): nullptr))
+  , fMC_rap(static_cast<TH2F*>(orig.fMC_rap ? orig.fMC_rap->Clone() : nullptr))
+  , fMC_type(static_cast<TH1I*>(orig.fMC_type ? orig.fMC_type->Clone(): nullptr))
+  , fMC_parent(static_cast<THnSparseI*>(orig.fMC_parent ? orig.fMC_parent->Clone(): nullptr))
+{
+}
 
 TList*
 AliFemtoCutMonitorPionPion::Pion::GetOutputList()
@@ -396,12 +491,19 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
   output->Add(fPtPhi);
   output->Add(fEtaPhi);
   output->Add(fChi2Tpc);
-  // output->Add(fChiTpcIts);
+  output->Add(fChi2Its);
+  output->Add(fChiTpcIts);
+  output->Add(fClsTpcIts);
   output->Add(fdEdX);
+  output->Add(fTofVsP);
+  output->Add(fNsigTof);
+  output->Add(fNsigTpc);
   output->Add(fImpact);
+  output->Add(fEtaY);
   if (fMC_type) {
     output->Add(fMC_mass);
     output->Add(fMC_pt);
+    output->Add(fMC_rap);
     output->Add(fMC_type);
     output->Add(fMC_parent);
   }
@@ -412,27 +514,30 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
 
 void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
 {
+  if (fAllowCharge && fAllowCharge != track->Charge()) {
+    return;
+  }
+
   const float pz = track->P().z(),
               pt = track->Pt(),
                p = track->P().Mag(),
+             eta = track->P().PseudoRapidity(),
              phi = track->P().Phi();
 
-  const double energy = ::sqrt(track->P().Mag2() + PionMass * PionMass),
-                  eta = 0.5 * ::log((energy + pz) / (energy - pz));
+  const double energy = ::sqrt(p * p + PionMass * PionMass),
+             rapidity = 0.5 * ::log((energy + pz) / (energy - pz));
 
-
-  const Int_t // ITS_ncls = track->ITSncls(),
-              TPC_ncls = track->TPCncls();
-
+  const Int_t TPC_ncls = track->TPCncls();
+  const Int_t ITS_ncls = track->ITSncls();
 
   if (fMC_mass) {
-    const AliFemtoModelHiddenInfo *mc = dynamic_cast<const AliFemtoModelHiddenInfo*>(track->GetHiddenInfo());
+    const auto &mc = static_cast<const AliFemtoModelHiddenInfo&>(*track->GetHiddenInfo());
 
-    fMC_mass->Fill(mc->GetMass());
-    fMC_pt->Fill(pt, mc->GetTrueMomentum()->Perp());
+    fMC_mass->Fill(mc.GetMass());
+    fMC_pt->Fill(pt, mc.GetTrueMomentum()->Perp());
 
-    auto pdg_code = mc->GetPDGPid(),
-         pdg_code_parent = mc->GetMotherPdgCode();
+    auto pdg_code = mc.GetPDGPid(),
+         pdg_code_parent = mc.GetMotherPdgCode();
 
     const auto type_location = std::find(codes.begin(), codes.end(), pdg_code);
     const Int_t type_bin = type_location == codes.end()
@@ -451,20 +556,31 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
     fMC_parent->Fill(value);
     #endif
 
+    const AliFemtoThreeVector &ideal_p = *mc.GetTrueMomentum();
+    const double
+      ipz = ideal_p.z(),
+      iE = ideal_p.MassHypothesis(mc.GetMass());
+
+    double ideal_rapidity = iE <= ipz ? -2.1 : 0.5 * std::log((iE + ipz) / (iE - ipz));
+    fMC_rap->Fill(rapidity, ideal_rapidity);
   }
 
-  fYPt->Fill(eta, pt);
+  fYPt->Fill(rapidity, pt);
   fPtPhi->Fill(phi, pt);
   fEtaPhi->Fill(phi, eta);
   fdEdX->Fill(p, track->TPCsignal());
+  fTofVsP->Fill(p, track->TOFpionTime());
+  fNsigTof->Fill(p, track->NSigmaTOFPi());
+  fNsigTpc->Fill(p, track->NSigmaTPCPi());
+  fChi2Tpc->Fill(TPC_ncls > 0 ? track->TPCchi2() / TPC_ncls : -1.0);
+  fChi2Its->Fill(ITS_ncls > 0 ? track->ITSchi2() / ITS_ncls : -1.0);
 
-  fChi2Tpc->Fill((TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0);
+  fChiTpcIts->Fill(track->TPCchi2perNDF(), track->ITSchi2perNDF());
 
-  // fChiTpcIts->Fill( (TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0,
-  //                   (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : 0.0);
-
+  fClsTpcIts->Fill(track->TPCncls(), track->ITSncls());
 
   fImpact->Fill(track->ImpactZ(), track->ImpactD());
+  fEtaY->Fill(eta, rapidity);
 }
 
 
@@ -533,16 +649,18 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
     fMCTrue_minv = new TH2F(
       hist_name("mc_Minv"),
       hist_title("Minv True vs Reconstructed",
-                 "M_{inv}^{r} (GeV);"
-                 "M_{inv}^{t} (Gev);"),
+                 "M_{inv}^{gen} (Gev);"
+                 "M_{inv}^{rec} (GeV);"
+                 ),
       144, 0.0, 4.5,
       144, 0.0, 4.5);
 
     fMCTrue_qinv = new TH2F(
       hist_name("mc_Qinv"),
       hist_title("q_{inv} True vs Reconstructed",
-                 "q_{inv}^{r} (GeV);"
-                 "q_{inv}^{t} (Gev);"),
+                 "q_{inv}^{gen} (Gev);"
+                 "q_{inv}^{rec} (GeV);"
+                 ),
       400, 0.0, 1.0,
       400, 0.0, 1.0);
   }
@@ -573,7 +691,6 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
   // if (fabs(delta_eta) <= 0.07 && fabs(delta_phi_star) <= 0.07 && passes)
   //     printf(">> %f % 6f % 6f %p \n", pair, delta_eta, delta_phi_star, this);
     // std::cout << ">> " << pair << " " << delta_eta << ", " << delta_phi_star << "\n"; // -> " << passes << "\n";
-
 
   fDetaDphi->Fill(delta_eta, delta_phi_star);
   fQinvDeta->Fill(qinv, delta_eta);
@@ -612,8 +729,8 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
       return;
     }
 
-    fMCTrue_qinv->Fill(qinv, true_qinv);
-    fMCTrue_minv->Fill(minv, true_minv);
+    fMCTrue_qinv->Fill(true_qinv, qinv);
+    fMCTrue_minv->Fill(true_minv, minv);
 
 //     if (0.2 < (qinv - true_qinv)) {
 //         printf(" => %6d %6d\n", mc_1->GetPDGPid(), mc_2->GetPDGPid());

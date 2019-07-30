@@ -22,6 +22,7 @@ class AliReducedPairInfo : public AliReducedBaseTrack {
     kALambda0ToPPi,          // anti-Lambda0 -> anti-p pi+
     kPhiToKK,                // phi          -> K+ K-
     kJpsiToEE,               // J/psi        -> e+ e-
+    kPsi2SToEE,              // psi(2S)      -> e+ e- 
     kUpsilon,                // Upsilon      -> e+ e-
     kDplusToK0sPiplus,       // D+           -> K0s pi+
     kDplusToK0sKplus,        // D+           -> K0s K+

@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include "AliEmcalTrackSelResultCombined.h"
+#include <TObjArray.h>
 
 /// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliEmcalTrackSelResultCombined)
@@ -39,18 +40,32 @@ AliEmcalTrackSelResultCombined::AliEmcalTrackSelResultCombined():
 
 }
 
+AliEmcalTrackSelResultCombined::AliEmcalTrackSelResultCombined(const std::vector<PWG::EMCAL::AliEmcalTrackSelResultPtr>& singleSelPointers):
+  TObject(),
+  fData(singleSelPointers)
+ {
+
+ }
+
+
 AliEmcalTrackSelResultCombined::AliEmcalTrackSelResultCombined(const TObjArray *singleSelPointers):
   TObject(),
-  fData("PWG::EMCAL::AliEmcalTrackSelResultPtr", singleSelPointers->GetEntries())
+  fData(singleSelPointers->GetEntries())
 {
-  for(auto o  : *singleSelPointers) new(fData[fData.GetEntries()]) AliEmcalTrackSelResultPtr(*(static_cast<AliEmcalTrackSelResultPtr *>(o)));
+  int index(0);
+  for(auto o  : *singleSelPointers) fData[index] = *static_cast<AliEmcalTrackSelResultPtr *>(o);
 }
 
-AliEmcalTrackSelResultPtr &AliEmcalTrackSelResultCombined::operator[](int index) const {
-  if(index < 0 || index >= fData.GetEntriesFast()) throw IndexException(index);
-  return *(static_cast<AliEmcalTrackSelResultPtr *>(fData.At(index)));
+const AliEmcalTrackSelResultPtr &AliEmcalTrackSelResultCombined::operator[](int index) const {
+  if(index < 0 || index >= static_cast<Int_t>(fData.size())) throw IndexException(index);
+  return fData[index];
+}
+
+AliEmcalTrackSelResultPtr &AliEmcalTrackSelResultCombined::operator[](int index) {
+  if(index < 0 || index >= static_cast<Int_t>(fData.size())) throw IndexException(index);
+  return fData[index];
 }
 
 Int_t AliEmcalTrackSelResultCombined::GetNumberOfSelectionResults() const {
-  return fData.GetEntriesFast();
+  return fData.size();
 }
