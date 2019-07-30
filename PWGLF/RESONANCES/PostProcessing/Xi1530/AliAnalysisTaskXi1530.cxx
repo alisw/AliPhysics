@@ -280,9 +280,11 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         if (IsHighMult) {
             fHistos->CreateTH1("hMult_QA", "", 100, 0, 0.1, "s");
             fHistos->CreateTH1("hMult_QA_onlyMult", "", 100, 0, 0.1, "s");
+            fHistos->CreateTH1("hMult_SkippedDataQA", "", 100, 0, 0.1, "s");
         } else {
             fHistos->CreateTH1("hMult_QA", "", 1000, 0, 100, "s");
             fHistos->CreateTH1("hMult_QA_onlyMult", "", 1000, 0, 100, "s");
+            fHistos->CreateTH1("hMult_SkippedDataQA", "", 100, 0, 100, "s");
         }
         fHistos->CreateTH2("hPhiEta", "", 180, 0, 2 * pi, 40, -2, 2);
         // T P C   P I D
@@ -1911,7 +1913,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
             }
         }
-    }  // mix loop
+    }       // mix loop
+    else {  // Count how many signals we lost due to the event cut
+        fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
+    }
 }
 void AliAnalysisTaskXi1530::FillTracksAOD() {
     AliVTrack* track1;         // charged track, pion
@@ -2488,7 +2493,10 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
             }
         }
-    }  // mix loop
+    }       // mix loop
+    else {  // Count how many signals we lost due to the event cut
+        fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
+    }
 }
 void AliAnalysisTaskXi1530::Terminate(Option_t*) {}
 
