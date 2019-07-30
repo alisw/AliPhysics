@@ -227,7 +227,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	//	AliFemtoCorrFctnDYDPhiSimpleWithCorrections	*cdydpyphinocorr[numOfMultBins*numOfChTypes];
 	AliFemtoCorrFctnDEtaDPhiCorrections *cdedpetaphiPt[numOfMultBins*numOfChTypes*numOfkTbins];
 
-	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta08[500];
+	//AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta08[500];
 	//AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta12[numOfMultBins*numOfkTbins];
 	//AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta16[numOfMultBins*numOfkTbins];
 	//AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta20[numOfMultBins*numOfkTbins];
@@ -624,8 +624,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					 
 					    anetaphitpc[aniter]->AddCorrFctn(cdedpetaphinocorr[aniter]);
 										
-					 cdphistardeta08[aniter] =  new AliFemtoCorrFctnDEtaDPhiStar(Form("cDPhiStarDEta08%stpcM%i", chrgs[ichg], imult));
-                    anetaphitpc[aniter]->AddCorrFctn(cdphistardeta08[aniter]);
+					 //cdphistardeta08[aniter] =  new AliFemtoCorrFctnDEtaDPhiStar(Form("cDPhiStarDEta08%stpcM%i", chrgs[ichg], imult));
+                    //anetaphitpc[aniter]->AddCorrFctn(cdphistardeta08[aniter]);
 				
 
 					
