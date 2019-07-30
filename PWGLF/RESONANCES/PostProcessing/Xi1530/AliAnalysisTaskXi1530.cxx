@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/07/25
+//  Last Modified Date: 2019/07/30
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1915,7 +1915,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
         }
     }       // mix loop
     else {  // Count how many signals we lost due to the event cut
-        fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
+        if (fsetmixing)
+            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
     }
 }
 void AliAnalysisTaskXi1530::FillTracksAOD() {
@@ -2463,8 +2464,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 // DCA Lambda to PV Check
                 Double_t fDCADist_Lambda_PV =
                     fabs(Xicandidate->DcaV0ToPrimVertex());
-                Double_t fDCADist_Xi_PV =
-                    fabs(Xicandidate->DcaXiToPrimVertex());
                 if (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)
                     continue;
 
@@ -2495,7 +2494,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
         }
     }       // mix loop
     else {  // Count how many signals we lost due to the event cut
-        fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
+        if (fsetmixing)
+            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
     }
 }
 void AliAnalysisTaskXi1530::Terminate(Option_t*) {}
