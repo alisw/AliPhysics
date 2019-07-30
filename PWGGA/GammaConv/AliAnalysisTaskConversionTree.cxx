@@ -52,14 +52,11 @@ AliAnalysisTaskConversionTree::AliAnalysisTaskConversionTree() : AliAnalysisTask
   ffillTree(-100),
   fOutputList(NULL),
 
-  hInvMass(NULL),
-
   fBuffer_NConversionCandidates(0),
   fBuffer_ConversionCandidate_E(0),
   fBuffer_ConversionCandidate_Px(0),
   fBuffer_ConversionCandidate_Py(0),
   fBuffer_ConversionCandidate_Pz(0),
-  fBuffer_ConversionCandidate_Pt(0),
   fBuffer_ConversionCandidate_Qt(0),
   fBuffer_ConversionCandidate_Alpha(0),
   fBuffer_ConversionCandidate_PsiPair(0),
@@ -85,7 +82,6 @@ AliAnalysisTaskConversionTree::AliAnalysisTaskConversionTree() : AliAnalysisTask
   fBuffer_ConversionCandidate_Px              = new Float_t[kMaxConvCandidates];
   fBuffer_ConversionCandidate_Py              = new Float_t[kMaxConvCandidates];
   fBuffer_ConversionCandidate_Pz              = new Float_t[kMaxConvCandidates];
-  fBuffer_ConversionCandidate_Pt              = new Float_t[kMaxConvCandidates];
   fBuffer_ConversionCandidate_Qt              = new Float_t[kMaxConvCandidates];
   fBuffer_ConversionCandidate_Alpha           = new Float_t[kMaxConvCandidates];
   fBuffer_ConversionCandidate_PsiPair         = new Float_t[kMaxConvCandidates];
@@ -117,14 +113,11 @@ AliAnalysisTaskConversionTree::AliAnalysisTaskConversionTree(const char *name) :
   ffillTree(-100),
   fOutputList(NULL),
 
-  hInvMass(NULL),
-
   fBuffer_NConversionCandidates(0),
   fBuffer_ConversionCandidate_E(0),
   fBuffer_ConversionCandidate_Px(0),
   fBuffer_ConversionCandidate_Py(0),
   fBuffer_ConversionCandidate_Pz(0),
-  fBuffer_ConversionCandidate_Pt(0),
   fBuffer_ConversionCandidate_Qt(0),
   fBuffer_ConversionCandidate_Alpha(0),
   fBuffer_ConversionCandidate_PsiPair(0),
@@ -151,7 +144,6 @@ AliAnalysisTaskConversionTree::AliAnalysisTaskConversionTree(const char *name) :
   fBuffer_ConversionCandidate_Px              = new Float_t[kMaxConvCandidates];
   fBuffer_ConversionCandidate_Py              = new Float_t[kMaxConvCandidates];
   fBuffer_ConversionCandidate_Pz              = new Float_t[kMaxConvCandidates];
-  fBuffer_ConversionCandidate_Pt              = new Float_t[kMaxConvCandidates];
   fBuffer_ConversionCandidate_Qt              = new Float_t[kMaxConvCandidates];
   fBuffer_ConversionCandidate_Alpha           = new Float_t[kMaxConvCandidates];
   fBuffer_ConversionCandidate_PsiPair         = new Float_t[kMaxConvCandidates];
@@ -194,9 +186,6 @@ void AliAnalysisTaskConversionTree::UserCreateOutputObjects()
     fOutputList->SetOwner(kTRUE);
   }
 
-  //fill histogram
-    hInvMass = new TH1F("InvMass","invariant mass distribution",200,0.,2.);
-    fOutputList->Add(hInvMass);
 
   if(ffillTree>=1.0){
     fAnalysisTree = new TTree(Form("PhotonTree_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()),Form("PhotonTree_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()));
@@ -206,7 +195,6 @@ void AliAnalysisTaskConversionTree::UserCreateOutputObjects()
     fAnalysisTree->Branch("ConversionCandidate_Px",           fBuffer_ConversionCandidate_Px,            "ConversionCandidate_Px[NConversionCandidates]/F");
     fAnalysisTree->Branch("ConversionCandidate_Py",           fBuffer_ConversionCandidate_Py,            "ConversionCandidate_Py[NConversionCandidates]/F");
     fAnalysisTree->Branch("ConversionCandidate_Pz",           fBuffer_ConversionCandidate_Pz,            "ConversionCandidate_Pz[NConversionCandidates]/F");
-    fAnalysisTree->Branch("ConversionCandidate_Pt",           fBuffer_ConversionCandidate_Pt,            "ConversionCandidate_Pt[NConversionCandidates]/F");
     fAnalysisTree->Branch("ConversionCandidate_Qt",           fBuffer_ConversionCandidate_Qt,            "ConversionCandidate_Qt[NConversionCandidates]/F");
     fAnalysisTree->Branch("ConversionCandidate_Alpha",        fBuffer_ConversionCandidate_Alpha,         "ConversionCandidate_Alpha[NConversionCandidates]/F");
     fAnalysisTree->Branch("ConversionCandidate_PsiPair",      fBuffer_ConversionCandidate_PsiPair,       "ConversionCandidate_PsiPair[NConversionCandidates]/F");
@@ -340,22 +328,6 @@ void AliAnalysisTaskConversionTree::UserExec(Option_t *){
     fAnalysisTree->Fill();
   }
 
-  TLorentzVector ph1;
-  TLorentzVector ph2;
-
-  //fill histogram
-  for(Int_t firstGammaIndex=0; firstGammaIndex<fBuffer_NConversionCandidates; firstGammaIndex++){
-    ph1.SetPxPyPzE(fBuffer_ConversionCandidate_Px[firstGammaIndex], fBuffer_ConversionCandidate_Py[firstGammaIndex], fBuffer_ConversionCandidate_Pz[firstGammaIndex], fBuffer_ConversionCandidate_E[firstGammaIndex] );
-    for(Int_t secondGammaIndex=firstGammaIndex+1; secondGammaIndex<fBuffer_NConversionCandidates; secondGammaIndex++){
-      ph2.SetPxPyPzE(fBuffer_ConversionCandidate_Px[secondGammaIndex], fBuffer_ConversionCandidate_Py[secondGammaIndex], fBuffer_ConversionCandidate_Pz[secondGammaIndex], fBuffer_ConversionCandidate_E[secondGammaIndex] );
-      ph2+=ph1;
-      hInvMass->Fill(ph2.M());
-    }
-  }
-
-  hInvMass->GetXaxis()->SetTitle("invariant mass [GeV]");
-  hInvMass->GetYaxis()->SetTitle("counts");
-
   if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
     RelabelAODPhotonCandidates(kFALSE); // Back to ESDMC Label
     fV0Reader->RelabelAODs(kFALSE);
@@ -375,7 +347,6 @@ void AliAnalysisTaskConversionTree::ProcessQATree(AliAODConversionPhoton *gamma)
   fBuffer_ConversionCandidate_Px[fBuffer_NConversionCandidates] = gamma->GetPx();
   fBuffer_ConversionCandidate_Py[fBuffer_NConversionCandidates] = gamma->GetPy();
   fBuffer_ConversionCandidate_Pz[fBuffer_NConversionCandidates] = gamma->GetPz();
-  fBuffer_ConversionCandidate_Pt[fBuffer_NConversionCandidates] = gamma->GetPhotonPt();
   fBuffer_ConversionCandidate_Qt[fBuffer_NConversionCandidates] = gamma->GetArmenterosQt();
   fBuffer_ConversionCandidate_Alpha[fBuffer_NConversionCandidates] = gamma->GetArmenterosAlpha();
   fBuffer_ConversionCandidate_PsiPair[fBuffer_NConversionCandidates] = gamma->GetPsiPair();
@@ -726,7 +697,6 @@ void AliAnalysisTaskConversionTree::ResetBuffer(){
     fBuffer_ConversionCandidate_Px[ccand] = 0;
     fBuffer_ConversionCandidate_Py[ccand] = 0;
     fBuffer_ConversionCandidate_Pz[ccand] = 0;
-    fBuffer_ConversionCandidate_Pt[ccand] = 0;
     fBuffer_ConversionCandidate_Qt[ccand] = 0;
     fBuffer_ConversionCandidate_Alpha[ccand] = 0;
     fBuffer_ConversionCandidate_PsiPair[ccand] = 0;
