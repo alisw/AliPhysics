@@ -6485,6 +6485,58 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       break;
 
 // *************** 60 + x **** modified tender Settings 2 - pPb
+// PCM-EDC based nonlinearity kSDM
+    case 61:
+      // apply testbeam nonlinearity (same as case 1)
+      energy /= FunctionNL_MartinTB_100MeV_Data(energy);
+      if(isMC>0){
+        // pp 8 TeV testbeam+kSDM
+        if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
+          if(fClusterType==1 || fClusterType==4){
+            energy /= (FunctionNL_kSDM(energy, 0.922543, -2.98635, -0.166558));
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
+    // EDC based nonlinearity kSDM
+    case 62:
+      // apply testbeam nonlinearity (same as case 1)
+      energy /= FunctionNL_MartinTB_100MeV_Data(energy);
+      if(isMC>0){
+        // pp 8 TeV testbeam+kSDM
+        if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
+          if(fClusterType==1 || fClusterType==4){
+            energy /= 0.9695901918;
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
+    // PCM-EDC based nonlinearity DExp or DPow
+    case 63:
+      // apply testbeam nonlinearity (same as case 1)
+      energy /= FunctionNL_MartinTB_100MeV_Data(energy);
+      if(isMC>0){
+        // pp 8 TeV testbeam+kSDM
+        if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
+          if(fClusterType==1 || fClusterType==4){
+            energy /= FunctionNL_DExp(energy, 1.0187582955, 0.0968596546, -1245.6786572041, 1.0964700195, 0.2039394193, -2.9807523023) ;
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
+    // EDC based nonlinearity DExp or DPow
+    case 64:
+      // apply testbeam nonlinearity (same as case 1)
+      energy /= FunctionNL_MartinTB_100MeV_Data(energy);
+      if(isMC>0){
+        // pp 8 TeV testbeam+kSDM
+        if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
+          if(fClusterType==1 || fClusterType==4){
+            energy /= (FunctionNL_DPOW(energy, 1.0536128351, -0.0594571604, -0.4999999913, 1.0802855636, -0.0459581695, -0.4999999875));
+          }
+        } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
 // *************** 60 + x **** temporary special settings for pp 5 TeV + TB studies
     case 61: //11 with new ECalib
       if(fCurrentMC==k17l3b || fCurrentMC==k18j2){
