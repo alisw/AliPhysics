@@ -55,6 +55,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
+  fCellsSingleChannelRecalibrated(kFALSE),fSingleChannelRecalibration(kFALSE),    fEMCALSingleChannelRecalibrationFactors(),
   fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fLowGain(kFALSE),
   fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),
   fIsParRun(kFALSE),                      fCurrentParNumber(0),                   fNPars(0),                              fGlobalEventID(NULL),
@@ -112,6 +113,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCellsRecalibrated(reco.fCellsRecalibrated),
   fRecalibration(reco.fRecalibration),                       fUse1Drecalib(reco.fUse1Drecalib),                   
   fEMCALRecalibrationFactors(NULL),
+  fCellsSingleChannelRecalibrated(reco.fCellsRecalibrated),
+  fSingleChannelRecalibration(reco.fRecalibration),          fEMCALSingleChannelRecalibrationFactors(NULL),
   fConstantTimeShift(reco.fConstantTimeShift),  
   fTimeRecalibration(reco.fTimeRecalibration),               fEMCALTimeRecalibrationFactors(NULL),
   fLowGain(reco.fLowGain),
@@ -171,6 +174,14 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
     for(int ism = 0; ism < reco.fEMCALRecalibrationFactors->GetEntries(); ism++) fEMCALRecalibrationFactors->AddAt(reco.fEMCALRecalibrationFactors->At(ism), ism);
   }
 
+  if(reco.fEMCALSingleChannelRecalibrationFactors) {
+    // Copy constructor - not taking ownership over calibration histograms
+    fEMCALSingleChannelRecalibrationFactors = new TObjArray(reco.fEMCALSingleChannelRecalibrationFactors->GetEntries());
+    fEMCALSingleChannelRecalibrationFactors->SetOwner(false);
+    for(int ism = 0; ism < reco.fEMCALSingleChannelRecalibrationFactors->GetEntries(); ism++) fEMCALSingleChannelRecalibrationFactors->AddAt(reco.fEMCALSingleChannelRecalibrationFactors->At(ism), ism);
+  }
+
+  
   if(reco.fEMCALTimeRecalibrationFactors) {
     // Copy constructor - not taking ownership over calibration histograms
     fEMCALTimeRecalibrationFactors = new TObjArray(reco.fEMCALTimeRecalibrationFactors->GetEntries());
@@ -349,6 +360,14 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
     fEMCALRecalibrationFactors->SetOwner(false);
     for(int ism = 0; ism < reco.fEMCALRecalibrationFactors->GetEntries(); ism++) fEMCALRecalibrationFactors->AddAt(reco.fEMCALRecalibrationFactors->At(ism), ism);
   }
+
+  if(fEMCALSingleChannelRecalibrationFactors) delete fEMCALSingleChannelRecalibrationFactors;
+  if(reco.fEMCALSingleChannelRecalibrationFactors) {
+    // Copy constructor - not taking ownership over calibration histograms
+    fEMCALSingleChannelRecalibrationFactors = new TObjArray(reco.fEMCALSingleChannelRecalibrationFactors->GetEntries());
+    fEMCALSingleChannelRecalibrationFactors->SetOwner(false);
+    for(int ism = 0; ism < reco.fEMCALSingleChannelRecalibrationFactors->GetEntries(); ism++) fEMCALSingleChannelRecalibrationFactors->AddAt(reco.fEMCALSingleChannelRecalibrationFactors->At(ism), ism);
+  }
   
   if(fEMCALTimeRecalibrationFactors) delete fEMCALTimeRecalibrationFactors;
   if(reco.fEMCALTimeRecalibrationFactors) {
@@ -379,7 +398,12 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
   { 
     delete fEMCALRecalibrationFactors;
   }  
-  
+
+  if (fEMCALSingleChannelRecalibrationFactors) 
+  { 
+    delete fEMCALSingleChannelRecalibrationFactors;
+  }  
+
   if (fEMCALTimeRecalibrationFactors) 
   { 
     delete fEMCALTimeRecalibrationFactors;
@@ -1928,6 +1952,41 @@ void AliEMCALRecoUtils::InitEMCALRecalibrationFactors1D()
 }
 
 ///
+/// Init EMCAL single channel energy calibration factors container
+///
+//_____________________________________________________
+void AliEMCALRecoUtils::InitEMCALSingleChannelRecalibrationFactors()
+{
+  AliDebug(2,"AliCalorimeterUtils::InitEMCALSingleChannelRecalibrationFactors()");
+  
+  // In order to avoid rewriting the same histograms
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  
+  fEMCALSingleChannelRecalibrationFactors = new TObjArray(22);
+  for (int i = 0; i < 22; i++) 
+    fEMCALSingleChannelRecalibrationFactors->Add(new TH2F(Form("EMCALSCCalibMap_Mod%d",i),
+							  Form("EMCALSCCalibMap_Mod%d",i),  48, 0, 48, 24, 0, 24));
+  //Init the histograms with 1
+  for (Int_t sm = 0; sm < 22; sm++) 
+  {
+    for (Int_t i = 0; i < 48; i++) 
+    {
+      for (Int_t j = 0; j < 24; j++) 
+      {
+        SetEMCALSingleChannelRecalibrationFactor(sm,i,j,1.);
+      }
+    }
+  }
+  
+  fEMCALSingleChannelRecalibrationFactors->SetOwner(kTRUE);
+  fEMCALSingleChannelRecalibrationFactors->Compress();
+  
+  // In order to avoid rewriting the same histograms
+  TH1::AddDirectory(oldStatus);    
+}
+
+///
 /// Init EMCAL time calibration shifts container
 ///
 //_________________________________________________________
@@ -2099,6 +2158,7 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   Int_t   absId  =-1;
   Int_t   icol   =-1, irow =-1, imod=1;
   Float_t factor = 1, frac = 0;
+  Float_t factorSC = 1;
   Int_t   absIdMax = -1;
   Float_t emax     = 0;
   
@@ -2126,13 +2186,27 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
       AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - recalibrate cell: module %d, col %d, row %d, cell fraction %f,recalibration factor %f, cell energy %f\n",
                       imod,icol,irow,frac,factor,cells->GetCellAmplitude(absId)));
       
-    } 
-    
-    energy += cells->GetCellAmplitude(absId)*factor*frac;
-    
-    if (emax < cells->GetCellAmplitude(absId)*factor*frac) 
+    }
+    if (!fCellsSingleChannelRecalibrated && IsSingleChannelRecalibrationOn()) 
     {
-      emax     = cells->GetCellAmplitude(absId)*factor*frac;
+      // Single Channel  
+      Int_t iTower = -1, iIphi = -1, iIeta = -1; 
+      geom->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
+      if (fEMCALSingleChannelRecalibrationFactors->GetEntries() <= imod) 
+        continue;
+      geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);      
+      factorSC = GetEMCALSingleChannelRecalibrationFactor(imod,icol,irow);
+      
+      AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - sinlge channel recalibrate cell: module %d, col %d, row %d, cell fraction %f,recalibration factor %f, cell energy %f\n",
+                      imod,icol,irow,frac,factorSC,cells->GetCellAmplitude(absId)));
+      
+    }
+    
+    energy += cells->GetCellAmplitude(absId)*factor*factorSC*frac;
+    
+    if (emax < cells->GetCellAmplitude(absId)*factor*factorSC*frac) 
+    {
+      emax     = cells->GetCellAmplitude(absId)*factor*factorSC*frac;
       absIdMax = absId;
     }
   }
@@ -4194,7 +4268,41 @@ TH2F * AliEMCALRecoUtils::GetEMCALChannelRecalibrationFactors(Int_t iSM) const{
     }
     return hist;
   }
+}
 
+/*
+ Setting EMCAL and DCAL single channel calibration factors using a map
+ */
+void AliEMCALRecoUtils::SetEMCALSingleChannelRecalibrationFactors(const TObjArray *map) { 
+  if(fEMCALSingleChannelRecalibrationFactors) fEMCALSingleChannelRecalibrationFactors->Clear();
+  else {
+    fEMCALSingleChannelRecalibrationFactors = new TObjArray(map->GetEntries());
+    fEMCALSingleChannelRecalibrationFactors->SetOwner(true);
+  }
+  if(!fEMCALSingleChannelRecalibrationFactors->IsOwner()){
+    // Must claim ownership since the new objects are owend by this instance
+    fEMCALSingleChannelRecalibrationFactors->SetOwner(kTRUE);
+  }
+  for(int i = 0; i < map->GetEntries(); i++){
+    TH2F *hist = dynamic_cast<TH2F *>(map->At(i));
+    if(!hist) continue;
+    this->SetEMCALSingleChannelRecalibrationFactors(i, hist);
+  }
+}
+
+/*
+ Setting EMCAL and DCAL single channel calibration factors using an SM by SM histogram
+ */
+void AliEMCALRecoUtils::SetEMCALSingleChannelRecalibrationFactors(Int_t iSM , const TH2F* h) { 
+  if(!fEMCALSingleChannelRecalibrationFactors){
+    fEMCALSingleChannelRecalibrationFactors = new TObjArray(iSM);
+    fEMCALSingleChannelRecalibrationFactors->SetOwner(true);
+  }
+  if(fEMCALSingleChannelRecalibrationFactors->GetEntries() <= iSM) fEMCALSingleChannelRecalibrationFactors->Expand(iSM+1);
+  if(fEMCALSingleChannelRecalibrationFactors->At(iSM)) fEMCALSingleChannelRecalibrationFactors->RemoveAt(iSM);
+  TH2F *clone = new TH2F(*h);
+  clone->SetDirectory(NULL);
+  fEMCALSingleChannelRecalibrationFactors->AddAt(clone,iSM); 
 }
 
 void AliEMCALRecoUtils::SetEMCALChannelStatusMap(const TObjArray *map) { 
