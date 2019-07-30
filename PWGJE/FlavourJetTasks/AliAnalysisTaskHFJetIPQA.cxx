@@ -1753,10 +1753,14 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
       printf("Adding Object %s\n",obj->GetName());
       fOutput->Add(obj);
     }
+
     PostData(1, fOutput);
 }
 
 void AliAnalysisTaskHFJetIPQA::PrintSettings(){
+    fOutput=dynamic_cast<AliEmcalList*>(GetOutputData(1));
+    fh1dCuts=dynamic_cast<TH1D*>(fOutput->First());
+
     TString jetcuts="";
     TString trackcuts="";
     TString vertexcuts="";
@@ -1816,7 +1820,6 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     fh1dCuts->GetYaxis()->SetTitle(vertexcuts.Data());
 
     printf("Vertex Cuts: %s\n",vertexcuts.Data());
-
 }
 
 //NotInUse
@@ -3286,7 +3289,13 @@ TH1 *AliAnalysisTaskHFJetIPQA::AddHistogramm(const char *name, const char *title
     }
     phist->Sumw2();
 
-    fOutput->Add(phist);
+    TString sName(name);
+    if(sName.EqualTo("fh1dCuts")){
+        fOutput->AddFirst(phist);
+    }
+    else{
+        fOutput->Add(phist);
+    }
     return (TH1*)phist;
 }
 
@@ -3663,41 +3672,6 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculatePSTrackPID(Double_t sign, Double_t s
 
 void AliAnalysisTaskHFJetIPQA::Terminate(Option_t *){
 
-
-    /*TIterator* iter = fOutput->MakeIterator();
-    TObject* obj;
-    Int_t count =0;
-    while ((obj = iter->Next())) {
-      printf("Name of object:%s\n",obj->GetName());
-      if (obj->InheritsFrom("TH1D")) {
-        TH1D *h=(TH1D*)obj;
-        printf("Inheriting... %p with entries=%f\n", obj,h->GetEntries());
-      }
-      else{
-        if(obj->InheritsFrom("TH2D")){
-            TH2D *h2=(TH2D*)obj;
-            printf("Inheriting... %p with entries=%f\n", obj,h2->GetEntries());
-        }
-        else{
-          if(obj->InheritsFrom("TH1F")){
-              TH1F *h3=(TH1F*)obj;
-              printf("Inheriting... %p with entries=%f\n", obj,h3->GetEntries());
-          }
-          else{
-            if(obj->InheritsFrom("TH2F")){
-                TH2F *h4=(TH2F*)obj;
-                printf("Inheriting... %p with entries=%f\n", obj,h4->GetEntries());
-            }
-            else{
-          printf("Strange! \n");
-          obj->Dump();
-            }
-          }
-        }
-      }
-      count++;
-    }*/
-    //printf("Overall %i objects in AliEmcalList\n",count);
     PrintSettings();
 
     printf("\n*********************************\n");
