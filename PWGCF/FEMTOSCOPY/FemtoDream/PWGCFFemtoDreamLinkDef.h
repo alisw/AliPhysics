@@ -45,6 +45,7 @@
 #pragma link C++ class AliOtonOmegaCascade+;
 #pragma link C++ class AliFemtoDreamHigherPairMath+;
 #pragma link C++ class AliAnalysisTaskNanoLX+;
+#pragma link C++ class AliAnalysisTaskOtonOmegaNanoAOD+;
 
 #endif
 
