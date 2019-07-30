@@ -129,6 +129,10 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoGammaGammaInvMassPtBeforeCuts(nullptr),
   fHistoMotherInvMassPt(nullptr),
   fHistoMotherInvMassPtRejectedKinematic(nullptr),
+  fHistoDalitzPlotPosFixedPzNDM(nullptr),
+  fHistoDalitzPlotNegFixedPzNDM(nullptr),
+  fHistoDalitzPlotPosSubNDM(nullptr),
+  fHistoDalitzPlotNegSubNDM(nullptr),
   fHistoBackInvMassPtGroup1(nullptr),
   fHistoBackInvMassPtGroup2(nullptr),
   fHistoBackInvMassPtGroup3(nullptr),
@@ -215,6 +219,10 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTrueMotherPiPlPiMiNDMInvMassPt(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM(nullptr),
+  fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM(nullptr),
+  fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM(nullptr),
+  fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM(nullptr),
+  fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM(nullptr),
   fHistoTrueMotherGammaGammaInvMassPt(nullptr),
   fHistoTrueMotherGammaGammaFromHNMInvMassPt(nullptr),
   fHistoTrueConvGammaPt(nullptr),
@@ -367,6 +375,10 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoGammaGammaInvMassPtBeforeCuts(nullptr),
   fHistoMotherInvMassPt(nullptr),
   fHistoMotherInvMassPtRejectedKinematic(nullptr),
+  fHistoDalitzPlotPosFixedPzNDM(nullptr),
+  fHistoDalitzPlotNegFixedPzNDM(nullptr),
+  fHistoDalitzPlotPosSubNDM(nullptr),
+  fHistoDalitzPlotNegSubNDM(nullptr),
   fHistoBackInvMassPtGroup1(nullptr),
   fHistoBackInvMassPtGroup2(nullptr),
   fHistoBackInvMassPtGroup3(nullptr),
@@ -453,6 +465,10 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTrueMotherPiPlPiMiNDMInvMassPt(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM(nullptr),
+  fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM(nullptr),
+  fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM(nullptr),
+  fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM(nullptr),
+  fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM(nullptr),
   fHistoTrueMotherGammaGammaInvMassPt(nullptr),
   fHistoTrueMotherGammaGammaFromHNMInvMassPt(nullptr),
   fHistoTrueConvGammaPt(nullptr),
@@ -651,6 +667,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   TString NameNeutralMesonAnalyzedLatex               = "not set";
   TString NameNDM                                     = "not set";
   TString NameNDMLatex                                = "not set";
+  Double_t HistoMassRangeDalitz                       = 3.0;
   
   switch( fSelectedHeavyNeutralMeson ) {
   case 0: // ETA MESON
@@ -709,6 +726,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fPDGCodeNDM                                       = 221; // PDG value eta
     fPDGMassChargedPion                               = 0.1395706; // hard coded PDG 2018 value to keep results reproducable later
     fPDGCodeAnalyzedMeson                             = 331; // PDG value eta prime
+    HistoMassRangeDalitz                              = 3.0;
     break;
   case 3:         // D0 MESON
     HistoNMassBins                                    = 600;
@@ -805,6 +823,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoPionDCAz              = new TH2F*[fnCuts];
       fHistoPionTPCdEdxNSigma     = new TH2F*[fnCuts];
       fHistoPionTPCdEdx           = new TH2F*[fnCuts];
+      fHistoDalitzPlotPosFixedPzNDM          = new TH2F*[fnCuts];
+      fHistoDalitzPlotNegFixedPzNDM          = new TH2F*[fnCuts];
+      fHistoDalitzPlotPosSubNDM              = new TH2F*[fnCuts];
+      fHistoDalitzPlotNegSubNDM              = new TH2F*[fnCuts];
     }
 
 
@@ -1045,6 +1067,27 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoPionTPCdEdx[iCut]->GetYaxis()->SetTitle("dE/dx signal (au)");
         fHistoPionTPCdEdx[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoPionTPCdEdx[iCut]);
+
+        fHistoDalitzPlotPosFixedPzNDM[iCut]          = new TH2F("ESD_DalitzPlotPos_FixedPz","ESD_DalitzPlotPos_FixedPz",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+        fHistoDalitzPlotPosFixedPzNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotPosFixedPzNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+}} %s (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotPosFixedPzNDM[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotPosFixedPzNDM[iCut]);
+        fHistoDalitzPlotNegFixedPzNDM[iCut]          = new TH2F("ESD_DalitzPlotNeg_FixedPz","ESD_DalitzPlotNeg_FixedPz",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+        fHistoDalitzPlotNegFixedPzNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotNegFixedPzNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-}} %s (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotNegFixedPzNDM[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotNegFixedPzNDM[iCut]);
+        fHistoDalitzPlotPosSubNDM[iCut]              = new TH2F("ESD_DalitzPlotPos_Sub","ESD_DalitzPlotPos_Sub",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+        fHistoDalitzPlotPosSubNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotPosSubNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+}} %s (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotPosSubNDM[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotPosSubNDM[iCut]);
+        fHistoDalitzPlotNegSubNDM[iCut]              = new TH2F("ESD_DalitzPlotNeg_Sub","ESD_DalitzPlotNeg_Sub",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+        fHistoDalitzPlotNegSubNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotNegSubNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-}} %s (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotNegSubNDM[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotNegSubNDM[iCut]);
       }
       fHistoGammaGammaInvMassPt[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt","ESD_GammaGamma_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
       fHistoGammaGammaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
@@ -1355,6 +1398,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt            = new TH2F*[fnCuts];
         fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt       = new TH2F*[fnCuts];
         fHistoTruePiPlPiMiNDMContaminationInvMassPt            = new TH2F*[fnCuts];
+
+        fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM  = new TH2F*[fnCuts];
+        fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM  = new TH2F*[fnCuts];
+        fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM    = new TH2F*[fnCuts];
+        fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM    = new TH2F*[fnCuts];
         
         fHistoTruevParticleChi2PerNDF = new TH1F*[fnCuts];
         fHistoTruevParticleFromSameMotherChi2PerNDF = new TH1F*[fnCuts];
@@ -1788,6 +1836,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM[iCut]);
 
+      
+
       if(!fDoLightOutput){
         fHistoTrueMotherGammaGammaInvMassPt[iCut]           = new TH2F("ESD_TrueMotherGG_InvMass_Pt","ESD_TrueMotherGG_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoTrueMotherGammaGammaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
@@ -1941,6 +1991,30 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]);
+
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Pos","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Pos",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]->Sumw2();
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2})", NameNDMLatex.Data()));
+          fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]);
+
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Neg","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Neg",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[iCut]->Sumw2();
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2})", NameNDMLatex.Data()));
+          fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[iCut]);
+
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Pos","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Pos",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[iCut]->Sumw2();
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2})", NameNDMLatex.Data()));
+          fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[iCut]);
+
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Neg","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Neg",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM[iCut]->Sumw2();
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2})", NameNDMLatex.Data()));
+          fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM[iCut]);
           if(fDoMesonQA>1){
             fTrueTreeList[iCut]                               = new TList();
             fTrueTreeList[iCut]->SetName(nameTrueRecTTreeList.Data());
@@ -4814,6 +4888,39 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
             AliAODConversionMother mesontmp(&NDMtmp,vParticle);
             fHistoMotherInvMassFixedPzNDM[fiCut]->Fill(mesontmp.M(),mesontmp.Pt(), fWeightJetJetMC);
             fHistoMotherInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
+
+            if(fDoMesonQA>0){
+              //Dalitz plot
+              AliKFParticle PosPionKFtmp( *posPionCandidatetmp, 211 ); 
+              AliKFParticle NegPionKFtmp( *negPionCandidatetmp, 211 );
+
+              TLorentzVector PosPionTLVtmp;
+              TLorentzVector NegPionTLVtmp;
+              TLorentzVector PosNegPionTLVtmp;
+
+              PosPionTLVtmp.SetPxPyPzE (PosPionKFtmp.Px(), PosPionKFtmp.Py(), PosPionKFtmp.Pz(), PosPionKFtmp.E() );
+              NegPionTLVtmp.SetPxPyPzE (NegPionKFtmp.Px(), NegPionKFtmp.Py(), NegPionKFtmp.Pz(), NegPionKFtmp.E() );
+              PosNegPionTLVtmp = PosPionTLVtmp + NegPionTLVtmp;
+
+              TLorentzVector NDMTLVtmp;
+              TLorentzVector NDMSubTLVtmp;
+              TLorentzVector PosPionNDMTLVtmp;
+              TLorentzVector NegPionNDMTLVtmp;
+              TLorentzVector PosPionNDMSubTLVtmp;
+              TLorentzVector NegPionNDMSubTLVtmp;
+
+              NDMTLVtmp.SetPxPyPzE( NDMtmp.Px(), NDMtmp.Py(), NDMtmp.Pz(), NDMtmp.E() );
+              NDMSubTLVtmp.SetPxPyPzE (neutralDecayMeson->Px(), neutralDecayMeson->Py(), neutralDecayMeson->Pz(), neutralDecayMeson->Energy());
+              PosPionNDMTLVtmp = PosPionTLVtmp + NDMTLVtmp;
+              NegPionNDMTLVtmp = NegPionTLVtmp + NDMTLVtmp;
+              PosPionNDMSubTLVtmp = PosPionTLVtmp + NDMSubTLVtmp;
+              NegPionNDMSubTLVtmp = NegPionTLVtmp + NDMSubTLVtmp;
+
+              fHistoDalitzPlotPosFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
+              fHistoDalitzPlotNegFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
+              fHistoDalitzPlotPosSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+              fHistoDalitzPlotNegSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+            }
             if(fMCEvent){
               if(fInputEvent->IsA()==AliESDEvent::Class())
                 ProcessTrueMesonCandidates(mesoncand,neutralDecayMeson,vParticle);
@@ -5495,7 +5602,37 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       AliAODConversionMother mesontmp(&NDMtmp,TrueVirtualParticleCandidate);
 
       fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM[fiCut]->Fill(mesontmp.M(),mesontmp.Pt(),weighted);
-      
+
+      if(fDoMesonQA>0){
+        //Dalitz plot
+        TLorentzVector PosPionTLVtmp;
+        TLorentzVector NegPionTLVtmp;
+        TLorentzVector PosNegPionTLVtmp;
+
+        PosPionTLVtmp.SetPxPyPzE (positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->E() );
+        NegPionTLVtmp.SetPxPyPzE (negativeMC->Px(), negativeMC->Py(), negativeMC->Pz(), negativeMC->E() );
+        PosNegPionTLVtmp = PosPionTLVtmp + NegPionTLVtmp;
+
+        TLorentzVector NDMTLVtmp;
+        TLorentzVector NDMSubTLVtmp;
+        TLorentzVector PosPionNDMTLVtmp;
+        TLorentzVector NegPionNDMTLVtmp;
+        TLorentzVector PosPionNDMSubTLVtmp;
+        TLorentzVector NegPionNDMSubTLVtmp;
+
+        NDMTLVtmp.SetPxPyPzE( NDMtmp.Px(), NDMtmp.Py(), NDMtmp.Pz(), NDMtmp.E() );
+        NDMSubTLVtmp.SetPxPyPzE (TrueNeutralDecayMesonCandidate->Px(), TrueNeutralDecayMesonCandidate->Py(), TrueNeutralDecayMesonCandidate->Pz(), TrueNeutralDecayMesonCandidate->Energy());
+        PosPionNDMTLVtmp = PosPionTLVtmp + NDMTLVtmp;
+        NegPionNDMTLVtmp = NegPionTLVtmp + NDMTLVtmp;
+        PosPionNDMSubTLVtmp = PosPionTLVtmp + NDMSubTLVtmp;
+        NegPionNDMSubTLVtmp = NegPionTLVtmp + NDMSubTLVtmp;
+
+        fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
+        fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM) );
+        fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
+        fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM) );
+      }
+
       AliAODConversionMother PosPiontmp, NegPiontmp;
       PosPiontmp.SetPxPyPzE(positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->E());
       NegPiontmp.SetPxPyPzE(negativeMC->Px(), negativeMC->Py(), negativeMC->Pz(), negativeMC->E());
