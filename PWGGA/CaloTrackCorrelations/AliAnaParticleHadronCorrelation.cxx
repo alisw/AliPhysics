@@ -2687,7 +2687,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
               fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data()),
          Form("#Delta #varphi vs #Delta #eta vs #it{p}_{T}^{trig} for associated #it{p}_{T} bin [%2.1f,%2.1f]%s", 
               fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data()),
-         nptbins      ,ptmin      ,ptmax      , 
+         fNTrigPtBins, fTrigPtBinLimit[0], fTrigPtBinLimit[fNTrigPtBins-1], 
          ndeltaphibins,deltaphimin,deltaphimax,
          ndeltaetabins,deltaetamin,deltaetamax);
         fhDeltaPhiDeltaEtaAssocPtBin[bin]->SetYTitle("#Delta #varphi (rad)");
@@ -3583,7 +3583,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
                 fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data()),
            Form("Mixed event #Delta #eta vs #Delta #varphi vs #it{p}_{T trigger} for associated #it{p}_{T} bin [%2.1f,%2.1f]%s", 
                 fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data()),
-           fNTrigPtBins  ,fTrigPtBinLimit[0] , fTrigPtBinLimit[fNTrigPtBins],
+           fNTrigPtBins  ,fTrigPtBinLimit[0] , fTrigPtBinLimit[fNTrigPtBins-1],
            ndeltaphibins ,deltaphimin,deltaphimax,
            ndeltaetabins ,deltaetamin,deltaetamax);
           fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin]->SetYTitle("#Delta #varphi (rad)");
@@ -3841,7 +3841,7 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fAssocPtBinLimit[18]  = 50.0 ;
   fAssocPtBinLimit[19]  = 100.0 ;
   
-  fNTrigPtBins         = 4.  ;
+  fNTrigPtBins         = 8.  ;
   fTrigPtBinLimit[0]   = 10. ;
   fTrigPtBinLimit[1]   = 12. ;
   fTrigPtBinLimit[2]   = 16. ;
