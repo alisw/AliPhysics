@@ -276,6 +276,10 @@ private:
     unsigned int            fDirNumber;
     Int_t                   fnTracklets;                           /// number of tracklets
     Int_t                   fnV0A;                                 /// V0A multiplicity 
+    ULong64_t               fTriggerMask;                          /// Trigger mask bitmap
+    Bool_t                  fTriggerFiredkINT7;                    /// Flag explicitly whether kINT7 trigger fired
+    Bool_t                  fTriggerFiredkHighMultSPD;             /// Flag explicitly whether kHighMultSPD trigger fired
+    Bool_t                  fTriggerFiredkHighMultV0;              /// Flag explicitly whether kHighMultV0 trigger fired
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
@@ -351,7 +355,7 @@ private:
     int fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,13);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,14);
     /// \endcond
 };
 
