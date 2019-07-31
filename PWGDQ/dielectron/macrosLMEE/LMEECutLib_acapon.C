@@ -80,7 +80,7 @@ class LMEECutLib {
   }
 
   // Getters
-  AliDielectronEventCuts*     GetEventCuts();
+  AliDielectronEventCuts*     GetEventCuts(Bool_t reqAliEventCuts, Bool_t reqAliEventCutsCorrelated);
   AliDielectronMixingHandler* GetMixingHandler(Int_t cutSet);
 
   AliAnalysisCuts*       GetTrackCuts(Int_t cutSet, Int_t PIDcuts);
@@ -563,7 +563,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 // the selection is hardcoded in the AddTask
-AliDielectronEventCuts* LMEECutLib::GetEventCuts() {
+AliDielectronEventCuts* LMEECutLib::GetEventCuts(Bool_t reqAliEventCuts, Bool_t reqAliEventCutsCorrelated){
 
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> GetEventCuts() >>>>>>>>>>>>>>>>>>>>>> ");
   AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCuts_acapon","Vertex Track && |vtxZ|<10 && ncontrib>0");
@@ -573,6 +573,13 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts() {
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,10.);
 
+  // Possibility to use AliEventCuts class for additional pile up rejection
+  if(reqAliEventCuts){
+    std::cout << "------ Using AliEventCuts class -------" << std::endl;
+    eventCuts->SetRequireAliEventCuts(reqAliEventCuts, reqAliEventCutsCorrelated);
+  }
+
+  eventCuts->Print();
   return eventCuts;
 }
 

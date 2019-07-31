@@ -7,16 +7,18 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 Bool_t doPairing       = kTRUE,
                                 Bool_t applyPairCuts   = kTRUE,
                                 Bool_t doMixing        = kTRUE, // Do event mixing for R fac.
-                                Bool_t rejectPileUp    = kTRUE, // SPDinMultBins
+                                Int_t rejectPileUp     = 0, // 0=None, 1=SPD, 2=SPDinMultBins, 4=MultiVertexer
                                 Bool_t trackVarPlots   = kTRUE, // Simple track QA plots
                                 Int_t whichDetPlots    = 0,     // 0=None,1=ITS,2=TPC,4=TOF,7=All3
-                                Bool_t v0plots         = kTRUE, // Plots for PID cal.
                                 // Use PID post calibration maps (for electrons)
                                 Bool_t useITScorr      = kTRUE,
                                 Bool_t useTPCcorr      = kTRUE,
                                 Bool_t useTOFcorr      = kTRUE,
-                                Bool_t plots3D         = kFALSE,
+                                // Option to use AliEventCuts class for additional event cuts
+                                Int_t whichAliEvtCuts  = 0, // 0 = not used, 1 = use, 2 = also correlations
                                 Bool_t useRun1binning  = kFALSE, // Match run1 pPb prelim. binning
+                                Bool_t plots3D         = kFALSE,
+                                Bool_t v0plots         = kTRUE,  // Plots for PID calibration
                                 Bool_t getFromAlien    = kFALSE)
 {
 
@@ -33,16 +35,18 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     std::cout << "Monte Carlo     : " << hasMC          << std::endl;
     std::cout << "Wagon number    : " << wagonNum       << std::endl;
     std::cout << "Pairing         : " << doPairing      << std::endl;
-    std::cout << "Event mixing    : " << doMixing       << std::endl;
     std::cout << "Pair cuts       : " << applyPairCuts  << std::endl;
+    std::cout << "Event mixing    : " << doMixing       << std::endl;
+    std::cout << "rejPileUp       : " << rejectPileUp   << std::endl;
     std::cout << "Track plots     : " << trackVarPlots  << std::endl;
     std::cout << "Which det plots : " << whichDetPlots  << std::endl;
-    std::cout << "v0 plots        : " << v0plots        << std::endl;
     std::cout << "Use ITScorr     : " << useITScorr     << std::endl;
     std::cout << "Use TPCcorr     : " << useTPCcorr     << std::endl;
     std::cout << "Use TOFcorr     : " << useTOFcorr     << std::endl;
-    std::cout << "3D plots        : " << plots3D        << std::endl;
+    std::cout << "Use AliEventCuts: " << whichAliEvtCuts<< std::endl;
     std::cout << "Using Run1 bins : " << useRun1binning << std::endl;
+    std::cout << "3D plots        : " << plots3D        << std::endl;
+    std::cout << "v0 plots        : " << v0plots        << std::endl;
 
     // Get the current analysis manager
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -95,28 +99,36 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     Int_t triggerNames = (AliVEvent::kINT7);
     task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
-    if(rejectPileUp){
+    if(rejectPileUp != 0){
       task->SetRejectPileup(kTRUE);
-      task->SetPileupRejTool(AliDielectronEventCuts::kSPDInMultBins);
+      if(rejectPileUp == 1){
+        task->SetPileupRejTool(AliDielectronEventCuts::kSPD);
+      }
+      else if(rejectPileUp == 2){
+        task->SetPileupRejTool(AliDielectronEventCuts::kSPDInMultBins);
+      }
+      else if(rejectPileUp == 3){
+        task->SetPileupRejTool(AliDielectronEventCuts::kMultiVertexer);
+      }
     }
-
+    // Set correct flags for AliEventCuts
+    Bool_t reqAliEvtCuts     = (whichAliEvtCuts == 0) ? kFALSE : kTRUE;
+    Bool_t reqAliEvtCutsCorr = (whichAliEvtCuts == 2) ? kTRUE  : kFALSE;
     // Event cuts are the same for all cut settings regardless
     // of config setup
     LMEECutLib* cutLib = new LMEECutLib(SDDstatus);
-    task->SetEventFilter(cutLib->GetEventCuts());
+    task->SetEventFilter(cutLib->GetEventCuts(reqAliEvtCuts, reqAliEvtCutsCorr));
 
     // Add the task to the manager
     mgr->AddTask(task);
     // Add dielectron analysis with different cuts to the task
     for(Int_t i = 0; i < nDie; ++i){
       TString dielTaskName(arrNames->At(i)->GetName());
-      AliDielectron* diel_low = 0x0;
-
-      diel_low = Config_acapon(dielTaskName, hasMC, SDDstatus,
-                                doPairing, applyPairCuts, doMixing,
-                                trackVarPlots, whichDetPlots, v0plots,
-                                useITScorr, useTPCcorr, useTOFcorr,
-                                plots3D, useRun1binning);
+      AliDielectron* diel_low = Config_acapon(dielTaskName, hasMC, SDDstatus,
+                                              doPairing, applyPairCuts, doMixing,
+                                              trackVarPlots, whichDetPlots, v0plots,
+                                              useITScorr, useTPCcorr, useTOFcorr,
+                                              plots3D, useRun1binning);
       if(!diel_low){
         continue;
       }
