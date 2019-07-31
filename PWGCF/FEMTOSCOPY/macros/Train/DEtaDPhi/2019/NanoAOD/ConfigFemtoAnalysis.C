@@ -794,7 +794,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//**** Correlation functions *******
 					//***without corrections*****
 					if(ichg >=34)
-					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),11, 11);
+					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),23, 23);
 					else if(ichg >= 13 || ichg < 34)
 					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),23, 23);
 					else
@@ -802,16 +802,17 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphinocorr[aniter]);
-					if(ichg==0 || ichg==1 || ichg==31 || ichg==33) //PP, aPaP, LL, ALAL
-                                        {
+
+        /*if(ichg==0 || ichg==1 || ichg==31 || ichg==33) //PP, aPaP, LL, ALAL
+            {
 					  cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //femto qinv, for identical mass particles
 					  anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
-					}
+				  	}
 					if(ichg==2 || ichg==27 || ichg==28 || ichg==29 || ichg==30 || ichg==32 || ichg==34 || ichg == 35 || ichg == 36 || ichg == 37) //PaP, PL, APL, PAL, APAL, LAL, PXim, aPXim, PXip, aPXip
-                                        {
+            {
 					  cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult), nbinssh, 0.0,shqmax); //for non-identical partcles
 					  anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
-                                        }
+            }*/
 
 
 					//***with corrections****
