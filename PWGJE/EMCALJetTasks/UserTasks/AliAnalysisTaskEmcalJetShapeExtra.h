@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskEmcalJetShapeExtra_H
-#define AliAnalysisTaskEmcalJetShapeExtra_H
+#ifndef AliAnalysisTaskEmcalnewsh_H
+#define AliAnalysisTaskEmcalnewsh_H
 
 class TH1;
 class TH2;
@@ -16,7 +16,7 @@ class AliJetContainer;
 
 
 
-class AliAnalysisTaskEmcalJetShapeExtra : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalnewsh : public AliAnalysisTaskEmcalJet {
  public:
 
 
@@ -33,10 +33,13 @@ class AliAnalysisTaskEmcalJetShapeExtra : public AliAnalysisTaskEmcalJet {
     kDerivSub = 2
   };
 
-
-    AliAnalysisTaskEmcalJetShapeExtra();
-  AliAnalysisTaskEmcalJetShapeExtra(const char *name);
-  virtual ~AliAnalysisTaskEmcalJetShapeExtra();
+ enum DerivSubtrOrder {
+    kSecondOrder = 0,
+    kFirstOrder = 1
+  };
+    AliAnalysisTaskEmcalnewsh();
+  AliAnalysisTaskEmcalnewsh(const char *name);
+  virtual ~AliAnalysisTaskEmcalnewsh();
 
   void                                UserCreateOutputObjects();
   void                                Terminate(Option_t *option);
@@ -47,7 +50,7 @@ class AliAnalysisTaskEmcalJetShapeExtra : public AliAnalysisTaskEmcalJet {
   void SetJetShapeType(JetShapeType t)                      { fJetShapeType       = t   ; }
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ; }
   
-
+ void SetDerivativeSubtractionOrder(Int_t c)              {fDerivSubtrOrder = c;}
   
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -77,21 +80,23 @@ class AliAnalysisTaskEmcalJetShapeExtra : public AliAnalysisTaskEmcalJet {
   //JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet
   Float_t                             fShapesVar[18];                  // jet shapes used for the tagging
 
+  Int_t                               fDerivSubtrOrder;
 
   
   TH2F                                *fh2ResponseUW;
 
   TH1F                                *fPtJet;
     TH1F                                *fNumberOfJet;
+ TH1F                                *fRho;
   TH2F                                *fNbOfConstvspT;
 
   TTree           *fTreeObservableTagging;  // Tree with tagging variables subtracted MC or true MC or raw 
 
  private:
-  AliAnalysisTaskEmcalJetShapeExtra(const AliAnalysisTaskEmcalJetShapeExtra&);            // not implemented
-  AliAnalysisTaskEmcalJetShapeExtra &operator=(const AliAnalysisTaskEmcalJetShapeExtra&); // not implemented
+  AliAnalysisTaskEmcalnewsh(const AliAnalysisTaskEmcalnewsh&);            // not implemented
+  AliAnalysisTaskEmcalnewsh &operator=(const AliAnalysisTaskEmcalnewsh&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetShapeExtra, 6)
+  ClassDef(AliAnalysisTaskEmcalnewsh, 6)
 };
 #endif
 

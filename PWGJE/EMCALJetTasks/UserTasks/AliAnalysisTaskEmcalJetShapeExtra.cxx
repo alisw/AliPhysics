@@ -45,16 +45,18 @@ using std::endl;
 ClassImp(AliAnalysisTaskEmcalJetShapeExtra)
 
 //________________________________________________________________________
-AliAnalysisTaskEmcalJetShapeExtra::AliAnalysisTaskEmcalJetShapeExtra() : 
+AliAnalysisTaskEmcalJetShapeExtra::AliAnalysisTaskEmcalJetShapeExtra() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetShapeExtra", kTRUE),
   fContainer(0),
-  fJetShapeType(kPythiaDef),
+  fJetShapeType(kData),
   fJetShapeSub(kNoSub),
  // fJetSelection(kInclusive),
+ fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
-  fPtJet(0x0),
+    fPtJet(0x0),
   fNbOfConstvspT(0x0),
     fNumberOfJet(0x0),
+fRho(0x0),
 fTreeObservableTagging(0)
 
 {
@@ -66,16 +68,18 @@ fTreeObservableTagging(0)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskEmcalJetShapeExtra::AliAnalysisTaskEmcalJetShapeExtra(const char *name) : 
+AliAnalysisTaskEmcalJetShapeExtra::AliAnalysisTaskEmcalJetShapeExtra(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fContainer(0),
-  fJetShapeType(kPythiaDef),
+  fJetShapeType(kData),
 fJetShapeSub(kNoSub),
 //  fJetSelection(kInclusive),
+ fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fPtJet(0x0),
   fNbOfConstvspT(0x0),
 fNumberOfJet(0x0),
+fRho(0x0),
 fTreeObservableTagging(0)
   
 {
@@ -118,6 +122,9 @@ AliAnalysisTaskEmcalJetShapeExtra::~AliAnalysisTaskEmcalJetShapeExtra()
     
     fNumberOfJet= new TH1F("fNumberOfJet","fNumberOfJet",100,0.5,100.5);
   fOutput->Add(fNumberOfJet);
+
+fRho= new TH1F("fRho","fRho",100,0,10);
+  fOutput->Add(fRho);
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
@@ -160,10 +167,10 @@ AliAnalysisTaskEmcalJetShapeExtra::~AliAnalysisTaskEmcalJetShapeExtra()
   fShapesVarNames[14]="ntrksEvt";
 //  fShapesVarNames[15]="rhoVal";
 //  fShapesVarNames[16]="rhoMassVal";
-  fShapesVarNames[15]="ptUnsub";
+  fShapesVarNames[15]="ptsub";
 
    for(Int_t ivar=0; ivar < nVar; ivar++){
-    cout<<"looping over variables"<<endl;
+    cout<<"looping over variables hello hjjjj"<<endl;
     fTreeObservableTagging->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/F", fShapesVarNames[ivar].Data()));}
  
   PostData(1,fOutput);
@@ -176,7 +183,6 @@ AliAnalysisTaskEmcalJetShapeExtra::~AliAnalysisTaskEmcalJetShapeExtra()
 Bool_t AliAnalysisTaskEmcalJetShapeExtra::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
-
   return kTRUE;
 }
 
@@ -185,28 +191,52 @@ Bool_t AliAnalysisTaskEmcalJetShapeExtra::FillHistograms()
 {
   // Fill histograms.
   //cout<<"base container"<<endl;
+
+ //   cout<<"=========================Hello fjjhgf ====================="<<endl;
   AliEmcalJet* jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(0);
     Float_t kWeight=1;
-
+    //  cout<<"step 1"<<endl;
   
   AliParticleContainer *partContAn = GetParticleContainer(0);
   TClonesArray *trackArrayAn = partContAn->GetArray();
-  Int_t ntracksEvt = trackArrayAn->GetEntriesFast();
-  
-  
+    Int_t ntracksEvt = trackArrayAn->GetEntriesFast();
+    //  cout<<"step 2"<<endl;
+  Float_t rhoVal=0., rhoMassVal=0.;  
+  //cout<<"step 3"<<endl;
+      
+ 
+    //fRho->Fill(GetRhoVal());
     if(jetCont) {
 
     jetCont->ResetCurrentID();
+   if ((fJetShapeSub==kConstSub) || (fJetShapeSub==kDerivSub)){
+                                                                                        
+      AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("Rho"));
+      if (!rhoParam) {
+	Printf("%s: Could not retrieve rho %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoName().Data());
+      } else rhoVal = rhoParam->GetVal();
+
+    //   cout<< "rho value is "<<rhoParam->GetVal()<<endl;
+      //rhom                                                                                                                                                          
+               AliRhoParameter* rhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoMass"));
+       if (!rhomParam) {
+      	Printf("%s: Could not retrieve rho_m %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoMassName().Data());
+	} else rhoMassVal = rhomParam->GetVal();
+       // cout<< "rho Mass value is "<<rhoParam->GetVal()<<endl; 
+ }
+
 
       Int_t count=0;
     while((jet1 = jetCont->GetNextAcceptJet())) {
          count++;
       if (!jet1) continue;
+
+
       AliEmcalJet* jet3 = 0x0;
       fPtJet->Fill(jet1->Pt());
   
- //       cout<<"Jet detector level Pt is"<<jet1->Pt()<<endl;
+  //      cout<<"Jet detector level Pt is"<<jet1->Pt()<<endl;
 
 
       
@@ -217,27 +247,34 @@ Bool_t AliAnalysisTaskEmcalJetShapeExtra::FillHistograms()
 
         if(!(fJetShapeSub==kConstSub)) jet3 = jet1->ClosestJet();
         if (!jet3) {
-          Printf("jet3 does not exist, returning");
+          Printf("jet3 does not exist, ===============returning");
           continue;
         }
         
-  //        cout<<"jet3 particle level pt is"<<jet3->Pt()<<endl;
+//          cout<<"jet3 particle level pt is"<<jet3->Pt()<<endl;
         fh2ResponseUW->Fill(jet1->Pt(),jet3->Pt());
         
         
       }
-      
-      
-        
     
+ Double_t ptSubtracted = 0;      
+        if (fJetShapeSub==kConstSub) {ptSubtracted= jet1->Pt();
+
+}
+      else if (fJetShapeSub==kDerivSub)  {
+	ptSubtracted=jet1->Pt()-GetRhoVal(0)*jet1->Area();
+
+      }
     
-      
-      
+
+           
       fNbOfConstvspT->Fill(GetJetNumberOfConstituents(jet1,0), jet1->Pt());
+  
       if (jet1->GetNumberOfTracks() <= 1) continue;
 
-  
+ 
       fShapesVar[1] = jet1->Pt();
+      //      fShapesVar[1] =1;
       fShapesVar[2] = GetJetpTD(jet1,0);
       fShapesVar[3] = GetJetMass(jet1,0);
       fShapesVar[4] = GetJetAngularity(jet1,0);
@@ -245,15 +282,18 @@ Bool_t AliAnalysisTaskEmcalJetShapeExtra::FillHistograms()
       fShapesVar[6] = GetJetLeSub(jet1,0);
  
  
-      Float_t ptMatch=0., ptDMatch=0., massMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0.;
+      Float_t ptMatch=0., ptDMatch=0., massMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0.,ptSub=0.;
       Int_t kMatched = 0;
 
        if (fJetShapeType==kPythiaDef) {
          kMatched =1;
          if(fJetShapeSub==kConstSub) kMatched = 3;
         
-         ptMatch=jet3->Pt();
+       
+  ptMatch=jet3->Pt();
+
          ptDMatch=GetJetpTD(jet3, kMatched);
+
          massMatch=GetJetMass(jet3,kMatched);
          //constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
          angulMatch=GetJetAngularity(jet3, kMatched);
@@ -290,7 +330,7 @@ Bool_t AliAnalysisTaskEmcalJetShapeExtra::FillHistograms()
       fShapesVar[14] = ntracksEvt;
 //      fShapesVar[15] = rhoVal;
 //      fShapesVar[16] = rhoMassVal;
-      fShapesVar[15] = jet1->Pt();
+      fShapesVar[15] =ptSubtracted;
 
 
       fTreeObservableTagging->Fill();
@@ -307,15 +347,18 @@ Bool_t AliAnalysisTaskEmcalJetShapeExtra::FillHistograms()
   }
   
   return kTRUE;
+
 }
 
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalJetShapeExtra::GetJetMass(AliEmcalJet *jet,Int_t jetContNb){
-   
+  
         if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-            return jet->GetShapeProperties()->GetFirstOrderSubtracted();
-        else
-            return jet->M();
+         if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtracted();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtracted();
+  else 
+	return jet->M();  
+   
 }
 
 //________________________________________________________________________
@@ -347,10 +390,12 @@ Float_t AliAnalysisTaskEmcalJetShapeExtra::Angularity(AliEmcalJet *jet, Int_t je
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalJetShapeExtra::GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb ){
     
-    if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-        return jet->GetShapeProperties()->GetFirstOrderSubtracted();
-    else
+      if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
+        if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity();
+  else
     return Angularity(jet, jetContNb);
+
     
 }
 
@@ -380,11 +425,13 @@ Float_t AliAnalysisTaskEmcalJetShapeExtra::PTD(AliEmcalJet *jet, Int_t jetContNb
 
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalJetShapeExtra::GetJetpTD(AliEmcalJet *jet, Int_t jetContNb ){
-    if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-        return jet->GetShapeProperties()->GetFirstOrderSubtracted();
-    else
+      if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
+        if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedpTD();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedpTD();
+  else
         return PTD(jet, jetContNb);
-    
+  
+
 }
 
 //_____________________________________________________________________________
@@ -472,11 +519,11 @@ Float_t AliAnalysisTaskEmcalJetShapeExtra::Circularity(AliEmcalJet *jet, Int_t j
 
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalJetShapeExtra::GetJetCircularity(AliEmcalJet *jet, Int_t jetContNb  ){
-    if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
+      if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
         return jet->GetShapeProperties()->GetFirstOrderSubtracted();
     else
-            return Circularity(jet, jetContNb);
-    
+    return Circularity(jet, jetContNb);
+     
 }
 
 //________________________________________________________________________
@@ -520,19 +567,21 @@ Float_t AliAnalysisTaskEmcalJetShapeExtra::LeSub(AliEmcalJet *jet, Int_t jetCont
 Float_t AliAnalysisTaskEmcalJetShapeExtra::GetJetLeSub(AliEmcalJet *jet, Int_t jetContNb ) {
     //calc subtracted jet mass
     
-    if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-        return jet->GetShapeProperties()->GetFirstOrderSubtracted();
-    else
-            return LeSub(jet, jetContNb);
-    
+   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
+         if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedLeSub();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedLeSub();
+  else
+    return LeSub(jet, jetContNb);
 }
 
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalJetShapeExtra::GetJetNumberOfConstituents(AliEmcalJet *jet,Int_t jetContNb){
     if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-        return jet->GetShapeProperties()->GetFirstOrderSubtracted();
-    else
+        if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedConstituent();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedConstituent();
+  else
     return jet->GetNumberOfTracks();
+
     
 }
 
@@ -601,12 +650,16 @@ Float_t AliAnalysisTaskEmcalJetShapeExtra::Sigma2(AliEmcalJet *jet, Int_t jetCon
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalJetShapeExtra::GetSigma2(AliEmcalJet *jet, Int_t jetContNb){
     //calc subtracted jet mass
-    
     if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
         return jet->GetShapeProperties()->GetFirstOrderSubtracted();
     else
         return Sigma2(jet, jetContNb);
-    
+
+
+  /*   if((jetContNb))
+
+            return Sigma2(jet, jetContNb);
+  */
 }
 
 
