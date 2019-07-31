@@ -80,7 +80,7 @@ class LMEECutLib {
   }
 
   // Getters
-  AliDielectronEventCuts*     GetEventCuts();
+  AliDielectronEventCuts*     GetEventCuts(Bool_t reqAliEventCuts, Bool_t reqAliEventCutsCorrelated);
   AliDielectronMixingHandler* GetMixingHandler(Int_t cutSet);
 
   AliAnalysisCuts*       GetTrackCuts(Int_t cutSet, Int_t PIDcuts);

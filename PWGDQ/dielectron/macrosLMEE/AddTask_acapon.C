@@ -7,7 +7,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 Bool_t doPairing       = kTRUE,
                                 Bool_t applyPairCuts   = kTRUE,
                                 Bool_t doMixing        = kTRUE, // Do event mixing for R fac.
-                                Bool_t rejectPileUp    = kTRUE, // SPDinMultBins
+                                Int_t rejectPileUp     = 0, // 0=None, 1=SPD, 2=SPDinMultBins, 4=MultiVertexer
                                 Bool_t trackVarPlots   = kTRUE, // Simple track QA plots
                                 Int_t whichDetPlots    = 0,     // 0=None,1=ITS,2=TPC,4=TOF,7=All3
                                 // Use PID post calibration maps (for electrons)
@@ -35,8 +35,9 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     std::cout << "Monte Carlo     : " << hasMC          << std::endl;
     std::cout << "Wagon number    : " << wagonNum       << std::endl;
     std::cout << "Pairing         : " << doPairing      << std::endl;
-    std::cout << "Event mixing    : " << doMixing       << std::endl;
     std::cout << "Pair cuts       : " << applyPairCuts  << std::endl;
+    std::cout << "Event mixing    : " << doMixing       << std::endl;
+    std::cout << "rejPileUp       : " << rejectPileUp   << std::endl;
     std::cout << "Track plots     : " << trackVarPlots  << std::endl;
     std::cout << "Which det plots : " << whichDetPlots  << std::endl;
     std::cout << "Use ITScorr     : " << useITScorr     << std::endl;
@@ -98,11 +99,18 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     Int_t triggerNames = (AliVEvent::kINT7);
     task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
-    if(rejectPileUp){
+    if(rejectPileUp != 0){
       task->SetRejectPileup(kTRUE);
-      task->SetPileupRejTool(AliDielectronEventCuts::kSPDInMultBins);
+      if(rejectPileUp == 1){
+        task->SetPileupRejTool(AliDielectronEventCuts::kSPD);
+      }
+      else if(rejectPileUp == 2){
+        task->SetPileupRejTool(AliDielectronEventCuts::kSPDInMultBins);
+      }
+      else if(rejectPileUp == 3){
+        task->SetPileupRejTool(AliDielectronEventCuts::kMultiVertexer);
+      }
     }
-
     // Set correct flags for AliEventCuts
     Bool_t reqAliEvtCuts     = (whichAliEvtCuts == 0) ? kFALSE : kTRUE;
     Bool_t reqAliEvtCutsCorr = (whichAliEvtCuts == 2) ? kTRUE  : kFALSE;
