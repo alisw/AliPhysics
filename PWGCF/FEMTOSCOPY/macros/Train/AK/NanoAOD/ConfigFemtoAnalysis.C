@@ -521,6 +521,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
 					sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045); 
 					sqpcetaphitpc[aniter]->SetPhiStar(kFALSE);
+					//sqpcetaphitpc[aniter]->SetPhiStar(kFALSE);
 					sqpcetaphitpc[aniter]->SetNanoAODAnalysis(kTRUE);
 				
 					
