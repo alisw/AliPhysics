@@ -65,7 +65,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	double ProtonMass = 0.938272013;
 	double LambdaMass = 1.115683;
 	
-	const int numOfMultBins = 1;	
+	const int numOfMultBins = 5;	
 	const int numOfChTypes = 16; //13
 	const int numOfkTbins = 1;
 
@@ -146,7 +146,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	TGrid::Connect("alien://");
 
 	int runmults[numOfMultBins] = {1};
-	int multbins[numOfMultBins+1] = {0, 200};
+	int multbins[numOfMultBins+1] = {0, 100, 200, 400, 600, 800};
 	
 	int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0}; // 1 - wlacza czastki do analizy
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "V0LL", "V0ALAL", "V0LAL", "all", "plus", "minus", "mixed"};
