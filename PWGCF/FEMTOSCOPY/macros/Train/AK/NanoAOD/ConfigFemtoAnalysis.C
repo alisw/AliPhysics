@@ -514,12 +514,13 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 					sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
-					//sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);
-					//sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
+					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);
+					sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
 					sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-					sqpcetaphitpc[aniter]->SetMinimumRadius(1.6);
+					sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
 					sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
 					sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045); 
+					sqpcetaphitpc[aniter]->SetPhiStar(kFALSE);
 					sqpcetaphitpc[aniter]->SetNanoAODAnalysis(kTRUE);
 				
 					
