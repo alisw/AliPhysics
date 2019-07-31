@@ -19,8 +19,8 @@ AliAnalysisTaskEmcalJetShapeExtra* AddTaskEmcalJetShapeExtra(const char * njetsB
 						     TString     trigClass      = "",
 						     TString     kEmcalTriggers = "",
 						     TString     tag            = "",
-							     AliAnalysisTaskEmcalJetShapeExtra::JetShapeType jetShapeType=AliAnalysisTaskEmcalJetShapeExtra::kPythiaDef,
-							     AliAnalysisTaskEmcalJetShapeExtra::JetShapeSub jetShapeSub=AliAnalysisTaskEmcalJetShapeExtra::kNoSub
+							     AliAnalysisTaskEmcalJetShapeExtra::JetShapeType jetShapeType=AliAnalysisTaskEmcalJetShapeExtra::kData,
+							     AliAnalysisTaskEmcalJetShapeExtra::JetShapeSub jetShapeSub=AliAnalysisTaskEmcalJetShapeExtra::kDerivSub,AliAnalysisTaskEmcalJetShapeExtra::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskEmcalJetShapeExtra::kSecondOrder 
                                              
 )
 {
@@ -47,7 +47,9 @@ AliAnalysisTaskEmcalJetShapeExtra* AddTaskEmcalJetShapeExtra(const char * njetsB
   TString wagonName2 = Form("JetQGTaggings_%s_TC%s%sTree",njetsBase,trigClass.Data(),tag.Data());
   //Configure jet tagger task
   AliAnalysisTaskEmcalJetShapeExtra *task = new AliAnalysisTaskEmcalJetShapeExtra(wagonName1.Data());
-
+  task->SetJetShapeType(jetShapeType);
+  task->SetJetShapeSub(jetShapeSub);
+  task->SetDerivativeSubtractionOrder(derivSubtrOrder);
   //task->SetNCentBins(4);
    TString thename(njetsBase);
   //if(thename.Contains("Sub")) task->SetIsConstSub(kTRUE);
@@ -90,7 +92,7 @@ AliAnalysisTaskEmcalJetShapeExtra* AddTaskEmcalJetShapeExtra(const char * njetsB
   if (jetShapeType==AliAnalysisTaskEmcalJetShapeExtra::kData){
     jetContBase = task->AddJetContainer(njetsBase,strType,R);
     if(jetContBase) {
-    //  jetContBase->SetRhoName(nrhoBase);
+      jetContBase->SetRhoName(nrhoBase);
       jetContBase->ConnectParticleContainer(trackCont);
       jetContBase->ConnectClusterContainer(clusterCont);
       jetContBase->SetPercAreaCut(0.6);
