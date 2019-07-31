@@ -71,14 +71,12 @@ AliDielectron* Config_acapon(TString cutDefinition,
   if(cutDefinition == "kAll"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kAllSpecies, LMEECutLib::kAllSpecies));
     if(applyPairCuts){
-      //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
       die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(LMEECutLib::kAllSpecies) );
     }
   } // Used for basic QA of data sets (simple cuts and PID)
   else if(cutDefinition == "kElectrons"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kElectrons, LMEECutLib::kElectrons));
     if(applyPairCuts){
-      //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kElectrons));
     }
   }
