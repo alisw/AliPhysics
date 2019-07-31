@@ -191,7 +191,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   if ( kAnaCutsString.Contains("HighMult") ) 
     ana->SwitchOnFillHighMultiplicityHistograms();
   else
-    ana->SwitchOnFillHighMultiplicityHistograms();
+    ana->SwitchOffFillHighMultiplicityHistograms();
   
   // Consider real calo acceptance (borders, bad map holes)
   // at generator level
@@ -1162,7 +1162,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SetMCGenType(0,7); // Change to higher to include Tagged decays
   
   ana->SwitchOffLeadHadronSelection(); // Open cuts, just fill histograms
-  ana->SwitchOnFillLeadHadronHistograms();
+  ana->SwitchOffFillLeadHadronHistograms();
   
   if ( kAnaCutsString.Contains("Bkg") && !bIsolated )
   {
@@ -1199,7 +1199,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //  ana->SetAssocPtBinLimit(6, 10) ;
   //  ana->SetAssocPtBinLimit(7, 100);
   
-  ana->SetNTriggerPtBins(5); // set last bin [25,30] GeV/c
+  ana->SetNTriggerPtBins(8); // set first bin [10,12] GeV/c and last bin [40,50] GeV/c
   // See AliAnaParticleCorrelation::InitParameters();
   // Default bins{10,12,16,20,25,30,40,50,75,100} GeV/c
   // If you want to change it:
