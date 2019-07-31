@@ -173,7 +173,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoEventReaderNanoAODChain *Reader = new AliFemtoEventReaderNanoAODChain();
 	Reader->SetFilterMask(filterbit);
 	Reader->SetCovMatPresent(false);
-	// Reader->SetDCAglobalTrack(ifGlobalTracks); //false for FB7, true for the rest //we do not use DCA at all
+	Reader->SetDCAglobalTrack(1); //false for FB7, true for the rest //we do not use DCA at all
 	Reader->SetUseMultiplicity("MultSelection.RefMult08");
 	
 
@@ -521,6 +521,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
 					sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045); 
 					sqpcetaphitpc[aniter]->SetPhiStar(kFALSE);
+					//sqpcetaphitpc[aniter]->SetPhiStar(kFALSE);
 					sqpcetaphitpc[aniter]->SetNanoAODAnalysis(kTRUE);
 				
 					
