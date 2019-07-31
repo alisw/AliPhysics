@@ -80,6 +80,7 @@
 #include "AliRhoParameter.h"
 #include "AliAnalysisTaskSEHFTreeCreator.h"
 #include "AliAODPidHF.h"
+#include "AliESDUtils.h"
 
 using std::cout;
 using std::endl;
@@ -172,11 +173,17 @@ fEventID(0),
 fFileName(""),
 fDirNumber(0),
 fnTracklets(0),
+fnTrackletsCorr(0),
+fRefMult(9.26),
 fnV0A(0),
 fTriggerMask(0),
 fTriggerFiredkINT7(false),
 fTriggerFiredkHighMultSPD(false),
 fTriggerFiredkHighMultV0(false),
+fnV0M(0),
+fnV0MEq(0),
+fnV0MCorr(0),
+fnV0MEqCorr(0),
 fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
@@ -219,7 +226,9 @@ fFillMatchingJetID(false),
 fFillJets(false),
 fDoJetSubstructure(false),
 fEnableNsigmaTPCDataCorr(false),
-fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone)
+fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone),
+fCorrNtrVtx(false),
+fCorrV0MVtx(false)
 {
 
 /// Default constructor
@@ -312,7 +321,13 @@ fEventID(0),
 fFileName(""),
 fDirNumber(0),
 fnTracklets(0),
+fnTrackletsCorr(0),
+fRefMult(9.26),
 fnV0A(0),
+fnV0M(0),
+fnV0MEq(0),
+fnV0MCorr(0),
+fnV0MEqCorr(0),
 fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
@@ -355,7 +370,9 @@ fFillMatchingJetID(false),
 fFillJets(false),
 fDoJetSubstructure(false),
 fEnableNsigmaTPCDataCorr(false),
-fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone)
+fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone),
+fCorrNtrVtx(false),
+fCorrV0MVtx(false)
 {
     /// Standard constructor
   
@@ -769,7 +786,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     OpenFile(5);
     fTreeEvChar = new TTree("tree_event_char","tree_event_char");
     //set variables
-    TString varnames[14] = {"centrality", "z_vtx_reco", "n_vtx_contributors", "n_tracks", "is_ev_rej", "run_number", "ev_id", "n_tracklets", "V0Amult", "trigger_bitmap", "trigger_kINT7", "trigger_kHighMultSPD", "trigger_kHighMultV0", "z_vtx_gen"};
+    TString varnames[] = {"centrality", "z_vtx_reco", "n_vtx_contributors", "n_tracks", "is_ev_rej", "run_number", "ev_id", "n_tracklets", "V0Amult", "trigger_bitmap", "trigger_kINT7", "trigger_kHighMultSPD", "trigger_kHighMultV0", "z_vtx_gen", "n_tracklets_corr", "v0m", "v0m_eq", "v0m_corr", "v0m_eq_corr"};
     fTreeEvChar->Branch(varnames[0].Data(),&fCentrality,Form("%s/F",varnames[0].Data()));
     fTreeEvChar->Branch(varnames[1].Data(),&fzVtxReco,Form("%s/F",varnames[1].Data()));
     fTreeEvChar->Branch(varnames[2].Data(),&fNcontributors,Form("%s/I",varnames[2].Data()));
@@ -784,6 +801,11 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeEvChar->Branch(varnames[11].Data(),&fTriggerFiredkHighMultSPD,Form("%s/O",varnames[11].Data()));
     fTreeEvChar->Branch(varnames[12].Data(),&fTriggerFiredkHighMultV0,Form("%s/O",varnames[12].Data()));
     if(fReadMC) fTreeEvChar->Branch(varnames[13].Data(),&fzVtxGen,Form("%s/F",varnames[13].Data()));
+    fTreeEvChar->Branch(varnames[14].Data(),&fnTrackletsCorr,Form("%s/I",varnames[14].Data()));
+    fTreeEvChar->Branch(varnames[15].Data(),&fnV0M,Form("%s/I",varnames[15].Data()));
+    fTreeEvChar->Branch(varnames[16].Data(),&fnV0MEq,Form("%s/I",varnames[16].Data()));
+    fTreeEvChar->Branch(varnames[17].Data(),&fnV0MCorr,Form("%s/I",varnames[17].Data()));
+    fTreeEvChar->Branch(varnames[18].Data(),&fnV0MEqCorr,Form("%s/I",varnames[18].Data()));
     fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
 
     if(fWriteVariableTreeD0){
@@ -1136,18 +1158,75 @@ void AliAnalysisTaskSEHFTreeCreator::FillJetTree() {
 
 }
 
+std::string AliAnalysisTaskSEHFTreeCreator::GetPeriod(const AliVEvent* event){
+  Int_t runNo  = event->GetRunNumber();
+  // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+  // pPb 2013: 0-LHC13b, 1-LHC13c
+  // pPb 2016: 0-LHC16q: 265499->265525; 265309->265387, 1-LHC16q:265435, 2-LHC16q:265388->265427, LHC16t: 267163->267166
+
+  if (runNo>195343 && runNo<195484) return "LHC13b";
+  if (runNo>195528 && runNo<195678) return "LHC13c";
+  if ((runNo>=265499 && runNo<=265525) || (runNo>=265309 && runNo<=265387)) return "LHC16q_0";
+  if (runNo == 265435) return "LHC16q_1";
+  if (runNo>=265388 && runNo<=265427) return "LHC16q_2";
+  if (runNo>=267163 && runNo<=267166) return "LHC16t";
+
+  // if(runNo>114930 && runNo<117223) period = 0;
+  // if(runNo>119158 && runNo<120830) period = 1;
+  // if(runNo>122373 && runNo<126438) period = 2;
+  // if(runNo>127711 && runNo<130851) period = 3;
+
+  if (runNo>=252235 && runNo<=252375) return "LHC16d";
+  if (runNo>=252603 && runNo<=253591) return "LHC16e";
+  if (runNo>=254124 && runNo<=254332) return "LHC16g";
+  if (runNo>=254378 && runNo<=255469) return "LHC16h_1";
+  if (runNo>=254418 && runNo<=254422) return "LHC16h_2";
+  if (runNo>=256146 && runNo<=256420) return "LHC16j";
+  if (runNo>=256504 && runNo<=258537) return "LHC16k";
+  if (runNo>=258883 && runNo<=260187) return "LHC16l";
+  if (runNo>=262395 && runNo<=264035) return "LHC16o";
+  if (runNo>=264076 && runNo<=264347) return "LHC16p";
+
+  if (runNo>=270822 && runNo<=270830) return "LHC17e";
+  if (runNo>=270854 && runNo<=270865) return "LHC17f";
+  if (runNo>=271868 && runNo<=273103) return "LHC17h";
+  if (runNo>=273591 && runNo<=274442) return "LHC17i";
+  if (runNo>=274593 && runNo<=274671) return "LHC17j";
+  if (runNo>=274690 && runNo<=276508) return "LHC17k";
+  if (runNo>=276551 && runNo<=278216) return "LHC17l";
+  if (runNo>=278914 && runNo<=280140) return "LHC17m";
+  if (runNo>=280282 && runNo<=281961) return "LHC17o";
+  if (runNo>=282504 && runNo<=282704) return "LHC17r";
+
+  if(runNo>=285008 && runNo<=285447) return "LHC18b";
+  if(runNo>=285978 && runNo<=286350) return "LHC18d";
+  if(runNo>=286380 && runNo<=286937) return "LHC18e";
+  if(runNo>=287000 && runNo<=287977) return "LHC18f";
+  if(runNo>=288619 && runNo<=288750) return "LHC18q";
+  if(runNo>=288804 && runNo<=288806) return "LHC18g";
+  if(runNo>=288861 && runNo<=288909) return "LHC18i";
+  if(runNo==288943) return "LHC18j";
+  if(runNo>=289165 && runNo<=289201) return "LHC18k";
+  if(runNo>=289240 && runNo<=289971) return "LHC18l";
+  if(runNo>=290222 && runNo<=292839) return "LHC18m";
+  if(runNo>=293357 && runNo<=293359) return "LHC18n";
+  if(runNo>=293368 && runNo<=293898) return "LHC18o";
+  if(runNo>=294009 && runNo<=294925) return "LHC18p";
+
+  return "undefined";
+}
 //________________________________________________________________________
 void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
 
 {
-    /// Execute analysis for current event:
-    
-    AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-    
-    fNentries->Fill(0); // all events
-    if(fAODProtection>=0){
-        //   Protection against different number of events in the AOD and deltaAOD
-        //   In case of discrepancy the event is rejected.
+	/// Execute analysis for current event:
+
+	AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+
+	fNentries->Fill(0); // all events
+	if(fAODProtection>=0){
+		//   Protection against different number of events in the AOD and deltaAOD
+		//   In case of discrepancy the event is rejected.
         Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
         if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
             // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
@@ -1337,13 +1416,27 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
      if(eta>-1.0 && eta<1.0) countTreta1++;//count at central rapidity
   }
     fnTracklets=countTreta1;
-    //v0A multiplicity
-    Int_t vzeroMultA=0;
+    fnTrackletsCorr = -1.;
+    TProfile *estimatorAvg = fMultEstimatorAvg[GetPeriod(aod)];
+    if (fCorrNtrVtx && estimatorAvg)
+      fnTrackletsCorr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg, countTreta1, vtx->GetZ(), fRefMult));
+
+    //V0 multiplicities
     AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
-    if(vzeroAOD) {
-    vzeroMultA = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+    Double_t vzeroA = vzeroAOD ? vzeroAOD->GetMTotV0A() : 0.;
+    Double_t vzeroC = vzeroAOD ? vzeroAOD->GetMTotV0C() : 0.;
+    Double_t vzeroAEq = AliVertexingHFUtils::GetVZEROAEqualizedMultiplicity(aod);
+    Double_t vzeroCEq = AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(aod);
+    fnV0A = static_cast<Int_t>(vzeroA);
+    fnV0M = static_cast<Int_t>(vzeroA + vzeroC);
+    fnV0MEq = static_cast<Int_t>(vzeroAEq + vzeroCEq);
+    fnV0MCorr = -1;
+    fnV0MEqCorr = -1;
+    if (fCorrV0MVtx) {
+      fnV0MCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroA, vtx->GetZ()) + AliESDUtils::GetCorrV0C(vzeroC, vtx->GetZ()));
+      fnV0MEqCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroAEq, vtx->GetZ()) + AliESDUtils::GetCorrV0C(vzeroCEq, vtx->GetZ()));
     }
-    fnV0A=vzeroMultA;
+
     fEventID = GetEvID();
     // Extract fired triggers
     // Cast ULong64_t to UInt_t as there are only 30 trigger bits used in Run2
