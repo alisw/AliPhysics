@@ -268,7 +268,7 @@ void AliReducedAnalysisFilterTrees::WriteFilteredTracks(Int_t array /*=1*/) {
       fHistosManager->FillHistClass("Track_BeforeCuts", fValues);
       
       Bool_t writeTrack = IsTrackSelected(track, fValues);
-      writeTrack |= TrackIsCandidateLeg(track);
+      writeTrack |= (fWriteFilteredPairs && TrackIsCandidateLeg(track));
       
       if(writeTrack) {
          for(Int_t icut=0; icut<fTrackCuts.GetEntries(); ++icut) {
