@@ -25,7 +25,7 @@ class AliESDtools : public TNamed {
   void TPCVertexFit(TH1F *hisVertex);
   Int_t  GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType, AliExternalTrackParam & paramNearest);
   void   ProcessITSTPCmatchOut(AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, TTreeStream *pcstream);
-  Double_t CachePileupVertexTPC(Int_t entry, Int_t verbose=0);
+  Double_t CachePileupVertexTPC(Int_t entry, Int_t doReset=0, Int_t verbose=0);
   //
   Int_t DumpEventVariables();
   static Int_t SDumpEventVariables(){return fgInstance->DumpEventVariables();}
@@ -41,7 +41,7 @@ class AliESDtools : public TNamed {
   static Double_t GetMeanHisTPCVertexC(){return fgInstance->fHisTPCVertexC->GetMean();}
   static Double_t GetVertexInfo(Int_t index){return (*fgInstance->fTPCVertexInfo)[index];}
   static Int_t SetDefaultAliases(TTree* tree);
-  static Double_t SCachePileupVertexTPC(Int_t entry, Int_t verbose=0){ return fgInstance->CachePileupVertexTPC(entry, verbose);}
+  static Double_t SCachePileupVertexTPC(Int_t entry, Int_t doReset, Int_t verbose=0){ return fgInstance->CachePileupVertexTPC(entry, doReset, verbose);}
   //
   Int_t fVerbose;                                 // verbosity flag
   TTree *fESDtree;                                //! esd Tree pointer - class is not owner

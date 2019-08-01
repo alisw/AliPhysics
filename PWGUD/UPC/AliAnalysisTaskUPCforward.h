@@ -300,8 +300,13 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * distribution of the dimuon system, only
                                  * coherent component, so as to say, only
                                  * pt < 0.25 GeV/c for pt of the dimuon pair.
+                                 *
+                                 * The array is simply the same plot but
+                                 * divided in rapidity bins.
+                                 * From 0 up to 6 it is Y = -4 to -2.5.
                                  */
-        TH1F*                   fInvariantMassDistributionCoherentH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentH;                      //!
+        TH1F*                   fInvariantMassDistributionCoherentRapidityBinsH[6];       //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -662,6 +667,25 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH2F*                   fDcaAgainstInvariantMassH;         //!
 
+                                /**
+                                 * This histogram records the DCA vs the Pt
+                                 * of the vector meson.
+                                 */
+        TH2F*                   fDcaAgainstPtOfVectorMesonH;         //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system with a
+                                 * strict Pt and a strics DCA.
+                                 */
+        TH1F*                   fInvariantMassDistributionStrictPtStrictDcaH;         //!
+
+                                /**
+                                 * This histogram records the invariant mass
+                                 * distribution of the dimuon system VS Pt
+                                 * and a strics DCA.
+                                 */
+        TH2F*                   fInvariantMassDistributionVsPtStrictDcaH;         //!
 
         //_______________________________
         // Cloned histograms with EXTENDED Range (0,20)->(0,40).
@@ -1369,6 +1393,15 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH[50];  //!
         TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH[100];  //!
 
+                                /**
+                                 * Signal extraction in Phi, CosTheta, and
+                                 * TildePhi, with 25 bins only...
+                                 *
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[25];  //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[25];  //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[25];  //!
+
         //_______________________________
         // CUTS
         /*
@@ -1429,7 +1462,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 33);
+        ClassDef(AliAnalysisTaskUPCforward, 37);
 };
 
 #endif

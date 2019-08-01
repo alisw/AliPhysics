@@ -108,6 +108,10 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
+    void SetMaxNeutralPionOverlapsMC(Int_t nOverlaps){fMaxAllowedPi0OverlapsMC = nOverlaps;}
+
+    Bool_t NumberOfMCEventNeutralPionOverlapInEMCal(AliMCEvent *mcEvent);
+
   protected:
     AliV0ReaderV1*          fV0Reader;                                          // basic photon Selection Task
     TString                 fV0ReaderName;
@@ -298,12 +302,13 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TObjString*             fFileNameBroken;                                    // string object for broken file name
     Bool_t                  fDoDetailedM02;                                     // detailed M02 distribution
     Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
+    Int_t                   fMaxAllowedPi0OverlapsMC;                           // Event rejection based on pi0 overlaps in MC
 
   private:
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 33);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 34);
 };
 
 #endif

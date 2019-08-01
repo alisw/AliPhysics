@@ -1,4 +1,4 @@
-AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",Int_t ndebug=0, Bool_t lccuts=kFALSE,  Double_t *lccutvalues=NULL, Double_t *ptcutvalues=NULL,const char*  postname="")
+AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",Int_t ndebug=0,const char*  postname="")
  {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -33,21 +33,19 @@ AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",I
                                      analysiscuts,
                                      prodcuts,
                                      ndebug);
-
-  task->SetCutsond0Lcdaughters(lccuts);
-  if (lccuts){
-  task->ApplyD0CutLcdaughters(lccutvalues);
-  }
-  task->SetPtConfiguration(ptcutvalues);
-
+     
+  task->SetCutsond0Lcdaughters(kFALSE);
+  task->SetPtConfiguration(0.,30.,2.,14.,0.,999.,4.);
   mgr->AddTask(task);
 
   
   char* outputFileName=(char*)AliAnalysisManager::GetCommonFileName();
   TString container1;
   TString container2;
+  TString filename;
   container1.Form("HistosUPG%s", (char*)postname);
   container2.Form("ntupleUPGLb%s",(char*)postname);
+  filename.Form("ntupleUPGLb%s%s",(char*)postname,".root");
   
 
   AliAnalysisDataContainer *coutput1
@@ -61,8 +59,9 @@ AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",I
      =mgr->CreateContainer(container2,
                            TNtuple::Class(),
                            AliAnalysisManager::kOutputContainer,
-                           Form("%s:%s",outputFileName, "ITSImproverUpg"));
-
+                           filename);
+ 
+  coutput2->SetSpecialOutput();
 
 
   mgr->ConnectInput (task,0,mgr->GetCommonInputContainer());

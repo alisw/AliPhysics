@@ -1692,6 +1692,7 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
    
    AliMCEvent* event = AliDielectronMC::Instance()->GetMCEvent();
+   if(!event) return;
    
     AliReducedEventInfo* eventInfo = NULL; 
     if(fTreeWritingOption==kFullEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithFullTracks) {

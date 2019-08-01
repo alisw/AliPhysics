@@ -165,7 +165,8 @@ public:
     {
       const AliFemtoModelHiddenInfo *info = static_cast<AliFemtoModelHiddenInfo*>(track->GetHiddenInfo());
       const Int_t pid = info->GetPDGPid();
-      if (std::abs(pid) != 211) {
+
+      if (pid != std::copysign(211, charge)) {
         return false;
       }
       return AliFemtoTrackCutPionPionAK::Pass(track);
@@ -173,6 +174,36 @@ public:
 
   virtual const char* ClassName() const
     { return "AliFemtoTrackCutPionPionIdealAK"; }
+};
+
+
+/// Cut on MonteCarlo PDG code to select *only* misidentified pions
+///
+class AliFemtoTrackCutPionPionMisidentAK : public AliFemtoTrackCutPionPionAK {
+public:
+
+  AliFemtoTrackCutPionPionMisidentAK()
+    : AliFemtoTrackCutPionPionAK()
+    {}
+
+  AliFemtoTrackCutPionPionMisidentAK(AliFemtoConfigObject &cfg)
+    : AliFemtoTrackCutPionPionAK(cfg)
+    {}
+
+  virtual ~AliFemtoTrackCutPionPionMisidentAK() {}
+
+  virtual bool Pass(const AliFemtoTrack *track)
+    {
+      const AliFemtoModelHiddenInfo *info = static_cast<AliFemtoModelHiddenInfo*>(track->GetHiddenInfo());
+      const Int_t pid = info->GetPDGPid();
+      if (pid == std::copysign(211, charge)) {
+        return false;
+      }
+      return AliFemtoTrackCutPionPionAK::Pass(track);
+    }
+
+  virtual const char* ClassName() const
+    { return "AliFemtoTrackCutPionPionMisidentAK"; }
 };
 
 
@@ -251,6 +282,9 @@ template <>
 AliFemtoConfigObject AliFemtoConfigObject::From(const AliFemtoPairCutPionPionAKAvgSep &cut);
 
 template <>
+AliFemtoConfigObject AliFemtoConfigObject::From(const AliFemtoTrackCutPionPionMisidentAK &cut);
+
+template <>
 AliFemtoConfigObject AliFemtoConfigObject::From(const AliFemtoPairCutPionPionAKDetaDphi &cut);
 
 template <>
@@ -263,10 +297,14 @@ template <>
 AliFemtoTrackCutPionPionIdealAK* AliFemtoConfigObject::Into<AliFemtoTrackCutPionPionIdealAK>(bool);
 
 template <>
+AliFemtoTrackCutPionPionMisidentAK* AliFemtoConfigObject::Into<AliFemtoTrackCutPionPionMisidentAK>(bool);
+
+template <>
 AliFemtoPairCutPionPionAKAvgSep* AliFemtoConfigObject::Into<AliFemtoPairCutPionPionAKAvgSep>(bool);
 
 template <>
 AliFemtoPairCutPionPionAKDetaDphi* AliFemtoConfigObject::Into<AliFemtoPairCutPionPionAKDetaDphi>(bool);
+
 
 
 

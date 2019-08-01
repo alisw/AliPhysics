@@ -414,6 +414,14 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoMCGammaHBTInvMassPt;                          //! array of histos with Inv mass of generated MC gammas
     TH2F**                  fHistoBckTrueGammaInvMassPt;                        //! array of histos with Bck Inv mass of validated gammas
     TH2F**                  fHistoBckMCGammaHBTInvMassPt;                       //! array of histos with Bck Inv mass of generated MC gammas
+    TH2F**                  fHistoHBTOpeningAnglePt;                             //! array of histos with Bck Inv mass of generated MC gammas
+    TH2F**                  fHistoBckHBTOpeningAnglePt;                         //! array of histos with Bck Inv mass of generated MC gammas
+    TH2F**                  fHistoHBTDeltaEPt;                                  //! array of histos with Bck Inv mass of generated MC gammas
+    TH2F**                  fHistoBckHBTDeltaEPt;                               //! array of histos with Bck Inv mass of generated MC gammas
+    TH2F**                  fHistoMCGammaHBTOpeningAnglePt;                     //! array of histos with Bck Inv mass of generated MC gammas
+    TH2F**                  fHistoBckMCGammaHBTOpeningAnglePt;                  //! array of histos with Bck Inv mass of generated MC gammas
+    TH2F**                  fHistoMCGammaHBTDeltaEPt;                           //! array of histos with Bck Inv mass of generated MC gammas
+    TH2F**                  fHistoBckMCGammaHBTDeltaEPt;                        //! array of histos with Bck Inv mass of generated MC gammas
 
     TH1F**                 fHistoPtJet;                                          // Histogram of Jet Pt
     TH1F**                 fHistoJetEta;                                         // Histogram of Jet Eta
@@ -576,7 +584,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 54);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 55);
 };
 
 #endif

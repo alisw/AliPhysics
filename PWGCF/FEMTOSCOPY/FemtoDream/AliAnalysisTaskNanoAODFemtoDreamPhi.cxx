@@ -60,6 +60,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserCreateOutputObjects() {
   fOutput->SetOwner();
 
   fEvent = new AliFemtoDreamEvent(false, true, fTrigger);
+  fEvent->SetCalcSpherocity(true);
   fOutput->Add(fEvent->GetEvtCutList());
 
   fTrack = new AliFemtoDreamTrack();

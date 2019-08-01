@@ -57,10 +57,8 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   
   //set parameters
    void SetCutsond0Lcdaughters(Bool_t val = kTRUE) {fCutsond0Lcdaughters = val; return;}
-   void ApplyD0CutLcdaughters(Double_t cut[2]){if(cut!=NULL){fCutD0Daughter[0]=cut[0]; fCutD0Daughter[1]=cut[1];}
-   else {std::cout<<"Null pointer for d0 Lc daughter cuts"<<std::endl;}}
-   void SetPtConfiguration(Double_t ptcuts[7]){if(ptcuts!=NULL){for (int i=0;i<7 ;i++){fCutsPerPt[i]=ptcuts[i];}}
-   else{std::cout<<"Null pointer for pt cuts cuts"<<std::endl;}}
+   void ApplyD0CutLcdaughters(Double_t d0cutd1, Double_t d0cutd2){fCutD0Daughter[0]=d0cutd1; fCutD0Daughter[1]=d0cutd2;}
+   void SetPtConfiguration(Double_t ptbin, Double_t ptlcupper, Double_t ptlclower, Double_t ptpionupper, Double_t ptpionlower, Double_t ptlbupper, Double_t ptlblower){fCutsPerPt[0]=ptbin;fCutsPerPt[1]=ptlcupper;fCutsPerPt[2]=ptlclower;fCutsPerPt[3]=ptpionupper;fCutsPerPt[4]=ptpionlower;fCutsPerPt[5]=ptlbupper;fCutsPerPt[6]=ptlblower;}
 
  private:
   AliAnalysisTaskSELbtoLcpi4(const AliAnalysisTaskSELbtoLcpi4&);
@@ -73,8 +71,8 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   
   Int_t CheckMCLc(AliAODRecoDecayHF3Prong *d, TClonesArray* arrayMC);
   Int_t CheckMCpartPIONaf(AliAODTrack *p, TClonesArray* arrayMC);
-  void  FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d, Int_t Lc,AliAODEvent *ev);
-  void  FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d,Int_t Lc,AliAODEvent *ev);
+  void  FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d, Int_t Lc,AliAODEvent *ev, Bool_t IsPromptLc);
+  void  FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d,Int_t Lc,AliAODEvent *ev, Bool_t IsPromptLc);
   void FillHistos(AliAODRecoDecayHF3Prong* d,TClonesArray* arrayMC,AliAODEvent *ev,AliAODMCHeader *mcHeader);
   Bool_t CheckGenerator(AliAODTrack *p,AliAODRecoDecayHF3Prong *d,AliAODMCHeader *mcHeader,TClonesArray* arrayMC);
   Int_t IsSelectedLbMY(TObject* obj,Int_t selectionLevel,Int_t lb,Int_t isRot, Bool_t isHijing) const; 
@@ -120,7 +118,8 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   Double_t fCutD0Daughter[2];
   Bool_t fCutsond0Lcdaughters;
   Double_t fCutsPerPt[7];
-  ClassDef(AliAnalysisTaskSELbtoLcpi4,2);
+  Bool_t fIsPromptLc;
+  ClassDef(AliAnalysisTaskSELbtoLcpi4,3);
 };
 
 #endif

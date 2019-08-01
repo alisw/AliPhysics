@@ -221,6 +221,7 @@ struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
   Bool_t cuts_use_attrs;
 
   Bool_t mc_pion_only;
+  Bool_t mc_nonpion_only;
 
   Bool_t event_use_basic;
 

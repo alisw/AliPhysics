@@ -73,6 +73,7 @@ set(SRCS
   AliOtonOmegaCascade.cxx
   AliFemtoDreamHigherPairMath.cxx
   AliAnalysisTaskNanoLX.cxx
+  AliAnalysisTaskOtonOmegaNanoAOD.cxx
   )
 
 

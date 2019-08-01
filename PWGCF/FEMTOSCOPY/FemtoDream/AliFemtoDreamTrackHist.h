@@ -142,13 +142,14 @@ class AliFemtoDreamTrackHist {
 
   void FillDCAXYPtBins(float pT, float dcaxy, int multiplicity);
 
-  void FillTOFMass(float mom, float beta){
-      if (beta>=0) {
-      fTOFMass->Fill(mom, mom/beta*TMath::Sqrt(1-beta*beta));
+  void FillTOFMass(float mom, float beta) {
+    if (fTOFMass) {
+      if (beta > 0 && beta <= 1) {
+        fTOFMass->Fill(mom, mom / beta * TMath::Sqrt(1 - beta * beta));
+      } else {
+        fTOFMass->Fill(0., -999.);
       }
-      else {
-      fTOFMass->Fill(0.,-999.);
-      }
+    }
   }
 
   void FillTPCClsCPileUp(int i, int iCrit, float TPCClsC) {

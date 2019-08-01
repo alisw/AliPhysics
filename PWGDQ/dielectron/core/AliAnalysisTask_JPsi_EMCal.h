@@ -267,6 +267,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 //Histograms for the analysis
 	TH1F				*fNevent;
+    TH1F                *fNevent2;
     TH1F                *fPDG_values;
     TH1F                *fNevent_SPD_multi;
     TH1F                *fNevent_V0_multi;

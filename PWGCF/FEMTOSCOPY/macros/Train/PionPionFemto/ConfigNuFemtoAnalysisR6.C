@@ -75,6 +75,9 @@ struct MacroParams : public TNamed {
   std::vector<unsigned char> pair_codes;
   std::vector<float> kt_ranges;
 
+  std::vector<double> obins;
+  std::vector<double> slbins;
+
   // monte carlo weight generator
   bool mcwg_lednicky { true };
   bool mcwg_square { false };
@@ -119,9 +122,13 @@ struct MacroParams : public TNamed {
   Float_t ylm_vmax { 0.3 };
   Bool_t ylm_useLCMS { true };
 
+  bool do_mc_misident_analysis { false };
+
   bool do_deltaeta_deltaphi_cf { false };
   bool do_avg_sep_cf { false };
   bool do_kt_avg_sep_cf { false };
+
+  bool do_q3d_varbins { false };
 
   bool do_qinv_cf { false };
   bool do_kt_qinv_cf { false };
@@ -214,6 +221,26 @@ ConfigFemtoAnalysis(const TString& param_str="")
   std::cout << "[ConfigFemtoAnalysisRun2 Nu (PionPion)]\n";
 
   const double PionMass = 0.13956995;
+
+  // default parameters for 3D hists with variable binsize (macro config: do_q3d_varbins)
+  const std::vector<double>
+    DEFAULT_OBINS = {0.        , 0.005     , 0.01028325, 0.01584975, 0.02169951,
+                     0.02783251, 0.03424877, 0.04094828, 0.04793103, 0.05519704,
+                     0.06274631, 0.07057882, 0.07869458, 0.08709360, 0.09577586,
+                     0.10474138, 0.11399015, 0.12352217, 0.13333744, 0.14343596,
+                     0.15381773, 0.16448276, 0.17543103, 0.18666256, 0.19817734,
+                     0.20997537, 0.22205665, 0.23442118, 0.24706897, 0.26},
+    DEFAULT_SBINS = {-0.26      , -0.24519231, -0.23077692, -0.21675385, -0.20312308,
+                     -0.18988462, -0.17703846, -0.16458462, -0.15252308, -0.14085385,
+                     -0.12957692, -0.11869231, -0.1082    , -0.0981    , -0.08839231,
+                     -0.07907692, -0.07015385, -0.06162308, -0.05348462, -0.04573846,
+                     -0.03838462, -0.03142308, -0.02485385, -0.01867692, -0.01289231,
+                     -0.0075    , -0.0025    ,  0.0025    ,  0.0075    ,  0.01289231,
+                      0.01867692,  0.02485385,  0.03142308,  0.03838462,  0.04573846,
+                      0.05348462,  0.06162308,  0.07015385,  0.07907692,  0.08839231,
+                      0.0981    ,  0.1082    ,  0.11869231,  0.12957692,  0.14085385,
+                      0.15252308,  0.16458462,  0.17703846,  0.18988462,  0.20312308,
+                      0.21675385,  0.23077692,  0.24519231,  0.26};
 
   // Get the default configurations
   AFAPP::AnalysisParams analysis_config = AFAPP::DefaultConfig();
@@ -546,8 +573,20 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_pqq3d_cf) {
-        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_PQ3D",
-          new AliFemtoCorrFctn3DLCMSPosQuad("", macro_config.q3d_bin_count, macro_config.q3d_maxq));
+        const std::vector<double>
+          obins = macro_config.obins.empty()
+                ? DEFAULT_OBINS
+                : macro_config.obins,
+
+          slbins = macro_config.slbins.empty()
+                 ? DEFAULT_SBINS
+                 : macro_config.slbins;
+
+        auto *pq_cf = macro_config.do_q3d_varbins
+                    ? new AliFemtoCorrFctn3DLCMSPosQuad("", "", obins, slbins, slbins)
+                    : new AliFemtoCorrFctn3DLCMSPosQuad("", macro_config.q3d_bin_count, macro_config.q3d_maxq);
+
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_PQ3D", pq_cf);
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],
@@ -558,13 +597,24 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_trueq3d_cf) {
-        AliFemtoModelCorrFctnTrueQ3D *kt_trueq3d_cf = AliFemtoModelCorrFctnTrueQ3D::Build()
-                                                          .NamePrefix("")
-                                                          .BinCount(macro_config.q3d_bin_count)
-                                                          .QRange(macro_config.q3d_maxq)
-                                                          .EnableExtraHists(macro_config.trueq3d_extra_bins)
-                                                          .EnableWeightedDenominators(macro_config.trueq3d_weighted_denoms)
-                                                          .Manager(model_manager);
+        const std::vector<double>
+          obins = macro_config.obins.empty()
+                ? DEFAULT_OBINS
+                : macro_config.obins,
+
+          slbins = macro_config.slbins.empty()
+                 ? DEFAULT_SBINS
+                 : macro_config.slbins;
+
+        auto *kt_trueq3d_cf = macro_config.do_q3d_varbins
+                            ? new AliFemtoModelCorrFctnTrueQ3D("", obins, slbins, slbins, model_manager)
+                            : AliFemtoModelCorrFctnTrueQ3D::Build()
+                                  .NamePrefix("")
+                                  .BinCount(macro_config.q3d_bin_count)
+                                  .QRange(macro_config.q3d_maxq)
+                                  .EnableExtraHists(macro_config.trueq3d_extra_bins)
+                                  .EnableWeightedDenominators(macro_config.trueq3d_weighted_denoms)
+                                  .Manager(model_manager).into_ptr();
 
         AliFemtoKtBinnedCorrFunc *kt_trueq3d_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D", kt_trueq3d_cf);
 
@@ -701,6 +751,26 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       manager->AddAnalysis(analysis);
+
+      if (macro_config.do_mc_misident_analysis) {
+        if (!analysis_config.is_mc_analysis) {
+          throw std::runtime_error("do_mc_misident_analysis requested for non-mc analysis");
+        }
+        if (!cut_config.cuts_use_attrs) {
+          throw std::runtime_error("do_mc_misident_analysis requested for non 'attrs' cut");
+        }
+
+        TString misident_name = analysis_name + "_misident";
+        AFAPP::AnalysisParams misident_config(analysis_config);
+        AFAPP::CutParams misident_cut_config(cut_config);
+        misident_cut_config.mc_nonpion_only = true;
+
+        auto *misident_analysis = new AliFemtoAnalysisPionPion(misident_name, misident_config, misident_cut_config);
+        misident_analysis->SetTrackFilter(filter_mask);
+        misident_analysis->AddStanardCutMonitors();
+
+        manager->AddAnalysis(misident_analysis);
+      }
     }
   }
 

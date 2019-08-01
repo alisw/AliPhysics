@@ -30,6 +30,7 @@ public:
   void SetTPCExitSepMinimum(double dtpc);
   void SetDataType(AliFemtoDataType type);
   void SetMinAvgSeparation(int type, double minSep);
+  void SetNanoAODAnalysis(bool aNanoAOD);
 
 protected:
   long fNPairsPassed;          ///< Number of pairs consideered that passed the cut
@@ -45,6 +46,7 @@ protected:
   double   fMinAvgSepPosNeg;
   double   fMinAvgSepNegPos;
   double   fMinAvgSepNegNeg;
+  bool fNanoAODAnalysis;
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -66,8 +68,8 @@ inline AliFemtoV0PairCut::AliFemtoV0PairCut(const AliFemtoV0PairCut &c):
   fMinAvgSepPosPos(c.fMinAvgSepPosPos),
   fMinAvgSepPosNeg(c.fMinAvgSepPosNeg),
   fMinAvgSepNegPos(c.fMinAvgSepPosNeg),
-  fMinAvgSepNegNeg(c.fMinAvgSepNegNeg)
-
+  fMinAvgSepNegNeg(c.fMinAvgSepNegNeg),
+  fNanoAODAnalysis(c.fNanoAODAnalysis)
 {
   /// no-op
 }
@@ -78,5 +80,6 @@ inline AliFemtoPairCut *AliFemtoV0PairCut::Clone()
   // Should we set fNPairsPassed & fNPairsFailed to 0 here? How will Clone() be used?
   return c;
 }
+inline void AliFemtoV0PairCut::SetNanoAODAnalysis(bool aNanoAOD) {fNanoAODAnalysis = aNanoAOD;}
 
 #endif

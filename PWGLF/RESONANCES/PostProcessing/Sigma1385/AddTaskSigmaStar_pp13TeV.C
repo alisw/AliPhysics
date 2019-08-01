@@ -1,3 +1,7 @@
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
+#endif
 /***************************************************************************
 //            Modified by Bong-Hwi Lim - 08/05/2019
 //            Based on AddTaskRare_pp13
@@ -335,7 +339,10 @@ Bool_t Config_Lambdapi(
   TString pname="lambdap";
   if(enableMonitor){
     Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+#ifdef __CINT__
+    gROOT->LoadMacro(
+        "$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+#endif
     AddMonitorOutput(isMC,cutSetQ->GetMonitorOutput());
     AddMonitorOutput(isMC,cutSetPi->GetMonitorOutput());
     AddMonitorOutput_Eta("pi",cutSetPi->GetMonitorOutput());

@@ -38,6 +38,7 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 
   	Bool_t isMC;
   	TString fTriggerName;
+
   	// tree
   	TTree *fRhoTree;
 	// tree variables and branches
@@ -102,6 +103,8 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	TH2F *EtaPhiN;
 
 	TH2F *fFOcorr;
+	TH1F *fGoodTracks;
+	TH1F *fTrackChi2;
 
 	// SPD effi
 	Bool_t isUsingEffi;

@@ -157,6 +157,7 @@ set(HDRS ${HDRS}
   PhysicalConstants.h
   SystemOfUnits.h
   AliFemtoPairCut.h
+  AliFemtoPairCutRejectAll.h
   AliFemtoEventCut.h
   AliFemtoParticleCut.h
   AliFemtoTrackCollection.h

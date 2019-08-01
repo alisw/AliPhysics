@@ -706,7 +706,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "00200089297000001280000000", "0152103500000000"); // Min Bias more open cuts
     cuts.AddCutPCM("00010113", "00200089227300008250400000", "0152101500000000"); // Min Bias default cuts 2.76 TeV
   } else if (trainConfig == 302) { //MB JL.
-    cuts.AddCutPCM("00010113", "00200009327000008250400000", "0163103100000010"); // Min Bias Same Cuts as PCMCalo for PHOS
+    cuts.AddCutPCM("00010113", "0d200009327000008250404000", "0163103100000010"); // Min Bias Same Cuts as PCMCalo for PHOS
   } else if (trainConfig == 303) { // low B optimized chi2,PsiPair,qt
     cuts.AddCutPCM("00010113", "00200089297000001280000000", "0152103500000000"); // pt dep Qt, chi2-psipair exp
     cuts.AddCutPCM("00010113", "0020008929700000iih0400000", "0152103500000000"); // pt dep Qt, chi2-psipair exp
@@ -923,6 +923,8 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dj00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
     cuts.AddCutPCM("00010113", "0dk00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 55-72
     cuts.AddCutPCM("00010113", "0dg00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 95-180
+  } else if (trainConfig == 425){   // AM exclude 55-72 region
+    cuts.AddCutPCM("00010113", "0dm00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
 
   } else if (trainConfig == 440){ // as 400 to be used MBW
     cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
@@ -940,6 +942,8 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dj00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
     cuts.AddCutPCM("00010113", "0dk00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 55-72
     cuts.AddCutPCM("00010113", "0dg00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 95-180
+  } else if (trainConfig == 445){   // AM exclude 55-72 region
+    cuts.AddCutPCM("00010113", "0dm00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
 
 
   } else if (trainConfig == 449){ // PCM standard
@@ -1052,6 +1056,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dj00089267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
     cuts.AddCutPCM("00010113", "0dk00089267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
     cuts.AddCutPCM("00010113", "0dg00089267300008250404000", "0152103500000000"); // eta < 0.8  72-95 cm
+  } else if (trainConfig == 618) { // R 5-180 and remove r bin 55-72
+    cuts.AddCutPCM("00010113", "0dm00089267300008250404000", "0152103500000000"); // eta < 0.8
+    cuts.AddCutPCM("00010113", "0d200089327000008250404000", "0152103500000000"); // eta < 0.8
 
  // Low B Field to be used with MBW
   } else if (trainConfig == 652) {
@@ -1118,7 +1125,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dj00089267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
     cuts.AddCutPCM("00010113", "0dk00089267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
     cuts.AddCutPCM("00010113", "0dg00089267300008250404000", "0152103500000000"); // eta < 0.8  72-95 cm
-
+  } else if (trainConfig == 668) { // R 5-180 and remove r bin 55-72
+    cuts.AddCutPCM("00010113", "0dm00089267300008250404000", "0152103500000000"); // eta < 0.8
+    cuts.AddCutPCM("00010113", "0d200089327000008250404000", "0152103500000000"); // eta < 0.8
 
   // Material studies Ana-----nomB
   } else if (trainConfig == 700) {
@@ -1196,7 +1205,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dj00009267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
     cuts.AddCutPCM("00010113", "0dk00009267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
     cuts.AddCutPCM("00010113", "0dg00009267300008250404000", "0152103500000000"); // eta < 0.8  95-180 cm
-
+  } else if (trainConfig == 718) { // R 5-180 and remove r bin 55-72
+    cuts.AddCutPCM("00010113", "0dm00009267300008250404000", "0152103500000000"); // eta < 0.8
+    cuts.AddCutPCM("00010113", "0d200009327000008250404000", "0152103500000000"); // eta < 0.8
     // config like 70X but to be used with weights +50
   } else if (trainConfig == 752) { // as iConfig 702 to be used with MBW
     cuts.AddCutPCM("00010113", "00a00009267300008250404000", "0152103500000000"); //
@@ -1263,7 +1274,10 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dj00009267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
     cuts.AddCutPCM("00010113", "0dk00009267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
     cuts.AddCutPCM("00010113", "0dg00009267300008250404000", "0152103500000000"); // eta < 0.8  95-180 cm
-
+  } else if (trainConfig == 768) { // R 5-180 and remove r bin 55-72
+    cuts.AddCutPCM("00010113", "0dm00009267300008250404000", "0152103500000000"); // eta < 0.8
+    cuts.AddCutPCM("00010113", "0d200009327000008250404000", "0152103500000000"); // eta < 0.8
+ 
   //----------------------------- configuration for 2.76TeV standard cuts ----------------------------------------------------
   } else if (trainConfig == 1001){
     cuts.AddCutPCM("00000113", "00200009397300008250400000", "0163103100900000"); // new pi0/eta cut 2.76TeV
@@ -1390,6 +1404,14 @@ void AddTask_GammaConvV1_pp(
 
   } else if (trainConfig == 1090) { //Standard cut for pp 5 TeV analysis VAND
     cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); //
+
+  } else if (trainConfig == 1100) { //new cut for pp 8 TeV analysis VAND triggers and MB for RpA calcluation
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0152103500000000","1111101060032230000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
+  } else if (trainConfig == 1101) { //new cut for pp 8 TeV analysis VAND triggers and MB for RpA calcluation
+    cuts.AddCutPCM("00052113", "00200009f9730000dge0400000", "0152103500000000","1111101060032230000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
+    cuts.AddCutPCM("00081113", "00200009f9730000dge0400000", "0152103500000000","1111101060032230000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
+
+
 
   } else if (trainConfig == 2001) { // Double Gap event selection  special trigger 11
     cuts.AddCutPCM("000b0113", "0d200009267300008250404000", "0152103500000000"); // eta < 0.8
@@ -1668,8 +1690,9 @@ if(!cuts.AreValid()){
 
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-
-    if ( (trainConfig > 24 && trainConfig < 29) || ( trainConfig > 69 && trainConfig < 73 ) || (trainConfig > 319 && trainConfig < 350 ) || (trainConfig >= 1070 && trainConfig <= 1079)){
+    if(!cuts.GetClusterCut(i).CompareTo("")){
+      cout << "\nNo cluster cut set, not filling cluster histograms for triggers ...\n" << endl;
+    } else {
         TString caloCutPos = cuts.GetClusterCut(i);
         caloCutPos.Resize(1);
         TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
@@ -1703,7 +1726,9 @@ if(!cuts.AreValid()){
     if (enableMatBudWeightsPi0 > 0){
         if (isMC > 0){
             if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
-                initializedMatBudWeigths_existing = kTRUE;}
+                initializedMatBudWeigths_existing = kTRUE;
+		cout << "MBW properly initialized" << endl;
+	    }
             else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
         }
         else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
@@ -1770,11 +1795,19 @@ if(!cuts.AreValid()){
   Int_t nContainer = 2;
   for(Int_t i = 0; i<numberOfCuts; i++){
     if(enableQAPhotonTask>1){
-      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      if (initializedMatBudWeigths_existing) {
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s MBW Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      }else{
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      }
       nContainer++;
     }
     if(enableQAMesonTask>1){
-      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      if (initializedMatBudWeigths_existing) {
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s MBW Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      }else{
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      }
       nContainer++;
     }
   }

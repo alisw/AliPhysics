@@ -1309,14 +1309,31 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Int_t   method    = GetIsolationCut()->GetICMethod() ;
   Int_t   particle  = GetIsolationCut()->GetParticleTypeInCone() ;
   
+  // For UE subtracted histograms, shift it down by 20 GeV
+  // keep same histogram binning.
+  // Same as done in AliIsolationCut::GetCreateOutput()
+  if ( method >= AliIsolationCut::kSumBkgSubIC )
+  {
+    ptsummin   = ptsummin-20;
+    nptsumbins = nptsumbins*(1.+20./(ptsummax-ptsummin));
+  }
+
   TString sThreshold = "";
-  if      ( method == AliIsolationCut::kSumPtIC )
+  if      ( method == AliIsolationCut::kSumPtIC ||  
+            method >= AliIsolationCut::kSumBkgSubIC )
   {
     sThreshold = Form(", %2.2f < #Sigma #it{p}_{T}^{in cone} < %2.2f GeV/#it{c}",
-                      GetIsolationCut()->GetSumPtThreshold(), GetIsolationCut()->GetSumPtThresholdMax());
-    if(GetIsolationCut()->GetSumPtThresholdMax() > 200)
+                      GetIsolationCut()->GetSumPtThreshold(),
+                      GetIsolationCut()->GetSumPtThresholdMax());
+    if ( GetIsolationCut()->GetSumPtThresholdMax() > 200 )
       sThreshold = Form(", #Sigma #it{p}_{T}^{in cone} = %2.2f GeV/#it{c}",
                         GetIsolationCut()->GetSumPtThreshold());
+    if      ( method == AliIsolationCut::kSumBkgSubIC )
+      sThreshold+="-UE #perp cones";
+    else if ( method == AliIsolationCut::kSumBkgSubEtaBandIC )
+      sThreshold+="-UE #eta band";
+    else if ( method == AliIsolationCut::kSumBkgSubPhiBandIC )
+      sThreshold+="-UE #varphi band";
   }
   else if ( method == AliIsolationCut::kPtThresIC)
   {

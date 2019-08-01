@@ -48,6 +48,7 @@ void AddTask_GammaCaloMerged_pp(
   Double_t  minEnergyForExoticsCut        = 1.0,      // minimum energy to be used for exotics CutHandler
   Bool_t    enableExoticsQA               = kFALSE,   // switch to run QA for exotic clusters
   Bool_t    runDetailedM02                = kFALSE,   // switch on very detailed M02 distribution
+  Int_t     maxAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ) {
@@ -1012,14 +1013,28 @@ void AddTask_GammaCaloMerged_pp(
     cuts.AddCutMergedCalo("00010113","111111106f032200000","111111106f022700002","0163300000000000"); // INT7
     cuts.AddCutMergedCalo("00052113","111111106f032200000","111111106f022700002","0163300000000000"); // EMC7
     cuts.AddCutMergedCalo("00081113","111111106f032200000","111111106f022700002","0163300000000000"); // EGA
-  } else if (trainConfig == 215){  // new standard with V1
-    cuts.AddCutMergedCalo("00010113","111111106f032200000","111111106f022700000","0163300000000000"); // INT7
-    cuts.AddCutMergedCalo("00052113","111111106f032200000","111111106f022700000","0163300000000000"); // EMC7
-    cuts.AddCutMergedCalo("00081113","111111106f032200000","111111106f022700000","0163300000000000"); // EGA
+
   } else if (trainConfig == 215){  // new TB
-    cuts.AddCutMergedCalo("00010113","111110106f532200000","111110106f522900001","0163300000000000"); // INT7
-    cuts.AddCutMergedCalo("00052113","111110106f532200000","111110106f522900001","0163300000000000"); // EMC7
-    cuts.AddCutMergedCalo("00081113","111110106f532200000","111110106f522900001","0163300000000000"); // EGA
+    cuts.AddCutMergedCalo("00010113","111110106f032200000","111110106f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","111110106f032200000","111110106f022700001","0163300000000000"); // EMC7
+    cuts.AddCutMergedCalo("00081113","111110106f032200000","111110106f022700001","0163300000000000"); // EGA
+
+  } else if (trainConfig == 216){  // new TB+finetuning CCRF
+    cuts.AddCutMergedCalo("00010113","111113106f032200000","111113106f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","111113106f032200000","111113106f022700001","0163300000000000"); // EMC7
+    cuts.AddCutMergedCalo("00081113","111113106f032200000","111113106f022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 217){  // new TB+finetuning CRF
+    cuts.AddCutMergedCalo("00010113","111113206f032200000","111113206f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","111113206f032200000","111113206f022700001","0163300000000000"); // EMC7
+    cuts.AddCutMergedCalo("00081113","111113206f032200000","111113206f022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 218){  // new TB+finetuning CCMF
+    cuts.AddCutMergedCalo("00010113","111113306f032200000","111113306f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","111113306f032200000","111113306f022700001","0163300000000000"); // EMC7
+    cuts.AddCutMergedCalo("00081113","111113306f032200000","111113306f022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 219){  // new TB+finetuning CMF
+    cuts.AddCutMergedCalo("00010113","111113406f032200000","111113406f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","111113406f032200000","111113406f022700001","0163300000000000"); // EMC7
+    cuts.AddCutMergedCalo("00081113","111113406f032200000","111113406f022700001","0163300000000000"); // EGA
   // systematics pp 8 TeV
   } else if (trainConfig == 220){ // M02 var 1
     cuts.AddCutMergedCalo("00081113","111111106f032200000","111111106f022600001","0163300000000000"); // min 0.3
@@ -1104,6 +1119,21 @@ void AddTask_GammaCaloMerged_pp(
     cuts.AddCutMergedCalo("00000113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCutMergedCalo("00000113","1111121067032200000","1111121067022700001","0163300000000000"); // INT7
 
+  } else if (trainConfig == 262){  // EMCAL clusters 7 TeV LHC11 TM on + TB NonLin
+    cuts.AddCutMergedCalo("00010113","111110106f032200000","111110106f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","111110106f032200000","111110106f022700001","0163300000000000"); // EMC7
+  } else if (trainConfig == 263){  // EMCAL clusters 7 TeV LHC11 TM on + TB NonLin
+    cuts.AddCutMergedCalo("00010113","111113106f032200000","111113106f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","111113106f032200000","111113106f022700001","0163300000000000"); // EMC7
+  } else if (trainConfig == 264){  // EMCAL clusters 7 TeV LHC11 TM on + TB NonLin
+    cuts.AddCutMergedCalo("00010113","111113206f032200000","111113206f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","111113206f032200000","111113206f022700001","0163300000000000"); // EMC7
+  } else if (trainConfig == 265){  // EMCAL clusters 7 TeV LHC11 TM on + TB NonLin
+    cuts.AddCutMergedCalo("00010113","111113306f032200000","111113306f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","111113306f032200000","111113306f022700001","0163300000000000"); // EMC7
+  } else if (trainConfig == 266){  // EMCAL clusters 7 TeV LHC11 TM on + TB NonLin
+    cuts.AddCutMergedCalo("00010113","111113406f032200000","111113406f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("00052113","111113406f032200000","111113406f022700001","0163300000000000"); // EMC7
     // 13 TeV & 5 TeV
   } else if (trainConfig == 401){ // pp 2.76TeV paper cuts : open timing, TB nonlin
     cuts.AddCutMergedCalo("00010113","1111101017032200000","1111101017022700001","0163300000000000"); // INT7
@@ -1643,6 +1673,7 @@ void AddTask_GammaCaloMerged_pp(
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
+  if(maxAllowedPi0Overlaps>-1){ task->SetMaxNeutralPionOverlapsMC(maxAllowedPi0Overlaps);}
   task->SetEnableDetailedM02Distribtuon(runDetailedM02);
   task->SetSelectedMesonID(selectedMeson);
   task->SetCorrectionTaskSetting(corrTaskSetting);

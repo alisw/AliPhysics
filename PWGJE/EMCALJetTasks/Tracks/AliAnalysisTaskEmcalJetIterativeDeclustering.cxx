@@ -70,7 +70,7 @@ AliAnalysisTaskEmcalJetIterativeDeclustering::~AliAnalysisTaskEmcalJetIterativeD
 {
 }
 
-void AliAnalysisTaskEmcalJetIterativeDeclustering::UserCreateOutputObject()
+void AliAnalysisTaskEmcalJetIterativeDeclustering::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
@@ -86,11 +86,12 @@ void AliAnalysisTaskEmcalJetIterativeDeclustering::UserCreateOutputObject()
   const TAxis *binnings[5] = {&fJetPtBinning, &fJetPtBinning, &fLnDeltaRBinning, &fLnPtRelBinning, &fNSplittingsBinning};
 
   fHistos = new THistManager(Form("Histos%s", GetName()));
+  fHistos->CreateTH1("hEventCounter", "Number of events", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hEventCounterWeighted", "Number of events", 1, 0.5, 1.5);
   fHistos->CreateTH2("hNSplittings", "Number of splittings", 300, 0., 300., 100, 0., 100.);
   fHistos->CreateTHnSparse("hSplittings", "Splittings", 5, binnings);
 
-  for (auto h : *fHistos)
-    fOutput->Add(h);
+  for (auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
 }
 
@@ -115,7 +116,7 @@ Bool_t AliAnalysisTaskEmcalJetIterativeDeclustering::Run()
   }
 
   Double_t weight = fUseDownscaleWeight ? GetDownscaleWeight() : 1.;
-  fHistos->FillTH1("hEventCounter", 1., weight);
+  fHistos->FillTH1("hEventCounter", 1.);
   if (fUseDownscaleWeight)
     fHistos->FillTH1("hEventCounterWeighted", 1., weight);
 
@@ -123,14 +124,17 @@ Bool_t AliAnalysisTaskEmcalJetIterativeDeclustering::Run()
   {
     if (jet->Pt() < fJetPtMin || jet->Pt() > fJetPtMax)
       continue;
+    AliDebugStream(1) << "Jet found, pt = " << jet->Pt() << " GeV/c" <<  std::endl;
     auto lundplane = fDecluster->Evaluate(*jet, tracks, clusters, fVertex);
     auto splittings = lundplane.GetSplittings();
     fHistos->FillTH2("hNSplittings", jet->Pt(), static_cast<double>(splittings.size()));
     for (auto splitting : splittings)
     {
+      AliDebugStream(2) << "Next splitting: " << splitting.GetNSplittings() << ", angle " << splitting.GetLnDeltaR() << ", rel kt " << splitting.GetLnPtrel() << ", pt lower " << splitting.GetPtLower() << std::endl;
       Double_t point[] = {jet->Pt(), splitting.GetPtLower(), splitting.GetLnDeltaR(), splitting.GetLnPtrel(), static_cast<double>(splitting.GetNSplittings())};
       fHistos->FillTHnSparse("hSplittings", point, weight);
     }
+    AliDebugStream(2) << "Jet done" << std::endl;
   }
 
   return true;
@@ -226,7 +230,7 @@ AliAnalysisTaskEmcalJetIterativeDeclustering *AliAnalysisTaskEmcalJetIterativeDe
       jetradius,
       ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPCfid,
       tracks, clusters);
-  datajets->SetName("detLevel");
+  datajets->SetName("datajets");
   datajets->SetJetPtCut(0.);
   datajets->SetMaxTrackPt(1000.);
 

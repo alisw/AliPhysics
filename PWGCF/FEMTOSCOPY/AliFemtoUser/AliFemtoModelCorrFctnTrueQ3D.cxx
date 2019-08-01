@@ -115,6 +115,51 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const Parameters &par
 }
 
 
+AliFemtoModelCorrFctnTrueQ3D::
+  AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
+                               const std::vector<double> &obins,
+                               const std::vector<double> &sbins,
+                               const std::vector<double> &lbins,
+                               AliFemtoModelManager *mgr)
+  : AliFemtoCorrFctn()
+  , fManager(mgr)
+  , fNumeratorGenerated(nullptr)
+  , fNumeratorReconstructed(nullptr)
+  , fNumeratorGenUnweighted(nullptr)
+  , fNumeratorRecUnweighted(nullptr)
+  , fDenominatorGenerated(nullptr)
+  , fDenominatorReconstructed(nullptr)
+  , fDenominatorGenWeighted(nullptr)
+  , fDenominatorRecWeighted(nullptr)
+{
+
+  auto new_th3 = [&] (const TString &name, const TString &title)
+    {
+      return new TH3F(prefix + name,
+                      title + "; q_{out} (GeV); q_{side} (GeV); q_{long} (Gev)",
+                      obins.size()-1, obins.data(),
+                      sbins.size()-1, sbins.data(),
+                      lbins.size()-1, lbins.data());
+    };
+
+  fNumeratorGenerated = new_th3("NumGen", "Numerator (MC-Generated Momentum)");
+  fNumeratorReconstructed = new_th3("NumRec", "Numerator (Reconstructed Momentum)");
+  fDenominatorGenerated = new_th3("DenGen", "Denominator (MC-Generated Momentum)");
+  fDenominatorReconstructed = new_th3("DenRec", "Denominator (Reconstructed Momentum)");
+
+  fNumeratorGenerated->Sumw2();
+  fNumeratorReconstructed->Sumw2();
+
+  fNumeratorRecUnweighted = new_th3("NumRecUnweighted", "Numerator (Reconstructed Momentum - No femto weight)");
+  fNumeratorGenUnweighted = new_th3("NumGenUnweighted", "Numerator (Generated Momentum - No femto weight)");
+
+  fDenominatorGenWeighted = new_th3("DenGenWeight", "Denominator (Generated Momentum - with femto weight)");
+  fDenominatorRecWeighted = new_th3("DenRecWeight", "Denominator (Reconstructed Momentum - with femto weight)");
+
+  fDenominatorGenWeighted->Sumw2();
+  fDenominatorRecWeighted->Sumw2();
+}
+
 AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCorrFctnTrueQ3D& orig):
   AliFemtoCorrFctn(orig)
   , fManager(orig.fManager)
@@ -276,7 +321,7 @@ fill_hists(TH3 *dest,
   Double_t q_out, q_side, q_long;
   std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
 
-  TH3 *hist = dest ?: dest_unweighted;
+  TH3 *hist = dest ? dest : dest_unweighted;
 
   const Int_t dest_bin = hist->FindBin(q_out, q_long, q_side);
 

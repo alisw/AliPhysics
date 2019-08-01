@@ -381,7 +381,7 @@ AliAnalysisTaskTPCTOFCascade::InitEvent()
   /* event selection */
   fIsCollisionCandidate = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);
   fIsEventSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  fIsPileupFromSPD = fESDEvent->IsPileupFromSPD();
+  fIsPileupFromSPD = fESDEvent->IsPileupFromSPDInMultBins();
   FillHist(3);  
   if(fESDEvent->IsIncompleteDAQ()) return kFALSE;
   if(fAnUtils->IsSPDClusterVsTrackletBG(fESDEvent)) return kFALSE;
@@ -810,7 +810,7 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
     fAnalysisParticleArray->Clear();
     
     /* loop over primary particles */
-    Int_t nPrimaries = fMCEvent->GetNumberOfPrimaries();//fMCStack->GetNprimary();
+    Int_t nPrimaries = fMCEvent->GetNumberOfTracks();//fMCStack->GetNprimary();
     TParticle *particle;
     TParticlePDG *particlePDG;
     /* loop over primary particles */
@@ -824,7 +824,7 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
       particlePDG = particle->GetPDG();
       Int_t pdgcode = TMath::Abs(particle->GetPdgCode());
       if (!particlePDG) continue;
-      OWSave = ((pdgcode==333)||(pdgcode==310)||(pdgcode==3122)||(pdgcode==11));
+      OWSave = ((pdgcode==333)||(pdgcode==310)||(pdgcode==3122)||(pdgcode==11)||(pdgcode==313)||(pdgcode==323));
 
       /* check primary */
       if ((!fMCEvent->IsPhysicalPrimary(ipart))&&(!OWSave)) continue;
@@ -839,8 +839,8 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
        if(std::isnan(PRap))
 	 continue;
 	
-      if (TMath::Abs(particle->Y()) > fRapidityCut) continue;
-      if (particle->Pt() < 0.15) continue;
+       // if (TMath::Abs(particle->Y()) > fRapidityCut) continue;
+       //if (particle->Pt() < 0.15) continue; //Maybe remove to properly correct for feeddown?
       //Get mother PDG code. In principle, can be optimized by only doing if for OWSace, as the rest of the particles are physical primaries
       Int_t indexMother = particle->GetFirstMother();
       Int_t lMotherPDG=0; //Just to be safe

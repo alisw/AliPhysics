@@ -1172,10 +1172,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("13530a13","2446600051012200000","0163103100000010"); //
     cuts.AddCutCalo("15910a13","2446600051012200000","0163103100000010"); //
   } else if (trainConfig == 854){ // PHOS clusters - 20181018
-    cuts.AddCutCalo("10130a13","244668305b012200000","0163103100000010"); //
-    cuts.AddCutCalo("11310a13","244668305b012200000","0163103100000010"); //
-    cuts.AddCutCalo("13530a13","244668305b012200000","0163103100000010"); //
-    cuts.AddCutCalo("15910a13","244668305b012200000","0163103100000010"); //
+    cuts.AddCutCalo("10130a13","244668105b012200000","0163103100000010"); //
+    cuts.AddCutCalo("11310a13","244668105b012200000","0163103100000010"); //
+    cuts.AddCutCalo("13530a13","244668105b012200000","0163103100000010"); //
+    cuts.AddCutCalo("15910a13","244668105b012200000","0163103100000010"); //
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

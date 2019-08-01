@@ -247,7 +247,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fGoodRegionCMax(0),
   fGoodRegionAMax(0),
   fBadRegionCMax(0),
-  fBadRegionAMax(0)
+  fBadRegionAMax(0),
+  fExcludeMinR(180.),
+  fExcludeMaxR(250.)
 {
   InitPIDResponse();
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -415,7 +417,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fGoodRegionCMax(ref.fGoodRegionCMax),
   fGoodRegionAMax(ref.fGoodRegionAMax),
   fBadRegionCMax(ref.fBadRegionCMax),
-  fBadRegionAMax(ref.fBadRegionAMax)
+  fBadRegionAMax(ref.fBadRegionAMax),
+  fExcludeMinR(ref.fExcludeMinR),
+  fExcludeMaxR(ref.fExcludeMaxR)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -572,16 +576,17 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
       //    }
   }
 
-  fHistoAcceptanceCuts=new TH2F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts vs p_{T,#gamma}",11,-0.5,10.5,250,0,50);
+  fHistoAcceptanceCuts=new TH2F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts vs p_{T,#gamma}",12,-0.5,11.5,250,0,50);
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(2,"maxR");
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(3,"minR");
-  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(4,"line");
-  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(5,"maxZ");
-  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(6,"eta");
-  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(7,"phisector");
-  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(8,"minpt");
-  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(9,"out");
+  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(4,"ExcludeR");
+  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(5,"line");
+  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(6,"maxZ");
+  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(7,"eta");
+  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(8,"phisector");
+  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(9,"minpt");
+  fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(10,"out");
   fHistograms->Add(fHistoAcceptanceCuts);
 
   // dEdx Cuts
@@ -1389,6 +1394,13 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
   }
   cutIndex++;
 
+  if(photon->GetConversionRadius()>fExcludeMinR && photon->GetConversionRadius()<fExcludeMaxR ){ // cuts on distance from collision point
+    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+    return kFALSE;
+  }
+  cutIndex++;
+
+
   if(photon->GetConversionRadius() <= ((TMath::Abs(photon->GetConversionZ())*fLineCutZRSlope)-fLineCutZValue)){
     if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
@@ -1995,7 +2007,7 @@ Bool_t AliConversionPhotonCuts::PIDProbabilityCut(AliConversionPhotonBase *photo
     AliESDtrack* negTrack   = esdEvent->GetTrack(photon->GetTrackLabelNegative());
     AliESDtrack* posTrack   = esdEvent->GetTrack(photon->GetTrackLabelPositive());
 
-    if(negProbArray && posProbArray){
+    if(negTrack && posTrack){
 
       negTrack->GetTPCpid(negProbArray);
       posTrack->GetTPCpid(posProbArray);
@@ -2583,90 +2595,140 @@ Bool_t AliConversionPhotonCuts::SetRCut(Int_t RCut){
   case 0:
     fMinR=0;
     fMaxR = 180.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
   case 1:
     fMinR=2.8;
     fMaxR = 180.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
   case 2:
     fMinR=5.;
     fMaxR = 180.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
   case 3:
     fMaxR = 70.;
     fMinR = 10.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
   case 4:
     fMaxR = 70.;
     fMinR = 5.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
   case 5:
     fMaxR = 180.;
     fMinR = 10.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
   case 6:
     fMaxR = 180.;
     fMinR = 20.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
   case 7:
     fMaxR = 180.;
     fMinR = 35.; //old 26.
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
   case 8:
     fMaxR = 180.;
     fMinR = 12.5;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
   case 9:
     fMaxR = 180.;
     fMinR = 7.5;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 10:
+  case 10:  //a
     fMaxR = 33.5;
     fMinR = 5.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 11:
+  case 11:  //b
     fMaxR = 72.;
     fMinR = 33.5;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 12:
+  case 12: //c
     fMaxR = 180.;
     fMinR = 72.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 13:
+  case 13: //d
     fMaxR = 55.;
     fMinR = 5.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 14:
+  case 14: //e
     fMaxR = 180.;
     fMinR = 55.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 15:
+  case 15: //f
     fMaxR = 72.;
     fMinR = 5.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 16:
+  case 16: //g
     fMaxR = 180.;
     fMinR = 95.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 17:
+  case 17: //h
     fMaxR = 13.;
     fMinR = 5.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 18:
+  case 18: //i
     fMaxR = 33.5;
     fMinR = 13.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 19:
+  case 19:  // j
     fMaxR = 55.;
     fMinR = 33.5;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 20:
+  case 20: //k
     fMaxR = 72.;
     fMinR = 55.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
     break;
-  case 21:
+  case 21: //l
     fMaxR = 95.;
     fMinR = 72.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 22: //m
+    fMaxR = 180.;
+    fMinR = 5.;
+    fExcludeMinR = 55.;
+    fExcludeMaxR = 72.;
     break;
 
   default:

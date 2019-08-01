@@ -225,7 +225,7 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
     // Additional settings must be after setting the period to ensure that the settings aren't overwritten.
     // Centrality
     std::pair<double, double> centRange;
-    res = yamlConfig.GetProperty("centralityRange", centRange, false);
+    res = yamlConfig.GetProperty({ baseName, "centralityRange" }, centRange, false);
     if (res) {
       AliDebugGeneralStream(taskName.c_str(), 3) << "Setting centrality range of (" << centRange.first << ", " << centRange.second << ").\n";
       eventCuts.SetCentralityRange(centRange.first, centRange.second);

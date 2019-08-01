@@ -38,6 +38,7 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   void SetUseAnalysisTrackSelection(Bool_t trkSel = kTRUE) {fUseAnalysisTrkSel = trkSel;};
   void SelectPIDcheckOnly(Bool_t pidch = kFALSE) {fPIDCheckOnly = pidch;};
   void SetPeriod(Int_t period = 2015) {fPeriod = period;};
+  void SetTriggerMask(UInt_t triggerMask = AliVEvent::kINT7) {fTriggerMask = triggerMask;};
   void SetBetheSplines(Bool_t betheSplines = kTRUE ) {fBetheSplines = betheSplines;};
   void SetParamsHe(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsHe[i] = params[i];};
   void SetParamsT(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsT[i] = params[i];};
@@ -54,6 +55,8 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   TH2F                   *fHistdEdx;            //<   Histogram of Tpc dEdx for pid qa
   TH2F                   *fHistdEdxV0;          //<   Histogram of Tpc dEdx for pid qa
   TH1F                   *fHistNumEvents;       //<   Histogram of number of events
+  TH1F			 *fHistTrigger;	 	//<   Histogram of trigger for all events 
+  TH1F			 *fHistV0;	 	//<   Histogram of trigger for all V0s 
   TH1F                   *fHistMcGen;           //<   Histogram of generated Hypertriton
   TH1F                   *fHistMcRec;           //<   Histogram of reconstructed Hypertriton
   TTree                  *fTree;                //<   Tree containing reduced events
@@ -72,7 +75,8 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   Bool_t                  fPIDCheckOnly;        //< Flag to reduce the task only to PID check for Hypertriton daughters
   Bool_t                  fMCtrue;              //< Flag for activating MC analysis (set automatically)
   AliEventCuts            fEventCuts;           //< 2015 event cuts as advised by PDG (AliEventCuts)
-  Int_t		                fPeriod;              //< Data period for centrality selector
+  UInt_t		  fTriggerMask;		//< Triggermask for event cuts
+  Int_t		          fPeriod;              //< Data period for centrality selector
   Bool_t                  fBetheSplines;        //< Switch between built in BetheSplines and personal Fit
   Double_t                fBetheParamsHe[6];    //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
   Double_t                fBetheParamsT[6];     //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
@@ -88,7 +92,7 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   AliAnalysisTaskHypTritEventTree &operator=(const AliAnalysisTaskHypTritEventTree&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskHypTritEventTree, 3);
+  ClassDef(AliAnalysisTaskHypTritEventTree, 4);
   /// \endcond
 };
 #endif

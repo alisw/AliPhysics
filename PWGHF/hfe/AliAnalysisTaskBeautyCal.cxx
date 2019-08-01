@@ -1684,7 +1684,10 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
            } 
          else if(centrality>=60 && centrality<80)
            {
-            eop += 0.045; //60-80% (tuned up to 18 GeV/c) 
+            if(iCorr==0)
+              { 
+               eop += 0.045; //60-80% (tuned up to 18 GeV/c) 
+              }
            } 
          else
            {

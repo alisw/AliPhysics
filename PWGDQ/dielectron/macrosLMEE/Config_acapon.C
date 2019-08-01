@@ -52,6 +52,9 @@ AliDielectron* Config_acapon(TString cutDefinition,
   if(!doPairing){
     die->SetNoPairing();
   }
+  if(hasMC){
+    die->SetHasMC(hasMC);
+  }
 
   // Event mixing handler. Will be set after cut sets are set up due to flag
   // described below
@@ -68,14 +71,12 @@ AliDielectron* Config_acapon(TString cutDefinition,
   if(cutDefinition == "kAll"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kAllSpecies, LMEECutLib::kAllSpecies));
     if(applyPairCuts){
-      //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
       die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(LMEECutLib::kAllSpecies) );
     }
   } // Used for basic QA of data sets (simple cuts and PID)
   else if(cutDefinition == "kElectrons"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kElectrons, LMEECutLib::kElectrons));
     if(applyPairCuts){
-      //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kElectrons));
     }
   }
@@ -232,18 +233,6 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  else if(cutDefinition == "kTheoPID"){ // Standard TOFif PID cut set taken from a Run 1 analysis
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kTOFreq"){ // Copy of TheoPID cut setting however TOF always required
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTOFreq));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
   // ######## Track+ePID Cut variation settings #################
   // These variations all use the same PhiV cut
   else if(cutDefinition == "kCutVar1"){
@@ -374,6 +363,21 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
+  // Standard run1 track+PID cuts. Use V0 finder as well as conversion cuts
+  else if(cutDefinition == "kTheoPIDv0finder"){
+    // Applies very loose track cuts and no PID
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetV0finder()); // Dummy argument
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kTOFreq"){ // Copy of TheoPID cut setting however TOF always required
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTOFreq));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
   // Cut set to imitate pPb FAST+woSDD analysis
   else if(cutDefinition == "kScheidCuts"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kScheidCuts));
@@ -434,6 +438,12 @@ AliDielectron* Config_acapon(TString cutDefinition,
     nonStandardMixing = kTRUE;
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme5);
   }
+  // Produces plots using MCtruth information to select dielectron pairs
+  else if(cutDefinition == "kDCAdists"){
+    // Applies very loose track cuts and standard PID
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTheoPID));
+    LMcutlib->SetSignalsMC(die);
+  }
   else{
     cout << " =============================== " << endl;
     cout << " ==== INVALID CONFIGURATION ==== " << endl;
@@ -465,7 +475,7 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
     AliDielectronHistos *histos = new AliDielectronHistos(die->GetName(),die->GetTitle());
 
     // Initialise histogram classes
-    histos->SetReservedWords("Track;Pair;Pre;RejTrack;RejPair");//;Track_Legs");//RejPair;RejTrack");
+    histos->SetReservedWords("Track;Pair");//;Track_Legs");//RejPair;RejTrack");
 
     // Event class
     histos->AddClass("Event");
@@ -497,6 +507,15 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
       }
     }
 
+    // Add MC signal histograms
+    if(die->GetMCSignals()){
+      for(Int_t i = 0; i < die->GetMCSignals()->GetEntriesFast(); ++i){
+        histos->AddClass(Form("Track_%s_%s", AliDielectron::PairClassName(1), die->GetMCSignals()->At(i)->GetName()));
+        if(doPairing){
+          histos->AddClass(Form("Pair_%s",die->GetMCSignals()->At(i)->GetName()));
+        }
+      }
+    }
 
     TH1::AddDirectory(kFALSE);
     // Add histograms to event class
@@ -560,11 +579,12 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
       // DCA
       histos->UserHistogram("Track","dXY","",400,-2.,2.,AliDielectronVarManager::kImpactParXY);
       histos->UserHistogram("Track","dZ" ,"",600,-4.,4.,AliDielectronVarManager::kImpactParZ);
-      histos->UserHistogram("Track","dXY_dZ","",100,-1.,1.,150,-3.,3.,AliDielectronVarManager::kImpactParXY,AliDielectronVarManager::kImpactParZ);
+      histos->UserHistogram("Track","dXYsig","",100,0,20,AliDielectronVarManager::kImpactParXYsigma);
+      histos->UserHistogram("Track","dZsig" ,"",100,0,20,AliDielectronVarManager::kImpactParZsigma);
       histos->UserHistogram("Track","SPD clusters vs. tracklets",";tracklets;SPD clusters",
                             150,0,150,6,0,6,AliDielectronVarManager::kNTrk ,AliDielectronVarManager::kITSLayerFirstCls);
-      histos->UserHistogram("Track","DCA_{xy} vs p_T","",300,0,5,100,0,0.5,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXY);
-      histos->UserHistogram("Track","DCA_{Z} vs p_T","",300,0,5,100,-1,1,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXY);
+      /* histos->UserHistogram("Track","DCA_{xy} vs p_T","",300,0,5,100,0,0.5,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXY); */
+      /* histos->UserHistogram("Track","DCA_{Z} vs p_T","",300,0,5,100,-1,1,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXY); */
 
       // Track cut variables for trackQA
       // ITS
@@ -728,18 +748,8 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
         histos->UserHistogram("Pair","Rapidity","",200,-2.,2.,AliDielectronVarManager::kY);
         histos->UserHistogram("Pair","OpeningAngle","",240,0.,TMath::Pi(),AliDielectronVarManager::kOpeningAngle);
         histos->UserHistogram("Pair","PhiV","", GetVector(kPhiV), AliDielectronVarManager::kPhivPair);
-        /* if(trackVarPlots){ */
-        /*   histos->UserHistogram("Pair","dXY abs (sqrt)",""    ,200 ,0,2.0 , AliDielectronVarManager::kPairDCAabsXY); */
-        /*   histos->UserHistogram("Pair","dZ abs (sqrt)",""     ,500 ,0,5.0 , AliDielectronVarManager::kPairDCAabsZ); */
-        /*   histos->UserHistogram("Pair","dXY sigma (sqrt)",""  ,2000,0,20.0, AliDielectronVarManager::kPairDCAsigXY); */
-        /*   histos->UserHistogram("Pair","dZ sigma (sqrt)",""   ,2000,0,20.0, AliDielectronVarManager::kPairDCAsigZ); */
-        /*   histos->UserHistogram("Pair","dXY abs (linear)",""  ,100 ,0,1.0 , AliDielectronVarManager::kPairLinDCAabsXY); */
-        /*   histos->UserHistogram("Pair","dZ abs (linear)",""   ,500 ,0,5.0 , AliDielectronVarManager::kPairLinDCAabsZ); */
-        /*   histos->UserHistogram("Pair","dXY sigma (linear)","",2000,0,20.0, AliDielectronVarManager::kPairLinDCAsigXY); */
-        /*   histos->UserHistogram("Pair","dZ sigma (linear)","" ,2000,0,20.0, AliDielectronVarManager::kPairLinDCAsigZ); */
-        /* } */
 
-        // 2D and 3D histograms
+        // 3D histograms
         histos->UserHistogram("Pair","InvMass_PairPt_PhivPair",";Inv. Mass (GeV);Pair Pt (GeV);PhiV",
                               GetVector(kMee, useRun1binning), GetVector(kPtee), GetVector(kPhiV),
                               AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
@@ -752,27 +762,7 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
         histos->UserHistogram("Pair","InvMass_PairPt_pseudoRapdity",";Inv. Mass (GeV);Pair Pt (GeV);#eta_{ee}",
                               GetVector(kMee, useRun1binning), GetVector(kPtee), BinsToVector(200, -2, 2),
                               AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kEta);
-        /* histos->UserHistogram("Pair","InvMass_PhivPair_OpeningAngle",";Inv. Mass (GeV);PhiV;Opening Angle", */
-        /*                       GetVector(kMee500), GetVector(kPhiV), GetVector(kOpAng2), */
-        /*                       AliDielectronVarManager::kM, AliDielectronVarManager::kPhivPair, AliDielectronVarManager::kOpeningAngle); */
-
-        // Opening angle and PhiV
-        /* histos->UserHistogram("Pair","InvMass_OpeningAngle",";Inv. Mass (GeV);Opening Angle;#pairs", */
-        /*                       GetVector(kMee), GetVector(kOpAng), */
-        /*                       AliDielectronVarManager::kM, AliDielectronVarManager::kOpeningAngle); */
-        histos->UserHistogram("Pair","InvMass_PhivPair",";Inv. Mass (GeV);PhiV;#pairs",
-                              GetVector(kMee, useRun1binning), GetVector(kPhiV),
-                              AliDielectronVarManager::kM, AliDielectronVarManager::kPhivPair);
-        /* histos->UserHistogram("Pair","PairPt_OpeningAngle",";Pair Pt (GeV);Opening Angle;#pairs", */
-        /*                       GetVector(kPtee), GetVector(kOpAng), */
-        /*                       AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle); */
-        histos->UserHistogram("Pair","PairPt_PhivPair",";Pair Pt (GeV);PhiV;#pairs",
-                              GetVector(kPtee), GetVector(kPhiV),
-                              AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
-        /* histos->UserHistogram("Pair","OpeningAngle_PhivPair",";Opening Angle;PhiV;#pairs", */
-        /*                       GetVector(kOpAng), GetVector(kPhiV), */
-        /*                       AliDielectronVarManager::kOpeningAngle, AliDielectronVarManager::kPhivPair); */
-
+       
         // Multiplicity
         histos->UserHistogram("Pair", "InvMass_PairPt_CentralityV0M", ";Inv. Mass (GeV);Pair Pt (GeV);CentralityV0M",
                               GetVector(kMee, useRun1binning), GetVector(kPtee), GetVector(kCent),
@@ -789,7 +779,7 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
     if(cutDefinition == "kV0_allAcc"){
       histos->UserHistogram("Pair", "CosPointingAngle", "", BinsToVector(100, 0, 1),    AliDielectronVarManager::kCosPointingAngle);
       histos->UserHistogram("Pair", "Chi2NDF",          "", BinsToVector(100, 0, 100),  AliDielectronVarManager::kChi2NDF);
-      histos->UserHistogram("Pair", "LegDist",          "", BinsToVector(400, 0, 1),    AliDielectronVarManager::kLegDist);
+      histos->UserHistogram("Pair", "LegDist",          "", BinsToVector(400, 0, 0.1),    AliDielectronVarManager::kLegDist);
       histos->UserHistogram("Pair", "R",                "", BinsToVector(1000, 0, 200), AliDielectronVarManager::kR);
       histos->UserHistogram("Pair", "PsiTrack",         "", BinsToVector(100, 0, TMath::Pi()), AliDielectronVarManager::kPsiPair);
       histos->UserHistogram("Pair", "kM",               "", BinsToVector(2000, 0, 20),  AliDielectronVarManager::kM);

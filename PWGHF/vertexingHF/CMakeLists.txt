@@ -152,6 +152,7 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
   AliAnalysisTaskSEHFSystPID.cxx
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
+  AliAnalysisTaskSEXicTopKpi.cxx
    )
 
 # Headers from sources
@@ -226,4 +227,5 @@ install(DIRECTORY
             macros
         DESTINATION PWGHF/vertexingHF/)
 
+install(DIRECTORY upgrade DESTINATION PWGHF/vertexingHF)
 install(DIRECTORY charmFlow DESTINATION PWGHF/vertexingHF)

@@ -52,9 +52,9 @@ public:
   void SetHardCutoff(double pthard) { fHardCutoff = pthard; }
   void SetSelectTrigger(UInt_t triggerbits, const char * triggerstring) { fTriggerBits = triggerbits; fTriggerString = triggerstring; }
 
-  AliAnalysisTaskEmcalJetIterativeDeclustering *AddTaskEmcalJetIterativeDeclustering(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, EMCAL_STRINGVIEW trigger);
+  static AliAnalysisTaskEmcalJetIterativeDeclustering *AddTaskEmcalJetIterativeDeclustering(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, EMCAL_STRINGVIEW trigger);
 protected:
-  virtual void UserCreateOutputObject();
+  virtual void UserCreateOutputObjects();
   virtual Bool_t Run();
 
   virtual bool IsTriggerSelected();
@@ -63,8 +63,8 @@ protected:
   Double_t GetDownscaleWeight() const;
 
 private:
-    AliLundPlaneHelper          *fDecluster;
-    THistManager                *fHistos;
+    AliLundPlaneHelper          *fDecluster;                //!<!
+    THistManager                *fHistos;                   //!<!
     Bool_t                      fUseDownscaleWeight;
     Bool_t                      fUseChargedConstituents;
     Bool_t                      fUseNeutralConstituents;

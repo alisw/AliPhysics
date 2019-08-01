@@ -847,8 +847,8 @@ AliAnalysisTaskEmcalLight::EBeamType_t AliAnalysisTaskEmcalLight::GetBeamType()
 }
 
 Bool_t AliAnalysisTaskEmcalLight::IsEventSelected(){
-  if(fUseBuiltinEventSelection) return IsEventSelectedInternal();
   if(!IsTriggerSelected()) return false;
+  if(fUseBuiltinEventSelection) return IsEventSelectedInternal();
   if(!CheckMCOutliers()) return false;
   return fAliEventCuts.AcceptEvent(fInputEvent);
 }
@@ -1362,7 +1362,7 @@ Bool_t AliAnalysisTaskEmcalLight::CheckMCOutliers()
 
   // Condition 2 : Reconstructed EMCal cluster pT / pT-hard > factor
   if (fPtHardAndClusterPtFactor > 0.) {
-    AliClusterContainer* mccluscont = GetClusterContainer(0);
+    AliClusterContainer* mccluscont = fClusterCollArray.begin()->second;
     if ((Bool_t)mccluscont) {
       for (auto cluster : mccluscont->all()) {// Not cuts applied ; use accept for cuts
         Float_t ecluster = cluster->E();
@@ -1377,8 +1377,13 @@ Bool_t AliAnalysisTaskEmcalLight::CheckMCOutliers()
   // end condition 2
 
   // condition 3 : Reconstructed track pT / pT-hard >factor
+  std::vector<AliMCParticleContainer *> mcpcont;
+  for(auto cont : fParticleCollArray) {
+    AliMCParticleContainer *mccont = dynamic_cast<AliMCParticleContainer *>(cont.second);
+    if(mccont) mcpcont.push_back(mccont);
+  }
   if (fPtHardAndTrackPtFactor > 0.) {
-    AliMCParticleContainer* mcpartcont = dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(0));
+    AliMCParticleContainer* mcpartcont = *mcpcont.begin();
     if ((Bool_t)mcpartcont) {
       for (auto mctrack : mcpartcont->all()) {// Not cuts applied ; use accept for cuts
         Float_t trackpt = mctrack->Pt();

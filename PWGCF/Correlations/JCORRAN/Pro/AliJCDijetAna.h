@@ -33,23 +33,69 @@ class AliJCDijetAna : public TObject
         AliJCDijetAna(const AliJCDijetAna& obj); // Copy constructor
         AliJCDijetAna& operator=(const AliJCDijetAna& obj); // Equal sign operator
 
-        static void CalculateJetsDijets(TClonesArray *inList,
-                                        int    lDebug,
-                                        int    lCBin,
-                                        double lParticleEtaCut,
-                                        double lParticlePtCut,
-                                        double lJetCone,
-                                        double lktJetCone,
-                                        int    lktScheme,
-                                        bool   lusePionMassInkt,
-                                        bool   luseDeltaPhiBGSubtr,
-                                        double lConstituentCut,
-                                        double lLeadingJetCut,
-                                        double lSubleadingJetCut,
-                                        double lDeltaPhiCut,
-                                        AliJCDijetHistos *fhistos);
+#if !defined(__CINT__) && !defined(__MAKECINT__)
+        void SetSettings(int    lDebug,
+                         double lParticleEtaCut,
+                         double lParticlePtCut,
+                         double lJetCone,
+                         double lktJetCone,
+                         int    lktScheme,
+                         bool   lusePionMassInkt,
+                         bool   luseDeltaPhiBGSubtr,
+                         double lConstituentCut,
+                         double lLeadingJetCut,
+                         double lSubleadingJetCut,
+                         double lDeltaPhiCut);
+
+        void CalculateJetsDijets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin);
+#endif
 
     private:
+        int fDebug;
+        double fParticleEtaCut;
+        double fParticlePtCut;
+        bool fusePionMassInkt;
+        bool fUseDeltaPhiBGSubtr;
+        double fConstituentCut;
+        double fLeadingJetCut;
+        double fSubleadingJetCut;
+        double fDeltaPhiCut;
+        double etaMaxCutForJet;
+        double MinJetPt;
+        double pionmass;
+
+        enum jetClasses {iRaw, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, jetClassesSize};
+        double phi, eta, pt, pt2, rho, rhom, area, mjj, ptpair, dPhi, dPhi2;
+        bool leadingTrackOverThreshold;
+        unsigned noTracks;
+        bool removed;
+        //For loops:
+        unsigned utrack, uktjet, ujet, uconst, udijet;
+
+#if !defined(__CINT__) && !defined(__MAKECINT__)
+        vector<fastjet::PseudoJet> chparticles;
+        vector<fastjet::PseudoJet> ktchparticles;
+        vector<vector<fastjet::PseudoJet>> jets;
+        vector<fastjet::PseudoJet> rhoEstJets;
+        vector<fastjet::PseudoJet> constituents;
+
+        fastjet::RecombinationScheme ktScheme;
+        fastjet::PseudoJet jetAreaVector;
+        fastjet::PseudoJet jet_bgSubtracted;
+        fastjet::PseudoJet dijet;
+
+        fastjet::JetDefinition jet_def;
+        fastjet::JetDefinition jet_def_bge;
+
+        fastjet::GhostedAreaSpec area_spec;
+        fastjet::AreaDefinition area_def;
+        fastjet::AreaDefinition area_def_bge;
+
+        fastjet::Selector selectorAllButTwo;
+        fastjet::Selector selectorEta;
+        fastjet::Selector selectorBoth;
+        fastjet::JetMedianBackgroundEstimator bge;
+#endif
 
         ClassDef(AliJCDijetAna, 1); // ClassDef needed if inheriting from TObject
 

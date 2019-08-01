@@ -40,7 +40,9 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
       fHasMagField(false),
       fisSelected(false),
       fEstimator(AliFemtoDreamEvent::kRef08),
-      fspher(0) {
+      fspher(0),
+      fsphero(0),
+      fcalcsphero(false){
 
 }
 
@@ -70,7 +72,9 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fHasMagField(false),
       fisSelected(false),
       fEstimator(kRef08),
-      fspher(0) {
+      fspher(0),
+      fsphero(0),
+      fcalcsphero(false) {
   if (fuseAliEvtCuts) {
     fEvtCuts = new AliEventCuts();
     if (trigger != AliVEvent::kINT7) {
@@ -134,6 +138,8 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
   fisSelected = obj.fisSelected;
   fEstimator = obj.fEstimator;
   fspher = obj.fspher;
+  fsphero = obj.fsphero;
+  fcalcsphero= obj.fcalcsphero;
   return (*this);
 }
 
@@ -175,6 +181,9 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fV0AMult = vZERO->GetMTotV0A();
   this->fV0CMult = vZERO->GetMTotV0C();
   this->fspher = CalculateSphericityEvent(evt);
+  if (fcalcsphero){
+       this->fsphero = CalculateSpherocityEvent(evt);
+  }
   fRefMult08 = header->GetRefMultiplicityComb08();
   AliMultSelection *MultSelection = 0x0;
   MultSelection = (AliMultSelection *) evt->FindListObject("MultSelection");
@@ -239,6 +248,10 @@ void AliFemtoDreamEvent::SetEvent(AliVEvent *evt) {
     this->fV0CMult = nanoHeader->GetVar(kV0C);
   }
   this->fspher = CalculateSphericityEvent(evt);
+
+  if (fcalcsphero){
+  this->fsphero = CalculateSpherocityEvent(evt);
+  }
 }
 
 void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
@@ -464,4 +477,124 @@ double AliFemtoDreamEvent::CalculateSphericityEvent(AliVEvent *evt) {
   }
 
   return spt;
+}
+
+double AliFemtoDreamEvent::CalculateSpherocityEvent(AliAODEvent *evt) {
+  float pFull = 0.f;
+  float Spherocity = 2.f;
+
+  const float pi = TMath::Pi();
+
+  float pTtot = 0.f;
+
+  std::vector<float> pXVec;
+  std::vector<float> pYVec;
+
+  int numOfTracks = evt->GetNumberOfTracks();
+  if (numOfTracks < 3)
+    return -9999.;
+
+  for (int iTrack = 0; iTrack < numOfTracks; iTrack++) {
+    AliAODTrack *track = dynamic_cast<AliAODTrack *>(evt->GetTrack(iTrack));
+    if (!track->TestFilterBit(96))
+      continue;
+    double pt = track->Pt();
+    if (TMath::Abs(pt) < 0.5 || TMath::Abs(track->Eta()) > 0.8) {
+      continue;
+    }
+    pTtot += pt;
+    pXVec.push_back(track->Px());
+    pYVec.push_back(track->Py());
+  }
+
+  if (pTtot == 0.f)
+    return -9999.;
+
+  const float OneOverPtTotal = 1.f / pTtot;
+
+  float numerator = 0.f;
+  float phiparam = 0.f;
+  float nx = 0.f;
+  float ny = 0.f;
+
+  for (int i = 0; i < 360 / 0.1; ++i) {
+    numerator = 0.f;
+    phiparam = (pi * i * 0.1 / 180);  // parametrization of the angle
+    nx = TMath::Cos(phiparam);  // x component of an unitary vector n
+    ny = TMath::Sin(phiparam);  // y component of an unitary vector n
+
+    for (size_t itTrack = 0; itTrack < pXVec.size(); ++itTrack) {
+      numerator += TMath::Abs(ny * pXVec[itTrack] - nx * pYVec[itTrack]);  // product between p
+      // proyection in XY plane and
+      // the unitary vector
+    }
+    pFull = std::pow((numerator * OneOverPtTotal), 2);
+
+    if (pFull < Spherocity)  // maximization of pFull
+        {
+      Spherocity = pFull;
+    }
+  }
+  return ((Spherocity) * pi * pi) / 4.0;
+}
+
+double AliFemtoDreamEvent::CalculateSpherocityEvent(AliVEvent *evt) {
+  float pFull = 0.f;
+  float Spherocity = 2.f;
+
+  const float pi = TMath::Pi();
+
+  float pTtot = 0.f;
+
+  int numOfTracks = evt->GetNumberOfTracks();
+  if (numOfTracks < 3)
+    return -9999.;
+
+  std::vector<float> pXVec;
+  std::vector<float> pYVec;
+
+  for (int iTrack = 0; iTrack < numOfTracks; iTrack++) {
+    AliNanoAODTrack *track = dynamic_cast<AliNanoAODTrack *>(evt->GetTrack(
+        iTrack));
+    if (!track->TestFilterBit(96))
+      continue;
+    double pt = track->Pt();
+    if (TMath::Abs(pt) < 0.5 || TMath::Abs(track->Eta()) > 0.8) {
+      continue;
+    }
+    pTtot += pt;
+    pXVec.push_back(track->Px());
+    pYVec.push_back(track->Py());
+  }
+
+  if (pTtot == 0.f) {
+    return -9999.;
+  }
+
+  const float OneOverPtTotal = 1.f / pTtot;
+
+  float numerator = 0.f;
+  float phiparam = 0.f;
+  float nx = 0.f;
+  float ny = 0.f;
+
+  for (int i = 0; i < 360 / 0.1; ++i) {
+    numerator = 0.f;
+    phiparam = (pi * i * 0.1 / 180);  // parametrization of the angle
+    nx = std::cos(phiparam);  // x component of an unitary vector n
+    ny = std::sin(phiparam);  // y component of an unitary vector n
+
+    for (size_t itTrack = 0; itTrack < pXVec.size(); ++itTrack) {
+      numerator += TMath::Abs(ny * pXVec[itTrack] - nx * pYVec[itTrack]);  // product between p
+      // proyection in XY plane and
+      // the unitary vector
+    }
+    pFull = std::pow((numerator * OneOverPtTotal), 2);
+
+    if (pFull < Spherocity)  // maximization of pFull
+        {
+      Spherocity = pFull;
+    }
+  }
+  return ((Spherocity) * pi * pi) / 4.0;
 }

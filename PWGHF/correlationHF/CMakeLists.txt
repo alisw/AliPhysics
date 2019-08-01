@@ -24,6 +24,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/correlationHF)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
                     ${AliPhysics_SOURCE_DIR}/PWGHF/hfe
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
   )
@@ -61,7 +63,14 @@ set(SRCS
     AliHFCorrFitter.cxx
     AliHFCorrFitSystematics.cxx
     AliDhCorrelationExtraction.cxx
-  ) 						
+  )
+
+# Tasks that should only be compiled in ROOT 6
+if(ROOT_VERSION_MAJOR EQUAL 6)
+    set(SRCS ${SRCS}
+	AliAnalysisTaskDHFeCorr.cxx
+	)						
+endif(ROOT_VERSION_MAJOR EQUAL 6)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
