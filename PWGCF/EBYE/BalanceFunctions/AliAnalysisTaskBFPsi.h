@@ -25,6 +25,8 @@ class AliPID;
 #include "AliPID.h"  
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "AliTimeRangeCut.h"
+
  
 //================================correction
 #define kCENTRALITY 101
@@ -193,6 +195,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fCutGeoNcrNclGeom1Pt = cutGeoNcrNclGeom1Pt;
     fCutGeoNcrNclFractionNcr = cutGeoNcrNclFractionNcr;
     fCutGeoNcrNclFractionNcl = cutGeoNcrNclFractionNcl;
+  }
+
+  void SetTimeRangeCutPbPb2018(){
+    fUseTimeRangeCutForPbPb2018 = kTRUE;
   }
   
   //Centrality
@@ -382,6 +388,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH1F *fHistVx; //x coordinate of the primary vertex
   TH1F *fHistVy; //y coordinate of the primary vertex
   TH2F *fHistVz; //z coordinate of the primary vertex
+  TH1F *fHistCentrAfterEventSel; //event centrality distribution after all event selection
 
   TH2F *fHistMixEvents; //number of events that is mixed with in the current pool
   TH2F *fHistMixTracks; //number of tracks that is mixed with in the current pool
@@ -567,6 +574,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Float_t fCutGeoNcrNclFractionNcr;
   Float_t fCutGeoNcrNclFractionNcl;
 
+  Float_t fUseTimeRangeCutForPbPb2018; 
+  AliTimeRangeCut fTimeRangeCut;
+ 
 
   Double_t fPtMin;//only used for AODs
   Double_t fPtMax;//only used for AODs
@@ -635,7 +645,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 19); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 20); // example of analysis
 };
 
 

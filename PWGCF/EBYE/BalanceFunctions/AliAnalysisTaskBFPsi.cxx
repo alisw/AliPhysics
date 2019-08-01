@@ -94,6 +94,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistVx(0),
   fHistVy(0),
   fHistVz(0),
+  fHistCentrAfterEventSel(0),
   fHistMixEvents(0),
   fHistMixTracks(0),
   fHistTPCvsVZEROMultiplicity(0),
@@ -453,6 +454,9 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fHistVz = new TH2F("fHistVz","Primary vertex distribution - z coordinate;V_{z} (cm);Centrality percentile;Entries",100,-20.,20.,220,-5,105);
   fList->Add(fHistVz);
 
+  fHistCentrAfterEventSel = new TH1F("fHistCentrAfterEventSel", "Event distribution after all selections;Centrality percentile;Entries", 220,-5,105);
+  fList->Add(fHistCentrAfterEventSel);
+  
   // Event Mixing
   fHistMixEvents = new TH2F("fHistMixEvents","Number of mixed events;Centrality percentile;N_{mix,evts}",101, 0, 101, 200, 0, 200);
   fList->Add(fHistMixEvents);
@@ -1326,107 +1330,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
     if(fUtils->IsFirstEventInChunk(event)) 
       return -1.;
     fHistEventStats->Fill(6,gRefMultiplicity); 
-  }
-  // check for pile-up event
-  AliAnalysisUtils ut;
-  if(fCheckPileUp){
-    fUtils->SetUseMVPlpSelection(kTRUE);
-    if (fUsePileUpSPD) {
-      fUtils->SetUseMVPlpSelection(kFALSE);
-      if (fModifySPDDefaultParams) {
-	fUtils->SetMinPlpContribSPD(fMinVtxPileUpContrSPD);
-	fUtils->SetMinPlpZdistSPD(fMinPileUpZdistSPD);
-      }	    
-    }
-    // fUtils->SetUseOutOfBunchPileUp(kTRUE);
-    if(fUtils->IsPileUpEvent(event))
-      return -1.;
-    fHistEventStats->Fill(7,gRefMultiplicity); 
-  }
-
-  if (fCheckOutOfBunchPileUp){
-    AliMultSelection *multSelection = (AliMultSelection*) event->FindListObject("MultSelection");
-    
-    if (fUseOOBPileUpCutsLHC15o) { //Out of bunch pile up cut based on ESD vs TPC tracks
-      if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-	fHistEventStats->Fill(9, -1);
-	return -1;
-      }
-      const Int_t nTracks = event->GetNumberOfTracks();
-      Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
-      fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
-      fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
-      
-      Int_t multTPC = 0;
-      for (Int_t it = 0; it < nTracks; it++) {
-	AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
-	if (!AODTrk){ delete AODTrk; continue; }
-	if (AODTrk->TestFilterBit(128)) {multTPC++;}
-      } // end of for (Int_t it = 0; it < nTracks; it++)
-      
-      if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset) return -1;
-      fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
-      fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
-      
-    }
-    
-    if (fUseOOBPileUpCutsLHC15oJpsi) {//Out of bunch pile up cut based on V0mult vs TPC out tracks
-      
-      if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-	fHistEventStats->Fill(9, -1);
-	return -1;
-      }
-      
-      Int_t ntrkTPCout = 0;
-      for (int it = 0; it < event->GetNumberOfTracks(); it++) {
-	AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
-	if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
-	    ntrkTPCout++;
-      }
-      
-      Double_t multVZERO =0; 
-      AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
-	if(vzero) {
-	  for(int ich=0; ich < 64; ich++)
-	    multVZERO += vzero->GetMultiplicity(ich);
-	}
-	
-	fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
-	fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
-	
-	if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
-	  fHistEventStats->Fill(9, -1);
-	  return -1;
-	}
-	fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
-	fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
-    }
-
-    if (fUseOOBPileUpCutsLHC18nTPCclus) {//Out of bunch pile up cut based on V0mult vs TPC out tracks
-      
-      Double_t multVZERO =0; 
-      AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
-      if(vzero) {
-	for(int ich=0; ich < 64; ich++)
-	  multVZERO += vzero->GetMultiplicity(ich);
-      }
-
-      Int_t nTPCclus = ((AliAODHeader*)event->GetHeader())->GetNumberOfTPCClusters();
-      fHistV0MvsnTPCclusBeforePileUpCuts->Fill(nTPCclus, multVZERO);
-      fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
-      
-      if (multVZERO < (-fOOBLHC18Slope + fOOBLHC18Par1*nTPCclus + fOOBLHC18Par2*nTPCclus*nTPCclus)) {
-	fHistEventStats->Fill(9, -1);
-	return -1 ;
-      }
-      
-      fHistV0MvsnTPCclusAfterPileUpCuts->Fill(nTPCclus, multVZERO);
-      fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
-      
-    }
-    
-  }
-  
+  } 
   
   // Event trigger bits
   fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
@@ -1463,6 +1367,8 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 		fHistVx->Fill(gVertexArray.At(0));
 		fHistVy->Fill(gVertexArray.At(1));
 		fHistVz->Fill(gVertexArray.At(2),gRefMultiplicity);
+
+
 		
 		// take only events inside centrality class
 		if(fUseCentrality) {
@@ -1525,51 +1431,159 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 		     
 		     fHistEventStats->Fill(8,gRefMultiplicity); 
 		   }
+
+		   // check for pile-up event
+		   AliAnalysisUtils ut;
+		   if(fCheckPileUp){
+		     fUtils->SetUseMVPlpSelection(kTRUE);
+		     if (fUsePileUpSPD) {
+		       fUtils->SetUseMVPlpSelection(kFALSE);
+		       if (fModifySPDDefaultParams) {
+			 fUtils->SetMinPlpContribSPD(fMinVtxPileUpContrSPD);
+			 fUtils->SetMinPlpZdistSPD(fMinPileUpZdistSPD);
+		       }	    
+		     }
+		     // fUtils->SetUseOutOfBunchPileUp(kTRUE);
+		     if(fUtils->IsPileUpEvent(event))
+		       return -1.;
+		     fHistEventStats->Fill(7,gRefMultiplicity); 
+		   }
+		   
+		   if (fCheckOutOfBunchPileUp){
+		     AliMultSelection *multSelection = (AliMultSelection*) event->FindListObject("MultSelection");
+		     
+		     if (fUseOOBPileUpCutsLHC15o) { //Out of bunch pile up cut based on ESD vs TPC tracks
+		       if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+			 fHistEventStats->Fill(9, -1);
+			 return -1;
+		       }
+		       const Int_t nTracks = event->GetNumberOfTracks();
+		       Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
+		       fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
+		       fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+		       
+		       Int_t multTPC = 0;
+		       for (Int_t it = 0; it < nTracks; it++) {
+			 AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
+			 if (!AODTrk){ delete AODTrk; continue; }
+			 if (AODTrk->TestFilterBit(128)) {multTPC++;}
+		       } // end of for (Int_t it = 0; it < nTracks; it++)
+		       
+		       if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset) return -1;
+		       fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
+		       fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+		       
+		     }
+		     
+		     if (fUseOOBPileUpCutsLHC15oJpsi) {//Out of bunch pile up cut based on V0mult vs TPC out tracks
+		       
+		       if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+			 fHistEventStats->Fill(9, -1);
+			 return -1;
+		       }
+		       
+		       Int_t ntrkTPCout = 0;
+		       for (int it = 0; it < event->GetNumberOfTracks(); it++) {
+			 AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
+			 if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
+			   ntrkTPCout++;
+		       }
+		       
+		       Double_t multVZERO =0; 
+		       AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
+		       if(vzero) {
+			 for(int ich=0; ich < 64; ich++)
+			   multVZERO += vzero->GetMultiplicity(ich);
+		       }
+		       
+		       fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
+		       fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+		       
+		       if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
+			 fHistEventStats->Fill(9, -1);
+			 return -1;
+		       }
+		       fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
+		       fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+		     }
+		     
+		     if (fUseOOBPileUpCutsLHC18nTPCclus) {//Out of bunch pile up cut based on V0mult vs TPC out tracks
+		       
+		       Double_t multVZERO =0; 
+		       AliVVZERO *vzero = (AliVVZERO*)event->GetVZEROData();
+		       if(vzero) {
+			 for(int ich=0; ich < 64; ich++)
+			   multVZERO += vzero->GetMultiplicity(ich);
+		       }
+		       
+		       Int_t nTPCclus = ((AliAODHeader*)event->GetHeader())->GetNumberOfTPCClusters();
+		       fHistV0MvsnTPCclusBeforePileUpCuts->Fill(nTPCclus, multVZERO);
+		       fHistCentrBeforePileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M"));
+		       
+		       if (multVZERO < (-fOOBLHC18Slope + fOOBLHC18Par1*nTPCclus + fOOBLHC18Par2*nTPCclus*nTPCclus)) {
+			 fHistEventStats->Fill(9, -1);
+			 return -1 ;
+		       }
+		       
+		       fHistV0MvsnTPCclusAfterPileUpCuts->Fill(nTPCclus, multVZERO);
+		       fHistCentrAfterPileUpCuts->Fill(multSelection->GetMultiplicityPercentile("V0M")); 
+		     }		     
+		   }
+		   
+		   if(fUseTimeRangeCutForPbPb2018){
+		     fTimeRangeCut.InitFromEvent(event);
+		     if(fTimeRangeCut.CutEvent((AliAODEvent*)event)){
+		       fHistEventStats->Fill(9, -1);
+			return -1 ;
+		     }
+		   }
 		   
 		   // get the reference multiplicty or centrality for run1 data
 		   if((event->GetRunNumber()<244824) && (fEventClass=="Multiplicity")&&(fMultiplicityEstimator.Contains("Utils"))) {
 		     if ((fMultiplicityEstimator == "V0MUtils")) {
 		       gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0MEq");
-		    if ((fMultiplicityEstimator == "V0AUtils")) 
-		      gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0AEq");
-		    if ((fMultiplicityEstimator == "V0CUtils")) 
-		      gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0CEq");
+		       if ((fMultiplicityEstimator == "V0AUtils")) 
+			 gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0AEq");
+		       if ((fMultiplicityEstimator == "V0CUtils")) 
+			 gRefMultiplicity = fUtils->GetMultiplicityPercentile(event,"V0CEq");
 		    else 
 		      AliError("The requested estimator from AliAnalysisUtils is not supported");
-		    }//use the framework to define the multiplicity class
-		  } 
-		  else
-		    gRefMultiplicity = GetRefMultiOrCentrality(event);
-		  
-		  fHistVx->Fill(vertex->GetX());
-		  fHistVy->Fill(vertex->GetY());
-		  fHistVz->Fill(vertex->GetZ(),gRefMultiplicity);
-		  
+		     }//use the framework to define the multiplicity class
+		   } 
+		   else
+		     gRefMultiplicity = GetRefMultiOrCentrality(event);
+		   
+		   fHistVx->Fill(vertex->GetX());
+		   fHistVy->Fill(vertex->GetY());
+		   fHistVz->Fill(vertex->GetZ(),gRefMultiplicity);
+		   
+		   fHistCentrAfterEventSel->Fill(gRefMultiplicity);
+		   
 		  // take only events inside centrality class
 		  // if(fUseCentrality) {
-		  if((gRefMultiplicity > fCentralityPercentileMin) && (gRefMultiplicity < fCentralityPercentileMax)){
-		    
-		    // centrality weighting (optional for 2011 if central and semicentral triggers are used)
-		    if (fCentralityWeights && !AcceptEventCentralityWeight(gRefMultiplicity)){
-		      AliInfo(Form("Rejecting event because of centrality weighting: %f", gRefMultiplicity));
-		      return -1;
+		   if((gRefMultiplicity > fCentralityPercentileMin) && (gRefMultiplicity < fCentralityPercentileMax)){
+		     
+		     // centrality weighting (optional for 2011 if central and semicentral triggers are used)
+		     if (fCentralityWeights && !AcceptEventCentralityWeight(gRefMultiplicity)){
+		       AliInfo(Form("Rejecting event because of centrality weighting: %f", gRefMultiplicity));
+		       return -1;
+		     }
+		     
+		     fHistEventStats->Fill(5,gRefMultiplicity); //events with correct centrality
+		     return gRefMultiplicity;		
+		   }//centrality class
+		   
+		   // take events only within the same multiplicity class RUN1! data! 
+		   else if((fUseMultiplicity)&&(event->GetRunNumber()<244824)){
+		     //if(fDebugLevel) 
+		     //Printf("N(min): %.0f, N(max): %.0f - N(ref): %.0f",fNumberOfAcceptedTracksMin,
+		     //fNumberOfAcceptedTracksMax,gRefMultiplicity);
+		     
+		     if((gRefMultiplicity > fNumberOfAcceptedTracksMin) && (gRefMultiplicity < fNumberOfAcceptedTracksMax)) {
+		       fHistEventStats->Fill(5,gRefMultiplicity); //events with correct multiplicity
+		       return gRefMultiplicity;
 		    }
-
-		    fHistEventStats->Fill(5,gRefMultiplicity); //events with correct centrality
-		    return gRefMultiplicity;		
-		  }//centrality class
-		  
-		  // take events only within the same multiplicity class RUN1! data! 
-		  else if((fUseMultiplicity)&&(event->GetRunNumber()<244824)){
-		    //if(fDebugLevel) 
-		    //Printf("N(min): %.0f, N(max): %.0f - N(ref): %.0f",fNumberOfAcceptedTracksMin,
-		    //fNumberOfAcceptedTracksMax,gRefMultiplicity);
-		  
-		    if((gRefMultiplicity > fNumberOfAcceptedTracksMin) && (gRefMultiplicity < fNumberOfAcceptedTracksMax)) {
-		      fHistEventStats->Fill(5,gRefMultiplicity); //events with correct multiplicity
-		      return gRefMultiplicity;
-		    }
-		  } //multiplicity range
+		   } //multiplicity range
 		}//Vz cut
 	      }//Vy cut
 	    }//Vx cut
@@ -3138,7 +3152,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  Bool_t hasGenerator = mcEvent->GetCocktailGenerator(label,generatorName);
 	  if((!hasGenerator) || (!generatorName.Contains(fGenToBeKept.Data())))
 	    continue;
-	  
 	  //Printf("mother =%d, generatorName=%s", label, generatorName.Data()); 
 	}
       }
