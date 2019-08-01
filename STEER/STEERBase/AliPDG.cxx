@@ -357,7 +357,7 @@ void AliPDG::AddParticlesToPdgDataBase()
   ionCode = 2010010030;
   if(!pdgDB->GetParticle(ionCode)){
     pdgDB->AddParticle("CTriton","CTriton", 4.162, kFALSE,
-       3.3e-12, 6, "Ion", ionCode);
+       3.3e-12, 3, "Ion", ionCode);
     pdgDB->AddAntiParticle("AntiCTriton", - ionCode);
   }
 
