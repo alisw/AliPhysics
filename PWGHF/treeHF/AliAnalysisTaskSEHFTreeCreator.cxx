@@ -2058,8 +2058,8 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                             bool isprompt = kFALSE;
                             bool isFD = kFALSE;
                             bool isrefl = kFALSE;
-                            
-                            if(isKKpi || isPhiKKpi || isK0starKKpi) {
+                          
+                            if((fWriteVariableTreeDs==3 && isKKpi) || (fWriteVariableTreeDs==1 && isPhiKKpi) || (fWriteVariableTreeDs==2 && isK0starKKpi)) {
                                 if(fReadMC) {
                                     if(labDs>=0) {
                                         if(orig==4 || orig==5) {
@@ -2088,7 +2088,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                             isprompt = kFALSE;
                             isFD = kFALSE;
                             isrefl = kFALSE;
-                            if(ispiKK || isPhipiKK || isK0starpiKK) {
+                            if((fWriteVariableTreeDs==3 && ispiKK) || (fWriteVariableTreeDs==1 && isPhipiKK) || (fWriteVariableTreeDs==2 && isK0starpiKK)) {
                                 if(fReadMC) {
                                     if(labDs>=0) {
                                         if(orig==4 || orig==5) {
@@ -2259,13 +2259,13 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                   Int_t isSelectedTrackAnalysis = fCutsLctopKpi->IsSelected(lctopkpi,AliRDHFCuts::kTracks,aod);
                   if(isSelectedTrackAnalysis > 0)                            isSelTracksAnCuts=kTRUE;
                   if(isSelectedAnalysis==1 || isSelectedAnalysis==3)         isSelAnCutspKpi=kTRUE;
-                  if(isSelectedAnalysis>2)                                   isSelAnCutspiKp=kTRUE;
+                  if(isSelectedAnalysis>=2)                                  isSelAnCutspiKp=kTRUE;
                   if(isSelectedTopoAnalysis==1 || isSelectedTopoAnalysis==3) isSelTopopKpi=kTRUE;
-                  if(isSelectedTopoAnalysis>2)                               isSelTopopiKp=kTRUE;
+                  if(isSelectedTopoAnalysis>=2)                              isSelTopopiKp=kTRUE;
                   if(isSelectedPidAnalysis==1 || isSelectedPidAnalysis==3)   isSelPIDpKpi=kTRUE;
-                  if(isSelectedPidAnalysis>2)                                isSelPIDpiKp=kTRUE;
+                  if(isSelectedPidAnalysis>=2)                               isSelPIDpiKp=kTRUE;
                   if(isSelectedFilt==1 || isSelectedFilt==3)                 ispKpi=kTRUE;
-                  if(isSelectedFilt>2)                                       ispiKp=kTRUE;
+                  if(isSelectedFilt>=2)                                      ispiKp=kTRUE;
 
                   Bool_t unsetvtx=kFALSE;
                   if(!lctopkpi->GetOwnPrimaryVtx()){
