@@ -346,6 +346,16 @@ void  AliMC::AddParticles()
 	//Anti-Lambda(1405)-Lambda(1405)
   TVirtualMC::GetMC()->DefineParticle(-1020000021, "AntiLambda1405Lambda1405", kPTNeutron, 2.693, 0.0, 1.316e-23,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
+  //c-deuteron
+  TVirtualMC::GetMC()->DefineParticle(2010010020, "CDeuteron", kPTHadron, 3.226 , 1.0, 2.0e-13,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
+  //Anti-c-deuteron
+  TVirtualMC::GetMC()->DefineParticle(-2010010020, "AntiCDeuteron", kPTHadron, 3.226 , 1.0, 2.0e-13,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
+
+  //c-triton
+  TVirtualMC::GetMC()->DefineParticle(2010010030, "CTriton", kPTHadron, 4.162 , 1.0, 2.0e-13,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  //Anti-c-Hypertriton
+  TVirtualMC::GetMC()->DefineParticle(-2010010030, "AntiCTriton", kPTHadron, 4.162 , 1.0, 2.0e-13,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
 
   //Resonances not in Generators
   // f0(980) assume 70 MeV as width (PDG: 40 to 100 MeV)
@@ -955,6 +965,92 @@ void  AliMC::AddParticles()
 
   TVirtualMC::GetMC()->SetDecayMode(-1020000021,abratio11,amode11);
 
+
+  // Define the decays for the c-triton
+  Int_t ctmode[6][3];
+  Float_t ctbratio[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+    ctbratio[kz] = 0.;
+    ctmode[kz][0] = 0;
+    ctmode[kz][1] = 0;
+    ctmode[kz][2] = 0;
+  }
+  ctbratio[0] = 50.;
+  ctmode[0][0] = 1000020030; // Helium3
+  ctmode[0][1] = 310; // K0s
+
+  ctbratio[1] = 50.;
+  ctmode[1][0] = 1000020030; // Helium3
+  ctmode[1][1] = -321; // negative kaon
+  ctmode[1][2] = 211; // positive pion
+
+  TVirtualMC::GetMC()->SetDecayMode(2010010030,ctbratio,ctmode);
+
+  // Define the decays for the anti-c-triton
+  Int_t actmode[6][3];
+  Float_t actbratio[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+    actbratio[kz] = 0.;
+    actmode[kz][0] = 0;
+    actmode[kz][1] = 0;
+    actmode[kz][2] = 0;
+    actmode[kz][3] = 0;
+  }
+  actbratio[0] = 50.;
+  actmode[0][0] = -1000020030; // Helium3
+  actmode[0][1] = 310; // K0s
+
+  actbratio[1] = 50.;
+  actmode[1][0] = -1000020030; // Helium3
+  actmode[1][1] = 321; // negative kaon
+  actmode[1][2] = -211; // positive pion
+
+  TVirtualMC::GetMC()->SetDecayMode(-2010010030,actbratio,actmode);
+
+
+  // Define the decays for the c-deuteron
+  Int_t cdmode[6][3];
+  Float_t cdbratio[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+    cdbratio[kz] = 0.;
+    cdmode[kz][0] = 0;
+    cdmode[kz][1] = 0;
+    cdmode[kz][2] = 0;
+  }
+  cdbratio[0] = 50.;
+  cdmode[0][0] = 1000010020; // deuteron
+  cdmode[0][1] = -321; // negative kaon
+  cdmode[0][1] = 211; // positive pion
+
+  cdbratio[1] = 50.;
+  cdmode[1][0] = 1000010020; // deuteron
+  cdmode[1][1] = 310; // K0s
+
+  TVirtualMC::GetMC()->SetDecayMode(2010010020,cdbratio,cdmode);
+
+  // Define the decays for the anti-c-deuteron
+  Int_t acdmode[6][3];
+  Float_t acdbratio[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+    acdbratio[kz] = 0.;
+    acdmode[kz][0] = 0;
+    acdmode[kz][1] = 0;
+    acdmode[kz][2] = 0;
+  }
+  acdbratio[0] = 50.;
+  acdmode[0][0] = -1000010020; // deuteron
+  acdmode[0][1] = 321; // negative kaon
+  acdmode[0][1] = -211; // positive pion
+
+  acdbratio[1] = 50.;
+  acdmode[1][0] = -1000010020; // deuteron
+  acdmode[1][1] = 310; // K0s
+
+  TVirtualMC::GetMC()->SetDecayMode(-2010010020,acdbratio,acdmode);
 
   ///////////////////////////////////////////////////////////////////
 
