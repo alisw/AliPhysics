@@ -21,6 +21,8 @@ class AliESDtools : public TNamed {
   static Double_t LoadESD(Int_t entry, Int_t verbose=0);
   /// caching
   Int_t  CacheTPCEventInformation();
+  Int_t  CacheITSVertexInformation(Bool_t doReset=1, Double_t dcaCut=0.05,  Double_t dcaZcut=0.15);
+  Int_t  CacheTOFEventInformation(Bool_t dumpStreamer=0);
   Int_t CalculateEventVariables();
   void TPCVertexFit(TH1F *hisVertex);
   Int_t  GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType, AliExternalTrackParam & paramNearest);
@@ -42,18 +44,25 @@ class AliESDtools : public TNamed {
   static Double_t GetVertexInfo(Int_t index){return (*fgInstance->fTPCVertexInfo)[index];}
   static Int_t SetDefaultAliases(TTree* tree);
   static Double_t SCachePileupVertexTPC(Int_t entry, Int_t doReset, Int_t verbose=0){ return fgInstance->CachePileupVertexTPC(entry, doReset, verbose);}
+  static Double_t SCacheITSVertexInformation(Bool_t doReset=1, Double_t dcaCut=0.05, Double_t dcaZcut=0.15){ return fgInstance->CacheITSVertexInformation(doReset, dcaCut, dcaZcut);}
+  //
+  static Double_t SCacheTOFEventInformation(Bool_t dumpStreamer){return fgInstance->CacheTOFEventInformation(dumpStreamer);}
+  static Double_t SGetTOFHitInfo(Int_t number, Int_t coord);
   //
   Int_t fVerbose;                                 // verbosity flag
   TTree *fESDtree;                                //! esd Tree pointer - class is not owner
   AliESDEvent * fEvent;                           //! esd event pointer - class is not owner
   AliPIDResponse   * fPIDResponse;                //! PID response object
   Bool_t   fTaskMode;                             // analysis task mode
+  TH1F *fHisITSVertex;                            // ITS z vertex histogram
   TH1F *fHisTPCVertexA;                           // TPC z vertex A side
   TH1F *fHisTPCVertexC;                           // TPC z vertex C side
   TH1F *fHisTPCVertex;                            //
   TH1F *fHisTPCVertexACut;                        //
   TH1F *fHisTPCVertexCCut;                        //
+
   TVectorF         * fTPCVertexInfo;              // TPC vertex info
+  TVectorF         * fITSVertexInfo;              // ITS vertex info
   TH1F             * fHistPhiTPCCounterA;         // helper histogram phi counters
   TH1F             * fHistPhiTPCCounterC;         // helper histogram phi counters
   TH1F             * fHistPhiTPCCounterAITS;      // helper histogram phi counters
