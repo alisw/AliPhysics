@@ -442,11 +442,11 @@ bool AliHFTreeHandler::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
 
 
 //________________________________________________________________
-void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand) {
+void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, Double_t invmass) {
 #ifdef HAVE_FASTJET
   AliHFJetFinder hfjetfinder;
   SetJetParameters(hfjetfinder); 
-  AliHFJet hfjet(hfjetfinder.GetHFJet(array,cand));
+  AliHFJet hfjet(hfjetfinder.GetHFJet(array,cand,invmass));
 	  
   SetJetTreeVars(hfjet);
 #else
