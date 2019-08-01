@@ -561,6 +561,13 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     double deltaPhi = tracklets->GetDeltaPhi(iTracklet);
     fHistTrackletThetaPhi->Fill(theta, phi);
     fHistTrackletDThetaDPhi->Fill(deltaTheta, deltaPhi);
+    
+    int id1{-1}, id2{-1};
+    tracklets->GetTrackletTrackIDs (iTracklet, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
+    
+    if (id1 >= 0 && id2 > 0)  /// Both points are used in a track
+      continue;
+
     if (std::abs(deltaPhi) > fMaxDeltaPhi)
       continue;
     if (std::abs(deltaTheta) > fMaxDeltaTheta)
@@ -581,6 +588,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
         trkl.fDeltaTheta = deltaTheta;
         trkl.fPhi = phi;
         trkl.fTheta = theta;
+        trkl.fSharedCluster = (id1 >= 0) || (id2 >= 0);
         if (tracklets->GetLabel(iTracklet, 0) == tracklets->GetLabel(iTracklet, 1) && fMC && tracklets->GetLabel(iTracklet, 0) >= 0)
         {
           int ilab = tracklets->GetLabel(iTracklet, 0);

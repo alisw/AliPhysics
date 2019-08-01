@@ -75,6 +75,7 @@ struct RTracklet
   float fPhi;
   Double32_t fDeltaTheta; //[-0.12,0.12,8]
   Double32_t fDeltaPhi;   //[-0.12,0.12,8]
+  bool fSharedCluster;
 };
 
 struct SHyperTritonHe3pi
