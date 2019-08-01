@@ -101,7 +101,7 @@ bool AliFemtoPairCutAntiGamma::Pass(const AliFemtoPair* pair)
         double e2 = TMath::Sqrt(me*me + p2.Mag2());
 
         double minv = 2*me*me + 2*(e1*e2 - p1.Dot(p2));
-        if ((minv < fMaxEEMinv) && (dtheta < fMaxDTheta)) {
+        if ((TMath::Abs(minv) < fMaxEEMinv) && (dtheta < fMaxDTheta)) {
             temp = false;
         }
     }
