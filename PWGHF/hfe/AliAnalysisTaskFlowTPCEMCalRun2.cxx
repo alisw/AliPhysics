@@ -132,7 +132,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fHistPhoReco0(0),
 	fHistPhoReco1(0),
 	fHistPhoReco2(0),
-	fPi000(0),
+	fPi000_0(0),
+	fPi000_1(0),
 	fEta000(0),
 	fHistPhoPi0(0),
 	fHistPhoEta(0),
@@ -294,7 +295,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fHistPhoReco0(0),
 	fHistPhoReco1(0),
 	fHistPhoReco2(0),
-	fPi000(0),
+	fPi000_0(0),
+	fPi000_1(0),
 	fEta000(0),
 	fHistPhoPi0(0),
 	fHistPhoEta(0),
@@ -615,9 +617,11 @@ fHistPhoReco2 = new TH1F("fHistPhoReco2","P_{T} (HFE)",500,0,100);
 fOutputList->Add(fHistPhoReco2);
 
 //Pi0 Weight
-fPi000 = new TF1("fPi000","[0]*x/pow([1]+x/[2]+x*x/[3],[4])",0,100);
-fPi000 -> SetParameters(7.10556e+01,7.23998e-02,6.81625e+00,2.94420e+00,2.46414e+00);
-//fOutputList -> Add(fPi000);
+fPi000_0 = new TF1("fPi000_0","[0]*x/pow([1]+x/[2],[3])");
+fPi000_0->SetParameters(0.937028,0.674846,9.02659,10.);
+fPi000_1 = new TF1("fPi000_1","[0]*x/pow([1]+x/[2],[3])");
+fPi000_1->SetParameters(2.7883,0.,2.5684,5.63827);
+
 
 //Eta Weight
 fEta000 = new TF1("fEta000","[0]*x/pow([1]+x/[2]+x*x/[3],[4])",0,100);
@@ -1706,8 +1710,14 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 	if(iEmbPi0){
 
 		cout << "pTmom=" << pTmom <<endl;
-
-		WeightPho = fPi000 -> Eval(pTmom);
+                if(pTmom<4.0)
+                   {
+		    WeightPho = fPi000_0 -> Eval(pTmom);
+                   }
+                else
+                   {
+		    WeightPho = fPi000_1 -> Eval(pTmom);
+                   }
 
 	}
 
