@@ -2664,10 +2664,14 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
       nFilteredLc2V0bachelor++;
       if((vHF->FillRecoCasc(aod,d,kFALSE,fLc2V0bachelorCalcSecoVtx))) {//Fill the data members of the candidate only if they are empty.
         
-        //TODO, add vHF->RecoSecondaryVertexForCascades() for fLc2V0bachelorCalcSecoVtx=kTRUE if so we want to save properties as d_len, cos_p for Lc also in pp/pPb
+        //Add vHF->RecoSecondaryVertexForCascades() for fLc2V0bachelorCalcSecoVtx=kTRUE if we want to save properties as d_len, cos_p for Lc also in pp/pPb. For PbPb it is automatically done with vHF->FillRecoCasc above
+        
+        //Automatically selects offline V0's. If one wants to use on-the-fly V0's some flag needs to be added
+        AliAODv0 * v0part = (AliAODv0*)d->Getv0();
+        Bool_t isOnFlyV0 = v0part->GetOnFlyStatus();
         
         Int_t isSelectedFilt = fFiltCutsLc2V0bachelor->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
-        if(isSelectedFilt > 0){
+        if(isSelectedFilt > 0 && !isOnFlyV0){
           fNentries->Fill(34);
           nSelectedLc2V0bachelor++;
           
