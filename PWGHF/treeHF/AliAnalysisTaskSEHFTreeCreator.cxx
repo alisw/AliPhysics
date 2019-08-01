@@ -173,6 +173,10 @@ fFileName(""),
 fDirNumber(0),
 fnTracklets(0),
 fnV0A(0),
+fTriggerMask(0),
+fTriggerFiredkINT7(false),
+fTriggerFiredkHighMultSPD(false),
+fTriggerFiredkHighMultV0(false),
 fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
@@ -765,7 +769,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     OpenFile(5);
     fTreeEvChar = new TTree("tree_event_char","tree_event_char");
     //set variables
-    TString varnames[10] = {"centrality", "z_vtx_reco", "n_vtx_contributors", "n_tracks", "is_ev_rej", "run_number", "ev_id", "n_tracklets", "V0Amult", "z_vtx_gen"};
+    TString varnames[14] = {"centrality", "z_vtx_reco", "n_vtx_contributors", "n_tracks", "is_ev_rej", "run_number", "ev_id", "n_tracklets", "V0Amult", "trigger_bitmap", "trigger_kINT7", "trigger_kHighMultSPD", "trigger_kHighMultV0", "z_vtx_gen"};
     fTreeEvChar->Branch(varnames[0].Data(),&fCentrality,Form("%s/F",varnames[0].Data()));
     fTreeEvChar->Branch(varnames[1].Data(),&fzVtxReco,Form("%s/F",varnames[1].Data()));
     fTreeEvChar->Branch(varnames[2].Data(),&fNcontributors,Form("%s/I",varnames[2].Data()));
@@ -775,7 +779,11 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeEvChar->Branch(varnames[6].Data(),&fEventID,Form("%s/i",varnames[6].Data()));
     fTreeEvChar->Branch(varnames[7].Data(),&fnTracklets,Form("%s/I",varnames[7].Data()));
     fTreeEvChar->Branch(varnames[8].Data(),&fnV0A,Form("%s/I",varnames[8].Data()));
-    if(fReadMC) fTreeEvChar->Branch(varnames[9].Data(),&fzVtxGen,Form("%s/F",varnames[9].Data()));
+    fTreeEvChar->Branch(varnames[9].Data(),&fTriggerMask,Form("%s/l",varnames[9].Data()));
+    fTreeEvChar->Branch(varnames[10].Data(),&fTriggerFiredkINT7,Form("%s/O",varnames[10].Data()));
+    fTreeEvChar->Branch(varnames[11].Data(),&fTriggerFiredkHighMultSPD,Form("%s/O",varnames[11].Data()));
+    fTreeEvChar->Branch(varnames[12].Data(),&fTriggerFiredkHighMultV0,Form("%s/O",varnames[12].Data()));
+    if(fReadMC) fTreeEvChar->Branch(varnames[13].Data(),&fzVtxGen,Form("%s/F",varnames[13].Data()));
     fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
 
     if(fWriteVariableTreeD0){
@@ -1337,6 +1345,12 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     }
     fnV0A=vzeroMultA;
     fEventID = GetEvID();
+    // Extract fired triggers
+    // Cast ULong64_t to UInt_t as there are only 30 trigger bits used in Run2
+    fTriggerMask = aod->GetTriggerMask();
+    fTriggerFiredkINT7 = (fTriggerMask&BIT(1));
+    fTriggerFiredkHighMultSPD = (fTriggerMask&BIT(3));
+    fTriggerFiredkHighMultV0 = (fTriggerMask&BIT(16));
    
     fTreeEvChar->Fill();
     
