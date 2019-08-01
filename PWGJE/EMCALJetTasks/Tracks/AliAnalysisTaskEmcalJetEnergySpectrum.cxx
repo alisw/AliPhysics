@@ -183,7 +183,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
 
 
   auto trgclusters = GetTriggerClustersANY();
-  if(!fIsMC && fRequestTriggerClusters) GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses().Data());
+  if(!fIsMC && fRequestTriggerClusters) trgclusters = GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses().Data());
   Double_t weight = 1.;
   if(fUseDownscaleWeight) {
     weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data(), fTriggerSelectionString.Data(), fUseMuonCalo));
