@@ -528,10 +528,11 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         FillTrackHistograms(trackV,dca,cov,TrackWeight);
     }
     AliJetContainer *  jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
-    fAnalysisCuts[bAnalysisCut_MinJetPt]=jetconrec->GetJetPtCut();
-    fAnalysisCuts[bAnalysisCut_MaxJetPt]=jetconrec->GetJetPtCutMax();
-    fAnalysisCuts[bAnalysisCut_MinJetEta]=jetconrec->GetMinEta();
-    fAnalysisCuts[bAnalysisCut_MaxJetEta]=jetconrec->GetMaxEta();
+    //fAnalysisCuts[bAnalysisCut_MinJetPt]=jetconrec->GetJetPtCut();
+    //fAnalysisCuts[bAnalysisCut_MaxJetPt]=jetconrec->GetJetPtCutMax();
+    //fAnalysisCuts[bAnalysisCut_MinJetEta]=jetconrec->GetMinEta();
+    //fAnalysisCuts[bAnalysisCut_MaxJetEta]=jetconrec->GetMaxEta();
+
     //printf("In Program %f < jetpt <%f, %f < jeteta < %f\n",fAnalysisCuts[bAnalysisCut_MinJetPt],fAnalysisCuts[bAnalysisCut_MaxJetPt],fAnalysisCuts[bAnalysisCut_MinJetEta],fAnalysisCuts[bAnalysisCut_MaxJetEta] );
     FillHist("fh1dNoJetsPerEvent",jetconrec->GetNJets(),1);
 
@@ -1026,6 +1027,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                                 sImpParXYZ.clear();
                                 sImpParXYZSig.clear();
                             }//end jetloop
+
                             return kTRUE;
                         }
 
@@ -1757,10 +1759,17 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     PostData(1, fOutput);
 }
 
-void AliAnalysisTaskHFJetIPQA::PrintSettings(){
-    fOutput=dynamic_cast<AliEmcalList*>(GetOutputData(1));
-    fh1dCuts=dynamic_cast<TH1D*>(fOutput->First());
+void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
+    AliJetContainer *  jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+    fAnalysisCuts[bAnalysisCut_MinJetPt]=jetconrec->GetJetPtCut();
+    fAnalysisCuts[bAnalysisCut_MaxJetPt]=jetconrec->GetJetPtCutMax();
+    fAnalysisCuts[bAnalysisCut_MinJetEta]=jetconrec->GetMinEta();
+    fAnalysisCuts[bAnalysisCut_MaxJetEta]=jetconrec->GetMaxEta();
 
+    PrintSettings();
+}
+
+void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     TString jetcuts="";
     TString trackcuts="";
     TString vertexcuts="";
@@ -3671,8 +3680,6 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculatePSTrackPID(Double_t sign, Double_t s
 
 
 void AliAnalysisTaskHFJetIPQA::Terminate(Option_t *){
-
-    PrintSettings();
 
     printf("\n*********************************\n");
     printf("Corrections:\n");
