@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/07/30
+//  Last Modified Date: 2019/08/01
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -281,10 +281,11 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
             fHistos->CreateTH1("hMult_QA", "", 100, 0, 0.1, "s");
             fHistos->CreateTH1("hMult_QA_onlyMult", "", 100, 0, 0.1, "s");
             fHistos->CreateTH1("hMult_SkippedDataQA", "", 100, 0, 0.1, "s");
+            fHistos->CreateTH1("hMult_ProcessedDataQA", "", 100, 0, 0.1, "s");
         } else {
             fHistos->CreateTH1("hMult_QA", "", 1000, 0, 100, "s");
             fHistos->CreateTH1("hMult_QA_onlyMult", "", 1000, 0, 100, "s");
-            fHistos->CreateTH1("hMult_SkippedDataQA", "", 100, 0, 100, "s");
+            fHistos->CreateTH1("hMult_ProcessedDataQA", "", 100, 0, 100, "s");
         }
         fHistos->CreateTH2("hPhiEta", "", 180, 0, 2 * pi, 40, -2, 2);
         // T P C   P I D
@@ -488,9 +489,9 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     const AliVVertex* pVtx = fEvt->GetPrimaryVertex();
     // const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTracks() ;
     const AliVVertex* spdVtx = fEvt->GetPrimaryVertexSPD();
-    PVx = pVtx->GetX();
-    PVy = pVtx->GetY();
-    PVz = pVtx->GetZ();
+    lPosPV[0] = pVtx->GetX();
+    lPosPV[1] = pVtx->GetY();
+    lPosPV[2] = pVtx->GetZ();
     fZ = spdVtx->GetZ();
 
     // Initialize
@@ -963,20 +964,20 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
             // DCA to PV
             Double_t fDCADist_Lambda_PV =
-                fabs(Xicandidate->GetD(PVx, PVy, PVz));
+                fabs(Xicandidate->GetD(lPosPV[0], lPosPV[1], lPosPV[2]));
             Double_t fDCADist_Xi_PV =
-                fabs(Xicandidate->GetDcascade(PVx, PVy, PVz));
+                fabs(Xicandidate->GetDcascade(lPosPV[0], lPosPV[1], lPosPV[2]));
             if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
                 fDCADist_LambdaProton_PV =
-                    fabs(pTrackXi->GetD(PVx, PVy, bField));
-                fDCADist_LambdaPion_PV = fabs(nTrackXi->GetD(PVx, PVy, bField));
+                    fabs(pTrackXi->GetD(lPosPV[0], lPosPV[1], bField));
+                fDCADist_LambdaPion_PV = fabs(nTrackXi->GetD(lPosPV[0], lPosPV[1], bField));
             } else {
                 fDCADist_LambdaProton_PV =
-                    fabs(nTrackXi->GetD(PVx, PVy, bField));
-                fDCADist_LambdaPion_PV = fabs(pTrackXi->GetD(PVx, PVy, bField));
+                    fabs(nTrackXi->GetD(lPosPV[0], lPosPV[1], bField));
+                fDCADist_LambdaPion_PV = fabs(pTrackXi->GetD(lPosPV[0], lPosPV[1], bField));
             }
             Double_t fDCADist_BachelorPion_PV =
-                fabs(bTrackXi->GetD(PVx, PVy, bField));
+                fabs(bTrackXi->GetD(lPosPV[0], lPosPV[1], bField));
             if (fQA) {
                 fHistos->FillTH1("hDCADist_lambda_to_PV", fDCADist_Lambda_PV);
                 fHistos->FillTH1("hDCADist_Xi_to_PV", fDCADist_Xi_PV);
@@ -997,10 +998,15 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             // CPA cut
             Double_t cX, cY, cZ;
             Xicandidate->GetXYZcascade(cX, cY, cZ);
-            Double_t fLambdaCPA =
-                Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
+            Double_t fLambdaCPA;
+            if (!fCPAstudy)
+                fLambdaCPA =
+                    Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
+            else
+                fLambdaCPA =
+                    Xicandidate->GetV0CosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
             Double_t fXiCPA =
-                Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
+                Xicandidate->GetCascadeCosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
             if (fQA) {
                 fHistos->FillTH1("hCosPA_lambda", fLambdaCPA);
                 fHistos->FillTH1("hCosPA_Xi", fXiCPA);
@@ -1208,7 +1214,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             Double_t fDCADist_Lambda_PV =
                 fabs(Xicandidate_aod->DcaV0ToPrimVertex());
             Double_t fDCADist_Xi_PV =
-                fabs(Xicandidate_aod->DcaXiToPrimVertex(PVx, PVy, PVz));
+                fabs(Xicandidate_aod->DcaXiToPrimVertex(lPosPV[0], lPosPV[1], lPosPV[2]));
             if (Xicandidate_aod->ChargeXi() == -1) {  // Xi- has +proton, -pion
                 fDCADist_LambdaProton_PV =
                     fabs(Xicandidate_aod->DcaPosToPrimVertex());
@@ -1244,10 +1250,13 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             lPosXi[0] = Xicandidate_aod->DecayVertexXiX();
             lPosXi[1] = Xicandidate_aod->DecayVertexXiY();
             lPosXi[2] = Xicandidate_aod->DecayVertexXiZ();
-
-            Double_t fLambdaCPA = Xicandidate_aod->CosPointingAngle(lPosXi);
+            Double_t fLambdaCPA;
+            if (!fCPAstudy)
+                fLambdaCPA = Xicandidate_aod->CosPointingAngle(lPosXi);
+            else
+                fLambdaCPA = Xicandidate_aod->CosPointingAngle(lPosPV);
             Double_t fXiCPA =
-                Xicandidate_aod->CosPointingAngleXi(PVx, PVy, PVz);
+                Xicandidate_aod->CosPointingAngleXi(lPosPV[0], lPosPV[1], lPosPV[2]);
             if (fQA) {
                 fHistos->FillTH1("hCosPA_lambda", fLambdaCPA);
                 fHistos->FillTH1("hCosPA_Xi", fXiCPA);
@@ -1481,9 +1490,9 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // DCA Lambda to PV Check
                 Double_t fDCADist_Lambda_PV =
-                    fabs(Xicandidate->GetD(PVx, PVy, PVz));
+                    fabs(Xicandidate->GetD(lPosPV[0], lPosPV[1], lPosPV[2]));
                 Double_t fDCADist_Xi_PV =
-                    fabs(Xicandidate->GetDcascade(PVx, PVy, PVz));
+                    fabs(Xicandidate->GetDcascade(lPosPV[0], lPosPV[1], lPosPV[2]));
                 if ((SysCheck.at(sys) != "DCADistLambdaPVLoose") &&
                     (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)) {
                     AliInfo(Form("DCADistLambdaPV! %f %s", fDCADist_Lambda_PV,
@@ -1498,10 +1507,15 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 // CPA Check
                 Double_t cX, cY, cZ;
                 Xicandidate->GetXYZcascade(cX, cY, cZ);
-                Double_t fLambdaCPA =
-                    Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
+                Double_t fLambdaCPA;
+                if (!fCPAstudy)
+                    fLambdaCPA =
+                        Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
+                else
+                    fLambdaCPA =
+                        Xicandidate->GetV0CosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
                 Double_t fXiCPA =
-                    Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
+                    Xicandidate->GetCascadeCosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
 
                 if ((SysCheck.at(sys) != "V0CosineOfPointingAngleLoose") &&
                     (fLambdaCPA < fV0CosineOfPointingAngleCut)) {
@@ -1599,28 +1613,28 @@ void AliAnalysisTaskXi1530::FillTracks() {
                                 -1) {  // Xi- has +proton, -pion
                                 fHistos->FillTH1(
                                     "hDCADist_LambdaProton_to_PV_TrueMC",
-                                    fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                    fabs(pTrackXi->GetD(lPosPV[0], lPosPV[1], bField)));
                                 fHistos->FillTH1(
                                     "hDCADist_LambdaPion_to_PV_TrueMC",
-                                    fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                                    fabs(nTrackXi->GetD(lPosPV[0], lPosPV[1], bField)));
                             } else {
                                 fHistos->FillTH1(
                                     "hDCADist_LambdaProton_to_PV_TrueMC",
-                                    fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                                    fabs(nTrackXi->GetD(lPosPV[0], lPosPV[1], bField)));
                                 fHistos->FillTH1(
                                     "hDCADist_LambdaPion_to_PV_TrueMC",
-                                    fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                    fabs(pTrackXi->GetD(lPosPV[0], lPosPV[1], bField)));
                             }
                             fHistos->FillTH1(
                                 "hDCADist_BachelorPion_to_PV_TrueMC",
-                                fabs(bTrackXi->GetD(PVx, PVy, bField)));
+                                fabs(bTrackXi->GetD(lPosPV[0], lPosPV[1], bField)));
 
                             fHistos->FillTH1(
                                 "hDCADist_lambda_to_PV_TrueMC",
-                                fabs(Xicandidate->GetD(PVx, PVy, PVz)));
+                                fabs(Xicandidate->GetD(lPosPV[0], lPosPV[1], lPosPV[2])));
                             fHistos->FillTH1(
                                 "hDCADist_Xi_to_PV_TrueMC",
-                                fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
+                                fabs(Xicandidate->GetDcascade(lPosPV[0], lPosPV[1], lPosPV[2])));
 
                             fHistos->FillTH2("hPhiEta_Xi_TrueMC",
                                              Xicandidate->Phi(),
@@ -1659,10 +1673,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
                                              nTrackXi->GetTPCsignal());
                             fHistos->FillTH1(
                                 "hDCADist_LambdaProton_to_PV_cut",
-                                fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                fabs(pTrackXi->GetD(lPosPV[0], lPosPV[1], bField)));
                             fHistos->FillTH1(
                                 "hDCADist_LambdaPion_to_PV_cut",
-                                fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                                fabs(nTrackXi->GetD(lPosPV[0], lPosPV[1], bField)));
                         } else {  // Xi+ has -proton, +pion
                             fHistos->FillTH2("hTPCPIDLambdaProton_cut",
                                              nTrackXi->GetTPCmomentum(),
@@ -1672,10 +1686,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
                                              pTrackXi->GetTPCsignal());
                             fHistos->FillTH1(
                                 "hDCADist_LambdaProton_to_PV_cut",
-                                fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                                fabs(nTrackXi->GetD(lPosPV[0], lPosPV[1], bField)));
                             fHistos->FillTH1(
                                 "hDCADist_LambdaPion_to_PV_cut",
-                                fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                fabs(pTrackXi->GetD(lPosPV[0], lPosPV[1], bField)));
                         }
                         fHistos->FillTH2("hTPCPIDBachelorPion_cut",
                                          bTrackXi->GetTPCmomentum(),
@@ -1699,10 +1713,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
                                          fDCADist_Lambda_PV);
                         fHistos->FillTH1(
                             "hDCADist_Xi_to_PV_cut",
-                            fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
+                            fabs(Xicandidate->GetDcascade(lPosPV[0], lPosPV[1], lPosPV[2])));
                         fHistos->FillTH1(
                             "hDCADist_BachelorPion_to_PV_cut",
-                            fabs(bTrackXi->GetD(PVx, PVy, bField)));
+                            fabs(bTrackXi->GetD(lPosPV[0], lPosPV[1], bField)));
                         fHistos->FillTH1("hDCADist_Xi1530pion_to_PV_cut",
                                          pionZ);
                         // CPA QA
@@ -1802,8 +1816,12 @@ void AliAnalysisTaskXi1530::FillTracks() {
     if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
         Int_t epsize = ep.size();
-        if (epsize < fnMix)
+        if (epsize < fnMix) {
+            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
             return;
+        }
+        fHistos->FillTH1("hMult_ProcessedDataQA", (double)fCent);
+
         Int_t nForSkipSameEvent = 0;
         for (auto pool : ep) {
             if (nForSkipSameEvent == (epsize - 1))
@@ -1886,17 +1904,22 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // DCA Lambda to PV Check
                 Double_t fDCADist_Lambda_PV =
-                    fabs(Xicandidate->GetD(PVx, PVy, PVz));
+                    fabs(Xicandidate->GetD(lPosPV[0], lPosPV[1], lPosPV[2]));
                 if (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)
                     continue;
 
                 // CPA Check
                 Double_t cX, cY, cZ;
                 Xicandidate->GetXYZcascade(cX, cY, cZ);
-                Double_t fLambdaCPA =
-                    Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
+                Double_t fLambdaCPA;
+                if (!fCPAstudy)
+                    fLambdaCPA =
+                        Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
+                else
+                    fLambdaCPA =
+                        Xicandidate->GetV0CosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
                 Double_t fXiCPA =
-                    Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
+                    Xicandidate->GetCascadeCosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
 
                 if (fLambdaCPA < fV0CosineOfPointingAngleCut)
                     continue;
@@ -1914,10 +1937,6 @@ void AliAnalysisTaskXi1530::FillTracks() {
             }
         }
     }       // mix loop
-    else {  // Count how many signals we lost due to the event cut
-        if (fsetmixing)
-            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
-    }
 }
 void AliAnalysisTaskXi1530::FillTracksAOD() {
     AliVTrack* track1;         // charged track, pion
@@ -2060,7 +2079,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 Double_t fDCADist_Lambda_PV =
                     fabs(Xicandidate->DcaV0ToPrimVertex());
                 Double_t fDCADist_Xi_PV =
-                    fabs(Xicandidate->DcaXiToPrimVertex(PVx, PVy, PVz));
+                    fabs(Xicandidate->DcaXiToPrimVertex(lPosPV[0], lPosPV[1], lPosPV[2]));
                 if ((SysCheck.at(sys) != "DCADistLambdaPVLoose") &&
                     (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)){
                     AliInfo(Form("DCADistLambdaPV! %f %s", fDCADist_Lambda_PV,
@@ -2077,10 +2096,13 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 lPosXi[0] = Xicandidate->DecayVertexXiX();
                 lPosXi[1] = Xicandidate->DecayVertexXiY();
                 lPosXi[2] = Xicandidate->DecayVertexXiZ();
-
-                Double_t fLambdaCPA = Xicandidate->CosPointingAngle(lPosXi);
+                Double_t fLambdaCPA;
+                if (!fCPAstudy)
+                    fLambdaCPA = Xicandidate->CosPointingAngle(lPosXi);
+                else
+                    fLambdaCPA = Xicandidate->CosPointingAngle(lPosPV);
                 Double_t fXiCPA =
-                    Xicandidate->CosPointingAngleXi(PVx, PVy, PVz);
+                    Xicandidate->CosPointingAngleXi(lPosPV[0], lPosPV[1], lPosPV[2]);
 
                 if ((SysCheck.at(sys) != "V0CosineOfPointingAngleLoose") &&
                     (fLambdaCPA < fV0CosineOfPointingAngleCut)){
@@ -2384,8 +2406,12 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
         Int_t epsize = ep.size();
-        if (epsize < fnMix)
+        if (epsize < fnMix){
+            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
             return;
+        }
+        fHistos->FillTH1("hMult_ProcessedDataQA", (double)fCent);
+
         Int_t nForSkipSameEvent = 0;
         for (auto pool : ep) {
             if (nForSkipSameEvent == (epsize - 1))
@@ -2472,10 +2498,13 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 lPosXi[0] = Xicandidate->DecayVertexXiX();
                 lPosXi[1] = Xicandidate->DecayVertexXiY();
                 lPosXi[2] = Xicandidate->DecayVertexXiZ();
-
-                Double_t fLambdaCPA = Xicandidate->CosPointingAngle(lPosXi);
+                Double_t fLambdaCPA;
+                if (!fCPAstudy)
+                    fLambdaCPA = Xicandidate->CosPointingAngle(lPosXi);
+                else
+                    fLambdaCPA = Xicandidate->CosPointingAngle(lPosPV);
                 Double_t fXiCPA =
-                    Xicandidate->CosPointingAngleXi(PVx, PVy, PVz);
+                    Xicandidate->CosPointingAngleXi(lPosPV[0], lPosPV[1], lPosPV[2]);
 
                 if (fLambdaCPA < fV0CosineOfPointingAngleCut)
                     continue;
@@ -2493,10 +2522,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
             }
         }
     }       // mix loop
-    else {  // Count how many signals we lost due to the event cut
-        if (fsetmixing)
-            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
-    }
 }
 void AliAnalysisTaskXi1530::Terminate(Option_t*) {}
 
