@@ -152,24 +152,15 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
   // is written to the output.
   //
   TFile *resfileCur=TFile::Open(resfileCurURI);
-  fD0RPResPCur =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResP" )));
-  fD0RPResKCur =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResK" )));
-  fD0RPResPiCur=new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPi")));
-  fD0ZResPCur  =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0ZResP"  )));
-  fD0ZResKCur  =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0ZResK"  )));
-  fD0ZResPiCur =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0ZResPi" )));
-  fPt1ResPCur  =new TGraph(*static_cast<TGraph*>(resfileCur->Get("Pt1ResP"  )));
-  fPt1ResKCur  =new TGraph(*static_cast<TGraph*>(resfileCur->Get("Pt1ResK"  )));
-  fPt1ResPiCur =new TGraph(*static_cast<TGraph*>(resfileCur->Get("Pt1ResPi" )));
-  fD0RPResPCur ->SetName("D0RPResPCur" );
-  fD0RPResKCur ->SetName("D0RPResKCur" );
-  fD0RPResPiCur->SetName("D0RPResPiCur");
-  fD0ZResPCur  ->SetName("D0ZResPCur"  ); 
-  fD0ZResKCur  ->SetName("D0ZResKCur"  );
-  fD0ZResPiCur ->SetName("D0ZResPiCur" );
-  fPt1ResPCur  ->SetName("Pt1ResPCur"  );
-  fPt1ResKCur  ->SetName("Pt1ResKCur"  );
-  fPt1ResPiCur ->SetName("Pt1ResPiCur" );
+  fD0RPResPCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0RPResP" )))->Clone("fD0RPResPCur"));
+  fD0RPResKCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0RPResK" )))->Clone("fD0RPResKCur"));
+  fD0RPResPiCur = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0RPResPi" )))->Clone("fD0RPResPiCur"));
+  fD0ZResPCur   = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0ZResP" )))->Clone("fD0ZResPCur"));
+  fD0ZResKCur   = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0ZResK" )))->Clone("fD0ZResKCur"));
+  fD0ZResPiCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0ZResPi" )))->Clone("fD0ZResPiCur"));
+  fPt1ResPCur   = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("Pt1ResP" )))->Clone("fPt1ResPCur"));
+  fPt1ResKCur   = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("Pt1ResK" )))->Clone("fPt1ResKCur"));
+  fPt1ResPiCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("Pt1ResPi" )))->Clone("fPt1ResPiCur"));
 /*  fD0RPResPCurSA =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPSA" )));
   fD0RPResKCurSA =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResKSA" )));
   fD0RPResPiCurSA=new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPiSA")));
@@ -190,25 +181,18 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
   fPt1ResPiCurSA ->SetName("Pt1ResPiCurSA" );
 */
   delete resfileCur;
+
   TFile *resfileUpg=TFile::Open(resfileUpgURI );
-  fD0RPResPUpg =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResP" )));
-  fD0RPResKUpg =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResK" )));
-  fD0RPResPiUpg=new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResPi")));
-  fD0ZResPUpg  =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0ZResP"  )));
-  fD0ZResKUpg  =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0ZResK"  )));
-  fD0ZResPiUpg =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0ZResPi" )));
-  fPt1ResPUpg  =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("Pt1ResP"  )));
-  fPt1ResKUpg  =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("Pt1ResK"  )));
-  fPt1ResPiUpg =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("Pt1ResPi" )));
-  fD0RPResPUpg ->SetName("D0RPResPUpg" );
-  fD0RPResKUpg ->SetName("D0RPResKUpg" );
-  fD0RPResPiUpg->SetName("D0RPResPiUpg");
-  fD0ZResPUpg  ->SetName("D0ZResPUpg"  );
-  fD0ZResKUpg  ->SetName("D0ZResKUpg"  );
-  fD0ZResPiUpg ->SetName("D0ZResPiUpg" );
-  fPt1ResPUpg  ->SetName("Pt1ResPUpg"  );
-  fPt1ResKUpg  ->SetName("Pt1ResKUpg"  );
-  fPt1ResPiUpg ->SetName("Pt1ResPiUpg" );
+  fD0RPResPUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0RPResP" )))->Clone("D0RPResPUpg"));
+  fD0RPResKUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0RPResK" )))->Clone("fD0RPResKUpg"));
+  fD0RPResPiUpg = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0RPResPi" )))->Clone("fD0RPResPiUpg"));
+  fD0ZResPUpg   = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0ZResP" )))->Clone("fD0ZResPUpg"));
+  fD0ZResKUpg   = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0ZResK" )))->Clone("fD0ZResKUpg"));
+  fD0ZResPiUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0ZResPi" )))->Clone("fD0ZResPiUpg"));
+  fPt1ResPUpg   = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("Pt1ResP" )))->Clone("fPt1ResPUpg"));
+  fPt1ResKUpg   = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("Pt1ResK" )))->Clone("fPt1ResKUpg"));
+  fPt1ResPiUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("Pt1ResPi" )))->Clone("fPt1ResPiUpg"));
+  
   /*fD0RPResPUpgSA =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResPSA" )));
   fD0RPResKUpgSA =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResKSA" )));
   fD0RPResPiUpgSA=new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResPiSA")));
@@ -230,7 +214,7 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
 */
   delete resfileUpg;
 
-  DefineOutput(1,TNtuple::Class());
+  DefineOutput(1,TList::Class());
 }
 
 AliAnalysisTaskSEImproveITS3::~AliAnalysisTaskSEImproveITS3() {
