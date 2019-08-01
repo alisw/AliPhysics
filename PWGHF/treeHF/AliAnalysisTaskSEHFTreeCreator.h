@@ -30,6 +30,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include "TProfile.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
@@ -86,6 +87,18 @@ public:
     virtual Bool_t RetrieveEventObjects();
     virtual void Terminate(Option_t *option);
     
+    void SetRefMult(Double_t refMult) { fRefMult = refMult; }
+    Double_t GetRefMult() { return fRefMult; }
+    void SetMultiplVsZProfile(std::string period, TProfile *hprof)
+    {
+        delete fMultEstimatorAvg[period];
+        fMultEstimatorAvg[period] = new TProfile(*hprof);
+    }
+    std::string GetPeriod(const AliVEvent *ev);
+    void SetCorrNtrVtx(bool corr = true) { fCorrNtrVtx = corr; }
+    bool GetCorrNtrVtx() const { return fCorrNtrVtx; }
+    void SetCorrV0MVtx(bool corr = true) { fCorrV0MVtx = corr; }
+    bool GetCorrV0MVtx() const { return fCorrV0MVtx; }
     
     void SetReadMC(Bool_t opt=kFALSE){fReadMC=opt;}
     void SetSystem(Int_t opt){fSys=opt;}
@@ -275,11 +288,17 @@ private:
     TString                 fFileName;
     unsigned int            fDirNumber;
     Int_t                   fnTracklets;                           /// number of tracklets
+    Int_t                   fnTrackletsCorr;                       /// number of tracklets (corrected)
+    Double_t                fRefMult;                              /// reference multiplicity
     Int_t                   fnV0A;                                 /// V0A multiplicity 
     ULong64_t               fTriggerMask;                          /// Trigger mask bitmap
     Bool_t                  fTriggerFiredkINT7;                    /// Flag explicitly whether kINT7 trigger fired
     Bool_t                  fTriggerFiredkHighMultSPD;             /// Flag explicitly whether kHighMultSPD trigger fired
     Bool_t                  fTriggerFiredkHighMultV0;              /// Flag explicitly whether kHighMultV0 trigger fired
+    Int_t                   fnV0M;                                 /// V0M multiplicity
+    Int_t                   fnV0MEq;                               /// V0M multiplicity (equalized)
+    Int_t                   fnV0MCorr;                             /// V0M multiplicity (corrected)
+    Int_t                   fnV0MEqCorr;                           /// V0M multiplicity (equalized + corrected)
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
@@ -353,6 +372,10 @@ private:
   
     bool fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
     int fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
+
+    std::map<std::string, TProfile*> fMultEstimatorAvg;
+    bool fCorrNtrVtx;
+    bool fCorrV0MVtx;
 
     /// \cond CLASSIMP
     ClassDef(AliAnalysisTaskSEHFTreeCreator,14);
