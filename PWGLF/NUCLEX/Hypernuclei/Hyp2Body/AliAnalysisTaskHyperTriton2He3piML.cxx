@@ -305,6 +305,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
         v0part.fPzPi = pi->Pz();
         v0part.fFake = true;
         v0part.fRecoIndex = -1;
+        v0part.fRecoTracklet = -1;
         v0part.fNegativeLabels = true;
         mcMap[ilab] = fSHyperTriton.size();
         fSHyperTriton.push_back(v0part);
