@@ -91,144 +91,7 @@ ClassImp(AliAnalysisTaskSEHFTreeCreator);
 
 //________________________________________________________________________
 AliAnalysisTaskSEHFTreeCreator::AliAnalysisTaskSEHFTreeCreator():
-AliAnalysisTaskSE(),
-fEventNumber(0),
-fNentries(0x0),
-fHistoNormCounter(0x0),
-fListCuts(0x0),
-fFiltCutsD0toKpi(0x0),
-fFiltCutsDstoKKpi(0x0),
-fFiltCutsDplustoKpipi(0x0),
-fFiltCutsLctopKpi(0x0),
-fFiltCutsBplustoD0pi(0x0),
-fFiltCutsDstartoKpipi(0x0),
-fFiltCutsLc2V0bachelor(0x0),
-fCutsD0toKpi(0x0),
-fCutsDstoKKpi(0x0),
-fCutsDplustoKpipi(0x0),
-fCutsLctopKpi(0x0),
-fCutsBplustoD0pi(0x0),
-fCutsDstartoKpipi(0x0),
-fCutsLc2V0bachelor(0x0),
-fEvSelectionCuts(0x0),
-fReadMC(0),
-fListCounter(0x0),
-fCounter(0x0),
-fUseSelectionBit(kTRUE),
-fSys(0),
-fAODProtection(1),
-fWriteVariableTreeD0(0),
-fWriteVariableTreeDs(0),
-fWriteVariableTreeDplus(0),
-fWriteVariableTreeLctopKpi(0),
-fWriteVariableTreeBplus(0),
-fWriteVariableTreeDstar(0),
-fWriteVariableTreeLc2V0bachelor(0),
-fVariablesTreeD0(0x0),
-fVariablesTreeDs(0x0),
-fVariablesTreeDplus(0x0),
-fVariablesTreeLctopKpi(0x0),
-fVariablesTreeBplus(0x0),
-fVariablesTreeDstar(0x0),
-fVariablesTreeLc2V0bachelor(0x0),
-fGenTreeD0(0x0),
-fGenTreeDs(0x0),
-fGenTreeDplus(0x0),
-fGenTreeLctopKpi(0x0),
-fGenTreeBplus(0x0),
-fGenTreeDstar(0x0),
-fGenTreeLc2V0bachelor(0x0),
-fTreeEvChar(0x0),
-fWriteOnlySignal(kFALSE),
-fTreeHandlerD0(0x0),
-fTreeHandlerDs(0x0),
-fTreeHandlerDplus(0x0),
-fTreeHandlerLctopKpi(0x0),
-fTreeHandlerBplus(0x0),
-fTreeHandlerDstar(0x0),
-fTreeHandlerLc2V0bachelor(0x0),
-fTreeHandlerGenD0(0x0),
-fTreeHandlerGenDs(0x0),
-fTreeHandlerGenDplus(0x0),
-fTreeHandlerGenLctopKpi(0x0),
-fTreeHandlerGenBplus(0x0),
-fTreeHandlerGenDstar(0x0),
-fTreeHandlerGenLc2V0bachelor(0x0),
-fPIDresp(0x0),
-fPIDoptD0(AliHFTreeHandler::kRawAndNsigmaPID),
-fPIDoptDs(AliHFTreeHandler::kRawAndNsigmaPID),
-fPIDoptDplus(AliHFTreeHandler::kRawAndNsigmaPID),
-fPIDoptLctopKpi(AliHFTreeHandler::kRawAndNsigmaPID),
-fPIDoptBplus(AliHFTreeHandler::kRawAndNsigmaPID),
-fPIDoptDstar(AliHFTreeHandler::kRawAndNsigmaPID),
-fPIDoptLc2V0bachelor(AliHFTreeHandler::kRawAndNsigmaPID),
-fCentrality(-999.),
-fzVtxReco(0.),
-fzVtxGen(0.),
-fNcontributors(0),
-fNtracks(0),
-fIsEvRej(0),
-fRunNumber(0),
-fEventID(0),
-fFileName(""),
-fDirNumber(0),
-fnTracklets(0),
-fnTrackletsCorr(0),
-fRefMult(9.26),
-fnV0A(0),
-fTriggerMask(0),
-fTriggerFiredkINT7(false),
-fTriggerFiredkHighMultSPD(false),
-fTriggerFiredkHighMultV0(false),
-fnV0M(0),
-fnV0MEq(0),
-fnV0MCorr(0),
-fnV0MEqCorr(0),
-fFillMCGenTrees(kTRUE),
-fDsMassKKOpt(1),
-fLc2V0bachelorCalcSecoVtx(0),
-fTreeSingleTrackVarsOpt(AliHFTreeHandler::kRedSingleTrackVars),
-fJetRadius(0.4),
-fSubJetRadius(0.2),
-fJetAlgorithm(JetAlgorithm::antikt),
-fSubJetAlgorithm(JetAlgorithm::ca),
-fMinJetPt(0.0),
-fFillParticleTree(false),
-fFillTrackletTree(false),
-fVariablesTreeParticle(0),
-fVariablesTreeTracklet(0),
-fVariablesTreeGenParticle(0),
-fTreeHandlerParticle(nullptr),
-fTreeHandlerTracklet(nullptr),
-fTreeHandlerGenParticle(nullptr),
-fParticleCollArray(),
-fWriteNJetTrees(0),
-fFillJetConstituentTrees(false),
-fVariablesTreeJet(0),
-fVariablesTreeJetConstituent(0),
-fTreeHandlerJet(0),
-fLocalInitialized(kFALSE),
-fJetCollArray(),
-fMinJetPtCorr(0.),
-fRhoName(),
-fRho(0),
-fRhoVal(0),
-fFillJetEtaPhi(false),
-fFillPtCorr(false),
-fFillPtUncorr(false),
-fFillArea(false),
-fFillNConstituents(false),
-fFillZLeading(false),
-fFillRadialMoment(false),
-fFillpTD(false),
-fFillMass(false),
-fFillMatchingJetID(false),
-fFillJets(false),
-fDoJetSubstructure(false),
-fEnableNsigmaTPCDataCorr(false),
-fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone),
-fCorrNtrVtx(false),
-fCorrV0MVtx(false)
+AliAnalysisTaskSEHFTreeCreator("", nullptr, 0, false)
 {
 
 /// Default constructor
@@ -379,51 +242,6 @@ fCorrV0MVtx(false)
     fParticleCollArray.SetOwner(kTRUE);
     fJetCollArray.SetOwner(kTRUE);
   
-    if(fFiltCutsD0toKpi){
-    delete fFiltCutsD0toKpi;fFiltCutsD0toKpi=NULL;
-    }
-    if(fFiltCutsDstoKKpi){
-    delete fFiltCutsDstoKKpi;fFiltCutsDstoKKpi=NULL;
-    }
-    if(fFiltCutsDplustoKpipi){
-    delete fFiltCutsDplustoKpipi;fFiltCutsDplustoKpipi=NULL;
-    }
-    if(fFiltCutsLctopKpi){
-    delete fFiltCutsLctopKpi;fFiltCutsLctopKpi=NULL;
-    }
-    if(fFiltCutsBplustoD0pi){
-    delete fFiltCutsBplustoD0pi;fFiltCutsBplustoD0pi=NULL;
-    }
-    if(fFiltCutsDstartoKpipi){
-      delete fFiltCutsDstartoKpipi;fFiltCutsDstartoKpipi=NULL;
-    }
-    if(fFiltCutsLc2V0bachelor){
-      delete fFiltCutsLc2V0bachelor;fFiltCutsLc2V0bachelor=NULL;
-    }
-    if(fCutsD0toKpi){
-    delete fCutsD0toKpi;fCutsD0toKpi=NULL;
-    }
-    if(fCutsDstoKKpi){
-    delete fCutsDstoKKpi;fCutsDstoKKpi=NULL;
-    }
-    if(fCutsDplustoKpipi){
-    delete fCutsDplustoKpipi;fCutsDplustoKpipi=NULL;
-    }
-    if(fCutsLctopKpi){
-    delete fCutsLctopKpi;fCutsLctopKpi=NULL;
-    }
-    if(fCutsBplustoD0pi){
-    delete fCutsBplustoD0pi;fCutsBplustoD0pi=NULL;
-    }
-    if(fCutsDstartoKpipi){
-      delete fCutsDstartoKpipi;fCutsDstartoKpipi=NULL;
-    }
-    if(fCutsLc2V0bachelor){
-      delete fCutsLc2V0bachelor;fCutsLc2V0bachelor=NULL;
-    }
-    if(fEvSelectionCuts){
-      delete fEvSelectionCuts;fEvSelectionCuts=NULL;
-    }
     fListCuts=cutsList;
     
     fFiltCutsD0toKpi      =(AliRDHFCutsD0toKpi*)fListCuts->FindObject("D0toKpiFilteringCuts");
@@ -525,164 +343,47 @@ fCorrV0MVtx(false)
 //________________________________________________________________________
 AliAnalysisTaskSEHFTreeCreator::~AliAnalysisTaskSEHFTreeCreator()
 {
-    if (fListCuts) {
-        delete fListCuts;
-        fListCuts = 0x0;
-    }
-    if (fFiltCutsD0toKpi) {
-        delete fFiltCutsD0toKpi;
-        fFiltCutsD0toKpi = 0x0;
-    }
-    if (fFiltCutsDstoKKpi) {
-        delete fFiltCutsDstoKKpi;
-        fFiltCutsDstoKKpi = 0x0;
-    }
-    if (fFiltCutsDplustoKpipi) {
-        delete fFiltCutsDplustoKpipi;
-        fFiltCutsDplustoKpipi = 0x0;
-    }
-    if (fFiltCutsLctopKpi) {
-        delete fFiltCutsLctopKpi;
-        fFiltCutsLctopKpi = 0x0;
-    }
-    if (fFiltCutsBplustoD0pi) {
-        delete fFiltCutsBplustoD0pi;
-        fFiltCutsBplustoD0pi = 0x0;
-    }
-    if (fFiltCutsDstartoKpipi) {
-      delete fFiltCutsDstartoKpipi;
-      fFiltCutsDstartoKpipi = 0x0;
-    }
-    if (fFiltCutsLc2V0bachelor) {
-      delete fFiltCutsLc2V0bachelor;
-      fFiltCutsLc2V0bachelor = 0x0;
-    }
-    if (fCutsD0toKpi) {
-        delete fCutsD0toKpi;
-        fCutsD0toKpi = 0x0;
-    }
-    if (fCutsDstoKKpi) {
-        delete fCutsDstoKKpi;
-        fCutsDstoKKpi = 0x0;
-    }
-    if (fCutsDplustoKpipi) {
-        delete fCutsDplustoKpipi;
-        fCutsDplustoKpipi = 0x0;
-    }
-    if (fCutsLctopKpi) {
-        delete fCutsLctopKpi;
-        fCutsLctopKpi = 0x0;
-    }
-    if (fCutsBplustoD0pi) {
-        delete fCutsBplustoD0pi;
-        fCutsBplustoD0pi = 0x0;
-    }
-    if (fCutsDstartoKpipi) {
-      delete fCutsDstartoKpipi;
-      fCutsDstartoKpipi = 0x0;
-    }
-    if (fCutsLc2V0bachelor) {
-      delete fCutsLc2V0bachelor;
-      fCutsLc2V0bachelor = 0x0;
-    }
-    if (fEvSelectionCuts) {
-      delete fEvSelectionCuts;
-      fEvSelectionCuts = 0x0;
-    }
-    if (fNentries){
-        delete fNentries;
-        fNentries = 0x0;
-    }
-    if (fHistoNormCounter){
-        delete fHistoNormCounter;
-        fHistoNormCounter = 0x0;
-    }
-    if (fListCounter) {
-        delete fListCounter;
-        fListCounter = 0x0;
-    }
-    if(fCounter){
-        delete fCounter;
-        fCounter=0x0;
-    }
-    if(fTreeHandlerD0) {
-      delete fTreeHandlerD0;
-      fTreeHandlerD0 = 0x0;
-    }
-    if(fTreeHandlerDs) {
-      delete fTreeHandlerDs;
-      fTreeHandlerDs = 0x0;
-    }
-    if(fTreeHandlerDplus) {
-      delete fTreeHandlerDplus;
-      fTreeHandlerDplus = 0x0;
-    }
-    if(fTreeHandlerLctopKpi) {
-      delete fTreeHandlerLctopKpi;
-      fTreeHandlerLctopKpi = 0x0;
-    }
-    if(fTreeHandlerBplus) {
-        delete fTreeHandlerBplus;
-        fTreeHandlerBplus = 0x0;
-    }
-    if(fTreeHandlerDstar) {
-      delete fTreeHandlerDstar;
-      fTreeHandlerDstar = 0x0;
-    }
-    if(fTreeHandlerLc2V0bachelor) {
-      delete fTreeHandlerLc2V0bachelor;
-      fTreeHandlerLc2V0bachelor = 0x0;
-    }
-    if(fTreeHandlerParticle) {
-      delete fTreeHandlerParticle;
-      fTreeHandlerParticle = 0x0;
-    }
-    if(fTreeHandlerTracklet) {
-      delete fTreeHandlerTracklet;
-      fTreeHandlerTracklet = 0x0;
-    }
-    for(auto& thj : fTreeHandlerJet) {
-      if(thj) {
+    delete fListCuts;
+    delete fFiltCutsD0toKpi;
+    delete fFiltCutsDstoKKpi;
+    delete fFiltCutsDplustoKpipi;
+    delete fFiltCutsLctopKpi;
+    delete fFiltCutsBplustoD0pi;
+    delete fFiltCutsDstartoKpipi;
+    delete fFiltCutsLc2V0bachelor;
+    delete fCutsD0toKpi;
+    delete fCutsDstoKKpi;
+    delete fCutsDplustoKpipi;
+    delete fCutsLctopKpi;
+    delete fCutsBplustoD0pi;
+    delete fCutsDstartoKpipi;
+    delete fCutsLc2V0bachelor;
+    delete fEvSelectionCuts;
+    delete fNentries;
+    delete fHistoNormCounter;
+    delete fListCounter;
+    delete fCounter;
+    delete fTreeHandlerD0;
+    delete fTreeHandlerDs;
+    delete fTreeHandlerDplus;
+    delete fTreeHandlerLctopKpi;
+    delete fTreeHandlerBplus;
+    delete fTreeHandlerDstar;
+    delete fTreeHandlerLc2V0bachelor;
+    delete fTreeHandlerParticle;
+    delete fTreeHandlerTracklet;
+
+    for(auto& thj : fTreeHandlerJet)
         delete thj;
-      }
-    }
-    if(fTreeHandlerGenD0) {
-      delete fTreeHandlerGenD0;
-      fTreeHandlerGenD0 = 0x0;
-    }
-    if(fTreeHandlerGenDs) {
-      delete fTreeHandlerGenDs;
-      fTreeHandlerGenDs = 0x0;
-    }
-    if(fTreeHandlerGenDplus) {
-      delete fTreeHandlerGenDplus;
-      fTreeHandlerGenDplus = 0x0;
-    }
-    if(fTreeHandlerGenLctopKpi) {
-      delete fTreeHandlerGenLctopKpi;
-      fTreeHandlerGenLctopKpi = 0x0;
-    }
-    if(fTreeHandlerGenBplus) {
-        delete fTreeHandlerGenBplus;
-        fTreeHandlerGenBplus = 0x0;
-    }
-    if(fTreeHandlerGenDstar) {
-        delete fTreeHandlerGenDstar;
-        fTreeHandlerGenDstar = 0x0;
-    }
-    if(fTreeHandlerGenLc2V0bachelor) {
-        delete fTreeHandlerGenLc2V0bachelor;
-        fTreeHandlerGenLc2V0bachelor = 0x0;
-    }
-    if(fTreeHandlerGenParticle) {
-      delete fTreeHandlerGenParticle;
-      fTreeHandlerGenParticle = 0x0;
-    }
-    if(fTreeEvChar) {
-        delete fTreeEvChar;
-        fTreeEvChar = 0x0;
-    }
-    
+    delete fTreeHandlerGenD0;
+    delete fTreeHandlerGenDs;
+    delete fTreeHandlerGenDplus;
+    delete fTreeHandlerGenLctopKpi;
+    delete fTreeHandlerGenBplus;
+    delete fTreeHandlerGenDstar;
+    delete fTreeHandlerGenLc2V0bachelor;
+    delete fTreeHandlerGenParticle;
+    delete fTreeEvChar;
 }
 
 //________________________________________________________________________
@@ -786,26 +487,25 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     OpenFile(5);
     fTreeEvChar = new TTree("tree_event_char","tree_event_char");
     //set variables
-    TString varnames[] = {"centrality", "z_vtx_reco", "n_vtx_contributors", "n_tracks", "is_ev_rej", "run_number", "ev_id", "n_tracklets", "V0Amult", "trigger_bitmap", "trigger_kINT7", "trigger_kHighMultSPD", "trigger_kHighMultV0", "z_vtx_gen", "n_tracklets_corr", "v0m", "v0m_eq", "v0m_corr", "v0m_eq_corr"};
-    fTreeEvChar->Branch(varnames[0].Data(),&fCentrality,Form("%s/F",varnames[0].Data()));
-    fTreeEvChar->Branch(varnames[1].Data(),&fzVtxReco,Form("%s/F",varnames[1].Data()));
-    fTreeEvChar->Branch(varnames[2].Data(),&fNcontributors,Form("%s/I",varnames[2].Data()));
-    fTreeEvChar->Branch(varnames[3].Data(),&fNtracks,Form("%s/I",varnames[3].Data()));
-    fTreeEvChar->Branch(varnames[4].Data(),&fIsEvRej,Form("%s/I",varnames[4].Data()));
-    fTreeEvChar->Branch(varnames[5].Data(),&fRunNumber,Form("%s/I",varnames[5].Data()));
-    fTreeEvChar->Branch(varnames[6].Data(),&fEventID,Form("%s/i",varnames[6].Data()));
-    fTreeEvChar->Branch(varnames[7].Data(),&fnTracklets,Form("%s/I",varnames[7].Data()));
-    fTreeEvChar->Branch(varnames[8].Data(),&fnV0A,Form("%s/I",varnames[8].Data()));
-    fTreeEvChar->Branch(varnames[9].Data(),&fTriggerMask,Form("%s/l",varnames[9].Data()));
-    fTreeEvChar->Branch(varnames[10].Data(),&fTriggerFiredkINT7,Form("%s/O",varnames[10].Data()));
-    fTreeEvChar->Branch(varnames[11].Data(),&fTriggerFiredkHighMultSPD,Form("%s/O",varnames[11].Data()));
-    fTreeEvChar->Branch(varnames[12].Data(),&fTriggerFiredkHighMultV0,Form("%s/O",varnames[12].Data()));
-    if(fReadMC) fTreeEvChar->Branch(varnames[13].Data(),&fzVtxGen,Form("%s/F",varnames[13].Data()));
-    fTreeEvChar->Branch(varnames[14].Data(),&fnTrackletsCorr,Form("%s/I",varnames[14].Data()));
-    fTreeEvChar->Branch(varnames[15].Data(),&fnV0M,Form("%s/I",varnames[15].Data()));
-    fTreeEvChar->Branch(varnames[16].Data(),&fnV0MEq,Form("%s/I",varnames[16].Data()));
-    fTreeEvChar->Branch(varnames[17].Data(),&fnV0MCorr,Form("%s/I",varnames[17].Data()));
-    fTreeEvChar->Branch(varnames[18].Data(),&fnV0MEqCorr,Form("%s/I",varnames[18].Data()));
+    fTreeEvChar->Branch("centrality", &fCentrality);
+    fTreeEvChar->Branch("z_vtx_reco", &fzVtxReco);
+    fTreeEvChar->Branch("n_vtx_contributors", &fNcontributors);
+    fTreeEvChar->Branch("n_tracks", &fNtracks);
+    fTreeEvChar->Branch("is_ev_rej", &fIsEvRej);
+    fTreeEvChar->Branch("run_number", &fRunNumber);
+    fTreeEvChar->Branch("ev_id", &fEventID);
+    fTreeEvChar->Branch("n_tracklets", &fnTracklets);
+    fTreeEvChar->Branch("V0Amult", &fnV0A);
+    fTreeEvChar->Branch("trigger_bitmap", &fTriggerMask);
+    fTreeEvChar->Branch("trigger_kINT7", &fTriggerFiredkINT7);
+    fTreeEvChar->Branch("trigger_kHighMultSPD", &fTriggerFiredkHighMultSPD);
+    fTreeEvChar->Branch("trigger_kHighMultV0", &fTriggerFiredkHighMultV0);
+    fTreeEvChar->Branch("z_vtx_gen", &fzVtxGen);
+    fTreeEvChar->Branch("n_tracklets_corr", &fnTrackletsCorr);
+    fTreeEvChar->Branch("v0m", &fnV0M);
+    fTreeEvChar->Branch("v0m_eq", &fnV0MEq);
+    fTreeEvChar->Branch("v0m_corr", &fnV0MCorr);
+    fTreeEvChar->Branch("v0m_eq_corr", &fnV0MEqCorr);
     fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
 
     if(fWriteVariableTreeD0){
@@ -3110,3 +2810,4 @@ AliJetContainer* AliAnalysisTaskSEHFTreeCreator::GetJetContainer(Int_t i) const
   AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
   return cont;
 }
+

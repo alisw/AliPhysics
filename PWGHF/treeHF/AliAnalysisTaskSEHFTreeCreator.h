@@ -189,7 +189,6 @@ private:
     AliAnalysisTaskSEHFTreeCreator(const AliAnalysisTaskSEHFTreeCreator&);
     AliAnalysisTaskSEHFTreeCreator& operator=(const AliAnalysisTaskSEHFTreeCreator&);
     
-    
     unsigned int            fEventNumber;
     TH1F                    *fNentries;                            //!<!   histogram with number of events on output slot 1
     TH2F                    *fHistoNormCounter;                    //!<!   histogram with number of events on output slot 1
