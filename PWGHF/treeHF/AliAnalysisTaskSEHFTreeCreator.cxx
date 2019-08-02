@@ -52,6 +52,7 @@
 #include "AliESDtrack.h"
 #include "AliVertexerTracks.h"
 #include "AliAODHandler.h"
+#include "AliVEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
@@ -497,9 +498,13 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeEvChar->Branch("n_tracklets", &fnTracklets);
     fTreeEvChar->Branch("V0Amult", &fnV0A);
     fTreeEvChar->Branch("trigger_bitmap", &fTriggerMask);
-    fTreeEvChar->Branch("trigger_kINT7", &fTriggerFiredkINT7);
-    fTreeEvChar->Branch("trigger_kHighMultSPD", &fTriggerFiredkHighMultSPD);
-    fTreeEvChar->Branch("trigger_kHighMultV0", &fTriggerFiredkHighMultV0);
+    fTreeEvChar->Branch("trigger_hasbit_INT7", &fTriggerBitINT7);
+    fTreeEvChar->Branch("trigger_hasbit_HighMultSPD", &fTriggerBitHighMultSPD);
+    fTreeEvChar->Branch("trigger_hasbit_HighMultV0", &fTriggerBitHighMultV0);
+    fTreeEvChar->Branch("trigger_classes", &fTriggerClasses);
+    fTreeEvChar->Branch("trigger_hasclass_INT7", &fTriggerClassINT7);
+    fTreeEvChar->Branch("trigger_hasclass_HighMultSPD", &fTriggerClassHighMultSPD);
+    fTreeEvChar->Branch("trigger_hasclass_HighMultV0", &fTriggerClassHighMultV0m);
     fTreeEvChar->Branch("z_vtx_gen", &fzVtxGen);
     fTreeEvChar->Branch("n_tracklets_corr", &fnTrackletsCorr);
     fTreeEvChar->Branch("v0m", &fnV0M);
@@ -1139,12 +1144,16 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
 
     fEventID = GetEvID();
     // Extract fired triggers
-    // Cast ULong64_t to UInt_t as there are only 30 trigger bits used in Run2
-    fTriggerMask = aod->GetTriggerMask();
-    fTriggerFiredkINT7 = (fTriggerMask&BIT(1));
-    fTriggerFiredkHighMultSPD = (fTriggerMask&BIT(3));
-    fTriggerFiredkHighMultV0 = (fTriggerMask&BIT(16));
+    fTriggerMask = static_cast<AliVAODHeader*>(aod->GetHeader())->GetOfflineTrigger();
+    fTriggerBitINT7 = static_cast<bool>(fTriggerMask & AliVEvent::kINT7);
+    fTriggerBitHighMultSPD = static_cast<bool>(fTriggerMask & AliVEvent::kHighMultSPD);
+    fTriggerBitHighMultV0 = static_cast<bool>(fTriggerMask & AliVEvent::kHighMultV0);
    
+    fTriggerClasses = aod->GetFiredTriggerClasses();
+    fTriggerClassINT7 = fTriggerClasses.Contains("CINT7-B");
+    fTriggerClassHighMultSPD = fTriggerClasses.Contains("CVHMSH2-B");
+    fTriggerClassHighMultV0m = fTriggerClasses.Contains("CVHMV0M-B");
+
     fTreeEvChar->Fill();
     
     //get PID response
