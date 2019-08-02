@@ -378,7 +378,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
 // ############################################################################
 void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   // const double pi = TMath::Pi();
-
+std::cout << __LINE__ << "################################################################################################" << '\n';
 
   fGenNegPart.clear();
   fGenPosPart.clear();
