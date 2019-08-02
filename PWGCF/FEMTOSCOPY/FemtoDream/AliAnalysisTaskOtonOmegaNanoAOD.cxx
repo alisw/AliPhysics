@@ -494,8 +494,8 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
 
 
   //fill Tree
-  //if(fTnProton>0&&fTnCascade>0) fOmegaTree->Fill();
-  if(fTnProton>0||fTnCascade>0) fOmegaTree->Fill();
+  if(fTnProton>0&&fTnCascade>0) fOmegaTree->Fill();
+  //if(fTnProton>0||fTnCascade>0) fOmegaTree->Fill();
 
  
   //pair cleaner
