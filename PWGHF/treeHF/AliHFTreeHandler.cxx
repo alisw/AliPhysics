@@ -376,15 +376,15 @@ void AliHFTreeHandler::AddJetBranches() { //Jet branches added
 //________________________________________________________________
 void AliHFTreeHandler::AddGenJetBranches() { //Gen jet branches added
 
-  fTreeVar->Branch("pt_gen_jet",&fPtGenJet);
-  fTreeVar->Branch("eta_gen_jet",&fEtaGenJet);
-  fTreeVar->Branch("phi_gen_jet",&fPhiGenJet);
-  fTreeVar->Branch("delta_eta_gen_jet",&fDeltaEtaGenJetHadron);
-  fTreeVar->Branch("delta_phi_gen_jet",&fDeltaPhiGenJetHadron);
-  fTreeVar->Branch("delta_r_gen_jet",&fDeltaRGenJetHadron);
-  fTreeVar->Branch("ntracks_gen_jet",&fNTracksGenJet);
-  fTreeVar->Branch("zg_gen_jet",&fZgGenJet);
-  fTreeVar->Branch("rg_gen_jet",&fRgGenJet);
+  fTreeVar->Branch("pt_jet",&fPtGenJet);
+  fTreeVar->Branch("eta_jet",&fEtaGenJet);
+  fTreeVar->Branch("phi_jet",&fPhiGenJet);
+  fTreeVar->Branch("delta_eta_jet",&fDeltaEtaGenJetHadron);
+  fTreeVar->Branch("delta_phi_jet",&fDeltaPhiGenJetHadron);
+  fTreeVar->Branch("delta_r_jet",&fDeltaRGenJetHadron);
+  fTreeVar->Branch("ntracks_jet",&fNTracksGenJet);
+  fTreeVar->Branch("zg_jet",&fZgGenJet);
+  fTreeVar->Branch("rg_jet",&fRgGenJet);
 
     
 }

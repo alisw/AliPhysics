@@ -465,42 +465,10 @@ Bool_t AliHFJetFinder::CheckTrack(AliAODTrack *track) {
 //Apply filter bit selection on tracks
 Bool_t AliHFJetFinder::CheckFilterBits(AliAODTrack *track) {
 
-  const Int_t nbits = 26;
-  Int_t bits[nbits];
-  bits[0]=0;
-  bits[1]=0;
-  bits[2]=0;
-  bits[3]=1;
-  bits[4]=1;
-  bits[5]=0;
-  bits[6]=0;
-  bits[7]=0;
-  bits[8]=0;
-  bits[9]=0;
-  bits[10]=0;
-  bits[11]=0;
-  bits[12]=0;
-  bits[13]=0;
-  bits[14]=2;
-  bits[15]=1;
-  bits[16]=2;
-  bits[17]=0;
-  bits[18]=0;
-  bits[19]=0;
-  bits[20]=1;
-  bits[21]=0;
-  bits[22]=0;
-  bits[23]=0;
-  bits[24]=0;
-  bits[25]=2;
 
-
-  for (Int_t i=0; i<nbits; i++){
-    if (bits[i]==0 || bits[i]==1){
-      if((track->TestBits(BIT(i))/TMath::Power(2,i))!=bits[i]) return false;
-    }
-    else continue;
-  }
+  if(!track->TestBits(BIT(4))) return false;
+  // if(!(track->TestBits(BIT(9)) || track->TestBits(BIT(8)))) return false;
+  if(!track->TestBits(BIT(9))) return false;
   return true;
 }
 
