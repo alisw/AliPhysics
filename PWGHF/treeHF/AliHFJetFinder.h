@@ -56,7 +56,7 @@ class AliHFJetFinder : public TObject
   void SetFJWrapper(); 
   AliHFJet GetHFJet(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass=0);
   AliHFJet GetHFMCJet(TClonesArray *array, AliAODMCParticle *mcpart);
-  std::vector<AliHFJet> GetHFJets(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass=0);
+  std::vector<AliHFJet> GetHFJets(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass);
   std::vector<AliHFJet> GetHFMCJets(TClonesArray *array, AliAODMCParticle *mcpart);
   std::vector<AliHFJet> GetJets(TClonesArray *array);
   std::vector<AliHFJet> GetMCJets(TClonesArray *array);
