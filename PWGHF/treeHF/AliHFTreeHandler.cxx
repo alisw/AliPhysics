@@ -532,7 +532,7 @@ void AliHFTreeHandler::SetJetParameters(AliHFJetFinder& hfjetfinder){
 }
 #endif
 //________________________________________________________________
-void AliHFTreeHandler::SetJetTreeVars(AliHFJet& hfjet){
+void AliHFTreeHandler::SetJetTreeVars(AliHFJet hfjet){
 
   fPtJet=hfjet.GetPt();
   fEtaJet=hfjet.GetEta();
@@ -549,7 +549,7 @@ void AliHFTreeHandler::SetJetTreeVars(AliHFJet& hfjet){
 }
 
 //________________________________________________________________
-void AliHFTreeHandler::SetGenJetTreeVars(AliHFJet& hfjet){
+void AliHFTreeHandler::SetGenJetTreeVars(AliHFJet hfjet){
 
   fPtGenJet=hfjet.GetPt();
   fEtaGenJet=hfjet.GetEta();

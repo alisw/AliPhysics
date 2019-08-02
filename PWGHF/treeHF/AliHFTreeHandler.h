@@ -92,8 +92,8 @@ class AliHFTreeHandler : public TObject
 #ifdef HAVE_FASTJET
     void SetJetParameters(AliHFJetFinder& hfjetfinder);
 #endif
-    void SetJetTreeVars(AliHFJet& hfjet);
-    void SetGenJetTreeVars(AliHFJet& hfjet);
+    void SetJetTreeVars(AliHFJet hfjet);
+    void SetGenJetTreeVars(AliHFJet hfjet);
 
 
     void FillTree() { //to be called for each candidate!
