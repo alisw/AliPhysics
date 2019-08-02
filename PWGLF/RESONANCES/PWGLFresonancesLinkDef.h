@@ -18,6 +18,7 @@
 #pragma link C++ class AliRsnValueEvent+;
 
 #pragma link C++ class AliRsnCutEventUtils+;
+#pragma link C++ class AliRsnEventCuts+;
 #pragma link C++ class AliRsnCutPrimaryVertex+;
 #pragma link C++ class AliRsnCutTrue+;
 #pragma link C++ class AliRsnCutTrackQuality+;

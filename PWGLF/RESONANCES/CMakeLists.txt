@@ -47,6 +47,7 @@ set(SRCS
   AliRsnValuePair.cxx
   AliRsnValueEvent.cxx
   AliRsnCutEventUtils.cxx
+  AliRsnEventCuts.cxx
   AliRsnCutPrimaryVertex.cxx
   AliRsnCutTrackQuality.cxx
   AliRsnCutTrue.cxx
