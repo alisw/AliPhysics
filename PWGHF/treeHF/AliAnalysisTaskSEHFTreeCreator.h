@@ -291,9 +291,13 @@ private:
     Double_t                fRefMult;                              /// reference multiplicity
     Int_t                   fnV0A;                                 /// V0A multiplicity 
     ULong64_t               fTriggerMask;                          /// Trigger mask bitmap
-    Bool_t                  fTriggerFiredkINT7;                    /// Flag explicitly whether kINT7 trigger fired
-    Bool_t                  fTriggerFiredkHighMultSPD;             /// Flag explicitly whether kHighMultSPD trigger fired
-    Bool_t                  fTriggerFiredkHighMultV0;              /// Flag explicitly whether kHighMultV0 trigger fired
+    Bool_t                  fTriggerBitINT7;                       /// Flag explicitly whether bitmap contains INT7
+    Bool_t                  fTriggerBitHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
+    Bool_t                  fTriggerBitHighMultV0;                 /// Flag explicitly whether bitmap kHighMultV0
+    TString                 fTriggerClasses;                       /// Collect all trigger classes
+    Bool_t                  fTriggerClassINT7;                     /// Flag explicitly whether classes contain INT7
+    Bool_t                  fTriggerClassHighMultSPD;              /// Flag explicitly whether classes contain HighMultSPD
+    Bool_t                  fTriggerClassHighMultV0m;              /// Flag explicitly whether classes contain HighMultV0
     Int_t                   fnV0M;                                 /// V0M multiplicity
     Int_t                   fnV0MEq;                               /// V0M multiplicity (equalized)
     Int_t                   fnV0MCorr;                             /// V0M multiplicity (corrected)
@@ -377,7 +381,7 @@ private:
     bool fCorrV0MVtx;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,14);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,15);
     /// \endcond
 };
 
