@@ -56,7 +56,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   //void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
   void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1;};
   void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2;};
-
+  void SetMCeta(Bool_t MCEtaFull){iMCEtaFull = MCEtaFull;};
 
  protected:
   void                        ExecOnce();
@@ -91,6 +91,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Bool_t fmcData;
     Bool_t iMCcorr;
     Bool_t iDCApTweight;
+    Bool_t iMCEtaFull;
     Int_t NembMCpi0;
     Int_t NembMCeta;
     Int_t NpureMCproc;
