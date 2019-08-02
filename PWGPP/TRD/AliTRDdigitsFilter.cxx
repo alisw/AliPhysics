@@ -161,7 +161,7 @@ Bool_t AliTRDdigitsFilter::UserNotify()
 
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
-  TString ofname = esdH->GetInputFileName();
+  TString ofname = esdH->GetTree()->GetCurrentFile()->GetName();
   TString ifname = ofname;
 
   ifname.ReplaceAll("AliESDs.root", "TRD.Digits.root");
@@ -234,13 +234,19 @@ void AliTRDdigitsFilter::Process(AliESDEvent *const esdEvent)
 
   for (int iTrack=0; iTrack<fPidTags.size(); iTrack++) {
 
+    Bool_t keepTrack = kFALSE;
+
     if (fPidTags[iTrack] == kPidUndef) continue;
     if (fPidTags[iTrack] == kPidError) continue;
 
     AliESDtrack* track = esdEvent->GetTrack(iTrack);
 
+    fhPtTag->Fill(track->Pt());
+
     // general track cuts
     if ( ! PassTrackCuts(track,3) ) continue;
+
+    fhPtGood->Fill(track->Pt());
 
     for (std::list<AcceptCrit>::iterator iCrit = fAcceptCriteria.begin();
          iCrit != fAcceptCriteria.end(); iCrit++) {
@@ -254,6 +260,11 @@ void AliTRDdigitsFilter::Process(AliESDEvent *const esdEvent)
         if ( gRandom->Uniform() > iCrit->fFraction ) continue;
 
         keepEvent = kTRUE;
+        keepTrack = kTRUE;
+     }
+
+     if (keepTrack) {
+       fhPtAcc->Fill(track->Pt());
      }
 
   }

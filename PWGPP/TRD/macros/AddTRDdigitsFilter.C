@@ -11,6 +11,7 @@
 #include <AliAnalysisManager.h>
 #include <AliAnalysisDataContainer.h>
 #include <AliAnalysisTask.h>
+#include <AliESDv0KineCuts.h>
 #include <AliTRDdigitsFilter.h>
 #endif
 
