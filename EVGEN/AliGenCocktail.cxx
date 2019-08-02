@@ -232,8 +232,8 @@ void AliGenCocktail::Generate()
 	  if(vtxGen){
 	    const AliHeader* hBg = vtxGen->GetHeader();
 	    if(hBg){	
-	  	AliGenEventHeader* genHeader = hBg->GenEventHeader();
-	  	coll = (AliCollisionGeometry*)genHeader;
+	      AliGenHijingEventHeader* genHeader = (AliGenHijingEventHeader*)hBg->GenEventHeader();
+	      coll = (AliCollisionGeometry*)genHeader;
 	    }
 	  }
 	}
