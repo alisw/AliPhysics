@@ -285,6 +285,9 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fDoMesonAnalysis(kTRUE),
   fDoMesonQA(0),
   fIsFromMBHeader(kTRUE),
+  fIsFromDesiredHeader(kTRUE),
+  fIsOverlappingWithOtherHeader(kFALSE),
+  fAllowOverlapHeaders(kTRUE),
   fIsMC(kFALSE),
   fSelectedHeavyNeutralMeson(kFALSE),
   fDoLightOutput(kFALSE),
@@ -531,6 +534,9 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fDoMesonAnalysis(kTRUE),
   fDoMesonQA(0),
   fIsFromMBHeader(kTRUE),
+  fIsFromDesiredHeader(kTRUE),
+  fIsOverlappingWithOtherHeader(kFALSE),
+  fAllowOverlapHeaders(kTRUE),
   fIsMC(kFALSE),
   fSelectedHeavyNeutralMeson(kFALSE),
   fDoLightOutput(kFALSE),
@@ -789,6 +795,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fProfileJetJetXSection       = new TProfile*[fnCuts];
     fHistoJetJetNTrials          = new TH1F*[fnCuts];
   }
+  if (fNDMRecoMode > 0){
+    fHistoClusterGammaPt        = new TH1F*[fnCuts];
+    fHistoClusterGammaEta       = new TH1F*[fnCuts];
+    fHistoClusterGammaE         = new TH1F*[fnCuts];
+  }
   if(!fDoLightOutput){
     fProfileEtaShift              = new TProfile*[fnCuts];
     fHistoSPDClusterTrackletBackground = new TH2F*[fnCuts];
@@ -802,11 +813,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     if (fNDMRecoMode < 2){
       fHistoConvGammaPt           = new TH1F*[fnCuts];
       fHistoConvGammaEta          = new TH1F*[fnCuts];
-    }
-    if (fNDMRecoMode > 0){
-      fHistoClusterGammaPt        = new TH1F*[fnCuts];
-      fHistoClusterGammaEta       = new TH1F*[fnCuts];
-      fHistoClusterGammaE         = new TH1F*[fnCuts];
     }
     fHistoNegPionPt               = new TH1F*[fnCuts];
     fHistoPosPionPt               = new TH1F*[fnCuts];
@@ -931,6 +937,24 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoNGoodESDTracks[iCut]->GetYaxis()->SetTitle("N_{events}");
     fHistoNGoodESDTracks[iCut]->Sumw2();
     fESDList[iCut]->Add(fHistoNGoodESDTracks[iCut]);
+
+    if (fNDMRecoMode > 0){
+      fHistoClusterGammaPt[iCut]  = new TH1F("ESD_ClusterGamma_Pt","ESD_ClusterGamma_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+      fHistoClusterGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistoClusterGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
+      fHistoClusterGammaPt[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoClusterGammaPt[iCut]);
+      fHistoClusterGammaEta[iCut] = new TH1F("ESD_ClusterGamma_Eta","ESD_ClusterGamma_Eta",600,-1.5,1.5);
+      fHistoClusterGammaEta[iCut]->GetXaxis()->SetTitle("#eta");
+      fHistoClusterGammaEta[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
+      fHistoClusterGammaEta[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoClusterGammaEta[iCut]);
+      fHistoClusterGammaE[iCut]  = new TH1F("ESD_ClusterGamma_E","ESD_ClusterGamma_E",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+      fHistoClusterGammaE[iCut]->GetXaxis()->SetTitle("E (GeV)");
+      fHistoClusterGammaE[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
+      fHistoClusterGammaE[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoClusterGammaE[iCut]);
+    }
     if(!fDoLightOutput){
       fProfileEtaShift[iCut]        = new TProfile("Eta Shift","Eta Shift",1, -0.5,0.5);
       fESDList[iCut]->Add(fProfileEtaShift[iCut]);
@@ -981,23 +1005,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoConvGammaEta[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
         fHistoConvGammaEta[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoConvGammaEta[iCut]);
-      }
-      if (fNDMRecoMode > 0){
-        fHistoClusterGammaPt[iCut]  = new TH1F("ESD_ClusterGamma_Pt","ESD_ClusterGamma_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fHistoClusterGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-        fHistoClusterGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
-        fHistoClusterGammaPt[iCut]->Sumw2();
-        fESDList[iCut]->Add(fHistoClusterGammaPt[iCut]);
-        fHistoClusterGammaEta[iCut] = new TH1F("ESD_ClusterGamma_Eta","ESD_ClusterGamma_Eta",600,-1.5,1.5);
-        fHistoClusterGammaEta[iCut]->GetXaxis()->SetTitle("#eta");
-        fHistoClusterGammaEta[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
-        fHistoClusterGammaEta[iCut]->Sumw2();
-        fESDList[iCut]->Add(fHistoClusterGammaEta[iCut]);
-        fHistoClusterGammaE[iCut]  = new TH1F("ESD_ClusterGamma_E","ESD_ClusterGamma_E",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fHistoClusterGammaE[iCut]->GetXaxis()->SetTitle("E (GeV)");
-        fHistoClusterGammaE[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
-        fHistoClusterGammaE[iCut]->Sumw2();
-        fESDList[iCut]->Add(fHistoClusterGammaE[iCut]);
       }
       
       fHistoNegPionPt[iCut]         = new TH1F("ESD_PrimaryNegPions_Pt","ESD_PrimaryNegPions_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
@@ -2388,22 +2395,38 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessCaloPhotonCandida
       }
     }
 
-    fIsFromMBHeader = kTRUE;
+    fIsFromDesiredHeader            = kTRUE;
+    fIsOverlappingWithOtherHeader   = kFALSE;
+    //TString periodName         = fV0Reader->GetPeriodName();
     // test whether largest contribution to cluster orginates in added signals
-    if ((((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0) && fIsMC && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 0) fIsFromMBHeader = kFALSE;
-    if (fIsFromMBHeader && (!fDoLightOutput)){
-      fHistoClusterGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), tempPhotonWeight);
-      fHistoClusterGammaEta[fiCut]->Fill(PhotonCandidate->Eta(), tempPhotonWeight);
-      fHistoClusterGammaE[fiCut]->Fill(PhotonCandidate->E(), tempPhotonWeight);
-    }
-    fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
-
-    if(fIsMC){
-      if(fInputEvent->IsA()==AliESDEvent::Class()){
-        ProcessTrueCaloPhotonCandidates(PhotonCandidate);
-      } else {
-        ProcessTrueCaloPhotonCandidatesAOD(PhotonCandidate);
+    if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+      if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 0){
+        fIsFromDesiredHeader = kFALSE;
       }
+      if (clus->GetNLabels()>1){
+        Int_t* mclabelsCluster = clus->GetLabels();
+        for (Int_t l = 1; l < (Int_t)clus->GetNLabels(); l++ ){
+          if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(mclabelsCluster[l], fMCEvent, fInputEvent) == 0){
+            fIsOverlappingWithOtherHeader = kTRUE;
+          }
+        }
+      }
+    }
+
+    if ( (fIsFromDesiredHeader && !fIsOverlappingWithOtherHeader && !fAllowOverlapHeaders) || (fIsFromDesiredHeader && fAllowOverlapHeaders)){
+      fHistoClusterGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),tempPhotonWeight);
+      fHistoClusterGammaEta[fiCut]->Fill(PhotonCandidate->Eta(),tempPhotonWeight);
+      fHistoClusterGammaE[fiCut]->Fill(PhotonCandidate->E(),tempPhotonWeight);
+      if(fIsMC>0){
+        if(fInputEvent->IsA()==AliESDEvent::Class()){
+          ProcessTrueCaloPhotonCandidates(PhotonCandidate);
+        }else {
+          ProcessTrueCaloPhotonCandidatesAOD(PhotonCandidate);
+        }
+      }
+      fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
+    } else{
+      delete PhotonCandidate;
     }
   }
 }
@@ -2413,7 +2436,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueCaloPhotonCan
 {
   TParticle *Photon = nullptr;
   if (!TruePhotonCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
-    if (TruePhotonCandidate->GetCaloPhotonMCLabel(0)<0) return;
 	// fHistoTrueNLabelsInClus[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels());
 
   const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
@@ -2433,7 +2455,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueCaloPhotonCan
   TruePhotonCandidate->SetCaloPhotonMCFlags(fMCEvent, kFALSE);
 
   // True Photon
-  if(fIsFromMBHeader && (!fDoLightOutput)){
+  if(!fDoLightOutput){
     Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, TruePhotonCandidate->GetCaloPhotonMCLabel(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if(isPrimary){
       if (TruePhotonCandidate->IsLargestComponentPhoton()){
@@ -2461,7 +2483,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueCaloPhotonCan
 
   if (AODMCTrackArray){
     if (!TruePhotonCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
-    if (TruePhotonCandidate->GetCaloPhotonMCLabel(0)<0) return;
   }else{
     AliInfo("AODMCTrackArray could not be loaded");
     return;
@@ -2484,7 +2505,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueCaloPhotonCan
   TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, kFALSE);
 
   // True Photon
-  if(fIsFromMBHeader && (!fDoLightOutput)){
+  if(!fDoLightOutput){
     Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD( fInputEvent, Photon, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if(isPrimary){
       if (TruePhotonCandidate->IsLargestComponentPhoton()){
@@ -4933,9 +4954,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
             }
           }
         }
+        delete mesoncand;
+        mesoncand=0x0;
       }
     }
   }
+
 }
 //________________________________________________________________________
 void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(){
