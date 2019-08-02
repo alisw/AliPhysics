@@ -214,6 +214,7 @@ class AliHFTreeHandler : public TObject
     float fImpParXY; ///candidate impact parameter in the transverse plane
     float fDCA; ///DCA of candidates prongs
     float fPProng[knMaxProngs]; ///prong momentum
+    int fSPDhitsProng[knMaxProngs]; ///prong hits in the SPD
     float fTPCPProng[knMaxProngs]; ///prong TPC momentum
     float fTOFPProng[knMaxProngs]; ///prong TOF momentum
     float fPtProng[knMaxProngs]; ///prong pt
