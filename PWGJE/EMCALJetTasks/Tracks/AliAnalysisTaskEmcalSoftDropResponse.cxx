@@ -73,6 +73,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse():
   fBeta(0.),
   fReclusterizer(kCAAlgo),
   fSampleFraction(1.),
+  fMinFractionShared(0),
   fUseChargedConstituents(true),
   fUseNeutralConstituents(true),
   fNameMCParticles("mcparticles"),
@@ -80,15 +81,11 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse():
   fSampleTrimmer(nullptr),
   fPartLevelPtBinning(nullptr),
   fDetLevelPtBinning(nullptr),
-  fZgResponse(nullptr),
-  fZgResponseClosure(nullptr),
-  fZgPartLevel(nullptr),
-  fZgDetLevel(nullptr),
-  fZgPartLevelTruncated(nullptr),
-  fZgPartLevelClosureNoResp(nullptr),
-  fZgDetLevelClosureNoResp(nullptr),
-  fZgPartLevelClosureResp(nullptr),
-  fZgDetLevelClosureResp(nullptr)
+  fNamePartLevelJetContainer(""),
+  fNameDetLevelJetContainer(""),
+  fNameUnSubLevelJetContainer(""),
+  fIsEmbeddedEvent(false),
+  fHistManager("AliAnalysisTaskSoftDropResponse")
 {
 
 }
@@ -101,6 +98,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
   fBeta(0.),
   fReclusterizer(kCAAlgo),
   fSampleFraction(1.),
+  fMinFractionShared(0),
   fUseChargedConstituents(true),
   fUseNeutralConstituents(true),
   fNameMCParticles("mcparticles"),
@@ -108,15 +106,11 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
   fSampleTrimmer(nullptr),
   fPartLevelPtBinning(nullptr),
   fDetLevelPtBinning(nullptr),
-  fZgResponse(nullptr),
-  fZgResponseClosure(nullptr),
-  fZgPartLevel(nullptr),
-  fZgDetLevel(nullptr),
-  fZgPartLevelTruncated(nullptr),
-  fZgPartLevelClosureNoResp(nullptr),
-  fZgDetLevelClosureNoResp(nullptr),
-  fZgPartLevelClosureResp(nullptr),
-  fZgDetLevelClosureResp(nullptr)
+  fNamePartLevelJetContainer(""),
+  fNameDetLevelJetContainer(""),
+  fNameUnSubLevelJetContainer(""),
+  fIsEmbeddedEvent(false),
+  fHistManager(name)
 {
   SetMakeGeneralHistograms(true);
 }
@@ -142,30 +136,78 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects(){
   fPartLevelPtBinning->CreateBinEdges(binEdgesPtPart);
   fDetLevelPtBinning->CreateBinEdges(binEdgesPtDet);
 
-  fZgDetLevel = new TH2D("hZgDetLevel", "Zg response at detector level", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-  fZgPartLevel = new TH2D("hZgPartLevel", "Zg response at particle level", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-  fZgPartLevelTruncated = new TH2D("hZgPartLevelTruncated", "Zg response at particle level (truncated)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-
-  // For closure test
-  fZgPartLevelClosureNoResp = new TH2D("hZgPartLevelClosureNoResp", "Zg response at particle level (closure test, jets not used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-  fZgDetLevelClosureNoResp = new TH2D("hZgDetLevelClosureNoResp", "Zg response at detector level (closure test, jets not used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-  fZgPartLevelClosureResp =  new TH2D("hZgPartLevelClosureResp", "Zg response at particle level (closure test, jets used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-  fZgDetLevelClosureResp = new TH2D("hZgDetLevelClosureResp", "Zg response at detector level (closure test, jets used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-
-  fZgResponse = new RooUnfoldResponse("hZgResponse", "z_{g} response matrix");
-  fZgResponse->Setup(fZgDetLevel, fZgPartLevel);
-  fZgResponseClosure = new RooUnfoldResponse("hZgResponseClosure", "z_{g} response matrix for the closure test");
-  fZgResponseClosure->Setup(fZgDetLevel, fZgPartLevel);
-
-  fOutput->Add(fZgResponse);
-  fOutput->Add(fZgResponseClosure);
-  fOutput->Add(fZgDetLevel);
-  fOutput->Add(fZgPartLevel);
-  fOutput->Add(fZgPartLevelTruncated);
-  fOutput->Add(fZgPartLevelClosureNoResp);
-  fOutput->Add(fZgDetLevelClosureNoResp);
-  fOutput->Add(fZgPartLevelClosureResp);
-  fOutput->Add(fZgDetLevelClosureResp);
+  //Need to do centrality bins in the histograms if it is not pp 
+  if (fForceBeamType != kpp){
+    TString histname;
+    TString histtitle;
+    for (Int_t cent = 0; cent < fNcentBins; cent++) {
+      histname = TString::Format("hZgDetLevel_%d", cent);
+      histtitle = TString::Format("Zg response at detector level, %d centrality bin", cent);
+      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      histname = TString::Format("hZgPartLevel_%d", cent);
+      histtitle = TString::Format("Zg response at particle level, %d centrality bin", cent);
+      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      histname = TString::Format("hZgPartLevelTruncated_%d", cent);
+      histtitle = TString::Format("Zg response at particle level (truncated), %d centrality bin", cent);
+      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    
+      // For closure test
+      histname = TString::Format("hZgPartLevelClosureNoResp_%d", cent);
+      histtitle = TString::Format("Zg response at particle level (closure test, jets not used for the response matrix), %d centrality bin", cent);
+      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      histname = TString::Format("hZgDetLevelClosureNoResp_%d", cent);
+      histtitle = TString::Format("Zg response at detector level (closure test, jets not used for the response matrix), %d centrality bin", cent);
+      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      histname = TString::Format("hZgPartLevelClosureResp_%d", cent);
+      histtitle = TString::Format("Zg response at particle level (closure test, jets used for the response matrix), %d centrality bin", cent);
+      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      histname = TString::Format("hZgDetLevelClosureResp_%d", cent);
+      histtitle = TString::Format("Zg response at detector level (closure test, jets used for the response matrix), %d centrality bin", cent);
+      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    
+      histname = TString::Format("hZgResponse_%d", cent);
+      histtitle = TString::Format("z_{g} response matrix, %d centrality bin", cent);
+      RooUnfoldResponse* r = new RooUnfoldResponse(histname, histtitle);
+      TString fZgDetLevel = TString::Format("hZgDetLevel_%d", cent);
+      TString fZgPartLevel = TString::Format("hZgPartLevel_%d", cent);
+      r->Setup((TH1*)fHistManager.FindObject(fZgDetLevel), (TH1*)fHistManager.FindObject(fZgPartLevel));
+      fZgResponse.push_back(r);
+      histname = TString::Format("hZgResponseClosure_%d", cent);
+      histtitle = TString::Format("z_{g} response matrix for the closure test, %d centrality bin", cent);
+      RooUnfoldResponse* r_closure = new RooUnfoldResponse(histname, histtitle);
+      r_closure->Setup((TH1*)fHistManager.FindObject(fZgDetLevel), (TH1*)fHistManager.FindObject(fZgPartLevel));
+      fZgResponseClosure.push_back(r_closure);
+    }
+  } else {
+    fHistManager.CreateTH2("hZgDetLevel", "Zg response at detector level", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hZgPartLevel", "Zg response at particle level", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hZgPartLevelTruncated", "Zg response at particle level (truncated)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    
+    // For closure test
+    fHistManager.CreateTH2("hZgPartLevelClosureNoResp", "Zg response at particle level (closure test, jets not used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hZgDetLevelClosureNoResp", "Zg response at detector level (closure test, jets not used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hZgPartLevelClosureResp", "Zg response at particle level (closure test, jets used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hZgDetLevelClosureResp", "Zg response at detector level (closure test, jets used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    
+    RooUnfoldResponse* r = new RooUnfoldResponse("hZgResponse", "z_{g} response matrix");
+    r->Setup((TH1*)fHistManager.FindObject("hZgDetLevel"), (TH1*)fHistManager.FindObject("hZgPartLevel"));
+    fZgResponse.push_back(r);
+    RooUnfoldResponse* r_closure = new RooUnfoldResponse("hZgResponseClosure", "z_{g} response matrix for the closure test");
+    r_closure->Setup((TH1*)fHistManager.FindObject("hZgDetLevel"), (TH1*)fHistManager.FindObject("hZgPartLevel"));
+    fZgResponseClosure.push_back(r_closure);
+  }
+  
+  TIter next(fHistManager.GetListOfHistograms());
+  TObject* obj = 0;
+  while ((obj = next())) {
+    fOutput->Add(obj);
+  }
+  for (int i = 0; i < fZgResponse.size(); i++) {
+    fOutput->Add(fZgResponse.at(i));
+  }
+  for (int i = 0; i < fZgResponseClosure.size(); i++) {
+    fOutput->Add(fZgResponseClosure.at(i));
+  }
 
   PostData(1, fOutput);
 }
@@ -174,7 +216,7 @@ Bool_t AliAnalysisTaskEmcalSoftDropResponse::CheckMCOutliers() {
   if(!fMCRejectFilter) return true;
   if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
-  auto partjets = GetJetContainer("partLevel");
+  auto partjets = GetJetContainer(fNamePartLevelJetContainer);
   if(!partjets) return true;
 
   // Check whether there is at least one particle level jet with pt above n * event pt-hard
@@ -189,8 +231,8 @@ Bool_t AliAnalysisTaskEmcalSoftDropResponse::CheckMCOutliers() {
 }
 
 bool AliAnalysisTaskEmcalSoftDropResponse::Run(){
-  AliJetContainer *partLevelJets = this->GetJetContainer("partLevel"),
-                  *detLevelJets = GetJetContainer("detLevel");
+  AliJetContainer *partLevelJets = this->GetJetContainer(fNamePartLevelJetContainer),
+                  *detLevelJets = GetJetContainer(fNameDetLevelJetContainer);
   AliClusterContainer *clusters = GetClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   AliTrackContainer *tracks = GetTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   AliParticleContainer *particles = GetParticleContainer(fNameMCParticles.Data());
@@ -198,39 +240,109 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run(){
     AliErrorStream() << "Either of the jet containers not found" << std::endl;
     return kFALSE;
   }
-
+  
   if(fSampleFraction < 1.) {
     if(fSampleTrimmer->Uniform() > fSampleFraction) return false;
   }
 
   // get truncations at detector level
+  TString histname;
+  if (fForceBeamType != kpp){
+    histname = TString::Format("hZgDetLevel_%d", fCentBin);
+  } else{
+    histname = "hZgDetLevel";
+  }
+  TH2D* fZgDetLevel = (TH2D*)fHistManager.FindObject(histname);
   auto ptmindet = fZgDetLevel->GetYaxis()->GetBinLowEdge(1),
        ptmaxdet = fZgDetLevel->GetYaxis()->GetBinUpEdge(fZgDetLevel->GetYaxis()->GetNbins());
 
+  //when  embedding and doing the constituent subtraction there is an additional step to the detector (or hybrid) to particle level matching because the detector jet (or hybrid) is the constituent subtracted jet which is not matched so we need to find the unsubtracted jet that it corresponds to and get the matched jets from there
+  AliJetContainer *jetContUS = nullptr;
+  if (fIsEmbeddedEvent) jetContUS = GetJetContainer(fNameUnSubLevelJetContainer);
+
   for(auto detjet : detLevelJets->accepted()){
-    auto partjet = detjet->ClosestJet();
+    AliEmcalJet *partjet = nullptr;
+    //variables for embedded pbpb data
+    AliEmcalJet *jetUS = nullptr;
+    Int_t ilab = -1;
+    //for embedding, find the unsubtracted jet and get it's matched detector level jet 
+    if (fIsEmbeddedEvent){
+      for (Int_t i = 0; i < jetContUS->GetNJets(); i++) {
+	jetUS = jetContUS->GetJet(i);
+	if(jetUS->GetLabel() == detjet->GetLabel()) {
+	  ilab = i;
+	  break;
+	}
+      }
+      if(ilab == -1) continue;
+      jetUS=jetContUS->GetJet(ilab);
+      partjet=jetUS->ClosestJet();
+    }
+    //if we aren't embedding then just find the matched jet 
+    else partjet = detjet->ClosestJet();
     if(!partjet) continue;
+    //one extra level of matching needed for embedding to go from detector to particle level
+    if (fIsEmbeddedEvent) {
+      partjet = partjet->ClosestJet();
+      if (!partjet) continue;
+    }
+
+    //cut on the shared pt fraction, when embedding the unsubtracted jet should be used 
+    Double_t fraction=0;
+    if(fIsEmbeddedEvent) fraction = jetContUS->GetFractionSharedPt(jetUS);
+    else fraction = detLevelJets->GetFractionSharedPt(detjet);
+    if(fraction<fMinFractionShared) continue;
 
     // sample splitting (for closure test)
     bool closureUseResponse = (fSampleSplitter->Uniform() < fFractionResponseClosure);
 
     // Get the softdrop response   
     std::vector<double> softdropDet, softdropPart;
+    
     try {
       softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(), tracks, clusters);
       softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), particles, nullptr);
-      fZgPartLevel->Fill(softdropPart[0], partjet->Pt());
+      TString histname;
+      if (fForceBeamType != kpp){
+	histname = TString::Format("hZgPartLevel_%d", fCentBin);
+	fHistManager.FillTH1(histname,softdropPart[0], partjet->Pt());
+      } else{
+	fHistManager.FillTH1("hZgPartLevel", softdropPart[0], partjet->Pt());
+      }
       if(detjet->Pt() >= ptmindet && detjet->Pt() <= ptmaxdet) {
-        fZgPartLevelTruncated->Fill(softdropPart[0], partjet->Pt());
-        fZgDetLevel->Fill(softdropDet[0], detjet->Pt());
-        fZgResponse->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+	if (fForceBeamType != kpp){
+	  histname = TString::Format("hZgPartLevelTruncated_%d", fCentBin);
+	  fHistManager.FillTH2(histname,softdropPart[0], partjet->Pt());
+	  histname = TString::Format("hZgDetLevel_%d", fCentBin);
+	  fHistManager.FillTH2(histname, softdropDet[0], detjet->Pt());
+	  fZgResponse.at(fCentBin)->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+	} else{
+	  fHistManager.FillTH2("hZgPartLevelTruncated", softdropPart[0], partjet->Pt());
+	  fHistManager.FillTH2("hZgDetLevel", softdropDet[0], detjet->Pt());
+	  fZgResponse.at(0)->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+	}
         if(closureUseResponse) {
-          fZgResponseClosure->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
-          fZgDetLevelClosureResp->Fill(softdropDet[0], detjet->Pt());
-          fZgPartLevelClosureResp->Fill(softdropPart[0], partjet->Pt());
+	  if (fForceBeamType != kpp){
+	    fZgResponseClosure.at(fCentBin)->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+	    histname = TString::Format("hZgDetLevelClosureResp_%d", fCentBin);
+	    fHistManager.FillTH2(histname, softdropDet[0], detjet->Pt());
+	    histname = TString::Format("hZgPartLevelClosureResp_%d", fCentBin);
+	    fHistManager.FillTH2(histname,softdropPart[0], partjet->Pt());
+	  } else{
+	    fZgResponseClosure.at(0)->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+	    fHistManager.FillTH2("hZgDetLevelClosureResp", softdropDet[0], detjet->Pt());
+	    fHistManager.FillTH2("hZgPartLevelClosureResp", softdropPart[0], partjet->Pt());
+	  }
         } else {
-          fZgDetLevelClosureNoResp->Fill(softdropDet[0], detjet->Pt());
-          fZgPartLevelClosureNoResp->Fill(softdropPart[0], partjet->Pt());
+	  if (fForceBeamType != kpp){
+	    histname = TString::Format("hZgPartLevelClosureNoResp_%d", fCentBin);
+	    fHistManager.FillTH2(histname,softdropPart[0], partjet->Pt());
+	    histname = TString::Format("hZgDetLevelClosureNoResp_%d", fCentBin);
+            fHistManager.FillTH2(histname, softdropDet[0], detjet->Pt());
+	  } else{
+	    fHistManager.FillTH2("hZgDetLevelClosureNoResp", softdropDet[0], detjet->Pt());
+	    fHistManager.FillTH2("hZgPartLevelClosureNoResp", softdropPart[0], partjet->Pt());
+	  }
         }
       }
     } catch(...){
@@ -250,7 +362,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
   if(tracks && (fUseChargedConstituents || isMC)){                    // Neutral particles part of particle container in case of MC
     AliDebugStream(1) << "Jet substructure: Using charged constituents" << std::endl;
     for(int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++){
-      auto track = jet.TrackAt(itrk, tracks->GetArray());
+      auto track = jet.Track(itrk);
       if(!track->Charge() && !fUseNeutralConstituents) continue;      // Reject neutral constituents in case of using only charged consituents
       if(track->Charge() && !fUseChargedConstituents) continue;       // Reject charged constituents in case of using only neutral consituents
       fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
@@ -376,7 +488,7 @@ TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetZgBinning() const {
   return binning;
 }
 
-AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *namepartcont, const char *trigger) {
+AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, bool ifembed, const char *namepartcont, const char *trigger) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   Bool_t isAOD(kFALSE);
@@ -394,29 +506,37 @@ AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddT
   taskname << "SoftdropResponsemaker_R" << std::setw(2) << std::setfill('0') << int(jetradius*10) << trigger;  
   AliAnalysisTaskEmcalSoftDropResponse *responsemaker = new AliAnalysisTaskEmcalSoftDropResponse(taskname.str().data());
   responsemaker->SelectCollisionCandidates(AliVEvent::kINT7);
+  responsemaker->SetIsEmbeddedEvent(ifembed);
   mgr->AddTask(responsemaker);
 
   TString partcontname(namepartcont);
   if(partcontname == "usedefault") partcontname = "mcparticles";
   AliParticleContainer *particles = responsemaker->AddMCParticleContainer(partcontname.Data());
+  //if embedding need to specify that the particles are embedded
+  if (ifembed) particles->SetIsEmbedding(true);
   particles->SetMinPt(0.);
   responsemaker->SetNameMCParticleContainer(partcontname.Data());
-
+  
+  TString partLevelTag("Jet");
+  //if embedding need to specify the tag of the particle level jet from the embedding framework
+  if (ifembed) partLevelTag = "partLevelJets";
   AliJetContainer *mcjets = responsemaker->AddJetContainer(
                               jettype,
                               AliJetContainer::antikt_algorithm,
                               recombinationScheme,
                               jetradius,
                               ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPC,
-                              particles, nullptr);
-  mcjets->SetName("partLevel");
+                              particles, nullptr, partLevelTag);
   mcjets->SetJetPtCut(0.);
   mcjets->SetMaxTrackPt(1000.);
+  responsemaker->SetNamePartLevelJetContainer(mcjets->GetName());
   
   AliTrackContainer *tracks(nullptr);
   if((jettype == AliJetContainer::kChargedJet) || (jettype == AliJetContainer::kFullJet)){
       tracks = responsemaker->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
       std::cout << "Track container name: " << tracks->GetName() << std::endl;
+      //if embedding need to specify that the tracks are embedded                                                                                      
+      if (ifembed) tracks->SetIsEmbedding(true);
       tracks->SetMinPt(0.15);
   }
   AliClusterContainer *clusters(nullptr);
@@ -430,16 +550,21 @@ AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddT
     std::cout << "Using charged jets ... " << std::endl;
   }
 
+  TString detLevelTag("Jet");
+  //if embedding need to specify the tag of the detector (or hybrid) level jet from the embedding framework                                             
+  if (ifembed) detLevelTag= "hybridLevelJets";
   AliJetContainer *datajets = responsemaker->AddJetContainer(
                               jettype,
                               AliJetContainer::antikt_algorithm,
                               recombinationScheme,
                               jetradius,
                               ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPCfid,
-                              tracks, clusters);
-  datajets->SetName("detLevel");
+                              tracks, clusters, detLevelTag);
   datajets->SetJetPtCut(0.);
   datajets->SetMaxTrackPt(1000.);
+  //if embedding then this jet is the unsubtracted jet and the subtracted jet is added in the run macro, if not then it is the detector level jet
+  if (!ifembed) responsemaker->SetNameDetLevelJetContainer(datajets->GetName());
+  else responsemaker->SetNameUnSubLevelJetContainer(datajets->GetName());
 
   std::string jettypestring;
   switch(jettype) {
