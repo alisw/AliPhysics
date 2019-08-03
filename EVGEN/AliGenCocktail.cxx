@@ -231,9 +231,12 @@ void AliGenCocktail::Generate()
 	  const AliVertexGenFile* vtxGen =  (AliVertexGenFile*)gAlice->GetMCApp()->Generator()->GetVertexGenerator();
 	  if(vtxGen){
 	    const AliHeader* hBg = vtxGen->GetHeader();
-	    if(hBg){	
-	      AliGenHijingEventHeader* genHeader = (AliGenHijingEventHeader*)hBg->GenEventHeader();
-	      coll = (AliCollisionGeometry*)genHeader;
+	    if (hBg) {
+	      AliGenEventHeader* genHeader = hBg->GenEventHeader();
+	      coll = dynamic_cast<AliCollisionGeometry*>(genHeader);
+	      if (!coll) {
+		AliFatalF("Header %s does not provide collision geometry",genHeader->IsA()->GetName());
+	      }
 	    }
 	  }
 	}
