@@ -71,15 +71,24 @@ AliHFTreeHandler::AliHFTreeHandler():
   fNPbinsNsigmaTPCDataCorr(0),
   fEtalimitsNsigmaTPCDataCorr{},
   fNEtabinsNsigmaTPCDataCorr(0),
-  fPtJet(-9999.),
-  fEtaJet(-9999.),
-  fPhiJet(-9999.),
-  fDeltaEtaJetHadron(-9999.),
-  fDeltaPhiJetHadron(-9999.),
-  fDeltaRJetHadron(-9999.),
-  fNTracksJet(-9999.),
-  fZgJet(-9999.),
-  fRgJet(-9999.),
+  fPtJet(-99.),
+  fPtGenJet(-99.),
+  fEtaJet(-99.),
+  fEtaGenJet(-99.),
+  fPhiJet(-99.),
+  fPhiGenJet(-99.),
+  fDeltaEtaJetHadron(-99.),
+  fDeltaEtaGenJetHadron(-99.),
+  fDeltaPhiJetHadron(-99.),
+  fDeltaPhiGenJetHadron(-99.),
+  fDeltaRJetHadron(-99.),
+  fDeltaRGenJetHadron(-99.),
+  fNTracksJet(-99.),
+  fNTracksGenJet(-99.),
+  fZgJet(-99.),
+  fZgGenJet(-99.),
+  fRgJet(-99.),
+  fRgGenJet(-99.),
   fFillJets(false),
   fDoJetSubstructure(false), 
   fJetRadius(0.4),
@@ -163,15 +172,24 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fNPbinsNsigmaTPCDataCorr(0),
   fEtalimitsNsigmaTPCDataCorr{},
   fNEtabinsNsigmaTPCDataCorr(0),
-  fPtJet(-9999.),
-  fEtaJet(-9999.),
-  fPhiJet(-9999.),
-  fDeltaEtaJetHadron(-9999.),
-  fDeltaPhiJetHadron(-9999.),
-  fDeltaRJetHadron(-9999.),
-  fNTracksJet(-9999.),
-  fZgJet(-9999.),
-  fRgJet(-9999.),
+  fPtJet(-99.),
+  fPtGenJet(-99.),
+  fEtaJet(-99.),
+  fEtaGenJet(-99.),
+  fPhiJet(-99.),
+  fPhiGenJet(-99.),
+  fDeltaEtaJetHadron(-99.),
+  fDeltaEtaGenJetHadron(-99.),
+  fDeltaPhiJetHadron(-99.),
+  fDeltaPhiGenJetHadron(-99.),
+  fDeltaRJetHadron(-99.),
+  fDeltaRGenJetHadron(-99.),
+  fNTracksJet(-99.),
+  fNTracksGenJet(-99.),
+  fZgJet(-99.),
+  fZgGenJet(-99.),
+  fRgJet(-99.),
+  fRgGenJet(-99.),
   fFillJets(false),
   fDoJetSubstructure(false), 
   fJetRadius(0.4),
@@ -245,7 +263,7 @@ TTree* AliHFTreeHandler::BuildTreeMCGen(TString name, TString title) {
   fTreeVar->Branch("phi_cand",&fPhi);
   fTreeVar->Branch("dau_in_acc",&fDauInAcceptance);
 
-  if (fFillJets) AddJetBranches(); //Gen Jet Branches added here
+  if (fFillJets) AddGenJetBranches(); //Gen Jet Branches added here
   
   return fTreeVar;
 }
@@ -333,17 +351,42 @@ void AliHFTreeHandler::AddSingleTrackBranches() {
 }
 
 //________________________________________________________________
-void AliHFTreeHandler::AddJetBranches() { //Jet brances added
+void AliHFTreeHandler::AddJetBranches() { //Jet branches added
 
   fTreeVar->Branch("pt_jet",&fPtJet);
+  fTreeVar->Branch("pt_gen_jet",&fPtGenJet);
   fTreeVar->Branch("eta_jet",&fEtaJet);
+  fTreeVar->Branch("eta_gen_jet",&fEtaGenJet);
   fTreeVar->Branch("phi_jet",&fPhiJet);
+  fTreeVar->Branch("phi_gen_jet",&fPhiGenJet);
   fTreeVar->Branch("delta_eta_jet",&fDeltaEtaJetHadron);
+  fTreeVar->Branch("delta_eta_gen_jet",&fDeltaEtaGenJetHadron);
   fTreeVar->Branch("delta_phi_jet",&fDeltaPhiJetHadron);
+  fTreeVar->Branch("delta_phi_gen_jet",&fDeltaPhiGenJetHadron);
   fTreeVar->Branch("delta_r_jet",&fDeltaRJetHadron);
+  fTreeVar->Branch("delta_r_gen_jet",&fDeltaRGenJetHadron);
   fTreeVar->Branch("ntracks_jet",&fNTracksJet);
+  fTreeVar->Branch("ntracks_gen_jet",&fNTracksGenJet);
   fTreeVar->Branch("zg_jet",&fZgJet);
+  fTreeVar->Branch("zg_gen_jet",&fZgGenJet);
   fTreeVar->Branch("rg_jet",&fRgJet);
+  fTreeVar->Branch("rg_gen_jet",&fRgGenJet);
+
+    
+}
+
+//________________________________________________________________
+void AliHFTreeHandler::AddGenJetBranches() { //Gen jet branches added
+
+  fTreeVar->Branch("pt_jet",&fPtGenJet);
+  fTreeVar->Branch("eta_jet",&fEtaGenJet);
+  fTreeVar->Branch("phi_jet",&fPhiGenJet);
+  fTreeVar->Branch("delta_eta_jet",&fDeltaEtaGenJetHadron);
+  fTreeVar->Branch("delta_phi_jet",&fDeltaPhiGenJetHadron);
+  fTreeVar->Branch("delta_r_jet",&fDeltaRGenJetHadron);
+  fTreeVar->Branch("ntracks_jet",&fNTracksGenJet);
+  fTreeVar->Branch("zg_jet",&fZgGenJet);
+  fTreeVar->Branch("rg_jet",&fRgGenJet);
 
     
 }
@@ -446,13 +489,20 @@ bool AliHFTreeHandler::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
 
 
 //________________________________________________________________
-void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand) {
+void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, Double_t invmass, TClonesArray *mcarray, AliAODMCParticle* mcPart) {
 #ifdef HAVE_FASTJET
   AliHFJetFinder hfjetfinder;
   SetJetParameters(hfjetfinder); 
-  AliHFJet hfjet(hfjetfinder.GetHFJet(array,cand));
-	  
+  AliHFJet hfjet(hfjetfinder.GetHFJet(array,cand,invmass));
   SetJetTreeVars(hfjet);
+  
+  AliHFJet hfgenjet;
+  if (mcarray && mcPart){
+    AliHFJetFinder hfgenjetfinder;
+    SetJetParameters(hfgenjetfinder); 
+    hfgenjet=hfgenjetfinder.GetHFMCJet(mcarray,mcPart);
+  }
+  SetGenJetTreeVars(hfgenjet);
 #else
   cout << "You need to have fastjet installed to get meaningful results" <<endl;
 #endif 
@@ -467,7 +517,7 @@ void AliHFTreeHandler::SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPa
   SetJetParameters(hfjetfinder);
   AliHFJet hfjet(hfjetfinder.GetHFMCJet(array,mcPart));
 	  
-  SetJetTreeVars(hfjet);
+  SetGenJetTreeVars(hfjet);
 #else
   cout << "You need to have fastjet installed to get meaningful results" <<endl;
 #endif 
@@ -486,7 +536,7 @@ void AliHFTreeHandler::SetJetParameters(AliHFJetFinder& hfjetfinder){
 }
 #endif
 //________________________________________________________________
-void AliHFTreeHandler::SetJetTreeVars(AliHFJet& hfjet){
+void AliHFTreeHandler::SetJetTreeVars(AliHFJet hfjet){
 
   fPtJet=hfjet.GetPt();
   fEtaJet=hfjet.GetEta();
@@ -498,6 +548,23 @@ void AliHFTreeHandler::SetJetTreeVars(AliHFJet& hfjet){
   if (fDoJetSubstructure){
     fZgJet=hfjet.GetZg();
     fRgJet=hfjet.GetRg();
+  }
+
+}
+
+//________________________________________________________________
+void AliHFTreeHandler::SetGenJetTreeVars(AliHFJet hfjet){
+
+  fPtGenJet=hfjet.GetPt();
+  fEtaGenJet=hfjet.GetEta();
+  fPhiGenJet=hfjet.GetPhi();
+  fDeltaEtaGenJetHadron=hfjet.GetDeltaEta();
+  fDeltaPhiGenJetHadron=hfjet.GetDeltaPhi();
+  fDeltaRGenJetHadron=hfjet.GetDeltaR();
+  fNTracksGenJet=hfjet.GetN();
+  if (fDoJetSubstructure){
+    fZgGenJet=hfjet.GetZg();
+    fRgGenJet=hfjet.GetRg();
   }
 
 }

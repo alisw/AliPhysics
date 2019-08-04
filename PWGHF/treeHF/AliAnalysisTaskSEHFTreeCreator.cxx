@@ -1476,8 +1476,8 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                     Int_t origin= -1;
                     Float_t ptGenD0 = -99.;
 
+		    AliAODMCParticle *partD0=0x0;
                     if(fReadMC) {
-                        AliAODMCParticle *partD0=0x0;
                         labD0 = d->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
                         if(labD0>=0){
                             partD0 = (AliAODMCParticle*)arrMC->At(labD0);
@@ -1517,7 +1517,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                         if(!fReadMC || (issignal || isbkg)) {
                             fTreeHandlerD0->SetIsSelectedStd(isSelAnCutsD0, isSelTopoAnCutsD0, isSelPidAnCutsD0, isSelTracksAnCuts);
                             fTreeHandlerD0->SetVariables(fRunNumber,fEventID,ptGenD0,d,bfield,masshypo,fPIDresp);
-			    if (fFillJets) fTreeHandlerD0->SetJetVars(aod->GetTracks(),d);
+			    if (fFillJets) fTreeHandlerD0->SetJetVars(aod->GetTracks(),d,d->InvMassD0(),arrMC,partD0);
                             fTreeHandlerD0->FillTree();
                         }
                     }//end D0
@@ -1549,7 +1549,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                         if(!fReadMC || (issignal || isbkg)) {
                             fTreeHandlerD0->SetIsSelectedStd(isSelAnCutsD0bar, isSelTopoAnCutsD0bar, isSelPidAnCutsD0bar, isSelTracksAnCuts);
                             fTreeHandlerD0->SetVariables(fRunNumber,fEventID,ptGenD0,d,bfield,masshypo,fPIDresp);
-			    if (fFillJets) fTreeHandlerD0->SetJetVars(aod->GetTracks(),d);
+			    if (fFillJets) fTreeHandlerD0->SetJetVars(aod->GetTracks(),d,d->InvMassD0bar(),arrMC,partD0);
                             fTreeHandlerD0->FillTree();
                         }
                     }//end D0bar
@@ -1687,7 +1687,8 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                               fTreeHandlerBplus->SetVariables(fRunNumber,fEventID,ptGenBplus,&trackBPlus, bfield, masshypo, fPIDresp);
 			      if (fFillJets){
 				AliAODRecoDecayHF2Prong *trackBPlusptr=&trackBPlus;
-				fTreeHandlerBplus->SetJetVars(aod->GetTracks(),trackBPlusptr);
+				UInt_t prong_pdg[2]={211,421};
+				fTreeHandlerBplus->SetJetVars(aod->GetTracks(),trackBPlusptr,trackBPlusptr->InvMass(2,prong_pdg),nullptr,nullptr);
 			      }
                               fTreeHandlerBplus->FillTree();
                             
@@ -1826,8 +1827,8 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                         Int_t orig=0;
                         Float_t ptGenDs = -99.;
                         //checking origin
+			AliAODMCParticle *partDs = 0x0;
                         if(fReadMC){
-                            AliAODMCParticle *partDs = 0x0;
                             labDs = ds->MatchToMC(431,arrMC,3,pdgDstoKKpi);
                             labDplus = ds->MatchToMC(411,arrMC,3,pdgDstoKKpi);
                             
@@ -1879,7 +1880,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                                 if(!fReadMC || (issignal || isbkg)) {
                                     fTreeHandlerDs->SetIsSelectedStd(isSelAnCutsKKpi,isSelAnTopoCutsKKpi,isSelAnPidCutsKKpi,isSelTracksAnCuts);
                                     fTreeHandlerDs->SetVariables(fRunNumber,fEventID,ptGenDs,ds,bfield,0,fPIDresp);
-				    if (fFillJets) fTreeHandlerDs->SetJetVars(aod->GetTracks(),ds);
+				    if (fFillJets) fTreeHandlerDs->SetJetVars(aod->GetTracks(),ds,ds->InvMassDsKKpi(),arrMC,partDs);
                                     fTreeHandlerDs->FillTree();
                                 }
                             }
@@ -1908,7 +1909,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                                 if(!fReadMC || (issignal || isbkg)) {
                                     fTreeHandlerDs->SetIsSelectedStd(isSelAnCutspiKK,isSelAnTopoCutspiKK,isSelAnPidCutspiKK,isSelTracksAnCuts);
                                     fTreeHandlerDs->SetVariables(fRunNumber,fEventID,ptGenDs,ds,bfield,1,fPIDresp);
-				    if (fFillJets) fTreeHandlerDs->SetJetVars(aod->GetTracks(),ds);
+				    if (fFillJets) fTreeHandlerDs->SetJetVars(aod->GetTracks(),ds,ds->InvMassDspiKK(),arrMC,partDs);
                                     fTreeHandlerDs->FillTree();
                                 }
                             }
@@ -1979,10 +1980,11 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                   Int_t pdgCode=-2;
                   Float_t ptGenDplus = -99.;
                   //read MC
+		  AliAODMCParticle *partDp=0x0;
                     if(fReadMC){
                         labDp = dplus->MatchToMC(411,arrMC,3,pdgDgDplustoKpipi);
                         if(labDp>=0){
-                            AliAODMCParticle *partDp = (AliAODMCParticle*)arrMC->At(labDp);
+			    partDp = (AliAODMCParticle*)arrMC->At(labDp);
                             ptGenDplus = partDp->Pt();
                             Int_t orig=AliVertexingHFUtils::CheckOrigin(arrMC,partDp,kTRUE);//Prompt = 4, FeedDown = 5
                             if(orig==4 || orig==5) {
@@ -2006,7 +2008,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                     if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerDplus->SetIsSelectedStd(isSelAnCuts,isSelAnTopolCuts,isSelAnPidCuts,isSelTracksAnCuts);
                         fTreeHandlerDplus->SetVariables(fRunNumber,fEventID,ptGenDplus,dplus,bfield,0,fPIDresp);
-			if (fFillJets) fTreeHandlerDplus->SetJetVars(aod->GetTracks(),dplus);
+			if (fFillJets) fTreeHandlerDplus->SetJetVars(aod->GetTracks(),dplus,dplus->InvMassDplus(),arrMC,partDp);
                         fTreeHandlerDplus->FillTree();
                     }
                     //end fill tree
@@ -2090,10 +2092,11 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                   int restype = -1;
                   if(ispKpi) {
                     //read MC
+		    AliAODMCParticle *partDp=0x0;
                     if(fReadMC){
                       labDp = lctopkpi->MatchToMC(4122,arrMC,3,pdgLctopKpi);
                       if(labDp>=0){
-                        AliAODMCParticle *partDp = (AliAODMCParticle*)arrMC->At(labDp);
+                        partDp = (AliAODMCParticle*)arrMC->At(labDp);
                         ptGenLcpKpi = partDp->Pt();
                         Int_t orig=AliVertexingHFUtils::CheckOrigin(arrMC,partDp,kTRUE);//Prompt = 4, FeedDown = 5
                         if(orig==4 || orig==5) {
@@ -2130,7 +2133,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                         fTreeHandlerLctopKpi->SetIsSelectedStd(isSelAnCutspKpi,isSelTopopKpi,isSelPIDpKpi,isSelTracksAnCuts);
                         fTreeHandlerLctopKpi->SetVariables(fRunNumber,fEventID,ptGenLcpKpi,lctopkpi,bfield,1,fPIDresp);
                         fTreeHandlerLctopKpi->SetVariableResonantDecay(restype);
-			if (fFillJets) fTreeHandlerLctopKpi->SetJetVars(aod->GetTracks(),lctopkpi);
+			if (fFillJets) fTreeHandlerLctopKpi->SetJetVars(aod->GetTracks(),lctopkpi,lctopkpi->InvMassLcpKpi(),arrMC,partDp);
                         fTreeHandlerLctopKpi->FillTree();
                     }
                   } // end pKpi
@@ -2143,10 +2146,11 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                   restype = -1;
                   if(ispiKp) {
                     //read MC
+		    AliAODMCParticle *partDp=0x0;
                     if(fReadMC){
                       labDp = lctopkpi->MatchToMC(4122,arrMC,3,pdgLctopKpi);
                       if(labDp>=0){
-                            AliAODMCParticle *partDp = (AliAODMCParticle*)arrMC->At(labDp);
+                            partDp = (AliAODMCParticle*)arrMC->At(labDp);
                             ptGenLcpKpi = partDp->Pt();
                             Int_t orig=AliVertexingHFUtils::CheckOrigin(arrMC,partDp,kTRUE);//Prompt = 4, FeedDown = 5
                             if(orig==4 || orig==5) {
@@ -2183,7 +2187,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                         fTreeHandlerLctopKpi->SetIsSelectedStd(isSelAnCutspiKp,isSelTopopiKp,isSelPIDpiKp,isSelTracksAnCuts);
                         fTreeHandlerLctopKpi->SetVariables(fRunNumber,fEventID,ptGenLcpKpi,lctopkpi,bfield,2,fPIDresp);
                         fTreeHandlerLctopKpi->SetVariableResonantDecay(restype);
-			if (fFillJets) fTreeHandlerLctopKpi->SetJetVars(aod->GetTracks(),lctopkpi);
+			if (fFillJets) fTreeHandlerLctopKpi->SetJetVars(aod->GetTracks(),lctopkpi,lctopkpi->InvMassLcpiKp(),arrMC,partDp);
                         fTreeHandlerLctopKpi->FillTree();
                     }
                   } // end fill piKpi
@@ -2284,8 +2288,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
                     Int_t origin= -1;
                     Float_t ptGenDstar = -99;
 
+		    AliAODMCParticle *partDstar=0x0;
                     if(fReadMC) {
-                        AliAODMCParticle *partDstar=0x0;
                         labDstar = d->MatchToMC(413,421,pdgDgDStartoD0pi, pdgDgD0toKpi, arrMC);
                         if(labDstar>=0){
                             partDstar = (AliAODMCParticle*)arrMC->At(labDstar);
@@ -2320,7 +2324,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
                     if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerDstar->SetIsSelectedStd(isSelAnCuts,isSelAnTopolCuts,isSelAnPidCuts,isSelTracksAnCuts);
                         fTreeHandlerDstar->SetVariables(fRunNumber,fEventID,ptGenDstar,d,bfield,masshypo,fPIDresp);
-			if (fFillJets) fTreeHandlerDstar->SetJetVars(aod->GetTracks(),d);
+			if (fFillJets) fTreeHandlerDstar->SetJetVars(aod->GetTracks(),d,d->InvMassDstarKpipi(),arrMC,partDstar);	
                         fTreeHandlerDstar->FillTree();
                     }
 
@@ -2428,9 +2432,9 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
           Int_t pdgLc2V0bachelor = -99;
           Int_t origin= -1;
           Float_t ptGenLc2V0bachelor = -99;
-          
+
+	  AliAODMCParticle *partLc2V0bachelor=0x0;
           if(fReadMC) {
-            AliAODMCParticle *partLc2V0bachelor=0x0;
             labLc2V0bachelor = d->MatchToMC(4122,310,pdgDgLc2K0Spr, pdgDgK0stoDaughters, arrMC, kTRUE);
             if(labLc2V0bachelor>=0){
               partLc2V0bachelor = (AliAODMCParticle*)arrMC->At(labLc2V0bachelor);
@@ -2466,7 +2470,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
             fTreeHandlerLc2V0bachelor->SetIsSelectedStd(isSelAnCutstopK0s,isSelAnTopolCutstopK0s,isSelAnPidCutstopK0s,isSelTracksAnCuts);
             fTreeHandlerLc2V0bachelor->SetIsLctoLpi(isSelAnCutstoLpi, isSelAnTopolCutstoLpi, isSelAnPidCutstoLpi);
             fTreeHandlerLc2V0bachelor->SetVariables(fRunNumber,fEventID,ptGenLc2V0bachelor,d,bfield,masshypo,fPIDresp);
-	    if (fFillJets) fTreeHandlerLc2V0bachelor->SetJetVars(aod->GetTracks(),d);
+	    if (fFillJets) fTreeHandlerLc2V0bachelor->SetJetVars(aod->GetTracks(),d,d->InvMassLctoK0sP(),arrMC,partLc2V0bachelor);
             fTreeHandlerLc2V0bachelor->FillTree();
           }          
           if(recVtx)fFiltCutsLc2V0bachelor->CleanOwnPrimaryVtx(d,aod,origownvtx);
