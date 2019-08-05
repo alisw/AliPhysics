@@ -40,7 +40,7 @@ AliAnalysisTaskTransTask::AliAnalysisTaskTransTask() : AliAnalysisTaskSE(),
   fL0inputs(0), fL1inputs(0), fZem1Energy(0), fZem2Energy(0),
   fZNCEnergy(0), fZNAEnergy(0), fZPCEnergy(0), fZPAEnergy(0),fZNATime(0),fZNCTime(0),
   fV0ADecision(-10), fV0CDecision(-10), fADADecision(-10), fADCDecision(-10), 
-  fIR1Map(0),fIR2Map(0),fBCrossNum(0),fCounter(0)
+  fIR1Map(0),fIR2Map(0),fBCrossNum(0),fCounter(0),isMC(kFALSE)
 
 {
     // default constructor, don't allocate memory here!
@@ -53,7 +53,7 @@ AliAnalysisTaskTransTask::AliAnalysisTaskTransTask(const char* name) : AliAnalys
   fL0inputs(0), fL1inputs(0), fZem1Energy(0), fZem2Energy(0),						       
   fZNCEnergy(0), fZNAEnergy(0), fZPCEnergy(0), fZPAEnergy(0),fZNATime(0),fZNCTime(0),
   fV0ADecision(-10), fV0CDecision(-10), fADADecision(-10), fADCDecision(-10), 
-  fIR1Map(0),fIR2Map(0),fBCrossNum(0),fCounter(0)
+  fIR1Map(0),fIR2Map(0),fBCrossNum(0),fCounter(0),isMC(kFALSE)
 
 {
   for (Int_t i=0;i<4;i++) fZNATDC[i]=fZNCTDC[i]=fZPATDC[i]=fZPCTDC[i]=0;
@@ -136,7 +136,7 @@ void AliAnalysisTaskTransTask::UserExec(Option_t *)
   if (trigger.Contains("C1ZED-A")) fC1zed = 2;
   if (trigger.Contains("C1ZED-C")) fC1zed = 3;
   if (trigger.Contains("C1ZED-E")) fC1zed = 4;
-  if (fCtrue == -1 && fC1zed == -1) {PostData(2, fOutputList); return;}
+  if (fCtrue == -1 && fC1zed == -1 && !isMC) {PostData(2, fOutputList); return;}
   fCounter->Fill(3);    
 
   // tracks
