@@ -65,11 +65,8 @@ AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
 {
   AliFemtoEventReaderAODMultSelection* Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetFilterMask(1);
-  //Reader->SetReadV0(1);
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
-  Reader->SetEPVZERO(kTRUE);
-  Reader->SetCentralityFlattening(kTRUE);
-  //Reader->SetReadCascade(kTRUE);
+  //Reader->SetCentralityFlattening(kTRUE);
   Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
 
   Reader->SetUseAliEventCuts(kTRUE);
@@ -98,7 +95,7 @@ AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis)
 }
 
 //_
-AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid,int year, int dca, double dcaMaxXY1, double dcaMaxZ1,double dcaMaxXY2, double dcaMaxZ2, int nClusters, int pileup, int nMix, int nBinMix) {
+AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid,int year, int dca, double dcaMaxXY1, double dcaMaxZ1,double dcaMaxXY2, double dcaMaxZ2, int nClusters, int pileup) {
 
 
   double PionMass = 0.13957018;//0.13956995;
@@ -234,15 +231,15 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 
 	  //Mix events with respect to the z position of the primary vertex and event total multipliticy:
-	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, nBinMix, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(nMix);
+	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
+	  anetaphitpc[aniter]->SetNumEventsToMix(10);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 	  
 	  //Select basic cuts:
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 	  mecetaphitpc[aniter]->SetEventMult(0,100000);
-	  mecetaphitpc[aniter]->SetVertZPos(-7,7);
+	  mecetaphitpc[aniter]->SetVertZPos(-10,10);
 
 	  //Study the multiplicity distribution:
 	  if(turnOnMonitors == 1) {
