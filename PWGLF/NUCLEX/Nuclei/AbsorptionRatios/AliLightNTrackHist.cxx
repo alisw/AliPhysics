@@ -299,6 +299,11 @@ AliLightNTrackHist::AliLightNTrackHist(bool DCADist,bool CombSig,bool PlotPmass2
         
         fTrackCutQA[i]->Add(fITSStatus[i]);
         
+        TString TrackChi2perNDFname = Form("TrackChi2perNDF_%s",sName[i].Data());
+        fTrackChi2perNDF[i] = new TH1F(TrackChi2perNDFname.Data(),TrackChi2perNDFname.Data(),200,-1,10);
+        fTrackChi2perNDF[i]->GetXaxis()->SetTitle("#chi^{2}/NDF");
+        fTrackCutQA[i]->Add(fTrackChi2perNDF[i]);
+        
         TString TPCClsCPileUpName=Form("TPCClsCPileUp_%s",sName[i].Data());
         fTPCClsCPiluUp[i]=new TH2F(TPCClsCPileUpName.Data(),
                                    TPCClsCPileUpName.Data(),

@@ -595,6 +595,7 @@ void AliLightNTrackCuts::BookQA(AliLightNTrack *Track) {
             fHists->FillTOFStatus(i,Track->GetstatusTOF());
             fHists->FillITSStatus(i,Track->GetstatusITS());
             fHists->FillrapidityCut(i,Track->GetRapidity(fParticleID));
+            fHists->FillTrackChi2perNDF(i,Track->GetTrackChi2perNDF());
             //Fill These Before
             if (i==0&&fCombSigma) {
                 fHists->FillNSigComb(p,Track->GetnSigmaTPC(fParticleID),Track->GetnSigmaTOF(fParticleID));
