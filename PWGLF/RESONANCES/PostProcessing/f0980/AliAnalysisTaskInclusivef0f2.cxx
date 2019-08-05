@@ -304,13 +304,10 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 	{binType,binZ,binCent,binPt,binMass,binExKaonNum},"s");
 //**********************************************
 
-
 //QA plots**************************************
  CreateTHnSparse("hSinglePion","hSinglePion",4,
 	{binCent,binTrackPt,binCharge,binEta},"s");
 //**********************************************
-
-
 
 // fEMpool.resize(binCent.GetNbins(),
 //	vector<eventpool> (binZ.GetNbins()));
@@ -366,19 +363,19 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( fOption.Contains("MC") ){
 	IsMC = kTRUE;
  }
-	fRunTable->SetColl(0);
-	if( fOption.Contains("pPb") ){
-		fRunTable->SetColl(1);
-	}
-	if( fOption.Contains("PbPb") ){
-		fRunTable->SetColl(2);
-	}
+
+ fRunTable->SetColl(0);
+ if( fOption.Contains("pPb") ){
+	fRunTable->SetColl(1);
+ }
+ if( fOption.Contains("PbPb") ){
+	fRunTable->SetColl(2);
+ }
 
 // const AliVVertex* trackVtx = fEvt->GetPrimaryVertexTPC(); //for ESD
  const AliVVertex* trackVtx = fEvt->GetPrimaryVertex();
  const AliVVertex* spdVtx = fEvt->GetPrimaryVertexSPD();
  fZ = -15.5;
-
 
 // Generated True Particle distributions for efficiecny and acceptance correction
  Double_t genzvtx;
@@ -456,8 +453,6 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 //***********************************************
 //***********************************************
 
-
-
  Bool_t IsTriggered = kFALSE;
  Bool_t IsNotPileup = kFALSE;
  Bool_t IsValidVtx = kFALSE;
@@ -484,13 +479,10 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 //*****************************
 
 
- cout << (inputHandler -> IsEventSelected()) << ", " << (AliVEvent::kINT7) << endl;
-
-
 //IsNotPileup Flag Configuration
  if( IsMC ) IsNotPileup = kTRUE;
  else if( fRunTable->IsAA() || fRunTable->IsPA() ) IsNotPileup = kTRUE;
- else if( !IsMC && event->IsPileupFromSPDInMultBins() &&
+ else if( !IsMC && !event->IsPileupFromSPDInMultBins() &&
 	( fRunTable->IsPP() ) ) IsNotPileup = kTRUE;
 //*****************************
 
@@ -571,15 +563,12 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  }
 
  if( fOption.Contains("QAMode") && IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
-//	FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
 	if( this -> GoodTracksSelection(0x20, 5, 3, 2) ) FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
-//	if( this -> GoodTracksSelection(0x20, 5, 2, 1.5) ) FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
  }
 
  if( !fOption.Contains("EvtSelStudy") ){
 	if( !fOption.Contains("Sys") ){
 		if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
-//			if(this -> GoodTracksSelection(0x20, 5, 2, 1.5)) this -> FillTracks();
 			if(this -> GoodTracksSelection(0x20, 5, 3, 2)) this -> FillTracks();
 			fHistos->FillTH1("hEvtNumberUsed",1,1);
 			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
@@ -619,17 +608,6 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 			}
 		}
 	}
-/*
-	else if( fOption.Contains("SysPID") ){
-		if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
-			if(this -> GoodTracksSelection(0x20, 5, 3, 2)) this -> FillTracks();
-			if(this -> GoodTracksSelection(0x20, 5, 3, 2.5)) this -> FillTracks();
-			if(this -> GoodTracksSelection(0x20, 5, 3.5, 2)) this -> FillTracks();
-			fHistos->FillTH1("hEvtNumberUsed",1,1);
-			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
-		}
-	}
-*/
  }
 
 
@@ -1214,19 +1192,6 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 
  tracklist trackpool;
 
- int epsize=1;
- if( centbin>=0 && zbin>=0 && fRunTable->IsPP() && fOption.Contains("AddMixing") ){
-	eventpool &ep = fEMpooltrk[trkbin][centbin][zbin];
-	epsize = ep.size();
-        if (ep.size()< 10 ) return;
-        int n = 0;
-        for (auto pool: ep){
-                if (n == (ep.size() -1 )) continue;
-                for (auto track: pool) trackpool.push_back((AliVTrack*)track);
-                n++;
-        }
- }
-
 
  int MotherID;
 
@@ -1409,6 +1374,21 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 		}
 	}
  }
+
+ int epsize=1;
+ if( centbin>=0 && zbin>=0 && fRunTable->IsPP() && fOption.Contains("AddMixing") ){
+        eventpool &ep = fEMpooltrk[trkbin][centbin][zbin];
+        epsize = ep.size();
+        if (ep.size()< 10 ) return;
+        int n = 0;
+        for (auto pool: ep){
+                if (n == (ep.size() -1 )) continue;
+                for (auto track: pool) trackpool.push_back((AliVTrack*)track);
+                n++;
+        }
+ }
+
+
  if( fRunTable->IsPP() && fOption.Contains("AddMixing") ){
  	for (UInt_t  it = 0; it < ntracks; it++) {
 		track1 =  (AliVTrack*) fEvt->GetTrack(goodtrackindices.at(it)) ;
