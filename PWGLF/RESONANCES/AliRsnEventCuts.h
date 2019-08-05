@@ -27,6 +27,7 @@ class AliRsnEventCuts : public AliRsnCut {
   Bool_t         Init(TObject *object);
   Bool_t         IsSelected(TObject *object);
   void           SetSetupPbPb2018(Bool_t doit) {fUsePbPb2018 = doit;};
+  Bool_t         IsAcceptedMultSelection();
 
  private:  
   AliEventCuts        *fEvCuts; //pointer to the AliAnalysisUtils object
