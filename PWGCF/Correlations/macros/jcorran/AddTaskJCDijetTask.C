@@ -14,7 +14,8 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
                                     double leadingJetCut      = 20.0,
                                     double subleadingJetCut   = 20.0,
                                     double constituentCut     = 5.0,
-                                    double deltaPhiCut        = 2.0){
+                                    double deltaPhiCut        = 2.0,
+                                    double matchingR          = 0.2){
     // Load Custom Configuration and parameters
     // override values with parameters
 
@@ -70,7 +71,7 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
     dijetTask->SetJetConeSize(jetCone, ktjetCone);
     dijetTask->SetBGSubtrSettings(ktScheme, usePionMassInkt, useDeltaPhiBGSubtr);
     dijetTask->SetIsMC(isMC);
-    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut);
+    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut, matchingR);
     cout << dijetTask->GetName() << endl;
 
 

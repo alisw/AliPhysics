@@ -55,10 +55,10 @@ class AliJCDijetHistos : public AliJHistogramInterface
         //===================================================
         // Event/Track histograms
         //===================================================
-        AliJTH1D fh_events;     //! // for counting events, jets, dijets and so on.
-        AliJTH1D fh_info;       //! // General information about the run.
-        AliJTH1D fh_centrality; //! // centrality histogram
-        AliJTH1D fh_zvtx;       //! // z-vertex histogram
+        AliJTH1D fh_events;       //! // for counting events, jets, dijets and so on.
+        AliJTH1D fh_info;         //! // General information about the run.
+        AliJTH1D fh_centrality;   //! // centrality histogram
+        AliJTH1D fh_zvtx;         //! // z-vertex histogram
 
         AliJTH1D fh_pt;     //! // for pt dist of tracks
         AliJTH1D fh_eta;    //! // for eta dist of tracks
@@ -80,6 +80,15 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_dijetDeltaPhi;            //! // for dijet deltaPhi
         AliJTH1D fh_dijetPtPairDeltaPhiCut;   //! // for dijet pt after deltaPhi cut
         AliJTH1D fh_dijetInvMDeltaPhiCut;     //! // for dijet invariant mass after deltaPhi cut
+        AliJTH1D fh_dijetDeltaPhiWithCut;     //! // for dijet delta phi after deltaPhi cut
+
+        AliJTH1D fh_responseInfo;             //! // for counting response related things.
+        AliJTH1D fh_jetResponseDeltaR;        //! // true jet vs. detector jet deltaR
+        AliJTH1D fh_jetDeltaRMin;             //! // Minimum deltaR between jets
+        AliJTH1D fh_jetBGSubtrDeltaR;         //! // DeltaR between BG subtr jet and raw jet.
+        AliJTH2D fh_jetResponse;              //! // Jet response matrix
+        AliJTH2D fh_dijetResponse;            //! // Dijet response matrix
+        AliJTH2D fh_dijetResponseDeltaPhiCut; //! // Dijet response matrix with deltaPhi cut
 };
 
 #endif //ALIJCDIJETHISTOS_H

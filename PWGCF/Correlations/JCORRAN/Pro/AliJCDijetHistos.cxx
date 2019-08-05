@@ -256,6 +256,43 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << TH1D("h_dijetInvMDeltaPhiCut", "h_dijetInvMDeltaPhiCut", NBINSDijet, logBinsXDijet)
         << fHistCentBin << fJetBin
         << "END" ;
+
+    fh_dijetDeltaPhiWithCut
+        << TH1D("h_dijetDeltaPhiWithCut", "h_dijetDeltaPhiWithCut", 100, 0, 10)
+        << fHistCentBin << fJetBin
+        << "END" ;
+
+
+    // ============ Response histograms ===========
+    fh_responseInfo
+        << TH1D("h_responseInfo", "h_responseInfo", 40, 0.0, 40.0 )
+        << "END" ;
+
+    fh_jetResponseDeltaR
+        << TH1D("h_jetResponseDeltaR", "h_jetResponseDeltaR", 100, 0.0, 1.0)
+        << "END" ;
+
+    fh_jetDeltaRMin
+        << TH1D("h_jetDeltaRMin", "h_jetDeltaRMin", 400, 0.0, 4.0)
+        << fHistCentBin << fJetBin
+        << "END" ;
+
+    fh_jetBGSubtrDeltaR
+        << TH1D("h_jetBGSubtrDeltaR", "h_jetBGSubtrDeltaR", 400, 0.0, 4.0)
+        << fHistCentBin
+        << "END" ;
+
+    fh_jetResponse
+        << TH2D("h_jetResponse", "h_jetResponse", NBINSJet, LogBinsXJet, NBINSJet, LogBinsXJet )
+        << "END" ;
+
+    fh_dijetResponse
+        << TH2D("h_dijetResponse", "h_dijetResponse", NBINSDijet, logBinsXDijet, NBINSDijet, logBinsXDijet )
+        << "END" ;
+
+    fh_dijetResponseDeltaPhiCut
+        << TH2D("h_dijetResponseDeltaPhiCut", "h_dijetResponseDeltaPhiCut", NBINSDijet, logBinsXDijet, NBINSDijet, logBinsXDijet )
+        << "END" ;
 }
 
 int AliJCDijetHistos::GetCentralityClass(Double_t fCent){
