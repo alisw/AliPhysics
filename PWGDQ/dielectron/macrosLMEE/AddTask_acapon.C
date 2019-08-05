@@ -97,8 +97,8 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
 
     // Add event filter (the same for all cut sets and configs)
     Int_t triggerNames = (AliVEvent::kINT7);
-    task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
+    task->UsePhysicsSelection();
     if(rejectPileUp != 0){
       task->SetRejectPileup(kTRUE);
       if(rejectPileUp == 1){

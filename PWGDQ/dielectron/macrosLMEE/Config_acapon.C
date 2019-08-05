@@ -533,14 +533,19 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
     histos->UserHistogram("Event","RefMultTPConly","",300,0,300,AliDielectronVarManager::kRefMultTPConly);
     //------ Pile-up check plots
     histos->UserHistogram("Event","SPD clusters vs tracklets","",75,0,150,30,0,60,AliDielectronVarManager::kNaccTrcklts10,AliDielectronVarManager::kITSLayerFirstCls);
+    // Using new centrality estimator (run2)
     histos->UserHistogram("Event","NTPCclsEvent","kNTPCclsEvent;Centrality/%;kNTPCclsEvent",202,-1.,100.,500,0,5000000,AliDielectronVarManager::kCentralityNew,AliDielectronVarManager::kNTPCclsEvent);
     histos->UserHistogram("Event","NTPCtrkswITSout","kNTPCtrkswITSout;Centrality/%;kNTPCtrkswITSout",202,-1.,100.,500,0,15000,AliDielectronVarManager::kCentralityNew,AliDielectronVarManager::kNTPCtrkswITSout);
+    // Using new centrality estimator (run1)
+    histos->UserHistogram("Event","NTPCclsEvent","kNTPCclsEvent;Centrality/%;kNTPCclsEvent",202,-1.,100.,500,0,5000000,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kNTPCclsEvent);
+    histos->UserHistogram("Event","NTPCtrkswITSout","kNTPCtrkswITSout;Centrality/%;kNTPCtrkswITSout",202,-1.,100.,500,0,15000,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kNTPCtrkswITSout);
 
     //--------- V0 plots ------------------------//
     histos->UserHistogram("Event","MultV0","Multiplicity V0;V0M amplitude",                       4000, -0.5, 3999.5, AliDielectronVarManager::kMultV0);
     histos->UserHistogram("Event","EqMultV0","Equalized Multiplicity V0;Equalized V0M amplitude", 4000, -0.5, 3999.5, AliDielectronVarManager::kEqMultV0);
     histos->UserHistogram("Event","ChMultV0","Charged Multiplicity V0;Charged V0M amplitude",     1000, -0.5, 999.5,  AliDielectronVarManager::kVZEROchMult);
-    histos->UserHistogram("Event","CentralityV0M","Centrality V0;V0M percentile",   102, -1, 101, AliDielectronVarManager::kCentralityNew);
+    histos->UserHistogram("Event","CentralityV0M","Centrality V0;V0M percentile",   102, -1, 101, AliDielectronVarManager::kCentralityNew); // V0M in run2
+    histos->UserHistogram("Event","CentralityV0M","Centrality V0;V0M percentile",   102, -1, 101, AliDielectronVarManager::kCentrality); // V0M in run1
     histos->UserHistogram("Event","CentralityV0A","Centrality V0;V0A percentile",   102, -1, 101, AliDielectronVarManager::kCentralityV0A);
     histos->UserHistogram("Event","CentralityV0C","Centrality V0;V0C percentile",   102, -1, 101, AliDielectronVarManager::kCentralityV0C);
     histos->UserHistogram("Event","CentralityZNA","Centrality V0;V0ZNA percentile", 102, -1, 101, AliDielectronVarManager::kCentralityZNA);
