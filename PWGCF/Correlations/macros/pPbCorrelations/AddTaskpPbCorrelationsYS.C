@@ -1,5 +1,5 @@
 AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
-								       TString  fListName      = "pPbCorrelations_1",
+								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
 								       TString  fCollisiontype = "pPb",
@@ -10,7 +10,8 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 								       TString anacent         ="V0A",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =5,
-								       Int_t fFMDcutpar        =1
+								       Int_t fFMDcutpar        =2,
+								       Bool_t fmakehole        =kFALSE
 								       )
 {
   // Get the current analysis manager.
@@ -58,6 +59,7 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   myTask->SetRunType(frun2);
   myTask->SetFMDcut(fFMDcut);
   myTask->SetFMDcutpar(fFMDcutpar);
+  myTask->Setacceptancehole(fmakehole);
   //  if(anamode=="FMDFMD" || anamode=="SECA")myTask-> SetMinNTracksInPool(5000);
   myTask->SetMinNTracksInPool(5000);
   myTask->SetAnalysisCent(anacent);//0:V0A 1:ZNA 2:
@@ -66,7 +68,7 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
   if(fCollisiontype=="PbPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
   if(fCollisiontype=="pPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
-  if(fCollisiontype=="HMPP"|| fCollisiontype=="PP") myTask->SetPoolCentBinLimits(cent_mult_bin_numbHMPP,cent_mult_binlimitsHMPP);
+  if(fCollisiontype=="HMPP"|| fCollisiontype=="PP"||fCollisiontype=="MBPP") myTask->SetPoolCentBinLimits(cent_mult_bin_numbHMPP,cent_mult_binlimitsHMPP);
   mgr->AddTask(myTask);
 
   //cout<<"hogehoge"<<endl;
