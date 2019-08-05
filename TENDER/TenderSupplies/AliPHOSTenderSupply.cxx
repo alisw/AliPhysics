@@ -876,26 +876,40 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
   if(fNonlinearityVersion=="Run2TuneMCNoNcell"){ //Improved Run2 tune for MC in the case of loose cluster cuts (no Ncell>2 cut)
     if(en<=0.) return 0.;
     
-    Double_t Nonlin=0.;
-    const Double_t x0=5.17 ;
+    const Double_t xMin=0.57; //low part of the param (optimized from pi0 peak)
+    const Double_t xMax=5.17; //Upper part of the param (optimized from pi0 peak)
+        
+    //middle part param    
     const Double_t a= 1.02165   ; 
-    const Double_t b=-0.27678 ; 
-    const Double_t c= 6.483e-01 ;     
-    const Double_t d=-4.775e-01 ;    
-    const Double_t e= 1.205e-01 ;
-    const Double_t beta= b+2.*c/TMath::Sqrt(x0)+3.*d/x0+4.*e/x0/TMath::Sqrt(x0) ;
-    const Double_t alpha = a+b/TMath::Sqrt(x0)+c/x0+d/x0/TMath::Sqrt(x0)+e/(x0*x0)-beta/TMath::Sqrt(x0) ;
-    if(en<x0){
-      Nonlin= 1.02384*(a*en+b*TMath::Sqrt(en)+c+d/TMath::Sqrt(en)+e/en)/en ;
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 0.6413 ;     
+    const Double_t d=-0.4760 ;
+    const Double_t e= 0.1165  ;  
+
+    Double_t ecorr=0.;
+    if(en<xMin){
+       const Double_t beta = a+0.5*b/sqrt(xMin)-0.5*d/(xMin*sqrt(xMin))-e/(xMin*xMin);
+       const Double_t alpha = a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*xMin ;
+       ecorr= 1.007102*(alpha+beta*en) ;  
     }
     else{
-      Nonlin = 1.02384*(alpha*en+beta*TMath::Sqrt(en))/en ;  
+      if(en<xMax){
+         ecorr= 1.007102*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+      }
+      else{
+        const Double_t beta= b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax) ;
+        const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
+        ecorr= 1.007102*(alpha*en+beta*sqrt(en)) ;  
+      }
+    }
+    if(ecorr<0){
+      return 0.;
     }
 
-    Double_t aM=-0.035 ;    
-    Double_t bM= 0.375 ;    
-    Double_t cM= 0.08 ;
-    return en * Nonlin*(1.+aM*(1.-TMath::TanH((en-bM)/cM))) ;    
+    Double_t aM= 0.0226  ;
+    Double_t bM= 0.415   ; 
+    Double_t cM= 0.09 ;
+    return ecorr*(1.+aM*(1.-TMath::TanH((en-bM)/cM))) ;
     
   }
 
