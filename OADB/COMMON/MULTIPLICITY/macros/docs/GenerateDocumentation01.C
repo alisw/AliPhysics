@@ -1,4 +1,6 @@
-GenerateDocumentation01() {
+#include "AliMult"
+
+void GenerateDocumentation01() {
     //This macro auto-generates documentation (twiki-style)
     //based on all OADBs currently deployed in the AliPhysics
     //directory specified here:
