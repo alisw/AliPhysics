@@ -41,7 +41,10 @@ public:
    
    void           SetPIDCutProton(Double_t value)          {fPIDCutProton = value;}
    void           SetPIDCutPion(Double_t value)            {fPIDCutPion = value;}
-  
+   
+   void           SetDifferentDCACutPosNegTrack(Bool_t doDifferentTrackDCACuts){fCustomTrackDCACuts = doDifferentTrackDCACuts;}
+   void           SetMinDCAToVtxXYPositiveTrack(Double_t value) {fMinDCAPositiveTrack = value;}
+   void           SetMinDCAToVtxXYNegativeTrack(Double_t value) {fMinDCANegativeTrack = value;}
 
    AliRsnCutTrackQuality *CutQuality()                     {return &fCutQuality;}
    void           SetAODTestFilterBit(Int_t value)         {fAODTestFilterBit = value;}
@@ -71,6 +74,9 @@ protected:
    Double_t         fMaxDaughtersDCA;  // max allowed DCA between the two daughers
    Int_t            fMinTPCcluster;    // min allowed TOC cluster
    Double_t         fMaxRapidity;      // max allowed V0 rapidity
+   Bool_t           fCustomTrackDCACuts; // Use different DCA cuts for positive and negative V0 tracks
+   Double_t         fMinDCAPositiveTrack; // DCA of positive V0 track to vertex
+   Double_t         fMinDCANegativeTrack; // DCA of negative V0 track to vertex
    
    AliPID::EParticleType fPID;         // PID for track
    AliPID::EParticleType fPID2;        // PID for track
@@ -84,7 +90,7 @@ protected:
    
    Int_t            fAODTestFilterBit; // test filter bit for AODs
    
-   ClassDef(AliRsnCutV0, 1)
+   ClassDef(AliRsnCutV0, 2)
 };
 
 //__________________________________________________________________________________________________
