@@ -956,7 +956,7 @@ void AliAnalysisTaskFlowModes_pPb::UserCreateOutputObjects()
     // charged (tracks) histograms
     fh2RefsMult = new TH2D("fh2RefsMult","RFPs: Centrality: Multiplicity; centrality; multiplicity",fFlowCentNumBins,0,fFlowCentNumBins,1000,0,1000);
     fQACharged->Add(fh2RefsMult);
-    fh2RefsPt = new TH2D("fh2RefsPt","RFPs: #it{p}_{T};  centrality; #it{p}_{T} (GeV/#it{c})",fFlowCentNumBins,0,fFlowCentNumBins,300,0,30);
+    fh2RefsPt = new TH2D("fh2RefsPt","RFPs: #it{p}_{T};  centrality; #it{p}_{T} (GeV/#it{c})",fFlowCentNumBins,0,fFlowCentNumBins,100,0,10);
     fQACharged->Add(fh2RefsPt);
     fh2RefsEta = new TH2D("fh2RefsEta","RFPs: #eta; centrality; #eta",fFlowCentNumBins,0,fFlowCentNumBins, 151,-1.5,1.5);
     fQACharged->Add(fh2RefsEta);
@@ -984,7 +984,7 @@ void AliAnalysisTaskFlowModes_pPb::UserCreateOutputObjects()
         
         if(fFillQA)
         {
-            fh2PIDPionPt = new TH2D("fh2PIDPionPt","PID: #pi: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,150,0.,30.);
+            fh2PIDPionPt = new TH2D("fh2PIDPionPt","PID: #pi: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,100,0.,10.);
             fQAPID->Add(fh2PIDPionPt);
             fh2PIDPionPhi = new TH2D("fh2PIDPionPhi","PID: #pi: centrality vs. #varphi; centrality; #varphi", fFlowCentNumBins,0,fFlowCentNumBins,100,0,TMath::TwoPi());
             fQAPID->Add(fh2PIDPionPhi);
@@ -992,7 +992,7 @@ void AliAnalysisTaskFlowModes_pPb::UserCreateOutputObjects()
             fQAPID->Add(fh2PIDPionEta);
             fhPIDPionCharge = new TH1D("fhPIDPionCharge","PID: #pi: charge; charge", 3,-1.5,1.5);
             fQAPID->Add(fhPIDPionCharge);
-            fh2PIDKaonPt = new TH2D("fh2PIDKaonPt","PID: K: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,150,0.,30.);
+            fh2PIDKaonPt = new TH2D("fh2PIDKaonPt","PID: K: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,100,0.,10.);
             fQAPID->Add(fh2PIDKaonPt);
             fh2PIDKaonPhi = new TH2D("fh2PIDKaonPhi","PID: K: centrality vs. #varphi; centrality; #varphi", fFlowCentNumBins,0,fFlowCentNumBins,100,0,TMath::TwoPi());
             fQAPID->Add(fh2PIDKaonPhi);
@@ -1000,7 +1000,7 @@ void AliAnalysisTaskFlowModes_pPb::UserCreateOutputObjects()
             fQAPID->Add(fh2PIDKaonEta);
             fhPIDKaonCharge = new TH1D("fhPIDKaonCharge","PID: K: charge; charge", 3,-1.5,1.5);
             fQAPID->Add(fhPIDKaonCharge);
-            fh2PIDProtonPt = new TH2D("fh2PIDProtonPt","PID: p: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,150,0.,30.);
+            fh2PIDProtonPt = new TH2D("fh2PIDProtonPt","PID: p: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,100,0.,10.);
             fQAPID->Add(fh2PIDProtonPt);
             fh2PIDProtonPhi = new TH2D("fh2PIDProtonPhi","PID: p: centrality vs. #varphi; centrality; #varphi", fFlowCentNumBins,0,fFlowCentNumBins,100,0,TMath::TwoPi());
             fQAPID->Add(fh2PIDProtonPhi);
@@ -1096,7 +1096,7 @@ void AliAnalysisTaskFlowModes_pPb::UserCreateOutputObjects()
                 fQACharged->Add(fhQAChargedMult[iQA]);
                 fhQAChargedCharge[iQA] = new TH1D(Form("fhQAChargedCharge_%s",sQAindex[iQA].Data()),"QA Charged: Track charge; charge;", 3,-1.5,1.5);
                 fQACharged->Add(fhQAChargedCharge[iQA]);
-                fhQAChargedPt[iQA] = new TH1D(Form("fhQAChargedPt_%s",sQAindex[iQA].Data()),"QA Charged: Track #it{p}_{T}; #it{p}_{T} (GeV/#it{c})", 300,0.,30.);
+                fhQAChargedPt[iQA] = new TH1D(Form("fhQAChargedPt_%s",sQAindex[iQA].Data()),"QA Charged: Track #it{p}_{T}; #it{p}_{T} (GeV/#it{c})", 100,0.,10.);
                 fQACharged->Add(fhQAChargedPt[iQA]);
                 fhQAChargedEta[iQA] = new TH1D(Form("fhQAChargedEta_%s",sQAindex[iQA].Data()),"QA Charged: Track #it{#eta}; #it{#eta}", 151,-1.5,1.5);
                 fQACharged->Add(fhQAChargedEta[iQA]);
