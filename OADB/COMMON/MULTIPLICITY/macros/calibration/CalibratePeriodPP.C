@@ -1,10 +1,19 @@
+#include "AliMultEstimator.h"
+#include "AliMultSelectionCuts.h"
+#include "AliMultSelection.h"
+#include "AliMultSelectionCalibrator.h"
+#include <TString.h>
+#include <TSystem.h>
+#include <TF1.h>
+#include <TFile.h>
+
 ////////////////////////////////////////////////////////////
 //
 // Default macro for calibrating minimum bias pp data.
 //
 ////////////////////////////////////////////////////////////
 
-CalibratePeriodPP(const Char_t* inputDir, TString lPeriodName = "LHC16k",
+void CalibratePeriodPP(const Char_t* inputDir, TString lPeriodName = "LHC16k",
                   TString lWhichData = "MB",
                   Long_t lRunToUseAsDefault = 257630, TString lRunIdentifier = "") {
 
@@ -28,7 +37,7 @@ CalibratePeriodPP(const Char_t* inputDir, TString lPeriodName = "LHC16k",
 
     lCalib->SetRunToUseAsDefault( lRunToUseAsDefault );
     lCalib->SetSelectedTriggerClass(AliVEvent::kINT7);
-    
+
     //============================================================
     // --- Definition of Boundaries ---
     //============================================================
@@ -82,7 +91,7 @@ CalibratePeriodPP(const Char_t* inputDir, TString lPeriodName = "LHC16k",
         lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
     }
 
-    //Additional selections for pp: incompleteDAQ and asymmetric vzero 
+    //Additional selections for pp: incompleteDAQ and asymmetric vzero
 
 
 
