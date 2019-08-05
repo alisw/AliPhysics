@@ -75,7 +75,7 @@ void AliCDBManager::Init() {
   RegisterFactory(new AliCDBLocalFactory());
   // AliCDBGridFactory is registered only if AliEn libraries are enabled in Root
   static int hltOnlineMode = getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0;
-  if(!hltOnlineMode && TClass::GetClass("TAlien")){
+  if(!hltOnlineMode){
     AliInfo("AliEn classes enabled in Root. AliCDBGrid factory registered.");
     RegisterFactory(new AliCDBGridFactory());
     fCondParam = CreateParameter(fgkCondUri);

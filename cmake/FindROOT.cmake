@@ -208,6 +208,16 @@ if(ROOTSYS)
             include_directories(SYSTEM ${ALIEN}/api/include)
         endif()
 
+        if(EXISTS "${JALIEN_LIBS}/include")
+          message(INFO "JALIEN_LIBS location: ${JALIEN_LIBS}/include")
+          include_directories(SYSTEM "${JALIEN_LIBS}/include")
+        endif()
+
+        if(EXISTS "${ALIEN_LIBS}/include")
+          message(INFO "ALIEN_LIBS location: ${ALIEN_LIBS}/include")
+          include_directories(SYSTEM "${ALIEN_LIBS}/include")
+        endif()
+
         set(ROOT_HASALIEN TRUE)
     else(ALIEN)
         message(WARNING "No AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
