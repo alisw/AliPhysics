@@ -12,7 +12,7 @@
 #include "AliRsnEventCuts.h"
 #include "AliEventCuts.h"
 //#include "AliESDtrackCuts.h"
-//#include "AliMultSelection.h"
+#include "AliMultSelection.h"
 //#include "AliMCEvent.h"
 //#include "AliMCParticle.h"
 //#include "AliAODMCParticle.h"
@@ -85,8 +85,28 @@ Bool_t AliRsnEventCuts::IsSelected(TObject *object)
    if (fUsePbPb2018) fEvCuts->SetupPbPb2018();
 
    Bool_t accept = kTRUE;
+   if(!IsAcceptedMultSelection()) return kFALSE;
    if (!fEvCuts->AcceptEvent(vevt)) return kFALSE;
   
    return accept;
 }
 
+//_________________________________________________________________________________________________
+Bool_t AliRsnEventCuts::IsAcceptedMultSelection() {
+
+  AliMultSelection *MultSelection=0;
+
+  if(!fEvent) return kFALSE;
+
+  AliESDEvent* esdEvt=0;
+  Bool_t isESD=fEvent->IsESD();
+  if(isESD) esdEvt=dynamic_cast<AliESDEvent *>(fEvent->GetRef());
+  if(isESD && esdEvt){
+    MultSelection=(AliMultSelection*) esdEvt->FindListObject("MultSelection");
+    if(!MultSelection) return kTRUE;
+    if(MultSelection->IsEventSelected()) return kTRUE;
+    return kFALSE;
+  }
+
+  return kFALSE;
+}
