@@ -70,7 +70,10 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fPIDCutPion(0),
    fESDtrackCuts(0x0),
    fCutQuality(Form("%sDaughtersQuality", name)),
-   fAODTestFilterBit(5)
+   fAODTestFilterBit(5),
+   fCustomTrackDCACuts(kFALSE),
+   fMinDCAPositiveTrack(0.001),
+   fMinDCANegativeTrack(0.001)
 {
 //
 // Default constructor.
@@ -104,7 +107,10 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fPIDCutPion(copy.fPIDCutPion),
    fESDtrackCuts(copy.fESDtrackCuts),
    fCutQuality(copy.fCutQuality),
-   fAODTestFilterBit(copy.fAODTestFilterBit)
+   fAODTestFilterBit(copy.fAODTestFilterBit),
+   fCustomTrackDCACuts(copy.fCustomTrackDCACuts),
+   fMinDCAPositiveTrack(copy.fMinDCAPositiveTrack),
+   fMinDCANegativeTrack(copy.fMinDCANegativeTrack)
 {
 //
 // Copy constructor.
@@ -154,6 +160,9 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fESDtrackCuts = copy.fESDtrackCuts;
    fCutQuality = copy.fCutQuality;
    fAODTestFilterBit = copy.fAODTestFilterBit;
+   fCustomTrackDCACuts = copy.fCustomTrackDCACuts;
+   fMinDCAPositiveTrack = copy.fMinDCAPositiveTrack;
+   fMinDCANegativeTrack = copy.fMinDCANegativeTrack;
 
    return (*this);
 }
@@ -238,6 +247,29 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
          AliDebugClass(2, "Negative daughter failed quality cuts");
          return kFALSE;
       }
+   }
+
+      // Apply different DCAxy cut for positive and negative V0 daughters
+
+   if (fCustomTrackDCACuts) {
+     Float_t impParPos[2], impParNeg[2];
+     Float_t covMatPos[3], covMatNeg[3];
+     pTrack->GetImpactParameters(impParPos,covMatPos);
+     nTrack->GetImpactParameters(impParNeg,covMatNeg);
+
+     if (covMatPos[0]<=0 || covMatPos[2]<=0) {
+       Printf("Estimated b resolution lower or equal zero!");
+       covMatPos[0]=0; covMatPos[2]=0;
+     }
+
+     if (covMatNeg[0]<=0 || covMatNeg[2]<=0) {
+       Printf("Estimated b resolution lower or equal zero!");
+       covMatNeg[0]=0; covMatNeg[2]=0;
+     }
+     
+     if(impParPos[0]<fMinDCAPositiveTrack) return kFALSE;
+     if(impParNeg[0]<fMinDCANegativeTrack) return kFALSE;
+     
    }
 
    // topological checks
