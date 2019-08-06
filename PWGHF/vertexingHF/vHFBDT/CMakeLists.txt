@@ -19,6 +19,7 @@ add_definitions(-D_MODULEVHFBDT_="${MODULEVHFBDT}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT
+					${AliRoot_SOURCE_DIR}/STEER/STEERBase
 					${ROOT_INCLUDE_DIRS}
 					)
 
@@ -49,7 +50,7 @@ add_library_tested(${MODULEVHFBDT} SHARED  ${SRCS} G__${MODULEVHFBDT}.cxx)
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS STEERBase ANALYSISalice)
-generate_rootmap("${MODULEVHFBDT}" "" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULEVHFBDT}LinkDef.h")
+generate_rootmap("${MODULEVHFBDT}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULEVHFBDT}LinkDef.h")
 
 # Linking the library
 target_link_libraries(${MODULEVHFBDT})
