@@ -97,7 +97,6 @@ AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(),
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
-
 //_____________________________________________________________________________
 AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON(const char* name) : AliAnalysisTaskSE(name),
   fMuonTrackCuts(0x0), fPeriod(-10), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0),  fNumberMuonsH(0), fNumberMCMuonsH(0),  
@@ -178,12 +177,12 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
   fRecTree = new TTree("fRecTree", "fRecTree");
   fRecTree ->Branch("fRunNum", &fRunNum, "fRunNum/I");
   // fRecTree ->Branch("fTracklets", &fTracklets, "fTracklets/I");	
-  fRecTree ->Branch("fZNCEnergy", &fZNCEnergy, "fZNCEnergy/D");  
-  fRecTree ->Branch("fZNAEnergy", &fZNAEnergy, "fZNAEnergy/D");
+  fRecTree ->Branch("fZNCEnergy", &fZNCEnergy, "fZNCEnergy/F");  
+  fRecTree ->Branch("fZNAEnergy", &fZNAEnergy, "fZNAEnergy/F");
   // fRecTree ->Branch("fZPCEnergy", &fZPCEnergy, "fZPCEnergy/D");
   // fRecTree ->Branch("fZPAEnergy", &fZPAEnergy, "fZPAEnergy/D");  
-  fRecTree ->Branch("fZNATDC", &fZNATDC[0], "fZNATDC[4]/D");
-  fRecTree ->Branch("fZNCTDC", &fZNCTDC[0], "fZNCTDC[4]/D");  
+  fRecTree ->Branch("fZNATDC", &fZNATDC[0], "fZNATDC[4]/F");
+  fRecTree ->Branch("fZNCTDC", &fZNCTDC[0], "fZNCTDC[4]/F");  
   // fRecTree ->Branch("fZPATDC", &fZPATDC[0], "fZPATDC[4]/D");
   // fRecTree ->Branch("fZPCTDC", &fZPCTDC[0], "fZPCTDC[4]/D"); 
   fRecTree ->Branch("fV0ADecision", &fV0ADecision, "fV0ADecision/I");
@@ -194,10 +193,10 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
   fRecTree ->Branch("fADCDecision", &fADCDecision, "fADCDecision/I");
   // fRecTree ->Branch("fIR1Map", &fIR1Map);
   // fRecTree ->Branch("fIR2Map", &fIR2Map);  
-  fRecTree ->Branch("fMuMuPt", &fMuMuPt, "fMuMuPt/D");
+  fRecTree ->Branch("fMuMuPt", &fMuMuPt, "fMuMuPt/F");
   // fRecTree ->Branch("fMuMuPhi", &fMuMuPhi, "fMuMuPhi/D");
-  fRecTree ->Branch("fMuMuY", &fMuMuY, "fMuMuY/D");
-  fRecTree ->Branch("fMuMuM", &fMuMuM, "fMuMuM/D");
+  fRecTree ->Branch("fMuMuY", &fMuMuY, "fMuMuY/F");
+  fRecTree ->Branch("fMuMuM", &fMuMuM, "fMuMuM/F");
   // fRecTree ->Branch("fMuPt1", &fMuPt1, "fMuPt1/D");
   // fRecTree ->Branch("fMuPt2", &fMuPt2, "fMuPt2/D");
   // fRecTree ->Branch("fMuEta1", &fMuEta1, "fMuEta1/D");
@@ -218,10 +217,10 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
     fGenPart = new TClonesArray("TParticle", 1000);
 
     fGenTree ->Branch("fMCRunNum", &fMCRunNum, "fMCRunNum/I");
-    fGenTree ->Branch("fMCMuMuPt", &fMCMuMuPt, "fMCMuMuPt/D");
+    fGenTree ->Branch("fMCMuMuPt", &fMCMuMuPt, "fMCMuMuPt/F");
     // fGenTree ->Branch("fMCMuMuPhi", &fMCMuMuPhi, "fMCMuMuPhi/D");
-    fGenTree ->Branch("fMCMuMuY", &fMCMuMuY, "fMCMuMuY/D");
-    fGenTree ->Branch("fMCMuMuM", &fMCMuMuM, "fMCMuMuM/D");
+    fGenTree ->Branch("fMCMuMuY", &fMCMuMuY, "fMCMuMuY/F");
+    fGenTree ->Branch("fMCMuMuM", &fMCMuMuM, "fMCMuMuM/F");
     // fGenTree ->Branch("fMCMuPt1", &fMCMuPt1, "fMCMuPt1/D");
     // fGenTree ->Branch("fMCMuPt2", &fMCMuPt2, "fMCMuPt2/D");
     // fGenTree ->Branch("fMCMuEta1", &fMCMuEta1, "fMCMuEta1/D");
@@ -363,6 +362,7 @@ void AliAnalysisTaskNanoMUON::TwoMuonAna(Int_t *idxPosMuons, Int_t *idxNegMuons)
   // fMuPt2 = NegTrack->Pt();
   // fMuQ2 = NegTrack->Charge();
 }
+//_____________________________________________________________________________
 void AliAnalysisTaskNanoMUON::TwoMCMuonAna(Int_t *idxMCPosMuons, Int_t *idxMCNegMuons)
 {
 // get tracks  

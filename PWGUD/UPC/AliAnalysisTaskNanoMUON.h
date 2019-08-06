@@ -59,12 +59,12 @@ class AliAnalysisTaskNanoMUON : public AliAnalysisTaskSE
 		TTree *fRecTree; 		//! analysis tree
 		Int_t fRunNum;
 		// Int_t fTracklets;
-		Double_t fZNCEnergy; 
-		Double_t fZNAEnergy;
+		Float_t fZNCEnergy; 
+		Float_t fZNAEnergy;
 		// Double_t fZPCEnergy; 
 		// Double_t fZPAEnergy;
-		Double_t fZNATDC[4];
-		Double_t fZNCTDC[4];
+		Float_t fZNATDC[4];
+		Float_t fZNCTDC[4];
 		// Double_t fZPATDC[4];
 		// Double_t fZPCTDC[4];
 		Int_t fV0ADecision; 
@@ -75,10 +75,10 @@ class AliAnalysisTaskNanoMUON : public AliAnalysisTaskSE
 		Int_t fADCDecision;
 	  	// TBits fIR1Map;
 	  	// TBits fIR2Map;
-		Double_t fMuMuPt; 
+		Float_t fMuMuPt; 
 		// Double_t fMuMuPhi;
-		Double_t fMuMuY; 
-		Double_t fMuMuM;
+		Float_t fMuMuY; 
+		Float_t fMuMuM;
 		// Double_t fMuPt1; 
 		// Double_t fMuPt2;
 		// Double_t fMuEta1; 
@@ -91,10 +91,10 @@ class AliAnalysisTaskNanoMUON : public AliAnalysisTaskSE
 		TClonesArray *fGenPart; 	//! MC particle object
 		TTree *fGenTree; 		//! MC tree
 		Int_t fMCRunNum;
-		Double_t fMCMuMuPt; 
+		Float_t fMCMuMuPt; 
 		// Double_t fMCMuMuPhi;
-		Double_t fMCMuMuY; 
-		Double_t fMCMuMuM;
+		Float_t fMCMuMuY; 
+		Float_t fMCMuMuM;
 		// Double_t fMCMuPt1; 
 		// Double_t fMCMuPt2;
 		// Double_t fMCMuEta1; 
