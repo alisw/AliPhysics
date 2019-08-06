@@ -48,6 +48,7 @@ add_library_tested(${MODULEVHFBDT} SHARED  ${SRCS} G__${MODULEVHFBDT}.cxx)
 
 # Generate the ROOT map
 # Dependecies
+set(LIBDEPS STEERBase ANALYSISalice)
 generate_rootmap("${MODULEVHFBDT}" "" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULEVHFBDT}LinkDef.h")
 
 # Linking the library
