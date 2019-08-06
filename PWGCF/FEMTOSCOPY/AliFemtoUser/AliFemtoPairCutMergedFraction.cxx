@@ -27,6 +27,7 @@ AliFemtoPairCutAntiGamma(),
   fRadiusMin(0.8),
   fRadiusMax(2.5),
   fMagSign(1),
+  fMagFieldVal(0.5),
   fMergedFractionDataType(kESD)
 {
   fDistanceMax = aDistanceMax;
@@ -45,6 +46,7 @@ AliFemtoPairCutMergedFraction::AliFemtoPairCutMergedFraction(const AliFemtoPairC
   fRadiusMin(cPairCut.fRadiusMin),
   fRadiusMax(cPairCut.fRadiusMax),
   fMagSign(cPairCut.fMagSign),
+  fMagFieldVal(cPairCut.fMagFieldVal),
   fMergedFractionDataType(cPairCut.fMergedFractionDataType)
 {
 }
@@ -63,6 +65,7 @@ AliFemtoPairCutMergedFraction& AliFemtoPairCutMergedFraction::operator=(const Al
     fRadiusMin = cPairCut.fRadiusMin;
     fRadiusMax = cPairCut.fRadiusMax;
     fMagSign = cPairCut.fMagSign;
+    fMagFieldVal = cPairCut.fMagFieldVal;
     fMergedFractionDataType = cPairCut.fMergedFractionDataType;
   }
   return *this;
@@ -83,6 +86,7 @@ bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
   double pt2 = pair->Track2()->Track()->Pt();
   double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
   double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
+  double magval = fMagFieldVal;
 
   // Check magnetic field sign:
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -137,8 +141,10 @@ bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
     Double_t rad = irad;
 
     // Calculate dPhiStar:
-    double afsi0b = -0.07510020733*chg1*fMagSign*rad/pt1;
-    double afsi1b = -0.07510020733*chg2*fMagSign*rad/pt2;
+    //double afsi0b = -0.07510020733*chg1*fMagSign*rad/pt1;
+    //double afsi1b = -0.07510020733*chg2*fMagSign*rad/pt2;
+    double afsi0b = -0.15*magval*chg1*fMagSign*rad/pt1;
+    double afsi1b = -0.15*magval*chg2*fMagSign*rad/pt2; 
     Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
     dphistar = TVector2::Phi_mpi_pi(dphistar); // returns phi angle in the interval [-PI,PI)
 
@@ -219,6 +225,10 @@ void AliFemtoPairCutMergedFraction::SetMagneticFieldSign(int magsign) {
     fMagSign = -1;
   else
     fMagSign = magsign;
+}
+
+void AliFemtoPairCutMergedFraction::SetMagneticFieldValue(double magval) {
+  fMagFieldVal = magval;
 }
 
 //__________________
