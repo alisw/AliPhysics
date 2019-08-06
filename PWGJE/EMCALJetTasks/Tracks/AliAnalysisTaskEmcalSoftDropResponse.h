@@ -84,6 +84,7 @@ protected:
   TBinning *GetDefaultPartLevelPtBinning() const;
   TBinning *GetDefaultDetLevelPtBinning() const;
   TBinning *GetZgBinning() const;
+  TBinning *GetRgBinning(double R) const;
 
   std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
 
@@ -108,8 +109,12 @@ private:
   TString                       fNamePartLevelJetContainer; ///< Name of the particle level jet container  
   TString                       fNameDetLevelJetContainer;  ///< Name of the detector (or hybrid if embedding)  level jet container  
   TString                       fNameUnSubLevelJetContainer;///< Name of the unsubtracted hybrid level jet container
-  std::vector<RooUnfoldResponse*> fZgResponse;              //!<! RooUnfold response object
-  std::vector<RooUnfoldResponse*> fZgResponseClosure;       //!<! RooUnfold response for the closure test
+  std::vector<RooUnfoldResponse*> fZgResponse;              //!<! RooUnfold response for z_g
+  std::vector<RooUnfoldResponse*> fZgResponseClosure;       //!<! RooUnfold response for z_g for the closure test
+  std::vector<RooUnfoldResponse*> fRgResponse;              //!<! RooUnfold response for r_g
+  std::vector<RooUnfoldResponse*> fRgResponseClosure;       //!<! RooUnfold response for r_g for the closure test
+  std::vector<RooUnfoldResponse*> fNsdResponse;             //!<! RooUnfold response for n_sd
+  std::vector<RooUnfoldResponse*> fNsdResponseClosure;      //!<! RooUnfold response for n_sd for the closure test
   THistManager                  fHistManager;               //!< Histogram manager                                       
 
   AliAnalysisTaskEmcalSoftDropResponse(const AliAnalysisTaskEmcalSoftDropResponse &);

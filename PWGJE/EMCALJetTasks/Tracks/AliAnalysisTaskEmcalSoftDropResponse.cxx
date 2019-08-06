@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <iostream>
+#include <memory>
 #include <vector>
 
 #include <TArrayD.h>
@@ -32,6 +33,7 @@
 #include <TCustomBinning.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TLinearBinning.h>
 #include <TLorentzVector.h>
 #include <TRandom.h>
 
@@ -80,10 +82,16 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse() : A
                                                                                fSampleTrimmer(nullptr),
                                                                                fPartLevelPtBinning(nullptr),
                                                                                fDetLevelPtBinning(nullptr),
+                                                                               fIsEmbeddedEvent(false),
                                                                                fNamePartLevelJetContainer(""),
                                                                                fNameDetLevelJetContainer(""),
                                                                                fNameUnSubLevelJetContainer(""),
-                                                                               fIsEmbeddedEvent(false),
+                                                                               fZgResponse(),
+                                                                               fZgResponseClosure(),
+                                                                               fRgResponse(),
+                                                                               fRgResponseClosure(),
+                                                                               fNsdResponse(),
+                                                                               fNsdResponseClosure(),
                                                                                fHistManager("AliAnalysisTaskSoftDropResponse")
 {
 }
@@ -107,6 +115,12 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
                                                                                                fNameDetLevelJetContainer(""),
                                                                                                fNameUnSubLevelJetContainer(""),
                                                                                                fIsEmbeddedEvent(false),
+                                                                                               fZgResponse(),
+                                                                                               fZgResponseClosure(),
+                                                                                               fRgResponse(),
+                                                                                               fRgResponseClosure(),
+                                                                                               fNsdResponse(),
+                                                                                               fNsdResponseClosure(),
                                                                                                fHistManager(name)
 {
   SetMakeGeneralHistograms(true);
@@ -127,6 +141,7 @@ AliAnalysisTaskEmcalSoftDropResponse::~AliAnalysisTaskEmcalSoftDropResponse()
 void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  double R = GetJetContainer(fNameDetLevelJetContainer.Data())->GetJetRadius();
 
   fSampleSplitter = new TRandom;
   if (fSampleFraction < 1.)
@@ -136,55 +151,69 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
     fPartLevelPtBinning = GetDefaultPartLevelPtBinning();
   if (!fDetLevelPtBinning)
     fDetLevelPtBinning = GetDefaultDetLevelPtBinning();
-  auto zgbinning = GetZgBinning();
-  TArrayD binEdgesZg, binEdgesPtPart, binEdgesPtDet;
+  std::unique_ptr<TBinning> zgbinning(GetZgBinning()),
+                            rgbinning(GetRgBinning(R)),
+                            nsdbinning(new TLinearBinning(21, -0.5, 20.5));
+  TArrayD binEdgesZg, binEdgesRg, binEdgesNsd, binEdgesPtPart, binEdgesPtDet;
   zgbinning->CreateBinEdges(binEdgesZg);
+  rgbinning->CreateBinEdges(binEdgesRg);
+  nsdbinning->CreateBinEdges(binEdgesNsd);
   fPartLevelPtBinning->CreateBinEdges(binEdgesPtPart);
   fDetLevelPtBinning->CreateBinEdges(binEdgesPtDet);
 
   //Need to do centrality bins in the histograms if it is not pp
   if (fForceBeamType != kpp)
   {
-    TString histname;
-    TString histtitle;
     for (Int_t cent = 0; cent < fNcentBins; cent++)
     {
-      histname = TString::Format("hZgDetLevel_%d", cent);
-      histtitle = TString::Format("Zg response at detector level, %d centrality bin", cent);
-      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-      histname = TString::Format("hZgPartLevel_%d", cent);
-      histtitle = TString::Format("Zg response at particle level, %d centrality bin", cent);
-      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-      histname = TString::Format("hZgPartLevelTruncated_%d", cent);
-      histtitle = TString::Format("Zg response at particle level (truncated), %d centrality bin", cent);
-      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hZgDetLevel_%d", cent), Form("Zg response at detector level, %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hZgPartLevel_%d", cent), Form("Zg response at particle level, %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hZgPartLevelTruncated_%d", cent), Form("Zg response at particle level (truncated), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hRgDetLevel_%d", cent), Form("Rg response at detector level, %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hRgPartLevel_%d", cent), Form("Rg response at particle level, %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hRgPartLevelTruncated_%d", cent), Form("Rg response at particle level (truncated), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hNsdDetLevel_%d", cent), Form("Nsd response at detector level, %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hNsdPartLevel_%d", cent), Form("Nsd response at particle level, %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hNsdPartLevelTruncated_%d", cent), Form("Nsd response at particle level (truncated), %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
 
       // For closure test
-      histname = TString::Format("hZgPartLevelClosureNoResp_%d", cent);
-      histtitle = TString::Format("Zg response at particle level (closure test, jets not used for the response matrix), %d centrality bin", cent);
-      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-      histname = TString::Format("hZgDetLevelClosureNoResp_%d", cent);
-      histtitle = TString::Format("Zg response at detector level (closure test, jets not used for the response matrix), %d centrality bin", cent);
-      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-      histname = TString::Format("hZgPartLevelClosureResp_%d", cent);
-      histtitle = TString::Format("Zg response at particle level (closure test, jets used for the response matrix), %d centrality bin", cent);
-      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
-      histname = TString::Format("hZgDetLevelClosureResp_%d", cent);
-      histtitle = TString::Format("Zg response at detector level (closure test, jets used for the response matrix), %d centrality bin", cent);
-      fHistManager.CreateTH2(histname, histtitle, binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hZgPartLevelClosureNoResp_%d", cent), Form("Zg response at particle level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hZgDetLevelClosureNoResp_%d", cent), Form("Zg response at detector level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hZgPartLevelClosureResp_%d", cent), Form("Zg response at particle level (closure test, jets used for the response matrix), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hZgDetLevelClosureResp_%d", cent), Form("Zg response at detector level (closure test, jets used for the response matrix), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hRgPartLevelClosureNoResp_%d", cent), Form("Rg response at particle level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hRgDetLevelClosureNoResp_%d", cent), Form("Rg response at detector level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hRgPartLevelClosureResp_%d", cent), Form("Rg response at particle level (closure test, jets used for the response matrix), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hRgDetLevelClosureResp_%d", cent), Form("Rg response at detector level (closure test, jets used for the response matrix), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hNsdPartLevelClosureNoResp_%d", cent), Form("Nsd response at particle level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hNsdDetLevelClosureNoResp_%d", cent), Form("Nsd response at detector level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hNsdPartLevelClosureResp_%d", cent), Form("Nsd response at particle level (closure test, jets used for the response matrix), %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+      fHistManager.CreateTH2(Form("hNsdDetLevelClosureResp_%d", cent), Form("Nsd response at detector level (closure test, jets used for the response matrix), %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
 
-      histname = TString::Format("hZgResponse_%d", cent);
-      histtitle = TString::Format("z_{g} response matrix, %d centrality bin", cent);
-      RooUnfoldResponse *r = new RooUnfoldResponse(histname, histtitle);
-      TString fZgDetLevel = TString::Format("hZgDetLevel_%d", cent);
-      TString fZgPartLevel = TString::Format("hZgPartLevel_%d", cent);
-      r->Setup((TH1 *)fHistManager.FindObject(fZgDetLevel), (TH1 *)fHistManager.FindObject(fZgPartLevel));
-      fZgResponse.push_back(r);
-      histname = TString::Format("hZgResponseClosure_%d", cent);
-      histtitle = TString::Format("z_{g} response matrix for the closure test, %d centrality bin", cent);
-      RooUnfoldResponse *r_closure = new RooUnfoldResponse(histname, histtitle);
-      r_closure->Setup((TH1 *)fHistManager.FindObject(fZgDetLevel), (TH1 *)fHistManager.FindObject(fZgPartLevel));
-      fZgResponseClosure.push_back(r_closure);
+      RooUnfoldResponse *r_zg = new RooUnfoldResponse(Form("hZgResponse_%d", cent), Form("z_{g} response matrix, %d centrality bin", cent)),
+                        *r_rg = new RooUnfoldResponse(Form("hRgResponse_%d", cent), Form("r_{g} response matrix, %d centrality bin", cent)),
+                        *r_nsd = new RooUnfoldResponse(Form("hNsdResponse_%d", cent), Form("n_{SD} response matrix, %d centrality bin", cent)),
+                        *r_zg_closure = new RooUnfoldResponse(Form("hZgResponseClosure_%d", cent), Form("z_{g} response matrix for the closure test, %d centrality bin", cent)),
+                        *r_rg_closure = new RooUnfoldResponse(Form("hRgResponseClosure_%d", cent), Form("r_{g} response matrix for the closure test, %d centrality bin", cent)),
+                        *r_nsd_closure = new RooUnfoldResponse(Form("hNsdResponseClosure_%d", cent), Form("n_{SD} response matrix for the closure test, %d centrality bin", cent));
+      TString nameZgDetLevel = TString::Format("hZgDetLevel_%d", cent);
+      TString nameZgPartLevel = TString::Format("hZgPartLevel_%d", cent);
+      r_zg->Setup((TH1 *)fHistManager.FindObject(nameZgDetLevel), (TH1 *)fHistManager.FindObject(nameZgPartLevel));
+      r_zg_closure->Setup((TH1 *)fHistManager.FindObject(nameZgDetLevel), (TH1 *)fHistManager.FindObject(nameZgPartLevel));
+      TString nameRgDetLevel = TString::Format("hRgDetLevel_%d", cent);
+      TString nameRgPartLevel = TString::Format("hRgPartLevel_%d", cent);
+      r_rg->Setup((TH1 *)fHistManager.FindObject(nameRgDetLevel), (TH1 *)fHistManager.FindObject(nameRgPartLevel));
+      r_rg_closure->Setup((TH1 *)fHistManager.FindObject(nameRgDetLevel), (TH1 *)fHistManager.FindObject(nameRgPartLevel));
+      TString nameNsdDetLevel = TString::Format("hNsdDetLevel_%d", cent);
+      TString nameNsdPartLevel = TString::Format("hNsdPartLevel_%d", cent);
+      r_nsd->Setup((TH1 *)fHistManager.FindObject(nameNsdDetLevel), (TH1 *)fHistManager.FindObject(nameNsdPartLevel));
+      r_nsd_closure->Setup((TH1 *)fHistManager.FindObject(nameNsdDetLevel), (TH1 *)fHistManager.FindObject(nameNsdPartLevel));
+      fZgResponse.push_back(r_zg);
+      fZgResponseClosure.push_back(r_zg_closure);
+      fRgResponse.push_back(r_rg);
+      fRgResponseClosure.push_back(r_rg_closure);
+      fNsdResponse.push_back(r_nsd);
+      fNsdResponseClosure.push_back(r_nsd_closure);
     }
   }
   else
@@ -192,35 +221,61 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
     fHistManager.CreateTH2("hZgDetLevel", "Zg response at detector level", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
     fHistManager.CreateTH2("hZgPartLevel", "Zg response at particle level", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
     fHistManager.CreateTH2("hZgPartLevelTruncated", "Zg response at particle level (truncated)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hRgDetLevel", "Rg response at detector level", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hRgPartLevel", "Rg response at particle level", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hRgPartLevelTruncated", "Rg response at particle level (truncated)", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hNsdDetLevel", "Nsd response at detector level", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hNsdPartLevel", "Nsd response at particle level", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hNsdPartLevelTruncated", "Nsd response at particle level (truncated)", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
 
     // For closure test
     fHistManager.CreateTH2("hZgPartLevelClosureNoResp", "Zg response at particle level (closure test, jets not used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
     fHistManager.CreateTH2("hZgDetLevelClosureNoResp", "Zg response at detector level (closure test, jets not used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
     fHistManager.CreateTH2("hZgPartLevelClosureResp", "Zg response at particle level (closure test, jets used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
     fHistManager.CreateTH2("hZgDetLevelClosureResp", "Zg response at detector level (closure test, jets used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hRgPartLevelClosureNoResp", "Rg response at particle level (closure test, jets not used for the response matrix)", binEdgesRg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hRgDetLevelClosureNoResp", "Rg response at detector level (closure test, jets not used for the response matrix)", binEdgesRg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hRgPartLevelClosureResp", "Rg response at particle level (closure test, jets used for the response matrix)", binEdgesRg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hRgDetLevelClosureResp", "Rg response at detector level (closure test, jets used for the response matrix)", binEdgesRg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hNsdPartLevelClosureNoResp", "Nsd response at particle level (closure test, jets not used for the response matrix)", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hNsdDetLevelClosureNoResp", "Nsd response at detector level (closure test, jets not used for the response matrix)", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hNsdPartLevelClosureResp", "Nsd response at particle level (closure test, jets used for the response matrix)", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
+    fHistManager.CreateTH2("hNsdDetLevelClosureResp", "Nsd response at detector level (closure test, jets used for the response matrix)", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtDet.GetSize() - 1, binEdgesPtDet.GetArray());
 
-    RooUnfoldResponse *r = new RooUnfoldResponse("hZgResponse", "z_{g} response matrix");
-    r->Setup((TH1 *)fHistManager.FindObject("hZgDetLevel"), (TH1 *)fHistManager.FindObject("hZgPartLevel"));
-    fZgResponse.push_back(r);
-    RooUnfoldResponse *r_closure = new RooUnfoldResponse("hZgResponseClosure", "z_{g} response matrix for the closure test");
-    r_closure->Setup((TH1 *)fHistManager.FindObject("hZgDetLevel"), (TH1 *)fHistManager.FindObject("hZgPartLevel"));
-    fZgResponseClosure.push_back(r_closure);
+    RooUnfoldResponse *r_zg = new RooUnfoldResponse("hZgResponse", "z_{g} response matrix"),
+                      *r_rg = new RooUnfoldResponse("hRgResponse", "r_{g} response matrix"),
+                      *r_nsd = new RooUnfoldResponse("hNsdResponse", "n_{SD} response matrix");
+    r_zg->Setup((TH1 *)fHistManager.FindObject("hZgDetLevel"), (TH1 *)fHistManager.FindObject("hZgPartLevel"));
+    r_rg->Setup((TH1 *)fHistManager.FindObject("hRgDetLevel"), (TH1 *)fHistManager.FindObject("hRgPartLevel"));
+    r_nsd->Setup((TH1 *)fHistManager.FindObject("hNsdDetLevel"), (TH1 *)fHistManager.FindObject("hNsdPartLevel"));
+    fZgResponse.push_back(r_zg);
+    fRgResponse.push_back(r_rg);
+    fNsdResponse.push_back(r_nsd);
+    RooUnfoldResponse *r_zg_closure = new RooUnfoldResponse("hZgResponseClosure", "z_{g} response matrix for the closure test"),
+                      *r_rg_closure = new RooUnfoldResponse("hRgResponseClosure", "z_{g} response matrix for the closure test"),
+                      *r_nsd_closure = new RooUnfoldResponse("hNsdResponseClosure", "z_{g} response matrix for the closure test");
+    r_zg_closure->Setup((TH1 *)fHistManager.FindObject("hZgDetLevel"), (TH1 *)fHistManager.FindObject("hZgPartLevel"));
+    r_rg_closure->Setup((TH1 *)fHistManager.FindObject("hRgDetLevel"), (TH1 *)fHistManager.FindObject("hRgPartLevel"));
+    r_nsd_closure->Setup((TH1 *)fHistManager.FindObject("hNsdDetLevel"), (TH1 *)fHistManager.FindObject("hNsdPartLevel"));
+    fZgResponseClosure.push_back(r_zg_closure);
+    fRgResponseClosure.push_back(r_rg_closure);
+    fNsdResponseClosure.push_back(r_nsd_closure);
   }
 
-  TIter next(fHistManager.GetListOfHistograms());
-  TObject *obj = 0;
-  while ((obj = next()))
-  {
-    fOutput->Add(obj);
-  }
-  for (int i = 0; i < fZgResponse.size(); i++)
-  {
-    fOutput->Add(fZgResponse.at(i));
-  }
-  for (int i = 0; i < fZgResponseClosure.size(); i++)
-  {
-    fOutput->Add(fZgResponseClosure.at(i));
-  }
+  for (auto h : *fHistManager.GetListOfHistograms())
+    fOutput->Add(h);
+  for (auto r : fZgResponse)
+    fOutput->Add(r);
+  for (auto r : fZgResponseClosure)
+    fOutput->Add(r);
+  for (auto r : fRgResponse)
+    fOutput->Add(r);
+  for (auto r : fRgResponseClosure)
+    fOutput->Add(r);
+  for (auto r : fNsdResponse)
+    fOutput->Add(r);
+  for (auto r : fNsdResponseClosure)
+    fOutput->Add(r);
 
   PostData(1, fOutput);
 }
@@ -342,62 +397,90 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     {
       softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(), tracks, clusters);
       softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), particles, nullptr);
-      TString histname;
       if (fForceBeamType != kpp)
       {
-        histname = TString::Format("hZgPartLevel_%d", fCentBin);
-        fHistManager.FillTH1(histname, softdropPart[0], partjet->Pt());
+        fHistManager.FillTH1(Form("hZgPartLevel_%d", fCentBin), softdropPart[0], partjet->Pt());
+        fHistManager.FillTH1(Form("hRgPartLevel_%d", fCentBin), softdropPart[2], partjet->Pt());
+        fHistManager.FillTH1(Form("hNsdPartLevel_%d", fCentBin), softdropPart[5], partjet->Pt());
       }
       else
       {
         fHistManager.FillTH1("hZgPartLevel", softdropPart[0], partjet->Pt());
+        fHistManager.FillTH1("hRgPartLevel", softdropPart[2], partjet->Pt());
+        fHistManager.FillTH1("hNsdPartLevel", softdropPart[5], partjet->Pt());
       }
       if (detjet->Pt() >= ptmindet && detjet->Pt() <= ptmaxdet)
       {
         if (fForceBeamType != kpp)
         {
-          histname = TString::Format("hZgPartLevelTruncated_%d", fCentBin);
-          fHistManager.FillTH2(histname, softdropPart[0], partjet->Pt());
-          histname = TString::Format("hZgDetLevel_%d", fCentBin);
-          fHistManager.FillTH2(histname, softdropDet[0], detjet->Pt());
-          fZgResponse.at(fCentBin)->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+          fHistManager.FillTH2(Form("hZgPartLevelTruncated_%d", fCentBin), softdropPart[0], partjet->Pt());
+          fHistManager.FillTH2(Form("hZgDetLevel_%d", fCentBin), softdropDet[0], detjet->Pt());
+          fHistManager.FillTH2(Form("hRgPartLevelTruncated_%d", fCentBin), softdropPart[2], partjet->Pt());
+          fHistManager.FillTH2(Form("hRgDetLevel_%d", fCentBin), softdropDet[2], detjet->Pt());
+          fHistManager.FillTH2(Form("hNsdPartLevelTruncated_%d", fCentBin), softdropPart[5], partjet->Pt());
+          fHistManager.FillTH2(Form("hNsdDetLevel_%d", fCentBin), softdropDet[5], detjet->Pt());
+          fZgResponse[fCentBin]->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+          fRgResponse[fCentBin]->Fill(softdropDet[2], detjet->Pt(), softdropPart[2], partjet->Pt());
+          fNsdResponse[fCentBin]->Fill(softdropDet[5], detjet->Pt(), softdropPart[5], partjet->Pt());
         }
         else
         {
           fHistManager.FillTH2("hZgPartLevelTruncated", softdropPart[0], partjet->Pt());
           fHistManager.FillTH2("hZgDetLevel", softdropDet[0], detjet->Pt());
-          fZgResponse.at(0)->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+          fHistManager.FillTH2("hRgPartLevelTruncated", softdropPart[2], partjet->Pt());
+          fHistManager.FillTH2("hRgDetLevel", softdropDet[2], detjet->Pt());
+          fHistManager.FillTH2("hNsdPartLevelTruncated", softdropPart[5], partjet->Pt());
+          fHistManager.FillTH2("hNsdDetLevel", softdropDet[5], detjet->Pt());
+          fZgResponse[0]->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+          fRgResponse[0]->Fill(softdropDet[2], detjet->Pt(), softdropPart[2], partjet->Pt());
+          fNsdResponse[0]->Fill(softdropDet[5], detjet->Pt(), softdropPart[5], partjet->Pt());
         }
         if (closureUseResponse)
         {
           if (fForceBeamType != kpp)
           {
-            fZgResponseClosure.at(fCentBin)->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
-            histname = TString::Format("hZgDetLevelClosureResp_%d", fCentBin);
-            fHistManager.FillTH2(histname, softdropDet[0], detjet->Pt());
-            histname = TString::Format("hZgPartLevelClosureResp_%d", fCentBin);
-            fHistManager.FillTH2(histname, softdropPart[0], partjet->Pt());
+            fZgResponseClosure[fCentBin]->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+            fRgResponseClosure[fCentBin]->Fill(softdropDet[2], detjet->Pt(), softdropPart[2], partjet->Pt());
+            fNsdResponseClosure[fCentBin]->Fill(softdropDet[5], detjet->Pt(), softdropPart[5], partjet->Pt());
+            fHistManager.FillTH2(Form("hZgDetLevelClosureResp_%d", fCentBin), softdropDet[0], detjet->Pt());
+            fHistManager.FillTH2(Form("hZgPartLevelClosureResp_%d", fCentBin), softdropPart[0], partjet->Pt());
+            fHistManager.FillTH2(Form("hRgDetLevelClosureResp_%d", fCentBin), softdropDet[2], detjet->Pt());
+            fHistManager.FillTH2(Form("hRgPartLevelClosureResp_%d", fCentBin), softdropPart[2], partjet->Pt());
+            fHistManager.FillTH2(Form("hNsdDetLevelClosureResp_%d", fCentBin), softdropDet[5], detjet->Pt());
+            fHistManager.FillTH2(Form("hNsdPartLevelClosureResp_%d", fCentBin), softdropPart[5], partjet->Pt());
           }
           else
           {
-            fZgResponseClosure.at(0)->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+            fZgResponseClosure[0]->Fill(softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt());
+            fRgResponseClosure[0]->Fill(softdropDet[2], detjet->Pt(), softdropPart[2], partjet->Pt());
+            fNsdResponseClosure[0]->Fill(softdropDet[5], detjet->Pt(), softdropPart[5], partjet->Pt());
             fHistManager.FillTH2("hZgDetLevelClosureResp", softdropDet[0], detjet->Pt());
             fHistManager.FillTH2("hZgPartLevelClosureResp", softdropPart[0], partjet->Pt());
+            fHistManager.FillTH2("hRgDetLevelClosureResp", softdropDet[2], detjet->Pt());
+            fHistManager.FillTH2("hRgPartLevelClosureResp", softdropPart[2], partjet->Pt());
+            fHistManager.FillTH2("hNsdDetLevelClosureResp", softdropDet[5], detjet->Pt());
+            fHistManager.FillTH2("hNsdPartLevelClosureResp", softdropPart[5], partjet->Pt());
           }
         }
         else
         {
           if (fForceBeamType != kpp)
           {
-            histname = TString::Format("hZgPartLevelClosureNoResp_%d", fCentBin);
-            fHistManager.FillTH2(histname, softdropPart[0], partjet->Pt());
-            histname = TString::Format("hZgDetLevelClosureNoResp_%d", fCentBin);
-            fHistManager.FillTH2(histname, softdropDet[0], detjet->Pt());
+            fHistManager.FillTH2(Form("hZgPartLevelClosureNoResp_%d", fCentBin), softdropPart[0], partjet->Pt());
+            fHistManager.FillTH2(Form("hZgDetLevelClosureNoResp_%d", fCentBin), softdropDet[0], detjet->Pt());
+            fHistManager.FillTH2(Form("hRgPartLevelClosureNoResp_%d", fCentBin), softdropPart[2], partjet->Pt());
+            fHistManager.FillTH2(Form("hRgDetLevelClosureNoResp_%d", fCentBin), softdropDet[2], detjet->Pt());
+            fHistManager.FillTH2(Form("hNsdPartLevelClosureNoResp_%d", fCentBin), softdropPart[5], partjet->Pt());
+            fHistManager.FillTH2(Form("hNsdDetLevelClosureNoResp_%d", fCentBin), softdropDet[5], detjet->Pt());
           }
           else
           {
             fHistManager.FillTH2("hZgDetLevelClosureNoResp", softdropDet[0], detjet->Pt());
             fHistManager.FillTH2("hZgPartLevelClosureNoResp", softdropPart[0], partjet->Pt());
+            fHistManager.FillTH2("hRgDetLevelClosureNoResp", softdropDet[2], detjet->Pt());
+            fHistManager.FillTH2("hRgPartLevelClosureNoResp", softdropPart[2], partjet->Pt());
+            fHistManager.FillTH2("hNsdDetLevelClosureNoResp", softdropDet[5], detjet->Pt());
+            fHistManager.FillTH2("hNsdPartLevelClosureNoResp", softdropPart[5], partjet->Pt());
           }
         }
       }
@@ -568,6 +651,13 @@ TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetZgBinning() const
   binning->SetMinimum(0.);
   binning->AddStep(0.1, 0.1);
   binning->AddStep(0.5, 0.05);
+  return binning;
+}
+
+TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetRgBinning(double R) const {
+  auto binning = new TCustomBinning;
+  binning->SetMinimum(0.);
+  binning->AddStep(R, 0.05);
   return binning;
 }
 
