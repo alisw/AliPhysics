@@ -9,6 +9,7 @@ class AliAnalysisDataContainer;
 AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
     TString OADBfilename="",
     TString Splinefilename="", 
+    Bool_t iMC = kFALSE,
     TString ContNameExt= "semicentral")
 {
     // get the manager via the static access member. since it's static, you don't need
@@ -28,7 +29,15 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
     // add your task to the manager
     task->SetOADBFileName(OADBfilename);
     task->SetqnPercentileSelection(Splinefilename);
-    task->SelectCollisionCandidates(AliVEvent::AliVEvent::kSemiCentral);
+    if(iMC)
+      {
+       task->SelectCollisionCandidates(AliVEvent::kMB);
+      }
+    else
+      {
+       task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+      }
+
     mgr->AddTask(task);
 
     TString containerName = mgr->GetCommonFileName();
