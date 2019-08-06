@@ -444,6 +444,13 @@ AliDielectron* Config_acapon(TString cutDefinition,
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTheoPID));
     LMcutlib->SetSignalsMC(die);
   }
+  // Cut designed to only use "good" eta/phi regions
+  else if(cutDefinition == "kGoodEtaPhiRegions"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kGoodEtaPhi, LMEECutLib::kTheoPID));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
   else{
     cout << " =============================== " << endl;
     cout << " ==== INVALID CONFIGURATION ==== " << endl;
