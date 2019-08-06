@@ -53,7 +53,7 @@ set(LIBDEPS STEERBase ANALYSISalice)
 generate_rootmap("${MODULEVHFBDT}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULEVHFBDT}LinkDef.h")
 
 # Linking the library
-target_link_libraries(${MODULEVHFBDT})
+target_link_libraries(${MODULEVHFBDT} ${LIBDEPS})
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULEVHFBDT} PUBLIC ${incdirs})
