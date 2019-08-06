@@ -4162,7 +4162,10 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
     fMaxPhiCut = 3.28;//EMCal acceptance Run2 with stripe
     fMaxPhiCutDMC = 5.70;//DCal acceptance with stripe
     break;
-
+  case 10:
+    if( !fUsePhiCut ) fUsePhiCut=1;
+    fMaxPhiCut = 2.09;//EMCal acceptance 2010 (1.39626 + 40 degrees)
+    break;
   default:
     AliError(Form("Max Phi Cut not defined %d",maxPhi));
     return kFALSE;
