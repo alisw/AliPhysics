@@ -90,7 +90,9 @@
 #pragma link C++ class RTracklet+;
 #pragma link C++ class std::vector<RTracklet>+;
 #pragma link C++ class SGenericV0+;
+#pragma link C++ class SGenericTracklet+;
 #pragma link C++ class std::vector<SGenericV0>+;
+#pragma link C++ class std::vector<SGenericTracklet>+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
