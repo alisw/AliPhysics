@@ -122,6 +122,7 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
 
     jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
     if(jetContTrue) {
+      jetContTrue->SetIsEmbedding(true);
       jetContTrue->SetRhoName(nrhoBase);
       jetContTrue->ConnectParticleContainer(trackContTrue);
       jetContTrue->SetPercAreaCut(acut); 
@@ -140,6 +141,7 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
  
      jetContPart = task->AddJetContainer(njetsPartLevel,strType,R);
       if(jetContPart) {
+	jetContTrue->SetIsEmbedding(true);
         jetContPart->SetRhoName(nrhoBase);
         jetContPart->ConnectParticleContainer(trackContPartLevel);
         jetContPart->SetPercAreaCut(acut);
