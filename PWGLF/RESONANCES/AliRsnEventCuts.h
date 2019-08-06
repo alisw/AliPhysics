@@ -28,8 +28,8 @@ class AliRsnEventCuts : public AliRsnCut {
   void           SetUseMultSelectionEvtSel() {fEvCuts.SetManualMode(); fEvCuts.UseMultSelectionEventSelection();};
   AliEventCuts   fEvCuts; //pointer to the AliAnalysisUtils object
 
-  ClassDef(AliRsnEventCuts, 3)
-  
+  ClassDef(AliRsnEventCuts, 2)
+
 };
 
 #endif
