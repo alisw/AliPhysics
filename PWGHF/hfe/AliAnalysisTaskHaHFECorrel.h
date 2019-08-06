@@ -87,13 +87,13 @@ public:
     Int_t HFEisCharmOrBeauty(Int_t ElectronIndex);
 
     //*********************ANALYSIS Helper
-    Bool_t ChargedHadronTrackCuts(const AliVVertex *pVtx,AliVTrack *Htrack, Int_t nMother, Int_t listMother[], Double_t EventWeight);
+    Bool_t ChargedHadronTrackCuts(const AliVVertex *pVtx,AliVTrack *Htrack, Int_t nMother, Int_t listMother[], Double_t EventWeight, Bool_t fillHists=kFALSE);
     Bool_t ChargedHadronPIDCuts(AliVTrack *Htrack, Double_t EventWeight);;
 
     Bool_t AssoHadronPIDCuts(AliVTrack *Htrack, Double_t EventWeight);
 
-    Bool_t InclElecTrackCuts(const AliVVertex *pVtx,AliVTrack *ietrack, Int_t nMother, Int_t listMother[], Double_t EventWeight);
-    Bool_t InclElecPIDCuts(AliVTrack *track, Bool_t IsPrimary, Double_t EventWeight);
+    Bool_t InclElecTrackCuts(const AliVVertex *pVtx,AliVTrack *ietrack, Int_t nMother, Int_t listMother[], Double_t EventWeight, Bool_t fillHists=kFALSE);
+    Bool_t InclElecPIDCuts(AliVTrack *track,  Double_t EventWeight, Bool_t fillHists=kFALSE);
 
     Bool_t PhotElecPIDCuts(AliVTrack *track, Double_t EventWeight);
     Bool_t PhotElecTrackCuts(const AliVVertex *pVtx,AliVTrack *aetrack, Int_t nMother, Int_t listMother[], Double_t EventWeight);
@@ -104,6 +104,7 @@ public:
 
     void BinLogX(TAxis *axis);
     void SetPDGAxis(TAxis *axis, std::vector<TString> PDGLabel);
+    void SetTriggerAxis(TAxis *axis);
     void CheckHadronIsTrigger(Double_t ptE, Bool_t *HadronIsTrigger);
     void CheckElectronIsTrigger(Double_t ptH, Bool_t *ElectronIsTrigger) ;
     Bool_t PassEventBias( const AliVVertex *pVtx, Int_t nMother, Int_t *listMother, Double_t EventWeight);    
@@ -124,7 +125,10 @@ public:
     }
 
     
-
+    void SetEleVarOpt(Int_t VarOption);
+    void SetHadVarOpt(Int_t VarOption);
+    void SetPhotVarOpt(Int_t PhotVarOpt);
+    
     void SetTRDQA(Bool_t TRDQA) {fTRDQA=TRDQA;};
     void SetPtMinEvent(Double_t PtMin) {fMinPtEvent=PtMin;};
     void SetPtMaxEvent(Double_t PtMax) {fMaxPtEvent=PtMax;};
@@ -158,7 +162,7 @@ public:
     void SetUseITSsa(Bool_t UseITSsa) {fUseITSsa = UseITSsa;}
     void SetSigmaITScut(Double_t SigmaITScut) {fSigmaITScut = SigmaITScut;};
     void SetSigmaTOFcut(Double_t SigmaTOFcut) {fSigmaTOFcut = SigmaTOFcut;};
-    void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
+    void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcutLow = SigmaTPCcut;};
 
   
     void SetRecEff(Bool_t RecEff) { 
@@ -189,11 +193,13 @@ public:
     void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
     void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
     void SetHadRecEff(TH3F & HadRecEff) {fHadRecEff = HadRecEff; fHadRecEff.SetName("fHadRecEff");}
-    void SetEleRecEff(TH2F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
-    void SetSPDnTrAvg(TProfile & SPDnTrAvg) {fSPDnTrAvg = SPDnTrAvg; fSPDnTrAvg.SetName("fSPDnTrAvg");}
+    void SetEleRecEff(TH3F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
+    //  void SetSPDnTrAvg(TProfile & SPDnTrAvg) {fSPDnTrAvg = SPDnTrAvg; fSPDnTrAvg.SetName("fSPDnTrAvg");}
+    void SetSPDConfigHist(TH1F & SPDConfigHist) {fSPDConfigHist = SPDConfigHist; fSPDConfigHist.SetName("SPDConfigHist");}
+    void SetSPDConfigProfiles(TH3F & SPDConfigProfiles) {fSPDConfigProfiles = SPDConfigProfiles; fSPDConfigProfiles.SetName("fSPDConfigProfiles");}
     void SetNonTagCorr(TH1F & NonTagCorr) {fNonTagCorr = NonTagCorr; fNonTagCorr.SetName("fNonTagCorr");}
-    void SetTriggerWeight(TH2F & TriggerWeight){fTriggerWeight = TriggerWeight; fTriggerWeight.SetName("fTriggerWeight");}
-    void SetVtxWeight(TH1F & VtxWeight) {fVtxWeight = VtxWeight; fVtxWeight.SetName("fVtxWeight");};
+    void SetTriggerWeight(TH3F & TriggerWeight){fTriggerWeight = TriggerWeight; fTriggerWeight.SetName("fTriggerWeight");}
+    void SetVtxWeight(TH2F & VtxWeight) {fVtxWeight = VtxWeight; fVtxWeight.SetName("fVtxWeight");};
 
     Bool_t   ESDkTrkGlobalNoDCA(AliVTrack* Vtrack);
 
@@ -207,16 +213,16 @@ public:
     Double_t              GetDeltaPhi(Double_t phiA,Double_t phiB) const;
     Double_t              GetDeltaEta(Double_t etaA,Double_t etaB) const;
     Double_t              Eta2y(Double_t pt, Double_t m, Double_t eta) const;
-    Double_t              GetHadronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx);
-    Double_t              GetElectronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx);
-    Double_t              GetTriggerWeight(Double_t minV0, Double_t nTrAcc);
-    Double_t              GetVtxWeight(Double_t nTrAcc);
+    Double_t              GetHadronRecEff(Int_t run, Double_t pt, Double_t phi, Double_t eta, Double_t zVtx);
+    Double_t              GetElectronRecEff(Int_t run, Double_t pt, Double_t phi, Double_t eta, Double_t zVtx);
+    Double_t              GetTriggerWeight(Int_t run, Double_t minV0, Double_t nTrAcc);
+    Double_t              GetVtxWeight(Int_t run, Double_t nTrAcc);
     Double_t              GetNonTagCorr(Double_t ptTrack, Double_t ptAsso);
 
     Double_t              Sphericity(const TObjArray* tracks, Double_t MaxEta, Double_t MinPt);
     Bool_t                Thrust(const TObjArray* tracks, Double_t t[2], Double_t MaxEta, Double_t MinPt);
 
-    
+    Int_t                 fRunNumber;               //
     Bool_t                fUseTender;               // Use tender
     Int_t                 fWhichPeriod;             // period
     Bool_t                fUseKFforPhotonicPartner; //default ist DCA
@@ -233,18 +239,24 @@ public:
     Double_t              fMinHadronEta;            //
 
     // HFECuts
+    Int_t                 fVarEleOpt;               //
+    Bool_t                fElectronkAny;            // True: kAny, False: kBoth
     Int_t                 fTPCnCut;                 // TPC number of clusters for tagged electron
     Int_t                 fTPCndEdxCut;             //
     Int_t                 fITSnCut;                 // ITs number of clusters for tagged electrons 
     Float_t               fITSSharedClusterCut;     //
+    Double_t              fEleDCAr;                 //
+    Double_t              fEleDCAz;                 //
 
     Bool_t                fUseTRD;                  //
     Bool_t                fUseITSsa;                // Use ITSsa tracks
     Double_t              fSigmaITScut;             // ITS nSigma cut
     Double_t              fSigmaTOFcut;             // TOF nSigma cut
-    Double_t              fSigmaTPCcut;             // lower TPC nSigma cut 
+    Double_t              fSigmaTPCcutLow;          // lower TPC nSigma cut
+    Double_t              fSigmaTPCcutHigh;         //
 
     // Photonic  Electrons
+    Int_t                 fVarPhotOpt;                   //
     Double_t              fPhotElecPtCut;                // pt cut for associated electron
     Double_t              fPhotElecSigmaTPCcut;          //
     Int_t                 fPhotElecTPCnCut;              // TPC number of clusters for associated electron
@@ -255,9 +267,14 @@ public:
     Double_t              fAssNonEleTPCcut;         //  
 
     // Hadron Cut
+    Int_t                 fVarHadOpt;               //
     Int_t                 fHTPCnCut;                // TPC number of clusters for trigger hadron
     Bool_t                fHITSrefitCut;            // ITS refit for trigger hadron
-    Bool_t                fHTPCrefitCut;            // TPC refit for trigger hadron 
+    Bool_t                fHTPCrefitCut;            // TPC refit for trigger hadron
+    Double_t              fHadDCAr;                 //
+    Double_t              fHadDCAz;                 //
+    Bool_t                fHadkAny;                 //
+    Bool_t                fHadTOFmatch;             // matching to TOF bunch crossing ID to suppress pileup
     
     Double_t              fOpeningAngleCut;         // openingAngle cut for non-HFE selection
     Double_t              fInvmassCut;              // invariant mass cut  for non-HFE selection
@@ -326,13 +343,13 @@ public:
     TH2F                  *fV0ACTriggered;          //!
     TH2F                  *fV0MinTriggered;         //!
     TH3F                  *fV0MinTriggeredNTr;         //!
-    TH2F                  fTriggerWeight;
+    TH3F                  fTriggerWeight;
     TH2F                  *fVtxEtaNTr;              //!
     TH2F                  *fVtxBeforeNTrAcc;        //!
     TH2F                  *fVtxAfterNTrAcc;         //!
     TH1F                  *fVtxRecBeforeNTr;        //!
     TH2F                  *fVtxRecAfterNTr;         //!
-    TH1F                  fVtxWeight;
+    TH2F                  fVtxWeight;
     TH2F                  *fTrkpt;                  //! track pt for different cuts
     TH2F                  *fEtaVtxZ;                //! Eta vs Vtx z (check for ITS acceptance problem)
 
@@ -534,8 +551,11 @@ public:
     TH1F                  fCorrectEtatoData;       
     Double_t              GetEtaWeight(Double_t pt);
     TH3F                  fHadRecEff;
-    TH2F                  fEleRecEff;
-    TProfile              fSPDnTrAvg;
+    TH3F                  fEleRecEff;
+    Int_t                 fSPDConfig;
+    TH1F                  fSPDConfigHist;
+    TH3F                  fSPDConfigProfiles;
+    TProfile*             fSPDnTrAvg;               //!
     TH1F                  fNonTagCorr;
 
     Int_t                 fAssPtHad_Nbins;
@@ -660,6 +680,7 @@ public:
     TH2F                  *fCheckMCPtvsRecPtEle;     //!
     TH1F                  *fRecHFE; //!
     THnSparse             *fMCElecPtEtaPhiVtx;       //!
+    TH2F                  *fRecElecMCSecondaryCont;   //!
     THnSparse             *fRecElecPtEtaPhiVtx;      //!
     THnSparse             *fRecElecPtEtaPhiVtxWRecEff;  //!
     THnSparse             *fRecElecMCPtEtaPhiVtx;    //!
