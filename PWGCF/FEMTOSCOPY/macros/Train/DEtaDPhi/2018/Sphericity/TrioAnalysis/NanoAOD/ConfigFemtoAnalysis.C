@@ -264,6 +264,9 @@ AliFemtoEventReaderAODChain* GetReaderPP(bool mcAnalysis)
   Reader->SetDCAglobalTrack(1); //false for FB7, true for the rest //we do not use DCA at all
   Reader->SetUseMultiplicity("MultSelection.RefMult08.Value");
 
+  Reader->SetReadV0(kTRUE);
+  Reader->SetReadCascade(kTRUE);
+
   return Reader;
 }
 
