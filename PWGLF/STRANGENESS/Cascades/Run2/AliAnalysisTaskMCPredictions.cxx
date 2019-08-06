@@ -203,9 +203,13 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     Double_t lMaxPt = 20.0;
     
     //Settings for charged particle counters (integers!)
-    Int_t lNNchBins = 10000;
+    Int_t lNNchBins = 4000;
     Double_t lLowNchBound  = -0.5;
     Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
+    
+    Int_t lNNchBinsV0M = 10000;
+    Double_t lLowNchBoundV0M  = -0.5;
+    Double_t lHighNchBoundV0M = -0.5 + ((double)(lNNchBins));
     
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
@@ -217,14 +221,14 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     //___________________________________________________
     if(! fHistV0MMult ) {
         //Histogram Output: Event-by-Event
-        fHistV0MMult = new TH1D( "fHistV0MMult", ";V0M Mult;Count",lNNchBins,lLowNchBound,lHighNchBound);
+        fHistV0MMult = new TH1D( "fHistV0MMult", ";V0M Mult;Count",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M);
         //Keeps track of some basics
         fListHist->Add(fHistV0MMult);
     }
     if(! fHistNchVsV0MMult ) {
         //Histogram Output: Event-by-Event
         fHistNchVsV0MMult = new TH2D( "fHistNchVsV0MMult", ";V0M Mult;Count",
-                                     lNNchBins,lLowNchBound,lHighNchBound,
+                                     lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,
                                      lNNchBins,lLowNchBound,lHighNchBound);
         //Keeps track of some basics
         fListHist->Add(fHistNchVsV0MMult);
@@ -273,7 +277,7 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     }
     for(Int_t ih=0; ih<12; ih++){
         if(! fHistPtVsV0MMult[ih] ) {
-            fHistPtVsV0MMult[ih] = new TH2D(Form("fHistPtVsV0MMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBins,lLowNchBound,lHighNchBound,lNPtBins,0,lMaxPt);
+            fHistPtVsV0MMult[ih] = new TH2D(Form("fHistPtVsV0MMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPtVsV0MMult[ih]);
         }
     }
