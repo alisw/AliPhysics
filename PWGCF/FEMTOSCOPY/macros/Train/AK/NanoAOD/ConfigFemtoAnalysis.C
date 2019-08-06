@@ -140,7 +140,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int setMostProb2 = atoi(parameter[16]);
 	int setMostProb3 = atoi(parameter[17]);
 
-	Bool_t ifMonitors=kFALSE; //if(atoi(parameter[19]))ifMonitors=kTRUE;//kTRUE 
+	Bool_t ifMonitors=kTRUE; //if(atoi(parameter[19]))ifMonitors=kTRUE;//kTRUE 
 	Bool_t ifV0Monitors = kFALSE;//TRUE;
 	double nSigmaVal2 = atof(parameter[20]); //3.0 (or 2.0)
 
