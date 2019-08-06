@@ -108,6 +108,15 @@ struct SGenericV0
   float fPz;
 };
 
+struct SGenericTracklet
+{ /// For the other V0s that are reconstructed
+  int fRecoIndex;
+  long fPdgCode;
+  float fPx;
+  float fPy;
+  float fPz;
+};
+
 class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE
 {
 public:
@@ -146,6 +155,7 @@ public:
 
   AliEventCuts fEventCuts; /// Event cuts class
   bool fFillGenericV0s;
+  bool fFillGenericTracklets; /// To check what is the background
   bool fFillTracklet;
   bool fSaveFileNames;
   bool fPropagetToPV;
@@ -191,6 +201,7 @@ private:
   std::vector<SGenericV0> fSGenericV0;          //!
   std::vector<RHyperTritonHe3pi> fRHyperTriton; //!
   std::vector<RTracklet> fRTracklets;           //!
+  std::vector<SGenericTracklet> fSGenericTracklets;  //!
   RCollision fRCollision;                       //!
 
   AliAnalysisTaskHyperTriton2He3piML(
