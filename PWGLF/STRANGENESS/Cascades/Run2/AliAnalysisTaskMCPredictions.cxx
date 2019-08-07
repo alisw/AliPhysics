@@ -207,7 +207,7 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     Double_t lLowNchBound  = -0.5;
     Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
     
-    Int_t lNNchBinsV0M = 10000;
+    Int_t lNNchBinsV0M = 8000;
     Double_t lLowNchBoundV0M  = -0.5;
     Double_t lHighNchBoundV0M = -0.5 + ((double)(lNNchBins));
     
