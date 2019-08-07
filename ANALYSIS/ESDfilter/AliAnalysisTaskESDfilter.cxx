@@ -133,7 +133,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fbitfieldPCMv0sA(NULL),
   fbitfieldPCMv0sB(NULL),
   fv0Histos(NULL),
-  fHistov0List(NULL)
+  fHistov0List(NULL),
+  fkDoSelectiveV0Reset(kFALSE)
 {
   // Default constructor
   fV0Cuts[0] =  33.   ;   // max allowed chi2
@@ -219,7 +220,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name, Bool_t addP
   fbitfieldPCMv0sA(NULL),
   fbitfieldPCMv0sB(NULL),
   fv0Histos(NULL),
-  fHistov0List(NULL)
+  fHistov0List(NULL),
+  fkDoSelectiveV0Reset(kFALSE)
 {
   /// Constructor
 
@@ -2423,15 +2425,19 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
       // Reconstruct cascades and V0 here
   if (fIsV0CascadeRecoEnabled) {
     esd->ResetCascades();
-    esd->ResetV0s();
+    
+    if(!fkDoSelectiveV0Reset){
+      esd->ResetV0s();
+    }else{
+      SelectiveResetV0s(esd, 0); //remove all offline V0s
+    }
 
     AliV0vertexer lV0vtxer;
     AliCascadeVertexer lCascVtxer;
 
     lV0vtxer.SetCuts(fV0Cuts);
     lCascVtxer.SetCuts(fCascadeCuts);
-
-
+    
     lV0vtxer.Tracks2V0vertices(esd);
     lCascVtxer.V0sTracks2CascadeVertices(esd);
   }
@@ -2883,4 +2889,20 @@ Float_t AliAnalysisTaskESDfilter::GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *
   
   //Return value
   return lCosPA;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskESDfilter::SelectiveResetV0s(AliESDEvent *event, Int_t lType){
+  //Selectively reset V0s
+  Long_t iV0=0;
+  while(iV0 < event->GetNumberOfV0s() ) //extra-crazy test
+  {   // This is the begining of the V0 loop
+    AliESDv0 *v0 = ((AliESDEvent*)event)->GetV0(iV0);
+    if (!v0) continue;
+    if ( v0->GetOnFlyStatus() == lType ){
+      event->RemoveV0(iV0);
+    } else {
+      iV0++;
+    }
+  }
 }
