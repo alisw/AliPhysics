@@ -190,7 +190,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         AliTriggerAnalysis*             fTrigger=nullptr; //!
         AliESDtrackCuts*                fTrackCuts=nullptr; //!
         AliVEvent*                      fEvt=nullptr; //!
-	AliJJetTask*			fJetTask;
+	AliJJetTask*			fJetTask=nullptr; //!
 
         UInt_t                          fFilterBit=0x300;
         Bool_t                          IsFirstEvent=kTRUE;
