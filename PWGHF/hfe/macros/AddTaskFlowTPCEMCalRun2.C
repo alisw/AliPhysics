@@ -36,9 +36,26 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
        task->SelectCollisionCandidates(AliVEvent::kMB);
       }
     else
-      {
-       task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
-      }
+     {
+      Int_t centID = 0;
+      if(cmim==0.0)centID = 0;
+      if(cmim==30.0)centID = 1;
+
+       if(centID==0)
+         {
+          cout << "centrality selection : " << cmim << " ; " << cmax << " ; kCentral " << endl; 
+          task->SelectCollisionCandidates(AliVEvent::kCentral);
+          }
+       else if(centID==1)
+         {
+          cout << "centrality selection : " << cmim << " ; " << cmax << " ; kSemiCentral " << endl; 
+          task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+          }
+       else
+          {
+           task->SelectCollisionCandidates(AliVEvent::kINT7);
+          }
+     }
 
     task->SetMinCentrality(cmim);
     task->SetMaxCentrality(cmax);
