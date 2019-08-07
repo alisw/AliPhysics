@@ -1,37 +1,43 @@
-AliAnalysisTask *AddTaskReducedTreeHyperTriton ()  {
 
-  // options central SemiCentral and kINT7
-  // Get the current analysis manager
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
-    Error("No analysis manager found.");
-    return 0;
-  }
 
-  AliAnalysisTaskReducedTreeHypertriton *task = new AliAnalysisTaskReducedTreeHypertriton("TaskHypTri");
-  
-  // Min bais
-  task -> SelectCollisionCandidates (AliVEvent::kINT7);
-  task -> SetCentrality (0.0,90.0);
-
-//   // central
-//   task -> SelectCollisionCandidates (AliVEvent::kCentral);
-//   task -> SetCentrality (0.0,10.0);
-//     
-//   // SemiCentral Collision
-//   task -> SelectCollisionCandidates (AliVEvent::kSemiCentral);
-//   task -> SetCentrality (30.0,50.0);
-  
-  
-  mgr -> AddTask(task);
-  TString Filename =mgr->GetCommonFileName();
-  AliAnalysisDataContainer *cQA = mgr->CreateContainer("QAHistograms", TList::Class(), AliAnalysisManager::kOutputContainer, Filename.Data());
-  AliAnalysisDataContainer *cOutput = mgr->CreateContainer("ReducedTree_Hypertriton", TList::Class(), AliAnalysisManager::kOutputContainer, Filename.Data());
-
-  mgr -> ConnectInput  (task, 0, mgr->GetCommonInputContainer());
-  mgr -> ConnectOutput (task, 1, cOutput);
-  mgr -> ConnectOutput (task, 2, cQA);
+//_______________________________________________________________________________________________________________________________________________________
+AliAnalysisTask *AddTaskReducedTreeHyperTriton (Double_t CentralityMin = 0.0, Double_t CentralityMax = 10.0)  {
     
-  return task;
     
+    //Get Analysis Manager
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    if (!mgr) {
+        printf("ERROR: Analysis Manager Not Found!!!\n");
+        return NULL;
+    }
+    
+    //Retrieve Input Event Handler
+    if (!mgr->GetInputEventHandler()) {
+        printf("ERROR: Input Event Handler Not Found!!!\n");
+        return NULL;
+    }
+    
+    //Input Container
+    AliAnalysisDataContainer *input = mgr->GetCommonInputContainer();
+    
+    //Get File Name
+    TString Filename = mgr->GetCommonFileName();
+    
+    //Analysis Task
+    AliAnalysisTaskReducedTreeHypertriton *task = new AliAnalysisTaskReducedTreeHypertriton  ("taskHyperTritonTree");
+    if (CentralityMin==0 && CentralityMax==90)  task -> SelectCollisionCandidates (AliVEvent::kINT7);
+    if (CentralityMin==0 && CentralityMax==10)  task -> SelectCollisionCandidates (AliVEvent::kCentral);
+    if (CentralityMin==30 && CentralityMax==50) task -> SelectCollisionCandidates (AliVEvent::kSemiCentral);
+    task -> AliAnalysisTaskReducedTreeHypertriton::SetCentrality (CentralityMin,CentralityMax);
+    mgr -> AddTask(task);
+    AliAnalysisDataContainer *outputData = mgr -> CreateContainer("Input",TList::Class(),AliAnalysisManager::kOutputContainer,Filename.Data());
+    AliAnalysisDataContainer *outputQA   = mgr -> CreateContainer("InputQA",TList::Class(),AliAnalysisManager::kOutputContainer,Filename.Data());
+    mgr -> ConnectInput  (task,0,input);
+    mgr -> ConnectOutput (task,1,outputData);
+    mgr -> ConnectOutput (task,2,outputQA);
+    
+    return task;
 }
+//_______________________________________________________________________________________________________________________________________________________
+
+
