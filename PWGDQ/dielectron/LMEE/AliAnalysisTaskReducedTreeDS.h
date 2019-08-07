@@ -3,6 +3,7 @@
 
 #include "vector"
 #include "AliAnalysisTaskSE.h"
+
 using namespace std;
 
 class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
@@ -20,6 +21,15 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
     virtual void ProcessMC(Option_t *option);
+
+    void FillTrackInfo();
+
+    void FillV0InfoESD();
+    void FillV0InfoAOD();
+
+    void FillMCInfoESD();
+    void FillMCInfoAOD();
+
     Double_t PsiPair(AliAODv0 *v0, Float_t Bz);
     Double_t PhivPair(AliAODv0 *v0, Float_t Bz);
     void ExtractQnVectors();
@@ -32,18 +42,21 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
         return;
       }
     }
-    Bool_t IsPrimaryElectron(AliAODMCParticle *p);
-    Bool_t IsLF(AliAODMCParticle *parent);
-    Bool_t IsSemileptonicDecayFromHF(AliAODMCParticle *parent);
-    Bool_t IsEWBoson(AliAODMCParticle *parent);//parent is electro-weak boson, i.e. W/Z, gamma
+    Bool_t IsPrimaryElectron(AliVParticle *p);
+    Bool_t IsLF(AliVParticle *p);
+    Bool_t IsSemileptonicDecayFromHF(AliVParticle *p);
+    Bool_t IsEWBoson(AliVParticle *p);//parent is electro-weak boson, i.e. W/Z, gamma
 
-    Int_t GetFirstMother(AliAODMCParticle *p){
+    Bool_t IsLFESD(AliVParticle *parent);
+    Bool_t IsSemileptonicDecayFromHFESD(AliVParticle *parent);
+
+    Int_t GetFirstMother(AliVParticle *p){
       Int_t first_mother_index     = p->GetMother();
       Int_t first_mother_index_tmp = p->GetMother();
 
       while(first_mother_index_tmp > -1){
         first_mother_index = first_mother_index_tmp;
-        AliAODMCParticle *fmp = (AliAODMCParticle*)fMCArray->At(first_mother_index);
+        AliVParticle *fmp = (AliVParticle*)fMCEvent->GetTrack(first_mother_index);
         first_mother_index_tmp = fmp->GetMother();
       }//end of mother loop
       return first_mother_index;
@@ -68,12 +81,15 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Float_t fMaxEtaCut;
     Float_t fMinTPCNsigmaEleCut;
     Float_t fMaxTPCNsigmaEleCut;
+    AliESDtrackCuts *fESDtrackCutsGlobalNoDCA;
     TTree *fTree;
     AliPIDResponse *fPIDResponse;     //! PID response object
     AliQnCorrectionsManager *fFlowQnVectorMgr;
     AliVEvent *fEvent; 
     AliESDEvent *fESDEvent;
     AliAODEvent *fAODEvent;
+    AliMCEvent *fMCEvent;
+    Bool_t fHasMC;
     AliTimeRangeCut fTimeRangeCut;
     TClonesArray *fMCArray;
     Int_t fRunNumber;
@@ -91,10 +107,8 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Int_t fNContributor;
     Int_t fNTPCCluster;
     Int_t fNTrackTPCout;
-    Int_t fNTrackTPConly;
     Int_t fNTrackTPC;//number of TPC track with kITSout
     Int_t fNITSCluster[2];
-    Int_t fNHybridTrack08;
     Int_t fNSPDTracklet05;//|eta| < 0.5
     Int_t fNSPDTracklet10;//|eta| < 1.0
     Float_t fV0AMultiplicity;
@@ -183,8 +197,6 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     vector<Float_t> fV0alpha;//N 
     vector<Float_t> fV0qT;//N 
     vector<Float_t> fV0DCA;//N //DCA between daughters
-    vector<Float_t> fV0PsiPair;//N //Angle cut w.r.t. to magnetic field
-    vector<Float_t> fV0PhivPair;//N
     vector<Float_t> fV0PointingAngle;//N
     vector<vector<Float_t>> fV0Chi2;//N x 4//Gamma K0S Lambda Anti-Lambda
     vector<vector<Float_t>> fV0Mass;//N x 4//Gamma K0S Lambda Anti-Lambda
@@ -235,7 +247,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 11);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 12);
 
 };
 
