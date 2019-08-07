@@ -77,6 +77,7 @@ set(SRCS
   AliAnalysisTaskSEDplus.cxx
   AliAnalysisTaskSEDs.cxx
   AliAnalysisTaskSELambdac.cxx
+  AliAnalysisTaskSED0BDT.cxx
   AliAnalysisTaskSED0Mass.cxx
   AliAnalysisTaskSED0MassTMVA.cxx
   AliAnalysisTaskSELambdacTMVA.cxx
