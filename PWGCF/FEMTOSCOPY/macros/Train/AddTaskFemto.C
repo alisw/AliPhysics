@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerName="femtolist", TString configMacroParameters="" )
+AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerName="femtolist", TString configMacroParameters="",  Bool_t kGridConfig = kFALSE)
 {
 // Creates a proton analysis task and adds it to the analysis manager.
 
@@ -43,7 +43,10 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerNam
   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
+  if(!kGridConfig)
+    AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kGridConfig);
+  else
+    AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE,kGridConfig);
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
