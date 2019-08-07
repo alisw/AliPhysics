@@ -77,7 +77,9 @@ private:
     
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1D *fHistV0MMult;
+    TH1D *fHistSPDMult;
     TH2D *fHistNchVsV0MMult;
+    TH2D *fHistNchVsSPDMult;
     TH1D *fHistNpart;
     TH2D *fHistNchVsNpart;
     TH1D *fHistB;
@@ -85,6 +87,7 @@ private:
     
     TH1D *fHistPt[12];              //! for keeping track of base spectra
     TH2D *fHistPtVsV0MMult[12];     //! for keeping track of base spectra
+    TH2D *fHistPtVsSPDMult[12];     //! for keeping track of base spectra
     TH2D *fHistPtVsNpart[12];       //! for keeping track of base spectra
     TH2D *fHistPtVsB[12];           //! for keeping track of base spectra
   
