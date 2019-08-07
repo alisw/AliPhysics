@@ -267,8 +267,8 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
        covMatNeg[0]=0; covMatNeg[2]=0;
      }
      
-     if(impParPos[0]<fMinDCAPositiveTrack) return kFALSE;
-     if(impParNeg[0]<fMinDCANegativeTrack) return kFALSE;
+     if(TMath::Abs(impParPos[0])<fMinDCAPositiveTrack) return kFALSE;
+     if(TMath::Abs(impParNeg[0])<fMinDCANegativeTrack) return kFALSE;
      
    }
 
