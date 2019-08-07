@@ -957,12 +957,5 @@ void AliAnalysisTaskFemto::LoadMacro(TMacro *macro)
     while ((obj = (TObjString*) next())) {
        ss << obj->GetName() << std::endl;
     }
-    //gROOT->LoadText(ss.str().c_str()); //doesn't work in ROOT 5.34
-    //nasty workaround
-    ofstream ofile;
-    ofile.open("temp.C");
-    ofile<<ss.str();
-    ofile.close();
-    gROOT->LoadMacro("temp.C");
-    remove("temp.C");
+    gInterpreter->LoadText(ss.str().c_str());
  }
