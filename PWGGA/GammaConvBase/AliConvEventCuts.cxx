@@ -2593,6 +2593,10 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC18l8a :
     case kLHC18l8b :
     case kLHC18l8c :
+    case kLHC19h2a :
+    case kLHC19h2b :
+    case kLHC19h2c :
+    case kLHC19h3 :
       return kTRUE;
       break;
     default :
@@ -6382,6 +6386,18 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kPbPb5TeV;
   } else if ( periodName.CompareTo("LHC18l8c") == 0 ){
     fPeriodEnum = kLHC18l8c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC19h2a") == 0 ){
+    fPeriodEnum = kLHC19h2a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC19h2b") == 0 ){
+    fPeriodEnum = kLHC19h2b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC19h2c") == 0 ){
+    fPeriodEnum = kLHC19h2c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC19h3") == 0 ){
+    fPeriodEnum = kLHC19h3;
     fEnergyEnum = kPbPb5TeV;
 
   // LHC16x anchored MCs
