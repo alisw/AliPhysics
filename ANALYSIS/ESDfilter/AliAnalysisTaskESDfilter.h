@@ -83,9 +83,11 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   void SetRefitVertexTracks(Int_t algo=6, Double_t* cuts=0);
   void SetMuonCaloPass();
   void SetAddPCMv0s(Bool_t addPCMv0s) {fAddPCMv0s=addPCMv0s;}
+  void SetSelectiveResetV0(Bool_t lOpt=kTRUE) {fkDoSelectiveV0Reset=lOpt;}
   
   //helper
   Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, Float_t lB, Float_t *lVtx);
+  void SelectiveResetV0s(AliESDEvent *event, Int_t lType = 0);
 
   AliAnalysisFilter* GetTrackFilter() const { return fTrackFilter;}
 
@@ -189,8 +191,9 @@ private:
   TBits* 	     fbitfieldPCMv0sB;		   ///< Bitfield with PCM v0s from offline v0 finder
   TH1D*		     fv0Histos; 		   ///< v0 histos for PCM consistency checks
   TList*	     fHistov0List;		  ///< TList containing PCM histos
+  Bool_t         fkDoSelectiveV0Reset; ///< if true + redo V0+cascade true, keep OTF V0s
   
-  ClassDef(AliAnalysisTaskESDfilter, 22); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDfilter, 23); // Analysis task for standard ESD filtering
 };
 
 #endif
