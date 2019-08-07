@@ -76,7 +76,9 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f4DcorrectionsAll(NULL),
   f4DcorrectionsLambdas(NULL),
   f4DcorrectionsLambdasMinus(NULL),
-  fGridConfig(aGridConfig)
+  fGridConfig(aGridConfig),
+  fConfigTMacro(NULL),
+  fSaveConfigTMacro(NULL)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -124,7 +126,9 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f4DcorrectionsAll(NULL),
   f4DcorrectionsLambdas(NULL),
   f4DcorrectionsLambdasMinus(NULL),
-  fGridConfig(aGridConfig)
+  fGridConfig(aGridConfig),
+  fConfigTMacro(NULL),
+  fSaveConfigTMacro(false)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -169,7 +173,9 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto &aFemtoTas
   f4DcorrectionsAll(aFemtoTask.f4DcorrectionsAll),
   f4DcorrectionsLambdas(aFemtoTask.f4DcorrectionsLambdas),
   f4DcorrectionsLambdasMinus(aFemtoTask.f4DcorrectionsLambdasMinus),
-  fGridConfig(aFemtoTask.fGridConfig)
+  fGridConfig(aFemtoTask.fGridConfig),
+  fConfigTMacro(aFemtoTask.fConfigTMacro),
+  fSaveConfigTMacro(aFemtoTask.fSaveConfigTMacro)
 {
   // copy constructor
 }
@@ -217,6 +223,8 @@ AliAnalysisTaskFemto &AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   f4DcorrectionsLambdasMinus = aFemtoTask.f4DcorrectionsLambdasMinus;
 
   fGridConfig = aFemtoTask.fGridConfig;
+  fConfigTMacro = aFemtoTask.fConfigTMacro;
+  fSaveConfigTMacro = aFemtoTask.fSaveConfigTMacro;
 
   return *this;
 }
@@ -501,15 +509,12 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
 
   gSystem->SetIncludePath("-I$ROOTSYS/include -I./STEERBase/ -I./ESD/ -I./AOD/ -I./ANALYSIS/ -I./ANALYSISalice/ -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser");
   if(!fGridConfig)
-    gROOT->LoadMacro(fConfigMacro);
-  else
     {
-      TFile *fileConfig = TFile::Open(fConfigMacro);
-      TMacro *config = dynamic_cast<TMacro*>(fileConfig->Get("ConfigFemtoAnalysis")->Clone());
-      LoadMacro(config);
-      fileConfig->Close();
+      gROOT->LoadMacro(fConfigMacro);
+      if(fSaveConfigTMacro)
+	fConfigTMacro = new TMacro(fConfigMacro);
     }
-  //  fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
+
 
   TString cmd = Form("ConfigFemtoAnalysis(%s)", fConfigParams.Data());
   auto *femto_manager = reinterpret_cast<AliFemtoManager*>(gInterpreter->ProcessLine(cmd));
@@ -533,6 +538,10 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
     delete tOL;
   }
 
+
+  if(fSaveConfigTMacro && fConfigTMacro)
+    fOutputList->Add(fConfigTMacro);
+  
   PostData(0, fOutputList);
 }
 
@@ -649,6 +658,8 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     }
 
     // Post the output histogram list
+    if(fSaveConfigTMacro && fConfigTMacro)
+      fOutputList->Add(fConfigTMacro);
     PostData(0, fOutputList);
   }
 
@@ -692,6 +703,8 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     }
 
     // Post the output histogram list
+    if(fSaveConfigTMacro && fConfigTMacro)
+      fOutputList->Add(fConfigTMacro);
     PostData(0, fOutputList);
   }
 
@@ -710,6 +723,8 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
         fManager->ProcessEvent();
       }
       // Post the output histogram list
+      if(fSaveConfigTMacro && fConfigTMacro)
+	fOutputList->Add(fConfigTMacro);
       PostData(0, fOutputList);
     }
 
@@ -945,7 +960,6 @@ void AliAnalysisTaskFemto::Set4DCorrectionsLambdasMinus(THnSparse *h1)
 
  ////////////////////////////////////////////////////////////////////////////////
  /// Load the macro into the interpreter.
- /// Return true in case the loading was successful.
  /// Function copied from TMacro class of ROOT 6, not present in ROOT 5.34
 void AliAnalysisTaskFemto::LoadMacro(TMacro *macro)
  {
@@ -958,4 +972,12 @@ void AliAnalysisTaskFemto::LoadMacro(TMacro *macro)
        ss << obj->GetName() << std::endl;
     }
     gInterpreter->LoadText(ss.str().c_str());
+
+    if(fSaveConfigTMacro)
+      fConfigTMacro = dynamic_cast<TMacro*>(macro->Clone());
  }
+
+void AliAnalysisTaskFemto::SaveConfigTMacro(Bool_t save)
+{
+  fSaveConfigTMacro = save;
+}

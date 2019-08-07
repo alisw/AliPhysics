@@ -123,6 +123,7 @@ public:
   void Set4DCorrectionsLambdas(THnSparse *h1);
   void Set4DCorrectionsLambdasMinus(THnSparse *h1);
   void LoadMacro(TMacro *macro);
+  void SaveConfigTMacro(Bool_t save);
 
 protected:
   AliESDEvent          *fESD;          //!<! ESD object
@@ -163,6 +164,8 @@ protected:
   THnSparse            *f4DcorrectionsLambdasMinus; //file with corrections, pT dependant
 
   Bool_t fGridConfig; //use config stored on the grid
+  TMacro *fConfigTMacro; //macro of the config file
+  Bool_t fSaveConfigTMacro; //flag to save config TMacro in output list
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskFemto, 3);
@@ -205,7 +208,9 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto():
   f4DcorrectionsAll(NULL),
   f4DcorrectionsLambdas(NULL),
   f4DcorrectionsLambdasMinus(NULL),
-  fGridConfig(false)
+  fGridConfig(false),
+  fConfigTMacro(NULL),
+  fSaveConfigTMacro(false)
 {
   /* no-op */
 }
