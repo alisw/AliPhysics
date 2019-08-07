@@ -203,11 +203,11 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     Double_t lMaxPt = 20.0;
     
     //Settings for charged particle counters (integers!)
-    Int_t lNNchBins = 4000;
+    Int_t lNNchBins = 1000;
     Double_t lLowNchBound  = -0.5;
     Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
     
-    Int_t lNNchBinsV0M = 8000;
+    Int_t lNNchBinsV0M = 4000;
     Double_t lLowNchBoundV0M  = -0.5;
     Double_t lHighNchBoundV0M = -0.5 + ((double)(lNNchBins));
     
