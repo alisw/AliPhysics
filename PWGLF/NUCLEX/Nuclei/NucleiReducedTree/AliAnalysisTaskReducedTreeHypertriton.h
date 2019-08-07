@@ -5,19 +5,20 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliMultSelection.h"
 #include "AliAnalysisUtils.h"
+#include "AliESDtrackCuts.h"
 #include "AliAnalysisTask.h"
 #include "AliPIDResponse.h"
-#include "AliAODVertex.h"
+#include "AliESDVertex.h"
 #include "AliEventCuts.h"
-#include "AliAODEvent.h"
-#include "AliAODTrack.h"
-#include "TObjArray.h"
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "TVector2.h"
 #include "TVector3.h"
-#include "AliAODv0.h"
+#include "AliESDv0.h"
 #include "TList.h"
 #include "TTree.h"
 #include "TH1F.h"
+
 
 class AliAnalysisTaskReducedTreeHypertriton : public AliAnalysisTaskSE {
     
@@ -29,32 +30,37 @@ public:
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec (Option_t *option);
     
-    void SetCentrality (Double_t centralityMin, Double_t centralityMax)  {
-        fcentralityMin = centralityMin;
-        fcentralityMax = centralityMax;
-    }
-    
+    void     SetCentrality (Double_t centrMin, Double_t centrMax)  { fCentralityMin = centrMin; fCentralityMax = centrMax; }
     Bool_t   GetInputEvent ();
-    Bool_t   PassedBasicTrackQualityCuts (AliAODTrack *track);
-    Bool_t   PassedV0QualityCuts         (AliAODv0 *V0);
-    Bool_t   IsHyperTritonCandidate      (AliAODv0 *V0);
-    Bool_t   Is3HeCandidate              (AliAODTrack *track);
-    Bool_t   IsPionCandidate             (AliAODTrack *track);
+    Bool_t   PassedBasicTrackQualityCuts_Pos (AliESDtrack *track);
+    Bool_t   PassedBasicTrackQualityCuts_Neg (AliESDtrack *track);
+    Double_t GetTransverseDCA                (AliESDtrack *track);
+    Bool_t   PassedMinimalQualityCutsV0      (AliESDv0 *V0);
+    Bool_t   IsHyperTritonCandidate          (AliESDv0 *V0);
+    Double_t GetDecayLengthV0                (AliESDv0 *V0);
+    Bool_t   Is3HeCandidate                  (AliESDtrack *track);
+    Bool_t   IsPionCandidate                 (AliESDtrack *track);
 
     virtual void   Terminate(Option_t *);
     
 private:
-    AliAODEvent      *fAODevent;//!
+    AliESDEvent      *fESDevent;//!
     AliPIDResponse   *fPIDResponse;//!
-    AliEventCuts      fAODeventCuts;// 
+    AliESDtrackCuts  *fESDtrackCuts_Pos;//!
+    AliESDtrackCuts  *fESDtrackCuts_Neg;//!
+    AliEventCuts      fESDeventCuts;//
     AliAnalysisUtils *fUtils;//!
     TList            *fOutputList;//!
     TList            *fQAList;//!
-    Double_t          fcentralityMin;//
-    Double_t          fcentralityMax;//
+    Double_t          fCentralityMin;//
+    Double_t          fCentralityMax;//
 
+    
+    
+    
     //Event Selection Histogram
     TH1F *hEvents;//!
+    
     
     //Reduced Tree
     TTree *reducedTree_HyperTriton;//!
@@ -69,8 +75,6 @@ private:
     Int_t    q_Daughter1;//
     Double_t dcaxy_Daughter1;//
     Int_t    nTPC_Clusters_Daughter1;//
-    Int_t    nTPC_FindableClusters_Daughter1;//
-    Int_t    nTPC_CrossedRows_Daughter1;//
     Int_t    nTPC_Clusters_dEdx_Daughter1;//
     Double_t chi2_TPC_Daughter1;//
     Double_t nSigmaTPC_He3_Daughter1;//
@@ -83,8 +87,6 @@ private:
     Int_t    q_Daughter2;//
     Double_t dcaxy_Daughter2;//
     Int_t    nTPC_Clusters_Daughter2;//
-    Int_t    nTPC_FindableClusters_Daughter2;//
-    Int_t    nTPC_CrossedRows_Daughter2;//
     Int_t    nTPC_Clusters_dEdx_Daughter2;//
     Double_t chi2_TPC_Daughter2;//
     Double_t nSigmaTPC_He3_Daughter2;//
@@ -94,8 +96,8 @@ private:
     Int_t    isOnTheFlyV0;//
     Double_t cosPointingAngle;//
     Double_t dcaV0Daughters;//
-    Double_t dcaV0ToVertex;//
     Double_t radius;//
+    Double_t chi2V0;//
     Double_t decayLength;//
 
     
