@@ -174,7 +174,7 @@ class AliHFTreeHandler : public TObject
 
   protected:  
     //constant variables
-    static const unsigned int knMaxProngs   = 3;
+    static const unsigned int knMaxProngs   = 4;
     static const unsigned int knMaxDet4Pid  = 2;
     static const unsigned int knMaxHypo4Pid = 3;
 
