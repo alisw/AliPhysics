@@ -10,6 +10,8 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
     TString OADBfilename="",
     TString Splinefilename="", 
     Bool_t iMC = kFALSE,
+    Double_t cmim = 30.0,
+    Double_t cmax = 50.0,
     TString ContNameExt= "semicentral")
 {
     // get the manager via the static access member. since it's static, you don't need
@@ -37,6 +39,9 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
       {
        task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
       }
+
+    task->SetMinCentrality(cmim);
+    task->SetMaxCentrality(cmax);
 
     mgr->AddTask(task);
 

@@ -199,8 +199,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fqnSplineFileName(""),
 	fEtaGapInTPCHalves(0),
 	fScalProdLimit(0.4),
-	fMinCentr(0.),
-	fMaxCentr(100.)
+	fMinCentr(30.),
+	fMaxCentr(50.)
 
 
 {
@@ -363,8 +363,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fqnSplineFileName(""),
 	fEtaGapInTPCHalves(0),
 	fScalProdLimit(0.4),
-	fMinCentr(0.),
-	fMaxCentr(100.)
+	fMinCentr(30.),
+	fMaxCentr(50.)
 
 	// Standard constructor
 {
@@ -882,6 +882,9 @@ Double_t CutEopHad = -3.5;
 	    return;
     }  
 
+
+  //TString firedTrigger;
+
 ////////////if Tender////////////////
 //if(fUseTender){
 ////new branches with calibrted tracks and clusters
@@ -907,10 +910,13 @@ Double_t CutEopHad = -3.5;
       	    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
       }
 
+
     flPercentile -> Fill(lPercentile);
 
-    if(TMath::Abs(lPercentile)<30 || TMath::Abs(lPercentile)>50)return;
-
+      
+    //if(TMath::Abs(lPercentile)<30 || TMath::Abs(lPercentile)>50)return;
+    if(TMath::Abs(lPercentile)<fMinCentr || TMath::Abs(lPercentile)>fMaxCentr)return;
+     
     ///////Event Plane for 2015//////
 //   flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *> (AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
 //

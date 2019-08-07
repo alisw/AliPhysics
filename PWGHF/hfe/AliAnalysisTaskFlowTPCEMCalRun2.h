@@ -62,8 +62,8 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		void CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
 		void SetDCA(Double_t xy, Double_t z){DCAxy = xy, DCAz = z;};
 
-		void SetMinCentrality(float mincentr=0.) {fMinCentr = mincentr;}
-		void SetMaxCentrality(float maxcentr=100.) {fMaxCentr = maxcentr;}
+		void SetMinCentrality(float mincentr=30.) {fMinCentr = mincentr;}
+		void SetMaxCentrality(float maxcentr=50.) {fMaxCentr = maxcentr;}
 
 		//virtual void LocalInit();
 
