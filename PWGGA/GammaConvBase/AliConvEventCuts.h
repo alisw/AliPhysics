@@ -224,6 +224,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18l8a,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8b,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8c,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h2a,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h2b,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h2c,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h3,         //!< anchored to LHC18qr    - general purpose Pythia8 with added GA signals
 
 
         // MC upgrade
@@ -716,7 +720,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,71)
+      ClassDef(AliConvEventCuts,72)
       /// \endcond
 };
 
