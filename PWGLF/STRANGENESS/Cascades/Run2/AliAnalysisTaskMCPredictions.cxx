@@ -139,13 +139,13 @@ fAtMixEvent(0)
     }
 }
 
-AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions(const char *name)
+AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning, Int_t lNLargeBinning, Int_t lRebinFactor)
 : AliAnalysisTaskSE(name),
 fListHist(0),
 fHistEventCounter(0),
-fSmallMultRange(1000),
-fLargeMultRange(4000),
-fRebinFactor(1),
+fSmallMultRange(lNSmallBinning),
+fLargeMultRange(lNLargeBinning),
+fRebinFactor(lRebinFactor),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),

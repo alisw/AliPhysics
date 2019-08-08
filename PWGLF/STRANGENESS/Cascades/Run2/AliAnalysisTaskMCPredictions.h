@@ -47,7 +47,7 @@ class AliCFContainer;
 class AliAnalysisTaskMCPredictions : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskMCPredictions();
-    AliAnalysisTaskMCPredictions(const char *name);
+    AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 4000, Int_t lRebinFactor = 1);
     virtual ~AliAnalysisTaskMCPredictions();
 
     virtual void   UserCreateOutputObjects();
