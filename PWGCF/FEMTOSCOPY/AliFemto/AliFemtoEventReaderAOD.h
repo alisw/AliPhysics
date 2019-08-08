@@ -52,19 +52,45 @@ public:
   virtual AliFemtoEvent *ReturnHbtEvent();
   AliFemtoString Report();
   void SetInputFile(const char *inputfile);
+
   void SetFilterBit(UInt_t ibit);
   void SetFilterMask(int ibit);
+  UInt_t GetTrackFilter() const {
+    return fFilterBit | fFilterMask;
+  }
+
   void SetReadMC(unsigned char a);
+  bool GetReadMC() const {
+    return fReadMC;
+  }
+
   void SetReadV0(unsigned char a);
+  bool GetReadV0() const {
+    return fReadV0;
+  }
+
   void SetReadCascade(unsigned char a);
+  bool GetReadCascade() const {
+    return fReadCascade;
+  }
+
   void SetCentralityPreSelection(double min, double max);
+  std::pair<double, double> GetCentralityPreSelection() const {
+    return std::make_pair(fCentRange[0], fCentRange[1]);
+  }
+
   void SetNoCentrality(bool anocent);
   void SetAODpidUtil(AliAODpidUtil *aAODpidUtil);
   void SetAODheader(AliAODHeader *aAODheader);
   void SetMagneticFieldSign(int s);
   void SetEPVZERO(Bool_t);
   void GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
+
   void SetUseMultiplicity(EstEventMult aType);
+  EstEventMult GetUseMultiplicity() const {
+    return fEstEventMult;
+  }
+
   void SetpA2013(Bool_t pa2013); ///< set vertex configuration for pA (2013): IsVertexSelected2013pA
   void SetUseMVPlpSelection(Bool_t mvplp);
   void SetUseOutOfBunchPlpSelection(Bool_t outOfBunchPlp);
@@ -83,12 +109,22 @@ public:
     fMinPlpContribSPD = minPlpContribSPD;
   }
   void SetDCAglobalTrack(Int_t dcagt);
+  Int_t GetDCAglobalTrack() const {
+    return fDCAglobalTrack;
+  }
 
   bool RejectEventCentFlat(float MagField, float CentPercent);
   void SetCentralityFlattening(Bool_t flat);
+  bool GetCentralityFlattening() const {
+    return fFlatCent;
+  }
   void SetShiftPosition(Double_t rad);
 
   void SetPrimaryVertexCorrectionTPCPoints(bool correctTpcPoints);
+  bool GetPrimaryVertexCorrectionTPCPoints() const {
+    return fPrimaryVertexCorrectionTPCPoints;
+  }
+
   void SetShiftedPositions(const AliAODTrack *track ,const Float_t bfield, Float_t posShifted[3], const Double_t radius=1.25);
 
   void SetUseAliEventCuts(Bool_t useAliEventCuts);
