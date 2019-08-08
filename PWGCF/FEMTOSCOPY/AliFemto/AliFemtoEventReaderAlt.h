@@ -49,7 +49,7 @@ protected:
   TRandom3 *fRng;
   double fEnhanceSmearing;
 
-  double fDistributeMCParticles;
+  bool fDistributeMCParticles;
 };
 
 
