@@ -193,11 +193,12 @@ AliFemtoModelCorrFctnTrueQ3D::operator=(const AliFemtoModelCorrFctnTrueQ3D &rhs)
 {
   AliFemtoCorrFctn::operator=(rhs);
 
+  fManager = rhs.fManager;
+
   *fNumeratorGenerated = *rhs.fNumeratorGenerated;
   *fNumeratorReconstructed = *rhs.fNumeratorReconstructed;
   *fDenominatorGenerated = *rhs.fDenominatorGenerated;
   *fDenominatorReconstructed = *rhs.fDenominatorReconstructed;
-
 
   auto copy_if_present = [] (const TH3F* src, TH3F *&dest)
     {
@@ -207,7 +208,7 @@ AliFemtoModelCorrFctnTrueQ3D::operator=(const AliFemtoModelCorrFctnTrueQ3D &rhs)
       else if (src) {
         dest = new TH3F(*src);
       }
-      else {
+      else if (dest) {
         delete dest;
         dest = nullptr;
       }
@@ -274,7 +275,7 @@ AliFemtoModelCorrFctnTrueQ3D::AddOutputObjectsTo(TCollection &list)
 /// Return q{Out-Side-Long} tuple, calculated from momentum vectors p1 & p2
 static
 std::tuple<Double_t, Double_t, Double_t>
-Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
+Qlcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
 {
   const AliFemtoLorentzVector p = p1 + p2,
                               d = p1 - p2;
@@ -292,7 +293,7 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
 
   // relative momentum component in lab frame
   Double_t beta = p.z()/p.t(),
-          gamma = 1.0 / TMath::Sqrt((1.0-beta)*(1.0+beta));
+          gamma = 1.0 / TMath::Sqrt(1.0-beta*beta);
 
   Double_t qlong = gamma * (d.z() - beta*d.t());
 
@@ -319,7 +320,7 @@ fill_hists(TH3 *dest,
            double weight)
 {
   Double_t q_out, q_side, q_long;
-  std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
+  std::tie(q_out, q_side, q_long) = Qlcms(p1, p2);
 
   TH3 *hist = dest ? dest : dest_unweighted;
 
