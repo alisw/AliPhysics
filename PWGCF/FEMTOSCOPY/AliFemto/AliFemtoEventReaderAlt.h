@@ -37,11 +37,11 @@ protected:
   AliFemtoEventReaderAlt(const AliFemtoEventReaderAlt&);
   AliFemtoEventReaderAlt operator=(const AliFemtoEventReaderAlt&);
 
-  AliFemtoEvent* CopyAODtoFemtoEvent() override;
+  virtual AliFemtoEvent* CopyAODtoFemtoEvent();
 
-  AliFemtoTrack* CopyAODtoFemtoTrack(AliAODTrack *src) override;
+  virtual AliFemtoTrack* CopyAODtoFemtoTrack(AliAODTrack *src);
 
-  void CopyPIDtoFemtoTrack(AliAODTrack *, AliFemtoTrack *) override;
+  virtual void CopyPIDtoFemtoTrack(AliAODTrack *, AliFemtoTrack *);
 
   //
   void RandomlyDistributeParticles(AliFemtoEvent &);
