@@ -47,7 +47,7 @@ class AliCFContainer;
 class AliAnalysisTaskMCPredictions : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskMCPredictions();
-    AliAnalysisTaskMCPredictions(const char *name);
+    AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 4000, Int_t lRebinFactor = 1);
     virtual ~AliAnalysisTaskMCPredictions();
 
     virtual void   UserCreateOutputObjects();
@@ -75,9 +75,15 @@ private:
     //Histograms (Desired objects in this cross-checking task) 
     TH1D *fHistEventCounter; //! histogram for event counting
     
+    Int_t fSmallMultRange;
+    Int_t fLargeMultRange;
+    Int_t fRebinFactor; 
+    
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1D *fHistV0MMult;
+    TH1D *fHistSPDMult;
     TH2D *fHistNchVsV0MMult;
+    TH2D *fHistNchVsSPDMult;
     TH1D *fHistNpart;
     TH2D *fHistNchVsNpart;
     TH1D *fHistB;
@@ -85,6 +91,7 @@ private:
     
     TH1D *fHistPt[12];              //! for keeping track of base spectra
     TH2D *fHistPtVsV0MMult[12];     //! for keeping track of base spectra
+    TH2D *fHistPtVsSPDMult[12];     //! for keeping track of base spectra
     TH2D *fHistPtVsNpart[12];       //! for keeping track of base spectra
     TH2D *fHistPtVsB[12];           //! for keeping track of base spectra
   

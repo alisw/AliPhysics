@@ -96,8 +96,13 @@ AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions()
 : AliAnalysisTaskSE(),
 fListHist(0),
 fHistEventCounter(0),
+fSmallMultRange(1000),
+fLargeMultRange(4000),
+fRebinFactor(1),
 fHistV0MMult(0),
+fHistSPDMult(0),
 fHistNchVsV0MMult(0),
+fHistNchVsSPDMult(0),
 fHistNpart(0),
 fHistNchVsNpart(0),
 fHistB(0),
@@ -122,6 +127,7 @@ fAtMixEvent(0)
     for(Int_t ih=0; ih<12; ih++){
         fHistPt[ih]          = 0x0;
         fHistPtVsV0MMult[ih] = 0x0;
+        fHistPtVsSPDMult[ih] = 0x0;
         fHistPtVsNpart[ih]   = 0x0;
         fHistPtVsB[ih]       = 0x0;
         fHist3d2pcSE[ih]     = 0x0;
@@ -133,12 +139,17 @@ fAtMixEvent(0)
     }
 }
 
-AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions(const char *name)
+AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning, Int_t lNLargeBinning, Int_t lRebinFactor)
 : AliAnalysisTaskSE(name),
 fListHist(0),
 fHistEventCounter(0),
+fSmallMultRange(lNSmallBinning),
+fLargeMultRange(lNLargeBinning),
+fRebinFactor(lRebinFactor),
 fHistV0MMult(0),
+fHistSPDMult(0),
 fHistNchVsV0MMult(0),
+fHistNchVsSPDMult(0),
 fHistNpart(0),
 fHistNchVsNpart(0),
 fHistB(0),
@@ -163,6 +174,7 @@ fAtMixEvent(0)
     for(Int_t ih=0; ih<12; ih++){
         fHistPt[ih]          = 0x0;
         fHistPtVsV0MMult[ih] = 0x0;
+        fHistPtVsSPDMult[ih] = 0x0;
         fHistPtVsNpart[ih]   = 0x0;
         fHistPtVsB[ih]       = 0x0;
         fHist3d2pcSE[ih]     = 0x0;
@@ -199,17 +211,17 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
     
     //Settings for transverse momentum
-    Int_t lNPtBins = 200;
-    Double_t lMaxPt = 20.0;
+    Int_t lNPtBins = 400;
+    Double_t lMaxPt = 40.0;
     
     //Settings for charged particle counters (integers!)
-    Int_t lNNchBins = 1000;
+    Int_t lNNchBins = fSmallMultRange/fRebinFactor;
     Double_t lLowNchBound  = -0.5;
     Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
     
-    Int_t lNNchBinsV0M = 4000;
+    Int_t lNNchBinsV0M = fLargeMultRange/fRebinFactor;
     Double_t lLowNchBoundV0M  = -0.5;
-    Double_t lHighNchBoundV0M = -0.5 + ((double)(lNNchBins));
+    Double_t lHighNchBoundV0M = -0.5 + ((double)(lNNchBinsV0M));
     
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
@@ -225,9 +237,23 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
         //Keeps track of some basics
         fListHist->Add(fHistV0MMult);
     }
+    if(! fHistSPDMult ) {
+        //Histogram Output: Event-by-Event
+        fHistSPDMult = new TH1D( "fHistSPDMult", ";SPD Mult;Count",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M);
+        //Keeps track of some basics
+        fListHist->Add(fHistSPDMult);
+    }
     if(! fHistNchVsV0MMult ) {
         //Histogram Output: Event-by-Event
         fHistNchVsV0MMult = new TH2D( "fHistNchVsV0MMult", ";V0M Mult;Count",
+                                     lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,
+                                     lNNchBins,lLowNchBound,lHighNchBound);
+        //Keeps track of some basics
+        fListHist->Add(fHistNchVsV0MMult);
+    }
+    if(! fHistNchVsSPDMult ) {
+        //Histogram Output: Event-by-Event
+        fHistNchVsSPDMult = new TH2D( "fHistNchVsSPDMult", ";SPD Mult;Count",
                                      lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,
                                      lNNchBins,lLowNchBound,lHighNchBound);
         //Keeps track of some basics
@@ -279,6 +305,10 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
         if(! fHistPtVsV0MMult[ih] ) {
             fHistPtVsV0MMult[ih] = new TH2D(Form("fHistPtVsV0MMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPtVsV0MMult[ih]);
+        }
+        if(! fHistPtVsSPDMult[ih] ) {
+            fHistPtVsSPDMult[ih] = new TH2D(Form("fHistPtVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNPtBins,0,lMaxPt);
+            fListHist->Add(fHistPtVsSPDMult[ih]);
         }
     }
     for(Int_t ih=0; ih<12; ih++){
@@ -349,6 +379,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     Long_t lNchEta8   = 0;
     Long_t lNchEta8to15   = 0;
     Long_t lNchEta10  = 0;
+    Long_t lNchEta14  = 0;
     Long_t lNchVZEROA = 0;
     Long_t lNchVZEROC = 0;
     Bool_t lEvSel_INELgtZEROStackPrimaries=kFALSE;
@@ -370,6 +401,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
         if( (TMath::Abs(geta) > 0.8) && (TMath::Abs(geta) < 1.5) ) lNchEta8to15++;
         if( TMath::Abs(geta) < 1.0 ) lNchEta10++;
+        if( TMath::Abs(geta) < 1.4 ) lNchEta14++;
         if( TMath::Abs(geta) < 1.0 ) lEvSel_INELgtZEROStackPrimaries = kTRUE;
         if( 2.8 < geta && geta < 5.1 ) lNchVZEROA++;
         if(-3.7 < geta && geta <-1.7 ) lNchVZEROC++;
@@ -434,7 +466,9 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     fHistEventCounter->Fill(0.5);
     
     fHistV0MMult        -> Fill ( lNchVZEROA+lNchVZEROC );
+    fHistSPDMult        -> Fill ( lNchEta14 );
     fHistNchVsV0MMult   -> Fill ( lNchVZEROA+lNchVZEROC, lNchEta5  );
+    fHistNchVsSPDMult   -> Fill ( lNchEta14, lNchEta5  );
     fHistNpart          -> Fill ( fMC_NPart );
     fHistNchVsNpart     -> Fill ( fMC_NPart, lNchEta5  );
     fHistB              -> Fill ( fMC_b );
@@ -449,13 +483,12 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     TString lPartNames[12] = {
         "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "D0", "D0s", "Lambdac"
     };
-    Bool_t lCheckIsPhysicalPrimary[12] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kTRUE, kTRUE, kTRUE };
+    Bool_t lCheckIsPhysicalPrimary[12] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE };
     
     Int_t lThisPDG  = 0;
     Double_t lThisRap  = 0;
     Double_t lThisPt   = 0;
     Bool_t lIsPhysicalPrimary = kFALSE;
-    
     
     //----- Loop on Stack Starts Here ---------------
     for (Int_t ilab = 0;  ilab < (lMCstack->GetNtrack()); ilab++)
@@ -489,6 +522,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
                 //Fill Histograms
                 fHistPt[ih]->Fill(lThisPt);
                 fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
+                fHistPtVsSPDMult[ih]->Fill(lNchEta14,lThisPt);
                 fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
                 fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
             }
@@ -498,6 +532,9 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     
     //===== Start 2pc nested loops =================
     if( fkDo2pc ) {
+        //Apply the eta cut first or go home
+        Long_t lNValidParticles = 0;
+        TArrayI lValidParticles(lMCstack->GetNtrack());
         //----- Loop on Stack ----------------------------------------------------------------
         for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
         {   // This is the begining of the loop on tracks
@@ -506,19 +543,31 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
             if(!particleOne->GetPDG()) continue;
             Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
             if(TMath::Abs(lThisCharge)<0.001) continue;
-            if(! (lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
+            //if(! (lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
+
+            Double_t geta = particleOne -> Eta();
+            
+            if( TMath::Abs(geta)<0.8 ) lValidParticles[lNValidParticles++]=iCurrentLabelStack;
+        }
+        //----- Loop on Stack ----------------------------------------------------------------
+        for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < lNValidParticles; iCurrentLabelStack++)
+        {   // This is the begining of the loop on tracks
+            TParticle* particleOne = lMCstack->Particle(lValidParticles[iCurrentLabelStack]);
+            if(!particleOne) continue;
+            if(!particleOne->GetPDG()) continue;
+            Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+            if(TMath::Abs(lThisCharge)<0.001) continue;
+            if(! (lMCstack->IsPhysicalPrimary(lValidParticles[iCurrentLabelStack])) ) continue;
             
             //Double_t gpt = particleOne -> Pt();
             Double_t geta = particleOne -> Eta();
             Double_t gphi = particleOne -> Phi();
             
-            if( TMath::Abs(geta) > 0.8 ) continue;
-            
-            for (Int_t ilab = 0;  ilab < (lMCstack->GetNtrack()); ilab++)
+            for (Int_t ilab = iCurrentLabelStack+1;  ilab < lNValidParticles; ilab++)
             {   // This is the begining of the loop on tracks
                 
                 TParticle* lPart = 0x0;
-                lPart = lMCstack->Particle( ilab );
+                lPart = lMCstack->Particle( lValidParticles[ilab] );
                 if(!lPart) {
                     Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", ilab );
                     continue;
