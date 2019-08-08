@@ -117,6 +117,7 @@ public:
     void SetHighMultQABinning( Bool_t lVar ) { fkHighMultQABinning = lVar; }
     void SetGeneratorOnly( Bool_t lVar ) { fkGeneratorOnly = lVar; }
     void SetSkipMCHeaders( Bool_t lVar ) { fkSkipMCHeaders = lVar; }
+    void SetPreferSuperCalib( Bool_t lVar ) { fkPreferSuperCalib = lVar; }
     
     //override for getting estimator definitions from different OADB file
     //FIXME: should preferably be protected, extra functionality required
@@ -168,6 +169,7 @@ private:
     Bool_t fkHighMultQABinning; //if true, use narrow binning for percentile histograms
     Bool_t fkGeneratorOnly; //if true, skip loading of reco objects
     Bool_t fkSkipMCHeaders; //if true, don't try to read headers
+    Bool_t fkPreferSuperCalib; //if true, prefer supercalib if available
     
     //Debug Options
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
@@ -384,7 +386,7 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 10);
+    ClassDef(AliMultSelectionTask, 11);
     //3 - extra QA histograms
     //8 - fOADB ponter
 };
