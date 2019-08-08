@@ -321,6 +321,8 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 			}
 		}
 	} //read aod reco track done.
+	if(fDebugLevel>1) cout << "Tracks: " << TrackList->GetEntriesFast() << endl;
+    
 }
 //______________________________________________________________________________
 Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
