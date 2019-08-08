@@ -110,7 +110,7 @@
       }
       else {
 	printf("WARNING: Could not load HadRecEff\n");
-	return;
+	return NULL;
       }
     }
     if (EleRecEff) taskMB->SetEleRecEff(*EleRecEff);
@@ -122,7 +122,7 @@
       }
       else {
 	printf("WARNING: Could not load EleRecEff\n");
-	return;
+	return NULL;
       }
     }
   }
@@ -156,7 +156,7 @@
     VtxWeight = (TH2F*)EventWeightFile->Get("VtxEff");
     //    if (!IsMC || !VtxWeight) VtxWeight = (TH1F*)EventWeightFile->Get("VtxWeight");
     if (VtxWeight) taskMB->SetVtxWeight(*VtxWeight);
-    if (!VtxWeight || !TriggerWeight) print("Could no open EventWeight hists");
+    if (!VtxWeight || !TriggerWeight) printf("Could no open EventWeight hists");
   }
   else  printf("Could not open EventWeight file \n"); 
   TH1::AddDirectory(kTRUE);
@@ -207,5 +207,5 @@
 
 
 
-  return NULL;
+  return taskMB;
 }
