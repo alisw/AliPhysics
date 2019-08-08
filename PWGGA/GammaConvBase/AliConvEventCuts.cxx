@@ -3982,7 +3982,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         AliFatal("OADB/PWGGA/EMCalTriggerMimicOADB.root was not found");
       }
       if (fileTriggThresh) delete fileTriggThresh;
-      AliOADBContainer *contfileTriggThresh = new AliOADBContainer("");
+      std::unique_ptr<AliOADBContainer> contfileTriggThresh(new AliOADBContainer(""));
       contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"AliEMCalTriggerMimic");
       TObjArray *arrayTriggThresh=(TObjArray*)contfileTriggThresh->GetObject(runnumber);
       if (!arrayTriggThresh)
