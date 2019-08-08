@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskEmcalnewsh_H
-#define AliAnalysisTaskEmcalnewsh_H
+#ifndef AliAnalysisTaskEmcalJetShapeExtra_H
+#define AliAnalysisTaskEmcalJetShapeExtra_H
 
 class TH1;
 class TH2;
@@ -16,7 +16,7 @@ class AliJetContainer;
 
 
 
-class AliAnalysisTaskEmcalnewsh : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalJetShapeExtra : public AliAnalysisTaskEmcalJet {
  public:
 
 
@@ -37,9 +37,9 @@ class AliAnalysisTaskEmcalnewsh : public AliAnalysisTaskEmcalJet {
     kSecondOrder = 0,
     kFirstOrder = 1
   };
-    AliAnalysisTaskEmcalnewsh();
-  AliAnalysisTaskEmcalnewsh(const char *name);
-  virtual ~AliAnalysisTaskEmcalnewsh();
+    AliAnalysisTaskEmcalJetShapeExtra();
+  AliAnalysisTaskEmcalJetShapeExtra(const char *name);
+  virtual ~AliAnalysisTaskEmcalJetShapeExtra();
 
   void                                UserCreateOutputObjects();
   void                                Terminate(Option_t *option);
@@ -93,10 +93,10 @@ class AliAnalysisTaskEmcalnewsh : public AliAnalysisTaskEmcalJet {
   TTree           *fTreeObservableTagging;  // Tree with tagging variables subtracted MC or true MC or raw 
 
  private:
-  AliAnalysisTaskEmcalnewsh(const AliAnalysisTaskEmcalnewsh&);            // not implemented
-  AliAnalysisTaskEmcalnewsh &operator=(const AliAnalysisTaskEmcalnewsh&); // not implemented
+  AliAnalysisTaskEmcalJetShapeExtra(const AliAnalysisTaskEmcalJetShapeExtra&);            // not implemented
+  AliAnalysisTaskEmcalJetShapeExtra &operator=(const AliAnalysisTaskEmcalJetShapeExtra&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalnewsh, 6)
+  ClassDef(AliAnalysisTaskEmcalJetShapeExtra, 6)
 };
 #endif
 
