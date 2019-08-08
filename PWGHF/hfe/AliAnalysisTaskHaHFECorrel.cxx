@@ -1578,7 +1578,10 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
   PhotULSLSElectronAcceptance(pVtx, mult,  nMotherKink, listofmotherkink, EventWeight);
   LPtrack=FindLPAndHFE(RedTracksHFE, pVtx, nMotherKink,listofmotherkink, mult, EvContainsTaggedPhot, EvContainsNonTaggedPhot, EventWeight);
-  if (fLParticle) if (LPtrack->Pt()>=1000) return;
+  if (fLParticle) {
+    //    cout << "LPTrackPt " << LPtrack->Pt() << endl;
+    if (LPtrack->Pt()>=1000) return;
+  }
 
   // Control hists for TagEff
   if (fIsMC) {
@@ -1623,10 +1626,10 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
    
       if (!RedTrack->IsPhotonic()) continue;
       if (RedTrack->TruePartner()) {
-	fPt2Tagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt(), EventWeight);
+	if (fLParticle) fPt2Tagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt(), EventWeight);
 	//	fMCThrustTagged->Fill(RedTrack->Pt(), ThrustVar[0], Case);
 	fMCSpherTagged->Fill(RedTrack->Pt(), SpherVar, Case, EventWeight);
-	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case, EventWeight);
+	if (fLParticle) if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case, EventWeight);
 	//	fMultCorrTagged->Fill(RedTrack->Pt(), nTrAccCorrMax, Case);
 	fNHadTagged->Fill(RedTrack->Pt(), MCnHadrons[0], Case, EventWeight);
 	//	fNHadTaggedA->Fill(RedTrack->Pt(), MCnHadrons[1], Case);
@@ -1640,33 +1643,34 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
 	//	fMothMCThrustTagged->Fill(MotherPt, ThrustVar[0]);
 	fMothMCSpherTagged->Fill(MotherPt, SpherVar, EventWeight);
-	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPTagged->Fill(MotherPt, LPtrack->Pt(), EventWeight);
+	if (fLParticle) if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPTagged->Fill(MotherPt, LPtrack->Pt(), EventWeight);
 	//	fMothMultCorrTagged->Fill(MotherPt, nTrAccCorrMax);
 	fMothNHadTagged->Fill(MotherPt, MCnHadrons[0], EventWeight);
 	fMothMeanPtTagged->Fill(MotherPt, AverageMCPt[0],EventWeight);
-	if (LPtrack->Pt()>2) {
-	  //  fMCThrustTaggedH->Fill(RedTrack->Pt(), ThrustVar[0]);
-	  fMCSpherTaggedH->Fill(RedTrack->Pt(), SpherVar, EventWeight);
-	  if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPTaggedH->Fill(RedTrack->Pt(), LPtrack->Pt(), EventWeight);
-	  //	  fMultCorrTaggedH->Fill(RedTrack->Pt(), nTrAccCorrMax);
-	  fNHadTaggedH->Fill(RedTrack->Pt(), MCnHadrons[0], EventWeight);
-	  fMeanPtTaggedH->Fill(RedTrack->Pt(), AverageMCPt[0], EventWeight);
-	  //  fMothMCThrustTaggedH->Fill(MotherPt, ThrustVar[0]);
-	  fMothMCSpherTaggedH->Fill(MotherPt, SpherVar, EventWeight);
-	  if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPTaggedH->Fill(MotherPt, LPtrack->Pt(), EventWeight);
-	  // fMothMultCorrTaggedH->Fill(MotherPt, nTrAccCorrMax);
-	  fMothNHadTaggedH->Fill(MotherPt, MCnHadrons[0], EventWeight);
-	  fMothMeanPtTaggedH->Fill(MotherPt, AverageMCPt[0], EventWeight);
-	
+	if (fLParticle) {
+	  if (LPtrack->Pt()>2) {
+	    //  fMCThrustTaggedH->Fill(RedTrack->Pt(), ThrustVar[0]);
+	    fMCSpherTaggedH->Fill(RedTrack->Pt(), SpherVar, EventWeight);
+	    if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPTaggedH->Fill(RedTrack->Pt(), LPtrack->Pt(), EventWeight);
+	    //	  fMultCorrTaggedH->Fill(RedTrack->Pt(), nTrAccCorrMax);
+	    fNHadTaggedH->Fill(RedTrack->Pt(), MCnHadrons[0], EventWeight);
+	    fMeanPtTaggedH->Fill(RedTrack->Pt(), AverageMCPt[0], EventWeight);
+	    //  fMothMCThrustTaggedH->Fill(MotherPt, ThrustVar[0]);
+	    fMothMCSpherTaggedH->Fill(MotherPt, SpherVar, EventWeight);
+	    if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPTaggedH->Fill(MotherPt, LPtrack->Pt(), EventWeight);
+	    // fMothMultCorrTaggedH->Fill(MotherPt, nTrAccCorrMax);
+	    fMothNHadTaggedH->Fill(MotherPt, MCnHadrons[0], EventWeight);
+	    fMothMeanPtTaggedH->Fill(MotherPt, AverageMCPt[0], EventWeight);
+	  }
 	}
       }
       else {
-
-	fPt2NTagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt(), EventWeight);
+	
+	if (fLParticle) fPt2NTagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt(), EventWeight);
 	
 	//	fMCThrustNTagged->Fill(RedTrack->Pt(), ThrustVar[0], Case);
 	fMCSpherNTagged->Fill(RedTrack->Pt(), SpherVar, Case, EventWeight);
-	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPNTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case, EventWeight);
+	if (fLParticle)	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPNTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case, EventWeight);
 	//	fMultCorrNTagged->Fill(RedTrack->Pt(), nTrAccCorrMax, Case);
 	fNHadNTagged->Fill(RedTrack->Pt(), MCnHadrons[0], Case, EventWeight);
 	//	fNHadNTaggedA->Fill(RedTrack->Pt(), MCnHadrons[1], Case);
@@ -1680,23 +1684,25 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
 	//	fMothMCThrustNTagged->Fill(MotherPt, ThrustVar[0]);
 	fMothMCSpherNTagged->Fill(MotherPt, SpherVar, EventWeight);
-	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) 	fMothRecLPNTagged->Fill(MotherPt, LPtrack->Pt(), EventWeight);
+	if (fLParticle)	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) 	fMothRecLPNTagged->Fill(MotherPt, LPtrack->Pt(), EventWeight);
 	//	fMothMultCorrNTagged->Fill(MotherPt, nTrAccCorrMax);
 	fMothNHadNTagged->Fill(MotherPt, MCnHadrons[0], EventWeight);
 	fMothMeanPtNTagged->Fill(MotherPt, AverageMCPt[0], EventWeight);
-	if (LPtrack->Pt()>2) {
-	  //  fMCThrustNTaggedH->Fill(RedTrack->Pt(), ThrustVar[0]);
-	  fMCSpherNTaggedH->Fill(RedTrack->Pt(), SpherVar, EventWeight);
-	  if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPNTaggedH->Fill(RedTrack->Pt(), LPtrack->Pt(), EventWeight);
-	  //  fMultCorrNTaggedH->Fill(RedTrack->Pt(), nTrAccCorrMax);
-	  fNHadNTaggedH->Fill(RedTrack->Pt(), MCnHadrons[0], EventWeight);
-	  fMeanPtNTaggedH->Fill(RedTrack->Pt(), AverageMCPt[0], EventWeight);
-	  //  fMothMCThrustNTaggedH->Fill(MotherPt, ThrustVar[0]);
-	  fMothMCSpherNTaggedH->Fill(MotherPt, SpherVar, EventWeight);
-	  if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPNTaggedH->Fill(MotherPt, LPtrack->Pt(),EventWeight);
-	  //  fMothMultCorrNTaggedH->Fill(MotherPt, nTrAccCorrMax);
-	  fMothNHadNTaggedH->Fill(MotherPt, MCnHadrons[0], EventWeight);
-	  fMothMeanPtNTaggedH->Fill(MotherPt, AverageMCPt[0], EventWeight);
+	if (fLParticle) {
+	  if (LPtrack->Pt()>2) {
+	    //  fMCThrustNTaggedH->Fill(RedTrack->Pt(), ThrustVar[0]);
+	    fMCSpherNTaggedH->Fill(RedTrack->Pt(), SpherVar, EventWeight);
+	    if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPNTaggedH->Fill(RedTrack->Pt(), LPtrack->Pt(), EventWeight);
+	    //  fMultCorrNTaggedH->Fill(RedTrack->Pt(), nTrAccCorrMax);
+	    fNHadNTaggedH->Fill(RedTrack->Pt(), MCnHadrons[0], EventWeight);
+	    fMeanPtNTaggedH->Fill(RedTrack->Pt(), AverageMCPt[0], EventWeight);
+	    //  fMothMCThrustNTaggedH->Fill(MotherPt, ThrustVar[0]);
+	    fMothMCSpherNTaggedH->Fill(MotherPt, SpherVar, EventWeight);
+	    if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPNTaggedH->Fill(MotherPt, LPtrack->Pt(),EventWeight);
+	    //  fMothMultCorrNTaggedH->Fill(MotherPt, nTrAccCorrMax);
+	    fMothNHadNTaggedH->Fill(MotherPt, MCnHadrons[0], EventWeight);
+	    fMothMeanPtNTaggedH->Fill(MotherPt, AverageMCPt[0], EventWeight);
+	  }
 	}
       }
     }
@@ -1712,7 +1718,8 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
   // MC Truth correlation after event Cuts
   Int_t LPinAccAfterEventCuts=-999, LPAfterEventCuts=-999;
-  AliAODTrack * LPtrackAOD = dynamic_cast<AliAODTrack*>(LPtrack);
+  AliAODTrack * LPtrackAOD=0;
+  if (fLParticle) LPtrackAOD = dynamic_cast<AliAODTrack*>(LPtrack);
   Int_t LPtrackLabel=0;
   if (LPtrackAOD) LPtrackLabel=abs(LPtrackAOD->GetLabel());
   if (fIsMC && fMCTrueCorrelation) {  
@@ -1819,7 +1826,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   fOutputListQA->SetOwner(); 
 
 
-  fesdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
+  if(fIsAOD) fesdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
 
   // V0 Kine cuts 
   fV0cuts = new AliAODv0KineCuts();
@@ -6309,7 +6316,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::PassEventBias( const AliVVertex *pVtx, Int_t 
 
 Bool_t AliAnalysisTaskHaHFECorrel::ESDkTrkGlobalNoDCA(AliVTrack* Vtrack) {
   AliESDtrack *ESDtrack = dynamic_cast<AliESDtrack*>(Vtrack);   
-  if (!fIsAOD && !ESDtrack) return kFALSE;
+  if (!fIsAOD && !ESDtrack && !fesdTrackCuts) return kFALSE;
   fesdTrackCuts->SetMaxDCAToVertexXY(2.4);
   fesdTrackCuts->SetMaxDCAToVertexZ(3.2);
   fesdTrackCuts->SetDCAToVertex2D(kTRUE);
