@@ -1612,16 +1612,16 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   if ( fRunNum == 297221 ) calibrated = 1;
   if ( fRunNum == 297415 ) calibrated = 1;
 
-  // if ( !calibrated ) {
-  //   if( fRunNum <= 246994 ) {
-  //     fZNAEnergy *= (2500./250.);
-  //     fZNCEnergy *= (2500./250.);
-  //   }
+  if ( !calibrated ) {
+    if( fRunNum <= 246994 ) {
+      fZNAEnergy *= (2500./250.);
+      fZNCEnergy *= (2500./250.);
+    }
   //   if( fRunNum >  246994 ) {
   //     fZNAEnergy *= (2500./190.);
   //     fZNCEnergy *= (2500./190.);
   //   }
-  // }
+  }
 
   /* - V0: we try to find the V0 object data in the nano-AOD. If we cannot,
      - we return, because there would be no way to actually select the events
