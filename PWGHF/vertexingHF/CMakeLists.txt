@@ -22,6 +22,8 @@ add_subdirectory (vHFBDT)
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
 
+include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT)
+
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
@@ -77,6 +79,7 @@ set(SRCS
   AliAnalysisTaskSEDplus.cxx
   AliAnalysisTaskSEDs.cxx
   AliAnalysisTaskSELambdac.cxx
+  AliAnalysisTaskSED0BDT.cxx
   AliAnalysisTaskSED0Mass.cxx
   AliAnalysisTaskSED0MassTMVA.cxx
   AliAnalysisTaskSELambdacTMVA.cxx
