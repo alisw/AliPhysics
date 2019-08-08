@@ -43,10 +43,18 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerNam
   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  if(!kGridConfig)
-    AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kGridConfig);
+  if(kGridConfig)
+    {
+      TFile *fileConfig = TFile::Open(configMacroName.Data());
+      TMacro *macro = dynamic_cast<TMacro*>(fileConfig->Get("ConfigFemtoAnalysis")->Clone());
+      AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","",configMacroParameters,kFALSE,kTRUE);
+      taskfemto->LoadMacro(macro);
+    }
   else
-    AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE,kGridConfig);
+    {
+      AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kFALSE);
+    }
+  
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
