@@ -92,10 +92,13 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fEtaMuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
+      fInvariantMassDistributionRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fInvariantMassDistributionCoherentH(0),
+      fInvariantMassDistributionCoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionIncoherentH(0),
+      fInvariantMassDistributionIncoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fDimuonPtDistributionH(0),
       fTemplatePtDistributionH(0),
       fDcaAgainstInvariantMassH(0),
@@ -263,10 +266,13 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fEtaMuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
+      fInvariantMassDistributionRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fInvariantMassDistributionCoherentH(0),
+      fInvariantMassDistributionCoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionIncoherentH(0),
+      fInvariantMassDistributionIncoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fDimuonPtDistributionH(0),
       fTemplatePtDistributionH(0),
       fDcaAgainstInvariantMassH(0),
@@ -548,6 +554,15 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fInvariantMassDistributionH = new TH1F("fInvariantMassDistributionH", "fInvariantMassDistributionH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionH);
 
+  for( Int_t iRapidityBin = 0; iRapidityBin < 6; iRapidityBin++ ){
+    fInvariantMassDistributionRapidityBinsH[iRapidityBin]
+          = new TH1F( Form("fInvariantMassDistributionRapidityBinsH_%d", iRapidityBin),
+                      Form("fInvariantMassDistributionRapidityBinsH_%d", iRapidityBin),
+                      2000, 0, 20
+                      );
+    fOutputList->Add(fInvariantMassDistributionRapidityBinsH[iRapidityBin]);
+  }
+
   fEntriesAgainstRunNumberH = new TH1F("fEntriesAgainstRunNumberH", "fEntriesAgainstRunNumberH", 10000, 290000, 300000);
   fOutputList->Add(fEntriesAgainstRunNumberH);
 
@@ -566,8 +581,26 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fInvariantMassDistributionCoherentH = new TH1F("fInvariantMassDistributionCoherentH", "fInvariantMassDistributionCoherentH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionCoherentH);
 
+  for( Int_t iRapidityBin = 0; iRapidityBin < 6; iRapidityBin++ ){
+    fInvariantMassDistributionCoherentRapidityBinsH[iRapidityBin]
+          = new TH1F( Form("fInvariantMassDistributionCoherentRapidityBinsH_%d", iRapidityBin),
+                      Form("fInvariantMassDistributionCoherentRapidityBinsH_%d", iRapidityBin),
+                      2000, 0, 20
+                      );
+    fOutputList->Add(fInvariantMassDistributionCoherentRapidityBinsH[iRapidityBin]);
+  }
+
   fInvariantMassDistributionIncoherentH = new TH1F("fInvariantMassDistributionIncoherentH", "fInvariantMassDistributionIncoherentH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentH);
+
+  for( Int_t iRapidityBin = 0; iRapidityBin < 6; iRapidityBin++ ){
+    fInvariantMassDistributionIncoherentRapidityBinsH[iRapidityBin]
+          = new TH1F( Form("fInvariantMassDistributionIncoherentRapidityBinsH_%d", iRapidityBin),
+                      Form("fInvariantMassDistributionIncoherentRapidityBinsH_%d", iRapidityBin),
+                      2000, 0, 20
+                      );
+    fOutputList->Add(fInvariantMassDistributionIncoherentRapidityBinsH[iRapidityBin]);
+  }
 
   fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionH);
@@ -1751,6 +1784,19 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
         chargeOfMuons[indexMuon] = track[indexMuon]->Charge();
   }
   fInvariantMassDistributionH->Fill(possibleJPsi.Mag());
+  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
+    fInvariantMassDistributionRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.75 && possibleJPsi.Rapidity() <= -3.50 ) {
+    fInvariantMassDistributionRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.25 ) {
+    fInvariantMassDistributionRapidityBinsH[2]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -3.00 ) {
+    fInvariantMassDistributionRapidityBinsH[3]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.75 ) {
+    fInvariantMassDistributionRapidityBinsH[4]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -2.75 && possibleJPsi.Rapidity() <= -2.50 ) {
+    fInvariantMassDistributionRapidityBinsH[5]->Fill(possibleJPsi.Mag());
+  }
   fInvariantMassDistributionExtendedH->Fill(possibleJPsi.Mag());
 
   /* - This is a TH2F histogram filled with DCA against the invariant mass of
@@ -1772,9 +1818,35 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
   if( ptOfTheDimuonPair < 0.25) {
         fInvariantMassDistributionCoherentH->Fill(possibleJPsi.Mag());
         fInvariantMassDistributionCoherentExtendedH->Fill(possibleJPsi.Mag());
+        if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.75 && possibleJPsi.Rapidity() <= -3.50 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.25 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[2]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -3.00 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[3]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.75 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[4]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -2.75 && possibleJPsi.Rapidity() <= -2.50 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[5]->Fill(possibleJPsi.Mag());
+        }
   } else {
         fInvariantMassDistributionIncoherentH->Fill(possibleJPsi.Mag());
         fInvariantMassDistributionIncoherentExtendedH->Fill(possibleJPsi.Mag());
+        if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.75 && possibleJPsi.Rapidity() <= -3.50 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.25 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[2]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -3.00 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[3]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.75 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[4]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -2.75 && possibleJPsi.Rapidity() <= -2.50 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[5]->Fill(possibleJPsi.Mag());
+        }
   }
   fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
   if ( (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) fTemplatePtDistributionH->Fill(ptOfTheDimuonPair);
