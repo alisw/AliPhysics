@@ -742,6 +742,34 @@ static TObjArray* GetPassFailOutputList(const TString &name,
   return res;
 }
 
+void
+AliFemtoAnalysisPionPion::StoreEventReaderConfiguration(const AliFemtoEventReader &evreader)
+{
+  if (auto *aod = dynamic_cast<const AliFemtoEventReaderAOD*>(&evreader)) {
+
+    auto mult = aod->GetUseMultiplicity();
+
+    const TString
+      cent_type = mult == AliFemtoEventReaderAOD::kCentrality ? "V0M"
+                : mult == AliFemtoEventReaderAOD::kCentralityV0A ? "V0A"
+                : mult == AliFemtoEventReaderAOD::kCentralityV0C ? "V0C"
+                : mult == AliFemtoEventReaderAOD::kCentralityZNA ? "ZNA"
+                : mult == AliFemtoEventReaderAOD::kCentralityZNC ? "ZNC"
+                : mult == AliFemtoEventReaderAOD::kCentralityCL0 ? "CL0"
+                : mult == AliFemtoEventReaderAOD::kCentralityCL1 ? "CL1"
+                                                                 : "??";
+
+    fEventReaderCfg = AliFemtoConfigObject::BuildMap()
+          ("filtermask", aod->GetTrackFilter())
+          ("vertex_shift", aod->GetPrimaryVertexCorrectionTPCPoints())
+          ("centrality", cent_type)
+          ("dca_method", aod->GetDCAglobalTrack());
+  } else {
+    fEventReaderCfg = AliFemtoConfigObject::BuildMap()
+          ("_class", "??");
+  }
+}
+
 AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfiguration() const
 {
   auto event_cut_cfg = GetConfigurationOf(*fEventCut);
@@ -751,16 +779,17 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfiguration() const
   return AliFemtoConfigObject::BuildMap()
                   ("_class", "AliFemtoAnalysisPionPion")
                   ("is_mc", fMCAnalysis)
-                  ("track_filtermask", fFilterMask)
                   ("events_to_mix", NumEventsToMix())
                   ("collection_size_min", fMinSizePartCollection)
                   ("mix_vertex_z_bins", fVertexZBins)
                   ("mix_vertex_z_range", std::make_pair(fVertexZ[0], fVertexZ[1]))
                   ("mix_mult_bins", fMultBins)
                   ("mix_mult_range", std::make_pair(fMult[0], fMult[1]))
+                  ("event_reader", fEventReaderCfg)
                   ("event_cut", event_cut_cfg)
                   ("track_cut", track_cut_cfg)
                   ("pair_cut", pair_cut_cfg);
+
 }
 
 TList* AliFemtoAnalysisPionPion::GetOutputList()

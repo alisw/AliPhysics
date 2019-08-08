@@ -335,7 +335,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
       cut_config.event_centrality = centrality_range;
 
       auto *analysis = new AliFemtoAnalysisPionPion(analysis_name, analysis_config, cut_config);
-      analysis->SetTrackFilter(filter_mask);
+      analysis->StoreEventReaderConfiguration(*rdr);
 
       analysis->AddStanardCutMonitors();
 
@@ -680,7 +680,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         misident_cut_config.mc_nonpion_only = true;
 
         auto *misident_analysis = new AliFemtoAnalysisPionPion(misident_name, misident_config, misident_cut_config);
-        misident_analysis->SetTrackFilter(filter_mask);
+        misident_analysis->StoreEventReaderConfiguration(*rdr);
         misident_analysis->AddStanardCutMonitors();
 
         manager->AddAnalysis(misident_analysis);
