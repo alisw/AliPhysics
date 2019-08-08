@@ -104,7 +104,8 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
-fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), 
+fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fkSkipVertexZ(kFALSE),
@@ -263,7 +264,8 @@ fOADB(nullptr)
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
 : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0),
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
-fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE),
+fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fkSkipVertexZ(kFALSE), 
@@ -2113,6 +2115,8 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
                     lProductionName = lExceptionMap;
                 }
             }
+            //Attempt supercalib if requested
+            if( fkPreferSuperCalib ) lProductionName.Append("_SuperCalib");
         }else{
             AliWarning(" OADB for this period exists. Proceeding as usual.");
         }
@@ -2146,7 +2150,13 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     }
     
     //Open File without calling InitFromFile, don't load it all!
+    
     TFile * foadb = TFile::Open(fileName);
+    if( !foadb->IsOpen() && fkPreferSuperCalib ){
+        fileName.ReplaceAll("_SuperCalib", "");
+        foadb = TFile::Open(fileName);
+    }
+    
     if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", fileName.Data()));
     
     //Managed to open, save name of opened OADB file
