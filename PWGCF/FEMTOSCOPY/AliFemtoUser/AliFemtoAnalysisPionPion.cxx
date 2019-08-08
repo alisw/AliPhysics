@@ -121,8 +121,8 @@ void
 AliFemtoAnalysisPionPion::AnalysisParams::calc_automult(const AliFemtoAnalysisPionPion::CutParams &cut)
 {
   const double
-    centlo = cut.event_CentralityMax,
-    centhi = cut.event_CentralityMin,
+    centlo = cut.event_centrality.first,
+    centhi = cut.event_centrality.second,
 
     bin_width = (mult_max - mult_min) / mult_bins,
 
@@ -386,26 +386,19 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
   , mc_pion_only(false)
   , mc_nonpion_only(false)
   , event_use_basic(false)
-  , event_MultMin(default_event.multiplicity.first)
-  , event_MultMax(default_event.multiplicity.second)
-  , event_CentralityMin(default_event.centrality.first)
-  , event_CentralityMax(default_event.centrality.second)
-  , event_VertexZMin(default_event.vertex_z.first)
-  , event_VertexZMax(default_event.vertex_z.second)
-  , event_EP_VZeroMin(default_event.ep_psi.first)
-  , event_EP_VZeroMax(default_event.ep_psi.second)
+  , event_mult(default_event.multiplicity)
+  , event_centrality(default_event.centrality)
+  , event_vertex_z(default_event.vertex_z)
+  , event_ep_vzero(default_event.ep_psi)
   , event_TriggerSelection(default_event.trigger_selection)
   , event_AcceptBadVertex(default_event.accept_bad_vertex)
   , event_AcceptOnlyPhysics(default_event.accept_bad_vertex)
   , event_zdc_part(0.0)
 
     // Pion 1
-  , pion_1_PtMin(default_pion.pt.first)
-  , pion_1_PtMax(default_pion.pt.second)
-  , pion_1_EtaMin(default_pion.eta.first)
-  , pion_1_EtaMax(default_pion.eta.second)
-  , pion_1_DCAMin(default_pion.DCA.first)
-  , pion_1_DCAMax(default_pion.DCA.second)
+  , pion_1_pt(default_pion.pt)
+  , pion_1_eta(default_pion.eta)
+  , pion_1_DCA(default_pion.DCA)
 
   , pion_1_status(default_pion.status)
   // , default_pion.nSigma.first
@@ -466,9 +459,8 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   AliFemtoAnalysisPionPion::CutParams params;
 
   // sanity checks
-  assert(params.event_MultMin == default_event.multiplicity.first);
-  assert(params.pion_1_PtMin == default_pion.pt.first);
-  assert(params.pion_2_PtMin == default_pion.pt.first);
+  assert(params.event_mult == default_event.multiplicity);
+  assert(params.pion_1_pt == default_pion.pt);
   assert(params.pair_TPCOnly == default_pair.TPCOnly);
   // assert(params.pair_TPCExitSepMin == default_pair_TPCExitSepMin);
   assert(params.pair_delta_eta_min == default_pair.min_delta_eta);
@@ -492,8 +484,8 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
     auto *cut = p.mc_nonpion_only ? new AliFemtoTrackCutPionPionMisidentAK()
               :    p.mc_pion_only ? new AliFemtoTrackCutPionPionIdealAK()
                                   : new AliFemtoTrackCutPionPionAK();
-    cut->pt_range = {p.pion_1_PtMin, p.pion_1_PtMax};
-    cut->eta_range = {p.pion_1_EtaMin, p.pion_1_EtaMax};
+    cut->pt_range = p.pion_1_pt;
+    cut->eta_range = p.pion_1_eta;
     cut->status = p.pion_1_status;
     cut->ncls_tpc_min = p.pion_1_min_tpc_ncls;
     cut->ncls_its_min = p.pion_1_min_its_ncls;
@@ -517,9 +509,9 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   AliFemtoESDTrackCut *cut = new AliFemtoESDTrackCut();
   cut->SetCharge(charge);
   cut->SetMass(PionMass);
-  cut->SetPt(p.pion_1_PtMin, p.pion_1_PtMax);
-  cut->SetEta(p.pion_1_EtaMin, p.pion_1_EtaMax);
-  cut->SetRapidity(p.pion_1_EtaMin, p.pion_1_EtaMax);
+  cut->SetPt(p.pion_1_pt.first, p.pion_1_pt.second);
+  cut->SetEta(p.pion_1_eta.first, p.pion_1_eta.second);
+  cut->SetRapidity(p.pion_1_eta.first, p.pion_1_eta.second);
   cut->SetMostProbablePion();
   cut->SetNsigma(p.pion_1_sigma);
   cut->SetNsigmaTPCTOF(p.pion_1_use_tpctof);
@@ -583,8 +575,8 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
   if (p.cuts_use_attrs) {
     auto *cut = new AliFemtoEventCutPionPionAK();
 
-    cut->cent_range = {p.event_CentralityMin, p.event_CentralityMax};
-    cut->zvert_range = {p.event_VertexZMin, p.event_VertexZMax};
+    cut->cent_range = {p.event_centrality.first, p.event_centrality.second};
+    cut->zvert_range = {p.event_vertex_z.first, p.event_vertex_z.second};
     cut->trigger = p.event_TriggerSelection;
     cut->zdc_participants_min = p.event_zdc_part;
 
@@ -594,18 +586,18 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
   if (p.event_use_basic) {
     AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
 
-    cut->SetEventMult(p.event_MultMin, p.event_MultMax);
-    cut->SetVertZPos(p.event_VertexZMin, p.event_VertexZMax);
-    cut->SetEPVZERO(p.event_EP_VZeroMin, p.event_EP_VZeroMax);
+    cut->SetEventMult(p.event_mult.first, p.event_mult.second);
+    cut->SetVertZPos(p.event_vertex_z.first, p.event_vertex_z.second);
+    cut->SetEPVZERO(p.event_ep_vzero.first, p.event_ep_vzero.second);
     cut->SetTriggerSelection(p.event_TriggerSelection);
     cut->SetAcceptBadVertex(p.event_AcceptBadVertex);
     return cut;
   }
 
   AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();
-  cut->SetCentralityRange(p.event_CentralityMin, p.event_CentralityMax);
-  cut->SetZPosRange(p.event_VertexZMin, p.event_VertexZMax);
-  cut->SetEPVZERO(p.event_EP_VZeroMin, p.event_EP_VZeroMax);
+  cut->SetCentralityRange(p.event_centrality.first, p.event_centrality.second);
+  cut->SetZPosRange(p.event_vertex_z.first, p.event_vertex_z.second);
+  cut->SetEPVZERO(p.event_ep_vzero.first, p.event_ep_vzero.second);
   cut->SetTriggerSelection(p.event_TriggerSelection);
 
 //   if (!fMCAnalysis) {
