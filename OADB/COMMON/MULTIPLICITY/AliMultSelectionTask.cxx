@@ -431,11 +431,13 @@ fOADB(nullptr)
     // B - Debug AliPPVsMultUtils
     // M - Extra MC variables
     // T - Extra TH2D N gen particles vs N reco tracks
+    // S - use supercalib if available
     
     if ( lExtraOptions.Contains("A") ) fkDebugAliCentrality = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugAliPPVsMultUtils = kTRUE;
     if ( lExtraOptions.Contains("M") ) fkDebugIsMC = kTRUE;
     if ( lExtraOptions.Contains("T") ) fkDebugAdditional2DHisto = kTRUE;
+    if ( lExtraOptions.Contains("S") ) fkPreferSuperCalib = kTRUE;
 }
 
 
