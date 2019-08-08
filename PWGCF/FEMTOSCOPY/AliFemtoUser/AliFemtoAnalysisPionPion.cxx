@@ -679,8 +679,14 @@ void AliFemtoAnalysisPionPion::AddStanardCutMonitors()
                                                         : "ERROR";
 
   if (fFirstParticleCut) {
-    auto *pass_cut = new AliFemtoCutMonitorPionPion::Pion(true, p1_type_str, fMCAnalysis),
-         *fail_cut = new AliFemtoCutMonitorPionPion::Pion(false, p1_type_str, fMCAnalysis);
+
+    Long64_t dca_track_method = 1;
+    fEventReaderCfg.find_and_load("dca_method", dca_track_method);
+
+    bool use_wide_bins = dca_track_method == 0;
+
+    auto *pass_cut = new AliFemtoCutMonitorPionPion::Pion(true, p1_type_str, fMCAnalysis, false, use_wide_bins),
+         *fail_cut = new AliFemtoCutMonitorPionPion::Pion(false, p1_type_str, fMCAnalysis, false, use_wide_bins);
 
     fail_cut->SetCharge(fPionType_1 == kPiPlus ? 1 : -1);
     fFirstParticleCut->AddCutMonitor(pass_cut, fail_cut);
