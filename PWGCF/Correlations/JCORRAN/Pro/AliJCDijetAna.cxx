@@ -423,18 +423,19 @@ void AliJCDijetAna::CalculateJetsDijets(TClonesArray *inList, AliJCDijetHistos *
 
             // Here we check deltaPhi cut
             dijets[udijet][1][0] = jets[udijet][0];
+            bHasDeltaPhiSubLeadJet = false;
             for (ujet = 1; ujet < jets[udijet].size(); ujet++) { //Det MC jets
                 if(CheckDeltaPhi(dijets[udijet][1][0], jets[udijet][ujet], TMath::Pi()/fDeltaPhiCut)) {
                         dijets[udijet][1][1] = jets[udijet][ujet];
                         bHasDeltaPhiSubLeadJet = true;
-                        break;
+                        break; // list is pt-ordered. The first jet to have deltaPhi check ok, is the pair.
                 }
             }
 
             // Analysis for dijet without deltaPhi cut.
             if(dijets[udijet][0][1].pt()>fSubleadingJetCut) {
                 fhistos->fh_events[lCBin]->Fill(Form("%s acc. dijets",sDijetTypes[udijet].Data()),1.0);
-                bHasDijet = true;
+                if(udijet==iRaw) bHasDijet = true;
                 dijet = dijets[udijet][0][0] + dijets[udijet][0][1];
                 mjj = dijet.m();
                 ptpair = dijet.pt();
@@ -445,9 +446,9 @@ void AliJCDijetAna::CalculateJetsDijets(TClonesArray *inList, AliJCDijetHistos *
             }
 
             // Analysis for dijet with deltaPhi cut.
-            if(dijets[udijet][1][1].pt()>fSubleadingJetCut) {
+            if(bHasDeltaPhiSubLeadJet && dijets[udijet][1][1].pt()>fSubleadingJetCut) {
                 fhistos->fh_events[lCBin]->Fill(Form("%s deltaphi cut dijets",sDijetTypes[udijet].Data()),1.0);
-                bHasDeltaPhiDijet = true;
+                if(udijet==iRaw) bHasDeltaPhiDijet = true;
                 dijet = dijets[udijet][1][0] + dijets[udijet][1][1];
                 mjj = dijet.m();
                 ptpair = dijet.pt();
