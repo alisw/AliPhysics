@@ -41,7 +41,8 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
                                            TString aConfigMacro,
                                            TString aConfigParams,
                                            Bool_t aVerbose,
-					   Bool_t aGridConfig):
+					   Bool_t aGridConfig,
+					   TMacro *aMacro):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
@@ -77,13 +78,15 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f4DcorrectionsLambdas(NULL),
   f4DcorrectionsLambdasMinus(NULL),
   fGridConfig(aGridConfig),
-  fConfigTMacro(NULL),
+  fConfigTMacro(aMacro),
   fSaveConfigTMacro(NULL)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
   //DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
+  LoadMacro(fConfigTMacro);
+  
   DefineOutput(0, TList::Class());
 
 }
@@ -91,7 +94,8 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
                                            TString aConfigMacro,
                                            Bool_t aVerbose,
-					   Bool_t aGridConfig):
+					   Bool_t aGridConfig,
+					   TMacro *aMacro):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
@@ -127,13 +131,15 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f4DcorrectionsLambdas(NULL),
   f4DcorrectionsLambdasMinus(NULL),
   fGridConfig(aGridConfig),
-  fConfigTMacro(NULL),
+  fConfigTMacro(aMacro),
   fSaveConfigTMacro(false)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
   //DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
+  LoadMacro(fConfigTMacro);
+  
   DefineOutput(0, TList::Class());
 
 }

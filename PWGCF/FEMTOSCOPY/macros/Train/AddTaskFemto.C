@@ -47,12 +47,11 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerNam
     {
       TFile *fileConfig = TFile::Open(configMacroName.Data());
       TMacro *macro = dynamic_cast<TMacro*>(fileConfig->Get("ConfigFemtoAnalysis")->Clone());
-      AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","",configMacroParameters,kFALSE,kTRUE);
-      taskfemto->LoadMacro(macro);
+      AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","",configMacroParameters,kFALSE,kTRUE,macro);
     }
   else
     {
-      AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kFALSE);
+      AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kFALSE,NULL);
     }
   
   mgr->AddTask(taskfemto);
