@@ -2377,7 +2377,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
           if( fZNCEnergy > -5000 ) {
                       if( fZNCEnergy < 1250 ) {
                                   if( fZNAEnergy > -5000 ) {
-                                              if( fZNAEnergy < 1000 ) {
+                                              if( fZNAEnergy < 1250 ) {
                                                           fDimuonPtDistributionZNCzeroZNAzeroH            ->Fill(ptOfTheDimuonPair);
                                                           fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH->Fill(ptOfTheDimuonPair);
                                                           if( ptOfTheDimuonPair < 0.25 ) {
@@ -2441,7 +2441,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                                   }
                       } else {
                                   if( fZNAEnergy > -5000 ) {
-                                              if( fZNAEnergy < 1000 ) {
+                                              if( fZNAEnergy < 1250 ) {
                                                           fDimuonPtDistributionZNCanyZNAzeroH            ->Fill(ptOfTheDimuonPair);
                                                           fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH->Fill(ptOfTheDimuonPair);
                                                           if( ptOfTheDimuonPair < 0.25 ) {
