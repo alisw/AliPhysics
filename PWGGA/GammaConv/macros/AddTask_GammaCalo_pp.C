@@ -1502,9 +1502,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","2446601044012300000","0163103100000010"); // PHOS people NL
     cuts.AddCutCalo("00010113","2446651044012300000","0163103100000010"); // INT7
     cuts.AddCutCalo("00010113","2446652044012300000","0163103100000010"); // PHOS calo NL
-  } else if( trainConfig == 705){ // DEFAULT 2018 oct 31 no NL
-    cuts.AddCutCalo("00010113","2446600004012300000","0163103100000010"); //
-    cuts.AddCutCalo("00062113","2446600004012300000","0163103100000010"); // PHI7
+  } else if( trainConfig == 705){ // Timing cut efficiency studies
+    cuts.AddCutCalo("00010113","244665100a012200000","0163103100000010"); //
+    cuts.AddCutCalo("000ap113","2446651000012200000","0163103100000010"); // PHI7
   } else if( trainConfig == 706){ // DEFAULT 2019 july 18
     cuts.AddCutCalo("00010113","244665107a012200000","0163103100000010"); //
     cuts.AddCutCalo("00010113","2446651070012200000","0163103100000010"); //
@@ -1650,8 +1650,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("000a1113","4117911070032230000","01631031000000d0"); // std EMC7
     cuts.AddCutCalo("000a2113","4117911070032230000","01631031000000d0"); // std EG2
     cuts.AddCutCalo("000a3113","4117911070032230000","01631031000000d0"); // std EG1
-  } else if (trainConfig == 2005){ // EMCAL+DCAL clusters standard cuts
-    cuts.AddCutCalo("00010113","4117918077032230000","01631031000000d0"); // Standard EDC, new nonlin pcm-edc
+  } else if (trainConfig == 2005){ // Timing cut efficiency studies
+    cuts.AddCutCalo("00010113","4117911007032230000","01631031000000d0"); // Standard EDC
+    cuts.AddCutCalo("000a1113","4117911000032230000","01631031000000d0"); // std EMC7
+    cuts.AddCutCalo("000a2113","4117911000032230000","01631031000000d0"); // std EG2
   } else if (trainConfig == 2006){ // EMCAL+DCAL clusters pp 5 TeV Sphericity Cuts
     cuts.AddCutCalo("00010113","4117911077032230000","01631031000000d0"); // std
     cuts.AddCutCalo("h0510113","4117911077032230000","01631031000000d0"); // std
