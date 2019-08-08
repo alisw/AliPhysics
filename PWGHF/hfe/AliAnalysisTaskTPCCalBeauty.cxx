@@ -2396,9 +2396,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             fInclElecDCA->Fill(track->Pt(),DCA);
             fInclElecDCAnoSign->Fill(track->Pt(),d0z0[0]);
             
-            if(!fFlagFillMCHistos){
+            //if(!fFlagFillMCHistos){
                 InvMassCheckData(i, track, d0z0, MagSign);
-            }
+            //}
+            
             //Make incl electron and photonic electron plots
             /*if(nsigma>fMinNSigCut && nsigma<3) {
              if(M20>0.01 && M20<fMaxM20Cut) {
@@ -2923,13 +2924,6 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
         
         if(fFlagLS && mass<0.1) Nls++;
         if(fFlagULS && mass<0.1) Nuls++;
-        
-        if (fFlagULS && mass<0.1 && track->Pt()>1) {
-            fULSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
-            
-        }else if(fFlagLS && mass<0.1 && track->Pt()>1){
-            fLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
-        }
         
         //CHANGED FROM pt>1
         if (fFlagULS && mass<0.1) {
