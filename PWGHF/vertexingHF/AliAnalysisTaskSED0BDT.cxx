@@ -56,7 +56,6 @@
 #include "AliAnalysisTaskSED0BDT.h"
 #include "AliNormalizationCounter.h"
 #include "AliEventCuts.h"
-#include "AliRDHFBDT.h"
 
 using std::cout;
 using std::endl;
