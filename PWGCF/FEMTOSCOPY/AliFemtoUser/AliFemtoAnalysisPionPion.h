@@ -226,17 +226,11 @@ struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
   Bool_t event_use_basic;
 
   // EVENT
-  Int_t event_MultMin,
-        event_MultMax;
+  std::pair<int, int> event_mult;
 
-  double event_CentralityMin,
-         event_CentralityMax;
-
-  double event_VertexZMin,
-         event_VertexZMax;
-
-  double event_EP_VZeroMin,
-         event_EP_VZeroMax;
+  std::pair<double, double> event_centrality,
+                            event_vertex_z,
+                            event_ep_vzero;
 
   Int_t event_TriggerSelection;
   Bool_t event_AcceptBadVertex;
@@ -244,17 +238,9 @@ struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
   Int_t event_zdc_part;
 
   // PION - 1
-  Float_t pion_1_PtMin,
-          pion_1_PtMax;
-
-  Float_t pion_1_EtaMin,
-          pion_1_EtaMax;
-
-  Float_t pion_1_DCAMin,
-          pion_1_DCAMax;
-
-  // Float_t pion_1_NSigmaMin,
-  //        pion_1_NSigmaMax;
+  std::pair<double, double> pion_1_pt,
+                            pion_1_eta,
+                            pion_1_DCA;
 
   ULong_t pion_1_status;
 
