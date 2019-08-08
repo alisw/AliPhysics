@@ -75,6 +75,10 @@ private:
     //Histograms (Desired objects in this cross-checking task) 
     TH1D *fHistEventCounter; //! histogram for event counting
     
+    Int_t fSmallMultRange;
+    Int_t fLargeMultRange;
+    Int_t fRebinFactor; 
+    
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1D *fHistV0MMult;
     TH1D *fHistSPDMult;

@@ -96,6 +96,9 @@ AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions()
 : AliAnalysisTaskSE(),
 fListHist(0),
 fHistEventCounter(0),
+fSmallMultRange(1000),
+fLargeMultRange(4000),
+fRebinFactor(1),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -140,6 +143,9 @@ AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions(const char *name)
 : AliAnalysisTaskSE(name),
 fListHist(0),
 fHistEventCounter(0),
+fSmallMultRange(1000),
+fLargeMultRange(4000),
+fRebinFactor(1),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -205,15 +211,15 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
     
     //Settings for transverse momentum
-    Int_t lNPtBins = 200;
-    Double_t lMaxPt = 20.0;
+    Int_t lNPtBins = 400;
+    Double_t lMaxPt = 40.0;
     
     //Settings for charged particle counters (integers!)
-    Int_t lNNchBins = 1000;
+    Int_t lNNchBins = fSmallMultRange/fRebinFactor;
     Double_t lLowNchBound  = -0.5;
     Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
     
-    Int_t lNNchBinsV0M = 4000;
+    Int_t lNNchBinsV0M = fLargeMultRange/fRebinFactor;
     Double_t lLowNchBoundV0M  = -0.5;
     Double_t lHighNchBoundV0M = -0.5 + ((double)(lNNchBinsV0M));
     
