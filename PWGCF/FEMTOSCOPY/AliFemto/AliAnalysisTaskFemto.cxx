@@ -969,6 +969,10 @@ void AliAnalysisTaskFemto::Set4DCorrectionsLambdasMinus(THnSparse *h1)
  /// Function copied from TMacro class of ROOT 6, not present in ROOT 5.34
 void AliAnalysisTaskFemto::LoadMacro(TMacro *macro)
  {
+    if (macro == nullptr) {
+      return;
+    }
+
     std::stringstream ss;
     
     TList *fLines = macro->GetListOfLines();
