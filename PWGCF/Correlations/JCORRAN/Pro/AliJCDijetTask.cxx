@@ -285,7 +285,8 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
     TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
-    fana->CalculateJetsDijets(fInputList, fhistos, fCBin);
+    fana->CalculateJets(fInputList, fhistos, fCBin);
+    fana->FillJetsDijets(fhistos, fCBin);
 #endif
 
     if(fIsMC) {
@@ -300,7 +301,8 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         TClonesArray *fInputListDetMC = (TClonesArray*)fJCatalystDetMCTask->GetInputList();
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
-        fanaMC->CalculateJetsDijets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
+        fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
+        fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC);
 
         // Here response matrix calculation.
         fana->CalculateResponse(fanaMC,fhistosDetMC);
