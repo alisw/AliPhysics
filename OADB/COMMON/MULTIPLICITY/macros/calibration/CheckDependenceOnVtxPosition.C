@@ -129,18 +129,29 @@ void CheckDependenceOnVtxPosition(
     // Function meant to generate calibration OADB
     //
     // --- input : nameInputFile, containing a TTree object
+    Int_t collSys         = 0;
 
     TString collisionSystem = lPeriodName;
-    if ( lPeriodName.Contains("LHC16q") || lPeriodName.Contains("LHC16t") || lPeriodName.Contains("LHC13b") || lPeriodName.Contains("LHC13c") || lPeriodName.Contains("LHC13d") || lPeriodName.Contains("LHC13e") )
+    if ( lPeriodName.Contains("LHC16q") || lPeriodName.Contains("LHC16t") || lPeriodName.Contains("LHC13b") || lPeriodName.Contains("LHC13c") || lPeriodName.Contains("LHC13d") || lPeriodName.Contains("LHC13e") ){
       collisionSystem = collisionSystem+", p-Pb #sqrt{#it{s}_{_{NN}}} = 5.02 TeV";
-    else if (lPeriodName.Contains("LHC13f") )
+      collSys         = 1;
+    } else if (lPeriodName.Contains("LHC13f") ) {
       collisionSystem = collisionSystem+", Pb-p #sqrt{#it{s}_{_{NN}}} = 5.02 TeV";
-    else if (lPeriodName.Contains("LHC16r") )
-        collisionSystem = collisionSystem+", p-Pb #sqrt{#it{s}_{_{NN}}} = 8.16 TeV";
-    else if (lPeriodName.Contains("LHC16s") )
-          collisionSystem = collisionSystem+", Pb-p #sqrt{#it{s}_{_{NN}}} = 8.16 TeV";
-    else if (lPeriodName.Contains("LHC17n") )
+      collSys         = 1;
+    } else if (lPeriodName.Contains("LHC16r") ){
+      collisionSystem = collisionSystem+", p-Pb #sqrt{#it{s}_{_{NN}}} = 8.16 TeV";
+      collSys         = 1;
+    } else if (lPeriodName.Contains("LHC16s") ) {
+      collisionSystem = collisionSystem+", Pb-p #sqrt{#it{s}_{_{NN}}} = 8.16 TeV";
+      collSys         = 1;
+    } else if (lPeriodName.Contains("LHC17n") ) {
       collisionSystem = collisionSystem+", Xe-Xe #sqrt{#it{s}_{_{NN}}} = 5.44 TeV";
+      collSys         = 2;
+    } else if (lPeriodName.Contains("LHC16f_lowB") || lPeriodName.Contains("LHC17g") || lPeriodName.Contains("LHC18c")){
+      collisionSystem = collisionSystem+", pp #sqrt{#it{s}} = 13 TeV, B = 0.2 T";
+    } else if (lPeriodName.Contains("LHC15n") || lPeriodName.Contains("LHC17p") || lPeriodName.Contains("LHC17q")){
+      collisionSystem = collisionSystem+", pp #sqrt{#it{s}} = 5 TeV";
+    }
 
     AliMultSelectionCalibrator *lCalib = new AliMultSelectionCalibrator("lCalib");
     if ( lPeriodName.Contains("LHC16q") || lPeriodName.Contains("LHC16t") || lPeriodName.Contains("LHC13b") || lPeriodName.Contains("LHC13c")) {
@@ -152,9 +163,7 @@ void CheckDependenceOnVtxPosition(
       lCalib->GetEventCuts()->SetRejectPileupInMultBinsCut (kFALSE);
       lCalib->GetEventCuts()->SetVertexConsistencyCut      (kFALSE);
       lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
-    }
-
-    if ( lPeriodName.Contains("LHC16r") || lPeriodName.Contains("LHC16s")  || lPeriodName.Contains("LHC13d") || lPeriodName.Contains("LHC13e") || lPeriodName.Contains("LHC13f") ) {
+    } else if ( lPeriodName.Contains("LHC16r") || lPeriodName.Contains("LHC16s")  || lPeriodName.Contains("LHC13d") || lPeriodName.Contains("LHC13e") || lPeriodName.Contains("LHC13f") ) {
       cout<<"Setting event selection criteria for HI p-Pb and Pb-p ..."<<endl;
       lCalib->GetEventCuts()->SetVzCut(10.0);
       lCalib->GetEventCuts()->SetTriggerCut                (kTRUE );
@@ -163,8 +172,7 @@ void CheckDependenceOnVtxPosition(
       lCalib->GetEventCuts()->SetRejectPileupInMultBinsCut (kTRUE);
       lCalib->GetEventCuts()->SetVertexConsistencyCut      (kFALSE);
       lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
-    }
-    if ( lPeriodName.Contains("LHC17n")  ){
+    } else if ( lPeriodName.Contains("LHC17n")  ){
       cout<<"Setting event selection criteria for Xe-Xe..."<<endl;
       lCalib->GetEventCuts()->SetVzCut(10.0);
       lCalib->GetEventCuts()->SetTriggerCut                (kTRUE );
@@ -173,6 +181,15 @@ void CheckDependenceOnVtxPosition(
       lCalib->GetEventCuts()->SetRejectPileupInMultBinsCut (kFALSE);
       lCalib->GetEventCuts()->SetVertexConsistencyCut      (kFALSE);
       lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE );
+    } else {
+      lCalib->GetEventCuts()->SetVzCut(10.0);
+      lCalib->GetEventCuts()->SetTriggerCut                (kTRUE);
+      lCalib->GetEventCuts()->SetINELgtZEROCut             (kTRUE);
+      lCalib->GetEventCuts()->SetTrackletsVsClustersCut    (kTRUE);
+      lCalib->GetEventCuts()->SetRejectPileupInMultBinsCut (kTRUE);
+      lCalib->GetEventCuts()->SetVertexConsistencyCut      (kTRUE);
+      lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
+      lCalib->GetEventCuts()->SetIsNotIncompleteDAQ        (kTRUE);
     }
 
 
@@ -221,8 +238,12 @@ void CheckDependenceOnVtxPosition(
     Int_t fRunNumber;
     Float_t fAmplitude_V0A                  = 0.;
     Float_t fAmplitude_V0C                  = 0.;
+    Float_t fAmplitude_V0AOnline            = 0.;
+    Float_t fAmplitude_V0COnline            = 0.;
     Float_t fAmplitude_V0AEq                = 0.;
     Float_t fAmplitude_V0CEq                = 0.;
+    Float_t fAmplitude_ADA                  = 0.;
+    Float_t fAmplitude_ADC                  = 0.;
     Int_t fnSPDClusters0                    = 0;
     Int_t fnSPDClusters1                    = 0;
     Int_t fRefMultEta5                      = 0;
@@ -260,8 +281,12 @@ void CheckDependenceOnVtxPosition(
 
     fTree->SetBranchAddress("fAmplitude_V0A",&fAmplitude_V0A);
     fTree->SetBranchAddress("fAmplitude_V0C",&fAmplitude_V0C);
+    fTree->SetBranchAddress("fAmplitude_OnlineV0A",&fAmplitude_V0AOnline);
+    fTree->SetBranchAddress("fAmplitude_OnlineV0C",&fAmplitude_V0COnline);
     fTree->SetBranchAddress("fAmplitude_V0AEq",&fAmplitude_V0AEq);
     fTree->SetBranchAddress("fAmplitude_V0CEq",&fAmplitude_V0CEq);
+    fTree->SetBranchAddress("fAmplitude_ADA",&fAmplitude_ADA);
+    fTree->SetBranchAddress("fAmplitude_ADC",&fAmplitude_ADC);
     fTree->SetBranchAddress("fnSPDClusters0",&fnSPDClusters0);
     fTree->SetBranchAddress("fnSPDClusters1",&fnSPDClusters1);
     fTree->SetBranchAddress("fnSPDClusters",&fnSPDClusters);
@@ -281,6 +306,7 @@ void CheckDependenceOnVtxPosition(
 
 
     Int_t maxAmplitudeV0A     = 1000;
+    Int_t maxAmplitudeADA     = 1000;
     Int_t maxSPDCl            = 500;
     Int_t maxRefMult          = 200;
     Int_t maxNTracklets       = 500;
@@ -314,6 +340,12 @@ void CheckDependenceOnVtxPosition(
     auto h2V0AvsVtxZ            = new TH2F("h2V0AvsVtxZ","h2V0AvsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
     auto h2V0CvsVtxZ            = new TH2F("h2V0CvsVtxZ","h2V0CvsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
     auto h2V0MvsVtxZ            = new TH2F("h2V0MvsVtxZ","h2V0MvsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
+    auto h2V0AOnlinevsVtxZ      = new TH2F("h2V0AOnlinevsVtxZ","h2V0AOnlinevsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
+    auto h2V0COnlinevsVtxZ      = new TH2F("h2V0COnlinevsVtxZ","h2V0COnlinevsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
+    auto h2V0MOnlinevsVtxZ      = new TH2F("h2V0MOnlinevsVtxZ","h2V0MOnlinevsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
+    auto h2ADAvsVtxZ            = new TH2F("h2ADAvsVtxZ","h2ADAvsVtxZ",1000,0,maxAmplitudeADA,nBinsZvtx,-12,12);
+    auto h2ADCvsVtxZ            = new TH2F("h2ADCvsVtxZ","h2ADCvsVtxZ",1000,0,maxAmplitudeADA,nBinsZvtx,-12,12);
+    auto h2ADMvsVtxZ            = new TH2F("h2ADMvsVtxZ","h2ADMvsVtxZ",1000,0,maxAmplitudeADA,nBinsZvtx,-12,12);
     auto h2V0AEqvsVtxZ          = new TH2F("h2V0AEqvsVtxZ","h2V0AEqvsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
     auto h2V0CEqvsVtxZ          = new TH2F("h2V0CEqvsVtxZ","h2V0CEqvsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
     auto h2V0MEqvsVtxZ          = new TH2F("h2V0MEqvsVtxZ","h2V0MEqvsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
@@ -329,9 +361,15 @@ void CheckDependenceOnVtxPosition(
     auto hprofVtxZvsV0A         = new TProfile("hprofVtxZvsV0A","hprofVtxZvsV0A",nBinsZvtx,-12,12, 0,maxAmplitudeV0A);
     auto hprofVtxZvsV0C         = new TProfile("hprofVtxZvsV0C","hprofVtxZvsV0C",nBinsZvtx,-12,12,0,maxAmplitudeV0A);
     auto hprofVtxZvsV0M         = new TProfile("hprofVtxZvsV0M","hprofVtxZvsV0M",nBinsZvtx,-12,12,0,maxAmplitudeV0A);
+    auto hprofVtxZvsV0AOnline   = new TProfile("hprofVtxZvsV0AOnline","hprofVtxZvsV0AOnline",nBinsZvtx,-12,12, 0,maxAmplitudeV0A);
+    auto hprofVtxZvsV0COnline   = new TProfile("hprofVtxZvsV0COnline","hprofVtxZvsV0COnline",nBinsZvtx,-12,12,0,maxAmplitudeV0A);
+    auto hprofVtxZvsV0MOnline   = new TProfile("hprofVtxZvsV0MOnline","hprofVtxZvsV0MOnline",nBinsZvtx,-12,12,0,maxAmplitudeV0A);
     auto hprofVtxZvsV0AEq       = new TProfile("hprofVtxZvsV0AEq","hprofVtxZvsV0AEq",nBinsZvtx,-12,12,0,maxAmplitudeV0A);
     auto hprofVtxZvsV0CEq       = new TProfile("hprofVtxZvsV0CEq","hprofVtxZvsV0CEq",nBinsZvtx,-12,12,0,maxAmplitudeV0A);
     auto hprofVtxZvsV0MEq       = new TProfile("hprofVtxZvsV0MEq","hprofVtxZvsV0MEq",nBinsZvtx,-12,12,0,maxAmplitudeV0A);
+    auto hprofVtxZvsADA         = new TProfile("hprofVtxZvsADA","hprofVtxZvsADA",nBinsZvtx,-12,12, 0,maxAmplitudeADA);
+    auto hprofVtxZvsADC         = new TProfile("hprofVtxZvsADC","hprofVtxZvsADC",nBinsZvtx,-12,12,0,maxAmplitudeADA);
+    auto hprofVtxZvsADM         = new TProfile("hprofVtxZvsADM","hprofVtxZvsADM",nBinsZvtx,-12,12,0,maxAmplitudeADA);
     auto hprofVtxZvsSPDCl0      = new TProfile("hprofVtxZvsSPDCl0","hprofVtxZvsSPDCl0",nBinsZvtx,-12,12,0,maxSPDCl);
     auto hprofVtxZvsSPDCl1      = new TProfile("hprofVtxZvsSPDCl1","hprofVtxZvsSPDCl1",nBinsZvtx,-12,12,0,maxSPDCl);
     auto hprofVtxZvsSPDCl       = new TProfile("hprofVtxZvsSPDCl","hprofVtxZvsSPDCl",nBinsZvtx,-12,12,0,maxSPDCl);
@@ -392,9 +430,15 @@ void CheckDependenceOnVtxPosition(
           h2V0AvsVtxZ->Fill(fAmplitude_V0A, fEvSel_VtxZ);
           h2V0CvsVtxZ->Fill(fAmplitude_V0C, fEvSel_VtxZ);
           h2V0MvsVtxZ->Fill(fAmplitude_V0A+fAmplitude_V0C, fEvSel_VtxZ);
+          h2V0AOnlinevsVtxZ->Fill(fAmplitude_V0AOnline, fEvSel_VtxZ);
+          h2V0COnlinevsVtxZ->Fill(fAmplitude_V0COnline, fEvSel_VtxZ);
+          h2V0MOnlinevsVtxZ->Fill(fAmplitude_V0AOnline+fAmplitude_V0COnline, fEvSel_VtxZ);
           h2V0AEqvsVtxZ->Fill(fAmplitude_V0AEq, fEvSel_VtxZ);
           h2V0CEqvsVtxZ->Fill(fAmplitude_V0CEq, fEvSel_VtxZ);
           h2V0CEqvsVtxZ->Fill(fAmplitude_V0CEq+fAmplitude_V0AEq, fEvSel_VtxZ);
+          h2ADAvsVtxZ->Fill(fAmplitude_ADA, fEvSel_VtxZ);
+          h2ADCvsVtxZ->Fill(fAmplitude_ADC, fEvSel_VtxZ);
+          h2ADMvsVtxZ->Fill(fAmplitude_ADA+fAmplitude_ADC, fEvSel_VtxZ);
           h2SPDCl0vsVtxZ->Fill(fnSPDClusters0, fEvSel_VtxZ);
           h2SPDCl1vsVtxZ->Fill(fnSPDClusters1, fEvSel_VtxZ);
           h2SPDClvsVtxZ->Fill(fnSPDClusters, fEvSel_VtxZ);
@@ -408,17 +452,29 @@ void CheckDependenceOnVtxPosition(
           hprofVtxZvsV0A->Fill(fEvSel_VtxZ, fAmplitude_V0A);
           hprofVtxZvsV0C->Fill(fEvSel_VtxZ, fAmplitude_V0C);
           hprofVtxZvsV0M->Fill(fEvSel_VtxZ, fAmplitude_V0A+fAmplitude_V0C);
+          hprofVtxZvsV0AOnline->Fill(fEvSel_VtxZ, fAmplitude_V0AOnline);
+          hprofVtxZvsV0COnline->Fill(fEvSel_VtxZ, fAmplitude_V0COnline);
+          hprofVtxZvsV0MOnline->Fill(fEvSel_VtxZ, fAmplitude_V0AOnline+fAmplitude_V0COnline);
           hprofVtxZvsV0AEq->Fill(fEvSel_VtxZ, fAmplitude_V0AEq);
           hprofVtxZvsV0CEq->Fill(fEvSel_VtxZ, fAmplitude_V0CEq);
           hprofVtxZvsV0MEq->Fill(fEvSel_VtxZ, fAmplitude_V0CEq+fAmplitude_V0AEq);
+          hprofVtxZvsADA->Fill(fEvSel_VtxZ, fAmplitude_ADA);
+          hprofVtxZvsADC->Fill(fEvSel_VtxZ, fAmplitude_ADC);
+          hprofVtxZvsADM->Fill(fEvSel_VtxZ, fAmplitude_ADA+fAmplitude_ADC);
           hprofVtxZvsSPDCl0->Fill(fEvSel_VtxZ, fnSPDClusters0);
           hprofVtxZvsSPDCl1->Fill(fEvSel_VtxZ, fnSPDClusters1);
           hprofVtxZvsSPDCl->Fill(fEvSel_VtxZ, fnSPDClusters);
           hprofVtxZvsRefMultEta5->Fill(fEvSel_VtxZ, fRefMultEta5);
           hprofVtxZvsRefMultEta8->Fill(fEvSel_VtxZ, fRefMultEta8);
           hprofVtxZvsNTracklets->Fill(fEvSel_VtxZ, fnTracklets);
-          hprofVtxZvsZNA->Fill(fEvSel_VtxZ, (Bool_t)fZnaFired*fZnaTower+!((Bool_t)fZnaFired)*0);
-          hprofVtxZvsZNC->Fill(fEvSel_VtxZ, (Bool_t)fZncFired*fZncTower+!((Bool_t)fZncFired)*0);
+
+          if (collSys > 0){
+            hprofVtxZvsZNA->Fill(fEvSel_VtxZ, (Bool_t)fZnaFired*fZnaTower+!((Bool_t)fZnaFired)*0);
+            hprofVtxZvsZNC->Fill(fEvSel_VtxZ, (Bool_t)fZncFired*fZncTower+!((Bool_t)fZncFired)*0);
+          } else {
+            hprofVtxZvsZNA->Fill(fEvSel_VtxZ, -(Bool_t)fZnaFired*fZnaTower+!((Bool_t)fZnaFired)*1e6);
+            hprofVtxZvsZNC->Fill(fEvSel_VtxZ, -(Bool_t)fZncFired*fZncTower+!((Bool_t)fZncFired)*1e6);
+          }
           //           sTree [ lIndex ] -> Fill();
         }
 
@@ -430,12 +486,25 @@ void CheckDependenceOnVtxPosition(
     hprofVtxZvsV0C->Fit(fitVtxZvsV0C,"Q0EMRN","",-10,10);
     TF1* fitVtxZvsV0M = new TF1("fitVtxZvsV0M","[4]+[3]*x+[2]*x*x+[1]*x*x*x+[0]*x*x*x*x",-10,10);
     hprofVtxZvsV0M->Fit(fitVtxZvsV0M,"Q0EMRN","",-10,10);
+    TF1* fitVtxZvsV0AOnline = new TF1("fitVtxZvsV0AOnline","[4]+[3]*x+[2]*x*x+[1]*x*x*x+[0]*x*x*x*x",-10,10);
+    hprofVtxZvsV0AOnline->Fit(fitVtxZvsV0AOnline,"Q0EMRN","",-10,10);
+    TF1* fitVtxZvsV0COnline = new TF1("fitVtxZvsV0COnline","[4]+[3]*x+[2]*x*x+[1]*x*x*x+[0]*x*x*x*x",-10,10);
+    hprofVtxZvsV0COnline->Fit(fitVtxZvsV0COnline,"Q0EMRN","",-10,10);
+    TF1* fitVtxZvsV0MOnline = new TF1("fitVtxZvsV0MOnline","[4]+[3]*x+[2]*x*x+[1]*x*x*x+[0]*x*x*x*x",-10,10);
+    hprofVtxZvsV0MOnline->Fit(fitVtxZvsV0MOnline,"Q0EMRN","",-10,10);
     TF1* fitVtxZvsV0AEq = new TF1("fitVtxZvsV0AEq","[4]+[3]*x+[2]*x*x+[1]*x*x*x+[0]*x*x*x*x",-10,10);
     hprofVtxZvsV0AEq->Fit(fitVtxZvsV0AEq,"Q0EMRN","",-10,10);
     TF1* fitVtxZvsV0CEq = new TF1("fitVtxZvsV0CEq","[4]+[3]*x+[2]*x*x+[1]*x*x*x+[0]*x*x*x*x",-10,10);
     hprofVtxZvsV0CEq->Fit(fitVtxZvsV0CEq,"Q0EMRN","",-10,10);
     TF1* fitVtxZvsV0MEq = new TF1("fitVtxZvsV0MEq","[4]+[3]*x+[2]*x*x+[1]*x*x*x+[0]*x*x*x*x",-10,10);
     hprofVtxZvsV0MEq->Fit(fitVtxZvsV0MEq,"Q0EMRN","",-10,10);
+
+    TF1* fitVtxZvsADA = new TF1("fitVtxZvsADA","[4]+[3]*x+[2]*x*x+[1]*x*x*x+[0]*x*x*x*x",-10,10);
+    hprofVtxZvsADA->Fit(fitVtxZvsADA,"Q0EMRN","",-10,10);
+    TF1* fitVtxZvsADC = new TF1("fitVtxZvsADC","[4]+[3]*x+[2]*x*x+[1]*x*x*x+[0]*x*x*x*x",-10,10);
+    hprofVtxZvsADC->Fit(fitVtxZvsADC,"Q0EMRN","",-10,10);
+    TF1* fitVtxZvsADM = new TF1("fitVtxZvsADM","[4]+[3]*x+[2]*x*x+[1]*x*x*x+[0]*x*x*x*x",-10,10);
+    hprofVtxZvsADM->Fit(fitVtxZvsADM,"Q0EMRN","",-10,10);
 
     TF1* fitVtxZvsSPDCl0 = new TF1("fitVtxZvsSPDCl0","[4]+[3]*x+[2]*x*x+[1]*x*x*x+[0]*x*x*x*x",-10,10);
     hprofVtxZvsSPDCl0->Fit(fitVtxZvsSPDCl0,"Q0EMRN","",-10,10);
@@ -463,9 +532,15 @@ void CheckDependenceOnVtxPosition(
       h2V0AvsVtxZ->Write();
       h2V0CvsVtxZ->Write();
       h2V0MvsVtxZ->Write();
+      h2V0AOnlinevsVtxZ->Write();
+      h2V0COnlinevsVtxZ->Write();
+      h2V0MOnlinevsVtxZ->Write();
       h2V0AEqvsVtxZ->Write();
       h2V0CEqvsVtxZ->Write();
       h2V0MEqvsVtxZ->Write();
+      h2ADAvsVtxZ->Write();
+      h2ADCvsVtxZ->Write();
+      h2ADMvsVtxZ->Write();
       h2SPDCl0vsVtxZ->Write();
       h2SPDCl1vsVtxZ->Write();
       h2SPDClvsVtxZ->Write();
@@ -478,9 +553,15 @@ void CheckDependenceOnVtxPosition(
       hprofVtxZvsV0A->Write();
       hprofVtxZvsV0C->Write();
       hprofVtxZvsV0M->Write();
+      hprofVtxZvsV0AOnline->Write();
+      hprofVtxZvsV0COnline->Write();
+      hprofVtxZvsV0MOnline->Write();
       hprofVtxZvsV0AEq->Write();
       hprofVtxZvsV0CEq->Write();
       hprofVtxZvsV0MEq->Write();
+      hprofVtxZvsADA->Write();
+      hprofVtxZvsADC->Write();
+      hprofVtxZvsADM->Write();
       hprofVtxZvsSPDCl0->Write();
       hprofVtxZvsSPDCl1->Write();
       hprofVtxZvsSPDCl->Write();
@@ -493,9 +574,15 @@ void CheckDependenceOnVtxPosition(
       fitVtxZvsV0A->Write();
       fitVtxZvsV0C->Write();
       fitVtxZvsV0M->Write();
+      fitVtxZvsV0AOnline->Write();
+      fitVtxZvsV0COnline->Write();
+      fitVtxZvsV0MOnline->Write();
       fitVtxZvsV0AEq->Write();
       fitVtxZvsV0CEq->Write();
       fitVtxZvsV0MEq->Write();
+      fitVtxZvsADA->Write();
+      fitVtxZvsADC->Write();
+      fitVtxZvsADM->Write();
       fitVtxZvsSPDCl0->Write();
       fitVtxZvsSPDCl1->Write();
       fitVtxZvsSPDCl->Write();
@@ -511,9 +598,15 @@ void CheckDependenceOnVtxPosition(
     DrawTProfileWithCorrespondingFunction( hprofVtxZvsV0A, fitVtxZvsV0A, "Z_{vtx} (cm)", "V0A signal (arb. units)", collisionSystem, Form("%s/V0AZVtzDep.pdf", nameOutputDir.Data()));
     DrawTProfileWithCorrespondingFunction( hprofVtxZvsV0C, fitVtxZvsV0C, "Z_{vtx} (cm)", "V0C signal (arb. units)", collisionSystem, Form("%s/V0CZVtzDep.pdf", nameOutputDir.Data()));
     DrawTProfileWithCorrespondingFunction( hprofVtxZvsV0M, fitVtxZvsV0M, "Z_{vtx} (cm)", "V0M signal (arb. units)", collisionSystem, Form("%s/V0MZVtzDep.pdf", nameOutputDir.Data()));
+    DrawTProfileWithCorrespondingFunction( hprofVtxZvsV0AOnline, fitVtxZvsV0AOnline, "Z_{vtx} (cm)", "V0A signal online (arb. units)", collisionSystem, Form("%s/V0AOnlineZVtzDep.pdf", nameOutputDir.Data()));
+    DrawTProfileWithCorrespondingFunction( hprofVtxZvsV0COnline, fitVtxZvsV0COnline, "Z_{vtx} (cm)", "V0C signal online (arb. units)", collisionSystem, Form("%s/V0COnlineZVtzDep.pdf", nameOutputDir.Data()));
+    DrawTProfileWithCorrespondingFunction( hprofVtxZvsV0MOnline, fitVtxZvsV0MOnline, "Z_{vtx} (cm)", "V0M signal online (arb. units)", collisionSystem, Form("%s/V0MOnlineZVtzDep.pdf", nameOutputDir.Data()));
     DrawTProfileWithCorrespondingFunction( hprofVtxZvsV0AEq, fitVtxZvsV0AEq, "Z_{vtx} (cm)", "V0AEq signal (arb. units)", collisionSystem, Form("%s/V0AEqZVtzDep.pdf", nameOutputDir.Data()));
     DrawTProfileWithCorrespondingFunction( hprofVtxZvsV0CEq, fitVtxZvsV0CEq, "Z_{vtx} (cm)", "V0CEq signal (arb. units)", collisionSystem, Form("%s/V0CEqZVtzDep.pdf", nameOutputDir.Data()));
     DrawTProfileWithCorrespondingFunction( hprofVtxZvsV0MEq, fitVtxZvsV0MEq, "Z_{vtx} (cm)", "V0MEq signal (arb. units)", collisionSystem, Form("%s/V0MEqZVtzDep.pdf", nameOutputDir.Data()));
+    DrawTProfileWithCorrespondingFunction( hprofVtxZvsADA, fitVtxZvsADA, "Z_{vtx} (cm)", "ADA signal (arb. units)", collisionSystem, Form("%s/ADAZVtzDep.pdf", nameOutputDir.Data()));
+    DrawTProfileWithCorrespondingFunction( hprofVtxZvsADC, fitVtxZvsADC, "Z_{vtx} (cm)", "ADC signal (arb. units)", collisionSystem, Form("%s/ADCZVtzDep.pdf", nameOutputDir.Data()));
+    DrawTProfileWithCorrespondingFunction( hprofVtxZvsADM, fitVtxZvsADM, "Z_{vtx} (cm)", "ADM signal (arb. units)", collisionSystem, Form("%s/ADMZVtzDep.pdf", nameOutputDir.Data()));
     DrawTProfileWithCorrespondingFunction( hprofVtxZvsSPDCl0, fitVtxZvsSPDCl0, "Z_{vtx} (cm)", "SPD cl. layer 0", collisionSystem, Form("%s/SPCCl0ZVtzDep.pdf", nameOutputDir.Data()));
     DrawTProfileWithCorrespondingFunction( hprofVtxZvsSPDCl1, fitVtxZvsSPDCl1, "Z_{vtx} (cm)", "SPD cl. layer 1", collisionSystem, Form("%s/SPCCl1ZVtzDep.pdf", nameOutputDir.Data()));
     DrawTProfileWithCorrespondingFunction( hprofVtxZvsSPDCl, fitVtxZvsSPDCl, "Z_{vtx} (cm)", "SPD cl.", collisionSystem, Form("%s/SPCClZVtzDep.pdf", nameOutputDir.Data()));
