@@ -271,8 +271,8 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
   AliAnalysisDataContainer *cinputmassD0 = mgr->CreateContainer(inname,TChain::Class(), 
 							  AliAnalysisManager::kInputContainer);
 							  
-  out6name = "D0Ntuples";
-  out7name = "D0BDTResponses";
+  out6name = "D0Ntuples" + finDirname;
+  out7name = "D0BDTResponses" + finDirname;
 
   AliAnalysisDataContainer *coutputmassD01 = mgr->CreateContainer(out1name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //mass
   AliAnalysisDataContainer *coutputmassD02 = mgr->CreateContainer(out2name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //distr
