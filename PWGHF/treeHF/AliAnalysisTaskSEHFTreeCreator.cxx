@@ -1501,21 +1501,6 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
       nFilteredD0++;
       if((vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.
         
-        Bool_t unsetvtx=kFALSE;
-        if(!d->GetOwnPrimaryVtx()){
-          d->SetOwnPrimaryVtx(vtx1);
-          unsetvtx=kTRUE;
-          // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
-          // Pay attention if you use continue inside this loop!!!
-        }
-        Bool_t recVtx=kFALSE;
-        AliAODVertex *origownvtx=0x0;
-        if(fFiltCutsD0toKpi->GetIsPrimaryWithoutDaughters()){
-          if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
-          if(fFiltCutsD0toKpi->RecalcOwnPrimaryVtx(d,aod))recVtx=kTRUE;
-          else fFiltCutsD0toKpi->CleanOwnPrimaryVtx(d,aod,origownvtx);
-        }
-        
         //filtering cuts
         Int_t isSelectedFilt     = fFiltCutsD0toKpi->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
         Int_t isSelectedPidFilt  = fFiltCutsD0toKpi->IsSelectedPID(d);
@@ -1552,6 +1537,21 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
           if(isSelectedTrackAnalysis > 0) isSelTracksAnCuts=kTRUE;
           
           fTreeHandlerD0->SetIsDzeroDzeroBar(isSelectedAnalysis, isSelectedTopoAnalysis, isSelectedPidAnalysis, isSelectedFilt, isSelectedTopoFilt, isSelectedPidFilt);
+          
+          Bool_t unsetvtx=kFALSE;
+          if(!d->GetOwnPrimaryVtx()){
+            d->SetOwnPrimaryVtx(vtx1);
+            unsetvtx=kTRUE;
+            // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
+            // Pay attention if you use continue inside this loop!!!
+          }
+          Bool_t recVtx=kFALSE;
+          AliAODVertex *origownvtx=0x0;
+          if(fFiltCutsD0toKpi->GetIsPrimaryWithoutDaughters()){
+            if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
+            if(fFiltCutsD0toKpi->RecalcOwnPrimaryVtx(d,aod))recVtx=kTRUE;
+            else fFiltCutsD0toKpi->CleanOwnPrimaryVtx(d,aod,origownvtx);
+          }
           
           Int_t labD0 = -1;
           Int_t pdgD0 = -99;
@@ -1635,9 +1635,9 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
               fTreeHandlerD0->FillTree();
             }
           }//end D0bar
+          if(recVtx)fFiltCutsD0toKpi->CleanOwnPrimaryVtx(d,aod,origownvtx);
+          if(unsetvtx) d->UnsetOwnPrimaryVtx();
         }//end is selected filt
-        if(recVtx)fFiltCutsD0toKpi->CleanOwnPrimaryVtx(d,aod,origownvtx);
-        if(unsetvtx) d->UnsetOwnPrimaryVtx();
       }
       else {
         fNentries->Fill(14); //monitor how often this fails
@@ -1835,21 +1835,6 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
       nFilteredDs++;
       if((vHF->FillRecoCand(aod,ds))) {////Fill the data members of the candidate only if they are empty.
         
-        Bool_t unsetvtx=kFALSE;
-        if(!ds->GetOwnPrimaryVtx()){
-          ds->SetOwnPrimaryVtx(vtx1);
-          unsetvtx=kTRUE;
-          // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
-          // Pay attention if you use continue inside this loop!!!
-        }
-        Bool_t recVtx=kFALSE;
-        AliAODVertex *origownvtx=0x0;
-        if(fFiltCutsDstoKKpi->GetIsPrimaryWithoutDaughters()){
-          if(ds->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*ds->GetOwnPrimaryVtx());
-          if(fFiltCutsDstoKKpi->RecalcOwnPrimaryVtx(ds,aod))recVtx=kTRUE;
-          else fFiltCutsDstoKKpi->CleanOwnPrimaryVtx(ds,aod,origownvtx);
-        }
-        
         Int_t isSelectedFilt=fFiltCutsDstoKKpi->IsSelected(ds,AliRDHFCuts::kAll,aod);
         Int_t isKKpi=isSelectedFilt&1;
         Int_t ispiKK=isSelectedFilt&2;
@@ -1902,6 +1887,21 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
             if(isSelectedPidAnalysis==2 || isSelectedPidAnalysis==3) isSelAnPidCutspiKK=kTRUE;
             if(isSelectedTopoAnalysis&1) isSelAnTopoCutsKKpi=kTRUE;
             if(isSelectedTopoAnalysis&2) isSelAnTopoCutspiKK=kTRUE;
+          }
+          
+          Bool_t unsetvtx=kFALSE;
+          if(!ds->GetOwnPrimaryVtx()){
+            ds->SetOwnPrimaryVtx(vtx1);
+            unsetvtx=kTRUE;
+            // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
+            // Pay attention if you use continue inside this loop!!!
+          }
+          Bool_t recVtx=kFALSE;
+          AliAODVertex *origownvtx=0x0;
+          if(fFiltCutsDstoKKpi->GetIsPrimaryWithoutDaughters()){
+            if(ds->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*ds->GetOwnPrimaryVtx());
+            if(fFiltCutsDstoKKpi->RecalcOwnPrimaryVtx(ds,aod))recVtx=kTRUE;
+            else fFiltCutsDstoKKpi->CleanOwnPrimaryVtx(ds,aod,origownvtx);
           }
           
           Int_t labDs=-1;
@@ -1997,9 +1997,9 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
               }
             }
           }//end fill tree
+          if(recVtx)fFiltCutsDstoKKpi->CleanOwnPrimaryVtx(ds,aod,origownvtx);
+          if(unsetvtx) ds->UnsetOwnPrimaryVtx();
         }//end is selected
-        if(recVtx)fFiltCutsDstoKKpi->CleanOwnPrimaryVtx(ds,aod,origownvtx);
-        if(unsetvtx) ds->UnsetOwnPrimaryVtx();
       }
       else{
         fNentries->Fill(18); //monitor how often this fails
@@ -2018,19 +2018,6 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
       nFilteredDplus++;
       fNentries->Fill(19);
       if((vHF->FillRecoCand(aod,dplus))) {////Fill the data members of the candidate only if they are empty.
-        
-        Bool_t unsetvtx=kFALSE;
-        if(!dplus->GetOwnPrimaryVtx()){
-          dplus->SetOwnPrimaryVtx(vtx1);
-          unsetvtx=kTRUE;
-        }
-        Bool_t recVtx=kFALSE;
-        AliAODVertex *origownvtx=0x0;
-        if(fFiltCutsDplustoKpipi->GetIsPrimaryWithoutDaughters()){
-          if(dplus->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dplus->GetOwnPrimaryVtx());
-          if(fFiltCutsDplustoKpipi->RecalcOwnPrimaryVtx(dplus,aod))recVtx=kTRUE;
-          else fFiltCutsDplustoKpipi->CleanOwnPrimaryVtx(dplus,aod,origownvtx);
-        }
         
         Int_t isSelectedFilt = fFiltCutsDplustoKpipi->IsSelected(dplus,AliRDHFCuts::kAll,aod);
         
@@ -2054,6 +2041,19 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
           Bool_t isSelTracksAnCuts=kFALSE;
           Int_t isSelectedTrackAnalysis = fCutsDplustoKpipi->IsSelected(dplus,AliRDHFCuts::kTracks,aod);
           if(isSelectedTrackAnalysis > 0) isSelTracksAnCuts=kTRUE;
+          
+          Bool_t unsetvtx=kFALSE;
+          if(!dplus->GetOwnPrimaryVtx()){
+            dplus->SetOwnPrimaryVtx(vtx1);
+            unsetvtx=kTRUE;
+          }
+          Bool_t recVtx=kFALSE;
+          AliAODVertex *origownvtx=0x0;
+          if(fFiltCutsDplustoKpipi->GetIsPrimaryWithoutDaughters()){
+            if(dplus->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dplus->GetOwnPrimaryVtx());
+            if(fFiltCutsDplustoKpipi->RecalcOwnPrimaryVtx(dplus,aod))recVtx=kTRUE;
+            else fFiltCutsDplustoKpipi->CleanOwnPrimaryVtx(dplus,aod,origownvtx);
+          }
           
           Int_t labDp=-1;
           bool isPrimary=kFALSE;
@@ -2095,10 +2095,9 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
             fTreeHandlerDplus->FillTree();
           }
           //end fill tree
-          
+          if(recVtx)fFiltCutsDplustoKpipi->CleanOwnPrimaryVtx(dplus,aod,origownvtx);
+          if(unsetvtx) dplus->UnsetOwnPrimaryVtx();
         } //end topol and PID cuts
-        if(recVtx)fFiltCutsDplustoKpipi->CleanOwnPrimaryVtx(dplus,aod,origownvtx);
-        if(unsetvtx) dplus->UnsetOwnPrimaryVtx();
       }//end ok fill reco cand
       else{
         fNentries->Fill(21); //monitor how often this fails
@@ -2118,6 +2117,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
       fNentries->Fill(22);
       if((vHF->FillRecoCand(aod,lctopkpi))) {////Fill the data members of the candidate only if they are empty.
         
+        //To be added in AliRDHFCutsLctopKpi IsSelected. If the case, move down after isSelectedFilt as for other mesons
         Bool_t unsetvtx=kFALSE;
         if(!lctopkpi->GetOwnPrimaryVtx()){
           lctopkpi->SetOwnPrimaryVtx(vtx1);
@@ -2326,21 +2326,6 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
       nFilteredDstar++;
       if((vHF->FillRecoCasc(aod,d,kTRUE))) {//Fill the data members of the candidate only if they are empty.
         
-        Bool_t unsetvtx=kFALSE;
-        if(!d->GetOwnPrimaryVtx()){
-          d->SetOwnPrimaryVtx(vtx1);
-          unsetvtx=kTRUE;
-          // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
-          // Pay attention if you use continue inside this loop!!!
-        }
-        Bool_t recVtx=kFALSE;
-        AliAODVertex *origownvtx=0x0;
-        if(fFiltCutsDstartoKpipi->GetIsPrimaryWithoutDaughters()){
-          if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
-          if(fFiltCutsDstartoKpipi->RecalcOwnPrimaryVtx(d,aod))recVtx=kTRUE;
-          else fFiltCutsDstartoKpipi->CleanOwnPrimaryVtx(d,aod,origownvtx);
-        }
-        
         Int_t isSelectedFilt = fFiltCutsDstartoKpipi->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
         if(isSelectedFilt > 0){
           fNentries->Fill(30);
@@ -2363,6 +2348,23 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
           if(isSelectedTopoAnalysis) isSelAnTopolCuts = kTRUE;
           fCutsDstartoKpipi->SetUsePID(isUsePidAn);
           
+          //For Dstar the removal of daughters is done only for D0 prongs.
+          AliAODRecoDecayHF2Prong* dd = (AliAODRecoDecayHF2Prong*)d->Get2Prong();
+          Bool_t unsetvtx=kFALSE;
+          if(!dd->GetOwnPrimaryVtx()){
+            dd->SetOwnPrimaryVtx(vtx1);
+            unsetvtx=kTRUE;
+            // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
+            // Pay attention if you use continue inside this loop!!!
+          }
+          Bool_t recVtx=kFALSE;
+          AliAODVertex *origownvtx=0x0;
+          if(fFiltCutsDstartoKpipi->GetIsPrimaryWithoutDaughters()){
+            if(dd->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dd->GetOwnPrimaryVtx());
+            if(fFiltCutsDstartoKpipi->RecalcOwnPrimaryVtx(dd,aod))recVtx=kTRUE;
+            else fFiltCutsDstartoKpipi->CleanOwnPrimaryVtx(dd,aod,origownvtx);
+          }
+
           Int_t labDstar = -1;
           Int_t pdgDstar = -99;
           Int_t origin= -1;
@@ -2407,10 +2409,9 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
             if (fFillJets) fTreeHandlerDstar->SetJetVars(aod->GetTracks(),d,d->InvMassDstarKpipi(),arrMC,partDstar);	
             fTreeHandlerDstar->FillTree();
           }
-          
+          if(recVtx)fFiltCutsDstartoKpipi->CleanOwnPrimaryVtx(dd,aod,origownvtx);
+          if(unsetvtx) dd->UnsetOwnPrimaryVtx();
         }//end is selected filt
-        if(recVtx)fFiltCutsDstartoKpipi->CleanOwnPrimaryVtx(d,aod,origownvtx);
-        if(unsetvtx) d->UnsetOwnPrimaryVtx();
       }
       else {
         fNentries->Fill(31); //monitor how often this fails
@@ -2457,6 +2458,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
         
         //Add vHF->RecoSecondaryVertexForCascades() for fLc2V0bachelorCalcSecoVtx=kTRUE if we want to save properties as d_len, cos_p for Lc also in pp/pPb. For PbPb it is automatically done with vHF->FillRecoCasc above
         
+        //To be added in AliRDHFCutsLctoV0 IsSelected. If the case, move down after isSelectedFilt as for other mesons
         Bool_t unsetvtx=kFALSE;
         if(!d->GetOwnPrimaryVtx()){
           d->SetOwnPrimaryVtx(vtx1);
