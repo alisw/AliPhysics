@@ -1603,16 +1603,21 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      -
    */
   Bool_t calibrated = 0;
-  if ( fRunNum <= 245068 ) calibrated = 1;
-  if ( fRunNum <  295726 ) calibrated = 1;
-  if ( fRunNum == 296509 ) calibrated = 1;
-  if ( fRunNum >  296689 ) calibrated = 1;
-  if ( fRunNum >  296695 ) calibrated = 0;
-  if ( fRunNum == 297219 ) calibrated = 1;
-  if ( fRunNum == 297221 ) calibrated = 1;
-  if ( fRunNum == 297415 ) calibrated = 1;
+  if ( fRunNum <= 245068 ) {
+    calibrated = 1;
+  } else if ( ( fRunNum > 245068 ) && ( fRunNum <  246995 ) ){
+    calibrated = 0;
+  } else {
+    calibrated = 1;
+  }
+  // if ( fRunNum == 296509 ) calibrated = 1;
+  // if ( fRunNum >  296689 ) calibrated = 1;
+  // if ( fRunNum >  296695 ) calibrated = 0;
+  // if ( fRunNum == 297219 ) calibrated = 1;
+  // if ( fRunNum == 297221 ) calibrated = 1;
+  // if ( fRunNum == 297415 ) calibrated = 1;
 
-  if ( !calibrated ) {
+  if ( calibrated == 0 ) {
     if( fRunNum <= 246994 ) {
       fZNAEnergy *= (2500./250.);
       fZNCEnergy *= (2500./250.);
