@@ -83,7 +83,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
 
 //_____________________________________________________________________
 void AliForwardFlowRun2Task::UserCreateOutputObjects()
-  {
+{
     //
     //  Create output objects
     //
@@ -96,66 +96,45 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
                                         // Needs to be created here, otherwise it will draw the same random number.
 
     fAnalysisList    = new TList();
-    //fEventList       = new TList();
-    fAnalysisList   ->SetName("Analysis");
-    //fEventList      ->SetName("EventInfo");
-
-    //fCent = new TH1D("Centrality","Centrality",fSettings.fCentBins,0,60);
-    //fEventList->Add(fCent);
-    //fVertex = new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge);
-    //fEventList->Add(fVertex);
-    //fCent->SetDirectory(0);
-    //fVertex->SetDirectory(0);
-
-    //fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
-
-    // fdNdeta = new TH2D("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,60);
-    // fdNdeta->SetDirectory(0);
-    // fOutputList->Add(fdNdeta);
-
-    fAnalysisList->Add(new TList());
-    fAnalysisList->Add(new TList());
-    //fAnalysisList->Add(new TList());
-    static_cast<TList*>(fAnalysisList->At(0))->SetName("Reference");
-    static_cast<TList*>(fAnalysisList->At(1))->SetName("Differential");
-    //static_cast<TList*>(fAnalysisList->At(2))->SetName("AutoCorrection");
+    fAnalysisList   ->SetName("cumulants");
 
     fOutputList->Add(fAnalysisList);
-    //fOutputList->Add(fEventList);
 
     // do analysis from v_2 to a maximum of v_5
     Int_t fMaxMoment = 4;
-    Int_t dimensions = 5;
+    Int_t dimensions = 7;
+    Int_t ptnmax =  (fSettings.doPt ? 5 : 0);
 
-    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ;
-    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ;
-    Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
-    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4ThreeTwoB)+1};
-
-    //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnF("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
-    //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnF("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
-    Int_t ptnmax =  (fSettings.doPt ? 10 : 0);
+    Int_t dbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ;
+    Int_t rbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ; // n, pt, s, zvtx,eta,cent,kind
+    Double_t xmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
+    Double_t xmax[dimensions] = {3,ptnmax+1,fSettings.fnoSamples,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4ThreeTwoB)+1};
 
     // create a THn for each harmonic
-    for (Int_t n = 2; n <= fMaxMoment; n++) {
-      for (Int_t ptn = 0; ptn <= ptnmax; ptn++){
 
-        static_cast<TList*>(fAnalysisList->At(0))->Add(new THnD(Form("cumuRef_v%d_pt%d", n,ptn), Form("cumuRef_v%d_pt%d", n,ptn), dimensions, rbins, xmin, xmax));
-        static_cast<TList*>(fAnalysisList->At(1))->Add(new THnD(Form("cumuDiff_v%d_pt%d", n,ptn),Form("cumuDiff_v%d_pt%d", n,ptn), dimensions, dbins, xmin, xmax));
-        // The THn has dimensions [random samples, vertex position, eta, centrality, kind of variable to store]
+  fAnalysisList->Add(new THnD("reference", "reference", dimensions, rbins, xmin, xmax));
+  fAnalysisList->Add(new THnD("differential","differential", dimensions, dbins, xmin, xmax));
+        // The THn has dimensions [n, pt, random samples, vertex position, eta, centrality, kind of variable to store]
         // set names
-        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(0)->SetName("samples");
-        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(1)->SetName("vertex");
-        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(2)->SetName("eta");
-        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(3)->SetName("cent");
-        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(0))->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(4)->SetName("identifier");
-        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(0)->SetName("samples");
-        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(1)->SetName("vertex");
-        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(2)->SetName("eta");
-        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(3)->SetName("cent");
-        static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(4)->SetName("identifier");
-      }
-    }
+  THnD* reference = static_cast<THnD*>(fAnalysisList->At(0));
+  reference->GetAxis(0)->SetName("n");
+  reference->GetAxis(1)->SetName("pt");
+  reference->GetAxis(2)->SetName("samples");
+  reference->GetAxis(3)->SetName("vertex");
+  reference->GetAxis(4)->SetName("eta");
+  reference->GetAxis(5)->SetName("cent");
+  reference->GetAxis(6)->SetName("identifier");
+
+
+  THnD* differential = static_cast<THnD*>(fAnalysisList->At(1));
+  differential->GetAxis(0)->SetName("n");
+  differential->GetAxis(1)->SetName("pt");
+  differential->GetAxis(2)->SetName("samples");
+  differential->GetAxis(3)->SetName("vertex");
+  differential->GetAxis(4)->SetName("eta");
+  differential->GetAxis(5)->SetName("cent");
+  differential->GetAxis(6)->SetName("identifier");
+      
 
   // Make centralDist
   Int_t   centralEtaBins = (fSettings.useITS ? 200 : 400);
@@ -250,15 +229,15 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //fVertex->Fill(zvertex);
   
   if (fSettings.a5){
-    fCalculator.CumulantsAccumulate(forwardDist, fOutputList, cent, zvertex,kTRUE, true,false);
-    fCalculator.CumulantsAccumulate(centralDist, fOutputList, cent, zvertex,kFALSE,true,false);
+    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE, true,false);
+    fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,true,false);
   }
   else{
-    if (fSettings.ref_mode & fSettings.kFMDref) fCalculator.CumulantsAccumulate(refDist, fOutputList, cent, zvertex,kTRUE,true,false);
-    else fCalculator.CumulantsAccumulate(refDist, fOutputList, cent, zvertex,kFALSE,true,false);
+    if (fSettings.ref_mode & fSettings.kFMDref) fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kTRUE,true,false);
+    else fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
   }
-  fCalculator.CumulantsAccumulate(forwardDist, fOutputList, cent, zvertex,kTRUE,false,true);
-  fCalculator.CumulantsAccumulate(centralDist, fOutputList, cent, zvertex,kFALSE,false,true);  
+  fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,false,true);
+  fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,false,true);  
 
   UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
   fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);   
@@ -271,7 +250,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   if (fSettings.mc && fSettings.use_primaries_fwd || fSettings.mc && fSettings.esd) forwardDist->Reset();
 
 
-  //PostData(1, fOutputList);    
   PostData(1, fStorage);
 
 
