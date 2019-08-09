@@ -102,13 +102,13 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     // do analysis from v_2 to a maximum of v_5
     Int_t fMaxMoment = 4;
-    Int_t dimensions = 7;
+    constexpr Int_t dimensions = 7;
     Int_t ptnmax =  (fSettings.doPt ? 5 : 0);
 
     Int_t dbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ;
     Int_t rbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ; // n, pt, s, zvtx,eta,cent,kind
     Double_t xmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
-    Double_t xmax[dimensions] = {3,ptnmax+1,fSettings.fnoSamples,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4ThreeTwoB)+1};
+    Double_t xmax[dimensions] = {3,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4ThreeTwoB)+1};
 
     // create a THn for each harmonic
 
