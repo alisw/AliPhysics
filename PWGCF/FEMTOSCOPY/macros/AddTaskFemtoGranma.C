@@ -85,7 +85,9 @@ else
     suffix="4";
     evtCuts->SetSphericityCuts(0.,1.0);
   }
-
+if(!DoSphericityCuts){
+    suffix="8";
+}
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
                                                             isMC);
 
