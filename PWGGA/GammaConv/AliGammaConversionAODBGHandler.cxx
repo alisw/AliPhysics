@@ -668,9 +668,7 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(TList* const eventMothers, Do
 	if(fBGEventMesonCounter[z][m] >= fNEvents){
 		fBGEventMesonCounter[z][m]=0;
 	}
-	if(fBGEventBufferCounter[z][m] < fNEvents){
-		fBGEventBufferCounter[z][m]++;
-	}
+
 	Int_t eventCounter=fBGEventMesonCounter[z][m];
 	
 	fBGEventVertex[z][m][eventCounter].fX = xvalue;
@@ -698,9 +696,7 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(const std::vector<AliAODConve
   if(fBGEventMesonCounter[z][m] >= fNEvents){
     fBGEventMesonCounter[z][m]=0;
   }
-	if(fBGEventBufferCounter[z][m] < fNEvents){
-		fBGEventBufferCounter[z][m]++;
-	}
+
   Int_t eventCounter=fBGEventMesonCounter[z][m];
 
   fBGEventVertex[z][m][eventCounter].fX = xvalue;
