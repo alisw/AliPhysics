@@ -14,8 +14,9 @@ class TList;
 #include "AliFemtoConfigObject.h"
 
 #include "AliFemtoVertexMultAnalysis.h"
-#include "AliFemtoEventReaderAODMultSelection.h"
 
+
+#include <TClass.h>
 #include <TNamed.h>
 
 
@@ -106,6 +107,9 @@ public:
   /// namespace.
   void AddStanardCutMonitors();
 
+  /// Store configuration of eventreader
+  void StoreEventReaderConfiguration(const AliFemtoEventReader &);
+
   /// Return configuration object describing analysis
   virtual AliFemtoConfigObject GetConfiguration() const;
 
@@ -147,10 +151,6 @@ public:
 
   static TString make_random_string(const TString &prefix="");
 
-  /// track filter
-  void SetTrackFilter(ULong_t m)
-    { fFilterMask = m; }
-
 protected:
 
   /// The name of this analysis used for identification in the output list
@@ -172,8 +172,8 @@ protected:
   /// This is a Monte Carlo analysis
   Bool_t fMCAnalysis;
 
-  /// FilterBit
-  ULong64_t fFilterMask;
+  /// Configuration of event reader
+  AliFemtoConfigObject fEventReaderCfg;
 };
 
 /// \class AliFemtoAnalysisPionPion::AnalysisParams

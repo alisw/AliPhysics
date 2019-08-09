@@ -18,6 +18,7 @@ AliFemtoEventReaderAlt::AliFemtoEventReaderAlt()
   : AliFemtoEventReaderAODMultSelection()
   , fRng(nullptr)
   , fEnhanceSmearing(0.0)
+  , fDistributeMCParticles(false)
 {
 }
 
@@ -25,6 +26,7 @@ AliFemtoEventReaderAlt::AliFemtoEventReaderAlt(const AliFemtoEventReaderAlt &ori
   : AliFemtoEventReaderAODMultSelection(orig)
   , fRng(nullptr)
   , fEnhanceSmearing(0.0)
+  , fDistributeMCParticles(false)
 {
   SetEnhanceSmearing(orig.GetEnhanceSmearing());
 }

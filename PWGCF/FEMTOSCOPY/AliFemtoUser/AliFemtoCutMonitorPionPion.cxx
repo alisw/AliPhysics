@@ -223,7 +223,8 @@ const std::vector<Int_t> parent_codes = {
 AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                                        const TString& typestr,
                                        const bool is_mc_analysis,
-                                       const bool suffix_output):
+                                       const bool suffix_output,
+                                       const bool wide_impact_range):
   AliFemtoCutMonitor()
   , fAllowCharge(0)
   , fYPt(nullptr)
@@ -355,14 +356,17 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     128, 0, 6.0,
     sig_nbins, -sig_max, sig_max);
 
+
+  const double impact_range = wide_impact_range ? 3.25 : 0.25;
+
   fImpact = new TH2F(
     hist_name("impact"),
     hist_title("Track impact parameter components",
                 "z (cm); "
                 "r (cm); "
                 "N_{#pi} "),
-    325, -3.25, 3.25,
-    130, 0, 3.25);
+    257, -impact_range, impact_range,
+    129, 0, impact_range);
 
   fEtaY = new TH2F(
     hist_name("eta_y"),
