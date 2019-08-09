@@ -829,7 +829,7 @@ BuildConfiguration(const TString &text,
 
     case '+':
       if (line == "+p") {
-        cmd = macro_varname + "->pair_codes.push_back(AliFemtoAnalysisPionPion::kPiPlus)";
+        cmd = macro_varname + "->pair_codes.insert(AliFemtoAnalysisPionPion::kPiPlus)";
       }
       else if (line == "+m") {
         cmd = macro_varname + "->pair_codes.insert(AliFemtoAnalysisPionPion::kPiMinus)";

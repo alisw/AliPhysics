@@ -795,7 +795,6 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfiguration() const
                   ("event_cut", event_cut_cfg)
                   ("track_cut", track_cut_cfg)
                   ("pair_cut", pair_cut_cfg);
-
 }
 
 TList* AliFemtoAnalysisPionPion::GetOutputList()
