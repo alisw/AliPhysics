@@ -545,6 +545,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("v0m_eq", &fnV0MEq);
   fTreeEvChar->Branch("v0m_corr", &fnV0MCorr);
   fTreeEvChar->Branch("v0m_eq_corr", &fnV0MEqCorr);
+  fTreeEvChar->Branch("mult_gen", &fMultGen);
+  fTreeEvChar->Branch("mult_gen_v0a", &fMultGenV0A);
+  fTreeEvChar->Branch("mult_gen_v0c", &fMultGenV0C);
   fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
   
   if(fWriteVariableTreeD0){
@@ -1217,6 +1220,17 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     fnV0MEqCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroAEq, vtx->GetZ()) + AliESDUtils::GetCorrV0C(vzeroCEq, vtx->GetZ()));
   }
   
+  // generated multiplicity
+  fMultGen = -1;
+  fMultGenV0A = -1;
+  fMultGenV0C = -1;
+  if (fReadMC) {
+    TClonesArray *arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    fMultGen = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.0,1.0);
+    fMultGenV0A = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,2.8,5.1);
+    fMultGenV0C = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-3.7,-1.7);
+  }
+
   fEventID = GetEvID();
   // Extract fired triggers
   fTriggerMask = static_cast<AliVAODHeader*>(aod->GetHeader())->GetOfflineTrigger();
