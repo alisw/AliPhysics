@@ -39,7 +39,6 @@ AliFemtoModelGausLCMSFreezeOutGenerator::AliFemtoModelGausLCMSFreezeOutGenerator
 //_______________________
 AliFemtoModelGausLCMSFreezeOutGenerator::~AliFemtoModelGausLCMSFreezeOutGenerator()
 {
-  if (fRandom) delete fRandom;
 }
 //_______________________
 AliFemtoModelGausLCMSFreezeOutGenerator& AliFemtoModelGausLCMSFreezeOutGenerator::operator=(const AliFemtoModelGausLCMSFreezeOutGenerator &aModel)
