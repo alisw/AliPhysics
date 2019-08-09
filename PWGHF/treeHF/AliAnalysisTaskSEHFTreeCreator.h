@@ -308,6 +308,9 @@ private:
     Int_t                   fnTrackletsCorr;                       /// number of tracklets (corrected)
     Double_t                fRefMult;                              /// reference multiplicity
     Int_t                   fnV0A;                                 /// V0A multiplicity 
+    Int_t                   fMultGen;                              /// generated multiplicity around mid-rapidity [-1,1]
+    Int_t                   fMultGenV0A;                           /// generated multiplicity in V0A range
+    Int_t                   fMultGenV0C;                           /// generated multiplicity in V0C range
     ULong64_t               fTriggerMask;                          /// Trigger mask bitmap
     Bool_t                  fTriggerBitINT7;                       /// Flag explicitly whether bitmap contains INT7
     Bool_t                  fTriggerBitHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
