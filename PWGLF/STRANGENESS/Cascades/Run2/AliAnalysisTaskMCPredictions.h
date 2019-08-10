@@ -89,11 +89,11 @@ private:
     TH1D *fHistB;
     TH2D *fHistNchVsB;
     
-    TH1D *fHistPt[12];              //! for keeping track of base spectra
-    TH2D *fHistPtVsV0MMult[12];     //! for keeping track of base spectra
-    TH2D *fHistPtVsSPDMult[12];     //! for keeping track of base spectra
-    TH2D *fHistPtVsNpart[12];       //! for keeping track of base spectra
-    TH2D *fHistPtVsB[12];           //! for keeping track of base spectra
+    TH1D *fHistPt[13];              //! for keeping track of base spectra
+    TH2D *fHistPtVsV0MMult[13];     //! for keeping track of base spectra
+    TH2D *fHistPtVsSPDMult[13];     //! for keeping track of base spectra
+    TH2D *fHistPtVsNpart[13];       //! for keeping track of base spectra
+    TH2D *fHistPtVsB[13];           //! for keeping track of base spectra
   
     Bool_t fkDo2pc;
     Int_t fNumberOfEventsToMix;
@@ -102,14 +102,14 @@ private:
     Long_t fBufferChargedTriggerSize[10];
     Double_t fBufferChargedTriggersPhi[10][1000];
     Double_t fBufferChargedTriggersEta[10][1000];
-    TH3D *fHist3d2pcSE[12]; //! base, unmixed 2pc
-    TH3D *fHist3d2pcME[12]; //! base, mixed 2pc
+    TH3D *fHist3d2pcSE[13]; //! base, unmixed 2pc
+    TH3D *fHist3d2pcME[13]; //! base, mixed 2pc
     //Add some 2pc to the mixture: xi trigger
-    Long_t fBufferXiTriggerSize[10];
-    Double_t fBufferXiTriggersPhi[10][1000];
-    Double_t fBufferXiTriggersEta[10][1000];
-    TH3D *fHist3d2pcXiSE[12]; //! base, unmixed 2pc
-    TH3D *fHist3d2pcXiME[12]; //! base, mixed 2pc
+    Long_t fBufferXiTriggerSize[13];
+    Double_t fBufferXiTriggersPhi[13][1000];
+    Double_t fBufferXiTriggersEta[13][1000];
+    TH3D *fHist3d2pcXiSE[13]; //! base, unmixed 2pc
+    TH3D *fHist3d2pcXiME[13]; //! base, mixed 2pc
     //Add some 2pc to the mixture: phi trigger
     Long_t fBufferPhiTriggerSize[10];
     Double_t fBufferPhiTriggersPhi[10][1000];
