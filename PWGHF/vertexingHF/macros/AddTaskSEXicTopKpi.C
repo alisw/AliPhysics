@@ -1,9 +1,10 @@
+#if !defined (__CINT__) || defined (__CLING__)
 #include "AliAnalysisTaskSEXicTopKpi.h"
 #include "AliAnalysisManager.h"
 #include "TFile.h"
 #include "AliAnalysisDataContainer.h"
 #include "TChain.h"
-
+#endif
 AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
 					     Int_t system=0/*0=pp,1=PbPb*/,
 					     Float_t minC=0, Float_t maxC=0,
