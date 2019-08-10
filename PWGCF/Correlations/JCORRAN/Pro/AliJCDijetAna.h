@@ -17,11 +17,11 @@
 
 #include <TH1D.h>
 #include <TClonesArray.h>
-#include <AliJBaseTrack.h>
+#include "AliJBaseTrack.h"
 #include "AliJCDijetHistos.h"
 
 // Fastjet includes
-#include <FJ_includes.h>
+#include "FJ_includes.h"
 
 class AliJCDijetHistos;
 
@@ -54,8 +54,11 @@ class AliJCDijetAna : public TObject
                          double lDeltaPhiCut,
                          double lmatchingR);
 
-        void CalculateJetsDijets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin);
+        void CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin);
+        void SetJets(vector<fastjet::PseudoJet> jetsOutside);
+        void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin);
         void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos);
+        void ResetObjects();
         double DeltaR(fastjet::PseudoJet jet1, fastjet::PseudoJet jet2);
         bool CheckDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet, double deltaPhiCut);
         double GetDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet);
@@ -77,6 +80,7 @@ class AliJCDijetAna : public TObject
         double fktJetCone;
         double pionmass;
         double matchingR;
+        bool bEvtHasAreaInfo;
 
         enum jetClasses {iRaw, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, jetClassesSize};
         double phi, eta, pt, pt2, rho, rhom, area, mjj, ptpair, dPhi, deltaRMin, deltaR;
@@ -113,6 +117,9 @@ class AliJCDijetAna : public TObject
         fastjet::Selector selectorEta;
         fastjet::Selector selectorBoth;
         fastjet::JetMedianBackgroundEstimator bge;
+
+        unique_ptr<fastjet::ClusterSequenceArea> cs;
+        unique_ptr<fastjet::ClusterSequenceArea> cs_bge;
 #endif
 
         ClassDef(AliJCDijetAna, 1); // ClassDef needed if inheriting from TObject
