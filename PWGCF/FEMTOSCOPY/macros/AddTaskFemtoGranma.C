@@ -69,23 +69,18 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   }
   if (suffix=="3") {
     evtCuts->SetSphericityCuts(0.7,1.0);
-  }//4 is reserved to the full sphericity range
-  if (suffix=="5") {
-    evtCuts->SetSphericityCuts(0.7,0.8);
   }
-  if (suffix=="6") {
-    evtCuts->SetSphericityCuts(0.8,0.9);
-  }
-  if (suffix=="7") {
-    evtCuts->SetSphericityCuts(0.9,1.0);
-  }
-}
-else
-  {
-    suffix="4";
+  //4 is reserved to the full sphericity range
+  if (suffix=="4") {
     evtCuts->SetSphericityCuts(0.,1.0);
   }
-if(!DoSphericityCuts){
+  if (suffix=="5") {
+    evtCuts->SetSphericityCuts(0.8,1.0);
+  }
+  if (suffix=="6") {
+    evtCuts->SetSphericityCuts(0.9,1.0);
+  }
+}else if(!DoSphericityCuts){
     suffix="8";
 }
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
