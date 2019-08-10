@@ -124,5 +124,6 @@
 #pragma link C++ class IClassifierReader+;
 #pragma link C++ class AliAnalysisTaskSELbtoLcpi4+;
 #pragma link C++ class AliAnalysisTaskSEXicTopKpi+;
+#pragma link C++ class AliRDHFCutsXictopKpi+;
 
 #endif
