@@ -760,7 +760,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
 
     if(fIsMC) {
       fPDGcode = GetPDGcodeFromMC(track,arrayMC);
-      AliPIDResponse::EDetector det[kNMaxDet] = {AliPIDResponse::kITS,AliPIDResponse::kTPC,AliPIDResponse::kTOF,AliPIDResponse::kHMPID}; 
+      AliPIDResponse::EDetector det[4] = {AliPIDResponse::kITS,AliPIDResponse::kTPC,AliPIDResponse::kTOF,AliPIDResponse::kHMPID}; 
       for(int iDet=0; iDet<kNMaxDet; iDet++) {
         if(!fEnabledDet[iDet])
           continue;
