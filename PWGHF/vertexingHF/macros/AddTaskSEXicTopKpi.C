@@ -37,7 +37,7 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
     //AliNormalizationCounter
     out2name="normalizationCounter";
     out3name="outputList";
-    filename+=suffix;
+    filename+=suffix.Data();
     
     inname="cinputmassD0_1";
 
