@@ -259,6 +259,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   {
     fSHyperTriton.clear();
     fSGenericV0.clear();
+    fSGenericTracklets.clear();
     for (int ilab = 0; ilab < mcEvent->GetNumberOfTracks(); ilab++)
     { // This is the begining of the loop on tracks
       AliVParticle *part = mcEvent->GetTrack(ilab);
@@ -313,6 +314,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
         v0part.fNegativeLabels = true;
         mcMap[ilab] = fSHyperTriton.size();
         fSHyperTriton.push_back(v0part);
+
       }
     }
   }
