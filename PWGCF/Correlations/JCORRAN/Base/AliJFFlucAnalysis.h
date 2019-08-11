@@ -93,10 +93,10 @@ public:
 
 	static int GetCentralityClass(Double_t);
 
-	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kH9, kNH}; //harmonics
+	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kH9, kH10, kH11, kH12, kNH}; //harmonics
 	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
+#define kcNH kH6 //max second dimension + 1
 private:
-//#define kcNH kH9 //max N+1 to be 4-particle correlated
 
 	TClonesArray *fInputList;
 	AliJEfficiency *fEfficiency;
