@@ -1,7 +1,14 @@
-
+#if !defined (__CINT__) || defined (__CLING__)
+#include <Rtypes.h>
+#include <TString.h>
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliAnalysisTaskReducedTreeHypertritonBindingEnergy.h"
+#include "AliPID.h"
+#endif
 
 //_______________________________________________________________________________________________________________________________________________________
-AliAnalysisTask *AddTaskReducedTreeHyperTritonBindingEnergy (TString centralityTrigger, Double_t CentralityMin = 0.0, Double_t CentralityMax = 10.0)  {
+AliAnalysisTask *AddTaskReducedTreeHyperTritonBindingEnergy (TString centralityTrigger = "MinBias", Double_t CentralityMin = 0.0, Double_t CentralityMax = 90.0)  {
     
     
     //Get Analysis Manager
@@ -19,11 +26,11 @@ AliAnalysisTask *AddTaskReducedTreeHyperTritonBindingEnergy (TString centralityT
     
     
     //Input List Names
-    TString nameListData = "InputHypertritonTreeData";
+    TString nameListData = "InputHypertritonTreeBindingEnergyData_";
     nameListData += centralityTrigger;
-    TString nameListQA   = "InputHypertritonTreeQA";
+    TString nameListQA   = "InputHypertritonTreeBindingEnergyQA_";
     nameListQA += centralityTrigger;
-
+    
     
     //Analysis Task
     AliAnalysisTaskReducedTreeHypertritonBindingEnergy *task = new AliAnalysisTaskReducedTreeHypertritonBindingEnergy  (Form("taskHyperTritonTree_%s",centralityTrigger));
@@ -41,5 +48,3 @@ AliAnalysisTask *AddTaskReducedTreeHyperTritonBindingEnergy (TString centralityT
     return task;
 }
 //_______________________________________________________________________________________________________________________________________________________
-
-
