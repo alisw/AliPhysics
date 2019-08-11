@@ -488,7 +488,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     }
   }
   else {
-    if(fUseTimeRangeCutForPbPb2018){
+    if(fUseTimeRangeCutForPbPb2018 && !fIsMC){
       if(fAOD->GetRunNumber() != fRunNumberPrevEvent){
         fTimeRangeCut.InitFromRunNumber(fAOD->GetRunNumber());
       }
@@ -501,7 +501,6 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
   }
 
   fHistNEvents->Fill(11);   
-
   // load MC particles
   TClonesArray *arrayMC=0;
   if(fIsMC){
@@ -761,32 +760,39 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
 
     if(fIsMC) {
       fPDGcode = GetPDGcodeFromMC(track,arrayMC);
-      AliPIDResponse::EDetector det[3] = {AliPIDResponse::kITS,AliPIDResponse::kTPC,AliPIDResponse::kTOF}; 
+      AliPIDResponse::EDetector det[4] = {AliPIDResponse::kITS,AliPIDResponse::kTPC,AliPIDResponse::kTOF,AliPIDResponse::kHMPID}; 
       for(int iDet=0; iDet<kNMaxDet; iDet++) {
         if(!fEnabledDet[iDet])
           continue;
-
+  
         switch(fPDGcode) {
           case 211:
-            fHistNsigmaVsPt[iDet][kPion]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kPion));
+            if(fEnabledSpecies[kPion])
+              fHistNsigmaVsPt[iDet][kPion]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kPion));
             break;
           case 321:
-            fHistNsigmaVsPt[iDet][kKaon]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kKaon));
+            if(fEnabledSpecies[kKaon])
+              fHistNsigmaVsPt[iDet][kKaon]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kKaon));
             break;
           case 2212:
-            fHistNsigmaVsPt[iDet][kProton]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kProton));
+            if(fEnabledSpecies[kProton])
+              fHistNsigmaVsPt[iDet][kProton]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kProton));
             break;
           case 11:
-            fHistNsigmaVsPt[iDet][kElectron]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kElectron));
+            if(fEnabledSpecies[kElectron])
+              fHistNsigmaVsPt[iDet][kElectron]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kElectron));
             break;
           case 1000010020:
-            fHistNsigmaVsPt[iDet][kDeuteron]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kDeuteron));
+            if(fEnabledSpecies[kDeuteron])
+              fHistNsigmaVsPt[iDet][kDeuteron]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kDeuteron));
             break;
           case 1000010030:
-            fHistNsigmaVsPt[iDet][kTriton]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kTriton));
+            if(fEnabledSpecies[kTriton])
+              fHistNsigmaVsPt[iDet][kTriton]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kTriton));
             break;
           case 1000020030:
-            fHistNsigmaVsPt[iDet][kHe3]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kHe3));
+            if(fEnabledSpecies[kHe3])
+              fHistNsigmaVsPt[iDet][kHe3]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kHe3));
             break;
         }
       }
@@ -975,6 +981,7 @@ short AliAnalysisTaskSEHFSystPID::GetPDGcodeFromMC(AliAODTrack* track, TClonesAr
 {
   // Get pdg code
   short pdg = -1;
+  if(!track) return pdg;
   int label = track->GetLabel();
   if(label<0) return pdg;
   AliAODMCParticle* partMC = dynamic_cast<AliAODMCParticle*>(arrayMC->At(label));
