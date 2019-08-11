@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerName="femtolist", TString configMacroParameters="",  Bool_t kGridConfig = kFALSE)
+AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerName="femtolist", TString configMacroParameters="",  Bool_t kGridConfig = kFALSE, TString userName = "")
 {
 // Creates a proton analysis task and adds it to the analysis manager.
 
@@ -45,13 +45,11 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerNam
 
   if(kGridConfig)
     {
-      TFile *fileConfig = TFile::Open(configMacroName.Data());
-      TMacro *macro = dynamic_cast<TMacro*>(fileConfig->Get("ConfigFemtoAnalysis")->Clone());
-      AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","",configMacroParameters,kFALSE,kTRUE,macro);
+        AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE,kTRUE,userName);
     }
   else
     {
-      AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kFALSE,NULL);
+      AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kFALSE,userName);
     }
   
   mgr->AddTask(taskfemto);
