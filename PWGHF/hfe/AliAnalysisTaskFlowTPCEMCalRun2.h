@@ -58,7 +58,7 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 
 		void GetTrkClsEtaPhiDiff(AliVTrack *t,AliVCluster *v,Double_t &phidiff, Double_t &etadiff);
 		//void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Double_t TrkPt, Double_t DCAxy, Int_t Bsign);
-		void SelectPhotonicElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Double_t TrkPt, Double_t DCAxy, Int_t Bsign);
+		void SelectPhotonicElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Double_t TrkPt, Double_t DCAxy, Int_t Bsign, Double_t TrkPhiPI, Double_t PsinV0A);
 		void CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
 		void SetDCA(Double_t xy, Double_t z){DCAxy = xy, DCAz = z;};
 
@@ -100,6 +100,7 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH1F* fVtxX; //!Vertex x
 		TH1F* fVtxY; //!Vertex y
 		TH1F* fTrkPt;
+                TH1F* fTrkPtbef;
 		TH1F* fTrketa;    
 		TH1F* fTrkphi;
 		TH1F* fTrketa2;
@@ -118,6 +119,11 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH1F* fEMCTrkphi;
 		TH2F* fClsEtaPhiAftMatch;
 		TH2F* fTPCnsig;
+                TH2F* fTOFnsig;
+		TH2F* fTPCnsig_TOFnsig;
+		//TH3F* fTrkPt_TPCnsig_TOFnsig;
+		TH2F* fHistele_TOFcuts;
+		TH2F* fHisthad_TOFcuts;
 		TH1F* fHisteop;
 		TH2F* fM20;
 		TH2F* fM02;
@@ -185,12 +191,30 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		//TH2F* fTrkPhiEPFullTPC_Pt;
 		TH2F* fTrkPhiEPV0A_Pt;
 		TH2F* fTrkPhiEPV0A_Pt_ele;
+                TH2F* fTrkPhiEPV0A_Pt_ele_lowpt;
 		//TH1F* fTrkPhiEP2;
 		//TH2F* fTrkPhiEP_Pt;
 		//TH2F* fTrkPhiEP2_Pt;
-		//TH2F* fTrkPhicos2;
+		TH2F* fTrkPhicos2;
+                TH2F* fTrkPhisin2;
+		TH2F* fTrkPhicos2_elelow;
+		TH2F* fTrkPhisin2_elelow;
+		TH2F* fTrkPhicos2_elehigh;
+		TH2F* fTrkPhisin2_elehigh;
+		TH2F* fTrkPhicos2_hadhigh;
+		TH2F* fTrkPhisin2_hadhigh;
+		TH2F* fTrkPhicos2_phoLShigh;
+		TH2F* fTrkPhisin2_phoLShigh;
+		TH2F* fTrkPhicos2_phoULShigh;
+		TH2F* fTrkPhisin2_phoULShigh;
 		//TH1F* fInplane;
 		//TH1F* fOutplane;
+                TH1F* fInplane_ele;
+		TH1F* fOutplane_ele;
+		TH1F* fInplane_LSpho;
+		TH1F* fOutplane_LSpho;
+		TH1F* fInplane_ULSpho;
+		TH1F* fOutplane_ULSpho;
 
 		TH2F* fDCAxy_Pt_ele;
 		TH2F* fDCAxy_Pt_had;
