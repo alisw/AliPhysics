@@ -12,6 +12,7 @@
 #include "TInterpreter.h"
 #include "TMacro.h"
 #include "TFile.h"
+#include "TGrid.h"
 
 //#include "AliAnalysisTask.h"
 #include "AliAnalysisTaskSE.h"
@@ -42,7 +43,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
                                            TString aConfigParams,
                                            Bool_t aVerbose,
 					   Bool_t aGridConfig,
-					   TMacro *aMacro):
+					   TString aUserName):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
@@ -78,15 +79,14 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f4DcorrectionsLambdas(NULL),
   f4DcorrectionsLambdasMinus(NULL),
   fGridConfig(aGridConfig),
-  fConfigTMacro(aMacro),
-  fSaveConfigTMacro(NULL)
+  fConfigTMacro(NULL),
+  fSaveConfigTMacro(NULL),
+  fUserName(aUserName)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
   //DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
-  LoadMacro(fConfigTMacro);
-  
   DefineOutput(0, TList::Class());
 
 }
@@ -95,7 +95,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
                                            TString aConfigMacro,
                                            Bool_t aVerbose,
 					   Bool_t aGridConfig,
-					   TMacro *aMacro):
+					   TString aUserName):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
@@ -131,15 +131,14 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f4DcorrectionsLambdas(NULL),
   f4DcorrectionsLambdasMinus(NULL),
   fGridConfig(aGridConfig),
-  fConfigTMacro(aMacro),
-  fSaveConfigTMacro(false)
+  fConfigTMacro(NULL),
+  fSaveConfigTMacro(false),
+  fUserName(aUserName)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
   //DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
-  LoadMacro(fConfigTMacro);
-  
   DefineOutput(0, TList::Class());
 
 }
@@ -512,13 +511,23 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
 {
   if (fVerbose)
     AliInfo("Creating Femto Analysis objects\n");
-
   gSystem->SetIncludePath("-I$ROOTSYS/include -I./STEERBase/ -I./ESD/ -I./AOD/ -I./ANALYSIS/ -I./ANALYSISalice/ -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser");
   if(!fGridConfig)
     {
       gROOT->LoadMacro(fConfigMacro);
       if(fSaveConfigTMacro)
 	fConfigTMacro = new TMacro(fConfigMacro);
+    }
+  else
+    {
+      printf(Form("*** Executing alien-token-init %s ***\n"),fUserName.Data());
+      //gSystem->Exec(Form("alien-token-init %s",fUserName.Data()));
+      printf("*** Connect to AliEn ***\n");
+      TGrid::Connect("alien://");
+      TFile *fileConfig = TFile::Open(fConfigMacro.Data());
+      fConfigTMacro = dynamic_cast<TMacro*>(fileConfig->Get("ConfigFemtoAnalysis")->Clone());
+      LoadMacro(fConfigTMacro);
+      fileConfig->Close();
     }
 
 
@@ -990,4 +999,9 @@ void AliAnalysisTaskFemto::LoadMacro(TMacro *macro)
 void AliAnalysisTaskFemto::SaveConfigTMacro(Bool_t save)
 {
   fSaveConfigTMacro = save;
+}
+
+void AliAnalysisTaskFemto::SetGRIDUserName(TString aUserName)
+{
+  fUserName = aUserName;
 }
