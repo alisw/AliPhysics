@@ -585,7 +585,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 	for(int ih=2; ih < kNH; ih++){
 		//for(int ihh=2; ihh<ih; ihh++){ //all SC
-		for(int ihh=2; ihh<std::min(ih,(int)kcNH); ihh++){ //limited
+		for(int ihh=2, mm = (ih < kcNH?ih:kcNH); ihh<mm; ihh++){ //limited
 			TComplex scfour = Four( ih, ihh, -ih, -ihh ) / Four(0,0,0,0).Re();
 			
 			fh_SC_with_QC_4corr[ih][ihh][fCBin]->Fill( scfour.Re(), event_weight_four );
