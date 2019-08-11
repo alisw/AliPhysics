@@ -1285,9 +1285,15 @@ struct Configuration<AliFemtoModelCorrFctnTrueQ3D> : AbstractConfiguration<AliFe
   {
     obj.pop_all()
       ("title", params.prefix)
-      ("bin_count", params.bin_count)
-      ("qmin", params.qmin)
-      ("qmax", params.qmax)
+      ("bin_count_out", params.bin_count_out)
+      ("bin_count_side", params.bin_count_side)
+      ("bin_count_long", params.bin_count_long)
+      ("qomin", params.qomin)
+      ("qomax", params.qomax)
+      ("qsmin", params.qsmin)
+      ("qsmin", params.qsmin)
+      ("qlmax", params.qlmax)
+      ("qlmax", params.qlmax)
       .WarnOfRemainingItems();
   }
 

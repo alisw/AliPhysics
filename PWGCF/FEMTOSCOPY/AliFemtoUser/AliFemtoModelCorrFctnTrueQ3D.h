@@ -185,6 +185,36 @@ public:
                                Bool_t enable_extra_hists,
                                Bool_t enable_extra_denoms);
 
+  /// Big Constructor
+  ///
+  /// enable_extra_hists -- adds four complimentary weighted/unweighted histograms
+  /// enable_extra_denoms --
+  ///
+  AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
+                               UInt_t nbins_out,
+                               UInt_t nbins_side,
+                               UInt_t nbins_long,
+                               Double_t QoutHi,
+                               Double_t QsideHi,
+                               Double_t QlongHi,
+                               Bool_t enable_extra_hists,
+                               Bool_t enable_extra_denoms);
+
+  /// Biggest Constructor
+  ///
+  AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
+                               UInt_t nbins_out,
+                               UInt_t nbins_side,
+                               UInt_t nbins_long,
+                               Double_t QoutLo,
+                               Double_t QoutHi,
+                               Double_t QsideLo,
+                               Double_t QsideHi,
+                               Double_t QlongLo,
+                               Double_t QlongHi,
+                               Bool_t enable_extra_hists,
+                               Bool_t enable_extra_denoms);
+
   /// Build with variable bins
   ///
   AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
