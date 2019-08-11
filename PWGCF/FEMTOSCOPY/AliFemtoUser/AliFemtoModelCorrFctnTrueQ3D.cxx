@@ -410,12 +410,17 @@ AliFemtoModelCorrFctnTrueQ3D::AddMixedPair(AliFemtoPair *pair)
   const AliFemtoParticle *p1 = pair->Track1(),
                          *p2 = pair->Track2();
 
+  // skip weight calculation if we are not storing it
+  const double weight = fDenominatorGenWeighted != nullptr
+                      ? fManager->GetWeight(pair)
+                      : 0.0;
+
   AddPair(*p1, *p2,
           fDenominatorGenWeighted,
           fDenominatorRecWeighted,
           fDenominatorGenerated,
           fDenominatorReconstructed,
-          fManager->GetWeight(pair));
+          weight);
 }
 
 
