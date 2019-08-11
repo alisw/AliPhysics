@@ -93,6 +93,7 @@
 #pragma link C++ class SGenericTracklet+;
 #pragma link C++ class std::vector<SGenericV0>+;
 #pragma link C++ class std::vector<SGenericTracklet>+;
+#pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
