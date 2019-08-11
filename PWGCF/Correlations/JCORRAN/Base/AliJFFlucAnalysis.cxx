@@ -241,17 +241,17 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< "END" ;
 
 	fh_vn
-		<< TH1D("hvn","hvn", 1024, -1.5, 1.5)
+		<< TH1D("hvn","hvn", 1024, -0.1, 0.1)
 		<< fBin_h << fBin_k
 		<< fHistCentBin
 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent]
 	fh_vna
-		<< TH1D("hvna","hvna", 1024, -1.5, 1.5)
+		<< TH1D("hvna","hvna", 1024, -0.1, 0.1)
 		<< fBin_h << fBin_k
 		<< fHistCentBin
 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent]
 	fh_vn_vn
-		<< TH1D("hvn_vn", "hvn_vn", 1024, -1.5, 1.5)
+		<< TH1D("hvn_vn", "hvn_vn", 1024, -0.1, 0.1)
 		<< fBin_h << fBin_k
 		<< fBin_hh << fBin_kk
 		<< fHistCentBin
@@ -284,7 +284,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fHistCentBin
 		<< "END";*/
 	fh_correlator
-		<< TH1D("h_corr", "h_corr", 1024, -1.5, 1.5)
+		<< TH1D("h_corr", "h_corr", 1024, -3.0, 3.0)
 		<< fCorrBin
 		<< fHistCentBin
 		<< "END" ;
