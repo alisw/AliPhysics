@@ -1,7 +1,14 @@
-
+#if !defined (__CINT__) || defined (__CLING__)
+#include <Rtypes.h>
+#include <TString.h>
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliAnalysisTaskReducedTreeHypertritonBindingEnergy.h"
+#include "AliPID.h"
+#endif
 
 //_______________________________________________________________________________________________________________________________________________________
-AliAnalysisTask *AddTaskReducedTreeHyperTritonBindingEnergy (TString centralityTrigger, Double_t CentralityMin = 0.0, Double_t CentralityMax = 10.0)  {
+AliAnalysisTask *AddTaskReducedTreeHyperTritonBindingEnergy (const char *centralityTrigger = "MinBias", Double_t CentralityMin = 0.0, Double_t CentralityMax = 90.0)  {
     
     
     //Get Analysis Manager
@@ -19,14 +26,13 @@ AliAnalysisTask *AddTaskReducedTreeHyperTritonBindingEnergy (TString centralityT
     
     
     //Input List Names
-    TString nameListData = "InputHypertritonTreeData";
-    nameListData += centralityTrigger;
-    TString nameListQA   = "InputHypertritonTreeQA";
-    nameListQA += centralityTrigger;
-
+    const char *nameListData = Form ("InputHypertritonTreeBindingEnergyData_%s",centralityTrigger);
+    const char *nameListQA   = Form ("InputHypertritonTreeBindingEnergyQA_%s",centralityTrigger);
+    const char *taskHypName  = Form ("TaskHyperTritonTree_%s",centralityTrigger);
+    
     
     //Analysis Task
-    AliAnalysisTaskReducedTreeHypertritonBindingEnergy *task = new AliAnalysisTaskReducedTreeHypertritonBindingEnergy  (Form("taskHyperTritonTree_%s",centralityTrigger));
+    AliAnalysisTaskReducedTreeHypertritonBindingEnergy *task = new AliAnalysisTaskReducedTreeHypertritonBindingEnergy  (taskHypName);
     if (CentralityMin==0.0  && CentralityMax==90.0) task -> SelectCollisionCandidates (AliVEvent::kINT7);
     if (CentralityMin==0.0  && CentralityMax==10.0) task -> SelectCollisionCandidates (AliVEvent::kCentral);
     if (CentralityMin==30.0 && CentralityMax==50.0) task -> SelectCollisionCandidates (AliVEvent::kSemiCentral);
@@ -41,5 +47,3 @@ AliAnalysisTask *AddTaskReducedTreeHyperTritonBindingEnergy (TString centralityT
     return task;
 }
 //_______________________________________________________________________________________________________________________________________________________
-
-
