@@ -1022,19 +1022,22 @@ void AliMCEvent::AssignGeneratorIndex() {
       }
       //
       // Loop over primary particles for generator i
-      for (Int_t j = nsumpart-1; j >= nsumpart-npart; j--) {
-	AliVParticle* part = fTopEvent->GetTrack(j); // after 1st GetTrack indices correspond to top event
-	if (!part) {
-	  AliWarning(Form("AliMCEvent::AssignGeneratorIndex: 0-pointer to particle j %8d npart %8d nsumpart %8d Nprimaries %8d\n", 
-			  j, npart, nsumpart, fNprimaries));
-	  break;
+      TString ttl = gh->GetTitle();
+      if (!ttl.Contains("particles_suppressed")) {
+	for (Int_t j = nsumpart-1; j >= nsumpart-npart; j--) {
+	  AliVParticle* part = fTopEvent->GetTrack(j); // after 1st GetTrack indices correspond to top event
+	  if (!part) {
+	    AliWarning(Form("AliMCEvent::AssignGeneratorIndex: 0-pointer to particle j %8d npart %8d nsumpart %8d Nprimaries %8d\n", 
+			    j, npart, nsumpart, fNprimaries));
+	    break;
+	  }
+	  part->SetGeneratorIndex(i);
+	  Int_t dmin = part->GetDaughterFirst();
+	  Int_t dmax = part->GetDaughterLast();
+	  if (dmin == -1) continue;
+	  AssignGeneratorIndex(i, dmin, dmax);
 	}
-	part->SetGeneratorIndex(i);
-	Int_t dmin = part->GetDaughterFirst();
-	Int_t dmax = part->GetDaughterLast();
-	if (dmin == -1) continue;
-	AssignGeneratorIndex(i, dmin, dmax);
-      } 
+      }
       nsumpart -= npart;
     }
   }
