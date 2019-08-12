@@ -297,7 +297,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
 					dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
-					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==34 || ichg==36) //protons
+					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==34 || ichg==36 || ichg == 38 || ichg == 40) //protons
 					  {
 					    dtc1etaphitpc[aniter]->SetPt(0.5,maxPt);
 					    dtc1etaphitpc[aniter]->SetMass(ProtonMass);
@@ -327,7 +327,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
 					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc2etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
-					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==35 || ichg==37) //antiprotons
+					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==35 || ichg==37 || ichg == 39 || ichg == 41) //antiprotons
 					  {
 					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt);
 					    dtc2etaphitpc[aniter]->SetMass(ProtonMass);
