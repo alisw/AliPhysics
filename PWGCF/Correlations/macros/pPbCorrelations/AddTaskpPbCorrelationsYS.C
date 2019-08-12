@@ -1,15 +1,17 @@
 AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
-								       TString  fListName      = "pPbCorrelations_1",
+								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
 								       TString  fCollisiontype = "pPb",
 								       Bool_t  fDataType       =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
-								       Bool_t fFMDcut          =kFALSE,
-								       TString anamode         ="ITSFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
+								       Bool_t fFMDcut          =kTRUE,
+								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
 								       TString anacent         ="V0A",
 								       TString assomode        ="hadron",
-								       Int_t ffilterbit        =5
+								       Int_t ffilterbit        =5,
+								       Int_t fFMDcutpar        =2,
+								       Bool_t fmakehole        =kFALSE
 								       )
 {
   // Get the current analysis manager.
@@ -40,6 +42,11 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   Double_t cent_mult_binlimitspPb[] = { 0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100};
   Int_t cent_mult_bin_numbpPb = sizeof(cent_mult_binlimitspPb)/sizeof(Double_t) - 1;
 
+
+  //  Double_t cent_mult_binlimitsHMPP[] = { 0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1};
+  Double_t cent_mult_binlimitsHMPP[] = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1,2,5,10,15,20,30,40,50,70,80,90,100};
+  Int_t cent_mult_bin_numbHMPP = sizeof(cent_mult_binlimitsHMPP)/sizeof(Double_t) - 1;
+  
   //Correlation task
   AliAnalysisTaskSEpPbCorrelationsYS *myTask = new AliAnalysisTaskSEpPbCorrelationsYS(fListName.Data());
 
@@ -51,15 +58,17 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   myTask->SetDatatype(fDataType);
   myTask->SetRunType(frun2);
   myTask->SetFMDcut(fFMDcut);
+  myTask->SetFMDcutpar(fFMDcutpar);
+  myTask->Setacceptancehole(fmakehole);
   //  if(anamode=="FMDFMD" || anamode=="SECA")myTask-> SetMinNTracksInPool(5000);
   myTask->SetMinNTracksInPool(5000);
   myTask->SetAnalysisCent(anacent);//0:V0A 1:ZNA 2:
   myTask->SetAnalysisCollisionType(fCollisiontype);
 
-  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
+  //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
   if(fCollisiontype=="PbPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
   if(fCollisiontype=="pPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
-  
+  if(fCollisiontype=="HMPP"|| fCollisiontype=="PP"||fCollisiontype=="MBPP") myTask->SetPoolCentBinLimits(cent_mult_bin_numbHMPP,cent_mult_binlimitsHMPP);
   mgr->AddTask(myTask);
 
   //cout<<"hogehoge"<<endl;

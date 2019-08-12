@@ -46,6 +46,7 @@
 #pragma link C++ class std::pair<int,AliAnalysisTaskDmesonJets::AliDmesonJetInfo>+;
 #pragma link C++ class std::pair<std::string,AliAnalysisTaskDmesonJets::AliJetInfo>+;
 #pragma link C++ class AliAnalysisTaskDmesonJets+;
+#pragma link C++ class AliAnalysisTaskHFJetIPQA+;
 
 #pragma link C++ class AliAnalysisTaskDmesonJetsSub::AliJetInfo+;
 #pragma link C++ class AliAnalysisTaskDmesonJetsSub::AliDmesonJetInfo+;

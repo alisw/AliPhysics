@@ -27,11 +27,13 @@ class AliAnalysisTaskTPCMatchEff : public AliAnalysisTaskMKBase
                                 AliAnalysisTaskTPCMatchEff(const char *name);
         virtual                 ~AliAnalysisTaskTPCMatchEff();
 
-        virtual void            AddOutput(); //called at the beginning
-        virtual void            AnaTrack();  //called once for every track        
-        virtual void            AnaEvent();  //called once for every event        
+        virtual void            AddOutput();                     //called at the beginning
+        virtual Bool_t          IsEventSelected();               //called for each event
+        virtual void            AnaEvent();                      //called once for every selected event        
+        virtual void            AnaTrackDATA(Int_t flag = 0);    //called once for every track in data
+        virtual void            AnaTrackMC(Int_t flag = 0);      //called once for every track in mc        
         
-        static AliAnalysisTaskTPCMatchEff* AddTaskTPCMatchEff(const char* name = "TaskTPCMatchEff");
+        static AliAnalysisTaskTPCMatchEff* AddTaskTPCMatchEff(const char* name = "TaskTPCMatchEff", const char* outfile = 0);
 
     protected:    
         THnSparseD*             fHistMCMatchEff;     //-> for mc matching efficiency

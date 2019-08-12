@@ -70,7 +70,9 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fK0sMassOfMisIDV0(0),
   fLambdaMassOfMisIDV0(0),
   fAntiLambdaMassOfMisIDV0(0),
-  fIgnoreOnFlyStatus(false)
+  fIgnoreOnFlyStatus(false),
+  fNanoAODAnalysis(false)
+
 
 {
   // Default constructor
@@ -143,7 +145,8 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut) :
   fInvMassRejectLambdaMax(aCut.fInvMassRejectLambdaMax),
   fInvMassRejectAntiLambdaMin(aCut.fInvMassRejectAntiLambdaMin),
   fInvMassRejectAntiLambdaMax(aCut.fInvMassRejectAntiLambdaMax),
-  fIgnoreOnFlyStatus(aCut.fIgnoreOnFlyStatus)
+  fIgnoreOnFlyStatus(aCut.fIgnoreOnFlyStatus),
+  fNanoAODAnalysis(aCut.fNanoAODAnalysis)
 {
   //copy constructor
   if(aCut.fMinvPurityAidHistoV0) fMinvPurityAidHistoV0 = new TH1D(*aCut.fMinvPurityAidHistoV0);
@@ -233,6 +236,7 @@ AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut
     else fAntiLambdaMassOfMisIDV0 = 0;
 
   fIgnoreOnFlyStatus = aCut.fIgnoreOnFlyStatus;
+  fNanoAODAnalysis = aCut.fNanoAODAnalysis;
 
   return *this;
 }
@@ -293,9 +297,10 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   if (aV0->TPCNclsNeg() < fTPCNclsDaughters) return false;
   if (aV0->NdofPos() > fNdofDaughters) return false;
   if (aV0->NdofNeg() > fNdofDaughters) return false;
-  if (!(aV0->StatusNeg() & fStatusDaughters)) return false;
-  if (!(aV0->StatusPos() & fStatusDaughters)) return false;
-
+  if(!fNanoAODAnalysis){
+    if (!(aV0->StatusNeg() & fStatusDaughters)) return false;
+    if (!(aV0->StatusPos() & fStatusDaughters)) return false;
+  }
   //fiducial volume radius
   if(aV0->RadiusV0()<fRadiusV0Min || aV0->RadiusV0()>fRadiusV0Max)
     return false;
@@ -431,8 +436,8 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
       }
     }
   }
-
   if (!pid_check) return false;
+
   return true;
 }
 //------------------------------

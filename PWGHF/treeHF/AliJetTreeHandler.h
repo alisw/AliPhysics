@@ -52,7 +52,7 @@ class AliJetTreeHandler : public TObject
     // Core methods
     TTree* BuildJetTree(TString name, TString title);
     TTree* BuildJetConstituentTree(TString name, TString title);
-    void FillTree(unsigned int eventID);
+    void FillTree(int runNumber, unsigned int eventID);
     void SetJetVariables(const AliEmcalJet* jet);
     void SetJetConstituentVariables(const AliVParticle* track);
     void SetJetLabels();
@@ -114,7 +114,8 @@ class AliJetTreeHandler : public TObject
     float                        fTrackPhi;                //!<! Phi of track (0 < phi < 2pi)
   
     // Jet quantities
-    unsigned int                 fEventID;                 //!<! event ID
+    int                          fRunNumber;               //!<! run number
+    unsigned int                 fEventID;                 //!<! event ID (unique identifier when run number is fixed)
     unsigned short int           fJetID;                   //!<! jet ID (i^th jet in each event)
 
     float                        fPtCorr;                  //!<! Pt of the jet after subtracting average background
@@ -136,7 +137,7 @@ class AliJetTreeHandler : public TObject
     unsigned short int           fMatchedJetID;            //!<! JetID of matched jet in the matching jet tree
   
   /// \cond CLASSIMP
-  ClassDef(AliJetTreeHandler,3); ///
+  ClassDef(AliJetTreeHandler,4); ///
   /// \endcond
 };
 

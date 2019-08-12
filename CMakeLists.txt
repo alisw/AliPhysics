@@ -44,7 +44,7 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
 endif(NOT CMAKE_BUILD_TYPE)
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
-set(CMAKE_ALLOWED_BUILD_TYPES DEBUG RELEASE RELWITHDEBINFO COVERAGE)
+set(CMAKE_ALLOWED_BUILD_TYPES DEBUG RELEASE RELWITHDEBINFO COVERAGE CUSTOM_EXTERNAL)
 list(FIND CMAKE_ALLOWED_BUILD_TYPES "${CMAKE_BUILD_TYPE}" VALID_BUILD_TYPE)
 if(${VALID_BUILD_TYPE} EQUAL -1)
   string(REPLACE ";" ", " CMAKE_ALLOWED_BUILD_TYPES_FLAT "${CMAKE_ALLOWED_BUILD_TYPES}")
@@ -208,20 +208,12 @@ else()
   endif()
 
   # If no Fortran, i.e on Windows
-  # We need to specify ROOT fortran
-  # (f95 comes before gfortran in default module)
   include(CheckLanguage)
-
-  if(ROOT_FORTRAN)
-    message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
-    set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
-  else()
-    message(STATUS "Using default system Fortran compiler")
-  endif(ROOT_FORTRAN)
 
   check_language(Fortran)
   if(CMAKE_Fortran_COMPILER)
     enable_language(Fortran OPTIONAL)
+    message(STATUS "Fortran compiler is ${CMAKE_Fortran_COMPILER}")
   else()
     message(STATUS "No Fortran support.")
   endif()
@@ -280,6 +272,7 @@ else()
   add_subdirectory(PWGPP)
   add_subdirectory(PWGUD)
   add_subdirectory(PWGMM)
+  add_subdirectory (ML)
 
   # Transition to Run3
   if(ROOT_VERSION_MAJOR EQUAL 6)

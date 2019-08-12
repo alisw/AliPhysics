@@ -81,12 +81,9 @@
 #include "AliEmcalParticleJetConstituent.h"
 #endif
 
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetSubstructureTree);
 
-/// \cond CLASSIMP
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetSubstructureTree);
-/// \endcond
-
-namespace EmcalTriggerJets {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree() :
     AliAnalysisTaskEmcalJet(),
@@ -324,7 +321,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   if(fUseDownscaleWeight){
     AliDebugStream(2) << "Trigger selection string: " << fTriggerSelectionString << std::endl;
     TString selectionString = (fTriggerSelectionBits & AliVEvent::kINT7) ? "INT7" : fTriggerSelectionString;
-    auto triggerstring = MatchTrigger(selectionString.Data());
+    auto triggerstring = MatchTrigger(selectionString.Data(), fTriggerSelectionString.Data());
     AliDebugStream(2) << "Getting downscale correction factor for trigger string " << triggerstring << std::endl;
     weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(triggerstring);
   }
@@ -807,36 +804,6 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::SelectJet(const AliEmcalJet &jet, 
   return nallowed > 0;
 }
 
-std::string AliAnalysisTaskEmcalJetSubstructureTree::MatchTrigger(const std::string &triggertoken) const {
-  std::vector<std::string> tokens;
-  std::string result;
-  std::stringstream decoder(fInputEvent->GetFiredTriggerClasses().Data());
-  while(std::getline(decoder, result, ' '))  tokens.emplace_back(result); 
-  result.clear();
-  for(auto t : tokens) {
-    if(t.find(triggertoken) != std::string::npos) {
-      // take first occurrence - downscale factor should normally be the same
-      result = t;
-      break;
-    }
-  }
-  return result;
-}
-
-bool AliAnalysisTaskEmcalJetSubstructureTree::IsSelectEmcalTriggers(const std::string &triggerstring) const {
-  const std::array<std::string, 8> kEMCALTriggers = {
-    "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
-  };
-  bool isEMCAL = false;
-  for(auto emcaltrg : kEMCALTriggers) {
-    if(triggerstring.find(emcaltrg) != std::string::npos) {
-      isEMCAL = true;
-      break;
-    }
-  }
-  return isEMCAL;
-}
-
 AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *trigger){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -992,7 +959,6 @@ void AliJetTreeGlobalParameters::LinkJetTreeBranches(TTree *jettree, bool fillRh
   }
 }
 
-void LinkBranch(TTree *jettree, void *data, const char *branchname, const char *type) {
+void PWGJE::EMCALJetTasks::LinkBranch(TTree *jettree, void *data, const char *branchname, const char *type) {
   jettree->Branch(branchname, data, Form("%s/%s", branchname, type));
 }
-} /* namespace EmcalTriggerJets */

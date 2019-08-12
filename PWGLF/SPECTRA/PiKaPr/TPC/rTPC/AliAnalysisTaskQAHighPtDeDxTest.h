@@ -177,53 +177,51 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
 
 		// Histograms for PreCalibration
 
-		TH2D *hMIPVsEta[10];
-		TProfile *pMIPVsEta[10];
-		TH2D *hMIPVsEtaV0s[10];
-		TProfile *pMIPVsEtaV0s[10];
-		TH2D *hPlateauVsEta[10];
-		TProfile *pPlateauVsEta[10];
-		TH2D *hPhi[10];
+		TH2D *hMIPVsEta[11];
+		TProfile *pMIPVsEta[11];
+		TH2D *hMIPVsEtaV0s[11];
+		TProfile *pMIPVsEtaV0s[11];
+		TH2D *hPlateauVsEta[11];
+		TProfile *pPlateauVsEta[11];
+		TH2D *hPhi[11];
 
-		TH2D     *hMIPVsNch[10][4];
-		TProfile *pMIPVsNch[10][4];
+		TH2D     *hMIPVsNch[11][4];
+		TProfile *pMIPVsNch[11][4];
 
-		TH2D     *hMIPVsPhi[10][4];
-		TProfile *pMIPVsPhi[10][4];
-		TH2D     *hPlateauVsPhi[10][4];
-		TProfile *pPlateauVsPhi[10][4];
-
+		TH2D     *hMIPVsPhi[11][4];
+		TProfile *pMIPVsPhi[11][4];
+		TH2D     *hPlateauVsPhi[11][4];
+		TProfile *pPlateauVsPhi[11][4];
 
 		// Histograms for PostCalibration
 
+		TH1D *hPtAll[11];
+		TH1D *hPtAllPos[11];
+		TH1D *hPtAllNeg[11];
+		TH1D *hPtPos[11][4];
+		TH1D *hPtNeg[11][4];
+		TH2D *hPtVsP[11][4];
 
-		TH1D *hPtAll[10];
-		TH1D *hPtAllPos[10];
-		TH1D *hPtAllNeg[10];
-		TH1D *hPtPos[10][4];
-		TH1D *hPtNeg[10][4];
-		TH2D *hPtVsP[10][4];
+		TH2D *hDeDxVsP[11][4];
 
-		TH2D *hDeDxVsP[10][4];
+		TH2D *hnSigmaPiPos[11][4];
+		TH2D *hnSigmaKPos[11][4];
+		TH2D *hnSigmaPPos[11][4];
 
-		TH2D *hnSigmaPiPos[10][4];
-		TH2D *hnSigmaKPos[10][4];
-		TH2D *hnSigmaPPos[10][4];
+		TH2D *hnSigmaPiNeg[11][4];
+		TH2D *hnSigmaKNeg[11][4];
+		TH2D *hnSigmaPNeg[11][4];
 
-		TH2D *hnSigmaPiNeg[10][4];
-		TH2D *hnSigmaKNeg[10][4];
-		TH2D *hnSigmaPNeg[10][4];
+		TH2D* histPiV0[11][4];
+		TH1D* histpPiV0[11][4];
 
-		TH2D* histPiV0[10][4];
-		TH1D* histpPiV0[10][4];
+		TH2D* histPV0[11][4];
+		TH1D* histpPV0[11][4];
 
-		TH2D* histPV0[10][4];
-		TH1D* histpPV0[10][4];
+		TH2D* histPiTof[11][4];
+		TH1D* histpPiTof[11][4];
 
-		TH2D* histPiTof[10][4];
-		TH1D* histpPiTof[10][4];
-
-		TH2D* histEV0[10][4];
+		TH2D* histEV0[11][4];
 
 		TH1D* hMcIn[11][7];
 		TH1D* hMcOut[11][7];
@@ -233,31 +231,27 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
 		TH1D* hMcOutPos[11][7];
 
 
-		TH2D* hDCAxyVsPtPiNeg[10];
-		TH2D* hDCAxyVsPtPiNegC[10];
-		TH2D* hDCAxyVsPtKNeg[10];
-		TH2D* hDCAxyVsPtKNegC[10];
-		TH2D* hDCAxyVsPtPNeg[10];
-		TH2D* hDCAxyVsPtPNegC[10];
-		TH2D* hDCAxyVsPtPiPos[10];
-		TH2D* hDCAxyVsPtPiPosC[10];
-		TH2D* hDCAxyVsPtKPos[10];
-		TH2D* hDCAxyVsPtKPosC[10];
-		TH2D* hDCAxyVsPtPPos[10];
-		TH2D* hDCAxyVsPtPPosC[10];
+		TH2D* hDCAxyVsPtPiNeg[11];
+		TH2D* hDCAxyVsPtPiNegC[11];
+		TH2D* hDCAxyVsPtKNeg[11];
+		TH2D* hDCAxyVsPtKNegC[11];
+		TH2D* hDCAxyVsPtPNeg[11];
+		TH2D* hDCAxyVsPtPNegC[11];
+		TH2D* hDCAxyVsPtPiPos[11];
+		TH2D* hDCAxyVsPtPiPosC[11];
+		TH2D* hDCAxyVsPtKPos[11];
+		TH2D* hDCAxyVsPtKPosC[11];
+		TH2D* hDCAxyVsPtPPos[11];
+		TH2D* hDCAxyVsPtPPosC[11];
 
 		//    [Cent][Pid][Charge: 0:neutral 1:Neg 2:Pos]
-		TH2D* hDCApTPrim[10][7][3];
-		TH2D* hDCApTWDec[10][7][3];
-		TH2D* hDCApTMate[10][7][3];
+		TH2D* hDCApTPrim[11][7][3];
+		TH2D* hDCApTWDec[11][7][3];
+		TH2D* hDCApTMate[11][7][3];
 
-		TH2D* hDCApTPrim2[10][7][3];
-		TH2D* hDCApTWDec2[10][7][3];
-		TH2D* hDCApTMate2[10][7][3];
-
-
-
-
+		TH2D* hDCApTPrim2[11][7][3];
+		TH2D* hDCApTWDec2[11][7][3];
+		TH2D* hDCApTMate2[11][7][3];
 
 		TF1* fEtaCalibrationNeg;
 		TF1* fEtaCalibration;
@@ -275,3 +269,4 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
 };
 
 #endif
+

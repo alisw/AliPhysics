@@ -76,6 +76,25 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
         }
     } 
 
+    if(kProcess==2){
+        std::cout << "running direct photon mode"<< std::endl;
+        gener->SetProcess(kPyDirectGamma);
+        if(ptHardMin > 0.){ 
+            std::cout << "Setting pTHardMin: "<< ptHardMin << "\t ptHardMax: "<< ptHardMax <<  std::endl;
+            gener->SetPtHard(ptHardMin,ptHardMax);
+        }
+    }
+
+    if(kProcess==3){
+        std::cout << "running direct photon mode + min bias"<< std::endl;
+        gener->SetProcess(kPyMbWithDirectPhoton);
+        if(ptHardMin > 0.){ 
+            std::cout << "Setting pTHardMin: "<< ptHardMin << "\t ptHardMax: "<< ptHardMax <<  std::endl;
+            gener->SetPtHard(ptHardMin,ptHardMax);
+        }
+    }
+
+
     //Centre of mass energy 
     gener->SetEnergyCMS(e_cms); // in GeV
 

@@ -41,7 +41,10 @@ set(SRCS
 		AliAnalysisTaskUpcTree.cxx
 		AliAnalysisTaskUPCforward.cxx
 		AliAnalysisTaskUPCforwardMC.cxx
+		AliAnalysisTaskUPCforward2.cxx
+		AliAnalysisTaskMatchTriggerForward.cxx
 		AliAnalysisTaskCTrue.cxx
+    AliAnalysisTaskNanoMUON.cxx
     AliUPCEvent.cxx
     AliUPCMuonTrack.cxx
     AliUPCTrack.cxx

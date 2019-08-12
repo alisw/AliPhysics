@@ -33,6 +33,9 @@ public:
 
 private:
 
+  void AddPair(const AliFemtoPair* aPair, TH2 &share, TH2 &qual, TH2 &sep);
+
+
   TH2D *fShareNumerator;        // Share fraction for real pairs
   TH2D *fShareDenominator;      // share fraction for mixed pairs
 

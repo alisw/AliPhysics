@@ -7,6 +7,7 @@ AliAnalysisTaskSEImproveITS *AddTaskImproveITS(Bool_t isRunInVertexing=kFALSE, /
     ::Error("AddAliAnalysisTaskSEImproveITS", "No analysis manager to connect to.");
     return 0;
   }
+  if (!TGrid::Connect("alien://")) return 0;
                 
   AliAnalysisTaskSEImproveITS *task
     =new AliAnalysisTaskSEImproveITS("ITSImprover",
@@ -15,15 +16,16 @@ AliAnalysisTaskSEImproveITS *AddTaskImproveITS(Bool_t isRunInVertexing=kFALSE, /
                                      isRunInVertexing,
                                      ndebug);
   mgr->AddTask(task);
-                
-  TString outputFileName=AliAnalysisManager::GetCommonFileName();
-  outputFileName+=":ITSImprover";
+
+//  TString outputFileName=AliAnalysisManager::GetCommonFileName();
+  TString outputFileName="Improver.root";
+//  outputFileName+=":ITSImprover";
   AliAnalysisDataContainer *coutput
      =mgr->CreateContainer("debug",
                            TList::Class(),
                            AliAnalysisManager::kOutputContainer,
                            outputFileName.Data());
-  
+  coutput->SetSpecialOutput();
   mgr->ConnectInput (task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput);
 

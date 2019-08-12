@@ -55,18 +55,18 @@ AliAnalysisTaskDCArStudy::~AliAnalysisTaskDCArStudy()
 void AliAnalysisTaskDCArStudy::AddOutput()
 {    
     //dcar:pt:mult:mcinfo
-    AddAxis("DCAxy",10000,-1,1);
+    AddAxis("DCAxy",5000,-1,1);
     AddAxis("pt");    
-    AddAxis("nTracks","mult6kfine");
-    AddAxis("MCinfo",3,-0.5,2.5); // 0=prim, 1=decay 2=material
+    AddAxis("nTracks","mult6kcoarse");
+    AddAxis("MCinfo",4,-1.5,2.5); // 0=prim, 1=decay 2=material -1=data
     fHistDCA = CreateHist("fHistDCA");
     fOutputList->Add(fHistDCA);
     
     //dcar:pt:mult:mcinfo
-    AddAxis("DCAxy",10000,-20,20); 
+    AddAxis("DCAxy",5000,-20,20); 
     AddAxis("TPCpt","pt");    
-    AddAxis("nTracks","mult6kfine");
-    AddAxis("MCinfo",3,-0.5,2.5); // 0=prim, 1=decay 2=material
+    AddAxis("nTracks","mult6kcoarse");
+    AddAxis("MCinfo",4,-1.5,2.5); // 0=prim, 1=decay 2=material -1=data
     fHistDCATPC = CreateHist("fHistDCATPC");
     fOutputList->Add(fHistDCATPC);
     
@@ -76,31 +76,39 @@ void AliAnalysisTaskDCArStudy::AddOutput()
 
 //_____________________________________________________________________________
 
+Bool_t AliAnalysisTaskDCArStudy::IsEventSelected()
+{
+    return fIsAcceptedAliEventCuts;
+}
+
+//_____________________________________________________________________________
+
+
 void AliAnalysisTaskDCArStudy::AnaEvent()
 {
-   InitEvent();
-   InitEventMult();
-   InitEventCent();
-   InitMCEvent();
-   LoopOverAllTracks();
-   
+    LoopOverAllTracks();
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskDCArStudy::AnaTrack()
-{    
-    InitTrack();
-    InitMCTrack();
-    InitTrackIP();
-    InitTrackTPC();
-    if (fESDtrackCuts[0]->AcceptTrack(fESDTrack)) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, fMCPrimSec); }
-    if (fESDtrackCuts[1]->AcceptTrack(fESDTrack)) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, fMCPrimSec); }
+void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
+{
+    if (fAcceptTrack[0]) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, fMCPrimSec); }
+    if (fAcceptTrack[1]) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, fMCPrimSec); }
 }
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskDCArStudy* AliAnalysisTaskDCArStudy::AddTaskDCArStudy(const char* name) 
+void AliAnalysisTaskDCArStudy::AnaTrackDATA(Int_t flag)
+{
+    if (fAcceptTrack[0]) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, -1); }
+    if (fAcceptTrack[1]) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, -1); }
+}
+
+
+//_____________________________________________________________________________
+
+AliAnalysisTaskDCArStudy* AliAnalysisTaskDCArStudy::AddTaskDCArStudy(const char* name, const char* outfile) 
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -117,13 +125,12 @@ AliAnalysisTaskDCArStudy* AliAnalysisTaskDCArStudy::AddTaskDCArStudy(const char*
     
     // Setup output file
     //===========================================================================
-    TString fileName = AliAnalysisManager::GetCommonFileName();
-    //fileName += ":TaskDCArStudy";      // create a subfolder in the file
-    fileName = TString("out_");
-    fileName += name;
-    fileName += ".root";
-    //if (outfile) fileName = TString(outfile);
-    
+    TString fileName = AliAnalysisManager::GetCommonFileName();        
+    fileName += ":";
+    fileName += name;  // create a subfolder in the file
+    if (outfile) { // if a finename is given, use that one
+        fileName = TString(outfile);        
+    }
 
     // create the task
     //===========================================================================
@@ -133,9 +140,9 @@ AliAnalysisTaskDCArStudy* AliAnalysisTaskDCArStudy::AddTaskDCArStudy(const char*
     // configure the task
     //===========================================================================
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);    
-    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("default"));
-    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("TPCgeoNoDCAr"));    
-    task->SetESDtrackCuts(1,AlidNdPtTools::CreateESDtrackCuts("TPCITSgeoNoDCAr"));    
+    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("TPCgeoNoDCArEta08"));    
+    task->SetESDtrackCuts(1,AlidNdPtTools::CreateESDtrackCuts("TPCITSforDCArStudyEta08"));    
         
     // attach the task to the manager and configure in and ouput
     //===========================================================================

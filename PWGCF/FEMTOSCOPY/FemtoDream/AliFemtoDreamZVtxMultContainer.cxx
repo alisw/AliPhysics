@@ -22,7 +22,9 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
       fDeltaPhiMax(0.f),
       fDeltaPhiEtaMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false) {
-
+  TDatabasePDG::Instance()->AddParticle("deuteron", "deuteron", 1.8756134,
+                                        kTRUE, 0.0, 1, "Nucleus", 1000010020);
+  TDatabasePDG::Instance()->AddAntiParticle("anti-deuteron", -1000010020);
 }
 
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
@@ -37,6 +39,9 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
       fDeltaPhiEtaMax(
           fDeltaPhiMax * fDeltaPhiMax + fDeltaEtaMax * fDeltaEtaMax),
       fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()) {
+  TDatabasePDG::Instance()->AddParticle("deuteron", "deuteron", 1.8756134,
+                                        kTRUE, 0.0, 1, "Nucleus", 1000010020);
+  TDatabasePDG::Instance()->AddAntiParticle("anti-deuteron", -1000010020);
 }
 
 AliFemtoDreamZVtxMultContainer::~AliFemtoDreamZVtxMultContainer() {
@@ -104,6 +109,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           }
           RelativeK = RelativePairMomentum(itPart1->GetMomentum(), *itPDGPar1,
                                            itPart2->GetMomentum(), *itPDGPar2);
+
           if (fillHists && ResultsHist->GetEtaPhiPlots()) {
             DeltaEtaDeltaPhi(HistCounter, part1, part2, true, ResultsHist,
                              RelativeK);
@@ -145,6 +151,17 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
                 RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
                                itPart2->GetMomentum(), *itPDGPar2),
                 RelativeK);
+          }
+          if (fillHists && ResultsHist->GetDoPtQA()) {
+            ResultsHist->FillPtQADist(HistCounter, RelativeK, itPart1->GetPt(),
+                                      itPart2->GetPt());
+          }
+          if (fillHists && ResultsHist->GetDoMassQA()) {
+            ResultsHist->FillMassQADist(HistCounter, RelativeK,
+                                        itPart1->GetInvMass(),
+                                        itPart2->GetInvMass());
+	    ResultsHist->FillPairInvMassQAD(HistCounter, part1, part2);
+
           }
           ++itPart2;
         }

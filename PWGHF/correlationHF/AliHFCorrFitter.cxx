@@ -84,7 +84,12 @@ AliHFCorrFitter::AliHFCorrFitter():
   fMinAsspt(0.),
   fMaxAsspt(0.),
   fIspPb(kFALSE),
-  fBetaVal(0.)
+  fBetaVal(0.),
+  fUseExternalPars(kFALSE), //keep as kFALSE for default!!!!
+  fNpars(0),
+  fExtParsVals(0x0),
+  fExtParsLowBounds(0x0),
+  fExtParsUppBounds(0x0)
 {
   //Default Constructor......... fix me
 
@@ -119,7 +124,12 @@ fMaxDpt(0.),
 fMinAsspt(0.),
 fMaxAsspt(0.),
 fIspPb(kFALSE),
-fBetaVal(0.)
+fBetaVal(0.),
+fUseExternalPars(kFALSE), //keep as kFALSE for default!!!!
+fNpars(0),
+fExtParsVals(0x0),
+fExtParsLowBounds(0x0),
+fExtParsUppBounds(0x0)
 {
   if(isowner)fHist=histoToFit;
   else fHist=(TH1F*)histoToFit->Clone("fHist");
@@ -156,7 +166,12 @@ AliHFCorrFitter::AliHFCorrFitter(const AliHFCorrFitter &source):
   fMinAsspt(source.fMinAsspt),
   fMaxAsspt(source.fMaxAsspt),
   fIspPb(source.fIspPb),
-  fBetaVal(source.fBetaVal)
+  fBetaVal(source.fBetaVal),
+  fUseExternalPars(source.fUseExternalPars), //keep as kFALSE for default!!!!
+  fNpars(source.fNpars),
+  fExtParsVals(source.fExtParsVals),
+  fExtParsLowBounds(source.fExtParsLowBounds),
+  fExtParsUppBounds(source.fExtParsUppBounds)  
 {
   //copy constructor
 }
@@ -209,6 +224,11 @@ AliHFCorrFitter& AliHFCorrFitter::operator=(const AliHFCorrFitter &cfit)
   fMaxAsspt=cfit.fMaxAsspt;
   fIspPb=cfit.fIspPb;
   fBetaVal=cfit.fBetaVal;
+  fUseExternalPars=cfit.fUseExternalPars; //keep as kFALSE for default!!!!
+  fNpars=cfit.fNpars;
+  fExtParsVals=cfit.fExtParsVals;
+  fExtParsLowBounds=cfit.fExtParsLowBounds;
+  fExtParsUppBounds=cfit.fExtParsUppBounds;
 
   return *this;
 
@@ -223,6 +243,26 @@ void AliHFCorrFitter::SetHisto(const TH1F *histoToFit){
 
 
 
+
+
+//___________________________________________________________________________________________
+void AliHFCorrFitter::SetExternalValsAndBounds(Int_t npars, Double_t* vals, Double_t* lowBounds, Double_t* uppBounds) {
+
+  fNpars=npars;
+
+  fExtParsVals = new Double_t[fNpars];
+  fExtParsLowBounds = new Double_t[fNpars];
+  fExtParsUppBounds = new Double_t[fNpars];
+
+  for(int i=0;i<fNpars;i++) {
+    fExtParsVals[i]=vals[i];
+    fExtParsLowBounds[i]=lowBounds[i];
+    fExtParsUppBounds[i]=uppBounds[i];
+  }
+
+}
+
+
 //_________________________|Setting functios to fit|___________________
 void AliHFCorrFitter::SetFunction()
 {
@@ -234,6 +274,9 @@ void AliHFCorrFitter::SetFunction()
 |          =4: const +yieldNS*(G NS) + yieldAS*[fact*(G AS)+(1- fact)*(G2 AS)]   (w/ periodicity)
 |          =5: v2 modulation (no gaussian terms)
 |          =6: v2 modulation + G NS + G AS  (w/ periodicity)
+|          =7: const+ GenG NS + G AS  (w/ periodicity)
+|          =8: const+ GenG fixBeta NS + G AS  (w/ periodicity)
+|          =9: const+ GenG constrBeta NS + G AS  (w/ periodicity)
 |______________________________________________________________________________________________________|*/
   if(fFit){
     delete fFit;
@@ -269,6 +312,12 @@ void AliHFCorrFitter::SetFunction()
 
     //fFit->SetParameters(1,0.1,0.,1,0.1,TMath::Pi(),0.3);   
     
+    if(fUseExternalPars) { //overwrites previous configuration :)
+      for(int i=0; i<fNpars; i++) {
+        fFit->SetParameter(i,fExtParsVals[i]);
+        fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
+      }
+    }    
    
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");
@@ -304,7 +353,13 @@ void AliHFCorrFitter::SetFunction()
     fFit->SetParName(4,"AS Y");
     fFit->SetParName(5,"AS mean");
     fFit->SetParName(6,"AS #sigma");
-   
+
+    if(fUseExternalPars) { //overwrites previous configuration :)
+      for(int i=0; i<fNpars; i++) {
+        fFit->SetParameter(i,fExtParsVals[i]);
+        fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
+      }
+    }   
     break;
     */ 
   case 2:
@@ -330,7 +385,13 @@ void AliHFCorrFitter::SetFunction()
     fFit->SetParameter(5,TMath::Pi());
     fFit->SetParameter(6,0.3);
 
-    
+    if(fUseExternalPars) { //overwrites previous configuration :)
+      for(int i=0; i<fNpars; i++) {
+        fFit->SetParameter(i,fExtParsVals[i]);
+        fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
+      }
+    }
+
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");
     fFit->SetParName(2,"NS mean");
@@ -367,6 +428,12 @@ void AliHFCorrFitter::SetFunction()
     fFit->SetParameter(7,0.8);
     fFit->SetParameter(8,0.1);
 
+    if(fUseExternalPars) { //overwrites previous configuration :)
+      for(int i=0; i<fNpars; i++) {
+        fFit->SetParameter(i,fExtParsVals[i]);
+        fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
+      }
+    }
     
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");   
@@ -408,6 +475,12 @@ case 4:
     fFit->SetParameter(7,0.8); 
     fFit->SetParameter(8,0.3);
 
+    if(fUseExternalPars) { //overwrites previous configuration :)
+      for(int i=0; i<fNpars; i++) {
+        fFit->SetParameter(i,fExtParsVals[i]);
+        fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
+      }
+    }
     
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");   
@@ -421,8 +494,15 @@ case 4:
     break;
           
     case 5: // v2 modulation
-      fFit=new TF1("v2Modulation","[0]*(1+2*[1]*[2]*TMath::TMath::Cos(2*x))",fMin,fMax);
-      fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2]*TMath::TMath::Cos(2*x))",fMin,fMax); 
+      fFit=new TF1("v2Modulation","[0]*(1+2*[1]*[2]*TMath::Cos(2*x))",fMin,fMax);
+      fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2]*TMath::Cos(2*x))",fMin,fMax); 
+
+    if(fUseExternalPars) { //overwrites previous configuration :)
+      for(int i=0; i<fNpars; i++) {
+        fFit->SetParameter(i,fExtParsVals[i]);
+        fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
+      }
+    }
 
       fFit->SetParLimits(0,0.,999.);
       fFit->SetParLimits(1,-1,1);
@@ -434,12 +514,12 @@ case 4:
       break;
       
       case 6: // case 2 + v2 modulation
-	fFit=new TF1("TwoGausPeriodicityPlusV2modulation","[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-[2])*(x-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-[5])*(x-[5])/2./([6]*[6]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-2.*TMath::Pi()-[2])*(x-2.*TMath::Pi()-[2])/2./([3]*[3]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x+2.*TMath::Pi()-[2])*(x+2.*TMath::Pi()-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x+2.*TMath::Pi()-[5])*(x+2.*TMath::Pi()-[5])/2./([6]*[6]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-2.*TMath::Pi()-[5])*(x-2.*TMath::Pi()-[5])/2./([6]*[6]))+[0]*(1+2*[7]*[8]*TMath::TMath::Cos(2*x))",fMin,fMax);
+	fFit=new TF1("TwoGausPeriodicityPlusV2modulation","[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-[2])*(x-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-[5])*(x-[5])/2./([6]*[6]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-2.*TMath::Pi()-[2])*(x-2.*TMath::Pi()-[2])/2./([3]*[3]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x+2.*TMath::Pi()-[2])*(x+2.*TMath::Pi()-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x+2.*TMath::Pi()-[5])*(x+2.*TMath::Pi()-[5])/2./([6]*[6]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-2.*TMath::Pi()-[5])*(x-2.*TMath::Pi()-[5])/2./([6]*[6]))+[0]*(1+2*[7]*[8]*TMath::Cos(2*x))",fMin,fMax);
         
     fGausNS=new TF1("fGausNSper","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
     fGausNS2=new TF1("fGausNS2per","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
     fGausAS=new TF1("fGausASper","[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2]))",fMin,fMax);
-    fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2]*TMath::TMath::Cos(2*x))",fMin,fMax); 
+    fPed=new TF1("fPedv2Mod","[0]*(1+2*[1]*[2]*TMath::Cos(2*x))",fMin,fMax); 
     
     fFit->SetParLimits(0,0.,999.);
     fFit->SetParLimits(1,0,999.);
@@ -460,7 +540,13 @@ case 4:
     fFit->SetParameter(6,0.3);
     fFit->SetParameter(7,0);
     fFit->SetParameter(8,0);
-    
+
+    if(fUseExternalPars) { //overwrites previous configuration :)
+      for(int i=0; i<fNpars; i++) {
+        fFit->SetParameter(i,fExtParsVals[i]);
+        fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
+      }
+    }    
     
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");
@@ -673,6 +759,13 @@ case 4:
       }
     }    
 
+    if(fUseExternalPars) { //overwrites previous configuration :)
+      for(int i=0; i<fNpars; i++) {
+        fFit->SetParameter(i,fExtParsVals[i]);
+        fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
+      }
+    }
+
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");
     fFit->SetParName(2,"NS mean");
@@ -880,6 +973,13 @@ case 4:
     }    
 
     fFit->FixParameter(7,fBetaVal);
+
+    if(fUseExternalPars) { //overwrites previous configuration :)
+      for(int i=0; i<fNpars; i++) {
+        fFit->SetParameter(i,fExtParsVals[i]);
+        fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
+      }
+    }
 
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");
@@ -1089,6 +1189,13 @@ case 4:
 
     fFit->SetParameter(7,fBetaVal);
     fFit->SetParLimits(7,fBetaVal*0.8,fBetaVal*1.2);
+
+    if(fUseExternalPars) { //overwrites previous configuration :)
+      for(int i=0; i<fNpars; i++) {
+        fFit->SetParameter(i,fExtParsVals[i]);
+        fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
+      }
+    }
 
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");
@@ -1330,7 +1437,7 @@ Double_t AliHFCorrFitter::FindBaseline(){
 }
 //_______________________________________________________________________________
 
-void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm)
+void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm, Bool_t useExternalPars)
 {
 /*|________________________________________________________________________|
 | -> fFixBase=0 : baseline free
@@ -1346,6 +1453,8 @@ void AliHFCorrFitter::Fitting(Bool_t drawSplitTerm)
 |           =3 : NS mean fixed to 0, AS mean to pi
 |___________________________________________________________________________|*/
     
+  if(useExternalPars) fUseExternalPars=kTRUE;
+
   //_________________________________________ fFixBase 0
   if(fFixBase!=0&&fFixBase!=6){
     Printf("AliHFCorrFitter::Fitting, Finding baseline");

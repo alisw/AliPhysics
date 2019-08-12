@@ -1,9 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
-// AliFemtoCorrFctn3DPRF: a class to calculate 3D correlation        //
-// for pairs of particles in PRF                                        //
+// AliFemtoCorrFctn3DPRF: a class to calculate 3D correlation            //
+// for pairs of particles in PRF                                         //
+//  (by Ashutosh Kumar Pandey)                                           //
 //                                                                       //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 
 #ifndef ALIFEMTOCORRFCTN3DPRF_H
 #define ALIFEMTOCORRFCTN3DPRF_H
@@ -28,7 +29,7 @@ public:
 
   TH3F* Numerator();
   TH3F* Denominator();
-  TH3F* NumeratorW();//Weighed by qinv
+  TH3F* NumeratorW();//Weighted by |k*|
   TH3F* DenominatorW();
 
 

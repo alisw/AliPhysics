@@ -15,8 +15,6 @@
 // #include "AliFemtoCorr.h"
 
 class AliFemtoPair;
-class AliFemtoModelManager;
-class TRandom;
 
 
 /// \class AliFemtoModelCorrFctnTrueQ6D
@@ -47,7 +45,6 @@ public:
     Double_t qmax;
     BinMethod bin_method;
     TString title;
-    AliFemtoModelManager *mc_manager;
 
     Double_t qout_range_min;
     Double_t qout_range_max;
@@ -57,7 +54,6 @@ public:
     Double_t qlong_range_max;
 
     bool ignore_zeromass;
-    bool use_femtoweight;
 
     Builder()
       : bin_count(59)
@@ -65,7 +61,6 @@ public:
       , qmax(0.295)
       , bin_method(kRecLSOGenOSL)
       , title("CF_TrueQ6D")
-      , mc_manager(NULL)
       , qout_range_min(0.0)
       , qout_range_max(0.0)
       , qside_range_min(0.0)
@@ -73,7 +68,6 @@ public:
       , qlong_range_min(0.0)
       , qlong_range_max(0.0)
       , ignore_zeromass(true)
-      , use_femtoweight(true)
     {
     }
 
@@ -86,13 +80,6 @@ public:
 
       Builder b(*this);
       b.title = title;
-      return b;
-    }
-
-    Builder Manager(AliFemtoModelManager *manager) const
-    {
-      Builder b(*this);
-      b.mc_manager = manager;
       return b;
     }
 
@@ -143,7 +130,6 @@ public:
 
     CREATE_SETTER_METHOD(NBins, Int_t, bin_count);
     CREATE_SETTER_METHOD(IgnoreZeroMass, Bool_t, ignore_zeromass);
-    CREATE_SETTER_METHOD(UseFemtoWeight, Bool_t, use_femtoweight);
     CREATE_SETTER_METHOD(Binning, BinMethod, bin_method);
 
     #undef CREATE_SETTER_METHOD
@@ -168,29 +154,75 @@ public:
   AliFemtoModelCorrFctnTrueQ6D();
 
   /// Construct from data
-  AliFemtoModelCorrFctnTrueQ6D(const HistType &, AliFemtoModelManager *m=nullptr);
+  AliFemtoModelCorrFctnTrueQ6D(const HistType &);
 
   /// Building using pointer
-  AliFemtoModelCorrFctnTrueQ6D(HistType *&, AliFemtoModelManager *m=nullptr);
+  AliFemtoModelCorrFctnTrueQ6D(HistType *&);
 
   /// Custom title
   ///
   /// Use default binning parameters
+  ///
   AliFemtoModelCorrFctnTrueQ6D(const TString &title);
 
   /// Symmetric constructor
   ///
   /// Construct with nbins from -qmax to qmax in both directions
+  ///
   AliFemtoModelCorrFctnTrueQ6D(const TString &title,
                                UInt_t nbins,
                                Double_t qmax);
 
   /// Custom constructor
   ///
-  AliFemtoModelCorrFctnTrueQ6D(const TString &title,
+  AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
                                UInt_t nbins,
                                Double_t aQinvLo,
-                               Double_t aQinvHi);
+                               Double_t aQinvHi,
+                               BinMethod binning=kRecGenOSL);
+
+  /// Asymmetric constructor
+  ///
+  AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                               Int_t nbins_out,
+                               Double_t qout_lo,
+                               Double_t qout_hi,
+                               Int_t nbins_side,
+                               Double_t qside_lo,
+                               Double_t qside_hi,
+                               Int_t nbins_long,
+                               Double_t qlong_lo,
+                               Double_t qlong_hi,
+                               BinMethod binning=kRecGenOSL);
+
+  /// Big Asymmetric constructor
+  ///
+  AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                               Int_t nbins_out,
+                               Double_t qout_lo,
+                               Double_t qout_hi,
+                               Int_t nbins_side,
+                               Double_t qside_lo,
+                               Double_t qside_hi,
+                               Int_t nbins_long,
+                               Double_t qlong_lo,
+                               Double_t qlong_hi,
+                               Int_t nbins_out_true,
+                               Double_t qout_lo_true,
+                               Double_t qout_hi_true,
+                               Int_t nbins_side_true,
+                               Double_t qside_lo_true,
+                               Double_t qside_hi_true,
+                               Int_t nbins_long_true,
+                               Double_t qlong_lo_true,
+                               Double_t qlong_hi_true,
+                               BinMethod binning=kRecGenOSL);
+
+  AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                               const std::vector<double> &obins,
+                               const std::vector<double> &sbins,
+                               const std::vector<double> &lbins,
+                               BinMethod binning=kRecGenOSL);
 
   /// Construct from parameter object
   ///
@@ -204,9 +236,6 @@ public:
 
   /// Destructor - histograms destroyed, ModelManager is NOT
   virtual ~AliFemtoModelCorrFctnTrueQ6D();
-
-  /// Set the MC model manager
-  virtual void SetManager(AliFemtoModelManager *);
 
   virtual AliFemtoString Report();
 
@@ -233,32 +262,20 @@ public:
   static BinMethod GuessBinMethod(const HistType &hist);
 
 protected:
-  AliFemtoModelManager *fManager; //!<! Link back to the manager to retrieve weights
 
   /// Histogram of data
   HistType *fHistogram;
 
-  /// Random number generator used for randomizing order of pair momentums
-  TRandom *fRng;
-
   BinMethod fBinMethod;
   Bool_t fIgnoreZeroMassParticles;
-  Bool_t fUseFemtoWeight;
 
   std::pair<double, double> fQlimits[3];
 
   void UpdateQlimits();
 
 private:
-  void AddPair(const AliFemtoParticle &, const AliFemtoParticle &, double weight=1.0);
+  void AddPair(const AliFemtoParticle &, const AliFemtoParticle &);
 };
-
-inline
-void
-AliFemtoModelCorrFctnTrueQ6D::SetManager(AliFemtoModelManager *manager)
-{
-  fManager = manager;
-}
 
 inline
 void

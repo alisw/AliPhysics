@@ -37,7 +37,8 @@ AliFemtoPairCutAntiGamma::AliFemtoPairCutAntiGamma():
   fMaxDTheta(0.0),
   fDTPCMin(0),
   fMinAvgsep(0),
-  fDataType(kESD)
+  fDataType(kESD),
+  fNanoAODAnalysis(kFALSE)
 {
 }
 //__________________
@@ -47,7 +48,8 @@ AliFemtoPairCutAntiGamma::AliFemtoPairCutAntiGamma(const AliFemtoPairCutAntiGamm
   fMaxDTheta(c.fMaxDTheta),
   fDTPCMin(c.fDTPCMin),
   fMinAvgsep(c.fMinAvgsep),
-  fDataType(c.fDataType)
+  fDataType(c.fDataType),
+  fNanoAODAnalysis(c.fNanoAODAnalysis)
 {
 }
 
@@ -61,6 +63,7 @@ AliFemtoPairCutAntiGamma::operator=(const AliFemtoPairCutAntiGamma& c)
         fDTPCMin = c.fDTPCMin;
         fMinAvgsep = c.fMinAvgsep;
         fDataType = c.fDataType;
+        fNanoAODAnalysis = c.fNanoAODAnalysis;
     }
 
     return *this;
@@ -98,11 +101,12 @@ bool AliFemtoPairCutAntiGamma::Pass(const AliFemtoPair* pair)
         double e2 = TMath::Sqrt(me*me + p2.Mag2());
 
         double minv = 2*me*me + 2*(e1*e2 - p1.Dot(p2));
-        if ((minv < fMaxEEMinv) && (dtheta < fMaxDTheta)) {
+        if ((TMath::Abs(minv) < fMaxEEMinv) && (dtheta < fMaxDTheta)) {
             temp = false;
         }
     }
 
+    if(temp && fNanoAODAnalysis ) return true;
     // check separation at TPC entrance
     bool tempTPCEntrance = true;
 
@@ -140,11 +144,15 @@ bool AliFemtoPairCutAntiGamma::Pass(const AliFemtoPair* pair)
         avgsepCheck = avgSep > fMinAvgsep;
     }
 
+    
+
     if (temp && tempTPCEntrance && avgsepCheck)
     {
+
         temp = AliFemtoShareQualityPairCut::Pass(pair);
         if (temp) {fNPairsPassed++;}
         else fNPairsFailed++;
+
         return temp;
     }
     else

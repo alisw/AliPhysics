@@ -18,6 +18,7 @@
 #pragma link C++ class AliRsnValueEvent+;
 
 #pragma link C++ class AliRsnCutEventUtils+;
+#pragma link C++ class AliRsnEventCuts+;
 #pragma link C++ class AliRsnCutPrimaryVertex+;
 #pragma link C++ class AliRsnCutTrue+;
 #pragma link C++ class AliRsnCutTrackQuality+;
@@ -39,6 +40,7 @@
 #pragma link C++ class AliRsnCutDaughterKStar2010PP+;
 #pragma link C++ class AliRsnCutDaughterLStar2010+;
 #pragma link C++ class AliRsnCutV0+;
+#pragma link C++ class AliRsnCutCascade+;
 #pragma link C++ class AliRsnCutDaughterSigmaStar2010PP+;
 #pragma link C++ class AliRsnCutSetDaughterParticle+;
 #pragma link C++ class AliRsnCutPhiRAA+;
@@ -74,8 +76,9 @@
 #pragma link C++ class AliRsnMiniResonanceFinder+;
 #pragma link C++ class AliRsnTrainManager+;
 #pragma link C++ class AliRsnMiniTaskPhiVn+;
-
 // Xi1530
 #pragma link C++ class AliAnalysisTaskXi1530+;
-#pragma link C++ class AliAnalysisTaskXi1530RunTable+;
+//f0980
+#pragma link C++ class AliAnalysisTaskInclusivef0f2+;
+
 #endif

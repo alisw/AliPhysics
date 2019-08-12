@@ -4,6 +4,7 @@
 #include "TNamed.h"
 #include "TMath.h"
 #include "TAxis.h"
+using std::vector;
 class AliGFWCumulant {
  public:
   AliGFWCumulant();
@@ -22,10 +23,15 @@ class AliGFWCumulant {
   TComplex Vec(Int_t, Int_t, Int_t ptbin=0); //envelope class to summarize pt-dif. Q-vec getter
   Int_t fN; //! Harmonics
   Int_t fPow; //! Power
+  vector<Int_t> fPowVec; //! Powers array
   Int_t fPt; //!fPt bins
+  Bool_t *fFilledPts;
   Bool_t fInitialized; //Arrays are initialized
   void CreateComplexVectorArray(Int_t N=1, Int_t P=1, Int_t Pt=1);
+  void CreateComplexVectorArrayVarPower(Int_t N=1, vector<Int_t> Pvec={1}, Int_t Pt=1);
+  Int_t PW(Int_t ind) { return fPowVec.at(ind); }; //No checks to speed up, be carefull!!!
   void DestroyComplexVectorArray();
+  Bool_t IsPtBinFilled(Int_t ptb) { if(!fFilledPts) return kFALSE; return fFilledPts[ptb]; };
 };
 
 #endif

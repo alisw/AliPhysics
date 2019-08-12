@@ -16,6 +16,7 @@
 // L. van Doremalen, lennart.van.doremalen@cern.ch
 // J. Norman, jaime.norman@cern.ch
 // G. Luparello, grazia.luparello@cern.ch
+// N. Zardoshti, nima.zardoshti@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include <cmath>
@@ -25,6 +26,7 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliPIDResponse.h"
 #include "AliESDtrack.h"
+#include "TMath.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFTreeHandler);
@@ -38,6 +40,7 @@ AliHFTreeHandler::AliHFTreeHandler():
   fCandType(0),
   fInvMass(-9999.),
   fPt(-9999.),
+  fPtGen(-9999.),
   fY(-9999.),
   fEta(-9999.),
   fPhi(-9999.),
@@ -54,7 +57,45 @@ AliHFTreeHandler::AliHFTreeHandler():
   fIsMCGenTree(false),
   fDauInAcceptance(false),
   fEvID(9999),
-  fRunNumber(9999)
+  fRunNumber(9999),
+  fRunNumberPrevCand(9999),
+  fApplyNsigmaTPCDataCorr(false),
+  fSystNsigmaTPCDataCorr(AliAODPidHF::kNone),
+  fMeanNsigmaTPCPionData{},
+  fMeanNsigmaTPCKaonData{},
+  fMeanNsigmaTPCProtonData{},
+  fSigmaNsigmaTPCPionData{},
+  fSigmaNsigmaTPCKaonData{},
+  fSigmaNsigmaTPCProtonData{},
+  fPlimitsNsigmaTPCDataCorr{},
+  fNPbinsNsigmaTPCDataCorr(0),
+  fEtalimitsNsigmaTPCDataCorr{},
+  fNEtabinsNsigmaTPCDataCorr(0),
+  fPtJet(-99.),
+  fPtGenJet(-99.),
+  fEtaJet(-99.),
+  fEtaGenJet(-99.),
+  fPhiJet(-99.),
+  fPhiGenJet(-99.),
+  fDeltaEtaJetHadron(-99.),
+  fDeltaEtaGenJetHadron(-99.),
+  fDeltaPhiJetHadron(-99.),
+  fDeltaPhiGenJetHadron(-99.),
+  fDeltaRJetHadron(-99.),
+  fDeltaRGenJetHadron(-99.),
+  fNTracksJet(-99.),
+  fNTracksGenJet(-99.),
+  fZgJet(-99.),
+  fZgGenJet(-99.),
+  fRgJet(-99.),
+  fRgGenJet(-99.),
+  fFillJets(false),
+  fDoJetSubstructure(false), 
+  fJetRadius(0.4),
+  fSubJetRadius(0.2),
+  fJetAlgorithm(0),
+  fSubJetAlgorithm(2),
+  fMinJetPt(0.0)
 {
   //
   // Default constructor
@@ -74,24 +115,33 @@ AliHFTreeHandler::AliHFTreeHandler():
     fITSclsMapProng[iProng] = -9999;
     fTrackIntegratedLengthProng[iProng] = -9999.;
     fStartTimeResProng[iProng] = -9999.;
-    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++) {
-      fPIDrawVector[iProng][iDet] = -9999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++)
+      fPIDrawVector[iProng][iDet] = -999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid+1; iDet++) {
       for(unsigned int iHypo=0; iHypo<knMaxHypo4Pid; iHypo++) {
-        fPIDNsigmaVector[iProng][iDet][iHypo] = -9999.;
-        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999999;      
+        fPIDNsigmaVector[iProng][iDet][iHypo] = -999.;
+        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999;      
       }
     }
+  }
+
+  for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
+    fPlimitsNsigmaTPCDataCorr[iP] = 0.;
+  }
+  for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
+    fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
   }
 }
 
 //________________________________________________________________
 AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
-    TObject(),
+  TObject(),
   fTreeVar(nullptr),
   fNProngs(-1),
   fCandType(0),
   fInvMass(-9999.),
   fPt(-9999.),
+  fPtGen(-9999.),
   fY(-9999.),
   fEta(-9999.),
   fPhi(-9999.),
@@ -108,7 +158,45 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fIsMCGenTree(false),
   fDauInAcceptance(false),
   fEvID(9999),
-  fRunNumber(9999)
+  fRunNumber(9999),
+  fRunNumberPrevCand(9999),
+  fApplyNsigmaTPCDataCorr(false),
+  fSystNsigmaTPCDataCorr(AliAODPidHF::kNone),
+  fMeanNsigmaTPCPionData{},
+  fMeanNsigmaTPCKaonData{},
+  fMeanNsigmaTPCProtonData{},
+  fSigmaNsigmaTPCPionData{},
+  fSigmaNsigmaTPCKaonData{},
+  fSigmaNsigmaTPCProtonData{},
+  fPlimitsNsigmaTPCDataCorr{},
+  fNPbinsNsigmaTPCDataCorr(0),
+  fEtalimitsNsigmaTPCDataCorr{},
+  fNEtabinsNsigmaTPCDataCorr(0),
+  fPtJet(-99.),
+  fPtGenJet(-99.),
+  fEtaJet(-99.),
+  fEtaGenJet(-99.),
+  fPhiJet(-99.),
+  fPhiGenJet(-99.),
+  fDeltaEtaJetHadron(-99.),
+  fDeltaEtaGenJetHadron(-99.),
+  fDeltaPhiJetHadron(-99.),
+  fDeltaPhiGenJetHadron(-99.),
+  fDeltaRJetHadron(-99.),
+  fDeltaRGenJetHadron(-99.),
+  fNTracksJet(-99.),
+  fNTracksGenJet(-99.),
+  fZgJet(-99.),
+  fZgGenJet(-99.),
+  fRgJet(-99.),
+  fRgGenJet(-99.),
+  fFillJets(false),
+  fDoJetSubstructure(false), 
+  fJetRadius(0.4),
+  fSubJetRadius(0.2),
+  fJetAlgorithm(0),
+  fSubJetAlgorithm(2),
+  fMinJetPt(0.0)
 {
   //
   // Standard constructor
@@ -128,13 +216,21 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
     fITSclsMapProng[iProng] = -9999;
     fTrackIntegratedLengthProng[iProng] = -9999.;
     fStartTimeResProng[iProng] = -9999.;
-    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++) {
-      fPIDrawVector[iProng][iDet] = -9999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++)
+      fPIDrawVector[iProng][iDet] = -999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid+1; iDet++) {
       for(unsigned int iHypo=0; iHypo<knMaxHypo4Pid; iHypo++) {
-        fPIDNsigmaVector[iProng][iDet][iHypo] = -9999.;
-        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999999;      
+        fPIDNsigmaVector[iProng][iDet][iHypo] = -999.;
+        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999;      
       }
     }
+  }
+
+  for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
+    fPlimitsNsigmaTPCDataCorr[iP] = 0.;
+  }
+  for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
+    fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
   }
 }
 
@@ -167,6 +263,8 @@ TTree* AliHFTreeHandler::BuildTreeMCGen(TString name, TString title) {
   fTreeVar->Branch("phi_cand",&fPhi);
   fTreeVar->Branch("dau_in_acc",&fDauInAcceptance);
 
+  if (fFillJets) AddGenJetBranches(); //Gen Jet Branches added here
+  
   return fTreeVar;
 }
 
@@ -209,6 +307,7 @@ void AliHFTreeHandler::AddCommonDmesonVarBranches() {
   fTreeVar->Branch("cand_type",&fCandType);
   fTreeVar->Branch("inv_mass",&fInvMass);
   fTreeVar->Branch("pt_cand",&fPt);
+  fTreeVar->Branch("pt_gen_cand",&fPtGen);
   fTreeVar->Branch("y_cand",&fY);
   fTreeVar->Branch("eta_cand",&fEta);
   fTreeVar->Branch("phi_cand",&fPhi);
@@ -232,12 +331,15 @@ void AliHFTreeHandler::AddSingleTrackBranches() {
       fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
       fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
       fTreeVar->Branch(Form("phi_prong%d",iProng),&fPhiProng[iProng]);
+      fTreeVar->Branch(Form("p_prong%d",iProng),&fPProng[iProng]);
+      fTreeVar->Branch(Form("spdhits_prong%d",iProng),&fSPDhitsProng[iProng]);
     }
     else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
       fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
       fTreeVar->Branch(Form("phi_prong%d",iProng),&fPhiProng[iProng]);
       fTreeVar->Branch(Form("p_prong%d",iProng),&fPProng[iProng]);
+      fTreeVar->Branch(Form("spdhits_prong%d",iProng),&fSPDhitsProng[iProng]);
       fTreeVar->Branch(Form("nTPCcls_prong%d",iProng),&fNTPCclsProng[iProng]);
       fTreeVar->Branch(Form("nTPCclspid_prong%d",iProng),&fNTPCclsPidProng[iProng]);
       fTreeVar->Branch(Form("nTPCcrossrow_prong%d",iProng),&fNTPCCrossedRowProng[iProng]);
@@ -249,11 +351,52 @@ void AliHFTreeHandler::AddSingleTrackBranches() {
 }
 
 //________________________________________________________________
+void AliHFTreeHandler::AddJetBranches() { //Jet branches added
+
+  fTreeVar->Branch("pt_jet",&fPtJet);
+  fTreeVar->Branch("pt_gen_jet",&fPtGenJet);
+  fTreeVar->Branch("eta_jet",&fEtaJet);
+  fTreeVar->Branch("eta_gen_jet",&fEtaGenJet);
+  fTreeVar->Branch("phi_jet",&fPhiJet);
+  fTreeVar->Branch("phi_gen_jet",&fPhiGenJet);
+  fTreeVar->Branch("delta_eta_jet",&fDeltaEtaJetHadron);
+  fTreeVar->Branch("delta_eta_gen_jet",&fDeltaEtaGenJetHadron);
+  fTreeVar->Branch("delta_phi_jet",&fDeltaPhiJetHadron);
+  fTreeVar->Branch("delta_phi_gen_jet",&fDeltaPhiGenJetHadron);
+  fTreeVar->Branch("delta_r_jet",&fDeltaRJetHadron);
+  fTreeVar->Branch("delta_r_gen_jet",&fDeltaRGenJetHadron);
+  fTreeVar->Branch("ntracks_jet",&fNTracksJet);
+  fTreeVar->Branch("ntracks_gen_jet",&fNTracksGenJet);
+  fTreeVar->Branch("zg_jet",&fZgJet);
+  fTreeVar->Branch("zg_gen_jet",&fZgGenJet);
+  fTreeVar->Branch("rg_jet",&fRgJet);
+  fTreeVar->Branch("rg_gen_jet",&fRgGenJet);
+
+    
+}
+
+//________________________________________________________________
+void AliHFTreeHandler::AddGenJetBranches() { //Gen jet branches added
+
+  fTreeVar->Branch("pt_jet",&fPtGenJet);
+  fTreeVar->Branch("eta_jet",&fEtaGenJet);
+  fTreeVar->Branch("phi_jet",&fPhiGenJet);
+  fTreeVar->Branch("delta_eta_jet",&fDeltaEtaGenJetHadron);
+  fTreeVar->Branch("delta_phi_jet",&fDeltaPhiGenJetHadron);
+  fTreeVar->Branch("delta_r_jet",&fDeltaRGenJetHadron);
+  fTreeVar->Branch("ntracks_jet",&fNTracksGenJet);
+  fTreeVar->Branch("zg_jet",&fZgGenJet);
+  fTreeVar->Branch("rg_jet",&fRgGenJet);
+
+    
+}
+
+//________________________________________________________________
 void AliHFTreeHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF) 
 {
 
   if(fPidOpt==kNoPID) return;
-  if(fPidOpt>kRawAndNsigmaPID) {
+  if(fPidOpt>kNsigmaDetAndCombPID) {
     AliWarning("Wrong PID setting!");
     return;
   }
@@ -265,21 +408,25 @@ void AliHFTreeHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool u
   TString rawPidName[knMaxDet4Pid] = {"dEdxTPC","ToF"};
 
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
-    if((fPidOpt>=kNsigmaPID && fPidOpt<=kNsigmaPIDfloatandint) || fPidOpt==kRawAndNsigmaPID) {
+    if((fPidOpt>=kNsigmaPID && fPidOpt<=kNsigmaPIDfloatandint) || fPidOpt>=kRawAndNsigmaPID) {
       for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++) {
         if(!useDet[iDet]) continue;
         for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
           if(!useHypo[iPartHypo]) continue;
-          if(fPidOpt==kNsigmaPID || fPidOpt==kNsigmaPIDfloatandint || fPidOpt==kRawAndNsigmaPID) fTreeVar->Branch(Form("nsig%s_%s_%d",detName[iDet].Data(),partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaVector[iProng][iDet][iPartHypo]);
-          if(fPidOpt==kNsigmaPIDint || fPidOpt==kNsigmaPIDfloatandint) fTreeVar->Branch(Form("nsig%s_%s_%d",detName[iDet].Data(),partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaIntVector[iProng][iDet][iPartHypo]);
+          if(fPidOpt==kNsigmaPID || fPidOpt==kNsigmaPIDfloatandint || fPidOpt>=kRawAndNsigmaPID) 
+            fTreeVar->Branch(Form("nsig%s_%s_%d",detName[iDet].Data(),partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaVector[iProng][iDet][iPartHypo]);
+          if(fPidOpt==kNsigmaPIDint || fPidOpt==kNsigmaPIDfloatandint) 
+            fTreeVar->Branch(Form("int_nsig%s_%s_%d",detName[iDet].Data(),partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaIntVector[iProng][iDet][iPartHypo]);
         }
       }
     }
-    if(fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) {
+    if((fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt==kNsigmaDetAndCombPID) {
       for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
         if(!useHypo[iPartHypo]) continue;
-        if(fPidOpt==kNsigmaCombPID || fPidOpt==kNsigmaCombPIDfloatandint) fTreeVar->Branch(Form("nsigComb_%s_%d",partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaVector[iProng][0][iPartHypo]);
-        if(fPidOpt==kNsigmaCombPIDint || fPidOpt==kNsigmaCombPIDfloatandint) fTreeVar->Branch(Form("int_nsigComb_%s_%d",partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaIntVector[iProng][0][iPartHypo]);
+        if(fPidOpt==kNsigmaCombPID || fPidOpt==kNsigmaCombPIDfloatandint || fPidOpt==kNsigmaDetAndCombPID)
+          fTreeVar->Branch(Form("nsigComb_%s_%d",partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaVector[iProng][kCombTPCTOF][iPartHypo]);
+        if(fPidOpt==kNsigmaCombPIDint || fPidOpt==kNsigmaCombPIDfloatandint) 
+          fTreeVar->Branch(Form("int_nsigComb_%s_%d",partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaIntVector[iProng][kCombTPCTOF][iPartHypo]);
       }
     }
     if(fPidOpt==kRawPID || fPidOpt==kRawAndNsigmaPID) {
@@ -319,12 +466,15 @@ bool AliHFTreeHandler::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
       fPtProng[iProng]=prongtracks[iProng]->Pt();
       fEtaProng[iProng]=prongtracks[iProng]->Eta();
       fPhiProng[iProng]=prongtracks[iProng]->Phi();
+      fPProng[iProng]=prongtracks[iProng]->P();
+      fSPDhitsProng[iProng] = prongtracks[iProng]->GetITSClusterMap() & 0x3;
     }
     else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fPtProng[iProng]=prongtracks[iProng]->Pt();
       fEtaProng[iProng]=prongtracks[iProng]->Eta();
       fPhiProng[iProng]=prongtracks[iProng]->Phi();
       fPProng[iProng]=prongtracks[iProng]->P();
+      fSPDhitsProng[iProng] = prongtracks[iProng]->GetITSClusterMap() & 0x3;
       fNTPCclsProng[iProng]=prongtracks[iProng]->GetTPCNcls();
       fNTPCclsPidProng[iProng]=prongtracks[iProng]->GetTPCsignalN();
       fNTPCCrossedRowProng[iProng]=prongtracks[iProng]->GetTPCNCrossedRows();
@@ -336,6 +486,89 @@ bool AliHFTreeHandler::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
 
   return true;
 }
+
+
+//________________________________________________________________
+void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, Double_t invmass, TClonesArray *mcarray, AliAODMCParticle* mcPart) {
+#ifdef HAVE_FASTJET
+  AliHFJetFinder hfjetfinder;
+  SetJetParameters(hfjetfinder); 
+  AliHFJet hfjet(hfjetfinder.GetHFJet(array,cand,invmass));
+  SetJetTreeVars(hfjet);
+  
+  AliHFJet hfgenjet;
+  if (mcarray && mcPart){
+    AliHFJetFinder hfgenjetfinder;
+    SetJetParameters(hfgenjetfinder); 
+    hfgenjet=hfgenjetfinder.GetHFMCJet(mcarray,mcPart);
+  }
+  SetGenJetTreeVars(hfgenjet);
+#else
+  cout << "You need to have fastjet installed to get meaningful results" <<endl;
+#endif 
+
+}
+
+
+//________________________________________________________________
+void AliHFTreeHandler::SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart) {
+#ifdef HAVE_FASTJET
+  AliHFJetFinder hfjetfinder;
+  SetJetParameters(hfjetfinder);
+  AliHFJet hfjet(hfjetfinder.GetHFMCJet(array,mcPart));
+	  
+  SetGenJetTreeVars(hfjet);
+#else
+  cout << "You need to have fastjet installed to get meaningful results" <<endl;
+#endif 
+}
+#ifdef HAVE_FASTJET
+//________________________________________________________________
+void AliHFTreeHandler::SetJetParameters(AliHFJetFinder& hfjetfinder){
+
+  hfjetfinder.SetJetRadius(fJetRadius);
+  hfjetfinder.SetJetAlgorithm(fJetAlgorithm);
+  hfjetfinder.SetMinJetPt(fMinJetPt);
+  hfjetfinder.SetSubJetRadius(fSubJetRadius);
+  hfjetfinder.SetSubJetAlgorithm(fSubJetAlgorithm);
+  hfjetfinder.SetDoJetSubstructure(fDoJetSubstructure);
+
+}
+#endif
+//________________________________________________________________
+void AliHFTreeHandler::SetJetTreeVars(AliHFJet hfjet){
+
+  fPtJet=hfjet.GetPt();
+  fEtaJet=hfjet.GetEta();
+  fPhiJet=hfjet.GetPhi();
+  fDeltaEtaJetHadron=hfjet.GetDeltaEta();
+  fDeltaPhiJetHadron=hfjet.GetDeltaPhi();
+  fDeltaRJetHadron=hfjet.GetDeltaR();
+  fNTracksJet=hfjet.GetN();
+  if (fDoJetSubstructure){
+    fZgJet=hfjet.GetZg();
+    fRgJet=hfjet.GetRg();
+  }
+
+}
+
+//________________________________________________________________
+void AliHFTreeHandler::SetGenJetTreeVars(AliHFJet hfjet){
+
+  fPtGenJet=hfjet.GetPt();
+  fEtaGenJet=hfjet.GetEta();
+  fPhiGenJet=hfjet.GetPhi();
+  fDeltaEtaGenJetHadron=hfjet.GetDeltaEta();
+  fDeltaPhiGenJetHadron=hfjet.GetDeltaPhi();
+  fDeltaRGenJetHadron=hfjet.GetDeltaR();
+  fNTracksGenJet=hfjet.GetN();
+  if (fDoJetSubstructure){
+    fZgGenJet=hfjet.GetZg();
+    fRgGenJet=hfjet.GetRg();
+  }
+
+}
+
 
 //________________________________________________________________
 bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF) 
@@ -358,12 +591,20 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
   
   //compute PID variables for different options
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
-    if((fPidOpt>=kNsigmaPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt==kRawAndNsigmaPID) {
+    if((fPidOpt>=kNsigmaPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt>=kRawAndNsigmaPID) {
       for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
         if(useHypo[iPartHypo]) {
-          if(useTPC) sig[iProng][kTPC][iPartHypo] = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
+          if(useTPC) {
+          float nSigmaTPC = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
+            if(fApplyNsigmaTPCDataCorr && nSigmaTPC>-990.) {
+              float sigma=1., mean=0.;
+              GetNsigmaTPCMeanSigmaData(mean, sigma, parthypo[iPartHypo], prongtracks[iProng]->GetTPCmomentum(), prongtracks[iProng]->Eta());
+              nSigmaTPC = (nSigmaTPC-mean)/sigma;
+            }
+            sig[iProng][kTPC][iPartHypo] = nSigmaTPC;
+          }
           if(useTOF) sig[iProng][kTOF][iPartHypo] = pidrespo->NumberOfSigmasTOF(prongtracks[iProng],parthypo[iPartHypo]);
-          if(fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) {
+          if(((fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt==kNsigmaDetAndCombPID) && useTPC && useTOF) {
             sigComb[iProng][iPartHypo] = CombineNsigmaDiffDet(sig[iProng][kTPC][iPartHypo],sig[iProng][kTOF][iPartHypo]);
           }
         }
@@ -430,7 +671,7 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
       for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
         for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
           if(!useHypo[iPartHypo]) continue;
-          fPIDNsigmaVector[iProng][0][iPartHypo]=sigComb[iProng][iPartHypo];
+          fPIDNsigmaVector[iProng][kCombTPCTOF][iPartHypo]=sigComb[iProng][iPartHypo];
         }
       }
     break;
@@ -438,7 +679,7 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
       for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
         for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
           if(!useHypo[iPartHypo]) continue;
-          fPIDNsigmaIntVector[iProng][0][iPartHypo]=RoundFloatToInt(sigComb[iProng][iPartHypo]*100);
+          fPIDNsigmaIntVector[iProng][kCombTPCTOF][iPartHypo]=RoundFloatToInt(sigComb[iProng][iPartHypo]*100);
         }
       }
     break;
@@ -446,8 +687,8 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
       for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
         for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
           if(!useHypo[iPartHypo]) continue;
-          fPIDNsigmaVector[iProng][0][iPartHypo]=sigComb[iProng][iPartHypo]*100;
-          fPIDNsigmaIntVector[iProng][0][iPartHypo]=RoundFloatToInt(sigComb[iProng][iPartHypo]*100);
+          fPIDNsigmaVector[iProng][kCombTPCTOF][iPartHypo]=sigComb[iProng][iPartHypo]*100;
+          fPIDNsigmaIntVector[iProng][kCombTPCTOF][iPartHypo]=RoundFloatToInt(sigComb[iProng][iPartHypo]*100);
         }
       }
     break;
@@ -483,6 +724,18 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
         }
       }
     break;
+    case 9: //kNsigmaDetAndCombPID
+      for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
+        for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
+          if(!useHypo[iPartHypo]) continue;
+          fPIDNsigmaVector[iProng][kCombTPCTOF][iPartHypo]=sigComb[iProng][iPartHypo];
+          for(int iDet=kTPC; iDet<=kTOF; iDet++) {
+            if(!useDet[iDet]) continue;
+            fPIDNsigmaVector[iProng][iDet][iPartHypo]=sig[iProng][iDet][iPartHypo];
+          }
+        }
+      }
+    break;
     default:
       AliWarning("Wrong PID setting!");
       return false;
@@ -497,8 +750,8 @@ double AliHFTreeHandler::CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF
 {
   if(nsigmaTPC > -998. && nsigmaTOF > -998.) return TMath::Sqrt((nsigmaTPC*nsigmaTPC+nsigmaTOF*nsigmaTOF)/2);
   else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return nsigmaTPC;
-  else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return nsigmaTPC;
-  else return -9999.;
+  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return nsigmaTOF;
+  else return -999.;
 }
 
 //________________________________________________________________
@@ -535,4 +788,48 @@ float AliHFTreeHandler::GetTOFmomentum(AliAODTrack* track, AliPIDResponse* pidre
 
   if(TMath::Abs(beta_d-1.) < 1.e-12) return track->GetTPCmomentum();
   else return mass*beta_d/sqrt(1.-(beta_d*beta_d));
+}
+
+//________________________________________________________________
+void AliHFTreeHandler::GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta) {
+    
+  if(fRunNumber!=fRunNumberPrevCand)
+    AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fRunNumber, fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, 
+                                                  fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, 
+                                                  fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
+
+  int bin = TMath::BinarySearch(fNPbinsNsigmaTPCDataCorr,fPlimitsNsigmaTPCDataCorr,pTPC);
+  if(bin<0) bin=0; //underflow --> equal to min value
+  else if(bin>fNPbinsNsigmaTPCDataCorr-1) bin=fNPbinsNsigmaTPCDataCorr-1; //overflow --> equal to max value
+
+  int etabin = TMath::BinarySearch(fNEtabinsNsigmaTPCDataCorr,fEtalimitsNsigmaTPCDataCorr,TMath::Abs(eta));
+  if(etabin<0) etabin=0; //underflow --> equal to min value
+  else if(etabin>fNEtabinsNsigmaTPCDataCorr-1) etabin=fNEtabinsNsigmaTPCDataCorr-1; //overflow --> equal to max value
+
+  switch(species) {
+    case AliPID::kPion: 
+    {
+      mean = fMeanNsigmaTPCPionData[etabin][bin];
+      sigma = fSigmaNsigmaTPCPionData[etabin][bin];
+      break;
+    }
+    case AliPID::kKaon: 
+    {
+      mean = fMeanNsigmaTPCKaonData[etabin][bin];
+      sigma = fSigmaNsigmaTPCKaonData[etabin][bin];
+      break;
+    }
+    case AliPID::kProton: 
+    {
+      mean = fMeanNsigmaTPCProtonData[etabin][bin];
+      sigma = fSigmaNsigmaTPCProtonData[etabin][bin];
+      break;
+    }
+    default: 
+    {
+      mean = 0.;
+      sigma = 1.;
+      break;
+    }
+  }
 }

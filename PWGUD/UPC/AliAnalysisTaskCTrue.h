@@ -16,6 +16,7 @@
 
 class TTree;
 class TH1I;
+// class TGraphErrors;
 class TList;
 class AliAODEvent;
 
@@ -105,39 +106,67 @@ public:
                                  */
     void                        SetXeXe();
 
-                                /**
-                                 * Function computing the binomial error.
-                                 * It has two inputs.
-                                 *
-                                 * \param cut , the threshold value
-                                 * \param CTRUE, the number of CTRUE events
-                                 *
-                                 * If I understand well enough the efficiency
-                                 * would be something like cut/CTRUE.
-                                 * Hence the binomial error would be
-                                 * something similar to the
-                                 * \sqrt[eff*(1-eff)/CTRUE].
-                                 */
-    Double_t                    BinomialError(Double_t cut, Double_t CTRUE);
-
-                                /**
-                                 * This function executes the polinomial
-                                 * fit to the wanted distribution.
-                                 */
-    Double_t                    FitPolinomial(Double_t *x, Double_t *p);
-
-                                /**
-                                 * Compute the total efficiency.
-                                 */
-    void                        ComputeEfficiency(  Int_t n,
-                                                    Double_t *weight,
-                                                    Double_t *mu,
-    	                                              Double_t p0,
-                                                    Double_t p0e,
-                                                    Double_t p1,
-                                                    Double_t p1e,
-    	                                              Double_t *eff
-                                                    );
+    //                             /**
+    //                              * Function computing the binomial error.
+    //                              * It has two inputs.
+    //                              *
+    //                              * \param cut , the threshold value
+    //                              * \param CTRUE, the number of CTRUE events
+    //                              *
+    //                              * If I understand well enough the efficiency
+    //                              * would be something like cut/CTRUE.
+    //                              * Hence the binomial error would be
+    //                              * something similar to the
+    //                              * \sqrt[eff*(1-eff)/CTRUE].
+    //                              */
+    // Double_t                    BinomialError(Double_t cut, Double_t CTRUE);
+    //
+    //                             /**
+    //                              * This function executes the polinomial
+    //                              * fit to the wanted distribution.
+    //                              */
+    // Double_t                    FitPolinomial(Double_t *x, Double_t *p);
+    //
+    //                             /**
+    //                              * Compute the total efficiency.
+    //                              */
+    // void                        ComputeEfficiency(  Int_t n,
+    //                                                 Double_t *weight,
+    //                                                 Double_t *mu,
+    // 	                                              Double_t p0,
+    //                                                 Double_t p0e,
+    //                                                 Double_t p1,
+    //                                                 Double_t p1e,
+    // 	                                              Double_t *eff
+    //                                                 // std::vector<Double_t>* fVectorEfficiencyC
+    //                                                 );
+    //
+    //                             /**
+    //                              * Normalize the total efficiency and
+    //                              * retrieve the value with the corresponding
+    //                              * error.
+    //                              */
+    // Double_t*                   NormalizeEfficiency();
+    //
+    //                             /**
+    //                              * This function takes as argument 2 TH1F*
+    //                              * and one TGraph. Basically it is like a fit.
+    //                              * What happens here is that we obtain the final
+    //                              * results we wanted for the efficiency.
+    //                              * This needs all the other histograms to
+    //                              * have already been filled however...
+    //                              * This is the reason why it has to be called
+    //                              * at the end of the analysis, inside the
+    //                              * Terminate() function!!
+    //                              *
+    //                              * \param signal: the signal histo
+    //                              * \param bkg:    the bkg    histo
+    //                              * \param graphToBeFilled: self-explanatory
+    //                              */
+    // void                        DoPlot( TH1F*         signal,
+    //                                     TH1F*         background,
+    //                                     TGraphErrors* graphToBeFilled
+    //                                     );
 
                                 /**
                                  * Called at the END of the analysis (when all
@@ -219,8 +248,431 @@ private:
                                  */
     AliRunWithMuAndWeight       fMapGoodRunsToMuAndWeight;
 
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 */
+    TH1F*                       fEntriesAgainstRunNumberProperlyH;         //!
+
+    /*_________________________________________________________________________
+    ***************************************************************************
+    *                                                                         *
+    *                                                                         *
+    *                             CTRUE == 1 (B)                              *
+    *                                                                         *
+    *                                                                         *
+    ***************************************************************************
+    __________________________________________________________________________*/
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Counting the number of CTRUE==1 events.
+                                 */
+    TH1F*                       fCTrueBEventsPerRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Counting the number of CTRUE==1 events
+                                 * with the following conditions:
+                                 * !f0UBA
+                                 * !f0UBC
+                                 * fADCDecision == 0
+                                 * fADCDecision == 0
+                                 * !f0VBA
+                                 * fV0ADecision == 0
+                                 * !f0VBC
+                                 * fV0CDecision == 0
+                                 */
+    TH1F*                       fCTrueBEventsPerRunNumberConditionsH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fTrackletsPerRunNumberH;         //!
 
     //_______________________________
+    // - V0A PLOTS
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fRecurringVetoAH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fRecurringVetoAtrackletsH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVBAforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing
+                                 * tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVBATrackletsForRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VDA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVDAforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VDA firing
+                                 * tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVDATrackletsForRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA and VDA
+                                 * firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVBAandVDAforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA and VDA
+                                 * firing tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVBAandVDATrackletsForRunNumberH;         //!
+
+    //_______________________________
+    // - V0C PLOTS
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fRecurringVetoCH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBA firing per
+                                 * run number.
+                                 */
+    TH1F*                       fRecurringVetoCtrackletsH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBC firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVBCforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBC firing
+                                 * tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVBCTrackletsForRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 *
+                                 * Recording the number of VDC firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVDCforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VDC firing
+                                 * tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVDCTrackletsForRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBC and VDC
+                                 * firing per
+                                 * run number.
+                                 */
+    TH1F*                       fVBCandVDCforRunNumberH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * What is different is the usage of proper
+                                 * bin labels...
+                                 *
+                                 * Recording the number of VBC and
+                                 * VDC firing tracklets per
+                                 * run number.
+                                 */
+    TH1F*                       fVBCandVDCTrackletsForRunNumberH;         //!
+
+                                /**
+                                 * This histogram shows the distribution of
+                                 * fV0CDecision VS fADCDecision. This should
+                                 * behave like some kind of Truth Table, with
+                                 * most data points focused on the True-True
+                                 * and False-False cells.
+                                 */
+    TH2F*                       fCTRUEBfV0CDecisionVSfADCDecisionH;
+
+                                /**
+                                 * This histogram shows the distribution of
+                                 * fV0ADecision VS fADADecision. This should
+                                 * behave like some kind of Truth Table, with
+                                 * most data points focused on the True-True
+                                 * and False-False cells.
+                                 */
+    TH2F*                       fCTRUEBfV0ADecisionVSfADADecisionH;
+
+
+
+    //__________________________________________________________________________
+    // RESULTS TGRAPHERRORS
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * Only tracklets without V0A or V0C requests.
+    //                              */
+    // TGraphErrors*               fOnlyTrackletsGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * Only VBA requested.
+    //                              */
+    // TGraphErrors*               fVbaGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * Only VBA with tracklets requested.
+    //                              */
+    // TGraphErrors*               fVbaTrackletsGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * Only VDA requested.
+    //                              */
+    // TGraphErrors*               fVdaGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * Only VDA with tracklets requested.
+    //                              */
+    // TGraphErrors*               fVdaTrackletsGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * VBA and VDA requested.
+    //                              */
+    // TGraphErrors*               fVbaAndVdaGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * VBA and VDA and tracklets requested.
+    //                              */
+    // TGraphErrors*               fVbaAndVdaTrackletsGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * VBC requested.
+    //                              */
+    // TGraphErrors*               fVbcGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * VBC and tracklets requested.
+    //                              */
+    // TGraphErrors*               fVbcTrackletsGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * VDC requested.
+    //                              */
+    // TGraphErrors*               fVdcGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * VDC and tracklets requested.
+    //                              */
+    // TGraphErrors*               fVdcTrackletsGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * VBC and VDC requested.
+    //                              */
+    // TGraphErrors*               fVbcAndVdcGE;
+    //
+    //                             /**
+    //                              * TGraphErrors to be filled in the
+    //                              * Terminate() function from which we could
+    //                              * possibly retrieve the efficiency...
+    //                              *
+    //                              * VBC and VDC and tracklets requested.
+    //                              */
+    // TGraphErrors*               fVbcAndVdcTrackletsGE;
+
+
+    // _______________________________
     // CUTS
     /**
      * The following is all the possible checks for the event selections
@@ -287,6 +739,18 @@ private:
     UChar_t inputId_0OM2;     //!
     UChar_t inputId_0VOM;     //!
 
+                                /**
+                                 * This is the total weight needed for
+                                 * computing efficiencies and similar stuff.
+                                 */
+    Double_t                    TotalWeightForEfficiency;     //!
+
+                                /**
+                                 * Vector containing the efficiency
+                                 * values. There will be three of them, one
+                                 * for each of the efficiencies...
+                                 */
+    std::vector<Double_t>*      fVectorEfficiency;     //!
 
     /**
      * Not implemented yet...
@@ -304,7 +768,7 @@ private:
      * If I happen to encounter it again in the future, I will make sure to
      * record it!
      */
-    ClassDef(AliAnalysisTaskCTrue, 1);
+    ClassDef(AliAnalysisTaskCTrue, 6);
 };
 
 #endif

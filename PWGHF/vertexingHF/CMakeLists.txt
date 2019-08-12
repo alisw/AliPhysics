@@ -17,9 +17,12 @@
 set(MODULE PWGHFvertexingHF)
 add_definitions(-D_MODULE_="${MODULE}")
 add_subdirectory (TMVA)
+add_subdirectory (vHFBDT)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
+
+include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -76,7 +79,9 @@ set(SRCS
   AliAnalysisTaskSEDplus.cxx
   AliAnalysisTaskSEDs.cxx
   AliAnalysisTaskSELambdac.cxx
+  AliAnalysisTaskSED0BDT.cxx
   AliAnalysisTaskSED0Mass.cxx
+  AliAnalysisTaskSED0MassTMVA.cxx
   AliAnalysisTaskSELambdacTMVA.cxx
   AliAnalysisTaskSED0MassCutVarFDSub.cxx
   AliAnalysisTaskSECharmFraction.cxx
@@ -116,6 +121,7 @@ set(SRCS
   AliAnalysisTaskSEMonitNorm.cxx
   AliAnalysisTaskSEBkgLikeSignD0.cxx
   AliAnalysisTaskSEImproveITS.cxx
+  AliAnalysisTaskSEImproveITSCVMFS.cxx
   AliAnalysisTaskCombinHF.cxx
   charmFlow/AliEventPlaneResolutionHandler.cxx
   charmFlow/AliAnalysisTaskSEHFvn.cxx
@@ -136,6 +142,8 @@ set(SRCS
   cutVarFDsub/AliHFCutVarFDsubMinimiser.cxx
   upgrade/AliAnalysisTaskSELambdacUp.cxx
   upgrade/AliAnalysisTaskCountLcEta.cxx
+  upgrade/AliAnalysisTaskSEImproveITS3.cxx
+  upgrade/AliAnalysisTaskSELbtoLcpi4.cxx
   AliAnalysisTaskSELc2eleLambdafromAODtracks.cxx
   AliAnalysisTaskSELc2V0bachelorTMVA.cxx
   AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
@@ -148,6 +156,8 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
   AliAnalysisTaskSEHFSystPID.cxx
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
+  AliAnalysisTaskSEXicTopKpi.cxx
+  AliRDHFCutsXictopKpi.cxx
    )
 
 # Headers from sources
@@ -164,7 +174,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface)
+set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -222,4 +232,5 @@ install(DIRECTORY
             macros
         DESTINATION PWGHF/vertexingHF/)
 
+install(DIRECTORY upgrade DESTINATION PWGHF/vertexingHF)
 install(DIRECTORY charmFlow DESTINATION PWGHF/vertexingHF)

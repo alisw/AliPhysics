@@ -172,7 +172,7 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kPlaneAngle:
          return event->Angle();
       case kLeadingPt:
-         l = event->LeadingParticle();
+         l = event->LeadingParticle(fUseMCInfo);
          if (l) {
             l->Set4Vector(v,-1.0,fUseMCInfo);
             return v.Pt();
@@ -207,7 +207,7 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kCosThetaToEventPlane:
          return pair->CosThetaToEventPlane(event, fUseMCInfo);
       case kAngleLeading:
-         l = event->LeadingParticle();
+         l = event->LeadingParticle(fUseMCInfo);
          if (l) {
             l->Set4Vector(v,-1.0,fUseMCInfo);
             Double_t angle = v.Phi() - pair->Sum(fUseMCInfo).Phi();

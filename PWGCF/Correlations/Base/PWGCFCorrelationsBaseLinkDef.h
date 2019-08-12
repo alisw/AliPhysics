@@ -11,5 +11,6 @@
 #pragma link C++ class AliCFTreeMapping+;
 #pragma link C++ class AliAnalysisTaskCFTree+;
 #pragma link C++ class AliTwoPlusOneContainer+;
+#pragma link C++ class AliAnalysisTaskNtuplizer+;
 
 #endif

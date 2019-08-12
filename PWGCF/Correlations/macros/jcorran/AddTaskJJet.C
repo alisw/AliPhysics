@@ -10,7 +10,8 @@ AliJJetTask* AddTaskJJet(
     int         doRecoTrackJet    = 1,  // if do Jet Reconstruction with Reconstructed track. both of MC,Data
     int         isMC              = 0,  // If this event is MC ( both of particle, track )
     int         nR                = 3,  //Number(1-3) of R parameters in order from list 0.4, 0.5, 0.6
-    int         doBackgroundEst   = 0   // If user wants to do background estimation with kt-algorithm
+    int         doBackgroundEst   = 0,   // If user wants to do background estimation with kt-algorithm
+    int         doFullJets        = 1   //If user wants to use full jets
     )
 {  
 
@@ -92,6 +93,7 @@ AliJJetTask* AddTaskJJet(
   const int nktFinders = nktTrackFinders + nktMCParticleFinders;
 
   int countJetFinder                = 0;  // Counter for number of current Jet Finders
+  int iTypeStart = doFullJets ? 0 : 1;
 
   //-------------------------------------------------------
   // AliJJetTask , AliEmcalJetTask, AliJetContainer
@@ -146,7 +148,7 @@ AliJJetTask* AddTaskJJet(
 
     //================= LOOP for configuraion
     //for(int i=iStart ; i<iEnd; i++){
-    for(int itype = 0; itype < 2; itype++){
+    for(int itype = iTypeStart; itype < 2; itype++){
       for(int iR = 0; iR < nR; iR++){
         int iF = iStart + itype*nR + iR;
         //== Variables
@@ -194,7 +196,7 @@ AliJJetTask* AddTaskJJet(
     mcTrackCont->SetClassName("AliAODMCParticle");
 
     //================= LOOP for configuraion
-    for(int itype = 0; itype < 2; itype++){
+    for(int itype = iTypeStart; itype < 2; itype++){
       for(int iR = 0; iR < nR; iR++){
         int iF = iStart + itype*nR + iR;
         double consizeMC = bConeSizes[iR];

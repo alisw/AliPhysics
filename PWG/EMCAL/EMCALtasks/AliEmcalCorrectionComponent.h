@@ -25,7 +25,7 @@ class AliVEvent;
 
 /**
  * @class AliEmcalCorrectionComponent
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Base class for correction components in the EMCal correction framework
  *
  * Base class for all correction components in the EMCal Correction Framework. Each correction
@@ -141,7 +141,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliEmcalCorrectionComponent &operator=(const AliEmcalCorrectionComponent &);    // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionComponent, 6); // EMCal correction component
+  ClassDef(AliEmcalCorrectionComponent, 8); // EMCal correction component
   /// \endcond
 };
 

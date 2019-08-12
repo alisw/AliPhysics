@@ -122,7 +122,9 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
   fSystem(0),
   fNtrcklMin(0),
   fNtrcklMax(10000),
-  fCutOnTrckl(kFALSE)
+  fCutOnTrckl(kFALSE),
+  fFillOnlySignalSparses(kFALSE),
+  fUseFinPtBinsForSparse(kFALSE)
 {
   /// Default constructor
 
@@ -209,7 +211,9 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fSystem(0),
   fNtrcklMin(0),
   fNtrcklMax(10000),
-  fCutOnTrckl(kFALSE)
+  fCutOnTrckl(kFALSE),
+  fFillOnlySignalSparses(kFALSE),
+  fUseFinPtBinsForSparse(kFALSE)
 {
   //
   /// Standrd constructor
@@ -1201,7 +1205,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	if(fDoImpPar && passTopolAndPIDCuts){
 	  fHistMassPtImpPar[0]->Fill(arrayForImpPar);
 	}
-	if(fDoSparse){
+	if(fDoSparse && (!fReadMC || !fFillOnlySignalSparses)){ //fill in case of false fReadMC or false fFillOnlySignalSparses
 	  fSparseCutVars[0]->Fill(arrayForSparse);
 	}
 	if(passTopolAndPIDCuts){
@@ -1528,9 +1532,11 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
 
   Int_t nmassbins=GetNBinsHistos();
 
-  Int_t nptbins=80;
+  Int_t nptbins=100;
   Double_t ptmin=0.;
-  Double_t ptmax=40.;
+  Double_t ptmax=50.;
+  if(fUseFinPtBinsForSparse)
+    nptbins = 500;
 
   Int_t nselbins=2;
   Double_t minsel=0.5;
@@ -1722,14 +1728,20 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos(){
     nmultbins=1;
   }
   
-  Int_t nbinsPrompt[nVarPrompt]={200,100,nmultbins};
-  Int_t nbinsFD[nVarFD]={200,100,nmultbins,200};
+  Int_t nptbins = 100;
+  Double_t ptmin = 0.;
+  Double_t ptmax = 50.;
+  if(fUseFinPtBinsForSparse)
+    nptbins = 500;
 
-  Double_t xminPrompt[nVarPrompt] = {0.,-1.,multmin};
-  Double_t xmaxPrompt[nVarPrompt] = {40.,1.,multmax};
+  Int_t nbinsPrompt[nVarPrompt]={nptbins,100,nmultbins};
+  Int_t nbinsFD[nVarFD]={nptbins,100,nmultbins,200};
 
-  Double_t xminFD[nVarFD] = {0.,-1.,multmin,0.};
-  Double_t xmaxFD[nVarFD] = {40.,1.,multmax,40.};
+  Double_t xminPrompt[nVarPrompt] = {ptmin,-1.,multmin};
+  Double_t xmaxPrompt[nVarPrompt] = {ptmax,1.,multmax};
+
+  Double_t xminFD[nVarFD] = {ptmin,-1.,multmin,0.};
+  Double_t xmaxFD[nVarFD] = {ptmax,1.,multmax,40.};
 
   //pt, y
   fMCAccPrompt = new THnSparseF("hMCAccPrompt","kStepMCAcceptance pt vs. y vs. Ntracklets - promptD",nVarPrompt,nbinsPrompt,xminPrompt,xmaxPrompt);

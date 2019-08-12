@@ -1,6 +1,9 @@
 AliAnalysisTaskCheckAODTracks *AddTaskCheckAODTracks(TString suffix="",
 						     Bool_t readMC=kFALSE,
-						     Bool_t useMCtruthForPID=kFALSE)
+						     Bool_t useMCtruthForPID=kFALSE,
+						     Double_t minCent=-1.,
+						     Double_t maxCent=999.,
+						     TString estim="V0M")
 {
 
   // Creates, configures and attaches to the train the task for tracking checks
@@ -40,6 +43,7 @@ AliAnalysisTaskCheckAODTracks *AddTaskCheckAODTracks(TString suffix="",
   AliAnalysisTaskCheckAODTracks *tasktr = new AliAnalysisTaskCheckAODTracks();
   tasktr->SetReadMC(readMC);
   tasktr->SetUseMCtruthForPID(useMCtruthForPID);
+  if(minCent>=0 && maxCent<=100) tasktr->SetCentralityInterval(minCent,maxCent,estim);
   mgr->AddTask(tasktr);
   
   // Create ONLY the output containers for the data produced by the task.

@@ -6,7 +6,7 @@ defaultRun=$3
 nProcs=$4
 runListFile=$5
 
-macrosPath=$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/calibration
+macrosPath=$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/
 
 mkdir -p temp/nohupOutput
 mkdir -p temp/buffers
@@ -27,7 +27,7 @@ for ifile in $files; do
       sleep 5s;
    done
     
-   nohup aliroot –l –b –q "$macrosPath/CalibratePeriodPP.C(\"$inputDirectory\", \"$lhcPeriod\", \"MB\", $defaultRun, \"$runIdentifier\")" &> temp/nohupOutput/nohupCalibMB_$runIdentifier.txt &
+   nohup aliroot –l –b –q "$macrosPath/calibration/CalibratePeriodPP.C(\"$inputDirectory\", \"$lhcPeriod\", \"MB\", $defaultRun, \"$runIdentifier\")" &> temp/nohupOutput/nohupCalibMB_$runIdentifier.txt &
 done
 
 # wait for all the calibration jobs to finish
@@ -42,7 +42,7 @@ rm -r temp/buffers/*.root
 echo "Merging individual OADB files..."
 ls temp/partialOADBs/OADB-$lhcPeriod*MB.root > oadbFiles.txt
 cat oadbFiles.txt
-aliroot -l -b -q "$macrosPath/MergeOADB.C(\"oadbFiles.txt\",\"OADB-$lhcPeriod-MB.root\")"
+aliroot -l -b -q "$macrosPath/calibration/MergeOADB.C(\"oadbFiles.txt\",\"OADB-$lhcPeriod-MB.root\")"
 rm oadbFiles.txt
 
 # run the OADB test for every run and produce pictures
@@ -56,7 +56,7 @@ for run in `cat $runListFile`; do
       sleep 5s;
    done
    
-   nohup aliroot –b –q "$macrosPath/TestOADBMultSelPP.C(\"$inputDirectory\", \"$lhcPeriod\", $run)" &> temp/nohupOutput/nohupTestOADB_$run.txt &
+   nohup aliroot –b –q "$macrosPath/qa/TestOADBMultSelPP.C(\"$inputDirectory\", \"$lhcPeriod\", $run)" &> temp/nohupOutput/nohupTestOADB_$run.txt &
 done
 
 while [ $(ps -ef | grep aliroot | grep TestOADBMultSelPP | wc -l) -ge 1 ]; do

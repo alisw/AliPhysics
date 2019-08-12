@@ -49,7 +49,9 @@ set(SRCS
       AliReducedBaseEvent.cxx
       AliReducedBaseTrackCut.cxx
       AliReducedBaseTrack.cxx
+      AliReducedCaloClusterCut.cxx
       AliReducedCaloClusterInfo.cxx
+      AliReducedCaloClusterTrackMatcher.cxx
       AliReducedCompositeCut.cxx
       AliReducedEventCut.cxx
       AliReducedEventInfo.cxx

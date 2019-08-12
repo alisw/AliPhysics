@@ -16,8 +16,8 @@
 // c++ headers
 #include <iostream>
 #include <fstream>
-#include <vector>
-#include <algorithm>
+// #include <vector>
+// #include <algorithm>
 
 
 // root headers
@@ -28,6 +28,7 @@
 #include "TH2D.h"
 #include "TH2F.h"
 #include "TH1.h"
+#include "THnSparse.h"
 #include <TFile.h>
 #include <TF2.h>
 #include <TF1.h>
@@ -91,10 +92,13 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fEtaMuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
+      fInvariantMassDistributionRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fInvariantMassDistributionCoherentH(0),
+      fInvariantMassDistributionCoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionIncoherentH(0),
+      fInvariantMassDistributionIncoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fDimuonPtDistributionH(0),
       fTemplatePtDistributionH(0),
       fDcaAgainstInvariantMassH(0),
@@ -104,6 +108,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMuonTrackCuts(0x0),
       fRunNum(0),
       fTracklets(0),
+      fLumiPerRun(0),
       fL0inputs(0),
       fL1inputs(0),
       fZem1Energy(0),
@@ -129,7 +134,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fV0TotalNCells(0),
-      fVectorGoodRunNumbers(0),
+      // fVectorGoodRunNumbers(0),
       fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
       fAngularDistribOfNegativeMuonRestFrameJPsiH(0),
       fMCpdgCodesH(0),
@@ -165,12 +170,15 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fBBCFlagsAD(0),
       fBGAFlagsAD(0),
       fBGCFlagsAD(0),
-      fVectorCosThetaGenerated(0),
-      fVectorCosThetaReconstructed(0),
+      // fVectorCosThetaGenerated(0),
+      // fVectorCosThetaReconstructed(0),
       fCosThetaGeneratedHelicityFrame(0),
       fCosThetaReconHelicityFrame(0),
+      fPhiGeneratedHelicityFrame(0),
+      fPhiReconHelicityFrame(0),
       fCounterUPCevent(0),
       fBinMigrationHelicityH(0),
+      fBinMigrationForPhiHelicityH(0),
       fCheckHelicityRestFrameJPsiH(0),
       fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
       fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
@@ -197,7 +205,51 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMCCosThetaHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fMCCosThetaCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fMCPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-      fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+      fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
+      fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
+      fInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
+      fMCInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
+      fCosThetaHeFrameForSignalExH(0),
+      fPhiHeFrameForSignalExH(0),
+      fMCCosThetaHeFrameForSignalExH(0),
+      fMCPhiHeFrameForSignalExH(0),
+      fEfficiencyPerRunH(0),
+      fMCEfficiencyPerRunH(0),
+      fEtaAndPhi(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fCosThetaAndPhiHelicityFrameMyBinningH(0),
+      fMCCosThetaAndPhiHelicityFrameMyBinningH(0),
+      fCosThetaHelicityFrameMyBinningH(0),
+      fMCCosThetaHelicityFrameMyBinningH(0),
+      fCosThetaHelicityFrameMyBinningSmallH(0),
+      fMCCosThetaHelicityFrameMyBinningSmallH(0),
+      fCosThetaHelicityFrameMySeventeenBinningH(0),
+      fMCCosThetaHelicityFrameMySeventeenBinningH(0),
+      fCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fMCCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fPhiHelicityFrameTwentyfiveBinsH(0),
+      fMCPhiHelicityFrameTwentyfiveBinsH(0),
+      fTildePhiHelicityFrameTwentyfiveBinsH(0),
+      fMCTildePhiHelicityFrameTwentyfiveBinsH(0),
+      fPhiHelicityFrameMyBinningH(0),
+      fMCPhiHelicityFrameMyBinningH(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -214,10 +266,13 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fEtaMuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
+      fInvariantMassDistributionRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fInvariantMassDistributionCoherentH(0),
+      fInvariantMassDistributionCoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionIncoherentH(0),
+      fInvariantMassDistributionIncoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fDimuonPtDistributionH(0),
       fTemplatePtDistributionH(0),
       fDcaAgainstInvariantMassH(0),
@@ -227,6 +282,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMuonTrackCuts(0x0),
       fRunNum(0),
       fTracklets(0),
+      fLumiPerRun(0),
       fL0inputs(0),
       fL1inputs(0),
       fZem1Energy(0),
@@ -252,7 +308,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fV0TotalNCells(0),
-      fVectorGoodRunNumbers(0),
+      // fVectorGoodRunNumbers(0),
       fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
       fAngularDistribOfNegativeMuonRestFrameJPsiH(0),
       fMCpdgCodesH(0),
@@ -288,12 +344,15 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fBBCFlagsAD(0),
       fBGAFlagsAD(0),
       fBGCFlagsAD(0),
-      fVectorCosThetaGenerated(0),
-      fVectorCosThetaReconstructed(0),
+      // fVectorCosThetaGenerated(0),
+      // fVectorCosThetaReconstructed(0),
       fCosThetaGeneratedHelicityFrame(0),
       fCosThetaReconHelicityFrame(0),
+      fPhiGeneratedHelicityFrame(0),
+      fPhiReconHelicityFrame(0),
       fCounterUPCevent(0),
       fBinMigrationHelicityH(0),
+      fBinMigrationForPhiHelicityH(0),
       fCheckHelicityRestFrameJPsiH(0),
       fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
       fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
@@ -320,9 +379,62 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMCCosThetaHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fMCCosThetaCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fMCPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-      fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+      fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
+      fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
+      fInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
+      fMCInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
+      fCosThetaHeFrameForSignalExH(0),
+      fPhiHeFrameForSignalExH(0),
+      fMCCosThetaHeFrameForSignalExH(0),
+      fMCPhiHeFrameForSignalExH(0),
+      fEfficiencyPerRunH(0),
+      fMCEfficiencyPerRunH(0),
+      fEtaAndPhi(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fCosThetaAndPhiHelicityFrameMyBinningH(0),
+      fMCCosThetaAndPhiHelicityFrameMyBinningH(0),
+      fCosThetaHelicityFrameMyBinningH(0),
+      fMCCosThetaHelicityFrameMyBinningH(0),
+      fCosThetaHelicityFrameMyBinningSmallH(0),
+      fMCCosThetaHelicityFrameMyBinningSmallH(0),
+      fCosThetaHelicityFrameMySeventeenBinningH(0),
+      fMCCosThetaHelicityFrameMySeventeenBinningH(0),
+      fCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fMCCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fPhiHelicityFrameTwentyfiveBinsH(0),
+      fMCPhiHelicityFrameTwentyfiveBinsH(0),
+      fTildePhiHelicityFrameTwentyfiveBinsH(0),
+      fMCTildePhiHelicityFrameTwentyfiveBinsH(0),
+      fPhiHelicityFrameMyBinningH(0),
+      fMCPhiHelicityFrameMyBinningH(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 {
-    FillGoodRunVector(fVectorGoodRunNumbers);
+    // FillGoodRunVector(fVectorGoodRunNumbers);
+    for( Int_t iRun = 0; iRun < 60000; iRun++) {
+      fCounterGeneratedLevel[iRun]   = 0;
+      // fDeadZoneEtaVsPhiPerRunH[iRun] = 0x0;
+    }
+    // fDeadZoneEtaVsPhiPerRunH[60000] = 0x0;
+    for( Int_t iRun = 0; iRun < 364; iRun++) {
+      fDeadZoneEtaVsPhiPerRunH[iRun] = 0x0;
+    }
+    fEtaAndPhi = new Double_t[2];
 
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -341,59 +453,59 @@ AliAnalysisTaskUPCforwardMC::~AliAnalysisTaskUPCforwardMC()
     if(fMuonTrackCuts) {delete fMuonTrackCuts;}   // from memory by calling this function
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskUPCforwardMC::FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers)
-{
-  fVectorGoodRunNumbers.clear();
-  Int_t listOfGoodRunNumbersLHC18q[] = { 295585, 295586, 295587, 295588, 295589, 295612,
-                                         295615, 295665, 295666, 295667, 295668, 295671,
-                                         295673, 295675, 295676, 295677, 295714, 295716,
-                                         295717, 295718, 295719, 295723, 295725, 295753,
-                                         295754, 295755, 295758, 295759, 295762, 295763,
-                                         295786, 295788, 295791, 295816, 295818, 295819,
-                                         295822, 295825, 295826, 295829, 295831, 295854,
-                                         295855, 295856, 295859, 295860, 295861, 295863,
-                                         295881, 295908, 295909, 295910, 295913, 295936,
-                                         295937, 295941, 295942, 295943, 295945, 295947,
-                                         296061, 296062, 296063, 296065, 296066, 296068,
-                                         296123, 296128, 296132, 296133, 296134, 296135,
-                                         296142, 296143, 296191, 296192, 296194, 296195,
-                                         296196, 296197, 296198, 296241, 296242, 296243,
-                                         296244, 296246, 296247, 296269, 296270, 296273,
-                                         296279, 296280, 296303, 296304, 296307, 296309,
-                                         296312, 296376, 296377, 296378, 296379, 296380,
-                                         296381, 296383, 296414, 296419, 296420, 296423,
-                                         296424, 296433, 296472, 296509, 296510, 296511,
-                                         296514, 296516, 296547, 296548, 296549, 296550,
-                                         296551, 296552, 296553, 296615, 296616, 296618,
-                                         296619, 296622, 296623 };
-  Int_t listOfGoodRunNumbersLHC18r[] = { 296690, 296691, 296694, 296749, 296750, 296781,
-                                         296784, 296785, 296786, 296787, 296791, 296793,
-                                         296794, 296799, 296836, 296838, 296839, 296848,
-                                         296849, 296850, 296851, 296852, 296890, 296894,
-                                         296899, 296900, 296903, 296930, 296931, 296932,
-                                         296934, 296935, 296938, 296941, 296966, 296967,
-                                         296968, 296969, 296971, 296975, 296976, 296977,
-                                         296979, 297029, 297031, 297035, 297085, 297117,
-                                         297118, 297119, 297123, 297124, 297128, 297129,
-                                         297132, 297133, 297193, 297194, 297196, 297218,
-                                         297219, 297221, 297222, 297278, 297310, 297312,
-                                         297315, 297317, 297363, 297366, 297367, 297372,
-                                         297379, 297380, 297405, 297408, 297413, 297414,
-                                         297415, 297441, 297442, 297446, 297450, 297451,
-                                         297452, 297479, 297481, 297483, 297512, 297537,
-                                         297540, 297541, 297542, 297544, 297558, 297588,
-                                         297590, 297595, 297623, 297624 };
-  Int_t sizeOfLHC18q = 0;
-  Int_t sizeOfLHC18r = 0;
-  for ( Int_t GoodRunNumberLHC18q : listOfGoodRunNumbersLHC18q ) {
-        fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18q);
-        sizeOfLHC18q++;
-  }
-  for ( Int_t GoodRunNumberLHC18r : listOfGoodRunNumbersLHC18r ) {
-        fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18r);
-        sizeOfLHC18r++;
-  }
-}
+// void AliAnalysisTaskUPCforwardMC::FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers)
+// {
+//   fVectorGoodRunNumbers.clear();
+//   Int_t listOfGoodRunNumbersLHC18q[] = { 295585, 295586, 295587, 295588, 295589, 295612,
+//                                          295615, 295665, 295666, 295667, 295668, 295671,
+//                                          295673, 295675, 295676, 295677, 295714, 295716,
+//                                          295717, 295718, 295719, 295723, 295725, 295753,
+//                                          295754, 295755, 295758, 295759, 295762, 295763,
+//                                          295786, 295788, 295791, 295816, 295818, 295819,
+//                                          295822, 295825, 295826, 295829, 295831, 295854,
+//                                          295855, 295856, 295859, 295860, 295861, 295863,
+//                                          295881, 295908, 295909, 295910, 295913, 295936,
+//                                          295937, 295941, 295942, 295943, 295945, 295947,
+//                                          296061, 296062, 296063, 296065, 296066, 296068,
+//                                          296123, 296128, 296132, 296133, 296134, 296135,
+//                                          296142, 296143, 296191, 296192, 296194, 296195,
+//                                          296196, 296197, 296198, 296241, 296242, 296243,
+//                                          296244, 296246, 296247, 296269, 296270, 296273,
+//                                          296279, 296280, 296303, 296304, 296307, 296309,
+//                                          296312, 296376, 296377, 296378, 296379, 296380,
+//                                          296381, 296383, 296414, 296419, 296420, 296423,
+//                                          296424, 296433, 296472, 296509, 296510, 296511,
+//                                          296514, 296516, 296547, 296548, 296549, 296550,
+//                                          296551, 296552, 296553, 296615, 296616, 296618,
+//                                          296619, 296622, 296623 };
+//   Int_t listOfGoodRunNumbersLHC18r[] = { 296690, 296691, 296694, 296749, 296750, 296781,
+//                                          296784, 296785, 296786, 296787, 296791, 296793,
+//                                          296794, 296799, 296836, 296838, 296839, 296848,
+//                                          296849, 296850, 296851, 296852, 296890, 296894,
+//                                          296899, 296900, 296903, 296930, 296931, 296932,
+//                                          296934, 296935, 296938, 296941, 296966, 296967,
+//                                          296968, 296969, 296971, 296975, 296976, 296977,
+//                                          296979, 297029, 297031, 297035, 297085, 297117,
+//                                          297118, 297119, 297123, 297124, 297128, 297129,
+//                                          297132, 297133, 297193, 297194, 297196, 297218,
+//                                          297219, 297221, 297222, 297278, 297310, 297312,
+//                                          297315, 297317, 297363, 297366, 297367, 297372,
+//                                          297379, 297380, 297405, 297408, 297413, 297414,
+//                                          297415, 297441, 297442, 297446, 297450, 297451,
+//                                          297452, 297479, 297481, 297483, 297512, 297537,
+//                                          297540, 297541, 297542, 297544, 297558, 297588,
+//                                          297590, 297595, 297623, 297624 };
+//   Int_t sizeOfLHC18q = 0;
+//   Int_t sizeOfLHC18r = 0;
+//   for ( Int_t GoodRunNumberLHC18q : listOfGoodRunNumbersLHC18q ) {
+//         fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18q);
+//         sizeOfLHC18q++;
+//   }
+//   for ( Int_t GoodRunNumberLHC18r : listOfGoodRunNumbersLHC18r ) {
+//         fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18r);
+//         sizeOfLHC18r++;
+//   }
+// }
 //_____________________________________________________________________________
 void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
 {
@@ -442,6 +554,15 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fInvariantMassDistributionH = new TH1F("fInvariantMassDistributionH", "fInvariantMassDistributionH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionH);
 
+  for( Int_t iRapidityBin = 0; iRapidityBin < 6; iRapidityBin++ ){
+    fInvariantMassDistributionRapidityBinsH[iRapidityBin]
+          = new TH1F( Form("fInvariantMassDistributionRapidityBinsH_%d", iRapidityBin),
+                      Form("fInvariantMassDistributionRapidityBinsH_%d", iRapidityBin),
+                      2000, 0, 20
+                      );
+    fOutputList->Add(fInvariantMassDistributionRapidityBinsH[iRapidityBin]);
+  }
+
   fEntriesAgainstRunNumberH = new TH1F("fEntriesAgainstRunNumberH", "fEntriesAgainstRunNumberH", 10000, 290000, 300000);
   fOutputList->Add(fEntriesAgainstRunNumberH);
 
@@ -460,13 +581,31 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fInvariantMassDistributionCoherentH = new TH1F("fInvariantMassDistributionCoherentH", "fInvariantMassDistributionCoherentH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionCoherentH);
 
+  for( Int_t iRapidityBin = 0; iRapidityBin < 6; iRapidityBin++ ){
+    fInvariantMassDistributionCoherentRapidityBinsH[iRapidityBin]
+          = new TH1F( Form("fInvariantMassDistributionCoherentRapidityBinsH_%d", iRapidityBin),
+                      Form("fInvariantMassDistributionCoherentRapidityBinsH_%d", iRapidityBin),
+                      2000, 0, 20
+                      );
+    fOutputList->Add(fInvariantMassDistributionCoherentRapidityBinsH[iRapidityBin]);
+  }
+
   fInvariantMassDistributionIncoherentH = new TH1F("fInvariantMassDistributionIncoherentH", "fInvariantMassDistributionIncoherentH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentH);
 
-  fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 2000, 0, 20);
+  for( Int_t iRapidityBin = 0; iRapidityBin < 6; iRapidityBin++ ){
+    fInvariantMassDistributionIncoherentRapidityBinsH[iRapidityBin]
+          = new TH1F( Form("fInvariantMassDistributionIncoherentRapidityBinsH_%d", iRapidityBin),
+                      Form("fInvariantMassDistributionIncoherentRapidityBinsH_%d", iRapidityBin),
+                      2000, 0, 20
+                      );
+    fOutputList->Add(fInvariantMassDistributionIncoherentRapidityBinsH[iRapidityBin]);
+  }
+
+  fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionH);
 
-  fTemplatePtDistributionH = new TH1F("fTemplatePtDistributionH", "fTemplatePtDistributionH", 2000, 0, 20);
+  fTemplatePtDistributionH = new TH1F("fTemplatePtDistributionH", "fTemplatePtDistributionH", 4000, 0, 20);
   fOutputList->Add(fTemplatePtDistributionH);
 
   fDcaAgainstInvariantMassH = new TH2F("fDcaAgainstInvariantMassH", "fDcaAgainstInvariantMassH", 4000, 0, 40, 2000, -100, 100);
@@ -497,6 +636,8 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fBinMigrationHelicityH = new TH2F("fBinMigrationHelicityH", "fBinMigrationHelicityH", 1000, -1., 1., 1000, -1., 1.);
   fOutputList->Add(fBinMigrationHelicityH);
 
+  fBinMigrationForPhiHelicityH = new TH2F("fBinMigrationForPhiHelicityH", "fBinMigrationForPhiHelicityH", 1000, -3.14, 3.14, 1000, -3.14, 3.14);
+  fOutputList->Add(fBinMigrationForPhiHelicityH);
 
   //_______________________________
   // - MC-only plots
@@ -539,10 +680,10 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fMCpseudorapidityDimuonGeneratedTruthH = new TH1F("fMCpseudorapidityDimuonGeneratedTruthH", "fMCpseudorapidityDimuonGeneratedTruthH", 2000, 0, 20);
   fOutputList->Add(fMCpseudorapidityDimuonGeneratedTruthH);
 
-  fMCptDimuonGeneratedTruthSingleMuonsH = new TH1F("fMCptDimuonGeneratedTruthSingleMuonsH", "fMCptDimuonGeneratedTruthSingleMuonsH", 2000, 0, 20);
+  fMCptDimuonGeneratedTruthSingleMuonsH = new TH1F("fMCptDimuonGeneratedTruthSingleMuonsH", "fMCptDimuonGeneratedTruthSingleMuonsH", 4000, 0, 20);
   fOutputList->Add(fMCptDimuonGeneratedTruthSingleMuonsH);
 
-  fMCptDimuonGeneratedTruthH = new TH1F("fMCptDimuonGeneratedTruthH", "fMCptDimuonGeneratedTruthH", 2000, 0, 20);
+  fMCptDimuonGeneratedTruthH = new TH1F("fMCptDimuonGeneratedTruthH", "fMCptDimuonGeneratedTruthH", 4000, 0, 20);
   fOutputList->Add(fMCptDimuonGeneratedTruthH);
 
 
@@ -765,6 +906,385 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
     fOutputList->Add(fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH[iRapidityBin]);
   }
 
+  fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH =
+        new TH2F( "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
+                  "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
+                  80, -1, 1,
+                  80, -4, 4
+                  );
+  fOutputList->Add(fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH);
+
+  fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH =
+        new TH2F( "fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
+                  "fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
+                  80, -1, 1,
+                  80, -4, 4
+                  );
+  fOutputList->Add(fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH);
+
+  /* - Variable binning for CosTheta and Phi.
+     - Adopting same binning as inclusive people's.
+     -
+   */
+  const Int_t XBINS = 19;
+  const Int_t YBINS = 20;
+  Double_t CosThetaBinning[ XBINS + 1 ] = { -1. , -0.8, -0.7 , -0.6 , -0.5, -0.4,
+                                            -0.3, -0.2, -0.12, -0.04,  0.04, 0.12,
+                                             0.2,  0.3,  0.4,   0.5,   0.6,  0.7,
+                                             0.8,  1
+                                             };
+  Double_t PhiBinning[ YBINS + 1 ] = { -3.142, -2.639, -2.136, -1.885, -1.696,
+                                       -1.571, -1.445, -1.257, -1.005, -0.502,
+                                        0.,     0.502,  1.005,  1.257,  1.445,
+                                        1.571,  1.696,  1.885,  2.136,  2.639,
+                                        3.142
+                                      };
+  fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH =
+        new TH2F( "fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  "fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  XBINS, CosThetaBinning,
+                  YBINS, PhiBinning
+                  );
+  fOutputList->Add(fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH);
+
+  fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH =
+        new TH2F( "fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  "fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  XBINS, CosThetaBinning,
+                  YBINS, PhiBinning
+                  );
+  fOutputList->Add(fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH);
+
+
+  fInvariantMassDistributionForSignalExtractionHelicityFrameH =
+        new TH2F( "fInvariantMassDistributionForSignalExtractionHelicityFrameH",
+                  "fInvariantMassDistributionForSignalExtractionHelicityFrameH",
+                  10, -1.00, 1.00,
+                  10, -3.14, 3.14
+                  );
+  fOutputList->Add(fInvariantMassDistributionForSignalExtractionHelicityFrameH);
+
+  fMCInvariantMassDistributionForSignalExtractionHelicityFrameH =
+        new TH2F( "fMCInvariantMassDistributionForSignalExtractionHelicityFrameH",
+                  "fMCInvariantMassDistributionForSignalExtractionHelicityFrameH",
+                  10, -1.00, 1.00,
+                  10, -3.14, 3.14
+                  );
+  fOutputList->Add(fMCInvariantMassDistributionForSignalExtractionHelicityFrameH);
+
+  fCosThetaHeFrameForSignalExH = new TH1F("fCosThetaHeFrameForSignalExH", "fCosThetaHeFrameForSignalExH", 40, -1., 1.);
+  fOutputList->Add(fCosThetaHeFrameForSignalExH);
+
+  fMCCosThetaHeFrameForSignalExH = new TH1F("fMCCosThetaHeFrameForSignalExH", "fMCCosThetaHeFrameForSignalExH", 40, -1., 1.);
+  fOutputList->Add(fMCCosThetaHeFrameForSignalExH);
+
+  fPhiHeFrameForSignalExH = new TH1F("fPhiHeFrameForSignalExH", "fPhiHeFrameForSignalExH", 50, -3.14, 3.14);
+  fOutputList->Add(fPhiHeFrameForSignalExH);
+
+  fMCPhiHeFrameForSignalExH = new TH1F("fMCPhiHeFrameForSignalExH", "fMCPhiHeFrameForSignalExH", 50, -3.14, 3.14);
+  fOutputList->Add(fMCPhiHeFrameForSignalExH);
+
+  fEfficiencyPerRunH = new TH1F("fEfficiencyPerRunH", "fEfficiencyPerRunH", 3, 0, 3);
+  fEfficiencyPerRunH->SetStats(0);
+  fEfficiencyPerRunH->SetFillColor(38);
+  fEfficiencyPerRunH->LabelsDeflate();
+  fOutputList->Add(fEfficiencyPerRunH);
+
+  fMCEfficiencyPerRunH = new TH1F("fMCEfficiencyPerRunH", "fMCEfficiencyPerRunH", 3, 0, 3);
+  fMCEfficiencyPerRunH->SetStats(0);
+  fMCEfficiencyPerRunH->SetFillColor(38);
+  fMCEfficiencyPerRunH->LabelsDeflate();
+  fOutputList->Add(fMCEfficiencyPerRunH);
+
+  /* - Eta vs Phi dead zones per Run.
+   * -
+   */
+  Int_t*    bins = new Int_t[2];
+  Double_t* xmin = new Double_t[2];
+  Double_t* xmax = new Double_t[2];
+  /* - [0] refers to Eta.
+   * - I am plotting from -5.0 to -2.0,
+   * - hence 150 bins are reasonable...  (REBIN 10x)
+   * - [1] refers to Phi.
+   * - To avoid problems related to TMath::Pi(),
+   * - I am plotting from -4 to 4.
+   * - Hence I had thought of 200 bins... (REBIN 10x)
+   */
+  bins[0] = 150;
+  bins[1] = 200;
+  xmin[0] = -5.0;
+  xmin[1] = -4.0;
+  xmax[0] = -2.0;
+  xmax[1] = +4.0;
+  Int_t listOfGoodRunNumbers[]       = { 295585, 295586, 295587, 295588, 295589, 295612,
+                                         295615, 295665, 295666, 295667, 295668, 295671,
+                                         295673, 295675, 295676, 295677, 295714, 295716,
+                                         295717, 295718, 295719, 295723, 295725, 295753,
+                                         295754, 295755, 295758, 295759, 295762, 295763,
+                                         295786, 295788, 295791, 295816, 295818, 295819,
+                                         295822, 295825, 295826, 295829, 295831, 295854,
+                                         295855, 295856, 295859, 295860, 295861, 295863,
+                                         295881, 295908, 295909, 295910, 295913, 295936,
+                                         295937, 295941, 295942, 295943, 295945, 295947,
+                                         296061, 296062, 296063, 296065, 296066, 296068,
+                                         296123, 296128, 296132, 296133, 296134, 296135,
+                                         296142, 296143, 296191, 296192, 296194, 296195,
+                                         296196, 296197, 296198, 296241, 296242, 296243,
+                                         296244, 296246, 296247, 296269, 296270, 296273,
+                                         296279, 296280, 296303, 296304, 296307, 296309,
+                                         296312, 296376, 296377, 296378, 296379, 296380,
+                                         296381, 296383, 296414, 296419, 296420, 296423,
+                                         296424, 296433, 296472, 296509, 296510, 296511,
+                                         296514, 296516, 296547, 296548, 296549, 296550,
+                                         296551, 296552, 296553, 296615, 296616, 296618,
+                                         296619, 296622, 296623,
+                                         296690, 296691, 296694, 296749, 296750, 296781,
+                                         296784, 296785, 296786, 296787, 296791, 296793,
+                                         296794, 296799, 296836, 296838, 296839, 296848,
+                                         296849, 296850, 296851, 296852, 296890, 296894,
+                                         296899, 296900, 296903, 296930, 296931, 296932,
+                                         296934, 296935, 296938, 296941, 296966, 296967,
+                                         296968, 296969, 296971, 296975, 296976, 296977,
+                                         296979, 297029, 297031, 297035, 297085, 297117,
+                                         297118, 297119, 297123, 297124, 297128, 297129,
+                                         297132, 297133, 297193, 297194, 297196, 297218,
+                                         297219, 297221, 297222, 297278, 297310, 297312,
+                                         297315, 297317, 297363, 297366, 297367, 297372,
+                                         297379, 297380, 297405, 297408, 297413, 297414,
+                                         297415, 297441, 297442, 297446, 297450, 297451,
+                                         297452, 297479, 297481, 297483, 297512, 297537,
+                                         297540, 297541, 297542, 297544, 297558, 297588,
+                                         297590, 297595,/*, 297623, 297624*/
+                                         244918, 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
+                                         245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
+                                         245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
+                                         245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
+                                         245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
+                                         245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
+                                         246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
+                                         246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
+                                         246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
+                                         246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
+                                         246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
+                                         246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
+                                         246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
+                                         246949, 246980, 246982, 246984, 246989, 246991, 246994
+                                       };
+  // for( Int_t iRuns = 0; iRuns < 60001; iRuns++ ) {
+  for( Int_t iRuns = 0; iRuns < 364; iRuns++ ) {
+    // fDeadZoneEtaVsPhiPerRunH[iRuns] = new THnSparseF( Form( "fDeadZoneEtaVsPhiPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+    //                                                   Form( "fDeadZoneEtaVsPhiPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+    //                                                   2, // number of dimensions
+    //                                                   bins,
+    //                                                   xmin,
+    //                                                   xmax
+    //                                                   );
+    fDeadZoneEtaVsPhiPerRunH[iRuns] = new TH2F( Form( "fDeadZoneEtaVsPhiPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+                                                Form( "fDeadZoneEtaVsPhiPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+                                                150, -5.0, -2.0,
+                                                // 200, -4.0,  4.0
+                                                200,  0.0,  8.0
+                                                );
+    fOutputList->Add(fDeadZoneEtaVsPhiPerRunH[iRuns]);
+  }
+
+  //________________________________________
+  /* - Templates for polarisation analysis.
+   * -
+   */
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 40; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 50; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins]);
+  }
+  //________________________________________
+
+  /* - My Variable binning for CosTheta and Phi.
+   * - 2D analysis.
+   */
+  const Int_t XBINS2 = 7;
+  const Int_t YBINS2 = 20;
+  Double_t MyVariableCosThetaBinning2[] = { -0.65, -0.35, -0.15, -0.05,
+                                             0.05,  0.15,  0.35,  0.65 };
+  Double_t MyVariablePhiBinning2[] = { -3.14*1,       -3.14*19*0.05, -3.14*18*0.05, -3.14*17*0.05,
+                                       -3.14*13*0.05, -3.14*9*0.05,  -3.14*6*0.05,  -3.14*4*0.05,
+                                       -3.14*2*0.05,  -3.14*1*0.05,   0,            +3.14*1*0.05,
+                                       +3.14*2*0.05,  +3.14*4*0.05,  +3.14*6*0.05,  +3.14*9*0.05,
+                                       +3.14*13*0.05, +3.14*17*0.05, +3.14*18*0.05, +3.14*19*0.05,
+                                       +3.14*1 };
+  fCosThetaAndPhiHelicityFrameMyBinningH =
+        new TH2F( "fCosThetaAndPhiHelicityFrameMyBinningH",
+                  "fCosThetaAndPhiHelicityFrameMyBinningH",
+                  XBINS2, MyVariableCosThetaBinning2,
+                  YBINS2, MyVariablePhiBinning2
+                  );
+  fOutputList->Add(fCosThetaAndPhiHelicityFrameMyBinningH);
+
+  fMCCosThetaAndPhiHelicityFrameMyBinningH =
+        new TH2F( "fMCCosThetaAndPhiHelicityFrameMyBinningH",
+                  "fMCCosThetaAndPhiHelicityFrameMyBinningH",
+                  XBINS2, MyVariableCosThetaBinning2,
+                  YBINS2, MyVariablePhiBinning2
+                  );
+  fOutputList->Add(fMCCosThetaAndPhiHelicityFrameMyBinningH);
+
+  //_____________________________________________
+  /* - My Variable binning for CosTheta and Phi.
+   * - 1D analysis.
+   */
+  const Int_t XBINS3 = 26;
+  const Int_t YBINS3 = 30;
+  Double_t MyVariableCosThetaBinning1D[] = { -0.65,  -0.5,  -0.4,  -0.35,  -0.3,
+                                             -0.25,  -0.2,  -0.15, -0.125, -0.1,
+                                             -0.075, -0.05, -0.025, 0,      0.025,
+                                              0.05,   0.075, 0.1,   0.125,  0.15,
+                                              0.2,    0.25,  0.3,   0.35,   0.4,
+                                              0.5,    0.65 };
+  Double_t MyVariablePhiBinning1D[] = { -3.14*1,      -3.14*14/15,  -3.14*13/15,  -3.14*12/15,
+                                        -3.14*11/15,  -3.14*10/15,  -3.14*9/15,   -3.14*8/15,
+                                        -3.14*7/15,   -3.14*6/15,   -3.14*5/15,   -3.14*4/15,
+                                        -3.14*3/15,   -3.14*2/15,   -3.14*1/15,    0,
+                                        +3.14*1/15,   +3.14*2/15,   +3.14*3/15,   +3.14*4/15,
+                                        +3.14*5/15,   +3.14*6/15,   +3.14*7/15,   +3.14*8/15,
+                                        +3.14*9/15,   +3.14*10/15,  +3.14*11/15,  +3.14*12/15,
+                                        +3.14*13/15,  +3.14*14/15,  +3.14*1 };
+  const Int_t XBINS4 = 9;
+  Double_t MyVariableCosThetaBinning1Dv2[] = { -0.65, -0.45, -0.3, -0.15,  -0.05,
+                                                0.05,  0.15,  0.3,  0.45,   0.65 };
+  const Int_t XBINS5 = 17;
+  Double_t MyVariableCosThetaBinning1Dv3[] = { -0.65,  -0.5,  -0.425, -0.35,
+                                               -0.275, -0.2,  -0.125, -0.075,
+                                               -0.025,  0.025, 0.075,  0.125,
+                                                0.2,    0.275, 0.35,   0.425,
+                                                0.5,    0.65 };
+  fCosThetaHelicityFrameMyBinningH =
+        new TH1F( "fCosThetaHelicityFrameMyBinningH",
+                  "fCosThetaHelicityFrameMyBinningH",
+                  XBINS3, MyVariableCosThetaBinning1D
+                  );
+  fOutputList->Add(fCosThetaHelicityFrameMyBinningH);
+
+  fMCCosThetaHelicityFrameMyBinningH =
+        new TH1F( "fMCCosThetaHelicityFrameMyBinningH",
+                  "fMCCosThetaHelicityFrameMyBinningH",
+                  XBINS3, MyVariableCosThetaBinning1D
+                  );
+  fOutputList->Add(fMCCosThetaHelicityFrameMyBinningH);
+
+  fCosThetaHelicityFrameMyBinningSmallH =
+        new TH1F( "fCosThetaHelicityFrameMyBinningSmallH",
+                  "fCosThetaHelicityFrameMyBinningSmallH",
+                  XBINS4, MyVariableCosThetaBinning1Dv2
+                  );
+  fOutputList->Add(fCosThetaHelicityFrameMyBinningSmallH);
+
+  fMCCosThetaHelicityFrameMyBinningSmallH =
+        new TH1F( "fMCCosThetaHelicityFrameMyBinningSmallH",
+                  "fMCCosThetaHelicityFrameMyBinningSmallH",
+                  XBINS4, MyVariableCosThetaBinning1Dv2
+                  );
+  fOutputList->Add(fMCCosThetaHelicityFrameMyBinningSmallH);
+
+  fCosThetaHelicityFrameMySeventeenBinningH =
+        new TH1F( "fCosThetaHelicityFrameMySeventeenBinningH",
+                  "fCosThetaHelicityFrameMySeventeenBinningH",
+                  XBINS5, MyVariableCosThetaBinning1Dv3
+                  );
+  fOutputList->Add(fCosThetaHelicityFrameMySeventeenBinningH);
+
+  fMCCosThetaHelicityFrameMySeventeenBinningH =
+        new TH1F( "fMCCosThetaHelicityFrameMySeventeenBinningH",
+                  "fMCCosThetaHelicityFrameMySeventeenBinningH",
+                  XBINS5, MyVariableCosThetaBinning1Dv3
+                  );
+  fOutputList->Add(fMCCosThetaHelicityFrameMySeventeenBinningH);
+
+  fPhiHelicityFrameMyBinningH =
+        new TH1F( "fPhiHelicityFrameMyBinningH",
+                  "fPhiHelicityFrameMyBinningH",
+                  YBINS3, MyVariablePhiBinning1D
+                  );
+  fOutputList->Add(fPhiHelicityFrameMyBinningH);
+
+  fMCPhiHelicityFrameMyBinningH =
+        new TH1F( "fMCPhiHelicityFrameMyBinningH",
+                  "fMCPhiHelicityFrameMyBinningH",
+                  YBINS3, MyVariablePhiBinning1D
+                  );
+  fOutputList->Add(fMCPhiHelicityFrameMyBinningH);
+
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 26; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 30; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins]);
+  }
+
+  fCosThetaHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fCosThetaHelicityFrameTwentyfiveBinsH",
+                  "fCosThetaHelicityFrameTwentyfiveBinsH",
+                  25, -1, 1
+                  );
+  fOutputList->Add(fCosThetaHelicityFrameTwentyfiveBinsH);
+
+  fMCCosThetaHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fMCCosThetaHelicityFrameTwentyfiveBinsH",
+                  "fMCCosThetaHelicityFrameTwentyfiveBinsH",
+                  25, -1, 1
+                  );
+  fOutputList->Add(fMCCosThetaHelicityFrameTwentyfiveBinsH);
+
+  fPhiHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fPhiHelicityFrameTwentyfiveBinsH",
+                  "fPhiHelicityFrameTwentyfiveBinsH",
+                  25, -3.14, 3.14
+                  );
+  fOutputList->Add(fPhiHelicityFrameTwentyfiveBinsH);
+
+  fMCPhiHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fMCPhiHelicityFrameTwentyfiveBinsH",
+                  "fMCPhiHelicityFrameTwentyfiveBinsH",
+                  25, -3.14, 3.14
+                  );
+  fOutputList->Add(fMCPhiHelicityFrameTwentyfiveBinsH);
+
+  fTildePhiHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fTildePhiHelicityFrameTwentyfiveBinsH",
+                  "fTildePhiHelicityFrameTwentyfiveBinsH",
+                  25, -3.14*7.0*0.25, 3.14*3.0*0.25
+                  );
+  fOutputList->Add(fTildePhiHelicityFrameTwentyfiveBinsH);
+
+  fMCTildePhiHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fMCTildePhiHelicityFrameTwentyfiveBinsH",
+                  "fMCTildePhiHelicityFrameTwentyfiveBinsH",
+                  25, -3.14*7.0*0.25, 3.14*3.0*0.25
+                  );
+  fOutputList->Add(fMCTildePhiHelicityFrameTwentyfiveBinsH);
+
   //_______________________________
   // - End of the function
   PostData(1, fOutputList);
@@ -800,8 +1320,18 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
       return;
   }
   if(fMCEvent) {
+    fRunNum    = fAOD->GetRunNumber();
+    SetLuminosityCap();
+    fCounterGeneratedLevel[ fRunNum - 240000 ] += 1;
+    // cout << "fCounterGeneratedLevel[ " << (fRunNum - 240000) << " ] = " << fCounterGeneratedLevel[ fRunNum - 240000 ] << endl;
+    // if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( (Int_t)fLumiPerRun * (Int_t)40000 ) ) {
+    if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 40000 ) ) {
+          PostData(1, fOutputList);
+          return;
+    }
     ProcessMCParticles(fMCEvent);
     fCounterUPCevent += 1;
+    fMCEfficiencyPerRunH->Fill( Form("%d", fRunNum) , 1 );
   }
   /* - We are now checking if there were any tracks. If there were at least one,
      - then the histogram gets filled again. If not we are returning. There
@@ -949,16 +1479,99 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
      - them I move on to the next event.
      -
    */
-   auto findRunNumber = std::find(  std::begin(fVectorGoodRunNumbers),
-                                    std::end(fVectorGoodRunNumbers),
-                                    fRunNum
-                                    );
-   if (findRunNumber != std::end(fVectorGoodRunNumbers)) {
-        // std::cout << "fVectorGoodRunNumbers DOES     contain: " << fRunNum << std::endl;
-   } else {
-        PostData(1, fOutputList);
-        return;
-   }
+  // auto findRunNumber = std::find(  std::begin(fVectorGoodRunNumbers),
+  //                                  std::end(fVectorGoodRunNumbers),
+  //                                  fRunNum
+  //                                  );
+  // if (findRunNumber != std::end(fVectorGoodRunNumbers)) {
+  //     // std::cout << "fVectorGoodRunNumbers DOES     contain: " << fRunNum << std::endl;
+  // } else {
+  //     PostData(1, fOutputList);
+  //     return;
+  // }
+
+  fCounterH->Fill(15);
+  Int_t listOfGoodRunNumbersLHC18q[] = { 295585, 295586, 295587, 295588, 295589, 295612,
+                                         295615, 295665, 295666, 295667, 295668, 295671,
+                                         295673, 295675, 295676, 295677, 295714, 295716,
+                                         295717, 295718, 295719, 295723, 295725, 295753,
+                                         295754, 295755, 295758, 295759, 295762, 295763,
+                                         295786, 295788, 295791, 295816, 295818, 295819,
+                                         295822, 295825, 295826, 295829, 295831, 295854,
+                                         295855, 295856, 295859, 295860, 295861, 295863,
+                                         295881, 295908, 295909, 295910, 295913, 295936,
+                                         295937, 295941, 295942, 295943, 295945, 295947,
+                                         296061, 296062, 296063, 296065, 296066, 296068,
+                                         296123, 296128, 296132, 296133, 296134, 296135,
+                                         296142, 296143, 296191, 296192, 296194, 296195,
+                                         296196, 296197, 296198, 296241, 296242, 296243,
+                                         296244, 296246, 296247, 296269, 296270, 296273,
+                                         296279, 296280, 296303, 296304, 296307, 296309,
+                                         296312, 296376, 296377, 296378, 296379, 296380,
+                                         296381, 296383, 296414, 296419, 296420, 296423,
+                                         296424, 296433, 296472, 296509, 296510, 296511,
+                                         296514, 296516, 296547, 296548, 296549, 296550,
+                                         296551, 296552, 296553, 296615, 296616, 296618,
+                                         296619, 296622, 296623 };
+  Int_t listOfGoodRunNumbersLHC18r[] = { 296690, 296691, 296694, 296749, 296750, 296781,
+                                         296784, 296785, 296786, 296787, 296791, 296793,
+                                         296794, 296799, 296836, 296838, 296839, 296848,
+                                         296849, 296850, 296851, 296852, 296890, 296894,
+                                         296899, 296900, 296903, 296930, 296931, 296932,
+                                         296934, 296935, 296938, 296941, 296966, 296967,
+                                         296968, 296969, 296971, 296975, 296976, 296977,
+                                         296979, 297029, 297031, 297035, 297085, 297117,
+                                         297118, 297119, 297123, 297124, 297128, 297129,
+                                         297132, 297133, 297193, 297194, 297196, 297218,
+                                         297219, 297221, 297222, 297278, 297310, 297312,
+                                         297315, 297317, 297363, 297366, 297367, 297372,
+                                         297379, 297380, 297405, 297408, 297413, 297414,
+                                         297415, 297441, 297442, 297446, 297450, 297451,
+                                         297452, 297479, 297481, 297483, 297512, 297537,
+                                         297540, 297541, 297542, 297544, 297558, 297588,
+                                         297590, 297595/*, 297623, 297624*/ };
+  /* - This good run number list has been taken from the analysis
+     - note of Kay's talk for DIS 2017, see:
+     - https://alice-notes.web.cern.ch/system/files/notes/analysis/596/2017-Feb-08-analysis_note-2017-Feb-08-analysis-note.pdf
+     -
+   */
+  Int_t listOfGoodRunNumbersLHC15o[] = { 244918, 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
+                                         245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
+                                         245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
+                                         245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
+                                         245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
+                                         245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
+                                         246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
+                                         246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
+                                         246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
+                                         246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
+                                         246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
+                                         246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
+                                         246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
+                                         246949, 246980, 246982, 246984, 246989, 246991, 246994
+                                       };
+  Int_t listOfRunNumbersZDC[] = { 296244, 296750, 296849, 297219, 297481 };
+  Bool_t checkIfGoodRun = kFALSE;
+  for( Int_t iRunLHC18q = 0; iRunLHC18q < 129; iRunLHC18q++){
+    if( fRunNum == listOfGoodRunNumbersLHC18q[iRunLHC18q] ) checkIfGoodRun = kTRUE;
+  }
+  for( Int_t iRunLHC18r = 0; iRunLHC18r <  98; iRunLHC18r++){
+    if( fRunNum == listOfGoodRunNumbersLHC18r[iRunLHC18r] ) checkIfGoodRun = kTRUE;
+  }
+  for( Int_t iRunLHC15o = 0; iRunLHC15o < 137; iRunLHC15o++){
+    if( fRunNum == listOfGoodRunNumbersLHC15o[iRunLHC15o] ) checkIfGoodRun = kTRUE;
+  }
+  // for( Int_t iRunZDC = 0; iRunZDC < 5; iRunZDC++){
+  //   if( fRunNum == listOfRunNumbersZDC[iRunZDC] )           checkIfGoodRun = kTRUE;
+  // }
+  // cout << "fRunNum = " << fRunNum << "   and   checkIfGoodRun = " << checkIfGoodRun << endl;
+  if(checkIfGoodRun != 1) {
+       PostData(1, fOutputList);
+       // cout << "OPS!" << endl;
+       return;
+  }
+  fCounterH->Fill(17);
+
   // END RUN SELECTION
   //_____________________________________
 
@@ -1132,8 +1745,25 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
      -
    */
   fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
+  fEfficiencyPerRunH               ->Fill( Form("%d", fRunNum) , 1 );
   if (nGoodMuons>0) fCounterH->Fill(iSelectionCounter); // At least one good muon
   iSelectionCounter++;
+
+  /* - Filling the fDeadZoneEtaVsPhiPerRunH.
+   * -
+   */
+  // fEtaAndPhi[0] = 0;
+  // fEtaAndPhi[1] = 0;
+  // fEtaAndPhi[0] = track[0]->Eta();
+  // fEtaAndPhi[1] = track[0]->Phi();
+  // ((THnSparseF*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( fEtaAndPhi );
+  ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[0]->Eta(), track[0]->Phi() );
+  // fEtaAndPhi[0] = 0;
+  // fEtaAndPhi[1] = 0;
+  // fEtaAndPhi[0] = track[1]->Eta();
+  // fEtaAndPhi[1] = track[1]->Phi();
+  // ((THnSparseF*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( fEtaAndPhi );
+  ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[1]->Eta(), track[1]->Phi() );
 
   /* - Finally the core!!!
    * - What will be happening is that we will instantiate TLorentzVectors to
@@ -1154,6 +1784,19 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
         chargeOfMuons[indexMuon] = track[indexMuon]->Charge();
   }
   fInvariantMassDistributionH->Fill(possibleJPsi.Mag());
+  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
+    fInvariantMassDistributionRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.75 && possibleJPsi.Rapidity() <= -3.50 ) {
+    fInvariantMassDistributionRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.25 ) {
+    fInvariantMassDistributionRapidityBinsH[2]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -3.00 ) {
+    fInvariantMassDistributionRapidityBinsH[3]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.75 ) {
+    fInvariantMassDistributionRapidityBinsH[4]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -2.75 && possibleJPsi.Rapidity() <= -2.50 ) {
+    fInvariantMassDistributionRapidityBinsH[5]->Fill(possibleJPsi.Mag());
+  }
   fInvariantMassDistributionExtendedH->Fill(possibleJPsi.Mag());
 
   /* - This is a TH2F histogram filled with DCA against the invariant mass of
@@ -1175,9 +1818,35 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
   if( ptOfTheDimuonPair < 0.25) {
         fInvariantMassDistributionCoherentH->Fill(possibleJPsi.Mag());
         fInvariantMassDistributionCoherentExtendedH->Fill(possibleJPsi.Mag());
+        if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.75 && possibleJPsi.Rapidity() <= -3.50 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.25 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[2]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -3.00 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[3]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.75 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[4]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -2.75 && possibleJPsi.Rapidity() <= -2.50 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[5]->Fill(possibleJPsi.Mag());
+        }
   } else {
         fInvariantMassDistributionIncoherentH->Fill(possibleJPsi.Mag());
         fInvariantMassDistributionIncoherentExtendedH->Fill(possibleJPsi.Mag());
+        if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.75 && possibleJPsi.Rapidity() <= -3.50 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.25 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[2]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -3.00 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[3]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.75 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[4]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -2.75 && possibleJPsi.Rapidity() <= -2.50 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[5]->Fill(possibleJPsi.Mag());
+        }
   }
   fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
   if ( (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) fTemplatePtDistributionH->Fill(ptOfTheDimuonPair);
@@ -1252,6 +1921,16 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
                                                           possibleJPsiCopy
                                                           )
                                                         );
+
+    fCosThetaAndPhiHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                         muonsCopy2[1],
+                                                                         possibleJPsiCopy
+                                                                         ),
+                                                  CosPhiHelicityFrame( muonsCopy2[0],
+                                                                       muonsCopy2[1],
+                                                                       possibleJPsiCopy
+                                                                       )
+                                                  );
     /* - Now we are filling in terms of rapidity...
        - The easiest way to do so I have envisioned is to simply
        - check everytime if we are below the following threshold
@@ -1261,7 +1940,7 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
        -
        */
     for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
-        if( (possibleJPsiCopy.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
+        if( (possibleJPsiCopy.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/8. ){
           fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrame[0]);
           /* - New part: filling all possible histograms!
              -
@@ -1291,6 +1970,92 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
     }
 
 
+    /* - NEW:
+       -
+     */
+    Bool_t controlFlag2 = 0;
+    Bool_t controlFlag3 = 0;
+    if ( possibleJPsiCopy.Pt() < 0.25 ) {
+          Double_t CosThetaHelicityFrameValue = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          Double_t PhiHelicityFrameValue      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          for(Int_t iCosThetaBins = 0; iCosThetaBins < 40; iCosThetaBins++) {
+            if( controlFlag2 == 1) break;
+            if( (CosThetaHelicityFrameValue + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/40. ){
+                fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins]->Fill(possibleJPsiCopy.Mag());
+                controlFlag2 = 1;
+            }
+          }
+          for(Int_t iPhiBins = 0; iPhiBins < 50; iPhiBins++) {
+            if( controlFlag3 == 1) break;
+            if( (PhiHelicityFrameValue + 3.14) < 6.28*((Double_t)iPhiBins + 1.)/50. ){
+                fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins]->Fill(possibleJPsiCopy.Mag());
+                controlFlag3 = 1;
+            }
+          }
+
+    }
+
+    /* - NEW: analysis with purity of the binning
+     * - above 80% in CosTheta.
+     */
+    if ( (possibleJPsiCopy.Pt() < 0.25) && (possibleJPsiCopy.Mag() < 3.35) && (possibleJPsiCopy.Mag() > 2.85) ) {
+          Double_t CosThetaHelicityFrameValue10 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          Double_t PhiHelicityFrameValue10      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          Double_t TildePhiPositiveCosTheta    = PhiHelicityFrameValue10 - 0.25 * 3.14;
+          Double_t TildePhiNegativeCosTheta    = PhiHelicityFrameValue10 - 0.75 * 3.14;
+          fCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrameValue10 );
+          fPhiHelicityFrameTwentyfiveBinsH     ->Fill( PhiHelicityFrameValue10 );
+          if( CosThetaHelicityFrameValue10 > 0 ){
+            fTildePhiHelicityFrameTwentyfiveBinsH->Fill( TildePhiPositiveCosTheta );
+          } else {
+            fTildePhiHelicityFrameTwentyfiveBinsH->Fill( TildePhiNegativeCosTheta );
+          }
+    }
+
+    /* - NEW:
+     * - 1D analysis with
+     * - my variable binning.
+     */
+    Bool_t controlFlag5 = 0;
+    Bool_t controlFlag6 = 0;
+    Double_t MyVariableCosThetaBinning1D[] = { -0.65,  -0.5,  -0.4,  -0.35,  -0.3,
+                                               -0.25,  -0.2,  -0.15, -0.125, -0.1,
+                                               -0.075, -0.05, -0.025, 0,      0.025,
+                                                0.05,   0.075, 0.1,   0.125,  0.15,
+                                                0.2,    0.25,  0.3,   0.35,   0.4,
+                                                0.5,    0.65 };
+    Double_t MyVariablePhiBinning1D[] = { -3.14*1,      -3.14*14/15,  -3.14*13/15,  -3.14*12/15,
+                                          -3.14*11/15,  -3.14*10/15,  -3.14*9/15,   -3.14*8/15,
+                                          -3.14*7/15,   -3.14*6/15,   -3.14*5/15,   -3.14*4/15,
+                                          -3.14*3/15,   -3.14*2/15,   -3.14*1/15,    0,
+                                          +3.14*1/15,   +3.14*2/15,   +3.14*3/15,   +3.14*4/15,
+                                          +3.14*5/15,   +3.14*6/15,   +3.14*7/15,   +3.14*8/15,
+                                          +3.14*9/15,   +3.14*10/15,  +3.14*11/15,  +3.14*12/15,
+                                          +3.14*13/15,  +3.14*14/15,  +3.14*1 };
+    if ( possibleJPsiCopy.Pt() < 0.25 ) {
+          Double_t CosThetaHelicityFrameValue4 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          Double_t PhiHelicityFrameValue4      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          fCosThetaHelicityFrameMyBinningH         ->Fill( CosThetaHelicityFrameValue4 );
+          fCosThetaHelicityFrameMyBinningSmallH    ->Fill( CosThetaHelicityFrameValue4 );
+          fCosThetaHelicityFrameMySeventeenBinningH->Fill( CosThetaHelicityFrameValue4 );
+          fPhiHelicityFrameMyBinningH              ->Fill( PhiHelicityFrameValue4      );
+          for(Int_t iCosThetaBins = 0; iCosThetaBins < 26; iCosThetaBins++) {
+            if( controlFlag5 == 1) break;
+            if( CosThetaHelicityFrameValue4 < MyVariableCosThetaBinning1D[iCosThetaBins + 1] ){
+              fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins]->Fill( possibleJPsiCopy.Mag() );
+              controlFlag5 = 1;
+            }
+          }
+          for(Int_t iPhiBins = 0; iPhiBins < 30; iPhiBins++) {
+            if( controlFlag6 == 1) break;
+            if( PhiHelicityFrameValue4  < MyVariablePhiBinning1D[iPhiBins + 1] ){
+              fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins]->Fill( possibleJPsiCopy.Mag() );
+              controlFlag6 = 1;
+            }
+          }
+    }
+
+
     /* - Now we are filling in terms of rapidity...
        - The easiest way to do so I have envisioned is to simply
        - check everytime if we are below the following threshold
@@ -1302,7 +2067,7 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
        - NEW: the following code is for 10 rapidity bins...
        */
     for(Int_t iRapidityBin = 0; iRapidityBin < 10; iRapidityBin++){
-        if( (possibleJPsiCopy.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/10 ){
+        if( (possibleJPsiCopy.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/10. ){
           fCosThetaHelicityFrameJPsiTenRapidityBinsH[iRapidityBin]->Fill( CosThetaHelicityFrame( muonsCopy2[0],
                                                                                                  muonsCopy2[1],
                                                                                                  possibleJPsiCopy
@@ -1326,10 +2091,56 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
           break;
         }
     }
+
+
+    /* - What we do here is very similar.
+       - This time we divide firstly in bins of CosTheta.
+       - As many as needed.
+       - And then we divide again in terms of Phi.
+       - Then we fill.
+       - This way we should be able to obtain some kind of map...
+       -
+     */
+    fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                               muonsCopy2[1],
+                                                                                               possibleJPsiCopy
+                                                                                               ),
+                                                                        CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                             muonsCopy2[1],
+                                                                                             possibleJPsiCopy
+                                                                                             )
+                                                                        );
+    fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                      muonsCopy2[1],
+                                                                                      possibleJPsiCopy
+                                                                                      ),
+                                                               CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                    muonsCopy2[1],
+                                                                                    possibleJPsiCopy
+                                                                                    )
+                                                               );
+    fInvariantMassDistributionForSignalExtractionHelicityFrameH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                              muonsCopy2[1],
+                                                                                              possibleJPsiCopy
+                                                                                              ),
+                                                                       CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                            muonsCopy2[1],
+                                                                                            possibleJPsiCopy
+                                                                                            )
+                                                                       );
+    fCosThetaHeFrameForSignalExH->Fill( CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy ) );
+    fPhiHeFrameForSignalExH     ->Fill( CosPhiHelicityFrame(   muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy ) );
+
   }
 
   // fVectorCosThetaReconstructed.push_back(cosThetaMuonsRestFrame[0]);
+  fCosThetaReconHelicityFrame = 0;
   fCosThetaReconHelicityFrame = cosThetaMuonsRestFrame[0];
+  fPhiReconHelicityFrame      = 0;
+  fPhiReconHelicityFrame      = CosPhiHelicityFrame( muonsCopy2[0],
+                                                     muonsCopy2[1],
+                                                     possibleJPsiCopy
+                                                     );
   /* - Mind that it could generate segmentation fault without
      - fCounterUPCevent-1, because we are incrementing the counter right after
      - it processes the MC events at Generated level...
@@ -1347,6 +2158,11 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
         fBinMigrationHelicityH->Fill( fCosThetaGeneratedHelicityFrame,
                                       fCosThetaReconHelicityFrame
                                     );
+  }
+  if ( fPhiReconHelicityFrame ) {
+        fBinMigrationForPhiHelicityH->Fill( fPhiGeneratedHelicityFrame,
+                                            fPhiReconHelicityFrame
+                                            );
   }
 
 
@@ -1491,6 +2307,10 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
                   // fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[0]);
                   fCosThetaGeneratedHelicityFrame = cosThetaMuonsRestFrameMC[0];
+                  fPhiGeneratedHelicityFrame      = CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                         muonsMCcopy[1],
+                                                                         possibleJPsiMC
+                                                                       );
                   /* - New part: filling all possible histograms!
                      -
                    */
@@ -1514,6 +2334,61 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                           possibleJPsiMC
                                                                           )
                                                                         );
+                  fMCCosThetaHeFrameForSignalExH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                               muonsMCcopy[1],
+                                                                               possibleJPsiMC
+                                                                               )
+                                                                              );
+                  fMCPhiHeFrameForSignalExH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                          muonsMCcopy[1],
+                                                                          possibleJPsiMC
+                                                                          )
+                                                                         );
+                  fMCCosThetaHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                   muonsMCcopy[1],
+                                                                                   possibleJPsiMC
+                                                                                   )
+                                                                                  );
+                  fMCCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                        muonsMCcopy[1],
+                                                                                        possibleJPsiMC
+                                                                                        )
+                                                                                       );
+                  fMCPhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                 muonsMCcopy[1],
+                                                                                 possibleJPsiMC
+                                                                                 )
+                                                                                );
+                  if( CosThetaHelicityFrame(muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC) > 0 ){
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC ) - 3.14*0.25 );
+                  } else {
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC ) - 3.14*0.75 );
+                  }
+                  fMCCosThetaHelicityFrameMyBinningSmallH->Fill( CosThetaHelicityFrame(  muonsMCcopy[0],
+                                                                                         muonsMCcopy[1],
+                                                                                         possibleJPsiMC
+                                                                                         )
+                                                                                        );
+                  fMCCosThetaHelicityFrameMySeventeenBinningH->Fill( CosThetaHelicityFrame(  muonsMCcopy[0],
+                                                                                             muonsMCcopy[1],
+                                                                                             possibleJPsiMC
+                                                                                             )
+                                                                                            );
+                  fMCPhiHelicityFrameMyBinningH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                            muonsMCcopy[1],
+                                                                            possibleJPsiMC
+                                                                            )
+                                                                           );
+                  fMCInvariantMassDistributionForSignalExtractionHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                                              muonsMCcopy[1],
+                                                                                                              possibleJPsiMC
+                                                                                                              ),
+                                                                                       CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                                            muonsMCcopy[1],
+                                                                                                            possibleJPsiMC
+                                                                                                            )
+                                                                                       );
+
                   /* - Now we are filling in terms of rapidity...
                      - The easiest way to do so I have envisioned is to simply
                      - check everytime if we are below the following threshold
@@ -1523,7 +2398,7 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                      -
                      */
                   for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
-                      if( (possibleJPsiMC.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
+                      if( (possibleJPsiMC.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/8. ){
                         fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrameMC[0]);
                         /* - New part: filling all possible histograms!
                            -
@@ -1556,7 +2431,7 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                      -
                    */
                   for(Int_t iRapidityBin = 0; iRapidityBin < 10; iRapidityBin++){
-                      if( (possibleJPsiMC.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/10 ){
+                      if( (possibleJPsiMC.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/10. ){
                         fMCCosThetaHelicityFrameJPsiTenRapidityBinsH[iRapidityBin]->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
                                                                                                                  muonsMCcopy[1],
                                                                                                                  possibleJPsiMC
@@ -1580,11 +2455,50 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                         break;
                       }
                   }
+                  /* - What we do here is very similar.
+                     - This time we divide firstly in bins of CosTheta.
+                     - As many as needed.
+                     - And then we divide again in terms of Phi.
+                     - Then we fill.
+                     - This way we should be able to obtain some kind of map...
+                     -
+                   */
+                  fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                                               muonsMCcopy[1],
+                                                                                                               possibleJPsiMC
+                                                                                                               ),
+                                                                                        CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                                             muonsMCcopy[1],
+                                                                                                             possibleJPsiMC
+                                                                                                             )
+                                                                                        );
+                  fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                                      muonsMCcopy[1],
+                                                                                                      possibleJPsiMC
+                                                                                                      ),
+                                                                               CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                                    muonsMCcopy[1],
+                                                                                                    possibleJPsiMC
+                                                                                                    )
+                                                                               );
+                  fMCCosThetaAndPhiHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                       muonsMCcopy[1],
+                                                                                       possibleJPsiMC
+                                                                                       ),
+                                                                CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                     muonsMCcopy[1],
+                                                                                     possibleJPsiMC
+                                                                                     )
+                                                                );
           } else  {
                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
                   // fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[1]);
                   fCosThetaGeneratedHelicityFrame = cosThetaMuonsRestFrameMC[1];
+                  fPhiGeneratedHelicityFrame      = CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                         muonsMCcopy[0],
+                                                                         possibleJPsiMC
+                                                                         );
                   /* - New part: filling all possible histograms!
                      -
                    */
@@ -1608,6 +2522,61 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                           possibleJPsiMC
                                                                           )
                                                                         );
+                  fMCCosThetaHeFrameForSignalExH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                               muonsMCcopy[0],
+                                                                               possibleJPsiMC
+                                                                               )
+                                                                              );
+                  fMCPhiHeFrameForSignalExH->Fill( CosPhiHelicityFrame(   muonsMCcopy[1],
+                                                                          muonsMCcopy[0],
+                                                                          possibleJPsiMC
+                                                                          )
+                                                                         );
+                  fMCCosThetaHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                                   muonsMCcopy[0],
+                                                                                   possibleJPsiMC
+                                                                                   )
+                                                                                  );
+                  fMCCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                        muonsMCcopy[1],
+                                                                                        possibleJPsiMC
+                                                                                        )
+                                                                                       );
+                  fMCPhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                 muonsMCcopy[1],
+                                                                                 possibleJPsiMC
+                                                                                 )
+                                                                                );
+                  if( CosThetaHelicityFrame(muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC) > 0 ){
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC ) - 3.14*0.25 );
+                  } else {
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC ) - 3.14*0.75 );
+                  }
+                  fMCCosThetaHelicityFrameMyBinningSmallH->Fill( CosThetaHelicityFrame(  muonsMCcopy[1],
+                                                                                         muonsMCcopy[0],
+                                                                                         possibleJPsiMC
+                                                                                         )
+                                                                                        );
+                  fMCCosThetaHelicityFrameMySeventeenBinningH->Fill( CosThetaHelicityFrame(  muonsMCcopy[1],
+                                                                                             muonsMCcopy[0],
+                                                                                             possibleJPsiMC
+                                                                                             )
+                                                                                            );
+                  fMCPhiHelicityFrameMyBinningH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                            muonsMCcopy[0],
+                                                                            possibleJPsiMC
+                                                                            )
+                                                                           );
+                  fMCInvariantMassDistributionForSignalExtractionHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                                                              muonsMCcopy[0],
+                                                                                                              possibleJPsiMC
+                                                                                                              ),
+                                                                                       CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                                                            muonsMCcopy[0],
+                                                                                                            possibleJPsiMC
+                                                                                                            )
+                                                                                       );
+
                   /* - Now we are filling in terms of rapidity...
                      - The easiest way to do so I have envisioned is to simply
                      - check everytime if we are below the following threshold
@@ -1617,7 +2586,7 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                      -
                      */
                   for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++){
-                      if( (possibleJPsiMC.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/8 ){
+                      if( (possibleJPsiMC.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/8. ){
                         fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[iRapidityBin]->Fill(cosThetaMuonsRestFrameMC[1]);
                         /* - New part: filling all possible histograms!
                            -
@@ -1650,7 +2619,7 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                      -
                    */
                   for(Int_t iRapidityBin = 0; iRapidityBin < 10; iRapidityBin++){
-                      if( (possibleJPsiMC.Rapidity() + 4) < 1.5*(iRapidityBin + 1)/10 ){
+                      if( (possibleJPsiMC.Rapidity() + 4.) < 1.5*((Double_t)iRapidityBin + 1.)/10. ){
                         fMCCosThetaHelicityFrameJPsiTenRapidityBinsH[iRapidityBin]->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
                                                                                                                  muonsMCcopy[0],
                                                                                                                  possibleJPsiMC
@@ -1674,7 +2643,41 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                         break;
                       }
                   }
-
+                  fMCCosThetaAndPhiHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                                       muonsMCcopy[0],
+                                                                                       possibleJPsiMC
+                                                                                       ),
+                                                                CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                                     muonsMCcopy[0],
+                                                                                     possibleJPsiMC
+                                                                                     )
+                                                                );
+                  /* - What we do here is very similar.
+                     - This time we divide firstly in bins of CosTheta.
+                     - As many as needed.
+                     - And then we divide again in terms of Phi.
+                     - Then we fill.
+                     - This way we should be able to obtain some kind of map...
+                     -
+                   */
+                  fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                                                               muonsMCcopy[0],
+                                                                                                               possibleJPsiMC
+                                                                                                               ),
+                                                                                        CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                                                             muonsMCcopy[0],
+                                                                                                             possibleJPsiMC
+                                                                                                             )
+                                                                                        );
+                  fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                                                      muonsMCcopy[0],
+                                                                                                      possibleJPsiMC
+                                                                                                      ),
+                                                                               CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                                                    muonsMCcopy[0],
+                                                                                                    possibleJPsiMC
+                                                                                                    )
+                                                                               );
           }
       }
     }
@@ -1890,3 +2893,744 @@ void AliAnalysisTaskUPCforwardMC::Terminate(Option_t *)
     // called at the END of the analysis (when all events are processed)
 }
 //_____________________________________________________________________________
+/* - There were plenty of ways to do this...
+ * - However, recently the STL libraries were
+ * - creating confusion on the LEGO framework
+ * - (they didn't fire at all).
+ * - This problem was not found on local, where
+ * - things were working properly...
+ * - So I am using the most barbaric C-style
+ * - arrays/for...
+ */
+void AliAnalysisTaskUPCforwardMC::SetLuminosityCap()
+{
+  fLumiPerRun = 0;
+  /* - Here I am rounding up the number for 10k,
+   * - so that I don't have to do tedious conversions...
+   * - I am adding 1 entry to the number obtained by 40k,
+   * - so that I am not missing anything...
+   * -
+   */
+  if      ( fRunNum == 244980 ) { fLumiPerRun = 0.0505; }
+  else if ( fRunNum == 244982 ) { fLumiPerRun = 0.0761; }
+  else if ( fRunNum == 244983 ) { fLumiPerRun = 0.0291; }
+  else if ( fRunNum == 245064 ) { fLumiPerRun = 0.1643; }
+  else if ( fRunNum == 245066 ) { fLumiPerRun = 0.0236; }
+  else if ( fRunNum == 245068 ) { fLumiPerRun = 0.0202; }
+  else if ( fRunNum == 245145 ) { fLumiPerRun = 1.2115; }
+  else if ( fRunNum == 245146 ) { fLumiPerRun = 1.3773; }
+  else if ( fRunNum == 245151 ) { fLumiPerRun = 0.1469; }
+  else if ( fRunNum == 245152 ) { fLumiPerRun = 0.1655; }
+  else if ( fRunNum == 245231 ) { fLumiPerRun = 0.3084; }
+  else if ( fRunNum == 245232 ) { fLumiPerRun = 1.0146; }
+  else if ( fRunNum == 245233 ) { fLumiPerRun = 0.2373; }
+  else if ( fRunNum == 245253 ) { fLumiPerRun = 0.3067; }
+  else if ( fRunNum == 245259 ) { fLumiPerRun = 0.4893; }
+  else if ( fRunNum == 245343 ) { fLumiPerRun = 0.7006; }
+  else if ( fRunNum == 245345 ) { fLumiPerRun = 2.2153; }
+  else if ( fRunNum == 245346 ) { fLumiPerRun = 0.2785; }
+  else if ( fRunNum == 245347 ) { fLumiPerRun = 1.1752; }
+  else if ( fRunNum == 245353 ) { fLumiPerRun = 1.6505; }
+  else if ( fRunNum == 245401 ) { fLumiPerRun = 0.7485; }
+  else if ( fRunNum == 245407 ) { fLumiPerRun = 2.0625; }
+  else if ( fRunNum == 245409 ) { fLumiPerRun = 0.8705; }
+  else if ( fRunNum == 245410 ) { fLumiPerRun = 0.1819; }
+  else if ( fRunNum == 245446 ) { fLumiPerRun = 0.1261; }
+  else if ( fRunNum == 245450 ) { fLumiPerRun = 0.2621; }
+  else if ( fRunNum == 245496 ) { fLumiPerRun = 1.06;   }
+  else if ( fRunNum == 245501 ) { fLumiPerRun = 1.334;  }
+  else if ( fRunNum == 245504 ) { fLumiPerRun = 0.6492; }
+  else if ( fRunNum == 245505 ) { fLumiPerRun = 0.3624; }
+  else if ( fRunNum == 245507 ) { fLumiPerRun = 1.6192; }
+  else if ( fRunNum == 245535 ) { fLumiPerRun = 1.3612; }
+  else if ( fRunNum == 245540 ) { fLumiPerRun = 0.7121; }
+  else if ( fRunNum == 245542 ) { fLumiPerRun = 1.1181; }
+  else if ( fRunNum == 245543 ) { fLumiPerRun = 2.0169; }
+  else if ( fRunNum == 245554 ) { fLumiPerRun = 1.7248; }
+  else if ( fRunNum == 245683 ) { fLumiPerRun = 4.0406; }
+  else if ( fRunNum == 245692 ) { fLumiPerRun = 1.9090; }
+  else if ( fRunNum == 245700 ) { fLumiPerRun = 1.1167; }
+  else if ( fRunNum == 245705 ) { fLumiPerRun = 0.3239; }
+  else if ( fRunNum == 245729 ) { fLumiPerRun = 1.1548; }
+  else if ( fRunNum == 245731 ) { fLumiPerRun = 3.3932; }
+  else if ( fRunNum == 245738 ) { fLumiPerRun = 1.9485; }
+  else if ( fRunNum == 245752 ) { fLumiPerRun = 1.2497; }
+  else if ( fRunNum == 245759 ) { fLumiPerRun = 1.3785; }
+  else if ( fRunNum == 245766 ) { fLumiPerRun = 1.1429; }
+  else if ( fRunNum == 245775 ) { fLumiPerRun = 1.7326; }
+  else if ( fRunNum == 245785 ) { fLumiPerRun = 0.5102; }
+  else if ( fRunNum == 245793 ) { fLumiPerRun = 0.7093; }
+  else if ( fRunNum == 245829 ) { fLumiPerRun = 1.958;  }
+  else if ( fRunNum == 245831 ) { fLumiPerRun = 1.9939; }
+  else if ( fRunNum == 245833 ) { fLumiPerRun = 0.3559; }
+  else if ( fRunNum == 245949 ) { fLumiPerRun = 0.5652; }
+  else if ( fRunNum == 245952 ) { fLumiPerRun = 3.0759; }
+  else if ( fRunNum == 245954 ) { fLumiPerRun = 1.9965; }
+  else if ( fRunNum == 245963 ) { fLumiPerRun = 2.2815; }
+  else if ( fRunNum == 245996 ) { fLumiPerRun = 0.4644; }
+  else if ( fRunNum == 246001 ) { fLumiPerRun = 3.5684; }
+  else if ( fRunNum == 246003 ) { fLumiPerRun = 0.5803; }
+  else if ( fRunNum == 246012 ) { fLumiPerRun = 0.7302; }
+  else if ( fRunNum == 246036 ) { fLumiPerRun = 0.2143; }
+  else if ( fRunNum == 246037 ) { fLumiPerRun = 1.7465; }
+  else if ( fRunNum == 246042 ) { fLumiPerRun = 4.8713; }
+  else if ( fRunNum == 246048 ) { fLumiPerRun = 0.3835; }
+  else if ( fRunNum == 246049 ) { fLumiPerRun = 3.2666; }
+  else if ( fRunNum == 246053 ) { fLumiPerRun = 1.7691; }
+  else if ( fRunNum == 246087 ) { fLumiPerRun = 14.184; }
+  else if ( fRunNum == 246089 ) { fLumiPerRun = 0.3296; }
+  else if ( fRunNum == 246113 ) { fLumiPerRun = 1.4761; }
+  else if ( fRunNum == 246115 ) { fLumiPerRun = 0.4514; }
+  else if ( fRunNum == 246148 ) { fLumiPerRun = 5.3175; }
+  else if ( fRunNum == 246151 ) { fLumiPerRun = 3.0605; }
+  else if ( fRunNum == 246152 ) { fLumiPerRun = 0.4734; }
+  else if ( fRunNum == 246153 ) { fLumiPerRun = 4.6676; }
+  else if ( fRunNum == 246178 ) { fLumiPerRun = 0.8156; }
+  else if ( fRunNum == 246181 ) { fLumiPerRun = 2.7526; }
+  else if ( fRunNum == 246182 ) { fLumiPerRun = 2.2047; }
+  else if ( fRunNum == 246217 ) { fLumiPerRun = 3.4663; }
+  else if ( fRunNum == 246220 ) { fLumiPerRun = 0.682;  }
+  else if ( fRunNum == 246222 ) { fLumiPerRun = 3.6826; }
+  else if ( fRunNum == 246225 ) { fLumiPerRun = 1.2534; }
+  else if ( fRunNum == 246272 ) { fLumiPerRun = 5.5294; }
+  else if ( fRunNum == 246275 ) { fLumiPerRun = 1.242;  }
+  else if ( fRunNum == 246276 ) { fLumiPerRun = 0.5871; }
+  else if ( fRunNum == 246390 ) { fLumiPerRun = 0.0448; }
+  else if ( fRunNum == 246391 ) { fLumiPerRun = 0.1446; }
+  else if ( fRunNum == 246392 ) { fLumiPerRun = 0.1765; }
+  else if ( fRunNum == 246424 ) { fLumiPerRun = 2.866;  }
+  else if ( fRunNum == 246428 ) { fLumiPerRun = 0.4417; }
+  else if ( fRunNum == 246431 ) { fLumiPerRun = 1.7836; }
+  else if ( fRunNum == 246433 ) { fLumiPerRun = 0.4164; }
+  else if ( fRunNum == 246434 ) { fLumiPerRun = 4.103;  }
+  else if ( fRunNum == 246487 ) { fLumiPerRun = 0.7286; }
+  else if ( fRunNum == 246488 ) { fLumiPerRun = 7.5895; }
+  else if ( fRunNum == 246493 ) { fLumiPerRun = 1.3534; }
+  else if ( fRunNum == 246495 ) { fLumiPerRun = 0.4100; }
+  else if ( fRunNum == 246675 ) { fLumiPerRun = 2.3469; }
+  else if ( fRunNum == 246676 ) { fLumiPerRun = 0.4794; }
+  else if ( fRunNum == 246750 ) { fLumiPerRun = 2.0756; }
+  else if ( fRunNum == 246751 ) { fLumiPerRun = 2.0419; }
+  else if ( fRunNum == 246755 ) { fLumiPerRun = 1.4197; }
+  else if ( fRunNum == 246757 ) { fLumiPerRun = 0.59;   }
+  else if ( fRunNum == 246758 ) { fLumiPerRun = 1.626;  }
+  else if ( fRunNum == 246759 ) { fLumiPerRun = 0.3335; }
+  else if ( fRunNum == 246760 ) { fLumiPerRun = 1.1753; }
+  else if ( fRunNum == 246763 ) { fLumiPerRun = 0.549;  }
+  else if ( fRunNum == 246765 ) { fLumiPerRun = 0.3274; }
+  else if ( fRunNum == 246804 ) { fLumiPerRun = 1.0208; }
+  else if ( fRunNum == 246805 ) { fLumiPerRun = 3.1925; }
+  else if ( fRunNum == 246806 ) { fLumiPerRun = 2.5555; }
+  else if ( fRunNum == 246807 ) { fLumiPerRun = 2.5962; }
+  else if ( fRunNum == 246808 ) { fLumiPerRun = 0.3101; }
+  else if ( fRunNum == 246809 ) { fLumiPerRun = 2.4707; }
+  else if ( fRunNum == 246844 ) { fLumiPerRun = 0.7657; }
+  else if ( fRunNum == 246845 ) { fLumiPerRun = 1.4355; }
+  else if ( fRunNum == 246846 ) { fLumiPerRun = 0.8986; }
+  else if ( fRunNum == 246847 ) { fLumiPerRun = 1.7064; }
+  else if ( fRunNum == 246851 ) { fLumiPerRun = 1.2170; }
+  else if ( fRunNum == 246855 ) { fLumiPerRun = 1.3014; }
+  else if ( fRunNum == 246859 ) { fLumiPerRun = 1.2397; }
+  else if ( fRunNum == 246864 ) { fLumiPerRun = 2.4832; }
+  else if ( fRunNum == 246865 ) { fLumiPerRun = 0.8111; }
+  else if ( fRunNum == 246867 ) { fLumiPerRun = 1.5019; }
+  else if ( fRunNum == 246871 ) { fLumiPerRun = 0.8713; }
+  else if ( fRunNum == 246930 ) { fLumiPerRun = 0.5641; }
+  else if ( fRunNum == 246937 ) { fLumiPerRun = 0.699;  }
+  else if ( fRunNum == 246942 ) { fLumiPerRun = 1.0555; }
+  else if ( fRunNum == 246945 ) { fLumiPerRun = 2.1676; }
+  else if ( fRunNum == 246948 ) { fLumiPerRun = 0.8855; }
+  else if ( fRunNum == 246949 ) { fLumiPerRun = 2.8978; }
+  else if ( fRunNum == 246980 ) { fLumiPerRun = 7.1999; }
+  else if ( fRunNum == 246982 ) { fLumiPerRun = 0.5146; }
+  else if ( fRunNum == 246984 ) { fLumiPerRun = 4.143;  }
+  else if ( fRunNum == 246989 ) { fLumiPerRun = 3.8342; }
+  else if ( fRunNum == 246991 ) { fLumiPerRun = 0.4368; }
+  else if ( fRunNum == 246994 ) { fLumiPerRun = 1.2329; }
+  else if ( fRunNum == 295585 ) { fLumiPerRun = 0.0793; }
+  else if ( fRunNum == 295586 ) { fLumiPerRun = 0.2386; }
+  else if ( fRunNum == 295587 ) { fLumiPerRun = 0.1095; }
+  else if ( fRunNum == 295588 ) { fLumiPerRun = 0.1358; }
+  else if ( fRunNum == 295589 ) { fLumiPerRun = 0.2819; }
+  else if ( fRunNum == 295612 ) { fLumiPerRun = 0.449;  }
+  else if ( fRunNum == 295615 ) { fLumiPerRun = 0.0566; }
+  else if ( fRunNum == 295665 ) { fLumiPerRun = 0.3349; }
+  else if ( fRunNum == 295666 ) { fLumiPerRun = 0.3239; }
+  else if ( fRunNum == 295667 ) { fLumiPerRun = 0.0970; }
+  else if ( fRunNum == 295668 ) { fLumiPerRun = 0.1303; }
+  else if ( fRunNum == 295671 ) { fLumiPerRun = 0.3259; }
+  else if ( fRunNum == 295673 ) { fLumiPerRun = 0.3128; }
+  else if ( fRunNum == 295675 ) { fLumiPerRun = 0.132;  }
+  else if ( fRunNum == 295676 ) { fLumiPerRun = 0.3213; }
+  else if ( fRunNum == 295677 ) { fLumiPerRun = 0.2652; }
+  else if ( fRunNum == 295714 ) { fLumiPerRun = 0.3456; }
+  else if ( fRunNum == 295716 ) { fLumiPerRun = 0.3389; }
+  else if ( fRunNum == 295717 ) { fLumiPerRun = 0.2880; }
+  else if ( fRunNum == 295718 ) { fLumiPerRun = 0.2567; }
+  else if ( fRunNum == 295719 ) { fLumiPerRun = 0.2947; }
+  else if ( fRunNum == 295723 ) { fLumiPerRun = 0.5064; }
+  else if ( fRunNum == 295725 ) { fLumiPerRun = 0.8890; }
+  else if ( fRunNum == 295753 ) { fLumiPerRun = 0.3846; }
+  else if ( fRunNum == 295754 ) { fLumiPerRun = 0.7055; }
+  else if ( fRunNum == 295755 ) { fLumiPerRun = 0.7585; }
+  else if ( fRunNum == 295758 ) { fLumiPerRun = 1.8934; }
+  else if ( fRunNum == 295759 ) { fLumiPerRun = 0.5331; }
+  else if ( fRunNum == 295762 ) { fLumiPerRun = 0.2749; }
+  else if ( fRunNum == 295763 ) { fLumiPerRun = 1.0282; }
+  else if ( fRunNum == 295786 ) { fLumiPerRun = 0.7490; }
+  else if ( fRunNum == 295788 ) { fLumiPerRun = 3.0237; }
+  else if ( fRunNum == 295791 ) { fLumiPerRun = 0.8580; }
+  else if ( fRunNum == 295816 ) { fLumiPerRun = 1.2056; }
+  else if ( fRunNum == 295818 ) { fLumiPerRun = 0.1453; }
+  else if ( fRunNum == 295819 ) { fLumiPerRun = 2.7474; }
+  else if ( fRunNum == 295822 ) { fLumiPerRun = 2.2529; }
+  else if ( fRunNum == 295825 ) { fLumiPerRun = 0.2558; }
+  else if ( fRunNum == 295826 ) { fLumiPerRun = 1.5814; }
+  else if ( fRunNum == 295829 ) { fLumiPerRun = 0.9351; }
+  else if ( fRunNum == 295831 ) { fLumiPerRun = 0.7762; }
+  else if ( fRunNum == 295854 ) { fLumiPerRun = 1.3119; }
+  else if ( fRunNum == 295855 ) { fLumiPerRun = 1.7466; }
+  else if ( fRunNum == 295856 ) { fLumiPerRun = 1.4700; }
+  else if ( fRunNum == 295859 ) { fLumiPerRun = 1.0510; }
+  else if ( fRunNum == 295860 ) { fLumiPerRun = 0.8341; }
+  else if ( fRunNum == 295861 ) { fLumiPerRun = 1.0670; }
+  else if ( fRunNum == 295863 ) { fLumiPerRun = 0.7279; }
+  else if ( fRunNum == 295881 ) { fLumiPerRun = 0.7115; }
+  else if ( fRunNum == 295908 ) { fLumiPerRun = 2.9261; }
+  else if ( fRunNum == 295909 ) { fLumiPerRun = 0.7875; }
+  else if ( fRunNum == 295910 ) { fLumiPerRun = 3.1843; }
+  else if ( fRunNum == 295913 ) { fLumiPerRun = 3.1294; }
+  else if ( fRunNum == 295936 ) { fLumiPerRun = 1.4736; }
+  else if ( fRunNum == 295937 ) { fLumiPerRun = 0.4057; }
+  else if ( fRunNum == 295941 ) { fLumiPerRun = 1.6767; }
+  else if ( fRunNum == 295942 ) { fLumiPerRun = 1.9237; }
+  else if ( fRunNum == 295943 ) { fLumiPerRun = 1.6747; }
+  else if ( fRunNum == 295945 ) { fLumiPerRun = 2.0370; }
+  else if ( fRunNum == 295947 ) { fLumiPerRun = 2.6337; }
+  else if ( fRunNum == 296061 ) { fLumiPerRun = 1.2968; }
+  else if ( fRunNum == 296062 ) { fLumiPerRun = 1.8083; }
+  else if ( fRunNum == 296063 ) { fLumiPerRun = 2.6876; }
+  else if ( fRunNum == 296065 ) { fLumiPerRun = 2.4473; }
+  else if ( fRunNum == 296066 ) { fLumiPerRun = 0.7337; }
+  else if ( fRunNum == 296068 ) { fLumiPerRun = 1.9812; }
+  else if ( fRunNum == 296123 ) { fLumiPerRun = 0.5065; }
+  else if ( fRunNum == 296128 ) { fLumiPerRun = 0.4455; }
+  else if ( fRunNum == 296132 ) { fLumiPerRun = 1.312;  }
+  else if ( fRunNum == 296133 ) { fLumiPerRun = 1.7321; }
+  else if ( fRunNum == 296134 ) { fLumiPerRun = 3.9104; }
+  else if ( fRunNum == 296135 ) { fLumiPerRun = 2.3412; }
+  else if ( fRunNum == 296142 ) { fLumiPerRun = 1.7893; }
+  else if ( fRunNum == 296143 ) { fLumiPerRun = 0.5340; }
+  else if ( fRunNum == 296191 ) { fLumiPerRun = 5.0507; }
+  else if ( fRunNum == 296192 ) { fLumiPerRun = 0.4974; }
+  else if ( fRunNum == 296194 ) { fLumiPerRun = 2.8725; }
+  else if ( fRunNum == 296195 ) { fLumiPerRun = 0.7376; }
+  else if ( fRunNum == 296196 ) { fLumiPerRun = 2.352;  }
+  else if ( fRunNum == 296197 ) { fLumiPerRun = 2.0691; }
+  else if ( fRunNum == 296198 ) { fLumiPerRun = 0.8140; }
+  else if ( fRunNum == 296241 ) { fLumiPerRun = 0.8459; }
+  else if ( fRunNum == 296242 ) { fLumiPerRun = 0.9517; }
+  else if ( fRunNum == 296243 ) { fLumiPerRun = 1.5674; }
+  else if ( fRunNum == 296244 ) { fLumiPerRun = 8.3722; }
+  else if ( fRunNum == 296246 ) { fLumiPerRun = 1.8351; }
+  else if ( fRunNum == 296247 ) { fLumiPerRun = 1.1765; }
+  else if ( fRunNum == 296269 ) { fLumiPerRun = 3.8392; }
+  else if ( fRunNum == 296270 ) { fLumiPerRun = 1.5116; }
+  else if ( fRunNum == 296273 ) { fLumiPerRun = 7.2237; }
+  else if ( fRunNum == 296279 ) { fLumiPerRun = 0.4057; }
+  else if ( fRunNum == 296280 ) { fLumiPerRun = 1.5066; }
+  else if ( fRunNum == 296303 ) { fLumiPerRun = 2.006;  }
+  else if ( fRunNum == 296304 ) { fLumiPerRun = 6.0965; }
+  else if ( fRunNum == 296307 ) { fLumiPerRun = 2.9023; }
+  else if ( fRunNum == 296309 ) { fLumiPerRun = 2.1026; }
+  else if ( fRunNum == 296312 ) { fLumiPerRun = 2.1228; }
+  else if ( fRunNum == 296377 ) { fLumiPerRun = 6.0666; }
+  else if ( fRunNum == 296378 ) { fLumiPerRun = 5.3897; }
+  else if ( fRunNum == 296379 ) { fLumiPerRun = 2.0969; }
+  else if ( fRunNum == 296380 ) { fLumiPerRun = 2.8820; }
+  else if ( fRunNum == 296381 ) { fLumiPerRun = 1.4418; }
+  else if ( fRunNum == 296383 ) { fLumiPerRun = 1.5136; }
+  else if ( fRunNum == 296414 ) { fLumiPerRun = 4.8766; }
+  else if ( fRunNum == 296419 ) { fLumiPerRun = 2.7523; }
+  else if ( fRunNum == 296420 ) { fLumiPerRun = 1.4132; }
+  else if ( fRunNum == 296423 ) { fLumiPerRun = 1.5981; }
+  else if ( fRunNum == 296424 ) { fLumiPerRun = 0.3864; }
+  else if ( fRunNum == 296433 ) { fLumiPerRun = 4.0456; }
+  else if ( fRunNum == 296472 ) { fLumiPerRun = 0.8632; }
+  else if ( fRunNum == 296509 ) { fLumiPerRun = 2.9592; }
+  else if ( fRunNum == 296510 ) { fLumiPerRun = 9.0673; }
+  else if ( fRunNum == 296511 ) { fLumiPerRun = 2.5666; }
+  else if ( fRunNum == 296514 ) { fLumiPerRun = 0.4898; }
+  else if ( fRunNum == 296516 ) { fLumiPerRun = 0.6134; }
+  else if ( fRunNum == 296547 ) { fLumiPerRun = 1.0834; }
+  else if ( fRunNum == 296548 ) { fLumiPerRun = 1.3771; }
+  else if ( fRunNum == 296549 ) { fLumiPerRun = 4.8645; }
+  else if ( fRunNum == 296550 ) { fLumiPerRun = 3.9901; }
+  else if ( fRunNum == 296551 ) { fLumiPerRun = 2.0214; }
+  else if ( fRunNum == 296552 ) { fLumiPerRun = 0.4842; }
+  else if ( fRunNum == 296553 ) { fLumiPerRun = 0.7091; }
+  else if ( fRunNum == 296615 ) { fLumiPerRun = 1.5676; }
+  else if ( fRunNum == 296616 ) { fLumiPerRun = 0.5399; }
+  else if ( fRunNum == 296618 ) { fLumiPerRun = 1.7014; }
+  else if ( fRunNum == 296619 ) { fLumiPerRun = 1.5613; }
+  else if ( fRunNum == 296622 ) { fLumiPerRun = 0.7064; }
+  else if ( fRunNum == 296623 ) { fLumiPerRun = 2.1442; }
+  else if ( fRunNum == 296690 ) { fLumiPerRun = 6.8615; }
+  else if ( fRunNum == 296691 ) { fLumiPerRun = 0.6511; }
+  else if ( fRunNum == 296694 ) { fLumiPerRun = 5.1826; }
+  else if ( fRunNum == 296749 ) { fLumiPerRun = 9.2413; }
+  else if ( fRunNum == 296750 ) { fLumiPerRun = 8.2161; }
+  else if ( fRunNum == 296781 ) { fLumiPerRun = 0.8179; }
+  else if ( fRunNum == 296784 ) { fLumiPerRun = 2.98;   }
+  else if ( fRunNum == 296785 ) { fLumiPerRun = 1.9085; }
+  else if ( fRunNum == 296786 ) { fLumiPerRun = 0.7537; }
+  else if ( fRunNum == 296787 ) { fLumiPerRun = 3.2190; }
+  else if ( fRunNum == 296791 ) { fLumiPerRun = 0.7573; }
+  else if ( fRunNum == 296793 ) { fLumiPerRun = 1.3317; }
+  else if ( fRunNum == 296794 ) { fLumiPerRun = 3.1335; }
+  else if ( fRunNum == 296799 ) { fLumiPerRun = 2.7149; }
+  else if ( fRunNum == 296836 ) { fLumiPerRun = 1.5116; }
+  else if ( fRunNum == 296838 ) { fLumiPerRun = 0.5432; }
+  else if ( fRunNum == 296839 ) { fLumiPerRun = 2.9424; }
+  else if ( fRunNum == 296848 ) { fLumiPerRun = 2.1628; }
+  else if ( fRunNum == 296849 ) { fLumiPerRun = 11.469; }
+  else if ( fRunNum == 296850 ) { fLumiPerRun = 2.7979; }
+  else if ( fRunNum == 296851 ) { fLumiPerRun = 0.1392; }
+  else if ( fRunNum == 296852 ) { fLumiPerRun = 0.9565; }
+  else if ( fRunNum == 296890 ) { fLumiPerRun = 8.0545; }
+  else if ( fRunNum == 296894 ) { fLumiPerRun = 4.6472; }
+  else if ( fRunNum == 296899 ) { fLumiPerRun = 2.1355; }
+  else if ( fRunNum == 296900 ) { fLumiPerRun = 2.7833; }
+  else if ( fRunNum == 296903 ) { fLumiPerRun = 1.0391; }
+  else if ( fRunNum == 296930 ) { fLumiPerRun = 1.4575; }
+  else if ( fRunNum == 296931 ) { fLumiPerRun = 0.5292; }
+  else if ( fRunNum == 296932 ) { fLumiPerRun = 1.1863; }
+  else if ( fRunNum == 296934 ) { fLumiPerRun = 2.5917; }
+  else if ( fRunNum == 296935 ) { fLumiPerRun = 4.4039; }
+  else if ( fRunNum == 296938 ) { fLumiPerRun = 1.6678; }
+  else if ( fRunNum == 296941 ) { fLumiPerRun = 2.9181; }
+  else if ( fRunNum == 296966 ) { fLumiPerRun = 3.3611; }
+  else if ( fRunNum == 296967 ) { fLumiPerRun = 0.8051; }
+  else if ( fRunNum == 296968 ) { fLumiPerRun = 3.1905; }
+  else if ( fRunNum == 296969 ) { fLumiPerRun = 1.8878; }
+  else if ( fRunNum == 296971 ) { fLumiPerRun = 0.6907; }
+  else if ( fRunNum == 296975 ) { fLumiPerRun = 7.3683; }
+  else if ( fRunNum == 296976 ) { fLumiPerRun = 1.1175; }
+  else if ( fRunNum == 296979 ) { fLumiPerRun = 1.0995; }
+  else if ( fRunNum == 297029 ) { fLumiPerRun = 7.2370; }
+  else if ( fRunNum == 297031 ) { fLumiPerRun = 6.0499; }
+  else if ( fRunNum == 297035 ) { fLumiPerRun = 0.5705; }
+  else if ( fRunNum == 297085 ) { fLumiPerRun = 0.9774; }
+  else if ( fRunNum == 297117 ) { fLumiPerRun = 2.3096; }
+  else if ( fRunNum == 297118 ) { fLumiPerRun = 2.43;   }
+  else if ( fRunNum == 297119 ) { fLumiPerRun = 2.6870; }
+  else if ( fRunNum == 297123 ) { fLumiPerRun = 3.2804; }
+  else if ( fRunNum == 297124 ) { fLumiPerRun = 0.6395; }
+  else if ( fRunNum == 297128 ) { fLumiPerRun = 2.411;  }
+  else if ( fRunNum == 297129 ) { fLumiPerRun = 2.8300; }
+  else if ( fRunNum == 297132 ) { fLumiPerRun = 2.8179; }
+  else if ( fRunNum == 297133 ) { fLumiPerRun = 1.1454; }
+  else if ( fRunNum == 297193 ) { fLumiPerRun = 7.5602; }
+  else if ( fRunNum == 297194 ) { fLumiPerRun = 8.8428; }
+  else if ( fRunNum == 297196 ) { fLumiPerRun = 2.1255; }
+  else if ( fRunNum == 297218 ) { fLumiPerRun = 6.42;   }
+  else if ( fRunNum == 297219 ) { fLumiPerRun = 10.531; }
+  else if ( fRunNum == 297221 ) { fLumiPerRun = 2.8309; }
+  else if ( fRunNum == 297222 ) { fLumiPerRun = 1.7175; }
+  else if ( fRunNum == 297278 ) { fLumiPerRun = 0.6019; }
+  else if ( fRunNum == 297310 ) { fLumiPerRun = 0.6701; }
+  else if ( fRunNum == 297312 ) { fLumiPerRun = 2.4002; }
+  else if ( fRunNum == 297315 ) { fLumiPerRun = 7.8271; }
+  else if ( fRunNum == 297317 ) { fLumiPerRun = 4.3148; }
+  else if ( fRunNum == 297363 ) { fLumiPerRun = 1.9122; }
+  else if ( fRunNum == 297366 ) { fLumiPerRun = 2.1293; }
+  else if ( fRunNum == 297367 ) { fLumiPerRun = 3.1548; }
+  else if ( fRunNum == 297372 ) { fLumiPerRun = 3.2003; }
+  else if ( fRunNum == 297379 ) { fLumiPerRun = 6.8050; }
+  else if ( fRunNum == 297380 ) { fLumiPerRun = 1.5488; }
+  else if ( fRunNum == 297405 ) { fLumiPerRun = 0.6007; }
+  else if ( fRunNum == 297408 ) { fLumiPerRun = 4.1021; }
+  else if ( fRunNum == 297413 ) { fLumiPerRun = 2.9907; }
+  else if ( fRunNum == 297414 ) { fLumiPerRun = 2.2140; }
+  else if ( fRunNum == 297415 ) { fLumiPerRun = 6.8227; }
+  else if ( fRunNum == 297441 ) { fLumiPerRun = 5.0556; }
+  else if ( fRunNum == 297442 ) { fLumiPerRun = 1.9878; }
+  else if ( fRunNum == 297446 ) { fLumiPerRun = 8.1326; }
+  else if ( fRunNum == 297450 ) { fLumiPerRun = 1.9518; }
+  else if ( fRunNum == 297451 ) { fLumiPerRun = 1.3327; }
+  else if ( fRunNum == 297452 ) { fLumiPerRun = 1.1512; }
+  else if ( fRunNum == 297479 ) { fLumiPerRun = 7.7463; }
+  else if ( fRunNum == 297481 ) { fLumiPerRun = 10.645; }
+  else if ( fRunNum == 297483 ) { fLumiPerRun = 1.9505; }
+  else if ( fRunNum == 297512 ) { fLumiPerRun = 1.5848; }
+  else if ( fRunNum == 297537 ) { fLumiPerRun = 1.8096; }
+  else if ( fRunNum == 297540 ) { fLumiPerRun = 0.6286; }
+  else if ( fRunNum == 297541 ) { fLumiPerRun = 4.0120; }
+  else if ( fRunNum == 297542 ) { fLumiPerRun = 1.5362; }
+  else if ( fRunNum == 297544 ) { fLumiPerRun = 7.2900; }
+  else if ( fRunNum == 297558 ) { fLumiPerRun = 0.4783; }
+  else if ( fRunNum == 297588 ) { fLumiPerRun = 5.2912; }
+  else if ( fRunNum == 297590 ) { fLumiPerRun = 3.06;   }
+
+  // if      ( fRunNum == 244980 ) { fLumiPerRun = 0.0504512; }
+  // else if ( fRunNum == 244982 ) { fLumiPerRun = 0.0760554; }
+  // else if ( fRunNum == 244983 ) { fLumiPerRun = 0.0291017; }
+  // else if ( fRunNum == 245064 ) { fLumiPerRun = 0.164271; }
+  // else if ( fRunNum == 245066 ) { fLumiPerRun = 0.0235605; }
+  // else if ( fRunNum == 245068 ) { fLumiPerRun = 0.0202038; }
+  // else if ( fRunNum == 245145 ) { fLumiPerRun = 1.21146; }
+  // else if ( fRunNum == 245146 ) { fLumiPerRun = 1.37734; }
+  // else if ( fRunNum == 245151 ) { fLumiPerRun = 0.146884; }
+  // else if ( fRunNum == 245152 ) { fLumiPerRun = 0.16546; }
+  // else if ( fRunNum == 245231 ) { fLumiPerRun = 0.308407; }
+  // else if ( fRunNum == 245232 ) { fLumiPerRun = 1.01455; }
+  // else if ( fRunNum == 245233 ) { fLumiPerRun = 0.237275; }
+  // else if ( fRunNum == 245253 ) { fLumiPerRun = 0.306764; }
+  // else if ( fRunNum == 245259 ) { fLumiPerRun = 0.489333; }
+  // else if ( fRunNum == 245343 ) { fLumiPerRun = 0.700646; }
+  // else if ( fRunNum == 245345 ) { fLumiPerRun = 2.21529; }
+  // else if ( fRunNum == 245346 ) { fLumiPerRun = 0.278521; }
+  // else if ( fRunNum == 245347 ) { fLumiPerRun = 1.1752; }
+  // else if ( fRunNum == 245353 ) { fLumiPerRun = 1.65046; }
+  // else if ( fRunNum == 245401 ) { fLumiPerRun = 0.748546; }
+  // else if ( fRunNum == 245407 ) { fLumiPerRun = 2.06245; }
+  // else if ( fRunNum == 245409 ) { fLumiPerRun = 0.870463; }
+  // else if ( fRunNum == 245410 ) { fLumiPerRun = 0.181904; }
+  // else if ( fRunNum == 245446 ) { fLumiPerRun = 0.126099; }
+  // else if ( fRunNum == 245450 ) { fLumiPerRun = 0.262106; }
+  // else if ( fRunNum == 245496 ) { fLumiPerRun = 1.06; }
+  // else if ( fRunNum == 245501 ) { fLumiPerRun = 1.33395; }
+  // else if ( fRunNum == 245504 ) { fLumiPerRun = 0.649154; }
+  // else if ( fRunNum == 245505 ) { fLumiPerRun = 0.362348; }
+  // else if ( fRunNum == 245507 ) { fLumiPerRun = 1.61918; }
+  // else if ( fRunNum == 245535 ) { fLumiPerRun = 1.3612; }
+  // else if ( fRunNum == 245540 ) { fLumiPerRun = 0.712118; }
+  // else if ( fRunNum == 245542 ) { fLumiPerRun = 1.1181; }
+  // else if ( fRunNum == 245543 ) { fLumiPerRun = 2.01687; }
+  // else if ( fRunNum == 245554 ) { fLumiPerRun = 1.72478; }
+  // else if ( fRunNum == 245683 ) { fLumiPerRun = 4.04056; }
+  // else if ( fRunNum == 245692 ) { fLumiPerRun = 1.90903; }
+  // else if ( fRunNum == 245700 ) { fLumiPerRun = 1.11668; }
+  // else if ( fRunNum == 245705 ) { fLumiPerRun = 0.323852; }
+  // else if ( fRunNum == 245729 ) { fLumiPerRun = 1.15478; }
+  // else if ( fRunNum == 245731 ) { fLumiPerRun = 3.39319; }
+  // else if ( fRunNum == 245738 ) { fLumiPerRun = 1.94851; }
+  // else if ( fRunNum == 245752 ) { fLumiPerRun = 1.24974; }
+  // else if ( fRunNum == 245759 ) { fLumiPerRun = 1.37845; }
+  // else if ( fRunNum == 245766 ) { fLumiPerRun = 1.14287; }
+  // else if ( fRunNum == 245775 ) { fLumiPerRun = 1.73259; }
+  // else if ( fRunNum == 245785 ) { fLumiPerRun = 0.510202; }
+  // else if ( fRunNum == 245793 ) { fLumiPerRun = 0.709256; }
+  // else if ( fRunNum == 245829 ) { fLumiPerRun = 1.958; }
+  // else if ( fRunNum == 245831 ) { fLumiPerRun = 1.99389; }
+  // else if ( fRunNum == 245833 ) { fLumiPerRun = 0.355875; }
+  // else if ( fRunNum == 245949 ) { fLumiPerRun = 0.565192; }
+  // else if ( fRunNum == 245952 ) { fLumiPerRun = 3.07588; }
+  // else if ( fRunNum == 245954 ) { fLumiPerRun = 1.99647; }
+  // else if ( fRunNum == 245963 ) { fLumiPerRun = 2.28151; }
+  // else if ( fRunNum == 245996 ) { fLumiPerRun = 0.464359; }
+  // else if ( fRunNum == 246001 ) { fLumiPerRun = 3.56841; }
+  // else if ( fRunNum == 246003 ) { fLumiPerRun = 0.580254; }
+  // else if ( fRunNum == 246012 ) { fLumiPerRun = 0.730168; }
+  // else if ( fRunNum == 246036 ) { fLumiPerRun = 0.21434; }
+  // else if ( fRunNum == 246037 ) { fLumiPerRun = 1.74655; }
+  // else if ( fRunNum == 246042 ) { fLumiPerRun = 4.87131; }
+  // else if ( fRunNum == 246048 ) { fLumiPerRun = 0.383492; }
+  // else if ( fRunNum == 246049 ) { fLumiPerRun = 3.26661; }
+  // else if ( fRunNum == 246053 ) { fLumiPerRun = 1.76914; }
+  // else if ( fRunNum == 246087 ) { fLumiPerRun = 14.1839; }
+  // else if ( fRunNum == 246089 ) { fLumiPerRun = 0.329577; }
+  // else if ( fRunNum == 246113 ) { fLumiPerRun = 1.47609; }
+  // else if ( fRunNum == 246115 ) { fLumiPerRun = 0.45138; }
+  // else if ( fRunNum == 246148 ) { fLumiPerRun = 5.31746; }
+  // else if ( fRunNum == 246151 ) { fLumiPerRun = 3.06053; }
+  // else if ( fRunNum == 246152 ) { fLumiPerRun = 0.473422; }
+  // else if ( fRunNum == 246153 ) { fLumiPerRun = 4.66758; }
+  // else if ( fRunNum == 246178 ) { fLumiPerRun = 0.815641; }
+  // else if ( fRunNum == 246181 ) { fLumiPerRun = 2.7526; }
+  // else if ( fRunNum == 246182 ) { fLumiPerRun = 2.20471; }
+  // else if ( fRunNum == 246217 ) { fLumiPerRun = 3.46631; }
+  // else if ( fRunNum == 246220 ) { fLumiPerRun = 0.681981; }
+  // else if ( fRunNum == 246222 ) { fLumiPerRun = 3.68259; }
+  // else if ( fRunNum == 246225 ) { fLumiPerRun = 1.25344; }
+  // else if ( fRunNum == 246272 ) { fLumiPerRun = 5.52935; }
+  // else if ( fRunNum == 246275 ) { fLumiPerRun = 1.24195; }
+  // else if ( fRunNum == 246276 ) { fLumiPerRun = 0.587066; }
+  // else if ( fRunNum == 246390 ) { fLumiPerRun = 0.0447665; }
+  // else if ( fRunNum == 246391 ) { fLumiPerRun = 0.144587; }
+  // else if ( fRunNum == 246392 ) { fLumiPerRun = 0.176529; }
+  // else if ( fRunNum == 246424 ) { fLumiPerRun = 2.86597; }
+  // else if ( fRunNum == 246428 ) { fLumiPerRun = 0.441718; }
+  // else if ( fRunNum == 246431 ) { fLumiPerRun = 1.78356; }
+  // else if ( fRunNum == 246433 ) { fLumiPerRun = 0.41636; }
+  // else if ( fRunNum == 246434 ) { fLumiPerRun = 4.10295; }
+  // else if ( fRunNum == 246487 ) { fLumiPerRun = 0.728572; }
+  // else if ( fRunNum == 246488 ) { fLumiPerRun = 7.58954; }
+  // else if ( fRunNum == 246493 ) { fLumiPerRun = 1.3534; }
+  // else if ( fRunNum == 246495 ) { fLumiPerRun = 0.410001; }
+  // else if ( fRunNum == 246675 ) { fLumiPerRun = 2.34692; }
+  // else if ( fRunNum == 246676 ) { fLumiPerRun = 0.47941; }
+  // else if ( fRunNum == 246750 ) { fLumiPerRun = 2.07563; }
+  // else if ( fRunNum == 246751 ) { fLumiPerRun = 2.04192; }
+  // else if ( fRunNum == 246755 ) { fLumiPerRun = 1.41974; }
+  // else if ( fRunNum == 246757 ) { fLumiPerRun = 0.589975; }
+  // else if ( fRunNum == 246758 ) { fLumiPerRun = 1.62597; }
+  // else if ( fRunNum == 246759 ) { fLumiPerRun = 0.333544; }
+  // else if ( fRunNum == 246760 ) { fLumiPerRun = 1.17529; }
+  // else if ( fRunNum == 246763 ) { fLumiPerRun = 0.548986; }
+  // else if ( fRunNum == 246765 ) { fLumiPerRun = 0.327353; }
+  // else if ( fRunNum == 246804 ) { fLumiPerRun = 1.0208; }
+  // else if ( fRunNum == 246805 ) { fLumiPerRun = 3.19254; }
+  // else if ( fRunNum == 246806 ) { fLumiPerRun = 2.55545; }
+  // else if ( fRunNum == 246807 ) { fLumiPerRun = 2.59623; }
+  // else if ( fRunNum == 246808 ) { fLumiPerRun = 0.310122; }
+  // else if ( fRunNum == 246809 ) { fLumiPerRun = 2.47068; }
+  // else if ( fRunNum == 246844 ) { fLumiPerRun = 0.765679; }
+  // else if ( fRunNum == 246845 ) { fLumiPerRun = 1.4355; }
+  // else if ( fRunNum == 246846 ) { fLumiPerRun = 0.898577; }
+  // else if ( fRunNum == 246847 ) { fLumiPerRun = 1.70644; }
+  // else if ( fRunNum == 246851 ) { fLumiPerRun = 1.21702; }
+  // else if ( fRunNum == 246855 ) { fLumiPerRun = 1.30141; }
+  // else if ( fRunNum == 246859 ) { fLumiPerRun = 1.23973; }
+  // else if ( fRunNum == 246864 ) { fLumiPerRun = 2.48315; }
+  // else if ( fRunNum == 246865 ) { fLumiPerRun = 0.811053; }
+  // else if ( fRunNum == 246867 ) { fLumiPerRun = 1.50194; }
+  // else if ( fRunNum == 246871 ) { fLumiPerRun = 0.871307; }
+  // else if ( fRunNum == 246930 ) { fLumiPerRun = 0.564051; }
+  // else if ( fRunNum == 246937 ) { fLumiPerRun = 0.698979; }
+  // else if ( fRunNum == 246942 ) { fLumiPerRun = 1.05546; }
+  // else if ( fRunNum == 246945 ) { fLumiPerRun = 2.16762; }
+  // else if ( fRunNum == 246948 ) { fLumiPerRun = 0.88548; }
+  // else if ( fRunNum == 246949 ) { fLumiPerRun = 2.89783; }
+  // else if ( fRunNum == 246980 ) { fLumiPerRun = 7.19989; }
+  // else if ( fRunNum == 246982 ) { fLumiPerRun = 0.514646; }
+  // else if ( fRunNum == 246984 ) { fLumiPerRun = 4.14298; }
+  // else if ( fRunNum == 246989 ) { fLumiPerRun = 3.83424; }
+  // else if ( fRunNum == 246991 ) { fLumiPerRun = 0.4368; }
+  // else if ( fRunNum == 246994 ) { fLumiPerRun = 1.23287; }
+  // else if ( fRunNum == 295585 ) { fLumiPerRun = 0.0793352; }
+  // else if ( fRunNum == 295586 ) { fLumiPerRun = 0.238634; }
+  // else if ( fRunNum == 295587 ) { fLumiPerRun = 0.109518; }
+  // else if ( fRunNum == 295588 ) { fLumiPerRun = 0.135751; }
+  // else if ( fRunNum == 295589 ) { fLumiPerRun = 0.281934; }
+  // else if ( fRunNum == 295612 ) { fLumiPerRun = 0.448985; }
+  // else if ( fRunNum == 295615 ) { fLumiPerRun = 0.0565828; }
+  // else if ( fRunNum == 295665 ) { fLumiPerRun = 0.334899; }
+  // else if ( fRunNum == 295666 ) { fLumiPerRun = 0.323926; }
+  // else if ( fRunNum == 295667 ) { fLumiPerRun = 0.0970438; }
+  // else if ( fRunNum == 295668 ) { fLumiPerRun = 0.130269; }
+  // else if ( fRunNum == 295671 ) { fLumiPerRun = 0.325938; }
+  // else if ( fRunNum == 295673 ) { fLumiPerRun = 0.312761; }
+  // else if ( fRunNum == 295675 ) { fLumiPerRun = 0.13199; }
+  // else if ( fRunNum == 295676 ) { fLumiPerRun = 0.321306; }
+  // else if ( fRunNum == 295677 ) { fLumiPerRun = 0.26522; }
+  // else if ( fRunNum == 295714 ) { fLumiPerRun = 0.345554; }
+  // else if ( fRunNum == 295716 ) { fLumiPerRun = 0.338941; }
+  // else if ( fRunNum == 295717 ) { fLumiPerRun = 0.288033; }
+  // else if ( fRunNum == 295718 ) { fLumiPerRun = 0.256706; }
+  // else if ( fRunNum == 295719 ) { fLumiPerRun = 0.294713; }
+  // else if ( fRunNum == 295723 ) { fLumiPerRun = 0.506379; }
+  // else if ( fRunNum == 295725 ) { fLumiPerRun = 0.889047; }
+  // else if ( fRunNum == 295753 ) { fLumiPerRun = 0.384579; }
+  // else if ( fRunNum == 295754 ) { fLumiPerRun = 0.705466; }
+  // else if ( fRunNum == 295755 ) { fLumiPerRun = 0.758451; }
+  // else if ( fRunNum == 295758 ) { fLumiPerRun = 1.89342; }
+  // else if ( fRunNum == 295759 ) { fLumiPerRun = 0.53309; }
+  // else if ( fRunNum == 295762 ) { fLumiPerRun = 0.274898; }
+  // else if ( fRunNum == 295763 ) { fLumiPerRun = 1.02823; }
+  // else if ( fRunNum == 295786 ) { fLumiPerRun = 0.749037; }
+  // else if ( fRunNum == 295788 ) { fLumiPerRun = 3.02371; }
+  // else if ( fRunNum == 295791 ) { fLumiPerRun = 0.85803; }
+  // else if ( fRunNum == 295816 ) { fLumiPerRun = 1.20558; }
+  // else if ( fRunNum == 295818 ) { fLumiPerRun = 0.14533; }
+  // else if ( fRunNum == 295819 ) { fLumiPerRun = 2.74741; }
+  // else if ( fRunNum == 295822 ) { fLumiPerRun = 2.25289; }
+  // else if ( fRunNum == 295825 ) { fLumiPerRun = 0.255836; }
+  // else if ( fRunNum == 295826 ) { fLumiPerRun = 1.58143; }
+  // else if ( fRunNum == 295829 ) { fLumiPerRun = 0.935067; }
+  // else if ( fRunNum == 295831 ) { fLumiPerRun = 0.776182; }
+  // else if ( fRunNum == 295854 ) { fLumiPerRun = 1.31191; }
+  // else if ( fRunNum == 295855 ) { fLumiPerRun = 1.74655; }
+  // else if ( fRunNum == 295856 ) { fLumiPerRun = 1.47003; }
+  // else if ( fRunNum == 295859 ) { fLumiPerRun = 1.05103; }
+  // else if ( fRunNum == 295860 ) { fLumiPerRun = 0.834139; }
+  // else if ( fRunNum == 295861 ) { fLumiPerRun = 1.06703; }
+  // else if ( fRunNum == 295863 ) { fLumiPerRun = 0.727895; }
+  // else if ( fRunNum == 295881 ) { fLumiPerRun = 0.711464; }
+  // else if ( fRunNum == 295908 ) { fLumiPerRun = 2.92606; }
+  // else if ( fRunNum == 295909 ) { fLumiPerRun = 0.787541; }
+  // else if ( fRunNum == 295910 ) { fLumiPerRun = 3.18427; }
+  // else if ( fRunNum == 295913 ) { fLumiPerRun = 3.12937; }
+  // else if ( fRunNum == 295936 ) { fLumiPerRun = 1.47359; }
+  // else if ( fRunNum == 295937 ) { fLumiPerRun = 0.405657; }
+  // else if ( fRunNum == 295941 ) { fLumiPerRun = 1.67669; }
+  // else if ( fRunNum == 295942 ) { fLumiPerRun = 1.92368; }
+  // else if ( fRunNum == 295943 ) { fLumiPerRun = 1.67468; }
+  // else if ( fRunNum == 295945 ) { fLumiPerRun = 2.03704; }
+  // else if ( fRunNum == 295947 ) { fLumiPerRun = 2.63369; }
+  // else if ( fRunNum == 296061 ) { fLumiPerRun = 1.29676; }
+  // else if ( fRunNum == 296062 ) { fLumiPerRun = 1.80833; }
+  // else if ( fRunNum == 296063 ) { fLumiPerRun = 2.68761; }
+  // else if ( fRunNum == 296065 ) { fLumiPerRun = 2.44727; }
+  // else if ( fRunNum == 296066 ) { fLumiPerRun = 0.733648; }
+  // else if ( fRunNum == 296068 ) { fLumiPerRun = 1.98122; }
+  // else if ( fRunNum == 296123 ) { fLumiPerRun = 0.506486; }
+  // else if ( fRunNum == 296128 ) { fLumiPerRun = 0.445452; }
+  // else if ( fRunNum == 296132 ) { fLumiPerRun = 1.31195; }
+  // else if ( fRunNum == 296133 ) { fLumiPerRun = 1.73212; }
+  // else if ( fRunNum == 296134 ) { fLumiPerRun = 3.9104; }
+  // else if ( fRunNum == 296135 ) { fLumiPerRun = 2.34118; }
+  // else if ( fRunNum == 296142 ) { fLumiPerRun = 1.7893; }
+  // else if ( fRunNum == 296143 ) { fLumiPerRun = 0.534028; }
+  // else if ( fRunNum == 296191 ) { fLumiPerRun = 5.05074; }
+  // else if ( fRunNum == 296192 ) { fLumiPerRun = 0.497364; }
+  // else if ( fRunNum == 296194 ) { fLumiPerRun = 2.87252; }
+  // else if ( fRunNum == 296195 ) { fLumiPerRun = 0.737647; }
+  // else if ( fRunNum == 296196 ) { fLumiPerRun = 2.35196; }
+  // else if ( fRunNum == 296197 ) { fLumiPerRun = 2.06905; }
+  // else if ( fRunNum == 296198 ) { fLumiPerRun = 0.81402; }
+  // else if ( fRunNum == 296241 ) { fLumiPerRun = 0.845868; }
+  // else if ( fRunNum == 296242 ) { fLumiPerRun = 0.95166; }
+  // else if ( fRunNum == 296243 ) { fLumiPerRun = 1.56742; }
+  // else if ( fRunNum == 296244 ) { fLumiPerRun = 8.37223; }
+  // else if ( fRunNum == 296246 ) { fLumiPerRun = 1.83514; }
+  // else if ( fRunNum == 296247 ) { fLumiPerRun = 1.17651; }
+  // else if ( fRunNum == 296269 ) { fLumiPerRun = 3.8392; }
+  // else if ( fRunNum == 296270 ) { fLumiPerRun = 1.51158; }
+  // else if ( fRunNum == 296273 ) { fLumiPerRun = 7.22369; }
+  // else if ( fRunNum == 296279 ) { fLumiPerRun = 0.405699; }
+  // else if ( fRunNum == 296280 ) { fLumiPerRun = 1.50663; }
+  // else if ( fRunNum == 296303 ) { fLumiPerRun = 2.00598; }
+  // else if ( fRunNum == 296304 ) { fLumiPerRun = 6.09653; }
+  // else if ( fRunNum == 296307 ) { fLumiPerRun = 2.90228; }
+  // else if ( fRunNum == 296309 ) { fLumiPerRun = 2.10255; }
+  // else if ( fRunNum == 296312 ) { fLumiPerRun = 2.12275; }
+  // else if ( fRunNum == 296377 ) { fLumiPerRun = 6.06657; }
+  // else if ( fRunNum == 296378 ) { fLumiPerRun = 5.38973; }
+  // else if ( fRunNum == 296379 ) { fLumiPerRun = 2.09689; }
+  // else if ( fRunNum == 296380 ) { fLumiPerRun = 2.88204; }
+  // else if ( fRunNum == 296381 ) { fLumiPerRun = 1.44175; }
+  // else if ( fRunNum == 296383 ) { fLumiPerRun = 1.51363; }
+  // else if ( fRunNum == 296414 ) { fLumiPerRun = 4.87662; }
+  // else if ( fRunNum == 296419 ) { fLumiPerRun = 2.7523; }
+  // else if ( fRunNum == 296420 ) { fLumiPerRun = 1.41318; }
+  // else if ( fRunNum == 296423 ) { fLumiPerRun = 1.59805; }
+  // else if ( fRunNum == 296424 ) { fLumiPerRun = 0.386356; }
+  // else if ( fRunNum == 296433 ) { fLumiPerRun = 4.04558; }
+  // else if ( fRunNum == 296472 ) { fLumiPerRun = 0.863186; }
+  // else if ( fRunNum == 296509 ) { fLumiPerRun = 2.95923; }
+  // else if ( fRunNum == 296510 ) { fLumiPerRun = 9.06727; }
+  // else if ( fRunNum == 296511 ) { fLumiPerRun = 2.56663; }
+  // else if ( fRunNum == 296514 ) { fLumiPerRun = 0.489835; }
+  // else if ( fRunNum == 296516 ) { fLumiPerRun = 0.613431; }
+  // else if ( fRunNum == 296547 ) { fLumiPerRun = 1.08337; }
+  // else if ( fRunNum == 296548 ) { fLumiPerRun = 1.3771; }
+  // else if ( fRunNum == 296549 ) { fLumiPerRun = 4.86451; }
+  // else if ( fRunNum == 296550 ) { fLumiPerRun = 3.99007; }
+  // else if ( fRunNum == 296551 ) { fLumiPerRun = 2.02138; }
+  // else if ( fRunNum == 296552 ) { fLumiPerRun = 0.484243; }
+  // else if ( fRunNum == 296553 ) { fLumiPerRun = 0.709064; }
+  // else if ( fRunNum == 296615 ) { fLumiPerRun = 1.56764; }
+  // else if ( fRunNum == 296616 ) { fLumiPerRun = 0.53985; }
+  // else if ( fRunNum == 296618 ) { fLumiPerRun = 1.70141; }
+  // else if ( fRunNum == 296619 ) { fLumiPerRun = 1.56131; }
+  // else if ( fRunNum == 296622 ) { fLumiPerRun = 0.706373; }
+  // else if ( fRunNum == 296623 ) { fLumiPerRun = 2.14419; }
+  // else if ( fRunNum == 296690 ) { fLumiPerRun = 6.86147; }
+  // else if ( fRunNum == 296691 ) { fLumiPerRun = 0.651063; }
+  // else if ( fRunNum == 296694 ) { fLumiPerRun = 5.1826; }
+  // else if ( fRunNum == 296749 ) { fLumiPerRun = 9.24134; }
+  // else if ( fRunNum == 296750 ) { fLumiPerRun = 8.21606; }
+  // else if ( fRunNum == 296781 ) { fLumiPerRun = 0.817883; }
+  // else if ( fRunNum == 296784 ) { fLumiPerRun = 2.97965; }
+  // else if ( fRunNum == 296785 ) { fLumiPerRun = 1.9085; }
+  // else if ( fRunNum == 296786 ) { fLumiPerRun = 0.753734; }
+  // else if ( fRunNum == 296787 ) { fLumiPerRun = 3.21903; }
+  // else if ( fRunNum == 296791 ) { fLumiPerRun = 0.757278; }
+  // else if ( fRunNum == 296793 ) { fLumiPerRun = 1.33169; }
+  // else if ( fRunNum == 296794 ) { fLumiPerRun = 3.1335; }
+  // else if ( fRunNum == 296799 ) { fLumiPerRun = 2.71491; }
+  // else if ( fRunNum == 296836 ) { fLumiPerRun = 1.5116; }
+  // else if ( fRunNum == 296838 ) { fLumiPerRun = 0.543214; }
+  // else if ( fRunNum == 296839 ) { fLumiPerRun = 2.94239; }
+  // else if ( fRunNum == 296848 ) { fLumiPerRun = 2.16277; }
+  // else if ( fRunNum == 296849 ) { fLumiPerRun = 11.469; }
+  // else if ( fRunNum == 296850 ) { fLumiPerRun = 2.79789; }
+  // else if ( fRunNum == 296851 ) { fLumiPerRun = 0.139243; }
+  // else if ( fRunNum == 296852 ) { fLumiPerRun = 0.956479; }
+  // else if ( fRunNum == 296890 ) { fLumiPerRun = 8.05448; }
+  // else if ( fRunNum == 296894 ) { fLumiPerRun = 4.64718; }
+  // else if ( fRunNum == 296899 ) { fLumiPerRun = 2.13548; }
+  // else if ( fRunNum == 296900 ) { fLumiPerRun = 2.78325; }
+  // else if ( fRunNum == 296903 ) { fLumiPerRun = 1.03906; }
+  // else if ( fRunNum == 296930 ) { fLumiPerRun = 1.45745; }
+  // else if ( fRunNum == 296931 ) { fLumiPerRun = 0.529172; }
+  // else if ( fRunNum == 296932 ) { fLumiPerRun = 1.18632; }
+  // else if ( fRunNum == 296934 ) { fLumiPerRun = 2.59166; }
+  // else if ( fRunNum == 296935 ) { fLumiPerRun = 4.40388; }
+  // else if ( fRunNum == 296938 ) { fLumiPerRun = 1.6678; }
+  // else if ( fRunNum == 296941 ) { fLumiPerRun = 2.91812; }
+  // else if ( fRunNum == 296966 ) { fLumiPerRun = 3.36111; }
+  // else if ( fRunNum == 296967 ) { fLumiPerRun = 0.80508; }
+  // else if ( fRunNum == 296968 ) { fLumiPerRun = 3.19051; }
+  // else if ( fRunNum == 296969 ) { fLumiPerRun = 1.88784; }
+  // else if ( fRunNum == 296971 ) { fLumiPerRun = 0.690732; }
+  // else if ( fRunNum == 296975 ) { fLumiPerRun = 7.36828; }
+  // else if ( fRunNum == 296976 ) { fLumiPerRun = 1.11749; }
+  // else if ( fRunNum == 296979 ) { fLumiPerRun = 1.0995; }
+  // else if ( fRunNum == 297029 ) { fLumiPerRun = 7.23702; }
+  // else if ( fRunNum == 297031 ) { fLumiPerRun = 6.04991; }
+  // else if ( fRunNum == 297035 ) { fLumiPerRun = 0.570489; }
+  // else if ( fRunNum == 297085 ) { fLumiPerRun = 0.97735; }
+  // else if ( fRunNum == 297117 ) { fLumiPerRun = 2.30958; }
+  // else if ( fRunNum == 297118 ) { fLumiPerRun = 2.42995; }
+  // else if ( fRunNum == 297119 ) { fLumiPerRun = 2.68703; }
+  // else if ( fRunNum == 297123 ) { fLumiPerRun = 3.28037; }
+  // else if ( fRunNum == 297124 ) { fLumiPerRun = 0.639463; }
+  // else if ( fRunNum == 297128 ) { fLumiPerRun = 2.41097; }
+  // else if ( fRunNum == 297129 ) { fLumiPerRun = 2.83004; }
+  // else if ( fRunNum == 297132 ) { fLumiPerRun = 2.81789; }
+  // else if ( fRunNum == 297133 ) { fLumiPerRun = 1.14535; }
+  // else if ( fRunNum == 297193 ) { fLumiPerRun = 7.56024; }
+  // else if ( fRunNum == 297194 ) { fLumiPerRun = 8.84277; }
+  // else if ( fRunNum == 297196 ) { fLumiPerRun = 2.1255; }
+  // else if ( fRunNum == 297218 ) { fLumiPerRun = 6.41998; }
+  // else if ( fRunNum == 297219 ) { fLumiPerRun = 10.531; }
+  // else if ( fRunNum == 297221 ) { fLumiPerRun = 2.83092; }
+  // else if ( fRunNum == 297222 ) { fLumiPerRun = 1.71749; }
+  // else if ( fRunNum == 297278 ) { fLumiPerRun = 0.601879; }
+  // else if ( fRunNum == 297310 ) { fLumiPerRun = 0.670071; }
+  // else if ( fRunNum == 297312 ) { fLumiPerRun = 2.40024; }
+  // else if ( fRunNum == 297315 ) { fLumiPerRun = 7.82708; }
+  // else if ( fRunNum == 297317 ) { fLumiPerRun = 4.31479; }
+  // else if ( fRunNum == 297363 ) { fLumiPerRun = 1.91217; }
+  // else if ( fRunNum == 297366 ) { fLumiPerRun = 2.12929; }
+  // else if ( fRunNum == 297367 ) { fLumiPerRun = 3.15478; }
+  // else if ( fRunNum == 297372 ) { fLumiPerRun = 3.20026; }
+  // else if ( fRunNum == 297379 ) { fLumiPerRun = 6.80504; }
+  // else if ( fRunNum == 297380 ) { fLumiPerRun = 1.54879; }
+  // else if ( fRunNum == 297405 ) { fLumiPerRun = 0.600709; }
+  // else if ( fRunNum == 297408 ) { fLumiPerRun = 4.10208; }
+  // else if ( fRunNum == 297413 ) { fLumiPerRun = 2.9907; }
+  // else if ( fRunNum == 297414 ) { fLumiPerRun = 2.21401; }
+  // else if ( fRunNum == 297415 ) { fLumiPerRun = 6.82266; }
+  // else if ( fRunNum == 297441 ) { fLumiPerRun = 5.05562; }
+  // else if ( fRunNum == 297442 ) { fLumiPerRun = 1.98775; }
+  // else if ( fRunNum == 297446 ) { fLumiPerRun = 8.13263; }
+  // else if ( fRunNum == 297450 ) { fLumiPerRun = 1.95181; }
+  // else if ( fRunNum == 297451 ) { fLumiPerRun = 1.33273; }
+  // else if ( fRunNum == 297452 ) { fLumiPerRun = 1.15124; }
+  // else if ( fRunNum == 297479 ) { fLumiPerRun = 7.74629; }
+  // else if ( fRunNum == 297481 ) { fLumiPerRun = 10.6454; }
+  // else if ( fRunNum == 297483 ) { fLumiPerRun = 1.95052; }
+  // else if ( fRunNum == 297512 ) { fLumiPerRun = 1.58475; }
+  // else if ( fRunNum == 297537 ) { fLumiPerRun = 1.80959; }
+  // else if ( fRunNum == 297540 ) { fLumiPerRun = 0.62859; }
+  // else if ( fRunNum == 297541 ) { fLumiPerRun = 4.01201; }
+  // else if ( fRunNum == 297542 ) { fLumiPerRun = 1.5362; }
+  // else if ( fRunNum == 297544 ) { fLumiPerRun = 7.29002; }
+  // else if ( fRunNum == 297558 ) { fLumiPerRun = 0.478315; }
+  // else if ( fRunNum == 297588 ) { fLumiPerRun = 5.29117; }
+  // else if ( fRunNum == 297590 ) { fLumiPerRun = 3.05991; }
+
+}

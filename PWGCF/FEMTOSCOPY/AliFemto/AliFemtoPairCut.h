@@ -34,7 +34,8 @@ public:
   virtual ~AliFemtoPairCut();                        ///< destructor
   virtual AliFemtoPairCut* Clone() const { return NULL; }  ///< Clones the object. The default implementation simply returns NULL
 
-  /// Clones the object. The default implementation simply returns NULL
+  /// Clones the object (non-const)
+  /// The default implementation calls the const version
   virtual AliFemtoPairCut* Clone()
     { return const_cast<const AliFemtoPairCut*>(this)->Clone(); }
 
@@ -46,7 +47,8 @@ public:
   virtual TList *ListSettings() = 0;                ///< Return a TList of settings
 
   /// the following allows "back-pointing" from the CorrFctn to the "parent" Analysis
-  AliFemtoAnalysis* HbtAnalysis(){return fyAnalysis;};
+  AliFemtoAnalysis* HbtAnalysis() { return fyAnalysis; }
+
   void SetAnalysis(AliFemtoAnalysis* aAnalysis);    ///< Set back-pointer to Analysis
 
 protected:

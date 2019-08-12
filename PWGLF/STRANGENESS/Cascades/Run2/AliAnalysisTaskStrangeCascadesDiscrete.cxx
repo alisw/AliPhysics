@@ -1,7 +1,6 @@
 
 //ERRORs: no member SetCutIsCowboy(int i)
 
-
 #include <stdio.h>
 
 #include <Riostream.h>
@@ -431,6 +430,13 @@ lMinCascPA(0.0),
 lMaxBBCosPA(1.0),
 lMinBBPA(0.0),
 dca(0.0),
+fTreeCascVarMassXiScratch(0),
+fTreeCascVarMassOmegaScratch(0),
+fTreeCascVarBackgroundMassOmega(0),
+fTreeCascVarBackgroundMassXi(0),
+
+
+
 
 //Histos
 fHistEventCounter(0),
@@ -446,7 +452,18 @@ fHistCentrality(0)
 AliAnalysisTaskStrangeCascadesDiscrete::AliAnalysisTaskStrangeCascadesDiscrete(Bool_t lSaveEventTree,
                                                                                Bool_t lSaveV0Tree,
                                                                                Bool_t lSaveCascadeTree,
-                                                                               const char *name, TString lExtraOptions)
+                                                                               Bool_t lRunVertexers, //kFALSE per default
+                                                                               Bool_t lUseLightVertexer, //kFALSE per def
+                                                                               Double_t lCascaderMaxChi2,
+                                                                               Double_t lCascaderV0MinImpactParam, //0.050 per def
+                                                                               Double_t lCascaderV0MassWindow, //0.010 per def
+                                                                               Double_t lCascaderBachMinImpactParam, //0.03 per def
+                                                                               Double_t lCascaderMaxDCAV0andBach, //2.0 per def
+                                                                               Double_t lCascaderMinCosAngle, //0.95 per def
+                                                                               Double_t lCascaderMinRadius, //0.4 per def
+                                                                               Double_t lCascaderMaxRadius, //100. per def
+                                                                               const char *name, TString lExtraOptions
+                                                                               )
 : AliAnalysisTaskSE(name), fListHist(0), fListK0Short(0), fListLambda(0), fListAntiLambda(0),
 fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
@@ -805,6 +822,12 @@ lMinCascPA(0.0),
 lMaxBBCosPA(1.0),
 lMinBBPA(0.0),
 dca(0.0),
+fTreeCascVarMassXiScratch(0),
+fTreeCascVarMassOmegaScratch(0),
+fTreeCascVarBackgroundMassOmega(0),
+fTreeCascVarBackgroundMassXi(0),
+
+
 
 //Histos
 fHistEventCounter(0),
@@ -815,6 +838,9 @@ fHistCentrality(0)
     
     //Re-vertex: Will only apply for cascade candidates
     
+    fkRunVertexers = lRunVertexers;
+    fkUseLightVertexer = lUseLightVertexer;
+    
     fV0VertexerSels[0] =  33.  ;  // max allowed chi2
     fV0VertexerSels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
     fV0VertexerSels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
@@ -823,14 +849,25 @@ fHistCentrality(0)
     fV0VertexerSels[5] =   1.0 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
     fV0VertexerSels[6] = 200.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
     
-    fCascadeVertexerSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
-    fCascadeVertexerSels[1] =   0.05 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
-    fCascadeVertexerSels[2] =   0.010;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
-    fCascadeVertexerSels[3] =   0.03 ;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
-    fCascadeVertexerSels[4] =   2.0  ;  // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
-    fCascadeVertexerSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
-    fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
-    fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
+    fCascadeVertexerSels[0] = lCascaderMaxChi2  ;  // max allowed chi2 (same as PDC07) (33)
+    fCascadeVertexerSels[1] = lCascaderV0MinImpactParam ;  // min allowed V0 impact parameter (0.05)                   (PDC07 : 0.05   / LHC09a4 : 0.025 )
+    fCascadeVertexerSels[2] = lCascaderV0MassWindow;  // "window" around the Lambda mass  (0.010)                  (PDC07 : 0.008  / LHC09a4 : 0.010 )
+    fCascadeVertexerSels[3] = lCascaderBachMinImpactParam;  // min allowed bachelor's impact parameter (0.03)            (PDC07 : 0.035  / LHC09a4 : 0.025 )
+    fCascadeVertexerSels[4] = lCascaderMaxDCAV0andBach;  // max allowed DCA between the V0 and the bachelor (2.0)    (PDC07 : 0.1    / LHC09a4 : 0.2   )
+    fCascadeVertexerSels[5] = lCascaderMinCosAngle;  // min allowed cosine of the cascade pointing angle (0.95)  (PDC07 : 0.9985 / LHC09a4 : 0.998 )
+    fCascadeVertexerSels[6] = lCascaderMinRadius;  // min radius of the fiducial volume (0.4)                 (PDC07 : 0.9    / LHC09a4 : 0.2   )
+    fCascadeVertexerSels[7] = lCascaderMaxRadius;  // max radius of the fiducial volume (100.)                 (PDC07 : 100    / LHC09a4 : 100   )
+    
+    
+    /*fCascadeVertexerSels[0] = 33.;  // max allowed chi2 (same as PDC07) (33)
+    fCascadeVertexerSels[1] = 0.05 ;  // min allowed V0 impact parameter (0.05)                   (PDC07 : 0.05   / LHC09a4 : 0.025 )
+    fCascadeVertexerSels[2] = 0.010;  // "window" around the Lambda mass  (0.010)                  (PDC07 : 0.008  / LHC09a4 : 0.010 )
+    fCascadeVertexerSels[3] = 0.03;  // min allowed bachelor's impact parameter (0.03)            (PDC07 : 0.035  / LHC09a4 : 0.025 )
+    fCascadeVertexerSels[4] = 2.0;  // max allowed DCA between the V0 and the bachelor (2.0)    (PDC07 : 0.1    / LHC09a4 : 0.2   )
+    fCascadeVertexerSels[5] = 0.95;  // min allowed cosine of the cascade pointing angle (0.95)  (PDC07 : 0.9985 / LHC09a4 : 0.998 )
+    fCascadeVertexerSels[6] = 0.4;  // min radius of the fiducial volume (0.4)                 (PDC07 : 0.9    / LHC09a4 : 0.2   )
+    fCascadeVertexerSels[7] = 100.;  // max radius of the fiducial volume (100.)                 (PDC07 : 100    / LHC09a4 : 100   )
+     */
     
     //[0]+[1]*TMath::Exp([2]*x)+[3]*TMath::Exp([4]*x)
     fLambdaMassMean[0]=1.116; //standard fixed
@@ -1151,6 +1188,14 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarCosineProtonRestV0RestOmegaMinus", &fTreeCascVarCosineProtonRestV0RestOmegaMinus, "fTreeCascVarCosineProtonRestV0RestOmegaMinus/D");
      fTreeCascade->Branch("fTreeCascVarCosineProtonRestV0RestOmegaPlus", &fTreeCascVarCosineProtonRestV0RestOmegaPlus, "fTreeCascVarCosineProtonRestV0RestOmegaPlus/D");
     fTreeCascade->Branch("fTreeCascVarDzetaFromMomentaOmegaMinus",&fTreeCascVarDzetaFromMomentaOmegaMinus,"fTreeCascVarDzetaFromMomentaOmegaMinus/D");
+    
+    fTreeCascade->Branch("fTreeCascVarMassXiScratch", &fTreeCascVarMassXiScratch, "fTreeCascVarMassXiScratch/F");
+    fTreeCascade->Branch("fTreeCascVarMassOmegaScratch", &fTreeCascVarMassOmegaScratch, "fTreeCascVarMassOmegaScratch/F");
+    fTreeCascade->Branch( "fTreeCascVarBackgroundMassOmega", &fTreeCascVarBackgroundMassOmega, "fTreeCascVarBackgroundMassOmega/F");
+    fTreeCascade->Branch("fTreeCascVarBackgroundMassXi", &fTreeCascVarBackgroundMassXi,"fTreeCascVarBackgroundMassXi/F");
+
+
+
     
     //------------------------------------------------
     if ( fkDebugWrongPIDForTracking ){
@@ -2386,14 +2431,13 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
         fTreeVariableRapLambda = lRapLambda;
         fTreeVariableAlphaV0 = lAlphaV0;
         fTreeVariablePtArmV0 = lPtArmV0;
-       //  cout << "does it work at 2062 for LHC17r?" << endl; // yes, but only once the message popped out
     
         //Official means of acquiring N-sigmas
         fTreeVariableNSigmasPosProton = fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton);
         fTreeVariableNSigmasPosPion   = fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kPion);
         fTreeVariableNSigmasNegProton = fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kProton);
         fTreeVariableNSigmasNegPion   = fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kPion);
-       // cout << "does it work at 2069 for LHC17r?" << endl; //no
+     
         //This requires an Invariant Mass Hypothesis afterwards
         fTreeVariableDistOverTotMom = TMath::Sqrt(
                                                   TMath::Power( tDecayVertexV0[0] - lBestPrimaryVtxPos[0] , 2) +
@@ -2457,7 +2501,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
                    //Pre-selection in case this is AA...
                    
                    //Random denial
-                   // cout << "inside the selection! " << endl;  //works
+                   
                    Bool_t lKeepV0 = kTRUE;
                    // The random denial was left away because it is not known what its purpose is. 22.01.19
                    //  if(fkDownScaleV0 && ( fRand->Uniform() > fDownScaleFactorV0 )) lKeepV0 = kFALSE;
@@ -2473,11 +2517,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
                    if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSaveV0Tree && lKeepV0 )
                    {
                        fTreeV0->Fill();
-                      // cout << "he?" << endl;
-                    //   fTreeV0Cascade->Fill();
-                     //  cout << "ok?" << endl;
-                       
-                       //  cout << "The tree VO was apparently filled" << endl;
+                     
                    }
                }
         }
@@ -2659,6 +2699,10 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
     // Rerun cascade vertexer!
     //------------------------------------------------
     
+   // fkRunVertexers = kTRUE;
+    
+   
+    
     if( fkRunVertexers ) {
         //Remove existing cascades
         lESDevent->ResetCascades();
@@ -2730,6 +2774,11 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
         Double_t lInvMassXiPlus     = 0.;
         Double_t lInvMassOmegaMinus = 0.;
         Double_t lInvMassOmegaPlus  = 0.;
+        //for the estimation of the background shape for the inv mass distribution
+        Double_t lInvMassOmegaPlusBackground = 0.;
+        Double_t lInvMassOmegaMinusBackground = 0.;
+        Double_t lInvMassXiPlusBackground = 0.;
+        Double_t lInvMassXiMinusBackground = 0.;
         
         fTreeCascVarChiSquareV0      = 1e+3;
         fTreeCascVarChiSquareCascade = 1e+3;
@@ -3196,6 +3245,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
             // pdg code 3334 = Omega-
             lInvMassOmegaMinus = xi->GetEffMassXi();
             
+            
             lV0quality = 0.;
             xi->ChangeMassHypothesis(lV0quality , 3312); 	// Back to default hyp.
         }// end if negative bachelor
@@ -3227,25 +3277,118 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
         
         //+-+ Recalculate Xi Masses from scratch: will not change with lambda mass as
         //the perfect lambda mass is always assumed
+        Double_t m_proton = TDatabasePDG::Instance()->GetParticle(kProton)->Mass();
+        Double_t m_pion = TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass();
+        Double_t m_kaon = TDatabasePDG::Instance()->GetParticle(321)->Mass(); //K+
+      //  cout << "mass of proton / pion / kaon is = " << m_proton << " , " << m_pion << " , " << m_kaon << " , " << endl;
+      // >  mass of proton / pion / kaon is = 0.938272 , 0.13957 , 0.493677
+        
+        Float_t eproton(0), epion(0), ebach(0);
+        Float_t E_cascade=0.;
+        Float_t mom_cascade[3] = {0.,0.,0.};
+        Double_t lInvMassOmegaMinusScratch = 0.;
+        Double_t lInvMassOmegaPlusScratch = 0.;
+        Double_t lInvMassXiMinusScratch = 0.;
+        Double_t lInvMassXiPlusScratch = 0.;
+
+        
+        if(bachTrackXi->Charge() <0){
+            //
+            // Signals of Omega- and Xi- from scratch
+            //
+            //if we assume that a cascade is a Omega minus, mass of the omega minus -> Lambda(proton + pi-)K-
+            //positive track - proton, negative track - pion, bachelor track - kaon
+            eproton = TMath::Sqrt(m_proton*m_proton+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2]);
+            epion = TMath::Sqrt(m_pion*m_pion+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2]);
+            ebach = TMath::Sqrt(m_kaon*m_kaon + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
+            E_cascade = eproton+epion+ebach;
+            mom_cascade[0] =lPMom[0] + lNMom[0] + lBMom[0];
+            mom_cascade[1] =lPMom[1] + lNMom[1] + lBMom[1];
+            mom_cascade[2] =lPMom[2] + lNMom[2] + lBMom[2];
+            lInvMassOmegaMinusScratch = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassOmegaMinusScratch = lInvMassOmegaMinusScratch > 0 ? TMath::Sqrt(lInvMassOmegaMinusScratch) : 0.;
+            // if we assume that a particle is Xi-, then bachelor track is a pion
+            //the total three momentum of the cascade is unchanged
+            ebach = TMath::Sqrt(m_pion*m_pion + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
+            E_cascade = eproton+epion+ebach;
+            lInvMassXiMinusScratch = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassXiMinusScratch = lInvMassXiMinusScratch > 0 ? TMath::Sqrt(lInvMassXiMinusScratch) : 0.;
+            //
+            // combo-backgrounds: For omega minus - AntiLambda(p-pion+)K-
+            //                    For Xi minus - AntiLambda(p-pion+)pion-
+            //                    the 3 momenta is the same, mom_cascade
+            //
+            //omega
+            epion = TMath::Sqrt(m_pion*m_pion+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2]);
+            eproton = TMath::Sqrt(m_proton*m_proton+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2]);
+            ebach = TMath::Sqrt(m_kaon*m_kaon + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
+            E_cascade = eproton+epion+ebach;
+            lInvMassOmegaMinusBackground = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassOmegaMinusBackground = lInvMassOmegaMinusBackground > 0 ? TMath::Sqrt(lInvMassOmegaMinusBackground) : 0.;
+            //xi
+            ebach = TMath::Sqrt(m_pion*m_pion + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
+            E_cascade = eproton+epion+ebach;
+            lInvMassXiMinusBackground = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassXiMinusBackground = lInvMassXiMinusBackground > 0 ? TMath::Sqrt(lInvMassXiMinusBackground) : 0.;
+            
+        }
+        else if(bachTrackXi->Charge() > 0){
+            //cascade is a Omega plus, mass of the omega plus -> AntiLambda(proton - pi+)K+
+            //positive track - pion, negative track - proton, bachelor track - kaon
+            epion = TMath::Sqrt(m_pion*m_pion+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2]);
+            eproton = TMath::Sqrt(m_proton*m_proton+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2]);
+            ebach = TMath::Sqrt(m_kaon*m_kaon + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
+            E_cascade = eproton+epion+ebach;
+            mom_cascade[0] =lPMom[0] + lNMom[0] + lBMom[0];
+            mom_cascade[1] =lPMom[1] + lNMom[1] + lBMom[1];
+            mom_cascade[2] =lPMom[2] + lNMom[2] + lBMom[2];
+            lInvMassOmegaPlusScratch = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassOmegaPlusScratch = lInvMassOmegaPlusScratch > 0 ? TMath::Sqrt(lInvMassOmegaPlusScratch) : 0.;
+            // if we assume that a particle is Xi+, then bachelor track is a pion
+            //the total three momentum of the cascade is unchanged
+            ebach = TMath::Sqrt(m_pion*m_pion + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
+            E_cascade = eproton+epion+ebach;
+            lInvMassXiPlusScratch = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassXiPlusScratch = lInvMassXiPlusScratch > 0 ? TMath::Sqrt(lInvMassXiPlusScratch) : 0.;
+            //
+            // combo-backgrounds: For omega plus - Lambda(p+pion-)K+
+            //                    For Xi plus - Lambda(p+pion-)pion+
+            //                    the 3 momenta is the same, mom_cascade
+            //
+            //omega
+            eproton = TMath::Sqrt(m_proton*m_proton+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2]);
+            epion = TMath::Sqrt(m_pion*m_pion+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2]);
+            ebach = TMath::Sqrt(m_kaon*m_kaon + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
+            E_cascade = eproton+epion+ebach;
+            lInvMassOmegaPlusBackground = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassOmegaPlusBackground = lInvMassOmegaPlusBackground > 0 ? TMath::Sqrt(lInvMassOmegaPlusBackground) : 0.;
+            //xi
+            ebach = TMath::Sqrt(m_pion*m_pion + lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2]);
+            E_cascade = eproton+epion+ebach;
+            lInvMassXiPlusBackground = E_cascade*E_cascade - mom_cascade[0]*mom_cascade[0] - mom_cascade[1]*mom_cascade[1]-mom_cascade[2]*mom_cascade[2];
+            lInvMassXiPlusBackground = lInvMassXiPlusBackground > 0 ? TMath::Sqrt(lInvMassXiPlusBackground) : 0.;
+            
+        }
+        else continue;
+        
+        
+       
+        
+        
         
         //+-+ Recalculate Lambda mass from scratch
         //Under Lambda hypothesis, the positive daughter is the proton, negative pion
-        Double_t m1 = TDatabasePDG::Instance()->GetParticle(kProton)->Mass();
-        Double_t m2 = TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass();
-        Double_t e12   = m1*m1+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2];
-        Double_t e22   = m2*m2+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2];
-        fTreeCascVarV0MassLambda = TMath::Sqrt(TMath::Max(m1*m1+m2*m2
-                                                          +2.*(TMath::Sqrt(e12*e22)-lPMom[0]*lNMom[0]-lPMom[1]*lNMom[1]-lPMom[2]*lNMom[2]),0.));
-        
+        Double_t e12   = m_proton*m_proton+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2];
+        Double_t e22   = m_pion*m_pion+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2];
+        fTreeCascVarV0MassLambda = m_pion*m_pion+m_proton*m_proton +2.*(TMath::Sqrt(e12*e22)-lPMom[0]*lNMom[0]-lPMom[1]*lNMom[1]-lPMom[2]*lNMom[2]);
+        fTreeCascVarV0MassLambda = fTreeCascVarV0MassLambda > 0 ? TMath::Sqrt(fTreeCascVarV0MassLambda) : 0.;
+
         //+-+ Recalculate AntiLambda mass from scratch
         //Under Lambda hypothesis, the positive daughter is the pion, negative antiproton
-        m1 = TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass();
-        m2 = TDatabasePDG::Instance()->GetParticle(kProton)->Mass();
-        e12   = m1*m1+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2];
-        e22   = m2*m2+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2];
-        fTreeCascVarV0MassAntiLambda = TMath::Sqrt(TMath::Max(m1*m1+m2*m2
-                                                              +2.*(TMath::Sqrt(e12*e22)-lPMom[0]*lNMom[0]-lPMom[1]*lNMom[1]-lPMom[2]*lNMom[2]),0.));
-        
+        e12   = m_pion*m_pion+lPMom[0]*lPMom[0]+lPMom[1]*lPMom[1]+lPMom[2]*lPMom[2];
+        e22   = m_proton*m_proton+lNMom[0]*lNMom[0]+lNMom[1]*lNMom[1]+lNMom[2]*lNMom[2];
+        fTreeCascVarV0MassAntiLambda = m_proton*m_proton+m_pion*m_pion +2.*(TMath::Sqrt(e12*e22)-lPMom[0]*lNMom[0]-lPMom[1]*lNMom[1]-lPMom[2]*lNMom[2]);
+        fTreeCascVarV0MassAntiLambda = fTreeCascVarV0MassAntiLambda > 0 ? TMath::Sqrt(fTreeCascVarV0MassAntiLambda) : 0.;
         
         
         // - II.Step 6 : extra info for QA (ESD)
@@ -3357,10 +3500,17 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
         
         fTreeCascVarCharge	= lChargeXi;
         if (lChargeXi < 0 ){
+            //determined with AliCascader
             fTreeCascVarMassAsXi    = lInvMassXiMinus;
             fTreeCascVarMassAsOmega = lInvMassOmegaMinus;
+            //determined from scratch using the info of the charged tracks
+            fTreeCascVarMassOmegaScratch = lInvMassOmegaMinusScratch;
+            fTreeCascVarMassXiScratch = lInvMassXiMinusScratch;
+            //combinatorial backgrounds
+            fTreeCascVarBackgroundMassOmega = lInvMassOmegaMinusBackground;
+            fTreeCascVarBackgroundMassXi = lInvMassXiMinusBackground;
             
-            cosAAA = GetCosOfProtonLambdaRestOmegaRest(pXi, fTreeCascVarMassAsOmega, pL, fTreeCascVarV0MassLambda, pp, m1);
+            cosAAA = GetCosOfProtonLambdaRestOmegaRest(pXi, fTreeCascVarMassAsOmega, pL, fTreeCascVarV0MassLambda, pp, m_proton);
            // cout << "The cosine value is = " << cosAAA << endl;
             fTreeCascVarCosineProtonRestV0RestOmegaMinus = cosAAA;
             dzeta = DzetaFromMomenta(pXi, pL, pp);
@@ -3372,8 +3522,16 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
         if (lChargeXi > 0 ){
             fTreeCascVarMassAsXi    = lInvMassXiPlus;
             fTreeCascVarMassAsOmega = lInvMassOmegaPlus;
+            //determined from scratch using the info of the charged tracks
+            fTreeCascVarMassOmegaScratch = lInvMassOmegaPlusScratch;
+            fTreeCascVarMassXiScratch = lInvMassXiPlusScratch;
+            //include combinatorial background for the study of shape
+            fTreeCascVarBackgroundMassOmega = lInvMassOmegaPlusBackground;
+            fTreeCascVarBackgroundMassXi = lInvMassXiPlusBackground;
+
+
             //anti-proton is handled as a negative track
-            cosAAA = GetCosOfProtonLambdaRestOmegaRest(pXi, fTreeCascVarMassAsOmega, pL, fTreeCascVarV0MassAntiLambda, pn, m1);
+            cosAAA = GetCosOfProtonLambdaRestOmegaRest(pXi, fTreeCascVarMassAsOmega, pL, fTreeCascVarV0MassAntiLambda, pn, m_proton);
             fTreeCascVarCosineProtonRestV0RestOmegaPlus = cosAAA;
         }
         fTreeCascVarPt = lXiTransvMom;
@@ -3428,7 +3586,10 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
         lValidOmegaMinus = kTRUE;
         lValidOmegaPlus = kTRUE;
         
-        if ( fkExtraCleanup ){
+        //set to test the outcome 14.02.19
+       // fkPreselectDedx = kTRUE;
+        
+        if ( fkExtraCleanup ){ //set to kTRUE
             //Valid or not valid
             lValidXiMinus = kFALSE;
             lValidXiPlus = kFALSE;
@@ -3437,7 +3598,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
             //Meant to provide extra level of cleanup
             if( TMath::Abs(fTreeCascVarPosEta)>0.8 || TMath::Abs(fTreeCascVarNegEta)>0.8 || TMath::Abs(fTreeCascVarBachEta)>0.8 ) continue;
             if( TMath::Abs(fTreeCascVarRapXi)>0.5 && TMath::Abs(fTreeCascVarRapOmega)>0.5 ) continue;
-            if ( fkPreselectDedx ){
+            if ( fkPreselectDedx ){ //set to kFALSE
                 Bool_t lPassesPreFilterdEdx = kFALSE;
                 Double_t lWindow = 0.11;
                 //XiMinus Pre-selection
@@ -3521,10 +3682,6 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *)
         {
             
             fTreeCascade->Fill();
-           // cout << "mmmm" << endl;
-           // fTreeV0Cascade->Fill();
-           // cout << "mmm after " << endl;
-            //  cout << "Cascade tree is being filled " << endl;
         }
         //------------------------------------------------
         // Fill tree over.

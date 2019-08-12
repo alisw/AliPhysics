@@ -166,8 +166,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 
 	  //Mix events with respect to the z position of the primary vertex and event total multipliticy:
-	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(5);
+	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 4, multbins[imult], multbins[imult+1]);
+	  anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 	  

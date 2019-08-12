@@ -107,7 +107,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   fnSparse(0),
   fImpParSparse(0x0),
   fMultSelectionObjectName("MultSelection"),
-  fCentEstName("off")
+  fCentEstName("off"),
+  fUseFinPtBinsForSparse(kFALSE)
 {
   /// Default constructor
 
@@ -143,6 +144,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   {
     fMassHistKK[i] = 0;
     fMassHistKpi[i] = 0;
+    fMassHistKKVsKKpi[i] = 0;
+    fMassHistKpiVsKKpi[i] = 0;
     fMassRotBkgHistPhi[i] = 0;
     fMassLSBkgHistPhi[i] = 0;
     fMassRSBkgHistPhi[i] = 0;
@@ -214,7 +217,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   fnSparse(0),
   fImpParSparse(0x0),
   fMultSelectionObjectName("MultSelection"),
-  fCentEstName("off")
+  fCentEstName("off"),
+  fUseFinPtBinsForSparse(kFALSE)
 {
   /// Default constructor
   /// Output slot #1 writes into a TList container
@@ -251,6 +255,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   {
     fMassHistKK[i] = 0;
     fMassHistKpi[i] = 0;
+    fMassHistKKVsKKpi[i] = 0;
+    fMassHistKpiVsKKpi[i] = 0;
     fMassRotBkgHistPhi[i] = 0;
     fMassLSBkgHistPhi[i] = 0;
     fMassRSBkgHistPhi[i] = 0;
@@ -365,6 +371,8 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     {
       delete fMassHistKK[i];
       delete fMassHistKpi[i];
+      delete fMassHistKKVsKKpi[i];
+      delete fMassHistKpiVsKKpi[i];
       delete fMassRotBkgHistPhi[i];
       delete fMassLSBkgHistPhi[i];
       delete fMassRSBkgHistPhi[i];
@@ -699,6 +707,12 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fMassHistKpi[i] = new TH1F(hisname.Data(), hisname.Data(), 200, 0.7, 1.1);
     fMassHistKpi[i]->Sumw2();
     fOutput->Add(fMassHistKpi[i]);
+    hisname.Form("hMassKKVsKKpiPt%d", i);
+    fMassHistKKVsKKpi[i] = new TH2F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass, 200, 0.95, 1.15);
+    fOutput->Add(fMassHistKKVsKKpi[i]);
+    hisname.Form("hMassKpiVsKKpiPt%d", i);
+    fMassHistKpiVsKKpi[i] = new TH2F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass, 200, 0.7, 1.1);
+    fOutput->Add(fMassHistKpiVsKKpi[i]);
     if (fDoRotBkg)
     {
       hisname.Form("hMassAllPt%dphi_RotBkg", i);
@@ -878,9 +892,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     if (fAnalysisCuts->GetUseCentrality() > 0 && fAnalysisCuts->IsEventSelectedInCentrality(aod) != 0)
       // events not passing the centrality selection can be removed immediately.
       return;
-    Double_t zMCVertex = mcHeader->GetVtxZ();
-    if (TMath::Abs(zMCVertex) > fAnalysisCuts->GetMaxVtxZ())
-      return;
     FillMCGenAccHistos(arrayMC, mcHeader, nTracklets);
   }
 
@@ -977,6 +988,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Double_t massKK_piKK = 0.;
     Double_t massKp = 0;
     Double_t masspK = 0;
+    Double_t invMass_KKpi = 0.;
+    Double_t invMass_piKK = 0.;
 
     if (isFidAcc)
     {
@@ -995,15 +1008,21 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
       { //KKpi
         massKK_KKpi = d->InvMass2Prongs(0, 1, 321, 321);
         massKp = d->InvMass2Prongs(1, 2, 321, 211);
+        invMass_KKpi = d->InvMassDsKKpi();
         fMassHistKK[iPtBin]->Fill(massKK_KKpi);
         fMassHistKpi[iPtBin]->Fill(massKp);
+        fMassHistKKVsKKpi[iPtBin]->Fill(invMass_KKpi, massKK_KKpi);
+        fMassHistKpiVsKKpi[iPtBin]->Fill(invMass_KKpi, massKp);
       }
       if (retCodeNoRes & 2)
       { //piKK
         massKK_piKK = d->InvMass2Prongs(1, 2, 321, 321);
         masspK = d->InvMass2Prongs(0, 1, 211, 321);
+        invMass_piKK = d->InvMassDspiKK();
         fMassHistKK[iPtBin]->Fill(massKK_piKK);
         fMassHistKpi[iPtBin]->Fill(masspK);
+        fMassHistKKVsKKpi[iPtBin]->Fill(invMass_piKK, massKK_piKK);
+        fMassHistKpiVsKKpi[iPtBin]->Fill(invMass_piKK, masspK);
       }
 
       Int_t isKKpi = retCodeAnalysisCuts & 1;
@@ -1046,8 +1065,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         fChanHist[0]->Fill(retCodeAnalysisCuts);
 
         const Int_t nProng = 3;
-        Double_t invMass_KKpi = 0.;
-        Double_t invMass_piKK = 0.;
         Int_t indexMCKKpi = -1;
         Int_t indexMCpiKK = -1;
         Int_t labDs = -1;
@@ -1124,7 +1141,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           if (fDoRotBkg && TMath::Abs(massKK_KKpi - massPhi) <= fMaxDeltaPhiMass4Rot)
             GenerateRotBkg(d, 1, iPtBin);
 
-          invMass_KKpi = d->InvMassDsKKpi();
           fMassHist[index]->Fill(invMass_KKpi, weightKKpi);
           fPtVsMass->Fill(invMass_KKpi, ptCand, weightKKpi);
 
@@ -1186,7 +1202,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           if (fDoRotBkg && TMath::Abs(massKK_piKK - massPhi) <= fMaxDeltaPhiMass4Rot)
             GenerateRotBkg(d, 2, iPtBin);
 
-          invMass_piKK = d->InvMassDspiKK();
           fMassHist[index]->Fill(invMass_piKK, weightpiKK);
           fPtVsMass->Fill(invMass_piKK, ptCand, weightpiKK);
 
@@ -1797,7 +1812,11 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     nSparseAxes--;
   }
 
-  Int_t nBinsReco[knVarForSparse] = {nInvMassBins, (Int_t)fPtLimits[fNPtBins], 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nTrklBins, nCentrBins};
+  Int_t nPtBins = (Int_t)fPtLimits[fNPtBins];
+  if(fUseFinPtBinsForSparse)
+    nPtBins = nPtBins*10;
+
+  Int_t nBinsReco[knVarForSparse] = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nTrklBins, nCentrBins};
   Double_t xminReco[knVarForSparse] = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., 1., 0.};
   Double_t xmaxReco[knVarForSparse] = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 301., 101.};
   TString axis[knVarForSparse] = {"invMassDsAllPhi", "p_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP", "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", "N tracklets", Form("Percentile (%s)", fCentEstName.Data())};
@@ -1827,7 +1846,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     xmaxReco[7] = 100.;
   }
 
-  Int_t nBinsAcc[knVarForSparseAcc] = {(Int_t)fPtLimits[fNPtBins], 20, nTrklBins};
+  Int_t nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, nTrklBins};
   Double_t xminAcc[knVarForSparseAcc] = {0., -10., 1.};
   Double_t xmaxAcc[knVarForSparseAcc] = {fPtLimits[fNPtBins], 10., 301.};
 

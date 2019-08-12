@@ -36,7 +36,8 @@ public:
 		// delete [] fInvariantMass;
 
 		for(Int_t i = 0; i < 2; ++i)
-			if (fInvariantMass[i]) delete fInvariantMass[i];
+			if (fInvariantMass[i])
+				delete fInvariantMass[i];
 
 		// Don't delete fClusters, as ROOT will take 
 		// care of it.

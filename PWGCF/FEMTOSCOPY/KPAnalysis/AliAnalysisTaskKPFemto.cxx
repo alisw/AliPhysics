@@ -583,7 +583,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
   
   // Create histograms 
   
-  fHistEventMultiplicity   = new TH1F( "fHistEventMultiplicity" , "Nb of Events" , 12 , 0.5,12.5);
+  fHistEventMultiplicity   = new TH1F( "fHistEventMultiplicity" , "Nb of Events" , 13 , 0.5,13.5);
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(1,"All Events");
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(2,"Events w/PV and PID response");
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(3,"Events w/|Vz|<10cm");
@@ -595,13 +595,14 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(9,"MB Events");
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(10,"kInt7 Events");
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(11,"HM Events");
+  fHistEventMultiplicity->GetXaxis()->SetBinLabel(12,"Is Selected Events");
   fOutputContainer->Add(fHistEventMultiplicity);
 
-  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",30000,-100,200);
-  hmult->GetXaxis()->SetTitle("kTrackletsITSTPC");
+  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",30000,-0.5,2999.5);
+  hmult->GetXaxis()->SetTitle("Number of tracklets");
   fOutputContainer->Add(hmult);
 
-  fHistCentrality = new TH1F("fHistCentrality", "Number of events", 20, 0., 100.);
+  fHistCentrality = new TH1F("fHistCentrality", "Number of events", 10001, -0.5, 100.5);
   fHistCentrality ->GetXaxis()->SetTitle("Centrality");
   fHistCentrality ->GetYaxis()->SetTitle("Entries");
   fOutputContainer->Add(fHistCentrality);
@@ -745,7 +746,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
          fHistSparseSignal = new TTree("fHistSparseSignal","fHistSparseSignal");
 	 /*1 */   fHistSparseSignal->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
 	 /*2 */   fHistSparseSignal->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
-	 /*3 */   fHistSparseSignal->Branch("tCentrality",         &tCentrality        , "tCentrality/I" );
+	 /*3 */   fHistSparseSignal->Branch("tCentrality",         &tCentrality        , "tCentrality/F" );
 	 /*4 */   fHistSparseSignal->Branch("tDCAxyP1",            &tDCAxyP1           , "tDCAxyP1/F" );
 	 /*5 */   fHistSparseSignal->Branch("tDCAzP1",             &tDCAzP1            , "tDCAzP1/F" ); 
 	 /*6 */   fHistSparseSignal->Branch("tDCAxyP2",            &tDCAxyP2           , "tDCAxyP2/F" ); 
@@ -769,7 +770,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
 	 fHistSparseBkg = new TTree("fHistSparseBkg","fHistSparseBkg");
 	 /*1 */   fHistSparseBkg->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
 	 /*2 */   fHistSparseBkg->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
-	 /*3 */   fHistSparseBkg->Branch("tCentrality",         &tCentrality        , "tCentrality/I" );
+	 /*3 */   fHistSparseBkg->Branch("tCentrality",         &tCentrality        , "tCentrality/F" );
 	 /*4 */   fHistSparseBkg->Branch("tDCAxyP1",            &tDCAxyP1           , "tDCAxyP1/F" );
 	 /*5 */   fHistSparseBkg->Branch("tDCAzP1",             &tDCAzP1            , "tDCAzP1/F" ); 
 	 /*6 */   fHistSparseBkg->Branch("tDCAxyP2",            &tDCAxyP2           , "tDCAxyP2/F" ); 
@@ -796,7 +797,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
     fHistSparseSignal = new TTree("fHistSparseSignal","fHistSparseSignal");
     /*1 */   fHistSparseSignal->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
     /*2 */   fHistSparseSignal->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
-    /*3 */   fHistSparseSignal->Branch("tCentrality",         &tCentrality        , "tCentrality/I" );
+    /*3 */   fHistSparseSignal->Branch("tCentrality",         &tCentrality        , "tCentrality/F" );
     /*4 */   fHistSparseSignal->Branch("tDCAxyP1",            &tDCAxyP1           , "tDCAxyP1/F" );
     /*5 */   fHistSparseSignal->Branch("tDCAzP1",             &tDCAzP1            , "tDCAzP1/F" ); 
     /*6 */   fHistSparseSignal->Branch("tDCAxyP2",            &tDCAxyP2           , "tDCAxyP2/F" ); 
@@ -830,7 +831,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
     fHistSparseBkg = new TTree("fHistSparseBkg","fHistSparseBkg");
     /*1 */   fHistSparseBkg->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
     /*2 */   fHistSparseBkg->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
-    /*3 */   fHistSparseBkg->Branch("tCentrality",         &tCentrality        , "tCentrality/I" );
+    /*3 */   fHistSparseBkg->Branch("tCentrality",         &tCentrality        , "tCentrality/F" );
     /*4 */   fHistSparseBkg->Branch("tDCAxyP1",            &tDCAxyP1           , "tDCAxyP1/F" );
     /*5 */   fHistSparseBkg->Branch("tDCAzP1",             &tDCAzP1            , "tDCAzP1/F" ); 
     /*6 */   fHistSparseBkg->Branch("tDCAxyP2",            &tDCAxyP2           , "tDCAxyP2/F" ); 
@@ -1026,6 +1027,20 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   }
   fHistEventMultiplicity->Fill(3);
 
+  //event must not be tagged as pileup
+  Bool_t isPileUpSpd=kFALSE;
+  isPileUpSpd=fAODevent->IsPileupFromSPD();
+  if(isPileUpSpd){ 
+    PostData(1,fOutputContainer );
+    PostData(2, fHistSparseSignal );
+    PostData(3, fHistSparseBkg );
+    return;
+  }
+  
+  fHistEventMultiplicity->Fill(4);
+
+
+
   Float_t lcentrality = -99.;
   
   //  AliMultSelection* centrality = 0x0;
@@ -1049,30 +1064,28 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     //    lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicity(); //run on phojet
     lcentrality = centrality->GetMultiplicityPercentile("V0M"); //FIXME : Also for pp? Test on kd
     //    cout<<"Centrality: "<<lcentrality<<endl;
-    hmult->Fill(lcentrality);
+    //    hmult->Fill(lcentrality);
+    
   }
 
-  // cout<<lcentrality<<endl;
+  //  cout<<"centrality: "<<lcentrality<<endl;
 
+  if ( lcentrality > 199 ){
+    //Event didn't pass Event Selections
+    PostData(1,fOutputContainer );
+    PostData(2, fHistSparseSignal );
+    PostData(3, fHistSparseBkg );
+    return;
+  }
+  
   if (lcentrality<fCentrLowLim||lcentrality>=fCentrUpLim){   
     PostData(1,fOutputContainer );
     PostData(2, fHistSparseSignal );
     PostData(3, fHistSparseBkg );
     return;
   }
-  fHistEventMultiplicity->Fill(4);
-  
-  //event must not be tagged as pileup
-  Bool_t isPileUpSpd=kFALSE;
-  isPileUpSpd=fAODevent->IsPileupFromSPD();
-  if(isPileUpSpd){ 
-    PostData(1,fOutputContainer );
-    PostData(2, fHistSparseSignal );
-    PostData(3, fHistSparseBkg );
-    return;
-  }
-  
   fHistEventMultiplicity->Fill(5);
+  
 
   Bool_t isSelectedCentral     = kFALSE;
   Bool_t isSelectedSemiCentral = kFALSE;
@@ -1090,6 +1103,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   }
   
   else if(fCollidingSystem == "pp"){
+  
     isSelectedCentral     = (mask & AliVEvent::kCentral);
     isSelectedSemiCentral = (mask & AliVEvent::kSemiCentral);
     isSelectedMB          = (mask & AliVEvent::kMB);
@@ -1097,12 +1111,20 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     isSelectedHM          = (mask & AliVEvent::kHighMultV0);
     isSelectedAny         = (mask & AliVEvent::kAnyINT);
     
+    // if(isSelectedHM)
+    // cout<<"isSelectedCentral    : "<<isSelectedCentral     <<endl;
+    // cout<<"isSelectedSemiCentral: "<<isSelectedSemiCentral <<endl;
+    // cout<<"isSelectedMB         : "<<isSelectedMB          <<endl;
+    // cout<<"isSelectedInt7       : "<<isSelectedInt7        <<endl;
+    // cout<<"isSelectedHM         : "<<isSelectedHM          <<endl;
+    // cout<<"isSelectedAny        : "<<isSelectedAny         <<endl;
+      
     if(fYear == 2010 && isSelectedMB )
       isSelected = kTRUE;
     else if(fYear != 2010 && fHMtrigger == kFALSE && isSelectedInt7)
-	isSelected = kTRUE;
+      isSelected = kTRUE;
     else if(fYear != 2010 && fHMtrigger == kTRUE && isSelectedHM)
-	isSelected = kTRUE;
+      isSelected = kTRUE;
     else 
       isSelected = kFALSE;
   }
@@ -1167,7 +1189,12 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     }
     
   }
+
+  fHistEventMultiplicity->Fill(12); // is event selected for the analysis
   
+  if(fCollidingSystem == "pp") 
+    hmult->Fill(((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicityComb08());
+
   // cout<<"nTracks: "<<ntracks<<" centrality "<<lcentrality<<endl;
   Double_t fSphericityvalue = CalculateSphericityofEvent(fAODevent);
   fHistSphericity->Fill(fSphericityvalue);
@@ -1437,8 +1464,11 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       printf ("Exceeding buffer size!!");
       continue;
     }
+    if(fFilterBit == 128)
+      vtrackg = fAODevent->GetTrack(farrGT[-track->GetID()-1]);
+    else
+      vtrackg = track;
 
-    vtrackg = fAODevent->GetTrack(farrGT[-track->GetID()-1]);
     if (!vtrackg) {
       printf ("No global info! iTrack %d, ID %d\n",ip,track->GetID());
       continue;
@@ -1447,7 +1477,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     globaltrack = dynamic_cast<AliAODTrack*>(vtrackg); 
     if(!globaltrack) AliFatal("Not a standard AOD");
 
-    //    cout<<" Filter map for the global track "<<globaltrack->GetFilterMap()<<endl;
+    //    cout<<" Filter map for the global track "<<globaltrack->GetFilterMap()<<" "<<globaltrack<<endl;
      
     // IP to PV of tracks
     dz[0] = -999.; dz[1]  = -999.;
@@ -1513,12 +1543,15 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       rapiditySecond = 0.5*TMath::Log((energyDeuteron + track->Pz())/(energyDeuteron - track->Pz()));
     }
     
-    // cout<<"Firt particle: "<<fFirstpart<<" "<<rapidityFirst<<" second particle: "<<fSecondpart<<" "<<rapiditySecond<<endl;
+    //cout<<"Firt particle: "<<fFirstpart<<" "<<rapidityFirst<<" second particle: "<<fSecondpart<<" "<<rapiditySecond<<endl;
+
     //  if(fFirstpart == kKaon){
 
     nsigmaTPCf = fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)fFirstpart); 
     nsigmaTPCs = fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)fSecondpart); 
-
+    
+    //cout<<"Firt particle ns: "<<nsigmaTPCf<<" "<<nsigmaTPCs<<endl;
+   
     // //pulls TPC
     // pullsTPC[0] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kElectron)); 
     // pullsTPC[1] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kPion)); 
@@ -1658,15 +1691,28 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       // if(fFirstpart == 3){ //electron veto in K
       // 	  if(track->Pt()>0.3 && track->Pt()<0.4)continue;
       // 	}
+      
+      // // //cout<<"Qui ???"<<endl;
+      // cout<<fkCutOnTPCIP<<endl;
+      // cout<<TMath::Abs(dz[0]) <<" "<<fIPCutxyPrim <<endl;
+      // cout<<TMath::Abs(dz[1]) <<" "<<fIPCutzPrim  <<endl;
+      // cout<<TMath::Abs(dzg[0])<<" "<<fIPCutxyPrim<<endl;
+      // cout<<TMath::Abs(dzg[1])<<" "<<fIPCutzPrim <<endl;
 
       if (fkCutOnTPCIP) {
 	if (TMath::Abs(dz[0])>fIPCutxyPrim ) continue;  // 2.4 proton 1. pion 
 	if (TMath::Abs(dz[1])>fIPCutzPrim ) continue;  // 3.2  proton 1. pion
       } else {
-	if (TMath::Abs(dzg[0])>fIPCutxyPrim ) continue;  // 0.1 proton/pion
-	if (TMath::Abs(dzg[1])>fIPCutzPrim ) continue; // 0.15 proton/pion
+	   dz[0] = dzg[0];
+	   dz[1] = dzg[1];
+	   if (TMath::Abs(dz[0])>fIPCutxyPrim ) continue;  // 0.1 proton/pion
+	   if (TMath::Abs(dz[1])>fIPCutzPrim ) continue;   // 0.15 proton/pion
+	  // if (TMath::Abs(dzg[0])>fIPCutxyPrim ) continue;  // 0.1 proton/pion
+	  // if (TMath::Abs(dzg[1])>fIPCutzPrim ) continue; // 0.15 proton/pion
       }
       
+      //cout<<"ORA?"<<endl;
+
       if (track->Pt()>fMinPtForPrim  && track->Pt()< fMomemtumLimitForTOFPIDfirst){
 	
 	if(fReadMCTruth == kTRUE)
@@ -1677,7 +1723,8 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	//------------------ Save first particle information
 	fEvt->fReconstructedFirst[fCount].fCharge = charge;
 
-	//      cout<<"Charge of pion "<<fEvt->fReconstructedFirst[fCount].fCharge<<endl;
+	//	cout<<"Charge of pion "<<fEvt->fReconstructedFirst[fCount].fCharge<<endl;
+	
 	if(fReadMCTruth == kTRUE){
 	  fEvt->fReconstructedFirst[fCount].fMomentumTruth[0]  = tparticle->Px();
 	  fEvt->fReconstructedFirst[fCount].fMomentumTruth[1]  = tparticle->Py();
@@ -2292,7 +2339,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       }
     }
     //--------------------------------------------------------------
-    DoPairsh1h2((Int_t)lcentrality, fieldsign,fSphericityvalue);  
+    DoPairsh1h2(lcentrality, fieldsign,fSphericityvalue);  
     //DoPairsh1h2(centralityBin, fieldsign,fSphericityvalue);  
   }
   // Post output data
@@ -2305,7 +2352,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 //----------------------------------------------------------------------------------------------------
   
 //void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Float_t lcentrality, int fieldsignf, double fSphericityvalue) {
-void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Int_t lcentrality, int fieldsign, const Double_t fSphericityvalue) {
+void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Float_t lcentrality, int fieldsign, const Double_t fSphericityvalue) {
 
   // UInt_t dimsparse;
   // if(!fReadMCTruth) dimsparse=16;

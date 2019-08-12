@@ -60,7 +60,7 @@
 #endif
 
 //_
-AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid) {
+AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, int runSHCorrFctn, int runNonIdCorrFctn, int run3DPRF, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid) {
 
 
   double PionMass = 0.13957018;//0.13956995;
@@ -144,6 +144,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   //AliFemtoModelGausLCMSFreezeOutGenerator *gausLCMSFreezeOutGenerator[size];
   //AliFemtoModelWeightGeneratorBasic      *weightGeneratorLednicky[size];
   //AliFemtoModelManager          *tModelManager[size];
+  AliFemtoCorrFctn3DPRF         *ck3dprftpc[size];
   AliFemtoCorrFctnNonIdDR       *cnonidtpc[size];
   AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta08[size];
   AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta12[size];
@@ -166,8 +167,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 
 	  //Mix events with respect to the z position of the primary vertex and event total multipliticy:
-	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(5);
+	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 4, multbins[imult], multbins[imult+1]);
+	  anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 	  
@@ -206,9 +207,9 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(1.0);
+	  dtc2etaphitpc[aniter]->UseNsigmaTOF450_500(true);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(3.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF450_500(2.0);
-	  dtc2etaphitpc[aniter]->UseNsigmaTOF450_500(true);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPCge500(3.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
@@ -345,7 +346,14 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	    cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult), nbinssh, 0.0, shqmax);
 	    anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
 	  }
-
+	  
+	  //correlation function in kstarout, kstarside, kstarlong (run3DPRF)
+	  	  if(run3DPRF == 1) {
+		    ck3dprftpc[aniter] = new AliFemtoCorrFctn3DPRF(Form("ck3dPRF%stpcM%i", chrgs[ichg], imult),100,0.5);
+		    //ck3dprfkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+		    anetaphitpc[aniter]->AddCorrFctn(ck3dprftpc[aniter]);
+		  }
+		  
 	  if(runDPhiStarKStarMergedFraction == 1) {
 	    dphistarkstarmftpc[aniter] = new AliFemtoCorrFctnDPhiStarKStarMergedFraction(Form("cdphistarkstarmergedfraction%stpcM%iD%lfF%lf", chrgs[ichg], imult, distance, fraction1), 0.8, 2.5, distance, fraction1, 0.01, 51, 0.0, 0.5, 127, -1.0, 1.0);
 	    anetaphitpc[aniter]->AddCorrFctn(dphistarkstarmftpc[aniter]);

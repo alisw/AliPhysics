@@ -43,6 +43,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
                                                                        fEventCutArray              = CutArray;}
         void SetConversionCutList(Int_t nCuts, TList *CutArray)       {fnCuts                      = nCuts;
                                                                        fConversionCutArray         = CutArray;}
+	void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
 
 
 
@@ -97,7 +98,11 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hNGoodESDTracksWeightedEta08; //!
 		TH1F**            hNGoodESDTracksEta14;         //!
 		TH1F**            hNGoodESDTracksEta08_14;      //!
+		TH1F**            fHistoNV0Tracks;              //!
+		TH1F**            fHistoNV0TracksWeighted;      //!
+
 		TH2F**            hESDConversionRPhi;           //!
+		TH2F**            hESDConversionRPhiFromConv;   //!
 		TH2F**            hESDConversionRZ;             //!
 		TH2F**            hESDConversionRPt;            //!
 		TH2F**            hESDConversionWOWeightRPt;    //!
@@ -115,6 +120,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH2F**            hPositronRNSigmadEdx;         //!
 
  		TH2F**            hMCConversionRPhi;            //!
+ 		TH2F**            hMCConversionRPhiFromConv;    //!
 		TH2F**            hMCConversionRPt;             //!
 		TH2F**            hMCConversionWOWeightRPt;             //!
 		TH2F**            hMCConversionREta;            //!
@@ -127,6 +133,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 
 
 		TH2F**            hMCTrueConversionRPhi;        //!
+		TH2F**            hMCTrueConversionRPhiFromConv;//!
 		TH2F**            hMCTrueConversionRZ;          //!
 		TH2F**            hMCTrueConversionRPt;         //!
 		TH2F**            hMCTrueConversionWOWeightRPt;         //!
@@ -159,13 +166,14 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH3F**            hElectrondEdxMapsR2;         //!
 		TH3F**            hPositrondEdxMapsR3;         //!
 		TH3F**            hElectrondEdxMapsR3;         //!
+		Bool_t            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
 		//Bool_t            fDoHistosForMaterial;             // flag for using Trees for Material Budget evaluation
 
 		AliAnalysisTaskMaterialHistos(const AliAnalysisTaskMaterialHistos&); // not implemented
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 20);
+        ClassDef(AliAnalysisTaskMaterialHistos, 22);
 };
 
 #endif

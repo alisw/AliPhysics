@@ -117,6 +117,10 @@ class AliFemtoDreamv0Hist {
     fInvMassPt->Fill(pT, mass);
   }
   ;
+  void FillArmenterosPodolandski(int i, float qT, float alpha) {
+    if (!fMinimalBooking)
+      fArmenterosPodolandski[i]->Fill(qT, alpha);
+  }
   void FillCPAPtBins(float pT, float cpa, int multiplicity);
   void FillInvMassPerRunNumber(int RunNumber, float mass) {
     if (!fMinimalBooking)
@@ -162,6 +166,7 @@ class AliFemtoDreamv0Hist {
   TH1F *fInvMassKaon;
   TH1F *fInvMassBefSelection;
   TH2F *fInvMassPt;
+  TH2F *fArmenterosPodolandski[2];
   TH2F *fCPAPtBins;
   TH2F *fCPAPtBinsMult[3];  //!
   TH2F *fInvMassPerRunNumber;ClassDef(AliFemtoDreamv0Hist,3)

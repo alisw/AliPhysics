@@ -112,15 +112,16 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
 
   //set single-track variables
   AddSingleTrackBranches();
+  if (fFillJets) AddJetBranches();
 
   //set PID variables
-  if(fPidOpt != kNoPID) AddPidBranches(true, false, true, true, true);
+  if(fPidOpt != kNoPID) AddPidBranches(true, true, true, true, true);
 
   return fTreeVar;
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) 
+bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) 
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
@@ -128,7 +129,8 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eve
   }
   fRunNumber=runnumber;
   fEvID=eventID;
-    
+  fPtGen=ptgen;
+  
   //topological variables
   //common
   fPt=cand->Pt();
@@ -209,7 +211,7 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eve
   //pid variables
   if(fPidOpt == kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks, pidrespo, true, false, true, true, true);
+  bool setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true);
   if(!setpid) return false;
 
   return true;

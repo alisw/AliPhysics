@@ -56,6 +56,7 @@ if(FASTJET_FOUND)
     set(SRCS ${SRCS}
         AliJCDijetHistos.cxx
         AliJCDijetTask.cxx
+        AliJCDijetAna.cxx
         )
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})

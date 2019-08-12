@@ -397,6 +397,9 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   // printf("event index = %i\n", fESD->GetEventNumberInFile());
 
   // leading particle
+  // printf("\n\nNew event!\n");
+
+  // printf("LP search\n");
   fEvInfo->FindLeadingParticle(fTracks);
   // shape
   fEvInfo->MakeDirectivity(fTracks);
@@ -489,16 +492,10 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     val[6] = 0.;
     if(H) H->Fill(val);
 
-    // define matching with ESD track array
-    for(Int_t iesd(0); iesd<fTracks->GetEntries(); iesd++){
-      if(!( tmesRec = (AliMEStrackInfo*)fTracks->At(iesd))) continue;
-      if(tmesRec->GetLabel()!=ipart) continue;
-      tmesRec->SetLabel(fMCtracks->GetEntries()-1);
-      tmes->SetLabel(iesd);
-    }
   }
 
   // leading particle
+  // printf("generated LP search\n");
   fMCevInfo->FindLeadingParticle(fMCtracks);
   // shape
   fMCevInfo->MakeDirectivity(fMCtracks);
@@ -511,7 +508,21 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   val[3] = fMCevInfo->GetEventShape()->GetDirectivity(kFALSE);
   if(H) H->Fill(val);
 
-
+  // define matching with ESD track array
+  std::vector< Int_t > alreadyMatched;
+  for (Int_t ipart=0; ipart<fMCtracks->GetEntries(); ipart++) {
+    if( !(tmes= (AliMEStrackInfo*)fMCtracks->At(ipart)) ) continue;
+    for(Int_t iesd(0); iesd<fTracks->GetEntries(); iesd++){
+      if(!( tmesRec = (AliMEStrackInfo*)fTracks->At(iesd))) continue;
+      if (std::find(alreadyMatched.begin(), alreadyMatched.end(), iesd) != alreadyMatched.end()) continue;
+      if(tmesRec->GetLabel() != tmes->GetLabel()) continue;
+      alreadyMatched.push_back(iesd);
+      tmesRec->SetLabel(ipart);
+      tmes->SetLabel(iesd);
+      break;
+    }
+  }
+  
   // fill debug
   if(DebugLevel()>0){
 	  (*AliMESbaseTask::DebugStream()) << "evInfoMC"

@@ -19,6 +19,8 @@
 // L. van Doremalen, lennart.van.doremalen@cern.ch
 // J. Norman, jaime.norman@cern.ch
 // G. Luparello, grazia.luparello@cern.ch
+// J. Mulligan, james.mulligan@berkeley.edu
+// N. Zardoshti, nima.zardoshti@cern.ch
 ///*************************************************************************
 
 #include <TROOT.h>
@@ -28,6 +30,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include "TProfile.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
@@ -45,9 +48,15 @@
 #include "AliHFTreeHandlerDstoKKpi.h"
 #include "AliHFTreeHandlerLctopKpi.h"
 #include "AliHFTreeHandlerBplustoD0pi.h"
+#include "AliHFTreeHandlerBstoDspi.h"
 #include "AliHFTreeHandlerDstartoKpipi.h"
 #include "AliHFTreeHandlerLc2V0bachelor.h"
 #include "AliJetTreeHandler.h"
+#include "AliParticleTreeHandler.h"
+#include "AliTrackletTreeHandler.h"
+#include "AliParticleContainer.h"
+#include "AliTrackContainer.h"
+#include "AliMCParticleContainer.h"
 #include "AliJetContainer.h"
 
 class AliAODEvent;
@@ -58,9 +67,13 @@ class AliRhoParameter;
 class AliAnalysisTaskSEHFTreeCreator : public AliAnalysisTaskSE
 {
 public:
-
-
-    
+  
+  enum JetAlgorithm{
+    antikt,
+    kt,
+    ca
+  };
+   
     AliAnalysisTaskSEHFTreeCreator();
     AliAnalysisTaskSEHFTreeCreator(const char *name,TList *cutsList, int fillNJetTrees, bool fillJetConstituentTrees);
     virtual ~AliAnalysisTaskSEHFTreeCreator();
@@ -75,6 +88,18 @@ public:
     virtual Bool_t RetrieveEventObjects();
     virtual void Terminate(Option_t *option);
     
+    void SetRefMult(Double_t refMult) { fRefMult = refMult; }
+    Double_t GetRefMult() { return fRefMult; }
+    void SetMultiplVsZProfile(std::string period, TProfile *hprof)
+    {
+        delete fMultEstimatorAvg[period];
+        fMultEstimatorAvg[period] = new TProfile(*hprof);
+    }
+    std::string GetPeriod(const AliVEvent *ev);
+    void SetCorrNtrVtx(bool corr = true) { fCorrNtrVtx = corr; }
+    bool GetCorrNtrVtx() const { return fCorrNtrVtx; }
+    void SetCorrV0MVtx(bool corr = true) { fCorrV0MVtx = corr; }
+    bool GetCorrV0MVtx() const { return fCorrV0MVtx; }
     
     void SetReadMC(Bool_t opt=kFALSE){fReadMC=opt;}
     void SetSystem(Int_t opt){fSys=opt;}
@@ -85,6 +110,7 @@ public:
     void SetFillDplusTree(Int_t opt){fWriteVariableTreeDplus=opt;}
     void SetFillLctopKpiTree(Int_t opt){fWriteVariableTreeLctopKpi=opt;}
     void SetFillBplusTree(Int_t opt){fWriteVariableTreeBplus=opt;}
+    void SetFillBsTree(Int_t opt){fWriteVariableTreeBs=opt;}
     void SetFillDstarTree(Int_t opt){fWriteVariableTreeDstar=opt;}
     void SetFillLc2V0bachelorTree(Int_t opt){fWriteVariableTreeLc2V0bachelor=opt;}
     void SetPIDoptD0Tree(Int_t opt){fPIDoptD0=opt;}
@@ -92,6 +118,7 @@ public:
     void SetPIDoptDplusTree(Int_t opt){fPIDoptDplus=opt;}
     void SetPIDoptLctopKpiTree(Int_t opt){fPIDoptLctopKpi=opt;}
     void SetPIDoptBplusTree(Int_t opt){fPIDoptBplus=opt;}
+    void SetPIDoptBsTree(Int_t opt){fPIDoptBs=opt;}
     void SetPIDoptDstarTree(Int_t opt){fPIDoptDstar=opt;}
     void SetPIDoptLc2V0bachelorTree(Int_t opt){fPIDoptLc2V0bachelor=opt;}
     void SetFillMCGenTrees(Bool_t fillMCgen) {fFillMCGenTrees=fillMCgen;}
@@ -107,6 +134,18 @@ public:
     void SetFillpTD(bool b) { fFillpTD = b; }
     void SetFillMass(bool b) { fFillMass = b; }
     void SetFillMatchingJetID(bool b) { fFillMatchingJetID = b; }
+
+    void SetFillJets(bool b) {fFillJets = b; }
+    void SetDoJetSubstructure(bool b) {fDoJetSubstructure = b; }
+    void SetJetRadius(Double_t d) {fJetRadius = d; }
+    void SetJetSubRadius(Double_t d) {fSubJetRadius = d; }
+    void SetJetAlgorithm(Int_t i) {fJetAlgorithm = i; }
+    void SetSubJetAlgorithm(Int_t i) {fSubJetAlgorithm = i; }
+    void SetMinJetPt(Double_t d) {fMinJetPt = d; }
+  
+    void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
+    void SetGoodTrackEtaRange(Double_t d) { fGoodTrackEtaRange = d; }
+    void SetGoodTrackMinPt(Double_t d) { fGoodTrackMinPt = d; }
   
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
     void SetLc2V0bachelorCalcSecoVtx(Int_t opt=1) {fLc2V0bachelorCalcSecoVtx=opt;}
@@ -120,15 +159,32 @@ public:
     void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
     void ProcessDstar(TClonesArray *arrayDstar, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
     void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
+    void ProcessBs(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
     void ProcessMCGen(TClonesArray *mcarray);
   
     Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
-    AliAODVertex* ReconstructBplusVertex(const AliVVertex *primary, TObjArray *tracks, Double_t bField, Double_t dispersion);
+    void SelectGoodTrackForReconstruction(AliAODEvent *aod, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
+    AliAODVertex* ReconstructDisplVertex(const AliVVertex *primary, TObjArray *tracks, Double_t bField, Double_t dispersion);
   
+    void SetNsigmaTPCDataDrivenCorrection(Int_t syst) {
+        fEnableNsigmaTPCDataCorr=true; 
+        fSystemForNsigmaTPCDataCorr=syst; 
+    }
+  
+    // Particles (tracks or MC particles)
+    //-----------------------------------------------------------------------------------------------
+    void                        SetFillParticleTree(Bool_t b) {fFillParticleTree = b;}
+    void                        SetFillTrackletTree(Bool_t b) {fFillTrackletTree = b;}
+    AliParticleContainer*       AddParticleContainer(const char *n);
+    AliTrackContainer*          AddTrackContainer(const char *n);
+    AliMCParticleContainer*     AddMCParticleContainer(const char *n);
+    AliParticleContainer*       GetParticleContainer(Int_t i=0) const;
+    AliParticleContainer*       GetParticleContainer(const char* name) const;
+    void                        FillParticleTree();
+
     // Jets
     //-----------------------------------------------------------------------------------------------
     void SetFillNJetTrees(Int_t n){fWriteNJetTrees=n;}
-  
     AliJetContainer* AddJetContainer(AliJetContainer::EJetType_t jetType, AliJetContainer::EJetAlgo_t jetAlgo, AliJetContainer::ERecoScheme_t recoScheme, Double_t radius, UInt_t accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
     AliJetContainer* AddJetContainer(const char *n, UInt_t accType, Float_t jetRadius);
     AliJetContainer* GetJetContainer(Int_t i=0) const;
@@ -142,7 +198,6 @@ private:
     AliAnalysisTaskSEHFTreeCreator(const AliAnalysisTaskSEHFTreeCreator&);
     AliAnalysisTaskSEHFTreeCreator& operator=(const AliAnalysisTaskSEHFTreeCreator&);
     
-    
     unsigned int            fEventNumber;
     TH1F                    *fNentries;                            //!<!   histogram with number of events on output slot 1
     TH2F                    *fHistoNormCounter;                    //!<!   histogram with number of events on output slot 1
@@ -152,6 +207,7 @@ private:
     AliRDHFCutsDplustoKpipi *fFiltCutsDplustoKpipi;                //      DplustoKpipi filtering (or loose) cuts
     AliRDHFCutsLctopKpi     *fFiltCutsLctopKpi    ;                //      LctopKpi filtering (or loose) cuts
     AliRDHFCutsBPlustoD0Pi  *fFiltCutsBplustoD0pi;                 //      BplustoD0pi filtering (or loose) cuts
+    AliRDHFCutsDstoKKpi     *fFiltCutsBstoDspi;                    //      BstoDspi filtering (or loose) cuts
     AliRDHFCutsDStartoKpipi *fFiltCutsDstartoKpipi;                //      DstartoKpipi filtering (or loose) cuts
     AliRDHFCutsLctoV0       *fFiltCutsLc2V0bachelor;               //      Lc2V0bachelor filtering (or loose) cuts
     AliRDHFCutsD0toKpi      *fCutsD0toKpi;                         //      D0toKpi analysis cuts
@@ -159,6 +215,7 @@ private:
     AliRDHFCutsDplustoKpipi *fCutsDplustoKpipi;                    //      DplustoKpipi analysis cuts
     AliRDHFCutsLctopKpi     *fCutsLctopKpi;                        //      LctopKpi analysis cuts
     AliRDHFCutsBPlustoD0Pi  *fCutsBplustoD0pi;                     //      BplustoD0pi analysis cuts
+    AliRDHFCutsDstoKKpi     *fCutsBstoDspi;                        //      BstoDspi analysis cuts
     AliRDHFCutsDStartoKpipi *fCutsDstartoKpipi;                    //      DstartoKpipi analysis cuts
     AliRDHFCutsLctoV0       *fCutsLc2V0bachelor;                   //      Lc2V0bachelor analysis cuts
     AliRDHFCuts             *fEvSelectionCuts;                     //      Event selection cuts
@@ -181,14 +238,16 @@ private:
     Int_t                   fWriteVariableTreeLctopKpi;            // flag to decide whether to write the candidate variables on a tree variables
     													                                     // 0 don't fill
                                                                    // 1 fill standard tree
-    Int_t                    fWriteVariableTreeBplus;              // flag to decide whether to write the candidate variables on a tree variables
+    Int_t                   fWriteVariableTreeBplus;              // flag to decide whether to write the candidate variables on a tree variables
                                                                    // 0 don't fill
                                                                    // 1 fill standard tree
-
-    Int_t                  fWriteVariableTreeDstar;                // flag to decide whether to write the candidate variables on a tree variables
+    Int_t                   fWriteVariableTreeBs;                   // flag to decide whether to write the candidate variables on a tree variables
+                                                                   // 0 don't fill
+                                                                   // 1 fill standard tree
+    Int_t                   fWriteVariableTreeDstar;                // flag to decide whether to write the candidate variables on a tree variables
     													                                     // 0 don't fill
                                                                    // 1 fill standard tree
-    Int_t                  fWriteVariableTreeLc2V0bachelor;        // flag to decide whether to write the candidate variables on a tree variables
+    Int_t                   fWriteVariableTreeLc2V0bachelor;        // flag to decide whether to write the candidate variables on a tree variables
     													                                     // 0 don't fill
                                                                    // 1 fill standard tree
 
@@ -197,6 +256,7 @@ private:
     TTree                   *fVariablesTreeDplus;                  //!<! tree of the candidate variables
     TTree                   *fVariablesTreeLctopKpi;               //!<! tree of the candidate variables
     TTree                   *fVariablesTreeBplus;                  //!<! tree of the candidate variables
+    TTree                   *fVariablesTreeBs;                     //!<! tree of the candidate variables
     TTree                   *fVariablesTreeDstar;                  //!<! tree of the candidate variables
     TTree                   *fVariablesTreeLc2V0bachelor;          //!<! tree of the candidate variables
     TTree                   *fGenTreeD0;                           //!<! tree of the gen D0 variables
@@ -204,6 +264,7 @@ private:
     TTree                   *fGenTreeDplus;                        //!<! tree of the gen D+ variables
     TTree                   *fGenTreeLctopKpi;                     //!<! tree of the gen LctopKpi variables
     TTree                   *fGenTreeBplus;                        //!<! tree of the gen B+ variables
+    TTree                   *fGenTreeBs;                           //!<! tree of the gen Bs variables
     TTree                   *fGenTreeDstar;                        //!<! tree of the gen Dstar variables
     TTree                   *fGenTreeLc2V0bachelor;                //!<! tree of the gen Lc2V0bachelor variables
     TTree                   *fTreeEvChar;                          //!<! tree of event variables
@@ -213,6 +274,7 @@ private:
     AliHFTreeHandlerDplustoKpipi   *fTreeHandlerDplus;             //!<! handler object for the tree with topological variables
     AliHFTreeHandlerLctopKpi       *fTreeHandlerLctopKpi;          //!<! handler object for the tree with topological variables
     AliHFTreeHandlerBplustoD0pi    *fTreeHandlerBplus;             //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerBstoDspi       *fTreeHandlerBs;                //!<! handler object for the tree with topological variables
     AliHFTreeHandlerDstartoKpipi   *fTreeHandlerDstar;             //!<! handler object for the tree with topological variables
     AliHFTreeHandlerLc2V0bachelor  *fTreeHandlerLc2V0bachelor;     //!<! handler object for the tree with topological variables
     AliHFTreeHandlerD0toKpi        *fTreeHandlerGenD0;             //!<! handler object for the tree with topological variables
@@ -220,6 +282,7 @@ private:
     AliHFTreeHandlerDplustoKpipi   *fTreeHandlerGenDplus;          //!<! handler object for the tree with topological variables
     AliHFTreeHandlerLctopKpi       *fTreeHandlerGenLctopKpi;       //!<! handler object for the tree with topological variables
     AliHFTreeHandlerBplustoD0pi    *fTreeHandlerGenBplus;          //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerBstoDspi       *fTreeHandlerGenBs;             //!<! handler object for the tree with topological variables
     AliHFTreeHandlerDstartoKpipi   *fTreeHandlerGenDstar;          //!<! handler object for the tree with topological variables
     AliHFTreeHandlerLc2V0bachelor  *fTreeHandlerGenLc2V0bachelor;  //!<! handler object for the tree with topological variables
     AliPIDResponse          *fPIDresp;                             /// PID response
@@ -228,6 +291,7 @@ private:
     int                     fPIDoptDplus;                          /// PID option for D+ tree
     int                     fPIDoptLctopKpi;                       /// PID option for Lc2pKpi tree
     int                     fPIDoptBplus;                          /// PID option for B+ tree
+    int                     fPIDoptBs;                             /// PID option for Bs tree
     int                     fPIDoptDstar;                          /// PID option for D* tree
     int                     fPIDoptLc2V0bachelor;                  /// PID option for Lc2V0bachelor tree
     Float_t                 fCentrality;                           /// event centrality
@@ -237,11 +301,28 @@ private:
     Int_t                   fNtracks;                              /// number of tracks
     Int_t                   fIsEvRej;                              /// flag with information about rejection of the event
     Int_t                   fRunNumber;                            /// run number
-    UInt_t                  fEventID;                              /// unique event ID
+    UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
     TString                 fFileName;
     unsigned int            fDirNumber;
     Int_t                   fnTracklets;                           /// number of tracklets
+    Int_t                   fnTrackletsCorr;                       /// number of tracklets (corrected)
+    Double_t                fRefMult;                              /// reference multiplicity
     Int_t                   fnV0A;                                 /// V0A multiplicity 
+    Int_t                   fMultGen;                              /// generated multiplicity around mid-rapidity [-1,1]
+    Int_t                   fMultGenV0A;                           /// generated multiplicity in V0A range
+    Int_t                   fMultGenV0C;                           /// generated multiplicity in V0C range
+    ULong64_t               fTriggerMask;                          /// Trigger mask bitmap
+    Bool_t                  fTriggerBitINT7;                       /// Flag explicitly whether bitmap contains INT7
+    Bool_t                  fTriggerBitHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
+    Bool_t                  fTriggerBitHighMultV0;                 /// Flag explicitly whether bitmap kHighMultV0
+    TString                 fTriggerClasses;                       /// Collect all trigger classes
+    Bool_t                  fTriggerClassINT7;                     /// Flag explicitly whether classes contain INT7
+    Bool_t                  fTriggerClassHighMultSPD;              /// Flag explicitly whether classes contain HighMultSPD
+    Bool_t                  fTriggerClassHighMultV0m;              /// Flag explicitly whether classes contain HighMultV0
+    Int_t                   fnV0M;                                 /// V0M multiplicity
+    Int_t                   fnV0MEq;                               /// V0M multiplicity (equalized)
+    Int_t                   fnV0MCorr;                             /// V0M multiplicity (corrected)
+    Int_t                   fnV0MEqCorr;                           /// V0M multiplicity (equalized + corrected)
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
@@ -249,7 +330,33 @@ private:
     Int_t                   fLc2V0bachelorCalcSecoVtx;             /// option to calculate the secondary vertex for Lc2V0bachelor. False by default, has to be added to AddTask in case we want to start using it.
   
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
+
+    Double_t                fJetRadius;                            //Setting the radius for jet finding
+    Double_t                fSubJetRadius;                         //Setting the radius for subjet finding
+    Int_t                   fJetAlgorithm;                         //Setting the jet finding algorithm
+    Int_t                   fSubJetAlgorithm;                      //Setting the jet finding algorithm
+    Double_t                fMinJetPt;                             //Setting the jet finding min pT
   
+    Int_t                   fGoodTrackFilterBit;                   /// Setting filter bit for bachelor on-the-fly reconstruction candidate
+    Double_t                fGoodTrackEtaRange;                    /// Setting eta-range for bachelor on-the-fly reconstruction candidate
+    Double_t                fGoodTrackMinPt;                       /// Setting min pT for bachelor on-the-fly reconstruction candidate
+
+    // Particles (tracks / MC particles)
+    // Add a single AliTrackContainer and/or AliMCParticleContainer to select particles
+    // A separate (identical) AliParticleTreeHandler will be used to fill each tree.
+    //-----------------------------------------------------------------------------------------------
+    bool                    fFillParticleTree;                     ///< Store tree of all tracks inside the jet
+    bool                    fFillTrackletTree;                     ///< Store tree of all tracklets
+  
+    TTree*                  fVariablesTreeParticle;                //!<! Particle tree
+    TTree*                  fVariablesTreeTracklet;                //!<! Tracklet tree
+    TTree*                  fVariablesTreeGenParticle;             //!<! MC particle tree
+  
+    AliParticleTreeHandler* fTreeHandlerParticle;                  //!<! handler object for particle tree
+    AliTrackletTreeHandler* fTreeHandlerTracklet;                  //!<! handler object for tracklet tree
+    AliParticleTreeHandler* fTreeHandlerGenParticle;               //!<! handler object for MC particle tree
+  
+    TObjArray               fParticleCollArray;                    ///< particle/track collection array
   
     // Jets
     //-----------------------------------------------------------------------------------------------
@@ -285,9 +392,21 @@ private:
     bool                    fFillpTD;                              ///< pT,D
     bool                    fFillMass;                             ///< Mass
     bool                    fFillMatchingJetID;                    ///< jet matching
+
+
+    
+    bool                    fFillJets;                             //FillJetInfo
+    bool                    fDoJetSubstructure;                    //FillJetSubstructure
   
+    bool fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
+    int fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
+
+    std::map<std::string, TProfile*> fMultEstimatorAvg;
+    bool fCorrNtrVtx;
+    bool fCorrV0MVtx;
+
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,12);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,16);
     /// \endcond
 };
 

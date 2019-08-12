@@ -56,6 +56,7 @@ set(SRCS
   AliAnalysisTaskMixedHarmonics.cxx 
   AliAnalysisTaskFlowModes.cxx
   AliAnalysisTaskFlowModesMC.cxx
+  AliAnalysisTaskFlowModes_pPb.cxx
   AliAnalysisTaskNestedLoops.cxx 
   AliAnalysisTaskQAflow.cxx 
   AliAnalysisTaskPIDflowQA.cxx 
@@ -81,6 +82,7 @@ set(SRCS
   AliAnalysisTaskStudentsCM.cxx
   AliAnalysisTaskStudentsML.cxx
   AliAnalysisTaskTwoMultiCorrelations.cxx
+  AliAnalysisTaskStudentsMW.cxx
   )
 
 # Headers from sources

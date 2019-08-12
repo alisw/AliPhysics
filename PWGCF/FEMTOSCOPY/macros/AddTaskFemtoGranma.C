@@ -7,7 +7,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
     bool DCAPlots = false,//3
     bool CPAPlots = false,//4
     bool MomReso = false,//5 to set to true only when running on MC
-    bool etaPhiPlotsAtTPCRadii=true,//6 to set to true only when running on MC
+    bool etaPhiPlotsAtTPCRadii=true,//6 to set to true only when running on MC but very Mem. Consuming
     bool CombSigma = false,//7
     bool PileUpRej=true,//8
     bool dPhidEtaPlots=true,//9
@@ -15,6 +15,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
     bool InvMassPairs=false, //11
     bool kTCentBins=false,//12
     bool DeltaEtaDeltaPhiCut=false,//13
+    bool DoSphericityCuts=false, //14
     const char *swuffix = "") {
 
 
@@ -54,27 +55,39 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
+  evtCuts->SetDoSphericityCuts(DoSphericityCuts);
+  if(isMC && CentEst=="kHM"){
+    evtCuts->SetMultiplicityPercentileMax(5);
+  }
 
+  if(DoSphericityCuts){
   if (suffix=="1") {
     evtCuts->SetSphericityCuts(0.,0.3);
   }
-
   if (suffix=="2") {
     evtCuts->SetSphericityCuts(0.3,0.7);
   }
-
   if (suffix=="3") {
     evtCuts->SetSphericityCuts(0.7,1.0);
-  }
-
-  if (suffix=="4") {
-    evtCuts->SetSphericityCuts(0.,1.0);
-  }
-
+  }//4 is reserved to the full sphericity range
   if (suffix=="5") {
+    evtCuts->SetSphericityCuts(0.7,0.8);
+  }
+  if (suffix=="6") {
+    evtCuts->SetSphericityCuts(0.8,0.9);
+  }
+  if (suffix=="7") {
     evtCuts->SetSphericityCuts(0.9,1.0);
   }
-
+}
+else
+  {
+    suffix="4";
+    evtCuts->SetSphericityCuts(0.,1.0);
+  }
+if(!DoSphericityCuts){
+    suffix="8";
+}
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
                                                             isMC);
 
@@ -206,13 +219,12 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   MultBins.push_back(100);
   config->SetMultBins(MultBins);
 
-  std::vector<float> centBins;
+  std::vector<int> centBins;
   centBins.push_back(20);
   centBins.push_back(40);
   centBins.push_back(90);
   config->SetCentBins(centBins);
   config->SetkTCentralityBinning(kTCentBins);
-  config->SetInvMassPairs(InvMassPairs);
 
 
 if(isMC)

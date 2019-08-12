@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskParticleEff *AddTaskEfficiency(TString containerName="femtolist",int method=3)
+AliAnalysisTaskParticleEff *AddTaskEfficiency(TString containerName="femtolist",int method=3, int filterbit=96)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -41,8 +41,9 @@ AliAnalysisTaskParticleEff *AddTaskEfficiency(TString containerName="femtolist",
 //   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskParticleEff *taskEfficiency = new AliAnalysisTaskParticleEff("EfficiencyTask",method);
+  AliAnalysisTaskParticleEff *taskEfficiency = new AliAnalysisTaskParticleEff("EfficiencyTask",method,filterbit);
   taskEfficiency->SetPidMethod(method);
+  taskEfficiency->SetFB(filterbit);
   mgr->AddTask(taskEfficiency);
 
   // D. Configure the analysis task. Extra parameters can be used via optional

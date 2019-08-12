@@ -37,6 +37,7 @@
 using namespace std;
 
 #include "AliAnalysisTaskMinijet.h"
+#include "AliNanoAODTrack.h"
 
 // Analysis task for two-particle correlations using all particles over pt threshold
 // pt_trig threshold for trigger particle (event axis) and pt_assoc for possible associated particles.
@@ -623,7 +624,8 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
     
     
     if(fDebug){
-        Printf("IsSelected = %d", isSelected);
+        Printf("IsSelected = %d (%x)", isSelected, ((AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
+        
         Printf("CheckEvent(true)= %d", CheckEvent(true));
         Printf("CheckEvent(false)= %d", CheckEvent(false));
     }
@@ -1246,8 +1248,12 @@ Double_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector
         Bool_t filterBitOK = kTRUE;
         if (fFilterBit != 0) {
           AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*> (track);
-          if(!aodTrack) AliFatal("Not a standard AOD");
-          if (!aodTrack->TestFilterBit(fFilterBit))
+          AliNanoAODTrack *nanoTrack = dynamic_cast<AliNanoAODTrack*> (track);
+          if(!aodTrack && !nanoTrack) AliFatal("Not a standard AOD");
+          
+          if (aodTrack && !aodTrack->TestFilterBit(fFilterBit))
+            filterBitOK = kFALSE;
+          else if (nanoTrack && !nanoTrack->TestFilterBit(fFilterBit))
             filterBitOK = kFALSE;
         }
           

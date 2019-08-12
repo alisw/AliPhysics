@@ -139,7 +139,9 @@ Int_t AliRsnDaughter::GetMother()
 
    if (fRefMC->InheritsFrom(AliMCParticle::Class())) {
       AliMCParticle *mc = (AliMCParticle *)fRefMC;
-      return mc->Particle()->GetFirstMother();
+    //return mc->Particle()->GetFirstMother(); // Before Change in accessing MC infor in AliRoot v5-09-46
+      return mc->GetMother();
+
    } else if (fRefMC->InheritsFrom(AliAODMCParticle::Class())) {
       AliAODMCParticle *mc = (AliAODMCParticle *)fRefMC;
       return mc->GetMother();

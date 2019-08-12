@@ -320,13 +320,13 @@ void AliAnalysisTaskTrackQA::UserCreateOutputObjects()
     fESDList[iCut]->SetOwner(kTRUE);
     fCutFolder[iCut]->Add(fESDList[iCut]);
 
-    Int_t nBinsR=400;
+//    Int_t nBinsR=400;
 //     Int_t nBinsX=2000;
 //     Int_t nBinsY=2000;
-    Int_t nBinsZ=750;
-    Int_t nBinsPhi=750;
-    Int_t nBinsEta=2000;
-    Int_t nBinsPt=400;
+//    Int_t nBinsZ=750;
+//    Int_t nBinsPhi=750;
+//    Int_t nBinsEta=2000;
+//    Int_t nBinsPt=400;
     Double_t xyMax =  0.5;
     Double_t xyMin = -0.5;
 

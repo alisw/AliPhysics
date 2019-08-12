@@ -42,6 +42,7 @@
 #include "AliNanoAODReplicator.h"
 #include "AliNanoAODTrackMapping.h"
 #include "AliNanoAODTrack.h"
+#include "AliNanoFilterNormalisation.h"
 
 ClassImp(AliAnalysisTaskNanoAODFilter)
 
@@ -52,13 +53,12 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
   fMCMode(0),
   fReplicator(0),
   fEvtCuts(),
-  fTrkCuts(0),
-  fV0Cuts(0),
-  fCascadeCuts(0),
   fQAOutput(0),
   fSaveCutsFlag(kFALSE),
   fInputArrayName(""),
-  fOutputArrayName("")
+  fOutputArrayName(""),
+  fNormalisation(0x0)
+
 {
   // Dummy constructor ALWAYS needed for I/O.
 }
@@ -69,20 +69,21 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
    fMCMode(0),
    fReplicator(0),
    fEvtCuts(0),
-   fTrkCuts(0),
-   fV0Cuts(0),
-   fCascadeCuts(0),
    fQAOutput(0),
    fSaveCutsFlag(saveCutsFlag),
    fInputArrayName(""),
-   fOutputArrayName("")
+   fOutputArrayName(""),
+   fNormalisation(0x0)
 
 {
   // Constructor
 
   fReplicator = new AliNanoAODReplicator("NanoAODReplicator", "remove non interesting tracks, writes special tracks array tracks");
+  fQAOutput = new TList();
+  fQAOutput->SetOwner(kTRUE); 
   
-  DefineOutput(1, TList::Class());
+  DefineOutput(1, AliNanoFilterNormalisation::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //________________________________________________________________________
@@ -94,6 +95,7 @@ AliAnalysisTaskNanoAODFilter::~AliAnalysisTaskNanoAODFilter()
   delete fReplicator;
   if (fQAOutput) 
     delete fQAOutput;
+  delete fNormalisation;
 }
 
 //________________________________________________________________________
@@ -102,21 +104,15 @@ void AliAnalysisTaskNanoAODFilter::UserCreateOutputObjects()
   // Create histograms
   // Called once (on the worker node)
       
-  fQAOutput = new TList();
-  fQAOutput->SetOwner(kTRUE); 
-
   if (fSaveCutsFlag) {
     for (std::list<AliAnalysisCuts*>::iterator it = fEvtCuts.begin(); it != fEvtCuts.end(); ++it)
       fQAOutput->Add(*it);
-    if (fTrkCuts)
-      fQAOutput->Add(fTrkCuts);
-    if (fV0Cuts)
-      fQAOutput->Add(fV0Cuts);
-    if (fCascadeCuts)
-      fQAOutput->Add(fCascadeCuts);
+    PostData(2, fQAOutput);
   }
   
-  PostData(1, fQAOutput);
+  std::string normName = std::string(fName) + "_scaler";
+  fNormalisation = new AliNanoFilterNormalisation(normName.data(), normName.data());
+  PostData(1, fNormalisation);
 }
 
 void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const char* title)
@@ -131,7 +127,6 @@ void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const
     AliFatal("Cannot get extension");
   }
   
-  fReplicator->SetTrackCuts(fTrkCuts);
   fReplicator->SetMCMode(fMCMode);
      
   if (!fInputArrayName.IsNull()) fReplicator->SetInputArrayName(fInputArrayName);
@@ -157,7 +152,6 @@ void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const
 
 void AliAnalysisTaskNanoAODFilter::Init()
 {
-
   // Initialization
   AddFilteredAOD("AliAOD.NanoAOD.root", "NanoAODTracksEvents");
 }
@@ -173,10 +167,14 @@ void AliAnalysisTaskNanoAODFilter::UserExec(Option_t *)
     lAODevent = AODEvent(); // On the fly ESD filtering
   if (!lAODevent)
     AliFatal("No input event");
+
+  fNormalisation->FillCandidate(kTRUE, kTRUE, kTRUE, kTRUE, 0);
   
   for (std::list<AliAnalysisCuts*>::iterator it = fEvtCuts.begin(); it != fEvtCuts.end(); ++it)
     if (!((*it)->IsSelected(lAODevent))) 
       return;
+
+  fNormalisation->FillSelected(kTRUE, kTRUE, kTRUE, kTRUE, 0);
 
   AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
   if ( handler ){
@@ -199,7 +197,21 @@ void AliAnalysisTaskNanoAODFilter::FinishTaskOutput() {
 
   AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
   AliAODExtension *extNanoAOD = handler->GetFilteredAOD("AliAOD.NanoAOD.root");
+
+  // copy production version info
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (inputHandler->GetUserInfo()) {
+    TObject* prodInfo = inputHandler->GetUserInfo()->FindObject("alirootVersion");
+    if (prodInfo)
+      extNanoAOD->GetTree()->GetUserInfo()->Add(prodInfo->Clone());
+  }
+  
+  Printf("****************************************************************");
   extNanoAOD->GetTree()->GetUserInfo()->Add(AliNanoAODTrackMapping::GetInstance(fReplicator->GetVarListTrack()));
+  AliNanoAODTrackMapping::GetInstance()->Print();
+  Printf("****************************************************************");
+  
+  extNanoAOD->GetTree()->GetUserInfo()->Add(fNormalisation->Clone());
 }
 
 void AliAnalysisTaskNanoAODFilter::AddPIDField(AliNanoAODTrack::ENanoPIDResponse response, AliPID::EParticleType particle)

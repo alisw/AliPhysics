@@ -369,7 +369,7 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
         fHistNtrklVsqnVsCentr = new TH3F("fHistNtrklVsqnVsCentr",Form("#it{N}_{tracklets} vs. %s vs. centrality;centrality (%%);%s;#it{N}_{tracklets}",qnpercaxisname.Data(),qnpercaxisname.Data()),ncentbins,fMinCentr,fMaxCentr,nqnbins,qnmin,qnmax,500,-0.5,4999.5);
         fOutput->Add(fHistNtrklVsqnVsCentr);
         if(fPercentileqn) {
-            fHistPercqnVsqnVsCentr = new TH3F("fHistPercqnVsqnVsCentr",Form("%s vs. %s vs. centrality;centrality (%%);%s;%s",qnpercaxisname.Data(),qnaxisname.Data(),qnaxisname.Data(),qnpercaxisname.Data()),ncentbins,fMinCentr,fMaxCentr,500,0,10,nqnbins,qnmin,qnmax);
+            fHistPercqnVsqnVsCentr = new TH3F("fHistPercqnVsqnVsCentr",Form("%s vs. %s vs. centrality;centrality (%%);%s;%s",qnpercaxisname.Data(),qnaxisname.Data(),qnaxisname.Data(),qnpercaxisname.Data()),ncentbins,fMinCentr,fMaxCentr,300,0,15,nqnbins,qnmin,qnmax);
             fOutput->Add(fHistPercqnVsqnVsCentr);
         }
     }
@@ -394,7 +394,14 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     int ndeltaphibins    = 1;
     double mindeltaphi   = -1.;
     double maxdeltaphi   = -1.;
+
+    int nfphibins        = 100;
+    double fphimin       = -1.;
+    double fphimax       = 1.;
+
     TString deltaphiname = "";
+    TString nfphiname1 = Form("Cos(%d#varphi_{D})",fHarmonic);
+    TString nfphiname2 = Form("Sin(%d#varphi_{D})",fHarmonic);
     if(fFlowMethod==kEP || fFlowMethod==kEvShapeEP) {
         ndeltaphibins    = 96;
         mindeltaphi      = 0.;
@@ -405,7 +412,11 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
         ndeltaphibins    = 100;
         mindeltaphi      = -fScalProdLimit*fScalProdLimit;
         maxdeltaphi      = fScalProdLimit*fScalProdLimit;
-        deltaphiname     = "u_{D}Q_{A}";
+        deltaphiname     = Form("u_{%d,D}Q_{%d,A}",fHarmonic,fHarmonic);
+        fphimin          = -fScalProdLimit*fScalProdLimit;
+        fphimax          = fScalProdLimit*fScalProdLimit;
+        nfphiname1       = Form("Cos(%d#varphi_{D})Q_{%d,y,A}",fHarmonic,fHarmonic);
+        nfphiname2       = Form("Sin(%d#varphi_{D})Q_{%d,y,A}",fHarmonic,fHarmonic);
     }
     else if(fFlowMethod==kEPVsMass || fFlowMethod==kEvShapeEPVsMass) {
         ndeltaphibins    = 100;
@@ -422,10 +433,6 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     double Ntrkmin       = 0.;
     double Ntrkmax       = 5000.;
 
-    int nfphibins        = 100;
-    double fphimin       = -1.;
-    double fphimax       = 1.;
-
     TString massaxisname = "";
     if(fDecChannel==0)      massaxisname = "#it{M}(K#pi#pi) (GeV/#it{c}^{2})";
     else if(fDecChannel==1) massaxisname = "#it{M}(K#pi) (GeV/#it{c}^{2})";
@@ -437,7 +444,7 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     int nbins[naxes]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins};
     double xmin[naxes]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin};
     double xmax[naxes]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax};
-    TString axTit[naxes] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname.Data(), Form("Cos(%d#varphi_{D})",fHarmonic), Form("Sin(%d#varphi_{D})",fHarmonic), "#varphi_{D}", "Centrality (%)", "#it{N}_{tracklets}", qnaxisnamefill};
+    TString axTit[naxes] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname, nfphiname1, nfphiname2, "#varphi_{D}", "Centrality (%)", "#it{N}_{tracklets}", qnaxisnamefill};
 
     fHistMassPtPhiqnCentr = new THnSparseF("fHistMassPtPhiqnCentr",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
 
@@ -825,9 +832,23 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         double scalprod = (TMath::Cos(fHarmonic*phiD)*mainQn[0]+TMath::Sin(fHarmonic*phiD)*mainQn[1]) / mainMultQn;
         double cosndeltaphi = TMath::Cos(fHarmonic*deltaphi);
         double vnfunc = -999.;
-        if(fFlowMethod==kEP || fFlowMethod==kEvShapeEP)                  vnfunc = deltaphi;
-        else if(fFlowMethod==kSP || fFlowMethod==kEvShapeSP)             vnfunc = scalprod;
-        else if(fFlowMethod==kEPVsMass || fFlowMethod==kEvShapeEPVsMass) vnfunc = cosndeltaphi;
+        double phifunc1 = -999.;
+        double phifunc2 = -999.;
+        if(fFlowMethod==kEP || fFlowMethod==kEvShapeEP) {
+            vnfunc   = deltaphi;
+            phifunc1 = TMath::Cos(fHarmonic*phiD);
+            phifunc2 = TMath::Sin(fHarmonic*phiD);
+        }
+        else if(fFlowMethod==kSP || fFlowMethod==kEvShapeSP) {
+            vnfunc = scalprod;
+            phifunc1 = TMath::Cos(fHarmonic*phiD)*mainQn[1] / mainMultQn;
+            phifunc2 = TMath::Sin(fHarmonic*phiD)*mainQn[0] / mainMultQn;
+        }
+        else if(fFlowMethod==kEPVsMass || fFlowMethod==kEvShapeEPVsMass) {
+            vnfunc   = cosndeltaphi;
+            phifunc1 = TMath::Cos(fHarmonic*phiD);
+            phifunc2 = TMath::Sin(fHarmonic*phiD);
+        }
 
         //remove daughter tracks from qn (on top of random downsampling, if enabled)
         double candQnFullTPC[2], candQnPosTPC[2], candQnNegTPC[2];
@@ -865,30 +886,30 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         }
 
         if(fDecChannel==kDplustoKpipi) {
-            double sparsearray[9] = {invMass[0],ptD,vnfunc,TMath::Cos(fHarmonic*phiD),TMath::Sin(fHarmonic*phiD),phiD,evCentr,static_cast<double>(tracklets),candpercqn};
+            double sparsearray[9] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
             fHistMassPtPhiqnCentr->Fill(sparsearray);
         }
         else if(fDecChannel==kD0toKpi) {
             if(isSelected==1 || isSelected==3) {
-                double sparsearray[9] = {invMass[0],ptD,vnfunc,TMath::Cos(fHarmonic*phiD),TMath::Sin(fHarmonic*phiD),phiD,evCentr,static_cast<double>(tracklets),candpercqn};
+                double sparsearray[9] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
                 fHistMassPtPhiqnCentr->Fill(sparsearray);
             }
             if(isSelected==2 || isSelected==3) {
-                double sparsearray[9] = {invMass[1],ptD,vnfunc,TMath::Cos(fHarmonic*phiD),TMath::Sin(fHarmonic*phiD),phiD,evCentr,static_cast<double>(tracklets),candpercqn};
+                double sparsearray[9] = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
                 fHistMassPtPhiqnCentr->Fill(sparsearray);
             }
         }
         else if(fDecChannel==kDstartoKpipi) {
-            double sparsearray[9] = {invMass[0],ptD,vnfunc,TMath::Cos(fHarmonic*phiD),TMath::Sin(fHarmonic*phiD),phiD,evCentr,static_cast<double>(tracklets),candpercqn};
+            double sparsearray[9] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
             fHistMassPtPhiqnCentr->Fill(sparsearray);
         }
         else if(fDecChannel==kDstoKKpi) {
             if(isSelected&4) {
-                double sparsearray[9] = {invMass[0],ptD,vnfunc,TMath::Cos(fHarmonic*phiD),TMath::Sin(fHarmonic*phiD),phiD,evCentr,static_cast<double>(tracklets),candpercqn};
+                double sparsearray[9] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
                 fHistMassPtPhiqnCentr->Fill(sparsearray);
             }
             if(isSelected&8) {
-                double sparsearray[9] = {invMass[1],ptD,vnfunc,TMath::Cos(fHarmonic*phiD),TMath::Sin(fHarmonic*phiD),phiD,evCentr,static_cast<double>(tracklets),candpercqn};
+                double sparsearray[9] = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
                 fHistMassPtPhiqnCentr->Fill(sparsearray);
             }
         }

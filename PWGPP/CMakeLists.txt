@@ -59,7 +59,8 @@ set ( SRCS1
   AliTrackComparisonESD.cxx
   AliOfflineTrigger.cxx
 		AliMCTreeTools.cxx
-		AliPIDtools.cxx
+	AliPIDtools.cxx	
+	AliESDtools.cxx
   )
 #file ( GLOB SRCS2 "global/*.cxx" )
 set ( SRCS2
@@ -70,6 +71,7 @@ set ( SRCS2
   global/AliAnalysisTaskCheckESDTracks.cxx
   global/AliAnalysisTaskCheckAODTracks.cxx
   global/AliAnalysisTaskCheckGenKine.cxx
+  global/AliAnalysisTaskCountEvents.cxx
   global/AliAnalysisTaskTrackingEffPID.cxx
   global/AliGlobalFBFqa.cxx
   global/AliAnalysisTaskTrackRefsChecksMultipleSpecies.cxx

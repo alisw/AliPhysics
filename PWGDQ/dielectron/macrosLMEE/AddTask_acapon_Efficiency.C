@@ -19,11 +19,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
-  
+
   TObjArray *arrNames = names.Tokenize(";");
   Int_t nDie          = arrNames->GetEntries();
   Printf("Number of implemented cuts: %i", nDie);
-  
+
   std::string resoFilenameFromAlien = "/alice/cern.ch/user/a/acapon/ResolutionFiles/";
   resoFilenameFromAlien.append(resoFilename);
 
@@ -97,6 +97,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   GetCentrality(centrality, centMin, centMax);
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
   task->SetCentrality(centMin, centMax);
+  if(centrality == 8){
+    task->SetRun1Analysis(kTRUE);
+  }
 
   // #########################################################
   // #########################################################
@@ -145,7 +148,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   std::vector<Double_t> massBins;
   if(!useRun1binning){
     for(Int_t j = 0; j < sizeof(massBinsArr)/sizeof(massBinsArr[0]); j++){
-      std::cout << "Bin: " << j << ": " << massBinsArr[j] << std::endl;
       massBins.push_back(massBinsArr[j]);
     }
   }else{

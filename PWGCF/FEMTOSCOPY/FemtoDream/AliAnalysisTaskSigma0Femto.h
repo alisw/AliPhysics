@@ -32,6 +32,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   void SetV0ReaderName(TString name) { fV0ReaderName = name; }
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
+  void SetCheckDaughterCF(bool doIt) { fCheckDaughterCF = doIt; }
   void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
   void SetMultiplicityMode(UInt_t trigger) { fMultMode = trigger; }
@@ -53,6 +54,9 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
     fConfig = config;
   }
 
+  void CastToVector(std::vector<AliSigma0ParticleV0> &container,
+                    std::vector<AliFemtoDreamBasePart> &particles,
+                    const AliMCEvent *mcEvent);
   void CastToVector(std::vector<AliSigma0ParticleV0> &container,
                     const AliVEvent *inputEvent);
   void CastToVector(std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
@@ -87,6 +91,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
 
   bool fIsMC;                //
   bool fIsLightweight;       //
+  bool fCheckDaughterCF;     //
   bool fPhotonLegPileUpCut;  //
   float fV0PercentileMax;    //
   UInt_t fTrigger;           //
@@ -108,6 +113,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TList *fResultList;              //!
   TList *fResultQAList;            //!
 
-  ClassDef(AliAnalysisTaskSigma0Femto, 15)
+  ClassDef(AliAnalysisTaskSigma0Femto, 16)
 };
 #endif

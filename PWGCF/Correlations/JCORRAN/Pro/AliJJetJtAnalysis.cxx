@@ -50,6 +50,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fpythiaJets("AliJJet",10)
   , fJetEtaCut() // Jet's eta cut
   , fLeadingJets(0)
+  , fMaxDeltaRCorr(0)
   , frandom(0x0)
   , fJetTriggPtBorders(NULL)
   , fJetConstPtLowLimits(NULL)
@@ -77,6 +78,10 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fConstPt(NULL)    //Store pT of jet constituents
   , fConstLabels(NULL)    //Store labels of jet constituents
   , fJetPt(NULL)    //Store pT of corresponding jets
+  , fLeadJetPhi(NULL)    //Store phi of leading jet
+  , fLeadJetEta(NULL)    //Store eta of leading jet
+  , fSubLeadJetPhi(NULL)    //Store phi of subleading jet
+  , fSubLeadJetEta(NULL)    //Store eta of subleading jet
   , fDiJetMjj(NULL) //Store di-jet invariant mass for each jet finder
   , fDiJetMjjSubtr(NULL) //Store di-jet bg-subtracted invariant mass for each jet finder
   , fTrackFound(NULL) //Keep track of matched tracks
@@ -338,6 +343,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fpythiaJets("AliJJet",10)
   , fJetEtaCut()
   , fLeadingJets(0)
+  , fMaxDeltaRCorr(0)
   , frandom(0x0)
   , fJetTriggPtBorders(NULL)
   , fJetConstPtLowLimits(NULL)
@@ -365,6 +371,10 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fConstPt(NULL)    //Store pT of jet constituents
   , fConstLabels(NULL)    //Store labels of jet constituents
   , fJetPt(NULL)    //Store pT of corresponding jets
+  , fLeadJetPhi(NULL)    //Store phi of corresponding jets
+  , fLeadJetEta(NULL)    //Store eta of corresponding jets
+  , fSubLeadJetPhi(NULL)    //Store phi of subleading jet
+  , fSubLeadJetEta(NULL)    //Store eta of subleading jet
   , fDiJetMjj(NULL) //Store di-jet invariant mass for each jet finder
   , fDiJetMjjSubtr(NULL) //Store di-jet bg-subtracted invariant mass for each jet finder
   , fTrackFound(NULL) //Keep track of matched tracks
@@ -626,6 +636,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fpythiaJets(ap.fpythiaJets)
   , fJetEtaCut(ap.fJetEtaCut) // Jet's eta cut
   , fLeadingJets(ap.fLeadingJets)
+  , fMaxDeltaRCorr(ap.fMaxDeltaRCorr)
   , frandom(0x0)
   , fJetTriggPtBorders(ap.fJetTriggPtBorders)
   , fJetConstPtLowLimits(ap.fJetConstPtLowLimits)
@@ -653,6 +664,10 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fConstPt(ap.fConstPt)
   , fConstLabels(ap.fConstLabels)
   , fJetPt(ap.fJetPt)
+  , fLeadJetPhi(ap.fLeadJetPhi)
+  , fLeadJetEta(ap.fLeadJetEta)
+  , fSubLeadJetPhi(ap.fSubLeadJetPhi)
+  , fSubLeadJetEta(ap.fSubLeadJetEta)
   , fDiJetMjj(ap.fDiJetMjj)
   , fDiJetMjjSubtr(ap.fDiJetMjjSubtr)
   , fTrackFound(ap.fTrackFound)
@@ -2075,6 +2090,10 @@ void AliJJetJtAnalysis::UserExec(){
 
   fDiJetMjj = new TVector(fJetListOfList.GetEntries()-fnkt); //Di-jet invariant mass for each jet finder.
   fDiJetMjjSubtr = new TVector(fJetListOfList.GetEntries()-fnkt); //Di-jet bg-subtracted invariant mass for each jet finder.
+  fLeadJetPhi = new TVector(fJetListOfList.GetEntries()-fnkt); //Leading jet phi
+  fLeadJetEta = new TVector(fJetListOfList.GetEntries()-fnkt); //Leading jet eta
+  fSubLeadJetPhi = new TVector(fJetListOfList.GetEntries()-fnkt); //Subleading jet phi
+  fSubLeadJetEta = new TVector(fJetListOfList.GetEntries()-fnkt); //Subleading jet eta
 
   if(fnkt>0) {
     fRho = new TVector(fnkt);
@@ -2138,8 +2157,15 @@ void AliJJetJtAnalysis::UserExec(){
       for( int i=0;i<nAntikt/2;i++ ){
           if((*fDiJetMjj)[i+fnR*2] > 0 ) { //MC jets
               if((*fDiJetMjj)[i] > 0 ) {  //jets
-                  if(cBin>-1) fhDiJetMjjCorrCentBinned[i][cBin]->Fill((*fDiJetMjj)[i+fnR*2],(*fDiJetMjj)[i]);
-                  fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+fnR*2],(*fDiJetMjj)[i]);
+                  // Check that the leading and subleading jets are close enough in phi-eta plane.
+                  if(getDiffR((*fLeadJetPhi)[i],(*fLeadJetPhi)[i+fnR*2],(*fLeadJetEta)[i],(*fLeadJetEta)[i+fnR*2]) < fMaxDeltaRCorr
+                  && getDiffR((*fSubLeadJetPhi)[i],(*fSubLeadJetPhi)[i+fnR*2],(*fSubLeadJetEta)[i],(*fSubLeadJetEta)[i+fnR*2]) < fMaxDeltaRCorr) {
+                      if(cBin>-1) fhDiJetMjjCorrCentBinned[i][cBin]->Fill((*fDiJetMjj)[i+fnR*2],(*fDiJetMjj)[i]);
+                      fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+fnR*2],(*fDiJetMjj)[i]);
+                  } else {
+                      if(cBin>-1) fhDiJetMjjCorrCentBinned[i][cBin]->Fill((*fDiJetMjj)[i+fnR*2],-1);
+                      fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+fnR*2],-1);
+                  }
               } else {
                   if(cBin>-1) fhDiJetMjjCorrCentBinned[i][cBin]->Fill((*fDiJetMjj)[i+fnR*2],-1);
                   fhDiJetMjjCorr[i]->Fill((*fDiJetMjj)[i+fnR*2],-1);
@@ -2362,6 +2388,10 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
       (*fConstLabels)[icon] = -1;
       (*fConstFound)[icon] = -1;
       (*fJetPt)[icon] = -1;
+      (*fLeadJetPhi)[icon] = -1;
+      (*fLeadJetEta)[icon] = -1;
+      (*fSubLeadJetPhi)[icon] = -1;
+      (*fSubLeadJetEta)[icon] = -1;
       (*fTrackFound)[icon] = -1;
       AliJBaseTrack *track = dynamic_cast<AliJBaseTrack*>(trackArray->At(icon));
       if (!track) continue;
@@ -2848,6 +2878,10 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
     if(fnkt>0) dijetSubtracted = leadingJetSubtracted + subleadingJetSubtracted; // Adding the jets together.
     if (leadingjet->Pt() > 20 && subleadingjet->Pt() > 20){
       (*fDiJetMjj)[iContainer] = dijet.M();
+      (*fLeadJetPhi)[iContainer] = leadingjet->Phi();
+      (*fLeadJetEta)[iContainer] = leadingjet->Eta();
+      (*fSubLeadJetPhi)[iContainer] = subleadingjet->Phi();
+      (*fSubLeadJetEta)[iContainer] = subleadingjet->Eta();
       //cout << "Dijet mass in an event: " << dijet.M() << ", leading pt: " << leadingjet->Pt() << ", subleading pt: " << subleadingjet->Pt() << endl;
       dPhi1 = leadingJetLorentz.DeltaPhi(subleadingJetLorentz);
       dPhi2  = dPhi1<0 ? dPhi1+TMath::TwoPi() : dPhi1;
@@ -3278,14 +3312,14 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
       pT      = jet->Pt();
       areaDet = jet->Area();
       deltaR   = getDiffR(jet->Phi(),mcjet->Phi(),jet->Eta(),mcjet->Eta());
-      if(deltaR < 0.5){
+      if(deltaR < fMaxDeltaRCorr){
         if(cBin>-1) {
           fhJetPtCorrCentBinned[iContainer][cBin]->Fill(pTmc,pT);
           if(fnkt>1) fhJetPtCorrCentBinnedSubtracted[iContainer][cBin]->Fill(pTmc - rhoMC*areaMC, pT - rhoDet*areaDet);
         }
         fhJetPtCorr[iContainer]->Fill(pTmc,pT);
         fhJetPtCorrCoarse[iContainer]->Fill(pTmc,pT);
-        fhJetPtCorr[iContainer]->Fill(pTmc,pT);
+        //fhJetPtCorr[iContainer]->Fill(pTmc,pT);
         fhJetdR[iContainer][iBin]->Fill(deltaR);
         fhJetdPt[iContainer][iBin]->Fill(pTmc-pT);
         found = 1;

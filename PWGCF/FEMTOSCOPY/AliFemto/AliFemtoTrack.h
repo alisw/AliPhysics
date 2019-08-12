@@ -12,9 +12,11 @@
 #include "TBits.h"
 #include "AliFemtoHiddenInfo.h"
 
+#include <algorithm> 
+
 
 /// \class AliFemtoTrack
-/// \brief Main class holding track information (before identification)
+/// \brief Main class holding track information (before identification)  
 ///
 /// AliFemtoTrack holds all the necessary information about a track that is
 /// required during femtoscopic analysis. This class is filled with information
@@ -86,6 +88,7 @@ public:
   /***********************/
 
   float VTOF() const;
+  float TOFsignal() const;
   float NSigmaTOFPi() const;
   float NSigmaTOFK() const;
   float NSigmaTOFP() const;
@@ -185,6 +188,7 @@ public:
   void SetNSigmaTPCP(const float& x);
   void SetNSigmaTPCE(const float& x);
   void SetVTOF(const float& x);
+  void SetTOFsignal(const float& x);
   void SetNSigmaTOFPi(const float& x);
   void SetNSigmaTOFK(const float& x);
   void SetNSigmaTOFP(const float& x);
@@ -359,6 +363,7 @@ public:
   float fTPCsignalS;      ///< RMS of dEdx measurement (not used in AOD files)
 
   float fVTOF;            ///< v=length/TOF
+  float fTOFsignal;            ///< TOF signal
   float fNSigmaTPCPi;     ///< nsigma TPC for pion
   float fNSigmaTPCK;      ///< nsigma TPC for K
   float fNSigmaTPCP;      ///< nsigma TPC for P
@@ -516,6 +521,7 @@ inline void AliFemtoTrack::SetTPCsignal(const float& aTPCsig) { fTPCsignal = aTP
 inline void AliFemtoTrack::SetTPCsignalN(const short& aTPCsignalN) { fTPCsignalN = aTPCsignalN; }
 inline void AliFemtoTrack::SetTPCsignalS(const float& aTPCsignalS) { fTPCsignalS = aTPCsignalS; }
 inline void AliFemtoTrack::SetVTOF(const float& aVTOF) { fVTOF = aVTOF; }
+inline void AliFemtoTrack::SetTOFsignal(const float& aTOFsignal) { fTOFsignal = aTOFsignal; }
 inline void AliFemtoTrack::SetNSigmaTPCPi(const float& aNSigmaTPCPi) { fNSigmaTPCPi = aNSigmaTPCPi; }
 inline void AliFemtoTrack::SetNSigmaTPCK(const float& aNSigmaTPCK) { fNSigmaTPCK = aNSigmaTPCK; }
 inline void AliFemtoTrack::SetNSigmaTPCP(const float& aNSigmaTPCP) { fNSigmaTPCP = aNSigmaTPCP; }
@@ -570,6 +576,7 @@ inline float AliFemtoTrack::TPCsignal() const { return fTPCsignal; }
 inline short AliFemtoTrack::TPCsignalN() const { return fTPCsignalN; }
 inline float AliFemtoTrack::TPCsignalS() const { return fTPCsignalS; }
 inline float AliFemtoTrack::VTOF() const { return fVTOF; }
+inline float AliFemtoTrack::TOFsignal() const { return fTOFsignal; }
 inline float AliFemtoTrack::NSigmaTPCPi() const { return fNSigmaTPCPi; }
 inline float AliFemtoTrack::NSigmaTPCK() const { return fNSigmaTPCK; }
 inline float AliFemtoTrack::NSigmaTPCP() const { return fNSigmaTPCP; }

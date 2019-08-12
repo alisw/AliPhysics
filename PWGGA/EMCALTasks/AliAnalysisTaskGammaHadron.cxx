@@ -60,7 +60,8 @@ fParticleLevel(kFALSE),fIsMC(kFALSE),fMCParticles(0),
 fEventCutList(0),
 
 fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
-fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fEMCalMultvZvtx(0),
+fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),
+bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),fEMCalMultvZvtx(0),
 fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
 fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
@@ -89,7 +90,9 @@ fParticleLevel(kFALSE),fIsMC(InputMCorData),fMCParticles(0),
 fEventCutList(0),
 
 fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
-fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fEMCalMultvZvtx(0),
+fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),
+bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),
+fEMCalMultvZvtx(0),
 fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
 fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0), fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
@@ -372,6 +375,9 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
+  fHistEventRejection->GetXaxis()->SetBinLabel(2,"Cent");
+
+
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   Add output for AliEventCuts
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -588,19 +594,19 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//   THn Sparse for the Pi0 Candidates
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Int_t dimThnPi0 = 0;
-    TString titleThnPi0[10];
-    Int_t nBinsThnPi0[10] = {0};
-    Double_t minThnPi0[10] = {0.};
-    Double_t maxThnPi0[10] = {0.};
-    Double_t *binEdgesThnPi0[10] = {0};
+    TString titleThnPi0[11];
+    Int_t nBinsThnPi0[11] = {0};
+    Double_t minThnPi0[11] = {0.};
+    Double_t maxThnPi0[11] = {0.};
+    Double_t *binEdgesThnPi0[11] = {0};
 
     titleThnPi0[dimThnPi0] = "p_{T}^{#gamma#gamma}";
-    nBinsThnPi0[dimThnPi0] = 100;
-    Double_t pTArray[100+1];
+    nBinsThnPi0[dimThnPi0] = 60;
+    Double_t pTArray[60+1];
     binEdgesThnPi0[dimThnPi0] = pTArray;
-    GenerateFixedBinArray(100,0,50,pTArray);
+    GenerateFixedBinArray(60,0,30,pTArray);
     minThnPi0[dimThnPi0] = 0;
-    maxThnPi0[dimThnPi0] = 50;
+    maxThnPi0[dimThnPi0] = 30;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "M_{#gamma#gamma}";
@@ -619,8 +625,11 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Opening Angle [rad]";
-    nBinsThnPi0[dimThnPi0] = 29;
-    Double_t openAngleArray[29+1] = {0,0.009,0.011,0.013,0.015,0.017,0.019,0.021,0.023,0.025,0.027,0.029,0.031,0.033,0.035,0.037,0.04,0.044,0.048,0.055,0.07,0.08,0.09,0.1,0.125,0.15,pi/16.,pi/8.,pi/4.,pi};
+    nBinsThnPi0[dimThnPi0] = 6;
+    // Small Range
+    Double_t openAngleArray[6+1] = {0,0.015,0.017,0.019,0.021,0.23,pi};
+    // Large Scan
+//    Double_t openAngleArray[29+1] = {0,0.009,0.011,0.013,0.015,0.017,0.019,0.021,0.023,0.025,0.027,0.029,0.031,0.033,0.035,0.037,0.04,0.044,0.048,0.055,0.07,0.08,0.09,0.1,0.125,0.15,pi/16.,pi/8.,pi/4.,pi};
     binEdgesThnPi0[dimThnPi0] = openAngleArray;
   //  GenerateFixedBinArray(20,0,TMath::Pi(),openAngleArray);
     minThnPi0[dimThnPi0] = 0;
@@ -628,19 +637,20 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Max Lambda_{0}^{2}";
-    nBinsThnPi0[dimThnPi0] = 6;
-    Double_t MaxM02Array[6+1] = {0.1,0.3,0.35,0.4,0.45,0.5,10}; 
+    nBinsThnPi0[dimThnPi0] = 8;
+    Double_t MaxM02Array[8+1] = {0.1, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 1.0};
+//    Double_t MaxM02Array[6+1] = {0.1,0.3,0.35,0.4,0.45,0.5,10};
     binEdgesThnPi0[dimThnPi0] = MaxM02Array;
    // GenerateFixedBinArray(5,0,);
     minThnPi0[dimThnPi0] = 0.1;
-    maxThnPi0[dimThnPi0] = 10;
+    maxThnPi0[dimThnPi0] = 1.0;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Min Cluster Energy";
     nBinsThnPi0[dimThnPi0] = 3;
-    Double_t MinClusEnergyArray[3+1] = {1,1.5,2,100};
+    Double_t MinClusEnergyArray[3+1] = {2,2.5,3,100};
     binEdgesThnPi0[dimThnPi0] = MinClusEnergyArray;
-    minThnPi0[dimThnPi0] = 1;
+    minThnPi0[dimThnPi0] = 2;
     maxThnPi0[dimThnPi0] = 100;
 /*    nBinsThnPi0[dimThnPi0] = 5;
     Double_t MinClusEnergyArray[5+1] = {0.3,0.5,1,1.5,2,100};
@@ -650,16 +660,18 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Asymmetry";
-    nBinsThnPi0[dimThnPi0] = 5;
-    Double_t asymmetryArray[5+1];
+    nBinsThnPi0[dimThnPi0] = 4;
+    Double_t asymmetryArray[4+1] = {0.,0.7,0.8,0.9,1.0};
     binEdgesThnPi0[dimThnPi0] = asymmetryArray;
-    GenerateFixedBinArray(5,0,1,asymmetryArray);
+    // More useful range
+    // Old Range
+    //GenerateFixedBinArray(5,0,1,asymmetryArray);
     minThnPi0[dimThnPi0] = 0;
     maxThnPi0[dimThnPi0] = 1;
     dimThnPi0++;
 
     //..ID array -  0 - real, 1 - rotated, 2 - mixed event, 3 - pos-swapped
-    titleThnPi0[dimThnPi0] = "Rotation Status";
+    titleThnPi0[dimThnPi0] = "Type";
     nBinsThnPi0[dimThnPi0] = 4;
     Double_t mRotArray[4+1];
     binEdgesThnPi0[dimThnPi0] = mRotArray;
@@ -668,19 +680,32 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     maxThnPi0[dimThnPi0] = 4;
     dimThnPi0++;
 
-    Double_t mcStatusArray[7+1];
+    // Event Plane Angle
+    titleThnPi0[dimThnPi0] = "EPAngle";
+    nBinsThnPi0[dimThnPi0] = 3;
+    Double_t epArray[3+1] = {0,1,2,3};
+    binEdgesThnPi0[dimThnPi0] = epArray;
+    minThnPi0[dimThnPi0] = 0;
+    maxThnPi0[dimThnPi0] = 3;
+    dimThnPi0++;
+
+    Double_t mcStatusArray[14+1];
     if (fIsMC) {
       //..MC Status array:
 			// 0 - no Match, 1 - Single Particle to two clusters, 2 - pi0 to two gamma
 			// 3 - pi0 Dalitz, 4 - Eta to two gamma, 5 - Eta to three pi0
 			// 6 - eta to pi0pi+pi0 or pi0twogamma, 7 - eta to gammapi+pi- or gammaf+f-
 			// 8 - gamma to e+e-, 9 - other shared ancestor (not in previous categories
+      // 10 PosSwapped pi0->2gamma (pair energies conserved)
+      // 11 PosSwapped pi0->2gamma (pair position conserved)
+      // 12 PosSwapped eta->2gamma (pair energies conserved)
+      // 13 PosSwapped eta->2gamma (pair position conserved)
       titleThnPi0[dimThnPi0] = "MC Match Status";
-      nBinsThnPi0[dimThnPi0] = 10;
+      nBinsThnPi0[dimThnPi0] = 14;
       binEdgesThnPi0[dimThnPi0] = mcStatusArray;
-      GenerateFixedBinArray(10,0,10,mcStatusArray);
+      GenerateFixedBinArray(14,0,14,mcStatusArray);
       minThnPi0[dimThnPi0] = 0;
-      maxThnPi0[dimThnPi0] = 10;
+      maxThnPi0[dimThnPi0] = 14;
       dimThnPi0++;
     }
 
@@ -696,6 +721,145 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
       dimThnPi0++;
     }
 
+    // Information for modification histograms
+    // Axes for modification arrays
+    Int_t dimThnMod = 0;
+    TString titleThnMod[8];
+    Int_t nBinsThnMod[8] = {0};
+    Double_t minThnMod[8] = {0.};
+    Double_t maxThnMod[8] = {0.};
+    Double_t *binEdgesThnMod[8] = {0};
+/*
+    titleThnMod[dimThnMod] = "Modification"; // could replace later
+    nBinsThnMod[dimThnMod] = 1000;
+    Double_t ModArray[1000+1];
+    binEdgesThnMod[dimThnMod] = ModArray;
+    GenerateFixedBinArray(1000,0,10.,ModArray);
+    minThnMod[dimThnMod] = 0.0;
+    maxThnMod[dimThnMod] = 10.;
+    dimThnMod++;
+*/
+    titleThnMod[dimThnMod] = "Initial Mass";
+    nBinsThnMod[dimThnMod] = 500;
+    Double_t InitialMassArray[500+1];
+    binEdgesThnMod[dimThnMod] = InitialMassArray;
+    GenerateFixedBinArray(500,0,1.,InitialMassArray);
+    minThnMod[dimThnMod] = 0.0;
+    maxThnMod[dimThnMod] = 1.0;
+    dimThnMod++;
+
+    titleThnMod[dimThnMod] = "Initial pT";
+    nBinsThnMod[dimThnMod] = 60;
+    Double_t InitialPtArray[60+1];
+    binEdgesThnMod[dimThnMod] = InitialPtArray;
+    GenerateFixedBinArray(60,0,30,InitialPtArray);
+    minThnMod[dimThnMod] =  0.0;
+    maxThnMod[dimThnMod] = 30.0;
+    dimThnMod++;
+
+    titleThnMod[dimThnMod] = "Final Mass";
+    nBinsThnMod[dimThnMod] = 500;
+    Double_t FinalMassArray[500+1];
+    binEdgesThnMod[dimThnMod] = FinalMassArray;
+    GenerateFixedBinArray(500,0,1.,FinalMassArray);
+    minThnMod[dimThnMod] = 0.0;
+    maxThnMod[dimThnMod] = 1.0;
+    dimThnMod++;
+
+    titleThnMod[dimThnMod] = "Final pT";
+    nBinsThnMod[dimThnMod] = 60;
+    Double_t FinalPtArray[60+1];
+    binEdgesThnMod[dimThnMod] = FinalPtArray;
+    GenerateFixedBinArray(60,0,30,FinalPtArray);
+    minThnMod[dimThnMod] =  0.0;
+    maxThnMod[dimThnMod] = 30.0;
+    dimThnMod++;
+
+
+    titleThnMod[dimThnMod] = "Max Lambda_{0}^{2}";
+    nBinsThnMod[dimThnMod] = 8;
+    Double_t ModMaxM02Array[8+1] = {0.1, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 1.0};
+    binEdgesThnMod[dimThnMod] = ModMaxM02Array;
+    minThnMod[dimThnMod] = 0.1;
+    maxThnMod[dimThnMod] = 1.0;
+    dimThnMod++;
+
+    titleThnMod[dimThnMod] = "Min Cluster Energy";
+    nBinsThnMod[dimThnMod] = 3;
+    binEdgesThnMod[dimThnMod] = MinClusEnergyArray;
+    minThnMod[dimThnMod] = 2;
+    maxThnMod[dimThnMod] = 100;
+    dimThnMod++;
+
+    // Event Plane Angle
+    titleThnMod[dimThnMod] = "EPAngle";
+    nBinsThnMod[dimThnMod] = 3;
+    Double_t ModEPArray[3+1] = {0,1,2,3};
+    binEdgesThnMod[dimThnMod] = ModEPArray;
+    minThnMod[dimThnMod] = 0;
+    maxThnMod[dimThnMod] = 3;
+    dimThnMod++;
+
+    // Axes for 2D Scaling Modification Arrays
+    Int_t dimThnModMatrix = 0;
+    TString titleThnModMatrix[7];
+    Int_t nBinsThnModMatrix[7] = {0};
+    Double_t minThnModMatrix[7] = {0.};
+    Double_t maxThnModMatrix[7] = {0.};
+    Double_t *binEdgesThnModMatrix[7] = {0};
+
+    const Int_t nBins2DMod = 500;
+    nBinsThnModMatrix[dimThnModMatrix] = nBins2DMod;
+    Double_t ModMatrixArray[nBins2DMod+1];
+    binEdgesThnModMatrix[dimThnModMatrix] = ModMatrixArray;
+    if (bLogPSMod) {
+      // Log Version
+      titleThnModMatrix[dimThnModMatrix] = "Log Mass Scaling";
+      GenerateFixedBinArray(nBins2DMod,-5.,5.,ModMatrixArray);
+      minThnModMatrix[dimThnModMatrix] = -5.;
+      maxThnModMatrix[dimThnModMatrix] = 5.;
+    } else {
+      // Linear Version
+      titleThnModMatrix[dimThnModMatrix] = "Mass Scaling";
+      GenerateFixedBinArray(nBins2DMod,0,10.,ModMatrixArray);
+      minThnModMatrix[dimThnModMatrix] = 0.0;
+      maxThnModMatrix[dimThnModMatrix] = 10.;
+    }
+    dimThnModMatrix++;
+
+    nBinsThnModMatrix[dimThnModMatrix] = nBins2DMod;
+    Double_t ModMatrixArray2[nBins2DMod+1];
+    binEdgesThnModMatrix[dimThnModMatrix] = ModMatrixArray2;
+    if (bLogPSMod) {
+      // Log Version
+      titleThnModMatrix[dimThnModMatrix] = "Log pT Scaling";
+      GenerateFixedBinArray(nBins2DMod,-5.,5.,ModMatrixArray2);
+      minThnModMatrix[dimThnModMatrix] = -5.;
+      maxThnModMatrix[dimThnModMatrix] = 5.;
+    } else {
+      // Linear Version
+      titleThnModMatrix[dimThnModMatrix] = "pT Scaling";
+      GenerateFixedBinArray(nBins2DMod,0,10.,ModMatrixArray2);
+      minThnModMatrix[dimThnModMatrix] = 0.0;
+      maxThnModMatrix[dimThnModMatrix] = 10.;
+    }
+    dimThnModMatrix++;
+
+    titleThnModMatrix[dimThnModMatrix] = "Max Lambda_{0}^{2}";
+    nBinsThnModMatrix[dimThnModMatrix] = 8;
+    Double_t ModMatrixMaxM02Array[8+1] = {0.1, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 1.0};
+    binEdgesThnModMatrix[dimThnModMatrix] = ModMatrixMaxM02Array;
+    minThnModMatrix[dimThnModMatrix] = 0.1;
+    maxThnModMatrix[dimThnModMatrix] = 1.0;
+    dimThnModMatrix++;
+
+    titleThnModMatrix[dimThnModMatrix] = "Min Cluster Energy";
+    nBinsThnModMatrix[dimThnModMatrix] = 3;
+    binEdgesThnModMatrix[dimThnModMatrix] = MinClusEnergyArray;
+    minThnModMatrix[dimThnModMatrix] = 2;
+    maxThnModMatrix[dimThnModMatrix] = 100;
+    dimThnModMatrix++;
+
     if ( fGammaOrPi0>0  && fPlotQA==1)
     {
       fPi0Cands= new THnSparseF("Pi0Cands", "Pi0Cands", dimThnPi0, nBinsThnPi0, minThnPi0, maxThnPi0);
@@ -705,6 +869,33 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
         fPi0Cands->SetBinEdges(i, binEdgesThnPi0[i]);
       }
       fOutput->Add(fPi0Cands);
+
+      // Initializing the PS Modification histograms
+      fPSMassPtMap = new THnSparseF("fPSMassPtMap","fPSMassPtMap",dimThnMod,nBinsThnMod,minThnMod,maxThnMod);
+      fESMassPtMap = new THnSparseF("fESMassPtMap","fESMassPtMap",dimThnMod,nBinsThnMod,minThnMod,maxThnMod);
+      for(Int_t i=0;i<dimThnMod;i++)
+      {
+        fPSMassPtMap->GetAxis(i)->SetTitle(titleThnMod[i]);
+        fESMassPtMap->GetAxis(i)->SetTitle(titleThnMod[i]);
+
+        fPSMassPtMap->SetBinEdges(i, binEdgesThnMod[i]);
+        fESMassPtMap->SetBinEdges(i, binEdgesThnMod[i]);
+      }
+      fOutput->Add(fPSMassPtMap);
+      fOutput->Add(fESMassPtMap);
+
+      fUScaleMatrix = new THnSparseF("UScaleMatrix","UScaleMatrix",dimThnModMatrix,nBinsThnModMatrix,minThnModMatrix,maxThnModMatrix);
+      fVScaleMatrix = new THnSparseF("VScaleMatrix","VScaleMatrix",dimThnModMatrix,nBinsThnModMatrix,minThnModMatrix,maxThnModMatrix);
+      for(Int_t i=0;i<dimThnModMatrix;i++)
+      {
+        fUScaleMatrix->GetAxis(i)->SetTitle(titleThnModMatrix[i]);
+        fVScaleMatrix->GetAxis(i)->SetTitle(titleThnModMatrix[i]);
+
+        fUScaleMatrix->SetBinEdges(i, binEdgesThnModMatrix[i]);
+        fVScaleMatrix->SetBinEdges(i, binEdgesThnModMatrix[i]);
+      }
+      fOutput->Add(fUScaleMatrix);
+      fOutput->Add(fVScaleMatrix);
 
 //			Double_t fBinsMixedClusZvtx[nBinsMixedClusZvtx+1] = {-10., -5.,-3.,-1.,1.,3.,5.,10.};
 //			Double_t fBinsEMCalMult[nBinsEMCalMult + 1] = {0.,50.,100.,150.,200.,250.,300,500,700,900,1200};
@@ -1205,10 +1396,10 @@ void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
 	{
 		if (MixMode == 0) {
 			fPoolMgr = new AliEventPoolManager(fPoolSize, fTrackDepth, nCentBins, centBins, nZvtxBins, zvtxbin);
-			cout<<"....  Pool Manager Created for Mixed Tracks ...."<<endl;
+			AliInfo("....  Pool Manager Created for Mixed Tracks ....");
 		} else { //MixMode == 1
 			fPoolMgr = new AliEventPoolManager(fPoolSize, fTrackDepth, nCentBins, centBins, nZvtxBins, zvtxbin, nUsedEvtPlaneBins, fEventPlaneArray, kUsedPi0TriggerPtBins, fArray_G_Bins);
-			cout<<"....  Pool Manager Created for Mixed Triggers ...."<<endl;
+			AliInfo("....  Pool Manager Created for Mixed Triggers ....");
 		}
 		fPoolMgr->SetTargetValues(fTrackDepth, fTargetFraction, 5);  //pool is ready at 0.1*fTrackDepth = 5000 or events =5
 		//save this pool by default
@@ -1221,7 +1412,7 @@ void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
 		if (fSEvMEv != 2 ) {
 			fPoolMgr->ClearPools();
 		}
-		cout<<"....  Pool Manager Provided From File ...."<<endl;
+		AliInfo("....  Pool Manager Provided From File ....");
 	}
 
 	//..Check binning of pool manager (basic dimensional check for the time being) to see whether external pool fits the here desired one??
@@ -1302,7 +1493,7 @@ void AliAnalysisTaskGammaHadron::InitClusMixer()
 	}
 
 	//Using same trackdepth, etc., as mixed event mode.
-	cout<<"....  Pool Manager Created for cluster mixing ...."<<endl;
+	AliInfo("....  Pool Manager Created for cluster mixing ....");
 	//fPoolMgr = new AliEventPoolManager(fPoolSize,fTrackDepth,nCentBins,centBins,nZvtxBins,zvtxbin);
 	fPoolMgr = new AliEventPoolManager(fPoolSize,fClusterDepth,nEMCalMultBins,emcalMultBins,nClusZvtxBins,zClusvtxbin);
 	fPoolMgr->SetTargetValues(fClusterDepth,0.05,5); //pool is ready at 0.05*fClusterDepth = 500 or events =5
@@ -1436,6 +1627,14 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 			return kFALSE;
 		}
 	}
+
+  if ((fMinCent != -999) && (fMaxCent != -999)) {
+    if (fCent<fMinCent || fCent>fMaxCent) {
+      if (fGeneralHistograms) fHistEventRejection->Fill("Cent",1);
+      return kFALSE;
+    }
+  }
+
     /*
 	//.. Maybe these two as well .. .. ..
 	if (fSelectPtHardBin != -999 && fSelectPtHardBin != fPtHardBin)  {
@@ -1468,7 +1667,7 @@ Bool_t AliAnalysisTaskGammaHadron::Run()
 	if (!fCaloClusters)
 	{
 		fCaloClusters = (TClonesArray*)GetClusterContainer(0);
-		cout<<"load calo clusters"<<endl;
+		//cout<<"load calo clusters"<<endl;
 	}
 	//..Get the emcal cells
 	if (!fCaloCells)
@@ -1482,7 +1681,7 @@ Bool_t AliAnalysisTaskGammaHadron::Run()
 			fCaloCells =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCaloCellsName));
 			if (!fCaloCells) AliError(Form("%s: Could not retrieve cells %s!", GetName(), fCaloCellsName.Data()));
 		}
-		cout<<"load calo cells"<<endl;
+		//cout<<"load calo cells"<<endl;
 	}
 
 	if (!fGeom)
@@ -1561,7 +1760,7 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 
 				if(!bgTracks)
 				{
-					cout<<"could not retrieve TObjArray from EventPool!"<<endl;
+					AliError("could not retrieve TObjArray from EventPool!");
 				}
 				//..Loop over clusters and fill histograms
 				if(fGammaOrPi0==0) CorrelateClusterAndTrack(0,bgTracks,0,1.0/nMix);//correlate with mixed event
@@ -1781,7 +1980,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 {
   if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack()"<<endl;
 
-//	Double_t pi = TMath::Pi();
+	Double_t pi = TMath::Pi();
 	//...........................................
 	//--Do cluster loop.
 	AliClusterContainer* clusters  = GetClusterContainer(0);
@@ -1908,23 +2107,47 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
           // Filling Pi0 Cands with position swapped clusters
           if (fDoPosSwapMixing > 0 && NoOfClustersInEvent > 2) {
 
+            // Filling the position swap modification functions
+            Double_t fMinClusEnergy = TMath::Min(cluster->GetNonLinCorrEnergy(),cluster2->GetNonLinCorrEnergy());
+            // May move to separate function
+            Double_t ModArray[8];
+            /*
+            ModArray[1] = fMaxClusM02;
+            ModArray[2] = fMinClusEnergy;
+            ModArray[0] = TMath::Sqrt(cluster->GetNonLinCorrEnergy()/cluster2->GetNonLinCorrEnergy());
+            fVDist->Fill(ModArray,Weight);
+            // Redo for switch
+            ModArray[0] = TMath::Sqrt(cluster2->GetNonLinCorrEnergy() / cluster->GetNonLinCorrEnergy());
+            fVDist->Fill(ModArray,Weight);
+            */
             Int_t iSelectClusNo = -1;
             Int_t nTimes = 1; // 1 if no looping
 
             if (fDoPosSwapMixing == 1) {
               if (!fRand) fRand = new TRandom3(0);
-              iSelectClusNo = fRand->Integer(NoOfClustersInEvent-2);
+              iSelectClusNo = fRand->Integer(NoOfClustersInEvent);
             } else {
-              nTimes = NoOfClustersInEvent-2; // number of available clusters to mix
+              nTimes = NoOfClustersInEvent; // number of available clusters to mix
             }
 
+            Int_t iRandomSamples = 0;
+
+            //AliInfo(Form("Starting PosSwap Cycle for pair %d %d",NoCluster1,NoCluster2));
+
             for (Int_t j = 0; j < nTimes; j++) {
-              if (nTimes > 1) { // If not random.   This still works if NoOfClusters = 3
+              if (nTimes > 1) { // If not random. This still works if NoOfClusters = 3
                 iSelectClusNo = j;
+                if ((iSelectClusNo == NoCluster1) || (iSelectClusNo == NoCluster2)) continue;
               }
-              // Swapping selected cluster with final clusters (if same as one of initial pair)
-              if (iSelectClusNo == NoCluster1) iSelectClusNo = NoOfClustersInEvent-2;
-              else if (iSelectClusNo == NoCluster2) iSelectClusNo = NoOfClustersInEvent-1;
+              if (nTimes == 1) {
+                if ((iSelectClusNo == NoCluster1) || (iSelectClusNo == NoCluster2)) {
+                  iSelectClusNo = fRand->Integer(NoOfClustersInEvent);
+                  j--; // redo the loop
+                  iRandomSamples++; // count to avoid getting stuck in inf loop
+                  if (iRandomSamples >= 5) break;
+                  else continue;
+                }
+              }
 
               AliVCluster * cluster3 = clusters->GetAcceptCluster(iSelectClusNo);
               Int_t iMCIndexClus3 = -1;
@@ -1936,27 +2159,172 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
                 // Do energy swap  on cluster first, before getting momentum
                 TLorentzVector CaloClusterVecSwap;
                 TLorentzVector CaloClusterVecPi0Swap;
-                clusters->GetMomentum(CaloClusterVecPi0Swap, cluster3); //recycling pi0swap
-                // Set swap cluster to have energy of cluster2
+                TLorentzVector CaloClusterVec3; // The third cluster
+                clusters->GetMomentum(CaloClusterVec3, cluster3);
+//                clusters->GetMomentum(CaloClusterVecPi0Swap, cluster3); //recycling pi0swap
+                // Fill the mass modification histograms
+
+                Double_t f3MaxClusM02 = TMath::Max(fMaxClusM02,cluster3->GetM02());
+                Double_t f3MinClusEnergy = TMath::Min(fMinClusEnergy,cluster3->GetNonLinCorrEnergy());
+
+                // Theta31 vs Theta32?
+                Double_t Theta31 = CaloClusterVec3.Angle(CaloClusterVec.Vect());
+                Double_t Theta32 = CaloClusterVec3.Angle(CaloClusterVec2.Vect());
+
+
+                if ((Theta31 < 1e-4) || (Theta32 < 1e-4)) continue; // avoiding risk of FP error.
+
+                // 2D Scalin distributions
+                ModArray[2] = f3MaxClusM02;
+                ModArray[3] = f3MinClusEnergy;
+                //UMatrix
+//                ModArray[0] = TMath::Sqrt((1-TMath::Cos(Theta31))/(1-TMath::Cos(Theta32)));
+                ModArray[1] = TMath::Cos(Theta31/2.) / TMath::Cos(Theta32/2.);
+                if (bLogPSMod) {
+                  // Could simplify computation further with log
+                  ModArray[0] = 0.5*(TMath::Log(1-TMath::Cos(Theta31)) - TMath::Log(1-TMath::Cos(Theta32)));
+                  //ModArray[0] = TMath::Log(ModArray[0]);
+                  ModArray[1] = TMath::Log(ModArray[1]);
+                } else {
+                  ModArray[0] = TMath::Sqrt((1-TMath::Cos(Theta31))/(1-TMath::Cos(Theta32)));
+                }
+                fUScaleMatrix->Fill(ModArray,Weight);
+                if (bLogPSMod) {
+                  ModArray[0] = -ModArray[0];
+                  ModArray[1] = -ModArray[1];
+                } else {
+                  ModArray[0] = 1./ModArray[0];
+                  ModArray[1] = 1./ModArray[1];
+                }
+                fUScaleMatrix->Fill(ModArray,Weight);
+
+                //VMatrix
+//                ModArray[0] = TMath::Sqrt(cluster->GetNonLinCorrEnergy()/cluster2->GetNonLinCorrEnergy());
+                ModArray[1] = (cluster3->GetNonLinCorrEnergy() + cluster->GetNonLinCorrEnergy()) /
+                (cluster3->GetNonLinCorrEnergy() + cluster2->GetNonLinCorrEnergy());
+                if (bLogPSMod) {
+                  ModArray[0] = 0.5 * (TMath::Log(cluster->GetNonLinCorrEnergy()) - TMath::Log(cluster2->GetNonLinCorrEnergy()));
+                  //ModArray[0] = TMath::Log(ModArray[0]);
+                  ModArray[1] = TMath::Log(ModArray[1]);
+                } else {
+                  ModArray[0] = TMath::Sqrt(cluster->GetNonLinCorrEnergy()/cluster2->GetNonLinCorrEnergy());
+                }
+                fVScaleMatrix->Fill(ModArray,Weight);
+                if (bLogPSMod) {
+                  ModArray[0] = -ModArray[0];
+                  ModArray[1] = -ModArray[1];
+                } else {
+                  ModArray[0] = 1./ModArray[0];
+                  ModArray[1] = 1./ModArray[1];
+                }
+                fVScaleMatrix->Fill(ModArray,Weight);
+
+
+                // ======================================================================
+                // Set swap cluster to have energy of cluster2 (swapping pos 3 with pos 2)
                 CaloClusterVecSwap = CaloClusterVec2;
-                CaloClusterVecSwap.SetPhi(CaloClusterVecPi0Swap.Phi());
-                CaloClusterVecSwap.SetTheta(CaloClusterVecPi0Swap.Theta());
+                CaloClusterVecSwap.SetPhi(CaloClusterVec3.Phi());
+                CaloClusterVecSwap.SetTheta(CaloClusterVec3.Theta());
+//                CaloClusterVecSwap.SetPhi(CaloClusterVecPi0Swap.Phi());
+//                CaloClusterVecSwap.SetTheta(CaloClusterVecPi0Swap.Theta());
 
                 CaloClusterVecPi0Swap = CaloClusterVec + CaloClusterVecSwap;
 
+                Double_t evtPlaneAngle=DeltaPhi(CaloClusterVecPi0Swap,fEPV0);
+                Int_t evtPlaneCategory=-1;
+                Double_t angleFromAxis;
+                // Calculate EP category for the PosSwapped cluster pair
+                angleFromAxis=fabs(evtPlaneAngle);
+                if((pi-angleFromAxis)<angleFromAxis)angleFromAxis = pi-angleFromAxis;
+                if(angleFromAxis>=0 && angleFromAxis<pi/6.)           evtPlaneCategory=0;
+                else if (angleFromAxis>=pi/6. && angleFromAxis<pi/3.) evtPlaneCategory=1;
+                else if (angleFromAxis>=pi/3. && angleFromAxis<=pi/2.)evtPlaneCategory=2;
+
+                // Saving the Pos Swap Mapping information
+                ModArray[4] = f3MaxClusM02;
+                ModArray[5] = f3MinClusEnergy;
+                ModArray[6] = evtPlaneCategory;
+                // UMap
+                ModArray[0] = CaloClusterVecpi0.M();// Initial Mass
+                ModArray[1] = CaloClusterVecpi0.Pt();// Initial Pt
+                ModArray[2] = CaloClusterVecPi0Swap.M();// Final Mass
+                ModArray[3] = CaloClusterVecPi0Swap.Pt();// Final Pt
+                fPSMassPtMap->Fill(ModArray,Weight);
+
                 // for MC, fill once with energy match MC index and once with position match index (0.5 weight each time)
                 if (fIsMC) {
-                  // Keeping the MC indices of the original pair (E_A, E_B)
-                  FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus1,iMCIndexClus2);
+                  // Keeping the MC indices of the original pair (A,B) (Energy pair conserved for MC Info)
+                  // Final argument 1 means MC indices for for E_A,E_B (A location is changed)
+                  FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus1,iMCIndexClus2,1);
                   // Alternate, use index of 3rd cluster
-                  // MC id for (X_A, X_B)
-                  FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus1,iMCIndexClus3);
+                  // MC id for (A,C) (Position pair conserved)
+                  // Final argument 2 means MC indices for for x_A,x_C (An energy is changed)
+                  FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus1,iMCIndexClus3,2);
                 } else {
                   FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,Weight,2,iMCIndexClus1,iMCIndexClus2);
                 }
+
+                // Energy Swap Map
+                CaloClusterVecSwap = CaloClusterVec3;
+                CaloClusterVecSwap.SetPhi(CaloClusterVec2.Phi());
+                CaloClusterVecSwap.SetTheta(CaloClusterVec2.Theta());
+                CaloClusterVecPi0Swap = CaloClusterVec + CaloClusterVecSwap;
+
+                ModArray[2] = CaloClusterVecPi0Swap.M();// Final Mass
+                ModArray[3] = CaloClusterVecPi0Swap.Pt();// Final Pt
+                fESMassPtMap->Fill(ModArray,Weight);
+
+
+
+                // ======================================================================
+                // Now, do it again using the energy of cluster 1 (swapping pos 3 with pos 1)
+                CaloClusterVecSwap = CaloClusterVec;
+                CaloClusterVecSwap.SetPhi(CaloClusterVec3.Phi());
+                CaloClusterVecSwap.SetTheta(CaloClusterVec3.Theta());
+
+                CaloClusterVecPi0Swap = CaloClusterVecSwap + CaloClusterVec2;
+
+
+                evtPlaneAngle=DeltaPhi(CaloClusterVecPi0Swap,fEPV0);
+                evtPlaneCategory=-1;
+
+                // Calculate EP category for the PosSwapped cluster pair
+                angleFromAxis=fabs(evtPlaneAngle);
+                if((pi-angleFromAxis)<angleFromAxis)angleFromAxis = pi-angleFromAxis;
+                if(angleFromAxis>=0 && angleFromAxis<pi/6.)           evtPlaneCategory=0;
+                else if (angleFromAxis>=pi/6. && angleFromAxis<pi/3.) evtPlaneCategory=1;
+                else if (angleFromAxis>=pi/3. && angleFromAxis<=pi/2.)evtPlaneCategory=2;
+
+                ModArray[6] = evtPlaneCategory;
+                // Saving the Pos Swap Mapping information
+                // VMap
+                ModArray[0] = CaloClusterVecpi0.M();// Initial Mass
+                ModArray[1] = CaloClusterVecpi0.Pt();// Initial Pt
+                ModArray[2] = CaloClusterVecPi0Swap.M();// Final Mass
+                ModArray[3] = CaloClusterVecPi0Swap.Pt();// Final Pt
+                fPSMassPtMap->Fill(ModArray,Weight);
+
+                if (fIsMC) {
+                  // MC info for energy pair (A,B)
+                  FillPi0CandsHist(CaloClusterVecSwap,CaloClusterVec2,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus2,iMCIndexClus1,1);
+                  // Now use MC id (C,B) for Position Pair
+                  FillPi0CandsHist(CaloClusterVecSwap,CaloClusterVec2,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus3,iMCIndexClus2,2);
+                } else {
+                  FillPi0CandsHist(CaloClusterVecSwap,CaloClusterVec2,CaloClusterVecPi0Swap,fMaxClusM02,Weight,2,iMCIndexClus2,iMCIndexClus1);
+                }
+
+                // Energy Swap Map
+                CaloClusterVecSwap = CaloClusterVec3;
+                CaloClusterVecSwap.SetPhi(CaloClusterVec.Phi());
+                CaloClusterVecSwap.SetTheta(CaloClusterVec.Theta());
+
+                CaloClusterVecPi0Swap = CaloClusterVecSwap + CaloClusterVec2;
+
+                ModArray[2] = CaloClusterVecPi0Swap.M();// Final Mass
+                ModArray[3] = CaloClusterVecPi0Swap.Pt();// Final Pt
+                fESMassPtMap->Fill(ModArray,Weight);
               }
             }
-
           }
 				}
 				fHistClusPairInvarMasspT->Fill(CaloClusterVecpi0.M(),CaloClusterVecpi0.Pt());
@@ -1972,9 +2340,11 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 				//        }
 				//	}
 			}
+      //AliInfo("  Done analyzing with this Event");
 		}
 		if (fPlotQA && fDoClusMixing)
 		{
+      //AliInfo("  Saving clusters to pool ...");
 			TObjArray * accClusterArr = new TObjArray();
 			for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 			{
@@ -1988,6 +2358,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			if (!pool->GetLockFlag()) {
 				pool->UpdatePool(accClusterArr);
 			}
+     // AliInfo("       ... Done!");
 		}
 	}
 	//...........................................
@@ -2081,7 +2452,9 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 			if(AccClusPairForAna(cluster,cluster2,aliCaloClusterVecpi0))
 			{
-				fEtaPhiPionAcc->Fill(aliCaloClusterVecpi0.Eta(),aliCaloClusterVecpi0.Phi());
+        Double_t fLocalPhi = aliCaloClusterVecpi0.Phi();
+        if (fLocalPhi < 0) fLocalPhi += 2*pi;
+				fEtaPhiPionAcc->Fill(aliCaloClusterVecpi0.Eta(),fLocalPhi);
 				fMassPtPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt());
 				fMassPtCentPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt(),fCent);
 				nAccPi0Clusters++;
@@ -2179,9 +2552,11 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 /// To Do: add in rotation method
 ///
 //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterVec, AliTLorentzVector CaloClusterVec2, AliTLorentzVector CaloClusterVecPi0, Double_t fMaxClusM02, Double_t Weight, Int_t isMixed, Int_t mcIndex1, Int_t mcIndex2)
+void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterVec, AliTLorentzVector CaloClusterVec2, AliTLorentzVector CaloClusterVecPi0, Double_t fMaxClusM02, Double_t Weight, Int_t isMixed, Int_t mcIndex1, Int_t mcIndex2, Int_t PosSwapStatus)
 {
-	Double_t valueArray[9];
+	Double_t pi = TMath::Pi();
+
+	Double_t valueArray[11];
 	valueArray[0]=CaloClusterVecPi0.Pt();
 	valueArray[1]=CaloClusterVecPi0.M();
 	valueArray[2]=CaloClusterVec.Angle(CaloClusterVec2.Vect());
@@ -2197,6 +2572,18 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 	if (isMixed == 1) valueArray[6] = 2;
   else if (isMixed == 2) valueArray[6] = 3; // cluster swapping
 	else valueArray[6]=0;
+
+  // Event Plane will be 7
+  Double_t evtPlaneAngle=DeltaPhi(CaloClusterVecPi0,fEPV0);
+	Int_t evtPlaneCategory=-1;
+	Double_t angleFromAxis;
+	angleFromAxis=fabs(evtPlaneAngle);
+	if((pi-angleFromAxis)<angleFromAxis)angleFromAxis = pi-angleFromAxis;
+	if(angleFromAxis>=0 && angleFromAxis<pi/6.)           evtPlaneCategory=0;
+	else if (angleFromAxis>=pi/6. && angleFromAxis<pi/3.) evtPlaneCategory=1;
+	else if (angleFromAxis>=pi/3. && angleFromAxis<=pi/2.)evtPlaneCategory=2;
+
+  valueArray[7]=evtPlaneCategory;
 
 
 	// MC Status determination
@@ -2223,10 +2610,15 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 					if (iLCAPdg == 111) {
 						Int_t nLCADaughters = pLCA->GetNDaughters();
 						if (nLCADaughters == 2) { // 2 Gammas
-							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0));
-							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0)+1);
+              AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0));
+              AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughterLabel(0)+1);
 							if (pDaughter1 && pDaughter2 && pDaughter1->GetPdgCode() == 22 && pDaughter2->GetPdgCode() == 22) {
 								MCMatchStatus = 2;
+                if (PosSwapStatus == 1) {
+                  MCMatchStatus = 10;
+                } else if (PosSwapStatus == 2) {
+                  MCMatchStatus = 11;
+                }
 								// Check Reconstructed Pi0 DeltaPt and DeltaPhiDeltaEta
 								Double_t fPi0_Pt = CaloClusterVecPi0.Pt();
 								Double_t fDeltaPt = fPi0_Pt - pLCA->Pt();
@@ -2250,6 +2642,11 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 							if (pDaughter1 && pDaughter2 && pDaughter1->GetPdgCode() == 22 && pDaughter2->GetPdgCode() == 22) {
 
 								MCMatchStatus = 4;
+                if (PosSwapStatus == 1) {
+                  MCMatchStatus = 12;
+                } else if (PosSwapStatus == 2) {
+                  MCMatchStatus = 13;
+                }
 								// Check Reconstructed Eta DeltaPt and DeltaPhiDeltaEta
 								Double_t fPi0_Pt = CaloClusterVecPi0.Pt();
 								Double_t fDeltaPt = fPi0_Pt - pLCA->Pt();
@@ -2295,10 +2692,10 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 		}
 	}
 	if (fIsMC) {
-		valueArray[7] = MCMatchStatus;
-		if (fApplyPatchCandCut) valueArray[8] = DetermineGAPatchCand(CaloClusterVec,CaloClusterVec2);
+		valueArray[8] = MCMatchStatus;
+		if (fApplyPatchCandCut) valueArray[9] = DetermineGAPatchCand(CaloClusterVec,CaloClusterVec2);
 	} else { // if no MC, then axis 7 is patch status
-		if (fApplyPatchCandCut) valueArray[7] = DetermineGAPatchCand(CaloClusterVec,CaloClusterVec2);
+		if (fApplyPatchCandCut) valueArray[8] = DetermineGAPatchCand(CaloClusterVec,CaloClusterVec2);
 	}
 
 
@@ -2353,6 +2750,17 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 		valueArray[4]=TMath::Min(fE1,fE2);
 		valueArray[5]=fAsym;
 		valueArray[6]=1;
+
+    // Event Plane Angle For Rot Bkg
+    evtPlaneAngle=DeltaPhi(CaloClusterVecPi0,fEPV0);
+    evtPlaneCategory=-1;
+    angleFromAxis=fabs(evtPlaneAngle);
+    if((pi-angleFromAxis)<angleFromAxis)angleFromAxis = pi-angleFromAxis;
+    if(angleFromAxis>=0 && angleFromAxis<pi/6.)           evtPlaneCategory=0;
+    else if (angleFromAxis>=pi/6. && angleFromAxis<pi/3.) evtPlaneCategory=1;
+    else if (angleFromAxis>=pi/3. && angleFromAxis<=pi/2.)evtPlaneCategory=2;
+
+    valueArray[7]=evtPlaneCategory;
 
 		if (fIsMC) {
 			valueArray[7] = 0; // MC info is meaningless for rot bkg
@@ -2596,6 +3004,13 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 
 	//!!double check these cuts carefully with the experts!!
 
+
+	//-----------------------------
+	//..Check if the cluster energy is above set threshold
+  if (caloCluster->GetNonLinCorrEnergy() < fClEnergyMin) {
+    return 0;
+  }
+
 	//-----------------------------
 	//..at least 2 cells in cluster
 	if(caloCluster->GetNCells()<2)
@@ -2670,6 +3085,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
 	Double_t fE1 = cluster1->GetNonLinCorrEnergy();
 	Double_t fE2 = cluster2->GetNonLinCorrEnergy();
 
+  // This check should be redundant now ...
   if (fE1<fClEnergyMin || fE2<fClEnergyMin) return 0;  // Check cluster energy min.
 
 	Double_t fAsym = (fE1+fE2 > 0.000001) ? TMath::Abs(fE2-fE1)/(fE1+fE2) : 0; //Don't divide by zero

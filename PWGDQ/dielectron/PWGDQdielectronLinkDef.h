@@ -11,6 +11,7 @@
 #pragma link C++ class AliDielectronHistos+;
 #pragma link C++ class AliDielectronCF+;
 #pragma link C++ class AliDielectronCFdraw+;
+#pragma link C++ class AliDielectronClusterCuts+;
 #pragma link C++ class AliDielectronHF+;
 #pragma link C++ class AliDielectronHFhelper+;
 #pragma link C++ class AliDielectronMC+;
@@ -53,11 +54,13 @@
 #pragma link C++ class AliAnalysisTaskMLTreeMaker+;
 #pragma link C++ class AliAnalysisTaskMLTreeMakerEff+;
 #pragma link C++ class AliAnalysisTaskSimpleTreeMaker+;
+#pragma link C++ class AliAnalysisTask_JPsi_EMCal+;
 #pragma link C++ class AliDielectronReducedTrack+;
 #pragma link C++ class AliDielectronTGReducedPair+;
 #pragma link C++ class AliDielectronTGReducedTrack+;
 #pragma link C++ class AliDielectronTGReducedInfo+;
 #pragma link C++ class AliAnalysisTaskTGReducedTree+;
+#pragma link C++ class AliAnalysisTaskReducedTreeDS+;
 #pragma link C++ class AliAnalysisTaskLMeeCocktailMC+;
 #pragma link C++ class AliCocktailSmearing+;
 #pragma link C++ class AliAnalysisTaskCharm+;

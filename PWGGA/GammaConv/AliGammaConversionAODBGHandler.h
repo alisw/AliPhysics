@@ -20,9 +20,11 @@
 #include "AliAODConversionMother.h"
 #include "TClonesArray.h"
 #include "AliESDVertex.h"
+#include "AliAODMCParticle.h"
 
 typedef std::vector<AliAODConversionPhoton*> AliGammaConversionAODVector;
 typedef std::vector<AliAODConversionMother*> AliGammaConversionMotherAODVector;
+typedef std::vector<AliAODMCParticle*> AliAODMCParticleVector;
 
 class AliGammaConversionAODBGHandler : public TObject {
 
@@ -43,6 +45,10 @@ class AliGammaConversionAODBGHandler : public TObject {
 	typedef std::vector<AliGammaConversionMotherAODVector> AliGammaConversionMotherBGEventVector;
 	typedef std::vector<AliGammaConversionMotherBGEventVector> AliGammaConversionMotherMultipicityVector;
 	typedef std::vector<AliGammaConversionMotherMultipicityVector> AliGammaConversionMotherBGVector;
+
+        typedef std::vector<AliAODMCParticleVector> AliGammaMCParticleBGEventVector;
+	typedef std::vector<AliGammaMCParticleBGEventVector> AliGammaMCParticleMultipicityVector;
+	typedef std::vector<AliGammaMCParticleMultipicityVector> AliAODMCParticleBGVector;
 	
 
 	AliGammaConversionAODBGHandler();																							//constructor
@@ -64,11 +70,13 @@ class AliGammaConversionAODBGHandler : public TObject {
 	void AddMesonEvent(TList* const eventMothers, Double_t xvalue,Double_t yvalue,Double_t zvalue, Int_t multiplicity, Double_t epvalue = -100);
 	void AddMesonEvent(const std::vector<AliAODConversionMother> &eventMother, Double_t xvalue, Double_t yvalue, Double_t zvalue, Int_t multiplicity, Double_t epvalue = -100);
 	void AddElectronEvent(TClonesArray* const eventENeg, Double_t zvalue, Int_t multiplicity);
+        void AddMCParticleEvent(TList* const eventGammas, Double_t xvalue,Double_t yvalue,Double_t zvalue, Int_t multiplicity, Double_t epvalue = -100);
 
 	Int_t GetNBGEvents()const {return fNEvents;}
 
 	// Get BG photons
 	AliGammaConversionAODVector* GetBGGoodV0s(Int_t zbin, Int_t mbin, Int_t event);
+        AliAODMCParticleVector* GetBGGoodV0sMC(Int_t zbin, Int_t mbin, Int_t event);
 	
 	// Get BG mesons
 	AliGammaConversionMotherAODVector* GetBGGoodMesons(Int_t zbin, Int_t mbin, Int_t event);
@@ -88,6 +96,7 @@ class AliGammaConversionAODBGHandler : public TObject {
 		Int_t ** 							fBGEventCounter;				//! bg counter
 		Int_t ** 							fBGEventENegCounter;			//! bg electron counter
 		Int_t ** 							fBGEventMesonCounter;			//! bg counter
+		Int_t ** 							fBGMCParticleEventCounter;        	//! bg counter
 		Int_t ** 							fBGEventBufferCounter;			//! bg counter
 		Double_t ** 						fBGProbability; 				//! prob per bin
 		GammaConversionVertex *** 			fBGEventVertex;					//! array of event vertex
@@ -97,8 +106,9 @@ class AliGammaConversionAODBGHandler : public TObject {
 		Double_t *							fBinLimitsArrayMultiplicity;	//! bin limit multiplicity array
 		AliGammaConversionBGVector 			fBGEvents; 						// photon background events
 		AliGammaConversionBGVector 			fBGEventsENeg; 					// electron background electron events
-		AliGammaConversionMotherBGVector 	fBGEventsMeson; 				// neutral meson background events
+		AliGammaConversionMotherBGVector                fBGEventsMeson; 				// neutral meson background events
+		AliAODMCParticleBGVector 	                fBGEventsMCParticle; 				// MC Particle background events
 		
-	ClassDef(AliGammaConversionAODBGHandler,7)
+	ClassDef(AliGammaConversionAODBGHandler,8)
 };
 #endif

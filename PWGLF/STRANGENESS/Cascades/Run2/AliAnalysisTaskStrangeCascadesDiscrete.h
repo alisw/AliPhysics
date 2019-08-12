@@ -74,7 +74,17 @@ class AliOADBMultSelection; */
 class AliAnalysisTaskStrangeCascadesDiscrete : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskStrangeCascadesDiscrete();
-    AliAnalysisTaskStrangeCascadesDiscrete(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions = "");
+    AliAnalysisTaskStrangeCascadesDiscrete(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, Bool_t lRunVertexers, Bool_t lUseLightVertexer, Double_t lCascaderMaxChi2,
+                                           Double_t lCascaderV0MinImpactParam,
+                                           Double_t lCascaderV0MassWindow,
+                                           Double_t lCascaderBachMinImpactParam,
+                                           Double_t lCascaderMaxDCAV0andBach,
+                                           Double_t lCascaderMinCosAngle,
+                                           Double_t lCascaderMinRadius,
+                                           Double_t lCascaderMaxRadius,
+                                           const char *name, TString lExtraOptions = "");
+    
+    
     virtual ~AliAnalysisTaskStrangeCascadesDiscrete();
     
     virtual void   UserCreateOutputObjects();
@@ -686,6 +696,15 @@ private:
     Float_t lLifetimeCut[4];
     Float_t lMass[4];
     Double_t dca;
+    
+    Float_t fTreeCascVarMassXiScratch;
+    Float_t fTreeCascVarMassOmegaScratch;
+    Float_t fTreeCascVarBackgroundMassOmega;
+    Float_t fTreeCascVarBackgroundMassXi;
+
+
+
+    
     Float_t lMWindow[3];
 
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

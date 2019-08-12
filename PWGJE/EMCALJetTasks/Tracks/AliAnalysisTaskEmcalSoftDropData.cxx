@@ -35,6 +35,7 @@
 #include <TArray.h>
 #include <TCustomBinning.h>
 #include <THistManager.h>
+#include <TLinearBinning.h>
 
 #include "AliAnalysisTaskEmcalSoftDropData.h"
 #include "AliAnalysisManager.h"
@@ -65,14 +66,16 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData() :
   fReclusterizer(kCAAlgo),
   fUseChargedConstituents(kTRUE),
   fUseNeutralConstituents(kTRUE),
+  fJetPtMin(0),
+  fJetPtMax(1000),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
 
 }
 
-AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData(const char *name) : 
-  AliAnalysisTaskEmcalJet(name, kTRUE),
+AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGVIEW name) : 
+  AliAnalysisTaskEmcalJet(name.data(), kTRUE),
   fBinningMode(kSDModeINT7),
   fTriggerBits(AliVEvent::kAny),
   fTriggerString(""),
@@ -82,6 +85,8 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData(const char *n
   fReclusterizer(kCAAlgo),
   fUseChargedConstituents(kTRUE),
   fUseNeutralConstituents(kTRUE),
+  fJetPtMin(0),
+  fJetPtMax(1000),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
@@ -96,19 +101,26 @@ AliAnalysisTaskEmcalSoftDropData::~AliAnalysisTaskEmcalSoftDropData() {
 void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
+  double R = GetJetContainer("datajets")->GetJetRadius();
   if(!fPtBinning) fPtBinning = GetDefaultPtBinning(); 
-  std::unique_ptr<TBinning> zgBinning(GetZgBinning());
+  std::unique_ptr<TBinning> zgBinning(GetZgBinning()),
+                            rgBinning(GetRgBinning(R)),
+                            nsdBinning(new TLinearBinning(21, -0.5, 20.5));
   TArrayD edgesPt;
   fPtBinning->CreateBinEdges(edgesPt);
   fJetPtMin = edgesPt[0];
-  fJetPtMax = edgesPt[edgesPt.GetSize()];
+  fJetPtMax = edgesPt[edgesPt.GetSize()-1];
 
   fHistos = new THistManager("histosSoftdrop");
-  fHistos->CreateTH1("hEventCounter", "EventCounter", 1, 0., 1);
+  fHistos->CreateTH1("hEventCounter", "EventCounter", 1, 0.5, 1.5);
   fHistos->CreateTH2("hZgVsPt", "zg vs pt", *zgBinning, *fPtBinning);
+  fHistos->CreateTH2("hRgVsPt", "rg vs pt", *rgBinning,  *fPtBinning);
+  fHistos->CreateTH2("hNsdVsPt", "nsd vs pt", *nsdBinning, *fPtBinning);
   if(fUseDownscaleWeight){
-    fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt", *zgBinning, *fPtBinning);
-    fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0., 1.);
+    fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt (weighted)", *zgBinning, *fPtBinning);
+    fHistos->CreateTH2("hRgVsPtWeighted", "rg vs pt (weighted)", *rgBinning,  *fPtBinning);
+    fHistos->CreateTH2("hNsdVsPtWeighted", "nsd vs pt (weighted)", *nsdBinning, *fPtBinning);
+    fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0.5, 1.5);
   }
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
@@ -117,7 +129,7 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
 
 Bool_t AliAnalysisTaskEmcalSoftDropData::IsTriggerSelected(){
   if(!(fInputHandler->IsEventSelected() & fTriggerBits)) return false;
-  if(fTriggerString.Length()) {
+  if(fTriggerString.length()) {
     if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerString)) return false;
   }
   return true;
@@ -147,13 +159,23 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
   Double_t weight = fUseDownscaleWeight ? GetDownscaleWeight() : 1.;
   fHistos->FillTH1("hEventCounter", 1., weight);
   if(fUseDownscaleWeight) fHistos->FillTH1("hEventCounterWeighted", 1., weight);
+  AliDebugStream(1) << fTriggerString << ": Using pt ranges " << fJetPtMin << " to " << fJetPtMax << std::endl;
 
   for(auto jet : jets->accepted()){
+    AliDebugStream(2) << "Next accepted jet with pt " << jet->Pt() << std::endl;
     if(jet->Pt() < fJetPtMin || jet->Pt() > fJetPtMax) continue;
     auto zgparams = MakeSoftdrop(*jet, jets->GetJetRadius(), tracks, clusters);
+    AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << zgparams[0] << std::endl;
     fHistos->FillTH2("hZgVsPt", zgparams[0], jet->Pt());
-    if(fUseDownscaleWeight) fHistos->FillTH2("hZgVsPtWeighted",  zgparams[0], jet->Pt(), weight);
+    fHistos->FillTH2("hRgVsPt", zgparams[2], jet->Pt());
+    fHistos->FillTH2("hNsdVsPt", zgparams[5], jet->Pt());
+    if(fUseDownscaleWeight) {
+      fHistos->FillTH2("hZgVsPtWeighted", zgparams[0], jet->Pt(), weight);
+      fHistos->FillTH2("hRgVsPtWeighted", zgparams[2], jet->Pt(), weight);
+      fHistos->FillTH2("hNsdVsPtWeighted", zgparams[5], jet->Pt(), weight);
+    } 
   }
+  return true;
 }
 
 Double_t AliAnalysisTaskEmcalSoftDropData::GetDownscaleWeight() const {
@@ -200,6 +222,13 @@ TBinning *AliAnalysisTaskEmcalSoftDropData::GetZgBinning() const {
   binning->SetMinimum(0.);
   binning->AddStep(fZcut, fZcut);
   binning->AddStep(0.5, 0.05);
+  return binning;
+}
+
+TBinning *AliAnalysisTaskEmcalSoftDropData::GetRgBinning(double R) const {
+  auto binning = new TCustomBinning;
+  binning->SetMinimum(0.);
+  binning->AddStep(R, 0.05);
   return binning;
 }
 
@@ -269,7 +298,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
   return result;
 }
 
-AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger) {
+AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, EMCAL_STRINGVIEW trigger) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   Bool_t isAOD(kFALSE);
@@ -313,7 +342,7 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
                               jetradius,
                               ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPCfid,
                               tracks, clusters);
-  datajets->SetName("detLevel");
+  datajets->SetName("datajets");
   datajets->SetJetPtCut(0.);
   datajets->SetMaxTrackPt(1000.);
 
@@ -326,15 +355,19 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
   };
 
   EBinningMode_t binmode(kSDModeINT7);
-  UInt_t triggerbits(AliVEvent::kINT7);
+  ULong_t triggerbits(AliVEvent::kINT7);
   std::string triggerstring(trigger);
+  std::cout << "Found trigger " << triggerstring << std::endl;
   if(triggerstring == "EJ1") {
+    std::cout << "Setting binning mode for EJ1" << std::endl;
     binmode = kSDModeEJ1;
     triggerbits = AliVEvent::kEMCEJE;
   } else if(triggerstring == "EJ2") {
+    std::cout << "Setting binning mode for EJ2" << std::endl;
     binmode = kSDModeEJ2;
     triggerbits = AliVEvent::kEMCEJE;
   }
+  datamaker->SetSelectTrigger(triggerbits, trigger.data());
   datamaker->SetBinningMode(binmode);
 
   // Connecting containers

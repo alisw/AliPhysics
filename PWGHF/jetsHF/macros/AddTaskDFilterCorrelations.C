@@ -1,3 +1,11 @@
+#if !defined (__CINT__) || defined (__CLING__)
+#include "AliAnalysisTaskDJetCorrelations.h"
+#include "AliAnalysisManager.h"
+#include "TFile.h"
+#include "AliRDHFCutsD0toKpi.h"
+#include "AliRDHFCutsDStartoKpipi.h"
+#endif
+
 AliAnalysisTaskDJetCorrelations *AddTaskDFilterCorrelations(
   AliAnalysisTaskDJetCorrelations::ECandidateType cand = AliAnalysisTaskDJetCorrelations::kDstartoKpipi,
   TString filename = "DStartoKpipiCuts.root",
@@ -16,7 +24,8 @@ AliAnalysisTaskDJetCorrelations *AddTaskDFilterCorrelations(
   Float_t jptcut = 10.,
   const char *cutType = "TPC",
   Double_t percjetareacut = -1.,
-  AliAnalysisTaskDJetCorrelations::ECorrelationMethod CorrMethod = AliAnalysisTaskDJetCorrelations::kConstituent
+  AliAnalysisTaskDJetCorrelations::ECorrelationMethod CorrMethod = AliAnalysisTaskDJetCorrelations::kConstituent,
+  Bool_t isPPData = kTRUE
 )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -28,7 +37,7 @@ AliAnalysisTaskDJetCorrelations *AddTaskDFilterCorrelations(
   Bool_t useStdC = kFALSE;
   TFile* filecuts=TFile::Open(filename);
   if(!filecuts || (filecuts && !filecuts->IsOpen())) {
-    cout<<"Input file not found: use std cuts"<<endl;
+    std::cout<<"Input file not found: use std cuts"<<std::endl;
     useStdC = kTRUE;
   }
 
@@ -77,6 +86,7 @@ AliAnalysisTaskDJetCorrelations *AddTaskDFilterCorrelations(
   taskCorr->SetCorrelationMethod(CorrMethod);
   taskCorr->SetMC(theMCon);
   taskCorr->SetUseReco(reco);
+  taskCorr->SetIsPPData(isPPData);
   
   AliParticleContainer *trackCont  = taskCorr->AddParticleContainer(trackArrname);
   
@@ -137,7 +147,7 @@ AliAnalysisTaskDJetCorrelations *AddTaskDFilterCorrelations(
 
     if(!candArrName.IsNull())
     {
-        AliAnalysisDataContainer* coutputFC2 = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(nameContainerFC2));
+        AliAnalysisDataContainer* coutputFC2 = reinterpret_cast<AliAnalysisDataContainer*>(cnt->FindObject(nameContainerFC2));
         if (!coutputFC2) {
             ::Error("AliAnalysisTaskDJetCorrelations", "Could not find input container '%s'!", nameContainerFC2.Data());
         }
@@ -147,7 +157,7 @@ AliAnalysisTaskDJetCorrelations *AddTaskDFilterCorrelations(
 
     if(!sbArrName.IsNull())
     {
-        AliAnalysisDataContainer* coutputFC3 = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(nameContainerFC3));
+        AliAnalysisDataContainer* coutputFC3 = reinterpret_cast<AliAnalysisDataContainer*>(cnt->FindObject(nameContainerFC3));
         if (!coutputFC3) {
             ::Error("AliAnalysisTaskDJetCorrelations", "Could not find input container '%s'!", nameContainerFC3.Data());
         }

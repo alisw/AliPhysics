@@ -162,14 +162,34 @@ Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString & trigger, TS
     return kFALSE;
   }
 
-  // Run2: triggers not used in LHC17n period XeXe
+  // Run2: Triggers not used in first LHC16 periods 
   //
-  if ( year == 2017 && period == "LHC17n" && trigger.Contains("L") ) 
+  if ( year == 2016 && trigger.Contains("L") )
   { 
-    printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal triggers for period %s XeXe, SKIP \n", 
-           trigger.Data(),period.Data());
-    
-    return kFALSE;
+    if ( period == "LHC16b" || period == "LHC16c" || period == "LHC16d" ||
+         period == "LHC16e" || period == "LHC16f" || period == "LHC16g" || 
+         period == "LHC16h" ) 
+    {
+      printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal for period %s, SKIP \n", 
+             trigger.Data(),period.Data());
+      
+      return kFALSE;
+    }
+  }
+  
+  // Run2: triggers not used in first LHC17 periods and LHC17n period XeXe
+  //
+  if ( year == 2017 && trigger.Contains("L") ) 
+  { 
+    if ( period == "LHC17a" || period == "LHC17b" || period == "LHC17c" ||
+         period == "LHC17d" || period == "LHC17e" || period == "LHC17f" || 
+         period == "LHC17g" || period == "LHC17n" ) 
+    {
+      printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal triggers for period %s, SKIP \n", 
+             trigger.Data(),period.Data());
+      
+      return kFALSE;
+    }
   }
   
   // Run2: L1 trigger not used in LHC17pq period
@@ -192,6 +212,36 @@ Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString & trigger, TS
     printf("CheckActiveEMCalTriggerPerPeriod() - Add <_CaloOnly> to trigger string: %s!!!\n",trigger.Data());
   }
   
+  
+  // Run2: triggers not used in first LHC18 periods
+  //
+  if ( year == 2018 && trigger.Contains("L") ) 
+  { 
+    if ( period == "LHC18a" || period == "LHC18b" || period == "LHC18c" ) 
+    {
+      printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal triggers for period %s, SKIP \n", 
+             trigger.Data(),period.Data());
+      
+      return kFALSE;
+    }
+  }
+ 
+  // Run2: triggers EG2 and L0 not used in LHC18 Pb-Pb periods
+  //
+  if ( year == 2018 && (trigger.Contains("L2") || trigger.Contains("L0")) ) 
+  { 
+    if ( period == "LHC18q" || period == "LHC18r" ) 
+    {
+      printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal triggers for period %s, SKIP \n", 
+             trigger.Data(),period.Data());
+      
+      return kFALSE;
+    }
+  }
+  
+  // Everything is ok accept this configuration
   return kTRUE;
 }
+
+
 

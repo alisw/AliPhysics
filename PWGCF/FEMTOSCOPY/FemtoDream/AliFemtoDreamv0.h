@@ -20,10 +20,26 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   AliFemtoDreamv0();
   virtual ~AliFemtoDreamv0();
   void Setv0(AliAODEvent *evt, AliAODv0 *v0, const int multiplicity = -1);
+  void Setv0(AliVEvent *evt, AliAODv0 *v0, const int multiplicity = -1);
   void Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
              const int multiplicity = -1);
-  void Setv0(const AliFemtoDreamBasePart &posDaughter, const float posMass,
-             const AliFemtoDreamBasePart &negDaughter, const float negMass);
+  // the last two are switches to ignore the first entry in the phi, eta, ...
+  // vector in case one cases a V0 in this object, and only wants to keep the
+  // daughter information
+  void Setv0(const AliFemtoDreamBasePart &posDaughter,
+             const AliFemtoDreamBasePart &negDaughter,
+             const bool ignoreFirstPos = false, const bool ignoreFirstNeg =
+                 false);
+  void Setv0(const AliFemtoDreamBasePart &posDaughter,
+             const AliFemtoDreamBasePart &negDaughter, AliAODEvent *evt,
+             const bool ignoreFirstPos = false, const bool ignoreFirstNeg =
+                 false,
+             const bool setDaughter = true);
+  void Setv0(const AliFemtoDreamBasePart &posDaughter,
+             const AliFemtoDreamBasePart &negDaughter, AliVEvent *evt,
+             const bool ignoreFirstPos = false, const bool ignoreFirstNeg =
+                 false,
+             const bool setDaughter = true);
   bool GetOnlinev0() const {
     return fOnlinev0;
   }
@@ -49,11 +65,11 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   }
   ;
   float Getv0Mass() const {
-    return fv0Mass;
+    return GetInvMass();
   }
   ;
   void Setv0Mass(float mass) {
-    fv0Mass = mass;
+    SetInvMass(mass);
   }
   ;
   float GetDCAv0Vtx(int i) const {
@@ -95,11 +111,18 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   double DecayLengthV0(const double *DecayVtx, const double *point) const;
   double CosPointingAngle(const double *DecayVtx, const double *point) const;
   double DecayLengthXY(double const *DecayVtx, double const *point) const;
+  float GetArmenterosAlpha() const;
+  float GetArmenterosQt() const;
  private:
   AliFemtoDreamv0 &operator=(const AliFemtoDreamv0 &obj);
   AliFemtoDreamv0(const AliFemtoDreamv0&);
   void Reset();
   void SetDaughter(AliAODv0 *v0);
+  void SetDaughter(AliAODv0 *v0, AliVEvent *evt);
+  void SetDaughter(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter);
+  void SetDaughter(const AliFemtoDreamBasePart &posDaughter,
+                   const AliFemtoDreamBasePart &negDaughter,
+                   AliVEvent *evt);
   void SetDaughter(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0);
   void SetDaughterInfo(AliAODv0 *v0);
   void SetDaughterInfo(AliESDv0 *v0);
@@ -110,7 +133,6 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   bool fHasDaughter;
   AliFemtoDreamTrack *fpDaug;
   AliFemtoDreamTrack *fnDaug;
-  float fv0Mass;
   double fv0Vtx[3];  // Decay Vertex in xyz
   float fdcav0Daug;  // Daugther to Daughter DCA
   float fdcaPrim;
@@ -118,7 +140,7 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   float fdcaPrimNeg;  // rphi impact params w.r.t. Primary Vtx [cm]
   float flenDecay;   // Decay Length
   float fTransRadius;   // Decay Length in xy
-ClassDef(AliFemtoDreamv0,2)
+ClassDef(AliFemtoDreamv0, 4)
 };
 
 inline double AliFemtoDreamv0::DecayLengthV0(const double *DecayVtx,
@@ -126,6 +148,19 @@ inline double AliFemtoDreamv0::DecayLengthV0(const double *DecayVtx,
   return ::sqrt(
       ::pow(DecayVtx[0] - point[0], 2) + ::pow(DecayVtx[1] - point[1], 2)
           + ::pow(DecayVtx[2] - point[2], 2));
+}
+
+inline float AliFemtoDreamv0::GetArmenterosAlpha() const {
+  TVector3 v0P = GetMomentum();
+  TVector3 posP = fpDaug->GetMomentum();
+  TVector3 negP = fnDaug->GetMomentum();
+  return 1. - 2. / (1. + posP.Dot(v0P) / negP.Dot(v0P));
+}
+
+inline float AliFemtoDreamv0::GetArmenterosQt() const {
+  TVector3 posP = fpDaug->GetMomentum();
+  TVector3 v0P = GetMomentum();
+  return posP.Perp(v0P);
 }
 
 #endif /* ALIFEMTODREAMV0_H_ */

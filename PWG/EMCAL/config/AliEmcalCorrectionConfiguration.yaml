@@ -75,6 +75,7 @@ CellBadChannel:                                     # Bad channel removal at the
 CellTimeCalib:                                      # Cell Time Calibration component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    doMergedBCs: false                              # Whether the task should create output histograms
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellEmulateCrosstalk:                               # Component to emulate crosstalk
@@ -156,7 +157,7 @@ CellCombineCollections:                             # Utility task to combine tw
 Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    clusterizer: kClusterizerv2                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
+    clusterizer: kClusterizerv3                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
     unfold: false                                   # Activate cluster unfolding
     unfoldRejectBelowThreshold: false               #  split (false-default) or reject (true) cell energy below threshold after UF
     unfoldMinCellE: 0.015                           #  apply an energy cut on the cells after unfolding

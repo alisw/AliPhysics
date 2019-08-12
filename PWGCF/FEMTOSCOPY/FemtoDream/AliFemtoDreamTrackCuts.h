@@ -21,6 +21,12 @@ class AliFemtoDreamTrackCuts {
   static AliFemtoDreamTrackCuts *PrimProtonCuts(bool isMC, bool DCAPlots,
                                                 bool CombSigma,
                                                 bool ContribSplitting);
+  static AliFemtoDreamTrackCuts *PrimKaonCuts(bool isMC, bool DCAPlots = false,
+                                              bool CombSigma = false,
+                                              bool ContribSplitting = false);
+  static AliFemtoDreamTrackCuts *PrimDeuteronCuts(bool isMC, bool DCAPlots,
+                                                bool CombSigma,
+                                                bool ContribSplitting);
   static AliFemtoDreamTrackCuts *DecayProtonCuts(bool isMC, bool PileUpRej,
                                                  bool ContribSplitting);
   static AliFemtoDreamTrackCuts *DecayPionCuts(bool isMC, bool PileUpRej,
@@ -47,6 +53,10 @@ class AliFemtoDreamTrackCuts {
   ;
   void SetPlotDCADist(bool plot) {
     fDCAPlots = plot;
+  }
+  ;
+  void SetPlotTOFMass(bool mass) {
+    fTOFM = mass;
   }
   ;
   void SetOriginMultiplicityHists(bool plot) {
@@ -249,6 +259,7 @@ class AliFemtoDreamTrackCuts {
   bool fMinimalBooking;               //
   bool fMCData;                       //
   bool fDCAPlots;                     //
+  bool fTOFM;                         //
   bool fDoMultBinning;                //
   bool fCheckMother;                  //
   bool fCombSigma;                    //

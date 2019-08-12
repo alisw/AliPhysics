@@ -32,6 +32,7 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts()
       fcutXiMass(false),
       fXiMass(0),
       fXiMassWidth(0),
+      fXiMassWidthExcl(0),
       fcutXiCharge(false),
       fXiCharge(0),
       fcutDCAXiDaug(false),
@@ -91,6 +92,7 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts(
       fcutXiMass(cuts.fcutXiMass),
       fXiMass(cuts.fXiMass),
       fXiMassWidth(cuts.fXiMassWidth),
+      fXiMassWidthExcl(cuts.fXiMassWidthExcl),
       fcutXiCharge(cuts.fcutXiCharge),
       fXiCharge(cuts.fXiCharge),
       fcutDCAXiDaug(cuts.fcutDCAXiDaug),
@@ -154,6 +156,7 @@ AliFemtoDreamCascadeCuts& AliFemtoDreamCascadeCuts::operator=(
   this->fcutXiMass = cuts.fcutXiMass;
   this->fXiMass = cuts.fXiMass;
   this->fXiMassWidth = cuts.fXiMassWidth;
+  this->fXiMassWidthExcl = cuts.fXiMassWidthExcl;
   this->fcutXiCharge = cuts.fcutXiCharge;
   this->fXiCharge = cuts.fXiCharge;
   this->fcutDCAXiDaug = cuts.fcutDCAXiDaug;
@@ -222,6 +225,24 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(
   XiCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
   XiCuts->SetRejectOmegas(1.672, 0.005);
   XiCuts->SetPtRangeXi(0.3, 999.9);
+  return XiCuts;
+}
+
+AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiFor1530Cuts(
+    bool isMC, bool contribSplitting) {
+  AliFemtoDreamCascadeCuts *XiCuts = new AliFemtoDreamCascadeCuts();
+  XiCuts->SetIsMonteCarlo(isMC);
+  XiCuts->SetContributionSplitting(contribSplitting);
+  XiCuts->SetXiMassRange(1.322, 0.007);
+  XiCuts->SetCutXiDaughterDCA(1.9);
+  XiCuts->SetCutXiMinDistBachToPrimVtx(0.015);
+  XiCuts->SetCutXiCPA(0.981);
+  XiCuts->SetCutXiTransverseRadius(0., 100);
+
+  XiCuts->SetCutv0MaxDaughterDCA(1.4);
+  XiCuts->SetCutv0CPA(0.875);
+  XiCuts->SetCutv0MinDistToPrimVtx(0.015);
+  XiCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
   return XiCuts;
 }
 
@@ -425,8 +446,12 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
       }
     }
     if (pass && fcutXiMass) {
-      if ((casc->GetMass() < (fXiMass - fXiMassWidth))
-          || (casc->GetMass() > (fXiMass + fXiMassWidth))) {
+       if(
+         (fXiMassWidthExcl<0.&&fabs(casc->GetMass()-fXiMass)>fXiMassWidth)
+         ||(fXiMassWidthExcl>-1.&&
+           (fabs(casc->GetMass()-fXiMass)>fXiMassWidth
+           ||fabs(casc->GetMass()-fXiMass)<fXiMassWidthExcl))
+      ){
         pass = false;
       } else {
         if (!fMinimalBooking)

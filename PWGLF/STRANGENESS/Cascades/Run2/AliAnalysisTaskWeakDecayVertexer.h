@@ -20,6 +20,9 @@
 //
 // --- David Dobrigkeit Chinellato
 //
+// For questions, comments, etc, please write to:
+//      david.dobrigkeit.chinellato@cern.ch
+//
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 #ifndef AliAnalysisTaskWeakDecayVertexer_H
@@ -132,6 +135,11 @@ public:
     }
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
+    }
+    void SetUseStrictPileupCuts () {
+        //This will enable Ionut's pileup rejection in AliEventCuts
+        fEventCuts.fUseStrongVarCorrelationCut = true;
+        fEventCuts.fUseVariablesCorrelationCuts = true;
     }
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters

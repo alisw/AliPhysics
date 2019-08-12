@@ -71,11 +71,13 @@ AliFemtoShareQualityTPCEntranceSepQAPairCut& AliFemtoShareQualityTPCEntranceSepQ
 }
 
 //__________________
-AliFemtoShareQualityTPCEntranceSepQAPairCut::~AliFemtoShareQualityTPCEntranceSepQAPairCut(){
+AliFemtoShareQualityTPCEntranceSepQAPairCut::~AliFemtoShareQualityTPCEntranceSepQAPairCut()
+{
   /* no-op */
 }
 //__________________
-bool AliFemtoShareQualityTPCEntranceSepQAPairCut::Pass(const AliFemtoPair* pair){
+bool AliFemtoShareQualityTPCEntranceSepQAPairCut::Pass(const AliFemtoPair* pair)
+{
   // Accept pairs based on their TPC entrance separation and
   // quality and sharity
   bool pass = true;
@@ -102,23 +104,21 @@ bool AliFemtoShareQualityTPCEntranceSepQAPairCut::Pass(const AliFemtoPair* pair)
   return pass;
 }
 //__________________
-AliFemtoString AliFemtoShareQualityTPCEntranceSepQAPairCut::Report(){
+AliFemtoString AliFemtoShareQualityTPCEntranceSepQAPairCut::Report()
+{
   // Prepare a report from the execution
-  string stemp = "AliFemtoShareQualityTPCEntranceSep Pair Cut - remove shared and split pairs and pairs with small separation at the entrance to the TPC\n";  char ctemp[100];
-  snprintf(ctemp , 100, "Accept pair with TPC entrance separation more that %f",fDTPCMin);
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;}
-//__________________
+  AliFemtoString report = "AliFemtoShareQualityTPCEntranceSep Pair Cut - remove shared and split pairs and pairs with small separation at the entrance to the TPC\n";
+  report += Form("Accept pair with TPC entrance separation more that %f", fDTPCMin);
+  report += Form("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
 
+  return report;
+}
+//__________________
 TList *AliFemtoShareQualityTPCEntranceSepQAPairCut::ListSettings()
 {
   // return a list of settings in a writable form
   TList *tListSetttings =  AliFemtoShareQualityQAPairCut::ListSettings();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoShareQualityTPCEntranceSepQAPairCut.tpcentsepmin=%f", fDTPCMin);
+  char *buf = Form("AliFemtoShareQualityTPCEntranceSepQAPairCut.tpcentsepmin=%f", fDTPCMin);
   tListSetttings->AddLast(new TObjString(buf));
 
   return tListSetttings;

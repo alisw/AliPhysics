@@ -119,13 +119,15 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistEtaPhiPtTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
-
+    
   TH3F* fHistEtaPhiPtPosChargeTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtPosChargeTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtPosChargeTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
   TH3F* fHistEtaPhiPtNegChargeTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtNegChargeTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
-  TH3F* fHistEtaPhiPtNegChargeTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+  TH3F* fHistEtaPhiPtNegChargeTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)  
+  TH3F* fHistEtaPhiPositionPtPosChargeTPCsel;   //!<!  histo of eta,phi (position) at TPC inner
+  TH3F* fHistEtaPhiPositionPtNegChargeTPCsel;   //!<!  histo of eta,phi (position) at TPC inner
 
   TH3F* fHistEtaPhiPtTPCselTOFbc;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSrefTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit)
@@ -220,7 +222,8 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Int_t*   fTreeVarInt;        //!<! variables to be written to the tree
 
 
-  AliESDtrackCuts* fTrCutsTPC; // TPC track cuts
+  AliESDtrackCuts* fTrCutsTPC;        // TPC track cuts
+  AliESDtrackCuts* fTrCutsTPCPrimary; // TPC track cuts for primary tracks
   Int_t   fMinNumOfTPCPIDclu;  // cut on min. of TPC clust for PID
   Bool_t  fUseTOFbcSelection;  // flag use/not use TOF for pileup rejection
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
@@ -234,7 +237,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,15);
+  ClassDef(AliAnalysisTaskCheckESDTracks,17);
 };
 
 

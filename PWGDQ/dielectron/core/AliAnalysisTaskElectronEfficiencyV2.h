@@ -15,9 +15,11 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliDielectronSignalMC.h"
 #include "TString.h"
+#include "THnSparse.h"
 class TH1F;
 class TH2F;
 class TH3D;
+
 
 class AliTriggerAnalysis;
 class AliAnalysisFilter;
@@ -45,6 +47,7 @@ public:
    // called at end of analysis
    virtual void Terminate(Option_t* option);
 
+   void SetRun1Analysis(Bool_t answer){ run1analysis = answer; }
 
    enum Detector {kITS, kTPC, kTOF};
    Bool_t               GetEnablePhysicsSelection() const   {return fSelectPhysics; }
@@ -111,6 +114,21 @@ public:
    void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
    void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
+
+   // Single leg from Pair related setter
+   void   SetWriteLegsFromPair(bool enable){fWriteLegsFromPair = enable;}
+   void   SetPtMinLegsFromPair(const double ptMin){fPtMinLegsFromPair = ptMin;}
+   void   SetPtMaxLegsFromPair(const double ptMax){fPtMaxLegsFromPair = ptMax;}  
+   void   SetEtaMinLegsFromPair(const double etaMin){fEtaMinLegsFromPair = etaMin;}
+   void   SetEtaMaxLegsFromPair(const double etaMax){fEtaMaxLegsFromPair = etaMax;} 
+   void   SetPhiMinLegsFromPair(const double phiMin){fPhiMinLegsFromPair = phiMin;}
+   void   SetPhiMaxLegsFromPair(const double phiMax){fPhiMaxLegsFromPair = phiMax;} 
+   void   SetOpAngleMinLegsFromPair(const double opAngleMin){fOpAngleMinLegsFromPair = opAngleMin;}
+   void   SetOpAngleMaxLegsFromPair(const double opAngleMax){fOpAngleMaxLegsFromPair = opAngleMax;} 
+   void   SetPtNBinsLegsFromPair(const int ptNBins){fPtNBinsLegsFromPair = ptNBins;} 
+   void   SetEtaNBinsLegsFromPair(const int etaNBins){fEtaNBinsLegsFromPair = etaNBins;}
+   void   SetPhiNBinsLegsFromPair(const int phiNBins){fPhiNBinsLegsFromPair = phiNBins;}
+   void   SetOpAngleNBinsLegsFromPair(const int opAngleNBins){fOpAngleNBinsLegsFromPair = opAngleNBins;}
 
    // Set Cocktail waiting
    void SetDoCocktailWeighting(bool doCocktailWeight) { fDoCocktailWeighting = doCocktailWeight; }
@@ -293,6 +311,22 @@ private:
   std::vector<TH2D*> fHistGenSmearedPair_ULSandLS;
   std::vector<TH2D*> fHistRecPair_ULSandLS;
 
+  bool fWriteLegsFromPair;
+  double fPtMinLegsFromPair;
+  double fPtMaxLegsFromPair;
+  double fEtaMinLegsFromPair; 
+  double fEtaMaxLegsFromPair;
+  double fPhiMinLegsFromPair;
+  double fPhiMaxLegsFromPair;
+  double fOpAngleMinLegsFromPair; 
+  double fOpAngleMaxLegsFromPair;
+  int fPtNBinsLegsFromPair;
+  int fEtaNBinsLegsFromPair;
+  int fPhiNBinsLegsFromPair;
+  int fOpAngleNBinsLegsFromPair;
+  std::vector<THnSparseF*> fTHnSparseGenSmearedLegsFromPair;
+  std::vector<THnSparseF*> fTHnSparseRecLegsFromPair;
+
   Bool_t fDoPairing;
   Bool_t fDoULSandLS;
   Bool_t fDeactivateLS;
@@ -320,6 +354,8 @@ private:
   TH1* fPostPIDCntrdCorrTOF;     // post pid correction object for centroids in TOF
   TH1* fPostPIDWdthCorrTOF;      // post pid correction object for widths in TOF
 
+  Bool_t run1analysis;
+
 
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
@@ -329,3 +365,4 @@ private:
 
 
 # endif
+

@@ -29,14 +29,15 @@
 #  3. runTask 
 ###############################################################################
 
-source $UnitTestConfig
-
+source ${UnitTestConfig}
+echo ${UnitTestConfig}
+cat ${UnitTestConfig}
 #get path to input list
-    inputListfiles=$TestData_pPb
+    inputListfiles=${1-TestData_pPb}
 #get scale number for tracks
-    filterT=${2-20}
+    filterT=${2-500}
 #get scale number for V0s
-    filterV=${3-2}
+    filterV=${3-50}
 #get scale number of friends
     filterFriend=${4--1}
 #get OCDB path (optional)
@@ -69,6 +70,6 @@ source $UnitTestConfig
         exit 1
     fi
 #run FilterTask
-    echo aliroot -l -b -q $AliPhysics_SRC/PWGPP/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,$filterT,$filterV,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
-    aliroot -l -b -q $AliPhysics_SRC/PWGPP/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,$filterT,$filterV,$filterFriend,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
-exit
+    echo aliroot -l -b -q $AliPhysics_SRC/PWGPP/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,0,$filterT,$filterV,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
+    aliroot -l -b -q $AliPhysics_SRC/PWGPP/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,0,$filterT,$filterV,$filterFriend,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
+#exit

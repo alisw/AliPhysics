@@ -112,6 +112,7 @@ TTree* AliHFTreeHandlerDstartoKpipi::BuildTree(TString name, TString title)
 
   //set single-track variables
   AddSingleTrackBranches();
+  if (fFillJets) AddJetBranches();
 
   //set PID variables
   if(fPidOpt!=kNoPID) AddPidBranches(true,true,false,true,true);
@@ -120,7 +121,7 @@ TTree* AliHFTreeHandlerDstartoKpipi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerDstartoKpipi::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo)
+bool AliHFTreeHandlerDstartoKpipi::SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo)
 {
   fIsMCGenTree=false;
 
@@ -130,6 +131,7 @@ bool AliHFTreeHandlerDstartoKpipi::SetVariables(int runnumber, unsigned int even
   }
   fRunNumber=runnumber;
   fEvID=eventID;
+  fPtGen=ptgen;
   
   fCandType &= ~kRefl; //protection --> Dstar ->Kpipi cannot be reflected
 

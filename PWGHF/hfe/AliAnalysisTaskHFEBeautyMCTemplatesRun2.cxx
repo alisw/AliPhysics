@@ -45,14 +45,14 @@ ClassImp(AliAnalysisTaskHFEBeautyMCTemplatesRun2)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEBeautyMCTemplatesRun2::AliAnalysisTaskHFEBeautyMCTemplatesRun2()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCABeautyNew(0), fDCAConversionNew(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCACharmNewDPlus(0), fDCACharmNewDZero(0), fDCACharmNewDS(0), fDCACharmNewLambdaC(0), fDCACharmNewOtherC(0), fDCABeautyNew(0), fDCABeautyNewBZero(0), fDCABeautyNewBPlus(0), fDCABeautyNewBS(0), fDCABeautyNewLambdaB(0), fDCABeautyNewOtherB(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCACharmWeightedNew3050(0), fDCACharmWeightedNew3050IP(0), fDCACharmWeightedNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyWeightedNewHalfRAA(0), fDCABeautyWeightedNewHalfRAAIP(0), fDCABeautyWeightedNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
 {
-  
+
 }
 
 //________________________________________________________________________
 AliAnalysisTaskHFEBeautyMCTemplatesRun2::AliAnalysisTaskHFEBeautyMCTemplatesRun2(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCABeautyNew(0), fDCAConversionNew(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCACharmNewDPlus(0), fDCACharmNewDZero(0), fDCACharmNewDS(0), fDCACharmNewLambdaC(0), fDCACharmNewOtherC(0), fDCABeautyNew(0), fDCABeautyNewBZero(0), fDCABeautyNewBPlus(0), fDCABeautyNewBS(0), fDCABeautyNewLambdaB(0), fDCABeautyNewOtherB(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCACharmWeightedNew3050(0), fDCACharmWeightedNew3050IP(0), fDCACharmWeightedNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyWeightedNewHalfRAA(0), fDCABeautyWeightedNewHalfRAAIP(0), fDCABeautyWeightedNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
 {
   // Constructor
   // Define input and output slots here
@@ -82,7 +82,17 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
   // Create histograms
   // Called once
     Double_t ptbinningX[19] = {0., 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 2., 2.5, 3., 4., 6., 8., 10., 12., 16., 20.}; // Apr 2018 binning
-    
+    //Double_t CentBins[11] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.};
+    Double_t * CentBins = new Double_t[51];
+    for(int i=0;i<51;i++) CentBins[i] = 0. + 2.*double(i);
+    Double_t SourceBins[6]=  {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5};
+    Double_t * IPbins = new Double_t[401];
+    for(int i=0;i<401;i++) IPbins[i] = -0.2 + 0.4/400.*double(i);
+    Double_t * MotherpTBins = new Double_t[81];
+    for(int i=0;i<41;i++) MotherpTBins[i] = 0. + 0.25*double(i);
+    for(int i=41;i<61;i++) MotherpTBins[i] = 10. + 1.0*double(i-40); // Larger bins at higher pT
+    for(int i=61;i<81;i++) MotherpTBins[i] = 30. + 4.0*double(i-60); // Larger bins at higher pT
+
     fCentrality = new TH1D(Form("fCentrality"),Form("fCentrality"), 20, 0., 100.);
     //fSourceGenerator = new TH2D(Form("fSourceGenerator"),Form("fSourceGenerator"), 10, -0.5, 9.5, 20, -1.5, 18.5);
     fDCACharm = new TH2D(Form("fDCACharm"),Form("fDCACharm"), 18, ptbinningX, 400, -0.2, 0.2);
@@ -103,14 +113,21 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fDCACharmNew3050 = new TH2D(Form("fDCACharmNew3050"),Form("fDCACharmNew3050"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCACharmNew3050IP = new TH2D(Form("fDCACharmNew3050IP"),Form("fDCACharmNew3050IP"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCACharmNew3050OOP = new TH2D(Form("fDCACharmNew3050OOP"),Form("fDCACharmNew3050OOP"), 18, ptbinningX, 400, -0.2, 0.2);
+    fDCACharmWeightedNew3050 = new TH3D(Form("fDCACharmWeightedNew3050"),Form("fDCACharmWeightedNew3050"), 18, ptbinningX, 400, IPbins, 5, SourceBins);
+    fDCACharmWeightedNew3050IP = new TH3D(Form("fDCACharmWeightedNew3050IP"),Form("fDCACharmWeightedNew3050IP"), 18, ptbinningX, 400, IPbins, 5, SourceBins);
+    fDCACharmWeightedNew3050OOP = new TH3D(Form("fDCACharmWeightedNew3050OOP"),Form("fDCACharmWeightedNew3050OOP"), 18, ptbinningX, 400, IPbins, 5, SourceBins);
     fDCABeautyNew = new TH2D(Form("fDCABeautyNew"),Form("fDCABeautyNew"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCABeautyNewHalfRAA = new TH2D(Form("fDCABeautyNewHalfRAA"),Form("fDCABeautyNewHalfRAA"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCABeautyNewHalfRAAIP = new TH2D(Form("fDCABeautyNewHalfRAAIP"),Form("fDCABeautyNewHalfRAAIP"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCABeautyNewHalfRAAOOP = new TH2D(Form("fDCABeautyNewHalfRAAOOP"),Form("fDCABeautyNewHalfRAAOOP"), 18, ptbinningX, 400, -0.2, 0.2);
+    fDCABeautyWeightedNewHalfRAA = new TH3D(Form("fDCABeautyWeightedNewHalfRAA"),Form("fDCABeautyWeightedNewHalfRAA"), 18, ptbinningX, 400, IPbins, 5, SourceBins);
+    fDCABeautyWeightedNewHalfRAAIP = new TH3D(Form("fDCABeautyWeightedNewHalfRAAIP"),Form("fDCABeautyWeightedNewHalfRAAIP"), 18, ptbinningX, 400, IPbins, 5, SourceBins);
+    fDCABeautyWeightedNewHalfRAAOOP = new TH3D(Form("fDCABeautyWeightedNewHalfRAAOOP"),Form("fDCABeautyWeightedNewHalfRAAOOP"), 18, ptbinningX, 400, IPbins, 5, SourceBins);
     fDCABeautyNewRAA = new TH2D(Form("fDCABeautyNewRAA"),Form("fDCABeautyNewRAA"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCABeautyNewRAAIP = new TH2D(Form("fDCABeautyNewRAAIP"),Form("fDCABeautyNewRAAIP"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCABeautyNewRAAOOP = new TH2D(Form("fDCABeautyNewRAAOOP"),Form("fDCABeautyNewRAAOOP"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCAConversionNew = new TH2D(Form("fDCAConversionNew"),Form("fDCAConversionNew"), 18, ptbinningX, 400, -0.2, 0.2);
+    fDCAConversionNewCent = new TH3D(Form("fDCAConversionNewCent"),Form("fDCAConversionNewCent"), 18, ptbinningX, 400, IPbins, 50, CentBins);
     fDCADalitzNew = new TH2D(Form("fDCADalitzNew"),Form("fDCADalitzNew"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCADalitzCharm = new TH2D(Form("fDCADalitzCharm"),Form("fDCADalitzCharm"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCADalitzBeauty = new TH2D(Form("fDCADalitzBeauty"),Form("fDCADalitzBeauty"), 18, ptbinningX, 400, -0.2, 0.2);
@@ -124,6 +141,18 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fDCAWErrKaons = new TH3D(Form("fDCAWErrKaons"),Form("fDCAWErrKaons"), 80, 0., 10., 400, -0.2, 0.2, 100, 0.0, 0.01);
     fDCAKaonsFineBins = new TH3D(Form("fDCAKaonsFineBins"),Form("fDCAKaonsFineBins"), 80, 0., 10., 400, -0.2, 0.2, 10, 0., 100.);
     fDCAHadronsCorrected = new TH2D(Form("fDCAHadronsCorrected"),Form("fDCAHadronsCorrected"), 18, ptbinningX, 400, -0.2, 0.2);
+
+    fDCACharmNewDPlus = new TH3D(Form("fDCACharmNewDPlus"),Form("fDCACharmNewDPlus"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewDZero = new TH3D(Form("fDCACharmNewDZero"),Form("fDCACharmNewDZero"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewDS = new TH3D(Form("fDCACharmNewDS"),Form("fDCACharmNewDS"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewLambdaC = new TH3D(Form("fDCACharmNewLambdaC"),Form("fDCACharmNewLambdaC"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewOtherC = new TH3D(Form("fDCACharmNewOtherC"),Form("fDCACharmNewOtherC"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+
+    fDCABeautyNewBZero = new TH3D(Form("fDCABeautyNewBZero"),Form("fDCABeautyNewBZero"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewBPlus = new TH3D(Form("fDCABeautyNewBPlus"),Form("fDCABeautyNewBPlus"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewBS = new TH3D(Form("fDCABeautyNewBS"),Form("fDCABeautyNewBS"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewLambdaB = new TH3D(Form("fDCABeautyNewLambdaB"),Form("fDCABeautyNewLambdaB"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewOtherB = new TH3D(Form("fDCABeautyNewOtherB"),Form("fDCABeautyNewOtherB"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
     
 
     fBeautyMotherpT = new TH1D(Form("fBeautyMotherpT"),Form("fBeautyMotherpT"), 40, 0., 20.);
@@ -131,10 +160,11 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fGroundStateBeautyMotherpT = new TH1D(Form("fGroundStateBeautyMotherpT"),Form("fGroundStateBeautyMotherpT"), 40, 0., 20.);
     fGroundStateCharmMotherpT = new TH1D(Form("fGroundStateCharmMotherpT"),Form("fGroundStateCharmMotherpT"), 40, 0., 20.);
 
-    fPionV0pTRNoCuts = new TH3D(Form("fPionV0pTRNoCuts"),Form("fPionV0pTRNoCuts"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
-    fPionV0pTRWithCuts = new TH3D(Form("fPionV0pTRWithCuts"),Form("fPionV0pTRWithCuts"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
+    fPionV0pTRNoCuts = new TH3D(Form("fPionV0pTRNoCuts"),Form("fPionV0pTRNoCuts"), 40, 0., 10., 80, 0., 20., 50, 0., 100.);
+    fPionV0pTRWithCuts = new TH3D(Form("fPionV0pTRWithCuts"),Form("fPionV0pTRWithCuts"), 40, 0., 10., 80, 0., 20., 50, 0., 100.);
 
     fRd = new TRandom3(0);
+
     
     fOutputContainer = new TObjArray(1);
     fOutputContainer->SetName(GetName());
@@ -154,17 +184,34 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fOutputContainer->Add(fDCAConversion);
     fOutputContainer->Add(fDCADalitz);
     fOutputContainer->Add(fDCACharmNew);
+    fOutputContainer->Add(fDCACharmNewDPlus);
+    fOutputContainer->Add(fDCACharmNewDZero);
+    fOutputContainer->Add(fDCACharmNewDS);
+    fOutputContainer->Add(fDCACharmNewLambdaC);
+    fOutputContainer->Add(fDCACharmNewOtherC);
     fOutputContainer->Add(fDCACharmNew3050);
     fOutputContainer->Add(fDCACharmNew3050IP);
     fOutputContainer->Add(fDCACharmNew3050OOP);
+    fOutputContainer->Add(fDCACharmWeightedNew3050);
+    fOutputContainer->Add(fDCACharmWeightedNew3050IP);
+    fOutputContainer->Add(fDCACharmWeightedNew3050OOP);
     fOutputContainer->Add(fDCABeautyNew);
+    fOutputContainer->Add(fDCABeautyNewBZero);
+    fOutputContainer->Add(fDCABeautyNewBPlus);
+    fOutputContainer->Add(fDCABeautyNewBS);
+    fOutputContainer->Add(fDCABeautyNewLambdaB);
+    fOutputContainer->Add(fDCABeautyNewOtherB);
     fOutputContainer->Add(fDCABeautyNewHalfRAA);
     fOutputContainer->Add(fDCABeautyNewHalfRAAIP);
     fOutputContainer->Add(fDCABeautyNewHalfRAAOOP);
+    fOutputContainer->Add(fDCABeautyWeightedNewHalfRAA);
+    fOutputContainer->Add(fDCABeautyWeightedNewHalfRAAIP);
+    fOutputContainer->Add(fDCABeautyWeightedNewHalfRAAOOP);
     fOutputContainer->Add(fDCABeautyNewRAA);
     fOutputContainer->Add(fDCABeautyNewRAAIP);
     fOutputContainer->Add(fDCABeautyNewRAAOOP);
     fOutputContainer->Add(fDCAConversionNew);
+    fOutputContainer->Add(fDCAConversionNewCent);
     fOutputContainer->Add(fDCADalitzNew);
     fOutputContainer->Add(fDCADalitzCharm);
     fOutputContainer->Add(fDCADalitzBeauty);
@@ -222,6 +269,48 @@ Int_t AliAnalysisTaskHFEBeautyMCTemplatesRun2::FindSource(AliMCParticle * mcple,
   if(true) return 3; // Dalitz !HasStrangeAncestor - 
         
   return 7;
+}
+
+Int_t AliAnalysisTaskHFEBeautyMCTemplatesRun2::CharmSource(AliMCParticle * mcple, AliMCEvent* fMCEvent)
+{
+  AliMCParticle * mother;
+  Int_t pdgCode = 0;
+  mother=mcple;
+  while(mother!=0)
+  {
+    pdgCode = TMath::Abs(mother->PdgCode());
+    if(pdgCode == 411) return 0; // D+
+    if(pdgCode == 421) return 1; // D0
+    if(pdgCode == 431) return 2; // Ds
+    if(pdgCode == 4122) return 3; // Lc
+    if(mother->GetMother() > 0)
+      if(TMath::Abs(((AliMCParticle*) fMCEvent->GetTrack(mother->GetMother()))->PdgCode())<10) break;
+    if(mother->GetMother() > 0)
+        mother =  (AliMCParticle*) fMCEvent->GetTrack(mother->GetMother());
+    else mother = 0x0;
+  }
+  return 4;
+}
+
+Int_t AliAnalysisTaskHFEBeautyMCTemplatesRun2::BeautySource(AliMCParticle * mcple, AliMCEvent* fMCEvent)
+{
+  AliMCParticle * mother;
+  Int_t pdgCode = 0;
+  mother=mcple;
+  while(mother!=0)
+  {
+    pdgCode = TMath::Abs(mother->PdgCode());
+    if(pdgCode == 511) return 0; // B0
+    if(pdgCode == 521) return 1; // B+
+    if(pdgCode == 531) return 2; // Bs
+    if(pdgCode == 5122) return 3; // Lb
+    if(mother->GetMother() > 0)
+      if(TMath::Abs(((AliMCParticle*) fMCEvent->GetTrack(mother->GetMother()))->PdgCode())<10) break;
+    if(mother->GetMother() > 0)
+        mother =  (AliMCParticle*) fMCEvent->GetTrack(mother->GetMother());
+    else mother = 0x0;
+  }
+  return 4;
 }
 
 Int_t AliAnalysisTaskHFEBeautyMCTemplatesRun2::MotherPDG(AliMCParticle * mcple, AliMCEvent* fMCEvent)
@@ -432,7 +521,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
   vertex->GetXYZ(vtx);
   vertexSPD->GetXYZ(vtxSPD);
 
-  bool analyzeEvent=(centrality>=0.0 && centrality<=90.0 && TMath::Sqrt(vcov[5]) < 0.25 && TMath::Abs(vtx[2])<10. && TMath::Abs(vtx[2] - vtxSPD[2]) < 0.5);
+  bool analyzeEvent=(centrality>=0.0 && centrality<=60.0 && TMath::Sqrt(vcov[5]) < 0.25 && TMath::Abs(vtx[2])<10. && TMath::Abs(vtx[2] - vtxSPD[2]) < 0.5); // had 0-90 before
   //hfetrackCuts->SetRecEvent(aodEvent);
 
   int nTracks = aodEvent->GetNumberOfTracks();
@@ -455,6 +544,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
   Double_t rndm = 0.;
   Int_t Source, SourceNew;
   Double_t CorrGaussWidth=0.;
+  Int_t sourceTemp = 0;
   
   if(analyzeEvent)
   {
@@ -481,12 +571,13 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         {
            // Just to fill the motherpT
           pTEdgeOfBin = fDCABeauty->GetXaxis()->GetBinLowEdge(fDCABeauty->GetXaxis()->FindBin(pt));
-          //CorrCharm3050 = 15.8864*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(MotherPt*(2.09819*TMath::Exp(-MotherPt*0.739794)+0.0396785*TMath::Exp(-MotherPt*0.169834))) / (15.8864*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(pTEdgeOfBin*(2.09819*TMath::Exp(-pTEdgeOfBin*0.739794)+0.0396785*TMath::Exp(-pTEdgeOfBin*0.169834)))); // 11h
-          CorrCharm3050 = 15.1975*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)) / (15.1975*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
+          //CorrCharm3050 = 15.1975*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)) / (15.1975*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519))); // previous
+          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
+          
           //CorrCharm3050 = 1410.16*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(TMath::Exp(-MotherPt*0.11023)+234.578*TMath::Exp(-MotherPt*0.439153)) // old (10h)
           //      /(1410.16*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(TMath::Exp(-pTEdgeOfBin*0.11023)+234.578*TMath::Exp(-pTEdgeOfBin*0.439153)));
-          IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159+1);
-          OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159);
+          IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159+1);
+          OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159);
           fDCACharm->Fill(pt, IP);
           if(rndm < CorrCharm3050) fDCACharm3050->Fill(pt, IP);
           if(rndm < CorrCharm3050*IPCorrection) fDCACharm3050IP->Fill(pt, IP);
@@ -495,17 +586,17 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         if(Source == 1)
         {
           fDCABeauty->Fill(pt, IP);
-          //BasicBeautyCorrection = (0.940489/(1.+TMath::Power((MotherPt-0.860907)/4.84045,2.))+0.230487*TMath::Gaus(MotherPt,8.47677,4.75503)); // 11h
-          BasicBeautyCorrection = (0.88686*TMath::Power(MotherPt,0.430499)*TMath::Exp(-MotherPt*0.133517)+-3.87792e-08*TMath::Power(MotherPt,8.05593)*TMath::Exp(-MotherPt*0.472494));
-          CorrBeautyHalfRAA = 1.05*BasicBeautyCorrection*(1.+(0.5/(1. + TMath::Exp((MotherPt-7.)*0.7)) + 0.5 + (MotherPt-15.)/300.))/2.;
-          BeautyIPCorrection = CorrBeautyHalfRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*0.95;
-          BeautyOOPCorrection = CorrBeautyHalfRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*1.05;
+          //BasicBeautyCorrection = (0.88686*TMath::Power(MotherPt,0.430499)*TMath::Exp(-MotherPt*0.133517)+-3.87792e-08*TMath::Power(MotherPt,8.05593)*TMath::Exp(-MotherPt*0.472494));  // previous
+          BasicBeautyCorrection = 0.818137*TMath::Power(MotherPt,0.602011)*TMath::Exp(-MotherPt*0.163487)+1.77121e-08*TMath::Power(MotherPt,11.7204)*TMath::Exp(-MotherPt*1.15383);
+          CorrBeautyHalfRAA = BasicBeautyCorrection * (0.5+0.5*0.590839*(TMath::Gaus(MotherPt,2.54621,3.14525)+ 0.664211));
+          BeautyIPCorrection = CorrBeautyHalfRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*0.95;
+          BeautyOOPCorrection = CorrBeautyHalfRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*1.05;
           if(rndm < CorrBeautyHalfRAA) fDCABeautyHalfRAA->Fill(pt, IP);
           if(rndm < BeautyIPCorrection) fDCABeautyHalfRAAIP->Fill(pt, IP);
           if(rndm < BeautyOOPCorrection) fDCABeautyHalfRAAOOP->Fill(pt, IP);
-          CorrBeautyRAA = 1.1*BasicBeautyCorrection*(0.5/(1. + TMath::Exp((MotherPt-7.)*0.7)) + 0.5 + (MotherPt-15.)/300.);
-          BeautyIPCorrection = CorrBeautyRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*0.95;
-          BeautyOOPCorrection = CorrBeautyRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*1.05;
+          CorrBeautyRAA = BasicBeautyCorrection*(0.590839*(TMath::Gaus(MotherPt,2.54621,3.14525)+ 0.664211));
+          BeautyIPCorrection = CorrBeautyRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*0.95;
+          BeautyOOPCorrection = CorrBeautyRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*1.05;
           if(rndm < CorrBeautyRAA) fDCABeautyRAA->Fill(pt, IP);
           if(rndm < BeautyIPCorrection) fDCABeautyRAAIP->Fill(pt, IP);
           if(rndm < BeautyOOPCorrection) fDCABeautyRAAOOP->Fill(pt, IP);
@@ -517,37 +608,56 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         if(SourceNew == 0)
         {
           pTEdgeOfBin = fDCABeauty->GetXaxis()->GetBinLowEdge(fDCABeauty->GetXaxis()->FindBin(pt));
-          //CorrCharm3050 = 15.8864*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(MotherPt*(2.09819*TMath::Exp(-MotherPt*0.739794)+0.0396785*TMath::Exp(-MotherPt*0.169834))) / (15.8864*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(pTEdgeOfBin*(2.09819*TMath::Exp(-pTEdgeOfBin*0.739794)+0.0396785*TMath::Exp(-pTEdgeOfBin*0.169834))));
-          CorrCharm3050 = 15.1975*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)) / (15.1975*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
-          //1410.16*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(TMath::Exp(-MotherPt*0.11023)+234.578*TMath::Exp(-MotherPt*0.439153)) // old
-          //      /(1410.16*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(TMath::Exp(-pTEdgeOfBin*0.11023)+234.578*TMath::Exp(-pTEdgeOfBin*0.439153)));
-          IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159+1);
-          OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159);
+          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
+          IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159+1);
+          OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159);
           fDCACharmNew->Fill(pt, IP);
           if(rndm < CorrCharm3050) fDCACharmNew3050->Fill(pt, IP);
           if(rndm < CorrCharm3050*IPCorrection) fDCACharmNew3050IP->Fill(pt, IP);
           if(rndm < CorrCharm3050*OOPCorrection) fDCACharmNew3050OOP->Fill(pt, IP);
+          sourceTemp = CharmSource(mcple, fMCEvent);
+          fDCACharmWeightedNew3050->Fill(pt, IP, sourceTemp, TMath::Min(1., CorrCharm3050));
+          fDCACharmWeightedNew3050IP->Fill(pt, IP, sourceTemp, TMath::Min(1., CorrCharm3050*IPCorrection));
+          fDCACharmWeightedNew3050OOP->Fill(pt, IP, sourceTemp, TMath::Min(1., CorrCharm3050*OOPCorrection));
+          
+          if(sourceTemp == 0) fDCACharmNewDPlus->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 1) fDCACharmNewDZero->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 2) fDCACharmNewDS->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 3) fDCACharmNewLambdaC->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 4) fDCACharmNewOtherC->Fill(pt, IP, MotherPt);
         }
         if(SourceNew == 1)
         {
           fDCABeautyNew->Fill(pt, IP);
-          //BasicBeautyCorrection = (0.940489/(1.+TMath::Power((MotherPt-0.860907)/4.84045,2.))+0.230487*TMath::Gaus(MotherPt,8.47677,4.75503)); // 11h
-          BasicBeautyCorrection = (0.88686*TMath::Power(MotherPt,0.430499)*TMath::Exp(-MotherPt*0.133517)+-3.87792e-08*TMath::Power(MotherPt,8.05593)*TMath::Exp(-MotherPt*0.472494));
-          CorrBeautyHalfRAA = 1.05*BasicBeautyCorrection*(1.+(0.5/(1. + TMath::Exp((MotherPt-7.)*0.7)) + 0.5 + (MotherPt-15.)/300.))/2.;
-          BeautyIPCorrection = CorrBeautyHalfRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*0.95;
-          BeautyOOPCorrection = CorrBeautyHalfRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*1.05;
+          BasicBeautyCorrection = 0.818137*TMath::Power(MotherPt,0.602011)*TMath::Exp(-MotherPt*0.163487)+1.77121e-08*TMath::Power(MotherPt,11.7204)*TMath::Exp(-MotherPt*1.15383);
+          CorrBeautyHalfRAA = BasicBeautyCorrection * (0.5+0.5*0.590839*(TMath::Gaus(MotherPt,2.54621,3.14525)+ 0.664211));
+          BeautyIPCorrection = CorrBeautyHalfRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*0.95;
+          BeautyOOPCorrection = CorrBeautyHalfRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*1.05;
           if(rndm < CorrBeautyHalfRAA) fDCABeautyNewHalfRAA->Fill(pt, IP);
           if(rndm < BeautyIPCorrection) fDCABeautyNewHalfRAAIP->Fill(pt, IP);
           if(rndm < BeautyOOPCorrection) fDCABeautyNewHalfRAAOOP->Fill(pt, IP);
-          CorrBeautyRAA = 1.1*BasicBeautyCorrection*(0.5/(1. + TMath::Exp((MotherPt-7.)*0.7)) + 0.5 + (MotherPt-15.)/300.);
-          BeautyIPCorrection = CorrBeautyRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*0.95;
-          BeautyOOPCorrection = CorrBeautyRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*1.05;
+          sourceTemp = BeautySource(mcple, fMCEvent);
+          fDCABeautyWeightedNewHalfRAA->Fill(pt, IP, sourceTemp, CorrBeautyHalfRAA);
+          fDCABeautyWeightedNewHalfRAAIP->Fill(pt, IP, sourceTemp, BeautyIPCorrection);
+          fDCABeautyWeightedNewHalfRAAOOP->Fill(pt, IP, sourceTemp, BeautyOOPCorrection);
+          CorrBeautyRAA = BasicBeautyCorrection*(0.590839*(TMath::Gaus(MotherPt,2.54621,3.14525)+ 0.664211));
+          BeautyIPCorrection = CorrBeautyRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*0.95;
+          BeautyOOPCorrection = CorrBeautyRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*1.05;
           if(rndm < CorrBeautyRAA) fDCABeautyNewRAA->Fill(pt, IP);
           if(rndm < BeautyIPCorrection) fDCABeautyNewRAAIP->Fill(pt, IP);
           if(rndm < BeautyOOPCorrection) fDCABeautyNewRAAOOP->Fill(pt, IP);
+
+          if(sourceTemp == 0) fDCABeautyNewBZero->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 1) fDCABeautyNewBPlus->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 2) fDCABeautyNewBS->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 3) fDCABeautyNewLambdaB->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 4) fDCABeautyNewOtherB->Fill(pt, IP, MotherPt);
         }
         if(SourceNew == 2 && !IsAddedSignal(mcple))
+        {
           fDCAConversionNew->Fill(pt, IP);
+          fDCAConversionNewCent->Fill(pt, IP, centrality);
+        }
         if(SourceNew == 3 && !IsAddedSignal(mcple))
           fDCADalitzNew->Fill(pt, IP);
 

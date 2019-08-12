@@ -184,7 +184,7 @@ void AliAnalysisTaskCaloTrackCorrelation::Init()
 /// Execute analysis for current event.
 //______________________________________________________________________
 void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
-{  
+{ 
   if ( !fAna->IsEventProcessed() ) return;
   
   Int_t eventN = Entry();
@@ -195,7 +195,7 @@ void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
     if ( (AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler() )
       eventN = ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()->GetReadEntry());
   }
-  
+    
   if ( (fLastEvent  > 0 && eventN > fLastEvent )  || 
        (fFirstEvent > 0 && eventN < fFirstEvent)     ) return ;
   
@@ -217,7 +217,7 @@ void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
   fAna->GetReader()->SetInputOutputMCEvent(InputEvent(), AODEvent(), MCEvent());
   
   // Process event
-  fAna->ProcessEvent((Int_t) Entry(), CurrentFileName());
+  fAna->ProcessEvent(eventN, CurrentFileName());
   
   PostData(1, fOutputContainer);
   

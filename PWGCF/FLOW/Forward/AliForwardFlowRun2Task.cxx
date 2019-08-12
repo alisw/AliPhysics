@@ -109,6 +109,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   Double_t xmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
   Double_t xmax[dimensions] = {3,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kW4ThreeTwoB)+1};
 
+
   // create a THn for each harmonic
 
   fAnalysisList->Add(new THnD("reference", "reference", dimensions, rbins, xmin, xmax));

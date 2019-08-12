@@ -14,8 +14,9 @@ class TList;
 #include "AliFemtoConfigObject.h"
 
 #include "AliFemtoVertexMultAnalysis.h"
-#include "AliFemtoEventReaderAODMultSelection.h"
 
+
+#include <TClass.h>
 #include <TNamed.h>
 
 
@@ -106,6 +107,12 @@ public:
   /// namespace.
   void AddStanardCutMonitors();
 
+  /// Store configuration of eventreader
+  void StoreEventReaderConfiguration(const AliFemtoEventReader &);
+
+  /// Return configuration object describing analysis
+  virtual AliFemtoConfigObject GetConfiguration() const;
+
   /// Returns a TList of all objects
   virtual TList* GetOutputList();
 
@@ -144,7 +151,6 @@ public:
 
   static TString make_random_string(const TString &prefix="");
 
-
 protected:
 
   /// The name of this analysis used for identification in the output list
@@ -165,6 +171,9 @@ protected:
 
   /// This is a Monte Carlo analysis
   Bool_t fMCAnalysis;
+
+  /// Configuration of event reader
+  AliFemtoConfigObject fEventReaderCfg;
 };
 
 /// \class AliFemtoAnalysisPionPion::AnalysisParams
@@ -211,20 +220,17 @@ struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
 
   Bool_t cuts_use_attrs;
 
+  Bool_t mc_pion_only;
+  Bool_t mc_nonpion_only;
+
   Bool_t event_use_basic;
 
   // EVENT
-  Int_t event_MultMin,
-        event_MultMax;
+  std::pair<int, int> event_mult;
 
-  double event_CentralityMin,
-         event_CentralityMax;
-
-  double event_VertexZMin,
-         event_VertexZMax;
-
-  double event_EP_VZeroMin,
-         event_EP_VZeroMax;
+  std::pair<double, double> event_centrality,
+                            event_vertex_z,
+                            event_ep_vzero;
 
   Int_t event_TriggerSelection;
   Bool_t event_AcceptBadVertex;
@@ -232,17 +238,9 @@ struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
   Int_t event_zdc_part;
 
   // PION - 1
-  Float_t pion_1_PtMin,
-          pion_1_PtMax;
-
-  Float_t pion_1_EtaMin,
-          pion_1_EtaMax;
-
-  Float_t pion_1_DCAMin,
-          pion_1_DCAMax;
-
-  // Float_t pion_1_NSigmaMin,
-  //        pion_1_NSigmaMax;
+  std::pair<double, double> pion_1_pt,
+                            pion_1_eta,
+                            pion_1_DCA;
 
   ULong_t pion_1_status;
 
@@ -274,11 +272,10 @@ struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
   Float_t pion_2_NSigmaMin,
           pion_2_NSigmaMax;
 
-  Float_t pion_2_max_impact_xy
-        , pion_2_max_impact_z
-        , pion_2_max_tpc_chi_ndof
-        , pion_2_max_its_chi_ndof
-        ;
+  Float_t pion_2_max_impact_xy,
+          pion_2_max_impact_z,
+          pion_2_max_tpc_chi_ndof,
+          pion_2_max_its_chi_ndof;
 
   UInt_t pion_2_min_tpc_ncls;
   Bool_t pion_2_remove_kinks,

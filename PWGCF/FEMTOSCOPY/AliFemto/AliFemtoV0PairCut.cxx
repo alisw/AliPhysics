@@ -26,7 +26,8 @@ AliFemtoV0PairCut::AliFemtoV0PairCut():
   fMinAvgSepPosPos(0),
   fMinAvgSepPosNeg(0),
   fMinAvgSepNegPos(0),
-  fMinAvgSepNegNeg(0)
+  fMinAvgSepNegNeg(0),
+  fNanoAODAnalysis(false)
 {
   /* no-op */
 }
@@ -55,7 +56,7 @@ AliFemtoV0PairCut &AliFemtoV0PairCut::operator=(const AliFemtoV0PairCut &cut)
   fMinAvgSepPosNeg = cut.fMinAvgSepPosNeg;
   fMinAvgSepNegPos = cut.fMinAvgSepNegPos;
   fMinAvgSepNegNeg = cut.fMinAvgSepNegNeg;
-
+  fNanoAODAnalysis = cut.fNanoAODAnalysis;
   return *this;
 }
 
@@ -76,6 +77,7 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
   }
 
   // Test separation between track daughters' entrance and exit points
+  if(!fNanoAODAnalysis){
   if (fDataType == kESD || fDataType == kAOD) {
     const AliFemtoThreeVector diffPosEntrance = V0_1->NominalTpcEntrancePointPos() - V0_2->NominalTpcEntrancePointPos(),
                                   diffPosExit = V0_1->NominalTpcExitPointPos() - V0_2->NominalTpcExitPointPos(),
@@ -90,7 +92,7 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
       return false;
     }
   }
-
+}
   // Find average separations between tracks
   double avgSep_pp = 0.0,
          avgSep_pn = 0.0,
@@ -102,7 +104,7 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
                                avgSep_np,
                                avgSep_pn,
                                avgSep_pp);
-
+if(!fNanoAODAnalysis){
   if (avgSep_pp < fMinAvgSepPosPos) {
     return false;
   }
@@ -118,6 +120,7 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
   if (avgSep_nn < fMinAvgSepNegNeg) {
     return false;
   }
+}
 
   return true;
 }

@@ -72,7 +72,7 @@ private:
 //    Long64_t triggerMask;
    Int_t magFieldSign;//
    
-//    Int_t SelectionStep;//
+   Int_t SelectionStep;//
    //check for more estimators, e.g. SPD, TPC track multiplicity ...
    Double_t multPercentile_V0M;//
    Double_t multPercentile_V0A;//

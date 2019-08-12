@@ -193,6 +193,142 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   }
 }
 
+void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
+  //xi business
+  Reset();
+  fIsReset = false;
+  fIsSet = true;
+  this->SetCharge(casc->ChargeXi());
+  this->SetMomentum(casc->MomXiX(), casc->MomXiY(), casc->MomXiZ());
+  this->SetPt(fP.Pt());
+  double PrimVtx[3] = { 99., 99., 99 };
+  double decayPosXi[3] = { casc->DecayVertexXiX(), casc->DecayVertexXiY(), casc
+      ->DecayVertexXiZ() };
+  fXiMass = casc->MassXi();
+  fOmegaMass = casc->MassOmega();
+  fDCAXiDaug = casc->DcaXiDaughters();
+  evt->GetPrimaryVertex()->GetXYZ(PrimVtx);
+  this->SetEvtNumber(evt->GetRunNumber());
+  fCPA = casc->CosPointingAngleXi(PrimVtx[0], PrimVtx[1], PrimVtx[2]);
+  fTransRadius = TMath::Sqrt(
+      decayPosXi[0] * decayPosXi[0] + decayPosXi[1] * decayPosXi[1]);
+  fRapXi = casc->RapXi();
+  fRapOmega = casc->RapOmega();
+  this->SetEta(casc->Eta());
+  this->SetTheta(fP.Theta());
+  this->SetPhi(fP.Phi());
+  fAlphaXi = casc->AlphaXi();
+  fPtArmXi = casc->PtArmXi();
+  fDCAXiPrimVtx = casc->DcaXiToPrimVertex(PrimVtx[0], PrimVtx[1], PrimVtx[2]);
+  fLength = TMath::Sqrt(
+      TMath::Power((decayPosXi[0] - PrimVtx[0]), 2)
+          + TMath::Power((decayPosXi[1] - PrimVtx[1]), 2)
+          + TMath::Power((decayPosXi[2] - PrimVtx[2]), 2));
+  if (this->GetMomentum().Mag() > 0) {
+    static double mass =
+        TDatabasePDG::Instance()->GetParticle(fPDGCode)->Mass();
+    fLength = fLength * mass / this->GetMomentum().Mag();
+  } else {
+    fLength = -1.;
+  }
+
+  //From here daughter business
+  AliVTrack *nTrackXi = dynamic_cast<AliVTrack*>(casc->GetDaughter(1));
+  AliVTrack *pTrackXi = dynamic_cast<AliVTrack*>(casc->GetDaughter(0));
+  AliVTrack *bachTrackXi = dynamic_cast<AliVTrack*>(casc->GetDecayVertexXi()
+      ->GetDaughter(0));
+  fNegDaug->SetTrack(nTrackXi,evt,0);
+  fPosDaug->SetTrack(pTrackXi,evt,0);
+  fBach->SetTrack(bachTrackXi,evt,0);
+  fNegDaug->SetMomentum(casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
+  fPosDaug->SetMomentum(casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
+  fBach->SetMomentum(casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
+
+  double posMom[3] = { 0. };
+  double negMom[3] = { 0. };
+  double bachMom[3] = { 0. };
+
+  fNegDaug->GetMomentum().GetXYZ(negMom);
+  fPosDaug->GetMomentum().GetXYZ(posMom);
+  fBach->GetMomentum().GetXYZ(bachMom);
+
+  fMass = MassCasc();
+  this->SetIDTracks(nTrackXi->GetID());
+  this->SetIDTracks(pTrackXi->GetID());
+  this->SetIDTracks(bachTrackXi->GetID());
+
+  this->SetEta(fNegDaug->GetMomentum().Eta());
+  this->SetEta(fPosDaug->GetMomentum().Eta());
+  this->SetEta(fBach->GetMomentum().Eta());
+
+  this->SetTheta(fNegDaug->GetMomentum().Theta());
+  this->SetTheta(fPosDaug->GetMomentum().Theta());
+  this->SetTheta(fBach->GetMomentum().Theta());
+
+  this->SetPhi(fNegDaug->GetMomentum().Phi());
+  this->SetPhi(fPosDaug->GetMomentum().Phi());
+  this->SetPhi(fBach->GetMomentum().Phi());
+
+  this->SetCharge(nTrackXi->Charge());
+  this->SetCharge(pTrackXi->Charge());
+  this->SetCharge(bachTrackXi->Charge());
+  if (fNegDaug->IsSet()) {
+    this->SetPhiAtRadius(fNegDaug->GetPhiAtRaidius().at(0));
+  } else {
+    fIsSet = false;
+  }
+  if (fPosDaug->IsSet()) {
+    this->SetPhiAtRadius(fPosDaug->GetPhiAtRaidius().at(0));
+  } else {
+    fIsSet = false;
+  }
+  if (fBach->IsSet()) {
+    this->SetPhiAtRadius(fBach->GetPhiAtRaidius().at(0));
+  } else {
+    fIsSet = false;
+  }
+
+  //v0 business
+  if (bachTrackXi->Charge() < 0) {  //Xi minus
+    fMassv0 = casc->MassLambda();
+  } else {  //Xi plus case
+    //Workaround to identify also Xi+. We usually only set the PDG code once,
+    //assuming a Xi -, meaning we expect a Lambda, not an Antilambda.
+    fMassv0 = casc->MassAntiLambda();
+  }
+  fv0Momentum.SetXYZ(casc->MomV0X(), casc->MomV0Y(), casc->MomV0Z());
+  fv0Pt = casc->MomV0X() * casc->MomV0X() + casc->MomV0Y() * casc->MomV0Y();
+  fv0DCADaug = casc->DcaV0Daughters();
+  fv0DCAPrimVtx = casc->DcaV0ToPrimVertex();
+  double decayPosV0[3] = { casc->DecayVertexV0X(), casc->DecayVertexV0Y(), casc
+      ->DecayVertexV0Z() };
+  fv0TransRadius = TMath::Sqrt(
+      decayPosV0[0] * decayPosV0[0] + decayPosV0[1] * decayPosV0[1]);
+  fv0CPA = casc->CosPointingAngle(PrimVtx);
+
+  fDCABachPrimVtx = casc->DcaBachToPrimVertex();
+  fv0PosToPrimVtx = casc->DcaPosToPrimVertex();
+  fv0NegToPrimVtx = casc->DcaNegToPrimVertex();
+  fv0ToXiPointAngle = casc->CosPointingAngle(casc->GetDecayVertexXi());
+  float LamPDGMass = 1.115683;
+  fv0Length = TMath::Sqrt(
+      TMath::Power((decayPosV0[0] - decayPosXi[0]), 2)
+          + TMath::Power((decayPosV0[1] - decayPosXi[1]), 2)
+          + TMath::Power((decayPosV0[2] - decayPosXi[2]), 2));
+  //  Float_t lctauV0 = -1.;
+  if (fv0Momentum.Mag() > 0) {
+    fv0Length = fv0Length * LamPDGMass / fv0Momentum.Mag();
+  } else {
+    fv0Length = -1.;
+  }
+  fDCAv0Xi = TMath::Sqrt(
+      TMath::Power((decayPosV0[0] - decayPosXi[0]), 2)
+          + TMath::Power((decayPosV0[1] - decayPosXi[1]), 2));
+//  if (fIsMC) {
+//    SetMCMotherInfo(evt, casc);
+//  }
+}
+
 void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
                                       AliESDcascade *casc) {
   Reset();

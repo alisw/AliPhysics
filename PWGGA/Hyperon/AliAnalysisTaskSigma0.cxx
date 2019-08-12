@@ -126,49 +126,6 @@ AliAnalysisTaskSE(),
       fTreeVariableLeastNbrCrossedRows(0),
       fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
-/*      fTreeGammaVarChi2V0(0),
-      fTreeGammaVarDcaV0Daughters(0),
-      fTreeGammaVarDcaV0ToPrimVertex(0),
-      fTreeGammaVarDcaPosToPrimVertex(0),
-      fTreeGammaVarDcaNegToPrimVertex(0),
-      fTreeGammaVarV0CosineOfPointingAngle(0),
-      fTreeGammaVarV0Radius(0),
-      fTreeGammaVarPt(0),
-      fTreeGammaVarRapK0Short(0),
-      fTreeGammaVarRapLambda(0),
-      fTreeGammaVarInvMassK0s(0),
-      fTreeGammaVarInvMassLambda(0),
-      fTreeGammaVarInvMassAntiLambda(0),
-      fTreeGammaVarAlphaV0(0),
-      fTreeGammaVarPtArmV0(0),
-      fTreeGammaVarNegEta(0),
-      fTreeGammaVarPosEta(0),
-      fTreeGammaVarNSigmasPosProton(0),
-      fTreeGammaVarNSigmasPosPion(0),
-      fTreeGammaVarNSigmasNegProton(0),
-      fTreeGammaVarNSigmasNegPion(0),
-      fTreeGammaVarDistOverTotMom(0),
-      fTreeGammaVarLeastNbrCrossedRows(0),
-      fTreeGammaVarLeastRatioCrossedRowsOverFindable(0),
-*/
-
-
-
-/*      fTreeVariableCentV0M(0),
-      fTreeVariableCentV0A(0),
-      fTreeVariableCentV0C(0),
-      fTreeVariableCentV0MEq(0),
-      fTreeVariableCentV0AEq(0),
-      fTreeVariableCentV0CEq(0),
-      fTreeVariableCentV0B(0),
-      fTreeVariableCentV0Apartial(0),
-      fTreeVariableCentV0Cpartial(0),
-      fTreeVariableCentV0S(0),
-      fTreeVariableCentV0SB(0),
-      fTreeVariableRefMultEta8(0),
-      fTreeVariableRefMultEta5(0),
-      fTreeVariableRunNumber(0), */
-
     fV0Reader(NULL),
     fESDEvent(NULL),
     fESDpid(NULL),
@@ -689,11 +646,11 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
 
     Int_t npt=500 ; // Number of Pt bins
     Int_t npt2=150 ; // Double_t ptmin2 = 0. ;
-    Double_t ptmin=0.;
+    //    Double_t ptmin=0.;
     Double_t ptmax=15. ;   // was 50.
     Double_t ptmax2=15. ;
 
-    Double_t mSigmax=1.4; Double_t mSigmin=1.1;
+    //    Double_t mSigmax=1.4; Double_t mSigmin=1.1;
     Double_t mLammax=1.20; Double_t mLammin=1.05;
     Int_t nLambins = 150;
 
@@ -701,8 +658,8 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
 
 
     
-    Int_t nBinMass = 70; // Number of mass bins
-    Int_t nR=50 ; // Number of radius bin
+    //    Int_t nBinMass = 70; // Number of mass bins
+    //    Int_t nR=50 ; // Number of radius bin
     Double_t Rmax=500. ;
 
     
@@ -1831,20 +1788,21 @@ void AliAnalysisTaskSigma0::SelectGammaV0(){
   //------------------------------------------------
 
   //Variable definition
-  Int_t    lOnFlyStatus = 0;// nv0sOn = 0, nv0sOff = 0;
-  Double_t lChi2V0 = 0;
-  Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
-  Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
-  Double_t lV0CosineOfPointingAngle = 0;
-  Double_t lV0Radius = 0, lPt = 0;
-  Double_t lRapK0Short = 0, lRapLambda = 0;
-  Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
-  Double_t lAlphaV0 = 0, lPtArmV0 = 0;
+  //  Int_t    lOnFlyStatus = 0;// nv0sOn = 0, nv0sOff = 0;
+  // Double_t lChi2V0 = 0;
+  //   Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
+  //  Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
+  // Double_t lV0CosineOfPointingAngle = 0;
+  //  Double_t lV0Radius = 0, lPt = 0;
+  //  Double_t  lPt = 0;
+  //  Double_t lRapK0Short = 0, lRapLambda = 0;
+  // Double_t lInvMassK0s = 0, lInvMassLambda = 0 ; // , lInvMassAntiLambda = 0;
+  //  Double_t lAlphaV0 = 0, lPtArmV0 = 0;
   
-  Double_t fMinV0Pt = 0;
-  Double_t fMaxV0Pt = 100;
+  //  Double_t fMinV0Pt = 0;
+  //  Double_t fMaxV0Pt = 100;
 
-  Int_t nv0s = 0;
+  //  Int_t nv0s = 0;
 
   if(1>0 ) return;
 
@@ -2132,7 +2090,7 @@ void AliAnalysisTaskSigma0::SelectLambda(){     //Fill list of Lambdas
         
     Double_t v0x=0.,v0y=0.,v0z=0.;
     v0->GetXYZ(v0x,v0y,v0z) ;
-    Double_t r=TMath::Sqrt(v0x*v0x + v0y*v0y) ;
+    //    Double_t r=TMath::Sqrt(v0x*v0x + v0y*v0y) ;
     // printf ("Lambda r %f V0R %f \n", r, lV0Radius);
         
     Int_t LamRecFl = 0;
@@ -2227,7 +2185,7 @@ void AliAnalysisTaskSigma0::SelectLambda(){     //Fill list of Lambdas
     FillHistogram("hALamMvsPt10",malam, ptalam );
     // FillHistogram("R3Conv", r ) ;
     
-    Double_t Rlam0 =   sqrt( v0->Xv()*v0->Xv() +  v0->Yv()*v0->Yv() + v0->Zv()*v0->Zv() );
+    //    Double_t Rlam0 =   sqrt( v0->Xv()*v0->Xv() +  v0->Yv()*v0->Yv() + v0->Zv()*v0->Zv() );
     //    FillHistogram("hMClam0MassPt0All", v0->GetEffMass(),  v0->Pt() );
     // FillHistogram("hMClam0RPt0All", Rlam0,  v0->Pt() );
             
@@ -2335,7 +2293,7 @@ void AliAnalysisTaskSigma0::SelectLambda(){     //Fill list of Lambdas
 
 	lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
 
-	Double_t lPt = v0->Pt();
+	//	Double_t lPt = v0->Pt();
 	Double_t lRapK0Short = v0->RapK0Short();
 	Double_t lRapLambda  = v0->RapLambda();
 	//      if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
@@ -2736,7 +2694,7 @@ void AliAnalysisTaskSigma0::SelectPhotonsFB()
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
 
-    Float_t dca = 1000;
+    //    Float_t dca = 1000;
     //     PhotonCandidate->GetDistanceOfClossetApproachToPrimVtx(lBestPrimaryVtxPos,dca);
 
     /*    Double_t  lMagneticField = fESDEvent->GetMagneticField();
@@ -3128,7 +3086,7 @@ void AliAnalysisTaskSigma0::SelectConvPhotons(){
     Double_t minPnSigmaAbovePionLine = 1. ;
     Double_t maxPnSigmaAbovePionLine = 3. ;
     Double_t nSigmaAbovePionLine = 0 ;
-    Int_t NlamEv = 0;   Int_t NalamEv = 0;  Int_t NlamminalamEv = 0;
+    //    Int_t NlamEv = 0;   Int_t NalamEv = 0;  Int_t NlamminalamEv = 0;
     
     for(Int_t iv0=0; iv0<nV0;iv0++){
         AliESDv0 * v0 = fESDEvent->GetV0(iv0) ;
@@ -4165,7 +4123,8 @@ Bool_t AliAnalysisTaskSigma0::TestLambda(Double_t pt,Double_t l1,Double_t l2){
 void AliAnalysisTaskSigma0::FillCorr(TLorentzVector * trig, const Int_t itype  )
 {
   //OLD     
-  Int_t hnum = -1;
+  //  Int_t hnum = -1;
+  if( 1>0 ) return;
 }
 
 //______________________________________________________________________________

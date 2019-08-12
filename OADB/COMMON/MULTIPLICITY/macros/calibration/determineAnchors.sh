@@ -6,7 +6,7 @@ runListFile=$3
 automaticMode=$4
 nProcs=$5
 
-macrosPath=$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/calibration
+macrosPath=$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/calibration/
 
 mkdir -p temp/anchors
 for run in `cat $runListFile`; do

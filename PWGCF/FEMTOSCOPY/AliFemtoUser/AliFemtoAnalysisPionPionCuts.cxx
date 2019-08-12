@@ -112,5 +112,7 @@ AliFemtoPairCutPionPionAKDetaDphi::EventBegin(const AliFemtoEvent *ev)
 
 IMPL_TOFROM_CUT(AliFemtoEventCutPionPionAK)
 IMPL_TOFROM_CUT(AliFemtoTrackCutPionPionAK)
+IMPL_TOFROM_CUT(AliFemtoTrackCutPionPionIdealAK)
+IMPL_TOFROM_CUT(AliFemtoTrackCutPionPionMisidentAK)
 IMPL_TOFROM_CUT(AliFemtoPairCutPionPionAKAvgSep)
 IMPL_TOFROM_CUT(AliFemtoPairCutPionPionAKDetaDphi)
