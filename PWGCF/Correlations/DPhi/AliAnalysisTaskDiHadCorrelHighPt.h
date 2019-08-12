@@ -92,6 +92,8 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetNumberOfDeltaEtaBins(Int_t bins) { fNumberOfDeltaEtaBins = bins; }
         void                    SetNumberOfEtaBins(Int_t bins) { fNumberOfEtaBins = bins; }
         void                    SetMixing(Bool_t mix) { fMixing = mix; } 
+        void                    SetNumberOfVzBins(Int_t nbins) { fNumOfVzBins = nbins; }
+        AliAODTrack *           SetAliAODTrack(Double_t theta,Double_t phi, Double_t pt , Short_t charge);
 
         AliEventCuts            fAliEventCuts;
     
@@ -116,11 +118,13 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         THnSparse*              fHistNumberOfTriggers;  //!
         THnSparse*              fHistMCKorelacie;       //!
         THnSparse*              fHistMCMixingRec;       //!
+        THnSparse*              fHistMCMixingGen;       //!
 
         Bool_t          			  fFillMixed;  // enable event mixing (default: ON)
         Int_t           			  fMixingTracks;      // size of track buffer for event mixing
         AliEventPoolManager*          fPoolMgr;         //! event pool manager
         AliEventPool*                 fPool; //!
+        AliEventPool*                 fPoolMCGen; //!
         Bool_t                        fAnalysisMC; // enable MC study
         Int_t                         fOStatus; //
         Double_t                      fPtTrigMin; //
@@ -191,11 +195,12 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Int_t                   fNumberOfDeltaEtaBins; // Number of DeltaEta Bins in correlation functionand in mixing
         Int_t                   fNumberOfEtaBins; // Number of Eta bins for efficiency correction
         Bool_t                  fMixing; // enable mixing
+        Double_t                fNumOfVzBins; // number of PV bins for mixing
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 15);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 16);
 };
 
 class AliV0ChParticle : public AliVParticle
