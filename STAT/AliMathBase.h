@@ -49,6 +49,29 @@ class AliMathBase : public TObject
 
   static Double_t Gamma(Double_t k=0);
 
+  //
+  // Other useful functions
+  //
+  static UInt_t NumberOfSetBits(UInt_t i) {
+    // Function that calculates the Hamming weight of an UInt_t
+    // see
+    // https://en.wikipedia.org/wiki/Hamming_weight
+    // https://stackoverflow.com/questions/109023/how-to-count-the-number-of-set-bits-in-a-32-bit-integer
+    i = i - ((i >> 1) & 0x55555555);
+    i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
+    return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+  }
+
+  static Float_t TruncateFloatFraction(Float_t x, UInt_t mask = 0xFFFFFF00){
+    // Mask the less significant bits in the float fraction (1 bit sign, 8 bits exponent, 23 bits fraction), see
+    // https://en.wikipedia.org/wiki/Single-precision_floating-point_format
+    // mask 0xFFFFFF00 means 23 - 8 = 15 bits in the fraction
+    union { Float_t y; UInt_t iy;} myu;
+    myu.y = x;
+    myu.iy &= mask;
+    return myu.y;
+  }
+
  ClassDef(AliMathBase,0) // Various mathematical tools for physics analysis - which are not included in ROOT TMath
  
 };
