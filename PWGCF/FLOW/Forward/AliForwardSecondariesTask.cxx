@@ -69,11 +69,16 @@ ClassImp(AliForwardSecondariesTask)
 
 //_____________________________________________________________________
 AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
-  fOutputList(0),
+  fOutputList(0),    // output list
   fEventList(0),
   fDeltaList(0),
   fRandom(0),
   fTrackDensity(),
+  delta_phi_eta(),
+  delta_eta_phi(),
+  delta_eta_eta(),
+  delta_phi_phi(),
+  fnoPrim(),
   fSettings(),
   fUtil(),
   fStored(0),
@@ -81,12 +86,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fMaxConsequtiveStrips(3),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
-  fStorage(nullptr),
-  delta_phi_eta(),
-  delta_eta_phi(),
-  delta_eta_eta(),
-  delta_phi_phi(),
-  fnoPrim()
+  fStorage(nullptr)
   {
     //
     //  Default constructor
@@ -100,6 +100,11 @@ AliForwardSecondariesTask::AliForwardSecondariesTask(const char* name) : AliAnal
   fDeltaList(0),
   fRandom(0),
   fTrackDensity(),
+  delta_phi_eta(),
+  delta_eta_phi(),
+  delta_eta_eta(),
+  delta_phi_phi(),
+  fnoPrim(),
   fSettings(),
   fUtil(),
   fStored(0),
@@ -107,12 +112,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask(const char* name) : AliAnal
   fMaxConsequtiveStrips(3),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
-  fStorage(nullptr),
-  delta_phi_eta(),
-  delta_eta_phi(),
-  delta_eta_eta(),
-  delta_phi_phi(),
-  fnoPrim()
+  fStorage(nullptr)
   {
     //
     //  Constructor
