@@ -2874,8 +2874,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
   Int_t nSelectedLctopKpi=0;
   Int_t nFilteredLctopKpi=0;
   
-  Int_t pdgDgLbtoLcpi[2] = {211,4122};
-  UInt_t pdgDgLbtoLcpiUInt[2] = {211,4122};
+  Int_t pdgDgLbtoLcpi[2] = {4122,211};
+  UInt_t pdgDgLbtoLcpiUInt[2] = {4122,211};
   Int_t nSelectedLb = 0;
   Int_t nFilteredLb = 0;
   
@@ -2977,9 +2977,9 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                 
                 //we use the Lb pion and Lc tracks to reconstruct the vertex for the Lb
                 AliExternalTrackParam firstTrack;
-                firstTrack.CopyFromVTrack(pionTrack);
+                firstTrack.CopyFromVTrack(lctopkpi);
                 AliExternalTrackParam secondTrack;
-                secondTrack.CopyFromVTrack(lctopkpi);
+                secondTrack.CopyFromVTrack(pionTrack);
                 
                 // we calculate the vertex of the mother candidate
                 TObjArray daughterTracks;
@@ -3025,8 +3025,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                   AliAODRecoDecayHF2Prong trackLb(vertexMother, px, py, pz, d0, d0err, dca);
                   
                   trackLb.SetCharge(chargeMother);
-                  trackLb.GetSecondaryVtx()->AddDaughter(pionTrack);
                   trackLb.GetSecondaryVtx()->AddDaughter(lctopkpi);
+                  trackLb.GetSecondaryVtx()->AddDaughter(pionTrack);
                   trackLb.SetPrimaryVtxRef((AliAODVertex*)aod->GetPrimaryVertex());
                   trackLb.SetProngIDs(2, id);
                   

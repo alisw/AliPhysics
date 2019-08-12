@@ -168,7 +168,7 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, unsigned int eventID,
   fEvID=eventID;
   fPtGen=ptgen;
  
-  AliAODRecoDecayHF3Prong* candLc = (AliAODRecoDecayHF3Prong*)cand->GetDaughter(1); //Lc
+  AliAODRecoDecayHF3Prong* candLc = (AliAODRecoDecayHF3Prong*)cand->GetDaughter(0); //Lc
   
   //topological variables
   //common (Lb -> Lc pi)
@@ -185,13 +185,13 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, unsigned int eventID,
   fDCA=((AliAODRecoDecayHF2Prong*)cand)->GetDCA();
 
   UInt_t prongs[2];
-  prongs[0] = 211; prongs[1] = 4122;
+  prongs[0] = 4122; prongs[1] = 211;
   fInvMass=((AliAODRecoDecayHF2Prong*)cand)->InvMass(2,prongs);
   
-  fImpParProng[0]=cand->Getd0Prong(0);
   for(unsigned int iProng=0; iProng<3; iProng++) {
-    fDCAProng_Lc[iProng]=candLc->GetDCA(iProng);
+    fImpParProng[iProng]=candLc->Getd0Prong(iProng);
   }
+  fImpParProng[3]=cand->Getd0Prong(1);
   //To add if any more Lb-specific
 
   //Lc -> p K pi variables
@@ -224,9 +224,9 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, unsigned int eventID,
 
   //single track variables
   AliAODTrack* prongtracks[4];
-  prongtracks[0] = (AliAODTrack*)cand->GetDaughter(0);
-  for(unsigned int iProng=0; iProng<3; iProng++) prongtracks[iProng+1] = (AliAODTrack*)candLc->GetDaughter(iProng);
-  
+  for(unsigned int iProng=0; iProng<3; iProng++) prongtracks[iProng] = (AliAODTrack*)candLc->GetDaughter(iProng);
+  prongtracks[3] = (AliAODTrack*)cand->GetDaughter(1);
+
   bool setsingletrack = SetSingleTrackVars(prongtracks);
   if(!setsingletrack) return false;
 
