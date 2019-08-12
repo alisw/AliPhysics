@@ -3012,7 +3012,7 @@ void AddTask_GammaConvV1_PbPb(
       TObjString *Header1 = new TObjString("PARAM_PHOS");
       HeaderList->Add(Header1);
     }
-  } else if (generatorName.CompareTo("LHC16h4")==0 || periodNameV0Reader.CompareTo("LHC16h4")==0){
+  } else if (generatorName.CompareTo("LHC16h4")==0 || generatorName.CompareTo("LHC19h3")==0){
     if (doWeightingPart == 1){
       TObjString *Header1 = new TObjString("Injector (pi0)_1");
       HeaderList->Add(Header1);
