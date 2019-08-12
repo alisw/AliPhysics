@@ -20,7 +20,7 @@ std::string AliDataFile::GetFileName(const std::string &url) {
   if ((env = gSystem->Getenv("ALIPHYSICS_VERSION"))) {
     buf = env;
     size_t cut = buf.rfind('-'); // remove build number
-    size_t us = buf.rfind('_');
+    size_t us = buf.find('_');
     if (cut != std::string::npos) {
       if (us != std::string::npos && us < cut) cut = us;
       ver = buf.substr(0, cut);
