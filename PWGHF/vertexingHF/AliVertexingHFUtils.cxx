@@ -2586,6 +2586,136 @@ Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle 
   if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
   return decayBs;
 }
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckLbDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
+  /// Checks the Lb decay channel. Returns >= 1 for Lb->Lcpi->pKpipi, <0 in other cases
+  /// Returns 1 for non-resonant Lc decays and 2, 3 or 4 for resonant ones, -1 in other cases
+  
+  if(label<0) return -1;
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
+  if(TMath::Abs(pdgD)!=5122) return -1;
+  
+  Int_t nDau=mcPart->GetNDaughters();
+  if(nDau!=2) return -1;
+  
+  Int_t labelFirstDau = mcPart->GetDaughterFirst();
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Int_t nProtons=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundpKpi=0;
+  Int_t decayLb = -1;
+  
+  for(Int_t iDau=0; iDau<nDau; iDau++){
+    Int_t indDau = labelFirstDau+iDau;
+    if(indDau<0) return -1;
+    TParticle* dau=mcEvent->Particle(indDau);
+    if(!dau) return -1;
+    Int_t pdgdau=dau->GetPdgCode();
+    if(TMath::Abs(pdgdau)==4122){
+      Int_t labDauLc[3] = {-1,-1,-1};
+      //Returns 1 for non-resonant decays and 2, 3 or 4 for resonant ones, -1 in other cases
+      Int_t decayLc = CheckLcpKpiDecay(mcEvent, indDau, labDauLc);
+      if (decayLc < 0 || labDauLc[0] == -1) return -1;
+      decayLb = decayLc;
+      nProtons++;
+      nKaons++;
+      nPions++;
+      for(Int_t iLc = 0; iLc < 3; iLc++){
+        TParticle* dauLc=mcEvent->Particle(labDauLc[iLc]);
+        sumPxDau+=dauLc->Px();
+        sumPyDau+=dauLc->Py();
+        sumPzDau+=dauLc->Pz();
+        arrayDauLab[nFoundpKpi++]=labDauLc[iLc];
+      }
+      if(nFoundpKpi>4) return -1;
+    }else if(TMath::Abs(pdgdau)==211){
+      if(pdgD*pdgdau>0) return -1;
+      nPions++;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      arrayDauLab[nFoundpKpi++]=indDau;
+      if(nFoundpKpi>4) return -1;
+    }
+  }
+  
+  if(nProtons!=1) return -1;
+  if(nKaons!=1) return -1;
+  if(nPions!=2) return -1;
+  if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+  if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+  if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
+  return decayLb;
+}
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckLbDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+  /// Checks the Lb decay channel. Returns >= 1 for Lb->Lcpi->pKpipi, <0 in other cases
+  /// Returns 1 for non-resonant Lc decays and 2, 3 or 4 for resonant ones, -1 in other cases
+  
+  Int_t pdgD=mcPart->GetPdgCode();
+  if(TMath::Abs(pdgD)!=5122) return -1;
+  
+  Int_t nDau=mcPart->GetNDaughters();
+  if(nDau!=2) return -1;
+  
+  Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Int_t nProtons=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundpKpi=0;
+  Int_t decayLb = -1;
+  
+  for(Int_t iDau=0; iDau<nDau; iDau++){
+    Int_t indDau = labelFirstDau+iDau;
+    if(indDau<0) return -1;
+    AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
+    if(!dau) return -1;
+    Int_t pdgdau=dau->GetPdgCode();
+    if(TMath::Abs(pdgdau)==4122){
+      Int_t labDauLc[3] = {-1,-1,-1};
+      //Returns 1 for non-resonant decays and 2, 3 or 4 for resonant ones, -1 in other cases
+      Int_t decayLc = CheckLcpKpiDecay(arrayMC, dau, labDauLc);
+      if (decayLc < 0 || labDauLc[0] == -1) return -1;
+      decayLb = decayLc;
+      nProtons++;
+      nKaons++;
+      nPions++;
+      for(Int_t iLc = 0; iLc < 3; iLc++){
+        AliAODMCParticle* dauLc=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauLc[iLc]));
+        sumPxDau+=dauLc->Px();
+        sumPyDau+=dauLc->Py();
+        sumPzDau+=dauLc->Pz();
+        arrayDauLab[nFoundpKpi++]=labDauLc[iLc];
+      }
+      if(nFoundpKpi>4) return -1;
+    }else if(TMath::Abs(pdgdau)==211){
+      if(pdgD*pdgdau>0) return -1;
+      nPions++;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      arrayDauLab[nFoundpKpi++]=indDau;
+      if(nFoundpKpi>4) return -1;
+    }
+  }
+  
+  if(nProtons!=1) return -1;
+  if(nKaons!=1) return -1;
+  if(nPions!=2) return -1;
+  if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
+  if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
+  if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+  return decayLb;
+}
 //________________________________________________________________________
 Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod,
                                             Double_t etaMin, Double_t etaMax,
