@@ -101,15 +101,21 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
   // In case of Pythia pt Hard bin simulations (jet-jet, gamma-jet)
   // reject some special events that bother the cross section
   //
-  if ( simulation )
+  if ( simulation && cutsString.Contains("PtHardCut"))
   {
     // Event rejection cuts for jet-jet simulations, do not use in other
-    reader->SetPtHardAndJetPtComparison(kTRUE);
-    reader->SetPtHardAndJetPtFactor(2);
+    if (  cutsString.Contains("JetJet")  )
+    {
+      reader->SetPtHardAndJetPtComparison(kTRUE);
+      reader->SetPtHardAndJetPtFactor(2);
+    }
     
     // Event rejection more suitable for gamma-jet simulations, do not use in other
-    // reader->SetPtHardAndClusterPtComparison(kTRUE);
-    // reader->SetPtHardAndClusterPtFactor(1.5);
+    if (  cutsString.Contains("GamJet")  )
+    {    
+      reader->SetPtHardAndClusterPtComparison(kTRUE);
+      reader->SetPtHardAndClusterPtFactor(1.5);
+    }
     
     // Set here generator name, default pythia
     //reader->GetMCAnalysisUtils()->SetMCGenerator("");
@@ -160,7 +166,7 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
 /// \param cutsString : A string with additional cuts ("Smearing","MCEnScale")
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
-/// \param year: The year the data was taken, used to configure time cut
+/// \param year: The year the data was taken, used to configure time cut and fiducial cut
 /// \param simulation : A bool identifying the data as simulation
 ///
 void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader, 
@@ -170,8 +176,13 @@ void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader,
   reader->SetEMCALEMin(0.3);
   reader->SetEMCALEMax(1000);
   
-  if      ( calorimeter == "EMCAL" ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70,  80, 187) ;
-  else if ( calorimeter == "DCAL"  ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70, 260, 327) ; 
+  if      ( calorimeter == "EMCAL" )
+  {
+     if     ( year > 2014 ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 185.8) ; //12 SM
+    else if ( year > 2010 ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 178.8) ; //10 SM
+    else                    reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 118.8) ; // 4 SM
+  }
+  else if ( calorimeter == "DCAL"  ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
   
   // Use other cluster array than default:
   reader->SetEMCALClusterListName(clustersArray);
@@ -186,13 +197,8 @@ void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader,
   {
     printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Apply time cut:");
     reader->SwitchOnUseEMCALTimeCut();
-    reader->SetEMCALTimeCut(-25,20);
-    if ( year > 2013 ) 
-    {
-      reader->SetEMCALTimeCut(-20,15);
-      printf(" -20 ns < t < 15 ns\n");
-    }
-    else printf(" -25 ns < t < 20 ns\n");
+    reader->SetEMCALTimeCut(-30,30); // rather open, until high pT calibration is improved
+    printf(" -30 ns < t < 30 ns\n");
   }
   
   if ( calorimeter == "EMCAL" || calorimeter == "DCAL" )
@@ -253,15 +259,17 @@ void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader,
 ///
 /// \param reader: pointer to AliCaloTrackReaderTask
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year: The year the data was taken, used to configure fiducial cut
 ///
 void ConfigurePHOSClusterCuts ( AliCaloTrackReader* reader, 
-                                TString calorimeter )
+                                TString calorimeter, Int_t year )
 {
   reader->SetPHOSEMin(0.3);
   reader->SetPHOSEMax(1000);
   
-  reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250, 320) ; 
-
+  if ( year > 2014 ) reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
+  else               reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ; 
+  
   if ( calorimeter == "PHOS" )
   { // Should be on if QA is activated with correlation on
     reader->SwitchOnPHOSCells();
@@ -391,7 +399,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   
   ConfigureTrackCuts       (reader, inputDataType, cutsString);
   
-  ConfigurePHOSClusterCuts (reader, calorimeter);
+  ConfigurePHOSClusterCuts (reader, calorimeter, year);
 
   ConfigureEMCALClusterCuts(reader, calorimeter, cutsString, clustersArray, year, simulation);
 
@@ -432,7 +440,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
   cu->SetDebug(debug);
   
   // Remove clusters close to borders, at least max energy cell is 1 cell away
-  cu->SetNumberOfCellsFromEMCALBorder(1);
+  cu->SetNumberOfCellsFromEMCALBorder(0); // temporary! set it back to 1.
   cu->SetNumberOfCellsFromPHOSBorder (2);
   
   cu->SetNumberOfSuperModulesUsed(10);
@@ -560,6 +568,17 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 /// \param debug : An int to define the debug level of all the tasks
 /// \param trigSuffix :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
 ///
+/// Options of cutsString:
+///    * Smearing: Smear shower shape long axis in cluster, just this parameter. Not to be used
+///    * SPDPileUp: Remove events tagged as pile-up by SPD
+///    * MCWeight: Apply weight on histograms and calculate sumw2
+///    * MCEvtHeadW: Get the cross section from the event header
+///    * MCEnScale: Scale the cluster energy by a factor, depending SM number  and period
+///    * ITSonly: Select tracks with only ITS information
+///    * PtHardCut: Select events with jet or cluster photon energy not too large or small with respect the generated partonic energy 
+///       * JetJet: Compare generated (reconstructed generator level) jet pT with parton pT  
+///       * GamJet: Compare cluster pt and generated parton pt, careful, test before using
+///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (
  TString  calorimeter   = "EMCAL", // "DCAL", "PHOS"
@@ -569,7 +588,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
  TString  period        = "", // LHC11d
  Int_t    rejectEMCTrig = 0,
  TString  clustersArray = "",
- TString  cutsString    = "", // "Smearing","SPDPileUp"
+ TString  cutsString    = "", 
  Bool_t   calibrate     = kFALSE,
  Bool_t   nonLinOn      = kFALSE,
  Int_t    minCen        = -1,

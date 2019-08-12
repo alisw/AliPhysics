@@ -589,7 +589,7 @@ void AliEmcalCorrectionTask::InitializeComponents()
 }
 
 /**
- * Steers the creation of all input objects of a selected type. In the case of clusters and tracks, 
+ * Steers the creation of all input objects of a selected type. In the case of clusters and tracks,
  * AliEmcalContainer can be used, and a container is created for each requested object of the specified
  * input object type. In the case of cells, an EMCal Correction Cell Container is created to handle the
  * relevant information.
@@ -863,7 +863,7 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
   if (result) {
     // Only continue checking if the min is there, since we must set both together
     Double_t tempDouble2 = 0;
-    result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "maxEta", tempDouble, false);
+    result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "maxEta", tempDouble2, false);
     if (result) {
       AliDebugStream(2) << cont->GetName() << ": Setting eta limits of " << tempDouble << " to " << tempDouble2 << std::endl;
       cont->SetEtaLimits(tempDouble, tempDouble2);
@@ -874,7 +874,7 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
   if (result) {
     // Only continue checking if the min is there, since we must set both together
     Double_t tempDouble2 = 0;
-    result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "maxPhi", tempDouble, false);
+    result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "maxPhi", tempDouble2, false);
     if (result) {
       AliDebugStream(2) << cont->GetName() << ": Setting phi limits of " << tempDouble << " to " << tempDouble2 << std::endl;
       cont->SetPhiLimits(tempDouble, tempDouble2);
@@ -959,12 +959,12 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
 /**
  * Creates a new AliEmcalContainer derived container based on the requested type and the branch name set in
  * the user and default %YAML configuration and requested by a particular correction component. Supports the
- * "usedefault" pattern to simplify setting the proper branch name. Any track input objects are created as 
+ * "usedefault" pattern to simplify setting the proper branch name. Any track input objects are created as
  * track containers unless the branch is named "mcparticles". If this is problematic for your analysis, the
  * track selection behavior of the track container can be disabled by setting the track selection to
  * "kNoTrackFilter".
  *
- * Note that the created container is adopted and managed by the Correction Task. 
+ * Note that the created container is adopted and managed by the Correction Task.
  *
  * @param[in] contType Type of the input object to add
  * @param[in] containerName Name of the container to create (as defined in the %YAML configuration)
@@ -1135,7 +1135,7 @@ void AliEmcalCorrectionTask::ExecOnce()
     AliError("Could not retrieve event! Returning!");
     return;
   }
-  
+
   // This warning was extracted out from the cell components
   if (dynamic_cast<AliAODEvent*>(InputEvent())) {
     AliWarning("=============================================================");
@@ -1443,7 +1443,7 @@ void AliEmcalCorrectionTask::CheckForContainerArray(AliEmcalContainer * cont, Al
 
 /**
  * Given the input object type, it return the name of the field in the %YAML configuration where information
- * about it should be located. 
+ * about it should be located.
  *
  * @param inputObjectType The type of the input object
  * @return The name of the field of the requested input object in the %YAML configuration file
@@ -1471,7 +1471,7 @@ std::string AliEmcalCorrectionTask::GetInputFieldNameFromInputObjectType(AliEmca
 /**
  * Checks for a component name in a list of possible component names. This is necessary to search for the
  * components that are associated with a given correction task and it's associated suffix. The comparison is
- * done between strings, so some care is needed not to execute this function too often, especially for a 
+ * done between strings, so some care is needed not to execute this function too often, especially for a
  * large number of possible components
  *
  * @param name Name to search for in the possible names

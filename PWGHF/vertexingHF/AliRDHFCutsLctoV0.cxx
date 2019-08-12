@@ -1156,7 +1156,7 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
 
   case 12:
 
-    // identify bachelor with an N-sigma cut
+    // identify bachelor with an N-sigma cut - TOF required
     nTOFsigmas = -999;
     tofID = fPidHF->GetnSigmaTOF(bachelor, 4, nTOFsigmas);
     nTPCsigmas = -999;
@@ -1170,6 +1170,26 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
     tpcID = fPidHF->GetnSigmaTPC(bachelor, 2, nTPCsigmas);
 
     isBachelorID2 = TMath::Abs(nTPCsigmas) < 3. && TMath::Abs(nTOFsigmas) < 3. && (tpcID == 1) && (tofID == 1);
+    isBachelorID4 = isBachelorID2;
+
+    break;
+
+  case 13:
+
+    // identify bachelor with an N-sigma cut - TOF required when available
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor, 4, nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor, 4, nTPCsigmas);
+
+    isBachelorID1 = (tpcID == 1) && (TMath::Abs(nTPCsigmas) < 3.) && ((tofID == 1 && TMath::Abs(nTOFsigmas) < 3.) || tofID == -1);
+
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor, 2, nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor, 2, nTPCsigmas);
+
+    isBachelorID2 = (tpcID == 1) && (TMath::Abs(nTPCsigmas) < 3.) && ((tofID == 1 && TMath::Abs(nTOFsigmas) < 3.) || tofID == -1);
     isBachelorID4 = isBachelorID2;
 
     break;

@@ -138,7 +138,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
-  fCutOnMomConservation(0.00001)
+  fCutOnMomConservation(0.00001),
+  fAODProtection(1)
 {
   //
   //Default ctor
@@ -205,7 +206,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
-  fCutOnMomConservation(0.00001)
+  fCutOnMomConservation(0.00001),
+  fAODProtection(1)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -304,7 +306,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fUseCutsForTMVA(c.fUseCutsForTMVA),
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
   fFillMinimumSteps(c.fFillMinimumSteps),
-  fCutOnMomConservation(c.fCutOnMomConservation)
+  fCutOnMomConservation(c.fCutOnMomConservation),
+  fAODProtection(c.fAODProtection)
+
 {
   //
   // Copy Constructor
@@ -556,6 +560,18 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   }
 
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
+    
+  if(fAODProtection>=0){
+        //   Protection against different number of events in the AOD and deltaAOD
+        //   In case of discrepancy the event is rejected.
+        Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+        if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+            // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+            fHistEventsProcessed->Fill(6.5);
+            return;
+        }
+        fHistEventsProcessed->Fill(7.5);
+  }
 
   TClonesArray *arrayBranch=0;
 
@@ -803,11 +819,6 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     trackCuts[0]=fCuts->GetTrackCuts();
     trackCuts[1]=fCuts->GetTrackCutsV0daughters();
     trackCuts[2]=fCuts->GetTrackCutsV0daughters();
-    if (fUseCascadeTaskForLctoV0bachelor){ // the bachelor is prong 2 in this case
-      trackCuts[2]=fCuts->GetTrackCuts();
-      trackCuts[0]=fCuts->GetTrackCutsV0daughters();
-      trackCuts[1]=fCuts->GetTrackCutsV0daughters();
-    }
   }
   else {
     for (Int_t iProng = 0; iProng<cfVtxHF->GetNProngs(); iProng++){
@@ -1627,13 +1638,15 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   //slot #1
   OpenFile(1);
   const char* nameoutput=GetOutputSlot(1)->GetContainer()->GetName();
-  fHistEventsProcessed = new TH1I(nameoutput,"",6,0,6) ;
+  fHistEventsProcessed = new TH1I(nameoutput,"",8,0,8) ;
   fHistEventsProcessed->GetXaxis()->SetBinLabel(1,"Events processed (all)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(2,"Events analyzed (after selection)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(3,"Candidates processed (all)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(4,"Candidates already filled");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(5,"Candidates OK in FillRecoCand");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(6,"Candidates failing in FillRecoCand");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(7,"AOD/dAOD mismatch");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(8,"AOD/dAOD #events ok");
 
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;

@@ -65,7 +65,6 @@ AliHFQnVectorHandler::AliHFQnVectorHandler():
     fIsOADBFileOpen(false),
     fCalibObjRun(-9999),
     fHistMultV0(nullptr),
-    fWeightsTPC(nullptr),
     fEnablePhiDistrHistos(false),
     fQnVectorTask(nullptr),
     fQnVectorMgr(nullptr)
@@ -81,8 +80,8 @@ AliHFQnVectorHandler::AliHFQnVectorHandler():
         fQnVecPosTPC[iComp]      = -9999.;
         fQnVecNegTPC[iComp]      = -9999.;
         fQnVecFullV0[iComp]      = -9999.;
-        fQnVecV0A[iComp]     = -9999.;
-        fQnVecV0C[iComp]     = -9999.;
+        fQnVecV0A[iComp]         = -9999.;
+        fQnVecV0C[iComp]         = -9999.;
     }
 
     for(int iZvtx = 0; iZvtx < 14; iZvtx++) {
@@ -94,6 +93,11 @@ AliHFQnVectorHandler::AliHFQnVectorHandler():
         fQy2mV0C[iZvtx] = nullptr;
         fQx2sV0C[iZvtx] = nullptr;
         fQy2sV0C[iZvtx] = nullptr;  
+    }
+
+    for(int iCent = 0; iCent < 9; iCent++) {
+        fWeightsTPCPosEta[iCent] = nullptr;
+        fWeightsTPCNegEta[iCent] = nullptr;
     }
 
     fPhiVsCentrTPC[0]=nullptr;
@@ -134,7 +138,6 @@ AliHFQnVectorHandler::AliHFQnVectorHandler(int calibType, int normMeth, int harm
     fIsOADBFileOpen(false),
     fCalibObjRun(-9999),
     fHistMultV0(nullptr),
-    fWeightsTPC(nullptr),
     fEnablePhiDistrHistos(false),
     fQnVectorTask(nullptr),
     fQnVectorMgr(nullptr)
@@ -150,8 +153,8 @@ AliHFQnVectorHandler::AliHFQnVectorHandler(int calibType, int normMeth, int harm
         fQnVecPosTPC[iComp]      = -9999.;
         fQnVecNegTPC[iComp]      = -9999.;
         fQnVecFullV0[iComp]      = -9999.;
-        fQnVecV0A[iComp]     = -9999.;
-        fQnVecV0C[iComp]     = -9999.;
+        fQnVecV0A[iComp]         = -9999.;
+        fQnVecV0C[iComp]         = -9999.;
     }
 
     for(int iZvtx = 0; iZvtx < 14; iZvtx++) {
@@ -163,6 +166,11 @@ AliHFQnVectorHandler::AliHFQnVectorHandler(int calibType, int normMeth, int harm
         fQy2mV0C[iZvtx] = nullptr;
         fQx2sV0C[iZvtx] = nullptr;
         fQy2sV0C[iZvtx] = nullptr;  
+    }
+
+    for(int iCent = 0; iCent < 9; iCent++) {
+        fWeightsTPCPosEta[iCent] = nullptr;
+        fWeightsTPCNegEta[iCent] = nullptr;
     }
 
     fPhiVsCentrTPC[0]=nullptr;
@@ -467,6 +475,9 @@ void AliHFQnVectorHandler::RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, d
     TBits negIDsAfterRem(fUsedTrackNegIDs);
     
     if(fCalibType==kQnCalib) {
+        
+        short centbin = GetCentBin();
+
         for(unsigned int iTr=0; iTr<trToRem.size(); iTr++) {
             bool isTrackUsed = false;
             short trID = trToRem[iTr]->GetID();
@@ -477,18 +488,30 @@ void AliHFQnVectorHandler::RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, d
             if(!isTrackUsed) continue; // --> track not used for Qn
             double eta=trToRem[iTr]->Eta();
             double phi=trToRem[iTr]->Phi();
-            QnVecFullTPC[0] -= TMath::Cos(fHarmonic*phi);
-            QnVecFullTPC[1] -= TMath::Sin(fHarmonic*phi);
-            multFullTPC -= 1;
+            double weight = 1.;
             if(eta>0) {
-                QnVecPosTPC[0] -= TMath::Cos(fHarmonic*phi);
-                QnVecPosTPC[1] -= TMath::Sin(fHarmonic*phi);
-                multPosTPC -= 1;
+                if(fWeightsTPCPosEta[centbin]) {
+                    int phibin = fWeightsTPCPosEta[centbin]->GetXaxis()->FindBin(phi);
+                    weight = 1./fWeightsTPCPosEta[centbin]->GetBinContent(phibin);
+                }
+                QnVecFullTPC[0] -= weight*TMath::Cos(fHarmonic*phi);
+                QnVecFullTPC[1] -= weight*TMath::Sin(fHarmonic*phi);
+                multFullTPC     -= weight;
+                QnVecPosTPC[0]  -= weight*TMath::Cos(fHarmonic*phi);
+                QnVecPosTPC[1]  -= weight*TMath::Sin(fHarmonic*phi);
+                multPosTPC      -= weight;
             }
             else {
-                QnVecNegTPC[0] -= TMath::Cos(fHarmonic*phi);
-                QnVecNegTPC[1] -= TMath::Sin(fHarmonic*phi);
-                multNegTPC -= 1;
+                if(fWeightsTPCNegEta[centbin]) {
+                    int phibin = fWeightsTPCNegEta[centbin]->GetXaxis()->FindBin(phi);
+                    weight = 1./fWeightsTPCNegEta[centbin]->GetBinContent(phibin);
+                }
+                QnVecFullTPC[0] -= weight*TMath::Cos(fHarmonic*phi);
+                QnVecFullTPC[1] -= weight*TMath::Sin(fHarmonic*phi);
+                multFullTPC     -= weight;
+                QnVecNegTPC[0]  -= weight*TMath::Cos(fHarmonic*phi);
+                QnVecNegTPC[1]  -= weight*TMath::Sin(fHarmonic*phi);
+                multNegTPC      -= weight;
             }
             if(trID>=0)
                 posIDsAfterRem.ResetBitNumber(trID);
@@ -841,7 +864,7 @@ void AliHFQnVectorHandler::ComputeQvecQnFrameworkV0()
 //__________________________________________________________
 void AliHFQnVectorHandler::ComputeQvecTPC() 
 {
-    //TODO: add calibrations (from Alex file? Our own calibrations?)
+    short centbin = GetCentBin();
 
     //initialise Q vectors
     for(int iComp=0; iComp<2; iComp++) {
@@ -873,20 +896,32 @@ void AliHFQnVectorHandler::ComputeQvecTPC()
         else fUsedTrackNegIDs.SetBitNumber(TMath::Abs(track->GetID()));
         double qx = TMath::Cos(fHarmonic*phi);
         double qy = TMath::Sin(fHarmonic*phi);
-        fQnVecFullTPC[0] += qx;
-        fQnVecFullTPC[1] += qy;
-        fMultFullTPC     += 1;
+        double weight = 1.;
         if(eta>0) {
-            fQnVecPosTPC[0] += qx;
-            fQnVecPosTPC[1] += qy;
-            fMultPosTPC     += 1;
+            if(fWeightsTPCPosEta[centbin]) {
+                int phibin = fWeightsTPCPosEta[centbin]->GetXaxis()->FindBin(phi);
+                weight = 1./fWeightsTPCPosEta[centbin]->GetBinContent(phibin);
+            }
+            fQnVecFullTPC[0] += weight*qx;
+            fQnVecFullTPC[1] += weight*qy;
+            fMultFullTPC     += weight;
+            fQnVecPosTPC[0]  += weight*qx;
+            fQnVecPosTPC[1]  += weight*qy;
+            fMultPosTPC      += weight;
             if(fEnablePhiDistrHistos && fPhiVsCentrTPC[0])
                 fPhiVsCentrTPC[0]->Fill(fCentrality,phi);
         }
         else {
-            fQnVecNegTPC[0] += qx;
-            fQnVecNegTPC[1] += qy;
-            fMultNegTPC     += 1;
+            if(fWeightsTPCNegEta[centbin]) {
+                int phibin = fWeightsTPCNegEta[centbin]->GetXaxis()->FindBin(phi);
+                weight = 1./fWeightsTPCNegEta[centbin]->GetBinContent(phibin);
+            }
+            fQnVecFullTPC[0] += weight*qx;
+            fQnVecFullTPC[1] += weight*qy;
+            fMultFullTPC     += weight;
+            fQnVecNegTPC[0]  += weight*qx;
+            fQnVecNegTPC[1]  += weight*qy;
+            fMultNegTPC      += weight;
             if(fEnablePhiDistrHistos && fPhiVsCentrTPC[1])
                 fPhiVsCentrTPC[1]->Fill(fCentrality,phi);
         }
@@ -996,10 +1031,11 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
     fOADBFile = TFile::Open(fOADBFileName.Data());
 
     if(!fOADBFile){
-        AliWarning("OADB V0-Trkl calibration file cannot be opened\n");
+        AliWarning("OADB V0-TPC calibration file cannot be opened\n");
         return false;
     }
     
+    //load V0 calibrations (mandatory)
     AliOADBContainer* cont = (AliOADBContainer*) fOADBFile->Get("hMultV0BefCorPfpx");
     if(!cont){
         AliWarning("OADB object hMultV0BefCorPfpx is not available in the file\n");
@@ -1012,93 +1048,127 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
     fHistMultV0 = ((TH1D*) cont->GetObject(fRun));
             
     for(int iZvtx = 0; iZvtx < 14; iZvtx++) {
-        AliOADBContainer* contQx2am = (AliOADBContainer*) fOADBFile->Get(Form("fqxa2m_%d", iZvtx));
+        AliOADBContainer* contQx2am = (AliOADBContainer*) fOADBFile->Get(Form("fqxa%dm_%d", fHarmonic, iZvtx));
         if(!contQx2am){
-            AliWarning("OADB object fqxa2m is not available in the file\n");
+            AliWarning(Form("OADB object fqxa%dm is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQx2am->GetObject(fRun))){
-            AliWarning(Form("OADB object fqxa2m is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqxa%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
-        fQx2mV0A[iZvtx]= ((TH1D*) contQx2am->GetObject(fRun));
+        fQx2mV0A[iZvtx] = ((TH1D*) contQx2am->GetObject(fRun));
         
-        AliOADBContainer* contQy2am = (AliOADBContainer*) fOADBFile->Get(Form("fqya2m_%d", iZvtx));
+        AliOADBContainer* contQy2am = (AliOADBContainer*) fOADBFile->Get(Form("fqya%dm_%d", fHarmonic, iZvtx));
         if(!contQy2am){
-            AliWarning("OADB object fqya2m is not available in the file\n");
+            AliWarning(Form("OADB object fqya%dm is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQy2am->GetObject(fRun))){
-            AliWarning(Form("OADB object fqya2m is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqya%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
-        fQy2mV0A[iZvtx]= ((TH1D*) contQy2am->GetObject(fRun));
+        fQy2mV0A[iZvtx] = ((TH1D*) contQy2am->GetObject(fRun));
         
-        AliOADBContainer* contQx2as = (AliOADBContainer*) fOADBFile->Get(Form("fqxa2s_%d", iZvtx));
+        AliOADBContainer* contQx2as = (AliOADBContainer*) fOADBFile->Get(Form("fqxa%ds_%d", fHarmonic, iZvtx));
         if(!contQx2as){
-            AliWarning("OADB object fqxa2s is not available in the file\n");
+            AliWarning(Form("OADB object fqxa%ds is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQx2as->GetObject(fRun))){
-            AliWarning(Form("OADB object fqxa2s is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqxa%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
-        fQx2sV0A[iZvtx]= ((TH1D*) contQx2as->GetObject(fRun));
+        fQx2sV0A[iZvtx] = ((TH1D*) contQx2as->GetObject(fRun));
         
-        AliOADBContainer* contQy2as = (AliOADBContainer*) fOADBFile->Get(Form("fqya2s_%d", iZvtx));
+        AliOADBContainer* contQy2as = (AliOADBContainer*) fOADBFile->Get(Form("fqya%ds_%d", fHarmonic, iZvtx));
         if(!contQy2as){
-            AliWarning("OADB object fqya2s is not available in the file\n");
+            AliWarning(Form("OADB object fqya%ds is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQy2as->GetObject(fRun))){
-            AliWarning(Form("OADB object fqya2s is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqya%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
-        fQy2sV0A[iZvtx]= ((TH1D*) contQy2as->GetObject(fRun));
+        fQy2sV0A[iZvtx] = ((TH1D*) contQy2as->GetObject(fRun));
         
-        AliOADBContainer* contQx2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqxc2m_%d", iZvtx));
+        AliOADBContainer* contQx2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqxc%dm_%d", fHarmonic, iZvtx));
         if(!contQx2cm){
-            AliWarning("OADB object fqxc2m is not available in the file\n");
+            AliWarning(Form("OADB object fqxc%dm is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQx2cm->GetObject(fRun))){
-            AliWarning(Form("OADB object fqxc2m is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqxc%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
-        fQx2mV0C[iZvtx]= ((TH1D*) contQx2cm->GetObject(fRun));
+        fQx2mV0C[iZvtx] = ((TH1D*) contQx2cm->GetObject(fRun));
         
-        AliOADBContainer* contQy2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqyc2m_%d", iZvtx));
+        AliOADBContainer* contQy2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqyc%dm_%d", fHarmonic, iZvtx));
         if(!contQy2cm){
-            AliWarning("OADB object fqyc2m is not available in the file\n");
+            AliWarning(Form("OADB object fqyc%dm is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQy2cm->GetObject(fRun))){
-            AliWarning(Form("OADB object fqyc2m is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqyc%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
-        fQy2mV0C[iZvtx]= ((TH1D*) contQy2cm->GetObject(fRun));
+        fQy2mV0C[iZvtx] = ((TH1D*) contQy2cm->GetObject(fRun));
 
-        AliOADBContainer* contQx2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqxc2s_%d", iZvtx));
+        AliOADBContainer* contQx2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqxc%ds_%d", fHarmonic, iZvtx));
         if(!contQx2cs){
-            AliWarning("OADB object fqxc2s is not available in the file\n");
+            AliWarning(Form("OADB object fqxc%ds is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQx2cs->GetObject(fRun))){
-            AliWarning(Form("OADB object fqxc2s is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqxc%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
-        fQx2sV0C[iZvtx]= ((TH1D*) contQx2cs->GetObject(fRun));
+        fQx2sV0C[iZvtx] = ((TH1D*) contQx2cs->GetObject(fRun));
         
-        AliOADBContainer* contQy2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqyc2s_%d", iZvtx));
+        AliOADBContainer* contQy2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqyc%ds_%d", fHarmonic, iZvtx));
         if(!contQy2cs){
-            AliWarning("OADB object fqyc2s is not available in the file\n");
+            AliWarning(Form("OADB object fqyc%ds is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQy2cs->GetObject(fRun))){
-            AliWarning(Form("OADB object fqyc2s is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqyc%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
-        fQy2sV0C[iZvtx]= ((TH1D*) contQy2cs->GetObject(fRun));   
+        fQy2sV0C[iZvtx] = ((TH1D*) contQy2cs->GetObject(fRun));   
+    }
+
+    //load TPC calibrations (not mandatory)
+    for(int iCent = 0; iCent < 9; iCent++) {
+        AliOADBContainer* contTPCposEta = (AliOADBContainer*) fOADBFile->Get(Form("fphidistr_poseta_%d_%d", iCent*10, (iCent+1)*10));
+        if(!contTPCposEta){
+            AliWarning("OADB object fphidistr_poseta is not available in the file\n");
+            fWeightsTPCPosEta[iCent] = nullptr;
+        }
+        else {
+            if(!(contTPCposEta->GetObject(fRun))){
+                AliWarning(Form("OADB object fphidistr_poseta is not available for run %i\n", fRun));
+                fWeightsTPCPosEta[iCent] = nullptr;
+            }
+            else {
+                fWeightsTPCPosEta[iCent] = ((TH1D*) contTPCposEta->GetObject(fRun));   
+            }
+        }
+
+        AliOADBContainer* contTPCnegEta = (AliOADBContainer*) fOADBFile->Get(Form("fphidistr_negeta_%d_%d", iCent*10, (iCent+1)*10));
+        if(!contTPCnegEta){
+            AliWarning("OADB object fphidistr_negeta is not available in the file\n");
+            fWeightsTPCNegEta[iCent] = nullptr;
+            return true;
+        }
+        else {        
+            if(!(contTPCnegEta->GetObject(fRun))){
+                AliWarning(Form("OADB object fphidistr_negeta is not available for run %i\n", fRun));
+                fWeightsTPCNegEta[iCent] = nullptr;
+            }
+            else {
+                fWeightsTPCNegEta[iCent] = ((TH1D*) contTPCnegEta->GetObject(fRun));   
+            }
+        }
     }
 
     return true;
@@ -1139,6 +1209,35 @@ short AliHFQnVectorHandler::GetVertexZbin() const
         zvtxbin = 13;
     
     return zvtxbin;
+}
+
+//__________________________________________________________
+short AliHFQnVectorHandler::GetCentBin() const
+{
+    short centbin = -10;
+    
+    if (fCentrality >= 0. && fCentrality < -10.)
+        centbin = 0;
+    else if (fCentrality >= 10. && fCentrality < 20.)
+        centbin = 1;
+    else if (fCentrality >= 20. && fCentrality < 30.)
+        centbin = 2;
+    else if (fCentrality >= 30. && fCentrality < 40.)
+        centbin = 3;
+    else if (fCentrality >= 40. && fCentrality < 50.)
+        centbin = 4;
+    else if (fCentrality >= 50. && fCentrality < 60.)
+        centbin = 5;
+    else if (fCentrality >= 60. && fCentrality < 70.)
+        centbin = 6;
+    else if (fCentrality >= 70. && fCentrality < 80.)
+        centbin = 7;
+    else if (fCentrality >= 80. && fCentrality < 90.)
+        centbin = 8;
+    else if(fCentrality >= 90.)
+        centbin = 8;
+
+    return centbin;
 }
 
 //__________________________________________________________

@@ -68,6 +68,8 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   }
   ;
  private:
+  AliAnalysisTaskGrandma(const AliAnalysisTaskGrandma &task);
+  AliAnalysisTaskGrandma &operator=(const AliAnalysisTaskGrandma &task);
   int fTrackBufferSize;                     //
   bool fIsMC;                               //
   TList *fQA;                               //!

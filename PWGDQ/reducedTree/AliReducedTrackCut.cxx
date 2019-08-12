@@ -93,7 +93,8 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj) {
   //Fill values
   Float_t values[AliReducedVarManager::kNVars];
   AliReducedVarManager::FillTrackInfo((AliReducedBaseTrack*)obj, values);
-  
+  AliReducedVarManager::FillClusterMatchedTrackInfo((AliReducedBaseTrack*)obj, values);
+
   return IsSelected(obj, values);
 }
 

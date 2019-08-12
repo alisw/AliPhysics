@@ -18,6 +18,50 @@
 
 namespace pwgfemto {
 
+#if __cplusplus < 201103L
+
+// Old C++ not supported
+template <typename T>
+bool call_pair_passes(T &, const AliFemtoPair &)
+{
+  return false;
+}
+
+#elif true
+
+/// called if the cut expects two tracks
+template <typename T>
+bool
+call_pair_passes(
+  typename std::enable_if<
+    std::is_same<
+      decltype(std::declval<T>().Pass(std::declval<const AliFemtoTrack &>(), std::declval<const AliFemtoTrack &>())),
+      bool
+      >::value,
+    T>::type &obj,
+  const AliFemtoPair &pair)
+{
+  const AliFemtoTrack &track1 = *pair.Track1()->Track(),
+                      &track2 = *pair.Track2()->Track();
+  return obj.Pass(track1, track2);
+}
+
+/// called if the cut expects a pair
+template <typename T>
+bool
+call_pair_passes(
+  typename std::enable_if<
+    std::is_same<
+      decltype(std::declval<T>().Pass(std::declval<const AliFemtoPair &>())),
+      bool
+      >::value,
+    T>::type &obj,
+  const AliFemtoPair &pair)
+{
+  return obj.Pass(pair);
+}
+
+#endif
 
 /// \class AddPairCutAttrs
 /// \brief Join cut-types together
@@ -25,9 +69,10 @@ namespace pwgfemto {
 template <typename T1, typename T2>
 struct AddPairCutAttrs : public T1, public T2 {
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+  bool Pass(const AliFemtoPair &pair)
     {
-      return T1::Pass(track1, track2) && T2::Pass(track1, track2);
+      return call_pair_passes<T1>(static_cast<T1&>(*this), pair)
+          && call_pair_passes<T2>(static_cast<T2&>(*this), pair);
     }
 
   AddPairCutAttrs()
@@ -68,7 +113,7 @@ struct PairCutTrackAttrAvgSep {
     }
 
   PairCutTrackAttrAvgSep(AliFemtoConfigObject &cfg)
-    : avgsep_min(cfg.pop_float("avgsep_min", 0.0))
+    : avgsep_min(cfg.pop_num("avgsep_min", 0.0))
     {
     }
 
@@ -124,74 +169,18 @@ struct PairCutTrackAttrShareQuality {
   double share_fraction_max;
   double share_quality_max;
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
+  bool Pass(const AliFemtoPair &pair) const
     {
       // quick-return if we don't want to cut
       if (share_fraction_max >= 1.0 && share_quality_max >= 1.0) {
         return true;
       }
 
-      const std::pair<double, double>
-        qual_and_frac = calc_share_quality_fraction(track1, track2);
-
-      const double
-        share_fraction = qual_and_frac.first,
-        share_quality = qual_and_frac.second;
+      double share_fraction, share_quality;
+      pair.CalcTrackShareQualFractions(share_fraction, share_quality);
 
       return share_fraction <= share_fraction_max
           && share_quality <= share_quality_max;
-    }
-
-  static std::pair<double, double>
-  calc_share_quality_fraction(const AliFemtoTrack &track1,
-                              const AliFemtoTrack &track2)
-    {
-      Int_t nh = 0;
-      Int_t an = 0;
-      Int_t ns = 0;
-
-      const unsigned int n_bits = track1.TPCclusters().GetNbits();
-
-      const auto &tpc_clusters_1 = track1.TPCclusters(),
-                 &tpc_clusters_2 = track2.TPCclusters(),
-
-                 &tpc_sharing_1 = track1.TPCsharing(),
-                 &tpc_sharing_2 = track2.TPCsharing();
-
-      for (unsigned int imap = 0; imap < n_bits; imap++) {
-          const bool cluster_bit_1 = tpc_clusters_1.TestBitNumber(imap),
-                     cluster_bit_2 = tpc_clusters_2.TestBitNumber(imap);
-        // If both have clusters in the same row
-        if (cluster_bit_1 && cluster_bit_2) {
-           // Do they share it ?
-           if (tpc_sharing_1.TestBitNumber(imap) && tpc_sharing_2.TestBitNumber(imap))
-           {
-              an++;
-              nh+=2;
-              ns+=2;
-           }
-           // Different hits on the same padrow
-           else {
-              an--;
-              nh+=2;
-           }
-        }
-        else if (cluster_bit_1 || cluster_bit_2) {
-           // One track has a hit, the other does not
-           an++;
-           nh++;
-        }
-      }
-
-      Float_t share_quality = 0.0;
-      Float_t share_fraction = 0.0;
-
-      if (__builtin_expect(nh > 0, 1)) {
-        share_quality = an * 1.0 / nh;
-        share_fraction = ns * 1.0 / nh;
-      }
-
-      return std::make_pair(share_quality, share_fraction);
     }
 
   PairCutTrackAttrShareQuality()
@@ -200,8 +189,8 @@ struct PairCutTrackAttrShareQuality {
     {}
 
   PairCutTrackAttrShareQuality(AliFemtoConfigObject &cfg)
-    : share_fraction_max(cfg.pop_float("share_fraction_max", 1.0))
-    , share_quality_max(cfg.pop_float("share_quality_max", 1.0))
+    : share_fraction_max(cfg.pop_num("share_fraction_max", 1.0))
+    , share_quality_max(cfg.pop_num("share_quality_max", 1.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -252,9 +241,9 @@ struct PairCutTrackAttrDetaDphiStar {
    }
 
   PairCutTrackAttrDetaDphiStar(AliFemtoConfigObject &cut)
-   : delta_eta_min(cut.pop_float("delta_eta_min", 0.0))
-   , delta_phistar_min(cut.pop_float("delta_phistar_min", 0.0))
-   , phistar_radius(cut.pop_float("phistar_radius", 1.2))
+   : delta_eta_min(cut.pop_num("delta_eta_min", 0.0))
+   , delta_phistar_min(cut.pop_num("delta_phistar_min", 0.0))
+   , phistar_radius(cut.pop_num("phistar_radius", 1.2))
    , fCurrentMagneticField(0.0)
    {
    }
@@ -324,8 +313,8 @@ struct PairCutTrackAttrDetaDphi {
     {}
 
   PairCutTrackAttrDetaDphi(AliFemtoConfigObject &cfg)
-    : min_delta_eta(cfg.pop_float("min_delta_eta", 0.0))
-    , min_delta_phi(cfg.pop_float("min_delta_phi", 0.0))
+    : min_delta_eta(cfg.pop_num("min_delta_eta", 0.0))
+    , min_delta_phi(cfg.pop_num("min_delta_phi", 0.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -504,7 +493,7 @@ struct PairCutTrackAttrRemoveEE {
     {}
 
   PairCutTrackAttrRemoveEE(AliFemtoConfigObject &cfg)
-    : ee_minv_min(cfg.pop_float("ee_minv_min", 0.0))
+    : ee_minv_min(cfg.pop_num("ee_minv_min", 0.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -566,7 +555,7 @@ public:
 
   virtual bool Pass(const AliFemtoPair *pair)
     {
-      return CutAttrs::Pass(*pair->Track1()->Track(), *pair->Track2()->Track());
+      return CutAttrs::Pass(*pair);
     }
 
   void StoreConfiguration(AliFemtoConfigObject &cfg) const
@@ -578,7 +567,7 @@ public:
   AliFemtoConfigObject GetConfiguration() const
     {
       AliFemtoConfigObject result = AliFemtoConfigObject::BuildMap()
-                                      ("_class", CRTP::ClassName());
+                                      ("_class", static_cast<const CRTP*>(this)->ClassName());
       CutAttrs::FillConfiguration(result);
       return result;
     }

@@ -39,7 +39,7 @@ AliAnalysisTaskSEHFTenderQnVectors* AddTaskHFTenderQnVectors(TString taskname = 
     AliAnalysisDataContainer *cinput = mgr->CreateContainer(Form("cinputQnVectorTender%s",outputSuffix.Data()),TChain::Class(),AliAnalysisManager::kInputContainer);
     //define output containers
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("coutputQnVectorTender%s",outputSuffix.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-    AliAnalysisDataContainer *coutputphidistr[2], *coutputQvecdistr[2];
+    AliAnalysisDataContainer *coutputphidistr[2], *coutputQvecdistr[3];
     if(calibType==0 && enableTPCphivscentrhistos) {
         coutputphidistr[0] = mgr->CreateContainer("coutputQnVectorTenderPhiDistrPosEta", TH2F::Class(),AliAnalysisManager::kOutputContainer,Form("%sPhiDistr",outputfile.Data()));
         coutputphidistr[1] = mgr->CreateContainer("coutputQnVectorTenderPhiDistrNegEta", TH2F::Class(),AliAnalysisManager::kOutputContainer,Form("%sPhiDistr",outputfile.Data()));

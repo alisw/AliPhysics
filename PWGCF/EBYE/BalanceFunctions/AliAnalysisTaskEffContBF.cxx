@@ -22,6 +22,7 @@
 #include "AliCentrality.h"
 #include "AliGenEventHeader.h"
 #include "AliMultSelection.h"
+#include "AliESDtrackCuts.h"
 
 #include "AliLog.h"
 #include "AliAnalysisTaskEffContBF.h"
@@ -45,6 +46,7 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
     fHistCentrality(0),
     fHistNMult(0),
     fHistVz(0),
+    fHistDCA(0),
     fHistNSigmaTPCvsPtbeforePID(0),
     fHistNSigmaTPCvsPtafterPID(0),
     fHistContaminationSecondariesPlus(0),
@@ -102,6 +104,10 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
     fVxMax(3.0),
     fVyMax(3.0),
     fVzMax(10.),
+    fDCAxyCut(-1),
+    fDCAzCut(-1),
+    fTPCchi2Cut(-1),
+    fNClustersTPCCut(-1),
     fAODTrackCutBit(128),
     fMinNumberOfTPCClusters(80),
     fMaxChi2PerTPCCluster(4.0),
@@ -120,6 +126,13 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
     fPtBin(100), //=100 (BF)  36
     fHistSurvived4EtaPtPhiPlus(0),
     fHistSurvived8EtaPtPhiPlus(0),
+    fESDtrackCuts(0x0),
+    fUseRaaGeoCut(kFALSE),
+    fDeadZoneWidth(3),
+    fCutGeoNcrNclLength(130),
+    fCutGeoNcrNclGeom1Pt(1.5),
+    fCutGeoNcrNclFractionNcr(0.85),
+    fCutGeoNcrNclFractionNcl(0.7),
     fHistPdgGen(0),
     fHistPdgSurv(0){
 } 
@@ -134,7 +147,8 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fHistEventStats(0), 
     fHistCentrality(0),
     fHistNMult(0), 
-    fHistVz(0), 
+    fHistVz(0),
+    fHistDCA(0), 
     fHistNSigmaTPCvsPtbeforePID(0),
     fHistNSigmaTPCvsPtafterPID(0),  
     fHistContaminationSecondariesPlus(0),
@@ -192,6 +206,10 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fVxMax(3.0), 
     fVyMax(3.0),
     fVzMax(10.), 
+    fDCAxyCut(-1),
+    fDCAzCut(-1),
+    fTPCchi2Cut(-1),
+    fNClustersTPCCut(-1),
     fAODTrackCutBit(128),
     fMinNumberOfTPCClusters(80),
     fMaxChi2PerTPCCluster(4.0),
@@ -210,6 +228,13 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fPtBin(100), //=100 (BF)  36
     fHistSurvived4EtaPtPhiPlus(0),
     fHistSurvived8EtaPtPhiPlus(0),
+    fESDtrackCuts(0x0),
+    fUseRaaGeoCut(kFALSE),
+    fDeadZoneWidth(3),
+    fCutGeoNcrNclLength(130),
+    fCutGeoNcrNclGeom1Pt(1.5),
+    fCutGeoNcrNclFractionNcr(0.85),
+    fCutGeoNcrNclFractionNcl(0.7),
     fHistPdgGen(0),
     fHistPdgSurv(0)
    {   
@@ -294,6 +319,9 @@ void AliAnalysisTaskEffContBF::UserCreateOutputObjects() {
 
   fHistNSigmaTPCvsPtafterPID = new TH2F ("NSigmaTPCvsPtafter","NSigmaTPCvsPtafter",200, 0, 20, 200, -10, 10); 
   fQAList->Add(fHistNSigmaTPCvsPtafterPID);
+
+  fHistDCA  = new TH2F("fHistDCA","DCA (xy vs. z)",400,-5,5,400,-5,5); 
+  fQAList->Add(fHistDCA);
 
   //Contamination for Secondaries
   fHistContaminationSecondariesPlus = new TH3D("fHistContaminationSecondariesPlus","Secondaries;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
@@ -585,7 +613,13 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		//Printf("Z Vertex: %lf", vertex->GetZ());
 		
 		fHistEventStats->Fill(4); //analyzed events
-		fHistVz->Fill(vertex->GetZ()); 
+		fHistVz->Fill(vertex->GetZ());
+
+		if (fUseRaaGeoCut){
+		  fESDtrackCuts = new AliESDtrackCuts();
+		  fESDtrackCuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
+		}
+		
 		
 	      //++++++++++++++++++CONTAMINATION++++++++++++++++++//
 	      Int_t nGoodAODTracks = fAOD->GetNumberOfTracks();
@@ -613,8 +647,43 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		
 		if((track->Pt() > fMaxPt)||(track->Pt() <  fMinPt))
 		  continue;
-		
-		Double_t phiRad = track->Phi(); 
+	
+		if( fTPCchi2Cut != -1 && track->Chi2perNDF() > fTPCchi2Cut){
+		  continue;
+     		}
+      		
+		if( fNClustersTPCCut != -1 && track->GetTPCNcls() < fNClustersTPCCut){
+		  continue;
+      		}
+	
+		Double_t pos[3];
+      		Double_t v[3];
+      		Float_t dcaXY = 0.;
+      		Float_t dcaZ  = 0.;
+
+        	if(fAODTrackCutBit == 128){
+            	 dcaXY = track->DCA();
+                dcaZ  = track->ZAtDCA();
+       	}
+        	else{
+		 vertex->GetXYZ(v);
+		 track->GetXYZ(pos);
+		 dcaXY  = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+		 dcaZ   = pos[2] - v[2];
+        	}
+              
+		if( fDCAxyCut != -1 && fDCAzCut != -1){
+		  if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
+		    continue;  // 2D cut
+		  }
+      		}
+
+		Double_t phiRad = track->Phi();
+
+		if(fUseRaaGeoCut){
+		  if (!fESDtrackCuts->IsSelected(track))
+		    continue;
+		}
 		
 		Int_t label = TMath::Abs(track->GetLabel());
 		if(label > nMCParticles) continue;
@@ -740,7 +809,11 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                   	}
 		  }
                }
+
+		fHistDCA->Fill(dcaZ,dcaXY);
+
 	      }//loop over tracks
+	      
 	      //++++++++++++++++++CONTAMINATION++++++++++++++++++//
 	      
 	      //++++++++++++++++++EFFICIENCY+++++++++++++++++++++//
@@ -853,6 +926,11 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
               //track cuts
               if (!trackAOD->TestFilterBit(fAODTrackCutBit)) continue;
 
+	      if(fUseRaaGeoCut){
+		if (!fESDtrackCuts->IsSelected(trackAOD))
+		  continue;
+	      }
+	     
               Int_t label = TMath::Abs(trackAOD->GetLabel());
               if(IsLabelUsed(labelArray,label)) continue;
               labelArray.AddAt(label,labelCounter);
@@ -874,6 +952,37 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 
               } 
 		
+
+		if( fTPCchi2Cut != -1 && trackAOD->Chi2perNDF() > fTPCchi2Cut){
+                  continue;
+                }
+
+                if( fNClustersTPCCut != -1 && trackAOD->GetTPCNcls() < fNClustersTPCCut){
+                  continue;
+                }
+
+		 Double_t pos[3];
+                Double_t v[3];
+                Float_t dcaXY = 0.;
+                Float_t dcaZ  = 0.;
+              
+              	 if(fAODTrackCutBit == 128){
+                 dcaXY = trackAOD->DCA();
+                 dcaZ  = trackAOD->ZAtDCA();
+                }
+                else{
+                 vertex->GetXYZ(v);
+                 trackAOD->GetXYZ(pos);
+                 dcaXY  = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+                 dcaZ   = pos[2] - v[2];
+                }
+
+                if( fDCAxyCut != -1 && fDCAzCut != -1){
+                  if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
+                    continue;  // 2D cut
+ 		  }
+                }
+		
               Int_t mcGoods = nMCLabelCounter;
               for (Int_t k = 0; k < mcGoods; k++) {
 		  Int_t mcLabel = labelMCArray.At(k);
@@ -892,9 +1001,9 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                       Int_t pdgcode = mcTracMatchedWithReco->GetPdgCode();
                       if (TMath::Abs(pdgcode) != fPDGCodeWanted) continue;
                   }
-		  
-                  //acceptance
-                  if (fUseY){
+		   
+		   //acceptance
+                   if (fUseY){
                       if(TMath::Abs(trackAOD->Y(fMassParticleOfInterest)) > fMaxEta)
 			continue;
                   }
@@ -908,7 +1017,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                   }
 		  else{ continue;}
 		  
-                  Short_t gCharge = trackAOD->Charge();
+		   Short_t gCharge = trackAOD->Charge();
                   Double_t phiRad = trackAOD->Phi();
                   Double_t mom = trackAOD->P();
 
@@ -949,8 +1058,8 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 
 		  }
                   
-
-                  if(fUsePIDstrategy){
+	
+		   if(fUsePIDstrategy){
 
 
                       AliAODPid* pidObj = trackAOD->GetDetPid();
@@ -1061,9 +1170,11 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		    }	
 		  }
 		  
-              }//end of mcGoods
+	       }//end of mcGoods
 	      }//AOD track loop
-	      
+
+	      if (fUseRaaGeoCut) delete fESDtrackCuts;
+		 
 	      labelMCArray.Reset();
 	      labelArray.Reset();	       
 	      

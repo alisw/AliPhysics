@@ -62,6 +62,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistNLambdaGammaLabel(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
+      fHistInvMassK0Gamma(nullptr),
       fHistInvMassSelected(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
@@ -167,6 +168,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistNLambdaGammaLabel(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
+      fHistInvMassK0Gamma(nullptr),
       fHistInvMassSelected(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
@@ -239,6 +241,10 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
     std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
   fInputEvent = inputEvent;
   fMCEvent = mcEvent;
+
+  fSigma.clear();
+  fSidebandUp.clear();
+  fSidebandDown.clear();
 
   if (fIsMC) {
     ProcessMC();
@@ -410,7 +416,7 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
       if (hasSameLabels) {
         const float cpaPhoton = photon->GetCosineAlpha();
         const float cpaLambda = lambda->GetCosineAlpha();
-        ++nPhotonKilledLabel;
+        ++nPhotonLambdaKilledLabel;
         if (cpaPhoton > cpaLambda) {
           lambda->SetUse(false);
         } else {
@@ -543,9 +549,7 @@ void AliSigma0PhotonMotherCuts::SingleV0QA(
 void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
     const std::vector<AliSigma0ParticleV0> &photonCandidates,
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
-  fSigma.clear();
-  fSidebandUp.clear();
-  fSidebandDown.clear();
+  static float massK0 = TDatabasePDG::Instance()->GetParticle(311)->Mass();
 
   // Mulitplicity estimator: V0M
   Float_t lPercentile = 300;
@@ -590,6 +594,12 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         fHistInvMassRecPhoton->Fill(pT, sigma.GetRecMassPhoton());
         fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
         fHistInvMassRec->Fill(pT, sigma.GetRecMass());
+
+        TLorentzVector track1, track2;
+        track1.SetXYZM(lambda.GetPx(), lambda.GetPy(), lambda.GetPz(), massK0);
+        track2.SetXYZM(photon.GetPx(), photon.GetPy(), photon.GetPz(), 0.f);
+        TLorentzVector trackSum = track1 + track2;
+        fHistInvMassK0Gamma->Fill(trackSum.M());
       }
 
       int label = -10;
@@ -635,6 +645,14 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       fHistInvMass->Fill(invMass);
       fHistInvMassPtRaw->Fill(pT, invMass);
 
+      if (TMath::Abs(rap) < fRapidityMax) {
+        fHistInvMassPt->Fill(pT, invMass);
+
+        if (multBin >= 0 && fIsSpectrumAnalysis) {
+          fHistPtMult[multBin]->Fill(pT, invMass);
+        }
+      }
+
       if (fIsMC) {
         if (label > 0) {
           fHistMCV0Pt->Fill(sigma.GetPt());
@@ -669,12 +687,6 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
                                TMath::Abs(partPhoton->PdgCode()));
         }
       }
-
-      if (TMath::Abs(rap) > fRapidityMax) continue;
-      fHistInvMassPt->Fill(pT, invMass);
-
-      if (multBin >= 0 && fIsSpectrumAnalysis)
-        fHistPtMult[multBin]->Fill(pT, invMass);
     }
   }
   fHistNSigma->Fill(nSigma);
@@ -1195,6 +1207,10 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
         "fHistMassCutPt", "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
         100, 0, 10);
 
+    fHistInvMassK0Gamma = new TH1F("fHistInvMassK0Gamma",
+                                   "; M_{K^{0}#gamma} (GeV/#it{c}); Entries",
+                                   1000, 0.5, 3);
+
     fHistInvMassSelected = new TH2F("fHistInvMassSelected",
                                     "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                     "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
@@ -1223,6 +1239,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
         new TH2F("fHistPtRapidity", "; #it{p}_{T} (GeV/#it{c}); y", 100, 0, 10,
                  100, -2, 2);
 
+    fHistograms->Add(fHistInvMassK0Gamma);
     fHistograms->Add(fHistNPhotonBefore);
     fHistograms->Add(fHistNPhotonAfter);
     fHistograms->Add(fHistNLambdaBefore);

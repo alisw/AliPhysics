@@ -119,6 +119,11 @@ fOutput(0),
 fParticleSpecies(-2),
 fUsePhysicalPrimary(kFALSE),
 fUseGeneratedPt(kFALSE)
+,fUsetrkITSrefit_highMev(kFALSE)
+,fCountTracks(0)
+,fNumTracksperEv(0)
+,fNumContributors(0)
+
 {
     //
     // Default constructor
@@ -185,6 +190,10 @@ fOutput(0),
 fParticleSpecies(-2),
 fUsePhysicalPrimary(kFALSE),
 fUseGeneratedPt(kFALSE)
+,fUsetrkITSrefit_highMev(kFALSE)
+,fCountTracks(0)
+,fNumTracksperEv(0)
+,fNumContributors(0)
 {
     //
     // Default constructor
@@ -218,6 +227,9 @@ AliAnalysisTaskSEImpParResSparse::~AliAnalysisTaskSEImpParResSparse()
     delete fImpParrphiSparsePtEtaPhi_SPDmod;
     delete fPtDistrib;
     delete fhPtWeights;
+    delete fCountTracks;
+    delete fNumTracksperEv;
+    delete fNumContributors;
     
 }
 //______________________________________________________________________________________________________
@@ -494,11 +506,41 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
     ConfigurePtWeights();
     fOutput->Add(fhPtWeights);
     
-    if(!fNentries) fNentries = new TH1F("hNentries", "number of entries", 26, 0., 40.);
+    if(!fNentries) {
+        fNentries = new TH1F("hNentries", "number of entries;step;counts", 26, 0.5, 26.5);
+        fNentries->GetXaxis()->SetBinLabel(1,"all");
+        fNentries->GetXaxis()->SetBinLabel(2,"trigger");
+        fNentries->GetXaxis()->SetBinLabel(3,"fCheckSDDIsIn");
+        fNentries->GetXaxis()->SetBinLabel(4,"fHasVertex");
+        fNentries->GetXaxis()->SetBinLabel(5,"fStartTrkLoop (ok PIDresp)");
+        
+    }
     if(!fMultiplicity) fMultiplicity = new TH1F("fMultiplicity", "number of hits in SPD layer 1", 100, 0., 10000.);
     
     fOutput->Add(fNentries);
     fOutput->Add(fMultiplicity);
+
+    // debug histogram for track counting (mfaggin)
+        fCountTracks = new TH1D("fCountTracks","number of tracks;step;counts",11,0.5,11.5);
+        fCountTracks->GetXaxis()->SetBinLabel(1,"all");
+        fCountTracks->GetXaxis()->SetBinLabel(2,"ITSrefit");
+        fCountTracks->GetXaxis()->SetBinLabel(3,"#eta acceptance");
+        fCountTracks->GetXaxis()->SetBinLabel(4,"#varphi bin > 0");
+        fCountTracks->GetXaxis()->SetBinLabel(5,"p_{T} weights");
+        fCountTracks->GetXaxis()->SetBinLabel(6,"vtx w/o trk");
+        fCountTracks->GetXaxis()->SetBinLabel(7,"cov. matrix");
+        fCountTracks->GetXaxis()->SetBinLabel(8,"TPCrefit and TPCclst");
+        fCountTracks->GetXaxis()->SetBinLabel(9,"fill TrkType0");
+        fCountTracks->GetXaxis()->SetBinLabel(10,"fill TrkType1");
+        fCountTracks->GetXaxis()->SetBinLabel(11,"fillTrkType2");
+        fOutput->Add(fCountTracks);
+    // debug histogram for counting of number of tracks per event (mfaggin)
+    if(fUsetrkITSrefit_highMev) fNumTracksperEv = new TH1D("fNumTrackperEv","number of tracks per event (ITSrefit satisfied);# tracks;counts",10,0,200);
+    else                        fNumTracksperEv = new TH1D("fNumTrackperEv","number of tracks per event;# tracks;counts",30,0,3000);
+    fOutput->Add(fNumTracksperEv);
+    // debug histogram for counting of number of contributors to the primary vertex (mfaggin)
+    fNumContributors = new TH1D("fNumContributors","number of contributors to the primary vertex;# contributors;counts",100,0,500);
+    fOutput->Add(fNumContributors);
     
     PostData(1, fOutput);
     
@@ -517,7 +559,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         AliError("event not found. Nothing done!");
         return;
     }
-    
+    fNentries->Fill(1);
     // only events in the requested multiplicity range
     TString firedTriggerClasses="";
     Int_t runNumber=0;
@@ -540,6 +582,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         if(!firedTriggerClasses.Contains(fTriggerClass.Data())) return;
     }
     
+    fNentries->Fill(2);
+
     Bool_t sddIsIn=kTRUE;
     if(fCheckSDDIsIn) {
         if(!fTrigConfig) {
@@ -587,7 +631,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         if(fCheckSDDIsIn==3) sddIsIn=kFALSE; //for MC without SDD
     }
     
-    fNentries->Fill(1);
+    fNentries->Fill(3);
     if(fIsAOD)fMultiplicity->Fill(((AliVAODHeader*)((AliAODEvent*)event)->GetHeader())->GetNumberOfITSClusters(1));
     else{
         const AliMultiplicity *alimult =((AliESDEvent*)event)->GetMultiplicity();
@@ -598,8 +642,23 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         fMultiplicity->Fill(nclsSPDouter);
     }
     
-    Int_t nTrks = event->GetNumberOfTracks();
-    Bool_t highMult=(nTrks>500 ? kTRUE : kFALSE);
+    const Int_t nTrks = event->GetNumberOfTracks();
+    Bool_t highMult;
+    if(!fUsetrkITSrefit_highMev){
+    highMult = (nTrks>500 ? kTRUE : kFALSE);
+    fNumTracksperEv->Fill(nTrks);
+    }
+    else{    // Consider the number of tracks with ITS refit only, avoiding the TPC pile-up
+        Int_t nTrks_ITSrefit=0;
+        AliVTrack* trk = 0;
+        for (Int_t it=0; it<nTrks; it++){ //start loop over tracks
+            trk = (AliVTrack*)event->GetTrack(it);
+            if(!trk) {continue;}
+            if(trk->GetStatus()&AliESDtrack::kITSrefit)    nTrks_ITSrefit++;
+        }
+        highMult=(nTrks_ITSrefit>500 ? kTRUE : kFALSE);
+        fNumTracksperEv->Fill(nTrks_ITSrefit);
+    }
     //Printf("%d",nTrks);
     
     Double_t vtxTrue[3];
@@ -632,6 +691,9 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         delete vtxVRec; vtxVRec=NULL;
         {/*Printf("VERTEX REC NUMBER OF CONTRIBUTORS < 1");*/return;}
     }
+    Double_t nContributors = vtxVRec->GetNContributors();
+    fNumContributors->Fill(nContributors);
+    fNentries->Fill(4);
     
     if (fReadMC) {
         if (fIsAOD){
@@ -723,19 +785,19 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 	return;
       }
     }
-
-    //Printf("\nSTART LOOP OVER TRACKS\n");
-    
+    fNentries->Fill(5);
+   
     for (Int_t it=0; it<nTrks; it++){ //start loop over tracks
         vtrack = (AliVTrack*)event->GetTrack(it);
         if(!vtrack) {/*Printf("TRACK NOT FOUND");*/ continue;}
         
         //Printf("ETA %f",eta);
+        fCountTracks->Fill(1);
         
         npointsITS=0; npointsSPD=0;
         if(fIsAOD){
-            haskITSrefit=(((AliAODTrack*)vtrack)->GetStatus()&AliESDtrack::kITSrefit);
-            haskTPCrefit=(((AliAODTrack*)vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
+            haskITSrefit=((/*(AliAODTrack*)*/vtrack)->GetStatus()&AliESDtrack::kITSrefit);
+            haskTPCrefit=((/*(AliAODTrack*)*/vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
             nClsTotTPC=((AliAODTrack*)vtrack)->GetTPCNcls();
             //Printf("nClsTotTPC %d",nClsTotTPC);
             if(!haskITSrefit) continue;
@@ -746,8 +808,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             //Printf("npointsITS %d",npointsITS);
         }
         else {
-            haskITSrefit=(((AliESDtrack*)vtrack)->GetStatus()&AliESDtrack::kITSrefit);
-            haskTPCrefit=(((AliESDtrack*)vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
+            haskITSrefit=((/*(AliESDtrack*)*/vtrack)->GetStatus()&AliESDtrack::kITSrefit);
+            haskTPCrefit=((/*(AliESDtrack*)*/vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
             nClsTotTPC=((AliESDtrack*)vtrack)->GetTPCNcls();
             if(!haskITSrefit) continue;
             for (Int_t ilayer=0; ilayer<6; ilayer++){
@@ -755,10 +817,11 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 if (((AliESDtrack*)vtrack)->HasPointOnITSLayer(ilayer)) npointsITS++;
             }
         }
-        
+        fCountTracks->Fill(2);
         
         eta = vtrack->Eta();
         if(eta<-0.8 || eta>0.8) continue;
+        fCountTracks->Fill(3);
         if(eta<0.) {
             pullrphi[3]=0.;
             pullz[3]=0.;
@@ -784,6 +847,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         phi=vtrack->Phi();
         Int_t phibin=PhiBin(phi,fUseFinerPhiBins);  // mfaggin
         if(phibin<0) continue;
+        fCountTracks->Fill(4);
         pullrphi[2]=phibin;
         pullz[2]=phibin;
         pullrphi1[2]=phibin;
@@ -809,6 +873,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         if (pt > 1000.) continue;
         if( ((Double_t)pt*10000.)-((Long_t)(pt*10000.))>weight) continue;
         
+        fCountTracks->Fill(5);
+
         //MC
         if (fReadMC){
             trkLabel = vtrack->GetLabel();
@@ -885,7 +951,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         } // else {
         // vtxVSkip = new AliVVertex(); produce error!!!
         // }
-        
+        fCountTracks->Fill(6);
         
         // Select primary particle if MC event (for ESD event), Rprod < 1 micron
         if(fReadMC){
@@ -918,14 +984,17 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         covdz[0]=covdzRec[0];
         covdz[1]=covdzRec[1];
         covdz[2]=covdzRec[2];
+        //printf("===\ncovdz[0] = %f\ncovdz[1] = %f\ncovdz[2] = %f\n", covdz[0],covdz[1], covdz[2]);
         // wrt event vertex without this track
         if(!highMult && fSkipTrack) {
+            //printf("!!! !highMult && fSkipTrack\n");
             vtrack->PropagateToDCA(vtxVSkip, event->GetMagneticField(), beampiperadius, dzRecSkip, covdzRecSkip);
             dz[0]=dzRecSkip[0];
             dz[1]=dzRecSkip[1];
             covdz[0]=covdzRecSkip[0];
             covdz[1]=covdzRecSkip[1];
             covdz[2]=covdzRecSkip[2];
+            //printf("\ncovdz[0] = %f\ncovdz[1] = %f\ncovdz[2] = %f\n", covdz[0],covdz[1], covdz[2]);
         } else if(!fSkipTrack) {
             dz[0]=dzRec[0];
             dz[1]=dzRec[1];
@@ -933,11 +1002,13 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             covdz[1]=covdzRec[1];
             covdz[2]=covdzRec[2];
         } else {
+            //printf("!!! else");
             dz[0]=0;
             dz[1]=0;
             covdz[0]=0;
             covdz[1]=0;
             covdz[2]=0;
+            //printf("\ncovdz[0] = %f\ncovdz[1] = %f\ncovdz[2] = %f\n", covdz[0],covdz[1], covdz[2]);
         }
         //delete vtxVSkip; vtxVSkip=NULL; // not needed anymore
         
@@ -950,6 +1021,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             covdz[2]=covdzTrue[2];
         }
         if(covdz[0]<1.e-13 || covdz[2]<1.e-13) continue;
+        fCountTracks->Fill(7);
         pointrphi[0]=10000.*dz[0];
         pointrphi1[0]=10000.*dz[0];
         pointrphi2[0]=10000.*dz[0];
@@ -1016,6 +1088,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 
         if(fTrackType==0){
             if(!haskTPCrefit || nClsTotTPC<70) continue;
+            fCountTracks->Fill(8);
             if( (sddIsIn && (npointsITS==6)) || (sddIsIn && (npointsITS==5) && (spdreq==npointsSPD)) || (!sddIsIn && (npointsITS==4)) || (!sddIsIn && (npointsITS==3) && (spdreq==npointsSPD)) ){
                 if(fFillSparseForExpert){
                     if(fFillSparse_ImpParrphiSparsePtBchargePhi)        fImpParrphiSparsePtBchargePhi->Fill(pointrphi1);
@@ -1031,6 +1104,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 if(fFillSparse_ImpParzSparsePtEtaPhi)           fImpParzSparsePtEtaPhi->Fill(pointz);
                 if(fFillSparse_ImpParPullrphiSparsePtEtaPhi)    fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
                 if(fFillSparse_ImpParPullzSparsePtEtaPhi)       fImpParPullzSparsePtEtaPhi->Fill(pullz);
+                
+                fCountTracks->Fill(9);
             }
         }
         // ITS standalone
@@ -1050,6 +1125,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             if(fFillSparse_ImpParzSparsePtEtaPhi)           fImpParzSparsePtEtaPhi->Fill(pointz);
             if(fFillSparse_ImpParPullrphiSparsePtEtaPhi)    fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
             if(fFillSparse_ImpParPullzSparsePtEtaPhi)       fImpParPullzSparsePtEtaPhi->Fill(pullz);
+        
+            fCountTracks->Fill(10);
         }
         // ESD TRACK CUTS
         else if(fTrackType==2 && IsTrackSelected(vtrack,primaryVtx,fESDtrackCuts,event)){
@@ -1068,6 +1145,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             if(fFillSparse_ImpParzSparsePtEtaPhi)           fImpParzSparsePtEtaPhi->Fill(pointz);
             if(fFillSparse_ImpParPullrphiSparsePtEtaPhi)    fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
             if(fFillSparse_ImpParPullzSparsePtEtaPhi)       fImpParPullzSparsePtEtaPhi->Fill(pullz);
+
+            fCountTracks->Fill(11);
         }
         
         

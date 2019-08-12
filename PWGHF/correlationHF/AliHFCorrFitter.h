@@ -58,6 +58,7 @@ class AliHFCorrFitter{
   void SetHistoIsReflected(Bool_t isrefl){
     fIsReflected=isrefl;
   }
+  void SetExternalValsAndBounds(Int_t npars, Double_t* vals, Double_t* lowBounds, Double_t* uppBounds);
   //---------------------Getters----------->
   Double_t GetNSSigma(){
     if(fTypeOfFitfunc==kConstThreeGausPeriodicity){// other cases to be implemented
@@ -110,7 +111,7 @@ class AliHFCorrFitter{
   }
 
   Double_t FindBaseline();
-  void Fitting(Bool_t drawSplitTerm=kTRUE);
+  void Fitting(Bool_t drawSplitTerm=kTRUE, Bool_t useExternalPars=kFALSE);
   void CalculateYieldsAboveBaseline();
   TH1F* SubtractBaseline();
   void DrawLegendWithParameters();
@@ -148,6 +149,13 @@ class AliHFCorrFitter{
   Double_t			  fMaxAsspt;
   Double_t			  fIspPb;
   Double_t        fBetaVal;
-  ClassDef(AliHFCorrFitter,6);
+
+  Bool_t 		  fUseExternalPars;
+  Int_t			  fNpars;
+  Double_t 		  *fExtParsVals;
+  Double_t 	 	  *fExtParsLowBounds;
+  Double_t 	 	  *fExtParsUppBounds;
+  
+  ClassDef(AliHFCorrFitter,7);
 };
 #endif

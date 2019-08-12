@@ -35,7 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx  
+  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AliMeanPtAnalysisTask.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskCutTest.cxx
@@ -58,9 +58,16 @@ set(SRCS
   ChargedHadrons/dNdPt/AlidNdPtTask.cxx
   ChargedHadrons/dNdPt/AlidNdPtTools.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskMKBase.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskBaseWeights.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskMKTest.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskTPCMatchEff.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskDCArStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskPtResStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskEffContStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskUEStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskSpectra.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskSpectraV0M.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskFilterEventTPCdEdx.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
@@ -68,11 +75,13 @@ set(SRCS
   ChargedHadrons/dNdPt/AlimPtMatrix.cxx
   ChargedHadrons/dNdPt/AlimPtMatrixZDC.cxx
   ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
+  ChargedHadrons/AliMCSpectraWeights/AliMCSpectraWeightsAnalysisTask.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskSpherocity.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
@@ -136,6 +145,7 @@ set(SRCS
   Spherocity/AliTransverseEventShape.cxx
   Spherocity/AliSpherocityEstimator.cxx
   Spherocity/AliSpherocityUtils.cxx
+  Spherocity/macros/AliAnalysisSphericityTask.cxx
 )
 
 # Headers from sources
@@ -154,8 +164,8 @@ set(PAR_EXTRAFILES_H
   PiKaPr/TestAOD/Histograms.h
 )
 
-set(PAR_EXTRAFILES 
-   ${PAR_EXTRAFILES_H} 
+set(PAR_EXTRAFILES
+   ${PAR_EXTRAFILES_H}
    ${PAR_EXTRAFILES_CXX}
 )
 
@@ -220,6 +230,7 @@ install(DIRECTORY ChargedHadrons/dNdPt/macros DESTINATION  PWGLF/SPECTRA/Charged
 install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
   PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
 install(DIRECTORY ChargedHadrons/dNdPtVsMultpp/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp)
+install(FILES ChargedHadrons/AliMCSpectraWeights/AddTask_phuhn_MCSpectraWeights.C DESTINATION PWGLF/SPECTRA/ChargedHadrons/AliMCSpectraWeights)
 install(DIRECTORY IdentifiedHighPt/train/macros DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY IdentifiedHighPt/train/macros1 DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)

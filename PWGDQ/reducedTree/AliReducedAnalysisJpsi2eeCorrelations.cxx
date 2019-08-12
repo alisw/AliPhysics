@@ -239,6 +239,7 @@ void AliReducedAnalysisJpsi2eeCorrelations::LoopOverAssociatedTracks(Int_t array
       track = (AliReducedTrackInfo*)nextTrack();
       if(fOptionRunOverMC && track->IsMCTruth()) continue;
       AliReducedVarManager::FillTrackInfo(track, fValues);
+      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
       if (fillHistograms) fHistosManager->FillHistClass("AssociatedTrack_BeforeCuts", fValues);
       for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingStatus; ++iflag) {
          AliReducedVarManager::FillTrackingFlag(track, iflag, fValues);
@@ -311,6 +312,7 @@ void AliReducedAnalysisJpsi2eeCorrelations::FillAssociatedTrackHistograms(TStrin
   for(Int_t i=0;i<fAssociatedTracks.GetEntries();++i) {
     track = (AliReducedTrackInfo*)nextAssocTrack();
     AliReducedVarManager::FillTrackInfo(track, fValues);
+    AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
     FillAssociatedTrackHistograms(track, trackClass);
   }
 }

@@ -35,7 +35,8 @@ AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut():
   fMinDEtaStarNeg(0.0),
   fMinDPhiStarPos(0.0),
   fMinDPhiStarNeg(0.0),
-  fMinRad(0.0)
+  fMinRad(0.0),
+  fNanoAODAnalysis(false)
 {
   /* no-op */
 }
@@ -71,6 +72,7 @@ AliFemtoV0TrackPairCut &AliFemtoV0TrackPairCut::operator=(const AliFemtoV0TrackP
   fMinDPhiStarNeg = cut.fMinDPhiStarNeg;
 
   fMinRad = cut.fMinRad;
+  fNanoAODAnalysis = cut.fNanoAODAnalysis;
 
   return *this;
 }
@@ -100,6 +102,7 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
   //
   // Test separation between the track and the V0 daughters' entrance and exit points
   //
+if(!fNanoAODAnalysis){
   if (fDataType == kESD || fDataType == kAOD) {
     const AliFemtoThreeVector diffPosEntrance = V0->NominalTpcEntrancePointPos() - track->NominalTpcEntrancePoint(),
                                   diffPosExit = V0->NominalTpcExitPointPos() - track->NominalTpcExitPoint(),
@@ -113,6 +116,7 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
       return false;
     }
   }
+}
 
   //
   // Check for pairs that are possibly shared/double reconstruction
@@ -202,7 +206,7 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
   //
   // Test the average separation between the track and each daughter in TPC
   //
-  {
+if(!fNanoAODAnalysis){
     Double_t pos_avgSep = pair->NominalTpcAverageSeparationTrackV0Pos(),
              neg_avgSep = pair->NominalTpcAverageSeparationTrackV0Neg();
 
@@ -305,6 +309,7 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
   }
 
   fNPairsPassed++;
+
   return true;
 }
 //__________________

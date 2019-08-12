@@ -47,7 +47,15 @@ public:
     void            SetMC(Bool_t setMCfill) {fFlagFillMCHistos = setMCfill;};
     void            SetSSCut(Double_t maxM20Cut) {fMaxM20Cut = maxM20Cut;};
     void            UseLongAxis(Bool_t applyM02) {fApplyM02Cut = applyM02;}
+    void            SetPileUpCut1(Bool_t EnablePileupCut1){fEnablePileupCut1 = EnablePileupCut1;};
+    void            SetPileUpCut2(Bool_t EnablePileupRejVZEROTPCout){fEnablePileupRejVZEROTPCout = EnablePileupRejVZEROTPCout;};
+    void            SetEoPShift(Bool_t EnableShiftEoP){fShiftEoP = EnableShiftEoP;};
+    void            SetTimeCut(Bool_t EnableTimeCut){fApplyTimeCut = EnableTimeCut;};
+    void            SetTPCnCrossRows(Int_t nTpcCrossRowCut){fNCrossRows = nTpcCrossRowCut;};
+    void            SetITSChi2(Int_t itsChi2Cut){fItsChi2 = itsChi2Cut;};
+    
     void            SetEoP(Double_t eopCut) {fMinEoPCut = eopCut;};
+    void            SetEoPMax(Double_t eopCutMax) {fMaxEoPCut = eopCutMax;};
     void            SetNSig(Double_t nSigCut) {fMinNSigCut = nSigCut;};
     
     void            SetNSigAsso(Double_t nSigAssoCut) {fMinNSigAssoCut = nSigAssoCut;};
@@ -89,7 +97,14 @@ private:
     //Bool_t              fFlagApplySSCut; //switch to turn on SS cut
     Double_t            fMaxM20Cut;      // set eID M20 cut
     Bool_t              fApplyM02Cut;    // apply M02 instead of M20 cut
-    Double_t            fMinEoPCut;      // set eID E/p cut
+    Bool_t              fEnablePileupCut1; //add additional pile-up cuts
+    Bool_t              fEnablePileupRejVZEROTPCout; //add additional pile-up cuts
+    Bool_t              fShiftEoP; //apply E/p shift in MC
+    Bool_t              fApplyTimeCut; //apply cluster timing cuts
+    Int_t              fNCrossRows; //set N of TPC crossed rows
+    Int_t              fItsChi2; //set max ITS chi-2. if negative, does not apply any cut
+    Double_t            fMinEoPCut;      // set min eID E/p cut
+    Double_t            fMaxEoPCut;      // set max eID E/p cut
     Double_t            fMinNSigCut;     // set eID nSig cut
     
     Double_t            fMinNSigAssoCut; // set nSig cut for asso track
@@ -126,6 +141,7 @@ private:
     //TH1F                *fClsEamEMCal;   //! cluster energy after matching to EMCal
     //TH1F                *fClsEAll;   //! cluster energy of all track-matched clusters
     TH1F                *fClsE;   //! cluster energy of EMCal/DCal depending on subfolder
+    TH1F                *fClsEnoTimeCut; //! cluster energy after matching w/o cluster time cut
     //TH1F                *fClsEamElecEMC;   //! cluster energy of e- after matching to EMCal
     //TH1F                *fClsEamElecDC;   //! cluster energy of e- after matching to EMCal
     TH1F                *fTrkPhi;        //! track phi after track matching
@@ -177,6 +193,9 @@ private:
     TH2F                *fnSigaftSysM20EoPCut;   //! DCA after Sys eID M20 + E/p cut
     TH2F                *fInclElecDCAnoSign;   //! Inclusive electron DCA vs. pT, no sign
     TH2F                *fElecEoPnoSig;  //! Elec EoP w/o sigma cut
+    
+    TH2F                *fInclElecEoPnoShift;   //! Inclusive electron EoP vs. pT w/o E/p shift
+    TH2F                *fHadronEoPnoShift;     //! Hadron EoP vs. pT w/o E/p shift
     TH2F                *fInclElecEoP;   //! Inclusive electron EoP vs. pT
     TH2F                *fInclElecEoPNoM20;   //! Inclusive electron EoP vs. pT
     TH2F                *fTPCElecEoP;   //! EoP vs. pT, -0.1<nsig<3 cut
@@ -193,6 +212,8 @@ private:
     TH1F                *fDWeightNew; //!
     TH1F                *fDWeightVar1; //!
     TH1F                *fDWeightVar2; //!
+    TH1F                *fLcWeightVar1; //!
+    TH1F                *fLcWeightVar2; //!
     TH1F                *fBWeight; //!
     TH1F                *fBWeightNew; //!
     TH1F                *fBWeightVar1; //!
@@ -278,6 +299,10 @@ private:
     TH1F                *fHFElecStack; //!
     TH1F                *fBElecStack; //!
     
+    TH1F                *fAllElecStackDiffPID; //!
+    TH1F                *fDElecStackDiffPID; //!
+    TH1F                *fBElecStackDiffPID; //!
+    
     TH1F                *fElecTPCTrk; //!
     TH1F                *fHFElecTPCTrk; //!
     TH1F                *fBElecTPCTrk; //!
@@ -285,6 +310,14 @@ private:
     TH1F                *fElecAftTrkCuts; //!
     TH1F                *fHFElecAftTrkCuts; //!
     TH1F                *fBElecAftTrkCuts; //!
+    
+    TH1F                *fElecAftLooseTrkCuts; //!
+    TH1F                *fHFElecAftLooseTrkCuts; //!
+    TH1F                *fBElecAftLooseTrkCuts; //!
+    
+    TH1F                *fElecAftLooseTrkCutsDiffPID; //!
+    TH1F                *fDElecAftLooseTrkCutsDiffPID; //!
+    TH1F                *fBElecAftLooseTrkCutsDiffPID; //!
     
     TH1F                *fElecAftTrkMatch; //!
     TH1F                *fHFElecAftTrkMatch; //!

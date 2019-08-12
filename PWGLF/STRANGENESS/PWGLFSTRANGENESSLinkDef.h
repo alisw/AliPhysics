@@ -29,6 +29,7 @@
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicity+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMC+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRun2+;
+#pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityAODRun2+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMCRun2+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRun2pPb+;
@@ -39,6 +40,7 @@
 #pragma link C++ class AliAnalysisTaskLambdaOverK0sJets+;
 #pragma link C++ class AliMiniParticle+;
 #pragma link C++ class AliAnalysisTaskV0ChCorrelations+;
+#pragma link C++ class AliAnalysisTaskhStrCorr+;
 #pragma link C++ class AliV0ChBasicParticle+;
 #pragma link C++ class AliAnalysisTaskCheckCascadepp+;
 #pragma link C++ class AliAnalysisTaskCheckPerformanceCascadepp+;

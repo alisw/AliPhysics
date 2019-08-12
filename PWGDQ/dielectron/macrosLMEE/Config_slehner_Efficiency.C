@@ -14,12 +14,15 @@ void Config_slehner_Efficiency(AliAnalysisTaskElectronEfficiencyV2 *task,  Bool_
   Int_t PIDCut=0;
   Int_t MVACut=0;
   
-//  for(int glcut = 0; glcut <=20; ++glcut){
-  for(int glcut = 0; glcut <=1; ++glcut){
+  for(int glcut = 0; glcut <=30; ++glcut){
+//  for(int glcut = 0; glcut <=0; ++glcut){
     ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
-    if(glcut>0 && glcut<11) continue;
-    PIDCut=glcut;
+    if(glcut>0 && glcut<21) continue;    
+    PIDCut=glcut-10;
     trackCut=glcut;
+    if(glcut==0) trackCut=-1;
+    if(glcut==0) PIDCut=0;
+    
     std::cout << "Config_slehner_Efficiency: CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<0<<" added"<< std::endl;
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
     task->AddTrackCuts(filter); 
@@ -253,7 +256,7 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   AliDielectronSignalMC eleFinalState("eleFinalState","eleFinalState");
   eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//  eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);    //in slight O(1%) disagreement with ML tree maker non-conversion electrons
+  eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);    //in slight O(1%) disagreement with ML tree maker non-conversion electrons
   eleFinalState.SetMotherPDGs(22,22,kTRUE,kTRUE); // this line leads to results in agreement with ML tree maker when counting non-conversion electrons
   
   AliDielectronSignalMC eleFinalStateFromSameMotherMeson("eleFinalStateFromSameMotherMeson","eleFinalStateFromSameMotherMeson");
@@ -324,7 +327,7 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
     AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
     pair_sameMother.SetLegPDGs(11,-11);
     pair_sameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//    pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
     pair_sameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.

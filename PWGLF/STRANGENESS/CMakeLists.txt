@@ -60,6 +60,7 @@ set(SRCS
   Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityAODRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2pPb.cxx
@@ -68,6 +69,7 @@ set(SRCS
   Cascades/AliAnalysisTaskpANormalizationCheckMC.cxx
   Correlations/AliAnalysisTaskLambdaOverK0sJets.cxx
   Correlations/AliAnalysisTaskV0ChCorrelations.cxx
+  Correlations/AliAnalysisTaskhStrCorr.cxx
   Cascades/AliAnalysisTaskCheckCascadepp.cxx
   Cascades/AliAnalysisTaskCheckPerformanceCascadepp.cxx
   Cascades/lightvertexers/AliLightV0vertexer.cxx

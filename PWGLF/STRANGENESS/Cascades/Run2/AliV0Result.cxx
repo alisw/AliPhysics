@@ -57,6 +57,7 @@ fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
 fCut276TeVLikedEdx(kFALSE),
 fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE), 
 fCutIsCowboy(0)
 {
     // Dummy Constructor - not to be used!
@@ -121,6 +122,7 @@ fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
 fCut276TeVLikedEdx(kFALSE),
 fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE), 
 fCutIsCowboy(0)
 {
     // Named constructor
@@ -185,6 +187,7 @@ fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
 fCut276TeVLikedEdx(kFALSE),
 fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE), 
 fCutIsCowboy(0)
 {
     //centrality binning assignment
@@ -249,6 +252,7 @@ fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
 fCut276TeVLikedEdx(kFALSE),
 fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE), 
 fCutIsCowboy(0)
 {
     //centrality binning assignment
@@ -318,6 +322,7 @@ fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const),
 fUseOnTheFly(lCopyMe.fUseOnTheFly),
 fCut276TeVLikedEdx(lCopyMe.fCut276TeVLikedEdx),
 fCutAtLeastOneTOF(lCopyMe.fCutAtLeastOneTOF),
+fCutITSorTOF(lCopyMe.fCutITSorTOF), 
 fCutIsCowboy(lCopyMe.fCutIsCowboy)
 {
     SetName( lNewName.Data() );
@@ -423,6 +428,7 @@ fHisto(0)
     fCut276TeVLikedEdx = lCopyMe -> GetCut276TeVLikedEdx();
     
     fCutAtLeastOneTOF = lCopyMe -> GetCutAtLeastOneTOF();
+    fCutITSorTOF = lCopyMe -> GetCutITSorTOF(); 
     
     fCutIsCowboy = lCopyMe -> GetCutIsCowboy();
     
@@ -546,6 +552,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCut276TeVLikedEdx = lCopyMe.GetCut276TeVLikedEdx();
     
     fCutAtLeastOneTOF = lCopyMe.GetCutAtLeastOneTOF();
+    fCutITSorTOF = lCopyMe.GetCutITSorTOF();
     
     fCutIsCowboy = lCopyMe.GetCutIsCowboy();
     
@@ -695,6 +702,7 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     if( fCut276TeVLikedEdx != lCompareV0->GetCut276TeVLikedEdx() ) lReturnValue = kFALSE;
     
     if( fCutAtLeastOneTOF != lCompareV0->GetCutAtLeastOneTOF() ) lReturnValue = kFALSE;
+    if( fCutITSorTOF != lCompareV0->GetCutITSorTOF() ) lReturnValue = kFALSE;
     
     if( fCutIsCowboy != lCompareV0->GetCutIsCowboy() ) lReturnValue = kFALSE;
     
@@ -751,6 +759,7 @@ void AliV0Result::Print()
     cout<<" Max chi2/clusters..: "<<fCutMaxChi2PerCluster<<endl;
     cout<<" Min Track Length...: "<<fCutMinTrackLength<<endl;
     cout<<" At least 1 tof.....: "<<fCutAtLeastOneTOF<<endl;
+    cout<<" ITS||TOF...........: "<<fCutITSorTOF<<endl; 
     cout<<" Is cowboy..........: "<<fCutIsCowboy<<endl;
     cout<<"========================================"<<endl;
     return;

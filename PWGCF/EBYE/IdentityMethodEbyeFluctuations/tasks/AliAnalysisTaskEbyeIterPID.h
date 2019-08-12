@@ -28,6 +28,7 @@ class fPIDCombined;
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDCombined.h"
 #include "AliTPCdEdxInfo.h"
+#include "AliESDv0KineCuts.h"
 #include "THnSparse.h"
 #include "THn.h"
 #include "TVectorF.h"
@@ -42,9 +43,9 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
 
   AliEventCuts fEventCuts;     /// Event cuts
 
-// ---------------------------------------------------------------------------------
-//                           Constructor and Destructor
-// ---------------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------
+  //                           Constructor and Destructor
+  // ---------------------------------------------------------------------------------
 
   AliAnalysisTaskEbyeIterPID(const char *name);
   AliAnalysisTaskEbyeIterPID();
@@ -128,6 +129,11 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
     kBBB=6,
     kAAB=7,
     kBBA=8,
+    kABBB=9,
+    kAABB=10,
+    kAAAB=11,
+    kAAAA=12,
+    kBBBB=13,
   };
 
   /*
@@ -193,9 +199,11 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetFillTreeMC(const Bool_t ifTreeMC = kFALSE)                {fFillTreeMC= ifTreeMC;}
 
   void   SetDefaultTrackCuts(const Bool_t ifDefaultTrackCuts = kFALSE){fDefaultTrackCuts= ifDefaultTrackCuts;}
+  void   SetDefaultEventCuts(const Bool_t ifDefaultEventCuts = kFALSE){fDefaultEventCuts= ifDefaultEventCuts;}
   void   SetFillNudynFastGen(const Bool_t ifNudynFastGen = kFALSE)    {fFillNudynFastGen= ifNudynFastGen;}
   void   SetUsePtCut(const Int_t ifUsePtCut = 1)                      {fUsePtCut            = ifUsePtCut;}
   void   SetTrackOriginType(const Int_t ifTrackOriginType = 0)        {fTrackOriginType     = ifTrackOriginType;}
+  void   SetRapidityType(const Int_t ifRapidityType = 0)              {fRapidityType        = ifRapidityType;}
   void   SetFillDnchDeta(const Bool_t ifDnchDetaCal = kFALSE)         {fFillDnchDeta        = ifDnchDetaCal;}
   void   SetIncludeTOF(const Bool_t ifIncludeTOF = kFALSE)            {fIncludeTOF          = ifIncludeTOF;}
   void   SetUseThnSparse(const Bool_t ifUseThnSparse = kFALSE)        {fUseThnSparse        = ifUseThnSparse;}
@@ -462,6 +470,7 @@ private:
   void FillEffMatrix();            // Prepare efficiency matrix
   void FillCleanSamples();                    // Fill Clean Pions
   void SelectCleanSamplesFromV0s(AliESDv0 *v0, AliESDtrack *track0, AliESDtrack *track1);
+  void SetSpecialV0Cuts(AliESDv0KineCuts* cuts);
   void BinLogAxis(TH1 *h);
   void CalculateEventVariables();
   void SetCutBitsAndSomeTrackVariables(AliESDtrack *track);
@@ -484,11 +493,18 @@ private:
   AliESDEvent      * fESD;                    //! ESD object
   TList            * fListHist;               //! list for histograms
   AliESDtrackCuts  * fESDtrackCuts;           //! basic cut variables
+  AliESDtrackCuts  * fESDtrackCutsLoose;      //! basic cut variables for debugging
   AliESDv0Cuts     * fESDtrackCutsV0;         //! basic cut variables for V0
   AliESDtrackCuts  * fESDtrackCutsCleanSamp;  //! basic cut variables for clean pion and electron form V0s
   AliPIDCombined   * fPIDCombined;            //! combined PID object
   AliTPCdEdxInfo   * fTPCdEdxInfo;            //! detailed dEdx info
   AliStack         * fMCStack;                //! stack object to get Mc info
+  AliESDv0KineCuts * fV0OpenCuts;             // v0 strong filter for tagged V0s
+  AliESDv0KineCuts * fV0StrongCuts;           // v0 strong filter for tagged V0s
+  AliAnalysisCuts  * fK0sPionCuts;            // filter for pions from K0s
+  AliAnalysisCuts  * fLambdaProtonCuts;       // filter for protons from Lambda
+  AliAnalysisCuts  * fLambdaPionCuts;         // filter for pions from Lambda
+  AliAnalysisCuts  * fGammaElectronCuts;      // filter for electrons from gamma conversions
 
   TTree            * fArmPodTree;             // Tree for clean pion and proton selection
   TTreeSRedirector * fTreeSRedirector;        //! temp tree to dump output
@@ -551,9 +567,12 @@ private:
   Bool_t            fFillGenDistributions;   // when running over galice.root do not fill other objects
   Bool_t            fFillTreeMC;
   Bool_t            fDefaultTrackCuts;
+  Bool_t            fDefaultEventCuts;
   Bool_t            fFillNudynFastGen;
   Int_t             fUsePtCut;
   Int_t             fTrackOriginType;
+  Int_t             fRapidityType;
+
 
   Bool_t            fFillDnchDeta;           // switch on calculation of the dncdeta for fastgens
   Bool_t            fIncludeTOF;             // Include TOF information to investigate the efficiency loss effects on observable
@@ -574,11 +593,11 @@ private:
   Float_t           fArmPodCentrality;
   Float_t           fQt;
   Float_t           fAlfa;
-  Float_t           fPiNSigmasTOF;           // TOF N sigma for Pion
-  Float_t           fKaNSigmasTOF;           // TOF N sigma for Pion
-  Float_t           fElNSigmasTOF;           // TOF N sigma for Pion
-  Float_t           fPrNSigmasTOF;           // TOF N sigma for Pion
-  Float_t           fDeNSigmasTOF;           // TOF N sigma for Proton
+  Float_t           fNSigmasElTOF;           // TOF N sigma for Pion
+  Float_t           fNSigmasPiTOF;           // TOF N sigma for Pion
+  Float_t           fNSigmasKaTOF;           // TOF N sigma for Pion
+  Float_t           fNSigmasPrTOF;           // TOF N sigma for Pion
+  Float_t           fNSigmasDeTOF;           // TOF N sigma for Proton
 
   Float_t           fDEdxEl;                 // Expected Electron dEdx
   Float_t           fDEdxKa;                 // Expected Kaon dEdx

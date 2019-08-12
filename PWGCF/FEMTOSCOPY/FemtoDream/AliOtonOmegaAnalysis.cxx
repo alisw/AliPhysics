@@ -188,7 +188,7 @@ void AliOtonOmegaAnalysis::Init(bool isMonteCarlo, UInt_t trigger) {
   }
   if (fConfig->GetUsePhiSpinning()) {
     fControlSample = new AliFemtoDreamControlSample(
-        fConfig, fConfig->GetMinimalBookingSample());
+        fConfig);
   }
 
   InitializeTreeBooking();
@@ -259,6 +259,9 @@ void AliOtonOmegaAnalysis::InitializeTreeBooking() {
  fomegaTTree->Branch("ProtonPx",&fTProtonPx,"fTProtonPx[fTnProton]/F");
  fomegaTTree->Branch("ProtonPy",&fTProtonPy,"fTProtonPy[fTnProton]/F");
  fomegaTTree->Branch("ProtonPz",&fTProtonPz,"fTProtonPz[fTnProton]/F");
+ fomegaTTree->Branch("ProtonVPx",&fTProtonVPx,"fTProtonVPx[fTnProton]/F");
+ fomegaTTree->Branch("ProtonVPy",&fTProtonVPy,"fTProtonVPy[fTnProton]/F");
+ fomegaTTree->Branch("ProtonVPz",&fTProtonVPz,"fTProtonVPz[fTnProton]/F");
  fomegaTTree->Branch("ProtonEta",&fTProtonEta,"fTProtonEta[fTnProton]/F");
  //fomegaTTree->Branch("ProtonmT",&fTProtonmT,"fTProtonmT[fTnProton]/F");
  //fomegaTTree->Branch("ProtonTPCmom",&fTProtonTPCmom,"fTProtonTPCmom[fTnProton]/F");
@@ -310,7 +313,7 @@ void AliOtonOmegaAnalysis::InitializeTreeBooking() {
  fomegaTTree->Branch("TrackPz",&fTTrackPz,"fTTrackPz[fTnCascade][3]/F");
  //fomegaTTree->Branch("TrackTPCmom",&fTTrackTPCmom,"fTTrackTPCmom[fTnCascade][3]/F");
  fomegaTTree->Branch("TrackEta",&fTTrackEta,"fTTrackEta[fTnCascade][3]/F");
- //fomegaTTree->Branch("TrackCharge",&fTTrackCharge,"fTTrackCharge[fTnCascade][3]/S");
+ fomegaTTree->Branch("TrackCharge",&fTTrackCharge,"fTTrackCharge[fTnCascade][3]/S");
  fomegaTTree->Branch("TrackDCA",&fTTrackDCA,"fTTrackDCA[fTnCascade][3]/F");
  //fomegaTTree->Branch("TrackITSspi",&fTTrackITSspi,"fTTrackITSspi[fTnCascade][3]/F");
  //fomegaTTree->Branch("TrackITSsk",&fTTrackITSsk,"fTTrackITSsk[fTnCascade][3]/F");
@@ -322,8 +325,8 @@ void AliOtonOmegaAnalysis::InitializeTreeBooking() {
  //fomegaTTree->Branch("TrackTOFsk",&fTTrackTOFsk,"fTTrackTOFsk[fTnCascade][3]/F");
  //fomegaTTree->Branch("TrackTOFsp",&fTTrackTOFsp,"fTTrackTOFsp[fTnCascade][3]/F");
  fomegaTTree->Branch("TrackNcl",&fTTrackNcl,"fTTrackNcl[fTnCascade][3]/I");
- //fomegaTTree->Branch("TrackCrF",&fTTrackCrF,"fTTrackCrF[fTnCascade][3]/F");
- //fomegaTTree->Branch("TrackShared",&fTTrackShared,"fTTrackShared[fTnCascade][3]/I");
+ fomegaTTree->Branch("TrackCrF",&fTTrackCrF,"fTTrackCrF[fTnCascade][3]/F");
+ fomegaTTree->Branch("TrackShared",&fTTrackShared,"fTTrackShared[fTnCascade][3]/I");
  //fomegaTTree->Branch("TrackTPCchi2",&fTTrackTPCchi2,"fTTrackTPCchi2[fTnCascade][3]/F");
  fomegaTTree->Branch("TrackITStime",&fTTrackITStime,"fTTrackITStime[fTnCascade][3]/O");
  fomegaTTree->Branch("TrackTOFtime",&fTTrackTOFtime,"fTTrackTOFtime[fTnCascade][3]/O");
@@ -627,8 +630,7 @@ void AliOtonOmegaAnalysis::Make(AliAODEvent *evt, bool OmegaTreeFlag) {
                         fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
   }
   if (fConfig->GetUsePhiSpinning()) {
-    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),
-                             fEvent->GetMultiplicity());
+    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),fEvent);
   }
 }
 
@@ -708,11 +710,11 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
     fFemtoCasc->SetCascade(evt, mcEvent, esdCascade);
     if (fCascCuts->isSelected(fFemtoCasc)) {
       XiDecays.push_back(*fFemtoCasc);
-      FillOmegaTree_omega = kTRUE;
+      //FillOmegaTree_omega = kTRUE;
     }
     if (fAntiCascCuts->isSelected(fFemtoCasc)) {
       AntiXiDecays.push_back(*fFemtoCasc);
-      FillOmegaTree_aomega = kTRUE;
+      //FillOmegaTree_aomega = kTRUE;
     }
 
     //signal omegas:
@@ -769,8 +771,7 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
                         fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
   }
   if (fConfig->GetUsePhiSpinning()) {
-    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),
-                             fEvent->GetMultiplicity());
+    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),fEvent);
   }
 }
 
@@ -1040,8 +1041,26 @@ Bool_t AliOtonOmegaAnalysis::FillProtonTrack(AliESDEvent *evt, Int_t idtrack) {
  fTProtonPt[fTnProton]=sqrt(pow(track->Px(),2)+pow(track->Py(),2));
  fTProtonmT[fTnProton]= sqrt( pow(0.9382721,2) + pow(track->Px(),2) + pow(track->Py(),2) );
 
-   //fill Eta:
-   fTProtonEta[fTnProton]= track->Eta();
+
+ //fill momentum with vtx constraint:
+ AliESDtrack *fESDTPCOnlyTrack;
+ fESDTPCOnlyTrack = AliESDtrackCuts::GetTPCOnlyTrack(evt, track->GetID());
+ double p[3] = { 0. };
+ const AliESDVertex *vtxSPD = evt->GetPrimaryVertexSPD();
+ AliExternalTrackParam exParam;
+ Bool_t relate = false;
+ relate = fESDTPCOnlyTrack->RelateToVertexTPC(vtxSPD, evt->GetMagneticField(), 1e30, &exParam);
+ // set the constrained parameters to the track
+ fESDTPCOnlyTrack->Set(exParam.GetX(), exParam.GetAlpha(),exParam.GetParameter(), exParam.GetCovariance());
+ fESDTPCOnlyTrack->GetPxPyPz(p);
+ fTProtonVPx[fTnProton]=p[0];
+ fTProtonVPy[fTnProton]=p[1];
+ fTProtonVPz[fTnProton]=p[2];
+
+
+
+ //fill Eta:
+ fTProtonEta[fTnProton]= track->Eta();
 
 
  //fill charge GIVEN:
@@ -1101,6 +1120,9 @@ void AliOtonOmegaAnalysis::InitializeTreeValues(){
    fTProtonPx[ii]=-100000.;
    fTProtonPy[ii]=-100000.;
    fTProtonPz[ii]=-100000.;
+   fTProtonVPx[ii]=-100000.;
+   fTProtonVPy[ii]=-100000.;
+   fTProtonVPz[ii]=-100000.;
    fTProtonTPCmom[ii]=-100000.;
    fTProtonCharge[ii]=-10;
    fTProtonDCA[ii]=-100000.;

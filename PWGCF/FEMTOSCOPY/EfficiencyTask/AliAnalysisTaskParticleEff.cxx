@@ -44,7 +44,7 @@ double fV1[3];
 
 //_______________________________________________________
 
-AliAnalysisTaskParticleEff::AliAnalysisTaskParticleEff(TString name, int pidMethod) :
+AliAnalysisTaskParticleEff::AliAnalysisTaskParticleEff(TString name, int pidMethod, int filterbit) :
   AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fEtaLambda(0),fPtLambda(0), fEtaAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fEtaXim(0),fPtXim(0), fEtaXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kNSigma),  fEstEventMult(kRefMult),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 {
   for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
@@ -84,7 +84,7 @@ AliAnalysisTaskParticleEff::AliAnalysisTaskParticleEff(TString name, int pidMeth
     fTrackCuts->SetMinNClustersTPC(70);*/
   
   if(pidMethod!=-1) SetPidMethod(pidMethod);
-  
+  SetFB(filterbit);
 
 
 

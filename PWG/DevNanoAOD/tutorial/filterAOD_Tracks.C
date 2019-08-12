@@ -13,7 +13,7 @@ void filterAOD_Tracks()
   // Multiplicity selection
   gInterpreter->ExecuteMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
   
-  AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/AddTaskNanoAODFilter.C(0, kFALSE)");
+  AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/macros/AddTaskNanoAODFilter.C(0, kFALSE)");
   task->AddSetter(new AliNanoAODSimpleSetter);
   
   // Event selection
@@ -30,9 +30,9 @@ void filterAOD_Tracks()
   // Fields to store
   // event level
   // Note: vertices are kept by default
-  task->SetVarListHeader("OfflineTrigger,MagField,MultSelection.RefMult08");
+  task->SetVarListHeader("OfflineTrigger,MagField,MultSelection.RefMult08,CentrV0M");
   // track level
-  task->SetVarListTrack("pt,theta,phi");
+  task->SetVarListTrack("pt,theta,phi,TOFBunchCrossing,ID");
 
   task->SetTrkCuts(trkCuts);
   task->AddEvtCuts(evtCuts);

@@ -9,6 +9,7 @@
 #include <AliPID.h>
 
 class TF1;
+class TH1D;
 class TH2F;
 class TH3D;
 class AliFlowTrackCuts;
@@ -39,6 +40,7 @@ private:
   AliAnalysisTaskLFefficiencies &operator=(const AliAnalysisTaskLFefficiencies &source);
 
   TList* fOutputList;                                    //!<! Output list
+  TH1D* fNumberOfRecoPrimaryTracks;                      //!<! Number of recostructed primary tracks per event
   TH3D* fGeneratedYPhiPt[AliPID::kSPECIESC][2];          //!<! Generated particles
   TH3D* fReconstructedYPhiPt[AliPID::kSPECIESC][2][8];   //!<! Reconstructed particles vs y, Phi and pT, {FB4,FB5,FB5+PID TPC, FB5 + TOF matching, FB5 + PID TOF, FB5 + TOF matching - TOF mismatch, FB5 + TOF matching - TOF mismatch + TOF PID}
   TH3D* fGeneratedEtaPhiPt[AliPID::kSPECIESC][8];        //!<! Generated particles in the eta

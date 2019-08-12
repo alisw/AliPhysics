@@ -260,6 +260,21 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     plotFileName=Form("TracksPtDistrib-TPCselSPDany.%s",outputForm.Data());
     cdists->SaveAs(plotFileName.Data());
     if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+    TFile* outtrsp=new TFile("TrackPtSpectra.root","recreate");
+    hPtEtaNegTPCsel->Write();
+    hPtEtaNegPosChargeTPCsel->Write();
+    hPtEtaNegNegChargeTPCsel->Write();
+    hPtEtaPosTPCsel->Write();
+    hPtEtaPosPosChargeTPCsel->Write();
+    hPtEtaPosNegChargeTPCsel->Write();
+    hPtEtaNegTPCselSPDany->Write();
+    hPtEtaNegPosChargeTPCselSPDany->Write();
+    hPtEtaNegNegChargeTPCselSPDany->Write();
+    hPtEtaPosTPCselSPDany->Write();
+    hPtEtaPosPosChargeTPCselSPDany->Write();
+    hPtEtaPosNegChargeTPCselSPDany->Write();
+    hNEvents->Write();
+    outtrsp->Close();
   }else{
     TCanvas* cdist=new TCanvas("cdist","Pt+Phi Distrib",900,900);
     cdist->Divide(2,2);

@@ -10,7 +10,7 @@
 #include "AliAnalysisDataContainer.h"
 #endif
 
-AliAnalysisTaskEventCutsValidation* AddTaskEventCutsValidation(bool storeCuts = true, TString tskname = "EventCutsValidation",TString suffix = "") {
+AliAnalysisTaskEventCutsValidation* AddTaskEventCutsValidation(bool storeCuts = true, bool fillTree = false, TString tskname = "EventCutsValidation",TString suffix = "") {
 
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -39,11 +39,19 @@ AliAnalysisTaskEventCutsValidation* AddTaskEventCutsValidation(bool storeCuts = 
   mgr->ConnectOutput (ev,  1, evCont);
   
   if (storeCuts) {
-    AliAnalysisDataContainer *cutCont = mgr->CreateContainer("EventCuts",
+    AliAnalysisDataContainer *cutCont = mgr->CreateContainer(Form("Cuts%s",tskname.Data()),
         AliEventCuts::Class(),
         AliAnalysisManager::kParamContainer,
         output.Data());
     mgr->ConnectOutput(ev, 2, cutCont);
+  }
+
+  if (fillTree) {
+    AliAnalysisDataContainer *treeCont = mgr->CreateContainer(Form("Tree%s",tskname.Data()),
+        TTree::Class(),
+        AliAnalysisManager::kOutputContainer,
+        output.Data());
+    mgr->ConnectOutput(ev, 3, treeCont);
   }
 
   return ev;

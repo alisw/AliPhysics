@@ -183,6 +183,14 @@ public:
   double	GetPairAngleEP() const;
   void		SetPairAngleEP(double x) {fPairAngleEP = x;}
 
+  /// Calcuates the share fraction and share quality between pair of tracks
+  void CalcTrackShareQualFractions(double &frac, double &quality) const;
+
+  static void CalcShareQualFractions(const AliFemtoTrack &track1,
+                                     const AliFemtoTrack &track2,
+                                     double &frac,
+                                     double &quality);
+
   /// Read cached femto-weight value created from weight-generator
   /// located at 'ptr'
   ///
@@ -211,6 +219,7 @@ public:
                              double &avgsep_nn, double &avgsep_np,
                              double &avgsep_pn, double &avgsep_pp);
   // static double CalcAvgSepTracks(const AliFemtoTrack &t1, const AliFemtoTrack &t2);
+
 
 private:
   AliFemtoParticle* fTrack1; // Link to the first track in the pair
@@ -266,6 +275,9 @@ private:
   /// Used to store the average separations of tracks
   mutable double fAverageSeparations[4];
 
+  /// Cache value of ssharing
+  mutable double fSharingCache[2];
+
   /// Cache for re-using MC-generated weights
   /// First item in pair is pointer to weight, second is the weight
   mutable std::pair<std::intptr_t, double> fFemtoWeightCache[3];
@@ -303,6 +315,7 @@ inline void AliFemtoPair::ResetParCalculated(){
   fMergingParNotCalculatedV0NegV0Neg=1;
 
   std::fill_n(fAverageSeparations, 4, NAN);
+  std::fill_n(fSharingCache, 2, NAN);
   ClearWeightCache();
 }
 

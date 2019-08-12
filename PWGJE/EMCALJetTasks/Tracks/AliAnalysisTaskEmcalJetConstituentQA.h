@@ -35,7 +35,9 @@
 
 class THistManager;
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalJetConstituentQA : public AliAnalysisTaskEmcalJet {
 public:
@@ -51,6 +53,13 @@ public:
   void AddNameJetContainer(const char *name) { fNamesJetContainers.Add(new TObjString(name)); }
   void SetUseTriggerSelection(Bool_t doUse) { fUseTriggerSelection = doUse; }
   void SetJetType(AliJetContainer::EJetType_t jettype) { fJetType = jettype; }
+
+  void SetDoHighZClusters(Bool_t doMon)           { fDoHighZClusters = doMon; }
+  void SetDoChargedConstituents(Bool_t doMon)     { fDoCharged = doMon; }
+  void SetDoNeutralConstituents(Bool_t doMon)     { fDoNeutral = doMon; }
+  void SetDoLeadingCharged(Bool_t doMon)          { fDoLeadingCharged = doMon; }
+  void SetDoLeadingNeutral(Bool_t doMon)          { fDoLeadingNeutral = doMon; }
+  void SetDoLeadingCell(Bool_t doMon)             { fDoLeadingCell = doMon; }
 
 protected:
   virtual void UserCreateOutputObjects();
@@ -68,6 +77,15 @@ private:
   Bool_t                        fUseTriggerSelection;       ///< Use trigger selection in addition to trigger string
   TString                       fNameTriggerDecisionContainer;  ///< Name of the trigger decision container
 
+  // Switchable options
+  Bool_t                        fDoHighZClusters;           ///< Monoitor clusters with a high z
+  Bool_t                        fDoCharged;                 ///< Monitor charged constituents
+  Bool_t                        fDoNeutral;                 ///< Monitor neutral constituents
+  Bool_t                        fDoLeadingCharged;          ///< Monitor leading charged constituents
+  Bool_t                        fDoLeadingNeutral;          ///< Monitor leading netural constituents
+  Bool_t                        fDoLeadingCell;             ///< Monitor leading cell
+
+
   AliAnalysisTaskEmcalJetConstituentQA(const AliAnalysisTaskEmcalJetConstituentQA &);
   AliAnalysisTaskEmcalJetConstituentQA &operator=(const AliAnalysisTaskEmcalJetConstituentQA &);
 
@@ -75,6 +93,9 @@ private:
   ClassDef(AliAnalysisTaskEmcalJetConstituentQA, 1);
   /// \endcond
 };
+
+}
+
 }
 
 #endif

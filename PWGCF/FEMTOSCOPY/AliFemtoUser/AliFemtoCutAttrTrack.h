@@ -193,8 +193,8 @@ struct TrackCutAttrImpact {
     {}
 
   TrackCutAttrImpact(AliFemtoConfigObject &cfg)
-    : max_xy(cfg.pop_float("max_xy", 0.25))
-    , max_z(cfg.pop_float("max_z", 0.3))
+    : max_xy(cfg.pop_num("max_xy", 0.25))
+    , max_z(cfg.pop_num("max_z", 0.3))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -283,8 +283,8 @@ struct TrackCutAttrChi2ITS {
     {}
 
   TrackCutAttrChi2ITS(AliFemtoConfigObject &cfg)
-    : rchi2_its_max(cfg.pop_float("rchi2_its_max", -1.0))
-    , rchi2_its_min(cfg.pop_float("rchi2_its_min", 0.0))
+    : rchi2_its_max(cfg.pop_num("rchi2_its_max", -1.0))
+    , rchi2_its_min(cfg.pop_num("rchi2_its_min", 0.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -327,8 +327,8 @@ struct TrackCutAttrChi2TPC {
     {}
 
   TrackCutAttrChi2TPC(AliFemtoConfigObject &cfg)
-    : rchi2_tpc_max(cfg.pop_float("rchi2_tpc_max", -1.0))
-    , rchi2_tpc_min(cfg.pop_float("rchi2_tpc_min", 0.0))
+    : rchi2_tpc_max(cfg.pop_num("rchi2_tpc_max", -1.0))
+    , rchi2_tpc_min(cfg.pop_num("rchi2_tpc_min", 0.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -355,7 +355,7 @@ struct TrackCutAttrRemoveNegLabel {
 
   bool Pass(const AliFemtoTrack &track) const
     {
-      return !remove_neg_label || track.Label() < 0;
+      return !remove_neg_label || track.Label() >= 0;
     }
 
   TrackCutAttrRemoveNegLabel()
@@ -520,7 +520,7 @@ struct TrackCutAttrRapidity {
 
   TrackCutAttrRapidity(AliFemtoConfigObject &cfg)
     : rapidity_range(cfg.pop_range("rapidity_range", DEFAULT))
-    , rapidity_mass(cfg.pop_float("rapidity_mass", 0.0))
+    , rapidity_mass(cfg.pop_num("rapidity_mass", 0.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -661,7 +661,7 @@ struct TrackCutAttrSigmaPion {
   TrackCutAttrSigmaPion(AliFemtoConfigObject &cfg)
     : nsigma_pion_range(cfg.pop_range("nsigma_pion_range", DEFAULT))
     , usetpctof(cfg.pop_bool("use_tpctof", true))
-    , nsigma_pion(cfg.pop_float("nsigma_pion", 3.0))
+    , nsigma_pion(cfg.pop_num("nsigma_pion", 3.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -798,7 +798,8 @@ struct TrackCutAttrItsCluster {
 };
 
 
-/// Rapidity assuming mass
+/// Reject tracks within 3 TPC-sigma of electrons and outside 3-sigma
+/// of other particles
 struct TrackCutAttrElectronRejection {
 
   bool reject_electrons;
@@ -883,7 +884,7 @@ public:
   AliFemtoConfigObject GetConfiguration() const
     {
       AliFemtoConfigObject cfg = AliFemtoConfigObject::BuildMap()
-                                    ("_class", CRTP::ClassName());
+                                  ("_class", static_cast<const CRTP*>(this)->ClassName());
       CutAttrs::FillConfiguration(cfg);
       return cfg;
     }
@@ -892,7 +893,6 @@ public:
   virtual ~AliFemtoTrackCutAttr()
     {}
 };
-
 
 
 #endif

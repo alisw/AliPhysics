@@ -1,7 +1,3 @@
-// $Id: AliAnalysisTaskCLQA_local.cxx 6758 2016-06-15 14:19:35Z loizides $
-//
-// Constantin's Task
-//
 // Author: C.Loizides
 
 #include "AliCLTask.h"
@@ -20,27 +16,32 @@
 #include <TNtupleD.h>
 #include <TProfile.h>
 #include <TTree.h>
-#include <AliAODMCParticle.h>
 #include <AliAODEvent.h>
+#include <AliAODMCParticle.h>
 #include <AliAODTrack.h>
-#include <AliPIDResponse.h>
 #include <AliAnalysisManager.h>
-#include <AliInputEventHandler.h>
 #include <AliCaloPID.h>
 #include <AliCalorimeterUtils.h>
 #include <AliEventCuts.h>
+#include <AliInputEventHandler.h>
+#include <AliPIDResponse.h>
+#include <AliPhysicsSelection.h>
+#include <AliPhysicsSelectionTask.h>
+#include <AliTriggerAnalysis.h>
 
 ClassImp(AliCLTask)
 
 //________________________________________________________________________
-AliCLTask::AliCLTask(const char *name) : 
-  AliAnalysisTaskSE(name), fMcMode(0), fDoClust(0), fDoSkip(0), fPtCut(3), fM2Cut(2), fCounter(0), fCounterC(0), 
-  fPidRes(0), fPidCalo(0), fCaloUtils(0), fMyTree(0), fMyInfo(0), fMyTracks(0), fMyParts(0), fEventCuts(0)
+AliCLTask::AliCLTask(const char *name, Bool_t dolist) : 
+  AliAnalysisTaskSE(name), fDoList(dolist), fMcMode(0), fDoClust(0), fDoSkip(0), fDoFilter(0), fPtCut(3), fECut(5), fM2Cut(2), fCounter(0), fCounterC(0), 
+  fPidRes(0), fPidCalo(0), fCaloUtils(0), fMyTree(0), fMyInfo(0), fMyTracks(0), fMyClus(0), fMyParts(0), fEventCuts(0), fOutput(0), fTana(0)
 {
   // Standard constructor.
 
   if (name) {
     DefineOutput(1, TTree::Class());
+    if (fDoList)
+      DefineOutput(2, TList::Class());
   }
 }
 
@@ -83,8 +84,31 @@ void AliCLTask::UserExec(Option_t *option)
     fPidRes = inputHandler->GetPIDResponse();
   }
 
+  if (!fTana) {
+    AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+    TObjArray *l = man->GetTopTasks();
+    const Int_t n = l->GetEntries();
+    for (Int_t i=0;i<n;++i) {
+      AliPhysicsSelectionTask *task = dynamic_cast<AliPhysicsSelectionTask*>(l->At(i));
+      if (task) {
+	fTana=task->GetPhysicsSelection()->GetTriggerAnalysis();
+	break;
+      }
+    }
+  } else {
+    fTana = new AliTriggerAnalysis("myown");
+  }
+
+
   AliAODHeader *h = static_cast<AliAODHeader*>(InputEvent()->GetHeader());
   fMyInfo->fTrig     = h->GetOfflineTrigger();
+  if (fTana) {
+    fMyInfo->fSPDClsVsTrkBG   = fTana->IsSPDClusterVsTrackletBG(aodev);
+    fMyInfo->fV0MOnVsOfPileup = fTana->IsV0MOnVsOfPileup(aodev);
+    fMyInfo->fSPDOnVsOfPileup = fTana->IsSPDOnVsOfPileup(aodev);
+    fMyInfo->fV0PFPileup      = fTana->IsV0PFPileup(aodev);
+    fMyInfo->fSPDVtxPileup    = fTana->IsSPDVtxPileup(aodev);
+  }
   fMyInfo->fEvAcc    = fEventCuts->AcceptEvent(aodev); 
   fMyInfo->fSpdPu1   = aodev->IsPileupFromSPD(3,0.8);
   fMyInfo->fSpdPu2   = aodev->IsPileupFromSPD(5,0.8);;
@@ -97,6 +121,9 @@ void AliCLTask::UserExec(Option_t *option)
   fMyInfo->fSkippedV = fCounter;
   fMyInfo->fSkippedC = fCounterC;
 
+  TClonesArray *mcarr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("mcparticles"));
+  Int_t labels[99999] = {-1};
+
   for(Int_t i=0,newcl=0; i<fMyInfo->fNtracks; ++i) {
     AliAODTrack* track = static_cast<AliAODTrack*>(aodev->GetTrack(i));
     if (!track)
@@ -104,16 +131,26 @@ void AliCLTask::UserExec(Option_t *option)
     Double_t pt = track->Pt();
     if (pt<0.8)
       continue;
+    if (pt>100)
+      continue;
     Double_t eta = track->Eta();
-    if (TMath::Abs(eta)>0.9) 
+    if (TMath::Abs(eta)>1.0) 
       continue;
     Double_t fraction = track->GetTPCFoundFraction();
     if (fraction<=0)
       continue;
+    if (fDoFilter) {
+      if (!track->IsGlobalConstrained() && !track->IsHybridGlobalConstrainedGlobal() && !track->IsHybridTPCConstrainedGlobal())
+	continue;
+    }
     Double_t nsigmaTPC = 999.0;	
     Double_t nsigmaTOF = 999.0;
-    AliPIDResponse::EDetPidStatus statusTPC = fPidRes->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
-    AliPIDResponse::EDetPidStatus statusTOF = fPidRes->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType) 0, nsigmaTOF);
+    AliPIDResponse::EDetPidStatus statusTPC = AliPIDResponse::kDetNoSignal;
+    AliPIDResponse::EDetPidStatus statusTOF = AliPIDResponse::kDetNoSignal;
+    if (fPidRes) { 
+      statusTPC = fPidRes->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
+      statusTOF = fPidRes->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType) 0, nsigmaTOF);
+    }
     Bool_t tpcIsOk = (statusTPC == AliPIDResponse::kDetPidOk);
     Bool_t tofIsOk = (statusTOF == AliPIDResponse::kDetPidOk);
     Double_t m2tof = -1;
@@ -123,7 +160,7 @@ void AliCLTask::UserExec(Option_t *option)
       continue;
     Double_t dedx = track->GetTPCsignal();
     Double_t nSigmaTPCDeut = -1;
-    if (tpcIsOk) 
+    if (tpcIsOk && fPidRes) 
       nSigmaTPCDeut = fPidRes->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);
     Double_t dca[2] = {0,0};   // 0 - dcar, 1 - dcaz -> output parameter
     Double_t cov[3] = {0,0,0}; // covariance matrix -> output parameter
@@ -134,23 +171,41 @@ void AliCLTask::UserExec(Option_t *option)
       dca[0] = -1;
       dca[1] = -1;
     }
-    CLTrack *myt = (CLTrack*)fMyTracks->ConstructedAt(newcl++);
-    myt->fPt       = pt;
-    myt->fPhi      = TVector2::Phi_0_2pi(track->Phi());
-    myt->fEta      = track->Eta();
-    myt->fCh       = track->Charge();
-    myt->fIsGlobal = track->IsGlobalConstrained();
-    myt->fIsHybGlo = track->IsHybridGlobalConstrainedGlobal();
-    myt->fIsTcon   = track->IsTPCConstrained();
-    myt->fIsPrim   = track->IsPrimary();
-    myt->fIsTpcOk  = tpcIsOk;
-    myt->fIsTofOk  = tofIsOk;
-    myt->fTsig     = dedx;
-    myt->fNsd      = nSigmaTPCDeut;
-    myt->fM2tof    = m2tof;
-    myt->fTfrac    = fraction;
-    myt->fDcar     = dca[0];
-    myt->fDcaz     = dca[1];
+    CLTrack *myt = (CLTrack*)fMyTracks->ConstructedAt(newcl);
+    myt->fPt        = pt;
+    myt->fPhi       = TVector2::Phi_0_2pi(track->Phi());
+    myt->fEta       = track->Eta();
+    myt->fCh        = track->Charge();
+    for (Int_t i=14;i<=20;++i) {
+      if (track->TestBit(BIT(i)))
+	myt->SetBit(BIT(i));
+    }
+    myt->fIsTpcOk   = tpcIsOk;
+    myt->fIsTofOk   = tofIsOk;
+    myt->fTsig      = dedx;
+    myt->fNsd       = nSigmaTPCDeut;
+    myt->fM2tof     = m2tof;
+    myt->fTfrac     = fraction;
+    myt->fDcar      = dca[0];
+    myt->fDcaz      = dca[1];
+    myt->fMap       = track->GetFilterMap();
+    myt->fChi2pdf   = track->GetTPCchi2perNDF();
+    if (mcarr) {
+      Int_t lab     = TMath::Abs(track->GetLabel());
+      AliAODMCParticle *p = dynamic_cast<AliAODMCParticle*>(mcarr->At(lab));
+      if (p) { 
+	myt->fId    = p->PdgCode();
+	if (lab>99999) {
+	  AliFatal(Form("Increase array for labels: %d",lab));
+	}
+	labels[lab] = newcl;
+      }
+    }
+    ++newcl;
+    if (fOutput) {
+      TH2F *h1 = (TH2F*)fOutput->At(0);
+      h1->Fill(pt,m2tof);
+    }
   }
 
   const Int_t nclus = InputEvent()->GetNumberOfCaloClusters();
@@ -161,7 +216,9 @@ void AliCLTask::UserExec(Option_t *option)
     if (clus->GetM02()<0.1) 
       continue;
     Double_t e=clus->E();
-    if (e<fPtCut) 
+    if (e<fECut) 
+      continue;
+    if (e>200) 
       continue;
     TLorentzVector clusterVec;
     clus->GetMomentum(clusterVec,vertex);
@@ -188,7 +245,6 @@ void AliCLTask::UserExec(Option_t *option)
     }
   }
 
-  TClonesArray *mcarr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("mcparticles"));
   if (mcarr) {
     if (!fMyParts) {
       fMyParts = new TClonesArray("CLMCpart",100);
@@ -202,19 +258,30 @@ void AliCLTask::UserExec(Option_t *option)
 	continue;
       Int_t apg = TMath::Abs(p->PdgCode()); 
       if (apg==1000010020) {
-	CLMCpart *myp = (CLMCpart*)fMyParts->ConstructedAt(newcl++);
+	CLMCpart *myp = (CLMCpart*)fMyParts->ConstructedAt(newcl);
 	myp->fPt     = p->Pt();
 	myp->fEta    = eta;
 	myp->fPhi    = TVector2::Phi_0_2pi(p->Phi());
 	myp->fId     = p->PdgCode();
         myp->fIsPrim = p->IsPhysicalPrimary();
+	Int_t trkl   = labels[i];
+	if (trkl>-1) {
+	  CLTrack *myt = dynamic_cast<CLTrack*>(fMyTracks->At(trkl));
+	  if (myt) {
+	    myp->fLab    = trkl+1; //+1 so that zero means no label
+	    myt->fLab    = newcl+1;
+	  }
+	}
+	++newcl;
       }
     } 
   }
 
-  if ((fMcMode) && (mcarr->GetEntries()==0))
-    return; // only accept event if at least one MC particle
-
+  if (fMcMode) {
+    if (mcarr && (fMyParts->GetEntries()==0)) {
+      return; // only accept event if at least one MC particle
+    }
+  }
   if (fDoSkip) {
     if ((fMyTracks->GetEntries()==0) && (fMyClus->GetEntries()==0)) {
       ++fCounterC;
@@ -231,7 +298,6 @@ void AliCLTask::UserCreateOutputObjects()
 {
   // Create histograms
 
-  //fOut
   fMyTree = new TTree("CLTree", "CLTree created from AliCLTask");
   if (1) {
     fMyTree->SetDirectory(0);
@@ -255,21 +321,34 @@ void AliCLTask::UserCreateOutputObjects()
   fPidCalo->Print("");
   fCaloUtils = new AliCalorimeterUtils;
   fCaloUtils->SetEMCALGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
-  fCaloUtils->InitEMCALGeometry();
   fCaloUtils->SetImportGeometryFromFile(0);
+  fCaloUtils->InitEMCALGeometry();
   fCaloUtils->Print("");
 
   fEventCuts = new AliEventCuts;
   fEventCuts->Print();
 
-  PostData(1, fMyTree); // Post data for ALL output slots >0 here, to get at least an empty histogram
+  PostData(1, fMyTree);
+
+  if (fDoList) {
+    fOutput = new TList;
+    TH2F *h1 = new TH2F("hM2vsPt",";p_{T} (GeV); m^{2} (GeV)",120,0,6,200,0,10);
+    h1->Sumw2();
+    fOutput->Add(h1);
+    PostData(2, fOutput);
+  }
 }
 
 //________________________________________________________________________
 Double_t AliCLTask::GetM2tof(AliAODTrack *track) const
 {
+  if (!fPidRes) 
+    return 0;
   const Double_t start_time = fPidRes->GetTOFResponse().GetStartTime(track->P());                 // in ps
-  const Double_t stop_time  = track->GetTOFsignal();                                              // in ps
+  Double_t stop_time  = track->GetTOFsignal();                                                    // in ps
+  if (fMyParts&&fPidRes->IsTunedOnData()) {
+    stop_time = fPidRes->GetTOFsignalTunedOnData(track);
+  }
   const Double_t tof        = (stop_time - start_time);                                           // in ps
   const Double_t length     = fPidRes->GetTOFResponse().GetExpectedSignal(track,AliPID::kPion);   // in ps
   if ((length<=1)||(tof<=1)) 

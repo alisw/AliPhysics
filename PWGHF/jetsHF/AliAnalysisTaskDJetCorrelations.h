@@ -51,6 +51,7 @@ public:
 
    enum ECandidateType{ kD0toKpi, kDstartoKpipi };
    enum ECorrelationMethod{ kConstituent, kAngular, kResponseMatrix };
+   enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 }; /// multiplicity estimators
 
    AliAnalysisTaskDJetCorrelations();
    AliAnalysisTaskDJetCorrelations(const Char_t* name,AliRDHFCuts* cuts, ECandidateType candtype);
@@ -87,6 +88,12 @@ public:
    void SetUseSBArray(Bool_t b) {fUseSBArray=b;}
    Bool_t GetUseSBArray() const {return fUseSBArray;}
 
+   void SetIsPPData(Bool_t b){fIsPPData=b;}
+   void SetIsPbPbData(Bool_t b){fIsPbPbData=b;}
+
+   void SetMultiplicityEstimator(Int_t c){fMultiplicityEstimator=c;}
+   Int_t GetMultiplicityEstimator() const {return fMultiplicityEstimator;}
+
    // Array of D0 width for the Dstar
    Bool_t SetD0WidthForDStar(Int_t nptbins,Float_t* width);
    void ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent);
@@ -95,7 +102,7 @@ public:
    void CreateMCResponseMatrix(AliEmcalJet* MCjet, AliAODEvent* aodEvent);
    void FillDJetHistograms(AliEmcalJet* jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent);
    void GetHFJet(AliEmcalJet*& jet, Bool_t IsBkg);
-   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent, Int_t pdg);
+   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Double_t jetNtrack, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent, Int_t pdg);
    void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    void FillHistogramsMCGenDJetCorr(Double_t z,Double_t ptD,Double_t ptjet, Double_t yD, Double_t jetEta, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    void FindMCJet(AliEmcalJet*& mcjet);
@@ -124,6 +131,9 @@ private:
 
 
    Bool_t fUseMCInfo;               // Use MC info
+   Bool_t fIsPPData;                // is pp data (don't check centrality)
+   Bool_t fIsPbPbData;                // is Pb-Pb data (for mult binning)
+   Int_t  fMultiplicityEstimator;   // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
    Bool_t fUseReco;                 // use reconstructed tracks when running on MC
    Bool_t fUsePythia;		    // Use Pythia info only for MC
    Bool_t fBuildRM;                 // flag to switch on/off the Response Matrix (Needs MC)
@@ -171,7 +181,7 @@ private:
    THnSparse* fhsDphiz;             //!
    THnSparse* fResponseMatrix;      //!
 
-   ClassDef(AliAnalysisTaskDJetCorrelations,1); // class for charm-jet CorrelationsExch
+   ClassDef(AliAnalysisTaskDJetCorrelations,2); // class for charm-jet CorrelationsExch
 };
 
 #endif

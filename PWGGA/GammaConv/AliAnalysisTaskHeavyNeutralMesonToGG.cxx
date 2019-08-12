@@ -404,7 +404,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::InitBack(){
   const Int_t nDim = 4;
   Int_t nBins[nDim] = {800,300,7,4};
   Double_t xMin[nDim] = {0,0, 0,0};
-  Double_t xMax[nDim] = {0.8,30,7,4};
+  Double_t xMax[nDim] = {1.2,30,7,4};
 
   if(fDoTHnSparse){
     fSparseMotherInvMassPtZM      = new THnSparseF*[fnCuts];
@@ -1561,6 +1561,14 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserExec(Option_t *){
         fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
         if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
         continue;
+      }
+      
+      if(fMesonRecoMode < 2){
+        if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetDoElecDeDxPostCalibration()){
+            if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->LoadElecDeDxPostCalibration(fInputEvent->GetRunNumber())){
+            AliFatal(Form("ERROR: LoadElecDeDxPostCalibration returned kFALSE for %d despite being requested!",fInputEvent->GetRunNumber()));
+            }
+        }
       }
 
       if (triggered==kTRUE){

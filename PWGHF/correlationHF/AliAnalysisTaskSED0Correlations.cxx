@@ -875,7 +875,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   Double_t zVtxPosition = vtx1->GetZ();
   fzVtx = zVtxPosition;
   if(!fMergePools) fPoolNum = fCutsTracks->GetPoolBin(MultipOrCent, zVtxPosition);
-  
+
   //vtx1->Print();
   TString primTitle = vtx1->GetTitle();
   if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) {
@@ -938,7 +938,8 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
 
   //Fill Event Multiplicity (needed only in Reco)
-  fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
+  if(fSys==0) fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.)); //pp (or pPb)
+  else fMultEv = fCutsD0->GetCentrality(aod); //PbPb
 
   //Fill control plots for event centrality and zVtx
   if(fCutsD0->GetUseCentrality()) ((TH1F*)fOutputStudy->FindObject("hCentralEvts"))->Fill(fCutsD0->GetCentrality(aod));
@@ -1018,7 +1019,13 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 		((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
                 ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
               }
-	      CalculateCorrelations(d,labD0,mcArray);
+	      if(fFillTrees==kNoTrees) CalculateCorrelations(d,labD0,mcArray);
+              if(fFillTrees==kFillCutOptTree) { 
+                AliAODMCParticle *partD0 = (AliAODMCParticle*)mcArray->At(labD0);
+                if (partD0->GetPdgCode()==421) fIsSelectedCandidate = 1;
+                else fIsSelectedCandidate = 2;
+                FillTreeD0ForCutOptim(d,aod);
+              }
 	    }
           }
         }
@@ -1211,6 +1218,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
       fillthis="histMass_WeigD0Eff_";
       fillthis+=ptbin;
       Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
+       
       if(!fUseDeff || !effD0) effD0=1.; 
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
       if(fFillTrees>0) {

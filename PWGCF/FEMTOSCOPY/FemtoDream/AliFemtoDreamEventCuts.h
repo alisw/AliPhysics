@@ -62,6 +62,9 @@ class AliFemtoDreamEventCuts {
     fUseAliEvtCuts = apply;
   }
   ;
+  bool GetUseAliEventCuts () const {
+    return fUseAliEvtCuts;
+  }
   void SetMultVsCentPlots(bool doIt) {
     fCentVsMultPlots = doIt;
   }
@@ -98,6 +101,28 @@ class AliFemtoDreamEventCuts {
     return fSpherCutsUp;
   }
   ;
+  void SetDoSpherocityCuts(bool doIt) {
+    fDoSpheroCuts = doIt;
+  }
+  ;
+  bool GetDoSpherocityCuts() const {
+    return fDoSpheroCuts;
+  }
+  ;
+  void SetSpherocityCuts(float spherolow, float spheroup) {
+    fSpheroCutsLow = spherolow;
+    fSpheroCutsUp = spheroup;
+    fDoSpheroCuts = true;
+  }
+  ;
+  float GetSpherocityCutsLow() const {
+    return fSpheroCutsLow;
+  }
+  ;
+  float GetSpherocityCutsUp() const {
+    return fSpheroCutsUp;
+  }
+  ;
 
  private:
   void BookQA(AliFemtoDreamEvent *evt);
@@ -124,7 +149,10 @@ class AliFemtoDreamEventCuts {
   bool fDoSpherCuts;       //
   float fSpherCutsLow;      //
   float fSpherCutsUp;      //
-ClassDef(AliFemtoDreamEventCuts,6)
+  bool fDoSpheroCuts;       //
+  float fSpheroCutsLow;      //
+  float fSpheroCutsUp;      //
+ClassDef(AliFemtoDreamEventCuts,7)
 };
 
 #endif /* ALIFEMTODREAMEVENTCUTS_H_ */

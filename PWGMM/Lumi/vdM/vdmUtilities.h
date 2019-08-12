@@ -155,6 +155,48 @@ void Find_start_and_end_of_scans()
 }
 
 //-------------------------------------------------------
+// Find indices of start and end of scan
+//-------------------------------------------------------
+
+void FindIdicesOfScanStartEnd(Int_t scan, Int_t *indices)
+
+{
+   // get separation files
+  char file_name[kg_string_size];
+  sprintf(file_name,"../Fill-%d/NomSep_x_Scan_%d.root",g_vdm_Fill,scan);
+  TFile *ScanFileX = new TFile(file_name);
+  if (ScanFileX == NULL) {
+    cout << " file " << file_name << " not found " << endl;
+    exit(-103);
+  }
+  sprintf(file_name,"../Fill-%d/NomSep_y_Scan_%d.root",g_vdm_Fill,scan);
+  TFile *ScanFileY = new TFile(file_name);
+  if (ScanFileY == NULL) {
+    cout << " file " << file_name << " not found " << endl;
+    exit(-103);
+  }
+  
+ // find first index of x scan
+  TTree *scan_tree_x = (TTree *) ScanFileX->Get("SepInfo");
+  Int_t idx_separation_start = -1;  
+  scan_tree_x->ResetBranchAddresses();
+  scan_tree_x->SetBranchAddress("idx_separation_start",&idx_separation_start);
+  scan_tree_x->GetEntry(0); // get first entry
+
+  // find last index of y scan
+  TTree *scan_tree_y = (TTree *) ScanFileY->Get("SepInfo");
+  Int_t n_separations_y = scan_tree_y->GetEntries();
+  Int_t idx_separation_end = -1;  
+  scan_tree_y->ResetBranchAddresses();
+  scan_tree_y->SetBranchAddress("idx_separation_end",&idx_separation_end);
+  scan_tree_y->GetEntry(n_separations_y-1); // get last entry
+
+  // return values
+  indices[0] = idx_separation_start;
+  indices[1] = idx_separation_end;  
+}
+
+//-------------------------------------------------------
 // Find index between x and y scan
 //-------------------------------------------------------
 
@@ -190,7 +232,7 @@ Int_t FindIdxBetweenScans(Int_t scan)
   Int_t idx_separation_start = -1;  
   scan_tree_y->ResetBranchAddresses();
   scan_tree_y->SetBranchAddress("idx_separation_start",&idx_separation_start);
-  scan_tree_y->GetEntry(0); // get last entry
+  scan_tree_y->GetEntry(0); // get first entry
 
   Int_t idx = (Int_t) ((((Double_t) idx_separation_start) + ((Double_t) idx_separation_end))*0.5);
   return idx;
@@ -249,6 +291,27 @@ void FindStepStartAndEnd(Int_t scan_type, Int_t scan, Int_t n_separations, Int_t
     idx_start[i]=idx_separation_start;
     idx_end[i]=idx_separation_end;    
   }
+}
+
+
+//-------------------------------------------------------
+// Find index in histogram corresponding to time
+// (used to match DCCT histogram index to relative time in tree
+//-------------------------------------------------------
+
+Int_t GetHistogramIndex(TH1 *histo, Double_t time)
+{
+  Double_t diff = 1000000.0; // large number
+  Int_t nbx = histo->GetNbinsX();
+  Int_t idx = -1;
+  for(Int_t j=0;j<=nbx;j++) {
+    Double_t th = histo->GetBinCenter(j);
+    if (TMath::Abs(th-time)<diff) {
+      idx=j;
+      diff = TMath::Abs(th-time);
+    }
+  }
+  return idx;
 }
 
 

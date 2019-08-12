@@ -1,13 +1,16 @@
-class AliAnalysisTaskSELc2V0bachelorTMVAApp;
+class AliAnalysisTaskSELc2V0bachelorTMVAAppMine;
 
-AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBin = "_6_12", TString finname="Lc2V0bachelorCuts.root",
-								    Float_t ptMin=0, Float_t ptMax=24,
-								    Bool_t theMCon=kTRUE,
-								    Bool_t fillTree=kFALSE,
-								    Bool_t onTheFly=kFALSE,
-								    Bool_t keepingOnlyHIJINGbkd=kFALSE,
-								    TString suffixName="",
-								    Bool_t debugFlag = kFALSE){
+AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars, TString library = "_6_12", TString finname="Lc2V0bachelorCuts.root",
+									Float_t ptMin=0, Float_t ptMax=24,
+									Bool_t theMCon=kTRUE,
+									Bool_t fillTree=kFALSE,
+									Bool_t onTheFly=kFALSE,
+									Bool_t keepingOnlyHIJINGbkd=kFALSE,
+									TString suffixName="",
+									Bool_t debugFlag = kFALSE,
+									Bool_t useXmlWeightsFile = kTRUE,
+									Bool_t useWeightsLibrary = kFALSE,
+									TString xmlWeightsFile = "$ALICE_PHYSICS/PWGHF/vertexingHF/TMVA/LHC19c2a_TMVAClassification_BDT_2_4_noP.weights.xml"){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -56,36 +59,60 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBi
     return NULL;
   }
   
-  TString namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,combinedProtonProb,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
+  Int_t nvarsSpectators = 0;
+  TString namesTMVAvars, namesTMVAvarsSpectators;
+  if (nvars == 14) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,bachelorP,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka,bachTPCmom";
+  else if (nvars == 11) {
+    namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
+    nvarsSpectators = 15;
+    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,massLc2Lambdapi,massLambda,massLambdaBar,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,dcaV0neg,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
+  }
+  else if (nvars == 10) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
+  else if (nvars == 7) {
+    namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
+    nvarsSpectators = 15;
+    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,massLc2Lambdapi,massLambda,massLambdaBar,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,dcaV0neg,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
+  }
 
   //CREATE THE TASK
   printf("CREATE TASK\n");
   AliAnalysisTaskSELc2V0bachelorTMVAApp *task = new AliAnalysisTaskSELc2V0bachelorTMVAApp("AliAnalysisTaskSELc2V0bachelorTMVAApp", RDHFCutsLctoV0anal, onTheFly);
   //  task->SetMVReader(fBDTReader);
+  task->SetNVars(nvars);
   task->SetNamesTMVAVariables(namesTMVAvars);
   task->SetTMVAlibName("libvertexingHFTMVA.so");
-  task->SetTMVAlibPtBin(ptBin);
+  task->SetTMVAlibPtBin(library);
   task->SetFillTree(fillTree);
+
+  Printf("************* fillTree = %d", (Int_t)fillTree);
   task->SetMC(theMCon);
   task->SetKeepingOnlyHIJINGBkg(keepingOnlyHIJINGbkd);
   task->SetK0sAnalysis(kTRUE);
   task->SetDebugLevel(0);
   task->SetDebugHistograms(debugFlag);
+  // TMVA reader
+  task->SetNVarsSpectators(nvarsSpectators);
+  task->SetNamesTMVAVariablesSpectators(namesTMVAvarsSpectators);
+  task->SetUseXmlWeightsFile(useXmlWeightsFile);
+  task->SetUseWeightsLibrary(useWeightsLibrary);
+  task->SetXmlWeightsFile(TString(gSystem->ExpandPathName(Form("%s", xmlWeightsFile.Data()))));
+  
   mgr->AddTask(task);
   
   // Create and connect containers for input/output  
   //TString outputfile = AliAnalysisManager::GetCommonFileName();
   //TString outputfile = Form("Lc2K0Sp_tree_pA%s.root", suffixName.Data());
-  TString outputfile = Form("Lc2K0Sp_tree_pA%s%s.root", ptBin.Data(), suffixName.Data());
+  //TString outputfile = Form("Lc2K0Sp_tree_pA%s%s.root", ptBin.Data(), suffixName.Data());
+  TString outputfile = "AnalysisResults.root";
   TString output1name="", output2name="", output3name="", output4name="", output5name="", output6name="", output7name="";
 
-  output1name = Form("treeList%s", suffixName.Data());
-  output2name = Form("Lc2pK0Scounter%s", suffixName.Data());
-  output3name = Form("Lc2pK0SCuts%s", suffixName.Data());
-  output4name = Form("treeSgn%s", suffixName.Data());
-  output5name = Form("treeBkg%s", suffixName.Data());
-  output6name = Form("listHistoKF%s", suffixName.Data());
-  output7name = Form("listWeights%s", suffixName.Data());
+  output1name = Form("treeList%s%s", suffixName.Data(), library.Data());
+  output2name = Form("Lc2pK0Scounter%s%s", suffixName.Data(), library.Data());
+  output3name = Form("Lc2pK0SCuts%s%s", suffixName.Data(), library.Data());
+  output4name = Form("treeSgn%s%s", suffixName.Data(), library.Data());
+  output5name = Form("treeBkg%s%s", suffixName.Data(), library.Data());
+  output6name = Form("listHistoKF%s%s", suffixName.Data(), library.Data());
+  output7name = Form("listWeights%s%s", suffixName.Data(), library.Data());
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   AliAnalysisDataContainer *coutput1   = mgr->CreateContainer(output1name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // trees

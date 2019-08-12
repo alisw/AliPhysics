@@ -228,6 +228,7 @@ Bool_t AliReducedVarCut::IsSelected(TObject* obj) {
    Float_t values[AliReducedVarManager::kNVars];
    if(obj->InheritsFrom(AliReducedBaseEvent::Class())) AliReducedVarManager::FillEventInfo((AliReducedBaseEvent*)obj, values);
    if(obj->InheritsFrom(AliReducedBaseTrack::Class())) AliReducedVarManager::FillTrackInfo((AliReducedBaseTrack*)obj, values);
+   if(obj->InheritsFrom(AliReducedBaseTrack::Class())) AliReducedVarManager::FillClusterMatchedTrackInfo((AliReducedBaseTrack*)obj, values);
    if(obj->InheritsFrom(AliReducedPairInfo::Class())) AliReducedVarManager::FillPairInfo((AliReducedPairInfo*)obj, values);
    
    return IsSelected(values);

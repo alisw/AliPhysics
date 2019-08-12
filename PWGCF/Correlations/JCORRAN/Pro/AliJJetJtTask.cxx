@@ -183,6 +183,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
   fJJetJtAnalysis->SetMC(fDoMC);
   if(fDoLog) fJJetJtAnalysis->SetLog(fDoLog);
   fJJetJtAnalysis->SetLeadingJets(fLeadingJets);
+  fJJetJtAnalysis->SetMaxDeltaRCorr(fmaxDeltaRCorr);
   fJJetJtAnalysis->SetSide(fSide);
   fJJetJtAnalysis->SetnR(fJetTask->GetnR());
   fJJetJtAnalysis->Setnkt(fJetTask->Getnkt());

@@ -21,11 +21,13 @@ class AliAnalysisTaskDCArStudy : public AliAnalysisTaskMKBase
                                 AliAnalysisTaskDCArStudy(const char *name);
         virtual                 ~AliAnalysisTaskDCArStudy();
 
-        virtual void            AddOutput(); //called at the beginning
-        virtual void            AnaTrack();  //called for every track
-        virtual void            AnaEvent();  //called for every track        
+        virtual void            AddOutput();                     //called at the beginning
+        virtual Bool_t          IsEventSelected();               //called for each event
+        virtual void            AnaEvent();                      //called once for every selected event        
+        virtual void            AnaTrackDATA(Int_t flag = 0);    //called once for every track in DATA event
+        virtual void            AnaTrackMC(Int_t flag = 0);      //called once for every track in MC event
         
-        static AliAnalysisTaskDCArStudy* AddTaskDCArStudy(const char* name = "TaskDCArStudy");
+        static AliAnalysisTaskDCArStudy* AddTaskDCArStudy(const char* name = "TaskDCArStudy", const char* outfile = 0);
 
     protected:     
         THnSparseD*             fHistDCA;    //-> dca hist  

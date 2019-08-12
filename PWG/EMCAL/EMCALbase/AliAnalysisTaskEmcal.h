@@ -56,6 +56,8 @@ class AliESDInputHandler;
 #include "AliClusterContainer.h"
 #include "AliEmcalList.h"
 #include "AliEventCuts.h"
+#include "AliEmcalStringView.h"
+
 
 #include "AliAnalysisTaskSE.h"
 /**

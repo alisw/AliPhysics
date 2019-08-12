@@ -10,8 +10,8 @@
 ///
 
 
-#ifndef ST_THREE_VECTOR_HH
-#define ST_THREE_VECTOR_HH
+#ifndef ALIFMTHREEVECTOR_H
+#define ALIFMTHREEVECTOR_H
 
 #ifdef __ROOT__
 #include "Rtypes.h"
@@ -866,4 +866,4 @@ istream  &operator>>(istream &is, AliFmThreeVector<T> &v)
 
 #endif /* ! __CINT__ */
 
-#endif /* ST_THREE_VECTOR_HH */
+#endif /* ALIFMTHREEVECTOR_H */

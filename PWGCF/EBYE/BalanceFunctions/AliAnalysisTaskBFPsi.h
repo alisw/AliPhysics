@@ -25,6 +25,8 @@ class AliPID;
 #include "AliPID.h"  
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "AliTimeRangeCut.h"
+
  
 //================================correction
 #define kCENTRALITY 101
@@ -60,6 +62,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   void SetInputListForNUACorr(TString fileNUA);
   void SetInputListForNUECorr(TString fileNUE);
+
+  void SetInputListForNUECorr3D(TString fileNUE);
  
   Double_t GetNUACorrection(Int_t gRun, Short_t vCharge, Double_t vVz, Float_t vEta, Float_t vPhi );
   Double_t GetNUECorrection(Int_t gCentrality, Short_t vCharge, Double_t vPt);
@@ -161,6 +165,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void ExcludeResonancePDGInMC(Double_t pdgValue) {fExcludeResonancePDGInMC = pdgValue;}
   void IncludeResonancePDGInMC(Double_t pdgValue) {fIncludeResonancePDGInMC = pdgValue;}
 
+
+  void ExcludeResonancesLabelCut(Int_t gPdgResonanceCode) {
+     fExcludeResonancesLabel = kTRUE;
+     fMotherPDGCodeToExclude = gPdgResonanceCode;
+  }
+
   void SetPDGCode(Int_t gPdgCode) {
     fUseMCPdgCode = kTRUE;
     fPDGCodeToBeAnalyzed = gPdgCode;
@@ -178,6 +188,19 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fUseNUADeep = kTRUE;
   }
 
+  void SetUseRaaGeoCut(Float_t deadZoneWidth = 3, Float_t cutGeoNcrNclLength = 130, Float_t cutGeoNcrNclGeom1Pt = 1.5, Float_t cutGeoNcrNclFractionNcr = 0.85, Float_t cutGeoNcrNclFractionNcl = 0.7){
+    fUseRaaGeoCut=kTRUE;
+    fDeadZoneWidth = deadZoneWidth; 
+    fCutGeoNcrNclLength = cutGeoNcrNclLength;
+    fCutGeoNcrNclGeom1Pt = cutGeoNcrNclGeom1Pt;
+    fCutGeoNcrNclFractionNcr = cutGeoNcrNclFractionNcr;
+    fCutGeoNcrNclFractionNcl = cutGeoNcrNclFractionNcl;
+  }
+
+  void SetTimeRangeCutPbPb2018(){
+    fUseTimeRangeCutForPbPb2018 = kTRUE;
+  }
+  
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
   const char* GetCentralityEstimator(void)  const              {return fCentralityEstimator;}
@@ -213,6 +236,13 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
   void CheckFirstEventInChunk() {fCheckFirstEventInChunk = kTRUE;}
   void CheckPileUp() {fCheckPileUp = kTRUE;}
+  void UseSPDPileUpCuts(){fUsePileUpSPD = kTRUE;}
+
+  void SetPileUpSPDParams(Int_t minVtxPileUpContrSPD, Float_t minPileUpZdistSPD){
+    fModifySPDDefaultParams = kTRUE;
+    fMinVtxPileUpContrSPD = minVtxPileUpContrSPD;
+    fMinPileUpZdistSPD = minPileUpZdistSPD;
+  }  
   void CheckPrimaryFlagAOD() {fCheckPrimaryFlagAOD = kTRUE;}
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
   void SetRebinnedCorrHistos() {fRebinCorrHistos = kTRUE;}
@@ -358,6 +388,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH1F *fHistVx; //x coordinate of the primary vertex
   TH1F *fHistVy; //y coordinate of the primary vertex
   TH2F *fHistVz; //z coordinate of the primary vertex
+  TH1F *fHistCentrAfterEventSel; //event centrality distribution after all event selection
 
   TH2F *fHistMixEvents; //number of events that is mixed with in the current pool
   TH2F *fHistMixTracks; //number of tracks that is mixed with in the current pool
@@ -399,6 +430,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistRefTracks;//reference track multiplicities (QA histogram)
   TH2F *fHistPhivZ;//phi vs Vz (QA histos) 
   TH2F *fHistEtavZ;//eta vs Vz (QA histos)
+  TH2F *fHistPtPhi;//pt vs phi for GeOCut PbPb2018
   TH1F *fHistPdgMC;
   TH1F *fHistPdgMCAODrec;//pdg code of accepted tracks in MCAODrec
   TH1F *fHistSphericity; //sphericity of accepted tracks
@@ -502,6 +534,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
   Bool_t fCheckFirstEventInChunk;//Usage of the "First Event in Chunk" check (not needed for new productions)
   Bool_t fCheckPileUp;//Usage of the "Pile-Up" event check
+  Bool_t fUsePileUpSPD;//Usage of the pile-up rejection with SPD instead of MultiVertexer one
   Bool_t fCheckPrimaryFlagAOD;// Usage of check on AliAODtrack::kPrimary (default = OFF)
   Bool_t fUseMCforKinematics;//Usage of MC information for filling the kinematics information of particles (only in MCAODrec mode)
   Bool_t fRebinCorrHistos;//Rebinning of corrected plots
@@ -516,7 +549,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUseOOBPileUpCutsLHC18nTPCclus; //multVZERO < (-fOOBLHC18Slope + fOOBLHC18Par1*nTPCclus + fOOBLHC18Par2*nTPCclus*nTPCclus 
   Float_t fOOBLHC18Slope;
   Float_t fOOBLHC18Par1;
-  Float_t fOOBLHC18Par2; 
+  Float_t fOOBLHC18Par2;
+
+  Bool_t  fModifySPDDefaultParams;
+  Int_t   fMinVtxPileUpContrSPD;
+  Float_t fMinPileUpZdistSPD;
 
   Bool_t fDetailedTracksQA; //fill Eta, Phi vs Vx histos to be used to check ME pools. 
 
@@ -529,6 +566,17 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistPtTriggerThreshold;//QA histo
   
   Int_t fnAODtrackCutBit;//track cut bit from track selection (only used for AODs)
+
+  Bool_t fUseRaaGeoCut; //flag to switch on GeoCut for 2018PbPb data pass1
+  Float_t fDeadZoneWidth; //parameters of the cut as implemented in AliESDtrackCuts.h, default values implemented as suggested by DPG and D mesons analysis
+  Float_t fCutGeoNcrNclLength;
+  Float_t fCutGeoNcrNclGeom1Pt;
+  Float_t fCutGeoNcrNclFractionNcr;
+  Float_t fCutGeoNcrNclFractionNcl;
+
+  Float_t fUseTimeRangeCutForPbPb2018; 
+  AliTimeRangeCut fTimeRangeCut;
+ 
 
   Double_t fPtMin;//only used for AODs
   Double_t fPtMax;//only used for AODs
@@ -558,10 +606,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fExcludeSecondariesInMC;//flag to exclude the secondaries from material and weak decays in the MCAODrec analysis
   Bool_t fExcludeWeakDecaysInMC;//flag to exclude the weak decay products (if not done by IsPhysicalPrimary) from the MC analysis
   Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products (and conversion) from the MC analysis
+  Bool_t fExcludeResonancesLabel;//flag to exclude the resonances using mother's label;
   Bool_t fExcludeElectronsInMC;//flag to exclude the electrons from the MC analysis
   Bool_t fExcludeParticlesExtra;//flag to exclude particles from the MC analysis (extra)
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC and MCAODrec
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC and MCAODrec
+  Int_t fMotherPDGCodeToExclude; // exclude the resonance with this PDG with the label cut from the MC analysis 
   Int_t fExcludeResonancePDGInMC;// exclude the resonance with this PDG from the MC analysis
   Int_t fIncludeResonancePDGInMC;// include excluvely this resonance with this PDG to the MC and MCAODrec analysis
 
@@ -595,7 +645,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 16); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 20); // example of analysis
 };
 
 

@@ -51,6 +51,9 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   void SetCutOnSPDZDiff(Double_t cutz) {
     fSPDZDiffCut=cutz;
   }
+  void ApplyPbPbOutOfBunchPileupCut(Bool_t opt){
+    fApplyPbPbOutOfBunchPileupCut=opt;
+  }
 
  private:
 
@@ -64,6 +67,7 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   TH2F* fHistXspdVsContrib;           //!<!  histo of vtx coord.
   TH2F* fHistYspdVsContrib;           //!<!  histo of vtx coord.
   TH2F* fHistZspdVsContrib;           //!<!  histo of vtx coord.
+  TH2F* fHistZspdOnlyZVsContrib;      //!<!  histo of vtx coord.
   TH2F* fHistXtrkVsContrib;           //!<!  histo of vtx coord.
   TH2F* fHistYtrkVsContrib;           //!<!  histo of vtx coord.
   TH2F* fHistZtrkVsContrib;           //!<!  histo of vtx coord.
@@ -73,6 +77,7 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   TH2F* fHistXspdVsMult;              //!<!  histo of vtx coord.
   TH2F* fHistYspdVsMult;              //!<!  histo of vtx coord.
   TH2F* fHistZspdVsMult;              //!<!  histo of vtx coord.
+  TH2F* fHistZspdOnlyZVsMult;         //!<!  histo of vtx coord.
   TH2F* fHistXtrkVsMult;              //!<!  histo of vtx coord.
   TH2F* fHistYtrkVsMult;              //!<!  histo of vtx coord.
   TH2F* fHistZtrkVsMult;              //!<!  histo of vtx coord.
@@ -83,17 +88,23 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   TH2F* fHistXspdVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistYspdVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZspdVsCent;              //!<!  histo of vtx coord.
+  TH2F* fHistZspdOnlyZVsCent;         //!<!  histo of vtx coord.
+  TH2F* fHistContrSpdVsCent;          //!<!  histo of vtx contrib
+  TH2F* fHistContrSpdOnlyZVsCent;          //!<!  histo of vtx contrib
   TH2F* fHistXtrkVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistYtrkVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZtrkVsCent;              //!<!  histo of vtx coord.
+  TH2F* fHistContrTrkVsCent;          //!<!  histo of vtx contrib
   TH2F* fHistXtpcVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistYtpcVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZtpcVsCent;              //!<!  histo of vtx coord.
+  TH2F* fHistContrTpcVsCent;          //!<!  histo of vtx contrib
   TH2F* fHistNtracklVsZtrue;          //!<!  histo of vtx coord.
   TH1F* fHistoNOfPileupVertSPD;       //!<! histo of SPD pileup
   TH1F* fHistoNOfSelPileupVertSPD;    //!<! histo of SPD pileup
   TH1F* fHistoNOfPileupVertMV;        //!<! histo of SPD pileup
   TH1F* fHistoNOfSelPileupVertMV;     //!<! histo of SPD pileup
+  TH2F* fHistoV0MultVsNclsTPC;        //!<! contro histo for TPC pileup
   Bool_t  fUsePhysSel;                // flag use/not use phys sel
   Int_t   fTriggerMask;               // mask used in physics selection
   Double_t fMaxMult;                  // upper limit of multiplicity plots
@@ -103,10 +114,11 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   Double_t fMVCChi2Cut;               //  cut on MV pileup vertex
   Float_t  fMVWeiZDiffCut;            // cut on MV pileup vertex
   Bool_t  fMVCheckPlpFromDifferentBC; // cut on MV pileup vertex
+  Bool_t  fApplyPbPbOutOfBunchPileupCut; // switch for cut on TPC clus vs. V0
   Bool_t  fReadMC;                    // flag read/not-read MC truth info
 
 
-  ClassDef(AliAnalysisTaskCheckVertexAOD,4);
+  ClassDef(AliAnalysisTaskCheckVertexAOD,9);
 };
 
 

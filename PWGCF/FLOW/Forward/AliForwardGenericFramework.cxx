@@ -197,6 +197,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
           double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
 
           Double_t x[7] = {Double_t(n-2),Double_t(ptn),noSamples, zvertex, refEtaA, cent, Double_t(fSettings.kW2TwoA)};//kW4FourA
+
           //x[4] = Double_t(fSettings.kW2Two);//kW2TwoA
 
           cumuRef->Fill(x, two);
@@ -225,6 +226,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
 
         Double_t y[7] = {Double_t(n-2),Double_t(ptn),noSamples, zvertex, eta, cent, Double_t(fSettings.kW2TwoB)};//kW2TwoB
+
         cumuDiff->Fill(y, twodiff);
         y[6] = Double_t(fSettings.kW2B);//kW2B
         cumuDiff->Fill(y, dn2diff);

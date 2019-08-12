@@ -31,7 +31,7 @@ AliFemtoXiTrackCut::AliFemtoXiTrackCut():
   , fInvMassXiMin(0)
   , fInvMassXiMax(1000)
   , fInvMassRejectMin(0)
-  , fInvMassRejectMax(1000) 
+  , fInvMassRejectMax(1000)
   , fParticleTypeXi(kXiMinus)
   , fRadiusXiMin(0.)
   , fRadiusXiMax(99999.0)
@@ -69,7 +69,7 @@ AliFemtoXiTrackCut::AliFemtoXiTrackCut(const AliFemtoXiTrackCut& aCut) :
   , fInvMassXiMin(aCut.fInvMassXiMin)
   , fInvMassXiMax(aCut.fInvMassXiMax)
   , fInvMassRejectMin(aCut.fInvMassRejectMin)
-  , fInvMassRejectMax(aCut.fInvMassRejectMax) 
+  , fInvMassRejectMax(aCut.fInvMassRejectMax)
   , fParticleTypeXi(aCut.fParticleTypeXi)
   , fRadiusXiMin(aCut.fRadiusXiMin)
   , fRadiusXiMax(aCut.fRadiusXiMax)
@@ -107,7 +107,7 @@ AliFemtoXiTrackCut& AliFemtoXiTrackCut::operator=(const AliFemtoXiTrackCut& aCut
   fInvMassXiMin = aCut.fInvMassXiMin;
   fInvMassXiMax = aCut.fInvMassXiMax;
   fInvMassRejectMin = aCut.fInvMassRejectMin;
-  fInvMassRejectMax = aCut.fInvMassRejectMax; 
+  fInvMassRejectMax = aCut.fInvMassRejectMax;
   fParticleTypeXi = aCut.fParticleTypeXi;
   fRadiusXiMin = aCut.fRadiusXiMin;
   fRadiusXiMax = aCut.fRadiusXiMax;
@@ -137,23 +137,21 @@ AliFemtoXiTrackCut* AliFemtoXiTrackCut::Clone()
 
 bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 {
-  // test the particle and return 
+  // test the particle and return
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
-
   Float_t pt = aXi->PtXi();
   Float_t eta = aXi->EtaXi();
-  
   if(aXi->ChargeXi()==0)
     return false;
 
 
   //ParticleType selection
-  //If fParticleTypeXi=kAll, any charged candidate will pass 
-  if(fParticleTypeXi == kXiPlus && aXi->ChargeXi() == -1) 
+  //If fParticleTypeXi=kAll, any charged candidate will pass
+  if(fParticleTypeXi == kXiPlus && aXi->ChargeXi() == -1)
     return false;
 
-  if(fParticleTypeXi == kXiMinus && aXi->ChargeXi() == 1) 
+  if(fParticleTypeXi == kXiMinus && aXi->ChargeXi() == 1)
     return false;
 
   //kinematic cuts
@@ -161,47 +159,50 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   if(pt < fMinPtXi) return false;
   if(pt > fMaxPtXi) return false;
   if(TMath::Abs(aXi->EtaBac()) > fMaxEtaBac) return false;
-  if(aXi->PtBac()< fMinPtBac) return false; 
-  if(aXi->PtBac()> fMaxPtBac) return false; 
+  if(!fNanoAODAnalysis){
+    if(aXi->PtBac()< fMinPtBac) return false;
+    if(aXi->PtBac()> fMaxPtBac) return false;
+  }
 
-  
 
     //Xi from kinematics information
     if (fParticleTypeXi == kXiMinusMC || fParticleTypeXi == kXiPlusMC) {
       if(!(aXi->MassXi()>fInvMassXiMin && aXi->MassXi()<fInvMassXiMax) || !(aXi->BacNSigmaTPCPi()==0))
-	return false; 
+	return false;
       else
 	{
-	  return true;  
-	} 
+	  return true;
+	}
     }
-    
+
     //quality cuts
-    if(aXi->StatusBac() == 999) return false;
-    if(aXi->TPCNclsBac()<fTPCNclsBac) return false; 
+
+    if(aXi->TPCNclsBac()<fTPCNclsBac) return false;
     if(aXi->NdofBac()>fNdofBac) return false;
-    if(!(aXi->StatusBac()&fStatusBac)) return false; 
-    
+    if(!fNanoAODAnalysis){
+      if(!(aXi->StatusBac()&fStatusBac)) return false;
+      if(aXi->StatusBac() == 999) return false;
+    }
     //DCA Xi to prim vertex
     if(TMath::Abs(aXi->DcaXiToPrimVertex())>fMaxDcaXi)
       return false;
-    
+
     //DCA Xi bachelor to prim vertex
     if(TMath::Abs(aXi->DcaBacToPrimVertex())<fMinDcaXiBac)
       return false;
-    
+
     //DCA Xi daughters
     if(TMath::Abs(aXi->DcaXiDaughters())>fMaxDcaXiDaughters)
       return false;
-    
+
     //cos pointing angle
     if(aXi->CosPointingAngleXi()<fMinCosPointingAngleXi)
-      return false; 
+      return false;
 
     //cos pointing angle of V0 to Xi
     if(aXi->CosPointingAngleV0toXi()<fMinCosPointingAngleV0toXi)
-      return false; 
-    
+      return false;
+
     //decay length
     if(aXi->DecayLengthXi()>fMaxDecayLengthXi)
       return false;
@@ -209,7 +210,7 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
     //fiducial volume radius
     if(aXi->RadiusXi()<fRadiusXiMin || aXi->RadiusXi()>fRadiusXiMax)
       return false;
-    
+
   if(fParticleTypeXi == kAll)
     return true;
 
@@ -223,11 +224,11 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   }
 
   if (!pid_check) return false;
-  
+
   if(!AliFemtoV0TrackCut::Pass(aXi))
     return false;
 
-  
+
   if(fBuildPurityAidXi) {fMinvPurityAidHistoXi->Fill(aXi->MassXi());}
 
   //invariant mass Xi
@@ -235,7 +236,7 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
     {
       return false;
     }
-  
+
   //removing particles in the given Minv window (e.g. to reject omegas in Xi sample)
  if(aXi->MassOmega()>fInvMassRejectMin && aXi->MassOmega()>fInvMassRejectMax)
     {
@@ -256,7 +257,7 @@ TList *AliFemtoXiTrackCut::ListSettings()
 {
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
- 
+
   return tListSetttings;
 }
 
@@ -299,7 +300,7 @@ void AliFemtoXiTrackCut::SetPtBac(double min, double max){
 
 
 void AliFemtoXiTrackCut::SetTPCnclsBac(int x){
-  fTPCNclsBac = x; 
+  fTPCNclsBac = x;
 }
 
 void AliFemtoXiTrackCut::SetNdofBac(double x){
@@ -372,4 +373,3 @@ TList *AliFemtoXiTrackCut::GetOutputList()
 
   return tOutputList;
 }
-

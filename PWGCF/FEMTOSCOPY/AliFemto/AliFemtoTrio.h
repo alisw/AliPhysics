@@ -13,8 +13,10 @@ public:
   enum EPart { kKaonPlus , kKaonMinus , kPionPlus , kPionMinus , kProton, kAntiProton, kUnknown};
   
   AliFemtoTrio();
-  AliFemtoTrio(AliFemtoTrio&);
-  ~AliFemtoTrio();
+  AliFemtoTrio(const AliFemtoTrio&);
+  virtual ~AliFemtoTrio();
+
+  AliFemtoTrio& operator=(const AliFemtoTrio&);
 
   // track Gets:
   inline AliFemtoParticle* Track1(){return fTrack1;}

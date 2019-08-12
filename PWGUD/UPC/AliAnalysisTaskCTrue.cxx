@@ -37,6 +37,7 @@
 #include <map>
 // #include <pair>
 #include <algorithm>
+#include <stdlib.h>
 
 // root headers
 #include <TMath.h>
@@ -52,7 +53,7 @@
 #include <TRandom.h>
 #include <TGraph.h>
 #include <TLegend.h>
-#include <TGraphErrors.h>
+// #include <TGraphErrors.h>
 #include <TPad.h>
 #include <TCanvas.h>
 #include <TStyle.h>
@@ -128,7 +129,46 @@ AliAnalysisTaskCTrue::AliAnalysisTaskCTrue()
       inputId_1ZED(0),
       inputId_0MUL(0),
       inputId_0OM2(0),
-      inputId_0VOM(0)
+      inputId_0VOM(0),
+      TotalWeightForEfficiency(0),
+      fVectorEfficiency(0),
+      // plots for CTRUE
+      fEntriesAgainstRunNumberProperlyH(0),
+      fCTrueBEventsPerRunNumberH(0),
+      fCTrueBEventsPerRunNumberConditionsH(0),
+      fTrackletsPerRunNumberH(0),
+      fVBAforRunNumberH(0),
+      fVBATrackletsForRunNumberH(0),
+      fVDAforRunNumberH(0),
+      fVDATrackletsForRunNumberH(0),
+      fVBAandVDAforRunNumberH(0),
+      fVBAandVDATrackletsForRunNumberH(0),
+      fVBCforRunNumberH(0),
+      fVBCTrackletsForRunNumberH(0),
+      fVDCforRunNumberH(0),
+      fVDCTrackletsForRunNumberH(0),
+      fVBCandVDCforRunNumberH(0),
+      fVBCandVDCTrackletsForRunNumberH(0),
+      fRecurringVetoAH(0),
+      fRecurringVetoAtrackletsH(0),
+      fRecurringVetoCH(0),
+      fRecurringVetoCtrackletsH(0),
+      fCTRUEBfV0CDecisionVSfADCDecisionH(0),
+      fCTRUEBfV0ADecisionVSfADADecisionH(0)
+      // // result TGraphErrors
+      // fOnlyTrackletsGE(0),
+      // fVbaGE(0),
+      // fVbaTrackletsGE(0),
+      // fVdaGE(0),
+      // fVdaTrackletsGE(0),
+      // fVbaAndVdaGE(0),
+      // fVbaAndVdaTrackletsGE(0),
+      // fVbcGE(0),
+      // fVbcTrackletsGE(0),
+      // fVdcGE(0),
+      // fVdcTrackletsGE(0),
+      // fVbcAndVdcGE(0),
+      // fVbcAndVdcTrackletsGE(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -175,11 +215,51 @@ AliAnalysisTaskCTrue::AliAnalysisTaskCTrue(const char* name)
       inputId_1ZED(0),
       inputId_0MUL(0),
       inputId_0OM2(0),
-      inputId_0VOM(0)
+      inputId_0VOM(0),
+      TotalWeightForEfficiency(0),
+      fVectorEfficiency(0),
+      // plots for CTRUE
+      fEntriesAgainstRunNumberProperlyH(0),
+      fCTrueBEventsPerRunNumberH(0),
+      fCTrueBEventsPerRunNumberConditionsH(0),
+      fTrackletsPerRunNumberH(0),
+      fVBAforRunNumberH(0),
+      fVBATrackletsForRunNumberH(0),
+      fVDAforRunNumberH(0),
+      fVDATrackletsForRunNumberH(0),
+      fVBAandVDAforRunNumberH(0),
+      fVBAandVDATrackletsForRunNumberH(0),
+      fVBCforRunNumberH(0),
+      fVBCTrackletsForRunNumberH(0),
+      fVDCforRunNumberH(0),
+      fVDCTrackletsForRunNumberH(0),
+      fVBCandVDCforRunNumberH(0),
+      fVBCandVDCTrackletsForRunNumberH(0),
+      fRecurringVetoAH(0),
+      fRecurringVetoAtrackletsH(0),
+      fRecurringVetoCH(0),
+      fRecurringVetoCtrackletsH(0),
+      fCTRUEBfV0CDecisionVSfADCDecisionH(0),
+      fCTRUEBfV0ADecisionVSfADADecisionH(0)
+      // // result TGraphErrors
+      // fOnlyTrackletsGE(0),
+      // fVbaGE(0),
+      // fVbaTrackletsGE(0),
+      // fVdaGE(0),
+      // fVdaTrackletsGE(0),
+      // fVbaAndVdaGE(0),
+      // fVbaAndVdaTrackletsGE(0),
+      // fVbcGE(0),
+      // fVbcTrackletsGE(0),
+      // fVdcGE(0),
+      // fVdcTrackletsGE(0),
+      // fVbcAndVdcGE(0),
+      // fVbcAndVdcTrackletsGE(0)
 {
     // fMapGoodRunsToMuAndWeight.insert( std::make_pair( 0, std::make_pair(0,0) ) );
     Set2018PbPb();
     FillGoodRunMapInfo(fMapGoodRunsToMuAndWeight);
+    fVectorEfficiency = new std::vector<Double_t>[3];
 
     // constructor
     DefineInput(0, TChain::Class());
@@ -390,6 +470,215 @@ void AliAnalysisTaskCTrue::UserCreateOutputObjects()
     fAnaTree ->Branch("fBCrossNum",   &fBCrossNum,   "fBCrossNum/s"  );
 
 
+
+    // fEntriesAgainstRunNumberProperlyH = new TH1F("fEntriesAgainstRunNumberProperlyH", "fEntriesAgainstRunNumberProperlyH", 10000, 290000, 300000);
+    fEntriesAgainstRunNumberProperlyH = new TH1F("fEntriesAgainstRunNumberProperlyH", "fEntriesAgainstRunNumberProperlyH", 3, 0, 3);
+    fEntriesAgainstRunNumberProperlyH->SetStats(0);
+    fEntriesAgainstRunNumberProperlyH->SetFillColor(38);
+    // fEntriesAgainstRunNumberProperlyH->SetCanExtend(TH1::kAllAxes);
+    fEntriesAgainstRunNumberProperlyH->LabelsDeflate();
+    fOutputList->Add(fEntriesAgainstRunNumberProperlyH);
+
+    /*_________________________________________________________________________
+    ***************************************************************************
+    *                                                                         *
+    *                                                                         *
+    *                             CTRUE == 1 (B)                              *
+    *                                                                         *
+    *                                                                         *
+    ***************************************************************************
+    __________________________________________________________________________*/
+
+    fCTrueBEventsPerRunNumberH = new TH1F("fCTrueBEventsPerRunNumberH", "fCTrueBEventsPerRunNumberH", 3, 0, 3);
+    fCTrueBEventsPerRunNumberH->SetStats(0);
+    fCTrueBEventsPerRunNumberH->SetFillColor(38);
+    // fCTrueBEventsPerRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fCTrueBEventsPerRunNumberH->LabelsDeflate();
+    fOutputList->Add(fCTrueBEventsPerRunNumberH);
+
+    fCTrueBEventsPerRunNumberConditionsH = new TH1F("fCTrueBEventsPerRunNumberConditionsH", "fCTrueBEventsPerRunNumberConditionsH", 3, 0, 3);
+    fCTrueBEventsPerRunNumberConditionsH->SetStats(0);
+    fCTrueBEventsPerRunNumberConditionsH->SetFillColor(38);
+    // fCTrueBEventsPerRunNumberConditionsH->SetCanExtend(TH1::kAllAxes);
+    fCTrueBEventsPerRunNumberConditionsH->LabelsDeflate();
+    fOutputList->Add(fCTrueBEventsPerRunNumberConditionsH);
+
+    fTrackletsPerRunNumberH = new TH1F("fTrackletsPerRunNumberH", "fTrackletsPerRunNumberH", 3, 0, 3);
+    fTrackletsPerRunNumberH->SetStats(0);
+    fTrackletsPerRunNumberH->SetFillColor(38);
+    // fTrackletsPerRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fTrackletsPerRunNumberH->LabelsDeflate();
+    fOutputList->Add(fTrackletsPerRunNumberH);
+
+    //_______________________________
+    // VOA plots
+
+    fRecurringVetoAH = new TH1F("fRecurringVetoAH", "fRecurringVetoAH", 3, 0, 3);
+    fRecurringVetoAH->SetStats(0);
+    fRecurringVetoAH->SetFillColor(38);
+    // fRecurringVetoAH->SetCanExtend(TH1::kAllAxes);
+    fRecurringVetoAH->LabelsDeflate();
+    fOutputList->Add(fRecurringVetoAH);
+
+    fRecurringVetoAtrackletsH = new TH1F("fRecurringVetoAtrackletsH", "fRecurringVetoAtrackletsH", 3, 0, 3);
+    fRecurringVetoAtrackletsH->SetStats(0);
+    fRecurringVetoAtrackletsH->SetFillColor(38);
+    // fRecurringVetoAtrackletsH->SetCanExtend(TH1::kAllAxes);
+    fRecurringVetoAtrackletsH->LabelsDeflate();
+    fOutputList->Add(fRecurringVetoAtrackletsH);
+
+    fVBAforRunNumberH = new TH1F("fVBAforRunNumberH", "fVBAforRunNumberH", 3, 0, 3);
+    fVBAforRunNumberH->SetStats(0);
+    fVBAforRunNumberH->SetFillColor(38);
+    // fVBAforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBAforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBAforRunNumberH);
+
+    fVBATrackletsForRunNumberH = new TH1F("fVBATrackletsForRunNumberH", "fVBATrackletsForRunNumberH", 3, 0, 3);
+    fVBATrackletsForRunNumberH->SetStats(0);
+    fVBATrackletsForRunNumberH->SetFillColor(38);
+    // fVBATrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBATrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBATrackletsForRunNumberH);
+
+    fVDAforRunNumberH = new TH1F("fVDAforRunNumberH", "fVDAforRunNumberH", 3, 0, 3);
+    fVDAforRunNumberH->SetStats(0);
+    fVDAforRunNumberH->SetFillColor(38);
+    // fVDAforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVDAforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVDAforRunNumberH);
+
+    fVDATrackletsForRunNumberH = new TH1F("fVDATrackletsForRunNumberH", "fVDATrackletsForRunNumberH", 3, 0, 3);
+    fVDATrackletsForRunNumberH->SetStats(0);
+    fVDATrackletsForRunNumberH->SetFillColor(38);
+    // fVDATrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVDATrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVDATrackletsForRunNumberH);
+
+    fVBAandVDAforRunNumberH = new TH1F("fVBAandVDAforRunNumberH", "fVBAandVDAforRunNumberH", 3, 0, 3);
+    fVBAandVDAforRunNumberH->SetStats(0);
+    fVBAandVDAforRunNumberH->SetFillColor(38);
+    // fVBAandVDAforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBAandVDAforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBAandVDAforRunNumberH);
+
+    fVBAandVDATrackletsForRunNumberH = new TH1F("fVBAandVDATrackletsForRunNumberH", "fVBAandVDATrackletsForRunNumberH", 3, 0, 3);
+    fVBAandVDATrackletsForRunNumberH->SetStats(0);
+    fVBAandVDATrackletsForRunNumberH->SetFillColor(38);
+    // fVBAandVDATrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBAandVDATrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBAandVDATrackletsForRunNumberH);
+
+    //_______________________________
+    // VOC plots
+
+    fRecurringVetoCH = new TH1F("fRecurringVetoCH", "fRecurringVetoCH", 3, 0, 3);
+    fRecurringVetoCH->SetStats(0);
+    fRecurringVetoCH->SetFillColor(38);
+    // fRecurringVetoCH->SetCanExtend(TH1::kAllAxes);
+    fRecurringVetoCH->LabelsDeflate();
+    fOutputList->Add(fRecurringVetoCH);
+
+    fRecurringVetoCtrackletsH = new TH1F("fRecurringVetoCtrackletsH", "fRecurringVetoCtrackletsH", 3, 0, 3);
+    fRecurringVetoCtrackletsH->SetStats(0);
+    fRecurringVetoCtrackletsH->SetFillColor(38);
+    // fRecurringVetoCtrackletsH->SetCanExtend(TH1::kAllAxes);
+    fRecurringVetoCtrackletsH->LabelsDeflate();
+    fOutputList->Add(fRecurringVetoCtrackletsH);
+
+    fVBCforRunNumberH = new TH1F("fVBCforRunNumberH", "fVBCforRunNumberH", 3, 0, 3);
+    fVBCforRunNumberH->SetStats(0);
+    fVBCforRunNumberH->SetFillColor(38);
+    // fVBCforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBCforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBCforRunNumberH);
+
+    fVBCTrackletsForRunNumberH = new TH1F("fVBCTrackletsForRunNumberH", "fVBCTrackletsForRunNumberH", 3, 0, 3);
+    fVBCTrackletsForRunNumberH->SetStats(0);
+    fVBCTrackletsForRunNumberH->SetFillColor(38);
+    // fVBCTrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBCTrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBCTrackletsForRunNumberH);
+
+    fVDCforRunNumberH = new TH1F("fVDCforRunNumberH", "fVDCforRunNumberH", 3, 0, 3);
+    fVDCforRunNumberH->SetStats(0);
+    fVDCforRunNumberH->SetFillColor(38);
+    // fVDCforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVDCforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVDCforRunNumberH);
+
+    fVDCTrackletsForRunNumberH = new TH1F("fVDCTrackletsForRunNumberH", "fVDCTrackletsForRunNumberH", 3, 0, 3);
+    fVDCTrackletsForRunNumberH->SetStats(0);
+    fVDCTrackletsForRunNumberH->SetFillColor(38);
+    // fVDCTrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVDCTrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVDCTrackletsForRunNumberH);
+
+    fVBCandVDCforRunNumberH = new TH1F("fVBCandVDCforRunNumberH", "fVBCandVDCforRunNumberH", 3, 0, 3);
+    fVBCandVDCforRunNumberH->SetStats(0);
+    fVBCandVDCforRunNumberH->SetFillColor(38);
+    // fVBCandVDCforRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBCandVDCforRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBCandVDCforRunNumberH);
+
+    fVBCandVDCTrackletsForRunNumberH = new TH1F("fVBCandVDCTrackletsForRunNumberH", "fVBCandVDCTrackletsForRunNumberH", 3, 0, 3);
+    fVBCandVDCTrackletsForRunNumberH->SetStats(0);
+    fVBCandVDCTrackletsForRunNumberH->SetFillColor(38);
+    // fVBCandVDCTrackletsForRunNumberH->SetCanExtend(TH1::kAllAxes);
+    fVBCandVDCTrackletsForRunNumberH->LabelsDeflate();
+    fOutputList->Add(fVBCandVDCTrackletsForRunNumberH);
+
+    fCTRUEBfV0CDecisionVSfADCDecisionH = new TH2F(
+            "fCTRUEBfV0CDecisionVSfADCDecisionH",
+            "fCTRUEBfV0CDecisionVSfADCDecisionH",
+            2000, -10, 10,
+            2000, -10, 10
+            );
+    fOutputList->Add(fCTRUEBfV0CDecisionVSfADCDecisionH);
+
+    fCTRUEBfV0ADecisionVSfADADecisionH = new TH2F(
+            "fCTRUEBfV0ADecisionVSfADADecisionH",
+            "fCTRUEBfV0ADecisionVSfADADecisionH",
+            2000, -10, 10,
+            2000, -10, 10
+            );
+    fOutputList->Add(fCTRUEBfV0ADecisionVSfADADecisionH);
+
+
+    //_______________________________
+    // TGRAPHERRORS results for the efficiency computation.
+    // fVbaGE = new TGraphErrors();
+    // fVbaGE->SetName("fVbaGE");
+    // fOutputList->Add(fVbaGE);
+    // fVbaGE->SetPoint(0,0,0);
+    //
+    // fVbaTrackletsGE = new TGraphErrors();
+    // fVbaTrackletsGE->SetName("fVbaTrackletsGE");
+    // fOutputList->Add(fVbaTrackletsGE);
+    // fVbaTrackletsGE->SetPoint(0,0,0);
+    //
+    //
+    // fVdaGE = new TGraphErrors();
+    // fVdaGE->SetName("fVdaGE");
+    // fOutputList->Add(fVdaGE);
+    // fVdaGE->SetPoint(0,0,0);
+    //
+    // fVdaTrackletsGE = new TGraphErrors();
+    // fVdaTrackletsGE->SetName("fVdaTrackletsGE");
+    // fOutputList->Add(fVdaTrackletsGE);
+    // fVdaTrackletsGE->SetPoint(0,0,0);
+    //
+    // fVbaAndVdaGE = new TGraphErrors();
+    // fVbaAndVdaGE->SetName("fVbaAndVdaGE");
+    // fOutputList->Add(fVbaAndVdaGE);
+    // fVbaAndVdaGE->SetPoint(0,0,0);
+    //
+    // fVbaAndVdaTrackletsGE = new TGraphErrors();
+    // fVbaAndVdaTrackletsGE->SetName("fVbaAndVdaTrackletsGE");
+    // fOutputList->Add(fVbaAndVdaTrackletsGE);
+    // fVbaAndVdaTrackletsGE->SetPoint(0,0,0);
+
+
     // post output
     PostData(1, fAnaTree);
     PostData(2, fOutputList);
@@ -581,7 +870,167 @@ void AliAnalysisTaskCTrue::UserExec(Option_t *)
   //_______________________________
   /* - FULL ANALYSIS
      -
-  */
+     - The analysis is roughly divided in 4 parts:
+     - 1) configuration B
+     - 2) configuration C
+     - 3) configuration E
+     - 4) configuration A
+     -
+     - Until now the macros I was given were only able to
+     - analyse type B only. In the latter stages of this analysis
+     - task I will try to incorporate even the other three cases.
+     - The separation is done at the level of histograms already.
+     - What will happen is that I will fill everything inside a
+     - if "loop".
+     -
+     - We first remember that if CTRUE:
+     - 1 == B
+     - 2 == A
+     - 3 == C
+     - 4 == E
+     - and we will fill the respective histograms...
+     -
+     - The efficiency retrieval is instead done at the
+     - Terminate() level!! So jump up to that point to
+     - check the comments... This is needed because this type
+     - of analysis require the full statistics available per
+     - run!
+     -
+     - NB: this is the first prototype for the analysis task.
+     - If perhaps the Terminate() method doesn't work
+     - somehow, another way is feasible. Given that the
+     - runs are usually stuck together, I just have to check
+     - if the following is a different run and then compute the efficiency
+     - for the previous at this point...
+     - But this is a messier method and not totally safe.
+     -
+   */
+
+  // glabal bools
+  Bool_t f0VBA = 0;
+  Bool_t f0VBC = 0;
+  Bool_t f0UBA = 0;
+  Bool_t f0UBC = 0;
+  Bool_t f1ZED = 0;
+  Bool_t f0MUL = 0;
+  Bool_t f0STG = 0;
+
+  /* - This type of instruction forces the label to receive a string
+     - type of name. So it gets automatically changed to a label of
+     - our custom. Every time it gets filled with a weight equal to 1,
+     - meaning that it works effectively as a good histogram.
+     -
+   */
+  fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
+
+  // CTRUE == 1 (B)
+  if ( fCtrue == 1 ) {
+      fCTrueBEventsPerRunNumberH->Fill( Form("%d", fRunNum) , 1 );
+
+      /* - First steps towards a OCDB integration...
+         - What I would like to do is to retrieve the
+         - L0 inforamtion from the OCDB during runtime.
+         - This way even if the Trigger Bit String changes
+         - between runs it would be possible to keep track
+         - of it and have more realistic results.
+         - Until now this had been fixed once for all runs.
+         - This is not a bad assumption, considering
+         - that 2018 data have been taken right before the
+         - end of Run2, meaning that there should not be that
+         - much variation between triggers in two consecutive
+         - runs!
+         -
+         -
+         -
+         - gROOT->Reset();
+         - AliCDBManager *man = AliCDBManager::Instance();
+         - man->Init();
+         - // man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+         - man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB/");
+         - man->SetRun(104065);
+         - AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/Config");
+         - AliTriggerConfiguration* rc = dynamic_cast<AliTriggerConfiguration*>(entry->GetObject());
+         - rc->Print();
+        */
+
+      // get L0 trigger flags
+      f0VBA = fL0inputs & 1 << (inputId_0VBA-1);
+      f0VBC = fL0inputs & 1 << (inputId_0VBC-1);
+      f0UBA = fL0inputs & 1 << (inputId_0UBA-1);
+      f0UBC = fL0inputs & 1 << (inputId_0UBC-1);
+
+
+      /* - Truth table for fV0CDecision vs fADCDecision
+         - (and the same for the other side).
+         - This shoudl show the various cells. So True-True and
+         - the many configurations.
+         -
+       */
+      fCTRUEBfV0CDecisionVSfADCDecisionH->Fill( fV0CDecision, fADCDecision );
+      fCTRUEBfV0ADecisionVSfADADecisionH->Fill( fV0ADecision, fADADecision );
+
+      /* - The raw signal goes down right before it counts. 20ns maybe
+         - with -500V. The trigger comes with a discriminator and this tells
+         - you when you go more than the threshold value.
+         - fV0CDecision tells you when you went over threshold!
+         -
+         - ADC instead has a reasonably wide timing window, and it
+         - measures the charge collected. It measures the integral
+         - of the voltage in time, so the overall charge that was
+         - deposited and THIS is what is digitized.
+         -
+         - We can then check offline ONLY if the number in ADC is
+         - greater than some random number!!
+         -
+         -
+         - Try to do a plot fV0CDecision vs fADCDecision!
+         - Like a truth table...
+         -
+       */
+
+      if ( !f0UBA && !f0UBC && fADCDecision == 0 && !f0VBC && fV0CDecision == 0 ) {
+
+          if ( !f0VBA && fV0ADecision == 0 ){
+            fCTrueBEventsPerRunNumberConditionsH                 ->Fill( Form("%d", fRunNum) , 1 );
+            if ( fTracklets > 0 ) fTrackletsPerRunNumberH        ->Fill( Form("%d", fRunNum) , 1 );
+          }
+
+          fRecurringVetoAH                                       ->Fill( Form("%d", fRunNum) , 1 );
+          if ( fTracklets < 1 ) fRecurringVetoAtrackletsH        ->Fill( Form("%d", fRunNum) , 1 );
+          if ( f0VBA  ) {
+              fVBAforRunNumberH                                  ->Fill( Form("%d", fRunNum) , 1 );
+              if( fTracklets < 1 ) fVBATrackletsForRunNumberH    ->Fill( Form("%d", fRunNum) , 1 );
+          }
+          if ( fV0ADecision != 0 ) {
+              fVDAforRunNumberH                                  ->Fill( Form("%d", fRunNum) , 1 );
+              if( fTracklets < 1 ) fVDATrackletsForRunNumberH    ->Fill( Form("%d", fRunNum) , 1 );
+          }
+          if ( f0VBA || fV0ADecision != 0 ) {
+            fVBAandVDAforRunNumberH                              ->Fill( Form("%d", fRunNum) , 1 );
+            if( fTracklets < 1 ) fVBAandVDATrackletsForRunNumberH->Fill( Form("%d", fRunNum) , 1 );
+
+          }
+      }
+
+
+      if ( !f0UBA && !f0UBC && fADCDecision == 0 && !f0VBA && fV0ADecision == 0 ) {
+          fRecurringVetoCH                                       ->Fill( Form("%d", fRunNum) , 1 );
+          if ( fTracklets < 1 ) fRecurringVetoCtrackletsH        ->Fill( Form("%d", fRunNum) , 1 );
+          if ( f0VBC  ) {
+              fVBCforRunNumberH                                  ->Fill( Form("%d", fRunNum) , 1 );
+              if( fTracklets < 1 ) fVBCTrackletsForRunNumberH    ->Fill( Form("%d", fRunNum) , 1 );
+          }
+          if ( fV0CDecision != 0 ) {
+              fVDCforRunNumberH                                  ->Fill( Form("%d", fRunNum) , 1 );
+              if( fTracklets < 1 ) fVDCTrackletsForRunNumberH    ->Fill( Form("%d", fRunNum) , 1 );
+          }
+          if ( f0VBC || fV0CDecision != 0 ) {
+            fVBCandVDCforRunNumberH                              ->Fill( Form("%d", fRunNum) , 1 );
+            if( fTracklets < 1 ) fVBCandVDCTrackletsForRunNumberH->Fill( Form("%d", fRunNum) , 1 );
+          }
+      }
+
+  }
 
   PostData(1, fAnaTree);
   PostData(2, fOutputList);
@@ -616,10 +1065,10 @@ void AliAnalysisTaskCTrue::Set2015PbPb()
   // Run 245064
   // --------------------------------
 
-  inputId_0VBA = 1; // 0VBA: >=1 V0A cell fired in BB timing gate
-  inputId_0VBC = 2; // 0VBC: >=1 V0C cell fired in BB timing gate
-  inputId_0UBA = 7; // 0UBA: >=1 ADA cell fired in BB timing gate
-  inputId_0UBC = 8; // 0UBC: >=1 ADC cell fired in BB timing gate
+  inputId_0VBA = 1;  // 0VBA: >=1 V0A cell fired in BB timing gate
+  inputId_0VBC = 2;  // 0VBC: >=1 V0C cell fired in BB timing gate
+  inputId_0UBA = 7;  // 0UBA: >=1 ADA cell fired in BB timing gate
+  inputId_0UBC = 8;  // 0UBC: >=1 ADC cell fired in BB timing gate
   inputId_0SH1 = 13; // 0SH1: >=2 outer FO hits
   inputId_1ZED = 15;
 
@@ -644,64 +1093,228 @@ void AliAnalysisTaskCTrue::SetXeXe()
   inputId_0OM2 = 9;
 }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskCTrue::BinomialError(Double_t cut, Double_t CTRUE)
-// use Root formula for binomial error
-{
-  Double_t efficiency = cut/CTRUE;
-  // Double_t e1 = TMath::Sqrt(cut);   // seem unused. I commented them out!!
-  // Double_t e2 = TMath::Sqrt(ctrue); // seem unused. I commented them out!!
-  /* - If I did the math right this should be equivalent to the new method:
-     -
-   */
-  // return TMath::Sqrt(TMath::Abs( ((1.0-2.0*efficiency)*cut + efficiency*efficiency*ctrue)/(ctrue*ctrue) ));
-  return TMath::Sqrt(TMath::Abs( efficiency*(1-efficiency)/CTRUE ));
-}
+// Double_t AliAnalysisTaskCTrue::BinomialError(Double_t cut, Double_t CTRUE)
+// // use Root formula for binomial error
+// {
+//   Double_t efficiency = cut/CTRUE;
+//   // Double_t e1 = TMath::Sqrt(cut);   // seem unused. I commented them out!!
+//   // Double_t e2 = TMath::Sqrt(ctrue); // seem unused. I commented them out!!
+//   /* - If I did the math right this should be equivalent to the new method:
+//      -
+//    */
+//   // return TMath::Sqrt(TMath::Abs( ((1.0-2.0*efficiency)*cut + efficiency*efficiency*ctrue)/(ctrue*ctrue) ));
+//   return TMath::Sqrt(TMath::Abs( efficiency*(1-efficiency)/CTRUE ));
+// }
+// //_____________________________________________________________________________
+// Double_t AliAnalysisTaskCTrue::FitPolinomial(Double_t *x, Double_t *p)
+// // fit model of a pol1 passing through 0
+// {
+//   return p[0]+p[1]*x[0];
+// }
+// //_____________________________________________________________________________
+// void AliAnalysisTaskCTrue::ComputeEfficiency( Int_t n,
+//                                               Double_t *weight,
+//                                               Double_t *mu,
+// 	                                            Double_t p0,
+//                                               Double_t p0e,
+//                                               Double_t p1,
+//                                               Double_t p1e,
+// 	                                            Double_t *eff
+//                                               // std::vector<Double_t>* fVectorEfficiencyC
+//                                               )
+// {
+//   // Double_t w_tot = 0.0;
+//   // for(Int_t i=0;i<n;i++) {
+//   //   Double_t w = weight[i];
+//   //   w_tot += w;
+//   //   Double_t p = p0+p1*mu[i];
+//   //   eff[0] += (w*TMath::Exp(-p));
+//   //   Double_t pm = p0+(p1-p1e)*mu[i];
+//   //   eff[1] += (w*TMath::Exp(-pm));
+//   //   Double_t pp = p0+(p1+p1e)*mu[i];
+//   //   eff[2] += (w*TMath::Exp(-pp));
+//   //   //  cout << i << " w " << w << " p " << p << " eff " <<  (w*TMath::Exp(-p)) << endl;
+//   // }
+//   // if (w_tot < 1e-12) return;
+//   // for(Int_t i=0;i<3;i++) eff[i] = eff[i]/w_tot;
+//   /*
+//   cout << " efficiency  = " << eff[0]
+//        << " + " << (eff[1]-eff[0])
+//        << " - " << (eff[0]-eff[2])
+//        << endl;
+//   */
+//   for(Int_t i=0;i<n;i++) {
+//     TotalWeightForEfficiency += weight[i];
+//     Double_t p  = p0+      p1*mu[i];
+//     Double_t pm = p0+(p1-p1e)*mu[i];
+//     Double_t pp = p0+(p1+p1e)*mu[i];
+//
+//     fVectorEfficiency[0].push_back( weight[i]*TMath::Exp(-p ) );
+//     fVectorEfficiency[1].push_back( weight[i]*TMath::Exp(-pm) );
+//     fVectorEfficiency[2].push_back( weight[i]*TMath::Exp(-pp) );
+//   }
+// }
+// //_____________________________________________________________________________
+// Double_t* AliAnalysisTaskCTrue::NormalizeEfficiency()
+// {
+//   Double_t effInTheCycle[3];
+//   effInTheCycle[0] = effInTheCycle[1] = effInTheCycle[2] = 0;
+//   for ( Int_t iLoop = 0; iLoop < 3; iLoop++){
+//     effInTheCycle[iLoop] = 0;
+//     for ( auto it = fVectorEfficiency[0].begin(); it != fVectorEfficiency[0].end(); it ++ ) {
+//       effInTheCycle[iLoop] += (*it);
+//     }
+//     effInTheCycle[iLoop] /= TotalWeightForEfficiency;
+//   }
+//   Double_t* returningEff = new Double_t[3];
+//   returningEff[0] = effInTheCycle[0];
+//   returningEff[1] = effInTheCycle[1] - effInTheCycle[0];
+//   returningEff[1] = effInTheCycle[0] - effInTheCycle[2];
+//
+//   return returningEff;
+// }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskCTrue::FitPolinomial(Double_t *x, Double_t *p)
-// fit model of a pol1 passing through 0
-{
-  return p[0]+p[1]*x[0];
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskCTrue::ComputeEfficiency( Int_t n,
-                                              Double_t *weight,
-                                              Double_t *mu,
-	                                            Double_t p0,
-                                              Double_t p0e,
-                                              Double_t p1,
-                                              Double_t p1e,
-	                                            Double_t *eff
-                                              )
-{
-  Double_t w_tot = 0.0;
-  for(Int_t i=0;i<n;i++) {
-    Double_t w = weight[i];
-    w_tot += w;
-    Double_t p = p0+p1*mu[i];
-    eff[0] += (w*TMath::Exp(-p));
-    Double_t pm = p0+(p1-p1e)*mu[i];
-    eff[1] += (w*TMath::Exp(-pm));
-    Double_t pp = p0+(p1+p1e)*mu[i];
-    eff[2] += (w*TMath::Exp(-pp));
-    //  cout << i << " w " << w << " p " << p << " eff " <<  (w*TMath::Exp(-p)) << endl;
-  }
-  if (w_tot < 1e-12) return;
-  for(Int_t i=0;i<3;i++) eff[i] = eff[i]/w_tot;
-  /*
-  cout << " efficiency  = " << eff[0]
-       << " + " << (eff[1]-eff[0])
-       << " - " << (eff[0]-eff[2])
-       << endl;
-  */
-}
+// void  AliAnalysisTaskCTrue::DoPlot( TH1F*         signal,
+//                                     TH1F*         background,
+//                                     TGraphErrors* graphToBeFilled
+//                                     )
+// {
+//   // decide if constraint the origin of the line fit
+//   // to pass through the origin
+//   Bool_t fix_p0 = kFALSE;
+//
+//   Int_t nbinsx = signal->GetXaxis()->GetNbins();
+//   const char* binLabel;
+//   Double_t x, y, yError, weight = 0;
+//
+//
+//   /* - Firstly, we get the label of the bin.
+//      - This label is actually the run number!!
+//      - Then we look for this "key" inside the map.
+//      - Hence, we retrieve this information.
+//      - And now we can finish the analysis.
+//      -
+//    */
+//   for (Int_t iLoop = 1; iLoop < nbinsx+1; iLoop++) {
+//     binLabel = signal->GetXaxis()->GetBinLabel(iLoop);
+//     // cout << "binLabel:   " << binLabel << atoi(binLabel) << endl;
+//     if ( atoi(binLabel) == 0 ) continue;
+//     if ( signal    ->GetBinContent(iLoop) < 0.5 ) continue;
+//     if ( background->GetBinContent(iLoop) < 0.5 ) continue;
+//
+//     auto iterator = fMapGoodRunsToMuAndWeight.find( atoi(binLabel) );
+//     if ( iterator == fMapGoodRunsToMuAndWeight.end() ) {
+//         cout << "Missing run number: not a problem but be careful" << endl;
+//     } else {
+//         x      = (iterator->second).first;
+//         cout << "x      = " << x      << endl;
+//         weight = (iterator->second).second;
+//         cout << "weight = " << weight << endl;
+//     }
+//
+//     y      = (Double_t)signal->GetBinContent(iLoop) / (Double_t)background->GetBinContent(iLoop);
+//     cout << "y      = " << y      << endl;
+//     yError = BinomialError( (Double_t)signal->GetBinContent(iLoop), (Double_t)background->GetBinContent(iLoop) );
+//     cout << "yError = " << yError << endl;
+//
+//     fVbcGE->Draw();
+//     Int_t nOfPoints = fVbcGE->GetN();
+//     cout << "nOfPoints   " << nOfPoints << endl;
+//     fVbcGE->SetPoint     ( nOfPoints, x, y     );
+//     fVbcGE->SetPointError( nOfPoints, 0, yError);
+//
+//   }
+//   // // prepare for fractions to store weights to total efficiency
+//   // Double_t *weight = new Double_t [nRuns];
+//   // for (Int_t i=0;i<nRuns;i++) weight[i]=0.0;
+//   //
+//   // // prepare graphs
+//   // Double_t ymin =10;
+//   // Double_t ymax =-10;
+//   // TGraphErrors *gr = new TGraphErrors();
+//   // for(Int_t i=0;i<nRuns;i++) {
+//   //   Double_t ye = berr(signal[i],empty[i]);
+//   //   if (ymin>y-ye) ymin = y-ye;
+//   //   if (ymax<y+ye) ymax = y+ye;
+//   //   // if (y < 0.01) continue;
+//   //   // fill graph
+//   //   Int_t n = gr->GetN();
+//   //   gr->SetPoint(n,x,y);
+//   //   gr->SetPointError(n,0,ye);
+//   //   weight[n]=w_all[i];
+//   // }
+//   //
+//   //
+//   // //plot graph
+//   // // No stats and no titles
+//   // gStyle->SetOptTitle(1);
+//   // gStyle->SetOptStat(0);
+//   // gStyle->SetOptFit(1);
+//   //
+//   //
+//   // TCanvas *c = new TCanvas(title,title,1200,600);
+//   // c->Divide(1,1);
+//   // c->cd(1);
+//   // gr->SetMarkerStyle(20);  gr->SetMarkerColor(kRed); gr->SetLineColor(kRed);
+//   // // make some white space in the canvas
+//   // ymin *= 0.5;
+//   // if (ymin<0) ymin = 0.001;
+//   // ymax *= 1.5;
+//   // // define the histo
+//   // Double_t mu_max = 0.0025;
+//   // TH1F* frame1 = gPad->DrawFrame(0.,ymin,mu_max,ymax);
+//   // frame1->GetYaxis()->SetTitleOffset(1.3);
+//   // frame1->GetYaxis()->SetLabelSize(0.025);
+//   // frame1->SetTitle(Form("%s;#mu;Prob.",title));
+//   // TF1 *pol = new TF1("pol",fit_p1, 0, 1,2);
+//   // if (gr->GetN()>0) {
+//   //   gr->Draw("p,same");
+//   //   pol->SetParNames("p0","p1");
+//   //   pol->SetParameter(0,0.0);
+//   //   pol->SetParameter(1,1.0);
+//   //   if (fix_p0) pol->FixParameter(0,0.0);
+//   //   gr->Fit("pol");
+//   // } else { cout << " gr is empty " << endl;}
+//   // gPad->Update();
+//   //
+//   // // compute efficiency
+//   // Double_t eff[3]; // mean, minus, plus
+//   // eff[0]=eff[1]=eff[2]=0.0;
+//   // DoEff(gr->GetN(),weight,gr->GetX(),pol->GetParameter(0), pol->GetParError(0),
+// 	// pol->GetParameter(1), pol->GetParError(1), eff);
+//   //
+//   // // print eff in the canvas
+//   // TLatex* l = new TLatex();
+//   // l->SetTextFont(42);
+//   // l->SetTextSize(0.045);
+//   // l->DrawLatex(mu_max*0.05,ymax*0.9,Form("#varepsilon = %.5f + %.5f - %.5f",eff[0],(eff[1]-eff[0]),(eff[0]-eff[2])));
+//   //
+//   // // save
+//   // c->Print(Form("Canvas_%s.pdf",title));
+//   // // clean up
+//   // delete [] weight;
+// }
 //_____________________________________________________________________________
 void AliAnalysisTaskCTrue::Terminate(Option_t *)
 {
   // terminate
   // called at the END of the analysis (when all events are processed)
   // define hist and add it to the list
-  fCounterTryingH = new TH1I("fCounterTryingH", "fCounterTryingH", 100, 1, 101);
-  fOutputList->Add(fCounterTryingH);
+  // fCounterTryingH = new TH1I("fCounterTryingH", "fCounterTryingH", 100, 1, 101);
+  // fOutputList->Add(fCounterTryingH);
+  //
+  // DoPlot( fVBCforRunNumberH,                fRecurringVetoCH,          fVbcGE );
+  // DoPlot( fVDCforRunNumberH,                fRecurringVetoCH,          fVdcGE );
+  // DoPlot( fVBCTrackletsForRunNumberH,       fRecurringVetoCtrackletsH, fVbcTrackletsGE );
+  // DoPlot( fVDCTrackletsForRunNumberH,       fRecurringVetoCtrackletsH, fVdcTrackletsGE );
+  // DoPlot( fVBCandVDCforRunNumberH,          fRecurringVetoCH,          fVbcAndVdcGE );
+  // DoPlot( fVBCandVDCTrackletsForRunNumberH, fRecurringVetoCtrackletsH, fVbcAndVdcTrackletsGE );
+  // DoPlot( fVBAforRunNumberH,                fRecurringVetoAH,          fVbaGE );
+  // DoPlot( fVDAforRunNumberH,                fRecurringVetoAH,          fVdaGE );
+  // DoPlot( fVBATrackletsForRunNumberH,       fRecurringVetoAtrackletsH, fVbaTrackletsGE );
+  // DoPlot( fVDATrackletsForRunNumberH,       fRecurringVetoAtrackletsH, fVdaTrackletsGE );
+  // DoPlot( fVBAandVDAforRunNumberH,          fRecurringVetoAH,          fVbaAndVdaGE );
+  // DoPlot( fVBAandVDATrackletsForRunNumberH, fRecurringVetoAtrackletsH, fVbaAndVdaTrackletsGE );
 
 }
 //_____________________________________________________________________________

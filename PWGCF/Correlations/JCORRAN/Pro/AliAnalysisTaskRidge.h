@@ -10,7 +10,9 @@
 #ifndef ALIANALYSISTASKRIDGE_H
 #define ALIANALYSISTASKRIDGE_H
 
-#include "TGrid.h"
+#include "TFile.h"
+#include <TSystem.h>
+#include <TGrid.h>
 #include "THnSparse.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliTriggerAnalysis.h"
@@ -23,11 +25,21 @@
 #include <deque>
 #include <iostream>
 #include <fstream>
+#include "AliAnalysisUtils.h"
+#include <vector>
+#include <TVector.h>
+#include <TRandom.h>
+#include <TString.h>
+#include "AliJJetTask.h"
 
 using namespace std;
 
 class AliMultSelection;
 class AliVMultiplicity;
+class TClonesArray;
+class AliDirList;
+
+
 class AliAnalysisTaskRidgeRunTable {
     public:
         enum {kPP,kPA,kAA,kUnknownCollType};
@@ -47,6 +59,7 @@ class AliAnalysisTaskRidgeRunTable {
     private:
         Int_t  fCollisionType=kPP; //! Is proton-proton collisions?
 };
+
 
 class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
     public:
@@ -85,9 +98,16 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 
         void SetOption(char * option) {fOption = option;}
         void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
-//	void SetEfficiencyFile(char* fname) { fefficiencyFile = new TFile(fname,"read"); }
+//	void SetEfficiencyFile(char * fname) { TGrid::Connect("alien://"); fefficiencyFile = new TFile(fname,"READ"); cout << "setter check " << endl; }
+//	void SetEfficiency3DFile(char * fname) { TGrid::Connect("alien://"); fefficiency3DFile = new TFile(fname,"READ"); }
+
 	void SetEfficiencyFile(char* fname) { TGrid::Connect("alien://"); fefficiencyFile = TFile::Open(fname,"READ"); }
+//	void SetEfficiencyFile(char* fname) { TGrid::Connect("alien://"); fefficiencyFile  = new TFile(fname,"READ"); }
 	void SetEfficiency3DFile(char* fname) { TGrid::Connect("alien://"); fefficiency3DFile = TFile::Open(fname,"READ"); }
+//	void SetEfficiencyFile(char* fname) { fefficiencyFile = (TFile*)TFile::Open(fname,"READ"); }
+//	void SetEfficiency3DFile(char* fname) { fefficiency3DFile = (TFile*)TFile::Open(fname,"READ"); }
+//	void SetEfficiencyFile(char* fname) { fefficiencyFile = TFile::Open(fname); }
+//	void SetEfficiency3DFile(char* fname) { fefficiency3DFile = TFile::Open(fname); }
 
         Bool_t  GoodTracksSelection(int trk);
         Bool_t  GoodTrackletSelection();
@@ -126,6 +146,12 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 		Double_t pt;
 		Int_t IsTrackRecon;
 	};
+
+//	TFile* fefficiencyFile=nullptr; //
+
+//	TFile* fefficiencyFile=0; //
+//	TFile* fefficiency3DFile=0; //
+
     private:
         typedef std::vector<AliVTrack*> tracklist;
         typedef std::deque<tracklist>  eventpool;
@@ -141,17 +167,31 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 
       
         TString                         fOption;
-        TList*                          fOutput=nullptr; //!
-	TFile*				fefficiencyFile=nullptr; //!
-	TFile*				fefficiency3DFile=nullptr; //!
-//        TFile*                          fefficiencyFile=nullptr; 
-  //      TFile*                          fefficiency3DFile=nullptr; 
-//	TFile*				fefficiencyFile=0; 
-//	TFile*				fefficiency3DFile=0; 
+	AliDirList*				fOutput=nullptr; //!
+//        AliDirList*                          fOutput=nullptr; //!
+//	TFile*				fefficiencyFile=nullptr; //!
+//	TFile*				fefficiency3DFile=nullptr; //!
+//	TFile*                          fefficiencyFile=nullptr; //
+//	TFile*                          fefficiency3DFile=nullptr; //
+//	TFile*				fefficiencyFile=0; //
+//	TFile*				fefficiencyFile = new TFile("EffOut.root","read"); //
+
+	TFile*				fefficiencyFile= TFile::Open("EffOut.root","read"); //
+	TFile*				fefficiency3DFile=nullptr; //
+//	TFile*				fefficiencyFile=0; //!
+//	TFile*				fefficiency3DFile=0; //!
+
+//	TFile*				fefficiencyFile = TFile::Open("EffOut.root","read"); //
+//	TFile*				fefficiency3DFile=nullptr; //!
+
+//	TFile				fefficiencyFile;
+//	TFile				fefficiency3DFile;
 
         AliTriggerAnalysis*             fTrigger=nullptr; //!
         AliESDtrackCuts*                fTrackCuts=nullptr; //!
         AliVEvent*                      fEvt=nullptr; //!
+	AliJJetTask*			fJetTask=nullptr; //!
+
         UInt_t                          fFilterBit=0x300;
         Bool_t                          IsFirstEvent=kTRUE;
         AliAnalysisTaskRidgeRunTable*   fRunTable=nullptr; //!
@@ -182,8 +222,11 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         TAxis                           binZ; //!
 	TAxis				binTPt;
 	TAxis				binPt;
+	TAxis				binPt1;
 	TAxis				binNtrig;
 	TAxis				binLtpt;
+	TAxis				binJetpT;
+	TAxis				binEta;
 
         Int_t                           centbin = -1 ;
         Int_t                           zbin = -1 ;
@@ -192,6 +235,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 	Double_t			fLT_pT;
 	Double_t			fLT_pT_MCALICE;
 	Double_t			fLT_pT_MCCMS;
+	Double_t			fJetPt;
+
 
 	Bool_t                          fsetmixing = kTRUE;
         Bool_t                          IsDGV0=kFALSE;
@@ -221,7 +266,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 	Double_t fEff_eta_max = 0.9;
 	Double_t fEff_eta_l = 0.1;
 
-	Int_t fEff_nphi_step = 18;
+	Int_t fEff_nphi_step = 180;
 
         Int_t ITS_fEff_neta_step = 26;
         Double_t ITS_fEff_eta_min = -1.3;

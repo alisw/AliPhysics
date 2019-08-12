@@ -10,7 +10,7 @@
 // trigger, background correction and scan
 //-------------------------------------------------------
 
-void Create_one_bkgd_corrected_rate_file(Int_t scan_type, Int_t scan, char *rate_name, char *bkgd_corr_name)
+void Create_one_bkgd_corrected_rate_file(Int_t scan_type, Int_t scan, const char *rate_name, const char *bkgd_corr_name)
 // scan_type: 1 => x-scan; 2 => y-scan
 
 {
@@ -99,7 +99,7 @@ void Create_one_bkgd_corrected_rate_file(Int_t scan_type, Int_t scan, char *rate
 // Create background corrected  rate files
 //-------------------------------------------------------
 
-void Create_bkgd_corrected_rate_file(Int_t Fill, char *rate_name, char *bkgd_corr_name)
+void Create_bkgd_corrected_rate_file(Int_t Fill, const char *rate_name, const char *bkgd_corr_name)
 {  
   // get name of files and set pointers to trees
   Set_input_file_names(Fill);

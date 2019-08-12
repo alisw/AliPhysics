@@ -1,6 +1,7 @@
 ///
 /// \file AliAnalysisTaskFemto.cxx
 ///
+#include <sstream>
 
 #include "TROOT.h"
 #include "TChain.h"
@@ -9,6 +10,9 @@
 #include "TSystem.h"
 #include "TFile.h"
 #include "TInterpreter.h"
+#include "TMacro.h"
+#include "TFile.h"
+#include "TGrid.h"
 
 //#include "AliAnalysisTask.h"
 #include "AliAnalysisTaskSE.h"
@@ -21,6 +25,7 @@
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
+#include "AliFemtoEventReaderNanoAODChain.h"
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -36,13 +41,17 @@
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
                                            TString aConfigMacro,
                                            TString aConfigParams,
-                                           Bool_t aVerbose):
+                                           Bool_t aVerbose,
+					   Bool_t aGridConfig,
+					   TString aUserName):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
+  fVEvent(NULL),
   fAOD(NULL),
   fAODpidUtil(NULL),
   fAODheader(NULL),
+  fNanoAODheader(NULL),
   fStack(NULL),
   fOutputList(NULL),
   fReader(NULL),
@@ -68,7 +77,11 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f4DcorrectionsProtonsMinus(NULL),
   f4DcorrectionsAll(NULL),
   f4DcorrectionsLambdas(NULL),
-  f4DcorrectionsLambdasMinus(NULL)
+  f4DcorrectionsLambdasMinus(NULL),
+  fGridConfig(aGridConfig),
+  fConfigTMacro(NULL),
+  fSaveConfigTMacro(NULL),
+  fUserName(aUserName)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -80,13 +93,17 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
 //________________________________________________________________________
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
                                            TString aConfigMacro,
-                                           Bool_t aVerbose):
+                                           Bool_t aVerbose,
+					   Bool_t aGridConfig,
+					   TString aUserName):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
+  fVEvent(NULL),
   fAOD(NULL),
   fAODpidUtil(NULL),
   fAODheader(NULL),
+  fNanoAODheader(NULL),
   fStack(NULL),
   fOutputList(NULL),
   fReader(NULL),
@@ -112,7 +129,11 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f4DcorrectionsProtonsMinus(NULL),
   f4DcorrectionsAll(NULL),
   f4DcorrectionsLambdas(NULL),
-  f4DcorrectionsLambdasMinus(NULL)
+  f4DcorrectionsLambdasMinus(NULL),
+  fGridConfig(aGridConfig),
+  fConfigTMacro(NULL),
+  fSaveConfigTMacro(false),
+  fUserName(aUserName)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -126,9 +147,11 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto &aFemtoTas
   AliAnalysisTaskSE(aFemtoTask), //AliAnalysisTask(aFemtoTask),
   fESD(aFemtoTask.fESD),
   fESDpid(aFemtoTask.fESDpid),
+  fVEvent(aFemtoTask.fVEvent),
   fAOD(aFemtoTask.fAOD),
   fAODpidUtil(aFemtoTask.fAODpidUtil),
   fAODheader(aFemtoTask.fAODheader),
+  fNanoAODheader(aFemtoTask.fNanoAODheader),
   fStack(aFemtoTask.fStack),
   fOutputList(aFemtoTask.fOutputList),
   fReader(aFemtoTask.fReader),
@@ -154,7 +177,10 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto &aFemtoTas
   f4DcorrectionsProtonsMinus(aFemtoTask.f4DcorrectionsProtonsMinus),
   f4DcorrectionsAll(aFemtoTask.f4DcorrectionsAll),
   f4DcorrectionsLambdas(aFemtoTask.f4DcorrectionsLambdas),
-  f4DcorrectionsLambdasMinus(aFemtoTask.f4DcorrectionsLambdasMinus)
+  f4DcorrectionsLambdasMinus(aFemtoTask.f4DcorrectionsLambdasMinus),
+  fGridConfig(aFemtoTask.fGridConfig),
+  fConfigTMacro(aFemtoTask.fConfigTMacro),
+  fSaveConfigTMacro(aFemtoTask.fSaveConfigTMacro)
 {
   // copy constructor
 }
@@ -201,6 +227,10 @@ AliAnalysisTaskFemto &AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   f4DcorrectionsLambdas = aFemtoTask.f4DcorrectionsLambdas;
   f4DcorrectionsLambdasMinus = aFemtoTask.f4DcorrectionsLambdasMinus;
 
+  fGridConfig = aFemtoTask.fGridConfig;
+  fConfigTMacro = aFemtoTask.fConfigTMacro;
+  fSaveConfigTMacro = aFemtoTask.fSaveConfigTMacro;
+
   return *this;
 }
 
@@ -218,6 +248,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
   fAOD = nullptr;
   fAODpidUtil = nullptr;
   fAODheader = nullptr;
+  fNanoAODheader = nullptr;
   fAnalysisType = 0;
 
   TTree *tree = dynamic_cast<TTree *>(GetInputData(0));
@@ -403,6 +434,40 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
     }
   }
 
+  if (auto *femtoReaderNanoAOD = dynamic_cast<AliFemtoEventReaderNanoAODChain *>(fReader)) {
+    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    AliAnalysisTaskSE::ConnectInputData();
+    if (!aodH) {
+      TObject *handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+      if (fVerbose) {
+        AliInfo("Has output handler ");
+      }
+      if (handler && handler->InheritsFrom("AliAODHandler")) {
+        if (fVerbose)
+          AliInfo("Selected NanoAOD analysis");
+
+        //fAOD = ((AliAODHandler *)handler)->GetAOD();
+
+
+	fNanoAODheader = dynamic_cast<AliNanoAODHeader *>(fVEvent->GetHeader());
+	if (!fNanoAODheader) AliFatal("Not a standard NanoAOD");
+	femtoReaderNanoAOD->SetAODheader(fNanoAODheader);
+
+
+        fAnalysisType = 3;
+      } else {
+        if (fVerbose)
+          AliWarning("Selected NanoAOD reader but no AOD handler found");
+	}
+
+    } else {
+      if (fVerbose)
+        AliInfo("Selected NanoAOD analysis");
+      fAnalysisType = 3;
+
+
+    }
+  }
 
   if (auto *femtoReaderAODKine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -446,10 +511,25 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
 {
   if (fVerbose)
     AliInfo("Creating Femto Analysis objects\n");
-
   gSystem->SetIncludePath("-I$ROOTSYS/include -I./STEERBase/ -I./ESD/ -I./AOD/ -I./ANALYSIS/ -I./ANALYSISalice/ -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser");
-  gROOT->LoadMacro(fConfigMacro);
-  //  fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
+  if(!fGridConfig)
+    {
+      gROOT->LoadMacro(fConfigMacro);
+      if(fSaveConfigTMacro)
+	fConfigTMacro = new TMacro(fConfigMacro);
+    }
+  else
+    {
+      printf(Form("*** Executing alien-token-init %s ***\n"),fUserName.Data());
+      //gSystem->Exec(Form("alien-token-init %s",fUserName.Data()));
+      printf("*** Connect to AliEn ***\n");
+      TGrid::Connect("alien://");
+      TFile *fileConfig = TFile::Open(fConfigMacro.Data());
+      fConfigTMacro = dynamic_cast<TMacro*>(fileConfig->Get("ConfigFemtoAnalysis")->Clone());
+      LoadMacro(fConfigTMacro);
+      fileConfig->Close();
+    }
+
 
   TString cmd = Form("ConfigFemtoAnalysis(%s)", fConfigParams.Data());
   auto *femto_manager = reinterpret_cast<AliFemtoManager*>(gInterpreter->ProcessLine(cmd));
@@ -473,6 +553,10 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
     delete tOL;
   }
 
+
+  if(fSaveConfigTMacro && fConfigTMacro)
+    fOutputList->Add(fConfigTMacro);
+  
   PostData(0, fOutputList);
 }
 
@@ -589,30 +673,18 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     }
 
     // Post the output histogram list
+    if(fSaveConfigTMacro && fConfigTMacro)
+      fOutputList->Add(fConfigTMacro);
     PostData(0, fOutputList);
   }
 
   if (fAnalysisType == 2) {
+
     if (!fAOD) {
       if (fVerbose)
-        AliWarning("fAOD not available");
+	AliWarning("fAOD not available");
       return;
     }
-
-    // Get AOD
-//     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*>(event_handler);
-
-//     if (!aodH) {
-//       AliWarning("Could not get AODInputHandler");
-//       return;
-//     }
-//     else {
-
-//       fAOD = aodH->GetEvent();
-//     }
-
-
-
 
     if (fVerbose) {
       AliInfo(Form("Tracks in AOD: %d \n", fAOD->GetNumberOfTracks()));
@@ -646,8 +718,31 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     }
 
     // Post the output histogram list
+    if(fSaveConfigTMacro && fConfigTMacro)
+      fOutputList->Add(fConfigTMacro);
     PostData(0, fOutputList);
   }
+
+    if (fAnalysisType == 3) {
+
+      if (auto *faodc = dynamic_cast<AliFemtoEventReaderNanoAODChain *>(fReader)) {
+	// Process the event
+	if (!fInputEvent)
+	  {
+	    return;
+	  }
+
+	faodc->SetInputEvent(fInputEvent);
+	AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
+	faodc->SetAODheader(nanoHeader);
+        fManager->ProcessEvent();
+      }
+      // Post the output histogram list
+      if(fSaveConfigTMacro && fConfigTMacro)
+	fOutputList->Add(fConfigTMacro);
+      PostData(0, fOutputList);
+    }
+
 }
 
 //________________________________________________________________________
@@ -687,6 +782,15 @@ void AliAnalysisTaskFemto::SetFemtoReaderAOD(AliFemtoEventReaderAODChain *aReade
     AliInfo("Selecting Femto reader for AOD\n");
   fReader = aReader;
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskFemto::SetFemtoReaderNanoAOD(AliFemtoEventReaderNanoAODChain *aReader)
+{
+  if (fVerbose)
+    AliInfo("Selecting Femto reader for NanoAOD\n");
+  fReader = aReader;
+}
+
 void AliAnalysisTaskFemto::SetFemtoReaderStandard(AliFemtoEventReaderStandard *aReader)
 {
   if (fVerbose)
@@ -740,6 +844,9 @@ void AliAnalysisTaskFemto::SetFemtoManager(AliFemtoManager *aManager)
   }
   else if (dynamic_cast<AliFemtoEventReaderAODChain*>(eventReader) != NULL) {
     SetFemtoReaderAOD((AliFemtoEventReaderAODChain *) eventReader);
+  }
+  else if (dynamic_cast<AliFemtoEventReaderNanoAODChain*>(eventReader) != NULL) {
+    SetFemtoReaderNanoAOD((AliFemtoEventReaderNanoAODChain *) eventReader);
   }
   else if (dynamic_cast<AliFemtoEventReaderStandard*>(eventReader) != NULL) {
     SetFemtoReaderStandard((AliFemtoEventReaderStandard *) eventReader);
@@ -863,4 +970,38 @@ void AliAnalysisTaskFemto::Set4DCorrectionsLambdas(THnSparse *h1)
 void AliAnalysisTaskFemto::Set4DCorrectionsLambdasMinus(THnSparse *h1)
 {
   f4DcorrectionsLambdasMinus = h1;
+}
+
+
+ ////////////////////////////////////////////////////////////////////////////////
+ /// Load the macro into the interpreter.
+ /// Function copied from TMacro class of ROOT 6, not present in ROOT 5.34
+void AliAnalysisTaskFemto::LoadMacro(TMacro *macro)
+ {
+    if (macro == nullptr) {
+      return;
+    }
+
+    std::stringstream ss;
+    
+    TList *fLines = macro->GetListOfLines();
+    TIter next(fLines);
+    TObjString *obj;
+    while ((obj = (TObjString*) next())) {
+       ss << obj->GetName() << std::endl;
+    }
+    gInterpreter->LoadText(ss.str().c_str());
+
+    if(fSaveConfigTMacro)
+      fConfigTMacro = dynamic_cast<TMacro*>(macro->Clone());
+ }
+
+void AliAnalysisTaskFemto::SaveConfigTMacro(Bool_t save)
+{
+  fSaveConfigTMacro = save;
+}
+
+void AliAnalysisTaskFemto::SetGRIDUserName(TString aUserName)
+{
+  fUserName = aUserName;
 }

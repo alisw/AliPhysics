@@ -163,7 +163,6 @@ AliAnalysisTaskSE* AddTaskFemtoGranma_systcuts(bool isMC, TString CentEst = "kIn
   config->SetCentBins(centBins);
   config->SetkTCentralityBinning(false);
 
-  config->SetInvMassPairs(false);
 
   if (isMC) {
     config->SetMomentumResolution(false);//kstar true vs. kstar reco

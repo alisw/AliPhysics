@@ -46,7 +46,6 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   std::vector<Double_t> GetVectorJetEta() {return fVectorJetEta;}
   std::vector<Double_t> GetVectorJetPhi() {return fVectorJetPhi;}
   std::vector<Double_t> GetVectorJetArea() {return fVectorJetR;}
-  std::vector<Double_t> GetVectorJetNChargPart() {return fVectorJetNChargPart;}
 
   Double_t GetTrueNJets() {return fTrueNJets;}
   std::vector<Double_t> GetTrueVectorJetPt()  {return fTrueVectorJetPt;}
@@ -56,7 +55,6 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   std::vector<Double_t> GetTrueVectorJetEta() {return fTrueVectorJetEta;}
   std::vector<Double_t> GetTrueVectorJetPhi() {return fTrueVectorJetPhi;}
   std::vector<Double_t> GetTrueVectorJetArea()   {return fTrueVectorJetR;}
-  std::vector<Double_t> GetTrueVectorJetNChargPart() {return fTrueVectorJetNChargPart;}
 
   Double_t Get_Jet_Radius(){
       AliJetContainer* jetCont = 0;
@@ -83,7 +81,6 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   std::vector<Double_t>       fVectorJetEta;                   // Vector for the eta of the reconstructed jets
   std::vector<Double_t>       fVectorJetPhi;                   // Vector for the phi of the reconstructed jets
   std::vector<Double_t>       fVectorJetR;                     // Vector for the radius of the reconstructed jets
-  std::vector<Double_t>       fVectorJetNChargPart;            // Vector for the number of charged particles in the reconstructed jets
 
   Double_t                    fTrueNJets;                      // Number of true jets
   std::vector<Double_t>       fTrueVectorJetPt;                // Vector for the pt of the true jets
@@ -93,14 +90,13 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   std::vector<Double_t>       fTrueVectorJetEta;               // Vector for the eta of the true jets
   std::vector<Double_t>       fTrueVectorJetPhi;               // Vector for the phi of the true jets
   std::vector<Double_t>       fTrueVectorJetR;                 // Vector for the radius of the true jets
-  std::vector<Double_t>       fTrueVectorJetNChargPart;        // Vector for the number of charged particles in the true jets
 
  private:
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&)           ;
   AliAnalysisTaskConvJet &operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 10);
+  ClassDef(AliAnalysisTaskConvJet, 11);
   /// \endcond
 };
 #endif

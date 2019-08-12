@@ -7,9 +7,6 @@
 
 #include "SystemOfUnits.h"   // has "tesla" in it
 
-#include <algorithm>
-
-
 
 AliFemtoTrack::AliFemtoTrack():
   fCharge(0),
@@ -49,6 +46,7 @@ AliFemtoTrack::AliFemtoTrack():
   fTPCsignalN(0),
   fTPCsignalS(0.0f),
   fVTOF(0.0f),
+  fTOFsignal(0.0f),
   fNSigmaTPCPi(0.0f),
   fNSigmaTPCK(0.0f),
   fNSigmaTPCP(0.0f),
@@ -147,6 +145,7 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fTPCsignalN(t.fTPCsignalN),
   fTPCsignalS(t.fTPCsignalS),
   fVTOF(t.fVTOF),
+  fTOFsignal(t.fTOFsignal),
   fNSigmaTPCPi(t.fNSigmaTPCPi),
   fNSigmaTPCK(t.fNSigmaTPCK),
   fNSigmaTPCP(t.fNSigmaTPCP),
@@ -260,6 +259,7 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fTPCsignalN=aTrack.fTPCsignalN;
   fTPCsignalS=aTrack.fTPCsignalS;
   fVTOF=aTrack.fVTOF;
+  fTOFsignal=aTrack.fTOFsignal;
   fNSigmaTPCPi=aTrack.fNSigmaTPCPi;
   fNSigmaTPCK=aTrack.fNSigmaTPCK;
   fNSigmaTPCP=aTrack.fNSigmaTPCP;

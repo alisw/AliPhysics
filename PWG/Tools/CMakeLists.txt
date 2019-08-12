@@ -37,8 +37,10 @@ set(SRCS
   AliFigure.cxx
   AliCanvas.cxx
   AliHelperPID.cxx
+  AliMCSpectraWeights.cxx
   AliNamedArrayI.cxx
   AliNamedString.cxx
+  AliMCSpectraWeights.cxx
   TCustomBinning.cxx
   TLinearBinning.cxx
   TVariableBinning.cxx
@@ -105,7 +107,7 @@ install (DIRECTORY macros DESTINATION PWG/Tools)
 install (DIRECTORY test DESTINATION PWG/Tools)
 
 # Histmanager test
-set(HISTMGRTESTS 
+set(HISTMGRTESTS
     build_simple
     build_grouped
     fill_simple
@@ -113,7 +115,7 @@ set(HISTMGRTESTS
     )
 foreach(TEST_HMGR ${HISTMGRTESTS})
     add_test (histmgr_${TEST_HMGR}
-        env 
+        env
         LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
         DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
         root -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/tools/test/histmgr/runtest.C(\"${TEST_HMGR}\")")

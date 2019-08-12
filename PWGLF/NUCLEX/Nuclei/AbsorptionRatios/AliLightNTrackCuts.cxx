@@ -27,14 +27,15 @@ AliLightNTrackCuts::AliLightNTrackCuts()
 ,fetamin(0.)
 ,fetamax(0.)
 ,fcutEta(false)
-,fcutCharge(false)
 ,fCutRapidity(false)
+,fcutCharge(false)
 ,fCharge(0)
 ,fnTPCCls(0)
 ,fcutnTPCCls(false)
 ,fDCAProp(false)
 ,fDCAToVertexXY(0)
 ,fCutDCAToVtxXY(false)
+,fdoITSnSigmaCut(false)
 ,fDCAToVertexZ(0)
 ,fCutDCAToVtxZ(false)
 ,fMinMass(0.)
@@ -98,6 +99,14 @@ bool AliLightNTrackCuts::isSelected(AliLightNTrack *Track) {
         }
     }
     
+    if (pass && fdoITSnSigmaCut) {
+        if (!ITSPIDAODCuts(Track)) {
+            pass=false;
+            ForMassFitPass=false;
+            PIDEffPass=false;
+        }
+    }
+    
     if (pass) {
         if (!DCACuts(Track)) {
             pass=false;
@@ -108,11 +117,7 @@ bool AliLightNTrackCuts::isSelected(AliLightNTrack *Track) {
     
     //The mass distribution without a TOF PID cut, (to make corrections with a fit later)
     //And a 3D histogram p,mass,dca
-    double p = 0;
-    TVector3 MomVector= Track->GetMomentum();
-    if (MomVector*MomVector > 0){
-        p =TMath::Sqrt(MomVector*MomVector);
-    }
+    double p =Track->GetP();
     for (int i=0;i<2;++i) {
         if (i==0||(i==1&&ForMassFitPass)) {
             fHists->FillMass2sq(i,p,Track->GetMassSquare());
@@ -136,11 +141,7 @@ bool AliLightNTrackCuts::isSelected(AliLightNTrack *Track) {
             BookMC(Track);
             //The momentum distribution of correct identified particles without a PID
             //cut but with the requirement that there is a detector signal (particle reached the detector)
-            double p = 0;
-            TVector3 MomVector= Track->GetMomentum();
-            if (MomVector*MomVector > 0){
-                p =TMath::Sqrt(MomVector*MomVector);
-            }
+            double p =Track->GetP();
             if (PIDEffPass){
                 bool TPCisthere=false;
                 bool TOFisthere=false;
@@ -169,11 +170,7 @@ bool AliLightNTrackCuts::TrackingCuts(AliLightNTrack *Track) {
     std::vector<double> eta=Track->GetEta();
     std::vector<int> charge=Track->GetCharge();
     double rapidity = Track->GetRapidity(fParticleID);
-    double p = 0;
-    TVector3 MomVector= Track->GetMomentum();
-    if (MomVector*MomVector > 0){
-        p =TMath::Sqrt(MomVector*MomVector);
-    }
+    double p =Track->GetP();
     
     if (fCheckFilterBit) {
         if (!Track->TestFilterBit(fFilterBit)) {
@@ -279,6 +276,25 @@ bool AliLightNTrackCuts::TrackingCuts(AliLightNTrack *Track) {
 }
 
 
+bool AliLightNTrackCuts::ITSPIDAODCuts(AliLightNTrack *Track) {
+    //ITS PID cut for (anti-)deuterons in the momentum region 0 < p < 1.4 GeV/c
+    bool pass=true;
+    bool ITSisthere=false;
+    
+    if (Track->GetstatusITS()==AliPIDResponse::kDetPidOk) {
+        ITSisthere=true;
+    }
+    
+    double p =Track->GetP();
+    if (p<1.4) {
+        double nSigITS=(Track->GetnSigmaITS((int)(fParticleID)));
+        if (nSigITS < -2) {
+            pass=false;
+        }
+    }
+    return pass;
+}
+
 bool AliLightNTrackCuts::TPCPIDAODCuts(AliLightNTrack *Track) {
     bool pass=true;
     //PID Method with an nSigma cut, just use the TPC below threshold,
@@ -305,7 +321,7 @@ bool AliLightNTrackCuts::TPCPIDAODCuts(AliLightNTrack *Track) {
     }
     return pass;
 }
-		
+
 
 bool AliLightNTrackCuts::PIDAODCuts(AliLightNTrack *Track) {
     bool pass=true;
@@ -325,12 +341,7 @@ bool AliLightNTrackCuts::PIDAODCuts(AliLightNTrack *Track) {
     //TPC for PID, since the TOF has only limited matching efficiency. Above
     //threshold use both detectors and perform a purity check, if another
     //particle species doesn't have a smaller sigma value
-    double p = 0;
-    TVector3 MomVector= Track->GetMomentum();
-    if (MomVector*MomVector > 0){
-        p =TMath::Sqrt(MomVector*MomVector);
-    }
-    
+    double p =Track->GetP();
     if (p < fPIDPTPCThreshold) {
         if (!TPCisthere) {
             pass=false;
@@ -410,12 +421,7 @@ bool AliLightNTrackCuts::SmallestNSig(AliLightNTrack *Track) {
 
 bool AliLightNTrackCuts::MassCut_ForDCA(AliLightNTrack *Track) {
     bool pass = true;
-    double p = 0;
-    TVector3 MomVector= Track->GetMomentum();
-    if (MomVector*MomVector > 0){
-        p =TMath::Sqrt(MomVector*MomVector);
-    }
-    
+    double p =Track->GetP();
     if (!(Track->GetMassSquare()>fMinMass && Track->GetMassSquare()<fMaxMass)){
         if(p > fPIDPTPCThreshold){
             pass = false;
@@ -427,13 +433,7 @@ bool AliLightNTrackCuts::MassCut_ForDCA(AliLightNTrack *Track) {
 
 bool AliLightNTrackCuts::DCACuts(AliLightNTrack *Track) {
     bool pass=true;
-    double p = 0;
-    TVector3 MomVector= Track->GetMomentum();
-    if (MomVector*MomVector > 0){
-        p =TMath::Sqrt(MomVector*MomVector);
-    }
-    
-    
+    double p =Track->GetP();
     if (fCutDCAToVtxZ) {
         if (fDCAProp) {
             if (!(TMath::Abs(Track->GetDCAZProp())<fDCAToVertexZ)) {
@@ -502,13 +502,9 @@ void AliLightNTrackCuts::Init() {
 void AliLightNTrackCuts::BookQA(AliLightNTrack *Track) {
     std::vector<double> eta=Track->GetEta();
     std::vector<double> phi=Track->GetPhi();
-    double pT = Track->GetPt();
+    // double pT = Track->GetPt();
     double pTPC = Track->GetMomTPC();
-    double p = 0;
-    TVector3 MomVector= Track->GetMomentum();
-    if (MomVector*MomVector > 0){
-        p =TMath::Sqrt(MomVector*MomVector);
-    }
+    double p =Track->GetP();
     
     for (int i=0;i<2;++i) {
         if (i==0||(i==1&&Track->UseParticle())) {
@@ -516,6 +512,7 @@ void AliLightNTrackCuts::BookQA(AliLightNTrack *Track) {
             fHists->FillphiCut(i,phi.at(0));
             fHists->FillpCut(i,p);
             fHists->FillpTPCCut(i,pTPC);
+            fHists->FillpDiff_p_pTPC(i,p,p-pTPC);
             fHists->FillTPCclsCut(i,Track->GetNClsTPC());
             if (fDCAProp) {
                 fHists->FillDCAxyCut(i,p,Track->GetDCAXYProp());
@@ -614,15 +611,9 @@ void AliLightNTrackCuts::BookQA(AliLightNTrack *Track) {
 }
 
 void AliLightNTrackCuts::BookMC(AliLightNTrack *Track) {
-    if (!Track->TestFilterBit(fFilterBit)) {
-        return;
-    }
-    double p = 0;
+    if(!Track->TestFilterBit(1))return;
+    double p =Track->GetP();
     double RAPIDITY = Track->GetRapidity(fParticleID);
-    TVector3 MomVector= Track->GetMomentum();
-    if (MomVector*MomVector > 0){
-        p =TMath::Sqrt(MomVector*MomVector);
-    }
     Int_t PDGcode[6] = {11,13,211,321,2212,1000010020};
     if (fpTmin<p && p<fpTmax) { 															//to be in same p range
         if (fetamin<Track->GetEta().at(0)&&Track->GetEta().at(0)<fetamax) { 				//to be in same eta range
@@ -648,7 +639,7 @@ void AliLightNTrackCuts::BookMC(AliLightNTrack *Track) {
         }
     }
     if (Track->UseParticle()) {
-        double pT = Track->GetPt();
+        // double pT = Track->GetPt();
         int PDGcode[6] = {11,13,211,321,2212,1000010020};
         //Fill Identified
         fMCHists->FillMCIdent(p);
@@ -682,12 +673,8 @@ void AliLightNTrackCuts::FillMCContributions(
                                              AliLightNTrack *Track)
 {
     
-    double p = 0;
-    TVector3 MomVector= Track->GetMomentum();
-    if (MomVector*MomVector > 0){
-        p =TMath::Sqrt(MomVector*MomVector);
-    }
-    double pT=Track->GetPt();
+    double p =Track->GetP();
+    // double pT=Track->GetPt();
     AliLightNBasePart::PartOrigin org=Track->GetParticleOrigin();
     Int_t iFill = -1;
     switch(org) {
@@ -841,7 +828,7 @@ AliLightNTrackCuts* AliLightNTrackCuts::PrimProtonCuts(bool isMC,bool DCAPlots,b
     trackCuts->SetCutSharedCls(true);
     trackCuts->SetCutTPCCrossedRows(true);
     trackCuts->SetPID(AliPID::kProton, 0.7,3.,1e30);
-    trackCuts->SetRapidityRange(-1, 0);
+    trackCuts->SetRapidityRange(-1, 1);
     trackCuts->SetRejLowPtPionsTOF(false);
     trackCuts->SetCutSmallestSig(false);
     trackCuts->SetMassCut_ForDCA(0.3,1.8);
@@ -890,7 +877,8 @@ AliLightNTrackCuts* AliLightNTrackCuts::PrimDeuteronCuts(bool isMC,bool DCAPlots
     trackCuts->SetCutSharedCls(true);
     trackCuts->SetCutTPCCrossedRows(true);
     trackCuts->SetPID(AliPID::kDeuteron, 1.4,3.,1e30);
-    trackCuts->SetRapidityRange(-1, 0);
+    trackCuts->SetCutITSPID(true);
+    trackCuts->SetRapidityRange(-1, 1);
     trackCuts->SetRejLowPtPionsTOF(false);
     trackCuts->SetCutSmallestSig(false);
     trackCuts->SetMassCut_ForDCA(3.0,5.0);

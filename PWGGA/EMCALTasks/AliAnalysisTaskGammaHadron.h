@@ -63,6 +63,7 @@ public:
   void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg          = input;}
   void                        SetDoClusMixing(Bool_t input)                         { fDoClusMixing      = input;}
   void                        SetDoPosSwapMixing(Int_t input)                       { fDoPosSwapMixing   = input;}
+  void                        SetPSCorrectionLogMode(Bool_t input)                  { bLogPSMod          = input;}
   void                        SetClusterDepth(Int_t input)                          { fClusterDepth      = input;}
   void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples    = input;}
   void                        SetUseParamMassSigma(Bool_t input)                    { fUseParamMassSigma = input;}
@@ -101,7 +102,7 @@ public:
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight,Int_t isMixed, Int_t mcIndex1 = -1, Int_t mcIndex2 = -1);
+  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight,Int_t isMixed, Int_t mcIndex1 = -1, Int_t mcIndex2 = -1, Int_t PosSwapStatus = 0); // Pos swap status 1 is for conserved energy pair, 2 is for conserved positions pair
   void                        FillTriggerHist(AliTLorentzVector ClusterVec, Double_t Weight);
   void                        FillGhHistograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t Weight);
   void                        FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t Weight=1);
@@ -231,6 +232,17 @@ public:
   Int_t           fDoPosSwapMixing;            ///< Whether to use Position Swapping ME method.  (0: Not used, 1: Use 1 random cluster, 2: use all avail clusters.)
   Int_t           fNRotBkgSamples;             ///< How many samples to use in the rotational background
   THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
+
+  // Position Swap Correction Histograms
+  Bool_t          bLogPSMod;            ///<  Whether to store the scaling factors in log form
+  // 2D Maps: These store the initial mass,pt and final mass,pt
+  THnSparseF      *fPSMassPtMap;                     //!<! Mass,Pt 2D mapping for same E pairs
+  THnSparseF      *fESMassPtMap;                     //!<! Mass,Pt 2D mapping for same Pos pairs (Energy Swap)
+  // Scaling Versions: These store the scaling of the mass and pt
+  THnSparseF      *fUScaleMatrix;                   //!<! Mass and Pt modification scaling matrix for same E Pairs
+  THnSparseF      *fVScaleMatrix;                   //!<! Mass and Pt modification scaling matrix for same Pos Pairs
+
+
   TH2							*fEMCalMultvZvtx;            //!<! Histogram investigating z-vertex, EMCal Multiplicity for mixed cluster pairs
 
 	// Monte Carlo Histograms

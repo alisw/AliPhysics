@@ -153,7 +153,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity():
 {
   /// Default constructor
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
-  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
+  for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
 }
 
 //________________________________________________________________________
@@ -255,7 +255,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   //
  
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
-  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
+  for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
   if(fPdgMeson==413){
     fNMassBins=200;
     SetMassLimits(0.12,0.2);
@@ -303,7 +303,7 @@ AliAnalysisTaskSEDvsMultiplicity::~AliAnalysisTaskSEDvsMultiplicity()
   delete fCounterC;
   delete fCounterU;
   delete fCounterCandidates;
-  for(Int_t i=0; i<4; i++) {
+  for(Int_t i=0; i<14; i++) {
     if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
   }
   
@@ -385,8 +385,8 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
   
   fListProfiles = new TList();
   fListProfiles->SetOwner();
-  TString period[4];
-  Int_t nProfiles=4;
+  TString period[14];
+  Int_t nProfiles=14;
   if (fisPPbData) {
     if(fYearNumber == 13) {
       period[0]="LHC13b";
@@ -401,13 +401,54 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
     }
   }
   else {
+    if(fYearNumber == 10){ 
     period[0]="LHC10b";
     period[1]="LHC10c";
     period[2]="LHC10d";
     period[3]="LHC10e";
     nProfiles = 4;
+  }else if(fYearNumber == 16){
+     period[0]="LHC16d";
+     period[1]="LHC16e";
+     period[2]="LHC16g";
+     period[3]="LHC16h1";
+     period[4]="LHC16h2";
+     period[5]="LHC16j";
+     period[6]="LHC16k";
+     period[7]="LHC16l";
+     period[8]="LHC16o";
+     period[9]="LHC16p";
+     nProfiles = 10;
+  }else if(fYearNumber == 17){
+    period[0]="LHC17e";
+    period[1]="LHC17f";
+    period[2]="LHC17h";
+    period[3]="LHC17i";
+    period[4]="LHC17j";
+    period[5]="LHC17k";
+    period[6]="LHC17l";
+    period[7]="LHC17m";
+    period[8]="LHC17o";
+    period[9]="LHC17r";
+    nProfiles = 10;
+  }else if(fYearNumber == 18){
+    period[0]="LHC18b";
+    period[1]="LHC18d";
+    period[2]="LHC18e";
+    period[3]="LHC18f";
+    period[4]="LHC18g";
+    period[5]="LHC18h";
+    period[6]="LHC18i";
+    period[7]="LHC18j";
+    period[8]="LHC18k";
+    period[9]="LHC18l";
+    period[10]="LHC18m";
+    period[11]="LHC18n";
+    period[12]="LHC18o";
+    period[13]="LHC18p";
+    nProfiles = 14;
+   }
   }
-  
   for(Int_t i=0; i<nProfiles; i++){
     if(fMultEstimatorAvg[i]){
       TProfile* hprof=new TProfile(*fMultEstimatorAvg[i]);
@@ -1441,17 +1482,53 @@ TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEven
     }
   }
   else {
+    if(fYearNumber==10){
     if(runNo>114930 && runNo<117223) period = 0;
     if(runNo>119158 && runNo<120830) period = 1;
     if(runNo>122373 && runNo<126438) period = 2;
     if(runNo>127711 && runNo<130851) period = 3;
     if(period<0 || period>3) return 0;
-        
+    }else if(fYearNumber==16){
+    if(runNo>=252235 && runNo<=252375)period = 0;//16d
+    if(runNo>=252603 && runNo<=253591)period = 1;//16e
+    if(runNo>=254124 && runNo<=254332)period = 2;//16g
+    if(runNo>=254378  && runNo<=255469 )period = 3;//16h_1
+    if(runNo>=254418  && runNo<=254422 )period = 4;//16h_2 negative mag
+    if(runNo>=256146  && runNo<=256420 )period = 5;//16j
+    if(runNo>=256504  && runNo<=258537 )period = 6;//16k
+    if(runNo>=258883  && runNo<=260187)period = 7;//16l
+    if(runNo>=262395  && runNo<=264035 )period = 8;//16o
+    if(runNo>=264076  && runNo<=264347 )period = 9;//16p
+    }else if(fYearNumber==17){
+    if(runNo>=270822 && runNo<=270830)period = 0;//17e
+    if(runNo>=270854 && runNo<=270865)period = 1;//17f
+    if(runNo>=271868 && runNo<=273103)period = 2;//17h
+    if(runNo>=273591  && runNo<=274442)period = 3;//17i
+    if(runNo>=274593  && runNo<=274671)period = 4;//17j 
+    if(runNo>=274690  && runNo<=276508)period = 5;//17k
+    if(runNo>=276551  && runNo<=278216)period = 6;//17l
+    if(runNo>=278914  && runNo<=280140)period = 7;//17m
+    if(runNo>=280282   && runNo<=281961)period = 8;//17o
+    if(runNo>=282504  && runNo<=282704)period = 9;//17r
+    }else if(fYearNumber==18){     
+      if(runNo>=285008 && runNo<=285447)period = 0;//18b
+    if(runNo>=285978 && runNo<=286350)period = 1;//18d
+    if(runNo>=286380 && runNo<=286937)period = 2;//18e
+    if(runNo>=287000  && runNo<=287977)period = 3;//18f
+    if(runNo>=288619  && runNo<=288750)period = 4;//18g
+    if(runNo>=288804  && runNo<=288806)period = 5;//18h
+    if(runNo>=288861  && runNo<=288909 )period = 6;//18i
+    if(runNo==288943)period = 7;//18j
+    if(runNo>=289165   && runNo<=289201)period = 8;//18k
+    if(runNo>=289240  && runNo<=289971)period = 9;//18l
+    if(runNo>=290222  && runNo<=292839)period = 10;//18m
+    if(runNo>=293357   && runNo<=293359)period = 11;//18n
+    if(runNo>=293368   && runNo<=293898)period = 12;//18o
+    if(runNo>=294009  && runNo<=294925)period = 13;//18p
   }
-    
+  }
   return fMultEstimatorAvg[period];
 }
-
 //__________________________________________________________________________________________________
 void AliAnalysisTaskSEDvsMultiplicity::CreateMeasuredNchHisto(){
   /// creates historgam with measured multiplcity distribution in pp 7 TeV collisions (from Eur. Phys. J. C (2010) 68: 345–354)

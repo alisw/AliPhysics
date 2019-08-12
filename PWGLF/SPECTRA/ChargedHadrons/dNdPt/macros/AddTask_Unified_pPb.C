@@ -18,8 +18,8 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutModeLow=123, Int_t cut
     Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
     AlidNdPtUnifiedAnalysisTask* task125 = NULL; 
-
-    for(Int_t cutMode=cutModeLow; cutMode <= cutModeHigh; cutMode++)
+    
+    for(Int_t cutMode=125; cutMode <= 125; cutMode++)
     {
     AlidNdPtUnifiedAnalysisTask *task = new AlidNdPtUnifiedAnalysisTask(Form("AlidNdPtUnifiedAnalysisTask_%d", cutMode));
     if(cutMode==125) {task125 = task;}
@@ -65,13 +65,12 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutModeLow=123, Int_t cut
     task->SetMaxEta(+0.8);//cms +1.3
 
 
-    task->SetMinPt(0.10);
+    task->SetMinPt(0.15);
     task->SetMaxPt(1.e10);
 
     task->SetMeanXYZv(0.0,0.0,0.0);
     task->SetSigmaMeanXYZv(1.0,1.0,10.0);
-    task->SetZvtx(30.);
-    if (controll.Contains("vz10")) task->SetZvtx(10.);
+    task->SetZvtx(10.);
 
     task->Set2015data(kTRUE);    //only p-Pb 2013!!!
 

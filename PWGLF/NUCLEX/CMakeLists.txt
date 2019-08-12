@@ -26,9 +26,6 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${ALIROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/EVENTMIX
-                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
-                    ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
 		                ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
@@ -39,9 +36,7 @@ set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
-  Exotica/NOmega/AliAnalysisTaskNOmegaLPK.cxx
-  Exotica/NOmega/AliAnalysisTaskOmegaOmegaOX.cxx
-  Exotica/NOmega/AliAnalysisTaskNOmegaLX.cxx
+  Exotica/LambdaNN/AliAnalysisTaskLNNv0Bkg.cxx
   Exotica/Ps/AliAnalysisTaskPsEfficiency.cxx
   Exotica/dStar/AliAnalysisTaskdStar.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3Pi.cxx
@@ -51,10 +46,11 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypCrossCheck.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskReducedTreeHypertritonBindingEnergy.cxx
+  Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
-  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3Dev.cxx
-  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3AOD.cxx
-  Hypernuclei/NewHyp3Body/AliAnalysisTaskHypertriton3New.cxx
+  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3ML.cxx
+  Hypernuclei/Vertexer2Body/AliVertexerHyperTriton2Body.cxx
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
   Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskLightN.cxx
@@ -69,43 +65,33 @@ set(SRCS
   Nuclei/AbsorptionRatios/AliLightNTrackMCHist.cxx
   Nuclei/DeltaMasses/AliAnalysisNucleiMass.cxx
   Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx
-  Nuclei/DeuteronpA/AliAnalysisDeuteronpA.cxx
-  Nuclei/DeuteronpA/AliAnalysisDeuteronTree.cxx
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
   Nuclei/He4pp/AliAnalysisHe4.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
-  Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYieldESD.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
-  Nuclei/Nucleipp/AliAnalysisTaskB2.cxx
-  Nuclei/Nucleipp/AliAnalysisTaskB2AOD.cxx
-  Nuclei/Nucleipp/AliLnAODtrackCuts.cxx
-  Nuclei/Nucleipp/AliLnHistoMap.cxx
-  Nuclei/Nucleipp/AliLnID.cxx
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx
+  Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeHypertriton.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_PbPb.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx
   Nuclei/v2/AliAnalysisTaskAllPtcv2.cxx
+  Nuclei/v2/AliAnalysishDEventCollection.cxx
+  Nuclei/v2/AliAnalysisTaskDeuFlow2PC.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKine.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKineCor.cxx
-  Utils/NuclexFilter/AliAODMCNuclExReplicator.cxx
-  Utils/NuclexFilter/AliAODNuclExReplicator.cxx
-  Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilter.cxx
-  Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilterMC.cxx
-  Utils/NuclexFilter/AliAnalysisTaskReadNuclexAOD.cxx
-  Utils/RecoDecay/AliAODRecoDecayLF.cxx
-  Utils/RecoDecay/AliAODRecoDecayLF2Prong.cxx
   Utils/CODEX/AliAnalysisCODEX.cxx
   Utils/CODEX/AliAnalysisCODEXtask.cxx
-  Utils/NucleiSkimAOD/AliAnalysisTaskNucleiSkimAOD.cxx
+  Utils/NanoAOD/AliNanoFilterPID.cxx
+  Utils/NanoAOD/AliNanoSkimmingPID.cxx
+  Utils/ChunkFilter/AliAnalysisTaskFilterHe3.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
 	 set(SRCS
 		  ${SRCS}
-				  Hypernuclei/NewHyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
+				  Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
 						  )
 	  endif()
 
@@ -118,7 +104,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW OADB PWGUDbase PWGHFvertexingHF PWGPPevcharQn PWGflowTasks EVGEN PWGLFcommonutils)
+set(ALIROOT_DEPENDENCIES ANALYSISalice OADB PWGPPevcharQn PWGflowTasks EVGEN PWGLFcommonutils PWGDevNanoAOD)
 
 # Generate the ROOT map
 # Dependecies

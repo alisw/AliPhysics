@@ -104,16 +104,18 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
-fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkDebug(kTRUE),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
+fkSkipVertexZ(kFALSE),
 fDownscaleFactor(2.0), //2.0: no downscaling
 fRand(0),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
 fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
 //don't change the default, or we'll be in big trouble!
 fStoredObjectName("MultSelection"),
-fESDtrackCuts(0), fUtils(0),
+fESDtrackCuts(0),
+fUtils(0),
 fAmplitude_V0A(0),
 fAmplitude_V0A1(0),
 fAmplitude_V0A2(0),
@@ -168,7 +170,9 @@ fEvSel_HasGoodVertex2016(0),
 fEvSel_TriggerMask(0),
 fFiredTriggerClasses(""),
 fnContributors(0),
-fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0),
+fTrackCuts(0),
+fTrackCutsGlobal2015(0),
+fTrackCutsITSsa2010(0),
 fTrackCutsFiltBit32(0),
 fTrackCutsFiltBit64(0),
 fZnaFired(0),
@@ -257,17 +261,48 @@ fOADB(nullptr)
 }
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
-: AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0), fUtils(0),
+: AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0),
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
-fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkDebug(kTRUE),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
+fkSkipVertexZ(kFALSE), 
 fDownscaleFactor(2.0), //2.0: no downscaling
 fRand(0),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
 fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
 //don't change the default, or we'll be in big trouble!
 fStoredObjectName("MultSelection"),
+fESDtrackCuts(0),
+fUtils(0),
+fAmplitude_V0A   (0),
+fAmplitude_V0A1(0),
+fAmplitude_V0A2(0),
+fAmplitude_V0A3(0),
+fAmplitude_V0A4(0),
+fAmplitude_V0C   (0),
+fAmplitude_V0C1(0),
+fAmplitude_V0C2(0),
+fAmplitude_V0C3(0),
+fAmplitude_V0C4(0),
+fAmplitude_V0Apartial   (0),
+fAmplitude_V0Cpartial   (0),
+fAmplitude_V0AEq (0),
+fAmplitude_V0CEq (0),
+fAmplitude_OnlineV0A(0),
+fAmplitude_OnlineV0C(0),
+fAmplitude_V0AADC   (0),
+fAmplitude_V0CADC   (0),
+fnSPDClusters(0),
+fnSPDClusters0(0),
+fnSPDClusters1(0),
+fnTracklets(0),
+fnTracklets08(0),
+fnTracklets15(0),
+fRefMultEta5(0),
+fRefMultEta8(0),
+fMultiplicity_ADA (0),
+fMultiplicity_ADC (0),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -278,49 +313,7 @@ fZnaTower(0),
 fZncTower(0),
 fZpaTower(0),
 fZpcTower(0),
-fZnaFired(0),
-fZncFired(0),
-fZpaFired(0),
-fZpcFired(0),
-fNTracks(0),
-fNTracksTPCout(0),
-fNTracksGlobal2015(0),
-fNTracksGlobal2015Trigger(0),
-fNTracksITSsa2010(0),
-fNTracksINELgtONE(0),
-fNPartINELgtONE(0),
-fCurrentRun(-1),
-fMultiplicity_ADA (0),
-fMultiplicity_ADC (0),
-fAmplitude_V0A   (0),
-fAmplitude_V0C   (0),
-fAmplitude_V0Apartial   (0),
-fAmplitude_V0Cpartial   (0),
-fAmplitude_V0AEq (0),
-fAmplitude_V0CEq (0),
-fAmplitude_OnlineV0A(0),
-fAmplitude_OnlineV0C(0),
-fAmplitude_V0A1(0),
-fAmplitude_V0A2(0),
-fAmplitude_V0A3(0),
-fAmplitude_V0A4(0),
-fAmplitude_V0C1(0),
-fAmplitude_V0C2(0),
-fAmplitude_V0C3(0),
-fAmplitude_V0C4(0),
-fAmplitude_V0AADC   (0),
-fAmplitude_V0CADC   (0),
-fnSPDClusters(0),
-fnTracklets(0),
-fnTracklets08(0),
-fnTracklets15(0),
-fnSPDClusters0(0),
-fnSPDClusters1(0),
-fnContributors(0),
-fTrackCutsFiltBit32(0),
-fTrackCutsFiltBit64(0),
-fRefMultEta5(0),
-fRefMultEta8(0),
+fEvSel_VtxZ(0),
 fRunNumber(0),
 fEvSel_VtxZCut(0),
 fEvSel_IsNotPileup(0),
@@ -333,9 +326,27 @@ fEvSel_PassesTrackletVsCluster(0),
 fEvSel_IsNotAsymmetricInVZERO(0),
 fEvSel_IsNotIncompleteDAQ(0),
 fEvSel_HasGoodVertex2016(0),
-fEvSel_VtxZ(0),
 fEvSel_TriggerMask(0),
 fFiredTriggerClasses(""),
+fnContributors(0),
+fTrackCuts(0),
+fTrackCutsGlobal2015(0),
+fTrackCutsITSsa2010(0),
+fTrackCutsFiltBit32(0),
+fTrackCutsFiltBit64(0),
+fZnaFired(0),
+fZncFired(0),
+fZpaFired(0),
+fZpcFired(0),
+fNTracks(0),
+fNTracksTPCout(0),
+fNTracksGlobal2015(0),
+fNTracksGlobal2015Trigger(0),
+fNTracksITSsa2010(0),
+fNTracksINELgtONE(0),
+fNPartINELgtONE(0),
+fCurrentRun(-1),
+fQuantiles{0.}, /*added Hans*/
 fEvSelCode(0),
 fNDebug(1),
 fAliCentralityV0M(0),
@@ -386,8 +397,8 @@ fHistQASelected_TrackletsVsV0M(0),
 fHistQASelected_TrackletsVsCL0(0),
 fHistQASelected_TrackletsVsCL1(0),
 fHistQASelected_NTracksGlobalVsV0M(0),
-fHistQASelected_NTracksGlobalVsCL1(0),
 fHistQASelected_NTracksGlobalVsCL0(0),
+fHistQASelected_NTracksGlobalVsCL1(0),
 fHistQASelected_PtGlobalVsV0M(0),
 fHistQASelected_PtGlobalVsCL0(0),
 fHistQASelected_PtGlobalVsCL1(0),
@@ -1157,45 +1168,47 @@ void AliMultSelectionTask::UserExec(Option_t *)
         
         if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
             
-            //Npart and Ncoll information
-            AliGenHijingEventHeader* hHijing=0;
-            AliGenDPMjetEventHeader* dpmHeader=0;
-            AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-            
-            //DPMJet/HIJING info if available
-            if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
-                hHijing = (AliGenHijingEventHeader*)mcGenH;
-            else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
-                TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
-                hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
-                if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
-                if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
-            }
-            else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
-                dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
-            }
-            if(hHijing)   {
-                fMC_b -> SetValue( hHijing->ImpactParameter() );
-                fMC_NPart ->SetValueInteger( hHijing->ProjectileParticipants()+hHijing->TargetParticipants() );
-                fMC_NColl ->SetValueInteger( hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw() );
-            }
-            if(dpmHeader) {
-                fMC_b -> SetValue( hHijing->ImpactParameter() );
-                fMC_NPart ->SetValueInteger( dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants());
-                fMC_NColl ->SetValueInteger( dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw());
-            }
-            
-            //check EPOS info, if available
-            if ( IsEPOSLHC() ){
-                AliGenHepMCEventHeader *lHepMCHeader = 0x0;
-                if (mcGenH->InheritsFrom(AliGenHepMCEventHeader::Class()))
-                    lHepMCHeader = (AliGenHepMCEventHeader*)mcGenH;
+            if(!fkSkipMCHeaders){
+                //Npart and Ncoll information
+                AliGenHijingEventHeader* hHijing=0;
+                AliGenDPMjetEventHeader* dpmHeader=0;
+                AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
                 
-                if (lHepMCHeader ){
-                    fMC_NPart ->SetValueInteger( lHepMCHeader->Npart_proj()+lHepMCHeader->Npart_targ() );
-                    fMC_NColl ->SetValueInteger( lHepMCHeader->N_Nwounded_collisions() +
-                                                lHepMCHeader->Nwounded_N_collisions() +
-                                                lHepMCHeader->Nwounded_Nwounded_collisions() );
+                //DPMJet/HIJING info if available
+                if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
+                    hHijing = (AliGenHijingEventHeader*)mcGenH;
+                else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+                    TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+                    hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
+                    if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
+                    if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
+                }
+                else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+                    dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
+                }
+                if(hHijing)   {
+                    fMC_b -> SetValue( hHijing->ImpactParameter() );
+                    fMC_NPart ->SetValueInteger( hHijing->ProjectileParticipants()+hHijing->TargetParticipants() );
+                    fMC_NColl ->SetValueInteger( hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw() );
+                }
+                if(dpmHeader) {
+                    fMC_b -> SetValue( hHijing->ImpactParameter() );
+                    fMC_NPart ->SetValueInteger( dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants());
+                    fMC_NColl ->SetValueInteger( dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw());
+                }
+                
+                //check EPOS info, if available
+                if ( IsEPOSLHC() ){
+                    AliGenHepMCEventHeader *lHepMCHeader = 0x0;
+                    if (mcGenH->InheritsFrom(AliGenHepMCEventHeader::Class()))
+                        lHepMCHeader = (AliGenHepMCEventHeader*)mcGenH;
+                    
+                    if (lHepMCHeader ){
+                        fMC_NPart ->SetValueInteger( lHepMCHeader->Npart_proj()+lHepMCHeader->Npart_targ() );
+                        fMC_NColl ->SetValueInteger( lHepMCHeader->N_Nwounded_collisions() +
+                                                    lHepMCHeader->Nwounded_N_collisions() +
+                                                    lHepMCHeader->Nwounded_Nwounded_collisions() );
+                    }
                 }
             }
             
@@ -1740,7 +1753,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if( lMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejINELgtZERO);
         
-        if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut()      )
+        if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut() && !fkSkipVertexZ)
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejVzCut);
         
         if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      )
@@ -2688,7 +2701,13 @@ TString AliMultSelectionTask::GetPeriodNameByLPM(TString lTag)
 }
 
 //______________________________________________________________________
-TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
+TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const {
+    AliInfoF(" Autodetecting production name from filename: %s", lPath.Data() );
+    return GetPeriodNameByGenericPath(lPath);
+}
+
+//______________________________________________________________________
+TString AliMultSelectionTask::GetPeriodNameByGenericPath(const TString lPath)
 {
     //============================================================
     //This function is meant to get the period name.
@@ -2700,8 +2719,6 @@ TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
     //==================================
     // Setup initial Info
     TString lProductionName = lPath.Data();
-    //==================================
-    AliInfoF(" Autodetecting production name from filename: %s", lProductionName.Data() );
     //==================================
     // Get Production name
     Long_t iOcurrence = 0;
@@ -2736,8 +2753,13 @@ TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
     
     return lProductionName;
 }
+
+TString AliMultSelectionTask::GetPeriodNameByRunNumber() const {
+    return GetPeriodNameByRunNumber(fCurrentRun);
+}
+
 //______________________________________________________________________
-TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
+TString AliMultSelectionTask::GetPeriodNameByRunNumber(int runNumber)
 {
     //============================================================
     // This function is meant to get the period name.
@@ -2752,88 +2774,109 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     TString lProductionName = "Empty";
     
     //Registered Productions : Run 1 pp
-    if ( fCurrentRun >= 114751 && fCurrentRun <= 117222 ) lProductionName = "LHC10b";
-    if ( fCurrentRun >= 118903 && fCurrentRun <= 120829 ) lProductionName = "LHC10c";
-    if ( fCurrentRun >= 122374 && fCurrentRun <= 126437 ) lProductionName = "LHC10d";
-    if ( fCurrentRun >= 127712 && fCurrentRun <= 130840 ) lProductionName = "LHC10e";
+    if ( runNumber >= 114751 && runNumber <= 117222 ) lProductionName = "LHC10b";
+    if ( runNumber >= 118903 && runNumber <= 120829 ) lProductionName = "LHC10c";
+    if ( runNumber >= 122374 && runNumber <= 126437 ) lProductionName = "LHC10d";
+    if ( runNumber >= 127712 && runNumber <= 130840 ) lProductionName = "LHC10e";
     
     //Registered Productions : Run 1 Pb-Pb
-    if ( fCurrentRun >= 136851 && fCurrentRun <= 139517 ) lProductionName = "LHC10h";
-    
+    if ( runNumber >= 136851 && runNumber <= 139517 ) lProductionName = "LHC10h";
+  
+    //Registered Productions : Run 1 p-Pb
+    if ( runNumber >= 195344 && runNumber <= 195483 ) lProductionName = "LHC13b";
+    if ( runNumber >= 195529 && runNumber <= 195677 ) lProductionName = "LHC13c";
+    if ( runNumber >= 195681 && runNumber <= 195873 ) lProductionName = "LHC13d";
+    if ( runNumber >= 195935 && runNumber <= 196311 ) lProductionName = "LHC13e";
+    if ( runNumber >= 196433 && runNumber <= 197388 ) lProductionName = "LHC13f";
+  
     //Registered Productions : Run 2 pp
-    if ( fCurrentRun >= 225000 && fCurrentRun <= 226606 ) lProductionName = "LHC15f";
-    if ( fCurrentRun >= 232914 && fCurrentRun <= 234050 ) lProductionName = "LHC15h";
-    if ( fCurrentRun >= 235196 && fCurrentRun <= 236866 ) lProductionName = "LHC15i";
-    if ( fCurrentRun >= 237003 && fCurrentRun <= 238622 ) lProductionName = "LHC15j";
-    if ( fCurrentRun >= 239319 && fCurrentRun <= 241541 ) lProductionName = "LHC15l";
-    if ( fCurrentRun >= 244340 && fCurrentRun <= 244628 ) lProductionName = "LHC15n";
+    if ( runNumber >= 225000 && runNumber <= 226606 ) lProductionName = "LHC15f";
+    if ( runNumber >= 232914 && runNumber <= 234050 ) lProductionName = "LHC15h";
+    if ( runNumber >= 235196 && runNumber <= 236866 ) lProductionName = "LHC15i";
+    if ( runNumber >= 237003 && runNumber <= 238622 ) lProductionName = "LHC15j";
+    if ( runNumber >= 239319 && runNumber <= 241541 ) lProductionName = "LHC15l";
+    if ( runNumber >= 244340 && runNumber <= 244628 ) lProductionName = "LHC15n";
     
     //2016
-    if ( fCurrentRun >= 252235 && fCurrentRun <= 252375 ) lProductionName = "LHC16d";
-    if ( fCurrentRun >= 252603 && fCurrentRun <= 253591 ) lProductionName = "LHC16e";
-    if ( fCurrentRun >= 253659 && fCurrentRun <= 253978 ) lProductionName = "LHC16f";
-    if ( fCurrentRun >= 254124 && fCurrentRun <= 254332 ) lProductionName = "LHC16g";
-    if ( fCurrentRun >= 254378 && fCurrentRun <= 255467 ) lProductionName = "LHC16h";
-    if ( fCurrentRun >= 255515 && fCurrentRun <= 255618 ) lProductionName = "LHC16i";
-    if ( fCurrentRun >= 256146 && fCurrentRun <= 256420 ) lProductionName = "LHC16j";
-    if ( fCurrentRun >= 256504 && fCurrentRun <= 258537 ) lProductionName = "LHC16k";
-    if ( fCurrentRun >= 258883 && fCurrentRun <= 260187 ) lProductionName = "LHC16l";
-    if ( fCurrentRun >= 260218 && fCurrentRun <= 260647 ) lProductionName = "LHC16m";
-    if ( fCurrentRun >= 262395 && fCurrentRun <= 264035 ) lProductionName = "LHC16o";
-    if ( fCurrentRun >= 264076 && fCurrentRun <= 264347 ) lProductionName = "LHC16p";
+    if ( runNumber >= 252235 && runNumber <= 252375 ) lProductionName = "LHC16d";
+    if ( runNumber >= 252603 && runNumber <= 253591 ) lProductionName = "LHC16e";
+    if ( runNumber >= 253659 && runNumber <= 253978 ) lProductionName = "LHC16f";
+    if ( runNumber >= 254124 && runNumber <= 254332 ) lProductionName = "LHC16g";
+    if ( runNumber >= 254378 && runNumber <= 255467 ) lProductionName = "LHC16h";
+    if ( runNumber >= 255515 && runNumber <= 255618 ) lProductionName = "LHC16i";
+    if ( runNumber >= 256146 && runNumber <= 256420 ) lProductionName = "LHC16j";
+    if ( runNumber >= 256504 && runNumber <= 258537 ) lProductionName = "LHC16k";
+    if ( runNumber >= 258883 && runNumber <= 260187 ) lProductionName = "LHC16l";
+    if ( runNumber >= 260218 && runNumber <= 260647 ) lProductionName = "LHC16m";
+    if ( runNumber >= 262395 && runNumber <= 264035 ) lProductionName = "LHC16o";
+    if ( runNumber >= 264076 && runNumber <= 264347 ) lProductionName = "LHC16p";
     
     //2017
-    if ( fCurrentRun >= 270531 && fCurrentRun <= 270667 ) lProductionName = "LHC17c";
-    if ( fCurrentRun >= 270822 && fCurrentRun <= 270830 ) lProductionName = "LHC17e";
-    if ( fCurrentRun >= 270854 && fCurrentRun <= 270865 ) lProductionName = "LHC17f";
-    if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lProductionName = "LHC17g";
-    if ( fCurrentRun >= 271868 && fCurrentRun <= 273103 ) lProductionName = "LHC17h";
-    if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lProductionName = "LHC17i";
-    if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lProductionName = "LHC17j";
-    if ( fCurrentRun >= 274690 && fCurrentRun <= 276508 ) lProductionName = "LHC17k";
-    if ( fCurrentRun >= 276551 && fCurrentRun <= 278216 ) lProductionName = "LHC17l";
-    if ( fCurrentRun >= 278914 && fCurrentRun <= 280140 ) lProductionName = "LHC17m";
-    if ( fCurrentRun >= 280282 && fCurrentRun <= 281961 ) lProductionName = "LHC17o";
-    if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lProductionName = "LHC17p";
-    if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lProductionName = "LHC17q";
-    if ( fCurrentRun >= 282504 && fCurrentRun <= 282704 ) lProductionName = "LHC17r";
+    if ( runNumber >= 270531 && runNumber <= 270667 ) lProductionName = "LHC17c";
+    if ( runNumber >= 270822 && runNumber <= 270830 ) lProductionName = "LHC17e";
+    if ( runNumber >= 270854 && runNumber <= 270865 ) lProductionName = "LHC17f";
+    if ( runNumber >= 270882 && runNumber <= 271777 ) lProductionName = "LHC17g";
+    if ( runNumber >= 271868 && runNumber <= 273103 ) lProductionName = "LHC17h";
+    if ( runNumber >= 273591 && runNumber <= 274442 ) lProductionName = "LHC17i";
+    if ( runNumber >= 274593 && runNumber <= 274671 ) lProductionName = "LHC17j";
+    if ( runNumber >= 274690 && runNumber <= 276508 ) lProductionName = "LHC17k";
+    if ( runNumber >= 276551 && runNumber <= 278216 ) lProductionName = "LHC17l";
+    if ( runNumber >= 278914 && runNumber <= 280140 ) lProductionName = "LHC17m";
+    if ( runNumber >= 280282 && runNumber <= 281961 ) lProductionName = "LHC17o";
+    if ( runNumber >= 282008 && runNumber <= 282343 ) lProductionName = "LHC17p";
+    if ( runNumber >= 282365 && runNumber <= 282367 ) lProductionName = "LHC17q";
+    if ( runNumber >= 282504 && runNumber <= 282704 ) lProductionName = "LHC17r";
     
     //2018
-    if ( fCurrentRun >= 285008 && fCurrentRun <= 285447 ) lProductionName = "LHC18b";
-    if ( fCurrentRun >= 285466 && fCurrentRun <= 285958 ) lProductionName = "LHC18c";
-    if ( fCurrentRun >= 285978 && fCurrentRun <= 286350 ) lProductionName = "LHC18d";
-    if ( fCurrentRun >= 286380 && fCurrentRun <= 286937 ) lProductionName = "LHC18e";
-    if ( fCurrentRun >= 287000 && fCurrentRun <= 287977 ) lProductionName = "LHC18f";
-    if ( fCurrentRun >= 288619 && fCurrentRun <= 288750 ) lProductionName = "LHC18g";
-    if ( fCurrentRun >= 288804 && fCurrentRun <= 288806 ) lProductionName = "LHC18h";
-    if ( fCurrentRun >= 288861 && fCurrentRun <= 288909 ) lProductionName = "LHC18i";
-    if ( fCurrentRun >= 288943 && fCurrentRun <= 288943 ) lProductionName = "LHC18j";
-    if ( fCurrentRun >= 289165 && fCurrentRun <= 289201 ) lProductionName = "LHC18k";
+    if ( runNumber >= 285008 && runNumber <= 285447 ) lProductionName = "LHC18b";
+    if ( runNumber >= 285466 && runNumber <= 285958 ) lProductionName = "LHC18c";
+    if ( runNumber >= 285978 && runNumber <= 286350 ) lProductionName = "LHC18d";
+    if ( runNumber >= 286380 && runNumber <= 286937 ) lProductionName = "LHC18e";
+    if ( runNumber >= 287000 && runNumber <= 287977 ) lProductionName = "LHC18f";
+    if ( runNumber >= 288619 && runNumber <= 288750 ) lProductionName = "LHC18g";
+    if ( runNumber >= 288804 && runNumber <= 288806 ) lProductionName = "LHC18h";
+    if ( runNumber >= 288861 && runNumber <= 288909 ) lProductionName = "LHC18i";
+    if ( runNumber >= 288943 && runNumber <= 288943 ) lProductionName = "LHC18j";
+    if ( runNumber >= 289165 && runNumber <= 289201 ) lProductionName = "LHC18k";
+    if ( runNumber >= 289240 && runNumber <= 289971 ) lProductionName = "LHC18l";
+    if ( runNumber >= 290222 && runNumber <= 292839 ) lProductionName = "LHC18m";
+    if ( runNumber >= 293357 && runNumber <= 293359 ) lProductionName = "LHC18n";
+    if ( runNumber >= 293368 && runNumber <= 293898 ) lProductionName = "LHC18o";
+    if ( runNumber >= 294009 && runNumber <= 294925 ) lProductionName = "LHC18p";
     
     //Registered Productions : Run 2 Pb-Pb
-    if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lProductionName = "LHC15m";
-    if ( fCurrentRun >= 244917 && fCurrentRun <= 246994 ) lProductionName = "LHC15o";
+    if ( runNumber >= 243395 && runNumber <= 243984 ) lProductionName = "LHC15m";
+    if ( runNumber >= 244917 && runNumber <= 246994 ) lProductionName = "LHC15o";
     
     //Registered Productions : Run 2 p-Pb
-    if ( fCurrentRun >= 265115 && fCurrentRun <= 265525 ) lProductionName = "LHC16q";
-    if ( fCurrentRun >= 265589 && fCurrentRun <= 266318 ) lProductionName = "LHC16r";
-    if ( fCurrentRun >= 266405 && fCurrentRun <= 267131 ) lProductionName = "LHC16s";
-    if ( fCurrentRun >= 267161 && fCurrentRun <= 267166 ) lProductionName = "LHC16t";
+    if ( runNumber >= 265115 && runNumber <= 265525 ) lProductionName = "LHC16q";
+    if ( runNumber >= 265589 && runNumber <= 266318 ) lProductionName = "LHC16r";
+    if ( runNumber >= 266405 && runNumber <= 267131 ) lProductionName = "LHC16s";
+    if ( runNumber >= 267161 && runNumber <= 267166 ) lProductionName = "LHC16t";
     
     //Registered production: Run 2 Xe-Xe
-    if ( fCurrentRun >= 280234 && fCurrentRun <= 280235 ) lProductionName = "LHC17n";
+    if ( runNumber >= 280234 && runNumber <= 280235 ) lProductionName = "LHC17n";
     
     //Registered production: Run 2 Pb-Pb 2018
-    if ( fCurrentRun >= 295581 && fCurrentRun <= 296689 ) lProductionName = "LHC18q";
-    if ( fCurrentRun >= 296690 && fCurrentRun <= 300000 ) lProductionName = "LHC18r";
+    if ( runNumber >= 295581 && runNumber <= 296689 ) lProductionName = "LHC18q";
+    if ( runNumber >= 296690 && runNumber <= 300000 ) lProductionName = "LHC18r";
     
     //WARNING: change line above if you want to register anything else!
     //         Please note that this is temporary!
     
     return lProductionName;
 }
-//______________________________________________________________________
+
 TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
+{
+    TString lSystemType = GetSystemTypeByRunNumber(fCurrentRun);
+    
+    //Will make anything return AliMultSelectionCuts::kNoCalib
+    return lSystemType == "" ? "pp" : lSystemType;
+}
+
+//______________________________________________________________________
+TString AliMultSelectionTask::GetSystemTypeByRunNumber(int runNumber)
 {
     //============================================================
     //
@@ -2845,84 +2888,88 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     //
     //============================================================
     
-    //Will make anything return AliMultSelectionCuts::kNoCalib
-    TString lSystemType = "pp"; //default unless told otherwise
+    TString lSystemType = ""; //default unless told otherwise
     
     //Registered Productions : Run 1 pp
-    if ( fCurrentRun >= 114751 && fCurrentRun <= 117222 ) lSystemType = "pp";
-    if ( fCurrentRun >= 118903 && fCurrentRun <= 120829 ) lSystemType = "pp";
-    if ( fCurrentRun >= 122374 && fCurrentRun <= 126437 ) lSystemType = "pp";
-    if ( fCurrentRun >= 127712 && fCurrentRun <= 130840 ) lSystemType = "pp";
+    if ( runNumber >= 114751 && runNumber <= 117222 ) lSystemType = "pp";
+    if ( runNumber >= 118903 && runNumber <= 120829 ) lSystemType = "pp";
+    if ( runNumber >= 122374 && runNumber <= 126437 ) lSystemType = "pp";
+    if ( runNumber >= 127712 && runNumber <= 130840 ) lSystemType = "pp";
     
     //Registered Productions : Run 1 Pb-Pb
-    if ( fCurrentRun >= 136851 && fCurrentRun <= 139517 ) lSystemType = "Pb-Pb";
+    if ( runNumber >= 136851 && runNumber <= 139517 ) lSystemType = "Pb-Pb";
     
     //Registered Productions : Run 2 pp
-    if ( fCurrentRun >= 225000 && fCurrentRun <= 226606 ) lSystemType = "pp";
-    if ( fCurrentRun >= 232914 && fCurrentRun <= 234050 ) lSystemType = "pp";
-    if ( fCurrentRun >= 235196 && fCurrentRun <= 236866 ) lSystemType = "pp";
-    if ( fCurrentRun >= 237003 && fCurrentRun <= 238622 ) lSystemType = "pp";
-    if ( fCurrentRun >= 239319 && fCurrentRun <= 241541 ) lSystemType = "pp";
-    if ( fCurrentRun >= 244340 && fCurrentRun <= 244628 ) lSystemType = "pp";
+    if ( runNumber >= 225000 && runNumber <= 226606 ) lSystemType = "pp";
+    if ( runNumber >= 232914 && runNumber <= 234050 ) lSystemType = "pp";
+    if ( runNumber >= 235196 && runNumber <= 236866 ) lSystemType = "pp";
+    if ( runNumber >= 237003 && runNumber <= 238622 ) lSystemType = "pp";
+    if ( runNumber >= 239319 && runNumber <= 241541 ) lSystemType = "pp";
+    if ( runNumber >= 244340 && runNumber <= 244628 ) lSystemType = "pp";
     
     //2016
-    if ( fCurrentRun >= 252235 && fCurrentRun <= 252375 ) lSystemType = "pp";
-    if ( fCurrentRun >= 252603 && fCurrentRun <= 253591 ) lSystemType = "pp";
-    if ( fCurrentRun >= 253659 && fCurrentRun <= 253978 ) lSystemType = "pp";
-    if ( fCurrentRun >= 254124 && fCurrentRun <= 254332 ) lSystemType = "pp";
-    if ( fCurrentRun >= 254378 && fCurrentRun <= 255467 ) lSystemType = "pp";
-    if ( fCurrentRun >= 255515 && fCurrentRun <= 255618 ) lSystemType = "pp";
-    if ( fCurrentRun >= 256146 && fCurrentRun <= 256420 ) lSystemType = "pp";
-    if ( fCurrentRun >= 256504 && fCurrentRun <= 258537 ) lSystemType = "pp";
-    if ( fCurrentRun >= 258883 && fCurrentRun <= 260187 ) lSystemType = "pp";
-    if ( fCurrentRun >= 260218 && fCurrentRun <= 260647 ) lSystemType = "pp";
-    if ( fCurrentRun >= 262395 && fCurrentRun <= 264035 ) lSystemType = "pp";
-    if ( fCurrentRun >= 264076 && fCurrentRun <= 264347 ) lSystemType = "pp";
+    if ( runNumber >= 252235 && runNumber <= 252375 ) lSystemType = "pp";
+    if ( runNumber >= 252603 && runNumber <= 253591 ) lSystemType = "pp";
+    if ( runNumber >= 253659 && runNumber <= 253978 ) lSystemType = "pp";
+    if ( runNumber >= 254124 && runNumber <= 254332 ) lSystemType = "pp";
+    if ( runNumber >= 254378 && runNumber <= 255467 ) lSystemType = "pp";
+    if ( runNumber >= 255515 && runNumber <= 255618 ) lSystemType = "pp";
+    if ( runNumber >= 256146 && runNumber <= 256420 ) lSystemType = "pp";
+    if ( runNumber >= 256504 && runNumber <= 258537 ) lSystemType = "pp";
+    if ( runNumber >= 258883 && runNumber <= 260187 ) lSystemType = "pp";
+    if ( runNumber >= 260218 && runNumber <= 260647 ) lSystemType = "pp";
+    if ( runNumber >= 262395 && runNumber <= 264035 ) lSystemType = "pp";
+    if ( runNumber >= 264076 && runNumber <= 264347 ) lSystemType = "pp";
     
     //2017
-    if ( fCurrentRun >= 270531 && fCurrentRun <= 270667 ) lSystemType = "pp";
-    if ( fCurrentRun >= 270822 && fCurrentRun <= 270830 ) lSystemType = "pp";
-    if ( fCurrentRun >= 270854 && fCurrentRun <= 270865 ) lSystemType = "pp";
-    if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lSystemType = "pp";
-    if ( fCurrentRun >= 271868 && fCurrentRun <= 273103 ) lSystemType = "pp";
-    if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lSystemType = "pp";
-    if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lSystemType = "pp";
-    if ( fCurrentRun >= 274690 && fCurrentRun <= 276508 ) lSystemType = "pp";
-    if ( fCurrentRun >= 276551 && fCurrentRun <= 278216 ) lSystemType = "pp";
-    if ( fCurrentRun >= 278914 && fCurrentRun <= 280140 ) lSystemType = "pp";
-    if ( fCurrentRun >= 280282 && fCurrentRun <= 281961 ) lSystemType = "pp";
-    if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lSystemType = "pp";
-    if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lSystemType = "pp";
-    if ( fCurrentRun >= 282504 && fCurrentRun <= 282704 ) lSystemType = "pp";
+    if ( runNumber >= 270531 && runNumber <= 270667 ) lSystemType = "pp";
+    if ( runNumber >= 270822 && runNumber <= 270830 ) lSystemType = "pp";
+    if ( runNumber >= 270854 && runNumber <= 270865 ) lSystemType = "pp";
+    if ( runNumber >= 270882 && runNumber <= 271777 ) lSystemType = "pp";
+    if ( runNumber >= 271868 && runNumber <= 273103 ) lSystemType = "pp";
+    if ( runNumber >= 273591 && runNumber <= 274442 ) lSystemType = "pp";
+    if ( runNumber >= 274593 && runNumber <= 274671 ) lSystemType = "pp";
+    if ( runNumber >= 274690 && runNumber <= 276508 ) lSystemType = "pp";
+    if ( runNumber >= 276551 && runNumber <= 278216 ) lSystemType = "pp";
+    if ( runNumber >= 278914 && runNumber <= 280140 ) lSystemType = "pp";
+    if ( runNumber >= 280282 && runNumber <= 281961 ) lSystemType = "pp";
+    if ( runNumber >= 282008 && runNumber <= 282343 ) lSystemType = "pp";
+    if ( runNumber >= 282365 && runNumber <= 282367 ) lSystemType = "pp";
+    if ( runNumber >= 282504 && runNumber <= 282704 ) lSystemType = "pp";
     
     //2018
-    if ( fCurrentRun >= 285008 && fCurrentRun <= 285447 ) lSystemType = "pp";
-    if ( fCurrentRun >= 285466 && fCurrentRun <= 285958 ) lSystemType = "pp";
-    if ( fCurrentRun >= 285978 && fCurrentRun <= 286350 ) lSystemType = "pp";
-    if ( fCurrentRun >= 286380 && fCurrentRun <= 286937 ) lSystemType = "pp";
-    if ( fCurrentRun >= 287000 && fCurrentRun <= 287977 ) lSystemType = "pp";
-    if ( fCurrentRun >= 288619 && fCurrentRun <= 288750 ) lSystemType = "pp";
-    if ( fCurrentRun >= 288804 && fCurrentRun <= 288806 ) lSystemType = "pp";
-    if ( fCurrentRun >= 288861 && fCurrentRun <= 288909 ) lSystemType = "pp";
-    if ( fCurrentRun >= 288943 && fCurrentRun <= 288943 ) lSystemType = "pp";
-    if ( fCurrentRun >= 289165 && fCurrentRun <= 289201 ) lSystemType = "pp";
+    if ( runNumber >= 285008 && runNumber <= 285447 ) lSystemType = "pp";
+    if ( runNumber >= 285466 && runNumber <= 285958 ) lSystemType = "pp";
+    if ( runNumber >= 285978 && runNumber <= 286350 ) lSystemType = "pp";
+    if ( runNumber >= 286380 && runNumber <= 286937 ) lSystemType = "pp";
+    if ( runNumber >= 287000 && runNumber <= 287977 ) lSystemType = "pp";
+    if ( runNumber >= 288619 && runNumber <= 288750 ) lSystemType = "pp";
+    if ( runNumber >= 288804 && runNumber <= 288806 ) lSystemType = "pp";
+    if ( runNumber >= 288861 && runNumber <= 288909 ) lSystemType = "pp";
+    if ( runNumber >= 288943 && runNumber <= 288943 ) lSystemType = "pp";
+    if ( runNumber >= 289165 && runNumber <= 289201 ) lSystemType = "pp";
+    if ( runNumber >= 289240 && runNumber <= 289971 ) lSystemType = "pp";
+    if ( runNumber >= 290222 && runNumber <= 292839 ) lSystemType = "pp";
+    if ( runNumber >= 293357 && runNumber <= 293359 ) lSystemType = "pp";
+    if ( runNumber >= 293368 && runNumber <= 293898 ) lSystemType = "pp";
+    if ( runNumber >= 294009 && runNumber <= 294925 ) lSystemType = "pp";
     
     //Registered Productions : Run 2 Pb-Pb
-    if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lSystemType = "Pb-Pb";
-    if ( fCurrentRun >= 244917 && fCurrentRun <= 246994 ) lSystemType = "Pb-Pb";
+    if ( runNumber >= 243395 && runNumber <= 243984 ) lSystemType = "Pb-Pb";
+    if ( runNumber >= 244917 && runNumber <= 246994 ) lSystemType = "Pb-Pb";
     
     //Registered Productions : Run 2 p-Pb
     //warning: no distinction between p-Pb and Pb-p so far
-    if ( fCurrentRun >= 265115 && fCurrentRun <= 265525 ) lSystemType = "p-Pb";
-    if ( fCurrentRun >= 265589 && fCurrentRun <= 266318 ) lSystemType = "p-Pb";
-    if ( fCurrentRun >= 266405 && fCurrentRun <= 267131 ) lSystemType = "p-Pb";
-    if ( fCurrentRun >= 267161 && fCurrentRun <= 267166 ) lSystemType = "p-Pb";
+    if ( runNumber >= 265115 && runNumber <= 265525 ) lSystemType = "p-Pb";
+    if ( runNumber >= 265589 && runNumber <= 266318 ) lSystemType = "p-Pb";
+    if ( runNumber >= 266405 && runNumber <= 267131 ) lSystemType = "p-Pb";
+    if ( runNumber >= 267161 && runNumber <= 267166 ) lSystemType = "p-Pb";
     
     //Registered production: Run 2 Xe-Xe
-    if ( fCurrentRun >= 280234 && fCurrentRun <= 280235 ) lSystemType = "Xe-Xe";
+    if ( runNumber >= 280234 && runNumber <= 280235 ) lSystemType = "Xe-Xe";
     
     //Registered production: Run 2 Pb-Pb 2018
-    if ( fCurrentRun >= 295488 && fCurrentRun <= 297624 ) lSystemType = "Pb-Pb";
+    if ( runNumber >= 295488 && runNumber <= 297624 ) lSystemType = "Pb-Pb";
     
     return lSystemType;
 }

@@ -56,7 +56,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fEMCALRecalibrationFactors(),
   fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fLowGain(kFALSE),
-  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),
+  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),     fDoUseMergedBC(kFALSE),
   fUseRunCorrectionFactors(kFALSE),       
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
@@ -113,6 +113,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fLowGain(reco.fLowGain),
   fUseL1PhaseInTimeRecalibration(reco.fUseL1PhaseInTimeRecalibration), 
   fEMCALL1PhaseInTimeRecalibration(reco.fEMCALL1PhaseInTimeRecalibration),
+  fDoUseMergedBC(reco.fDoUseMergedBC),
   fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   
   fRemoveBadChannels(reco.fRemoveBadChannels),               fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
   fEMCALBadChannelMap(NULL),
@@ -202,6 +203,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
 
   fUseL1PhaseInTimeRecalibration   = reco.fUseL1PhaseInTimeRecalibration;
   fEMCALL1PhaseInTimeRecalibration = reco.fEMCALL1PhaseInTimeRecalibration;
+
+  fDoUseMergedBC             = reco.fDoUseMergedBC;
   
   fUseRunCorrectionFactors   = reco.fUseRunCorrectionFactors;
   
@@ -938,6 +941,24 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       
       break;
     }
+    case kBeamTestNS:
+    {
+      // New parametrization of testbeam data points, 
+      // includes also points for E>100 GeV.
+      // See EMCal meeting 07/12/2018 slides
+      // https://indico.cern.ch/event/761682/contributions/3245317/attachments/1767706/2870846/2018_12_pp5TeV_NonlinearityStudies_update.pdf
+      
+//      fNonLinearityParams[0] = 0.986154;
+//      fNonLinearityParams[1] = 0.214860;
+//      fNonLinearityParams[2] = 0.717724;
+//      fNonLinearityParams[3] = 0.069200;
+//      fNonLinearityParams[4] = 155.497605;
+//      fNonLinearityParams[5] = 48.868069;
+//      fNonLinearityParams[6] = 0.972947;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
       
     case kSDMv5:
     {
@@ -998,6 +1019,24 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       //fNonLinearityParams[4] =  244.586;
       //fNonLinearityParams[5] =  116.938;
       //fNonLinearityParams[6] =  1.00437;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
+      
+    case kPi0MCNS:
+    {
+      // New parametrization of testbeam MC points,
+      // includes also points for E>100 GeV.
+      // See EMCal meeting 07/12/2018 slides
+      // https://indico.cern.ch/event/761682/contributions/3245317/attachments/1767706/2870846/2018_12_pp5TeV_NonlinearityStudies_update.pdf
+      //fNonLinearityParams[0] =  1.009121;
+      //fNonLinearityParams[1] =  0.083153;
+      //fNonLinearityParams[2] =  1.444362;
+      //fNonLinearityParams[3] =  0.100294;
+      //fNonLinearityParams[4] =  416.897753;
+      //fNonLinearityParams[5] =  324.246101;
+      //fNonLinearityParams[6] =  1.004055;
       energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
       
       break;
@@ -1185,6 +1224,22 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[5] = 47.18;
     fNonLinearityParams[6] = 0.97;
   }
+
+  if (fNonLinearityFunction == kBeamTestNS) {
+    
+    // New parametrization of testbeam data points, 
+    // includes also points for E>100 GeV.
+    // See EMCal meeting 07/12/2018 slides
+    // https://indico.cern.ch/event/761682/contributions/3245317/attachments/1767706/2870846/2018_12_pp5TeV_NonlinearityStudies_update.pdf
+    
+     fNonLinearityParams[0] = 0.986154;
+     fNonLinearityParams[1] = 0.214860;
+     fNonLinearityParams[2] = 0.717724;
+     fNonLinearityParams[3] = 0.069200;
+     fNonLinearityParams[4] = 155.497605;
+     fNonLinearityParams[5] = 48.868069;
+     fNonLinearityParams[6] = 0.972947;
+  }
   
   if (fNonLinearityFunction == kSDMv5) {
     fNonLinearityParams[0] =  1.0;
@@ -1224,6 +1279,16 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[4] = 244.586;   
     fNonLinearityParams[5] = 116.938;   
     fNonLinearityParams[6] = 1.00437;   
+  }
+
+  if (fNonLinearityFunction == kPi0MCNS) {
+    fNonLinearityParams[0] =  1.009121;
+    fNonLinearityParams[1] =  0.083153;
+    fNonLinearityParams[2] =  1.444362;
+    fNonLinearityParams[3] =  0.100294;
+    fNonLinearityParams[4] =  416.897753;
+    fNonLinearityParams[5] =  324.246101;
+    fNonLinearityParams[6] =  1.004055;
   }
 
 if (fNonLinearityFunction == kPCMv1) {
@@ -1563,31 +1628,52 @@ void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
-  if(fLowGain) fEMCALTimeRecalibrationFactors = new TObjArray(8);
-  else fEMCALTimeRecalibrationFactors = new TObjArray(4);
+  if(fDoUseMergedBC){
 
-  for (int i = 0; i < 4; i++) 
-    fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvBC%d",i),
+    if(fLowGain) fEMCALTimeRecalibrationFactors = new TObjArray(2);
+    else fEMCALTimeRecalibrationFactors = new TObjArray(1);
+
+    fEMCALTimeRecalibrationFactors->Add(new TH1S("hAllTimeAv",
+                                                 "hAllTimeAv",  
+                                                 48*24*22,0.,48*24*22)          );
+    // Init the histograms with 0
+    for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
+      SetEMCALChannelTimeRecalibrationFactor(0,iCh,0.,kFALSE);
+
+    if(fLowGain) {
+      fEMCALTimeRecalibrationFactors->Add(new TH1F("hAllTimeAvLG",
+                                                   "hAllTimeAvLG",  
+                                                    48*24*22,0.,48*24*22)        );
+      for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
+        SetEMCALChannelTimeRecalibrationFactor(1,iCh,0.,kTRUE);
+    }
+
+  }else{
+    if(fLowGain) fEMCALTimeRecalibrationFactors = new TObjArray(8);
+    else fEMCALTimeRecalibrationFactors = new TObjArray(4);
+
+    for (int i = 0; i < 4; i++) 
+      fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvBC%d",i),
                                                  Form("hAllTimeAvBC%d",i),  
                                                  48*24*22,0.,48*24*22)          );
-  // Init the histograms with 0
-  for (Int_t iBC = 0; iBC < 4; iBC++) 
-  {
-    for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
-      SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kFALSE);
-  }
-
-  if(fLowGain) {
-    for (int iBC = 0; iBC < 4; iBC++) {
-      fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvLGBC%d",iBC),
-						   Form("hAllTimeAvLGBC%d",iBC),  
-						   48*24*22,0.,48*24*22)        );
+    // Init the histograms with 0
+    for (Int_t iBC = 0; iBC < 4; iBC++) 
+    {
       for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
-	SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kTRUE);
+        SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kFALSE);
     }
+
+    if(fLowGain) {
+      for (int iBC = 0; iBC < 4; iBC++) {
+        fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvLGBC%d",iBC),
+                                                     Form("hAllTimeAvLGBC%d",iBC),  
+                                                     48*24*22,0.,48*24*22)        );
+        for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
+          SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kTRUE);
+      }
+    }
+
   }
-
-
   
   fEMCALTimeRecalibrationFactors->SetOwner(kTRUE);
   fEMCALTimeRecalibrationFactors->Compress();
@@ -3705,16 +3791,22 @@ void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(const TObjArray
   }
 }
 
-void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(Int_t bc, const TH1F* h){ 
+void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(Int_t bc, const TH1* h){ 
   if(!fEMCALTimeRecalibrationFactors){
     fEMCALTimeRecalibrationFactors = new TObjArray(bc);
     fEMCALTimeRecalibrationFactors->SetOwner(true);
   }
   if(fEMCALTimeRecalibrationFactors->GetEntries() <= bc) fEMCALTimeRecalibrationFactors->Expand(bc+1);
   if(fEMCALTimeRecalibrationFactors->At(bc)) fEMCALTimeRecalibrationFactors->RemoveAt(bc);
-  TH1F *clone = new TH1F(*h);
-  clone->SetDirectory(NULL);
-  fEMCALTimeRecalibrationFactors->AddAt(clone,bc); 
+  if(fDoUseMergedBC){
+    TH1S *clone = new TH1S(*(TH1S*)h);
+    clone->SetDirectory(NULL);
+    fEMCALTimeRecalibrationFactors->AddAt(clone,bc); 
+  }else{
+    TH1F *clone = new TH1F(*(TH1F*)h);
+    clone->SetDirectory(NULL);
+    fEMCALTimeRecalibrationFactors->AddAt(clone,bc); 
+  }
 }
 
 void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TObjArray *map) { 

@@ -90,12 +90,11 @@ HELP_USAGE
 cat  << LambdaOCDB   > lambdaOCDB.C
     {
         TFile *fin = TFile::Open("$1");
-        TFile *fout= TFile::Open("$2","recreate");
         AliCDBEntry* entry=(AliCDBEntry*)fin->Get("$3");
         TObject * o=(TObject*)entry->GetObject();
         $4
-        fout->cd();
-        o->Write("AliCDBEntry");
+        TFile *fout= TFile::Open("$2","recreate");
+        entry->Write("AliCDBEntry");
         delete fout;
     }
 LambdaOCDB

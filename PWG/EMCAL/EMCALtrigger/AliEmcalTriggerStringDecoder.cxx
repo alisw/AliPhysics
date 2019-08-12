@@ -36,13 +36,13 @@ std::string Triggerinfo::ExpandClassName() const {
   return result;
 }
 
-bool Triggerinfo::IsTriggerClass(const std::string &triggerclass) const {
+bool Triggerinfo::IsTriggerClass(EMCAL_STRINGVIEW triggerclass) const {
   return fTriggerClass.substr(1) == triggerclass; // remove C from trigger class part
 }
 
-std::vector<Triggerinfo> Triggerinfo::DecodeTriggerString(const std::string &triggerstring) {
+std::vector<Triggerinfo> Triggerinfo::DecodeTriggerString(EMCAL_STRINGVIEW triggerstring) {
   std::vector<Triggerinfo> result;
-  std::stringstream triggerparser(triggerstring);
+  std::stringstream triggerparser(triggerstring.data());
   std::string currenttrigger;
   while(std::getline(triggerparser, currenttrigger, ' ')){
     if(!currenttrigger.length()) continue;

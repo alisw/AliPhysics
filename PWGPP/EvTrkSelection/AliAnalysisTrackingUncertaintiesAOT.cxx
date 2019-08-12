@@ -87,6 +87,13 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fListHist(0x0),
   fESDtrackCuts(0x0),
   fVertex(0x0)
+  ,fmakefinerpTbin(kFALSE)
+  ,fUseCutGeoNcrNcl(kFALSE),
+  fDeadZoneWidth(2.),
+  fCutGeoNcrNclLength(130.),
+  fCutGeoNcrNclGeom1Pt(1.5),
+  fCutGeoNcrNclFractionNcr(0.9),
+  fCutGeoNcrNclFractionNcl(0.7)
 {
 
 }
@@ -125,6 +132,13 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   fListHist(0x0),
   fESDtrackCuts(0x0),
   fVertex(0x0)
+  ,fmakefinerpTbin(kFALSE)
+  ,fUseCutGeoNcrNcl(kFALSE),
+  fDeadZoneWidth(2.),
+  fCutGeoNcrNclLength(130.),
+  fCutGeoNcrNclGeom1Pt(1.5),
+  fCutGeoNcrNclFractionNcr(0.9),
+  fCutGeoNcrNclFractionNcl(0.7)
 {
   //
   // standard constructur
@@ -164,7 +178,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
   fESDtrackCuts->SetEtaRange(-fMaxEta, fMaxEta);
   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fCrossRowsOverFndCltTPC);
-
+  if(fUseCutGeoNcrNcl)  fESDtrackCuts->SetCutGeoNcrNcl( fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
 
   //
   // Create histograms
@@ -224,6 +238,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
     if(fDCAz){
       const Int_t nvars = 10;
       Int_t nBins[nvars]   = {600,   64,   29, 29,  18,   nEtaBins,    3,  2,    5,    2};
+      if(fmakefinerpTbin)   nBins[2]*=2;
       Double_t xmin[nvars] = {-3., -3.2,  0.5, 0.5, 0.,   -fMaxEta, -0.5, -2., -0.5, -0.5};
       Double_t xmax[nvars] = {3.,   3.2, 15.0, 15,  6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5};
       TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","particle p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc"};
@@ -237,6 +252,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
     else{
       const Int_t nvars = 8;
       Int_t nBins[nvars]   = {600,   29,  18,   nEtaBins,    3,  2,    5,    2};
+      if(fmakefinerpTbin)   nBins[1]*=2;
       Double_t xmin[nvars] = {-3.,   0.5,  0.,   -fMaxEta, -0.5, -2., -0.5, -0.5};
       Double_t xmax[nvars] = {3.,   15.0,  6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5};
       TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc"};
@@ -254,6 +270,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
     if(fDCAz){
       const Int_t nvars = 6;
       Int_t nBins[nvars]   = {600,   64,    29,    18,  nEtaBins,    2};
+      if(fmakefinerpTbin)   nBins[2]*=2;
       Double_t xmin[nvars] = {-3., -3.2,   0.5,    0.,  -fMaxEta, -0.5};
       Double_t xmax[nvars] = {3.,   3.2,  15.0,  6.28,   fMaxEta,  1.5};
       TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","phi","eta","TOFbc"};
@@ -263,6 +280,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
     else{
       const Int_t nvars = 5;
       Int_t nBins[nvars]   = {600,   29,    18,  nEtaBins,    2};
+      if(fmakefinerpTbin)   nBins[1]*=2;
       Double_t xmin[nvars] = {-3.,   0.5,    0.,  -fMaxEta, -0.5};
       Double_t xmax[nvars] = {3.,    15.0,  6.28,   fMaxEta,  1.5};
       TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","TOFbc"};
@@ -472,6 +490,9 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
 
     AliESDtrack *track =fESD->GetTrack(i);
     if (!track) continue;
+
+
+
     track->SetESDEvent(fESD);
     if(!track->RelateToVertex(fVertex,fESD->GetMagneticField(),100)) continue;
     //fill TPCcls histo
@@ -885,3 +906,4 @@ void AliAnalysisTrackingUncertaintiesAOT::InitializeTrackCutHistograms() {
     histTpcItsMatch->GetAxis(iaxis)->SetTitle(axisTitleTpcItsMatch[iaxis]);
   }
 }
+

@@ -484,15 +484,10 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     Info("UserExec","Number of pre-reco'ed V0 vertices: %i",nv0s);
     
     if( fkRunV0Vertexer ){
-        if ( !fkUseOptimalTrackParams ){
-            //reset all V0s, please
-            lESDevent->ResetV0s();
-        }else{
-            //reset only offline V0s, please
-            //important: reset cascades or RemoveV0s will NOT DO IT
-            lESDevent->ResetCascades();
-            SelectiveResetV0s(lESDevent, 0);
-        }
+        //reset only offline V0s, please
+        //important: reset cascades or RemoveV0s will NOT DO IT
+        lESDevent->ResetCascades();
+        SelectiveResetV0s(lESDevent, 0);
         if( !fkMonteCarlo ){
             Tracks2V0vertices(lESDevent);
         }else{
@@ -669,11 +664,10 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 &&fkExtraCleanup ) continue;
         
         Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
-        if (TMath::Abs(d)<fV0VertexerSels[2]) continue;
-        if (TMath::Abs(d)>fV0VertexerSels[6]) continue;
         
-        if (esdTrack->GetSign() < 0.) neg[nneg++]=i;
-        else pos[npos++]=i;
+        //Select on single-track to PV DCA here, do not call that O(N^2)
+        if (esdTrack->GetSign() < 0. && TMath::Abs(d)>fV0VertexerSels[1]) neg[nneg++]=i;
+        if (esdTrack->GetSign() > 0. && TMath::Abs(d)>fV0VertexerSels[2]) pos[npos++]=i;
     }
     
     for (i=0; i<nneg; i++) {
@@ -690,9 +684,6 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             
             Double_t lNegMassForTracking = ntrk->GetMassForTracking();
             Double_t lPosMassForTracking = ptrk->GetMassForTracking();
-            
-            if (TMath::Abs(ntrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[1])
-                if (TMath::Abs(ptrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[2]) continue;
             
             fHistV0Statistics->Fill(1.5); //pass distance to PV
             

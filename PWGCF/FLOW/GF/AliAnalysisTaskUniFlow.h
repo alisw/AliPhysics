@@ -1,4 +1,4 @@
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. */
+/* Copyright(c) 2016, ALICE Experiment at CERN, All rights reserved. */
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
@@ -13,7 +13,6 @@ class TString;
 class TComplex;
 class TFile;
 class TList;
-class TClonesArray;
 class TProfile;
 class TH1D;
 class TH2D;
@@ -23,11 +22,15 @@ class AliPIDResponse;
 class AliPIDCombined;
 class AliVEvent;
 class AliAODEvent;
+class AliMCEvent;
+class AliVParticle;
 class AliVTrack;
 class AliAODTrack;
 class AliPicoTrack;
 class AliAODv0;
 class AliAODMCParticle;
+
+class AliUniFlowCorrTask;
 
 //_____________________________________________________________________________
 
@@ -41,32 +44,6 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
       enum    SparseCand {kInvMass = 0, kCent, kPt, kEta, kDim}; // reconstructed candidates dist. dimensions
       enum    QAindex { kBefore = 0, kAfter, kNumQA}; // index for filling QA status
-
-      class CorrTask
-      {
-        public:
-                      CorrTask(); // default ctor
-                      CorrTask( // actual ctor
-                          Bool_t doRFPs,
-                          Bool_t doPOIs,
-                          std::vector<Int_t> harms,
-                          std::vector<Double_t> gaps = std::vector<Double_t>());
-                      ~CorrTask() { fiHarm.clear(); fdGaps.clear(); }
-
-          Bool_t      HasGap() const { return (Bool_t) fiNumGaps; }; // check if Gap
-          void        Print() const; // print CorrTask properties
-
-          Bool_t                fbDoRefs; // which particles are procesed (RFPs / POIs / both )
-          Bool_t                fbDoPOIs; // which particles are procesed (RFPs / POIs / both )
-          Int_t                 fiNumHarm; // correlation order <M>
-          Int_t                 fiNumGaps; // number of subevents
-          std::vector<Int_t>    fiHarm; // harmonics n1,n2,...,nM
-          std::vector<Double_t> fdGaps; // gaps between subevents (standard GF notation)
-          TString               fsName; // automatically generated name: see Init() for format
-          TString               fsLabel; // automatically generated label see Init() for format
-        protected:
-        private:
-      };
 
                               AliAnalysisTaskUniFlow(); // constructor
                               AliAnalysisTaskUniFlow(const char *name, ColSystem colSys, Bool_t bUseWeights = kFALSE, Bool_t bIsMC = kFALSE); // named (primary) constructor
@@ -89,7 +66,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetProcessV0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; fProcessSpec[kLambda] = use; }
       void                    SetProcessPhi(Bool_t use = kTRUE) { fProcessSpec[kPhi] = use; }
       // flow related setters
-      void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new CorrTask(doRFPs, doPOIs, harms, gaps)); }
+      void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE);
+      // void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
       void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { AddCorr({n1,n2},{},refs,pois); }
       void                    AddTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { AddCorr({n1,n2},{gap},refs,pois); }
       void                    AddThree(Int_t n1, Int_t n2, Int_t n3, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { AddCorr({n1,n2,n3},{},refs,pois); }
@@ -109,8 +87,10 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetUseWeigthsRunByRun(Bool_t bRunByRun = kTRUE) { fFlowRunByRunWeights = bRunByRun; }
       void                    SetWeightsTag(TString tag) { fFlowWeightsTag = tag; }
       void                    SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
+      void                    SetApplyWeightsForReco(Bool_t apply = kTRUE) { fFlowWeightsApplyForReco = apply; }
       // events setters
       void                    SetCentrality(CentEst est, Int_t min = 0, Int_t max = 0, Int_t bins = 0) { fCentEstimator = est; fCentMin = min; fCentMax = max; fCentBinNum = bins; }
+      void                    SetAddCentCut(CentEst est, Int_t min, Int_t max) { fCentEstimatorAdd = est; fCentMinAdd = min; fCentMaxAdd = max; }
       void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
       void					  SetPVtxZMax(Double_t z) { fPVtxCutZ = z; }
       void                    SetRejectAddPileUp(Bool_t use = kTRUE) { fEventRejectAddPileUp = use; }
@@ -179,8 +159,12 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       static const Int_t      fFlowNumWeightPowersMax = 5; // maximum weight power length of flow vector array
 
       const char*             GetSpeciesName(PartSpecies species) const;
+      const char*             GetSpeciesName(Int_t species) const { return GetSpeciesName(PartSpecies(species)); }
       const char*             GetSpeciesLabel(PartSpecies species) const;
+      const char*             GetSpeciesLabel(Int_t species) const { return GetSpeciesLabel(PartSpecies(species)); }
       const char*             GetEtaGapName(Double_t dEtaGap) const { return Form("%02.2g",10.0*dEtaGap); }
+
+      Bool_t                  sortPt(const AliVTrack* t1, const AliVTrack* t2) { return (t1->Pt() < t2->Pt()); } // function for std::sort
 
       Bool_t                  InitializeTask(); // called once on beginning of task (within CreateUserObjects method)
       Bool_t                  LoadWeights(); // load weights histograms
@@ -194,24 +178,29 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Bool_t                  IsEventSelected(); // event selection for Run 2 using AliEventCuts
       Bool_t                  IsEventRejectedAddPileUp() const; // additional pile-up rejection for Run2 Pb-Pb
       Int_t                   GetSamplingIndex() const; // returns sampling index based on sampling selection (number of samples)
-      Int_t                   GetCentralityIndex() const; // returns centrality index based centrality estimator or number of selected tracks
+      Int_t                   GetCentralityIndex(CentEst est) const; // returns centrality index based centrality estimator or number of selected tracks
       const char*             GetCentEstimatorLabel(CentEst est) const; // returns mult/cent estimator string with label or 'n/a' if not available
 
-      void                    CalculateCorrelations(const CorrTask* task, PartSpecies species, Double_t dPt = -1.0, Double_t dMass = -1.0) const; // wrapper for correlations methods
-      Bool_t                  ProcessCorrTask(const CorrTask* task); // procesisng of CorrTask
-      Bool_t                  CalculateFlow(); // main (envelope) method for flow calculations in selected events
-
+      void                    ProcessMC() const; // processing MC generated particles
       void                    FilterCharged() const; // charged tracks filtering
       void                    FilterPID() const; // pi,K,p filtering
       void                    FilterV0s() const; // K0s, Lambda, ALambda filtering
       void                    FilterPhi() const; // reconstruction and filtering of Phi meson candidates
 
+      void                    CalculateCorrelations(const AliUniFlowCorrTask* task, PartSpecies species, Double_t dPt = -1.0, Double_t dMass = -1.0) const; // wrapper for correlations methods
+      Bool_t                  ProcessCorrTask(const AliUniFlowCorrTask* task); // procesisng of AliUniFlowCorrTask
+      Bool_t                  CalculateFlow(); // main (envelope) method for flow calculations in selected events
+
       AliAODMCParticle*       GetMCParticle(Int_t label) const; // find corresponding MC particle from fArrayMC depending of AOD track label
+      Bool_t                  CheckMCPDG(const AliVParticle* track, const Int_t iPDGCode) const; // check if track has an associated MC particle which is the same species
+      Bool_t                  CheckMCPDG(const AliVParticle* track, const PartSpecies species) const; // check if track has an associated MC particle which is the same species
+      Bool_t                  CheckMCTruthReco(const PartSpecies species, const AliVParticle* track, const AliVParticle* daughterPos = nullptr, const AliVParticle* daughterNeg = nullptr) const; // check if Reco track has an associated MC particle which is the same species
       Double_t                GetRapidity(Double_t mass, Double_t Pt, Double_t Eta) const; // calculate particle / track rapidity
       Bool_t                  HasMass(PartSpecies spec) const { return (spec == kK0s || spec == kLambda || spec == kPhi); }
       Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?
       Bool_t                  HasTrackPIDTOF(const AliAODTrack* track) const; // is TOF PID OK for this track ?
-      Bool_t                  IsWithinRefs(const AliAODTrack* track) const; // check if track fulfill requirements for Refs (used for refs selection & autocorelations)
+      Bool_t                  IsWithinRefs(const AliVParticle* track) const; // check if track is in (pt,eta) acceptance for Refs (used for refs selection & autocorelations)
+      Bool_t                  IsWithinPOIs(const AliVParticle* track) const; // check if track is in (pt,eta) acceptance for POIs
       Bool_t                  IsChargedSelected(const AliAODTrack* track) const; // charged track selection
       PartSpecies             IsPIDSelected(const AliAODTrack* track) const; // PID tracks selections
       Bool_t                  IsV0Selected(const AliAODv0* v0) const; // general (common) V0 selection
@@ -228,7 +217,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
 
       // Flow related methods
       void                    FillRefsVectors(Double_t dGap); // fill flow vector Q with RFPs for reference flow
-      Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
+      Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Int_t& indStart, Int_t& tracksInBin, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
 
@@ -261,19 +250,12 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TComplex                FourDiffGapNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (with eta gap)
 
       // array lenghts & constants
-      const Double_t          fPDGMassPion; // [DPGMass] DPG mass of charged pion
-      const Double_t          fPDGMassKaon; // [DPGMass] DPG mass of charged kaon
-      const Double_t          fPDGMassProton; // [DPGMass] DPG mass of proton
-      const Double_t          fPDGMassPhi; // [DPGMass] DPG mass of phi (333) meson
-      const Double_t          fPDGMassK0s; // [DPGMass] DPG mass of K0s
-      const Double_t          fPDGMassLambda; // [DPGMass] DPG mass of (Anti)Lambda
-
       AliAODEvent*            fEventAOD; //! AOD event countainer
+      AliMCEvent*             fEventMC; //! MC event countainer
       Double_t                fPVz; // PV z-coordinate used for weights
       AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
       AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
       TList*                  fFlowWeightsList; //! list of weights from input file
-      TClonesArray*           fArrayMC; //! input list of MC particles
       Bool_t                  fMC; // is running on mc?
       Bool_t                  fInit; // initialization check
       Int_t                   fIndexSampling; // sampling index (randomly generated)
@@ -290,7 +272,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TComplex                fFlowVecSpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
       TComplex                fFlowVecSneg[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
 
-      std::vector<CorrTask*>  fVecCorrTask; //
+      std::vector<AliUniFlowCorrTask*>  fVecCorrTask; //
       std::vector<AliVTrack*>* fVector[kUnknown]; //! container for selected Refs charged particles
 
       //cuts & selection: analysis
@@ -313,12 +295,13 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Int_t                   fPhiNumBinsMass; // number of InvMass bins for phi distribution
       Int_t                   fV0sNumBinsMass; // number of InvMass bins for V0s distribution
       Int_t                   fNumSamples; // [1] overall number of samples (from random sampling) used
-      TString                 fFlowWeightsTag; // [""] tag with TList name for weights (used for systematics)
       Bool_t                  fFlowFillWeights; //[kFALSE] flag for filling weights
       Bool_t                  fFlowFillAfterWeights; //[kTRUE] flag for filling weights after NUA (only if fUseWeights is on)
       Bool_t                  fFlowUseWeights; //[kFALSE] flag for using the previously filled weights
       Bool_t                  fFlowUse3Dweights; // [kFALSE] flag for using 3D GF weights, if kFALSE, 2D weights are expected
       Bool_t                  fFlowRunByRunWeights; // [kTRUE] flag for using rub-by-run weigths from weigths file; if false, only one set of histrograms is provided
+      Bool_t                  fFlowWeightsApplyForReco; //[kFALSE] flag for applying weights for Reco particles
+      TString                 fFlowWeightsTag; // [""] tag with TList name for weights (used for systematics)
 
       //cuts & selection: events
       ColSystem               fColSystem; // collisional system
@@ -327,6 +310,9 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Int_t                   fCentMin; // [0] min range for centrality/multiplicity histos
       Int_t                   fCentMax; // [0] max range for centrality/multiplicity histos
       Int_t                   fCentBinNum; // [0] number of centrality bins
+      CentEst                 fCentEstimatorAdd; // [kRFP] multiplicity/centrality estimator as in AliMultSelection
+      Int_t                   fCentMinAdd; // [0] min range for centrality/multiplicity histos
+      Int_t                   fCentMaxAdd; // [0] max range for centrality/multiplicity histos
       Double_t                fPVtxCutZ; // (cm) PV z cut
       Bool_t                  fEventRejectAddPileUp; // additional pile-up rejection for Pb-Pb collisions in Run2 (17n, 15o)
       //cuts & selection: tracks
@@ -390,7 +376,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TList*                  fQAPhi; //! Phi candidates list
       TList*                  fFlowWeights; //! list for flow weights
       TList*                  fListFlow[kUnknown]; //! flow lists
-
+      TList*                  fListMC; //! list for MC
 
       // histograms & profiles
 
@@ -443,19 +429,10 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*                   fh2PIDTOFnSigmaKaon[3]; //! TOF nSigma vs pT for selected pions (kaon hypothesis)
       TH2D*                   fh2PIDTPCnSigmaProton[3]; //! TPC nSigma vs pT for selected pions (proton hypothesis)
       TH2D*                   fh2PIDTOFnSigmaProton[3]; //! TOF nSigma vs pT for selected pions (proton hypothesis)
-
-      TH1D*                   fhMCRecoSelectedPionPt; //! pt dist of selected (MC reco) pions
-      TH1D*                   fhMCRecoSelectedTruePionPt; //! pt dist of selected (MC reco) true (tagged in MC gen) pions
-      TH1D*                   fhMCRecoAllPionPt; //! pt dist of all (MC reco) pions (i.e. selected charged tracks that are tagged in MC)
-      TH1D*                   fhMCGenAllPionPt; //! pt dist of all (MC) generated pions
-      TH1D*                   fhMCRecoSelectedKaonPt; //! pt dist of selected (MC reco) Kaons
-      TH1D*                   fhMCRecoSelectedTrueKaonPt; //! pt dist of selected (MC reco) true (tagged in MC gen) Kaons
-      TH1D*                   fhMCRecoAllKaonPt; //! pt dist of all (MC reco) Kaons (i.e. selected charged tracks that are tagged in MC)
-      TH1D*                   fhMCGenAllKaonPt; //! pt dist of all (MC) generated Kaons
-      TH1D*                   fhMCRecoSelectedProtonPt; //! pt dist of selected (MC reco) Protons
-      TH1D*                   fhMCRecoSelectedTrueProtonPt; //! pt dist of selected (MC reco) true (tagged in MC gen) Protons
-      TH1D*                   fhMCRecoAllProtonPt; //! pt dist of all (MC reco) Protons (i.e. selected charged tracks that are tagged in MC)
-      TH1D*                   fhMCGenAllProtonPt; //! pt dist of all (MC) generated Protons
+      // MC
+      TH2D*                   fh2MCPtEtaGen[kUnknown]; //! (pt,eta) dist for generated particles
+      TH2D*                   fh2MCPtEtaReco[kUnknown]; //! (pt,eta) dist for reconstructed particles
+      TH2D*                   fh2MCPtEtaRecoTrue[kUnknown]; //! (pt,eta) dist for reconstructed particles with matching generating particle (true)
       // Phi
       TH1D*                   fhPhiCounter; //! counter following phi candidate selection
       TH1D*                   fhPhiMult; //! multiplicity distribution of selected phi candidates
@@ -483,10 +460,10 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH1D*                   fhQAEventsNumSPDContrPV[QAindex::kNumQA]; //!
       TH1D*                   fhQAEventsDistPVSPD[QAindex::kNumQA]; //!
       TH1D*                   fhQAEventsSPDresol[QAindex::kNumQA]; //!
-      TH2D*                   fhQAEventsfMult32vsCentr;
-      TH2D*                   fhQAEventsMult128vsCentr;
-      TH2D*                   fhQAEventsfMultTPCvsTOF;
-      TH2D*                   fhQAEventsfMultTPCvsESD;
+      TH2D*                   fhQAEventsfMult32vsCentr; //!
+      TH2D*                   fhQAEventsMult128vsCentr; //!
+      TH2D*                   fhQAEventsfMultTPCvsTOF; //!
+      TH2D*                   fhQAEventsfMultTPCvsESD; //!
       // QA: charged tracks
       TH1D*                   fhQAChargedMult[QAindex::kNumQA];       //! number of AOD charged tracks distribution
       TH1D*                   fhQAChargedPt[QAindex::kNumQA];         //! pT dist of charged tracks
@@ -548,7 +525,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 7);
+      ClassDef(AliAnalysisTaskUniFlow, 9);
 };
 
 #endif

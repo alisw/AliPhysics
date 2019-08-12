@@ -8,6 +8,7 @@
 #pragma link C++ class AliXiStar+;
 #pragma link C++ class AliXiStarpp13TeV+;
 #pragma link C++ class AliXiStarPbPb+;
+#pragma link C++ class AliXiStarPbPb_RUN2+;
 #pragma link C++ class AliXiStarEventCollection+;
 #pragma link C++ class AliXiStarpp13TeVEventCollection+;
 #pragma link C++ class AliXiStarPbPbEventCollection+;
@@ -20,5 +21,4 @@
 #pragma link C++ class AliAnalysisTaskLambdaStar+;
 #pragma link C++ class AliAnalysisTaskSEF01710fromAODtracks+;
 #pragma link C++ class AliRsnf0f2Task+;
-#pragma link C++ class AliAnalysisTaskInclusivef0f2+;
 #endif

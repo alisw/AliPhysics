@@ -64,29 +64,29 @@ void AliAnalysisTaskMKTest::AddOutput()
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskMKTest::AnaEvent()
+Bool_t AliAnalysisTaskMKTest::IsEventSelected()
 {
-   InitEvent();
-   InitMCEvent();
-   LoopOverAllTracks();
-   
+    return fIsAcceptedAliEventCuts;
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskMKTest::AnaTrack()
+void AliAnalysisTaskMKTest::AnaEvent()
+{   
+   LoopOverAllTracks();
+}
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskMKTest::AnaTrack(Int_t flag)
 {
-    if (!fESDtrackCuts[0]->AcceptTrack(fESDTrack)) return;
-    InitTrack();
-    InitMCTrack();
-    InitTrackIP();
-    InitTrackTPC();
+    if (!fAcceptTrack[0]) return;
     FillHist(fHistPt, fPt, fPtInner, fPtInnerTPC, fMCPt);
 }
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskMKTest* AliAnalysisTaskMKTest::AddTaskMKTest(const char* name) 
+AliAnalysisTaskMKTest* AliAnalysisTaskMKTest::AddTaskMKTest(const char* name, const char* outfile) 
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -103,12 +103,12 @@ AliAnalysisTaskMKTest* AliAnalysisTaskMKTest::AddTaskMKTest(const char* name)
     
     // Setup output file
     //===========================================================================
-    TString fileName = AliAnalysisManager::GetCommonFileName();
-    //fileName += ":TaskMKTest";      // create a subfolder in the file
-    fileName = TString("out_");
-    fileName += name;
-    fileName += ".root";
-    //if (outfile) fileName = TString(outfile);
+    TString fileName = AliAnalysisManager::GetCommonFileName();        
+    fileName += ":";
+    fileName += name;  // create a subfolder in the file
+    if (outfile) { // if a finename is given, use that one
+        fileName = TString(outfile);        
+    }
     
 
     // create the task
@@ -119,8 +119,8 @@ AliAnalysisTaskMKTest* AliAnalysisTaskMKTest::AddTaskMKTest(const char* name)
     // configure the task
     //===========================================================================
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);    
-    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("default"));
-    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("default"));
+    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
     
     // attach the task to the manager and configure in and ouput
     //===========================================================================

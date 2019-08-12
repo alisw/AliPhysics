@@ -1,7 +1,7 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition=0);
 void SetupCuts(AliDielectron *die, Int_t cutDefinition, TString userPathWeightFile, Double_t userTMVACutValue);
 void SetTPCCorr(AliDielectron *die);
-const AliDielectronEventCuts *GetEventCuts();
+//const AliDielectronEventCuts *GetEventCuts();
 void SetupMCsignals(AliDielectron* die);
 AliDielectronCutGroup* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Int_t MVACut=0., Bool_t useAODFilterCuts, TString TMVAweight);
         
@@ -9,6 +9,7 @@ Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
 Bool_t kRot = kFALSE;
 Bool_t kMix = kTRUE;
 Bool_t randomizeDau = kTRUE;
+Bool_t bUsePileUpCutsTPCClusters=kTRUE;
 
 // available cut defintions
 const Int_t nMax = 3; 
@@ -21,16 +22,15 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
   Int_t PIDCut=0;
   Int_t MVACut=0;
   
-  for(int glcut = 0; glcut <=20; ++glcut){
-    ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
-    if(glcut>0 && glcut<11) continue;
+//  for(int glcut = 0; glcut <=30; ++glcut){
+  for(int glcut = -999; glcut <=-999; ++glcut){
+
     PIDCut=glcut;
     trackCut=glcut;
 
-    for(MVACut = 0; MVACut<10;MVACut++){
+    MVACut = 0;
       
       TString name=TString::Format("DieleTr%d_PID%d_MVA%d",trackCut,PIDCut, MVACut);
-      //    cout<<"Diele name: "<<name.Data()<<endl;    
       AliDielectron * diel_low = new AliDielectron(Form("%s",name.Data()), Form("Name: %s",name.Data()));
       if(!diel_low){
         Printf("=======================================");
@@ -49,20 +49,32 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
         diel_low->SetMixingHandler(mix);
       }
 
-      if(usePIDCorr){
-       SetITSCorr(diel_low,hasMC);
-       SetTPCCorr(diel_low,hasMC);
-//       SetTOFCorr(diel_low,hasMC);
-      }
-
       diel_low->SetUseKF(kFALSE);   //keep this one, otherwise masses are slightly wrong and R factors very wrong!
-      InitHistograms(diel_low,0);
+      InitHistograms(diel_low,0,hasMC);
 
+      if(bUsePileUpCutsTPCClusters){
+        Double_t pileUpCutsTPCClustersMin = 2.0e+06;
+        Double_t pileUpCutsTPCClustersMax = 3.1e+06;        
+        
+        printf("Adding TPC-Cluster based Pile-up rejection! \n");
+        TF1* fFitMin = new TF1("fFit","pol6",0,90);
+        fFitMin->SetParameters(pileUpCutsTPCClustersMin,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+        TF1* fFitMax = new TF1("fFit","pol6",0,90);
+        fFitMax->SetParameters(pileUpCutsTPCClustersMax,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+               
+        AliDielectronEventCuts *pileUpCuts = new AliDielectronEventCuts("pileUpCuts","pileUpCuts");
+        pileUpCuts->SetMinCorrCutFunction(fFitMin, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+        pileUpCuts->SetMaxCorrCutFunction(fFitMax, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+
+        pileUpCuts->Print();
+        diel_low->GetEventFilter().AddCuts(pileUpCuts);
+    }      
+      
       std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
       diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
+      
       task->AddDielectron(diel_low);
       printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
-      }
 
   }
  return;
@@ -153,7 +165,7 @@ void SetTOFCorr(AliDielectron *die, Bool_t hasMC){
 }
 
 //______________________________________________________________________________________
-void InitHistograms(AliDielectron *die, Int_t cutDefinition)
+void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 {
   
   //Setup histogram classes
@@ -239,6 +251,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 //  histos->UserHistogram("Event","ZVertex","ZVertex;ZVertex/cm",120,-12.,12.,AliDielectronVarManager::kZvPrim);
   histos->UserHistogram("Event","Centrality","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentralityNew);
 //  histos->UserHistogram("Event","nEvTPC_eventplaneents",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnTPCrpH2);
+  histos->UserHistogram("Event","ZdcEpC",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi(),TMath::Pi()),AliDielectronVarManager::kQnZDCCrpH1);
+  histos->UserHistogram("Event","ZdcEpA",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi(),TMath::Pi()),AliDielectronVarManager::kQnZDCArpH1);
+  histos->UserHistogram("Event","ZdcEpA:ZdcEpC",";;ev plane;", 100,-TMath::Pi(),TMath::Pi(),100,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kQnZDCArpH1,AliDielectronVarManager::kQnZDCCrpH1);
 
 
   //add histograms to track class
@@ -261,13 +276,20 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 //  histos->UserHistogram("Track","eta","" , 100,-0.8,0.8, AliDielectronVarManager::kEta);
 //  histos->UserHistogram("Track","phi","" , 100,0,7, AliDielectronVarManager::kPhi);
   histos->UserHistogram("Track","pt", "", 100,0,10,AliDielectronVarManager::kPt);  
+  if(isMC)  histos->UserHistogram("Track","PdgCodeMother", "", 1,0,0,AliDielectronVarManager::kPdgCodeMother);  
   histos->UserHistogram("Track","nSigmaITSEl:pt", "", 100,0,10,100,-5,5,AliDielectronVarManager::kPt,AliDielectronVarManager::kITSnSigmaEle);  
   histos->UserHistogram("Track","nSigmaTPCEl:pt", "", 100,0,10,100,-5,5,AliDielectronVarManager::kPt,AliDielectronVarManager::kTPCnSigmaEle);  
   histos->UserHistogram("Track","nSigmaTOFEl:pt", "", 100,0,10,100,-5,5,AliDielectronVarManager::kPt,AliDielectronVarManager::kTOFnSigmaEle);  
   histos->UserHistogram("Track","nSigmaITSEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);  
   histos->UserHistogram("Track","nSigmaTPCEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);  
   histos->UserHistogram("Track","nSigmaTOFEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle);  
- 
+//  histos->UserHistogram("Track","ZdcEpC",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnZDCCrpH1);
+//  histos->UserHistogram("Track","ZdcEpA",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnZDCArpH1);
+//  histos->UserHistogram("Track","ZdcEpA:ZdcEpC",";;ev plane;", 100,-TMath::Pi()/2.,TMath::Pi()/2.,100,-TMath::Pi()/2.,TMath::Pi()/2.,AliDielectronVarManager::kQnZDCArpH1,AliDielectronVarManager::kQnZDCCrpH1);
+//  histos->UserHistogram("Track","ZdcEpCRem",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  -TMath::Pi(),TMath::Pi()),AliDielectronVarManager::kZDCCrpH1);
+//  histos->UserHistogram("Track","ZdcEpARem",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  -TMath::Pi(),TMath::Pi()),AliDielectronVarManager::kZDCArpH1);
+//  histos->UserHistogram("Track","ZdcEpARem:ZdcEpCRem",";;ev plane;", 100,-TMath::Pi(),TMath::Pi(),100,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kZDCArpH1,AliDielectronVarManager::kZDCCrpH1);
+  
 //lmee mass spectrum
 //  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02 ,0.04 ,0.08 ,0.14 ,0.22 ,0.38 ,0.54 ,1.1 ,1.7 ,2.5 ,2.9 ,3.0 ,3.1 ,3.3 ,3.5 ,4.0 ,5.0"); //Carsten's binning
 //  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.4,0.6,1,2.5,8");
@@ -277,7 +299,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   
 ////low ptee
   TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.0,0.1,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0"); // for low ptee
-  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0, 0.025, 0.05, 0.075, 0.1,0.125, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 5.0, 8.0");
+  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0, 0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0");
   TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);
   histos->UserHistogram("Pair","InvMass_pPt_cent","Inv.Mass:PairPt:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (V0M)",
                         mbins, ptbins, centbins,
@@ -290,14 +312,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 //                        mbins, ptsqbins, centbins,
 //                        AliDielectronVarManager::kM, AliDielectronVarManager::kPtSq, AliDielectronVarManager::kCentrality);
 //
-//////angular deflection  
-//  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0"); // for low ptee
-//  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 8");
-//  TVectorD* magbins= AliDielectronHelper::MakeLinBinning(20,0,100);
-//  histos->UserHistogram("Pair","InvMass_pPt_mag","Inv.Mass:PairPtSq:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); PairPlaneMag",
-//                        mbins, ptbins, magbins,
-//                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPairPlaneMagInPro);
-  
+
 //
 //  histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","InvMass:PairPt:PhivPair;Inv. Mass [GeV];Pair Pt [GeV];PhiV",
 //                        600,0.,6., 600,0.,6., 20,0.,TMath::Pi(),
@@ -342,207 +357,221 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 }
 
-const AliDielectronEventCuts *GetEventCuts(){
-
-  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex SPD && |vtxZ|<10 && ncontrib>0");
-  eventCuts->SetRequireVertex();
-  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
-  eventCuts->SetVertexZ(-10.,10.);
-  eventCuts->SetMinVtxContributors(1); 
-
-  //no centrality cuts for the moment
-  //Bool_t isRun2 = kTRUE;
-  //eventCuts->SetCentralityRange(0,80,isRun2);
-
-  return eventCuts;
-}
+//const AliDielectronEventCuts *GetEventCuts(){
+//
+//  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex SPD && |vtxZ|<10 && ncontrib>0");
+//  eventCuts->SetRequireVertex();
+//  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
+//  eventCuts->SetVertexZ(-10.,10.);
+//  eventCuts->SetMinVtxContributors(1); 
+//
+//  //no centrality cuts for the moment
+//  //Bool_t isRun2 = kTRUE;
+//  //eventCuts->SetCentralityRange(0,80,isRun2);
+//
+//  return eventCuts;
+//}
 
 
 void SetupMCsignals(AliDielectron* die){
 
   Printf("Setting up MC signals...");
 
-  // ##################### "real" pairs from signals (pi0,eta,eta',rho, omega, phi) ##############################
-   AliDielectronSignalMC* pi0Sig = new AliDielectronSignalMC("pi0", "pi0Signal"); ///pi0 dalitz pairs 
-  pi0Sig->SetLegPDGs(11,-11);
-  pi0Sig->SetMotherPDGs(111,111);
-  pi0Sig->SetMothersRelation(AliDielectronSignalMC::kSame);
-  pi0Sig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  pi0Sig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
-  pi0Sig->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  pi0Sig->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  pi0Sig->SetFillPureMCStep(kTRUE);
-  die->AddSignalMC(pi0Sig);
-
-  AliDielectronSignalMC* pi0All = new AliDielectronSignalMC("pi0", "pi0All"); ///pi0 dalitz pairs (also from secondary)
-  pi0All->SetLegPDGs(11,-11);
-  pi0All->SetMotherPDGs(111,111);
-  pi0All->SetMothersRelation(AliDielectronSignalMC::kSame);
-  pi0All->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  pi0All->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  pi0All->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  pi0All->SetFillPureMCStep(kTRUE);
-  die->AddSignalMC(pi0All);
-
-
-  AliDielectronSignalMC* etaSig = new AliDielectronSignalMC("Eta", "etaSignal"); ///eta dalitz pairs 
-  etaSig->SetLegPDGs(11,-11);
-  etaSig->SetMotherPDGs(221,221);
-  etaSig->SetMothersRelation(AliDielectronSignalMC::kSame);
-  etaSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  etaSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
-  etaSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  etaSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  etaSig->SetFillPureMCStep(kTRUE);
-  die->AddSignalMC(etaSig);
-
-
-  AliDielectronSignalMC* etaprimeSig = new AliDielectronSignalMC("Etaprime", "etaprimeSignal"); ///etaprime pairs 
-  etaprimeSig->SetLegPDGs(11,-11);
-  etaprimeSig->SetMotherPDGs(331,331);
-  etaprimeSig->SetMothersRelation(AliDielectronSignalMC::kSame);
-  etaprimeSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  etaprimeSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
-  etaprimeSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  etaprimeSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  etaprimeSig->SetFillPureMCStep(kTRUE);
-  die->AddSignalMC(etaprimeSig);
-
-
-  AliDielectronSignalMC* rhoSig = new AliDielectronSignalMC("Rho", "rhoSignal"); ///rho pairs 
-  rhoSig->SetLegPDGs(11,-11);
-  rhoSig->SetMotherPDGs(113,113);
-  rhoSig->SetMothersRelation(AliDielectronSignalMC::kSame);
-  rhoSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  rhoSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
-  rhoSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  rhoSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  rhoSig->SetFillPureMCStep(kTRUE);
-  die->AddSignalMC(rhoSig);
-
-  AliDielectronSignalMC* omegaSig = new AliDielectronSignalMC("Omega", "omegaSignal"); ///omega pairs 
-  omegaSig->SetLegPDGs(11,-11);
-  omegaSig->SetMotherPDGs(223,223);
-  omegaSig->SetMothersRelation(AliDielectronSignalMC::kSame);
-  omegaSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  omegaSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
-  omegaSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  omegaSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  omegaSig->SetFillPureMCStep(kTRUE);
-  die->AddSignalMC(omegaSig);
+//  // ##################### "real" pairs from signals (pi0,eta,eta',rho, omega, phi) ##############################
+//   AliDielectronSignalMC* pi0Sig = new AliDielectronSignalMC("pi0", "pi0Signal"); ///pi0 dalitz pairs 
+//  pi0Sig->SetLegPDGs(11,-11);
+//  pi0Sig->SetMotherPDGs(111,111);
+//  pi0Sig->SetMothersRelation(AliDielectronSignalMC::kSame);
+//  pi0Sig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+//  pi0Sig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
+//  pi0Sig->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  pi0Sig->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  pi0Sig->SetFillPureMCStep(kTRUE);
+//  die->AddSignalMC(pi0Sig);
+//
+//  AliDielectronSignalMC* pi0All = new AliDielectronSignalMC("pi0", "pi0All"); ///pi0 dalitz pairs (also from secondary)
+//  pi0All->SetLegPDGs(11,-11);
+//  pi0All->SetMotherPDGs(111,111);
+//  pi0All->SetMothersRelation(AliDielectronSignalMC::kSame);
+//  pi0All->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+//  pi0All->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  pi0All->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  pi0All->SetFillPureMCStep(kTRUE);
+//  die->AddSignalMC(pi0All);
+//
+//
+//  AliDielectronSignalMC* etaSig = new AliDielectronSignalMC("Eta", "etaSignal"); ///eta dalitz pairs 
+//  etaSig->SetLegPDGs(11,-11);
+//  etaSig->SetMotherPDGs(221,221);
+//  etaSig->SetMothersRelation(AliDielectronSignalMC::kSame);
+//  etaSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+//  etaSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
+//  etaSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  etaSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  etaSig->SetFillPureMCStep(kTRUE);
+//  die->AddSignalMC(etaSig);
+//
+//
+//  AliDielectronSignalMC* etaprimeSig = new AliDielectronSignalMC("Etaprime", "etaprimeSignal"); ///etaprime pairs 
+//  etaprimeSig->SetLegPDGs(11,-11);
+//  etaprimeSig->SetMotherPDGs(331,331);
+//  etaprimeSig->SetMothersRelation(AliDielectronSignalMC::kSame);
+//  etaprimeSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+//  etaprimeSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
+//  etaprimeSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  etaprimeSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  etaprimeSig->SetFillPureMCStep(kTRUE);
+//  die->AddSignalMC(etaprimeSig);
+//
+//
+//  AliDielectronSignalMC* rhoSig = new AliDielectronSignalMC("Rho", "rhoSignal"); ///rho pairs 
+//  rhoSig->SetLegPDGs(11,-11);
+//  rhoSig->SetMotherPDGs(113,113);
+//  rhoSig->SetMothersRelation(AliDielectronSignalMC::kSame);
+//  rhoSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+//  rhoSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
+//  rhoSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  rhoSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  rhoSig->SetFillPureMCStep(kTRUE);
+//  die->AddSignalMC(rhoSig);
+//
+//  AliDielectronSignalMC* omegaSig = new AliDielectronSignalMC("Omega", "omegaSignal"); ///omega pairs 
+//  omegaSig->SetLegPDGs(11,-11);
+//  omegaSig->SetMotherPDGs(223,223);
+//  omegaSig->SetMothersRelation(AliDielectronSignalMC::kSame);
+//  omegaSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+//  omegaSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
+//  omegaSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  omegaSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  omegaSig->SetFillPureMCStep(kTRUE);
+//  die->AddSignalMC(omegaSig);
+//  
+//  AliDielectronSignalMC* phiSig = new AliDielectronSignalMC("Phi", "phiSignal"); ///phi pairs 
+//  phiSig->SetLegPDGs(11,-11);
+//  phiSig->SetMotherPDGs(333,333);
+//  phiSig->SetMothersRelation(AliDielectronSignalMC::kSame);
+//  phiSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+//  phiSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
+//  phiSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  phiSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  phiSig->SetFillPureMCStep(kTRUE);
+//  die->AddSignalMC(phiSig);
+//  
+//  // ##################### "real" pairs from photon conversions in the detector material ##############################
+//  AliDielectronSignalMC* signalFromResonance_ULS_gammaConv = new AliDielectronSignalMC("signalFromResonance_ULS_gammaConv", "signalFromResonance_ULS_gammaConv");
+//  signalFromResonance_ULS_gammaConv->SetLegPDGs(11,-11);
+//  signalFromResonance_ULS_gammaConv->SetMotherPDGs(22,22);
+//  signalFromResonance_ULS_gammaConv->SetMothersRelation(AliDielectronSignalMC::kSame);
+//  signalFromResonance_ULS_gammaConv->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary); // kSecondary means decays in the detector
+//  signalFromResonance_ULS_gammaConv->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  die->AddSignalMC(signalFromResonance_ULS_gammaConv);
+//
+//  // ##################### combinatorial pairs ##############################
+//  AliDielectronSignalMC* diEleCombinatiorial = new AliDielectronSignalMC("diEleCombinatiorial", "diEleCombinatiorial");
+//  diEleCombinatiorial->SetLegPDGs(11,-11);
+//  diEleCombinatiorial->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+//  diEleCombinatiorial->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  die->AddSignalMC(diEleCombinatiorial);
+//
+//  AliDielectronSignalMC* diEleCombinatiorialConversion = new AliDielectronSignalMC("diEleCombinatiorialConversion", "diEleCombinatiorialConversion");
+//  diEleCombinatiorialConversion->SetLegPDGs(11,-11);
+//  diEleCombinatiorialConversion->SetMotherPDGs(22,0);// 1 leg from photons + 1 leg from everything
+//  diEleCombinatiorialConversion->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+//  diEleCombinatiorialConversion->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  die->AddSignalMC(diEleCombinatiorialConversion);
+//
+//    // ##################### HF pairs ##############################
+//  AliDielectronSignalMC* diEleHF = new AliDielectronSignalMC("diEleHF", "diEleHF");
+//  diEleHF->SetLegPDGs(11,-11);
+//  diEleHF->SetMotherPDGs(401,401);
+//  diEleHF->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+//  diEleHF->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  die->AddSignalMC(diEleHF);
+//
+// 
+//  // #################### D-Mesons
+//  AliDielectronSignalMC* diEleOpenCharmCharged = new AliDielectronSignalMC("DmesonsCharged","di-electrons from open charm D+- mesons no B grandmother");  // dielectrons originating from open charm hadrons
+//  diEleOpenCharmCharged->SetLegPDGs(11,-11);
+//  diEleOpenCharmCharged->SetMotherPDGs(401,401);
+//  diEleOpenCharmCharged->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
+//  diEleOpenCharmCharged->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+//  // diEleOpenCharmCharged->SetFillPureMCStep(kTRUE);
+//  diEleOpenCharmCharged->SetCheckStackForPDG(kTRUE);
+//  diEleOpenCharmCharged->SetPDGforStack(503);
+//  diEleOpenCharmCharged->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  diEleOpenCharmCharged->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  die->AddSignalMC(diEleOpenCharmCharged);
+//
+//  AliDielectronSignalMC* diEleOpenCharmNeutral = new AliDielectronSignalMC("DmesonsNeutral","di-electrons from open charm D0 mesons no B grandmother");  // dielectrons originating from open charm hadrons
+//  diEleOpenCharmNeutral->SetLegPDGs(11,-11);
+//  diEleOpenCharmNeutral->SetMotherPDGs(405,405);
+//  diEleOpenCharmNeutral->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
+//  diEleOpenCharmNeutral->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+//  diEleOpenCharmNeutral->SetCheckStackForPDG(kTRUE);
+//  diEleOpenCharmNeutral->SetPDGforStack(503);
+//  diEleOpenCharmNeutral->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  diEleOpenCharmNeutral->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  die->AddSignalMC(diEleOpenCharmNeutral);
+//
+//  //B meson (3)
+//  AliDielectronSignalMC* diEleOneOpenB = new AliDielectronSignalMC("B2ee","di-electrons from one B meson");  // dielectrons originating from open charm hadrons
+//  diEleOneOpenB->SetLegPDGs(11,-11);
+//  diEleOneOpenB->SetMotherPDGs(401,501);
+//  diEleOneOpenB->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
+//  diEleOneOpenB->SetGrandMotherPDGs(501,0);
+//  diEleOneOpenB->SetCheckMotherGrandmotherRelation(kTRUE,kTRUE);
+//  diEleOneOpenB->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  diEleOneOpenB->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  diEleOneOpenB->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+//  die->AddSignalMC(diEleOneOpenB);
+//
+//  //B meson (1)(1)
+//  AliDielectronSignalMC* diEleOpenB = new AliDielectronSignalMC("BMesons","di-electrons from B mesons");  // dielectrons originating from open charm hadrons
+//  diEleOpenB->SetLegPDGs(11,-11);
+//  diEleOpenB->SetMotherPDGs(501,501);
+//  diEleOpenB->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
+//  diEleOpenB->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+//  diEleOpenB->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  diEleOpenB->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  die->AddSignalMC(diEleOpenB);
+//
+//  //B meson (2)(2)
+//  AliDielectronSignalMC* diEleOpenBtoD = new AliDielectronSignalMC("B2D2ee","di-electrons from B->D-> e");  // dielectrons originating from open charm hadrons
+//  diEleOpenBtoD->SetLegPDGs(11,-11);
+//  diEleOpenBtoD->SetMotherPDGs(401,401);
+//  diEleOpenBtoD->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
+//  diEleOpenBtoD->SetGrandMotherPDGs(501,501);
+//  diEleOpenBtoD->SetGrandMothersRelation(AliDielectronSignalMC::kDifferent);
+//  diEleOpenBtoD->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  diEleOpenBtoD->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  diEleOpenBtoD->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+//  die->AddSignalMC(diEleOpenBtoD);
+//
+//  //B meson (1)(2)
+//  AliDielectronSignalMC* diEleOpenBandBtoD = new AliDielectronSignalMC("B2eAndB2D2e","di-electrons from B->e and B->D->e");  // dielectrons originating from open charm hadrons
+//  diEleOpenBandBtoD->SetLegPDGs        (11,11);
+//  diEleOpenBandBtoD->SetMotherPDGs     (401,501);
+//  diEleOpenBandBtoD->SetGrandMotherPDGs(501,0);
+//  diEleOpenBandBtoD->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
+//  diEleOpenBandBtoD->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  diEleOpenBandBtoD->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  diEleOpenBandBtoD->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+//  //do i need this?
+//  diEleOpenBandBtoD->SetCheckMotherGrandmotherRelation(kTRUE,kFALSE);
+//  die->AddSignalMC(diEleOpenBandBtoD);
   
-  AliDielectronSignalMC* phiSig = new AliDielectronSignalMC("Phi", "phiSignal"); ///phi pairs 
-  phiSig->SetLegPDGs(11,-11);
-  phiSig->SetMotherPDGs(333,333);
-  phiSig->SetMothersRelation(AliDielectronSignalMC::kSame);
-  phiSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  phiSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
-  phiSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  phiSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  phiSig->SetFillPureMCStep(kTRUE);
-  die->AddSignalMC(phiSig);
   
-  // ##################### "real" pairs from photon conversions in the detector material ##############################
-  AliDielectronSignalMC* signalFromResonance_ULS_gammaConv = new AliDielectronSignalMC("signalFromResonance_ULS_gammaConv", "signalFromResonance_ULS_gammaConv");
-  signalFromResonance_ULS_gammaConv->SetLegPDGs(11,-11);
-  signalFromResonance_ULS_gammaConv->SetMotherPDGs(22,22);
-  signalFromResonance_ULS_gammaConv->SetMothersRelation(AliDielectronSignalMC::kSame);
-  signalFromResonance_ULS_gammaConv->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary); // kSecondary means decays in the detector
-  signalFromResonance_ULS_gammaConv->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  die->AddSignalMC(signalFromResonance_ULS_gammaConv);
-
-  // ##################### combinatorial pairs ##############################
-  AliDielectronSignalMC* diEleCombinatiorial = new AliDielectronSignalMC("diEleCombinatiorial", "diEleCombinatiorial");
-  diEleCombinatiorial->SetLegPDGs(11,-11);
-  diEleCombinatiorial->SetMothersRelation(AliDielectronSignalMC::kDifferent);
-  diEleCombinatiorial->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  die->AddSignalMC(diEleCombinatiorial);
-
-  AliDielectronSignalMC* diEleCombinatiorialConversion = new AliDielectronSignalMC("diEleCombinatiorialConversion", "diEleCombinatiorialConversion");
-  diEleCombinatiorialConversion->SetLegPDGs(11,-11);
-  diEleCombinatiorialConversion->SetMotherPDGs(22,0);// 1 leg from photons + 1 leg from everything
-  diEleCombinatiorialConversion->SetMothersRelation(AliDielectronSignalMC::kDifferent);
-  diEleCombinatiorialConversion->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  die->AddSignalMC(diEleCombinatiorialConversion);
-
-    // ##################### HF pairs ##############################
-  AliDielectronSignalMC* diEleHF = new AliDielectronSignalMC("diEleHF", "diEleHF");
-  diEleHF->SetLegPDGs(11,-11);
-  diEleHF->SetMotherPDGs(401,401);
-  diEleHF->SetMothersRelation(AliDielectronSignalMC::kDifferent);
-  diEleHF->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  die->AddSignalMC(diEleHF);
-
- 
-  // #################### D-Mesons
-  AliDielectronSignalMC* diEleOpenCharmCharged = new AliDielectronSignalMC("DmesonsCharged","di-electrons from open charm D+- mesons no B grandmother");  // dielectrons originating from open charm hadrons
-  diEleOpenCharmCharged->SetLegPDGs(11,-11);
-  diEleOpenCharmCharged->SetMotherPDGs(401,401);
-  diEleOpenCharmCharged->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
-  diEleOpenCharmCharged->SetMothersRelation(AliDielectronSignalMC::kDifferent);
-  // diEleOpenCharmCharged->SetFillPureMCStep(kTRUE);
-  diEleOpenCharmCharged->SetCheckStackForPDG(kTRUE);
-  diEleOpenCharmCharged->SetPDGforStack(503);
-  diEleOpenCharmCharged->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  diEleOpenCharmCharged->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  die->AddSignalMC(diEleOpenCharmCharged);
-
-  AliDielectronSignalMC* diEleOpenCharmNeutral = new AliDielectronSignalMC("DmesonsNeutral","di-electrons from open charm D0 mesons no B grandmother");  // dielectrons originating from open charm hadrons
-  diEleOpenCharmNeutral->SetLegPDGs(11,-11);
-  diEleOpenCharmNeutral->SetMotherPDGs(405,405);
-  diEleOpenCharmNeutral->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
-  diEleOpenCharmNeutral->SetMothersRelation(AliDielectronSignalMC::kDifferent);
-  diEleOpenCharmNeutral->SetCheckStackForPDG(kTRUE);
-  diEleOpenCharmNeutral->SetPDGforStack(503);
-  diEleOpenCharmNeutral->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  diEleOpenCharmNeutral->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  die->AddSignalMC(diEleOpenCharmNeutral);
-
-  //B meson (3)
-  AliDielectronSignalMC* diEleOneOpenB = new AliDielectronSignalMC("B2ee","di-electrons from one B meson");  // dielectrons originating from open charm hadrons
-  diEleOneOpenB->SetLegPDGs(11,-11);
-  diEleOneOpenB->SetMotherPDGs(401,501);
-  diEleOneOpenB->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
-  diEleOneOpenB->SetGrandMotherPDGs(501,0);
-  diEleOneOpenB->SetCheckMotherGrandmotherRelation(kTRUE,kTRUE);
-  diEleOneOpenB->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  diEleOneOpenB->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  diEleOneOpenB->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
-  die->AddSignalMC(diEleOneOpenB);
-
-  //B meson (1)(1)
-  AliDielectronSignalMC* diEleOpenB = new AliDielectronSignalMC("BMesons","di-electrons from B mesons");  // dielectrons originating from open charm hadrons
-  diEleOpenB->SetLegPDGs(11,-11);
-  diEleOpenB->SetMotherPDGs(501,501);
-  diEleOpenB->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
-  diEleOpenB->SetMothersRelation(AliDielectronSignalMC::kDifferent);
-  diEleOpenB->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  diEleOpenB->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  die->AddSignalMC(diEleOpenB);
-
-  //B meson (2)(2)
-  AliDielectronSignalMC* diEleOpenBtoD = new AliDielectronSignalMC("B2D2ee","di-electrons from B->D-> e");  // dielectrons originating from open charm hadrons
-  diEleOpenBtoD->SetLegPDGs(11,-11);
-  diEleOpenBtoD->SetMotherPDGs(401,401);
-  diEleOpenBtoD->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
-  diEleOpenBtoD->SetGrandMotherPDGs(501,501);
-  diEleOpenBtoD->SetGrandMothersRelation(AliDielectronSignalMC::kDifferent);
-  diEleOpenBtoD->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  diEleOpenBtoD->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  diEleOpenBtoD->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
-  die->AddSignalMC(diEleOpenBtoD);
-
-  //B meson (1)(2)
-  AliDielectronSignalMC* diEleOpenBandBtoD = new AliDielectronSignalMC("B2eAndB2D2e","di-electrons from B->e and B->D->e");  // dielectrons originating from open charm hadrons
-  diEleOpenBandBtoD->SetLegPDGs        (11,11);
-  diEleOpenBandBtoD->SetMotherPDGs     (401,501);
-  diEleOpenBandBtoD->SetGrandMotherPDGs(501,0);
-  diEleOpenBandBtoD->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
-  diEleOpenBandBtoD->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  diEleOpenBandBtoD->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  diEleOpenBandBtoD->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
-  //do i need this?
-  diEleOpenBandBtoD->SetCheckMotherGrandmotherRelation(kTRUE,kFALSE);
-  die->AddSignalMC(diEleOpenBandBtoD);
+  AliDielectronSignalMC* diElePhoto = new AliDielectronSignalMC("sameMotherEle","dielectrons from photo production");  
+  diElePhoto->SetLegPDGs(11,-11);
+//  diElePhoto->SetMotherPDGs(-9999,-9999);
+  diElePhoto->SetMothersRelation(AliDielectronSignalMC::kSame);  
+  diElePhoto->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
+//  diElePhoto->SetGrandMotherPDGs(501,501);
+//  diElePhoto->SetGrandMothersRelation(AliDielectronSignalMC::kDifferent);
+  diElePhoto->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  diElePhoto->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  diElePhoto->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+  die->AddSignalMC(diElePhoto); 
+  
 }
 

@@ -84,6 +84,7 @@ void GetCentrality(const Int_t centrality, Double_t& CentMin, Double_t& CentMax)
   else if(centrality == 5){CentMin = 60; CentMax = 80;}
   else if(centrality == 6){CentMin = 80; CentMax = 100;}
   else if(centrality == 7){CentMin = 0;  CentMax = 5;}
+  else if(centrality == 8){CentMin = -1; CentMax = -1;}
   else                      {std::cout << "WARNING::Centrality range not found....." std::endl;}
   return;
 }
@@ -169,210 +170,210 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kScheidPID"){ 
-    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kScheidPID));
+  else if(cutDefinition == "kScheidCuts"){
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kScheidCuts));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
   // ######## PID Cut variation settings #################
   // These variations use the kCutSet1 track cuts and only vary PID
-  else if(cutDefinition == "kPIDcut1"){ 
+  else if(cutDefinition == "kPIDcut1"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut1));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut2"){ 
+  else if(cutDefinition == "kPIDcut2"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut2));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut3"){ 
+  else if(cutDefinition == "kPIDcut3"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut3));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut4"){ 
+  else if(cutDefinition == "kPIDcut4"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut4));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut5"){ 
+  else if(cutDefinition == "kPIDcut5"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut5));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut6"){ 
+  else if(cutDefinition == "kPIDcut6"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut6));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut7"){ 
+  else if(cutDefinition == "kPIDcut7"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut7));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut8"){ 
+  else if(cutDefinition == "kPIDcut8"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut8));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut9"){ 
+  else if(cutDefinition == "kPIDcut9"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut9));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut10"){ 
+  else if(cutDefinition == "kPIDcut10"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut10));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut11"){ 
+  else if(cutDefinition == "kPIDcut11"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut11));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut12"){ 
+  else if(cutDefinition == "kPIDcut12"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut12));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut13"){ 
+  else if(cutDefinition == "kPIDcut13"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut13));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut14"){ 
+  else if(cutDefinition == "kPIDcut14"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut14));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut15"){ 
+  else if(cutDefinition == "kPIDcut15"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut15));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut16"){ 
+  else if(cutDefinition == "kPIDcut16"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut16));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut17"){ 
+  else if(cutDefinition == "kPIDcut17"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut17));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut18"){ 
+  else if(cutDefinition == "kPIDcut18"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut18));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut19"){ 
+  else if(cutDefinition == "kPIDcut19"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut19));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kPIDcut20"){ 
+  else if(cutDefinition == "kPIDcut20"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut20));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
   // ######## Track+ePID Cut variation settings #################
-  else if(cutDefinition == "kCutVar1"){ 
+  else if(cutDefinition == "kCutVar1"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar1, LMEECutLib::kCutVar1));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar2"){ 
+  else if(cutDefinition == "kCutVar2"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar2, LMEECutLib::kCutVar2));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar3"){ 
+  else if(cutDefinition == "kCutVar3"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar3, LMEECutLib::kCutVar3));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar4"){ 
+  else if(cutDefinition == "kCutVar4"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar4, LMEECutLib::kCutVar4));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar5"){ 
+  else if(cutDefinition == "kCutVar5"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar5, LMEECutLib::kCutVar5));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar6"){ 
+  else if(cutDefinition == "kCutVar6"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar6, LMEECutLib::kCutVar6));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar7"){ 
+  else if(cutDefinition == "kCutVar7"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar7, LMEECutLib::kCutVar7));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar8"){ 
+  else if(cutDefinition == "kCutVar8"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar8, LMEECutLib::kCutVar8));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar9"){ 
+  else if(cutDefinition == "kCutVar9"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar9, LMEECutLib::kCutVar9));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar10"){ 
+  else if(cutDefinition == "kCutVar10"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar10, LMEECutLib::kCutVar10));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar11"){ 
+  else if(cutDefinition == "kCutVar11"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar11, LMEECutLib::kCutVar11));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar12"){ 
+  else if(cutDefinition == "kCutVar12"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar12, LMEECutLib::kCutVar12));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar13"){ 
+  else if(cutDefinition == "kCutVar13"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar13, LMEECutLib::kCutVar13));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar14"){ 
+  else if(cutDefinition == "kCutVar14"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar14, LMEECutLib::kCutVar14));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar15"){ 
+  else if(cutDefinition == "kCutVar15"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar15, LMEECutLib::kCutVar15));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar16"){ 
+  else if(cutDefinition == "kCutVar16"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar16, LMEECutLib::kCutVar16));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar17"){ 
+  else if(cutDefinition == "kCutVar17"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar17, LMEECutLib::kCutVar17));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar18"){ 
+  else if(cutDefinition == "kCutVar18"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar18, LMEECutLib::kCutVar18));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar19"){ 
+  else if(cutDefinition == "kCutVar19"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar19, LMEECutLib::kCutVar19));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutVar20"){ 
+  else if(cutDefinition == "kCutVar20"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar20, LMEECutLib::kCutVar20));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
@@ -395,7 +396,7 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
 
   // All final state electrons (excluding conversion electrons)
   AliDielectronSignalMC eleFinalState("eleFinalState","eleFinalState");
-  eleFinalState.SetLegPDGs(11,1); 
+  eleFinalState.SetLegPDGs(11,1);
   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
   eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
   eleFinalState.SetMotherPDGs(22, 22, kTRUE, kTRUE); // Exclude conversion electrons
@@ -407,13 +408,13 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   eleFinalStateFromD.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
   eleFinalStateFromD.SetMotherPDGs(402, 402);
   eleFinalStateFromD.SetCheckBothChargesMothers(kTRUE,kTRUE);
-  
+
   // Electrons from open beauty mesons and baryons
   AliDielectronSignalMC eleFinalStateFromB("eleFinalStateFromB","eleFinalStateFromB");
   eleFinalStateFromB.SetLegPDGs(11,1);
   eleFinalStateFromB.SetCheckBothChargesLegs(kTRUE,kTRUE);
   eleFinalStateFromB.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  eleFinalStateFromB.SetMotherPDGs(502, 502); 
+  eleFinalStateFromB.SetMotherPDGs(502, 502);
   eleFinalStateFromB.SetCheckBothChargesMothers(kTRUE,kTRUE);
 
   // Add signals
@@ -456,7 +457,7 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
   pair_sameMother_pion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
   // Set mother properties
   pair_sameMother_pion.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother_pion.SetMotherPDGs(111,111); 
+  pair_sameMother_pion.SetMotherPDGs(111,111);
 
   AliDielectronSignalMC pair_sameMother_eta("sameMother_eta","sameMother_eta");
   pair_sameMother_eta.SetLegPDGs(11,-11);
@@ -464,7 +465,7 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
   pair_sameMother_eta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
   // Set mother properties
   pair_sameMother_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother_eta.SetMotherPDGs(221,221); 
+  pair_sameMother_eta.SetMotherPDGs(221,221);
 
   AliDielectronSignalMC pair_sameMother_etaP("sameMother_etaP","sameMother_etaP");
   pair_sameMother_etaP.SetLegPDGs(11,-11);
@@ -496,7 +497,7 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
   pair_sameMother_phi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
   // Set mother properties
   pair_sameMother_phi.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother_phi.SetMotherPDGs(333, 333); 
+  pair_sameMother_phi.SetMotherPDGs(333, 333);
 
   AliDielectronSignalMC pair_sameMother_jpsi("sameMother_jpsi","sameMother_jpsi");
   pair_sameMother_jpsi.SetLegPDGs(11,-11);
@@ -504,7 +505,7 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
   pair_sameMother_jpsi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
   // Set mother properties
   pair_sameMother_jpsi.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother_jpsi.SetMotherPDGs(443, 443); 
+  pair_sameMother_jpsi.SetMotherPDGs(443, 443);
 
   task->AddPairMCSignal(pair_sameMother);
   // task->AddPairMCSignal(pair_sameMother_pion);

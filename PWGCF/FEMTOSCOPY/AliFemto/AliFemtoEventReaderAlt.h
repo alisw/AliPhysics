@@ -1,5 +1,5 @@
 ///
-/// AliFemtoEventReaderAlt.h
+/// \file AliFemtoEventReaderAlt.h
 ///
 
 #pragma once
@@ -21,21 +21,35 @@ class AliFemtoEventReaderAlt : public AliFemtoEventReaderAODMultSelection {
 public:
 
   AliFemtoEventReaderAlt();
-  ~AliFemtoEventReaderAlt();
+  virtual ~AliFemtoEventReaderAlt();
 
-  void SetEnhanceSmearing(double n);
+  /// Randomly smear particles' momentum components with weights
+  /// from gaussian distribution of mean 1.0 & the sigma provided
+  void SetEnhanceSmearing(double sigma);
   double GetEnhanceSmearing() const
     { return fEnhanceSmearing; }
+
+  /// randomly distribute particles around gaussian approximation of
+  /// event shape
+  void SetShouldDistribute(bool val=true);
 
 protected:
   AliFemtoEventReaderAlt(const AliFemtoEventReaderAlt&);
   AliFemtoEventReaderAlt operator=(const AliFemtoEventReaderAlt&);
 
+  virtual AliFemtoEvent* CopyAODtoFemtoEvent();
+
   virtual AliFemtoTrack* CopyAODtoFemtoTrack(AliAODTrack *src);
-  void CopyPIDtoFemtoTrack(AliAODTrack *, AliFemtoTrack *);
+
+  virtual void CopyPIDtoFemtoTrack(AliAODTrack *, AliFemtoTrack *);
+
+  //
+  void RandomlyDistributeParticles(AliFemtoEvent &);
 
   TRandom3 *fRng;
   double fEnhanceSmearing;
+
+  bool fDistributeMCParticles;
 };
 
 

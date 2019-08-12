@@ -16,15 +16,16 @@
 AliAnalysisTaskGammaConvV1* AddTask_hikari(
    Int_t   trainConfig            = 1,
    Int_t   isMC                   = 0,    
-   TString photonCutNumberV0Reader= "", // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
+   TString photonCutNumberV0Reader= "00000008400100001500000000", // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
    TString periodNameV0Reader     = "",
    Int_t   enableQAMesonTask      = 0,    
-   Int_t   enableQAPhotonTask     = 0,   
+   Int_t   enableQAPhotonTask     = 0,
    TString fileNameExternalInputs = "",//FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, separate with ;
    Int_t   enableMatBudWeightsPi0 = 0,        // 1 = three radial bins, 2 = 10 radial bins
-   TString periodNameAnchor       = "",       
-   Bool_t  doMultWeight           = kFALSE,   
-   Bool_t  doPostCalibration      = kFALSE,  
+   TString periodNameAnchor       = "",//Nch weighting & Ptweighting
+   Bool_t  doPartWeight           = kFALSE,//partcle weighting
+   Bool_t  doMultWeight           = kFALSE,//Nch weighting
+   Bool_t  doPostCalibration      = kFALSE,//post calib
    Int_t   isHeavyIon             = 0,
    TString additionalTrainConfig  = "0"// additional counter for trainconfig + special settings
    ) {
@@ -266,17 +267,16 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("00010113", "0d200009297000008250404000", "0152103500000000"); // to be used for MBW
 
     } else if (trainConfig == 440){ // as 400 to be used MBW
-      cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
-      cuts.AddCutPCM("00010113", "0c200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
-      cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
-    } else if (trainConfig == 441){
-      cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
-      cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72
-      cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
-    } else if (trainConfig == 442){ // as 440 to be used MBW
-      cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-33.5
-      cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72.
-      cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180    
+      cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // 
+      cuts.AddCutPCM("00010113", "0c200009227300008250404000", "0152103500000000"); // 
+      cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // 
+    } else if (trainConfig == 441){// as 440 to be used MBW
+      cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // R 5-33.5 cm
+      cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // R 33.5-72 cm
+      cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // R 72-180 cm
+    } else if (trainConfig == 442){ //further study material 
+      cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // R 95.0-180 cm Gas Volume
+      cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // R 5-13.0 cm SPD
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL;
@@ -348,6 +348,30 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("80210113", "0d200009a17000008250404000", "0162103500000000"); // pidEdx 0,-10
       cuts.AddCutPCM("80210113", "0d200009a27000003250404000", "0162103500000000"); // qT max 0.05 1D
       cuts.AddCutPCM("80210113", "0d200009a27000002250404000", "0162103500000000"); // qT max 0.06 2D
+    } else if (trainConfig == 17){
+      cuts.AddCutPCM("82410113", "0d200009a27300008250404000", "0162103500000000"); // default 2040 
+    } else if (trainConfig == 18){
+      cuts.AddCutPCM("84610113", "0d200009a27300008250404000", "0162103500000000"); // default 4060
+    } else if (trainConfig == 19){
+      cuts.AddCutPCM("86810113", "0d200009a27300008250404000", "0162103500000000"); // default 6080
+    } else if (trainConfig == 20){
+      cuts.AddCutPCM("88010113", "0d200009a27300008250404000", "0162103500000000"); // default 80100
+
+    } else if (trainConfig == 440){// as 400 to be used MBW
+      cuts.AddCutPCM("80010113", "00200009a27300008250404000", "0162103500000000"); // 
+      cuts.AddCutPCM("80010113", "0c200009a27300008250404000", "0162103500000000"); // 
+      cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "0162103500000000"); // 
+    } else if (trainConfig == 441){// as 440 to be used MBW
+      cuts.AddCutPCM("80010113", "0da00009a27300008250404000", "0162103500000000"); // R 5-33.5   cm
+      cuts.AddCutPCM("80010113", "0db00009a27300008250404000", "0162103500000000"); // R 33.5-72  cm
+      cuts.AddCutPCM("80010113", "0dc00009a27300008250404000", "0162103500000000"); // R 72-180   cm
+    } else if (trainConfig == 442){// further study material 
+      cuts.AddCutPCM("80010113", "0dh00009a27300008250404000", "0162103500000000"); // R 95.0-180 cm Gas Volume
+      cuts.AddCutPCM("80010113", "0di00009a27300008250404000", "0162103500000000"); // R 5-13.0   cm SPD
+    } else if (trainConfig == 443){// 
+      cuts.AddCutPCM("80010113", "0d200009a27300008250424000", "0162103500000000"); // default 0100 + Cat1
+    } else if (trainConfig == 444){// 
+      cuts.AddCutPCM("80010113", "0d200009a27300008250454000", "0162103500000000"); // default 0100 + Cat23
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL; 
@@ -378,6 +402,17 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
 
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i]          = new AliConvEventCuts();
+    TString fitNamePi0            = "Pi0_Fit_Data_5TeV2017";
+    TString fitNameEta            = "Eta_Fit_Data_5TeV2017";
+    TString mcInputNamePi0        = "Pi0_Pythia8_LHC17pq_fastwoSDD_5TeV2017";
+    TString mcInputNameEta        = "Eta_Pythia8_LHC17pq_fastwoSDD_5TeV2017";
+
+    if (doPartWeight){
+      analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNamePtWeights,
+								   mcInputNamePi0, mcInputNameEta, "",
+								   fitNamePi0,fitNameEta,"");
+    }
+
     TString dataInputMultHisto    = "";
     TString mcInputMultHisto      = "";
     TString triggerString         = (cuts.GetEventCut(i)).Data();
@@ -408,18 +443,18 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       }
       else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
-    if (doPostCalibration>0){
+    if (doPostCalibration){
       if (isMC == 0){
-        if( analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNamedEdxPostCalib)){
-          analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
-        } else {
-          doPostCalibration=kFALSE;
-          analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
+        if(fileNamedEdxPostCalib.CompareTo("") != 0){
+          analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
+          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
         }
-      } else{
-        cout << "ERROR doPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
-        doPostCalibration=kFALSE;
         analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
+        cout << "Enabled TPC dEdx recalibration." << endl;
+      } else{
+        cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+        doPostCalibration=kFALSE;
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
       }
     }
 

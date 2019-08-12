@@ -9,17 +9,17 @@ class AliESDVertex;
 class AliESDtrack;
 class AliExternalTrackParam;
 
-class AliVertexerHyperTriton3Body
-{
+class AliVertexerHyperTriton3Body {
 public:
   AliVertexerHyperTriton3Body();
   ~AliVertexerHyperTriton3Body();
 
-  AliESDVertex* GetCurrentVertex() { return mCurrentVertex; }
+  AliESDVertex *GetCurrentVertex() { return mCurrentVertex; }
   int GetGuessCompatibility() { return mCurrentGuessCompatibility; }
 
-  bool FindDecayVertex(AliESDtrack *deuteronTrack, AliESDtrack *protonTrack, AliESDtrack *pionTrack, float b);
-  static void Find2ProngClosestPoint(AliExternalTrackParam *track1, AliExternalTrackParam *track2, float b, float* pos);
+  bool FindDecayVertex(AliExternalTrackParam *deuteronTrack, AliExternalTrackParam *protonTrack,
+                       AliExternalTrackParam *pionTrack, float b);
+  static void Find2ProngClosestPoint(AliExternalTrackParam *track1, AliExternalTrackParam *track2, float b, float *pos);
 
   void SetMaxDinstanceInit(float maxD) { mMaxDistanceInitialGuesses = maxD; }
   void SetToleranceGuessCompatibility(int tol) { mToleranceGuessCompatibility = tol; }
@@ -27,7 +27,7 @@ public:
   AliVertexerTracks mVertexerTracks;
 
 private:
-  AliESDVertex* mCurrentVertex;
+  AliESDVertex *mCurrentVertex;
   int mCurrentGuessCompatibility;
 
   float mMaxDistanceInitialGuesses;

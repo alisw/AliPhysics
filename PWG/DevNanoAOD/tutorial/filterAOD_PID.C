@@ -13,7 +13,7 @@ void filterAOD_PID()
   // PID response
   gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   
-  AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/AddTaskNanoAODFilter.C(0, kFALSE)");
+  AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/macros/AddTaskNanoAODFilter.C(0, kFALSE)");
   task->AddSetter(new AliNanoAODSimpleSetter);
   
   // Event selection
@@ -29,7 +29,7 @@ void filterAOD_PID()
   // Fields to store
   // event level
   // vertices kept by default
-  task->SetVarListHeader("OfflineTrigger,MagField");
+  task->SetVarListHeader("OfflineTrigger,MagField,T0Spread,NumberOfESDTracks");
   // track level
   task->SetVarListTrack("pt,theta,phi");
   task->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kPion);

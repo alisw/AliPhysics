@@ -13,11 +13,11 @@
 #ifndef ALIANALYSISTASKNANOAODESEFILTER_H
 #define ALIANALYSISTASKNANOAODESEFILTER_H
 
-class AliAnalysisCuts;
-class AliNanoAODReplicator;
 class AliNanoAODCustomSetter;
+class AliNanoFilterNormalisation;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisCuts.h"
 #include "AliNanoAODReplicator.h"
 #include "AliNanoAODTrack.h"
 #include "AliPID.h"
@@ -38,10 +38,10 @@ public:
 
   Int_t GetMCMode() { return fMCMode; }
   void  SetMCMode (Int_t var) { fMCMode = var;}
-  void AddFilteredAOD(const char* aodfilename, const char* title);
+  void  AddFilteredAOD(const char* aodfilename, const char* title);
 
   void  AddEvtCuts     (AliAnalysisCuts * var           ) { fEvtCuts.push_back(var);}
-  void  SetTrkCuts     (AliAnalysisCuts * var           ) { fTrkCuts = var;}
+  void  SetTrkCuts     (AliAnalysisCuts * var           ) { fReplicator->SetTrackCuts(var); if (fSaveCutsFlag) fQAOutput->Add(var);}
   void  AddSetter      (AliNanoAODCustomSetter * var    ) { fReplicator->AddCustomSetter(var); }
 
   void  SetVarListTrack(TString var                     ) { fReplicator->SetVarListTrack(var);}
@@ -50,8 +50,9 @@ public:
   void  SetVarFiredTriggerClasses (TString var          ) { fReplicator->SetVarListHeaderTC(var);}
   void  SaveVzero(Bool_t var)                             { fReplicator->SetSaveVzero(var); }
   void  SaveZDC(Bool_t var)                               { fReplicator->SetSaveZDC(var); }
-  void  SaveV0s(Bool_t var, AliAnalysisCuts* v0Cuts = 0)  { fReplicator->SetSaveV0s(var); fV0Cuts = v0Cuts; fReplicator->SetV0Cuts(v0Cuts); }
-  void  SaveCascades(Bool_t var, AliAnalysisCuts* cuts = 0) { fReplicator->SetSaveCascades(var); fCascadeCuts = cuts; fReplicator->SetCascadeCuts(cuts); }
+  void  SaveV0s(Bool_t var, AliAnalysisCuts* v0Cuts = 0)  { fReplicator->SetSaveV0s(var); fReplicator->SetV0Cuts(v0Cuts); if (fSaveCutsFlag && v0Cuts) fQAOutput->Add(v0Cuts); }
+  void  SaveCascades(Bool_t var, AliAnalysisCuts* cuts = 0) { fReplicator->SetSaveCascades(var); fReplicator->SetCascadeCuts(cuts); if (fSaveCutsFlag && cuts) fQAOutput->Add(cuts); }
+  void  SaveConversionPhotons(Bool_t var, AliAnalysisCuts* cuts = 0) { fReplicator->SetSaveConversionPhotons(var); fReplicator->SetConversionPhotonCuts(cuts); if (fSaveCutsFlag && cuts) fQAOutput->Add(cuts); }
   
   AliNanoAODReplicator* GetReplicator() { return fReplicator; }
 
@@ -63,9 +64,6 @@ protected:
   AliNanoAODReplicator* fReplicator; // replicator
 
   std::list<AliAnalysisCuts*> fEvtCuts; // Event cuts
-  AliAnalysisCuts* fTrkCuts; // Track cuts
-  AliAnalysisCuts* fV0Cuts; // V0 cuts
-  AliAnalysisCuts* fCascadeCuts; // Cascade cuts
 
   TList* fQAOutput;     //  Output list for cut objects and QA
   Bool_t fSaveCutsFlag; // If true, the event and track cuts are saved to disk. Can only be set in the constructor.
@@ -73,10 +71,12 @@ protected:
   TString fInputArrayName; // name of TObjectArray of Tracks
   TString fOutputArrayName; // name of TObjectArray of AliNanoAODTracks
 
+  AliNanoFilterNormalisation* fNormalisation;          //!<! Normalisation object
+
   AliAnalysisTaskNanoAODFilter(const AliAnalysisTaskNanoAODFilter&); // not implemented
   AliAnalysisTaskNanoAODFilter& operator=(const AliAnalysisTaskNanoAODFilter&); // not implemented
 
-  ClassDef(AliAnalysisTaskNanoAODFilter, 8); // Nano AOD Filter Task
+  ClassDef(AliAnalysisTaskNanoAODFilter, 9); // Nano AOD Filter Task
 };
 
 #endif

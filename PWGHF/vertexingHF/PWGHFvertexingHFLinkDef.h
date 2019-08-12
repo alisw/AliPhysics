@@ -45,7 +45,9 @@
 #pragma link C++ class AliAnalysisTaskSEDplus+;
 #pragma link C++ class AliAnalysisTaskSEDs+;
 #pragma link C++ class AliAnalysisTaskSELambdac+;
+#pragma link C++ class AliAnalysisTaskSED0BDT+;
 #pragma link C++ class AliAnalysisTaskSED0Mass+;
+#pragma link C++ class AliAnalysisTaskSED0MassTMVA+;
 #pragma link C++ class AliAnalysisTaskSED0MassCutVarFDSub+;
 #pragma link C++ class AliAnalysisTaskSECharmFraction+;
 #pragma link C++ class AliAnalysisTaskSED0MassNonPromptFraction+;
@@ -87,6 +89,8 @@
 #pragma link C++ class AliAnalysisTaskSEMonitNorm+;
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignD0+;
 #pragma link C++ class AliAnalysisTaskSEImproveITS+;
+#pragma link C++ class AliAnalysisTaskSEImproveITS3+;
+#pragma link C++ class AliAnalysisTaskSEImproveITSCVMFS+;
 #pragma link C++ class AliAnalysisTaskCombinHF+;
 #pragma link C++ class AliEventPlaneResolutionHandler+;
 #pragma link C++ class AliAnalysisTaskSEHFvn+;
@@ -118,5 +122,8 @@
 #pragma link C++ class AliAnalysisTaskSEHFSystPID+;
 #pragma link C++ class AliAnalysisTaskSEDmesonPIDSysProp+;
 #pragma link C++ class IClassifierReader+;
+#pragma link C++ class AliAnalysisTaskSELbtoLcpi4+;
+#pragma link C++ class AliAnalysisTaskSEXicTopKpi+;
+#pragma link C++ class AliRDHFCutsXictopKpi+;
 
 #endif

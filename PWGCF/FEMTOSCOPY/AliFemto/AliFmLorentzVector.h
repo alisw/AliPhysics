@@ -67,8 +67,8 @@
 /*//
 //// General class for a Lorentz four-vector
 ///*/
-#ifndef ST_LORENTZ_VECTOR_HH
-#define ST_LORENTZ_VECTOR_HH
+#ifndef ALIFMLORENTZVECTOR_H
+#define ALIFMLORENTZVECTOR_H
 
 #include "AliFmThreeVector.h"
 template<class T> class AliFmLorentzVector {

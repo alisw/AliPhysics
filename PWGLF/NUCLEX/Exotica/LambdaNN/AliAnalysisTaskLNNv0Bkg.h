@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKNTUPLE_H
-#define ALIANALYSISTASKNTUPLE_H
+#ifndef ALIANALYSISTASKLNNV0BKG_H
+#define ALIANALYSISTASKLNNV0BKG_H
 
 /*  See cxx source for full Copyright notice */
 

@@ -19,6 +19,7 @@
 // L. van Doremalen, lennart.van.doremalen@cern.ch
 // J. Norman, jaime.norman@cern.ch
 // G. Luparello, grazia.luparello@cern.ch
+// N. Zardoshti, nima.zardoshti@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include <TTree.h>
@@ -26,6 +27,12 @@
 #include "AliPIDResponse.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODMCParticle.h"
+#include "AliAODPidHF.h"
+#include "AliHFJet.h"
+
+#ifdef HAVE_FASTJET
+#include "AliHFJetFinder.h"
+#endif
 
 class AliHFTreeHandler : public TObject
 {
@@ -52,17 +59,19 @@ class AliHFTreeHandler : public TObject
       kNsigmaCombPIDint,
       kNsigmaCombPIDfloatandint, //--> to test
       kRawPID,
-      kRawAndNsigmaPID
+      kRawAndNsigmaPID,
+      kNsigmaDetAndCombPID
     };
 
     enum piddet {
       kTPC,
-      kTOF
+      kTOF,
+      kCombTPCTOF // must be the last element in the enum
     };
 
     enum optsingletrack {
       kNoSingleTrackVars, // single-track vars off
-      kRedSingleTrackVars, // only pT, eta, phi
+      kRedSingleTrackVars, // only pT, p, eta, phi
       kAllSingleTrackVars // all single-track vars
     };
 
@@ -73,10 +82,19 @@ class AliHFTreeHandler : public TObject
 
     //core methods --> implemented in each derived class
     virtual TTree* BuildTree(TString name, TString title) = 0;
-    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
+    virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
     //for MC gen --> common implementation
     TTree* BuildTreeMCGen(TString name, TString title);
     bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
+
+    void SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, Double_t invmass, TClonesArray *mcarray, AliAODMCParticle* mcPart);
+    void SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart);
+#ifdef HAVE_FASTJET
+    void SetJetParameters(AliHFJetFinder& hfjetfinder);
+#endif
+    void SetJetTreeVars(AliHFJet hfjet);
+    void SetGenJetTreeVars(AliHFJet hfjet);
+
 
     void FillTree() { //to be called for each candidate!
       if(fFillOnlySignal && !(fCandType&kSignal)) { //if fill only signal and not signal candidate, do not store 
@@ -85,10 +103,15 @@ class AliHFTreeHandler : public TObject
       else {      
         fTreeVar->Fill(); 
         fCandType=0;
+        fRunNumberPrevCand = fRunNumber;
       }
     } 
     
     //common methods
+    void SetFillJets(bool FillJets) {fFillJets=FillJets;}
+    void SetDoJetSubstructure(bool DoJetSubstructure) {fDoJetSubstructure=DoJetSubstructure;}
+    void SetJetProperties(Double_t JetRadius,Int_t JetAlgorithm,Double_t MinJetPt) {fJetRadius=JetRadius;fJetAlgorithm=JetAlgorithm;fMinJetPt=MinJetPt;}
+    void SetSubJetProperties(Double_t SubJetRadius,Int_t SubJetAlgorithm) {fSubJetRadius=SubJetRadius;fSubJetAlgorithm=SubJetAlgorithm;}
     void SetOptPID(int PIDopt) {fPidOpt=PIDopt;}
     void SetOptSingleTrackVars(int opt) {fSingleTrackOpt=opt;}
     void SetFillOnlySignal(bool fillopt=true) {fFillOnlySignal=fillopt;}
@@ -144,9 +167,14 @@ class AliHFTreeHandler : public TObject
         return false;
     }
 
+    void EnableNsigmaTPCDataDrivenCorrection(int syst) {
+      fApplyNsigmaTPCDataCorr=true;
+      fSystNsigmaTPCDataCorr=syst;
+    }
+
   protected:  
     //constant variables
-    static const unsigned int knMaxProngs   = 3;
+    static const unsigned int knMaxProngs   = 4;
     static const unsigned int knMaxDet4Pid  = 2;
     static const unsigned int knMaxHypo4Pid = 3;
 
@@ -155,6 +183,8 @@ class AliHFTreeHandler : public TObject
     //helper methods for derived clases (to be used in BuildTree and SetVariables functions)
     void AddCommonDmesonVarBranches();
     void AddSingleTrackBranches();
+    void AddJetBranches();
+    void AddGenJetBranches();
     void AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
     bool SetSingleTrackVars(AliAODTrack* prongtracks[]);
     bool SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
@@ -165,12 +195,15 @@ class AliHFTreeHandler : public TObject
     float ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF* cand, float bfield);
     float GetTOFmomentum(AliAODTrack* track, AliPIDResponse* pidrespo);
   
+    void GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta);
+
     TTree* fTreeVar; /// tree with variables
     unsigned int fNProngs; /// number of prongs
     unsigned int fNCandidates; /// number of candidates in one fill (event)
     int fCandType; ///flag for candidate type (bit map above)
     float fInvMass; ///candidate invariant mass
     float fPt; ///candidate pt
+    float fPtGen; ///generated candidate pt
     float fY; ///candidate rapidity
     float fEta; ///candidate pseudorapidity
     float fPhi; ///candidate azimuthal angle
@@ -182,6 +215,7 @@ class AliHFTreeHandler : public TObject
     float fImpParXY; ///candidate impact parameter in the transverse plane
     float fDCA; ///DCA of candidates prongs
     float fPProng[knMaxProngs]; ///prong momentum
+    int fSPDhitsProng[knMaxProngs]; ///prong hits in the SPD
     float fTPCPProng[knMaxProngs]; ///prong TPC momentum
     float fTOFPProng[knMaxProngs]; ///prong TOF momentum
     float fPtProng[knMaxProngs]; ///prong pt
@@ -195,8 +229,8 @@ class AliHFTreeHandler : public TObject
     int fITSclsMapProng[knMaxProngs];///prong track ITS cluster map
     float fTrackIntegratedLengthProng[knMaxProngs]; /// prong track integrated lengths
     float fStartTimeResProng[knMaxProngs]; /// prong track start time resolutions (for TOF)
-    float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid][knMaxHypo4Pid]; ///PID nsigma variables
-    int fPIDNsigmaIntVector[knMaxProngs][knMaxDet4Pid][knMaxHypo4Pid]; ///PID nsigma variables (integers)
+    float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid]; ///PID nsigma variables
+    int fPIDNsigmaIntVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid]; ///PID nsigma variables (integers)
     float fPIDrawVector[knMaxProngs][knMaxDet4Pid]; ///raw PID variables
     int fPidOpt; ///option for PID variables
     int fSingleTrackOpt; ///option for single-track variables
@@ -205,9 +239,48 @@ class AliHFTreeHandler : public TObject
     bool fDauInAcceptance; ///flag to know if the daughter are in acceptance in case of MC gen
     unsigned int fEvID; ///event ID corresponding to the one set in fTreeEvChar
     int fRunNumber; ///run number
-  
+    int fRunNumberPrevCand; ///run number of previous candidate
+    bool fApplyNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
+    int fSystNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
+    vector<vector<float> > fMeanNsigmaTPCPionData; /// array of NsigmaTPC pion mean in data 
+    vector<vector<float> > fMeanNsigmaTPCKaonData; /// array of NsigmaTPC kaon mean in data 
+    vector<vector<float> > fMeanNsigmaTPCProtonData; /// array of NsigmaTPC proton mean in data 
+    vector<vector<float> > fSigmaNsigmaTPCPionData; /// array of NsigmaTPC pion mean in data 
+    vector<vector<float> > fSigmaNsigmaTPCKaonData; /// array of NsigmaTPC kaon mean in data 
+    vector<vector<float> > fSigmaNsigmaTPCProtonData; /// array of NsigmaTPC proton mean in data 
+    float fPlimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxPBins+1]; /// array of p limits for data-driven NsigmaTPC correction
+    int fNPbinsNsigmaTPCDataCorr;/// number of p bins for data-driven NsigmaTPC correction
+    float fEtalimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxEtaBins+1]; /// vector of eta limits for data-driven NsigmaTPC correction
+    int fNEtabinsNsigmaTPCDataCorr; /// number of eta bins for data-driven NsigmaTPC correction
+
+    float fPtJet; ///jet pt
+    float fPtGenJet; ///gen jet pt
+    float fEtaJet; ///jet pseudorapidity
+    float fEtaGenJet; ///gen jet pseudorapidity
+    float fPhiJet; ///jet azimuthal angle
+    float fPhiGenJet; ///gen jet azimuthal angle
+    float fDeltaEtaJetHadron; ///jet hadron pseudorapidity
+    float fDeltaEtaGenJetHadron; ///gen jet hadron pseudorapidity
+    float fDeltaPhiJetHadron; ///jet hadron azimuthal angle
+    float fDeltaPhiGenJetHadron; ///jet hadron azimuthal angle
+    float fDeltaRJetHadron; ///jet hadron distance
+    float fDeltaRGenJetHadron; ///gen jet hadron distance
+    float fNTracksJet;  //number of tracks in the jet
+    float fNTracksGenJet;  //number of tracks in the gen jet
+    float fZgJet; //zg
+    float fZgGenJet; //gen zg
+    float fRgJet; //Rg
+    float fRgGenJet; //gen Rg
+    bool  fFillJets; //fill jets
+    bool  fDoJetSubstructure; //fill jet substructure
+    Double_t fJetRadius; //Jet finding radius
+    Double_t fSubJetRadius; //Subjet finding radius
+    Int_t fJetAlgorithm; //Jet finding algorithm
+    Int_t fSubJetAlgorithm; //SubJet finding algorithm
+    Double_t fMinJetPt; //Jet finding mimimum Jet pT
+
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandler,5); ///
+  ClassDef(AliHFTreeHandler,9); ///
   /// \endcond
 };
 #endif

@@ -66,11 +66,11 @@ AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
 {
   AliFemtoEventReaderAODMultSelection* Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetFilterMask(96);
-  Reader->SetReadV0(1);
+  //Reader->SetReadV0(1);
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
-  Reader->SetReadCascade(kTRUE);
+  //Reader->SetReadCascade(kTRUE);
   Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
 
   Reader->SetUseAliEventCuts(kTRUE);
@@ -85,11 +85,11 @@ AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis)
 {
   AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
   Reader->SetFilterBit(7);
-  Reader->SetReadV0(1);
+  //Reader->SetReadV0(1);
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
-  Reader->SetReadCascade(kTRUE);
+  //Reader->SetReadCascade(kTRUE);
   Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
   if(mcAnalysis) Reader->SetReadMC(kTRUE);
   

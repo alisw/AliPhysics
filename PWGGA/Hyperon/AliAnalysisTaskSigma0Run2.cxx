@@ -294,7 +294,7 @@ void AliAnalysisTaskSigma0Run2::CastToVector(
 
     AliSigma0ParticleV0 phot(PhotonCandidate, pos, neg, inputEvent);
     if (fIsMC) {
-      const int label = phot.MatchToMC(fMCEvent, 22, {{11, -11}});
+      phot.MatchToMC(fMCEvent, 22, {{11, -11}});
     }
     container.push_back(phot);
   }
@@ -316,9 +316,7 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
   fQA->SetOwner(true);
 
   if (fTrigger != AliVEvent::kINT7) {
-    fAliEventCuts.SetManualMode();
-    if (!fIsHeavyIon) fAliEventCuts.SetupRun2pp();
-    fAliEventCuts.fTriggerMask = fTrigger;
+    fAliEventCuts.OverrideAutomaticTriggerSelection(fTrigger);
   }
 
   fV0Reader =

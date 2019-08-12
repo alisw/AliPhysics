@@ -31,6 +31,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fPartColl(nullptr),
       fIsMC(false),
       fIsLightweight(false),
+      fCheckDaughterCF(false),
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
@@ -65,8 +66,8 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name,
       fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
-      fEvent(nullptr),
       fRandom(nullptr),
+      fEvent(nullptr),
       fEvtCuts(nullptr),
       fProtonTrack(nullptr),
       fTrackCutsPartProton(nullptr),
@@ -76,6 +77,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name,
       fPartColl(nullptr),
       fIsMC(isMC),
       fIsLightweight(false),
+      fCheckDaughterCF(false),
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
@@ -166,29 +168,9 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   }
 
   // EVENT SELECTION
-  fEvent->SetEvent(static_cast<AliESDEvent *>(fInputEvent));
+  AliESDEvent *evt = static_cast<AliESDEvent *>(fInputEvent);
+  fEvent->SetEvent(evt);
   if (!fEvtCuts->isSelected(fEvent)) return;
-
-  // PROTON SELECTION
-  UInt_t filterBitProton = fTrackCutsPartProton->GetFilterBit();
-  bool useTPConlyTrack = (filterBitProton == 128);
-
-  static std::vector<AliFemtoDreamBasePart> particles;
-  particles.clear();
-  static std::vector<AliFemtoDreamBasePart> antiParticles;
-  antiParticles.clear();
-  const AliESDEvent *evt = static_cast<AliESDEvent *>(fInputEvent);
-  for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
-    fProtonTrack->SetTrack(static_cast<AliESDtrack *>(evt->GetTrack(iTrack)),
-                           fMCEvent, fEvent->GetMultiplicity(),
-                           useTPConlyTrack);
-    if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
-      particles.push_back(*fProtonTrack);
-    }
-    if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
-      antiParticles.push_back(*fProtonTrack);
-    }
-  }
 
   // LAMBDA SELECTION
   fV0Cuts->SelectV0(fInputEvent, fMCEvent);
@@ -233,12 +215,55 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   CastToVector(fAntiSigmaCuts->GetSidebandDown(), antiSigma0sidebandLow,
                fMCEvent);
 
+  // Get the Sigma0 daughters
+  if (fCheckDaughterCF) {
+    static std::vector<AliSigma0ParticleV0> lambdaSigma;
+    static std::vector<AliSigma0ParticleV0> photonSigma;
+    static std::vector<AliSigma0ParticleV0> lambdaAntiSigma;
+    static std::vector<AliSigma0ParticleV0> photonAntiSigma;
+
+    fSigmaCuts->GetLambda(lambdaSigma);
+    fSigmaCuts->GetPhoton(photonSigma);
+    fAntiSigmaCuts->GetLambda(lambdaAntiSigma);
+    fAntiSigmaCuts->GetPhoton(photonAntiSigma);
+
+    CastToVector(lambdaSigma, sigma0lambda, fMCEvent);
+    CastToVector(photonSigma, sigma0photon, fMCEvent);
+    CastToVector(lambdaAntiSigma, antiSigma0lambda, fMCEvent);
+    CastToVector(photonAntiSigma, antiSigma0photon, fMCEvent);
+  }
+
+  // PROTON SELECTION
+  const int multiplicity = fEvent->GetMultiplicity();
+  UInt_t filterBitProton = fTrackCutsPartProton->GetFilterBit();
+  bool useTPConlyTrack = (filterBitProton == 128);
+  static std::vector<AliFemtoDreamBasePart> particles;
+  particles.clear();
+  static std::vector<AliFemtoDreamBasePart> antiParticles;
+  antiParticles.clear();
+  for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
+    AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(evt->GetTrack(iTrack));
+    fProtonTrack->SetTrack(esdTrack, fMCEvent, multiplicity, useTPConlyTrack);
+    if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
+      particles.push_back(*fProtonTrack);
+    }
+    if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
+      antiParticles.push_back(*fProtonTrack);
+    }
+  }
+
   fPairCleaner->CleanTrackAndDecay(&particles, &sigma0particles, 0);
   fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0particles, 1);
   fPairCleaner->CleanTrackAndDecay(&particles, &sigma0sidebandUp, 2);
   fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0sidebandUp, 3);
   fPairCleaner->CleanTrackAndDecay(&particles, &sigma0sidebandLow, 4);
   fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0sidebandLow, 5);
+  if (fCheckDaughterCF) {
+     fPairCleaner->CleanTrackAndDecay(&particles, &sigma0lambda, 6);
+     fPairCleaner->CleanTrackAndDecay(&particles, &sigma0photon, 7);
+     fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0lambda, 8);
+     fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0photon, 9);
+   }
 
   fPairCleaner->ResetArray();
   fPairCleaner->StoreParticle(particles);
@@ -249,6 +274,12 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(antiSigma0sidebandUp);
   fPairCleaner->StoreParticle(sigma0sidebandLow);
   fPairCleaner->StoreParticle(antiSigma0sidebandLow);
+  if (fCheckDaughterCF) {
+     fPairCleaner->StoreParticle(sigma0lambda);
+     fPairCleaner->StoreParticle(sigma0photon);
+     fPairCleaner->StoreParticle(antiSigma0lambda);
+     fPairCleaner->StoreParticle(antiSigma0photon);
+   }
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
@@ -304,7 +335,7 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
 
     AliSigma0ParticleV0 phot(PhotonCandidate, pos, neg, inputEvent);
     if (fIsMC) {
-      const int label = phot.MatchToMC(fMCEvent, 22, {{11, -11}});
+      phot.MatchToMC(fMCEvent, 22, {{11, -11}});
     }
     container.push_back(phot);
   }
@@ -320,6 +351,16 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
   if (sigmaContainer.size() > 0) {
     particles.push_back(
         {sigmaContainer[fRandom->Rndm() * sigmaContainer.size()], mcEvent});
+  }
+}
+
+//____________________________________________________________________________________________________
+void AliAnalysisTaskSigma0Femto::CastToVector(
+    std::vector<AliSigma0ParticleV0> &container,
+    std::vector<AliFemtoDreamBasePart> &particles, const AliMCEvent *mcEvent) {
+  particles.clear();
+  for (const auto &part : container) {
+    particles.push_back({part, mcEvent});
   }
 }
 
@@ -423,7 +464,7 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fAntiSigmaHistList = fAntiSigmaCuts->GetCutHistograms();
   }
 
-  const int nPairs = 6;
+  const int nPairs = (fCheckDaughterCF) ? 10 : 6;
   fPairCleaner =
       new AliFemtoDreamPairCleaner(nPairs, 0, fConfig->GetMinimalBookingME());
   fPartColl =

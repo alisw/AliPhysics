@@ -90,7 +90,7 @@
 #pragma link C++ class AliAnalysisTaskNetLambdaTrad+;
 
 #pragma link C++ class AliAnalysisTaskEbyeNetChargeFluctuations+;
-
+#pragma link C++ class AliAnalysisTaskEbyeNetChargeMCPbPbESD+;
 #pragma link C++ class AliEbyEPhiDistNew+;
 
 

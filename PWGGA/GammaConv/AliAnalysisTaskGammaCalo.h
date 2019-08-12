@@ -364,6 +364,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoPionSpectrum;                                   //! array of histos with charged pion spectrum
     TH1F**                fHistoProtonSpectrum;                                 //! array of histos with proton spectrum
     TH1F**                fHistoKaonSpectrum;                                   //! array of histos with charged kaon spectrum
+    TH1F**                fHistoNPionSpectrum;                                  //! array of histos with Neutral pion spectrum
+    TH1F**                fHistoEtaSpectrum;                                    //! array of histos with Eta spectrum
+    TH1F**                fHistoDMesonSpectrum;                                 //! array of histos with D0 meson spectrum
     TTree**               tTreeSphericity;                                      //! array of trees with sphericity correlations
     Float_t               fRecSph;                                              //! Reconstructed sphericity
     Float_t               fTrueSph;                                             //! True Sphericity
@@ -385,7 +388,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoEtaPhiJetPi0Cand;                               // Histogram of delta eta and delta phi distr between jet and NM candidates
     TH2F**                 fHistoEtaPhiJetWithPi0Cand;                           // Histogram of delta eta and delta phi distr when pi0 is inside a jet
     TH2F**                 fHistoJetFragmFunc;                                   // Histogram to determine fragmentation function
-    TH2F**                 fHistoJetFragmFuncChargPart;                          // Histogram with fragmentation function as function of charged particles
+    TH2F**                 fHistoJetFragmFuncZInvMass;                           // Histogram of Inv Mass distribution with z
     TH2F**                 fHistoTruevsRecJetPt;                                 // Histogram of true jet pt vs reconstructed jet pt
     TH2F**                 fHistoTruePi0JetMotherInvMassPt;                      // Histogram of true pi0s in an event with a jet
     TH2F**                 fHistoTruePi0InJetMotherInvMassPt;                    // Histogram of true pi0s in a jet
@@ -399,9 +402,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoTruePrimaryEtainJetInvMassPt;                   // Histogram of true primary etas in a jet
     TH1F**                 fHistoTrueDoubleCountingEtaJet;                       // Histogram of when a true eta is defined to be in multiple jets
     TH2F**                 fHistoTruePi0JetFragmFunc;                            // Histogram to determine true pi0 fragmentation function
+    TH2F**                 fHistoTruePi0JetFragmFuncZInvMass;                    // Histogram to determine true pi0 Inv Mass distribution with z
     TH2F**                 fHistoTrueEtaJetFragmFunc;                            // Histogram to determine true eta fragmentation function
-    TH2F**                 fHistoTruePi0JetFragmFuncChargPart;                   // Histogram with fragmentation function as function of charged particles
-    TH2F**                 fHistoTrueEtaJetFragmFuncChargPart;                   // Histogram with fragmentation function as function of charged particles
+    TH2F**                 fHistoTrueEtaJetFragmFuncZInvMass;                    // Histogram to determine true eta Inv Mass distribution with z
     TH1F**                 fHistoMCPi0JetInAccPt;                                // Histogram with weighted pi0 in a jet event in acceptance, pT
     TH1F**                 fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
     TH1F**                 fHistoMCEtaJetInAccPt;                                // Histogram with weighted eta in a jet event in acceptance, pT
@@ -442,6 +445,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoUnfoldingAsData;                                // Histogram to use for jet pi0 unfolding
     TH2F**                 fHistoUnfoldingMissed;                                // Histogram to use for jet pi0 unfolding
     TH2F**                 fHistoUnfoldingReject;                                // Histogram to use for jet pi0 unfolding
+    TH2F**                 fHistoUnfoldingAsDataInvMassZ;                        // Histogram to use for jet pi0 unfolding for z inmass
+    TH2F**                 fHistoUnfoldingMissedInvMassZ;                        // Histogram to use for jet pi0 unfolding for z inmass
+    TH2F**                 fHistoUnfoldingRejectInvMassZ;                        // Histogram to use for jet pi0 unfolding for z inmass
 
     vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
     vector<Double_t>      fVectorJetPx;                                         // Vector of JetPx
@@ -450,14 +456,12 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     vector<Double_t>      fVectorJetEta;                                        // Vector of JetEta
     vector<Double_t>      fVectorJetPhi;                                        // Vector of JetPhi
     vector<Double_t>      fVectorJetArea;                                       // Vector of JetArea
-    vector<Double_t>      fVectorJetNChargPart;                                 // vector of Number of charged particles in Jet
     vector<Double_t>      fTrueVectorJetPt;                                     // Vector of True JetPt
     vector<Double_t>      fTrueVectorJetPx;                                     // Vector of True JetPx
     vector<Double_t>      fTrueVectorJetPy;                                     // Vector of True JetPy
     vector<Double_t>      fTrueVectorJetPz;                                     // Vector of True JetPz
     vector<Double_t>      fTrueVectorJetEta;                                    // Vector of True JetEta
     vector<Double_t>      fTrueVectorJetPhi;                                    // Vector of True JetPhi
-    vector<Double_t>      fTrueVectorJetNChargPart;                             // Vector of number of charged particles in Jet
 
     // tree for identified particle properties
     TTree**               tTrueInvMassROpenABPtFlag;                            //! array of trees with
@@ -496,6 +500,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fTrackPID_P;                                          //! track PID P
     Float_t               fClusterIsoSumClusterEt;                              //! sum of Et of clusters within R<0.2
     Float_t               fClusterIsoSumTrackEt;                                //! sum of Et of tracks within R<0.2
+
+    // tree for timing cut effi studies
+    TTree**               tClusterTimingEff;                                    //! array of trees with tree for timing effi studies
+    Float_t               fClusterTimeTag;                                      //! cluster time of tagged photon
+    Float_t               fClusterTimeProbe;                                    //! cluster time of probe photon
+    Float_t               fClusterETag;                                         //! cluster E of tagged photon
+    Float_t               fClusterEProbe;                                       //! cluster E of probe photon
 
     // hists for nonlineartiy calibration
 //    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
@@ -538,7 +549,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 67);
+    ClassDef(AliAnalysisTaskGammaCalo, 70);
 };
 
 #endif

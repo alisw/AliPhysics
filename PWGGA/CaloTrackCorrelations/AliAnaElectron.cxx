@@ -387,8 +387,8 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
     {
       index = kmcssPhoton;
     }//photon   no conversion
-    else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron && 
-              !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion)))
+    else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron) && 
+              !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion))
     {
       index = kmcssElectron;
        
@@ -400,7 +400,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
         Int_t ancPDG = 0, ancStatus = -1;
         Int_t ancLabel = 0;
         Int_t noverlaps = 1;      
-        for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++ )
+        for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++)
         {
           ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab], GetMC(),
                                                                ancPDG,ancStatus,fMomentumMC,fProdVertex);

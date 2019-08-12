@@ -48,7 +48,6 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() :
   fVectorJetEta(0),
   fVectorJetPhi(0),
   fVectorJetR(0),
-  fVectorJetNChargPart(0),
   fTrueNJets(0),
   fTrueVectorJetPt(0),
   fTrueVectorJetPx(0),
@@ -56,8 +55,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() :
   fTrueVectorJetPz(0),
   fTrueVectorJetEta(0),
   fTrueVectorJetPhi(0),
-  fTrueVectorJetR(0),
-  fTrueVectorJetNChargPart(0)
+  fTrueVectorJetR(0)
 {
 }
 
@@ -71,15 +69,13 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char *name) :
   fVectorJetEta(0),
   fVectorJetPhi(0),
   fVectorJetR(0),
-  fVectorJetNChargPart(0),
   fTrueVectorJetPt(0),
   fTrueVectorJetPx(0),
   fTrueVectorJetPy(0),
   fTrueVectorJetPz(0),
   fTrueVectorJetEta(0),
   fTrueVectorJetPhi(0),
-  fTrueVectorJetR(0),
-  fTrueVectorJetNChargPart(0)
+  fTrueVectorJetR(0)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -135,7 +131,6 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fVectorJetEta.clear();
       fVectorJetPhi.clear();
       fVectorJetR.clear();
-      fVectorJetNChargPart.clear();
       for(auto jet : jetCont->accepted()) {
         if (!jet) continue;
         count++;
@@ -146,7 +141,6 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         fVectorJetEta.push_back(jet->Eta());
         fVectorJetPhi.push_back(jet->Phi());
         fVectorJetR.push_back(jet->Area());
-        fVectorJetNChargPart.push_back(jet->GetNumberOfTracks());
       }
       fNJets = count ;
     }else{
@@ -159,7 +153,6 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fTrueVectorJetEta.clear();
       fTrueVectorJetPhi.clear();
       fTrueVectorJetR.clear();
-      fTrueVectorJetNChargPart.clear();
       for(auto jet : jetCont->accepted()) {
         if (!jet) continue;
         count++;
@@ -170,7 +163,6 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         fTrueVectorJetEta.push_back(jet->Eta());
         fTrueVectorJetPhi.push_back(jet->Phi());
         fTrueVectorJetR.push_back(jet->Area());
-        fTrueVectorJetNChargPart.push_back(jet->GetNumberOfTracks());
       }
       fTrueNJets = count ;
     }

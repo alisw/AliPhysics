@@ -29,11 +29,12 @@ class AliAnalysisTaskMKTest : public AliAnalysisTaskMKBase
                                 AliAnalysisTaskMKTest(const char *name);
         virtual                 ~AliAnalysisTaskMKTest();
 
-        virtual void            AddOutput(); //called at the beginning
-        virtual void            AnaTrack();  //called once for every track
-        virtual void            AnaEvent();  //called once for every event        
-        
-        static AliAnalysisTaskMKTest* AddTaskMKTest(const char* name = "TaskMKTest");
+        virtual void            AddOutput();                     //called at the beginning
+        virtual Bool_t          IsEventSelected();               //called for each event
+        virtual void            AnaEvent();                      //called once for every selected event        
+        virtual void            AnaTrack(Int_t flag = 0);        //called once for every track
+
+        static AliAnalysisTaskMKTest* AddTaskMKTest(const char* name = "TaskMKTest", const char* outfile = 0);
 
     protected:    
         THnSparseD*             fHistPt;     //-> pt hist  
