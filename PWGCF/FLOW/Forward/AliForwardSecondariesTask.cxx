@@ -138,7 +138,7 @@ void AliForwardSecondariesTask::UserCreateOutputObjects()
   this->fOutputList = new TList();
   this->fOutputList->SetOwner(kTRUE);
 
-  TRandom fRandom = TRandom();              // random integer to use for creation of samples (used for error bars).
+  TRandom fRandom = TRandom();        // random integer to use for creation of samples (used for error bars).
                                       // Needs to be created here, otherwise it will draw the same random number.
   fDeltaList = new TList();
   fDeltaList->SetName("Delta");

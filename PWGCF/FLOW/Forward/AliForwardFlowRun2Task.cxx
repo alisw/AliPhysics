@@ -84,38 +84,37 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
 //_____________________________________________________________________
 void AliForwardFlowRun2Task::UserCreateOutputObjects()
 {
-    //
-    //  Create output objects
-    //
-    //bool saveAutoAdd = TH1::AddDirectoryStatus();
+  //
+  //  Create output objects
+  //
+  //bool saveAutoAdd = TH1::AddDirectoryStatus();
 
-    fOutputList = new TList();          // the final output list
-    fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
+  fOutputList = new TList();          // the final output list
+  fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
 
-    TRandom r = TRandom();              // random integer to use for creation of samples (used for error bars).
-                                        // Needs to be created here, otherwise it will draw the same random number.
+  TRandom r = TRandom();              // random integer to use for creation of samples (used for error bars).
+                                      // Needs to be created here, otherwise it will draw the same random number.
 
-    fAnalysisList    = new TList();
-    fAnalysisList   ->SetName("cumulants");
+  fAnalysisList    = new TList();
+  fAnalysisList   ->SetName("cumulants");
 
-    fOutputList->Add(fAnalysisList);
+  fOutputList->Add(fAnalysisList);
 
-    // do analysis from v_2 to a maximum of v_5
-    Int_t fMaxMoment = 4;
-    Int_t dimensions = 7;
-    Int_t ptnmax =  (fSettings.doPt ? 5 : 0);
+  // do analysis from v_2 to a maximum of v_5
+  constexpr Int_t dimensions = 7;
+  Int_t ptnmax =  (fSettings.doPt ? 5 : 0);
 
-    Int_t dbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ;
-    Int_t rbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ; // n, pt, s, zvtx,eta,cent,kind
-    Double_t xmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
-    Double_t xmax[dimensions] = {3,ptnmax+1,fSettings.fnoSamples,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4ThreeTwoB)+1};
+  Int_t dbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ;
+  Int_t rbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ; // n, pt, s, zvtx,eta,cent,kind
+  Double_t xmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
+  Double_t xmax[dimensions] = {3,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kW4ThreeTwoB)+1};
 
-    // create a THn for each harmonic
+  // create a THn for each harmonic
 
   fAnalysisList->Add(new THnD("reference", "reference", dimensions, rbins, xmin, xmax));
   fAnalysisList->Add(new THnD("differential","differential", dimensions, dbins, xmin, xmax));
-        // The THn has dimensions [n, pt, random samples, vertex position, eta, centrality, kind of variable to store]
-        // set names
+  // The THn has dimensions [n, pt, random samples, vertex position, eta, centrality, kind of variable to store]
+  // set names
   THnD* reference = static_cast<THnD*>(fAnalysisList->At(0));
   reference->GetAxis(0)->SetName("n");
   reference->GetAxis(1)->SetName("pt");
