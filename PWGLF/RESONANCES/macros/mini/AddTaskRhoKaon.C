@@ -51,8 +51,8 @@ AliRsnMiniAnalysisTask * AddTaskRhoKaon
    TString taskName = Form("TPCPhiMeson%s%s", (isPP? "pp" : "pPb"), (isMC ? "MC" : "Data"));
    
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
-      task->SelectCollisionCandidates(AliVEvent::kINT7);
-   // task->UseESDTriggerMask(AliVEvent::kINT7); i have did this
+   //   task->SelectCollisionCandidates(AliVEvent::kINT7);
+    task->UseESDTriggerMask(AliVEvent::kINT7); //i have did this
    if (isPP) 
      task->UseMultiplicity("AliMultSelection_V0M");
    else
