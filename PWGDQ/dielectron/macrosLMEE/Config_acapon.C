@@ -451,6 +451,12 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
+  else if(cutDefinition == "kBadEtaPhiRegions"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kBadEtaPhi, LMEECutLib::kTheoPID));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
   else{
     cout << " =============================== " << endl;
     cout << " ==== INVALID CONFIGURATION ==== " << endl;
