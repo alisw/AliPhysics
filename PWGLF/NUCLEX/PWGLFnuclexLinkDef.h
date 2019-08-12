@@ -82,6 +82,7 @@
 #pragma link C++ class AliReducedHypTritEvent+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 #pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
+#pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
 #pragma link C++ class RHyperTritonHe3pi+;
 #pragma link C++ class SHyperTritonHe3pi+;
 #pragma link C++ class std::vector<RHyperTritonHe3pi>+;
