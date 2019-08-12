@@ -92,7 +92,7 @@ TList* AliAODUPCReplicator::GetList() const
     fTracks = new TClonesArray("AliAODTrack",30);
     fTracks->SetName("tracks");
     
-    fVertices = new TClonesArray("AliAODVertex",2);
+    fVertices = new TClonesArray("AliAODVertex",3);
     fVertices->SetName("vertices");     
       
     fVZERO = new AliAODVZERO;
@@ -171,7 +171,7 @@ void AliAODUPCReplicator::ReplicateAndFilter(const AliAODEvent& source)
   Int_t nvertices(0);
   
   while ( ( v = static_cast<AliAODVertex*>(nextV()) ) ) {
-    if (v->GetType() == AliAODVertex::kPrimary) {
+    if (v->GetType() == AliAODVertex::kPrimary || v->GetType() == AliAODVertex::kMainSPD) {
       AliAODVertex* tmp = v->CloneWithoutRefs();
       AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
       // to insure the main vertex retains the ncontributors information
@@ -198,6 +198,16 @@ Bool_t AliAODUPCReplicator::IsGoodGlobalTrack(const AliAODTrack *trk)
 //_____________________________________________________________________________
 Bool_t AliAODUPCReplicator::IsGoodITSsaTrack(const AliAODTrack *trk)
 {
+
+  if(fReplicateMuonTracks){
+    Bool_t goodMuonCaloTrack = kTRUE;
+    if(!(trk->GetStatus() & AliAODTrack::kITSrefit)) goodMuonCaloTrack=kFALSE;
+    if(trk->GetITSNcls() < 4)goodMuonCaloTrack=kFALSE;
+    if(trk->Chi2perNDF() > 2.5)goodMuonCaloTrack=kFALSE;
+    if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))goodMuonCaloTrack=kFALSE;
+    
+    if(goodMuonCaloTrack)return kTRUE;
+    }
 
   if(!(trk->TestFilterBit(1<<1))) return kFALSE;
   return kTRUE;

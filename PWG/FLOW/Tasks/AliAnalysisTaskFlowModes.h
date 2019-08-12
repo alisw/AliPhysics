@@ -56,6 +56,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     void                    SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
     void                    SetNumEventsAnalyse(Short_t num) { fNumEventsAnalyse = num; }
     void		            SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
+    void                    SetSampling(Bool_t sample = kTRUE) { fSampling = sample; }
     void                    SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
     void                    SetProcessCharged(Bool_t filter = kTRUE) { fProcessCharged = filter; }
     void                    SetProcessPID(Bool_t filter = kTRUE, Bool_t PIDbayesian = kFALSE) {
@@ -112,6 +113,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
      TFile*                  fFlowNUAWeightsFile; //! source file containing weights
      TFile*                  fFlowNUEWeightsFile; //! source file containing weights
      Bool_t                  fInit; // initialization check
+     Short_t                 fIndexSampling; // sampling index (randomly generated)
      Short_t                 fIndexCentrality; // centrality bin index (based on centrality est. or number of selected tracks)
      Short_t                 fEventCounter; // event counter (used for local test runmode purpose)
      Short_t                 fNumEventsAnalyse; // [50] number of events to be analysed / after passing selection (only in test mode)
@@ -131,6 +133,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     //cuts & selection: analysis
     RunMode                 fRunMode; // running mode (not grid related)
     AnalType                fAnalType; // analysis type: AOD / ESD
+    Bool_t                  fSampling;      // Do random sampling ? (estimation of vn stat. uncertanity)
     Bool_t                  fFillQA; //[kTRUE] flag for filling the QA plots
     Bool_t                  fProcessCharged; // flag for processing charged tracks (both RPF and POIs)
     Bool_t                  fProcessPID; // flag for processing PID tracks (pi,K,p)
@@ -189,14 +192,16 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     Float_t                 fCurrCentr; // current centrality used for set the priors
     Double_t                fParticleProbability; // Minimum Bayesian probability
     
+    static const Int_t      fNumCentralities = 7; // number of centrality ranges for NUE maps (for now...)
     static const Int_t      fgkPIDptBin = 32; // pT bins for priors
     Float_t                 fC[fgkPIDptBin][5],fBinLimitPID[fgkPIDptBin]; // pt bin limit and priors
     static const Short_t    fFlowNumHarmonicsMax = 10; // maximum harmonics length of flow vector array
     static const Short_t    fFlowNumWeightPowersMax = 10; // maximum weight power length of flow vector array
-    static const Short_t    fFlowPOIsPtNumBins = 200; // number of pT bins for POIs
+    static const Short_t    fFlowPOIsPtNumBins = 100; // number of pT bins for POIs
     
     static const Short_t    fiNumIndexQA = 2; // QA indexes: 0: before cuts // 1: after cuts
-    
+   
+    const static Short_t    fNumSamples = 10; // overall number of samples (from random sampling) used
     const static Int_t      fNumHarmonics = 5; // number of harmonics
     const static Int_t      fNumMixedHarmonics = 4; // number of mixed harmonics: 4{psi2}, 6{psi3} and 5{psi2,3}
     static Int_t            fHarmonics[fNumHarmonics]; // values of used harmonics
@@ -253,19 +258,8 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     TH3D*           fh3NUAWeightKaonMinus; //! container for loading weights for given run
     TH3D*           fh3NUAWeightProtonMinus; //! container for loading weights for given run
     
-    TH1D*           fhNUEWeightRefsPlus; //! container for loading weights for given run
-    TH1D*           fhNUEWeightChargedPlus; //! container for loading weights for given run
-    TH1D*           fhNUEWeightPionPlus; //! container for loading weights for given run
-    TH1D*           fhNUEWeightKaonPlus; //! container for loading weights for given run
-    TH1D*           fhNUEWeightProtonPlus; //! container for loading weights for given run
-    
-    TH1D*           fhNUEWeightRefsMinus; //! container for loading weights for given run
-    TH1D*           fhNUEWeightChargedMinus; //! container for loading weights for given run
-    TH1D*           fhNUEWeightPionMinus; //! container for loading weights for given run
-    TH1D*           fhNUEWeightKaonMinus; //! container for loading weights for given run
-    TH1D*           fhNUEWeightProtonMinus; //! container for loading weights for given run
-    
     // Events
+    TH2D*           fhEventSampling; //! distribution of sampled events (based on randomly generated numbers)
     TH1D*           fhEventCentrality; //! distribution of event centrality
     TH2D*           fh2EventCentralityNumSelCharged; //! distribution of event centrality vs number of selected charged tracks
     TH1D*           fhEventCounter; //! counter following event selection
@@ -322,7 +316,21 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     TH2D*           fh2PIDProtonTPCnSigmaProton; //! TPC nSigma vs pT for selected protons (proton hypothesis)
     TH2D*           fh2PIDProtonTOFnSigmaProton; //! TOF nSigma vs pT for selected protons (proton hypothesis)
     
-    
+    TH1F*           fhNUEWeightRefsPlus; //! containers for loading weights for given run
+    TH1F*           fhNUEWeightRefsMinus; //! container for loading weights for given run
+
+    TH1F*           fhNUEWeightChargedPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightChargedMinus; //! container for loading weights for given run
+
+    TH1F*           fhNUEWeightPionPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightPionMinus; //! container for loading weights for given run
+
+    TH1F*           fhNUEWeightKaonPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightKaonMinus; //! container for loading weights for given run
+
+    TH1F*           fhNUEWeightProtonPlus; //! container for loading weights for given run
+    TH1F*           fhNUEWeightProtonMinus; //! container for loading weights for given run
+
     TComplex                fFlowVecQpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
     TComplex                fFlowVecQneg[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
     TComplex                fFlowVecPpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax][fFlowPOIsPtNumBins]; // flow vector array for flow calculation
@@ -337,41 +345,41 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     TProfile*       fpMeanQyRefsPos[fNumEtaGap][fNumHarmonics]; //! average of Qy (vs. centrality) for Refs
     TProfile*       fpMeanQyRefsNeg[fNumEtaGap][fNumHarmonics]; //! average of Qy (vs. centrality) for Refs
 
-    TProfile*       fpRefsCor2[fNumEtaGap][fNumHarmonics]; //! <2> correlations for RFPs
-    TProfile2D*     fp2ChargedCor2Pos[fNumEtaGap][fNumHarmonics]; //! <2'> correlations for Charged tracks POIs: POIs in Eta>0
-    TProfile2D*     fp2ChargedCor2Neg[fNumEtaGap][fNumHarmonics]; //! <2'> correlations for Charged tracks POIs: POIs in Eta<0
-    TProfile2D*     fp2PionCor2Pos[fNumEtaGap][fNumHarmonics]; //! <2'> correlations for pion POIs: POIs in Eta>0
-    TProfile2D*     fp2PionCor2Neg[fNumEtaGap][fNumHarmonics]; //! <2'> correlations for pion POIs: POIs in Eta>0
-    TProfile2D*     fp2KaonCor2Pos[fNumEtaGap][fNumHarmonics]; //! <2'> correlations for kaon POIs: POIs in Eta>0
-    TProfile2D*     fp2KaonCor2Neg[fNumEtaGap][fNumHarmonics]; //! <2'> correlations for kaon POIs: POIs in Eta>0
-    TProfile2D*     fp2ProtonCor2Pos[fNumEtaGap][fNumHarmonics]; //! <2'> correlations for proton POIs: POIs in Eta>0
-    TProfile2D*     fp2ProtonCor2Neg[fNumEtaGap][fNumHarmonics]; //! <2'> correlations for proton POIs: POIs in Eta>0
+    TProfile*       fpRefsCor2[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2> correlations for RFPs
+    TProfile2D*     fp2ChargedCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for Charged tracks POIs: POIs in Eta>0
+    TProfile2D*     fp2ChargedCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for Charged tracks POIs: POIs in Eta<0
+    TProfile2D*     fp2PionCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for pion POIs: POIs in Eta>0
+    TProfile2D*     fp2PionCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for pion POIs: POIs in Eta>0
+    TProfile2D*     fp2KaonCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for kaon POIs: POIs in Eta>0
+    TProfile2D*     fp2KaonCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for kaon POIs: POIs in Eta>0
+    TProfile2D*     fp2ProtonCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for proton POIs: POIs in Eta>0
+    TProfile2D*     fp2ProtonCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for proton POIs: POIs in Eta>0
 
-    //TProfile*       fpRefsCor4[fNumHarmonics]; //! <4> correlations for RFPs
-    //TProfile2D*     fp2ChargedCor4[fNumHarmonics]; //! <4'> correlations for Charged tracks POIs
-    //TProfile2D*     fp2PionCor4[fNumHarmonics]; //! <4'> correlations for pion POIs
-    //TProfile2D*     fp2KaonCor4[fNumHarmonics]; //! <4'> correlations for kaon POIs
-    //TProfile2D*     fp2ProtonCor4[fNumHarmonics]; //! <4'> correlations for proton POIs
+    //TProfile*       fpRefsCor4[fNumSamples][fNumHarmonics]; //! <4> correlations for RFPs
+    //TProfile2D*     fp2ChargedCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for Charged tracks POIs
+    //TProfile2D*     fp2PionCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for pion POIs
+    //TProfile2D*     fp2KaonCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for kaon POIs
+    //TProfile2D*     fp2ProtonCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for proton POIs
     
     //Mixed harmonics:
-    TProfile*       fpMixedRefsCor4[fNumEtaGap][fNumMixedHarmonics]; //! <4> correlations for RFPs
-    TProfile*       fpMixedRefsCor6[fNumEtaGap]; //! <6> correlations for RFPs
-    TProfile2D*     fpMixedChargedCor3Pos[fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for Charged tracks POIs: POIs in Eta>0
-    TProfile2D*     fpMixedChargedCor3Neg[fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for Charged tracks POIs: POIs in Eta<0
-    TProfile2D*     fpMixedPionCor3Pos[fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for pion POIs: POIs in Eta>0
-    TProfile2D*     fpMixedPionCor3Neg[fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for pion POIs: POIs in Eta<0
-    TProfile2D*     fpMixedKaonCor3Pos[fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for kaon POIs: POIs in Eta>0
-    TProfile2D*     fpMixedKaonCor3Neg[fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for kaon POIs: POIs in Eta<0
-    TProfile2D*     fpMixedProtonCor3Pos[fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for proton POIs: POIs in Eta>0
-    TProfile2D*     fpMixedProtonCor3Neg[fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for proton POIs: POIs in Eta<0
-    TProfile2D*     fpMixedChargedCor4Pos[fNumEtaGap]; //! <4'> correlations for Charged tracks POIs: POIs in Eta>0
-    TProfile2D*     fpMixedChargedCor4Neg[fNumEtaGap]; //! <4'> correlations for Charged tracks POIs: POIs in Eta<0
-    TProfile2D*     fpMixedPionCor4Pos[fNumEtaGap]; //! <4'> correlations for pion POIs: POIs in Eta>0
-    TProfile2D*     fpMixedPionCor4Neg[fNumEtaGap]; //! <4'> correlations for pion POIs: POIs in Eta<0
-    TProfile2D*     fpMixedKaonCor4Pos[fNumEtaGap]; //! <4'> correlations for kaon POIs: POIs in Eta>0
-    TProfile2D*     fpMixedKaonCor4Neg[fNumEtaGap]; //! <4'> correlations for kaon POIs: POIs in Eta<0
-    TProfile2D*     fpMixedProtonCor4Pos[fNumEtaGap]; //! <4'> correlations for proton POIs: POIs in Eta>0
-    TProfile2D*     fpMixedProtonCor4Neg[fNumEtaGap]; //! <4'> correlations for proton POIs: POIs in Eta<0
+    TProfile*       fpMixedRefsCor4[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <4> correlations for RFPs
+    TProfile*       fpMixedRefsCor6[fNumSamples][fNumEtaGap]; //! <6> correlations for RFPs
+    TProfile2D*     fpMixedChargedCor3Pos[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for Charged tracks POIs: POIs in Eta>0
+    TProfile2D*     fpMixedChargedCor3Neg[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for Charged tracks POIs: POIs in Eta<0
+    TProfile2D*     fpMixedPionCor3Pos[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for pion POIs: POIs in Eta>0
+    TProfile2D*     fpMixedPionCor3Neg[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for pion POIs: POIs in Eta<0
+    TProfile2D*     fpMixedKaonCor3Pos[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for kaon POIs: POIs in Eta>0
+    TProfile2D*     fpMixedKaonCor3Neg[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for kaon POIs: POIs in Eta<0
+    TProfile2D*     fpMixedProtonCor3Pos[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for proton POIs: POIs in Eta>0
+    TProfile2D*     fpMixedProtonCor3Neg[fNumSamples][fNumEtaGap][fNumMixedHarmonics]; //! <3'> correlations for proton POIs: POIs in Eta<0
+    TProfile2D*     fpMixedChargedCor4Pos[fNumSamples][fNumEtaGap]; //! <4'> correlations for Charged tracks POIs: POIs in Eta>0
+    TProfile2D*     fpMixedChargedCor4Neg[fNumSamples][fNumEtaGap]; //! <4'> correlations for Charged tracks POIs: POIs in Eta<0
+    TProfile2D*     fpMixedPionCor4Pos[fNumSamples][fNumEtaGap]; //! <4'> correlations for pion POIs: POIs in Eta>0
+    TProfile2D*     fpMixedPionCor4Neg[fNumSamples][fNumEtaGap]; //! <4'> correlations for pion POIs: POIs in Eta<0
+    TProfile2D*     fpMixedKaonCor4Pos[fNumSamples][fNumEtaGap]; //! <4'> correlations for kaon POIs: POIs in Eta>0
+    TProfile2D*     fpMixedKaonCor4Neg[fNumSamples][fNumEtaGap]; //! <4'> correlations for kaon POIs: POIs in Eta<0
+    TProfile2D*     fpMixedProtonCor4Pos[fNumSamples][fNumEtaGap]; //! <4'> correlations for proton POIs: POIs in Eta>0
+    TProfile2D*     fpMixedProtonCor4Neg[fNumSamples][fNumEtaGap]; //! <4'> correlations for proton POIs: POIs in Eta<0
     
     // QA: events
     TH1D*           fhQAEventsPVz[fiNumIndexQA]; //!
@@ -419,6 +427,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     Bool_t                  IsEventSelected_PbPb(); // event selection for LHC2015 PbPb data
     Bool_t                  IsEventSelected_pp(); // event selection for LHC2016 MB pp data
     void                    FillEventsQA(const Short_t iQAindex); // filling QA plots related to event selection
+    Short_t                 GetSamplingIndex(); // returns sampling index based on sampling selection (number of samples)
     Short_t                 GetCentralityIndex(); // returns centrality index based centrality estimator or number of selected tracks
     Double_t                GetWDist(const AliAODVertex* v0, const AliAODVertex* v1); // gets the distance between the two vertices
     Bool_t                  ProcessEvent(); // main (envelope) method for processing events passing selection

@@ -1,171 +1,200 @@
 #ifndef AliSigma0PhotonCuts_H
 #define AliSigma0PhotonCuts_H
 
-#include "AliAODTrack.h"
+#include "AliAODEvent.h"
 #include "AliMCEvent.h"
-#include "AliMCParticle.h"
-#include "AliSigma0ParticleBase.h"
-#include "AliV0ReaderV1.h"
-#include "AliVEvent.h"
+#include "AliPID.h"
 #include "Riostream.h"
+#include "TDatabasePDG.h"
 #include "TObject.h"
-
-#include "AliStack.h"
-
-#include "TH1.h"
-#include "TH2.h"
-#include "TList.h"
 #include "TProfile.h"
-
-class AliPIDResponse;
+#include "TH2F.h"
+#include "AliAODConversionPhoton.h"
+#include "AliPIDResponse.h"
+#include "AliFemtoDreamBasePart.h"
 
 class AliSigma0PhotonCuts : public TObject {
  public:
+
   AliSigma0PhotonCuts();
   AliSigma0PhotonCuts(const AliSigma0PhotonCuts &);
   AliSigma0PhotonCuts &operator=(const AliSigma0PhotonCuts &);
   virtual ~AliSigma0PhotonCuts();
 
-  static AliSigma0PhotonCuts *DefaultCuts();
+  static AliSigma0PhotonCuts *PhotonCuts();
 
-  void SelectPhotons(AliVEvent *inputEvent, AliMCEvent *mcEvent,
-                     std::vector<AliAODConversionPhoton> &photon);
-  double getCosineOfPointingAngle(const AliConversionPhotonBase *photon,
-                                  AliVEvent *event) const;
-  bool IsPhotonCandidate(AliAODConversionPhoton *TruePhotonCandidate) const;
+  void PhotonCuts(AliAODEvent *inputEvent, AliMCEvent *mcEvent,
+                  const TClonesArray *photons,
+                  std::vector<AliFemtoDreamBasePart> &container);
+  bool ProcessPhoton(AliVEvent* event, AliAODConversionPhoton *PhotonCandidate,
+                     AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg);
+  float ComputeInvMass(AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg, int pdgPos,
+                       int pgdNeg) const;
+  AliVTrack *GetTrack(AliVEvent * event, int label);
+  void SetLightweight(bool isLightweight) {
+    fIsLightweight = isLightweight;
+  }
 
-  void SetIsMC(bool isMC) { fIsMC = isMC; }
-  void SetV0ReaderName(TString name) { fV0ReaderName = name; }
-  void SetDCArMax(float dcaR) { fDCAr = dcaR; }
-  void SetDCAzMax(float dcaZ) { fDCAz = dcaZ; }
-  void SetCosPA(float cosPA) { fCosPA = cosPA; }
-  void SetPmax(float pmax) { fPmax = pmax; }
-  void SetPtmax(float ptmax) { fPtmax = ptmax; }
-  void SetPtElemax(float ptelemax) { fPtElemax = ptelemax; }
+  void SetIsMC(bool isMC) {
+    fIsMC = isMC;
+  }
 
-  void InitCutHistograms();
-  TList *GetCutHistograms() const { return fHistograms; }
+  void SetV0ReaderName(TString name) {
+    fV0ReaderName = name;
+  }
+  void SetArmenteros2DCut(bool doIt) {
+    f2DArmenterosCut = doIt;
+  }
+  void SetArmenterosQtMax(float qtmax) {
+    fQtMax = qtmax;
+  }
+  void SetPhotonPtMin(float ptmin) {
+    fPhotonPtMin = ptmin;
+  }
+  void SetPhotonEtaMax(float etamax) {
+    fPhotonEtaMax = etamax;
+  }
+  void SetPsiPair2DCut(bool doIt) {
+    f2DPsiPairCut = doIt;
+  }
+  void SetPsiPairMax(float psimax) {
+    fPsiPairMax = psimax;
+  }
+  void SetChi2ForPsiMax(float chi2max) {
+    fChi2MaxFor2DPsiPair = chi2max;
+  }
+  void SetCPAMin(float cpamin) {
+    fCPAMin = cpamin;
+  }
+  void SetDCAzMax(float dcazmax) {
+    fDCAzMax = dcazmax;
+  }
+  void SetDCArMax(float dcarmax) {
+    fDCArMax = dcarmax;
+  }
+
+  void SetElectronPtMin(float ptmin) {
+    fElectronPtMin = ptmin;
+  }
+  void SetElectronEtaMax(float etamax) {
+    fElectronEtaMax = etamax;
+  }
+  void SetElectronRatioFindable(float ratioMax) {
+    fElectronRatioFindable = ratioMax;
+  }
+  void SetElectronNSigmaTPCMax(float nsigmamax) {
+    fElectronNSigmaTPCMax = nsigmamax;
+  }
+  void SetElectronNSigmaTPCMin(float nsigmamin) {
+    fElectronNSigmaTPCMin = nsigmamin;
+  }
+  void SetTransverseRadiusRejection(float low, float up) {
+    fDoTransvRadRejection = true;
+    fTransvRadRejectionLow = low;
+    fTransvRadRejectionUp = up;
+  }
+
+  void InitCutHistograms(TString appendix = TString(""));
+  TList *GetCutHistograms() const {
+    return fHistograms;
+  }
 
  protected:
-  TList *fHistograms;
-  TList *fHistogramsMC;
+  TList *fHistograms;        //!
+  TList *fHistogramsBefore;  //!
+  TList *fHistogramsAfter;   //!
+  TList *fHistogramsPos;     //!
+  TList *fHistogramsNeg;     //!
 
-  AliV0ReaderV1
-      *fV0Reader;         //! basic photon Selection Task !!! needs //! for grid
-  TString fV0ReaderName;  //
-  TClonesArray *
-      fReaderGammas;  //! Array with conversion photons selected by V0Reader Cut
+  AliVEvent *fInputEvent;   //!
+  AliMCEvent *fMCEvent;       //!
+  TDatabasePDG fDataBasePDG;  //!
 
-  bool fIsMC;
+  bool fIsLightweight;  //
+  TString fV0ReaderName;                         //
 
-  AliVEvent *fInputEvent;  //!
-  AliMCEvent *fMCEvent;    //!
-  AliStack *fMCStack;      //!
+  bool fIsMC;                                //
+  bool f2DArmenterosCut;                     //
+  float fQtMax;                              //
+  float fPhotonPtMin;                            //
+  float fPhotonEtaMax;  //
+  bool f2DPsiPairCut;  //
+  float fPsiPairMax;  //
+  float fChi2MaxFor2DPsiPair;  //
+  float fCPAMin;  //
+  float fDCAzMax;  //
+  float fDCArMax;  //
 
-  float fDCAr;
-  float fDCAz;
-  float fCosPA;
-  float fPmax;
-  float fPtmax;
-  float fPtElemax;
+  float fElectronPtMin;  //
+  float fElectronEtaMax;  //
+  float fElectronRatioFindable;  //
+  float fElectronNSigmaTPCMax;  //
+  float fElectronNSigmaTPCMin;  //
 
-  AliPIDResponse *fPIDResponse;  //! pid response
+  bool fDoTransvRadRejection;   //
+  float fTransvRadRejectionLow; //
+  float fTransvRadRejectionUp;  //
 
   // Histograms
   // =====================================================================
-  TProfile *fHistCuts;  //
+  TProfile *fHistCutBooking;  //!
 
-  TH1F *fHistPhotonCuts;        //
-  TH1F *fHistNPhoton;           //
-  TH1F *fHistPhotonPt;          //
-  TH1F *fHistPhotonP;           //
-  TH1F *fHistPhotonInvMass;     //
-  TH2F *fHistPhotonInvMassPt;   //
-  TH2F *fHistPhotonInvMassEta;  //
-  TH2F *fHistPhotonCPAPt;       //
-  TH2F *fHistPhotonR;           //
-  TH2F *fHistPhotonArm;         //
-  TH1F *fHistPhotonDCAz;        //
-  TH1F *fHistPhotonDCAr;        //
-  TH2F *fHistPhotonEtaPhi;      //
-  TH1F *fHistPhotonConvPointX;  //
-  TH1F *fHistPhotonConvPointY;  //
-  TH1F *fHistPhotonConvPointZ;  //
-  TH1F *fHistPhotonEleP;        //
-  TH1F *fHistPhotonElePt;       //
+  TH1F *fHistCuts;  //!
+  TH1F *fHistNV0;   //!
 
-  TH2F *fHistPhotonEleNsigmaTPC;      //
-  TH2F *fHistPhotonEleNsigmaTPCPion;  //
-  TH2F *fHistPhotonEleTPCsignal;      //
+  TH1F *fHistLambdaMass;       //!
+  TH1F *fHistAntiLambdaMass;   //!
+  TH1F *fHistK0Mass;           //!
+  TH1F *fHistV0Pt;             //!
+  TH1F *fHistV0Mass;           //!
+  TH2F *fHistV0MassPt;         //!
+  TH2F *fHistCosPA;            //!
+  TH2F *fHistEtaPhi;           //!
+  TH2F *fHistPsiPairBefore;          //!
+  TH2F *fHistPsiPairAfter;          //!
 
-  TH1F *fHistTwoPhotonPt;          //
-  TH1F *fHistTwoPhotonP;           //
-  TH1F *fHistTwoPhotonInvMass;     //
-  TH2F *fHistTwoPhotonInvMassPt;   //
-  TH2F *fHistTwoPhotonInvMassEta;  //
+  TH2F *fHistDecayVertexXBefore;      //!
+  TH2F *fHistDecayVertexYBefore;      //!
+  TH2F *fHistDecayVertexZBefore;      //!
+  TH2F *fHistDecayVertexXAfter;       //!
+  TH2F *fHistDecayVertexYAfter;       //!
+  TH2F *fHistDecayVertexZAfter;       //!
+  TH2F *fHistTransverseRadiusBefore;  //!
+  TH2F *fHistTransverseRadiusAfter;   //!
+  TH2F *fHistCosPABefore;             //!
+  TH2F *fHistCosPAAfter;              //!
+  TH2F *fHistDCArBefore;              //!
+  TH2F *fHistDCArAfter;               //!
+  TH2F *fHistDCAzBefore;              //!
+  TH2F *fHistDCAzAfter;               //!
+  TH2F *fHistDCA;                     //!
+  TH2F *fHistDecayLength;             //!
+  TH2F *fHistArmenterosBefore;        //!
+  TH2F *fHistArmenterosAfter;         //!
 
-  TH1F *fHistMCRecSigma0PhotonPt;          //
-  TH1F *fHistMCRecSigma0PhotonP;           //
-  TH1F *fHistMCRecSigma0PhotonInvMass;     //
-  TH2F *fHistMCRecSigma0PhotonInvMassPt;   //
-  TH2F *fHistMCRecSigma0PhotonInvMassEta;  //
-  TH2F *fHistMCRecSigma0PhotonR;           //
-  TH2F *fHistMCRecSigma0PhotonArm;         //
-  TH1F *fHistMCRecSigma0PhotonDCAz;        //
-  TH1F *fHistMCRecSigma0PhotonDCAr;        //
-  TH1F *fHistMCRecSigma0PhotonConvPointX;  //
-  TH1F *fHistMCRecSigma0PhotonConvPointY;  //
-  TH1F *fHistMCRecSigma0PhotonConvPointZ;  //
-  TH1F *fHistMCRecSigma0PhotonEleP;        //
-  TH1F *fHistMCRecSigma0PhotonElePt;       //
-  TH2F *fHistMCRecSigma0CPAPt;
-  TH2F *fHistMCRecSigma0PhotonDCAzPt;
-  TH2F *fHistMCRecSigma0PhotonDCArPt;
-  TH2F *fHistMCRecSigma0PhotonPsiPairPt;
-  TH2F *fHistMCRecSigma0PhotonChi2Pt;
+  TH1F *fHistSingleParticleCuts[2];                        //!
+  TH1F *fHistSingleParticlePt[2];                          //!
+  TH2F *fHistSingleParticleEtaBefore[2];                   //!
+  TH2F *fHistSingleParticleEtaAfter[2];                    //!
+  TH2F *fHistSingleParticleChi2Before[2];                  //!
+  TH2F *fHistSingleParticleChi2After[2];                   //!
+  TH2F *fHistSingleParticleNclsTPCBefore[2];               //!
+  TH2F *fHistSingleParticleNclsTPCAfter[2];                //!
+  TH2F *fHistSingleParticleNclsTPCFindableBefore[2];       //!
+  TH2F *fHistSingleParticleNclsTPCFindableAfter[2];        //!
+  TH2F *fHistSingleParticleNclsTPCRatioFindableBefore[2];  //!
+  TH2F *fHistSingleParticleNclsTPCRatioFindableAfter[2];   //!
+  TH2F *fHistSingleParticleNcrossedTPCBefore[2];           //!
+  TH2F *fHistSingleParticleNcrossedTPCAfter[2];            //!
+  TH2F *fHistSingleParticleDCAtoPVBefore[2];               //!
+  TH2F *fHistSingleParticleDCAtoPVAfter[2];                //!
+  TH2F *fHistSingleParticlePileUp[2];                      //!
+  TH2F *fHistSingleParticlePID[2];                         //!
 
-  TH1F *fHistMCFakeSigma0PhotonPt;          //
-  TH1F *fHistMCFakeSigma0PhotonP;           //
-  TH1F *fHistMCFakeSigma0PhotonInvMass;     //
-  TH2F *fHistMCFakeSigma0PhotonInvMassPt;   //
-  TH2F *fHistMCFakeSigma0PhotonInvMassEta;  //
-  TH2F *fHistMCFakeSigma0PhotonR;           //
-  TH2F *fHistMCFakeSigma0PhotonArm;         //
-  TH1F *fHistMCFakeSigma0PhotonDCAz;        //
-  TH1F *fHistMCFakeSigma0PhotonDCAr;        //
-  TH1F *fHistMCFakeSigma0PhotonConvPointX;  //
-  TH1F *fHistMCFakeSigma0PhotonConvPointY;  //
-  TH1F *fHistMCFakeSigma0PhotonConvPointZ;  //
-  TH1F *fHistMCFakeSigma0PhotonEleP;        //
-  TH1F *fHistMCFakeSigma0PhotonElePt;       //
-  TH2F *fHistMCFakeSigma0CPAPt;
-  TH2F *fHistMCFakeSigma0PhotonDCAzPt;
-  TH2F *fHistMCFakeSigma0PhotonDCArPt;
-  TH2F *fHistMCFakeSigma0PhotonPsiPairPt;
-  TH2F *fHistMCFakeSigma0PhotonChi2Pt;
-
-  TH1F *fHistMCFakePhotonPt;          //
-  TH1F *fHistMCFakePhotonP;           //
-  TH1F *fHistMCFakePhotonInvMass;     //
-  TH2F *fHistMCFakePhotonInvMassPt;   //
-  TH2F *fHistMCFakePhotonInvMassEta;  //
-  TH2F *fHistMCFakePhotonR;           //
-  TH2F *fHistMCFakePhotonArm;         //
-  TH1F *fHistMCFakePhotonDCAz;        //
-  TH1F *fHistMCFakePhotonDCAr;        //
-  TH1F *fHistMCFakePhotonConvPointX;  //
-  TH1F *fHistMCFakePhotonConvPointY;  //
-  TH1F *fHistMCFakePhotonConvPointZ;  //
-  TH1F *fHistMCFakePhotonEleP;        //
-  TH1F *fHistMCFakePhotonElePt;       //
-  TH2F *fHistMCFakePhotonCPAPt;
-  TH2F *fHistMCFakePhotonDCAzPt;
-  TH2F *fHistMCFakePhotonDCArPt;
-  TH2F *fHistMCFakePhotonPsiPairPt;
-  TH2F *fHistMCFakePhotonChi2Pt;
+  AliPIDResponse *fPIDResponse;  //!  pid response
 
  private:
-  ClassDef(AliSigma0PhotonCuts, 1)
+ClassDef(AliSigma0PhotonCuts, 4)
 };
 
 #endif

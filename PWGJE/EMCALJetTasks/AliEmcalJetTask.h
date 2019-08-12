@@ -1,13 +1,39 @@
+/**************************************************************************************
+ * Copyright (C) 2016, Copyright Holders of the ALICE Collaboration                   *
+ * All rights reserved.                                                               *
+ *                                                                                    *
+ * Redistribution and use in source and binary forms, with or without                 *
+ * modification, are permitted provided that the following conditions are met:        *
+ *     * Redistributions of source code must retain the above copyright               *
+ *       notice, this list of conditions and the following disclaimer.                *
+ *     * Redistributions in binary form must reproduce the above copyright            *
+ *       notice, this list of conditions and the following disclaimer in the          *
+ *       documentation and/or other materials provided with the distribution.         *
+ *     * Neither the name of the <organization> nor the                               *
+ *       names of its contributors may be used to endorse or promote products         *
+ *       derived from this software without specific prior written permission.        *
+ *                                                                                    *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND    *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED      *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE             *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY                *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES         *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;       *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND        *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT         *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
+ **************************************************************************************/
 #ifndef ALIEMCALJETTASK_H
 #define ALIEMCALJETTASK_H
-
-/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
 class TClonesArray;
 class TObjArray;
 class AliVEvent;
 class AliEmcalJetUtility;
+
+#include "TF1.h"
+#include "TRandom3.h"
 
 #include <AliLog.h>
 
@@ -27,6 +53,7 @@ namespace fastjet {
 /**
  * @class AliEmcalJetTask
  * @brief General jet finder task implementing a wrapper for FastJet
+ * @ingroup PWGJEBASE
  * @author Constantin Lozides <cloizides@lbl.gov>, Lawrence Berkeley National Laboratory
  * @author Marta Verweij
  * @author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
@@ -75,7 +102,9 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   SetMinJetPt(Double_t j)                    { if (IsLocked()) return; fMinJetPt         = j     ; }
   void                   SetRecombScheme(ERecoScheme_t scheme)      { if (IsLocked()) return; fRecombScheme     = scheme; }
   void                   SetTrackEfficiency(Double_t t)             { if (IsLocked()) return; fTrackEfficiency  = t     ; }
+  void                   SetQoverPtShift(Double_t shift)            { if (IsLocked()) return; fQoverPtShift     = shift; fApplyQoverPtShift = true; }
   void                   SetTrackEfficiencyOnlyForEmbedding(Bool_t b) { if (IsLocked()) return; fTrackEfficiencyOnlyForEmbedding = b     ; }
+  void                   SetEnableAliBasicParticleCompatibility(Bool_t b) { if (IsLocked()) return; fEnableAliBasicParticleCompatibility = b; }
   void                   SetLegacyMode(Bool_t mode)                 { if (IsLocked()) return; fLegacyMode       = mode  ; }
   void                   SetFillGhost(Bool_t b=kTRUE)               { if (IsLocked()) return; fFillGhost        = b     ; }
   void                   SetRadius(Double_t r)                      { if (IsLocked()) return; fRadius           = r     ; }
@@ -114,6 +143,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 
   UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   
+  void                   LoadTrackEfficiencyFunction(const std::string & path, const std::string & name);
 
   Bool_t                 IsLocked() const;
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
@@ -141,7 +171,8 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
       const TString tag                          = "Jet",
       const Double_t minJetPt                    = 0.,
       const Bool_t lockTask                      = kTRUE,
-      const Bool_t bFillGhosts                   = kFALSE
+      const Bool_t bFillGhosts                   = kFALSE,
+      const char *suffix                         = ""
     );
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
@@ -179,15 +210,21 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               fJetEtaMax;              ///< maximum eta to keep jet in output
   Double_t               fGhostArea;              ///< ghost area
   Double_t               fTrackEfficiency;        ///< artificial tracking inefficiency (0...1)
+  Double_t               fQoverPtShift;           ///< artificial q/pt shift
   TObjArray             *fUtilities;              ///< jet utilities (gen subtractor, constituent subtractor etc.)
-  Bool_t                 fTrackEfficiencyOnlyForEmbedding; ///<tituent Apply aritificial tracking inefficiency only for embedded tracks
+  Bool_t                 fTrackEfficiencyOnlyForEmbedding; ///< Apply aritificial tracking inefficiency only for embedded tracks
+  TF1                   *fTrackEfficiencyFunction;///< Function that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
+  Bool_t                 fApplyArtificialTrackingEfficiency; ///< Flag to apply artificial tracking efficiency
+  Bool_t                 fApplyQoverPtShift;      ///< Apply Q/pt shift
+  TRandom3               fRandom;                 //!<! Random number generator for artificial tracking efficiency
   Bool_t                 fLocked;                 ///< true if lock is set
-  Bool_t	          fFillConstituents;		 ///< If true jet consituents will be filled to the AliEmcalJet
+  Bool_t	               fFillConstituents;		 ///< If true jet consituents will be filled to the AliEmcalJet
 
   TString                fJetsName;               //!<!name of jet collection
   Bool_t                 fIsInit;                 //!<!=true if already initialized
   Bool_t                 fIsPSelSet;              //!<!=true if physics selection was set
   Bool_t                 fIsEmcPart;              //!<!=true if emcal particles are given as input (for clusters)
+  Bool_t                 fEnableAliBasicParticleCompatibility; ///< Flag to allow compatibility with AliBasicParticle constituents
   Bool_t                 fLegacyMode;             //!<!=true to enable FJ 2.x behavior
   Bool_t                 fFillGhost;              ///< =true ghost particles will be filled in AliEmcalJet obj
 
@@ -207,7 +244,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJetTask, 26);
+  ClassDef(AliEmcalJetTask, 30);
   /// \endcond
 };
 #endif

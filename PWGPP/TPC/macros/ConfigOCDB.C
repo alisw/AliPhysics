@@ -14,6 +14,15 @@ void ConfigOCDB(Int_t run, const char *ocdb="raw://") {
 
   // OCDB
   printf("setting run to %d\n",run);
+  if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {
+    Printf("ConfigOCDB: using OCDB snapshot");
+    AliCDBManager::Instance()->SetSnapshotMode("OCDB.root");
+  }
+  else {
+    Printf("ConfigOCDB: NOT using OCDB snapshot");
+  }
+  Printf("Default storage is %s", ocdb);
+
   AliCDBManager::Instance()->SetDefaultStorage(ocdb);
   AliCDBManager::Instance()->SetRun(run); 
 
@@ -38,13 +47,14 @@ void ConfigOCDB(Int_t run, const char *ocdb="raw://") {
   // geometry
   printf("Loading geometry...\n");
   AliGeomManager::LoadGeometry();
-  if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC") ) {
+  if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD TOF HMPID") ) {
     printf("Problem with align objects\n"); 
   }
-  
-  if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {        
-    printf("loading localOCDBaccessConfig.C\n");
-    gROOT->LoadMacro("localOCDBaccessConfig.C");
-    localOCDBaccessConfig();
-  }
+
+   if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {
+    Printf("ConfigOCDB: localOCDBaccessConfig detected\n");
+     gROOT->LoadMacro("localOCDBaccessConfig.C");
+    gInterpreter->ProcessLine("localOCDBaccessConfig();");
+   }
+ 
 }

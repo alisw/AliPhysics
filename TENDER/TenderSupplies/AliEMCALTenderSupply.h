@@ -65,6 +65,10 @@ public:
  
   void     SetCustomBC(const Char_t *BCfile)              { fCustomBC = BCfile               ;}
  
+  void     SetCustomTimeCalibration(const Char_t *SMFile, const Char_t *ParamFile)
+                                                          { fCustomTempCalibSM = SMFile      ;
+                                                          fCustomTempCalibParams = ParamFile ;}
+ 
   void     SetConfigFileName(const char *name)            { fConfigName = name               ;}
 
   void     SetNonLinearityFunction(Int_t fun)             { fNonLinearFunc = fun             ;}
@@ -194,7 +198,10 @@ public:
   void     SwitchOffUseAutomaticRunDepRecalibParam()       { fUseAutomaticRunDepRecalib = kFALSE ; }
   void     SwitchOffUseAutomaticTimeCalibParam()           { fUseAutomaticTimeCalib     = kFALSE ; }
   void     SwitchOffUseAutomaticRecParam()                 { fUseAutomaticRecParam      = kFALSE ; }
-  
+
+  void     SwitchUseNewRunDepTempCalib(Bool_t doUseTC)     { fUseNewRunDepTempCalib     = doUseTC; }
+  void     SwitchUseMergedBCs(Bool_t doUseMergedBC)     { fDoMergedBCs     = doUseMergedBC; }
+
 private:
 
   AliVEvent* GetEvent();
@@ -256,6 +263,8 @@ private:
   Float_t                fPhicut;                 // phi cut for track matching  
   TString                fBasePath;               // base folder path to get root files 
   TString                fCustomBC;               // custom BC map file
+  TString                fCustomTempCalibSM;      // custom temperature per SM file
+  TString                fCustomTempCalibParams;  // custom temp calib params file
   Bool_t                 fReClusterize;           // switch for reclustering
   AliEMCALClusterizer   *fClusterizer;            //!clusterizer 
   Bool_t                 fGeomMatrixSet;          // set geometry matrices only once, for the first event.         
@@ -270,6 +279,7 @@ private:
   Float_t                fExoticCellFraction;     // good cell if fraction < 1-ecross/ecell
   Float_t                fExoticCellDiffTime;     // if time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
   Float_t                fExoticCellMinAmplitude; // check for exotic only if amplitud is larger than this value
+  Bool_t                 fDoMergedBCs;            // flag whether to load four histos for the time calib or one merged histo
 
   // MC labels
   static const Int_t     fgkTotalCellNumber = 17664 ; // Maximum number of cells in EMCAL/DCAL: (48*24)*(10+4/3.+6*2/3.)
@@ -290,12 +300,13 @@ private:
   // Change to false if experts
   Bool_t                 fUseAutomaticRecalib;       // On by default the check in the OADB of the energy recalibration
   Bool_t                 fUseAutomaticRunDepRecalib; // On by default the check in the OADB of the run dependent energy recalibration
+  Bool_t                 fUseNewRunDepTempCalib;     // Off by default the check in the OADB of the new run dependent temperature calib which covers Run1 and Run2
   Bool_t                 fUseAutomaticTimeCalib;     // On by default the check in the OADB of the time recalibration
   Bool_t                 fUseAutomaticRecParam;      // On the auto setting of the rec param
   
   AliEMCALTenderSupply(            const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 20); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 23); // EMCAL tender task
 };
 #endif

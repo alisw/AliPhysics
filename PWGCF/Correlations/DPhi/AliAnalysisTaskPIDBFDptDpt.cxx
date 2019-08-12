@@ -75,6 +75,7 @@
 #include "AliEventCuts.h"
 #include <AliVVZERO.h>
 #include "AliHelperPID.h"
+#include "TBits.h"
 
 using namespace AliHelperPIDNameSpace;
 using namespace std;
@@ -104,6 +105,9 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   useCircularCutPID( 0),
   fHelperPID(0),
   NoContamination   ( 0),
+  NoContaminationWeak   ( 0),
+  NoContaminationWeakMaterial   ( 0),
+  Closure_NoMisIDWeakMaterial   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
   _useEventPlane   ( 0),
@@ -155,6 +159,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _charge_1(0),
   _iEtaPhi_1(0),
   _iPt_1(0),
+  _TrackArray(0),
   _pt_1(0),
   _px_1(0),
   _py_1(0),
@@ -217,10 +222,20 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   __s2NPtNw_12(0),
   __s2PtNNw_12(0),
   __n1_1_vsPt(0),
+  __n1_1_vsPt_pdg(0),
+  __n1_1_vsPt_pdg_Weak(0),
+  __n1_1_vsPt_pdg_Weak_Material(0),
+  __n1_1_vsPt_Weak(0),
+  __n1_1_vsPt_Material(0),
   __n1_1_vsEtaPhi(0),
   __s1pt_1_vsEtaPhi(0),
   __n1_1_vsZEtaPhiPt(0),
   __n1_2_vsPt(0),
+  __n1_2_vsPt_pdg(0),
+  __n1_2_vsPt_pdg_Weak(0),
+  __n1_2_vsPt_pdg_Weak_Material(0),
+  __n1_2_vsPt_Weak(0),
+  __n1_2_vsPt_Material(0),
   __n1_2_vsEtaPhi(0),
   __s1pt_2_vsEtaPhi(0),
   __n1_2_vsZEtaPhiPt(0),
@@ -301,6 +316,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _dcaz   ( 0),
   _dcaxy  ( 0),
   _n1_1_vsPt         ( 0),
+  _n1_1_vsPt_pdg(0),
+  _n1_1_vsPt_pdg_Weak(0),
+  _n1_1_vsPt_pdg_Weak_Material(0),
+  _n1_1_vsPt_Weak(0),
+  _n1_1_vsPt_Material(0),
   _n1_1_vsEtaVsPhi   ( 0),
   _s1pt_1_vsEtaVsPhi ( 0),
   _n1_1_vsZVsEtaVsPhiVsPt ( 0),
@@ -312,6 +332,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _corrDedxVsP_1     ( 0),
   _betaVsP_1         ( 0),
   _n1_2_vsPt         ( 0),
+  _n1_2_vsPt_pdg(0),
+  _n1_2_vsPt_pdg_Weak(0),
+  _n1_2_vsPt_pdg_Weak_Material(0),
+  _n1_2_vsPt_Weak(0),
+  _n1_2_vsPt_Material(0),
   _n1_2_vsEtaVsPhi   ( 0),
   _s1pt_2_vsEtaVsPhi ( 0),
   _n1_2_vsZVsEtaVsPhiVsPt ( 0),
@@ -338,6 +363,10 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _invMassKaon       ( 0),
   _invMassKaonSq     ( 0),
   _invMassElec       ( 0),
+  _ClusterSharedFraction_beforeCut (0),
+  _ClusterSharedFraction_afterCut (0),
+  _ClusterSharedFraction_3by3Bins_beforeCut (0),
+  _ClusterSharedFraction_3by3Bins_afterCut (0),
   n1Name("NA"),
   n1NwName("NA"),
   n2Name("NA"),
@@ -441,6 +470,9 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   vsEta("NA"),
   vsEtaPhi("NA"),
   vsPtVsPt("NA"),
+  pdg("NA"),
+  Weak("NA"),
+  Material("NA"),
   fUtils(0),
   f2015V0MtoTrkTPCout(NULL),
   f2015V0MtoTrkTPCout_Upper(NULL),
@@ -481,6 +513,9 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   useCircularCutPID( 0),
   fHelperPID(0),
   NoContamination   ( 0),
+  NoContaminationWeak   ( 0),
+  NoContaminationWeakMaterial   ( 0),
+  Closure_NoMisIDWeakMaterial   ( 0),
   _useWeights    ( 0),
   _useRapidity   ( 0),
   _useEventPlane   ( 0),
@@ -532,6 +567,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _charge_1(0),
   _iEtaPhi_1(0),
   _iPt_1(0),
+  _TrackArray(0),
   _pt_1(0),
   _px_1(0),
   _py_1(0),
@@ -594,10 +630,20 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   __s2NPtNw_12(0),
   __s2PtNNw_12(0),
   __n1_1_vsPt(0),
+  __n1_1_vsPt_pdg(0),
+  __n1_1_vsPt_pdg_Weak(0),
+  __n1_1_vsPt_pdg_Weak_Material(0),
+  __n1_1_vsPt_Weak(0),
+  __n1_1_vsPt_Material(0),
   __n1_1_vsEtaPhi(0),
   __s1pt_1_vsEtaPhi(0),
   __n1_1_vsZEtaPhiPt(0),
   __n1_2_vsPt(0),
+  __n1_2_vsPt_pdg(0),
+  __n1_2_vsPt_pdg_Weak(0),
+  __n1_2_vsPt_pdg_Weak_Material(0),
+  __n1_2_vsPt_Weak(0),
+  __n1_2_vsPt_Material(0),
   __n1_2_vsEtaPhi(0),
   __s1pt_2_vsEtaPhi(0),
   __n1_2_vsZEtaPhiPt(0),
@@ -677,6 +723,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _dcaz ( 0),
   _dcaxy ( 0),
   _n1_1_vsPt         ( 0),
+  _n1_1_vsPt_pdg(0),
+  _n1_1_vsPt_pdg_Weak(0),
+  _n1_1_vsPt_pdg_Weak_Material(0),
+  _n1_1_vsPt_Weak(0),
+  _n1_1_vsPt_Material(0),
   _n1_1_vsEtaVsPhi   ( 0),
   _s1pt_1_vsEtaVsPhi ( 0),
   _n1_1_vsZVsEtaVsPhiVsPt ( 0),
@@ -688,6 +739,11 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _corrDedxVsP_1     ( 0),
   _betaVsP_1         ( 0),
   _n1_2_vsPt         ( 0),
+  _n1_2_vsPt_pdg(0),
+  _n1_2_vsPt_pdg_Weak(0),
+  _n1_2_vsPt_pdg_Weak_Material(0),
+  _n1_2_vsPt_Weak(0),
+  _n1_2_vsPt_Material(0),
   _n1_2_vsEtaVsPhi   ( 0),
   _s1pt_2_vsEtaVsPhi ( 0),
   _n1_2_vsZVsEtaVsPhiVsPt ( 0),
@@ -714,6 +770,10 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _invMassKaon       ( 0),
   _invMassKaonSq     ( 0),
   _invMassElec       ( 0),
+  _ClusterSharedFraction_beforeCut (0),
+  _ClusterSharedFraction_afterCut (0),
+  _ClusterSharedFraction_3by3Bins_beforeCut (0),
+  _ClusterSharedFraction_3by3Bins_afterCut (0),
   n1Name("NA"),
   n1NwName("NA"),
   n2Name("NA"),
@@ -817,6 +877,9 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   vsEta("NA"),
   vsEtaPhi("NA"),
   vsPtVsPt("NA"),
+  pdg("NA"),
+  Weak("NA"),
+  Material("NA"),
   fUtils(0),
   f2015V0MtoTrkTPCout(NULL),
   f2015V0MtoTrkTPCout_Upper(NULL),
@@ -899,7 +962,13 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
   _pz_1       = new float[arraySize];
   _correction_1 = new float[arraySize];
   _dedx_1     = new float[arraySize];
-  __n1_1_vsPt              = getDoubleArray(_nBins_pt_1,        0.);
+  _TrackArray = new AliAODTrack * [arraySize];
+  __n1_1_vsPt                   = getDoubleArray(_nBins_pt_1, 0.);
+  __n1_1_vsPt_pdg               = getDoubleArray(_nBins_pt_1, 0.);
+  __n1_1_vsPt_pdg_Weak          = getDoubleArray(_nBins_pt_1, 0.);
+  __n1_1_vsPt_pdg_Weak_Material = getDoubleArray(_nBins_pt_1, 0.);
+  __n1_1_vsPt_Weak              = getDoubleArray(_nBins_pt_1, 0.);
+  __n1_1_vsPt_Material          = getDoubleArray(_nBins_pt_1, 0.);
   __n1_1_vsEtaPhi          = getDoubleArray(_nBins_etaPhi_1,    0.);
   __s1pt_1_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_1,    0.);
   __n1_1_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_1,  0.);
@@ -920,10 +989,14 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
       _correction_2 = new float[arraySize];
       _dedx_2       = new float[arraySize];
       __n1_2_vsPt              = getDoubleArray(_nBins_pt_2,        0.);
+      __n1_2_vsPt_pdg               = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_pdg_Weak          = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_pdg_Weak_Material = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_Weak              = getDoubleArray(_nBins_pt_2, 0.);
+      __n1_2_vsPt_Material          = getDoubleArray(_nBins_pt_2, 0.);
       __n1_2_vsEtaPhi          = getDoubleArray(_nBins_etaPhi_2,    0.);
       __s1pt_2_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_2,    0.);
-      __n1_2_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_2, 0.);
-        
+      __n1_2_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_2, 0.);        
     }
     
   __n2_12_vsPtPt           = getDoubleArray(_nBins_pt_1*_nBins_pt_2,0.);
@@ -1021,12 +1094,14 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
     
   vsZ         = "_vsZ";
   vsM         = "_vsM";
-  vsPt         = "_vsPt";
-  vsPhi        = "_vsPhi";
-  vsEta        = "_vsEta";
-  vsEtaPhi     = "_vsEtaPhi";
-  vsPtVsPt     = "_vsPtVsPt";
-    
+  vsPt        = "_vsPt";
+  vsPhi       = "_vsPhi";
+  vsEta       = "_vsEta";
+  vsEtaPhi    = "_vsEtaPhi";
+  vsPtVsPt    = "_vsPtVsPt";
+  pdg         = "_pdg";
+  Weak        = "_Weak";
+  Material    = "_Material";
     
   if (_useWeights)
     {
@@ -1162,8 +1237,18 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "y_Pt_AllCh_MCAODTruth";       _y_Pt_AllCh_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
       name = "y_Pt_POI_MCAODTruth";        _y_Pt_POI_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );      
       name = n1Name + part_1_Name + vsPt;                         _n1_1_vsPt = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_1_Name + vsPt + pdg;                   _n1_1_vsPt_pdg = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_1_Name + vsPt + pdg + Weak;            _n1_1_vsPt_pdg_Weak = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_1_Name + vsPt + pdg + Weak + Material; _n1_1_vsPt_pdg_Weak_Material = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_1_Name + vsPt + Weak;                  _n1_1_vsPt_Weak = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+      name = n1Name + part_1_Name + vsPt + Material;              _n1_1_vsPt_Material = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
       name = n1Name + part_1_Name + vsZ + vsEtaPhi + vsPt;        _n1_1_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_1, 0., double(_nBins_etaPhi_1), _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", _title_etaPhi_1,  _title_pt_1);        
       name = n1Name + part_2_Name + vsPt;                         _n1_2_vsPt = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + pdg;                   _n1_2_vsPt_pdg = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + pdg + Weak;            _n1_2_vsPt_pdg_Weak = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + pdg + Weak + Material; _n1_2_vsPt_pdg_Weak_Material = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + Weak;                  _n1_2_vsPt_Weak = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+      name = n1Name + part_2_Name + vsPt + Material;              _n1_2_vsPt_Material = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
       name = n1Name + part_2_Name + vsZ + vsEtaPhi + vsPt;        _n1_2_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_2, 0., double(_nBins_etaPhi_2), _nBins_pt_2, _min_pt_2, _max_pt_2, "zVertex", _title_etaPhi_2,  _title_pt_2);	
     }
   else
@@ -1198,6 +1283,10 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "mInvKaon";   _invMassKaon   = createHisto1F(name,name, 80, 0.98, 1.06, "M_{KK}","counts");
       name = "mInvKaonSq"; _invMassKaonSq = createHisto1F(name,name, 120, 0.98, 1.10, "M_{KK}^2","counts");
       name = "mInvElec"; _invMassElec = createHisto1F(name,name, 500, 0., 1.000, "M_{inv}","counts");
+      name = "ClusterSharedFraction_beforeCut"; _ClusterSharedFraction_beforeCut = createHisto1F(name,name, 400, 0., 1.0, "Cluster Shared Fraction","Pair Counts");
+      name = "ClusterSharedFraction_afterCut"; _ClusterSharedFraction_afterCut = createHisto1F(name,name, 400, 0., 1.0, "Cluster Shared Fraction after Cut","Pair Counts");
+      name = "ClusterSharedFraction_3by3Bins_beforeCut"; _ClusterSharedFraction_3by3Bins_beforeCut = createHisto1F(name,name, 400, 0., 1.0, "Cluster Shared Fraction","Pair Counts");
+      name = "ClusterSharedFraction_3by3Bins_afterCut"; _ClusterSharedFraction_3by3Bins_afterCut = createHisto1F(name,name, 400, 0., 1.0, "Cluster Shared Fraction after Cut","Pair Counts");
     }
     
   AliInfo(" AliAnalysisTaskPIDBFDptDpt::createHistoHistograms() All Done");
@@ -1214,15 +1303,35 @@ void  AliAnalysisTaskPIDBFDptDpt::finalizeHistograms()
       if (_sameFilter)
         {
 	  fillHistoWithArray(_n1_1_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
+	  fillHistoWithArray(_n1_1_vsPt_pdg,          __n1_1_vsPt_pdg,    _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_pdg_Weak,            __n1_1_vsPt_pdg_Weak,            _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_pdg_Weak_Material,   __n1_1_vsPt_pdg_Weak_Material,   _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_Weak,                __n1_1_vsPt_Weak,                _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_Material,            __n1_1_vsPt_Material,            _nBins_pt_1);
 	  fillHistoWithArray(_n1_1_vsZVsEtaVsPhiVsPt, __n1_1_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_1, _nBins_pt_1);
 	  fillHistoWithArray(_n1_2_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
+	  fillHistoWithArray(_n1_2_vsPt_pdg,          __n1_1_vsPt_pdg,    _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak,            __n1_1_vsPt_pdg_Weak,            _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak_Material,   __n1_1_vsPt_pdg_Weak_Material,   _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_Weak,                __n1_1_vsPt_Weak,                _nBins_pt_1);
+          fillHistoWithArray(_n1_2_vsPt_Material,            __n1_1_vsPt_Material,            _nBins_pt_1);
 	  fillHistoWithArray(_n1_2_vsZVsEtaVsPhiVsPt, __n1_1_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_1, _nBins_pt_1);
         }
       else
         {
 	  fillHistoWithArray(_n1_1_vsPt,              __n1_1_vsPt,        _nBins_pt_1);
+	  fillHistoWithArray(_n1_1_vsPt_pdg,          __n1_1_vsPt_pdg,    _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_pdg_Weak,            __n1_1_vsPt_pdg_Weak,            _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_pdg_Weak_Material,   __n1_1_vsPt_pdg_Weak_Material,   _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_Weak,                __n1_1_vsPt_Weak,                _nBins_pt_1);
+          fillHistoWithArray(_n1_1_vsPt_Material,            __n1_1_vsPt_Material,            _nBins_pt_1);
 	  fillHistoWithArray(_n1_1_vsZVsEtaVsPhiVsPt, __n1_1_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_1, _nBins_pt_1);
 	  fillHistoWithArray(_n1_2_vsPt,              __n1_2_vsPt,        _nBins_pt_2);
+	  fillHistoWithArray(_n1_2_vsPt_pdg,          __n1_2_vsPt_pdg,    _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak,            __n1_2_vsPt_pdg_Weak,            _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_pdg_Weak_Material,   __n1_2_vsPt_pdg_Weak_Material,   _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_Weak,                __n1_2_vsPt_Weak,                _nBins_pt_2);
+          fillHistoWithArray(_n1_2_vsPt_Material,            __n1_2_vsPt_Material,            _nBins_pt_2);
 	  fillHistoWithArray(_n1_2_vsZVsEtaVsPhiVsPt, __n1_2_vsZEtaPhiPt, _nBins_vertexZ, _nBins_etaPhi_2, _nBins_pt_2);
         }
     }
@@ -1621,25 +1730,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		
 		  if ( IDrec != particleSpecies ) continue; // select POI
 		
-		  // This block of code used to get PdgCode for MC reco tracks
-		  if ( fAnalysisType == "MCAODreco" && NoContamination == 1 )
-		    {
-		      Int_t lab =  t -> GetLabel();
-		      //cout << "step 1 Au-Au: particle Label: " << lab << endl;
-		      TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
-		      if( !arr ) continue;
-		      //cout << "step 2 Au-Au: arr: " << arr->GetEntriesFast() << endl;
-		      AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
-		      //cout << "step 3 Au-Au: particle ID: " << particle -> GetPdgCode() << endl;
-		      if( particleSpecies == 0 )
-                        { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
-                      else if( particleSpecies == 1 )
-                        { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
-                      else if( particleSpecies == 2 )
-                        { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
-		      //cout << "step 4 Au-Au: pion ID: " << particle -> GetPdgCode() << endl;
-		    }
-		
+		      
 		  if ( particleSpecies == 0 )  mass = mpion;
 		  if ( particleSpecies == 1 )  mass = mkaon;
 		  if ( particleSpecies == 2 )  mass = mproton;
@@ -1755,11 +1846,66 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  if ( _singlesOnly )
 		    {
 		      __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
-		      __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;       
+		      
+		      if ( fAnalysisType == "RealData" ) { __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
+                      else if ( fAnalysisType == "MCAODreco" )  // This block of code used to get PdgCode for MC reco tracks
+                        {
+                          Int_t lab =  t -> GetLabel();
+                          TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
+                          if( !arr ) continue;
+                          AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
+              
+                          if ( NoContamination )
+                            {
+                              if( particleSpecies == 0 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
+                              else if( particleSpecies == 1 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
+                              else if( particleSpecies == 2 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
+
+                               __n1_1_vsPt_pdg[iPt]   += corr;
+                
+                              if ( NoContaminationWeak )
+                                {
+                                  if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                                  __n1_1_vsPt_pdg_Weak[iPt]   += corr;
+                
+                                  if ( NoContaminationWeakMaterial )
+                                    {
+                                     if( particle -> IsSecondaryFromMaterial() )  continue;
+                                     __n1_1_vsPt_pdg_Weak_Material[iPt]  += corr;
+				     
+				     if ( Closure_NoMisIDWeakMaterial ) { __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
+                                    }
+                                 }
+                              }
+              
+                          if ( !Closure_NoMisIDWeakMaterial ) { __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
+			      
+                         }
 		    }
 		  else
 		    {
-          __n1_1_vsPt[iPt]            += corr;
+		      if ( fAnalysisType == "MCAODreco" ) // This block of code used to get PdgCode for MC reco tracks
+                        {
+                          Int_t lab =  t -> GetLabel();
+                          TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
+              		  if( !arr ) continue;
+              		  AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
+             
+                          if ( Closure_NoMisIDWeakMaterial )
+                            {
+                              if( particleSpecies == 0 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
+                              else if( particleSpecies == 1 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
+                              else if( particleSpecies == 2 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
+                
+                              if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                              if( particle -> IsSecondaryFromMaterial() )  continue;
+                            }
+                         }
+			  
+                      __n1_1_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_1[k1]                   = iTrack;
 		      _charge_1[k1]               = charge;
@@ -1776,6 +1922,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		      __s1pt_1_vsEtaPhi[iEtaPhi]  += corrPt;
 		      __n1Nw_1                    += 1;
 		      __s1ptNw_1                  += pt;
+		      _TrackArray[k1] = t;
 		      ++k1;
 		      if (k1>=arraySize)
 			{
@@ -1823,11 +1970,66 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  if (_singlesOnly)
 		    {
 		      __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
-		      __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
+		      
+		      if ( fAnalysisType == "RealData" ) { __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
+                      else if ( fAnalysisType == "MCAODreco" )  // This block of code used to get PdgCode for MC reco tracks
+                        {
+                          Int_t lab =  t -> GetLabel();
+                          TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
+                          if( !arr ) continue;
+                          AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
+              
+                          if ( NoContamination )
+                            {
+                              if( particleSpecies == 0 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
+                              else if( particleSpecies == 1 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
+                              else if( particleSpecies == 2 )
+                                { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
+                
+                              __n1_2_vsPt_pdg[iPt]   += corr;
+                
+                              if ( NoContaminationWeak )
+                                {
+                                 if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                                 __n1_2_vsPt_pdg_Weak[iPt]   += corr;
+                  
+                                 if ( NoContaminationWeakMaterial )
+                                   {
+                                    if( particle -> IsSecondaryFromMaterial() )  continue;
+                                    __n1_2_vsPt_pdg_Weak_Material[iPt]  += corr;
+					 
+				    if ( Closure_NoMisIDWeakMaterial ) { __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
+                                   }
+                                }
+                            }
+              
+                          if ( !Closure_NoMisIDWeakMaterial ) { __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr; }
+              
+                        }	  
 		    }
 		  else
 		    {
-          __n1_2_vsPt[iPt]            += corr;
+		      if ( fAnalysisType == "MCAODreco" ) // This block of code used to get PdgCode for MC reco tracks
+                        {
+                          Int_t lab =  t -> GetLabel();
+                          TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
+              		  if( !arr ) continue;
+              		  AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
+             
+                          if ( Closure_NoMisIDWeakMaterial )
+                            {
+                              if( particleSpecies == 0 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 211  )  continue; }
+                              else if( particleSpecies == 1 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 321  )  continue; }
+                              else if( particleSpecies == 2 ) { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
+                
+                              if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                              if( particle -> IsSecondaryFromMaterial() )  continue;
+                            }
+                         }
+			  
+          	      __n1_2_vsPt[iPt]            += corr;
 		      corrPt                      = corr*pt;
 		      _id_2[k2]                   = iTrack;         //cout << "step 1" << endl;
 		      _charge_2[k2]               = charge;         //cout << "step 2" << endl;
@@ -1874,6 +2076,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	      }
 
 	      if( !t -> IsPhysicalPrimary() ) continue;
+	      if( t -> IsSecondaryFromWeakDecay() )  continue;
+              if( t -> IsSecondaryFromMaterial() )  continue;
 	    
 	      q      = t -> Charge();
 
@@ -1963,10 +2167,16 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		      if( pdgCodeOfMother == 311 || pdgCodeOfMother == -311 // K0
 			  || pdgCodeOfMother == 310 // K_Short
 			  || pdgCodeOfMother == 130 // K_Long
+			  || pdgCodeOfMother == 313 // K_Star_0
+                          || pdgCodeOfMother == 323 // K_Star_+
 			  || pdgCodeOfMother == 333 // phi
 			  || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
 			  || pdgCodeOfMother == 111 // pi0
 			  || pdgCodeOfMother == 22 // photon
+			  || pdgCodeOfMother == 2224 // Delta_++
+                          || pdgCodeOfMother == 2214 // Delta_+
+                          || pdgCodeOfMother == 2114 // Delta_0
+                          || pdgCodeOfMother == 1114 // Delta_-
 			  ) continue;
 		    }
 		  }
@@ -2196,6 +2406,16 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 			  py_2      = _py_1[i2];          //SAME with particle 1 because this is for like-sign pairs
 			  pz_2      = _pz_1[i2];          //
 			  
+			  Double_t passsharedfractionpair = CalculateSharedFraction( _TrackArray[i1]->GetTPCClusterMapPtr(), _TrackArray[i2]->GetTPCClusterMapPtr(), _TrackArray[i1]->GetTPCSharedMapPtr(), _TrackArray[i2]->GetTPCSharedMapPtr() );
+                          _ClusterSharedFraction_beforeCut->Fill(passsharedfractionpair);
+                          if( TMath::Abs(_TrackArray[i1]->Eta()-_TrackArray[i2]->Eta()) < (3.*4.*_max_eta_1/(2.*_nBins_eta_1-1.)) && TMath::Abs(_TrackArray[i1]->Phi()-_TrackArray[i2]->Phi()) < (3.*2.*TMath::Pi()/(double)_nBins_phi_1) )
+                          { _ClusterSharedFraction_3by3Bins_beforeCut->Fill(passsharedfractionpair); }
+ 
+                          if( passsharedfractionpair > fSharedfraction_Pair_cut ) continue;
+                          _ClusterSharedFraction_afterCut->Fill(passsharedfractionpair);
+                          if( TMath::Abs(_TrackArray[i1]->Eta()-_TrackArray[i2]->Eta()) < (3.*4.*_max_eta_1/(2.*_nBins_eta_1-1.)) && TMath::Abs(_TrackArray[i1]->Phi()-_TrackArray[i2]->Phi()) < (3.*2.*TMath::Pi()/(double)_nBins_phi_1) )
+                          { _ClusterSharedFraction_3by3Bins_afterCut->Fill(passsharedfractionpair); }
+			      
 			  if ( particleSpecies == 1 )  // invariant mass for kaon-kaon pairs
 			    {
 			      float EngyKaon1Sq = massKaonSq + pt_1*pt_1 + pz_1*pz_1;
@@ -2268,6 +2488,16 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 			  px_2      = _px_1[i2];          //
 			  py_2      = _py_1[i2];          //SAME with particle 1 because this is for like-sign pairs
 			  pz_2      = _pz_1[i2];          //
+			      
+			  Double_t passsharedfractionpair = CalculateSharedFraction( _TrackArray[i1]->GetTPCClusterMapPtr(), _TrackArray[i2]->GetTPCClusterMapPtr(), _TrackArray[i1]->GetTPCSharedMapPtr(), _TrackArray[i2]->GetTPCSharedMapPtr() );
+                          _ClusterSharedFraction_beforeCut->Fill(passsharedfractionpair);
+                          if( TMath::Abs(_TrackArray[i1]->Eta()-_TrackArray[i2]->Eta()) < (3.*4.*_max_eta_1/(2.*_nBins_eta_1-1.)) && TMath::Abs(_TrackArray[i1]->Phi()-_TrackArray[i2]->Phi()) < (3.*2.*TMath::Pi()/(double)_nBins_phi_1) )
+                          { _ClusterSharedFraction_3by3Bins_beforeCut->Fill(passsharedfractionpair); }
+              
+                          if( passsharedfractionpair > fSharedfraction_Pair_cut ) continue;
+                          _ClusterSharedFraction_afterCut->Fill(passsharedfractionpair);
+                          if( TMath::Abs(_TrackArray[i1]->Eta()-_TrackArray[i2]->Eta()) < (3.*4.*_max_eta_1/(2.*_nBins_eta_1-1.)) && TMath::Abs(_TrackArray[i1]->Phi()-_TrackArray[i2]->Phi()) < (3.*2.*TMath::Pi()/(double)_nBins_phi_1) )
+                          { _ClusterSharedFraction_3by3Bins_afterCut->Fill(passsharedfractionpair); }
 			      
 			  if ( particleSpecies == 1 )  // invariant mass for kaon-kaon pairs
 			    {
@@ -3039,4 +3269,46 @@ Bool_t AliAnalysisTaskPIDBFDptDpt::StoreEventMultiplicities(AliVEvent *event)
       //}
     } 
   return kTRUE;
+}
+
+
+//________________________________________________________________________________________________________________
+Double_t AliAnalysisTaskPIDBFDptDpt:: CalculateSharedFraction(const TBits *triggerClusterMap,const TBits *assocClusterMap,const TBits *triggerShareMap,const TBits *assocShareMap)
+{
+  Double_t nofhits=0;
+  Double_t nofsharedhits=0;
+  
+  for(UInt_t imap=0;imap< (triggerClusterMap->GetNbits() );imap++)
+  {
+    //if they are in same pad
+    //cout<<triggerClusterMap->TestBitNumber(imap)<<"    "<< assocClusterMap->TestBitNumber(imap)<<endl;
+    if (triggerClusterMap->TestBitNumber(imap) && assocClusterMap->TestBitNumber(imap))
+    {
+      //if they share
+      //cout<<triggerShareMap->TestBitNumber(imap)<<"   "<<assocShareMap->TestBitNumber(imap)<<endl;
+      if (triggerShareMap->TestBitNumber(imap) && assocShareMap->TestBitNumber(imap))
+      { //cout<<triggerShareMap->TestBitNumber(imap)<<"   "<<assocShareMap->TestBitNumber(imap)<<endl;
+        nofhits+=2;
+        nofsharedhits+=2;
+      }
+      //not shared
+      else { nofhits+=2; }
+    }
+    
+    //different pad
+    //cout<< (triggerClusterMap->TestBitNumber(imap) || assocClusterMap->TestBitNumber(imap))<<endl;
+    else if (triggerClusterMap->TestBitNumber(imap) || assocClusterMap->TestBitNumber(imap))
+    {// One track has a hit, the other does not
+      nofhits++;
+      //cout<<"No hits :"<<nofhits<<endl;
+    }
+  }
+  
+  Double_t SharedFraction=0.0;
+  if(nofhits>0) SharedFraction=(nofsharedhits/nofhits);
+  
+  //cout<<"Fraction shared hits :"<<SharedFraction<<endl;
+  
+  return SharedFraction;
+  
 }

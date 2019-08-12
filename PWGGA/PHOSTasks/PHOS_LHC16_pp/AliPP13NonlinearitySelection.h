@@ -2,7 +2,7 @@
 #define ALIPP13NONLINEARITYSELECTION_H
 
 // --- Custom header files ---
-#include "AliPP13PhotonSelectionMC.h"
+#include "AliPP13SpectrumSelectionMC.h"
 #include "AliPP13SelectionWeights.h"
 #include "AliPP13DetectorHistogram.h"
 
@@ -18,18 +18,18 @@
 // TODO: Merge nonlinearity selection wiht nonlinearity Study
 //
 
-class AliPP13NonlinearitySelection: public AliPP13PhotonSelectionMC
+class AliPP13NonlinearitySelection: public AliPP13SpectrumSelectionMC
 {
 public:
 	AliPP13NonlinearitySelection():
-		AliPP13PhotonSelectionMC(),
+		AliPP13SpectrumSelectionMC(),
 		fMassPt()
 	{
 	}
 
 	AliPP13NonlinearitySelection(const char * name, const char * title, 
 		AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w, Bool_t isMC = kTRUE):
-		AliPP13PhotonSelectionMC(name, title, cuts, w),
+		AliPP13SpectrumSelectionMC(name, title, cuts, w),
 		fMassPt()
 	{
 		// NB: Disable timing cuts for MC
@@ -49,7 +49,7 @@ public:
 	}
 	
 protected:
-	virtual void SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags);
+	virtual void SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & eflags);
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
 
 	AliPP13NonlinearitySelection(const AliPP13NonlinearitySelection &);

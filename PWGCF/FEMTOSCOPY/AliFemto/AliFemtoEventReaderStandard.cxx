@@ -306,10 +306,10 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
       AliAODMCParticle *motherpart;
       for (int ip=0; ip<mcP->GetEntries(); ip++) {
 	motherpart = (AliAODMCParticle *) mcP->At(ip);
-	if (motherpart->GetDaughter(0) > 0)
-	  motherids[motherpart->GetDaughter(0)] = ip;
-	if (motherpart->GetDaughter(1) > 0)
-	  motherids[motherpart->GetDaughter(1)] = ip;
+	if (motherpart->GetDaughterLabel(0) > 0)
+	  motherids[motherpart->GetDaughterLabel(0)] = ip;
+	if (motherpart->GetDaughterLabel(1) > 0)
+	  motherids[motherpart->GetDaughterLabel(1)] = ip;
       }
     }
   }

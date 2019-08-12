@@ -34,6 +34,9 @@ AliReducedTrackCut::AliReducedTrackCut() :
   fCutOnITShitMap(0),
   fUseANDonITShitMap(kFALSE),
   fRequestCutOnITShitMap(kFALSE),  
+  fCutOnITSsharedClsMap(0),
+  fUseANDonITSsharedClsMap(kFALSE),
+  fRequestCutOnITSsharedClsMap(kFALSE),
   fRequestTPCrefit(kFALSE),
   fRequestTOFout(kFALSE),
   fRequestTRDonlineMatch(kFALSE)
@@ -61,6 +64,9 @@ AliReducedTrackCut::AliReducedTrackCut(const Char_t* name, const Char_t* title) 
   fCutOnITShitMap(0),
   fUseANDonITShitMap(kFALSE),
   fRequestCutOnITShitMap(kFALSE),  
+  fCutOnITSsharedClsMap(0),
+  fUseANDonITSsharedClsMap(kFALSE),
+  fRequestCutOnITSsharedClsMap(kFALSE),
   fRequestTPCrefit(kFALSE),
   fRequestTOFout(kFALSE),
   fRequestTRDonlineMatch(kFALSE)
@@ -87,7 +93,8 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj) {
   //Fill values
   Float_t values[AliReducedVarManager::kNVars];
   AliReducedVarManager::FillTrackInfo((AliReducedBaseTrack*)obj, values);
-  
+  AliReducedVarManager::FillClusterMatchedTrackInfo((AliReducedBaseTrack*)obj, values);
+
   return IsSelected(obj, values);
 }
 
@@ -153,6 +160,13 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj, Float_t* values) {
          UChar_t eval = itsHitMap & fCutOnITShitMap;
          if(fUseANDonITShitMap && (eval!=fCutOnITShitMap)) return kFALSE;
          if(!fUseANDonITShitMap && (eval==0)) return kFALSE;
+      }
+      if(fRequestCutOnITSsharedClsMap) {
+         UChar_t itsHitMap = track->ITSclusterMap();
+         UChar_t itsSharedMap = track->ITSSharedClusterMap();
+         UChar_t eval = itsHitMap & itsSharedMap & fCutOnITSsharedClsMap;
+         if(fUseANDonITSsharedClsMap && (eval==fCutOnITSsharedClsMap)) return kFALSE;
+         if(!fUseANDonITSsharedClsMap && (eval!=0)) return kFALSE;
       }
    }
 

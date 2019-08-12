@@ -45,11 +45,9 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield_XeXe(Bool_t isMC = kFALSE,
   deu->SetDCABins(80,-0.5,0.5);
   deu->SetRequireMaxMomentum(1.3);
 
-  //float p[5] = {7.25105e-01,4.99820e+01,2.35714e-10,2.49196e+00,1.41570e+01};
-  //deu->SetCustomTPCpid(p,0.08f);
   deu->SetRequireTPCpidSigmas(3.f);
-  float cent[11] = {0.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f};
-  deu->SetCentBins(10, cent);
+  float cent[6] = {0.f,10.f,20.f,40.f,60.f,90.f};
+  deu->SetCentBins(5, cent);
   deu->SetUseFlattening(false);
   float pt[33] = {
     0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f,1.1f,

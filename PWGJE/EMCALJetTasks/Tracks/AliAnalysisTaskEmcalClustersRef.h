@@ -146,6 +146,18 @@ public:
   void SetFillMultiplicityHistograms(Bool_t doFill) { fDoFillMultiplicityHistograms = doFill; }
 
   /**
+   * @brief Switch on histograms for fired clusters
+   * @param[in] doUse If true histograms are switched on
+   */
+  void SetUsedFiredClusters(Bool_t doUse) { fUseFiredTriggers = doUse; }
+
+  /**
+   * @brief Set filling trigger cluster dimension
+   * @param[in] doFill If true trigger cluster axis is filled (only relevant in pp for livetime correction) 
+   */
+  void SetFillTriggerClusters(Bool_t doFill) { fFillTriggerClusters = doFill; }
+
+  /**
   * @brief Switch on/off exclusive triggers
   * 
   * Exclusive triggers do not contain lower threshold triggers. Switching
@@ -232,7 +244,7 @@ protected:
    */
   void GetPatchBoundaries(AliEMCALTriggerPatchInfo &o, Double_t *boundaries) const;
 
-  void FillClusterHistograms(const TString &triggerclass, double energy, double transversenergy, double eta, double phi, double clustertime, int ncell, int trgcluster, const TList *triggerpatches, int energycomp);
+  void FillClusterHistograms(const TString &triggerclass, double energy, double eta, double phi, double clustertime, int ncell, int trgcluster, const TList *triggerpatches, int energycomp);
 
   /**
    * @brief Check whether cluster is inside a trigger patch which has fired the trigger
@@ -253,7 +265,9 @@ protected:
   EnergyDefinition_t                  fEnergyDefinition;          ///< Energy definition used for a given cluster
   Bool_t                              fEnableSumw2;               ///< Enable sumw2 when creating histograms
   Bool_t                              fDoFillMultiplicityHistograms;    ///< Swich for multiplcity histograms
+  Bool_t                              fUseFiredTriggers;          ///< Study clusters connected with patches
   Bool_t                              fUseExclusiveTriggers;      ///< Include exclusive triggers (without lower threshold triggers)
+  Bool_t                              fFillTriggerClusters;       ///< Fill trigger cluster histograms
   AliCutValueRange<double>            fClusterTimeRange;          ///< Selected range on cluster time
   std::vector<TriggerCluster_t>       fTriggerClusters;           //!<! Detected trigger clusters for event
   TObjArray                           fRequiredOverlaps;          ///< Add option to require overlap with certain triggers

@@ -1,9 +1,9 @@
 #ifndef AliSigma0ParticleBase_H
 #define AliSigma0ParticleBase_H
 
+#include "AliESDtrack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
-#include "AliVTrack.h"
 #include "Riostream.h"
 #include "TObject.h"
 
@@ -12,14 +12,14 @@ class AliSigma0ParticleBase {
   AliSigma0ParticleBase();
   virtual ~AliSigma0ParticleBase() {}
   AliSigma0ParticleBase &operator=(const AliSigma0ParticleBase &obj);
-  AliSigma0ParticleBase(const AliVTrack &track, int pdg,
-                        const float magneticField, int filterbit = 128);
+  AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
+                        const float magneticField, int filterbit = 0);
 
   double ComputeRelK(const AliSigma0ParticleBase &part2,
                      bool debug = false) const;
   double ComputeRelKMC(const AliSigma0ParticleBase &part2) const;
-  double ComputePhiStar(const AliVTrack &track, const float magneticField,
-                        const float radius) const;
+  float ComputePhiStar(const AliESDtrack *track, const float magneticField,
+                       const float radius) const;
   void ProcessMCInfo(AliMCParticle *mcParticle, AliMCEvent *mcEvent);
 
   void SetMass(double mass) { fMass = mass; }
@@ -52,13 +52,21 @@ class AliSigma0ParticleBase {
   double GetMass() const { return fMass; }
   int GetQ() const { return fQ; }
   double GetPt() const { return fPt; }
+  double GetP() const {
+    return std::sqrt(fP[0] * fP[0] + fP[1] * fP[1] + fP[2] * fP[2]);
+  }
   int GetTrackLabel() const { return fTrackLabel; }
   double GetPhi() const { return fPhi; }
   double GetEta() const { return fEta; }
+  double GetTheta() const { return fTheta; }
+  double GetPhiMC() const { return fPhiMC; }
+  double GetThetaMC() const { return fThetaMC; }
   bool GetIsUse() const { return fUse; }
   double GetDCAr() { return fDCAr; }
   double GetDCAz() { return fDCAz; }
   double GetPhiStar(int iRadius) const { return fPhistar[iRadius]; }
+  double GetAveragePhiStar() const { return fAveragePhistar; }
+  const std::vector<float> &GetPhiStar() const { return fPhistar; }
   int GetMCLabel() const { return fMClabel; }
 
  protected:
@@ -74,16 +82,20 @@ class AliSigma0ParticleBase {
   int fMClabel;
   double fPhi;
   double fEta;
+  double fTheta;
+  double fPhiMC;
+  double fThetaMC;
 
   int fCharge;
   double fDCAz;
   double fDCAr;
   bool fUse;
 
-  double fPhistar[9];
+  std::vector<float> fPhistar;
+  float fAveragePhistar;
 
  private:
-  ClassDef(AliSigma0ParticleBase, 1)
+  ClassDef(AliSigma0ParticleBase, 5)
 };
 
 #endif

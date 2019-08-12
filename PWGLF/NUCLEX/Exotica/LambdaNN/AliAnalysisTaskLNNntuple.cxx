@@ -73,7 +73,7 @@ AliAnalysisTaskSE (),
   fhMassTOF (0),
   fhBBPions (0),
   fhBBH3 (0),
-  fhBBH3TofSel (0), fhTestNsigma (0), fhTestQ(0), fNt (0), fPIDResponse(0)
+  fhBBH3TofSel (0), fhTestNsigma (0), fTPCclusPID(0), fhTestQ(0), fNt (0), fPIDResponse(0)
 {
   // Dummy Constructor
   //Printf("                   ****************** Default ctor \n");
@@ -97,6 +97,7 @@ AliAnalysisTaskLNNntuple::AliAnalysisTaskLNNntuple (const char *name, Bool_t mc)
   fhBBH3 (0),
   fhBBH3TofSel (0),
   fhTestNsigma (0),
+  fTPCclusPID(0),
   fhTestQ(0),
   fNt (0), fPIDResponse(0)
 {
@@ -138,7 +139,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
   if (!fHistEventMultiplicity)
     {
       fHistEventMultiplicity =
-	new TH1F ("fHistEventMultiplicity", "Nb of Events", 12, -0.5, 11.5);
+	new TH1F ("fHistEventMultiplicity", "Nb of Events", 13, -0.5, 12.5);
       fHistEventMultiplicity->GetXaxis ()->SetBinLabel (1, "All Events");
       fHistEventMultiplicity->GetXaxis ()->SetBinLabel (2, "Events w/PV");
       fHistEventMultiplicity->GetXaxis ()->SetBinLabel (3, "Events w/|Vz|<10cm");
@@ -150,6 +151,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
       fHistEventMultiplicity->GetXaxis ()->SetBinLabel (9, "MB Events w/|Vz|<10cm");
       fHistEventMultiplicity->GetXaxis ()->SetBinLabel (10,"Any Events");
       fHistEventMultiplicity->GetXaxis ()->SetBinLabel (11,"Any Events w/|Vz|<10cm");
+      fHistEventMultiplicity->GetXaxis ()->SetBinLabel (12,"other");
 
       fListHist->Add (fHistEventMultiplicity);
     }
@@ -164,13 +166,13 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
       fListHist->Add (fHistTrackMultiplicity);
     }
 
-  Double_t pMax = 15;
+  Double_t pMax = 8;
   Double_t binWidth = 0.1;
   Int_t nBinBB = (Int_t) (2 * pMax / binWidth);
 
   if (!fhBB)
     {
-      fhBB = new TH2F ("fhBB", "BetheBlochTPC", nBinBB, -pMax, pMax, 400, 0, 1000);
+      fhBB = new TH2F ("fhBB", "BetheBlochTPC", nBinBB, -pMax, pMax, 400, 0, 800);
       fhBB->GetXaxis ()->SetTitle ("p/z (GeV/#it{c})");
       fhBB->GetYaxis ()->SetTitle ("TPC Signal");
       fListHist->Add (fhBB);
@@ -187,7 +189,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
   if (!fhMassTOF)
     {
       fhMassTOF =
-	new TH2F ("fhMassTOF", "Particle Mass - TOF", nBinBB, 0, pMax, 800, 0,5);
+	new TH2F ("fhMassTOF", "Particle Mass - TOF", nBinBB, 0, pMax, 400, 0,5);
       fhMassTOF->GetYaxis ()->SetTitle ("Mass (GeV/#it{c}^{2})");
       fhMassTOF->GetXaxis ()->SetTitle ("P (GeV/#it{c})");
       fListHist->Add (fhMassTOF);
@@ -195,7 +197,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
 
   if (!fhBBPions)
     {
-      fhBBPions = new TH2F ("fhBBPions", "Bethe-Bloch TPC Pions", nBinBB, -pMax, pMax, 400, 0, 1000);
+      fhBBPions = new TH2F ("fhBBPions", "Bethe-Bloch TPC Pions", nBinBB, -pMax, pMax, 400, 0, 800);
       fhBBPions->GetXaxis ()->SetTitle ("p/z (GeV/#it{c})");
       fhBBPions->GetYaxis ()->SetTitle ("TPC Signal");
       fListHist->Add (fhBBPions);
@@ -203,7 +205,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
 
   if (!fhBBH3)
     {
-      fhBBH3 = new TH2F ("fhBBH3", "Bethe-Bloch TPC ^3H", nBinBB, -pMax, pMax, 400, 0, 1000);
+      fhBBH3 = new TH2F ("fhBBH3", "Bethe-Bloch TPC ^3H", nBinBB, -pMax, pMax, 400, 0, 800);
       fhBBH3->GetXaxis ()->SetTitle ("p/z (GeV/#it{c})");
       fhBBH3->GetYaxis ()->SetTitle ("TPC Signal");
       fListHist->Add (fhBBH3);
@@ -211,7 +213,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
   if (!fhBBH3TofSel)
     {
       fhBBH3TofSel =
-	new TH2F ("fhBBH3TofSel","Bethe-Bloch TPC #^{3}H after TOF 3#sigma cut", nBinBB,-pMax, pMax, 400, 0, 1000);
+	new TH2F ("fhBBH3TofSel","Bethe-Bloch TPC #^{3}H after TOF 3#sigma cut", nBinBB,-pMax, pMax, 400, 0, 800);
       fhBBH3TofSel->GetXaxis ()->SetTitle ("p/z (GeV/#it{c})");
       fhBBH3TofSel->GetYaxis ()->SetTitle ("TPC Signal");
       fListHist->Add (fhBBH3TofSel);
@@ -222,6 +224,11 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
       fhTestNsigma = new TH2F ("hNsigmaTri", "n #sigma distribution", 300, 0, 15, 100, -10, 10);
       fListHist->Add (fhTestNsigma);
     }
+  if(!fTPCclusPID){
+   fTPCclusPID = new TH2F("fTPCclusPID","triton track : clusters vs PID clusters",200,0,200,200,0,200);
+  fListHist->Add (fTPCclusPID);
+
+   }
 
   if(!fhTestQ){
     fhTestQ = new TH2F("htestQ","candidate charge as from TPC",16,-2,2,16,-2,2);
@@ -235,10 +242,10 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
     {
       if(!fMC){
 
-	fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDcaZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus");
+	fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDcaZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:triTRDsig");
 	fListHist->Add (fNt);
       } else {
-	fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDCAZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:piPdgCode:triPdgCode:piMumPdgCode:triMumPdgCode");
+	fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDCAZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:piPdgCode:triPdgCode:piMumPdgCode:triMumPdgCode:triTRDsig");
 	fListHist->Add (fNt);
 
       }
@@ -441,7 +448,7 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
     else {
       for(Int_t iEff=0; iEff<3; iEff++)  {
 	Bool_t isEle =  fPIDResponse->IdentifiedAsElectronTRD(triton,nTrackletsPID,eleEff[iEff],centrality,AliTRDPIDResponse::kLQ2D);
-	if(isEle && nTrackletsPID>3) isHele += TMath::Power(10,iEff);
+	if(isEle && nTrackletsPID>3) isHele += (iEff+1)*TMath::Power(10,iEff);
       }
     }
 
@@ -464,22 +471,22 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
 	  pdgTritonMum = stack->Particle(mum)->GetPdgCode();
 	}
       }
-      Double_t ntuple[33] =
+      Double_t ntuple[34] =
 	{ momPi[0], momPi[1], momPi[2], momTri[0], momTri[1],momTri[2], nSPi, nSTri,
 	  tofMass,pion->GetTPCsignal (), triton->GetTPCsignal (),
-	  v0s->P (), ptArm, alphaArm, dcaTri[0], dcaTri[1],v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
+	  v0s->P(), ptArm, alphaArm, dcaTri[0], dcaTri[1],v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
 	  v0s->GetD (vtx->GetX (), vtx->GetY (), vtx->GetZ ()),v0s->GetV0CosineOfPointingAngle (), err, pion->GetSign () + triton->GetSign ()*10,
 	  dcaPi,isHele,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters(),
-	  pdgPion,pdgTriton,pdgPionMum,pdgTritonMum};
+	  pdgPion,pdgTriton,pdgPionMum,pdgTritonMum,triton->GetTRDsignal()};
 
       fNt->Fill (ntuple);
     } else {
-      Double_t ntuple[29] =
+      Double_t ntuple[30] =
 	{ momPi[0], momPi[1], momPi[2], momTri[0], momTri[1],momTri[2], nSPi, nSTri,
 	  tofMass,pion->GetTPCsignal (), triton->GetTPCsignal (),
-	  v0s->Pt(), ptArm, alphaArm, dcaTri[0], dcaTri[1], v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
+	  v0s->P(), ptArm, alphaArm, dcaTri[0], dcaTri[1], v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
 	  v0s->GetD (vtx->GetX (), vtx->GetY (), vtx->GetZ ()),v0s->GetV0CosineOfPointingAngle (), err, pion->GetSign () + triton->GetSign ()*10,
-	  dcaPi,isHele,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters()};
+	  dcaPi,isHele,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters(),triton->GetTRDsignal()};
       fNt->Fill (ntuple);
     }
   } // loop over V0s
@@ -521,7 +528,7 @@ Bool_t AliAnalysisTaskLNNntuple::Passv0Cuts (AliESDv0 * v0, Double_t decayLength
   if (v0->P () > 10) return kFALSE;
   if (v0->GetDcaV0Daughters () > 0.8) return kFALSE;
   if (v0->GetV0CosineOfPointingAngle () < 0.9995) return kFALSE;
-  if (decayLength < 1) return false; // loose cut to reduce bkg of V0s coming from primary vertex( weak decay and the coice of 1 cm comes from MC study )
+  if (decayLength < 0.5) return false; // loose cut to reduce bkg of V0s coming from primary vertex( weak decay and the coice of 1 cm comes from MC study )
 
   return true;
 }
@@ -547,6 +554,10 @@ Bool_t AliAnalysisTaskLNNntuple::IsTritonCandidate(AliESDtrack * tr)
   statusTPC = fPIDResponse->NumberOfSigmas (AliPIDResponse::kTPC, tr, AliPID::kTriton, nSigmaTPC);
   Bool_t z = kFALSE;
   if (statusTPC == AliPIDResponse::kDetPidOk && TMath::Abs (nSigmaTPC) <= 3.5) z = kTRUE;
+  if(z) {
+   fTPCclusPID->Fill(tr->GetTPCNcls(),tr->GetTPCsignalN());
+    if(tr->GetTPCsignalN()<40) z = kFALSE;
+   }
   return z;
 }
 //________________________________________________________________________

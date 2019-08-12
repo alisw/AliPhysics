@@ -1,7 +1,7 @@
 /// \class AliAnalysisTaskPrepareInputForEmbedding
 /// \brief Save in a TTree the 4-momentum vector of the jets at reco and particle level
 ///
-/// \ingroup PWGJETASKS
+/// \ingroup PWGJEUSER
 /// Reads the reconstructed jet container (no background subtraction since it's thought to run on PYTHIA)
 /// The correspondent particle level jet is also stored. 
 /// The task requires the AliAnalysisTaskEmcalJetTagger for PYTHIA matching to be run first

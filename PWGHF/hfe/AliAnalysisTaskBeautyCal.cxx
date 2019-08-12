@@ -63,6 +63,7 @@
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliEMCALGeometry.h"
 
 #include "AliQnCorrectionsManager.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
@@ -83,6 +84,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fFlowQnVectorMgr(0),
   fMCheader(0),
   fpidResponse(0),
+  fEMCALGeo(0),
   fCFM(0),
   fFlagSparse(kFALSE),
   fSys(kFALSE),
@@ -100,6 +102,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
+  fRefit(kTRUE),
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
@@ -148,6 +151,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistEopHad2(0),
   fHistEopTrueMC(0),
   fM20(0),
+  fM20MC(0),
   fM02(0),
   fM20EovP(0),
   fM02EovP(0),
@@ -210,6 +214,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistHFEcorr(0),
   fHistResD(0),
   fHistResB(0),
+  fHistEffde(0),
+  fHistEffbe(0),
   fHistHFEpos(0),
   fHistHFEneg(0),
   fHistHFmcCheck(0), 
@@ -230,6 +236,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   Eop010Corr_data1(0),
   Eop010Corr_mc1(0),
   iCorr(0),
+  iSelSM(0),
   fhfeCuts(0) 
 {
   // Constructor
@@ -253,6 +260,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fFlowQnVectorMgr(0),
   fMCheader(0),
   fpidResponse(0),
+  fEMCALGeo(0),
   fCFM(0),
   fFlagSparse(kFALSE),
   fSys(kFALSE),
@@ -270,6 +278,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
+  fRefit(kTRUE),
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
@@ -318,6 +327,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistEopHad2(0),
   fHistEopTrueMC(0),
   fM20(0),
+  fM20MC(0),
   fM02(0),
   fM20EovP(0),
   fM02EovP(0),
@@ -378,6 +388,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistHFEcorr(0),
   fHistResD(0),
   fHistResB(0),
+  fHistEffde(0),
+  fHistEffbe(0),
   fHistHFEpos(0),
   fHistHFEneg(0),
   fHistHFmcCheck(0),
@@ -398,6 +410,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   Eop010Corr_data1(0),
   Eop010Corr_mc1(0),
   iCorr(0),
+  iSelSM(0),
   fhfeCuts(0) 
 {
   //Default constructor
@@ -620,6 +633,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fM20 = new TH2F ("fM20","M20 vs pt distribution",200,0,20,400,0,2);
   fOutputList->Add(fM20);
 
+  fM20MC = new TH2F ("fM20MC","M20 vs pt distribution MC HFE",200,0,20,400,0,2);
+  fOutputList->Add(fM20MC);
+
   fM02 = new TH2F ("fM02","M02 vs pt distribution",200,0,20,400,0,2);
   fOutputList->Add(fM02);
 
@@ -827,6 +843,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistResB = new TH2D("fHistResB", "B->e pT corr", 400,0.0,40.0,400,0.0,40.0);
   fOutputList->Add(fHistResB);
+
+  fHistEffde = new TH2D("fHistEffde", "step by step eff (D to e)", 10,-0.5,9.5,40,0,40);
+  fOutputList->Add(fHistEffde);
+ 
+  fHistEffbe = new TH2D("fHistEffbe", "step by step eff (B to e)", 10,-0.5,9.5,40,0,40);
+  fOutputList->Add(fHistEffbe);
 
   fHistHFEpos = new TH1D("fHistHFEpos", "HFE postive", 40,0,40);
   fOutputList->Add(fHistHFEpos);
@@ -1090,12 +1112,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   Bool_t EG1tr = kFALSE;
   Bool_t EG2tr = kFALSE;
 
-  //cout << "trigger = " << trigger << endl;
-  //if(trigger==7)fEMCEG1 = kTRUE;
-  //if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
-  //if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
-  //cout << "fEMCEGA1 = " << fEMCEG1 << endl;
-  //cout << "firedTrigger = " << firedTrigger << endl;
 
   //if(trigger==7)if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
   //cout << "EG1tr = " << EG1tr << endl;
@@ -1235,6 +1251,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     }
   } //+++
 
+    if(!fEMCALGeo)fEMCALGeo  = AliEMCALGeometry::GetInstance(); // not work w.o. Tender
+
   ///////////////
   //Track loop///
   ///////////////
@@ -1252,9 +1270,17 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
     AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 
+    /*
+    // up to vAN20180708
     double m20mim = 0.03;
-    //double m20max = 0.3;
     double m20max = 0.28;
+    */
+    /*
+    double m20mim = 0.01;
+    double m20max = 0.35;
+    */
+    double m20mim = fmimM20;
+    double m20max = fmaxM20;
 
     ////////////////////
     //Apply track cuts//
@@ -1295,18 +1321,19 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       Double_t nTPCstand = 80;
       Double_t nITSstand = 3;
-
+     
       // applied lose cut first
       if(atrack->GetTPCNcls() < 60) continue;
       if(atrack->GetITSNcls() < 2) continue;
       if(atrack->GetTPCNCrossedRows() < 80) continue; 
-
+      
       /*
-      if(atrack->GetTPCNcls() < nTPCstand) continue;
-      if(atrack->GetITSNcls() < nITSstand) continue;
+      if(atrack->GetTPCNcls() < 80) continue;
+      if(atrack->GetITSNcls() < 3) continue;
       if(atrack->GetTPCNCrossedRows() < 120) continue; // add
-      if(atrack->GetTPCchi2() > 4) continue; // add
-      if(atrack->GetITSchi2() > 36) continue; // add
+      if(atrack->GetITSchi2() > fitschi2) continue; 
+      // vAN06212019 - vAN07032019 (for cross check with b->e)
+
       */
       if(fetarange==0)
         {
@@ -1322,7 +1349,13 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         }
       fCheckEta->Fill(atrack->Eta());
 
-      if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+
+      if(fRefit)
+        { 
+         if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+        }
+      // not apply vAN20180703 to vAN20180705
+      
       if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
 
       Double_t TPCfound = atrack->GetTPCNclsF();
@@ -1415,6 +1448,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   
         if(pid_eleD)fHistResD->Fill(track->Pt(),fMCparticle->Pt());
         if(pid_eleB)fHistResB->Fill(track->Pt(),fMCparticle->Pt()); 
+
+        if(pid_eleD)fHistEffde->Fill(1,track->Pt());
+        if(pid_eleB)fHistEffbe->Fill(1,track->Pt());
 
     //if(abs(pdg)==11 && pid_eleD)cout << " pid_ele from D = " << pid_ele << " ; pidM = " << pidM << endl;
     //if(abs(pdg)==11 && pid_eleB)cout << " pid_ele from B = " << pid_ele << " ; pidM = " << pidM << endl;
@@ -1570,6 +1606,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       MatchR = sqrt(pow(clustMatch->GetTrackDx(),2)+pow(clustMatch->GetTrackDz(),2));
       if(MatchR>0.03)continue;
 
+
       /////////////////////////////////
       //Select EMCAL or DCAL clusters//
       /////////////////////////////////
@@ -1588,6 +1625,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+
+        if(pid_eleD)fHistEffde->Fill(2,track->Pt());
+        if(pid_eleB)fHistEffbe->Fill(2,track->Pt());
 
       // remove some bad runs
       //if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
@@ -1625,22 +1665,29 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          if(centrality>=0 && centrality<10)
            { 
             //cout << "iCorr = " << iCorr << endl;
-            if(iCorr==0)
+            if(iCorr==0)  // standard yaml file
               {
                eop += (Eop010Corr_data0->Eval(track->Pt()) - Eop010Corr_mc0->Eval(track->Pt())); 
               }
             else
               {
-               eop += (Eop010Corr_data1->Eval(track->Pt()) - Eop010Corr_mc1->Eval(track->Pt())); 
+               //eop += (Eop010Corr_data1->Eval(track->Pt()) - Eop010Corr_mc1->Eval(track->Pt()));  // test yaml file
+               eop += 0.0;
               } 
            }
          else if(centrality>=30 && centrality<50)
            {
-            eop += 0.04; //30-50% 
+            if(iCorr==0)
+              { 
+               eop += 0.04; //30-50% 
+              }
            } 
          else if(centrality>=60 && centrality<80)
            {
-            eop += 0.045; //60-80% (tuned up to 18 GeV/c) 
+            if(iCorr==0)
+              { 
+               eop += 0.045; //60-80% (tuned up to 18 GeV/c) 
+              }
            } 
          else
            {
@@ -1691,23 +1738,39 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       
       //Double_t mimSig = -0.5;
       Double_t fmaxSig =  3.0;
+      
       if(fMCarray) // nSigma cut in MC
         {
          fmimSig = -10.0;
          fmaxSig =  10.0;
         }
+        // tempolary not use the cut vAN20180619 to vAN20180703
 
+    
+
+        fHistIncTPCchi2->Fill(track->Pt(),atrack->GetTPCchi2());
+        fHistIncITSchi2->Fill(track->Pt(),atrack->GetITSchi2());
      
-
+      
       // track cut + eID
       if(atrack->GetTPCNcls() < 80) continue;
       if(atrack->GetITSNcls() < 3) continue;
       if(atrack->GetTPCNCrossedRows() < 120) continue; 
-      if(atrack->GetTPCchi2() > 4) continue; 
+      //if(atrack->GetTPCchi2() > 4) continue;    // not included recent production ?
       //if(atrack->GetITSchi2() > 36) continue; 
       //if(atrack->GetITSchi2() > 26) continue; 
       //cout << "itschi2 = " << fitschi2 << endl;
       if(atrack->GetITSchi2() > fitschi2) continue; 
+    
+  
+      // SM
+      if(iSelSM>-0.5)
+         {
+          Int_t idSM = GetSM(clustMatch);
+          //cout << "idSM = " << idSM << endl;
+          if(iSelSM!=idSM)continue;
+         }
+      //
  
       if(abs(pdg)==11 && (pid_eleD || pid_eleB))
        {
@@ -1758,8 +1821,23 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5)fHistEopHad2->Fill(track->Pt(),eop);
       fM20->Fill(track->Pt(),clustMatch->GetM20());
+      if(pid_eleD || pid_eleB)fM20MC->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
-
+  
+      if(fTPCnSigma > fmimSig && fTPCnSigma < fmaxSig)
+        {
+         if(eop>fmimEop && eop<1.3)
+            {
+             if(pid_eleD)fHistEffde->Fill(3,track->Pt());
+             if(pid_eleB)fHistEffbe->Fill(3,track->Pt());
+            }
+         if(m20>m20mim && m20<m20max)
+           {
+            if(pid_eleD)fHistEffde->Fill(4,track->Pt());
+            if(pid_eleB)fHistEffbe->Fill(4,track->Pt());
+           }
+        }
+      
       //if(fTPCnSigma > fmimSig && fTPCnSigma < fmaxSig && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max)
       if(fTPCnSigma > fmimSig && fTPCnSigma < fmaxSig && eop>fmimEop && eop<1.3 && m20>m20mim && m20<m20max)
         {
@@ -1791,8 +1869,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           }
 
         fHistDCAinc->Fill(track->Pt(),DCAxy);
-        fHistIncTPCchi2->Fill(track->Pt(),atrack->GetTPCchi2());
-        fHistIncITSchi2->Fill(track->Pt(),atrack->GetITSchi2());
+        //fHistIncTPCchi2->Fill(track->Pt(),atrack->GetTPCchi2());
+        //fHistIncITSchi2->Fill(track->Pt(),atrack->GetITSchi2());
 
         if(pid_eleD)fHistDCAdeInc->Fill(track->Pt(),DCAxy);
         if(pid_eleB)fHistDCAbeInc->Fill(track->Pt(),DCAxy);
@@ -2352,6 +2430,25 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
 
  return;
 }
+
+//_______________________________________________________________________
+Int_t AliAnalysisTaskBeautyCal::GetSM(AliVCluster *cluster)
+{
+        // Select SM
+  
+        Short_t NcellsInCluster = cluster->GetNCells();
+        int iSM = -1;
+        for(int icl=0; icl<NcellsInCluster; icl++)
+        {
+            int icell = cluster->GetCellAbsId(icl);
+            //cout << "icell = " << icell << endl;
+            if(fEMCALGeo)
+                iSM = fEMCALGeo->GetSuperModuleNumber(icell);
+        }
+     
+      return iSM;
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskBeautyCal::FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta,Double_t emcphi)

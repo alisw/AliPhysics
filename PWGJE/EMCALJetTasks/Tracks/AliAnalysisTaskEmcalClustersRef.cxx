@@ -83,7 +83,9 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fEnergyDefinition(kDefaultEnergy),
     fEnableSumw2(false),
     fDoFillMultiplicityHistograms(false),
+    fUseFiredTriggers(false),
     fUseExclusiveTriggers(true),
+    fFillTriggerClusters(true),
     fClusterTimeRange(-50e-6, 50e-6),
     fTriggerClusters(),
     fRequiredOverlaps(),
@@ -101,7 +103,9 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fEnergyDefinition(kDefaultEnergy),
     fEnableSumw2(false),
     fDoFillMultiplicityHistograms(false),
+    fUseFiredTriggers(false),
     fUseExclusiveTriggers(true),
+    fFillTriggerClusters(true),
     fClusterTimeRange(-50e-6, 50e-6),
     fTriggerClusters(),
     fRequiredOverlaps(),
@@ -128,9 +132,10 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
    */
 
   // Binnings for Multiplicity correlation
-  TLinearBinning v0abinning(1000, 0., 1000.), trackletbinning(500, 0., 500.), itsclustbinning(500, 0., 500.), emcclustbinning(100, 0., 100.), emccellbinning(3000, 0., 3000.), adcbinning(2000, 0., 2000.);
+  TLinearBinning v0abinning(1000, 0., 1000.), centralitybinning(100, 0., 100.), trackletbinning(500, 0., 500.), itsclustbinning(500, 0., 500.), 
+                 emcclustbinning(100, 0., 100.), emccellbinning(3000, 0., 3000.), adcbinning(2000, 0., 2000.);
   const TBinning *multbinning[6] = {&v0abinning, &trackletbinning, &trackletbinning, &itsclustbinning, &emcclustbinning, &emccellbinning};
-  const TBinning *clustallbinning[6] = {&smbinning, &energybinning, &energybinning, &etabinning, &phibinning, &trgclustbinning};
+  const TBinning *clustallbinning[6] = {&smbinning, &centralitybinning, &energybinning, &etabinning, &phibinning, &trgclustbinning};
   AliDebugStream(1) << "Using exclusive triggers: " << (fUseExclusiveTriggers ? "yes" : "no") << std::endl;
   for(auto trg : GetSupportedTriggers(fUseExclusiveTriggers)){
     AliDebugStream(1) << "Creating histograms for trigger " << trg << std::endl;
@@ -139,24 +144,26 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
     fHistos->CreateTH1("hVertexZ" + trg, "z-position of the primary vertex for trigger class " + trg, 200, -40., 40., optionstring);
     if(this->fDoFillMultiplicityHistograms) fHistos->CreateTHnSparse("hMultiplicityCorrelation" + trg, "Multiplicity correlation for trigger" + trg, 6, multbinning);
     fHistos->CreateTHnSparse("hClusterTHnSparseAll" + trg, "Cluster THnSparse (all) for trigger" + trg, 6, clustallbinning);
-    fHistos->CreateTHnSparse("hClusterTHnSparseFired" + trg, "Cluster THnSparse (firing) for trigger" + trg, 6, clustallbinning);
+    fHistos->CreateTHnSparse("hClusterTHnSparseMax" + trg, "Cluster THnSparse (max) for trigger" + trg, 6, clustallbinning);
+    if(fUseFiredTriggers) fHistos->CreateTHnSparse("hClusterTHnSparseFired" + trg, "Cluster THnSparse (firing) for trigger" + trg, 6, clustallbinning);
     fHistos->CreateTH2("hTimeEnergy" + trg, "Cluster time vs. energy for trigger class " + trg, timebinning, energybinning, optionstring);
     fHistos->CreateTH2("hNCellEnergy" + trg, "Cluster number of cells vs energy for trigger class " + trg, ncellbinning, energybinning, optionstring);
-    fHistos->CreateTH2("hNCellET" + trg, "Cluster number of cells vs transverse energy for trigger class " + trg, ncellbinning, energybinning, optionstring);
-    fHistos->CreateTH2("hCorrClusterEPatchADC" + trg, "Correlation between cluster E and patch ADC for trigger " + trg, energybinning, adcbinning);
-    fHistos->CreateTH2("hCorrClusterEPatchE" + trg, "Correlation between cluster E and patch E for trigger " + trg, energybinning, energybinning);
+    if(fUseFiredTriggers){
+      fHistos->CreateTH2("hCorrClusterEPatchADC" + trg, "Correlation between cluster E and patch ADC for trigger " + trg, energybinning, adcbinning);
+      fHistos->CreateTH2("hCorrClusterEPatchE" + trg, "Correlation between cluster E and patch E for trigger " + trg, energybinning, energybinning);
+    }
   }
 }
 
 bool AliAnalysisTaskEmcalClustersRef::IsUserEventSelected(){
-  fEventCentrality = -1;
+  fEventCentrality = 99;   // without centrality put everything in the peripheral bin
   if(fRequestCentrality){
     AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
     if(!mult){
       AliErrorStream() << GetName() << ": Centrality selection enabled but no centrality estimator found" << std::endl;
       return false;
     }
-    if(mult->IsEventSelected()) return false;
+    //if(mult->IsEventSelected()) return false;
     fEventCentrality = mult->GetEstimator(fCentralityEstimator)->GetPercentile();
     AliDebugStream(1) << GetName() << ": Centrality " <<  fEventCentrality << std::endl;
     if(!fCentralityRange.IsInRange(fEventCentrality)){
@@ -205,38 +212,40 @@ bool AliAnalysisTaskEmcalClustersRef::IsUserEventSelected(){
   // Only meaningfull in data
   fTriggerClusters.clear();
   fTriggerClusters.emplace_back(kTrgClusterANY);
-  Bool_t isCENT(false), isCENTNOTRD(false), isCALO(false), isCALOFAST(false);
-  for(auto trg : PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data())){
-    auto trgclust = trg.Triggercluster();
-    if(trgclust == "CENT" && !isCENT){
-      isCENT = true;
-      fTriggerClusters.emplace_back(kTrgClusterCENT);
+  if(fFillTriggerClusters) {
+    Bool_t isCENT(false), isCENTNOTRD(false), isCALO(false), isCALOFAST(false);
+    for(auto trg : PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data())){
+      auto trgclust = trg.Triggercluster();
+      if(trgclust == "CENT" && !isCENT){
+        isCENT = true;
+        fTriggerClusters.emplace_back(kTrgClusterCENT);
+      }
+      if(trgclust == "CENTNOTRD" && ! isCENTNOTRD){
+        isCENTNOTRD = true;
+        fTriggerClusters.emplace_back(kTrgClusterCENTNOTRD);
+      }
+      if(trgclust == "CALO" && !isCALO){
+        isCALO = true;
+        fTriggerClusters.emplace_back(kTrgClusterCALO);
+      }
+      if(trgclust == "CALOFAST" && ! isCALOFAST) {
+        isCALOFAST = true;
+        fTriggerClusters.emplace_back();
+      } 
     }
-    if(trgclust == "CENTNOTRD" && ! isCENTNOTRD){
-      isCENTNOTRD = true;
-      fTriggerClusters.emplace_back(kTrgClusterCENTNOTRD);
+    // Mixed clusters
+    if(isCENT || isCENTNOTRD) {
+      if(isCENT) {
+        if(isCENTNOTRD) fTriggerClusters.emplace_back(kTrgClusterCENTBOTH);
+        else fTriggerClusters.emplace_back(kTrgClusterOnlyCENT);
+      } else fTriggerClusters.emplace_back(kTrgClusterOnlyCENTNOTRD);
     }
-    if(trgclust == "CALO" && !isCALO){
-      isCALO = true;
-      fTriggerClusters.emplace_back(kTrgClusterCALO);
+    if(isCALO || isCALOFAST){
+      if(isCALO) {
+        if(isCALOFAST) fTriggerClusters.emplace_back(kTrgClusterCALOBOTH);
+        else fTriggerClusters.emplace_back(kTrgClusterOnlyCALO);
+      } else fTriggerClusters.emplace_back(kTrgClusterOnlyCALOFAST);
     }
-    if(trgclust == "CALOFAST" && ! isCALOFAST) {
-      isCALOFAST = true;
-      fTriggerClusters.emplace_back();
-    } 
-  }
-  // Mixed clusters
-  if(isCENT || isCENTNOTRD) {
-    if(isCENT) {
-      if(isCENTNOTRD) fTriggerClusters.emplace_back(kTrgClusterCENTBOTH);
-      else fTriggerClusters.emplace_back(kTrgClusterOnlyCENT);
-    } else fTriggerClusters.emplace_back(kTrgClusterOnlyCENTNOTRD);
-  }
-  if(isCALO || isCALOFAST){
-    if(isCALO) {
-      if(isCALOFAST) fTriggerClusters.emplace_back(kTrgClusterCALOBOTH);
-      else fTriggerClusters.emplace_back(kTrgClusterOnlyCALO);
-    } else fTriggerClusters.emplace_back(kTrgClusterOnlyCALOFAST);
   }
 
   return true;
@@ -274,11 +283,13 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
   auto supportedTriggers = GetSupportedTriggers(fUseExclusiveTriggers);
   Double_t energy, et, eta, phi;
   const TList *selpatches(nullptr);
+  AliVCluster *maxcluster = nullptr; 
   for(auto clust : GetClusterContainer(fNameClusterContainer.Data())->all()){
     //AliVCluster *clust = static_cast<AliVCluster *>(*clustIter);
     if(!clust->IsEMCAL()) continue;
     if(clust->GetIsExotic()) continue;
     if(!fClusterTimeRange.IsInRange(clust->GetTOF())) continue;
+    if(!maxcluster || clust->E() > maxcluster->E()) maxcluster = clust;
 
     // Distinguish energy definition
     switch(fEnergyDefinition){
@@ -304,7 +315,6 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     TLorentzVector posvec;
     clust->GetMomentum(posvec, fVertex);
     posvec.SetE(energy);        // use energy definition as selected in the task
-    et = posvec.Et();
     eta = posvec.Eta();
     phi = posvec.Phi();
     if(phi < 0) phi += TMath::TwoPi();
@@ -322,16 +332,39 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
         }
       }
       for(auto trgclust : fTriggerClusters) {
-        FillClusterHistograms(trg.Data(), energy, et, eta, phi, clust->GetTOF(), clust->GetNCells(), trgclust, selpatches, energycomp);
+        FillClusterHistograms(trg.Data(), energy, eta, phi, clust->GetTOF(), clust->GetNCells(), trgclust, selpatches, energycomp);
       }
+    }
+  }
+
+  // Fill max cluster histogram 
+  // in case not found fill also 0
+  double maxpoint[6] = {-1, fEventCentrality, 0, -1. -1., 0};
+  if(maxcluster) {
+    maxpoint[2] = maxcluster->E();
+    TLorentzVector maxvector;
+    maxcluster->GetMomentum(maxvector, fVertex);
+    maxpoint[3] = maxvector.Eta();
+    maxpoint[4] = maxvector.Phi();
+    if(maxpoint[4] < 0) maxpoint[4] += TMath::TwoPi();
+    Int_t supermoduleID = -1;
+    fGeom->SuperModuleNumberFromEtaPhi(eta, phi, supermoduleID);
+    maxpoint[0] = supermoduleID;
+  }
+  for(const auto & trg : fSelectedTriggers){
+    if(std::find(supportedTriggers.begin(), supportedTriggers.end(), trg) == supportedTriggers.end()) continue;
+    auto weight = GetTriggerWeight(trg);
+    for(auto trgclust : fTriggerClusters) {
+      maxpoint[5] = trgclust;
+      fHistos->FillTHnSparse("hClusterTHnSparseMax" + trg, maxpoint, weight);
     }
   }
   return true;
 }
 
-void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &triggerclass, double energy, double transverseenergy, double eta, double phi, double clustertime, int ncell, int trgcluster, const TList *triggerPatches, int energycomp){
+void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &triggerclass, double energy, double eta, double phi, double clustertime, int ncell, int trgcluster, const TList *triggerPatches, int energycomp){
   std::vector<AliEMCALTriggerPatchInfo *> matchedPatches;
-  if(triggerPatches) {
+  if(fUseFiredTriggers && triggerPatches) {
     matchedPatches = CorrelateToTrigger(eta, phi, *triggerPatches);
   }
   auto hasTriggerPatch = matchedPatches.size() > 0;
@@ -340,13 +373,12 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << std::endl;
 
   fGeom->SuperModuleNumberFromEtaPhi(eta, phi, supermoduleID);
-  double point[6] = {static_cast<double>(supermoduleID), energy, transverseenergy, eta, phi, static_cast<double>(trgcluster)};
+  double point[6] = {static_cast<double>(supermoduleID), fEventCentrality, energy, eta, phi, static_cast<double>(trgcluster)};
   fHistos->FillTHnSparse("hClusterTHnSparseAll" + triggerclass, point, weight);
 
   fHistos->FillTH2("hTimeEnergy" + triggerclass, clustertime, energy, weight);
   fHistos->FillTH2("hNCellEnergy" + triggerclass, ncell, energy, weight);
-  fHistos->FillTH2("hNCellET" + triggerclass, ncell, transverseenergy, weight);
-  if(hasTriggerPatch){
+  if(fUseFiredTriggers && hasTriggerPatch){
     // find maximum trigger patch
     AliEMCALTriggerPatchInfo *maxpatch(nullptr);
     double maxenergy = 0;

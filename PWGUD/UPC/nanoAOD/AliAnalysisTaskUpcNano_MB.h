@@ -10,6 +10,7 @@ class TH2;
 class TTree;
 class TList;
 class TFile;
+class AliTOFTriggerMask;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -60,21 +61,24 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH1D *hITSPIDKaon;		//!
   TH2D *hITSPIDKaonCorr;	//!
   TH2D *hTPCdEdxCorr;		//!
+  TH2I *hTriggerCounter;	//!
   
   Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma;
-  Int_t fChannel, fSign, fRunNumber, fNFiredMaxiPads, fNTOFtrgPads, fTrackIndex[2];
-  Bool_t fTriggerInputsMC[10], fInEtaGen, fInEtaRec;
-  TArrayI fTOFhits;
-  TArrayI fTrackIndices;
+  Int_t fChannel, fSign, fRunNumber;
+  Bool_t fTriggerInputsMC[11], fTriggers[8], fInEtaGen, fInEtaRec;
   
   TFile *fSPDfile;
+  TFile *fTOFfile;
+  Int_t fLoadedRun;
+  TH2I *hBadMaxiPadMask;
   TH1D *hBCmod4;
   TH2D *hSPDeff;
+  AliTOFTriggerMask *fTOFmask;
   
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 16); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 23); 
 };
 
 #endif

@@ -28,25 +28,58 @@
 #include <TList.h>
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalTriggerCorrelation.h"
+#include "AliMultSelection.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerCorrelation)
 
 using namespace EMCalTriggerPtAnalysis;
 
 AliAnalysisTaskEmcalTriggerCorrelation::AliAnalysisTaskEmcalTriggerCorrelation():
-  AliAnalysisTaskEmcalTriggerBase()
+  AliAnalysisTaskEmcalTriggerBase(),
+  fRequestCentrality(false),
+  fEventCentrality(99.),
+  fCentralityRange(0.,100.),
+  fCentralityEstimator("V0M")
 {
   SetRequireAnalysisUtils(true);
 }
 
 AliAnalysisTaskEmcalTriggerCorrelation::AliAnalysisTaskEmcalTriggerCorrelation(const char *name):
-  AliAnalysisTaskEmcalTriggerBase(name)
+  AliAnalysisTaskEmcalTriggerBase(name),
+  fRequestCentrality(false),
+  fEventCentrality(99.),
+  fCentralityRange(0.,100.),
+  fCentralityEstimator("V0M")
 {
   SetRequireAnalysisUtils(true);
 }
 
 AliAnalysisTaskEmcalTriggerCorrelation::~AliAnalysisTaskEmcalTriggerCorrelation(){
 
+}
+
+bool AliAnalysisTaskEmcalTriggerCorrelation::IsUserEventSelected(){
+  fEventCentrality = 99;   // without centrality put everything in the peripheral bin
+  if(fRequestCentrality){
+    AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
+    if(!mult){
+      AliErrorStream() << GetName() << ": Centrality selection enabled but no centrality estimator found" << std::endl;
+      return false;
+    }
+    //if(mult->IsEventSelected()) return false;
+    fEventCentrality = mult->GetEstimator(fCentralityEstimator)->GetPercentile();
+    AliDebugStream(1) << GetName() << ": Centrality " <<  fEventCentrality << std::endl;
+    if(!fCentralityRange.IsInRange(fEventCentrality)){
+      AliDebugStream(1) << GetName() << ": reject centrality: " << fEventCentrality << std::endl;
+      return false;
+    } else {
+      AliDebugStream(1) << GetName() << ": select centrality " << fEventCentrality << std::endl;
+    }
+  } else {
+    AliDebugStream(1) << GetName() << ": No centrality selection applied" << std::endl;
+  }
+
+  return true;
 }
 
 AliAnalysisTaskEmcalTriggerCorrelation *AliAnalysisTaskEmcalTriggerCorrelation::AddTaskTriggerCorrelation(const char *name){

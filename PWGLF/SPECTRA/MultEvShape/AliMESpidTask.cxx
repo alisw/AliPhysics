@@ -92,7 +92,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   // number of events counter
   Double_t vec_hNoEvts[7];   // vector used to fill hNoEvts
-  THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(3);
+  THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(slot_NoEvts);
 
   Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);  	// combined multiplicity with |eta| < 0.8
   Double_t mult_V0M = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M);   		// V0M percentile
@@ -101,17 +101,17 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   // event shape for data (from ESD)
   Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
-  // Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
+  Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
 
   vec_hNoEvts[0] = 0.;
   // hNoEvts->Fill(vec_hNoEvts);
 
-/*
+
+  Double_t directivity = -2;
+
   // select events with both dirs in the same interval
   const Int_t lenght = 4;
   Double_t intervals[lenght] = {0., 0.3, 0.6, 1.0};
-
-  Double_t directivity = -2;
 
   // NOTE: the intervals are considered half-closed: (a,b]
   if( (directivity_plus >= intervals[0]) && (directivity_plus <= intervals[lenght-1]) ){
@@ -128,18 +128,24 @@ void AliMESpidTask::UserExec(Option_t *opt)
           directivity =  (directivity_plus + directivity_minus) / 2.0;
       }
   }
-*/
-  Double_t directivity = directivity_plus;
+/*
+  // select events with both dirs close
+  if(TMath::Abs(directivity_plus - directivity_minus) < 0.2){
+    directivity = (directivity_plus + directivity_minus) / 2.0;
+  }
 
+  // select events using only dir plus
+  Double_t directivity = directivity_plus;
+*/
 
   // event shape for MC (from MC event)
   Double_t MC_directivity_plus = 0;
-  // Double_t MC_directivity_minus = 0;
+  Double_t MC_directivity_minus = 0;
   Double_t MC_directivity = 0;
   if( HasMCdata() ){ // run only on MC
       MC_directivity_plus = fMCevInfo->GetEventShape()->GetDirectivity(1);
-      // MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
-      // MC_directivity =  (MC_directivity_plus + MC_directivity_minus) / 2.0;
+      MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
+      MC_directivity =  (MC_directivity_plus + MC_directivity_minus) / 2.0;
       MC_directivity = MC_directivity_plus;
   }
 
@@ -177,7 +183,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
   vec_hNoEvts[6] = 0;
   if( HasMCdata() ){
     vec_hNoEvts[4] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
-	vec_hNoEvts[5] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kV0M);
+	  vec_hNoEvts[5] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kV0M);
     vec_hNoEvts[6] = MC_directivity;
   }
 
@@ -205,8 +211,8 @@ void AliMESpidTask::UserExec(Option_t *opt)
   // Double_t V0Asignal = 0;
   // AliInfo(Form("V0A signal = %f\t V0C signal = %f\n", V0Asignal, V0Csignal));
 
-  THnSparseD *hMultEst = (THnSparseD*)fHistosQA->At(0);
-  Double_t vec_hMultEst[8]; // vector used to fill hMultEst
+  THnSparseD *hMultEst = (THnSparseD*)fHistosQA->At(slot_MultEst);
+  Double_t vec_hMultEst[12]; // vector used to fill hMultEst
 //   vec_hMultEst[0] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);
 //   vec_hMultEst[1] = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M);
 //   vec_hMultEst[2] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
@@ -216,12 +222,11 @@ void AliMESpidTask::UserExec(Option_t *opt)
   vec_hMultEst[2] = V0Asignal + V0Csignal;
   vec_hMultEst[3] = directivity;
   if( HasMCdata() ){
-	    vec_hMultEst[4] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
-   		vec_hMultEst[5] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kV0M);
-		vec_hMultEst[6] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
-        vec_hMultEst[7] = MC_directivity;
+    vec_hMultEst[6] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
+ 		vec_hMultEst[7] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kV0M);
+  	vec_hMultEst[8] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
+    vec_hMultEst[9] = MC_directivity;
   }
-  hMultEst->Fill(vec_hMultEst);
 
   // get the leading particle direction
   Double_t px_LP=0., py_LP=0., phi_LP=0.;
@@ -240,6 +245,21 @@ void AliMESpidTask::UserExec(Option_t *opt)
   }
 
 
+  Double_t vec_hPIDQA[8];			//  vector used to fill hPIDQA
+/*
+  TTree *testTree = (TTree*)fHistosQA->At(slot_testTree);
+  testTree->Branch("p", &vec_hPIDQA[0], "p/D");
+  testTree->Branch("charge", &vec_hPIDQA[1], "charge/D");
+  testTree->Branch("TPC", &vec_hPIDQA[5], "TPC/D");
+  testTree->Branch("TOF", &vec_hPIDQA[6], "TPC/D");
+  testTree->Branch("MCpid", &vec_hPIDQA[7], "MCpid/D");
+*/
+
+  Double_t y_LP_ESD = -9999.;
+  Double_t y_LP_MC = -9999.;
+  Double_t pT_LP_ESD = -9999.;
+  Double_t pT_LP_MC = -9999.;
+  
   // ESD track loop
   AliMEStrackInfo *t(NULL), *tMC(NULL);
   for(Int_t it(0); it<fTracks->GetEntries(); it++){
@@ -255,14 +275,13 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	}
 
 
-	Double_t vec_hAllESD[13];    	// vector used to fill hAllESD
-    Double_t vec_hPIDQA[8];			//  vector used to fill hPIDQA
-    Double_t vec_hDeltaPhi[8];		//  vector used to fill hDeltaPhi
+	Double_t vec_hAllESD[14];    	// vector used to fill hAllESD
+  Double_t vec_hDeltaPhi[9];		// vector used to fill hDeltaPhi
 
 
-	THnSparseD *hAllESD = (THnSparseD*)fHistosQA->At(1);
-    // enum axis_hAllESD {l_comb08, l_V0M, l_comb0408, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
-	enum axis_hAllESD {l_comb08, l_V0M, l_directivity, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_delta_phi, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
+	THnSparseD *hAllESD = (THnSparseD*)fHistosQA->At(slot_AllESD);
+  // enum axis_hAllESD {l_comb08, l_V0M, l_comb0408, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
+	enum axis_hAllESD {l_comb08, l_V0M, l_directivity, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_delta_phi, l_delta_y, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
 
 	// ---------------------------
 	// get ESD multiplicity
@@ -338,6 +357,11 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	if(TMath::Abs(vec_hAllESD[l_rapidity]) > 1.0) continue;
 // 	AliInfo(Form("Pz = %g \te = %g \t e+Pz = %g \t e-Pz = %g\n", t->Pz(), e, (e + t->Pz()), (e - t->Pz())));
 
+  // set the y for the LP (NOTE: the LP is always the first one in the list)
+  if(it == 0){
+    pT_LP_ESD = vec_hAllESD[l_pT];
+    y_LP_ESD = vec_hAllESD[l_rapidity];
+  }
 	// ---------------------------
 	// get the TOF mistmatch
 // 	vec_hAllESD[6] = (((t->GetPID()->GetTOFmisProb())<0.01)?1:0);
@@ -347,19 +371,28 @@ void AliMESpidTask::UserExec(Option_t *opt)
 // 	vec_hPIDQA[4] = vec_hAllESD[6];
 	vec_hPIDQA[4] = vec_hAllESD[l_TOFmatching];
 
-    // ---------------------------
-    // get the delta phi angle
-    vec_hAllESD[l_delta_phi] = ComputeDeltaPhi(t->Phi(), phi_LP);
+  // ---------------------------
+  // get the delta phi angle
+  vec_hAllESD[l_delta_phi] = ComputeDeltaPhi(t->Phi(), phi_LP);
+
+  // ---------------------------
+  // compute delta y
+  vec_hAllESD[l_delta_y] = y_LP_ESD - vec_hAllESD[l_rapidity];
 
 
-    // fill the deltaPhi sparse
-    THnSparseD *hDeltaPhi = (THnSparseD*)fHistosQA->At(5);
-    // vec_hDeltaPhi[0] = t->Pt();
-    vec_hDeltaPhi[0] = mult_comb08;
-    vec_hDeltaPhi[1] = directivity;
-    vec_hDeltaPhi[2] = ComputeDeltaPhi(t->Phi(), phi_LP);       // rec info
-    vec_hDeltaPhi[3] = 0;
-    vec_hDeltaPhi[4] = 0;
+  // fill the deltaPhi sparse
+  THnSparseD *hDeltaPhi = (THnSparseD*)fHistosQA->At(slot_DeltaPhi);
+  // vec_hDeltaPhi[0] = t->Pt();
+  vec_hDeltaPhi[0] = mult_comb08;
+  vec_hDeltaPhi[1] = directivity;
+  vec_hDeltaPhi[2] = vec_hAllESD[l_pT]; // pT ESD
+  vec_hDeltaPhi[3] = vec_hAllESD[l_delta_y];  // delta_y ESD
+  vec_hDeltaPhi[4] = vec_hAllESD[l_delta_phi];  // delta_phi ESD
+  // generated:
+  vec_hDeltaPhi[5] = 0; // pt MC
+  vec_hDeltaPhi[6] = 0; // delta_y MC
+  vec_hDeltaPhi[7] = 0; // delta_phi MC
+  vec_hDeltaPhi[8] = 0; // deltaPhi ESD vs MC LP
 
 
 	if( HasMCdata() ){ // run only on MC
@@ -398,8 +431,15 @@ void AliMESpidTask::UserExec(Option_t *opt)
 		else vec_hAllESD[l_yMCPID] = -9999;
 		if(TMath::Abs(vec_hAllESD[l_yMCPID]) > 1.0) continue;
 
-        vec_hDeltaPhi[3] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);  // gen info
-        vec_hDeltaPhi[4] = ComputeDeltaPhi(t->Phi(), phi_LP_MC);    // rec tracks vs gen LP
+    vec_hDeltaPhi[5] = tMC->Pt();
+    
+    // delta_y MC
+    y_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Y();
+    pT_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Pt();
+    vec_hDeltaPhi[6] = y_LP_MC - tMC->Y();
+    
+    vec_hDeltaPhi[7] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);  // gen info
+    vec_hDeltaPhi[8] = ComputeDeltaPhi(t->Phi(), phi_LP_MC);    // rec tracks vs gen LP
 	}
 
 	// ---------------------------
@@ -409,18 +449,22 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 
 	// fill the PID QA sparse
-	THnSparseD *hPIDQA = (THnSparseD*)fHistosQA->At(4);
+	THnSparseD *hPIDQA = (THnSparseD*)fHistosQA->At(slot_PIDQA);
 	vec_hPIDQA[0] = t->P();
 	vec_hPIDQA[5] = t->GetdEdx();
 	vec_hPIDQA[6] = t->Getbeta();
 	hPIDQA->Fill(vec_hPIDQA);
+
+    // fill also the testTree
+    // testTree->Fill();
+
 
 /*
 	// THIS IS USED ONLY WHEN RUNNING FOR DCA SHAPES (change AliMEStender.cxx line 163 kTRUE->kFALSE)
 
 	Double_t valDCA[12];
 
-	THnSparseD *hDCA = (THnSparseD*)fHistosQA->At(6);
+	THnSparseD *hDCA = (THnSparseD*)fHistosQA->At(slot_DCA);
 
 	valDCA[0] = vec_hAllESD[l_comb08];		// multiplicity
     valDCA[1] = vec_hAllESD[l_directivity];	// directivity
@@ -474,8 +518,8 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 // 	if( HasMCdata() ){ // run only on MC
 	if(DebugLevel()>0){ // used ONLY for systematic studies
-        Double_t vec_ESDtree[2];
-        vec_ESDtree[0] = t->Eta();
+    Double_t vec_ESDtree[2];
+    vec_ESDtree[0] = t->Eta();
 		vec_ESDtree[1] = t->Phi();
 // 		vec_ESDtree[2] = t->GetPID()->GetTOFmisProb();
 		// 		vec_ESDtree[3] = tMC->P();
@@ -551,66 +595,69 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   	for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
     	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
-
     	//  !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     	// review this for DCA fits shapes
-		if( !(tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
-
-		// add this as a extra dimension on the sparse
-// 		if(TMath::Abs(tMC->Eta()) > 0.9) continue;
-		if(TMath::Abs(tMC->Y()) > 1.) continue;
+		  if( !(tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
+		  // add this as a extra dimension on the sparse
+      // if(TMath::Abs(tMC->Eta()) > 0.9) continue;
+		  if(TMath::Abs(tMC->Y()) > 1.) continue;
     	//  !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     	Double_t vec_hGen[9];  // vector used to fill hGen
 
-		THnSparseD *hGen = (THnSparseD*)fHistosQA->At(2);
+		  THnSparseD *hGen = (THnSparseD*)fHistosQA->At(slot_Gen);
 
-		// ---------------------------
-		// get generated multiplicity
-		vec_hGen[l_MC_comb08] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
-// 		vec_hGen[0] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
+  		// ---------------------------
+  		// get generated multiplicity
+  		vec_hGen[l_MC_comb08] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
+      // 		vec_hGen[0] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
 
-        // ---------------------------
-        // get generated directivity
-        vec_hGen[l_MC_directivity] = MC_directivity;
+      // ---------------------------
+      // get generated directivity
+      vec_hGen[l_MC_directivity] = MC_directivity;
 
-		// ---------------------------
-		// get pT
-		vec_hGen[l_MC_pT] = tMC->Pt();
-//  AliInfo(Form("pT = %g", vec_hGen[0]));
+  		// ---------------------------
+  		// get pT
+  		vec_hGen[l_MC_pT] = tMC->Pt();
+      //  AliInfo(Form("pT = %g", vec_hGen[0]));
 
-		// ---------------------------
-		// get charge
-		vec_hGen[l_MC_charge] = tMC->Charge();
+  		// ---------------------------
+  		// get charge
+  		vec_hGen[l_MC_charge] = tMC->Charge();
 
-		// ---------------------------
-		// get the MC PDG code
-		const Double_t *MCpdg = tMC->GetPID()->GetProb(AliMEStrackInfo::kITS);
-		for(Int_t i = 0; i<AliPID::kSPECIES; i++){
-// 			AliInfo(Form("MC: probITS[%i]= %g", i, MCpdg[i]));
-			if( MCpdg[i] > 0 )	vec_hGen[l_MC_PID] = i;
-		}
+  		// ---------------------------
+  		// get the MC PDG code
+  		const Double_t *MCpdg = tMC->GetPID()->GetProb(AliMEStrackInfo::kITS);
+  		for(Int_t i = 0; i<AliPID::kSPECIES; i++){
+      // 			AliInfo(Form("MC: probITS[%i]= %g", i, MCpdg[i]));
+  			if( MCpdg[i] > 0 )	vec_hGen[l_MC_PID] = i;
+  		}
 
-		// ---------------------------
-		// get y
-		vec_hGen[l_MC_rapidity] = tMC->Y();
+  		// ---------------------------
+  		// get y
+  		vec_hGen[l_MC_rapidity] = tMC->Y();
 
-        // ---------------------------
-        // get the delta phi angle
-        vec_hGen[l_MC_delta_phi] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);
+      // ---------------------------
+      // get the delta phi angle
+      vec_hGen[l_MC_delta_phi] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);
 
-		// ---------------------------
-		// get the ESD multiplicity
-		// 		vec_hGen[5] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);
-        vec_hGen[l_MC_ESDmult] = mult_comb08;
+  		// ---------------------------
+  		// get the ESD multiplicity
+  		// 		vec_hGen[5] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);
+      vec_hGen[l_MC_ESDmult] = mult_comb08;
 
-        // ---------------------------
-		// get the ESD directivity
-		vec_hGen[l_MC_ESDdir] = directivity;
+      // ---------------------------
+  		// get the ESD directivity
+  		vec_hGen[l_MC_ESDdir] = directivity;
 
-		// ---------------------------
-		// fill the hSparse
-		hGen->Fill(vec_hGen);
+  		// ---------------------------
+  		// fill the hSparse
+  		hGen->Fill(vec_hGen);
+      
+      if(it == 0){
+        pT_LP_MC = vec_hGen[l_MC_pT];
+        y_LP_MC = vec_hGen[l_MC_rapidity];
+      }
 
 /*
 		TH1D *testCounter = (TH1D*)fHistosQA->At(3);
@@ -626,11 +673,16 @@ void AliMESpidTask::UserExec(Option_t *opt)
 		}
 */
 
-	} // end MC track loop
+  	} // end MC track loop
 
   } // end HasMCdata IF
 
-
+  vec_hMultEst[4] = pT_LP_ESD;
+  vec_hMultEst[5] = y_LP_ESD;
+  vec_hMultEst[10] = pT_LP_MC;
+  vec_hMultEst[11] = y_LP_MC;
+  hMultEst->Fill(vec_hMultEst);
+  
 
 }  // end UserExec
 
@@ -648,30 +700,32 @@ Bool_t AliMESpidTask::BuildQAHistos()
 
   // multiplicity estimators correlations && generated multiplicity
   Double_t binLimitsV0M[] = {0.0,0.01,0.1,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,21.0,22.0,23.0,24.0,25.0,26.0,27.0,28.0,29.0,30.0,31.0,32.0,33.0,34.0,35.0,36.0,37.0,38.0,39.0,40.0,41.0,42.0,43.0,44.0,45.0,46.0,47.0,48.0,49.0,50.0,51.0,52.0,53.0,54.0,55.0,56.0,57.0,58.0,59.0,60.0,61.0,62.0,63.0,64.0,65.0,66.0,67.0,68.0,69.0,70.0,71.0,72.0,73.0,74.0,75.0,76.0,77.0,78.0,79.0,80.0,81.0,82.0,83.0,84.0,85.0,86.0,87.0,88.0,89.0,90.0,91.0,92.0,93.0,94.0,95.0,96.0,97.0,98.0,99.0,100.0};
-
-  const Int_t ndim(8);
-  const Int_t cldNbins[ndim]   = {105, 102, 50, 21, 102, 102, 20, 20};
-  const Double_t cldMin[ndim]  = {-5, 0., 0., 0., -1.5, -1.5, -2.5, 0.},
-  cldMax[ndim]  = {100., 100., 500., 1.05, 100.5, 100.5, 1.5, 1.};
-  // THnSparseD *hMultEst = new THnSparseD("hMultEst","hMultEst;combined 0.8;V0M;combined 0.4-0.8; directivity; generated 0.8;generated V0M;generated 0.4-0.8;generated directivity;",ndim, cldNbins, cldMin, cldMax);
-  THnSparseD *hMultEst = new THnSparseD("hMultEst","hMultEst;combined 0.8;V0M;V0A signal;directivity;generated 0.8;generated V0M;generated 0.4-0.8;generated directivity;",ndim, cldNbins, cldMin, cldMax);
-  hMultEst->GetAxis(1)->Set(102, binLimitsV0M);  // custom made V0M binning (to incorporate the 3 bins below 1)
-  // hMultEst->GetAxis(5)->Set(102, binLimitsV0M);  // custom made V0M binning (to incorporate the 3 bins below 1)
-  fHistosQA->AddAt(hMultEst, 0);
-
+  
   // use for matching, PID and contaminations efficiency
   Double_t binLimits[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
+  
+  const Int_t ndim(12);
+  const Int_t cldNbins[ndim]   = {105, 102, 50, 21, 52, 20, 102, 102, 20, 21, 52, 20};
+  const Double_t cldMin[ndim]  = {-5, 0., 0., 0., 0., -1., -1.5, -1.5, -2.5, 0., 0., -1.},
+  cldMax[ndim]  = {100., 100., 500., 1.05, 5., 1., 100.5, 100.5, 1.5, 1.05, 5, 1.};
+  // THnSparseD *hMultEst = new THnSparseD("hMultEst","hMultEst;combined 0.8;V0M;combined 0.4-0.8; directivity; generated 0.8;generated V0M;generated 0.4-0.8;generated directivity;",ndim, cldNbins, cldMin, cldMax);
+  THnSparseD *hMultEst = new THnSparseD("hMultEst","hMultEst;combined 0.8;V0M;V0A signal;directivity;LP pT; LP y;generated 0.8;generated V0M;generated 0.4-0.8;generated directivity;generated LP pT;generated LP y",ndim, cldNbins, cldMin, cldMax);
+  hMultEst->GetAxis(1)->Set(102, binLimitsV0M);  // custom made V0M binning (to incorporate the 3 bins below 1)
+  // hMultEst->GetAxis(5)->Set(102, binLimitsV0M);  // custom made V0M binning (to incorporate the 3 bins below 1)
+  hMultEst->GetAxis(4)->Set(52, binLimits);
+  hMultEst->GetAxis(10)->Set(52, binLimits);
+  fHistosQA->AddAt(hMultEst, slot_MultEst);
 
   // used for raw spectra and a lot of corrections
-  const Int_t ndimAllESD(13);
-  const Int_t cldNbinsAllESD[ndimAllESD]   = {150, 102, 21, 52, 2, 5, 5, 20, 2, 80, 5, 20, 2};
-  const Double_t cldMinAllESD[ndimAllESD]  = {0.5, 0., 0., 0., -2., -0.5, -0.5, -1., -0.5, -TMath::PiOver2(), -0.5, -1., -0.5},
-  cldMaxAllESD[ndimAllESD]  = {150.5, 100., 1.05, 5., 2., 4.5, 4.5, 1., 1.5, (3.*TMath::PiOver2()), 4.5, 1.,1.5};
+  const Int_t ndimAllESD(14);
+  const Int_t cldNbinsAllESD[ndimAllESD]   = {150, 102, 21, 52, 2, 5, 5, 20, 2, 80, 20, 5, 20, 2};
+  const Double_t cldMinAllESD[ndimAllESD]  = {0.5, 0., 0., 0., -2., -0.5, -0.5, -1., -0.5, -TMath::PiOver2(), -2., -0.5, -1., -0.5},
+  cldMaxAllESD[ndimAllESD]  = {150.5, 100., 1.05, 5., 2., 4.5, 4.5, 1., 1.5, (3.*TMath::PiOver2()), 2., 4.5, 1.,1.5};
   // THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;combined08;V0M;combined0408;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
-  THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;combined08;V0M;directivity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;delta_phi;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
+  THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;combined08;V0M;directivity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;delta_phi;delta_y;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
   hAllESD->GetAxis(1)->Set(102, binLimitsV0M);
   hAllESD->GetAxis(3)->Set(52, binLimits);
-  fHistosQA->AddAt(hAllESD, 1);
+  fHistosQA->AddAt(hAllESD, slot_AllESD);
 
   // used for tracking efficiency
   const Int_t ndimGen(9);
@@ -680,7 +734,7 @@ Bool_t AliMESpidTask::BuildQAHistos()
   cldMaxGen[ndimGen]  = {150.5, 1.05, 5., 2., 4.5, 1., (3.*TMath::PiOver2()), 150.5, 1.};
   THnSparseD *hGen = new THnSparseD("Gen","Gen;MCmultiplicity;MCdirectivity;MCp_{T};MCcharge;MCPID;MCy;MCdelta_phi;ESDmultiplicity;ESDdirectivity;",ndimGen, cldNbinsGen, cldMinGen, cldMaxGen);
   hGen->GetAxis(2)->Set(52, binLimits);
-  fHistosQA->AddAt(hGen, 2);
+  fHistosQA->AddAt(hGen, slot_Gen);
 
   // 	TH1D *testCounter = new TH1D("testCounter","testCounter", 4, 0.5, 4.5);
   // 	fHistosQA->AddAt(testCounter, 3);
@@ -707,7 +761,7 @@ Bool_t AliMESpidTask::BuildQAHistos()
   hNoEvts->GetAxis(0)->SetBinLabel(3, "Vertex Cut");
   hNoEvts->GetAxis(0)->SetBinLabel(4, "Analyzed");
   hNoEvts->GetAxis(2)->Set(102, binLimitsV0M);  // custom made V0M binning (to incorporate the 3 bins below 1)
-  fHistosQA->AddAt(hNoEvts, 3);
+  fHistosQA->AddAt(hNoEvts, slot_NoEvts);
 
 
   // PID "QA"
@@ -717,17 +771,17 @@ Bool_t AliMESpidTask::BuildQAHistos()
   cldMaxPID[ndimPID]  = {5., 2., 4.5, 4.5, 1.5, 200., 1.1, 4.5};
   THnSparseD *hPIDQA = new THnSparseD("PIDQA","PIDQA;p;charge;PID_TPC;PID_TPCTOF;TOFmatching;dEdx;beta;MCPID",ndimPID, cldNbinsPID, cldMinPID, cldMaxPID);
   hPIDQA->GetAxis(0)->Set(52, binLimits);
-  fHistosQA->AddAt(hPIDQA, 4);
+  fHistosQA->AddAt(hPIDQA, slot_PIDQA);
 
 
   // deltaPhi studies
-  const Int_t ndimPhi(5);
-  const Int_t cldNbinsPhi[ndimPhi]   = {150, 21, 80, 80, 80};
-  const Double_t cldMinPhi[ndimPhi]  = {-0.5, 0., -TMath::PiOver2(), -TMath::PiOver2(), -TMath::PiOver2()},
-  cldMaxPhi[ndimPhi]  = {150.5, 1.05, (3.*TMath::PiOver2()), (3.*TMath::PiOver2()), (3.*TMath::PiOver2())};
-  THnSparseD *hDeltaPhi = new THnSparseD("DeltaPhi","deltaPhi;combined 0.8;directivity;deltaPhiESD;deltaPhiMC;deltaPhiESD_LPMC",ndimPhi, cldNbinsPhi, cldMinPhi, cldMaxPhi);
+  const Int_t ndimPhi(9);
+  const Int_t cldNbinsPhi[ndimPhi]   = {150, 21, 52, 32, 80, 52, 32, 80, 80};
+  const Double_t cldMinPhi[ndimPhi]  = {-0.5, 0., 0., -1.6, -TMath::PiOver2(), 0., -1.6, -TMath::PiOver2(), -TMath::PiOver2()},
+  cldMaxPhi[ndimPhi]  = {150.5, 1.05, 5., 1.6, (3.*TMath::PiOver2()), 5., 1.6, (3.*TMath::PiOver2()), (3.*TMath::PiOver2())};
+  THnSparseD *hDeltaPhi = new THnSparseD("DeltaPhi","deltaPhi;combined 0.8;directivity;ptESD; delta_y_ESD;deltaPhiESD;ptMC;delta_y_MC;deltaPhiMC;deltaPhiESD_LPMC",ndimPhi, cldNbinsPhi, cldMinPhi, cldMaxPhi);
   // hDeltaPhi->GetAxis(0)->Set(52, binLimits);
-  fHistosQA->AddAt(hDeltaPhi, 5);
+  fHistosQA->AddAt(hDeltaPhi, slot_DeltaPhi);
 
 /*
 	// used for DCA corrections
@@ -737,10 +791,16 @@ Bool_t AliMESpidTask::BuildQAHistos()
 	cldMaxDCA[ndimDCA]  = {150.5, 1.05, 5., 2., 4.5, 4.5, 1., 1.5, (3.*TMath::PiOver2()), 2.5, 3.,1.5};
 	THnSparseD *hDCA = new THnSparseD("DCA","DCA;multiplicity;directivity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;delta_phi;MCorigin;DCA;pass_DCAcut;",ndimDCA, cldNbinsDCA, cldMinDCA, cldMaxDCA);
 	hDCA->GetAxis(2)->Set(52, binLimits);
-	fHistosQA->AddAt(hDCA, 6);
+	fHistosQA->AddAt(hDCA, slot_DCA);
 */
 
-  return kTRUE;
+    // test a tree output
+    // TTree *testTree = new TTree("testTree", "test Tree");
+    // fHistosQA->AddAt(testTree, slot_testTree);
+
+    fHistosQA->ls();
+
+    return kTRUE;
 }
 
 

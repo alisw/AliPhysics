@@ -9,12 +9,18 @@
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <TFile.h>
+#include <TChain.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TArrayD.h>
 #include <TVector2.h>
+#include <TString.h>
+#include "THistManager.h"
+#include "AliLog.h"
+#include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJet.h"
-#include <THistManager.h>
+#include "AliEmcalEmbeddingQA.h"
 
 /// \class AliAnalysisTaskEmcalJetCDF
 /// \brief Analysis of jet shapes and FF of all jets and leading jets
@@ -31,8 +37,6 @@ public:
     void                        UserCreateOutputObjects();
     void                        Terminate ( Option_t *option );
 
-    THistManager                fHistManager   ;///< Histogram manager
-
 protected:
     void                        ExecOnce();
     Bool_t                      Run() ;
@@ -46,6 +50,22 @@ protected:
     /// \return TObject*
     TObject* GetHistogram ( const char* histName );
 
+    Bool_t              IsEventSelected();
+
+    AliEmcalEmbeddingQA         fEmbeddingQA;            //!<! QA hists for embedding (will only be added if embedding)
+
+    // Event selection
+    Bool_t                      fUseAliEventCuts;                     ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
+    AliEventCuts                fEventCuts;                           ///< event selection utility
+    TList                      *fEventCutList;                        //!<! Output list for event cut histograms
+    Bool_t                      fUseManualEventCuts;                  ///< Flag to use manual event cuts
+
+    // MC options
+    AliMCParticleContainer*     fGeneratorLevel;                      //!<! generator level container
+
+    THistManager                fHistManager   ;///< Histogram manager
+
+
 private:
     AliAnalysisTaskEmcalJetCDF ( const AliAnalysisTaskEmcalJetCDF& );           // not implemented
     AliAnalysisTaskEmcalJetCDF &operator= ( const AliAnalysisTaskEmcalJetCDF& ); // not implemented
@@ -56,7 +76,10 @@ private:
 
 };
 
-namespace NS_AliAnalysisTaskEmcalJetCDF {
+namespace PWGJE {
+namespace EMCALJetTasks {
+namespace AliAnalysisTaskEmcalJetCDF_NS {
+
   /// (pt,index) pair
   typedef std::pair<Double_t, Int_t> ptidx_pair;
 
@@ -69,7 +92,7 @@ namespace NS_AliAnalysisTaskEmcalJetCDF {
   /// Computing the Mag2 of an AliVParticle derived object
   /// \param trk AliVParticle
   /// \return Mag2
-  inline Double_t Mag2 (const AliVParticle& trk) 
+  inline Double_t Mag2 (const AliVParticle& trk)
     { return trk.Px()*trk.Px() + trk.Py()*trk.Py() + trk.Pz()*trk.Pz(); }
 
   /// Computing the Mag of an AliVParticle derived object
@@ -169,6 +192,7 @@ namespace NS_AliAnalysisTaskEmcalJetCDF {
                                 const char* ntracks    = "usedefault",
                                 const char* nclusters  = "usedefault",
                                 const char* ncells     = "usedefault",
+                                const char* ntracks_mc = "",
                                 const char* tag        = "CDF"
                               );
 
@@ -182,7 +206,7 @@ namespace NS_AliAnalysisTaskEmcalJetCDF {
   /// \param mintrackpt : min track constituent pt to accept the jet (default = 0.15)
   /// \param maxtrackpt : max track constituent pt to accept the jet (default = 1000.)
   /// \return
-  void jetContSetParams (
+  AliJetContainer* jetContSetParams (
                           AliJetContainer* jetCont,
                           Float_t jetptmin = 1.,
                           Float_t jetptmax = 500.,
@@ -193,7 +217,134 @@ namespace NS_AliAnalysisTaskEmcalJetCDF {
                           Float_t maxtrackpt = 1000.
                           );
 
-} // end of NS_AliAnalysisTaskEmcalJetCDF
+
+/**
+ * Creates a chain from an list of files
+ * Using list of directories is not supported; use find to create a list of files; Ex:
+ * find /alice/data/2016/LHC16r/ -path "_*_/000266189/_*_" -path "_*_/pass1_CENT_wSDD/_*_" -name AliAOD.root -printf "file://%p\n"
+ * NB! on macos you need gfind that is installed with "brew install findutils"
+ * @param filelist Name of the file containing the list of files
+ * @param iNumFiles If iNumFiles > 0 only nfiles files are added
+ * @param iStartWithFile starting from file 'iStartWithFile' (>= 1).
+ * @param cTreeNameArg Tree name for chaining. if "auto" it will be taken as the first tree name from the first file from filelist
+ * @param friends Specify the root_file/friend_tree that is assumed to be in the same directory as the each input file; if friend_tree is not specified we will assume the defaults
+ * @return TChain*
+ */
+TChain* CreateChain ( const char* filelist = "filelist.txt",
+                      const char* cTreeNameArg       = "auto",
+                      const char* friends            = "",
+                      UInt_t      iNumFiles          = -1,
+                      UInt_t      iStartWithFile     =  1
+                      );
+
+
+
+/// Return true if lhc beggining string have more than 6 characters
+/// @param str char array
+/// @return bool
+inline bool PeriodIsMC (const char* str) {
+   TString period (str);
+   if (!period.IsNull()) {
+     period.ToLower();
+     if ( period.BeginsWith("lhc") && (period.Length() > 6) ) { return true; }
+     }
+   return false;
+ }
+
+
+/// Return the first sub-string beggining with "lhc" from a / delimited char array
+/// \param file_path char array
+/// \return TString period id
+inline TString GetPeriod (const char* file_path) {
+   TString period = "";
+   TString sFile(file_path);
+   sFile.ToLower();
+
+   if (!sFile.IsNull()) {
+     // split string in tokens (libs)
+     TObjArray* tokens_list = sFile.Tokenize("/");
+     tokens_list->SetOwner(kTRUE);
+     TIter next_str(tokens_list);
+     TObjString* token = NULL;
+     while ((token=(TObjString*)next_str())) {
+       TString token_str = token->GetString();
+       if ( token_str.BeginsWith("lhc") ) { period = token_str; break; }
+       }
+     delete tokens_list;
+     }
+   return period;
+ }
+
+
+/// Return the first sub-string beggining with "pass" from a / delimited char array
+/// \param file_path char array
+/// \return TString pass id
+inline TString GetPass ( const char* file_path) {
+   TString pass = "";
+   TString sFile (file_path);
+   sFile.ToLower();
+
+   if (!sFile.IsNull()) {
+     // split string in tokens (libs)
+     TObjArray* tokens_list = sFile.Tokenize("/");
+     tokens_list->SetOwner(kTRUE);
+     TIter next_str(tokens_list);
+     TObjString* token = NULL;
+     while ((token=(TObjString*)next_str())) {
+       TString token_str = token->GetString();
+       if ( token_str.BeginsWith("pass") ) { pass = token_str; break; }
+       }
+     delete tokens_list;
+     }
+
+   return pass;
+ }
+
+
+/// Return the last sub-string from a / delimited char array
+/// \param file_path char array
+/// \return TString file name
+inline TString GetFileFromPath ( const char* file_path = "" ) {
+TString file (file_path);
+TString file_name ("");
+TObjArray* token_list = file.Tokenize("/");
+token_list->SetOwner(kTRUE);
+
+if ( token_list->GetEntries() > 0 )
+  { file_name = ((TObjString*)token_list->At(token_list->GetLast()))->GetString(); }
+
+delete token_list;
+return file_name;
+}
+
+
+/// Save AliAnalysisManager to file; return bool fo success
+/// \param file_name char array
+/// \return bool of sucess status
+inline bool SaveManager ( const char* file_name) {
+   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+   if ( !mgr ) { ::Error ( "SaveManager", "No analysis manager to connect to." ); return kFALSE; }
+
+   TFile pOutFile (file_name,"RECREATE");
+   if ( ! pOutFile.cd() ) { ::Error ( "SaveManager", "Could not use the new created file" ); return kFALSE; }
+   Int_t written_bytes = mgr->Write();
+   pOutFile.Close();
+   if (written_bytes == 0 ) { ::Error ( "SaveManager", "0 bytes written saving manager to file" ); return kFALSE; }
+   return kTRUE;
+   }
+
+/// Get pt of jet with background substracted
+/// \param AliEmcalJet* jet
+/// \param Double_t rho
+/// \return jet pt
+inline Double_t JetPtRho(const AliEmcalJet* jet, Double_t rho) {
+  return jet->Pt() - jet->Area() * rho;
+  }
+
+} // namespace AliAnalysisTaskEmcalJetCDF_NS
+} // namespace EMCALJetTasks
+} // namespace PWGJE
+
 
 #endif // end of #ifndef ALIANALYSISTASKEMCALJETCDF_H
 

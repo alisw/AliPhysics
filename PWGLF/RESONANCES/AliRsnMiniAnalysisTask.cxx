@@ -11,7 +11,6 @@
 //
 // Author: A. Pulvirenti
 // Developers: F. Bellini (fbellini@cern.ch)
-//
 
 #include <Riostream.h>
 
@@ -48,11 +47,12 @@
 
 #include "AliRsnMiniAnalysisTask.h"
 #include "AliRsnMiniResonanceFinder.h"
-
+//#include "AliSpherocityUtils.h"
 
 ClassImp(AliRsnMiniAnalysisTask)
 
 //__________________________________________________________________________________________________
+/// Default constructor
 AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    AliAnalysisTaskSE(),
    fUseMC(kFALSE),
@@ -79,6 +79,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fHAEventsVsMulti(0x0),
    fHAEventsVsTracklets(0x0),
    fHAEventVzCent(0x0),
+   fHAEventSpherocityCent(0x0),
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
@@ -94,7 +95,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fCheckDecay(kTRUE),
    fMaxNDaughters(-1),
    fCheckP(kFALSE),
-   fCheckFeedDown(kFALSE),   
+   fCheckFeedDown(kFALSE),
    fOriginDselection(kFALSE),
    fKeepDfromB(kFALSE),
    fKeepDfromBOnly(kFALSE),
@@ -103,16 +104,23 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
    fRsnTreeInFile(kFALSE),
-   fNResonanceFinders(0)
+   fComputeSpherocity(kFALSE),
+   fTrackFilter(0x0),
+   fSpherocity(-10),
+   fResonanceFinders(0)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
 //
-
-   fResonanceFinder[0] = fResonanceFinder[1] = 0;
 }
 
 //__________________________________________________________________________________________________
+/// Main constructor
+///
+/// \param name Name of the task
+/// \param useMC Flag for Monte Carlo
+/// \param saveRsnTreeInFile Flag for saving tree of rsn daughters in file
+/// 
 AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bool_t saveRsnTreeInFile) :
    AliAnalysisTaskSE(name),
    fUseMC(useMC),
@@ -139,6 +147,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fHAEventsVsMulti(0x0),
    fHAEventsVsTracklets(0x0),
    fHAEventVzCent(0x0),
+   fHAEventSpherocityCent(0x0),
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
@@ -154,7 +163,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fCheckDecay(kTRUE),
    fMaxNDaughters(-1),
    fCheckP(kFALSE),
-   fCheckFeedDown(kFALSE),   
+   fCheckFeedDown(kFALSE),
    fOriginDselection(kFALSE),
    fKeepDfromB(kFALSE),
    fKeepDfromBOnly(kFALSE),
@@ -163,7 +172,10 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
    fRsnTreeInFile(saveRsnTreeInFile),
-   fNResonanceFinders(0)
+   fComputeSpherocity(kFALSE),
+   fTrackFilter(0x0),
+   fSpherocity(-10),
+   fResonanceFinders(0)
 {
 //
 // Default constructor.
@@ -174,11 +186,10 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
 
    DefineOutput(1, TList::Class());
    if (fRsnTreeInFile) DefineOutput(2, TTree::Class());
-
-   fResonanceFinder[0] = fResonanceFinder[1] = 0;
 }
 
 //__________________________________________________________________________________________________
+/// Copy constructor
 AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &copy) :
    AliAnalysisTaskSE(copy),
    fUseMC(copy.fUseMC),
@@ -205,6 +216,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fHAEventsVsMulti(0x0),
    fHAEventsVsTracklets(0x0),
    fHAEventVzCent(0x0),
+   fHAEventSpherocityCent(0x0),
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
@@ -220,7 +232,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fCheckDecay(copy.fCheckDecay),
    fMaxNDaughters(copy.fMaxNDaughters),
    fCheckP(copy.fCheckP),
-   fCheckFeedDown(copy.fCheckFeedDown),   
+   fCheckFeedDown(copy.fCheckFeedDown),
    fOriginDselection(copy.fOriginDselection),
    fKeepDfromB(copy.fOriginDselection),
    fKeepDfromBOnly(copy.fKeepDfromBOnly),
@@ -229,18 +241,20 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fMotherAcceptanceCutMaxEta(copy.fMotherAcceptanceCutMaxEta),
    fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance),
    fRsnTreeInFile(copy.fRsnTreeInFile),
-   fNResonanceFinders(0)
+   fComputeSpherocity(copy.fComputeSpherocity),
+   fTrackFilter(copy.fTrackFilter),
+   fSpherocity(copy.fSpherocity),
+   fResonanceFinders(copy.fResonanceFinders)
 {
 //
 // Copy constructor.
 // Implemented as requested by C++ standards.
 // Can be used in PROOF and by plugins.
 //
-    
-   fResonanceFinder[0] = fResonanceFinder[1] = 0;
 }
 
 //__________________________________________________________________________________________________
+/// Assignment Operator 
 AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalysisTask &copy)
 {
 //
@@ -275,6 +289,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fHAEventsVsMulti = copy.fHAEventsVsMulti;
    fHAEventsVsTracklets = copy.fHAEventsVsTracklets;
    fHAEventVzCent = copy.fHAEventVzCent;
+   fHAEventSpherocityCent = copy.fHAEventSpherocityCent;
    fHAEventMultiCent = copy.fHAEventMultiCent;
    fHAEventRefMultiCent = copy.fHAEventRefMultiCent;
    fHAEventPlane = copy.fHAEventPlane;
@@ -296,11 +311,16 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fMotherAcceptanceCutMaxEta = copy.fMotherAcceptanceCutMaxEta;
    fKeepMotherInAcceptance = copy.fKeepMotherInAcceptance;
    fRsnTreeInFile = copy.fRsnTreeInFile;
+   fComputeSpherocity = copy.fComputeSpherocity;
+   fTrackFilter = copy.fTrackFilter;
+   fSpherocity = copy.fSpherocity;
+   fResonanceFinders = copy.fResonanceFinders;
 
    return (*this);
 }
 
 //__________________________________________________________________________________________________
+/// Destructor
 AliRsnMiniAnalysisTask::~AliRsnMiniAnalysisTask()
 {
 //
@@ -311,12 +331,19 @@ AliRsnMiniAnalysisTask::~AliRsnMiniAnalysisTask()
    if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
       delete fOutput;
       delete fEvBuffer;
-      delete fResonanceFinder[0];
-      delete fResonanceFinder[1];
    }
 }
 
 //__________________________________________________________________________________________________
+/// Add a new cut set for a new criterion for track selection.
+/// A user can add as many as (s)he wants, and each one corresponds
+/// to one of the available bits in the AliRsnMiniParticle mask.
+/// The only check is the following: if a cut set with the same name
+/// as the argument is there, this is not added.
+///
+/// \param cuts Pointer to an AliRsnCutSet object
+/// \return A value that is the array position of this set.
+///
 Int_t AliRsnMiniAnalysisTask::AddTrackCuts(AliRsnCutSet *cuts)
 {
 //
@@ -339,17 +366,26 @@ Int_t AliRsnMiniAnalysisTask::AddTrackCuts(AliRsnCutSet *cuts)
       v = fTrackCuts.IndexOf(cuts);
    }
 
-    for (Int_t i=0; i<fNResonanceFinders; i++) if(fResonanceFinder[i]) fResonanceFinder[i]->IncrementResonanceCutID();
+   for (Int_t i=0; i<fResonanceFinders.GetEntries(); i++){
+      AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
+      if(f) f->IncrementResonanceCutID();
+   }
     
-    return v;
+   return v;
 }
 
 //__________________________________________________________________________________________________
+/// Create output objects 
+/// 
+/// It creates a list of custom histograms and event counters. 
+/// This is called once per worker node.
+/// If required by setting the corresponding flag, 
+/// it initialises the flow vector (Qn) from the external task.
+///
 void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
 {
 //
 // Initialization of outputs.
-// This is called once per worker node.
 //
 
    // reset counter
@@ -366,6 +402,12 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    if (fESDtrackCuts) delete fESDtrackCuts;
    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
 
+   //initialize quality trackcuts for spherocity
+   if(!fTrackFilter){	
+     fTrackFilter = new AliAnalysisFilter("trackFilter2015");
+     SetTrackCuts(fTrackFilter);
+   }
+
    // create list and set it as owner of its content (MANDATORY)
    if (fBigOutput) OpenFile(1);
    fOutput = new TList();
@@ -377,7 +419,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fHEventStat->GetXaxis()->SetBinLabel(2, "V0AND");
    fHEventStat->GetXaxis()->SetBinLabel(3, "Candle");
    fHEventStat->GetXaxis()->SetBinLabel(4, "Accepted");
-   fHEventStat->GetXaxis()->SetBinLabel(5, "Not Accepted - Total");   
+   fHEventStat->GetXaxis()->SetBinLabel(5, "Not Accepted - Total");
    fHEventStat->GetXaxis()->SetBinLabel(6, "Not Accepted - No Track Vertex");
    fHEventStat->GetXaxis()->SetBinLabel(7, "Not Accepted - Not Enough Contributors");
    fHEventStat->GetXaxis()->SetBinLabel(8, "Not Accepted - No Vertex inside |z| < 10 cm");
@@ -389,7 +431,6 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fHEventStat->GetXaxis()->SetBinLabel(14, "Not Accepted - Past/Future");
    fHEventStat->GetXaxis()->SetBinLabel(15, "Not Accepted - Cluster-Tracklets Correlation");
    fHEventStat->GetXaxis()->SetBinLabel(16, "Not Accepted - All local cuts");
-   
    
    fOutput->Add(fHEventStat);
 
@@ -408,6 +449,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    if(fHAEventVzCent) fOutput->Add(fHAEventVzCent);
    if(fHAEventMultiCent) fOutput->Add(fHAEventMultiCent);
    if(fHAEventRefMultiCent) fOutput->Add(fHAEventRefMultiCent);
+   if(fHAEventSpherocityCent) fOutput->Add(fHAEventSpherocityCent);
    if(fHAEventPlane) fOutput->Add(fHAEventPlane);
 
    AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
@@ -425,7 +467,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    // create temporary tree for filtered events
    if (fMiniEvent) SafeDelete(fMiniEvent);
    if (fRsnTreeInFile) OpenFile(2);
-   fEvBuffer = new TTree("EventBuffer", "Temporary buffer for mini events");  
+   fEvBuffer = new TTree("EventBuffer", "Temporary buffer for mini events");
    fMiniEvent = new AliRsnMiniEvent();
    fEvBuffer->Branch("events", "AliRsnMiniEvent", &fMiniEvent);
    
@@ -447,13 +489,19 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
 }
 
 //__________________________________________________________________________________________________
+/// Main computation loop, performed for each event.
+///
+/// It checks if the event is acceptable, and eventually
+/// creates the corresponding mini-event and stores it in the buffer.
+/// The real histogram filling is done at the end, in "FinishTaskOutput".
+///
+/// Note: "true" mother-related histograms are filled in UserExec,
+/// since they require direct access to MC event
+///
 void AliRsnMiniAnalysisTask::UserExec(Option_t *)
 {
 //
 // Computation loop.
-// In this case, it checks if the event is acceptable, and eventually
-// creates the corresponding mini-event and stores it in the buffer.
-// The real histogram filling is done at the end, in "FinishTaskOutput".
 //
    // increment event counter
    fEvNum++;
@@ -471,7 +519,10 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
    // and skip this event if no tracks were accepted
    FillMiniEvent(check);
 
-   for (Int_t i=0; i<fNResonanceFinders; i++) if(fResonanceFinder[i]) fResonanceFinder[i]->RunResonanceFinder(fMiniEvent);
+   for (Int_t i=0; i<fResonanceFinders.GetEntries(); i++){
+      AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
+      if(f) f->RunResonanceFinder(fMiniEvent);
+   }
 
    // fill MC based histograms on mothers,
    // which do need the original event
@@ -498,13 +549,16 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
 }
 
 //__________________________________________________________________________________________________
+/// Finish task. 
+/// This function is called at the end of the loop on available events,
+/// and then the buffer will be full with all the corresponding mini-events,
+/// each one containing all tracks selected by each of the available track cuts.
+/// Here a loop is done on each of these events, and both single-event and mixing are computed
+///
 void AliRsnMiniAnalysisTask::FinishTaskOutput()
 {
 //
-// This function is called at the end of the loop on available events,
-// and then the buffer will be full with all the corresponding mini-events,
-// each one containing all tracks selected by each of the available track cuts.
-// Here a loop is done on each of these events, and both single-event and mixing are computed
+// FInish task: loop on each of the selected events, and compute both single-event and mixing 
 //
 
    // security code: reassign the buffer to the mini-event cursor
@@ -661,49 +715,19 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
    AliInfo(Form("[%s] EventMixing %d/%d",GetName(),nEvents,nEvents));
    timer.Stop(); timer.Print(); fflush(stdout);
 
-   /*
-   OLD
-   ifill = 0;
-   for (iloop = 1; iloop < nEvents; iloop++) {
-      imix = ievt + iloop;
-      // restart from beginning if reached last event
-      if (imix >= nEvents) imix -= nEvents;
-      // avoid to mix an event with itself
-      if (imix == ievt) continue;
-      // skip all events already mixed enough times
-      if (fNMixed[ievt] >= fNMix) break;
-      if (fNMixed[imix] >= fNMix) continue;
-      fEvBuffer->GetEntry(imix);
-      // skip if events are not matched
-      if (TMath::Abs(evMain.Vz()    - fMiniEvent->Vz()   ) > fMaxDiffVz   ) continue;
-      if (TMath::Abs(evMain.Mult()  - fMiniEvent->Mult() ) > fMaxDiffMult ) continue;
-      if (TMath::Abs(evMain.Angle() - fMiniEvent->Angle()) > fMaxDiffAngle) continue;
-      // found a match: increment counter for both events
-      AliDebugClass(1, Form("Event %d, def '%s': event mixing (%d with %d)", ievt, def->GetName(), ievt, imix));
-      fNMixed[ievt]++;
-      fNMixed[imix]++;
-      // process mixing
-      ifill += def->FillPair(&evMain, fMiniEvent, &fValues);
-      // stop if mixed enough times
-      if (fNMixed[ievt] >= fNMix) break;
-   }
-   break;
-   // print number of mixings done with each event
-   for (ievt = 0; ievt < nEvents; ievt++) {
-      AliDebugClass(2, Form("Event %6d: mixed %2d times", ievt, fNMixed[ievt]));
-   }
-   */
-
    // post computed data
    PostData(1, fOutput);
    if (fRsnTreeInFile) PostData(2, fEvBuffer);
 }
 
 //__________________________________________________________________________________________________
+/// Terminate function. 
+/// Called only once at the end.
+/// It only checks that the output list is there.
+///
 void AliRsnMiniAnalysisTask::Terminate(Option_t *)
 {
 //
-// Draw result to screen, or perform fitting, normalizations
 // Called once at the end of the query
 //
 
@@ -715,25 +739,25 @@ void AliRsnMiniAnalysisTask::Terminate(Option_t *)
 }
 
 //__________________________________________________________________________________________________
+/// This method checks if current event is OK for analysis.
+///
+/// In case it is, the pointers of the local AliRsnEvent data member
+/// will point to it, in order to allow cut checking, otherwise the
+/// function exits with a failure message.
+/// ---
+/// ESD events must pass the physics selection, AOD are supposed to do.
+/// ---
+/// While checking the event, a histogram is filled to count the number
+/// of CINT1B, V0AND and CANDLE events, which are needed for normalization
+/// ---
+/// \return A character such as 'E' or 'A' if the event is accepted and is ESD or AOD
+/// \return 0 if the event is not accepted   
+///
 Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
 {
 //
 // This method checks if current event is OK for analysis.
-// In case it is, the pointers of the local AliRsnEvent data member
-// will point to it, in order to allow cut checking, otherwise the
-// function exits with a failure message.
-// ---
-// ESD events must pass the physics selection, AOD are supposed to do.
-// ---
-// While checking the event, a histogram is filled to count the number
-// of CINT1B, V0AND and CANDLE events, which are needed for normalization
-// ---
-// Return values can be:
-//    -- 'E' if the event is accepted and is ESD
-//    -- 'A' if the event is accepted and is AOD
-//    --  0  if the event is not accepted
 //
-
    // string to sum messages
    TString msg("");
 
@@ -845,71 +869,74 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       isSelected = kTRUE;
    }
 
-   AliRsnCutEventUtils* evtUtils=new AliRsnCutEventUtils("temporary_cutEventUtils");
-   evtUtils->IsSelected(&fRsnEvent);
-
-   AliRsnCutPrimaryVertex* cutPrimaryVertex=new AliRsnCutPrimaryVertex("temporary_cutPrimaryVertex");
-   cutPrimaryVertex->IsSelected(&fRsnEvent);
-
    // if the above exit point is not taken, the event is accepted
    AliDebugClass(2, Form("Stats: %s", msg.Data()));
    if (isSelected) {
+     
      fHEventStat->Fill(3.1);
      Double_t multi = ComputeCentrality((output == 'E'));
      Double_t tracklets = ComputeTracklets();
      Double_t refmulti = ComputeReferenceMultiplicity((output == 'E'), fRefMultiType.Data());
+     fSpherocity = (fComputeSpherocity) ? ComputeSpherocity() : -10;
      fHAEventsVsMulti->Fill(multi);
      fHAEventsVsTracklets->Fill(tracklets);
      if(fHAEventVzCent) fHAEventVzCent->Fill(multi,fInputEvent->GetPrimaryVertex()->GetZ());
+     if(fHAEventSpherocityCent && fComputeSpherocity) fHAEventSpherocityCent->Fill(multi,fSpherocity);
      if(fHAEventMultiCent) fHAEventMultiCent->Fill(multi,ComputeMultiplicity(output == 'E', fHAEventMultiCent->GetYaxis()->GetTitle()));
      if(fHAEventRefMultiCent) fHAEventRefMultiCent->Fill(refmulti, ComputeReferenceMultiplicity(output == 'E', fHAEventRefMultiCent->GetYaxis()->GetTitle()));
      if(fHAEventPlane) fHAEventPlane->Fill(multi,ComputeAngle());
-     SafeDelete(evtUtils);
-     SafeDelete(cutPrimaryVertex);
-      return output;
+     return output;
+     
    } else {
+
      fHEventStat->Fill(4.1);
-     AliAnalysisUtils *utils = new AliAnalysisUtils();
      const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
-     if (!vertex) fHEventStat->Fill(5.1);
-     else {
+     if (!vertex) {
+       fHEventStat->Fill(5.1);
+     } else {
        TString title=vertex->GetTitle();
+       AliRsnCutEventUtils* evtUtils = new AliRsnCutEventUtils("temporary_cutEventUtils");
+       evtUtils->IsSelected(&fRsnEvent);
+       AliRsnCutPrimaryVertex* cutPrimaryVertex = new AliRsnCutPrimaryVertex("temporary_cutPrimaryVertex");
+       cutPrimaryVertex->IsSelected(&fRsnEvent);
+       
        if( (title.Contains("Z")) || (title.Contains("3D")) || vertex->GetNContributors()<1.) {
 	 if( (title.Contains("Z")) || (title.Contains("3D")) ) fHEventStat->Fill(5.1);
 	 if(vertex->GetNContributors()<1.) fHEventStat->Fill(6.1);
        }
        else if(TMath::Abs(vertex->GetZ())>10.) fHEventStat->Fill(7.1);
-       else if(utils->IsPileUpEvent(fInputEvent)) fHEventStat->Fill(8.1);
+       else if(((AliAnalysisUtils *)evtUtils->GetAnalysisUtils())->IsPileUpEvent(fInputEvent)) fHEventStat->Fill(8.1);
        else if(!cutPrimaryVertex->GoodZResolutionSPD()) fHEventStat->Fill(9.1);
        else if(!cutPrimaryVertex->GoodDispersionSPD()) fHEventStat->Fill(10.1);
        else if(!cutPrimaryVertex->GoodZDifferenceSPDTrack()) fHEventStat->Fill(11.1);
        else if(evtUtils->IsIncompleteDAQ()) fHEventStat->Fill(12.1);
        else if(evtUtils->FailsPastFuture()) fHEventStat->Fill(13.1);
-       else if(utils->IsSPDClusterVsTrackletBG(fInputEvent)) fHEventStat->Fill(14.1);
+       else if(evtUtils->IsSPDClusterVsTrackletBG(fInputEvent)) fHEventStat->Fill(14.1);
+       SafeDelete(evtUtils);
+       SafeDelete(cutPrimaryVertex);  
      }
-
-    SafeDelete(evtUtils);
-    SafeDelete(cutPrimaryVertex);
-    SafeDelete(utils);
+     
      return 0;
    }
 }
 
 //__________________________________________________________________________________________________
+/// Refresh cursor mini-event data member to fill with current event.
+/// 
+/// It fills the RsnMiniEvent with the event properties
+/// and it fills the track pool after applying track cuts.
+///
+/// \param evType A character for ESD ('E') or AOD ('A') input
+/// \return The total number of selected tracks.
+/// 
 void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
 {
-//
-// Refresh cursor mini-event data member to fill with current event.
-// Returns the total number of tracks selected.
-//
-    fMiniEvent->Clear();
-    // return;
+   fMiniEvent->Clear();
    // assign event-related values
-  //  if (fMiniEvent) delete fMiniEvent;
-  //  fMiniEvent = new AliRsnMiniEvent;
    fMiniEvent->SetRef(fRsnEvent.GetRef());
    fMiniEvent->SetRefMC(fRsnEvent.GetRefMC());
    fMiniEvent->Vz()    = fInputEvent->GetPrimaryVertex()->GetZ();
+   fMiniEvent->Spherocity()  = fSpherocity;
    fMiniEvent->Angle() = ComputeAngle();
    fMiniEvent->Mult()  = ComputeCentrality((evType == 'E'));
    fMiniEvent->RefMult()  = ComputeReferenceMultiplicity((evType == 'E'), fRefMultiType.Data());
@@ -946,7 +973,7 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
          if (cuts->IsSelected(&cursor)) miniParticlePtr->SetCutBit(ic);
         }
         // continue;
-        
+       
         // if a track passes at least one track cut, it is added to the pool
       // if (miniParticle.CutBits()) {
         if (miniParticlePtr->CutBits()) {
@@ -970,6 +997,8 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
 }
 
 //__________________________________________________________________________________________________
+/// Compute event plane angle.
+///
 Double_t AliRsnMiniAnalysisTask::ComputeAngle()
 {
 //
@@ -994,14 +1023,17 @@ Double_t AliRsnMiniAnalysisTask::ComputeAngle()
 }
 
 //__________________________________________________________________________________________________
+/// Computes event centrality/multiplicity.
+/// 
+/// COmputation is carried out according to the criterion defined
+/// by two elements: (1) choice between multiplicity and centrality and
+/// (2) the string defining what estimator must be used for specific computation.
+///
+/// \param isESD Flag =1 for ESD
+/// \return Centrality/ multiplicity value (or percentile)
+///
 Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
 {
-//
-// Computes event centrality/multiplicity according to the criterion defined
-// by two elements: (1) choice between multiplicity and centrality and
-// (2) the string defining what criterion must be used for specific computation.
-//
-
    if (fUseCentrality) {
      if ((!fUseMC) && (fUseCentralityPatchPbPb2011)) {
        return ApplyCentralityPatchPbPb2011();//
@@ -1079,14 +1111,19 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
 }
 
 //__________________________________________________________________________________________________
+/// Computes event reference multiplicity according to the strategy defined by the "type"
+///
+/// Implementation follows AliPPVsMultUtils::GetStandardReferenceMultiplicity(...)
+/// type = "TRACKLETS" uses SPD tracklets only
+/// type = "QUALITY" (default) uses global tracks unless in cases when the track vertex is not available. Then tracklets are used anyway.
+///
+/// \param isESD Flag =1 for ESD
+/// \param type Estimator 
+/// \return Multiplicity value
+/// 
 Double_t AliRsnMiniAnalysisTask::ComputeReferenceMultiplicity(Bool_t isESD,TString type)
 {
-//
-// Computes event reference multiplicity according to the strategy defined by the "type"
-// Implementation follows AliPPVsMultUtils::GetStandardReferenceMultiplicity(...)
-// type = "TRACKLETS" uses SPD tracklets only
-// type = "QUALITY" (default) uses global tracks unless in cases when the track vertex is not available. Then tracklets are used anyway.
-//
+
   type.ToUpper();
   Double_t computedRefMulti = -10.0;
   if ( type.CompareTo("TRACKLETS") && type.CompareTo("GLOBAL") ) {
@@ -1104,14 +1141,14 @@ Double_t AliRsnMiniAnalysisTask::ComputeReferenceMultiplicity(Bool_t isESD,TStri
       */
       computedRefMulti = AliESDtrackCuts::GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets, 0.8, 0.0);
     } else {
-      /* If track vertex available, use combined estimator 
-	 = number of global tracks/event 
+      /* If track vertex available, use combined estimator
+	 = number of global tracks/event
 	 + number of ITS standalone tracks complementary to TPC for a given event
 	 + number of SPD tracklets complementary to global/ITSSA tracks for a given events,
 	 all of them within the specified eta range
       */
-      computedRefMulti = AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent *)fInputEvent, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0.0);       
-    } 
+      computedRefMulti = AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent *)fInputEvent, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0.0);
+    }
   } else {
     AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(fInputEvent);
     if (!aodevent) return kFALSE;
@@ -1122,7 +1159,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeReferenceMultiplicity(Bool_t isESD,TStri
     // (-3) -> only if old AOD, but then -> recompute
     // (-4) -> kept, user might discard, but will be killed anyhow by ev. sel.
     //Hack: if this is -3, this is an old AOD filtering and we need to fall back on tracklets.
-    if( (lStoredRefMult == -3)||(!type.CompareTo("TRACKLETS")) ) { 
+    if( (lStoredRefMult == -3)||(!type.CompareTo("TRACKLETS")) ) {
       //(then -1 and -2 are NOT the case, -4 unchecked but impossible since no track vtx)
       //Get Multiplicity object
       AliAODTracklets *spdmult = aodevent->GetMultiplicity();
@@ -1141,14 +1178,16 @@ Double_t AliRsnMiniAnalysisTask::ComputeReferenceMultiplicity(Bool_t isESD,TStri
 }
 
 //__________________________________________________________________________________________________
+/// Computes event multiplicity according to the specified estimator
+/// 
+/// Attention: **Deprecated**, better use ComputeCentrality() instead
+///
+/// \param isESD Flag =1 for ESD
+/// \param type Estimator 
+/// \return Multiplicity value
+/// 
 Double_t AliRsnMiniAnalysisTask::ComputeMultiplicity(Bool_t isESD,TString type)
 {
-//
-// Computes event multiplicity according to the string defining
-// what criterion must be used for specific computation.
-//
-// Deprecated, better use ComputeReferenceMultiplicity instead
-//
    type.ToUpper();
 
    if (!type.CompareTo("TRACKS"))
@@ -1185,12 +1224,12 @@ Double_t AliRsnMiniAnalysisTask::ComputeMultiplicity(Bool_t isESD,TString type)
 }
 
 //__________________________________________________________________________________________________
+/// Computes number of tracklets
+/// 
+/// \return Number of tracklets
+/// 
 Double_t AliRsnMiniAnalysisTask::ComputeTracklets()
 {
-//
-// Get number of tracklets
-//
-
   Double_t nTr = 100;
   Double_t count = 0.0;
 
@@ -1202,7 +1241,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeTracklets()
       Double_t theta=spdmult->GetTheta(iTr);
       Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
       if(eta>-1.0 && eta<1.0) count++;
-    } 
+    }
   }
   else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
     AliAODEvent *aodEvent = (AliAODEvent *)fInputEvent;
@@ -1219,12 +1258,84 @@ Double_t AliRsnMiniAnalysisTask::ComputeTracklets()
 }
 
 //__________________________________________________________________________________________________
+/// Computes event spherocity.
+/// 
+/// For AODs, the filter bit 5 is used to select tracks for the computation. 
+/// For tESDs, the track filter set externally is used to select tracks. 
+///
+/// \return Spherocity value if at least 10 good tracks are used for the computation. If not, returns -10.
+/// 
+Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
+{
+  AliVEvent * evTypeS = InputEvent();
+  Int_t ntracksLoop = evTypeS->GetNumberOfTracks();
+  Int_t GoodTracks = 0;
+  Float_t spherocity = -10.0;
+  Float_t pFull = 0;
+  Float_t Spherocity = 2;
+  Float_t pt[10000],phi[1000];
+  
+  //computing total pt
+  Float_t sumapt = 0;
+  for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
+    AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
+    AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
+    AliESDtrack *esdt  = dynamic_cast<AliESDtrack *>(track);
+    if (aodt) if (!aodt->TestFilterBit(5)) continue;
+    if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
+    if (track->Pt() < 0.15) continue;
+    if(TMath::Abs(track->Eta()) > 0.8) continue;
+    //pt[i1] = track->Pt();
+    pt[i1] = 1.0;
+    sumapt += pt[i1];
+    GoodTracks++;
+  }
+  if (GoodTracks < 10) return -10.0;
+  //Getting thrust
+  for(Int_t i = 0; i < 360/0.1; ++i){
+	Float_t numerador = 0;
+	Float_t phiparam  = 0;
+	Float_t nx = 0;
+	Float_t ny = 0;
+	phiparam=( (TMath::Pi()) * i * 0.1 ) / 180; // parametrization of the angle
+	nx = TMath::Cos(phiparam);            // x component of an unitary vector n
+	ny = TMath::Sin(phiparam);            // y component of an unitary vector n
+	for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
+	  AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
+	  AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
+	  AliESDtrack *esdt  = dynamic_cast<AliESDtrack *>(track);
+	  if (aodt) if (!aodt->TestFilterBit(5)) continue;
+	  if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
+	  if (track->Pt() < 0.15) continue;
+	  if(TMath::Abs(track->Eta()) > 0.8) continue;
+	  //pt[i1] = track->Pt();
+	  pt[i1] = 1.0;
+	  phi[i1] = track->Phi();
+	  Float_t pxA = pt[i1] * TMath::Cos( phi[i1] );
+	  Float_t pyA = pt[i1] * TMath::Sin( phi[i1] );
+	  numerador += TMath::Abs( ny * pxA - nx * pyA );//product between p  proyection in XY plane and the unitary vector
+	}
+	pFull=TMath::Power( (numerador / sumapt),2 );
+	if(pFull < Spherocity)//maximization of pFull
+	  {
+	    Spherocity = pFull;
+	  }
+  }
+  spherocity=((Spherocity)*TMath::Pi()*TMath::Pi())/4.0;
+  if (GoodTracks > 9) return spherocity;
+  else return -10.0;
+}
+
+//__________________________________________________________________________________________________
+/// Fills the histograms with mother (ESD version)
+///
+/// By accessing the Monte Carlo information, it looks for the 
+/// desired mother (resonance) and desired decay channel.  
+///
+/// \param miniEvent Pointer to the miniEvent object to process
+/// 
 void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
 {
-//
-// Fills the histograms with generated mother (ESD version)
-//
-
    Bool_t okMatch;
    Int_t id, ndef = fHistograms.GetEntries();
    Int_t ip, label1, label2, npart = fMCEvent->GetNumberOfTracks();
@@ -1232,8 +1343,11 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
    AliMCParticle *daughter1, *daughter2;
    TLorentzVector p1, p2;
    AliRsnMiniOutput *def = 0x0;
-    
-   for ( id = 0; id < fNResonanceFinders; id++) if(fResonanceFinder[id]) fResonanceFinder[id]->FillMother(fMCEvent, miniEvent);
+
+   for (Int_t i=0; i<fResonanceFinders.GetEntries(); i++){
+      AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
+      if(f) f->FillMother(fMCEvent, miniEvent);
+   }
 
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
@@ -1245,10 +1359,13 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
          //get mother pdg code
          if (!AliRsnDaughter::IsEquivalentPDGCode(part->Particle()->GetPdgCode() , def->GetMotherPDG())) continue;
          // check that daughters match expected species
-         if (part->Particle()->GetNDaughters() < 2) continue; 
-	 if (fMaxNDaughters > 0 && part->Particle()->GetNDaughters() > fMaxNDaughters) continue;
-         label1 = part->Particle()->GetDaughter(0);
-         label2 = part->Particle()->GetDaughter(1);
+         if (part->Particle()->GetNDaughters() < 2) continue;
+	      if (fMaxNDaughters > 0 && part->Particle()->GetNDaughters() > fMaxNDaughters) continue;
+         //label1 = part->Particle()->GetDaughter(0); // Before Change in accessing MC infor in AliRoot v5-09-46
+         //label2 = part->Particle()->GetDaughter(1); // Before Change in accessing MC infor in AliRoot v5-09-46
+         label1 = part->GetDaughterLabel(0);
+         label2 = part->GetDaughterLabel(1);
+          
          daughter1 = (AliMCParticle *)fMCEvent->GetTrack(label1);
          daughter2 = (AliMCParticle *)fMCEvent->GetTrack(label2);
          okMatch = kFALSE;
@@ -1264,83 +1381,85 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(0));
          }
          if (fCheckDecay && !okMatch) continue;
-	 if(fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&	 
+	      if (fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&
      				(TMath::Abs(part->Py()-(daughter1->Py()+daughter2->Py()))/(TMath::Abs(part->Py())+1.e-13)) > 0.00001 &&
      				(TMath::Abs(part->Pz()-(daughter1->Pz()+daughter2->Pz()))/(TMath::Abs(part->Pz())+1.e-13)) > 0.00001 ) continue;
-	 if(fCheckFeedDown){
-		Int_t pdgGranma = 0;
-		Int_t mother = 0;
-		mother = part->GetMother();
-		Int_t istep = 0;
-		Int_t abspdgGranma =0;
-		Bool_t isFromB=kFALSE;
-		Bool_t isQuarkFound=kFALSE;
-		while (mother >=0 ){
-			istep++;
-			AliDebug(2,Form("mother at step %d = %d", istep, mother));
-			AliMCParticle* mcGranma = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(mother));
-			if (mcGranma){
-				pdgGranma = mcGranma->PdgCode();
-				AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
-				abspdgGranma = TMath::Abs(pdgGranma);
-				if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
-				  isFromB=kTRUE;
-				}
-				if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
-				mother = mcGranma->GetMother();
-			}else{
-				AliError("Failed casting the mother particle!");
-				break;
-			}
-		}
-		if(fRejectIfNoQuark && !isQuarkFound) pdgGranma = -99999;
-		if(isFromB){
-		  if (!fKeepDfromB) pdgGranma = -9999; //skip particle if come from a B meson.
-		}
-		else{ 
-		  if (fKeepDfromBOnly) pdgGranma = -999;
-		  
-		if (pdgGranma == -99999){
-			AliDebug(2,"This particle does not have a quark in his genealogy\n");
-			continue;
-		}
-		if (pdgGranma == -9999){
-			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
-			continue;
-		}	
-		
-		if (pdgGranma == -999){
-			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");  
-			continue;
-		}	
+         if (fCheckFeedDown){
+            Int_t pdgGranma = 0;
+            Int_t mother = 0;
+            mother = part->GetMother();
+            Int_t istep = 0;
+            Int_t abspdgGranma =0;
+            Bool_t isFromB=kFALSE;
+            Bool_t isQuarkFound=kFALSE;
+            while (mother >=0 ){
+               istep++;
+               AliDebug(2,Form("mother at step %d = %d", istep, mother));
+               AliMCParticle* mcGranma = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(mother));
+               if (mcGranma){
+                  pdgGranma = mcGranma->PdgCode();
+                  AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
+                  abspdgGranma = TMath::Abs(pdgGranma);
+                  if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+                  isFromB=kTRUE;
+                  }
+                  if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
+                  mother = mcGranma->GetMother();
+               }else{
+                  AliError("Failed casting the mother particle!");
+                  break;
+               }
+            }
+            if(fRejectIfNoQuark && !isQuarkFound) pdgGranma = -99999;
+            if(isFromB){
+            if (!fKeepDfromB) pdgGranma = -9999; //skip particle if come from a B meson.
+            }
+            else{
+            if (fKeepDfromBOnly) pdgGranma = -999;
+            
+            if (pdgGranma == -99999){
+               AliDebug(2,"This particle does not have a quark in his genealogy\n");
+               continue;
+            }
+            if (pdgGranma == -9999){
+               AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");
+               continue;
+            }
+            
+            if (pdgGranma == -999){
+               AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");
+               continue;
+            }
 
-	      }
-	 }
+               }
+         }
          // assign momenta to computation object
          miniPair.Sum(0) = miniPair.Sum(1) = (p1 + p2);
          miniPair.FillRef(def->GetMotherMass());
-	 miniPair.P1(1) = p1;
-	 miniPair.P2(1) = p2;
+         miniPair.P1(1) = p1;
+         miniPair.P2(1) = p2;
 
          // do computations and fill output
          def->FillMother(&miniPair, miniEvent, &fValues);
-	 if(fKeepMotherInAcceptance){
-	      if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
-	      def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
-	 }	 
-	 
-	 
+         if (fKeepMotherInAcceptance){
+	         if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
+	         def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
+	      }
       }
    }
+   return;
 }
 
 //__________________________________________________________________________________________________
+/// Fills the histograms with mother (AOD version)
+///
+/// By accessing the Monte Carlo information, it looks for the 
+/// desired mother (resonance) and desired decay channel.  
+///
+/// \param miniEvent Pointer to the miniEvent object to process
+/// 
 void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 {
-//
-// Fills the histograms with generated mother (AOD version)
-//
-
    Bool_t okMatch;
    TClonesArray *list = fRsnEvent.GetAODList();
    Int_t id, ndef = fHistograms.GetEntries();
@@ -1349,8 +1468,11 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
    AliAODMCParticle *daughter1, *daughter2;
    TLorentzVector p1, p2;
    AliRsnMiniOutput *def = 0x0;
-    
-   for ( id = 0; id < fNResonanceFinders; id++) if(fResonanceFinder[id]) fResonanceFinder[id]->FillMother(list, miniEvent);
+
+   for (Int_t i=0; i<fResonanceFinders.GetEntries(); i++){
+      AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
+      if(f) f->FillMother(list, miniEvent);
+   }
 
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
@@ -1363,8 +1485,8 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
          // check that daughters match expected species
          if (part->GetNDaughters() < 2) continue;
 	 if (fMaxNDaughters > 0 && part->GetNDaughters() > fMaxNDaughters) continue;
-         label1 = part->GetDaughter(0);
-         label2 = part->GetDaughter(1);
+         label1 = part->GetDaughterLabel(0);
+         label2 = part->GetDaughterLabel(1);
          daughter1 = (AliAODMCParticle *)list->At(label1);
          daughter2 = (AliAODMCParticle *)list->At(label2);
          okMatch = kFALSE;
@@ -1380,7 +1502,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(0));
          }
          if (fCheckDecay && !okMatch) continue;
-	 if(fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&	 
+	 if(fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&
      				(TMath::Abs(part->Py()-(daughter1->Py()+daughter2->Py()))/(TMath::Abs(part->Py())+1.e-13)) > 0.00001 &&
      				(TMath::Abs(part->Pz()-(daughter1->Pz()+daughter2->Pz()))/(TMath::Abs(part->Pz())+1.e-13)) > 0.00001 ) continue;
 	 if(fCheckFeedDown){
@@ -1413,7 +1535,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 		if(isFromB){
 		  if (!fKeepDfromB) pdgGranma = -9999; //skip particle if come from a B meson.
 		}
-		else{ 
+		else{
 		  if (fKeepDfromBOnly) pdgGranma = -999;
 		  }
 		  
@@ -1422,15 +1544,15 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 			continue;
 		}
 		if (pdgGranma == -9999){
-			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
+			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");
 			continue;
-		}	
+		}
 		
 		if (pdgGranma == -999){
-			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");  
+			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");
 			continue;
-		}	
-	 } 
+		}
+	 }
 	 // assign momenta to computation object
          miniPair.Sum(0) = miniPair.Sum(1) = (p1 + p2);
          miniPair.FillRef(def->GetMotherMass());
@@ -1445,15 +1567,15 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 	 }
       }
    }
+   return;
 }
 //___________________________________________________________
+/// USed for D0 analysis. Selects the D0 selection criterium.
+///
+/// \param originDselection Set to 0, 1 or 2 for D0 from c quarks, b quarks or both ,respectively
+///
 void AliRsnMiniAnalysisTask::SetDselection(UShort_t originDselection)
 {
-	// setting the way the D0 will be selected
-	// 0 --> only from c quarks
-	// 1 --> only from b quarks
-	// 2 --> from both c quarks and b quarks
-		
 	fOriginDselection = originDselection;
 	
 	if (fOriginDselection == 0) {
@@ -1471,18 +1593,21 @@ void AliRsnMiniAnalysisTask::SetDselection(UShort_t originDselection)
 		fKeepDfromBOnly = kFALSE;
 	}
 	
-	return;	
+	return;
 }
 //__________________________________________________________________________________________________
+/// Check if two events are compatible.
+///
+/// If the mixing is continuous, this is true if differences in vz, mult and angle are smaller than
+/// the specified values.
+/// If the mixing is binned, this is true if the events are in the same bin.
+///
+/// \param event1 First event pointer
+/// \param event1 Second event pointer
+/// \return Flag = 1 if events are compatible
+/// 
 Bool_t AliRsnMiniAnalysisTask::EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2)
 {
-//
-// Check if two events are compatible.
-// If the mixing is continuous, this is true if differences in vz, mult and angle are smaller than
-// the specified values.
-// If the mixing is binned, this is true if the events are in the same bin.
-//
-
    if (!event1 || !event2) return kFALSE;
    Int_t ivz1, ivz2, imult1, imult2, iangle1, iangle2;
    Double_t dv, dm, da;
@@ -1519,6 +1644,10 @@ Bool_t AliRsnMiniAnalysisTask::EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEv
 }
 
 //---------------------------------------------------------------------
+/// Patch to be used with 2011 Pb-Pb data for flat centrality distribution
+///
+/// \return Centrality value after flattening (reweighting)
+///
 Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchPbPb2011(){
   //This part rejects randomly events such that the centrality gets flat for LHC11h Pb-Pb data
   //for 0-5% and 10-20% centrality bin
@@ -1534,12 +1663,12 @@ Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchPbPb2011(){
     return -999.0;
   }
   
-  Double_t cent = (Float_t)(centrality->GetCentralityPercentile("V0M"));               
+  Double_t cent = (Float_t)(centrality->GetCentralityPercentile("V0M"));
   Double_t rnd_hc = -1., testf = 0.0, ff = 0, N1 = -1., N2 = -1.;
 
   if(fUseCentralityPatchPbPb2011==510){
     N1 = 1.9404e+06;
-    N2 = 1.56435e+06; //N2 is the reference 
+    N2 = 1.56435e+06; //N2 is the reference
     ff = 5.04167e+06 - 1.49885e+06*cent + 2.35998e+05*cent*cent -1.22873e+04*cent*cent*cent;
   } else {
     if(fUseCentralityPatchPbPb2011==1020){
@@ -1556,7 +1685,7 @@ Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchPbPb2011(){
 
   //AliDebugClass(1, Form("Flat Centrality %d", fUseCentralityPatchPbPb2011));
 
-  if (rnd_hc < 0 || rnd_hc > 1 ) 
+  if (rnd_hc < 0 || rnd_hc > 1 )
     {
       AliWarning("Wrong Random number generated");
       return -999.0;
@@ -1568,6 +1697,10 @@ Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchPbPb2011(){
     return -999.0;
 }
 //---------------------------------------------------------------------
+/// Patch to be used with 2010 Pb-Pb data AOD049 for a correct centrality distribution
+///
+/// \return Centrality value after re-parameterisation
+///
 Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchAOD049()
 {
    //
@@ -1590,25 +1723,6 @@ Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchAOD049()
    }
 
    Float_t cent = (Float_t)(centrality->GetCentralityPercentile("V0M"));
-   /*
-   Bool_t isSelRun = kFALSE;
-   Int_t selRun[5] = {138364, 138826, 138828, 138836, 138871};
-   if(cent<0){
-     Int_t quality = centrality->GetQuality();
-     if(quality<=1){
-       cent=(Float_t)centrality->GetCentralityPercentileUnchecked("V0M");
-     } else {
-       Int_t runnum=aodEvent->GetRunNumber();
-       for(Int_t ir=0;ir<5;ir++){
-   if(runnum==selRun[ir]){
-     isSelRun=kTRUE;
-     break;
-   }
-       }
-       if((quality==8||quality==9)&&isSelRun) cent=(Float_t)centrality->GetCentralityPercentileUnchecked("V0M");
-     }
-   }
-   */
 
    if(cent>=0.0) {
       Float_t v0 = 0.0;
@@ -1647,6 +1761,14 @@ Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchAOD049()
 }
 
 //----------------------------------------------------------------------------------
+/// Set event QA histograms
+///
+/// Used to monitor multiplicity distributions (different estimators),
+/// event plane, spherocity, vertex position.
+///
+/// \param type String defining one specific monitoring histogram among those available
+/// \param histo Histogram to be added
+///
 void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH1 *histo)
 {
    if(!histo) {
@@ -1661,6 +1783,10 @@ void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH1 *histo)
    if(!type.CompareTo("eventsvsmulti")) fHAEventsVsMulti = (TH1F*) histo;
    else if(!type.CompareTo("eventsvstracklets")) fHAEventsVsTracklets = (TH1F*) histo;
    else if(!type.CompareTo("vz")) fHAEventVzCent = (TH2F*) histo;
+   else if(!type.CompareTo("spherocitycent")){
+      fHAEventSpherocityCent = (TH2F*) histo;
+      fComputeSpherocity = kTRUE;
+   }
    else if(!type.CompareTo("multicent")) {
       if(multitype.CompareTo("QUALITY") && multitype.CompareTo("TRACKS") && multitype.CompareTo("TRACKLETS")) {
          AliWarning(Form("multiplicity vs. centrality histogram y-axis %s unknown, setting to TRACKS",multitype.Data()));
@@ -1673,7 +1799,7 @@ void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH1 *histo)
        AliWarning(Form("Reference multiplicity vs. centrality histogram y-axis %s unknown, setting to GLOBAL",multitype.Data()));
        histo->GetYaxis()->SetTitle("GLOBAL");
      }
-     fHAEventRefMultiCent = (TH2F*) histo;     
+     fHAEventRefMultiCent = (TH2F*) histo;
    }
    else if(!type.CompareTo("eventplane")) fHAEventPlane = (TH2F*) histo;
    else AliWarning(Form("event QA histogram slot %s undefined",type.Data()));
@@ -1682,14 +1808,16 @@ void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH1 *histo)
 }
 
 //----------------------------------------------------------------------------------
+/// Create a new AliRsnMiniValue in the task
+/// and return its ID, which is needed for setting up histograms.
+/// If that value was already initialized, returns its ID and does not recreate it.
+///
+/// \param type Type of value to be created (one of those defined in AliRsnMiniValue)
+/// \param useMC Flag = 1 if generated information has to be used (for MC only)
+/// \return ID of the value, to be used for setting histograms
+///
 Int_t AliRsnMiniAnalysisTask::CreateValue(AliRsnMiniValue::EType type, Bool_t useMC)
 {
-//
-// Create a new value in the task,
-// and returns its ID, which is needed for setting up histograms.
-// If that value was already initialized, returns its ID and does not recreate it.
-//
-
    Int_t valID = ValueID(type, useMC);
    if (valID >= 0 && valID < fValues.GetEntries()) {
       AliInfo(Form("Value '%s' is already created in slot #%d", AliRsnMiniValue::ValueName(type, useMC), valID));
@@ -1703,12 +1831,14 @@ Int_t AliRsnMiniAnalysisTask::CreateValue(AliRsnMiniValue::EType type, Bool_t us
 }
 
 //----------------------------------------------------------------------------------
+/// Check if value is initialised
+///
+/// \param type Type of value to be created (one of those defined in AliRsnMiniValue)
+/// \param useMC Flag = 1 if generated information has to be used (for MC only)
+/// \return ID of the value, if value is initialised, otherwise returns -1
+///
 Int_t AliRsnMiniAnalysisTask::ValueID(AliRsnMiniValue::EType type, Bool_t useMC)
 {
-//
-// Searches if a value computation is initialized
-//
-
    const char *name = AliRsnMiniValue::ValueName(type, useMC);
    TObject *obj = fValues.FindObject(name);
    if (obj)
@@ -1718,13 +1848,16 @@ Int_t AliRsnMiniAnalysisTask::ValueID(AliRsnMiniValue::EType type, Bool_t useMC)
 }
 
 //----------------------------------------------------------------------------------
+/// Create a new histogram definition in the task.
+/// and returns it to the user for its configuration
+///
+/// \param name Name of the output histogram
+/// \param type Type of the output histogram (out of AliRsnMiniOutput-supported formats)
+/// \param src Type of computation (out of AliRsnMiniOutput-supported ones)
+/// \return Pointer to the output histogram
+///
 AliRsnMiniOutput *AliRsnMiniAnalysisTask::CreateOutput(const char *name, AliRsnMiniOutput::EOutputType type, AliRsnMiniOutput::EComputation src)
 {
-//
-// Create a new histogram definition in the task,
-// which is then returned to the user for its configuration
-//
-
    Int_t n = fHistograms.GetEntries();
    AliRsnMiniOutput *newDef = new (fHistograms[n]) AliRsnMiniOutput(name, type, src);
 
@@ -1732,19 +1865,31 @@ AliRsnMiniOutput *AliRsnMiniAnalysisTask::CreateOutput(const char *name, AliRsnM
 }
 
 //----------------------------------------------------------------------------------
+/// Create a new histogram definition in the task.
+/// and returns it to the user for its configuration
+///
+/// \param name Name of the output histogram
+/// \param type Type of the output histogram (SPARSE, TH1D, TH2D, TH3D)
+/// \param src Type of computation (EVENT, PAIR, MIX, TRUE, MOTHER, ROTATE1, ROTATE2)
+/// \return Pointer to the output histogram
+///
 AliRsnMiniOutput *AliRsnMiniAnalysisTask::CreateOutput(const char *name, const char *outType, const char *compType)
 {
-//
-// Create a new histogram definition in the task,
-// which is then returned to the user for its configuration
-//
-
    Int_t n = fHistograms.GetEntries();
    AliRsnMiniOutput *newDef = new (fHistograms[n]) AliRsnMiniOutput(name, outType, compType);
 
    return newDef;
 }
 
+
+//----------------------------------------------------------------------------------
+/// Gets the flow vector from an external list
+///
+/// \param list Pointer to the external list (from flow task)
+/// \param subdetector String with subdetector to be used for Qn computation
+/// \param expectedstep String for desired correction step in Qn framework 
+/// \return Pointer to the Qn vector object
+///
 AliQnCorrectionsQnVector *AliRsnMiniAnalysisTask::GetQnVectorFromList(
   const TList *list, const char *subdetector, const char *expectedstep) const {
 
@@ -1770,21 +1915,53 @@ AliQnCorrectionsQnVector *AliRsnMiniAnalysisTask::GetQnVectorFromList(
 }
 
 //----------------------------------------------------------------------------------
-Int_t AliRsnMiniAnalysisTask::SetResonanceFinder(AliRsnMiniResonanceFinder* f, Int_t j)
+/// Add a new AliRsnMiniResonanceFinder object.
+///
+/// A user can add as many as he wants, and each one corresponds
+/// to one of the available bits in the AliRsnMiniParticle mask.
+/// The only check is the following: if a ResonanceFinder set with the same name
+/// as the argument is there, this is not added.
+///
+/// \param f Pointer to the AliRsnMiniResonanceFinder object
+/// \return Cut ID for the ResonanceFinder f.
+///
+Int_t AliRsnMiniAnalysisTask::AddResonanceFinder(AliRsnMiniResonanceFinder* f)
 {
-   Int_t k = 0;
-   if(j<0) {
-      if (fNResonanceFinders == 0 || !fResonanceFinder[0]) k = 0;
-      else k=1;
-   } else if(!j) k = 0;
-   else k = 1;
-    
-   if(fNResonanceFinders <= k) fNResonanceFinders = k+1;
-    
-   if(fResonanceFinder[k]) AliWarning("Replacing existing AliRsnMiniResonanceFinder");
+   TObject *obj = fResonanceFinders.FindObject(f->GetName());
+   Int_t v = 0;
 
-   fResonanceFinder[k] = f;
-   Int_t v = GetNumberOfTrackCuts()+k;
-   f->SetResonanceCutID(v);
+   if (obj) {
+      AliInfo(Form("A ResonanceFinder named '%s' already exists", f->GetName()));
+      v = fResonanceFinders.IndexOf(obj) + GetNumberOfTrackCuts();
+   } else {
+      fResonanceFinders.AddLast(f);
+      v = fResonanceFinders.IndexOf(f) + GetNumberOfTrackCuts();
+      f->SetResonanceCutID(v);
+   }
+
    return v;
+}
+//----------------------------------------------------------------------------------
+/// Defines track cuts for Spherocity computation.
+///
+/// Uses a track filter to set the quality cuts for the spherocity calculation.
+/// Implementation only used for ESDs. AOD filtering is done via the filter bit. 
+///
+/// \param fTrackFilter Pointer to the AliAnalysisFilter 
+///
+void AliRsnMiniAnalysisTask::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
+
+	AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
+	//TPC Only
+	esdTrackCuts->SetMinNClustersTPC(50);
+	esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+	esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+	esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+	esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+	esdTrackCuts->SetDCAToVertex2D(kTRUE);
+	
+	esdTrackCuts->SetRequireTPCRefit(kTRUE);// TPC Refit
+	esdTrackCuts->SetRequireITSRefit(kTRUE);// ITS Refit
+	fTrackFilter->AddCuts(esdTrackCuts);
+   return;
 }

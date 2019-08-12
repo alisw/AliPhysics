@@ -4,6 +4,7 @@
 #include <TH1F.h>
 #include <TFile.h>
 #include <TF1.h>
+#include <TProfile.h>
 #include <TSystem.h>
 #include <TMath.h>
 #include "TTree.h"
@@ -16,11 +17,12 @@
 #include <TStyle.h>
 #endif
 
-void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s);
+void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s, Bool_t isMC=kFALSE);
 void DrawDistrib(TH1D* h1, TH1D* h2, TH1D* h3, Bool_t showStat);
 TH1D* ComputeMatchEff(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle);
 TH1D* ComputeRatio(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle);
 void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms);
+Double_t fp2bkgk0(Double_t *x, Double_t *par);
 
 const Int_t totTrending=36;
 Float_t vecForTrend[totTrending];
@@ -29,6 +31,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
 
   TString pdfFileNames="";
   TString plotFileName="";
+  gStyle->SetLegendFont(42);
+  gStyle->SetLegendBorderSize(0);
+  gStyle->SetFillStyle(0);
 
   TString varForTrending[totTrending];
   for(Int_t jbit=0; jbit<12; jbit++){
@@ -54,6 +59,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     trtree->Branch(varForTrending[j].Data(),&vecForTrend[j],Form("%s/F",varForTrending[j].Data()));
     vecForTrend[j]=-99.;
   }
+  Bool_t isMC=kFALSE; // set automatically based on histos filled
 
   TFile* f=new TFile(filename.Data());
   TDirectoryFile* df=(TDirectoryFile*)f->Get("CheckAODTracks");
@@ -66,6 +72,10 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     printf("TList clistCheckAODTracks%s not found in file %s\n",suffix.Data(),filename.Data());
     return;    
   }
+
+  
+  TH1F* hNEvents=(TH1F*)l->FindObject("hNEvents");
+  Int_t nSelectedEvents=hNEvents->GetBinContent(6);
 
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
@@ -250,6 +260,21 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     plotFileName=Form("TracksPtDistrib-TPCselSPDany.%s",outputForm.Data());
     cdists->SaveAs(plotFileName.Data());
     if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+    TFile* outtrsp=new TFile("TrackPtSpectra.root","recreate");
+    hPtEtaNegTPCsel->Write();
+    hPtEtaNegPosChargeTPCsel->Write();
+    hPtEtaNegNegChargeTPCsel->Write();
+    hPtEtaPosTPCsel->Write();
+    hPtEtaPosPosChargeTPCsel->Write();
+    hPtEtaPosNegChargeTPCsel->Write();
+    hPtEtaNegTPCselSPDany->Write();
+    hPtEtaNegPosChargeTPCselSPDany->Write();
+    hPtEtaNegNegChargeTPCselSPDany->Write();
+    hPtEtaPosTPCselSPDany->Write();
+    hPtEtaPosPosChargeTPCselSPDany->Write();
+    hPtEtaPosNegChargeTPCselSPDany->Write();
+    hNEvents->Write();
+    outtrsp->Close();
   }else{
     TCanvas* cdist=new TCanvas("cdist","Pt+Phi Distrib",900,900);
     cdist->Divide(2,2);
@@ -417,7 +442,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   hMatchEffVsPhiNegEtaSPDanyLowPt->Draw("samepe");
   hMatchEffVsPhiNegEtaLowPtTOFbc->Draw("samepe");
   hMatchEffVsPhiNegEtaSPDanyLowPtTOFbc->Draw("samepe");
-  TLegend* legt2=new TLegend(0.17,0.74,0.89,0.89);
+  TLegend* legt2=new TLegend(0.17,0.14,0.89,0.29);
   legt2->SetNColumns(2);
   legt2->SetMargin(0.1);
   legt2->AddEntry(hMatchEffVsPhiNegEtaLowPt,"ITSrefit","P");
@@ -456,6 +481,34 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   cme2->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
+  TFile* outME=new TFile("MatchingEff.root","recreate");
+  hMatchEffVsPtNegEta->Write();
+  hMatchEffVsPtPosEta->Write();
+  hMatchEffVsPtNegEtaSPDany->Write();
+  hMatchEffVsPtPosEtaSPDany->Write();
+  hMatchEffVsPtNegEtaTOFbc->Write();
+  hMatchEffVsPtPosEtaTOFbc->Write();
+  hMatchEffVsPtNegEtaSPDanyTOFbc->Write();
+  hMatchEffVsPtPosEtaSPDanyTOFbc->Write();
+  hMatchEffVsPhiNegEtaLowPt->Write();
+  hMatchEffVsPhiNegEtaSPDanyLowPt->Write();
+  hMatchEffVsPhiNegEtaLowPtTOFbc->Write();
+  hMatchEffVsPhiNegEtaSPDanyLowPtTOFbc->Write();
+  hMatchEffVsPhiPosEtaLowPt->Write();
+  hMatchEffVsPhiPosEtaSPDanyLowPt->Write();
+  hMatchEffVsPhiPosEtaLowPtTOFbc->Write();
+  hMatchEffVsPhiPosEtaSPDanyLowPtTOFbc->Write();
+  hMatchEffVsPhiNegEtaHighPt->Write();
+  hMatchEffVsPhiNegEtaSPDanyHighPt->Write();
+  hMatchEffVsPhiNegEtaHighPtTOFbc->Write();
+  hMatchEffVsPhiNegEtaSPDanyHighPtTOFbc->Write();
+  hMatchEffVsPhiPosEtaHighPt->Write();
+  hMatchEffVsPhiPosEtaSPDanyHighPt->Write();
+  hMatchEffVsPhiPosEtaHighPtTOFbc->Write();
+  hMatchEffVsPhiPosEtaSPDanyHighPtTOFbc->Write();
+  outME->Close();
+  delete outME;
+
   TH3F* hEtaPhiPtTPCselITSrefGood=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSrefGood");
   TH3F* hEtaPhiPtTPCselITSrefFake=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSrefFake");
   TH1D* hPtGood=hEtaPhiPtTPCselITSrefGood->ProjectionZ("hPtGood",etamin,eta0m);
@@ -463,6 +516,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hPtAll=(TH1D*)hPtGood->Clone("hPtAll");
   TH1F* hratiofake=(TH1F*)hPtFake->Clone("hratiofake");
   if(hPtFake->GetEntries()>0){
+    isMC=kTRUE;
     hPtAll->Add(hPtFake);
     hPtAll->SetLineColor(1);
     hPtGood->Sumw2();
@@ -490,6 +544,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   hratiofakeip->SetLineColor(1);
   hratiofakeip->SetStats(0);
   if(hImpParFake->Integral()>0 && hImpParGood->Integral()>0 ){
+    isMC=kTRUE;
     TCanvas* c1=new TCanvas("c1","FakeGood",1200,900);
     c1->Divide(2,2);
     c1->cd(1);
@@ -606,6 +661,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   hPtSecMat->Scale(1.,"width");
 
   if(hImpParSecDec->Integral()>0 && hImpParPrim->Integral()>0 ){
+    isMC=kTRUE;
     TCanvas* cps1=new TCanvas("cps1","SecPrim",1200,900);
     cps1->Divide(2,2);
     cps1->cd(1);
@@ -741,12 +797,14 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   Bool_t okRes=kFALSE;
   Bool_t okOneOverRes=kFALSE;
   if(hPtResidVsPtTPCselITSrefPrim && hPtResidVsPtTPCselITSrefPrim->Integral()>0){
+    isMC=kTRUE;
     FillMeanAndRms(hPtResidVsPtTPCselITSrefPrim,gMeanPrim,gRmsPrim);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefSecDec,gMeanSecDec,gRmsSecDec);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefSecMat,gMeanSecMat,gRmsSecMat);
     okRes=kTRUE;
   }
   if(hOneOverPtResidVsPtTPCselITSrefPrim && hOneOverPtResidVsPtTPCselITSrefPrim->Integral()>0){
+    isMC=kTRUE;
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefPrim,gDum,gRelPrim);
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefSecDec,gDum,gRelSecDec);
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefSecMat,gDum,gRelSecMat);
@@ -759,16 +817,19 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefPrim->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefPrim->Draw("colz");
     cps2->cd(2);
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefSecDec->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefSecDec->Draw("colz");
     cps2->cd(3);
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefSecMat->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefSecMat->Draw("colz");
     cps2->cd(4);
     gPad->SetLeftMargin(0.13);
@@ -790,10 +851,13 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gMeanPrim->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
     gMeanSecDec->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
     gMeanSecMat->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
-    gMeanSecMat->GetYaxis()->SetTitleOffset(1.6);
-    gMeanSecMat->GetXaxis()->SetTitleOffset(1.2);
-    gMeanSecMat->Draw("AP");
-    gMeanPrim->Draw("psame");
+    gMeanPrim->GetYaxis()->SetTitleOffset(1.6);
+    gMeanPrim->GetXaxis()->SetTitleOffset(1.2);
+    gMeanPrim->SetMinimum(-0.04);
+    gMeanPrim->SetMaximum(0.04);
+    gMeanPrim->GetXaxis()->SetLimits(0.,20.);
+    gMeanPrim->Draw("AP");
+    gMeanSecMat->Draw("psame");
     gMeanSecDec->Draw("psame");
     cps2->cd(5);
     gPad->SetLeftMargin(0.13);
@@ -809,17 +873,19 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gRmsSecMat->SetMarkerStyle(28);
     gRmsSecMat->SetMarkerColor(kBlue+1);
     gRmsSecMat->SetLineColor(kBlue+1);
+    gRmsPrim->SetMinimum(0.);
+    gRmsPrim->SetMaximum(0.4);
     gRmsPrim->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
     gRmsSecDec->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
     gRmsSecMat->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
     gRmsPrim->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
     gRmsSecDec->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
     gRmsSecMat->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
-    gRmsSecMat->GetYaxis()->SetTitleOffset(1.6);
-    gRmsSecMat->GetXaxis()->SetTitleOffset(1.2);
-    gRmsSecMat->Draw("AP");
-    gRmsSecMat->Draw("AP");
-    gRmsPrim->Draw("psame");
+    gRmsPrim->GetYaxis()->SetTitleOffset(1.6);
+    gRmsPrim->GetXaxis()->SetTitleOffset(1.2);
+    gRmsPrim->GetXaxis()->SetLimits(0.,20.);
+    gRmsPrim->Draw("AP");
+    gRmsSecMat->Draw("psame");
     gRmsSecDec->Draw("psame");
     TLegend* legps=new TLegend(0.2,0.7,0.4,0.89);
     legps->AddEntry(gRmsPrim,"Primary","P");
@@ -849,8 +915,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       gRelPrim->GetYaxis()->SetTitle("#sigma(p_{T} (1/p_{T,reco}-1/p_{T,gen}))");
       gRelPrim->GetYaxis()->SetTitleOffset(1.6);
       gRelPrim->GetXaxis()->SetTitleOffset(1.2);
+      gRelPrim->GetXaxis()->SetLimits(0.,20.);
       gRelPrim->SetMinimum(0.);
-      gRelPrim->SetMaximum(0.05);
+      gRelPrim->SetMaximum(0.04);
       gRelPrim->Draw("AP");
       gRelSecMat->Draw("psame");
       gRelSecDec->Draw("psame");
@@ -958,6 +1025,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefPion->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefPion->Draw("colz");
     // TLatex* tpi=new TLatex(0.45,0.93,"Pions");
     // tpi->SetNDC();
@@ -966,6 +1034,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefKaon->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefKaon->Draw("colz");
     // TLatex* tk=new TLatex(0.45,0.93,"Kaons");
     // tk->SetNDC();
@@ -974,6 +1043,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefProton->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefProton->Draw("colz");
     // TLatex* tpr=new TLatex(0.43,0.93,"Protons");
     // tpr->SetNDC();
@@ -1000,6 +1070,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gMeanProt->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
     gMeanProt->GetYaxis()->SetTitleOffset(1.6);
     gMeanProt->GetXaxis()->SetTitleOffset(1.2);
+    gMeanProt->SetMinimum(-0.04);
+    gMeanProt->SetMaximum(0.04);
+    gMeanProt->GetXaxis()->SetLimits(0.,20.);
     gMeanProt->Draw("AP");
     gMeanPi->Draw("psame");
     gMeanK->Draw("psame");
@@ -1025,7 +1098,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gRmsProt->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
     gRmsProt->GetYaxis()->SetTitleOffset(1.6);
     gRmsProt->GetXaxis()->SetTitleOffset(1.2);
-    gRmsProt->Draw("AP");
+    gRmsProt->SetMinimum(0.);
+    gRmsProt->SetMaximum(0.4);
+    gRmsProt->GetXaxis()->SetLimits(0.,20.);
     gRmsProt->Draw("AP");
     gRmsPi->Draw("psame");
     gRmsK->Draw("psame");
@@ -1058,7 +1133,8 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       gRelPi->GetYaxis()->SetTitleOffset(1.6);
       gRelPi->GetXaxis()->SetTitleOffset(1.2);
       gRelPi->SetMinimum(0.);
-      gRelPi->SetMaximum(0.05);
+      gRelPi->SetMaximum(0.04);
+      gRelPi->GetXaxis()->SetLimits(0.,20.);
       gRelPi->Draw("AP");
       gRelProt->Draw("psame");
       gRelK->Draw("psame");
@@ -1077,6 +1153,10 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gMeanPiTPC->SetMarkerStyle(26);
     gMeanPiTPC->SetMarkerColor(kMagenta+1);
     gMeanPiTPC->SetLineColor(kMagenta+1);
+    gMeanPi->GetYaxis()->SetTitleOffset(1.6);
+    gMeanPi->GetXaxis()->SetTitleOffset(1.2);
+    gMeanPi->SetMinimum(-0.04);
+    gMeanPi->SetMaximum(0.04);
     gMeanPi->Draw("AP");
     gMeanPiTPC->Draw("psame");
     c2p->cd(2);
@@ -1087,6 +1167,11 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gRmsPiTPC->SetMarkerStyle(26);
     gRmsPiTPC->SetMarkerColor(kMagenta+1);
     gRmsPiTPC->SetLineColor(kMagenta+1);
+    gRmsPi->SetMinimum(-0.04);
+    gRmsPi->SetMaximum(0.4);
+    gRmsPi->GetYaxis()->SetTitleOffset(1.6);
+    gRmsPi->GetXaxis()->SetTitleOffset(1.2);
+    gRmsPi->GetXaxis()->SetLimits(0.,20.);
     gRmsPi->Draw("AP");
     gRmsPiTPC->Draw("psame");
     TLegend* legpit=new TLegend(0.2,0.7,0.5,0.89);
@@ -1102,6 +1187,11 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       gRelPiTPC->SetMarkerStyle(26);
       gRelPiTPC->SetMarkerColor(kMagenta+1);
       gRelPiTPC->SetLineColor(kMagenta+1);
+      gRelPi->GetYaxis()->SetTitleOffset(1.6);
+      gRelPi->GetXaxis()->SetTitleOffset(1.2);
+      gRelPi->SetMinimum(0.);
+      gRelPi->SetMaximum(0.04);
+      gRelPi->GetXaxis()->SetLimits(0.,20.);
       gRelPi->Draw("AP");
       gRelPiTPC->Draw("psame");
     }
@@ -1144,6 +1234,64 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     }
   }
 
+  TDirectory* curDir=gDirectory;
+  TFile* outfb=new TFile("FiltBitsHistos.root","recreate");
+  curDir->cd();
+  Int_t colors[12]={kRed+1,kRed-7,kOrange+1,kYellow+1,kGreen+1,kGreen,kCyan,kBlue+1,kMagenta,kMagenta+1,kGray+1,1};
+  Int_t lstyl[12]={1,9,1,3,1,8,2,5,7,1,1,9};
+  Int_t lwid[12]={2,2,2,3,2,2,3,3,3,2,2,2};
+
+  TH1F* hNtracksFB0=(TH1F*)l->FindObject("hNtracksFb0");
+  if(hNtracksFB0){
+    TH1F* hMean=new TH1F("hMeanMultVsBF"," ; Filter bit ; <N_{Tracks}> (kINT7 events)",9,-0.5,8.5);
+    TH1F* hRMS=new TH1F("hRMS"," ; Filter bit ; r.m.s.(N_{Tracks})",9,-0.5,8.5);
+    TLegend* legmfb=new TLegend(0.6,0.45,0.89,0.89);
+    TH1F* hNtracksFB[9];
+    TLatex* tmeanmult[9];
+    Double_t maxYaxis=1;
+    for(Int_t kb=0; kb<9; kb++){
+      hNtracksFB[kb]=(TH1F*)l->FindObject(Form("hNtracksFb%d",kb));
+      tmeanmult[kb]=0x0;
+      if(hNtracksFB[kb]){
+	hNtracksFB[kb]->SetLineColor(colors[kb]);
+	hNtracksFB[kb]->SetLineStyle(lstyl[kb]);
+	hNtracksFB[kb]->SetLineWidth(lwid[kb]);
+	if(hNtracksFB[kb]->GetMaximum()>maxYaxis) maxYaxis=1.5*hNtracksFB[kb]->GetMaximum();
+	legmfb->AddEntry(hNtracksFB[kb],Form("FiltBit %d",kb),"L")->SetTextColor(colors[kb]);
+	hMean->SetBinContent(hMean->FindBin(kb),hNtracksFB[kb]->GetMean());
+	hMean->SetBinError(hMean->FindBin(kb),hNtracksFB[kb]->GetMeanError());	
+	hNtracksFB[kb]->SetStats(0);
+	hNtracksFB[kb]->GetXaxis()->SetTitle("N_{tracks}");
+	hNtracksFB[kb]->GetYaxis()->SetTitle("kINT7 Events");
+	hNtracksFB[kb]->SetTitle("");
+	tmeanmult[kb]=new TLatex(kb-0.4,hNtracksFB[kb]->GetMean()+0.02*hNtracksFB0->GetMean(),Form("%.2f",hNtracksFB[kb]->GetMean()));
+	tmeanmult[kb]->SetTextFont(43);
+	tmeanmult[kb]->SetTextSize(20);
+	tmeanmult[kb]->SetTextColor(colors[kb]);
+      }
+    }
+    TCanvas* cmult=new TCanvas("cmult","Track Multipl",1200,500);
+    cmult->Divide(2,1);
+    cmult->cd(1);
+    gPad->SetLogy();
+    hNtracksFB[0]->SetMaximum(maxYaxis);
+    hNtracksFB[0]->GetYaxis()->SetTitleOffset(1.2);
+    hNtracksFB[0]->Draw();
+    for(Int_t kb=1; kb<9; kb++){
+      if(hNtracksFB[kb]) hNtracksFB[kb]->Draw("same");
+    }
+    legmfb->Draw();
+    cmult->cd(2);
+    gStyle->SetPaintTextFormat(".2f");
+    hMean->SetStats(0);
+    hMean->SetMarkerStyle(20);
+    hMean->GetYaxis()->SetTitleOffset(1.2);
+    hMean->Draw();
+    for(Int_t kb=0; kb<9; kb++){
+      if(tmeanmult[kb]){tmeanmult[kb]->Draw();}
+    }
+    cmult->SaveAs("TrackMultDistPerFilterBit.png");
+  }
   TCanvas* cip=new TCanvas("cip","FiltBits",1100,900);
   cip->Divide(2,2);
   cip->cd(1);
@@ -1151,11 +1299,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   hFilterBits->Draw("colz");
   cip->cd(2);
   gPad->SetLogy();
-  Int_t colors[12]={kRed+1,kRed-7,kOrange+1,kYellow+1,kGreen+1,kGreen,kCyan,kBlue+1,kMagenta,kMagenta+1,kGray+1,1};
-  Int_t lstyl[12]={1,9,1,3,1,8,2,5,7,1,1,9};
-  Int_t lwid[12]={2,2,2,3,2,2,3,3,3,2,2,2};
-  TLegend* leg2=new TLegend(0.65,0.2,0.89,0.89);
+  TLegend* leg2=new TLegend(0.4,0.5,0.89,0.89);
   leg2->SetMargin(0.3);
+  leg2->SetNColumns(2);
   for(Int_t jbit=0; jbit<12; jbit++){
     TString hname=Form("hImpParXYPtMulPionFiltBit%d",jbit);
     TH3F* h=(TH3F*)l->FindObject(hname.Data());
@@ -1194,14 +1340,20 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       hphi->Draw("same");
     }
     cip->cd(4);
+    gPad->SetLogy();
     if(jbit==0){ 
-      hpt1->SetMinimum(0.);
-      hpt1->SetMaximum(1.4*hpt1->GetMaximum());
+      hpt1->SetMinimum(0.9);
+      hpt1->GetXaxis()->SetRangeUser(0.,15.);
+      hpt1->SetMaximum(4.*hpt1->GetMaximum());
       hpt1->Draw();
     }else{ 
       hpt1->Draw("same");
     }
     leg2->Draw();
+    outfb->cd();
+    hphi->Write();
+    hpt1->Write();
+    curDir->cd();
   }
   plotFileName=Form("FilterBits.%s",outputForm.Data());
   cip->SaveAs(plotFileName.Data());
@@ -1217,30 +1369,50 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hdist1->SetStats(0);
     hdist1->SetTitle(Form("Filter bit %d",jb ));
     hdist1->Draw("colz");
+    TProfile* hpr1=hdist1->ProfileX(Form("%s-Profile",hdist1->GetName()));
+    hpr1->SetMarkerStyle(21);
+    hpr1->SetMarkerSize(0.8);
+    hpr1->Draw("same");
     ccc->cd(2);
     gPad->SetLogz();
     TH2F* hdist2=(TH2F*)l->FindObject(Form("hSPDcluPtFiltBit%d",jb));
     hdist2->SetTitle(Form("Filter bit %d",jb ));
     hdist2->SetStats(0);
     hdist2->Draw("colz");
+    TProfile* hpr2=hdist2->ProfileX(Form("%s-Profile",hdist2->GetName()));
+    hpr2->SetMarkerStyle(21);
+    hpr2->SetMarkerSize(0.8);
+    hpr2->Draw("same");
     ccc->cd(3);
     gPad->SetLogz();
     TH2F* hdist3=(TH2F*)l->FindObject(Form("hTPCcluPtFiltBit%d",jb));
     hdist3->SetTitle(Form("Filter bit %d",jb ));
     hdist3->SetStats(0);
     hdist3->Draw("colz");
+    TProfile* hpr3=hdist3->ProfileX(Form("%s-Profile",hdist3->GetName()));
+    hpr3->SetMarkerStyle(21);
+    hpr3->SetMarkerSize(0.8);
+    hpr3->Draw("same");
     ccc->cd(4);
     gPad->SetLogz();
     TH2F* hdist4=(TH2F*)l->FindObject(Form("hTPCcrrowsPtFiltBit%d",jb));
     hdist4->SetTitle(Form("Filter bit %d",jb ));
     hdist4->SetStats(0);
     hdist4->Draw("colz");
+    TProfile* hpr4=hdist4->ProfileX(Form("%s-Profile",hdist4->GetName()));
+    hpr4->SetMarkerStyle(21);
+    hpr4->SetMarkerSize(0.8);
+    hpr4->Draw("same");
     ccc->cd(5);
     gPad->SetLogz();
     TH2F* hdist5=(TH2F*)l->FindObject(Form("hTPCCrowOverFindPtFiltBit%d",jb));
     hdist5->SetTitle(Form("Filter bit %d",jb ));
     hdist5->SetStats(0);
     hdist5->Draw("colz");
+    TProfile* hpr5=hdist5->ProfileX(Form("%s-Profile",hdist5->GetName()));
+    hpr5->SetMarkerStyle(21);
+    hpr5->SetMarkerSize(0.8);
+    hpr5->Draw("same");
     ccc->cd(6);
     gPad->SetLogz();
     TH2F* hdist6=(TH2F*)l->FindObject(Form("hTPCChi2ndfPtFiltBit%d",jb));
@@ -1248,12 +1420,25 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hdist6->SetTitle(Form("Filter bit %d",jb ));
     hdist6->SetStats(0);
     hdist6->Draw("colz");
-    gPad->SetLogz();
+    TProfile* hpr6=hdist6->ProfileX(Form("%s-Profile",hdist6->GetName()));
+    hpr6->SetMarkerStyle(21);
+    hpr6->SetMarkerSize(0.8);
+    hpr6->Draw("same");
+    outfb->cd();
+    hpr1->Write();
+    hpr2->Write();
+    hpr3->Write();
+    hpr4->Write();
+    hpr5->Write();
+    hpr6->Write();
+    curDir->cd();
+
     plotFileName=Form("VarDistFiltBit%d.%s",jb,outputForm.Data());
     ccc->SaveAs(plotFileName.Data());
     if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
-
+  outfb->Close();
+  
   TH3F*	hInvMassK0s3d=(TH3F*)l->FindObject("hInvMassK0s");
   TH3F*	hInvMassLambda3d=(TH3F*)l->FindObject("hInvMassLambda");
   TH3F*	hInvMassAntiLambda3d=(TH3F*)l->FindObject("hInvMassAntiLambda");
@@ -1296,13 +1481,24 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   Int_t p5=hInvMassK0s3d->GetYaxis()->FindBin(9.99);
   TH1D* hInvMassK0sP4=hInvMassK0s3d->ProjectionX("hInvMassK0sP4",p4,p5,0,-1);
 
+  // K0s histos vs. radius
+  z1=hInvMassK0s3d->GetZaxis()->FindBin(2.99);
+  TH1D* hInvMassK0sR1=hInvMassK0s3d->ProjectionX("hInvMassK0s1dR1",0,-1,1,z1);
+  z2=hInvMassK0s3d->GetZaxis()->FindBin(5.99);
+  TH1D* hInvMassK0sR2=hInvMassK0s3d->ProjectionX("hInvMassK0s1dR2",0,-1,z1+1,z2);
+  z3=hInvMassK0s3d->GetZaxis()->FindBin(8.01);
+  z4=hInvMassK0s3d->GetZaxis()->FindBin(22.99);
+  TH1D* hInvMassK0sR3=hInvMassK0s3d->ProjectionX("hInvMassK0s1dR3",0,-1,z3,z4);
+  z5=hInvMassK0s3d->GetZaxis()->FindBin(28.01);
+  z6=hInvMassK0s3d->GetZaxis()->FindBin(42.99);
+  TH1D* hInvMassK0sR4=hInvMassK0s3d->ProjectionX("hInvMassK0s1dR4",0,-1,z5,z6);
 
 
-  TF1* fmassk0=new TF1("fmassk0","[0]+[1]*x+[2]/sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-0.5*(x-[3])*(x-[3])/[4]/[4])",0.46,0.54);
+  TF1* fmassk0=new TF1("fmassk0","[0]+[1]*x+[2]*x*x+[3]/sqrt(2.*TMath::Pi())/[5]*TMath::Exp(-0.5*(x-[4])*(x-[4])/[5]/[5])",0.44,0.56);
   fmassk0->SetLineWidth(2);
   fmassk0->SetLineColor(kMagenta+1);
 
-  TF1* fmassL=new TF1("fmassL","[0]+[1]*x+[2]/sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-0.5*(x-[3])*(x-[3])/[4]/[4])",1.10,1.13);
+  TF1* fmassL=new TF1("fmassL","[0]+[1]*x+[2]*x*x+[3]/sqrt(2.*TMath::Pi())/[5]*TMath::Exp(-0.5*(x-[4])*(x-[4])/[5]/[5])",1.10,1.13);
   fmassL->SetLineWidth(2);
   fmassL->SetLineColor(kRed+1);
 
@@ -1310,13 +1506,13 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   cv0->Divide(3,1);
   cv0->cd(1);
   hInvMassK0s->Draw();
-  InitFuncAndFit(hInvMassK0s,fmassk0,kTRUE);
+  InitFuncAndFit(hInvMassK0s,fmassk0,kTRUE,isMC);
   cv0->cd(2);
   hInvMassLambda->Draw();
-  InitFuncAndFit(hInvMassLambda,fmassL,kFALSE);
+  InitFuncAndFit(hInvMassLambda,fmassL,kFALSE,isMC);
   cv0->cd(3);
   hInvMassAntiLambda->Draw();
-  InitFuncAndFit(hInvMassAntiLambda,fmassL,kFALSE);
+  InitFuncAndFit(hInvMassAntiLambda,fmassL,kFALSE,isMC);
   plotFileName=Form("MassSpectraV0-integrated.%s",outputForm.Data());
   cv0->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
@@ -1325,7 +1521,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   clam->Divide(2,2);
   clam->cd(1);
   hInvMassLambdaR1->Draw();
-  InitFuncAndFit(hInvMassLambdaR1,fmassL,kFALSE);
+  InitFuncAndFit(hInvMassLambdaR1,fmassL,kFALSE,isMC);
   TLatex* tr1=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(1)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z1+1))));
   tr1->SetNDC();
   tr1->SetTextFont(43);
@@ -1333,7 +1529,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   tr1->Draw();
   clam->cd(2);
   hInvMassLambdaR2->Draw();
-  InitFuncAndFit(hInvMassLambdaR2,fmassL,kFALSE);
+  InitFuncAndFit(hInvMassLambdaR2,fmassL,kFALSE,isMC);
   TLatex* tr2=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z1+1)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z2+1))));
   tr2->SetNDC();
   tr2->SetTextFont(43);
@@ -1341,7 +1537,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   tr2->Draw();
   clam->cd(3);
   hInvMassLambdaR3->Draw();
-  InitFuncAndFit(hInvMassLambdaR3,fmassL,kFALSE);
+  InitFuncAndFit(hInvMassLambdaR3,fmassL,kFALSE,isMC);
   TLatex* tr3=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z3)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z4+1))));
   tr3->SetNDC();
   tr3->SetTextFont(43);
@@ -1349,7 +1545,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   tr3->Draw();
   clam->cd(4);
   hInvMassLambdaR4->Draw();
-  InitFuncAndFit(hInvMassLambdaR4,fmassL,kFALSE);
+  InitFuncAndFit(hInvMassLambdaR4,fmassL,kFALSE,isMC);
   TLatex* tr4=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z5)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z6+1))));
   tr4->SetNDC();
   tr4->SetTextFont(43);
@@ -1359,11 +1555,12 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   clam->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
+
   TCanvas* ck0=new TCanvas("ck0","K0s vs. pt",1400,900);
   ck0->Divide(2,2);
   ck0->cd(1);
   hInvMassK0sP1->Draw();
-  InitFuncAndFit(hInvMassK0sP1,fmassk0,kTRUE);
+  InitFuncAndFit(hInvMassK0sP1,fmassk0,kTRUE,isMC);
   TLatex* tp1=new TLatex(0.6,0.6,Form("%.1f<p_{T}<%.1f GeV/c",hInvMassK0s3d->GetYaxis()->GetBinLowEdge(1),hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p1+1)));
   tp1->SetNDC();
   tp1->SetTextFont(43);
@@ -1371,7 +1568,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   tp1->Draw();
   ck0->cd(2);
   hInvMassK0sP2->Draw();
-  InitFuncAndFit(hInvMassK0sP2,fmassk0,kTRUE);
+  InitFuncAndFit(hInvMassK0sP2,fmassk0,kTRUE,isMC);
   TLatex* tp2=new TLatex(0.6,0.6,Form("%.1f<p_{T}<%.1f GeV/c",hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p1+1),hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p2+1)));
   tp2->SetNDC();
   tp2->SetTextFont(43);
@@ -1379,7 +1576,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   tp2->Draw();
   ck0->cd(3);
   hInvMassK0sP3->Draw();
-  InitFuncAndFit(hInvMassK0sP3,fmassk0,kTRUE);
+  InitFuncAndFit(hInvMassK0sP3,fmassk0,kTRUE,isMC);
   TLatex* tp3=new TLatex(0.6,0.6,Form("%.1f<p_{T}<%.1f GeV/c",hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p2+1),hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p3+1)));
   tp3->SetNDC();
   tp3->SetTextFont(43);
@@ -1387,7 +1584,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   tp3->Draw();
   ck0->cd(4);
   hInvMassK0sP4->Draw();
-  InitFuncAndFit(hInvMassK0sP4,fmassk0,kTRUE);
+  InitFuncAndFit(hInvMassK0sP4,fmassk0,kTRUE,isMC);
   TLatex* tp4=new TLatex(0.6,0.6,Form("%.1f<p_{T}<%.1f GeV/c",hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p4),hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p5+1)));
   tp4->SetNDC();
   tp4->SetTextFont(43);
@@ -1397,6 +1594,124 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   ck0->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
+  TCanvas* ck0r=new TCanvas("ck0r","K0s vs R",1400,900);
+  ck0r->Divide(2,2);
+  ck0r->cd(1);
+  hInvMassK0sR1->Draw();
+  InitFuncAndFit(hInvMassK0sR1,fmassk0,kTRUE,isMC);
+  TLatex* tr1k=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(1)),TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z1+1))));
+  tr1k->SetNDC();
+  tr1k->SetTextFont(43);
+  tr1k->SetTextSize(26);
+  tr1k->Draw();
+  ck0r->cd(2);
+  hInvMassK0sR2->Draw();
+  InitFuncAndFit(hInvMassK0sR2,fmassk0,kTRUE,isMC);
+  TLatex* tr2k=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z1+1)),TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z2+1))));
+  tr2k->SetNDC();
+  tr2k->SetTextFont(43);
+  tr2k->SetTextSize(26);
+  tr2k->Draw();
+  ck0r->cd(3);
+  hInvMassK0sR3->Draw();
+  InitFuncAndFit(hInvMassK0sR3,fmassk0,kTRUE,isMC);
+  TLatex* tr3k=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z3)),TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z4+1))));
+  tr3k->SetNDC();
+  tr3k->SetTextFont(43);
+  tr3k->SetTextSize(26);
+  tr3k->Draw();
+  ck0r->cd(4);
+  hInvMassK0sR4->Draw();
+  InitFuncAndFit(hInvMassK0sR4,fmassk0,kTRUE,isMC);
+  TLatex* tr4k=new TLatex(0.65,0.6,Form("%d<R<%d cm",TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z5)),TMath::Nint(hInvMassK0s3d->GetZaxis()->GetBinLowEdge(z6+1))));
+  tr4k->SetNDC();
+  tr4k->SetTextFont(43);
+  tr4k->SetTextSize(26);
+  tr4k->Draw();
+  plotFileName=Form("K0s-MassSpectra-VsR.%s",outputForm.Data());
+  ck0r->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
+  // K0 pt resolution vs. pt
+  const Int_t nPtBinsK0=10;
+  Double_t ptbinlimsK0[nPtBinsK0+1]={0.,0.4,0.8,1.2,2.0,3.,4.,5.,6.,8.,10.};
+  TH1F* hSigmaK0AllR=new TH1F("hSigmaK0AllR"," ; p_{T} (GeV/c) ; #sigma_{K0} (MeV/c^{2})",nPtBinsK0,ptbinlimsK0);
+  TH1F* hSigmaK0R4=new TH1F("hSigmaK0R4"," ; p_{T} (GeV/c) ; #sigma_{K0} (MeV/c^{2})",nPtBinsK0,ptbinlimsK0);
+  TH1F* hMassK0AllR=new TH1F("hMassK0AllR"," ; p_{T} (GeV/c) ; #mu_{K0} (GeV/c^{2})",nPtBinsK0,ptbinlimsK0);
+  TH1F* hYieldK0AllR=new TH1F("hYieldK0AllR"," ; p_{T} (GeV/c) ; N_{K0}/event",nPtBinsK0,ptbinlimsK0);
+
+  TCanvas* ctmpk0=new TCanvas("ctmpk0","K0s vs. pt R<4",1600,900);
+  ctmpk0->Divide(5,4);
+  for(Int_t ipt=0; ipt<nPtBinsK0; ipt++){
+    Int_t pfine1=hInvMassK0s3d->GetYaxis()->FindBin(ptbinlimsK0[ipt]+0.001);
+    Int_t pfine2=hInvMassK0s3d->GetYaxis()->FindBin(ptbinlimsK0[ipt+1]-0.001);
+    Int_t r1=hInvMassK0s3d->GetZaxis()->FindBin(0.001);
+    Int_t r2=hInvMassK0s3d->GetZaxis()->FindBin(3.999);
+    TH1D* hTmpInvMassK0sR4=hInvMassK0s3d->ProjectionX(Form("hInvMassK0sR4PtFine%d",ipt),pfine1,pfine2,r1,r2);
+    TH1D* hTmpInvMassK0sAllR=hInvMassK0s3d->ProjectionX(Form("hInvMassK0sAllRPtFine%d",ipt),pfine1,pfine2,0,-1);
+    ctmpk0->cd(ipt+1);
+    hTmpInvMassK0sR4->Draw();
+    InitFuncAndFit(hTmpInvMassK0sR4,fmassk0,kTRUE,isMC);
+    TLatex* tpfine=new TLatex(0.6,0.6,Form("%.1f<p_{T}<%.1f GeV/c",hInvMassK0s3d->GetYaxis()->GetBinLowEdge(pfine1),hInvMassK0s3d->GetYaxis()->GetBinUpEdge(pfine2)));
+    tpfine->SetNDC();
+    tpfine->SetTextFont(43);
+    tpfine->SetTextSize(24);
+    tpfine->Draw();
+    hSigmaK0R4->SetBinContent(ipt+1,fmassk0->GetParameter(5)*1000.);
+    hSigmaK0R4->SetBinError(ipt+1,fmassk0->GetParError(5)*1000.);
+    ctmpk0->cd(ipt+11);
+    hTmpInvMassK0sAllR->Draw();
+    InitFuncAndFit(hTmpInvMassK0sAllR,fmassk0,kTRUE,isMC);
+    tpfine->Draw();
+    hMassK0AllR->SetBinContent(ipt+1,fmassk0->GetParameter(4));
+    hMassK0AllR->SetBinError(ipt+1,fmassk0->GetParError(4));
+    hSigmaK0AllR->SetBinContent(ipt+1,fmassk0->GetParameter(5)*1000.);
+    hSigmaK0AllR->SetBinError(ipt+1,fmassk0->GetParError(5)*1000.);
+    Double_t yield=fmassk0->GetParameter(3)/hTmpInvMassK0sAllR->GetBinWidth(1)/nSelectedEvents;
+    Double_t eyield=fmassk0->GetParError(3)/hTmpInvMassK0sAllR->GetBinWidth(1)/nSelectedEvents;
+    hYieldK0AllR->SetBinContent(ipt+1,yield);
+    hYieldK0AllR->SetBinError(ipt+1,eyield);
+  }
+
+  TCanvas* cK0signal=new TCanvas("cK0signal","K0 width and yield vs pt",1600,500);
+  cK0signal->Divide(3,1);
+  cK0signal->cd(1);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hMassK0AllR->SetMinimum(0.495);
+  hMassK0AllR->SetMaximum(0.500);
+  hMassK0AllR->SetStats(0);
+  hMassK0AllR->SetMarkerStyle(20);
+  hMassK0AllR->SetLineWidth(2);
+  hMassK0AllR->Draw();
+  cK0signal->cd(2);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hSigmaK0AllR->SetMinimum(0);
+  hSigmaK0AllR->SetMaximum(10);
+  hSigmaK0AllR->SetStats(0);
+  hSigmaK0AllR->SetMarkerStyle(20);
+  hSigmaK0AllR->SetLineWidth(2);
+  hSigmaK0R4->SetMarkerStyle(25);
+  hSigmaK0R4->SetMarkerColor(kRed+1);
+  hSigmaK0R4->SetLineColor(kRed+1);
+  hSigmaK0R4->SetLineWidth(2);
+  hSigmaK0AllR->Draw();
+  hSigmaK0R4->Draw("same");
+  TLegend* lk=new TLegend(0.18,0.18,0.5,0.3);
+  lk->AddEntry(hSigmaK0AllR,"All decay radii","P")->SetTextColor(hSigmaK0AllR->GetMarkerColor());
+  lk->AddEntry(hSigmaK0R4,"R < 4 cm","P")->SetTextColor(hSigmaK0R4->GetMarkerColor());
+  lk->Draw();
+  cK0signal->cd(3);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hYieldK0AllR->SetStats(0);
+  hYieldK0AllR->SetMarkerStyle(20);
+  hYieldK0AllR->SetLineWidth(2);
+  hYieldK0AllR->Draw();
+  plotFileName=Form("K0s-SignalVsPt.%s",outputForm.Data());
+  cK0signal->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   trtree->Fill();
 
@@ -1410,38 +1725,68 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     delete foutfile;
   }
 
+  TFile* foutk0=new TFile("SigmaK0s.root","recreate");
+  hSigmaK0AllR->Write();
+  hSigmaK0R4->Write();
+  foutk0->Close();
+  delete foutk0;
+  
   if(outputForm=="pdf") gSystem->Exec(Form("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=PlotsAODTrackQA.pdf %s",pdfFileNames.Data()));
+
+  printf("SUMMARY:\n");
+  printf("Number of events used in the plots = %d\n",nSelectedEvents);
 
 }
 
-void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s){
-  fmass->SetParameter(0,hm->GetBinContent(hm->FindBin(1.10)));
-  if(isK0s)  fmass->SetParameter(0,hm->GetBinContent(hm->FindBin(0.45)));
-  fmass->SetParameter(1,0.);
-  //  fmass->SetParLimits(1,-99999999999,0.);
-  fmass->SetParameter(2,100.);
+void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s, Bool_t isMC){
+
+  // first estimate of background
+  Double_t cntpeak,expSigma;
   if(isK0s){
-    fmass->SetParameter(3,0.5);
-    fmass->SetParLimits(3,0.49,0.51);
-    fmass->SetParameter(4,0.002);
-    fmass->SetParLimits(4,0.0006,0.02);
+    TF1* ffb = new TF1("fp2bkgk0",fp2bkgk0,0.44,0.56,3);
+    hm->Fit("fp2bkgk0","R");
+    for(Int_t k=0; k<3; k++) fmass->SetParameter(k,ffb->GetParameter(k));
+    cntpeak=hm->GetBinContent(hm->FindBin(0.498))-ffb->Integral(0.498-0.5*hm->GetBinWidth(1),0.498+hm->GetBinWidth(1));
+    delete ffb;
+    expSigma=0.004;
   }else{
-    fmass->SetParameter(3,1.116);
-    fmass->SetParLimits(3,1.11,1.12);
-    fmass->SetParameter(4,0.002);
-    fmass->SetParLimits(4,0.0006,0.003);
+    fmass->SetParameter(0,hm->GetBinContent(hm->FindBin(1.10)));
+    fmass->SetParameter(1,0.);
+    fmass->FixParameter(2,0.);
+    cntpeak=hm->GetBinContent(hm->FindBin(1.116))-hm->GetBinContent(hm->FindBin(1.14));
+    expSigma=0.0015;
+  }
+  //  fmass->SetParLimits(1,-99999999999,0.);
+  fmass->SetParameter(3,cntpeak*TMath::Sqrt(2*TMath::Pi())*expSigma);
+  //  fmass->SetParLimits(3,0.,9999999999.);
+  if(isK0s){
+    fmass->SetParameter(4,0.5);
+    fmass->SetParLimits(4,0.49,0.51);
+    fmass->SetParameter(5,0.002);
+    fmass->SetParLimits(5,0.0006,0.02);
+  }else{
+    fmass->SetParameter(4,1.116);
+    fmass->SetParLimits(4,1.11,1.12);
+    fmass->SetParameter(5,0.0015);
+    fmass->SetParLimits(5,0.0006,0.003);
+  }
+  if(isMC){
+    fmass->FixParameter(0,0.);
+    fmass->FixParameter(1,0.);
+    fmass->FixParameter(2,0.);
   }
 
-  hm->Fit(fmass,"R");
-  TLatex* t1=new TLatex(0.14,0.8,Form("Mean = %.3f+-%.3f GeV/c^{2}",fmass->GetParameter(3),fmass->GetParError(3)));
+  if(isMC)hm->Fit(fmass,"R");
+  else hm->Fit(fmass,"RL");
+  TLatex* t1=new TLatex(0.14,0.8,Form("Mean = %.3f+-%.3f GeV/c^{2}",fmass->GetParameter(4),fmass->GetParError(4)));
   t1->SetTextSize(0.04);
   t1->SetNDC();
   t1->Draw();
-  TLatex* t2=new TLatex(0.14,0.75,Form("Sigma = %.2f+-%.2f MeV/c^{2}",fmass->GetParameter(4)*1000.,fmass->GetParError(4)*1000.));
+  TLatex* t2=new TLatex(0.14,0.75,Form("Sigma = %.2f+-%.2f MeV/c^{2}",fmass->GetParameter(5)*1000.,fmass->GetParError(5)*1000.));
   t2->SetNDC();
   t2->SetTextSize(0.04);
   t2->Draw();
-  TLatex* t3=new TLatex(0.14,0.7,Form("Yield = %.0f+-%.0f",fmass->GetParameter(2)/hm->GetBinWidth(1),fmass->GetParError(2)/hm->GetBinWidth(1)));
+  TLatex* t3=new TLatex(0.14,0.7,Form("Yield = %.0f+-%.0f",fmass->GetParameter(3)/hm->GetBinWidth(1),fmass->GetParError(3)/hm->GetBinWidth(1)));
   t3->SetNDC();
   t3->SetTextSize(0.04);
   t3->Draw();
@@ -1491,7 +1836,7 @@ void DrawDistrib(TH1D* h1, TH1D* h2, TH1D* h3, Bool_t showStat){
   }else{
     h3->Draw("same");
   }
-    h3->Draw("histosame");
+  h3->Draw("histosame");
 }
 
 TH1D* ComputeMatchEff(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle){
@@ -1534,18 +1879,30 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
   Int_t jptr=0;
   for(Int_t j=1; j<=h2d->GetNbinsX(); j++){
     Double_t pt=h2d->GetXaxis()->GetBinCenter(j);
-    Double_t ept=0;
+    Double_t ept=h2d->GetXaxis()->GetBinWidth(j)/2.;
     Int_t ji=j;
     Int_t jf=j;
     if(pt>5 && pt<=10){
       ji=j;
-      jf=j+2;
+      jf=j+1;
       j=jf;
       pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
       ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
-    }else if(pt>10){
+    }else if(pt>10 && pt<=16){
       ji=j;
-      jf=j+5;
+      jf=j+3;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+    }else if(pt>16 && pt<=20){
+      ji=j;
+      jf=j+7;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+     }else if(pt>20){
+      ji=j;
+      jf=j+19;
       j=jf;
       pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
       ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
@@ -1554,14 +1911,14 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
     if(htmp->Integral()>40){
       htmp->Fit("gaus","Q0");
       TF1* fg=(TF1*)htmp->GetListOfFunctions()->FindObject("gaus");      
-      Double_t m=htmp->GetMean();
-      Double_t em=htmp->GetMeanError();
-      gMean->SetPoint(jpt,pt,m);
-      gMean->SetPointError(jpt,ept,em);
-      ++jpt;
+      Double_t m=fg->GetParameter(1);//htmp->GetMean();
+      Double_t em=fg->GetParError(1);//htmp->GetMeanError();
       Double_t r=fg->GetParameter(2);//htmp->GetRMS();
       Double_t er=fg->GetParError(2);//=htmp->GetRMSError();
       if(er/r<0.35){
+	gMean->SetPoint(jpt,pt,m);
+	gMean->SetPointError(jpt,ept,em);
+	++jpt;
 	gRms->SetPoint(jptr,pt,r);
 	gRms->SetPointError(jptr,ept,er);
 	++jptr;
@@ -1571,3 +1928,11 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
   }
 }
  
+
+Double_t fp2bkgk0(Double_t *x, Double_t *par){
+  if (x[0] > 0.47 && x[0] < 0.53) {
+    TF1::RejectPoint();
+    return 0;
+  }
+  return par[0] + par[1]*x[0] + par[2]*x[0]*x[0];
+}

@@ -56,7 +56,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fEMCALRecalibrationFactors(),
   fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fLowGain(kFALSE),
-  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),
+  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),     fDoUseMergedBC(kFALSE),
   fUseRunCorrectionFactors(kFALSE),       
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
@@ -69,7 +69,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fCutR(0),                               fCutEta(0),                             fCutPhi(0),
   fClusterWindow(0),                      fMass(0),                           
   fStepSurface(0),                        fStepCluster(0),
-  fITSTrackSA(kFALSE),                    fEMCalSurfaceDistance(440.),
+  fITSTrackSA(kFALSE),                    fUseTrackDCA(kTRUE), // keep it active, but not working for old MC
+  fUseOuterTrackParam(kFALSE),            fEMCalSurfaceDistance(440.),
   fTrackCutsType(0),                      fCutMinTrackPt(0),                      fCutMinNClusterTPC(0), 
   fCutMinNClusterITS(0),                  fCutMaxChi2PerClusterTPC(0),            fCutMaxChi2PerClusterITS(0),
   fCutRequireTPCRefit(kFALSE),            fCutRequireITSRefit(kFALSE),            fCutAcceptKinkDaughters(kFALSE),
@@ -88,6 +89,11 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fResidualPhi           = new TArrayF();
   fResidualEta           = new TArrayF();
   fPIDUtils              = new AliEMCALPIDUtils();
+  
+  fBadStatusSelection[0] = kTRUE;
+  fBadStatusSelection[1] = kTRUE;
+  fBadStatusSelection[2] = kTRUE;
+  fBadStatusSelection[3] = kTRUE;
 }
 
 //
@@ -107,6 +113,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fLowGain(reco.fLowGain),
   fUseL1PhaseInTimeRecalibration(reco.fUseL1PhaseInTimeRecalibration), 
   fEMCALL1PhaseInTimeRecalibration(reco.fEMCALL1PhaseInTimeRecalibration),
+  fDoUseMergedBC(reco.fDoUseMergedBC),
   fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   
   fRemoveBadChannels(reco.fRemoveBadChannels),               fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
   fEMCALBadChannelMap(NULL),
@@ -124,7 +131,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCutR(reco.fCutR),        fCutEta(reco.fCutEta),           fCutPhi(reco.fCutPhi),
   fClusterWindow(reco.fClusterWindow),
   fMass(reco.fMass),        fStepSurface(reco.fStepSurface), fStepCluster(reco.fStepCluster),
-  fITSTrackSA(reco.fITSTrackSA),                             fEMCalSurfaceDistance(440.),
+  fITSTrackSA(reco.fITSTrackSA),                             fUseTrackDCA(reco.fUseTrackDCA),
+  fUseOuterTrackParam(reco.fUseOuterTrackParam),             fEMCalSurfaceDistance(440.),
   fTrackCutsType(reco.fTrackCutsType),                       fCutMinTrackPt(reco.fCutMinTrackPt), 
   fCutMinNClusterTPC(reco.fCutMinNClusterTPC),               fCutMinNClusterITS(reco.fCutMinNClusterITS), 
   fCutMaxChi2PerClusterTPC(reco.fCutMaxChi2PerClusterTPC),   fCutMaxChi2PerClusterITS(reco.fCutMaxChi2PerClusterITS),
@@ -136,9 +144,10 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
 {  
   for (Int_t i = 0; i < 15 ; i++) { fMisalRotShift[i]      = reco.fMisalRotShift[i]      ; 
                                     fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; }
-  for (Int_t i = 0; i < 10  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
+  for (Int_t i = 0; i < 10  ; i++){ fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
   for (Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }
   for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]    = reco.fMCGenerToAccept[j]    ; }
+  for (Int_t j = 0; j < 4  ; j++) { fBadStatusSelection[j] = reco.fBadStatusSelection[j] ; }
 
   if(reco.fEMCALBadChannelMap) {
     // Copy constructor - not taking ownership over calibration histograms
@@ -194,6 +203,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
 
   fUseL1PhaseInTimeRecalibration   = reco.fUseL1PhaseInTimeRecalibration;
   fEMCALL1PhaseInTimeRecalibration = reco.fEMCALL1PhaseInTimeRecalibration;
+
+  fDoUseMergedBC             = reco.fDoUseMergedBC;
   
   fUseRunCorrectionFactors   = reco.fUseRunCorrectionFactors;
   
@@ -225,6 +236,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fStepSurface               = reco.fStepSurface;
   fStepCluster               = reco.fStepCluster;
   fITSTrackSA                = reco.fITSTrackSA;
+  fUseTrackDCA               = reco.fUseTrackDCA;
+  fUseOuterTrackParam        = reco.fUseOuterTrackParam;
   fEMCalSurfaceDistance      = reco.fEMCalSurfaceDistance;
   
   fTrackCutsType             = reco.fTrackCutsType;
@@ -302,6 +315,9 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
     fMatchedClusterIndex = 0;
   }
 
+  for (Int_t j = 0; j < 4  ; j++) 
+   fBadStatusSelection[j] = reco.fBadStatusSelection[j] ; 
+  
   if(fEMCALBadChannelMap) delete fEMCALBadChannelMap;
   if(reco.fEMCALBadChannelMap) {
     // Copy constructor - not taking ownership over calibration histograms
@@ -400,7 +416,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   if ( absID < 0 || absID >= 24*48*geom->GetNumberOfSuperModules() ) 
     return kFALSE;
   
-  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1, status=0; 
   
   if (!geom->GetCellIndex(absID,imod,iTower,iIphi,iIeta)) 
   {
@@ -412,8 +428,15 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);  
 
   // Do not include bad channels found in analysis,
-  if (IsBadChannelsRemovalSwitchedOn() && GetEMCALChannelStatus(imod, ieta, iphi)) 
-    return kFALSE;
+  if ( IsBadChannelsRemovalSwitchedOn() )
+  {
+    Bool_t bad = GetEMCALChannelStatus(imod, ieta, iphi,status);
+    
+    if ( status > 0 )
+      AliDebug(1,Form("Channel absId %d, status %d, set as bad %d",absID, status, bad));
+    
+    if ( bad ) return kFALSE;
+  }
   
   //Recalibrate energy
   amp  = cells->GetCellAmplitude(absID);
@@ -552,9 +575,10 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
     
     geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);      
     
-    if (GetEMCALChannelStatus(imod, icol, irow)) 
+    Int_t status = 0;
+    if (GetEMCALChannelStatus(imod, icol, irow, status)) 
     {
-      AliDebug(2,Form("Cluster with bad channel: SM %d, col %d, row %d\n",imod, icol, irow));
+      AliDebug(2,Form("Cluster with bad channel: SM %d, col %d, row %d, status %d\n",imod, icol, irow, status));
       return kTRUE;
     }
   }// cell cluster loop
@@ -867,7 +891,7 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
     case kBeamTestCorrectedv2:
     {
       // From beam test, corrected for material between beam and EMCAL
-      // Different function to kBeamTestCorrected
+      // Different parametrization to kBeamTestCorrected
       //fNonLinearityParams[0] =  0.983504;
       //fNonLinearityParams[1] =  0.210106;
       //fNonLinearityParams[2] =  0.897274;
@@ -882,7 +906,7 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       
     case kBeamTestCorrectedv3:
     {
-      // Same function as kBeamTestCorrectedv2, different default parametrization.
+      // Same function as kBeamTestCorrected, different default parametrization.
       //fNonLinearityParams[0] =  0.976941;
       //fNonLinearityParams[1] =  0.162310;
       //fNonLinearityParams[2] =  1.08689;
@@ -890,6 +914,47 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       //fNonLinearityParams[4] =  152.338;
       //fNonLinearityParams[5] =  30.9594;
       //fNonLinearityParams[6] =  0.9615;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
+      
+    case kBeamTestCorrectedv4:
+    {
+      // New parametrization of kBeamTestCorrected, 
+      // fitting new points for E>100 GeV.
+      // I should have same performance as v3 in the low energies
+      // See EMCal meeting 21/09/2018 slides
+      // https://indico.cern.ch/event/759154/contributions/3148448/attachments/1721042/2778585/nonLinearityUpdate.pdf
+      //  and jira ticket EMCAL-190
+      // Not very smart copy pasting the same function for each new parametrization, need to think how to do it better.
+      
+//      fNonLinearityParams[0] = 0.9892;
+//      fNonLinearityParams[1] = 0.1976;
+//      fNonLinearityParams[2] = 0.865;
+//      fNonLinearityParams[3] = 0.06775;
+//      fNonLinearityParams[4] = 156.6;
+//      fNonLinearityParams[5] = 47.18;
+//      fNonLinearityParams[6] = 0.97;
+      
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
+    case kBeamTestNS:
+    {
+      // New parametrization of testbeam data points, 
+      // includes also points for E>100 GeV.
+      // See EMCal meeting 07/12/2018 slides
+      // https://indico.cern.ch/event/761682/contributions/3245317/attachments/1767706/2870846/2018_12_pp5TeV_NonlinearityStudies_update.pdf
+      
+//      fNonLinearityParams[0] = 0.986154;
+//      fNonLinearityParams[1] = 0.214860;
+//      fNonLinearityParams[2] = 0.717724;
+//      fNonLinearityParams[3] = 0.069200;
+//      fNonLinearityParams[4] = 155.497605;
+//      fNonLinearityParams[5] = 48.868069;
+//      fNonLinearityParams[6] = 0.972947;
       energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
       
       break;
@@ -954,6 +1019,24 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       //fNonLinearityParams[4] =  244.586;
       //fNonLinearityParams[5] =  116.938;
       //fNonLinearityParams[6] =  1.00437;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
+      
+    case kPi0MCNS:
+    {
+      // New parametrization of testbeam MC points,
+      // includes also points for E>100 GeV.
+      // See EMCal meeting 07/12/2018 slides
+      // https://indico.cern.ch/event/761682/contributions/3245317/attachments/1767706/2870846/2018_12_pp5TeV_NonlinearityStudies_update.pdf
+      //fNonLinearityParams[0] =  1.009121;
+      //fNonLinearityParams[1] =  0.083153;
+      //fNonLinearityParams[2] =  1.444362;
+      //fNonLinearityParams[3] =  0.100294;
+      //fNonLinearityParams[4] =  416.897753;
+      //fNonLinearityParams[5] =  324.246101;
+      //fNonLinearityParams[6] =  1.004055;
       energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
       
       break;
@@ -1111,7 +1194,7 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
 
   if (fNonLinearityFunction == kBeamTestCorrectedv3) {
     
-    // New parametrization of kBeamTestCorrectedv2
+    // New parametrization of kBeamTestCorrected
     // excluding point at 0.5 GeV from Beam Test Data
     // https://indico.cern.ch/event/438805/contribution/1/attachments/1145354/1641875/emcalPi027August2015.pdf
     
@@ -1124,6 +1207,40 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[6] =  0.9615;
   }
 
+  if (fNonLinearityFunction == kBeamTestCorrectedv4) {
+    
+    // New parametrization of kBeamTestCorrected, 
+    // fitting new points for E>100 GeV.
+    // I should have same performance as v3 in the low energies
+    // See EMCal meeting 21/09/2018 slides
+    // https://indico.cern.ch/event/759154/contributions/3148448/attachments/1721042/2778585/nonLinearityUpdate.pdf
+    //  and jira ticket EMCAL-190
+    
+    fNonLinearityParams[0] = 0.9892;
+    fNonLinearityParams[1] = 0.1976;
+    fNonLinearityParams[2] = 0.865;
+    fNonLinearityParams[3] = 0.06775;
+    fNonLinearityParams[4] = 156.6;
+    fNonLinearityParams[5] = 47.18;
+    fNonLinearityParams[6] = 0.97;
+  }
+
+  if (fNonLinearityFunction == kBeamTestNS) {
+    
+    // New parametrization of testbeam data points, 
+    // includes also points for E>100 GeV.
+    // See EMCal meeting 07/12/2018 slides
+    // https://indico.cern.ch/event/761682/contributions/3245317/attachments/1767706/2870846/2018_12_pp5TeV_NonlinearityStudies_update.pdf
+    
+     fNonLinearityParams[0] = 0.986154;
+     fNonLinearityParams[1] = 0.214860;
+     fNonLinearityParams[2] = 0.717724;
+     fNonLinearityParams[3] = 0.069200;
+     fNonLinearityParams[4] = 155.497605;
+     fNonLinearityParams[5] = 48.868069;
+     fNonLinearityParams[6] = 0.972947;
+  }
+  
   if (fNonLinearityFunction == kSDMv5) {
     fNonLinearityParams[0] =  1.0;
     fNonLinearityParams[1] =  6.64778e-02;
@@ -1162,6 +1279,16 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[4] = 244.586;   
     fNonLinearityParams[5] = 116.938;   
     fNonLinearityParams[6] = 1.00437;   
+  }
+
+  if (fNonLinearityFunction == kPi0MCNS) {
+    fNonLinearityParams[0] =  1.009121;
+    fNonLinearityParams[1] =  0.083153;
+    fNonLinearityParams[2] =  1.444362;
+    fNonLinearityParams[3] =  0.100294;
+    fNonLinearityParams[4] =  416.897753;
+    fNonLinearityParams[5] =  324.246101;
+    fNonLinearityParams[6] =  1.004055;
   }
 
 if (fNonLinearityFunction == kPCMv1) {
@@ -1207,6 +1334,72 @@ if (fNonLinearityFunction == kPCMv1) {
  }
 }
 
+///
+/// Set the type of channels to be declared as bad
+/// \param all  : all cases are bad, default true
+/// \param dead : dead channels are bad
+/// \param hot  : hot channels are bad
+/// \param warm : warm channels are bad
+///
+//____________________________________________________________________
+void AliEMCALRecoUtils::SetEMCALBadChannelStatusSelection(Bool_t all, Bool_t dead, Bool_t hot, Bool_t warm)
+{ 
+  fBadStatusSelection[0] = all;  // declare all as bad if true, never mind the other settings
+  fBadStatusSelection[1] = dead; 
+  fBadStatusSelection[2] = hot; 
+  fBadStatusSelection[3] = warm; 
+}
+
+///
+/// \return declare channel as bad (true) or not good (false)
+/// By default if status is not kAlive, all are declared bad,
+/// but optionnaly 
+///
+/// \param iSM: supermodule number of channel
+/// \param iCol: cell column in SM
+/// \param iRow: cell row in SM
+/// \param status: channel status
+///
+//____________________________________________________________________
+Bool_t AliEMCALRecoUtils::GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Int_t & status) const 
+{ 
+  if(fEMCALBadChannelMap) 
+    status = (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
+  else 
+    status = 0; // Channel is ok by default
+  
+  if ( status == AliCaloCalibPedestal::kAlive ) 
+  {
+    return kFALSE; // Good channel
+  }
+  else
+  {
+    if      ( fBadStatusSelection[0]  == kTRUE ) 
+    {
+      return kTRUE; // consider bad hot, dead and warm
+    }
+    else
+    {
+      if      ( fBadStatusSelection[AliCaloCalibPedestal::kDead]    == kTRUE  && 
+                status == AliCaloCalibPedestal::kDead    ) 
+        return kTRUE; // consider bad dead
+      else if ( fBadStatusSelection[AliCaloCalibPedestal::kHot]     == kTRUE  && 
+                status == AliCaloCalibPedestal::kHot     ) 
+        return kTRUE; // consider bad hot
+      else if ( fBadStatusSelection[AliCaloCalibPedestal::kWarning] == kTRUE  && 
+                status == AliCaloCalibPedestal::kWarning ) 
+        return kTRUE; // consider bad warm 
+    }
+  }
+  
+  AliWarning(Form("Careful, bad channel selection not properly done: ism %d, icol %d, irow %d, status %d,\n"
+                  " fBadAll %d, fBadHot %d, fBadWarm %d, fBadDead %d",
+                  iSM, iCol, iRow, status,
+                  fBadStatusSelection[0], fBadStatusSelection[1],
+                  fBadStatusSelection[2], fBadStatusSelection[3]));
+  
+  return kFALSE; // if everything fails, accept it.
+}
 
 ///
 /// For a given CaloCluster gets the absId of the cell 
@@ -1435,31 +1628,52 @@ void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
-  if(fLowGain) fEMCALTimeRecalibrationFactors = new TObjArray(8);
-  else fEMCALTimeRecalibrationFactors = new TObjArray(4);
+  if(fDoUseMergedBC){
 
-  for (int i = 0; i < 4; i++) 
-    fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvBC%d",i),
+    if(fLowGain) fEMCALTimeRecalibrationFactors = new TObjArray(2);
+    else fEMCALTimeRecalibrationFactors = new TObjArray(1);
+
+    fEMCALTimeRecalibrationFactors->Add(new TH1S("hAllTimeAv",
+                                                 "hAllTimeAv",  
+                                                 48*24*22,0.,48*24*22)          );
+    // Init the histograms with 0
+    for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
+      SetEMCALChannelTimeRecalibrationFactor(0,iCh,0.,kFALSE);
+
+    if(fLowGain) {
+      fEMCALTimeRecalibrationFactors->Add(new TH1F("hAllTimeAvLG",
+                                                   "hAllTimeAvLG",  
+                                                    48*24*22,0.,48*24*22)        );
+      for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
+        SetEMCALChannelTimeRecalibrationFactor(1,iCh,0.,kTRUE);
+    }
+
+  }else{
+    if(fLowGain) fEMCALTimeRecalibrationFactors = new TObjArray(8);
+    else fEMCALTimeRecalibrationFactors = new TObjArray(4);
+
+    for (int i = 0; i < 4; i++) 
+      fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvBC%d",i),
                                                  Form("hAllTimeAvBC%d",i),  
                                                  48*24*22,0.,48*24*22)          );
-  // Init the histograms with 0
-  for (Int_t iBC = 0; iBC < 4; iBC++) 
-  {
-    for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
-      SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kFALSE);
-  }
-
-  if(fLowGain) {
-    for (int iBC = 0; iBC < 4; iBC++) {
-      fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvLGBC%d",iBC),
-						   Form("hAllTimeAvLGBC%d",iBC),  
-						   48*24*22,0.,48*24*22)        );
+    // Init the histograms with 0
+    for (Int_t iBC = 0; iBC < 4; iBC++) 
+    {
       for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
-	SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kTRUE);
+        SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kFALSE);
     }
+
+    if(fLowGain) {
+      for (int iBC = 0; iBC < 4; iBC++) {
+        fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvLGBC%d",iBC),
+                                                     Form("hAllTimeAvLGBC%d",iBC),  
+                                                     48*24*22,0.,48*24*22)        );
+        for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
+          SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kTRUE);
+      }
+    }
+
   }
-
-
   
   fEMCALTimeRecalibrationFactors->SetOwner(kTRUE);
   fEMCALTimeRecalibrationFactors->Compress();
@@ -2607,8 +2821,13 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
         if ( phi <= 10 || phi >= 250 ) continue;
       }
       
-      if (!fITSTrackSA)
-        trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());  // if TPC Available
+      if (!fITSTrackSA) // if TPC Available
+      {
+        if ( fUseOuterTrackParam )
+          trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetOuterParam());  
+        else
+          trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());  
+      }
       else
         trackParam =  new AliExternalTrackParam(*esdTrack); // If ITS Track Standing alone		
       
@@ -2652,7 +2871,12 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
       }
       
       Double_t pos[3],mom[3];
-      aodTrack->GetXYZ(pos);
+      
+      if ( fUseTrackDCA )
+        aodTrack->GetXYZ(pos);
+      else
+        aodTrack->XvYvZv(pos);
+        
       aodTrack->GetPxPyPz(mom);
       AliDebug(5,Form("aod track: i=%d | pos=(%5.4f,%5.4f,%5.4f) | mom=(%5.4f,%5.4f,%5.4f) | charge=%d\n",
                       itr,pos[0],pos[1],pos[2],mom[0],mom[1],mom[2],aodTrack->Charge()));
@@ -2782,8 +3006,13 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
   }
   
   AliExternalTrackParam *trackParam = 0;
-  if (!fITSTrackSA)
-    trackParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());  // If TPC
+  if (!fITSTrackSA) // If TPC
+  {
+    if ( fUseOuterTrackParam )
+      trackParam = const_cast<AliExternalTrackParam*>(track->GetOuterParam());  
+    else 
+      trackParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());  
+  }
   else
     trackParam = new AliExternalTrackParam(*track);
   
@@ -3562,16 +3791,22 @@ void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(const TObjArray
   }
 }
 
-void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(Int_t bc, const TH1F* h){ 
+void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(Int_t bc, const TH1* h){ 
   if(!fEMCALTimeRecalibrationFactors){
     fEMCALTimeRecalibrationFactors = new TObjArray(bc);
     fEMCALTimeRecalibrationFactors->SetOwner(true);
   }
   if(fEMCALTimeRecalibrationFactors->GetEntries() <= bc) fEMCALTimeRecalibrationFactors->Expand(bc+1);
   if(fEMCALTimeRecalibrationFactors->At(bc)) fEMCALTimeRecalibrationFactors->RemoveAt(bc);
-  TH1F *clone = new TH1F(*h);
-  clone->SetDirectory(NULL);
-  fEMCALTimeRecalibrationFactors->AddAt(clone,bc); 
+  if(fDoUseMergedBC){
+    TH1S *clone = new TH1S(*(TH1S*)h);
+    clone->SetDirectory(NULL);
+    fEMCALTimeRecalibrationFactors->AddAt(clone,bc); 
+  }else{
+    TH1F *clone = new TH1F(*(TH1F*)h);
+    clone->SetDirectory(NULL);
+    fEMCALTimeRecalibrationFactors->AddAt(clone,bc); 
+  }
 }
 
 void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TObjArray *map) { 

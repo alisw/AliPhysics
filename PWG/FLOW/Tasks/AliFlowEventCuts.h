@@ -65,6 +65,18 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   void SetCutTPCmultiplicityOutliers(Bool_t b=kTRUE) {fCutTPCmultiplicityOutliers=b;}  
   void SetCutTPCmultiplicityOutliersAOD(Bool_t b=kTRUE) {fCutTPCmultiplicityOutliersAOD=b;}
 
+  //================================================//
+   void SetSphericityCut(Double_t sphericityMin, Double_t sphericityMax) {
+     fSphericityMin = sphericityMin;
+     fSphericityMax = sphericityMax;
+     fUseSphericityCut = kTRUE;
+   }
+   void SelectEventsWithHighPtParticles(Double_t gPt) {
+     fMinPtOfTrigger = gPt;
+     fUseMinPtOfTrigger = kTRUE;
+   }
+  //================================================//
+
   Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
   Int_t GetNumberOfTracksMin() const {return fNumberOfTracksMin;}
   Int_t GetRefMultMax() const {return fRefMultMax;}
@@ -146,6 +158,14 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   TH2F *fhistTPCvsGlobalMult; //!correlation between TPCMult and GlobalMult
   Bool_t fData2011; //2011 data is used
   Bool_t fCheckPileUp; //pile-up
+
+  Double_t fSphericityMin;//sphericity min cut (currently only for AODs)
+  Double_t fSphericityMax;//sphericity max cut (currently only for AODs)
+  Bool_t fUseSphericityCut;//sphericity cut (currently only for AODs)
+
+  Double_t fMinPtOfTrigger;//min pT of the trigger particle within the event
+  Bool_t fUseMinPtOfTrigger;//usage of min pT cut for the trigger
+
   ClassDef(AliFlowEventCuts,8)
 };
 

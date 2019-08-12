@@ -35,24 +35,25 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
                                       Bool_t  enableDoMesonChic         = kFALSE, // enable additional Chic analysis
                                       TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                                       Bool_t  doWeighting               = kFALSE,  //enable Weighting
+                                      Bool_t  enableUseTHnSparse        = kTRUE,                          // enable THnSparse for mixed event BG
                                       TString cutnumberAODBranch        = "0000000060084001001500000",
-                                      TString   periodName                      = "LHC13d2",   
-                                      Int_t     enableV0EffiStudies             = 0,     
+                                      TString   periodName                      = "LHC13d2",
+                                      Int_t     enableV0EffiStudies             = 0,
                                       Bool_t    enableTriggerMimicking  = kFALSE,
                                       Bool_t    enableTriggerOverlapRej = kFALSE,    // enable trigger overlap rejection
-                                      Float_t   maxFacPtHard            = 3.,     // maximum factor between hardest jet and ptHard generated
+                                      TString   settingMaxFacPtHard     = "3.",       // maximum factor between hardest jet and ptHard generated
                                       TString   periodNameV0Reader      = "",
                                       Bool_t    runLightOutput          = kFALSE,
                                       Int_t     enableMatBudWeightsPi0          = 0,
-                                      TString   additionalTrainConfig   = "0"           
-                                 )  { 
-  
+                                      TString   additionalTrainConfig   = "0"
+                                 )  {
+
   Int_t isHeavyIon = 1;
-  
+
   if (additionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + additionalTrainConfig.Atoi();
   }
-  
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -60,12 +61,45 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
     return ;
   }
 
+  TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
+  if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_GammaConvDalitzV1_PbPb during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
+  Bool_t fMinPtHardSet        = kFALSE;
+  Double_t minFacPtHard       = -1;
+  Bool_t fMaxPtHardSet        = kFALSE;
+  Double_t maxFacPtHard       = 100;
+  Bool_t fSingleMaxPtHardSet  = kFALSE;
+  Double_t maxFacPtHardSingle = 100;
+  for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
+    TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
+    TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
+    if(strTempSetting.BeginsWith("MINPTHFAC:")){
+      strTempSetting.Replace(0,10,"");
+      minFacPtHard               = strTempSetting.Atof();
+      cout << "running with min pT hard jet fraction of: " << minFacPtHard << endl;
+      fMinPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("MAXPTHFAC:")){
+      strTempSetting.Replace(0,10,"");
+      maxFacPtHard               = strTempSetting.Atof();
+      cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
+      fMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("MAXPTHFACSINGLE:")){
+      strTempSetting.Replace(0,16,"");
+      maxFacPtHardSingle         = strTempSetting.Atof();
+      cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
+      fSingleMaxPtHardSet        = kTRUE;
+    } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
+      maxFacPtHard               = strTempSetting.Atof();
+      cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
+      fMaxPtHardSet        = kTRUE;
+    }
+  }
+
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-  
+
   Bool_t isMCForOtherSettings = 0;
   if (isMC > 0) isMCForOtherSettings = 1;
-  
+
   //========= Add PID Reponse to ANALYSIS manager ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
@@ -76,7 +110,7 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
   TString cutnumberPhoton = "00000070000000000500004000";
   if (periodNameV0Reader.CompareTo("LHC17n") == 0 || periodNameV0Reader.Contains("LHC17j7"))
     cutnumberPhoton         = "00000088400100001500000000";
-  TString cutnumberEvent = "10000003";
+  TString cutnumberEvent  = "10000003";
   TString ElecCuts        = "30105400000003300000";            //Electron Cuts
 
   Bool_t enableV0findingEffi = kFALSE;
@@ -89,8 +123,6 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
       cutnumberEvent = "52500013";
     }
   }
-
-
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -120,7 +152,7 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
         fEventCuts->SetFillCutHistograms("",kTRUE);
       }
     }
-    
+
     // Set AnalysisCut Number
     AliConversionPhotonCuts *fCuts=NULL;
     if(cutnumberPhoton!=""){
@@ -144,7 +176,6 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
       fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
-
     AliLog::SetGlobalLogLevel(AliLog::kInfo);
 
     //connect input V0Reader
@@ -168,18 +199,14 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
         fElecCuts->SetFillCutHistograms("",kTRUE);
       }
     }
-
     fElectronSelector->Init();
     mgr->AddTask(fElectronSelector);
-
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
 
     //connect input V0Reader
     mgr->ConnectInput (fElectronSelector,0,cinput1);
   }
-  
-  cout<<"Entro"<<endl;
-  
+
   //================================================
   //========= Add task to the ANALYSIS manager =====
   //================================================
@@ -193,29 +220,20 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
 
   CutHandlerConvDalitz cuts; // object to add the cut
 
- 
-  
-  
   if ( trainConfig == 1 ) { // LHC15o, kINT7, cent. from V0M, reject added particles
-    
-      cuts.AddCut("10110013", "00200009247602008250404000", "20405400233202223710", "0263103500900000"); //  0-10%
-      cuts.AddCut("11210013", "00200009247602008250404000", "20405400233202223710", "0263103500900000"); // 10-20%
-      cuts.AddCut("12510013", "00200009247602008250404000", "20405400233202223710", "0263103500900000"); // 20-50%
-      cuts.AddCut("15910013", "00200009247602008250404000", "20405400233202223710", "0263103500900000"); // 50-90%
-      cuts.AddCut("10910013", "00200009247602008250404000", "20405400233202223710", "0263103500900000"); //  0-90%
-  
+    cuts.AddCut("10110013", "00200009247602008250404000", "20405400233202223710", "0263103500900000"); //  0-10%
+    cuts.AddCut("11210013", "00200009247602008250404000", "20405400233202223710", "0263103500900000"); // 10-20%
+    cuts.AddCut("12510013", "00200009247602008250404000", "20405400233202223710", "0263103500900000"); // 20-50%
+    cuts.AddCut("15910013", "00200009247602008250404000", "20405400233202223710", "0263103500900000"); // 50-90%
+    cuts.AddCut("10910013", "00200009247602008250404000", "20405400233202223710", "0263103500900000"); //  0-90%
   } else if ( trainConfig == 2 ) { //XeXe configurations
-      
-      cuts.AddCut("10210113", "00200009327000008250400000", "20405400233202223710", "0263103500900000"); // 0-20 // NOTE Check electron
-      cuts.AddCut("12410113", "00200009327000008250400000", "20405400233202223710", "0263103500900000"); // 20-40
-      cuts.AddCut("10410113", "00200009327000008250400000", "20405400233202223710", "0263103500900000"); // 0-40
-      cuts.AddCut("14810113", "00200009327000008250400000", "20405400233202223710", "0263103500900000"); // 40-80
-      
+    cuts.AddCut("10210113", "00200009327000008250400000", "10885400233102227610", "0263103500900000"); // 0-20 // NOTE Check electron
+    cuts.AddCut("12410113", "00200009327000008250400000", "10885400233102227610", "0263103500900000"); // 20-40
+    cuts.AddCut("10410113", "00200009327000008250400000", "10885400233102227610", "0263103500900000"); // 0-40
+    cuts.AddCut("14810113", "00200009327000008250400000", "10885400233102227610", "0263103500900000"); // 40-80
+  } else if ( trainConfig == 3 ) { //XeXe configurations, only 40-80 for testing purposes
+    cuts.AddCut("14810113", "00200009327000008250400000", "10885400233102227610", "0263103500900000"); // 0-20 // NOTE Check electron
   }
-  
-  
-
-  
 
   if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
@@ -225,15 +243,15 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
   }
 
   Int_t numberOfCuts = cuts.GetNCuts();
-  
- 
+
+
 
   TList *EventCutList = new TList();
   TList *ConvCutList  = new TList();
   TList *MesonCutList = new TList();
   TList *ElecCutList  = new TList();
-  
-  
+
+
   TList *HeaderList = new TList();
   if (periodName.CompareTo("LHC13d2")==0){
     TObjString *Header1 = new TObjString("pi0_1");
@@ -344,9 +362,6 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
       HeaderList->Add(Header2);
     }
   }
-  
-  
-
 
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts          = new AliConvEventCuts*[numberOfCuts];
@@ -361,24 +376,26 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
   AliDalitzElectronCuts **analysisElecCuts     = new AliDalitzElectronCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
-      
-      
+
+
     analysisEventCuts[i] = new AliConvEventCuts();
-   
+
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
-    analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+    if(fMinPtHardSet)
+      analysisEventCuts[i]->SetMinFacPtHard(minFacPtHard);
+    if(fMaxPtHardSet)
+      analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+    if(fSingleMaxPtHardSet)
+      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
-    
+
     if( ! analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data()) ){
-        
-        cout<<"ERROR:  analysisEventCuts ["<<i<<"]"<<endl;
-        return 0;
+      cout<<"ERROR:  analysisEventCuts ["<<i<<"]"<<endl;
+      return 0;
     }
-    
-    
     if (periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
       if (headerSelectionInt == 1 || headerSelectionInt == 4 || headerSelectionInt == 12 ) analysisEventCuts[i]->SetAddedSignalPDGCode(111);
       if (headerSelectionInt == 2 || headerSelectionInt == 5 || headerSelectionInt == 13 ) analysisEventCuts[i]->SetAddedSignalPDGCode(221);
@@ -386,76 +403,61 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
     EventCutList->Add(analysisEventCuts[i]);
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-    
-    
-    analysisCuts[i] = new AliConversionPhotonCuts();
-    
-    if (enableMatBudWeightsPi0 > 0){
-        
-        if (isMC > 0){
-            if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
-                initializedMatBudWeigths_existing = kTRUE;}
-            else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
-        }
-        else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
-    }
 
+    analysisCuts[i] = new AliConversionPhotonCuts();
+    if (enableMatBudWeightsPi0 > 0){
+      if (isMC > 0){
+        if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
+          initializedMatBudWeigths_existing = kTRUE;}
+        else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
+      }
+      else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+    }
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
     if( ! analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data() ) ){
-         cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
-         return 0;
+      cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
+      return 0;
     }
-    
+
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-    
-    
+
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetLightOutput(runLightOutput);
     if ( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
-        cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
-        return 0;
-        
+      cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
+      return 0;
     }
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
 
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
-    
-    
     analysisElecCuts[i] = new AliDalitzElectronCuts();
     analysisElecCuts[i]->SetUseCrossedRows(kTRUE);
-    
+
     if( !analysisElecCuts[i]->InitializeCutsFromCutString((cuts.GetElecCut(i)).Data()) ){
       cout<< "ERROR:  analysisElecCuts [ " <<i<<" ] "<<endl;
       return 0;
     }
     ElecCutList->Add(analysisElecCuts[i]);
     analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,(cuts.GetElecCut(i)).Data());
-    
-    
-
   }
 
-  
-  
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(numberOfCuts,ConvCutList);
   task->SetMesonCutList(MesonCutList);
   task->SetElectronCutList(ElecCutList);
-
   task->SetMoveParticleAccordingToVertex(kTRUE);
-
-
   if(enableQAMesonTask) task->SetDoMesonQA(kTRUE);
   if(enableDoMesonChic) task->SetDoChicAnalysis(kTRUE);
+  task->SetDoTHnSparse(enableUseTHnSparse);
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer(Form("GammaConvDalitzV1_%i",trainConfig), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaConvDalitzV1_%i.root",trainConfig));
+  mgr->CreateContainer( Form("GammaConvDalitzV1_%i",trainConfig), TList::Class(),
+                        AliAnalysisManager::kOutputContainer,Form("GammaConvDalitzV1_%i.root",trainConfig));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);

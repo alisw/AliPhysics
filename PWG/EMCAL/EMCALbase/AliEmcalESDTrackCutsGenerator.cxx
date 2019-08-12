@@ -543,6 +543,8 @@ AliEmcalESDTrackCutsGenerator::EDataSet_t AliEmcalESDTrackCutsGenerator::SteerDa
     dataSet = kLHC11h;
   } else if (strPeriod == "lhc16t") {
     dataSet = kLHC11h;
+  } else if (strPeriod == "lhc17o_trd") {
+    dataSet = kLHC17o_TRD;
   } else if (strPeriod == "lhc12a15f") {
     dataSet = kLHC11h;
   } else if (strPeriod == "lhc13b4") {
@@ -561,6 +563,14 @@ AliEmcalESDTrackCutsGenerator::EDataSet_t AliEmcalESDTrackCutsGenerator::SteerDa
     dataSet = kLHC10bcde;
   } else if (strPeriod.BeginsWith("lhc14j4")) {
     dataSet = kLHC10bcde;
+  } else if (strPeriod.BeginsWith("lhc17f8")) {
+    dataSet = kLHC11h;
+  } else if (strPeriod.BeginsWith("lhc18f5")) {
+    dataSet = kLHC11h;
+  } else if (strPeriod.BeginsWith("lhc18g2")) {
+    dataSet = kLHC11h;
+  } else if (strPeriod.BeginsWith("lhc19a1")) {
+    dataSet = kLHC11h;
   } else {
     ::Error("AliEmcalESDTrackCutsGenerator::SteerDataSetFromString", "Dataset %s not recognized!", period.Data());
   }
@@ -594,6 +604,13 @@ void AliEmcalESDTrackCutsGenerator::AddHybridTrackCuts(AliEmcalTrackSelection* t
     auto hybridcuts2010 = new AliEmcalESDHybridTrackCuts("hybridcuts2010wSPD", AliEmcalESDHybridTrackCuts::kDef2010);
     hybridcuts2010->SetUseNoITSrefitTracks(kTRUE);
     trkSel->AddTrackCuts(hybridcuts2010);
+    break;
+  }
+  case kLHC17o_TRD:
+  {
+    auto hybridcuts2018TRD = new AliEmcalESDHybridTrackCuts("hybridcuts2018TRD", AliEmcalESDHybridTrackCuts::kDef2018TRD);
+    hybridcuts2018TRD->SetUseNoITSrefitTracks(kFALSE);
+    trkSel->AddTrackCuts(hybridcuts2018TRD);
     break;
   }
   default:

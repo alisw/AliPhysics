@@ -1,3 +1,4 @@
+
 #ifndef ALIANALYSISTASKHIGHPTDEDX_H
 #define ALIANALYSISTASKHIGHPTDEDX_H
 
@@ -34,7 +35,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
 
-  Bool_t   GetAnalysisMC() { return fAnalysisMC; }   
+  Bool_t   GetAnalysisMC() { return fAnalysisMC; }
+  Bool_t   GetCentFrameworkAliCen() { return fCentFrameworkAliCen; }   
   Double_t GetVtxCut() { return fVtxCut; }   
   Double_t GetEtaCut() { return fEtaCut; }     
   Double_t GetEtaCutStack() { return fEtaCutStack; }   
@@ -42,17 +44,24 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t GetMinPtV0() { return fMinPtV0; }
   Double_t GetCosPACut() { return fCosPACut; }
   Double_t GetDecayRCut() { return fDecayRCut; }
-  Int_t    GetTreeOption() { return fTreeOption; }
-
-   virtual void  SetTrigger1(UInt_t ktriggerInt1) {ftrigBit1 = ktriggerInt1;}
-   virtual void  SetTrigger2(UInt_t ktriggerInt2) {ftrigBit2 = ktriggerInt2;}
+  Int_t    GetContributorsVtxCut() { return fContributorsVtxCut; }
+  Int_t    GetContributorsVtxSPDCut() { return fContributorsVtxSPDCut; }
+  Double_t GetPileupCut() { return fPileupCut; }
+  Double_t GetVtxR2Cut() { return fVtxR2Cut; }
+  Double_t GetCrossedRowsCut() { return fCrossedRowsCut; }
+  Double_t GetCrossedOverFindableCut() { return fCrossedOverFindableCut; }
+  Bool_t   GetRejectKinks() { return fRejectKinks; }
+  Bool_t   GetSigmaDedxCut() { return fSigmaDedxCut; }
+  
+  virtual void  SetTrigger1(UInt_t ktriggerInt1) {ftrigBit1 = ktriggerInt1;}
+  virtual void  SetTrigger2(UInt_t ktriggerInt2) {ftrigBit2 = ktriggerInt2;}
   virtual void  SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
   virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
   virtual void  SetTrackFilterTPC(AliAnalysisFilter* trackF) {fTrackFilterTPC = trackF;}
   virtual void  SetProduceVZEROBranch(Bool_t prodvzerob) {fVZEROBranch = prodvzerob;}
-  virtual void  SetProduceTPCBranch(Bool_t prodtpcb) {fTPCBranch = prodtpcb;}
   virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
   virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
+  virtual void  SetCentFrameworkAliCen(Bool_t isAliCen) {fCentFrameworkAliCen = isAliCen;}
   virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
   virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
   virtual void  SetEtaCutStack(Double_t etaCutStack){fEtaCutStack = etaCutStack;}
@@ -62,12 +71,17 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
   virtual void  SetLowPtFraction(Double_t value) {fLowPtFraction = value;}   
   virtual void  SetMassCut(Double_t massCut){fMassCut = massCut;}
-  virtual void  SetTreeOption(Int_t value) {fTreeOption = value;}    
-  virtual void  SetRequireRecV0(Bool_t value) {fRequireRecV0 = value;}
-  virtual void  SetStoreMcIn(Bool_t value) {fStoreMcIn = value;}
   virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) {fAnalysisPbPb = isanaPbPb;}
   virtual void  SetCosPACut(Double_t value) {fCosPACut = value;}   
-  virtual void  SetDecayRCut(Double_t value) {fDecayRCut = value;}   
+  virtual void  SetDecayRCut(Double_t value) {fDecayRCut = value;}
+  virtual void  SetContributorsVtxCut(Int_t value) {fContributorsVtxCut = value;}
+  virtual void  SetContributorsVtxSPDCut(Int_t value) {fContributorsVtxSPDCut =  value;}
+  virtual void  SetPileupCut(Double_t value) {fPileupCut = value;}
+  virtual void  SetVtxR2Cut(Double_t value) { fVtxR2Cut = value;}
+  virtual void  SetCrossedRowsCut(Double_t value) {fCrossedRowsCut = value;}
+  virtual void  SetCrossedOverFindableCut(Double_t value) {fCrossedOverFindableCut = value;}
+  virtual void  SetRejectKinks(Bool_t isRejectKinks) {fRejectKinks = isRejectKinks;}
+  virtual void  SetSigmaDedxCut(Bool_t isSigmaDedxCut) {fSigmaDedxCut = isSigmaDedxCut;}
 
   //Task Configuration: trigger selection
   /* void SetSelectedTriggerClass1(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType1 = trigType;} */
@@ -84,10 +98,6 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void ProduceArrayTrksAOD(AliAODEvent* event, AnalysisMode anamode );
   virtual void ProduceArrayV0AOD(AliAODEvent* event, AnalysisMode anamode );
   Short_t   GetPidCode(Int_t pdgCode) const;
-  /* Float_t   GetSpherocity(AliESDEvent* event, AliAnalysisFilter* cuts, Float_t etacut, Float_t ptcut, Bool_t useTPCtrack); */
-  /* Float_t   GetSphericity(AliESDEvent* event, AliAnalysisFilter* cuts, Float_t etacut, Float_t ptcut, Bool_t useTPCtrack); */
-  /* Float_t   GetSpherocityTrue(AliStack *Stack, Float_t etacut, Float_t ptcut); */
-  /* Float_t   GetSphericityTrue(AliStack *Stack, Float_t etacut, Float_t ptcut); */
 
   void      ProcessMCTruthESD();
   void      ProcessMCTruthAOD(); 
@@ -123,15 +133,13 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   AliAnalysisFilter* fTrackFilterTPC; // track filter for TPC only tracks
   TString       fAnalysisType;        //  "ESD" or "AOD"
   Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
+  Bool_t        fCentFrameworkAliCen; //   kTRUE: use AliCentrality, kFALSE: use AliMultSelection
   Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
   Bool_t        fVZEROBranch;         //true if you want to store VZERO cells information
-  Bool_t        fTPCBranch;           //tru if you want to produce the TPC branch
   TRandom*      fRandom;              //! random number generator
   DeDxEvent*    fEvent;               //! event pointer
   TClonesArray* fTrackArrayGlobalPar;          //! track array pointer, global tracks
-  TClonesArray* fTrackArrayTPCPar;          //! track array pointer, tpc track parameters
   TClonesArray* fV0ArrayGlobalPar;             //! V0 array pointer, global tracks
-  TClonesArray* fV0ArrayTPCPar;             //! V0 array pointer, tpc tracks
   TClonesArray* fTrackArrayMC;        //! MC track array pointer
   TClonesArray* fVZEROArray;          //! array of the v0 cells.
 
@@ -147,16 +155,22 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t     fMinPt;              // Min pt - for histogram limits
   Double_t     fMinPtV0;            // Min pt - for histogram limits - V0s / strangeness part
   Double_t     fLowPtFraction;      // Fraction of tracks below min pt to keep
-  Double_t     fCosPACut;              // Min cosPA - for histogram limits
-  Double_t     fDecayRCut;              // Min decay radius
+  Double_t     fCosPACut;           // Min cosPA - for histogram limits
+  Double_t     fDecayRCut;          // Min decay radius
   Double_t     fMassCut;            // Reject all v0 with all dmass > masscut!
-  Int_t        fTreeOption;         // 0: no tree, >0: enable debug tree
   Float_t      fMinCent; //minimum centrality
   Float_t      fMaxCent; //maximum centrality
-  Bool_t       fRequireRecV0;       // Require a v0 before updating tree
-                                    // For a spectra analysis we will need to
-                                    // keep track also of the empty events
-  Bool_t       fStoreMcIn;          // Store MC input tracks
+
+  Int_t        fContributorsVtxCut; // Number of tracks (+1) used to fit this vertex
+ 
+  Int_t        fContributorsVtxSPDCut; // Number of tracks (+1) used to fit this vertex
+  Double_t     fPileupCut;          // |zvtx-zvtxSPD| > fPileupCut is considered bad vtx
+  Double_t     fVtxR2Cut;           // r = sqrt(x^2+y^2) which is the distance between PV and the z axis
+  Double_t     fCrossedRowsCut;     // CrossedRowsTOC
+  Double_t     fCrossedOverFindableCut; // CrossedRowsTPC / findable 
+  Bool_t       fRejectKinks;        // reject kink daughters
+  Bool_t       fSigmaDedxCut;       // dE/dx cut < 3 sigma on proton daughter candidates with momentum < 1 GeV/c:
+
   //
   // Help variables
   //
@@ -167,7 +181,11 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Float_t      fZvtxMC;             // z vertex MC (truth)
   Int_t        fRun;                // run no
   ULong64_t    fEventId;            // unique event id
-              
+
+  Int_t        fTriggerInt;         // 0 = kMB, 1 = kCent, 2 = kSemiCent
+  Int_t        fV0Finder;           // 0 = oldFinder, 1 = newFinder
+  Int_t        fCentFramework;      // 0 = AliCentrality, 1 = AliMultSelection
+    
   //
   // Output objects
   //

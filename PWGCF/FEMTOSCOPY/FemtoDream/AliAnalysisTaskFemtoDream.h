@@ -18,24 +18,62 @@
 class AliAnalysisTaskFemtoDream : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFemtoDream();
-  AliAnalysisTaskFemtoDream(const char *name,bool isMC);
+  AliAnalysisTaskFemtoDream(const char *name, bool isESD, bool isMC);
+  AliAnalysisTaskFemtoDream(const AliAnalysisTaskFemtoDream& task);
+  AliAnalysisTaskFemtoDream& operator=(const AliAnalysisTaskFemtoDream& task);
   virtual ~AliAnalysisTaskFemtoDream();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
-  virtual void Terminate(Option_t *){};
-  void SetMVPileUp(bool mvPileUp){fMVPileUp=mvPileUp;};
-  void SetEvtCutQA(bool setQA){fEvtCutQA=setQA;};
-  void SetEventCuts(AliFemtoDreamEventCuts *cuts){fEvtCuts=cuts;};
-  void SetTrackCuts(AliFemtoDreamTrackCuts *cuts){fTrackCuts=cuts;};
-  void SetAntiTrackCuts(AliFemtoDreamTrackCuts *cuts){fAntiTrackCuts=cuts;};
-  void Setv0Cuts(AliFemtoDreamv0Cuts *cuts){fv0Cuts=cuts;};
-  void SetAntiv0Cuts(AliFemtoDreamv0Cuts *cuts){fAntiv0Cuts=cuts;};
-  void SetCascadeCuts(AliFemtoDreamCascadeCuts *cuts){fCascCuts=cuts;};
-  void SetAntiCascadeCuts(AliFemtoDreamCascadeCuts *cuts){fAntiCascCuts=cuts;};
-  void SetTrackBufferSize(int size){fTrackBufferSize=size;};
-  void SetCollectionConfig(AliFemtoDreamCollConfig *conf) {fConfig=conf;};
+  virtual void Terminate(Option_t *) {
+  }
+  ;
+  void SetMVPileUp(bool mvPileUp) {
+    fMVPileUp = mvPileUp;
+  }
+  ;
+  void SetEvtCutQA(bool setQA) {
+    fEvtCutQA = setQA;
+  }
+  ;
+  void SetEventCuts(AliFemtoDreamEventCuts *cuts) {
+    fEvtCuts = cuts;
+  }
+  ;
+  void SetTrackCuts(AliFemtoDreamTrackCuts *cuts) {
+    fTrackCuts = cuts;
+  }
+  ;
+  void SetAntiTrackCuts(AliFemtoDreamTrackCuts *cuts) {
+    fAntiTrackCuts = cuts;
+  }
+  ;
+  void Setv0Cuts(AliFemtoDreamv0Cuts *cuts) {
+    fv0Cuts = cuts;
+  }
+  ;
+  void SetAntiv0Cuts(AliFemtoDreamv0Cuts *cuts) {
+    fAntiv0Cuts = cuts;
+  }
+  ;
+  void SetCascadeCuts(AliFemtoDreamCascadeCuts *cuts) {
+    fCascCuts = cuts;
+  }
+  ;
+  void SetAntiCascadeCuts(AliFemtoDreamCascadeCuts *cuts) {
+    fAntiCascCuts = cuts;
+  }
+  ;
+  void SetTrackBufferSize(int size) {
+    fTrackBufferSize = size;
+  }
+  ;
+  void SetCollectionConfig(AliFemtoDreamCollConfig *conf) {
+    fConfig = conf;
+  }
+  ;
  private:
   int fTrackBufferSize;                     //
+  bool fESDAnalysis;                        //
   bool fMinBookingME;                       //
   bool fMinBookingSample;                   //
   bool fMVPileUp;                           //
@@ -68,7 +106,7 @@ class AliAnalysisTaskFemtoDream : public AliAnalysisTaskSE {
   TList *fResultQA;                         //!
   TList *fResultsSample;                    //!
   TList *fResultQASample;					//!
-  ClassDef(AliAnalysisTaskFemtoDream,3)
+ClassDef(AliAnalysisTaskFemtoDream,4)
 };
 
 #endif /* ALIANALYSISTASKFEMTODREAM_H_ */

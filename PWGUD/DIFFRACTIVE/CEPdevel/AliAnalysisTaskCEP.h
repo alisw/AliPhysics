@@ -124,8 +124,6 @@ private:
 	// PID information
   AliPIDResponse *fPIDResponse;   //! esd pid object
   AliPIDCombined *fPIDCombined1;  //! PID Combined object with priors
-  AliPIDCombined *fPIDCombined2;  //! PID Combined object without priors
-  AliPIDCombined *fPIDCombined3;  //! PID Combined object without priors
 
 	// some Ali tools
 	AliTriggerAnalysis *fTrigger;           //! trigger object

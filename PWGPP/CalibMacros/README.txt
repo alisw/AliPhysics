@@ -1,5 +1,5 @@
-CPass0 - CPass0 calibration macros
-CPass1 - CPass1 calibration macros
+CPass0 - CPass0 calibration macros - see https://github.com/alisw/AliDPG/tree/master/DataProc/CPass0
+CPass1 - CPass1 calibration macros - see https://github.com/alisw/AliDPG/tree/master/DataProc/CPass1
 
 
 Temporary files: functionality from macros below to be combined to the one toolikit class

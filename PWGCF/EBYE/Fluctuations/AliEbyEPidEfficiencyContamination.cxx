@@ -21,17 +21,20 @@
 //                   Deepika Rathee  | Satyajit Jena                       //
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//                        (Last Modified 2018/03/14)                       //
+//                        (Last Modified 2018/08/27)                       //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
 //analysis task.                                                           //
 //=========================================================================//
+
+//ver: 2018/08/27 support only for proton
 
 #include <Riostream.h>
 #include "TList.h"
 #include "TFile.h"
 #include "TH1D.h"
 #include "TH2F.h"
+#include "TH3F.h"
 #include "THnSparse.h"
 
 #include "AliAnalysisManager.h"
@@ -99,10 +102,8 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination()
   
   fIsMC(kFALSE),
   fIsAOD(kFALSE),
-  fIsQA(kFALSE),
   fIsRapCut(kFALSE),
-  fIsTrig(kFALSE),
-  fIsThn(kFALSE),
+  fTotP(kFALSE),
 
   fNTracks(0),
   fCentrality(-1),
@@ -116,57 +117,22 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination()
   fPidStrategy(0),
   fNSigmaMaxITS(3.),
   fNSigmaMaxTPC(3.),
-  fNSigmaMaxTPClow(3.),
   fNSigmaMaxTOF(3.),
-  fMinPtForTOFRequired(0.69),
-  fMaxPtForTPClow(0.69),
   fParticleSpecies(AliPID::kPion),
-
-  fHistTPC(NULL), 
-  fHistTOF(NULL),
-  fHistITS(NULL),
-
-  fHistTPCc(NULL),
-  fHistTOFc(NULL),
-  fHistITSc(NULL),
-
-  fHistTPCTOF(NULL),
-  fHistTPCTOFc(NULL),
-  
-
-  fHistNsTPC(NULL), 
-  fHistNsTOF(NULL), 
-  fHistNsITS(NULL), 
-
-  fHistNsTPCc(NULL), 
-  fHistNsTOFc(NULL), 
-  fHistNsITSc(NULL),
   
   fPtBinNplusNminusCh(NULL),
-  fPtBinNplusNminusChTruth(NULL),
-  fTHnCentNplusNminusCh(NULL)
-
+  fPtBinNplusNminusChTruth(NULL)
 { 
   
   for (Int_t i = 0; i < 2; i++) {
     fHitCentRec[i] = NULL;
     fHitCentGen[i] = NULL;
-    nPidRec[i] = 0.;
-    nPidRecP[i] = 0.;
-    nPidRecMid[i] = 0.;
-    nPidRecSec[i] = 0.;
-    nPidRecWD[i] = 0.;
-    nPidWoPID[i] = 0.;
-    for (Int_t j = 0; j < 3; j++) {
-      fHistERec[i][j]     = NULL;
-      fHistERecPri[i][j]  = NULL;      
-      fHistEGen[i][j]     = NULL;      
-      
-      fHistCSec[i][j] = NULL;      
-      fHistCMat[i][j] = NULL;      
-      fHistCMisId[i][j] = NULL;      
-      //  fHistCLepton[i][j] = NULL;      
-    }
+    fCentPtEtaPhiThnGen[i] = NULL;
+    fCentPtEtaPhiThnRec[i] = NULL;
+    fCentPtEtaPhiThnRecPrim[i] = NULL;
+    fCentPtEtaPhiThnSec[i] = NULL;
+    fCentPtEtaPhiThnMat[i] = NULL;
+    fCentPtEtaPhiThnMisId[i] = NULL;
   }
 }
 
@@ -201,13 +167,10 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination( const char
     
     fIsMC(kFALSE),
     fIsAOD(kFALSE),
-    fIsQA(kFALSE),
     fIsRapCut(kFALSE),
-    fIsTrig(kFALSE),
-    fIsThn(kFALSE),
+    fTotP(kFALSE),
     
     fNTracks(0),
-    
     fCentrality(-1),
     fEventCounter(NULL), 
     fHistCent(NULL), 
@@ -219,54 +182,21 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination( const char
     fPidStrategy(0),
     fNSigmaMaxITS(4.),
     fNSigmaMaxTPC(4.),
-    fNSigmaMaxTPClow(3.),
     fNSigmaMaxTOF(4.),
-    fMinPtForTOFRequired(0.69),
-    fMaxPtForTPClow(0.69),
     fParticleSpecies(AliPID::kPion),
-    fHistTPC(NULL), 
-    fHistTOF(NULL),
-    fHistITS(NULL),
-    
-    fHistTPCc(NULL),
-    fHistTOFc(NULL),
-    fHistITSc(NULL),
-    
-    fHistTPCTOF(NULL),
-    fHistTPCTOFc(NULL),
-    
-    
-    fHistNsTPC(NULL), 
-    fHistNsTOF(NULL), 
-    fHistNsITS(NULL), 
-    
-    fHistNsTPCc(NULL), 
-    fHistNsTOFc(NULL), 
-    fHistNsITSc(NULL),
-
+   
     fPtBinNplusNminusCh(NULL),
-    fPtBinNplusNminusChTruth(NULL),
-    fTHnCentNplusNminusCh(NULL)
+    fPtBinNplusNminusChTruth(NULL)
 {  
   for (Int_t i = 0; i < 2; i++) {
     fHitCentRec[i] = NULL;
     fHitCentGen[i] = NULL;
-    nPidRec[i] = 0.;
-    nPidRecP[i] = 0.;
-    nPidRecMid[i] = 0.;
-    nPidRecSec[i] = 0.;
-    nPidRecWD[i] = 0.;
-    nPidWoPID[i] = 0.;
-    for (Int_t j = 0; j < 3; j++) {
-      fHistERec[i][j]     = NULL;
-      fHistERecPri[i][j]  = NULL;      
-      fHistEGen[i][j]     = NULL;      
-      
-      fHistCSec[i][j] = NULL;      
-      fHistCMat[i][j] = NULL;      
-      fHistCMisId[i][j] = NULL;      
-      // fHistCLepton[i][j] = NULL;      
-    }
+    fCentPtEtaPhiThnGen[i] = NULL;
+    fCentPtEtaPhiThnRec[i] = NULL;
+    fCentPtEtaPhiThnRecPrim[i] = NULL;
+    fCentPtEtaPhiThnSec[i] = NULL;
+    fCentPtEtaPhiThnMat[i] = NULL;
+    fCentPtEtaPhiThnMisId[i] = NULL;
   }
   DefineOutput(1, TList::Class()); 
 }
@@ -374,298 +304,140 @@ void AliEbyEPidEfficiencyContamination::UserCreateOutputObjects(){
 
 //----------------------------------------------------------------------------------
 void AliEbyEPidEfficiencyContamination::CreateEffCont() {
-
-  if(fIsQA && fPidType != 0){
-    
-    const Char_t *pidname[4] = {" ", "Pion", "Kaon", "Proton"};
-    
-    fHistTOF = new TH2F("fHistPID_TOF","TOF Signal;#it{p_{T}} (GeV/#it{c});", 50, 0, 5, 440, -1.1, 1.1);
-    fHistTPC = new TH2F("fHistPID_TPC","TPC Signal;#it{p_{T}} (GeV/#it{c});", 50, 0, 5, 1600, -800, 800);
-    fHistITS = new TH2F("fHistPID_ITS","ITS Signal;#it{p_{T}} (GeV/#it{c});", 50, 0, 5, 1600, -800, 800);
-    
-    fThnList->Add(fHistTOF);
-    fThnList->Add(fHistTPC);
-    fThnList->Add(fHistITS);
-    
-    fHistTOFc  = new TH2F("fHistPID_TOFcut",Form("TOF Signal (Selected %s);#it{p_{T}} (GeV/#it{c});",pidname[fPidType]),50, 0, 5,  440, -1.1,1.1);
-    fHistTPCc  = new TH2F("fHistPID_TPCcut",Form("TPC Signal (Selected %s);#it{p_{T}} (GeV/#it{c});",pidname[fPidType]),50, 0, 5, 1600, -800,800);
-    fHistITSc  = new TH2F("fHistPID_ITScut",Form("ITS Signal (Selected %s);#it{p_{T}} (GeV/#it{c});",pidname[fPidType]),50, 0, 5, 1600, -800,800);
-    fThnList->Add(fHistTOFc);
-    fThnList->Add(fHistTPCc);
-    fThnList->Add(fHistITSc);
-    
-    fHistTPCTOF  = new TH2F("fHistPID_TPCTOF","TPC vs TOF Signal;TPC;TOF",1600, -800,800, 440, -1.1,1.1);
-    fHistTPCTOFc = new TH2F("fHistPID_TPCTOFcut",Form("TPC vs TOF Signal (Selected %s);TPC;TOF",pidname[fPidType]),1600, -800,800, 440, -1.1,1.1);
-    
-    fThnList->Add(fHistTPCTOF);
-    fThnList->Add(fHistTPCTOFc);
-    
-    fHistNsTPC  = new TH2F("fHistNsPID_TPC","TPS N_{#sigma} after Cut;#it{p_{T}} (GeV/#it{c});N_{#sigma}",50,0,5, 400, -40,40);
-    fHistNsTOF  = new TH2F("fHistNsPID_TOF","TOF N_{#sigma} after Cut;#it{p_{T}} (GeV/#it{c});N_{#sigma}",50,0,5, 400, -40,40);
-    fHistNsITS  = new TH2F("fHistNsPID_ITS","ITS N_{#sigma} after Cut;#it{p_{T}} (GeV/#it{c});N_{#sigma}",50,0,5, 400, -40,40);
-    
-    fHistNsTPCc = new TH2F("fHistNsPID_TPCcut",Form("TPS N_{#sigma} (Selected %s);#it{p_{T}} (GeV/#it{c});N_{#sigma}",pidname[fPidType]),50,0,5, 400, -40,40);
-    fHistNsTOFc = new TH2F("fHistNsPID_TOFcut",Form("TOF N_{#sigma} (Selected %s);#it{p_{T}} (GeV/#it{c});N_{#sigma}",pidname[fPidType]),50,0,5, 400, -40,40);
-    fHistNsITSc = new TH2F("fHistNsPID_ITScut",Form("ITS N_{#sigma} (Selected %s);#it{p_{T}} (GeV/#it{c});N_{#sigma}",pidname[fPidType]),50,0,5, 400, -40,40);
-    
-    fThnList->Add(fHistNsTPC);
-    fThnList->Add(fHistNsTOF);
-    fThnList->Add(fHistNsITS);
-    
-    fThnList->Add(fHistNsTPCc);
-    fThnList->Add(fHistNsTOFc);
-    fThnList->Add(fHistNsITSc);
-    
-  }
-  
   
   const Char_t *fgkHistName[4] = {"Nch", "Npi", "Nka", "Npr"};
-  const Char_t *fgkHistLat[2][4]  = {{"N^{-}", "#pi^{-}", "K^{-}", "P^{-}"},
-				     {"N^{+}", "#pi^{+}", "K^{+}", "P^{+}"}
-  };
+  
   const Char_t *fgkHistCharge[2] = {"Minus", "Plus"};
   
-  Int_t ybins[3] = {30, 32, 66};
-  Double_t yaxis[2][3] = {{0.15,-0.8,0.}, {3.15,0.8,6.6}};
-  
-  const Int_t xNbins = 100;
-  Double_t xBinEdge[xNbins+1];
-  for(Int_t iBin = 0 ; iBin <= xNbins; iBin++){
-    xBinEdge[iBin] = iBin - 0.5;
-  }
+  const Int_t cbin = 81;
+  Double_t CentBins[cbin+1];
+  for(Int_t ic = 0; ic <= cbin; ic++) CentBins[ic] = ic - 0.5;
+  const Int_t ebin = 8;
+  Double_t EtaBins[ebin+1];
+  for( Int_t ie = 0; ie <= ebin; ie++) EtaBins[ie] = ie - 0.5;
 
-  //fPtArray
-  Double_t chPtBins[17] = { 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 1.0, 1.3, 1.6, 2.0, 2.1 };
-  Double_t pidPtBins[20] = { 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
- 
-  const Char_t *gstName[3] = {"Pt","Eta","Phi"};
-  const Char_t *gstLat[3]  = {"p_{T}","#eta","#phi"};
+  const Int_t ptBins = 19;
+  Double_t pidPtBins[ptBins+1] = { 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.55 };
+
+  //---For----ThnSparse-----
+  const Int_t dim = 305; //1 centrality bin + (19 pt bins) * 2 * 8 (eta bins)
+  Int_t bin[dim];
+  bin[0] = 81;
   
-  const Char_t *PidCut[4] = {
-    "ChHad",
-    "TPC+TOF",
-    "TPC+TOF",
-    "TPC+ITS+TOF"
-  };
+  for(Int_t ibin = 1; ibin < dim; ibin++) bin[ibin] = 6;
+  
+  Double_t min[dim];
+  for(Int_t jbin = 0; jbin < dim; jbin++) min[jbin] =  -0.5;
+  
+  Double_t max[dim];
+  max[0] = 80.5;
+  for(Int_t jbin = 1; jbin < dim; jbin++) max[jbin] = 5.5;
   
   
+  fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
+  fThnList->Add(fPtBinNplusNminusCh);
   
-  for(Int_t k = 0; k < 2; k++) {//loop over charge type; k = 0 -ve charge, k = 1, +ve ch.
-    
-    Int_t i = fPidType;
-    TString PIDtype = "Charge";
-    if (i != 0) PIDtype = Form("%s",PidCut[fPidType]);
-    
-    fHitCentRec[k] = new TH2F(Form("fHist%s%sRecCent", fgkHistCharge[k], fgkHistName[i]),Form(" Stg %s : Rec%s", PIDtype.Data(), fgkHistName[i]), 100, -0.5, 99.5, 1900, -0.5, 1899.5);
-    fHitCentRec[k]->Sumw2();
-    fThnList->Add(fHitCentRec[k]);
-    
-    if(fIsMC){
-      fHitCentGen[k] = new TH2F(Form("fHist%s%sGenCent", fgkHistCharge[k], fgkHistName[i]),Form(" Stg %s : Gen%s", PIDtype.Data(), fgkHistName[i]), 100, -0.5, 99.5, 1900, -0.5, 1899.5);
+  if(fIsMC){
+
+    fPtBinNplusNminusChTruth = new THnSparseI("fPtBinNplusNminusChTruth","cent-nplus-nminus", dim, bin, min, max);
+    fThnList->Add(fPtBinNplusNminusChTruth);
+
+    //Book the Eff.cont. histos--------
+    for(Int_t k = 0; k < 2; k++) {//loop over charge type; k = 0 -ve charge, k = 1, +ve ch.
+
+      Int_t pidtype = fPidType;
+      
+      fHitCentRec[k] = new TH2F(Form("fHist%s%sRecCent", fgkHistCharge[k], fgkHistName[pidtype]),Form("Rec%s", fgkHistName[pidtype]), 100, -0.5, 99.5, 1900, -0.5, 1899.5);
+      fHitCentRec[k]->Sumw2();
+      fThnList->Add(fHitCentRec[k]);
+      
+      fHitCentGen[k] = new TH2F(Form("fHist%s%sGenCent", fgkHistCharge[k], fgkHistName[pidtype]),Form("Gen%s", fgkHistName[pidtype]), 100, -0.5, 99.5, 1900, -0.5, 1899.5);
       fHitCentGen[k]->Sumw2();
       fThnList->Add(fHitCentGen[k]);
-    }
-    
-    for(Int_t j = 0; j < 3; j++) {
       
-      if( j == 0){ //for pt only--(unequal bin width )
-	
-	if( fPidType == 0){
-	  
-	  fHistERec[k][j] = new TH2F(Form("fHist%s%s%sRec",gstName[j],fgkHistCharge[k], fgkHistName[i]),Form(" Stg %s : Rec%s : %s ;#it{Bin};%s",PIDtype.Data(), gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
-	  fHistERec[k][j]->Sumw2();
-	  fThnList->Add(fHistERec[k][j]);
-	  
-	  if(fIsMC){ 
-	    fHistERecPri[k][j] = new TH2F(Form("fHist%s%s%sRecPri",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : Rec.Primary %s :  %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
-	    fHistERecPri[k][j]->Sumw2();
-	    fThnList->Add(fHistERecPri[k][j]);
-	    
-	    fHistEGen[k][j] = new TH2F(Form("fHist%s%s%sGen",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Generated %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
-	    fHistEGen[k][j]->Sumw2();
-	    fThnList->Add(fHistEGen[k][j]);
-	    
-	    fHistCSec[k][j] = new TH2F(Form("fHist%s%s%sContSec",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Secondary %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
-	    fHistCSec[k][j]->Sumw2();
-	    fThnList->Add(fHistCSec[k][j]);
-	    
-	    fHistCMat[k][j] = new TH2F(Form("fHist%s%s%sContMat",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Material %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
-	    fHistCMat[k][j]->Sumw2();
-	    fThnList->Add(fHistCMat[k][j]);
-	    
-	    fHistCMisId[k][j] = new TH2F(Form("fHist%s%s%sContMisId",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form(" Stg- %s : %s : Mis.Id %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, chPtBins);
-	    fHistCMisId[k][j]->Sumw2();
-	    fThnList->Add(fHistCMisId[k][j]);
-	  }//if MC
-	}//if fPidType == 0 ch. hadron
-	else{
-	  
-	  fHistERec[k][j] = new TH2F(Form("fHist%s%s%sRec",gstName[j],fgkHistCharge[k], fgkHistName[i]),Form(" Stg %s : Rec%s : %s ;#it{Bin};%s",PIDtype.Data(), gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
-	  fHistERec[k][j]->Sumw2();
-	  fThnList->Add(fHistERec[k][j]);
-	  
-	  if(fIsMC){ 
-	    fHistERecPri[k][j] = new TH2F(Form("fHist%s%s%sRecPri",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : Rec.Primary %s :  %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
-	    fHistERecPri[k][j]->Sumw2();
-	    fThnList->Add(fHistERecPri[k][j]);
-	    
-	    fHistEGen[k][j] = new TH2F(Form("fHist%s%s%sGen",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Generated %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
-	    fHistEGen[k][j]->Sumw2();
-	    fThnList->Add(fHistEGen[k][j]);
-	    
-	    fHistCSec[k][j] = new TH2F(Form("fHist%s%s%sContSec",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Secondary %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
-	    fHistCSec[k][j]->Sumw2();
-	    fThnList->Add(fHistCSec[k][j]);
-	    
-	    fHistCMat[k][j] = new TH2F(Form("fHist%s%s%sContMat",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Material %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
-	    fHistCMat[k][j]->Sumw2();
-	    fThnList->Add(fHistCMat[k][j]);
-	    
-	    fHistCMisId[k][j] = new TH2F(Form("fHist%s%s%sContMisId",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form(" Stg- %s : %s : Mis.Id %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, pidPtBins);
-	    fHistCMisId[k][j]->Sumw2();
-	    fThnList->Add(fHistCMisId[k][j]);
-	  }//if MC
-	  
-	}//else pi, k, p
+      //Gen----
+      fCentPtEtaPhiThnGen[k]      = new TH3F( Form("fCentPtEtaThnGen%s%s", fgkHistCharge[k], fgkHistName[pidtype]), "Gen:cent-pt-eta", cbin, CentBins, ptBins, pidPtBins, ebin, EtaBins );
+      fCentPtEtaPhiThnGen[k]->GetXaxis()->SetTitle("Centrality");
+      fCentPtEtaPhiThnGen[k]->GetYaxis()->SetTitle("p_{T}");
+      fCentPtEtaPhiThnGen[k]->GetZaxis()->SetTitle("#eta");
+      fCentPtEtaPhiThnGen[k]->Sumw2();
+      fThnList->Add( fCentPtEtaPhiThnGen[k] );
+      
+      //Rec----
+      fCentPtEtaPhiThnRec[k]      = new TH3F( Form("fCentPtEtaThnRec%s%s", fgkHistCharge[k], fgkHistName[pidtype]), "Rec:cent-pt-eta", cbin, CentBins, ptBins, pidPtBins, ebin, EtaBins );
+      fCentPtEtaPhiThnRec[k]->GetXaxis()->SetTitle("Centrality");
+      fCentPtEtaPhiThnRec[k]->GetYaxis()->SetTitle("p_{T}");
+      fCentPtEtaPhiThnRec[k]->GetZaxis()->SetTitle("#eta");
+      fCentPtEtaPhiThnRec[k]->Sumw2();
+      fThnList->Add( fCentPtEtaPhiThnRec[k] );
+      
+      //Rec. Prim---
+      fCentPtEtaPhiThnRecPrim[k]  = new TH3F( Form("fCentPtEtaThnRecPrim%s%s", fgkHistCharge[k], fgkHistName[pidtype]), "RecPrim:cent-pt-eta", cbin, CentBins, ptBins, pidPtBins, ebin, EtaBins );
+      fCentPtEtaPhiThnRecPrim[k]->GetXaxis()->SetTitle("Centrality");
+      fCentPtEtaPhiThnRecPrim[k]->GetYaxis()->SetTitle("p_{T}");
+      fCentPtEtaPhiThnRecPrim[k]->GetZaxis()->SetTitle("#eta");
+      fCentPtEtaPhiThnRecPrim[k]->Sumw2();
+      fThnList->Add( fCentPtEtaPhiThnRecPrim[k] );
+      
+      //Rec. Sec-------
+      fCentPtEtaPhiThnSec[k]      = new TH3F( Form("fCentPtEtaThnSec%s%s", fgkHistCharge[k], fgkHistName[pidtype]), "RecSec:cent-pt-eta", cbin, CentBins, ptBins, pidPtBins, ebin, EtaBins );
+      fCentPtEtaPhiThnSec[k]->GetXaxis()->SetTitle("Centrality");
+      fCentPtEtaPhiThnSec[k]->GetYaxis()->SetTitle("p_{T}");
+      fCentPtEtaPhiThnSec[k]->GetZaxis()->SetTitle("#eta");
+      fCentPtEtaPhiThnSec[k]->Sumw2();
+      fThnList->Add( fCentPtEtaPhiThnSec[k] );
+      
+      //Rec. Material---
+      fCentPtEtaPhiThnMat[k]      = new TH3F( Form("fCentPtEtaThnMat%s%s", fgkHistCharge[k], fgkHistName[pidtype]), "RecMat:cent-pt-eta", cbin, CentBins, ptBins, pidPtBins, ebin, EtaBins );
+      fCentPtEtaPhiThnMat[k]->GetXaxis()->SetTitle("Centrality");
+      fCentPtEtaPhiThnMat[k]->GetYaxis()->SetTitle("p_{T}");
+      fCentPtEtaPhiThnMat[k]->GetZaxis()->SetTitle("#eta");
+      fCentPtEtaPhiThnMat[k]->Sumw2();
+      fThnList->Add( fCentPtEtaPhiThnMat[k] );
+      
+      //Rec. Mis-ID---
+      fCentPtEtaPhiThnMisId[k]    = new TH3F( Form("fCentPtEtaThnMisId%s%s", fgkHistCharge[k], fgkHistName[pidtype]), "RecMisID:cent-pt-eta", cbin, CentBins, ptBins, pidPtBins, ebin, EtaBins );
+      fCentPtEtaPhiThnMisId[k]->GetXaxis()->SetTitle("Centrality");
+      fCentPtEtaPhiThnMisId[k]->GetYaxis()->SetTitle("p_{T}");
+      fCentPtEtaPhiThnMisId[k]->GetZaxis()->SetTitle("#eta");
+      fCentPtEtaPhiThnMisId[k]->Sumw2();
+      fThnList->Add( fCentPtEtaPhiThnMisId[k] );
+        
+    }//k ---
 
-      }//j == 0; pT only
-      
-      else {
-	//*/
-	fHistERec[k][j] = new TH2F(Form("fHist%s%s%sRec",gstName[j],fgkHistCharge[k], fgkHistName[i]),Form(" Stg %s : Rec%s : %s ;#it{Bin};%s",PIDtype.Data(), gstLat[j],fgkHistLat[k][i], gstLat[j]), 100, -0.5, 99.5,ybins[j],yaxis[0][j],yaxis[1][j]);
-	fHistERec[k][j]->Sumw2();
-	fThnList->Add(fHistERec[k][j]);
-	
-	if(fIsMC){ 
-	  fHistERecPri[k][j] = new TH2F(Form("fHist%s%s%sRecPri",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : Rec.Primary %s :  %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), 100, -0.5, 99.5,ybins[j],yaxis[0][j],yaxis[1][j]);
-	  fHistERecPri[k][j]->Sumw2();
-	  fThnList->Add(fHistERecPri[k][j]);
-	  
-	  fHistEGen[k][j] = new TH2F(Form("fHist%s%s%sGen",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Generated %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), 100, -0.5, 99.5,ybins[j],yaxis[0][j],yaxis[1][j]);
-	  fHistEGen[k][j]->Sumw2();
-	  fThnList->Add(fHistEGen[k][j]);
-	  
-	  fHistCSec[k][j] = new TH2F(Form("fHist%s%s%sContSec",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Secondary %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), 100, -0.5, 99.5,ybins[j],yaxis[0][j],yaxis[1][j]);
-	  fHistCSec[k][j]->Sumw2();
-	  fThnList->Add(fHistCSec[k][j]);
-	  
-	  fHistCMat[k][j] = new TH2F(Form("fHist%s%s%sContMat",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Material %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), 100, -0.5, 99.5,ybins[j],yaxis[0][j],yaxis[1][j]);
-	  fHistCMat[k][j]->Sumw2();
-	  fThnList->Add(fHistCMat[k][j]);
-	  
-	  fHistCMisId[k][j] = new TH2F(Form("fHist%s%s%sContMisId",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form(" Stg- %s : %s : Mis.Id %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), 100, -0.5, 99.5,ybins[j],yaxis[0][j],yaxis[1][j]);
-	  fHistCMisId[k][j]->Sumw2();
-	  fThnList->Add(fHistCMisId[k][j]);
-	}
-	
-      }//else
-      
-    }//j ---kinematics
-  }//k -----charge
-  
-  
-  if( fPidType == 0){//for charged hadron 
-    const Int_t dim = 33; //1 centrality bin and (16 pt bins) * 2
-    
-    Int_t bin[dim]    = { 100,
-			  800, 800, 800, 800,
-			  600, 600,
-			  500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-			  800, 800, 800, 800,
-			  600, 600,
-			  500, 500, 500, 500, 500, 500, 500, 500, 500, 500  };
-    
-    Double_t min[dim] = { -0.5,
-			  -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-			  -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-			  -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-			  -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5 };
-    
-    Double_t max[dim] = { 99.5,
-			  799.5, 799.5, 799.5, 799.5,
-			  599.5, 599.5,
-			  499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
-			  799.5, 799.5, 799.5, 799.5,
-			  599.5, 599.5,
-			  499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5 };
-    
-    fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
-    fThnList->Add(fPtBinNplusNminusCh);
-    
-    if( fIsMC ){
-      fPtBinNplusNminusChTruth = new THnSparseI("fPtBinNplusNminusChTruth","cent-nplus-nminus", dim, bin, min, max);
-      fThnList->Add(fPtBinNplusNminusChTruth);
-    }
-    
-  }
-  else {//for PID
-    const Int_t dim = 39; //1 centrality bin + (19 pt bins) * 2
-    Int_t bin[dim]    = { 100,
-			  500, 500, 500,
-			  500, 500, 500, 500, 500, 500, 500, 500,
-			  200, 200, 200, 200, 200, 200, 200, 200,
-			  500, 500, 500,
-			  500, 500, 500, 500, 500, 500, 500, 500,
-			  200, 200, 200, 200, 200, 200, 200, 200 };
-    
-    Double_t min[dim] = { -0.5,
-			  -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-			  -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-			  -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 
-			  -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-			  -0.5, -0.5};
-    
-    Double_t max[dim] = { 99.5,
-			  499.5, 499.5, 499.5,
-			  499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
-			  199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5,
-			  499.5, 499.5, 499.5,
-			  499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
-			  199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5 };
-    
-    fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
-    fThnList->Add(fPtBinNplusNminusCh);
-    
-    if( fIsMC ){
-      fPtBinNplusNminusChTruth = new THnSparseI("fPtBinNplusNminusChTruth","cent-nplus-nminus", dim, bin, min, max);
-      fThnList->Add(fPtBinNplusNminusChTruth);
-    }
-
+  }//isMC---
    
-    
-  } //else PID
   
-  if(fIsQA){
-    const Int_t nDim = 3;
-    Int_t fBinsCh[nDim] = {100, 1900, 1900};
-    Double_t fMinCh[nDim] = { -0.5, -0.5, -0.5 };
-    Double_t fMaxCh[nDim] = { 99.5, 1899.5, 1899.5};
-    fTHnCentNplusNminusCh = new THnSparseI("fTHnCentNplusNminusCh","Cent-NplusChrg-NminusChrg", nDim, fBinsCh, fMinCh, fMaxCh); 
-    fTHnCentNplusNminusCh->GetAxis(0)->SetTitle("Centrality");
-    fTHnCentNplusNminusCh->GetAxis(1)->SetTitle("Nplus");
-    fTHnCentNplusNminusCh->GetAxis(2)->SetTitle("Nminus");
-    fThnList->Add(fTHnCentNplusNminusCh);
-  }
   //cout <<" Hisotgrams booked " << endl;
   
 }
 
-
+  
 //----------------------------------------------------------------------------------
 void AliEbyEPidEfficiencyContamination::LocalPost() {
-  PostData(1, fThnList);
-
-}
-
+    PostData(1, fThnList);
+    
+  }
+  
 //----------------------------------------------------------------------------------
 void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 
-  const Int_t dim = fNptBins*2;
-  Int_t ptCh[dim];
-  Int_t ptChMC[dim];
+
+  if( fPidType < 1 || fPidType > 3 ){
+    AliError("PID type not supported");
+    return;
+  }
+  
+  const Int_t dim = 19*2; //number of pT bins
+  const Int_t kEta = 8; //Number of Eta bins---
+  Int_t ptCh[dim][kEta];
+  Int_t ptChMC[dim][kEta];
+  
   for(Int_t idx = 0; idx < dim; idx++){
-    ptCh[idx] = 0.;
-    ptChMC[idx] = 0;
+    for( Int_t it = 0; it < kEta; it++){
+      ptCh[idx][it] = 0.;
+      ptChMC[idx][it] = 0;
+    }
   }
   
   fEventCounter->Fill(1);
@@ -799,68 +571,66 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
   
   fEventCounter->Fill(3);
   fNTracks  = fVevent->GetNumberOfTracks();
-  
-  Int_t iTracks = 0;
+ 
   Double_t nRec[2] = {0., 0.};
   Double_t nGen[2] = {0., 0.};
-  
-  nPidRec[0] = 0.; nPidRec[1] =  0.;
-  nPidRecP[0] = 0.; nPidRecP[1] = 0.;
-  nPidRecMid[0] = 0.; nPidRecMid[1] = 0.;
-  nPidRecSec[0] = 0.; nPidRecSec[1] = 0.;
-  nPidRecWD[0] = 0.;  nPidRecWD[1] = 0.;
-  nPidWoPID[0] = 0.; nPidWoPID[1] = 0.;
   
   //track loop
   
   for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
     
-    AliVTrack *track = static_cast<AliVTrack*>(fVevent->GetTrack(idxTrack)); 
+    AliVTrack *track = static_cast<AliVTrack*>(fVevent->GetTrack(idxTrack));
+    
     if(!AcceptTrackL(track)) continue;
     
     Int_t icharge = track->Charge() < 0 ? 0 : 1;    
     Float_t lPt  = (Float_t)track->Pt();
+    Float_t lPz  = track->Pz();
+    Float_t lP = 0.;
+    if( fTotP) lP = track->GetInnerParam()->GetP();
     Float_t lEta = (Float_t)track->Eta();
     Float_t lPhi = (Float_t)track->Phi();
-    
-    Int_t iptbin = GetPtBin(lPt);
+
+    //Get the pt (p) bin--
+    Int_t iptbin = -1;
+    if( fTotP) iptbin = GetPtBin(lP);  //total momentum 
+    else iptbin = GetPtBin(lPt);
     if( iptbin < 0 || iptbin > fNptBins-1 ) continue;
-    Bool_t isPid = kFALSE;
+
+    //Get the Eta bin--
+    Int_t etabin = -1;
+    etabin = GetEtaBin( TMath::Abs(lEta) );
+    if( etabin < 0 || etabin > 7 ) continue;
     
-    if (fPidType == 0 ) {
-      fHistERec[icharge][0]->Fill(fCentrality,lPt); 
-      fHistERec[icharge][1]->Fill(fCentrality,lEta); 
-      fHistERec[icharge][2]->Fill(fCentrality,lPhi);
-      nRec[icharge] += 1.;
-      
-      if(icharge == 1){
-	ptCh[iptbin] += 1;
-      }
-      if(icharge == 0){
-	ptCh[iptbin+fNptBins] += 1;
-      }
-      
-    }//fPidType == 0
+    //-----------------Fill EffHistos--------
+    Float_t RecContainer[3];
+    RecContainer[0] = fCentrality;
+    if( fTotP ) RecContainer[1] = lP;
+    else RecContainer[1] = lPt;
+    RecContainer[2] = etabin;
+
+    Bool_t isPid = kFALSE;
     
     if (fPidType != 0 ) {
       isPid = IsPidPassed(track);
       if(isPid){
-	nPidRec[icharge] += 1.;
-	fHistERec[icharge][0]->Fill(fCentrality,lPt); 
-	fHistERec[icharge][1]->Fill(fCentrality,lEta); 
-	fHistERec[icharge][2]->Fill(fCentrality,lPhi);
+
+	if(fIsMC){
+	  fCentPtEtaPhiThnRec[icharge]->Fill( RecContainer[0], RecContainer[1], RecContainer[2] );
+	}
+
 	nRec[icharge] += 1.;
 	
 	if(icharge == 1){
-	  ptCh[iptbin] += 1;
+	  ptCh[iptbin][etabin] += 1;
 	}
 	if(icharge == 0){
-	  ptCh[iptbin+fNptBins] += 1;
+	  ptCh[iptbin+fNptBins][etabin] += 1;
 	}
       }
       
     }//PID----
-
+    
     //---------------------------------
     // - MC Loop for Physical Primary -
     //--------------------------------- 
@@ -887,86 +657,82 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	isSecondaryFromMaterial  =  (static_cast<AliAODMCParticle*>(particle))->IsSecondaryFromMaterial();
       }
       
-
-      Float_t fpTRec   = particle->Pt();
+      
+      Float_t fpTRec   = particle->Pt(); //pT
+      Float_t fpZRec   = particle->Pz();
+      Float_t fPRec    = particle->P(); //total p
       Float_t fEtaRec  = particle->Eta();
       Float_t fPhiRec  = particle->Phi();
       Int_t pdg        = TMath::Abs(particle->PdgCode());
-      
-      Bool_t isLep = kFALSE;
-      if ((pdg == 11) ||(pdg == 13))  isLep = kTRUE; // Is Leptons ?
-      
-      if (isPhysicalPrimary) {
-	if (fPidType == 0) { // For Charge
-	  if (!isLep) {
-	    nPidRecP[icharge] += 1.;
-	    fHistERecPri[icharge][0]->Fill(fCentrality,fpTRec); 
-	    fHistERecPri[icharge][1]->Fill(fCentrality,fEtaRec); 
-	    fHistERecPri[icharge][2]->Fill(fCentrality,fPhiRec); 
-	  } else {
-	    nPidRecMid[icharge] += 1.;
-	    fHistCMisId[icharge][0]->Fill(fCentrality,fpTRec); 
-	    fHistCMisId[icharge][1]->Fill(fCentrality,fEtaRec); 
-	    fHistCMisId[icharge][2]->Fill(fCentrality,fPhiRec); 
-	  }//mis-Id
-	}//fPidType == 0---ch. particle
-      }//Phys. Primary
 
+      //Get the Eta (rap) bin--
+      Int_t etabinRecMC = -1;
+      etabinRecMC =  GetEtaBin( TMath::Abs(fEtaRec) );
+      if( etabinRecMC < 0 || etabinRecMC > 7 ) continue;
+      
+      Double_t RecMCContainer[3];
+      RecMCContainer[0] = fCentrality;
+      if( fTotP ) RecMCContainer[1] = fPRec;
+      else RecMCContainer[1] = fpTRec;
+      RecMCContainer[2] = etabinRecMC;
+      
       //PID------
       if(isPid){
 	if(isPhysicalPrimary){
 	  if ( pdg == fMcPid ) {// For PID
-	    nPidRecP[icharge] += 1.;
-	    fHistERecPri[icharge][0]->Fill(fCentrality,fpTRec); 
-	    fHistERecPri[icharge][1]->Fill(fCentrality,fEtaRec); 
-	    fHistERecPri[icharge][2]->Fill(fCentrality,fPhiRec); 
+	    fCentPtEtaPhiThnRecPrim[icharge]->Fill( RecMCContainer[0], RecMCContainer[1], RecMCContainer[2] );
 	  }
 	  else {
-	    nPidRecMid[icharge] += 1.;
-	    fHistCMisId[icharge][0]->Fill(fCentrality,fpTRec); 
-	    fHistCMisId[icharge][1]->Fill(fCentrality,fEtaRec); 
-	    fHistCMisId[icharge][2]->Fill(fCentrality,fPhiRec); 
+	    fCentPtEtaPhiThnMisId[icharge]->Fill( RecMCContainer[0], RecMCContainer[1], RecMCContainer[2] );
 	  }
 	}//------------isPhysics Primary -------------
 	else if (isSecondaryFromWeakDecay) {
-	  nPidRecWD[icharge] += 1.;
-	  fHistCSec[icharge][0]->Fill(fCentrality,fpTRec); 
-	  fHistCSec[icharge][1]->Fill(fCentrality,fEtaRec); 
-	  fHistCSec[icharge][2]->Fill(fCentrality,fPhiRec); 
+	  fCentPtEtaPhiThnSec[icharge]->Fill( RecMCContainer[0], RecMCContainer[1], RecMCContainer[2] );
+
 	}//------isSecondaryFromWeakDecay--------------
 	else if (isSecondaryFromMaterial) {
-	  nPidRecSec[icharge] += 1.;
-	  fHistCMat[icharge][0]->Fill(fCentrality,fpTRec); 
-	  fHistCMat[icharge][1]->Fill(fCentrality,fEtaRec); 
-	  fHistCMat[icharge][2]->Fill(fCentrality,fPhiRec); 
+	  fCentPtEtaPhiThnMat[icharge]->Fill( RecMCContainer[0], RecMCContainer[1], RecMCContainer[2] );
+
 	}//------isSecondaryFromMaterial--------------------
 	
       }// if(IsPid)---PID finish
       
     }//IsMC
     
-    iTracks++; //reco track numbers
   }//rec track loop --
 
-  fHitCentRec[0]->Fill(fCentrality,nRec[0]);
-  fHitCentRec[1]->Fill(fCentrality,nRec[1]);
-
+  if( fIsMC ){  
+    fHitCentRec[0]->Fill(fCentrality,nRec[0]);
+    fHitCentRec[1]->Fill(fCentrality,nRec[1]);
+  }
   
-  //cout << " Rec positve " << nRec[1] <<" and -ve particle " << nRec[0] << endl;
+  const Int_t thndim = dim*kEta;
+  Double_t ptContainer[thndim+1];
   
-  
-  Double_t ptContainer[dim+1];
   ptContainer[0] = (Double_t)fCentrality;
-  for(Int_t i = 1; i <= dim; i++){
-    ptContainer[i] = ptCh[i-1];
+  
+  for(Int_t ipt = 0; ipt < dim; ipt++){
+    for(Int_t jeta = 0; jeta < kEta; jeta++){
+      Int_t k = (ipt*kEta) + jeta;
+      ptContainer[k+1] = ptCh[ipt][jeta];
+      if( ptCh[ipt][jeta] > 4 ) fEventCounter->Fill( 17 );
+    }
   }
   
   fPtBinNplusNminusCh->Fill(ptContainer);
   
-  //cout << "In centrality " << fCentrality << " total +ve Rec =" << nPidRec[0] << " and check_total (pri + misId + mat + WD)= " << nPidRecP[0] + nPidRecMid[0] + nPidRecSec[0] + nPidRecWD[0]  << endl;
+  /*
+  Int_t recplus = 0, recminus = 0;
+  Int_t kk = fNptBins*kEta;
+  for(Int_t ik = 1; ik < kk; ik++) {
+    recplus  += ptContainer[ik+1];
+    recminus += ptContainer[kk+ik+1];
+  }
+  */
   
-  //cout << "In centrality " << fCentrality << " total -ve Rec =" << nPidRec[1] << " total (pri + misId + mat + WD)= " << nPidRecP[1] + nPidRecMid[1] + nPidRecSec[1] + nPidRecWD[1]  << endl;
-    
+    //cout << "In centrality " << fCentrality << " total -ve Rec =" << nRec[0] << "  THnMinus = " << recminus << endl;
+    //cout << "In centrality " << fCentrality << " total +ve Rec =" << nRec[1] << "  THnPlus= " << recplus << endl;
+  
   fEventCounter->Fill(7);
   //---- - -- - - - - -   -  -- - - - ---- - - - ---
   if (fIsMC) {
@@ -976,36 +742,44 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	AliAODMCParticle *particle = static_cast<AliAODMCParticle*>(fArrayMC->At(idxMC));
 	if (!particle) 
 	  continue;
-
+	
 	if (!particle->IsPhysicalPrimary()) continue;
 	if (!AcceptTrackLMC((AliVParticle*)particle)) continue;
 	Int_t icharge = (particle->PdgCode() < 0) ? 0 : 1;
-
+	
 	Float_t fpTGen   = particle->Pt();
+	Float_t fpzGen   = particle->Pz(); 
+	Float_t fpGen    = particle->P();
 	Float_t fEtaGen  = particle->Eta();
 	Float_t fPhiGen  = particle->Phi();
-
-	Int_t pdg  = TMath::Abs(particle->PdgCode());
 	
-	if (fPidType != 0) { // if not charge and if not pdg = pidtype
-	  if (pdg != fMcPid) continue;
-	} else { // if charge and if lepton 
-	  if (pdg == 11 || pdg == 13) continue;
-	}
+	Int_t pdg  = TMath::Abs(particle->PdgCode());       
+	if (pdg != fMcPid) continue;
 	
-	fHistEGen[icharge][0]->Fill(fCentrality,fpTGen); 
-	fHistEGen[icharge][1]->Fill(fCentrality,fEtaGen); 
-	fHistEGen[icharge][2]->Fill(fCentrality,fPhiGen);
-	nGen[icharge] += 1.;
-
-	Int_t iptbinMC = GetPtBin(fpTGen);
+	Int_t iptbinMC = -1;
+	if( fTotP ) iptbinMC = GetPtBin(fpGen); // Total p bin
+	else iptbinMC = GetPtBin(fpTGen); //pT bin	
 	if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
 	
+	Int_t etabinMC = -1;
+	etabinMC = GetEtaBin( TMath::Abs(fEtaGen) );
+	if( etabinMC < 0 || etabinMC > 7 ) continue;
+	
+	Double_t GenContainer[3];
+	GenContainer[0] = fCentrality;
+	if( fTotP ) GenContainer[1] = fpGen;
+	else  GenContainer[1] = fpTGen;
+	GenContainer[2] = etabinMC;
+
+	fCentPtEtaPhiThnGen[icharge]->Fill( GenContainer[0], GenContainer[1], GenContainer[2] );
+      
+	nGen[icharge] += 1.;
+	
 	if(icharge == 1){
-	  ptChMC[iptbinMC] += 1;
+	  ptChMC[iptbinMC][etabinMC] += 1;
 	}
 	if(icharge == 0){
-	  ptChMC[iptbinMC+fNptBins] += 1;
+	  ptChMC[iptbinMC+fNptBins][etabinMC] += 1;
 	}
 	
       } //AOD track
@@ -1023,29 +797,40 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	Int_t icharge = (particle->PdgCode() < 0) ? 0 : 1;
 	
 	Float_t fpTGen   = particle->Pt();
+	Float_t fpzGen   = particle->Pz();
+	Float_t fpGen    = particle->P();
 	Float_t fEtaGen  = particle->Eta();
 	Float_t fPhiGen  = particle->Phi();
 	Int_t pdg = TMath::Abs(particle->PdgCode());
+	if (pdg != fMcPid) continue;
 	
-	if (fPidType != 0) {
-	  if (pdg != fMcPid) continue;
-	} else {
-	  if (pdg == 11 || pdg == 13) continue;
-	}
-	
-	fHistEGen[icharge][0]->Fill(fCentrality,fpTGen); 
-	fHistEGen[icharge][1]->Fill(fCentrality,fEtaGen); 
-	fHistEGen[icharge][2]->Fill(fCentrality,fPhiGen); 
-	nGen[icharge] += 1.;
-	
-	Int_t iptbinMC = GetPtBin(fpTGen);
+	//Pt (p) bin-------------------
+	Int_t iptbinMC = -1;
+	if( fTotP ) iptbinMC = GetPtBin(fpGen); // Total p bin
+	else iptbinMC = GetPtBin(fpTGen); //pT bin
 	if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
+
+	//Eta bin---
+	Int_t etabinMC = -1;
+	etabinMC = GetEtaBin( TMath::Abs(fEtaGen) );
+	if( etabinMC < 0 || etabinMC > 7 ) continue;
 	
+	Double_t GenContainer[3];
+	GenContainer[0] = fCentrality;
+	if( fTotP ) GenContainer[1] = fpGen;
+	else  GenContainer[1] = fpTGen;
+	GenContainer[2] = etabinMC;
+	
+	fCentPtEtaPhiThnGen[icharge]->Fill( GenContainer[0], GenContainer[1], GenContainer[2] );
+	
+	nGen[icharge] += 1.;
+
+	//-------------
 	if(icharge == 1){
-	  ptChMC[iptbinMC] += 1;
+	  ptChMC[iptbinMC][etabinMC] += 1;
 	}
 	if(icharge == 0){
-	  ptChMC[iptbinMC+fNptBins] += 1;
+	  ptChMC[iptbinMC+fNptBins][etabinMC] += 1;
 	}	
       }
       
@@ -1055,23 +840,31 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
     
     fHitCentGen[0]->Fill(fCentrality, nGen[0]);
     fHitCentGen[1]->Fill(fCentrality, nGen[1]);
-
-    
-    
-    //cout << " Gen positve " << nGen[1] <<" and -ve particle " << nGen[0] << endl;
-   
-    if(fIsQA){
-      Double_t fContainerCh[3] = { (double)fCentrality, nGen[1], nGen[0] };
-      fTHnCentNplusNminusCh->Fill(fContainerCh);
-    }
-    
-    Double_t ptContainerMC[dim+1];
+      
+    Double_t ptContainerMC[thndim+1];
     ptContainerMC[0] = (Double_t) fCentrality;
-    for(Int_t i = 1; i <= dim; i++){
-      ptContainerMC[i] = ptChMC[i-1];
+    
+    for(Int_t ipt = 0; ipt < dim; ipt++){
+      for(Int_t jeta = 0; jeta < kEta; jeta++){
+	Int_t k = (ipt*kEta) + jeta;
+	ptContainerMC[k+1] = ptChMC[ipt][jeta];
+	if( ptChMC[ipt][jeta] > 4 ) fEventCounter->Fill( 18 );
+      }
     }
     
     fPtBinNplusNminusChTruth->Fill(ptContainerMC);
+
+    /*
+    //For debuging--
+    Int_t kk = fNptBins*kEta;
+    for(Int_t ik = 1; ik < kk; ik++) {
+    recplusMC  += ptContainerMC[ik+1];
+    recminusMC += ptContainerMC[kk+ik+1];
+    }
+    
+    cout << " Gen positve " << nGen[0] <<" and -ve particle " << nGen[1] << endl;
+    cout <<" Thn pos = " << recplusMC << "  and Thn neg = " << recminusMC << endl;
+    */
     
   }
   
@@ -1096,23 +889,21 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
   } else {      // ESDs
     if(!fESDtrackCuts->AcceptTrack(dynamic_cast<AliESDtrack*>(track)))  return kFALSE;
   }
-  
-  Double_t ptot = track->P();
-  //if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
-  if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE;
 
-  //cout << "Track --" << track->Pt() << endl;
-
-  Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
+  Double_t pt = track->Pt();
   Double_t pz = track->Pz();
-  Double_t en = TMath::Sqrt( ptot*ptot + partMass*partMass );
-  Double_t rap = -999.;
-  if( en != TMath::Abs(pz) ){
-    rap = 0.5*TMath::Log( (en + pz)/(en - pz) );
+  
+  if( fTotP ){
+    if( !track->GetInnerParam() ) return kFALSE;
+    Double_t ptotTPC = track->GetInnerParam()->GetP();//total momentum;
+    if( ptotTPC < fPtMin || ptotTPC > fPtMax )  return kFALSE; //cut on momentum (to compare with Identity method result)
   }
-  else rap = -999.;
-
+  else{
+    if( pt < fPtMin || pt > fPtMax )  return kFALSE; //pT cut
+  }
+  
   if( fIsRapCut ){
+    Double_t rap = GetRapidity( pt, pz );
     if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
     if( TMath::Abs(track->Eta()) > fEtaMax ) return kFALSE;
   }
@@ -1127,24 +918,25 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
 
 //___________________________________________________________
 Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle) const {
-  if(!particle) return kFALSE;
-  if (particle->Charge() == 0.0) return kFALSE; 
-  Double_t ptotMC = particle->P();
-  //if ( ptotMC < 0.6 || ptotMC > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
-  if (particle->Pt() < fPtMin || particle->Pt() > fPtMax) return kFALSE;
 
-  //rapidity cut
-  Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
-  Double_t pz = particle->Pz();
-  Double_t en = TMath::Sqrt( ptotMC*ptotMC + partMass*partMass );
-  Double_t rap;
-  if( en != TMath::Abs(pz) ){
-    rap = 0.5*TMath::Log( (en + pz)/(en - pz) );
-  }
-  else rap = -999;
+  if(!particle) return kFALSE;
+  if(particle->Charge() == 0.0) return kFALSE;
+
+  Double_t ptotMC = particle->P();
+  Double_t ptMC = particle->Pt();
+  Double_t pzMC = particle->Pz();
   
+  if( fTotP ){
+    if ( ptotMC < fPtMin || ptotMC > fPtMax )  return kFALSE; //cut on momentum (to compare with Identity method result)
+  }
+  else{
+    if ( ptMC < fPtMin || ptMC > fPtMax) return kFALSE;
+  }
+  
+  //rapidity cut--------
   if( fIsRapCut ){
-    if( TMath::Abs(rap) > 0.5 ) return kFALSE; //rapidity cut
+    Double_t rapMC = GetRapidity( ptMC, pzMC );
+    if( TMath::Abs(rapMC) > 0.5 ) return kFALSE; //rapidity cut
     if( TMath::Abs(particle->Eta()) > fEtaMax ) return kFALSE;
   }
   else{
@@ -1155,49 +947,77 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle)
   
 }
 //---------------------------------------------------------------
+
+//___________________________________________________________
+Double_t AliEbyEPidEfficiencyContamination::GetRapidity(Float_t pt, Float_t pz) const{
+  
+  Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
+  Double_t en = TMath::Sqrt( pt*pt + pz*pz + partMass*partMass );
+  Double_t rap = -999.;
+  if( en != TMath::Abs(pz) ){
+    rap = 0.5*TMath::Log( (en + pz)/(en - pz) );
+  }
+  else rap = -999.;
+  
+  return rap;
+  
+}
+//---------------------------------------------------------------
+
+//___________________________________________________________
 Int_t AliEbyEPidEfficiencyContamination::GetPtBin(Double_t pt){
   
   Int_t bin = -1;
   
-  if( fPidType == 0){
-    Double_t chPtBins[17] = { 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 1.0, 1.3, 1.6, 2.0, 2.1 };
-    for(Int_t iBin = 0; iBin < fNptBins; iBin++){
-      
-      if( iBin == fNptBins-1){
-	if( pt >= chPtBins[iBin] && pt <= chPtBins[iBin+1]){
-	  bin = iBin;
-	  break;
-	}
+  Double_t pidPtBins[20] = { 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.55 };
+  for(Int_t iBin = 0; iBin < fNptBins; iBin++){
+    
+    if( iBin == fNptBins-1){
+      if( pt >= pidPtBins[iBin] && pt <= pidPtBins[iBin+1]){
+	bin = iBin;
+	break;
       }
-      else{
-	if( pt >= chPtBins[iBin] && pt < chPtBins[iBin+1]){
-	  bin = iBin;
-	  break;
-	  
-	}
+    }
+    else{
+      if( pt >= pidPtBins[iBin] && pt < pidPtBins[iBin+1]){
+	bin = iBin;
+	break;
+	
       }
-    }//for 
-  }
-  else {
-    Double_t pidPtBins[20] = { 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
-    for(Int_t iBin = 0; iBin < fNptBins; iBin++){
-      
-      if( iBin == fNptBins-1){
-	if( pt >= pidPtBins[iBin] && pt <= pidPtBins[iBin+1]){
-	  bin = iBin;
-	  break;
-	}
-      }
-      else{
-	if( pt >= pidPtBins[iBin] && pt < pidPtBins[iBin+1]){
-	  bin = iBin;
-	  break;
-	  
-	}
-      }
-    }//for 
-  }
+    }
+  }//for
+  
   return bin;
+  
+}
+
+//------------------------------------------------------------------------
+
+//________________________________________________________________________
+Int_t AliEbyEPidEfficiencyContamination::GetEtaBin(Float_t eta){
+
+  Int_t etabin = -1;
+
+  Float_t EtaRange[9] = {  0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8 };
+  
+  for(Int_t iBin = 0; iBin < 8; iBin++){
+    
+    if( iBin == 7){
+      if( eta >= EtaRange[iBin] && eta <= EtaRange[iBin+1]){
+	etabin = iBin;
+	break;
+      }
+    }
+    else{
+      if( eta >= EtaRange[iBin] && eta < EtaRange[iBin+1]){
+	etabin = iBin;
+	break;
+	
+      }
+    }
+  }//for
+  
+  return etabin;
   
 }
 //___________________________________________________________
@@ -1249,7 +1069,6 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
 
   Bool_t isAcceptedITS    = kFALSE;
   Bool_t isAcceptedTPC    = kFALSE;
-  Bool_t isAcceptedTPClow = kFALSE;
   Bool_t isAcceptedTOF    = kFALSE;
   Bool_t isAccepted       = kFALSE;
   Bool_t hasPIDTOF = kFALSE;
@@ -1260,6 +1079,7 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
   pid[2] = 10.;
   
   Double_t pt = track->Pt();
+  Double_t ptot = track->GetInnerParam()->GetP();//total momentum
   
   //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
   //ITS--------------
@@ -1281,10 +1101,17 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
     pid[0] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kITS, track, fParticleSpecies);
     
     if(TMath::Abs(pid[0]) < fNSigmaMaxITS) isAcceptedITS = kTRUE;
+
+    Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kPion));
+    Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kKaon));
+    Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
     
-    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
+    if (TMath::Abs(pid[0]) > nSigmaEl) isAcceptedITS = kFALSE;
     
-    if (TMath::Abs(pid[0]) > nSigma) isAcceptedITS = kFALSE;
+    if( fPidStrategy == 2){
+      if( TMath::Abs(pid[0]) > nSigmaPion) isAcceptedITS = kFALSE;
+      if( TMath::Abs(pid[0]) > nSigmaKaon) isAcceptedITS = kFALSE;
+    }
     
   }
   
@@ -1293,7 +1120,7 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
 
     pid[1] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track, fParticleSpecies);
     
-    if(fParticleSpecies == 3){//for kaon only 
+    if(fParticleSpecies == 3){////kaon------
       if( track->Pt() > 0.525 && track->Pt() < 0.6){
 	if (TMath::Abs(pid[1]) < 1.)  // nsigma < 1
 	  isAcceptedTPC = kTRUE;
@@ -1303,25 +1130,29 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
 	  isAcceptedTPC = kTRUE;
       }
       else 
-	if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
-	  isAcceptedTPC = kTRUE;
+	if(TMath::Abs(pid[1]) < fNSigmaMaxTPC ) isAcceptedTPC = kTRUE;
       
-    }//kaon
+    }//kaon------
     else{
       
-      if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
-	isAcceptedTPC = kTRUE;
-      
-      if (TMath::Abs(pid[1]) < fNSigmaMaxTPClow)  // Anywhere withing Mim Nsigma TPC
-	isAcceptedTPClow = kTRUE;                 // extra identifier
-      
-      if (track->Pt() < fMaxPtForTPClow)         // if less than a pt when low nsigma should be applied
-	isAcceptedTPC = isAcceptedTPClow;        // --------nslow-----|ptlow|----------------nshigh------
+      if (TMath::Abs(pid[1]) < fNSigmaMaxTPC ) isAcceptedTPC = kTRUE;
+    }
+    
+    Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
+    Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kPion));
+    Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kKaon));
+    
+    if (TMath::Abs(pid[1]) > nSigmaEl) isAcceptedTPC = kFALSE;
+
+    if( fPidStrategy == 2){
+      if( pt > 0.9 ){
+	if (TMath::Abs(pid[1]) > nSigmaPion) isAcceptedTPC = kFALSE;
+	if (TMath::Abs(pid[1]) > nSigmaKaon) isAcceptedTPC = kFALSE;
+      }
     }
 
-    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
-    if (TMath::Abs(pid[1]) > nSigma) isAcceptedTPC = kFALSE;
-
+    
+    
   }
   
   
@@ -1329,14 +1160,23 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
   if ( fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) {
     pid[2] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTOF, track, fParticleSpecies);
     hasPIDTOF = kTRUE;
-    if (TMath::Abs(pid[2]) < fNSigmaMaxTOF) 
-      isAcceptedTOF = kTRUE;
+    if (TMath::Abs(pid[2]) < fNSigmaMaxTOF) isAcceptedTOF = kTRUE;
     
-    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron));
-    if (TMath::Abs(pid[2]) > nSigma)
-      isAcceptedTOF = kFALSE;
-  }
+    Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron));
+    Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kPion));
+    Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kKaon));
+    
+    if (TMath::Abs(pid[2]) > nSigmaEl) isAcceptedTOF = kFALSE;
 
+    if( fPidStrategy == 2){
+      if( pt > 0.9 ){
+	if (TMath::Abs(pid[2]) > nSigmaPion) isAcceptedTOF = kFALSE;
+	if (TMath::Abs(pid[2]) > nSigmaKaon) isAcceptedTOF = kFALSE;
+      }
+    }
+    
+  }
+  
   
   if (fIsMC && isAcceptedTOF) {
     Int_t tofLabel[3];  
@@ -1352,11 +1192,7 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
     }
     
     if(fIsAOD) {
-      // AliAODMCParticle  *matchedTrack = dynamic_cast<AliAODMCParticle*>(fArrayMC->At(TMath::Abs(tofLabel[0])));
-      // if (TMath::Abs(matchedTrack->GetMother()) == TMath::Abs(track->GetLabel())) 
-      //	hasMatchTOF = kTRUE;
-      // if (TMath::Abs(track->GetLabel()) ==  TMath::Abs(matchedTrack->GetMother()))
-      //	cout << mcMother->GetMother() << "  " << tofLabel[0]  << "  " << track->GetLabel() << endl;
+      //------
     } else {
       TParticle *matchedTrack = fMCStack->Particle(TMath::Abs(tofLabel[0]));
       if (TMath::Abs(matchedTrack->GetFirstMother()) == TMath::Abs(track->GetLabel())) 
@@ -1364,33 +1200,11 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
     }
     isAcceptedTOF = hasMatchTOF;
   }
+
+  //--------Combined--PID------------
   
-  
-  Short_t c    = 0;
-  Double_t p   = 0;
-  Double_t tpc = 0;
-  Double_t tof = 0;
-  Double_t its = 0;
-  
-  if (fIsQA && (fCentrality == 0 || fCentrality == 1)) {
-    c   = track->Charge();
-    p   = track->P();
-    tpc = track->GetTPCsignal();
-    tof = TOFBetaCalc(track);    // => GetTOFsignal();
-    its = track->GetITSsignal();
+  if (fParticleSpecies == 2){//for Pion: TPC+TOF---
     
-    fHistTOF->Fill(p,c*tof);
-    fHistTPC->Fill(p,c*tpc);
-    fHistITS->Fill(p,c*its);
-    fHistTPCTOF->Fill(c*tpc,c*tof);
-    
-    fHistNsITS->Fill(p,pid[0]);
-    fHistNsTPC->Fill(p,pid[1]);
-    fHistNsTOF->Fill(p,pid[2]);
-  }
-  
-  
-  if (fParticleSpecies == 2){//for Pion: TPC+TOF
     if(fPidStrategy == 0){
       isAccepted = isAcceptedTPC && isAcceptedTOF;
     }
@@ -1402,13 +1216,13 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
       isAccepted = isAcceptedTOF;
     } 
   }
-  
-  if( fParticleSpecies == 3){//for kaon: TPC and/or TOF
+  else if( fParticleSpecies == 3){//for kaon: TPC and/or TOF
+
     if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
     else isAccepted =  isAcceptedTPC; 
   }
   
-  if( fParticleSpecies == 4){//for proton
+  else if( fParticleSpecies == 4){//for proton
     
     if(fPidStrategy == 0){
       //ITS+TPC and TPC+TOF
@@ -1416,35 +1230,36 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
       else isAccepted = isAcceptedTPC && isAcceptedTOF;
     }
     else if( fPidStrategy == 1){
-      //ITS+TPC, TPC , TPC+TOF
-      if( pt >= 0.3 && pt <= 0.575 ) isAccepted = isAcceptedITS && isAcceptedTPC;
-      else if( pt >= 0.825 && pt <= 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
-      else isAccepted =  isAcceptedTPC;
+      
+      if( pt >= ptLowITS[fParticleSpecies] && pt <= ptHighITS[fParticleSpecies] ) {
+	Double_t nsigCompITSTPC = TMath::Sqrt( pid[1]*pid[1] +  pid[0]*pid[0] );
+	if( nsigCompITSTPC < fNSigmaMaxTPC ) isAccepted = kTRUE;
+      }
+      else {
+	Double_t nsigCompTPCTOF = TMath::Sqrt( pid[1]*pid[1] +  pid[2]*pid[2] );
+	if( nsigCompTPCTOF < fNSigmaMaxTPC ) isAccepted = kTRUE;
+      }
     }
-    else if( fPidStrategy == 2){
-      //ITS+TPC
-      isAccepted = isAcceptedITS && isAcceptedTPC;
+    else if( fPidStrategy == 2){     
+      isAccepted = isAcceptedTOF && isAcceptedTPC;
+    }
+    else if( fPidStrategy == 3){
+      if( pt >= 0.3 && pt <= 0.575 ) isAccepted = isAcceptedITS && isAcceptedTPC;
+      else if( pt >= 0.825 && pt < 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+      else isAccepted =  isAcceptedTPC;
+      
+    }
+    else if( fPidStrategy == 4){
+      if( pt >= 0.825 && pt < 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+      else isAccepted =  isAcceptedTPC;
     }
     
   }//for proton
   
   
-  if (fIsQA && isAccepted && (fCentrality == 0 || fCentrality == 1)) {
-    fHistTOFc->Fill(p,c*tof);
-    fHistTPCc->Fill(p,c*tpc);
-    fHistITSc->Fill(p,c*its);
-    
-    fHistTPCTOFc->Fill(c*tpc,c*tof);
-    
-    fHistNsITSc->Fill(p,pid[0]);
-    fHistNsTPCc->Fill(p,pid[1]);
-    fHistNsTOFc->Fill(p,pid[2]);
-  }
-  
   delete [] pid;
   return isAccepted;
   
-  PostData(1, fThnList);
   
 }//IsPidPassed
 

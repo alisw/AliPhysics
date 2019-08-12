@@ -21,7 +21,7 @@
 /// root [1] Plot_BCMap("runList.txt","pathToYourOtherOADBCopy")  If you have an OADB copy other than in $ALICE_DATA/ you can add an explicit path here <br>
 /// These are functions for BC exerts:                       <br>
 /// root [1] Test_OADB("LHC16k",804,0,"runList16k.txt")     <br>
-/// root [1] Plot_CellList("LHC15o",771,"1","List115o.txt") <br>
+/// root [1] Plot_CellList("LHC15o",771,"List115o.txt") <br>
 ///
 ///
 /// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
@@ -36,6 +36,8 @@
 #include <TLatex.h>
 #include <TLegend.h>
 #include <TStyle.h>
+#include <TROOT.h>
+
 
 // --- ANALYSIS system ---
 #include "AliEMCALGeometry.h"          //include when compile
@@ -476,6 +478,7 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Em
 ///________________________________________________________________________
 void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList="")
 {
+	gROOT->SetBatch(1); //..Prevent ROOT from stealing focus when plotting
 	gStyle->SetPadTopMargin(0.05);//0.05
 	gStyle->SetPadBottomMargin(0.18);//0.15
 	gStyle->SetPadRightMargin(0.05);
@@ -485,16 +488,16 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 
 	//......................................................
 	//..Settings
-	const Int_t nBlocks=1; //..number of different runblocks of the period
+	const Int_t nBlocks=3; //..number of different runblocks of the period
 
 	Int_t zoomRange=20;
 	Double_t range=5; //10 GeV
 	Double_t tRange1,tRange2;
-	//tRange1=-200;
-    //tRange2=400;
+	tRange1=-200;
+    tRange2=400;
 	//..uncalibrated:
-	tRange1 =400;
-	tRange2 =900;
+	//tRange1 =400;
+	//tRange2 =900;
 	Int_t shift=0;
 
 	//......................................................
@@ -557,15 +560,37 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 		if(iBlock==2)rootFileName[iBlock]= Form("Version4OADB/%s_INT7_Histograms_V4.root",period.Data());
 		 */
 		//..16k
-		//if(iBlock==0)rootFileName[iBlock]= Form("Version0/%s_INT7_Histograms_V0.root",period.Data());
+		if(period=="LHC16i")
+		{
+		if(iBlock==0)rootFileName[iBlock]= Form("Version0/%s_INT7_Histograms_V0.root",period.Data());
+		}
 		//..17n
-		if(iBlock==0)rootFileName[iBlock]= Form("Version1OADB/%s_INT7_Histograms_V1.root",period.Data());
-
+		if(period=="LHC17n")
+		{
+		if(iBlock==0)rootFileName[iBlock]= Form("Version2/%s_INT7_Histograms_V2.root",period.Data());
+		}
+		if(period=="LHC16i")
+		{
+			if(iBlock==0)rootFileName[iBlock]= "Version2/LHC16i_INT7_Histograms_V1.root";
+			if(iBlock==1)rootFileName[iBlock]= "Version2/LHC16i_INT7_Histograms_V2.root";
+		}
+		if(period=="LHC16g")
+		{
+			if(iBlock==0)rootFileName[iBlock]= "LHC16g_Block1_INT7_Histograms_V0.root";
+			if(iBlock==1)rootFileName[iBlock]= "LHC16g_Block2_INT7_Histograms_V0.root";
+			if(iBlock==2)rootFileName[iBlock]= "LHC16g_Block3_INT7_Histograms_V0.root";
+		}
+		cout<<"Look for filename: "<<rootFileName[iBlock]<<endl;
+		cout<<"in path: "<<path<<endl;
 		outputRoot[iBlock]   = TFile::Open(Form("%s/%s",path.Data(),rootFileName[iBlock].Data()));
 		if(!outputRoot[iBlock])cout<<"File "<<outputRoot[iBlock]->GetName()<<" does not exist"<<endl;
+		else cout<<"open File "<<outputRoot[iBlock]->GetName()<<endl;
 		h2DAmp[iBlock]     =(TH2F*)outputRoot[iBlock]->Get("hCellAmplitude");
 		h2DRatio[iBlock]   =(TH2F*)outputRoot[iBlock]->Get("ratio2DAmp");
 		h2DCellTime[iBlock]=(TH2F*)outputRoot[iBlock]->Get("hCellTime");
+		if(!h2DAmp[iBlock])cout<<"Problem 1"<<endl;
+		if(!h2DRatio[iBlock])cout<<"Problem 2"<<endl;
+		if(!h2DCellTime[iBlock])cout<<"Problem 3"<<endl;
 	}
 
 	TCanvas *c1 = new TCanvas(1);

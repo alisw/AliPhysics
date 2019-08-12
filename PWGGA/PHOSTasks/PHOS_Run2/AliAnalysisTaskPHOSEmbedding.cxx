@@ -8,6 +8,10 @@
 #include "TRandom3.h"
 #include "TGrid.h"
 #include "TROOT.h"
+#include "TMath.h"
+#include "TDirectory.h"
+#include "TList.h"
+#include "THashList.h"
 
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
@@ -79,6 +83,13 @@ ClassImp(AliAnalysisTaskPHOSEmbedding)
 AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   AliAnalysisTaskSE(name),
   //AliAnalysisTaskESDfilter(name),
+  fOutputContainer(0x0),
+  fHistoFileID(0x0),
+  fHistoEventID(0x0),
+  fHistoStatus(0x0),
+  fHistoPt(0x0),
+  fHistoEtaPhi(0x0),
+  fHistoEtaPt(0x0),
   fParticle(""),
   fEvent(0x0),
   fRandom3(0x0),
@@ -87,10 +98,9 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   fAODInput(0x0),
   fAODTree(0x0),
   fAODEvent(0x0),
-  fNEvents(0),
   fEventCounter(0),
-  fEventLoopMin(0),
-  fEventLoopMax(0),
+  fStartID(0),
+  fNeventMC(0),
   fCellsPHOS(0x0),
   fDigitsTree(0x0),
   fClustersTree(0x0),
@@ -111,31 +121,31 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
 {
   // Constructor
 
-  //fRandom3 = new TRandom3(1);//0 is not preferable.
-
   AliCDBManager *cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("raw://");
   cdb->SetRun(246982);//dummy run number//necessary run number is set in Init()
   fUserNonLin = new TF1("fUserNonLin","1.",0,100);
 
-  //fEventCuts = new AliEventCuts(kFALSE); 
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
   // Output slot #0 id reserved by the base class for AOD
   // Output slot #1 writes into a TH1 container
-  //DefineOutput(1, THashList::Class());
+  DefineOutput(1, THashList::Class());
 
 }
 //____________________________________________________________________________________________________________________________________
 AliAnalysisTaskPHOSEmbedding::~AliAnalysisTaskPHOSEmbedding()
 {
-  delete fRandom3;
-  fRandom3 = 0x0;
+  if(fRandom3){
+    delete fRandom3;
+    fRandom3 = 0x0;
+  }
 
-  delete fUserNonLin;
-  fUserNonLin = 0x0;
-
+  if(fUserNonLin){
+    delete fUserNonLin;
+    fUserNonLin = 0x0;
+  }
 
   if(fPHOSReconstructor){
     delete fPHOSReconstructor;
@@ -157,6 +167,42 @@ AliAnalysisTaskPHOSEmbedding::~AliAnalysisTaskPHOSEmbedding()
     fEmbeddedCells = 0x0;
   }
 
+  if(fAODEvent){
+    //remove previous input MC event
+    delete fAODEvent;
+    fAODEvent = 0x0;
+  }
+
+  if(fHistoFileID){
+    delete fHistoFileID;
+    fHistoFileID = 0x0;
+  }
+
+  if(fHistoEventID){
+    delete fHistoEventID;
+    fHistoEventID = 0x0;
+  }
+
+  if(fHistoStatus){
+    delete fHistoStatus;
+    fHistoStatus = 0x0;
+  }
+
+  if(fHistoPt){
+    delete fHistoPt;
+    fHistoPt = 0x0;
+  }
+
+  if(fHistoEtaPhi){
+    delete fHistoEtaPhi;
+    fHistoEtaPhi = 0x0;
+  }
+
+  if(fHistoEtaPt){
+    delete fHistoEtaPt;
+    fHistoEtaPt = 0x0;
+  }
+
 }
 //____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
@@ -164,17 +210,41 @@ void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  //fOutputContainer = new THashList();
-  //fOutputContainer->SetOwner(kTRUE);
-  fMCArray = new TClonesArray("AliAODMCParticle",0);
+  fOutputContainer = new THashList();
+  fOutputContainer->SetOwner(kTRUE);
 
-  fEmbeddedClusterArray = new TClonesArray("AliAODCaloCluster",0);
+  const Int_t Nfile = 500;
+  const Int_t Nev = 30e+3;
+  fHistoFileID  = new TH1F(Form("hEventFileID_%s" ,fParticle.Data()),Form("file index in MC str array %s;file ID;Number of events",fParticle.Data()),Nfile+1,-0.5,Nfile+0.5);
+  fHistoEventID = new TH1F(Form("hEventEventID_%s",fParticle.Data()),Form("event index in MC AOD %s;event ID;Number of events"    ,fParticle.Data()),Nev+1  ,-0.5,Nev+0.5);
+  fOutputContainer->Add(fHistoFileID);
+  fOutputContainer->Add(fHistoEventID);
+
+  fHistoStatus = new TH1F(Form("hIOStatus_%s",fParticle.Data()),Form("byte count read from MC AOD %s;kbyte;Number of events",fParticle.Data()),502,-2,500);//unit of kilo byte
+  fOutputContainer->Add(fHistoStatus);
+
+  fHistoPt     = new TH1F(Form("hMotherPt_%s"    ,fParticle.Data()),Form("p_{T} of %s;p_{T} (GeV/c);Number of counts",fParticle.Data()),500,0,50);
+  fHistoEtaPhi = new TH2F(Form("hMotherEtaPhi_%s",fParticle.Data()),Form("y vs. #phi of %s;#phi (radian);rapidity"   ,fParticle.Data()),60,0,TMath::TwoPi(),200,-1,1);
+  fHistoEtaPt  = new TH2F(Form("hMotherEtaPt_%s" ,fParticle.Data()),Form("y vs p_{T} of %s;rapidity;p_{T} (GeV/c)"   ,fParticle.Data()),200,-1,1,500,0,50);
+
+  fHistoPt    ->Sumw2();
+  fHistoEtaPhi->Sumw2();
+  fHistoEtaPt ->Sumw2();
+
+  fOutputContainer->Add(fHistoPt    );
+  fOutputContainer->Add(fHistoEtaPhi);
+  fOutputContainer->Add(fHistoEtaPt );
+
+
+  fMCArray = new TClonesArray("AliAODMCParticle",50);
+
+  fEmbeddedClusterArray = new TClonesArray("AliAODCaloCluster",200);
   //fEmbeddedClusterArray->SetName(Form("Embedded%sCaloClusters",fParticle.Data()));
 
   fEmbeddedCells = new AliAODCaloCells();
   //fEmbeddedCells->SetName(Form("Embedded%sPHOScells",fParticle.Data()));
   
-  //PostData(1,fOutputContainer);
+  PostData(1,fOutputContainer);
 
 }
 //____________________________________________________________________________________________________________________________________
@@ -188,34 +258,40 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     return;
   }
 
-
   if(fRunNumber != fEvent->GetRunNumber()){
     fRunNumber = fEvent->GetRunNumber();
     Init();
   }
 
-
-  if(fEventLoopMax > fEventCounter + fEventLoopMin){
-    fEventCounter++;
+  if(fAODInput){
+    AliInfo("fAODInput exists. No need to open external MC file.");
   }
-  else{//fEventCounter reaches Nevent in input AOD MC tree. go to next file.
-    AliInfo("fEventCounter reaches at fEventLoopMax. Go to next external MC file.");
-    Bool_t IsFileOK = OpenAODFile();//fNEvents are set here. //fEventCounter is reset here.
+  else{
+    AliInfo("fAODInput does not exist. Get fAODInput from external MC file.");
+    Bool_t IsFileOK = OpenAODFile();//fEventCounter is reset here.
     if(!IsFileOK){
       AliError(Form("external file (%s) could not be opened. return.",fAODPath.Data()));
       return;
     }
   }
 
-  AliInfo(Form("fEventCounter = %d in current MC AOD input.",fEventCounter));
+  Long64_t evID = (fStartID + (Long64_t)fEventCounter) % (Long64_t)fNeventMC;
+  fHistoEventID->Fill(evID);
+  //Long64_t evID = Long64_t(fNeventMC * fRandom3->Rndm());
+  //fHistoEventID->Fill(evID);
+  Int_t status = fAODTree->GetEvent(evID,0);//second argument is for "getall" in TBranch. //default is 0 (no getall).
 
-  fAODTree->GetEvent(fEventCounter + fEventLoopMin);
+  fHistoStatus->Fill((Double_t)status/1.e+3);
+  if(status <= 0){
+    //status is data size in unit of byte read from branch.
+    //if this is less than or equal to 0, I/O problem.
+    //https://root.cern.ch/root/html534/TTree.html#TTree:GetEntry
+    AliInfo("There is I/O problem in external MC AOD file.");
+    return;
+  }
 
+  AliInfo(Form("fStartID = %lld , fEventCounter = %d , Extract event ID %lld , %d byte read-out from %s.",fStartID,fEventCounter,evID,status,fAODPath.Data()));
   ConvertAODtoESD();
-
-  //To do
-  //SetPHOSCells
-  //SetClusters
 
   //start embedding
   CopyRecalibrateDigits();
@@ -283,9 +359,8 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     ndigit++;
   }
 
-
   //Add Digits from Signal
-  TClonesArray sdigits("AliPHOSDigit",0) ;
+  TClonesArray sdigits("AliPHOSDigit",56*64*5) ;
   Int_t isdigit=0 ;
   if(fAODEvent){
     AliAODCaloCells* cellsS = fAODEvent->GetPHOSCells();
@@ -300,7 +375,8 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     //Celect digits contributing to fAODEvent clusters and add primary information
     //(it is not stored in CaloCells)
     //------------------------------------------------------------------------------------
-    sdigits.Expand(cellsS->GetNumberOfCells());
+    //sdigits.Expand(cellsS->GetNumberOfCells());
+
     for(Int_t i=0; i<fAODEvent->GetNumberOfCaloClusters(); i++) {
       //cluster from embedded signal
       AliAODCluster *clus = (AliAODCaloCluster*)fAODEvent->GetCaloCluster(i);
@@ -383,6 +459,8 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     }
   }
 
+  sdigits.Clear();
+
   //Change Amp back from Energy to ADC counts
   //Note that Reconstructor uses best ("new") calibration
   for(Int_t i=0; i<ndigit;i++){
@@ -434,14 +512,47 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
   const Int_t Npart = mcarray_org->GetEntries();
 
   fMCArray->Clear();
-  fMCArray->Expand(Npart);
+  //fMCArray->Expand(Npart);
 
   for(Int_t i=0;i<Npart;i++){
     AliAODMCParticle* aodpart = (AliAODMCParticle*)mcarray_org->At(i);
     //printf("PDG = %d , X = %e , Y = %e , Z = %e\n",aodpart->GetPdgCode(), aodpart->Xv(),aodpart->Yv(),aodpart->Zv());
-
     new ((*fMCArray)[i]) AliAODMCParticle(*aodpart);
   }
+
+  const Int_t Np = fMCArray->GetEntries();
+  for(Int_t i=0;i<Np;i++){
+    AliAODMCParticle *p = (AliAODMCParticle*)fMCArray->At(i);
+    Double_t pT  = p->Pt();
+    Double_t y   = p->Y();
+    Double_t phi = p->Phi();
+
+    Double_t xv = p->Xv();
+    Double_t yv = p->Yv();
+    Double_t R  = TMath::Sqrt(xv*xv + yv*yv);
+    Int_t pdg   = p->GetPdgCode();
+
+    if(R > 1.) continue;
+
+    if(fParticle.Contains("Pi0",TString::kIgnoreCase) && pdg == 111){
+      fHistoPt->Fill(pT);
+      fHistoEtaPhi->Fill(phi,y);
+      fHistoEtaPt->Fill(y,pT);
+    }
+    else if(fParticle.Contains("Eta",TString::kIgnoreCase) && pdg == 221){
+      fHistoPt->Fill(pT);
+      fHistoEtaPhi->Fill(phi,y);
+      fHistoEtaPt->Fill(y,pT);
+    }
+    else if(fParticle.Contains("Gamma",TString::kIgnoreCase) && pdg == 11){
+      fHistoPt->Fill(pT);
+      fHistoEtaPhi->Fill(phi,y);
+      fHistoEtaPt->Fill(y,pT);
+    }
+
+  }//end of MC particles loop
+
+
 
   AliVEvent* input = InputEvent();
 
@@ -472,6 +583,8 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     input->AddObject(fEmbeddedCells);
   }
 
+  fEventCounter++;
+
   //PostData(1, fOutputContainer);
 }
 //____________________________________________________________________________________________________________________________________
@@ -479,6 +592,7 @@ void AliAnalysisTaskPHOSEmbedding::Terminate(Option_t *option)
 {
   //Called once at the end of the query
   //In principle, this function is not needed...
+  if(fAODInput && fAODInput->IsOpen()) fAODInput->Close();
 
   AliInfo(Form("%s is done.",GetName()));
 
@@ -501,10 +615,11 @@ Bool_t AliAnalysisTaskPHOSEmbedding::UserNotify()
   TString runstr = ((TObjString *)(tx->At(5)))->String();
   Int_t runNum = runstr.Atoi();
 
-  UInt_t seed = UInt_t(runNum * 1e+4) + UInt_t(fileID);
-  AliInfo(Form("seed is %u",seed));
-
-  fRandom3 = new TRandom3(seed);
+  if(!fRandom3){
+    UInt_t seed = UInt_t(runNum * 1e+4) + UInt_t(fileID);
+    AliInfo(Form("seed is %u",seed));
+    fRandom3 = new TRandom3(seed);
+  }
 
   return kTRUE;
 }
@@ -522,6 +637,7 @@ Int_t AliAnalysisTaskPHOSEmbedding::SelectAODFile()
 
   fAODPath = objStr->GetString();
   AliInfo(Form("External MC file is %s.",fAODPath.Data()));
+  fHistoFileID->Fill(ientry);
 
   return Nfile;
 }
@@ -540,23 +656,11 @@ Bool_t AliAnalysisTaskPHOSEmbedding::OpenAODFile()
   fAODInput = TFile::Open(fAODPath,"TIMEOUT=180");
 
   if(!fAODInput){
-    AliError(Form("1/3 trial failed : An external AOD MC input (%s) could not be opened.",fAODPath.Data()));
-    Nfile = SelectAODFile();//2nd trial
-    fAODInput = TFile::Open(fAODPath,"TIMEOUT=180");
+    AliInfo(Form("fAODInput (%s) is not properly opened. return kFALSE",fAODPath.Data()));
+    return kFALSE;
+  }
 
-    if(!fAODInput){
-      AliError(Form("2/3 trial failed : An external AOD MC input (%s) could not be opened.",fAODPath.Data()));
-      Nfile = SelectAODFile();//3rd trial
-      fAODInput = TFile::Open(fAODPath,"TIMEOUT=180");
-
-      if(!fAODInput){
-        AliError(Form("3/3 trial failed : An external AOD MC input (%s) could not be opened.",fAODPath.Data()));
-        return kFALSE;
-      }//end of 3rd trial
-
-    }//end of 2nd trial
-
-  }//end of 1st trial
+  AliInfo(Form("%d files are stored in fAODPathArray.",Nfile));
 
   fAODTree = (TTree*)fAODInput->Get("aodTree");
   if(!fAODTree){
@@ -571,18 +675,11 @@ Bool_t AliAnalysisTaskPHOSEmbedding::OpenAODFile()
   }
   fAODEvent = new AliAODEvent();
   fAODEvent->ReadFromTree(fAODTree);
-  fNEvents = fAODTree->GetEntries();
+  fNeventMC = fAODTree->GetEntries();
+  fStartID = Long64_t(fNeventMC * fRandom3->Rndm());
 
-  AliInfo(Form("%d events are stored in %s.",fNEvents,fAODPath.Data()));
-  fEventCounter = 0;//reset counter.
-
-  Int_t index1 = Int_t(fNEvents * fRandom3->Rndm());
-  Int_t index2 = Int_t(fNEvents * fRandom3->Rndm());
-
-  fEventLoopMin = TMath::Min(index1,index2);
-  fEventLoopMax = TMath::Max(index1,index2);
-  
-  AliInfo(Form("Event loop in external MC file will run over %d - %d.",fEventLoopMin,fEventLoopMax));
+  AliInfo(Form("%d events are stored in %s.",fNeventMC,fAODPath.Data()));
+  AliInfo(Form("fStartID = %lld",fStartID));
 
   return kTRUE;
 }
@@ -625,6 +722,11 @@ void AliAnalysisTaskPHOSEmbedding::Init()
   Int_t runNum = event->GetRunNumber();
   AliCDBManager::Instance()->SetRun(runNum);
   //AliCDBManager::Instance()->SetDefaultStorage("raw://");
+
+  if(fPHOSReconstructor){
+    delete fPHOSReconstructor;
+    fPHOSReconstructor = 0x0;
+  }
   fPHOSReconstructor = new AliPHOSReconstructor("Run2");
 
   AliCDBPath path("PHOS","Calib","RecoParam");
@@ -860,7 +962,7 @@ void AliAnalysisTaskPHOSEmbedding::ConvertESDtoAOD()
   Int_t jClusters = 0;
 
   const Int_t Ncluster = fESDEvent->GetNumberOfCaloClusters();
-  fEmbeddedClusterArray->Expand(Ncluster);
+  //fEmbeddedClusterArray->Expand(Ncluster);
 
   //PHOS + CPV clusters are stored.
   for (Int_t iClust=0; iClust<Ncluster; iClust++) {

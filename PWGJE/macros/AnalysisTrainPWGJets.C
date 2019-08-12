@@ -2050,7 +2050,7 @@ TChain* CreateChainSingle(const char* xmlfile, const char *treeName)
    printf("*******************************\n");
    printf("*** Getting the ESD Chain   ***\n");
    printf("*******************************\n");
-   TAlienCollection * myCollection  = TAlienCollection::Open(xmlfile);
+   TGridCollection * myCollection  = gGrid->OpenCollection(xmlfile);
 
    if (!myCollection) {
       ::Error("AnalysisTrainPWG4Jets.C::CreateChainSingle", "Cannot create an AliEn collection from %s", xmlfile) ;

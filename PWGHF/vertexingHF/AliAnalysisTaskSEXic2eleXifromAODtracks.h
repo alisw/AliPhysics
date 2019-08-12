@@ -29,6 +29,7 @@
 #include "AliAODEvent.h"
 #include "AliPID.h"
 #include "AliRDHFCutsXictoeleXifromAODtracks.h"
+#include "TF1.h"
 
 /// \class AliAnalysisTaskSEXic2eleXifromAODtracks
 
@@ -143,7 +144,9 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void DoEventMixingWithPools(Int_t index);
   void FillBackground(std::vector<TLorentzVector * > mixTypeE,std::vector<TVector * > mixTypeEVars, std::vector<TLorentzVector * > mixTypeL, std::vector<TVector * > mixTypeLVars, Int_t chargexi);
   Int_t GetPoolIndex(Double_t zvert, Double_t mult, Double_t rp);
-
+  void SetFunction(TF1* weightfit){fWeightFit=weightfit;}
+  void SetFunctionElectron(TF1 * AccWeight){fAccWeight= AccWeight;}
+  void SetFunctionPositron(TF1* AccWeightPositron){fAccWeightPositron = AccWeightPositron;}           
 
  private:
 
@@ -410,12 +413,15 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoMassVariablesvsXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
   THnSparse* fHistoMassVariablesvsXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
 
-	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
-	TH2D *fHistoResponseXiPt; //!<! Response function Xi pT <- True Xic pt
-	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
+  TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
+  TH2D *fHistoResponseXiPt; //!<! Response function Xi pT <- True Xic pt
+  
+  TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
+  TH2D *fHistoResponseEleXiPtWeight; // weight of  the response funtion 
+  
   TH2D *fHistoResponseXiPtvsEleXiPt; //!<! Response function Xi pT <- e-Xi pT
-	TH2D *fHistoResponseXiPtXib; //!<! Response function Xi pT <- True ept
-	TH2D *fHistoResponseEleXiPtXib; //!<! Response function Xi pT <- True ept
+  TH2D *fHistoResponseXiPtXib; //!<! Response function Xi pT <- True ept
+  TH2D *fHistoResponseEleXiPtXib; //!<! Response function Xi pT <- True ept
   TH2D *fHistoResponseMcGenXibPtvsXicPt; //!<! Response function Xi-c pT <- Xi-b pT
 
   TH1F* fHistoPi0MCGen;         //!<! Number of electrons from pi0
@@ -458,6 +464,15 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH2D *fHistodPhiSdEtaSElectronBachelorR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
 
+  TF1 * fWeightFit; // implement the fit  function of weight (pass to the task)
+  TF1 * fAccWeight;//
+  TF1 * fAccWeightPositron;//
+
+  THnSparse *fHistoElectronTotal; // pt, eta, phi distribution for electron
+  THnSparse *fHistoElectronTotalMCWeight; // weight for positron
+  THnSparse *fHistoPositronTotal; // pt, eta, phi distribution for positron 
+  THnSparse *fHistoPositronTotalMCWeight; // weight for positron
+
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
   Bool_t fMixWithoutConversionFlag; /// flag for mixing
@@ -480,7 +495,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,35); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,38); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

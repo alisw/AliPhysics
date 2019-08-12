@@ -73,6 +73,8 @@
 #define SafeDelete(x) if (x != NULL) { delete x; x = NULL; }
 #endif
 
+#include <memory>
+
 /// \ingroup utils
 
 ClassImp(AliAnalysisTaskMuonRefit)
@@ -85,6 +87,7 @@ fImproveTracks(kFALSE),
 fSigmaCut(-1.),
 fSigmaCutForTrigger(-1.),
 fReAlign(kFALSE),
+fUseDefaultAlignStorage(kFALSE),
 fOldAlignStorage(""),
 fOldAlignVersion(-1),
 fOldAlignSubVersion(-1),
@@ -115,6 +118,7 @@ fImproveTracks(kFALSE),
 fSigmaCut(-1.),
 fSigmaCutForTrigger(-1.),
 fReAlign(kFALSE),
+fUseDefaultAlignStorage(kFALSE),
 fOldAlignStorage(""),
 fOldAlignVersion(-1),
 fOldAlignSubVersion(-1),
@@ -412,7 +416,28 @@ void AliAnalysisTaskMuonRefit::NotifyRun()
     TString defaultStorage(cdbm->GetDefaultStorage()->GetType());
     if (defaultStorage == "alien") defaultStorage += Form("://folder=%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
     else defaultStorage += Form("://%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
-    
+
+    // setup alignment storage automatically
+    if( fUseDefaultAlignStorage )
+    {
+
+      AliInfo( "Using default alignment storage" );
+
+      // old align storage is set to default
+      // versions are loaded from ESDs
+      fOldAlignStorage = defaultStorage;
+      if( !GetAlignStorageFromESD() ) return;
+
+      // new align storage is all set to default, in order to load latest version from OCDB
+      fNewAlignStorage = defaultStorage;
+      fNewAlignVersion = -1;
+      fNewAlignSubVersion = -1;
+
+      AliInfo( Form( "Old alignment: %s version: %i, subversion: %i", fOldAlignStorage.Data(), fOldAlignVersion, fOldAlignSubVersion ) );
+      AliInfo( Form( "New alignment: %s version: %i, subversion: %i", fNewAlignStorage.Data(), fNewAlignVersion, fNewAlignSubVersion ) );
+
+    }
+
     if (fReAlign) {
       
       // get original geometry transformer
@@ -643,3 +668,79 @@ Bool_t AliAnalysisTaskMuonRefit::SetMagField() const
   
 }
 
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskMuonRefit::GetAlignStorageFromESD()
+{
+
+  // get user info from the event handler to get the old alignment storage
+  if( !AliAnalysisManager::GetAnalysisManager() ) return kFALSE;
+
+  // input handler
+  auto inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if( !inputHandler ) return kFALSE;
+
+  // user info
+  auto userInfo = inputHandler->GetUserInfo();
+  if( !userInfo )
+  {
+    AliFatal( "Could not load userInfo from ESD" );
+    return kFALSE;
+  }
+
+  // cdb map
+  auto cdbMap = static_cast<TMap*>( userInfo->FindObject("cdbMap") );
+  if( !cdbMap )
+  {
+    AliFatal( "Could not load cdbMap from ESD" );
+    return kFALSE;
+  }
+
+  // muon align specific storage
+  auto muonAlignStorage = cdbMap->GetValue( "MUON/Align/Data" );
+  if( muonAlignStorage )
+  {
+
+    fOldAlignStorage = static_cast<TObjString*>( muonAlignStorage )->GetString();
+
+  } else {
+
+    // default map
+    auto defaultStorage = cdbMap->GetValue( "default" );
+    if( defaultStorage )
+    {
+
+      fOldAlignStorage = static_cast<TObjString*>( defaultStorage )->GetString();
+
+    } else return false;
+
+  }
+
+  // cdb list
+  auto cdbList = static_cast<TList*>( userInfo->FindObject("cdbList") );
+  if( !cdbList )
+  {
+    AliFatal( "Could not load cdbList from ESD" );
+    return kFALSE;
+  }
+
+  // loop over list content
+  Bool_t found = kFALSE;
+  TPRegexp regexp( "\"MUON/Align/Data\";.*version: v(\\d+)_s(\\d+)" );
+  TIter next( cdbList );
+  while( auto string = next() )
+  {
+    const auto content( static_cast<TObjString*>( string )->GetString() );
+    std::unique_ptr<TObjArray> matches( regexp.MatchS( content ) );
+    if( matches->GetLast() >= 2 )
+    {
+      fOldAlignVersion = static_cast<TObjString*>(matches->At(1))->GetString().Atoi();
+      fOldAlignSubVersion = static_cast<TObjString*>(matches->At(2))->GetString().Atoi();
+      found = kTRUE;
+      break;
+    }
+  }
+
+  return found;
+
+}

@@ -1,23 +1,36 @@
-/**************************************************************************
- * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
+/**************************************************************************************
+ * Copyright (C) 2016, Copyright Holders of the ALICE Collaboration                   *
+ * All rights reserved.                                                               *
+ *                                                                                    *
+ * Redistribution and use in source and binary forms, with or without                 *
+ * modification, are permitted provided that the following conditions are met:        *
+ *     * Redistributions of source code must retain the above copyright               *
+ *       notice, this list of conditions and the following disclaimer.                *
+ *     * Redistributions in binary form must reproduce the above copyright            *
+ *       notice, this list of conditions and the following disclaimer in the          *
+ *       documentation and/or other materials provided with the distribution.         *
+ *     * Neither the name of the <organization> nor the                               *
+ *       names of its contributors may be used to endorse or promote products         *
+ *       derived from this software without specific prior written permission.        *
+ *                                                                                    *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND    *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED      *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE             *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY                *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES         *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;       *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND        *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT         *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
+ **************************************************************************************/
 #include <vector>
 
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TRandom3.h>
+#include <TGrid.h>
+#include <TFile.h>
 
 #include <AliVCluster.h>
 #include <AliVEvent.h>
@@ -69,14 +82,19 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
+  fQoverPtShift(0.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
+  fTrackEfficiencyFunction(nullptr),
+  fApplyArtificialTrackingEfficiency(kFALSE),
+  fRandom(0),
   fLocked(0),
   fFillConstituents(kTRUE),
   fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
   fIsEmcPart(0),
+  fEnableAliBasicParticleCompatibility(kFALSE),
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
@@ -105,14 +123,19 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
+  fQoverPtShift(0.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
+  fTrackEfficiencyFunction(nullptr),
+  fApplyArtificialTrackingEfficiency(kFALSE),
+  fRandom(0),
   fLocked(0),
   fFillConstituents(kTRUE),
   fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
   fIsEmcPart(0),
+  fEnableAliBasicParticleCompatibility(kFALSE),
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
@@ -244,20 +267,39 @@ Int_t AliEmcalJetTask::FindJets()
     AliDebug(2,Form("Tracks from collection %d: '%s'. Embedded: %i, nTracks: %i", iColl-1, tracks->GetName(), tracks->GetIsEmbedding(), tracks->GetNParticles()));
     AliParticleIterableMomentumContainer itcont = tracks->accepted_momentum();
     for (AliParticleIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
-      // artificial inefficiency
-      if (fTrackEfficiency < 1.) {
+      
+      // Apply artificial track inefficiency, if supplied (either constant or pT-dependent)
+      if (fApplyArtificialTrackingEfficiency) {
         if (fTrackEfficiencyOnlyForEmbedding == kFALSE || (fTrackEfficiencyOnlyForEmbedding == kTRUE && tracks->GetIsEmbedding())) {
-          Double_t rnd = gRandom->Rndm();
-          if (fTrackEfficiency < rnd) {
+          Double_t trackEfficiency = fTrackEfficiencyFunction->Eval(it->first.Pt());
+          Double_t rnd = fRandom.Rndm();
+          if (trackEfficiency < rnd) {
             AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", it.current_index()));
             continue;
           }
         }
       }
 
-      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f, eta = %f, phi = %f, E = %f, m = %f, px = %f, py = %f, pz = %f)", it.current_index(), it->second->GetLabel(), it->first.Pt(), it->first.Eta(), it->first.Phi(), it->first.E(), it->first.M(), it->first.Px(), it->first.Py(), it->first.Pz()));
+      TLorentzVector pvec(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E());
+      if(fApplyQoverPtShift){
+        AliDebugStream(2) << "Q/pt shift enabled" << std::endl;
+        if(TMath::Abs(fQoverPtShift) > DBL_EPSILON) {
+          AliDebugStream(2) << "Applying Q/pt shift " << fQoverPtShift << std::endl;
+          double chargedval = it->second->Charge() > 0 ? 1. : -1.;
+          double shiftedPt = TMath::Max(1/(chargedval * fQoverPtShift + 1/TMath::Abs(it->second->Pt())), 0.);
+          // Calculate new momentum vector
+          TVector3 shiftedmom;
+          shiftedmom.SetPtEtaPhi(shiftedPt, pvec.Eta(), pvec.Phi());
+          double oldE = pvec.E(), oldp = pvec.P(), newp = shiftedmom.Mag();
+          double shiftedE = TMath::Sqrt(oldE * oldE - oldp * oldp + newp * newp);
+          pvec.SetPtEtaPhiE(shiftedPt, pvec.Eta(), pvec.Phi(), shiftedE);
+          AliDebugStream(2) << "Original pt " << it->second->Pt() << ", shifted pt " << shiftedPt << std::endl;
+        }
+      }
+
+      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f, eta = %f, phi = %f, E = %f, m = %f, px = %f, py = %f, pz = %f)", it.current_index(), it->second->GetLabel(), pvec.Pt(), pvec.Eta(), pvec.Phi(), pvec.E(), it->first.M(), pvec.Px(), pvec.Py(), pvec.Pz()));
       Int_t uid = it.current_index() + fgkConstIndexShift * iColl;
-      fFastJetWrapper.AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
+      fFastJetWrapper.AddInputVector(pvec.Px(), pvec.Py(), pvec.Pz(), pvec.E(), uid);
     }
     iColl++;
   }
@@ -372,9 +414,22 @@ Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::Pse
  */
 void AliEmcalJetTask::ExecOnce()
 {
+  
+  // If a constant artificial track efficiency is supplied, create a TF1 that is constant in pT
   if (fTrackEfficiency < 1.) {
-    if (gRandom) delete gRandom;
-    gRandom = new TRandom3(0);
+    // If a TF1 was already loaded, throw an error
+    if (fApplyArtificialTrackingEfficiency) {
+      AliError(Form("%s: fTrackEfficiencyFunction was already loaded! Do not apply multiple artificial track efficiencies.", GetName()));
+    }
+    
+    fTrackEfficiencyFunction = new TF1("trackEfficiencyFunction", "[0]", 0., fMaxBinPt);
+    fTrackEfficiencyFunction->SetParameter(0, fTrackEfficiency);
+    fApplyArtificialTrackingEfficiency = kTRUE;
+  }
+  
+  // If artificial tracking efficiency is enabled (either constant or pT-depdendent), set up random number generator
+  if (fApplyArtificialTrackingEfficiency) {
+    fRandom.SetSeed(0);
   }
 
   fJetsName = AliJetContainer::GenerateJetName(fJetType, fJetAlgo, fRecombScheme, fRadius, GetParticleContainer(0), GetClusterContainer(0), fJetsTag);
@@ -516,9 +571,10 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       Double_t cEta = t->Eta();
       Double_t cPhi = t->Phi();
       Double_t cPt  = t->Pt();
-      Double_t cP   = t->P();
       if (t->Charge() == 0) {
-        neutralE += cP;
+        if (!fEnableAliBasicParticleCompatibility) {
+          neutralE += t->P();
+        }
         ++nneutral;
         if (cPt > maxNe) maxNe = cPt;
       } else {
@@ -527,7 +583,9 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       }
 
       // check if MC particle
-      if (TMath::Abs(t->GetLabel()) > fMinMCLabel) mcpt += cPt;
+      if (!fEnableAliBasicParticleCompatibility) {
+        if (TMath::Abs(t->GetLabel()) > fMinMCLabel) mcpt += cPt;
+      }
 
       if (fGeom) {
         if (cPhi < 0) cPhi += TMath::TwoPi();
@@ -944,6 +1002,42 @@ Bool_t AliEmcalJetTask::IsJetInPhos(Double_t eta, Double_t phi, Double_t r)
   }
   return kFALSE;
 }
+  
+/**
+ * Load the artificial tracking efficiency TF1 from a file into the member fTrackEfficiencyFunction
+ * @param path Path to the file containing the TF1
+ * @param name Name of the TF1
+ */
+void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, const std::string & name)
+{
+  TString fname(path);
+  if (fname.BeginsWith("alien://")) {
+    TGrid::Connect("alien://");
+  }
+  
+  TFile* file = TFile::Open(path.data());
+  
+  if (!file || file->IsZombie()) {
+    AliErrorStream() << "Could not open artificial track efficiency function file\n";
+    return;
+  }
+  
+  TF1* trackEff = dynamic_cast<TF1*>(file->Get(name.data()));
+  
+  if (trackEff) {
+    AliInfoStream() << Form("Artificial track efficiency function %s loaded from file %s.", name.data(), path.data()) << "\n";
+  }
+  else {
+    AliErrorStream() << Form("Artificial track efficiency function %s not found in file %s.", name.data(), path.data()) << "\n";
+    return;
+  }
+  
+  fTrackEfficiencyFunction = static_cast<TF1*>(trackEff->Clone());
+  fApplyArtificialTrackingEfficiency = kTRUE;
+  
+  file->Close();
+  delete file;
+}
 
 /**
  * Add an instance of this class to the analysis manager
@@ -960,6 +1054,7 @@ Bool_t AliEmcalJetTask::IsJetInPhos(Double_t eta, Double_t phi, Double_t r)
  * @param minJetPt cut on the minimum jet pt
  * @param lockTask lock the task - no further changes are possible if kTRUE
  * @param bFillGhosts add ghosts particles among the jet constituents in the output
+ * @param suffix Additional suffix (for subwagons) - not yet added to the jet container name
  * @return a pointer to the new AliEmcalJetTask instance
  */
 AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
@@ -968,38 +1063,51 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
   const Double_t minTrPt, const Double_t minClPt,
   const Double_t ghostArea, const AliJetContainer::ERecoScheme_t reco,
   const TString tag, const Double_t minJetPt,
-  const Bool_t lockTask, const Bool_t bFillGhosts
+  const Bool_t lockTask, const Bool_t bFillGhosts, const char *suffix
 )
 {
-  // Get the pointer to the existing analysis manager via the static access method
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
+  if (!mgr)
+  {
     ::Error("AddTaskEmcalJet", "No analysis manager to connect to.");
     return 0;
   }
 
-  // Check the analysis type using the event handlers connected to the analysis manager
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
   AliVEventHandler* handler = mgr->GetInputEventHandler();
-  if (!handler) {
+  if (!handler)
+  {
     ::Error("AddTaskEmcalJet", "This task requires an input event handler");
     return 0;
   }
 
-  EDataType_t dataType = kUnknownDataType;
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD,
+    kMCgen
+  };
 
+  TString trackName(nTracks);
+  TString clusName(nClusters);
+
+  EDataType_t dataType = kUnknown;
   if (handler->InheritsFrom("AliESDInputHandler")) {
     dataType = kESD;
   }
   else if (handler->InheritsFrom("AliAODInputHandler")) {
     dataType = kAOD;
+  } else if (handler->InheritsFrom("AliMCGenHandler")) {
+    dataType = kMCgen;
   }
 
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString trackName(nTracks);
-  TString clusName(nClusters);
 
   if (trackName == "usedefault") {
     if (dataType == kESD) {
@@ -1008,8 +1116,8 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
     else if (dataType == kAOD) {
       trackName = "tracks";
     }
-    else {
-      trackName = "";
+    else if (dataType == kMCgen) {
+      trackName = "mcparticles";
     }
   }
 
@@ -1025,8 +1133,9 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
     }
   }
 
+
   AliParticleContainer* partCont = 0;
-  if (trackName == "mcparticles") {
+  if (trackName.Contains("mcparticles")) {  // must be contains in order to allow for non-standard particle containers
     AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
     partCont = mcpartCont;
   }
@@ -1059,14 +1168,16 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
     break;
   }
 
-  TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, reco, radius, partCont, clusCont, tag);
+  TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, reco, radius, partCont, clusCont, tag),
+          taskname = name;
+  if(strlen(suffix)) taskname += TString::Format("_%s", suffix);
 
   Printf("Jet task name: %s", name.Data());
 
-  AliEmcalJetTask* mgrTask = static_cast<AliEmcalJetTask *>(mgr->GetTask(name.Data()));
+  AliEmcalJetTask* mgrTask = static_cast<AliEmcalJetTask *>(mgr->GetTask(taskname.Data()));
   if (mgrTask) return mgrTask;
 
-  AliEmcalJetTask* jetTask = new AliEmcalJetTask(name);
+  AliEmcalJetTask* jetTask = new AliEmcalJetTask(taskname);
   jetTask->SetJetType(jetType);
   jetTask->SetJetAlgo(jetAlgo);
   jetTask->SetRecombScheme(reco);
@@ -1080,7 +1191,9 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
   if (bFillGhosts) jetTask->SetFillGhost();
   if (lockTask) jetTask->SetLocked();
 
+  //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
+  //-------------------------------------------------------
 
   mgr->AddTask(jetTask);
 

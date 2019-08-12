@@ -51,6 +51,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance(const char *name)                          ;
   virtual ~AliAnalysisTaskEmcalJetPerformance()                                 ;
   
+
   static AliAnalysisTaskEmcalJetPerformance* AddTaskEmcalJetPerformance(
     const char *ntracks            = "usedefault",
     const char *nclusters          = "usedefault",
@@ -106,11 +107,13 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void UserCreateOutputObjects()                                                ;
   
   // Setters
+  void SetMinPt(Double_t d)                                 { fMinPt = d; }
   void SetMaxPt(Double_t d)                                 { fMaxPt = d; }
   void SetUseAliEventCuts(Bool_t b)                         { fUseAliEventCuts = b; }
   void SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input;}
   void SetPlotJetHistograms(Bool_t b)                       { fPlotJetHistograms = b; }
   void SetPlotClusterHistograms(Bool_t b)                   { fPlotClusterHistograms = b; }
+  void SetPlotCellNonlinearityHistograms(Bool_t b)          { fPlotCellNonlinearityHistograms = b; }
   void SetPlotParticleCompositionHistograms(Bool_t b)       { fPlotParticleCompositionHistograms = b; }
   void SetComputeBackground(Bool_t b)                       { fComputeBackground = b; }
   void SetDoTriggerSimulation(Bool_t b)                     { fDoTriggerSimulation = b; }
@@ -118,28 +121,40 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetComputeMBDownscaling(Bool_t b)                    { fComputeMBDownscaling = b; }
   void SetTrackMatchingDeltaEtaMax(Double_t deta)           { fTrackMatchingDeltaEtaMax = deta; }
   void SetTrackMatchingDeltaPhiMax(Double_t dphi)           { fTrackMatchingDeltaPhiMax = dphi; }
-  void SetMinimumSharedMomentumFraction(double d)           { fMinSharedMomentumFraction = d; }
-  void SetMaximumMatchedJetDistance(double d)               { fMaxMatchedJetDistance = d; }
-  void SetUseResponseMaker(Bool_t b)                        { fUseResponseMaker = b; }
   void SetPlotDCal(Bool_t b)                                { fPlotDCal = b; }
+  void SetDoJetMatchingGeometrical(Bool_t b)                { fDoJetMatchingGeometrical = b; }
+  void SetDoDifferentialRM(Bool_t b)                        { fDoDifferentialRM = b; }
+  void SetDoJetMatchingMCFraction(Bool_t b)                 { fDoJetMatchingMCFraction = b; }
+  void SetRequireMatchedJetAccepted(Bool_t b)               { fRequireMatchedJetAccepted = b; }
+  void SetJetMatchingR(Double_t r)                          { fJetMatchingR = r; }
+  void SetMinimumSharedMomentumFraction(double d)           { fMinSharedMomentumFraction = d; }
+  void SetMCJetMinMatchingPt(Double_t min)                  { fMCJetMinMatchingPt = min; }
+  void SetDetJetMinMatchingPt(Double_t min)                 { fDetJetMinMatchingPt = min; }
+  void SetPlotJetMatchCandThresh(Double_t r)                { fPlotJetMatchCandThresh = r; };
+  void SetDoTriggerResponse(Bool_t b)                       { fDoTriggerResponse = b; };
+  void SetDoClosureTest(Bool_t b)                           { fDoClosureTest = b; }
+  void SetFillChargedFluctuations(Bool_t b)                 { fFillChargedFluctuations = b; }
+
 
  protected:
-  void                        ExecOnce()                                        ;
-  Bool_t                      FillHistograms()                                  ;
-  Bool_t                      Run()                                             ;
-  Bool_t                      IsEventSelected()                                 ;
-  void                        RunChanged(Int_t run)                             ;
+  virtual void                ExecOnce()                                        ;
+  virtual Bool_t              FillHistograms()                                  ;
+  virtual Bool_t              Run()                                             ;
+  virtual Bool_t              IsEventSelected()                                 ;
+  virtual void                RunChanged(Int_t run)                             ;
 
   // Analysis and plotting functions
   void                        GenerateHistoBins()                               ;
   void                        AllocateJetHistograms()                           ;
   void                        AllocateClusterHistograms()                       ;
+  void                        AllocateCellNonlinearityHistograms()              ;
   void                        AllocateParticleCompositionHistograms()           ;
   void                        AllocateBackgroundHistograms()                    ;
   void                        AllocateTriggerSimHistograms()                    ;
   void                        AllocateMatchedJetHistograms()                    ;
   void                        FillJetHistograms()                               ;
   void                        FillClusterHistograms()                           ;
+  void                        FillCellNonlinearityHistograms()                  ;
   void                        FillParticleCompositionHistograms()               ;
   void                        FillParticleCompositionClusterHistograms(const AliMCEvent* mcevent);
   void                        FillParticleCompositionJetHistograms(const AliMCEvent* mcevent);
@@ -148,6 +163,11 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void                        DoTriggerSimulation()                             ;
   void                        FillTriggerSimHistograms()                        ;
   void                        FillMatchedJetHistograms()                        ;
+  void                        ComputeJetMatches(AliJetContainer* jetCont1, AliJetContainer* jetCont2, Bool_t bUseJetCont2Acceptance);
+  void                        SetJetClosestCandidate(AliEmcalJet* jet1, AliEmcalJet* jet2);
+  const AliEmcalJet*          GetMatchedPartLevelJet(const AliEmcalJet* jet, Double_t detJetPt);
+  Double_t                    GetAngularity(const AliEmcalJet* jet);
+  Double_t                    GetRelativePhi(Double_t mphi, Double_t vphi);
   
   // Utility functions
   Double_t                    GetJetPt(const AliEmcalJet* jet, Double_t rho);
@@ -155,22 +175,22 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    GetJetType(const AliEmcalJet* jet);
   ContributorType             GetContributorType(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label);
   Bool_t                      IsHadron(const ContributorType contributor);
-  
-  // Jet matching functions (for embedding)
-  const AliEmcalJet*          GetMatchedPartLevelJet(const AliJetContainer * jets, const AliEmcalJet * jet, const std::string & histName);
-  
+  Bool_t                      IsSignalJetOverlap(Bool_t isTrack, Int_t particleID, const AliJetContainer* jet, Int_t maxJetIds[]);
   // Analysis parameters
   Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
   Bool_t                      fPlotClusterHistograms;               ///< Set whether to plot cluster histograms
+  Bool_t                      fPlotCellNonlinearityHistograms;      ///< Set whether to plot cell non-linearity histograms for embedding studies
   Bool_t                      fPlotParticleCompositionHistograms;   ///< Set whether to plot jet composition histograms
   Bool_t                      fComputeBackground;                   ///< Set whether to enable study of background
   Bool_t                      fDoTriggerSimulation;                 ///< Set whether to perform a simple trigger simulation
-  Bool_t                      fPlotMatchedJetHistograms;            ///< Set whether to plot matched jet histograms (must run ResponseMaker first)
+  Bool_t                      fPlotMatchedJetHistograms;            ///< Set whether to plot matched jet histograms
   Bool_t                      fComputeMBDownscaling;                ///< Set whether to compute and plot MB downscaling factors
   Bool_t                      fPlotDCal;                            ///< Set whether to enable several DCal-specific histograms
-  
+  Bool_t                      fDoClosureTest;                       ///< Set whether to do thermal model closure test
+  Bool_t                      fFillChargedFluctuations;             ///< Set whether to fill also charged component of background fluctuations
   // Plotting parameters
-  Float_t                     fMaxPt;                               ///< Histogram pt limit
+  Double_t                    fMinPt;                               ///< Histogram min pT limit
+  Double_t                    fMaxPt;                               ///< Histogram max pT limit
   Int_t                       fNEtaBins;                            ///< Number of eta bins
   Int_t                       fNPhiBins;                            ///< Number of phi bins
   Int_t                       fNCentHistBins;                       //!<! number of cent bins
@@ -191,13 +211,22 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    fMedianEMCal;                         //!<! median patch energy in EMCal, per event
   Double_t                    fMedianDCal;                          //!<! median patch energy in DCal, per event
   Bool_t                      fkEMCEJE;                             //!<! flag telling whether the event is "triggered" or not in "simulation"
+  Bool_t                      fDoTriggerResponse;                   ///< flag whether to compute max patch response, in case of MC
   
   // Embedding parameters
+  Bool_t                      fDoJetMatchingGeometrical;            ///< Do geometrical matching between det-level and truth-level jet container
+  Bool_t                      fDoJetMatchingMCFraction;             ///< Do MC-fraction based matching using PbPb det-level, pp det-level, and pp truth-level jet containers
+  Bool_t                      fDoDifferentialRM;                    ///< This allows a differential RM depenent on the angularity of the particle lvl jet
   AliEmcalEmbeddingQA         fEmbeddingQA;                         //!<! QA hists for embedding (will only be added if embedding)
-  Double_t                    fMinSharedMomentumFraction;           ///< Minimum shared momentum (pp det-level track pT in combined jet) / (pp det-level track pT)
-  Double_t                    fMaxMatchedJetDistance;               ///< Maximum distance between two matched jets
-  Bool_t                      fUseResponseMaker;                    ///< Flag to use Response Maker rather than JetTagger
   AliJetContainer*            fMCJetContainer;                      //!<!Pointer to jet container of truth-level jets
+  AliJetContainer*            fDetJetContainer;                     //!<!Pointer to jet container of det-level jets
+  AliJetContainer*            fDetJetContainerPPIntermediate;       //!<!Pointer to jet container of intermediate pp det-level jets, if MC-fraction matching
+  Bool_t                      fRequireMatchedJetAccepted;           ///< Flag to require matched truth jet to be accepted (aside from geometrical acceptance)
+  Double_t                    fJetMatchingR;                        ///< Jet matching R threshold
+  Double_t                    fMinSharedMomentumFraction;           ///< Minimum shared momentum (pp det-level track pT in combined jet) / (pp det-level track pT)
+  Double_t                    fMCJetMinMatchingPt;                  ///< Min jet pT for MC jets being matched, for when container criteria is not applied
+  Double_t                    fDetJetMinMatchingPt;                 ///< Min jet pT for Det jets being matched, for when container criteria is not applied
+  Double_t                    fPlotJetMatchCandThresh;              ///< Threshold for jet R to count candidates, affects plotting only
   
   // Event selection
   Bool_t                      fUseAliEventCuts;                     ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
@@ -216,7 +245,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 12);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 21);
   /// \endcond
 };
 #endif

@@ -37,4 +37,6 @@ periodLevelQA()
 
   cp $ALICE_PHYSICS/PWGPP/TOF/trending/DrawTrendingTOFQA.C .
   aliroot -b -q -l "DrawTrendingTOFQA.C+g(\"trending.root\")"
+  rm DrawTrendingTOFQA_C.so
+  rm DrawTrendingTOFQA_C.d
 }

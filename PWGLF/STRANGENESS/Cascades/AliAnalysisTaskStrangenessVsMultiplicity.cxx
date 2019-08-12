@@ -114,6 +114,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
       fkApplyTrackletsVsClustersCut(kFALSE),
+      fMinbAnalysis(kFALSE),
       fkMultSelection ( kFALSE ),
       fTrigType(AliVEvent::kMB),
       fTrigName(""),
@@ -156,7 +157,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fEvSel_INELgtZERO(0),
       fEvSel_INELgtZEROtracklets(0),
       fEvSel_INELgtZERORefMult(0),
-      fEvSel_INELgtZERORefMultTracklets(0),
+      fEvSel_INELgtZERORefMultTracklets(0), 
       fEvSel_nTracklets(0),
       fEvSel_nTrackletsEta10(0),
       fEvSel_nSPDClusters(0),
@@ -286,6 +287,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
       fkApplyTrackletsVsClustersCut(kFALSE),
+      fMinbAnalysis(kFALSE),
       fkMultSelection ( kFALSE ),
       fTrigType(AliVEvent::kMB),
       fTrigName(""),
@@ -761,14 +763,13 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
 
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
-        fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",7,0,7);
-        fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
-        fHistEventCounter->GetXaxis()->SetBinLabel(2, "IsSelectedTrigger");
-        fHistEventCounter->GetXaxis()->SetBinLabel(3, "IsINELgtZERO");
-        fHistEventCounter->GetXaxis()->SetBinLabel(4, "IsAcceptedVertexPosition");
-        fHistEventCounter->GetXaxis()->SetBinLabel(5, "IsNotPileupSPDInMultBins");
-        fHistEventCounter->GetXaxis()->SetBinLabel(6, "HasNoInconsistentSPDandTrackVertices");
-        fHistEventCounter->GetXaxis()->SetBinLabel(7, "IsEventSelected");
+        TString eventClasses;  
+        if(!fMinbAnalysis) eventClasses= "Processed;IsSelectedTrigger;IsINELgtZERO;IsAcceptedVertexPosition;IsNotPileupSPDInMultBins;HasNoInconsistentSPDandTrackVertices;IsEventSelected";  
+        else eventClasses="Processed;IncompleteDAQ;BkgRejTrackletsVsCls;SPDpileup;IsSelectedTrigger;RejSPDorTrackVtxNotAvailable;SPDvtxResolution;SPDVtxAndTrackVtxProximity;IsAcceptedPosition";
+ 
+        TObjArray *arrNames=eventClasses.Tokenize(";");
+        fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",arrNames->GetEntries(),0,arrNames->GetEntries());
+        for(int iclass=0; iclass < arrNames->GetEntries(); iclass++) fHistEventCounter->GetXaxis()->SetBinLabel(iclass+1, arrNames->At(iclass)->GetName());
         fListHist->Add(fHistEventCounter);
     }
 
@@ -842,114 +843,17 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     //  --- Performed entirely via AliPPVsMultUtils 
     // (except removal of incomplete events and SPDClusterVsTracklets cut) 
     //------------------------------------------------
-
+    
     //Copy-paste of steps done in AliAnalysisTaskSkeleton
-
+    
     fHistEventCounter->Fill(0.5);
 
-    //Test IsEventSelected (embeds all)
-    if(!fkSelectTriggerByName && AliPPVsMultUtils::IsEventSelected (lESDevent, fTrigType) ) fHistEventCounter->Fill(6.5);
-    else if(fkSelectTriggerByName && AliPPVsMultUtils::IsEventSelected (lESDevent, fTrigName) ) fHistEventCounter->Fill(6.5);
-
-    //------------------------------------------------
-    //Step 1: Check for selected Trigger
-    //------------------------------------------------
-    if(!fkSelectTriggerByName){
-       if( !AliPPVsMultUtils::IsSelectedTrigger( lESDevent, fTrigType ) && !fkSkipEventSelection) {
-           PostData(1, fListHist);
-           PostData(2, fTreeEvent);
-           PostData(3, fTreeV0);
-           PostData(4, fTreeCascade);
-           return;
-        }
-    }else{
-       if( !AliPPVsMultUtils::IsSelectedTrigger( lESDevent, fTrigName ) && !fkSkipEventSelection) {
-           PostData(1, fListHist);
-           PostData(2, fTreeEvent);
-           PostData(3, fTreeV0);
-           PostData(4, fTreeCascade);
-           return;
-        }
-    }
-
-    //------------------------------------------------
-    //Step 1a: Discard incomplete events
-    //------------------------------------------------
-    if(lESDevent->IsIncompleteDAQ() && !fkSkipEventSelection){
-           PostData(1, fListHist);
-           PostData(2, fTreeEvent);
-           PostData(3, fTreeV0);
-           PostData(4, fTreeCascade);
-           return;
-    }
-
-    //------------------------------------------------
-    //Step 1b: Apply tracklets vs cluster cuts
-    //------------------------------------------------
-    if(fkApplyTrackletsVsClustersCut && fUtils->IsSPDClusterVsTrackletBG( lESDevent) && !fkSkipEventSelection){
-           PostData(1, fListHist);
-           PostData(2, fTreeEvent);
-           PostData(3, fTreeV0);
-           PostData(4, fTreeCascade);
-           return;     
-    } 
-
-
-    fHistEventCounter->Fill(1.5);
-
-    //------------------------------------------------
-    //Step 2: Check for INEL>0
-    //------------------------------------------------
-    if( !AliPPVsMultUtils::IsINELgtZERO( lESDevent ) && !fkSkipEventSelection) {
-        PostData(1, fListHist);
-        PostData(2, fTreeEvent);
-        PostData(3, fTreeV0);
-        PostData(4, fTreeCascade);
-        return;
-    }
-    fHistEventCounter->Fill(2.5);
-
-    //------------------------------------------------
-    //Step 3: Check for Vertex-Z position
-    //------------------------------------------------
-    if( !AliPPVsMultUtils::IsAcceptedVertexPosition( lESDevent ) && !fkSkipEventSelection) {
-        PostData(1, fListHist);
-        PostData(2, fTreeEvent);
-        PostData(3, fTreeV0);
-        PostData(4, fTreeCascade);
-        return;
-    }
-    fHistEventCounter->Fill(3.5);
-
-    //------------------------------------------------
-    //Step 4: Check for SPD Pileup
-    //------------------------------------------------
-    if( !AliPPVsMultUtils::IsNotPileupSPDInMultBins( lESDevent ) && !fkSkipEventSelection) {
-        PostData(1, fListHist);
-        PostData(2, fTreeEvent);
-        PostData(3, fTreeV0);
-        PostData(4, fTreeCascade);
-        return;
-    }
-    fHistEventCounter->Fill(4.5);
-
-    //------------------------------------------------
-    //Step 5: Check for SPD / track vertex consistency
-    //------------------------------------------------
-    if( !AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices( lESDevent ) && !fkSkipEventSelection) {
-        PostData(1, fListHist);
-        PostData(2, fTreeEvent);
-        PostData(3, fTreeV0);
-        PostData(4, fTreeCascade);
-        return;
-    }
-    fHistEventCounter->Fill(5.5);
-
-    UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    Bool_t isSelected = 0;
-    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
-    fEvSel_Triggered = isSelected;
-
+    Bool_t isEventSelected;  
+    if(!fMinbAnalysis) isEventSelected = SelectEventsMultiplicityDependentAnalysis(); 
+    else isEventSelected = SelectEventsMinimumBiasAnalysis();
+      
+    if(!isEventSelected) return;
+    //
     //------------------------------------------------
     // Primary Vertex Requirements Section:
     //  ---> pp: has vertex, |z|<10cm
@@ -968,6 +872,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
         fEvSel_VtxZCut = kTRUE;
     }
     fEvSel_VtxZ = lBestPrimaryVtxPos[2] ; //Set
+   
 
     if( !lESDevent->IsPileupFromSPD()           ) fEvSel_IsNotPileup           = kTRUE;
     if( !lESDevent->IsPileupFromSPDInMultBins() ) fEvSel_IsNotPileupInMultBins = kTRUE;
@@ -1909,4 +1814,251 @@ Int_t AliAnalysisTaskStrangenessVsMultiplicity::GetNumberTPCtracks(AliESDEvent *
   return nGoodTracks;
 }
 
+Bool_t AliAnalysisTaskStrangenessVsMultiplicity::SelectEventsMultiplicityDependentAnalysis(){
+    //
+    // event selection for multiplicity dependent analysis
+    //   
+    AliESDEvent *lESDevent = lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
+    if (!lESDevent) {
+        AliWarning("ERROR: lESDevent not available \n");
+        return kFALSE;
+    }
+
+    //
+    //Test IsEventSelected (embeds all)
+    if(!fkSelectTriggerByName && AliPPVsMultUtils::IsEventSelected (lESDevent, fTrigType) ) fHistEventCounter->Fill(6.5);
+    else if(fkSelectTriggerByName && AliPPVsMultUtils::IsEventSelected (lESDevent, fTrigName) ) fHistEventCounter->Fill(6.5);
+
+    //------------------------------------------------
+    //Step 1: Check for selected Trigger
+    //------------------------------------------------
+    if(!fkSelectTriggerByName){
+       if( !AliPPVsMultUtils::IsSelectedTrigger( lESDevent, fTrigType ) && !fkSkipEventSelection) {
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return kFALSE;
+        }
+    }else{
+       if( !AliPPVsMultUtils::IsSelectedTrigger( lESDevent, fTrigName ) && !fkSkipEventSelection) {
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return kFALSE;
+        }
+    }
+
+    //------------------------------------------------
+    //Step 1a: Discard incomplete events
+    //------------------------------------------------
+    if(lESDevent->IsIncompleteDAQ() && !fkSkipEventSelection){
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return kFALSE;
+    }
+
+    //------------------------------------------------
+    //Step 1b: Apply tracklets vs cluster cuts
+    //------------------------------------------------
+    if(fkApplyTrackletsVsClustersCut && fUtils->IsSPDClusterVsTrackletBG( lESDevent) && !fkSkipEventSelection){
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return kFALSE;     
+    } 
+
+
+    fHistEventCounter->Fill(1.5);
+
+    //------------------------------------------------
+    //Step 2: Check for INEL>0
+    //------------------------------------------------
+    if( !AliPPVsMultUtils::IsINELgtZERO( lESDevent ) && !fkSkipEventSelection) {
+        PostData(1, fListHist);
+        PostData(2, fTreeEvent);
+        PostData(3, fTreeV0);
+        PostData(4, fTreeCascade);
+        return kFALSE;
+    }
+    fHistEventCounter->Fill(2.5);
+
+    //------------------------------------------------
+    //Step 3: Check for Vertex-Z position
+    //------------------------------------------------
+    if( !AliPPVsMultUtils::IsAcceptedVertexPosition( lESDevent ) && !fkSkipEventSelection) {
+        PostData(1, fListHist);
+        PostData(2, fTreeEvent);
+        PostData(3, fTreeV0);
+        PostData(4, fTreeCascade);
+        return kFALSE;
+    }
+    fHistEventCounter->Fill(3.5);
+
+    //------------------------------------------------
+    //Step 4: Check for SPD Pileup
+    //------------------------------------------------
+    if( !AliPPVsMultUtils::IsNotPileupSPDInMultBins( lESDevent ) && !fkSkipEventSelection) {
+        PostData(1, fListHist);
+        PostData(2, fTreeEvent);
+        PostData(3, fTreeV0);
+        PostData(4, fTreeCascade);
+        return kFALSE;
+    }
+    fHistEventCounter->Fill(4.5);
+
+    //------------------------------------------------
+    //Step 5: Check for SPD / track vertex consistency
+    //------------------------------------------------
+    if( !AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices( lESDevent ) && !fkSkipEventSelection) {
+        PostData(1, fListHist);
+        PostData(2, fTreeEvent);
+        PostData(3, fTreeV0);
+        PostData(4, fTreeCascade);
+        return kFALSE;
+    }
+    fHistEventCounter->Fill(5.5);
+
+    UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    Bool_t isSelected = 0;
+    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+    fEvSel_Triggered = isSelected;
+return kTRUE;
+}
+
+Bool_t AliAnalysisTaskStrangenessVsMultiplicity::SelectEventsMinimumBiasAnalysis(){
+    //
+    // event selection for minimum bias analysis
+    //   
+    AliESDEvent *lESDevent = lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
+    if (!lESDevent) {
+        AliWarning("ERROR: lESDevent not available \n");
+        return kFALSE;
+    }
+
+    // 
+    //------------------------------------------------
+    //Step 1.1: Discard incomplete events
+    //------------------------------------------------
+    if(lESDevent->IsIncompleteDAQ() && !fkSkipEventSelection){
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return kFALSE;
+    }
+   
+    fHistEventCounter->Fill(1.5);  
+
+    //------------------------------------------------
+    //Step 1.2: Apply tracklets vs cluster cuts
+    //------------------------------------------------
+    if(fkApplyTrackletsVsClustersCut && fUtils->IsSPDClusterVsTrackletBG( lESDevent) && !fkSkipEventSelection){
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return kFALSE;
+    }
+
+    fHistEventCounter->Fill(2.5);  
+
+    //------------------------------------------------
+    //Step 1.3: Check for SPD Pileup
+    //------------------------------------------------
+    if( lESDevent->IsPileupFromSPD(3) && !fkSkipEventSelection) {
+        PostData(1, fListHist);
+        PostData(2, fTreeEvent);
+        PostData(3, fTreeV0);
+        PostData(4, fTreeCascade);
+        return kFALSE;
+    }
+    fHistEventCounter->Fill(3.5);
+
+    //------------------------------------------------
+    //Step 2: Check for selected Trigger
+    //------------------------------------------------
+    if(!fkSelectTriggerByName){
+       if( !AliPPVsMultUtils::IsSelectedTrigger( lESDevent, fTrigType ) && !fkSkipEventSelection) {
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return kFALSE;
+        }
+    }else{
+       if( !AliPPVsMultUtils::IsSelectedTrigger( lESDevent, fTrigName ) && !fkSkipEventSelection) {
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return kFALSE;
+        }
+    }
+    fHistEventCounter->Fill(4.5);
+    
+    //------------------------------------------------
+    //Step 3:  Primary Vertex quality selection
+    //------------------------------------------------
+    const AliESDVertex *lESDPrimaryTrackingVtx = lESDevent->GetPrimaryVertexTracks();
+    const AliESDVertex *lESDPrimarySPDVtx      = lESDevent->GetPrimaryVertexSPD();
+    const AliESDVertex *lPrimaryBestESDVtx     = lESDevent->GetPrimaryVertex();
+
+    //------------------------------------------------
+    //Step 3.1: reject events if SPDVtx or TrackVtx is not available
+    //------------------------------------------------
+    if(!(lESDPrimarySPDVtx->GetStatus() && lESDPrimaryTrackingVtx->GetStatus()) && !fkSkipEventSelection){
+	   PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return kFALSE;
+          }
+    fHistEventCounter->Fill(5.5);
+
+    //------------------------------------------------
+    //Step 3.2: check the spd vertex resolution and reject if not satisfied
+    //------------------------------------------------
+    if (lESDPrimarySPDVtx->GetStatus() && lESDPrimarySPDVtx->IsFromVertexerZ() && !(lESDPrimarySPDVtx->GetDispersion()<0.04 && lESDPrimarySPDVtx->GetZRes()<0.25) && !fkSkipEventSelection){
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return kFALSE;
+          } 
+    fHistEventCounter->Fill(6.5);
+
+    //------------------------------------------------
+    //Step 3.3: check the proximity between the spd vertex and trak vertex, and reject if not satisfied 
+    //------------------------------------------------
+    if((TMath::Abs(lESDPrimarySPDVtx->GetZ() - lESDPrimaryTrackingVtx->GetZ()) > 0.5) && !fkSkipEventSelection){
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return kFALSE;
+          }
+    fHistEventCounter->Fill(7.5);
+
+    //------------------------------------------------
+    //Step 3.4: Check for Vertex-Z position
+    //------------------------------------------------
+    //classical Proton-proton like selection
+    Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
+    lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
+ 
+    if( TMath::Abs(lBestPrimaryVtxPos[2])>10.0 && !fkSkipEventSelection) {
+        PostData(1, fListHist);
+        PostData(2, fTreeEvent);
+        PostData(3, fTreeV0);
+        PostData(4, fTreeCascade);
+        return kFALSE;
+       }
+    fHistEventCounter->Fill(8.5);
+return kTRUE;
+}
 

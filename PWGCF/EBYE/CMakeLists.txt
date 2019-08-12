@@ -74,6 +74,8 @@ set(SRCS
   MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeCharge.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeFluctuations.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeMCPbPbESD.cxx
   NetLambda/AliAnalysisTaskNetLambdaIdent.cxx 
   NetLambda/AliAnalysisTaskNetLambdaMCTrad.cxx 
   NetLambda/AliAnalysisTaskNetLambdaTrad.cxx 
@@ -102,6 +104,7 @@ set(SRCS
   NetParticle/AliAnalysisNetParticleHelper.cxx
   NetParticle/AliAnalysisTaskNetParticle.cxx
   NetParticle/AliAnalysisNetParticleQA.cxx
+  NetParticle/AliEbyEPhiDistNew.cxx
   TempFluctuations/AliAnalysisTempFluc.cxx
   LongAsymmetry/AliAnalysisFBMultFluct.cxx
   )

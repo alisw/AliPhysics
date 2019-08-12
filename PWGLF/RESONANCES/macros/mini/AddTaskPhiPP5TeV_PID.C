@@ -1,6 +1,6 @@
 /***************************************************************************
               Anders Knospe - last modified on 26 March 2016
-              Sushanta Tripathy - last modified on 14 April 2018
+              Sushanta Tripathy - last modified on 04 Aug 2018
 //Lauches phi analysis with rsn mini package
 //Allows basic configuration of pile-up check and event cuts
 ****************************************************************************/
@@ -33,6 +33,8 @@ enum eventMixConfig { kDisabled = -1,
 
 AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
 (
+ Bool_t      HIST = kFALSE,
+ Bool_t      Sphero = kTRUE,
  Bool_t      isMC=kFALSE,
  Bool_t      isPP=kTRUE,
  TString     outNameSuffix="tpc2stof3sveto",
@@ -102,8 +104,15 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
   // create the task and configure 
   TString taskName=Form("phi%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-  if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
-  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4 && evtCutSetID!=eventCutSet::kSpecial6) task->SelectCollisionCandidates(triggerMask); //AOD
+  //if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
+  if (Sphero)
+    {
+      if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4 && evtCutSetID!=eventCutSet::kSpecial6)task->UseESDTriggerMask(triggerMask); //ESD                                                                                             
+    }
+  else
+    {
+      if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4 && evtCutSetID!=eventCutSet::kSpecial6) task->SelectCollisionCandidates(triggerMask); //AOD                                                                                       
+    }
 
   if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
@@ -196,6 +205,12 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
   hmc->GetYaxis()->SetTitle("QUALITY");
   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
+  //Spherocity
+  //if (Sphero) AliRsnMiniAnalysisTask::SetComputeSpherocity();
+
+  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 1000.,0.,1.);
+  task->SetEventQAHist("spherocitycent",hsp);//plugs this histogram into the fHASpherocityCent data member
+
   // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
 
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity",AliRsnCutMiniPair::kRapidityRange);
@@ -208,7 +223,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP5TeV_PID.C");
-  if(!ConfigPhiPP5TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt)) return 0x0;
+  if(!ConfigPhiPP5TeV_PID(task,HIST,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------
 
@@ -216,12 +231,24 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
   //  outputFileName += ":Rsn";
   Printf("AddAnalysisTaskPhiPP5TeV_PID - Set OutputFileName : \n %s\n",outputFileName.Data());
 
+  if (HIST) {
+   AliAnalysisDataContainer* output_hist=mgr->CreateContainer(Form("RsnOut_hist_%s",outNameSuffix.Data()),
+  							  TList::Class(),
+							  AliAnalysisManager::kOutputContainer,
+							  outputFileName);
+    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(task, 1, output_hist);
+  }
+
+  else {
+ 
   AliAnalysisDataContainer* output=mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()),
 							TList::Class(),
 							AliAnalysisManager::kOutputContainer,
 							outputFileName);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, output);
+  } 
 
   return task;
 }

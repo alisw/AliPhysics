@@ -168,7 +168,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
 	  anetaphitpc[aniter]->SetNumEventsToMix(5);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
-	  anetaphitpc[aniter]->SetVerboseMode(kTRUE);
+	  //anetaphitpc[aniter]->SetVerboseMode(kTRUE);
+	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
       
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 	  mecetaphitpc[aniter]->SetEventMult(1,10000);
@@ -219,19 +220,19 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //------------------- November 2013 ----------------------------------->
 	  //Track quality cuts
 	 //dtc1etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
-	   //dtc1etaphitpc[aniter]->SetminTPCncls(80);
+	  dtc1etaphitpc[aniter]->SetminTPCncls(80);
 	  dtc1etaphitpc[aniter]->SetRemoveKinks(kTRUE);
 
 
-	  //dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
+	  dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
 	  //dtc1etaphitpc[aniter]->SetMaxITSChiNdof(36);	  
 	  dtc1etaphitpc[aniter]->SetLabel(kFALSE);
 	  
 	  //primary particles: hits in ITS + DCA cut
 	  //dtc1etaphitpc[aniter]->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 	  //				 AliESDtrackCuts::kAny);
-	  //dtc1etaphitpc[aniter]->SetMaxImpactZ(3.0);
-	  //dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4);
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(0.18);
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(0.16);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 	  //dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);

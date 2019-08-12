@@ -1,3 +1,10 @@
+
+
+
+//----------------------------------------------------
+
+AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStartoKpipiCuts010.root", TString cutObjectName="DStartoKpipiCuts", TString suffix="suf", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 413, Char_t isSign = 2, Bool_t useWeight=kTRUE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t useNtrkWeight=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE, Double_t refMult=9.26, Bool_t isFineNtrkBin=kFALSE)
+{
 const Double_t ymin  = -1.2 ;
 const Double_t ymax  =  1.2 ;
 const Double_t cosminTS = -1.05;
@@ -32,7 +39,7 @@ const Float_t centmin_60_100 = 60.;
 const Float_t centmax_60_100 = 100.;
 const Float_t centmax = 100.;
 const Float_t fakemin = -0.5;
-const Float_t fakemax = 2.5.;
+const Float_t fakemax = 2.5;
 const Float_t cosminXY = 0.95;
 const Float_t cosmaxXY = 1.0;
 const Float_t normDecLXYmin = 0;
@@ -47,12 +54,6 @@ const Float_t multmin_80_100 = 80;
 const Float_t multmax_80_100 = 100;
 const Float_t multmin_100_400 = 100;
 const Float_t multmax_100_400 = 400;
-
-
-//----------------------------------------------------
-
-AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStartoKpipiCuts010.root", TString cutObjectName="DStartoKpipiCuts", TString suffix="suf", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 413, Char_t isSign = 2, Bool_t useWeight=kTRUE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t useNtrkWeight=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE, Double_t refMult=9.26, Bool_t isFineNtrkBin=kFALSE)
-{
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
 		printf("The configuration is set to be SLOW --> all the variables will be used to fill the CF\n");
@@ -63,9 +64,12 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	else if (configuration == AliCFTaskVertexingHF::kFalcon){
 		printf("The configuration is set to be FAST --> using only pt, y, centrality, multiplicity to fill the CF\n");
 	}
+  else if (configuration == AliCFTaskVertexingHF::kESE){
+    printf("The configuration is set to be for ESE analysis --> using pt, y, centrality, multiplicity, local multiplicity and q2 to fill the CF\n");
+  }
 	else{
 		printf("The configuration is not defined! returning\n");
-		return;
+		return NULL;
 	}
 	       
 	gSystem->Sleep(2000);
@@ -76,21 +80,21 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 
 	TString expected;
 	if (isSign == 0 && pdgCode < 0){
-		AliError(Form("Error setting PDG code (%d) and sign (0 --> D* only): they are not compatible, returning"));
+		Printf("ERROR:Error setting PDG code (%d) and sign (0 --> D* only): they are not compatible, returning",pdgCode);
 		return 0x0;
 	}
 	else if (isSign == 1 && pdgCode > 0){
-		AliError(Form("Error setting PDG code (%d) and sign (1 --> D*bar only): they are not compatible, returning"));
+		Printf("ERROR:Error setting PDG code (%d) and sign (1 --> D*bar only): they are not compatible, returning",pdgCode);
 		return 0x0;
 	}
 	else if (isSign > 2 || isSign < 0){
-		AliError(Form("Sign not valid (%d, possible values are 0, 1, 2), returning"));
+		Printf("ERROR:Sign not valid (%d, possible values are 0, 1, 2), returning",isSign);
 		return 0x0;
 	}
 
 	TFile* fileCuts = TFile::Open(cutFile);
 	if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){ 
-	  AliError("Wrong cut file");
+	  Printf("ERROR: Wrong cut file");
 	  return 0x0;
 	}
 
@@ -140,7 +144,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
         const Int_t nbinfake = 3;  //bins in fake
         const Int_t nbinpointingXY = 50;  //bins in cosPointingAngleXY
         const Int_t nbinnormDecayLXY = 20;  //bins in NormDecayLengthXY
-	const Int_t nbinmult = 49;  //bins in multiplicity (total number)
+	Int_t nbinmult = 49;  //bins in multiplicity (total number)
         const Int_t nbinmult_0_20 = 20; //bins in multiplicity between 0 and 20
         const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
         const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 80
@@ -473,7 +477,59 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 		container -> SetVarTitle(icentSuperFast, "centrality");
 		container -> SetVarTitle(imultSuperFast, "multiplicity");
 	}
+  else if (configuration == AliCFTaskVertexingHF::kESE){
+    //arrays for the number of bins in each dimension
+    const Int_t nvar = 6;
+    
+    const UInt_t ipTESE = 0;
+    const UInt_t iyESE = 1;
+    const UInt_t icentESE = 2;
+    const UInt_t imultESE = 3;
+    const UInt_t ilocalmultESE = 4;
+    const UInt_t iq2ESE = 5;
+    
+    const Int_t iBinESE[nvar] = {iBin[ipT],iBin[iy],100,50,50,100};
 
+    Double_t binLimcentESE[iBinESE[icentESE]+1];
+    for(Int_t iCent=0; iCent<iBinESE[icentESE]+1; iCent++) {
+      binLimcentESE[iCent] = iCent;
+    }
+    Double_t binLimmultESE[iBinESE[imultESE]+1];
+    for(Int_t iMult=0; iMult<iBinESE[imultESE]+1; iMult++) {
+      binLimmultESE[iMult] = -0.5+iMult*5000./iBinESE[imultESE];
+    }
+    Double_t binLimlocalmultESE[iBinESE[ilocalmultESE]+1];
+    for(Int_t iLocalMult=0; iLocalMult<iBinESE[ilocalmultESE]+1; iLocalMult++) {
+      binLimlocalmultESE[iLocalMult] = -0.5+iLocalMult*200./iBinESE[ilocalmultESE];
+    }
+    Double_t binLimq2ESE[iBinESE[iq2ESE]+1];
+    for(Int_t iq2=0; iq2<iBinESE[iq2ESE]+1; iq2++) {
+      binLimq2ESE[iq2] = iq2*5./iBinESE[iq2ESE];
+    }
+    
+    container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinESE);
+    printf("pt\n");
+    container -> SetBinLimits(ipTESE,binLimpT);
+    printf("y\n");
+    container -> SetBinLimits(iyESE,binLimy);
+    printf("centrality\n");
+    container -> SetBinLimits(icentESE,binLimcentESE);
+    printf("multiplicity\n");
+    container -> SetBinLimits(imultESE,binLimmultESE);
+    printf("local multiplicity\n");
+    container -> SetBinLimits(ilocalmultESE,binLimlocalmultESE);
+    printf("q2\n");
+    container -> SetBinLimits(iq2ESE,binLimq2ESE);
+    
+    container -> SetVarTitle(ipTESE,"pt");
+    container -> SetVarTitle(iyESE,"y");
+    container -> SetVarTitle(icentESE, "centrality");
+    container -> SetVarTitle(imultESE, "multiplicity");
+    container -> SetVarTitle(ilocalmultESE, "local multiplicity");
+    container -> SetVarTitle(iq2ESE, "q2");
+  }
+
+  
 	container -> SetStepTitle(0, "MCLimAcc");
 	container -> SetStepTitle(1, "MC");
         container -> SetStepTitle(2, "MCAcc");
@@ -600,7 +656,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
             task->SetMCNchHisto(hNchPrimaries);
 	    if(isPPbData) task->SetUseNchTrackletsWeight();
           } else {
-            AliFatal("Histogram for multiplicity weights not found");
+            Printf("FATAL: Histogram for multiplicity weights not found");
             return 0x0;
           }
 	  if(hNchMeasured) task->SetMeasuredNchHisto(hNchMeasured);
@@ -614,8 +670,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	} else{
 	  TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
 	  if(!fileEstimator)  {
-	    AliFatal("File with multiplicity estimator not found"); 
-	    return;
+	    Printf("FATAL: File with multiplicity estimator not found"); 
+	    return NULL;
 	  }      
 	  task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
 	  task->SetReferenceMultiplcity(refMult);
@@ -627,8 +683,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	    for (Int_t ip=0; ip < 2; ip++) {
 	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));    
 	      if (!multEstimatorAvg[ip]) {
-		AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-		return;               
+		Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+		return NULL;               
 	      }
 	    }
 	    task->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
@@ -641,8 +697,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	    for(Int_t ip=0; ip<4; ip++) {
 	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
 	      if (!multEstimatorAvg[ip]) {
-		AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-		return;               
+		Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+		return NULL;               
 	      }  
 	    }
 	    task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
@@ -700,7 +756,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
 	nameCorr += suffix;
 
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
-        Double_t** binEdges = new Double_t[2];
+        Double_t** binEdges = new Double_t*[2];
 
         // set bin limits
 

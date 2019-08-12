@@ -2,10 +2,10 @@
 #define ALIMESPIDTASK_H
 
 /////////////////////////////////////////////////////////////////////////////
-//  PID task for Multiplicity and Event Shape group //
+//  PID task for Multiplicity and Event Shape group                       //
 //  Authors:                                                              //
-//    Cristi Andrei <Cristian.Andrei@cern.ch>         //
-//                                                                             //
+//    Cristi Andrei <Cristian.Andrei@cern.ch>                             //
+//                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef ALIMESBASETASK_H
@@ -29,7 +29,9 @@ private:
   AliMESpidTask(const AliMESpidTask&);
   AliMESpidTask& operator=(const AliMESpidTask&);
 
-  ClassDef(AliMESpidTask, 3)            // PID task for the Multi Event Shape
+  enum outputs_t {slot_MultEst, slot_AllESD, slot_Gen, slot_NoEvts, slot_PIDQA, slot_DeltaPhi, slot_testTree, slot_DCA};
+
+  ClassDef(AliMESpidTask, 4)            // PID task for the Multi Event Shape
 };
 
 #endif

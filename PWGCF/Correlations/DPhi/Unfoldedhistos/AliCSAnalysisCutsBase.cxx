@@ -420,6 +420,12 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
   } else if (szLHCPeriod.Contains("LHC13b2_efix")){
     fgDataPeriod = kLHC13b2_efix;
     fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
+    fgEnergy = kpPb5TeV;
+  } else if (szLHCPeriod.Contains("LHC13b2")){
+    fgDataPeriod = kLHC13b2;
+    fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
     fgEnergy = kpPb5TeV;
   } else if (szLHCPeriod.CompareTo("LHC13e7") == 0){
     fgDataPeriod = kLHC13e7;
@@ -598,6 +604,26 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
   // MC upgrade
   } else if (szLHCPeriod.Contains("LHC13d19")){
     fgDataPeriod = kLHC13d19;
+    fgIsMC = kTRUE;
+    fgEnergy = kPbPb5TeV;
+
+  // LHC18x PbPb productions
+  } else if (szLHCPeriod.Contains("LHC18q")){
+    fgDataPeriod = kLHC18q;
+    fgAnchorPeriod = kLHC18q;
+    fgIsMC = kFALSE;
+    fgEnergy = kPbPb5TeV;
+
+  } else if (szLHCPeriod.Contains("LHC18r")){
+    fgDataPeriod = kLHC18r;
+    fgAnchorPeriod = kLHC18r;
+    fgIsMC = kFALSE;
+    fgEnergy = kPbPb5TeV;
+
+  // LHC18x anchored MCs
+  } else if (szLHCPeriod.Contains("LHC18l8")) {
+    fgDataPeriod = kLHC18l8;
+    fgAnchorPeriod = kLHC18r;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
 

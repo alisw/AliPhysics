@@ -196,6 +196,12 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 //TProfile              *fTPCFQ3xVsCentRun; //!
 //TProfile              *fTPCFQ3yVsCentRun; //!
 
+  TH2F              *fZPASignalPerChVsCent; //!
+  TH2F              *fZPCSignalPerChVsCent; //!
+  TH2F              *fZNASignalPerChVsCent; //!
+  TH2F              *fZNCSignalPerChVsCent; //!
+  TProfile                  *fCentDistVsVz; //!
+ 
 
 
 
@@ -265,17 +271,17 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
   
   
-  TH3D                  *fHCorrectNUApos[5];   //! 5 centrality bin, read NUA from file
-  TH3D                  *fHCorrectNUAneg[5];   //! 5 centrality bin, read NUA from file
+  TH3F                  *fHCorrectNUApos[5];   //! 5 centrality bin, read NUA from file
+  TH3F                  *fHCorrectNUAneg[5];   //! 5 centrality bin, read NUA from file
 
-  TH3D              *fHCorrectNUAposPion[5];   //! 5 centrality bin, read NUA from file
-  TH3D              *fHCorrectNUAnegPion[5];   //! 5 centrality bin, read NUA from file
+  TH3F              *fHCorrectNUAposPion[5];   //! 5 centrality bin, read NUA from file
+  TH3F              *fHCorrectNUAnegPion[5];   //! 5 centrality bin, read NUA from file
 
-  TH3D              *fHCorrectNUAposKaon[5];   //! 5 centrality bin, read NUA from file
-  TH3D              *fHCorrectNUAnegKaon[5];   //! 5 centrality bin, read NUA from file
+  TH3F              *fHCorrectNUAposKaon[5];   //! 5 centrality bin, read NUA from file
+  TH3F              *fHCorrectNUAnegKaon[5];   //! 5 centrality bin, read NUA from file
 
-  TH3D            *fHCorrectNUAposProton[5];   //! 5 centrality bin, read NUA from file
-  TH3D            *fHCorrectNUAnegProton[5];   //! 5 centrality bin, read NUA from file
+  TH3F            *fHCorrectNUAposProton[5];   //! 5 centrality bin, read NUA from file
+  TH3F            *fHCorrectNUAnegProton[5];   //! 5 centrality bin, read NUA from file
 
 
 
@@ -293,6 +299,8 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TProfile     *fHist_Corr3p_EP_Norm_PP[2][4];  //!
   TProfile     *fHist_Corr3p_EP_Norm_NN[2][4];  //!
   TProfile     *fHist_Reso2n_EP_Norm_Det[2][4]; //! 
+
+  /*
   //Pion:
   TProfile     *fHist_Corr3p_Pion_EP_Norm_PN[2][4];  //! 
   TProfile     *fHist_Corr3p_Pion_EP_Norm_PP[2][4];  //!
@@ -305,36 +313,10 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TProfile     *fHist_Corr3p_Proton_EP_Norm_PN[2][4];  //! 
   TProfile     *fHist_Corr3p_Proton_EP_Norm_PP[2][4];  //!
   TProfile     *fHist_Corr3p_Proton_EP_Norm_NN[2][4];  //!
-
+  */
 
 
   // 3p correlator vs RefMult, EP method:
-  //Charge:
-  TProfile     *fHist_Corr3p_EP_Refm_PN[2][4];  //! 
-  TProfile     *fHist_Corr3p_EP_Refm_PP[2][4];  //!
-  TProfile     *fHist_Corr3p_EP_Refm_NN[2][4];  //!
-  TProfile     *fHist_Reso2n_EP_Refm_Det[2][4]; //! 
-  //Pion:
-  TProfile     *fHist_Corr3p_Pion_EP_Refm_PN[2][4];  //! 
-  TProfile     *fHist_Corr3p_Pion_EP_Refm_PP[2][4];  //!
-  TProfile     *fHist_Corr3p_Pion_EP_Refm_NN[2][4];  //!
-  //Kaon:
-  TProfile     *fHist_Corr3p_Kaon_EP_Refm_PN[2][4];  //! 
-  TProfile     *fHist_Corr3p_Kaon_EP_Refm_PP[2][4];  //!
-  TProfile     *fHist_Corr3p_Kaon_EP_Refm_NN[2][4];  //!
-  //Proton:
-  TProfile     *fHist_Corr3p_Proton_EP_Refm_PN[2][4];  //! 
-  TProfile     *fHist_Corr3p_Proton_EP_Refm_PP[2][4];  //!
-  TProfile     *fHist_Corr3p_Proton_EP_Refm_NN[2][4];  //!
-
-
-
-
-
-
-
-
-
 
   // 2p correlator vs Centrality  EP method:
 
@@ -369,76 +351,6 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
  
 
   //CME PID  differential Histograms:
-  //(pT_A + pT_B)/2.0
-  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0A_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0A_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0A_NN[2][6]; //!
-  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0C_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0C_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Pion_pTSum_EP_V0C_NN[2][6]; //!
-  // |(pT_A - pT_B)|
-  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0A_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0A_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0A_NN[2][6]; //!
-  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0C_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0C_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Pion_pTDiff_EP_V0C_NN[2][6]; //!
-  // |(Eta_A - Eta_B)|
-  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0A_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0A_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0A_NN[2][6]; //!
-  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0C_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0C_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Pion_EtaDiff_EP_V0C_NN[2][6]; //!
- 
-
-  //(pT_A + pT_B)/2.0
-  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0A_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0A_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0A_NN[2][6]; //!
-  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0C_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0C_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Kaon_pTSum_EP_V0C_NN[2][6]; //!
-  // |(pT_A - pT_B)|
-  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0A_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0A_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0A_NN[2][6]; //!
-  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0C_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0C_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Kaon_pTDiff_EP_V0C_NN[2][6]; //!
-  // |(Eta_A - Eta_B)|
-  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0A_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0A_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0A_NN[2][6]; //!
-  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0C_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0C_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Kaon_EtaDiff_EP_V0C_NN[2][6]; //!
- 
-
-  //(pT_A + pT_B)/2.0
-  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0A_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0A_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0A_NN[2][6]; //!
-  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0C_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0C_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Proton_pTSum_EP_V0C_NN[2][6]; //!
-  // |(pT_A - pT_B)|
-  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0A_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0A_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0A_NN[2][6]; //!
-  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0C_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0C_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Proton_pTDiff_EP_V0C_NN[2][6]; //!
-  // |(Eta_A - Eta_B)|
-  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0A_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0A_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0A_NN[2][6]; //!
-  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0C_PN[2][6]; //! 
-  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0C_PP[2][6]; //!
-  TProfile     *fHist_Corr3p_Proton_EtaDiff_EP_V0C_NN[2][6]; //!
- 
-
-
 
   //2 particle Differential Histograms:
 
@@ -450,11 +362,10 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
 
   TH1D           *fFB_Efficiency_Cent[10];    //!   for charge
-  TH1D      *fFB_Efficiency_Pion_Cent[10];    //!   
-  TH1D      *fFB_Efficiency_Kaon_Cent[10];    //!   
-//TH1D    *fFB_Efficiency_Proton_Cent[10];    //!   
-  TH1D    *fFB_Efficiency_Proton_Pos_Cent[10];   //!   
-  TH1D    *fFB_Efficiency_Proton_Neg_Cent[10];   //!  
+  //TH1D      *fFB_Efficiency_Pion_Cent[10];    //!   
+  //TH1D      *fFB_Efficiency_Kaon_Cent[10];    //!   
+  //TH1D    *fFB_Efficiency_Proton_Pos_Cent[10];   //!   
+  //TH1D    *fFB_Efficiency_Proton_Neg_Cent[10];   //!  
 
 
 

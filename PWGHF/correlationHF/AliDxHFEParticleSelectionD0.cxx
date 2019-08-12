@@ -213,7 +213,7 @@ int AliDxHFEParticleSelectionD0::InitControlObjectsDaughters(TString name, int d
   double thnMin [thnSize2] = {    0,    0,  0,    1.5648,   -1.};
   double thnMax [thnSize2] = {  100, 2*Pi, 20,    2.1648,    1.};
 
-  std::auto_ptr<THnSparseF> DaughterProperties(new THnSparseF(name, name, thnSize2, thnBins, thnMin, thnMax));
+  std::unique_ptr<THnSparseF> DaughterProperties(new THnSparseF(name, name, thnSize2, thnBins, thnMin, thnMax));
 
   if (DaughterProperties.get()==NULL) {
     return -ENOMEM;
@@ -455,7 +455,7 @@ int AliDxHFEParticleSelectionD0::ParseArguments(const char* arguments)
 {
   // parse arguments and set internal flags
   TString strArguments(arguments);
-  auto_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
+  unique_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
   if (!tokens.get()) return 0;
 
   AliInfo(strArguments);

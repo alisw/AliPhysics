@@ -9,7 +9,7 @@ fi
 echo "running in `pwd`, writing HepMC to $1"
 
 # prepare environment
-eval $(/cvmfs/alice-nightlies.cern.ch/bin/alienv printenv AMPT::v1.26t7-v2.26t7-alice1_PWGMMTEST-2)
+eval $(/cvmfs/alice.cern.ch/bin/alienv printenv AMPT::v1.26t7b-v2.26t7b-alice1-1)
 
 # run generator
 

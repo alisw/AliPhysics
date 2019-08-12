@@ -18,7 +18,10 @@ set(MODULE PWGCFFemtoDream)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/FemtoDream)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/FemtoDream
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/Hyperon
+                    ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -54,7 +57,23 @@ set(SRCS
   AliFemtoDreamPartCollection.cxx 
   AliFemtoDreamAnalysis.cxx 
   AliAnalysisTaskFemtoDream.cxx
-  AliAnalysisTaskMCFemtoDream.cxx
+  AliAnalysisTaskFemtoDreamDeuteron.cxx
+  AliAnalysisTaskNanoXioton.cxx
+  AliAnalysisTaskNanoXioton1530.cxx
+  AliAnalysisTaskNanoLoton.cxx
+  AliAnalysisTaskFemtoDreamPhi.cxx
+  AliAnalysisTaskNanoAODFemtoDreamPhi.cxx
+  AliAnalysisTaskSigma0Femto.cxx
+  AliAnalysisTaskAODSigma0Femto.cxx
+  AliAnalysisTaskNanoAODSigma0Femto.cxx
+  AliAnalysisTaskGrandma.cxx
+  AliAnalysisTaskOtonOmega.cxx
+  AliOtonOmegaAnalysis.cxx
+  AliOtonOmegaCascadeCuts.cxx
+  AliOtonOmegaCascade.cxx
+  AliFemtoDreamHigherPairMath.cxx
+  AliAnalysisTaskNanoLX.cxx
+  AliAnalysisTaskOtonOmegaNanoAOD.cxx
   )
 
 
@@ -67,7 +86,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD PWGGAGammaConvBase PWGGAHyperon)
 
 # Generate the ROOT map
 # Dependecies

@@ -109,6 +109,14 @@ AliAnalysisTaskQAV0::AliAnalysisTaskQAV0()
   f2dHistInvMassWithdEdxLambda(0),
   f2dHistInvMassWithdEdxAntiLambda(0),
 
+  f2dHistInvMassWithdEdxCowboysK0Short(0),
+  f2dHistInvMassWithdEdxCowboysLambda(0),
+  f2dHistInvMassWithdEdxCowboysAntiLambda(0),
+
+  f2dHistInvMassWithdEdxSailorsK0Short(0),
+  f2dHistInvMassWithdEdxSailorsLambda(0),
+  f2dHistInvMassWithdEdxSailorsAntiLambda(0),
+
   f2dHistResponseNegativeAsPion(0),
   f2dHistResponseNegativeAsProton(0),
   f2dHistResponsePositiveAsPion(0),
@@ -156,6 +164,14 @@ AliAnalysisTaskQAV0::AliAnalysisTaskQAV0(const char *name)
   f2dHistInvMassWithdEdxK0Short(0),
   f2dHistInvMassWithdEdxLambda(0),
   f2dHistInvMassWithdEdxAntiLambda(0),
+
+  f2dHistInvMassWithdEdxCowboysK0Short(0),
+  f2dHistInvMassWithdEdxCowboysLambda(0),
+  f2dHistInvMassWithdEdxCowboysAntiLambda(0),
+
+  f2dHistInvMassWithdEdxSailorsK0Short(0),
+  f2dHistInvMassWithdEdxSailorsLambda(0),
+  f2dHistInvMassWithdEdxSailorsAntiLambda(0),
 
   f2dHistResponseNegativeAsPion(0),
   f2dHistResponseNegativeAsProton(0),
@@ -271,6 +287,24 @@ void AliAnalysisTaskQAV0::UserCreateOutputObjects()
   fOutput->Add( f2dHistInvMassWithdEdxK0Short     );
   fOutput->Add( f2dHistInvMassWithdEdxLambda      );
   fOutput->Add( f2dHistInvMassWithdEdxAntiLambda  );
+    
+    //Invariant Mass Plots, with dEdx + are cowboys
+    f2dHistInvMassWithdEdxCowboysK0Short     = new TH2D( "f2dHistInvMassWithdEdxCowboysK0Short"   , ";p_{T};M(#pi^{+},#pi^{-})"   ,250,0,25,500,0.25,0.75);
+    f2dHistInvMassWithdEdxCowboysLambda      = new TH2D( "f2dHistInvMassWithdEdxCowboysLambda"    , ";p_{T};M(p,#pi^{-})"         ,250,0,25,300,1.07,1.115+0.255);
+    f2dHistInvMassWithdEdxCowboysAntiLambda  = new TH2D( "f2dHistInvMassWithdEdxCowboysAntiLambda", ";p_{T};M(#pi^{+},#bar{p})"   ,250,0,25,300,1.07,1.115+0.255);
+    
+    fOutput->Add( f2dHistInvMassWithdEdxCowboysK0Short     );
+    fOutput->Add( f2dHistInvMassWithdEdxCowboysLambda      );
+    fOutput->Add( f2dHistInvMassWithdEdxCowboysAntiLambda  );
+    
+    //Invariant Mass Plots, with dEdx + are sailors
+    f2dHistInvMassWithdEdxSailorsK0Short     = new TH2D( "f2dHistInvMassWithdEdxSailorsK0Short"   , ";p_{T};M(#pi^{+},#pi^{-})"   ,250,0,25,500,0.25,0.75);
+    f2dHistInvMassWithdEdxSailorsLambda      = new TH2D( "f2dHistInvMassWithdEdxSailorsLambda"    , ";p_{T};M(p,#pi^{-})"         ,250,0,25,300,1.07,1.115+0.255);
+    f2dHistInvMassWithdEdxSailorsAntiLambda  = new TH2D( "f2dHistInvMassWithdEdxSailorsAntiLambda", ";p_{T};M(#pi^{+},#bar{p})"   ,250,0,25,300,1.07,1.115+0.255);
+    
+    fOutput->Add( f2dHistInvMassWithdEdxSailorsK0Short     );
+    fOutput->Add( f2dHistInvMassWithdEdxSailorsLambda      );
+    fOutput->Add( f2dHistInvMassWithdEdxSailorsAntiLambda  );
 
   //dE/dx QA for main analysis and for calibration check 
   f2dHistResponseNegativeAsPion    = new TH2D( "f2dHistResponseNegativeAsPion", ";p_{T}^{V0};N#sigma",500,0,5,400,-20,20);
@@ -500,6 +534,18 @@ void AliAnalysisTaskQAV0::UserExec(Option_t *)
       Double_t lMomPos[3]; v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
       Double_t lMomNeg[3]; v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
 
+       //Provisions for cowboy/sailor check
+       Double_t lModp1 = TMath::Sqrt( lMomPos[0]*lMomPos[0] + lMomPos[1]*lMomPos[1] );
+       Double_t lModp2 = TMath::Sqrt( lMomNeg[0]*lMomNeg[0] + lMomNeg[1]*lMomNeg[1] );
+       
+       //Calculate vec prod with momenta projected to xy plane
+       Double_t lVecProd = (lMomPos[0]*lMomNeg[1] - lMomPos[1]*lMomNeg[0]) / (lModp1*lModp2);
+       
+       if ( lMagneticField < 0 ) lVecProd *= -1; //invert sign
+
+       Bool_t lIsCowboy = kFALSE;
+       if (lVecProd < 0) lIsCowboy = kTRUE;
+       
       AliESDtrack *pTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyPos);
       AliESDtrack *nTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyNeg);
       if (!pTrack || !nTrack) {
@@ -641,9 +687,21 @@ void AliAnalysisTaskQAV0::UserExec(Option_t *)
     }
 
     //Specific fV0Sel selection level, dE/dx applied
-    if ( TMath::Abs(lNSigmasPosPion)   < fdEdxCut && TMath::Abs(lNSigmasNegPion)   < fdEdxCut )    f2dHistInvMassWithdEdxK0Short       -> Fill ( lPt , lInvMassK0s        )   ;
-    if ( TMath::Abs(lNSigmasPosProton) < fdEdxCut && TMath::Abs(lNSigmasNegPion)   < fdEdxCut )    f2dHistInvMassWithdEdxLambda        -> Fill ( lPt , lInvMassLambda     )   ;
-    if ( TMath::Abs(lNSigmasPosPion)   < fdEdxCut && TMath::Abs(lNSigmasNegProton) < fdEdxCut )    f2dHistInvMassWithdEdxAntiLambda    -> Fill ( lPt , lInvMassAntiLambda )   ;
+      if ( TMath::Abs(lNSigmasPosPion)   < fdEdxCut && TMath::Abs(lNSigmasNegPion)   < fdEdxCut ) {
+          f2dHistInvMassWithdEdxK0Short       -> Fill ( lPt , lInvMassK0s        )   ;
+          if (lIsCowboy) f2dHistInvMassWithdEdxCowboysK0Short       -> Fill ( lPt , lInvMassK0s        )   ;
+          if (!lIsCowboy) f2dHistInvMassWithdEdxSailorsK0Short       -> Fill ( lPt , lInvMassK0s        )   ;
+      }
+      if ( TMath::Abs(lNSigmasPosProton) < fdEdxCut && TMath::Abs(lNSigmasNegPion)   < fdEdxCut ) {
+          f2dHistInvMassWithdEdxLambda        -> Fill ( lPt , lInvMassLambda     )   ;
+          if (lIsCowboy) f2dHistInvMassWithdEdxCowboysLambda        -> Fill ( lPt , lInvMassLambda     )   ;
+          if (!lIsCowboy) f2dHistInvMassWithdEdxSailorsLambda        -> Fill ( lPt , lInvMassLambda     )   ;
+      }
+      if ( TMath::Abs(lNSigmasPosPion)   < fdEdxCut && TMath::Abs(lNSigmasNegProton) < fdEdxCut ) {
+          f2dHistInvMassWithdEdxAntiLambda    -> Fill ( lPt , lInvMassAntiLambda )   ;
+          if (lIsCowboy) f2dHistInvMassWithdEdxCowboysAntiLambda    -> Fill ( lPt , lInvMassAntiLambda )   ;
+          if (!lIsCowboy) f2dHistInvMassWithdEdxSailorsAntiLambda    -> Fill ( lPt , lInvMassAntiLambda )   ;
+      }
 
   }
 

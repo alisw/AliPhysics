@@ -89,6 +89,10 @@ public:
   ///
   AliFemtoEventCutCentrality& operator=(const AliFemtoEventCutCentrality& c);
 
+  /// Reset object by applying parameters number of events passed/fail
+  ///
+  void ResetWithParameters(const Parameters &);
+
   /// Set min and max acceptable event centrality
   void SetCentralityRange(const float lo, const float hi);
 

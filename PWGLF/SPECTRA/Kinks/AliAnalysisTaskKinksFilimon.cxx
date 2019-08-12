@@ -821,8 +821,8 @@ Int_t AliAnalysisTaskKinksFilimon::KinkAnalysis(/*Option_t **/)
 				//Int_t nPhiDaughters = mcParticle->GetNDaughters();
 				if (nDaughters != 2) continue;
 				fhMCPhi2KaonPtY->Fill(MCPt, MCY);
-				AliVParticle* daughter1 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetFirstDaughter()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughter(0)));
-				AliVParticle* daughter2 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetLastDaughter()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughter(1)));
+				AliVParticle* daughter1 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetDaughterFirst()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughterLabel(0)));
+				AliVParticle* daughter2 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetDaughterLast()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughterLabel(1)));
 				Double_t openingAngle = TVector3(daughter1->Px(), daughter1->Py(), daughter1->Pz()).Angle(TVector3(daughter2->Px(), daughter2->Py(), daughter2->Pz()));
 				fhMCPhiDecayOpeningAngle->Fill(MCPt, TMath::Cos(openingAngle));
 			}
@@ -838,8 +838,8 @@ Int_t AliAnalysisTaskKinksFilimon::KinkAnalysis(/*Option_t **/)
 				//Int_t nKstarDaughters = mcParticle->GetNDaughters();
 				if (nDaughters != 2) continue;
 				fhMCKstar2KaonPtY->Fill(MCPt, MCY);
-				AliVParticle* daughter1 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetFirstDaughter()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughter(0)));
-				AliVParticle* daughter2 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetLastDaughter()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughter(1)));
+				AliVParticle* daughter1 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetDaughterFirst()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughterLabel(0)));
+				AliVParticle* daughter2 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetDaughterLast()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughterLabel(1)));
 				Double_t openingAngle = TVector3(daughter1->Px(), daughter1->Py(), daughter1->Pz()).Angle(TVector3(daughter2->Px(), daughter2->Py(), daughter2->Pz()));
 				fhMCKstarDecayOpeningAngle->Fill(MCPt, TMath::Cos(openingAngle));
 			}
@@ -855,8 +855,8 @@ Int_t AliAnalysisTaskKinksFilimon::KinkAnalysis(/*Option_t **/)
 				//Int_t nLambdaDaughters = mcParticle->GetNDaughters();
 				if (nDaughters != 2) continue;
 				//fhMCLambda2KaonPtY->Fill(MCPt, MCY);
-				AliVParticle* daughter1 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetFirstDaughter()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughter(0)));
-				AliVParticle* daughter2 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetLastDaughter()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughter(1)));
+				AliVParticle* daughter1 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetDaughterFirst()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughterLabel(0)));
+				AliVParticle* daughter2 = static_cast<AliVParticle*>(mcEvent ? mcEvent->GetTrack(static_cast<AliMCParticle*>(vMCParticle)->GetDaughterLast()) : arrayAODMC->At(static_cast<AliAODMCParticle*>(vMCParticle)->GetDaughterLabel(1)));
 				Double_t openingAngle = TVector3(daughter1->Px(), daughter1->Py(), daughter1->Pz()).Angle(TVector3(daughter2->Px(), daughter2->Py(), daughter2->Pz()));
 				fhMCLambdaDecayOpeningAngle->Fill(MCPt, TMath::Cos(openingAngle));
 			}

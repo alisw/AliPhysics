@@ -516,7 +516,9 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
     Int_t nPhysPrim=0;
     Int_t nPiKPeta09=0;
     for (Int_t i=0;i<nParticles;i++){
+      AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(i);
       TParticle* part = (TParticle*)mcEvent->Particle(i);
+      if(!part || !mcPart) continue;
       Int_t absPdg=TMath::Abs(part->GetPdgCode());
       Int_t pdg=part->GetPdgCode();
       if(absPdg==4) nc++;
@@ -620,8 +622,8 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Double_t disty=part->Vy()-mcVert->GetY();
       Double_t distz=part->Vz()-mcVert->GetZ();
       Double_t distToVert=TMath::Sqrt(distx*distx+disty*disty+distz*distz);
-      fHistMotherID->Fill(part->GetFirstMother());
-      Int_t iFromB=AliVertexingHFUtils::CheckOrigin(mcEvent,part,fSearchUpToQuark);
+      fHistMotherID->Fill(mcPart->GetMother());
+      Int_t iFromB=AliVertexingHFUtils::CheckOrigin(mcEvent,mcPart,fSearchUpToQuark);
       if(iFromB==4){
 	fHistYPtPromptAllDecay[iSpecies]->Fill(part->Pt(),rapid);
 	fHistOriginPrompt->Fill(distToVert);

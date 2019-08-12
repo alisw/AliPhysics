@@ -333,7 +333,8 @@ Bool_t AliRsnLoopPair::AssignMotherAndDaughtersESD(AliRsnEvent *rsnEvent, Int_t 
    // assign them as MC reference of the 'fDaughter' objects
    fDaughter[0].Reset();
    fDaughter[1].Reset();
-   Int_t index[2] = {motherP->GetDaughter(0), motherP->GetDaughter(1)};
+    //Int_t index[2] = {motherP->GetDaughter(0), motherP->GetDaughter(1)}; // Before Change in accessing MC infor in AliRoot v5-09-46
+    Int_t index[2] = {mother->GetDaughterLabel(0), mother->GetDaughterLabel(1)};
    Int_t i, pdg;
    Short_t charge;
    AliMCParticle *daughter = 0x0;
@@ -407,7 +408,7 @@ Bool_t AliRsnLoopPair::AssignMotherAndDaughtersAOD(AliRsnEvent *rsnEvent, Int_t 
    // assign them as MC reference of the 'fDaughter' objects
    fDaughter[0].Reset();
    fDaughter[1].Reset();
-   Int_t index[2] = {(Int_t)mother->GetDaughter(0), (Int_t)mother->GetDaughter(1)};
+   Int_t index[2] = {(Int_t)mother->GetDaughterLabel(0), (Int_t)mother->GetDaughterLabel(1)};
    Int_t ntracks = listAOD->GetEntriesFast();
    Int_t i, pdg;
    Short_t charge;

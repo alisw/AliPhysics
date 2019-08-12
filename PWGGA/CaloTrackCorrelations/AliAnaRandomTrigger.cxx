@@ -105,7 +105,9 @@ Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
   // Check if the cell or those around are bad
   //-------------------------------------
 
-  if(GetCaloUtils()->GetEMCALChannelStatus(sm,icol, irow) > 0) return kTRUE ; // trigger falls into a bad channel
+  Int_t status = 0;
+  if ( GetCaloUtils()->GetEMCALChannelStatus(sm,icol, irow,status) ) 
+    return kTRUE ; // trigger falls into a bad channel
 
   // Check if close there was a bad channel
 //  for(Int_t i = -1; i <= 1; i++)
@@ -291,7 +293,7 @@ void  AliAnaRandomTrigger::MakeAnalysisFillHistograms()
 //_________________________________________________________
 /// Set the detrimeter for the analysis.
 //_________________________________________________________
-void AliAnaRandomTrigger::SetTriggerDetector(TString & det)
+void AliAnaRandomTrigger::SetTriggerDetector(TString det)
 {
   fTriggerDetectorString = det;
   

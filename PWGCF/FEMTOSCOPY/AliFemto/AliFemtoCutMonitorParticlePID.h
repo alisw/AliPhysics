@@ -24,7 +24,7 @@ class AliFemtoCutMonitorParticlePID : public AliFemtoCutMonitor{
 
 public:
   AliFemtoCutMonitorParticlePID();
-  AliFemtoCutMonitorParticlePID(const char *aName, Int_t aTOFParticle);
+  AliFemtoCutMonitorParticlePID(const char *aName, Int_t aTOFParticle, Double_t yTOFTimeMin= -4000.0, Double_t yTOFTimeMax=4000.0);
   AliFemtoCutMonitorParticlePID(const AliFemtoCutMonitorParticlePID &aCut);
   virtual ~AliFemtoCutMonitorParticlePID();
 

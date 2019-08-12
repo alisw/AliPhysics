@@ -34,6 +34,7 @@ class AliHFDhadronCorrSystUnc : public TNamed{
   void InitStandardUncertaintiesPPb2016in020(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
   void InitStandardUncertaintiesPPb2016in2060(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
   void InitStandardUncertaintiesPPb2016in60100(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
+  void InitStandardUncertaintiesPP2017(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
   
   // Method with uncertainties for pp 2010, Dzero and D*+ and pt assoc> 0.3 GeV/c, with values used for HP2013
   void InitStandardUncertaintiesPP2010DzeroLowPtAss03();
@@ -360,6 +361,134 @@ class AliHFDhadronCorrSystUnc : public TNamed{
   void InitStandardUncertaintiesPPb2016DplusVeryHighPtAss1to99in60100();
 
   void InitStandardUncertaintiesPPb2016DummyValues();
+
+  // Method with uncertainties for pp 2017
+  void InitStandardUncertaintiesPP2017DzeroVeryLowPtAss03to99();
+  void InitStandardUncertaintiesPP2017DzeroLowPtAss03to99();
+  void InitStandardUncertaintiesPP2017DzeroMidPtAss03to99();
+  void InitStandardUncertaintiesPP2017DzeroHighPtAss03to99();
+  void InitStandardUncertaintiesPP2017DzeroVeryHighPtAss03to99();
+
+  void InitStandardUncertaintiesPP2017DstarVeryLowPtAss03to99();
+  void InitStandardUncertaintiesPP2017DstarLowPtAss03to99();
+  void InitStandardUncertaintiesPP2017DstarMidPtAss03to99();
+  void InitStandardUncertaintiesPP2017DstarHighPtAss03to99();
+  void InitStandardUncertaintiesPP2017DstarVeryHighPtAss03to99();
+
+  void InitStandardUncertaintiesPP2017DplusVeryLowPtAss03to99();
+  void InitStandardUncertaintiesPP2017DplusLowPtAss03to99();
+  void InitStandardUncertaintiesPP2017DplusMidPtAss03to99();
+  void InitStandardUncertaintiesPP2017DplusHighPtAss03to99();
+  void InitStandardUncertaintiesPP2017DplusVeryHighPtAss03to99();
+
+  void InitStandardUncertaintiesPP2017DzeroVeryLowPtAss03to1();
+  void InitStandardUncertaintiesPP2017DzeroLowPtAss03to1();
+  void InitStandardUncertaintiesPP2017DzeroMidPtAss03to1();
+  void InitStandardUncertaintiesPP2017DzeroHighPtAss03to1();
+  void InitStandardUncertaintiesPP2017DzeroVeryHighPtAss03to1();
+
+  void InitStandardUncertaintiesPP2017DstarVeryLowPtAss03to1();
+  void InitStandardUncertaintiesPP2017DstarLowPtAss03to1();
+  void InitStandardUncertaintiesPP2017DstarMidPtAss03to1();
+  void InitStandardUncertaintiesPP2017DstarHighPtAss03to1();
+  void InitStandardUncertaintiesPP2017DstarVeryHighPtAss03to1();
+
+  void InitStandardUncertaintiesPP2017DplusVeryLowPtAss03to1();
+  void InitStandardUncertaintiesPP2017DplusLowPtAss03to1();
+  void InitStandardUncertaintiesPP2017DplusMidPtAss03to1();
+  void InitStandardUncertaintiesPP2017DplusHighPtAss03to1();
+  void InitStandardUncertaintiesPP2017DplusVeryHighPtAss03to1();
+
+  void InitStandardUncertaintiesPP2017DzeroVeryLowPtAss1to99();
+  void InitStandardUncertaintiesPP2017DzeroLowPtAss1to99();
+  void InitStandardUncertaintiesPP2017DzeroMidPtAss1to99();
+  void InitStandardUncertaintiesPP2017DzeroHighPtAss1to99();
+  void InitStandardUncertaintiesPP2017DzeroVeryHighPtAss1to99();
+
+  void InitStandardUncertaintiesPP2017DstarVeryLowPtAss1to99();
+  void InitStandardUncertaintiesPP2017DstarLowPtAss1to99();
+  void InitStandardUncertaintiesPP2017DstarMidPtAss1to99();
+  void InitStandardUncertaintiesPP2017DstarHighPtAss1to99();
+  void InitStandardUncertaintiesPP2017DstarVeryHighPtAss1to99();
+
+  void InitStandardUncertaintiesPP2017DplusVeryLowPtAss1to99();
+  void InitStandardUncertaintiesPP2017DplusLowPtAss1to99();
+  void InitStandardUncertaintiesPP2017DplusMidPtAss1to99();
+  void InitStandardUncertaintiesPP2017DplusHighPtAss1to99();
+  void InitStandardUncertaintiesPP2017DplusVeryHighPtAss1to99();
+
+  void InitStandardUncertaintiesPP2017DzeroVeryLowPtAss2to99();
+  void InitStandardUncertaintiesPP2017DzeroLowPtAss2to99();
+  void InitStandardUncertaintiesPP2017DzeroMidPtAss2to99();
+  void InitStandardUncertaintiesPP2017DzeroHighPtAss2to99();
+  void InitStandardUncertaintiesPP2017DzeroVeryHighPtAss2to99();
+
+  void InitStandardUncertaintiesPP2017DstarVeryLowPtAss2to99();
+  void InitStandardUncertaintiesPP2017DstarLowPtAss2to99();
+  void InitStandardUncertaintiesPP2017DstarMidPtAss2to99();
+  void InitStandardUncertaintiesPP2017DstarHighPtAss2to99();
+  void InitStandardUncertaintiesPP2017DstarVeryHighPtAss2to99();
+
+  void InitStandardUncertaintiesPP2017DplusVeryLowPtAss2to99();
+  void InitStandardUncertaintiesPP2017DplusLowPtAss2to99();
+  void InitStandardUncertaintiesPP2017DplusMidPtAss2to99();
+  void InitStandardUncertaintiesPP2017DplusHighPtAss2to99();
+  void InitStandardUncertaintiesPP2017DplusVeryHighPtAss2to99();
+
+  void InitStandardUncertaintiesPP2017DzeroVeryLowPtAss3to99();
+  void InitStandardUncertaintiesPP2017DzeroLowPtAss3to99();
+  void InitStandardUncertaintiesPP2017DzeroMidPtAss3to99();
+  void InitStandardUncertaintiesPP2017DzeroHighPtAss3to99();
+  void InitStandardUncertaintiesPP2017DzeroVeryHighPtAss3to99();
+
+  void InitStandardUncertaintiesPP2017DstarVeryLowPtAss3to99();
+  void InitStandardUncertaintiesPP2017DstarLowPtAss3to99();
+  void InitStandardUncertaintiesPP2017DstarMidPtAss3to99();
+  void InitStandardUncertaintiesPP2017DstarHighPtAss3to99();
+  void InitStandardUncertaintiesPP2017DstarVeryHighPtAss3to99();
+
+  void InitStandardUncertaintiesPP2017DplusVeryLowPtAss3to99();
+  void InitStandardUncertaintiesPP2017DplusLowPtAss3to99();
+  void InitStandardUncertaintiesPP2017DplusMidPtAss3to99();
+  void InitStandardUncertaintiesPP2017DplusHighPtAss3to99();
+  void InitStandardUncertaintiesPP2017DplusVeryHighPtAss3to99();
+
+  void InitStandardUncertaintiesPP2017DzeroVeryLowPtAss1to2();
+  void InitStandardUncertaintiesPP2017DzeroLowPtAss1to2();
+  void InitStandardUncertaintiesPP2017DzeroMidPtAss1to2();
+  void InitStandardUncertaintiesPP2017DzeroHighPtAss1to2();
+  void InitStandardUncertaintiesPP2017DzeroVeryHighPtAss1to2();
+
+  void InitStandardUncertaintiesPP2017DstarVeryLowPtAss1to2();
+  void InitStandardUncertaintiesPP2017DstarLowPtAss1to2();
+  void InitStandardUncertaintiesPP2017DstarMidPtAss1to2();
+  void InitStandardUncertaintiesPP2017DstarHighPtAss1to2();
+  void InitStandardUncertaintiesPP2017DstarVeryHighPtAss1to2();
+
+  void InitStandardUncertaintiesPP2017DplusVeryLowPtAss1to2();
+  void InitStandardUncertaintiesPP2017DplusLowPtAss1to2();
+  void InitStandardUncertaintiesPP2017DplusMidPtAss1to2();
+  void InitStandardUncertaintiesPP2017DplusHighPtAss1to2();
+  void InitStandardUncertaintiesPP2017DplusVeryHighPtAss1to2();
+
+  void InitStandardUncertaintiesPP2017DzeroVeryLowPtAss2to3();
+  void InitStandardUncertaintiesPP2017DzeroLowPtAss2to3();
+  void InitStandardUncertaintiesPP2017DzeroMidPtAss2to3();
+  void InitStandardUncertaintiesPP2017DzeroHighPtAss2to3();
+  void InitStandardUncertaintiesPP2017DzeroVeryHighPtAss2to3();
+
+  void InitStandardUncertaintiesPP2017DstarVeryLowPtAss2to3();
+  void InitStandardUncertaintiesPP2017DstarLowPtAss2to3();
+  void InitStandardUncertaintiesPP2017DstarMidPtAss2to3();
+  void InitStandardUncertaintiesPP2017DstarHighPtAss2to3();
+  void InitStandardUncertaintiesPP2017DstarVeryHighPtAss2to3();
+
+  void InitStandardUncertaintiesPP2017DplusVeryLowPtAss2to3();
+  void InitStandardUncertaintiesPP2017DplusLowPtAss2to3();
+  void InitStandardUncertaintiesPP2017DplusMidPtAss2to3();
+  void InitStandardUncertaintiesPP2017DplusHighPtAss2to3();
+  void InitStandardUncertaintiesPP2017DplusVeryHighPtAss2to3();  
+
 
   /////////////
 

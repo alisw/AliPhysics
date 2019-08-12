@@ -57,7 +57,7 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
       if(isSingleSim){
         f1nonlin->FixParameter(0,-0.06);//for core E at ZS 20 MeV with only MIP cut
         f1nonlin->FixParameter(1,  0.7);//for core E at ZS 20 MeV with only MIP cut
-        f1nonlin->FixParameter(2,1.018);//for core E at ZS 20 MeV with only MIP cut
+        f1nonlin->FixParameter(2,1.013);//for core E at ZS 20 MeV with only MIP cut
       }
       else{
         f1nonlin->FixParameter(0,-0.06);//for core E at ZS 20 MeV with only MIP cut

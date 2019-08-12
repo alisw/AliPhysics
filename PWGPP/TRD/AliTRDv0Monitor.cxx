@@ -31,8 +31,8 @@
 #include "AliESDtrack.h"
 #include "AliPID.h"
 #include "AliTRDv0Monitor.h"
-#include "info/AliTRDv0Info.h"
-#include "info/AliTRDeventInfo.h"
+#include "AliTRDv0Info.h"
+#include "AliTRDeventInfo.h"
 
 
 ClassImp(AliTRDv0Monitor)

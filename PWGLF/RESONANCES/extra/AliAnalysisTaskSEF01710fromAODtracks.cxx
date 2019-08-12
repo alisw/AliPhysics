@@ -1517,7 +1517,7 @@ void AliAnalysisTaskSEF01710fromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
       if(ndau!=2) continue;
 
 
-      for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+      for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
       {
         if(idau<0) break;
         AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);

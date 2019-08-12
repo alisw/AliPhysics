@@ -95,6 +95,7 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   void Getd0MeasMinusExpProng(Int_t ip, Double_t magf, Double_t& d0diff, Double_t& errd0diff) const;
 
   void SetNProngs();
+  void SetNProngsHF(Int_t nprongsHF);
   void SetProngIDs(Int_t nIDs,UShort_t *id);
   UShort_t GetProngID(Int_t ip) const 
     {if(fProngID) {return fProngID[ip];} else {return 9999;}}
@@ -149,6 +150,13 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
 
 inline void AliAODRecoDecayHF::SetNProngs(){
 if(!GetNProngs())fNProngs=fNProngsHF;
+}
+inline void AliAODRecoDecayHF::SetNProngsHF(Int_t nprongsHF){
+  if(GetNProngs() && nprongsHF!=GetNProngs()){
+    printf("Cannot set nprongsHF for a candidate with a value already set \n ");
+    return;
+  }
+  fNProngsHF=nprongsHF;
 }
 inline void AliAODRecoDecayHF::SetProngIDs(Int_t nIDs,UShort_t *id) 
 {

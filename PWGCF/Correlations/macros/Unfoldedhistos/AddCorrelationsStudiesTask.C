@@ -75,6 +75,18 @@ AliAnalysisTaskSE *AddCorrelationsStudiesTask(const char *mincenstr, const char 
           lowedge = int(mincen[icen]/50);
           upedge = int(maxcen[icen]/50);
           break;
+        case 5:
+          centclass = 5;
+          lowedge = mincen[icen];
+          upedge = maxcen[icen];
+          if (upedge == 10) upedge = 0;
+          break;
+        case 6:
+          centclass = 6;
+          lowedge = mincen[icen] - 10;
+          upedge = maxcen[icen] - 10;
+          if (upedge == 10) upedge = 0;
+          break;
         default:
           AliFatalGeneral("AddCorrelationsStudiesTask", "centrality qualifier not supported. ABORTING");
         }

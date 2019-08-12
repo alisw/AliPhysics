@@ -1,16 +1,15 @@
 #include "AliSigma0ParticleBase.h"
-
 #include <iostream>
 #include "TLorentzVector.h"
 
 ClassImp(AliSigma0ParticleBase)
 
-//____________________________________________________________________________________________________
-AliSigma0ParticleBase::AliSigma0ParticleBase()
+    //____________________________________________________________________________________________________
+    AliSigma0ParticleBase::AliSigma0ParticleBase()
     : fP(),
       fPMC(),
       fPDGCode(0),
-      fPDGCodeMother(0),
+      fPDGCodeMother(-1),
       fMass(0),
       fQ(0),
       fPt(0),
@@ -18,38 +17,81 @@ AliSigma0ParticleBase::AliSigma0ParticleBase()
       fMClabel(0),
       fPhi(0),
       fEta(0),
+      fTheta(0),
+      fPhiMC(0),
+      fThetaMC(0),
       fCharge(0),
       fDCAz(0.f),
       fDCAr(0.f),
       fUse(true),
-      fPhistar() {}
+      fPhistar(),
+      fAveragePhistar(0.f) {
+  fP[0] = -0.;
+  fP[1] = -0.;
+  fP[2] = -0.;
+  fPMC[0] = -0.;
+  fPMC[1] = -0.;
+  fPMC[2] = -0.;
+}
 
 //____________________________________________________________________________________________________
-AliSigma0ParticleBase::AliSigma0ParticleBase(const AliVTrack &track, int pdg,
+AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
                                              const float magneticField,
-                                             int filterbit) {
+                                             int filterbit)
+    : fP(),
+      fPMC(),
+      fPDGCode(0),
+      fPDGCodeMother(-1),
+      fMass(0),
+      fQ(0),
+      fPt(0),
+      fTrackLabel(0),
+      fMClabel(0),
+      fPhi(0),
+      fEta(0),
+      fTheta(0),
+      fPhiMC(0),
+      fThetaMC(0),
+      fCharge(0),
+      fDCAz(0.f),
+      fDCAr(0.f),
+      fUse(true),
+      fPhistar(),
+      fAveragePhistar(0.f) {
   double trackMom[3];
-  track.GetPxPyPz(trackMom);
+  track->GetPxPyPz(trackMom);
   fP[0] = trackMom[0];
   fP[1] = trackMom[1];
   fP[2] = trackMom[2];
-  fPMC[0] = -1.;
-  fPMC[1] = -1.;
-  fPMC[2] = -1.;
+  fPMC[0] = -0.;
+  fPMC[1] = -0.;
+  fPMC[2] = -0.;
 
-  fCharge = track.Charge();
+  fCharge = track->Charge();
   fPDGCode = pdg;
-  fQ = track.Charge();
-  fPt = track.Pt();
-  fTrackLabel = (filterbit == 128) ? -track.GetID() - 1 : track.GetID();
-  fPhi = track.Phi();
-  fEta = track.Eta();
+  fQ = track->Charge();
+  fPt = track->Pt();
+  fTrackLabel = (filterbit == 128) ? -track->GetID() - 1 : track->GetID();
+  fPhi = track->Phi();
+  fEta = track->Eta();
+  fTheta = track->Theta();
   fUse = true;
 
-  for (float i = 0; i < 9; ++i) {
-    fPhistar[static_cast<int>(i)] =
-        ComputePhiStar(track, magneticField, 85.f + i * 20.f);
+  float TPCradii[9] = {85., 105., 125., 145., 165., 185., 205., 225., 245.};
+  for (int radius = 0; radius < 9; radius++) {
+    fPhistar.push_back(ComputePhiStar(track, magneticField, TPCradii[radius]));
   }
+
+  float TPCradiiForAverage[33] = {
+      85.,  90.,  95.,  100., 105., 110., 115., 120., 125., 130., 135.,
+      140., 145., 150., 155., 160., 165., 170., 175., 180., 185., 190.,
+      195., 200., 205., 210., 215., 220., 225., 230., 235., 240., 245.};
+
+  for (int radius = 0; radius < 33; radius++) {
+    fAveragePhistar +=
+        ComputePhiStar(track, magneticField, TPCradiiForAverage[radius]);
+  }
+  fAveragePhistar /= (33.f + 1e-32);
 }
 
 //____________________________________________________________________________________________________
@@ -72,8 +114,14 @@ AliSigma0ParticleBase &AliSigma0ParticleBase::operator=(
   fTrackLabel = -obj.GetTrackLabel() - 1;  // for filterbit 128
   fPhi = obj.GetPhi();
   fEta = obj.GetEta();
+  fTheta = obj.GetTheta();
+  fPhiMC = obj.GetPhiMC();
+  fThetaMC = obj.GetThetaMC();
 
   fUse = obj.GetIsUse();
+
+  fPhistar = obj.GetPhiStar();
+  fAveragePhistar = obj.GetAveragePhiStar();
 
   return (*this);
 }
@@ -135,12 +183,12 @@ double AliSigma0ParticleBase::ComputeRelKMC(
 }
 
 //____________________________________________________________________________________________________
-double AliSigma0ParticleBase::ComputePhiStar(const AliVTrack &track,
-                                             const float magneticField,
-                                             const float radius) const {
-  const float phi0 = track.Phi();  // angle at primary vertex
-  const float pt = track.Pt();
-  const float charge = track.Charge();
+float AliSigma0ParticleBase::ComputePhiStar(const AliESDtrack *track,
+                                            const float magneticField,
+                                            const float radius) const {
+  const float phi0 = track->Phi();  // angle at primary vertex
+  const float pt = track->GetTPCInnerParam()->Pt();
+  const float charge = track->Charge();
 
   // To use the following equation:
   // pt must be given in GeV/c
@@ -151,10 +199,8 @@ double AliSigma0ParticleBase::ComputePhiStar(const AliVTrack &track,
   // 0.3 is a conversion factor for pt and bfield can be plugged in in terms of
   // GeV/c and electric charge, 0.1 converts the magnetic field to Tesla, 0.01
   // transforms the radius from cm to m
-  Float_t phis = phi0 + std::asin(0.1 * charge * magneticField * 0.3 * radius *
-                                  0.01 / (2. * pt));
-
-  return phis;
+  return phi0 + TMath::ASin(0.1 * charge * magneticField * 0.3 * radius * 0.01 /
+                            (2. * pt));
 }
 
 //____________________________________________________________________________________________________
@@ -164,11 +210,13 @@ void AliSigma0ParticleBase::ProcessMCInfo(AliMCParticle *mcParticle,
   fPMC[1] = mcParticle->Py();
   fPMC[2] = mcParticle->Pz();
   fPDGCode = mcParticle->PdgCode();
+  fMClabel = mcParticle->GetLabel();
+  fPhiMC = mcParticle->Phi();
+  fThetaMC = mcParticle->Theta();
 
   if (mcParticle->GetMother() != 0) {
     AliMCParticle *mcMother = static_cast<AliMCParticle *>(
         mcEvent->GetTrack(mcParticle->GetMother()));
     fPDGCodeMother = mcMother->PdgCode();
-    fMClabel = mcParticle->GetLabel();
   }
 }

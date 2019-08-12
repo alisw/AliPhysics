@@ -73,11 +73,11 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fEnableNoINTTriggers(false),
   fEnableCentralityTriggers(false),
   fExclusiveMinBias(false),
-  fUseTriggerSelectionContainer(false)
+  fUseTriggerSelectionContainer(false),
+  fSelectCentralityTriggers2018(false)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
-  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *name):
@@ -103,11 +103,11 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fEnableNoINTTriggers(false),
   fEnableCentralityTriggers(false),
   fExclusiveMinBias(false),
-  fUseTriggerSelectionContainer(false)
+  fUseTriggerSelectionContainer(false),
+  fSelectCentralityTriggers2018(false)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
-  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEmcalTriggerBase::~AliAnalysisTaskEmcalTriggerBase() {
@@ -129,6 +129,10 @@ void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
 
   // Create trigger correlation histogram
   std::vector<std::string> binlabels = {"MB"};
+  if(fEnableCentralityTriggers) {
+    binlabels.emplace_back("CENT");
+    binlabels.emplace_back("SEMICENT");
+  }
   if(fEnableV0Triggers){
     const std::array<const std::string, 5> vzlabels = {{"EMC7", "EG1", "EG2", "EJ1", "EJ2"}};
     for(const auto & vlab : vzlabels) binlabels.emplace_back(vlab);
@@ -239,6 +243,19 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
          emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn],
          emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgn],
          emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgn];
+  
+  // check the centrality triggers
+  // temp hack to overcome missing support for 2018 by the physics selection 
+  if(fEnableCentralityTriggers) {
+    if(fSelectCentralityTriggers2018) {
+      auto triggers = PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
+      for(auto t : triggers) {
+        if(t.Triggercluster() != "CENT") continue;
+        if(t.Triggerclass() == "CV0H7") isCENT = true;
+        else if(t.Triggerclass() == "CMID7") isSemiCENT = true;
+      }
+    }
+  }
 
   if(fExclusiveMinBias){
     AliDebugStream(1) << "Min bias mode\n";
@@ -291,19 +308,21 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
         }
       }
     }
-    
-    if(fInputEvent->GetFiredTriggerClasses().Contains("EMC") || fInputEvent->GetFiredTriggerClasses().Contains("DMC")){
+    auto triggerstring =  fInputEvent->GetFiredTriggerClasses();
+    if(triggerstring.Contains("EMC") || triggerstring.Contains("DMC") || 
+       triggerstring.Contains("INT7E") || triggerstring.Contains("INT7D")){   // special conditions for 2015 PbPb
       // Apply cut on the trigger string - this basically discriminates high- and low-threshold
       // triggers
       auto triggers = PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
       std::map<int, std::array<bool, 3>> matchedTriggers;
       for(auto t : triggers) {  
         const auto &triggerclass = t.Triggerclass();
-        if((triggerclass.find("EMC") != std::string::npos) || (triggerclass.find("DMC") != std::string::npos)) 
+        if((triggerclass.find("EMC") != std::string::npos) || (triggerclass.find("DMC") != std::string::npos) || 
+           (triggerclass.find("INT7E") != std::string::npos) || (triggerclass.find("INT7D") != std::string::npos)) 
           AliDebugStream(1) << GetName() << ": Trigger string " << t.ExpandClassName() << std::endl;
         else continue;    // No EMC / DMC trigger - not to be checked
-        bool isT0trigger = (triggerclass.find("EMC8") != std::string::npos) || (triggerclass.find("DMC8") != std::string::npos),
-             isVZEROtrigger = (triggerclass.find("EMC7") != std::string::npos) || (triggerclass.find("DMC7") != std::string::npos);
+        bool isT0trigger = (triggerclass.find("EMC8") != std::string::npos) || (triggerclass.find("DMC8") != std::string::npos) || (triggerclass.find("INT8") != std::string::npos),
+             isVZEROtrigger = (triggerclass.find("EMC7") != std::string::npos) || (triggerclass.find("DMC7") != std::string::npos) || (triggerclass.find("INT7") != std::string::npos);
         for(auto iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
           AliDebugStream(1) << "Next trigger: " << kEmcalSelectTriggerStrings[iclass] << std::endl;
           bool emcalSelectionStatus = MatchTriggerFromPattern(kEmcalSelectTriggerStrings[iclass], triggerclass);

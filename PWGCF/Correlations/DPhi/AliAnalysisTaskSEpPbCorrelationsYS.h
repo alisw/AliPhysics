@@ -13,6 +13,7 @@
 #include "TH3.h"
 #include "THnSparse.h"
 #include "TString.h"
+#include "AliEventCuts.h"
 
 class TList;
 class AliCFContainer;
@@ -27,7 +28,7 @@ class AliAODv0;
 class THnSparse;
 class AliAODcascade;
 class AliAODVertex;
-class TProfile;
+
 
 #ifndef ALIANALYSISTASKSEH
 #include "AliAnalysisTaskSE.h"
@@ -54,7 +55,9 @@ public:
   virtual void SetDatatype(Bool_t mode) { fDataType = mode; }
   virtual void SetRunType(Bool_t mode) { frun2 = mode; }
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
-
+  virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
+  virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
+  virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
 
@@ -75,7 +78,9 @@ public:
       fCentBins[ix] = CentBins[ix];
     }
   }
+  void DumpTObjTable(const char* note);
 
+  
 private:
   AliAnalysisTaskSEpPbCorrelationsYS(
       const AliAnalysisTaskSEpPbCorrelationsYS &det);
@@ -87,10 +92,10 @@ private:
   void DefineCorrOutput();
   void DefinedQAHistos();
 
-  TObjArray *GetAcceptedTracksLeading(AliAODEvent *faod,Bool_t leading);
+  TObjArray *GetAcceptedTracksLeading(AliAODEvent *faod,Bool_t leading,TObjArray*tracks);
   TObjArray *GetAcceptedTracksPID(AliAODEvent *faod);
   TObjArray *GetAcceptedV0Tracks(const AliAODEvent *faod);
-  TObjArray *GetAcceptedCascadeTracks(const AliAODEvent *faod);
+  TObjArray *GetAcceptedCascadeTracks(AliAODEvent *faod);
   TObjArray *GetAcceptedTracksAssociated(AliAODEvent *faod);
 
   void  CalculateSP();
@@ -103,9 +108,11 @@ private:
   Bool_t IsAcceptedCascade(const AliAODcascade *casc);
   Bool_t IsAcceptedCascadeOmega(const AliAODcascade *casc);
 
+  TObjArray* CloneTrack(TObjArray* track);
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
+ Int_t      ConvertRunNumber(Int_t run);
 
 /*
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
@@ -131,6 +138,9 @@ private:
   Bool_t fDataType;
   Bool_t frun2;
   Bool_t fQA;
+  Bool_t fFMDcut;
+  Int_t fFMDcutmode;
+  Bool_t fmakehole;
   Bool_t fOnfly;
   TString fAnaMode;
   TString fasso;
@@ -196,8 +206,10 @@ private:
 
   THnSparseF *fHistMass_Lambda_MC;
 
-  //	Double_t fPtMinDaughter;
+  //	Double_t fPtMinDaughter
 
+  AliEventCuts fEventCuts; 
+  AliAnalysisUtils* fUtils;
   AliAODEvent *fEvent; //  AOD Event
   AliMCEvent* mcEvent;
   AliAODVertex *lPrimaryBestVtx;
@@ -224,7 +236,8 @@ private:
   // Global Histograms
   TH1F *fHistzvertex;
   TH1F *fHistCentrality;
-
+  TH1F *fHistCentrality_beforecut;
+  TH2F* fHistCentzvertex;
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
@@ -246,12 +259,22 @@ private:
   TH2D*  fh2_FMD_eta_phi_prim;
   TH2D*  fh2_FMD_acceptance;
   TH2D*  fh2_ITS_acceptance;
+  TH2F*  fh2_SPD_multcorr;
+  TH2F*  fh2_SPDV0_multcorr;
+  TH2F*  fh2_SPDtrack_multcorr;
+  TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;
+  TH1F* fHist_NeventRun;
+  TH1F* fHist_V0AMultRun;
+  TH1F* fHist_V0CMultRun;
+  TH1F* fHist_FMDAMultRun;
+  TH1F* fHist_FMDCMultRun;
 
+  TH2D*  fhistfmdphiacc;
   AliTHn* fhistfmd;
   THnSparseF* fhistits;
   AliTHn* fhSecFMD;
-
+  //  const TH2D& d2Ndetadphi;
   TH2F*fFMDV0;
   TH2F*fFMDV0_post;
   TH2F*fFMDV0A;

@@ -28,13 +28,13 @@
 /// The options that can be passed to the macro are:
 ///
 /// \param simulation: bool with data (0) or MC (1) condition
-/// \param trigger: trigger string name (EMCAL_L0, EMCAL_L1, EMCAL_L2, DCAL_L0, DCAL_L1, DCAL_L2)
-/// \param period: LHCXX
+/// \param trigger: trigger string name (EMCAL_L0, EMCAL_L1, EMCAL_L2, DCAL_L0, DCAL_L1, DCAL_L2), it can be modified for CaloOnly periods.
+/// \param period: LHCXXx
 /// \param year: 2011, ...
 ///
 /// \return True if analysis can be done.
 ///
-Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString trigger, TString period, Int_t year)
+Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString & trigger, TString period, Int_t year)
 {
   // Accept directly all MB kind of events
   //
@@ -152,7 +152,7 @@ Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString trigger, TStr
     return kFALSE;
   }
   
-  // Run2: L1 trigger not used again until LHC15o period
+  // Run2: L0 and L2 trigger not used in LHC15o period
   //
   if ( year == 2015 && period == "LHC15o" && ( trigger.Contains("L0") || trigger.Contains("L2") ) )
   { 
@@ -161,7 +161,87 @@ Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString trigger, TStr
     
     return kFALSE;
   }
+
+  // Run2: Triggers not used in first LHC16 periods 
+  //
+  if ( year == 2016 && trigger.Contains("L") )
+  { 
+    if ( period == "LHC16b" || period == "LHC16c" || period == "LHC16d" ||
+         period == "LHC16e" || period == "LHC16f" || period == "LHC16g" || 
+         period == "LHC16h" ) 
+    {
+      printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal for period %s, SKIP \n", 
+             trigger.Data(),period.Data());
+      
+      return kFALSE;
+    }
+  }
   
+  // Run2: triggers not used in first LHC17 periods and LHC17n period XeXe
+  //
+  if ( year == 2017 && trigger.Contains("L") ) 
+  { 
+    if ( period == "LHC17a" || period == "LHC17b" || period == "LHC17c" ||
+         period == "LHC17d" || period == "LHC17e" || period == "LHC17f" || 
+         period == "LHC17g" || period == "LHC17n" ) 
+    {
+      printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal triggers for period %s, SKIP \n", 
+             trigger.Data(),period.Data());
+      
+      return kFALSE;
+    }
+  }
+  
+  // Run2: L1 trigger not used in LHC17pq period
+  //
+  if ( year == 2017 && ( period == "LHC17p" || period == "LHC17q" ) && ( trigger.Contains("L1") ) )
+  { 
+    printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal L1 trigger for period %s, SKIP \n", 
+           trigger.Data(),period.Data());
+    
+    return kFALSE;
+  }
+  
+  // Some periods with triggered events do not have TPC and the trigger mask is kCaloOnly, 
+  // indicate this via the trigger string, so that in macro ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
+  // the proper trigger mask AliVEvent::kCaloOnly is applied.
+  if ( !trigger.Contains("CaloOnly") && 
+      ( period == "LHC15n" || period == "LHC17p" || period == "LHC17q") ) 
+  {
+    trigger+="_CaloOnly";
+    printf("CheckActiveEMCalTriggerPerPeriod() - Add <_CaloOnly> to trigger string: %s!!!\n",trigger.Data());
+  }
+  
+  
+  // Run2: triggers not used in first LHC18 periods
+  //
+  if ( year == 2018 && trigger.Contains("L") ) 
+  { 
+    if ( period == "LHC18a" || period == "LHC18b" || period == "LHC18c" ) 
+    {
+      printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal triggers for period %s, SKIP \n", 
+             trigger.Data(),period.Data());
+      
+      return kFALSE;
+    }
+  }
+ 
+  // Run2: triggers EG2 and L0 not used in LHC18 Pb-Pb periods
+  //
+  if ( year == 2018 && (trigger.Contains("L2") || trigger.Contains("L0")) ) 
+  { 
+    if ( period == "LHC18q" || period == "LHC18r" ) 
+    {
+      printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal triggers for period %s, SKIP \n", 
+             trigger.Data(),period.Data());
+      
+      return kFALSE;
+    }
+  }
+  
+  // Everything is ok accept this configuration
   return kTRUE;
 }
+
+
 

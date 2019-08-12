@@ -32,6 +32,8 @@ AliAnalysisTaskKPFemto *AddTaskKPFemto ( Bool_t krunMCtruth  = kFALSE,
 					 
 					 Float_t momemtumlimitforTOFPIDfirst = 0.4, //0.4 for k //paper 0.5
 					 Float_t momemtumlimitforTOFPIDsecond= 0.8, // 0.8 for p
+					 Bool_t useHMtrigger = kFALSE,
+					 Int_t filterBit = 128,
 					 Bool_t kusecrrfindratiocut = kFALSE,
 					 //Bool_t kusetpcip = kFALSE,
 					 Bool_t kusetpcip = kTRUE,
@@ -120,7 +122,11 @@ AliAnalysisTaskKPFemto *AddTaskKPFemto ( Bool_t krunMCtruth  = kFALSE,
   task->SetPropagateGlobal(kpropagateglobal);
   task->DoSphirocity(kDoSphericity);
   task->SetRadius(radius);
-  task->SetYear(2010);
+  task->SetYear(year);
+
+  task->SetHMTrigger(useHMtrigger);
+  task->SetFilterBit(filterBit);
+ 
   mgr->AddTask(task);
 
   // Create ONLY the output containers for the data produced by the task.

@@ -34,7 +34,7 @@ public TObject
   Float_t GetPhi() const {return fPhi;}; // get phi
   Float_t GetY(Float_t mass) const; // get Y
   Double_t GetSign() const {return fSign;}; // get sign
-  ULong_t GetStatus() const {return fStatus;}; // get status
+  ULong64_t GetStatus() const {return fStatus;}; // get status
   Int_t GetLabel() const {return fLabel;}; // get label
   Float_t GetImpactParameter(Int_t i) const {return fImpactParameter[i];}; // get impact parameter
   Float_t GetImpactParameterCov(Int_t i) const {return fImpactParameterCov[i];}; // get impact parameter covariance
@@ -143,7 +143,7 @@ public TObject
   Float_t fEta; // eta
   Float_t fPhi; // phi
   Double_t fSign; // sign
-  ULong_t fStatus; // status
+  ULong64_t fStatus; // status
   Int_t fLabel; // label
   Float_t fImpactParameter[2]; // impact parameters 
   Float_t fImpactParameterCov[3]; // impact parameters covariance
@@ -206,7 +206,7 @@ public TObject
 
   Float_t fTimeZeroSigma; //!
 
-  ClassDef(AliAnalysisTrack, 9);
+  ClassDef(AliAnalysisTrack, 10);
 };
 
 #endif /* ALIANALYSISTRACK_H */

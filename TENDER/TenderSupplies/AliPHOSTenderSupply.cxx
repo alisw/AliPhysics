@@ -819,7 +819,96 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
     return en*(fNonlinearityParams[0]+fNonlinearityParams[1]*TMath::Exp(-en*fNonlinearityParams[2]))*(1.+fNonlinearityParams[3]*TMath::Exp(-en*fNonlinearityParams[4]))*(1.+fNonlinearityParams[6]/(en*en+fNonlinearityParams[5])) ;
   }
   if(fNonlinearityVersion=="Run2"){
-     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en) ; ; 
+     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en) ; 
+  }
+  if(fNonlinearityVersion=="Run2MC"){ //Default for Run2 + some correction
+    return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en)*fNonlinearityParams[0]*(1+fNonlinearityParams[1]/(1.+en*en/fNonlinearityParams[2]/fNonlinearityParams[2])) ;
+  }
+  
+  if(fNonlinearityVersion=="Run2Tune"){ //Improved Run2 tune for Emin extended down to 100 MeV
+    if(en<=0.) return 0.;
+    const Double_t xMin=0.36; //low part of the param (optimized from pi0 peak)
+    const Double_t xMax=5.17; //Upper part of the param (optimized from pi0 peak)
+    
+    //middle part param    
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 6.483e-01 ;     
+    const Double_t d=-0.4805    ;
+    const Double_t e= 0.1275    ;
+
+    Double_t ecorr=0.;
+    if(en<xMin){
+       const Double_t beta = 2.*a*sqrt(xMin)+b-d/(xMin)-2.*e/(xMin*sqrt(xMin));
+       const Double_t alpha = a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*sqrt(xMin) ;
+       ecorr= 1.0312526*(alpha+beta*sqrt(en)) ;  
+    }
+    else{
+      if(en<xMax){
+         ecorr= 1.0312526*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+      }
+      else{
+        const Double_t beta= b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax) ;
+        const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
+        ecorr= 1.0312526*(alpha*en+beta*sqrt(en)) ;  
+      }
+    }
+    if(ecorr>0){
+      return ecorr;
+    }
+    else{
+      return 0.;
+    }
+  }
+  if(fNonlinearityVersion=="Run2TuneMC"){ //Improved Run2 tune for MC
+    if(en<=0.) return 0.;
+
+    const Double_t p0 = 1.04397;
+    const Double_t p1 = 0.512307;
+    const Double_t p2 = 0.133812;
+    const Double_t p3 = -0.150093;
+    const Double_t p4 = -0.455062;
+
+    const Double_t Nonlin = p0+p1/en+p2/en/en+p3/TMath::Sqrt(en)+p4/en/TMath::Sqrt(en);
+
+    return en * Nonlin;
+  }
+  if(fNonlinearityVersion=="Run2TuneMCNoNcell"){ //Improved Run2 tune for MC in the case of loose cluster cuts (no Ncell>2 cut)
+    if(en<=0.) return 0.;
+    
+    const Double_t xMin=0.850;  //low part of the param (optimized from pi0 peak)
+    const Double_t xMax=5.17;   //Upper part of the param (optimized from pi0 peak)
+        
+    //middle part param    
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 0.6483 ;
+    const Double_t d=-0.4980 ;
+    const Double_t e= 0.1245 ;  
+    
+    Double_t ecorr=0.;
+    if(en<xMin){
+       const Double_t gamma = 0.150 ;
+       const Double_t beta = 0.5*(0.5*b*sqrt(xMin)+c+1.5*d/sqrt(xMin)+2.*e/xMin)*TMath::Power((xMin*xMin+gamma*gamma),2)/
+       (xMin*xMin*xMin);
+       const Double_t alpha = (a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*xMin/(xMin*xMin+gamma*gamma))/xMin ;
+       ecorr= 1.0165898*(alpha*en+beta*en/(en*en+gamma*gamma)) ;  
+    }
+    else{
+      if(en<xMax){
+         ecorr= 1.0165898*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+      }
+      else{
+        const Double_t beta= b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax) ;
+        const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
+        ecorr= 1.0165898*(alpha*en+beta*sqrt(en)) ;  
+      }
+    }
+    if(ecorr<0){
+      return 0.;
+    }
+
+    return ecorr ;    
   }
 
   return en ;

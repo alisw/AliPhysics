@@ -29,11 +29,12 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
   Double_t centBinEdgesUsed[9] = {0., 5., 10., 20., 40., 60., 80., 90., 100.};
   Double_t* centBinEdges = centBinEdgesDummy;
 
-
   if(controlstring.Contains("pp")){
     if(controlstring.Contains("performanceHistos")) includeCrosscheckHistos = kTRUE;
     if(controlstring.Contains("5TeV")) is2015Data = kTRUE;
     if(controlstring.Contains("7TeV")) offlineTriggerMask = AliVEvent::kMB;
+    if(controlstring.Contains("2TeV")) offlineTriggerMask = AliVEvent::kMB;
+    if(controlstring.Contains("09TeV")) offlineTriggerMask = AliVEvent::kMB;
   }
   if(controlstring.Contains("XeXe"))  {
     colsys = "XeXe";
@@ -59,8 +60,10 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
     multSteps[2] = 0;    multBinWidth[2] = 1;
     nBinsCent = 8;
     centBinEdges = centBinEdgesUsed;
+    if(controlstring.Contains("2TeV")){offlineTriggerMask = AliVEvent::kMB; is2015Data = kFALSE;}
   }
   if(controlstring.Contains("excludeSigmas")) includeSigmas = kFALSE;
+  if(controlstring.Contains("oldTrigger")){offlineTriggerMask = AliVEvent::kMB;}
 
   // Binning in Multiplicity
   const Int_t nBinsMult = multSteps[0]+ multSteps[1] + multSteps[2] + 1;
@@ -107,10 +110,26 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
     if(controlstring.Contains("fullPt")){
       upperPtCut = 50;
       lowerPtCut = 0.;
-      Double_t pTBinEdgesLarge[69] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0,20.0,22.0,24.0,26.0,28.0,30.0,32.0,34.0,36.0,40.0,45.0,50.0};
-      task->SetBinsPt(68, pTBinEdgesLarge);
+//      Double_t pTBinEdgesLarge[69] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0,20.0,22.0,24.0,26.0,28.0,30.0,32.0,34.0,36.0,40.0,45.0,50.0};
+      Double_t pTBinEdgesLarge[54] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,20.0,30.0,40.0,50.0};
+      task->SetBinsPt(53, pTBinEdgesLarge);
     }
 
+    if(controlstring.Contains("logBinsPt")){
+
+      Double_t minPt = 0.1;
+      Double_t maxPt = 100.;
+      Int_t nbinsPt = 30;
+
+      Double_t logminPt = TMath::Log10(minPt);
+      Double_t logmaxPt = TMath::Log10(maxPt);
+      Double_t binwidth = (logmaxPt-logminPt)/nbinsPt;
+      Double_t *binsPt =  new Double_t[nbinsPt+1];
+      binsPt[0] = minPt;
+      for (Int_t i = 1; i <= nbinsPt; i++) {
+        binsPt[i] = minPt + TMath::Power(10, logminPt + i*binwidth);
+      }
+    }
 
     task->SetIncludeCrosscheckHistos(includeCrosscheckHistos);
     task->Set2013pA(is2013pA);

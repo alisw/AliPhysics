@@ -99,6 +99,11 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *controlString ="default
     for (Int_t ii = 0; ii<100; ii++){   binsCent[ii]= ii*0.1; }
     for (Int_t ii = 10; ii<=100; ii++){ binsCent[90+ii]= ii; }
     fdNdPtAnalysisPbPb->SetBinsCentrality(centNbins, binsCent);
+  }else if(stControlString.Contains("HalfPercentBins")){ 
+    const Int_t centNbins = 190;
+    Double_t binsCent [centNbins+1];
+    for(Int_t ii = 0; ii<=centNbins; ii++){binsCent[ii]=ii*0.5;}
+    fdNdPtAnalysisPbPb->SetBinsCentrality(centNbins, binsCent);
   }
 
 

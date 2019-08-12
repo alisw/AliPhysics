@@ -556,14 +556,14 @@ Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, 
 
       // Daughters
       if(mcPar->GetNDaughters() != 2) continue;
-      if(mcPar->GetFirstDaughter() >= nParticles || mcPar->GetFirstDaughter() < 0) continue;
-      AliAODMCParticle *mcParDau1 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetFirstDaughter());
+      if(mcPar->GetDaughterFirst() >= nParticles || mcPar->GetDaughterFirst() < 0) continue;
+      AliAODMCParticle *mcParDau1 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetDaughterFirst());
       if(!mcParDau1) continue;
       if(TMath::Abs(mcParDau1->GetPdgCode()) != pdgDaughter) continue;
       if(TMath::Abs(mcParDau1->Eta()) > TMath::Abs(etaRange)) continue;
 
-      if(mcPar->GetLastDaughter() >= nParticles || mcPar->GetLastDaughter() < 0) continue;
-      AliAODMCParticle *mcParDau2 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetLastDaughter());
+      if(mcPar->GetDaughterLast() >= nParticles || mcPar->GetDaughterLast() < 0) continue;
+      AliAODMCParticle *mcParDau2 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetDaughterLast());
       if(!mcParDau2) continue;
       if(TMath::Abs(mcParDau2->GetPdgCode()) != pdgDaughter) continue;
       if(TMath::Abs(mcParDau2->Eta()) > TMath::Abs(etaRange)) continue;
@@ -677,17 +677,17 @@ void AliDielectronHelper::CountMCtracks(const AliMCEvent *ev, Double_t numbers[1
 
     // Daughters
     if(mcPar->GetNDaughters() != 2) continue;
-    if(mcPar->GetFirstDaughter() >= nParticles || mcPar->GetFirstDaughter() < 0) continue;
+    if(mcPar->GetDaughterFirst() >= nParticles || mcPar->GetDaughterFirst() < 0) continue;
 
-    AliVParticle *mcParDau1 = (AliVParticle*) ev->GetTrack(mcPar->GetFirstDaughter());
-    // AliAODMCParticle *mcParDau1 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetFirstDaughter());
+    AliVParticle *mcParDau1 = (AliVParticle*) ev->GetTrack(mcPar->GetDaughterFirst());
+    // AliAODMCParticle *mcParDau1 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetDaughterFirst());
     if(!mcParDau1) continue;
     if(TMath::Abs(mcParDau1->PdgCode()) != pdgDaughter) continue;
     // if(TMath::Abs(mcParDau1->GetPdgCode()) != pdgDaughter) continue;
 
-    if(mcPar->GetLastDaughter() >= nParticles || mcPar->GetLastDaughter() < 0) continue;
-    AliVParticle *mcParDau2 = (AliVParticle*) ev->GetTrack(mcPar->GetLastDaughter());
-    // AliAODMCParticle *mcParDau2 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetLastDaughter());
+    if(mcPar->GetDaughterLast() >= nParticles || mcPar->GetDaughterLast() < 0) continue;
+    AliVParticle *mcParDau2 = (AliVParticle*) ev->GetTrack(mcPar->GetDaughterLast());
+    // AliAODMCParticle *mcParDau2 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetDaughterLast());
     if(!mcParDau2) continue;
     if(TMath::Abs(mcParDau2->PdgCode()) != pdgDaughter) continue;
     // if(TMath::Abs(mcParDau2->GetPdgCode()) != pdgDaughter) continue;

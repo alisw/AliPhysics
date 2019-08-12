@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "TNamed.h"
+#include <map>
 
 using namespace std;
 class AliESDEvent;
@@ -58,13 +59,15 @@ public:
     void SetupStandardInput();
     
     //Switch to configure <Ntracklet> fit type
-    void SetUseQuadraticMapping(Bool_t lOpt){ fkUseQuadraticMapping=lOpt; } 
+    void SetUseQuadraticMapping(Bool_t lOpt){ fkUseQuadraticMapping=lOpt; }
     
     //Master Function in this Class: To be called once filenames are set
     Bool_t Calibrate();
     
     //Helper
     Float_t MinVal( Float_t A, Float_t B );
+    
+    void AddV0MCutoff( Int_t lRunNumber, Float_t lV0MCutoff );
     
 private:
     AliMultInput     *fInput;     //Object for all input
@@ -91,8 +94,12 @@ private:
     AliMultSelectionCuts *fMultSelectionCuts;
     
     // TList object for storing histograms
-    TList *fCalibHists; 
+    TList *fCalibHists;
 
+    //Run maps: for manual V0M cutoff if requested
+    Long_t fNV0MCutoffs;
+    std::map<int, float> fV0MCutoffs;
+    
     ClassDef(AliMultSelectionCalibratorMC, 1);
 };
 #endif

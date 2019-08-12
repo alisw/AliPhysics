@@ -27,6 +27,7 @@ AliFemtoPairCutAntiGamma(),
   fRadiusMin(0.8),
   fRadiusMax(2.5),
   fMagSign(1),
+  fMagFieldVal(0.5),
   fMergedFractionDataType(kESD)
 {
   fDistanceMax = aDistanceMax;
@@ -39,36 +40,32 @@ AliFemtoPairCutAntiGamma(),
 //__________________
 AliFemtoPairCutMergedFraction::AliFemtoPairCutMergedFraction(const AliFemtoPairCutMergedFraction& cPairCut) :
   AliFemtoPairCutAntiGamma(cPairCut),
-  fDistanceMax(0.03),
-  fMergedFractionLimit(0.01),
-  fDEtaMax(0.01),
-  fRadiusMin(0.8),
-  fRadiusMax(2.5),
-  fMagSign(1),
-  fMergedFractionDataType(kESD)
+  fDistanceMax(cPairCut.fDistanceMax),
+  fMergedFractionLimit(cPairCut.fMergedFractionLimit),
+  fDEtaMax(cPairCut.fDEtaMax),
+  fRadiusMin(cPairCut.fRadiusMin),
+  fRadiusMax(cPairCut.fRadiusMax),
+  fMagSign(cPairCut.fMagSign),
+  fMagFieldVal(cPairCut.fMagFieldVal),
+  fMergedFractionDataType(cPairCut.fMergedFractionDataType)
 {
-  fDistanceMax = cPairCut.fDistanceMax;
-  fMergedFractionLimit = cPairCut.fMergedFractionLimit;
-  fDEtaMax = cPairCut.fDEtaMax;
-  fRadiusMin = cPairCut.fRadiusMin;
-  fRadiusMax = cPairCut.fRadiusMax;
-  fMagSign = cPairCut.fMagSign;
-  fMergedFractionDataType = cPairCut.fMergedFractionDataType;
 }
 
 //__________________
 AliFemtoPairCutMergedFraction::~AliFemtoPairCutMergedFraction() {
-  
+
 }
 
 AliFemtoPairCutMergedFraction& AliFemtoPairCutMergedFraction::operator=(const AliFemtoPairCutMergedFraction& cPairCut) {
   if(this != &cPairCut) {
+    AliFemtoPairCutAntiGamma::operator=(cPairCut);
     fDistanceMax = cPairCut.fDistanceMax;
     fMergedFractionLimit = cPairCut.fMergedFractionLimit;
     fDEtaMax = cPairCut.fDEtaMax;
     fRadiusMin = cPairCut.fRadiusMin;
     fRadiusMax = cPairCut.fRadiusMax;
     fMagSign = cPairCut.fMagSign;
+    fMagFieldVal = cPairCut.fMagFieldVal;
     fMergedFractionDataType = cPairCut.fMergedFractionDataType;
   }
   return *this;
@@ -76,10 +73,10 @@ AliFemtoPairCutMergedFraction& AliFemtoPairCutMergedFraction::operator=(const Al
 
 //__________________
 bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
-  
+
   if(fMergedFractionDataType == kKine)
     return true;
-  
+
   // Prepare variables:
   double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();
@@ -89,6 +86,7 @@ bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
   double pt2 = pair->Track2()->Track()->Pt();
   double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
   double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
+  double magval = fMagFieldVal;
 
   // Check magnetic field sign:
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -138,13 +136,15 @@ bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
     return kTRUE;
   // Iterate through all radii in range (fRadiusMin, fRadiusMax):
   for(double irad = fRadiusMin; irad < fRadiusMax; irad += 0.01) {
-    
+
     // Calculate radius:
     Double_t rad = irad;
 
     // Calculate dPhiStar:
-    double afsi0b = -0.07510020733*chg1*fMagSign*rad/pt1;
-    double afsi1b = -0.07510020733*chg2*fMagSign*rad/pt2;
+    //double afsi0b = -0.07510020733*chg1*fMagSign*rad/pt1;
+    //double afsi1b = -0.07510020733*chg2*fMagSign*rad/pt2;
+    double afsi0b = -0.15*magval*chg1*fMagSign*rad/pt1;
+    double afsi1b = -0.15*magval*chg2*fMagSign*rad/pt2; 
     Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
     dphistar = TVector2::Phi_mpi_pi(dphistar); // returns phi angle in the interval [-PI,PI)
 
@@ -158,7 +158,7 @@ bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
     }
     allpoints += 1.0;
   }
-    
+
   if(allpoints != 0.0) {
     // Calculate fraction:
     Double_t fraction = badpoints / allpoints;
@@ -179,27 +179,25 @@ bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
   else {
     fNPairsFailed++;
   }
-  
+
   return pairpass;
 }
 
 //__________________
-AliFemtoString AliFemtoPairCutMergedFraction::Report() {
+AliFemtoString AliFemtoPairCutMergedFraction::Report()
+{
   // Prepare a report from the execution
-  string stemp = "AliFemtoPairCutMergedFraction Pair Cut - remove shared and split pairs and pairs with small separation at the specified radius\n";  char ctemp[100];
-  snprintf(ctemp , 100, "Accept pair with separation more than %f fraction in %f m distance", fMergedFractionLimit, fDistanceMax);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "AliFemtoPairCutMergedFraction Pair Cut";
+  report += "- remove shared and split pairs and pairs with small separation at the specified radius\n";
+  report += Form("Accept pair with separation more than %f fraction in %f m distance", fMergedFractionLimit, fDistanceMax);
+  return report;
 }
 
 //__________________
 TList *AliFemtoPairCutMergedFraction::ListSettings() {
   // return a list of settings in a writable form
   TList *tListSetttings =  AliFemtoPairCut::ListSettings();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoPairCutMergedFraction.radiusrange=(%f,%f)", fRadiusMin, fRadiusMax);
-  tListSetttings->AddLast(new TObjString(buf));
+  tListSetttings->AddLast(new TObjString(Form("AliFemtoPairCutMergedFraction.radiusrange=(%f,%f)", fRadiusMin, fRadiusMax)));
 
   return tListSetttings;
 }
@@ -221,12 +219,16 @@ void AliFemtoPairCutMergedFraction::SetDEtaMax(double maxeta) {
 
 //__________________
 void AliFemtoPairCutMergedFraction::SetMagneticFieldSign(int magsign) {
-  if(magsign>1) 
+  if(magsign>1)
     fMagSign = 1;
-  else if(magsign<1) 
+  else if(magsign<1)
     fMagSign = -1;
-  else 
+  else
     fMagSign = magsign;
+}
+
+void AliFemtoPairCutMergedFraction::SetMagneticFieldValue(double magval) {
+  fMagFieldVal = magval;
 }
 
 //__________________

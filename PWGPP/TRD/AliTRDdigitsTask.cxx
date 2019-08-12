@@ -9,9 +9,10 @@
 
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
+#include "AliESDv0KineCuts.h"
 
-#include "AliMCEventHandler.h"
-#include "AliMCEvent.h"
+//#include "AliMCEventHandler.h"
+//#include "AliMCEvent.h"
 
 //#include "AliKalmanTrack.h"
 
@@ -37,8 +38,10 @@ ClassImp(AliTRDdigitsTask)
 //________________________________________________________________________
 AliTRDdigitsTask::AliTRDdigitsTask(const char *name) 
 : AliAnalysisTaskSE(name),
-  fDigitsInputFileName("TRD.Digits.root"), fDigitsInputFile(0),
-  fDigitsOutputFileName(""), fDigitsOutputFile(0),
+  fESD(0), fOutputList(0),
+  fV0cuts(0), fV0tags(0), fV0electrons(0), fV0pions(0),
+  fDigitsInputFileName("TRD.Digits.root"), fDigitsOutputFileName(""),
+  fDigitsInputFile(0), fDigitsOutputFile(0),
   fDigMan(0),fGeo(0), fEventNoInFile(-2), fDigitsLoadedFlag(kFALSE)
 {
   // Constructor
@@ -80,7 +83,8 @@ TFile* AliTRDdigitsTask::OpenDigitsFile(TString inputfile,
   // open the file
   AliInfo( "opening digits file " + inputfile
            + " with option \"" + opt + "\"");
-  TFile* dfile = new TFile(inputfile, opt);
+  //TFile* dfile = new TFile(inputfile, opt);
+  TFile* dfile = TFile::Open(inputfile, opt);
   if (!dfile) {
     AliWarning("digits file '" + inputfile + "' cannot be opened");
   }
@@ -114,9 +118,19 @@ Bool_t AliTRDdigitsTask::UserNotify()
 
 
 //________________________________________________________________________
-//void AliTRDdigitsTask::UserCreateOutputObjects()
-//{
-//}
+void AliTRDdigitsTask::UserCreateOutputObjects()
+{
+
+  // create list for output (QA) stuff
+  fOutputList = new TList();
+  fOutputList->SetOwner(kTRUE);
+
+  // At this point, additional histograms can be created, maybe via a
+  // virtual function.
+
+  
+  PostData(1, fOutputList);
+}
 
 
 
@@ -162,7 +176,13 @@ void AliTRDdigitsTask::UserExec(Option_t *)
     printf("ERROR: fESD not available\n");
     return;
   }
+}
 
+//________________________________________________________________________
+void AliTRDdigitsTask::AnalyseEvent()
+{
+
+  
   printf("There are %d tracks in this event\n", fESD->GetNumberOfTracks());
 
   if (fESD->GetNumberOfTracks() == 0) {
@@ -444,6 +464,109 @@ Int_t AliTRDdigitsTask::FindDigitsTrkl(const AliTRDtrackV1* trdTrack,
 //
 //  delete geo;
 //
+
+
+//______________________________________________________________________________
+void AliTRDdigitsTask::FillV0PIDlist(){
+
+  // no need to run if the V0 cuts are not set
+  if (!fV0cuts) {
+    cout << "FillV0PIDlist: skip event - no V0 cuts" << endl;
+    return;
+  }
+  
+  // basic sanity check...
+  if (!fESD) {
+    cout << "FillV0PIDlist: skip event - no ESD event" << endl;
+    return;
+  }
+
+  const Int_t numTracks = fESD->GetNumberOfTracks();
+
+  if (numTracks < 0) {
+    AliFatal("negative number of tracks?!?");
+  }
+  
+  // Ensure there is sufficient memory for the V0 tags
+  if (!fV0tags) {
+    //cout << "FillV0PIDlist: create fV0tags" << endl;
+    fV0tags = new Int_t[numTracks];
+  } else if ( sizeof(fV0tags)/sizeof(Int_t) < numTracks ) {
+    //cout << "FillV0PIDlist: re-create fV0tags" << endl;
+    delete fV0tags;
+    fV0tags = new Int_t[numTracks];
+  } else {
+    // there is more than enough space to store the tags, no need to
+    // do anything.
+  }
+
+  // Reset the V0 tags and reference particle arrays
+  for (Int_t i = 0; i < numTracks; i++) {
+    fV0tags[i] = 0;
+  }
+
+  fV0electrons->Clear();
+  fV0pions->Clear();
+
+  
+  // V0 selection
+  // loop over V0 particles
+  fV0cuts->SetEvent(fESD);
+  for(Int_t iv0=0; iv0<fESD->GetNumberOfV0s();iv0++){
+    
+    AliESDv0 *v0 = (AliESDv0 *) fESD->GetV0(iv0);
+
+    if(!v0) continue;
+    if(v0->GetOnFlyStatus()) continue;
+
+    // Get the particle selection
+    Bool_t foundV0 = kFALSE;
+    Int_t pdgV0, pdgP, pdgN;
+    foundV0 = fV0cuts->ProcessV0(v0, pdgV0, pdgP, pdgN);
+    if(!foundV0) continue;
+
+    Int_t iTrackP = v0->GetPindex();  // positive track inded
+    Int_t iTrackN = v0->GetNindex();  // negative track
+
+    if (fV0tags[iTrackP]) {
+      printf("Warning: particle %d tagged more than once\n", iTrackP);
+    }
+
+    if (fV0tags[iTrackN]) {
+      printf("Warning: particle %d tagged more than once\n", iTrackN);
+    }
+
+    
+    // fill the Object arrays
+    // positive particles
+    if( pdgP == -11){
+      //DigitsDictionary(iTrackP, iv0, pdgP);
+      fV0electrons->Add(fESD->GetTrack(iTrackP));
+      fV0tags[iTrackP] = pdgP;
+    }
+    else if( pdgP == 211){
+      //DigitsDictionary(iTrackP, iv0, pdgP);
+      fV0pions->Add(fESD->GetTrack(iTrackP));
+      fV0tags[iTrackP] = pdgP;
+    }
+
+
+    // negative particles
+    if( pdgN == 11){
+      //DigitsDictionary(iTrackN, -iv0, pdgN);
+      fV0electrons->Add(fESD->GetTrack(iTrackN));
+      fV0tags[iTrackN] = pdgN;
+    }
+    else if( pdgN == -211){
+      //DigitsDictionary(iTrackN, -iv0, pdgN);
+      fV0pions->Add(fESD->GetTrack(iTrackN));
+      fV0tags[iTrackN] = pdgN;
+    }
+
+  }
+
+}
+
 
 
 //________________________________________________________________________

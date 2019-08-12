@@ -9,7 +9,7 @@
 #include <AliVEvent.h>
 
 /**
- * @namespace AliEmcalContainerUtils
+ * @class AliEmcalContainerUtils
  * @ingroup EMCALCOREFW
  * @brief Helper functions related to AliEmcalContainer derived objects
  *

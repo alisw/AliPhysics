@@ -41,13 +41,11 @@ int MakeTrendZDC(TString infile, int run) {
 
   TString outfile = "trending.root";
 
-  //if(!infile) return -1;
-  //if(!outfile) return -1;
   TFile *f =0;
   f=TFile::Open(infile,"read");
   if(!f) {
     printf("File %s not available\n", infile.Data());
-    return -1;
+    return 1;
   }
 
   //access histograms lists
@@ -57,14 +55,13 @@ int MakeTrendZDC(TString infile, int run) {
   TDirectoryFile * zdcQAdir=(TDirectoryFile*)f->Get(zdcQAdirName);
   if(!zdcQAdir) {
     Printf("ERROR: ZDC QA directory not present in input file.\n");
-    return -1;
+    return 2;
   }
 
   TList * generalList=(TList*)zdcQAdir->Get(genListName);
-
   if(!generalList){
      Printf("WARNING: general QA histograms absent or not accessible\n");
-     return -1;
+     return 3;
   }
 
   TH1D    *fhTDCZNC           = (TH1D*)generalList->FindObject("fhTDCZNC");       //! TDC ZNC sum
@@ -85,8 +82,6 @@ int MakeTrendZDC(TString infile, int run) {
   TH1D    *fhPMCZNAemd        = (TH1D*)generalList->FindObject("fhPMCZNAemd");    //! ZNA PMC low gain chain
   TH1D    *fhPMCZNCemdUncalib = (TH1D*)generalList->FindObject("fhPMCZNCemdUncalib");  //! ZNC PMC low gain chain uncalibrated
   TH1D    *fhPMCZNAemdUncalib = (TH1D*)generalList->FindObject("fhPMCZNAemdUncalib");  //! ZNA PMC low gain chain uncalibrated
-  TH1D    *fhTDCZNAcorr       = (TH1D*)generalList->FindObject("fhTDCZNAcorr");   //! ZNA corrected TDC
-  TH1D    *fhTDCZNCcorr       = (TH1D*)generalList->FindObject("fhTDCZNCcorr");   //! ZNC corrected TDC
   TH2F    *fhZNCCentroid      = (TH2F*)generalList->FindObject("fhZNCCentroid");  //! ZNC centroid
   TH2F    *fhZNACentroid      = (TH2F*)generalList->FindObject("fhZNACentroid");  //! ZNA centroid
   TH2F    *fDebunch           = (TH2F*)generalList->FindObject("fDebunch");       //! TDC sum vs. diff
@@ -157,6 +152,7 @@ int MakeTrendZDC(TString infile, int run) {
 
   Printf(":::: Getting post-analysis info for run %i",run);
   TFile * trendFile = new TFile(outfile.Data(),"recreate");
+  trendFile->cd();
 
   printf("==============  Saving histograms for run %i ===============\n",run);
 
@@ -183,8 +179,8 @@ int MakeTrendZDC(TString infile, int run) {
   ttree->Fill();
   printf("==============  Saving trending quantities in tree for run %i ===============\n",run);
 
-  trendFile->cd();
+  //trendFile->cd();
   ttree->Write();
   trendFile->Close();
-
+  return 0;
 }

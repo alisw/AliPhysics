@@ -5,7 +5,7 @@
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
 ///
 
-#if !defined(__CINT__) || defined(__MAKECINT_)
+#if !defined(__CINT__) && !defined(__CLING__)
 
 #include "AliFemtoAnalysisPionPion.h"
 
@@ -32,6 +32,12 @@ struct MacroParams {
   std::vector<unsigned char> pair_codes;
   std::vector<float> kt_ranges;
 
+  int eventreader_filter_bit;
+  bool eventreader_epvzero;
+  bool eventreader_dca_globaltrack;
+  bool eventreader_centrality_flattening;
+  int eventreader_use_multiplicity;
+
   float qinv_bin_size_MeV;
   float qinv_max_GeV;
 
@@ -50,6 +56,7 @@ struct MacroParams {
   UInt_t ylm_ibin;
   Float_t ylm_vmin;
   Float_t ylm_vmax;
+  Bool_t ylm_useLCMS;
 
   bool do_deltaeta_deltaphi_cf;
   bool do_avg_sep_cf;
@@ -61,8 +68,10 @@ struct MacroParams {
   bool do_pqq3d_cf;
   bool do_kt_pqq3d_cf;
 
+  bool do_moco6_cf;
+
   bool do_ylm_cf; // not implemented yet
-  bool ylm_useLCMS;
+  bool do_kt_ylm_cf;
 
   // monte-carlo correlation functions
   bool do_trueq_cf;
@@ -103,6 +112,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_deltaeta_deltaphi_cf = false;
   macro_config.do_avg_sep_cf = false;
   macro_config.do_ylm_cf = false;
+  macro_config.do_kt_ylm_cf = false;
+  macro_config.do_moco6_cf = false;
 
   macro_config.do_trueq_cf = false;
   macro_config.do_kt_trueq_cf = false;
@@ -120,14 +131,20 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.delta_eta_min = -0.1;
   macro_config.delta_eta_max =  0.1;
 
-  macro_config.q3d_bin_count = 56;
-  macro_config.q3d_maxq = 0.14;
+  macro_config.q3d_bin_count = 59;
+  macro_config.q3d_maxq = 0.295;
 
   macro_config.ylm_max_l = 3;
   macro_config.ylm_ibin = 30;
   macro_config.ylm_vmin = 0.0;
   macro_config.ylm_vmax = 0.3;
   macro_config.ylm_useLCMS = false;
+
+  macro_config.eventreader_filter_bit = 7;
+  macro_config.eventreader_epvzero = true;
+  macro_config.eventreader_dca_globaltrack = true;
+  macro_config.eventreader_centrality_flattening = false;
+  macro_config.eventreader_use_multiplicity = AliFemtoEventReaderAOD::kCentrality;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
@@ -138,14 +155,15 @@ ConfigFemtoAnalysis(const TString& param_str="")
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
+  AliFemtoEventReaderAOD::EstEventMult multest = macro_config.eventreader_use_multiplicity;
   AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODMultSelection();
-    rdr->SetFilterBit(7);
-    rdr->SetEPVZERO(kTRUE);
-    rdr->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
-    rdr->SetCentralityFlattening(kFALSE);
+    rdr->SetFilterBit(macro_config.eventreader_filter_bit);
+    rdr->SetEPVZERO(macro_config.eventreader_epvzero);
+    rdr->SetUseMultiplicity(multest);
+    rdr->SetCentralityFlattening(macro_config.eventreader_centrality_flattening);
     rdr->SetReadV0(0);
     // rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
-    rdr->SetDCAglobalTrack(kTRUE);
+    rdr->SetDCAglobalTrack(macro_config.eventreader_dca_globaltrack);
     rdr->SetReadMC(analysis_config.is_mc_analysis);
   manager->SetEventReader(rdr);
 
@@ -194,7 +212,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         type_2 = PI_MINUS;
         break;
       default:
-        cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
+        std::cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
         continue;
       }
 
@@ -283,6 +301,13 @@ ConfigFemtoAnalysis(const TString& param_str="")
         analysis->AddCorrFctn(m_cf);
       }
 
+      if (macro_config.do_moco6_cf) {
+        TString cf_title("MRC6D");
+        AliFemtoModelCorrFctnTrueQ6D *m_cf = new AliFemtoModelCorrFctnTrueQ6D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        m_cf->SetManager(model_manager);
+        analysis->AddCorrFctn(m_cf);
+      }
+
       if (macro_config.do_kt_qinv_cf) {
         TString cf_title("_qinv");
         AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title, QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
@@ -354,6 +379,26 @@ ConfigFemtoAnalysis(const TString& param_str="")
             macro_config.ylm_useLCMS
           );
         analysis->AddCorrFctn(ylm_cf);
+      }
+
+      if (macro_config.do_kt_ylm_cf) {
+        AliFemtoCorrFctnDirectYlm *ylm_cf = new AliFemtoCorrFctnDirectYlm(
+            "AliFemtoCorrFctnDirectYlm",
+            macro_config.ylm_max_l,
+            macro_config.ylm_ibin, // nbinssh,
+            macro_config.ylm_vmin,
+            macro_config.ylm_vmax,
+            macro_config.ylm_useLCMS
+          );
+
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_DirectYlm", ylm_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
       }
 
       manager->AddAnalysis(analysis);
@@ -497,7 +542,7 @@ BuildConfiguration(const TString &text,
 
     cmd += ";";
 
-    cout << "I-BuildConfiguration: `" << cmd << "`\n";
+    std::cout << "I-BuildConfiguration: `" << cmd << "`\n";
     gROOT->ProcessLineFast(cmd);
   }
 }

@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//      Task for Beauty analysis in Pb-Pb collisions   				  //
+//      Task for Beauty analysis in central Pb-Pb collisions   				  //
 //      															  //
 //																	  //
 //		v1.0														  //
@@ -33,11 +33,12 @@ class AliCentrality;
 class AliAODEvent;
 class AliVEvent;
 class AliAODMCHeader;
-class AliSelectNonHFE;
+class AliHFEextraCuts;
 class AliEventPoolManager;
 class AliEventPool;
 class TObjArray;
 class AliGenEventHeader;
+class AliHFEV0taginfo;
 
 //______________________________________________________________________
 //Library
@@ -172,7 +173,8 @@ private:
     AliVEvent 		      	*fVevent;			
     TList       			*fOutputList;
     AliPIDResponse 			*fPidResponse;
-    AliSelectNonHFE 		*fNonHFE;
+    AliHFEextraCuts 		*fExtraCuts;
+	AliHFEV0taginfo			*fV0Tagger;  // Tags v0 tracks per Event
     
     
     //For the case of AOD analysis
@@ -186,9 +188,7 @@ private:
     //Histograms for the analysis
     TH1F				*fVertex1;//!
     TH1F				*fNevent; //!
-    TH1F				*fNeventT0; //!
-    TH1F				*fNevent_3;	//!
-    TH1F				*fNevent_T0b; //!
+    TH1F				*fNevent_passvertex;	//!
     TH1F				*fNevent_corrcut;//!
     TH1F				*fNevent_no_vertex; //!
     TH1F				*fNevent_no_vertex_2; //!
@@ -200,6 +200,8 @@ private:
     TH2F				*fTPC_p3;//!
     TH1F				*fPt_1;//!
     TH1F				*fPt_2;//!
+    TH1F				*fNAnalizedTracks;//!
+    TH1F				*fNAnalizedTracksHijing;//!
     TH1F				*fITSnClus_1;//!
     TH1F				*fITSnClus_2;//!
     TH1F				*fTPCnClus_1;//!
@@ -225,7 +227,9 @@ private:
     TH2F                *fTPCnsigma_TOFnsigma1;//!
     TH2F                *fTPCnsigma_TOFnsigma2;//!
     TH2F                *fTPCnsigma_TOFnsigma3;//!
+    TH2F				*fTPCnsigma_p_after_V0selection;//!
     TH2F                *fTPCnsigma_p_after_tof;//!
+    TH2F                *fTPCnsigma_p_after_tof_v2;//!
     TH2F                *fTPCnsigma_p_after_tof_p;//!
     TH2F                *fTPCnsigma_p_after_tof_pion;//!
     TH2F                *fTPCnsigma_p_after_tof_k;//!
@@ -245,6 +249,8 @@ private:
     TH2F                *fDCAxy_pt_beautybef;//!
     TH2F                *fDCAxy_pt_beautyaft;//!
     TH2F				*fDCAxy_pt_had_onlyDCA;//!
+    TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!
+    TH2F				*fDCAxy_pt_had_onlyDCA_Phytia;//!
     TH2F                *fDCAz_pt_ele;//!
     TH2F                *fDCAxy_pt_ele;//!
     TH1F                *fPtMCeta;//!
@@ -255,11 +261,16 @@ private:
 	TH2F                *hBeautyMotherPt;//!
 	TH1F				*fPtBeautyGenerated;//!
 	TH1F				*fPtGeneratedBmesons;//!
+	TH1F				*fPtBeautyReconstructedAll;//!
 	TH1F				*fPtBeautyReconstructedTracks;//!
 	TH1F				*fPtBeautyReconstructedTracksPID;//!
 	TH1F				*fPtBeautyReconstructedTracksPIDTPC;//!
 	TH1F				*fPtBeautyReconstructedTracksPIDTOF;//!
+	TH1F				*fPtBeautyReconstructedTracksPIDITS;//!
+	TH1F				*hTOFEffDen;
+	TH1F				*hTOFEffNum;
     
+    TH2F				*fPtBeautyPtrecVsPtparticle;//!
     TH2F				*hCharmMotherPt_vsElecPt;//!
     TH2F				*hElecPt_vsCharmMotherPt;//!
     

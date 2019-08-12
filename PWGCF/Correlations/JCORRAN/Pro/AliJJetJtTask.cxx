@@ -16,10 +16,10 @@
 //______________________________________________________________________________
 // Analysis task for jT Analysis
 // author: B.K Kim,  D.J. Kim, T. Snellman
-// ALICE Group University of Jyvaskyla 
-// Finland 
+// ALICE Group University of Jyvaskyla
+// Finland
 // Fill the analysis containers for ESD or AOD
-// Adapted for AliAnalysisTaskSE and AOD objects  
+// Adapted for AliAnalysisTaskSE and AOD objects
 //////////////////////////////////////////////////////////////////////////////
 
 #include "AliAODEvent.h"
@@ -27,22 +27,24 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAODHandler.h"
 #include "AliParticleContainer.h"
+#include "AliMultSelection.h"
 #include "AliAnalysisManager.h"
 #include "AliJHistManager.h"
 #include "AliLog.h"
 #include "AliJMCTrack.h"
-#include "AliJJetJtTask.h" 
+#include "AliJJetJtTask.h"
 #include "AliJCard.h"
 #include "AliJetContainer.h"
 #include "AliJEfficiency.h"
 
 //______________________________________________________________________________
-AliJJetJtTask::AliJJetJtTask() :   
+AliJJetJtTask::AliJJetJtTask() :
   AliAnalysisTaskSE("AliJJetJtTaskTask"),
   fJetTask(NULL),
   fMCJetTask(NULL),
   fJetTaskName(""),
   fMCJetTaskName(""),
+  fSelector(""),
   fJJetJtAnalysis(0x0),
   fOutput(NULL),
   fCard(NULL),
@@ -54,6 +56,7 @@ AliJJetJtTask::AliJJetJtTask() :
   fDoLog(0),
   NRandom(1),
   moveJet(0),
+  fCentCut(100),
   zVert(-999),
   fAnaUtils(NULL),
   fRunTable(NULL),
@@ -71,6 +74,7 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
   fMCJetTask(NULL),
   fJetTaskName(""),
   fMCJetTaskName(""),
+  fSelector(""),
   fJJetJtAnalysis(0x0),
   fOutput(NULL),
   fCard(NULL),
@@ -82,6 +86,7 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
   fDoLog(0),
   NRandom(1),
   moveJet(0),
+  fCentCut(100),
   zVert(-999),
   fAnaUtils(NULL),
   fRunTable(NULL),
@@ -102,6 +107,7 @@ AliJJetJtTask::AliJJetJtTask(const AliJJetJtTask& ap) :
   fJetTaskName(ap.fJetTaskName),
   fMCJetTask(ap.fMCJetTask),
   fMCJetTaskName(ap.fMCJetTaskName),
+  fSelector(ap.fSelector),
   fJJetJtAnalysis( ap.fJJetJtAnalysis ),
   fOutput( ap.fOutput ),
   fCard(ap.fCard),
@@ -111,6 +117,7 @@ AliJJetJtTask::AliJJetJtTask(const AliJJetJtTask& ap) :
   fSide(ap.fSide),
   NRandom(ap.NRandom),
   moveJet(ap.moveJet),
+  fCentCut(ap.fCentCut),
   zVert(ap.zVert),
   fJMCTracks(ap.fJMCTracks),
   fAnaUtils(ap.fAnaUtils),
@@ -163,7 +170,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
 
   OpenFile(1);
   fOutput = gDirectory;//->mkdir("JDiHadronCorr");
-  fOutput->cd();    
+  fOutput->cd();
 
   fJetTask = (AliJJetTask*)(man->GetTask( fJetTaskName));
 
@@ -176,6 +183,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
   fJJetJtAnalysis->SetMC(fDoMC);
   if(fDoLog) fJJetJtAnalysis->SetLog(fDoLog);
   fJJetJtAnalysis->SetLeadingJets(fLeadingJets);
+  fJJetJtAnalysis->SetMaxDeltaRCorr(fmaxDeltaRCorr);
   fJJetJtAnalysis->SetSide(fSide);
   fJJetJtAnalysis->SetnR(fJetTask->GetnR());
   fJJetJtAnalysis->Setnkt(fJetTask->Getnkt());
@@ -201,8 +209,9 @@ void AliJJetJtTask::UserCreateOutputObjects()
   fFirstEvent = kTRUE;
 }
 
+
 //______________________________________________________________________________
-/// Primary loop 
+/// Primary loop
 void AliJJetJtTask::UserExec(Option_t* /*option*/) 
 {
   // Processing of one event
@@ -232,11 +241,35 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
   // centrality
   float fcent = -999;
   if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
-    AliCentrality *cent = event->GetCentrality();
-    if( ! cent ) return;
-    fcent = cent->GetCentralityPercentile("V0M");
-  } else {
+    if(fDebug > 6) cout << fRunTable->GetPeriodName() << endl;
+    if(fSelector != ""){
+      fcent = sel->GetMultiplicityPercentile(fSelector);
+    }else{
+      if(fRunTable->IsPA() && !(fRunTable->GetPeriodName().BeginsWith("LHC13"))){
+        sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
+        if (sel) {
+          fcent = sel->GetMultiplicityPercentile("V0A");
+        }
+        else{
+          if(fDebug > 2) cout << "Sel not found" << endl;
+        }
+      }else{
+        AliCentrality *cent = event->GetCentrality();
+        if( ! cent ) return;
+        if(fRunTable->GetPeriodName().BeginsWith("LHC13")){
+          fcent = cent->GetCentralityPercentile("V0A");
+        }else{
+          fcent = cent->GetCentralityPercentile("V0M");
+        }
+      }
+    }
+  }
+  else {
     fcent = -1;
+  }
+  if(fcent > fCentCut){
+    if(fDebug > 2) cout << "Skip event, Centrality was " << fcent << " and cut is " << fCentCut << endl;
+    return;
   }
 
   cBin = fCard->GetBin(kCentrType, fcent);;
@@ -291,7 +324,7 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
 /// 
 void AliJJetJtTask::FindDaughters(AliJJet *jet, AliAODMCParticle *track, AliMCParticleContainer *mcTracksCont){
 
-  for(int id = track->GetFirstDaughter(); id <= track->GetLastDaughter() ; id++){
+  for(int id = track->GetDaughterFirst(); id <= track->GetDaughterLast() ; id++){
     AliAODMCParticle *daughter = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(id));
     if(daughter->GetNDaughters() > 0){
       FindDaughters(jet,daughter,mcTracksCont);

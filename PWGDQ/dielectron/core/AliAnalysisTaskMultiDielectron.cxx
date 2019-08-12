@@ -105,6 +105,8 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   // Constructor
   //
   DefineInput(0,TChain::Class());
+  if((AliAnalysisDataContainer*)(AliAnalysisManager::GetAnalysisManager())->GetContainers()->FindObject("ZDCEPExchangeContainer"))
+     DefineInput(1,AliFlowEventSimple::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TH1D::Class());

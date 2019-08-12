@@ -11,7 +11,6 @@
 #include <TGrid.h>
 #include <TList.h>
 #include <TMethodCall.h>
-#include <TAlienCollection.h>
 #include <TGridCollection.h>
 #include <TGridResult.h>
 #include <TGeoGlobalMagField.h>
@@ -30,7 +29,7 @@
 #endif
 
 TChain* MakeChainLST(const char* filename = NULL);
-void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t tchg=kFALSE,  Bool_t tpp=kTRUE, Long64_t nev=1234567890, Long64_t first = 0)
+void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t tchg=kTRUE,  Bool_t tpp=kTRUE, Long64_t nev=1234567890, Long64_t first = 0)
 {
   TStopwatch timer;
   timer.Start();
@@ -80,7 +79,7 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
     aliTender = (AliTender*)AddTaskTender(!mc, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE);  // (useV0, useTPC,  !!! useTOF=kFALSE for MC !!!, useTRD, usePID, useVTX, useT0, useEmc, usePtFix)
   }
   aliTender->SetHandleOCDB(kTRUE);
-  //aliTender->SetDefaultCDBStorage(Form("alien://folder=/alice/data/2010/OCDB?cacheFolder=%s/local", gSystem->ExpandPathName("$HOME")));
+  // aliTender->SetDefaultCDBStorage(Form("alien://folder=/alice/data/2010/OCDB?cacheFolder=%s/local", gSystem->ExpandPathName("$HOME")));
   // aliTender->SetDefaultCDBStorage(Form("local://%s/local/alice/data/2010/OCDB", gSystem->ExpandPathName("$HOME")));
 
 // *******************  Physics Selection  *************
@@ -96,15 +95,14 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESpidTask.C");
 	AddMESpidTask(mc);
   }
-//
 
-//   // *******************  MES CHG task  ******************
+  // *******************  MES CHG task  ******************
   if(tchg){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESchgTask.C");
     AddMESchgTask(mc);
   }
-//
-//   // *******************  MES ppCol task  ******************
+
+  // *******************  MES ppCol task  ******************
   if(tpp){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESppColTask.C");
     AddMESppColTask(mc);

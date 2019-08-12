@@ -65,6 +65,16 @@ public:
   void AddRequiredTriggerOverlap(const char *trigger);
   void AddExcludedTriggerOverlap(const char *trigger);
 
+  /**
+   * @brief Set centrality selection.
+   *
+   * Note: Needs multiplicity task to run in front
+   *
+   * @param[in] min Min. value of the centrality interval
+   * @param[in] max Max. value of the centrality interval
+   */
+  void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min,max); fRequestCentrality = true; }
+
   static AliAnalysisTaskEmcalRecalcPatchesRef *AddTaskEmcalRecalcPatches(const char *suffix);
 
 protected:
@@ -86,6 +96,10 @@ private:
   Bool_t                fSwapPatches;         ///< Look explicitly for the wrong patches
   TObjArray             fRequiredOverlaps;    ///< Add option to require overlap with certain triggers
   TObjArray             fExcludedOverlaps;    ///< Add option to exclude overlap with certain triggers
+  AliCutValueRange<double> fCentralityRange;  ///< Range of accepted event centralities
+  Bool_t                fUseRecalcPatches;    ///< Switch between offline (FEE) and recalc (L1) patches
+  Bool_t                fRequestCentrality;   ///< Switch for request of centrality selection
+  Double_t              fEventCentrality;     //!<! Event centrality
 
   AliAnalysisTaskEmcalRecalcPatchesRef(const AliAnalysisTaskEmcalRecalcPatchesRef &);
   AliAnalysisTaskEmcalRecalcPatchesRef &operator=(const AliAnalysisTaskEmcalRecalcPatchesRef &);

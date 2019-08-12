@@ -13,6 +13,7 @@
 
 class AliJetContainer;
 class AliEmcalJet;
+class AliVCaloCells;
 #include "THistManager.h"
 #include "AliYAMLConfiguration.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -23,7 +24,7 @@ class AliEmcalJet;
 // For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
 namespace PWGJE { namespace EMCALJetTasks { class AliAnalysisTaskEmcalJetHPerformance; } }
 std::ostream & operator<< (std::ostream &in, const PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance &myTask);
-void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & second); 
+void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & second);
 
 namespace PWGJE {
 namespace EMCALJetTasks {
@@ -48,7 +49,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // Additional constructors
   AliAnalysisTaskEmcalJetHPerformance(const AliAnalysisTaskEmcalJetHPerformance & other);
   AliAnalysisTaskEmcalJetHPerformance& operator=(AliAnalysisTaskEmcalJetHPerformance other);
-  friend void ::swap(AliAnalysisTaskEmcalJetHPerformance & first, AliAnalysisTaskEmcalJetHPerformance & second); 
+  friend void ::swap(AliAnalysisTaskEmcalJetHPerformance & first, AliAnalysisTaskEmcalJetHPerformance & second);
   // Avoid implementing move since c++11 is not allowed in the header
 
   void UserCreateOutputObjects();
@@ -56,7 +57,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // Initialize the task
   // Configuration is handled via the YAML configuration file
   bool Initialize();
-  void SetConfigurationPath(const std::string & configurationPath) { fConfigurationPath = configurationPath; }
+  void AddConfigurationFile(const std::string & configurationPath, const std::string & configName = "") { fYAMLConfig.AddConfiguration(configurationPath, configName); }
 
   // Utility functions
   // AddTask
@@ -71,27 +72,48 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
 
   Bool_t Run();
 
+  // Helper functions
+  double DetermineTrackingEfficiency(double trackPt, double trackEta);
+
   // Configuration
   void RetrieveAndSetTaskPropertiesFromYAMLConfig();
   void SetupJetContainersFromYAMLConfig();
+  void SetupParticleContainersFromYAMLConfig();
+  void SetupClusterContainersFromYAMLConfig();
+
+  // QA histograms
+  void SetupQAHists();
+  void QAHists();
+  void FillQAHists();
+  // Cell QA
+  void SetupCellQAHistsWithPrefix(const std::string & prefix);
+  void SetupCellQAHists();
+  void FillCellQAHists(const std::string & prefix, AliVCaloCells * cells);
+  void FillCellQAHists();
 
   // Response matrix functions
   void SetupResponseMatrixHists();
-  void CreateResponseMatrix();
-  void FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2);
-  ResponseMatrixFillWrapper CreateResponseMatrixFillWrapper(AliEmcalJet * jet) const;
+  void ResponseMatrix();
+  void FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2, const double jet1Rho);
+  ResponseMatrixFillWrapper CreateResponseMatrixFillWrapper(AliEmcalJet * jet, const double rho) const;
 
   // Basic configuration
-  PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file
-  std::string fConfigurationPath;     ///<  Path to the YAML configuration file
-  bool fConfigurationInitialized;     ///<  True if the task configuration has been successfully initialized
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file.
+  bool fConfigurationInitialized;     ///<  True if the task configuration has been successfully initialized.
 
   // Histograms
-  THistManager fHistManager;          ///<  Histogram manager
-  AliEmcalEmbeddingQA fEmbeddingQA;   //!<! Embedding QA hists (will only be added if embedding)
+  THistManager fHistManager;          ///<  Histogram manager.
+  AliEmcalEmbeddingQA fEmbeddingQA;   //!<! Embedding QA hists (will only be added if embedding).
 
   // Configuration options
-  bool fCreateResponseMatrix;         ///<  If true, create a response matrix with the available jet collections
+  bool fCreateQAHists;                ///<  If true, create QA histograms.
+  bool fCreateResponseMatrix;         ///<  If true, create a response matrix with the available jet collections.
+
+  // QA variables
+  std::string fEmbeddedCellsName;     ///<  Set the embedded cells collection name
+  UInt_t fPreviousEventTrigger;       ///<  Physics selection (offline trigger) of the previous event for determine why a small number of embedded event are double counted.
+  bool fPreviousEmbeddedEventSelected;///<  True if the previous embedded event was selected. Used to determine why a small number of embedded event are double counted.
+  AliAnalysisTaskEmcalJetHUtils::EEfficiencyPeriodIdentifier_t fEfficiencyPeriodIdentifier;  ///<  Identifies the period for determining the efficiency correction to apply
 
   // Response matrix variables
   // Response matrix fill map
@@ -106,7 +128,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   double fMinFractionShared;             ///<  Minimum fraction of shared jet pt required for matching a hybrid jet to detector level
   AliAnalysisTaskEmcalJetHUtils::ELeadingHadronBiasType_t fLeadingHadronBiasType; ///<  Leading hadron in jet bias type (either charged, neutral, or both)
 
-  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 1);
+  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 5);
 };
 
 } /* namespace EMCALJetTasks */

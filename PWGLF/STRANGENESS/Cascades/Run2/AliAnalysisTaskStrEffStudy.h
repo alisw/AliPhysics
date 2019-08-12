@@ -36,34 +36,29 @@
 #define AliAnalysisTaskStrEffStudy_H
 
 class TList;
-class TH1F;
-class TH2F;
-class TH3F;
+class TH1D;
+class TH3D;
 class TVector3;
-class THnSparse;
 class TRandom3;
-class TProfile; 
+class TTree;
 
-class AliESDpid;
 class AliESDtrackCuts;
 class AliAnalysisUtils;
 class AliESDEvent;
-class AliPhysicsSelection;
-class AliESDFMD;
-class AliCFContainer;
+class AliESDtrack;
+class AliPIDResponse;
 class AliV0Result;
 class AliCascadeResult;
-class AliExternalTrackParam; 
+class AliExternalTrackParam;
 
-//#include "TString.h"
-//#include "AliESDtrackCuts.h"
-//#include "AliAnalysisTaskSE.h"
+#include "TString.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 
 class AliAnalysisTaskStrEffStudy : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskStrEffStudy();
-    AliAnalysisTaskStrEffStudy(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions = "");
+    AliAnalysisTaskStrEffStudy(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, Bool_t lSaveHyperTriton, const char *name, TString lExtraOptions = "");
     virtual ~AliAnalysisTaskStrEffStudy();
 
     virtual void   UserCreateOutputObjects();
@@ -79,6 +74,9 @@ public:
     }
     void SetSaveCascades           (Bool_t lSaveCascades   = kTRUE ) {
         fkSaveCascadeTree   = lSaveCascades;
+    }
+    void SetSaveHyperTriton3Body (Bool_t lSaveHyp3Body   = kTRUE ) {
+        fkSaveHyperTriton3BodyTree   = lSaveHyp3Body;
     }
     void SetPreselectDedx (Bool_t lPreselectDedx= kTRUE ) {
         fkPreselectDedx   = lPreselectDedx;
@@ -151,6 +149,10 @@ public:
     void SetDownScaleCascade ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001 ) {
         fkDownScaleCascade = lOpt;
         fDownScaleFactorCascade = lVal;
+    }
+    void SetDownScaleHyperTriton3Body ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001 ) {
+        fkDownScaleHyperTriton3Body = lOpt;
+        fDownScaleFactorHyperTriton3Body = lVal;
     }
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters
@@ -295,6 +297,7 @@ private:
     TTree  *fTreeEvent;              //! Output Tree, Events
     TTree  *fTreeV0;              //! Output Tree, V0s
     TTree  *fTreeCascade;              //! Output Tree, Cascades
+    TTree  *fTreeHyperTriton3Body;              //! Output Tree, Cascades
 
     AliPIDResponse *fPIDResponse;     // PID response object
     AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
@@ -332,15 +335,19 @@ private:
     Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
 
+    Bool_t fkSaveHyperTriton3BodyTree;         //if true, save TTree
+    Bool_t fkDownScaleHyperTriton3Body;
+    Double_t fDownScaleFactorHyperTriton3Body;
+
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
-    
+
     //Save only decent tracks
     Bool_t fkSaveGoodTracks;
-    
+
     //Sandbox mode
     Bool_t fkSandboxV0;
     Bool_t fkSandboxCascade;
@@ -355,7 +362,7 @@ private:
 
     Double_t fLambdaMassSigma[4]; //Array to store the lambda mass sigma parametrization
     //[0]+[1]*x+[2]*TMath::Exp([3]*x)
-    
+
     Double_t fPrecisionCutoffCascadeDCA; //Precision cutoff for GetDCA numerical recipe
     Int_t fMaxIterationsCascadeDCA; //Max N Iter for cascade DCA calculation
 
@@ -408,6 +415,16 @@ private:
     Float_t fTreeVariableDecayX;
     Float_t fTreeVariableDecayY;
     Float_t fTreeVariableDecayZ;
+    Float_t fTreeVariableDecayXMC;
+    Float_t fTreeVariableDecayYMC;
+    Float_t fTreeVariableDecayZMC;
+    //p of daughters
+    Float_t fTreeVariableNegPxMC; //!
+    Float_t fTreeVariableNegPyMC; //!
+    Float_t fTreeVariableNegPzMC; //!
+    Float_t fTreeVariablePosPxMC; //!
+    Float_t fTreeVariablePosPyMC; //!
+    Float_t fTreeVariablePosPzMC; //!
     Float_t fTreeVariableInvMassK0s; //!
     Float_t fTreeVariableInvMassLambda; //!
     Float_t fTreeVariableInvMassAntiLambda; //!
@@ -428,10 +445,11 @@ private:
     Float_t fTreeVariableNegSigmaZ2;
     
     //Sandbox mode
-    AliExternalTrackParam *fTreeVariablePosTrack;
-    AliExternalTrackParam *fTreeVariableNegTrack;
+    AliESDtrack *fTreeVariablePosTrack;
+    AliESDtrack *fTreeVariableNegTrack;
     
     AliESDv0 *fTreeVariableOTFV0;
+    Bool_t fTreeVariableFoundOTFV0; 
     
     Float_t fTreeVariableMagneticField;
     
@@ -441,6 +459,10 @@ private:
     Float_t fTreeVariablePVx;
     Float_t fTreeVariablePVy;
     Float_t fTreeVariablePVz;
+    
+    AliESDVertex *fTreeVariableAliESDvertex;
+    
+    Int_t fTreeVariableRun;
     
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
@@ -542,12 +564,17 @@ private:
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     //Save full info for full re-vertex offline replay ('sandbox mode')
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    AliExternalTrackParam *fTreeCascVarBachTrack;
-    AliExternalTrackParam *fTreeCascVarPosTrack;
-    AliExternalTrackParam *fTreeCascVarNegTrack;
+    AliESDtrack *fTreeCascVarBachTrack;
+    AliESDtrack *fTreeCascVarPosTrack;
+    AliESDtrack *fTreeCascVarNegTrack;
     
     //Sandbox on-the-fly V0 for comparison, please
     AliESDv0 *fTreeCascVarOTFV0;
+    AliESDv0 *fTreeCascVarOTFV0NegBach;
+    AliESDv0 *fTreeCascVarOTFV0PosBach;
+    Bool_t fTreeCascVarV0AsOTF; 
+    Bool_t fTreeCascVarNegBachAsOTF;
+    Bool_t fTreeCascVarPosBachAsOTF;
     
     Float_t fTreeCascVarMagneticField;
     
@@ -558,8 +585,33 @@ private:
     Float_t fTreeCascVarPVx;
     Float_t fTreeCascVarPVy;
     Float_t fTreeCascVarPVz;
+    AliESDVertex *fTreeCascVarAliESDvertex;
+    
+    
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
+    AliESDtrack *fTreeHyp3BodyVarTracks[3];
+    Int_t        fTreeHyp3BodyVarPDGcodes[3];
+    
+    ULong64_t    fTreeHyp3BodyVarEventId;
+    Int_t        fTreeHyp3BodyVarMotherId;
+
+    Float_t      fTreeHyp3BodyVarTruePx;
+    Float_t      fTreeHyp3BodyVarTruePy;
+    Float_t      fTreeHyp3BodyVarTruePz;
+
+    Float_t      fTreeHyp3BodyVarDecayVx;
+    Float_t      fTreeHyp3BodyVarDecayVy;
+    Float_t      fTreeHyp3BodyVarDecayVz;
+    Float_t      fTreeHyp3BodyVarDecayT;
+
+    Float_t      fTreeHyp3BodyVarPVx;
+    Float_t      fTreeHyp3BodyVarPVy;
+    Float_t      fTreeHyp3BodyVarPVz;
+    Float_t      fTreeHyp3BodyVarPVt;
+
+    Float_t      fTreeHyp3BodyVarMagneticField;
+
 //===========================================================================================
 //   Histograms
 //===========================================================================================
@@ -578,7 +630,11 @@ private:
     TH3D *fHistGeneratedPtVsYVsCentralityXiPlus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaMinus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaPlus;
-
+    
+    //Hypertriton
+    TH3D *fHistGeneratedPtVsYVsCentralityHypTrit;
+    TH3D *fHistGeneratedPtVsYVsCentralityAntiHypTrit;
+    
     AliAnalysisTaskStrEffStudy(const AliAnalysisTaskStrEffStudy&);            // not implemented
     AliAnalysisTaskStrEffStudy& operator=(const AliAnalysisTaskStrEffStudy&); // not implemented
 

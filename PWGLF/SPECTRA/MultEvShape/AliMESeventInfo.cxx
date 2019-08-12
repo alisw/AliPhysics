@@ -188,6 +188,7 @@ Bool_t AliMESeventInfo::LeadingParticleDirection(TObjArray* tracks, Double_t pxy
   Int_t ntracks(0);
   if(!(ntracks=tracks->GetEntries())) return kFALSE;
 
+  Int_t indexmax(0);
   Double_t ptmax(0.);
   // Double_t etamax(0.);
   // Double_t phimax(0.);
@@ -204,7 +205,14 @@ Bool_t AliMESeventInfo::LeadingParticleDirection(TObjArray* tracks, Double_t pxy
     ptmax  = track->Pt();
     // etamax = track->Eta();
     // phimax = track->Phi();
+    indexmax = iTracks;
   }
+
+  // put the LP on the first position on the list
+  AliMEStrackInfo *tempLP = dynamic_cast<AliMEStrackInfo*>(tracks->At(indexmax));
+  AliMEStrackInfo *temp0 = dynamic_cast<AliMEStrackInfo*>(tracks->At(0));
+  tracks->AddAt(temp0, indexmax);   // put the first particle in the old LP position
+  tracks->AddAt(tempLP, 0);         // put the LP first
 
   return kTRUE;
 }
@@ -372,7 +380,8 @@ void AliMESeventInfo::Print(Option_t */*o*/) const
   printf("Event Shape  : D+[%f] D-[%f] T[%f %f] S[%f] R[%f] Leading(px, py)[%f %f]\n",
     fEvShape.fDir[0], fEvShape.fDir[1], fEvShape.fThrust[0], fEvShape.fThrust[1],  fEvShape.fSphericity,  fEvShape.fRecoil, fEvShape.fPxyLead[0], fEvShape.fPxyLead[1]);
   printf("             : FW[");
-  for(Int_t ifw(0); ifw<FW_MAX_ORDER; ifw++) printf("%f ", fEvShape.fFW[ifw]); printf("]\n");
+  for(Int_t ifw(0); ifw<FW_MAX_ORDER; ifw++) printf("%f ", fEvShape.fFW[ifw]); 
+  printf("]\n");
 }
 
 //______________________________________________________________

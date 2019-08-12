@@ -47,6 +47,12 @@
 
 //Globals
 
+#include <fastjet/config.h>
+#if FASJET_VERSION_NUMBER >= 30302
+#include <fastjet/tools/Recluster.hh>
+#else 
+#include <fastjet/contrib/Recluster.hh>
+#endif
 
 
 Double_t Eta_Upper=1.00;
@@ -55,7 +61,7 @@ Int_t Eta_Bins_1=100;
 Double_t Phi_Upper=2*(TMath::Pi());
 Double_t Phi_Lower=(-1*(TMath::Pi()));
 Int_t Phi_Bins_1=100;
-Float_t Percentile_1 = 300; 
+Float_t Percentile_1 = 300;
 
 
 
@@ -66,7 +72,7 @@ using std::endl;
 ClassImp(AliAnalysisTaskRecoilJetYield)
 
 //________________________________________________________________________
-AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() : 
+AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskRecoilJetYield", kTRUE),
   fContainer(0),
   fMinFractionShared(0),
@@ -80,7 +86,7 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fRecoilAngularWindow(0.6),
   fSemigoodCorrect(0),
   fHolePos(0),
-  fHoleWidth(0), 
+  fHoleWidth(0),
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
@@ -90,7 +96,6 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fJetRadius(0.4),
   fRMatched(0.2),
   fSharedFractionPtMin(0.5),
-  fDerivSubtrOrder(0),
   fFullTree(kFALSE),
   fBeta_SD(0),
   fZCut(0.1),
@@ -108,9 +113,11 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fTreeJetInfo(0),
   fhJetArea(0x0),
   fhTrackPt(0x0),
+  fhTrackEta(0x0),
+  fhTrackPhi(0x0),
   fhGroomedPtvJetPt(0x0),
   fhDroppedBranches(0x0),
-  fhPtTriggerHadron(0x0), 
+  fhPtTriggerHadron(0x0),
   fh2PtTriggerHadronJet(0x0),
   fhPhiTriggerHadronJet(0x0),
   fhPhiTriggerHadronEventPlane(0x0),
@@ -131,7 +138,7 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fhJetCounter_True(0x0),
   fhNumberOfJetTracks_Det(0x0),
   fhNumberOfJetTracks_True(0x0),
-  fh2PtRatio(0x0), 
+  fh2PtRatio(0x0),
   fhLundIterative(0x0),
   fhLundIterativeTrue(0x0),
   fReclusterAlgo(0),
@@ -151,7 +158,7 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
 }
 
 //________________________________________________________________________
-AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) : 
+AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fContainer(0),
   fMinFractionShared(0),
@@ -165,7 +172,7 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fRecoilAngularWindow(0.6),
   fSemigoodCorrect(0),
   fHolePos(0),
-  fHoleWidth(0), 
+  fHoleWidth(0),
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
@@ -175,7 +182,6 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fJetRadius(0.4),
   fRMatched(0.2),
   fSharedFractionPtMin(0.5),
-  fDerivSubtrOrder(0),
   fFullTree(kFALSE),
   fBeta_SD(0),
   fZCut(0.1),
@@ -193,9 +199,11 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fTreeJetInfo(0),
   fhJetArea(0x0),
   fhTrackPt(0x0),
+  fhTrackEta(0x0),
+  fhTrackPhi(0x0),
   fhGroomedPtvJetPt(0x0),
   fhDroppedBranches(0x0),
-  fhPtTriggerHadron(0x0), 
+  fhPtTriggerHadron(0x0),
   fh2PtTriggerHadronJet(0x0),
   fhPhiTriggerHadronJet(0x0),
   fhPhiTriggerHadronEventPlane(0x0),
@@ -251,11 +259,11 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
   TH1::AddDirectory(oldStatus);
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeJetInfo = new TTree(nameoutput, nameoutput);
-  
+
   if (!fFullTree){
     const Int_t nVarMin = 22;
     TString *fJetInfoVarNames = new TString [nVarMin];
-  
+
     fJetInfoVarNames[0] = "Pt";
     fJetInfoVarNames[1] = "Pt_Truth";
     fJetInfoVarNames[2] = "SymParam";
@@ -278,33 +286,33 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fJetInfoVarNames[19] = "Groomed_Mass_Truth";
     fJetInfoVarNames[20] = "N_SplittingsAll";
     fJetInfoVarNames[21] = "N_SplittingsAll_Truth";
-  
-    
+
+
     for(Int_t ivar=0; ivar < nVarMin; ivar++){
       cout<<"looping over variables"<<endl;
       fTreeJetInfo->Branch(fJetInfoVarNames[ivar].Data(), &fJetInfoVar[ivar], Form("%s/D", fJetInfoVarNames[ivar].Data()));
     }
   }
    if(fJetSelection == kRecoil){
-      fhPtTriggerHadron= new TH1F("fhPtTriggerHadron", "fhPtTriggerHadron",1500,-0.5,149.5);  
+      fhPtTriggerHadron= new TH1F("fhPtTriggerHadron", "fhPtTriggerHadron",1500,-0.5,149.5);
       fOutput->Add(fhPtTriggerHadron);
-      fh2PtTriggerHadronJet= new TH2F("fh2PtTriggerHadronJet", "fh2PtTriggerHadronJet",1500,-0.5,149.5,1500,-0.5,149.5);  
+      fh2PtTriggerHadronJet= new TH2F("fh2PtTriggerHadronJet", "fh2PtTriggerHadronJet",1500,-0.5,149.5,1500,-0.5,149.5);
       fOutput->Add(fh2PtTriggerHadronJet);
-      fhPhiTriggerHadronJet= new TH1F("fhPhiTriggerHadronJet", "fhPhiTriggerHadronJet",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));  
+      fhPhiTriggerHadronJet= new TH1F("fhPhiTriggerHadronJet", "fhPhiTriggerHadronJet",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
       fOutput->Add(fhPhiTriggerHadronJet);
-      fhPhiTriggerHadronEventPlane= new TH1F("fhPhiTriggerHadronEventPlane", "fhPhiTriggerHadronEventPlane",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));  
+      fhPhiTriggerHadronEventPlane= new TH1F("fhPhiTriggerHadronEventPlane", "fhPhiTriggerHadronEventPlane",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
       fOutput->Add(fhPhiTriggerHadronEventPlane);
-      fhPhiTriggerHadronEventPlaneTPC= new TH1F("fhPhiTriggerHadronEventPlaneTPC", "fhPhiTriggerHadronEventPlaneTPC",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));  
+      fhPhiTriggerHadronEventPlaneTPC= new TH1F("fhPhiTriggerHadronEventPlaneTPC", "fhPhiTriggerHadronEventPlaneTPC",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
       fOutput->Add(fhPhiTriggerHadronEventPlaneTPC);
-      
-  
+
+
     }
 
-   
+
 
    if (fJetShapeType==AliAnalysisTaskRecoilJetYield::kData || fJetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart || fJetShapeType==AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
-    
-    fhJetPt= new TH1F("fhJetPt", "Jet Pt",150,-0.5,149.5 );   
+
+    fhJetPt= new TH1F("fhJetPt", "Jet Pt",150,-0.5,149.5 );
     fOutput->Add(fhJetPt);
     fhJetPhi= new TH1F("fhJetPhi", "Jet Phi",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
     fOutput->Add(fhJetPhi);
@@ -320,17 +328,21 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fOutput->Add(fhJetCounter);
     fhJetArea= new TH1F("fhJetArea", "Jet Area", 400,-0.5, 1.95);
     fOutput->Add(fhJetArea);
-    fhTrackPt= new TH1F("fhTrackPt", "Track Pt",600,-0.5,59.5);   
+    fhTrackPt= new TH1F("fhTrackPt", "Track Pt",600,-0.5,59.5);
     fOutput->Add(fhTrackPt);
+    fhTrackEta = new TH1F("fhTrackEta","Track Eta ",600,-1.5,1.5);
+    fOutput->Add(fhTrackEta);
+    fhTrackPhi = new TH1F("fhTrackPhi","Track Phi ",600,-1.5,1.5);
+    fOutput->Add(fhTrackPhi);
     fhGroomedPtvJetPt= new TH2F("fhGroomedPtvJetPt","Groomed Jet p_{T} v Original Jet p_{T}",150,0,150,150,0,150);
     fOutput->Add(fhGroomedPtvJetPt);
     fhDroppedBranches= new TH1F("fhDroppedBranches","Number of Softdropped branches",50,0,50);
     fOutput->Add(fhDroppedBranches);
-    fhDetJetPt_Incl= new TH1F("fhDetJetPt_Incl", "Jet Pt",200,-0.5,199.5 );   
+    fhDetJetPt_Incl= new TH1F("fhDetJetPt_Incl", "Jet Pt",200,-0.5,199.5 );
     fOutput->Add(fhDetJetPt_Incl);
-    fhDetJetPt_Matched= new TH1F("fhDetJetPt_Matched", "Jet Pt",200,-0.5,199.5 );   
+    fhDetJetPt_Matched= new TH1F("fhDetJetPt_Matched", "Jet Pt",200,-0.5,199.5 );
     fOutput->Add(fhDetJetPt_Matched);
-    
+
     const Int_t dimSpec   = 5;
     const Int_t nBinsSpec[5]     = {50,50,10,3,10};
     const Double_t lowBinSpec[5] = {0.0,-10,  0,0,0};
@@ -338,15 +350,15 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fhLundIterative = new THnSparseF("fHLundIterative",
 				     "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
 				     dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
-    fOutput->Add(fhLundIterative); 
+    fOutput->Add(fhLundIterative);
     if(fJetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart){
-      
+
       fhLundIterativeTrue = new THnSparseF("fHLundIterativeTrue",
 					   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
 					   dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
       fOutput->Add(fhLundIterativeTrue);
     }
-   
+
   }
   if(fJetShapeType==AliAnalysisTaskRecoilJetYield::kTrueDet){
     fhJetPt_Det= new TH1F("fhJetPt_Det", "Jet Pt Detector Level",1500,-0.5,149.5 );
@@ -373,7 +385,7 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fOutput->Add(fhNumberOfJetTracks_Det);
     fhNumberOfJetTracks_True= new TH1F("fhNumberOfJetTracks_True", "Number of Tracks within a Jet Particle Level", 300, -0.5,299.5);
     fOutput->Add(fhNumberOfJetTracks_True);
-    
+
     fhJetCounter_Det= new TH1F("fhJetCounter_Det", "Jet Counter Detector Level", 150, -0.5, 149.5);
     fOutput->Add(fhJetCounter_Det);
     fhJetCounter_True= new TH1F("fhJetCounter_True", "Jet Counter Particle Level", 150, -0.5, 149.5);
@@ -388,13 +400,13 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fhLundIterative = new THnSparseF("fHLundIterative",
 				     "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
 				     dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
-    fOutput->Add(fhLundIterative); 
-      
+    fOutput->Add(fhLundIterative);
+
     fhLundIterativeTrue = new THnSparseF("fHLundIterativeTrue",
 					 "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
 					 dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
     fOutput->Add(fhLundIterativeTrue);
-    
+
   }
   PostData(1,fOutput);
   PostData(2,fTreeJetInfo);
@@ -452,28 +464,28 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     else TrackArray = PartCont->GetArray();
     if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly) TriggerHadron = static_cast<AliAODTrack*>(TrackArrayMC->At(TriggerHadronLabel));
     else TriggerHadron = static_cast<AliAODTrack*>(TrackArray->At(TriggerHadronLabel));
-    if (!TriggerHadron) return 0;//No trigger hadron with label found   
+    if (!TriggerHadron) return 0;//No trigger hadron with label found
     if(fSemigoodCorrect){
       Double_t HoleDistance=RelativePhi(TriggerHadron->Phi(),fHolePos);
       if(TMath::Abs(HoleDistance)+fHoleWidth+fJetRadius>TMath::Pi()-fRecoilAngularWindow) return 0;
     }
     fhPtTriggerHadron->Fill(TriggerHadron->Pt()); //Needed for per trigger Normalisation
     if (fJetShapeType != AliAnalysisTaskRecoilJetYield::kGenOnTheFly) fhPhiTriggerHadronEventPlane->Fill(TMath::Abs(RelativePhiEventPlane(fEPV0,TriggerHadron->Phi()))); //fEPV0 is the event plane from AliAnalysisTaskEmcal
-    if (fJetShapeType != AliAnalysisTaskRecoilJetYield::kGenOnTheFly) fhPhiTriggerHadronEventPlaneTPC->Fill(TMath::Abs(RelativePhiEventPlane(((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane(),TriggerHadron->Phi()))); //TPC event plane 
+    if (fJetShapeType != AliAnalysisTaskRecoilJetYield::kGenOnTheFly) fhPhiTriggerHadronEventPlaneTPC->Fill(TMath::Abs(RelativePhiEventPlane(((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane(),TriggerHadron->Phi()))); //TPC event plane
   }
 
 
 
-  
+
 
   ////////////////////kData////////////////////
   if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kData){
     // cout<<"entering kData"<<endl;
 
-    AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                         
-    AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event 
-    Int_t JetCounter=0; //Counts number of jets in event  
-    Double_t JetPhi=0;
+    AliEmcalJet *Jet1 = NULL; //Original Jet in the event
+    AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event
+    Int_t JetCounter=0; //Counts number of jets in event
+    Double_t JetPhi=0,TrackPhi=0;
     Bool_t EventCounter=kFALSE;
     Double_t JetPt_ForThreshold=0;
     AliEmcalJet *Jet2= NULL;
@@ -481,7 +493,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
       JetCont->ResetCurrentID();
       while((Jet1=JetCont->GetNextAcceptJet())) {
 	if(!Jet1) continue;
-	if (fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	if (fJetShapeSub==kNoSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	else JetPt_ForThreshold = Jet1->Pt();
 	if(JetPt_ForThreshold<fPtThreshold) {
 	  continue;
@@ -489,7 +501,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	else {
 	  Float_t RecoilDeltaPhi = 0.;
 	  if (fJetSelection == kRecoil){
-	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi()); 
+	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi());
 	    if (TMath::Abs(RecoilDeltaPhi) < (TMath::Pi() - fRecoilAngularWindow)) continue;  //accept the jet only if it overlaps with the recoil phi area of the trigger
 	    fh2PtTriggerHadronJet->Fill(TriggerHadron->Pt(), Jet1->Pt());
 	    fhPhiTriggerHadronJet->Fill(RelativePhi(TriggerHadron->Phi(), Jet1->Phi()));
@@ -498,7 +510,25 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
             EventCounter=kTRUE;
           }
 	  JetCounter++;
-	  fhJetPt->Fill(Jet1->Pt());
+	  if(fJetShapeSub==kNoSub) fhJetPt->Fill(Jet1->Pt()-(GetRhoVal(0)*Jet1->Area()));
+	  else fhJetPt->Fill(Jet1->Pt());
+	  AliTrackContainer *TrackCont = NULL;
+	  if(fJetShapeSub==kConstSub) TrackCont = GetTrackContainer(1);
+	  else TrackCont = GetTrackContainer(0);
+	  TClonesArray *TracksArray = NULL;
+	  TracksArray = TrackCont->GetArray();
+	  Double_t NTracks = TracksArray->GetEntriesFast();
+	  AliAODTrack *Track = 0x0;
+	  for(Int_t i=0; i < NTracks; i++){
+	    Track = static_cast<AliAODTrack*>(TrackCont->GetAcceptTrack(i));
+	    if (!Track) continue;
+      TrackPhi=Track->Phi();
+      if(TrackPhi < -1*TMath::Pi()) TrackPhi += (2*TMath::Pi());
+      else if (TrackPhi > TMath::Pi()) TrackPhi -= (2*TMath::Pi());
+	    fhTrackPt->Fill(Track->Pt());
+	    fhTrackEta->Fill(Track->Eta());
+      fhTrackPhi->Fill(TrackPhi);
+	  }
 	  fhJetArea->Fill(Jet1->Area());
 	  JetPhi=Jet1->Phi();
 	  if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
@@ -509,8 +539,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  fJetInfoVar[4]=Jet1->M();
 	  fhJetRadius->Fill(TMath::Sqrt((Jet1->Area()/TMath::Pi()))); //Radius of Jets per event
           fhNumberOfJetTracks->Fill(Jet1->GetNumberOfTracks());
-	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	  if(fJetShapeSub==kNoSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  else fJetInfoVar[0]=Jet1->Pt();
+
 	  fJetInfoVar[1]=0;
 	  if(fDoSoftDrop) {
 	    SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kFALSE);
@@ -518,7 +549,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    RecursiveParents(Jet1,JetCont,1,kFALSE);
 	    RecursiveParents(Jet1,JetCont,2,kFALSE);
 	    //SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kTRUE);
-	    
+
 	    fJetInfoVar[3]=0;
 	    fJetInfoVar[5]=0;
 	    fJetInfoVar[7]=0;
@@ -528,7 +559,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[15]=0;
 	    fJetInfoVar[17]=0;
 	    fJetInfoVar[19]=0;
-	    fJetInfoVar[21]=0;	    
+	    fJetInfoVar[21]=0;
 	  }
 	  else{
 	    fJetInfoVar[2]=0;
@@ -552,7 +583,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[20]=0;
 	    fJetInfoVar[21]=0;
 
-	  }		    
+	  }
 	  fTreeJetInfo->Fill();
 	}
       }
@@ -562,16 +593,16 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 
   ////////////////////kEmbedded////////////////////
   if(fJetShapeType == kDetEmbPart){
-    AliEmcalJet *JetHybridS = NULL; //Subtracted hybrid Jet  
-    AliEmcalJet *JetHybridUS = NULL; //Unsubtracted Hybrid Jet     //For matching SubtractedHybrid->DetPythia this jet container is also Subtracted Hybrid                                                                                                                
+    AliEmcalJet *JetHybridS = NULL; //Subtracted hybrid Jet
+    AliEmcalJet *JetHybridUS = NULL; //Unsubtracted Hybrid Jet     //For matching SubtractedHybrid->DetPythia this jet container is also Subtracted Hybrid
     AliEmcalJet *JetPythDet = NULL; //Detector Level Pythia Jet
     AliEmcalJet *JetPythTrue = NULL; //Particle Level Pyhtia Jet
-    AliJetContainer *JetContHybridS= GetJetContainer(0); //Jet Container for Subtracted Hybrid Jets 
-    AliJetContainer *JetContHybridUS= GetJetContainer(1); //Jet Container for Unsubtracted Hybrid Jets                                                                                  
-    AliJetContainer *JetContPythDet= GetJetContainer(2); //Jet Container for Detector Level Pyhtia Jets 
+    AliJetContainer *JetContHybridS= GetJetContainer(0); //Jet Container for Subtracted Hybrid Jets
+    AliJetContainer *JetContHybridUS= GetJetContainer(1); //Jet Container for Unsubtracted Hybrid Jets
+    AliJetContainer *JetContPythDet= GetJetContainer(2); //Jet Container for Detector Level Pyhtia Jets
     AliJetContainer *JetContPythTrue= GetJetContainer(3); //Jet Container for Particle Level Pythia Jets
 
-  
+
 
     Bool_t JetsMatched = kFALSE;
     Double_t JetPtThreshold;
@@ -583,8 +614,8 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     while((JetPythDet = JetContPythDet->GetNextAcceptJet())){
       fhDetJetPt_Incl->Fill(JetPythDet->Pt()); //Fill histogram with all Detector level jets
     }
-      
-      
+
+
     while((JetHybridS = JetContHybridS->GetNextAcceptJet())){
       if (fJetShapeSub==kConstSub) JetPtThreshold=JetHybridS->Pt();
       else JetPtThreshold=JetHybridS->Pt()-(GetRhoVal(0)*JetHybridS->Area());
@@ -593,7 +624,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
       for(Int_t i = 0; i<JetContHybridUS->GetNJets(); i++) {
 	JetHybridUS = JetContHybridUS->GetJet(i);
 	if (!JetHybridUS) continue;
-	    
+
 	if(JetHybridUS->GetLabel()==JetHybridS->GetLabel()) {
 	  JetNumber=i;
 	}
@@ -659,15 +690,15 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
       fJetInfoVar[5]=JetPythTrue->M();
       fTreeJetInfo->Fill();
     }
-    
+
   }
 
   ////////////////////kTrueDet////////////////////
-  if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kTrueDet){ //Truth->Detector response	        
-    AliEmcalJet *JetDet = NULL; //Detector Level Jet                                                                                                                  
-    AliEmcalJet *JetTrue = NULL; //Particle Level Jet  
+  if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kTrueDet){ //Truth->Detector response
+    AliEmcalJet *JetDet = NULL; //Detector Level Jet
+    AliEmcalJet *JetTrue = NULL; //Particle Level Jet
     AliJetContainer *JetContDet= GetJetContainer(0); //Jet Container for Detector Level Pythia
-    AliJetContainer *JetContTrue= GetJetContainer(1); //Jet Container for Particle Level Pythia                                                                                                     
+    AliJetContainer *JetContTrue= GetJetContainer(1); //Jet Container for Particle Level Pythia
     Double_t JetPhiDet=0;
     Double_t JetPhiTrue=0;
     Bool_t JetsMatched=kFALSE;
@@ -679,7 +710,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     if(JetContDet) {
       while((JetDet=JetContDet->GetNextAcceptJet())) {
 	if( (!JetDet) || ((JetDet->Pt())<fPtThreshold)) {
-	  // fhEventCounter_1->Fill(3); //events where the jet had a problem                                                                                   
+	  // fhEventCounter_1->Fill(3); //events where the jet had a problem
 	  continue;
 	}
 	else {
@@ -702,7 +733,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  fhJetPhi_Det->Fill(JetPhiDet);
 	  fhJetEta_Det->Fill(JetDet->Eta());
 	  fhJetMass_Det->Fill(JetDet->M());
-	  fhJetRadius_Det->Fill(TMath::Sqrt((JetDet->Area()/TMath::Pi())));                                                           
+	  fhJetRadius_Det->Fill(TMath::Sqrt((JetDet->Area()/TMath::Pi())));
 	  fhNumberOfJetTracks_Det->Fill(JetDet->GetNumberOfTracks());
 	  if((JetTrue = JetDet->ClosestJet())){
 	    JetsMatched=kTRUE;
@@ -714,14 +745,14 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fhJetPhi_True->Fill(JetPhiTrue);
 	    fhJetEta_True->Fill(JetTrue->Eta());
 	    fhJetMass_True->Fill(JetTrue->M());
-	    fhJetRadius_True->Fill(TMath::Sqrt((JetTrue->Area()/TMath::Pi())));                                                                         
+	    fhJetRadius_True->Fill(TMath::Sqrt((JetTrue->Area()/TMath::Pi())));
 	    fhNumberOfJetTracks_True->Fill(JetTrue->GetNumberOfTracks());
 	    fh2PtRatio->Fill(JetDet->Pt(),JetTrue->Pt(),Pythia_Event_Weight);
 	  }
           else continue;
-          if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= JetDet->Pt()-(GetRhoVal(0)*JetDet->Area());
+          if(fJetShapeSub==kNoSub) fJetInfoVar[0]= JetDet->Pt()-(GetRhoVal(0)*JetDet->Area());
 	  else fJetInfoVar[0]=JetDet->Pt();
-	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[1]= JetTrue->Pt()-(GetRhoVal(0)*JetTrue->Area());
+	  if(fJetShapeSub==kNoSub) fJetInfoVar[1]= JetTrue->Pt()-(GetRhoVal(0)*JetTrue->Area());
 	  else fJetInfoVar[1]=JetTrue->Pt();
 	  if(fDoSoftDrop) {
 	    SoftDrop(JetDet,JetContDet,fZCut,fBeta_SD,kFALSE);
@@ -763,17 +794,17 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  JetsMatched=kFALSE;
 	}
       }
-      fhJetCounter_Det->Fill(JetCounter_Det); //Number of Jets in Each Event Particle Level                                                                 
-      fhJetCounter_True->Fill(JetCounter_True); //Number of Jets in Each Event Detector Level        
+      fhJetCounter_Det->Fill(JetCounter_Det); //Number of Jets in Each Event Particle Level
+      fhJetCounter_True->Fill(JetCounter_True); //Number of Jets in Each Event Detector Level
     }
   }
 
-  
+
   ////////////////////kEmbedded////////////////////
   if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
-    AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                         
-    AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event 
-    Int_t JetCounter=0; //Counts number of jets in event  
+    AliEmcalJet *Jet1 = NULL; //Original Jet in the event
+    AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event
+    Int_t JetCounter=0; //Counts number of jets in event
     Double_t JetPhi=0;
     Bool_t EventCounter=kFALSE;
     Double_t JetPt_ForThreshold=0;
@@ -782,7 +813,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
       JetCont->ResetCurrentID();
       while((Jet1=JetCont->GetNextAcceptJet())) {
 	if(!Jet1) continue;
-	if (fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	if (fJetShapeSub==kNoSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	else JetPt_ForThreshold = Jet1->Pt();
 	if(JetPt_ForThreshold<fPtThreshold) {
 	  continue;
@@ -790,7 +821,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	else {
 	  Float_t RecoilDeltaPhi = 0.;
 	  if (fJetSelection == kRecoil){
-	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi()); 
+	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi());
 	    if (TMath::Abs(RecoilDeltaPhi) < (TMath::Pi() - fRecoilAngularWindow)) continue;  //accept the jet only if it overlaps with the recoil phi area of the trigger
 	    fh2PtTriggerHadronJet->Fill(TriggerHadron->Pt(), Jet1->Pt());
 	    fhPhiTriggerHadronJet->Fill(RelativePhi(TriggerHadron->Phi(), Jet1->Phi()));
@@ -809,7 +840,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  fhJetMass->Fill(Jet1->M());
 	  fhJetRadius->Fill(TMath::Sqrt((Jet1->Area()/TMath::Pi()))); //Radius of Jets per event
           fhNumberOfJetTracks->Fill(Jet1->GetNumberOfTracks());
-	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	  if(fJetShapeSub==kNoSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  else fJetInfoVar[0]=Jet1->Pt();
 	  fJetInfoVar[1]=0;
 	  if(fDoSoftDrop) {
@@ -847,8 +878,8 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
     }
   }
 
-  
-  
+
+
   return kTRUE;
 }
 
@@ -865,7 +896,7 @@ Double_t AliAnalysisTaskRecoilJetYield::RelativePhiEventPlane(Double_t EventPlan
 //________________________________________________________________________
 Double_t AliAnalysisTaskRecoilJetYield::RelativePhi(Double_t Phi1, Double_t Phi2){
 
-  if(Phi1 < -1*TMath::Pi()) Phi1 += (2*TMath::Pi());                                                           
+  if(Phi1 < -1*TMath::Pi()) Phi1 += (2*TMath::Pi());
   else if (Phi1 > TMath::Pi()) Phi1 -= (2*TMath::Pi());
   if(Phi2 < -1*TMath::Pi()) Phi2 += (2*TMath::Pi());
   else if (Phi2 > TMath::Pi()) Phi2 -= (2*TMath::Pi());
@@ -880,16 +911,16 @@ Double_t AliAnalysisTaskRecoilJetYield::RelativePhi(Double_t Phi1, Double_t Phi2
 
 //--------------------------------------------------------------------------
 Double_t AliAnalysisTaskRecoilJetYield::Angularity(AliEmcalJet *Jet, Int_t JetContNb){
-  
+
   AliJetContainer *JetCont = GetJetContainer(JetContNb);
-  Double_t Angularity_Numerator=0;                                                                          
+  Double_t Angularity_Numerator=0;
   Double_t Angularity_Denominator=0;
   AliVParticle *Particle=0x0;
   Double_t DeltaPhi=0;
 
 
-  for (Int_t i=0; i< Jet->GetNumberOfTracks(); i++){  //loops through all tracks                                                                              
-    Particle = static_cast<AliVParticle*>(Jet->TrackAt(i, JetCont->GetParticleContainer()->GetArray()));                                                                 
+  for (Int_t i=0; i< Jet->GetNumberOfTracks(); i++){  //loops through all tracks
+    Particle = static_cast<AliVParticle*>(Jet->TrackAt(i, JetCont->GetParticleContainer()->GetArray()));
     if(!Particle) continue;
     DeltaPhi=RelativePhi(Jet->Phi(),Particle->Phi());
     Angularity_Numerator=Angularity_Numerator+(Particle->Pt()*TMath::Sqrt(((Particle->Eta()-Jet->Eta())*(Particle->Eta()-Jet->Eta()))+(DeltaPhi*DeltaPhi)));
@@ -902,15 +933,15 @@ Double_t AliAnalysisTaskRecoilJetYield::Angularity(AliEmcalJet *Jet, Int_t JetCo
 
 
 
-//--------------------------------------------------------------------------                                                                                                         
+//--------------------------------------------------------------------------
 Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
 
   AliJetContainer *JetCont = GetJetContainer(JetContNb);
-  Double_t PTD_Numerator=0;  //Reset these values                                                                                                                            
+  Double_t PTD_Numerator=0;  //Reset these values
   Double_t PTD_Denominator=0;
   AliVParticle *Particle=0x0;
   Double_t DeltaPhi=0;
-  for (Int_t i=0; i< Jet->GetNumberOfTracks(); i++){  //loops through all tracks                                                                             
+  for (Int_t i=0; i< Jet->GetNumberOfTracks(); i++){  //loops through all tracks
     Particle = static_cast<AliVParticle*>(Jet->TrackAt(i, JetCont->GetParticleContainer()->GetArray()));
     if(!Particle) continue;
     PTD_Numerator=PTD_Numerator+(Particle->Pt()*Particle->Pt());
@@ -922,7 +953,8 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
 }
 
 //_________________________________________________________________________
- void AliAnalysisTaskRecoilJetYield::SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta, Bool_t fTruthJet){
+void AliAnalysisTaskRecoilJetYield::SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta, Bool_t fTruthJet){
+  try {
   std::vector<fastjet::PseudoJet>        fInputVectors;
   Double_t JetInvMass=0, PseudJetInvMass=0, TrackMom = 0, TrackEnergy = 0;
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
@@ -944,30 +976,23 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
       EmcalJetTrackPt[i]=fTrk->Pt();
       EmcalJetNTracks++;
     }
-  fastjet::JetDefinition                *fJetDef;         
-  fastjet::ClusterSequence              *fClustSeqSA;
 
 
-  fJetDef = new fastjet::JetDefinition(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+    fastjet::JetDefinition                fJetDef = fastjet::JetDefinition(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );
+    fastjet::ClusterSequence              fClustSeqSA = fastjet::ClusterSequence(fInputVectors,fJetDef);
 
-  try {
-    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
-  } catch (fastjet::Error) {
-    AliError(" [w] FJ Exception caught.");
-    //return -1;
-  }
 
   std::vector<fastjet::PseudoJet>       fOutputJets;
   fOutputJets.clear();
-  fOutputJets=fClustSeqSA->inclusive_jets(0);
-				
+  fOutputJets=fClustSeqSA.inclusive_jets(0);
+
   std::vector<fastjet::PseudoJet> jet_constituents = fOutputJets[0].constituents();
   Float_t NSubjettinessResult[3], NSubBeta = 1, R0=0.4;
   std::vector<fastjet::PseudoJet> Subjet_Axes;
   fastjet::PseudoJet SubJet1_Axis,SubJet2_Axis;
   Double_t DelR=-5;
-  				
-  
+
+
   for(Int_t j=1; j<3; j++){
     if(jet_constituents.size() < j){
       if(!fTruthJet){
@@ -1002,7 +1027,7 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
 	DeltaEtaSubJets=SubJet1_Eta-SubJet2_Eta;
 	if(DeltaPhiSubJets < -1*TMath::Pi()) DeltaPhiSubJets += (2*TMath::Pi());
 	else if (DeltaPhiSubJets > TMath::Pi()) DeltaPhiSubJets -= (2*TMath::Pi());
-	
+
 	DelR = TMath::Power(TMath::Power(DeltaPhiSubJets,2)+TMath::Power(DeltaEtaSubJets,2),0.5);
       }
     }
@@ -1018,18 +1043,25 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
       // fJetInfoVar[13]=DelR;
     }
 
-    
-  
+
+
   fastjet::contrib::SoftDrop softdrop(beta, zcut);
   //fastjet::contrib::SoftDrop softdrop_antikt(beta,zcut);
   softdrop.set_verbose_structure(kTRUE);
   //fastjet::JetDefinition jet_def_akt(fastjet::antikt_algorithm, 0.4);
   // fastjet::contrib::Recluster *antiKT_Recluster(jet_def_akt);
-  fastjet::contrib::Recluster *recluster;
-  if(fReclusterAlgo == 2) recluster = new fastjet::contrib::Recluster(fastjet::kt_algorithm,1,true);
-  if(fReclusterAlgo == 1) recluster = new fastjet::contrib::Recluster(fastjet::antikt_algorithm,1,true);
-  if(fReclusterAlgo == 0) recluster = new fastjet::contrib::Recluster(fastjet::cambridge_algorithm,1,true);  
-  softdrop.set_reclustering(true,recluster);
+  fastjet::JetAlgorithm algo;
+  switch(fReclusterAlgo){
+    case 0: algo = fastjet::cambridge_aachen_algorithm; break;
+    case 1: algo = fastjet::antikt_algorithm; break;
+    case 2: algo = fastjet::kt_algorithm; break; 
+  };
+#if FASTJET_VERSION_NUMBER >= 30302
+  fastjet::Recluster recluster(algo, 1, fastjet::Recluster::keep_only_hardest);
+#else
+  fastjet::contrib::Recluster recluster(algo, 1, true);
+#endif
+  softdrop.set_reclustering(true,&recluster);
   fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
   // fastjet::PseudoJet finaljet_antikt = softdrop_antikt(fOutputJets[0]);
   //cout<< finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry()<<endl;
@@ -1048,10 +1080,10 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
       FJNTracks++;
     }
     AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
-    EmcalTrackDelR = TMath::Sqrt(TMath::Power(fTrk->Eta()-JetEta,2)+TMath::Power(fTrk->Phi()-JetPhi,2));       
+    EmcalTrackDelR = TMath::Sqrt(TMath::Power(fTrk->Eta()-JetEta,2)+TMath::Power(fTrk->Phi()-JetPhi,2));
   }
   Int_t NDroppedTracks = fJet->GetNumberOfTracks()-finaljet.constituents().size();
-  Int_t nConstituents(fClustSeqSA->constituents(finaljet).size());
+  Int_t nConstituents(fClustSeqSA.constituents(finaljet).size());
   jet->SetNumberOfTracks(nConstituents);
   Double_t SymParam, Mu, DeltaR;
   SymParam=(finaljet.structure_of<fastjet::contrib::SoftDrop>().symmetry());
@@ -1100,7 +1132,7 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
       fJetInfoVar[11]=-1;
     }
   }
-    
+
   if(!fTruthJet) fJetInfoVar[2]=SymParam;
   else fJetInfoVar[3]=SymParam;
   if(!fTruthJet) fJetInfoVar[12] = DeltaR;
@@ -1117,28 +1149,32 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   }
   if(!fTruthJet) fJetInfoVar[18]=(finaljet.m());
   else fJetInfoVar[19]=(finaljet.m());
-  
+
+} catch (fastjet::Error) {
+  AliError(" [w] FJ Exception caught.");
+  //return -1;
+}
   return;
 
-  
+
 }
 
 //_________________________________________________________________________
 void AliAnalysisTaskRecoilJetYield::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo, Bool_t bTruth){
- 
+  try {
   std::vector<fastjet::PseudoJet>  fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet  PseudoTracks;
-  double xflagalgo=0; 
+  double xflagalgo=0;
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
-  
+
   if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
-      if (!fTrk) continue; 
+      if (!fTrk) continue;
       PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
       PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
       fInputVectors.push_back(PseudoTracks);
-     
+
     }
   fastjet::JetAlgorithm jetalgo(fastjet::antikt_algorithm);
 
@@ -1147,23 +1183,23 @@ void AliAnalysisTaskRecoilJetYield::RecursiveParents(AliEmcalJet *fJet,AliJetCon
   if(ReclusterAlgo==1){ xflagalgo=1.5;
     jetalgo=fastjet::cambridge_algorithm;}
   if(ReclusterAlgo==2){ xflagalgo=2.5;
-    jetalgo=fastjet::antikt_algorithm;} 
-  
-  fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+    jetalgo=fastjet::antikt_algorithm;}
+
   double ndepth=0;
   double nhard=0;
   double nall=0;
-  try {
+
+      fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );
     fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
     std::vector<fastjet::PseudoJet>   fOutputJets;
     fOutputJets.clear();
     fOutputJets=fClustSeqSA.inclusive_jets(0);
-  
+
     fastjet::PseudoJet jj;
     fastjet::PseudoJet j1;
     fastjet::PseudoJet j2;
     jj=fOutputJets[0];
-    
+
     while(jj.has_parents(j1,j2)){
       ndepth=ndepth+1;
       nall=nall+1;
@@ -1173,21 +1209,17 @@ void AliAnalysisTaskRecoilJetYield::RecursiveParents(AliEmcalJet *fJet,AliJetCon
       if(z > 0.1) nhard=nhard+1;
       double y =log(1.0/delta_R);
       double lnpt_rel=log(z*delta_R);
-      Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};  
+      Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};
       if(!bTruth) fhLundIterative->Fill(LundEntries);
       else if(bTruth) fhLundIterativeTrue->Fill(LundEntries);
       jj=j1;
       if(bMinSubjetPt && jj.perp() < fMinSubjetPt) break;
-    } 
+    }
 
 
 
 
-  }
-  catch (fastjet::Error) {
-    AliError(" [w] FJ Exception caught.");
-    //return -1;
-  }
+
   if(ReclusterAlgo==1){
     if(!bTruth) fJetInfoVar[14]=nhard;
     else if(bTruth) fJetInfoVar[15]=nhard;
@@ -1196,10 +1228,15 @@ void AliAnalysisTaskRecoilJetYield::RecursiveParents(AliEmcalJet *fJet,AliJetCon
   }
 
 
+}
+catch (fastjet::Error) {
+  AliError(" [w] FJ Exception caught.");
+  //return -1;
+}
 
   return;
 
-  
+
 }
 
 
@@ -1233,19 +1270,19 @@ Int_t AliAnalysisTaskRecoilJetYield::SelectTriggerHadron(Float_t PtMin, Float_t 
     if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly) PartContMC = GetParticleContainer(0);
     else PartCont = GetTrackContainer(0);
   }
-  
+
   TClonesArray *TracksArray = NULL;
   TClonesArray *TracksArrayMC = NULL;
   if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly) TracksArrayMC = PartContMC->GetArray();
   else TracksArray = PartCont->GetArray();
- 
+
   if (fJetShapeType == AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
     if(!PartContMC || !TracksArrayMC) return -99999;
   }
   else {
     if(!PartCont || !TracksArray) return -99999;
   }
-    
+
   AliAODTrack *Track = 0x0;
   Int_t Trigger_Index[100];
   for (Int_t i=0; i<100; i++) Trigger_Index[i] = 0;
@@ -1265,7 +1302,7 @@ Int_t AliAnalysisTaskRecoilJetYield::SelectTriggerHadron(Float_t PtMin, Float_t 
 	}
       }
     }
-    else{ 
+    else{
       if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
 	if (!Track) continue;
 	if(TMath::Abs(Track->Eta())>0.9) continue;
@@ -1275,14 +1312,14 @@ Int_t AliAnalysisTaskRecoilJetYield::SelectTriggerHadron(Float_t PtMin, Float_t 
 	  Trigger_Counter++;
 	}
       }
-    } 
+    }
   }
   if (Trigger_Counter == 0) return -99999;
-  Int_t RandomNumber = 0, Index = 0 ; 
-  TRandom3* Random = new TRandom3(0); 
-  RandomNumber = Random->Integer(Trigger_Counter);
+  Int_t RandomNumber = 0, Index = 0 ;
+  TRandom3 Random (0);
+  RandomNumber = Random.Integer(Trigger_Counter);
   Index = Trigger_Index[RandomNumber];
-  return Index; 
+  return Index;
 }
 
 
@@ -1351,9 +1388,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::RetrieveEventObjects() {
 
 
 //_______________________________________________________________________
-void AliAnalysisTaskRecoilJetYield::Terminate(Option_t *) 
+void AliAnalysisTaskRecoilJetYield::Terminate(Option_t *)
 {
   // Called once at the end of the analysis.
-  
-  
+
+
 }

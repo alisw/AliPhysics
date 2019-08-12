@@ -16,6 +16,7 @@ class AliAODMCHeader;
 class AliAODMCParticle; // sample
 class AliEMCALTriggerPatchInfo;
 class AliMultSelection;
+class AliTPCParamSR;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
@@ -54,7 +55,8 @@ public:
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
     void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
     
-    void CheckMCgen(AliAODMCHeader* mcHeader);
+    void CheckMCgen(AliAODMCHeader* mcHeader, Int_t &NpureMC, Int_t &NpureMCproc);
+    void GetTrackMCinfo(Int_t &ilabel, std::vector<double> &MCinfo, Int_t &NpureMC, Int_t &NpureMCproc);
     void GetRawTrackInfo(AliAODTrack* rtrack);
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
@@ -62,6 +64,10 @@ public:
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
     void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
     void GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
+    
+    Bool_t  ComparePropWithTPCAna(const AliVVertex *pVtx, AliAODTrack* atrack);
+    void    SetFilterBitOption(Int_t bitOption){fBitOption = bitOption;};
+    
 private:
     enum{
         kAODanalysis = BIT(20),
@@ -73,6 +79,7 @@ private:
     AliAODMCHeader *fMCheader;
     AliPIDResponse *fpidResponse; //!pid response
     AliEMCALGeometry *fEMCALGeo;
+    AliTPCParamSR    *fTPCparam; //!Access to TPC parameters //rh add
     
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
@@ -97,14 +104,17 @@ private:
     Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
     
-    Int_t fcentMim; // mim. centrality
-    Int_t fcentMax; // max. centrality
+    Int_t   fcentMim; // mim. centrality
+    Int_t   fcentMax; // max. centrality
+    
+    Int_t   fBitOption;// filter bit option - Global or ITSconstrained
     
     TString fCentralityEstimator;         // Centrality Estimator
-    
+    //Int_t   fCentBin; //rh add
+      
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
-    TH1F        *fCent;//! centrality
+    TH1F        *fCent;//! centrality    
     TH2F        *fMult;//! track multiplicity vs centrality
     TH2F        *fEvPlaneV0;//! V0 event plane
     TH2F        *fEvPlaneV0A;//! V0A event plane
@@ -147,6 +157,7 @@ private:
     TH2F        *fTPCnsigEta0;//!TPC Nsigma
     TH2F        *fTPCnsigEta1;//!TPC Nsigma
     TH2F        *fTPCnsigEta2;//!TPC Nsigma
+    TH2F        *fTPCnTrkVsSector[4]; //! #of tracks vs. TPC sector index // rh add
     TH1F        *fHistPtMatch;//!tracks matched to EMCAL
     TH2F        *fEMCTrkMatch;//!Distance of EMC cluster to closest track in phi and z
     TH1F        *fEMCTrkPt;//!tracks with EMCAL cluster
@@ -166,6 +177,7 @@ private:
     TH2F        *fHistNsigEop_Semi;//!pt vs E/p
     TH2F        *fHistNsigEop_Peri;//!pt vs E/p
     TH2F        *fHistEop;//!pt vs E/p
+    TH2F        *fHistEopHad;//!pt vs E/p
     TH2F        *fHistMcEopEle;//!pt vs E/p
     TH2F        *fHistMcEopHad;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt
@@ -185,18 +197,32 @@ private:
     TH1F        *fInvmassLS;//!Invmass of LS
     TH2F        *fInvmassULS_MCtrue;//!Invmass of ULS
     THnSparse   *fInvmassPi0Dalitz;//!Invmass of ULS
-    TH2F        *fHistRawNits; 
-    TH2F        *fHistRawNtpc; 
-    TH2F        *fHistRawCrosstpc; 
-    TH2F        *fHistRawNitschi2; 
-    TH2F        *fHistRawNtpcchi2; 
-    TH2F        *fHistRawNitsPhi; 
-    TH2F        *fHistRawNtpcPhi; 
-    TH2F        *fMCcheckMother;
-    TH2F        *fMCneutral;
-    TH2F        *fEMCTrkMatch_Phi;
-    TH2F        *fEMCTrkMatch_Eta;
+    TH2F        *fHistRawNits;//!
+    TH2F        *fHistRawNtpc;//!
+    TH2F        *fHistRawCrosstpc;//!
+    TH2F        *fHistRawNitschi2;//!
+    TH2F        *fHistRawNtpcchi2;//!
+    TH2F        *fHistRawNitsPhi;//!
+    TH2F        *fHistRawNtpcPhi;//!
+    TH2F        *fMCcheckMother;//!
+    TH2F        *fMCcheckBdecay;//!
+    TH2F        *fMCcheckDdecay;//!
+    TH2F        *fMCcheckHFdecay;//!
+    TH2F        *fHFmomCorr;//!
+    TH1F        *fMCphotonic0;
+    TH1F        *fMCphotonic1;
+    TH2F        *fMCneutral;//!
+    TH2F        *fEMCTrkMatch_Phi;//!
+    TH2F        *fEMCTrkMatch_Eta;//!
     
+    TH1F        *fCompTrackPt;//!
+    TH1F        *fCompTrackPtinEMCreg;//!
+    TH1F        *fCompTrackPtMatch;//!
+    TH1F        *fCompTrackPtMatchwithEMC;//!
+ 
+    TH2F        *fMCcheckPi0decay;    
+    TH2F        *fMCcheckEtadecay;    
+
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
     

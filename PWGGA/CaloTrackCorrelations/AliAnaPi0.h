@@ -6,7 +6,7 @@
 //_________________________________________________________________________
 /// \class AliAnaPi0
 /// \ingroup CaloTrackCorrelationsAnalysis 
-/// \brief Selected photon clusters invariant mass analysis.
+/// \brief Combine photon cluster pairs for invariant mass analysis.
 ///
 /// Class to collect two-photon invariant mass distributions for
 /// extracting raw pi0 or eta yields.
@@ -79,6 +79,10 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillAngleHisto()         { fFillAngleHisto      = kTRUE  ; }
   void         SwitchOffFillAngleHisto()        { fFillAngleHisto      = kFALSE ; }
+
+  void         SwitchOnOneCellSeparation()      { fUseOneCellSeparation = kTRUE  ; }
+  void         SwitchOffOneCellSeparation()     { fUseOneCellSeparation = kFALSE ; }
+  Bool_t       CheckSeparation(Int_t absID1, Int_t absID2) ;
   
   //------------------------------------------
   // Do analysis only with clusters in same SM or different combinations of SM
@@ -189,6 +193,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fUseAngleEDepCut ;          ///<  Select pairs depending on their opening angle
   Float_t  fAngleCut ;                 ///<  Select pairs with opening angle larger than a threshold
   Float_t  fAngleMaxCut ;              ///<  Select pairs with opening angle smaller than a threshold
+  Bool_t   fUseOneCellSeparation ;     ///<  Select pairs with one cell in between of maxima
   
   Float_t  fPi0MassWindow[2];          ///<  Pi0 mass selection window
   Float_t  fEtaMassWindow[2];          ///<  Eta mass selection window
@@ -605,7 +610,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,35) ;
+  ClassDef(AliAnaPi0,36) ;
   /// \endcond
   
 } ;

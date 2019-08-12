@@ -73,6 +73,10 @@ namespace AliFemtoCutMonitorPionPion {
     virtual void Fill(const AliFemtoParticleCollection *,
                       const AliFemtoParticleCollection *);
 
+  private:
+    Event(const Event &);
+    Event& operator=(const Event &);
+
   protected:
 
     TH2F *fCentMult;
@@ -99,22 +103,42 @@ namespace AliFemtoCutMonitorPionPion {
     Pion(const bool passing,
          const TString& typestr,
          const bool is_mc_analysis=kFALSE,
-         const bool suffix_output=kFALSE);
+         const bool suffix_output=kFALSE,
+         const bool wide_impact_range=kFALSE);
+
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoTrack* aEvent);
 
+    void SetCharge(int c)
+      { fAllowCharge = c; }
+
+  private:
+    Pion(const Pion &);
+    Pion& operator=(const Pion &);
+
+
   protected:
+
+    int fAllowCharge;
 
     TH2F *fYPt;
     TH2F *fPtPhi;
     TH2F *fEtaPhi;
     TH1F *fChi2Tpc;
-    //TH2F *fChiTpcIts;
+    TH1F *fChi2Its;
+    TH2F *fChiTpcIts;
+    TH2F *fClsTpcIts;
     TH2F *fdEdX;
+    TH2F *fTofVsP;
+    TH2F *fNsigTof;
+    TH2F *fNsigTpc;
     TH2F *fImpact;
+
+    TH2F *fEtaY;
 
     TH1F *fMC_mass;
     TH2F *fMC_pt;
+    TH2F *fMC_rap;
     TH1I *fMC_type;
     // TH2I *fMC_parent;
     THnSparseI *fMC_parent;
@@ -135,6 +159,10 @@ namespace AliFemtoCutMonitorPionPion {
     virtual void Fill(const AliFemtoPair* aEvent);
     virtual void EventBegin(const AliFemtoEvent*);
     virtual void SetRadius(float radius) { fRadius = radius; };
+
+  private:
+    Pair(const Pair &);
+    Pair& operator=(const Pair &);
 
   protected:
     float fCurrentMagneticField;

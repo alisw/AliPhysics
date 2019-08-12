@@ -1,22 +1,29 @@
 #include "iostream"
 
+// --- Custom header files ---
+#include "AliAnalysisTaskPP13.h"
+#include <AliPP13AnalysisCluster.h>
+#include <AliPP13TriggerProperties.h>
+
+
 // --- ROOT header files ---
 #include <TFile.h>
 #include <TObjArray.h>
 #include <TROOT.h>
 
-#include "AliAnalysisTaskPP13.h"
 
 // --- AliRoot header files ---
 #include "AliAnalysisManager.h"
 #include <AliVEvent.h>
 #include <AliVCaloCells.h>
 #include <AliVCluster.h>
+#include <AliAODCaloCluster.h>
 #include <AliVVertex.h>
 #include <AliPHOSGeometry.h>
 #include <AliLog.h>
 #include <AliAODMCParticle.h>
 #include <AliAODEvent.h>
+#include "AliPHOSTriggerUtils.h"
 
 
 // --- AliRoot MC headers ---
@@ -30,10 +37,7 @@ ClassImp(AliAnalysisTaskPP13)
 AliAnalysisTaskPP13::AliAnalysisTaskPP13() : AliAnalysisTaskSE(),
 	fPreviousEvents(0),
 	fSelections(0),
-	fPHOSBadMap(),
-	fNMixedEvents(0),
-	fNBad(0),
-	fBadCells(0)
+	fNMixedEvents(0)
 {
 	// Constructor for root I/O, do not use it
 }
@@ -43,10 +47,7 @@ AliAnalysisTaskPP13::AliAnalysisTaskPP13(const char * name, TList * selections, 
 	AliAnalysisTaskSE(name),
 	fPreviousEvents(0),
 	fSelections(selections),
-	fPHOSBadMap(),
-	fNMixedEvents(nmix),
-	fNBad(0),
-	fBadCells(0)
+	fNMixedEvents(nmix)
 {
 	fSelections->SetOwner(kTRUE);
 
@@ -58,7 +59,6 @@ AliAnalysisTaskPP13::AliAnalysisTaskPP13(const char * name, TList * selections, 
 AliAnalysisTaskPP13::~AliAnalysisTaskPP13()
 {
 	if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fSelections;
-	if (fBadCells) delete [] fBadCells;
 	if (fPreviousEvents) delete fPreviousEvents;
 }
 
@@ -68,7 +68,7 @@ void AliAnalysisTaskPP13::UserCreateOutputObjects()
 	// Initialization of all outputs
 	for (int i = 0; i < fSelections->GetEntries(); ++i)
 	{
-		AliPP13PhotonSelection * selection = dynamic_cast<AliPP13PhotonSelection *> (fSelections->At(i));
+		AliPP13PhysicsSelection * selection = dynamic_cast<AliPP13PhysicsSelection *> (fSelections->At(i));
 		selection->InitSummaryHistograms();
 		PostData(i + 1, selection->GetListOfHistos()); // Output starts from 1
 	}
@@ -89,10 +89,17 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 		return;
 	}
 
+	// AliPHOSTriggerUtils * triggerUtils = new AliPHOSTriggerUtils("PHOSTrig"); 
+	// triggerUtils->SetEvent(event);
+
+	AliPP13TriggerProperties triggerProperties(
+		event->GetCaloTrigger("PHOS")
+	);
+
 	// Count MB event before event cuts for every selection
 	for (int i = 0; i < fSelections->GetEntries(); ++i)
 	{
-		AliPP13PhotonSelection * selection = dynamic_cast<AliPP13PhotonSelection *> (fSelections->At(i));
+		AliPP13PhysicsSelection * selection = dynamic_cast<AliPP13PhysicsSelection *> (fSelections->At(i));
 		selection->CountMBEvent();
 	}
 
@@ -122,29 +129,39 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 	// NB: Use don't use TClonesArray as you don't want to copy the clusters
 	// just use pointers
 	//
+	Int_t nTriggered = 0;
 	TObjArray clusArray;
+	// clusArray.SetOwner(kTRUE);
 	for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++)
 	{
-		AliVCluster * clus = event->GetCaloCluster(i);
+		AliVCluster * clus = event->GetCaloCluster(i);	
+		// AliAODCaloCluster * c = dynamic_cast<AliAODCaloCluster *> (event->GetCaloCluster(i));
 		if (!clus)
 		{
 			AliWarning("Can't get cluster");
 			return;
 		}
 
-		// only basic filtering
-		if (!clus->IsPHOS()) continue;
-		if (IsClusterBad(clus)) continue;
+		// AliPP13AnalysisCluster * clus = new AliPP13AnalysisCluster(*c);
 
+		if (!clus->IsPHOS())
+			continue;
+
+		// triggerProperties.FillTriggerInformation(clus);
+		// Use only with triggerUtils
+		// clus->SetTrigger(triggerUtils->IsFiredTrigger(c));
+		// nTriggered += clus->IsTrigger();
 		clusArray.Add(clus);
 	}
+	// delete triggerUtils;
 
+	evtProperties.fTriggerEvent = nTriggered > 0;
 	evtProperties.fMcParticles = GetMCParticles(event);
 
 	TList * pool = fPreviousEvents->GetPool(evtProperties);
 	for (int i = 0; i < fSelections->GetEntries(); ++i) // Fill and Post Data to outputs
 	{
-		AliPP13PhotonSelection * selection = dynamic_cast<AliPP13PhotonSelection *> (fSelections->At(i));
+		AliPP13PhysicsSelection * selection = dynamic_cast<AliPP13PhysicsSelection *> (fSelections->At(i));
 
 		if (!selection->SelectEvent(evtProperties))
 			continue;
@@ -160,7 +177,6 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 //________________________________________________________________
 TClonesArray * AliAnalysisTaskPP13::GetMCParticles(const AliVEvent * event) const
 {
-	// TODO: Handle the ESD case here
 	const AliAODEvent * aodevent = dynamic_cast<const AliAODEvent*>(event);
 
 	if (!aodevent)
@@ -206,98 +222,4 @@ Bool_t AliAnalysisTaskPP13::EventSelected(const AliVEvent * event, EventFlags & 
 	eprops.ncontributors = vertex->GetNContributors();
 
 	return kTRUE;
-}
-
-//____________________________________________________________
-void AliAnalysisTaskPP13::SetBadCells(Int_t badcells[], Int_t nbad)
-{
-	// Set absId numbers for bad cells;
-	// clusters which contain a bad cell will be rejected.
-
-	if (fBadCells) delete [] fBadCells;
-
-	// switch off bad cells, if asked
-	if (nbad <= 0)
-	{
-		fNBad = 0;
-		return;
-	}
-
-	fNBad = nbad;
-	fBadCells = new Int_t[nbad];
-
-	for (Int_t i = 0; i < nbad; i++)
-		fBadCells[i] = badcells[i];
-}
-
-//________________________________________________________________
-Bool_t AliAnalysisTaskPP13::CellInPhos(Int_t absId, Int_t & sm, Int_t & ix, Int_t & iz) const
-{
-	// Converts cell absId --> (sm,ix,iz);
-	AliPHOSGeometry * geomPHOS = AliPHOSGeometry::GetInstance();
-	// AliPHOSGeometry * geomPHOS = AliPHOSGeometry::GetInstance("IHEP");
-	if (!geomPHOS)
-	{
-		AliWarning("Something is wrong with PHOS Geometry. Check if you initialize it in UserExec!");
-		return kTRUE;
-	}
-
-	Int_t relid[4];
-	geomPHOS->AbsToRelNumbering(absId, relid);
-	sm = relid[0];
-	ix = relid[2];
-	iz = relid[3];
-	return (sm >= kMinModule) && (sm <= kMaxModule);
-}
-
-//________________________________________________________________
-Bool_t AliAnalysisTaskPP13::IsClusterBad(AliVCluster * clus) const
-{
-	// Returns true if cluster contains a bad cell
-	for (Int_t b = 0; b < fNBad; b++)
-		for (Int_t c = 0; c < clus->GetNCells(); c++)
-			if (clus->GetCellAbsId(c) == fBadCells[b])
-				return kTRUE;
-
-	// If fBadCells array is empty then use BadMap
-
-	if ( !fPHOSBadMap[0] ) return kFALSE;
-
-	Int_t sm, ix, iz;
-	for (Int_t c = 0; c < clus->GetNCells(); c++) // Loop over all cells in cluster
-	{
-		if (!CellInPhos(clus->GetCellAbsId(c), sm, ix, iz)) // Reject cells outside PHOS
-			return kTRUE;
-
-		if (!fPHOSBadMap[sm - kMinModule]) // Warn if something is wrong
-			AliError(Form("No Bad map for PHOS module %d", sm));
-
-		if (fPHOSBadMap[sm - kMinModule]->GetBinContent(ix, iz) > 0) // Check if cell is bad
-			return kTRUE;
-
-	}
-
-	return kFALSE;
-}
-
-//________________________________________________________________
-void AliAnalysisTaskPP13::SetBadMap(const char * filename)
-{
-	TFile * fBadMap = TFile::Open(filename);
-	if (!fBadMap->IsOpen())
-		AliFatal(Form("Cannot set BadMap %s doesn't exist", filename));
-
-	std::cout << "\n\n...Adding PHOS bad channel map \n"  << std::endl;
-	gROOT->cd();
-
-	for (Int_t module = kMinModule; module <= kMaxModule; ++module)
-	{
-		TH2I * h = (TH2I *) fBadMap->Get(Form("PHOS_BadMap_mod%d", module));
-		if (!h) AliFatal( Form("PHOS_BadMap_mod%d doesn't exist", module));
-
-		fPHOSBadMap[module - kMinModule] = new TH2I(*h);
-		std::cout << "Set " <<  fPHOSBadMap[module - kMinModule]->GetName() << std::endl;
-	}
-	fBadMap->Close();
-	std::cout << "\n\n...PHOS BadMap is set now." << std::endl;
 }

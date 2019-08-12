@@ -83,7 +83,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // Geometry methods
     
   void           InitGeometry();
-  void           SetGeometryName(TString &name)                 { fGeomName = name             ; }
+  void           SetGeometryName(TString name)                  { fGeomName = name             ; }
   TString        GeometryName()                          const  { return fGeomName             ; }  
   void           SwitchOnLoadOwnGeometryMatrices()              { fLoadGeomMatrices = kTRUE    ; }
   void           SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE   ; } 
@@ -94,9 +94,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
                                                                   fImportGeometryFilePath = pa ; }    
   // Outout AOD branch methods
     
-  void           SetAODBranchName(TString &name)                { fOutputAODBranchName = name  ; }
-  void           SetAODCellsName(TString &name)                 { fOutputAODCellsName  = name  ; }
-  void           SetInputCaloCellsName(TString &name)           { fInputCaloCellsName  = name  ; }
+  void           SetAODBranchName(TString name)                 { fOutputAODBranchName = name  ; }
+  void           SetAODCellsName(TString name)                  { fOutputAODCellsName  = name  ; }
+  void           SetInputCaloCellsName(TString name)            { fInputCaloCellsName  = name  ; }
   void           FillAODFile(Bool_t yesno)                      { fFillAODFile         = yesno ; }
   void           FillAODCaloCells();
   void           FillAODHeader();
@@ -179,7 +179,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SetClustersMCLabelFrom2SelectedLabels(AliEMCALRecPoint* recPoint, AliAODCaloCluster *clus) ;
   void           SetClustersMCLabelFromOriginalClusters(AliAODCaloCluster * clus) ;
   
-  void           SwitchOnUseClusterMCLabelForCell(Int_t opt = 2){ fSetCellMCLabelFromCluster = opt     ; }
+  void           SwitchOnUseClusterMCLabelForCell(Int_t opt = 0){ fSetCellMCLabelFromCluster = opt     ; }
   void           SwitchOffUseClusterMCLabelForCell()            { fSetCellMCLabelFromCluster = 0       ; }
 
   void           SwitchOnUseMCEdepFracLabelForCell()            { fSetCellMCLabelFromEdepFrac = kTRUE  ;  
@@ -190,6 +190,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // T-Card correlation emulation, do on MC
   
   void           MakeCellTCardCorrelation() ;
+  void           CalculateInducedEnergyInTCardCell(Int_t absId, Int_t absIdRef, Int_t sm, Float_t ampRef, Int_t cellCase) ;
   void           AddNewTCardInducedCellsToDigit() ;
   
   /// Activate T-Card cells correlation, 
@@ -308,9 +309,13 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOffRandomizeTCardInducedEnergy()         { fRandomizeTCard = kFALSE  ; }  
 
   void           SetInducedTCardMinimumCellEnergy(Float_t mi)   { fTCardCorrMinAmp     = mi ; }
-  void           SeInducedTCardMaximum(Float_t ma)              { fTCardCorrMaxInduced = ma ; }
+  void           SetInducedTCardMaximum(Float_t ma)             { fTCardCorrMaxInduced = ma ; }
+  void           SetInducedTCardMinimum(Float_t mi)             { fTCardCorrMinInduced = mi ; }
+  void           SetInducedTCardMaximumLowE(Float_t ma)         { fTCardCorrMaxInducedLowE = ma ; }
   
   void           PrintTCardParam();
+
+  void     SwitchUseMergedBCs(Bool_t doUseMergedBC)     { fDoMergedBCs     = doUseMergedBC; }
   
   //------------------------------------------
   
@@ -407,8 +412,10 @@ private:
 
   ///<  Use cluster MC label as cell label:
   ///<   * 0 - get the MC label stored in cells
-  ///<   * 1 - from old way, select 2 most likely labels
-  ///<   * 2 - from new way, get the original clusters, add all the MC labels (useful for any reclusterization with output V1 clusters)
+  ///<   * 1 - select 2 most likely labels
+  ///<   * 2 - get the original clusters, add all the MC labels 
+  ///< Options 1 and 2 useful for any reclusterization with output V1 clusters and similar clusterization thresholds as original cluster,
+  ///< if original is 50 MeV cell E cut and new is 100 MeV, this does not work well.
   Int_t                  fSetCellMCLabelFromCluster;
   
   ///< For MC generated with aliroot > v5-07-21, check the EDep information 
@@ -439,9 +446,13 @@ private:
   Bool_t                fRandomizeTCard ;          ///<  Use random induced energy
   
   Float_t               fTCardCorrMinAmp;          ///<  Minimum cell energy to induce signal on adjacent cells
+  Float_t               fTCardCorrMinInduced;      ///<  Minimum induced energy signal on adjacent cells, sum of induced plus original energy, use same as cell energy clusterization cut
+  Float_t               fTCardCorrMaxInducedLowE;  ///<  Maximum value of induced energy signal that is always accepted, order of ADC, tipically 10 MeV
   Float_t               fTCardCorrMaxInduced;      ///<  Maximum induced energy signal on adjacent cells
   
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
+
+  Bool_t                fDoMergedBCs;              ///< flag whether to load four histos for the time calib or one merged histo
   
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&) ;
@@ -450,7 +461,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 42) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 44) ;
   /// \endcond
 
 };

@@ -36,7 +36,6 @@ class AliAODv0;
 #include "AliCentrality.h"
 #include "AliHeader.h"   //for MC
 #include "AliMCEvent.h"  //for MC
-#include "AliStack.h"    //for MC
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDtrackCuts.h"
@@ -71,44 +70,108 @@ ClassImp(AliAnalysisTaskQAMultistrange)
 //------------------------------------------------------------
 AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange() 
   : AliAnalysisTaskSE           (), 
-    fisMC                       (kFALSE),
-    fAnalysisType               ("ESD"), 
-    fPIDResponse                (0),
-    fkQualityCutTPCrefit        (kTRUE),
-    fkQualityCutnTPCcls         (kTRUE),
-    fMinnTPCcls                 (70),  
-    fMinPtCutOnDaughterTracks   (0.),
-    fEtaCutOnDaughterTracks     (0.8),
-
-
-    fListHistMultistrangeQA(0),
-      fHistEventSel(0),
-      fHistCascadeMultiplicityXiMinus(0), fHistCascadeMultiplicityXiPlus(0), fHistCascadeMultiplicityOmegaMinus(0), fHistCascadeMultiplicityOmegaPlus(0),
-      fHistVarDcaCascDaughtXiMinus(0), fHistVarDcaCascDaughtXiPlus(0), fHistVarDcaCascDaughtOmegaMinus(0), fHistVarDcaCascDaughtOmegaPlus(0),
-      fHistVarDcaBachToPrimVertexXiMinus(0), fHistVarDcaBachToPrimVertexXiPlus(0), fHistVarDcaBachToPrimVertexOmegaMinus(0), fHistVarDcaBachToPrimVertexOmegaPlus(0),
-      fHistVarCascCosineOfPointingAngleXiMinus(0), fHistVarCascCosineOfPointingAngleXiPlus(0), fHistVarCascCosineOfPointingAngleOmegaMinus(0), fHistVarCascCosineOfPointingAngleOmegaPlus(0),
-      fHistVarCascRadiusXiMinus(0), fHistVarCascRadiusXiPlus(0), fHistVarCascRadiusOmegaMinus(0), fHistVarCascRadiusOmegaPlus(0),
-      fHistVarInvMassLambdaAsCascDghterXiMinus(0), fHistVarInvMassLambdaAsCascDghterXiPlus(0), fHistVarInvMassLambdaAsCascDghterOmegaMinus(0), fHistVarInvMassLambdaAsCascDghterOmegaPlus(0),
-      fHistVarDcaV0DaughtersXiMinus(0), fHistVarDcaV0DaughtersXiPlus(0), fHistVarDcaV0DaughtersOmegaMinus(0), fHistVarDcaV0DaughtersOmegaPlus(0),
-      fHistVarV0CosineOfPAToCascVertexXiMinus(0), fHistVarV0CosineOfPAToCascVertexXiPlus(0), fHistVarV0CosineOfPAToCascVertexOmegaMinus(0), fHistVarV0CosineOfPAToCascVertexOmegaPlus(0),
-      fHistVarV0RadiusXiMinus(0), fHistVarV0RadiusXiPlus(0), fHistVarV0RadiusOmegaMinus(0), fHistVarV0RadiusOmegaPlus(0),
-      fHistVarDcaV0ToPrimVertexXiMinus(0), fHistVarDcaV0ToPrimVertexXiPlus(0), fHistVarDcaV0ToPrimVertexOmegaMinus(0), fHistVarDcaV0ToPrimVertexOmegaPlus(0),
-      fHistVarDcaPosToPrimVertexXiMinus(0), fHistVarDcaPosToPrimVertexXiPlus(0), fHistVarDcaPosToPrimVertexOmegaMinus(0), fHistVarDcaPosToPrimVertexOmegaPlus(0),
-      fHistVarDcaNegToPrimVertexXiMinus(0), fHistVarDcaNegToPrimVertexXiPlus(0), fHistVarDcaNegToPrimVertexOmegaMinus(0), fHistVarDcaNegToPrimVertexOmegaPlus(0),
-      fHistMassXiMinus(0), fHistMassXiPlus(0), fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
-      fHistVarTransvMomentumXiMinus(0), fHistVarTransvMomentumXiPlus(0), fHistVarTransvMomentumOmegaMinus(0), fHistVarTransvMomentumOmegaPlus(0),
-      fHistVarRapidityXiMinus(0), fHistVarRapidityXiPlus(0), fHistVarRapidityOmegaMinus(0), fHistVarRapidityOmegaPlus(0),
-      fHistVarCascProperLengthXiMinus(0), fHistVarCascProperLengthXiPlus(0), fHistVarCascProperLengthOmegaMinus(0), fHistVarCascProperLengthOmegaPlus(0),
-      fHistVarV0ProperLengthXiMinus(0), fHistVarV0ProperLengthXiPlus(0), fHistVarV0ProperLengthOmegaMinus(0), fHistVarV0ProperLengthOmegaPlus(0),
-      fHistGenVarTotMomXiMinus(0),fHistGenVarTotMomXiPlus(0), fHistGenVarTotMomOmegaMinus(0), fHistGenVarTotMomOmegaPlus(0),
-      fHistGenVarTransvMomXiMinus(0), fHistGenVarTransvMomXiPlus(0), fHistGenVarTransvMomOmegaMinus (0), fHistGenVarTransvMomOmegaPlus(0),
-      fHistGenVarYXiMinus(0), fHistGenVarYXiPlus(0), fHistGenVarYOmegaMinus(0), fHistGenVarYOmegaPlus(0),
-      fHistGenVarEtaXiMinus(0), fHistGenVarEtaXiPlus(0), fHistGenVarEtaOmegaMinus(0), fHistGenVarEtaOmegaPlus(0),
-      fHistGenVarThetaXiMinus(0), fHistGenVarThetaXiPlus(0), fHistGenVarThetaOmegaMinus(0), fHistGenVarThetaOmegaPlus(0),
-      fHistGenVarPhiXiMinus(0), fHistGenVarPhiXiPlus(0), fHistGenVarPhiOmegaMinus(0), fHistGenVarPhiOmegaPlus(0)
-
-
-
+  fisMC{false},
+  fAnalysisType{"ESD"},
+  fPIDResponse{nullptr},
+  fkQualityCutTPCrefit{true},
+  fkQualityCutnTPCcls{true},
+  fMinnTPCcls{70},
+  fMinPtCutOnDaughterTracks{0.},
+  fEtaCutOnDaughterTracks{0.8},
+  fListHistMultistrangeQA{nullptr},
+  fHistEventSel{nullptr},
+  fHistCascadeMultiplicityXiMinus{nullptr},
+  fHistCascadeMultiplicityXiPlus{nullptr},
+  fHistCascadeMultiplicityOmegaMinus{nullptr},
+  fHistCascadeMultiplicityOmegaPlus{nullptr},
+  fHistVarDcaCascDaughtXiMinus{nullptr},
+  fHistVarDcaBachToPrimVertexXiMinus{nullptr},
+  fHistVarCascCosineOfPointingAngleXiMinus{nullptr},
+  fHistVarCascRadiusXiMinus{nullptr},
+  fHistVarInvMassLambdaAsCascDghterXiMinus{nullptr},
+  fHistVarDcaV0DaughtersXiMinus{nullptr},
+  fHistVarV0CosineOfPAToCascVertexXiMinus{nullptr},
+  fHistVarV0RadiusXiMinus{nullptr},
+  fHistVarDcaV0ToPrimVertexXiMinus{nullptr},
+  fHistVarDcaPosToPrimVertexXiMinus{nullptr},
+  fHistVarDcaNegToPrimVertexXiMinus{nullptr},
+  fHistMassXiMinus{nullptr},
+  fHistVarTransvMomentumXiMinus{nullptr},
+  fHistVarRapidityXiMinus{nullptr},
+  fHistVarCascProperLengthXiMinus{nullptr},
+  fHistVarV0ProperLengthXiMinus{nullptr},
+  fHistGenVarTotMomXiMinus{nullptr},
+  fHistGenVarTransvMomXiMinus{nullptr},
+  fHistGenVarYXiMinus{nullptr},
+  fHistGenVarEtaXiMinus{nullptr},
+  fHistGenVarThetaXiMinus{nullptr},
+  fHistGenVarPhiXiMinus{nullptr},
+  fHistVarDcaCascDaughtXiPlus{nullptr},
+  fHistVarDcaBachToPrimVertexXiPlus{nullptr},
+  fHistVarCascCosineOfPointingAngleXiPlus{nullptr},
+  fHistVarCascRadiusXiPlus{nullptr},
+  fHistVarInvMassLambdaAsCascDghterXiPlus{nullptr},
+  fHistVarDcaV0DaughtersXiPlus{nullptr},
+  fHistVarV0CosineOfPAToCascVertexXiPlus{nullptr},
+  fHistVarV0RadiusXiPlus{nullptr},
+  fHistVarDcaV0ToPrimVertexXiPlus{nullptr},
+  fHistVarDcaPosToPrimVertexXiPlus{nullptr},
+  fHistVarDcaNegToPrimVertexXiPlus{nullptr},
+  fHistMassXiPlus{nullptr},
+  fHistVarTransvMomentumXiPlus{nullptr},
+  fHistVarRapidityXiPlus{nullptr},
+  fHistVarCascProperLengthXiPlus{nullptr},
+  fHistVarV0ProperLengthXiPlus{nullptr},
+  fHistGenVarTotMomXiPlus{nullptr},
+  fHistGenVarTransvMomXiPlus{nullptr},
+  fHistGenVarYXiPlus{nullptr},
+  fHistGenVarEtaXiPlus{nullptr},
+  fHistGenVarThetaXiPlus{nullptr},
+  fHistGenVarPhiXiPlus{nullptr},
+  fHistVarDcaCascDaughtOmegaMinus{nullptr},
+  fHistVarDcaBachToPrimVertexOmegaMinus{nullptr},
+  fHistVarCascCosineOfPointingAngleOmegaMinus{nullptr},
+  fHistVarCascRadiusOmegaMinus{nullptr},
+  fHistVarInvMassLambdaAsCascDghterOmegaMinus{nullptr},
+  fHistVarDcaV0DaughtersOmegaMinus{nullptr},
+  fHistVarV0CosineOfPAToCascVertexOmegaMinus{nullptr},
+  fHistVarV0RadiusOmegaMinus{nullptr},
+  fHistVarDcaV0ToPrimVertexOmegaMinus{nullptr},
+  fHistVarDcaPosToPrimVertexOmegaMinus{nullptr},
+  fHistVarDcaNegToPrimVertexOmegaMinus{nullptr},
+  fHistMassOmegaMinus{nullptr},
+  fHistVarTransvMomentumOmegaMinus{nullptr},
+  fHistVarRapidityOmegaMinus{nullptr},
+  fHistVarCascProperLengthOmegaMinus{nullptr},
+  fHistVarV0ProperLengthOmegaMinus{nullptr},
+  fHistGenVarTotMomOmegaMinus{nullptr},
+  fHistGenVarTransvMomOmegaMinus{nullptr},
+  fHistGenVarYOmegaMinus{nullptr},
+  fHistGenVarEtaOmegaMinus{nullptr},
+  fHistGenVarThetaOmegaMinus{nullptr},
+  fHistGenVarPhiOmegaMinus{nullptr},
+  fHistVarDcaCascDaughtOmegaPlus{nullptr},
+  fHistVarDcaBachToPrimVertexOmegaPlus{nullptr},
+  fHistVarCascCosineOfPointingAngleOmegaPlus{nullptr},
+  fHistVarCascRadiusOmegaPlus{nullptr},
+  fHistVarInvMassLambdaAsCascDghterOmegaPlus{nullptr},
+  fHistVarDcaV0DaughtersOmegaPlus{nullptr},
+  fHistVarV0CosineOfPAToCascVertexOmegaPlus{nullptr},
+  fHistVarV0RadiusOmegaPlus{nullptr},
+  fHistVarDcaV0ToPrimVertexOmegaPlus{nullptr},
+  fHistVarDcaPosToPrimVertexOmegaPlus{nullptr},
+  fHistVarDcaNegToPrimVertexOmegaPlus{nullptr},
+  fHistMassOmegaPlus{nullptr},
+  fHistVarTransvMomentumOmegaPlus{nullptr},
+  fHistVarRapidityOmegaPlus{nullptr},
+  fHistVarCascProperLengthOmegaPlus{nullptr},
+  fHistVarV0ProperLengthOmegaPlus{nullptr},
+  fHistGenVarTotMomOmegaPlus{nullptr},
+  fHistGenVarTransvMomOmegaPlus{nullptr},
+  fHistGenVarYOmegaPlus{nullptr},
+  fHistGenVarEtaOmegaPlus{nullptr},
+  fHistGenVarThetaOmegaPlus{nullptr},
+  fHistGenVarPhiOmegaPlus{nullptr}
 {
   // Dummy Constructor
 }
@@ -117,44 +180,108 @@ AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange()
 //----------------------------------------------------------------------------
 AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange(const char *name) 
   : AliAnalysisTaskSE           (name),
-    fisMC                       (kFALSE),
-    fAnalysisType               ("ESD"), 
-    fPIDResponse                (0),
-    fkQualityCutTPCrefit        (kTRUE),
-    fkQualityCutnTPCcls         (kTRUE),
-    fMinnTPCcls                 (70),
-    fMinPtCutOnDaughterTracks   (0.),
-    fEtaCutOnDaughterTracks     (0.8),
-
-
-    fListHistMultistrangeQA(0),
-      fHistEventSel(0),
-      fHistCascadeMultiplicityXiMinus(0), fHistCascadeMultiplicityXiPlus(0), fHistCascadeMultiplicityOmegaMinus(0), fHistCascadeMultiplicityOmegaPlus(0),
-      fHistVarDcaCascDaughtXiMinus(0), fHistVarDcaCascDaughtXiPlus(0), fHistVarDcaCascDaughtOmegaMinus(0), fHistVarDcaCascDaughtOmegaPlus(0),
-      fHistVarDcaBachToPrimVertexXiMinus(0), fHistVarDcaBachToPrimVertexXiPlus(0), fHistVarDcaBachToPrimVertexOmegaMinus(0), fHistVarDcaBachToPrimVertexOmegaPlus(0),
-      fHistVarCascCosineOfPointingAngleXiMinus(0), fHistVarCascCosineOfPointingAngleXiPlus(0), fHistVarCascCosineOfPointingAngleOmegaMinus(0), fHistVarCascCosineOfPointingAngleOmegaPlus(0),
-      fHistVarCascRadiusXiMinus(0), fHistVarCascRadiusXiPlus(0), fHistVarCascRadiusOmegaMinus(0), fHistVarCascRadiusOmegaPlus(0),
-      fHistVarInvMassLambdaAsCascDghterXiMinus(0), fHistVarInvMassLambdaAsCascDghterXiPlus(0), fHistVarInvMassLambdaAsCascDghterOmegaMinus(0), fHistVarInvMassLambdaAsCascDghterOmegaPlus(0),
-      fHistVarDcaV0DaughtersXiMinus(0), fHistVarDcaV0DaughtersXiPlus(0), fHistVarDcaV0DaughtersOmegaMinus(0), fHistVarDcaV0DaughtersOmegaPlus(0),
-      fHistVarV0CosineOfPAToCascVertexXiMinus(0), fHistVarV0CosineOfPAToCascVertexXiPlus(0), fHistVarV0CosineOfPAToCascVertexOmegaMinus(0), fHistVarV0CosineOfPAToCascVertexOmegaPlus(0),
-      fHistVarV0RadiusXiMinus(0), fHistVarV0RadiusXiPlus(0), fHistVarV0RadiusOmegaMinus(0), fHistVarV0RadiusOmegaPlus(0),
-      fHistVarDcaV0ToPrimVertexXiMinus(0), fHistVarDcaV0ToPrimVertexXiPlus(0), fHistVarDcaV0ToPrimVertexOmegaMinus(0), fHistVarDcaV0ToPrimVertexOmegaPlus(0),
-      fHistVarDcaPosToPrimVertexXiMinus(0), fHistVarDcaPosToPrimVertexXiPlus(0), fHistVarDcaPosToPrimVertexOmegaMinus(0), fHistVarDcaPosToPrimVertexOmegaPlus(0),
-      fHistVarDcaNegToPrimVertexXiMinus(0), fHistVarDcaNegToPrimVertexXiPlus(0), fHistVarDcaNegToPrimVertexOmegaMinus(0), fHistVarDcaNegToPrimVertexOmegaPlus(0),
-      fHistMassXiMinus(0), fHistMassXiPlus(0), fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
-      fHistVarTransvMomentumXiMinus(0), fHistVarTransvMomentumXiPlus(0), fHistVarTransvMomentumOmegaMinus(0), fHistVarTransvMomentumOmegaPlus(0),
-      fHistVarRapidityXiMinus(0), fHistVarRapidityXiPlus(0), fHistVarRapidityOmegaMinus(0), fHistVarRapidityOmegaPlus(0),
-      fHistVarCascProperLengthXiMinus(0), fHistVarCascProperLengthXiPlus(0), fHistVarCascProperLengthOmegaMinus(0), fHistVarCascProperLengthOmegaPlus(0),
-      fHistVarV0ProperLengthXiMinus(0), fHistVarV0ProperLengthXiPlus(0), fHistVarV0ProperLengthOmegaMinus(0), fHistVarV0ProperLengthOmegaPlus(0),
-      fHistGenVarTotMomXiMinus(0),fHistGenVarTotMomXiPlus(0), fHistGenVarTotMomOmegaMinus(0), fHistGenVarTotMomOmegaPlus(0),
-      fHistGenVarTransvMomXiMinus(0), fHistGenVarTransvMomXiPlus(0), fHistGenVarTransvMomOmegaMinus (0), fHistGenVarTransvMomOmegaPlus(0),
-      fHistGenVarYXiMinus(0), fHistGenVarYXiPlus(0), fHistGenVarYOmegaMinus(0), fHistGenVarYOmegaPlus(0),
-      fHistGenVarEtaXiMinus(0), fHistGenVarEtaXiPlus(0), fHistGenVarEtaOmegaMinus(0), fHistGenVarEtaOmegaPlus(0),
-      fHistGenVarThetaXiMinus(0), fHistGenVarThetaXiPlus(0), fHistGenVarThetaOmegaMinus(0), fHistGenVarThetaOmegaPlus(0),
-      fHistGenVarPhiXiMinus(0), fHistGenVarPhiXiPlus(0), fHistGenVarPhiOmegaMinus(0), fHistGenVarPhiOmegaPlus(0)
-
-
-
+  fisMC{false},
+  fAnalysisType{"ESD"},
+  fPIDResponse{nullptr},
+  fkQualityCutTPCrefit{true},
+  fkQualityCutnTPCcls{true},
+  fMinnTPCcls{70},
+  fMinPtCutOnDaughterTracks{0.},
+  fEtaCutOnDaughterTracks{0.8},
+  fListHistMultistrangeQA{nullptr},
+  fHistEventSel{nullptr},
+  fHistCascadeMultiplicityXiMinus{nullptr},
+  fHistCascadeMultiplicityXiPlus{nullptr},
+  fHistCascadeMultiplicityOmegaMinus{nullptr},
+  fHistCascadeMultiplicityOmegaPlus{nullptr},
+  fHistVarDcaCascDaughtXiMinus{nullptr},
+  fHistVarDcaBachToPrimVertexXiMinus{nullptr},
+  fHistVarCascCosineOfPointingAngleXiMinus{nullptr},
+  fHistVarCascRadiusXiMinus{nullptr},
+  fHistVarInvMassLambdaAsCascDghterXiMinus{nullptr},
+  fHistVarDcaV0DaughtersXiMinus{nullptr},
+  fHistVarV0CosineOfPAToCascVertexXiMinus{nullptr},
+  fHistVarV0RadiusXiMinus{nullptr},
+  fHistVarDcaV0ToPrimVertexXiMinus{nullptr},
+  fHistVarDcaPosToPrimVertexXiMinus{nullptr},
+  fHistVarDcaNegToPrimVertexXiMinus{nullptr},
+  fHistMassXiMinus{nullptr},
+  fHistVarTransvMomentumXiMinus{nullptr},
+  fHistVarRapidityXiMinus{nullptr},
+  fHistVarCascProperLengthXiMinus{nullptr},
+  fHistVarV0ProperLengthXiMinus{nullptr},
+  fHistGenVarTotMomXiMinus{nullptr},
+  fHistGenVarTransvMomXiMinus{nullptr},
+  fHistGenVarYXiMinus{nullptr},
+  fHistGenVarEtaXiMinus{nullptr},
+  fHistGenVarThetaXiMinus{nullptr},
+  fHistGenVarPhiXiMinus{nullptr},
+  fHistVarDcaCascDaughtXiPlus{nullptr},
+  fHistVarDcaBachToPrimVertexXiPlus{nullptr},
+  fHistVarCascCosineOfPointingAngleXiPlus{nullptr},
+  fHistVarCascRadiusXiPlus{nullptr},
+  fHistVarInvMassLambdaAsCascDghterXiPlus{nullptr},
+  fHistVarDcaV0DaughtersXiPlus{nullptr},
+  fHistVarV0CosineOfPAToCascVertexXiPlus{nullptr},
+  fHistVarV0RadiusXiPlus{nullptr},
+  fHistVarDcaV0ToPrimVertexXiPlus{nullptr},
+  fHistVarDcaPosToPrimVertexXiPlus{nullptr},
+  fHistVarDcaNegToPrimVertexXiPlus{nullptr},
+  fHistMassXiPlus{nullptr},
+  fHistVarTransvMomentumXiPlus{nullptr},
+  fHistVarRapidityXiPlus{nullptr},
+  fHistVarCascProperLengthXiPlus{nullptr},
+  fHistVarV0ProperLengthXiPlus{nullptr},
+  fHistGenVarTotMomXiPlus{nullptr},
+  fHistGenVarTransvMomXiPlus{nullptr},
+  fHistGenVarYXiPlus{nullptr},
+  fHistGenVarEtaXiPlus{nullptr},
+  fHistGenVarThetaXiPlus{nullptr},
+  fHistGenVarPhiXiPlus{nullptr},
+  fHistVarDcaCascDaughtOmegaMinus{nullptr},
+  fHistVarDcaBachToPrimVertexOmegaMinus{nullptr},
+  fHistVarCascCosineOfPointingAngleOmegaMinus{nullptr},
+  fHistVarCascRadiusOmegaMinus{nullptr},
+  fHistVarInvMassLambdaAsCascDghterOmegaMinus{nullptr},
+  fHistVarDcaV0DaughtersOmegaMinus{nullptr},
+  fHistVarV0CosineOfPAToCascVertexOmegaMinus{nullptr},
+  fHistVarV0RadiusOmegaMinus{nullptr},
+  fHistVarDcaV0ToPrimVertexOmegaMinus{nullptr},
+  fHistVarDcaPosToPrimVertexOmegaMinus{nullptr},
+  fHistVarDcaNegToPrimVertexOmegaMinus{nullptr},
+  fHistMassOmegaMinus{nullptr},
+  fHistVarTransvMomentumOmegaMinus{nullptr},
+  fHistVarRapidityOmegaMinus{nullptr},
+  fHistVarCascProperLengthOmegaMinus{nullptr},
+  fHistVarV0ProperLengthOmegaMinus{nullptr},
+  fHistGenVarTotMomOmegaMinus{nullptr},
+  fHistGenVarTransvMomOmegaMinus{nullptr},
+  fHistGenVarYOmegaMinus{nullptr},
+  fHistGenVarEtaOmegaMinus{nullptr},
+  fHistGenVarThetaOmegaMinus{nullptr},
+  fHistGenVarPhiOmegaMinus{nullptr},
+  fHistVarDcaCascDaughtOmegaPlus{nullptr},
+  fHistVarDcaBachToPrimVertexOmegaPlus{nullptr},
+  fHistVarCascCosineOfPointingAngleOmegaPlus{nullptr},
+  fHistVarCascRadiusOmegaPlus{nullptr},
+  fHistVarInvMassLambdaAsCascDghterOmegaPlus{nullptr},
+  fHistVarDcaV0DaughtersOmegaPlus{nullptr},
+  fHistVarV0CosineOfPAToCascVertexOmegaPlus{nullptr},
+  fHistVarV0RadiusOmegaPlus{nullptr},
+  fHistVarDcaV0ToPrimVertexOmegaPlus{nullptr},
+  fHistVarDcaPosToPrimVertexOmegaPlus{nullptr},
+  fHistVarDcaNegToPrimVertexOmegaPlus{nullptr},
+  fHistMassOmegaPlus{nullptr},
+  fHistVarTransvMomentumOmegaPlus{nullptr},
+  fHistVarRapidityOmegaPlus{nullptr},
+  fHistVarCascProperLengthOmegaPlus{nullptr},
+  fHistVarV0ProperLengthOmegaPlus{nullptr},
+  fHistGenVarTotMomOmegaPlus{nullptr},
+  fHistGenVarTransvMomOmegaPlus{nullptr},
+  fHistGenVarYOmegaPlus{nullptr},
+  fHistGenVarEtaOmegaPlus{nullptr},
+  fHistGenVarThetaOmegaPlus{nullptr},
+  fHistGenVarPhiOmegaPlus{nullptr}
 {
   // Constructor
   // Output slot #0 writes into a TList container (Cascade)
@@ -626,7 +753,6 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
    AliESDEvent  *lESDevent = 0x0;
    AliAODEvent  *lAODevent = 0x0;
    AliMCEvent   *lMCevent  = 0x0; //for MC
-   AliStack     *lMCstack  = 0x0; //for MC
    TClonesArray *arrayMC   = 0;   //for MC  
 
    //______________________
@@ -641,8 +767,6 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
        if (fisMC) {
            lMCevent = MCEvent();
            if (!lMCevent) { AliWarning("ERROR: Could not retrieve MC event \n");  return; }
-           lMCstack = lMCevent->Stack();
-           if (!lMCstack) { AliWarning("ERROR: Could not retrieve MC stack \n");  return; }
        }
    } else if (fAnalysisType == "AOD") {
        lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
@@ -713,7 +837,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
    }
 
 
-  ////////////////////////////               
+  ////////////////////////////
   // MC GENERATED CASCADE PART
   ////////////////////////////
 
@@ -722,7 +846,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
   if (fisMC) {
 
       Int_t lNbMCPrimary = 0;
-      if      (fAnalysisType == "ESD") lNbMCPrimary = lMCstack->GetNtrack();   
+      if      (fAnalysisType == "ESD") lNbMCPrimary = lMCevent->GetNumberOfTracks();
       else if (fAnalysisType == "AOD") lNbMCPrimary = arrayMC->GetEntries();
       Int_t ngenximinus    = 0;
       Int_t ngenxiplus     = 0;
@@ -744,12 +868,12 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
 
            if ( fAnalysisType == "ESD" ) {
                TParticle* lCurrentParticlePrimary = 0x0;
-               lCurrentParticlePrimary = lMCstack->Particle( iCurrentLabelStack );
+               lCurrentParticlePrimary = lMCevent->Particle( iCurrentLabelStack );
                if (!lCurrentParticlePrimary) {
                    AliWarning("Cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...");
                    continue;
                }
-               if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) continue;
+               if (!lMCevent->IsPhysicalPrimary(iCurrentLabelStack)) continue;
                TParticle* cascMC = 0x0;
                cascMC = lCurrentParticlePrimary;
                if (!cascMC) {
@@ -1038,17 +1162,17 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
            if (fisMC) {
              lblPosV0Dghter = 0;  lblPosV0Dghter = (Int_t) TMath::Abs( pTrackXi->GetLabel() );
              lblNegV0Dghter = 0;  lblNegV0Dghter = (Int_t) TMath::Abs( nTrackXi->GetLabel() );
-             mcPosV0Dghter = 0x0; mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
-             mcNegV0Dghter = 0x0; mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );               
+             mcPosV0Dghter = 0x0; mcPosV0Dghter = lMCevent->Particle( lblPosV0Dghter );
+             mcNegV0Dghter = 0x0; mcNegV0Dghter = lMCevent->Particle( lblNegV0Dghter );               
              lblMotherPosV0Dghter = 0.;  lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother();
              lblMotherNegV0Dghter = 0.;  lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
              if (lblMotherPosV0Dghter != lblMotherNegV0Dghter) continue; // must have same mother
              if (lblMotherPosV0Dghter < 0) continue;                     // this particle is primary, no mother   
              if (lblMotherNegV0Dghter < 0) continue;                     // this particle is primary, no mother
-             mcMotherPosV0Dghter = 0x0; mcMotherPosV0Dghter = lMCstack->Particle( lblMotherPosV0Dghter );
-             mcMotherNegV0Dghter = 0x0; mcMotherNegV0Dghter = lMCstack->Particle( lblMotherNegV0Dghter );  
+             mcMotherPosV0Dghter = 0x0; mcMotherPosV0Dghter = lMCevent->Particle( lblMotherPosV0Dghter );
+             mcMotherNegV0Dghter = 0x0; mcMotherNegV0Dghter = lMCevent->Particle( lblMotherNegV0Dghter );  
              lblBach = 0; lblBach = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
-             mcBach = 0x0; mcBach = lMCstack->Particle( lblBach );
+             mcBach = 0x0; mcBach = lMCevent->Particle( lblBach );
              lblGdMotherPosV0Dghter = 0; lblGdMotherPosV0Dghter = mcMotherPosV0Dghter->GetFirstMother() ;
              lblGdMotherNegV0Dghter = 0; lblGdMotherNegV0Dghter = mcMotherNegV0Dghter->GetFirstMother() ;
              lblMotherBach = 0; lblMotherBach = (Int_t) TMath::Abs( mcBach->GetFirstMother() );
@@ -1056,10 +1180,10 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
              if(lblGdMotherPosV0Dghter < 0) continue;                       // primary lambda ...   
              if(lblGdMotherNegV0Dghter < 0) continue;                       // primary lambda ...                            
              if(lblMotherBach != lblGdMotherPosV0Dghter) continue;          // must have same mother bach and V0 daughters
-             mcGdMotherPosV0Dghter = 0x0; mcGdMotherPosV0Dghter = lMCstack->Particle( lblGdMotherPosV0Dghter );
-             mcGdMotherNegV0Dghter = 0x0; mcGdMotherNegV0Dghter = lMCstack->Particle( lblGdMotherNegV0Dghter );
-             mcMotherBach          = 0x0; mcMotherBach          = lMCstack->Particle( lblMotherBach );
-             if (!(lMCstack->IsPhysicalPrimary(lblMotherBach))) continue;
+             mcGdMotherPosV0Dghter = 0x0; mcGdMotherPosV0Dghter = lMCevent->Particle( lblGdMotherPosV0Dghter );
+             mcGdMotherNegV0Dghter = 0x0; mcGdMotherNegV0Dghter = lMCevent->Particle( lblGdMotherNegV0Dghter );
+             mcMotherBach          = 0x0; mcMotherBach          = lMCevent->Particle( lblMotherBach );
+             if (!(lMCevent->IsPhysicalPrimary(lblMotherBach))) continue;
              if      (mcMotherBach->GetPdgCode() == 3312  && mcGdMotherPosV0Dghter->GetPdgCode() == 3312  && mcGdMotherNegV0Dghter->GetPdgCode() == 3312)  {lAssoXiMinus    = kTRUE; cascadeMass = 1.321;}
              else if (mcMotherBach->GetPdgCode() == -3312 && mcGdMotherPosV0Dghter->GetPdgCode() == -3312 && mcGdMotherNegV0Dghter->GetPdgCode() == -3312) {lAssoXiPlus     = kTRUE; cascadeMass = 1.321;}
              else if (mcMotherBach->GetPdgCode() == 3334  && mcGdMotherPosV0Dghter->GetPdgCode() == 3334  && mcGdMotherNegV0Dghter->GetPdgCode() == 3334)  {lAssoOmegaMinus = kTRUE; cascadeMass = 1.672;}

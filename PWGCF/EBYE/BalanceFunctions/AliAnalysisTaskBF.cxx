@@ -34,6 +34,8 @@
 #include "AliAnalysisTaskBF.h"
 #include "AliBalance.h"
 
+#include <random>
+
 
 // Analysis task for the BF code
 // Authors: Panos.Christakoglou@nikhef.nl
@@ -1325,7 +1327,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 
   if(fRunShuffling) {
     // shuffle charges
-    random_shuffle( chargeVectorShuffle[0]->begin(), chargeVectorShuffle[0]->end() );
+    std::random_device rd;
+    std::default_random_engine engine{rd()};
+    std::shuffle( chargeVectorShuffle[0]->begin(), chargeVectorShuffle[0]->end(), engine );
     if(fUseMultiplicity) 
       fShuffledBalance->CalculateBalance(gNumberOfAcceptedTracks,chargeVectorShuffle,bSign);
     else                 

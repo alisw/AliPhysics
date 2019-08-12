@@ -5,7 +5,7 @@
 #include <map>
 
 // --- Custom header files ---
-#include "AliPP13PhysPhotonSelectionMC.h"
+#include "AliPP13SpectrumSelectionMC.h"
 #include "AliPP13ParticlesHistogram.h"
 #include "AliPP13SelectionWeights.h"
 
@@ -28,7 +28,7 @@
 // TODO: Split this class to have separate efficiency and contamination estimators
 //
 
-class AliPP13KaonToPionRatioMC: public AliPP13PhysPhotonSelectionMC
+class AliPP13KaonToPionRatioMC: public AliPP13SpectrumSelectionMC
 {
 public:
 	enum Modes {kGenerated = 0, kReconstructed = 1, kNhists = 2};
@@ -42,7 +42,7 @@ public:
 
 
 	AliPP13KaonToPionRatioMC():
-		AliPP13PhysPhotonSelectionMC(),
+		AliPP13SpectrumSelectionMC(),
 		fPrimary(),
 		fAll()
 	{
@@ -54,7 +54,7 @@ public:
 
 	AliPP13KaonToPionRatioMC(const char * name, const char * title,
 			AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
-		AliPP13PhysPhotonSelectionMC(name, title, cuts, w),
+		AliPP13SpectrumSelectionMC(name, title, cuts, w),
 		fPrimary(),
 		fAll()
 	{
@@ -80,7 +80,6 @@ protected:
 		(void) eflags;
 	}
 
-	virtual Bool_t IsPrimary(const AliAODMCParticle * particle) const;
 	AliPP13KaonToPionRatioMC(const AliPP13KaonToPionRatioMC &);
 	AliPP13KaonToPionRatioMC & operator = (const AliPP13KaonToPionRatioMC &);
 

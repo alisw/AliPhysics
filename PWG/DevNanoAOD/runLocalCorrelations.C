@@ -63,9 +63,9 @@ void runLocalCorrelations(
 
   task->SetTrkCuts(trk);
   task->SetEvtCuts(evt);
-  task->SetSetter(new AliNanoAODSimpleSetter);
-  task->SetVarList("pt,theta,phi");
-  task->SetVarListHead("cstCentr,cstMagField");
+  task->AddSetter(new AliNanoAODSimpleSetter);
+  task->SetVarListTrack("pt,theta,phi");
+  task->SetVarListHeader("cstCentr,cstMagField");
 
   task->SelectCollisionCandidates(AliVEvent::kMB);
 

@@ -50,7 +50,8 @@ AliDielectronMixingHandler::AliDielectronMixingHandler() :
   fMixIncomplete(kTRUE),
   fMoveToSameVertex(kFALSE),
   fSkipFirstEvt(kFALSE),
-  fPID(0x0)
+  fPID(0x0),
+  fPIDobjectCount(0)
 {
   //
   // Default Constructor
@@ -71,7 +72,8 @@ AliDielectronMixingHandler::AliDielectronMixingHandler(const char* name, const c
   fMixIncomplete(kTRUE),
   fMoveToSameVertex(kFALSE),
   fSkipFirstEvt(kFALSE),
-  fPID(0x0)
+  fPID(0x0),
+  fPIDobjectCount(0)
 {
   //
   // Named Constructor
@@ -174,8 +176,24 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
 
   // do mixing
   if (poolp) {
+
+    // prepare object counter for TRef used in AliDielectronPair:
+    // Set to previous value (fPIDobjectCount) since TProcessID::GetObjectCount() starts always at 0 
+    // => otherwise newly referenced objects (which are all tracks from mixed events)
+    //    can obtain a UniqueID that was already assigned
+    TProcessID::SetObjectCount(fPIDobjectCount);
+
     TClonesArray &pool=*poolp;
     DoMixing(pool,diele);
+
+    // update object counter, i.e. fPIDobjectCount + number of newly referenced objects
+    if(TProcessID::GetObjectCount() < (UInt_t)0xffffffff ){
+      fPIDobjectCount = TProcessID::GetObjectCount();
+    }
+    else{
+      AliWarning("TProcessID::GetObjectCount() >= UINT_MAX [0xffffffff]; set fPIDobjectCount = 0");
+      fPIDobjectCount = 0;
+    }
   }
 
   Int_t index1=0;

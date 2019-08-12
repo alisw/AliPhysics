@@ -15,31 +15,40 @@
 #include <TLine.h>
 #include <TDatabasePDG.h>
 #include <TMath.h>
+#include <TGraph.h>
 
 //using namespace std;
 
 class Getoutput {
  public:
-  Getoutput();
+  Getoutput(const char *filename="results.root",Int_t nsTri=3, Int_t nsPi=3);
+  void Set3Hcharge(Int_t triCharge=2) {f3Hcharge=triCharge;}
   bool LoadParams(const char *paramfile="params.txt");
   bool LoadFile(const char *inputfile="AnalysisResults.root",const char *listName="clistNtupHyper");
+  void Process();
   void LoopOverV0(Int_t Hcharge=-1);
-  void StoreOutputData(const char *filename="results.root");
+  void StoreOutputData();
   bool LoadOutputData(const char *filename="results3H1.root");
    void DrawResults();
   void ClearInputData();
-
-  void BookOutputData();
+  void SetAcceptLikesign() {fRejectLikesign=kFALSE;}
+  void SetMC(){fIsMC=kTRUE;}
+  void SetAODCuts(){fUseAODCut=kTRUE;}
+  void SetTOFpid(){fIncludePidTOF=kTRUE;}
+  void Set3HPcut(Double_t pMin){f3HPcut=pMin;}
+  void BookOutputData(const char *name="");
   Double_t GetInvMass (TVector3 vPos, TVector3 vNeg, Double_t mPos, Double_t mNeg);
   bool EventSelectionAOD(Double_t *arr);
 
   Bool_t fIsMC;
   Bool_t fIncludePidTOF;
-  Bool_t fRejectBkg; // useful in case like-sign V0 are produced
-  Int_t f3Hsign;
+  Bool_t fRejectLikesign; // useful in case like-sign V0 are produced
+  Bool_t fUseAODCut;
+  Int_t f3Hcharge;
+  Double_t f3HPcut;
   Double_t array[28];
   Float_t param[20];
-
+  TString fOutFilename;
   TList *fInputList;
   TList *fHistList;
   TList *fOutputList;
@@ -48,6 +57,7 @@ class Getoutput {
   TH1F *hDecayLength[5];
   TH1F *hProdVtx[5];
   TH1F *hMass[5];
+  TH1F *hMassTrd[5];
   TH1F *hMassBkg;
   TH1F *hMassSignal;
   TH1F *hMassContrib[2][7]; // quark u&d, s,c,b for pion and triton
@@ -64,9 +74,20 @@ class Getoutput {
   TH2F *hArmPlotSel[5];
   TH2F *hTPCsignalPi;
   TH2F *hTPCsignalTri;
+  TH2F *hTPCsignalTriAll;
+  TH2F *hTPCsignalPiClean;
+  TH2F *hTPCsignalTriClean;
   TH2F* hTPCsignalTri91Lim;
+  TH2F* hTPCsignalTriTrd;
   TH2F *hMumCheck[2];
+  TH1I *hMonitorPlot;
  
+  TFile *fOutFile; 
+ 
+  TGraph* grTriPs;
+  TGraph* grTriMs;
+  TGraph* grPiPs;
+  TGraph* grPiMs;
 
   TNtupleD *ntTot;
 
@@ -83,14 +104,15 @@ enum { kPposx, kPposy, kPposz, kPnegx, kPnegy, kPnegz,	//0-5
  kNSPi, kNSTri, kTriTOFmass, kPiTPCsignal, kTriTPCsignal,	// 6-10
  kV0mom, kPtArm, kAlphaArm,	// 11-13
  kDcaTriXY, kDcaTriZ, kV0dcaD, kDecayPath, kDecayPathXY,	// 14-18
- kV0Dca, kCosP, kV0VtxErrSum, kSign,	// 19-22
- kDcaPi, kIsTrdEle, kSigPiFromPiTof, kSigPrTof, kSigPiTof, kNclusITS,
- kPiPdgCode, kTriPdgCode, kMumPiPdgCode, kMumTriPdgCode
-};				//23-27
+ kV0Dca, kCosP, kSigElTof, kSign,	// 19-22
+ kDcaPi, kIsTrdEle, kSigPiFromPiTof, kSigPrTof, kSigPiTof, kNclusITS, //23-27
+ kTRDsig, //28 
+ kPiPdgCode, kTriPdgCode, kMumPiPdgCode, kMumTriPdgCode // 29-32
+};			
 
 enum {
  kParMinP, kParMinPv0, kParMaxP3H, kParPiLim, kPar3hLim, kParNclusITS, kParNsigmaPID, kParNsigmaTOFmass, kParDcaTriZ, kParCosP, kParV0Dca,
- kK0MassLow, kK0MassHigh, kLambdaMassLow, kLambdaMassHigh,kGammaMassHigh
+ kK0MassLow, kK0MassHigh, kLambdaMassLow, kLambdaMassHigh,kGammaMassHigh,kTOFpid,kIsMc,kPIDResponseYear,k3HPlim
 };
 #endif
 

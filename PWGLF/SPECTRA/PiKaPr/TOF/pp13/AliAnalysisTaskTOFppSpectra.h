@@ -35,7 +35,7 @@ class AliAnalysisTaskTOFppSpectra : public AliAnalysisTaskSE {
 
 
   AliAnalysisTaskTOFppSpectra();
-  AliAnalysisTaskTOFppSpectra(const char *Periodname, Int_t nTPC_CR, Int_t Chi2_TPCcluser, Int_t DCAz, Int_t DCAxy, Int_t value_Sigma, Float_t value_Slope);
+  AliAnalysisTaskTOFppSpectra(const char *Periodname, Int_t nTPC_CR, Int_t Chi2_TPCcluser, Int_t DCAz, Int_t DCAxy, Int_t value_Sigma, Int_t value_Slope);
   virtual ~AliAnalysisTaskTOFppSpectra() {}
 
 	virtual void   UserCreateOutputObjects();
@@ -79,7 +79,7 @@ class AliAnalysisTaskTOFppSpectra : public AliAnalysisTaskSE {
         Int_t           fMaxDCAz;
         TString           fMaxDCAxy;
         Int_t           fSigma;
-        Float_t           fSlope;
+        Int_t           fSlope;
 
 
         AliESDtrackCuts *fesdTrackCuts;
@@ -144,8 +144,6 @@ class AliAnalysisTaskTOFppSpectra : public AliAnalysisTaskSE {
 	TH1F            *fGausTime;
 	TH1F            *fTOFGausTime;
 
-
-
 	TH3F          	*fTOFTimeV0MPtPosK;
 	TH3F          	*fTOFTimeV0MPtNegK;
 
@@ -207,11 +205,6 @@ class AliAnalysisTaskTOFppSpectra : public AliAnalysisTaskSE {
 
 
 	TH2F            *fTPCTOFnSigmaP;
-	TH1F            *fGausTime_K;
-	TH1F            *fTOFGausTime_K;
-	TH1F            *fGausTime_P;
-	TH1F            *fTOFGausTime_P;
-
 	
 	TH1F *fSec;
 	TH1F *fSec_k;

@@ -23,6 +23,8 @@ public:
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
+  void SetCustomBetheBloch(int iSpecies, float res, const float* bethe);
+
   AliEventCuts  fEventCut; ///<
 
   float fNsigmaITS;  ///< Number of sigma ITS
@@ -49,6 +51,11 @@ private:
   TH2F *fITSnSigmaSelected[2][4][5]; //!<! ITS nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
   TH2F *fTPCnSigmaSelected[2][4][5]; //!<! TPC nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
   TH2F *fTOFnSigmaSelected[2][4][5]; //!<! TOF nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
+
+  bool  fUseCustomBethe[4];
+  float fCustomBethe[4][5];
+  float fCustomResolution[4];
+
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiPIDqa, 1);
   /// \endcond

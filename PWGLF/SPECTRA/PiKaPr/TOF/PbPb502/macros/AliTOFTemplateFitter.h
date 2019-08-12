@@ -1,7 +1,7 @@
 #ifndef ALITOFTEMPLATEFITTER_H
 #define ALITOFTEMPLATEFITTER_H
 //Flags to set the modes to be used
-#define USECDECONVOLUTION//Cholesky-like
+// #define USECDECONVOLUTION//Cholesky-like
 #define USEFITFUNCTIONS //Fit functions
 class TH1;
 class TH1F;
@@ -19,9 +19,6 @@ class TF1;
 /// Authors:                                                              //
 /// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
 ////////////////////////////////////////////////////////////////////////////
-
-//_________________________________________________________________________________________________
-Double_t ComputeChi2(const TH1* hdata, const TH1* hfit, const Double_t xlow, const Double_t xhigh); //Macro to compute chi2
 
 //_________________________________________________________________________________________________
 Bool_t PerformFitWithTFF(TH1F* hData, TObjArray* mc, Double_t* range, Double_t* fitrange, TArrayD& fraction, TArrayD& fractionErr, TObjArray*& prediction);

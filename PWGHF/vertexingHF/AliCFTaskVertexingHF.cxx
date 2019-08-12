@@ -30,7 +30,6 @@
 // Author: A.Grelli ,  Utrecht - agrelli@uu.nl
 //-----------------------------------------------------------------------
 #include <TCanvas.h>
-#include <TParticle.h>
 #include <TDatabasePDG.h>
 #include <TProfile.h>
 #include <TH1I.h>
@@ -139,7 +138,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
-  fCutOnMomConservation(0.00001)
+  fCutOnMomConservation(0.00001),
+  fAODProtection(1)
 {
   //
   //Default ctor
@@ -206,7 +206,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
-  fCutOnMomConservation(0.00001)
+  fCutOnMomConservation(0.00001),
+  fAODProtection(1)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -305,7 +306,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fUseCutsForTMVA(c.fUseCutsForTMVA),
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
   fFillMinimumSteps(c.fFillMinimumSteps),
-  fCutOnMomConservation(c.fCutOnMomConservation)
+  fCutOnMomConservation(c.fCutOnMomConservation),
+  fAODProtection(c.fAODProtection)
+
 {
   //
   // Copy Constructor
@@ -364,6 +367,9 @@ void AliCFTaskVertexingHF::Init()
     case kFalcon:// super fast configuration: only pt_candidate, y, centrality
       fNvar = 4;
       break;
+    case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
+      fNvar = 6;
+      break;
     }
     fPartName="D0";
     fDauNames="K+pi";
@@ -381,6 +387,9 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kFalcon:// super fast configuration: only pt_candidate, y, centrality
       fNvar = 4;
+      break;
+    case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
+      fNvar = 6;
       break;
     }
     fPartName="Dstar";
@@ -417,6 +426,9 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kFalcon:// super fast configuration: only pt_candidate, y, centrality
       fNvar = 4;
+      break;
+    case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
+      fNvar = 6;
       break;
     }
     fPartName="Dplus";
@@ -548,6 +560,18 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   }
 
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
+    
+  if(fAODProtection>=0){
+        //   Protection against different number of events in the AOD and deltaAOD
+        //   In case of discrepancy the event is rejected.
+        Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+        if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+            // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+            fHistEventsProcessed->Fill(6.5);
+            return;
+        }
+        fHistEventsProcessed->Fill(7.5);
+  }
 
   TClonesArray *arrayBranch=0;
 
@@ -742,7 +766,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   Int_t nTrackletsEta16 = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.6,1.6));
   nTracklets = (Double_t)nTrackletsEta10;
   if(fMultiplicityEstimator==kNtrk10to16) { nTracklets = (Double_t)(nTrackletsEta16 - nTrackletsEta10); }
-
+  
   // Apply the Ntracklets z-vtx data driven correction
   if(fZvtxCorrectedNtrkEstimator) {
     TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
@@ -844,6 +868,16 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   if(fMultiplicityEstimator==kVZERO) { multiplicity = vzeroMult; }
 
   cfVtxHF->SetMultiplicity(multiplicity);
+  
+  Double_t q2=0;
+  if(fConfiguration==kESE) {
+    //set q2 in case of kESE configuration
+    q2=ComputeTPCq2(aodEvent,mcHeader,-0.8,0.8,0.2,5.);
+    cfVtxHF->Setq2Value(q2);
+
+    //set track array in case of kESE configuration
+    cfVtxHF->SetTrackArray(aodEvent->GetTracks());
+  }
 
   //  printf("Multiplicity estimator %d, value %2.2f\n",fMultiplicityEstimator,multiplicity);
 
@@ -1367,6 +1401,21 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
       h[2][iC] =   *(cont->ShowProjection(iC,4));
     }
   }
+  else if(fConfiguration == kESE){
+    //h = new TH1D[3][12];
+    nvarToPlot = 6;
+    for (Int_t ih = 0; ih<3; ih++){
+      h[ih] = new TH1D[nvarToPlot];
+    }
+    for(Int_t iC=0;iC<nvarToPlot; iC++){
+      // MC-level
+      h[0][iC] =   *(cont->ShowProjection(iC,0));
+      // MC-Acceptance level
+      h[1][iC] =   *(cont->ShowProjection(iC,1));
+      // Reco-level
+      h[2][iC] =   *(cont->ShowProjection(iC,4));
+    }
+  }
   TString* titles;
   //Int_t nvarToPlot = 0;
   if (fConfiguration == kSnail){
@@ -1461,6 +1510,16 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
       titles[2]="centrality";
       titles[3]="multiplicity";
     }
+  }
+  else if(fConfiguration == kESE){
+    //nvarToPlot = 4;
+    titles = new TString[nvarToPlot];
+    titles[0]="pT_candidate (GeV/c)";
+    titles[1]="rapidity";
+    titles[2]="centrality";
+    titles[3]="multiplicity";
+    titles[4]="N_{tracks} (R<0.4)";
+    titles[5]="q_{2}";
   }
 
   Int_t markers[16]={20,24,21,25,27,28,
@@ -1579,13 +1638,15 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   //slot #1
   OpenFile(1);
   const char* nameoutput=GetOutputSlot(1)->GetContainer()->GetName();
-  fHistEventsProcessed = new TH1I(nameoutput,"",6,0,6) ;
+  fHistEventsProcessed = new TH1I(nameoutput,"",8,0,8) ;
   fHistEventsProcessed->GetXaxis()->SetBinLabel(1,"Events processed (all)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(2,"Events analyzed (after selection)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(3,"Candidates processed (all)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(4,"Candidates already filled");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(5,"Candidates OK in FillRecoCand");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(6,"Candidates failing in FillRecoCand");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(7,"AOD/dAOD mismatch");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(8,"AOD/dAOD #events ok");
 
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
@@ -2183,3 +2244,39 @@ TProfile* AliCFTaskVertexingHF::GetEstimatorHistogram(const AliVEvent* event){
 
   return fMultEstimatorAvg[period];
 }
+
+//________________________________________________________________________
+Double_t AliCFTaskVertexingHF::ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mcHeader, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const {
+  /// Compute the q2 for ESE starting from TPC tracks
+  
+  Int_t nTracks=aod->GetNumberOfTracks();
+  Double_t nHarmonic=2.;
+  Double_t q2Vec[2] = {0.,0.};
+  Int_t multQvec=0;
+  
+  for(Int_t it=0; it<nTracks; it++){
+    AliAODTrack* track=(AliAODTrack*)aod->GetTrack(it);
+    if(!track) continue;
+    TString genname = AliVertexingHFUtils::GetGenerator(track->GetLabel(),mcHeader);
+    if(genname.Contains("Hijing")) {
+      if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
+        Double_t pt=track->Pt();
+        Double_t eta=track->Eta();
+        Double_t phi=track->Phi();
+        Double_t qx=TMath::Cos(nHarmonic*phi);
+        Double_t qy=TMath::Sin(nHarmonic*phi);
+        if(eta<etamax && eta>etamin && pt>ptmin && pt<ptmax) {
+          q2Vec[0]+=qx;
+          q2Vec[1]+=qy;
+          multQvec++;
+        }
+      }
+    }
+  }
+  
+  Double_t q2 = 0.;
+  if(multQvec>0) q2 = TMath::Sqrt(q2Vec[0]*q2Vec[0]+q2Vec[1]*q2Vec[1])/TMath::Sqrt(multQvec);
+
+  return q2;
+}
+

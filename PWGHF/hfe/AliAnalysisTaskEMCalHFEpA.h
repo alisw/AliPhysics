@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: August 4, 2017.      							  //
+	//		version: October 23th, 2018.      							  //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -72,7 +72,7 @@ class AliVCaloCells;
 	//______________________________________________________________________
 
 	//______________________________________________________________________
-class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE 
+class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
 {
 		//______________________________________________________________________
 public:
@@ -182,6 +182,12 @@ private:
 	Bool_t				fUseEMCal;
 	Bool_t				fUseTrigger;
 	Bool_t				fUseTender;
+    
+    //new organization of tender using global variables
+    TString        fTenderClusterName;//
+    TString            fTenderTrackName;//
+    
+    
 	Bool_t				fUseShowerShapeCut;
 	
 	//TPC calibration
@@ -562,6 +568,10 @@ private:
 	TH2F				**fTPCnsigma_eta_electrons;
 	TH2F				**fTPCnsigma_eta_hadrons;
 	TH2F				*fEoverP_pt_pions;
+    
+    TH2F                *fEoverP_pt_pions0;
+    TH2F                *fEoverP_pt_pions1;
+    
 	TH2F				*ftpc_p_EoverPcut;
 	TH2F				*fnsigma_p_EoverPcut;
 	TH2F				*fEoverP_pt_pions2;
@@ -571,6 +581,12 @@ private:
 	TH2F				*fEoverP_pt_pions2_2;
 	TH2F				*fEoverP_pt_pions2_3;
 		//TH2F				*fEoverP_pt_pions2_4;
+    
+    
+    TH2F                *fEoverP_pt_pions3_0;
+    TH2F                *fEoverP_pt_pions3_1;
+    TH2F                *fEoverP_pt_pions3_2;
+    TH2F                *fEoverP_pt_pions3_3;
 	
 	
 	TH2F				*fEoverP_pt_pions3;
@@ -811,7 +827,7 @@ private:
 	AliAnalysisTaskEMCalHFEpA(const AliAnalysisTaskEMCalHFEpA&); 			// not implemented
 	AliAnalysisTaskEMCalHFEpA& operator=(const AliAnalysisTaskEMCalHFEpA&); 		// not implemented
 	
-	ClassDef(AliAnalysisTaskEMCalHFEpA, 1); 								// example of analysis
+	ClassDef(AliAnalysisTaskEMCalHFEpA, 2); 								// example of analysis
 																			//______________________________________________________________________
 };
 

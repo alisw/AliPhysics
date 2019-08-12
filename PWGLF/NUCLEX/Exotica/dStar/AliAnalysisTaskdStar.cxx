@@ -27,6 +27,8 @@
 ClassImp(AliAnalysisTaskdStar);
 ///\endcond
 
+using std::string;
+
 /// Standard and default constructor of the class.
 ///
 /// \param taskname Name of the task
@@ -78,7 +80,7 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
   fList->SetOwner(true);
 
   char   letter[2] = {'a','m'};
-  string tpctofMC[3] = {"TPC","TPC_TOF","TPC_(TOF)"};
+  string tpctofMC[4] = {"TPC","TPC_TOF","TPC_(TOF)","ITS_sa"};
   float low_mass_limit = 2.2;
   float up_mass_limit = 2.7;
 
@@ -87,7 +89,7 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
     fList->Add(fProduction[iC]);
     fTotal[iC] = new TH2F(Form("fTotal_dStar(2380)_%c",letter[iC]),";M (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});Counts",50,low_mass_limit,up_mass_limit,20,0,10);
     fList->Add(fTotal[iC]);
-    for (int iT = 0; iT < 3; ++iT) {
+    for (int iT = 0; iT < 4; ++iT) {
       fReconstructed[iC][iT] = new TH2F(Form("fRec_dStar(2380)_%c_ITS_%s",letter[iC],tpctofMC[iT].data()),";M (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});Counts",50,low_mass_limit,up_mass_limit,20,0,10);
       fList->Add(fReconstructed[iC][iT]);
     }
@@ -193,7 +195,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     if (pdg == 900010020) {
       FourVector_t moth_vec = {0.f,0.f,0.f,0.f};
       for(int iD=0; iD<3; iD++){
-        const int daughter_id = part->GetDaughter(0)+iD;
+        const int daughter_id = part->GetDaughterLabel(0)+iD;
         AliAODMCParticle *daughter_part = (AliAODMCParticle*)stack->At(TMath::Abs(daughter_id));
         FourVector_t tmp_vec = {(float)daughter_part->Pt(),(float)daughter_part->Eta(),(float)daughter_part->Phi(),(float)daughter_part->M()};
         moth_vec+=tmp_vec;
@@ -235,8 +237,13 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
 
     AliAODTrack *track = static_cast<AliAODTrack*>(ev->GetTrack(iT));
-    if (track->GetID() <= 0) continue;
-    if (!track->TestFilterBit(fFilterBit)) continue;
+    if (track->GetID() < 0) continue;
+    // if (!track->TestFilterBit(fFilterBit)) continue;
+
+    bool fb = track->TestFilterBit(fFilterBit);
+    bool itsSA = track->GetStatus() & AliVTrack::kITSrefit && (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1));
+    if (!fb && !itsSA) continue;
+
     AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
     if (!part) continue;
     const int pdg = TMath::Abs(part->GetPdgCode());
@@ -248,7 +255,9 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
 
     // add deuterons and pions to the Tree for background analysis (ITS TPC only)
     // if they are under 3 sigmas TPC response
-    if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kDeuteron)) < 3.) {
+
+    // PID for deuterons
+    if (fb && TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kDeuteron)) < 3.) {
       FourVector_t tmp_deu = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kDeuteron)};
       unsigned char prop = 0u;
       if (part->Charge() > 0)               prop |= c;
@@ -264,60 +273,100 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
       fDeuteronVector.push_back(deu);
     }
 
-    if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kPion)) <  3.) {
-      FourVector_t tmp_pi = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kPion)};
-      unsigned char prop = 0u;
-      if (part->Charge() > 0)               prop |= c;
-      if (part->IsPhysicalPrimary())        prop |= p;
-      if (part->IsSecondaryFromMaterial())  prop |= s;
-      if (AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion)) < 3.)) prop |= t;
-      daughter_struct pi;
-      pi.mother_pdg = mum_pdg;
-      pi.mother_id  = mother_id;
-      pi.mc_truth   = pdg;
-      pi.vec        = tmp_pi;
-      pi.properties = prop;
-      track->Charge() > 0 ? fPiPlusVector.push_back(pi) : fPiMinusVector.push_back(pi);
+    // PID for Pions
+    if (fb) {    // TPC PID if available
+      if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kPion)) < 3.) {
+        FourVector_t tmp_pi = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kPion)};
+        unsigned char prop = 0u;
+        if (part->Charge() > 0)              prop |= c;
+        if (part->IsPhysicalPrimary())       prop |= p;
+        if (part->IsSecondaryFromMaterial()) prop |= s;
+        if (AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF, track, AliPID::kPion)) < 3.)) prop |= t;
+        daughter_struct pi;
+        pi.mother_pdg = mum_pdg;
+        pi.mother_id = mother_id;
+        pi.mc_truth = pdg;
+        pi.vec = tmp_pi;
+        pi.properties = prop;
+        track->Charge() > 0 ? fPiPlusVector.push_back(pi) : fPiMinusVector.push_back(pi);
+      }
+    } else if (itsSA) { // ITS standalone PID if TPC is not available
+      if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kITS, track, AliPID::kPion)) < 3.) {
+        FourVector_t tmp_pi = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kPion)};
+        unsigned char prop = 0u;
+        if (part->Charge() > 0)              prop |= c;
+        if (part->IsPhysicalPrimary())       prop |= p;
+        if (part->IsSecondaryFromMaterial()) prop |= s;
+        prop |= i;
+        daughter_struct pi;
+        pi.mother_pdg = mum_pdg;
+        pi.mother_id = mother_id;
+        pi.mc_truth = pdg;
+        pi.vec = tmp_pi;
+        pi.properties = prop;
+        track->Charge() > 0 ? fPiPlusVector.push_back(pi) : fPiMinusVector.push_back(pi);
+     }
     }
 
 
     // Check wheter the track belongs to a deuteron
-    if (pdg == 1000010020 && mum_pdg == 900010020) {
-      if(TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kDeuteron)) > 3.) continue;
-      FourVector_t tmp_vec = {(float)track->Pt(),(float)track->Eta(),(float)track->Phi(),(float)track->M(AliAODTrack::kDeuteron)};
-      auto it = std::find(mothers.begin(),mothers.end(), mother_id);
+    if (pdg == 1000010020 && mum_pdg == 900010020 && fb) {
+      if(TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kDeuteron)) > 3.) continue;
+      FourVector_t tmp_vec = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kDeuteron)};
+      auto it = std::find(mothers.begin(), mothers.end(), mother_id);
       if (it == mothers.end()){
         mother_struct tmp_mum;
         tmp_mum.id = mother_id;
-        tmp_mum.deuteron_tof = AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kDeuteron)) < 3.);
+        tmp_mum.deuteron_tof = AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF, track, AliPID::kDeuteron)) < 3.);
         tmp_mum.n_daughters = 1;
         tmp_mum.vec = tmp_vec;
         mothers.push_back(tmp_mum);
       }
       else{
         it->n_daughters++;
-        it->deuteron_tof *= AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kDeuteron)) < 3.);
+        it->deuteron_tof *= AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF, track, AliPID::kDeuteron)) < 3.);
         it->vec+=tmp_vec;
       }
     }
 
     // Check wether the track belgons to a pion
     if (pdg == 211 && mum_pdg == 900010020) {
-      if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kPion)) > 3.) continue;
-      FourVector_t tmp_vec = {(float)track->Pt(),(float)track->Eta(),(float)track->Phi(),(float)track->M(AliAODTrack::kPion)};
-      auto it = std::find(mothers.begin(),mothers.end(), mother_id);
-      if (it == mothers.end()){
-        mother_struct tmp_mum;
-        tmp_mum.id = mother_id;
-        tmp_mum.pi_tof = AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion)) < 3.);
-        tmp_mum.n_daughters = 1;
-        tmp_mum.vec = tmp_vec;
-        mothers.push_back(tmp_mum);
-      }
-      else {
-        it->n_daughters++;
-        it->pi_tof *= AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion)) < 3.);
-        it->vec+=tmp_vec;
+      if (fb) {
+        if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kPion)) > 3.) continue;
+        FourVector_t tmp_vec = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kPion)};
+        auto it = std::find(mothers.begin(), mothers.end(), mother_id);
+        if (it == mothers.end()) {
+          mother_struct tmp_mum;
+          tmp_mum.id = mother_id;
+          tmp_mum.pi_tpc = true;
+          tmp_mum.pi_tof = AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF, track, AliPID::kPion)) < 3.);
+          tmp_mum.n_daughters = 1;
+          tmp_mum.vec = tmp_vec;
+          mothers.push_back(tmp_mum);
+        } else {
+          it->n_daughters++;
+          it->pi_tof *= AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF, track, AliPID::kPion)) < 3.);
+          it->pi_tpc = true;
+          it->vec += tmp_vec;
+        }
+      } else if (itsSA) {
+        if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kITS, track, AliPID::kPion)) > 3.) continue;
+        FourVector_t tmp_vec = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kPion)};
+        auto it = std::find(mothers.begin(), mothers.end(), mother_id);
+        if (it == mothers.end()) {
+          mother_struct tmp_mum;
+          tmp_mum.id = mother_id;
+          tmp_mum.pi_tof = false;
+          tmp_mum.pi_tpc = false;
+          tmp_mum.n_daughters = 1;
+          tmp_mum.vec = tmp_vec;
+          mothers.push_back(tmp_mum);
+        } else {
+          it->n_daughters++;
+          it->pi_tof = false;
+          it->pi_tpc = false;
+          it->vec += tmp_vec;
+        }
       }
     }
 
@@ -334,9 +383,10 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     const int iC = part->Charge() > 0 ? 1 : 0;
     const float pt_rec = mum.vec.Pt();
     const float mass_rec = mum.vec.M();
-    fReconstructed[iC][0]->Fill(mass_rec,pt_rec);
-    if (mum.pi_tof && mum.deuteron_tof) fReconstructed[iC][1]->Fill(mass_rec,pt_rec);
-    if (mum.deuteron_tof) fReconstructed[iC][2]->Fill(mass_rec,pt_rec);
+    if (mum.pi_tpc) fReconstructed[iC][0]->Fill(mass_rec, pt_rec);
+    if (mum.pi_tof && mum.deuteron_tof && mum.pi_tpc) fReconstructed[iC][1]->Fill(mass_rec, pt_rec);
+    if (mum.deuteron_tof && mum.pi_tpc) fReconstructed[iC][2]->Fill(mass_rec, pt_rec);
+    fReconstructed[iC][3]->Fill(mass_rec, pt_rec);
   }
 
   //  Post output data.

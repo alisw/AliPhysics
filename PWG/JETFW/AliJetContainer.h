@@ -40,7 +40,8 @@ class AliJetContainer : public AliParticleContainer {
   enum EJetType_t {
     kFullJet,
     kChargedJet,
-    kNeutralJet
+    kNeutralJet,
+    kUndefinedJetType
   };
 
   enum EJetAlgo_t {
@@ -62,7 +63,8 @@ class AliJetContainer : public AliParticleContainer {
     Et2_scheme      = 4,
     BIpt_scheme     = 5,
     BIpt2_scheme    = 6,
-    external_scheme = 99
+    external_scheme = 99,
+    undefined_scheme = 999
   };
 
   /**
@@ -102,6 +104,7 @@ class AliJetContainer : public AliParticleContainer {
   void                        SetJetPtCutMax(Float_t cut)                          { SetMaxPt(cut)                      ; }
   void                        SetRunNumber(Int_t r)                                { fRunNumber = r;                      }
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
+  void                        SetJetType(EJetType_t type)                          { fJetType        = type             ; }
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
   void                        SetPercAreaCut(Float_t p)                            { if(fJetRadius==0.) AliWarning("JetRadius not set. Area cut will be 0"); 
                                                                                      fJetAreaCut = p*TMath::Pi()*fJetRadius*fJetRadius; }
@@ -176,6 +179,11 @@ class AliJetContainer : public AliParticleContainer {
   Double_t                    GetJetPtCut()                         const    {return GetMinPt() ; }
   Double_t                    GetJetPtCutMax()                      const    {return GetMaxPt() ; }
 
+  UInt_t                      GetAcceptanceType()                   const    {return fJetAcceptanceType; }
+  EJetType_t                  GetJetType()                          const    {return fJetType; }
+  EJetAlgo_t                  GetJetAlgorithm()                     const    {return fJetAlgorithm; }
+  ERecoScheme_t               GetRecombinationScheme()              const    {return fRecombinationScheme; }
+
   void                        SetArray(const AliVEvent *event);
   AliParticleContainer       *GetParticleContainer() const                   {return fParticleContainer;}
   AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
@@ -194,41 +202,44 @@ class AliJetContainer : public AliParticleContainer {
 #endif
 
  protected:
-  UInt_t                      fJetAcceptanceType;    ///  Jet acceptance type cut, see AliEmcalJet::JetAcceptanceType
-  Float_t                     fJetRadius;            ///  jet radius
-  TString                     fRhoName;              ///  Name of rho object
-  TString                     fLocalRhoName;         ///  Name of local rho object
-  TString                     fRhoMassName;          ///  Name of rho mass object
-  Int_t                       fFlavourSelection;     ///  selection on jet flavour
-  Float_t                     fJetAreaCut;           ///  cut on jet area
-  Float_t                     fAreaEmcCut;           ///  minimum cut on jet emcal area
-  Float_t                     fMinClusterPt;         ///  maximum cluster constituent pt to accept the jet
-  Float_t                     fMaxClusterPt;         ///  maximum cluster constituent pt to accept the jet
-  Float_t                     fMinTrackPt;           ///  maximum track constituent pt to accept the jet
-  Float_t                     fMaxTrackPt;           ///  maximum track constituent pt to accept the jet
-  Float_t                     fZLeadingEmcCut;       ///  maximum z,leading neutral
-  Float_t                     fZLeadingChCut;        ///  maximum z,leading charged
-  Float_t                     fNEFMinCut;            ///  minimum NEF in a jet
-  Float_t                     fNEFMaxCut;            ///  maximum NEF in a jet
-  Int_t                       fLeadingHadronType;    ///  0 = charged, 1 = neutral, 2 = both
-  Int_t                       fNLeadingJets;         ///  how many jets are to be considered the leading jet(s)
-  Int_t                       fMinNConstituents;     ///  minimum number of constituents in jet
-  UInt_t                      fJetTrigger;           ///  jet trigger
-  Int_t                       fTagStatus;            ///  jet tag status
-  AliParticleContainer       *fParticleContainer;    ///  particle container (jet constituents)
-  AliClusterContainer        *fClusterContainer;     ///  cluster container (jet constituents)
+  EJetType_t                  fJetType;              ///<  Jet type
+  EJetAlgo_t                  fJetAlgorithm;         ///<  Jet algorithm
+  ERecoScheme_t               fRecombinationScheme;  ///<  Recombination scheme
+  UInt_t                      fJetAcceptanceType;    ///<  Jet acceptance type cut, see AliEmcalJet::JetAcceptanceType
+  Float_t                     fJetRadius;            ///<  jet radius
+  TString                     fRhoName;              ///<  Name of rho object
+  TString                     fLocalRhoName;         ///<  Name of local rho object
+  TString                     fRhoMassName;          ///<  Name of rho mass object
+  Int_t                       fFlavourSelection;     ///<  selection on jet flavour
+  Float_t                     fJetAreaCut;           ///<  cut on jet area
+  Float_t                     fAreaEmcCut;           ///<  minimum cut on jet emcal area
+  Float_t                     fMinClusterPt;         ///<  maximum cluster constituent pt to accept the jet
+  Float_t                     fMaxClusterPt;         ///<  maximum cluster constituent pt to accept the jet
+  Float_t                     fMinTrackPt;           ///<  maximum track constituent pt to accept the jet
+  Float_t                     fMaxTrackPt;           ///<  maximum track constituent pt to accept the jet
+  Float_t                     fZLeadingEmcCut;       ///<  maximum z,leading neutral
+  Float_t                     fZLeadingChCut;        ///<  maximum z,leading charged
+  Float_t                     fNEFMinCut;            ///<  minimum NEF in a jet
+  Float_t                     fNEFMaxCut;            ///<  maximum NEF in a jet
+  Int_t                       fLeadingHadronType;    ///<  0 = charged, 1 = neutral, 2 = both
+  Int_t                       fNLeadingJets;         ///<  how many jets are to be considered the leading jet(s)
+  Int_t                       fMinNConstituents;     ///<  minimum number of constituents in jet
+  UInt_t                      fJetTrigger;           ///<  jet trigger
+  Int_t                       fTagStatus;            ///<  jet tag status
+  AliParticleContainer       *fParticleContainer;    ///<  particle container (jet constituents)
+  AliClusterContainer        *fClusterContainer;     ///<  cluster container (jet constituents)
   AliRhoParameter            *fRho;                  //!<! event rho for these jets
   AliLocalRhoParameter       *fLocalRho;             //!<! event local rho for these jets
   AliRhoParameter            *fRhoMass;              //!<! event rho mass for these jets
   AliEMCALGeometry           *fGeom;                 //!<! emcal geometry
   Int_t                       fRunNumber;            //!<! run number
-  Double_t                    fTpcHolePos;           ///   position(in radians) of the malfunctioning TPC sector
-  Double_t                    fTpcHoleWidth;         ///   width of the malfunctioning TPC area
+  Double_t                    fTpcHolePos;           ///<   position(in radians) of the malfunctioning TPC sector
+  Double_t                    fTpcHoleWidth;         ///<   width of the malfunctioning TPC area
  private:
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer, 18);
+  ClassDef(AliJetContainer, 19);
 };
 
 #endif

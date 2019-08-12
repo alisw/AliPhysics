@@ -138,6 +138,7 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
                 fFunBkgSaved[ptB][massRange][type] = histBkg;
                 }
                 TF1 *GetBkgFunction(Int_t massRange, Int_t ptB, Int_t type) const {return fFunBkgSaved[ptB][massRange][type];} 
+                TF1 *GetFunBFunction(Int_t ptB, Int_t type) const {return  fFunBSaved[ptB][type];} 
                 void SetFunBFunction(Int_t type, Int_t ptB, TF1 *histSec) { fFunBSaved[ptB][type] = histSec; }
                 void SetBackgroundSpecificParameters(Int_t pt, Int_t mb, Int_t tp);
                 void SetExtrapolationRegion(Int_t extrRegion){fSignalBinForExtrapolation = extrRegion;}   					   void SetLoadFunction(Bool_t loadFunc) { fLoadFunctions = loadFunc;}

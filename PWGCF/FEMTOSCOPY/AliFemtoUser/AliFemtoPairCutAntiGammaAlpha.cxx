@@ -40,22 +40,19 @@ AliFemtoPairCutAntiGammaAlpha::AliFemtoPairCutAntiGammaAlpha():
 {
 }
 //__________________
-AliFemtoPairCutAntiGammaAlpha::AliFemtoPairCutAntiGammaAlpha(const AliFemtoPairCutAntiGammaAlpha& c) : 
+AliFemtoPairCutAntiGammaAlpha::AliFemtoPairCutAntiGammaAlpha(const AliFemtoPairCutAntiGammaAlpha& c) :
   AliFemtoShareQualityPairCut(c),
-  fMaxEEMinv(0.0),
-  fMaxDAlpha(0.0),
-  fDTPCMin(0),
-  fDataType(kESD)
-{ 
-  fMaxEEMinv = c.fMaxEEMinv;
-  fMaxDAlpha = c.fMaxDAlpha;
-  fDTPCMin = c.fDTPCMin;
-  fDataType = c.fDataType;
+  fMaxEEMinv(c.fMaxEEMinv),
+  fMaxDAlpha(c.fMaxDAlpha),
+  fDTPCMin(c.fDTPCMin),
+  fDataType(c.fDataType)
+{
 }
 
 AliFemtoPairCutAntiGammaAlpha& AliFemtoPairCutAntiGammaAlpha::operator=(const AliFemtoPairCutAntiGammaAlpha& c)
 {
   if (this != &c) {
+    AliFemtoShareQualityPairCut::operator=(c);
     fMaxEEMinv = c.fMaxEEMinv;
     fMaxDAlpha = c.fMaxDAlpha;
     fDTPCMin = c.fDTPCMin;
@@ -80,43 +77,41 @@ bool AliFemtoPairCutAntiGammaAlpha::Pass(const AliFemtoPair* pair){
 
   double me = 0.000511;
 
-  if ((pair->Track1()->Track()->Charge() * pair->Track2()->Track()->Charge()) < 0.0) {
-    double dalpha = TMath::Abs((pair->Track1()->Track()->P().x()*pair->Track2()->Track()->P().x()
-		   + pair->Track1()->Track()->P().y()*pair->Track2()->Track()->P().y()
-		   + pair->Track1()->Track()->P().z()*pair->Track2()->Track()->P().z()
-				)/pair->Track1()->Track()->P().Mag()/pair->Track2()->Track()->P().Mag());
+  AliFemtoTrack *track1 = pair->Track1()->Track(),
+                *track2 = pair->Track2()->Track();
 
-    
-    double e1 = TMath::Sqrt(me*me + pair->Track1()->Track()->P().Mag2());
-    double e2 = TMath::Sqrt(me*me + pair->Track2()->Track()->P().Mag2());
-    
-    double minv = (2*me*me + 2*(e1*e2 - 
-			       pair->Track1()->Track()->P().x()*pair->Track2()->Track()->P().x() -
-			       pair->Track1()->Track()->P().y()*pair->Track2()->Track()->P().y() -
-					   pair->Track1()->Track()->P().z()*pair->Track2()->Track()->P().z()));
+  AliFemtoThreeVector p1 = track1->P(),
+                      p2 = track2->P();
+
+  if ((track1->Charge() * track2->Charge()) < 0.0) {
+
+    double dalpha = TMath::Abs(p1.Dot(p2) / TMath::Sqrt(p1.Mag2() * p2.Mag2()));
+
+    double e1 = TMath::Sqrt(me*me + p1.Mag2());
+    double e2 = TMath::Sqrt(me*me + p2.Mag2());
+
+    double minv = 2*me*me + 2*(e1*e2 - p1.Dot(p2));
 
     double sminv = TMath::Sqrt(minv);
-  
+
     if ((sminv < fMaxEEMinv) && (dalpha > fMaxDAlpha)) {
       temp = false;
     }
   }
 
   bool tempTPCEntrance = true;
-  
+
   if(fDataType==kESD || fDataType==kAOD)
     {
-      double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
-      double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
-      double distz = pair->Track1()->Track()->NominalTpcEntrancePoint().z() - pair->Track2()->Track()->NominalTpcEntrancePoint().z();
-      double dist = sqrt(distx*distx + disty*disty + distz*distz);
+      auto &epoint1 = track1->NominalTpcEntrancePoint(),
+           &epoint2 = track2->NominalTpcEntrancePoint();
 
-      tempTPCEntrance = dist > fDTPCMin;
+      tempTPCEntrance = (epoint1 - epoint2).Mag2() > fDTPCMin * fDTPCMin;
     }
- 
+
 
   if (temp && tempTPCEntrance) {
-    
+
     temp = AliFemtoShareQualityPairCut::Pass(pair);
     if (temp) {
       fNPairsPassed++;
@@ -124,35 +119,31 @@ bool AliFemtoPairCutAntiGammaAlpha::Pass(const AliFemtoPair* pair){
     else fNPairsFailed++;
     return temp;
   }
-  else
-    {
+  else {
     fNPairsFailed++;
     return false;
-    }
-
-
-
+  }
 }
 //__________________
-AliFemtoString AliFemtoPairCutAntiGammaAlpha::Report(){
+AliFemtoString AliFemtoPairCutAntiGammaAlpha::Report()
+{
   // Prepare a report from the execution
-  string stemp = "AliFemtoPairCutAntiGammaAlpha Pair Cut - remove pairs possibly coming from Gamma conversions\n";  
-  char ctemp[100];
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;}
-//__________________
+  AliFemtoString report = "AliFemtoPairCutAntiGammaAlpha Pair Cut - remove pairs possibly coming from Gamma conversions\n";
+  report += Form("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
+  return report;
+}
 
 TList *AliFemtoPairCutAntiGammaAlpha::ListSettings()
 {
   // return a list of settings in a writable form
   TList *tListSetttings =  AliFemtoShareQualityPairCut::ListSettings();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoPairCutAntiGammaAlpha.maxeeminv=%f", fMaxEEMinv);
-  snprintf(buf, 200, "AliFemtoPairCutAntiGammaAlpha.maxdalpha=%f", fMaxDAlpha);
-  tListSetttings->AddLast(new TObjString(buf));
+
+  tListSetttings->AddVector(
+      new TObjString(Form("AliFemtoPairCutAntiGammaAlpha.maxeeminv=%f", fMaxEEMinv)),
+      new TObjString(Form("AliFemtoPairCutAntiGammaAlpha.maxdalpha=%f", fMaxDAlpha)),
+      new TObjString(Form("AliFemtoPairCutAntiGammaAlpha.mintpcentrancesep=%f", fDTPCMin)),
+      nullptr
+  );
 
   return tListSetttings;
 }
@@ -162,7 +153,6 @@ void AliFemtoPairCutAntiGammaAlpha::SetMaxEEMinv(Double_t maxeeminv)
   fMaxEEMinv = maxeeminv;
 }
 
- 
 void AliFemtoPairCutAntiGammaAlpha::SetMaxAlphaDiff(Double_t maxdalpha)
 {
   fMaxDAlpha = maxdalpha;

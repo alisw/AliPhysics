@@ -45,7 +45,7 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
     }
     else if(L0input > 0)    TriggerName = TriggerName + "_" + "L0";
     else{
-      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least 1 trigger input (L0 or L1[H,M,L]).");
+      ::Error("AddTaskPHOSSingleSim", "PHOS trigger analysis requires at least 1 trigger input (L0 or L1[H,M,L]).");
       return NULL;
     }
   }
@@ -68,8 +68,10 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
 
   Double_t Ethre = 0.0;
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,kFALSE,dummy);
-  if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kAny;//change trigger selection in MC when you do PHOS trigger analysis.
+  //if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,kFALSE,dummy);
+  if(trigger == (UInt_t)AliVEvent::kPHI7)       task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,kFALSE,dummy);
+  else if(trigger  == (UInt_t) AliVEvent::kAny) task->SetPHOSTriggerAnalysisMB(L1input,L0input,Ethre,isMC,kFALSE,dummy);
+  if(isMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kAny;//change trigger selection in MC when you do PHOS trigger analysis.
 
   //task->SelectCollisionCandidates(trigger);
 
@@ -80,11 +82,11 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
   task->SetParticle(parname); 
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
-  task->SetCoreEnergyFlag(useCoreE);
+//  task->SetCoreEnergyFlag(useCoreE);
 
   const AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kSPDInMultBins;
   task->SetEventCuts(isMC,pf);
-  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,distBC);
+  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,useCoreE,distBC);
 
   task->SetCentralityMin(0);
   task->SetCentralityMax(9999);
@@ -98,11 +100,13 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
   //centrality setting
   task->SetCentralityEstimator("HybridTrack");
 
-  //setting esd track selection for hybrid track
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-  AliESDtrackCuts *cutsG = CreateTrackCutsPWGJE(10001008);//for good global tracks
+  AliESDtrackCuts *cutsG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);//standard cuts with very loose DCA
+  cutsG->SetMaxDCAToVertexXY(2.4);
+  cutsG->SetMaxDCAToVertexZ(3.2);
+  cutsG->SetDCAToVertex2D(kTRUE);
   task->SetESDtrackCutsForGlobal(cutsG);
-  AliESDtrackCuts *cutsGC = CreateTrackCutsPWGJE(10011008);//for good global-constrained tracks
+
+  AliESDtrackCuts *cutsGC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();//standard cuts with tight DCA cut
   task->SetESDtrackCutsForGlobalConstrained(cutsGC);
 
   //bunch space for TOF cut
@@ -152,6 +156,29 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
         farray_Eta->Add(f1weightEta[icen]);
       }
       task->SetAdditionalEtaPtWeightFunction(centarray_Eta,farray_Eta);
+    }
+    else if(parname=="Gamma"){
+      //for gamma pT weighting
+      const Int_t Ncen_Gamma = 2;
+      const Double_t centrality_Gamma[Ncen_Gamma] = {0,9999};
+      TArrayD *centarray_Gamma = new TArrayD(Ncen_Gamma,centrality_Gamma);
+
+      TObjArray *farray_Gamma = new TObjArray(Ncen_Gamma-1);
+      TF1 *f1weightGamma[Ncen_Gamma-1];
+
+      const Double_t p0[Ncen_Gamma-1] = {4.77586e+01};//Ae
+      const Double_t p1[Ncen_Gamma-1] = {1.15413e-01};//Te
+      const Double_t p2[Ncen_Gamma-1] = {9.08380e-01};//A
+      const Double_t p3[Ncen_Gamma-1] = {4.76998e-01};//T
+      const Double_t p4[Ncen_Gamma-1] = {3.04367e+00};//n
+
+      for(Int_t icen=0;icen<Ncen_Gamma-1;icen++){
+        f1weightGamma[icen] = new TF1(Form("f1weightGamma_%d",icen),"[0] * TMath::Exp(-(TMath::Sqrt(x*x + 0*0) - 0) / [1]) + [2] * TMath::Power(1 + (x*x)/([3]*[3]*[4]) , -[4])",0,100);//TCM fit to pp inclusive photon
+        f1weightGamma[icen]->SetNpx(1000);
+        f1weightGamma[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
+        farray_Gamma->Add(f1weightGamma[icen]);
+      }
+      task->SetAdditionalGammaPtWeightFunction(centarray_Gamma,farray_Gamma);
     }
   }
 

@@ -24,6 +24,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
+		    ${AliPhysics_SOURCE_DIR}/OADB/macros
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations # what deps here?
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
@@ -31,12 +32,21 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
+		    ${AliPhysics_SOURCE_DIR}/PWG/PP
+		    ${AliPhysics_SOURCE_DIR}/PWG/PP/PilotTrain
                     ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/BtoJPSI
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/JPSI
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/LMEE
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/
+  		    ${AliPhysics_SOURCE_DIR}/PWGHF/base
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/hfe/
+		    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/
+		    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/macros
+
                    )
 
 # Sources in alphabetical order
@@ -47,6 +57,7 @@ set(SRCS
       BtoJPSI/AliDielectronBtoJPSItoEle.cxx
       core/AliDielectronCF.cxx
       core/AliDielectronCFdraw.cxx
+      core/AliDielectronClusterCuts.cxx
       core/AliDielectronCutGroup.cxx
       core/AliDielectronCutQA.cxx
       core/AliDielectron.cxx
@@ -64,6 +75,7 @@ set(SRCS
       core/AliDielectronPID.cxx
       core/AliDielectronQnEPcorrection.cxx
       core/AliDielectronSignalMC.cxx
+      core/AliDielectronTMVACuts.cxx
       core/AliDielectronTrackCuts.cxx
       core/AliDielectronTrackRotator.cxx
       core/AliDielectronV0Cuts.cxx
@@ -76,6 +88,7 @@ set(SRCS
       core/AliAnalysisTaskRandomRejection.cxx
       core/AliAnalysisTaskElectronEfficiency.cxx
       core/AliAnalysisTaskElectronEfficiencyV2.cxx
+      core/AliAnalysisTask_JPsi_EMCal.cxx
       JPSI/AliDielectronSignalBase.cxx
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx
@@ -89,7 +102,13 @@ set(SRCS
       LMEE/AliAnalysisTaskSimpleTreeMaker.cxx
       LMEE/AliDielectronReducedTrack.cxx
       LMEE/AliAnalysisTaskTGReducedTree.cxx
+      LMEE/AliAnalysisTaskReducedTreeDS.cxx
       LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
+      LMEE/AliCocktailSmearing.cxx
+      LMEE/AliAnalysisTaskCharm.cxx
+      LMEE/AliAnalysisTaskBeauty.cxx
+      LMEE/AliAnalysisTaskJpsi.cxx
+      LMEE/AlimakeJPsiTree.cxx
   )
 
 # Headers from sources
@@ -102,7 +121,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO Tree)
+set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO TMVA Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase )
 set(ALIPHYSICS_DEPENCIES PWGPPevcharQnInterface)
 set(LIBDEPS ${ALIPHYSICS_DEPENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})

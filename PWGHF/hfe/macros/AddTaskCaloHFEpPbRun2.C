@@ -9,6 +9,7 @@ class AliAnalysisDataContainer;
  AliAnalysisTaskCaloHFEpPbRun2* AddTaskCaloHFEpPbRun2(
                                   TString name = "name",
                                   TString infoname = "infoname",
+                                  TString period,
                                   Bool_t flagMC,
                                   Bool_t flagEMCalCorrection,
                                   Bool_t flagEMCal,
@@ -17,6 +18,8 @@ class AliAnalysisDataContainer;
                                   Bool_t flagEG2,
                                   Bool_t flagDG1,
                                   Bool_t flagDG2,
+                                  Double_t centmin,
+                                  Double_t centmax,
                                   Double_t TrackEtaLow,
                                   Double_t TrackEtaHigh,
                                   Int_t NTPCClust,
@@ -58,6 +61,7 @@ class AliAnalysisDataContainer;
     if(!task) return 0x0;
     task -> SetMC(flagMC);
     task -> SetEMCalCorrection(flagEMCalCorrection);
+    task -> SetRunPeriod(period);
     if(!flagEG2 && !flagEG1 && !flagDG2 && !flagDG1) task -> SelectCollisionCandidates(AliVEvent::kINT7);
     else task -> SelectCollisionCandidates(AliVEvent::kEMCEGA);
     task -> SetClusterTypeEMC(flagEMCal);
@@ -66,6 +70,15 @@ class AliAnalysisDataContainer;
     task -> SetEG2(flagEG2);
     task -> SetDG1(flagDG1);
     task -> SetDG2(flagDG2);
+    task -> SetCentrality(centmin,centmax);
+
+    // TString PathEffHad = "~/cernbox/Analysis/HFE/p-Pb_8TeV/rootfile/EleHadCorrlpPbRun2/EleHadCorrl/MC/LHC17i5b2/180702/EHCorrlOutputStage1.root";
+    TString PathEffHad = "alien:///alice/cern.ch/user/d/dkawana/Efficiency/EffHadron/EHCorrlOutputStage1.root";
+    TFile *file = TFile::Open(PathEffHad.Data());
+    TDirectory *dir = (TDirectory*)file->Get("Dir_kINT7_integ");
+    TH1D *hist = (TH1D*)dir->Get("fHadRecoEff");
+    if(hist) task -> SetEffHadron(hist);
+    else cout << "No hadron efficiency file!" << endl;
     //#########################//
     //Systematic uncertainties //
     //#########################//

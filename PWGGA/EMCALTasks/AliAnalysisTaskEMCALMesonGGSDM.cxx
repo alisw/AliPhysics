@@ -1026,8 +1026,8 @@ void AliAnalysisTaskEMCALMesonGGSDM::UserExec(Option_t *)
 	h1_SecPi0Mother->Fill( ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() );
       
       Int_t daughter[2] = {-1,-1};
-      daughter[0] = mcP->GetFirstDaughter();
-      daughter[1] = mcP->GetLastDaughter();
+      daughter[0] = mcP->GetDaughterFirst();
+      daughter[1] = mcP->GetDaughterLast();
       
       if (daughter[0]<0)  continue;
       if (daughter[1]<0)  daughter[1]=daughter[0];      
@@ -1048,10 +1048,10 @@ void AliAnalysisTaskEMCALMesonGGSDM::UserExec(Option_t *)
 	     eta_d[daughter_index]>fEtamin && eta_d[daughter_index]<fEtamax && 
 	     phi_d[daughter_index]>fPhimin && phi_d[daughter_index]<fPhimax))   bacc = false;	
 
-	if(dmc->GetFirstDaughter()>0 && dmc->GetLastDaughter()>0) {
+	if(dmc->GetDaughterFirst()>0 && dmc->GetDaughterLast()>0) {
 	  // get the photons's daughters... 
-	  const AliMCParticle *dmcd1 = static_cast<const AliMCParticle *>(mcEvent->GetTrack(dmc->GetFirstDaughter()));
-	  const AliMCParticle *dmcd2 = static_cast<const AliMCParticle *>(mcEvent->GetTrack(dmc->GetLastDaughter()));
+	  const AliMCParticle *dmcd1 = static_cast<const AliMCParticle *>(mcEvent->GetTrack(dmc->GetDaughterFirst()));
+	  const AliMCParticle *dmcd2 = static_cast<const AliMCParticle *>(mcEvent->GetTrack(dmc->GetDaughterLast()));
 	  Double_t productionR1 = TMath::Sqrt(dmcd1->Xv()*dmcd1->Xv() + dmcd1->Yv()*dmcd1->Yv());
 	  if(bacc)  h1_eConversionR->Fill(productionR1);
 	  // check if this is a conversion... 
@@ -1060,9 +1060,9 @@ void AliAnalysisTaskEMCALMesonGGSDM::UserExec(Option_t *)
 	      productionR1<440.0){
 	    //find the conv e with highest energy, assign it to be that photon decay product.
 	    if( dmcd1->E() > dmcd2->E() )
-	      eIndexofConvertedPhoton[daughter_index] = dmc->GetFirstDaughter();
+	      eIndexofConvertedPhoton[daughter_index] = dmc->GetDaughterFirst();
 	    else
-	      eIndexofConvertedPhoton[daughter_index] = dmc->GetLastDaughter();
+	      eIndexofConvertedPhoton[daughter_index] = dmc->GetDaughterLast();
 	  }
 	}
       }

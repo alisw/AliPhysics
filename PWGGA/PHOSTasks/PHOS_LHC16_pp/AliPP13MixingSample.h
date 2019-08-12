@@ -7,7 +7,7 @@
 #include <TObjArray.h>
 
 // --- Custom libraries ---
-#include "AliPP13PhotonSelection.h"
+#include "AliPP13PhysicsSelection.h"
 
 class AliPP13MixingSample : public TObject
 {

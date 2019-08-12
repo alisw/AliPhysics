@@ -17,9 +17,33 @@ fTrack3type(kUnknown)
   
 }
 
+AliFemtoTrio::AliFemtoTrio(const AliFemtoTrio& trio):
+fTrack1(trio.fTrack1),
+fTrack2(trio.fTrack2),
+fTrack3(trio.fTrack3),
+fTrack1type(trio.fTrack1type),
+fTrack2type(trio.fTrack2type),
+fTrack3type(trio.fTrack3type)
+{
+  
+}
+
+
 AliFemtoTrio::~AliFemtoTrio()
 {
 
+}
+
+AliFemtoTrio& AliFemtoTrio::operator=(const AliFemtoTrio& trio)
+{
+  fTrack1 = trio.fTrack1;
+  fTrack2 = trio.fTrack2;
+  fTrack3 = trio.fTrack3;
+  fTrack1type = trio.fTrack1type;
+  fTrack2type = trio.fTrack2type;
+  fTrack3type = trio.fTrack3type;
+
+  return *this;
 }
 
 double AliFemtoTrio::MInv()
@@ -178,4 +202,3 @@ double AliFemtoTrio::GetTheta3()
   je.boost(c);
   return c.Theta()-je.Theta();
 }
-

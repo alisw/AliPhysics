@@ -2,8 +2,8 @@
   .L $AliPhysics_SRC/PWGPP/TPC/macros/TPCQAWebpage/tpcCalibValidation.C+
   AliDrawStyle::SetDefaults();
   AliDrawStyle::ApplyStyle("figTemplate");
-  // InitTPCMCValidation("LHC15o","pass1",3,1);
-  // InitTPCMCValidation("LHC17*","cpass1_pass1",3,1);
+  // InitTPCMCValidation("LHC15o","pass1",3,1,0);
+  // InitTPCMCValidation("LHC18*","cpass1_pass1",3,1,0);
   RegisterDefaultCalibFitters();
   MakeGainFitsMinuit();
 
@@ -38,7 +38,7 @@ TF1 likeGausCachy("likeGausCachy", AliTMinuitToolkit::GaussCachyLogLike,-10,10,2
 TF1 likeAbs("likeAbs", "abs(x)",-10,10);
 
 void RegisterDefaultCalibFitters();
-Bool_t InitTPCMCValidation(TString period, TString pass, Int_t verbose,  Int_t doCheck);
+Bool_t InitTPCMCValidation(TString period, TString pass, Int_t verbose,  Int_t doCheck, Int_t doFit);
 void AddMetadata();
 
 TVectorF rocGainIROC(36), rocGainOROCMedium(36), rocGainOROCLong(36);
@@ -50,7 +50,7 @@ TVectorF rocGainIROC(36), rocGainOROCMedium(36), rocGainOROCLong(36);
 /// \param verbose
 /// \param doCheck
 /// \return
-Bool_t InitTPCMCValidation(TString pPeriod, TString pPass, Int_t verbose,  Int_t doCheck) {
+Bool_t InitTPCMCValidation(TString pPeriod, TString pPass, Int_t verbose,  Int_t doCheck, Int_t doFit) {
   period = pPeriod;
   pass = pPass;
   externalInfo = new AliExternalInfo(".", "", verbose);
@@ -58,13 +58,15 @@ Bool_t InitTPCMCValidation(TString pPeriod, TString pPass, Int_t verbose,  Int_t
   trendingDraw->SetDefaultStyle();
   gStyle->SetOptTitle(0);
   if (period.Contains("*")) {
-    treeCalib = externalInfo->GetChain("QA.rawTPC", period, pass, TString("QA.TPC;QA.EVS;Logbook;Logbook.detector:TPC:detector==\"TPC\""));
+    //treeCalib = externalInfo->GetChain("QA.rawTPC", period, pass, TString("QA.TPC;QA.EVS;Logbook;Logbook.detector:TPC:detector==\"TPC\""));
+    treeCalib = externalInfo->GetChain("QA.rawTPC", period, pass, "QA.TPC;QA.EVS;Logbook");
   } else {
-    treeCalib = externalInfo->GetTree("QA.rawTPC", period, pass, TString("QA.TPC;QA.EVS;Logbook;Logbook.detector:TPC:detector==\"TPC\""));
+    //treeCalib = externalInfo->GetTree("QA.rawTPC", period, pass, TString("QA.TPC;QA.EVS;Logbook;Logbook.detector:TPC:detector==\"TPC\""));
+    treeCalib = externalInfo->GetTree("QA.rawTPC", period, pass, "QA.TPC;QA.EVS;Logbook");
   }
   treeCalib->SetMarkerStyle(21);
   treeCalib->SetMarkerSize(0.4);
-  RegisterDefaultCalibFitters();
+  if (doFit) RegisterDefaultCalibFitters();
   AddMetadata();
 }
 
@@ -207,7 +209,7 @@ void MakeGainFitsMinuit(){
 
   // Draw results
   TCanvas * canvasGainFit = new TCanvas("canvasGaiFit","canvasGaiFit", 1600,1000);
-  AliPainter::DivideTPad(canvasGainFit,"[1,1,1,2]",0);
+  AliPainter::DivideTPad("[1,1,1,2]","","",canvasGainFit);
   canvasGainFit->cd(1);
   TLegend* legend = new TLegend(0.11,0.65,0.5,0.89, "TPC gain");
   legend->SetMargin(0.03); legend->SetBorderSize(0);

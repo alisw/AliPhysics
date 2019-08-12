@@ -4,6 +4,7 @@
 //  Author: Brennan Schaefer, Oak Ridge National Laboratory, 2016   //
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
+#include <stdlib.h> 
 
 class AliAnalysisDataContainer;
 
@@ -23,16 +24,31 @@ AliAnalysisTaskCorPIDTOFQA* AddMyTaskCorPIDTOFQA(TString name = "name")
     }
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += ":MyTask";      // create a subfolder in the file
+    // fileName += ":MyTask";      // create a subfolder in the file
     // now we create an instance of your task
+    // AliAnalysisTaskCorPIDTOFQA* task = new BSchaefer_devel::AliAnalysisTaskCorPIDTOFQA(name.Data());
     AliAnalysisTaskCorPIDTOFQA* task = new AliAnalysisTaskCorPIDTOFQA(name.Data());   
     if(!task) return 0x0;
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
+    // if(run_mode == 0)    mgr->ConnectInput(task    ,0,mgr->GetCommonInputContainer());
+    // if(run_mode == 1)    mgr->ConnectInput(task_PID,0,mgr->GetCommonInputContainer());
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("MyOutputContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+
+    int run_mode = 0;
+    run_mode = atoi(name);
+    // cout<<endl<<endl<<endl<<run_mode<<endl<<endl<<endl;
+
+    if(run_mode == 0){   mgr->ConnectOutput(task,1,mgr->CreateContainer("cOutput",     TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    }
+    if(run_mode == 1){   mgr->ConnectOutput(task,1,mgr->CreateContainer("cOutput_PID", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    }
+    if(run_mode == 2){   mgr->ConnectOutput(task,1,mgr->CreateContainer("cOutput_TPC", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    }
+    if(run_mode == 3){   mgr->ConnectOutput(task,1,mgr->CreateContainer("cOutput_nCl", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    }
+    if(run_mode == 4){   mgr->ConnectOutput(task,1,mgr->CreateContainer("cOutput_DCA", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    }
+    if(run_mode == 5){   mgr->ConnectOutput(task,1,mgr->CreateContainer("cOutput_sid", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    }
+    if(run_mode == 6){   mgr->ConnectOutput(task,1,mgr->CreateContainer("cOutput_glo", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    }
+    // mgr->ConnectOutput(task,1,mgr->CreateContainer("cOutput",     TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
     return task;

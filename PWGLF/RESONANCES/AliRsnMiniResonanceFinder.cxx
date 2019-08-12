@@ -180,16 +180,39 @@ Int_t AliRsnMiniResonanceFinder::RunResonanceFinder(AliRsnMiniEvent* event)
 
          r = event->AddParticle();
          r->Clear();
-         r->Index() = -2;
+         r->SetResonance();
          r->Charge() = '0';
          r->SetCutBit(fCutIDrsn);
 
-         if(p1->Charge()=='+' && p2->Charge()=='-'){
-            r->IndexV0Pos() = p1->Index();
-            r->IndexV0Neg() = p2->Index();
-         }else{
-            r->IndexV0Pos() = p2->Index();
-            r->IndexV0Neg() = p1->Index();
+         if(p1->Charge()=='+'){
+            if(p2->Charge()=='-' || p2->Charge()=='+'){
+               r->IndexV0Pos() = p1->Index();
+               r->IndexV0Neg() = p2->Index();
+               r->Charge() = '0'; // does not account for double charges, e.g., Delta++
+            }else if(p2->Charge()=='0'){
+               r->IndexV0Pos() = p2->IndexV0Pos();
+               r->IndexV0Neg() = p2->IndexV0Neg();
+               r->IndexBachelor() = p1->Index();
+               r->Charge() = '+';
+            }
+         }else if(p1->Charge()=='-'){
+            if(p2->Charge()=='-' || p2->Charge()=='+'){
+               r->IndexV0Pos() = p2->Index();
+               r->IndexV0Neg() = p1->Index();
+               r->Charge() = '0'; // does not account for double charges, e.g., anti-Delta--
+            }else if(p2->Charge()=='0'){
+               r->IndexV0Pos() = p2->IndexV0Pos();
+               r->IndexV0Neg() = p2->IndexV0Neg();
+               r->IndexBachelor() = p1->Index();
+               r->Charge() = '-';
+            }
+         }else if(p1->Charge()=='0'){
+            if(p2->Charge()=='-' || p2->Charge()=='+'){
+               r->IndexV0Pos() = p1->IndexV0Pos();
+               r->IndexV0Neg() = p1->IndexV0Neg();
+               r->IndexBachelor() = p2->Index();
+               r->Charge() = p2->Charge();
+            }
          }
 
          r->PrecX() = fPair.Sum(0).X();
@@ -319,7 +342,7 @@ void AliRsnMiniResonanceFinder::FillMother(TClonesArray* event, AliRsnMiniEvent*
             AliError("Failed casting the mother particle!");
             continue;
          }
-            
+          
          r->Mother() = imother;
          r->PmotherX() = mother->Px();
          r->PmotherY() = mother->Py();

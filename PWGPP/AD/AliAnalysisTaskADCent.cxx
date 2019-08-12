@@ -33,11 +33,14 @@ ClassImp(AliAnalysisTaskADCent);
 AliAnalysisTaskADCent::AliAnalysisTaskADCent(const char *name)
   : AliAnalysisTaskSE(name)
   , fEstimatorNames("V0M:CL0:CL1:SPDClustersCorr:SPDTracklets")
-  , fAD()
-  , fIR1Map()
-  , fIR2Map()
+  , fMultAD(16)
+  , fPFBBAD()
+  , fPFBGAD()
+  , fClosestInteractions{0,0}
   , fMult(5)
   , fCent(5)
+  , fVtxZ(0)
+  , fNVtxContr(-1)
 {
   DefineOutput(1, TTree::Class());
 }
@@ -58,9 +61,10 @@ void AliAnalysisTaskADCent::UserCreateOutputObjects() {
   TDirectory *owd = gDirectory;
   OpenFile(1);
   fTE = new TTree("TE", "");
-  fTE->Branch("fAD",     &fAD,     32000, 1);
-  fTE->Branch("fIR1Map", &fIR1Map, 32000, 1);
-  fTE->Branch("fIR2Map", &fIR2Map, 32000, 1);
+  fTE->Branch("fMultAD",              fMultAD.GetMatrixArray(), "m[16]/F");
+  fTE->Branch("fPFBBAD",              fPFBBAD, "BB[16]/I");
+  fTE->Branch("fPFBGAD",              fPFBGAD, "BG[16]/I");
+  fTE->Branch("fClosestInteractions", fClosestInteractions,     "IR1/I:IR2");
   TString branchDescription;
   TString estimatorName = "";
   Ssiz_t  from = 0;
@@ -71,6 +75,8 @@ void AliAnalysisTaskADCent::UserCreateOutputObjects() {
   branchDescription = branchDescription(0, branchDescription.Length()-1);
   fTE->Branch("fMult",   fMult.GetMatrixArray(),  branchDescription);
   fTE->Branch("fCent",   fCent.GetMatrixArray(),  branchDescription);
+  fTE->Branch("fVtxZ",      &fVtxZ);
+  fTE->Branch("fNVtxContr", &fNVtxContr);
   PostData(1, fTE);
   owd->cd();
 }
@@ -107,10 +113,23 @@ void AliAnalysisTaskADCent::UserExec(Option_t* ) {
     AliWarning("AliMultSelection object not found!");
     return;
   }
+  AliAODVertex* pVtx = pAOD->GetPrimaryVertexSPD();
+  if (!pVtx) {
+    AliWarning("primary SPD vertex not found");
+    return;
+  }
 
-  fAD     = *aodAD;
-  fIR1Map =  pAODHeader->GetIRInt1InteractionMap();
-  fIR2Map =  pAODHeader->GetIRInt2InteractionMap();
+  for (Int_t ch=0; ch<16; ++ch) {
+    fMultAD[ch] = aodAD->GetMultiplicity(ch);
+    fPFBBAD[ch] = fPFBGAD[ch] = 0;
+    for (Int_t clock=0; clock<21; ++clock) {
+      fPFBBAD[ch] |= (aodAD->GetPFBBFlag(ch, clock) << clock);
+      fPFBGAD[ch] |= (aodAD->GetPFBGFlag(ch, clock) << clock);
+    }
+  }
+
+  fClosestInteractions[0] = pAODHeader->GetIRInt1ClosestInteractionMap();
+  fClosestInteractions[1] = pAODHeader->GetIRInt2ClosestInteractionMap();
 
   TString estimatorName = "";
   Ssiz_t  from = 0;
@@ -119,6 +138,9 @@ void AliAnalysisTaskADCent::UserExec(Option_t* ) {
     fCent[i] = mult->GetMultiplicityPercentile(estimatorName);
     AliDebugF(5, "%d %s %f %f", i, estimatorName.Data(), fMult[i], fCent[i]);
   }
+
+  fVtxZ      = pVtx->GetZ();
+  fNVtxContr = pVtx->GetNContributors();
 
   fTE->Fill();
 

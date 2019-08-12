@@ -20,11 +20,10 @@
 #include <TH3.h>
 #include <TMath.h>
 #include <TVector3.h>
-#include <TParticle.h>
-#include <TParticlePDG.h>
 #include "AliLog.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"
+#include "AliVParticle.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisManager.h"
 #include "AliCSPairAnalysis.h"
@@ -344,23 +343,7 @@ Bool_t AliCSPairAnalysis::ProcessTrack(Int_t, AliVTrack *trk) {
 /// \brief Stores particle reference in the corresponding array according to its charge
 /// \param par the intended particle
 /// \return kTRUE if the track is properly stored kFALSE otherwise
-Bool_t AliCSPairAnalysis::ProcessTrack(Int_t, TParticle *par) {
-
-  if (par->GetPDG()->Charge() == 0) return kFALSE;
-
-  /* add the track to the corresponding array */
-  if (par->Pt() < fMin_pt || fMax_pt < par->Pt()) return kFALSE;
-  if (par->Eta() < fMin_eta || fMax_eta < par->Eta()) return kFALSE;
-  if (par->GetPDG()->Charge() > 0) fPlusTracksArray->Add(par);
-  else fMinusTracksArray->Add(par);
-
-  return kTRUE;
-}
-
-/// \brief Stores particle reference in the corresponding array according to its charge
-/// \param par the intended particle
-/// \return kTRUE if the track is properly stored kFALSE otherwise
-Bool_t AliCSPairAnalysis::ProcessTrack(Int_t, AliAODMCParticle *par) {
+Bool_t AliCSPairAnalysis::ProcessTrack(Int_t, AliVParticle *par) {
 
   if (par->Charge() == 0) return kFALSE;
 
@@ -539,226 +522,111 @@ void AliCSPairAnalysis::ProcessEventData() {
     }
   }
   else {
-    Bool_t esdtrack = kFALSE;
-    if (fPlusTracksArray->GetEntriesFast() != 0)
-      esdtrack = fPlusTracksArray->At(0)->IsA()->InheritsFrom("AliVParticle");
-    if (fMinusTracksArray->GetEntriesFast() != 0)
-      esdtrack = fMinusTracksArray->At(0)->IsA()->InheritsFrom("AliVParticle");
+    /* for ESD MC processing */
+    for (Int_t ixplus1 = 0; ixplus1 < fPlusTracksArray->GetEntriesFast(); ixplus1++) {
+      Int_t fillbins[kgHistosDimension];
+      Int_t fillbinssw[kgHistosDimension];
 
-    if (!esdtrack) {
-      /* for ESD MC processing */
-      for (Int_t ixplus1 = 0; ixplus1 < fPlusTracksArray->GetEntriesFast(); ixplus1++) {
-        Int_t fillbins[kgHistosDimension];
-        Int_t fillbinssw[kgHistosDimension];
+      /* the plus-plus pairs analysis */
+      AliVParticle *trk1 = (AliVParticle *) fPlusTracksArray->At(ixplus1);
+      Int_t ixeta1 = Int_t ((trk1->Eta() - fMin_eta) / fWidth_eta);
+      Int_t ixphi1 = Int_t ((((trk1->Phi() < fMax_phi) ? trk1->Phi() : trk1->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
+      Int_t ixpt1 = fhPPDeltaEtaDeltaPhi->GetAxis(2)->FindBin(trk1->Pt()) - 1;
 
-        /* the plus-plus pairs analysis */
-        TParticle *trk1 = (TParticle *) fPlusTracksArray->At(ixplus1);
-        Int_t ixeta1 = Int_t ((trk1->Eta() - fMin_eta) / fWidth_eta);
-        Int_t ixphi1 = Int_t ((((trk1->Phi() < fMax_phi) ? trk1->Phi() : trk1->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-        Int_t ixpt1 = fhPPDeltaEtaDeltaPhi->GetAxis(2)->FindBin(trk1->Pt()) - 1;
+      fillbins[2] = fillbinssw[3] = ixpt1+1;
 
-        fillbins[2] = fillbinssw[3] = ixpt1+1;
+      for (Int_t ixplus2 = ixplus1+1; ixplus2 < fPlusTracksArray->GetEntriesFast(); ixplus2++) {
+        AliVParticle *trk2 = (AliVParticle *) fPlusTracksArray->At(ixplus2);
+        Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
+        Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
+        Int_t ixpt2 = fhPPDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
 
-        for (Int_t ixplus2 = ixplus1+1; ixplus2 < fPlusTracksArray->GetEntriesFast(); ixplus2++) {
-          TParticle *trk2 = (TParticle *) fPlusTracksArray->At(ixplus2);
-          Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
-          Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-          Int_t ixpt2 = fhPPDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
+        fillbins[3] = fillbinssw[2] = ixpt2+1;
 
-          fillbins[3] = fillbinssw[2] = ixpt2+1;
+        Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
+        Int_t ixdetasw = ixeta2 - ixeta1 + fNBins_eta - 1;
+        Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
+        Int_t ixdphisw = ixphi2 - ixphi1; if (ixdphisw < 0) ixdphisw += fNBins_phi;
 
-          Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
-          Int_t ixdetasw = ixeta2 - ixeta1 + fNBins_eta - 1;
-          Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
-          Int_t ixdphisw = ixphi2 - ixphi1; if (ixdphisw < 0) ixdphisw += fNBins_phi;
+        fillbins[0] = ixdeta+1;
+        fillbins[1] = ixdphi+1;
+        fillbinssw[0] = ixdetasw+1;
+        fillbinssw[1] = ixdphisw+1;
 
-          fillbins[0] = ixdeta+1;
-          fillbins[1] = ixdphi+1;
-          fillbinssw[0] = ixdetasw+1;
-          fillbinssw[1] = ixdphisw+1;
-
-          fhPPDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
-          fhPPDeltaEtaDeltaPhi->AddBinContent(fillbinssw,1.0);
-        }
-        /* the plus-minus pairs analysis */
-        for (Int_t ixminus2 = 0; ixminus2 < fMinusTracksArray->GetEntriesFast(); ixminus2++) {
-          TParticle *trk2 = (TParticle *) fMinusTracksArray->At(ixminus2);
-          Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
-          Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-          Int_t ixpt2 = fhPMDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
-
-          fillbins[3] = ixpt2+1;
-
-          Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
-          Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
-
-          fillbins[0] = ixdeta+1;
-          fillbins[1] = ixdphi+1;
-
-          fhPMDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
-        }
+        fhPPDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
+        fhPPDeltaEtaDeltaPhi->AddBinContent(fillbinssw,1.0);
       }
+      /* the plus-minus pairs analysis */
+      for (Int_t ixminus2 = 0; ixminus2 < fMinusTracksArray->GetEntriesFast(); ixminus2++) {
+        AliVParticle *trk2 = (AliVParticle *) fMinusTracksArray->At(ixminus2);
+        Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
+        Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
+        Int_t ixpt2 = fhPMDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
 
-      for (Int_t ixminus1 = 0; ixminus1 < fMinusTracksArray->GetEntriesFast(); ixminus1++) {
-        Int_t fillbins[kgHistosDimension];
-        Int_t fillbinssw[kgHistosDimension];
+        fillbins[3] = ixpt2+1;
 
-        /* the minus-minus pairs analysis */
-        TParticle *trk1 = (TParticle *) fMinusTracksArray->At(ixminus1);
-        Int_t ixeta1 = Int_t ((trk1->Eta() - fMin_eta) / fWidth_eta);
-        Int_t ixphi1 = Int_t ((((trk1->Phi() < fMax_phi) ? trk1->Phi() : trk1->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-        Int_t ixpt1 = fhMMDeltaEtaDeltaPhi->GetAxis(2)->FindBin(trk1->Pt()) - 1;
+        Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
+        Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
 
-        fillbins[2] = fillbinssw[3] = ixpt1+1;
+        fillbins[0] = ixdeta+1;
+        fillbins[1] = ixdphi+1;
 
-        for (Int_t ixminus2 = ixminus1+1; ixminus2 < fMinusTracksArray->GetEntriesFast(); ixminus2++) {
-          TParticle *trk2 = (TParticle *) fMinusTracksArray->At(ixminus2);
-          Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
-          Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-          Int_t ixpt2 = fhMMDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
-
-          fillbins[3] = fillbinssw[2] = ixpt2+1;
-
-          Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
-          Int_t ixdetasw = ixeta2 - ixeta1 + fNBins_eta - 1;
-          Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
-          Int_t ixdphisw = ixphi2 - ixphi1; if (ixdphisw < 0) ixdphisw += fNBins_phi;
-
-          fillbins[0] = ixdeta+1;
-          fillbins[1] = ixdphi+1;
-          fillbinssw[0] = ixdetasw+1;
-          fillbinssw[1] = ixdphisw+1;
-
-          fhMMDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
-          fhMMDeltaEtaDeltaPhi->AddBinContent(fillbinssw,1.0);
-        }
-        /* the minus-plus pairs analysis */
-        for (Int_t ixplus2 = 0; ixplus2 < fPlusTracksArray->GetEntriesFast(); ixplus2++) {
-          TParticle *trk2 = (TParticle *) fPlusTracksArray->At(ixplus2);
-          Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
-          Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-          Int_t ixpt2 = fhMPDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
-
-          fillbins[3] = ixpt2+1;
-
-          Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
-          Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
-
-          fillbins[0] = ixdeta+1;
-          fillbins[1] = ixdphi+1;
-
-          fhMPDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
-        }
+        fhPMDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
       }
     }
-    else {
-      /* for AOD MC processing */
-      for (Int_t ixplus1 = 0; ixplus1 < fPlusTracksArray->GetEntriesFast(); ixplus1++) {
-        Int_t fillbins[kgHistosDimension];
-        Int_t fillbinssw[kgHistosDimension];
 
-        /* the plus-plus pairs analysis */
-        AliAODMCParticle *trk1 = (AliAODMCParticle *) fPlusTracksArray->At(ixplus1);
-        Int_t ixeta1 = Int_t ((trk1->Eta() - fMin_eta) / fWidth_eta);
-        Int_t ixphi1 = Int_t ((((trk1->Phi() < fMax_phi) ? trk1->Phi() : trk1->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-        Int_t ixpt1 = fhPPDeltaEtaDeltaPhi->GetAxis(2)->FindBin(trk1->Pt()) - 1;
+    for (Int_t ixminus1 = 0; ixminus1 < fMinusTracksArray->GetEntriesFast(); ixminus1++) {
+      Int_t fillbins[kgHistosDimension];
+      Int_t fillbinssw[kgHistosDimension];
 
-        fillbins[2] = fillbinssw[3] = ixpt1+1;
+      /* the minus-minus pairs analysis */
+      AliVParticle *trk1 = (AliVParticle *) fMinusTracksArray->At(ixminus1);
+      Int_t ixeta1 = Int_t ((trk1->Eta() - fMin_eta) / fWidth_eta);
+      Int_t ixphi1 = Int_t ((((trk1->Phi() < fMax_phi) ? trk1->Phi() : trk1->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
+      Int_t ixpt1 = fhMMDeltaEtaDeltaPhi->GetAxis(2)->FindBin(trk1->Pt()) - 1;
 
-        for (Int_t ixplus2 = ixplus1+1; ixplus2 < fPlusTracksArray->GetEntriesFast(); ixplus2++) {
-          AliAODMCParticle *trk2 = (AliAODMCParticle *) fPlusTracksArray->At(ixplus2);
-          Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
-          Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-          Int_t ixpt2 = fhPPDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
+      fillbins[2] = fillbinssw[3] = ixpt1+1;
 
-          fillbins[3] = fillbinssw[2] = ixpt2+1;
+      for (Int_t ixminus2 = ixminus1+1; ixminus2 < fMinusTracksArray->GetEntriesFast(); ixminus2++) {
+        AliVParticle *trk2 = (AliVParticle *) fMinusTracksArray->At(ixminus2);
+        Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
+        Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
+        Int_t ixpt2 = fhMMDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
 
-          Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
-          Int_t ixdetasw = ixeta2 - ixeta1 + fNBins_eta - 1;
-          Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
-          Int_t ixdphisw = ixphi2 - ixphi1; if (ixdphisw < 0) ixdphisw += fNBins_phi;
+        fillbins[3] = fillbinssw[2] = ixpt2+1;
 
-          fillbins[0] = ixdeta+1;
-          fillbins[1] = ixdphi+1;
-          fillbinssw[0] = ixdetasw+1;
-          fillbinssw[1] = ixdphisw+1;
+        Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
+        Int_t ixdetasw = ixeta2 - ixeta1 + fNBins_eta - 1;
+        Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
+        Int_t ixdphisw = ixphi2 - ixphi1; if (ixdphisw < 0) ixdphisw += fNBins_phi;
 
-          fhPPDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
-          fhPPDeltaEtaDeltaPhi->AddBinContent(fillbinssw,1.0);
-        }
-        /* the plus-minus pairs analysis */
-        for (Int_t ixminus2 = 0; ixminus2 < fMinusTracksArray->GetEntriesFast(); ixminus2++) {
-          AliAODMCParticle *trk2 = (AliAODMCParticle *) fMinusTracksArray->At(ixminus2);
-          Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
-          Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-          Int_t ixpt2 = fhPMDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
+        fillbins[0] = ixdeta+1;
+        fillbins[1] = ixdphi+1;
+        fillbinssw[0] = ixdetasw+1;
+        fillbinssw[1] = ixdphisw+1;
 
-          fillbins[3] = ixpt2+1;
-
-          Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
-          Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
-
-          fillbins[0] = ixdeta+1;
-          fillbins[1] = ixdphi+1;
-
-          fhPMDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
-        }
+        fhMMDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
+        fhMMDeltaEtaDeltaPhi->AddBinContent(fillbinssw,1.0);
       }
+      /* the minus-plus pairs analysis */
+      for (Int_t ixplus2 = 0; ixplus2 < fPlusTracksArray->GetEntriesFast(); ixplus2++) {
+        AliVParticle *trk2 = (AliVParticle *) fPlusTracksArray->At(ixplus2);
+        Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
+        Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
+        Int_t ixpt2 = fhMPDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
 
-      for (Int_t ixminus1 = 0; ixminus1 < fMinusTracksArray->GetEntriesFast(); ixminus1++) {
-        Int_t fillbins[kgHistosDimension];
-        Int_t fillbinssw[kgHistosDimension];
+        fillbins[3] = ixpt2+1;
 
-        /* the minus-minus pairs analysis */
-        AliAODMCParticle *trk1 = (AliAODMCParticle *) fMinusTracksArray->At(ixminus1);
-        Int_t ixeta1 = Int_t ((trk1->Eta() - fMin_eta) / fWidth_eta);
-        Int_t ixphi1 = Int_t ((((trk1->Phi() < fMax_phi) ? trk1->Phi() : trk1->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-        Int_t ixpt1 = fhMMDeltaEtaDeltaPhi->GetAxis(2)->FindBin(trk1->Pt()) - 1;
+        Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
+        Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
 
-        fillbins[2] = fillbinssw[3] = ixpt1+1;
+        fillbins[0] = ixdeta+1;
+        fillbins[1] = ixdphi+1;
 
-        for (Int_t ixminus2 = ixminus1+1; ixminus2 < fMinusTracksArray->GetEntriesFast(); ixminus2++) {
-          AliAODMCParticle *trk2 = (AliAODMCParticle *) fMinusTracksArray->At(ixminus2);
-          Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
-          Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-          Int_t ixpt2 = fhMMDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
-
-          fillbins[3] = fillbinssw[2] = ixpt2+1;
-
-          Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
-          Int_t ixdetasw = ixeta2 - ixeta1 + fNBins_eta - 1;
-          Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
-          Int_t ixdphisw = ixphi2 - ixphi1; if (ixdphisw < 0) ixdphisw += fNBins_phi;
-
-          fillbins[0] = ixdeta+1;
-          fillbins[1] = ixdphi+1;
-          fillbinssw[0] = ixdetasw+1;
-          fillbinssw[1] = ixdphisw+1;
-
-          fhMMDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
-          fhMMDeltaEtaDeltaPhi->AddBinContent(fillbinssw,1.0);
-        }
-        /* the minus-plus pairs analysis */
-        for (Int_t ixplus2 = 0; ixplus2 < fPlusTracksArray->GetEntriesFast(); ixplus2++) {
-          AliAODMCParticle*trk2 = (AliAODMCParticle *) fPlusTracksArray->At(ixplus2);
-          Int_t ixeta2 = Int_t ((trk2->Eta() - fMin_eta) / fWidth_eta);
-          Int_t ixphi2 = Int_t ((((trk2->Phi() < fMax_phi) ? trk2->Phi() : trk2->Phi() - 2*TMath::Pi() )- fMin_phi) / fWidth_phi);
-          Int_t ixpt2 = fhMPDeltaEtaDeltaPhi->GetAxis(3)->FindBin(trk2->Pt()) - 1;
-
-          fillbins[3] = ixpt2+1;
-
-          Int_t ixdeta = ixeta1 - ixeta2 + fNBins_eta - 1;
-          Int_t ixdphi = ixphi1 - ixphi2; if (ixdphi < 0) ixdphi += fNBins_phi;
-
-          fillbins[0] = ixdeta+1;
-          fillbins[1] = ixdphi+1;
-
-          fhMPDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
-        }
+        fhMPDeltaEtaDeltaPhi->AddBinContent(fillbins,1.0);
       }
     }
   }
-
 }
 
 /// \brief Do the final process for the end of analysis

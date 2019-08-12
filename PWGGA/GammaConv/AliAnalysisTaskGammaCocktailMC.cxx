@@ -93,7 +93,10 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
-  fMaxY(2)
+  fMaxY(2),
+  fMaxEta(0),
+  fMaxPt(50),
+  fPtBinWidth(0.05)
 {
 
 }
@@ -138,7 +141,10 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
-  fMaxY(2)
+  fMaxY(2),
+  fMaxEta(0),
+  fMaxPt(50),
+  fPtBinWidth(0.05)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -163,14 +169,16 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
     fOutputContainer          = new TList();
     fOutputContainer->SetOwner(kTRUE);
   }
+  Int_t nBinsPt = fMaxPt/fPtBinWidth;
+
 
   fHistNEvents = (TH1F*)SetHist1D(fHistNEvents,"f","NEvents","","N_{evt}", 1, 0, 1, kTRUE);
   fOutputContainer->Add(fHistNEvents);
 
-  fHistPtYGamma = (TH2F*)SetHist2D(fHistPtYGamma,"f","Pt_Y_Gamma","#it{p}_{T}","Y", 1000, 0, 50, 400, -2.0, 2.0, kTRUE);
+  fHistPtYGamma = (TH2F*)SetHist2D(fHistPtYGamma,"f","Pt_Y_Gamma","#it{p}_{T}","Y", nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
   fOutputContainer->Add(fHistPtYGamma);
 
-  fHistPtPhiGamma = (TH2F*)SetHist2D(fHistPtPhiGamma,"f","Pt_Phi_Gamma","#it{p}_{T}","#phi", 1000, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
+  fHistPtPhiGamma = (TH2F*)SetHist2D(fHistPtPhiGamma,"f","Pt_Phi_Gamma","#it{p}_{T}","#phi", nBinsPt, 0, fMaxPt, 100, 0, 2*TMath::Pi(), kTRUE);
   fOutputContainer->Add(fHistPtPhiGamma);
 
   // tree + user info list to protect contents from merging
@@ -278,39 +286,39 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
   for(Int_t i=0; i<nInputParticles; i++){
 
     if (fHasMother[i]) {
-      fHistPtYInput[i] = (TH2F*)SetHist2D(fHistPtYInput[i],"f",Form("Pt_Y_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y", 1000, 0, 50, 400, -2.0, 2.0, kTRUE);
+      fHistPtYInput[i] = (TH2F*)SetHist2D(fHistPtYInput[i],"f",Form("Pt_Y_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y", nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYInput[i]);
 
       //Gammas from certain mother
-      fHistPtYGammaSource[i] = (TH2F*)SetHist2D(fHistPtYGammaSource[i],"f",Form("Pt_Y_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y", 1000, 0, 50, 400, -2.0, 2.0, kTRUE);
+      fHistPtYGammaSource[i] = (TH2F*)SetHist2D(fHistPtYGammaSource[i],"f",Form("Pt_Y_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y", nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYGammaSource[i]);
 
       //phi distributions
-      fHistPtPhiInput[i] = (TH2F*)SetHist2D(fHistPtPhiInput[i],"f",Form("Pt_Phi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi", 1000, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
+      fHistPtPhiInput[i] = (TH2F*)SetHist2D(fHistPtPhiInput[i],"f",Form("Pt_Phi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi", nBinsPt, 0, fMaxPt, 100, 0, 2*TMath::Pi(), kTRUE);
       fOutputContainer->Add(fHistPtPhiInput[i]);
 
       fHistPtPhiGammaSource[i] = (TH2F*)SetHist2D(fHistPtPhiGammaSource[i],"f",Form("Pt_Phi_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",
-                                                  1000, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
+                                                  nBinsPt, 0, fMaxPt, 100, 0, 2*TMath::Pi(), kTRUE);
       fOutputContainer->Add(fHistPtPhiGammaSource[i]);
 
       if(i==0){
         fHistPtYGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromDalitzPi0,"f",Form("Pt_Y_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",
-                                                            1000, 0, 50, 400, -2.0, 2.0, kTRUE);
+                                                            nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
         fOutputContainer->Add(fHistPtYGammaSourceFromDalitzPi0);
         fHistPtPhiGammaSourceFromDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromDalitzPi0,"f",Form("Pt_Phi_Gamma_From_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",
-                                                              1000, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
+                                                              nBinsPt, 0, fMaxPt, 100, 0, 2*TMath::Pi(), kTRUE);
         fOutputContainer->Add(fHistPtPhiGammaSourceFromDalitzPi0);
         fHistPtYGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtYGammaSourceFromNonDalitzPi0,"f",Form("Pt_Y_Gamma_FromNon_Dalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",
-                                                               1000, 0, 50, 400, -2.0, 2.0, kTRUE);
+                                                               nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
         fOutputContainer->Add(fHistPtYGammaSourceFromNonDalitzPi0);
         fHistPtPhiGammaSourceFromNonDalitzPi0 = (TH2F*)SetHist2D(fHistPtPhiGammaSourceFromNonDalitzPi0,"f",Form("Pt_Phi_Gamma_From_NonDalitz_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",
-                                                                 1000, 0, 50, 100, 0, 2*TMath::Pi(), kTRUE);
+                                                                 nBinsPt, 0, fMaxPt, 100, 0, 2*TMath::Pi(), kTRUE);
         fOutputContainer->Add(fHistPtPhiGammaSourceFromNonDalitzPi0);
       }
 
       // correlation gamma from certain mother to mother
       fHistPtGammaSourcePtInput[i] = (TH2F*)SetHist2D(fHistPtGammaSourcePtInput[i],"f",Form("PtGamma_PtMother_%s",fParticleListNames[i].Data()),"#it{p}_{T,daughter}","#it{p}_{T,mother}",
-                                                      1000, 0, 50, 1000, 0, 50,kTRUE);
+                                                      nBinsPt, 0, fMaxPt, nBinsPt, 0, fMaxPt,kTRUE);
       fOutputContainer->Add(fHistPtGammaSourcePtInput[i]);
 
       fHistPhiGammaSourcePhiInput[i] = (TH2F*)SetHist2D(fHistPhiGammaSourcePhiInput[i],"f",Form("PhiGamma_PhiMother_%s",fParticleListNames[i].Data()),"#phi_{daughter}","#phi_{mother}",
@@ -350,12 +358,12 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
       if (fHasMother[i]) {
         // gamma delta phi
         fHistPtDeltaPhiInput[i] = (TH2F*)SetHist2D(fHistPtDeltaPhiInput[i],"f",Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#Delta#phi_{#gamma_{1}#gamma_{2}}",
-                                                   1000, 0, 50, 82, binsDeltaPhi,kTRUE);
+                                                   nBinsPt, 0, fMaxPt, 82, binsDeltaPhi,kTRUE);
         fOutputContainer->Add(fHistPtDeltaPhiInput[i]);
 
         // alpha mother
         fHistPtAlphaInput[i] = (TH2F*)SetHist2D(fHistPtAlphaInput[i],"f",Form("Pt_Alpha_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#alpha",
-                                                1000, 0, 50, 100, -1, 1, kTRUE);
+                                                nBinsPt, 0, fMaxPt, 100, -1, 1, kTRUE);
         fOutputContainer->Add(fHistPtAlphaInput[i]);
       } else {
         fHistPtDeltaPhiInput[i] = NULL;
@@ -530,9 +538,14 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
     if( yPre <= 0 ) continue;
 
     Double_t y = 0.5*TMath::Log(yPre);
-    if (TMath::Abs(y) > fMaxY) continue;
-
+    
     if(particle->GetPdgCode()==22 && hasMother==kTRUE){
+      // additional condition to remove gammas out of eta range
+      if (fMaxEta>0){
+        if (TMath::Abs(particle->Eta()) > fMaxEta) continue;
+      } else {
+        if (TMath::Abs(y) > fMaxY) continue;
+      }
       if(motherIsPrimary && fHasMother[GetParticlePosLocal(motherParticle->GetPdgCode())]){
         fHistPtYGamma->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
         fHistPtPhiGamma->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
@@ -652,7 +665,8 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
         }
       }
     }
-
+    // remove particles (not gammas) outside of defined rapidity range
+    if (TMath::Abs(y) > fMaxY) continue;
     if(particle->GetPdgCode()!=22 && particleIsPrimary && fHasMother[GetParticlePosLocal(particle->GetPdgCode())]){
 
       Double_t alpha    = -999;

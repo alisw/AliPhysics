@@ -18,7 +18,7 @@
 #include "TString.h"
 #include "TEnv.h"
 #include "TSystem.h"
-#include "TAlienCollection.h"
+#include "TGridCollection.h"
 #include "TGrid.h"
 #include "TStopwatch.h"
 #include "AliRawVEvent.h"
@@ -234,7 +234,7 @@ Bool_t makeAlienInputEventList( TString outputFileName,
                                 TString referenceFileName,
                                 TString inputCollectionName )
 {
-  TAlienCollection *coll = (TAlienCollection *)TAlienCollection::Open(inputCollectionName);
+  TGridCollection *coll = gGrid->OpenCollection(inputCollectionName);
   if (!coll)
   {
     ::Error("makeAlienInputEventList", "Cannot open collection from %s", inputCollectionName.Data());

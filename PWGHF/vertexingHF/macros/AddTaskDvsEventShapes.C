@@ -44,7 +44,8 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     } else {
         filecuts=TFile::Open(filename.Data());
         if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-            AliFatal("Input file not found : check your cut object");
+            Printf("FATAL: Input file not found : check your cut object");
+	    return NULL;
         }
     }
     
@@ -107,7 +108,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                 dEvtShapeTask->UseMCNchWeight(NchWeight);
                 dEvtShapeTask->SetHistoNchWeight(hNchPrimaries);
             } else {
-                AliFatal("Histogram for Nch multiplicity weights not found");
+                Printf("FATAL: Histogram for Nch multiplicity weights not found");
                 return 0x0;
             }
             hMeasNchPrimaries = (TH1F*)filecuts->Get("hMeasNtrUnCorrEvWithD"); // data distribution
@@ -123,7 +124,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                 dEvtShapeTask->SetHistoNchWeight(hNchPrimaries);
                 dEvtShapeTask->SetMeasuredNchHisto(hMeasNchPrimaries);
             } else {
-                AliFatal("Histogram for Ntrk multiplicity weights not found");
+                Printf("FATAL: Histogram for Ntrk multiplicity weights not found");
                 return 0x0;
             }
         }
@@ -141,8 +142,8 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
         
         TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
         if(!fileEstimator)  {
-            AliFatal("File with multiplicity estimator not found\n");
-            return;
+            Printf("FATAL: File with multiplicity estimator not found\n");
+            return NULL;
         }
         
         dEvtShapeTask->SetReferenceMultiplcity(refMult);
@@ -159,8 +160,8 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                 cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
                 multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
                 if (!multEstimatorAvg[ip]) {
-                    AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-                    return;
+                    Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+                    return NULL;
                 }
             }
             dEvtShapeTask->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
@@ -172,8 +173,8 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
             for(Int_t ip=0; ip<4; ip++) {
                 multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
                 if (!multEstimatorAvg[ip]) {
-                    AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-                    return;
+                    Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+                    return NULL;
                 }
             }
             dEvtShapeTask->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
@@ -217,7 +218,8 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(outname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutputProf = mgr->CreateContainer(profname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-    if(readMC) AliAnalysisDataContainer *coutputEffCorr = mgr->CreateContainer(effname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+    AliAnalysisDataContainer *coutputEffCorr = 0x0;
+    if(readMC) coutputEffCorr = mgr->CreateContainer(effname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
     
     mgr->ConnectInput(dEvtShapeTask,0,mgr->GetCommonInputContainer());

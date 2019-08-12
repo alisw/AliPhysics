@@ -1,7 +1,7 @@
 
-
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
+//update Jul 24
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -26,11 +26,6 @@ public:
     virtual ~AliAnalysisTaskNetLambdaTrad(){};
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
-    
-    void SetIsMC(Bool_t val){fIsMC = val;};
-    Bool_t GetIsMC(){return fIsMC;};
-    void SetIsAOD(Bool_t val){fIsAOD = val;};
-    Bool_t GetIsAOD(){return fIsAOD;};
     void SetEventSelection(UInt_t val) {fEvSel = val;}
     
 protected:
@@ -38,60 +33,51 @@ protected:
     AliAnalysisTaskNetLambdaTrad& operator=(const  AliAnalysisTaskNetLambdaTrad &task);
     
     AliESDEvent* fESD;
-    AliAODEvent* fAOD;
     AliPIDResponse* fPIDResponse;
     AliEventCuts fEventCuts;
     TList* fListHist;
-    TTree* fTreeV0;
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
-
+    TH1F*  fHistPA;
+    TH1F*  fHistPAparLambda;
+    TH1F*  fHistPAparLambdabar;
     
-    TH2F*  f2fHistGenCentVsPtLambda;
-    TH2F*  f2fHistGenCentVsPtAntiLambda;
-    TH2F*  f2fHistRecCentVsPtLambda;
-    TH2F*  f2fHistRecCentVsPtAntiLambda;
-    TH2F*  f2fHistInvMassVsPtLambda;
-    TH2F*  f2fHistInvMassVsPtAntiLambda;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambda;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambda;
-    TH2F*  f2fHistmassctLambda;
-    TH2F*  f2fHistmassctAntiLambda;
-    TH2F*  f2fHistLambdaSecFromWeakDecay;
-    TH2F* f2fHistAntiLambdaSecFromWeakDecay;
-
+    
+    
+    TH3F*  f3fHistCentVsInvMassLambda1point0;
+    TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
+    
+    TH3F*  f3fHistCentVsInvMassLambda1point0Rap;
+    TH3F*  f3fHistCentVsInvMassLambda1point0MasscutRap;
+    
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
+    
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Rap;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0MasscutRap;
+    
     
     Float_t fCentrality;
-    Int_t fTreeVariablePID;
-    Int_t fTreeVariablePIDPositive;
-    Int_t fTreeVariablePIDNegative;
     Int_t fTreeVariableLeastNbrCrossedRows;
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;
-
-    Float_t fTreeVariableInvMassLambda;
-    Float_t fTreeVariableInvMassAntiLambda;
-    Float_t fTreeVariableDcaV0Daughters;
-    Float_t fTreeVariableDcaV0ToPrimVertex;
-    Float_t fTreeVariableDcaPosToPrimVertex;
-    Float_t fTreeVariableDcaNegToPrimVertex; 
-
-    Bool_t fIsMC;
-    Bool_t fIsAOD;
+    
+    
     UInt_t fEvSel;
     Int_t  fNptBins;
     
+    
     THnSparse *fPtBinNplusNminusCh;
-    THnSparse *fPtBinNplusNminusChTruth;
-    Int_t    GetPtBin(Double_t pt);
+    THnSparse *fPtBinNplusNminusChRap;
 
-   
-  
+    
+    
+    
+    Int_t    GetPtBin(Double_t pt);
     
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);
 };
 
 
 #endif
-
 

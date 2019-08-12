@@ -1,4 +1,4 @@
-configurationName: "EMCal MC Correction Cluster V1 Run1 with cross talk" emulation
+configurationName: "EMCal MC Correction Cluster V1 Run1 with cross talk emulation"
 pass: "pass1"
 CellEnergy:
     enabled: false
@@ -21,7 +21,7 @@ Clusterizer:
     recalDistToBadChannels: true
     recalShowerShape: false
     remapMcAod: true
-    setCellMCLabelFromCluster: 2
+    setCellMCLabelFromCluster: 0                    # use 2 if V1 and E cell 50 MeV
 ClusterExotics:
     enabled: true
     createHistos: true
@@ -41,6 +41,8 @@ CellEmulateCrosstalk:                               # Component to emulate cross
     randomizeTCardInducedEnergy: true               # Randomize the energy fraction induced by the TCard
     inducedTCardMinimumCellEnergy: 0.01             # Minimum cell energy induced by the TCard
     inducedTCardMaximum: 100                        # Maximum energy induced by the TCard
+    inducedTCardMinimum: 0.0                        # Minimum energy induced by the TCard + cell energy, IMPORTANT use the same value as the clusterization cell E threshold or not too far from it
+    inducedTCardMaximumELeak: 0                     # Maximum energy that is going to be leaked independently of what is set with inducedTCardMinimum    
     inducedEnergyLossConstant:                      # Constant energy lost by max energy cell in one of T-Card cells
         enabled: false                              # Enable setting these values
         values: {"all" : [0.02, 0.02, 0.02, 0]}     # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, 2nd row upper/lower cells]
@@ -57,8 +59,8 @@ CellEmulateCrosstalk:                               # Component to emulate cross
                  7 : [1.20e-02, 1.20e-02, 1.20e-02, 0], 
                  8 : [0.80e-02, 0.80e-02, 0.80e-02, 0],  
                  9 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 10: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 11: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 10: [1.20e-02, 1.20e-02, 1.20e-02, 0], 
+                 11: [1.20e-02, 1.20e-02, 1.20e-02, 0], 
                  12: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
                  13: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
                  14: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
@@ -78,7 +80,7 @@ CellEmulateCrosstalk:                               # Component to emulate cross
     inducedEnergyLossMinimumFraction:               # Minimum induced energy fraction when linear dependency is set
         enabled: true                               # Enable setting these values
         values: {0 : [3.5e-3], 1 : [5.0e-3], 2 : [4.5e-3], 3 : [6.0e-3], 4 : [3.5e-3], 5 : [3.5e-3], 6 : [3.5e-3], 7 : [6.0e-3], 8 : [3.5e-3], 9 : [3.5e-3], 
-                 10: [3.5e-3], 11: [3.5e-3], 12: [3.5e-3], 13: [3.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [3.5e-3], 17: [3.5e-3], 18: [3.5e-3], 19: [3.5e-3], 
+                 10: [5.0e-3], 11: [5.0e-3], 12: [3.5e-3], 13: [3.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [3.5e-3], 17: [3.5e-3], 18: [3.5e-3], 19: [3.5e-3], 
                  20: [3.5e-3], 21: [3.5e-3]} 
        #values: {"all" : [0.008]}                   # Values are [minimum fraction]
     inducedEnergyLossMaximumFraction:               # Maximum induced energy fraction when linear dependency is set

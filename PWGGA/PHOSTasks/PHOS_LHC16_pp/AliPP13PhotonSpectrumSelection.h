@@ -2,7 +2,7 @@
 #define ALIPP13QUALITYSELECTION_H
 
 // --- Custom header files ---
-#include "AliPP13PhotonSelection.h"
+#include "AliPP13PhysicsSelection.h"
 #include "AliPP13DetectorHistogram.h"
 #include "AliPP13SelectionWeights.h"
 
@@ -16,11 +16,11 @@
 
 // TODO: Remove Exotic cluster cuts from here
 
-class AliPP13PhotonSpectrumSelection : public AliPP13PhotonSelection
+class AliPP13PhotonSpectrumSelection : public AliPP13PhysicsSelection
 {
 public:
     AliPP13PhotonSpectrumSelection():
-        AliPP13PhotonSelection(),
+        AliPP13PhysicsSelection(),
         fSpectrum(0),
         fSpectrumCPV(0),
         fSpectrumDisp(0),
@@ -30,7 +30,7 @@ public:
 
     AliPP13PhotonSpectrumSelection(const char * name, const char * title, AliPP13ClusterCuts cuts,
         AliPP13SelectionWeights * w, Float_t cpv = 10., Float_t disp = 3.0):
-        AliPP13PhotonSelection(name, title, cuts, w),
+        AliPP13PhysicsSelection(name, title, cuts, w),
         fDistanceCPV(cpv),
         fDispersionCut(disp),
         fSpectrum(0),

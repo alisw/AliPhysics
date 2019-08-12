@@ -1,12 +1,11 @@
 #include "AliSigma0PhotonCuts.h"
-
-#include "AliAODEvent.h"
-#include "AliAnalysisManager.h"
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
-#include "AliInputEventHandler.h"
-
 #include <iostream>
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliAODv0.h"
+#include "TMath.h"
+#include "AliV0ReaderV1.h"
+#include "AliNanoAODTrack.h"
 
 ClassImp(AliSigma0PhotonCuts)
 
@@ -14,605 +13,600 @@ ClassImp(AliSigma0PhotonCuts)
 AliSigma0PhotonCuts::AliSigma0PhotonCuts()
     : TObject(),
       fHistograms(nullptr),
-      fHistogramsMC(nullptr),
-      fV0Reader(nullptr),
-      fV0ReaderName("NoInit"),
-      fReaderGammas(nullptr),
-      fIsMC(false),
+      fHistogramsBefore(nullptr),
+      fHistogramsAfter(nullptr),
+      fHistogramsPos(nullptr),
+      fHistogramsNeg(nullptr),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
-      fMCStack(nullptr),
-      fDCAr(999.f),
-      fDCAz(999.f),
-      fCosPA(0.f),
-      fPmax(999.f),
-      fPtmax(999.f),
-      fPtElemax(999.f),
-      fPIDResponse(nullptr),
+      fDataBasePDG(),
+      fIsLightweight(false),
+      fV0ReaderName("NoInit"),
+      fIsMC(false),
+      f2DArmenterosCut(false),
+      fQtMax(0.),
+      fPhotonPtMin(0.),
+      fPhotonEtaMax(999),
+      f2DPsiPairCut(false),
+      fPsiPairMax(999),
+      fChi2MaxFor2DPsiPair(999),
+      fCPAMin(0.),
+      fDCAzMax(999.f),
+      fDCArMax(999.f),
+      fElectronPtMin(0.),
+      fElectronEtaMax(999),
+      fElectronRatioFindable(0.),
+      fElectronNSigmaTPCMax(999),
+      fElectronNSigmaTPCMin(-999),
+      fDoTransvRadRejection(false),
+      fTransvRadRejectionLow(0.),
+      fTransvRadRejectionUp(0.),
+      fHistCutBooking(nullptr),
       fHistCuts(nullptr),
-      fHistPhotonCuts(nullptr),
-      fHistNPhoton(nullptr),
-      fHistPhotonPt(nullptr),
-      fHistPhotonP(nullptr),
-      fHistPhotonInvMass(nullptr),
-      fHistPhotonInvMassPt(nullptr),
-      fHistPhotonInvMassEta(nullptr),
-      fHistPhotonCPAPt(nullptr),
-      fHistPhotonR(nullptr),
-      fHistPhotonArm(nullptr),
-      fHistPhotonDCAz(nullptr),
-      fHistPhotonDCAr(nullptr),
-      fHistPhotonEtaPhi(nullptr),
-      fHistPhotonConvPointX(nullptr),
-      fHistPhotonConvPointY(nullptr),
-      fHistPhotonConvPointZ(nullptr),
-      fHistPhotonEleP(nullptr),
-      fHistPhotonElePt(nullptr),
-      fHistPhotonEleNsigmaTPC(nullptr),
-      fHistPhotonEleNsigmaTPCPion(nullptr),
-      fHistPhotonEleTPCsignal(nullptr),
-      fHistTwoPhotonPt(nullptr),
-      fHistTwoPhotonP(nullptr),
-      fHistTwoPhotonInvMass(nullptr),
-      fHistTwoPhotonInvMassPt(nullptr),
-      fHistTwoPhotonInvMassEta(nullptr),
-      fHistMCRecSigma0PhotonPt(nullptr),
-      fHistMCRecSigma0PhotonP(nullptr),
-      fHistMCRecSigma0PhotonInvMass(nullptr),
-      fHistMCRecSigma0PhotonInvMassPt(nullptr),
-      fHistMCRecSigma0PhotonInvMassEta(nullptr),
-      fHistMCRecSigma0PhotonR(nullptr),
-      fHistMCRecSigma0PhotonArm(nullptr),
-      fHistMCRecSigma0PhotonDCAz(nullptr),
-      fHistMCRecSigma0PhotonDCAr(nullptr),
-      fHistMCRecSigma0PhotonConvPointX(nullptr),
-      fHistMCRecSigma0PhotonConvPointY(nullptr),
-      fHistMCRecSigma0PhotonConvPointZ(nullptr),
-      fHistMCRecSigma0PhotonEleP(nullptr),
-      fHistMCRecSigma0PhotonElePt(nullptr),
-      fHistMCRecSigma0CPAPt(nullptr),
-      fHistMCRecSigma0PhotonDCAzPt(nullptr),
-      fHistMCRecSigma0PhotonDCArPt(nullptr),
-      fHistMCRecSigma0PhotonPsiPairPt(nullptr),
-      fHistMCRecSigma0PhotonChi2Pt(nullptr),
-      fHistMCFakeSigma0PhotonPt(nullptr),
-      fHistMCFakeSigma0PhotonP(nullptr),
-      fHistMCFakeSigma0PhotonInvMass(nullptr),
-      fHistMCFakeSigma0PhotonInvMassPt(nullptr),
-      fHistMCFakeSigma0PhotonInvMassEta(nullptr),
-      fHistMCFakeSigma0PhotonR(nullptr),
-      fHistMCFakeSigma0PhotonArm(nullptr),
-      fHistMCFakeSigma0PhotonDCAz(nullptr),
-      fHistMCFakeSigma0PhotonDCAr(nullptr),
-      fHistMCFakeSigma0PhotonConvPointX(nullptr),
-      fHistMCFakeSigma0PhotonConvPointY(nullptr),
-      fHistMCFakeSigma0PhotonConvPointZ(nullptr),
-      fHistMCFakeSigma0PhotonEleP(nullptr),
-      fHistMCFakeSigma0PhotonElePt(nullptr),
-      fHistMCFakeSigma0CPAPt(nullptr),
-      fHistMCFakeSigma0PhotonDCAzPt(nullptr),
-      fHistMCFakeSigma0PhotonDCArPt(nullptr),
-      fHistMCFakeSigma0PhotonPsiPairPt(nullptr),
-      fHistMCFakeSigma0PhotonChi2Pt(nullptr),
-      fHistMCFakePhotonPt(nullptr),
-      fHistMCFakePhotonP(nullptr),
-      fHistMCFakePhotonInvMass(nullptr),
-      fHistMCFakePhotonInvMassPt(nullptr),
-      fHistMCFakePhotonInvMassEta(nullptr),
-      fHistMCFakePhotonR(nullptr),
-      fHistMCFakePhotonArm(nullptr),
-      fHistMCFakePhotonDCAz(nullptr),
-      fHistMCFakePhotonDCAr(nullptr),
-      fHistMCFakePhotonConvPointX(nullptr),
-      fHistMCFakePhotonConvPointY(nullptr),
-      fHistMCFakePhotonConvPointZ(nullptr),
-      fHistMCFakePhotonEleP(nullptr),
-      fHistMCFakePhotonElePt(nullptr),
-      fHistMCFakePhotonCPAPt(nullptr),
-      fHistMCFakePhotonDCAzPt(nullptr),
-      fHistMCFakePhotonDCArPt(nullptr),
-      fHistMCFakePhotonPsiPairPt(nullptr),
-      fHistMCFakePhotonChi2Pt(nullptr) {}
+      fHistNV0(nullptr),
+      fHistLambdaMass(nullptr),
+      fHistAntiLambdaMass(nullptr),
+      fHistK0Mass(nullptr),
+      fHistV0Pt(nullptr),
+      fHistV0Mass(nullptr),
+      fHistV0MassPt(nullptr),
+      fHistCosPA(nullptr),
+      fHistEtaPhi(nullptr),
+      fHistPsiPairBefore(nullptr),
+      fHistPsiPairAfter(nullptr),
+      fHistDecayVertexXBefore(nullptr),
+      fHistDecayVertexYBefore(nullptr),
+      fHistDecayVertexZBefore(nullptr),
+      fHistDecayVertexXAfter(nullptr),
+      fHistDecayVertexYAfter(nullptr),
+      fHistDecayVertexZAfter(nullptr),
+      fHistTransverseRadiusBefore(nullptr),
+      fHistTransverseRadiusAfter(nullptr),
+      fHistCosPABefore(nullptr),
+      fHistCosPAAfter(nullptr),
+      fHistDCArBefore(nullptr),
+      fHistDCAzBefore(nullptr),
+      fHistDCArAfter(nullptr),
+      fHistDCAzAfter(nullptr),
+      fHistDCA(nullptr),
+      fHistDecayLength(nullptr),
+      fHistArmenterosBefore(nullptr),
+      fHistArmenterosAfter(nullptr),
+      fHistSingleParticleCuts(),
+      fHistSingleParticlePt(),
+      fHistSingleParticleEtaBefore(),
+      fHistSingleParticleEtaAfter(),
+      fHistSingleParticleChi2Before(),
+      fHistSingleParticleChi2After(),
+      fHistSingleParticleNclsTPCBefore(),
+      fHistSingleParticleNclsTPCAfter(),
+      fHistSingleParticleNclsTPCFindableBefore(),
+      fHistSingleParticleNclsTPCFindableAfter(),
+      fHistSingleParticleNclsTPCRatioFindableBefore(),
+      fHistSingleParticleNclsTPCRatioFindableAfter(),
+      fHistSingleParticleNcrossedTPCBefore(),
+      fHistSingleParticleNcrossedTPCAfter(),
+      fHistSingleParticleDCAtoPVBefore(),
+      fHistSingleParticleDCAtoPVAfter(),
+      fHistSingleParticlePileUp(),
+      fHistSingleParticlePID(),
+      fPIDResponse(nullptr) {
+}
 
 //____________________________________________________________________________________________________
 AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
     : TObject(ref),
       fHistograms(nullptr),
-      fHistogramsMC(nullptr),
-      fV0Reader(nullptr),
-      fV0ReaderName("NoInit"),
-      fReaderGammas(nullptr),
-      fIsMC(false),
+      fHistogramsBefore(nullptr),
+      fHistogramsAfter(nullptr),
+      fHistogramsPos(nullptr),
+      fHistogramsNeg(nullptr),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
-      fMCStack(nullptr),
-      fDCAr(999.f),
-      fDCAz(999.f),
-      fCosPA(0.f),
-      fPmax(999.f),
-      fPtmax(999.f),
-      fPtElemax(999.f),
-      fPIDResponse(nullptr),
+      fDataBasePDG(),
+      fIsLightweight(false),
+      fV0ReaderName("NoInit"),
+      fIsMC(false),
+      f2DArmenterosCut(false),
+      fQtMax(0.),
+      fPhotonPtMin(0.),
+      fPhotonEtaMax(999),
+      f2DPsiPairCut(false),
+      fPsiPairMax(999),
+      fChi2MaxFor2DPsiPair(999),
+      fCPAMin(0.),
+      fDCAzMax(999.f),
+      fDCArMax(999.f),
+      fElectronPtMin(0.),
+      fElectronEtaMax(999),
+      fElectronRatioFindable(0.),
+      fElectronNSigmaTPCMax(999),
+      fElectronNSigmaTPCMin(-999),
+      fDoTransvRadRejection(false),
+      fTransvRadRejectionLow(0.),
+      fTransvRadRejectionUp(0.),
+      fHistCutBooking(nullptr),
       fHistCuts(nullptr),
-      fHistPhotonCuts(nullptr),
-      fHistNPhoton(nullptr),
-      fHistPhotonPt(nullptr),
-      fHistPhotonP(nullptr),
-      fHistPhotonInvMass(nullptr),
-      fHistPhotonInvMassPt(nullptr),
-      fHistPhotonInvMassEta(nullptr),
-      fHistPhotonCPAPt(nullptr),
-      fHistPhotonR(nullptr),
-      fHistPhotonArm(nullptr),
-      fHistPhotonDCAz(nullptr),
-      fHistPhotonDCAr(nullptr),
-      fHistPhotonEtaPhi(nullptr),
-      fHistPhotonConvPointX(nullptr),
-      fHistPhotonConvPointY(nullptr),
-      fHistPhotonConvPointZ(nullptr),
-      fHistPhotonEleP(nullptr),
-      fHistPhotonElePt(nullptr),
-      fHistPhotonEleNsigmaTPC(nullptr),
-      fHistPhotonEleNsigmaTPCPion(nullptr),
-      fHistPhotonEleTPCsignal(nullptr),
-      fHistTwoPhotonPt(nullptr),
-      fHistTwoPhotonP(nullptr),
-      fHistTwoPhotonInvMass(nullptr),
-      fHistTwoPhotonInvMassPt(nullptr),
-      fHistTwoPhotonInvMassEta(nullptr),
-      fHistMCRecSigma0PhotonPt(nullptr),
-      fHistMCRecSigma0PhotonP(nullptr),
-      fHistMCRecSigma0PhotonInvMass(nullptr),
-      fHistMCRecSigma0PhotonInvMassPt(nullptr),
-      fHistMCRecSigma0PhotonInvMassEta(nullptr),
-      fHistMCRecSigma0PhotonR(nullptr),
-      fHistMCRecSigma0PhotonArm(nullptr),
-      fHistMCRecSigma0PhotonDCAz(nullptr),
-      fHistMCRecSigma0PhotonDCAr(nullptr),
-      fHistMCRecSigma0PhotonConvPointX(nullptr),
-      fHistMCRecSigma0PhotonConvPointY(nullptr),
-      fHistMCRecSigma0PhotonConvPointZ(nullptr),
-      fHistMCRecSigma0PhotonEleP(nullptr),
-      fHistMCRecSigma0PhotonElePt(nullptr),
-      fHistMCRecSigma0CPAPt(nullptr),
-      fHistMCRecSigma0PhotonDCAzPt(nullptr),
-      fHistMCRecSigma0PhotonDCArPt(nullptr),
-      fHistMCRecSigma0PhotonPsiPairPt(nullptr),
-      fHistMCRecSigma0PhotonChi2Pt(nullptr),
-      fHistMCFakeSigma0PhotonPt(nullptr),
-      fHistMCFakeSigma0PhotonP(nullptr),
-      fHistMCFakeSigma0PhotonInvMass(nullptr),
-      fHistMCFakeSigma0PhotonInvMassPt(nullptr),
-      fHistMCFakeSigma0PhotonInvMassEta(nullptr),
-      fHistMCFakeSigma0PhotonR(nullptr),
-      fHistMCFakeSigma0PhotonArm(nullptr),
-      fHistMCFakeSigma0PhotonDCAz(nullptr),
-      fHistMCFakeSigma0PhotonDCAr(nullptr),
-      fHistMCFakeSigma0PhotonConvPointX(nullptr),
-      fHistMCFakeSigma0PhotonConvPointY(nullptr),
-      fHistMCFakeSigma0PhotonConvPointZ(nullptr),
-      fHistMCFakeSigma0PhotonEleP(nullptr),
-      fHistMCFakeSigma0PhotonElePt(nullptr),
-      fHistMCFakeSigma0CPAPt(nullptr),
-      fHistMCFakeSigma0PhotonDCAzPt(nullptr),
-      fHistMCFakeSigma0PhotonDCArPt(nullptr),
-      fHistMCFakeSigma0PhotonPsiPairPt(nullptr),
-      fHistMCFakeSigma0PhotonChi2Pt(nullptr),
-      fHistMCFakePhotonPt(nullptr),
-      fHistMCFakePhotonP(nullptr),
-      fHistMCFakePhotonInvMass(nullptr),
-      fHistMCFakePhotonInvMassPt(nullptr),
-      fHistMCFakePhotonInvMassEta(nullptr),
-      fHistMCFakePhotonR(nullptr),
-      fHistMCFakePhotonArm(nullptr),
-      fHistMCFakePhotonDCAz(nullptr),
-      fHistMCFakePhotonDCAr(nullptr),
-      fHistMCFakePhotonConvPointX(nullptr),
-      fHistMCFakePhotonConvPointY(nullptr),
-      fHistMCFakePhotonConvPointZ(nullptr),
-      fHistMCFakePhotonEleP(nullptr),
-      fHistMCFakePhotonElePt(nullptr),
-      fHistMCFakePhotonCPAPt(nullptr),
-      fHistMCFakePhotonDCAzPt(nullptr),
-      fHistMCFakePhotonDCArPt(nullptr),
-      fHistMCFakePhotonPsiPairPt(nullptr),
-      fHistMCFakePhotonChi2Pt(nullptr) {}
+      fHistNV0(nullptr),
+      fHistLambdaMass(nullptr),
+      fHistAntiLambdaMass(nullptr),
+      fHistK0Mass(nullptr),
+      fHistV0Pt(nullptr),
+      fHistV0Mass(nullptr),
+      fHistV0MassPt(nullptr),
+      fHistCosPA(nullptr),
+      fHistEtaPhi(nullptr),
+      fHistPsiPairBefore(nullptr),
+      fHistPsiPairAfter(nullptr),
+      fHistDecayVertexXBefore(nullptr),
+      fHistDecayVertexYBefore(nullptr),
+      fHistDecayVertexZBefore(nullptr),
+      fHistDecayVertexXAfter(nullptr),
+      fHistDecayVertexYAfter(nullptr),
+      fHistDecayVertexZAfter(nullptr),
+      fHistTransverseRadiusBefore(nullptr),
+      fHistTransverseRadiusAfter(nullptr),
+      fHistCosPABefore(nullptr),
+      fHistCosPAAfter(nullptr),
+      fHistDCArBefore(nullptr),
+      fHistDCArAfter(nullptr),
+      fHistDCAzBefore(nullptr),
+      fHistDCAzAfter(nullptr),
+      fHistDCA(nullptr),
+      fHistDecayLength(nullptr),
+      fHistArmenterosBefore(nullptr),
+      fHistArmenterosAfter(nullptr),
+      fHistSingleParticleCuts(),
+      fHistSingleParticlePt(),
+      fHistSingleParticleEtaBefore(),
+      fHistSingleParticleEtaAfter(),
+      fHistSingleParticleChi2Before(),
+      fHistSingleParticleChi2After(),
+      fHistSingleParticleNclsTPCBefore(),
+      fHistSingleParticleNclsTPCAfter(),
+      fHistSingleParticleNclsTPCFindableBefore(),
+      fHistSingleParticleNclsTPCFindableAfter(),
+      fHistSingleParticleNclsTPCRatioFindableBefore(),
+      fHistSingleParticleNclsTPCRatioFindableAfter(),
+      fHistSingleParticleNcrossedTPCBefore(),
+      fHistSingleParticleNcrossedTPCAfter(),
+      fHistSingleParticleDCAtoPVBefore(),
+      fHistSingleParticleDCAtoPVAfter(),
+      fHistSingleParticlePileUp(),
+      fHistSingleParticlePID(),
+      fPIDResponse(nullptr) {
+}
 
 //____________________________________________________________________________________________________
 AliSigma0PhotonCuts &AliSigma0PhotonCuts::operator=(
     const AliSigma0PhotonCuts &ref) {
   // Assignment operator
-  if (this == &ref) return *this;
-
+  if (this == &ref)
+    return *this;
   return (*this);
 }
 
-//____________________________________________________________________________________________________
 AliSigma0PhotonCuts::~AliSigma0PhotonCuts() {
-  if(fPIDResponse) delete fPIDResponse;
-  if(fV0Reader) delete fV0Reader;
-  if(fReaderGammas) delete fReaderGammas;
-
+  delete fPIDResponse;
 }
 
 //____________________________________________________________________________________________________
-AliSigma0PhotonCuts *AliSigma0PhotonCuts::DefaultCuts() {
-  AliSigma0PhotonCuts *photonCuts = new AliSigma0PhotonCuts();
-  photonCuts->SetDCArMax(1E30);
-  photonCuts->SetDCAzMax(1E30);
-  photonCuts->SetCosPA(-10.f);
-  photonCuts->SetPmax(1E30);
-  photonCuts->SetPtmax(1E30);
-  photonCuts->SetPtElemax(1E30);
-  return photonCuts;
+AliSigma0PhotonCuts *AliSigma0PhotonCuts::PhotonCuts() {
+  AliSigma0PhotonCuts *v0Cuts = new AliSigma0PhotonCuts();
+  v0Cuts->SetArmenteros2DCut(true);
+  v0Cuts->SetArmenterosQtMax(0.06);
+  v0Cuts->SetPhotonPtMin(0.02);
+  v0Cuts->SetPhotonEtaMax(999);
+  v0Cuts->SetPsiPair2DCut(true);
+  v0Cuts->SetPsiPairMax(0.2);
+  v0Cuts->SetChi2ForPsiMax(30);
+  v0Cuts->SetCPAMin(0.999);
+  v0Cuts->SetElectronPtMin(0.05);
+  v0Cuts->SetElectronEtaMax(0.9);
+  v0Cuts->SetElectronRatioFindable(0.35);
+  v0Cuts->SetElectronNSigmaTPCMax(7);
+  v0Cuts->SetElectronNSigmaTPCMin(-6);
+  v0Cuts->SetDCAzMax(0.5);
+  v0Cuts->SetDCArMax(0.75);
+  return v0Cuts;
 }
 
 //____________________________________________________________________________________________________
-void AliSigma0PhotonCuts::SelectPhotons(
-    AliVEvent *inputEvent, AliMCEvent *mcEvent,
-    std::vector<AliAODConversionPhoton> &photon) {
-  photon.clear();
+void AliSigma0PhotonCuts::PhotonCuts(
+    AliAODEvent *inputEvent, AliMCEvent *mcEvent, const TClonesArray *photons,
+    std::vector<AliFemtoDreamBasePart> &container) {
+  container.clear();
 
-  // Get the PID manager from the input event handler
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler =
-      static_cast<AliInputEventHandler *>(man->GetInputEventHandler());
+  AliInputEventHandler *inputHandler = static_cast<AliInputEventHandler *>(man
+      ->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
-  fMCEvent = mcEvent;
 
-  // should no longer be used, but the corresponding functions have not been
-  // changed in the Photon classes yet
-  if (fIsMC) fMCStack = fMCEvent->Stack();
+  fHistNV0->Fill(photons->GetEntriesFast());
 
-  fInputEvent = inputEvent;
+  auto event = static_cast<AliVEvent*>(inputEvent);
 
-  fV0Reader = (AliV0ReaderV1 *)man->GetTask(fV0ReaderName.Data());
-  if (!fV0Reader) {
-    std::cout << "Error: No V0 Reader " << fV0ReaderName.Data() << "\n";
-    return;
-  }
+  for (int iGamma = 0; iGamma < photons->GetEntriesFast(); ++iGamma) {
+    auto *PhotonCandidate = dynamic_cast<AliAODConversionPhoton *>(photons->At(
+        iGamma));
+    fHistCuts->Fill(0.f);
 
-  fReaderGammas =
-      fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
-  fHistNPhoton->Fill(fReaderGammas->GetEntriesFast());
-
-  const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
-
-  for (Int_t iGamma = 0; iGamma < fReaderGammas->GetEntriesFast(); ++iGamma) {
-    AliAODConversionPhoton *PhotonCandidate =
-        dynamic_cast<AliAODConversionPhoton *>(fReaderGammas->At(iGamma));
-    if (!PhotonCandidate) continue;
-    fHistPhotonP->Fill(PhotonCandidate->GetPhotonP());
-    fHistPhotonPt->Fill(PhotonCandidate->GetPhotonPt());
-    fHistPhotonInvMass->Fill(PhotonCandidate->GetInvMassPair());
-    fHistPhotonInvMassPt->Fill(PhotonCandidate->GetPhotonPt(),
-                               PhotonCandidate->GetInvMassPair());
-    fHistPhotonInvMassEta->Fill(PhotonCandidate->Eta(),
-                                PhotonCandidate->GetInvMassPair());
-    fHistPhotonR->Fill(PhotonCandidate->GetPhotonPt(),
-                       PhotonCandidate->GetConversionRadius());
-    fHistPhotonArm->Fill(PhotonCandidate->GetArmenterosAlpha(),
-                         PhotonCandidate->GetArmenterosQt());
-    PhotonCandidate->CalculateDistanceOfClossetApproachToPrimVtx(vertex);
-    fHistPhotonDCAz->Fill(PhotonCandidate->GetDCAzToPrimVtx());
-    fHistPhotonDCAr->Fill(PhotonCandidate->GetDCArToPrimVtx());
-    fHistPhotonCPAPt->Fill(
-        PhotonCandidate->GetPhotonPt(),
-        getCosineOfPointingAngle(PhotonCandidate, fInputEvent));
-
-    Double_t convpoint[3];
-    PhotonCandidate->GetConversionPoint(convpoint);
-
-    fHistPhotonConvPointX->Fill(convpoint[0]);
-    fHistPhotonConvPointY->Fill(convpoint[1]);
-    fHistPhotonConvPointZ->Fill(convpoint[2]);
-
-    AliVParticle *posEle =
-        fInputEvent->GetTrack(PhotonCandidate->GetTrackLabelPositive());
-    AliVParticle *negEle =
-        fInputEvent->GetTrack(PhotonCandidate->GetTrackLabelNegative());
-
-    AliVEvent *event = static_cast<AliVEvent *>(fInputEvent);
-    AliVTrack *posEleTrack = static_cast<AliVTrack *>(
-        static_cast<AliConversionPhotonCuts *>(fV0Reader->GetConversionCuts())
-            ->GetTrack(event, PhotonCandidate->GetTrackLabelPositive()));
-    AliVTrack *negEleTrack = static_cast<AliVTrack *>(
-        static_cast<AliConversionPhotonCuts *>(fV0Reader->GetConversionCuts())
-            ->GetTrack(event, PhotonCandidate->GetTrackLabelNegative()));
-
-    fHistPhotonEleP->Fill(posEle->P());
-    fHistPhotonEleP->Fill(negEle->P());
-    fHistPhotonElePt->Fill(posEle->Pt());
-    fHistPhotonElePt->Fill(negEle->Pt());
-
-    fHistPhotonEleNsigmaTPC->Fill(
-        posEleTrack->P(),
-        fPIDResponse->NumberOfSigmasTPC(posEleTrack, AliPID::kElectron));
-    fHistPhotonEleNsigmaTPC->Fill(
-        negEleTrack->P(),
-        fPIDResponse->NumberOfSigmasTPC(negEleTrack, AliPID::kElectron));
-    fHistPhotonEleNsigmaTPCPion->Fill(
-        posEleTrack->P(),
-        fPIDResponse->NumberOfSigmasTPC(posEleTrack, AliPID::kPion));
-    fHistPhotonEleNsigmaTPCPion->Fill(
-        negEleTrack->P(),
-        fPIDResponse->NumberOfSigmasTPC(negEleTrack, AliPID::kPion));
-    fHistPhotonEleTPCsignal->Fill(posEleTrack->P(),
-                                  posEleTrack->GetTPCsignal());
-    fHistPhotonEleTPCsignal->Fill(negEleTrack->P(),
-                                  negEleTrack->GetTPCsignal());
-
-    if (fIsMC) {
-      AliMCParticle *photonElePos = static_cast<AliMCParticle *>(
-          fMCEvent->GetTrack(PhotonCandidate->GetMCLabelPositive()));
-      AliMCParticle *photonEleNeg = static_cast<AliMCParticle *>(
-          fMCEvent->GetTrack(PhotonCandidate->GetMCLabelNegative()));
-      if (photonElePos->GetMother() != photonEleNeg->GetMother()) continue;
-      AliMCParticle *photonMC = static_cast<AliMCParticle *>(
-          fMCEvent->GetTrack(photonEleNeg->GetMother()));
-      if (!photonMC) continue;
-      AliMCParticle *photonMother = static_cast<AliMCParticle *>(
-          fMCEvent->GetTrack(photonMC->GetMother()));
-      if (!photonMother) continue;
-      // take only true photons
-      if (IsPhotonCandidate(PhotonCandidate)) {
-        // mother is Sigma0
-        if (std::abs(photonMother->PdgCode()) == 3212) {
-          fHistMCRecSigma0PhotonP->Fill(PhotonCandidate->GetPhotonP());
-          fHistMCRecSigma0PhotonPt->Fill(PhotonCandidate->GetPhotonPt());
-          fHistMCRecSigma0PhotonInvMass->Fill(
-              PhotonCandidate->GetInvMassPair());
-          fHistMCRecSigma0PhotonInvMassPt->Fill(
-              PhotonCandidate->GetPhotonPt(),
-              PhotonCandidate->GetInvMassPair());
-          fHistMCRecSigma0PhotonInvMassEta->Fill(
-              PhotonCandidate->Eta(), PhotonCandidate->GetInvMassPair());
-          fHistMCRecSigma0PhotonR->Fill(PhotonCandidate->GetPhotonPt(),
-                                        PhotonCandidate->GetConversionRadius());
-          fHistMCRecSigma0PhotonArm->Fill(PhotonCandidate->GetArmenterosAlpha(),
-                                          PhotonCandidate->GetArmenterosQt());
-          fHistMCRecSigma0PhotonDCAz->Fill(PhotonCandidate->GetDCAzToPrimVtx());
-          fHistMCRecSigma0PhotonDCAr->Fill(PhotonCandidate->GetDCArToPrimVtx());
-          fHistMCRecSigma0PhotonConvPointX->Fill(convpoint[0]);
-          fHistMCRecSigma0PhotonConvPointY->Fill(convpoint[1]);
-          fHistMCRecSigma0PhotonConvPointZ->Fill(convpoint[2]);
-          fHistMCRecSigma0PhotonEleP->Fill(posEle->P());
-          fHistMCRecSigma0PhotonEleP->Fill(negEle->P());
-          fHistMCRecSigma0PhotonElePt->Fill(posEle->Pt());
-          fHistMCRecSigma0PhotonElePt->Fill(negEle->Pt());
-          fHistMCRecSigma0CPAPt->Fill(
-              PhotonCandidate->GetPhotonPt(),
-              getCosineOfPointingAngle(PhotonCandidate, fInputEvent));
-          fHistMCRecSigma0PhotonDCAzPt->Fill(
-              PhotonCandidate->GetPhotonPt(),
-              PhotonCandidate->GetDCAzToPrimVtx());
-          fHistMCRecSigma0PhotonDCArPt->Fill(
-              PhotonCandidate->GetPhotonPt(),
-              PhotonCandidate->GetDCArToPrimVtx());
-          fHistMCRecSigma0PhotonPsiPairPt->Fill(PhotonCandidate->GetPhotonPt(),
-                                                PhotonCandidate->GetPsiPair());
-          fHistMCRecSigma0PhotonChi2Pt->Fill(PhotonCandidate->GetPhotonPt(),
-                                             PhotonCandidate->GetChi2perNDF());
-        } else {
-          fHistMCFakeSigma0PhotonP->Fill(PhotonCandidate->GetPhotonP());
-          fHistMCFakeSigma0PhotonPt->Fill(PhotonCandidate->GetPhotonPt());
-          fHistMCFakeSigma0PhotonInvMass->Fill(
-              PhotonCandidate->GetInvMassPair());
-          fHistMCFakeSigma0PhotonInvMassPt->Fill(
-              PhotonCandidate->GetPhotonPt(),
-              PhotonCandidate->GetInvMassPair());
-          fHistMCFakeSigma0PhotonInvMassEta->Fill(
-              PhotonCandidate->Eta(), PhotonCandidate->GetInvMassPair());
-          fHistMCFakeSigma0PhotonR->Fill(
-              PhotonCandidate->GetPhotonPt(),
-              PhotonCandidate->GetConversionRadius());
-          fHistMCFakeSigma0PhotonArm->Fill(
-              PhotonCandidate->GetArmenterosAlpha(),
-              PhotonCandidate->GetArmenterosQt());
-          fHistMCFakeSigma0PhotonDCAz->Fill(
-              PhotonCandidate->GetDCAzToPrimVtx());
-          fHistMCFakeSigma0PhotonDCAr->Fill(
-              PhotonCandidate->GetDCArToPrimVtx());
-          fHistMCFakeSigma0PhotonConvPointX->Fill(convpoint[0]);
-          fHistMCFakeSigma0PhotonConvPointY->Fill(convpoint[1]);
-          fHistMCFakeSigma0PhotonConvPointZ->Fill(convpoint[2]);
-          fHistMCFakeSigma0PhotonEleP->Fill(posEle->P());
-          fHistMCFakeSigma0PhotonEleP->Fill(negEle->P());
-          fHistMCFakeSigma0PhotonElePt->Fill(posEle->Pt());
-          fHistMCFakeSigma0PhotonElePt->Fill(negEle->Pt());
-          fHistMCFakeSigma0CPAPt->Fill(
-              PhotonCandidate->GetPhotonPt(),
-              getCosineOfPointingAngle(PhotonCandidate, fInputEvent));
-          fHistMCFakeSigma0PhotonDCAzPt->Fill(
-              PhotonCandidate->GetPhotonPt(),
-              PhotonCandidate->GetDCAzToPrimVtx());
-          fHistMCFakeSigma0PhotonDCArPt->Fill(
-              PhotonCandidate->GetPhotonPt(),
-              PhotonCandidate->GetDCArToPrimVtx());
-          fHistMCFakeSigma0PhotonPsiPairPt->Fill(PhotonCandidate->GetPhotonPt(),
-                                                 PhotonCandidate->GetPsiPair());
-          fHistMCFakeSigma0PhotonChi2Pt->Fill(PhotonCandidate->GetPhotonPt(),
-                                              PhotonCandidate->GetChi2perNDF());
-        }
-      }
-      // check what fake photons look like
-      else {
-        fHistMCFakePhotonP->Fill(PhotonCandidate->GetPhotonP());
-        fHistMCFakePhotonPt->Fill(PhotonCandidate->GetPhotonPt());
-        fHistMCFakePhotonInvMass->Fill(PhotonCandidate->GetInvMassPair());
-        fHistMCFakePhotonInvMassPt->Fill(PhotonCandidate->GetPhotonPt(),
-                                         PhotonCandidate->GetInvMassPair());
-        fHistMCFakePhotonInvMassEta->Fill(PhotonCandidate->Eta(),
-                                          PhotonCandidate->GetInvMassPair());
-        fHistMCFakePhotonR->Fill(PhotonCandidate->GetPhotonPt(),
-                                 PhotonCandidate->GetConversionRadius());
-        fHistMCFakePhotonArm->Fill(PhotonCandidate->GetArmenterosAlpha(),
-                                   PhotonCandidate->GetArmenterosQt());
-        fHistMCFakePhotonDCAz->Fill(PhotonCandidate->GetDCAzToPrimVtx());
-        fHistMCFakePhotonDCAr->Fill(PhotonCandidate->GetDCArToPrimVtx());
-        fHistMCFakePhotonConvPointX->Fill(convpoint[0]);
-        fHistMCFakePhotonConvPointY->Fill(convpoint[1]);
-        fHistMCFakePhotonConvPointZ->Fill(convpoint[2]);
-        fHistMCFakePhotonEleP->Fill(posEle->P());
-        fHistMCFakePhotonEleP->Fill(negEle->P());
-        fHistMCFakePhotonElePt->Fill(posEle->Pt());
-        fHistMCFakePhotonElePt->Fill(negEle->Pt());
-        fHistMCFakePhotonCPAPt->Fill(
-            PhotonCandidate->GetPhotonPt(),
-            getCosineOfPointingAngle(PhotonCandidate, fInputEvent));
-        fHistMCFakePhotonDCAzPt->Fill(PhotonCandidate->GetPhotonPt(),
-                                      PhotonCandidate->GetDCAzToPrimVtx());
-        fHistMCFakePhotonDCArPt->Fill(PhotonCandidate->GetPhotonPt(),
-                                      PhotonCandidate->GetDCArToPrimVtx());
-        fHistMCFakePhotonPsiPairPt->Fill(PhotonCandidate->GetPhotonPt(),
-                                         PhotonCandidate->GetPsiPair());
-        fHistMCFakePhotonChi2Pt->Fill(PhotonCandidate->GetPhotonPt(),
-                                      PhotonCandidate->GetChi2perNDF());
-      }
-    }
-  }
-
-  for (int i = 0; i < fReaderGammas->GetEntriesFast(); ++i) {
-    AliAODConversionPhoton *photonCandidate =
-        dynamic_cast<AliAODConversionPhoton *>(fReaderGammas->At(i));
-    if (!photonCandidate) continue;
-    fHistPhotonCuts->Fill(0);
-
-    // cuts
-    photonCandidate->CalculateDistanceOfClossetApproachToPrimVtx(vertex);
-    if (photonCandidate->GetDCAzToPrimVtx() > fDCAz) continue;
-    fHistPhotonCuts->Fill(1);
-    if (photonCandidate->GetDCArToPrimVtx() > fDCAr) continue;
-    fHistPhotonCuts->Fill(2);
-    if (getCosineOfPointingAngle(photonCandidate, fInputEvent) < fCosPA)
+    if (!PhotonCandidate)
       continue;
-    fHistPhotonCuts->Fill(3);
-    if (photonCandidate->GetPhotonP() > fPmax) continue;
-    fHistPhotonCuts->Fill(4);
-    if (photonCandidate->GetPhotonPt() > fPtmax) continue;
-    fHistPhotonCuts->Fill(5);
-    AliVEvent *aodEvent = static_cast<AliVEvent *>(fInputEvent);
-    AliVTrack *posEleTrack = static_cast<AliVTrack *>(
-        static_cast<AliConversionPhotonCuts *>(fV0Reader->GetConversionCuts())
-            ->GetTrack(aodEvent, photonCandidate->GetTrackLabelPositive()));
-    AliVTrack *negEleTrack = static_cast<AliVTrack *>(
-        static_cast<AliConversionPhotonCuts *>(fV0Reader->GetConversionCuts())
-            ->GetTrack(aodEvent, photonCandidate->GetTrackLabelNegative()));
-    if (negEleTrack->Pt() > fPtElemax || posEleTrack->Pt() > fPtElemax)
-      continue;
-    fHistPhotonCuts->Fill(6);
-    fHistPhotonEtaPhi->Fill(photonCandidate->Eta(), photonCandidate->Phi());
-    photon.push_back(*photonCandidate);
-  }
 
-  // Two photon combined histos
-  for (auto photon1 = photon.begin(); photon1 != photon.end(); ++photon1) {
-    TLorentzVector photonVector1;
-    photonVector1.SetXYZM(photon1->Px(), photon1->Py(), photon1->Pz(),
-                          photon1->GetInvMassPair());
-    for (auto photon2 = photon1 + 1; photon2 != photon.end(); ++photon2) {
-      TLorentzVector photonVector2, photonSum;
-      photonVector2.SetXYZM(photon2->Px(), photon2->Py(), photon2->Pz(),
-                            photon2->GetInvMassPair());
-      photonSum = photonVector1 + photonVector2;
-      fHistTwoPhotonPt->Fill(photonSum.Pt());
-      fHistTwoPhotonP->Fill(photonSum.P());
-      fHistTwoPhotonInvMass->Fill(photonSum.M());
-      fHistTwoPhotonInvMassPt->Fill(photonSum.Pt(), photonSum.M());
-      fHistTwoPhotonInvMassEta->Fill(photonSum.Pt(), photonSum.Eta());
+    AliAODv0 *v0 = inputEvent->GetV0(PhotonCandidate->GetV0Index());
+    fHistCuts->Fill(1.f);
+
+    auto pos = GetTrack(dynamic_cast<AliVEvent*>(inputEvent),
+                        PhotonCandidate->GetTrackLabelPositive());
+    auto neg = GetTrack(dynamic_cast<AliVEvent*>(inputEvent),
+                        PhotonCandidate->GetTrackLabelNegative());
+    if (!pos || !neg)
+      continue;
+    fHistCuts->Fill(2.f);
+
+    auto nanoPos = dynamic_cast<AliNanoAODTrack *>(pos);
+    if(nanoPos) v0 = nullptr; // for NanoAODs we dont have a v0 matching!
+
+    if (ProcessPhoton(event, PhotonCandidate, v0, pos, neg)) {
+      container.push_back( { PhotonCandidate, pos, neg, inputEvent });
     }
   }
 }
 
 //____________________________________________________________________________________________________
-double AliSigma0PhotonCuts::getCosineOfPointingAngle(
-    const AliConversionPhotonBase *photon, AliVEvent *event) const {
-  // calculates the pointing angle of the recalculated V0
+bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event,
+                                        AliAODConversionPhoton *PhotonCandidate,
+                                        AliAODv0 *v0, AliVTrack *pos,
+                                        AliVTrack *neg) {
+  AliNanoAODTrack *nanoPos = dynamic_cast<AliNanoAODTrack *>(pos);
+  AliNanoAODTrack *nanoNeg = dynamic_cast<AliNanoAODTrack *>(neg);
 
-  Double_t momV0[3] = {0, 0, 0};
-  if (event->IsA() == AliESDEvent::Class()) {
-    AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(event);
-    if (!esdEvent) return -999;
-    AliESDv0 *v0 = esdEvent->GetV0(photon->GetV0Index());
-    if (!v0) return -999;
-    v0->GetPxPyPz(momV0[0], momV0[1], momV0[2]);
-  }
-  if (event->IsA() == AliAODEvent::Class()) {
-    momV0[0] = photon->GetPx();
-    momV0[1] = photon->GetPy();
-    momV0[2] = photon->GetPz();
-  }
+  // compute the relevant variables
+  const float pt = PhotonCandidate->GetPhotonPt();
+  const float invMass = PhotonCandidate->GetPhotonMass();
+  double momV0[3] = { 0, 0, 0 };
+  momV0[0] = PhotonCandidate->Px();
+  momV0[1] = PhotonCandidate->Py();
+  momV0[2] = PhotonCandidate->Pz();
+  double conv[3] { 0, 0, 0 };
+  conv[0] = PhotonCandidate->GetConversionX();
+  conv[1] = PhotonCandidate->GetConversionY();
+  conv[2] = PhotonCandidate->GetConversionZ();
+  const AliVVertex *vertex = event->GetPrimaryVertex();
+  const float xPV = vertex->GetX();
+  const float yPV = vertex->GetY();
+  const float zPV = vertex->GetZ();
 
+  PhotonCandidate->CalculateDistanceOfClossetApproachToPrimVtx(vertex);
+  const float DCAz = PhotonCandidate->GetDCAzToPrimVtx();
+  const float DCAr = PhotonCandidate->GetDCArToPrimVtx();
+  const float DCA = std::sqrt(DCAz * DCAz + DCAr * DCAr);
+
+  const double PosV0[3] = { conv[0] - xPV, conv[1] - yPV, conv[2] - zPV };
   // Recalculated V0 Position vector
-  double PosV0[3] = {
-      photon->GetConversionX() - event->GetPrimaryVertex()->GetX(),
-      photon->GetConversionY() - event->GetPrimaryVertex()->GetY(),
-      photon->GetConversionZ() - event->GetPrimaryVertex()->GetZ()};
 
-  double momV02 =
-      momV0[0] * momV0[0] + momV0[1] * momV0[1] + momV0[2] * momV0[2];
-  double PosV02 =
-      PosV0[0] * PosV0[0] + PosV0[1] * PosV0[1] + PosV0[2] * PosV0[2];
+  const double momV02 = momV0[0] * momV0[0] + momV0[1] * momV0[1]
+      + momV0[2] * momV0[2];
+  const double PosV02 = PosV0[0] * PosV0[0] + PosV0[1] * PosV0[1]
+      + PosV0[2] * PosV0[2];
 
-  double cosinePointingAngle = -999;
-  if (momV02 * PosV02 > 0.0) {
-    cosinePointingAngle =
-        (PosV0[0] * momV0[0] + PosV0[1] * momV0[1] + PosV0[2] * momV0[2]) /
-        std::sqrt(momV02 * PosV02);
+  const float cosinePointingAngle =
+      (momV02 * PosV02 > 0.0) ?
+          (PosV0[0] * momV0[0] + PosV0[1] * momV0[1] + PosV0[2] * momV0[2])
+              / std::sqrt(momV02 * PosV02) :
+          -999.f;
+
+  const float transRadius = PhotonCandidate->GetConversionRadius();
+  const float decayLength = std::sqrt(
+      conv[0] * conv[0] + conv[1] * conv[1] + conv[2] * conv[2]);
+
+  const float massLambda = ComputeInvMass(v0, pos, neg, 2212, 211);
+  const float massK0 = ComputeInvMass(v0, pos, neg, 211, 211);
+  const float massAntiLambda = ComputeInvMass(v0, pos, neg, 211, 2212);
+
+  const float armAlpha = PhotonCandidate->GetArmenterosAlpha();
+  const float armQt = PhotonCandidate->GetArmenterosQt();
+
+  const float eta = PhotonCandidate->GetPhotonEta();
+  const float phi = PhotonCandidate->GetPhotonPhi();
+  const float psiPair = PhotonCandidate->GetPsiPair();
+
+  const float dcaV0Daughters = (v0) ? v0->DcaV0Daughters() : 0;
+
+  const float posPt = pos->Pt();
+  const float negPt = neg->Pt();
+  const float posEta = pos->Eta();
+  const float negEta = neg->Eta();
+  const float dcaDaughterToPVPos = (v0) ? v0->DcaPosToPrimVertex() : 0;
+  const short nClsTPCPos = pos->GetTPCNcls();
+  const float nCrossedRowsPos =
+      (nanoPos) ? nanoPos->GetTPCNCrossedRows() : pos->GetTPCClusterInfo(2, 1);
+  const short nFindablePos = pos->GetTPCNclsF();
+  const float ratioFindablePos = nCrossedRowsPos
+      / (static_cast<float>(nFindablePos) + 1.e-3);
+  float chi2Pos =
+      (nClsTPCPos > 5) ? (pos->GetTPCchi2() / float(nClsTPCPos - 5)) : -1.;
+  if(nanoPos) chi2Pos = nanoPos->Chi2perNDF();
+
+  const float dcaDaughterToPVNeg = (v0) ? v0->DcaNegToPrimVertex() : 0;
+  const short nClsTPCNeg = neg->GetTPCNcls();
+  const float nCrossedRowsNeg =
+      (nanoNeg) ? nanoNeg->GetTPCNCrossedRows() : neg->GetTPCClusterInfo(2, 1);
+  const short nFindableNeg = neg->GetTPCNclsF();
+  const float ratioFindableNeg = nCrossedRowsNeg
+      / (static_cast<float>(nFindableNeg) + 1.e-3);
+  float chi2Neg =
+      (nClsTPCNeg > 5) ? (neg->GetTPCchi2() / float(nClsTPCNeg - 5)) : -1.;
+  if(nanoNeg) chi2Neg = nanoNeg->Chi2perNDF();
+
+  float pidPos = -999.f;
+  float pidNeg = -999.f;
+  if (fPIDResponse) {
+    pidPos = fPIDResponse->NumberOfSigmasTPC(pos, AliPID::kElectron);
+    pidNeg = fPIDResponse->NumberOfSigmasTPC(neg, AliPID::kElectron);
+  } else if(nanoPos && nanoNeg) {
+    pidPos = nanoPos->GetVar(AliNanoAODTrack::GetPIDIndex(
+                        AliNanoAODTrack::kSigmaTPC, AliPID::kElectron));
+    pidNeg = nanoNeg->GetVar(AliNanoAODTrack::GetPIDIndex(
+                        AliNanoAODTrack::kSigmaTPC, AliPID::kElectron));
   }
 
-  return cosinePointingAngle;
-}
+  // BEFORE THE CUTS
+  if (!fIsLightweight) {
+    fHistDecayVertexXBefore->Fill(pt, conv[0]);
+    fHistDecayVertexYBefore->Fill(pt, conv[1]);
+    fHistDecayVertexZBefore->Fill(pt, conv[2]);
+    fHistTransverseRadiusBefore->Fill(pt, transRadius);
+    fHistCosPABefore->Fill(pt, cosinePointingAngle);
+    fHistArmenterosBefore->Fill(armAlpha, armQt);
+    fHistDCArBefore->Fill(pt, DCAr);
+    fHistDCAzBefore->Fill(pt, DCAz);
+    fHistPsiPairBefore->Fill(pt, psiPair);
 
-//____________________________________________________________________________________________________
-bool AliSigma0PhotonCuts::IsPhotonCandidate(
-    AliAODConversionPhoton *TruePhotonCandidate) const {
-  AliMCParticle *posDaughter = static_cast<AliMCParticle *>(
-      fMCEvent->GetTrack(TruePhotonCandidate->GetMCLabelPositive()));
-  AliMCParticle *negDaughter = static_cast<AliMCParticle *>(
-      fMCEvent->GetTrack(TruePhotonCandidate->GetMCLabelNegative()));
+    fHistSingleParticleEtaBefore[0]->Fill(posPt, pos->Eta());
+    fHistSingleParticleChi2Before[0]->Fill(posPt, chi2Pos);
+    fHistSingleParticleNclsTPCBefore[0]->Fill(posPt, nClsTPCPos);
+    fHistSingleParticleNclsTPCFindableBefore[0]->Fill(posPt, nFindablePos);
+    fHistSingleParticleNclsTPCRatioFindableBefore[0]->Fill(posPt,
+                                                           ratioFindablePos);
+    fHistSingleParticleNcrossedTPCBefore[0]->Fill(posPt, nCrossedRowsPos);
+    fHistSingleParticleDCAtoPVBefore[0]->Fill(posPt, dcaDaughterToPVPos);
 
-  if (posDaughter == nullptr || negDaughter == nullptr)
-    return false;  // One particle does not exist
-  int pdgCode[2] = {std::abs(posDaughter->PdgCode()),
-                    std::abs(negDaughter->PdgCode())};
+    fHistSingleParticleEtaBefore[1]->Fill(negPt, neg->Eta());
+    fHistSingleParticleChi2Before[1]->Fill(negPt, chi2Neg);
+    fHistSingleParticleNclsTPCBefore[1]->Fill(negPt, nClsTPCNeg);
+    fHistSingleParticleNclsTPCFindableBefore[1]->Fill(negPt, nFindableNeg);
+    fHistSingleParticleNclsTPCRatioFindableBefore[1]->Fill(negPt,
+                                                           ratioFindableNeg);
+    fHistSingleParticleNcrossedTPCBefore[1]->Fill(negPt, nCrossedRowsNeg);
+    fHistSingleParticleDCAtoPVBefore[1]->Fill(negPt, dcaDaughterToPVNeg);
+  }
 
-  if (posDaughter->GetMother() != negDaughter->GetMother())
+  // DO THE CUTS
+  if (f2DArmenterosCut) {
+    const float maxPhotonAsymmetry = 0.95;
+    if (!(TMath::Power(armAlpha / maxPhotonAsymmetry, 2)
+        + TMath::Power(armQt / fQtMax, 2) < 1)) {
+      return false;
+    }
+  } else {
+    if (armQt > fQtMax) {
+      return false;
+    }
+  }
+  fHistCuts->Fill(3.f);
+
+  if (pt < fPhotonPtMin) {
     return false;
+  }
+  fHistCuts->Fill(4.f);
 
-  else if (posDaughter->GetMother() == -1)
+  if (TMath::Abs(eta) > fPhotonEtaMax) {
     return false;
+  }
+  fHistCuts->Fill(5.f);
 
-  if (pdgCode[0] != 11 || pdgCode[1] != 11)
-    return false;  // One Particle is not a electron
+  if (f2DPsiPairCut) {
+    if (!(TMath::Abs(psiPair)
+        < -fPsiPairMax / fChi2MaxFor2DPsiPair * PhotonCandidate->GetChi2perNDF()
+            + fPsiPairMax)) {
+      return false;
+    }
+  } else {
+    if (TMath::Abs(psiPair) > fPsiPairMax) {
+      return false;
+    }
+  }
+  fHistCuts->Fill(6.f);
 
-  if (posDaughter->PdgCode() == negDaughter->PdgCode())
-    return false;  // Same Charge
+  if (cosinePointingAngle < fCPAMin) {
+    return false;
+  }
+  fHistCuts->Fill(7.f);
 
-  AliMCParticle *Photon = static_cast<AliMCParticle *>(
-      fMCEvent->GetTrack(posDaughter->GetMother()));
-  if (Photon->PdgCode() != 22) return false;  // Mother is no Photon
+  if (DCAz > fDCAzMax) {
+    return false;
+  }
+  fHistCuts->Fill(8.f);
 
-  if (((posDaughter->GetUniqueID())) != 5 ||
-      ((negDaughter->GetUniqueID())) != 5)
-    return false;  // check if the daughters come from a conversion
+  if(DCAr > fDCArMax) {
+    return false;
+  }
+  fHistCuts->Fill(9.f);
 
+  if (posPt < fElectronPtMin || negPt < fElectronPtMin) {
+    return false;
+  }
+  fHistCuts->Fill(10.f);
+
+  if (TMath::Abs(posEta) > fElectronEtaMax
+      || TMath::Abs(negEta) > fElectronEtaMax) {
+    return false;
+  }
+  fHistCuts->Fill(11.f);
+
+  if (ratioFindableNeg < fElectronRatioFindable
+      || ratioFindablePos < fElectronRatioFindable) {
+    return false;
+  }
+  fHistCuts->Fill(12.f);
+
+  if (pidPos > fElectronNSigmaTPCMax || pidNeg > fElectronNSigmaTPCMax
+      || pidPos < fElectronNSigmaTPCMin || pidNeg < fElectronNSigmaTPCMin) {
+    return false;
+  }
+  fHistCuts->Fill(13.f);
+
+  if (fDoTransvRadRejection && transRadius > fTransvRadRejectionLow
+      && transRadius < fTransvRadRejectionUp) {
+    return false;
+  }
+  fHistCuts->Fill(14.f);
+
+  // AFTER THE CUTS
+  fHistV0MassPt->Fill(pt, invMass);
+
+  if (!fIsLightweight) {
+    fHistK0Mass->Fill(massK0);
+    fHistLambdaMass->Fill(massLambda);
+    fHistAntiLambdaMass->Fill(massAntiLambda);
+    fHistV0Pt->Fill(pt);
+    fHistV0Mass->Fill(invMass);
+    fHistCosPA->Fill(pt, cosinePointingAngle);
+    fHistEtaPhi->Fill(eta, phi);
+    fHistPsiPairAfter->Fill(pt, psiPair);
+    fHistDecayVertexXAfter->Fill(pt, conv[0]);
+    fHistDecayVertexYAfter->Fill(pt, conv[1]);
+    fHistDecayVertexZAfter->Fill(pt, conv[2]);
+    fHistTransverseRadiusAfter->Fill(pt, transRadius);
+    fHistCosPAAfter->Fill(pt, cosinePointingAngle);
+    fHistArmenterosAfter->Fill(armAlpha, armQt);
+
+    fHistDCArAfter->Fill(pt, DCAr);
+    fHistDCAzAfter->Fill(pt, DCAz);
+    fHistDCA->Fill(pt, DCA);
+    fHistDecayLength->Fill(pt, decayLength);
+
+    bool posTrackITS = (pos->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1)
+        || pos->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
+    bool negTrackITS = (neg->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1)
+        || neg->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
+    bool posTrackTOF = pos->GetTOFBunchCrossing() == 0;
+    bool negTrackTOF = neg->GetTOFBunchCrossing() == 0;
+
+    bool posTrackCombined = (posTrackITS || posTrackTOF);
+    bool negTrackCombined = (negTrackITS || negTrackTOF);
+
+    if (!fIsLightweight) {
+      if (posTrackITS)
+        fHistSingleParticlePileUp[0]->Fill(0.f, posPt);
+      if (posTrackTOF)
+        fHistSingleParticlePileUp[0]->Fill(1, posPt);
+      if (posTrackCombined)
+        fHistSingleParticlePileUp[0]->Fill(2, posPt);
+      if (!posTrackITS && !posTrackTOF)
+        fHistSingleParticlePileUp[0]->Fill(3, posPt);
+      if (negTrackITS)
+        fHistSingleParticlePileUp[1]->Fill(0.f, negPt);
+      if (negTrackTOF)
+        fHistSingleParticlePileUp[1]->Fill(1, negPt);
+      if (negTrackCombined)
+        fHistSingleParticlePileUp[1]->Fill(2, negPt);
+      if (!negTrackITS && !negTrackTOF)
+        fHistSingleParticlePileUp[1]->Fill(3, negPt);
+    }
+
+    fHistSingleParticlePt[0]->Fill(posPt);
+    fHistSingleParticleEtaAfter[0]->Fill(posPt, pos->Eta());
+    fHistSingleParticleChi2After[0]->Fill(posPt, chi2Pos);
+    fHistSingleParticleNclsTPCAfter[0]->Fill(posPt, nClsTPCPos);
+    fHistSingleParticleNclsTPCFindableAfter[0]->Fill(posPt, nFindablePos);
+    fHistSingleParticleNclsTPCRatioFindableAfter[0]->Fill(posPt,
+                                                          ratioFindablePos);
+    fHistSingleParticleNcrossedTPCAfter[0]->Fill(posPt, nCrossedRowsPos);
+    fHistSingleParticleDCAtoPVAfter[0]->Fill(posPt, dcaDaughterToPVPos);
+    fHistSingleParticlePID[0]->Fill(posPt, pidPos);
+
+    fHistSingleParticlePt[1]->Fill(negPt);
+    fHistSingleParticleEtaAfter[1]->Fill(negPt, neg->Eta());
+    fHistSingleParticleChi2After[1]->Fill(negPt, chi2Neg);
+    fHistSingleParticleNclsTPCAfter[1]->Fill(negPt, nClsTPCNeg);
+    fHistSingleParticleNclsTPCFindableAfter[1]->Fill(negPt, nFindableNeg);
+    fHistSingleParticleNclsTPCRatioFindableAfter[1]->Fill(negPt,
+                                                          ratioFindableNeg);
+    fHistSingleParticleNcrossedTPCAfter[1]->Fill(negPt, nCrossedRowsNeg);
+    fHistSingleParticleDCAtoPVAfter[1]->Fill(negPt, dcaDaughterToPVNeg);
+    fHistSingleParticlePID[1]->Fill(negPt, pidNeg);
+  }
+
+  //    if (fIsMC) {
+  //      int label = PhotonCandidate->GetMCParticleLabel(mcEvent);
+  //      if (label > 0) {
+  //        AliMCParticle *mcParticle =
+  //            static_cast<AliMCParticle *>(mcEvent->GetTrack(label));
+  //        if (mcParticle && mcParticle->PdgCode() == fPID) {
+  //          fHistMCV0Pt->Fill(v0->Pt());
+  //          const int pdgMother = static_cast<AliMCParticle *>(
+  //                                    mcEvent->GetTrack(mcParticle->GetMother()))
+  //                                    ->PdgCode();
+  //          fHistV0Mother->Fill(v0->Pt(), TMath::Abs(pdgMother));
+  //        }
+  //      }
+  //    }
   return true;
 }
 
-//____________________________________________________________________________________________________
-void AliSigma0PhotonCuts::InitCutHistograms() {
-  std::cout << "============================\n"
-            << " PHOTON CUT CONFIGURATION \n"
-            << " CPA min    " << fCosPA << "\n"
-            << " DCA r max  " << fDCAr << "\n"
-            << " DCA z max  " << fDCAz << "\n"
-            << " P max      " << fPmax << "\n"
-            << " Pt max     " << fPtmax << "\n"
-            << " Pt max ele " << fPtElemax << "\n"
-            << "============================\n";
-  TH1::AddDirectory(kFALSE);
+///________________________________________________________________________
+AliVTrack *AliSigma0PhotonCuts::GetTrack(AliVEvent * event, int label) {
+  //Returns pointer to the track with given ESD label
+  //(Important for AOD implementation, since Track array in AOD data is different
+  //from ESD array, but ESD tracklabels are stored in AOD Tracks)
 
+  if (label == -999999) {
+    return nullptr;  // if AOD relabelling goes wrong, immediately return NULL
+  }
+  AliVTrack *track;
+  if (AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data())
+      && ((AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask(
+          fV0ReaderName.Data()))->AreAODsRelabeled()) {
+    if (event->GetTrack(label)) {
+      track = dynamic_cast<AliVTrack*>(event->GetTrack(label));
+      return track;
+    }
+  } else {
+    for (Int_t ii = 0; ii < event->GetNumberOfTracks(); ii++) {
+      track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
+      if (track && track->GetID() == label) {
+        return track;
+      }
+    }
+  }
+  return nullptr;
+}
+
+//____________________________________________________________________________________________________
+float AliSigma0PhotonCuts::ComputeInvMass(AliAODv0 *v0, AliVTrack *pos,
+                                          AliVTrack *neg, int pdgPos,
+                                          int pgdNeg) const {
+  double posP[3], negP[3];
+  pos->GetPxPyPz(posP);
+  neg->GetPxPyPz(negP);
+  float massDP = TDatabasePDG::Instance()->GetParticle(pdgPos)->Mass();
+  float massDN = TDatabasePDG::Instance()->GetParticle(pgdNeg)->Mass();
+  TLorentzVector trackPos, trackNeg;
+  trackPos.SetXYZM(posP[0], posP[1], posP[2], massDP);
+  trackNeg.SetXYZM(negP[0], negP[1], negP[2], massDN);
+  TLorentzVector trackSum = trackPos + trackNeg;
+  return trackSum.M();
+}
+
+//____________________________________________________________________________________________________
+void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
+  const float pi = TMath::Pi();
+
+  TH1::AddDirectory(kFALSE);
+  TString name;
   if (fHistograms != nullptr) {
     delete fHistograms;
     fHistograms = nullptr;
@@ -620,402 +614,449 @@ void AliSigma0PhotonCuts::InitCutHistograms() {
   if (fHistograms == nullptr) {
     fHistograms = new TList();
     fHistograms->SetOwner(kTRUE);
-    fHistograms->SetName("PhotonCut_QA");
+    name = "V0_" + appendix;
+    fHistograms->SetName(name);
   }
 
-  // V0Reader QA
-  fV0Reader =
-      (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
-          fV0ReaderName.Data());
-  if (!fV0Reader) {
-    std::cout << "Error: No V0 Reader \n";
-    return;
-  }
+  if (!fIsLightweight) {
+    if (fHistogramsPos != nullptr) {
+      delete fHistogramsPos;
+      fHistogramsPos = nullptr;
+    }
+    if (fHistogramsPos == nullptr) {
+      fHistogramsPos = new TList();
+      fHistogramsPos->SetOwner(kTRUE);
+      fHistogramsPos->SetName("V0_PosDaughter");
+    }
 
-  if (fV0Reader) {
-    if ((AliConversionPhotonCuts *)fV0Reader->GetConversionCuts() &&
-        ((AliConversionPhotonCuts *)fV0Reader->GetConversionCuts())
-            ->GetCutHistograms()) {
-      fHistograms->Add(
-          ((AliConversionPhotonCuts *)fV0Reader->GetConversionCuts())
-              ->GetCutHistograms());
+    if (fHistogramsNeg != nullptr) {
+      delete fHistogramsNeg;
+      fHistogramsNeg = nullptr;
     }
-    if ((AliConvEventCuts *)fV0Reader->GetEventCuts() &&
-        ((AliConvEventCuts *)fV0Reader->GetEventCuts())->GetCutHistograms()) {
-      fHistograms->Add(
-          ((AliConvEventCuts *)fV0Reader->GetEventCuts())->GetCutHistograms());
-    }
-    if (fV0Reader->GetProduceV0FindingEfficiency() &&
-        fV0Reader->GetV0FindingEfficiencyHistograms()) {
-      fHistograms->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
-    }
-    if (fV0Reader->GetProduceImpactParamHistograms()) {
-      fHistograms->Add(fV0Reader->GetImpactParamHistograms());
+    if (fHistogramsNeg == nullptr) {
+      fHistogramsNeg = new TList();
+      fHistogramsNeg->SetOwner(kTRUE);
+      fHistogramsNeg->SetName("V0_NegDaughter");
     }
   }
 
-  fHistCuts = new TProfile("fHistCuts", ";;Cut value", 10, 0, 10);
-  fHistCuts->GetXaxis()->SetBinLabel(1, "DCAr max");
-  fHistCuts->GetXaxis()->SetBinLabel(2, "DCAz max");
-  fHistCuts->GetXaxis()->SetBinLabel(3, "cos#alpha min");
-  fHistCuts->GetXaxis()->SetBinLabel(4, "#it{p} max");
-  fHistCuts->GetXaxis()->SetBinLabel(5, "#it{p}_{T, #gamma} max");
-  fHistCuts->GetXaxis()->SetBinLabel(6, "#it{p}_{T, e^{-}} max");
+  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 16, 0, 16);
+  fHistCutBooking->GetXaxis()->SetBinLabel(1, "2-D Armenteros");
+  fHistCutBooking->GetXaxis()->SetBinLabel(2, "#it{q}_{T} max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(3, "#it{p}_{T} min");
+  fHistCutBooking->GetXaxis()->SetBinLabel(4, "#eta max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(5, "2-D #Psi_{pair} - #chi^{2}");
+  fHistCutBooking->GetXaxis()->SetBinLabel(6, "#Psi_{pair} max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(7, "#chi^{2} max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(8, "Electron #it{p}_{T} min");
+  fHistCutBooking->GetXaxis()->SetBinLabel(9, "Electron #eta max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(10, "Electron ratio findable");
+  fHistCutBooking->GetXaxis()->SetBinLabel(11, "n#sigma TPC max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(12, "n#sigma TPC min");
+  fHistCutBooking->GetXaxis()->SetBinLabel(13, "DCA_{z} max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(14, "DCA_{r} max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(15, "Transv. radius rej. low");
+  fHistCutBooking->GetXaxis()->SetBinLabel(16, "Transv. radius rej. up");
+  fHistograms->Add(fHistCutBooking);
+
+  fHistCutBooking->Fill(0.f, static_cast<double>(f2DArmenterosCut));
+  fHistCutBooking->Fill(1.f, fQtMax);
+  fHistCutBooking->Fill(2.f, fPhotonPtMin);
+  fHistCutBooking->Fill(3.f, fPhotonEtaMax);
+  fHistCutBooking->Fill(4.f, static_cast<double>(f2DPsiPairCut));
+  fHistCutBooking->Fill(5.f, fPsiPairMax);
+  fHistCutBooking->Fill(6.f, fChi2MaxFor2DPsiPair);
+  fHistCutBooking->Fill(7.f, fElectronPtMin);
+  fHistCutBooking->Fill(8.f, fElectronEtaMax);
+  fHistCutBooking->Fill(9.f, fElectronRatioFindable);
+  fHistCutBooking->Fill(10.f, fElectronNSigmaTPCMax);
+  fHistCutBooking->Fill(11.f, fElectronNSigmaTPCMin);
+  fHistCutBooking->Fill(12.f, fDCAzMax);
+  fHistCutBooking->Fill(13.f, fDCArMax);
+  fHistCutBooking->Fill(14.f, fTransvRadRejectionLow);
+  fHistCutBooking->Fill(15.f, fTransvRadRejectionUp);
+
+  fHistV0MassPt = new TH2F(
+      "InvMassPt", "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
+      100, 0, 10, 100, 0., .1);
+  fHistograms->Add(fHistV0MassPt);
+
+  fHistNV0 = new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 15, 0,
+                      15);
+  fHistograms->Add(fHistNV0);
+
+  fHistCuts = new TH1F("fHistCuts", ";;Entries", 15, 0, 15);
+  fHistCuts->GetXaxis()->SetBinLabel(1, "Photon candidates");
+  fHistCuts->GetXaxis()->SetBinLabel(2, "V_{0} Matching");
+  fHistCuts->GetXaxis()->SetBinLabel(3, "Track Matching");
+  fHistCuts->GetXaxis()->SetBinLabel(4, "Armenteros");
+  fHistCuts->GetXaxis()->SetBinLabel(5, "#it{p}_{T} min");
+  fHistCuts->GetXaxis()->SetBinLabel(6, "#eta max");
+  fHistCuts->GetXaxis()->SetBinLabel(7, "#Psi_{pair}");
+  fHistCuts->GetXaxis()->SetBinLabel(8, "cos#alpha");
+  fHistCuts->GetXaxis()->SetBinLabel(9, "DCA_{z}");
+  fHistCuts->GetXaxis()->SetBinLabel(10, "DCA_{r}");
+  fHistCuts->GetXaxis()->SetBinLabel(11, "Electron #it{p}_{T} min");
+  fHistCuts->GetXaxis()->SetBinLabel(12, "Electron #eta max");
+  fHistCuts->GetXaxis()->SetBinLabel(13, "Electron ratio findable");
+  fHistCuts->GetXaxis()->SetBinLabel(14, "n#sigma TPC");
+  fHistCuts->GetXaxis()->SetBinLabel(15, "Transverse radius rejection");
   fHistograms->Add(fHistCuts);
 
-  fHistCuts->Fill(0.f, fDCAr);
-  fHistCuts->Fill(1.f, fDCAz);
-  fHistCuts->Fill(2.f, fCosPA);
-  fHistCuts->Fill(3.f, fPmax);
-  fHistCuts->Fill(4.f, fPtmax);
-  fHistCuts->Fill(5.f, fPtElemax);
+  if (!fIsLightweight) {
+    fHistLambdaMass = new TH1F(
+        "fHistLambdaMass",
+        "; Invariant mass p#pi^{-} hypothesis (GeV/#it{c}^{2}); Entries", 125,
+        1., 1.25);
+    fHistograms->Add(fHistLambdaMass);
 
-  fHistPhotonCuts = new TH1F("fHistPhotonCuts", ";;Entries", 10, 0, 10);
-  fHistPhotonCuts->GetXaxis()->SetBinLabel(1, "#gamma");
-  fHistPhotonCuts->GetXaxis()->SetBinLabel(2, "DCAr");
-  fHistPhotonCuts->GetXaxis()->SetBinLabel(3, "DCAz");
-  fHistPhotonCuts->GetXaxis()->SetBinLabel(4, "cos#alpha");
-  fHistPhotonCuts->GetXaxis()->SetBinLabel(5, "#it{p}");
-  fHistPhotonCuts->GetXaxis()->SetBinLabel(6, "#it{p}_{T, #gamma} max");
-  fHistPhotonCuts->GetXaxis()->SetBinLabel(7, "#it{p}_{T, e^{-}} max");
-  fHistograms->Add(fHistPhotonCuts);
+    fHistAntiLambdaMass = new TH1F(
+        "fHistAntiLambdaMass",
+        "; Invariant mass #bar{p}#pi hypothesis (GeV/#it{c}^{2}); Entries", 125,
+        1., 1.25);
+    fHistograms->Add(fHistAntiLambdaMass);
 
-  fHistNPhoton =
-      new TH1F("fHistNPhoton", "; # #gamma per event; Entries", 50, 0, 50);
-  fHistPhotonPt = new TH1F("fHistPhotonPt",
-                           "; #it{p}_{T} [GeV/#it{c}]; Entries", 500, 0, 10);
-  fHistPhotonP =
-      new TH1F("fHistPhotonP", "; #it{p} [GeV/#it{c}]; Entries", 500, 0, 10);
-  fHistPhotonInvMass =
-      new TH1F("fHistPhotonInvMass",
-               "; Invariant mass [GeV/#it{c}^{2}]; Entries", 500, 0, 1);
-  fHistPhotonInvMassPt =
-      new TH2F("fHistPhotonInvMassPt",
-               "; #it{p}_{T} [GeV/#it{c}]; Invariant mass [GeV/#it{c}^{2}]",
-               500, 0, 10, 500, 0, 1);
-  fHistPhotonInvMassEta =
-      new TH2F("fHistPhotonInvMassEta",
-               "; #eta; Invariant mass [GeV/#it{c}^{2}]", 500, 0, 2, 500, 0, 1);
-  fHistPhotonCPAPt =
-      new TH2F("fHistPhotonCPAPt", "; #it{p}_{T} [GeV/#it{c}]; cos#alpha", 500,
-               0, 10, 500, 0.5, 1);
-  fHistPhotonR =
-      new TH2F("fHistPhotonR", "; #it{p}_{T} [GeV/#it{c}]; Conversion radius",
-               500, 0, 10, 500, 0, 200);
-  fHistPhotonArm =
-      new TH2F("fHistPhotonArm", "; #alpha; #it{q}_{T} [GeV/#it{c}]", 500, -1,
-               1, 500, 0, 1);
-  fHistPhotonDCAz =
-      new TH1F("fHistPhotonDCAz", "; DCA z [cm]; Entries", 500, -25, 25);
-  fHistPhotonDCAr =
-      new TH1F("fHistPhotonDCAr", "; DCA r [cm]; Entries", 500, 0, 25);
-  fHistPhotonEtaPhi = new TH2F("fHistPhotonEtaPhi", "; #eta; #phi", 200, -1, 1,
-                               200, 0, 2 * TMath::Pi());
-  fHistPhotonConvPointX = new TH1F(
-      "fHistPhotonConvPointX", "; conv. point x [cm]; Entries", 500, -200, 200);
-  fHistPhotonConvPointY = new TH1F(
-      "fHistPhotonConvPointY", "; conv. point x [cm]; Entries", 500, -200, 200);
-  fHistPhotonConvPointZ = new TH1F(
-      "fHistPhotonConvPointZ", "; conv. point x [cm]; Entries", 500, -200, 200);
-  fHistPhotonEleP =
-      new TH1F("fHistPhotonEleP", "; #it{p} [GeV/#it{c}]; Entries", 500, 0, 10);
-  fHistPhotonElePt = new TH1F("fHistPhotonElePt",
-                              "; #it{p}_{T} [GeV/#it{c}]; Entries", 500, 0, 10);
+    fHistK0Mass = new TH1F(
+        "fHistK0Mass",
+        "; Invariant mass #pi#pi hypothesis (GeV/#it{c}^{2}); Entries", 125,
+        0.4, 0.65);
+    fHistograms->Add(fHistK0Mass);
 
-  fHistPhotonEleNsigmaTPC = new TH2F("fHistPhotonEleNsigmaTPC",
-                                     "; #it{p} [GeV/#it{c}]; n_{#sigma} TPC",
-                                     500, 0, 10, 500, -10, 10);
-  fHistPhotonEleNsigmaTPCPion = new TH2F(
-      "fHistPhotonEleNsigmaTPCPion", "; #it{p} [GeV/#it{c}]; n_{#sigma} TPC",
-      500, 0, 10, 500, -10, 10);
-  fHistPhotonEleTPCsignal = new TH2F("fHistPhotonEleTPCsignal",
-                                     "; p [GeV/#it{c}];  TPC d#it{E}/d#it{x}",
-                                     500, 0, 5, 500, 0, 200);
+    fHistV0Pt = new TH1F("fHistV0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries", 100,
+                         0, 10);
+    fHistograms->Add(fHistV0Pt);
 
-  fHistTwoPhotonPt =
-      new TH1F("fHistTwoPhotonPt",
-               "; #it{p}_{T} #gamma#gamma [GeV/#it{c}]; Entries", 500, 0, 10);
-  fHistTwoPhotonP =
-      new TH1F("fHistTwoPhotonP", "; #it{p} #gamma#gamma [GeV/#it{c}]; Entries",
-               500, 0, 10);
-  fHistTwoPhotonInvMass = new TH1F(
-      "fHistTwoPhotonInvMass",
-      "; Invariant mass #gamma#gamma [GeV/#it{c}^{2}]; Entries", 500, 0, 1);
-  fHistTwoPhotonInvMassPt = new TH2F(
-      "fHistTwoPhotonInvMassPt",
-      "; #it{p}_{T} #gamma#gamma [GeV/#it{c}]; Invariant mass [GeV/#it{c}^{2}]",
-      500, 0, 10, 500, 0, 1);
-  fHistTwoPhotonInvMassEta =
-      new TH2F("fHistTwoPhotonInvMassEta",
-               "; #eta; Invariant mass #gamma#gamma [GeV/#it{c}^{2}]", 500, 0,
-               2, 500, 0, 1);
+    fHistV0Mass = new TH1F("fHistV0Mass",
+                           "; Invariant mass (GeV/#it{c}^{2}); Entries", 200,
+                           0., 0.2);
+    fHistograms->Add(fHistV0Mass);
 
-  fHistograms->Add(fHistNPhoton);
-  fHistograms->Add(fHistPhotonPt);
-  fHistograms->Add(fHistPhotonP);
-  fHistograms->Add(fHistPhotonInvMass);
-  fHistograms->Add(fHistPhotonInvMassPt);
-  fHistograms->Add(fHistPhotonInvMassEta);
-  fHistograms->Add(fHistPhotonCPAPt);
-  fHistograms->Add(fHistPhotonR);
-  fHistograms->Add(fHistPhotonArm);
-  fHistograms->Add(fHistPhotonDCAz);
-  fHistograms->Add(fHistPhotonDCAr);
-  fHistograms->Add(fHistPhotonEleP);
-  fHistograms->Add(fHistPhotonElePt);
-  fHistograms->Add(fHistPhotonEtaPhi);
-  fHistograms->Add(fHistPhotonConvPointX);
-  fHistograms->Add(fHistPhotonConvPointY);
-  fHistograms->Add(fHistPhotonConvPointZ);
-  fHistograms->Add(fHistPhotonEleNsigmaTPC);
-  fHistograms->Add(fHistPhotonEleNsigmaTPCPion);
-  fHistograms->Add(fHistPhotonEleTPCsignal);
-  fHistograms->Add(fHistTwoPhotonPt);
-  fHistograms->Add(fHistTwoPhotonP);
-  fHistograms->Add(fHistTwoPhotonInvMass);
-  fHistograms->Add(fHistTwoPhotonInvMassPt);
-  fHistograms->Add(fHistTwoPhotonInvMassEta);
+    fHistCosPA = new TH2F("fHistCosPA",
+                          "; #it{p}_{T} (GeV/#it{c}); cos(#alpha)", 100, 0, 10,
+                          100, 0.95, 1);
+    fHistograms->Add(fHistCosPA);
 
-  if (fIsMC) {
-    if (fHistogramsMC != nullptr) {
-      delete fHistogramsMC;
-      fHistogramsMC = nullptr;
+    fHistEtaPhi = new TH2F("fHistEtaPhi", "; #eta; #phi", 100, -1, 1, 100, 0,
+                           2 * pi);
+    fHistograms->Add(fHistEtaPhi);
+
+    fHistSingleParticleCuts[0] = new TH1F("fHistSingleParticleCuts_pos",
+                                          ";;Entries", 11, 0, 11);
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(1, "Daughter tracks");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(2, "#eta");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(3, "#chi^{2}");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(4, "nCls TPC");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(5, "nCrossed Rows TPC");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(6,
+                                                        "Ratio Findable TPC");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(7, "nCls Findable");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(8, "nCls Shared max");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(9,
+                                                        "Daughter DCA to PV");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(10, "TPC refit");
+    fHistSingleParticleCuts[0]->GetXaxis()->SetBinLabel(11, "Kink");
+    fHistogramsPos->Add(fHistSingleParticleCuts[0]);
+
+    fHistSingleParticleCuts[1] = new TH1F("fHistSingleParticleCuts_neg",
+                                          ";;Entries", 11, 0, 11);
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(1, "Daughter tracks");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(2, "#eta");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(3, "#chi^{2}");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(4, "nCls TPC");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(5, "nCrossed Rows TPC");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(6,
+                                                        "Ratio Findable TPC");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(7, "nCls Findable");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(8, "nCls Shared max");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(9,
+                                                        "Daughter DCA to PV");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(10, "TPC refit");
+    fHistSingleParticleCuts[1]->GetXaxis()->SetBinLabel(11, "Kink");
+    fHistogramsNeg->Add(fHistSingleParticleCuts[1]);
+
+    if (fHistogramsBefore != nullptr) {
+      delete fHistogramsBefore;
+      fHistogramsBefore = nullptr;
     }
-    if (fHistogramsMC == nullptr) {
-      fHistogramsMC = new TList();
-      fHistogramsMC->SetOwner(kTRUE);
-      fHistogramsMC->SetName("PhotonCut_MC");
+    if (fHistogramsBefore == nullptr) {
+      fHistogramsBefore = new TList();
+      fHistogramsBefore->SetOwner(kTRUE);
+      fHistogramsBefore->SetName("Before");
     }
 
-    fHistMCRecSigma0PhotonPt =
-        new TH1F("fHistMCRecSigma0PhotonPt",
-                 "; #it{p}_{T} [GeV/#it{c}]; Entries", 500, 0, 10);
-    fHistMCRecSigma0PhotonP =
-        new TH1F("fHistMCRecSigma0PhotonP", "; #it{p} [GeV/#it{c}]; Entries",
-                 500, 0, 10);
-    fHistMCRecSigma0PhotonInvMass =
-        new TH1F("fHistMCRecSigma0PhotonInvMass",
-                 "; Invariant mass [GeV/#it{c}^{2}]; Entries", 500, 0, 1);
-    fHistMCRecSigma0PhotonInvMassPt =
-        new TH2F("fHistMCRecSigma0PhotonInvMassPt",
-                 "; #it{p}_{T} [GeV/#it{c}]; Invariant mass [GeV/#it{c}^{2}]",
-                 500, 0, 10, 500, 0, 1);
-    fHistMCRecSigma0PhotonInvMassEta = new TH2F(
-        "fHistMCRecSigma0PhotonInvMassEta",
-        "; #eta; Invariant mass [GeV/#it{c}^{2}]", 500, 0, 2, 500, 0, 1);
-    fHistMCRecSigma0PhotonR =
-        new TH2F("fHistMCRecSigma0PhotonR",
-                 "; #it{p}_{T} [GeV/#it{c}]; Conversion radius", 500, 0, 10,
-                 500, 0, 200);
-    fHistMCRecSigma0PhotonArm =
-        new TH2F("fHistMCRecSigma0PhotonArm",
-                 "; #alpha; #it{q}_{T} [GeV/#it{c}]", 500, -1, 1, 500, 0, 1);
-    fHistMCRecSigma0PhotonDCAz = new TH1F(
-        "fHistMCRecSigma0PhotonDCAz", "; DCA z [cm]; Entries", 500, -25, 25);
-    fHistMCRecSigma0PhotonDCAr = new TH1F("fHistMCRecSigma0PhotonDCAr",
-                                          "; DCA r [cm]; Entries", 500, 0, 25);
-    fHistMCRecSigma0PhotonConvPointX =
-        new TH1F("fHistMCRecSigma0PhotonConvPointX",
-                 "; conv. point x [cm]; Entries", 500, -200, 200);
-    fHistMCRecSigma0PhotonConvPointY =
-        new TH1F("fHistMCRecSigma0PhotonConvPointY",
-                 "; conv. point x [cm]; Entries", 500, -200, 200);
-    fHistMCRecSigma0PhotonConvPointZ =
-        new TH1F("fHistMCRecSigma0PhotonConvPointZ",
-                 "; conv. point x [cm]; Entries", 500, -200, 200);
-    fHistMCRecSigma0PhotonEleP =
-        new TH1F("fHistMCRecSigma0PhotonEleP", "; #it{p} [GeV/#it{c}]; Entries",
-                 500, 0, 10);
-    fHistMCRecSigma0PhotonElePt =
-        new TH1F("fHistMCRecSigma0PhotonElePt",
-                 "; #it{p}_{T} [GeV/#it{c}]; Entries", 500, 0, 10);
-    fHistMCRecSigma0CPAPt = new TH2F("fHistMCRecSigma0CPAPt",
-                                     "; #it{p}_{T} [GeV/#it{c}]; cos#alpha",
-                                     500, 0, 10, 500, 0.5, 1);
-    fHistMCRecSigma0PhotonDCAzPt = new TH2F(
-        "fHistMCRecSigma0PhotonDCAzPt", "; #it{p}_{T} [GeV/#it{c}]; DCA z [cm]",
-        500, 0, 10, 500, -25, 25);
-    fHistMCRecSigma0PhotonDCArPt = new TH2F(
-        "fHistMCRecSigma0PhotonDCArPt", "; #it{p}_{T} [GeV/#it{c}]; DCA r [cm]",
-        500, 0, 10, 500, 0, 25);
-    fHistMCRecSigma0PhotonPsiPairPt = new TH2F(
-        "fHistMCRecSigma0PhotonPsiPairPt",
-        "; #it{p}_{T} [GeV/#it{c}]; #Psi_{pair}", 500, 0, 10, 500, 0, 5);
-    fHistMCRecSigma0PhotonChi2Pt = new TH2F(
-        "fHistMCRecSigma0PhotonChi2Pt", "; #it{p}_{T} [GeV/#it{c}]; #chi^{2}",
-        500, 0, 10, 500, 0, 100);
+    if (fHistogramsAfter != nullptr) {
+      delete fHistogramsAfter;
+      fHistogramsAfter = nullptr;
+    }
+    if (fHistogramsAfter == nullptr) {
+      fHistogramsAfter = new TList();
+      fHistogramsAfter->SetOwner(kTRUE);
+      fHistogramsAfter->SetName("After");
+    }
 
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonPt);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonP);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonInvMass);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonInvMassPt);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonInvMassEta);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonR);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonArm);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonDCAz);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonDCAr);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonConvPointX);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonConvPointY);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonConvPointZ);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonEleP);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonElePt);
-    fHistogramsMC->Add(fHistMCRecSigma0CPAPt);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonDCAzPt);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonDCArPt);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonPsiPairPt);
-    fHistogramsMC->Add(fHistMCRecSigma0PhotonChi2Pt);
+    fHistDecayVertexXBefore = new TH2F(
+        "fHistDecayVertexXBefore",
+        "; #it{p}_{T} (GeV/#it{c}); Decay vertex x (cm)", 50, 0, 10, 200, 0,
+        200);
+    fHistogramsBefore->Add(fHistDecayVertexXBefore);
 
-    fHistMCFakeSigma0PhotonPt =
-        new TH1F("fHistMCFakeSigma0PhotonPt",
-                 "; #it{p}_{T} [GeV/#it{c}]; Entries", 500, 0, 10);
-    fHistMCFakeSigma0PhotonP =
-        new TH1F("fHistMCFakeSigma0PhotonP", "; #it{p} [GeV/#it{c}]; Entries",
-                 500, 0, 10);
-    fHistMCFakeSigma0PhotonInvMass =
-        new TH1F("fHistMCFakeSigma0PhotonInvMass",
-                 "; Invariant mass [GeV/#it{c}^{2}]; Entries", 5000, 0, 1);
-    fHistMCFakeSigma0PhotonInvMassPt =
-        new TH2F("fHistMCFakeSigma0PhotonInvMassPt",
-                 "; #it{p}_{T} [GeV/#it{c}]; Invariant mass [GeV/#it{c}^{2}]",
-                 500, 0, 5, 500, 0, 1);
-    fHistMCFakeSigma0PhotonInvMassEta = new TH2F(
-        "fHistMCFakeSigma0PhotonInvMassEta",
-        "; #eta; Invariant mass [GeV/#it{c}^{2}]", 500, 0, 2, 500, 0, 1);
-    fHistMCFakeSigma0PhotonR = new TH2F(
-        "fHistMCFakeSigma0PhotonR",
-        "; #it{p}_{T} [GeV/#it{c}]; Conversion radius", 500, 0, 5, 500, 0, 200);
-    fHistMCFakeSigma0PhotonArm =
-        new TH2F("fHistMCFakeSigma0PhotonArm",
-                 "; #alpha; #it{q}_{T} [GeV/#it{c}]", 500, -1, 1, 500, 0, 1);
-    fHistMCFakeSigma0PhotonDCAz = new TH1F(
-        "fHistMCFakeSigma0PhotonDCAz", "; DCA z [cm]; Entries", 500, -25, 25);
-    fHistMCFakeSigma0PhotonDCAr = new TH1F("fHistMCFakeSigma0PhotonDCAr",
-                                           "; DCA r [cm]; Entries", 500, 0, 25);
-    fHistMCFakeSigma0PhotonConvPointX =
-        new TH1F("fHistMCFakeSigma0PhotonConvPointX",
-                 "; conv. point x [cm]; Entries", 500, -200, 200);
-    fHistMCFakeSigma0PhotonConvPointY =
-        new TH1F("fHistMCFakeSigma0PhotonConvPointY",
-                 "; conv. point x [cm]; Entries", 500, -200, 200);
-    fHistMCFakeSigma0PhotonConvPointZ =
-        new TH1F("fHistMCFakeSigma0PhotonConvPointZ",
-                 "; conv. point x [cm]; Entries", 500, -200, 200);
-    fHistMCFakeSigma0PhotonEleP =
-        new TH1F("fHistMCFakeSigma0PhotonEleP",
-                 "; #it{p} [GeV/#it{c}]; Entries", 500, 0, 10);
-    fHistMCFakeSigma0PhotonElePt =
-        new TH1F("fHistMCFakeSigma0PhotonElePt",
-                 "; #it{p}_{T} [GeV/#it{c}]; Entries", 500, 0, 10);
-    fHistMCFakeSigma0CPAPt = new TH2F("fHistMCFakeSigma0CPAPt",
-                                      "; #it{p}_{T} [GeV/#it{c}]; cos#alpha",
-                                      500, 0, 10, 500, 0.5, 1);
-    fHistMCFakeSigma0PhotonDCAzPt = new TH2F(
-        "fHistMCFakeSigma0PhotonDCAzPt",
-        "; #it{p}_{T} [GeV/#it{c}]; DCA z [cm]", 500, 0, 10, 500, -25, 25);
-    fHistMCFakeSigma0PhotonDCArPt = new TH2F(
-        "fHistMCFakeSigma0PhotonDCArPt",
-        "; #it{p}_{T} [GeV/#it{c}]; DCA r [cm]", 500, 0, 10, 500, 0, 25);
-    fHistMCFakeSigma0PhotonPsiPairPt = new TH2F(
-        "fHistMCFakeSigma0PhotonPsiPairPt",
-        "; #it{p}_{T} [GeV/#it{c}]; #Psi_{pair}", 500, 0, 10, 500, 0, 5);
-    fHistMCFakeSigma0PhotonChi2Pt = new TH2F(
-        "fHistMCFakeSigma0PhotonChi2Pt", "; #it{p}_{T} [GeV/#it{c}]; #chi^{2}",
-        500, 0, 10, 500, 0, 100);
+    fHistDecayVertexYBefore = new TH2F(
+        "fHistDecayVertexYBefore",
+        "; #it{p}_{T} (GeV/#it{c}); Decay vertex y (cm)", 50, 0, 10, 200, 0,
+        200);
+    fHistogramsBefore->Add(fHistDecayVertexYBefore);
 
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonPt);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonP);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonInvMass);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonInvMassPt);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonInvMassEta);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonR);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonArm);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonDCAz);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonDCAr);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonConvPointX);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonConvPointY);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonConvPointZ);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonEleP);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonElePt);
-    fHistogramsMC->Add(fHistMCFakeSigma0CPAPt);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonDCAzPt);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonDCArPt);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonPsiPairPt);
-    fHistogramsMC->Add(fHistMCFakeSigma0PhotonChi2Pt);
+    fHistDecayVertexZBefore = new TH2F(
+        "fHistDecayVertexZBefore",
+        "; #it{p}_{T} (GeV/#it{c}); Decay vertex z (cm)", 50, 0, 10, 200, 0,
+        200);
+    fHistogramsBefore->Add(fHistDecayVertexZBefore);
 
-    fHistMCFakePhotonPt =
-        new TH1F("fHistMCFakePhotonPt", "; #it{p}_{T} [GeV/#it{c}]; Entries",
-                 500, 0, 10);
-    fHistMCFakePhotonP = new TH1F("fHistMCFakePhotonP",
-                                  "; #it{p} [GeV/#it{c}]; Entries", 500, 0, 10);
-    fHistMCFakePhotonInvMass =
-        new TH1F("fHistMCFakePhotonInvMass",
-                 "; Invariant mass [GeV/#it{c}^{2}]; Entries", 5000, 0, 1);
-    fHistMCFakePhotonInvMassPt =
-        new TH2F("fHistMCFakePhotonInvMassPt",
-                 "; #it{p}_{T} [GeV/#it{c}]; Invariant mass [GeV/#it{c}^{2}]",
-                 500, 0, 5, 500, 0, 1);
-    fHistMCFakePhotonInvMassEta = new TH2F(
-        "fHistMCFakePhotonInvMassEta",
-        "; #eta; Invariant mass [GeV/#it{c}^{2}]", 500, 0, 2, 500, 0, 1);
-    fHistMCFakePhotonR = new TH2F(
-        "fHistMCFakePhotonR", "; #it{p}_{T} [GeV/#it{c}]; Conversion radius",
-        500, 0, 5, 500, 0, 200);
-    fHistMCFakePhotonArm =
-        new TH2F("fHistMCFakePhotonArm", "; #alpha; #it{q}_{T} [GeV/#it{c}]",
-                 500, -1, 1, 500, 0, 1);
-    fHistMCFakePhotonDCAz = new TH1F("fHistMCFakePhotonDCAz",
-                                     "; DCA z [cm]; Entries", 500, -25, 25);
-    fHistMCFakePhotonDCAr =
-        new TH1F("fHistMCFakePhotonDCAr", "; DCA r [cm]; Entries", 500, 0, 25);
-    fHistMCFakePhotonConvPointX =
-        new TH1F("fHistMCFakePhotonConvPointX", "; conv. point x [cm]; Entries",
-                 500, -200, 200);
-    fHistMCFakePhotonConvPointY =
-        new TH1F("fHistMCFakePhotonConvPointY", "; conv. point x [cm]; Entries",
-                 500, -200, 200);
-    fHistMCFakePhotonConvPointZ =
-        new TH1F("fHistMCFakePhotonConvPointZ", "; conv. point x [cm]; Entries",
-                 500, -200, 200);
-    fHistMCFakePhotonEleP = new TH1F(
-        "fHistMCFakePhotonEleP", "; #it{p} [GeV/#it{c}]; Entries", 500, 0, 10);
-    fHistMCFakePhotonElePt =
-        new TH1F("fHistMCFakePhotonElePt", "; #it{p}_{T} [GeV/#it{c}]; Entries",
-                 500, 0, 10);
-    fHistMCFakePhotonCPAPt = new TH2F("fHistMCFakePhotonCPAPt",
-                                      "; #it{p}_{T} [GeV/#it{c}]; cos#alpha",
-                                      500, 0, 10, 500, 0.5, 1);
-    fHistMCFakePhotonDCAzPt = new TH2F("fHistMCFakePhotonDCAzPt",
-                                       "; #it{p}_{T} [GeV/#it{c}]; DCA z [cm]",
-                                       500, 0, 10, 500, -25, 25);
-    fHistMCFakePhotonDCArPt = new TH2F("fHistMCFakePhotonDCArPt",
-                                       "; #it{p}_{T} [GeV/#it{c}]; DCA r [cm]",
-                                       500, 0, 10, 500, 0, 25);
-    fHistMCFakePhotonPsiPairPt = new TH2F(
-        "fHistMCFakePhotonPsiPairPt", "; #it{p}_{T} [GeV/#it{c}]; #Psi_{pair}",
-        500, 0, 10, 500, 0, 5);
-    fHistMCFakePhotonChi2Pt = new TH2F("fHistMCFakePhotonChi2Pt",
-                                       "; #it{p}_{T} [GeV/#it{c}]; #chi^{2}",
-                                       500, 0, 10, 500, 0, 100);
-    fHistogramsMC->Add(fHistMCFakePhotonPt);
-    fHistogramsMC->Add(fHistMCFakePhotonP);
-    fHistogramsMC->Add(fHistMCFakePhotonInvMass);
-    fHistogramsMC->Add(fHistMCFakePhotonInvMassPt);
-    fHistogramsMC->Add(fHistMCFakePhotonInvMassEta);
-    fHistogramsMC->Add(fHistMCFakePhotonR);
-    fHistogramsMC->Add(fHistMCFakePhotonArm);
-    fHistogramsMC->Add(fHistMCFakePhotonDCAz);
-    fHistogramsMC->Add(fHistMCFakePhotonDCAr);
-    fHistogramsMC->Add(fHistMCFakePhotonConvPointX);
-    fHistogramsMC->Add(fHistMCFakePhotonConvPointY);
-    fHistogramsMC->Add(fHistMCFakePhotonConvPointZ);
-    fHistogramsMC->Add(fHistMCFakePhotonEleP);
-    fHistogramsMC->Add(fHistMCFakePhotonElePt);
-    fHistogramsMC->Add(fHistMCFakePhotonCPAPt);
-    fHistogramsMC->Add(fHistMCFakePhotonDCAzPt);
-    fHistogramsMC->Add(fHistMCFakePhotonDCArPt);
-    fHistogramsMC->Add(fHistMCFakePhotonPsiPairPt);
-    fHistogramsMC->Add(fHistMCFakePhotonChi2Pt);
+    fHistDecayVertexXAfter = new TH2F(
+        "fHistDecayVertexXAfter",
+        "; #it{p}_{T} (GeV/#it{c}); Decay vertex x (cm)", 50, 0, 10, 200, 0,
+        200);
+    fHistogramsAfter->Add(fHistDecayVertexXAfter);
 
-    fHistograms->Add(fHistogramsMC);
+    fHistDecayVertexYAfter = new TH2F(
+        "fHistDecayVertexYAfter",
+        "; #it{p}_{T} (GeV/#it{c}); Decay vertex y (cm)", 50, 0, 10, 200, 0,
+        200);
+    fHistogramsAfter->Add(fHistDecayVertexYAfter);
+
+    fHistDecayVertexZAfter = new TH2F(
+        "fHistDecayVertexZAfter",
+        "; #it{p}_{T} (GeV/#it{c}); Decay vertex z (cm)", 50, 0, 10, 200, 0,
+        200);
+    fHistogramsAfter->Add(fHistDecayVertexZAfter);
+
+    fHistTransverseRadiusBefore = new TH2F(
+        "fHistTransverseRadiusBefore",
+        "; #it{p}_{T} (GeV/#it{c}); Transverse radius (cm)", 50, 0, 10, 200, 0,
+        200);
+    fHistogramsBefore->Add(fHistTransverseRadiusBefore);
+
+    fHistTransverseRadiusAfter = new TH2F(
+        "fHistTransverseRadiusAfter",
+        "; #it{p}_{T} (GeV/#it{c}); Transverse radius (cm)", 50, 0, 10, 200, 0,
+        200);
+    fHistogramsAfter->Add(fHistTransverseRadiusAfter);
+
+    fHistCosPABefore = new TH2F("fHistCosPABefore",
+                                "; #it{p}_{T} (GeV/#it{c}); cos(#alpha)", 100,
+                                0, 10, 100, 0.95, 1);
+    fHistogramsBefore->Add(fHistCosPABefore);
+
+    fHistCosPAAfter = new TH2F("fHistCosPAAfter",
+                               "; #it{p}_{T} (GeV/#it{c}); cos(#alpha)", 50, 0,
+                               10, 100, 0.95, 1);
+    fHistogramsAfter->Add(fHistCosPAAfter);
+
+    fHistDCArBefore = new TH2F(
+        "fHistDCArBefore",
+        "; #it{p}_{T} (GeV/#it{c}); DCA_{r} (cm)", 50, 0,
+        10, 100, 0, 10);
+    fHistogramsBefore->Add(fHistDCArBefore);
+
+    fHistDCArAfter = new TH2F(
+        "fHistDCArAfter",
+        "; #it{p}_{T} (GeV/#it{c}); DCA_{r} (cm)", 50, 0,
+        10, 100, 0, 10);
+    fHistogramsAfter->Add(fHistDCArAfter);
+
+    fHistDCAzBefore = new TH2F(
+        "fHistDCAzBefore",
+        "; #it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)", 50, 0,
+        10, 100, 0, 10);
+    fHistogramsBefore->Add(fHistDCAzBefore);
+
+    fHistDCAzAfter = new TH2F(
+        "fHistDCAzAfter",
+        "; #it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)", 50, 0,
+        10, 100, 0, 10);
+    fHistogramsAfter->Add(fHistDCAzAfter);
+
+    fHistDCA = new TH2F("fHistDCA", "; #it{p}_{T} (GeV/#it{c}); DCA to PV (cm)",
+                        50, 0, 10, 100, 0, 10);
+    fHistogramsAfter->Add(fHistDCA);
+
+    fHistDecayLength = new TH2F("fHistDecayLength",
+                                "; #it{p}_{T} (GeV/#it{c}); Decay length (cm)",
+                                50, 0, 10, 200, 0, 200);
+    fHistogramsAfter->Add(fHistDecayLength);
+
+    fHistArmenterosBefore = new TH2F("fHistArmenterosBefore",
+                                     " ; #alpha; #it{q}_{T} (GeV/#it{c})", 200,
+                                     -1, 1, 100, 0, 0.25);
+    fHistogramsBefore->Add(fHistArmenterosBefore);
+
+    fHistArmenterosAfter = new TH2F("fHistArmenterosAfter",
+                                    " ; #alpha; #it{q}_{T} (GeV/#it{c})", 200,
+                                    -1, 1, 100, 0, 0.25);
+    fHistogramsAfter->Add(fHistArmenterosAfter);
+
+    fHistPsiPairBefore = new TH2F("fHistPsiPairBefore",
+                                  "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}", 100,
+                                  0, 10, 200, -pi / 2.f, pi / 2.f);
+    fHistogramsBefore->Add(fHistPsiPairBefore);
+
+    fHistPsiPairAfter = new TH2F("fHistPsiPairAfter",
+                                 "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}", 100,
+                                 0, 10, 200, -pi / 2.f, pi / 2.f);
+    fHistogramsAfter->Add(fHistPsiPairAfter);
+
+    fHistograms->Add(fHistogramsBefore);
+    fHistograms->Add(fHistogramsAfter);
+
+    fHistSingleParticlePt[0] = new TH1F("fHistSingleParticlePt_pos",
+                                        ";#it{p}_{T}; Entries", 100, 0, 10);
+    fHistSingleParticlePt[1] = new TH1F("fHistSingleParticlePt_neg",
+                                        ";#it{p}_{T}; Entries", 100, 0, 10);
+    fHistSingleParticleEtaBefore[0] = new TH2F(
+        "fHistSingleParticleEtaBefore_pos", "; #it{p}_{T} (GeV/#it{c}); #eta",
+        50, 0, 10, 100, -2, 2);
+    fHistSingleParticleEtaBefore[1] = new TH2F(
+        "fHistSingleParticleEtaBefore_neg", "; #it{p}_{T} (GeV/#it{c}); #eta",
+        50, 0, 10, 100, -2, 2);
+    fHistSingleParticleEtaAfter[0] = new TH2F("fHistSingleParticleEtaAfter_pos",
+                                              "; #it{p}_{T} (GeV/#it{c}); #eta",
+                                              50, 0, 10, 100, -2, 2);
+    fHistSingleParticleEtaAfter[1] = new TH2F("fHistSingleParticleEtaAfter_neg",
+                                              "; #it{p}_{T} (GeV/#it{c}); #eta",
+                                              50, 0, 10, 100, -2, 2);
+    fHistSingleParticleChi2Before[0] = new TH2F(
+        "fHistSingleParticleChi2Before_pos",
+        "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 50, 0, 10, 100, 0, 20);
+    fHistSingleParticleChi2Before[1] = new TH2F(
+        "fHistSingleParticleChi2Before_neg",
+        "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 50, 0, 10, 100, 0, 20);
+    fHistSingleParticleChi2After[0] = new TH2F(
+        "fHistSingleParticleChi2After_pos",
+        "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 50, 0, 10, 100, 0, 20);
+    fHistSingleParticleChi2After[1] = new TH2F(
+        "fHistSingleParticleChi2After_neg",
+        "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 50, 0, 10, 100, 0, 20);
+    fHistSingleParticleNclsTPCBefore[0] = new TH2F(
+        "fHistSingleParticleNclsTPCBefore_pos",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC ", 50, 0, 10, 160, 0, 160);
+    fHistSingleParticleNclsTPCBefore[1] = new TH2F(
+        "fHistSingleParticleNclsTPCBefore_neg",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC ", 50, 0, 10, 160, 0, 160);
+    fHistSingleParticleNclsTPCAfter[0] = new TH2F(
+        "fHistSingleParticleNclsTPCAfter_pos",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC ", 50, 0, 10, 160, 0, 160);
+    fHistSingleParticleNclsTPCAfter[1] = new TH2F(
+        "fHistSingleParticleNclsTPCAfter_neg",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC ", 50, 0, 10, 160, 0, 160);
+    fHistSingleParticleNclsTPCFindableBefore[0] = new TH2F(
+        "fHistSingleParticleNclsTPCFindableBefore_pos",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC findable", 50, 0, 10, 160, 0,
+        160);
+    fHistSingleParticleNclsTPCFindableBefore[1] = new TH2F(
+        "fHistSingleParticleNclsTPCFindableBefore_neg",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC findable", 50, 0, 10, 160, 0,
+        160);
+    fHistSingleParticleNclsTPCFindableAfter[0] = new TH2F(
+        "fHistSingleParticleNclsTPCFindableAfter_pos",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC findable", 50, 0, 10, 160, 0,
+        160);
+    fHistSingleParticleNclsTPCFindableAfter[1] = new TH2F(
+        "fHistSingleParticleNclsTPCFindableAfter_neg",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC findable", 50, 0, 10, 160, 0,
+        160);
+    fHistSingleParticleNclsTPCRatioFindableBefore[0] = new TH2F(
+        "fHistSingleParticleNclsTPCRatioFindableBefore_pos",
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 50, 0, 10, 200, 0, 2);
+    fHistSingleParticleNclsTPCRatioFindableBefore[1] = new TH2F(
+        "fHistSingleParticleNclsTPCRatioFindableBefore_neg",
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 50, 0, 10, 200, 0, 2);
+    fHistSingleParticleNclsTPCRatioFindableAfter[0] = new TH2F(
+        "fHistSingleParticleNclsTPCRatioFindableAfter_pos",
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 50, 0, 10, 200, 0, 2);
+    fHistSingleParticleNclsTPCRatioFindableAfter[1] = new TH2F(
+        "fHistSingleParticleNclsTPCRatioFindableAfter_neg",
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 50, 0, 10, 200, 0, 2);
+    fHistSingleParticleNcrossedTPCBefore[0] = new TH2F(
+        "fHistSingleParticleNcrossedTPCBefore_pos",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed", 50, 0, 10, 160, 0, 160);
+    fHistSingleParticleNcrossedTPCBefore[1] = new TH2F(
+        "fHistSingleParticleNcrossedTPCBefore_neg",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed", 50, 0, 10, 160, 0, 160);
+    fHistSingleParticleNcrossedTPCAfter[0] = new TH2F(
+        "fHistSingleParticleNcrossedTPCAfter_pos",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed", 50, 0, 10, 160, 0, 160);
+    fHistSingleParticleNcrossedTPCAfter[1] = new TH2F(
+        "fHistSingleParticleNcrossedTPCAfter_neg",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed", 50, 0, 10, 160, 0, 160);
+    fHistSingleParticleDCAtoPVBefore[0] = new TH2F(
+        "fHistSingleParticleDCAtoPVBefore_pos",
+        "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA)", 50, 0, 10, 100, 0, 10);
+    fHistSingleParticleDCAtoPVBefore[1] = new TH2F(
+        "fHistSingleParticleDCAtoPVBefore_neg",
+        "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA)", 50, 0, 10, 100, 0, 10);
+    fHistSingleParticleDCAtoPVAfter[0] = new TH2F(
+        "fHistSingleParticleDCAtoPVAfter_pos",
+        "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA)", 50, 0, 10, 100, 0, 10);
+    fHistSingleParticleDCAtoPVAfter[1] = new TH2F(
+        "fHistSingleParticleDCAtoPVAfter_neg",
+        "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA)", 50, 0, 10, 100, 0, 10);
+    fHistSingleParticlePileUp[0] = new TH2F(
+        "fHistSingleParticlePileUp_pos",
+        "; Pileup flag; #it{p}_{T} (GeV/#it{c})", 4, 0, 4, 50, 0, 10);
+    fHistSingleParticlePileUp[0]->GetXaxis()->SetBinLabel(1, "ITS");
+    fHistSingleParticlePileUp[0]->GetXaxis()->SetBinLabel(2, "TOF");
+    fHistSingleParticlePileUp[0]->GetXaxis()->SetBinLabel(3, "Combined");
+    fHistSingleParticlePileUp[0]->GetXaxis()->SetBinLabel(4, "None");
+    fHistSingleParticlePileUp[1] = new TH2F(
+        "fHistSingleParticlePileUp_neg",
+        "; Pileup flag; #it{p}_{T} (GeV/#it{c})", 4, 0, 4, 50, 0, 10);
+    fHistSingleParticlePileUp[1]->GetXaxis()->SetBinLabel(1, "ITS");
+    fHistSingleParticlePileUp[1]->GetXaxis()->SetBinLabel(2, "TOF");
+    fHistSingleParticlePileUp[1]->GetXaxis()->SetBinLabel(3, "Combined");
+    fHistSingleParticlePileUp[1]->GetXaxis()->SetBinLabel(4, "None");
+
+    fHistSingleParticlePID[0] = new TH2F(
+        "fHistSingleParticlePID_pos", "; #it{p} (GeV/#it{c}); n_{#sigma} TPC",
+        50, 0, 10, 250, -10, 10);
+    fHistSingleParticlePID[1] = new TH2F(
+        "fHistSingleParticlePID_neg", "; #it{p} (GeV/#it{c}); n_{#sigma} TPC",
+        50, 0, 10, 250, -10, 10);
+
+    fHistogramsPos->Add(fHistSingleParticlePt[0]);
+    fHistogramsNeg->Add(fHistSingleParticlePt[1]);
+    fHistogramsPos->Add(fHistSingleParticleEtaBefore[0]);
+    fHistogramsNeg->Add(fHistSingleParticleEtaBefore[1]);
+    fHistogramsPos->Add(fHistSingleParticleChi2Before[0]);
+    fHistogramsNeg->Add(fHistSingleParticleChi2Before[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsTPCBefore[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsTPCBefore[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsTPCFindableBefore[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsTPCFindableBefore[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsTPCRatioFindableBefore[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsTPCRatioFindableBefore[1]);
+    fHistogramsPos->Add(fHistSingleParticleNcrossedTPCBefore[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNcrossedTPCBefore[1]);
+    fHistogramsPos->Add(fHistSingleParticleDCAtoPVBefore[0]);
+    fHistogramsNeg->Add(fHistSingleParticleDCAtoPVBefore[1]);
+    fHistogramsPos->Add(fHistSingleParticleEtaAfter[0]);
+    fHistogramsNeg->Add(fHistSingleParticleEtaAfter[1]);
+    fHistogramsPos->Add(fHistSingleParticleChi2After[0]);
+    fHistogramsNeg->Add(fHistSingleParticleChi2After[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsTPCAfter[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsTPCAfter[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsTPCFindableAfter[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsTPCFindableAfter[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsTPCRatioFindableAfter[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsTPCRatioFindableAfter[1]);
+    fHistogramsPos->Add(fHistSingleParticleNcrossedTPCAfter[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNcrossedTPCAfter[1]);
+    fHistogramsPos->Add(fHistSingleParticleDCAtoPVAfter[0]);
+    fHistogramsNeg->Add(fHistSingleParticleDCAtoPVAfter[1]);
+    fHistogramsPos->Add(fHistSingleParticlePileUp[0]);
+    fHistogramsNeg->Add(fHistSingleParticlePileUp[1]);
+    fHistogramsPos->Add(fHistSingleParticlePID[0]);
+    fHistogramsNeg->Add(fHistSingleParticlePID[1]);
   }
+  fHistograms->Add(fHistogramsPos);
+  fHistograms->Add(fHistogramsNeg);
 }

@@ -33,6 +33,7 @@
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALClusterizerv2.h"
+#include "AliEMCALClusterizerv3.h"
 #include "AliEMCALClusterizerFixedWindow.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALGeometry.h"
@@ -823,8 +824,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     
     c->SetLabel(parentList, parentMult);
     
-    if(fSetCellMCLabelFromEdepFrac) 
-      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+    c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
     
     //
     // Set the cell energy deposition fraction map:
@@ -1010,6 +1010,8 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   } 
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
     fClusterizer = new AliEMCALClusterizerv2(fGeom);
+  else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv3)
+    fClusterizer = new AliEMCALClusterizerv3(fGeom);
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerFW) {
     AliEMCALClusterizerFixedWindow *clusterizer = new AliEMCALClusterizerFixedWindow(fGeom);
     clusterizer->SetNphi(fNPhi);

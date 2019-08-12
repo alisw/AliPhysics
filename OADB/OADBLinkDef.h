@@ -24,6 +24,9 @@
 #pragma link C++ class AliCollisionNormalizationTask+;
 #pragma link C++ class AliEventCuts+;
 #pragma link C++ class AliEventCutsContainer+;
+#pragma link C++ class AliTimeRangeMask<ULong64_t, UShort_t>+;
+#pragma link C++ class AliTimeRangeMasking<ULong64_t, UShort_t>+;
+#pragma link C++ class AliTimeRangeCut;
 
 #pragma link C++ class AliMultVariable+;
 #pragma link C++ class AliMultInput+;
@@ -34,5 +37,6 @@
 #pragma link C++ class AliMultSelectionTask+;
 #pragma link C++ class AliMultSelectionCalibrator+;
 #pragma link C++ class AliMultSelectionCalibratorMC+;
+#pragma link C++ class AliMultGlauberNBDFitter+;
 
 #endif

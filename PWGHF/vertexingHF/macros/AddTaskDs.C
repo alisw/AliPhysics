@@ -1,7 +1,7 @@
 AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
 			       Int_t storeNtuple=0,Bool_t storeNsparse=kFALSE,Bool_t storeNsparseDplus=kFALSE,Bool_t readMC=kFALSE,
 			       TString filename="", TString postname="", Bool_t doCutVarHistos = kFALSE, Int_t AODProtection = 1,
-			       Bool_t fillNTrklAxis = kFALSE, Int_t fillCentrAxis = 0,
+			       Bool_t fillNTrklAxis = kFALSE, Bool_t fillCentrAxis = kFALSE,
 			       Bool_t useRotBkg=kFALSE, Bool_t useBkgFromPhiSB=kFALSE, Bool_t useCutV0multTPCout=kFALSE,
 			       Bool_t storeNsparseImpPar = kFALSE)
 {
@@ -27,9 +27,9 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
   } else {
     filecuts=TFile::Open(filename.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      ::Fatal("AddTaskDs", "Cut object not found: analysis will not start!\n");
+      ::Fatal("AddTaskDs", "Cut file not found on Grid: analysis will not start!\n");
     }
-    else printf("Cut object correctly found\n");
+    else printf("Cut file correctly found\n");
   }
     
   //Analysis Task
@@ -43,8 +43,13 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
     }
     else ::Fatal("AddTaskDs", "Standard cut object not available for PbPb: analysis will not start!\n");
   }
-  else analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get("AnalysisCuts");
-    
+  else {analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get("AnalysisCuts");
+    if (!analysiscuts)
+	{ ::Fatal("AddTaskDs", "Cut object named \"AnalysisCuts\" not found in cutfile.");
+	  return NULL;
+	}
+}
+
   AliAnalysisTaskSEDs *dsTask = new AliAnalysisTaskSEDs("DsAnalysis",analysiscuts,storeNtuple);
     
   dsTask->SetReadMC(readMC);

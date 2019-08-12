@@ -28,7 +28,7 @@ class AliHFCorrFitter{
  public:
     
   // enums
-  enum FunctionType{kConstwoGaus = 1, kTwoGausPeriodicity =2, kConstThreeGausPeriodicity = 3, kConstThreeGausPeriodicityAS =4, kv2Modulation =5, kTwoGausPeriodicityWithv2Modulation = 6};  
+  enum FunctionType{kConstwoGaus = 1, kTwoGausPeriodicity =2, kConstThreeGausPeriodicity = 3, kConstThreeGausPeriodicityAS =4, kv2Modulation =5, kTwoGausPeriodicityWithv2Modulation = 6, kModifNSGausPeriodicity =7, kModifNSGausPeriodicityFixBeta =8, kModifNSGausPeriodicityConstrainedBeta =9};  
 
   // constructors
   AliHFCorrFitter();
@@ -45,6 +45,8 @@ class AliHFCorrFitter{
   void SetFuncType(FunctionType fittype){fTypeOfFitfunc = fittype;}
   void SetFixBasetype(Int_t fixbasetype){fFixBase=fixbasetype;}
   void SetFixMeanType(Int_t fixmeantype){fFixMean=fixmeantype;}
+  void SetPtRanges(Double_t dmin,Double_t dmax,Double_t assmin,Double_t assmax) {fMinDpt=dmin; fMaxDpt=dmax; fMinAsspt=assmin; fMaxAsspt=assmax;}
+  void SetIspPb(Bool_t pPb) {fIspPb=pPb;}
   void SetBaselineExt(Double_t baseval){
     fBaseline=baseval;
     fFixBase=6;
@@ -56,6 +58,7 @@ class AliHFCorrFitter{
   void SetHistoIsReflected(Bool_t isrefl){
     fIsReflected=isrefl;
   }
+  void SetExternalValsAndBounds(Int_t npars, Double_t* vals, Double_t* lowBounds, Double_t* uppBounds);
   //---------------------Getters----------->
   Double_t GetNSSigma(){
     if(fTypeOfFitfunc==kConstThreeGausPeriodicity){// other cases to be implemented
@@ -72,6 +75,7 @@ class AliHFCorrFitter{
   
   Double_t GetNSYield(){return fFit->GetParameter("NS Y");}
   Double_t GetASYield(){return fFit->GetParameter("AS Y");}
+  Double_t GetBeta(){return fFit->GetParameter(7);}
   Double_t GetPedestal(){return fBaseline;}
   Double_t Getv2hadron(){return fFit->GetParameter("v_{2} hadron");}
   Double_t Getv2Dmeson(){return fFit->GetParameter("v_{2} D meson");}
@@ -79,16 +83,17 @@ class AliHFCorrFitter{
     if(fTypeOfFitfunc==kConstThreeGausPeriodicity){// THE FOLLOWING FORMULA IS WRONG... FULL ERROR PROPAGATION TO BE DONE
       return TMath::Sqrt(fFit->GetParameter("fract 1g")*fFit->GetParError(fFit->GetParNumber("NS #sigma 1g"))*fFit->GetParError(fFit->GetParNumber("NS #sigma 1g"))+(1.-fFit->GetParameter("fract 1g"))*fFit->GetParError(fFit->GetParNumber("NS #sigma 2g"))*fFit->GetParError(fFit->GetParNumber("NS #sigma 2g")));
     }
-    return fFit->GetParError(fFit->GetParNumber("NS #sigma"));
+    else return fFit->GetParError(fFit->GetParNumber("NS #sigma"));
   }
   Double_t GetASSigmaError(){
     if(fTypeOfFitfunc==kConstThreeGausPeriodicityAS){// THE FOLLOWING FORMULA IS WRONG... FULL ERROR PROPAGATION TO BE DONE
       return TMath::Sqrt(fFit->GetParameter("fract 1g")*fFit->GetParError(fFit->GetParNumber("AS #sigma 1g"))*fFit->GetParError(fFit->GetParNumber("AS #sigma 1g"))+(1.-fFit->GetParameter("fract 1g"))*fFit->GetParError(fFit->GetParNumber("AS #sigma 2g"))*fFit->GetParError(fFit->GetParNumber("AS #sigma 2g")));
     }
-    return fFit->GetParError(fFit->GetParNumber("AS #sigma"));
+    else return fFit->GetParError(fFit->GetParNumber("AS #sigma"));
   }
   Double_t GetNSYieldError(){return fFit->GetParError(fFit->GetParNumber("NS Y"));}
   Double_t GetASYieldError(){return fFit->GetParError(fFit->GetParNumber("AS Y"));}
+  Double_t GetBetaError(){return fFit->GetParError(7);}
   Double_t GetPedestalError(){return fErrbaseline;}
   Double_t Getv2hadronError(){return fFit->GetParError(fFit->GetParNumber("v_{2} hadron"));}
   Double_t Getv2DmesonError(){return fFit->GetParError(fFit->GetParNumber("v_{2} D meson"));}
@@ -106,11 +111,12 @@ class AliHFCorrFitter{
   }
 
   Double_t FindBaseline();
-  void Fitting(Bool_t drawSplitTerm=kTRUE);
+  void Fitting(Bool_t drawSplitTerm=kTRUE, Bool_t useExternalPars=kFALSE);
   void CalculateYieldsAboveBaseline();
   TH1F* SubtractBaseline();
   void DrawLegendWithParameters();
   void SetSingleTermsForDrawing(Bool_t draw);
+  void SetBetaVal(Double_t val) {fBetaVal=val;}
 
 
  private:
@@ -137,6 +143,19 @@ class AliHFCorrFitter{
   Int_t        fTypeOfFitfunc;     //type of functions
   Int_t           fDmesonType;
   Bool_t         fIsReflected;  // label to signal if the histogram is in 2pi range or pi (reflected)
-  ClassDef(AliHFCorrFitter,2);
+  Double_t			  fMinDpt;
+  Double_t			  fMaxDpt;
+  Double_t			  fMinAsspt;
+  Double_t			  fMaxAsspt;
+  Double_t			  fIspPb;
+  Double_t        fBetaVal;
+
+  Bool_t 		  fUseExternalPars;
+  Int_t			  fNpars;
+  Double_t 		  *fExtParsVals;
+  Double_t 	 	  *fExtParsLowBounds;
+  Double_t 	 	  *fExtParsUppBounds;
+  
+  ClassDef(AliHFCorrFitter,7);
 };
 #endif

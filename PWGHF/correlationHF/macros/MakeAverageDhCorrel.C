@@ -26,9 +26,8 @@ void MakeAverage(Double_t ptmin,Double_t ptmax,Double_t ptassocmin,Double_t ptas
   gStyle->SetOptFit(0000);
 
   TString systemStr;
-  if(system==0)systemStr="pp";
-  else if(system==1)systemStr="pPb";
-  else if(system==2)systemStr="pPb";
+  if(system==0||system==3)systemStr="pp";
+  else if(system==1||system==2)systemStr="pPb";
   else {
     Printf("Make Average: WRONG SYSTEM INPUT");
   }
@@ -220,6 +219,7 @@ void OpenOutputFileAndDraw(TString strfile,Double_t ptminD,Double_t ptmaxD,TStri
   gr->Draw("E2");
   TLatex *tSystem=new TLatex(0.18,0.80,"#bf{pp, #sqrt{#it{s}} = 7 TeV, L_{int} = 5 nb^{-1}}");
   if(system==1 || system==2) tSystem->SetTitle("#bf{p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV, L_{int} = 50 #mub^{-1}}");
+  if(system==3) tSystem->SetTitle("#bf{pp, #sqrt{#it{s}} = 5.02 TeV, L_{int} = 18 nb^{-1}}");
   tSystem->SetNDC();
   tSystem->SetTextSize(0.03);
   tSystem->Draw();
@@ -264,9 +264,8 @@ printf("RANGE MAX = %d\n",maxH);
   if(strfile.Contains("Dzero"))strfileout.Append("Dzero");
   if(strfile.Contains("Dstar"))strfileout.Append("Dstar");
   if(strfile.Contains("Dplus"))strfileout.Append("Dplus");
-  if(system==0)strfileout.Append("_pp_");
-  else if(system==1)strfileout.Append("_pPb_");
-  else if(system==2)strfileout.Append("_pPb_");
+  if(system==0||system==3)strfileout.Append("_pp_");
+  else if(system==1||system==2)strfileout.Append("_pPb_");
   else strfileout.Append("WrongCollSyst");
   strfileout.Append(Form("Pt%.0fto%.0fassocPt%.1fto",ptminD,ptmaxD,ptminAss));
   if(ptmaxAss>0)strfileout.Append(Form("%.1f.root",ptmaxAss));

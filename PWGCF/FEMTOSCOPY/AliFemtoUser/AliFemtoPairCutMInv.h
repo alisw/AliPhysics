@@ -25,8 +25,8 @@ public:
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
-  AliFemtoPairCut* Clone();
-  
+  AliFemtoPairCut* Clone() const;
+
  protected:
   Double_t fNPairsFailed;
   Double_t fNPairsPassed;
@@ -40,6 +40,7 @@ public:
 #endif
 };
 
-inline AliFemtoPairCut* AliFemtoPairCutMInv::Clone() { AliFemtoPairCutMInv* c = new AliFemtoPairCutMInv(*this); return c;}
+inline AliFemtoPairCut* AliFemtoPairCutMInv::Clone() const
+  { AliFemtoPairCutMInv* c = new AliFemtoPairCutMInv(*this); return c;}
 
 #endif

@@ -37,6 +37,7 @@ class TVector3;
 class THnSparse;
 class TObject;
 class TRandom3;
+class TObjString; 
 
 class AliESDpid;
 class AliESDtrackCuts;
@@ -52,6 +53,7 @@ class AliMultInput;
 class AliMultSelection;
 class AliMultSelectionCuts;
 class AliOADBMultSelection;
+class AliOADBContainer;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -85,6 +87,11 @@ public:
     TString GetExceptionMapping( TString lProductionName ) const; //list of exceptions
     Bool_t CheckOADB( TString lProdName ) const;
     
+    /// Static helper functions
+    static TString GetPeriodNameByRunNumber(int runNumber);
+    static TString GetSystemTypeByRunNumber(int runNumber);
+    static TString GetPeriodNameByGenericPath( const TString lPath );
+
     //Check MC type
     Bool_t IsHijing()  const;
     Bool_t IsDPMJet()  const;
@@ -98,6 +105,7 @@ public:
     
     //Setup Run if needed (depends on run number!)     
     Int_t SetupRun( const AliVEvent* const esd );
+    Int_t SetupRunFromOADB( const AliVEvent* const esd );
     
     //removed to avoid accidental usage!
     //void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
@@ -105,7 +113,10 @@ public:
     void SetFilterMB     ( Bool_t lVar ) { fkFilterMB    = lVar; } ;
     void SetDebug        ( Bool_t lVar ) { fkDebug       = lVar; } ;
     void SetNDebug       ( Int_t  lVar ) { fNDebug       = lVar; } ;
+    void SetStoreAllQA( Bool_t lVar ) { fkStoreQA = lVar; }
     void SetHighMultQABinning( Bool_t lVar ) { fkHighMultQABinning = lVar; }
+    void SetGeneratorOnly( Bool_t lVar ) { fkGeneratorOnly = lVar; }
+    void SetSkipMCHeaders( Bool_t lVar ) { fkSkipMCHeaders = lVar; }
     
     //override for getting estimator definitions from different OADB file
     //FIXME: should preferably be protected, extra functionality required
@@ -123,9 +134,18 @@ public:
     void SetUseDefaultMCCalib ( Bool_t lVar ){ fkUseDefaultMCCalib = lVar; }
     Bool_t GetUseDefaultMCCalib () const { return fkUseDefaultMCCalib; }
     
+    void SetSkipVertexZ ( Bool_t lVar ){ fkSkipVertexZ = lVar; }
+    Bool_t GetSkipVertexZ () const { return fkSkipVertexZ; }
+
     //Calibration mode downscaling for manageable output
     void SetDownscaleFactor ( Double_t lDownscale ) { fDownscaleFactor = lDownscale; }
     
+    void SetOADB ( TString lOADBfilename );
+    AliOADBContainer* GetOADB() {return fOADB;}; //for expert manipulation only
+    
+    // Static method for AddTaskMultSelection
+    static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, TString lContainerAppend = "", const TString lMasterJobSessionFlag = "");
+
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
@@ -144,7 +164,10 @@ private:
     Bool_t fkAddInfo;     //if true, save info
     Bool_t fkFilterMB;    //if true, save only kMB events
     Bool_t fkAttached;    //if true, has already attached to ESD (AOD)
+    Bool_t fkStoreQA;     //if true, store all QA histograms (and not just typical)
     Bool_t fkHighMultQABinning; //if true, use narrow binning for percentile histograms
+    Bool_t fkGeneratorOnly; //if true, skip loading of reco objects
+    Bool_t fkSkipMCHeaders; //if true, don't try to read headers
     
     //Debug Options
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
@@ -157,6 +180,8 @@ private:
     Bool_t fkUseDefaultCalib; //if true, allow for default data calibration
     Bool_t fkUseDefaultMCCalib; //if true, allow for default scaling factor in MC
     
+    Bool_t fkSkipVertexZ; //if true, skip vertex-Z selection for evselcode determination
+
     //Downscale factor:
     //-> if smaller than unity, reduce change of accepting a given event for calib tree
     Double_t fDownscaleFactor;
@@ -245,6 +270,7 @@ private:
     
     //Full Physics Selection Trigger info
     UInt_t fEvSel_TriggerMask; //! save full info for checking later
+    TString fFiredTriggerClasses; //!
     
     //Other Selections: more dedicated filtering to be studied!
 
@@ -264,6 +290,7 @@ private:
     AliMultVariable *fZpcFired;
     
     AliMultVariable *fNTracks;             //!  no. tracks
+    AliMultVariable *fNTracksTPCout;             //!  no. tracks
     AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
     AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
     AliMultVariable *fNTracksITSsa2010;                     //!  no. tracks ITSsa (2010 ITSsa track cuts)
@@ -280,13 +307,15 @@ private:
     Float_t fPPVsMultUtilsV0M; //! percentiles from AliPPVsMultUtils (for debugging)
     
     //Data needed for Monte Carlo
-    Int_t fMC_NColl;
-    Int_t fMC_NPart;
-    Int_t fMC_NchV0A;
-    Int_t fMC_NchV0C;
-    Int_t fMC_NchEta05;
-    Int_t fMC_NchEta08;
-    Int_t fMC_NchEta10;
+    AliMultVariable *fMC_NColl;
+    AliMultVariable *fMC_NPart;
+    AliMultVariable *fMC_NchV0A;
+    AliMultVariable *fMC_NchV0C;
+    AliMultVariable *fMC_NchEta05;
+    AliMultVariable *fMC_NchEta08;
+    AliMultVariable *fMC_NchEta10;
+    AliMultVariable *fMC_NchEta14;
+    AliMultVariable *fMC_b;
     
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
@@ -344,12 +373,20 @@ private:
     //AliMultSelection Framework
     AliOADBMultSelection *fOadbMultSelection;
     AliMultInput         *fInput;
-
+    
+    // --- For direct setup
+    //
+    // an actual OADB to be streamed together with the task
+    // if valid, will bypass every other config option
+    // set this with SetOADB( TString *file );
+    AliOADBContainer *fOADB;
+    
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 5);
+    ClassDef(AliMultSelectionTask, 10);
     //3 - extra QA histograms
+    //8 - fOADB ponter
 };
 
 #endif

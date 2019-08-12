@@ -14,11 +14,11 @@
 #endif
 
 #ifndef ALITRDTRACKINFO_H
-#include "info/AliTRDtrackInfo.h"
+#include "AliTRDtrackInfo.h"
 #endif
 
 #ifndef ALITRDEVENTINFO_H
-#include "info/AliTRDeventInfo.h"
+#include "AliTRDeventInfo.h"
 #endif
 
 class TAxis;

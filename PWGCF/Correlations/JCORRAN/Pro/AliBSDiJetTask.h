@@ -10,6 +10,7 @@ class TRandom3;
 class TGraphErrors;
 class TProfile;
 class THistManager;
+class TLorentzVector;
 class AliJetContainer;
 class AliParticleContainer;
 class AliClusterContainer;
@@ -17,6 +18,7 @@ class AliEmcalTrackSelection;
 class AliAnalysisUtils;
 class AliCalorimeterUtils;
 class AliMultSelection;
+class AliJetContainer;
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include <vector>
@@ -43,6 +45,7 @@ public:
   void SetLeadingParticlePtMin(Double_t m){ fLeadingParticlePtMin=m; };
   void SetIsMC(Bool_t ismc){fIsMC = ismc;};
   void SetScalingFactorHist(TH1D* sfhist) {fScalingFactorHist = (TH1D*)sfhist->Clone();};
+  void SetPtHardBin(double b) {pthardbin = b;};
   Double1D& GetDijetPtPair(){return fDijetPtPair;};
   Double1D& GetDijetInvM(){return fDijetInvM;};
   Bool1D& GetDijetSelectionCut(){return fDijetSelectionCut;};
@@ -58,7 +61,11 @@ protected:
   THnSparse * CreateTHnSparse(TString name, TString title, TString templ, Option_t * opt="");
   Long64_t FillTHnSparse( TString name, std::vector<Double_t> x, Double_t w=1. );
   Long64_t FillTHnSparse( THnSparse *h, std::vector<Double_t> x, Double_t w=1. );
-
+	void MeasureBgDensity (AliJetContainer* ktContainer);
+	void MeasurePtHardBinScalingFactor ();
+  Bool_t  MeasureJets(AliJetContainer* jetContainer, TLorentzVector1D &Jets, Bool_t istruth);
+	void CheckDijetSelections(TLorentzVector1D Jets, TLorentzVector2D &sj, Bool1D &disel);
+ 
 private:
   TList*                          fOutput = nullptr; //!
   TString                         fOption=""; 
@@ -91,6 +98,17 @@ private:
   TF1*                            tsf=nullptr;//!
   TF1*                            tsfl=nullptr;//!
   TF1*                            tsfh=nullptr;//!
-  ClassDef(AliBSDiJetTask, 1)
+  Double_t                        RHO = 0; 
+  Double_t                        RHOM = 0;
+  Double_t                        sf = 1;
+  Double_t                        genzvtx = -30;
+  Int_t                           NTrials = -1;
+  Double_t                        XSection = -1;
+  TLorentzVector                  p6;
+  TLorentzVector                  p7;
+  Double_t                        vertex[3];
+  Bool_t                          IsGoodVertex = false;
+  Double_t                        pthardbin = 0.5; //first bin
+  ClassDef(AliBSDiJetTask, 10)
 };
 #endif

@@ -19,7 +19,7 @@ class AliAODEvent;
 class AliAnalysisTaskFilterUPCNanoAOD : public AliAnalysisTaskSE
 {
 public:
-  AliAnalysisTaskFilterUPCNanoAOD(Bool_t withSPDTracklets=kTRUE,Bool_t withMuonTracks=kFALSE);
+  AliAnalysisTaskFilterUPCNanoAOD(Bool_t withSPDTracklets=kTRUE,Bool_t withMuonTracks=kFALSE,TString extraTriggers="");
   virtual ~AliAnalysisTaskFilterUPCNanoAOD();
 
   virtual void UserCreateOutputObjects();
@@ -32,8 +32,9 @@ private:
   
   AliAODBranchReplicator* fBranchReplicator; ///< the class doing the real work
   Bool_t fWithMuonTracks;
+  TString fExtraTriggers;
  
-  ClassDef(AliAnalysisTaskFilterUPCNanoAOD,2) // class to convert std AOD to muon one
+  ClassDef(AliAnalysisTaskFilterUPCNanoAOD,3) // class to convert std AOD to muon one
 };
 
 #endif

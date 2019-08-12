@@ -46,7 +46,8 @@ fStudyShape(kFALSE),                   fStudyShapeParam(kFALSE),
 fStudyWeight(kFALSE),               
 fStudyTCardCorrelation(kFALSE),        fStudyExotic(kFALSE),
 fStudyColRowFromCellMax(kFALSE),       fStudyInvMass(kFALSE),
-fStudyTimeCellHisto(kFALSE),
+fStudyTimeCellHisto(kFALSE),           fStudyModuleCells(kTRUE),
+fFillNLocMaxHistos(kTRUE),
 
 // Parameters and cuts
 fM02Min(0),                            fNCellMin(0),            
@@ -137,6 +138,7 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhNCellsPerClusterMEtaPhi [i] = 0;
     fhNCellsPerClusterMEtaPhiA[i] = 0;
     
+    fhSMNLocMax            [i] = 0;
     fhSMNCell              [i] = 0;
     fhSMNCellLowM02        [i] = 0;
     fhSMNCellHighM02       [i] = 0;
@@ -733,29 +735,32 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard
     
     if( absId == absIdMax || weight < 0.01 ) continue;
 
-    if     (nlm==1)  
+    if(fFillNLocMaxHistos)
     {
-      fhECellClusRatNLM1TCardCorrNoSelection[matched]->Fill(energy, eCell/energy, GetEventWeight());
-      fhLogECellNLM1TCardCorrNoSelection    [matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
-      fhECellWeightNLM1TCardCorrNoSelection [matched]->Fill(energy, weight, GetEventWeight());
-    }
-    else if(nlm==2)  
-    {
-      fhECellClusRatNLM2TCardCorrNoSelection[matched]->Fill(energy, eCell/energy, GetEventWeight());
-      fhLogECellNLM2TCardCorrNoSelection    [matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
-      fhECellWeightNLM2TCardCorrNoSelection [matched]->Fill(energy, weight, GetEventWeight());
-    }
-    else         
-    {
-      fhECellClusRatNLM3TCardCorrNoSelection[matched]->Fill(energy, eCell/energy, GetEventWeight());
-      fhLogECellNLM3TCardCorrNoSelection    [matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
-      fhECellWeightNLM3TCardCorrNoSelection [matched]->Fill(energy, weight, GetEventWeight());
+      if     (nlm==1)  
+      {
+        fhECellClusRatNLM1TCardCorrNoSelection[matched]->Fill(energy, eCell/energy, GetEventWeight());
+        fhLogECellNLM1TCardCorrNoSelection    [matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
+        fhECellWeightNLM1TCardCorrNoSelection [matched]->Fill(energy, weight, GetEventWeight());
+      }
+      else if(nlm==2)  
+      {
+        fhECellClusRatNLM2TCardCorrNoSelection[matched]->Fill(energy, eCell/energy, GetEventWeight());
+        fhLogECellNLM2TCardCorrNoSelection    [matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
+        fhECellWeightNLM2TCardCorrNoSelection [matched]->Fill(energy, weight, GetEventWeight());
+      }
+      else         
+      {
+        fhECellClusRatNLM3TCardCorrNoSelection[matched]->Fill(energy, eCell/energy, GetEventWeight());
+        fhLogECellNLM3TCardCorrNoSelection    [matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
+        fhECellWeightNLM3TCardCorrNoSelection [matched]->Fill(energy, weight, GetEventWeight());
+      }
     }
     
     Int_t rowDiff = -100, colDiff = -100;
     Bool_t sameTCard = GetCaloUtils()->IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff);
     
-    if(sameTCard)
+    if ( sameTCard && fFillNLocMaxHistos )
     {
       if     (nlm==1)  
       {
@@ -982,58 +987,57 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard
   fhLambda0TCardCorrNoSelection[matched]->Fill(energy, m02, GetEventWeight());
   fhLambda1TCardCorrNoSelection[matched]->Fill(energy, m20, GetEventWeight());
   
-  if     ( nlm == 1 )
-  {
-    fhLambda0NLM1TCardCorrNoSelection[matched]->Fill(energy, m02, GetEventWeight());
-    fhLambda1NLM1TCardCorrNoSelection[matched]->Fill(energy, m20, GetEventWeight()); 
-  }
-  else if( nlm == 2 )
-  {
-    fhLambda0NLM2TCardCorrNoSelection[matched]->Fill(energy, m02, GetEventWeight());
-    fhLambda1NLM2TCardCorrNoSelection[matched]->Fill(energy, m20, GetEventWeight()); 
-  }
-  
   fhLambdaRTCardCorrNoSelection[matched]->Fill(energy,lamR, GetEventWeight());
-  fhNLocMaxTCardCorrNoSelection[matched]->Fill(energy, nlm, GetEventWeight());
   fhExoticTCardCorrNoSelection [matched]->Fill(energy, exoticity, GetEventWeight());
   
-  if     (nlm==1)  
+  if ( fFillNLocMaxHistos )
   {
-    fhEMaxRatNLM1TCardCorrNoSelection    [matched]->Fill(energy, eCellMax/energy , GetEventWeight());
-    fhE2ndRatNLM1TCardCorrNoSelection    [matched]->Fill(energy, emax2nd/energy  , GetEventWeight());
-    fhE2ndEMaxRatNLM1TCardCorrNoSelection[matched]->Fill(energy, emax2nd/eCellMax, GetEventWeight());
-  }
-  else if(nlm==2)  
-  {
-    fhEMaxRatNLM2TCardCorrNoSelection    [matched]->Fill(energy, eCellMax/energy     , GetEventWeight());
-    fhE2ndRatNLM2TCardCorrNoSelection    [matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
-    fhE2ndEMaxRatNLM2TCardCorrNoSelection[matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
-  }
-  else         
-  {
-    fhEMaxRatNLM3TCardCorrNoSelection    [matched]->Fill(energy, eCellMax/energy     , GetEventWeight());
-    fhE2ndRatNLM3TCardCorrNoSelection    [matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
-    fhE2ndEMaxRatNLM3TCardCorrNoSelection[matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
-  }
-
-  if(sameTCard2ndMax)
-  {
-    if     (nlm==1)  
+    fhNLocMaxTCardCorrNoSelection[matched]->Fill(energy, nlm, GetEventWeight());
+    
+    if     ( nlm == 1 )  
     {
-      fhE2ndSameRatNLM1TCardCorrNoSelection    [matched]->Fill(energy, emax2nd/energy  , GetEventWeight());
-      fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[matched]->Fill(energy, emax2nd/eCellMax, GetEventWeight());
+      fhLambda0NLM1TCardCorrNoSelection[matched]->Fill(energy, m02, GetEventWeight());
+      fhLambda1NLM1TCardCorrNoSelection[matched]->Fill(energy, m20, GetEventWeight()); 
+      
+      fhEMaxRatNLM1TCardCorrNoSelection    [matched]->Fill(energy, eCellMax/energy , GetEventWeight());
+      fhE2ndRatNLM1TCardCorrNoSelection    [matched]->Fill(energy, emax2nd/energy  , GetEventWeight());
+      fhE2ndEMaxRatNLM1TCardCorrNoSelection[matched]->Fill(energy, emax2nd/eCellMax, GetEventWeight());
     }
-    else if(nlm==2)  
+    else if ( nlm==2 )  
     {
-      fhE2ndSameRatNLM2TCardCorrNoSelection    [matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
-      fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
+      fhLambda0NLM2TCardCorrNoSelection[matched]->Fill(energy, m02, GetEventWeight());
+      fhLambda1NLM2TCardCorrNoSelection[matched]->Fill(energy, m20, GetEventWeight()); 
+      
+      fhEMaxRatNLM2TCardCorrNoSelection    [matched]->Fill(energy, eCellMax/energy     , GetEventWeight());
+      fhE2ndRatNLM2TCardCorrNoSelection    [matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
+      fhE2ndEMaxRatNLM2TCardCorrNoSelection[matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
     }
     else         
     {
-      fhE2ndSameRatNLM3TCardCorrNoSelection    [matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
-      fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
+      fhEMaxRatNLM3TCardCorrNoSelection    [matched]->Fill(energy, eCellMax/energy     , GetEventWeight());
+      fhE2ndRatNLM3TCardCorrNoSelection    [matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
+      fhE2ndEMaxRatNLM3TCardCorrNoSelection[matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
     }
-  }
+    
+    if ( sameTCard2ndMax )
+    {
+      if     (nlm==1)  
+      {
+        fhE2ndSameRatNLM1TCardCorrNoSelection    [matched]->Fill(energy, emax2nd/energy  , GetEventWeight());
+        fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[matched]->Fill(energy, emax2nd/eCellMax, GetEventWeight());
+      }
+      else if(nlm==2)  
+      {
+        fhE2ndSameRatNLM2TCardCorrNoSelection    [matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
+        fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
+      }
+      else         
+      {
+        fhE2ndSameRatNLM3TCardCorrNoSelection    [matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
+        fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
+      }
+    } // sameTCard2ndMax
+  } // NLM histos
   
   fhNCellsTCardCorrNoSelection          [matched]->Fill(energy, ncells, GetEventWeight());
   fhNCellsTCardCorrWithWeightNoSelection[matched]->Fill(energy, nCellWithWeight, GetEventWeight());
@@ -1073,43 +1077,42 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard
 //  if ( energy >= 8 ) 
 //    fhColRowTCardCorrelNHighE[nCorrInd][matched]->Fill(icolAbs, irowAbs, GetEventWeight());
 
-  if     ( nlm == 1 ) 
+  if ( fFillNLocMaxHistos) 
   {
-    fhLambda0NLM1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m02, GetEventWeight());
-    fhLambda1NLM1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20, GetEventWeight());
-  }
-  else if( nlm == 2 ) 
-  {
-    fhLambda0NLM2TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m02, GetEventWeight());
-    fhLambda1NLM2TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20, GetEventWeight());
-  }
-  
+    if     ( nlm == 1 ) 
+    {
+      fhLambda0NLM1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m02, GetEventWeight());
+      fhLambda1NLM1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20, GetEventWeight());
+      
+      fhEMaxRatNLM1TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, eCellMax/energy , GetEventWeight());
+      fhE2ndRatNLM1TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, emax2nd/energy  , GetEventWeight());
+      fhE2ndEMaxRatNLM1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, emax2nd/eCellMax, GetEventWeight());
+    }
+    else if( nlm == 2 ) 
+    {
+      fhLambda0NLM2TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m02, GetEventWeight());
+      fhLambda1NLM2TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20, GetEventWeight());
+      
+      fhEMaxRatNLM2TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, eCellMax/energy, GetEventWeight());
+      fhE2ndRatNLM2TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
+      fhE2ndEMaxRatNLM2TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
+    }
+    else    
+    {
+      fhEMaxRatNLM3TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, eCellMax/energy, GetEventWeight());
+      fhE2ndRatNLM3TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
+      fhE2ndEMaxRatNLM3TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
+    }
+    
+    fhNLocMaxTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, nlm, GetEventWeight());
+  } // NLM histos
+
   fhLambda0TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m02, GetEventWeight());
   fhLambda1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, m20, GetEventWeight());
 //fhLambdaRTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy,lamR, GetEventWeight());
-  fhNLocMaxTCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, nlm, GetEventWeight());
   
   if(fStudyExotic)
     fhExoticTCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, exoticity, GetEventWeight());
-  
-  if     (nlm==1) 
-  {
-    fhEMaxRatNLM1TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, eCellMax/energy , GetEventWeight());
-    fhE2ndRatNLM1TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, emax2nd/energy  , GetEventWeight());
-    fhE2ndEMaxRatNLM1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, emax2nd/eCellMax, GetEventWeight());
-  }
-  else if(nlm==2)  
-  {
-    fhEMaxRatNLM2TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, eCellMax/energy, GetEventWeight());
-    fhE2ndRatNLM2TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
-    fhE2ndEMaxRatNLM2TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
-  }
-  else    
-  {
-    fhEMaxRatNLM3TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, eCellMax/energy, GetEventWeight());
-    fhE2ndRatNLM3TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, maxEList[1]/energy  , GetEventWeight());
-    fhE2ndEMaxRatNLM3TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, maxEList[1]/eCellMax, GetEventWeight());
-  }
   
   // Time diff in cluster, depending nCells
   for (Int_t ipos = 0; ipos < ncells; ipos++) 
@@ -1164,24 +1167,28 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard
       }
     } // exotic
     
-    if     (nlm==1)  
+    if ( fFillNLocMaxHistos )
     {
-      fhECellClusRatNLM1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, eCell/energy, GetEventWeight());
-      fhLogECellNLM1TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
-      fhECellWeightNLM1TCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, weight, GetEventWeight());
-    }
-    else if(nlm==2)  
-    {
-      fhECellClusRatNLM2TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, eCell/energy, GetEventWeight());
-      fhLogECellNLM2TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
-      fhECellWeightNLM2TCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, weight, GetEventWeight());
-    }
-    else         
-    {
-      fhECellClusRatNLM3TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, eCell/energy, GetEventWeight());
-      fhLogECellNLM3TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
-      fhECellWeightNLM3TCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, weight, GetEventWeight());
-    }
+      if     (nlm==1)  
+      {
+        fhECellClusRatNLM1TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, eCell/energy, GetEventWeight());
+        fhLogECellNLM1TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
+        fhECellWeightNLM1TCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, weight, GetEventWeight());
+      }
+      else if(nlm==2)  
+      {
+        fhECellClusRatNLM2TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, eCell/energy, GetEventWeight());
+        fhLogECellNLM2TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
+        fhECellWeightNLM2TCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, weight, GetEventWeight());
+      }
+      else         
+      {
+        fhECellClusRatNLM3TCardCorrelNCell[nCorrInd][nCorrNoInd][matched]->Fill(energy, eCell/energy, GetEventWeight());
+        fhLogECellNLM3TCardCorrelNCell    [nCorrInd][nCorrNoInd][matched]->Fill(energy, TMath::Log(eCell), GetEventWeight());
+        fhECellWeightNLM3TCardCorrelNCell [nCorrInd][nCorrNoInd][matched]->Fill(energy, weight, GetEventWeight());
+      }
+    } // NLM histos
+    
   } //cell loop
   
   // Invariant mass for clusters looking like photons, depending number of cells
@@ -1691,7 +1698,6 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   
   if ( fStudyModuleCells && GetCalorimeter() == kEMCAL )
   {
-    
     Int_t rowTCard = Int_t(iphiMax%8);
     Int_t colTCard = Int_t(ietaMax%2);
     Int_t iTCard = rowTCard+8*colTCard;
@@ -1790,10 +1796,12 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   if ( energy > fEMinShape && energy < fEMaxShape  && matchedPID == 0 ) 
   {
     fhNCellsPerClusterM02M20PerSM[smMax]->Fill(m20, nCell, m02, GetEventWeight());
-    fhNCellsPerClusterM02NLMPerSM[smMax]->Fill(nlm, nCell, m02, GetEventWeight());
+    if ( fFillNLocMaxHistos )
+      fhNCellsPerClusterM02NLMPerSM[smMax]->Fill(nlm, nCell, m02, GetEventWeight());
 
     // Col-Row histogram, fill emax/ecluster ratio for highest energy cell.
-    if ( fStudyColRowFromCellMax && fNCellsBins > 0)
+    if ( fStudyColRowFromCellMax && fNCellsBins > 0 && 
+         nCellBin >= 0 && nCellBin < fNCellsBins )
     {
       if      ( m02 > fM02LowBin[0]  && m02 <= fM02LowBin[1]  )
         fhColRowFromCellMaxECellClusterRatLowM02PerSM [smMax][ietaMax%2][nCellBin]->Fill(0., 0., eCellMax/energy, GetEventWeight());
@@ -1812,15 +1820,19 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax   , m02, GetEventWeight());
   fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
   fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
-  fhNCellsPerClusterNLM  [matchedPID]->Fill(energy, nCell  , nlm, GetEventWeight());
+  if ( fFillNLocMaxHistos )
+    fhNCellsPerClusterNLM  [matchedPID]->Fill(energy, nCell  , nlm, GetEventWeight());
   
   if ( matchedPID == 0  && fStudyColRowFromCellMax )
   {
     fhNCellsPerClusterM02PerSMPerCol[smMax][ietaMax%2]->Fill(energy, nCell, m02, GetEventWeight());
     fhNCellsPerClusterM20PerSMPerCol[smMax][ietaMax%2]->Fill(energy, nCell, m20, GetEventWeight());
-    fhNCellsPerClusterNLMPerSMPerCol[smMax][ietaMax%2]->Fill(energy, nCell, nlm, GetEventWeight());
+    if ( fFillNLocMaxHistos )
+      fhNCellsPerClusterNLMPerSMPerCol[smMax][ietaMax%2]->Fill(energy, nCell, nlm, GetEventWeight());
   }
   
+  if ( fFillNLocMaxHistos )
+    fhSMNLocMax          [matchedPID]->Fill(energy, smMax  , nlm  , GetEventWeight());
   fhSMNCell              [matchedPID]->Fill(energy, smMax  , nCell, GetEventWeight());
   fhSMM02NoCut           [matchedPID]->Fill(energy, smMax  , m02  , GetEventWeight());
   fhSMEMaxEClusterRat                ->Fill(energy, smMax  , eCellMax/energy  , GetEventWeight());
@@ -2181,8 +2193,11 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
     Int_t noverlaps =0;
     if ( IsDataMC() && fStudyShape )
     {
-      mcTag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(), clus->GetNLabels(), GetMC(),
-                                                GetReader()->GetNameOfMCEventHederGeneratorToAccept());
+      mcTag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(), 
+                                                clus->GetClusterMCEdepFraction(),
+                                                clus->GetNLabels(), GetMC(),
+                                                GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                                e);
       
       if      ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPi0        ) ||
                 GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCEta        ) ) mcIndex = 0;
@@ -2510,38 +2525,40 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhLambda1TCardCorrNoSelection[tm]->SetYTitle("#sigma^{2}_{short}");
       outputContainer->Add(fhLambda1TCardCorrNoSelection[tm]); 
       
-      fhLambda0NLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hLambda0NLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#sigma^{2}_{long} vs #it{E}, nlm=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhLambda0NLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E} (GeV)");
-      fhLambda0NLM1TCardCorrNoSelection[tm]->SetYTitle("#sigma^{2}_{long}");
-      outputContainer->Add(fhLambda0NLM1TCardCorrNoSelection[tm]); 
-      
-      fhLambda1NLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hLambda1NLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#sigma^{2}_{short} vs #it{E}, nlm=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhLambda1NLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E} (GeV)");
-      fhLambda1NLM1TCardCorrNoSelection[tm]->SetYTitle("#sigma^{2}_{short}");
-      outputContainer->Add(fhLambda1NLM1TCardCorrNoSelection[tm]); 
-      
-      fhLambda0NLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hLambda0NLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#sigma^{2}_{long} vs #it{E}, nlm=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhLambda0NLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E} (GeV)");
-      fhLambda0NLM2TCardCorrNoSelection[tm]->SetYTitle("#sigma^{2}_{long}");
-      outputContainer->Add(fhLambda0NLM2TCardCorrNoSelection[tm]); 
-      
-      fhLambda1NLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hLambda1NLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#sigma^{2}_{short} vs #it{E}, nlm=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhLambda1NLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E} (GeV)");
-      fhLambda1NLM2TCardCorrNoSelection[tm]->SetYTitle("#sigma^{2}_{short}");
-      outputContainer->Add(fhLambda1NLM2TCardCorrNoSelection[tm]); 
-      
+      if ( fFillNLocMaxHistos )
+      {
+        fhLambda0NLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hLambda0NLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#sigma^{2}_{long} vs #it{E}, nlm=1 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhLambda0NLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E} (GeV)");
+        fhLambda0NLM1TCardCorrNoSelection[tm]->SetYTitle("#sigma^{2}_{long}");
+        outputContainer->Add(fhLambda0NLM1TCardCorrNoSelection[tm]); 
+        
+        fhLambda1NLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hLambda1NLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#sigma^{2}_{short} vs #it{E}, nlm=1 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhLambda1NLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E} (GeV)");
+        fhLambda1NLM1TCardCorrNoSelection[tm]->SetYTitle("#sigma^{2}_{short}");
+        outputContainer->Add(fhLambda1NLM1TCardCorrNoSelection[tm]); 
+        
+        fhLambda0NLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hLambda0NLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#sigma^{2}_{long} vs #it{E}, nlm=2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhLambda0NLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E} (GeV)");
+        fhLambda0NLM2TCardCorrNoSelection[tm]->SetYTitle("#sigma^{2}_{long}");
+        outputContainer->Add(fhLambda0NLM2TCardCorrNoSelection[tm]); 
+        
+        fhLambda1NLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hLambda1NLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#sigma^{2}_{short} vs #it{E}, nlm=2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhLambda1NLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E} (GeV)");
+        fhLambda1NLM2TCardCorrNoSelection[tm]->SetYTitle("#sigma^{2}_{short}");
+        outputContainer->Add(fhLambda1NLM2TCardCorrNoSelection[tm]); 
+      }
       
       fhLambdaRTCardCorrNoSelection[tm]  = new TH2F 
       (Form("hLambdaRTCardCorrNoSelection%s",add[tm].Data()),
@@ -2559,278 +2576,281 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhNLocMaxTCardCorrNoSelection[tm]->SetYTitle("#it{n}_{LM}");
       outputContainer->Add(fhNLocMaxTCardCorrNoSelection[tm]); 
       
-      fhEMaxRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hEMaxRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs E, #it{n}_{LM}=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhEMaxRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhEMaxRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
-      outputContainer->Add(fhEMaxRatNLM1TCardCorrNoSelection[tm]); 
-      
-      fhEMaxRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hEMaxRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhEMaxRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhEMaxRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
-      outputContainer->Add(fhEMaxRatNLM2TCardCorrNoSelection[tm]); 
-      
-      fhEMaxRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hEMaxRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhEMaxRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhEMaxRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
-      outputContainer->Add(fhEMaxRatNLM3TCardCorrNoSelection[tm]); 
-      
-      fhE2ndRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd max}/#it{E}_{cluster} vs E, #it{n}_{LM}=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cluster}");
-      outputContainer->Add(fhE2ndRatNLM1TCardCorrNoSelection[tm]); 
-      
-      fhE2ndRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
-      outputContainer->Add(fhE2ndRatNLM2TCardCorrNoSelection[tm]); 
-      
-      fhE2ndRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
-      outputContainer->Add(fhE2ndRatNLM3TCardCorrNoSelection[tm]);
-      
-      
-      fhE2ndEMaxRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndEMaxRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max} vs E, #it{n}_{LM}=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndEMaxRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndEMaxRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max}");
-      outputContainer->Add(fhE2ndEMaxRatNLM1TCardCorrNoSelection[tm]); 
-      
-      fhE2ndEMaxRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndEMaxRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndEMaxRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndEMaxRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
-      outputContainer->Add(fhE2ndEMaxRatNLM2TCardCorrNoSelection[tm]); 
-      
-      fhE2ndEMaxRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndEMaxRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndEMaxRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndEMaxRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
-      outputContainer->Add(fhE2ndEMaxRatNLM3TCardCorrNoSelection[tm]);
-      
-      /////
-      
-      fhE2ndSameRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndSameRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd max}/#it{E}_{cluster} vs E, 2nd in same TCard as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndSameRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndSameRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cluster}");
-      outputContainer->Add(fhE2ndSameRatNLM1TCardCorrNoSelection[tm]); 
-      
-      fhE2ndSameRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndSameRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, 2nd in same TCard as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndSameRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndSameRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
-      outputContainer->Add(fhE2ndSameRatNLM2TCardCorrNoSelection[tm]); 
-      
-      fhE2ndSameRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndSameRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, 2nd in same TCard as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndSameRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndSameRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
-      outputContainer->Add(fhE2ndSameRatNLM3TCardCorrNoSelection[tm]);
-      
-      
-      fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndSameEMaxRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max} vs E, 2nd in same TCard as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max}");
-      outputContainer->Add(fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]); 
-      
-      fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndSameEMaxRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs E, 2nd in same TCard as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
-      outputContainer->Add(fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]); 
-      
-      fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hE2ndSameEMaxRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs E, 2nd in same TCard as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
-      outputContainer->Add(fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]);
-      
-      /////
-      
-      fhECellClusRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellClusRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}/#it{E}_{cluster} vs E_{cluster}, #it{n}_{LM}=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhECellClusRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellClusRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
-      outputContainer->Add(fhECellClusRatNLM1TCardCorrNoSelection[tm]); 
-      
-      fhECellClusRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellClusRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}/#it{E}_{cluster} vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhECellClusRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellClusRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
-      outputContainer->Add(fhECellClusRatNLM2TCardCorrNoSelection[tm]); 
-      
-      fhECellClusRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellClusRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}/#it{E}_{cluster} vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhECellClusRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellClusRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
-      outputContainer->Add(fhECellClusRatNLM3TCardCorrNoSelection[tm]);
-      
-      fhLogECellNLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hLogECellNLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("log(#it{E}_{cell}) vs E_{cluster}, #it{n}_{LM}=1, w > 0.01 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,150,-3,3); 
-      fhLogECellNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhLogECellNLM1TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
-      outputContainer->Add(fhLogECellNLM1TCardCorrNoSelection[tm]); 
-      
-      fhLogECellNLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hLogECellNLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("log(#it{E}_{cell}) vs E, #it{n}_{LM}=2, w > 0.01 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,150,-3,3); 
-      fhLogECellNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhLogECellNLM2TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
-      outputContainer->Add(fhLogECellNLM2TCardCorrNoSelection[tm]); 
-      
-      fhLogECellNLM3TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hLogECellNLM3TCardCorrNoSelection%s",add[tm].Data()),
-       Form("log(#it{E}_{cell}) vs E, #it{n}_{LM}>2, w > 0.01 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,150,-3,3); 
-      fhLogECellNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhLogECellNLM3TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
-      outputContainer->Add(fhLogECellNLM3TCardCorrNoSelection[tm]);
-      
-      
-      fhECellWeightNLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellWeightNLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs E_{cluster}, #it{n}_{LM}=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,90,0,4.5); 
-      fhECellWeightNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellWeightNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
-      outputContainer->Add(fhECellWeightNLM1TCardCorrNoSelection[tm]); 
-      
-      fhECellWeightNLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellWeightNLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,90,0,4.5); 
-      fhECellWeightNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellWeightNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
-      outputContainer->Add(fhECellWeightNLM2TCardCorrNoSelection[tm]); 
-      
-      fhECellWeightNLM3TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellWeightNLM3TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,90,0,4.5); 
-      fhECellWeightNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellWeightNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
-      outputContainer->Add(fhECellWeightNLM3TCardCorrNoSelection[tm]);
-      
-      
-      fhECellSameClusRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellSameClusRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}/#it{E}_{cluster} vs E_{cluster}, cell from same T-Card as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhECellSameClusRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellSameClusRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
-      outputContainer->Add(fhECellSameClusRatNLM1TCardCorrNoSelection[tm]); 
-      
-      fhECellSameClusRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellSameClusRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}/#it{E}_{cluster} vs E, cell from same T-Card as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhECellSameClusRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellSameClusRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
-      outputContainer->Add(fhECellSameClusRatNLM2TCardCorrNoSelection[tm]); 
-      
-      fhECellSameClusRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellSameClusRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{E}_{cell}/#it{E}_{cluster} vs E, cell from same T-Card as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,100,0,1); 
-      fhECellSameClusRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellSameClusRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
-      outputContainer->Add(fhECellSameClusRatNLM3TCardCorrNoSelection[tm]);
-      
-      fhLogECellSameNLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hLogECellSameNLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("log(#it{E}_{cell}) vs E_{cluster}, cell from same T-Card as leading, #it{n}_{LM}=1, w > 0.01 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,150,-3,3); 
-      fhLogECellSameNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhLogECellSameNLM1TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
-      outputContainer->Add(fhLogECellSameNLM1TCardCorrNoSelection[tm]); 
-      
-      fhLogECellSameNLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hLogECellSameNLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("log(#it{E}_{cell}) vs E, #it{n}_{LM}=2, cell from same T-Card as leading, w > 0.01 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,150,-3,3); 
-      fhLogECellSameNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhLogECellSameNLM2TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
-      outputContainer->Add(fhLogECellSameNLM2TCardCorrNoSelection[tm]); 
-      
-      fhLogECellSameNLM3TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hLogECellSameNLM3TCardCorrNoSelection%s",add[tm].Data()),
-       Form("log(#it{E}_{cell}) vs E, #it{n}_{LM}>2, cell from same T-Card as leading, w > 0.01 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,150,-3,3); 
-      fhLogECellSameNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhLogECellSameNLM3TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
-      outputContainer->Add(fhLogECellSameNLM3TCardCorrNoSelection[tm]);
-      
-      
-      fhECellSameWeightNLM1TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellSameWeightNLM1TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs E_{cluster}, cell from same T-Card as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,90,0,4.5); 
-      fhECellSameWeightNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellSameWeightNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
-      outputContainer->Add(fhECellSameWeightNLM1TCardCorrNoSelection[tm]); 
-      
-      fhECellSameWeightNLM2TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellSameWeightNLM2TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs E,  cell from same T-Card as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,90,0,4.5); 
-      fhECellSameWeightNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellSameWeightNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
-      outputContainer->Add(fhECellSameWeightNLM2TCardCorrNoSelection[tm]); 
-      
-      fhECellSameWeightNLM3TCardCorrNoSelection[tm]  = new TH2F 
-      (Form("hECellSameWeightNLM3TCardCorrNoSelection%s",add[tm].Data()),
-       Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))vs E, cell from same T-Card as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
-       nptbins,ptmin,ptmax,90,0,4.5); 
-      fhECellSameWeightNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhECellSameWeightNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
-      outputContainer->Add(fhECellSameWeightNLM3TCardCorrNoSelection[tm]);
+      if ( fFillNLocMaxHistos )
+      {
+        fhEMaxRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hEMaxRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs E, #it{n}_{LM}=1 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhEMaxRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhEMaxRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
+        outputContainer->Add(fhEMaxRatNLM1TCardCorrNoSelection[tm]); 
+        
+        fhEMaxRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hEMaxRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhEMaxRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhEMaxRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
+        outputContainer->Add(fhEMaxRatNLM2TCardCorrNoSelection[tm]); 
+        
+        fhEMaxRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hEMaxRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhEMaxRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhEMaxRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
+        outputContainer->Add(fhEMaxRatNLM3TCardCorrNoSelection[tm]); 
+        
+        fhE2ndRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd max}/#it{E}_{cluster} vs E, #it{n}_{LM}=1 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cluster}");
+        outputContainer->Add(fhE2ndRatNLM1TCardCorrNoSelection[tm]); 
+        
+        fhE2ndRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
+        outputContainer->Add(fhE2ndRatNLM2TCardCorrNoSelection[tm]); 
+        
+        fhE2ndRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
+        outputContainer->Add(fhE2ndRatNLM3TCardCorrNoSelection[tm]);
+        
+        
+        fhE2ndEMaxRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndEMaxRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max} vs E, #it{n}_{LM}=1 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndEMaxRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndEMaxRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max}");
+        outputContainer->Add(fhE2ndEMaxRatNLM1TCardCorrNoSelection[tm]); 
+        
+        fhE2ndEMaxRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndEMaxRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndEMaxRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndEMaxRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
+        outputContainer->Add(fhE2ndEMaxRatNLM2TCardCorrNoSelection[tm]); 
+        
+        fhE2ndEMaxRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndEMaxRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndEMaxRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndEMaxRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
+        outputContainer->Add(fhE2ndEMaxRatNLM3TCardCorrNoSelection[tm]);
+        
+        /////
+        
+        fhE2ndSameRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndSameRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd max}/#it{E}_{cluster} vs E, 2nd in same TCard as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndSameRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndSameRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cluster}");
+        outputContainer->Add(fhE2ndSameRatNLM1TCardCorrNoSelection[tm]); 
+        
+        fhE2ndSameRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndSameRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, 2nd in same TCard as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndSameRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndSameRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
+        outputContainer->Add(fhE2ndSameRatNLM2TCardCorrNoSelection[tm]); 
+        
+        fhE2ndSameRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndSameRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs E, 2nd in same TCard as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndSameRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndSameRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
+        outputContainer->Add(fhE2ndSameRatNLM3TCardCorrNoSelection[tm]);
+        
+        
+        fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndSameEMaxRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max} vs E, 2nd in same TCard as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max}");
+        outputContainer->Add(fhE2ndSameEMaxRatNLM1TCardCorrNoSelection[tm]); 
+        
+        fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndSameEMaxRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs E, 2nd in same TCard as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
+        outputContainer->Add(fhE2ndSameEMaxRatNLM2TCardCorrNoSelection[tm]); 
+        
+        fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hE2ndSameEMaxRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs E, 2nd in same TCard as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
+        outputContainer->Add(fhE2ndSameEMaxRatNLM3TCardCorrNoSelection[tm]);
+        
+        /////
+        
+        fhECellClusRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellClusRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}/#it{E}_{cluster} vs E_{cluster}, #it{n}_{LM}=1 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhECellClusRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellClusRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+        outputContainer->Add(fhECellClusRatNLM1TCardCorrNoSelection[tm]); 
+        
+        fhECellClusRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellClusRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}/#it{E}_{cluster} vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhECellClusRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellClusRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+        outputContainer->Add(fhECellClusRatNLM2TCardCorrNoSelection[tm]); 
+        
+        fhECellClusRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellClusRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}/#it{E}_{cluster} vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhECellClusRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellClusRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+        outputContainer->Add(fhECellClusRatNLM3TCardCorrNoSelection[tm]);
+        
+        fhLogECellNLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hLogECellNLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("log(#it{E}_{cell}) vs E_{cluster}, #it{n}_{LM}=1, w > 0.01 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,150,-3,3); 
+        fhLogECellNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhLogECellNLM1TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
+        outputContainer->Add(fhLogECellNLM1TCardCorrNoSelection[tm]); 
+        
+        fhLogECellNLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hLogECellNLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("log(#it{E}_{cell}) vs E, #it{n}_{LM}=2, w > 0.01 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,150,-3,3); 
+        fhLogECellNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhLogECellNLM2TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
+        outputContainer->Add(fhLogECellNLM2TCardCorrNoSelection[tm]); 
+        
+        fhLogECellNLM3TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hLogECellNLM3TCardCorrNoSelection%s",add[tm].Data()),
+         Form("log(#it{E}_{cell}) vs E, #it{n}_{LM}>2, w > 0.01 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,150,-3,3); 
+        fhLogECellNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhLogECellNLM3TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
+        outputContainer->Add(fhLogECellNLM3TCardCorrNoSelection[tm]);
+        
+        
+        fhECellWeightNLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellWeightNLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs E_{cluster}, #it{n}_{LM}=1 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,90,0,4.5); 
+        fhECellWeightNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellWeightNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+        outputContainer->Add(fhECellWeightNLM1TCardCorrNoSelection[tm]); 
+        
+        fhECellWeightNLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellWeightNLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs E, #it{n}_{LM}=2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,90,0,4.5); 
+        fhECellWeightNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellWeightNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+        outputContainer->Add(fhECellWeightNLM2TCardCorrNoSelection[tm]); 
+        
+        fhECellWeightNLM3TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellWeightNLM3TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))vs E, #it{n}_{LM}>2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,90,0,4.5); 
+        fhECellWeightNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellWeightNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+        outputContainer->Add(fhECellWeightNLM3TCardCorrNoSelection[tm]);
+        
+        
+        fhECellSameClusRatNLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellSameClusRatNLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}/#it{E}_{cluster} vs E_{cluster}, cell from same T-Card as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhECellSameClusRatNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellSameClusRatNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+        outputContainer->Add(fhECellSameClusRatNLM1TCardCorrNoSelection[tm]); 
+        
+        fhECellSameClusRatNLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellSameClusRatNLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}/#it{E}_{cluster} vs E, cell from same T-Card as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhECellSameClusRatNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellSameClusRatNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+        outputContainer->Add(fhECellSameClusRatNLM2TCardCorrNoSelection[tm]); 
+        
+        fhECellSameClusRatNLM3TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellSameClusRatNLM3TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{E}_{cell}/#it{E}_{cluster} vs E, cell from same T-Card as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,100,0,1); 
+        fhECellSameClusRatNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellSameClusRatNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+        outputContainer->Add(fhECellSameClusRatNLM3TCardCorrNoSelection[tm]);
+        
+        fhLogECellSameNLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hLogECellSameNLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("log(#it{E}_{cell}) vs E_{cluster}, cell from same T-Card as leading, #it{n}_{LM}=1, w > 0.01 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,150,-3,3); 
+        fhLogECellSameNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhLogECellSameNLM1TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
+        outputContainer->Add(fhLogECellSameNLM1TCardCorrNoSelection[tm]); 
+        
+        fhLogECellSameNLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hLogECellSameNLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("log(#it{E}_{cell}) vs E, #it{n}_{LM}=2, cell from same T-Card as leading, w > 0.01 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,150,-3,3); 
+        fhLogECellSameNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhLogECellSameNLM2TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
+        outputContainer->Add(fhLogECellSameNLM2TCardCorrNoSelection[tm]); 
+        
+        fhLogECellSameNLM3TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hLogECellSameNLM3TCardCorrNoSelection%s",add[tm].Data()),
+         Form("log(#it{E}_{cell}) vs E, #it{n}_{LM}>2, cell from same T-Card as leading, w > 0.01 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,150,-3,3); 
+        fhLogECellSameNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhLogECellSameNLM3TCardCorrNoSelection[tm]->SetYTitle("log(#it{E}_{cell})");
+        outputContainer->Add(fhLogECellSameNLM3TCardCorrNoSelection[tm]);
+        
+        
+        fhECellSameWeightNLM1TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellSameWeightNLM1TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs E_{cluster}, cell from same T-Card as leading, #it{n}_{LM}=1 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,90,0,4.5); 
+        fhECellSameWeightNLM1TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellSameWeightNLM1TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+        outputContainer->Add(fhECellSameWeightNLM1TCardCorrNoSelection[tm]); 
+        
+        fhECellSameWeightNLM2TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellSameWeightNLM2TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs E,  cell from same T-Card as leading, #it{n}_{LM}=2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,90,0,4.5); 
+        fhECellSameWeightNLM2TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellSameWeightNLM2TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+        outputContainer->Add(fhECellSameWeightNLM2TCardCorrNoSelection[tm]); 
+        
+        fhECellSameWeightNLM3TCardCorrNoSelection[tm]  = new TH2F 
+        (Form("hECellSameWeightNLM3TCardCorrNoSelection%s",add[tm].Data()),
+         Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))vs E, cell from same T-Card as leading, #it{n}_{LM}>2 %s",add[tm].Data()),
+         nptbins,ptmin,ptmax,90,0,4.5); 
+        fhECellSameWeightNLM3TCardCorrNoSelection[tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhECellSameWeightNLM3TCardCorrNoSelection[tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+        outputContainer->Add(fhECellSameWeightNLM3TCardCorrNoSelection[tm]);
+      } // NLM histos
       
       fhExoticTCardCorrNoSelection[tm]  = new TH2F 
       (Form("hExoticTCardCorrNoSelection%s",add[tm].Data()),
@@ -3119,39 +3139,6 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
           fhLambda1TCardCorrelNCell[i][j][tm]->SetYTitle("#sigma^{2}_{short}");
           outputContainer->Add(fhLambda1TCardCorrelNCell[i][j][tm]); 
           
-          fhLambda0NLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hLambda0NLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#sigma^{2}_{long} vs #it{E}, nlm=1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-          fhLambda0NLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
-          fhLambda0NLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#sigma^{2}_{long}");
-          outputContainer->Add(fhLambda0NLM1TCardCorrelNCell[i][j][tm]); 
-          
-          fhLambda1NLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hLambda1NLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#sigma^{2}_{short} vs #it{E}, nlm=1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-          fhLambda1NLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
-          fhLambda1NLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#sigma^{2}_{short}");
-          outputContainer->Add(fhLambda1NLM1TCardCorrelNCell[i][j][tm]); 
-          
-          fhLambda0NLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hLambda0NLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#sigma^{2}_{long} vs #it{E}, nlm=2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-          fhLambda0NLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
-          fhLambda0NLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#sigma^{2}_{long}");
-          outputContainer->Add(fhLambda0NLM2TCardCorrelNCell[i][j][tm]); 
-          
-          fhLambda1NLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hLambda1NLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#sigma^{2}_{short} vs #it{E}, nlm=2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-          fhLambda1NLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
-          fhLambda1NLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#sigma^{2}_{short}");
-          outputContainer->Add(fhLambda1NLM2TCardCorrelNCell[i][j][tm]); 
-          
-          
           //          fhLambdaRTCardCorrelNCell[i][j][tm]  = new TH2F 
           //          (Form("hLambdaRTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
           //           Form("#sigma^{2}_{short}/#sigma^{2}_{long} vs #it{E}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
@@ -3160,158 +3147,193 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
           //          fhLambdaRTCardCorrelNCell[i][j][tm]->SetYTitle("#sigma^{2}_{short}/#sigma^{2}_{long}");
           //          outputContainer->Add(fhLambdaRTCardCorrelNCell[i][j][tm]); 
           
-          fhNLocMaxTCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hNLocMaxTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{n}_{LM} vs #it{E}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,10,0,10); 
-          fhNLocMaxTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
-          fhNLocMaxTCardCorrelNCell[i][j][tm]->SetYTitle("#it{n}_{LM}");
-          outputContainer->Add(fhNLocMaxTCardCorrelNCell[i][j][tm]); 
-          
-          fhEMaxRatNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hEMaxRatNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhEMaxRatNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhEMaxRatNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
-          outputContainer->Add(fhEMaxRatNLM1TCardCorrelNCell[i][j][tm]); 
-          
-          fhEMaxRatNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hEMaxRatNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhEMaxRatNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhEMaxRatNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
-          outputContainer->Add(fhEMaxRatNLM2TCardCorrelNCell[i][j][tm]); 
-          
-          fhEMaxRatNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hEMaxRatNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhEMaxRatNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhEMaxRatNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
-          outputContainer->Add(fhEMaxRatNLM3TCardCorrelNCell[i][j][tm]); 
-          
-          fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hE2ndRatNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}^{2nd max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cluster}");
-          outputContainer->Add(fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]); 
-          
-          fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hE2ndRatNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
-          outputContainer->Add(fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]); 
-          
-          fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hE2ndRatNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
-          outputContainer->Add(fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]); 
-          
-          fhE2ndEMaxRatNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hE2ndEMaxRatNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max} vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhE2ndEMaxRatNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhE2ndEMaxRatNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max}");
-          outputContainer->Add(fhE2ndEMaxRatNLM1TCardCorrelNCell[i][j][tm]); 
-          
-          fhE2ndEMaxRatNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hE2ndEMaxRatNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhE2ndEMaxRatNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhE2ndEMaxRatNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
-          outputContainer->Add(fhE2ndEMaxRatNLM2TCardCorrelNCell[i][j][tm]); 
-          
-          fhE2ndEMaxRatNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hE2ndEMaxRatNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs #it{E}_{cell}^{max}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhE2ndEMaxRatNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhE2ndEMaxRatNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
-          outputContainer->Add(fhE2ndEMaxRatNLM3TCardCorrelNCell[i][j][tm]); 
-          
-          
-          fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hECellClusRatNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
-          outputContainer->Add(fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]); 
-          
-          fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hECellClusRatNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
-          outputContainer->Add(fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]); 
-          
-          fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hECellClusRatNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{E}_{cell}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,100,0,1); 
-          fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
-          outputContainer->Add(fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]); 
-          
-          fhLogECellNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hLogECellNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("log(#it{E}_{cell}) vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,150,-3,3); 
-          fhLogECellNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhLogECellNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("log(#it{E}_{cell})");
-          outputContainer->Add(fhLogECellNLM1TCardCorrelNCell[i][j][tm]); 
-          
-          fhLogECellNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hLogECellNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("log(#it{E}_{cell}) vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,150,-3,3); 
-          fhLogECellNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhLogECellNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("log(#it{E}_{cell})");
-          outputContainer->Add(fhLogECellNLM2TCardCorrelNCell[i][j][tm]); 
-          
-          fhLogECellNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hLogECellNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("log(#it{E}_{cell}) vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,150,-3,3); 
-          fhLogECellNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhLogECellNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("log(#it{E}_{cell})");
-          outputContainer->Add(fhLogECellNLM3TCardCorrelNCell[i][j][tm]); 
-          
-          fhECellWeightNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hECellWeightNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,90,0,4.5); 
-          fhECellWeightNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhECellWeightNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
-          outputContainer->Add(fhECellWeightNLM1TCardCorrelNCell[i][j][tm]); 
-          
-          fhECellWeightNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hECellWeightNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,90,0,4.5); 
-          fhECellWeightNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
-          fhECellWeightNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
-          outputContainer->Add(fhECellWeightNLM2TCardCorrelNCell[i][j][tm]); 
-          
-          fhECellWeightNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
-          (Form("hECellWeightNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
-           Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
-           nptbins,ptmin,ptmax,90,0,4.5); 
-          fhECellWeightNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
-          fhECellWeightNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("Log. weight");
-          outputContainer->Add(fhECellWeightNLM3TCardCorrelNCell[i][j][tm]); 
+          if ( fFillNLocMaxHistos )
+          {
+            fhLambda0NLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hLambda0NLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#sigma^{2}_{long} vs #it{E}, nlm=1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+            fhLambda0NLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
+            fhLambda0NLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#sigma^{2}_{long}");
+            outputContainer->Add(fhLambda0NLM1TCardCorrelNCell[i][j][tm]); 
+            
+            fhLambda1NLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hLambda1NLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#sigma^{2}_{short} vs #it{E}, nlm=1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+            fhLambda1NLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
+            fhLambda1NLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#sigma^{2}_{short}");
+            outputContainer->Add(fhLambda1NLM1TCardCorrelNCell[i][j][tm]); 
+            
+            fhLambda0NLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hLambda0NLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#sigma^{2}_{long} vs #it{E}, nlm=2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+            fhLambda0NLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
+            fhLambda0NLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#sigma^{2}_{long}");
+            outputContainer->Add(fhLambda0NLM2TCardCorrelNCell[i][j][tm]); 
+            
+            fhLambda1NLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hLambda1NLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#sigma^{2}_{short} vs #it{E}, nlm=2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+            fhLambda1NLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
+            fhLambda1NLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#sigma^{2}_{short}");
+            outputContainer->Add(fhLambda1NLM2TCardCorrelNCell[i][j][tm]); 
+            
+            fhNLocMaxTCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hNLocMaxTCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{n}_{LM} vs #it{E}, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,10,0,10); 
+            fhNLocMaxTCardCorrelNCell[i][j][tm]->SetXTitle("#it{E} (GeV)");
+            fhNLocMaxTCardCorrelNCell[i][j][tm]->SetYTitle("#it{n}_{LM}");
+            outputContainer->Add(fhNLocMaxTCardCorrelNCell[i][j][tm]); 
+            
+            fhEMaxRatNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hEMaxRatNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhEMaxRatNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhEMaxRatNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
+            outputContainer->Add(fhEMaxRatNLM1TCardCorrelNCell[i][j][tm]); 
+            
+            fhEMaxRatNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hEMaxRatNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhEMaxRatNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhEMaxRatNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
+            outputContainer->Add(fhEMaxRatNLM2TCardCorrelNCell[i][j][tm]); 
+            
+            fhEMaxRatNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hEMaxRatNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}^{max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhEMaxRatNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhEMaxRatNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{max}/#it{E}_{cluster}");
+            outputContainer->Add(fhEMaxRatNLM3TCardCorrelNCell[i][j][tm]); 
+            
+            fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hE2ndRatNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}^{2nd max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cluster}");
+            outputContainer->Add(fhE2ndRatNLM1TCardCorrelNCell[i][j][tm]); 
+            
+            fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hE2ndRatNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
+            outputContainer->Add(fhE2ndRatNLM2TCardCorrelNCell[i][j][tm]); 
+            
+            fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hE2ndRatNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster}");
+            outputContainer->Add(fhE2ndRatNLM3TCardCorrelNCell[i][j][tm]); 
+            
+            fhE2ndEMaxRatNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hE2ndEMaxRatNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max} vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhE2ndEMaxRatNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhE2ndEMaxRatNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd max}/#it{E}_{cell}^{max}");
+            outputContainer->Add(fhE2ndEMaxRatNLM1TCardCorrelNCell[i][j][tm]); 
+            
+            fhE2ndEMaxRatNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hE2ndEMaxRatNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max} vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhE2ndEMaxRatNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhE2ndEMaxRatNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
+            outputContainer->Add(fhE2ndEMaxRatNLM2TCardCorrelNCell[i][j][tm]); 
+            
+            fhE2ndEMaxRatNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hE2ndEMaxRatNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}^{2nd loc max}/#it{E}_{cluster} vs #it{E}_{cell}^{max}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhE2ndEMaxRatNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhE2ndEMaxRatNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}^{2nd loc max}/#it{E}_{cell}^{max}");
+            outputContainer->Add(fhE2ndEMaxRatNLM3TCardCorrelNCell[i][j][tm]); 
+            
+            
+            fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hECellClusRatNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+            outputContainer->Add(fhECellClusRatNLM1TCardCorrelNCell[i][j][tm]); 
+            
+            fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hECellClusRatNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+            outputContainer->Add(fhECellClusRatNLM2TCardCorrelNCell[i][j][tm]); 
+            
+            fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hECellClusRatNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{E}_{cell}/#it{E}_{cluster} vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,100,0,1); 
+            fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("#it{E}_{cell}/#it{E}_{cluster}");
+            outputContainer->Add(fhECellClusRatNLM3TCardCorrelNCell[i][j][tm]); 
+            
+            fhLogECellNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hLogECellNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("log(#it{E}_{cell}) vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,150,-3,3); 
+            fhLogECellNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhLogECellNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("log(#it{E}_{cell})");
+            outputContainer->Add(fhLogECellNLM1TCardCorrelNCell[i][j][tm]); 
+            
+            fhLogECellNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hLogECellNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("log(#it{E}_{cell}) vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,150,-3,3); 
+            fhLogECellNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhLogECellNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("log(#it{E}_{cell})");
+            outputContainer->Add(fhLogECellNLM2TCardCorrelNCell[i][j][tm]); 
+            
+            fhLogECellNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hLogECellNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("log(#it{E}_{cell}) vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,150,-3,3); 
+            fhLogECellNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhLogECellNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("log(#it{E}_{cell})");
+            outputContainer->Add(fhLogECellNLM3TCardCorrelNCell[i][j][tm]); 
+            
+            fhECellWeightNLM1TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hECellWeightNLM1TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs #it{E}_{cluster}, #it{n}_{LM} = 1, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,90,0,4.5); 
+            fhECellWeightNLM1TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhECellWeightNLM1TCardCorrelNCell[i][j][tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+            outputContainer->Add(fhECellWeightNLM1TCardCorrelNCell[i][j][tm]); 
+            
+            fhECellWeightNLM2TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hECellWeightNLM2TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs #it{E}_{cluster}, #it{n}_{LM} = 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,90,0,4.5); 
+            fhECellWeightNLM2TCardCorrelNCell[i][j][tm]->SetXTitle("#it{E}_{cluster} (GeV)");
+            fhECellWeightNLM2TCardCorrelNCell[i][j][tm]->SetYTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+            outputContainer->Add(fhECellWeightNLM2TCardCorrelNCell[i][j][tm]); 
+            
+            fhECellWeightNLM3TCardCorrelNCell[i][j][tm]  = new TH2F 
+            (Form("hECellWeightNLM3TCardCorrelNCell_Same%d_Diff%d%s",i,j,add[tm].Data()),
+             Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs #it{E}_{cluster}, #it{n}_{LM} > 2, N cells with  w > 0.01, TCard same = %d, diff =%d %s",i,j,add[tm].Data()),
+             nptbins,ptmin,ptmax,90,0,4.5); 
+            fhECellWeightNLM3TCardCorrelNCell[i][j][tm]->SetXTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
+            fhECellWeightNLM3TCardCorrelNCell[i][j][tm]->SetYTitle("Log. weight");
+            outputContainer->Add(fhECellWeightNLM3TCardCorrelNCell[i][j][tm]); 
+          } // NLM histos
           
           if ( fStudyInvMass )
           {
@@ -4135,16 +4157,19 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhNCellsPerClusterM02M20PerSM[i]->SetXTitle("#sigma^{2}_{short}");
       outputContainer->Add(fhNCellsPerClusterM02M20PerSM[i]);  
 
-      fhNCellsPerClusterM02NLMPerSM [i] = new TH3F
-      (Form("hNCellsPerClusterM02NLM_SM%d",i),
-       Form(" vs #sigma^{2}_{long} vs #it{n}_{cells}^{w>0.01} vs N_{lm}, "
-            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
-       10,0,10, cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
-      fhNCellsPerClusterM02NLMPerSM[i]->SetZTitle("#sigma^{2}_{long}");
-      fhNCellsPerClusterM02NLMPerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
-      fhNCellsPerClusterM02NLMPerSM[i]->SetXTitle("n_{lm}");
-      outputContainer->Add(fhNCellsPerClusterM02NLMPerSM[i]);  
-
+      if ( fFillNLocMaxHistos )
+      {
+        fhNCellsPerClusterM02NLMPerSM [i] = new TH3F
+        (Form("hNCellsPerClusterM02NLM_SM%d",i),
+         Form(" vs #sigma^{2}_{long} vs #it{n}_{cells}^{w>0.01} vs N_{lm}, "
+              "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+         10,0,10, cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+        fhNCellsPerClusterM02NLMPerSM[i]->SetZTitle("#sigma^{2}_{long}");
+        fhNCellsPerClusterM02NLMPerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterM02NLMPerSM[i]->SetXTitle("n_{lm}");
+        outputContainer->Add(fhNCellsPerClusterM02NLMPerSM[i]);  
+      }
+      
       fhEMaxCellEClusterM02NCellPerSM[i]  = new TH3F 
       (Form("hEMaxCellEClusterM02NCell_SM%d",i),
        Form("(#it{E}_{cluster} - #it{E}_{max cell})/#it{E}_{cluster} vs #sigma^{2}_{long} vs #it{n}_{cells}^{w>0.01}, "
@@ -4262,15 +4287,17 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
           fhNCellsPerClusterM20PerSMPerCol[i][col]->SetZTitle("#sigma^{2}_{short}");
           outputContainer->Add(fhNCellsPerClusterM20PerSMPerCol[i][col]); 
           
-          fhNCellsPerClusterNLMPerSMPerCol[i][col]  = new TH3F 
-          (Form("hNCellsPerClusterNLM_SM%d_Col%d",i,col),
-           Form("#it{E} vs #it{n}_{cells} vs n_{lm}, SM=%d, colum %d",i,col),
-           nEbins,minE,maxE,cellBins,cellMin,cellMax,10,0,10); 
-          fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetXTitle("#it{E} (GeV)");
-          fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetYTitle("#it{n}_{cells}^{w>0.01}");
-          fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetZTitle("n_{lm}");
-          outputContainer->Add(fhNCellsPerClusterNLMPerSMPerCol[i][col]); 
-          
+          if ( fFillNLocMaxHistos )
+          {
+            fhNCellsPerClusterNLMPerSMPerCol[i][col]  = new TH3F 
+            (Form("hNCellsPerClusterNLM_SM%d_Col%d",i,col),
+             Form("#it{E} vs #it{n}_{cells} vs n_{lm}, SM=%d, colum %d",i,col),
+             nEbins,minE,maxE,cellBins,cellMin,cellMax,10,0,10); 
+            fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetXTitle("#it{E} (GeV)");
+            fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+            fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetZTitle("n_{lm}");
+            outputContainer->Add(fhNCellsPerClusterNLMPerSMPerCol[i][col]); 
+          }
           
           fhColRowFromCellMaxLowM02PerSM[i][col]  = new TH3F 
           (Form("hColRowFromCellMaxLowM02_SM%d_Col%d",i,col),
@@ -4522,14 +4549,17 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhNCellsPerClusterM20[imatch]->SetZTitle("#sigma^{2}_{short}");
       outputContainer->Add(fhNCellsPerClusterM20[imatch]); 
 
-      fhNCellsPerClusterNLM[imatch]  = new TH3F 
-      (Form("hNCellsPerClusterNLM_%s",matchCase[imatch].Data()),
-       Form("#it{E} vs #it{n}_{cells} vs n_{lm} for ID %s",matchCase[imatch].Data()),
-       nEbins,minE,maxE,cellBins,cellMin,cellMax,10,0,10); 
-      fhNCellsPerClusterNLM[imatch]->SetXTitle("#it{E} (GeV)");
-      fhNCellsPerClusterNLM[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
-      fhNCellsPerClusterNLM[imatch]->SetZTitle("n_{lm}");
-      outputContainer->Add(fhNCellsPerClusterNLM[imatch]); 
+      if ( fFillNLocMaxHistos )
+      {
+        fhNCellsPerClusterNLM[imatch]  = new TH3F 
+        (Form("hNCellsPerClusterNLM_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs #it{n}_{cells} vs n_{lm} for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,cellBins,cellMin,cellMax,10,0,10); 
+        fhNCellsPerClusterNLM[imatch]->SetXTitle("#it{E} (GeV)");
+        fhNCellsPerClusterNLM[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterNLM[imatch]->SetZTitle("n_{lm}");
+        outputContainer->Add(fhNCellsPerClusterNLM[imatch]); 
+      }
       
       fhSMM02[imatch]  = new TH3F 
       (Form("hSMM02_%s",matchCase[imatch].Data()),
@@ -4588,6 +4618,18 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhSMM20HighM02NoCut[imatch]->SetYTitle("SM number");
       fhSMM20HighM02NoCut[imatch]->SetZTitle("#sigma^{2}_{short}");
       outputContainer->Add(fhSMM20HighM02NoCut[imatch]);       
+
+      if( fFillNLocMaxHistos )
+      {
+        fhSMNLocMax[imatch]  = new TH3F 
+        (Form("hSMNLocMax_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs SM number vs #it{n}_{LM} for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,10,0.5,10.5); 
+        fhSMNLocMax[imatch]->SetXTitle("#it{E} (GeV)");
+        fhSMNLocMax[imatch]->SetYTitle("SM number");
+        fhSMNLocMax[imatch]->SetZTitle("#it{n}_{LM}");
+        outputContainer->Add(fhSMNLocMax[imatch]); 
+      }
       
       fhSMNCell[imatch]  = new TH3F 
       (Form("hSMNCell_%s",matchCase[imatch].Data()),
@@ -5749,14 +5791,46 @@ void AliAnaClusterShapeCorrelStudies::Print(const Option_t * opt) const
   AliAnaCaloTrackCorrBaseClass::Print(" ");
   
   printf("Select Calorimeter %s \n",GetCalorimeterString().Data());
-  printf("Min n cells    : %d\n"   , fNCellMin) ;
-  printf("Min dist to bad: %2.1f\n", fMinDistToBad) ;
-  printf("Min M02        : %1.2f\n", fM02Min) ;
   
-  printf("Inv. Mass %2.1f < E_clus < %2.1f GeV/c\n"  , fInvMassMinECut  , fInvMassMaxECut  ) ;
-  printf("Inv. Mass %2.1f < M02_clus < %2.1f GeV/c\n", fInvMassMinM02Cut, fInvMassMaxM02Cut) ;
-  printf("Inv. Mass open angle : %2.1f deg\n"        , fInvMassMaxOpenAngle*TMath::RadToDeg()) ;
-  printf("Inv. Mass time difference: %2.1f ns\n"     , fInvMassMaxTimeDifference) ;
+  printf("Min n cells, basic cluster: %d\n"   , fNCellMin) ;
+  printf("Min n cells shape studies : %d\n"   , fNCellMinShape) ;
+  printf("N cell bins: %d {",fNCellsBins);
+  for(Int_t ibin = 0; ibin < fNCellsBins+1; ibin++) printf(" %d ", fNCellsBinsLimits[ibin]);
+  printf("}\n");
+  
+  printf("Min distance to bad channel: %2.1f\n", fMinDistToBad) ;
+  
+  printf("Min  M02 : %1.2f\n", fM02Min) ;
+  printf("Low  M02 bin [%1.2f,%1.2f]\n", fM02LowBin[0],fM02LowBin[1]) ;
+  printf("High M02 bin [%1.2f,%1.2f]\n", fM02HighBin[0],fM02HighBin[1]) ;
+
+  printf("E bin shape studies : [%2.2f,%2.2f]\n", fEMinShape,fEMaxShape) ;
+  if ( fStudyTCardCorrelation )
+  {
+    printf("E bins: %d {",fNEBinCuts);
+    for(Int_t ibin = 0; ibin < fNEBinCuts+1; ibin++) printf(" %2.2f ", fEBinCuts[ibin]);
+    printf("}\n");
+  }
+  
+  printf("Active switchs: Shape %d, extra shape param %d, weight %d, exotic %d,"
+         " TCardCorrel %d, cell max-sec %d, InvMass %d,"
+         " cell time %d, cells module %d, NLM histo %d\n",
+         fStudyShape,fStudyShapeParam,fStudyWeight,fStudyExotic,
+         fStudyTCardCorrelation,fStudyColRowFromCellMax,fStudyInvMass,
+         fStudyTimeCellHisto,fStudyModuleCells,fFillNLocMaxHistos);
+  
+  printf("N PID cases %d\n",fNMatchPIDCases);
+  if ( fNMatchPIDCases > 1 ) 
+    printf("dEdx bin for electrons [%d,%d], for hadrons [%d,%d]\n",
+           fdEdXMinEle,fdEdXMaxEle,fdEdXMinHad,fdEdXMaxHad);
+  
+  if ( fStudyInvMass )
+  {
+    printf("Inv. Mass %2.1f < E_clus < %2.1f GeV/c\n"  , fInvMassMinECut  , fInvMassMaxECut  ) ;
+    printf("Inv. Mass %2.1f < M02_clus < %2.1f GeV/c\n", fInvMassMinM02Cut, fInvMassMaxM02Cut) ;
+    printf("Inv. Mass open angle : %2.1f deg\n"        , fInvMassMaxOpenAngle*TMath::RadToDeg()) ;
+    printf("Inv. Mass time difference: %2.1f ns\n"     , fInvMassMaxTimeDifference) ;
+  }
 }
 
 //_____________________________________________________

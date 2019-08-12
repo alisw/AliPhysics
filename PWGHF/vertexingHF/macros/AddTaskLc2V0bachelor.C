@@ -35,7 +35,7 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
   } else {
       filecuts=TFile::Open(finname.Data());
       if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-	AliFatal("Input file not found : check your cut object");
+	Printf("FATAL: Input file not found : check your cut object");
       }
   }
 
@@ -51,7 +51,7 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
   // mm let's see if everything is ok
   if (!RDHFCutsLctoV0anal) {
     cout << "Specific AliRDHFCutsLctoV0 not found\n";
-    return;
+    return NULL;
   }
 
 

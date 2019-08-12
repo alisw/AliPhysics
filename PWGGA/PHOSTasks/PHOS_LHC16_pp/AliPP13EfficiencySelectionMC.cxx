@@ -1,5 +1,3 @@
-// #include "iterator"
-
 // --- Custom header files ---
 #include "AliPP13EfficiencySelectionMC.h"
 
@@ -78,7 +76,7 @@ void AliPP13EfficiencySelectionMC::InitSelectionHistograms()
 	}
 }
 
-
+//________________________________________________________________
 void AliPP13EfficiencySelectionMC::ConsiderGeneratedParticles(const EventFlags & eflags)
 {
 	if (!eflags.fMcParticles)
@@ -120,15 +118,5 @@ void AliPP13EfficiencySelectionMC::ConsiderGeneratedParticles(const EventFlags &
 
 		fSpectrums[code]->fPtPrimaries[Int_t(primary)]->Fill(pt, w);
 		fSpectrums[code]->fPtPrimariesStandard[Int_t(primary)]->Fill(pt, w);
-		ConsiderGeneratedParticle(i, pt, primary, eflags);
 	}
-}
-
-//________________________________________________________________
-Bool_t AliPP13EfficiencySelectionMC::IsPrimary(const AliAODMCParticle * particle) const
-{
-	// Look what particle left vertex (e.g. with vertex with radius <1 cm)
-	Double_t rcut = 1.;
-	Double_t r2 = particle->Xv() * particle->Xv() + particle->Yv() * particle->Yv()	;
-	return r2 < rcut * rcut;
 }

@@ -13,6 +13,7 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+
 #include <iostream>
 #include <TList.h>
 
@@ -30,7 +31,7 @@ using namespace std;
 ClassImp(AlidNdPtEventCuts)
 
 //_____________________________________________________________________________
-AlidNdPtEventCuts::AlidNdPtEventCuts(const Char_t* name,const Char_t *title) : 
+AlidNdPtEventCuts::AlidNdPtEventCuts(const Char_t* name,const Char_t *title) :
 AliAnalysisCuts(name, title)
 , fTriggerRequired(kTRUE)
 , fRecVertexRequired(kTRUE)
@@ -50,20 +51,20 @@ AliAnalysisCuts(name, title)
 , fUseBeamSpotConstraint(kTRUE)
 , fEventSelectedRequired(kFALSE)
 {
-  // default constructor 
-  
+  // default constructor
+
   // init data members with defaults
   Init();
 }
 
 //_____________________________________________________________________________
-AlidNdPtEventCuts::~AlidNdPtEventCuts()  
+AlidNdPtEventCuts::~AlidNdPtEventCuts()
 {
   // destructor
 }
 
 //_____________________________________________________________________________
-void AlidNdPtEventCuts::Init()  
+void AlidNdPtEventCuts::Init()
 {
   // set default values
   SetTriggerRequired();
@@ -93,27 +94,27 @@ Bool_t AlidNdPtEventCuts::AcceptEvent(AliESDEvent *esdEvent,AliMCEvent *mcEvent,
    // check MC event conditions
    AliHeader* header = mcEvent->Header();
    if(!header) return kFALSE;
-  
+
     // select event type (ND-non diffractive, SD-single diffractive, DD-double diffractive)
-    if(fEventProcessType == AliPWG0Helper::kInvalidProcess) { 
+    if(fEventProcessType == AliPWG0Helper::kInvalidProcess) {
       retValue=kTRUE;
-    } 
+    }
     else if(fEventProcessType == AliPWG0Helper::kSD || fEventProcessType == AliPWG0Helper::kDD) {
       AliPWG0Helper::MCProcessType processType = AliPWG0Helper::GetEventProcessType(header);
       if(processType == AliPWG0Helper::kND) retValue=kFALSE;
       else retValue=kTRUE;
     }
-    else if(fEventProcessType == AliPWG0Helper::GetEventProcessType(header)) { 
+    else if(fEventProcessType == AliPWG0Helper::GetEventProcessType(header)) {
       retValue=kTRUE;
     }
-    else 
+    else
       retValue=kFALSE;
   }
 
-  if(vtx->GetZ() < fMinZv) return kFALSE; 
-  if(vtx->GetZ() > fMaxZv) return kFALSE; 
+  if(vtx->GetZ() < fMinZv) return kFALSE;
+  if(vtx->GetZ() > fMaxZv) return kFALSE;
 
-return retValue;  
+return retValue;
 }
 
 //_____________________________________________________________________________
@@ -135,9 +136,9 @@ Bool_t AlidNdPtEventCuts::AcceptMCEvent(AliMCEvent *mcEvent)
   }
   TArrayF vtxMC(3);
   genHeader->PrimaryVertex(vtxMC);
-  
+
   // select event type (ND-non diffractive, SD-single diffractive, DD-double diffractive)
-  if(fEventProcessType == AliPWG0Helper::kInvalidProcess) { 
+  if(fEventProcessType == AliPWG0Helper::kInvalidProcess) {
      retValue=kTRUE;
   } else {
      if(fEventProcessType == AliPWG0Helper::GetEventProcessType(header)) retValue=kTRUE;
@@ -146,17 +147,17 @@ Bool_t AlidNdPtEventCuts::AcceptMCEvent(AliMCEvent *mcEvent)
 
   /*
   Float_t R = TMath::Sqrt(vtxMC[0]*vtxMC[0]+vtxMC[1]*vtxMC[1]);
-  if(R > fMaxR) return kFALSE; 
+  if(R > fMaxR) return kFALSE;
   */
 
-  if(vtxMC[2] < fMinZv) return kFALSE; 
-  if(vtxMC[2] > fMaxZv) return kFALSE; 
+  if(vtxMC[2] < fMinZv) return kFALSE;
+  if(vtxMC[2] > fMaxZv) return kFALSE;
 
-return retValue;  
+return retValue;
 }
 
 //_____________________________________________________________________________
-Long64_t AlidNdPtEventCuts::Merge(TCollection* list) 
+Long64_t AlidNdPtEventCuts::Merge(TCollection* list)
 {
   // Merge list of objects (needed by PROOF)
   if (!list)
@@ -169,11 +170,11 @@ Long64_t AlidNdPtEventCuts::Merge(TCollection* list)
   TObject* obj = 0;
 
   Int_t count=0;
-  while((obj = iter->Next()) != 0) 
+  while((obj = iter->Next()) != 0)
   {
     AlidNdPtEventCuts* entry = dynamic_cast<AlidNdPtEventCuts*>(obj);
-    if (entry == 0)  
-      continue; 
+    if (entry == 0)
+      continue;
 
   count++;
   }

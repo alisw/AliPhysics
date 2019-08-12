@@ -66,6 +66,8 @@ class AliBlastwaveFit2D : public AliBlastwaveFit
   static Double_t Pt(Double_t x[],Double_t par[]); // integrated on phi and r
 
 
+  static void SetIntPrec(Double_t value) {fIntPrec=value;}
+  static Double_t GetIntPrec() {return fIntPrec;}
  private:
   AliBlastwaveFit2D(const AliBlastwaveFit2D & old);
   AliBlastwaveFit2D& operator=(const AliBlastwaveFit2D &/*source*/); // ass. op.
@@ -73,6 +75,7 @@ class AliBlastwaveFit2D : public AliBlastwaveFit
 
   static TF2 *fgFuncIntYield; // function used to integrate FunctionIntYield
   static TF2 *fgFuncIntV2; // function used to integrate FunctionIntV2
+  static Double_t fIntPrec;
 
   ClassDef(AliBlastwaveFit2D,1)  // blast wave fit 2D
 };

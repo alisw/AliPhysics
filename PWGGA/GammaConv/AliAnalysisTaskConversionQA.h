@@ -83,7 +83,6 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     Double_t                    ffillTree;                  //
     Bool_t                      ffillHistograms;            //
     TList*                      fOutputList;                //
-    TList*                      fTreeList;                  //
     TList*                      fESDList;                   //
     TH1F*                       hVertexZ;                   //
     TH1I*                       hNGoodESDTracks;            //
@@ -136,7 +135,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     Int_t*                      fMCStackPos;                //[fnGammaCandidates]
     Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
     
-    ClassDef(AliAnalysisTaskConversionQA, 8);
+    ClassDef(AliAnalysisTaskConversionQA, 11);
 };
 
 #endif

@@ -1,21 +1,25 @@
 // $Id$
 
 AliEsdSkimTask* AddTaskEsdSkim(
-  Bool_t tof       = kFALSE,
-  Bool_t emc       = kFALSE,
+  Bool_t tof       = kTRUE,
+  Bool_t emc       = kTRUE,
   Bool_t emt       = kFALSE,
-  Bool_t phc       = kFALSE,
+  Bool_t phc       = kTRUE,
   Bool_t pht       = kFALSE,
-  Bool_t clus      = kFALSE,
-  Bool_t tracks    = kFALSE,
+  Bool_t clus      = kTRUE,
+  Bool_t tracks    = kTRUE,
+  Bool_t atracks   = kTRUE,
   Bool_t mtracks   = kFALSE,
   Bool_t ptracks   = kFALSE,
+  Bool_t v0s       = kFALSE,
+  Bool_t mult      = kTRUE,
+  Bool_t fmd       = kFALSE,
+  Bool_t muons     = kFALSE,
   Bool_t remcov    = kFALSE,
   Bool_t rescov    = kFALSE,
   Bool_t sbytes    = kFALSE,
   Bool_t phosclus  = kFALSE,
   Bool_t emcclus   = kFALSE,
-  Bool_t muons     = kFALSE,
   const char *tname = "Tracks",
   const char *filename = "AliSkimmedESD.root"
 )
@@ -52,6 +56,10 @@ AliEsdSkimTask* AddTaskEsdSkim(
   task->SetDoSaveBytes(sbytes);
   task->SetDoTof(tof);
   task->SetDoTracks(tracks);
+  task->SetDoAllTracks(atracks);
+  task->SetDoV0s(v0s);
+  task->SetDoMult(mult);
+  task->SetDoFmd(fmd);
   task->SetEmcalClusOnly(emcclus);
   task->SetPhosClusOnly(phosclus);
   task->SetRemoveCP(remcov);

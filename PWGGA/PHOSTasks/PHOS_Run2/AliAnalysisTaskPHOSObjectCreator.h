@@ -37,6 +37,9 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     void SetUserDefinedNonlinearity(TF1 *f1nonlin) {fUserNonLinCorr = f1nonlin;}
     void ExcludeM4(Bool_t flag) {fIsM4Excluded = flag;}
 
+    void SetSingleSim(Bool_t flag) {fIsSingleSim = flag;}
+    void SetEmbedding(Bool_t flag) {fIsEmbedding = flag;}
+
   protected:
     void Init();
     void InitBadMap();//this is for internal
@@ -77,12 +80,14 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     AliStack *fMCArrayESD;
     TClonesArray *fMCArrayAOD;
     Bool_t fIsM4Excluded;
+    Bool_t fIsSingleSim;
+    Bool_t fIsEmbedding;
 
   private:
     AliAnalysisTaskPHOSObjectCreator(const AliAnalysisTaskPHOSObjectCreator&);
     AliAnalysisTaskPHOSObjectCreator& operator=(const AliAnalysisTaskPHOSObjectCreator&);
 
-    ClassDef(AliAnalysisTaskPHOSObjectCreator, 16);
+    ClassDef(AliAnalysisTaskPHOSObjectCreator, 17);
 };
 
 #endif

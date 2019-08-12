@@ -15,7 +15,7 @@ using namespace std;
 ClassImp(AliPP13NonlinearitySelection);
 
 //________________________________________________________________
-void AliPP13NonlinearitySelection::SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags)
+void AliPP13NonlinearitySelection::SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & eflags)
 {
 	// NB: Nonlinearity is a function of photon energy
 	//     therefore the histograms should be filled for each photon.
@@ -32,7 +32,11 @@ void AliPP13NonlinearitySelection::SelectTwoParticleCombinations(const TObjArray
 				continue;
 
 			AliVCluster * second = dynamic_cast<AliVCluster *> (photonCandidates.At(j));
-			ConsiderPair(first, second, flags);
+
+			if (!fCuts.AcceptPair(first, second, eflags))
+				continue;
+
+			ConsiderPair(first, second, eflags);
 		} // second cluster loop
 	} // cluster loop
 	// Int_t Nn = photonCandidates.GetEntriesFast();
@@ -55,7 +59,7 @@ void AliPP13NonlinearitySelection::ConsiderPair(const AliVCluster * c1, const Al
 
 
 	// NB: This is the data cut
-	if (dynamic_cast<AliPP13SelectionWeights *>(fWeights))
+	if (dynamic_cast<AliPP13SelectionWeightsTOF *>(fWeights))
 	{
 		Float_t eff = fWeights->TofEfficiency(p1.E()) * fWeights->TofEfficiency(p2.E());
 		fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.E(), 1. / eff);	

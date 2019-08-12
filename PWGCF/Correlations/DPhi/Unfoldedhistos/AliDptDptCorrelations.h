@@ -23,8 +23,7 @@ class TH3;
 class THn;
 class AliVEvent;
 class AliVTrack;
-class TParticle;
-class AliAODMCParticle;
+class AliVParticle;
 
 class AliDptDptCorrelations : public TNamed {
 public:
@@ -79,8 +78,7 @@ public:
   TList                      *GetHistogramsList() { return fOutput; }
   Bool_t                      StartEvent(Float_t centrality, Float_t vertexZ);
   Bool_t                      ProcessTrack(Int_t trkId, AliVTrack *trk);
-  Bool_t                      ProcessTrack(Int_t trkId, TParticle *part);
-  Bool_t                      ProcessTrack(Int_t trkId, AliAODMCParticle *part);
+  Bool_t                      ProcessTrack(Int_t trkId, AliVParticle *part);
   Bool_t                      ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Float_t eta, Float_t phi);
   void                        ProcessEventData();
   void                        FinalizeProcess();

@@ -21,233 +21,215 @@
 //***************************************************************************************
 
 //***************************************************************************************
-//CutHandler contains all cuts for a certain analysis and trainconfig,
-//it automatically checks length of cutStrings and takes care of the number of added cuts,
-// no specification of the variable 'numberOfCuts' needed anymore.
-//***************************************************************************************
-class CutHandlerHeavyMesonCalo{
-  public:
-    CutHandlerHeavyMesonCalo(Int_t nMax=10){
-      nCuts=0; nMaxCuts=nMax; validCuts = true;
-      eventCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
-      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = "";  clusterCutArray[i] = ""; mesonCutArray[i] = "";}
-    }
-
-    void AddCut(TString eventCut, TString clusterCut, TString mesonCut){
-      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerHeavyMesonCalo: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || clusterCut.Length()!=19 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerHeavyMesonCalo: Incorrect length of cut string!" << endl; validCuts = false; return;}
-      eventCutArray[nCuts]=eventCut; clusterCutArray[nCuts]=clusterCut; mesonCutArray[nCuts]=mesonCut;
-      nCuts++;
-      return;
-    }
-    Bool_t AreValid(){return validCuts;}
-    Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
-    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerHeavyMesonCalo: GetEventCut wrong index i" << endl;return "";}}
-    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerHeavyMesonCalo: GetClusterCut wrong index i" << endl;return "";}}
-    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerHeavyMesonCalo: GetMesonCut wrong index i" << endl;return "";}}
-  private:
-    Bool_t validCuts;
-    Int_t nCuts; Int_t nMaxCuts;
-    TString* eventCutArray;
-    TString* clusterCutArray;
-    TString* mesonCutArray;
-};
-
-//***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_GammaHeavyMeson_CaloMode_pPb(  Int_t     selectedMeson                 = 0,                    // select the corresponding meson: 0 pi0, 1 eta, 2 eta'
-                                            Int_t     trainConfig                   = 1,                    // change different set of cuts
-                                            Int_t     isMC                          = 0,                    // run MC
-                                            Int_t     enableQAMesonTask             = 0,                    // enable QA in AliAnalysisTaskGammaConvV1
-                                            Int_t     enableQAPhotonTask            = 0,                    // enable additional QA task
-                                            TString   fileNameInputForWeighting     = "MCSpectraInput.root",// path to file for weigting input / modified acceptance
-                                            Int_t     doWeightingPart               = 0,                    // enable Weighting
-                                            TString   generatorName                 = "DPMJET",             // generator Name
-                                            TString   cutnumberAODBranch            = "800000006008400000001500000",  // cutnumber for AOD branch
-                                            Int_t     enableExtMatchAndQA           = 0,                    // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-                                            Bool_t    isUsingTHnSparse              = kTRUE,                // enable or disable usage of THnSparses for background estimation
-                                            Bool_t    enableV0findingEffi           = kFALSE,               // enables V0finding efficiency histograms
-                                            Bool_t    enableTriggerMimicking        = kFALSE,               // enable trigger mimicking
-                                            Bool_t    enableTriggerOverlapRej       = kFALSE,               // enable trigger overlap rejection
-                                            Float_t   maxFacPtHard                  = 3,                    // maximum factor between hardest jet and ptHard generated
-                                            TString   periodNameV0Reader            = "",                   // period Name for V0Reader
-                                            Bool_t    doMultiplicityWeighting       = kFALSE,               // enable multiplicity weights
-                                            TString   fileNameInputForMultWeighing  = "Multiplicity.root",  // file for multiplicity weights
-                                            TString   periodNameAnchor              = "",                   // anchor period name for mult weighting
-                                            Bool_t    enableSortingMCLabels         = kTRUE,                // enable sorting for MC cluster labels
-                                            Int_t     runLightOutput                = 0,                    // switch to run light output 0 (disabled), 1 (for CutClasses), 2 (for cutClasses and task)
-                                            TString   additionalTrainConfig         = "0"                   // additional counter for trainconfig, this has to be always the last parameter
+void AddTask_GammaHeavyMeson_CaloMode_pPb(
+  Int_t     selectedMeson                 = 0,        // select the corresponding meson: 0 pi0, 1 eta, 2 eta'
+  Int_t     trainConfig                   = 1,        // change different set of cuts
+  Int_t     isMC                          = 0,        // run MC
+  TString   photonCutNumberV0Reader       = "",       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
+  TString   periodNameV0Reader            = "",
+  // general setting for task
+  Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
+  Int_t     enableQAClusterTask           = 0,        // enable additional QA task
+  Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
+  Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
+  Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
+  Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+  Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
+  TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
+  Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
+  // settings for weights
+  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, separate with ;
+  TString   fileNameExternalInputs        = "",
+  Int_t     doWeightingPart               = 0,        // enable Weighting
+  TString   generatorName                 = "DPMJET", // generator Name
+  Bool_t    enableMultiplicityWeighting   = kFALSE,   //
+  TString   periodNameAnchor              = "",       //
+  // special settings
+  Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
+  // subwagon config
+  TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
                                           ) {
 
-  TH1S* histoAcc = 0x0;                     // histo for modified acceptance
-  TString corrTaskSetting = ""; // select which correction task setting to use
-  //parse additionalTrainConfig flag
-  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
-  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaHeavyMeson_CaloMode_pPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
-  TObjString* rAdditionalTrainConfig;
-  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
-    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
-    else{
-      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
-      TString tempStr = temp->GetString();
-      if(tempStr.BeginsWith("MODIFYACC")){
-        cout << "INFO: AddTask_GammaHeavyMeson_CaloMode_pPb activating 'MODIFYACC'" << endl;
-        TString tempType = tempStr;
-        tempType.Replace(0,9,"");
-        cout << "INFO: connecting to alien..." << endl;
-        TGrid::Connect("alien://");
-        cout << "done!" << endl;
-        TFile *w = TFile::Open(fileNameInputForWeighting.Data());
-        if(!w){cout << "ERROR: Could not open file: " << fileNameInputForWeighting.Data() << endl;return;}
-        histoAcc = (TH1S*) w->Get(tempType.Data());
-        if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
-        cout << "found: " << histoAcc << endl;
-      }else if(tempStr.BeginsWith("CF")){
-        cout << "INFO: AddTask_GammaHeavyMeson_CaloMode_pPb will use custom branch from Correction Framework!" << endl;
-        corrTaskSetting = tempStr;
-        corrTaskSetting.Replace(0,2,"");
-      }
-    }
-  }
-  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+
+  AliCutHandlerPCM cuts;
+
+  TString fileNamePtWeights     = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
+  TString fileNameMultWeights   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
+
+  TString addTaskName                 = "AddTask_GammaCalo_pPb";
+  TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
-    cout << "INFO: AddTask_GammaHeavyMeson_CaloMode_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+    cout << "INFO: " << addTaskName.Data() << " running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
-  cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
 
-  Int_t isHeavyIon    = 2;
+  TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
+  if(corrTaskSetting.CompareTo(""))
+    cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
+
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
+  TString strTrackMatcherRunningMode  = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "TM", "", addTaskName);
+  if(additionalTrainConfig.Contains("TM"))
+    trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
+
+  Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
+  TString strdoTreeEOverP             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "EPCLUSTree", "", addTaskName);
+  if(strdoTreeEOverP.Atoi()==1)
+    doTreeEOverP = kTRUE;
+
+  TH1S* histoAcc = 0x0;         // histo for modified acceptance
+  TString strModifiedAcc              = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MODIFYACC", "", addTaskName);
+  if(strModifiedAcc.Contains("MODIFYACC")){
+    TString tempType = strModifiedAcc;
+    tempType.Replace(0,9,"");
+    cout << "INFO: connecting to alien..." << endl;
+    TGrid::Connect("alien://");
+    cout << "done!" << endl;
+    TFile *w = TFile::Open(fileNamePtWeights.Data());
+    if(!w){cout << "ERROR: Could not open file: " << fileNamePtWeights.Data() << endl;return;}
+    histoAcc = (TH1S*) w->Get(tempType.Data());
+    if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
+    cout << "found: " << histoAcc << endl;
+  }
+
+  Int_t localDebugFlag = 0;
+  TString strLocalDebugFlag              = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "LOCALDEBUGFLAG", "", addTaskName);
+  if(strLocalDebugFlag.Atoi()>0)
+    localDebugFlag = strLocalDebugFlag.Atoi();
+
+  TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
+  if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_GammaHeavyMeson_CaloMode_pPb during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
+  Bool_t fMinPtHardSet        = kFALSE;
+  Double_t minFacPtHard       = -1;
+  Bool_t fMaxPtHardSet        = kFALSE;
+  Double_t maxFacPtHard       = 100;
+  Bool_t fSingleMaxPtHardSet  = kFALSE;
+  Double_t maxFacPtHardSingle = 100;
+  for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
+    TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
+    TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
+    if(strTempSetting.BeginsWith("MINPTHFAC:")){
+      strTempSetting.Replace(0,10,"");
+      minFacPtHard               = strTempSetting.Atof();
+      cout << "running with min pT hard jet fraction of: " << minFacPtHard << endl;
+      fMinPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("MAXPTHFAC:")){
+      strTempSetting.Replace(0,10,"");
+      maxFacPtHard               = strTempSetting.Atof();
+      cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
+      fMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("MAXPTHFACSINGLE:")){
+      strTempSetting.Replace(0,16,"");
+      maxFacPtHardSingle         = strTempSetting.Atof();
+      cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
+      fSingleMaxPtHardSet        = kTRUE;
+    } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
+      maxFacPtHard               = strTempSetting.Atof();
+      cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
+      fMaxPtHardSet        = kTRUE;
+    }
+  }
+
+  Int_t isHeavyIon = 2;
   // meson reco mode: 0 - PCM-PCM, 1 - PCM-Calo, 2 - Calo-Calo
   Int_t mesonRecoMode = 2;
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error(Form("AddTask_GammaHeavyMeson_CaloMode_pPb_%i",trainConfig), "No analysis manager found.");
+    Error(Form("%s_%i", addTaskName.Data(),  trainConfig), "No analysis manager found.");
     return ;
   }
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
-  Bool_t isMCForOtherTasks = kFALSE;
-  if (isMC > 0) isMCForOtherTasks = kTRUE;
-
-
-  //========= Add PID Reponse to ANALYSIS manager ====
-  if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    AddTaskPIDResponse(isMCForOtherTasks);
-  }
-
-  Printf("here \n");
-
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton   = "00000008400100001500000000";
-  TString cutnumberEvent    = "80000003";
-  Bool_t doEtaShift         = kFALSE;
+  TString cutnumberPhoton = photonCutNumberV0Reader.Data();
+  TString cutnumberEvent = "80000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  TString V0ReaderName        = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  AliV0ReaderV1 *fV0ReaderV1  =  NULL;
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
-    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
-    if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
-    fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
-    fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
-    fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-    fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
-
-    AliConvEventCuts *fEventCuts=NULL;
-    if(cutnumberEvent!=""){
-      fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
-      fEventCuts->SetPreSelectionCutFlag(kTRUE);
-      fEventCuts->SetV0ReaderName(V0ReaderName);
-      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
-      if (runLightOutput > 0) fEventCuts->SetLightOutput(kTRUE);
-      if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
-        fEventCuts->DoEtaShift(doEtaShift);
-        fV0ReaderV1->SetEventCuts(fEventCuts);
-        fEventCuts->SetFillCutHistograms("",kTRUE);
-      }
-    }
-
-    // Set AnalysisCut Number
-    AliConversionPhotonCuts *fCuts=NULL;
-    if(cutnumberPhoton!=""){
-      fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
-      fCuts->SetPreSelectionCutFlag(kTRUE);
-      fCuts->SetIsHeavyIon(isHeavyIon);
-      fCuts->SetV0ReaderName(V0ReaderName);
-      if (runLightOutput > 0) fCuts->SetLightOutput(kTRUE);
-      if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
-        fV0ReaderV1->SetConversionCuts(fCuts);
-        fCuts->SetFillCutHistograms("",kTRUE);
-      }
-    }
-    if(inputHandler->IsA()==AliAODInputHandler::Class()){
-    // AOD mode
-      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
-    }
-    fV0ReaderV1->Init();
-
-    AliLog::SetGlobalLogLevel(AliLog::kFatal);
-
-    //connect input V0Reader
-    mgr->AddTask(fV0ReaderV1);
-    mgr->ConnectInput(fV0ReaderV1,0,cinput);
-
+    cout << "V0Reader: " << V0ReaderName.Data() << " not found!!"<< endl;
+    return;
+  } else {
+    cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
   }
 
   //================================================
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskHeavyNeutralMesonToGG *task=NULL;
-  task= new AliAnalysisTaskHeavyNeutralMesonToGG(Form("HeavyNeutralMesonToGG_%i",trainConfig));
+  task= new AliAnalysisTaskHeavyNeutralMesonToGG(Form("HeavyNeutralMesonToGG_%i_%i_%i", mesonRecoMode, selectedMeson, trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetCorrectionTaskSetting(corrTaskSetting);
 
   task->SetMesonRecoMode(mesonRecoMode); // meson reco mode: 0 - PCM-PCM, 1 - PCM-Calo, 2 - Calo-Calo
-  if (runLightOutput > 1) task->SetLightOutput(kTRUE);
+  if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
   task->SetDoPrimaryTrackMatching(kTRUE);
 
-  //create cut handler
-  CutHandlerHeavyMesonCalo cuts;
-
+  //****************************************************************
   // Run 1, EMC
+  //****************************************************************
   if (trainConfig == 1){
-    cuts.AddCut("80010113","1111100057032230000","01631031000000d0"); // default MB
-    cuts.AddCut("80052113","1111100057032230000","01631031000000d0"); // default EMC7
-    cuts.AddCut("80083113","1111100057032230000","01631031000000d0"); // default EG1
-    cuts.AddCut("80085113","1111100057032230000","01631031000000d0"); // default EG2
+    cuts.AddCutCalo("80010113","1111100057032230000","01631030000000d0"); // default MB
+    cuts.AddCutCalo("80052113","1111100057032230000","01631030000000d0"); // default EMC7
+    cuts.AddCutCalo("80083113","1111100057032230000","01631030000000d0"); // default EG1
+    cuts.AddCutCalo("80085113","1111100057032230000","01631030000000d0"); // default EG2
   } else if (trainConfig == 2){
-    cuts.AddCut("80010113","1111141057032230000","01631031000000d0"); // default MB
-    cuts.AddCut("80052113","1111141057032230000","01631031000000d0"); // default EMC7
-    cuts.AddCut("80083113","1111141057032230000","01631031000000d0"); // default EG1
-    cuts.AddCut("80085113","1111141057032230000","01631031000000d0"); // default EG2
-  // Run 1, PHOS
-  } else if (trainConfig == 100){
-    cuts.AddCut("80010113","2444400041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
-    cuts.AddCut("80062113","2444400041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
-  } else if (trainConfig == 101){
-    cuts.AddCut("80010113","2444451041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
-    cuts.AddCut("80062113","2444451041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
+    cuts.AddCutCalo("80010113","1111141057032230000","01631030000000d0"); // default MB
+    cuts.AddCutCalo("80052113","1111141057032230000","01631030000000d0"); // default EMC7
+    cuts.AddCutCalo("80083113","1111141057032230000","01631030000000d0"); // default EG1
+    cuts.AddCutCalo("80085113","1111141057032230000","01631030000000d0"); // default EG2
+  } else if (trainConfig == 3){
+    cuts.AddCutCalo("80010113","1111100057032230000","0163103b000000d0"); // default MB
+    cuts.AddCutCalo("80052113","1111100057032230000","0163103b000000d0"); // default EMC7
+    cuts.AddCutCalo("80083113","1111100057032230000","0163103b000000d0"); // default EG1
+    cuts.AddCutCalo("80085113","1111100057032230000","0163103b000000d0"); // default EG2
 
+  //****************************************************************
+  // Run 1, PHOS
+  //****************************************************************
+  } else if (trainConfig == 100){
+    cuts.AddCutCalo("80010113","2444400041013200000","0163103000000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCutCalo("80062113","2444400041013200000","0163103000000010"); //standard cut, kPHI7  // PHOS clusters
+  } else if (trainConfig == 101){
+    cuts.AddCutCalo("80010113","2444451041013200000","0163103000000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCutCalo("80062113","2444451041013200000","0163103000000010"); //standard cut, kPHI7  // PHOS clusters
+
+  //****************************************************************
   // Run 2, EMC
+  //****************************************************************
   } else if (trainConfig == 300){
-    cuts.AddCut("80010113","1111100057032230000","01631031000000d0"); // default MB
-    cuts.AddCut("80210113","1111100057032230000","01631031000000d0"); // default 0-20
+    cuts.AddCutCalo("80010113","1111100057032230000","01631030000000d0"); // default MB
+    cuts.AddCutCalo("80210113","1111100057032230000","01631030000000d0"); // default 0-20
+  } else if (trainConfig == 301){ // same as 300, but no 0-20% centrality
+    cuts.AddCutCalo("80010113","1111100057032230000","01631030000000d0"); // default MB
+
+  //****************************************************************
   // Run 2, DMC
+  //****************************************************************
   } else if (trainConfig == 400){
-    cuts.AddCut("80010113","3885500057032230000","01631031000000d0"); // default MB
-    cuts.AddCut("80210113","3885500057032230000","01631031000000d0"); // default 0-20
-    // Run 2, PHOS
+    cuts.AddCutCalo("80010113","3885500057032230000","01631030000000d0"); // default MB
+    cuts.AddCutCalo("80210113","3885500057032230000","01631030000000d0"); // default 0-20
+  } else if (trainConfig == 401){ // same as 400, but no 0-20% centrality
+    cuts.AddCutCalo("80010113","3885500057032230000","01631030000000d0"); // default MB
+
+  //****************************************************************
+  // Run 2, PHOS
+  //****************************************************************
   } else if (trainConfig == 500){
-    cuts.AddCut("80010113","2446600051013200000","0163103100000010"); // default MB
-    cuts.AddCut("80210113","2446600051013200000","0163103100000010"); // default 0-20
+    cuts.AddCutCalo("80010113","2446600051013200000","0163103000000010"); // default MB
+    cuts.AddCutCalo("80210113","2446600051013200000","0163103000000010"); // default 0-20
+  } else if (trainConfig == 501){ // same as 500, but no 0-20% centrality
+    cuts.AddCutCalo("80010113","2446600051013200000","0163103000000010"); // default MB
 
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -314,18 +296,23 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(  Int_t     selectedMeson             
     dataInputMultHisto          = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
     mcInputMultHisto            = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
 
-    if (doMultiplicityWeighting){
+    if (enableMultiplicityWeighting){
       cout << "enabling mult weighting" << endl;
-      analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
+      analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameMultWeights, dataInputMultHisto, mcInputMultHisto );
     }
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
-    analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+    if(fMinPtHardSet)
+      analysisEventCuts[i]->SetMinFacPtHard(minFacPtHard);
+    if(fMaxPtHardSet)
+      analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+    if(fSingleMaxPtHardSet)
+      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
-    if (runLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -335,16 +322,17 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(  Int_t     selectedMeson             
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
-    if (runLightOutput > 0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput > 0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    if (runLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
-    analysisMesonCuts[i]->SetRunningMode(2);
+    analysisMesonCuts[i]->SetLightOutput(enableLightOutput);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
+    analysisMesonCuts[i]->SetIsMergedClusterCut(2);
+    analysisMesonCuts[i]->SetCaloMesonCutsObject(analysisClusterCuts[i]);
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
@@ -357,9 +345,9 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(  Int_t     selectedMeson             
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetMesonType(selectedMeson);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-  task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
+  task->SetDoPhotonQA(enableQAClusterTask);  //Attention new switch small for Photon QA
   task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
-  task->SetUseTHnSparse(isUsingTHnSparse);
+  task->SetUseTHnSparse(enableTHnSparse);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
 

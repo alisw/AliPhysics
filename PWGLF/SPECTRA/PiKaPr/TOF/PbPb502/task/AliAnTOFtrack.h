@@ -87,18 +87,11 @@ class AliAnTOFtrack {
 
   ///
   /// Method to get the track gamma * beta
-  Double_t GetGammaBeta() const
-  {
-    Double_t beta = GetBeta();
-    return beta / (TMath::Sqrt(1 - beta * beta));
-  }
+  Double_t GetGammaBeta() const;
 
   ///
-  /// Method to get the track mass
-  Double_t GetTOFMass(const Double_t p) const { return p / GetGammaBeta(); }
-  ///
   /// Method to get the track mass from the momentum at vertex
-  Double_t GetTOFMass() const { return GetTOFMass(GetMomentum()); }
+  Double_t GetTOFMass() const;
 
   //T0 Methods
 
@@ -192,30 +185,7 @@ class AliAnTOFtrack {
 
   ///
   /// Method to get the particle momentum
-  void Print() const
-  {
-    cout << "fTrkMask " << fTrkMask << endl;
-    cout << "fTPCPIDMask " << fTPCPIDMask << endl;
-    cout << "fTrkCutMask " << fTrkCutMask << endl;
-    cout << "fDCAXY " << fDCAXY << endl;
-    cout << "fDCAZ " << fDCAZ << endl;
-    cout << "fLength " << fLength << endl;
-    cout << "fLengthRatio " << fLengthRatio << endl;
-    cout << "fTOFTime " << fTOFTime << endl;
-    cout << "fTOFMismatchTime " << fTOFMismatchTime << endl;
-    for (Int_t i = 0; i < kExpSpecies; i++) {
-      cout << "fTOFExpTime[" << i << "] " << fTOFExpTime[i] << endl;
-      cout << "fTOFExpSigma[" << i << "] " << fTOFExpSigma[i] << endl;
-    }
-    cout << "fT0TrkTime " << fT0TrkTime << endl;
-    cout << "fTOFchan " << fTOFchan << endl;
-    cout << "fEta " << fEta << endl;
-    cout << "fPhi " << fPhi << endl;
-    cout << "fPt " << fPt << endl;
-    cout << "fPTPC " << fPTPC << endl;
-    cout << "fNTOFClusters " << fNTOFClusters << endl;
-    cout << "fTPCSignal " << fTPCSignal << endl;
-  };
+  void Print() const;
 };
 
 #endif

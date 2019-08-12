@@ -40,6 +40,10 @@ public:
                                                Int_t version = -1, Int_t subVersion = -1);
   void                      SetFallBackToRaw(Bool_t v)       {fFallBackToRaw = v;}
   Bool_t                    GetFallBackToRaw()         const {return fFallBackToRaw;}
-  ClassDef(AliTaskCDBconnect,5)  // Class giving CDB connectivity
+
+  static AliTaskCDBconnect* AddTaskCDBconnect(const char *path/*="raw://"*/, Int_t run = 0 );
+  static AliTaskCDBconnect* AddTaskCDBconnect();
+
+  ClassDef(AliTaskCDBconnect,6)  // Class giving CDB connectivity
 };
 #endif

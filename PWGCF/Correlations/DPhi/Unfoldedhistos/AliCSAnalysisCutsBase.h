@@ -126,6 +126,7 @@ public:
     /// \name 2013MC
     /// \brief MC's corresponding to 2013 data
     ///@{
+    kLHC13b2,         ///< anchored LHC13[b-c] pass 2
     kLHC13b2_efix,    ///< anchored LHC13[b-c] pass 2
     kLHC13e7,         ///< anchored LHC13[b-c] pass 2
     kLHC14b2,         ///< anchored LHC13[b-c] pass 2
@@ -195,6 +196,17 @@ public:
     ///@{
     kLHC17j6,          ///< anchored LHC17n XeXe 5.44 TeV with ITS reco points
     kLHC17j7,          ///< anchored LHC17n XeXe 5.44 TeV general purpose
+    ///@}
+    /// \name 2018
+    /// \brief 2018 periods
+    ///@{
+    kLHC18q,          ///< PbPb 5 TeV
+    kLHC18r,          ///< PbPb 5 TeV
+    ///@}
+    /// \name 2018MC
+    /// \brief MC's corresponding to 2018 data
+    ///@{
+    kLHC18l8,          ///< anchored to LHC18q/r Pb-Pb 5.02 TeV general purpose
     ///@}
     /// \name fast MC productions
     ///@{

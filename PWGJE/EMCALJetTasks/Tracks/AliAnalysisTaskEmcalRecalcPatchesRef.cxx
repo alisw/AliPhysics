@@ -39,6 +39,8 @@
 #include "AliAnalysisManager.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerStringDecoder.h"
+#include "AliMultSelection.h"
+#include "AliMultEstimator.h"
 #include "AliAnalysisTaskEmcalRecalcPatchesRef.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalRecalcPatchesRef);
@@ -51,9 +53,13 @@ AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef():
   fOnlineThresholds(),
   fSwapPatches(false),
   fRequiredOverlaps(),
-  fExcludedOverlaps()
+  fExcludedOverlaps(),
+  fCentralityRange(-999., 999.),
+  fUseRecalcPatches(false),
+  fRequestCentrality(false),
+  fEventCentrality(0)
 {
-
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef(const char * name):
@@ -62,8 +68,13 @@ AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef(const
   fOnlineThresholds(),
   fSwapPatches(false),
   fRequiredOverlaps(),
-  fExcludedOverlaps()
+  fExcludedOverlaps(),
+  fCentralityRange(-999., 999.),
+  fUseRecalcPatches(false),
+  fRequestCentrality(false),
+  fEventCentrality(0)
 {
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
   fOnlineThresholds.Set(8);
 }
 
@@ -107,6 +118,27 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::CreateUserHistos(){
 }
 
 bool AliAnalysisTaskEmcalRecalcPatchesRef::IsUserEventSelected(){
+  
+  fEventCentrality = -1;
+  if(fRequestCentrality){
+    AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
+    if(!mult){
+      AliErrorStream() << GetName() << ": Centrality selection enabled but no centrality estimator found" << std::endl;
+      return false;
+    }
+    if(mult->IsEventSelected()) return false;
+    fEventCentrality = mult->GetEstimator("V0M")->GetPercentile();
+    AliDebugStream(1) << GetName() << ": Centrality " <<  fEventCentrality << std::endl;
+    if(!fCentralityRange.IsInRange(fEventCentrality)){
+      AliDebugStream(1) << GetName() << ": reject centrality: " << fEventCentrality << std::endl;
+      return false;
+    } else {
+      AliDebugStream(1) << GetName() << ": select centrality " << fEventCentrality << std::endl;
+    }
+  } else {
+    AliDebugStream(1) << GetName() << ": No centrality selection applied" << std::endl;
+  }
+
   // handle overlaps
   if(fRequiredOverlaps.GetEntries() || fExcludedOverlaps.GetEntries()){
     if(fRequiredOverlaps.GetEntries()){

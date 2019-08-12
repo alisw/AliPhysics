@@ -29,6 +29,7 @@ class AliEmcalList;
 #include <string>
 
 #include <TStopwatch.h>
+#include <TRandom3.h>
 #include <AliAnalysisTaskSE.h>
 #include "AliEventCuts.h"
 #include "AliYAMLConfiguration.h"
@@ -182,6 +183,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliEventCuts * GetInternalEventCuts();
   /// Set internal event centrality selection
   void SetCentralityRange(double min, double max)                 { fCentMin = min; fCentMax = max; }
+  void SetRandomRejectionFactor(Double_t configure = 1.)          { fRandomRejectionFactor = configure; }
   /* @} */
 
   /**
@@ -278,7 +280,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   /* @} */
 
  protected:
-  void            RetrieveTaskPropertiesFromYAMLConfig();
+  virtual void    RetrieveTaskPropertiesFromYAMLConfig();
   bool            GetFilenames()        ;
   void            DeterminePythiaXSecFilename();
   bool            IsRunInRunlist(const std::string & path) const;
@@ -294,10 +296,12 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
   Bool_t          IsEventSelected()     ;
-  Bool_t          CheckIsEmbeddedEventSelected();
+  virtual Bool_t  CheckIsEmbeddedEventSelected();
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
+  // Validation helper
+  void            ValidatePhysicsSelectionForInternalEventSelection();
   // Helper functions
   bool            IsFileAccessible() const;
   void            ConnectToAliEn() const;
@@ -327,8 +331,12 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   bool                                 fUseManualInternalEventCuts; ///<  If true, manual event cuts mode will be used for AliEventCuts
   AliEventCuts                                  fInternalEventCuts; ///<  If enabled, Handles internal event selection
   bool                                          fEmbeddedEventUsed; //!<! If true, the internal event was selected, so the embedded event is used. Defaults to true so other tasks are not disrupted if internal event selection is disabled.
+  bool                                  fValidatedPhysicsSelection; ///<  Validate that the physics selection is set appropriately.
+  UInt_t                                 fInternalEventTriggerMask; ///<  Internal event physics selection (trigger mask) to be used with AliEventCuts.
   double                                        fCentMin          ; ///<  Minimum centrality for internal event selection
   double                                        fCentMax          ; ///<  Maximum centrality for internal event selection
+  Double_t                                      fRandomRejectionFactor; ///< factor by which to reject events
+  TRandom3                                      fRandom           ; ///< for random rejection of events
 
   bool                                    fAutoConfigurePtHardBins; ///<  If true, attempt to auto configure pt hard bins. Only works on the LEGO train.
   std::string                               fAutoConfigureBasePath; ///<  The base path to the auto configuration (for example, "/alice/cern.ch/user/a/alitrain/")
@@ -374,7 +382,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 11);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 12);
   /// \endcond
 };
 #endif

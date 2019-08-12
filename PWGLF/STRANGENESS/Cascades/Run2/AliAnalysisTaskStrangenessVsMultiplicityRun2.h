@@ -32,14 +32,15 @@ class TH3F;
 class TVector3;
 class THnSparse;
 class TRandom3;
-class TProfile; 
+class TProfile;
 
 class AliESDpid;
 class AliESDtrackCuts;
 class AliAnalysisUtils;
 class AliESDEvent;
+class AliESDtrack;
 class AliPhysicsSelection;
-class AliESDFMD;
+class AliPIDResponse;
 class AliCFContainer;
 class AliV0Result;
 class AliCascadeResult;
@@ -47,7 +48,7 @@ class AliExternalTrackParam;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
-//#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 
 class AliAnalysisTaskStrangenessVsMultiplicityRun2 : public AliAnalysisTaskSE {
@@ -99,8 +100,18 @@ public:
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
     }
+    void SetPileupRejectionMode ( Int_t lMode = 1 ){
+        //mode switch
+        // 0 -> no rejection
+        // 1 -> Ionut
+        // 2 -> Anti-Ionut
+        fkPileupRejectionMode = lMode;
+    }
     void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
         fkUseOldCentrality = lUseOldCent;
+    }
+    void SetMaxPVR2D ( Float_t lOpt = 1e+5) {
+        fkMaxPVR2D = lOpt;
     }
 //---------------------------------------------------------------------------------------
     void SetSelectCharge ( Int_t lCharge = -1) {
@@ -108,6 +119,10 @@ public:
     }
 //---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
+    void SetDownScaleEvent ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
+        fkDownScaleEvent = lOpt;
+        fDownScaleFactorEvent = lVal;
+    }
     void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
         fkDownScaleV0 = lOpt;
         fDownScaleFactorV0 = lVal;
@@ -198,59 +213,54 @@ public:
     void SetupLooseVertexing();
     // 2- Standard Topological Selection QA Sweeps
     void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
-    void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
+    void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100, TString lSweepOptions="");
     // 3 - Standard analysis configurations + systematics
-    void AddStandardV0Configuration(Bool_t lUseFull = kFALSE);
-    void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE);
+    void AddStandardV0Configuration(Bool_t lUseFull = kFALSE, Bool_t lDoSweepLooseTight = kFALSE, Int_t lSweepFullNumb = 0);
+    void AddStandardV0RadiusSweep();
+    void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE, Bool_t lDoSystematics = kTRUE);
     void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
+    void AddCascadeConfigurationPreliminaryCrosscheck(); //
 //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
 //---------------------------------------------------------------------------------------
-
+    void SetSaveSpecificCascadeConfig(TString lConfig){
+        fkConfigToSave = lConfig;
+        fkSaveSpecificConfig = kTRUE; 
+    }
 //---------------------------------------------------------------------------------------
-    // A simple struct to handle FMD hits information
-    // Nothe: this struct is based on what is implemented in AliAnalysisTaskValidation
-    //        defined as 'Track' (thanks to C. Bourjau). It was slightly changed here and
-    //        renamed to 'FMDhit' in order to avoid any confusion.
-    struct FMDhit {
-        Float_t eta;
-        Float_t phi;
-        Float_t weight;
-        //Constructor
-        FMDhit(Float_t _eta, Float_t _phi, Float_t _weight)
-            :eta(_eta), phi(_phi), weight(_weight) {};
-    };
-    typedef std::vector<AliAnalysisTaskStrangenessVsMultiplicityRun2::FMDhit> FMDhits;
-//---------------------------------------------------------------------------------------
-   AliAnalysisTaskStrangenessVsMultiplicityRun2::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
-//---------------------------------------------------------------------------------------
-
-
+    
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
     // your data member object is created on the worker nodes and streaming is not needed.
     // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
     TList  *fListHist;      //! List of Cascade histograms
-    TList  *fListV0;        // List of Cascade histograms
-    TList  *fListCascade;   // List of Cascade histograms
+    TList  *fListK0Short;        // List of Cascade histograms
+    TList  *fListLambda;        // List of Cascade histograms
+    TList  *fListAntiLambda;        // List of Cascade histograms
+    TList  *fListXiMinus;   // List of XiMinus outputs
+    TList  *fListXiPlus;   // List of XiPlus outputs
+    TList  *fListOmegaMinus;   // List of XiMinus outputs
+    TList  *fListOmegaPlus;   // List of XiPlus outputs
     TTree  *fTreeEvent;              //! Output Tree, Events
     TTree  *fTreeV0;              //! Output Tree, V0s
     TTree  *fTreeCascade;              //! Output Tree, Cascades
 
-    AliPIDResponse *fPIDResponse;     // PID response object
-    AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
-    AliESDtrackCuts *fESDtrackCutsITSsa2010;  // ESD track cuts used for ITSsa track definition
-    AliESDtrackCuts *fESDtrackCutsGlobal2015; // ESD track cuts used for global track definition
-    AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
+    AliPIDResponse *fPIDResponse;     //! PID response object
+    AliESDtrackCuts *fESDtrackCuts;   //! ESD track cuts used for primary track definition
+    AliESDtrackCuts *fESDtrackCutsITSsa2010;  //! ESD track cuts used for ITSsa track definition
+    AliESDtrackCuts *fESDtrackCutsGlobal2015; //! ESD track cuts used for global track definition
+    AliAnalysisUtils *fUtils;         //! analysis utils (for MV pileup selection)
+    
+    AliEventCuts fEventCuts;                 /// Event cuts class
+    AliEventCuts fEventCutsStrictAntipileup; /// Event cuts class
 
-    //Implementation of event selection utility
-    AliEventCuts fEventCuts; /// Event cuts class
-
-    TRandom3 *fRand;
+    TRandom3 *fRand; //!
 
     //Objects Controlling Task Behaviour
     Bool_t fkSaveEventTree;           //if true, save Event TTree
+    Bool_t fkDownScaleEvent;
+    Double_t fDownScaleFactorEvent;
     Bool_t fkSaveV0Tree;              //if true, save TTree
     Bool_t fkDownScaleV0;
     Double_t fDownScaleFactorV0;
@@ -260,7 +270,9 @@ private:
     Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
-    Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection 
+    Int_t fkPileupRejectionMode; //pileup rejection mode (0=none, 1=ionut, 2=anti-ionut)
+    Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection
+    Float_t fkMaxPVR2D; //cut to select on the maximum allowed R2D for the PV location
 
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;
@@ -271,7 +283,7 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
-
+    
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
@@ -287,7 +299,11 @@ private:
     Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
 
     //if true, save sandbox mode info (beware large files!)
-    Bool_t fkSandboxMode; 
+    Bool_t fkSandboxMode;
+    
+    //if true, fill cascade TTree with a config with a given name
+    Bool_t fkSaveSpecificConfig;
+    TString fkConfigToSave; 
     
 //===========================================================================================
 //   Variables for Event Tree
@@ -306,10 +322,6 @@ private:
     //V0 info for OOB pileup study
     Float_t fAmplitudeV0A; //!
     Float_t fAmplitudeV0C; //!
-
-    //FMD info for OOB pileup study
-    Float_t fNHitsFMDA; //!
-    Float_t fNHitsFMDC; //!
 
     //IR info for OOB pileup study
     Int_t fClosestNonEmptyBC; //!
@@ -361,16 +373,48 @@ private:
     Float_t fTreeVariableNegDCAz; //!
     Float_t fTreeVariablePosDCAz; //!
 
+    //Cluster information for all daughter tracks
+    Bool_t fTreeVariablePosITSClusters0;
+    Bool_t fTreeVariablePosITSClusters1;
+    Bool_t fTreeVariablePosITSClusters2;
+    Bool_t fTreeVariablePosITSClusters3;
+    Bool_t fTreeVariablePosITSClusters4;
+    Bool_t fTreeVariablePosITSClusters5;
+    
+    Bool_t fTreeVariableNegITSClusters0;
+    Bool_t fTreeVariableNegITSClusters1;
+    Bool_t fTreeVariableNegITSClusters2;
+    Bool_t fTreeVariableNegITSClusters3;
+    Bool_t fTreeVariableNegITSClusters4;
+    Bool_t fTreeVariableNegITSClusters5;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeVariablePosITSSharedClusters0;
+    Bool_t fTreeVariablePosITSSharedClusters1;
+    Bool_t fTreeVariablePosITSSharedClusters2;
+    Bool_t fTreeVariablePosITSSharedClusters3;
+    Bool_t fTreeVariablePosITSSharedClusters4;
+    Bool_t fTreeVariablePosITSSharedClusters5;
+    
+    Bool_t fTreeVariableNegITSSharedClusters0;
+    Bool_t fTreeVariableNegITSSharedClusters1;
+    Bool_t fTreeVariableNegITSSharedClusters2;
+    Bool_t fTreeVariableNegITSSharedClusters3;
+    Bool_t fTreeVariableNegITSSharedClusters4;
+    Bool_t fTreeVariableNegITSSharedClusters5;
+    
+    Bool_t fTreeVariableIsCowboy; //store if V0 is cowboy-like or sailor-like in XY plane
+
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeVariableNegTOFExpTDiff; //!
     Float_t fTreeVariablePosTOFExpTDiff; //!
     Float_t fTreeVariableNegTOFSignal; //!
     Float_t fTreeVariablePosTOFSignal; //!
+    Int_t   fTreeVariableNegTOFBCid; //!
+    Int_t   fTreeVariablePosTOFBCid; //! 
     //Event info
     Float_t fTreeVariableAmplitudeV0A; //!
     Float_t fTreeVariableAmplitudeV0C; //!
-    Float_t fTreeVariableNHitsFMDA; //!
-    Float_t fTreeVariableNHitsFMDC; //!
     Int_t   fTreeVariableClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
@@ -384,8 +428,8 @@ private:
     Float_t fTreeVariablePrimVertexY;
     Float_t fTreeVariablePrimVertexZ;
     
-    AliExternalTrackParam *fTreeVariablePosTrack;
-    AliExternalTrackParam *fTreeVariableNegTrack;
+    AliExternalTrackParam *fTreeVariablePosTrack; //!
+    AliExternalTrackParam *fTreeVariableNegTrack; //!
     
     Float_t fTreeVariableMagneticField;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -421,6 +465,8 @@ private:
     Float_t fTreeCascVarDCABachToBaryon;                     //!
     Float_t fTreeCascVarWrongCosPA;                   //!
     Int_t   fTreeCascVarLeastNbrClusters;             //!
+    Int_t fTreeCascVarLeastNbrCrossedRows;
+    Float_t fTreeCascVarNbrCrossedRowsOverLength;
     Float_t fTreeCascVarDistOverTotMom;               //!
     Float_t fTreeCascVarMaxChi2PerCluster; //!
     Float_t fTreeCascVarMinTrackLength; //!
@@ -510,6 +556,50 @@ private:
     //Event Number (check same-event index mixups)
     ULong64_t fTreeCascVarEventNumber; //!
 
+    //Cluster information for all daughter tracks
+    Bool_t fTreeCascVarPosITSClusters0;
+    Bool_t fTreeCascVarPosITSClusters1;
+    Bool_t fTreeCascVarPosITSClusters2;
+    Bool_t fTreeCascVarPosITSClusters3;
+    Bool_t fTreeCascVarPosITSClusters4;
+    Bool_t fTreeCascVarPosITSClusters5;
+    
+    Bool_t fTreeCascVarNegITSClusters0;
+    Bool_t fTreeCascVarNegITSClusters1;
+    Bool_t fTreeCascVarNegITSClusters2;
+    Bool_t fTreeCascVarNegITSClusters3;
+    Bool_t fTreeCascVarNegITSClusters4;
+    Bool_t fTreeCascVarNegITSClusters5;
+    
+    Bool_t fTreeCascVarBachITSClusters0;
+    Bool_t fTreeCascVarBachITSClusters1;
+    Bool_t fTreeCascVarBachITSClusters2;
+    Bool_t fTreeCascVarBachITSClusters3;
+    Bool_t fTreeCascVarBachITSClusters4;
+    Bool_t fTreeCascVarBachITSClusters5;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeCascVarPosITSSharedClusters0;
+    Bool_t fTreeCascVarPosITSSharedClusters1;
+    Bool_t fTreeCascVarPosITSSharedClusters2;
+    Bool_t fTreeCascVarPosITSSharedClusters3;
+    Bool_t fTreeCascVarPosITSSharedClusters4;
+    Bool_t fTreeCascVarPosITSSharedClusters5;
+    
+    Bool_t fTreeCascVarNegITSSharedClusters0;
+    Bool_t fTreeCascVarNegITSSharedClusters1;
+    Bool_t fTreeCascVarNegITSSharedClusters2;
+    Bool_t fTreeCascVarNegITSSharedClusters3;
+    Bool_t fTreeCascVarNegITSSharedClusters4;
+    Bool_t fTreeCascVarNegITSSharedClusters5;
+    
+    Bool_t fTreeCascVarBachITSSharedClusters0;
+    Bool_t fTreeCascVarBachITSSharedClusters1;
+    Bool_t fTreeCascVarBachITSSharedClusters2;
+    Bool_t fTreeCascVarBachITSSharedClusters3;
+    Bool_t fTreeCascVarBachITSSharedClusters4;
+    Bool_t fTreeCascVarBachITSSharedClusters5;
+
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeCascVarNegTOFExpTDiff; //!
     Float_t fTreeCascVarPosTOFExpTDiff; //!
@@ -517,11 +607,12 @@ private:
     Float_t fTreeCascVarNegTOFSignal; //!
     Float_t fTreeCascVarPosTOFSignal; //!
     Float_t fTreeCascVarBachTOFSignal; //!
+    Int_t   fTreeCascVarNegTOFBCid; //!
+    Int_t   fTreeCascVarPosTOFBCid; //!
+    Int_t   fTreeCascVarBachTOFBCid; //!
     //Event info
     Float_t fTreeCascVarAmplitudeV0A; //!
     Float_t fTreeCascVarAmplitudeV0C; //!
-    Float_t fTreeCascVarNHitsFMDA; //!
-    Float_t fTreeCascVarNHitsFMDC; //!
     Int_t   fTreeCascVarClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
@@ -534,6 +625,12 @@ private:
     Bool_t fTreeCascVarPosIsKink;
     Bool_t fTreeCascVarNegIsKink;
     
+    //Cowboy/sailor studies
+    Bool_t  fTreeCascVarIsCowboy;   //store if V0 is cowboy-like or sailor-like in XY plane
+    Float_t fTreeCascVarCowboyness; //negative -> cowboy, positive -> sailor
+    Bool_t  fTreeCascVarIsCascadeCowboy;   //store if V0 is cowboy-like or sailor-like in XY plane
+    Float_t fTreeCascVarCascadeCowboyness; //negative -> cowboy, positive -> sailor
+    
     //Select charge (testing / checks)
     Int_t fkSelectCharge;
     
@@ -543,9 +640,9 @@ private:
     Float_t fTreeCascVarPrimVertexY;
     Float_t fTreeCascVarPrimVertexZ;
     
-    AliExternalTrackParam *fTreeCascVarBachTrack;
-    AliExternalTrackParam *fTreeCascVarPosTrack;
-    AliExternalTrackParam *fTreeCascVarNegTrack;
+    AliExternalTrackParam *fTreeCascVarBachTrack;//!
+    AliExternalTrackParam *fTreeCascVarPosTrack; //!
+    AliExternalTrackParam *fTreeCascVarNegTrack; //!
     
     Float_t fTreeCascVarMagneticField;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -555,12 +652,13 @@ private:
 //===========================================================================================
 
     TH1D *fHistEventCounter; //!
+    TH1D *fHistEventCounterDifferential; //!
     TH1D *fHistCentrality; //!
 
     AliAnalysisTaskStrangenessVsMultiplicityRun2(const AliAnalysisTaskStrangenessVsMultiplicityRun2&);            // not implemented
     AliAnalysisTaskStrangenessVsMultiplicityRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityRun2&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2, 2);
+    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2, 4);
     //1: first implementation
 };
 

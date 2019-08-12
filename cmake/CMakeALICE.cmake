@@ -8,14 +8,15 @@
 # @DNAME  Dictionary name
 # @LDNAME LinkDef file name, ex: LinkDef.h
 # @DHDRS  Dictionary headers
+# @DHDRS_DEPS  Dictionary header files used as dependencies to the rootmap target
 # @DINCDIR Include folders that need to be passed to cint/cling
 # @EXTRADEFINITIONS - optional, extra compile flags specific to library
-#       - used as ${ARGV4}
-macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
+#       - used as ${ARGV5}
+macro(_generate_dictionary DNAME LDNAME DHDRS DHDRS_DEPS DINCDIRS)
 
     # Creating the INCLUDE path for cint/cling
-    foreach(dir ${DINCDIRS})
-        set(INCLUDE_PATH -I${dir} ${INCLUDE_PATH})
+    foreach(_dir ${DINCDIRS})
+        set(INCLUDE_PATH -I${_dir} ${INCLUDE_PATH})
     endforeach()
 
     # Get the list of definitions from the directory to be sent to CINT
@@ -27,36 +28,68 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
 
     # Custom definitions specific to library
     # Received as the forth optional argument
-    separate_arguments(EXTRADEFINITIONS UNIX_COMMAND "${ARGV4}")
+    separate_arguments(EXTRADEFINITIONS UNIX_COMMAND "${ARGV5}")
 
-    if(ROOT_VERSION_MAJOR LESS 6)
-        # ROOT version < 6
-        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.h
-                           COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
-                           ARGS -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx -c -p
-                           ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS} ${INCLUDE_PATH}
-                           ${DHDRS} ${LDNAME}
-                           DEPENDS ${DHDRS} ${LDNAME} ${ROOT_CINT}
-                           WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-    else()
-      # ROOT version >= 6
+    if (ROOT_VERSION_MAJOR LESS 6)
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.h
+                       COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
+                       ARGS -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx -c -p
+                       ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS} ${INCLUDE_PATH}
+                       ${DHDRS} ${LDNAME}
+                       DEPENDS ${DHDRS_DEPS} ${LDNAME} ${ROOT_CINT}
+                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                      )
+    else (ROOT_VERSION_MAJOR LESS 6)
       add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}_rdict.pcm
-                         COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
-                         ARGS -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx
-                              -rmf ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap
-                              -rml lib${DNAME}
-                              ${GLOBALDEFINITIONS}
-                              ${EXTRADEFINITIONS}
-                              ${INCLUDE_PATH}
-                              ${DHDRS}
-                              ${LDNAME}
-                         DEPENDS ${DHDRS} ${LDNAME} ${ROOT_CINT}
-                         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap" DESTINATION lib)
-      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}_rdict.pcm" DESTINATION lib)
+                       COMMAND
+                         LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
+                       ARGS
+                         -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx
+                         -rmf ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap -rml lib${DNAME}
+                         ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS} ${INCLUDE_PATH} ${DHDRS} ${LDNAME}
+                       DEPENDS
+                         ${DHDRS_DEPS} ${LDNAME} ${ROOT_CINT}
+                       WORKING_DIRECTORY
+                         ${CMAKE_CURRENT_BINARY_DIR}
+                      )
+
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap" DESTINATION lib)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}_rdict.pcm" DESTINATION lib)
+
+    endif (ROOT_VERSION_MAJOR LESS 6)
+
+endmacro(_generate_dictionary)
+
+
+# Same as generate_dictionary, but flattens the list of headers and sets additional include paths
+# with include_directories
+macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
+
+    set(_dhdrs "")
+    set(_daddincdirs "")
+    foreach(_itm ${DHDRS})
+      string(FIND "${_itm}" "/" _idx)
+      if(_idx GREATER -1)
+        # Has a subdirectory specified
+        get_filename_component(_itmdir "${_itm}" DIRECTORY)
+        get_filename_component(_itmbase "${_itm}" NAME)
+        list(APPEND _dhdrs "${_itmbase}")
+        list(APPEND _daddincdirs "${CMAKE_CURRENT_SOURCE_DIR}/${_itmdir}")
+      else()
+        # No subdirectory specified
+        list(APPEND _dhdrs "${_itm}")
+      endif()
+    endforeach()
+    list(REMOVE_DUPLICATES _daddincdirs)
+    if(NOT "${_daddincdirs}" STREQUAL "")
+      foreach(_dir "${_daddincdirs}")
+        include_directories("${_dir}")
+      endforeach()
     endif()
+    _generate_dictionary("${DNAME}" "${LDNAME}" "${_dhdrs}" "${DHDRS}" "${DINCDIRS};${_daddincdirs}" "${ARGV4}")
 
 endmacro(generate_dictionary)
+
 
 # Generate the ROOTmap files
 # @LIBNAME - library name: libAnalysis.so -> Analysis.rootmap
@@ -112,7 +145,6 @@ macro(generate_static_dependencies shared_list static_list)
     # set the scope to parent in order to be visible in the parent
     set(${static_list} PARENT_SCOPE)
 endmacro(generate_static_dependencies)
-
 
 # Prepend prefix to every element in the list. Note: this function modifies the input variable: this
 # does not work for macros in CMake, only for functions. Also note that it does NOT automatically

@@ -74,6 +74,7 @@ AliDielectronSignalMC::AliDielectronSignalMC() :
   fGrandMothersRelation(kUndefined),
   fGEANTProcess(kPPrimary),
   fJpsiRadiative(kAll),
+  fCheckCorrelatedHF(kFALSE),
   fCheckStackForPDG(kFALSE),
   fFillPureMCStep(kFALSE)
 {
@@ -121,6 +122,7 @@ AliDielectronSignalMC::AliDielectronSignalMC(const Char_t* name, const Char_t* t
   fGrandMothersRelation(kUndefined),
   fGEANTProcess(kPPrimary),
   fJpsiRadiative(kAll),
+  fCheckCorrelatedHF(kFALSE),
   fCheckStackForPDG(kFALSE),
   fFillPureMCStep(kFALSE)
 {
@@ -143,6 +145,7 @@ AliDielectronSignalMC* AliDielectronSignalMC::GetJpsiMCsignalDef(EJpsiSignals kS
 {
   AliDielectronSignalMC *mcSignal = new AliDielectronSignalMC();
   mcSignal->SetName(fgkJpsiSignals[kSignal]);
+  mcSignal->SetTitle(fgkJpsiSignals[kSignal]);
   switch (kSignal) {
     case kBegin:
       printf("No AliDielectronSignalMC defined for kBegin returning NULL");
@@ -154,9 +157,10 @@ AliDielectronSignalMC* AliDielectronSignalMC::GetJpsiMCsignalDef(EJpsiSignals kS
       mcSignal->SetMotherPDGs(443,443);
       mcSignal->SetMothersRelation(AliDielectronSignalMC::kSame);
       mcSignal->SetFillPureMCStep(kTRUE);
+      mcSignal->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
       mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
       mcSignal->SetCheckBothChargesMothers(kTRUE,kTRUE);
-      return mcSignal;;
+      return mcSignal;
     case kBeautyJpsi:
       // Jpsi from beauty decays
       // Only b-Mesons, b-Baryons decay to fast to measure them separately from promptJpsi in real data (anyhow small branching ratio b-Baryons->Jpsi)

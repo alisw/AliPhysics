@@ -2000,7 +2000,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
                             Double_t vRecMCEventHist2[3] = {vtxESD->GetX()-vtxMC[0],vtxESD->GetZ()-vtxMC[2],static_cast<Double_t>(multMBTracks)};
                             fRecMCEventHist2->Fill(vRecMCEventHist2);
 
-                            Double_t vRecMCEventHist3[2] = {static_cast<Double_t>(multRecMult),evtType};
+                            Double_t vRecMCEventHist3[2] = {static_cast<Double_t>(multRecMult),static_cast<Double_t>(evtType)};
                             fRecMCEventHist3->Fill(vRecMCEventHist3);
                         }
 

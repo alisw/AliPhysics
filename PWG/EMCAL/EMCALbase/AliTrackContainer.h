@@ -105,8 +105,9 @@ class AliTrackContainer : public AliParticleContainer {
     kRejected = -1,                  ///< Track rejected
     kUndefined = 0,                  ///< Track status undefined
     kHybridGlobal = 0,               ///< Track selected under the global hybrid track cuts
-    kHybridConstrained = 1,          ///< Track selected under the constrained hybrid track cuts
-    kHybridConstrainedNoITSrefit = 2,///< Track selected under the constrained hybrid track cuts without ITS refit
+    kHybridConstrainedTrue = 1,      ///< Track selected under the constrained hybrid track cuts (true constrained)
+    kHybridConstrainedFake = 2,      ///< Track selected under the constrained hybrid track cuts (fake constrained)
+    kHybridConstrainedNoITSrefit = 3,///< Track selected under the constrained hybrid track cuts without ITS refit
   };
 
   AliTrackContainer();

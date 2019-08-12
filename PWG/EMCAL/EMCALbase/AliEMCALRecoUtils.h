@@ -47,6 +47,7 @@ class AliVCaloCells;
 class AliVEvent;
 #include "AliLog.h"
 class AliMCEvent;
+#include "AliCaloCalibPedestal.h"
 
 // EMCAL includes
 #include "AliEMCALRecoUtilsBase.h"
@@ -70,17 +71,22 @@ public:
 
   /// Non linearity enum list of possible parametrizations. 
   /// Recomended for data kBeamTestCorrectedv3 and for simulation kPi0MCv3
-  enum     NonlinearityFunctions{ kPi0MC   = 0, kPi0GammaGamma = 1,
-                                  kPi0GammaConversion = 2, kNoCorrection = 3,
-                                  kBeamTest= 4, kBeamTestCorrected = 5,
-                                  kPi0MCv2 = 6, kPi0MCv3 = 7,
-                                  kBeamTestCorrectedv2   = 8,
-                                  kSDMv5   = 9, kPi0MCv5 = 10,
-                                  kSDMv6   =11, kPi0MCv6 = 12,
-                                  kBeamTestCorrectedv3   = 13,
-				  kPCMv1 = 14, //pure symmetric decay muon method 
-				  kPCMplusBTCv1 = 15, //kPCMv1 convoluted with kBeamTestCorrectedv3
-				  kPCMsysv1 = 16 //variation of kPCMv1 to calculate systematics
+  enum     NonlinearityFunctions
+  { 
+    kPi0MC   = 0, kPi0GammaGamma = 1,
+    kPi0GammaConversion = 2, kNoCorrection = 3,
+    kBeamTest= 4, kBeamTestCorrected = 5,
+    kPi0MCv2 = 6, kPi0MCv3 = 7,
+    kBeamTestCorrectedv2   = 8,
+    kSDMv5   = 9, kPi0MCv5 = 10,
+    kSDMv6   =11, kPi0MCv6 = 12,
+    kBeamTestCorrectedv3   = 13,
+    kPCMv1 = 14,               // pure symmetric decay muon method 
+    kPCMplusBTCv1 = 15,        // kPCMv1 convoluted with kBeamTestCorrectedv3
+    kPCMsysv1 = 16,            // variation of kPCMv1 to calculate systematics
+    kBeamTestCorrectedv4 = 17, // Different parametrization of v3 but similar, improve E>100 GeV linearity
+    kBeamTestNS = 18,          // Custom fit of all avail. TB points and E>100 GeV data
+    kPi0MCNS = 19              // Custom fit of all avail. TB points and E>100 GeV MC
   };
 
   /// Cluster position enum list of possible algoritms
@@ -183,7 +189,8 @@ public:
   void     SwitchOffRunDepCorrection()                   { fUseRunCorrectionFactors = kFALSE ; }
   void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
                                                            SwitchOnRecalibration()           ; }      
-  // Time Recalibration  
+  // Time Recalibration
+  void     SetUseOneHistForAllBCs(Bool_t useOneHist)     { fDoUseMergedBC = useOneHist ; }
   void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
 
   void     RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & time,Bool_t isLGon = kFALSE) const;
@@ -196,16 +203,22 @@ public:
   TObjArray* GetEMCALTimeRecalibrationFactorsArray() const { return fEMCALTimeRecalibrationFactors ; }
 
   Float_t  GetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Bool_t isLGon = kFALSE) const { 
-    if(fEMCALTimeRecalibrationFactors) 
-      return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->GetBinContent(absID); 
-    else return 0 ; } 
+    if(fEMCALTimeRecalibrationFactors){
+      if(fDoUseMergedBC)
+        return (Float_t) ((TH1S*)fEMCALTimeRecalibrationFactors->At(1*isLGon))->GetBinContent(absID); 
+      else 
+        return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->GetBinContent(absID);
+    } else return 0 ; } 
   void     SetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Double_t c = 0, Bool_t isLGon=kFALSE) { 
     if(!fEMCALTimeRecalibrationFactors) InitEMCALTimeRecalibrationFactors() ;
-    ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->SetBinContent(absID,c) ; }  
+    if(fDoUseMergedBC)
+      ((TH1S*)fEMCALTimeRecalibrationFactors->At(isLGon))->SetBinContent(absID,c) ;
+    else
+      ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->SetBinContent(absID,c) ; }  
   
-  TH1F *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)const       { return (TH1F*)fEMCALTimeRecalibrationFactors->At(bc) ; }	
+  TH1  *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)const       { return (TH1*)fEMCALTimeRecalibrationFactors->At(bc) ; }
   void     SetEMCALChannelTimeRecalibrationFactors(const TObjArray *map);
-  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , const TH1F* h);
+  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , const TH1* h);
 
   Bool_t   IsLGOn()const { return fLowGain   ; }
   void     SwitchOffLG() { fLowGain = kFALSE ; }
@@ -259,12 +272,17 @@ public:
                                                            if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ; }
   TObjArray* GetEMCALBadChannelStatusMapArray()    const { return fEMCALBadChannelMap ; }
   void     InitEMCALBadChannelStatusMap() ;
-  Int_t    GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-    if(fEMCALBadChannelMap) return (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
-    else return 0;}//Channel is ok by default
-  void     SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
+  void     SetEMCALBadChannelStatusSelection(Bool_t all, Bool_t dead, Bool_t hot, Bool_t warm);
+  void     SetWarmChannelAsGood() 
+           { fBadStatusSelection[0] = kFALSE; fBadStatusSelection[AliCaloCalibPedestal::kWarning] = kFALSE; }
+  void     SetDeadChannelAsGood() 
+           { fBadStatusSelection[0] = kFALSE; fBadStatusSelection[AliCaloCalibPedestal::kDead]    = kFALSE; }
+  void     SetHotChannelAsGood() 
+           { fBadStatusSelection[0] = kFALSE; fBadStatusSelection[AliCaloCalibPedestal::kHot]     = kFALSE; } 
+  Bool_t   GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Int_t & status) const ;
+  void     SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t status = 1) { 
     if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap()               ;
-    ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c)    ; }
+    ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,status)    ; }
   TH2I *   GetEMCALChannelStatusMap(Int_t iSM)     const { return (TH2I*)fEMCALBadChannelMap->At(iSM) ; }
   void     SetEMCALChannelStatusMap(const TObjArray *map);
   void     SetEMCALChannelStatusMap(Int_t iSM , const TH2I* h);
@@ -342,7 +360,10 @@ public:
   void     SetStep(Double_t step)                     { fStepSurface = step           ; }
   void     SetStepCluster(Double_t step)              { fStepCluster = step           ; }
   void     SetITSTrackSA(Bool_t isITS)                { fITSTrackSA = isITS           ; } //Special Handle of AliExternTrackParam    
-    
+  void     SwitchOnOuterTrackParam()                  { fUseOuterTrackParam = kTRUE   ; } 
+  void     SwitchOffOuterTrackParam()                 { fUseOuterTrackParam = kFALSE  ; } 
+  
+  
   // Track Cuts 
   Bool_t   IsAccepted(AliESDtrack *track);
   void     InitTrackCuts();
@@ -370,8 +391,9 @@ public:
   void     SetMaxDCAToVertexXY(Float_t dist=1e10)    { fCutMaxDCAToVertexXY     = dist ; }
   void     SetMaxDCAToVertexZ(Float_t dist=1e10)     { fCutMaxDCAToVertexZ      = dist ; }
   void     SetDCAToVertex2D(Bool_t b=kFALSE)         { fCutDCAToVertex2D        = b    ; }
-  void     SetRequireITSStandAlone(Bool_t b=kFALSE)    {fCutRequireITSStandAlone = b;} //Marcel
-  void     SetRequireITSPureStandAlone(Bool_t b=kFALSE){fCutRequireITSpureSA     = b;}
+  void     SetRequireITSStandAlone(Bool_t b=kFALSE)    {fCutRequireITSStandAlone= b    ; } //Marcel
+  void     SetRequireITSPureStandAlone(Bool_t b=kFALSE){fCutRequireITSpureSA    = b    ; }
+  void     SetRequireTrackDCA(Bool_t b=kFALSE)       { fUseTrackDCA             = b    ; }
   
   // getters								
   Double_t GetMinTrackPt()                     const { return fCutMinTrackPt           ; }
@@ -385,7 +407,8 @@ public:
   Float_t  GetMaxDCAToVertexXY()               const { return fCutMaxDCAToVertexXY     ; }
   Float_t  GetMaxDCAToVertexZ()                const { return fCutMaxDCAToVertexZ      ; }
   Bool_t   GetDCAToVertex2D()                  const { return fCutDCAToVertex2D        ; }
-  Bool_t   GetRequireITSStandAlone()           const { return fCutRequireITSStandAlone ; } //Marcel	
+  Bool_t   GetRequireITSStandAlone()           const { return fCutRequireITSStandAlone ; } //Marcel  
+  Bool_t   GetRequireTrackDCA()                const { return fUseTrackDCA             ; } 
 
   //----------------------------------------------------
   // Exotic cells / clusters
@@ -472,6 +495,7 @@ private:
   // Time Recalibration with L1 phase 
   Bool_t     fUseL1PhaseInTimeRecalibration;   ///< Switch on or off the L1 phase in time recalibration
   TObjArray* fEMCALL1PhaseInTimeRecalibration; ///< Histogram with map of L1 phase per SM, EMCAL
+  Bool_t     fDoUseMergedBC;                   ///< flag for using one histo for all BCs
 
   // Recalibrate with run dependent corrections, energy
   Bool_t     fUseRunCorrectionFactors;   ///< Use Run Dependent Correction
@@ -480,7 +504,12 @@ private:
   Bool_t     fRemoveBadChannels;         ///< Check the channel status provided and remove clusters with bad channels
   Bool_t     fRecalDistToBadChannels;    ///< Calculate distance from highest energy tower of cluster to closes bad channel
   TObjArray* fEMCALBadChannelMap;        ///< Array of histograms with map of bad channels, EMCAL
-
+  Bool_t     fBadStatusSelection[4];     ///< Declare as bad all the types of bad channels or only some. 
+                                         ///<   0- Set all types to bad if true
+                                         ///<   1- Set dead as good if false
+                                         ///<   2- Set hot as good if false
+                                         ///<   3- Set warm as good if false
+  
   // Border cells
   Int_t      fNCellsFromEMCALBorder;     ///< Number of cells from EMCAL border the cell with maximum amplitude has to be.
   Bool_t     fNoEMCALBorderAtEta0;       ///< Do fiducial cut in EMCAL region eta = 0?
@@ -513,7 +542,9 @@ private:
   Double_t   fMass;                      ///< Mass hypothesis of the track
   Double_t   fStepSurface;               ///< Length of step to extrapolate tracks to EMCal surface
   Double_t   fStepCluster;               ///< Length of step to extrapolate tracks to clusters
-  Bool_t     fITSTrackSA;                ///< If track matching is to be done with ITS tracks standing alone	
+  Bool_t     fITSTrackSA;                ///< If track matching is to be done with ITS tracks standing alone, ESDs	
+  Bool_t     fUseTrackDCA;               ///< Activate use of aodtrack->GetXYZ or XvYxZv like in AliEMCALRecoUtilsBase::ExtrapolateTrackToEMCalSurface 
+  Bool_t     fUseOuterTrackParam;        ///< Use OuterTrackParam not InnerTrackParam, ESDs
   Double_t   fEMCalSurfaceDistance;      ///< EMCal surface distance (= 430 by default, the last 10 cm are propagated on a cluster-track pair basis)
  
   // Track cuts  
@@ -538,7 +569,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 26) ;
+  ClassDef(AliEMCALRecoUtils, 30) ;
   /// \endcond
 
 };

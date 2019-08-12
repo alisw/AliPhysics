@@ -15,8 +15,9 @@ class AliAODEvent;
 class AliESDEvent;
 class AliTOFTriggerMask;
 class TBits;
+class TFile;
 
-#define ntrg 17
+#define ntrgMB 20
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
@@ -63,8 +64,8 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   Int_t fRunNum;
   UInt_t fPerNum, fOrbNum;
   //trigger
-  Bool_t fTrigger[ntrg];
-  Bool_t fTriggerInputsMC[ntrg];
+  Bool_t fTrigger[ntrgMB];
+  Bool_t fTriggerInputsMC[ntrgMB];
   UInt_t fL0inputs, fL1inputs;
   AliTOFTriggerMask *fTOFmask;
   Bool_t fIsPhysicsSelected;
@@ -136,12 +137,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TH1D *fHistMBTriggersPerRun;
   TH1D *fHistCentralTriggersPerRun;
   TH1D *fHistSemiCentralTriggersPerRun;
-  
-  TH1D *fHistCTest58TriggersPerRun;
-  TH1D *fHistCTest59TriggersPerRun;
-  TH1D *fHistCTest60TriggersPerRun;
-  TH1D *fHistCTest61TriggersPerRun;
-  
+
   TH1D *fHistCcup8TriggersPerRun;
   TH1D *fHistCcup9TriggersPerRun;
   TH1D *fHistCcup10TriggersPerRun;
@@ -150,6 +146,9 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TH1D *fHistCcup25TriggersPerRun;
   TH1D *fHistCcup26TriggersPerRun;
   TH1D *fHistCcup27TriggersPerRun;
+  TH1D *fHistCcup29TriggersPerRun;
+  TH1D *fHistCcup30TriggersPerRun;
+  TH1D *fHistCcup31TriggersPerRun;
   TH1D *fHistCtrueTriggersPerRun;
   
   TList *fListHist;
@@ -167,13 +166,15 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TList *fListSystematics;
   TList *fListJPsiLoose;
   TList *fListJPsiTight;
-  TList *fListPsi2sLoose;
-  TList *fListPsi2sTight;
+  
+  TFile *fSPDfile;
+  TH1D *hBCmod4;
+  TH2D *hSPDeff;
   
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcPsi2s, 7); 
+  ClassDef(AliAnalysisTaskUpcPsi2s, 11); 
 };
 
 #endif

@@ -126,8 +126,8 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	Double_t vtx2daughter1[3] = {0,0,0};   // secondary vertex from daughter 1
 	fmcPartCandidate->XvYvZv(vtx1);  // cm
 
-	Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
-	Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
+	Int_t daughter0 = fmcPartCandidate->GetDaughterLabel(0);
+	Int_t daughter1 = fmcPartCandidate->GetDaughterLabel(1);
 	AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0));
 	AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1));
 	if(!mcPartDaughter0 || !mcPartDaughter1) return bGenValues;
@@ -198,6 +198,11 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 		pTK = mcPartDaughter0->Pt();
 	}
 	
+  Int_t localmult=-1;
+  if(fConfiguration == AliCFTaskVertexingHF::kESE) {
+    localmult = ComputeLocalMultiplicity(decay->Eta(), decay->Phi(), 0.4);
+  }
+  
 	switch (fConfiguration){
 	case AliCFTaskVertexingHF::kSnail:
 		vectorMC[0] = fmcPartCandidate->Pt();
@@ -233,6 +238,14 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 		vectorMC[2] = fCentValue;   // dummy value for dca, meaningless in MC
 		vectorMC[3] = fMultiplicity;   // dummy value for dca, meaningless in MC
 		break;
+  case AliCFTaskVertexingHF::kESE:
+    vectorMC[0] = fmcPartCandidate->Pt();
+    vectorMC[1] = fmcPartCandidate->Y() ;
+    vectorMC[2] = fCentValue;   // centrality
+    vectorMC[3] = fMultiplicity;   // multiplicity (diff estimators can be used)
+    vectorMC[4] = localmult;   // local multiplicity (Ntracks in R<0.4)
+    vectorMC[5] = fq2;   // magnitude of reduced flow vector (computed using TPC tracks)
+    break;
 	}
 	delete decay;
 	bGenValues = kTRUE;
@@ -287,6 +300,11 @@ Bool_t AliCFVertexingHF2Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
 	
 	Double_t cT = d0toKpi->CtD0();	
 	
+  Int_t localmult=-1;
+  if(fConfiguration == AliCFTaskVertexingHF::kESE) {
+    localmult = ComputeLocalMultiplicity(d0toKpi->Eta(), d0toKpi->Phi(), 0.4);
+  }
+
 	switch (fConfiguration){
 	case AliCFTaskVertexingHF::kSnail:
 		vectorReco[0] = pt;
@@ -322,6 +340,14 @@ Bool_t AliCFVertexingHF2Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
 		vectorReco[2] = fCentValue;   
 		vectorReco[3] = fMultiplicity;   
 		break;
+  case AliCFTaskVertexingHF::kESE:
+    vectorReco[0] = pt;
+    vectorReco[1] = rapidity;
+    vectorReco[2] = fCentValue;   // centrality
+    vectorReco[3] = fMultiplicity;   // multiplicity (diff estimators can be used)
+    vectorReco[4] = localmult;   // local multiplicity (Ntracks in DeltaEta<0.1 and DeltaPhi<0.1)
+    vectorReco[5] = fq2;   // magnitude of reduced flow vector (computed using TPC tracks)
+    break;
 	}
 
 	bFillRecoValues = kTRUE;
@@ -336,8 +362,8 @@ Bool_t AliCFVertexingHF2Prong::CheckMCChannelDecay() const
 	// checking the MC decay channel
 	//
 	Bool_t checkCD = kFALSE;
-	Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
-	Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
+	Int_t daughter0 = fmcPartCandidate->GetDaughterLabel(0);
+	Int_t daughter1 = fmcPartCandidate->GetDaughterLabel(1);
 	AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0));
 	AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1));
 	

@@ -35,7 +35,8 @@ AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut():
   fMinDEtaStarNeg(0.0),
   fMinDPhiStarPos(0.0),
   fMinDPhiStarNeg(0.0),
-  fMinRad(0.0)
+  fMinRad(0.0),
+  fNanoAODAnalysis(false)
 {
   /* no-op */
 }
@@ -71,6 +72,7 @@ AliFemtoV0TrackPairCut &AliFemtoV0TrackPairCut::operator=(const AliFemtoV0TrackP
   fMinDPhiStarNeg = cut.fMinDPhiStarNeg;
 
   fMinRad = cut.fMinRad;
+  fNanoAODAnalysis = cut.fNanoAODAnalysis;
 
   return *this;
 }
@@ -100,6 +102,7 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
   //
   // Test separation between the track and the V0 daughters' entrance and exit points
   //
+if(!fNanoAODAnalysis){
   if (fDataType == kESD || fDataType == kAOD) {
     const AliFemtoThreeVector diffPosEntrance = V0->NominalTpcEntrancePointPos() - track->NominalTpcEntrancePoint(),
                                   diffPosExit = V0->NominalTpcExitPointPos() - track->NominalTpcExitPoint(),
@@ -113,6 +116,7 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
       return false;
     }
   }
+}
 
   //
   // Check for pairs that are possibly shared/double reconstruction
@@ -202,53 +206,16 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
   //
   // Test the average separation between the track and each daughter in TPC
   //
-  {
-    // AliFemtoAvgSepCalculator avgsep_calc(track, V0);
-    //
-    // if (!avgsep_calc.track_v0_passes(fMinAvgSepTrackPos, fMinAvgSepTrackNeg)) {
-    //   fNPairsFailed++;
-    //   return false;
-    // }
+if(!fNanoAODAnalysis){
+    Double_t pos_avgSep = pair->NominalTpcAverageSeparationTrackV0Pos(),
+             neg_avgSep = pair->NominalTpcAverageSeparationTrackV0Neg();
 
-    UInt_t pos_point_cnt = 0,
-           neg_point_cnt = 0;
-
-    Double_t pos_avgSep = 0.0,
-             neg_avgSep = 0.0;
-
-    // loop through NominalTpcPoints of the track and V0 daughters
-    for (int i = 0; i < 8; i++) {
-      // Grab references to each of the i'th points
-      const AliFemtoThreeVector &pos_p = V0->NominalTpcPointPos(i),
-                                &neg_p = V0->NominalTpcPointNeg(i),
-                              &track_p = track->NominalTpcPoint(i);
-
-      // if any track points are outside the boundary - skip
-      if (track_p.x() < -9990.0 || track_p.y() < -9990.0 || track_p.z() < -9990.0) {
-        continue;
-      }
-
-      // If the positive daughter points are not bad, increment point count and
-      // increase the cumulative average separation
-      if (!(pos_p.x() < -9990.0 || pos_p.y() < -9990.0 || pos_p.z() < -9990.0)) {
-        pos_avgSep += (pos_p - track_p).Mag();
-        pos_point_cnt++;
-      }
-
-      // If the negative daughter points are not bad, increment point count and
-      // increase the cumulative average separation
-      if (!(neg_p.x() < -9990.0 || neg_p.y() < -9990.0 || neg_p.z() < -9990.0)) {
-        neg_avgSep += (neg_p - track_p).Mag();
-        neg_point_cnt++;
-      }
-    }
-
-    if (pos_point_cnt == 0 || pos_avgSep / pos_point_cnt < fMinAvgSepTrackPos) {
+    if (pos_avgSep < fMinAvgSepTrackPos) {
       fNPairsFailed++;
       return false;
     }
 
-    if (neg_point_cnt == 0 || neg_avgSep / neg_point_cnt < fMinAvgSepTrackNeg) {
+    if (neg_avgSep < fMinAvgSepTrackNeg) {
       fNPairsFailed++;
       return false;
     }
@@ -281,23 +248,16 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
       ener1 = ::sqrt(temp1.Mag2() + ProtonMass * ProtonMass);
     }
 
-    AliFemtoLorentzVector fourMomentum1(ener1, temp1); // Particle momentum
-
-    // fourMomentum1.SetVect(temp1);
-    // fourMomentum1.SetE(ener1);
-
-    //AliFemtoLorentzVector fFourMomentum2; // Particle momentum
     AliFemtoThreeVector temp2 = track_p;
     double ener2 = 0;
 
     if (fSecondParticleType == kProton || fSecondParticleType == kAntiProton) {
       ener2 = ::sqrt(temp2.Mag2() + ProtonMass * ProtonMass);
     }
-    AliFemtoLorentzVector fourMomentum2; // Particle momentum
 
-
-    fourMomentum2.SetVect(temp2);
-    fourMomentum2.SetE(ener2);
+    // Particle momentum
+    const AliFemtoLorentzVector fourMomentum1(ener1, temp1);
+    const AliFemtoLorentzVector fourMomentum2(ener2, temp2);
 
     // Calculate qInv
     AliFemtoLorentzVector tDiff = (fourMomentum1 - fourMomentum2);
@@ -340,15 +300,16 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
                  dPhiS_neg = 2.0 * TMath::ATan(distSft_neg/2./((fMinRad*1e2)));
 
     if ( (TMath::Abs(detas_pos) < fMinDEtaStarPos &&
-	  TMath::Abs(dPhiS_pos) < fMinDPhiStarPos) ||
-	 (TMath::Abs(detas_neg) < fMinDEtaStarNeg &&
-	  TMath::Abs(dPhiS_neg) < fMinDPhiStarNeg) ) {
+          TMath::Abs(dPhiS_pos) < fMinDPhiStarPos) ||
+         (TMath::Abs(detas_neg) < fMinDEtaStarNeg &&
+          TMath::Abs(dPhiS_neg) < fMinDPhiStarNeg) ) {
       fNPairsFailed++;
       return false;
     }
   }
 
   fNPairsPassed++;
+
   return true;
 }
 //__________________
@@ -378,15 +339,13 @@ TList *AliFemtoV0TrackPairCut::ListSettings()
   TList *list = new TList();
 
   // The TString format patterns (F is float, I is integer, L is long)
-  const char ptrnF[] = "AliFemtoV0TrackPairCut.%s=%f",
-             //ptrnI[] = "AliFemtoV0TrackPairCut.%s=%d",
-             ptrnL[] = "AliFemtoV0TrackPairCut.%s=%ld";
+  const TString prefix = "AliFemtoV0TrackPairCut.";
 
-  list->Add(new TObjString(TString::Format(ptrnF, "sharequalitymax", fShareQualityMax)));
-  list->Add(new TObjString(TString::Format(ptrnF, "sharefractionmax", fShareFractionMax)));
+  list->Add(new TObjString(prefix + Form("sharequalitymax=%g", fShareQualityMax)));
+  list->Add(new TObjString(prefix + Form("sharefractionmax=%g", fShareFractionMax)));
 
-  list->Add(new TObjString(TString::Format(ptrnL, "pairs_passed", fNPairsPassed)));
-  list->Add(new TObjString(TString::Format(ptrnL, "pairs_failed", fNPairsFailed)));
+  list->Add(new TObjString(prefix + Form("pairs_passed=%ld", fNPairsPassed)));
+  list->Add(new TObjString(prefix + Form("pairs_failed=%ld", fNPairsFailed)));
 
   return list;
 }

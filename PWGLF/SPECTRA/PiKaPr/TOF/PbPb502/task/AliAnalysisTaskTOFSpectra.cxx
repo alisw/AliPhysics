@@ -72,11 +72,11 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, con
     , fBuilTPCTOF(kFALSE)
     , fBuilDCAchi2(kFALSE)
     , fUseTPCShift(kFALSE)
-    , fPerformance(kFALSE)   //kTRUE for performance plots!
-    , fMCPerformance(kFALSE) //kTRUE for MC performance plots!
-    , fRecalibrateTOF(kFALSE)
-    , fCutOnMCImpact(kFALSE)
-    , fFineTOFReso(kFALSE) // kTRUE for TOF resolution as a function of the number of TOF matched tracks
+    , fPerformance(kFALSE)    //kTRUE for performance plots!
+    , fMCPerformance(kFALSE)  //kTRUE for MC performance plots!
+    , fRecalibrateTOF(kFALSE) //kTRUE to recalibrate TOF response with new resolution
+    , fCutOnMCImpact(kFALSE)  //kTRUE to cut on the MC impact parameter instead of the centrality classes
+    , fFineTOFReso(kFALSE)    //kTRUE for TOF resolution as a function of the number of TOF matched tracks
     , fFineEfficiency(kFALSE)
     //Standard track and event cuts
     , fEventCut(0)
@@ -85,7 +85,6 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, con
     //Utility objects
     , fESD(0x0)
     , fMCEvt(0x0)
-    , fMCStack(0x0)
     , fMultSel(0x0)
     //TOF specific objects
     , fTOFcls(0x0)
@@ -2459,7 +2458,6 @@ void AliAnalysisTaskTOFSpectra::InitializeEventVar()
   //Objects
   StartTimePerformance(7);
   fMCEvt = 0x0;
-  fMCStack = 0x0;
   fMultSel = 0x0;
   StopTimePerformance(7);
 
@@ -2613,14 +2611,6 @@ void AliAnalysisTaskTOFSpectra::GatherEventMCInfo()
   //Set The PID response on the current MC event
   fPIDResponse->SetCurrentMCEvent(fMCEvt);
 
-  //Get the stack
-  fMCStack = fMCEvt->Stack();
-  // Check on the Stack
-  if (!fMCStack) {
-    AliError("Could not retrieve MC Stack");
-    return;
-  }
-
   //Get the number of tracks in the event
   fNMCTracks = fMCEvt->GetNumberOfTracks();      //Number of particles
   fMCPrimaries = fMCEvt->GetNumberOfPrimaries(); //Number of primary particles
@@ -2659,15 +2649,15 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles()
   Bool_t passy = kTRUE;
   TParticle* trackMC = nullptr;
   //loop on primary MC tracks Before Event Selection
-  for (Int_t i = 0; i < fMCStack->GetNtrack(); i++) {
-    if (!fMCStack->IsPhysicalPrimary(i))
+  for (Int_t i = 0; i < fNMCTracks; i++) {
+    if (!fMCEvt->IsPhysicalPrimary(i))
       continue;             //Keep only primaries
     InitializeMCTrackVar(); //Initialize all the variables to zero
     passeta = kTRUE;
     passy = kTRUE;
 
     //Get the particle in the stack at the index i
-    trackMC = fMCStack->Particle(i);
+    trackMC = fMCEvt->Particle(i);
 
     //Get the kinematic values of the particles
     fPMC = trackMC->P();
@@ -2793,7 +2783,7 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack* trk)
   else // Track was matched to a TOF hit but comes from mismatch!
     fMCTOFMatch = 1;
   //
-  TParticle* part = (TParticle*)fMCStack->Particle(AbsTrkLabel); //Particle in the stack
+  TParticle* part = fMCEvt->Particle(AbsTrkLabel); //Particle in the MC event
   if (!part) {
     AliError("Cannot find the TParticle!");
     return kFALSE;
@@ -2806,7 +2796,7 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack* trk)
   fPdgcode = part->GetPdgCode();
   fFirstMotherIndex = part->GetFirstMother();
   if (fFirstMotherIndex >= 0) { //Check if the particle has a mother
-    fPdgcodeMother = fMCStack->Particle(fFirstMotherIndex)->GetPdgCode();
+    fPdgcodeMother = fMCEvt->Particle(fFirstMotherIndex)->GetPdgCode();
     if (TOFTrkLabel[0] == TMath::Abs(fPdgcodeMother))
       fMCTOFMatch = 2;
   }
@@ -2827,11 +2817,11 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack* trk)
 
   //
   //Particle production
-  if (fMCStack->IsPhysicalPrimary(AbsTrkLabel))
+  if (fMCEvt->IsPhysicalPrimary(AbsTrkLabel))
     fProdInfo = 0; //Track is Physical Primary
-  else if (fMCStack->IsSecondaryFromWeakDecay(AbsTrkLabel))
+  else if (fMCEvt->IsSecondaryFromWeakDecay(AbsTrkLabel))
     fProdInfo = 1; //Track comes from weak decay
-  else if (fMCStack->IsSecondaryFromMaterial(AbsTrkLabel))
+  else if (fMCEvt->IsSecondaryFromMaterial(AbsTrkLabel))
     fProdInfo = 2; //Track is from material
   else
     AliFatal("Particle is not primary, sec. from w.d. or material");

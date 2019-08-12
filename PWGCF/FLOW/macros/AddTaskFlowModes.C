@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name", 
+AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "FlowHarmonics", 
 					   AliAnalysisTaskFlowModes::ColSystem collisionSystem = AliAnalysisTaskFlowModes::kPbPb,
 					   Int_t PVtxZMax = 10,
 					   Int_t NumTPCclsMin = 70,
@@ -39,8 +39,9 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
 
  // Analysis
     task1->SetRunMode(AliAnalysisTaskFlowModes::kFull);//kFull
-    task1->SetColisionSystem(collisionSystem);//kPP, kPbPb
+    task1->SetColisionSystem(collisionSystem);//AliAnalysisTaskFlowModes::kPbPb);// collisionSystem  kPP, kPbPb
     task1->SetNumEventsAnalyse(50);//In case of fRunMode == kTest it only analyses up to 50 events.  
+    task1->SetSampling(kTRUE);
     task1->SetAnalysisType(AliAnalysisTaskFlowModes::kAOD);
     task1->SetFillQAhistos(kTRUE);
     task1->SetProcessCharged(kTRUE);
@@ -51,6 +52,7 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     task1->SetPIDNumSigmasPionMax(3);
     task1->SetPIDNumSigmasKaonMax(3);
     task1->SetPIDNumSigmasProtonMax(3);
+    task1->SetPIDNumSigmasCombinedNoTOFrejection(kTRUE);
     if(PIDbayesian) task1->SetBayesianProbability(PIDprob);
     
 
@@ -61,16 +63,14 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     // task1->SetFlowDoFourCorrelations(kFALSE);
     task1->SetFlowDoOnlyMixedCorrelations(DoOnlyMixedFlow);
     task1->SetFlowFillWeights(FillWeights);
-    //task1->SetUseNUAWeigthsFile("alice/cern.ch/user/n/nmohamma/CorrectionMaps/fb96/NUACorrectionMap.root"); 
-    //task1->SetUseNUEWeigthsFile("alice/cern.ch/user/n/nmohamma/CorrectionMaps/fb96/NUECorrectionMap.root");
+    //task1->SetUseNUAWeigthsFile("alice/cern.ch/user/n/nmohamma/CorrectionMaps/hadronPID/PIDnSigma/fb96/NUACorrectionMap.root"); 
+    //task1->SetUseNUEWeigthsFile("alice/cern.ch/user/n/nmohamma/CorrectionMaps/fb768/NUECorrectionMap_fb768_nSigmaComb2.root"); 
 
     //task1->SetPositivelyChargedRef(kFALSE);//reference particles both positively charged
     //task1->SetNegativelyChargedRef(kFALSE);//reference particles both negatively charged
     //task1->SetPositivelyChargedPOI(kFALSE);//POIs positively charged
     //task1->SetNegativelyChargedPOI(kFALSE);//POIs negatively charged
 
-    // task1->SetUseWeightsFile("alice/cern.ch/user/v/vpacik/uniFlow_ver4_CENT_woSDD_16t_V0A/output/000267163/001/AnalysisResults.root");
-    // task1->SetUseWeigthsFile("/alice/cern.ch/user/v/vpacik/weights_CENTwoSDD_16q.root");
     // Events selection
     task1->SetTrigger(0); // case 0: kINT7, case 1: kHighMultV0, case 2: kHighMultSPD.
     task1->SetMultEstimator(MultEstimator);//CL1, CL0

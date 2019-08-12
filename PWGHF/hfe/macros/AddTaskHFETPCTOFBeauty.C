@@ -108,18 +108,7 @@ AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t 
 	task->SetEtaCut(EtaMin, EtaMax);
     //-----------------------------------------
     
-    //______________________________________
-    //Particle identification
-    AliHFEpid *pid = task->GetPID();
     
-    //______________________________________
-    //In the case of a simulation
-    if(isMCc)
-    {
-        pid->SetHasMCData(kTRUE);
-        task->SetMCanalysis();
-    }
-    //______________________________________
     
     if(isMCc){
     ///RAA model for B correction
@@ -131,13 +120,15 @@ AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t 
 	}
     ///Var 1
     if(IsBcorr == 1){
-		TF1 *fBmesonShape1 = new TF1("fBmesonShape1","(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300)+(1-(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300))/2", 0, 30);
+		//TF1 *fBmesonShape1 = new TF1("fBmesonShape1","(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300)+(1-(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300))/2", 0, 30);
+		TF1 *fBmesonShape1 = new TF1("fBmesonShape1","(4.65644e-01) / (TMath::Power(TMath::Exp( - (2.63272e-01) * x[0] - (-7.24611e-03) * x[0] * x[0] ) + x[0] / (1.24435e+01), (2.09389e+00)))", 0, 30);
 		task->SetBcorrFunction(fBmesonShape1);
 		cout<<"-----------------------------------------------------IsBcorr"<<IsBcorr<<endl;
 	}
     ///Var 2
     if(IsBcorr == 2){
-		TF1 *fBmesonShape2 = new TF1("fBmesonShape2","(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300)-(1-(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300))/2", 0, 30);
+		//TF1 *fBmesonShape2 = new TF1("fBmesonShape2","(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300)-(1-(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300))/2", 0, 30);
+		TF1 *fBmesonShape2 = new TF1("fBmesonShape2","(4.23575e-01) / (TMath::Power(TMath::Exp( - (2.65700e-01) * x[0] - (4.35955e-02) * x[0] * x[0] ) + x[0] / (7.48510e+00), (2.13502e+00)))", 0, 30);
 		task->SetBcorrFunction(fBmesonShape2);
 		cout<<"-----------------------------------------------------IsBcorr"<<IsBcorr<<endl;
 	}
@@ -357,11 +348,26 @@ AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t 
 	}
 	
     
+    //______________________________________
+    //Particle identification
+    AliHFEpid *pid = task->GetPID();
+    
+    //______________________________________
+    //In the case of a simulation
+    if(isMCc)
+    {
+        pid->SetHasMCData(kTRUE);
+        task->SetMCanalysis();
+    }
+    //______________________________________
+    
+    
+    /*
     ///Configure PID
     //_________________________
     //TPC PID
     pid->AddDetector("TPC", 0);				
-    
+
     //_________________________
     ///Configure TPC cut
     //Defaul = -1 to 3 sigmas
@@ -378,11 +384,13 @@ AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t 
     ///TOF PID
     pid->AddDetector("TOF", 1);
     pid->ConfigureTOF(tofPID);
+    */
     
     printf("*************************************\n");
     printf("Configuring standard Task:\n");
     pid->PrintStatus();
     printf("*************************************\n");
+    
     
     return task;
 }

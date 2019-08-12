@@ -78,7 +78,14 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
   }
 
-  else RDHFDStartoKpipi = (AliRDHFCutsDStartoKpipi*)filecuts->Get("DStartoKpipiCuts");
+ else {
+    RDHFDStartoKpipi = (AliRDHFCutsDStartoKpipi*)filecuts->Get("DStartoKpipiCuts");
+    if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
+      RDHFDStartoKpipi->SetMinCentrality(minC);
+      RDHFDStartoKpipi->SetMaxCentrality(maxC);
+    }
+
+  }
 
   RDHFDStartoKpipi->SetName("DStartoKpipiCuts");
 

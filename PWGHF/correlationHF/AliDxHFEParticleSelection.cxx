@@ -140,7 +140,7 @@ TH1* AliDxHFEParticleSelection::CreateControlHistogram(const char* name,
 						       const char** binLabels) const
 {
   /// create control histogram
-  std::auto_ptr<TH1> h(new TH1D(name, title, nBins, min, max));
+  std::unique_ptr<TH1> h(new TH1D(name, title, nBins, min, max));
   if (!h.get()) return NULL;
   if (binLabels) {
   for (int iLabel=0; iLabel<nBins; iLabel++) {
@@ -166,7 +166,7 @@ TH2* AliDxHFEParticleSelection::CreateControl2DHistogram(const char* name,
   // xaxis = title of x axis 
   // yaxis = title of y axis 
 
-  std::auto_ptr<TH2> h(new TH2D(name, title, (Int_t)nBins[0], nBins[1], nBins[2], (Int_t)nBins[3], nBins[4],nBins[5]));
+  std::unique_ptr<TH2> h(new TH2D(name, title, (Int_t)nBins[0], nBins[1], nBins[2], (Int_t)nBins[3], nBins[4],nBins[5]));
   if (!h.get()) return NULL;
   h->GetXaxis()->SetTitle(xaxis);
   h->GetYaxis()->SetTitle(yaxis);
@@ -187,7 +187,7 @@ THnSparse* AliDxHFEParticleSelection::CreateControlTHnSparse(const char* name,
 
   AliInfo("Setting up THnSparse");
 
-  std::auto_ptr<THnSparseF> th(new THnSparseF(name, name, thnSize, thnBins, thnMin, thnMax));
+  std::unique_ptr<THnSparseF> th(new THnSparseF(name, name, thnSize, thnBins, thnMin, thnMax));
   if (th.get()==NULL) {
     return NULL;
   }
@@ -379,7 +379,7 @@ void AliDxHFEParticleSelection::SaveAs(const char* filename, Option_t */*option*
   fileoption="RECREATE";
   //else fileoption="UPDATE";
 
-  std::auto_ptr<TFile> output(TFile::Open(filename,fileoption));
+  std::unique_ptr<TFile> output(TFile::Open(filename,fileoption));
   if (!output.get() || output->IsZombie()) {
     AliError(Form("can not open file %s from writing", filename));
     return;

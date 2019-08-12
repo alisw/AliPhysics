@@ -44,13 +44,14 @@
 #include <AliAODForwardMult.h>
 #include <AliForwardUtil.h>
 #include <AliTriggerAnalysis.h>
-#include <AliAODTrack.h>
 #include <AliESDtrack.h>
 #include <AliESDTrdTrack.h>
 #include <AliESDtrackCuts.h>
 #include <AliVZDC.h>
 #include <AliESDv0.h>
+#include <AliAODv0.h>
 #include <AliESDv0Cuts.h>
+#include <AliAODv0KineCuts.h>
 #include <AliESDv0KineCuts.h>
 #include <AliESDFMD.h>
 #include <AliVCluster.h>
@@ -58,6 +59,7 @@
 #include <AliMultiplicity.h>
 #include <AliAODTracklets.h>
 #include <AliPIDResponse.h>
+#include <AliTPCdEdxInfo.h>
 //#include <AliFlowBayesianPID.h>
 #include <AliMCParticle.h>
 #include <AliAODMCParticle.h>
@@ -67,6 +69,7 @@
 #include <AliCentrality.h>
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"
+#include "AliTimeRangeCut.h"
 #include "AliDielectronVarManager.h"
 //#include "AliFlowTrackCuts.h"
 #include "AliReducedEventInfo.h"
@@ -76,6 +79,8 @@
 #include "AliReducedFMDInfo.h"
 #include "AliReducedEventPlaneInfo.h"
 #include "AliSignalMC.h"
+#include "AliDielectronCutGroup.h"
+#include "AliDielectronVarCuts.h"
 #include "AliAnalysisTaskReducedTreeMaker.h"
 
 #include <iostream>
@@ -100,14 +105,17 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fRejectPileup(kFALSE),
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(kTRUE),
-  fWriteEventsWithNoSelectedTracks(kTRUE),
-  fMinSelectedTracks(1),
-  fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(kTRUE),
-  fScaleDownEventsWithNoSelectedTracks(0.0),
+  fMinSelectedTracks(0),
+  fMinSelectedBaseTracks(0),
+  fScaleDownEvents(0.0),
   fWriteSecondTrackArray(kFALSE),
   fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
+	fEventsList(0x0),
   fEventsHistogram(0x0),
+  fTRDEventsHistogram(0x0),
+  fEMCalEventsHistogram(0x0),
+  fCentEventsList(0x0),
   fTracksHistogram(0x0),
   fMCSignalsHistogram(0x0),
   fFillTrackInfo(kTRUE),
@@ -139,6 +147,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fGammaElectronCuts(0x0),
   fV0OpenCuts(0x0),
   fV0StrongCuts(0x0),
+  fV0CutsAOD(0x0),
   fFMDhist(0x0),
   fK0sMassRange(),
   fLambdaMassRange(),
@@ -151,7 +160,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fTree(0x0),
   fNevents(0),
   fReducedEvent(0x0),
-  fUsedVars(0x0)
+  fUsedVars(0x0),
+  fTimeRangeCut(),
+  fTimeRangeReject(kFALSE)
 {
   //
   // Constructor
@@ -171,14 +182,17 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fRejectPileup(kFALSE),
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(writeTree),
-  fWriteEventsWithNoSelectedTracks(kTRUE),
-  fMinSelectedTracks(1),
-  fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(kTRUE),
-  fScaleDownEventsWithNoSelectedTracks(0.0),
+  fMinSelectedTracks(0),
+  fMinSelectedBaseTracks(0),
+  fScaleDownEvents(0.0),
   fWriteSecondTrackArray(kFALSE),
   fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
+	fEventsList(0x0),
   fEventsHistogram(0x0),
+  fTRDEventsHistogram(0x0),
+  fEMCalEventsHistogram(0x0),
+  fCentEventsList(0x0),
   fTracksHistogram(0x0),
   fMCSignalsHistogram(0x0),
   fFillTrackInfo(kTRUE),
@@ -210,6 +224,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fGammaElectronCuts(0x0),
   fV0OpenCuts(0x0),
   fV0StrongCuts(0x0),
+  fV0CutsAOD(0x0),
   fFMDhist(0x0),
   fK0sMassRange(),
   fLambdaMassRange(),
@@ -222,7 +237,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fTree(0x0),
   fNevents(0),
   fReducedEvent(0x0),
-  fUsedVars(0x0)
+  fUsedVars(0x0),
+  fTimeRangeCut(),
+  fTimeRangeReject(kFALSE)
 {
   //
   // Constructor
@@ -238,9 +255,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   DefineOutput(1, AliReducedBaseEvent::Class());   // reduced information tree
   if(writeTree) {
     DefineOutput(2, TTree::Class());  // reduced information tree
-    DefineOutput(3, TH2I::Class());   // event statistics information
-    DefineOutput(4, TH2I::Class());   // track statistics information
-    DefineOutput(5, TH2I::Class());   // MC signals statistics information
+    DefineOutput(3, TList::Class());  // Tlist of event statistics information
   }
 }
 
@@ -296,10 +311,10 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
     }
 
     // MC
-    if (fWriteSecondTrackArray==kFALSE) {
-      for (Int_t i=0; i<kMaxMCsignals; i++) {
+    if (fWriteSecondTrackArray==kFALSE && fMCsignals.GetEntries()) {
+      for (Int_t i=0; i<fMCsignals.GetEntries(); i++) {
         if (fMCsignalsWritingOptions[i]==kBaseTrack) {
-          printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects(): Second track array will be used.\n");
+          printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects(): Second track array will be used (MC signal choice).\n");
           fWriteSecondTrackArray = kTRUE;
           break;
         }
@@ -326,31 +341,35 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
      default:
         break;
   };
- 
-  if(fWriteTree)
+
+	if(fWriteTree) {
     fTree->Branch("Event",&fReducedEvent,16000,99);
 
-  // if user set active branches
-  TObjArray* aractive=fActiveBranches.Tokenize(";");
-  if(aractive->GetEntries()>0) {fTree->SetBranchStatus("*", 0);}
-  for(Int_t i=0; i<aractive->GetEntries(); i++){
-    fTree->SetBranchStatus(aractive->At(i)->GetName(), 1);
-  }
+		// if user set active branches
+		TObjArray* aractive=fActiveBranches.Tokenize(";");
+		if(aractive->GetEntries()>0) {fTree->SetBranchStatus("*", 0);}
+		for(Int_t i=0; i<aractive->GetEntries(); i++){
+			fTree->SetBranchStatus(aractive->At(i)->GetName(), 1);
+		}
 
-  // if user set inactive branches
-  TObjArray* arinactive=fInactiveBranches.Tokenize(";");
-  for(Int_t i=0; i<arinactive->GetEntries(); i++){
-    fTree->SetBranchStatus(arinactive->At(i)->GetName(), 0);
-  }
- 
-  // if MC info is not requested, then set the respective branches off
-  if(!fFillMCInfo) {
-    fTree->SetBranchStatus("fTracks.fMC*", 0); 
-  }
-  if(!fFillEventPlaneInfo) {
-    fTree->SetBranchStatus("fEventPlane.*", 0);   
-  }
- 
+		// if user set inactive branches
+		TObjArray* arinactive=fInactiveBranches.Tokenize(";");
+		for(Int_t i=0; i<arinactive->GetEntries(); i++){
+			fTree->SetBranchStatus(arinactive->At(i)->GetName(), 0);
+		}
+
+		// if MC info is not requested, then set the respective branches off
+		if(!fFillMCInfo) {
+			fTree->SetBranchStatus("fTracks.fMC*", 0);
+		}
+		if(!fFillEventPlaneInfo) {
+			fTree->SetBranchStatus("fEventPlane.*", 0);
+		}
+
+    // if calorimeter cluster is filled, switch on cluster ID branch
+    if (fFillCaloClusterInfo) fTree->SetBranchStatus("fCaloClusters.fClusterID", 1);
+	}
+
   /*if(fFillBayesianPIDInfo) {
     fBayesianResponse = new AliFlowBayesianPID();
     fBayesianResponse->SetNewTrackParam();
@@ -362,20 +381,66 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   
   AliDielectronVarManager::SetFillMap(fUsedVars);
 
+	// TList for Event statistic histograms
+	fEventsList = new TList();
+	fEventsList->SetOwner();
+
   // event statistics histogram
-  fEventsHistogram = new TH2I("EventStatistics", "Event statistics", 9, -0.5,8.5,32,-0.5,31.5);
-  const Char_t* offlineTriggerNames[32] = {"MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
+  fEventsHistogram = new TH2I("EventStatistics", "Event statistics", 16, -0.5,15.5,34,-2.5,31.5);
+  const Char_t* offlineTriggerNames[34] = {"Total", "No Phys Sel", "MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
      "MuonSingleHighPt7/MUSH7/MUSHPB", "MuonLikeLowPt7/MUL7/MuonLikePB", "MuonUnlikeLowPt7/MUU7/MuonUnlikePB", "EMC7/EMC8", 
      "MUS7/MuonSingleLowPt7", "PHI1", "PHI7/PHI8/PHOSPb", "EMCEJE", "EMCEGA", "Central/HighMultV0", "SemiCentral", "DG/DG5", "ZED", 
      "SPI7/SPI", "INT8", "MuonSingleLowPt8", "MuonSingleHighPt8", "MuonLikeLowPt8", "MuonUnlikeLowPt8", "MuonUnlikeLowPt0/INT6", "UserDefined", 
-     "TRD", "N/A", "FastOnly", "N/A"
+     "TRD", "MuonCalo/CaloOnly", "FastOnly", "N/A"
   };  
-  const Char_t* selectionNames[9] = {"All PS", "PS and trigger selected", "Event cuts selected", "Rejected (event cuts)", "Rejected (no tracks)", "Rejected (no tracks and no assoc tracks)", "Written (has tracks)", "Written (no tracks, has assoc tracks)", "Written (no tracks, no assoc tracks)"};
-  for(Int_t i=1;i<=32;++i)
+  const Char_t* selectionNames[16] = {"All events", 
+     "TR and Physics Selection events (PS)", "Rejected due to PS",
+     "PS and Trigger Selected (TS)", "Rejected due to TS",
+     "TS and Pileup Checked (PC)", "Rejected due to PC",
+     "PC and Event cuts Checked (EC)", "Rejected due to EC",
+     "EC and Time Range accepted events (TR)", "Rejected due to TR",
+     Form("Written ev. (>=%d tracks, >=%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks), 
+     Form("Written ev. (<%d tracks, >=%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks), 
+     Form("Written ev. (<%d tracks, <%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks),
+     Form("Not written (<%d tracks and >=%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks), 
+     Form("Not written (<%d tracks and <%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks)};
+  for(Int_t i=1;i<=34;++i)
      fEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTriggerNames[i-1]);
-  for(Int_t i=1;i<=9;++i)
+  for(Int_t i=1;i<=16;++i)
      fEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
-  
+	fEventsList->Add(fEventsHistogram);
+
+  // TRD event statistics histogram
+  const Char_t* offlineTRDTriggerNames[7] = {"Total", "No Phys Sel", "HQUorHSE", "HQU", "HSE", "Nuclei", "Jet"};
+  fTRDEventsHistogram = new TH2I("TRDEventStatistics", "TRD Event statistics", 16, -0.5,15.5,12,-2.5,9.5);
+  for(Int_t i=1;i<=7;++i)  fTRDEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTRDTriggerNames[i-1]);
+  for(Int_t i=1;i<=16;++i) fTRDEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
+	fEventsList->Add(fTRDEventsHistogram);
+
+  // EMCal event statistics histogram
+  const Char_t* offlineEMCalTriggerNames[22] = {"Total", "No Phys Sel",
+    "EMC7orDMC7", "EMC7", "DMC7", "EMC1orDMC1", "EMC1", "DMC1",
+    "EMCEGA", "EG1/DG1", "EG2/DG2", "EG1", "EG2", "DG1", "DG2",
+    "EMCEJE", "EJ1/DJ1", "EJ2/DJ2", "EJ1", "EJ2", "DJ1", "DJ2"};
+  fEMCalEventsHistogram = new TH2I("EMCalEventStatistics", "EMCal Event statistics", 16,-0.5,15.5, 22,-2.5,19.5);
+  for(Int_t i=1;i<=22;++i) fEMCalEventsHistogram->GetYaxis()->SetBinLabel(i, offlineEMCalTriggerNames[i-1]);
+  for(Int_t i=1;i<=16;++i) fEMCalEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
+  fEventsList->Add(fEMCalEventsHistogram);
+
+	// Event Centrality statistics List of histograms (for the provided trigger mask)
+	fCentEventsList = new TList();
+	fCentEventsList->SetName("EventStatVsCent");
+	fCentEventsList->SetOwner();
+	const Int_t nCentEstimators = 3;
+	const Char_t* estimatorNames[nCentEstimators] = {"V0M", "ZNA", "CL1"};
+	TH2I *centEventsHistogram[nCentEstimators];
+	for (Int_t i=0; i<nCentEstimators; ++i) {
+		centEventsHistogram[i] = new TH2I(estimatorNames[i], Form("%s estimator",estimatorNames[i]), 16, -0.5,15.5,120,-5.,115.);
+		for(Int_t xi=1;xi<=16;++xi) centEventsHistogram[i]->GetXaxis()->SetBinLabel(xi, selectionNames[xi-1]);
+		fCentEventsList->Add(centEventsHistogram[i]);
+	}
+	fEventsList->Add(fCentEventsList);
+
   // track statistics histogram
   Int_t nBins = fTrackFilter.GetEntries()+4;
   Double_t xMin = -4.5;
@@ -389,6 +454,7 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
     fTracksHistogram->GetXaxis()->SetBinLabel(i, xLabels[i-1]);
   for (Int_t i=5; i<nBins+1; i++)
     fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("%s passed", ((AliAnalysisCuts*)fTrackFilter.At(i-5))->GetName()));
+	fEventsList->Add(fTracksHistogram);
 
   // MC statistics histogram
   fMCSignalsHistogram = new TH2I("MCSignalsStatistics", "Monte-Carlo signals statistics", 
@@ -399,18 +465,16 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
      if(fMCsignalsWritingOptions[i-1]==kFullTrack) trackTypeStr = "full track";
      fMCSignalsHistogram->GetXaxis()->SetBinLabel(i, Form("%s (%s)", ((AliSignalMC*)fMCsignals.At(i-1))->GetName(), trackTypeStr.Data()));
   }
-  
-  // set a seed for the random number generator
+	if (fFillMCInfo) fEventsList->Add(fMCSignalsHistogram);
+
+	// set a seed for the random number generator
   TTimeStamp ts;
   gRandom->SetSeed(ts.GetNanoSec());
   
   PostData(1, fReducedEvent);
   if(fWriteTree) {
     PostData(2, fTree);
-    PostData(3, fEventsHistogram);
-    PostData(4, fTracksHistogram);
-    if(fFillMCInfo)
-       PostData(5, fMCSignalsHistogram);
+    PostData(3, fEventsList);
   }
 }
 
@@ -434,60 +498,297 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   } else {
     AliFatal("This task needs the PID response attached to the input event handler!");
   }
-
-  // Was event selected ?
-  UInt_t isSelected = AliVEvent::kAny;
-  // event statistics before any cuts
-  for(Int_t i=0;i<32;++i) 
-     if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
   
+  // Was event selected ?
+  UInt_t isPhysSel = AliVEvent::kAny;
+  UInt_t isPhysAndTrigSel = AliVEvent::kAny;
+  UInt_t trdtrgtype[5];
+  memset(trdtrgtype,0,sizeof(trdtrgtype));
+  UInt_t emcaltrgtype[20];
+  memset(emcaltrgtype,0,sizeof(emcaltrgtype));
   if(inputHandler) {
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
-      isSelected = inputHandler->IsEventSelected();
-      isSelected&=fTriggerMask;
+      isPhysSel = inputHandler->IsEventSelected();
+      isPhysAndTrigSel = isPhysSel & fTriggerMask;
+
+      // get type of TRD triggered event
+      AliVEvent* tempevent=  inputHandler->GetEvent();
+      TString trgClasses  = tempevent->GetFiredTriggerClasses();
+      if(trgClasses.Contains("HQU")||trgClasses.Contains("HSE")) trdtrgtype[0]=1;
+      if(trgClasses.Contains("HQU")) trdtrgtype[1]=1;
+      if(trgClasses.Contains("HSE")) trdtrgtype[2]=1;
+      if(trgClasses.Contains("HNU")) trdtrgtype[3]=1;
+      if(trgClasses.Contains("HJT")) trdtrgtype[4]=1;
+
+      // get type of EMCal triggered event
+      if(trgClasses.Contains("EMC7")||trgClasses.Contains("DMC7")) emcaltrgtype[0]=1;
+      if(trgClasses.Contains("EMC7")) emcaltrgtype[1]=1;
+      if(trgClasses.Contains("DMC7")) emcaltrgtype[2]=1;
+      if(trgClasses.Contains("EMC1")||trgClasses.Contains("DMC1")) emcaltrgtype[3]=1;
+      if(trgClasses.Contains("EMC1")) emcaltrgtype[4]=1;
+      if(trgClasses.Contains("DMC1")) emcaltrgtype[5]=1;
+      if(trgClasses.Contains("EG1")||trgClasses.Contains("EG2")||trgClasses.Contains("DG1")||trgClasses.Contains("DG2")) emcaltrgtype[6]=1;
+      if(trgClasses.Contains("EG1")||trgClasses.Contains("DG1")) emcaltrgtype[7]=1;
+      if(trgClasses.Contains("EG2")||trgClasses.Contains("DG2")) emcaltrgtype[8]=1;
+      if(trgClasses.Contains("EG1")) emcaltrgtype[9]=1;
+      if(trgClasses.Contains("EG2")) emcaltrgtype[10]=1;
+      if(trgClasses.Contains("DG1")) emcaltrgtype[11]=1;
+      if(trgClasses.Contains("DG2")) emcaltrgtype[12]=1;
+      if(trgClasses.Contains("EJ1")||trgClasses.Contains("EJ2")||trgClasses.Contains("DJ1")||trgClasses.Contains("DJ2")) emcaltrgtype[13]=1;
+      if(trgClasses.Contains("EJ1")||trgClasses.Contains("DJ1")) emcaltrgtype[14]=1;
+      if(trgClasses.Contains("EJ2")||trgClasses.Contains("DJ2")) emcaltrgtype[15]=1;
+      if(trgClasses.Contains("EJ1")) emcaltrgtype[16]=1;
+      if(trgClasses.Contains("EJ2")) emcaltrgtype[17]=1;
+      if(trgClasses.Contains("DJ1")) emcaltrgtype[18]=1;
+      if(trgClasses.Contains("DJ2")) emcaltrgtype[19]=1;
     }
   }
+
+  // Get centrality object
+  const Int_t nCentEstimators = 3;
+  const Char_t* estimatorNames[nCentEstimators] = {"V0M", "ZNA", "CL1"};
+  AliVEvent* event = InputEvent();
+  AliCentrality *centrality = 0x0;
+  AliMultSelection* multSelection = 0x0;
+  Bool_t isOldCent = kFALSE;
+  if(event->GetRunNumber()<200000) isOldCent = kTRUE;
+  if(isOldCent) centrality = event->GetCentrality(); // old centrality framework
+  else multSelection = (AliMultSelection*)event->FindListObject("MultSelection"); // new centrality framework
+  if (!centrality && !multSelection) AliInfo("No centrality object found");
   
-  // event statistics after physics selection
-  if(isSelected) {
-     for(Int_t i=0;i<32;++i) 
-        if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(1.,Double_t(i));
+        
+  // event statistics before any selection
+  if(isPhysSel) {
+    for(Int_t i=0;i<32;++i) 
+      if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
+    for(Int_t i=0;i<5;++i)
+      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(0.,i);
+    for(Int_t i=0;i<20;++i)
+      if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(0.,i);
   }
-     
-  if(!fSelectPhysics) isSelected = AliVEvent::kAny;
-  
-  if(isSelected==0) {
-     PostData(3, fEventsHistogram);
+  else{
+      fEventsHistogram->Fill(0.,-1.);
+      fTRDEventsHistogram->Fill(0.,-1.);
+      fEMCalEventsHistogram->Fill(0.,-1.);
+  }
+  fEventsHistogram->Fill(0.,-2.);
+  fTRDEventsHistogram->Fill(0.,-2.);
+  fEMCalEventsHistogram->Fill(0.,-2.);
+  for (Int_t i=0;i<nCentEstimators;++i)
+	  ((TH2I*)fCentEventsList->At(i))->Fill(0.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+
+	// rejected due to physics selection
+  if(fSelectPhysics && !isPhysSel) {
+    fEventsHistogram->Fill(2., -1.);
+    fEventsHistogram->Fill(2., -2.);
+    fTRDEventsHistogram->Fill(2., -1.);
+    fTRDEventsHistogram->Fill(2., -2.);
+    fEMCalEventsHistogram->Fill(2., -1.);
+    fEMCalEventsHistogram->Fill(2., -2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(2.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+		PostData(3, fEventsList);
      return;
   }
   
-  //event filter
-  if (fEventFilter) {
-    if (!fEventFilter->IsSelected(InputEvent())) {
-       // event statistics for events failing selection cuts
-       for(Int_t i=0;i<32;++i) 
-          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
+  // event statistics after physics selection
+  // NOTE: if physics selection was not applied (as requested by user) then we can still have events with PS not fulfilled 
+  if(isPhysSel) {
+     for(Int_t i=0;i<32;++i) 
+       if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(1.,Double_t(i));
+    for(Int_t i=0;i<5;++i)
+      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(1.,i);
+    for(Int_t i=0;i<20;++i)
+      if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(1.,i);
+  } else{
+    fEventsHistogram->Fill(1.,-1.);
+    fTRDEventsHistogram->Fill(1.,-1.);
+    fEMCalEventsHistogram->Fill(1.,-1.);
+  }
+  fEventsHistogram->Fill(1.,-2.);
+  fTRDEventsHistogram->Fill(1.,-2.);
+  fEMCalEventsHistogram->Fill(1.,-2.);
+	for (Int_t i=0;i<nCentEstimators;++i)
+		((TH2I*)fCentEventsList->At(i))->Fill(1.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
 
-       PostData(3, fEventsHistogram);
-       return;
+  // event statistics after physics selection and trigger selection
+  if(isPhysAndTrigSel) {
+     for(Int_t i=0;i<32;++i) 
+       if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
+     for(Int_t i=0;i<5;++i)
+       if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(3.,i);
+    for(Int_t i=0;i<20;++i)
+      if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(3.,i);
+    fEventsHistogram->Fill(3.,-2.);
+    fTRDEventsHistogram->Fill(3.,-2.);
+    fEMCalEventsHistogram->Fill(3.,-2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(3.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+  }
+  else {
+    // reject events which do not fulfill the requested trigger mask
+    if(isPhysSel) {
+      for(Int_t i=0;i<32;++i)
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
+      for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(4.,i);
+      for(Int_t i=0;i<20;++i)
+        if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(4.,i);
+    } else{
+      fEventsHistogram->Fill(4.,-1.);
+      fTRDEventsHistogram->Fill(4.,-1.);
+      fEMCalEventsHistogram->Fill(4.,-1.);
     }
+    fEventsHistogram->Fill(4.,-2.);
+    fTRDEventsHistogram->Fill(4.,-2.);
+    fEMCalEventsHistogram->Fill(4.,-2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(4.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+		PostData(3, fEventsList);
+     return;
   }
 
-  //pileup
-  if (fRejectPileup){
-    if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) {
-       // event statistics for events failing selection cuts
-       for(Int_t i=0;i<32;++i) 
-          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
-       
-       PostData(3, fEventsHistogram);
-       return;
+	// rejected by pileup selection
+  if(fRejectPileup && InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)){
+    if(isPhysSel) {
+      for(Int_t i=0;i<32;++i)
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(6.,Double_t(i));
+      for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(6.,i);
+      for(Int_t i=0;i<20;++i)
+        if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(6.,i);
+    } else{
+      fEventsHistogram->Fill(6.,-1.);
+      fTRDEventsHistogram->Fill(6.,-1.);
+      fEMCalEventsHistogram->Fill(6.,-1.);
     }
+    fEventsHistogram->Fill(6.,-2.);
+    fTRDEventsHistogram->Fill(6.,-2.);
+    fEMCalEventsHistogram->Fill(6.,-2.);
+    for (Int_t i=0;i<nCentEstimators;++i)
+      ((TH2I*)fCentEventsList->At(i))->Fill(6.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+    PostData(3, fEventsList);
+    return;
+  }
+	else { 	// accepted pileup selection
+    if(isPhysSel) {
+      for(Int_t i=0;i<32;++i)
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
+      for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(5.,i);
+      for(Int_t i=0;i<20;++i)
+        if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(5.,i);
+    } else{
+       fEventsHistogram->Fill(5.,-1.);
+       fTRDEventsHistogram->Fill(5.,-1.);
+       fEMCalEventsHistogram->Fill(5.,-1.);
+    }
+    fEventsHistogram->Fill(5.,-2.);
+    fTRDEventsHistogram->Fill(5.,-2.);
+    fEMCalEventsHistogram->Fill(5.,-2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(5.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+  }  
+  
+  // user defined event filter
+  if(fEventFilter && !fEventFilter->IsSelected(InputEvent())) {
+    // event statistics for events failing selection cuts
+    if(isPhysSel) {
+      for(Int_t i=0;i<32;++i)
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
+      for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(8.,i);
+      for(Int_t i=0;i<20;++i)
+        if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(8.,i);
+    } else{
+      fEventsHistogram->Fill(8.,-1.);
+      fTRDEventsHistogram->Fill(8.,-1.);
+      fEMCalEventsHistogram->Fill(8.,-1.);
+    }
+    fEventsHistogram->Fill(8.,-2.);
+    fTRDEventsHistogram->Fill(8.,-2.);
+    fEMCalEventsHistogram->Fill(8.,-2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+      ((TH2I*)fCentEventsList->At(i))->Fill(8.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+		PostData(3, fEventsList);
+    return;
+  }
+  else {
+    if(isPhysSel) {
+      for(Int_t i=0;i<32;++i)
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
+      for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(7.,i);
+      for(Int_t i=0;i<20;++i)
+        if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(7.,i);
+    } else{
+      fEventsHistogram->Fill(7.,-1.);
+      fTRDEventsHistogram->Fill(7.,-1.);
+      fEMCalEventsHistogram->Fill(7.,-1.);
+    }
+    fEventsHistogram->Fill(7.,-2.);
+    fTRDEventsHistogram->Fill(7.,-2.);
+    fEMCalEventsHistogram->Fill(7.,-2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(7.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
   }
   
-  // event statistics after event selection cuts
-  for(Int_t i=0;i<32;++i) 
-     if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(2.,Double_t(i));
+  // Apply the time range cut needed to reject events with bad TPC pid in some chambers
+  // For details see: https://indico.cern.ch/event/830757/contributions/3479738/attachments/1873483/3083952/IArsene_DPG_2019July3.pdf
+  fTimeRangeCut.InitFromEvent(InputEvent());
+  if(fTimeRangeCut.CutEvent(InputEvent())) {
+     if(fTimeRangeReject) {
+        // if rejecting the bad events from writing, fill the appropriate event stats bins and return 
+        if(isPhysSel) {
+           for(Int_t i=0;i<32;++i) 
+              if(isPhysSel & (UInt_t(1)<<i)) 
+                 fEventsHistogram->Fill(10.,Double_t(i));
+           for(Int_t i=0;i<5;++i)
+              if(trdtrgtype[i]!=0) 
+                 fTRDEventsHistogram->Fill(10.,i);
+           for(Int_t i=0;i<20;++i)
+              if(emcaltrgtype[i]!=0) 
+                 fEMCalEventsHistogram->Fill(10.,i);
+        }
+        else {
+           fEventsHistogram->Fill(10.,-1.);   
+           fTRDEventsHistogram->Fill(10.,-1.);
+           fEMCalEventsHistogram->Fill(10.,-1.);
+        }
+        fEventsHistogram->Fill(10.,-2.);   
+        fTRDEventsHistogram->Fill(10.,-2.);
+        fEMCalEventsHistogram->Fill(10.,-2.);
+        
+        for(Int_t i=0;i<nCentEstimators;++i)
+           ((TH2I*)fCentEventsList->At(i))->Fill(10., isOldCent ? centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])) : multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+        
+        PostData(3, fEventsList);
+        return;
+     }
+     fReducedEvent->fEventTag |= (ULong64_t(1)<<15);
+  }
+  // fill the event statistics for events passing the Time Range cut
+  if(isPhysSel) {
+     for(Int_t i=0;i<32;++i) 
+        if(isPhysSel & (UInt_t(1)<<i)) 
+           fEventsHistogram->Fill(9.,Double_t(i));
+     for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) 
+           fTRDEventsHistogram->Fill(9.,i);
+     for(Int_t i=0;i<20;++i)
+        if(emcaltrgtype[i]!=0) 
+           fEMCalEventsHistogram->Fill(9.,i);
+  }
+  else {
+     fEventsHistogram->Fill(9.,-1.);   
+     fTRDEventsHistogram->Fill(9.,-1.);
+     fEMCalEventsHistogram->Fill(9.,-1.);
+  }
+  fEventsHistogram->Fill(9.,-2.);   
+  fTRDEventsHistogram->Fill(9.,-2.);
+  fEMCalEventsHistogram->Fill(9.,-2.);
+  for(Int_t i=0;i<nCentEstimators;++i)
+     ((TH2I*)fCentEventsList->At(i))->Fill(9., isOldCent ? centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])) : multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
   
   if(fFillMCInfo) {
      Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
@@ -502,66 +803,111 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   //bz for AliKF
   Double_t bz = InputEvent()->GetMagneticField();
   AliKFParticle::SetField( bz );
-
+  
   //Fill event wise information
-  fReducedEvent->ClearEvent();
+  fReducedEvent->ClearEvent();  
   FillEventInfo();
 
   // NOTE: It is important that FillV0PairInfo() is called before FillTrackInfo()
   if(fFillMCInfo) FillMCTruthInfo();
   if(fFillV0Info && isESD) FillV0PairInfo();
+  if(fFillV0Info && isAOD) FillV0PairInfoAOD();
   if(fFillTrackInfo) FillTrackInfo();
- 
+  
   if(fWriteTree) {
     Bool_t writeEvent = kFALSE;
     Int_t nTracks = fReducedEvent->fTracks->GetEntries();
     Int_t nTracks2 = fReducedEvent->fTracks2->GetEntries();
-    if(nTracks>=fMinSelectedTracks) {
-       writeEvent = kTRUE;
-       // event statistics, event with tracks -> written
-       for(Int_t i=0;i<32;++i) 
-          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(6.,Double_t(i));
-    }
-    else {
-       if(nTracks2>0) {
-          if(fWriteEventsWithNoSelectedTracks) {
-             writeEvent = kTRUE;
-             // event statistics, event with no POI tracks, but with assoc tracks -> written
-             for(Int_t i=0;i<32;++i) 
-                if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
-          }
-          else if(gRandom->Rndm()<fScaleDownEventsWithNoSelectedTracks) {
-             writeEvent = kTRUE;
-             // event statistics, event with no POI tracks, but with assoc tracks -> written
-             for(Int_t i=0;i<32;++i) 
-                if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
-          }
-      }
-      else {
-         if(fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks) {
-            writeEvent = kTRUE;
-            // event statistics, event with no POI tracks, and no assoc tracks -> written
-            for(Int_t i=0;i<32;++i) 
-               if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
-         }
-         else if(gRandom->Rndm()<fScaleDownEventsWithNoSelectedTracks) {
-            writeEvent = kTRUE;
-            // event statistics, event with no POI tracks, and no assoc tracks -> written
-            for(Int_t i=0;i<32;++i) 
-               if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
-         }
-      }  // end else (nTracks2==0)
-    }  // end else(nTracks==0)
     
-    if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2==0) {
-       // event statistics, event with no POI tracks, and no assoc tracks -> NOT written
-       for(Int_t i=0;i<32;++i) 
-          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
+    // write a random sample of events with a downscale of fScaleDownEvents
+    if(gRandom->Rndm()<fScaleDownEvents) {
+      writeEvent = kTRUE;
+      fReducedEvent->fEventTag |= (ULong64_t(1)<<14);                    // mark unbiased events
+       
+      Int_t binToFill = 13;
+      if(nTracks>=fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) binToFill = 11;
+      if(nTracks<fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) binToFill = 12;
+       
+      if(isPhysSel) {
+        for(Int_t i=0;i<32;++i)
+          if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(Double_t(binToFill),Double_t(i));
+        for(Int_t i=0;i<5;++i)
+          if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(Double_t(binToFill),i);
+        for(Int_t i=0;i<20;++i)
+          if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(Double_t(binToFill),i);
+      }
+      else{
+        fEventsHistogram->Fill(Double_t(binToFill), -1.);
+        fTRDEventsHistogram->Fill(Double_t(binToFill), -1.);
+        fEMCalEventsHistogram->Fill(Double_t(binToFill), -1.);
+      }
+      fEventsHistogram->Fill(Double_t(binToFill),-2.);
+      fTRDEventsHistogram->Fill(Double_t(binToFill),-2.);
+      fEMCalEventsHistogram->Fill(Double_t(binToFill),-2.);
+			for (Int_t i=0;i<nCentEstimators;++i)
+				((TH2I*)fCentEventsList->At(i))->Fill(Double_t(binToFill),isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
     }
-    if(!writeEvent && nTracks<fMinSelectedTracks) {
-       // event statistics, event with no POI tracks (may have assoc tracks) -> NOT written
-       for(Int_t i=0;i<32;++i) 
-          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
+    
+    // if the event was not already selected to be written, check that it fullfills the conditions
+    if(!writeEvent && nTracks>=fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) {
+      writeEvent = kTRUE;
+      if(isPhysSel) {
+        for(Int_t i=0;i<32;++i)
+          if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(11.,Double_t(i));
+        for(Int_t i=0;i<5;++i)
+          if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(11.,i);
+        for(Int_t i=0;i<20;++i)
+          if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(11.,i);
+      } else{
+        fEventsHistogram->Fill(11., -1.);
+        fTRDEventsHistogram->Fill(11., -1.);
+        fEMCalEventsHistogram->Fill(11., -1.);
+      }
+      fEventsHistogram->Fill(11.,-2.);
+      fTRDEventsHistogram->Fill(11.,-2.);
+      fEMCalEventsHistogram->Fill(11.,-2.);
+      for (Int_t i=0;i<nCentEstimators;++i)
+        ((TH2I*)fCentEventsList->At(i))->Fill(11.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+    }
+    
+    // count the events not to be written
+    if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) {
+      if(isPhysSel) {
+        for(Int_t i=0;i<32;++i)
+          if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(14.,Double_t(i));
+        for(Int_t i=0;i<5;++i)
+          if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(14.,i);
+        for(Int_t i=0;i<20;++i)
+          if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(14.,i);
+      } else{
+        fEventsHistogram->Fill(14., -1.);
+        fTRDEventsHistogram->Fill(14., -1.);
+        fEMCalEventsHistogram->Fill(14., -1.);
+      }
+      fEventsHistogram->Fill(14.,-2.);
+      fTRDEventsHistogram->Fill(14.,-2.);
+      fEMCalEventsHistogram->Fill(14.,-2.);
+         for (Int_t i=0;i<nCentEstimators;++i)
+	    ((TH2I*)fCentEventsList->At(i))->Fill(14.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+    }
+    if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2<fMinSelectedBaseTracks) {
+      if(isPhysSel) {
+        for(Int_t i=0;i<32;++i)
+          if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(15.,Double_t(i));
+        for(Int_t i=0;i<5;++i)
+          if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(15.,i);
+        for(Int_t i=0;i<20;++i)
+          if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(15.,i);
+      } else{
+        fEventsHistogram->Fill(15., -1.);
+        fTRDEventsHistogram->Fill(15., -1.);
+        fEMCalEventsHistogram->Fill(15., -1.);
+      }
+      fEventsHistogram->Fill(15.,-2.);
+      fTRDEventsHistogram->Fill(15.,-2.);
+      fEMCalEventsHistogram->Fill(15.,-2.);
+         for (Int_t i=0;i<nCentEstimators;++i)
+	    ((TH2I*)fCentEventsList->At(i))->Fill(15.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
     }
     
     if(writeEvent) fTree->Fill();
@@ -570,10 +916,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   PostData(1, fReducedEvent);
   if(fWriteTree) {
     PostData(2, fTree);
-    PostData(3, fEventsHistogram);
-    PostData(4, fTracksHistogram);
-    if(fFillMCInfo)
-      PostData(5, fMCSignalsHistogram);
+    PostData(3, fEventsList);
   }
 }
 
@@ -603,7 +946,17 @@ void AliAnalysisTaskReducedTreeMaker::AddTrackFilter(AliAnalysisCuts * const fil
 }
 
 //_________________________________________________________________________________
-Bool_t AliAnalysisTaskReducedTreeMaker::IsTrackSelected(AliVParticle* track, std::vector<Bool_t>& filterDecision)
+void AliAnalysisTaskReducedTreeMaker::AddCaloClusterFilter(AliAnalysisCuts * const filter)
+{
+  //
+  // add cluster filter to cluster filter list
+  //
+  if (fClusterFilter.GetEntries()<32) fClusterFilter.Add(filter);
+  else printf("AliAnalysisTaskReducedTreeMaker::AddCaloClusterFilter() WARNING: Cluster filter list full (%d entries), will not add another filter!\n", fClusterFilter.GetEntries());
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeMaker::IsTrackSelected(AliVParticle* track, Double_t* values, std::vector<Bool_t>& filterDecision)
 {
   //
   // check if track is selected and write filter decision to vector
@@ -611,7 +964,11 @@ Bool_t AliAnalysisTaskReducedTreeMaker::IsTrackSelected(AliVParticle* track, std
   Bool_t trackIsSelected = kFALSE;
   for (Int_t i=0; i<fTrackFilter.GetEntries(); i++) {
     AliAnalysisCuts* filter = (AliAnalysisCuts*)fTrackFilter.At(i);
-    if (filter->IsSelected(track)) {
+    Bool_t                                                  filterIsSelected = kFALSE;
+    if (filter->IsA()==AliDielectronCutGroup::Class())      filterIsSelected = (dynamic_cast<AliDielectronCutGroup*>(filter))->IsSelected(track, values);
+    else if (filter->IsA()==AliDielectronVarCuts::Class())  filterIsSelected = (dynamic_cast<AliDielectronVarCuts*>(filter))->IsSelected(values);
+    else                                                    filterIsSelected = filter->IsSelected(track);
+    if (filterIsSelected) {
       filterDecision.push_back(kTRUE);
       trackIsSelected = kTRUE;
     } else {
@@ -640,6 +997,24 @@ Bool_t AliAnalysisTaskReducedTreeMaker::IsSelectedTrackRequestedBaseTrack(std::v
       isBaseTrack = kFALSE;
   }
   return isBaseTrack;
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeMaker::IsClusterSelected(AliVCluster* cluster, std::vector<Bool_t>& filterDecision) {
+  //
+  // check if cluster is selected and write filter decision to vector
+  //
+  Bool_t clusterIsSelected = kFALSE;
+  for (Int_t i=0; i<fClusterFilter.GetEntries(); i++) {
+    AliAnalysisCuts* filter = (AliAnalysisCuts*)fClusterFilter.At(i);
+    if (filter->IsSelected(cluster)) {
+      filterDecision.push_back(kTRUE);
+      clusterIsSelected = kTRUE;
+    } else {
+      filterDecision.push_back(kFALSE);
+    }
+  }
+  return clusterIsSelected;
 }
 
 //_________________________________________________________________________________
@@ -753,7 +1128,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     if(fAnalysisUtils->IsPileUpMV(event))              // multi-vertexer pileup, with min weighted distance 5
       fReducedEvent->fEventTag |= (ULong64_t(1)<<4);
   }
-  
+    
   if(event->IsPileupFromSPD(3,0.6,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<5);
   if(event->IsPileupFromSPD(4,0.6,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<6);
   if(event->IsPileupFromSPD(5,0.6,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<7);
@@ -762,7 +1137,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   if(event->IsPileupFromSPD(4,0.8,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<10);
   if(event->IsPileupFromSPD(5,0.8,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<11);
   if(event->IsPileupFromSPD(6,0.8,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<12);
-  
+    
   fReducedEvent->fRunNo       = event->GetRunNumber();
   AliVVertex* eventVtx = 0x0;
   if(isESD) eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
@@ -886,8 +1261,10 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   
   eventInfo->fBC          = event->GetBunchCrossNumber();
   eventInfo->fEventType   = event->GetEventType();
-  //eventInfo->fTriggerMask = event->GetTriggerMask();
+  eventInfo->fOnlineTriggerMask = event->GetTriggerMask();
+  eventInfo->fOnlineTriggerMaskNext50 = event->GetTriggerMaskNext50();
   eventInfo->fTriggerMask = inputHandler->IsEventSelected();
+  eventInfo->fTriggerClass = event->GetFiredTriggerClasses();
   eventInfo->fIsPhysicsSelection = (isSelected!=0 ? kTRUE : kFALSE);
   eventInfo->fIsSPDPileup = event->IsPileupFromSPD(3,0.8,3.,2.,5.);
   eventInfo->fIsSPDPileupMultBins = event->IsPileupFromSPDInMultBins();
@@ -904,6 +1281,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
 	if(trgClasses.Contains("HQU")) eventInfo->fTRDfired = 1;
 	if(trgClasses.Contains("HSE")) eventInfo->fTRDfired = 2;
     }
+
     eventInfo->fIRIntClosestIntMap[0] = esdEvent->GetHeader()->GetIRInt1ClosestInteractionMap();
     eventInfo->fIRIntClosestIntMap[1] = esdEvent->GetHeader()->GetIRInt2ClosestInteractionMap();
     eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTPC());
@@ -920,6 +1298,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     eventInfo->fNTRDtracks    = esdEvent->GetNumberOfTrdTracks();
     eventInfo->fNTRDtracklets = esdEvent->GetNumberOfTrdTracklets();
     eventInfo->fNTPCclusters  = esdEvent->GetNumberOfTPCClusters();
+    eventInfo->fNtracksTPCout = esdEvent->GetNTPCTrackBeforeClean();
     
     for(Int_t ilayer=0; ilayer<2; ++ilayer)
       eventInfo->fSPDFiredChips[ilayer] = esdEvent->GetMultiplicity()->GetNumberOfFiredChips(ilayer);
@@ -955,6 +1334,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
 	if(trgClasses.Contains("HQU")) eventInfo->fTRDfired = 1;
 	if(trgClasses.Contains("HSE")) eventInfo->fTRDfired = 2;
     }
+
     eventInfo->fTimeStamp     = aodEvent->GetTimeStamp();
     eventInfo->fNpileupSPD    = aodEvent->GetNumberOfPileupVerticesSPD();
     eventInfo->fNpileupTracks = aodEvent->GetNumberOfPileupVerticesTracks();
@@ -1043,20 +1423,6 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   for(Int_t i=32;i<64;++i) multVZERO +=  vzero->GetMultiplicity(i);
   eventInfo->fVZEROTotalMult[0] = multVZERO;
   
-  if(fFillEventPlaneInfo) {
-    AliReducedEventPlaneInfo* ep=new AliReducedEventPlaneInfo();     
-    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][0] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnTPCxH2);
-    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][1] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnTPCyH2);
-    ep->fEventPlaneStatus[AliReducedEventPlaneInfo::kTPC][1] = AliReducedEventPlaneInfo::kRecentered;
-    ep->fQvector[AliReducedEventPlaneInfo::kVZEROA][1][0] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnV0AxH2);
-    ep->fQvector[AliReducedEventPlaneInfo::kVZEROA][1][1] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnV0AyH2);
-    ep->fEventPlaneStatus[AliReducedEventPlaneInfo::kVZEROA][1] = AliReducedEventPlaneInfo::kRecentered;
-    ep->fQvector[AliReducedEventPlaneInfo::kVZEROC][1][0] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnV0CxH2);
-    ep->fQvector[AliReducedEventPlaneInfo::kVZEROC][1][1] = AliDielectronVarManager::GetValue(AliDielectronVarManager::kQnV0CyH2);
-    ep->fEventPlaneStatus[AliReducedEventPlaneInfo::kVZEROC][1] = AliReducedEventPlaneInfo::kRecentered;
-    eventInfo->SetEventPlane(ep);
-  }
-  
   // EMCAL/PHOS clusters
   if(fFillCaloClusterInfo) FillCaloClusters();
   
@@ -1078,10 +1444,16 @@ void AliAnalysisTaskReducedTreeMaker::FillCaloClusters() {
   eventInfo->fNCaloClusters = 0;
   for(Int_t iclus=0; iclus<nclusters; ++iclus) {
     AliVCluster* cluster = event->GetCaloCluster(iclus);
+
+    Bool_t clusterFilterDecision = kTRUE;
+    std::vector<Bool_t> individualFilterDecisions;
+    if (fClusterFilter.GetEntries()>0)  clusterFilterDecision = IsClusterSelected(cluster, individualFilterDecisions);
+    if (!clusterFilterDecision) continue;
     
     TClonesArray& clusters = *(eventInfo->fCaloClusters);
     AliReducedCaloClusterInfo *reducedCluster=new(clusters[eventInfo->fNCaloClusters]) AliReducedCaloClusterInfo();
     
+    reducedCluster->fClusterID = iclus;
     reducedCluster->fType    = (cluster->IsEMCAL() ? AliReducedCaloClusterInfo::kEMCAL : AliReducedCaloClusterInfo::kPHOS);
     reducedCluster->fEnergy  = cluster->E();
     reducedCluster->fTrackDx = cluster->GetTrackDx();
@@ -1089,6 +1461,7 @@ void AliAnalysisTaskReducedTreeMaker::FillCaloClusters() {
     reducedCluster->fM20     = cluster->GetM20();
     reducedCluster->fM02     = cluster->GetM02();
     reducedCluster->fDispersion = cluster->GetDispersion();
+    reducedCluster->fNMatchedTracks = cluster->GetNTracksMatched();
     cluster->GetPosition(reducedCluster->fPosition);
     reducedCluster->fTOF = cluster->GetTOF();
     reducedCluster->fNCells = cluster->GetNCells();
@@ -1319,6 +1692,7 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
    
    AliMCEvent* event = AliDielectronMC::Instance()->GetMCEvent();
+   if(!event) return;
    
     AliReducedEventInfo* eventInfo = NULL; 
     if(fTreeWritingOption==kFullEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
@@ -1405,6 +1779,9 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       trackInfo->fMCMom[0] = particle->Px();
       trackInfo->fMCMom[1] = particle->Py();
       trackInfo->fMCMom[2] = particle->Pz();
+      trackInfo->fMCFreezeout[0] = particle->Xv();
+      trackInfo->fMCFreezeout[1] = particle->Yv();
+      trackInfo->fMCFreezeout[2] = particle->Zv();
       
       AliVParticle* mother = event->GetTrack(particle->GetMother());
       if(mother) {
@@ -1563,6 +1940,17 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     }  // end loop over TRD tracks
   }  // end if(fFillTRDMatchedTracks)
 
+  AliReducedEventPlaneInfo* evPlane = 0x0;  
+  if(fFillEventPlaneInfo) {
+     evPlane = new AliReducedEventPlaneInfo();     
+     for(Int_t i=0; i<3; i++) {
+       evPlane->fEventPlaneStatus[AliReducedEventPlaneInfo::kTPC][i] = AliReducedEventPlaneInfo::kRaw;
+       evPlane->fEventPlaneStatus[AliReducedEventPlaneInfo::kTPCptWeights][i] = AliReducedEventPlaneInfo::kRaw;
+       evPlane->fEventPlaneStatus[AliReducedEventPlaneInfo::kTPCpos][i] = AliReducedEventPlaneInfo::kRaw;
+       evPlane->fEventPlaneStatus[AliReducedEventPlaneInfo::kTPCneg][i] = AliReducedEventPlaneInfo::kRaw;
+     }
+  }
+  
   //Int_t pidtypes[4] = {AliPID::kElectron,AliPID::kPion,AliPID::kKaon,AliPID::kProton};
   AliESDtrack* esdTrack=0;
   AliAODTrack* aodTrack=0;
@@ -1571,9 +1959,17 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
   Bool_t usedForV0[4] = {kFALSE}; 
   Bool_t usedForPureV0[4] = {kFALSE};
   Bool_t usedForV0Or = kFALSE;
+  Float_t pileupTrackArrayP[20000];
+  Float_t pileupTrackArrayM[20000];
+  Int_t pileupCounterP = 0, pileupCounterM = 0;
+  Float_t pileupTrackArrayP2[20000];
+  Float_t pileupTrackArrayM2[20000];
+  Int_t pileupCounterP2 = 0, pileupCounterM2 = 0;
+  AliTPCdEdxInfo tpcdEdxInfo;
   for(Int_t itrack=0; itrack<ntracks; ++itrack){
      
     AliVParticle *particle=event->GetTrack(itrack);
+    if(!particle) continue;
     if(isESD) {
       esdTrack=static_cast<AliESDtrack*>(particle);
       trackId = esdTrack->GetID();
@@ -1582,6 +1978,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       aodTrack=static_cast<AliAODTrack*>(particle);
       trackId = aodTrack->GetID();
     }
+        
     // check whether this track belongs to a V0 stored in the reduced event
     usedForV0Or = kFALSE;
     for(Int_t i=0; i<4; ++i) {
@@ -1618,8 +2015,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     
     ULong_t status = (isESD ? esdTrack->GetStatus() : aodTrack->GetStatus());
     
-    AliReducedEventInfo* eventInfo = NULL; 
-        
+    AliReducedEventInfo* eventInfo=0x0;
     if(fTreeWritingOption==kFullEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
       eventInfo = dynamic_cast<AliReducedEventInfo*>(fReducedEvent);
       for(Int_t ibit=0; ibit<32; ++ibit) {
@@ -1627,14 +2023,73 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             eventInfo->fNtracksPerTrackingFlag[ibit] += 1;
          }
       }
+      if(isAOD && (status & AliVTrack::kTPCout)) eventInfo->fNtracksTPCout += 1;
+      
+      if(fFillEventPlaneInfo) {
+         if(!fFlowTrackFilter ||
+            (fFlowTrackFilter && fFlowTrackFilter->IsSelected(particle))) {
+            
+            Double_t x = TMath::Cos(particle->Phi());
+            Double_t y = TMath::Sin(particle->Phi());
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPC][0][0] += x;
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPC][0][1] += y;
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPC][1][0] += (2.0*TMath::Power(x,2.0)-1);
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPC][1][1] += 2.0*x*y;
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPC][2][0] += (4.0*TMath::Power(x,3.0)-3.0*x);
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPC][2][1] += (3.0*y-4.0*TMath::Power(y,3.0));
+            if(particle->Charge()<0.0) {
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCneg][0][0] += x;
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCneg][0][1] += y;
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCneg][1][0] += (2.0*TMath::Power(x,2.0)-1);
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCneg][1][1] += 2.0*x*y;
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCneg][2][0] += (4.0*TMath::Power(x,3.0)-3.0*x);
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCneg][2][1] += (3.0*y-4.0*TMath::Power(y,3.0));
+            }
+            if(particle->Charge()>0.0) {
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCpos][0][0] += x;
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCpos][0][1] += y;
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCpos][1][0] += (2.0*TMath::Power(x,2.0)-1);
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCpos][1][1] += 2.0*x*y;
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCpos][2][0] += (4.0*TMath::Power(x,3.0)-3.0*x);
+               evPlane->fQvector[AliReducedEventPlaneInfo::kTPCpos][2][1] += (3.0*y-4.0*TMath::Power(y,3.0));
+            }
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPCptWeights][0][0] += x;
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPCptWeights][0][1] += y;
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPCptWeights][1][0] += (particle->Pt()<2.0 ? particle->Pt() : 2.0)*(2.0*TMath::Power(x,2.0)-1);
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPCptWeights][1][1] += (particle->Pt()<2.0 ? particle->Pt() : 2.0)*2.0*x*y;
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPCptWeights][2][0] += (particle->Pt()<2.0 ? particle->Pt() : 2.0)*(4.0*TMath::Power(x,3.0)-3.0*x);
+            evPlane->fQvector[AliReducedEventPlaneInfo::kTPCptWeights][2][1] += (particle->Pt()<2.0 ? particle->Pt() : 2.0)*(3.0*y-4.0*TMath::Power(y,3.0));
+         }
+      }
     }
     
+    if((isESD && !esdTrack->IsOn(0x1)) || (!isESD && !aodTrack->IsOn(0x1))) {
+      Float_t dcaXY, dcaZ;
+      if(isESD) esdTrack->GetImpactParameters(dcaXY, dcaZ); 
+      if(!isESD) aodTrack->GetImpactParameters(dcaXY, dcaZ);
+      if(TMath::Abs(dcaXY)<3.0 && TMath::Abs(dcaZ)>4.0) {
+         Double_t tgl = particle->Pz() / particle->Pt();
+         if(tgl > 0.1) pileupTrackArrayP[++pileupCounterP] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
+         if(tgl < -0.1) pileupTrackArrayM[++pileupCounterM] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
+         if(TMath::Abs(dcaZ)>10.0) {
+            if(tgl > 0.1) pileupTrackArrayP2[++pileupCounterP2] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
+            if(tgl < -0.1) pileupTrackArrayM2[++pileupCounterM2] = (isESD ? esdTrack->GetZ() : aodTrack->GetZ());
+         }
+      }
+    }
+    
+    // fill values
+    Double_t values[AliDielectronVarManager::kNMaxValues];
+    // set the fill map (all 1's) for the AliDielectronVarManager
+    AliDielectronVarManager::SetFillMap(fUsedVars);
+    AliDielectronVarManager::Fill(particle, values);
+
     // decide whether to write the track in the tree
     Bool_t writeTrack = kFALSE;
     Bool_t trackFilterDecision = kFALSE;
     std::vector<Bool_t> individualFilterDecisions;
     if (fTrackFilter.GetEntries()==0) trackFilterDecision = kTRUE;
-    if (fTrackFilter.GetEntries()>0)  trackFilterDecision = IsTrackSelected(particle, individualFilterDecisions);
+    if (fTrackFilter.GetEntries()>0)  trackFilterDecision = IsTrackSelected(particle, values, individualFilterDecisions);
     if(trackFilterDecision) writeTrack = kTRUE;
     if(matchedInTRD) {
        if(fFillAllTRDMatchedTracks) writeTrack = kTRUE;
@@ -1643,8 +2098,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     }
     if(usedForV0Or) writeTrack = kTRUE;
     if(!writeTrack) continue;
-    //if(!matchedInTRD && !usedForV0Or && fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
-
+    
     Bool_t fSelectedTrackIsBaseTrack = IsSelectedTrackRequestedBaseTrack(individualFilterDecisions, usedForV0Or);
     TClonesArray& tracks = (fWriteSecondTrackArray && fSelectedTrackIsBaseTrack) ? *(fReducedEvent->fTracks2) : *(fReducedEvent->fTracks);
     AliReducedBaseTrack* reducedParticle = NULL;
@@ -1660,17 +2114,12 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
 
     // fill track statistics histogram
     FillTrackStatisticsHistogram(individualFilterDecisions, usedForV0Or);
-
-    Double_t values[AliDielectronVarManager::kNMaxValues];
-    // set the fill map (all 1's) for the AliDielectronVarManager
-    AliDielectronVarManager::SetFillMap(fUsedVars);
-    AliDielectronVarManager::Fill(particle, values);
     
     reducedParticle->PtPhiEta(values[AliDielectronVarManager::kPt],values[AliDielectronVarManager::kPhi],values[AliDielectronVarManager::kEta]);
     reducedParticle->fCharge        = values[AliDielectronVarManager::kCharge];
     
     if(fFlowTrackFilter) {
-      // switch on the first bit if this particle should be used for the event plane
+      // switch on the first bit if this particle was used for the event plane
       if(fFlowTrackFilter->IsSelected(particle)) reducedParticle->fQualityFlags |= (ULong_t(1)<<0);
     }
     for(Int_t iV0type=0;iV0type<4;++iV0type) {
@@ -1776,6 +2225,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     trackInfo->fTOFnSig[2]   = values[AliDielectronVarManager::kTOFnSigmaKao];
     trackInfo->fTOFnSig[3]   = values[AliDielectronVarManager::kTOFnSigmaPro];
     
+    trackInfo->fEMCALnSigEle = values[AliDielectronVarManager::kEMCALnSigmaEle];
+
     Double_t trdProbab[AliPID::kSPECIES]={0.0};
     if(isESD) {
        trackInfo->fMassForTracking = esdTrack->GetMassForTracking();
@@ -1815,6 +2266,13 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         trackInfo->fHelixRadius   = TMath::Abs(1./helixinfo[4]);
       }
       
+      if(esdTrack->GetTPCdEdxInfo(tpcdEdxInfo)) {
+         for(Int_t i=0;i<4;++i) {
+            trackInfo->fTPCdEdxInfoQmax[i] = tpcdEdxInfo.GetSignalMax(i);
+            trackInfo->fTPCdEdxInfoQtot[i] = tpcdEdxInfo.GetSignalTot(i);
+         }
+      }
+      
       trackInfo->fTOFdeltaBC    = esdTrack->GetTOFDeltaBC();
       trackInfo->fTOFdx         = esdTrack->GetTOFsignalDx();
       trackInfo->fTOFdz         = esdTrack->GetTOFsignalDz();
@@ -1841,7 +2299,11 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
 
       if(esdTrack->IsEMCAL()) trackInfo->fCaloClusterId = esdTrack->GetEMCALcluster();
       if(esdTrack->IsPHOS()) trackInfo->fCaloClusterId = esdTrack->GetPHOScluster();
-      
+      // NOTE: extrapolation depends on radius and PHOS radius differs slightly from EMCal radius
+      if (esdTrack->IsExtrapolatedToEMCAL()) trackInfo->fMomentumOnCalo = esdTrack->GetTrackPOnEMCal();
+      if (esdTrack->IsExtrapolatedToEMCAL()) trackInfo->fPhiOnCalo = esdTrack->GetTrackPhiOnEMCal();
+      if (esdTrack->IsExtrapolatedToEMCAL()) trackInfo->fEtaOnCalo = esdTrack->GetTrackEtaOnEMCal();
+
       Double_t xyz[3], pxpypz[3];
       Double_t covMat[21];
       esdTrack->GetXYZ(xyz);
@@ -1926,6 +2388,13 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         trackInfo->fHelixRadius   = TMath::Abs(1./helixinfo[4]);
       }
       
+      if(aodTrack->GetTPCdEdxInfo(tpcdEdxInfo)) {
+         for(Int_t i=0;i<4;++i) {
+            trackInfo->fTPCdEdxInfoQmax[i] = tpcdEdxInfo.GetSignalMax(i);
+            trackInfo->fTPCdEdxInfoQtot[i] = tpcdEdxInfo.GetSignalTot(i);
+         }
+      }
+      
       trackInfo->fTOFdz         = aodTrack->GetTOFsignalDz();
       trackInfo->fTOFdeltaBC = eventInfo->fBC - aodTrack->GetTOFBunchCrossing();
       
@@ -1940,7 +2409,9 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       
       if(aodTrack->IsEMCAL()) trackInfo->fCaloClusterId = aodTrack->GetEMCALcluster();
       if(aodTrack->IsPHOS()) trackInfo->fCaloClusterId = aodTrack->GetPHOScluster();
-      
+      // NOTE: extrapolation depends on radius and PHOS radius differs slightly from EMCal radius
+      if (aodTrack->IsExtrapolatedToEMCAL()) trackInfo->fMomentumOnCalo = aodTrack->GetTrackPOnEMCal();
+
       Double_t xyz[3], pxpypz[3];
       Double_t covMat[21];
       aodTrack->GetXYZ(xyz);
@@ -1990,12 +2461,23 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             }
          }
       }
-      
-      
-      
     }  // end if(isAOD)
 
     fReducedEvent->fNtracks[1] += 1;
+  }  // end loop over tracks
+    
+  AliReducedEventInfo* eventInfo = NULL; 
+  if(fTreeWritingOption==kFullEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
+     eventInfo = dynamic_cast<AliReducedEventInfo*>(fReducedEvent);
+     eventInfo->SetEventPlane(evPlane);
+     eventInfo->fTPCpileupZ[0] = (pileupCounterP>0 ? TMath::Median(pileupCounterP, pileupTrackArrayP) : 0.0);
+     eventInfo->fTPCpileupZ[1] = (pileupCounterM>0 ? -1.0*TMath::Median(pileupCounterM, pileupTrackArrayM) : 0.0);
+     eventInfo->fTPCpileupContributors[0] = pileupCounterP;
+     eventInfo->fTPCpileupContributors[1] = pileupCounterM;
+     eventInfo->fTPCpileupZ2[0] = (pileupCounterP2>0 ? TMath::Median(pileupCounterP2, pileupTrackArrayP2) : 0.0);
+     eventInfo->fTPCpileupZ2[1] = (pileupCounterM2>0 ? -1.0*TMath::Median(pileupCounterM2, pileupTrackArrayM2) : 0.0);
+     eventInfo->fTPCpileupContributors2[0] = pileupCounterP2;
+     eventInfo->fTPCpileupContributors2[1] = pileupCounterM2;
   }
 }
 
@@ -2063,8 +2545,6 @@ void AliAnalysisTaskReducedTreeMaker::FillV0PairInfo()
         goodGamma = kTRUE;
         if(fGammaElectronCuts && (!fGammaElectronCuts->IsSelected(legPos) || !fGammaElectronCuts->IsSelected(legNeg))) goodGamma = kFALSE;
       }
-      //cout << "open cuts  pdgV0/pdgP/pdgN/processV0 : " << pdgV0 << "/" << pdgP << "/" << pdgN << "/" << processV0 << endl;     
-      //cout << "good K0s/Lambda/ALambda/Gamma : " << goodK0s << "/" << goodLambda << "/" << goodALambda << "/" << goodGamma << endl;
     }
     
     Bool_t veryGoodK0s = kFALSE; Bool_t veryGoodLambda = kFALSE; Bool_t veryGoodALambda = kFALSE; Bool_t veryGoodGamma = kFALSE;
@@ -2079,8 +2559,6 @@ void AliAnalysisTaskReducedTreeMaker::FillV0PairInfo()
         veryGoodALambda = kTRUE;
       if(processV0 && goodGamma && TMath::Abs(pdgV0)==22 && TMath::Abs(pdgP)==11 && TMath::Abs(pdgN)==11)
         veryGoodGamma = kTRUE;
-      //cout << "strong cuts  pdgV0/pdgP/pdgN/processV0 : " << pdgV0 << "/" << pdgP << "/" << pdgN << "/" << processV0 << endl;     
-      //cout << "very good K0s/Lambda/ALambda/Gamma : " << veryGoodK0s << "/" << veryGoodLambda << "/" << veryGoodALambda << "/" << veryGoodGamma << endl;
     }
               
     if(!((goodK0s && fFillK0s) || 
@@ -2124,7 +2602,6 @@ void AliAnalysisTaskReducedTreeMaker::FillV0PairInfo()
       if(veryGoodALambda) goodALambdaPair->fQualityFlags |= (ULong_t(1)<<3);
       fReducedEvent->fNV0candidates[1] += 1;
     } else {goodALambda = kFALSE;}
-    //cout << "gamma mass: " << gammaReducedPair->fMass[0] << endl;
     if(fFillGammaConversions && goodGamma && gammaReducedPair->fMass[0]>fGammaMassRange[0] && gammaReducedPair->fMass[0]<fGammaMassRange[1]) {
       TClonesArray& tracks = *(fReducedEvent->fCandidates);
       AliReducedPairInfo *goodGammaPair = new (tracks[fReducedEvent->fNV0candidates[1]]) AliReducedPairInfo(*gammaReducedPair);
@@ -2209,6 +2686,152 @@ AliReducedPairInfo* AliAnalysisTaskReducedTreeMaker::FillV0PairInfo(AliESDv0* v0
   }
   return reducedPair;
 }
+
+
+//_________________________________________________________________________________
+void AliAnalysisTaskReducedTreeMaker::FillV0PairInfoAOD() 
+{
+   //
+   // fill reduced pair information
+   //
+   AliAODEvent* aod = (AliAODEvent*)InputEvent();
+   const AliAODVertex *primaryVertex = aod->GetPrimaryVertex();
+   AliKFVertex primaryVertexKF(*primaryVertex);
+   
+   fReducedEvent->fNV0candidates[0] = InputEvent()->GetNumberOfV0s();
+   
+   if(!(fFillK0s || fFillLambda || fFillALambda || fFillGammaConversions)) return;
+   
+   if(fV0CutsAOD) {
+      fV0CutsAOD->SetEvent(aod);
+      fV0CutsAOD->SetPrimaryVertex(&primaryVertexKF);
+   }
+   
+   Int_t pdgV0=0; Int_t pdgP=0; Int_t pdgN=0;
+   for(Int_t iV0=0; iV0<InputEvent()->GetNumberOfV0s(); ++iV0) {   // loop over V0s
+      AliAODv0 *v0 = aod->GetV0(iV0);
+      if(!v0) continue;
+      
+      if(!aod->GetTrack(v0->GetPosID())) continue;
+      AliAODTrack* legPos = dynamic_cast<AliAODTrack*>(aod->GetTrack(v0->GetPosID()));
+      if(!legPos) continue;
+      if(!aod->GetTrack(v0->GetNegID())) continue;
+      AliAODTrack* legNeg = dynamic_cast<AliAODTrack*>(aod->GetTrack(v0->GetNegID()));
+      if(!legNeg) continue;
+      
+      pdgV0=0; pdgP=0; pdgN=0;
+      Bool_t goodK0s = kTRUE; Bool_t goodLambda = kTRUE; Bool_t goodALambda = kTRUE; Bool_t goodGamma = kTRUE;
+      if(fV0CutsAOD) {
+         goodK0s = kFALSE; goodLambda = kFALSE; goodALambda = kFALSE; goodGamma = kFALSE;
+         Bool_t processV0 = fV0CutsAOD->ProcessV0(v0, pdgV0, pdgP, pdgN);
+         if(processV0 && TMath::Abs(pdgV0)==310 && TMath::Abs(pdgP)==211 && TMath::Abs(pdgN)==211) {
+            goodK0s = kTRUE;
+            if(fK0sPionCuts && (!fK0sPionCuts->IsSelected(legPos) || !fK0sPionCuts->IsSelected(legNeg))) goodK0s = kFALSE;
+         }
+         if(processV0 && pdgV0==3122 && (TMath::Abs(pdgP)==211 || TMath::Abs(pdgP)==2212) && (TMath::Abs(pdgN)==211 || TMath::Abs(pdgN)==2212)) {
+            goodLambda = kTRUE;
+            if(fLambdaProtonCuts && !fLambdaProtonCuts->IsSelected(legPos)) goodLambda = kFALSE;
+            if(fLambdaPionCuts && !fLambdaPionCuts->IsSelected(legNeg)) goodLambda = kFALSE;
+         }
+         if(processV0 && pdgV0==-3122 && (TMath::Abs(pdgP)==211 || TMath::Abs(pdgP)==2212) && (TMath::Abs(pdgN)==211 || TMath::Abs(pdgN)==2212)) {
+            goodALambda = kTRUE;
+            if(fLambdaProtonCuts && !fLambdaProtonCuts->IsSelected(legNeg)) goodALambda = kFALSE;
+            if(fLambdaPionCuts && !fLambdaPionCuts->IsSelected(legPos)) goodALambda = kFALSE;
+         }
+         if(processV0 && TMath::Abs(pdgV0)==22 && TMath::Abs(pdgP)==11 && TMath::Abs(pdgN)==11) {
+            goodGamma = kTRUE;
+            if(fGammaElectronCuts && (!fGammaElectronCuts->IsSelected(legPos) || !fGammaElectronCuts->IsSelected(legNeg))) goodGamma = kFALSE;
+         }
+      }
+      
+      if(!((goodK0s && fFillK0s) || 
+         (goodLambda && fFillLambda) || 
+         (goodALambda && fFillALambda) || 
+         (goodGamma && fFillGammaConversions))) {
+         continue;
+      }
+      
+      // Fill the V0 information into the tree for 4 hypothesis: K0s, Lambda, Anti-Lambda and gamma conversion
+      AliReducedPairInfo* k0sReducedPair     = FillV0PairInfoAOD(v0, AliReducedPairInfo::kK0sToPiPi,     legPos, legNeg, &primaryVertexKF);
+      AliReducedPairInfo* lambdaReducedPair  = FillV0PairInfoAOD(v0, AliReducedPairInfo::kLambda0ToPPi,  legPos, legNeg, &primaryVertexKF);
+      AliReducedPairInfo* alambdaReducedPair = FillV0PairInfoAOD(v0, AliReducedPairInfo::kALambda0ToPPi, legPos, legNeg, &primaryVertexKF);
+      AliReducedPairInfo* gammaReducedPair   = FillV0PairInfoAOD(v0, AliReducedPairInfo::kGammaConv,     legPos, legNeg, &primaryVertexKF);
+      
+      if(fFillK0s && goodK0s && k0sReducedPair->fMass[0]>fK0sMassRange[0] && k0sReducedPair->fMass[0]<fK0sMassRange[1]) {
+         TClonesArray& tracks = *(fReducedEvent->fCandidates);
+         AliReducedPairInfo *goodK0sPair = new (tracks[fReducedEvent->fNV0candidates[1]]) AliReducedPairInfo(*k0sReducedPair);
+         goodK0sPair->fMass[0] = k0sReducedPair->fMass[0];
+         goodK0sPair->fMass[1] = lambdaReducedPair->fMass[0];
+         goodK0sPair->fMass[2] = alambdaReducedPair->fMass[0];
+         goodK0sPair->fMass[3] = gammaReducedPair->fMass[0];
+         fReducedEvent->fNV0candidates[1] += 1;
+      } else {goodK0s=kFALSE;}
+      if(fFillLambda && goodLambda && lambdaReducedPair->fMass[0]>fLambdaMassRange[0] && lambdaReducedPair->fMass[0]<fLambdaMassRange[1]) {
+         TClonesArray& tracks = *(fReducedEvent->fCandidates);
+         AliReducedPairInfo *goodLambdaPair = new (tracks[fReducedEvent->fNV0candidates[1]]) AliReducedPairInfo(*lambdaReducedPair);
+         goodLambdaPair->fMass[0] = k0sReducedPair->fMass[0];
+         goodLambdaPair->fMass[1] = lambdaReducedPair->fMass[0];
+         goodLambdaPair->fMass[2] = alambdaReducedPair->fMass[0];
+         goodLambdaPair->fMass[3] = gammaReducedPair->fMass[0];
+         fReducedEvent->fNV0candidates[1] += 1;
+      } else {goodLambda=kFALSE;}
+      if(fFillALambda && goodALambda && alambdaReducedPair->fMass[0]>fLambdaMassRange[0] && alambdaReducedPair->fMass[0]<fLambdaMassRange[1]) {
+         TClonesArray& tracks = *(fReducedEvent->fCandidates);
+         AliReducedPairInfo *goodALambdaPair = new (tracks[fReducedEvent->fNV0candidates[1]]) AliReducedPairInfo(*alambdaReducedPair);
+         goodALambdaPair->fMass[0] = k0sReducedPair->fMass[0];
+         goodALambdaPair->fMass[1] = lambdaReducedPair->fMass[0];
+         goodALambdaPair->fMass[2] = alambdaReducedPair->fMass[0];
+         goodALambdaPair->fMass[3] = gammaReducedPair->fMass[0];
+         fReducedEvent->fNV0candidates[1] += 1;
+      } else {goodALambda = kFALSE;}
+      if(fFillGammaConversions && goodGamma && gammaReducedPair->fMass[0]>fGammaMassRange[0] && gammaReducedPair->fMass[0]<fGammaMassRange[1]) {
+         TClonesArray& tracks = *(fReducedEvent->fCandidates);
+         AliReducedPairInfo *goodGammaPair = new (tracks[fReducedEvent->fNV0candidates[1]]) AliReducedPairInfo(*gammaReducedPair);
+         goodGammaPair->fMass[0] = k0sReducedPair->fMass[0];
+         goodGammaPair->fMass[1] = lambdaReducedPair->fMass[0];
+         goodGammaPair->fMass[2] = alambdaReducedPair->fMass[0];
+         goodGammaPair->fMass[3] = gammaReducedPair->fMass[0];
+         fReducedEvent->fNV0candidates[1] += 1;
+      } else {goodGamma=kFALSE;}
+      delete k0sReducedPair;
+      delete lambdaReducedPair;
+      delete alambdaReducedPair;
+      delete gammaReducedPair;
+   }   // end loop over V0s
+}
+
+
+//_________________________________________________________________________________
+AliReducedPairInfo* AliAnalysisTaskReducedTreeMaker::FillV0PairInfoAOD(AliAODv0* v0, Int_t id, 
+                                                                    AliAODTrack* legPos, AliAODTrack* legNeg,
+                                                                    AliKFVertex* vtxKF) {
+   //
+   // Create a reduced V0 object and fill it
+   //
+   AliReducedPairInfo* reducedPair=new AliReducedPairInfo();  
+   reducedPair->fCandidateId = id;
+   reducedPair->fPairType    = v0->GetOnFlyStatus();    // on the fly status
+   reducedPair->fLegIds[0]   = legPos->GetID();
+   reducedPair->fLegIds[1]   = legNeg->GetID();
+   
+   // NOTE same treatment for both offline and on the fly V0s 
+   if(id==AliReducedPairInfo::kLambda0ToPPi) reducedPair->fMass[0] = v0->MassLambda();
+   if(id==AliReducedPairInfo::kALambda0ToPPi) reducedPair->fMass[0] = v0->MassAntiLambda();
+   if(id==AliReducedPairInfo::kK0sToPiPi) reducedPair->fMass[0] = v0->MassK0Short();
+   if(id==AliReducedPairInfo::kGammaConv) reducedPair->fMass[0] = 0.0;
+   reducedPair->fIsCartesian  = kFALSE;
+   reducedPair->fP[1]         = v0->Phi();
+   if(reducedPair->fP[1]<0.0) reducedPair->fP[1] = 2.0*TMath::Pi() + reducedPair->fP[1];  // converted to [0,2pi]
+   reducedPair->fP[0]         = v0->Pt();
+   reducedPair->fP[2]         = v0->Eta();
+   reducedPair->fLxy          = v0->RadiusV0();
+   Double_t secVtx[3] = {vtxKF->GetX(), vtxKF->GetY(), vtxKF->GetZ()};
+   reducedPair->fPointingAngle = v0->CosPointingAngle(secVtx);
+   reducedPair->fChisquare    = v0->Chi2V0();
+   
+   return reducedPair;
+}
+
 
 
 //_________________________________________________________________________________

@@ -120,6 +120,16 @@ public:
   void EnableCentralityTriggers(Bool_t doEnable) { fEnableCentralityTriggers = doEnable; }
 
   /**
+   * @brief Switch on selection of centrality triggers for PbPb 2018
+   * 
+   * Selection done based on trigger string using trigger classes for centrality triggers in 2018.
+   * Triggers are not yet supported by the physics selection.
+   * 
+   * @param doSelect If true trigger selection is enabled
+   */
+  void SetSelectCentralityTriggers2018(Bool_t doSelect) { fSelectCentralityTriggers2018 = doSelect; }
+
+  /**
    * @brief Set the name of the OADB container with the downscale factors.
    *
    * Once it is available, downscale weights can be obtained via
@@ -396,6 +406,7 @@ protected:
   Bool_t                          fEnableCentralityTriggers;  ///< Enable central / semi-central trigger
   Bool_t                          fExclusiveMinBias;          ///< Only look at Min. Bias trigger
   Bool_t                          fUseTriggerSelectionContainer;    ///< Use trigger decision in trigger selection container
+  Bool_t                          fSelectCentralityTriggers2018;    ///< Select centrality triggers 2018 based on trigger string (missing support by physics selection yet)
 
 private:
   AliAnalysisTaskEmcalTriggerBase(const AliAnalysisTaskEmcalTriggerBase &);

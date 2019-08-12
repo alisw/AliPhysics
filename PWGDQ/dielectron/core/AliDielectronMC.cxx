@@ -344,17 +344,17 @@ AliAODMCParticle* AliDielectronMC::GetMCTrackMother(const AliAODMCParticle* _par
 }
 
 //____________________________________________________________
-TParticle* AliDielectronMC::GetMCTrackMotherFromStack(const AliESDtrack* _track)
-{
+//TParticle* AliDielectronMC::GetMCTrackMotherFromStack(const AliESDtrack* _track)
+//{
   //
   // return MC track mother from MC event
   //
-  TParticle* mcpart = GetMCTrackFromStack(_track);
-  if ( !mcpart || mcpart->GetFirstMother()<=0 ) return NULL;
-  TParticle* mcmother = fMCEvent->Particle(mcpart->GetFirstMother());
-  if (!mcmother) return NULL;
-  return mcmother;
-}
+//  TParticle* mcpart = GetMCTrackFromStack(_track);
+//  if ( !mcpart || mcpart->GetFirstMother()<=0 ) return NULL;
+//  TParticle* mcmother = fMCEvent->Particle(mcpart->GetFirstMother());
+//  if (!mcmother) return NULL;
+//  return mcmother;
+//}
 
 //____________________________________________________________
 Int_t AliDielectronMC::GetMCPID(const AliESDtrack* _track)
@@ -434,15 +434,15 @@ Int_t AliDielectronMC::GetMotherPDG( const AliAODMCParticle* _track)
 }
 
 //____________________________________________________________
-Int_t AliDielectronMC::GetMotherPDGFromStack(const AliESDtrack* _track)
-{
+//Int_t AliDielectronMC::GetMotherPDGFromStack(const AliESDtrack* _track)
+//{
   //
   // return PDG code of the mother track from MC event
   //
-  TParticle* mcmother = GetMCTrackMotherFromStack(_track);
-  if (!mcmother) return -999;
-  return mcmother->GetPdgCode();
-}
+//  TParticle* mcmother = GetMCTrackMotherFromStack(_track);
+//  if (!mcmother) return -999;
+//  return mcmother->GetPdgCode();
+//}
 
 //____________________________________________________________
 Int_t AliDielectronMC::GetMCProcess(const AliESDtrack* _track)
@@ -456,15 +456,15 @@ Int_t AliDielectronMC::GetMCProcess(const AliESDtrack* _track)
 }
 
 //____________________________________________________________
-Int_t AliDielectronMC::GetMCProcessFromStack(const AliESDtrack* _track)
-{
+//Int_t AliDielectronMC::GetMCProcessFromStack(const AliESDtrack* _track)
+//{
   //
   // return process number of the track
   //
-  TParticle* mcpart = GetMCTrackFromStack(_track);
-  if (!mcpart) return -999;
-  return mcpart->GetUniqueID();
-}
+  //TParticle* mcpart = GetMCTrackFromStack(_track);
+  //if (!mcpart) return -999;
+  //return mcpart->GetUniqueID();
+//}
 
 //____________________________________________________________
 Int_t AliDielectronMC::NumberOfDaughters(const AliESDtrack* track)
@@ -525,15 +525,15 @@ Int_t AliDielectronMC::GetMCProcessMother(const AliESDtrack* _track)
 }
 
 //____________________________________________________________
-Int_t AliDielectronMC::GetMCProcessMotherFromStack(const AliESDtrack* _track)
-{
+//Int_t AliDielectronMC::GetMCProcessMotherFromStack(const AliESDtrack* _track)
+//{
   //
   // return process number of the mother of the track
   //
-  TParticle* mcmother = GetMCTrackMotherFromStack(_track);
-  if (!mcmother) return -999;
-  return mcmother->GetUniqueID();
-}
+//  TParticle* mcmother = GetMCTrackMotherFromStack(_track);
+//  if (!mcmother) return -999;
+//  return mcmother->GetUniqueID();
+//}
 
 //____________________________________________________________
 Bool_t AliDielectronMC::IsMCMotherToEE(const AliVParticle *particle, Int_t pdgMother)
@@ -552,8 +552,8 @@ Bool_t AliDielectronMC::IsMCMotherToEE(const AliVParticle *particle, Int_t pdgMo
   }
   //check pdg code
   if (particle->PdgCode()!=pdgMother) return kFALSE;
-  Int_t ifirst = particle->GetFirstDaughter();
-  Int_t ilast  = particle->GetLastDaughter();
+  Int_t ifirst = particle->GetDaughterFirst();
+  Int_t ilast  = particle->GetDaughterLast();
 
   //check number of daughters
   if ((ilast-ifirst)!=1) return kFALSE;
@@ -583,8 +583,8 @@ Bool_t AliDielectronMC::IsMCMotherToEEesd(const AliMCParticle *particle, Int_t p
 
   //check pdg code
   if (particle->PdgCode()!=pdgMother) return kFALSE;
-  Int_t ifirst = particle->GetFirstDaughter();
-  Int_t ilast  = particle->GetLastDaughter();
+  Int_t ifirst = particle->GetDaughterFirst();
+  Int_t ilast  = particle->GetDaughterLast();
 
   //check number of daughters
   if ((ilast-ifirst)!=1) return kFALSE;
@@ -615,8 +615,8 @@ Bool_t AliDielectronMC::IsMCMotherToEEaod(const AliAODMCParticle *particle, Int_
   if (particle->GetPdgCode()!=pdgMother) return kFALSE;
   if (particle->GetNDaughters()!=2) return kFALSE;
 
-  Int_t ifirst = particle->GetFirstDaughter();
-  Int_t ilast  = particle->GetLastDaughter();
+  Int_t ifirst = particle->GetDaughterFirst();
+  Int_t ilast  = particle->GetDaughterLast();
 
   //check number of daughters
   if ((ilast-ifirst)!=1) return kFALSE;
@@ -744,8 +744,8 @@ void AliDielectronMC::GetDaughters(const TObject *mother, AliVParticle* &d1, Ali
     return;
   }
   AliVParticle *mcMother = (AliVParticle*) mother;
-  lblD1 = mcMother->GetFirstDaughter();
-  lblD2 = mcMother->GetLastDaughter();
+  lblD1 = mcMother->GetDaughterFirst();
+  lblD2 = mcMother->GetDaughterLast();
   d1 = fMCEvent->GetTrack(lblD1);
   d2 = fMCEvent->GetTrack(lblD2);
 
@@ -764,7 +764,87 @@ Int_t AliDielectronMC::GetMothersLabel(Int_t daughterLabel) const {
   return momsLabel;
 }
 
+//________________________________________________________________________________
+Int_t AliDielectronMC::GetFirstMothersLabelInChain(Int_t daughterLabel) const {
+  //
+  //  Get the label of the very first mother in the decay chain for particle with label daughterLabel
+  //  NOTE: for tracks, the absolute label should be passed
+  //
+  if(daughterLabel<0) return -1;
+  if (!fMCEvent) return -1;
 
+  Int_t labelfirstmother = -1;
+  Int_t firstMotherIndex = GetMCTrackFromMCEvent(daughterLabel)->GetMother(); // get label of the mother
+  
+  while(firstMotherIndex>0){
+    labelfirstmother = firstMotherIndex;
+    firstMotherIndex = GetMCTrackFromMCEvent(labelfirstmother)->GetMother(); // get label of mother of mother....
+  }
+
+  if(firstMotherIndex==0) labelfirstmother = firstMotherIndex; // In case of PYTHIA first mother is 0 or 1 but should not happen in Hijing
+  // labelfirstmother is -1 if particle has no mother (primary) or equaled to the very first primary particle in the chain
+  return labelfirstmother;
+
+}
+//________________________________________________________________________________
+Int_t AliDielectronMC::GetMinLabelParticlePrimaryAround(Int_t label) const {
+  //
+  //  Get the label of the last primary particle around the primary particle at the label
+  //  NOTE: for tracks, the absolute label should be passed
+  //
+
+  if(label<0) return -1;
+  if (!fMCEvent) return -1;
+  
+  Int_t labelminfirstMother = label; // start at the particle label
+  // get label of the mother: should be -1 since we assume that this is the first mother in the chain
+  Int_t firstMotherIndex = GetMCTrackFromMCEvent(label)->GetMother();
+  if(firstMotherIndex>-1) return -1;
+  
+  while(firstMotherIndex<0){
+    labelminfirstMother--;
+    if(labelminfirstMother<0){
+      firstMotherIndex = 0;
+    }
+    else{
+      firstMotherIndex = GetMCTrackFromMCEvent(labelminfirstMother)->GetMother(); // get the mother label of the neighborhood particle
+    }
+  }
+  
+  labelminfirstMother ++; // set back by one to the last primary particle in the - neighborhood
+
+  return labelminfirstMother;
+
+}
+//________________________________________________________________________________
+Int_t AliDielectronMC::GetMaxLabelParticlePrimaryAround(Int_t label) const {
+  //
+  //  Get the label of the last primary particle around the primary particle at the label
+  //  NOTE: for tracks, the absolute label should be passed
+  //
+  if(label<0) return -1;
+  if (!fMCEvent) return -1;
+
+  Int_t labelmaxfirstMother = label; // start at the particle label
+  // get label of the mother: should be -1 since we assume that this is the first mother in the chain
+  Int_t firstMotherIndex = GetMCTrackFromMCEvent(label)->GetMother();
+  if(firstMotherIndex>-1) return -1;
+  
+  while(firstMotherIndex<0){
+    labelmaxfirstMother++;
+    if(labelmaxfirstMother > fMCEvent->GetNumberOfTracks()){
+      firstMotherIndex = 0;
+    }
+    else{
+      firstMotherIndex = GetMCTrackFromMCEvent(labelmaxfirstMother)->GetMother(); // get the mother label of the neighborhood particle
+    }
+  }
+  
+  labelmaxfirstMother --; // set back by one to the last primary particle in the + neighborhood
+
+  return labelmaxfirstMother;
+
+}
 //________________________________________________________________________________
 Int_t AliDielectronMC::GetPdgFromLabel(Int_t label) const {
   //
@@ -844,6 +924,17 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
       if(requiredPDG>0) result = particlePDG>=400 && particlePDG<=499;
       if(requiredPDG<0) result = particlePDG>=-499 && particlePDG<=-400;
     }
+    break;
+  case 600:     // all dielectron from same mother sources
+    result = TMath::Abs(particlePDG)==111 || // pion
+             TMath::Abs(particlePDG)==113 || // rho
+             TMath::Abs(particlePDG)==221 || // eta
+             TMath::Abs(particlePDG)==331 || // eta'
+             TMath::Abs(particlePDG)==223 || // omega
+             TMath::Abs(particlePDG)==333 || // phi
+             TMath::Abs(particlePDG)==443 || // jpsi
+             TMath::Abs(particlePDG)==100443 // psi 2S
+             ;
     break;
   case 401:     // open charm mesons
     if(checkBothCharges)
@@ -1446,15 +1537,15 @@ Bool_t AliDielectronMC::CheckIsRadiative(Int_t label) const
     const Int_t nd=mother->GetNDaughters();
     if (nd==2) return kFALSE;
     for (Int_t i=2; i<nd; ++i)
-      if (GetMCTrackFromMCEvent(mother->GetDaughter(0)+i)->PdgCode()!=22) return kFALSE; //last daughter is photon
+      if (GetMCTrackFromMCEvent(mother->GetDaughterLabel(0)+i)->PdgCode()!=22) return kFALSE; //last daughter is photon
   } else if(fAnaType==kESD) {
     if (!fMCEvent) return kFALSE;
     AliMCParticle *mother=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(label));
     if (!mother) return kFALSE;
-    const Int_t nd=(mother->GetLastDaughter()-mother->GetFirstDaughter()+1);
+    const Int_t nd=(mother->GetDaughterLast()-mother->GetDaughterFirst()+1);
     if (nd==2) return kFALSE;
     for (Int_t i=2; i<nd; ++i)
-      if (GetMCTrackFromMCEvent(mother->GetFirstDaughter()+i)->PdgCode()!=22) return kFALSE; //last daughters are photons
+      if (GetMCTrackFromMCEvent(mother->GetDaughterFirst()+i)->PdgCode()!=22) return kFALSE; //last daughters are photons
   }
   return kTRUE;
 }
@@ -1667,6 +1758,21 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
   if (signalMC->GetCheckStackForPDG()) {
     pdgInStack = CheckStackParticle(labelM1,signalMC->GetStackPDG()) && CheckStackParticle(labelM2,signalMC->GetStackPDG());
   }
+  // check is first mothers are closed (correlated charm/beauty)
+  Bool_t correlated = kTRUE;
+  if (signalMC->GetCheckCorrelatedHF()){
+    Int_t labelfirstmother1 = GetFirstMothersLabelInChain(labelD1);
+    Int_t labelminfirstmother1 = GetMinLabelParticlePrimaryAround(labelfirstmother1);
+    Int_t labelmaxfirstmother1 = GetMaxLabelParticlePrimaryAround(labelfirstmother1);
+    Int_t labelfirstmother2 = GetFirstMothersLabelInChain(labelD2);
+    Int_t labelminfirstmother2 = GetMinLabelParticlePrimaryAround(labelfirstmother2);
+    Int_t labelmaxfirstmother2 = GetMaxLabelParticlePrimaryAround(labelfirstmother2);
+    if(labelfirstmother1==-1 || labelminfirstmother1==-1 || labelmaxfirstmother1==-1) correlated = kFALSE; // security
+    if(labelfirstmother2==-1 || labelminfirstmother2==-1 || labelmaxfirstmother2==-1) correlated = kFALSE; // security
+    if(labelfirstmother1<labelminfirstmother2 || labelfirstmother1>labelmaxfirstmother2) correlated = kFALSE;
+    if(labelfirstmother2<labelminfirstmother1 || labelfirstmother2>labelmaxfirstmother1) correlated = kFALSE;
+  }
+    
   // check if a mother is also a grandmother
   Bool_t motherIsGrandmother = kTRUE;
   if (signalMC->GetCheckMotherGrandmotherRelation()) {
@@ -1674,7 +1780,7 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
     motherIsGrandmother = MotherIsGrandmother(labelM1,labelM2,labelG1,labelG2, signalMC->GetMotherIsGrandmother());
   }
 
-  return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack);
+  return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack && correlated);
 
 }
 
@@ -1825,11 +1931,15 @@ Bool_t AliDielectronMC::IsMCTruth(AliVParticle* mcD1, AliVParticle* mcD2, const 
     Bool_t pdgInStack = kTRUE;
     // Not implemented
 
+    // check if correlated for HF
+    Bool_t correlated = kTRUE;
+    // Not implemented
+
     // check if a mother is also a grandmother
     Bool_t motherIsGrandmother = kTRUE;
     // Not implemented
 
-    return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack);
+    return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack && correlated);
 
   }
   else if (mcD1->IsA() == AliAODMCParticle::Class()){
@@ -1969,11 +2079,15 @@ Bool_t AliDielectronMC::IsMCTruth(AliVParticle* mcD1, AliVParticle* mcD2, const 
     Bool_t pdgInStack = kTRUE;
     // Not implemented
 
+    // check if correlated
+    Bool_t correlated = kTRUE;
+    // Not implemented
+
     // check if a mother is also a grandmother
     Bool_t motherIsGrandmother = kTRUE;
     // Not implemented
 
-    return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack);
+    return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack && correlated);
 
   }
 
@@ -2023,11 +2137,11 @@ Bool_t AliDielectronMC::CompareDaughterPDG(Int_t labelM, Int_t reqPDG, Bool_t PD
   //Get Mother from label
   AliMCParticle *mother=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(labelM));
   //Get number auf daughters, so you can go through them
-  const Int_t nd=(mother->GetLastDaughter()-mother->GetFirstDaughter()+1);
+  const Int_t nd=(mother->GetDaughterLast()-mother->GetDaughterFirst()+1);
   //Loop over daughters and get stop loop if PDG is found.
   for (Int_t i=0; i<nd; ++i) {
     //Go through the daughters, set result true and break if PDG code fits
-    if (ComparePDG((GetMCTrackFromMCEvent(mother->GetFirstDaughter()+i)->PdgCode()),reqPDG,kFALSE,CheckBothChargesDaughter)) {
+    if (ComparePDG((GetMCTrackFromMCEvent(mother->GetDaughterFirst()+i)->PdgCode()),reqPDG,kFALSE,CheckBothChargesDaughter)) {
       result = kTRUE;
       break;
     }
@@ -2164,7 +2278,7 @@ Bool_t AliDielectronMC::LoadHFPairs()
 
     if(pdg_parta==4 || pdg_parta==5){
       //The quark is requested to create a B or D hadron -> Must have a daughter
-      if(!(cand->GetFirstDaughter()>-1)){
+      if(!(cand->GetDaughterFirst()>-1)){
 	//childless quark to be linked!
 	if(pdg_part==4) quarktmp[0][0]=i;
 	else if(pdg_part==-4) quarktmp[0][1]=i;
@@ -2175,7 +2289,7 @@ Bool_t AliDielectronMC::LoadHFPairs()
 
       //Check if the quark is the one leading to the hadron
       Bool_t isHFprim(kTRUE);
-      for(Int_t idau=cand->GetFirstDaughter();idau<=cand->GetLastDaughter();idau++){
+      for(Int_t idau=cand->GetDaughterFirst();idau<=cand->GetDaughterLast();idau++){
 	if(fMCEvent->GetTrack(idau)->PdgCode()==pdg_part){
 	  isHFprim=kFALSE;
 	  break;

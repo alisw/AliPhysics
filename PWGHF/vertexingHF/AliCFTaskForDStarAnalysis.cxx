@@ -243,8 +243,8 @@ void AliCFTaskForDStarAnalysis::UserExec(Option_t *)
       // check the MC-Acceptance level cuts
       // since standard CF functions are not applicable, using Kine Cuts on daughters
       
-      Int_t daughter0 = mcPart->GetDaughter(0);
-      Int_t daughter1 = mcPart->GetDaughter(1);
+      Int_t daughter0 = mcPart->GetDaughterLabel(0);
+      Int_t daughter1 = mcPart->GetDaughterLabel(1);
       
       AliDebug(2, Form("daughter0 = %d and daughter1 = %d",daughter0,daughter1));
       
@@ -271,11 +271,11 @@ void AliCFTaskForDStarAnalysis::UserExec(Option_t *)
       
       // Just to be sure to take the right particles    
       if(TMath::Abs(mcPartDaughter0->GetPdgCode())==421){
-	daughD00 = mcPartDaughter0->GetDaughter(0);
-	daughD01 = mcPartDaughter0->GetDaughter(1);
+	daughD00 = mcPartDaughter0->GetDaughterLabel(0);
+	daughD01 = mcPartDaughter0->GetDaughterLabel(1);
       }else{
-	daughD00 = mcPartDaughter1->GetDaughter(0);
-	daughD01 = mcPartDaughter1->GetDaughter(1);
+	daughD00 = mcPartDaughter1->GetDaughterLabel(0);
+	daughD01 = mcPartDaughter1->GetDaughterLabel(1);
       }
       
       // the D0 daughters
@@ -384,8 +384,8 @@ void AliCFTaskForDStarAnalysis::UserExec(Option_t *)
       AliAODTrack *track2 = (AliAODTrack*)dstarD0pi->GetBachelor(); 
 
       //D0tokpi
-      AliAODTrack *track0 = (AliAODTrack*)D0particle->GetDaughter(0);
-      AliAODTrack *track1 = (AliAODTrack*)D0particle->GetDaughter(1);
+      AliAODTrack *track0 = (AliAODTrack*)D0particle->GetDaughterLabel(0);
+      AliAODTrack *track1 = (AliAODTrack*)D0particle->GetDaughterLabel(1);
       
       // check if associated MC v0 passes the cuts
       if (!fCFManager->CheckParticleCuts(0 ,mcVtxHFDStar)) { 
@@ -628,8 +628,8 @@ Bool_t AliCFTaskForDStarAnalysis::GetDStarMCParticle(AliAODMCParticle* mcPart, T
   if(TMath::Abs(mcPart->GetPdgCode())!=413) return isDStar;
   
   // getting the daughters
-  Int_t daughter0 = mcPart->GetDaughter(0);
-  Int_t daughter1 = mcPart->GetDaughter(1);
+  Int_t daughter0 = mcPart->GetDaughterLabel(0);
+  Int_t daughter1 = mcPart->GetDaughterLabel(1);
   
   AliDebug(2, Form("daughter0 = %d and daughter1 = %d",daughter0,daughter1));
   if (daughter0 == 0 || daughter1 == 0) {
@@ -716,8 +716,8 @@ Bool_t AliCFTaskForDStarAnalysis::EvaluateIfD0toKpi(AliAODMCParticle* neutralDau
   
   Bool_t isHadronic = kFALSE;
   
-  Int_t daughterD00 = neutralDaugh->GetDaughter(0);
-  Int_t daughterD01 = neutralDaugh->GetDaughter(1);
+  Int_t daughterD00 = neutralDaugh->GetDaughterLabel(0);
+  Int_t daughterD01 = neutralDaugh->GetDaughterLabel(1);
   
   AliDebug(2, Form("daughter0 = %d and daughter1 = %d",daughterD00,daughterD01));
   if (daughterD00 == 0 || daughterD01 == 0) {

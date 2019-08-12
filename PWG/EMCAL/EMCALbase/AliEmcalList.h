@@ -18,9 +18,9 @@
 //
 
 class TH1;
-class TList;
 
 #include "TList.h"
+#include "TString.h"
 
 class AliEmcalList : public TList {
 
@@ -30,18 +30,23 @@ public:
   Long64_t                    Merge(TCollection *hlist);
   void                        SetUseScaling(Bool_t val) {fUseScaling = val;}
   Bool_t                      IsUseScaling() const { return fUseScaling; }
+  void                        SetNameXsec(const char *name) { fNameXsec = name; }
+  void                        SetNameTrials(const char *name) { fNameNTrials = name; }
 
 private:
   // ####### Helper functions
   void                        ScaleAllHistograms(TCollection *hlist, Double_t scalingFactor);
-  Double_t                    GetScalingFactor(TH1* xsection, TH1* ntrials);
-  Bool_t                      IsLastMergeLevel(TCollection* collection);
-  Int_t                       GetFilledBinNumber(TH1* hist);
+  Double_t                    GetScalingFactor(const TH1* xsection, const TH1* ntrials) const;
+  Bool_t                      IsLastMergeLevel(const TCollection* collection) const;
+  Int_t                       GetFilledBinNumber(const TH1* hist) const;
+  Bool_t                      IsScalingSupported(const TObject *scaleobject) const;
   
   Bool_t                      fUseScaling;                    ///< if true, scaling will be done. if false AliEmcalList simplifies to TList
+  TString                     fNameXsec;                      ///< Name of the cross section histogram
+  TString                     fNameNTrials;                   ///< Name of the histogram with the number of trials
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalList, 1);
+  ClassDef(AliEmcalList, 2);
   /// \endcond
 };
 

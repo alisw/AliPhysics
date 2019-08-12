@@ -34,6 +34,7 @@
 #include "AliAODVertex.h"
 #include "AliKFVertex.h"
 #include "AliKFParticle.h"
+#include "TObjArray.h"
 
 using std::cout;
 using std::endl;
@@ -362,6 +363,41 @@ void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int
 
   return;
 }
+
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpi::PreSelect(TObjArray aodTracks){
+
+  if(!fUsePreselect)return 3;
+  Int_t retVal=3;
+  AliAODTrack *track0 = (AliAODTrack*)aodTracks.At(0);
+  AliAODTrack *track1 = (AliAODTrack*)aodTracks.At(1); 
+
+  // calculate pt
+  Double_t px0=track0->Px();
+  Double_t px1=track1->Px();
+
+  Double_t py0=track0->Py();
+  Double_t py1=track1->Py();
+
+  Double_t ptD=TMath::Sqrt((px0+px1)*(px0+px1)+(py0+py1)*(py0+py1));
+  
+  if(ptD<fMinPtCand) return 0;
+  if(ptD>fMaxPtCand) return 0;
+  Int_t ptbin=PtBin(ptD);
+  if (ptbin==-1) {
+    return 0;
+  }
+  Float_t xy[2],z[2];
+  track0->GetImpactParameters(xy[0],z[0]);
+  track1->GetImpactParameters(xy[1],z[1]);
+  if(xy[0]*xy[1] > fCutsRD[GetGlobalIndex(7,ptbin)])return 0; 
+
+  retVal=IsSelectedPID(ptD,aodTracks);
+
+
+  return retVal;
+}
+
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod) {
   //
@@ -379,7 +415,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   }
 
   if(!fCutsRD){
-    cout<<"Cut matrice not inizialized. Exit..."<<endl;
+    cout<<"Cut matrix not inizialized. Exit..."<<endl;
     return 0;
   }
   //PrintAll();
@@ -824,9 +860,23 @@ Bool_t AliRDHFCutsD0toKpi::IsInFiducialAcceptance(Double_t pt, Double_t y) const
 
   return kTRUE;
 }
+
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d) 
 {
+  if(!fUsePID) return 3;
+  if(fDefaultPID) return IsSelectedPIDdefault(d);
+  if (fCombPID) return IsSelectedCombPID(d); //to use Bayesian method if applicable
+ 
+  TObjArray aodTracks(2);
+  aodTracks.AddAt(d->GetDaughter(0),0);
+  aodTracks.AddAt(d->GetDaughter(1),1);
+  Double_t pt=d->Pt();
+  return IsSelectedPID(pt,aodTracks);
+}
+
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpi::IsSelectedPID(Double_t pt, TObjArray aodTracks){
   // ############################################################
   //
   // Apply PID selection
@@ -834,9 +884,6 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
   //
   // ############################################################
 
-  if(!fUsePID) return 3;
-  if(fDefaultPID) return IsSelectedPIDdefault(d);
-  if (fCombPID) return IsSelectedCombPID(d); //to use Bayesian method if applicable
   fWhyRejection=0;
   Int_t isD0D0barPID[2]={1,2};
   Int_t combinedPID[2][2];// CONVENTION: [daught][isK,IsPi]; [0][0]=(prong 1, isK)=value [0][1]=(prong 1, isPi)=value; 
@@ -854,12 +901,12 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
   Bool_t checkPIDInfo[2]={kTRUE,kTRUE};
   Double_t sigma_tmp[3]={fPidHF->GetSigma(0),fPidHF->GetSigma(1),fPidHF->GetSigma(2)};
   Bool_t isTOFused=fPidHF->GetTOF(),isCompat=fPidHF->GetCompat();
-  AliAODTrack *aodtrack1=(AliAODTrack*)d->GetDaughter(0);
-  AliAODTrack *aodtrack2=(AliAODTrack*)d->GetDaughter(1);
+  AliAODTrack *aodtrack1=(AliAODTrack*)aodTracks.At(0);
+  AliAODTrack *aodtrack2=(AliAODTrack*)aodTracks.At(1);
   Short_t relativeSign = aodtrack1->Charge() * aodtrack2->Charge();
   for(Int_t daught=0;daught<2;daught++){
     //Loop con prongs
-    AliAODTrack *aodtrack=(AliAODTrack*)d->GetDaughter(daught);
+    AliAODTrack *aodtrack=(AliAODTrack*)aodTracks.At(daught);
     if(fPidHF->IsTOFPiKexcluded(aodtrack,5.)) return 0; 
 
     if(!(fPidHF->CheckStatus(aodtrack,"TPC")) && !(fPidHF->CheckStatus(aodtrack,"TOF"))) {
@@ -906,7 +953,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
       else isD0D0barPID[1]=0;// not a D0bar if pi+ or if K+ excluded
     }
 
-    if(fLowPt && d->Pt()<fPtLowPID){
+    if(fLowPt && pt<fPtLowPID){
       Double_t sigmaTPC[3]={3.,2.,0.};
       fPidHF->SetSigmaForTPC(sigmaTPC);
       // identify kaon
@@ -953,7 +1000,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
     return 0;
   }
 
-  if(fLowPt && d->Pt()<fPtLowPID){    
+  if(fLowPt && pt<fPtLowPID){    
     if(combinedPID[0][0]<=0&&combinedPID[1][0]<=0){
       fWhyRejection=32;// reject cases where the Kaon is not identified
       fPidHF->SetSigmaForTPC(sigma_tmp);
@@ -969,6 +1016,14 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsD0toKpi::IsSelectedPIDdefault(AliAODRecoDecayHF* d) 
 {
+
+  TObjArray aodTracks(2);
+  aodTracks.AddAt(d->GetDaughter(0),0);
+  aodTracks.AddAt(d->GetDaughter(1),1);
+  Double_t pt=d->Pt();
+  return IsSelectedPIDdefault(pt,aodTracks); 
+}
+Int_t AliRDHFCutsD0toKpi::IsSelectedPIDdefault(Double_t pt, TObjArray aodTracks) {
   // ############################################################
   //
   // Apply PID selection
@@ -1033,7 +1088,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPIDdefault(AliAODRecoDecayHF* d)
 
     // ########### Step 0- CHECKING minimal PID "ACCEPTANCE" ####################
 
-    AliAODTrack *aodtrack=(AliAODTrack*)d->GetDaughter(daught); 
+    AliAODTrack *aodtrack=(AliAODTrack*)aodTracks.At(daught); 
 
     if(!(aodtrack->GetStatus()&AliESDtrack::kTPCrefit)){
       fWhyRejection=26;
@@ -1137,7 +1192,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPIDdefault(AliAODRecoDecayHF* d)
     // ##########  ALSO DIFFERENT TPC PID REQUEST FOR LOW pt D0: request of K identification      ###############################
     // ########## more tolerant criteria for single particle ID-> more selective criteria for D0   ##############################
     // ###############                     NOT OPTIMIZED YET                                  ###################################
-    if(d->Pt()<2.){
+    if(pt<2.){
       isKaonPionTPC[daught][0]=0;
       isKaonPionTPC[daught][1]=0;
       AliAODPid *pidObj = aodtrack->GetDetPid();
@@ -1173,7 +1228,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPIDdefault(AliAODRecoDecayHF* d)
     fWhyRejection=28;// reject cases in which no PID info is available  
     return 0;
   }
-  if(d->Pt()<2.){
+  if(pt<2.){
     // request of K identification at low D0 pt
     combinedPID[0][0]=0;
     combinedPID[0][1]=0;
@@ -1417,7 +1472,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
 
   SetLowPt(kFALSE);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1549,7 +1604,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010vsMult() {
   //activate pileup rejection (for pp)
   SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1675,7 +1730,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2011_276TeV() {
   SetUseSpecialCuts(kTRUE);
   SetMaximumPtSpecialCuts(2.);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1809,7 +1864,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   SetUsePID(kTRUE);
   SetUseDefaultPID(kFALSE);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1941,7 +1996,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010Peripherals() {
 
   SetLowPt(kTRUE,2.);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1981,10 +2036,17 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
 
   if (!fUsePID || !d) return 3;
 
-
+  TObjArray aodTracks(2);
+  aodTracks.AddAt(d->GetDaughter(0),0);
+  aodTracks.AddAt(d->GetDaughter(1),1);
+  Double_t pt=d->Pt();
+  return IsSelectedCombPID(aodTracks); 
+}
+Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(TObjArray aodTracks){
+  
   if (fBayesianStrategy == kBayesWeightNoFilter) {
     //WeightNoFilter: Accept all particles (no PID cut) but fill mass histos with weights in task
-    CalculateBayesianWeights(d);
+    CalculateBayesianWeights(aodTracks);
     return 3;
   }
 
@@ -1997,7 +2059,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
   //Bayesian methods used here check for ID of kaon, and whether it is positive or negative.
 
   Bool_t checkPIDInfo[2] = {kTRUE, kTRUE};
-  AliAODTrack *aodtrack[2] = {(AliAODTrack*)d->GetDaughter(0), (AliAODTrack*)d->GetDaughter(1)};
+  AliAODTrack *aodtrack[2] = {(AliAODTrack*)aodTracks.At(0), (AliAODTrack*)aodTracks.At(1)};
 
   if ((aodtrack[0]->Charge()*aodtrack[1]->Charge()) != -1) {
     return 0;  //reject if charges not opposite
@@ -2025,7 +2087,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
     return 0;      //Reject if both daughters lack both TPC and TOF info
   }
 
-  CalculateBayesianWeights(d);        //Calculates all Bayesian probabilities for both positive and negative tracks
+  CalculateBayesianWeights(aodTracks);        //Calculates all Bayesian probabilities for both positive and negative tracks
   //      Double_t prob0[AliPID::kSPECIES];
   //      fPidHF->GetPidCombined()->ComputeProbabilities(aodtrack[daught], fPidHF->GetPidResponse(), prob0);
   ///Three possible Bayesian probability cuts: Picked using SetBayesianCondition(int).
@@ -2147,11 +2209,19 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedCombPID(AliAODRecoDecayHF* d)
 }
 
 //---------------------------------------------------------------------------
-void AliRDHFCutsD0toKpi::CalculateBayesianWeights(AliAODRecoDecayHF* d)
+void AliRDHFCutsD0toKpi::CalculateBayesianWeights(AliAODRecoDecayHF* d){
+
+  TObjArray aodTracks(2);
+  aodTracks.AddAt(d->GetDaughter(0),0);
+  aodTracks.AddAt(d->GetDaughter(1),1);
+  CalculateBayesianWeights(aodTracks);
+}
+//---------------------------------------------------------------------------
+void AliRDHFCutsD0toKpi::CalculateBayesianWeights(TObjArray aodTracks)
 {
   //Function to compute weights for Bayesian method
 
-  AliAODTrack *aodtrack[2] = {(AliAODTrack*)d->GetDaughter(0), (AliAODTrack*)d->GetDaughter(1)};
+  AliAODTrack *aodtrack[2] = {(AliAODTrack*)aodTracks.At(0), (AliAODTrack*)aodTracks.At(1)};
   if ((aodtrack[0]->Charge() * aodtrack[1]->Charge()) != -1) {
     return;  //Reject if charges do not oppose
   }

@@ -2403,8 +2403,8 @@ AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::Analy
 
   if (part->GetNDaughters() == 2) {
 
-    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(0)));
-    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(1)));
+    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(0)));
+    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(1)));
 
     if (!d1 || !d2) {
       return decay;
@@ -3652,7 +3652,7 @@ void AliAnalysisTaskDmesonJets::FillPartonLevelHistograms()
 
     Bool_t lastInPartonShower = kTRUE;
     Bool_t hadronDaughter = kFALSE;
-    for (Int_t daughterIndex = part.second->GetFirstDaughter(); daughterIndex <= part.second->GetLastDaughter(); daughterIndex++){
+    for (Int_t daughterIndex = part.second->GetDaughterFirst(); daughterIndex <= part.second->GetDaughterLast(); daughterIndex++){
       if (daughterIndex < 0) {
         AliDebugStream(5) << "Could not find daughter index!" << std::endl;
         continue;
@@ -3674,13 +3674,14 @@ void AliAnalysisTaskDmesonJets::FillPartonLevelHistograms()
       }
 
       AliDebugStream(5) << "Found daughter " << daughterIndex <<
-          " with pdg=" << daughterPdgCode <<
-          ", px=" << daughter->Px() <<
-          ", py=" << daughter->Py() <<
-          ", pz=" << daughter->Pz() <<
-          std::endl;
+        " with pdg=" << daughterPdgCode <<
+        ", px=" << daughter->Px() <<
+        ", py=" << daughter->Py() <<
+        ", pz=" << daughter->Pz() <<
+        std::endl;
+      // Codes between 81 and 100 are for internal MC code use, they may be intermediate states used e.g. in hadronizaion models
       if (daughterPdgCode == PdgCode) lastInPartonShower = kFALSE; // this parton is not the last parton in the shower
-      if (TMath::Abs(daughterPdgCode) >= 111) hadronDaughter = kTRUE;
+      if (TMath::Abs(daughterPdgCode) >= 111 || (daughterPdgCode >= 81 && daughterPdgCode <= 100)) hadronDaughter = kTRUE;
     }
     if (hadronDaughter) {
       AliDebugStream(5) << "This particle has at least a hadron among its daughters!" << std::endl;

@@ -36,6 +36,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/TRD/info
   )
 
 # Sources as introduced by the authors
@@ -58,6 +59,8 @@ set ( SRCS1
   AliTrackComparisonESD.cxx
   AliOfflineTrigger.cxx
 		AliMCTreeTools.cxx
+	AliPIDtools.cxx	
+	AliESDtools.cxx
   )
 #file ( GLOB SRCS2 "global/*.cxx" )
 set ( SRCS2
@@ -68,8 +71,11 @@ set ( SRCS2
   global/AliAnalysisTaskCheckESDTracks.cxx
   global/AliAnalysisTaskCheckAODTracks.cxx
   global/AliAnalysisTaskCheckGenKine.cxx
+  global/AliAnalysisTaskCountEvents.cxx
   global/AliAnalysisTaskTrackingEffPID.cxx
   global/AliGlobalFBFqa.cxx
+  global/AliAnalysisTaskTrackRefsChecksMultipleSpecies.cxx
+  global/AliAnalysisTaskTrackRefsChecks.cxx
   )
 #file ( GLOB SRCS3 "cosmic/*.cxx" )
 set ( SRCS3
@@ -386,18 +392,15 @@ install(DIRECTORY benchmark DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
 install(DIRECTORY EvTrkSelection/macros DESTINATION PWGPP/EvTrkSelection FILES_MATCHING PATTERN "*.C")
 install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTaskForAutomaticQA.C
+	      EvTrkSelection/macros/main_AddSingleTrackEfficiencyTaskForAutomaticQA.C
 	      DESTINATION PWGPP/EvTrkSelection)
-install(FILES CalibMacros/CPass0/LoadLibraries.C
-	      CalibMacros/CPass0/ConfigCalibTrain.C
-	      CalibMacros/CPass0/AddTaskTPCCalib.C
+install(FILES CalibMacros/CPass0/AddTaskTPCCalib.C
 	      CalibMacros/CPass0/AddTOFAnalysisTaskCalibPass0.C
 	      CalibMacros/CPass0/AddTaskT0Calib.C
 	      CalibMacros/CPass0/AddTaskMeanVertexCalib.C
 	      CalibMacros/CPass0/AddTaskSDDCalib.C
 	      DESTINATION PWGPP/CalibMacros/CPass0)
-install(FILES CalibMacros/CPass1/LoadLibraries.C
-	      CalibMacros/CPass1/ConfigCalibTrain.C
-	      CalibMacros/CPass1/AddTaskTPCCalib.C
+install(FILES CalibMacros/CPass1/AddTaskTPCCalib.C
 	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibPass0.C
 	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibTree.C
 	      CalibMacros/CPass1/AddTaskT0Calib.C

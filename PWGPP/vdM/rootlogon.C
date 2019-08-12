@@ -7,4 +7,5 @@
   gROOT->LoadMacro("AliVdMScanData.cxx+");
   gROOT->LoadMacro("proc.C+");
   gROOT->LoadMacro("proc_pileup.C+");
+  gROOT->LoadMacro("proc_bkgd.C+");
 }

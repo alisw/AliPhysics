@@ -74,55 +74,63 @@ void AliTaskCDBconnect::InitGRP()
 {
   // Initialize geometry and mag. field
   AliCDBManager *cdb = AliCDBManager::Instance();
-
+  
   if (!cdb->IsDefaultStorageSet()) {
-    //  
-    // automatic setting of year
-    Int_t year = -1;
-    if      (fRun<139674) year = 2010;
-    else if (fRun<170718) year = 2011;
-    else if (fRun<194479) year = 2012;
-    else if (fRun<199999) year = 2013;
-    else if (fRun<208504) year = 2014;
-    else if (fRun<247170) year = 2015;
-    else if (fRun<267255) year = 2016;
-    else if (fRun<282901) year = 2017;
+    if (gSystem->AccessPathName("OCDB.root",kFileExists)==0) {
+      cdb->SetDefaultStorage("local://");
+      cdb->SetRaw(kFALSE);
+      cdb->SetSnapshotMode("OCDB.root");
+    }
     else {
-      year = 2018;
-      TDatime today;
-      if (today.GetYear()!=year) AliErrorF("Adjust CDB connect, we are now in %d!",today.GetYear());
-    }
-    //
-    Bool_t useCVMFS = kFALSE;
-    TString inpStor = fStorage.Strip(TString::kTrailing,'/');
-    if (inpStor == "cvmfs:") {
-      fStorage = Form("local:///cvmfs/alice.cern.ch/calibration/data/%4d/OCDB",year);
-      useCVMFS = kTRUE;
-    }
-    else if (inpStor.BeginsWith("local:///cvmfs") && inpStor.EndsWith("/OCDB")) {
-      TString tmp = inpStor;
-      tmp.ReplaceAll("local://","");
-      TString strYold = tmp(TRegexp("/[0-9][0-9][0-9][0-9]/OCDB"));
-      TString strYnew = Form("/%4d/OCDB",year);
-      if (strYold.IsNull()) tmp += strYnew;
-      else tmp.ReplaceAll(strYold,strYnew);
-      useCVMFS = kTRUE;
-      fStorage = Form("local://%s", tmp.Data());
-    }
-    // check if cvfms is linked    
-    if (useCVMFS) {
-      TString cvmfspath = fStorage;
-      cvmfspath = cvmfspath.ReplaceAll("local://", "");
-      if(gSystem->AccessPathName(cvmfspath.Data(),kFileExists)) {
-	if (fFallBackToRaw) {
-	  AliErrorF("could not access %s, switching to raw://",fStorage.Data());
-	  fStorage = "raw://";
-	}
-	else AliFatalF("could not access %s, fallback to raw:// disabled",fStorage.Data());
+      //  
+      // automatic setting of year
+      Int_t year = -1;
+      if      (fRun<139674) year = 2010;
+      else if (fRun<170718) year = 2011;
+      else if (fRun<194479) year = 2012;
+      else if (fRun<199999) year = 2013;
+      else if (fRun<208504) year = 2014;
+      else if (fRun<247170) year = 2015;
+      else if (fRun<267255) year = 2016;
+      else if (fRun<282901) year = 2017;
+      else {
+	year = 2018;
+	// no more updates needed
+	// TDatime today;
+	// if (today.GetYear()!=year) AliErrorF("Adjust CDB connect, we are now in %d!",today.GetYear());
       }
+      //
+      Bool_t useCVMFS = kFALSE;
+      TString inpStor = fStorage.Strip(TString::kTrailing,'/');
+      if (inpStor == "cvmfs:") {
+	fStorage = Form("local:///cvmfs/alice.cern.ch/calibration/data/%4d/OCDB",year);
+	useCVMFS = kTRUE;
+      }
+      else if (inpStor.BeginsWith("local:///cvmfs") && inpStor.EndsWith("/OCDB")) {
+	TString tmp = inpStor;
+	tmp.ReplaceAll("local://","");
+	TString strYold = tmp(TRegexp("/[0-9][0-9][0-9][0-9]/OCDB"));
+	TString strYnew = Form("/%4d/OCDB",year);
+	if (strYold.IsNull()) tmp += strYnew;
+	else tmp.ReplaceAll(strYold,strYnew);
+	useCVMFS = kTRUE;
+	fStorage = Form("local://%s", tmp.Data());
+      }
+      // check if cvfms is linked    
+      if (useCVMFS) {
+	TString cvmfspath = fStorage;
+	cvmfspath = cvmfspath.ReplaceAll("local://", "");
+	if(gSystem->AccessPathName(cvmfspath.Data(),kFileExists)) {
+	  if (fFallBackToRaw) {
+	    AliErrorF("could not access %s, switching to raw://",fStorage.Data());
+	    fStorage = "raw://";
+	  }
+	  else AliFatalF("could not access %s, fallback to raw:// disabled",fStorage.Data());
+	}
+      }
+      AliInfoF("Setting default storage to %s",fStorage.Data());
+      cdb->SetDefaultStorage(fStorage);
     }
-    AliInfoF("Setting default storage to %s",fStorage.Data());
-    cdb->SetDefaultStorage(fStorage);
     //
     // set specific storages
     for (Int_t i = 0; i < fSpecCDBUri.GetEntriesFast(); i++) {
@@ -143,7 +151,6 @@ void AliTaskCDBconnect::InitGRP()
     }
     fLock = cdb->SetLock(kTRUE,fLock);
   }
-  if (gSystem->AccessPathName("OCDB.root",kFileExists)==0) cdb->SetSnapshotMode("OCDB.root"); 
   //
   if (!fGRPManager) fGRPManager = new AliGRPManager();
   AliInfo("AliCDBconnect: #### Loading GRP to init B-field...");
@@ -221,4 +228,23 @@ void AliTaskCDBconnect::SetSpecificStorage(const char* calibType, const char* db
   if (subVersion<0) subVersion = -1;
   nmpath->SetUniqueID((UInt_t(version+1)<<16)+UInt_t(subVersion+1));
   fSpecCDBUri.AddLast(nmpath);
+}
+
+//______________________________________________________________________________
+AliTaskCDBconnect* AliTaskCDBconnect::AddTaskCDBconnect(const char* path/*="raw://"*/, Int_t run) {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskCDBconnect", "No analysis manager to connect to.");
+    return NULL;
+  }
+  AliTaskCDBconnect *task= new AliTaskCDBconnect("CDBconnect", path, run);
+  mgr->AddTask(task);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+  mgr->ConnectInput(task,  0, cinput1);
+  return task;
+}
+
+//______________________________________________________________________________
+AliTaskCDBconnect* AliTaskCDBconnect::AddTaskCDBconnect() {
+  return AliTaskCDBconnect::AddTaskCDBconnect("cvmfs://");
 }

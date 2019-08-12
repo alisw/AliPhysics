@@ -83,7 +83,7 @@ AliAnalysisTaskJetV3* AddTaskJetV3(
       clusterCont = jetTask->AddClusterContainer(nclusters);
       jetTask->SetAnalysisType(AliAnalysisTaskJetV3::kFull);
   }
-  AliJetContainer* jetCont = jetTask->AddJetContainer(jetType, AliJetContainer::antikt_algorithm, rscheme, jetradius, acceptance, "Jet");
+/*  AliJetContainer* jetCont = jetTask->AddJetContainer(jetType, AliJetContainer::antikt_algorithm, rscheme, jetradius, acceptance, "Jet");
   if(jetCont) {
 //      jetCont->SetName("Jets");
       jetCont->SetPercAreaCut(jetareacut);
@@ -93,7 +93,7 @@ AliAnalysisTaskJetV3* AddTaskJetV3(
       if(clusterCont)   jetCont->ConnectClusterContainer(clusterCont);
       jetCont->PrintCuts();
   }
-
+*/
   // task specific setters
   jetTask->SetFillQAHistograms(fillQA);
   jetTask->SetModulationFitType(fitType);

@@ -88,6 +88,8 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack() :
   fMCMotherPrimary(kFALSE),
   fMCMotherPdgCode(0),
   fMCMotherLabel(0),
+  fMCPrimaryPdgCode(0),
+  fMCPrimaryLabel(0),
   fMCTOFMatchPrimary(kFALSE),
   fMCTOFMatchPdgCode(0),
   fMCTOFMatchLevel(-1),
@@ -100,9 +102,13 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack() :
   nSigmaPionTPC(0.),
   nSigmaKaonTPC(0.),
   nSigmaProtonTPC(0.),
+  nSigmaElectronTPC(0.),
+  nSigmaMuonTPC(0.),
   nSigmaPionTOF(0.),
   nSigmaKaonTOF(0.),
   nSigmaProtonTOF(0.),
+  nSigmaElectronTOF(0.),
+  nSigmaMuonTOF(0.),
   fTPCchi2(0.),
   fITSFakeFlag(kFALSE),
   fTrackCutFlag(0),
@@ -172,6 +178,8 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack(const AliAnalysisPIDTrack &source) :
   fMCMotherPrimary(source.fMCMotherPrimary),
   fMCMotherPdgCode(source.fMCMotherPdgCode),
   fMCMotherLabel(source.fMCMotherLabel),
+  fMCPrimaryPdgCode(source.fMCPrimaryPdgCode),
+  fMCPrimaryLabel(source.fMCPrimaryLabel),
   fMCTOFMatchPrimary(source.fMCTOFMatchPrimary),
   fMCTOFMatchPdgCode(source.fMCTOFMatchPdgCode),
   fMCTOFMatchLevel(source.fMCTOFMatchLevel),
@@ -184,9 +192,13 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack(const AliAnalysisPIDTrack &source) :
   nSigmaPionTPC(source.nSigmaPionTPC),
   nSigmaKaonTPC(source.nSigmaKaonTPC),
   nSigmaProtonTPC(source.nSigmaProtonTPC),
+  nSigmaElectronTPC(source.nSigmaElectronTPC),
+  nSigmaMuonTPC(source.nSigmaMuonTPC),
   nSigmaPionTOF(source.nSigmaPionTOF),
   nSigmaKaonTOF(source.nSigmaKaonTOF),
   nSigmaProtonTOF(source.nSigmaProtonTOF),
+  nSigmaElectronTOF(source.nSigmaElectronTOF),
+  nSigmaMuonTOF(source.nSigmaMuonTOF),
   fTPCchi2(source.fTPCchi2),
   fITSFakeFlag(source.fITSFakeFlag),
   fTrackCutFlag(source.fTrackCutFlag),
@@ -246,6 +258,8 @@ AliAnalysisPIDTrack::operator=(const AliAnalysisPIDTrack &source)
   fMCMotherPrimary = source.fMCMotherPrimary;
   fMCMotherPdgCode = source.fMCMotherPdgCode;
   fMCMotherLabel = source.fMCMotherLabel;
+  fMCPrimaryPdgCode = source.fMCPrimaryPdgCode;
+  fMCPrimaryLabel = source.fMCPrimaryLabel;
   fMCTOFMatchPrimary = source.fMCTOFMatchPrimary;
   fMCTOFMatchPdgCode = source.fMCTOFMatchPdgCode;
   fMCTOFMatchLevel = source.fMCTOFMatchLevel;
@@ -258,9 +272,13 @@ AliAnalysisPIDTrack::operator=(const AliAnalysisPIDTrack &source)
   nSigmaPionTPC = source.nSigmaPionTPC;
   nSigmaKaonTPC = source.nSigmaKaonTPC;
   nSigmaProtonTPC = source.nSigmaProtonTPC;
+  nSigmaElectronTPC = source.nSigmaElectronTPC;
+  nSigmaMuonTPC = source.nSigmaMuonTPC;
   nSigmaPionTOF = source.nSigmaPionTOF;
   nSigmaKaonTOF = source.nSigmaKaonTOF;
   nSigmaProtonTOF = source.nSigmaProtonTOF;
+  nSigmaElectronTOF = source.nSigmaElectronTOF;
+  nSigmaMuonTOF = source.nSigmaMuonTOF;
   fTPCchi2 = source.fTPCchi2;
   fITSFakeFlag = source.fITSFakeFlag;
   fTrackCutFlag = source.fTrackCutFlag;
@@ -319,6 +337,8 @@ AliAnalysisPIDTrack::Reset()
   fMCMotherPrimary = kFALSE;
   fMCMotherPdgCode = 0;
   fMCMotherLabel = 0;
+  fMCPrimaryPdgCode = 0;
+  fMCPrimaryLabel = 0;
   fMCTOFMatchPrimary = kFALSE;
   fMCTOFMatchPdgCode = 0;
   fMCTOFMatchLevel = -1;
@@ -331,9 +351,13 @@ AliAnalysisPIDTrack::Reset()
   nSigmaPionTPC = 0.;
   nSigmaKaonTPC = 0;
   nSigmaProtonTPC = 0;
+  nSigmaElectronTPC = 0;
+  nSigmaMuonTPC = 0;
   nSigmaPionTOF = 0;
   nSigmaKaonTOF = 0;
   nSigmaProtonTOF = 0;
+  nSigmaElectronTOF = 0;
+  nSigmaMuonTOF = 0;
   fTPCchi2 = 0.;
   fITSFakeFlag = kFALSE;
   fTrackCutFlag = 0;
@@ -371,9 +395,13 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDRespo
   nSigmaPionTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kPion);
   nSigmaKaonTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kKaon);
   nSigmaProtonTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kProton);
+  nSigmaElectronTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kElectron);
+  nSigmaMuonTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kMuon);
   nSigmaPionTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kPion);
   nSigmaKaonTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kKaon);
   nSigmaProtonTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kProton);
+  nSigmaElectronTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kElectron);
+  nSigmaMuonTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kMuon);
   Double_t timei[5];
   track->GetIntegratedTimes(timei);
   for (Int_t i = 0; i < 5; i++) fTOFExpTime[i] = timei[i];
@@ -382,17 +410,6 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDRespo
   fTOFDeltaZ = track->GetTOFsignalDz();
   track->GetTOFLabel(fTOFLabel);
   fTrackCutFlag = TrackCutFlag;
-  //fHMPIDmomentum = track->GetOuterHmpParam() ? track->GetOuterHmpParam()->P() : 0.;
-  /* HMPID signal with cuts */
-  /*Float_t xPc=0., yPc=0., xMip=0., yMip=0., thetaTrk=0., phiTrk=0.;
-  Int_t nPhot=0, qMip=0;
-  track->GetHMPIDtrk(xPc,yPc,thetaTrk,phiTrk);
-  track->GetHMPIDmip(xMip,yMip,qMip,nPhot);
-  Float_t dist = TMath::Sqrt((xPc-xMip)*(xPc-xMip) + (yPc-yMip)*(yPc-yMip));    
-  if (dist < 0.7 && nPhot < 30 && qMip > 100)
-    fHMPIDsignal = track->GetHMPIDsignal();
-  else
-    fHMPIDsignal = 0.;*/
   /* info from track references */
   fMCTOFTime = 0.;
   fMCTOFLength = 0.;
@@ -401,17 +418,15 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDRespo
     TClonesArray *arrayTR;
     AliTrackReference *trackRef;
     mcevent->GetParticleAndTR(fTOFLabel[0], particle, arrayTR);
-    if(!arrayTR) {
-      AliFatal("AddAnalysisTaskTPCTOFPID needs AliTrackReference!");
-      return;
-    };
-    for (Int_t itr = 0; itr < arrayTR->GetEntries(); itr++) {
-      trackRef = (AliTrackReference *)arrayTR->At(itr);
-      if (!trackRef || trackRef->DetectorId() != AliTrackReference::kTOF) continue;
-      fMCTOFTime = trackRef->GetTime() * 1.e12; /* s -> ps */
-      fMCTOFLength = trackRef->GetLength();
-      /* break as soon as we get it */
-      break;
+    if(arrayTR) {
+      for (Int_t itr = 0; itr < arrayTR->GetEntries(); itr++) {
+	trackRef = (AliTrackReference *)arrayTR->At(itr);
+	if (!trackRef || trackRef->DetectorId() != AliTrackReference::kTOF) continue;
+	fMCTOFTime = trackRef->GetTime() * 1.e12; /* s -> ps */
+	fMCTOFLength = trackRef->GetLength();
+	/* break as soon as we get it */
+	break;
+      }
     }
   }
   /* info from stack */
@@ -419,6 +434,7 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDRespo
   fMCPdgCode = 0;
   fMCMotherPrimary = kFALSE;
   fMCMotherPdgCode = 0;
+  fMCPrimaryPdgCode = 0;
   fMCSecondaryWeak = kFALSE;
   fMCSecondaryMaterial = kFALSE;
   if (mcevent) {
@@ -443,7 +459,26 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDRespo
       fMCMotherPdgCode = particlem->GetPdgCode();
       fMCMotherLabel = indexm;
     }
-
+    if (fMCPrimary) {
+      fMCPrimaryPdgCode = fMCPdgCode;
+      fMCPrimaryLabel = fLabel;
+    } else {
+      Bool_t primary = kFALSE;
+      while (!primary) {
+	if (indexm < 0) {
+	  fMCPrimaryPdgCode = 0;
+	  break;
+	}
+	TParticle *particlem = mcevent->Particle(indexm);
+	primary = mcevent->IsPhysicalPrimary(indexm);
+	if (primary) {
+	  fMCPrimaryPdgCode = particlem->GetPdgCode();
+	  fMCPrimaryLabel = indexm;
+	} else
+	  indexm = particlem->GetFirstMother();
+      }
+    }
+    
     /* check TOF match */
     fMCTOFMatchPrimary = kFALSE;
     fMCTOFMatchPdgCode = 0;

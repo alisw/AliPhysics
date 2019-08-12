@@ -1,8 +1,9 @@
 #!/bin/bash
 
-declare macroPP="${HFCJlocalCodeDir}/FitSystematicsAverage_pp13TeV.C"
+declare macroPP="${HFCJlocalCodeDir}/FitSystematicsAverage_pp.C"
 declare macroPPb="${HFCJlocalCodeDir}/FitSystematicsAverage_pPb.C"
 declare macroPPb2016="${HFCJlocalCodeDir}/FitSystematicsAverage_pPb2016.C"
+declare macroPP2017="${HFCJlocalCodeDir}/FitSystematicsAverage_pp2017.C"
 declare -i system=$1
 declare -i refl=$2
 declare -i avopt=$3
@@ -12,6 +13,7 @@ declare avstring="Weighted"
 declare -i includev2=$6
 declare saveawayside=$7
 declare doNewPedestalVars=$8
+declare betaTemplDir=$9
 declare -i plotv2sep=1
 declare -i v2had=8
 declare -i v2D=5
@@ -43,7 +45,8 @@ SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
- Systematics_pp_lowpthad(${refl})
+SetBetaDir("${betaTemplDir}")
+Systematics_pp_lowpthad(${refl})
 EOF
 
 root -b &>outFitPPhighpthad.log <<EOF
@@ -52,6 +55,7 @@ SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
 Systematics_pp_highpthad(${refl})
 EOF
 
@@ -61,6 +65,7 @@ SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
 Systematics_pp_integratedpthad(${refl})
 EOF
 
@@ -72,6 +77,7 @@ SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had}),0.01*((Double_t)${v2D}),${plotv2sep})
+SetBetaDir("${betaTemplDir}")
 Systematics_pPb_lowpthad(${refl})
 EOF
 
@@ -82,6 +88,7 @@ SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had}),0.01*((Double_t)${v2D}),${plotv2sep})
+SetBetaDir("${betaTemplDir}")
 Systematics_pPb_highpthad(${refl})
 EOF
 
@@ -92,6 +99,7 @@ SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had}),0.01*((Double_t)${v2D}),${plotv2sep})
+SetBetaDir("${betaTemplDir}")
 Systematics_pPb_integratedpthad(${refl})
 EOF
 
@@ -103,6 +111,7 @@ SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had03to99}),0.01*((Double_t)${v2D3to5}),0.01*((Double_t)${v2D5to8}),0.01*((Double_t)${v2D8to16}),0.01*((Double_t)${v2D16to24}),${plotv2sep})
+SetBetaDir("${betaTemplDir}")
 Systematics_pPb_03to99had(${refl})
 EOF
 
@@ -113,6 +122,7 @@ SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had03to1}),0.01*((Double_t)${v2D3to5}),0.01*((Double_t)${v2D5to8}),0.01*((Double_t)${v2D8to16}),0.01*((Double_t)${v2D16to24}),${plotv2sep})
+SetBetaDir("${betaTemplDir}")
 Systematics_pPb_03to1had(${refl})
 EOF
 
@@ -123,6 +133,7 @@ SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had1to99}),0.01*((Double_t)${v2D3to5}),0.01*((Double_t)${v2D5to8}),0.01*((Double_t)${v2D8to16}),0.01*((Double_t)${v2D16to24}),${plotv2sep})
+SetBetaDir("${betaTemplDir}")
 Systematics_pPb_1to99had(${refl})
 EOF
 
@@ -134,6 +145,7 @@ SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had2to99}),0.01*((Double_t)${v2D3to5}),0.01*((Double_t)${v2D5to8}),0.01*((Double_t)${v2D8to16}),0.01*((Double_t)${v2D16to24}),${plotv2sep})
+SetBetaDir("${betaTemplDir}")
 Systematics_pPb_2to99had(${refl})
 EOF
 
@@ -145,6 +157,7 @@ SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had3to99}),0.01*((Double_t)${v2D3to5}),0.01*((Double_t)${v2D5to8}),0.01*((Double_t)${v2D8to16}),0.01*((Double_t)${v2D16to24}),${plotv2sep})
+SetBetaDir("${betaTemplDir}")
 Systematics_pPb_3to99had(${refl})
 EOF
 
@@ -156,6 +169,7 @@ SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had1to2}),0.01*((Double_t)${v2D3to5}),0.01*((Double_t)${v2D5to8}),0.01*((Double_t)${v2D8to16}),0.01*((Double_t)${v2D16to24}),${plotv2sep})
+SetBetaDir("${betaTemplDir}")
 Systematics_pPb_1to2had(${refl})
 EOF
 
@@ -167,6 +181,78 @@ SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
 SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had2to3}),0.01*((Double_t)${v2D3to5}),0.01*((Double_t)${v2D5to8}),0.01*((Double_t)${v2D8to16}),0.01*((Double_t)${v2D16to24}),${plotv2sep})
+SetBetaDir("${betaTemplDir}")
 Systematics_pPb_2to3had(${refl})
+EOF
+
+elif [ ${system} = 3 ]; then
+    root -b &>outFitPP03to99had.log <<EOF
+.L ${macroPP2017}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
+Systematics_pp_03to99had(${refl})
+EOF
+
+root -b &>outFitPP1to99had.log <<EOF
+.L ${macroPP2017}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
+Systematics_pp_1to99had(${refl})
+EOF
+
+root -b &>outFitPP03to1had.log <<EOF
+.L ${macroPP2017}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
+Systematics_pp_03to1had(${refl})
+EOF
+
+root -b &>outFitPP2to99had.log <<EOF
+.L ${macroPP2017}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
+Systematics_pp_2to99had(${refl})
+EOF
+
+root -b &>outFitPP3to99had.log <<EOF
+.L ${macroPP2017}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
+Systematics_pp_3to99had(${refl})
+EOF
+
+root -b &>outFitPP1to2had.log <<EOF
+.L ${macroPP2017}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
+Systematics_pp_1to2had(${refl})
+EOF
+
+root -b &>outFitPP2to3had.log <<EOF
+.L ${macroPP2017}
+SetInputPath("${inputdir}")
+SetOutputPath("${outputdir}")
+SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
+SetBetaDir("${betaTemplDir}")
+Systematics_pp_2to3had(${refl})
 EOF
 fi

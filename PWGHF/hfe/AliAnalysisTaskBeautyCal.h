@@ -46,13 +46,17 @@ public:
     
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
-    
+ 
+    void SetRefit(Bool_t Refit){fRefit = Refit;};
+   
     void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
 
     void SetITSchi2(Int_t itschi2){fitschi2 = itschi2;};
     void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
     void SetEopMim(Double_t mimEop){fmimEop = mimEop;};
+    void SetMinM20(Double_t mimM20){fmimM20 = mimM20;};
+    void SetMaxM20(Double_t maxM20){fmaxM20 = maxM20;};
 
     void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
     void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
@@ -65,6 +69,8 @@ public:
     
     void SetEpCorr(Int_t Corr){iCorr = Corr;};
 
+    void SetSM(Int_t SelSM){iSelSM = SelSM;};
+
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
     //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec);
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec, Bool_t EmbPi0, Bool_t EmbEta, Double_t weight, Double_t dcaxy);
@@ -72,6 +78,7 @@ public:
     void ElectronAway(Int_t itrack, AliVTrack *track);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
+    Int_t GetSM(AliVCluster *cluster);
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
     void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
     void CheckMCgen(AliAODMCHeader* fMCheader);
@@ -94,6 +101,7 @@ private:
     AliQnCorrectionsManager *fFlowQnVectorMgr; //! new ep
     AliAODMCHeader *fMCheader; 
     AliPIDResponse *fpidResponse; //!pid response
+    AliEMCALGeometry *fEMCALGeo;
     AliCFManager 	   	*fCFM;                  //!Correction Framework Manager
     
     Bool_t      fFlagSparse;// switch to THnspare
@@ -120,17 +128,22 @@ private:
     Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
     
+    Bool_t fRefit;
+  
     Int_t fcentMim; // mim. centrality
     Int_t fcentMax; // max. centrality
     Int_t fitschi2; // max. centrality
     Double_t fmimSig; // max. centrality
     Double_t fmimEop; // max. centrality
+    Double_t fmimM20; // max. centrality
+    Double_t fmaxM20; // max. centrality
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
     Int_t fetarange;  
     Bool_t fEnablePileupRejVZEROTPCout;   
     Int_t fEPana;  
     Int_t iCorr;  
+    Int_t iSelSM;  
 
     Int_t NpureMCproc; // # of process in MC (no GEANT process)
     Int_t NembMCpi0; // # of process in MC (no GEANT process)
@@ -180,6 +193,7 @@ private:
     TH2F        *fHistEopHad2;//!pt vs E/p
     TH2F        *fHistEopTrueMC;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt
+    TH2F        *fM20MC;//!M20 vs pt
     TH2F        *fM02;//!M20 vs pt
     TH2F        *fM20EovP;//!M20 vs E/p
     TH2F        *fM02EovP;//!M20 vs E/p
@@ -252,6 +266,8 @@ private:
 
     TH2D        *fHistResD;
     TH2D        *fHistResB;
+    TH2D        *fHistEffde;
+    TH2D        *fHistEffbe;
     TH1D        *fHistHFEpos;
     TH1D        *fHistHFEneg;
     TH1D        *fHistHFmcCheck;

@@ -66,14 +66,20 @@ def plotPowerpoint(runList, plotDir):
   slide = qa.slides.add_slide(title_slide_layout)
   title = slide.shapes.title
   author = slide.placeholders[1]
-  title.text = str(period) + " QA -- Full Jets"
+  if isPtHard:
+    title.text = str(period) + " MC QA -- Full Jets"
+  else:
+    title.text = str(period) + "QA -- Full Jets"
   author.text = str(qa_author)
   
   # Make a general slide describing analysis details
   slide = qa.slides.add_slide(bullet_slide_layout)
   shapes = slide.shapes
   title_shape = shapes.title
-  title_shape.text = str(period) + " QA -- Full Jets"
+  if isPtHard:
+    title_shape.text = str(period) + " MC QA -- Full Jets"
+  else:
+    title_shape.text = str(period) + " QA -- Full Jets"
   body_shape = shapes.placeholders[1]
   tf = body_shape.text_frame
   tf.text = str(period) +": 5.02 TeV " + str(system)
@@ -129,16 +135,26 @@ def plotPowerpoint(runList, plotDir):
   totalRuns=0
   for run in runList.split():
     inputFile= plotDir + str(run) + "/AnalysisResults.root"
-    f = ROOT.TFile(inputFile)
-    qaTaskName = determineQATaskName("AliAnalysisTaskPWGJEQA", f, isPtHard)
-    #print("Found qaTaskName \"{0}\"".format(qaTaskName))
-    qaList = f.Get(qaTaskName)
-    histNEvent = qaList.FindObject("fHistEventCount")
-    nEvents = histNEvent.GetBinContent(1)
-    totalEvents=totalEvents+nEvents
-    totalRuns=totalRuns+1
-    p = tf.add_paragraph()
-    p.text = str(run)+" with "+str(nEvents)+" Evts "
+    if isPtHard:
+      inputFile= plotDir + str(run) + "/AnalysisResultsFinal.root"
+    #if downloading the file did fail at some point (=zero bytes) you can check this here:
+    size = os.stat(inputFile).st_size
+    #print("size of root file: %s" % size)
+    if size!=0:
+      f = ROOT.TFile(inputFile)
+      qaTaskName = determineQATaskName("AliAnalysisTaskPWGJEQA", f, isPtHard)
+      #print("Found qaTaskName \"{0}\"".format(qaTaskName))
+      qaList = f.Get(qaTaskName)
+      histNEvent = qaList.FindObject("fHistEventCount")
+      nEvents = histNEvent.GetBinContent(1)
+      totalEvents=totalEvents+nEvents
+      totalRuns=totalRuns+1
+      p = tf.add_paragraph()
+      p.text = str(run)+" with "+str(nEvents)+" Evts "
+      qaList.Delete()
+      f.Close()
+    else:
+      print("!!!!!!! Root file for run %s is empty - please check download" % str(run))
   p = tf.add_paragraph()
   p.text = "Total number of used runs period: "+str(totalRuns)
   p = tf.add_paragraph()
@@ -153,9 +169,11 @@ def plotPowerpoint(runList, plotDir):
   #define two different ways of plotting 1->ordered by run numbers 2->ordered by objects that are QAd'
   version=2
   #--------------------------------------------------------------------
-  # Now, do the run-by-run plots (run sorted)
+  # Do the run-by-run plots (run sorted)
   #
   if version==1:
+    if isPtHard:
+      plotPtHardInfo(qa, blank_slide_layout, plotDir, isPbPb, includePHOS)
     for run in runList.split():
       
       if not os.path.exists(plotDir + str(run) + "/QAoutput/EventQA"):
@@ -163,9 +181,11 @@ def plotPowerpoint(runList, plotDir):
         continue
       plotRun(qa, blank_slide_layout, plotDir, isPtHard, isPbPb, isIncludePhos, run, 0)
   #--------------------------------------------------------------------
-  # Now, do the run-by-run plots (object sorted)
+  # Do the run-by-run plots (object sorted)
   #
   if version==2:
+    if isPtHard:
+      plotPtHardInfo(qa, blank_slide_layout, plotDir, isPbPb)
     for object in range(1, 5):
       for run in runList.split():
 
@@ -204,8 +224,66 @@ def plotPowerpoint(runList, plotDir):
 
   #--------------------------------------------------------------------
   # Save the final presentation
-  qa.save(plotDir + period + "_QA.pptx")
-  print("Saved presentation in: " +  plotDir + period + "_QA.pptx")
+  if isPtHard:
+    qa.save(plotDir + period + "_MC_QA.pptx")
+    print("Saved presentation in: " +  plotDir + period + "_MC_QA.pptx")
+  else:
+    qa.save(plotDir + period + "_QA.pptx")
+    print("Saved presentation in: " +  plotDir + period + "_QA.pptx")
+####################################################################################################
+# Make slides a merged or single run, PbPb Data
+####################################################################################################
+def plotPtHardInfo(qa, blank_slide_layout, plotDir, isPbPb):
+
+  # Title
+  titleleft = Inches(2.6)
+  titletop = Inches(0.)
+  titleheight = Inches(0.8)
+  titlewidth = Inches(5.)
+
+  # Slide 0: Plots with pT Hard bins
+  slide = qa.slides.add_slide(blank_slide_layout)
+  txBox = slide.shapes.add_textbox(titleleft, titletop+0.2, titlewidth, titleheight)
+
+  imgWidth = 3.3
+  # columns
+  leftEdge = 0.1
+  rightEdge = 6.6
+  # rows
+  topEdge = 1.5
+  lowEdge = 4.6
+  
+  # Title
+  tf = txBox.text_frame
+  tf.text = "All Runs - pT Hard Bins"
+  tf.fit_text('Calibri', 40)
+
+  #top row
+  img_path = plotDir + "AllRuns/QAoutput/EventQA/hEventReject.png"
+  left = Inches(leftEdge)
+  top = Inches(topEdge)
+  width = Inches(imgWidth)
+  slide.shapes.add_picture(img_path, left, top, width=width)
+
+  img_path = plotDir + "AllRuns/QAoutput/PtHard/hPtHardNEvents.png"
+  left = Inches(rightEdge)
+  top = Inches(topEdge)
+  width = Inches(imgWidth)
+  slide.shapes.add_picture(img_path, left, top, width=width)
+  #bottom row
+  img_path = plotDir + "AllRuns/QAoutput/PtHard/hPtHardScaleFactor.png"
+  if os.path.exists(img_path):
+    left = Inches(leftEdge)
+    top = Inches(lowEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
+  img_path = plotDir + "AllRuns/QAoutput/PtHard/hPtHard.png"
+  left = Inches(rightEdge)
+  top = Inches(lowEdge)
+  width = Inches(imgWidth)
+  slide.shapes.add_picture(img_path, left, top, width=width)
+
 
 ####################################################################################################
 # Make slides a merged or single run, PbPb Data
@@ -264,7 +342,11 @@ def plotTrackSlides(slide, txBox, plotDir, isPtHard, isPbPb, isAllRuns, run):
   # rows
   topEdge = 1.5
   midVertEdge = 2.9
-  lowEdge = 5.1
+  lowEdge = 4.6
+  if isPtHard:
+    topEdge = 0.6
+    lowEdge = 5.2
+  
   
   # Title
   tf = txBox.text_frame
@@ -273,43 +355,109 @@ def plotTrackSlides(slide, txBox, plotDir, isPtHard, isPbPb, isAllRuns, run):
     tf.text = "All Runs -- Tracks"
   tf.fit_text('Calibri', 40)
 
-  img_path = plotDir + str(run) + "/QAoutput/EventQA/hEventReject.png"
-  left = Inches(leftEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackPt.png"
-  left = Inches(midEdge)
-  top = Inches(topEdge-0.5)
-  if isAllRuns:
+  #if it is a Pt hard bin production plot more info on the slides
+  if isPtHard:
+    #top row
+    img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackingEfficiency1D.png"
+    left = Inches(leftEdge)
     top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
 
-  img_path = plotDir + str(run) + "/QAoutput/Tracks/profTrackPtResolution.png"
-  left = Inches(rightEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
+    img_path = plotDir + str(run) + "/QAoutput/PtHard/hPtHard.png"
+    left = Inches(midEdge)
+    top = Inches(topEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
+    img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackPt.png"
+    left = Inches(rightEdge)
+    top = Inches(topEdge-0.5)
+    if isAllRuns:
+      top = Inches(topEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
+    #middle row
+    img_path = plotDir + str(run) + "/QAoutput/Tracks/profTrackPtResolution.png"
+    left = Inches(leftEdge)
+    top = Inches(midVertEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
+    img_path = plotDir + str(run) + "/QAoutput/Tracks/profTrackPtResolutionMC.png"
+    left = Inches(midEdge)
+    top = Inches(midVertEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
   
-  img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackPhi.png"
-  left = Inches(leftEdge)
-  top = Inches(lowEdge-0.5)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
+    img_path = plotDir + str(run) + "/QAoutput/PtHard/hPtHardNEvents.png"
+    left = Inches(rightEdge)
+    top = Inches(midVertEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
+    #lower row
+    img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackPhi.png"
+    left = Inches(leftEdge)
+    top = Inches(lowEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
   
-  img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackEta.png"
-  left = Inches(midEdge)
-  top = Inches(lowEdge-0.5)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
+    img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackEta.png"
+    left = Inches(midEdge)
+    top = Inches(lowEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
   
-  img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackEtaPhi.png"
-  left = Inches(rightEdge)
-  top = Inches(lowEdge-0.5)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
+    if isAllRuns:
+      img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackEtaPhi.png"
+    else:
+      img_path = plotDir + str(run) + "/QAoutput/EventQA/hEventReject.png"
+    left = Inches(rightEdge)
+    top = Inches(lowEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
+  #if it is not a pT hard bin production plot like this:
+  else:
+    img_path = plotDir + str(run) + "/QAoutput/EventQA/hEventReject.png"
+    left = Inches(leftEdge)
+    top = Inches(topEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+  
+    img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackPt.png"
+    left = Inches(midEdge)
+    top = Inches(topEdge-0.5)
+    if isAllRuns:
+      top = Inches(topEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
+    img_path = plotDir + str(run) + "/QAoutput/Tracks/profTrackPtResolution.png"
+    left = Inches(rightEdge)
+    top = Inches(topEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+  
+    img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackPhi.png"
+    left = Inches(leftEdge)
+    top = Inches(lowEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+  
+    img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackEta.png"
+    left = Inches(midEdge)
+    top = Inches(lowEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+  
+    img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackEtaPhi.png"
+    left = Inches(rightEdge)
+    top = Inches(lowEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
 
 ####################################################################################################
 # Plot slides with cluster information
@@ -363,6 +511,14 @@ def plotClusterSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, isAl
       top = Inches(topEdge)
       width = Inches(imgWidth)
       slide.shapes.add_picture(img_path, left, top, width=width)
+  if not isAllRuns and not includePHOS:
+    #img_path = plotDir + str(run) + "/QAoutput/Cells/profCellAbsIdTime.png"  #this is helpful in case there is an increased cluster/event yield
+    img_path = plotDir + str(run) + "/QAoutput/Cells/hCellEnergyTselRatio.png" #This checks the cluster yield after timing cuts
+    left = Inches(rightEdge)
+    top = Inches(topEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
 
   img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusPhiEta.png"
   left = Inches(leftEdge)
@@ -489,12 +645,6 @@ def plotChargedJetSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, i
 # Plot Full jet slides
 ####################################################################################################
 def plotFullJetSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, isAllRuns, run):
-  
-  print("Plot cluster slide")
-  print("Is pT hard: %s" % isPtHard)
-  print("Is PbPb data: %s" % isPbPb)
-  print("Includes PHOS info: %s" % includePHOS)
-  print("Is all run: %s" % isAllRuns)
   
   # columns
   leftEdge = 0.1

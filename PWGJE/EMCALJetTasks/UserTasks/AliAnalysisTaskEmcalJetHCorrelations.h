@@ -19,20 +19,27 @@
 
 #include <vector>
 
+#include <TRandom3.h>
 class TH1;
 class TH2;
 class TH3;
 class THnSparse;
-class AliEmcalJet;
-class AliEventPoolManager;
-class AliTLorentzVector;
 
+class AliEventPoolManager;
+
+#include "AliYAMLConfiguration.h"
+#include "THistManager.h"
+#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcalJetHUtils.h"
+class AliTLorentzVector;
 class AliEmcalJet;
 class AliJetContainer;
 class AliParticleContainer;
 
-#include "THistManager.h"
-#include "AliAnalysisTaskEmcalJet.h"
+// operator<< has to be forward declared carefully to stay in the global namespace so that it works with CINT.
+// For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
+namespace PWGJE { namespace EMCALJetTasks { class AliAnalysisTaskEmcalJetHCorrelations; } }
+std::ostream & operator<< (std::ostream &in, const PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations &myTask);
 
 namespace PWGJE {
 namespace EMCALJetTasks {
@@ -45,16 +52,6 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
    */
   enum jetBias_t {
     kDisableBias = 10000            //!<! Arbitrarily large value which can be used to disable the constituent bias. Can be used for either tracks or clusters.
-  };
-
-  /**
-   * @enum ESingleTrackEfficiency_t
-   * @brief Define the single track efficiency to apply
-   */
-  enum ESingleTrackEfficiency_t {
-    kEffDisable = 0,                //!<! Disable single track efficiency
-    kEffAutomaticConfiguration = 1, //!<! Auto configure the single track efficiency based on the beam type, centrality, and run quality (number)
-    kEffPP = 10,                    //!<! Explicitly select pp single track efficiency
   };
 
   AliAnalysisTaskEmcalJetHCorrelations();
@@ -98,8 +95,6 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   // Switch to cut out some unneeded sparse axis
   void                    SetDoLessSparseAxes(Bool_t dlsa)           { fDoLessSparseAxes = dlsa; }
   void                    SetDoWiderTrackBin(Bool_t wtrbin)          { fDoWiderTrackBin = wtrbin; }
-  // Set efficiency correction
-  void                    SetSingleTrackEfficiencyType(ESingleTrackEfficiency_t trackEffType) { fSingleTrackEfficiencyCorrectionType = trackEffType; }
   /// Artificial tracking inefficiency from 0 to 1. 1.0 (default) will disable it.
   void                    SetArtificialTrackingInefficiency(double eff) { fArtificialTrackInefficiency = eff; }
   // Setup JES correction
@@ -107,10 +102,6 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   void                    SetNoMixedEventJESCorrection(Bool_t b) { fNoMixedEventJESCorrection = b; }
 
   Bool_t                  RetrieveAndInitializeJESCorrectionHist(TString filename, TString histName, Double_t trackBias = AliAnalysisTaskEmcalJetHCorrelations::kDisableBias, Double_t clusterBias = AliAnalysisTaskEmcalJetHCorrelations::kDisableBias);
-
-  // Corrections
-  // Public so that it can be tested externally
-  Double_t       EffCorrection(Double_t trkETA, Double_t trkPT, AliAnalysisTaskEmcal::BeamType beamType) const;
 
   virtual void            UserCreateOutputObjects();
 
@@ -132,8 +123,6 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
      // Options
      const Bool_t lessSparseAxes      = kFALSE,
      const Bool_t widerTrackBin       = kFALSE,
-     // Corrections
-     const AliAnalysisTaskEmcalJetHCorrelations::ESingleTrackEfficiency_t singleTrackEfficiency = AliAnalysisTaskEmcalJetHCorrelations::kEffDisable,
      const Bool_t JESCorrection = kFALSE,
      const char * JESCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/JESCorrection.root",
      const char * JESCorrectionHistName = "JESCorrection",
@@ -154,6 +143,16 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
     const std::string & jetTag = "hybridLevelJets",
     const std::string & correlationsTracksCutsPeriod = "lhc11a");
 
+  // Task configuration
+  void AddConfigurationFile(const std::string & configurationPath, const std::string & configName = "") { fYAMLConfig.AddConfiguration(configurationPath, configName); }
+  bool Initialize();
+
+  // Printing
+  std::string toString() const;
+  friend std::ostream & ::operator<<(std::ostream &in, const AliAnalysisTaskEmcalJetHCorrelations &myTask);
+  void Print(Option_t* opt = "") const;
+  std::ostream & Print(std::ostream &in) const;
+
  protected:
 
   // NOTE: This is not an ideal way to resolve the size of histogram initialization.
@@ -169,12 +168,10 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   };
 
   // EMCal framework functions
-  void                   ExecOnce();
-  Bool_t                 Run();
+  virtual void UserExecOnce();
+  Bool_t Run();
 
   // Utility functions
-  AliParticleContainer * CreateParticleOrTrackContainer(const std::string & collectionName) const;
-
   // Determine if a jet has been matched
   bool CheckForMatchedJet(AliJetContainer * jets, AliEmcalJet * jet, const std::string & histName);
   // Apply artificial tracking inefficiency
@@ -194,13 +191,19 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   // Test for biased jet
   Bool_t                 BiasedJet(AliEmcalJet * jet);
   // Corrections
-  Double_t               EffCorrection(Double_t trkETA, Double_t trkPT) const;
+  Double_t               EffCorrection(Double_t trackEta, Double_t trackPt) const;
 
   // Fill methods which allow for the JES correction
   void                   FillHist(TH1 * hist, Double_t fillValue, Double_t weight = 1.0, Bool_t noCorrection = kFALSE);
   void                   FillHist(THnSparse * hist, Double_t *fillValue, Double_t weight = 1.0, Bool_t noCorrection = kFALSE);
   void                   AccessSetOfYBinValues(TH2D * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor = -1.0);
-  
+
+  // Configuration
+  void RetrieveAndSetTaskPropertiesFromYAMLConfig();
+
+  // Configuration
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig;   ///< YAML configuration file.
+  bool fConfigurationInitialized;                 ///<  True if the task configuration has been successfully initialized.
   // Jet bias
   Double_t               fTrackBias;               ///< Jet track bias
   Double_t               fClusterBias;             ///< Jet cluster bias
@@ -216,7 +219,8 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   UInt_t                 fMixingEventType;         ///< Event selection for mixed events
   Bool_t                 fDisableFastPartition;    ///< True if task should be disabled for the fast partition, where the EMCal is not included.
   // Efficiency correction
-  ESingleTrackEfficiency_t fSingleTrackEfficiencyCorrectionType; ///< Control the efficiency correction. See EffCorrection() for meaning of values.
+  TRandom3 fRandom;                               //!<! Random number generator for artificial track inefficiency.
+  AliAnalysisTaskEmcalJetHUtils::EEfficiencyPeriodIdentifier_t fEfficiencyPeriodIdentifier;  ///<  Identifies the period for determining the efficiency correction to apply
   Double_t               fArtificialTrackInefficiency; ///< Artificial track inefficiency. Enabled if < 1.0
   // JES correction
   Bool_t                 fNoMixedEventJESCorrection; ///< True if the jet energy scale correction should be applied to mixed event histograms
@@ -231,7 +235,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
 
   // Histograms
   THistManager           fHistManager;             ///<  Histogram manager
-  TH1                   *fHistTrackPt;             //!<! Track pt spectrum
+  TH1                   *fHistJetHTrackPt;         //!<! Track pt spectrum
   TH2                   *fHistJetEtaPhi;           //!<! Jet eta-phi distribution
   TH2                   *fHistTrackEtaPhi[7];      //!<! Track eta-phi distribution (the array corresponds to track pt)
   TH2                   *fHistJetHEtaPhi;          //!<! Eta-phi distribution of jets which are in jet-hadron correlations
@@ -242,23 +246,12 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   THnSparse             *fhnJH;                    //!<! JetH THnSparse
   THnSparse             *fhnTrigger;               //!<! JetH trigger sparse
 
-  // Pb-Pb Efficiency correction coefficients
-  static Double_t p0_10SG[17];                    ///< 0-10% centrality semi-good runs
-  static Double_t p10_30SG[17];                   ///< 10-30% centrality semi-good runs
-  static Double_t p30_50SG[17];                   ///< 30-50% centrality semi-good runs
-  static Double_t p50_90SG[17];                   ///< 50-90% centrality semi-good runs
-  // Good Runs
-  static Double_t p0_10G[17];                     ///< 0-10% centrality good runs
-  static Double_t p10_30G[17];                    ///< 10-30% centrality good runs
-  static Double_t p30_50G[17];                    ///< 30-50% centrality good runs
-  static Double_t p50_90G[17];                    ///< 50-90% centrality good runs
-
  private:
 
   AliAnalysisTaskEmcalJetHCorrelations(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
   AliAnalysisTaskEmcalJetHCorrelations& operator=(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 16);
+  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 20);
 };
 
 } /* namespace EMCALJetTasks */

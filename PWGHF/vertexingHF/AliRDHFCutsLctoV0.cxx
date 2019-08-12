@@ -857,6 +857,9 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
 
   Bool_t dummy = kFALSE;
 
+  Int_t isProton = -1;
+  Int_t isPion = -1;
+
   switch (fPidSelectionFlag) {
 
   case 0:
@@ -1137,6 +1140,56 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
     tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
 
     isBachelorID2 = TMath::Abs(nTPCsigmas)<3. && TMath::Abs(nTOFsigmas)<3. && (tpcID==1)&&(tofID==1);
+    isBachelorID4 = isBachelorID2;
+
+    break;
+          
+  case 11:
+    isProton = fPidHF->MakeRawPid(bachelor, AliPID::kProton);
+    isPion = fPidHF->MakeRawPid(bachelor, AliPID::kPion);
+    if (isProton<0) isBachelorID1 = kFALSE;
+    else isBachelorID1 = kTRUE;
+    if (isPion<0) isBachelorID2 = kFALSE;
+    else isBachelorID2 = kTRUE;
+    isBachelorID4 = isBachelorID2;
+    break;
+
+  case 12:
+
+    // identify bachelor with an N-sigma cut - TOF required
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor, 4, nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor, 4, nTPCsigmas);
+    
+    isBachelorID1 = TMath::Abs(nTPCsigmas) < 3. && TMath::Abs(nTOFsigmas) < 3. && (tpcID == 1) && (tofID == 1);
+
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor, 2, nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor, 2, nTPCsigmas);
+
+    isBachelorID2 = TMath::Abs(nTPCsigmas) < 3. && TMath::Abs(nTOFsigmas) < 3. && (tpcID == 1) && (tofID == 1);
+    isBachelorID4 = isBachelorID2;
+
+    break;
+
+  case 13:
+
+    // identify bachelor with an N-sigma cut - TOF required when available
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor, 4, nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor, 4, nTPCsigmas);
+
+    isBachelorID1 = (tpcID == 1) && (TMath::Abs(nTPCsigmas) < 3.) && ((tofID == 1 && TMath::Abs(nTOFsigmas) < 3.) || tofID == -1);
+
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor, 2, nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor, 2, nTPCsigmas);
+
+    isBachelorID2 = (tpcID == 1) && (TMath::Abs(nTPCsigmas) < 3.) && ((tofID == 1 && TMath::Abs(nTOFsigmas) < 3.) || tofID == -1);
     isBachelorID4 = isBachelorID2;
 
     break;

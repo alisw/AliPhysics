@@ -30,6 +30,8 @@ class AliHistogramManager : public TObject {
   AliHistogramManager(const Char_t* name, Int_t nvars);
   virtual ~AliHistogramManager();
   
+  void SetName(const Char_t* name) {fName = name;}
+  
   void AddHistClass(const Char_t* histClass);
   void AddHistogram(const Char_t* histClass,
 		    const Char_t* name, const Char_t* title, Bool_t isProfile,
@@ -50,13 +52,15 @@ class AliHistogramManager : public TObject {
                     Int_t nDimensions, Int_t* vars,
                     Int_t* nBins, Double_t* xmin, Double_t* xmax,
                     TString* axLabels=0x0,
-                    Int_t varW=-1);
+                    Int_t varW=-1,
+                    Bool_t useSparse=kFALSE);
   void AddHistogram(const Char_t* histClass,
                     const Char_t* name, const Char_t* title,
                     Int_t nDimensions, Int_t* vars,
                     TArrayD* binLimits,
                     TString* axLabels=0x0,
-                    Int_t varW=-1);
+                    Int_t varW=-1,
+                    Bool_t useSparse=kFALSE);
   static THnF* CreateHistogram(const Char_t* name, const Char_t* title,
                         Int_t nDimensions,
                         TArrayD* binLimits);
@@ -73,6 +77,7 @@ class AliHistogramManager : public TObject {
   void AddToOutputList(TList* list) {fOutputList.Add(list);}
   void CloseFile();
   const THashList* GetMainHistogramList() const {return &fMainList;}    // get a histogram list
+  const THashList* GetMainDirectory() const {return fMainDirectory;}    // get the main histogram list from the loaded file
   THashList* AddHistogramsToOutputList(); // get all histograms on a THashList
   THashList* GetHistogramOutputList() {return &fOutputList;} 
   THashList* GetHistogramList(const Char_t* listname) const;    // get a histogram list
@@ -103,7 +108,7 @@ class AliHistogramManager : public TObject {
   
   void MakeAxisLabels(TAxis* ax, const Char_t* labels);
   
-  ClassDef(AliHistogramManager, 3)
+  ClassDef(AliHistogramManager, 4)
 };
 
 #endif

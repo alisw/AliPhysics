@@ -43,9 +43,12 @@
 #pragma link C++ class  AliEmcalCorrectionCellCombineCollections+;
 #pragma link C++ class  AliEmcalCorrectionClusterizer+;
 #pragma link C++ class  AliEmcalCorrectionClusterNonLinearity+;
+#pragma link C++ class  AliEmcalCorrectionClusterNonLinearityMCAfterburner+;
 #pragma link C++ class  AliEmcalCorrectionClusterExotics+;
 #pragma link C++ class  AliEmcalCorrectionClusterTrackMatcher+;
 #pragma link C++ class  AliEmcalCorrectionClusterHadronicCorrection+;
+#pragma link C++ class  AliEmcalCorrectionCellEnergyVariation+;
+#pragma link C++ class  AliEmcalCorrectionClusterEnergyVariation+;
 #pragma link C++ class  std::map<AliVTrack *,AliParticleContainer *>+;
 #pragma link C++ class  std::pair<AliVTrack *,AliParticleContainer *>+;
 #pragma link C++ class  AliEmcalCorrectionPHOSCorrections+;
@@ -57,6 +60,7 @@
 #pragma link C++ class PWG::EMCAL::AliEmcalCellMonitorTask+;
 #pragma link C++ class PWG::EMCAL::AliEmcalFastOrMonitorTask+;
 #pragma link C++ class PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection+;
+#pragma link C++ class PWG::EMCAL::AliAnalysisTaskEmcalTriggerNormalization+;
 
 // Unit tests
 #pragma link C++ class PWG::EMCAL::TestAliEmcalAODFilterBitCuts+;

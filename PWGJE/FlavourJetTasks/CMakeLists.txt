@@ -30,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
+                    ${AliPhysics_SOURCE_DIR}/OADB
                    )
 
 # Sources in alphabetical order
@@ -61,9 +62,12 @@ if(FASTJET_FOUND)
            AliHFAODMCParticleContainer.cxx
            AliHFTrackContainer.cxx
            AliAnalysisTaskDmesonJets.cxx
+           AliAnalysisTaskDmesonJetsSub.cxx
            AliAnalysisTaskDmesonJetsDetectorResponse.cxx
+           AliAnalysisTaskHFSubstructure.cxx
            AliDJetTTreeReader.cxx
            AliDJetTHnReader.cxx
+           AliAnalysisTaskHFJetIPQA.cxx
            )
 endif(FASTJET_FOUND)
 
@@ -76,7 +80,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES Core Geom)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGJEEMCALJetTasks PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGJETFW PWGTools PWGCaloTrackCorrBase PWGHFvertexingHF)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD OADB STEERBase PWGJEEMCALJetTasks PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGJETFW PWGTools PWGCaloTrackCorrBase PWGHFvertexingHF)
 
 # Generate the ROOT map
 # Dependecies

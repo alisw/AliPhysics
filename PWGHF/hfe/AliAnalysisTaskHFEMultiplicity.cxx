@@ -176,10 +176,7 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
   fClusEta(0),
   fClusEtaPhi(0x0),								 
   fClusE(0),
-  fClusT(0),								 
-  fNCells(0),								 
-  fCellE(0),
-  fCellT(0),							 
+  fClusT(0),								 							 
   fSparseClusE(0),
   fvalueCluE(0),
  // track-cluster matching
@@ -203,6 +200,8 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
   fvaluePHElectron(0),
  // MC info
   fReadMC(kFALSE),
+  fzvtxcut(kFALSE),
+  fzvtxQA(kFALSE),
   fNTotMCpart(0),
   fNpureMC(0),
   fNembMCpi0(0),
@@ -249,16 +248,6 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
   fRecoPi0eEmbWeightTrkPt(0),
   fRecoEtaeEmbWeightTrkPt(0),
 //mult dependent
-  fNonHFeEmbWeightTrkPt_121_300(0),
-  fNonHFeEmbWeightTrkPt_95_121(0),
-  fNonHFeEmbWeightTrkPt_55_95(0),
-  fNonHFeEmbWeightTrkPt_38_55(0),
-  fNonHFeEmbWeightTrkPt_0_38(0),
-  fRecoNonHFeEmbWeightTrkPt_121_300(0),
-  fRecoNonHFeEmbWeightTrkPt_95_121(0),
-  fRecoNonHFeEmbWeightTrkPt_55_95(0),
-  fRecoNonHFeEmbWeightTrkPt_38_55(0),
-  fRecoNonHFeEmbWeightTrkPt_0_38(0),
 
   //nonhfe invariant mass
   fNonHFePairInvmassLS(0),
@@ -288,10 +277,10 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
   
 
   
-{ fvalueElectron = new Double_t[9];
+{ fvalueElectron = new Double_t[4];
   fvaluePHElectron = new Double_t[3];
   fvalueCluE = new Double_t[3];
-  fvalueMulti = new Double_t[7];
+  fvalueMulti = new Double_t[6];
   for(Int_t i=0; i<2; i++) fMultEstimatorAvg[i]=0;
 
 }
@@ -374,10 +363,7 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
   fClusEta(0),
   fClusEtaPhi(0x0),								 
   fClusE(0),
-  fClusT(0),								 
-  fNCells(0),								 
-  fCellE(0),
-  fCellT(0),							 
+  fClusT(0),								 						 
   fSparseClusE(0),
   fvalueCluE(0),
  // track-cluster matching
@@ -401,6 +387,8 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
   fvaluePHElectron(0),
  // MC info
   fReadMC(kFALSE),
+  fzvtxcut(kFALSE),
+  fzvtxQA(kFALSE),
   fNTotMCpart(0),
   fNpureMC(0),
   fNembMCpi0(0),
@@ -448,17 +436,6 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
   fRecoEtaeEmbWeightTrkPt(0),
  
  //mult dependent
-  fNonHFeEmbWeightTrkPt_121_300(0),
-  fNonHFeEmbWeightTrkPt_95_121(0),
-  fNonHFeEmbWeightTrkPt_55_95(0),
-  fNonHFeEmbWeightTrkPt_38_55(0),
-  fNonHFeEmbWeightTrkPt_0_38(0),
-  fRecoNonHFeEmbWeightTrkPt_121_300(0),
-  fRecoNonHFeEmbWeightTrkPt_95_121(0),
-  fRecoNonHFeEmbWeightTrkPt_55_95(0),
-  fRecoNonHFeEmbWeightTrkPt_38_55(0),
-  fRecoNonHFeEmbWeightTrkPt_0_38(0),
-
 
   //nonhfe invariant mass
   fNonHFePairInvmassLS(0),
@@ -489,10 +466,10 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
 
 {
   // constructor
-  fvalueElectron = new Double_t[9];
+  fvalueElectron = new Double_t[4];
   fvaluePHElectron = new Double_t[3];
   fvalueCluE = new Double_t[3];
-  fvalueMulti = new Double_t[7];
+  fvalueMulti = new Double_t[6];
   for(Int_t i=0; i<2; i++) fMultEstimatorAvg[i]=0;
   DefineInput(0, TChain::Class());   
   DefineOutput(1, TList::Class());
@@ -571,73 +548,71 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
   fNevents = new TH1F ("fNevents","Number of events",6,-0.5,5.5);
   fNevents->GetYaxis()->SetTitle("counts");
   fNevents->GetXaxis()->SetBinLabel(1,"nEvents Total");
-  fNevents->GetXaxis()->SetBinLabel(2,"nEvents With >2 Trks");
-  fNevents->GetXaxis()->SetBinLabel(3,"nEvents with Zvtx cut");
-  fNevents->GetXaxis()->SetBinLabel(4,"nEvents with Trigger");
-  fNevents->GetXaxis()->SetBinLabel(5,"nEvents with pileup cut");
+  fNevents->GetXaxis()->SetBinLabel(2,"nEvents With Zvtx cut");
+  fNevents->GetXaxis()->SetBinLabel(3,"nEvents with pileup cut");
+  fNevents->GetXaxis()->SetBinLabel(4,"nEvents with n contributor");
+  fNevents->GetXaxis()->SetBinLabel(5,"nEvents with zvtxQA cut");
   fNevents->GetXaxis()->SetBinLabel(6,"nEvents with vertex cut");
-	
-  
+ 
   
   fClusPhi    		= new TH1F("fClusPhi", "Cluster Phi distribution; #phi ; counts",100,0.,7);
   fClusEta    		= new TH1F("fClusEta", "Cluster Eta distribution; #eta ; counts",50,-2,2);
-  fClusEtaPhi		= new TH2F( "fClusEtaPhi","Cluster Eta Phi distribution; #eta ; #phi",50,-2,2,100,0.,7);
-  fClusT     		= new TH1F( "fClusT","Cluster time distribution ; Time(ns) ; counts",500,-1000,1000);
-  fNCells   		= new TH1F("fNCells","ncells distribution ; cell counts ; cluster counts", 50,-10,40);
-  fClusE   		= new TH1F("fClusE","Cluster Energy ; Energy(GeV); counts",200,0,100);
-  fCellE    		= new TH1F("EnergyCell","Cell Energy ; Energy(GeV) ; counts",200,0,100);
-  fCellT   		= new TH1F("fCellT","cell time distribution ; Time(ns) ;counts",500,-1000,1000);
+  fClusEtaPhi		= new TH2F( "fClusEtaPhi","Cluster Eta Phi distribution; #eta ; #phi",100,-1.5,1.5,100,0.,7);
+  fClusE   		= new TH1F("fClusE","Cluster Energy ; Energy(GeV); counts",200,0,100);	  
+  fClusT     		= new TH1F( "fClusT","Cluster time distribution ; Time(ns) ; counts",500,-100,100);
   fVtxZ 		= new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",1000,-50,50);
-  fVtxY 		= new TH1F("fVtxY","Y vertex position;Vtx_{y};counts",1000,-50,50);
-  fVtxX 		= new TH1F("fVtxX","X vertex position;Vtx_{x};counts",1000,-50,50);
+  fVtxY 		= new TH1F("fVtxY","Y vertex position;Vtx_{y};counts",300,-15,15);
+  fVtxX 		= new TH1F("fVtxX","X vertex position;Vtx_{x};counts",300,-15,15);
   fTPCdEdx 		= new TH2F("fTPCdEdx","All Track dE/dx distribution;p (GeV/c);dE/dx",200,0,20,500,0,160);
-  fTPCnsigma 		= new TH2F("fTPCnsig","All Track TPC Nsigma distribution;p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
-  fTrkPt 		= new TH1F("fTrkPt","p_{T} distribution of all tracks;p_{T} (GeV/c);counts",1000,0,100);
+  fTPCnsigma 		= new TH2F("fTPCnsig","All Track TPC Nsigma distribution;p (GeV/c);#sigma_{TPC-dE/dx}",500,0,50,200,-10,10);
+  fTrkPt 		= new TH1F("fTrkPt","p_{T} distribution of all tracks;p_{T} (GeV/c);counts",500,0,50);
   fTrketa 		= new TH1F("fTrketa","All Track #eta distribution;#eta;counts",100,-1.5,1.5);
   fTrkphi 		= new TH1F("fTrkphi","All Track #phi distribution;#phi;counts",100,0,2*3.141);
-  fTrkMatchTrkPt	= new TH1F("fTrkMatchTrkPt","p_{T} distribution of tracks with cluster;p_{T} (GeV/c);counts",1000,0,100);
+  fTrkMatchTrkPt	= new TH1F("fTrkMatchTrkPt","p_{T} distribution of tracks with cluster;p_{T} (GeV/c);counts",500,0,50);
   fTrkMatchTrketa	= new TH1F("fTrkMatchTrketa","#eta distribution of tracks matched to Cluster;#eta;counts",100,-1.5,1.5);
   fTrkMatchTrkphi	= new TH1F("fTrkMatchTrkphi","#phi distribution of tracks matched to Cluster;#phi;counts",100,0,2*3.141);
-  fTrkMatchClusetaphi	= new TH2F( "fTrkMatchClusetaphi","#eta#phi distribution of Clusters matched to tracks;#eta;#phi",50,-2,2,100,0.,7);
+  fTrkMatchClusetaphi	= new TH2F( "fTrkMatchClusetaphi","#eta#phi distribution of Clusters matched to tracks;#eta;#phi",100,-1.5,1.5,100,0.,7);
   fEMCTrkMatchcluster   = new TH2F("fEMCTrkMatchcluster","Distance of EMCAL cluster to its closest track Method 1",100,-0.3,0.3,100,-0.3,0.3);
-  fInvmassLS 		= new TH1F("fInvmassLS", "Inv mass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
-  fInvmassULS 		= new TH1F("fInvmassULS", "Inv mass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
-  fInvmassLSPt 		= new TH2F("fInvmassLSPt", "Inv mass of LS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,1000,0,1.0);
-  fInvmassULSPt		= new TH2F("fInvmassULSPt", "Inv mass of ULS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,1000,0,1.0);
+  fInvmassLS 		= new TH1F("fInvmassLS", "Inv mass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 50,0,0.5);
+  fInvmassULS 		= new TH1F("fInvmassULS", "Inv mass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 50,0,0.5);
+  fInvmassLSPt 		= new TH2F("fInvmassLSPt", "Inv mass of LS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,50,0,0.5);
+  fInvmassULSPt		= new TH2F("fInvmassULSPt", "Inv mass of ULS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,50,0,0.5);
 
   fULSElecPt  		= new TH1F("fULSElecPt","p_{T} distribution of ULS electrons;p_{T} (GeV/c);counts",500,0,50);
   fLSElecPt 		= new TH1F("fLSElecPt","p_{T} distribution of LS electrons;p_{T} (GeV/c);counts",500,0,50);
   
   
+  
    
 
 //---------------THnSparse------------
-  Int_t binsE[3]	=      	{200, 1000, 1000};
+ Int_t binsE[3]	=      	{500, 1000, 350};
   Double_t xminE[3]	=	{  0,  0,   0};
-  Double_t xmaxE[3]	=	{  100,   2000,   1000};
+  Double_t xmaxE[3]	=	{  50,   2000,   350};
 
   fSparseClusE 	= new THnSparseD ("Cluster Energy","Cluster Energy;ClusterE;V0M;SPDTracklets;",3 ,binsE,xminE,xmaxE);
  
 
   
-  Int_t bins[9]		=      	{280, 160, 100, 100, 100, 1000, 1000, 200,1000};
-  Double_t xmin[9]	=	{  2,  -8,   0,   0,   0, 0, 0, 0 ,-50};
-  Double_t xmax[9]	=	{  30,   8,   2,   2,  2, 2000, 1000, 100, 50};
+  Int_t bins[4]		=      	{250,100, 1000, 350};
+  Double_t xmin[4]	=	{  0, 0, 0, 0};
+  Double_t xmax[4]	=	{  50, 2, 2000, 350};
 
-  fSparseElectron 	= new THnSparseD ("Electron","Electron;pT;nSigma;E/P;m02;m20;V0M;SPDTracklets;Cluster Energy;zvtx;",9 ,bins,xmin,xmax);
+  fSparseElectron 	= new THnSparseD ("Electron","Electron;pT;E/P;V0M;SPDTracklets;",4 ,bins,xmin,xmax);
  
 
-  Int_t binsls[3]	=      	{280, 1000, 1000};
-  Double_t xminls[3]	=	{  2, 0, 0};
-  Double_t xmaxls[3]	=	{  30, 2000, 1000};
+  Int_t binsls[3]	=      	{250, 1000, 350};
+  Double_t xminls[3]	=	{  0, 0, 0};
+  Double_t xmaxls[3]	=	{  50, 2000, 350};
 
   fSparseLSElectron 	= new THnSparseD ("LSElectron","LSElectron;pT;V0M;SPDTracklets;",3 ,binsls,xminls,xmaxls);
   fSparseULSElectron 	= new THnSparseD ("ULSElectron","ULSElectron;pT;V0M;SPDTracklets;",3 ,binsls,xminls,xmaxls);
   
-  Int_t binsm[7]	=      	{1000,1000,1000,1000,1000,1000,400};
-  Double_t xminm[7]	=	{-50,0,0,0,0,0,0};
-  Double_t xmaxm[7]	=	{ 50,2000,1000,2000,1000,1000,400};
-  fSparseMulti 		= new THnSparseD ("Multiplicity","Multiplicity;zvtx;V0M_data;SPDTracklets_data;Corrected_V0M;Corrected_SPDTracklets;CorrSPDTracklets;ncharge;",7,binsm,xminm,xmaxm);
+  Int_t binsm[6]	=      	{300,1000,350,1000,350,400};
+  Double_t xminm[6]	=	{-15,0,0,0,0,0};
+  Double_t xmaxm[6]	=	{ 15,2000,350,2000,350,400};
+  fSparseMulti 		= new THnSparseD ("Multiplicity","Multiplicity;zvtx;V0M_data;SPDTracklets_data;Corrected_V0M;Corrected_SPDTracklets;ncharge;",6,binsm,xminm,xmaxm);
+    
     
  
 if(fReadMC){
@@ -681,13 +656,6 @@ if(fReadMC){
   fNonHFeEmbwPIDTrkPt = new TH1F("fNonHFeEmbwPIDTrkPt","Non-HF electrons from embedded #pi^{0} and #eta + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
   
   fNonHFeEmbWeightwPIDTrkPt = new TH1F("fNonHFeEmbWeightwPIDTrkPt","Non-HF electrons from embedded #pi^{0} and #eta + No mom with weight + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
-
-  
-  fNonHFeEmbWeightTrkPt_121_300  = new TH1F("fNonHFeEmbWeightTrkPt_121_300","Non-HF electrons from embedded #pi^{0} and #eta + No mom with weight + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
-  fNonHFeEmbWeightTrkPt_95_121 = new TH1F("fNonHFeEmbWeightTrkPt_95_121","Non-HF electrons from embedded #pi^{0} and #eta + No mom with weight + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
-  fNonHFeEmbWeightTrkPt_55_95 = new TH1F("fNonHFeEmbWeightTrkPt_55_95","Non-HF electrons from embedded #pi^{0} and #eta + No mom with weight + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
-  fNonHFeEmbWeightTrkPt_38_55 = new TH1F("fNonHFeEmbWeightTrkPt_38_55","Non-HF electrons from embedded #pi^{0} and #eta + No mom with weight + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
-  fNonHFeEmbWeightTrkPt_0_38 = new TH1F("fNonHFeEmbWeightTrkPt_0_38","Non-HF electrons from embedded #pi^{0} and #eta + No mom with weight + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
   
   fPi0eEmbWeightwPIDTrkPt = new TH1F("fPi0eEmbWeightwPIDTrkPt","Non-HF electrons from embedded #pi^{0} + No mom with weight wPID;p_{T} (GeV/c);counts",250,0,50);
  
@@ -699,11 +667,7 @@ if(fReadMC){
   
   fRecoNonHFeEmbWeightTrkPt = new TH1F("fRecoNonHFeEmbWeightTrkPt","Reco Non-HF electrons from embedded #pi^{0} and #eta  + No mom with weight;p_{T} (GeV/c);counts",250,0,50);
   
-  fRecoNonHFeEmbWeightTrkPt_121_300 = new TH1F("fRecoNonHFeEmbWeightTrkPt_121_300","Non-HF electrons from embedded #pi^{0} and #eta + No mom with weight + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
-  fRecoNonHFeEmbWeightTrkPt_95_121 = new TH1F("fRecoNonHFeEmbWeightTrkPt_95_121","Non-HF electrons from embedded #pi^{0} and #eta + No mom with weight + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
-  fRecoNonHFeEmbWeightTrkPt_55_95 = new TH1F("fRecoNonHFeEmbWeightTrkPt_55_95","Non-HF electrons from embedded #pi^{0} and #eta + No mom with weight + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
-  fRecoNonHFeEmbWeightTrkPt_38_55 = new TH1F("fRecoNonHFeEmbWeightTrkPt_38_55","Non-HF electrons from embedded #pi^{0} and #eta + No mom with weight + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
-  fRecoNonHFeEmbWeightTrkPt_0_38 = new TH1F("fRecoNonHFeEmbWeightTrkPt_0_38","Non-HF electrons from embedded #pi^{0} and #eta + No mom with weight + No mom wPID;p_{T} (GeV/c);counts",250,0,50);
+ 
   fRecoPi0eEmbWeightTrkPt = new TH1F("fRecoPi0eEmbWeightTrkPt","Reco Non-HF electrons from embedded #pi^{0}  + No mom with weight;p_{T} (GeV/c);counts",250,0,50);
   
   fRecoEtaeEmbWeightTrkPt = new TH1F("fRecoEtaeEmbWeightTrkPt","Reco Non-HF electrons from embedded #eta  + No mom with weight;p_{T} (GeV/c);counts",250,0,50);
@@ -783,7 +747,6 @@ if(fReadMC){
   fSparseClusE->Sumw2();
 
 if(fReadMC){
-
   fHFElecPtAll->Sumw2();
   fHFElecPtReco_wtrkcuts->Sumw2();
   fHFElecPtReco_wTPCPID->Sumw2();
@@ -817,16 +780,7 @@ if(fReadMC){
   fRecoULSeEmbWeightTrkPt->Sumw2();
   fRecoPi0ULSeEmbWeightTrkPt->Sumw2();
   fRecoEtaULSeEmbWeightTrkPt->Sumw2();
-  fNonHFeEmbWeightTrkPt_121_300->Sumw2();
-  fNonHFeEmbWeightTrkPt_95_121->Sumw2();
-  fNonHFeEmbWeightTrkPt_55_95->Sumw2();
-  fNonHFeEmbWeightTrkPt_38_55->Sumw2();
-  fNonHFeEmbWeightTrkPt_0_38->Sumw2();
-  fRecoNonHFeEmbWeightTrkPt_121_300->Sumw2();
-  fRecoNonHFeEmbWeightTrkPt_95_121->Sumw2();
-  fRecoNonHFeEmbWeightTrkPt_55_95->Sumw2();
-  fRecoNonHFeEmbWeightTrkPt_38_55->Sumw2();
-  fRecoNonHFeEmbWeightTrkPt_0_38->Sumw2();
+  
   
  }
 
@@ -836,10 +790,7 @@ if(fReadMC){
   fOutputList->Add(fClusEta);
   fOutputList->Add(fClusEtaPhi);
   fOutputList->Add(fClusT);
-  fOutputList->Add(fNCells);
   fOutputList->Add(fClusE);
-  fOutputList->Add(fCellE);
-  fOutputList->Add(fCellT);
   fOutputList->Add(fVtxZ);
   fOutputList->Add(fVtxY);
   fOutputList->Add(fVtxX);
@@ -920,17 +871,6 @@ if(fReadMC){
   fOutputList->Add(fRecoULSeEmbWeightTrkPt);
   fOutputList->Add(fRecoPi0ULSeEmbWeightTrkPt);
   fOutputList->Add(fRecoEtaULSeEmbWeightTrkPt);
-  fOutputList->Add(fNonHFeEmbWeightTrkPt_121_300);
-  fOutputList->Add(fNonHFeEmbWeightTrkPt_95_121);
-  fOutputList->Add(fNonHFeEmbWeightTrkPt_55_95);
-  fOutputList->Add(fNonHFeEmbWeightTrkPt_38_55);
-  fOutputList->Add(fNonHFeEmbWeightTrkPt_0_38);
-  fOutputList->Add(fRecoNonHFeEmbWeightTrkPt_121_300);
-  fOutputList->Add(fRecoNonHFeEmbWeightTrkPt_95_121);
-  fOutputList->Add(fRecoNonHFeEmbWeightTrkPt_55_95);
-  fOutputList->Add(fRecoNonHFeEmbWeightTrkPt_38_55);
-  fOutputList->Add(fRecoNonHFeEmbWeightTrkPt_0_38);
- 
 
 
 }
@@ -966,17 +906,17 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 
 
   //-------------------selecting trigger for calorimeter( EMCAL + DCAL )
-  TString firedTrigger;
-  TString TriggerEG1("EG1");
-  TString TriggerEG2("EG2");
-  TString TriggerDG1("DG1");
-  TString TriggerDG2("DG2");
+   TString firedTrigger;
+   TString TriggerEG1("EG1");
+   TString TriggerEG2("EG2");
+   TString TriggerDG1("DG1");
+   TString TriggerDG2("DG2");
     
-  if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
- 
+if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
+   
 
 //--------------------separate EMCal and DCal----------------------------   
-/*  Bool_t EG1tr = kFALSE;
+  Bool_t EG1tr = kFALSE;
   Bool_t EG2tr = kFALSE;
   if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
   if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
@@ -984,38 +924,51 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
   if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
   if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
   if(fDCalDG1){if(!firedTrigger.Contains(TriggerDG1))return;}
-  if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}*/
+  if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}
+
 
 //--------------------Combine EMCal and DCal----------------------------
 
-  if(fEMCEG2 && fDCalDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
-  if(fEMCEG1 && fDCalDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+ /* if(fEMCEG2 && fDCalDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
+  if(fEMCEG1 && fDCalDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;*/
 
 
-  fNevents->Fill(3);
+  fNevents->Fill(1);
 
 
   //////////////////
   // Multiplicity //
   /////////////////
+    Double_t Zvertex1 = -100;
+    const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
+    Zvertex1 =pVtx->GetZ();
+    if(fzvtxcut){
+        if(TMath::Abs(Zvertex1)>10.0) return;}
+    fNevents->Fill(2);
 
-
-  //---------------------multiplicity ------------------------------
-  Double_t Zvertex1 = -100;						    
-  const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
-  Zvertex1 =pVtx->GetZ();
+    
+     //--------------------vertex selection cuts-----------------------
+    if(fzvtxQA){
+   
+  
+    if (fRejectPUFromSPD && fAOD->IsPileupFromSPDInMultBins()) return; // pile-up cut
+    fNevents->Fill(3);
  
-  if (fRejectPUFromSPD && fAOD->IsPileupFromSPDInMultBins()) return; // pile-up cut
-  fNevents->Fill(4);
-  //--------------------vertex selection cuts-----------------------
-  AliAODVertex* vtxSPD = fAOD->GetPrimaryVertexSPD();
+        Double_t NContV = pVtx->GetNContributors();
+        
+        if(NContV<fCutNcontV) return; // n contributor
+        fNevents->Fill(4);
+        
+    AliAODVertex* vtxSPD = fAOD->GetPrimaryVertexSPD();
 	
-  if (!vtxSPD || vtxSPD->GetNContributors() < 1) return;
-  Double_t cov[6]={0};
-  vtxSPD->GetCovarianceMatrix(cov);
-  if (TMath::Sqrt(cov[5]) > 0.25) return;
+    if (!vtxSPD || vtxSPD->GetNContributors() < 1) return;
+    Double_t cov[6]={0};
+    vtxSPD->GetCovarianceMatrix(cov);
+    if (TMath::Sqrt(cov[5]) > 0.25) return;
+    if (TMath::Abs(vtxSPD->GetZ() - pVtx->GetZ())>0.5) return;
+    }
 
-  fNevents->Fill(5);
+    fNevents->Fill(5);
   
 //----------V0M Multiplicity------------------
   AliAODVZERO *vzeroAOD = dynamic_cast<AliAODVZERO *>( dynamic_cast<AliAODEvent *>(fAOD)->GetVZEROData());
@@ -1118,9 +1071,8 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
   fvalueMulti[1] = V0Mult;
   fvalueMulti[2] = nAcc;
   fvalueMulti[3] = vzeroMultCorr; 
-  fvalueMulti[4] = correctednAcc;
-  fvalueMulti[5] = correctednAcc1;
-  fvalueMulti[6] = GetNcharged();
+  fvalueMulti[4] = correctednAcc1;
+  fvalueMulti[5] = GetNcharged();
   
 
   fSparseMulti->Fill(fvalueMulti);    // multiplicity from tracklets
@@ -1181,18 +1133,18 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
       fClusPhi->Fill(cluphi);
       fClusEtaPhi->Fill(clueta,cluphi);
       fClusEta->Fill(clueta);
-      fNCells->Fill(ncells);
       fClusE->Fill(energy);
       fClusT->Fill(clut);
-        
+  
+
         fvalueCluE[0] = energy;
 	fvalueCluE[1] = vzeroMultCorr; //V0M, Multiplicity information
 	fvalueCluE[2] = correctednAcc1; //SPD Tracklets
 
   fSparseClusE->Fill(fvalueCluE); //For Rejection Factor
-    
+    }
       
-	}  
+	
 
 }
   ///////////////////////
@@ -1230,7 +1182,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 				
     fTPCdEdx->Fill(TrkP,dEdx);
     fTPCnsigma->Fill(TrkP,nsigma);
-    cout<<"Value of pt min"<< 1<<endl;
+    
 
     if(fReadMC){
         Int_t iTrklabel = TMath::Abs(track->GetLabel());
@@ -1262,7 +1214,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 	Double_t fPhiDiff = -999, fEtaDiff = -999;
         GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
 	fEMCTrkMatchcluster->Fill(fPhiDiff,fEtaDiff);
-	if(TMath::Abs(fPhiDiff) > 0.05 || TMath::Abs(fEtaDiff)> 0.05) continue;
+	if(TMath::Abs(fPhiDiff) > 0.06 || TMath::Abs(fEtaDiff)> 0.06) continue;
 	
 	Float_t EMCalpos[3];
 	clustMatch -> GetPosition(EMCalpos);
@@ -1292,23 +1244,25 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 	M02trkmatch = clustMatch->GetM02();
 	M20trkmatch = clustMatch->GetM20();
  
-
+        Bool_t fElectTrack = kFALSE;
+        fElectTrack = PassEIDCuts(track, clustMatch);
      
+if(fElectTrack){
         fvalueElectron[0] = TrkPt; //matched tracks pt
-        fvalueElectron[1] = nsigma; // tpc n sigma
-	fvalueElectron[2] = Eoptrk; //E/P
-	fvalueElectron[3] = M02trkmatch; // shower shape cut
-	fvalueElectron[4] = M20trkmatch;
-	fvalueElectron[5] = vzeroMultCorr; //V0M, Multiplicity information
-	fvalueElectron[6] = correctednAcc1; //SPD Tracklets
-	fvalueElectron[7] = Etrkmatch;  //cluster energy after matching
-	fvalueElectron[8] = Zvertex1;
+       // fvalueElectron[1] = nsigma; // tpc n sigma
+	fvalueElectron[1] = Eoptrk; //E/P
+	//fvalueElectron[3] = M02trkmatch; // shower shape cut
+	//fvalueElectron[4] = M20trkmatch;
+	fvalueElectron[2] = vzeroMultCorr; //V0M, Multiplicity information
+	fvalueElectron[3] = correctednAcc1; //SPD Tracklets
+	//fvalueElectron[7] = Etrkmatch;  //cluster energy after matching
+	//fvalueElectron[8] = Zvertex1;
 						
 	fSparseElectron->Fill(fvalueElectron);   //Electron information sparse         
 	
+	}
 	
-	Bool_t fElectTrack = kFALSE;
-	fElectTrack = PassEIDCuts(track, clustMatch);
+	
       
 	
 	Int_t iMCmom=-999, MomPDG = -999;
@@ -1352,7 +1306,7 @@ if(fReadMC){Int_t iTrklabel = TMath::Abs(track->GetLabel());
 
       if(!fNonHFE) continue;
       fNonHFeTrkPt->Fill(TrkPt);
- 	if(fElectTrack){ fNonHFewPIDTrkPt->Fill(TrkPt);	}
+ 	  if(fElectTrack){ fNonHFewPIDTrkPt->Fill(TrkPt);	}
       ///////////////////////////////////////
       // Check for pi0/eta from embbedding //
       ///////////////////////////////////////
@@ -1490,6 +1444,7 @@ if(fReadMC){
       }//track match
 			
   } //track loop
+
 		
   PostData(1,fOutputList); 
   PostData(2,fListProfiles);		
@@ -1533,7 +1488,7 @@ Bool_t AliAnalysisTaskHFEMultiplicity::PassEIDCuts(AliAODTrack *track, AliAODCal
   if(nsigma_ele < fCutNsigmaEMin || nsigma_ele > fCutNsigmaEMax) return kFALSE;
  
   if(m20 < fCutM20Min || m20 > fCutM20Max) return kFALSE;
-  if(eop < fCutEopEMin || eop > fCutEopEMax) return kFALSE;
+ // if(eop < fCutEopEMin || eop > fCutEopEMax) return kFALSE;
 
   return kTRUE;
 }
@@ -1600,18 +1555,17 @@ Bool_t AliAnalysisTaskHFEMultiplicity::PassEventSelect(AliAODEvent *fAOD)
 
   const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
   
-  Double_t NContV = pVtx->GetNContributors();
+ // Double_t NContV = pVtx->GetNContributors();
 
-  if(NContV<fCutNcontV) return kFALSE;
-cout<<"contributor n"<<fCutNcontV<<endl;
-  fNevents->Fill(1);
+ // if(NContV<fCutNcontV) return kFALSE;
+  //fNevents->Fill(1);
  
   Zvertex =pVtx->GetZ();
   Yvertex =pVtx->GetY();
   Xvertex =pVtx->GetX();
   
-  if(TMath::Abs(Zvertex)>10.0) return kFALSE;
-  fNevents->Fill(2);
+  //if(TMath::Abs(Zvertex)>10.0) return kFALSE;
+  //fNevents->Fill(2);
   
   
   fVtxZ->Fill(Zvertex);

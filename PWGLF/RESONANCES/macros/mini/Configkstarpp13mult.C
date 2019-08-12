@@ -125,7 +125,7 @@ Float_t nsigmaPiTOF=3.0;
 
     // axis X: invmass (or resolution)
     if (useIM[i]) 
-      out->AddAxis(imID, 90, 0.6, 1.5);
+      out->AddAxis(imID, 240, 0.6, 3.0);
     else
       out->AddAxis(resID, 200, -0.02, 0.02);
     

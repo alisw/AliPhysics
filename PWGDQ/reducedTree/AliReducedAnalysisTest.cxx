@@ -25,6 +25,13 @@ ClassImp(AliReducedAnalysisTest);
 AliReducedAnalysisTest::AliReducedAnalysisTest() :
   AliReducedAnalysisTaskSE(),
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
+  fFillEventHistograms(kTRUE),
+  fFillTriggerHistograms(kTRUE),
+  fFillTrackHistograms(kTRUE),
+  fFillTrackMCTruthHistograms(kTRUE),
+  fFillTrackV0Histograms(kTRUE),
+  fFillPairHistograms(kTRUE),
+  fFillCaloClusterHistograms(kTRUE),
   fEventCuts(),
   fTrackCuts(),
   fPairCuts(),
@@ -42,6 +49,13 @@ AliReducedAnalysisTest::AliReducedAnalysisTest() :
 AliReducedAnalysisTest::AliReducedAnalysisTest(const Char_t* name, const Char_t* title) :
   AliReducedAnalysisTaskSE(name,title),
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
+  fFillEventHistograms(kTRUE),
+  fFillTriggerHistograms(kTRUE),
+  fFillTrackHistograms(kTRUE),
+  fFillTrackMCTruthHistograms(kTRUE),
+  fFillTrackV0Histograms(kTRUE),
+  fFillPairHistograms(kTRUE),
+  fFillCaloClusterHistograms(kTRUE),
   fEventCuts(),
   fTrackCuts(),
   fPairCuts(),
@@ -131,101 +145,146 @@ void AliReducedAnalysisTest::Process() {
   if(!fEvent) return;
   
   if(fProcessMCInfo) {
-     if(fEventCounter%10000==0) 
+     if(fEventCounter%1000==0) 
         cout << "Event no. " << fEventCounter << endl;
   }
   else {
-     if(fEventCounter%10000==0) 
+     if(fEventCounter%1000==0) 
         cout << "Event no. " << fEventCounter << endl;
   }
   fEventCounter++;
   
   AliReducedVarManager::SetEvent(fEvent);
   
-  AliReducedVarManager::FillEventInfo(fEvent, fValues);
-  fHistosManager->FillHistClass("Event_NoCuts", fValues);
-  if(fEvent->IsA()==AliReducedEventInfo::Class()) {
-    for(UShort_t ibit=0; ibit<64; ++ibit) {
-      AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
-      fHistosManager->FillHistClass("OnlineTriggers_NoCuts", fValues);
-      for(UShort_t ibit2=0; ibit2<64; ++ibit2) {
-         AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues, ibit2);
-         fHistosManager->FillHistClass("TriggerCorrelation_NoCuts", fValues);
-      }
-    }
+  if(fFillEventHistograms || fFillTriggerHistograms) {
+      AliReducedVarManager::FillEventInfo(fEvent, fValues);
+  }
+  if(fFillEventHistograms) 
+     fHistosManager->FillHistClass("Event_NoCuts", fValues);
+  
+  if(fFillTriggerHistograms) {
+     if(fEvent->IsA()==AliReducedEventInfo::Class()) {
+        for(UShort_t ibit=0; ibit<64; ++ibit) {
+         AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
+         fHistosManager->FillHistClass("OnlineTriggers_NoCuts", fValues);
+         for(UShort_t ibit2=0; ibit2<64; ++ibit2) {
+            AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues, ibit2);
+            fHistosManager->FillHistClass("TriggerCorrelation_NoCuts", fValues);
+         }
+       }
+     }
   }
   if(!IsEventSelected(fEvent)) return;
   
   AliReducedEventInfo* eventInfo = NULL;
   if(fEvent->IsA()==AliReducedEventInfo::Class()) eventInfo = (AliReducedEventInfo*)fEvent;
   
-  if(eventInfo) {
-    for(UShort_t ibit=0; ibit<64; ++ibit) {
-      AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
-      fHistosManager->FillHistClass("OnlineTriggers_AfterCuts", fValues);
-      for(UShort_t ibit2=0; ibit2<64; ++ibit2) {
-         AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues, ibit2);
-         fHistosManager->FillHistClass("TriggerCorrelation_AfterCuts", fValues);
-      }
-      for(UShort_t i=0; i<32; ++i) {
-        AliReducedVarManager::FillL0TriggerInputs(eventInfo, i, fValues);
-        fHistosManager->FillHistClass("OnlineTriggers_vs_L0TrigInputs", fValues);
-      }
-      for(UShort_t i=0; i<32; ++i) {
-        AliReducedVarManager::FillL1TriggerInputs(eventInfo, i, fValues);
-        fHistosManager->FillHistClass("OnlineTriggers_vs_L1TrigInputs", fValues);
-      }
-      for(UShort_t i=0; i<16; ++i) {
-        AliReducedVarManager::FillL2TriggerInputs(eventInfo, i, fValues);
-        fHistosManager->FillHistClass("OnlineTriggers_vs_L2TrigInputs", fValues);
+    
+  if(fFillTriggerHistograms) {
+      if(eventInfo) {
+      for(UShort_t ibit=0; ibit<64; ++ibit) {
+         AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
+         fHistosManager->FillHistClass("OnlineTriggers_AfterCuts", fValues);
+         for(UShort_t ibit2=0; ibit2<64; ++ibit2) {
+            AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues, ibit2);
+            fHistosManager->FillHistClass("TriggerCorrelation_AfterCuts", fValues);
+         }
+         for(UShort_t i=0; i<32; ++i) {
+            AliReducedVarManager::FillL0TriggerInputs(eventInfo, i, fValues);
+            fHistosManager->FillHistClass("OnlineTriggers_vs_L0TrigInputs", fValues);
+         }
+         for(UShort_t i=0; i<32; ++i) {
+            AliReducedVarManager::FillL1TriggerInputs(eventInfo, i, fValues);
+            fHistosManager->FillHistClass("OnlineTriggers_vs_L1TrigInputs", fValues);
+         }
+         for(UShort_t i=0; i<16; ++i) {
+            AliReducedVarManager::FillL2TriggerInputs(eventInfo, i, fValues);
+            fHistosManager->FillHistClass("OnlineTriggers_vs_L2TrigInputs", fValues);
+         }
       }
     }
-  }
+  }  // end if(fFillTriggerHistograms)
     
-  for(UShort_t ibit=0; ibit<64; ++ibit) {
-    AliReducedVarManager::FillEventTagInput(fEvent, ibit, fValues);
-    fHistosManager->FillHistClass("EvtTags", fValues);
+  if(fFillEventHistograms) {
+      for(UShort_t ibit=0; ibit<64; ++ibit) {
+         AliReducedVarManager::FillEventTagInput(fEvent, ibit, fValues);
+         fHistosManager->FillHistClass("EvtTags", fValues);
+      }
   }
   
   if(eventInfo) {
-    for(UShort_t ibit=0; ibit<32; ++ibit) {
-      AliReducedVarManager::FillL0TriggerInputs(eventInfo, ibit, fValues);
-      fHistosManager->FillHistClass("L0TriggerInput", fValues);
-      for(UShort_t ibit2=0; ibit2<32; ++ibit2) {
-         AliReducedVarManager::FillL0TriggerInputs(eventInfo, ibit, fValues, ibit2);
-         fHistosManager->FillHistClass("L0InputCorrelation", fValues);
-      }
-    }
-    for(UShort_t ibit=0; ibit<32; ++ibit) {
-      AliReducedVarManager::FillL1TriggerInputs(eventInfo, ibit, fValues);
-      fHistosManager->FillHistClass("L1TriggerInput", fValues);
-      for(UShort_t ibit2=0; ibit2<32; ++ibit2) {
-         AliReducedVarManager::FillL1TriggerInputs(eventInfo, ibit, fValues, ibit2);
-         fHistosManager->FillHistClass("L1InputCorrelation", fValues);
-      }
-    }
-    for(UShort_t ibit=0; ibit<16; ++ibit) {
-      AliReducedVarManager::FillL2TriggerInputs(eventInfo, ibit, fValues);
-      fHistosManager->FillHistClass("L2TriggerInput", fValues);
-      for(UShort_t ibit2=0; ibit2<16; ++ibit2) {
-         AliReducedVarManager::FillL2TriggerInputs(eventInfo, ibit, fValues, ibit2);
-         fHistosManager->FillHistClass("L2InputCorrelation", fValues);
-      }
-    }
+    if(fFillTriggerHistograms) {
+         for(UShort_t ibit=0; ibit<32; ++ibit) {
+            AliReducedVarManager::FillL0TriggerInputs(eventInfo, ibit, fValues);
+            fHistosManager->FillHistClass("L0TriggerInput", fValues);
+            for(UShort_t ibit2=0; ibit2<32; ++ibit2) {
+               AliReducedVarManager::FillL0TriggerInputs(eventInfo, ibit, fValues, ibit2);
+               fHistosManager->FillHistClass("L0InputCorrelation", fValues);
+            }
+         }
+         for(UShort_t ibit=0; ibit<32; ++ibit) {
+            AliReducedVarManager::FillL1TriggerInputs(eventInfo, ibit, fValues);
+            fHistosManager->FillHistClass("L1TriggerInput", fValues);
+            for(UShort_t ibit2=0; ibit2<32; ++ibit2) {
+               AliReducedVarManager::FillL1TriggerInputs(eventInfo, ibit, fValues, ibit2);
+               fHistosManager->FillHistClass("L1InputCorrelation", fValues);
+            }
+         }
+         for(UShort_t ibit=0; ibit<16; ++ibit) {
+            AliReducedVarManager::FillL2TriggerInputs(eventInfo, ibit, fValues);
+            fHistosManager->FillHistClass("L2TriggerInput", fValues);
+            for(UShort_t ibit2=0; ibit2<16; ++ibit2) {
+               AliReducedVarManager::FillL2TriggerInputs(eventInfo, ibit, fValues, ibit2);
+               fHistosManager->FillHistClass("L2InputCorrelation", fValues);
+            }
+         }
+    }  // end if(fFillTriggerHistograms)
     
-    for(Int_t icl=0; icl<eventInfo->GetNCaloClusters(); ++icl) {
-      AliReducedVarManager::FillCaloClusterInfo(eventInfo->GetCaloCluster(icl), fValues);
-      fHistosManager->FillHistClass("CaloClusters", fValues);
+    if(fFillCaloClusterHistograms) {
+      for(Int_t icl=0; icl<eventInfo->GetNCaloClusters(); ++icl) {
+         AliReducedVarManager::FillCaloClusterInfo(eventInfo->GetCaloCluster(icl), fValues);
+         fHistosManager->FillHistClass("CaloClusters", fValues);
+      }
     }
   }
-     
-  // fill track histograms for the first track array
-  FillTrackHistograms(fEvent->GetTracks());
+  
+  fValues[AliReducedVarManager::kMCNch] = 0;
+  fValues[AliReducedVarManager::kMCNchSPDacc] = 0;
+  fValues[AliReducedVarManager::kMCNchNegSide] = 0;
+  fValues[AliReducedVarManager::kMCNchPosSide] = 0;
+   // fill track histograms for the first track array
+   FillTrackHistograms(fEvent->GetTracks());
   // fill track histograms for the second track array
-  if(fEvent->NTracks2()>0)
-     FillTrackHistograms(fEvent->GetTracks2());
+   if(fEvent->NTracks2()>0)
+      FillTrackHistograms(fEvent->GetTracks2());
   
-    
+   fValues[AliReducedVarManager::kDiffNchSPDtrklts] = fValues[AliReducedVarManager::kMCNch] - ((AliReducedEventInfo*)fEvent)->SPDntracklets();
+   fValues[AliReducedVarManager::kDiffNchSPDaccSPDtrklts] = fValues[AliReducedVarManager::kMCNchSPDacc] - ((AliReducedEventInfo*)fEvent)->SPDntracklets();
+   
+   fValues[AliReducedVarManager::kRelDiffNchSPDtrklts] = (fValues[AliReducedVarManager::kMCNch]>0.1 ?           fValues[AliReducedVarManager::kDiffNchSPDtrklts] / fValues[AliReducedVarManager::kMCNch] : 0.0);
+   
+   fValues[AliReducedVarManager::kRelDiffNchSPDaccSPDtrklts] = (fValues[AliReducedVarManager::kMCNchSPDacc]>0.1 ? fValues[AliReducedVarManager::kDiffNchSPDaccSPDtrklts] / fValues[AliReducedVarManager::kMCNchSPDacc] : 0.0);
+   
+   if(fValues[AliReducedVarManager::kMCNch] + ((AliReducedEventInfo*)fEvent)->SPDntracklets() > 0.1) {
+      fValues[AliReducedVarManager::kRelDiff2NchSPDtrklts] = 2.0*fValues[AliReducedVarManager::kDiffNchSPDtrklts] / (fValues[AliReducedVarManager::kMCNch] + ((AliReducedEventInfo*)fEvent)->SPDntracklets());
+   }
+   else 
+      fValues[AliReducedVarManager::kRelDiff2NchSPDtrklts] = 0.0;
+   
+   if(fValues[AliReducedVarManager::kMCNchSPDacc] + ((AliReducedEventInfo*)fEvent)->SPDntracklets()) {
+      fValues[AliReducedVarManager::kRelDiff2NchSPDaccSPDtrklts] = 2.0*fValues[AliReducedVarManager::kDiffNchSPDaccSPDtrklts] / (fValues[AliReducedVarManager::kMCNchSPDacc] + ((AliReducedEventInfo*)fEvent)->SPDntracklets());
+   }
+   else
+      fValues[AliReducedVarManager::kRelDiff2NchSPDaccSPDtrklts] = 0.0;
+   
+  if(fFillEventHistograms) {
+     for(Int_t ibin=0; ibin<32; ibin++) {
+        fValues[AliReducedVarManager::kEtaBinForSPDtracklets] = -1.6 + ibin*0.1 + 0.05;
+        fValues[AliReducedVarManager::kSPDntrackletsInCurrentEtaBin] = eventInfo->SPDntracklets(ibin);
+        fHistosManager->FillHistClass("EventMC_SPDtrkBins_AfterCuts", fValues);
+     }
+  }
+  
   TClonesArray* pairList = fEvent->GetPairs();
   TIter nextPair(pairList);
   AliReducedPairInfo* pair = 0x0;
@@ -235,7 +294,9 @@ void AliReducedAnalysisTest::Process() {
       pair = (AliReducedPairInfo*)nextPair();
     
       if(!IsPairSelected(pair)) continue;
-    
+      fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
+      if(!fFillPairHistograms) continue;
+      
       TString pairTypeStr = "";
       if(pair->PairType()==0) pairTypeStr = "Offline";
       if(pair->PairType()==1) pairTypeStr = "OnTheFly";
@@ -275,11 +336,16 @@ void AliReducedAnalysisTest::Process() {
            fHistosManager->FillHistClass(Form("PairQA_ADzeroToKplusPiminus_%s", type[Int_t(pair->PairType())].Data()),fValues);
            break;     
       };
-      fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
     }  // end loop over pairs
   }  // end if(pairList)
     
-  fHistosManager->FillHistClass("Event_AfterCuts", fValues);
+  if(fFillEventHistograms) {
+      fHistosManager->FillHistClass("Event_AfterCuts", fValues);
+      for(UShort_t ich=0; ich<64; ++ich) {
+         AliReducedVarManager::FillV0Channel(ich, fValues);
+         fHistosManager->FillHistClass("V0Channels", fValues);
+      }
+  }
 }
 
 //___________________________________________________________________________
@@ -287,6 +353,12 @@ void AliReducedAnalysisTest::FillTrackHistograms(TClonesArray* trackList) {
    //
    // fill tracks histograms
    //
+   Int_t vtxIdx = 0;
+   if(fEvent->Vertex(2)>-10.0 && fEvent->Vertex(2)<10.0) {
+      vtxIdx = Int_t(TMath::Floor(fEvent->Vertex(2))) + 10;
+   }
+   else vtxIdx = -1;
+   
    AliReducedBaseTrack* track = 0x0;
    TIter nextTrack(trackList);
    if(trackList) {
@@ -294,91 +366,117 @@ void AliReducedAnalysisTest::FillTrackHistograms(TClonesArray* trackList) {
          track = (AliReducedBaseTrack*)nextTrack();
          if(!track) continue;
          // reset track variables
-         for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedEOverP; ++i) fValues[i]=-9999.;
+         for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i]=-9999.;
          
-         if(fProcessMCInfo && track->GetMCFlags()) {
-            AliReducedVarManager::FillTrackInfo(track,fValues);
-            TObjArray* namesArr = fMCBitsNames.Tokenize(";");
-            for(Int_t iflag = 0; iflag<namesArr->GetEntries(); ++iflag)
-               if(track->TestMCFlag(iflag)) fHistosManager->FillHistClass(Form("PureMCqa_%s", namesArr->At(iflag)->GetName()), fValues);
-            for(UShort_t iflag=0; iflag<32; ++iflag) {
-               AliReducedVarManager::FillTrackMCFlag(track, iflag, fValues);
-               fHistosManager->FillHistClass("PureMCflags", fValues);
-               for(UShort_t iflag2=0; iflag2<32; ++iflag2) {
-                  AliReducedVarManager::FillTrackMCFlag(track, iflag, fValues, iflag2);
-                  fHistosManager->FillHistClass("CorrelationMCflags", fValues);
+          
+            if(fProcessMCInfo && track->IsMCKineParticle()) {
+               AliReducedVarManager::FillTrackInfo(track,fValues);
+               AliReducedVarManager::FillClusterMatchedTrackInfo(track,fValues);
+               /*if(TMath::Abs(track->Eta())>1.0 || TMath::Abs(track->Eta())<0.0001 || track->Charge()==0) continue;
+               fValues[AliReducedVarManager::kMCNch] += 1.0;
+               if(track->Eta()<0.0) fValues[AliReducedVarManager::kMCNchNegSide] += 1.0;
+               if(track->Eta()>0.0) fValues[AliReducedVarManager::kMCNchPosSide] += 1.0;
+               if(vtxIdx>=0) {
+                  if(track->Eta()>AliReducedVarManager::fgkSPDEtaCutsVsVtxZ[vtxIdx][0] && 
+                     track->Eta()<AliReducedVarManager::fgkSPDEtaCutsVsVtxZ[vtxIdx][1])
+                     fValues[AliReducedVarManager::kMCNchSPDacc] += 1.0;
+               }*/
+               
+               TObjArray* namesArr = fMCBitsNames.Tokenize(";");
+               for(Int_t iflag = 0; iflag<namesArr->GetEntries(); ++iflag)
+                  if(track->TestMCFlag(iflag)) fHistosManager->FillHistClass(Form("PureMCqa_%s", namesArr->At(iflag)->GetName()), fValues);
+                  
+               if(fFillTrackMCTruthHistograms) {
+                  for(UShort_t iflag=0; iflag<32; ++iflag) {
+                     AliReducedVarManager::FillTrackMCFlag(track, iflag, fValues);
+                     fHistosManager->FillHistClass("PureMCflags", fValues);
+                     for(UShort_t iflag2=0; iflag2<32; ++iflag2) {
+                        AliReducedVarManager::FillTrackMCFlag(track, iflag, fValues, iflag2);
+                        fHistosManager->FillHistClass("CorrelationMCflags", fValues);
+                     }
+                  }
                }
+               continue;
             }
-            continue;
-         }
+         // end if(fFillTrackMCTruthHistograms)
          
          if(!IsTrackSelected(track)) continue;
          AliReducedVarManager::FillTrackInfo(track,fValues);
-         fHistosManager->FillHistClass("TrackQA_AllTracks", fValues);
+         AliReducedVarManager::FillClusterMatchedTrackInfo(track,fValues);
+         if(fFillTrackHistograms)
+            fHistosManager->FillHistClass("TrackQA_AllTracks", fValues);
+         
          TObjArray* namesBitArr = fTrackFilterBitNames.Tokenize(";");
-         for(Int_t iflag = 0; iflag<namesBitArr->GetEntries(); ++iflag)
-            if(track->TestQualityFlag(iflag+32)) fHistosManager->FillHistClass(Form("TrackQA_%s", namesBitArr->At(iflag)->GetName()), fValues);
+         if(fFillTrackHistograms)
+            for(Int_t iflag = 0; iflag<namesBitArr->GetEntries(); ++iflag)
+               if(track->TestQualityFlag(iflag+32)) 
+                  fHistosManager->FillHistClass(Form("TrackQA_%s", namesBitArr->At(iflag)->GetName()), fValues);
          
          
          AliReducedTrackInfo* trackInfo = NULL;
          if(track->IsA()==AliReducedTrackInfo::Class()) trackInfo = (AliReducedTrackInfo*)track;
          
-         if(trackInfo) {
-            for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
-               AliReducedVarManager::FillTrackingFlag(trackInfo, iflag, fValues);
-               fHistosManager->FillHistClass("TrackingFlags", fValues);
+         if(fFillTrackHistograms) {
+            if(trackInfo) {
+               for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
+                  AliReducedVarManager::FillTrackingFlag(trackInfo, iflag, fValues);
+                  fHistosManager->FillHistClass("TrackingFlags", fValues);
+               }
             }
-         }
-         for(UShort_t iflag=0; iflag<64; ++iflag) {
-            AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
-            fHistosManager->FillHistClass("TrackQualityFlags", fValues);
-            for(UShort_t iflag2=0; iflag2<64; ++iflag2) {
-               AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues,iflag2);
-               fHistosManager->FillHistClass("CorrelationQualityFlagsTracks", fValues);
-            }
-         }
-         if(trackInfo) {
-            for(Int_t iLayer=0; iLayer<6; ++iLayer) {
-               AliReducedVarManager::FillITSlayerFlag(trackInfo, iLayer, fValues);
-               fHistosManager->FillHistClass("ITSclusterMap", fValues);
-            }
-            for(Int_t iLayer=0; iLayer<8; ++iLayer) {
-               AliReducedVarManager::FillTPCclusterBitFlag(trackInfo, iLayer, fValues);
-               fHistosManager->FillHistClass("TPCclusterMap", fValues);
-            }
-         }
-         if(track->IsGammaLeg()) {
-            fHistosManager->FillHistClass("TrackQA_GammaLeg", fValues);
+         
             for(UShort_t iflag=0; iflag<64; ++iflag) {
                AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
-               fHistosManager->FillHistClass("TrackQualityFlags_GammaLeg", fValues);
+               fHistosManager->FillHistClass("TrackQualityFlags", fValues);
+               for(UShort_t iflag2=0; iflag2<64; ++iflag2) {
+                  AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues,iflag2);
+                  fHistosManager->FillHistClass("CorrelationQualityFlagsTracks", fValues);
+               }
+            }
+            if(trackInfo) {
+               for(Int_t iLayer=0; iLayer<6; ++iLayer) {
+                  AliReducedVarManager::FillITSlayerFlag(trackInfo, iLayer, fValues);
+                  fHistosManager->FillHistClass("ITSclusterMap", fValues);
+               }
+               for(Int_t iLayer=0; iLayer<8; ++iLayer) {
+                  AliReducedVarManager::FillTPCclusterBitFlag(trackInfo, iLayer, fValues);
+                  fHistosManager->FillHistClass("TPCclusterMap", fValues);
+               }
             }
          }
-         if(track->IsPureGammaLeg()) fHistosManager->FillHistClass("TrackQA_PureGammaLeg", fValues);
-         if(track->IsK0sLeg()) {
-            fHistosManager->FillHistClass("TrackQA_K0sLeg", fValues);
-            for(UShort_t iflag=0; iflag<64; ++iflag) {
-               AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
-               fHistosManager->FillHistClass("TrackQualityFlags_K0sLeg", fValues);
+         if(fFillTrackV0Histograms) {
+            if(track->IsGammaLeg()) {
+               fHistosManager->FillHistClass("TrackQA_GammaLeg", fValues);
+               for(UShort_t iflag=0; iflag<64; ++iflag) {
+                  AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
+                  fHistosManager->FillHistClass("TrackQualityFlags_GammaLeg", fValues);
+               }
             }
-         }
-         if(track->IsPureK0sLeg()) fHistosManager->FillHistClass("TrackQA_PureK0sLeg", fValues);
-         if(track->IsLambdaLeg()) {
-            if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_LambdaPosLeg", fValues);
-            else fHistosManager->FillHistClass("TrackQA_LambdaNegLeg", fValues);
-         }
-         if(track->IsPureLambdaLeg()) {
-            if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureLambdaPosLeg", fValues);
-            else fHistosManager->FillHistClass("TrackQA_PureLambdaNegLeg", fValues);
-         }
-         if(track->IsALambdaLeg()) {
-            if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_ALambdaPosLeg", fValues);
-            else fHistosManager->FillHistClass("TrackQA_ALambdaNegLeg", fValues);
-         }
-         if(track->IsPureALambdaLeg()) {
-            if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureALambdaPosLeg", fValues);
-            else fHistosManager->FillHistClass("TrackQA_PureALambdaNegLeg", fValues);
-         }  
+            if(track->IsPureGammaLeg()) fHistosManager->FillHistClass("TrackQA_PureGammaLeg", fValues);
+            if(track->IsK0sLeg()) {
+               fHistosManager->FillHistClass("TrackQA_K0sLeg", fValues);
+               for(UShort_t iflag=0; iflag<64; ++iflag) {
+                  AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
+                  fHistosManager->FillHistClass("TrackQualityFlags_K0sLeg", fValues);
+               }
+            }
+            if(track->IsPureK0sLeg()) fHistosManager->FillHistClass("TrackQA_PureK0sLeg", fValues);
+            if(track->IsLambdaLeg()) {
+               if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_LambdaPosLeg", fValues);
+               else fHistosManager->FillHistClass("TrackQA_LambdaNegLeg", fValues);
+            }
+            if(track->IsPureLambdaLeg()) {
+               if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureLambdaPosLeg", fValues);
+               else fHistosManager->FillHistClass("TrackQA_PureLambdaNegLeg", fValues);
+            }
+            if(track->IsALambdaLeg()) {
+               if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_ALambdaPosLeg", fValues);
+               else fHistosManager->FillHistClass("TrackQA_ALambdaNegLeg", fValues);
+            }
+            if(track->IsPureALambdaLeg()) {
+               if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureALambdaPosLeg", fValues);
+               else fHistosManager->FillHistClass("TrackQA_PureALambdaNegLeg", fValues);
+            }  
+         }        // end if(fFillTrackV0Histograms)
       }  // end loop over tracks
    }  // end if(trackList)  
 }

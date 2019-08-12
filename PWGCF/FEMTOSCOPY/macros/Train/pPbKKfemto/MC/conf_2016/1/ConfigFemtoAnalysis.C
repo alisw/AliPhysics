@@ -52,6 +52,8 @@
 #include "AliFemtoCutMonitorParticlePtPDG.h"
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoCutMonitorCollections.h"
+#include "AliFemtoModelCorrFctnKK.h"
+#include "AliFemtoModelCorrFctnKpKp.h"
 #endif
 
 //________________________________________________________________________
@@ -96,23 +98,31 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   Reader->SetDCAglobalTrack(kTRUE);
   Reader->SetKaonAnalysis(kTRUE);*/
 
-  AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODMultSelection();
+  //AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODMultSelection();
+  AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetReadMC(kTRUE);
-  //Reader->SetKaonAnalysis(kTRUE);
-  Reader->SetPionAnalysis(kTRUE);
+  Reader->SetKaonAnalysis(kTRUE);
+  //Reader->SetPionAnalysis(kTRUE);
   Reader->SetFilterBit(7);
   Reader->SetReadV0(1);//exp
   //Reader->SetEPVZERO(kTRUE);//exp
   Reader->SetCentralityFlattening(kTRUE);//exp
   Reader->SetUseMultiplicity(AliFemtoEventReaderAODMultSelection::kCentrality);//ER
 
-  /*AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
-  Reader->SetFilterBit(7);
-  Reader->SetEPVZERO(kTRUE);
-  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
-  Reader->SetCentralityFlattening(kFALSE);
-  Reader->SetReadV0(0);//from ML*/
-  
+  AliFemtoModelGausRinvFreezeOutGenerator *tFreeze = new AliFemtoModelGausRinvFreezeOutGenerator();
+  tFreeze->SetSizeInv(1.5*TMath::Sqrt(2.0));
+  AliFemtoModelWeightGeneratorLednicky *tWeight = new AliFemtoModelWeightGeneratorLednicky();
+  tWeight->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
+  tWeight->SetCoulOff();
+  tWeight->SetQuantumOff();
+  tWeight->SetStrongOff();
+  tWeight->Set3BodyOff();
+  AliFemtoModelManager *tModelManager = new AliFemtoModelManager();
+  tModelManager->AcceptFreezeOutGenerator(tFreeze);
+  tModelManager->AcceptWeightGenerator(tWeight);
+  tModelManager->CreateCopyHiddenInfo(kTRUE);
+
+
   AliFemtoManager* Manager=new AliFemtoManager();
   Manager->SetEventReader(Reader);
 
@@ -124,10 +134,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoCutMonitorEventVertex *cutFailEvVetaphitpc[20];
   AliFemtoCutMonitorCollections   *cutPassColletaphitpc[20];
   AliFemtoCutMonitorCollections   *cutFailColletaphitpc[20];
-  //AliFemtoKKTrackCut           *dtc1etaphitpc[20];
-  //AliFemtoKKTrackCut           *dtc2etaphitpc[20];
-  AliFemtoESDTrackCut           *dtc1etaphitpc[20];
-  AliFemtoESDTrackCut           *dtc2etaphitpc[20];
+  AliFemtoKKTrackCut           *dtc1etaphitpc[20];
+  AliFemtoKKTrackCut           *dtc2etaphitpc[20];
+  //AliFemtoESDTrackCut           *dtc1etaphitpc[20];
+  //AliFemtoESDTrackCut           *dtc2etaphitpc[20];
   AliFemtoCutMonitorParticleYPt *cutPass1YPtetaphitpc[20];
   AliFemtoCutMonitorParticleYPt *cutFail1YPtetaphitpc[20];
   AliFemtoCutMonitorParticlePID *cutPass1PIDetaphitpc[20];
@@ -157,6 +167,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoShareQualityCorrFctn  *cqinvsqtpc[20*10];
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[20];
   AliFemtoTPCInnerCorrFctn      *cqinvinnertpc[20*10];
+  //AliFemtoModelCorrFctnKK   *cqinvkttpcmodel[20*8];
+  AliFemtoModelCorrFctnKpKp   *cqinvkttpcmodel[20*8];
+  //AliFemtoModelCorrFctnSource   *cqinvkttpcmodel[20*8];
 
   // *** Begin pion-pion analysis ***
   int aniter = 0;
@@ -188,8 +201,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           cutFailColletaphitpc[aniter] = new AliFemtoCutMonitorCollections(Form("cutFail%stpcM%i", chrgs[ichg], imult));
           mecetaphitpc[aniter]->AddCutMonitor(cutPassColletaphitpc[aniter], cutFailColletaphitpc[aniter]);
 
-	  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
-	  //dtc1etaphitpc[aniter] = new AliFemtoKKTrackCut();
+	  //dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
+	  dtc1etaphitpc[aniter] = new AliFemtoKKTrackCut();
 
 	  if (ichg == 0)
 	    dtc1etaphitpc[aniter]->SetCharge(1.0);
@@ -199,15 +212,15 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	   dtc1etaphitpc[aniter]->SetPt(0.14,1.5);
 	   dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
 
-	  //PID method
-	   //dtc1etaphitpc[aniter]->SetMass(KaonMass);
-	   dtc1etaphitpc[aniter]->SetMass(PionMass);
-	   //dtc1etaphitpc[aniter]->SetMostProbableKaon();
-	   dtc1etaphitpc[aniter]->SetMostProbablePion();
+	   //PID method
+	   dtc1etaphitpc[aniter]->SetMass(KaonMass);
+	   //dtc1etaphitpc[aniter]->SetMass(PionMass);
+	   dtc1etaphitpc[aniter]->SetMostProbableKaon();
+	   //dtc1etaphitpc[aniter]->SetMostProbablePion();
 	   //dtc1etaphitpc[aniter]->SetPIDMethod(AliFemtoESDTrackCut::kContour);
 //------------------- November 2013 -----------------------------------< 
 	  // new cuts to remove electron (do not take into analysis if 400<p<500) 
-	   /*dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
+	   dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	   dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
 	   dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(2.0);
 	   dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
@@ -216,7 +229,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	   // when momentum is greater then 800 MeV/c
 	   dtc1etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
 	   dtc1etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
-	   dtc1etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);*/
+	   dtc1etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);
 	  //------------------- November 2013 ----------------------------------->
 	  //Track quality cuts
 	 //dtc1etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
@@ -305,10 +318,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  cqinvkttpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax);
 	  anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[aniter]);
 
+
 	  //3D cartesian (without kT bins)
 	  if(run3d){
 	    //cq3dlcmskttpc[aniter] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%i", chrgs[ichg], imult),60,0.5);
-	    cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult),60,-2.0,2.0);
+	    cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult),80,-2.0,2.0);
 	    anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);
 	    
 	  }
@@ -343,18 +357,26 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      cqinvinnertpc[ktm]->SetRadius(1.2);
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[ktm]);
 
+	      //model
+	      cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctnKpKp(Form("cqinvModel%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
+	      //cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctnSource(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0, shqmax);
+	      cqinvkttpcmodel[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+	      cqinvkttpcmodel[ktm]->SetKaonPDG(kTRUE);
+	      cqinvkttpcmodel[ktm]->ConnectToManager(tModelManager);
+	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpcmodel[ktm]);
+
 	      if (run3d) {
 		//		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);
 		//cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,0.5);
-		cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,-2.0,2.0);
+		cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),80,-2.0,2.0);
 		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);
 	      }
 	    }
 	  }
 	  
-	  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),39, 39);
-	  anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
+	  /*cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),39, 39);
+	    anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);*/
 	  
 	  Manager->AddAnalysis(anetaphitpc[aniter]);	
 	}

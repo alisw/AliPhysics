@@ -1,13 +1,9 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoQinvCorrFctn:                                                 //
-// a simple Q-invariant correlation function                             //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoQinvCorrFctn.cxx
+///
 
 #include "AliFemtoQinvCorrFctn.h"
-//#include "AliFemtoHisto.h"
-#include <cstdio>
+// #include <cstdio>
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -16,20 +12,21 @@
 #endif
 
 //____________________________
-AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
-  fNumerator(0),
-  fDenominator(0),
-  fRatio(0),
-  fkTMonitor(0),
-  fDetaDphiscal(kFALSE),
-  fPairKinematics(kFALSE),
-  fRaddedps(1.2),
-  fNumDEtaDPhiS(0),
-  fDenDEtaDPhiS(0),
-  PairReader(0)// ,
-  // fTrack1(NULL),
-  // fTrack2(NULL)
-
+AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const char* title,
+                                           const int& nbins,
+                                           const float& QinvLo,
+                                           const float& QinvHi):
+  AliFemtoCorrFctn()
+  , fNumerator(nullptr)
+  , fDenominator(nullptr)
+  , fRatio(nullptr)
+  , fkTMonitor(nullptr)
+  , fDetaDphiscal(kFALSE)
+  , fPairKinematics(kFALSE)
+  , fRaddedps(1.2)
+  , fNumDEtaDPhiS(nullptr)
+  , fDenDEtaDPhiS(nullptr)
+  , PairReader(nullptr)
 {
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
@@ -78,25 +75,21 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const char* title, const int& nbins, 
 
   fNumDEtaDPhiS->Sumw2();
   fDenDEtaDPhiS->Sumw2();
-
 }
 
 //____________________________
-AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn) :
-  AliFemtoCorrFctn(),
-  fNumerator(0),
-  fDenominator(0),
-  fRatio(0),
-  fkTMonitor(0),
-  fDetaDphiscal(kFALSE),
-  fPairKinematics(kFALSE),
-  fRaddedps(1.2),
-  fNumDEtaDPhiS(0),
-  fDenDEtaDPhiS(0),
-  PairReader(0)// ,
-  // fTrack1(NULL),
-  // fTrack2(NULL)
-
+AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn):
+  AliFemtoCorrFctn(aCorrFctn)
+  , fNumerator(nullptr)
+  , fDenominator(nullptr)
+  , fRatio(nullptr)
+  , fkTMonitor(nullptr)
+  , fDetaDphiscal(aCorrFctn.fDetaDphiscal)
+  , fPairKinematics(aCorrFctn.fPairKinematics)
+  , fRaddedps(aCorrFctn.fRaddedps)
+  , fNumDEtaDPhiS(nullptr)
+  , fDenDEtaDPhiS(nullptr)
+  , PairReader(nullptr)
 {
   // copy constructor
   fNumerator = new TH1D(*aCorrFctn.fNumerator);
@@ -107,17 +100,13 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn
   fNumDEtaDPhiS = new TH2D(*aCorrFctn.fNumDEtaDPhiS);
   fDenDEtaDPhiS = new TH2D(*aCorrFctn.fDenDEtaDPhiS);
 
-  fDetaDphiscal = aCorrFctn.fDetaDphiscal;
-  fRaddedps = aCorrFctn.fRaddedps;
-
-  fPairKinematics = aCorrFctn.fPairKinematics;
-
-  if (aCorrFctn.PairReader)
-    PairReader = (TNtuple*)aCorrFctn.PairReader;
-
+  if (aCorrFctn.PairReader) {
+    PairReader = (TNtuple*)aCorrFctn.PairReader->Clone();
+  }
 }
 //____________________________
-AliFemtoQinvCorrFctn::~AliFemtoQinvCorrFctn(){
+AliFemtoQinvCorrFctn::~AliFemtoQinvCorrFctn()
+{
   // destructor
   delete fNumerator;
   delete fDenominator;
@@ -126,42 +115,38 @@ AliFemtoQinvCorrFctn::~AliFemtoQinvCorrFctn(){
   delete fNumDEtaDPhiS;
   delete fDenDEtaDPhiS;
   delete PairReader;
-
 }
 //_________________________
 AliFemtoQinvCorrFctn& AliFemtoQinvCorrFctn::operator=(const AliFemtoQinvCorrFctn& aCorrFctn)
 {
   // assignment operator
-  if (this == &aCorrFctn)
+  if (this == &aCorrFctn) {
     return *this;
+  }
 
-  if (fNumerator) delete fNumerator;
-  fNumerator = new TH1D(*aCorrFctn.fNumerator);
-  if (fDenominator) delete fDenominator;
-  fDenominator = new TH1D(*aCorrFctn.fDenominator);
-  if (fRatio) delete fRatio;
-  fRatio = new TH1D(*aCorrFctn.fRatio);
-  if (fkTMonitor) delete fkTMonitor;
-  fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
+  AliFemtoCorrFctn::operator=(aCorrFctn);
 
-  if (fNumDEtaDPhiS) delete fNumDEtaDPhiS;
-  fNumDEtaDPhiS = new TH2D(*aCorrFctn.fNumDEtaDPhiS);
-  if (fDenDEtaDPhiS) delete fDenDEtaDPhiS;
-  fDenDEtaDPhiS = new TH2D(*aCorrFctn.fDenDEtaDPhiS);
+  *fNumerator = *aCorrFctn.fNumerator;
+  *fDenominator = *aCorrFctn.fDenominator;
+  *fRatio = *aCorrFctn.fRatio;
+  *fkTMonitor = *aCorrFctn.fkTMonitor;
+
+  *fNumDEtaDPhiS = *aCorrFctn.fNumDEtaDPhiS;
+  *fDenDEtaDPhiS = *aCorrFctn.fDenDEtaDPhiS;
 
   fDetaDphiscal = aCorrFctn.fDetaDphiscal;
   fRaddedps = aCorrFctn.fRaddedps;
 
   fPairKinematics = aCorrFctn.fPairKinematics;
 
-  if (aCorrFctn.PairReader)
-    PairReader = (TNtuple*)aCorrFctn.PairReader;
+  delete PairReader;
+  PairReader = (TNtuple*)aCorrFctn.PairReader->Clone();
 
   return *this;
 }
 
-//_________________________
-void AliFemtoQinvCorrFctn::Finish(){
+void AliFemtoQinvCorrFctn::Finish()
+{
   // here is where we should normalize, fit, etc...
   // we should NOT Draw() the histos (as I had done it below),
   // since we want to insulate ourselves from root at this level
@@ -170,167 +155,98 @@ void AliFemtoQinvCorrFctn::Finish(){
   //fDenominator->Draw();
   //fRatio->Draw();
   fRatio->Divide(fNumerator,fDenominator,1.0,1.0);
-
 }
 
-//____________________________
-AliFemtoString AliFemtoQinvCorrFctn::Report(){
+AliFemtoString AliFemtoQinvCorrFctn::Report()
+{
   // construct report
-  string stemp = "Qinv Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in ratio:\t%E\n",fRatio->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "Qinv Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n", fNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
+  report += Form("Number of entries in ratio:\t%E\n", fRatio->GetEntries());
+
+  return report;
 }
-//____________________________
-void AliFemtoQinvCorrFctn::AddRealPair(AliFemtoPair* pair){
+
+
+// Function used by both AddRealPair & AddMixedPair to do the appropriate calculations
+// If the deta_dphi_hist argument is null, the (Δη, Δϕ*) calculation will be skipped,
+// otherwise the results are stored in the histogram at which it points.
+//
+static
+void AddPair(const AliFemtoPair &pair, TH1 &qinv_hist, TH2 *deta_dphi_hist, double rad)
+{
+  double qinv = fabs(pair.QInv());
+  qinv_hist.Fill(qinv);
+
+  if (deta_dphi_hist) {
+
+    const AliAODInputHandler *aodH = static_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!aodH) {
+      std::cerr << "E-AliFemtoQCorrFctn: Could not get AODInputHandler\n";
+    }
+
+    double magfield = aodH->GetEvent()->GetMagneticField();
+    Int_t magsign = magfield == 0.0 ? 0 : std::copysign(magfield, 1);
+
+    const AliFemtoTrack
+      &track1 = *pair.Track1()->Track(),
+      &track2 = *pair.Track2()->Track();
+
+    const AliFemtoThreeVector
+      &p1 = track1.P(),
+      &p2 = track2.P();
+
+    const double
+      delta_eta = p2.PseudoRapidity() - p1.PseudoRapidity(),
+      delta_phi = p2.Phi() - p1.Phi(),
+
+      afsi0b = 0.07510020733 * magsign * rad * track1.Charge() / track1.Pt(),
+      afsi1b = 0.07510020733 * magsign * rad * track2.Charge() / track2.Pt(),
+
+      delta_phistar = TVector2::Phi_mpi_pi(delta_phi + TMath::ASin(afsi1b) - TMath::ASin(afsi0b));
+
+    deta_dphi_hist->Fill(delta_phistar, delta_eta);
+  }
+}
+
+void AliFemtoQinvCorrFctn::AddRealPair(AliFemtoPair* pair)
+{
   // add true pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }
 
-  double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
+  // if null, the (Δη, Δϕ*) calculation will be skipped
+  AddPair(*pair, *fNumerator, fDetaDphiscal ? fNumDEtaDPhiS : nullptr, fRaddedps);
 
-  fNumerator->Fill(tQinv);
   fkTMonitor->Fill(pair->KT());
-
-
-//_______________________________________
-  if (fDetaDphiscal) {
-
-    double phi1 = pair->Track1()->Track()->P().Phi();
-    double phi2 = pair->Track2()->Track()->P().Phi();
-    double chg1 = pair->Track1()->Track()->Charge();
-    double chg2 = pair->Track2()->Track()->Charge();
-    double ptv1 = pair->Track1()->Track()->Pt();
-    double ptv2 = pair->Track2()->Track()->Pt();
-    double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
-    double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
-
-    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    Int_t magsign = 0;
-
-    if (!aodH) {
-      //AliWarning("Could not get AODInputHandler");
-    }
-    else {
-      AliAODEvent *fAOD; // = new AliAODEvent()
-      fAOD = aodH->GetEvent();
-      magsign = fAOD->GetMagneticField();
-    }
-
-
-    Int_t fMagSign;
-
-    if (magsign > 1)
-      fMagSign = 1;
-    else if ( magsign < 1)
-      fMagSign = -1;
-    else
-      fMagSign = magsign;
-
-    Double_t rad = fRaddedps;
-
-    double afsi0b = 0.07510020733*chg1*fMagSign*rad/ptv1;
-    double afsi1b = 0.07510020733*chg2*fMagSign*rad/ptv2;
-    Double_t dps6 =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
-    dps6 = TVector2::Phi_mpi_pi(dps6);
-
-    // Double_t dps = (phi1-phi2+(TMath::ASin(-0.075*chg1*fMagSign*rad/ptv1))-(TMath::ASin(-0.075*chg2*fMagSign*rad/ptv2)));
-    // dps = TVector2::Phi_mpi_pi(dps);
-    double etad = eta2 - eta1;
-
-    fNumDEtaDPhiS->Fill(dps6,etad);
-  }
-//_______________________________________________________________
-
-  //  cout << "AliFemtoQinvCorrFctn::AddRealPair : " << pair->qInv() << " " << tQinv <<
-  //" " << pair->track1().FourMomentum() << " " << pair->track2().FourMomentum() << endl;
 }
 
 //____________________________
-void AliFemtoQinvCorrFctn::AddMixedPair(AliFemtoPair* pair){
+void AliFemtoQinvCorrFctn::AddMixedPair(AliFemtoPair* pair)
+{
   // add mixed (background) pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }
 
-  double weight = 1.0;
-  double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
-  fDenominator->Fill(tQinv,weight);
+  AddPair(*pair, *fDenominator, fDetaDphiscal ? fDenDEtaDPhiS : nullptr, fRaddedps);
 
   if (fPairKinematics) {
-    AliFemtoParticle* fTrack1 = pair->Track1();
-    AliFemtoParticle* fTrack2 = pair->Track2();
+    const AliFemtoParticle &fTrack1 = *pair->Track1(),
+                           &fTrack2 = *pair->Track2();
 
-    double px1 = fTrack1->FourMomentum().vect().x();
-    double py1 = fTrack1->FourMomentum().vect().y();
-    double pz1 = fTrack1->FourMomentum().vect().z();
-    double e1 = fTrack1->FourMomentum().e();
+    const auto &p1 = fTrack1.FourMomentum(),
+               &p2 = fTrack2.FourMomentum();
 
-    double px2 = fTrack2->FourMomentum().vect().x();
-    double py2 = fTrack2->FourMomentum().vect().y();
-    double pz2 = fTrack2->FourMomentum().vect().z();
-    double e2 = fTrack2->FourMomentum().e();
-    PairReader->Fill(px1, py1, pz1, e1, px2, py2, pz2, e2);
+    PairReader->Fill(p1.x(), p1.y(), p1.z(), p1.e(),
+		     p2.x(), p2.y(), p2.z(), p2.e());
   }
-
-//_______________________________________
-  if (fDetaDphiscal) {
-
-    double phi1 = pair->Track1()->Track()->P().Phi();
-    double phi2 = pair->Track2()->Track()->P().Phi();
-    double chg1 = pair->Track1()->Track()->Charge();
-    double chg2 = pair->Track2()->Track()->Charge();
-    double ptv1 = pair->Track1()->Track()->Pt();
-    double ptv2 = pair->Track2()->Track()->Pt();
-    double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
-    double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
-
-    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    Int_t magsign = 0;
-
-
-    if (!aodH) {
-      //AliWarning("Could not get AODInputHandler");
-      cout << "Could not get AODInputHandler" << endl;
-    }
-    else {
-      AliAODEvent *fAOD;
-      fAOD = aodH->GetEvent();
-      magsign = fAOD->GetMagneticField();
-    }
-
-
-    Int_t fMagSign;
-    if (magsign > 1)
-      fMagSign = 1;
-    else if ( magsign < 1)
-      fMagSign = -1;
-    else
-      fMagSign = magsign;
-
-    Double_t rad = fRaddedps;
-
-    double afsi0b = 0.07510020733*chg1*fMagSign*rad/ptv1;
-    double afsi1b = 0.07510020733*chg2*fMagSign*rad/ptv2;
-    Double_t dps6 =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
-    dps6 = TVector2::Phi_mpi_pi(dps6);
-    double etad = eta2 - eta1;
-
-    fDenDEtaDPhiS->Fill(dps6,etad);
-  }
-//_______________________________________________________________
-
 }
-//____________________________
-void AliFemtoQinvCorrFctn::Write(){
+
+void AliFemtoQinvCorrFctn::Write()
+{
   // Write out neccessary objects
   fNumerator->Write();
   fDenominator->Write();
@@ -343,7 +259,7 @@ void AliFemtoQinvCorrFctn::Write(){
     PairReader->Write();
   }
 }
-//______________________________
+
 TList* AliFemtoQinvCorrFctn::GetOutputList()
 {
   // Prepare the list of objects to be written to the output
@@ -360,13 +276,4 @@ TList* AliFemtoQinvCorrFctn::GetOutputList()
     tOutputList->Add(PairReader);
   }
   return tOutputList;
-}
-
-void AliFemtoQinvCorrFctn::CalculateDetaDphis(Bool_t dedpsc, Double_t rad) {
-  fDetaDphiscal = dedpsc;
-  fRaddedps = rad;
-}
-
-void AliFemtoQinvCorrFctn::CalculatePairKinematics(Bool_t pk) {
-  fPairKinematics = pk;
 }

@@ -9,6 +9,7 @@
 #include <AliPID.h>
 
 class TF1;
+class TH1D;
 class TH2F;
 class TH3D;
 class AliFlowTrackCuts;
@@ -33,16 +34,19 @@ public:
   bool fUseMCtruthParams;
   static const std::string fPosNeg[2];
   static const int fNcuts;
-  static const std::string fCutNames[5];
+  static const std::string fCutNames[8];
 private:
   AliAnalysisTaskLFefficiencies (const AliAnalysisTaskLFefficiencies &source);
   AliAnalysisTaskLFefficiencies &operator=(const AliAnalysisTaskLFefficiencies &source);
 
   TList* fOutputList;                                    //!<! Output list
+  TH1D* fNumberOfRecoPrimaryTracks;                      //!<! Number of recostructed primary tracks per event
   TH3D* fGeneratedYPhiPt[AliPID::kSPECIESC][2];          //!<! Generated particles
-  TH3D* fReconstructedYPhiPt[AliPID::kSPECIESC][2][5];   //!<! Reconstructed particles vs y, Phi and pT, {FB4,FB5,FB5+PID TPC, FB5 + TOF matching, FB8 + PID TOF}
-  TH3D* fGeneratedEtaPhiPt[AliPID::kSPECIESC][2];        //!<! Generated particles in the eta
-  TH3D* fReconstructedEtaPhiPt[AliPID::kSPECIESC][2][5]; //!<! Reconstructed particles vs eta, Phi and pT, {FB4,FB5,FB5+PID TPC, FB5 + TOF matching, FB8 + PID TOF}
+  TH3D* fReconstructedYPhiPt[AliPID::kSPECIESC][2][8];   //!<! Reconstructed particles vs y, Phi and pT, {FB4,FB5,FB5+PID TPC, FB5 + TOF matching, FB5 + PID TOF, FB5 + TOF matching - TOF mismatch, FB5 + TOF matching - TOF mismatch + TOF PID}
+  TH3D* fGeneratedEtaPhiPt[AliPID::kSPECIESC][8];        //!<! Generated particles in the eta
+  TH3D* fReconstructedEtaPhiPt[AliPID::kSPECIESC][2][8]; //!<! Reconstructed particles vs eta, Phi and pT, {FB4,FB5,FB5+PID TPC, FB5 + TOF matching, FB5 + TOF matching - TOF mismatch, FB5 + TOF matching - TOF mismatch + TOF PID}
+
+  TH2D* fNsigmaTOFvsPt[AliPID::kSPECIESC][2];  //!<! N sigma distribution for tracks passing FB5 + hasTOF without mismatch;
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskLFefficiencies, 1);

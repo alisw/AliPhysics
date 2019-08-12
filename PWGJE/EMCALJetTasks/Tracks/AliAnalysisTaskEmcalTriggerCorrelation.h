@@ -28,6 +28,8 @@
 #define ALIANALYSISTASKEMCALTRIGGERCORRELATION_H
 
 #include "AliAnalysisTaskEmcalTriggerBase.h"
+#include "AliCutValueRange.h"
+#include "TString.h"
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -39,11 +41,19 @@ public:
 
   static AliAnalysisTaskEmcalTriggerCorrelation *AddTaskTriggerCorrelation(const char *name);
 
+  void SetCentralityRange(double mincent, double maxcent) { fCentralityRange.SetLimits(mincent, maxcent);  fRequestCentrality = true; }
+  void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
+
 protected:
   virtual void CreateUserHistos() {}
   virtual void CreateUserObjects() {}
+  virtual bool IsUserEventSelected();
 
 private:
+  Bool_t                    fRequestCentrality;           ///< Request centrality
+  Double_t                  fEventCentrality;             //!<! Event centrality: Tranisent worker variable
+  TString                   fCentralityEstimator;         ///< Centrality estimator (default: V0M)
+  AliCutValueRange<double>  fCentralityRange;             ///< Selected centrality range
 
   AliAnalysisTaskEmcalTriggerCorrelation(const AliAnalysisTaskEmcalTriggerCorrelation &);
   AliAnalysisTaskEmcalTriggerCorrelation &operator=(const AliAnalysisTaskEmcalTriggerCorrelation &);

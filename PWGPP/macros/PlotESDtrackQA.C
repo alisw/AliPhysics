@@ -23,7 +23,9 @@ TH1D* ComputeFraction(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_
 void DrawDistribTrHyp(TH1D* h1, TH1D* h2, TH1D* h3, TH1D* h4, TString pname, Bool_t showStat);
 void DrawDistrib(TH1D* h1, TH1D* h2, TH1D* h3, Bool_t showStat);
 void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms);
-void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s);
+void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s, Bool_t isMC=kFALSE);
+Double_t fp2bkgk0(Double_t *x, Double_t *par);
+
 Double_t maxPtHypoPlots=5.;
 Double_t maxPtMEPlots=20.;
 
@@ -35,6 +37,8 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   
   TTree* trtree=new TTree("trending","tree of trending variables");
   trtree->Branch("nrun",&runNumber,"nrun/I");
+  Bool_t isMC=kFALSE; // set automatically based on histos filled
+
   // match eff variables
   Double_t ptForTrend[3]={0.35,1.,4.};
   Double_t ptForBadHyp[3]={0.35,0.6,0.9};
@@ -93,6 +97,9 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
     df->ls();
     return;    
   }
+  TH1F* hNEvents=(TH1F*)l->FindObject("hNEvents");
+  Int_t nSelectedEvents=hNEvents->GetBinContent(6);
+
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
   TH3F* hEtaPhiPtTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDany");
@@ -245,6 +252,73 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   hPhiEtaPosTPCselHighPt->Sumw2();
   hPhiEtaPosTPCselITSrefHighPt->Sumw2();
   hPhiEtaPosTPCselSPDanyHighPt->Sumw2();
+
+  TString partNames[9]={"Elec","Muon","Pion","Kaon","Proton","Deuteron","Triton","He3","Alpha"};
+  TH2F* hdEdxVsPTPCsel[9];
+  TH2F* hdEdxVsPTPCselITSref[9];
+  TH2F* hdEdxVsPTPCselAll=0x0;
+  TCanvas* cdedxa=new TCanvas("cdedxall","dEdx Vs. hypo",1500,700);
+  cdedxa->Divide(2,1);
+  TLegend * legtrhyp=new TLegend(0.6,0.5,0.89,0.89);
+  legtrhyp->SetHeader("Mass Hypo in tracking");
+  for(Int_t jsp=0; jsp<9; jsp++){ 
+    hdEdxVsPTPCsel[jsp]=(TH2F*)l->FindObject(Form("hdEdxVsPTPCsel%s",partNames[jsp].Data()));
+    hdEdxVsPTPCsel[jsp]->GetXaxis()->SetTitle("p_{TPC} (GeV/c)");
+    hdEdxVsPTPCsel[jsp]->GetYaxis()->SetTitle("TPC dE/dx");
+    hdEdxVsPTPCsel[jsp]->SetTitle(Form("Tracked with %s mass hypothesis - TPC cuts",partNames[jsp].Data()));
+    hdEdxVsPTPCsel[jsp]->SetStats(0);
+    hdEdxVsPTPCselITSref[jsp]=(TH2F*)l->FindObject(Form("hdEdxVsPTPCselITSref%s",partNames[jsp].Data()));
+    hdEdxVsPTPCselITSref[jsp]->GetXaxis()->SetTitle("p_{TPC} (GeV/c)");
+    hdEdxVsPTPCselITSref[jsp]->GetYaxis()->SetTitle("TPC dE/dx");
+    hdEdxVsPTPCselITSref[jsp]->SetTitle(Form("Tracked with %s mass hypothesis - TPC cuts+ITS refit",partNames[jsp].Data()));
+    hdEdxVsPTPCselITSref[jsp]->SetStats(0);
+    if(jsp==0){
+      hdEdxVsPTPCselAll=(TH2F*)hdEdxVsPTPCsel[0]->Clone("hdEdxVsPTPCselAll");
+      hdEdxVsPTPCselAll->SetTitle("All mass hypotheses");
+    }else{
+      if(hdEdxVsPTPCselAll) hdEdxVsPTPCselAll->Add(hdEdxVsPTPCsel[jsp]);
+    }
+
+    TCanvas* cdedx=new TCanvas(Form("cdedx%s",partNames[jsp].Data()),Form("dEdx Hypo %s",partNames[jsp].Data()),1500,700);
+    cdedx->Divide(2,1);
+    cdedx->cd(1);
+    gPad->SetLogz();
+    gPad->SetRightMargin(0.12);
+    hdEdxVsPTPCsel[jsp]->GetYaxis()->SetTitleOffset(1.3);
+    hdEdxVsPTPCsel[jsp]->GetXaxis()->SetTitleOffset(1.1);
+    hdEdxVsPTPCsel[jsp]->Draw("colz");
+    cdedx->cd(2);
+    gPad->SetLogz();
+    gPad->SetRightMargin(0.12);
+    hdEdxVsPTPCselITSref[jsp]->GetYaxis()->SetTitleOffset(1.3);
+    hdEdxVsPTPCselITSref[jsp]->GetXaxis()->SetTitleOffset(1.1);
+    hdEdxVsPTPCselITSref[jsp]->Draw("colz");
+    plotFileName=Form("dEdx-TrackRecoWith%sHypo.%s",partNames[jsp].Data(),outputForm.Data());
+    cdedx->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+    
+    TH2F* htmp1=(TH2F*)hdEdxVsPTPCsel[jsp]->Clone(Form("%s_1",hdEdxVsPTPCselITSref[jsp]->GetName()));
+    htmp1->SetMarkerStyle(1);
+    htmp1->SetMarkerColor(jsp+1);
+    TH2F* htmp2=(TH2F*)hdEdxVsPTPCselITSref[jsp]->Clone(Form("%s_2",hdEdxVsPTPCselITSref[jsp]->GetName()));
+    htmp2->SetMarkerStyle(1);
+    htmp2->SetMarkerColor(jsp+1);
+    cdedxa->cd(1);
+    if(jsp==0) htmp1->Draw("P");
+    else htmp1->Draw("PSAME");
+    cdedxa->cd(2);
+    if(jsp==0) htmp2->Draw("P");
+    else htmp2->Draw("PSAME");
+    legtrhyp->AddEntry(htmp1,partNames[jsp].Data(),"")->SetTextColor(htmp1->GetMarkerColor());
+  }
+  cdedxa->cd(1);
+  legtrhyp->Draw();
+  cdedxa->cd(2);
+  legtrhyp->Draw();
+  plotFileName=Form("dEdxVsTrackRecoHypo.%s",outputForm.Data());
+  cdedxa->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
 
   TH1D* hMatchEffVsPtNegEta=ComputeMatchEff(hPtEtaNegTPCselITSref,hPtEtaNegTPCsel,"hMatchEffVsPtNegEta",1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtPosEta=ComputeMatchEff(hPtEtaPosTPCselITSref,hPtEtaPosTPCsel,"hMatchEffVsPtPosEta",1,20,"p_{T} (GeV/c)");
@@ -813,6 +887,7 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   TH1D* hPtAll=(TH1D*)hPtGood->Clone("hPtAll");
   TH1F* hratiofake=(TH1F*)hPtFake->Clone("hratiofake");
   if(hPtFake->GetEntries()>0){
+    isMC=kTRUE;
     hPtAll->Add(hPtFake);
     hPtAll->SetLineColor(1);
     hPtGood->Sumw2();
@@ -840,6 +915,7 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   hratiofakeip->SetLineColor(1);
   hratiofakeip->SetStats(0);
   if(hImpParFake->Integral()>0 && hImpParGood->Integral()>0 ){
+    isMC=kTRUE;
     TCanvas* c1=new TCanvas("c1","FakeGood",1200,900);
     c1->Divide(2,2);
     c1->cd(1);
@@ -956,6 +1032,7 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   hPtSecMat->Scale(1.,"width");
 
   if(hImpParSecDec->Integral()>0 && hImpParPrim->Integral()>0 ){
+    isMC=kTRUE;
     TCanvas* cps1=new TCanvas("cps1","SecPrim",1200,900);
     cps1->Divide(2,2);
     cps1->cd(1);
@@ -1188,12 +1265,14 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   Bool_t okRes=kFALSE;
   Bool_t okOneOverRes=kFALSE;
   if(hPtResidVsPtTPCselITSrefPion && hPtResidVsPtTPCselITSrefPion->Integral()>0){
+    isMC=kTRUE;
     FillMeanAndRms(hPtResidVsPtTPCselITSrefPion,gMeanPi,gRmsPi);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefKaon,gMeanK,gRmsK);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefProton,gMeanProt,gRmsProt);
     okRes=kTRUE;
   }
   if(hOneOverPtResidVsPtTPCselITSrefPion && hOneOverPtResidVsPtTPCselITSrefPion->Integral()>0){
+    isMC=kTRUE;
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefPion,gDum,gRelPi);
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefKaon,gDum,gRelK);
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefProton,gDum,gRelProt);
@@ -1360,11 +1439,11 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   
 
 
-  TF1* fmassk0=new TF1("fmassk0","[0]+[1]*x+[2]/sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-0.5*(x-[3])*(x-[3])/[4]/[4])",0.46,0.52);
+  TF1* fmassk0=new TF1("fmassk0","[0]+[1]*x+[2]*x*x+[3]/sqrt(2.*TMath::Pi())/[5]*TMath::Exp(-0.5*(x-[4])*(x-[4])/[5]/[5])",0.44,0.56);
   fmassk0->SetLineWidth(2);
   fmassk0->SetLineColor(kMagenta+1);
 
-  TF1* fmassL=new TF1("fmassL","[0]+[1]*x+[2]/sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-0.5*(x-[3])*(x-[3])/[4]/[4])",1.10,1.13);
+  TF1* fmassL=new TF1("fmassL","[0]+[1]*x+[2]*x*x+[3]/sqrt(2.*TMath::Pi())/[5]*TMath::Exp(-0.5*(x-[4])*(x-[4])/[5]/[5])",1.10,1.13);
   fmassL->SetLineWidth(2);
   fmassL->SetLineColor(kRed+1);
 
@@ -1372,33 +1451,33 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   cv0->Divide(3,1);
   cv0->cd(1);
   hInvMassK0s->Draw();
-  InitFuncAndFit(hInvMassK0s,fmassk0,kTRUE);
-  Float_t mK0=fmassk0->GetParameter(3);
-  Float_t emK0=fmassk0->GetParError(3);
-  Float_t sigK0=fmassk0->GetParameter(4);
-  Float_t esigK0=fmassk0->GetParError(4);
+  InitFuncAndFit(hInvMassK0s,fmassk0,kTRUE,isMC);
+  Float_t mK0=fmassk0->GetParameter(4);
+  Float_t emK0=fmassk0->GetParError(4);
+  Float_t sigK0=fmassk0->GetParameter(5);
+  Float_t esigK0=fmassk0->GetParError(5);
   trtree->Branch("massK0",&mK0,"massK0/F");
   trtree->Branch("errmassK0",&emK0,"errmassK0/F");
   trtree->Branch("sigmaK0",&sigK0,"sigmaK0/F");
   trtree->Branch("errsigmaK0",&esigK0,"errsigmaK0/F");
   cv0->cd(2);
   hInvMassLambda->Draw();
-  InitFuncAndFit(hInvMassLambda,fmassL,kFALSE);
-  Float_t mL=fmassL->GetParameter(3);
-  Float_t emL=fmassL->GetParError(3);
-  Float_t sigL=fmassL->GetParameter(4);
-  Float_t esigL=fmassL->GetParError(4);
+  InitFuncAndFit(hInvMassLambda,fmassL,kFALSE,isMC);
+  Float_t mL=fmassL->GetParameter(4);
+  Float_t emL=fmassL->GetParError(4);
+  Float_t sigL=fmassL->GetParameter(5);
+  Float_t esigL=fmassL->GetParError(5);
   trtree->Branch("massLambda",&mL,"massLambda/F");
   trtree->Branch("errmassLambda",&emL,"errmassLambda/F");
   trtree->Branch("sigmaLambda",&sigL,"sigmaLambda/F");
   trtree->Branch("errsigmaLambda",&esigL,"errsigmaLambda/F");
   cv0->cd(3);
   hInvMassAntiLambda->Draw();
-  InitFuncAndFit(hInvMassAntiLambda,fmassL,kFALSE);
-  Float_t mLb=fmassL->GetParameter(3);
-  Float_t emLb=fmassL->GetParError(3);
-  Float_t sigLb=fmassL->GetParameter(4);
-  Float_t esigLb=fmassL->GetParError(4);
+  InitFuncAndFit(hInvMassAntiLambda,fmassL,kFALSE,isMC);
+  Float_t mLb=fmassL->GetParameter(4);
+  Float_t emLb=fmassL->GetParError(4);
+  Float_t sigLb=fmassL->GetParameter(5);
+  Float_t esigLb=fmassL->GetParError(5);
   trtree->Branch("massLambdabar",&mLb,"massLambdabar/F");
   trtree->Branch("errmassLambdabar",&emLb,"errmassLambdabar/F");
   trtree->Branch("sigmaLambdabar",&sigLb,"sigmaLambdabar/F");
@@ -1411,11 +1490,11 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   clam->Divide(2,2);
   clam->cd(1);
   hInvMassLambdaR1->Draw();
-  InitFuncAndFit(hInvMassLambdaR1,fmassL,kFALSE);
-  Float_t mLRad1=fmassL->GetParameter(3);
-  Float_t emLRad1=fmassL->GetParError(3);
-  Float_t sigLRad1=fmassL->GetParameter(4);
-  Float_t esigLRad1=fmassL->GetParError(4);
+  InitFuncAndFit(hInvMassLambdaR1,fmassL,kFALSE,isMC);
+  Float_t mLRad1=fmassL->GetParameter(4);
+  Float_t emLRad1=fmassL->GetParError(4);
+  Float_t sigLRad1=fmassL->GetParameter(5);
+  Float_t esigLRad1=fmassL->GetParError(5);
   TString radbininfo=Form("_%dRad%d",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(1)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z1+1)));
   trtree->Branch(Form("massLambda%s",radbininfo.Data()),&mLRad1,Form("massLambda%s/F",radbininfo.Data()));
   trtree->Branch(Form("errmassLambda%s",radbininfo.Data()),&emLRad1,Form("errmassLambda%s/F",radbininfo.Data()));
@@ -1428,11 +1507,11 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   tr1->Draw();
   clam->cd(2);
   hInvMassLambdaR2->Draw();
-  InitFuncAndFit(hInvMassLambdaR2,fmassL,kFALSE);
-  Float_t mLRad2=fmassL->GetParameter(3);
-  Float_t emLRad2=fmassL->GetParError(3);
-  Float_t sigLRad2=fmassL->GetParameter(4);
-  Float_t esigLRad2=fmassL->GetParError(4);
+  InitFuncAndFit(hInvMassLambdaR2,fmassL,kFALSE,isMC);
+  Float_t mLRad2=fmassL->GetParameter(4);
+  Float_t emLRad2=fmassL->GetParError(4);
+  Float_t sigLRad2=fmassL->GetParameter(5);
+  Float_t esigLRad2=fmassL->GetParError(5);
   radbininfo=Form("_%dRad%d",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z1+1)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z2+1)));
   trtree->Branch(Form("massLambda%s",radbininfo.Data()),&mLRad2,Form("massLambda%s/F",radbininfo.Data()));
   trtree->Branch(Form("errmassLambda%s",radbininfo.Data()),&emLRad2,Form("errmassLambda%s/F",radbininfo.Data()));
@@ -1445,11 +1524,11 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   tr2->Draw();
   clam->cd(3);
   hInvMassLambdaR3->Draw();
-  InitFuncAndFit(hInvMassLambdaR3,fmassL,kFALSE);
-  Float_t mLRad3=fmassL->GetParameter(3);
-  Float_t emLRad3=fmassL->GetParError(3);
-  Float_t sigLRad3=fmassL->GetParameter(4);
-  Float_t esigLRad3=fmassL->GetParError(4);
+  InitFuncAndFit(hInvMassLambdaR3,fmassL,kFALSE,isMC);
+  Float_t mLRad3=fmassL->GetParameter(4);
+  Float_t emLRad3=fmassL->GetParError(4);
+  Float_t sigLRad3=fmassL->GetParameter(5);
+  Float_t esigLRad3=fmassL->GetParError(5);
   radbininfo=Form("_%dRad%d",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z3)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z4+1)));
   trtree->Branch(Form("massLambda%s",radbininfo.Data()),&mLRad3,Form("massLambda%s/F",radbininfo.Data()));
   trtree->Branch(Form("errmassLambda%s",radbininfo.Data()),&emLRad3,Form("errmassLambda%s/F",radbininfo.Data()));
@@ -1462,11 +1541,11 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   tr3->Draw();
   clam->cd(4);
   hInvMassLambdaR4->Draw();
-  InitFuncAndFit(hInvMassLambdaR4,fmassL,kFALSE);
-  Float_t mLRad4=fmassL->GetParameter(3);
-  Float_t emLRad4=fmassL->GetParError(3);
-  Float_t sigLRad4=fmassL->GetParameter(4);
-  Float_t esigLRad4=fmassL->GetParError(4);
+  InitFuncAndFit(hInvMassLambdaR4,fmassL,kFALSE,isMC);
+  Float_t mLRad4=fmassL->GetParameter(4);
+  Float_t emLRad4=fmassL->GetParError(4);
+  Float_t sigLRad4=fmassL->GetParameter(5);
+  Float_t esigLRad4=fmassL->GetParError(5);
   radbininfo=Form("_%dRad%d",TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z5)),TMath::Nint(hInvMassLambda3d->GetZaxis()->GetBinLowEdge(z6+1)));
   trtree->Branch(Form("massLambda%s",radbininfo.Data()),&mLRad4,Form("massLambda%s/F",radbininfo.Data()));
   trtree->Branch(Form("errmassLambda%s",radbininfo.Data()),&emLRad4,Form("errmassLambda%s/F",radbininfo.Data()));
@@ -1485,11 +1564,11 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   ck0->Divide(2,2);
   ck0->cd(1);
   hInvMassK0sP1->Draw();
-  InitFuncAndFit(hInvMassK0sP1,fmassk0,kTRUE);
-  Float_t mK0Pt1=fmassk0->GetParameter(3);
-  Float_t emK0Pt1=fmassk0->GetParError(3);
-  Float_t sigK0Pt1=fmassk0->GetParameter(4);
-  Float_t esigK0Pt1=fmassk0->GetParError(4);
+  InitFuncAndFit(hInvMassK0sP1,fmassk0,kTRUE,isMC);
+  Float_t mK0Pt1=fmassk0->GetParameter(4);
+  Float_t emK0Pt1=fmassk0->GetParError(4);
+  Float_t sigK0Pt1=fmassk0->GetParameter(5);
+  Float_t esigK0Pt1=fmassk0->GetParError(5);
   TString ptbininfo=Form("_%dPt%d",TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(1)*1000.),TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p1+1)*1000.));
   trtree->Branch(Form("massK0%s",ptbininfo.Data()),&mK0Pt1,Form("massK0%s/F",ptbininfo.Data()));
   trtree->Branch(Form("errmassK0%s",ptbininfo.Data()),&emK0Pt1,Form("errmassK0%s/F",ptbininfo.Data()));
@@ -1502,11 +1581,11 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   tp1->Draw();
   ck0->cd(2);
   hInvMassK0sP2->Draw();
-  InitFuncAndFit(hInvMassK0sP2,fmassk0,kTRUE);
-  Float_t mK0Pt2=fmassk0->GetParameter(3);
-  Float_t emK0Pt2=fmassk0->GetParError(3);
-  Float_t sigK0Pt2=fmassk0->GetParameter(4);
-  Float_t esigK0Pt2=fmassk0->GetParError(4);
+  InitFuncAndFit(hInvMassK0sP2,fmassk0,kTRUE,isMC);
+  Float_t mK0Pt2=fmassk0->GetParameter(4);
+  Float_t emK0Pt2=fmassk0->GetParError(4);
+  Float_t sigK0Pt2=fmassk0->GetParameter(5);
+  Float_t esigK0Pt2=fmassk0->GetParError(5);
   ptbininfo=Form("_%dPt%d",TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p1+1)*1000.),TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p2+1)*1000.));
   trtree->Branch(Form("massK0%s",ptbininfo.Data()),&mK0Pt2,Form("massK0%s/F",ptbininfo.Data()));
   trtree->Branch(Form("errmassK0%s",ptbininfo.Data()),&emK0Pt2,Form("errmassK0%s/F",ptbininfo.Data()));
@@ -1519,11 +1598,11 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   tp2->Draw();
   ck0->cd(3);
   hInvMassK0sP3->Draw();
-  InitFuncAndFit(hInvMassK0sP3,fmassk0,kTRUE);
-  Float_t mK0Pt3=fmassk0->GetParameter(3);
-  Float_t emK0Pt3=fmassk0->GetParError(3);
-  Float_t sigK0Pt3=fmassk0->GetParameter(4);
-  Float_t esigK0Pt3=fmassk0->GetParError(4);
+  InitFuncAndFit(hInvMassK0sP3,fmassk0,kTRUE,isMC);
+  Float_t mK0Pt3=fmassk0->GetParameter(4);
+  Float_t emK0Pt3=fmassk0->GetParError(4);
+  Float_t sigK0Pt3=fmassk0->GetParameter(5);
+  Float_t esigK0Pt3=fmassk0->GetParError(5);
   ptbininfo=Form("_%dPt%d",TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p2+1)*1000.),TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p3+1)*1000.));
   trtree->Branch(Form("massK0%s",ptbininfo.Data()),&mK0Pt3,Form("massK0%s/F",ptbininfo.Data()));
   trtree->Branch(Form("errmassK0%s",ptbininfo.Data()),&emK0Pt3,Form("errmassK0%s/F",ptbininfo.Data()));
@@ -1536,11 +1615,11 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   tp3->Draw();
   ck0->cd(4);
   hInvMassK0sP4->Draw();
-  InitFuncAndFit(hInvMassK0sP4,fmassk0,kTRUE);
-  Float_t mK0Pt4=fmassk0->GetParameter(3);
-  Float_t emK0Pt4=fmassk0->GetParError(3);
-  Float_t sigK0Pt4=fmassk0->GetParameter(4);
-  Float_t esigK0Pt4=fmassk0->GetParError(4);
+  InitFuncAndFit(hInvMassK0sP4,fmassk0,kTRUE,isMC);
+  Float_t mK0Pt4=fmassk0->GetParameter(4);
+  Float_t emK0Pt4=fmassk0->GetParError(4);
+  Float_t sigK0Pt4=fmassk0->GetParameter(5);
+  Float_t esigK0Pt4=fmassk0->GetParError(5);
   ptbininfo=Form("_%dPt%d",TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p4)*1000.),TMath::Nint(hInvMassK0s3d->GetYaxis()->GetBinLowEdge(p5+1)*1000.));
   trtree->Branch(Form("massK0%s",ptbininfo.Data()),&mK0Pt4,Form("massK0%s/F",ptbininfo.Data()));
   trtree->Branch(Form("errmassK0%s",ptbininfo.Data()),&emK0Pt4,Form("errmassK0%s/F",ptbininfo.Data()));
@@ -1555,17 +1634,102 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   ck0->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
+  // K0 pt resolution vs. pt
+  const Int_t nPtBinsK0=7;
+  Double_t ptbinlimsK0[nPtBinsK0+1]={0.,0.4,0.8,1.2,2.0,3.,4.,5.};
+  TH1F* hSigmaK0AllR=new TH1F("hSigmaK0AllR"," ; p_{T} (GeV/c) ; #sigma_{K0} (MeV/c^{2})",nPtBinsK0,ptbinlimsK0);
+  TH1F* hSigmaK0R4=new TH1F("hSigmaK0R4"," ; p_{T} (GeV/c) ; #sigma_{K0} (MeV/c^{2})",nPtBinsK0,ptbinlimsK0);
+  TH1F* hMassK0AllR=new TH1F("hMassK0AllR"," ; p_{T} (GeV/c) ; #mu_{K0} (GeV/c^{2})",nPtBinsK0,ptbinlimsK0);
+  TH1F* hYieldK0AllR=new TH1F("hYieldK0AllR"," ; p_{T} (GeV/c) ; N_{K0}/event",nPtBinsK0,ptbinlimsK0);
+  TCanvas* ctmpk0=new TCanvas("ctmpk0","K0s vs. pt R<4",1600,900);
+  ctmpk0->Divide(4,4);
+  for(Int_t ipt=0; ipt<nPtBinsK0; ipt++){
+    Int_t pfine1=hInvMassK0s3d->GetYaxis()->FindBin(ptbinlimsK0[ipt]+0.001);
+    Int_t pfine2=hInvMassK0s3d->GetYaxis()->FindBin(ptbinlimsK0[ipt+1]-0.001);
+    Int_t r1=hInvMassK0s3d->GetZaxis()->FindBin(0.001);
+    Int_t r2=hInvMassK0s3d->GetZaxis()->FindBin(3.999);
+    TH1D* hTmpInvMassK0sR4=hInvMassK0s3d->ProjectionX(Form("hInvMassK0sR4PtFine%d",ipt),pfine1,pfine2,r1,r2);
+    TH1D* hTmpInvMassK0sAllR=hInvMassK0s3d->ProjectionX(Form("hInvMassK0sAllRPtFine%d",ipt),pfine1,pfine2,0,-1);
+    ctmpk0->cd(ipt+1);
+    hTmpInvMassK0sR4->Draw();
+    InitFuncAndFit(hTmpInvMassK0sR4,fmassk0,kTRUE,isMC);
+    TLatex* tpfine=new TLatex(0.6,0.6,Form("%.1f<p_{T}<%.1f GeV/c",hInvMassK0s3d->GetYaxis()->GetBinLowEdge(pfine1),hInvMassK0s3d->GetYaxis()->GetBinUpEdge(pfine2)));
+    tpfine->SetNDC();
+    tpfine->SetTextFont(43);
+    tpfine->SetTextSize(24);
+    tpfine->Draw();
+    hSigmaK0R4->SetBinContent(ipt+1,fmassk0->GetParameter(5)*1000.);
+    hSigmaK0R4->SetBinError(ipt+1,fmassk0->GetParError(5)*1000.);
+    ctmpk0->cd(ipt+9);
+    hTmpInvMassK0sAllR->Draw();
+    InitFuncAndFit(hTmpInvMassK0sAllR,fmassk0,kTRUE,isMC);
+    tpfine->Draw();
+    hMassK0AllR->SetBinContent(ipt+1,fmassk0->GetParameter(4));
+    hMassK0AllR->SetBinError(ipt+1,fmassk0->GetParError(4));    
+    hSigmaK0AllR->SetBinContent(ipt+1,fmassk0->GetParameter(5)*1000.);
+    hSigmaK0AllR->SetBinError(ipt+1,fmassk0->GetParError(5)*1000.);
+    Double_t yield=fmassk0->GetParameter(3)/hTmpInvMassK0sAllR->GetBinWidth(1)/nSelectedEvents;
+    Double_t eyield=fmassk0->GetParError(3)/hTmpInvMassK0sAllR->GetBinWidth(1)/nSelectedEvents;
+    hYieldK0AllR->SetBinContent(ipt+1,yield);
+    hYieldK0AllR->SetBinError(ipt+1,eyield);
+  }
+
+  TCanvas* cK0signal=new TCanvas("cK0signal","K0 width and yield vs pt",1600,500);
+  cK0signal->Divide(3,1);
+  cK0signal->cd(1);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hMassK0AllR->SetMinimum(0.495);
+  hMassK0AllR->SetMaximum(0.500);
+  hMassK0AllR->SetStats(0);
+  hMassK0AllR->SetMarkerStyle(20);
+  hMassK0AllR->SetLineWidth(2);
+  hMassK0AllR->Draw();
+  cK0signal->cd(2);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hSigmaK0AllR->SetMinimum(0);
+  hSigmaK0AllR->SetMaximum(10);
+  hSigmaK0AllR->SetStats(0);
+  hSigmaK0AllR->SetMarkerStyle(20);
+  hSigmaK0AllR->SetLineWidth(2);
+  hSigmaK0R4->SetMarkerStyle(25);
+  hSigmaK0R4->SetMarkerColor(kRed+1);
+  hSigmaK0R4->SetLineColor(kRed+1);
+  hSigmaK0R4->SetLineWidth(2);
+  hSigmaK0AllR->Draw();
+  hSigmaK0R4->Draw("same");
+  TLegend* lk=new TLegend(0.18,0.18,0.5,0.3);
+  lk->AddEntry(hSigmaK0AllR,"All decay radii","P")->SetTextColor(hSigmaK0AllR->GetMarkerColor());
+  lk->AddEntry(hSigmaK0R4,"R < 4 cm","P")->SetTextColor(hSigmaK0R4->GetMarkerColor());
+  lk->Draw();
+  cK0signal->cd(3);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hYieldK0AllR->SetStats(0);
+  hYieldK0AllR->SetMarkerStyle(20);
+  hYieldK0AllR->SetLineWidth(2);
+  hYieldK0AllR->Draw();
+  plotFileName=Form("K0s-SignalVsPt.%s",outputForm.Data());
+  cK0signal->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
   trtree->Fill();
 
   if(runNumber>0){
     TFile* fouttree=new TFile("trending.root","recreate");
     trtree->Write();
+    TDirectory* outdir=fouttree->mkdir(df->GetName());
+    outdir->cd();
+    l->Write(l->GetName(),1);
     fouttree->Close();
     delete fouttree;
   }
 
   if(outputForm=="pdf") gSystem->Exec(Form("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=PlotsESDTrackQA.pdf %s",pdfFileNames.Data()));
   
+  printf("SUMMARY:\n");
+  printf("Number of events used in the plots = %d\n",nSelectedEvents);
 }
 
 void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
@@ -1576,9 +1740,27 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
     Double_t ept=0;
     Int_t ji=j;
     Int_t jf=j;
-    if(pt>10){
+    if(pt>5 && pt<=10){
       ji=j;
-      jf=j+5;
+      jf=j+1;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+    }else if(pt>10 && pt<=16){
+      ji=j;
+      jf=j+3;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+    }else if(pt>16 && pt<=20){
+      ji=j;
+      jf=j+7;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+     }else if(pt>20){
+      ji=j;
+      jf=j+19;
       j=jf;
       pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
       ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
@@ -1587,14 +1769,14 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
     if(htmp->Integral()>40){
       htmp->Fit("gaus","Q0");
       TF1* fg=(TF1*)htmp->GetListOfFunctions()->FindObject("gaus");      
-      Double_t m=htmp->GetMean();
-      Double_t em=htmp->GetMeanError();
-      gMean->SetPoint(jpt,pt,m);
-      gMean->SetPointError(jpt,ept,em);
-      ++jpt;
+      Double_t m=fg->GetParameter(1);//htmp->GetMean();
+      Double_t em=fg->GetParError(1);//htmp->GetMeanError();
       Double_t r=fg->GetParameter(2);//htmp->GetRMS();
       Double_t er=fg->GetParError(2);//=htmp->GetRMSError();
       if(er/r<0.35){
+	gMean->SetPoint(jpt,pt,m);
+	gMean->SetPointError(jpt,ept,em);
+	++jpt;
 	gRms->SetPoint(jptr,pt,r);
 	gRms->SetPointError(jptr,ept,er);
 	++jptr;
@@ -1604,34 +1786,55 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
   }
 }
  
-void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s){
-  fmass->SetParameter(0,hm->GetBinContent(hm->FindBin(1.10)));
-  if(isK0s)  fmass->SetParameter(0,hm->GetBinContent(hm->FindBin(0.45)));
-  fmass->SetParameter(1,0.);
-  //  fmass->SetParLimits(1,-99999999999,0.);
-  fmass->SetParameter(2,100.);
+void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s, Bool_t isMC){
+
+  // first estimate of background
+  Double_t cntpeak,expSigma;
   if(isK0s){
-    fmass->SetParameter(3,0.5);
-    fmass->SetParLimits(3,0.49,0.51);
-    fmass->SetParameter(4,0.002);
-    fmass->SetParLimits(4,0.0006,0.02);
+    TF1* ffb = new TF1("fp2bkgk0",fp2bkgk0,0.44,0.56,3);
+    hm->Fit("fp2bkgk0","R");
+    for(Int_t k=0; k<3; k++) fmass->SetParameter(k,ffb->GetParameter(k));
+    cntpeak=hm->GetBinContent(hm->FindBin(0.498))-ffb->Integral(0.498-0.5*hm->GetBinWidth(1),0.498+hm->GetBinWidth(1));
+    delete ffb;
+    expSigma=0.004;
   }else{
-    fmass->SetParameter(3,1.116);
-    fmass->SetParLimits(3,1.11,1.12);
-    fmass->SetParameter(4,0.002);
-    fmass->SetParLimits(4,0.0006,0.003);
+    fmass->SetParameter(0,hm->GetBinContent(hm->FindBin(1.10)));
+    fmass->SetParameter(1,0.);
+    fmass->FixParameter(2,0.);
+    cntpeak=hm->GetBinContent(hm->FindBin(1.116))-hm->GetBinContent(hm->FindBin(1.14));
+    expSigma=0.0015;
+  }
+  //  fmass->SetParLimits(1,-99999999999,0.);
+  fmass->SetParameter(3,cntpeak*TMath::Sqrt(2*TMath::Pi())*expSigma);
+  //  fmass->SetParLimits(3,0.,9999999999.);
+  if(isK0s){
+    fmass->SetParameter(4,0.5);
+    fmass->SetParLimits(4,0.49,0.51);
+    fmass->SetParameter(5,0.002);
+    fmass->SetParLimits(5,0.0006,0.02);
+  }else{
+    fmass->SetParameter(4,1.116);
+    fmass->SetParLimits(4,1.11,1.12);
+    fmass->SetParameter(5,0.0015);
+    fmass->SetParLimits(5,0.0006,0.003);
+  }
+  if(isMC){
+    fmass->FixParameter(0,0.);
+    fmass->FixParameter(1,0.);
+    fmass->FixParameter(2,0.);
   }
 
-  hm->Fit(fmass,"R");
-  TLatex* t1=new TLatex(0.14,0.8,Form("Mean = %.3f+-%.3f GeV/c^{2}",fmass->GetParameter(3),fmass->GetParError(3)));
+  if(isMC)hm->Fit(fmass,"R");
+  else hm->Fit(fmass,"RL");
+  TLatex* t1=new TLatex(0.14,0.8,Form("Mean = %.3f+-%.3f GeV/c^{2}",fmass->GetParameter(4),fmass->GetParError(4)));
   t1->SetTextSize(0.04);
   t1->SetNDC();
   t1->Draw();
-  TLatex* t2=new TLatex(0.14,0.75,Form("Sigma = %.2f+-%.2f MeV/c^{2}",fmass->GetParameter(4)*1000.,fmass->GetParError(4)*1000.));
+  TLatex* t2=new TLatex(0.14,0.75,Form("Sigma = %.2f+-%.2f MeV/c^{2}",fmass->GetParameter(5)*1000.,fmass->GetParError(5)*1000.));
   t2->SetNDC();
   t2->SetTextSize(0.04);
   t2->Draw();
-  TLatex* t3=new TLatex(0.14,0.7,Form("Yield = %.0f+-%.0f",fmass->GetParameter(2)/hm->GetBinWidth(1),fmass->GetParError(2)/hm->GetBinWidth(1)));
+  TLatex* t3=new TLatex(0.14,0.7,Form("Yield = %.0f+-%.0f",fmass->GetParameter(3)/hm->GetBinWidth(1),fmass->GetParError(3)/hm->GetBinWidth(1)));
   t3->SetNDC();
   t3->SetTextSize(0.04);
   t3->Draw();
@@ -1818,4 +2021,12 @@ void DrawDistrib(TH1D* h1, TH1D* h2, TH1D* h3, Bool_t showStat){
     h3->Draw("same");
   }
   h3->Draw("histosame");
+}
+
+Double_t fp2bkgk0(Double_t *x, Double_t *par){
+  if (x[0] > 0.47 && x[0] < 0.53) {
+    TF1::RejectPoint();
+    return 0;
+  }
+  return par[0] + par[1]*x[0] + par[2]*x[0]*x[0];
 }

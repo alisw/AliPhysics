@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskEMCALTimeCalib_h
-#define AliAnalysisTaskEMCALTimeCalib_h
+#ifndef ALIANALYSISTASKEMCALTIMECALIB_H
+#define ALIANALYSISTASKEMCALTIMECALIB_H
 
 //_________________________________________________________________________
 /// \class AliAnalysisTaskEMCALTimeCalib
@@ -60,19 +60,23 @@ class TH1C;
 class AliVCluster;
 //class AliAODEvent;
 class AliVEvent;
-class AliTOFT0maker;
+//class AliTOFT0maker;
 
 #include "AliAnalysisTaskSE.h"
+#include <fstream>
 
 class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE 
 {
  public:
 
-  enum { kNSM = 20, kNBCmask = 4 };
+   enum { kNSM = 20, kNBCmask = 4 };
 
    AliAnalysisTaskEMCALTimeCalib() : AliAnalysisTaskSE(),
+    fPARvec(),
+    fCurrentPARs(),
+    fCurrentPARIndex(0),
+    fIsPARRun(0),
     fRunNumber(-1),
-    fTOFmaker(0),
     fOutputList(0),
     fgeom(0),
     fGeometryName(0),
@@ -86,8 +90,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fMaxLambda0LG(0),
     fMaxRtrack(0),
     fMinCellEnergy(0),
-    fReferenceFileName(),
-    fReferenceRunByRunFileName(),
+    fReferenceFileName(0),
+    fReferenceRunByRunFileName(0),
     fPileupFromSPD(kFALSE),
     fMinTime(0),
     fMaxTime(0),
@@ -101,7 +105,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fEnergyNbins  (0),
     fEnergyMin(0),
     fEnergyMax(0),
-    fEnergyLGNbins  (0),
+    fEnergyLGNbins(0),
     fEnergyLGMin(0),
     fEnergyLGMax(0),
     fFineNbins(0),
@@ -110,10 +114,11 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fL1PhaseList(0),
     fBadReco(kFALSE),
     fFillHeavyHisto(kFALSE),
-    fBadChannelMapArray(),
+    fOneHistAllBCs(kFALSE),
+    fBadChannelMapArray(0),
     fBadChannelMapSet(kFALSE),
     fSetBadChannelMapSource(0),
-    fBadChannelFileName(),
+    fBadChannelFileName(0),
     fhcalcEvtTime(0),
     fhEvtTimeHeader(0),
     fhEvtTimeDiff(0),
@@ -128,11 +133,19 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhTimeSumSq(),
     fhTimeEnt(),
     fhTimeSum(),
+    fhTimeSumSqAllBCs(0x0),
+    fhTimeEntAllBCs(0x0),
+    fhTimeSumAllBCs(0x0),
     fhTimeLGSumSq(),
     fhTimeLGEnt(),
     fhTimeLGSum(),
+    fhTimeLGSumSqAllBCs(0x0),
+    fhTimeLGEntAllBCs(0x0),
+    fhTimeLGSumAllBCs(0x0),
     fhAllAverageBC(),
     fhAllAverageLGBC(),
+    fhAllAverageAllBCs(0x0),
+    fhAllAverageLGAllBCs(0x0),
     fhRefRuns(0),
     fhTimeDsup(),
     fhTimeDsupBC(),
@@ -146,15 +159,27 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhRawTimeSumLGBC(),
     fhRawTimeEntriesLGBC(),
     fhRawTimeSumSqLGBC(),
+    fhRawTimePARs(),
+    fhRawTimeLGPARs(),
     fhRawCorrTimeVsIdBC(),
     fhRawCorrTimeVsIdLGBC(),
     fhTimeVsIdBC(),
-    fhTimeVsIdLGBC()
+    fhTimeVsIdLGBC(),
+    fhTimeVsIdAllBCs(0x0),
+    fhTimeVsIdLGAllBCs(0x0)
     { ; }
   
   AliAnalysisTaskEMCALTimeCalib(const char *name);
   virtual ~AliAnalysisTaskEMCALTimeCalib() { ; }
   
+  // struct for storing PAR info
+  struct PARInfo {
+      Int_t runNumber;
+      Int_t numPARs;
+      std::vector<ULong64_t> PARGlobalBCs;
+      PARInfo() : runNumber(0), numPARs(0), PARGlobalBCs() {}
+  };
+
   //  virtual void   LocalInit();
   //virtual Bool_t Notify();
   virtual void   NotifyRun();
@@ -250,6 +275,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void LoadReferenceRunByRunHistos(); //loaded once to the memory at the beginning, phases for all runs 
   void SetL1PhaseReferenceForGivenRun();//set refernce L1phase per run 
 
+  void SetL1PhaseReferencePAR();//set reference L1phase for specific PAR in run
+  void SetPARInfo(TString PARfilename);//for given run, load in PAR info from file
+
   void LoadBadChannelMap(); //load bad channel map, main
   void LoadBadChannelMapFile(); //load bad channel map from file
   void LoadBadChannelMapOADB();//load bad channel map from OADB
@@ -260,10 +288,20 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     if(fBadChannelMapArray) return (Int_t) ((TH2I*)fBadChannelMapArray->At(0))->GetBinContent(absId+1);
     else return 0;}//Channel is ok by default
 
-  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
-  static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE, Bool_t justL1phase=kTRUE);
+  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE, Bool_t oneHistoAllBCs=kFALSE, Bool_t isPAR=kFALSE);
+  static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE, Bool_t justL1phase=kTRUE,TString PARfilename="");
+
+  void SwithOnFillOneHistAllBCs()  { fOneHistAllBCs = kTRUE ; }
 
   private:
+  
+  // variables and functions needed for PAR handling
+  std::vector<PARInfo> fPARvec; ///< vector of PAR info for all runs
+  PARInfo fCurrentPARs;         //! Par Info for current Run Number
+  Int_t fCurrentPARIndex;       //! Which PAR the currnt event is after
+  Bool_t fIsPARRun;             //! Does current run have PAR info? 
+  void GetPARInfoForRunNumber(Int_t runnum);
+
   
   virtual void PrepareTOFT0maker();
   Bool_t SetEMCalGeometry();
@@ -274,8 +312,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   // data members
   Int_t          fRunNumber ; //!<! run number
   
-  /// pointer to get T0 from TOF
-  AliTOFT0maker *fTOFmaker;   //->
+//  /// pointer to get T0 from TOF
+//  AliTOFT0maker *fTOFmaker;   //->
   
   /// pointer to output list
   TList         *fOutputList; //->
@@ -333,6 +371,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   Bool_t         fFillHeavyHisto;       ///< flag to fill heavy histograms
 
+  Bool_t	 fOneHistAllBCs;		///< flag to use one histogram for all the BCs instead of four
+
   // bad channel map
   TObjArray     *fBadChannelMapArray;   ///< bad channel map array
   Bool_t         fBadChannelMapSet;     ///< flag whether bad channel map is set
@@ -356,13 +396,22 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1F		*fhTimeSumSq  [kNBCmask]; //!<!  4
   TH1F		*fhTimeEnt    [kNBCmask]; //!<!  4
   TH1F		*fhTimeSum    [kNBCmask]; //!<!  4
+  TH1F		*fhTimeSumSqAllBCs  	; //!
+  TH1F		*fhTimeEntAllBCs    	; //!
+  TH1F		*fhTimeSumAllBCs    	; //!
   TH1F		*fhTimeLGSumSq[kNBCmask]; //!<!  4
   TH1F		*fhTimeLGEnt  [kNBCmask]; //!<!  4
   TH1F		*fhTimeLGSum  [kNBCmask]; //!<!  4
+  TH1F		*fhTimeLGSumSqAllBCs  	; //!
+  TH1F		*fhTimeLGEntAllBCs    	; //!
+  TH1F		*fhTimeLGSumAllBCs    	; //!
 
   // histos with reference values after the first iteration  
   TH1F		*fhAllAverageBC   [kNBCmask]; ///> 4 BCmask High gain
   TH1F		*fhAllAverageLGBC [kNBCmask]; ///> 4 BCmask Low gain
+
+  TH1S		*fhAllAverageAllBCs	; ///> High gain
+  TH1S		*fhAllAverageLGAllBCs   ; ///> Low gain
 
   // histo with reference values run-by-run after the first iteration 
   TH1C		*fhRefRuns; ///< 20 entries per run: nSM
@@ -383,6 +432,10 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1F          *fhRawTimeEntriesLGBC[kNBCmask]; //!<! 4 BCmask LG
   TH1F          *fhRawTimeSumSqLGBC  [kNBCmask]; //!<! 4 BCmask LG
 
+  //histos for correction of Raw Time with PAR
+  std::vector<std::vector<TH2F*>> fhRawTimePARs;//!<!
+  std::vector<std::vector<TH2F*>> fhRawTimeLGPARs;//!<!
+
   //histos for raw time after wrong reconstruction correction (100ns and L1 phase)
   TH2F          *fhRawCorrTimeVsIdBC  [kNBCmask]; //!<! 4 BCmask HG
   TH2F          *fhRawCorrTimeVsIdLGBC[kNBCmask]; //!<! 4 BCmask LG
@@ -390,6 +443,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   //histos for raw time after wrong reconstruction correction (100ns and L1 phase) and new L1 phase
   TH2F          *fhTimeVsIdBC  [kNBCmask]; //!<! 4 BCmask HG
   TH2F          *fhTimeVsIdLGBC[kNBCmask]; //!<! 4 BCmask LG
+  TH2F          *fhTimeVsIdAllBCs        ; //! HG
+  TH2F          *fhTimeVsIdLGAllBCs      ; //! LG
 
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALTimeCalib(           const AliAnalysisTaskEMCALTimeCalib&);
@@ -398,7 +453,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   AliAnalysisTaskEMCALTimeCalib& operator=(const AliAnalysisTaskEMCALTimeCalib&); 
   
 /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTimeCalib, 3) ;
+  ClassDef(AliAnalysisTaskEMCALTimeCalib, 7) ;
 /// \endcond
 };
 

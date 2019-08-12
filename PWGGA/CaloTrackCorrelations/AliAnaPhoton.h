@@ -22,6 +22,7 @@
 ///_________________________________________________________________________
 
 // --- ROOT system ---
+class TH3F ;
 class TH2F ;
 class TH1F;
 class TObjString;
@@ -60,15 +61,17 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, Int_t nlm, Int_t mctag) ;
+  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm, Bool_t matched, 
+                               Int_t mctag, Float_t mcbin, Float_t egen, Int_t noverlaps, Float_t weight) ;
   
   void         FillAcceptanceHistograms();
   
 //  void         DistanceToAddedSignalAtGeneratorLevel(Int_t label, Int_t nprim, 
 //                                     Float_t photonE, Float_t photonEta, Float_t photonPhi);
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Int_t nlm,
-                                         Float_t maxCellEFraction, Int_t & largeTimeInside) ;
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Float_t weight,
+                                          Int_t nlm, Bool_t matched, Float_t maxCellEFraction, 
+                                          Int_t & largeTimeInside) ;
   
   void         SwitchOnFillShowerShapeHistograms()        { fFillSSHistograms      = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()       { fFillSSHistograms      = kFALSE ; }  
@@ -91,7 +94,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillTrackMultiplicityHistograms()  { fFillTrackMultHistograms = kTRUE  ; }
   void         SwitchOffFillTrackMultiplicityHistograms() { fFillTrackMultHistograms = kFALSE ; }
   
-  void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut, Int_t mctag);
+  void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut, Int_t sm, 
+                                                   Bool_t matched, Int_t mctag, Float_t mcbin, 
+                                                   Float_t egen, Int_t noverlaps, Float_t weight);
   
   void         SwitchOnTMHistoFill()                      { fFillTMHisto           = kTRUE  ; }
   void         SwitchOffTMHistoFill()                     { fFillTMHisto           = kFALSE ; }
@@ -164,11 +169,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNmcPrimTypes = 7;
   
   /// For MC histograms with shower shape in arrays, index in the array corresponds to a MC originating particle type
-  enum mcssTypes  { kmcssPhoton = 0,      kmcssOther = 1,       kmcssPi0 = 2,
-                    kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5  };  
+  enum mcssTypes  { kmcssPhoton   = 0, kmcssPhotonConv = 1,        
+                    kmcssPi0      = 2, kmcssPi0Conv    = 3,
+                    kmcssEta      = 4, kmcssEtaConv    = 5,
+                    kmcssElectron = 6, kmcssOther      = 7 } ;  
   
   /// Total number of MC histograms for shower shape studies.
-  static const Int_t fgkNssTypes = 6 ;
+  static const Int_t fgkNssTypes = 8 ;
 
   /// For MC histograms with cocktail generator checks in arrays, index in the array corresponds to a MC originating particle type
   enum mcGenTypes { kmcGenPi0Merged = 1,  kmcGenPi0Decay = 2,   kmcGenEtaDecay = 3,
@@ -217,6 +224,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TLorentzVector fMomentum;                         //!<! Cluster momentum, temporary container
   TLorentzVector fMomentum2;                        //!<! Cluster momentum, temporary container
   TLorentzVector fPrimaryMom;                       //!<! Primary MC momentum, temporary container
+  TLorentzVector fPrimaryMom2;                      //!<! Primary MC momentum, temporary container
   TVector3       fProdVertex;                       //!<! Primary MC production vertex, temporary container
   
   Float_t  fConstantTimeShift;                      ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
@@ -315,6 +323,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Fill MC dependent histograms, Origin of this cluster is ...
 
+  TH2F * fhMCParticle[4];                           //!<! Trace origin of matched particle: raw, selected before TM, after TM, final
+  TH2F * fhMCParticleConverted[4];                  //!<! Trace origin of matched particle, converted:raw, selected before TM, after TM, final
+  TH3F * fhMCParticleVsErecEgen[4];                 //!<! Trace origin of matched particle vs reconstructed and generated E:raw, selected before TM, after TM, final
+  TH3F * fhMCParticleVsNOverlaps[4];                //!<! Trace origin of matched particle vs number of overlaps:raw, selected before TM, after TM, final
+  
   TH2F * fhMCDeltaE [fgkNmcTypes];                  //!<! MC-Reco E distribution coming from MC particle
   TH2F * fhMCDeltaPt[fgkNmcTypes];                  //!<! MC-Reco pT distribution coming from MC particle
   TH2F * fhMC2E     [fgkNmcTypes];                  //!<! E distribution, Reco vs MC coming from MC particle
@@ -417,7 +430,16 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhTrackMatchedDEtaMCConversion[2];         //!<! Eta distance between track and cluster vs cluster E, originated in conversion, after and before photon cuts 
   TH2F * fhTrackMatchedDPhiMCConversion[2];         //!<! Phi distance between track and cluster vs cluster E, originated in conversion, after and before photon cuts 
   
-  TH2F * fhTrackMatchedMCParticle[2];               //!<! Trace origin of matched particle
+  TH2F * fhTrackMatchedMCParticleBeforeTM[2];       //!<! Trace origin of matched particle vs cluster E, before Track-Matching criteria applied
+  TH2F * fhTrackMatchedMCParticleTrackPtBeforeTM[2];//!<! Trace origin of matched particle vs track pT, before Track-Matching criteria applied
+  TH2F * fhTrackMatchedMCParticle[2];               //!<! Trace origin of matched particle vs cluster E
+  TH2F * fhTrackMatchedMCParticleTrackPt[2];        //!<! Trace origin of matched particle vs track pT
+  TH2F * fhTrackMatchedMCParticleConverted[2];      //!<! Trace origin of matched particle vs cluster E, converted
+
+  TH3F * fhTrackMatchedMCParticleVsEOverP[2];       //!<! Trace origin of matched particle vs compare to E over P
+  TH3F * fhTrackMatchedMCParticleVsErecEgen[2];     //!<! Trace origin of matched particle vs reconstructed and generated E
+  TH3F * fhTrackMatchedMCParticleVsNOverlaps[2];    //!<! Trace origin of matched particle vs number of overlaps
+  
   TH2F * fhdEdx[2];                                 //!<! Matched track dEdx vs cluster E, after and before photon cuts
   TH2F * fhEOverP[2];                               //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts
   TH2F * fhEOverPTRD[2];                            //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts, behind TRD
@@ -589,7 +611,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,46) ;
+  ClassDef(AliAnaPhoton,47) ;
   /// \endcond
 
 } ;

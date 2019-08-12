@@ -100,6 +100,7 @@ class AliAnaWeights : public TObject {
   
   void             SwitchOnMCParticlePtWeights ()          { fDoMCParticlePtWeights = kTRUE  ; }
   void             SwitchOffMCParticlePtWeights()          { fDoMCParticlePtWeights = kFALSE ; }
+  void             CheckGeneratorName( Bool_t ch )         { fCheckGeneratorName    = ch     ; }
 
  private:
     
@@ -124,6 +125,8 @@ class AliAnaWeights : public TObject {
   TF1 *            fEtaFunction;          //!<!  eta spectrum parametrization
   
   TF1 *            fPi0Function;          //!<!  pi0 spectrum parametrization
+  
+  Bool_t           fCheckGeneratorName;   ///< apply weight only for pi0/eta particle from a particular generator.
   
   //
   // MC weights, pT hard pythia
@@ -152,7 +155,7 @@ class AliAnaWeights : public TObject {
   AliAnaWeights& operator=(const AliAnaWeights&); 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaWeights, 3) ;
+  ClassDef(AliAnaWeights, 4) ;
   /// \endcond
   
 } ;

@@ -46,6 +46,7 @@ CEPEventBuffer::CEPEventBuffer()
   , fnV0(0)
   , fVtxType(-1)
   , fVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
+  , fdPhiEtaMinMax(999.)
   , fMCGenerator("")
   , fMCProcessType(AliCEPBase::kdumval)
   , fMCVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
@@ -114,6 +115,7 @@ void CEPEventBuffer::Reset()
   fnV0            = 0;
   fVtxType        = -1;
   fVtxPos         = TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval);
+  fdPhiEtaMinMax  = 999.;
 
   // Monte Carlo information
   fMCProcessType = AliCEPBase::kdumval;
@@ -178,6 +180,9 @@ Bool_t CEPEventBuffer::RemoveTrack(Int_t ind)
     } else {
       fnTracksCombined--;
     }
+    
+    // free memory
+    delete trk;
     
     done = kTRUE;
   }

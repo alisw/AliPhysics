@@ -1,72 +1,81 @@
 #ifndef AliSigma0V0Cuts_H
 #define AliSigma0V0Cuts_H
 
-#include "AliAODTrack.h"
-#include "AliAODv0.h"
 #include "AliMCEvent.h"
 #include "AliPIDResponse.h"
 #include "AliSigma0ParticleV0.h"
-#include "AliSigma0SingleParticleCuts.h"
-#include "AliVEvent.h"
 #include "Riostream.h"
+#include "TDatabasePDG.h"
 #include "TObject.h"
 
-#include "TH1.h"
-#include "TH2.h"
-#include "TList.h"
 #include "TProfile.h"
 
 class AliPIDResponse;
 
 class AliSigma0V0Cuts : public TObject {
  public:
+  enum PileUpRejectionMode {
+    BothDaughtersCombined =
+        0,  ///< Impose timing criteria on both daughters, ITS or TOF
+    OneDaughterCombined =
+        1,     ///< Impose timing criteria on both daughters, ITS or TOF
+    None = 2,  ///< No timing information required
+    BothDaughtersITSonly =
+        3,  ///< Impose timing criteria on both daughters, ITS only
+    BothDaughtersTOFonly =
+        4,  ///< Impose timing criteria on both daughters, TOF only
+    OneDaughterITSonly =
+        5,  ///< Impose timing criteria on both daughters, ITS only
+    OneDaughterTOFonly =
+        6,  ///< Impose timing criteria on both daughters, ITS only
+  };
+
   AliSigma0V0Cuts();
   AliSigma0V0Cuts(const AliSigma0V0Cuts &);
   AliSigma0V0Cuts &operator=(const AliSigma0V0Cuts &);
   virtual ~AliSigma0V0Cuts();
 
-  static AliSigma0V0Cuts *DefaultCuts();
-  static AliSigma0V0Cuts *Sigma0Cuts();
+  static AliSigma0V0Cuts *LambdaCuts();
+  static AliSigma0V0Cuts *PhotonCuts();
 
-  void SelectV0s(AliVEvent *inputEvent, AliMCEvent *mcEvent,
-                 std::vector<AliSigma0ParticleV0> &V0Container,
-                 std::vector<AliSigma0ParticleV0> &AntiV0Container,
-                 AliPID::EParticleType particle1,
-                 AliPID::EParticleType particle2);
-  void ProcessESDs(AliPID::EParticleType particle,
-                   AliPID::EParticleType antiParticle);
-  void ProcessAODs(AliPID::EParticleType particle,
-                   AliPID::EParticleType antiParticle);
-  bool V0QualityCuts(const AliESDv0 *v0);
-  bool V0QualityCuts(const AliAODv0 *v0);
-  bool V0PID(const AliVTrack *pos, const AliVTrack *neg,
-             AliPID::EParticleType particle,
-             AliPID::EParticleType antiParticle);
+  void SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent);
+  bool V0QualityCuts(const AliESDv0 *v0) const;
+  bool V0PID(const AliESDv0 *v0, const AliESDtrack *pos,
+             const AliESDtrack *neg) const;
   bool SingleParticlePID(const AliVTrack *track, AliPID::EParticleType particle,
                          float &prob) const;
   void PlotSingleParticlePID(const AliVTrack *track,
                              AliPID::EParticleType particle) const;
-  bool V0TopologicalSelection(const AliAODv0 *v0);
-  bool V0TopologicalSelection(const AliESDv0 *v0);
-  bool SingleParticleQualityCuts(AliVTrack *track, const float dcaDaughterToPV);
-  template <typename T>
-  bool LambdaSelection(const T *v0, float massK0, float massLambda);
-  bool CheckIfRealV0(const AliAODv0 *v0, int PDGmother, int PDGdaugh1,
-                     int PDGdaugh2) const;
-  void ProcessMC() const;
-  bool IsLambdaProtonPion(AliMCParticle *particle) const;
-  float ComputeRapidity(float pt, float pz, float m) const;
-  int GetRapidityBin(float rapidity) const;
+  bool SingleParticleQualityCuts(AliESDtrack *track) const;
+  bool PileUpRejection(AliESDtrack *pos, AliESDtrack *neg) const;
+  bool V0TopologicalSelection(const AliESDv0 *v0) const;
+  void PlotMasses(AliESDv0 *v0) const;
+  bool LambdaSelection(AliESDv0 *v0) const;
+  bool PhotonSelection(AliESDv0 *v0) const;
+  float ComputePhotonMass(const AliESDv0 *v0) const;
+  float ComputePhotonMassRefit(const AliESDv0 *v0) const;
+  float ComputePsiPair(const AliESDv0 *v0) const;
+  void PhotonQA(AliVEvent *inputEvent, AliMCEvent *mcEvent, const TClonesArray *photons);
 
-  void SetSingleParticleCuts(AliSigma0SingleParticleCuts *cuts) {
-    fSingleParticleCuts = cuts;
-  }
+  void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
+  void SetCheckCutsMC(bool checkCuts) { fCheckCutsMC = checkCuts; }
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
-  void SetPileUpRejection(bool isPileUpRej) { fPileUpRejection = isPileUpRej; }
-  void SetExtendedQA(bool isExtended) { fIsExtendedQA = isExtended; }
+  void SetPileUpRejectionMode(PileUpRejectionMode pileUpRej) {
+    fPileUpRejectionMode = pileUpRej;
+  }
+  void SetPID(int pid) { fPID = pid; }
+  void SetPosPID(AliPID::EParticleType pid, const int pdg) {
+    fPosPID = pid;
+    fPosPDG = pdg;
+  }
+  void SetNegPID(AliPID::EParticleType pid, const int pdg) {
+    fNegPID = pid;
+    fNegPDG = pdg;
+  }
   void SetV0OnFlyStatus(bool onFly) { fV0OnFly = onFly; }
   void SetV0PtMin(float ptMin) { fV0PtMin = ptMin; }
+  void SetV0PtMax(float ptMax) { fV0PtMax = ptMax; }
   void SetV0CosPAMin(float cosPAMin) { fV0CosPAMin = cosPAMin; }
   void SetV0RadiusMax(float rMax) { fV0RadiusMax = rMax; }
   void SetV0RadiusMin(float rMin) { fV0RadiusMin = rMin; }
@@ -81,15 +90,16 @@ class AliSigma0V0Cuts : public TObject {
   void SetTPCnClsFindable(short nClsFind) { fTPCfindableMin = nClsFind; }
   void SetTPCnSharedMax(short nSharedMax) { fTPCnSharedMax = nSharedMax; }
   void SetEtaMax(float etaMax) { fEtaMax = etaMax; }
+  void SetChi2Max(float chi2Max) { fChi2Max = chi2Max; }
   void SetDaughterDCAMax(float ddcaMax) { fDaughterDCAMax = ddcaMax; }
   void SetDaughterDCAtoPV(float dca2pv) { fDaughterDCAPV = dca2pv; }
   void SetK0Rejection(float low, float up) {
-    fArmenterosCut = false;
+    fK0Rejection = true;
     fK0RejectionLow = low, fK0RejectionUp = up;
   }
   void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
                         float alphaUp) {
-    fArmenterosCut = true;
+    fUseArmenteros = true;
     fArmenterosQtLow = qtLow;
     fArmenterosQtUp = qtUp;
     fArmenterosAlphaLow = alphaLow;
@@ -98,191 +108,210 @@ class AliSigma0V0Cuts : public TObject {
   void SetLambdaSelection(float low, float up) {
     fLambdaSelectionLow = low, fLambdaSelectionUp = up;
   }
+  void SetPsiPairMax(float max) { fPsiPairMax = max; }
 
-  void InitCutHistograms(const char *appendix = "default");
+  void SetMCMultThreshold(float multThr) { fMCHighMultThreshold = multThr; }
+
+  void ProcessMC() const;
+  void CheckCutsMC() const;
+  bool CheckDaughters(const AliMCParticle *particle) const;
+  bool CheckDaughtersInAcceptance(const AliMCParticle *particle) const;
+
+  void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const { return fHistograms; }
 
+  std::vector<AliSigma0ParticleV0> &GetV0s() { return fV0Container; }
+
  protected:
-  TList *fHistograms;
-  TList *fHistogramsV0;
-  TList *fHistogramsV0MC;
-  TList *fHistogramsV0Before;
-  TList *fHistogramsV0After;
-  TList *fHistogramsV0Pos;
-  TList *fHistogramsV0Neg;
-  TList *fHistogramsAntiV0;
-  TList *fHistogramsAntiV0MC;
-  TList *fHistogramsAntiV0Before;
-  TList *fHistogramsAntiV0After;
-  TList *fHistogramsAntiV0Pos;
-  TList *fHistogramsAntiV0Neg;
+  TList *fHistograms;        //!
+  TList *fHistogramsMC;      //!
+  TList *fHistogramsBefore;  //!
+  TList *fHistogramsAfter;   //!
+  TList *fHistogramsPos;     //!
+  TList *fHistogramsNeg;     //!
 
-  AliVEvent *fInputEvent;  //!
-  AliMCEvent *fMCEvent;    //!
+  AliESDEvent *fInputEvent;   //!
+  AliMCEvent *fMCEvent;       //!
+  TDatabasePDG fDataBasePDG;  //!
 
-  AliSigma0SingleParticleCuts *fSingleParticleCuts;
+  std::vector<AliSigma0ParticleV0> fV0Container;  //!
 
-  std::vector<AliSigma0ParticleV0> fV0Vector;      //!
-  std::vector<AliSigma0ParticleV0> fAntiV0Vector;  //!
+  bool fIsLightweight;  //
+  bool fCheckCutsMC;    //
 
-  std::vector<AliAODTrack *> *fGlobalTrackReference;  //!
+  short fV0cut;  //
+  int fPID;      //
+  int fPosPDG;   //
+  int fNegPDG;   //
 
-  short fV0cut;
-  short fAntiV0cut;
-  short fPID;
+  bool fIsMC;                                //
+  PileUpRejectionMode fPileUpRejectionMode;  //
+  AliPID::EParticleType fPosPID;             //
+  AliPID::EParticleType fNegPID;             //
+  bool fV0OnFly;                             //
+  bool fK0Rejection;                         //
+  bool fUsePID;                              //
+  bool fUseArmenteros;                       //
+  float fV0PtMin;                            //
+  float fV0PtMax;                            //
+  float fV0CosPAMin;                         //
+  float fV0RadiusMax;                        //
+  float fV0RadiusMin;                        //
+  float fV0DecayVertexMax;                   //
+  float fPIDnSigma;                          //
+  float fEtaMax;                             //
+  float fChi2Max;                            //
+  float fTPCclusterMin;                      //
+  short fTPCnCrossedRowsMin;                 //
+  float fTPCratioFindable;                   //
+  short fTPCfindableMin;                     //
+  short fTPCnSharedMax;                      //
+  float fDaughterDCAMax;                     //
+  float fDaughterDCAPV;                      //
+  float fK0RejectionLow;                     //
+  float fK0RejectionUp;                      //
+  float fArmenterosQtLow;                    //
+  float fArmenterosQtUp;                     //
+  float fArmenterosAlphaLow;                 //
+  float fArmenterosAlphaUp;                  //
+  float fLambdaSelectionLow;                 //
+  float fLambdaSelectionUp;                  //
+  float fPsiPairMax;                         //
 
-  bool fIsMC;
-  bool fPileUpRejection;
-  bool fIsExtendedQA;
-  bool fV0OnFly;
-  bool fArmenterosCut;
-  bool fUsePID;
-  float fV0PtMin;
-  float fV0CosPAMin;
-  float fV0RadiusMax;
-  float fV0RadiusMin;
-  float fV0DecayVertexMax;
-  float fPIDnSigma;
-  float fEtaMax;
-  float fTPCclusterMin;
-  short fTPCnCrossedRowsMin;
-  float	fTPCratioFindable;
-  short fTPCfindableMin;
-  short	fTPCnSharedMax;
-  float fDaughterDCAMax;
-  float fDaughterDCAPV;
-  float fK0RejectionLow;
-  float fK0RejectionUp;
-  float fArmenterosQtLow;
-  float fArmenterosQtUp;
-  float fArmenterosAlphaLow;
-  float fArmenterosAlphaUp;
-  float fLambdaSelectionLow;
-  float fLambdaSelectionUp;
+  float fMCHighMultThreshold;  //
 
-  AliPIDResponse *fPIDResponse;  //! pid response
+  AliPIDResponse *fPIDResponse;  //!  pid response
 
   // Histograms
   // =====================================================================
-  TProfile *fHistCuts;  //
+  TProfile *fHistCutBooking;  //!
 
-  TH1F *fHistV0Cuts;  //
-  TH1F *fHistNV0;     //
+  TH1F *fHistCuts;  //!
+  TH1F *fHistNV0;   //!
 
-  TH1F *fHistV0LambdaMass;       //
-  TH1F *fHistV0LambdaPt;         //
-  TH2F *fHistV0LambdaPtY[20];    //
-  TH2F *fHistV0LambdaMassPt;     //
-  TH1F *fHistV0LambdaMassK0Rej;  //
-  TH1F *fHistV0K0Mass;           //
-  TH1F *fHistV0K0MassAfter;      //
-  TH2F *fHistV0CosPA;            //
-  TH2F *fHistV0EtaPhi;           //
+  TH1F *fHistLambdaMass;       //!
+  TH1F *fHistAntiLambdaMass;   //!
+  TH1F *fHistPhotonMass;       //!
+  TH1F *fHistPhotonMassRefit;  //!
+  TH1F *fHistK0Mass;           //!
+  TH1F *fHistV0Pt;             //!
+  TH1F *fHistV0Mass;           //!
+  TH2F *fHistV0MassPt;         //!
+  TH1F *fHistK0MassAfter;      //!
+  TH2F *fHistCosPA;            //!
+  TH2F *fHistEtaPhi;           //!
+  TH2F *fHistPsiPair;          //!
 
-  TH1F *fHistV0DecayVertexXBefore;      //
-  TH1F *fHistV0DecayVertexYBefore;      //
-  TH1F *fHistV0DecayVertexZBefore;      //
-  TH1F *fHistV0DecayVertexXAfter;       //
-  TH1F *fHistV0DecayVertexYAfter;       //
-  TH1F *fHistV0DecayVertexZAfter;       //
-  TH1F *fHistV0TransverseRadiusBefore;  //
-  TH1F *fHistV0TransverseRadiusAfter;   //
-  TH1F *fHistV0CosPABefore;             //
-  TH1F *fHistV0CosPAAfter;              //
-  TH1F *fHistV0DCADaughtersBefore;      //
-  TH1F *fHistV0DCADaughtersAfter;       //
-  TH1F *fHistV0DCA;                     //
-  TH1F *fHistV0DecayLength;             //
-  TH2F *fHistV0ArmenterosBefore;        //
-  TH2F *fHistV0ArmenterosAfter;         //
+  TH2F *fHistDecayVertexXBefore;      //!
+  TH2F *fHistDecayVertexYBefore;      //!
+  TH2F *fHistDecayVertexZBefore;      //!
+  TH2F *fHistDecayVertexXAfter;       //!
+  TH2F *fHistDecayVertexYAfter;       //!
+  TH2F *fHistDecayVertexZAfter;       //!
+  TH2F *fHistTransverseRadiusBefore;  //!
+  TH2F *fHistTransverseRadiusAfter;   //!
+  TH2F *fHistCosPABefore;             //!
+  TH2F *fHistCosPAAfter;              //!
+  TH2F *fHistDCADaughtersBefore;      //!
+  TH2F *fHistDCADaughtersAfter;       //!
+  TH2F *fHistDCA;                     //!
+  TH2F *fHistDecayLength;             //!
+  TH2F *fHistArmenterosBefore;        //!
+  TH2F *fHistArmenterosAfter;         //!
 
-  TH1F *fHistMCTruthV0Pt;     //
-  TH2F *fHistMCTruthV0PtY;    //
-  TH2F *fHistMCTruthV0PtEta;  //
-  TH1F *fHistMCTruthV0ProtonPionPt;     //
-  TH2F *fHistMCTruthV0ProtonPionPtY;    //
-  TH2F *fHistMCTruthV0ProtonPionPtEta;  //
+  TH2F *fHistMCTruthV0PtY;                      //!
+  TH2F *fHistMCTruthV0DaughterPtY;              //!
+  TH2F *fHistMCTruthV0DaughterPtYAccept;        //!
+  TH2F *fHistMCTruthPtYHighMult;                //!
+  TH2F *fHistMCTruthDaughterPtYHighMult;        //!
+  TH2F *fHistMCTruthDaughterPtYAcceptHighMult;  //!
+  TH1F *fHistMCV0Pt;                            //!
 
-  TH1F *fHistAntiV0Cuts;  //
-  TH1F *fHistNAntiV0;     //
+  TH2F *fHistV0Mother;                                        //!
+  TH2F *fHistV0MotherTrue;                                    //!
+  TH2F *fHistV0MassPtTrue;                                    //!
+  TH2F *fHistDecayVertexXTrue;                                //!
+  TH2F *fHistDecayVertexYTrue;                                //!
+  TH2F *fHistDecayVertexZTrue;                                //!
+  TH2F *fHistTransverseRadiusTrue;                            //!
+  TH2F *fHistCosPATrue;                                       //!
+  TH2F *fHistDCADaughtersTrue;                                //!
+  TH2F *fHistArmenterosTrue;                                  //!
+  TH2F *fHistPsiPairTrue;                                     //!
+  TH1F *fHistSingleParticlePtTrue[2];                         //!
+  TH2F *fHistSingleParticleDCAtoPVTrue[2];                    //!
+  TH2F *fHistSingleParticleNclsTPCTrue[2];                    //!
+  TH2F *fHistSingleParticleNclsTPCFindableTrue[2];            //!
+  TH2F *fHistSingleParticleNclsTPCRatioFindableTrue[2];       //!
+  TH2F *fHistSingleParticleNcrossedTPCTrue[2];                //!
+  TH2F *fHistSingleParticleNclsTPCSharedTrue[2];              //!
+  TH2F *fHistSingleParticleNclsITSSharedTrue[2];              //!
+  TH2F *fHistSingleParticleChi2True[2];                       //!
+  TH2F *fHistSingleParticlePIDTrue[2];                        //!
+  TH2F *fHistV0MassPtTrueSigma;                               //!
+  TH2F *fHistDecayVertexXTrueSigma;                           //!
+  TH2F *fHistDecayVertexYTrueSigma;                           //!
+  TH2F *fHistDecayVertexZTrueSigma;                           //!
+  TH2F *fHistTransverseRadiusTrueSigma;                       //!
+  TH2F *fHistCosPATrueSigma;                                  //!
+  TH2F *fHistDCADaughtersTrueSigma;                           //!
+  TH2F *fHistArmenterosTrueSigma;                             //!
+  TH2F *fHistPsiPairTrueSigma;                                //!
+  TH1F *fHistSingleParticlePtTrueSigma[2];                    //!
+  TH2F *fHistSingleParticleDCAtoPVTrueSigma[2];               //!
+  TH2F *fHistSingleParticleNclsTPCTrueSigma[2];               //!
+  TH2F *fHistSingleParticleNclsTPCFindableTrueSigma[2];       //!
+  TH2F *fHistSingleParticleNclsTPCRatioFindableTrueSigma[2];  //!
+  TH2F *fHistSingleParticleNcrossedTPCTrueSigma[2];           //!
+  TH2F *fHistSingleParticleNclsTPCSharedTrueSigma[2];         //!
+  TH2F *fHistSingleParticleNclsITSSharedTrueSigma[2];         //!
+  TH2F *fHistSingleParticleChi2TrueSigma[2];                  //!
+  TH2F *fHistSingleParticlePIDTrueSigma[2];                   //!
+  TH2F *fHistV0MassPtBkg;                                     //!
+  TH2F *fHistDecayVertexXBkg;                                 //!
+  TH2F *fHistDecayVertexYBkg;                                 //!
+  TH2F *fHistDecayVertexZBkg;                                 //!
+  TH2F *fHistTransverseRadiusBkg;                             //!
+  TH2F *fHistCosPABkg;                                        //!
+  TH2F *fHistDCADaughtersBkg;                                 //!
+  TH2F *fHistArmenterosBkg;                                   //!
+  TH2F *fHistPsiPairBkg;                                      //!
+  TH1F *fHistSingleParticlePtBkg[2];                          //!
+  TH2F *fHistSingleParticleDCAtoPVBkg[2];                     //!
+  TH2F *fHistSingleParticleNclsTPCBkg[2];                     //!
+  TH2F *fHistSingleParticleNclsTPCFindableBkg[2];             //!
+  TH2F *fHistSingleParticleNclsTPCRatioFindableBkg[2];        //!
+  TH2F *fHistSingleParticleNcrossedTPCBkg[2];                 //!
+  TH2F *fHistSingleParticleNclsTPCSharedBkg[2];               //!
+  TH2F *fHistSingleParticleNclsITSSharedBkg[2];               //!
+  TH2F *fHistSingleParticleChi2Bkg[2];                        //! .
+  TH2F *fHistSingleParticlePIDBkg[2];                         //!
 
-  TH1F *fHistAntiV0LambdaMass;       //
-  TH1F *fHistAntiV0LambdaPt;         //
-  TH2F *fHistAntiV0LambdaPtY[20];    //
-  TH2F *fHistAntiV0LambdaMassPt;     //
-  TH1F *fHistAntiV0LambdaMassK0Rej;  //
-  TH1F *fHistAntiV0K0Mass;           //
-  TH1F *fHistAntiV0K0MassAfter;      //
-  TH2F *fHistAntiV0CosPA;            //
-  TH2F *fHistAntiV0EtaPhi;           //
-
-  TH1F *fHistAntiV0DecayVertexXBefore;      //
-  TH1F *fHistAntiV0DecayVertexYBefore;      //
-  TH1F *fHistAntiV0DecayVertexZBefore;      //
-  TH1F *fHistAntiV0DecayVertexXAfter;       //
-  TH1F *fHistAntiV0DecayVertexYAfter;       //
-  TH1F *fHistAntiV0DecayVertexZAfter;       //
-  TH1F *fHistAntiV0TransverseRadiusBefore;  //
-  TH1F *fHistAntiV0TransverseRadiusAfter;   //
-  TH1F *fHistAntiV0CosPABefore;             //
-  TH1F *fHistAntiV0CosPAAfter;              //
-  TH1F *fHistAntiV0DCADaughtersBefore;      //
-  TH1F *fHistAntiV0DCADaughtersAfter;       //
-  TH1F *fHistAntiV0DCA;                     //
-  TH1F *fHistAntiV0DecayLength;             //
-  TH2F *fHistAntiV0ArmenterosBefore;        //
-  TH2F *fHistAntiV0ArmenterosAfter;         //
-
-  TH1F *fHistMCTruthAntiV0Pt;     //
-  TH2F *fHistMCTruthAntiV0PtY;    //
-  TH2F *fHistMCTruthAntiV0PtEta;  //
-
-  TH1F *fHistMCTruthAntiV0ProtonPionPt;     //
-  TH2F *fHistMCTruthAntiV0ProtonPionPtY;    //
-  TH2F *fHistMCTruthAntiV0ProtonPionPtEta;  //
-
-  TH1F *fHistV0SingleParticleCuts[2];           //
-  TH1F *fHistV0SingleParticlePt[2];             //
-  TH1F *fHistV0SingleParticleEtaBefore[2];      //
-  TH1F *fHistV0SingleParticleEtaAfter[2];       //
-  TH1F *fHistV0SingleParticleNclsTPCBefore[2];  //
-  TH1F *fHistV0SingleParticleNclsTPCAfter[2];   //
-  TH1F *fHistV0SingleParticleNclsTPCFindableBefore[2];  //
-  TH1F *fHistV0SingleParticleNclsTPCFindableAfter[2];   //
-  TH1F *fHistV0SingleParticleNclsTPCRatioFindableBefore[2];  //
-  TH1F *fHistV0SingleParticleNclsTPCRatioFindableAfter[2];   //
-  TH1F *fHistV0SingleParticleNcrossedTPCBefore[2];  //
-  TH1F *fHistV0SingleParticleNcrossedTPCAfter[2];   //
-  TH1F *fHistV0SingleParticleNclsTPCShared[2];       //
-  TH2F *fHistV0SingleParticleNclsTPCSharedTiming[2]; //
-  TH1F *fHistV0SingleParticleNclsITSShared[2];       //
-  TH2F *fHistV0SingleParticleNclsITSSharedTiming[2]; //
-  TH1F *fHistV0SingleParticleDCAtoPVBefore[2];  //
-  TH1F *fHistV0SingleParticleDCAtoPVAfter[2];   //
-  TH2F *fHistV0SingleParticlePID[2];            //
-
-  TH1F *fHistAntiV0SingleParticleCuts[2];           //
-  TH1F *fHistAntiV0SingleParticlePt[2];             //
-  TH1F *fHistAntiV0SingleParticleEtaBefore[2];      //
-  TH1F *fHistAntiV0SingleParticleEtaAfter[2];       //
-  TH1F *fHistAntiV0SingleParticleNclsTPCBefore[2];  //
-  TH1F *fHistAntiV0SingleParticleNclsTPCAfter[2];   //
-  TH1F *fHistAntiV0SingleParticleNclsTPCFindableBefore[2];  //
-  TH1F *fHistAntiV0SingleParticleNclsTPCFindableAfter[2];   //
-  TH1F *fHistAntiV0SingleParticleNclsTPCRatioFindableBefore[2];  //
-  TH1F *fHistAntiV0SingleParticleNclsTPCRatioFindableAfter[2];   //
-  TH1F *fHistAntiV0SingleParticleNcrossedTPCBefore[2];  //
-  TH1F *fHistAntiV0SingleParticleNcrossedTPCAfter[2];   //
-  TH1F *fHistAntiV0SingleParticleNclsTPCShared[2];       //
-  TH2F *fHistAntiV0SingleParticleNclsTPCSharedTiming[2]; //
-  TH1F *fHistAntiV0SingleParticleNclsITSShared[2];       //
-  TH2F *fHistAntiV0SingleParticleNclsITSSharedTiming[2]; //
-  TH1F *fHistAntiV0SingleParticleDCAtoPVBefore[2];  //
-  TH1F *fHistAntiV0SingleParticleDCAtoPVAfter[2];   //
-  TH2F *fHistAntiV0SingleParticlePID[2];            //
+  TH1F *fHistSingleParticleCuts[2];                        //!
+  TH1F *fHistSingleParticlePt[2];                          //!
+  TH2F *fHistSingleParticleEtaBefore[2];                   //!
+  TH2F *fHistSingleParticleEtaAfter[2];                    //!
+  TH2F *fHistSingleParticleChi2Before[2];                  //!
+  TH2F *fHistSingleParticleChi2After[2];                   //!
+  TH2F *fHistSingleParticleNclsTPCBefore[2];               //!
+  TH2F *fHistSingleParticleNclsTPCAfter[2];                //!
+  TH2F *fHistSingleParticleNclsTPCFindableBefore[2];       //!
+  TH2F *fHistSingleParticleNclsTPCFindableAfter[2];        //!
+  TH2F *fHistSingleParticleNclsTPCRatioFindableBefore[2];  //!
+  TH2F *fHistSingleParticleNclsTPCRatioFindableAfter[2];   //!
+  TH2F *fHistSingleParticleNcrossedTPCBefore[2];           //!
+  TH2F *fHistSingleParticleNcrossedTPCAfter[2];            //!
+  TH2F *fHistSingleParticleNclsTPCSharedBefore[2];         //!
+  TH2F *fHistSingleParticleNclsITSSharedBefore[2];         //!
+  TH2F *fHistSingleParticleNclsTPCSharedAfter[2];          //!
+  TH2F *fHistSingleParticleNclsITSSharedAfter[2];          //!
+  TH2F *fHistSingleParticleDCAtoPVBefore[2];               //!
+  TH2F *fHistSingleParticleDCAtoPVAfter[2];                //!
+  TH2F *fHistSingleParticlePileUp[2];                      //!
+  TH2F *fHistSingleParticlePID[2];                         //!
 
  private:
-  ClassDef(AliSigma0V0Cuts, 2)
+  ClassDef(AliSigma0V0Cuts, 10)
 };
 
 #endif

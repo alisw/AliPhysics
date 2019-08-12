@@ -1,17 +1,12 @@
 #ifndef AliJFFlucAnalysis_cxx
 #define AliJFFlucAnalysis_cxx
 
-//#include <TVector.h>
-//#include <TObjArray.h>
-#include "AliAnalysisTaskSE.h"
-#include "AliGenEventHeader.h"
+#include <AliAnalysisTaskSE.h>
 #include "AliJEfficiency.h"
 #include "AliJHistManager.h"
-#include "AliVVertex.h"
 #include <TComplex.h>
 
 class TClonesArray;
-class AliJBaseTrack;
 class AliJEfficiency;
 
 class AliJFFlucAnalysis : public AliAnalysisTaskSE {
@@ -47,7 +42,7 @@ public:
 		fQC_eta_gap_half = QC_eta_gap_half;
 		cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << endl;
 	}
-	void SetPhiWeights(TH2D *p){
+	void SetPhiWeights(TH1 *p){
 		pPhiWeights = p;
 	}
 
@@ -72,9 +67,14 @@ public:
 	// Getter for single vn
 	Double_t Get_vn( int ih, int imethod ){ return fSingleVn[ih][imethod]; } // method 0:SP, 1:QC(with eta gap), 2:QC(without eta gap)
 
+	enum SUBEVENT{
+		SUBEVENT_A = 0x1,
+		SUBEVENT_B = 0x2
+	};
+	void SelectSubevents(UInt_t nsubeventMask){
+		subeventMask = nsubeventMask;
+	}
 	enum{
-		//FLUC_PHI_MODULATION = 0x1,
-		//FLUC_PHI_INVERSE = 0x2,
 		FLUC_PHI_CORRECTION = 0x2,
 		FLUC_SCPT = 0x4,
 		FLUC_EBE_WEIGHTING = 0x8
@@ -93,15 +93,15 @@ public:
 
 	static int GetCentralityClass(Double_t);
 
-	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kH9, kNH}; //harmonics
+	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kH9, kH10, kH11, kH12, kNH}; //harmonics
 	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
+#define kcNH kH6 //max second dimension + 1
 private:
-//#define kcNH kH9 //max N+1 to be 4-particle correlated
 
 	TClonesArray *fInputList;
 	AliJEfficiency *fEfficiency;
 	const double *fVertex;//!
-	TH2D *pPhiWeights;//!
+	TH1 *pPhiWeights;//!
 	Float_t	fCent;
 	Float_t	fImpactParameter;
 	int fCBin;
@@ -111,6 +111,7 @@ private:
 	float fGlbtrks;
 	float fFB32trks;
 	float fFB32TOFtrks;
+	UInt_t subeventMask;
 	UInt_t flags;
 	Double_t fSingleVn[kNH][3]; // 3 methods
 
@@ -145,6 +146,7 @@ private:
 	AliJTH1D fh_eta;//! // for eta dist of tracks
 	AliJTH1D fh_phi;//! // for phi dist [ic][isub]
 	AliJTH2D fh_phieta;//!
+	AliJTH3D fh_phietaz;//!
 	//AliJTH1D fh_Qvector;//! // for Q-Vector dist [ic][isub][ih]
 
 	AliJTH1D fh_ntracks;//! // for number of tracks dist

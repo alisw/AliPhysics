@@ -786,6 +786,9 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/QA \
+                         @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/plotting \
+                         @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/plotting/invmass \
+                         @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/plotting/shape \
                          @CMAKE_SOURCE_DIR@/PWGGA/GammaConv \
                          @CMAKE_SOURCE_DIR@/PWGGA/GammaConv/documentation \
                          @CMAKE_SOURCE_DIR@/PWGMM/doc \

@@ -13,15 +13,6 @@ ClassImp(AliPP13QualityPhotonSelection);
 //________________________________________________________________
 void AliPP13QualityPhotonSelection::InitSelectionHistograms()
 {
-	// pi0 mass spectrum
-	Int_t nM       = 750;
-	Double_t mMin  = 0.0;
-	Double_t mMax  = 1.5;
-	Int_t nPt      = 400;
-	Double_t ptMin = 0;
-	Double_t ptMax = 20;
-
-
 	// Z-vertex
 	fZvertex = new TH1F("hZvertex", "Reconstructed vertex Z-coordinate; z_{vtx}, cm; counts", 200, -12, 12);
 
@@ -32,14 +23,6 @@ void AliPP13QualityPhotonSelection::InitSelectionHistograms()
 	fListOfHistos->Add(fZvertex);
 	fListOfHistos->Add(fNcellsE);
 	fListOfHistos->Add(fShapeE);
-
-	// Test Assymetry cut
-	for(Int_t i = 0; i < 2; ++i)
-	{
-		const char * s = (i == 0) ? "": "Mix";
-		fMassPtA[i] = new TH3F(Form("h%sMassPtA", s), "(M,p_{T}, A)_{#gamma#gamma}, N_{cell}>2; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax, 20, 0., 1.);
-		fListOfHistos->Add(fMassPtA[i]);
-	}
 
 	// Cluster occupancy
 	for(Int_t i = 0; i < 2; ++i)
@@ -52,7 +35,10 @@ void AliPP13QualityPhotonSelection::InitSelectionHistograms()
 	// Time maps
 	fClusterTime    = new AliPP13DetectorHistogram(new TH1F("hClusterTime", "Cluster Time scaled by E, ;t, s", 4800, -0.25 * 1e-6, 0.25 * 1e-6), fListOfHistos, AliPP13DetectorHistogram::kModules);
 	fClusterEvsT    = new AliPP13DetectorHistogram(new TH2F("hClusterEvsT", "Cluster energy vs time, ; cluster energy, GeV; time, s", 100, 0., 12., 1200, -0.25 * 1e-6, 0.25 * 1e-6), fListOfHistos, AliPP13DetectorHistogram::kModules);
+	fClusterTimeWide = new AliPP13DetectorHistogram(new TH1F("hClusterTimeWide", "Cluster Time scaled by E, ;t, s", 4800, -0.25 * 1e-3, 0.25 * 1e-3), fListOfHistos, AliPP13DetectorHistogram::kModules);
+	fClusterEvsTWide = new AliPP13DetectorHistogram(new TH2F("hClusterEvsTWide", "Cluster energy vs time, ; cluster energy, GeV; time, s", 100, 0., 12., 1200, -0.25 * 1e-2, 0.25 * 1e-2), fListOfHistos, AliPP13DetectorHistogram::kModules);
 	fClusterTimeMap = new AliPP13DetectorHistogram(new TH2F("hClusterTimeMap", "Cluster time map, ; X; Z", 64, 0.5, 64.5, 56, 0.5, 56.5), fListOfHistos, AliPP13DetectorHistogram::kModules);
+	fAsymmetry      = new TH1F("hAsymmetry", "Asymmetry between clusters; asymmetry A = (E_{1} - E_{2})/(E_{1} + E_{2})", 500, -0.5, 1.5);
 
 	for(Int_t i = 0; i < 2; ++i)
 	{
@@ -63,6 +49,7 @@ void AliPP13QualityPhotonSelection::InitSelectionHistograms()
 		fListOfHistos->Add(fClusterIdN[i]);
 		fListOfHistos->Add(fClusterIdE[i]);
 	}
+	fListOfHistos->Add(fAsymmetry);
 }
 
 
@@ -77,19 +64,14 @@ void AliPP13QualityPhotonSelection::ConsiderPair(const AliVCluster * c1, const A
 	// Pair cuts can be applied here
 	if (psum.M2() < 0)  return;
 
-	// Appply asymmetry cut for pair
-	Double_t asym = TMath::Abs( (p1.E() - p2.E()) / (p1.E() + p2.E()) );
-	if (asym > fCuts.fAsymmetryCut) return;
-
-
 	Int_t sm1, sm2, x1, z1, x2, z2;
 	if ((sm1 = CheckClusterGetSM(c1, x1, z1)) < 0) return; //  To be sure that everything is Ok
 	if ((sm2 = CheckClusterGetSM(c2, x2, z2)) < 0) return; //  To be sure that everything is Ok
 
-	Double_t ma12 = psum.M();
-	Double_t pt12 = psum.Pt();
-	
-	fMassPtA[Int_t(eflags.isMixing)]->Fill(ma12, pt12, asym);
+	Double_t asym = TMath::Abs( (p1.E() - p2.E()) / (p1.E() + p2.E()) );
+
+	if(!eflags.isMixing)
+		fAsymmetry->Fill(asym);
 }
 
 
@@ -116,7 +98,9 @@ void AliPP13QualityPhotonSelection::SelectPhotonCandidates(const TObjArray * clu
 		if (!eflags.isMixing)
 		{
 			fClusterTime->FillAll(sm, sm, clus->E());
+			fClusterTimeWide->FillAll(sm, sm, clus->E());
 			fClusterEvsT->FillAll(sm, sm, tof, clus->E());
+			fClusterEvsTWide->FillAll(sm, sm, tof, clus->E());
 			fClusterTimeMap->FillAll(sm, sm, x, z, tof);
 		}
 		if (TMath::Abs(clus->GetTOF()) > fCuts.fTimingCut) continue;
@@ -180,7 +164,7 @@ Bool_t AliPP13QualityPhotonSelection::SelectEvent(const EventFlags & flgs)
 {
 	// Keep it this way if you decide to switch Bool_t -> Some_Other_type
 
-	Bool_t accepted = AliPP13PhotonSelection::SelectEvent(flgs);
+	Bool_t accepted = AliPP13PhysicsSelection::SelectEvent(flgs);
 	if (accepted)
 		fZvertex->Fill(flgs.vtxBest[2]);
 

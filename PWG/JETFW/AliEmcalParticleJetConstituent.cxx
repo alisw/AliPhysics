@@ -49,7 +49,7 @@ AliEmcalParticleJetConstituent::AliEmcalParticleJetConstituent(const AliVParticl
 }
 
 AliEmcalParticleJetConstituent::AliEmcalParticleJetConstituent(const AliEmcalParticleJetConstituent &other) :
-    AliEmcalJetConstituent(),
+    AliEmcalJetConstituent(other),
     fkParticle(other.fkParticle)
 {
 
@@ -67,6 +67,17 @@ bool AliEmcalParticleJetConstituent::operator ==(const AliEmcalParticleJetConsti
   if(!fkParticle || !rhs.fkParticle) return false;
   return rhs.fkParticle->GetUniqueID() == fkParticle->GetUniqueID();
 }
+
+bool AliEmcalParticleJetConstituent::operator >(const AliEmcalParticleJetConstituent &rhs) const {
+  if(!fkParticle || !rhs.fkParticle) return false;
+  return rhs.fkParticle->Pt() < fkParticle->Pt();
+}
+
+bool AliEmcalParticleJetConstituent::operator <(const AliEmcalParticleJetConstituent &rhs) const {
+  if(!fkParticle || !rhs.fkParticle) return false;
+  return rhs.fkParticle->Pt() > fkParticle->Pt();
+}
+
 
 AliEmcalParticleJetConstituent::~AliEmcalParticleJetConstituent() {
 

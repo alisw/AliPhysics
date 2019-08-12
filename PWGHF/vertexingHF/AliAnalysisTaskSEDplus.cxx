@@ -122,7 +122,9 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
   fSystem(0),
   fNtrcklMin(0),
   fNtrcklMax(10000),
-  fCutOnTrckl(kFALSE)
+  fCutOnTrckl(kFALSE),
+  fFillOnlySignalSparses(kFALSE),
+  fUseFinPtBinsForSparse(kFALSE)
 {
   /// Default constructor
 
@@ -209,7 +211,9 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fSystem(0),
   fNtrcklMin(0),
   fNtrcklMax(10000),
-  fCutOnTrckl(kFALSE)
+  fCutOnTrckl(kFALSE),
+  fFillOnlySignalSparses(kFALSE),
+  fUseFinPtBinsForSparse(kFALSE)
 {
   //
   /// Standrd constructor
@@ -523,13 +527,14 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
 
-  fHistNCandidates = new TH1F("hNCandidates","number of candidates",6,-0.5,5.5);
+  fHistNCandidates = new TH1F("hNCandidates","number of candidates",7,-0.5,6.5);
   fHistNCandidates->GetXaxis()->SetBinLabel(1,"no. of 3prong candidates");
   fHistNCandidates->GetXaxis()->SetBinLabel(2,"no. of cand with D+ bitmask");
   fHistNCandidates->GetXaxis()->SetBinLabel(3,"D+ not on-the-fly reco");
   fHistNCandidates->GetXaxis()->SetBinLabel(4,"D+ after topological cuts");
   fHistNCandidates->GetXaxis()->SetBinLabel(5,"D+ after Topological+SingleTrack cuts");
   fHistNCandidates->GetXaxis()->SetBinLabel(6,"D+ after Topological+SingleTrack+PID cuts");
+  fHistNCandidates->GetXaxis()->SetBinLabel(7,"D+ rejected by preselect");
   fHistNCandidates->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNCandidates->SetMinimum(0);
   fOutput->Add(fHistNCandidates);
@@ -990,6 +995,16 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       }
       fHistNCandidates->Fill(1);
 
+      TObjArray arrTracks(3);
+      for(Int_t jdau=0; jdau<3; jdau++){
+        AliAODTrack *tr=vHF->GetProng(aod,d,jdau);
+        arrTracks.AddAt(tr,jdau);
+      }
+      if(!fRDCutsAnalysis->PreSelect(arrTracks)){
+        fHistNCandidates->Fill(6);
+        continue;
+      }
+
       if(!(vHF->FillRecoCand(aod,d))) { //Fill the data members of the candidate only if they are empty.
         fHistNCandidates->Fill(2); //monitor how often this fails
         continue;
@@ -1190,7 +1205,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	if(fDoImpPar && passTopolAndPIDCuts){
 	  fHistMassPtImpPar[0]->Fill(arrayForImpPar);
 	}
-	if(fDoSparse){
+	if(fDoSparse && (!fReadMC || !fFillOnlySignalSparses)){ //fill in case of false fReadMC or false fFillOnlySignalSparses
 	  fSparseCutVars[0]->Fill(arrayForSparse);
 	}
 	if(passTopolAndPIDCuts){
@@ -1517,9 +1532,11 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
 
   Int_t nmassbins=GetNBinsHistos();
 
-  Int_t nptbins=80;
+  Int_t nptbins=100;
   Double_t ptmin=0.;
-  Double_t ptmax=40.;
+  Double_t ptmax=50.;
+  if(fUseFinPtBinsForSparse)
+    nptbins = 500;
 
   Int_t nselbins=2;
   Double_t minsel=0.5;
@@ -1711,14 +1728,20 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos(){
     nmultbins=1;
   }
   
-  Int_t nbinsPrompt[nVarPrompt]={200,100,nmultbins};
-  Int_t nbinsFD[nVarFD]={200,100,nmultbins,200};
+  Int_t nptbins = 100;
+  Double_t ptmin = 0.;
+  Double_t ptmax = 50.;
+  if(fUseFinPtBinsForSparse)
+    nptbins = 500;
 
-  Double_t xminPrompt[nVarPrompt] = {0.,-1.,multmin};
-  Double_t xmaxPrompt[nVarPrompt] = {40.,1.,multmax};
+  Int_t nbinsPrompt[nVarPrompt]={nptbins,100,nmultbins};
+  Int_t nbinsFD[nVarFD]={nptbins,100,nmultbins,200};
 
-  Double_t xminFD[nVarFD] = {0.,-1.,multmin,0.};
-  Double_t xmaxFD[nVarFD] = {40.,1.,multmax,40.};
+  Double_t xminPrompt[nVarPrompt] = {ptmin,-1.,multmin};
+  Double_t xmaxPrompt[nVarPrompt] = {ptmax,1.,multmax};
+
+  Double_t xminFD[nVarFD] = {ptmin,-1.,multmin,0.};
+  Double_t xmaxFD[nVarFD] = {ptmax,1.,multmax,40.};
 
   //pt, y
   fMCAccPrompt = new THnSparseF("hMCAccPrompt","kStepMCAcceptance pt vs. y vs. Ntracklets - promptD",nVarPrompt,nbinsPrompt,xminPrompt,xmaxPrompt);
@@ -1828,7 +1851,7 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcH
   }
 
   Int_t nDau=partDp->GetNDaughters();
-  Int_t labelFirstDau = partDp->GetDaughter(0);
+  Int_t labelFirstDau = partDp->GetDaughterLabel(0);
   if(nDau==3){
     for(Int_t iDau=0; iDau<3; iDau++){
       Int_t ind = labelFirstDau+iDau;
@@ -1859,7 +1882,7 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcH
       }else{
 	Int_t nDauRes=part->GetNDaughters();
 	if(nDauRes==2){
-	  Int_t labelFirstDauRes = part->GetDaughter(0);
+	  Int_t labelFirstDauRes = part->GetDaughterLabel(0);
 	  for(Int_t iDauRes=0; iDauRes<2; iDauRes++){
 	    Int_t indDR = labelFirstDauRes+iDauRes;
 	    AliAODMCParticle* partDR = dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDR));

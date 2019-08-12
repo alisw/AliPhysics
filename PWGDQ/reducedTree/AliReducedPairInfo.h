@@ -22,6 +22,7 @@ class AliReducedPairInfo : public AliReducedBaseTrack {
     kALambda0ToPPi,          // anti-Lambda0 -> anti-p pi+
     kPhiToKK,                // phi          -> K+ K-
     kJpsiToEE,               // J/psi        -> e+ e-
+    kPsi2SToEE,              // psi(2S)      -> e+ e- 
     kUpsilon,                // Upsilon      -> e+ e-
     kDplusToK0sPiplus,       // D+           -> K0s pi+
     kDplusToK0sKplus,        // D+           -> K0s K+
@@ -44,20 +45,24 @@ class AliReducedPairInfo : public AliReducedBaseTrack {
   // setters
   void CandidateId(Char_t id) {fCandidateId=id;}
   void PairType(Char_t type) {fPairType=type;}
+  void PairTypeSPD(Char_t type) {fPairTypeSPD=type;}
   void SetMass(Float_t m) {fMass[0]=m;}
   void SetLegIds(UShort_t leg1, UShort_t leg2) {fLegIds[0]=leg1;fLegIds[1]=leg2;}
   void SetLxy(Float_t lxy) {fLxy = lxy;}
+  void SetPseudoProper(Float_t lpsproper) {fPsProper = lpsproper;}
   void SetPointingAngle(Float_t pa) {fPointingAngle = pa;}
   void SetChisquare(Float_t chi2) {fChisquare = chi2;}
   
   // getters
   Char_t   CandidateId()         const {return fCandidateId;}
   Char_t   PairType()            const {return fPairType;}
+  Char_t   PairTypeSPD()            const {return fPairTypeSPD;}
   Int_t    LegId(Int_t leg)      const {return (leg==0 || leg==1 ? fLegIds[leg] : -1);}
   Float_t  Mass(Int_t idx=0)     const {return (idx>=0 && idx<4 ? fMass[idx] : -999.);}
   Float_t  Energy()              const;
   Float_t  Rapidity()            const;
   Float_t  Lxy()                 const {return fLxy;}
+  Float_t  PsProper()                 const {return fPsProper;}
   Float_t  DecayRadius()         const {return fLxy;}
   Float_t  PointingAngle()       const {return fPointingAngle;}
   Float_t  Chi2()                const {return fChisquare;}
@@ -71,10 +76,12 @@ class AliReducedPairInfo : public AliReducedBaseTrack {
  protected:
   Char_t  fCandidateId;         // candidate type (K0s, Lambda, J/psi, phi, etc)
   Char_t  fPairType;            // 0- offline, 1- on the fly for V0 candidates; 0 ++; 1 +-; 2 -- for other pairs; 
+  Char_t  fPairTypeSPD;         // 2 both / 1 one / 0 none of the two legs has an hit in the first layers of the SPD; 
   UShort_t fLegIds[2];          // leg ids 
   Float_t fMass[4];             // invariant mass for pairs (3 extra mass values for other V0 pid assumptions)
                                 // idx=0 -> K0s assumption; idx=1 -> Lambda; idx=2 -> anti-Lambda; idx=3 -> gamma conversion
   Float_t fLxy;                 // pseudo-proper decay length (pair candidates) or radius of the secondary vertex for V0s 
+  Float_t fPsProper;                 // pseudo-proper decay length (pair candidates) or radius of the secondary vertex for V0s 
   Float_t fPointingAngle;       // angle between the pair momentum vector and the secondary vertex position vector
   Float_t fChisquare;           // chi2 for the legs matching
   

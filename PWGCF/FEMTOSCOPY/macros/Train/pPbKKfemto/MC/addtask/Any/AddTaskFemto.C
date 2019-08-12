@@ -11,7 +11,7 @@
 
 //this line for local: AliAnalysisTaskFemto *AddTaskFemtoKchHBT(const char *configMacroName="ConfigFemtoAnalysis.C", const char *configMacroParameters="" )
 
-AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containerName="femtolist", const char *configMacroParameters="" )
+AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerName="femtolist", const char *configMacroParameters="" )
 {
 // Creates a proton analysis task and adds it to the analysis manager.
 
@@ -55,19 +55,14 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //in $ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train/
   //[root@alicethinks Train]# ln -s /scratch/AliWork/PbPb2.76/Train2013/KchHBT KchHBT
   //
-  //Train:
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
-  //Local:
-  //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
   //10-90% only two triggers: SemiCentral and MB
   //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
+  //taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);
   taskfemto->SelectCollisionCandidates(AliVEvent::kAny);
   //0-10 % all three triggers
   //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
   mgr->AddTask(taskfemto);
-
-  //MC PID (not needed for data):
-  AliAnalysisTaskSE *pidresponse = AddTaskPIDResponse(kTRUE);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
   // arguments of the AddTaskXXX() function.
@@ -78,8 +73,8 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("Kaon_Any",  TList::Class(),
-  							       AliAnalysisManager::kOutputContainer,outputfile);
+  //AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("ER_woSDD",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer(containerName,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
 
 
    mgr->ConnectInput(taskfemto, 0, mgr->GetCommonInputContainer());

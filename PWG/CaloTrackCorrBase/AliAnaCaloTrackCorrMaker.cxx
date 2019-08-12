@@ -957,37 +957,38 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
 void AliAnaCaloTrackCorrMaker::Init()
 {  
   // Activate debug level in maker
-  if( fAnaDebug >= 0 )
+  if ( fAnaDebug >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fAnaDebug);
-  
-  //Initialize reader
+
+  // Initialize reader
   GetReader()->Init();
+
   GetReader()->SetCaloUtils(GetCaloUtils()); // pass the calo utils pointer to the reader
 
-  // Activate debug level in reader
-  if( fReader->GetDebug() >= 0 )
-    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fReader->ClassName(), fReader->GetDebug());
-  
   // Activate debug level in calo utils
-  if( fCaloUtils->GetDebug() >= 0 )
+  if ( fCaloUtils->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fCaloUtils->ClassName(), fCaloUtils->GetDebug());
-  
+
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0)
   {
     AliWarning("Analysis job list not initialized");
     return;
   }
-  
+
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
   {
     AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
     
     ana->SetReader(fReader);       // Set Reader for each analysis
+
     ana->SetCaloUtils(fCaloUtils); // Set CaloUtils for each analysis
-    
+
     ana->Init();
+
     ana->InitDebug();
-  }//Loop on analysis defined
+
+  } // Loop on analysis defined
+
 }
 
 //_____________________________________________

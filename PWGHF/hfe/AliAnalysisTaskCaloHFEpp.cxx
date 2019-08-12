@@ -24,6 +24,7 @@
 #include "TVector3.h"
 #include "TH1F.h"
 #include "TList.h"
+#include "TRandom.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
@@ -45,6 +46,7 @@
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliVertexingHFUtils.h"
 
 
 //using std::cout;
@@ -66,9 +68,33 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fUseTender(kTRUE),
 				fTracks_tender(0),
 				fCaloClusters_tender(0),
+				//==== cut parameters ====
+				TrackEtaMin(0),
+				TrackEtaMax(0),
+				NTPCClust(0), 
+				NITSClust(0), 
+				NCrossedRow(0),
+				DCAxy(0), 
+				DCAz(0),
+				NsigmaMin(0),
+				NsigmaMax(0),
+				M20Min(0), 
+				M20Max(0),
+				EopMin(0),
+				EopMax(0),
+				MaxConeR(0),
+				ptAssoMin(0),
+				pTe("name"),
+				massMin(0),
+				Nref(0),
+				Nch(0),
+				MinNtr(0),
+				MaxNtr(0),
 				//==== basic parameters ====
 				fNevents(0),
+				fNDB(0),
 				fHist_VertexZ(0),
+				fHist_VertexZ_all(0),
 				fHist_Centrality(0),
 				fHist_Mult(0),
 				fTrigMulti(0),
@@ -78,13 +104,22 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fHistPhi_EMcal(0),
 				fHistScatter_EMcal(0),
 				fHistScatter_EMcal_aftMatch(0),
-				fTPCNcls(0),
-				fITSNcls(0),
 				fHistoNCells(0),
 				fM02(0),
 				fM20(0),
+				fM02_ele(0),
+				fM20_ele(0),
+				fM02_had(0),
+				fM20_had(0),
+				//==== check cut parameters ====
+				fTPCNcls(0),
+				fITSNcls(0),
+				fTPCCrossedRow(0),
+				fTPCnsig_ele(0),
 				fM02_2(0),
 				fM20_2(0),
+				fEop_ele(0),
+				fConeR(0),
 				//==== Real data output ====
 				fHist_trackPt(0),
 				fHistMatchPt(0),
@@ -97,22 +132,50 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fHistNsigEop(0),
 				fEopPt_ele_loose(0),
 				fEopPt_ele_tight(0),
+				fEopPt_ele_tight_PYTHIA(0),
+				fEopPt_ele_tight_forSys(0),
 				fEopPt_had(0),
 				fEtadiff(0),
 				fPhidiff(0),
-				fInv_pT_ULS(0),
 				fInv_pT_LS(0),
+				fInv_pT_ULS(0),
+				fInv_pT_ULS_forW(0),
+				fHistPt_Inc(0),
+				fHistPt_Iso(0),
+				fHistPt_R_Iso(0),
+				fRiso_phidiff(0),
+				fRiso_phidiff_LS(0),
+				fRiso_phidiff_35(0),
+				fRiso_phidiff_LS_35(0),
+				fzvtx_Ntrkl(0),
+				fzvtx_Nch(0),
+				fzvtx_Ntrkl_Corr(0),
+				fzvtx_Corr(0),
+				fNtrkl_Corr(0),
+				fNchNtr(0),
+				fNchNtr_Corr(0),
+				fDCAxy_Pt_ele(0),
+				fDCAxy_Pt_had(0),
+				fDCAxy_Pt_LS(0),
+				fDCAxy_Pt_ULS(0),
+				fDCAxy_Pt_Dpm(0),
+				fDCAxy_Pt_D0(0),
+				fDCAxy_Pt_Ds(0),
+				fDCAxy_Pt_lambda(0),
+				fDCAxy_Pt_B(0),
+				fPt_Btoe(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
 				fDCDG1(kFALSE),
 				fDCDG2(kFALSE),
-				fFlagClsTypeEMC(kTRUE),
+				fFlagClsTypeEMC(kFALSE),
 				fFlagClsTypeDCAL(kFALSE),
 				//==== MC output ===
 				fMCcheckMother(0),
 				fMCarray(0),
 				fMCparticle(0),
+				fMCTrackpart(0),
 				fMCheader(0),
 				fCheckEtaMC(0),
 				fHistMCorgPi0(0),
@@ -122,6 +185,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				NembMCpi0(0),
 				NembMCeta(0),
 				NpureMCproc(0),
+				NpureMC(0),
 				fHistPhoReco0(0),
 				fHistPhoReco1(0),
 				fHistPhoReco2(0),
@@ -129,17 +193,31 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fHistPhoPi1(0),
 				fHistPhoEta0(0),
 				fHistPhoEta1(0),
+				fPi000(0),
+				fPi005(0),
 				fPi010(0),
+				fEta000(0),
+				fEta005(0),
 				fEta010(0),
+				fCorrZvtx(0),
+				fCorrNtrkl(0),
 				fHistPt_HFE_MC_D(0),
 				fHistPt_HFE_MC_B(0),
+				fHistPt_HFE_PYTHIA(0),
+				fHistPt_HFE_emb(0),
+				fHistPt_HFE_Gen(0),
+				fHistPt_HFE_GenvsReco(0),
 				fHist_eff_HFE(0),
 				fHist_eff_match(0),
-				fHist_eff_TPC(0)
+				fHist_eff_TPC(0),
+				fHist_eff_M20(0),
+				fHist_eff_Iso(0),
+				fweightNtrkl(0)
 
 {
 				// default constructor, don't allocate memory here!
 				// this is used by root for IO purposes, it needs to remain empty
+				for(Int_t i=0; i<6; i++) fMultEstimatorAvg[i]=0;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalysisTaskSE(name),
@@ -152,9 +230,33 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fUseTender(kTRUE),
 				fTracks_tender(0),
 				fCaloClusters_tender(0),
+				//==== cut parameters ====
+				TrackEtaMin(0),
+				TrackEtaMax(0),
+				NTPCClust(0), 
+				NITSClust(0), 
+				NCrossedRow(0),
+				DCAxy(0), 
+				DCAz(0),
+				NsigmaMin(0),
+				NsigmaMax(0),
+				M20Min(0), 
+				M20Max(0),
+				EopMin(0),
+				EopMax(0),
+				MaxConeR(0),
+				ptAssoMin(0),
+				pTe("name"),
+				massMin(0),
+				Nref(0),
+				Nch(0),
+				MinNtr(0),
+				MaxNtr(0),
 				//==== basic parameters ====
 				fNevents(0),
+				fNDB(0),
 				fHist_VertexZ(0),
+				fHist_VertexZ_all(0),
 				fHist_Centrality(0),
 				fHist_Mult(0),
 				fTrigMulti(0),
@@ -164,13 +266,22 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fHistPhi_EMcal(0),
 				fHistScatter_EMcal(0),
 				fHistScatter_EMcal_aftMatch(0),
-				fTPCNcls(0),
-				fITSNcls(0),
 				fHistoNCells(0),
 				fM02(0),
 				fM20(0),
+				fM02_ele(0),
+				fM20_ele(0),
+				fM02_had(0),
+				fM20_had(0),
+				//==== check cut parameters ====
+				fTPCNcls(0),
+				fITSNcls(0),
+				fTPCCrossedRow(0),
+				fTPCnsig_ele(0),
 				fM02_2(0),
 				fM20_2(0),
+				fEop_ele(0),
+				fConeR(0),
 				//==== Real data output ====
 				fHist_trackPt(0),
 				fHistMatchPt(0),
@@ -183,22 +294,50 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fHistNsigEop(0),
 				fEopPt_ele_loose(0),
 				fEopPt_ele_tight(0),
+				fEopPt_ele_tight_PYTHIA(0),
+				fEopPt_ele_tight_forSys(0),
 				fEopPt_had(0),
 				fEtadiff(0),
 				fPhidiff(0),
-				fInv_pT_ULS(0),
 				fInv_pT_LS(0),
+				fInv_pT_ULS(0),
+				fInv_pT_ULS_forW(0),
+				fHistPt_Inc(0),
+				fHistPt_Iso(0),
+				fHistPt_R_Iso(0),
+				fRiso_phidiff(0),
+				fRiso_phidiff_LS(0),
+				fRiso_phidiff_35(0),
+				fRiso_phidiff_LS_35(0),
+				fzvtx_Ntrkl(0),
+				fzvtx_Nch(0),
+				fzvtx_Ntrkl_Corr(0),
+				fzvtx_Corr(0),
+				fNtrkl_Corr(0),
+				fNchNtr(0),
+				fNchNtr_Corr(0),
+				fDCAxy_Pt_ele(0),
+				fDCAxy_Pt_had(0),
+				fDCAxy_Pt_LS(0),
+				fDCAxy_Pt_ULS(0),
+				fDCAxy_Pt_Dpm(0),
+				fDCAxy_Pt_D0(0),
+				fDCAxy_Pt_Ds(0),
+				fDCAxy_Pt_lambda(0),
+				fDCAxy_Pt_B(0),
+				fPt_Btoe(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
 				fDCDG1(kFALSE),
 				fDCDG2(kFALSE),
-				fFlagClsTypeEMC(kTRUE),
+				fFlagClsTypeEMC(kFALSE),
 				fFlagClsTypeDCAL(kFALSE),
 				//==== MC output ===
 				fMCcheckMother(0),
 				fMCarray(0),
 				fMCparticle(0),
+				fMCTrackpart(0),
 				fMCheader(0),
 				fCheckEtaMC(0),
 				fHistMCorgPi0(0),
@@ -208,6 +347,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				NembMCpi0(0),
 				NembMCeta(0),
 				NpureMCproc(0),
+				NpureMC(0),
 				fHistPhoReco0(0),
 				fHistPhoReco1(0),
 				fHistPhoReco2(0),
@@ -215,13 +355,26 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fHistPhoPi1(0),
 				fHistPhoEta0(0),
 				fHistPhoEta1(0),
+				fPi000(0),
+				fPi005(0),
 				fPi010(0),
+				fEta000(0),
+				fEta005(0),
 				fEta010(0),
+				fCorrZvtx(0),
+				fCorrNtrkl(0),
 				fHistPt_HFE_MC_D(0),
 				fHistPt_HFE_MC_B(0),
+				fHistPt_HFE_PYTHIA(0),
+				fHistPt_HFE_emb(0),
+				fHistPt_HFE_Gen(0),
+				fHistPt_HFE_GenvsReco(0),
 				fHist_eff_HFE(0),
 				fHist_eff_match(0),
-				fHist_eff_TPC(0)
+				fHist_eff_TPC(0),
+				fHist_eff_M20(0),
+				fHist_eff_Iso(0),
+				fweightNtrkl(0)
 {
 				// constructor
 				DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -231,6 +384,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				// you can add more output objects by calling DefineOutput(2, classname::Class())
 				// if you add more output objects, make sure to call PostData for all of them, and to
 				// make changes to your AddTask macro!
+				for(Int_t i=0; i<6; i++) fMultEstimatorAvg[i]=0;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
@@ -239,6 +393,10 @@ AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
 				if(fOutputList) {
 								delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
 				}
+				for(Int_t i=0; i<6; i++) {
+								if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
+				}
+				if(fweightNtrkl) delete fweightNtrkl;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
@@ -269,62 +427,124 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHistEta_EMcal = new TH1F("fHistEta_EMcal", "EMCAL selected cluster #eta distribution; #eta; counts", 200, -4, 4);    
 				fHistPhi_EMcal = new TH1F("fHistPhi_EMcal", "EMCAL selected cluster #phi distribution; #phi; counts", 200, 0, 10);    
 				fHist_VertexZ = new TH1F("fHist_VertexZ", "Z Vertex position; Vtx_{z}; counts", 200, -25, 25);     
+				fHist_VertexZ_all = new TH1F("fHist_VertexZ_all", "All z vertex position; Vtx_{z}; counts", 600, -30, 30);     
 				fHist_Centrality = new TH1F("fHist_Centrality", "Centrality", 100, 0, 100);
-				fNevents = new TH1F("fNevents","No of events",7,-0.5,6.5);
+				fNevents = new TH1F("fNevents","No of events",8,-0.5,7.5);
+				fNDB = new TH1F("fNDB","No of events",2,-0.5,1.5);
 				fTPCNcls = new TH1F("fTPCNcls","No of TPC clusters; N^{TPC}_{cls}; counts",100,0.0,200.);           
 				fITSNcls = new TH1F("fITSNcls","No of ITS clusters; N^{ITS}_{cls}; counts",100,0.0,20.); 
+				fTPCCrossedRow = new TH1F("fTPCCrossedRow","No of TPC CrossedRow; N^{ITS}_{CrossedRow}; counts",500,0.,500.); 
 				fEtadiff = new TH1F("fEtadiff", "Distance of EMCAL to its closest track(Eta)", 60,-0.3,0.3);
 				fPhidiff = new TH1F("fPhidiff", "Distance of EMCAL to its closest track(Phi)", 60,-0.3,0.3);
 				fMCcheckMother = new TH1F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5);
-				fHistPhoReco0 = new TH1D("fHistPhoReco0", "total pho in sample; p_{T}(GeV/c)", 60,0,60);
-				fHistPhoReco1 = new TH1D("fHistPhoReco1", "reco pho in sample; p_{T}(GeV/c)", 60,0,60);
-				fHistPhoReco2 = new TH1D("fHistPhoReco2", "non-reco pho in sample; p_{T}(GeV/c)", 60,0,60);
-				fHistPhoPi0 = new TH1D("fHistPhoPi0", "total pi0 in sample; p_{T}(GeV/c)", 60,0,60);
+				fHistPhoReco0 = new TH1D("fHistPhoReco0", "total pho in sample; p_{T}(GeV/c)", 600,0,60);
+				fHistPhoReco1 = new TH1D("fHistPhoReco1", "reco pho in sample; p_{T}(GeV/c)", 600,0,60);
+				fHistPhoReco2 = new TH1D("fHistPhoReco2", "non-reco pho in sample; p_{T}(GeV/c)", 600,0,60);
+				fHistPhoPi0 = new TH1D("fHistPhoPi0", "total pi0 in sample; p_{T}(GeV/c)", 600,0,60);
 				fHistPhoPi0->Sumw2(); 
-				fHistPhoPi1 = new TH1D("fHistPhoPi1", "reco pi0 in sample; p_{T}(GeV/c)", 60,0,60);
+				fHistPhoPi1 = new TH1D("fHistPhoPi1", "reco pi0 in sample; p_{T}(GeV/c)", 600,0,60);
 				fHistPhoPi1->Sumw2(); 
-				fHistPhoEta0 = new TH1D("fHistPhoEta0", "total Eta in sample; p_{T}(GeV/c)", 60,0,60);
+				fHistPhoEta0 = new TH1D("fHistPhoEta0", "total Eta in sample; p_{T}(GeV/c)", 600,0,60);
 				fHistPhoEta0->Sumw2(); 
-				fHistPhoEta1 = new TH1D("fHistPhoEta1", "reco Eta in sample; p_{T}(GeV/c)", 60,0,60);
+				fHistPhoEta1 = new TH1D("fHistPhoEta1", "reco Eta in sample; p_{T}(GeV/c)", 600,0,60);
 				fHistPhoEta1->Sumw2(); 
+
 				fCheckEtaMC = new TH1F("fCheckEtaMC","check Eta range cut in MC",160,-0.8,0.8);
-				fHistMCorgD = new TH1F("fHistMCorgD","MC org D",60,0,60);
-				fHistMCorgB = new TH1F("fHistMCorgB","MC org B",60,0,60);
-				fHistPt_HFE_MC_D  = new TH1F("fHistPt_HFE_MC_D","HFE from D MC",60,0,60);
-				fHistPt_HFE_MC_B  = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",60,0,60);
-				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",60,0,60);
-				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",60,0,60);
-				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",60,0,60);
+				fHistMCorgD = new TH1F("fHistMCorgD","MC org D",600,0,60);
+				fHistMCorgB = new TH1F("fHistMCorgB","MC org B",600,0,60);
+				fHistPt_HFE_MC_D  = new TH1F("fHistPt_HFE_MC_D","HFE from D MC",600,0,60);
+				fHistPt_HFE_MC_B  = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",600,0,60);
+				fHistPt_HFE_PYTHIA = new TH1F("fHistPt_HFE_PYTHIA","HFE fron PYTHIA",600,0,60);
+				fHistPt_HFE_emb    = new TH1F("fHistPt_HFE_emb","HFE fron embedding",600,0,60);
+				fHistPt_HFE_Gen    = new TH1F("fHistPt_HFE_Gen","HFE pt spectrum before reconstruct",600,0,60);
+				fHistPt_HFE_GenvsReco    = new TH2F("fHistPt_HFE_GenvsReco","HFE pt spectrum before reconstruct",600,0,60,600,0,60);
+				fHistPt_Inc = new TH1F("fHistPt_Inc","Inclusive electron",600,0,60);
+				fHistPt_Iso = new TH1F("fHistPt_Iso","Isolated electron",600,0,60);
+				fHistPt_R_Iso = new TH2F("fHistPt_R_Iso","Pt vs riso ",1000,0,100,500,0.,0.5);
+				fRiso_phidiff       = new TH2F("fRiso_phidiff","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
+				fRiso_phidiff_LS    = new TH2F("fRiso_phidiff_LS","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
+				fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
+				fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
+				fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
+				fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",400,-20.,20.,301,-0.5,300.5);
+				fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
+				fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",400,-20.,20.);
+				fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",301,-0.5,300.5);
+				fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
+				fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
+
+				fDCAxy_Pt_ele = new TH2F("fDCAxy_Pt_ele","DCA_{xy} vs Pt (electron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_had = new TH2F("fDCAxy_Pt_had","DCA_{xy} vs Pt (hadron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_LS = new TH2F("fDCAxy_Pt_LS","DCA_{xy} vs Pt LS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_ULS = new TH2F("fDCAxy_Pt_ULS","DCA_{xy} vs Pt ULS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_Dpm = new TH2F("fDCAxy_Pt_Dpm","DCA_{xy} vs Pt D+-(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_D0= new TH2F("fDCAxy_Pt_D0","DCA_{xy} vs Pt D0(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_Ds= new TH2F("fDCAxy_Pt_Ds","DCA_{xy} vs Pt Ds(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_lambda = new TH2F("fDCAxy_Pt_lambda","DCA_{xy} vs Pt lambda(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_B= new TH2F("fDCAxy_Pt_B","DCA_{xy} vs Pt all B meson(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+
+				Double_t eop_range[21] = {2.,2.5,3.,3.5,4.,4.5,5.0,5.5,6.,8.,10.,12.,14.,16.,19.,22.,26.,30.,35.,40.,50.};
+				fPt_Btoe = new TH2F("fPt_Btoe","B meson vs electron;electron p_{t} (GeV/c);B p_{t} (GeV/c)",20,eop_range,600,0.,60.);
+				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",600,0,60);
+				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
+				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
+				fHist_eff_M20     = new TH1F("fHist_eff_M20","efficiency :: shower shape cut",600,0,60);
+				fHist_eff_Iso     = new TH2F("fHist_eff_Iso","efficiency :: shower shape cut",600,0,60,500,0.,0.5);
 
 
 
 				/////////////////
 				//pi0 weight			
 				/////////////////
+				fPi000 = new TF1("fPi000","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+			  fPi000->SetParameters(3.68528e+01,5.43694e-02,1.99270e+00,5.33945e+00,3.08814e+00);
+				fPi005 = new TF1("fPi005","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+				fPi005->SetParameters(4.03327e+01,-2.14631e+01,9.93386e+02,3.60954e+00,2.34609e+00);
 				fPi010 = new TF1("fPi010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
-			  fPi010->SetParameters(3.68528e+01,5.43694e-02,1.99270e+00,5.33945e+00,3.08814e+00);
+			  fPi010->SetParameters(5.31753e+00,-7.43035e+01,3.27764e+04,4.94405e+00,1.93347e+00);
 
 				/////////////////
 				// Eta weight
 				/////////////////
+				fEta000 = new TF1("fEta000","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+				fEta000->SetParameters(1.50102e+01,2.08498e-01,2.95617e+00,5.05032e+00,2.95377e+00);    
+				fEta005 = new TF1("fEta005","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+				fEta005->SetParameters(3.00390e+01,-1.76773e+01,7.45941e+00,4.48491e+00,2.41261e+00);
 				fEta010 = new TF1("fEta010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
-				fEta010->SetParameters(1.50102e+01,2.08498e-01,2.95617e+00,5.05032e+00,2.95377e+00);    
+				fEta010->SetParameters(1.82736e+00,-8.08208e+01,2.32670e+04,4.66500e+00,1.75496e+00); 
+
+				fCorrZvtx = new TF1("fCorrZvtx","pol4");
+				fCorrZvtx->SetParameters(0.989494,-0.000148672,0.00145737,4.02038e-05,-2.07891e-05);
+
+				fCorrNtrkl = new TF1("fCorrNtrkl","pol8");
+				fCorrNtrkl->SetParameters(1.32267,-0.186463,0.0300275,-0.00205886,7.30481e-05,-1.45858e-06,1.65515e-08,-9.94577e-11,2.45483e-13);
+
 
 				fHist_Mult = new TH2F("fMult","Track multiplicity",100,0,100,20000,0,20000);
 				fHistScatter_EMcal = new TH2F("fHistScatter_EMcal", "EMCAL cluster scatter plot; #eta; #phi", 200,0.,6.,200, -1., 1.);       // create your histogra
 				fHistScatter_EMcal_aftMatch = new TH2F("fHistScatter_EMcal_aftMatch", "EMCAL cluster scatter plot after track matching; #eta; #phi", 40,-1.0,1.0,200, 0., 6.);       // create your histogra
 				fdEdx = new TH2F("fdEdx","All Track dE/dx distribution;p (GeV/c);dE/dx",500,0,50,500,0,160);
 				fTPCnsig = new TH2F("fTPCnsig","All Track TPC Nsigma distribution;p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
-				fHistNsigEop = new TH2F ("fHistNsigEop", "E/p vs TPC nsig; E/p; #sigme_{TPC-dE/dX}",60, 0.0, 3.0, 200, -10,10);   
+				fTPCnsig_ele = new TH1F("fTPCnsig_ele","electron TPC Nsigma distribution;#sigma_{TPC-dE/dx} ; counts",200,-10,10);
+				fHistNsigEop = new TH2F ("fHistNsigEop", "E/p vs TPC nsig; E/p; #sigme_{TPC-dE/dX}",300, 0.0, 3.0, 200, -10,10);   
 				fM02 = new TH2F ("fM02","M02 vs pt distribution; pt(GeV/c); M02",500,0,50,400,0,2);
 				fM20 = new TH2F ("fM20","M20 vs pt distribution; pt(GeV/c); M20",500,0,50,400,0,2);
+				fM02_ele = new TH1F ("fM02_ele","M02 distribution ele; pt(GeV/c); M02",400,0,2);
+				fM20_ele = new TH1F ("fM20_ele","M20 distribution ele; pt(GeV/c); M20",400,0,2);
+				fM02_had = new TH1F ("fM02_had","M02 distribution had; pt(GeV/c); M02",400,0,2);
+				fM20_had = new TH1F ("fM20_had","M20 distribution had; pt(GeV/c); M20",400,0,2);
 				fM02_2 = new TH2F ("fM02_2","M02 vs pt distribution (-1<nSigma<3 & 0.9<E/p<1.3); pt(GeV/c); M02",500,0,50,400,0,2);
 				fM20_2 = new TH2F ("fM20_2","M20 vs pt distribution (-1<nSigma<3 & 0.9<E/p<1.3); pt(GeV/c); M20",500,0,50,400,0,2);
-				fEopPt_ele_loose = new TH2F ("fEopPt_ele_loose","pt vs E/p distribution (-3<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
-				fEopPt_ele_tight = new TH2F ("fEopPt_ele_tight","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
-				fEopPt_had = new TH2F ("fEopPt_had","pt vs E/p distribution (nSigma<-3.5); pt(GeV/c); E/p",500,0,50,60,0,3.0);
+				fEopPt_ele_loose = new TH2F ("fEopPt_ele_loose","pt vs E/p distribution (-3<nSigma<3); pt(GeV/c); E/p",500,0,50,300,0,3.0);
+				fEopPt_ele_tight = new TH2F ("fEopPt_ele_tight","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,300,0,3.0);
+				fEopPt_ele_tight_PYTHIA = new TH2F ("fEopPt_ele_tight_PYTHIA","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,300,0,3.0);
+				fEopPt_ele_tight_forSys = new TH2F ("fEopPt_ele_tight_forSys","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",600,0,60,300,0,3.0);
+				fEopPt_had = new TH2F ("fEopPt_had","pt vs E/p distribution (nSigma<-3.5); pt(GeV/c); E/p",500,0,50,300,0,3.0);
+				fEop_ele = new TH1F ("fEop_ele"," electron E/p distribution ; E/p ; counts",300,0,3.0);
+				fConeR = new TH1F ("fConeR"," check cone radius; counts",500,0,0.5);
 				fHistoNCells = new TH2F("fHistoNCells", "No of EMCAL cells in a cluster; Cluster E; N^{EMC}_{cells}",500,0,50,30,0,30);
 				fInv_pT_ULS = new TH2F("fInv_pT_ULS", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",500,0,50,1000,0,1.0);
+				fInv_pT_ULS_forW = new TH2F("fInv_pT_ULS_forW", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",500,0,50,1000,0,100);
 				fInv_pT_LS = new TH2F("fInv_pT_LS", "Invariant mass vs p_{T} distribution(LS) ; pt(GeV/c) ; mass(GeV/c^2)",500,0,50,1000,0,1.0);
 				fHistMCorgPi0 = new TH2F("fHistMCorgPi0","MC org Pi0",2,-0.5,1.5,100,0,50);
 				fHistMCorgEta = new TH2F("fHistMCorgEta","MC org Eta",2,-0.5,1.5,100,0,50);
@@ -333,7 +553,9 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 
 				//==== basic parameters ====
 				fOutputList->Add(fNevents);
+				fOutputList->Add(fNDB);
 				fOutputList->Add(fHist_VertexZ);          
+				fOutputList->Add(fHist_VertexZ_all);          
 				fOutputList->Add(fHist_Centrality);       
 				fOutputList->Add(fHist_Mult);           
 				fOutputList->Add(fTrigMulti);
@@ -343,13 +565,22 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fHistPhi_EMcal);         
 				fOutputList->Add(fHistScatter_EMcal);     
 				fOutputList->Add(fHistScatter_EMcal_aftMatch);     
-				fOutputList->Add(fTPCNcls);
-				fOutputList->Add(fITSNcls);
 				fOutputList->Add(fHistoNCells);
 				fOutputList->Add(fM02);
 				fOutputList->Add(fM20);
+				fOutputList->Add(fM02_ele);
+				fOutputList->Add(fM20_ele);
+				fOutputList->Add(fM02_had);
+				fOutputList->Add(fM20_had);
+				//==== check cut parameters ====
+				fOutputList->Add(fTPCNcls);
+				fOutputList->Add(fITSNcls);
+				fOutputList->Add(fTPCCrossedRow);
+				fOutputList->Add(fTPCnsig_ele);
 				fOutputList->Add(fM02_2);
 				fOutputList->Add(fM20_2);
+				fOutputList->Add(fEop_ele);
+				fOutputList->Add(fConeR);
 				//==== Real data output ====
 				fOutputList->Add(fHist_trackPt);          
 				fOutputList->Add(fHistMatchPt);          
@@ -362,11 +593,38 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fHistNsigEop);
 				fOutputList->Add(fEopPt_ele_loose);
 				fOutputList->Add(fEopPt_ele_tight);
+				fOutputList->Add(fEopPt_ele_tight_PYTHIA);
+				fOutputList->Add(fEopPt_ele_tight_forSys);
 				fOutputList->Add(fEopPt_had);
 				fOutputList->Add(fEtadiff);
 				fOutputList->Add(fPhidiff);
-				fOutputList->Add(fInv_pT_ULS);
 				fOutputList->Add(fInv_pT_LS);
+				fOutputList->Add(fInv_pT_ULS);
+				fOutputList->Add(fInv_pT_ULS_forW);
+				fOutputList->Add(fHistPt_Inc);
+				fOutputList->Add(fHistPt_Iso);
+				fOutputList->Add(fHistPt_R_Iso);
+				fOutputList->Add(fRiso_phidiff);
+				fOutputList->Add(fRiso_phidiff_LS);
+				fOutputList->Add(fRiso_phidiff_35);
+				fOutputList->Add(fRiso_phidiff_LS_35);
+				fOutputList->Add(fzvtx_Ntrkl);
+				fOutputList->Add(fzvtx_Nch);
+				fOutputList->Add(fzvtx_Ntrkl_Corr);
+				fOutputList->Add(fzvtx_Corr);
+				fOutputList->Add(fNtrkl_Corr);
+				fOutputList->Add(fNchNtr);
+				fOutputList->Add(fNchNtr_Corr);
+				fOutputList->Add(fDCAxy_Pt_ele);
+				fOutputList->Add(fDCAxy_Pt_had);
+				fOutputList->Add(fDCAxy_Pt_LS);
+				fOutputList->Add(fDCAxy_Pt_ULS);
+				fOutputList->Add(fDCAxy_Pt_Dpm);
+				fOutputList->Add(fDCAxy_Pt_D0);
+				fOutputList->Add(fDCAxy_Pt_Ds);
+				fOutputList->Add(fDCAxy_Pt_lambda);
+				fOutputList->Add(fDCAxy_Pt_B);
+				fOutputList->Add(fPt_Btoe);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
 				fOutputList->Add(fCheckEtaMC);
@@ -383,9 +641,15 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fHistPhoEta1);
 				fOutputList->Add(fHistPt_HFE_MC_D);
 				fOutputList->Add(fHistPt_HFE_MC_B);
+				fOutputList->Add(fHistPt_HFE_PYTHIA);
+				fOutputList->Add(fHistPt_HFE_emb);
+				fOutputList->Add(fHistPt_HFE_Gen);
+				fOutputList->Add(fHistPt_HFE_GenvsReco);
 				fOutputList->Add(fHist_eff_HFE); 
 				fOutputList->Add(fHist_eff_match); 
 				fOutputList->Add(fHist_eff_TPC); 
+				fOutputList->Add(fHist_eff_M20); 
+				fOutputList->Add(fHist_eff_Iso); 
 
 
 				PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -396,22 +660,28 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 {
 
-				UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-				////////////////////
-				//cuts initialised//
-				////////////////////
-				AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
-				esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
-				esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
-				esdTrackCutsH->SetDCAToVertex2D(kTRUE);
-				esdTrackCutsH->SetMinNClustersTPC(80);
-				esdTrackCutsH->SetMinNClustersITS(3);
-				esdTrackCutsH->SetRequireTPCRefit(kTRUE);
-				esdTrackCutsH->SetRequireITSRefit(kTRUE);
-				esdTrackCutsH->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-				esdTrackCutsH->SetAcceptKinkDaughters(kFALSE);
-				esdTrackCutsH->SetMaxChi2PerClusterITS(6); //test.....
 
+				//##################### Systematic Parameters ##################### //
+				//---Track Cut
+				Double_t CutTrackEta[2] = {TrackEtaMin,TrackEtaMax};
+				Int_t CutTPCNCls = NTPCClust;
+				Int_t CutITSNCls = NITSClust; 
+				Int_t CutTPCNCrossedRow = NCrossedRow;
+				Double_t CutDCAxy = DCAxy;
+				Double_t CutDCAz  = DCAz;
+				//---PID Cut
+				Double_t CutNsigma[2] = {NsigmaMin,NsigmaMax};
+				Double_t CutM20[2] = {M20Min,M20Max};
+				Double_t CutEop[2] = {EopMin,EopMax};
+				Double_t CutEopHad = -3.5;
+				Double_t CutptAsso = ptAssoMin;
+				TString  TriggerPt = pTe;
+				Int_t CutMinNtr = MinNtr;
+				Int_t CutMaxNtr = MaxNtr;
+				cout<< "!!!!!!!!!!! pTe ;; "<<TriggerPt.Data()<<endl;
+				//################################################################# //
+
+				UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
 				// user exec
 				// this function is called once for each event
@@ -436,7 +706,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
        
 				//////////////////////////////
-				//Get Tender?  
+				//Get Tender
 				//////////////////////////////
 				Bool_t fFlagEMCalCorrection = kTRUE;
 				if(fFlagEMCalCorrection){
@@ -469,10 +739,20 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
 				if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
 
-				if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
-				if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
-				if(fDCDG1) {if(!firedTrigger.Contains(TriggerDG1))return;}
-				if(fDCDG2) {if(!firedTrigger.Contains(TriggerDG2))return;}
+				// Use EMCal & DCal
+				if(fFlagClsTypeEMC && fFlagClsTypeDCAL)
+				{
+								if(fEMCEG1 && fDCDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+								if(fEMCEG2 && fDCDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
+				}
+				// Use only EMCal or DCal
+				else
+				{
+								if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
+								if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
+								if(fDCDG1) {if(!firedTrigger.Contains(TriggerDG1))return;}
+								if(fDCDG2) {if(!firedTrigger.Contains(TriggerDG2))return;}
+				}
 
 				Int_t trigger = -1;
 				if (fAOD){
@@ -503,6 +783,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				}
 
 
+
+
+
 				//////////////////////////////
 				//Centarality
 				//////////////////////////////
@@ -531,6 +814,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				Double_t Xvertex = pVtx->GetX();
 				Double_t Yvertex = pVtx->GetY();
 				Double_t Zvertex = pVtx->GetZ();
+				fHist_VertexZ_all->Fill(Zvertex);
 				//==== SPD Vtx ====
 				const AliVVertex *pVtxSPD = fVevent->GetPrimaryVertexSPD();
 				Double_t ZvertexSPD = pVtxSPD->GetZ();
@@ -556,11 +840,83 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				if(TMath::Abs(Zvertex)>10.0)return;
 				fNevents->Fill(6); 
 				fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
-				fHist_Centrality -> Fill(centrality);
+
+
+				//////////////////////////////
+				// Get sign of B field
+				//////////////////////////////
+				int Bsign = 0;
+				if(fAOD->GetMagneticField() < 0) Bsign = -1;
+				if(fAOD->GetMagneticField() > 0) Bsign = 1;
+
+				//////////////////////////////
+				// Multiplicity
+				//////////////////////////////
+				Float_t lPercentiles[3];
+				TString lNames[1] = {"SPDTracklets,V0M,ZNA"}; // You can specify here the estimator you want to use
+				for(Int_t iEst=0; iEst<2; iEst++) lPercentiles[iEst] = 300;	
+				AliMultSelection *MultSelection = 0x0;
+				MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+				if(MultSelection){
+								for(Int_t iEst=0; iEst<2; iEst++)
+												lPercentiles[iEst] = MultSelection->GetMultiplicityPercentile(lNames[iEst].Data()); // gives the multiplicity in percetile for the corresponding estimator.
+				}else{
+
+								AliInfo("Didn't find MultSelection!"); 
+				}
+				fHist_Centrality -> Fill(lPercentiles[0]);
+
+				//------------SPDTracklets--------------------
+				Int_t nTracklets = 0;
+				Int_t nAcc = 0;
+				Double_t etaRange = 1.0;
+
+				AliAODTracklets *tracklets = static_cast<const AliAODEvent*>(fAOD)->GetTracklets();
+				nTracklets = tracklets->GetNumberOfTracklets();
+				for (Int_t nn = 0; nn < nTracklets; nn++) {
+								Double_t theta = tracklets->GetTheta(nn);
+								Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
+								if (TMath::Abs(eta) < etaRange) nAcc++;
+				}
+				fzvtx_Ntrkl->Fill(Zvertex,nAcc);
+
+
+				//-----------Tracklet correction-------------------------
+				Double_t correctednAcc   = nAcc;
+				Double_t fRefMult = Nref;
+				Double_t WeightNtrkl = -1.;
+				Double_t WeightZvtx = -1.;
+				TProfile* estimatorAvg;
+				if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fAOD);
+				if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fAOD);
+				if(estimatorAvg){
+								correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
+								//correctednAcc= AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(estimatorAvg,nAcc,Zvertex,fRefMult);
+				} 
+				fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
 
 
-				if(fMCarray)CheckMCgen(fMCheader);
+				if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
+
+
+				fNchNtr->Fill(correctednAcc,Nch);
+				if(fMCarray){
+								WeightZvtx = fCorrZvtx->Eval(Zvertex);
+								WeightNtrkl = fweightNtrkl->GetBinContent(fweightNtrkl->FindBin(correctednAcc));
+								fzvtx_Corr->Fill(Zvertex,WeightZvtx);
+								fNtrkl_Corr->Fill(correctednAcc,WeightNtrkl);
+								fNchNtr_Corr->Fill(correctednAcc,Nch,WeightNtrkl);
+								fzvtx_Nch->Fill(Zvertex,Nch,WeightZvtx);
+				}
+
+
+				//////////////////////////////////
+				// Separate by multiplicity class
+				//////////////////////////////////
+				if(correctednAcc<CutMinNtr || correctednAcc > CutMaxNtr) return;
+				fNevents->Fill(7); 
+
 
 				//////////////////////////////
 				// EMCal cluster loop
@@ -591,18 +947,20 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 												Double_t Phi =  pos.Phi();
 												if(Phi <0){Phi += 2*TMath::Pi();}
-												//fHistEta_EMcal->Fill(pos.Eta());                     // plot the pt value of the track in a histogram
-												//fHistPhi_EMcal->Fill(pos.Phi());                     // plot the pt value of the track in a histogram
 
 												if(Phi > 1.39 && Phi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187     
 												if(Phi > 4.53 && Phi < 5.708) fClsTypeDCAL = kTRUE; //DCAL  : 260 < phi < 327
 
 												//----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
 												if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
+												{
 																if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
-
-												if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+												}
+												else if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+												{
 																if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+												}
+												else{};
 
 
 												fHistScatter_EMcal->Fill(Phi,pos.Eta());                     // plot the pt value of the track in a histogram
@@ -619,11 +977,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				if(fFlagEMCalCorrection)iTracks = fTracks_tender->GetEntries();  // see how many tracks there are in the event
 				//fHist_Mult->Fill(centrality,nTracks);
 
-				for(Int_t i(0); i < iTracks; i++) {                 // loop ove rall these tracks
+				for(Int_t i(0); i < iTracks; i++) {    // loop overall these tracks
 								Double_t fTPCnSigma = -999, dEdx = -999, TrkP = -999, TrkPt = -999; 
 								Double_t ITSchi2 = -999, TPCchi2NDF = -999;
 
-								AliAODTrack* track;         // get a track (type AliAODTrack) from the event
+								AliAODTrack* track;     // get a track (type AliAODTrack) from the event
 								if(fFlagEMCalCorrection){
 												AliVParticle* Vtrack = 0x0;
 												Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(i));
@@ -632,19 +990,13 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								if(!fFlagEMCalCorrection)track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));   // get a track (type AliAODTrack) from the event
 
 								if(!track) continue;                            // if we failed, skip this track
-								fHist_trackPt->Fill(track->Pt());                     // plot the pt value of the track in a histogram
-								fHistEta_track->Fill(track->Eta());                     // plot the pt value of the track in a histogram
-								fHistPhi_track->Fill(track->Phi());                     // plot the pt value of the track in a histogram
+								fHist_trackPt->Fill(track->Pt());               // plot the pt value of the track in a histogram
 								dEdx = track->GetTPCsignal();
 								TrkP = track->P();
 								TrkPt = track->Pt();
 								fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron); 
 								ITSchi2 = track -> GetITSchi2();
 								TPCchi2NDF = track -> Chi2perNDF();
-								fTPCNcls->Fill(track->GetTPCNcls());
-								fITSNcls->Fill(track->GetITSNcls());
-								fdEdx->Fill(TrkP,dEdx);
-								fTPCnsig->Fill(TrkP,fTPCnSigma);
 
 								Int_t EMCalIndex = -1;
 								EMCalIndex = track->GetEMCALcluster();  // get index of EMCal cluster which matched to track
@@ -658,25 +1010,32 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								//==== 2.AOD filter bit required ====
 								if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
 								//==== 3.TPC cluster cut ====
-								if(track->GetTPCNcls() < 80) continue; 
+								if(track->GetTPCNcls() < CutTPCNCls) continue; 
 								//==== 4.ITS cluster cut ====
-								if(track->GetITSNcls() < 3) continue;  
+								if(track->GetITSNcls() < CutITSNCls) continue;  
 								//==== 5.SPD hit cut ====
 								if(!(track -> HasPointOnITSLayer(0) || track -> HasPointOnITSLayer(1))) continue;
 								//==== 6.Eta cut ====
-								if(track->Eta()>0.6 || track->Eta()<-0.6) continue; 
+								if(track->Eta()>CutTrackEta[1] || track->Eta()<CutTrackEta[0]) continue; 
 								//==== 7.DCA cut ====
 								Double_t DCA[2] = {-999.,-999.}, covar[3];
 								if(track -> PropagateToDCA(pVtx,fVevent -> GetMagneticField(),20.,DCA,covar))
 								{
-												if(TMath::Abs(DCA[0]) > 2.4 || TMath::Abs(DCA[1]) > 3.2) continue;
+												if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz) continue;
 								}
 								//==== 8.chi2 cut ====
 								if((ITSchi2 >= 25) || (TPCchi2NDF >= 4)) continue;
 								//==== 9.NCrossedRow cut ====
-								if(track -> GetTPCCrossedRows() < 100) continue;
+								if(track -> GetTPCCrossedRows() < CutTPCNCrossedRow) continue;
 
 
+								fdEdx->Fill(TrkP,dEdx);
+								fTPCNcls->Fill(track->GetTPCNcls());
+								fITSNcls->Fill(track->GetITSNcls());
+								fTPCnsig->Fill(TrkP,fTPCnSigma);
+								fHistEta_track->Fill(track->Eta());            
+								fHistPhi_track->Fill(track->Phi());             
+								fTPCCrossedRow->Fill(track -> GetTPCCrossedRows());
 
 
 								///////////////////////
@@ -688,6 +1047,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								Double_t pTmom = -1.0;
 								Int_t pidM = -1;
 								Int_t ilabelM = -1;
+								Double_t pTGMom = -1.0;
+								Int_t pidGM = -1;
+								Int_t ilabelGM = -1;
 								Bool_t iEmbPi0 = kFALSE; 
 								Bool_t iEmbEta = kFALSE;
 								Bool_t pid_eleD = kFALSE;
@@ -696,14 +1058,27 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 								if(ilabel>0 && fMCarray)
 								{
-												fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
-												pdg = fMCparticle->GetPdgCode();
+												fMCTrackpart = (AliAODMCParticle*) fMCarray->At(ilabel);
+												pdg = fMCTrackpart->GetPdgCode();
 												if(TMath::Abs(pdg)==11)pid_ele = 1.0;
-												if(pid_ele==1.0)FindMother(fMCparticle, ilabelM, pidM, pTmom);
+												if(pid_ele==1.0)FindMother(fMCTrackpart, ilabelM, pidM, pTmom);
 
-												pid_eleD = IsDdecay(pidM);
 												pid_eleB = IsBdecay(pidM);
 												pid_eleP = IsPdecay(pidM);
+												pid_eleD = IsDdecay(pidM);
+												if(pid_eleD || pid_eleB)fNDB->Fill(0);
+
+												if(pid_eleD){
+																AliAODMCParticle* fMCTrackpartMom = (AliAODMCParticle*) fMCarray->At(ilabelM);
+																FindMother(fMCTrackpartMom,ilabelGM,pidGM,pTGMom);
+																if(IsBdecay(pidGM)){
+																				pid_eleB = IsBdecay(pidGM);
+																				//cout<<"B->D->e"<<endl;
+																				pid_eleD = kFALSE;
+																}
+												}
+
+												if(pid_eleD || pid_eleB)fNDB->Fill(1);
 
 												if(pidM==111)
 												{
@@ -738,14 +1113,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 								if(pid_eleB || pid_eleD) {
 												fHist_eff_HFE->Fill(TrkPt);
-												if(fTPCnSigma<3 && fTPCnSigma>-1) fHist_eff_TPC->Fill(TrkPt);
+												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1]) fHist_eff_TPC->Fill(TrkPt);
 								}				
 
 
-								//if(pid_ele==1.0)cout << "pidM = " << pidM << " ; " << pid_eleP << endl;  
-								//if(pid_eleD)fHistDCAde->Fill(track->Pt(),DCAxy);
-								//if(pid_eleB)fHistDCAbe->Fill(track->Pt(),DCAxy);
-								//if(pid_eleP)fHistDCApe->Fill(track->Pt(),DCAxy);
+
 
 
 								//////////////////////////////////////
@@ -755,11 +1127,15 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 								if(iEmbPi0)
 								{
-												WeightPho = fPi010->Eval(pTmom);
+												if(TriggerPt=="pte5") {WeightPho = fPi005->Eval(pTmom);}
+												else if(TriggerPt=="pte10"){WeightPho = fPi010->Eval(pTmom);}
+												else {WeightPho = fPi000->Eval(pTmom);}
 								}
 								if(iEmbEta)
 								{
-												WeightPho = fEta010->Eval(pTmom);
+												if(TriggerPt=="pte5") {WeightPho = fEta005->Eval(pTmom);}
+												else if(TriggerPt=="pte10"){WeightPho = fEta010->Eval(pTmom);}
+												else {WeightPho = fEta000->Eval(pTmom);}
 								}
 
 
@@ -788,20 +1164,34 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												phidiff = TVector2::Phi_mpi_pi(track->GetTrackPhiOnEMCal()-Matchphi);
 												fEtadiff->Fill(etadiff); 
 												fPhidiff->Fill(phidiff); 
-												Matchphi=TVector2::Phi_mpi_pi(Matchphi);
+												//Matchphi=TVector2::Phi_mpi_pi(Matchphi);
+												if(Matchphi <0){Matchphi += 2*TMath::Pi();}
+
 
 												if(TMath::Abs(etadiff)>0.05 || TMath::Abs(phidiff)>0.05) continue;
 												if(Matchphi>1.39 && Matchphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187     
 												if(Matchphi>4.53 && Matchphi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
 
+												cout<< "======================================== "<<endl;
+												cout<< "fFlagClsTypeEMC == "<< fFlagClsTypeEMC << "  fFlagClsTypeDCAL == "<< fFlagClsTypeDCAL<<endl;
+												cout<< "fClsTypeEMC     == "<< fClsTypeEMC     << "  fClsTypeDCAL     == "<< fClsTypeDCAL<<endl;
+												cout<< "MachPhi         == "<< Matchphi <<endl ;
+												cout<< "======================================== "<<endl;
+
 												//----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
 												if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
+												{
 																if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
-
-												if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+												}
+												else if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+												{
 																if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+												}
+												else{};
+																//cout<<"!!!!!!!!!!!!!!!!!! DCAL !!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
 
 												fHistSelectPt->Fill(TrkPt);
+												fHistScatter_EMcal_aftMatch->Fill(track->Eta(),track->Phi());	
 
 												if(TrkPt>1.0){
 												fHistEta_EMcal->Fill(track->Eta()); 
@@ -809,11 +1199,10 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												}
 
 
-												if(fTPCnSigma<3 && fTPCnSigma>-1){
+												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1]){
 																if(pid_eleB || pid_eleD) fHist_eff_match->Fill(TrkPt);
 												}
 
-												fHistScatter_EMcal_aftMatch->Fill(track->Eta(),track->Phi());	
 
 												Double_t eop = -1.0;
 												Double_t clE = clustMatch->E();
@@ -825,14 +1214,29 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												fM02->Fill(TrkPt,m02);
 												fM20->Fill(TrkPt,m20);
 
+												if(TMath::Abs(pidM)==11){
+																fM02_ele->Fill(m02);
+																fM20_ele->Fill(m20);
+												}else{
+																fM02_had->Fill(m02);
+																fM20_had->Fill(m20);
+												}
+
+												fHistNsigEop->Fill(eop,fTPCnSigma);
+
+
 												Bool_t fFlagNonHFE=kFALSE; 
+												Bool_t fFlagIsolation=kFALSE; 
 												//if(fTPCnSigma<6 && fTPCnSigma>-6 && eop < 1.2&& eop > 0.8 && m20>0.02 && m20<0.25){ //for MC
-												if(fTPCnSigma<3 && fTPCnSigma>-1 && eop < 1.2&& eop > 0.8 && m20>0.02 && m20<0.25){
+												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && eop>CutEop[0] && eop<CutEop[1] && m20>CutM20[0] && m20<CutM20[1]){
 																fM02_2->Fill(TrkPt,m02);
 																fM20_2->Fill(TrkPt,m20);
 
 																///////-----Identify Non-HFE////////////////////////////
-																SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt);
+																SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt,DCA[0],Bsign);
+																IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD);
+																if(fFlagIsolation)fHistPt_Iso->Fill(track->Pt());
+
 																if(pid_eleP)
 																{
 																				fHistPhoReco0->Fill(track->Pt()); // reco pho
@@ -850,28 +1254,53 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																								fHistPhoReco2->Fill(track->Pt()); // org pho
 																				}
 																}
+
 												}
 
 
 
-												if(fTPCnSigma<3 && fTPCnSigma>-3 && m20>0.02 && m20<0.25){
+												if(fTPCnSigma<3 && fTPCnSigma>-3 && m20>CutM20[0] && m20<CutM20[1]){
 																fEopPt_ele_loose -> Fill(TrkPt,eop);
 												}
-												if(fTPCnSigma<3 && fTPCnSigma>-1 && m20>0.02 && m20<0.25){
+												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && m20>CutM20[0] && m20<CutM20[1]){ // TPC nsigma & shower shape cut
 																fEopPt_ele_tight -> Fill(TrkPt,eop);
-																if(eop < 1.2&& eop > 0.8){
+																if(ilabelM<NpureMC){fEopPt_ele_tight_PYTHIA -> Fill(TrkPt,eop);}
+																if(pid_eleB || pid_eleD){fHist_eff_M20 -> Fill(TrkPt);}
+																if(pid_eleB || pid_eleD){fEopPt_ele_tight_forSys-> Fill(TrkPt,eop);}
+
+																if(eop>CutEop[0] && eop<CutEop[1]){ // E/p cut
 																				if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt());
 																				if(pid_eleD) fHistPt_HFE_MC_D -> Fill(track->Pt());
+
+																				if(pid_eleB || pid_eleD){
+																								if(ilabelM<NpureMC){fHistPt_HFE_PYTHIA -> Fill(track->Pt());}
+																								else {fHistPt_HFE_emb -> Fill(track->Pt());}
+																								fHistPt_HFE_Gen -> Fill(fMCTrackpart->Pt());
+																								fHistPt_HFE_GenvsReco -> Fill(TrkPt,fMCTrackpart->Pt());
+																				}
+
+																				fHistPt_Inc->Fill(track->Pt());
+																				fTPCnsig_ele->Fill(fTPCnSigma);
+																				fEop_ele->Fill(eop);
+																				fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+
+																				// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
+																				if(pid_eleD){
+																								if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)== 413){fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																								if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)== 423){fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																								if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)== 433){fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																				}
+																				if(TMath::Abs(pidM)==4122){fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																				if(pid_eleB){fDCAxy_Pt_B->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
 																}
-																//if(ilabelM<NpureMC){fHistPt_HFE_PYTHIA -> Fill(track->Pt());}
-																//else {fHistPt_HFE_emb -> Fill(track->Pt());}
 												}
-												if(fTPCnSigma<-3.5 && m20>0.02 && m20<0.25){
+												if(fTPCnSigma< CutEopHad && m20>CutM20[0] && m20<CutM20[1]){
 																fEopPt_had -> Fill(TrkPt,eop);
+																fDCAxy_Pt_had->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 												}
 								}
 
-								}                                                   // continue until all the tracks are processed
+								}                                         // continue until all the tracks are processed
 				PostData(1, fOutputList);                           // stream the results the analysis of this event to
 				// the output manager which will take care of writing
 				// it to a file
@@ -883,11 +1312,16 @@ void AliAnalysisTaskCaloHFEpp::Terminate(Option_t *)
 				// called at the END of the analysis (when all events are processed)
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt)
+void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign)
 {
 				////// ////////////////////////////////////
 				//////Non-HFE - Invariant mass method//////
 				///////////////////////////////////////////
+
+				//##################### Set cone radius  ##################### //
+				Double_t CutptAsso = ptAssoMin;
+				Double_t CutmassMin = massMin;
+				//################################################################# //
 
 				AliESDtrackCuts* esdTrackCutsAsso = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 				esdTrackCutsAsso->SetAcceptKinkDaughters(kFALSE);
@@ -944,7 +1378,6 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 								//------track cuts applied
 								if(fAOD) {
 												if(!aAssotrack->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-												//if(aAssotrack->GetTPCNcls() < 70) continue;
 												if(aAssotrack->GetTPCNcls() < 80) continue;
 												if(aAssotrack->GetITSNcls() < 3 ) continue;
 												if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
@@ -954,7 +1387,8 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 								}
 
 								//-------loose cut on partner electron
-								if(ptAsso <0.2) continue;
+								if(ptAsso <CutptAsso) continue;
+								//if(ptAsso <0.2) continue;
 								if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
 								if(nsigma < -3 || nsigma > 3) continue;
                 if(AssoTPCchi2perNDF >= 4) continue;
@@ -977,31 +1411,22 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 								if(fFlagLS){
 												if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
 												if(mass < 0.002)cout <<"Px="<<track->Px() <<" Py="<<track->Py()<<" Pz="<<track->Pz()<<endl;
-												if(track->Pt()>1){fInv_pT_LS->Fill(TrkPt,mass);}
+												if(track->Pt()>1){
+																fInv_pT_LS->Fill(TrkPt,mass);
+																if(mass<CutmassMin)fDCAxy_Pt_LS->Fill(TrkPt,DCAxy*charge*Bsign);
+												}
 								}
 								if(fFlagULS){
-												if(track->Pt()>1){fInv_pT_ULS->Fill(TrkPt,mass);}
+												if(track->Pt()>1){
+																fInv_pT_ULS->Fill(TrkPt,mass);
+																fInv_pT_ULS_forW->Fill(TrkPt,mass);
+																if(mass<CutmassMin)fDCAxy_Pt_ULS->Fill(TrkPt,DCAxy*charge*Bsign);
+												}
 								}
 
-								if(iMC>0)
-								{
-												Int_t iMCbin = -999;
-												if(iMC == 111) 
-												{
-																iMCbin = 1;
-												}
-												else if(iMC == 221)
-												{
-																iMCbin = 2;
-												}
-												else
-												{
-																iMCbin = -999;
-												}  
 
-								}
-
-								if(mass<0.1 && fFlagULS && !flagPhotonicElec)
+								//if(mass<0.1 && fFlagULS && !flagPhotonicElec)
+								if(mass<CutmassMin && fFlagULS && !flagPhotonicElec)
 												flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised) 
 				}
 				fFlagPhotonicElec = flagPhotonicElec;
@@ -1019,6 +1444,7 @@ Bool_t AliAnalysisTaskCaloHFEpp::IsDdecay(int mpid)
     return kFALSE;
    } 
 }
+// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
 
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCaloHFEpp::IsBdecay(int mpid)
@@ -1033,6 +1459,7 @@ Bool_t AliAnalysisTaskCaloHFEpp::IsBdecay(int mpid)
     return kFALSE;
    } 
 }
+// 511 : B0, 521 :  B+, 513 : B*0, 523 : B*+, 531 : B_s0, 533 : B_s*0
 
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCaloHFEpp::IsPdecay(int mpid)
@@ -1069,33 +1496,28 @@ void AliAnalysisTaskCaloHFEpp::FindMother(AliAODMCParticle* part, int &label, in
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader)
+void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta)
 {
  TList *lh=fMCheader->GetCocktailHeaders();
- Int_t NpureMC = 0;
+ NpureMC = 0;
  NpureMCproc = 0;
  NembMCpi0 = 0;
  NembMCeta = 0;
+ Nch = 0;
  TString MCgen;
  TString embpi0("pi");
  TString embeta("eta");
 
  if(lh)
     {     
-     //cout << "<------- lh = " << lh << " ; NproAll = "<<  lh->GetEntries() << endl; 
-
      for(int igene=0; igene<lh->GetEntries(); igene++)
         {
          AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
          if(gh)
            {
-            cout << "<------- imc = "<< gh->GetName() << endl;     
             MCgen =  gh->GetName();     
-            cout << "<-------- Ncont = " << gh->NProduced() << endl;
             if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
            
-            //if(MCgen.Contains(embpi0))cout << MCgen << endl;
-            //if(MCgen.Contains(embeta))cout << MCgen << endl;
             if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc;
             if(MCgen.Contains(embeta))NembMCeta = NpureMCproc;
 
@@ -1104,42 +1526,44 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader)
         }
     }
 
- //cout << "NpureMC =" << NpureMC << endl;
- //cout << "NembMCpi0 =" << NembMCpi0 << endl;
- //cout << "NembMCeta =" << NembMCeta << endl;
- //cout << "NpureMCproc =" << NpureMCproc << endl;
 
  //for(int imc=0; imc<fMCarray->GetEntries(); imc++)
  for(int imc=0; imc<NpureMCproc; imc++)
      {
-      //cout << "imc = " << imc << endl;
       Bool_t iEnhance = kFALSE;
       if(imc>=NpureMC)iEnhance = kTRUE;
       Int_t iHijing = 1;  // select particles from Hijing or PYTHIA
 
-      //if(imc==NpureMC)cout << "========================" << endl;  
 
       fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
       Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
       Double_t pdgEta = fMCparticle->Eta(); 
-      Double_t pTtrue = fMCparticle->Pt(); 
-			if(imc>=NembMCeta && imc<NpureMCproc){
-			cout<<"!!!!!!!!!!!!!!PGD = "<<pdgGen<<" imc = "<<imc<<endl;
+			Double_t pTtrue = fMCparticle->Pt(); 
+			Int_t chargetrue = fMCparticle->Charge();
+			Bool_t isPhysPrim = fMCparticle->IsPhysicalPrimary();
+
+
+			//--------- Get N charged ----------------------
+			if(chargetrue!=0){
+							if(TMath::Abs(pdgEta)<1.0){
+											if(isPhysPrim){
+															Nch++;
+											}
+							}
 			}
 
-			//cout << "fetarange = " << fetarange << endl;
-			if(TMath::Abs(pdgEta)>0.6)continue;
+
+			if(TMath::Abs(pdgEta)>CutEta)continue;
 
 			fCheckEtaMC->Fill(pdgEta);
 
       Int_t pdgMom = -99;
       Int_t labelMom = -1;
       Double_t pTmom = -1.0;
-      //cout << "check Mother" << endl;
+
       FindMother(fMCparticle,labelMom,pdgMom,pTmom);
       if(pdgMom==-99 && iEnhance)iHijing = 0;  // particles from enhance
       if(pdgMom>0 && iEnhance)iHijing = -1;  // particles from enhance but feeddown
-      //if(pdgGen==111)cout << "pdg = " << pdgGen << " ; enhance = " << iEnhance << " ; HIJIJG = " << iHijing << " ; mother = " << pdgMom  << endl;
 
       if(iHijing>-1)
         {
@@ -1150,27 +1574,266 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader)
       if(TMath::Abs(pdgGen)!=11)continue;
       if(pTtrue<2.0)continue;
 
+      Int_t pdgGM = -99;
+      Int_t labelGM = -1;
+      Double_t pTGMom = -1.0;
 
-      //if(iHijing ==0)
-      //if(pdgMom>0)
-      if(pdgMom!=0)
-       {
-         AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray->At(labelMom);
-         //if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)
-				 if(IsDdecay(pdgMom))
-            {
-             fHistMCorgD->Fill(fMCparticle->Pt());
-             //cout << "orgD : " << pdgMom << " ; " << pdgGen << endl;
-            }
-         //if(pdgMom==511 || pdgMom==521 || pdgMom==513 || pdgMom==523 || pdgMom==531 || pdgMom==533)
-				 if(IsBdecay(pdgMom))
-           {
-            fHistMCorgB->Fill(fMCparticle->Pt());
-            //cout << "orgB : " << pdgMom << " ; " << pdgGen << endl;
-           }
-        }
+			if(pdgMom!=0)
+			{
+							AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray->At(labelMom);
+							if(IsDdecay(pdgMom)){
+											fHistMCorgD->Fill(fMCparticle->Pt());
+											FindMother(fMCparticleMom,labelGM,pdgGM,pTGMom);
+											if(IsBdecay(pdgGM)){
+															fPt_Btoe->Fill(fMCparticle->Pt(),pTGMom);
+											}
+							}
+							if(IsBdecay(pdgMom)){
+											fHistMCorgB->Fill(fMCparticle->Pt());
+											fPt_Btoe->Fill(fMCparticle->Pt(),pTmom);
+							}
+			}
 
-     }
+		 }
 
  return;
 }
+
+//_____________________________________________________________________________
+void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD)
+{
+				//##################### Set cone radius  ##################### //
+				Double_t CutConeR = MaxConeR;
+				//################################################################# //
+
+				//////////////////////////////
+				// EMCal cluster loop
+				//////////////////////////////
+				Int_t NclustIso = -999;
+				Bool_t flagIso = kFALSE;
+				Bool_t fFlagEMCalCorrection = kTRUE;
+
+				if(!fFlagEMCalCorrection)NclustIso =  fVevent->GetNumberOfCaloClusters();
+				if(fFlagEMCalCorrection) NclustIso =  fCaloClusters_tender->GetEntries();
+
+				Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;;
+				Double_t riso =  0.;
+				Double_t ConeR = -999.;
+
+				for(Int_t jcl=0; jcl<NclustIso; jcl++)
+				{
+								AliVCluster *Assoclust = 0x0;     
+								if(!fFlagEMCalCorrection)Assoclust = (AliVCluster*)fVevent->GetCaloCluster(jcl); // address cluster matched to track
+								if(fFlagEMCalCorrection)Assoclust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(jcl)); 
+
+								fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
+								ConeR = 0.;
+
+								if(Assoclust && Assoclust->IsEMCAL())
+								{
+												Float_t Assoclpos[3] = {0.};
+												Assoclust->GetPosition(Assoclpos);
+
+												TVector3 Assocpos(Assoclpos);
+
+												Double_t AssoPhi =  Assocpos.Phi();
+												if(AssoPhi <0){AssoPhi += 2*TMath::Pi();}
+												Double_t AssoEta =  Assocpos.Eta();
+												Double_t AssoclE =  Assoclust->E();
+
+												//------reject same Cluster
+												if(AssoclE==MatchclE && AssoPhi==MatchPhi && AssoEta==MatchEta) continue;
+
+
+												if(AssoPhi > 1.39 && AssoPhi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
+												if(AssoPhi > 4.53 && AssoPhi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
+
+												//----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
+												if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
+												{
+																if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
+												}
+												if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+												{
+																if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+												}
+												else{};
+
+
+												ConeR = sqrt(pow(AssoPhi-MatchPhi,2.)+pow(AssoEta-MatchEta,2.));
+												if(ConeR>CutConeR) continue;
+
+												riso += AssoclE;
+												fConeR->Fill(ConeR);
+								}
+				}
+
+				riso = riso/MatchclE;
+				if(riso>=0.0){
+								fHistPt_R_Iso->Fill(TrackPt,riso);
+								if(fFlagB || fFlagD){fHist_eff_Iso -> Fill(TrackPt,riso);}
+				}
+
+				if(TrackPt >= 30. && riso>=0.0)CheckCorrelation(itrack,track,TrackPt,riso,fFlagPhoto);
+
+				if(riso<0.05 && riso>=0.0) flagIso = kTRUE;
+
+				fFlagIso = flagIso;
+
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto)
+{
+
+				//##################### Systematic Parameters ##################### //
+				//---Track Cut
+				Double_t CutTrackEtaW[2] = {TrackEtaMin,TrackEtaMax};
+				Int_t CutTPCNClsW = NTPCClust;
+				Int_t CutITSNClsW = NITSClust; 
+				Int_t CutTPCNCrossedRowW = NCrossedRow;
+				Double_t CutDCAxyW = DCAxy;
+				Double_t CutDCAzW  = DCAz;
+				//################################################################# //
+
+				Bool_t fFlagEMCalCorrection = kTRUE;
+
+				Int_t nWassotracks = -999;
+				if(!fFlagEMCalCorrection)nWassotracks = fVevent->GetNumberOfTracks();
+				if(fFlagEMCalCorrection) nWassotracks = fTracks_tender->GetEntries();
+
+				const AliVVertex *WpVtx = fVevent->GetPrimaryVertex();
+
+				//////////////////////////////
+				// Track loop
+				//////////////////////////////
+				for (Int_t jtrack = 0; jtrack < nWassotracks; jtrack++) {
+								AliVParticle* VWassotrack = 0x0;
+								if(!fFlagEMCalCorrection) VWassotrack  = fVevent->GetTrack(jtrack);
+								if(fFlagEMCalCorrection)  VWassotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
+
+								if (!VWassotrack) {
+												printf("ERROR: Could not receive track %d\n", jtrack);
+												continue;
+								}
+
+								AliVTrack   *Wassotrack  = dynamic_cast<AliVTrack*>(VWassotrack);
+								AliESDtrack *eWassotrack = dynamic_cast<AliESDtrack*>(VWassotrack);
+								AliAODTrack *aWassotrack = dynamic_cast<AliAODTrack*>(VWassotrack);
+
+								if(!aWassotrack) continue;                            // if we failed, skip this track
+
+								//------reject same track
+								if(jtrack==itrack) continue;
+								if(aWassotrack->Px()==track->Px() && aWassotrack->Py()==track->Py() && aWassotrack->Pz()==track->Pz())continue;
+
+								Double_t ptWasso = -999., phiWasso = -999., etaWasso = -999.;
+								Double_t ITSchi2Wasso = -999., TPCchi2NDFWasso = -999.;
+								Double_t Wphidiff = -999., TrackPhi = -999.;
+
+								ptWasso         = aWassotrack->Pt();
+								phiWasso        = aWassotrack->Phi();
+								etaWasso        = aWassotrack->Eta();
+								ITSchi2Wasso    = aWassotrack -> GetITSchi2();
+								TPCchi2NDFWasso = aWassotrack -> Chi2perNDF();
+								TrackPhi        = track->Phi();
+
+								if(ptWasso <1.) continue;
+
+								/////////////////////////
+								// track cut
+								/////////////////////////
+								//==== 1.TPC and ITS refit cut ====
+								if(!(aWassotrack->GetStatus()&AliAODTrack::kITSrefit) || !(aWassotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
+								//==== 2.AOD filter bit required ====
+								if(!aWassotrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
+								//==== 3.TPC cluster cut ====
+								if(aWassotrack->GetTPCNcls() < CutTPCNClsW) continue; 
+								//==== 4.ITS cluster cut ====
+								if(aWassotrack->GetITSNcls() < CutITSNClsW) continue;  
+								//==== 5.SPD hit cut ====
+								if(!(aWassotrack -> HasPointOnITSLayer(0) || aWassotrack -> HasPointOnITSLayer(1))) continue;
+								//==== 6.Eta cut ====
+								if(etaWasso>CutTrackEtaW[1] || etaWasso<CutTrackEtaW[0]) continue; 
+								//==== 7.DCA cut ====
+								Double_t WassoDCA[2] = {-999.,-999.}, Wassocovar[3];
+								if(aWassotrack -> PropagateToDCA(WpVtx,fVevent -> GetMagneticField(),20.,WassoDCA,Wassocovar))
+								{
+												if(TMath::Abs(WassoDCA[0]) > CutDCAxyW || TMath::Abs(WassoDCA[1]) > CutDCAzW) continue;
+								}
+								//==== 8.chi2 cut ====
+								if((ITSchi2Wasso >= 25) || (TPCchi2NDFWasso >= 4)) continue;
+								//==== 9.NCrossedRow cut ====
+								if(aWassotrack -> GetTPCCrossedRows() < CutTPCNCrossedRowW) continue;
+
+
+								Wphidiff = phiWasso - TrackPhi; 
+								Wphidiff = TMath::ATan2(TMath::Sin(Wphidiff),TMath::Cos(Wphidiff)); 
+								if(Wphidiff < -TMath::Pi()/2) Wphidiff += 2*TMath::Pi();
+
+								fRiso_phidiff -> Fill(Wphidiff,Riso);
+								if(!fFlagPhoto)fRiso_phidiff_LS -> Fill(Wphidiff,Riso);
+
+								if(TrackPt>=35.){
+								fRiso_phidiff_35 -> Fill(Wphidiff,Riso);
+								if(!fFlagPhoto)fRiso_phidiff_LS_35 -> Fill(Wphidiff,Riso);
+								}
+
+				}
+
+}
+//____________________________________________________________________________
+TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAOD)
+{
+    
+  Int_t runNo  = fAOD->GetRunNumber();
+  Int_t period = -1; 
+   
+  if (runNo>=255539 && runNo<=255618) period = 0; //LHC16i
+  if (runNo>=256207 && runNo<=256420) period = 1; //LHC16j
+  if (runNo>=256941 && runNo<=258537) period = 2; //LHC16k
+  if (runNo>=262424 && runNo<=263487) period = 3; //LHC16o
+  if (period < 0 || period > 3) return 0;
+    
+    
+  return fMultEstimatorAvg[period];
+}
+//____________________________________________________________________________
+TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(const AliAODEvent* fAOD)
+{
+    
+  Int_t runNo  = fAOD->GetRunNumber();
+  Int_t period = -1; 
+   
+	if (runNo>=256504 && runNo<=258537) period = 4;  //LHC16k
+  if (runNo>=258919 && runNo<=259888) period = 5; //LHC16l
+  if (period < 4 || period > 5) return 0;
+    
+    
+  return fMultEstimatorAvg[period];
+}
+ //____________________________________________________________________________
+Double_t AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult)
+{
+				if(TMath::Abs(vtxZ)>10.0){
+								//    printf("ERROR: Z vertex out of range for correction of multiplicity\n");
+								return uncorrectedNacc;
+				}
+
+				if(!estimatorAvg){
+								printf("ERROR: Missing TProfile for correction of multiplicity\n");
+								return uncorrectedNacc;
+				}
+
+				Double_t localAvg = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxZ));
+				Double_t deltaM = 0;
+				deltaM = uncorrectedNacc*(refMult/localAvg - 1);
+
+				Double_t correctedNacc = uncorrectedNacc + (deltaM>0 ? 1 : -1) * gRandom->PoissonD(TMath::Abs(deltaM));
+
+				if(correctedNacc<0) correctedNacc=0;
+
+				return correctedNacc;
+
+}
+

@@ -690,15 +690,16 @@ Bool_t AliDptDptCorrelations::SetWeigths(const TH3F *h3_1, const TH3F *h3_2) {
   Bool_t done = kTRUE;
 
   if (fUseWeights){
-    Int_t ixZ, ixEtaPhi, ixPt;
     if (h3_1) {
       /* allocate memory for track 1 weights */
       fCorrectionWeights_1 = new Float_t[fNBins_vertexZ*fNBins_etaPhi_1*fNBins_pt_1];
 
-      for (ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
-        for (ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_1; ixEtaPhi++) {
-          for (ixPt=0; ixPt < fNBins_pt_1; ixPt++) {
-            fCorrectionWeights_1[ixZ*fNBins_etaPhi_1*fNBins_pt_1+ixEtaPhi*fNBins_pt_1+ixPt] = h3_1->GetBinContent(ixZ+1,ixEtaPhi+1,ixPt+1);
+      for (Int_t ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
+        Double_t zval = fMin_vertexZ + fWidth_vertexZ*(ixZ+0.5);
+        for (Int_t ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_1; ixEtaPhi++) {
+          for (Int_t ixPt=0; ixPt < fNBins_pt_1; ixPt++) {
+            Double_t pTval = fMin_pt_1 + fWidth_pt_1*(ixPt+0.5);
+            fCorrectionWeights_1[ixZ*fNBins_etaPhi_1*fNBins_pt_1+ixEtaPhi*fNBins_pt_1+ixPt] = h3_1->GetBinContent(h3_1->GetXaxis()->FindBin(zval),ixEtaPhi+1,h3_1->GetZaxis()->FindBin(pTval));
           }
         }
       }
@@ -712,10 +713,12 @@ Bool_t AliDptDptCorrelations::SetWeigths(const TH3F *h3_1, const TH3F *h3_2) {
       /* allocate memory for track 1 weights */
       fCorrectionWeights_2 = new Float_t[fNBins_vertexZ*fNBins_etaPhi_2*fNBins_pt_2];
 
-      for (ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
-        for (ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_2; ixEtaPhi++) {
-          for (ixPt=0; ixPt < fNBins_pt_2; ixPt++) {
-            fCorrectionWeights_2[ixZ*fNBins_etaPhi_2*fNBins_pt_2+ixEtaPhi*fNBins_pt_2+ixPt] = h3_2->GetBinContent(ixZ+1,ixEtaPhi+1,ixPt+1);
+      for (Int_t ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
+        Double_t zval = fMin_vertexZ + fWidth_vertexZ*(ixZ+0.5);
+        for (Int_t ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_2; ixEtaPhi++) {
+          for (Int_t ixPt=0; ixPt < fNBins_pt_2; ixPt++) {
+            Double_t pTval = fMin_pt_2 + fWidth_pt_2*(ixPt+0.5);
+            fCorrectionWeights_2[ixZ*fNBins_etaPhi_2*fNBins_pt_2+ixEtaPhi*fNBins_pt_2+ixPt] = h3_2->GetBinContent(h3_2->GetXaxis()->FindBin(zval),ixEtaPhi+1,h3_2->GetZaxis()->FindBin(pTval));
           }
         }
       }
@@ -993,28 +996,7 @@ Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliVTrack *trk) {
 /// \param trkId the external particle Id
 /// \param part the passed particle
 /// \return kTRUE if the particle is properly handled kFALSE otherwise
-Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, TParticle *part) {
-
-  if (fUseSimulation) {
-    return kFALSE;
-  }
-  else
-    if (part->GetPDG()->Charge() != 0) {
-      return ProcessTrack(trkId, (part->GetPDG()->Charge() > 0) ? 1 : -1, Float_t(part->Pt()), Float_t(part->Eta()), Float_t(part->Phi()));
-    }
-    else {
-      return kFALSE;
-    }
-}
-
-
-/// \brief process a true particle and store its parameters if feasible
-///
-/// If simulation is orderd the track is discarded and kFALSE is returned
-/// \param trkId the external particle Id
-/// \param part the passed particle
-/// \return kTRUE if the particle is properly handled kFALSE otherwise
-Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliAODMCParticle *part) {
+Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliVParticle *part) {
 
   if (fUseSimulation) {
     return kFALSE;
@@ -1747,6 +1729,12 @@ void  AliDptDptCorrelations::FinalizeProcess()
     fillHistoWithArray(fhN1_1_vsZEtaPhiPt,       fN1_1_vsZEtaPhiPt,     fNBins_vertexZ, fNBins_etaPhi_1, fNBins_pt_1);
     fillHistoWithArray(fhN1_2_vsPt,              fN1_2_vsPt,            fNBins_pt_2);
     fillHistoWithArray(fhN1_2_vsZEtaPhiPt,       fN1_2_vsZEtaPhiPt,     fNBins_vertexZ, fNBins_etaPhi_2, fNBins_pt_2);
+
+    /* for the time being, the errors are trivial so, we do not use results file space */
+    fhN1_1_vsPt->Sumw2(false);
+    fhN1_1_vsZEtaPhiPt->Sumw2(false);
+    fhN1_2_vsPt->Sumw2(false);
+    fhN1_2_vsZEtaPhiPt->Sumw2(false);
   }
   else {
     fillHistoWithArray(fhN1_1_vsEtaPhi,          fN1_1_vsEtaPhi,        fNBins_eta_1,   fNBins_phi_1);
@@ -1759,6 +1747,17 @@ void  AliDptDptCorrelations::FinalizeProcess()
     fillHistoWithArray(fhSum2PtN_12_vsEtaPhi,    fSum2PtN_12_vsEtaPhi,  fNBins_etaPhi_12);
     fillHistoWithArray(fhSum2NPt_12_vsEtaPhi,    fSum2NPt_12_vsEtaPhi,  fNBins_etaPhi_12);
     fillHistoWithArray(fhN2_12_vsPtPt,           fN2_12_vsPtPt,         fNBins_pt_1,    fNBins_pt_2);
+
+    /* for the time being, the errors are trivial so, we do not use results file space */
+    fhN1_1_vsEtaPhi->Sumw2(false);
+    fhSum1Pt_1_vsEtaPhi->Sumw2(false);
+    fhN1_2_vsEtaPhi->Sumw2(false);
+    fhSum1Pt_2_vsEtaPhi->Sumw2(false);
+    fhN2_12_vsEtaPhi->Sumw2(false);
+    fhSum2PtPt_12_vsEtaPhi->Sumw2(false);
+    fhSum2PtN_12_vsEtaPhi->Sumw2(false);
+    fhSum2NPt_12_vsEtaPhi->Sumw2(false);
+    fhN2_12_vsPtPt->Sumw2(false);
   }
 }
 

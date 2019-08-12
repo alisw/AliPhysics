@@ -26,6 +26,7 @@
 
 #include <Riostream.h>
 #include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TCanvas.h>
 #include <TNtuple.h>
 #include <TTree.h>
@@ -72,6 +73,8 @@ AliAnalysisTaskSE(),
   fLSBUppLim(), 
   fRSBLowLim(), 
   fRSBUppLim(),
+  fSignLowLim(),
+  fSignUppLim(),
   fDaughTrackID(),
   fDaughTrigNum(),
   fEvents(0),
@@ -109,7 +112,7 @@ AliAnalysisTaskSE(),
   fSignLeft_HighPt(0),
   fSignRight_HighPt(0),
   fPoolNum(0),
-  fSpeed(kTRUE),
+  fSpeed(kOneBinSB),
   fMergePools(kFALSE),
   fUseDeff(kTRUE),
   fUseTrackeff(kTRUE),
@@ -145,6 +148,8 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fLSBUppLim(), 
   fRSBLowLim(), 
   fRSBUppLim(),
+  fSignLowLim(),
+  fSignUppLim(),
   fDaughTrackID(),
   fDaughTrigNum(),
   fEvents(0),
@@ -182,7 +187,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fSignLeft_HighPt(0),
   fSignRight_HighPt(0),
   fPoolNum(0),
-  fSpeed(kTRUE),
+  fSpeed(kOneBinSB),
   fMergePools(kFALSE),
   fUseDeff(kTRUE),
   fUseTrackeff(kTRUE),
@@ -240,6 +245,8 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fLSBUppLim(source.fLSBUppLim), 
   fRSBLowLim(source.fRSBLowLim), 
   fRSBUppLim(source.fRSBUppLim),
+  fSignLowLim(source.fSignLowLim),
+  fSignUppLim(source.fSignUppLim),
   fDaughTrackID(source.fDaughTrackID),
   fDaughTrigNum(source.fDaughTrigNum),
   fEvents(source.fEvents),
@@ -357,6 +364,8 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fLSBUppLim = orig.fLSBUppLim; 
   fRSBLowLim = orig.fRSBLowLim;  
   fRSBUppLim = orig.fRSBUppLim; 
+  fSignLowLim = orig.fSignLowLim;
+  fSignUppLim = orig.fSignUppLim;
   fDaughTrackID = orig.fDaughTrackID;
   fDaughTrigNum = orig.fDaughTrigNum;
   fEvents = orig.fEvents;
@@ -393,8 +402,8 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fSignRight_LowPt = orig.fSignRight_LowPt;
   fSignLeft_HighPt = orig.fSignLeft_HighPt;
   fSignRight_HighPt = orig.fSignRight_HighPt;
-  fPoolNum = orig.fKaonCorr;
-  fSpeed = orig.fKaonCorr;   
+  fPoolNum = orig.fPoolNum;
+  fSpeed = orig.fSpeed;   
   fMergePools = orig.fMergePools;
   fUseDeff = orig.fUseDeff;
   fUseTrackeff = orig.fUseTrackeff;
@@ -626,7 +635,7 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
 
   const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Control plot", 20,-0.5,19.5);
+  fNentries=new TH1F(nameoutput, "Control plot", 21,-0.5,20.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nEventsSelected");
@@ -646,8 +655,9 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(16,"D0 failed to be filled");
   fReadMC ? fNentries->GetXaxis()->SetBinLabel(17,"nTrueD0Selected(MC)") : fNentries->GetXaxis()->SetBinLabel(17,"Dstar<-D0");
   fNentries->GetXaxis()->SetBinLabel(18,"ptbin = -1");
-  if(fSys==0) fNentries->GetXaxis()->SetBinLabel(19,"nCandSel(QualTr)");
-  fNentries->GetXaxis()->SetBinLabel(20,"nCandSel(Cuts)");
+  fNentries->GetXaxis()->SetBinLabel(19,"Preselect Rejection");
+  if(fSys==0) fNentries->GetXaxis()->SetBinLabel(20,"nCandSel(QualTr)");
+  fNentries->GetXaxis()->SetBinLabel(21,"nCandSel(Cuts)");
 
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
@@ -865,7 +875,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   Double_t zVtxPosition = vtx1->GetZ();
   fzVtx = zVtxPosition;
   if(!fMergePools) fPoolNum = fCutsTracks->GetPoolBin(MultipOrCent, zVtxPosition);
-  
+
   //vtx1->Print();
   TString primTitle = vtx1->GetTitle();
   if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) {
@@ -881,7 +891,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   if(fReadMC && fUseNtrklWeight) {
     Int_t nTracklets = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
     fWeight *= GetNtrklWeight(nTracklets);
-    printf("Using Ntrkl weights, tracklets=%d, Weight=%f\n",nTracklets,fWeight);
+    if(fDebug > 1) printf("Using Ntrkl weights, tracklets=%d, Weight=%f\n",nTracklets,fWeight);
   }
 
   //***** Loop over D0 candidates *****
@@ -928,7 +938,8 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
 
   //Fill Event Multiplicity (needed only in Reco)
-  fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
+  if(fSys==0) fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.)); //pp (or pPb)
+  else fMultEv = fCutsD0->GetCentrality(aod); //PbPb
 
   //Fill control plots for event centrality and zVtx
   if(fCutsD0->GetUseCentrality()) ((TH1F*)fOutputStudy->FindObject("hCentralEvts"))->Fill(fCutsD0->GetCentrality(aod));
@@ -939,6 +950,18 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 
     for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
       AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
+
+      //new preselection check, from PbPb 2018 (to spped up analysis)
+      TObjArray arrTracks(2);
+      for(Int_t ipr=0;ipr<2;ipr++){
+        AliAODTrack *tr=vHF->GetProng(aod,d,ipr);
+        arrTracks.AddAt(tr,ipr);
+      }
+
+      if(!fCutsD0->PreSelect(arrTracks)){
+        fNentries->Fill(18);
+        continue;
+      }
 
       if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.   
         fNentries->Fill(15); //monitor how often this fails 
@@ -956,7 +979,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
         nSelectedloose++;
         nSelectedtight++;      
         if(fSys==0){
-  	  if(fCutsD0->IsSelected(d,AliRDHFCuts::kTracks,aod)) fNentries->Fill(18);       
+  	     if(fCutsD0->IsSelected(d,AliRDHFCuts::kTracks,aod)) fNentries->Fill(19);       
         }  
         Int_t ptbin=fCutsD0->PtBin(d->Pt());
         if(ptbin==-1) {fNentries->Fill(17); continue;} //out of bounds
@@ -996,7 +1019,13 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 		((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
                 ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
               }
-	      CalculateCorrelations(d,labD0,mcArray);
+	      if(fFillTrees==kNoTrees) CalculateCorrelations(d,labD0,mcArray);
+              if(fFillTrees==kFillCutOptTree) { 
+                AliAODMCParticle *partD0 = (AliAODMCParticle*)mcArray->At(labD0);
+                if (partD0->GetPdgCode()==421) fIsSelectedCandidate = 1;
+                else fIsSelectedCandidate = 2;
+                FillTreeD0ForCutOptim(d,aod);
+              }
 	    }
           }
         }
@@ -1024,8 +1053,8 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 
           //Removal of cases in which D0 decay is not in Kpi!
 	  if(mcPart->GetNDaughters()!=2) continue;
-	  AliAODMCParticle* mcDau1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(0)));
-	  AliAODMCParticle* mcDau2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(1)));
+	  AliAODMCParticle* mcDau1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(0)));
+	  AliAODMCParticle* mcDau2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(1)));
 	  if(!mcDau1 || !mcDau2) continue;
 	  Int_t pdg1 = TMath::Abs(mcDau1->GetPdgCode());
 	  Int_t pdg2 = TMath::Abs(mcDau2->GetPdgCode());
@@ -1037,7 +1066,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
             Double_t pD0[3] = {mcPart->Px(),mcPart->Py(),mcPart->Pz()};
             if(TMath::Abs( (p1[0]+p2[0]-pD0[0])*(p1[0]+p2[0]-pD0[0]) + (p1[1]+p2[1]-pD0[1])*(p1[1]+p2[1]-pD0[1]) + (p1[2]+p2[2]-pD0[2])*(p1[2]+p2[2]-pD0[2]) )>0.1) continue;
 
-          if(fSys==0) fNentries->Fill(18);
+          if(fSys==0) fNentries->Fill(19);
           Int_t ptbin=fCutsD0->PtBin(mcPart->Pt());
           if(ptbin==-1) {fNentries->Fill(17); continue;} //out of bounds  
   
@@ -1121,7 +1150,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
   if (fReadMC) labD0 = part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
 
   //count candidates selected by cuts
-  fNentries->Fill(19);
+  fNentries->Fill(20);
   //count true D0 selected by cuts
   if (fReadMC && labD0>=0) fNentries->Fill(16);
 
@@ -1189,6 +1218,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
       fillthis="histMass_WeigD0Eff_";
       fillthis+=ptbin;
       Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
+       
       if(!fUseDeff || !effD0) effD0=1.; 
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
       if(fFillTrees>0) {
@@ -1335,7 +1365,7 @@ Int_t AliAnalysisTaskSED0Correlations::CheckD0Origin(TClonesArray* arrayMC, AliA
   //
   // checking whether the mother of the particles come from a charm or a bottom quark
   //
-  printf("AliAnalysisTaskSED0Correlations::CheckD0Origin() \n");
+  if(fDebug > 2) printf("AliAnalysisTaskSED0Correlations::CheckD0Origin() \n");
 	
   Int_t pdgGranma = 0;
   Int_t mother = 0;
@@ -1391,7 +1421,7 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
 
     //Modify n of bins with fast speed: in the "for" loop since bins can depend on pT (e.g. mass bin)
     //setting of mass bin is done at the end of the loop!
-    if(fSpeed) { //these with fast speed
+    if(fSpeed==kOneBinSB) { //these with fast speed, only 1 SBL and 1 SBR bins
       if(i>=9) {nBinsPhi[0] = 32; nBinsPhi[1] = 67; nBinsPhi[3] = 1; nBinsPhi[4] = 16;}
       else {nBinsPhi[0] = 32; nBinsPhi[1] = 43; nBinsPhi[3] = 1; nBinsPhi[4] = 16;}
       binMinPhi[0] = -TMath::Pi()/2.; binMinPhi[1] = 1.5848; binMinPhi[3] = 0.; binMinPhi[4] = -1.6;
@@ -1402,6 +1432,18 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
       binMinMix[0] = -TMath::Pi()/2.; binMinMix[1] = 1.5848; binMinMix[2] = -1.6;
       binMaxMix[0] = 3.*TMath::Pi()/2.; binMaxMix[1] = 2.1848; binMaxMix[2] = 1.6;
     }  	  
+    if(fSpeed==kOneBinSBandS) { //these with fast speed, only 1 SBL+SBR bin and 1 Sgin bin = total of 2 bins in mass axis!
+      if(i>=9) {nBinsPhi[0] = 32; nBinsPhi[1] = 2; nBinsPhi[3] = 1; nBinsPhi[4] = 16;}
+      else {nBinsPhi[0] = 32; nBinsPhi[1] = 2; nBinsPhi[3] = 1; nBinsPhi[4] = 16;}
+      binMinPhi[0] = -TMath::Pi()/2.; binMinPhi[1] = 1.5848; binMinPhi[3] = 0.; binMinPhi[4] = -1.6;
+      binMaxPhi[0] = 3.*TMath::Pi()/2.; binMaxPhi[1] = 2.1848; binMaxPhi[3] = 3.; binMaxPhi[4] = 1.6;
+    
+      if(i>=9) {nBinsMix[0] = 32; nBinsMix[1] = 2; nBinsMix[2] = 16;}
+      else {nBinsMix[0] = 32; nBinsMix[1] = 2; nBinsMix[2] = 16;} 
+      binMinMix[0] = -TMath::Pi()/2.; binMinMix[1] = 1.5848; binMinMix[2] = -1.6;
+      binMaxMix[0] = 3.*TMath::Pi()/2.; binMaxMix[1] = 2.1848; binMaxMix[2] = 1.6;
+    }   
+
 
     if(!fMixing) {
      if(!fFillTrees) {
@@ -1541,7 +1583,7 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
         } //end of MC
   
         //modify here the mass axis of THnSparse! 
-        if(fSpeed) {
+        if(fSpeed==kOneBinSB) {
       	  Int_t nBins; Double_t mBin;      
       	  if(i>=9) { //signal range is 1.7488 to 2.0008, plus 1 bin L and R for sidebands
       	    nBins = 67;
@@ -1579,7 +1621,37 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
           }
-        } //end of fSpeed
+        } //end of fSpeed==1
+
+                //modify here the mass axis of THnSparse! 
+        if(fSpeed==kOneBinSBandS) {
+          Int_t nBins = 2;
+          Double_t varBins[3];
+          varBins[0] = -0.5;
+          varBins[1] = 0.5;
+          varBins[2] = 1.5;
+        
+          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+          if (fReadMC) {
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_HF_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_HF_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_HF_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_HF_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_HF_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_HF_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+          }
+        } //end of fSpeed==2
 
       } //end of pool multiplicity      
    
@@ -1720,7 +1792,7 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
         fOutputCorr->Add(hPhiC_EvMix);  
 
         //modify here the mass axis of THnSparse! 
-        if(fSpeed) {
+        if(fSpeed==kOneBinSB) {
       	  Int_t nBins; Double_t mBin;      
       	  if(i>=9) { //signal range is 1.7488 to 2.0008, plus 1 bin L and R for sidebands
       	    nBins = 67;
@@ -1742,7 +1814,20 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
       	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
       	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
       	  
-        } //end of fSpeed   
+        } //end of fSpeed==1
+
+        if(fSpeed==kOneBinSBandS) {
+          Int_t nBins = 2;
+          Double_t varBins[3];          
+          varBins[0] = -0.5;
+          varBins[1] = 0.5;
+          varBins[2] = 1.5;
+        
+          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
+          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
+          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
+          
+        } //end of fSpeed==2          
       
       } //end of Mult pools
     } //end of Mix
@@ -2046,11 +2131,11 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
 
   if(fPurityStudies) {
     
-    TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
-    TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+    TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+    TString namebinAss[7] = {"03to99","03to1","1to99","1to3","1to2","2to3","3to99"};
 
-    for(int i=0; i<4; i++) { //pTD
-      for(int j=0; j<6; j++) { //pTass
+    for(int i=0; i<5; i++) { //pTD
+      for(int j=0; j<7; j++) { //pTass
 	namePlot=Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
         TH1F *hpurity_prim = new TH1F(namePlot.Data(), "Prim accepted",1,-0.5,0.5);
         hpurity_prim->SetMinimum(0);
@@ -2187,10 +2272,18 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
       if(fReadMC) {
         AliAODMCParticle* trkKine = (AliAODMCParticle*)mcArray->At(track->GetLabel());
         if (!trkKine) continue;
+        //remove secondary tracks (for MC closure test, but obviously not for purity studies)
         if (!trkKine->IsPhysicalPrimary()) {
  	  ((TH1F*)fOutputStudy->FindObject(Form("hPhysPrim_Bin%d",ptbin)))->Fill(1.);  
   	  if(!fPurityStudies) continue; //reject the Reco track if correspondent Kine track is not primary
         } else ((TH1F*)fOutputStudy->FindObject(Form("hPhysPrim_Bin%d",ptbin)))->Fill(0.);
+        //remove tracks not being pi/K/p/e/mu (for MC closure studies, but not for purity studies
+        // --> the sense is that in the purity correction we also remove primary reco particles not being pi/K/p/e/mu
+        // --> (we don't want them in the MC closure instead, since there we don't apply purity)
+        if(!fPurityStudies) {
+          Int_t pdg = TMath::Abs(trkKine->GetPdgCode());
+          if(!((pdg==321)||(pdg==211)||(pdg==2212)||(pdg==13)||(pdg==11))) continue;
+        }
       }
 
       Double_t effTr = track->GetWeight(); //extract track efficiency
@@ -2661,7 +2754,7 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
 
     Bool_t allowD0 = 0;
     Bool_t allowD0bar = 0;
-    if(fSpeed) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
+    if(fSpeed==kOneBinSB) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
       if(ptbin<PtBinCorr(8.01)) {	    
         if(mD0 > fSignLeft_LowPt && mD0 < fSignRight_LowPt) allowD0 = 1;
         if(mD0bar > fSignLeft_LowPt && mD0bar < fSignRight_LowPt) allowD0bar = 1;
@@ -2674,7 +2767,15 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
       if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 2.18; fillSpWeigD0[1] = 2.18;} //in RSB bin!
       if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 2.18; fillSpWeigD0bar[1] = 2.18;} //in RSB bin!
     } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
-    else if(!fSpeed) { // Full Minv range in THnSparse!
+    if(fSpeed==kOneBinSBandS) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
+      if(mD0 > fSignLowLim.at(ptbin) && mD0 < fSignUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 0; fillSpWeigD0[1] = 0;} //in Signal region-->Bin 1 (-0.5->0.5)!
+      if(mD0bar > fSignLowLim.at(ptbin) && mD0bar < fSignUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 0; fillSpWeigD0bar[1] = 0;} //in Signal region-->Bin 1 (-0.5->0.5)!
+      if(mD0 > fLSBLowLim.at(ptbin) && mD0 < fLSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 1; fillSpWeigD0[1] = 1;} //in LSB!-->Bin 2 (0.5->1.5)!
+      if(mD0bar > fLSBLowLim.at(ptbin) && mD0bar < fLSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 1; fillSpWeigD0bar[1] = 1;} //in LSB!-->Bin 2 (0.5->1.5)!
+      if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 1; fillSpWeigD0[1] = 1;} //in RSB!-->Bin 2 (0.5->1.5)!
+      if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 1; fillSpWeigD0bar[1] = 1;} //in RSB!-->Bin 2 (0.5->1.5)!
+    }    
+    if(!fSpeed) { // Full Minv range in THnSparse!
       if((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3)) allowD0 = 1;   
       if((fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3)) allowD0bar = 1;
     }
@@ -2771,7 +2872,7 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
 
     Bool_t allowD0 = 0;
     Bool_t allowD0bar = 0;
-    if(fSpeed) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
+    if(fSpeed==kOneBinSB) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
       if(ptbin<PtBinCorr(8.01)) {	    
         if(mD0 > fSignLeft_LowPt && mD0 < fSignRight_LowPt) allowD0 = 1;
         if(mD0bar > fSignLeft_LowPt && mD0bar < fSignRight_LowPt) allowD0bar = 1;
@@ -2784,7 +2885,15 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
       if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 2.18;} //in RSB bin!
       if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 2.18;} //in RSB bin!
     } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
-    else if(!fSpeed) { // Full Minv range in THnSparse!
+    if(fSpeed==kOneBinSBandS) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
+      if(mD0 > fSignLowLim.at(ptbin) && mD0 < fSignUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 0;} //in Signal region-->Bin 1 (-0.5->0.5)!
+      if(mD0bar > fSignLowLim.at(ptbin) && mD0bar < fSignUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 0;} //in Signal region-->Bin 1 (-0.5->0.5)!
+      if(mD0 > fLSBLowLim.at(ptbin) && mD0 < fLSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 1;} //in LSB!-->Bin 2 (0.5->1.5)!
+      if(mD0bar > fLSBLowLim.at(ptbin) && mD0bar < fLSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 1;} //in LSB!-->Bin 2 (0.5->1.5)!
+      if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 1;} //in RSB!-->Bin 2 (0.5->1.5)!
+      if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 1;} //in RSB!-->Bin 2 (0.5->1.5)!
+    }      
+    if(!fSpeed) { // Full Minv range in THnSparse!
       if((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3)) allowD0 = 1;   
       if((fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3)) allowD0bar = 1;
     }    
@@ -2975,8 +3084,8 @@ Bool_t AliAnalysisTaskSED0Correlations::IsSoftPion_MCKine(AliAODMCParticle* d, A
     return isSoftPi;
   }
   if(TMath::Abs(mcMoth->GetPdgCode())==413 && mcMoth->GetNDaughters()==2) { //mother is D* with 2 daughs
-    Int_t labdau1 = mcMoth->GetDaughter(0);
-    Int_t labdau2 = mcMoth->GetDaughter(1);
+    Int_t labdau1 = mcMoth->GetDaughterLabel(0);
+    Int_t labdau2 = mcMoth->GetDaughterLabel(1);
     AliAODMCParticle* dau1 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labdau1));
     AliAODMCParticle* dau2 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labdau2));
     if(!dau1 || !dau2) return isSoftPi; //safety check
@@ -3008,7 +3117,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
   Float_t centEv = -9;
   if(fCutsD0->GetUseCentrality()) centEv = fCutsD0->GetCentrality(aod); //get event centrality with current estimator
 
-  if(fSpeed) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
+  if(fSpeed==kOneBinSB) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
     if(ptbin<PtBinCorr(8.01)) {	    
       if(mD0 > fSignLeft_LowPt && mD0 < fSignRight_LowPt) allowD0 = 1;
       if(mD0bar > fSignLeft_LowPt && mD0bar < fSignRight_LowPt) allowD0bar = 1;
@@ -3021,7 +3130,15 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
     if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) allowD0 = 1; //in RSB bin!
     if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) allowD0bar = 1; //in RSB bin!
   } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
-  else if(!fSpeed) { // Full Minv range in THnSparse!
+  if(fSpeed==kOneBinSBandS) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
+    if(mD0 > fSignLowLim.at(ptbin) && mD0 < fSignUppLim.at(ptbin)) allowD0 = 1; //in Signal region
+    if(mD0bar > fSignLowLim.at(ptbin) && mD0bar < fSignUppLim.at(ptbin)) allowD0bar = 1; //in Signal region
+    if(mD0 > fLSBLowLim.at(ptbin) && mD0 < fLSBUppLim.at(ptbin)) allowD0 = 1; //in LSB!-->Bin 2 (0.5->1.5)!
+    if(mD0bar > fLSBLowLim.at(ptbin) && mD0bar < fLSBUppLim.at(ptbin)) allowD0bar = 1; //in LSB!-->Bin 2 (0.5->1.5)!
+    if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) allowD0 = 1; //in RSB!-->Bin 2 (0.5->1.5)!
+    if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) allowD0bar = 1; //in RSB!-->Bin 2 (0.5->1.5)!
+  }    
+  if(!fSpeed) { // Full Minv range in THnSparse!
     if((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3)) allowD0 = 1;   
     if((fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3)) allowD0bar = 1;
   }   
@@ -3186,7 +3303,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0ForCutOptim(AliAODRecoDecayHF2Pr
     else if(TMath::Abs(normdd0)>TMath::Abs(dd0max)) dd0max=normdd0;
   }
 
-// printf("Centralità = %f, %f (ZNA), %f (V0M)\n",fCutsD0->GetCentrality(aod),fCutsD0->GetCentrality(aod,AliRDHFCuts::kCentZNA),fCutsD0->GetCentrality(aod,AliRDHFCuts::kCentV0M)); getchar();
+// if(fDebug > 2) printf("Centralità = %f, %f (ZNA), %f (V0M)\n",fCutsD0->GetCentrality(aod),fCutsD0->GetCentrality(aod,AliRDHFCuts::kCentZNA),fCutsD0->GetCentrality(aod,AliRDHFCuts::kCentV0M)); getchar();
 
   //Fill TTree for accepted candidates
   //if both hypotheses are ok, the TTree is filled 2 times, with the different cut values
@@ -3317,8 +3434,8 @@ void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, Ali
 
   if(!fReadMC || !fRecoD0 || !fRecoTr) return;
 
-  TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
-  TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+  TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+  TString namebinAss[7] = {"03to99","03to1","1to99","1to3","1to2","2to3","3to99"};
 
   AliAODMCParticle* trkKine = (AliAODMCParticle*)mcArray->At(track->GetLabel());
   if (!trkKine) return;
@@ -3326,23 +3443,25 @@ void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, Ali
   Bool_t primTrack = trkKine->IsPhysicalPrimary();
   Double_t pTtr = track->Pt();
 
-  Bool_t fillAssocRange[6] = {kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+  Bool_t fillAssocRange[7] = {kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
   TString stringpTD = "";
   Bool_t okpTD = kFALSE;
-  if(fBinLimsCorr.at(ptbin) >= 3 && fBinLimsCorr.at(ptbin) < 5)   {stringpTD = namebinD[0]; okpTD = kTRUE;}
-  if(fBinLimsCorr.at(ptbin) >= 5 && fBinLimsCorr.at(ptbin) < 8)   {stringpTD = namebinD[1]; okpTD = kTRUE;}
-  if(fBinLimsCorr.at(ptbin) >= 8 && fBinLimsCorr.at(ptbin) < 16)  {stringpTD = namebinD[2]; okpTD = kTRUE;}
-  if(fBinLimsCorr.at(ptbin) >= 16 && fBinLimsCorr.at(ptbin) < 24) {stringpTD = namebinD[3]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 2 && fBinLimsCorr.at(ptbin) < 3)   {stringpTD = namebinD[0]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 3 && fBinLimsCorr.at(ptbin) < 5)   {stringpTD = namebinD[1]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 5 && fBinLimsCorr.at(ptbin) < 8)   {stringpTD = namebinD[2]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 8 && fBinLimsCorr.at(ptbin) < 16)  {stringpTD = namebinD[3]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 16 && fBinLimsCorr.at(ptbin) < 24) {stringpTD = namebinD[4]; okpTD = kTRUE;}
 
   if(pTtr >= 0.3) fillAssocRange[0] = kTRUE;
   if(pTtr >= 0.3 && pTtr < 1) fillAssocRange[1] = kTRUE;
   if(pTtr >= 1) fillAssocRange[2] = kTRUE;
-  if(pTtr >= 1 && pTtr < 2) fillAssocRange[3] = kTRUE;
-  if(pTtr >= 2 && pTtr < 3) fillAssocRange[4] = kTRUE;
-  if(pTtr >= 3) fillAssocRange[5] = kTRUE;
+  if(pTtr >= 1 && pTtr < 3) fillAssocRange[3] = kTRUE;
+  if(pTtr >= 1 && pTtr < 2) fillAssocRange[4] = kTRUE;
+  if(pTtr >= 2 && pTtr < 3) fillAssocRange[5] = kTRUE;
+  if(pTtr >= 3) fillAssocRange[6] = kTRUE;
 
   if(!okpTD) return;
-  for(int j=0; j<6; j++) {
+  for(int j=0; j<7; j++) {
     if(fillAssocRange[j]==kTRUE) {
       if(primTrack) {
         ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.,fWeight); 
@@ -3413,6 +3532,16 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   for (int i=0; i<fNPtBinsCorr; i++) {
     cout << fRSBUppLim.at(i) << ", ";
   }
+  if(fSpeed==kOneBinSBandS) {
+    cout << "\nSignal limits (Low)----\n";
+    for (int i=0; i<fNPtBinsCorr; i++) {
+      cout << fSignLowLim.at(i) << ", ";
+    }
+    cout << "\nSignal limits (Upp)----\n";
+    for (int i=0; i<fNPtBinsCorr; i++) {
+      cout << fSignUppLim.at(i) << ", ";
+    }        
+  }
 
   cout << "\n--------------------------\n";
   cout << "D0 Eta cut for Correl = "<<fEtaForCorrel<<"\n";
@@ -3427,7 +3556,7 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   cout << "--------------------------\n";
   cout << "Soft Pi Cut = "<<fSoftPiCut<<"\n";
   cout << "--------------------------\n";
-  cout << "Speed (1 SBL/SBR bin) = "<<fSpeed<<"\n";
+  cout << "Speed (1 SBL/SBR and eventually Sign bin) = "<<fSpeed<<"\n";
   cout << "--------------------------\n";
   cout << "All entries in Pool0 = "<<fMergePools<<"\n";
   cout << "--------------------------\n";  

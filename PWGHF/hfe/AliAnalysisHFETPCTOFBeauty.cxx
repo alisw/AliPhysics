@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//      Task for Beauty analysis in Pb-Pb collisions   				  //
+//      Task for Beauty analysis in Pb-Pb central collisions   				  //
 //      															  //
 //																	  //
 //		v1.0														  //
@@ -61,7 +61,7 @@
 #include "AliHFEtools.h"
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
-#include "AliSelectNonHFE.h"
+#include "AliHFEextraCuts.h"
 #include "AliHFEpidTPC.h"
 #include "AliAnalysisHFETPCTOFBeauty.h"
 #include "TMath.h"
@@ -92,6 +92,7 @@
 #include "AliGenEventHeader.h"
 #include "TRandom3.h"
 #include "AliAnalysisTaskSEImproveITS.h"
+#include "AliHFEV0taginfo.h"
 //______________________________________________________________________
 
 //______________________________________________________________________
@@ -122,7 +123,8 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,fVevent(0)
 ,fOutputList(0)
 ,fPidResponse(0)
-,fNonHFE(new AliSelectNonHFE())
+,fExtraCuts(NULL)
+,fV0Tagger(NULL)
 ,fIsAOD(kFALSE)
 ,fIsPP(kFALSE)
 ,fZvtx(0)
@@ -141,9 +143,7 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 //Histograms for the analysis
 ,fVertex1(0)
 ,fNevent(0)
-,fNeventT0(0)
-,fNevent_3(0)
-,fNevent_T0b(0)
+,fNevent_passvertex(0)
 ,fNevent_corrcut(0)
 ,fNevent_no_vertex(0)
 ,fNevent_no_vertex_2(0)
@@ -156,6 +156,8 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,fTPC_p3(0)
 ,fPt_1(0)
 ,fPt_2(0)
+,fNAnalizedTracks(0)
+,fNAnalizedTracksHijing(0)
 ,fITSnClus_1(0)
 ,fTPCnClus_1(0)
 ,fITSnClus_2(0)
@@ -166,7 +168,9 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,fTPCnsigma_pt1(0)
 ,fTPCnsigma_pt2(0)
 ,fTPCnsigma_pt3(0)
+,fTPCnsigma_p_after_V0selection(0)
 ,fTPCnsigma_p_after_tof(0)
+,fTPCnsigma_p_after_tof_v2(0)
 ,fTPCnsigma_p_after_tof_p(0)
 ,fTPCnsigma_p_after_tof_pion(0)
 ,fTPCnsigma_p_after_tof_k(0)
@@ -194,6 +198,8 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,fDCAxy_pt_beautybef(0)
 ,fDCAxy_pt_beautyaft(0)
 ,fDCAxy_pt_had_onlyDCA(0)
+,fDCAxy_pt_had_onlyDCA_Hijing(0)
+,fDCAxy_pt_had_onlyDCA_Phytia(0)
 ,fDCAz_pt_had(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
@@ -207,10 +213,17 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,hBeautyMotherPt(0)
 ,fPtBeautyGenerated(0)
 ,fPtGeneratedBmesons(0)
+,fPtBeautyReconstructedAll(0)
 ,fPtBeautyReconstructedTracks(0)
 ,fPtBeautyReconstructedTracksPID(0)
 ,fPtBeautyReconstructedTracksPIDTPC(0)
 ,fPtBeautyReconstructedTracksPIDTOF(0)
+,fPtBeautyReconstructedTracksPIDITS(0)
+,hTOFEffDen(0)
+,hTOFEffNum(0)
+,fPtBeautyPtrecVsPtparticle(0)
+,hPtLambdaC(0)
+,hPtD0(0)
 
 //For the HFE package
 ,fCuts(0)
@@ -303,7 +316,8 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,fVevent(0)
 ,fOutputList(0)
 ,fPidResponse(0)
-,fNonHFE(new AliSelectNonHFE())
+,fExtraCuts(NULL)
+,fV0Tagger(NULL)
 ,fIsAOD(kFALSE)
 ,fIsPP(kFALSE)
 ,fZvtx(0)
@@ -322,9 +336,7 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 //Histograms for the analysis
 ,fVertex1(0)
 ,fNevent(0)
-,fNeventT0(0)
-,fNevent_3(0)
-,fNevent_T0b(0)
+,fNevent_passvertex(0)
 ,fNevent_corrcut(0)
 ,fNevent_no_vertex(0)
 ,fNevent_no_vertex_2(0)
@@ -336,6 +348,8 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,fTPC_p3(0)
 ,fPt_1(0)
 ,fPt_2(0)
+,fNAnalizedTracks(0)
+,fNAnalizedTracksHijing(0)
 ,fITSnClus_1(0)
 ,fTPCnClus_1(0)
 ,fITSnClus_2(0)
@@ -346,7 +360,9 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,fTPCnsigma_pt1(0)
 ,fTPCnsigma_pt2(0)
 ,fTPCnsigma_pt3(0)
+,fTPCnsigma_p_after_V0selection(0)
 ,fTPCnsigma_p_after_tof(0)
+,fTPCnsigma_p_after_tof_v2(0)
 ,fTPCnsigma_p_after_tof_p(0)
 ,fTPCnsigma_p_after_tof_pion(0)
 ,fTPCnsigma_p_after_tof_k(0)
@@ -374,6 +390,8 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,fDCAxy_pt_beautybef(0)
 ,fDCAxy_pt_beautyaft(0)
 ,fDCAxy_pt_had_onlyDCA(0)
+,fDCAxy_pt_had_onlyDCA_Hijing(0)
+,fDCAxy_pt_had_onlyDCA_Phytia(0)
 ,fDCAz_pt_had(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
@@ -387,10 +405,17 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,hBeautyMotherPt(0)
 ,fPtBeautyGenerated(0)
 ,fPtGeneratedBmesons(0)
+,fPtBeautyReconstructedAll(0)
 ,fPtBeautyReconstructedTracks(0)
 ,fPtBeautyReconstructedTracksPID(0)
 ,fPtBeautyReconstructedTracksPIDTPC(0)
 ,fPtBeautyReconstructedTracksPIDTOF(0)
+,fPtBeautyReconstructedTracksPIDITS(0)
+,hTOFEffDen(0)
+,hTOFEffNum(0)
+,fPtBeautyPtrecVsPtparticle(0)
+,hPtLambdaC(0)
+,hPtD0(0)
 
 //For the HFE package
 ,fCuts(0)
@@ -456,7 +481,7 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
     // Output slot #1 writes into a TH1 container
     // DefineOutput(1, TH1I::Class());
     DefineOutput(1, TList::Class());
-    //DefineOutput(3, TTree::Class());
+    fV0Tagger = new AliHFEV0taginfo("Tagger");
 }
 
 //______________________________________________________________________
@@ -467,6 +492,7 @@ AliAnalysisHFETPCTOFBeauty::~AliAnalysisHFETPCTOFBeauty()
     delete fPID;
     delete fCFM;
     delete fPIDqa;
+    delete fV0Tagger;
 }
 
 //______________________________________________________________________
@@ -474,9 +500,8 @@ AliAnalysisHFETPCTOFBeauty::~AliAnalysisHFETPCTOFBeauty()
 //Here we can define the histograms and others output files
 //Called once
 void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
-{
-    //______________________________________________________________________
-    //Initialize PID
+{	
+    ///Initialize PID
     if(!fPID->GetNumberOfPIDdetectors())
     {
         fPID->AddDetector("TPC", 0);
@@ -487,10 +512,8 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     
     fPIDqa = new AliHFEpidQAmanager();
     fPIDqa->Initialize(fPID);
-    //______________________________________________________________________
-    
-    //______________________________________________________________________
-    //Initialize correction Framework and Cuts
+        
+    ///Initialize correction Framework and Cuts
     fCFM = new AliCFManager;
     const Int_t kNcutSteps = AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kNcutStepsRecTrack + AliHFEcuts::kNcutStepsDETrack;
     fCFM->SetNStepParticle(kNcutSteps);
@@ -504,9 +527,9 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     }
     
     fCuts->Initialize(fCFM);
-    //______________________________________________________________________
     
-    ///______________________________________________________________________
+    
+    
     ///Output Tlist
     //Create TList
     fOutputList = new TList();
@@ -515,13 +538,10 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     //PIDqa
     fOutputList->Add(fPIDqa->MakeList("PIDQA"));
     
-    //Store the number of events
     //Define the histo
     fNevent = new TH1F("fNevent","Number of Events",5,-0.5,4.5);
-    fNeventT0 = new TH1F("fNeventT0","Number of Events",5,-0.5,4.5);
     fVertex1 = new TH1F("fVertex1","vertex",500,-50,50);
-    fNevent_3 = new TH1F("fNevent_3","Number of Events",5,-0.5,4.5);
-    fNevent_T0b = new TH1F("fNevent_T0b","Number of Events",5,-0.5,4.5);
+    fNevent_passvertex = new TH1F("fNevent_passvertex","Number of Events",5,-0.5,4.5);
     fNevent_corrcut = new TH1F("fNevent_corrcut","Number of Events",5,-0.5,4.5);
     fNevent_no_vertex = new TH1F("fNevent_no_vertex","Number of Events",5,-0.5,4.5);
     fNevent_no_vertex_2 = new TH1F("fNevent_no_vertex_2","Number of Events",5,-0.5,4.5);
@@ -530,10 +550,8 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     fCent2 = new TH1F("fCent2","Centrality",100,0,100);
     //And then, add to the output list
     fOutputList->Add(fNevent);
-    fOutputList->Add(fNeventT0);
     fOutputList->Add(fVertex1);
-    fOutputList->Add(fNevent_3);
-    fOutputList->Add(fNevent_T0b);
+    fOutputList->Add(fNevent_passvertex);
     fOutputList->Add(fNevent_corrcut);
     fOutputList->Add(fNevent_no_vertex);
     fOutputList->Add(fNevent_no_vertex_2);
@@ -567,6 +585,12 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     
     fPt_2 = new TH1F("fPt_2","pt (GeV/c)",1000,0,100);
     fOutputList->Add(fPt_2);
+    
+    fNAnalizedTracks = new TH1F("fNAnalizedTracks","pt (GeV/c)",5000,0,5000);
+    fOutputList->Add(fNAnalizedTracks);
+    
+    fNAnalizedTracksHijing = new TH1F("fNAnalizedTracksHijing","pt (GeV/c)",5000,0,5000);
+    fOutputList->Add(fNAnalizedTracksHijing);
     
     fITSnClus_1 = new TH1F("fITSnClus_1","fITSnClus_1",1000,0,80);
     fOutputList->Add(fITSnClus_1);
@@ -704,6 +728,12 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     
     fDCAxy_pt_had_onlyDCA = new TH2F("fDCAxy_pt_had_onlyDCA",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA);
+    
+    fDCAxy_pt_had_onlyDCA_Hijing = new TH2F("fDCAxy_pt_had_onlyDCA_Hijing",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_onlyDCA_Hijing);
+       
+    fDCAxy_pt_had_onlyDCA_Phytia = new TH2F("fDCAxy_pt_had_onlyDCA_Phytia",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_onlyDCA_Phytia);
        
     fDCAz_pt_had = new TH2F("fDCAz_pt_had",";p_{t} (GeV/c);DCAz hadrons",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAz_pt_had);
@@ -716,9 +746,15 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     
     fPtMCeta = new TH1F("fPtMCeta",";p_{t} (GeV/c)",2000,0,100);
     fOutputList->Add(fPtMCeta);
+       
+    fTPCnsigma_p_after_V0selection = new TH2F("fTPCnsigma_p_after_V0selection","p (GeV/c);TPC Electron N#sigma after V0 selection",300,0,15,200,-15,10);
+    fOutputList->Add(fTPCnsigma_p_after_V0selection);
     
     fTPCnsigma_p_after_tof = new TH2F("fTPCnsigma_p_after_tof","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
     fOutputList->Add(fTPCnsigma_p_after_tof);
+    
+    fTPCnsigma_p_after_tof_v2 = new TH2F("fTPCnsigma_p_after_tof_v2","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
+    fOutputList->Add(fTPCnsigma_p_after_tof_v2);
     
     fTPCnsigma_p_after_tof_p = new TH2F("fTPCnsigma_p_after_tof_p","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
     fOutputList->Add(fTPCnsigma_p_after_tof_p);
@@ -744,6 +780,9 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     
     fPtGeneratedBmesons = new TH1F("fPtGeneratedBmesons","; p_{T} [GeV/c]; Count",1000,0,200);
     fOutputList->Add(fPtGeneratedBmesons);
+   
+    fPtBeautyReconstructedAll = new TH1F("fPtBeautyReconstructedAll","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fOutputList->Add(fPtBeautyReconstructedAll);
     
     fPtBeautyReconstructedTracks = new TH1F("fPtBeautyReconstructedTracks","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtBeautyReconstructedTracks);
@@ -757,16 +796,28 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     fPtBeautyReconstructedTracksPIDTOF = new TH1F("fPtBeautyReconstructedTracksPIDTOF","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtBeautyReconstructedTracksPIDTOF);
     
-      
-    ///THnSparse to store DCA of different particle species-------------
+    fPtBeautyReconstructedTracksPIDITS = new TH1F("fPtBeautyReconstructedTracksPIDITS","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fOutputList->Add(fPtBeautyReconstructedTracksPIDITS);
     
+    hTOFEffDen = new TH1F("hTOFEffDen","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fOutputList->Add(hTOFEffDen);
+    
+    hTOFEffNum = new TH1F("hTOFEffNum","; p_{T} [GeV/c]; Count",32,ptbinning);
+    fOutputList->Add(hTOFEffNum);
+
+    fPtBeautyPtrecVsPtparticle = new TH2F("fPtBeautyPtrecVsPtparticle","; p_{T} [GeV/c]; Count",32,ptbinning,32,ptbinning);
+    fOutputList->Add(fPtBeautyPtrecVsPtparticle);
+    
+    
+      
+    ///THnSparse to store DCA of different particle species in MC-------------
     Int_t nBinspdg2 = 21;
     Double_t minpdg2 = 0.;
     Double_t maxpdg2 = 21.;
     Double_t binLimpdg2[nBinspdg2+1];
     for(Int_t i=0; i<=nBinspdg2; i++) binLimpdg2[i]=(Double_t)minpdg2 + (maxpdg2-minpdg2)/nBinspdg2*(Double_t)i ;
     
-    Int_t nBinsdcaxy = 800;
+    Int_t nBinsdcaxy = 800; ///bin size 0.0005 cm
     Double_t mindcaxy = -0.2;
     Double_t maxdcaxy = 0.2;
     Double_t binLimdcaxy[nBinsdcaxy+1];
@@ -783,7 +834,7 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     Double_t maxR = 60;
     Double_t binLimR[nBinsR+1];
     for(Int_t i=0; i<=nBinsR; i++) binLimR[i]=(Double_t)minR + (maxR-minR)/nBinsR*(Double_t)i ;
-    
+    /*
     Int_t nBinsITSchi2 = 400;
     Double_t minITSchi2 = 0.;
     Double_t maxITSchi2 = 100;
@@ -795,12 +846,18 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     Double_t maxITSsha = 1;
     Double_t binLimITSsha[nBinsITSsha+1];
     for(Int_t i=0; i<=nBinsITSsha; i++) binLimITSsha[i]=(Double_t)minITSsha + (maxITSsha-minITSsha)/nBinsITSsha*(Double_t)i ;
-    
+    */
     Int_t nBinstype = 9;
     Double_t mintype = -1.;
     Double_t maxtype = 8.;
     Double_t binLimtype[nBinstype+1];
     for(Int_t i=0; i<=nBinstype; i++) binLimtype[i]=(Double_t)mintype + (maxtype-mintype)/nBinstype*(Double_t)i ;
+    
+    Int_t nBinscharge = 4;
+    Double_t mincharge = -2.;
+    Double_t maxcharge = 2.;
+    Double_t binLimcharge[nBinscharge+1];
+    for(Int_t i=0; i<=nBinscharge; i++) binLimcharge[i]=(Double_t)mincharge + (maxcharge-mincharge)/nBinscharge*(Double_t)i ;
     
     /*
      Double_t binLimpt2[45]= {0.1,0.112797,0.127231,0.143512,0.161877,0.182592,0.205957,0.232313,0.262041,0.295573,0.333397,
@@ -808,56 +865,52 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
      2.28928,2.58223,2.91267,3.2854,3.70582,4.18004,4.71494,5.3183,5.99886,6.76651,7.6324,8.60909,9.71076,10.9534,12.3551,13.9361,15.7195,17.731,20};//bin limits from the measured pi0 spectrum
      */
     
-    const Int_t nDima2=9;
-    Int_t nBina2[nDima2] = {32,nBinspdg2,nBinsdcaxy,nBinsg,nBinsR,nBinsITSchi2,nBinsITSsha,nBinstype,nBinspdg2};
+    const Int_t nDima2=8;
+    Int_t nBina2[nDima2] = {32,nBinspdg2,nBinsdcaxy,nBinsg,nBinsR,nBinstype,nBinsdcaxy,nBinscharge};
     fD0 = new THnSparseF("fD0","fD0",nDima2,nBina2);
     fD0->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
     fD0->SetBinEdges(1,binLimpdg2); /// electrons from D,charm baryons, B, beauty baryons, gamma, pi0, eta, Dcorrected, Dcorrected by weight, protons, kaons, D0_corr, D+-_corr,Ds_corr,Lc_corr, D0, D+-,Ds,Lc
-    fD0->SetBinEdges(2,binLimdcaxy); ///dca distribution
+    fD0->SetBinEdges(2,binLimdcaxy); ///dca distribution x charge x B
     fD0->SetBinEdges(3,binLimg);  ///From which generator (Hijing, else, pi0, eta)
     fD0->SetBinEdges(4,binLimR); ///Position where the electron is created
-    fD0->SetBinEdges(5,binLimITSchi2); ///ITS chi2 
-    fD0->SetBinEdges(6,binLimITSsha); ///fraction ITS shared clusters 
-    fD0->SetBinEdges(7,binLimtype); ///pi0 and eta type  ///kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kCharm, kKaonFromHF, kKaonFromNonHF
-    fD0->SetBinEdges(8,binLimpdg2); /// storing particles (charm and beauty) before correction: 
+    //fD0->SetBinEdges(5,binLimITSchi2); ///ITS chi2 
+    //fD0->SetBinEdges(6,binLimITSsha); ///fraction ITS shared clusters 
+    fD0->SetBinEdges(5,binLimtype); ///pi0 and eta type  ///kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kCharm, kKaonFromHF, kKaonFromNonHF
+    fD0->SetBinEdges(6,binLimdcaxy); /// dca distribution
+    fD0->SetBinEdges(7,binLimcharge); /// track charge
     fD0->Sumw2();
     fOutputList->Add(fD0);
-    
     ///-----------------------------------------------------------------
     
-    
-    
     ///THnSparse to store DCA in Data
-    const Int_t nDima3=5;
-    Int_t nBina3[nDima3] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2};
+    const Int_t nDima3=3;
+    //Int_t nBina3[nDima3] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2};
+    Int_t nBina3[nDima3] = {32,nBinsdcaxy,nBinspdg2};
     fD0Data = new THnSparseF("fD0Data","fD0Data",nDima3,nBina3);
     fD0Data->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
-    fD0Data->SetBinEdges(1,binLimdcaxy); ///dca distribution
-    fD0Data->SetBinEdges(2,binLimITSchi2); ///ITS chi2 
-    fD0Data->SetBinEdges(3,binLimITSsha); ///fraction ITS shared clusters 
-    fD0Data->SetBinEdges(4,binLimpdg2); /// electrons and pions
+    fD0Data->SetBinEdges(1,binLimdcaxy); ///dca distribution x charge x B
+    //fD0Data->SetBinEdges(2,binLimITSchi2); ///ITS chi2 
+    //fD0Data->SetBinEdges(3,binLimITSsha); ///fraction ITS shared clusters 
+    fD0Data->SetBinEdges(2,binLimpdg2); /// electrons and pions
     fD0Data->Sumw2();
     fOutputList->Add(fD0Data);
     
-    
     PostData(1, fOutputList);
     
-    ///______________________________________________________________________
+    
 }
 
-	
+//////////////
+//Main loop///
+//////////////
 
-
-//______________________________________________________________________
-//Main loop
-//Called for each event
+///Called for each event
 void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 {
 	gRandom->SetSeed(0);
 	//gRandom = new TRandom3(0);
     Int_t pdg = -99999;
     Int_t pdg_mother = -99999;
-    Double_t weight = -99999;
     Double_t fTPCnSigma = -999;
     Double_t fTOFnSigma = -999;
     Double_t fITSnSigma = -999;
@@ -878,7 +931,7 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 		qadcaData[j] = 0;
 	}
     
-    //Check Event
+    ///Check Event
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     
@@ -896,16 +949,16 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         return;
     }
     
-    //Check Cuts
+    ///Check Cuts
     if(!fCuts)
     {
         AliError("HFE cuts not available");
         return;
     }
-    //Check PID
+    ///Check PID
     if(!fPID->IsInitialized())
     {
-        // Initialize PID with the given run number
+        /// Initialize PID with the given run number
         AliWarning("PID not initialised, get from Run no");
         
         if(fIsAOD)
@@ -918,11 +971,11 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         }
     }
     
-    //PID response
+    ///PID response
     fPidResponse = fInputHandler->GetPIDResponse();
     
     
-    //Check PID response
+    ///Check PID response
     if(!fPidResponse)
     {
         AliDebug(1, "Using default PID Response");
@@ -933,27 +986,33 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
     
     fCFM->SetRecEventInfo(fVevent);
     
+    ///Initialize V0 electron tagger
+    if(fV0Tagger){
+		fV0Tagger->Reset();
+		fV0Tagger->TagV0Tracks(fAOD);
+	}
+	
+	///Initialize ExtraCuts: for DCA calculation
+	if(!fExtraCuts){
+			fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
+		}
+	fExtraCuts->SetRecEventInfo(fAOD);
+    
+    
     Double_t *fListOfmotherkink = 0;
     Int_t fNumberOfVertices = 0;
     Int_t fNumberOfMotherkink = 0;
     
-    //______________________________________________________________________
-    //Vertex Selection
+    
+    
+    ////////////////////
+	//Vertex Selection//
+	////////////////////
  
- 	///Checking Nv0 and NT0 before event and vertex selection--------------
-    fNevent->Fill(0);///triggered by v0
-        
-    ///Number of events in kint7 that is also triggered by T0
-    if(fIsPP){
-		if(!fIsMC){
-			TString firedTriggerClasses = static_cast<const AliAODEvent*>(InputEvent())->GetFiredTriggerClasses();
-            if ((firedTriggerClasses.Contains("C0TVX-B-NOPF-CENT"))){
-				fNevent_T0b->Fill(0);
-            }    
-         }
-    }
-    ///-------------------------------------------------------------
-        
+ 	///Checking Nv0 before vertex selection (events triggered by v0)
+    fNevent->Fill(0);
+
+    ///Getting primary vertex    
     AliAODVertex* vtTrc = fAOD->GetPrimaryVertex();
         
     ///Events with no vertex by tracks-------------------------------
@@ -971,7 +1030,7 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 	////////////////////
 	if(!PassCorrCuts(fAOD)) return;
         
-    ///Number of events that survives the correlation cuts between SPD and track vertexes
+    ///Number of events that passes the correlation cuts between SPD and track vertexes
     fNevent_corrcut->Fill(0);
         
     ////////////////////
@@ -1004,21 +1063,10 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
      }
 
        
-     ///Checking Nv0 and NT0 after the vertex selection----------------
-     fNevent_3->Fill(0); ///Number of analysed events ///triggered by v0
+     ///Checking Nv0 after the vertex selection (triggered by v0)
+     fNevent_passvertex->Fill(0); 
         
-     ///Number of events in kint7 that is also triggered by T0
-     if(fIsPP){
-		if(!fIsMC){
-			TString firedTriggerClasses = static_cast<const AliAODEvent*>(InputEvent())->GetFiredTriggerClasses();
-            if ((firedTriggerClasses.Contains("C0TVX-B-NOPF-CENT"))){
-				fNeventT0->Fill(0);
-            }
-         }
-     }
-     ///-------------------------------------------------------------
         
-   
     /////////////////////////
 	//Centrality Selection///
 	/////////////////////////
@@ -1054,65 +1102,63 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
     if(fAOD->GetMagneticField() < 0) signB = -1;
     if(fAOD->GetMagneticField() > 0) signB = 1;
     
-       
-          
+    int NAnalizedTracks = 0;   
+    int NAnalizedTracksHijing = 0;         
         
-    //=======================================================================
-    ///Initialization for MC analysis:
-    
-    if(fIsMC)
+        
+    //=======================================================================    
+    ///////////////////////////////////
+	//Initialization for MC analysis///
+	///////////////////////////////////
+    if(fIsMC && fIsAOD)
     {
-        if(fIsAOD)
-        {
-            fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-            if(!fMCarray){
-                AliError("Array of MC particles not found");
-                return;
-            }
-            if(fMCarray->GetEntries() < 1) return;
-            
-            fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-            if (!fMCheader) {
-                AliError("Could not find MC Header in AOD");
-                return;
-            }
-            
-            Bool_t test = GetNMCPartProduced();
-            //cout << "=====================" << endl;
-            weight = 1;
-            
-             
-            ////--------------------------------------------------------
-            
-            ///Get proportion between generated D0 and LambdaC
-            for(Int_t iMC = 0; iMC < fNTotMCpart; iMC++)
-            {
-				fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
-				
-				if((fMCparticle->Eta() < fEtaMin) || (fMCparticle->Eta() > fEtaMax)) continue;
-                     				
-				Int_t TrackPDG = TMath::Abs(fMCparticle->GetPdgCode());
-                if(TrackPDG == 421) hPtD0->Fill(fMCparticle->Pt());///D0
-                if(TrackPDG == 4122) hPtLambdaC->Fill(fMCparticle->Pt()); ///LambdaC
-                
-                if((TrackPDG>500 && TrackPDG<600)) fPtGeneratedBmesons->Fill(fMCparticle->Pt()); 
-                
-                
-                ///For the beauty reconstruction efficiency-----------
-				if(TrackPDG == 11){	
-					Bool_t MotherFound = FindMother(iMC);
-					if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
-                        fPtBeautyGenerated->Fill(fMCparticle->Pt());
-                        //cout<<"generated"<<endl;
-					}
-				}
-				///----------------------------------------------------  
-            }
+		fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+        if(!fMCarray){
+			AliError("Array of MC particles not found");
+            return;
         }
+        if(fMCarray->GetEntries() < 1) return;
+            
+        fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+        if (!fMCheader) {
+			AliError("Could not find MC Header in AOD");
+            return;
+        }
+            
+        Bool_t test = GetNMCPartProduced(); ///Getting number of particles produced by the MC generator
+           
+        for(Int_t iMC = 0; iMC < fNTotMCpart; iMC++)
+        {
+			fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
+			///Pseudo-rapidity cut
+			if((fMCparticle->Eta() < fEtaMin) || (fMCparticle->Eta() > fEtaMax)) continue;     				
+			
+            ///Get proportion between generated D0 and LambdaC:
+            Int_t TrackPDG = TMath::Abs(fMCparticle->GetPdgCode());
+            if(TrackPDG == 421) hPtD0->Fill(fMCparticle->Pt());///D0
+            if(TrackPDG == 4122) hPtLambdaC->Fill(fMCparticle->Pt()); ///LambdaC
+            if((TrackPDG>500 && TrackPDG<600)) fPtGeneratedBmesons->Fill(fMCparticle->Pt()); 
+                    
+            ///Beauty reconstruction efficiency block-----------
+			if(TrackPDG == 11){	
+				Bool_t MotherFound = FindMother(iMC);
+				if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
+					fPtBeautyGenerated->Fill(fMCparticle->Pt());
+                    //cout<<iMC<<endl;
+				}
+			}
+			///----------------------------------------------------  
+        }
+        //cout<<"fNTotMCpart = "<<fNTotMCpart<<endl; 
+        //cout<<"fMCarray->GetEntries() = "<<fMCarray->GetEntries()<<endl; 
     }
-    
+    //cout<<"fVevent->GetNumberOfTracks() = "<<fVevent->GetNumberOfTracks()<<endl;
     //=======================================================================
-    ///Track loop
+    
+    
+    ///////////////
+	//Track loop///
+	///////////////
     for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++)
     {
         AliVParticle* Vtrack = fVevent->GetTrack(iTracks);
@@ -1126,12 +1172,15 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
         AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 
-
         if(track->Pt()>30) continue;
         
-        ///_____________________________________________________________________________
-        ///Fill QA plots without track selection
-        fPt = track->Pt();
+        ///Test Filter Bit
+        if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; ///(Apply filter bit here, otherwise you count the track many times!!)
+
+        ///////////////////////////
+		//BEFORE TRACK SELECTION///
+		///////////////////////////
+		fPt = track->Pt();
         fEta = track->Eta();
         fPhi = track->Phi();
         fP = TMath::Sqrt((track->Pt())*(track->Pt()) + (track->Pz())*(track->Pz()));
@@ -1150,7 +1199,6 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         fTPC_p1->Fill(fP,fTPCsignal);
         fTPCnsigma_p1->Fill(fP,fTPCnSigma);
         fTPCnsigma_pt1->Fill(fPt,fTPCnSigma);
-        Float_t pos2[3]={0,0,0};
         
         fTPCnsigma_TOFnsigma1->Fill(fTOFnSigma,fTPCnSigma);
         fTOFnsigma_p1->Fill(fP,fTOFnSigma);
@@ -1163,68 +1211,80 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         
         fITSnClus_1->Fill(fITSnClus);
         fTPCnClus_1->Fill(fTPCnClus);
-        
+
+        ///Pseudo-rapidity cut
         if((track->Eta() < fEtaMin) || (track->Eta() > fEtaMax)) continue;
+        
+        ///Beauty reconstruction efficiency block-----------
+        if(fIsMC && fIsAOD){
+			Bool_t IsHFEMC = IsHFelectronsMC(track);
+			if(IsHFEMC){
+				if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
+					fPtBeautyReconstructedAll->Fill(fPt);
+					//cout<<"reconstructed by track cut"<<endl;
+				}
+			}
+		}
+		///----------------------------------------------------
         
         
         //=======================================================================
         // Track Selection Cuts are applied here
-        //=======================================================================
-        
-        
-        //AOD (Test Filter Bit)---------------------------------------------------------------------
-        if(fIsAOD)
-        {
-            
-            if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
-        }
-        
-        
-        //RecKine: ITSTPC cuts --------------------------------------------------------------
+        //=======================================================================        
+                
+        ///RecKine: ITS TPC cuts 
         if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
         
-       
-        
-        //RecKink -------------------------------------------------------------------------
+        ///RecKink 
         if(fRejectKinkMother)
         {
-            if(fIsAOD)
+			Bool_t kinkmotherpass = kTRUE;
+            for(Int_t kinkmother = 0; kinkmother < fNumberOfMotherkink; kinkmother++)
             {
-                Bool_t kinkmotherpass = kTRUE;
-                for(Int_t kinkmother = 0; kinkmother < fNumberOfMotherkink; kinkmother++)
+				if(track->GetID() == fListOfmotherkink[kinkmother])
                 {
-                    if(track->GetID() == fListOfmotherkink[kinkmother])
-                    {
-                        kinkmotherpass = kFALSE;
-                        continue;
-                    }
+					kinkmotherpass = kFALSE;
+                    continue;
                 }
-                if(!kinkmotherpass) continue;
-            }
-            else
-            {
-                if(etrack->GetKinkIndex(0) != 0) continue;
-            }
+             }
+			if(!kinkmotherpass) continue;
         }
-        
-              
-        //RecPrim -------------------------------------------------------------------------
+            
+        ///RecPrim
         if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;				///ProcessCutStep(Int_t cutStep, AliVParticle *track)
         
-       
-        //HFEcuts: ITS layers cuts -------------------------------------------------------------
+        ///HFEcuts: ITS layers cuts 
         if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
         
-        
-        //HFE cuts: TPC PID cleanup
+        ///HFE cuts: TPC PID cleanup
         if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
         
-        //=======================================================================
-        // QA plots after track selection
-        //=======================================================================
+        ///ITS Chi2 
+        Double_t ITSNcls = atrack->GetITSNcls();
+			//cout<<"atrack->GetITSNcls() = "<<atrack->GetITSNcls()<<endl;
+        if((atrack->GetITSchi2()/ITSNcls) > 5) continue; 
+			//cout<<"track->GetITSchi2() = "<<track->GetITSchi2()<<endl;
+            
+		///Fraction of shared clusters in the ITS
+		Bool_t HasSharedCls = kFALSE;
+		Double_t ITSNSharedcls = 0;
+		for(int itsL = 0; itsL < 6; itsL++){
+			HasSharedCls = atrack->HasSharedPointOnITSLayer(itsL);
+			if(HasSharedCls) ITSNSharedcls++;
+		}
+		//cout<<"ITSNSharedcls = "<<ITSNSharedcls<<endl;
+		Double_t fsharedclsITS = ITSNSharedcls/ITSNcls;
+		//cout<<"fsharedclsITS = "<<fsharedclsITS<<endl;
+        if(fsharedclsITS > 0.3) continue;    
+		
         
         
-        ///For the beauty reconstruction efficiency-----------
+        
+        ///////////////////////////
+		//AFTER TRACK SELECTION////
+		///////////////////////////
+		
+        ///Beauty reconstruction efficiency block-----------
         if(fIsMC && fIsAOD){
 			Bool_t IsHFEMC = IsHFelectronsMC(track);
 			if(IsHFEMC){
@@ -1234,12 +1294,24 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 				}
 			}
 		}
-		
 		///----------------------------------------------------
         
-             
-        fTPC_p2->Fill(fP,fTPCsignal);
+        ///Number of analised tracks
+		NAnalizedTracks = NAnalizedTracks+1;
         
+        ///Number of analysed tracks from Hijing:
+        if(fIsMC){
+			Int_t trkLabel = TMath::Abs(track->GetLabel());
+			Int_t labelm = GetPrimary(trkLabel,fMCarray);///gives the label of first mother
+			AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(labelm);
+			Int_t trkIndexPrimHFE= AODMCtrack->GetLabel();///gives index of the particle in original MCparticle array (labelm and trkIndexPrimHFE are the same, so I don't understand why this is done)
+   
+			if(trkIndexPrimHFE < fNpureMC){
+				NAnalizedTracksHijing = NAnalizedTracksHijing+1;
+			}
+		}
+
+        fTPC_p2->Fill(fP,fTPCsignal);
         fTPCnsigma_TOFnsigma2->Fill(fTOFnSigma,fTPCnSigma);
         fTOFnsigma_p2->Fill(fP,fTOFnSigma);
         fTOFnsigma_pt2->Fill(fPt,fTOFnSigma);
@@ -1251,23 +1323,46 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         fITSnClus_2->Fill(fITSnClus);
         fTPCnClus_2->Fill(fTPCnClus);
         
-        ///Calculating DCA
-        Double_t d0z0[2], cov[3];
-        AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
-        if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 100., d0z0, cov))) continue;
-        Double_t DCAxy = d0z0[0];
-        Double_t DCAz = d0z0[1];
         
-        //cout<<"fAOD->GetMagneticField() = "<<fAOD->GetMagneticField()<<endl;
+        ////////////////////
+		//Calculating DCA///
+		////////////////////
+		
+		///The way it was done before
+		//Double_t d0z0[2], cov[3];
+		//AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+        //if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 100., d0z0, cov))) continue;
+        //Double_t DCAxy = d0z0[0];
+        //Double_t DCAz = d0z0[1];
+        //cout<<"---------------------- fPt = "<<fPt<<endl;
+        //cout<<"---------------------- DCAxy = "<<DCAxy<<endl;
         
-               
         
+        ///Using AliHFEextraCuts method, that includes primary vertex recalculation if the number of contributors is smaller than 30       
+        Double_t hfeDCA[2];
+        hfeDCA[0] = -999.;
+        hfeDCA[1] = -999.;
+        Double_t hfeDCAResol[3];
+        hfeDCAResol[0] = -999.;
+        hfeDCAResol[1] = -999.;
+        hfeDCAResol[2] = -999.;
+		fExtraCuts->GetHFEImpactParameters((AliVTrack *)track, hfeDCA, hfeDCAResol);
+		//Float_t hfeDCA = -999.;
+        //Float_t hfeDCAResol = -999.;
+		//fExtraCuts->GetImpactParameters((AliVTrack *)track, hfeDCA, hfeDCAResol);
+        //cout<<"---------------------- hfeDCA = "<<hfeDCA[0]<<endl;
+        //printf("----------------------- hfeDCA = %0.4f",hfeDCA);
+        //printf("----------------------- hfeDCAResol = %0.4f",hfeDCAResol);
+        Double_t DCAxy = hfeDCA[0];
+        Double_t DCAz = hfeDCA[1];
+  
+  
         ///Checking nsigmaTPC after PID cuts in tof and its
+        /*
         if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
             fTPCnsigma_p_after_tof->Fill(fP,fTPCnSigma);
             fTPCnsigma_pt_after_tof->Fill(fPt,fTPCnSigma);
             
-             ///-------------------------------
 			///Cheking the hadron nsigmaTPC after TOF cut
 			if(fIsMC){
 				fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
@@ -1275,67 +1370,92 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 				if(TMath::Abs(fMCparticle->GetPdgCode()) == 130 || TMath::Abs(fMCparticle->GetPdgCode()) == 310 || TMath::Abs(fMCparticle->GetPdgCode()) == 311 || TMath::Abs(fMCparticle->GetPdgCode()) == 321)  fTPCnsigma_p_after_tof_k->Fill(fP,fTPCnSigma);
 				if(TMath::Abs(fMCparticle->GetPdgCode()) == 211)  fTPCnsigma_p_after_tof_pion->Fill(fP,fTPCnSigma);
 			}
-			///-------------------------------        
-            
+			
             if(fITSnSigma >= -2 && fITSnSigma <= 2){
                 fTPCnsigma_p_after_tof_its->Fill(fP,fTPCnSigma);
                 fTPCnsigma_pt_after_tof_its->Fill(fPt,fTPCnSigma);
             }
         }
+        */
+        ///New PID cuts
+        if(fP <= 2){
+			if(fTOFnSigma >= -4 && fTOFnSigma <= 2){
+				if(fITSnSigma >= -3 && fITSnSigma <= 3){
+					fTPCnsigma_p_after_tof_v2->Fill(fP,fTPCnSigma);
+				}
+			}
+		}
+		if(fP > 2){
+			if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+				fTPCnsigma_p_after_tof_v2->Fill(fP,fTPCnSigma);
+			}
+		}
         
-        ///Hadron DCA  --- for DCA resolution studies 
+        
+        //////////////////////////////////////////////
+		//Hadron DCA  --- for DCA resolution studies//
+		//////////////////////////////////////////////
         if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
 			fDCAxy_pt_had_onlyDCA->Fill(fPt,DCAxy);
 			fDCAxy_pt_had->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAz_pt_had->Fill(fPt,DCAz);	
-        }
-        
-		///Using thnSparse to store the DCA in Data-----------------------
-         if(!fIsMC){
-			 qadcaData[0] = fPt;
-         
-			 qadcaData[1] = DCAxy*track->Charge()*signB;
 			
-			 qadcaData[4] = -1.;
-			
-			 ///Charged pions
-			 if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
-				  qadcaData[4] = 0.5;
-			 }
-			 ///Electron candidates
-			 if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
-				if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
-					qadcaData[4] = 1.5;					
+			///Checking the effect of the improver in the resolution for hijing events separetely
+			if(fIsMC){
+				Int_t trkLabel = TMath::Abs(track->GetLabel());
+				Int_t labelm = GetPrimary(trkLabel,fMCarray);///gives the label of first mother
+				AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(labelm);
+				Int_t trkIndexPrimHFE= AODMCtrack->GetLabel();///gives index of the particle in original MCparticle array (labelm and trkIndexPrimHFE are the same, so I don't understand why this is done)
+            
+				///Particle generator:
+				if(trkIndexPrimHFE < fNpureMC){
+					fDCAxy_pt_had_onlyDCA_Hijing->Fill(fPt,DCAxy);
 				}
-			 }
-        
-			Double_t ITSNcls = atrack->GetITSNcls();
-			//cout<<"atrack->GetITSNcls() = "<<atrack->GetITSNcls()<<endl;
-            
-			///ITS Chi2            
-			qadcaData[2] = atrack->GetITSchi2()/ITSNcls; 
-			//cout<<"track->GetITSchi2() = "<<track->GetITSchi2()<<endl;
-            
-			///Fraction of shared clusters in the ITS
-			Bool_t HasSharedCls = kFALSE;
-			Double_t ITSNSharedcls = 0;
-			for(int itsL = 0; itsL < 6; itsL++){
-				HasSharedCls = atrack->HasSharedPointOnITSLayer(itsL);
-				if(HasSharedCls) ITSNSharedcls++;
+				if(trkIndexPrimHFE >= fNpureMC){
+					fDCAxy_pt_had_onlyDCA_Phytia->Fill(fPt,DCAxy);
+				}			
 			}
-			//cout<<"ITSNSharedcls = "<<ITSNSharedcls<<endl;
-            
-                        
-			Double_t fsharedclsITS = ITSNSharedcls/ITSNcls;
-			//cout<<"fsharedclsITS = "<<fsharedclsITS<<endl;
-            
-			qadcaData[3] = fsharedclsITS; 
-         
-			if(qadcaData[4]>0.) fD0Data->Fill(qadcaData);
         }
-        ///-------------------------------------------------------------
         
+        /////////////////////////////////////////////////////////////////////////////////////////////
+		//THnSparse to store the DCA information of Data (electron candidates and charged hadrons)///
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		qadcaData[0] = fPt;
+         
+		qadcaData[1] = DCAxy*track->Charge()*signB;
+			
+		qadcaData[2] = -1.;
+			
+		///Charged pions
+		if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
+		  qadcaData[2] = 0.5;
+		}
+		///Electron candidates
+		if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
+			if(fP <= 2){
+				if(fTOFnSigma >= -4 && fTOFnSigma <= 2){
+					if(fITSnSigma >= -3 && fITSnSigma <= 3){
+						qadcaData[2] = 1.5;	
+					}
+				}
+			}
+			if(fP > 2){
+				if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+					qadcaData[2] = 1.5;					
+				}
+			}
+		}
+
+		if(qadcaData[2]>0.) fD0Data->Fill(qadcaData);
+       
         
+        /////////////////////////////////////////////////////////
+		//Efficiencies of each PID cut for the beauty electrons//
+		////////////////////////////////////////////////////////    
+               
+		///Checking PID cuts separately (for the efficiency)
+		
+		///TPC	
         if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
 			///For the beauty reconstruction efficiency-----------
 			if(fIsMC && fIsAOD){
@@ -1349,49 +1469,122 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 			///----------------------------------------------------
 		}
         
-        if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
-			///For the beauty reconstruction efficiency-----------
-			if(fIsMC && fIsAOD){
-				Bool_t IsHFEMC = IsHFelectronsMC(track);
-				if(IsHFEMC){
-					if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
-						fPtBeautyReconstructedTracksPIDTOF->Fill(fPt);
+        ///TOF low pt
+        if(fP <= 2){
+			if(fTOFnSigma >= -4 && fTOFnSigma <= 2){
+				///For the beauty reconstruction efficiency-----------
+				if(fIsMC && fIsAOD){
+					Bool_t IsHFEMC = IsHFelectronsMC(track);
+					if(IsHFEMC){
+						if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
+							fPtBeautyReconstructedTracksPIDTOF->Fill(fPt);
+						}
+					}
+				}
+			///----------------------------------------------------
+			}
+		}
+		///TOF high pt
+        if(fP > 2){
+			if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+				///For the beauty reconstruction efficiency-----------
+				if(fIsMC && fIsAOD){
+					Bool_t IsHFEMC = IsHFelectronsMC(track);
+					if(IsHFEMC){
+						if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
+							fPtBeautyReconstructedTracksPIDTOF->Fill(fPt);
+						}
+					}
+				}
+			///----------------------------------------------------
+			}
+		} 
+		///ITS low pt
+		if(fP <= 2){
+			if(fITSnSigma >= -3 && fITSnSigma <= 3){
+				///For the beauty reconstruction efficiency-----------
+				if(fIsMC && fIsAOD){
+					Bool_t IsHFEMC = IsHFelectronsMC(track);
+					if(IsHFEMC){
+						if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
+							fPtBeautyReconstructedTracksPIDITS->Fill(fPt);
+						}
+					}
+				}
+			///----------------------------------------------------
+			}
+		}
+		///ITS high pt
+		if(fP > 2){
+				///For the beauty reconstruction efficiency-----------
+				if(fIsMC && fIsAOD){
+					Bool_t IsHFEMC = IsHFelectronsMC(track);
+					if(IsHFEMC){
+						if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
+							fPtBeautyReconstructedTracksPIDITS->Fill(fPt);
+						}
+					}
+				}
+			///----------------------------------------------------
+		}         
+        
+        ///////////////////////////////////////////////////////
+		//V0 electrons from systematic studies of TOF PID cut//
+		/////////////////////////////////////////////////////// 
+		
+		AliPID::EParticleType myv0pid = fV0Tagger->GetV0Info(track->GetID()); /// enum EParticleType: kElectron = 0, kMuon = 1, kPion = 2, etc
+		if(myv0pid == AliPID::kElectron){
+			//cout<<"----------------------V0 electrons --------------------------"<<endl;
+			fTPCnsigma_p_after_V0selection->Fill(fP,fTPCnSigma); ///Cross checking electron signal
+			if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
+				hTOFEffDen->Fill(fPt);
+				if(fP > 2){
+					if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+						hTOFEffNum->Fill(fPt);
+					}
+				}
+				if(fP <= 2){
+					if(fTOFnSigma >= -4 && fTOFnSigma <= 2){
+						hTOFEffNum->Fill(fPt);
 					}
 				}
 			}
-			///----------------------------------------------------
-		}          
-        
-               
+		}
+		
+ 
         //=======================================================================
-        // Here the PID cuts defined in the file "Config.C" is applied
-        //=======================================================================
-        Int_t pidpassed = 1;
-        AliHFEpidObject hfetrack;
-        hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
-        hfetrack.SetRecTrack(track);
-        hfetrack.SetPP();	//proton-proton analysis
-        if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
+        // Here the PID cuts are applied
+        //=======================================================================        
         
-        if(pidpassed==0) continue;
-        
-        //=======================================================================
-        // QA plots after PID selection
-        //=======================================================================
-        
-        
-        ///For the beauty reconstruction efficiency-----------
+        if(fTPCnSigma <= ftpcPIDmincut || fTPCnSigma >= ftpcPIDmaxcut) continue;
+		if(fP <= 2){
+			if(fTOFnSigma <= -4 || fTOFnSigma >= 2) continue;
+			if(fITSnSigma <= -3 || fITSnSigma >= 3) continue;
+		}
+		if(fP > 2){
+			if(fTOFnSigma <= ftofPIDmincut || fTOFnSigma >= ftofPIDmaxcut) continue;
+		}
+		//cout<< "fTOFnSigma = " <<fTOFnSigma<< "fP = "<< fP <<endl;
+
+        /////////////////////////
+		//AFTER PID SELECTION////
+		/////////////////////////
+        ///Beauty reconstruction efficiency block-----------
          if(fIsMC && fIsAOD){
 			Bool_t IsHFEMC = IsHFelectronsMC(track);
 			if(IsHFEMC){
 				if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
 					fPtBeautyReconstructedTracksPID->Fill(fPt);
+					
+					///Matrix for the unfolding
+					fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+					fPtBeautyPtrecVsPtparticle->Fill(fMCparticle->Pt(),fPt);
+					
 				}
 			}
 		}
 		///----------------------------------------------------
-        
-        
+
         ///After TOF and TPC cuts
         fTPC_p3->Fill(fP,fTPCsignal);
         fTPCnsigma_p3->Fill(fP,fTPCnSigma);
@@ -1411,7 +1604,9 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         fDCAz_pt_ele->Fill(fPt,DCAz);
               
         
-        ///Using thnSparse to store the DCA in MC-----------------------
+        /////////////////////////////////////////////////
+		//THnSparse to store the DCA information of MC///
+		/////////////////////////////////////////////////
         if(fIsMC && fIsAOD){
             
             Int_t trkLabel = TMath::Abs(track->GetLabel());
@@ -1436,40 +1631,41 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 			///Pt
             qadca[0] = fPt;
             
+            ///Selecting particle
+            qadca[1]=-1.; 
+            
             ///------------
             if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212) qadca[1]=10.5; ///to check DCA of protons
             if(TMath::Abs(fMCparticle->GetPdgCode()) == 321) qadca[1]=11.5; ///to check DCA of kaons
             ///------------
-            
-            ///Selecting electron source
-            qadca[1]=-1.;   
-            qadca[8]=-1.;       
-            
+
+            /////////////////////////
+			//Electrons from charm///
+			/////////////////////////
             Bool_t IsHFEMC = IsHFelectronsMC(track);
             if(IsHFEMC){
                 if(fIsFromD){
                     fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
                     fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
                     pdg_mother = fMCparticleMother->GetPdgCode();
+                    
                     if(TMath::Abs(pdg_mother)>400 && TMath::Abs(pdg_mother)<500){///charmed meson 
-						 qadca[8]=0.5;
-						 
-						if(TMath::Abs(pdg_mother) == 421) qadca[8]=16.5; ///to check DCA D0
-						if(TMath::Abs(pdg_mother) == 411) qadca[8]=17.5; ///to check DCA D+-
-						if(TMath::Abs(pdg_mother) == 433) qadca[8]=18.5; ///to check DCA Ds 
-						
+						qadca[1]=0.5; 
+						if(TMath::Abs(pdg_mother) == 421) qadca[1]=16.5; ///to check DCA D0
+						if(TMath::Abs(pdg_mother) == 411) qadca[1]=17.5; ///to check DCA D+-
+						if(TMath::Abs(pdg_mother) == 433) qadca[1]=18.5; ///to check DCA Ds 
 											 
 						 hCharmMotherPt->Fill(fMCparticleMother->Pt());
-						 
 						 hCharmMotherPt_vsElecPt->Fill(fPt,fMCparticleMother->Pt());
 						 hElecPt_vsCharmMotherPt->Fill(fMCparticleMother->Pt(),fPt);
-						 
 						 fDCAxy_pt_charmbef->Fill(fPt,DCAxy*track->Charge()*signB);
 						 
-						 ///(Weight for each pT bin starting at one - charm correction)
+						 ///Correcting pT spectrum
+						 ///(Weight for each electron pT bin starting at one - charm correction)
 						 float probAcceptD = -999;
 						 if(fMCparticleMother->Pt() > 30) continue;
-						 if(fMCparticleMother->Pt() < fPt){
+						 
+						 if(fMCparticleMother->Pt() < fPt){ ///Accept all D mesons with pt smaller than the electrons pt
 							 probAcceptD = 1;
 						 }
 						 else{
@@ -1497,38 +1693,41 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 							if(fPt >=9 && fPt < 10) probAcceptD = fDcorr15->Eval(fMCparticleMother->Pt());
 						}
 						 
-						 float a = gRandom->Uniform(0,1);
+						 float a = gRandom->Uniform(0,1); ///Random number between 0 and 1
 						 //cout<<"fPt = "<<fPt<<endl;
 						 //cout<<"fMCparticleMother->Pt() = "<<fMCparticleMother->Pt()<<endl;
 						 //cout<<"probAcceptD = "<<probAcceptD<<endl;
 						 //cout<<"a = "<<a<<endl;
 						 if(a < probAcceptD){
 							qadca[1]=7.5;
-							hCharmMotherPt_corr->Fill(fMCparticleMother->Pt());
-							hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt());
-							 
-							hCharmMotherPt_vsElecPt_corr->Fill(fPt,fMCparticleMother->Pt());
-							hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt);
-							
-							fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB);
-														 
 							if(TMath::Abs(pdg_mother) == 421) qadca[1]=12.5; ///to check DCA D0 - corrected
 							if(TMath::Abs(pdg_mother) == 411) qadca[1]=13.5; ///to check DCA D+- - corrected
-							if(TMath::Abs(pdg_mother) == 433) qadca[1]=14.5; ///to check DCA Ds  - corrected							 
+							if(TMath::Abs(pdg_mother) == 433) qadca[1]=14.5; ///to check DCA Ds  - corrected	
+							
+							hCharmMotherPt_corr->Fill(fMCparticleMother->Pt());
+							hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt());
+							hCharmMotherPt_vsElecPt_corr->Fill(fPt,fMCparticleMother->Pt());
+							hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt);
+							fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB);						 
 						 }												 
 					}
+					
 					if(TMath::Abs(pdg_mother)>4000 && TMath::Abs(pdg_mother)<5000){///charmed baryon
 						 qadca[1]=1.5;
 						 if(TMath::Abs(pdg_mother) == 4122) qadca[1]=15.5; ///to check DCA Lc
 					}
-                }
+                }//end of electrons from charm
                 
+                //////////////////////////
+				//Electrons from beauty///
+				//////////////////////////
                 if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
                     fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
                     fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
                     pdg_mother = fMCparticleMother->GetPdgCode();
+                    
                     if(fIsFromMesonB || fIsFromMesonBD){///beauty meson 
-						qadca[8]=2.5;
+						qadca[1]=2.5;
 						hBeautyMotherPt->Fill(fMCparticleMother->Pt(),fPt);
 						fDCAxy_pt_beautybef->Fill(fPt,DCAxy*track->Charge()*signB);
 						
@@ -1566,6 +1765,7 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 								}
 							}
 						}
+						
 						float b = gRandom->Uniform(0,1);
 						//cout<<"fPt = "<<fPt<<endl;
 						//cout<<"fMCparticleMother->Pt() = "<<fMCparticleMother->Pt()<<endl;
@@ -1577,12 +1777,17 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 							qadca[1]=19.5;
 						}
 					}
+					
 					if(fIsFromBarionB || fIsFromBarionBD){///beauty baryon
 						qadca[1]=3.5;
 					}
-                }
-            }
-           
+                }//end of electrons from beauty
+            }//end of hfe
+            
+            
+           ////////////////////////////////
+		   //Non Heavy-Flavour electrons///
+		   ////////////////////////////////
            if(!IsHFEMC){
                 fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
                 pdg = fMCparticle->GetPdgCode();
@@ -1598,14 +1803,21 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 					if(TMath::Abs(pdg_mother) == 221) qadca[1]=5.5;
 					if(TMath::Abs(pdg_mother) == 22) qadca[1]=6.5;
 					Int_t fType = GetPi0EtaType(fMCparticleMother,fMCarray);
-					qadca[7]=fType;
+					qadca[5]=fType;
                 }
             }
-            
-                       
-            ///DCAxy
+
+     
+            ///DCAxy x charge x B sign
             qadca[2]=DCAxy*track->Charge()*signB;
             
+            ///DCAxy
+            qadca[6]=DCAxy;
+            
+            ///track charge
+            qadca[7]=track->Charge();
+            
+            /*
             Double_t ITSNcls = atrack->GetITSNcls();
             //cout<<"atrack->GetITSNcls() = "<<atrack->GetITSNcls()<<endl;
             
@@ -1621,28 +1833,33 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 				if(HasSharedCls) ITSNSharedcls++;
 			}
 			//cout<<"ITSNSharedcls = "<<ITSNSharedcls<<endl;
-            
-                        
+
             Double_t fsharedclsITS = ITSNSharedcls/ITSNcls;
             //cout<<"fsharedclsITS = "<<fsharedclsITS<<endl;
             
             qadca[6] = fsharedclsITS; 
+            */
                         
             ///Fill
             if(qadca[1]>0.) fD0->Fill(qadca);
-            
-            
         }
-        ///-------------------------------------------------------------
+        
        
 
     }//End of track loop
     
-    //=======================================================================
-    
+    fNAnalizedTracks->Fill(NAnalizedTracks);
+	fNAnalizedTracksHijing->Fill(NAnalizedTracksHijing);
+	
+       
     delete fListOfmotherkink;
     PostData(1, fOutputList);
-}
+    
+}//end of main loop
+
+
+
+
 
 //=======================================================================
 void AliAnalysisHFETPCTOFBeauty::Terminate(Option_t *)
@@ -1658,8 +1875,8 @@ void AliAnalysisHFETPCTOFBeauty::Terminate(Option_t *)
         return;
     }
 }
-
 //=======================================================================
+
 
 //=======================================================================
 Bool_t AliAnalysisHFETPCTOFBeauty::ProcessCutStep(Int_t cutStep, AliVParticle *track)
@@ -1670,7 +1887,10 @@ Bool_t AliAnalysisHFETPCTOFBeauty::ProcessCutStep(Int_t cutStep, AliVParticle *t
     if(!fCFM->CheckParticleCuts(cutStep + kMCOffset, track)) return kFALSE;
     return kTRUE;
 }
+//=======================================================================
 
+
+//=======================================================================
 //Setter for the PID cuts (TOF and TPC)
 void AliAnalysisHFETPCTOFBeauty::SetPIDCuts(Float_t tpcPIDmincut, Float_t tpcPIDmaxcut, Float_t tofPIDmincut, Float_t tofPIDmaxcut) {
     ftpcPIDmincut = tpcPIDmincut;
@@ -1678,11 +1898,16 @@ void AliAnalysisHFETPCTOFBeauty::SetPIDCuts(Float_t tpcPIDmincut, Float_t tpcPID
     ftofPIDmincut = tofPIDmincut;
     ftofPIDmaxcut = tofPIDmaxcut;
 }
+//=======================================================================
+
+
+//=======================================================================
 //Setter for the Eta cut
 void AliAnalysisHFETPCTOFBeauty::SetEtaCut(Float_t EtaMin, Float_t EtaMax){
     fEtaMin = EtaMin;
     fEtaMax = EtaMax;
 }
+//=======================================================================
 
 
 //=======================================================================
@@ -1966,6 +2191,9 @@ Bool_t AliAnalysisHFETPCTOFBeauty::FindMother(Int_t mcIndex)
 }
 //======================================================================
 
+
+//=======================================================================
+
 Bool_t AliAnalysisHFETPCTOFBeauty::IsHFelectronsMC(AliVTrack *track){
     fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
     float pdg = fMCparticle->GetPdgCode();
@@ -1988,8 +2216,10 @@ Bool_t AliAnalysisHFETPCTOFBeauty::IsHFelectronsMC(AliVTrack *track){
         return kFALSE;
     }
 }
+//=======================================================================
 
-//_________________________________________ for taggign efficiency weights ________________________________________
+
+//=======================================================================
 Int_t AliAnalysisHFETPCTOFBeauty::GetPi0EtaType(AliAODMCParticle *pi0eta, TClonesArray *mcArray){
     //
     // Return what type of pi0, eta it is
@@ -2027,9 +2257,10 @@ Int_t AliAnalysisHFETPCTOFBeauty::GetPi0EtaType(AliAODMCParticle *pi0eta, TClone
         
     }
 }
+//=======================================================================
 
 
-//___________________________________________________________________________________________________________
+//=======================================================================
 
 Int_t AliAnalysisHFETPCTOFBeauty::GetElecSourceType(AliAODMCParticle *electron, TClonesArray *mcArray,Double_t &ptm){
     //
@@ -2096,8 +2327,10 @@ Int_t AliAnalysisHFETPCTOFBeauty::GetElecSourceType(AliAODMCParticle *electron, 
     return kOthersE;
     
 }
+//=======================================================================
 
-//_______________________________________________________________________________________
+
+//=======================================================================
 Bool_t AliAnalysisHFETPCTOFBeauty::GetNMCPartProduced()
 {
     //Get number of MC particles produced by generators.
@@ -2139,9 +2372,10 @@ Bool_t AliAnalysisHFETPCTOFBeauty::GetNMCPartProduced()
     
     return kTRUE;
 }
+//=======================================================================
 
-//_________________________________________
 
+//=======================================================================
 Int_t AliAnalysisHFETPCTOFBeauty::GetPrimary(Int_t id, TClonesArray *mcArray){
     
     // Return number of primary that has generated track
@@ -2155,9 +2389,10 @@ Int_t AliAnalysisHFETPCTOFBeauty::GetPrimary(Int_t id, TClonesArray *mcArray){
         if(parent<0) return current;
     }
 }
-//_________________________________________
+//=======================================================================
 
-//_________________________________________
+
+//=======================================================================
 Bool_t AliAnalysisHFETPCTOFBeauty::PassCorrCuts(AliAODEvent *fAOD)
 {
   //event selection cuts
@@ -2203,15 +2438,9 @@ Bool_t AliAnalysisHFETPCTOFBeauty::PassCorrCuts(AliAODEvent *fAOD)
 	}
   
 }
+//=======================================================================
 
-Double_t CrossOverLc(const double a, const double b, const double x){
-    if(x<b-a/2) return 1.0;
-    else if(x>b+a/2) return 0.0;
-    else return cos(((x-b)/a+0.5)*TMath::Pi())/2+0.5;
-}
-Double_t CrossOverRc(const double a, const double b, const double x){
-    return 1-CrossOverLc(a,b,x);
-}
 
-//_________________________________________
+
+
 

@@ -101,7 +101,7 @@ public:
    * @brief Switch on-/off- study of exotic triggers (default: off)
    * @param[in] doStudy If true study of exotic triggers is enabled
    */
-  void SetStudyExoticTriggers(Bool_t doStudy) { fStudyExoticTriggers = doStudy; }
+  void SetStudyExoticTriggers(Bool_t doStudy) { fStudyExoticTriggers = doStudy; SetCaloTriggerPatchInfoName("EmcalTriggers"); }
 
   /**
    * @brief Set the virtual track selection.

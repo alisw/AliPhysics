@@ -185,15 +185,18 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
 /// \return tag with primary particle at the origin of the cluster/track.
 /// Here we have only one input MC label not multiple. 
 ///
-/// \param labels: list of MC labels of cluster
-/// \param mcevent: pointer to MCEvent()
-/// \param selectHeaderName String that must have the header name, for pythia event header/process selection
+/// \param labels  : list of MC labels of cluster
+/// \param mcevent : pointer to MCEvent()
+/// \param selectHeaderName : String that must have the header name, for pythia event header/process selection
+/// \param clusE      : Input cluster energy
 //_____________________________________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, AliMCEvent* mcevent, TString selectHeaderName)
+Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, AliMCEvent* mcevent, 
+                                      TString selectHeaderName, Float_t clusE)
 {      
-  Int_t labels[] = { label };
+  Int_t labels [] = { label };
+  UShort_t edep[] = { 0     };
   
-  return CheckOrigin(labels, 1, mcevent, selectHeaderName);  
+  return CheckOrigin(labels, edep, 1, mcevent, selectHeaderName, clusE);  
 }	
 
 //__________________________________________________________________________________________
@@ -207,15 +210,17 @@ Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, AliMCEvent* mcevent, TString 
 /// Array of clusters needed in case we want to check if the cluster originated from a 
 /// pi0/eta meson has the companion decay photon in the list of clusters.
 ///
-/// \param labels: list of MC labels of cluster
-/// \param nlabels: total number of labels attached to cluster
-/// \param mcevent: pointer to MCEvent()
-/// \param selectHeaderName String that must have the header name, for pythia event header/process selection
-/// \param arrayCluster: list of calorimeter clusters, needed to check lost meson decays
+/// \param labels   : list of MC labels of cluster
+/// \param edepFrac : fraction of label contribution to the cluster energy, not really used, just in case
+/// \param nlabels  : total number of labels attached to cluster
+/// \param mcevent  : pointer to MCEvent()
+/// \param selectHeaderName : String that must have the header name, for pythia event header/process selection
+/// \param clusE    : Input cluster energy
+/// \param arrayCluster     : list of calorimeter clusters, needed to check lost meson decays
 //__________________________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
-                                      AliMCEvent* mcevent,  TString selectHeaderName,
-                                      const TObjArray* arrayCluster)
+Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, const UShort_t * edepFrac, Int_t nlabels,
+                                      AliMCEvent* mcevent, TString selectHeaderName,  
+                                      Float_t clusE, const TObjArray* arrayCluster)
 {    
   if( nlabels <= 0 )
   {
@@ -395,7 +400,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
     
     AliDebug(2,"First mother is directly pi0, not decayed by generator");
     
-    CheckOverlapped2GammaDecay(labels,nlabels, iMom, mcevent, tag); //set to kMCPi0 if 2 gammas in same cluster
+    CheckOverlapped2GammaDecay(labels, edepFrac, nlabels, iMom, clusE, mcevent, tag); //set to kMCPi0 if 2 gammas in same cluster
   }
   else if(mPdg == 221)
   {
@@ -403,7 +408,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
     
     AliDebug(2,"First mother is directly eta, not decayed by generator");
     
-    CheckOverlapped2GammaDecay(labels,nlabels, iMom, mcevent, tag); //set to kMCEta if 2 gammas in same cluster
+    CheckOverlapped2GammaDecay(labels, edepFrac, nlabels, iMom, clusE, mcevent, tag); //set to kMCEta if 2 gammas in same cluster
   }
   //Photons  
   else if(mPdg == 22)
@@ -417,7 +422,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       AliDebug(2,"Generator pi0 decay photon");
       
       // Set to kMCPi0 if 2 gammas in same cluster
-      CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcevent, tag); 
+      CheckOverlapped2GammaDecay(labels, edepFrac, nlabels, iParent, clusE, mcevent, tag); 
                                                                             
       // In case it did not merge, check if the decay companion is lost
       if(!CheckTagBit(tag, kMCPi0) && !CheckTagBit(tag,kMCDecayPairInCalo) && !CheckTagBit(tag,kMCDecayPairLost))
@@ -434,7 +439,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       AliDebug(2,"Generator eta decay photon");
       
       // Set to kMCEta if 2 gammas in same cluster
-      CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcevent, tag); 
+      CheckOverlapped2GammaDecay(labels, edepFrac, nlabels, iParent, clusE, mcevent, tag); 
       
       // In case it did not merge, check if the decay companion is lost
       if(!CheckTagBit(tag, kMCEta) && !CheckTagBit(tag,kMCDecayPairInCalo) && !CheckTagBit(tag,kMCDecayPairLost))
@@ -612,10 +617,18 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
 //_________________________________________________________________________________________
 /// Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. 
 /// Input are AOD AliVParticles.
+///
+/// \param labels     : list of MC labels of cluster
+/// \param edepFrac   : fraction of label contribution to the cluster energy, not really used, just in case
+/// \param nlabels    : total number of labels attached to cluster
+/// \param mesonIndex : Label of mother pi0/eta
+/// \param clusE      : Input cluster energy
+/// \param mcevent    : pointer to MCEvent()
+/// \param tag        : Modified MC tag map with decission on overalapped decay
 //_________________________________________________________________________________________
-void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, 
-                                                    Int_t mesonIndex, const AliMCEvent* mcevent, 
-                                                    Int_t & tag)
+void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const UShort_t *edepFrac, 
+                                                    Int_t nlabels, Int_t mesonIndex, Float_t clusE, 
+                                                    const AliMCEvent* mcevent, Int_t & tag)
 {  
   if(labels[0] < 0 || labels[0] > mcevent->GetNumberOfTracks() || nlabels <= 1)
   {
@@ -623,9 +636,10 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
     return;
   }
   
+  
   AliVParticle * meson = mcevent->GetTrack(mesonIndex);
   Int_t mesonPdg = meson->PdgCode();
-  if(mesonPdg != 111 && mesonPdg != 221)
+  if ( mesonPdg != 111 && mesonPdg != 221 )
   {
     AliWarning(Form("Wrong pi0/eta PDG : %d",mesonPdg));
     return;
@@ -633,8 +647,33 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
   
   AliDebug(2,Form("pdg %d, label %d, ndaughters %d", mesonPdg, mesonIndex, meson->GetNDaughters()));
   
+//  Bool_t convOrg = CheckTagBit(tag,kMCConversion);
+//  printf("pdg %d, label %d, ndaughters %d, E prim %2.2f, E clus %2.2f, conv? %d\n", 
+//         mesonPdg, mesonIndex, meson->GetNDaughters(),meson->E(),clusE, convOrg);
+  
+  // Reject very low energy mesons unlikely to merge
+  // Pi0s merge from ~5 GeV and Eta's from ~20 GeV
+  if ( ( meson->E() < 5  && mesonPdg == 111 ) || 
+       ( meson->E() < 20 && mesonPdg == 221 )) 
+  {
+    AliDebug(3,Form("Too low generated meson Energy to decay overlap: pdg %d, E prim %2.2f\n",
+                    mesonPdg,meson->E()));
+    
+    return; 
+  }
+  
+  // Check energy of input cluster and meson, if too low cluster energy, 
+  // discard overlap, it will be likely some weird large conversion
+  if ( clusE/meson->E() < 0.75 ) 
+  {
+    AliDebug(3,Form("Too low generated vs reconstructed meson Energy : pdg %d, E prim %2.2f, E clus %2.2f\n",
+                    mesonPdg,meson->E(),clusE));
+  
+    return;
+  }
+  
   // Get the daughters
-  if(meson->GetNDaughters() != 2)
+  if ( meson->GetNDaughters() != 2 )
   {
 //    if(meson->GetNDaughters()>2)
 //    {
@@ -653,6 +692,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
 //    }
     
     AliDebug(2,Form("Not overlapped. Number of daughters is %d, not 2",meson->GetNDaughters()));
+    
     return;
   }
   
@@ -670,20 +710,37 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
   AliVParticle *photon1 = mcevent->GetTrack(iPhoton1);
     
   // Check if both daughters are photons
-  if(photon0->PdgCode() != 22 && photon1->PdgCode()!=22)
+  if ( photon0->PdgCode() != 22 && photon1->PdgCode() != 22 )
   {
     AliWarning(Form("Not overlapped. PDG:  daughter 1 = %d, of daughter 2 = %d",photon0->PdgCode(),photon1->PdgCode()));
+
     return;
   }
   
   AliDebug(2,Form("Daughter labels : photon0 = %d, photon1 = %d",iPhoton0,iPhoton1));
+  
+  
+  // Avoid cases with large opening angle, usually weird conversions, with one electron/positron
+  // falling into the other photon cluster
+  fDaughMom .SetPxPyPzE(photon0->Px(),photon0->Py(),photon0->Pz(),photon0->E());
+  fDaughMom2.SetPxPyPzE(photon1->Px(),photon1->Py(),photon1->Pz(),photon1->E());
+  Double_t angle = fDaughMom.Angle(fDaughMom2.Vect());
+  
+  // Reject pairs with opening angle smaller than 4 EMCal cells size
+  // careful in case of PHOS, but it should be safe enough
+  if ( angle/0.0143 > 4 )
+  {
+    AliDebug(2,Form("Not an overlapped pair, opening angle %f rad, %2.2f EMCal cells",angle,angle/0.0143));
+      
+    return;
+  }
   
   // Check if both photons contribute to the cluster
   Bool_t okPhoton0 = kFALSE;
   Bool_t okPhoton1 = kFALSE;
   
   AliDebug(3,"Labels loop:");
-  
+
   Bool_t conversion = kFALSE;
   
 //  TLorentzVector d0, d1;
@@ -694,11 +751,11 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
   for(Int_t i = 0; i < nlabels; i++)
   {
     AliDebug(3, Form("\t label %d/%d: %d, ok? %d, %d", i, nlabels, labels[i], okPhoton0, okPhoton1));
-    
+        
     if ( labels[i] < 0 ) continue;
     
     // If we already found both, break the loop
-    if(okPhoton0 && okPhoton1) break;
+    if ( okPhoton0 && okPhoton1 ) break;
     
     Int_t index = 	labels[i];
     if      (iPhoton0 == index)
@@ -713,22 +770,31 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
     }
     
     // Trace back the mother in case it was a conversion
-    if(index >= mcevent->GetNumberOfTracks())
+    if ( index >= mcevent->GetNumberOfTracks() )
     {
       AliWarning(Form("Particle index %d larger than size of list %d!!",index,mcevent->GetNumberOfTracks()));
       continue;
     }
     
     AliVParticle * daught =  mcevent->GetTrack(index);
+    
+//    printf("\t parent index %d, pdg %d, E %2.2f, pT  %2.2f, eta %2.2f, phi %2.2f\n",
+//          index,daught->PdgCode(),daught->E(),daught->Pt(),daught->Eta()/0.0143,daught->Phi()/0.0143);
+    
     Int_t tmpindex = daught->GetMother();
     AliDebug(3,Form("Conversion? : mother %d",tmpindex));
     
-    while(tmpindex>=0)
+    while ( tmpindex >= 0 )
     {
       // MC particle of interest is the mother
       AliDebug(3,Form("\t parent index %d",tmpindex));
       daught   =  mcevent->GetTrack(tmpindex);
       //printf("tmpindex %d\n",tmpindex);
+      
+//      if ( daught->Pt()>0.1 )
+//        printf("\t new parent index %d, pdg %d, E %2.2f, pT  %2.2f, eta %2.2f, phi %2.2f\n",
+//               tmpindex,daught->PdgCode(),daught->E(),daught->Pt(),daught->Eta()/0.0143,daught->Phi()/0.0143);
+      
       if      (iPhoton0 == tmpindex)
       {
         conversion = kTRUE;
@@ -751,9 +817,22 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
   }//loop on list of labels
   
   //If both photons contribute tag as the corresponding meson.
-  if(okPhoton0 && okPhoton1)
+  if ( okPhoton0 && okPhoton1 )
   {
     AliDebug(2,Form("%s OVERLAPPED DECAY",(TDatabasePDG::Instance()->GetParticle(mesonPdg))->GetName()));
+    
+//    if ( meson->E() < 7 )
+//    {
+//      printf("pdg %d, label %d, ndaughters %d, E %2.2f, pT %2.2f\n", 
+//             mesonPdg, mesonIndex, meson->GetNDaughters(),meson->E(),meson->Pt());
+//      printf("\t %s OVERLAPPED DECAY, conversion %d?\n",
+//             (TDatabasePDG::Instance()->GetParticle(mesonPdg))->GetName(),conversion);
+//      
+//      printf("\t Daughter labels : photon0 = %d, E %2.2f, pT %2.2f, photon1 = %d, E %2.2f, pT %2.2f; angle/cell %2.2f\n",
+//             iPhoton0,photon0->E(),photon0->Pt(),
+//             iPhoton1,photon1->E(),photon1->Pt(),
+//             angle/0.0143); 
+//    }
     
     if(!CheckTagBit(tag,kMCConversion) && conversion)
     {
@@ -832,9 +911,9 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
         SetTagBit(tag, kMCDecayPairInCalo);
         return ;
       }
-      else if ( label== iParent || label== iMom )
+      else if ( label == iParent || label == iMom  || label < 0 )
       {
-        //printf("\t \t skip\n");
+        AliDebug(1,Form("Skip checking label %d, (iParent %d, iMom %d)",label,iParent,iMom));
         continue;
       }
       else // check the ancestry
@@ -897,8 +976,8 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
           continue;
         }
         
-      }
-    }
+      } // last else, check the ancestry 
+    } // label loop
   } // cluster loop
   
   SetTagBit(tag, kMCDecayPairLost);
@@ -1005,9 +1084,9 @@ TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, Bool_t check)
     {
       while(pdg != 94)
       {
-        if(tmp->GetFirstDaughter()==-1) return fJetsList;
+        if(tmp->GetDaughterFirst()==-1) return fJetsList;
         
-        tmp = mcevent->GetTrack(tmp->GetFirstDaughter());
+        tmp = mcevent->GetTrack(tmp->GetDaughterFirst());
         pdg = tmp->PdgCode();
       }//while
       
@@ -1018,8 +1097,8 @@ TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, Bool_t check)
       
       fJetsList->Add(jet1);
       
-      //printf("jet 1:  first daughter %d, last daughter %d\n", tmp->GetFirstDaughter(), tmp->GetLastDaughter());
-      //tmp = stack->Particle(tmp->GetFirstDaughter());
+      //printf("jet 1:  first daughter %d, last daughter %d\n", tmp->GetDaughterFirst(), tmp->GetDaughterLast());
+      //tmp = stack->Particle(tmp->GetDaughterFirst());
       //tmp->Print();
       //jet1->Print();
       AliDebug(1,Form("HERWIG Jet 1: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
@@ -1033,9 +1112,9 @@ TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, Bool_t check)
     {
       while(pdg != 94)
       {
-        if(tmp->GetFirstDaughter()==-1) return fJetsList;
+        if(tmp->GetDaughterFirst()==-1) return fJetsList;
         
-        tmp = mcevent->GetTrack(tmp->GetFirstDaughter());
+        tmp = mcevent->GetTrack(tmp->GetDaughterFirst());
         pdg = tmp->PdgCode();
       }//while
       
@@ -1049,8 +1128,8 @@ TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, Bool_t check)
       //jet2->Print();
       AliDebug(2,Form("HERWIG Jet 2: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
                       jet2->GetFirstMother(),jet2->GetStatusCode(),jet2->Pt(),jet2->Energy(),jet2->Phi()*TMath::RadToDeg(),jet2->Eta()));
-      //Int_t first =  tmp->GetFirstDaughter();
-      //Int_t last  =  tmp->GetLastDaughter();
+      //Int_t first =  tmp->GetDaughterFirst();
+      //Int_t last  =  tmp->GetDaughterLast();
       //printf("jet 2:  first daughter %d, last daughter %d, pdg %d\n",first, last, tmp->GetPdgCode());
       //	for(Int_t d = first ; d < last+1; d++){
       //						tmp = stack->Particle(d);
@@ -1121,7 +1200,7 @@ TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliMCEvent* mcev
 }
 
 //_________________________________________________________________________________________
-// \return the kinematics of the particle that generated the signal.
+/// \return the kinematics of the particle that generated the signal.
 //_________________________________________________________________________________________
 TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliMCEvent* mcevent,
                                              Int_t & pdg, Int_t & status, Bool_t & ok)
@@ -1381,7 +1460,7 @@ void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, 
   else 
   {
     ok = kFALSE;
-    AliInfo(Form("Mother with PDG %d, not found! \n",pdg));
+    AliInfo(Form("Mother with PDG %d, not found!",pdg));
     return;
   }      
   
@@ -1505,8 +1584,8 @@ Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
 /// Get and set internally the generated process
 /// pythia version and first generated particle in case of cocktail events
 ///
-/// \param mcevent Access to AliVMCEvent
-/// \param selectHeaderName String that must have the header name
+/// \param mcevent          : Access to AliVMCEvent
+/// \param selectHeaderName : String that must have the header name
 ///
 //________________________________________________________
 AliGenPythiaEventHeader * AliMCAnalysisUtils::CheckAndGetPythiaEventHeader

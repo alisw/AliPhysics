@@ -11,7 +11,8 @@ void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int
 		    Bool_t bOldApproach=kFALSE, Bool_t shrinkSP=kFALSE, Bool_t swapAssumption=kFALSE, Int_t nTPCClusters=70 ) {
   TFile *filecuts = TFile::Open( fileNameCuts.Data() );
   if( (!filecuts) || ( filecuts && !filecuts->IsOpen()) ){
-    AliFatal("Could not open cuts file.");
+    Printf("FATAL: Could not open cuts file.");
+    return NULL;
   }
 
   TString fileName = AliAnalysisManager::GetCommonFileName();
@@ -76,7 +77,8 @@ void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int
   case ( AliRDHFCuts::kD0toKpiCuts ):
     AliRDHFCutsD0toKpi *myCutsD0 = (AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiCuts");
     if(!myCutsD0) {
-      AliFatal("Problems reaching D0toKpiCuts");
+      Printf("FATAL: Problems reaching D0toKpiCuts");
+      return NULL;
     }
     taskSel = new AliAnalysisTaskFlowD2H( Form("TaskD0Selector_%s",thecuts.Data()), 
 					  cutsRFPTPC, cutsRFPVZE, myCutsD0, nDmeson );
@@ -84,7 +86,8 @@ void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int
   case ( AliRDHFCuts::kDstarCuts ):
     AliRDHFCutsDStartoKpipi *myCutsDStar = (AliRDHFCutsDStartoKpipi*)filecuts->Get("DStartoKpipiCuts");
     if(!myCutsDStar) {
-      AliFatal("Problems reaching DStarToKpipiCuts");
+      Printf("FATAL: Problems reaching DStarToKpipiCuts");
+      return NULL;
     }
     taskSel = new AliAnalysisTaskFlowD2H( Form("TaskDStarSelector_%s",thecuts.Data()),
 					  cutsRFPTPC, cutsRFPVZE, myCutsDStar, nDmeson);
@@ -92,7 +95,8 @@ void AddTaskFlowD2H(TString fileNameCuts, TString folderName, Int_t nDmeson, Int
   case (AliRDHFCuts::kDplusCuts):
     AliRDHFCutsDplustoKpipi *myCutsDplus = (AliRDHFCutsDplustoKpipi*)filecuts->Get("AnalysisCuts");
     if(!myCutsDplus) {
-      AliFatal("Problems reaching AnalysisCuts");
+      Printf("FATAL: Problems reaching AnalysisCuts");
+      return NULL;
     }
     taskSel = new AliAnalysisTaskFlowD2H( Form("TaskDplusSelector_%s",thecuts.Data()), 
 					  cutsRFPTPC, cutsRFPVZE, myCutsDplus, nDmeson );

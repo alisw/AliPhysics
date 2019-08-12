@@ -194,7 +194,7 @@ protected:
   Bool_t                              fEnableSumw2;               ///< Enable sumw2 during histogram creation
   Bool_t                              fUseRecalcPatches;          ///< Switch between offline (FEE) and recalc (L1) patches
   Bool_t                              fRequestCentrality;         ///< Switch for request of centrality selection
-  Double_t                            fEventCentrality;           //!<1! Event centrality
+  Double_t                            fEventCentrality;           //!<! Event centrality
 
 private:
 

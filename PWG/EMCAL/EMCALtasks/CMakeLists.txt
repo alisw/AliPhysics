@@ -63,6 +63,7 @@ set(SRCS
   AliEMCALConfigHandler.cxx
   AliEMCALConfigurationMatcher.cxx
   AliAnalysisTaskEmcalTriggerSelection.cxx
+  AliAnalysisTaskEmcalTriggerNormalization.cxx
   AliAnalysisTaskEmcalIteratorTest.cxx
   AliEmcalCopyCollection.cxx
   AliEmcalCorrectionEventManager.cxx
@@ -75,9 +76,12 @@ set(SRCS
   AliEmcalCorrectionCellCombineCollections.cxx
   AliEmcalCorrectionClusterizer.cxx
   AliEmcalCorrectionClusterNonLinearity.cxx
+  AliEmcalCorrectionClusterNonLinearityMCAfterburner.cxx
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx
+  AliEmcalCorrectionCellEnergyVariation.cxx
+  AliEmcalCorrectionClusterEnergyVariation.cxx
   AliEmcalCorrectionPHOSCorrections.cxx
   AliAnalysisTaskEmcalOccupancy.cxx
   TestAliEmcalAODFilterBitCuts.cxx

@@ -1,12 +1,13 @@
 /***************************************************************************
               Anders Knospe - last modified on 26 March 2016
-
+              Sushanta Tripathy - last modified on 4 Aug 2018
 *** Configuration script for phi analysis of 2015 pp 5.02 TeV data ***
 ****************************************************************************/
 
 Bool_t ConfigPhiPP5TeV_PID
 (  
- AliRsnMiniAnalysisTask *task, 
+ AliRsnMiniAnalysisTask *task,
+ Bool_t                 HIST, //ST
  Bool_t                 isMC, 
  Bool_t                 isPP,
  const char             *suffix,
@@ -66,6 +67,7 @@ Bool_t ConfigPhiPP5TeV_PID
   /* IM difference    */ Int_t diffID = task->CreateValue(AliRsnMiniValue::kInvMassDiff,kTRUE);
   /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt,kFALSE);
   /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
+  /* spherocity       */ Int_t SpherocityID = task->CreateValue(AliRsnMiniValue::kSpherocity,kFALSE);
   /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta,kFALSE);
   /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY,kFALSE);
   /* 1st daughter pt  */ Int_t fdpt   = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt,kFALSE);
@@ -89,14 +91,16 @@ Bool_t ConfigPhiPP5TeV_PID
   Int_t   useIM  [11]={ 1      ,  1     , 1      ,  1     ,  1     ,  1        ,  2      , 2           ,0       , 1        , 1        };
   TString name   [11]={"Unlike","Mixing","LikePP","LikeMM","Trues" ,"TruesFine","TruesMM","TruesFineMM","Res"   ,"MixingPP","MixingMM"};
   TString comp   [11]={"PAIR"  , "MIX"  ,"PAIR"  ,"PAIR"  , "TRUE" , "TRUE"    ,"TRUE"   ,"TRUE"       ,"TRUE"  ,"MIX"     ,"MIX"     };
-  TString output [11]={"SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE"   ,"SPARSE" ,"SPARSE"     ,"SPARSE","SPARSE"  ,"SPARSE"  };
+  TString output [11]={"SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE"   ,"SPARSE" ,"SPARSE"     ,"SPARSE","SPARSE"  ,"SPARSE"  }; //ST
+  TString outputh [11]={"HIST","HIST","HIST","HIST","HIST","HIST","HIST","HIST","HIST","HIST" ,"HIST"}; //ST
   Int_t   pdgCode[11]={333     , 333    ,333     ,333     , 333    , 333       ,333      ,333          ,333     , 333      ,333       };
   Char_t  charge1[11]={'+'     , '+'    ,'+'     ,'-'     , '+'    , '+'       ,'+'      , '+'         ,'+'     ,'+'       ,'-'       };
   Char_t  charge2[11]={'-'     , '-'    ,'+'     ,'-'     , '-'    , '-'       ,'-'      , '-'         ,'-'     ,'+'       ,'-'       };
 
   for(Int_t i=0;i<9;i++){
     if(!use[i]) continue;
-    AliRsnMiniOutput* out=task->CreateOutput(Form("phi_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
+    if (!HIST) AliRsnMiniOutput* out=task->CreateOutput(Form("phi_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());//ST
+    if (HIST)    AliRsnMiniOutput* out=task->CreateOutput(Form("phi_%s%s",name[i].Data(),suffix),outputh[i].Data(),comp[i].Data());//ST
     out->SetCutID(0,iCutK);
     out->SetCutID(1,iCutK);
     out->SetDaughter(0,AliRsnDaughter::kKaon);
@@ -121,20 +125,26 @@ Bool_t ConfigPhiPP5TeV_PID
      out->AddAxis(ptID,500,0.,50.);//default use mother pt
 
     // axis Z: centrality-multiplicity
-    if(!isPP) out->AddAxis(centID,100,0.,100.);
-    else out->AddAxis(centID,161,-0.5,160.5);
+    //   if(!isPP) out->AddAxis(centID,100,0.,100.);
+    // else out->AddAxis(centID,161,-0.5,160.5);
+
+    if(!isPP) out->AddAxis(centID,100,0.,100.); //ST
+    else out->AddAxis(centID,200,0.,200); //ST
+
+     out->AddAxis(SpherocityID,1000,0.,1.); //ST
     // axis W: pseudorapidity
-    // out->AddAxis(etaID, 20, -1.0, 1.0);
+    //out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
     // out->AddAxis(yID, 10, -0.5, 0.5);
 
     if (polarizationOpt.Contains("J")) out->AddAxis(ctjID,21,-1.,1);
     if (polarizationOpt.Contains("T")) out->AddAxis(cttID,21,-1.,1);
-  }
+    }
 
   if(isMC){   
     //get mothers for phi PDG = 333
-    AliRsnMiniOutput* outm=task->CreateOutput(Form("phi_Mother%s", suffix),"SPARSE","MOTHER");
+    if (!HIST) AliRsnMiniOutput* outm=task->CreateOutput(Form("phi_Mother%s", suffix),"SPARSE","MOTHER");//ST
+    if (HIST)  AliRsnMiniOutput* outm=task->CreateOutput(Form("phi_Mother%s", suffix),"HIST","MOTHER");//ST
     outm->SetDaughter(0,AliRsnDaughter::kKaon);
     outm->SetDaughter(1,AliRsnDaughter::kKaon);
     outm->SetMotherPDG(333);
@@ -143,11 +153,13 @@ Bool_t ConfigPhiPP5TeV_PID
     outm->AddAxis(imID,215,0.985,1.2);
     outm->AddAxis(ptID,500,0.,50.);
     if(!isPP) outm->AddAxis(centID,100,0.,100.);
-    else outm->AddAxis(centID,161,-0.5,160.5);
+    else outm->AddAxis(centID,200,0.,200);
+    outm->AddAxis(SpherocityID,1000,0.,1.); //ST
     if (polarizationOpt.Contains("J")) outm->AddAxis(ctjmID,21,-1.,1.);
     if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,21,-1.,1.);
 
-    AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"SPARSE","MOTHER");
+    if (!HIST) AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"SPARSE","MOTHER");//ST
+    if (HIST) AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"HIST","MOTHER");//ST
     outmf->SetDaughter(0,AliRsnDaughter::kKaon);
     outmf->SetDaughter(1,AliRsnDaughter::kKaon);
     outmf->SetMotherPDG(333);
@@ -156,7 +168,8 @@ Bool_t ConfigPhiPP5TeV_PID
     outmf->AddAxis(imID,215,0.985,1.2);
     outmf->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
     if(!isPP) outmf->AddAxis(centID,100,0.,100.);
-    else outmf->AddAxis(centID,161,-0.5,160.5);
+    else outmf->AddAxis(centID,200,0.,200);
+    outmf->AddAxis(SpherocityID,1000,0.,1.); //ST
     if (polarizationOpt.Contains("J")) outmf->AddAxis(ctjmID,21,-1.,1.);
     if (polarizationOpt.Contains("T")) outmf->AddAxis(cttmID,21,-1.,1.);
 
@@ -187,7 +200,8 @@ Bool_t ConfigPhiPP5TeV_PID
 
     //get reflections
     if(checkReflex){
-      AliRsnMiniOutput* outreflex=task->CreateOutput(Form("phi_reflex%s", suffix),"SPARSE","TRUE");
+      if (!HIST) AliRsnMiniOutput* outreflex=task->CreateOutput(Form("phi_reflex%s", suffix),"SPARSE","TRUE");//ST
+      if (HIST) AliRsnMiniOutput* outreflex=task->CreateOutput(Form("phi_reflex%s", suffix),"HIST","TRUE");//ST
       outreflex->SetDaughter(0,AliRsnDaughter::kKaon);
       outreflex->SetDaughter(1,AliRsnDaughter::kKaon);
       outreflex->SetCutID(0,iCutK);
@@ -197,8 +211,9 @@ Bool_t ConfigPhiPP5TeV_PID
       outreflex->SetPairCuts(cutsPair);
       outreflex->AddAxis(imID,215,0.985,1.2);
       outreflex->AddAxis(ptID,500,0.,50.);
-      if(!isPP) outreflex->AddAxis(centID,100,0.,100.);
+      //if(!isPP) outreflex->AddAxis(centID,100,0.,100.);
       else outreflex->AddAxis(centID,400,0.5,400.5);
+      outreflex->AddAxis(SpherocityID,1000,0.,1.); //ST
       if (polarizationOpt.Contains("J")) outreflex->AddAxis(ctjID,21,-1.,1.);
       if (polarizationOpt.Contains("T")) outreflex->AddAxis(cttID,21,-1.,1.);
     }//end reflections

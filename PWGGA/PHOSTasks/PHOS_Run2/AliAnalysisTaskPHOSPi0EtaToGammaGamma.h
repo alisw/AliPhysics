@@ -56,7 +56,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetTenderFlag(Bool_t tender) {fUsePHOSTender = tender;}
     void SetMCFlag(Bool_t mc) {fIsMC = mc;}
-    void SetCoreEnergyFlag(Bool_t iscore) {fUseCoreEnergy = iscore;}
+//    void SetCoreEnergyFlag(Bool_t iscore) {fUseCoreEnergy = iscore;}
     void SetBunchSpace(Double_t bs) {fBunchSpace = bs;}
     void SetCollisionSystem(Int_t id) {fCollisionSystem = id;}
     void SetQnVectorTask(Bool_t flag) {fIsFlowTask = flag;}
@@ -95,9 +95,11 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fPHOSEventCuts->SetPileupFinder(pf);
     }
 
-    void SetClusterCuts(Bool_t useCoreDisp, Double_t NsigmaCPV, Double_t NsigmaDisp, Double_t distBC){
+    void SetClusterCuts(Bool_t useCoreDisp, Double_t NsigmaCPV, Double_t NsigmaDisp, Bool_t useCoreE, Double_t distBC){
+      fUseCoreEnergy = useCoreE;
       fPHOSClusterCuts = new AliPHOSClusterCuts("PHOSClusterCuts");
       fPHOSClusterCuts->SetUseCoreDispersion(useCoreDisp);
+      fPHOSClusterCuts->SetUseCoreEnergy(useCoreE);
       fPHOSClusterCuts->SetNsigmaCPV(NsigmaCPV);
       fPHOSClusterCuts->SetNsigmaDisp(NsigmaDisp);
       fPHOSClusterCuts->SetMinDistanceFromBC(distBC);
@@ -105,6 +107,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalPi0PtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+
+      if(fCentArrayPi0){
+        delete fCentArrayPi0;
+        fCentArrayPi0 = 0x0;
+      }
+
       fCentArrayPi0 = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -119,6 +127,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalK0SPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+
+      if(fCentArrayK0S){
+        delete fCentArrayK0S;
+        fCentArrayK0S = 0x0;
+      }
+
       fCentArrayK0S = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -133,6 +147,10 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalL0PtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+      if(fCentArrayL0){
+        delete fCentArrayL0;
+        fCentArrayL0 = 0x0;
+      }
       fCentArrayL0 = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -147,6 +165,10 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalEtaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+      if(fCentArrayEta){
+        delete fCentArrayEta;
+        fCentArrayEta = 0x0;
+      }
       fCentArrayEta = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -161,6 +183,10 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalGammaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+      if(fCentArrayGamma){
+        delete fCentArrayGamma;
+        fCentArrayGamma = 0x0;
+      }
       fCentArrayGamma = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -216,6 +242,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       }
     }
 
+    void SetQnStep(Int_t step) {fQnStep = step;}
+
     void SetTRFMethod(Int_t id) {fTRFM = id;}//trigger rejection factor
     void SetPHOSTriggerAnalysis(TString selection, Bool_t isMC){
       //obsolete
@@ -225,6 +253,13 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC, Bool_t TOFflag, Int_t dummy_runNo=-1){
       fIsPHOSTriggerAnalysis = kTRUE;
+      fEnergyThreshold = Ethre;
+      fPHOSTriggerHelper = new AliPHOSTriggerHelper(L1input,L0input,isMC);
+      fPHOSTriggerHelper->ApplyTOFCut(TOFflag);
+      fPHOSTriggerHelper->SetDummyRunNumber(dummy_runNo);
+    }
+    void SetPHOSTriggerAnalysisMB(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC, Bool_t TOFflag, Int_t dummy_runNo=-1){
+      fIsPHOSTriggerAnalysis = kFALSE;//this is MB analysis
       fEnergyThreshold = Ethre;
       fPHOSTriggerHelper = new AliPHOSTriggerHelper(L1input,L0input,isMC);
       fPHOSTriggerHelper->ApplyTOFCut(TOFflag);
@@ -251,12 +286,31 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     }
 
     void SetTriggerThreshold(Double_t energy) {fEnergyThreshold = energy;}
-    void SetAnaOmega(Bool_t flag, Double_t MinPtPi0, Double_t MinPtChPi){
+
+    void SetPHOSTRUBadMap(Int_t mod, TH2I *h){
+      if(fPHOSTriggerHelper){
+        fPHOSTriggerHelper->SetPHOSTRUBadMap(mod,h);
+      }
+      else{
+        AliInfo(Form("fPHOSTriggerHelper is not set. Nothing to do."));
+      }
+    }
+
+
+    void SetAnaOmega(Bool_t flag, Double_t MinPtPi0, Double_t MinPtChPi, Double_t MaxR){
       fAnaOmega3Pi = flag;
       fMinPtPi0    = MinPtPi0;
       fMinPtChPi   = MinPtChPi;
+      fMaxR        = MaxR;
     }
     void SetOAStudy(Bool_t flag) {fIsOAStudy = flag;}
+    void SetMatchingR(Double_t maxR) {fMatchingR = maxR;}//for matching between a track and a cluster
+    void SetNMixForTrackMatching(Int_t nev) {fNMixTrack = nev;}
+
+    void SetPIDStudy(Bool_t flag) {fPIDStudy = flag;}
+
+    void SetJetPtFactor(Double_t factor) {fPtHardAndJetPtFactor = factor;}
+    void SetSingleParticlePtFactor(Double_t factor) {fPtHardAndSinglePtFactor = factor;}
 
   protected:
     virtual void UserCreateOutputObjects();
@@ -289,6 +343,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     Double_t R(AliAODMCParticle *p);//in cylindrical system
     Double_t Rho(AliAODMCParticle *p);//in sperical system
+    Double_t RAbs(AliAODMCParticle *p);//in cylindrical system
+    Double_t RhoAbs(AliAODMCParticle *p);//in sperical system
     Double_t DeltaPhiIn0Pi(Double_t dphi);//this returns dphi in 0-pi range.
 
     virtual Int_t FindCommonParent(Int_t iPart, Int_t jPart);
@@ -375,7 +431,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     }
 
     Bool_t Are2GammasInPHOSAcceptance(Int_t id);
-    void FillMixTrackMatching();
+    virtual void FillTrackMatching();
+    virtual void FillMixTrackMatching();
 
   protected:
     Bool_t fIsMC;
@@ -389,7 +446,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Double_t fBunchSpace;// in unit of ns.
     Int_t fCollisionSystem;//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
     TF1 *fTOFEfficiency;//TOF cut efficiency as a function of cluster energy;
-    TF1 *fTriggerEfficiency;//TOF cut efficiency as a function of cluster energy;
+    TF1 *fTriggerEfficiency;//trigger  efficiency as a function of cluster energy;
     AliESDtrackCuts *fESDtrackCutsGlobal;//good global track
     AliESDtrackCuts *fESDtrackCutsGlobalConstrained;//global track but constrained to IP because of SPD dead area
     TF1 *fAdditionalPi0PtWeight[11];//weight function for pT distribution
@@ -410,6 +467,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliStack *fMCArrayESD;     //MC particles array in ESD
     TClonesArray *fMCArrayAOD; //MC particles array in AOD
     AliPHOSJetJetMC *fJJMCHandler;
+    Double_t fPtHardAndJetPtFactor;
+    Double_t fPtHardAndSinglePtFactor;
     Int_t fRunNumber;
     AliPHOSGeometry *fPHOSGeo;
     TList *fPHOSEvents[10][12];
@@ -435,6 +494,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     TString fV0EPName[3]; 
     Double_t fEventPlane;
     TVector2 fQVector1;//x,y
+    Int_t fQnStep;
     Int_t fNHybridTrack;
     Bool_t fIsPHOSTriggerAnalysis;
     Double_t fEnergyThreshold;
@@ -451,16 +511,20 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     TF1 *fNonLin[7][7];
     Double_t fEmin;
     Bool_t fIsOAStudy;
+    Int_t fNMixTrack;
+    Double_t fMatchingR;//for photon purity
     Bool_t fAnaOmega3Pi;
     Double_t fMinPtPi0;//only for omega->3pi
     Double_t fMinPtChPi;//only for omega->3pi
-    TList *fTrackArrayList[10][12];//track matching in mixed event
+    Double_t fMaxR;//only for omega->3pi
+    Bool_t fPIDStudy;
+
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 57);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 72);
 };
 
 #endif

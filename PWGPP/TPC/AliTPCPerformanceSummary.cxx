@@ -35,6 +35,7 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TError.h"
+#include  "TPaveText.h"
 
 #include "AliGRPObject.h"
 #include "AliTPCcalibDB.h"
@@ -60,6 +61,7 @@
 #include "AliMathBase.h"
 #include "AliTPCPerformanceSummary.h"
 #include "AliDAQ.h"
+#include "AliTPCROC.h"
 
 using std::ifstream;
 
@@ -3152,7 +3154,84 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
 
 
 
+void AliTPCPerformanceSummary::DrawSectors(const int side=0)
+{
+  AliTPCROC* roc = AliTPCROC::Instance();
+  const float rLow = roc->GetInnerRadiusLow();
+  const float rMid = (roc->GetInnerRadiusUp()+roc->GetOuterRadiusLow())/2.;
+  const float rOut = roc->GetOuterRadiusUp();
+  const float rText = rLow*3./4.;
+  //const float rText2 = rLow*1./3.;
 
+  TLine l;
+  l.SetLineColor(kGray);
+
+  TLatex latSide;
+  latSide.SetTextAlign(22);
+  latSide.SetTextSize(0.08);
+  latSide.DrawLatex(0,0, side?"C":"A");
+
+  TLatex lat;
+  lat.SetTextAlign(22);
+  lat.SetTextColor(kGray);
+
+  //TLatex lat2;
+  //lat2.SetTextAlign(22);
+  //lat2.SetTextSize(0.03);
+  //lat2.SetTextColor(kGray);
+
+  for (Int_t iSector = 0; iSector<18; ++iSector) {
+    const float sinR = TMath::Sin(TMath::DegToRad() * iSector * 20);
+    const float cosR = TMath::Cos(TMath::DegToRad() * iSector * 20);
+
+    const float sinL = TMath::Sin(TMath::DegToRad() * ((iSector + 1) % 18) * 20);
+    const float cosL = TMath::Cos(TMath::DegToRad() * ((iSector + 1) % 18) * 20);
+
+    const float sinText = TMath::Sin(TMath::DegToRad() * (iSector + 0.5) * 20);
+    const float cosText = TMath::Cos(TMath::DegToRad() * (iSector + 0.5) * 20);
+
+    const float xR1 = rLow * cosR;
+    const float yR1 = rLow * sinR;
+    const float xR2 = rOut * cosR;
+    const float yR2 = rOut * sinR;
+
+    const float xL1 = rLow * cosL;
+    const float yL1 = rLow * sinL;
+    const float xL2 = rOut * cosL;
+    const float yL2 = rOut * sinL;
+
+    const float xM1 = rMid * cosR;
+    const float yM1 = rMid * sinR;
+    const float xM2 = rMid * cosL;
+    const float yM2 = rMid * sinL;
+
+    const float xText = rText * cosText;
+    const float yText = rText * sinText;
+
+    //const float xText2 = rText2 * cosText;
+    //const float yText2 = rText2 * sinText;
+
+    // left side line
+    l.DrawLine(xR1, yR1, xR2, yR2);
+
+    // IROC inner line
+    l.DrawLine(xR1, yR1, xL1, yL1);
+
+    // IROC - OROC line
+    l.DrawLine(xM1, yM1, xM2, yM2);
+
+    // IROC inner line
+    l.DrawLine(xR2, yR2, xL2, yL2);
+
+    // sector numbers
+    //lat.DrawLatex(xText, yText, TString::Format("%d", iSector+side*18));
+    lat.DrawLatex(xText, yText, TString::Format("%d", iSector));
+    // sector numbers for c-side also 0-17
+    //if (side) {
+      //lat2.DrawLatex(xText2, yText2, TString::Format("%d", iSector));
+    //}
+  }
+}
 
 
 void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
@@ -3165,42 +3244,53 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   gStyle->SetTitleSize(0.08,"XYZ");
   gStyle->SetTitleOffset(0.5,"XYZ");
   AliTPCcalibDB *calibDB = AliTPCcalibDB::Instance();
+  // reprocess active channel map creation with QA info
+  calibDB->FillQAInfo();
+
   TVectorD   value(72), valueNorm(72),valueRMS(72), roc(72);  
   AliTPCdataQA*  dataQA= calibDB->GetDataQA();
   for (Int_t isec=0; isec<72; isec++) roc[isec]=isec;
   //
   //
-  AliTPCCalPad * padActive=calibDB->GetPadGainFactor();
-  AliTPCCalPad * padLocalMax=dataQA->GetNLocalMaxima();
-  AliTPCCalPad * padNoThreshold=dataQA->GetNoThreshold();
-  AliTPCCalPad * padMaxCharge=dataQA->GetMaxCharge();
-//   AliTPCCalPad * padMeanCharge=dataQA->GetMeanCharge();
+  AliTPCCalPad *padActive      = calibDB->GetPadGainFactor();
+  AliTPCCalPad *padLocalMax    = dataQA->GetNLocalMaxima();
+  AliTPCCalPad *padMaxCharge   = dataQA->GetMaxCharge();
+  AliTPCCalPad *padNoThreshold = dataQA->GetNoThreshold();
+  AliTPCCalPad *padMaskedHV    = calibDB->GetMaskedChannelMapHV();
+  AliTPCCalPad *padMaskedAltro = calibDB->GetMaskedChannelMapAltro();
+  AliTPCCalPad *padMaskedDDL   = calibDB->GetMaskedChannelMapDDL();
+  AliTPCCalPad *padMaskedSCD   = calibDB->GetMaskedChannelMapSCD();
+
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBEntry * entry=  man->Get("TPC/Calib/QA");
   static Bool_t hasRawQA = entry->GetId().GetFirstRun()== man->GetRun();
 
 
-  const char   *typeNames[5]={"ActiveChannelMap", "LocaleMaxima", "NoThreshold",   "MaxCharge"  };
-  AliTPCCalPad *padInput [5]={ padActive,          padLocalMax,    padNoThreshold,  padMaxCharge};
-  TGraphErrors *grRaw[8]={0};
-  TGraphErrors *grStatus[8]={0};
+  const Int_t nTypes = 8;
+  //const char   *typeNames[nTypes]={"ActiveChannelMap", "LocaleMaxima", "HV_Mask",   "Altro_Mask",   "DDL_Mask",   "SCD_Mask"};
+  //AliTPCCalPad *padInput [nTypes]={ padActive,          padLocalMax,   padMaskedHV, padMaskedAltro, padMaskedDDL, padMaskedSCD};
+  const char   *typeNames[nTypes]={"ActiveChannelMap",  "HV_Mask",   "Altro_Mask",   "DDL_Mask",   "SCD_Mask" ,  "LocaleMaxima", "MaxCharge" , "NoThreshold"    };
+  AliTPCCalPad *padInput [nTypes]={ padActive,         padMaskedHV, padMaskedAltro, padMaskedDDL, padMaskedSCD,   padLocalMax,   padMaxCharge, padNoThreshold   };
+  enum EPadType                   { kpadActive=0,     kpadMaskedHV, kpadMaskedAltro, kpadMaskedDDL, kpadMaskedSCD,   kpadLocalMax,   kpadMaxCharge, kpadNoThreshold   };
+  TGraphErrors *grRaw[nTypes*2]={0};
   const char * side[2]={"A","C"};
-  Int_t kcolors[5]={1,2,4,3,6};
-  Int_t kmarkers[5]={21,25,20,24,26};
+  Int_t kcolors[nTypes] ={kBlack, kRed+2, kOrange+1, kGreen+2, kAzure+10, kBlue+2, kMagenta+1, kGray+1};
+  Int_t kmarkers[nTypes]={21, 25, 20, 24, 23, 32, 29, 30};
    
-  for (Int_t itype=0; itype<4; itype++){
+  for (Int_t itype=0; itype<nTypes; ++itype){
     if (!padInput[itype]) {
       ::Error("AliTPCPerformanceSummary::MakeRawOCDBQAPlot","Could not get input for type %d: %s", itype, typeNames[itype]);
     }
 
     for (Int_t isec=0; isec<72; isec++) {
       value[isec]              =padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMedian():-1;
-      if (itype==0) value[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMean()  :-1;
-      if (itype==2) value[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMedian():-1;
+      if (itype<=4) value[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMean()  :-1;
+      if (itype>=1 && itype<=4) value[isec] = 1-value[isec]; //for type 1-4 masked channels are given, so we need to invert to get the active channels
       valueRMS[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetRMS():-1;
-      if (value[isec]>0)valueRMS[isec]/=value[isec];
-      if (padInput[itype]&&padInput[itype]->GetCalROC(isec)) valueRMS[isec]/=TMath::Sqrt( 16*padInput[itype]->GetCalROC(isec)->GetNchannels()/padInput[itype]->GetCalROC(isec)->GetNrows());
+      if (value[isec]>0) valueRMS[isec]/=value[isec];
+      if (padInput[itype] && padInput[itype]->GetCalROC(isec)) valueRMS[isec]/=TMath::Sqrt( 16*padInput[itype]->GetCalROC(isec)->GetNchannels()/padInput[itype]->GetCalROC(isec)->GetNrows());
     }
+
     for (Int_t isec=0; isec<72; isec++) {
       Int_t offset=36*(isec/36);
       Double_t norm,rms;
@@ -3208,6 +3298,7 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
       valueNorm[isec]=1;
       if (norm>0) valueNorm[isec]=value[isec]/norm;  // if norm==0 means values not defined - we defineed normalized values in that case==1
     }
+
     grRaw[itype]= new TGraphErrors(72,roc.GetMatrixArray(),valueNorm.GetMatrixArray(),0,valueRMS.GetMatrixArray());
     grRaw[itype]->SetMarkerColor(kcolors[itype]);
     grRaw[itype]->SetMarkerStyle(kmarkers[itype]);
@@ -3218,57 +3309,118 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   }
 
 
+  //
+  // ===| Draw the canvas |=====================================================
+  //
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(1);
-  TCanvas *canvasRawQA0 = new TCanvas("canvasRawQA0","canvasRawQA0",1400,700);
-  for (Int_t itype=0; itype<4; itype++){
+  const float canvasHeight = 700;
+  const float canvasWidth  = nTypes/2.*2./3.*canvasHeight;
+  TCanvas *canvasRawQA0 = new TCanvas("canvasRawQA0", "canvasRawQA0", canvasWidth, canvasHeight);
+  const float summaryLeftMargin  = 0.05;
+  const float summaryRightMargin = 0.01;
+  const float titleWidth = summaryLeftMargin;
+  const float titleGap   = 0.005;
+  const float plotHeight = 0.3; // was 0.33
+  const float plotWidth  = (1. - summaryRightMargin - summaryLeftMargin)/nTypes;
+  const float plotGap    = 0.; // was 0.005;
+  const float summaryHeight = 1. - 2 * plotHeight - titleWidth;
+  // Side Title
+  //canvasRawQA0->cd();
+  //for (Int_t iplot=0; iplot<2; iplot++){
+    //TPaveText *p = new TPaveText(titleGap, summaryHeight + (iplot+0)*plotHeight, titleWidth-titleGap, summaryHeight + (iplot+1)*plotHeight, "NDC");
+    //p->AddText(TString::Format("%s Side", side[(iplot+1)%2]))->SetTextAngle(90);
+    //p->SetFillColor(10);
+    //p->SetBorderSize(1);
+    //p->Draw();
+  //}
+
+  for (Int_t itype=0; itype<nTypes; itype++){
+    // Title
+    canvasRawQA0->cd();
+    TPaveText *p = new TPaveText(titleWidth + itype * plotWidth, 1. - titleWidth - titleGap, titleWidth + (itype+1) * plotWidth, 1. - titleGap, "NDC");
+    p->AddText(padInput[itype]->GetTitle());
+    p->SetFillColor(10);
+    p->SetBorderSize(1);
+    p->Draw();
+
     for (Int_t iplot=0; iplot<2; iplot++){
       canvasRawQA0->cd()->SetLogz();
-      TPad *pad = new TPad("xxx","xxx",(itype+0)*0.25+0.005,(iplot+1)*0.33+0.005, (itype+1)*0.25-0.005,(iplot+2)*0.33-0.005);
+      TPad *pad = new TPad("xxx", "xxx", 
+                           summaryLeftMargin + (itype+0) * plotWidth + plotGap, summaryHeight + (iplot+0) * plotHeight + plotGap,
+                           summaryLeftMargin + (itype+1) * plotWidth - plotGap, summaryHeight + (iplot+1) * plotHeight - plotGap);
+      pad->SetLeftMargin(0.);
+      pad->SetRightMargin(0.);
+      pad->SetTopMargin(0.);
+      pad->SetBottomMargin(0.);
+      pad->SetTicks(0, 0);
       pad->Draw();
       pad->cd()->SetLogz();
       TH1* histo = 0;
-      if (padInput[itype] && padInput[itype]->GetMedian()>0){
-        padInput[itype]->Multiply(1./padInput[itype]->GetMedian());
+      if (padInput[itype]){
+        if (itype>=(Int_t)kpadLocalMax &&  padInput[itype]->GetMedian()>0) padInput[itype]->Multiply(1./padInput[itype]->GetMedian());
 	histo=padInput[itype]->MakeHisto2D((iplot+1)%2);
 	if (histo->GetMaximum()>2) histo->SetMaximum(2.); 
-	histo->SetName(TString::Format("%s  %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
-	histo->SetTitle(TString::Format("%s %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
-	histo->Draw("colz");
+	histo->SetName(TString::Format("%s_%s_Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
+        histo->GetXaxis()->SetTicks("");
+        histo->GetYaxis()->SetTicks("");
+        histo->GetXaxis()->SetLabelSize(0.);
+        histo->GetYaxis()->SetLabelSize(0.);
+	histo->SetTitle(";;");
+        histo->SetStats(kFALSE);
+	histo->Draw("col");
+        DrawSectors((iplot+1)%2);
       } else {
         TLatex l;
         l.DrawLatexNDC(.2,.5,TString::Format("%s not available", typeNames[itype]));
       }
     }
   }
-  canvasRawQA0->cd(); 
+
+  //
+  // ===| summary graph |===
+  //
+  canvasRawQA0->cd();
   gStyle->SetOptTitle(1);
-  TPad *pad = new TPad("graph","graph",0,0,1,0.33);
-  pad->SetRightMargin(0.01);
+  TPad *pad = new TPad("graph","graph", 0, 0, 1, summaryHeight);
+  pad->SetTopMargin(0.01);
+  pad->SetBottomMargin(0.15);
+  pad->SetRightMargin(summaryRightMargin);
+  pad->SetLeftMargin(summaryLeftMargin);
+  pad->SetGridx();
   pad->Draw();
   pad->cd();
   TLegend * legend = new TLegend(0.2,0.70,0.5,0.89,"Raw data QA (normalized to median))");
   legend->SetBorderSize(0);
-  legend->SetNColumns(2);
-  for (Int_t itype=0; itype<4; itype++){
-    if (itype==0) grRaw[itype]->Draw("ap");
+  legend->SetNColumns(nTypes/2);
+  TH1F* hDummy = new TH1F("h",";ROC;norm. value",72,0,72);
+  hDummy->GetXaxis()->SetNdivisions(908, kFALSE);
+  hDummy->GetXaxis()->SetTitleOffset(0.8);
+  hDummy->GetYaxis()->SetTitleOffset(0.3);
+  hDummy->SetMaximum(2);
+  hDummy->Draw();
+  for (Int_t itype=0; itype<nTypes; itype++){
+    //if (itype==0) grRaw[itype]->Draw("ap");
     grRaw[itype]->Draw("p");
     legend->AddEntry(grRaw[itype], typeNames[itype],"p");
   }
   legend->Draw();
-  TLine *line = new TLine(0,0.70,72,0.70);
+  TLine *line = new TLine(0,0.75,72,0.75);
   line->SetLineStyle(2);
   line->SetLineColor(2);
   line->SetLineWidth(3);
   line->Draw();
   TLatex latex;
-  latex.DrawLatex(73,0.70,"Threshold");
+  latex.DrawLatex(65,0.60,"Threshold");
   canvasRawQA0->SaveAs("rawQAInformation.png");
+  //canvasRawQA0->SaveAs("rawQAInformation.root");
   static Int_t clusterCounter= dataQA->GetClusterCounter();
   static Int_t signalCounter= dataQA->GetSignalCounter();
+
   //
   // add aso HV status
   //
+  TGraphErrors *grStatus[5]={0};
   for (Int_t itype=0; itype<5; itype++){
     for (Int_t isec=0; isec<72; isec++){
       if (itype==0) valueNorm[isec]=calibDB->GetChamberHVStatus(isec);
@@ -3324,11 +3476,15 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
       "hasRawQA="<<hasRawQA<<                   // flag - Raw QA present
       "rawClusterCounter="<<clusterCounter<<    // absolute number of cluster  in Raw QA          -  calibDB->GetDataQA()->GetClusterCounter();
       "rawSignalCounter="<<signalCounter<<      // absolute number of signal above Thr  in Raw QA -  calibDB->GetDataQA()->GetSignalCounter()
-      "grOCDBStatus.="<<grRaw[0]<<              // OCDB status as used in Reco         - LTM:calibDB->GetPadGainFactor();
       //
-      "grRawLocalMax.="<<grRaw[1]<<             // RAW QA OCDB local cluster counter   - LTM:calibDB->GetDataQA()->GetNLocalMaxima();
-      "grRawAboveThr.="<<grRaw[2]<<             // RAW QA OCDB above threshold counter - LTM:calibDB->GetDataQA->GetNoThreshold(); 
-      "grRawQMax.="<<grRaw[3]<<                 // RAQ QA OCDB max charge              - LTM:calibDB->GetDataQA()->GetMaxCharge();
+      "grOCDBStatus.="<<grRaw[EPadType::kpadActive]      <<  // OCDB status as used in Reco         - LTM:calibDB->GetPadGainFactor();
+      "grRawLocalMax.="<<grRaw[EPadType::kpadLocalMax]   <<  // RAW QA OCDB local cluster counter   - LTM:calibDB->GetDataQA()->GetNLocalMaxima();
+      "grRawAboveThr.="<<grRaw[EPadType::kpadNoThreshold]<<  // RAW QA OCDB above threshold counter - LTM:calibDB->GetDataQA->GetNoThreshold(); 
+      "grRawQMax.="    <<grRaw[EPadType::kpadMaxCharge]  <<  // RAW QA OCDB average QMax            - LTM:calibDB->GetDataQA()->GetMaxCharge();
+      "grActiveHV.="   <<grRaw[EPadType::kpadMaskedHV]   <<  // OCDB normalized active channels due to HV
+      "grActiveAltro.="<<grRaw[EPadType::kpadMaskedAltro]<<  // OCDB normalized active channels due to the Altro config
+      "grActiveDDL.="  <<grRaw[EPadType::kpadMaskedDDL]  <<  // OCDB normalized active channels due to the DDL status
+      "grActiveSCD.="  <<grRaw[EPadType::kpadMaskedSCD]  <<  // OCDB normalized active channels due to the space-charge distortions
       //
       "grROCHVStatus.="<<grStatus[0]<<          // ROC HV status - enable/disable chambers beacus of LOW HV
       "grROCHVTimeFraction.="<<grStatus[1]<<    // ROC HV fraction of time disabled
@@ -3353,6 +3509,7 @@ void  AliTPCPerformanceSummary::MakeMissingChambersAliases(TTree * tree){
   tree->SetAlias("rawLowQMaxCounter75","Sum$((grRawQMax.fY)<0.75)");                       // counter small gain based on RAW QA  Qmax 
   tree->SetAlias("rawLowOccupancyCounter75","Sum$((grRawLocalMax.fY)<0.75)");              // counter small occupancy (either gain or fraction of time)
   tree->SetAlias("rawLowCounter75","Sum$(((grRawQMax.fY)<0.75||(grRawLocalMax.fY)<0.75))*(-1+2*(grRawQMax.fEY<0.03))");
+  //tree->SetAlias("rawLowCounter75","Sum$(((grRawQMax.fY)<0.75))*(-1+2*(grRawQMax.fEY<0.03))");
   // counter outliers 75 (Qmax or occupancy based)  
   // for laser data Q is not reliable - disable decission for data with big RMS 
   tree->SetAlias("ocdbHVStatusCounter","Sum$(grROCHVStatus.fY<0.5)");                      // chambers not active  - according  HV decission

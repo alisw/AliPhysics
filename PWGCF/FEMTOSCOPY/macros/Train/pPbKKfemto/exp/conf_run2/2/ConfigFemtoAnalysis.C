@@ -90,7 +90,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   //AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
-  Reader->SetFilterBit(7);
+  Reader->SetFilterBit(8);
   Reader->SetReadV0(1);
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
@@ -167,7 +167,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
 	  anetaphitpc[aniter]->SetNumEventsToMix(5);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
-	  anetaphitpc[aniter]->SetVerboseMode(kTRUE);
+	  //anetaphitpc[aniter]->SetVerboseMode(kTRUE);
+	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
       
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 	  mecetaphitpc[aniter]->SetEventMult(1,10000);
@@ -216,19 +217,19 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //------------------- November 2013 ----------------------------------->
 	  //Track quality cuts
 	 //dtc1etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
-	   //dtc1etaphitpc[aniter]->SetminTPCncls(80);
+	  dtc1etaphitpc[aniter]->SetminTPCncls(80);
 	  dtc1etaphitpc[aniter]->SetRemoveKinks(kTRUE);
 
 
-	  //dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
+	  dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
 	  //dtc1etaphitpc[aniter]->SetMaxITSChiNdof(36);	  
 	  dtc1etaphitpc[aniter]->SetLabel(kFALSE);
 	  
 	  //primary particles: hits in ITS + DCA cut
 	  //dtc1etaphitpc[aniter]->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 	  //				 AliESDtrackCuts::kAny);
-	  //dtc1etaphitpc[aniter]->SetMaxImpactZ(3.0);
-	  //dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4);
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(0.13);
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(0.135);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 	  //dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
@@ -305,7 +306,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //3D cartesian (without kT bins)
 	  if(run3d){
 	    //cq3dlcmskttpc[aniter] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%i", chrgs[ichg], imult),60,0.5);
-	    cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult),130,-2.0,2.0);
+	    cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult),80,-2.0,2.0);
 	    anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);
 	    
 	  }
@@ -343,7 +344,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      if (run3d) {
 		//		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);
 		//cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,0.5);
-		cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),130,-2.0,2.0);
+		cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),80,-2.0,2.0);
 		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);
 	      }

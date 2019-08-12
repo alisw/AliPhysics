@@ -33,6 +33,7 @@ public:
   void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
   void SetWriteFilteredTracks(Bool_t option=kTRUE) {fWriteFilteredTracks=option;}
   void SetWriteFilteredPairs(Bool_t option=kTRUE) {fWriteFilteredPairs=option;}
+  void SetMCJpsiPtWeights(TH1F* weights) {fMCJpsiPtWeights = weights;}
   
   void SetBuildCandidatePairs(AliReducedPairInfo::CandidateType type) {fBuildCandidatePairs=kTRUE; fCandidateType=type;}
   void SetBuildCandidateLikePairs(Bool_t option=kTRUE) {fBuildCandidateLikePairs=option;}
@@ -46,6 +47,7 @@ public:
   void AddCandidateLeg1PairPrefilterCut(AliReducedInfoCut* cut) {fLeg1PairPrefilterCuts.Add(cut);}
   void AddCandidateLeg2PairPrefilterCut(AliReducedInfoCut* cut) {fLeg2PairPrefilterCuts.Add(cut);}
   
+  void SetRunOverMC(Bool_t option) {fOptionRunOverMC = option;};
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
   Bool_t GetWriteFilteredTracks() const {return fWriteFilteredTracks;}
@@ -61,7 +63,31 @@ public:
   Int_t GetNCandidateLegCuts() const {return fLeg1Cuts.GetEntries();}
   const Char_t* GetCandidateLegCutName(Int_t i, Int_t leg);
   Bool_t IsAsymmetricDecayChannel();
-  
+   Bool_t GetRunOverMC() const {return fOptionRunOverMC;};
+  //  Int_t GetNLegCandidateMCcuts() const {return fLegCandidatesMCcuts.GetEntries();}
+  //const Char_t* GetLegCandidateMCcutName(Int_t i) const {return (i<fLegCandidatesMCcuts.GetEntries() ? fLegCandidatesMCcuts.At(i)->GetName() : "");}
+  const Char_t* GetLegCandidateMCcutName() const {return (fLegCandidatesMCcuts ? fLegCandidatesMCcuts->GetName() : "");}
+  Int_t GetNJpsiMotherMCCuts() const {return fJpsiMotherMCcuts.GetEntries();}
+  const Char_t* GetJpsiMotherMCcutName(Int_t i) const {return (i<fJpsiMotherMCcuts.GetEntries() ? fJpsiMotherMCcuts.At(i)->GetName() : "");}
+
+ 
+ /* void AddLegCandidateMCcut(AliReducedInfoCut* cut) {
+     if(fLegCandidatesMCcuts.GetEntries()>=32) return;
+     fLegCandidatesMCcuts.Add(cut);
+  }*/
+ void SetLegCandidateMCcut(AliReducedInfoCut* cut) {
+     //if(fLegCandidatesMCcuts.GetEntries()>=32) return;
+     fLegCandidatesMCcuts  = cut;
+  }
+
+  void AddJpsiMotherMCCut(AliReducedInfoCut* cutMother, AliReducedInfoCut* cutElectron) {
+     if(fJpsiMotherMCcuts.GetEntries()>=32) return;
+     fJpsiMotherMCcuts.Add(cutMother);
+     fJpsiElectronMCcuts.Add(cutElectron);
+  }
+
+  void FillMCTruthHistograms();
+ 
 protected:
    AliHistogramManager* fHistosManager;   // Histogram manager
    
@@ -88,14 +114,43 @@ protected:
    TList fLeg2Tracks;                    // list of selected LEG2 tracks in the current event
    TList fLeg1PrefilteredTracks;    // list of prefilter selected LEG1 tracks in the current event
    TList fLeg2PrefilteredTracks;    // list of prefilter selected LEG2 tracks in the current event
+
+   Bool_t fOptionRunOverMC;  // true: trees contain MC info -> fill histos to compute efficiencies, false: run normally as on data
+   // selection based on the MC truth information of the reconstructed leg candidates
+   // NOTE:    The list is a list of AliReducedInfoCut objects which can be used to 
+   //              apply cuts on the MC flags of the tracks.
+   // NOTE: The names of the cuts are used in the naming of the histogram classes
+   AliReducedInfoCut *fLegCandidatesMCcuts; 
+ 
+   // selection cuts for the pure MC truth (select the J/psi from stack)
+   // the list should contains cuts which can be applied to a pure MC truth particle (no reconstructed information)
+   //  e.g. cuts on the MC flags and on kinematics
+   //  For each selection, a separate histogram directory will be created
+   TList fJpsiMotherMCcuts;
+   TH1F*  fMCJpsiPtWeights;            //! weights vs pt to reject events depending on the jpsi true pt (needed to re-weights jpsi Pt distribution)
+   Bool_t fSkipMCEvent; // if true MC event is skipped
+   // Selection on the MC truth of the electrons from the jpsi decay
+   //  Tipically, here one can specify the kinematic selection on the electrons from jpsi decay
+   //       so dividing the jpsi yield at this step by the yield of jpsi selected by the fJpsiMotherMCcuts, one can obtain the
+   //       acceptance efficiency.
+   //  NOTE: The number of selections on the jpsi electron needs to be the same and in sync with the number of fJpsiMotherMCcuts cuts
+   TList fJpsiElectronMCcuts;
    
    Bool_t IsEventSelected(AliReducedBaseEvent* event, Float_t* values=0x0);
    Bool_t IsTrackSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
    Bool_t IsPairSelected(AliReducedPairInfo* pair, Float_t* values=0x0);
    void CreateFilteredEvent();
-   Bool_t TrackIsCandidateLeg(AliReducedBaseTrack* track);
+   Bool_t CheckReconstructedLegMCTruth(AliReducedBaseTrack* ptrack, AliReducedBaseTrack* ntrack);
+ Bool_t CheckReconstructedLegMCTruth(AliReducedBaseTrack* track);
+  void    FindJpsiTruthLegs(AliReducedTrackInfo* mother, Int_t& leg1Label, Int_t& leg2Label);
+  AliReducedTrackInfo* FindMCtruthTrackByLabel(Int_t label);
+  void    LoopOverMCTracks(Int_t trackArray =1);
+  UInt_t CheckMotherMCTruth(AliReducedTrackInfo* mother);
+  UInt_t CheckDaughterMCTruth(AliReducedTrackInfo* daughter); 
+
+  Bool_t TrackIsCandidateLeg(AliReducedBaseTrack* track);
    void WriteFilteredPairs();
-   void WriteFilteredTracks();
+   void WriteFilteredTracks(Int_t array=1);
    Bool_t IsCandidateLegSelected(AliReducedBaseTrack* track, Float_t* values=0x0, Int_t whichLeg=1); 
    Bool_t IsCandidatePairSelected(Float_t* values);
    Bool_t IsCandidateLegPrefilterSelected(AliReducedBaseTrack* track, Float_t* values=0x0, Int_t whichLeg=1);

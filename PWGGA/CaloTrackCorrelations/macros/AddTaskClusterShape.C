@@ -11,11 +11,18 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// ROOT
 #include <TString.h>
 #include <TROOT.h>
 #include <TSystem.h>
 
+// ALIROOT/ALIPHYSICS
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliVTrack.h"
 #include "AliLog.h"
+
+// CaloTrackCorrr
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliCaloTrackESDReader.h"
 #include "AliCaloTrackAODReader.h"
@@ -24,15 +31,13 @@
 #include "AliHistogramRanges.h"
 #include "AliAnaCalorimeterQA.h"
 #include "AliAnaCaloTrackCorrMaker.h"
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliVTrack.h"
-#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
-#include "AliESDtrackCuts.h"
-#include "CreateTrackCutsPWGJE.C"
-#include "CheckActiveEMCalTriggerPerPeriod.C"
+
+// Macros
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 //#include "ConfigureEMCALRecoUtils.C"
-#include "GetAlienGlobalProductionVariables.C"
+#include "PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C"
+#include "PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C"
 
 #endif // CINT
 
@@ -760,7 +765,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistodRRangeAndNBins(0.,0.06,60);//QA
   
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,1.5,150);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,1.5,150);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
@@ -806,10 +811,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
-  
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
-  
+
   //
   // Debug
   //

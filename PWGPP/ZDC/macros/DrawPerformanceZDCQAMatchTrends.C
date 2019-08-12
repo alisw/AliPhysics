@@ -32,7 +32,7 @@
 
 TTree *tree;
 
-void DrawPerformanceZDCQAMatchTrends(const char* inFile = "prodQAhistos.root"){
+Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
 
   /*set graphic style*/
   gStyle->SetCanvasColor(kWhite);
@@ -57,11 +57,11 @@ void DrawPerformanceZDCQAMatchTrends(const char* inFile = "prodQAhistos.root"){
   gStyle->SetTitleOffset(1.0,"y");
 
   TFile *file0 = TFile::Open(inFile);
-  if(!file0) return;
+  if(!file0) return 1;
   file0->cd();
 
   tree = (TTree*) file0->Get("tree");
-  if(!tree) return;
+  if(!tree) return 2;
   //tree->Print();
 
   int const entries = tree->GetEntries();
@@ -159,7 +159,7 @@ tree->SetBranchAddress("ZN_TDC_Diff_Err",&ZN_TDC_Diff_err);
   for (int i=0; i<entries; i++){
      tree->GetEntry(i);
     printf("ZNC %f ZNA %f\n", ZNC_mean, ZNA_mean);
-    printf("ZEM1 %f ZEM2 %f\n", ZEM1_mean, ZEM2_mean);
+    //printf("ZEM1 %f ZEM2 %f\n", ZEM1_mean, ZEM2_mean);
      ZNC_tot += ZNC_mean;
      ZNA_tot += ZNA_mean;
      ZPC_tot += ZPC_mean;
@@ -330,5 +330,7 @@ tree->SetBranchAddress("ZN_TDC_Diff_Err",&ZN_TDC_Diff_err);
   gr_zntdcdiff->GetYaxis()->SetTitle("(ns)");
   gr_zntdcdiff->GetYaxis()->SetRangeUser(TdcDiff_avg-offset_tdc,TdcDiff_avg+offset_tdc);
   c6->Print("ZN_timing_trending.png");
+
+  return 0;
 
 }
