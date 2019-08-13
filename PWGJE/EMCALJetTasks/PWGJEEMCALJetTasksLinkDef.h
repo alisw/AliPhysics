@@ -284,7 +284,8 @@
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
 #pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
 #pragma link C++ class AliAnalysisTaskSVtaskMCFilter+;
-#pragma link C++ class AliAnalysisTaskEA+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEA+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliLundPlaneHelper+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalSoftDropData+;
 #ifdef WITH_ROOUNFOLD
