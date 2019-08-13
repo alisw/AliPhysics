@@ -2529,8 +2529,21 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC18P1Pyt8NomB :
     case kLHC18P1Pyt8LowB :
     // pPb 5 TeV
+    case kLHC13bc :
+    case kLHC13de :
+    case kLHC13f :
     case kLHC16qt :
     // pPb 5 TeV MC
+    case kLHC13b2_efix :
+    case kLHC13e7 :
+    case kLHC14b2 :
+    case kLHC18j5 :
+    case kLHC13b4_fix :
+    case kLHC13b4_plus :
+    case kLHC19a4 :
+    case kLHC16c3a :
+    case kLHC16c3b :
+    case kLHC16c3c :
     case kLHC17f2a :
     case kLHC17f2b :
     case kLHC18f3 :
