@@ -419,10 +419,10 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     }
   }
 
-  if(fIsHeavyIon > 0){
-    hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",420,0,105);
+  // if(fIsHeavyIon > 0){ // commented as mult. dep. analyses in pp started
+    hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",210,0,105);
     fHistograms->Add(hCentrality);
-  }
+  // }
 
   //hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
   //fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
