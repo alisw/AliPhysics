@@ -16,6 +16,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
     bool kTCentBins=false,//12
     bool DeltaEtaDeltaPhiCut=false,//13
     bool DoSphericityCuts=false, //14
+    bool DoSpherocityCuts=false, //15
     const char *swuffix = "") {
 
 
@@ -56,6 +57,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
   evtCuts->SetDoSphericityCuts(DoSphericityCuts);
+  evtCuts->SetDoSpherocityCuts(DoSpherocityCuts);
   if(isMC && CentEst=="kHM"){
     evtCuts->SetMultiplicityPercentileMax(5);
   }
@@ -80,9 +82,34 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   if (suffix=="6") {
     evtCuts->SetSphericityCuts(0.9,1.0);
   }
-}else if(!DoSphericityCuts){
+}else if(!DoSphericityCuts && !DoSpherocityCuts){
     suffix="8";
 }
+
+if(DoSpherocityCuts){
+if (suffix=="01") {
+  evtCuts->SetSpherocityCuts(0.,0.3);
+}
+if (suffix=="02") {
+  evtCuts->SetSpherocityCuts(0.3,0.7);
+}
+if (suffix=="03") {
+  evtCuts->SetSpherocityCuts(0.7,1.0);
+}
+//4 is reserved to the full sphericity range
+if (suffix=="04") {
+  evtCuts->SetSpherocityCuts(0.,1.0);
+}
+if (suffix=="05") {
+  evtCuts->SetSpherocityCuts(0.8,1.0);
+}
+if (suffix=="06") {
+  evtCuts->SetSpherocityCuts(0.9,1.0);
+}
+}else if(!DoSpherocityCuts && !DoSphericityCuts){
+  suffix="08";
+}
+
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
                                                             isMC);
 
@@ -90,12 +117,10 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, DCAPlots, CombSigma, ContributionSplitting);
   TrackCuts->SetCutCharge(1);
-//wanna change something? Do it like this: TrackCuts->SetPtRange(0.3, 4.05);
-//  task->SetTrackCuts(TrackCuts);
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, CombSigma, ContributionSplitting);
   AntiTrackCuts->SetCutCharge(-1);
-//  task->SetAntiTrackCuts(AntiTrackCuts);
+  //V0 cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(
       isMC,CPAPlots,ContributionSplitting);
   AliFemtoDreamTrackCuts *Posv0Daug=AliFemtoDreamTrackCuts::DecayProtonCuts(
@@ -107,7 +132,6 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   v0Cuts->SetPDGCodePosDaug(2212);//Proton
   v0Cuts->SetPDGCodeNegDaug(211);//Pion
   v0Cuts->SetPDGCodev0(3122);//Lambda
-//  task->Setv0Cuts(v0Cuts);
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(
       isMC, CPAPlots,ContributionSplitting);
   AliFemtoDreamTrackCuts *PosAntiv0Daug=AliFemtoDreamTrackCuts::DecayPionCuts(
@@ -121,7 +145,6 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   Antiv0Cuts->SetPDGCodePosDaug(211);//Pion
   Antiv0Cuts->SetPDGCodeNegDaug(2212);//Proton
   Antiv0Cuts->SetPDGCodev0(-3122);//Lambda
-//  task->SetAntiv0Cuts(Antiv0Cuts);
 
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
@@ -149,17 +172,6 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   // PairQA.push_back(0);         // Xi Xi
   // PairQA.push_back(0);         // Xi barXi
   // PairQA.push_back(0);         // barXi barXi
-
-  // PairQA.push_back(0);        // p p
-  // PairQA.push_back(11);         // p barp
-  // PairQA.push_back(0);        // p Lambda
-  // PairQA.push_back(12);         // p barLambda
-  // PairQA.push_back(0);        // barp barp
-  // PairQA.push_back(12);         // barp Lambda
-  // PairQA.push_back(0);        // barp barLambda
-  // PairQA.push_back(0);         // Lambda Lambda
-  // PairQA.push_back(0);         // Lambda barLambda
-  // PairQA.push_back(0);        // barLambda barLamb
   config->SetExtendedQAPairs(PairQA);
 
   std::vector<int> PDGParticles;
@@ -167,8 +179,6 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   PDGParticles.push_back(2212);
   PDGParticles.push_back(3122);
   PDGParticles.push_back(3122);
-//  PDGParticles.push_back(3312);
-//  PDGParticles.push_back(3312);
   config->SetPDGCodes(PDGParticles);
 
   std::vector<float> ZVtxBins;
@@ -322,7 +332,7 @@ if (etaPhiPlotsAtTPCRadii) {
   config->SetMixingDepth(10);
   config->SetCentBinning(false);
   config->SetkTBinning(false);
-  config->SetmTBinning(false);
+  config->SetmTBinning(true);
 
 
   config->SetUsePhiSpinning(false);
