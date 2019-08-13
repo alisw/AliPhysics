@@ -9,13 +9,14 @@
 #endif
 
 AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
-		Bool_t AnalysisMC = kFALSE,
-		Int_t system =1, // 0 for pp and 1 for Pb-Pb
-		Bool_t PostCalib = kFALSE,
-		Bool_t LowpT = kFALSE,
-		Bool_t MakePid = kFALSE,
-		const Char_t* Period   = "l",
-		const Double_t MeanCh = 7.266
+		bool AnalysisMC     = kFALSE,
+		int  system         = 1, // 0(pp) & 1 (Pb-Pb)
+		bool PostCalib      = kFALSE,
+		bool LowpT          = kFALSE,
+		bool MakePid        = kFALSE,
+		const double TrkLCut = 5.0,
+		const char* Period  = "l",
+		const double MeanCh = 7.266
 		)   
 {
 
@@ -70,6 +71,7 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 	else
 		task->SetAnalysisPbPb(kFALSE);
 	
+	task->SetLeadingCut(TrkLCut);
 	task->SetNcl(70);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
