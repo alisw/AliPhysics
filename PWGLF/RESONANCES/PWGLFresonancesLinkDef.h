@@ -76,6 +76,7 @@
 #pragma link C++ class AliRsnMiniResonanceFinder+;
 #pragma link C++ class AliRsnTrainManager+;
 #pragma link C++ class AliRsnMiniTaskPhiVn+;
+#pragma link C++ class AliRsnCutPIDkink+;
 // Xi1530
 #pragma link C++ class AliAnalysisTaskXi1530+;
 //f0980
