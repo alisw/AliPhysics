@@ -104,6 +104,7 @@ void AliAnalysisTaskGrandma::UserCreateOutputObjects() {
   // might want to turn this off for systematics
 
   fEvent = new AliFemtoDreamEvent(true, fEvtCutQA, GetCollisionCandidates());
+  fEvent->SetCalcSpherocity(true);
 
   fFemtoTrack = new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(fIsMC);
