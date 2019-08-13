@@ -1,11 +1,10 @@
 
-AliAnalysisTaskEbyeChargeFB* AddTaskEbyeNetChargeFluctuations(
+AliAnalysisTaskEbyeNetChargeFluctuations* AddTaskEbyeNetChargeFluctuations(
                                                               TString suffixName = "",
                                                               Bool_t MCthere = kFALSE,
-                                                    //          Int_t MagPolarity = 1,
                                                               Int_t zvtxcut = 10,
                                                               Int_t trackBit = 768,
-                                                              Int_t TPCCrossedRows = 100.,
+                                                              Int_t MaxTPCclus = 100.,
                                                               Int_t TPCNclus =80.,
                                                               Double_t DCAxyCut =2.4,
                                                               Double_t DCAzCut =3.2
@@ -29,7 +28,7 @@ AliAnalysisTaskEbyeChargeFB* AddTaskEbyeNetChargeFluctuations(
     fileName += ":MyTask";
     
     // now we create an instance for task
-    AliAnalysisTaskEbyeChargeFB* task = new AliAnalysisTaskEbyeChargeFB("");
+    AliAnalysisTaskEbyeNetChargeFluctuations* task = new AliAnalysisTaskEbyeNetChargeFluctuations("");
     if(!task) return 0x0;
  
 //    if(MCthere){
@@ -39,10 +38,9 @@ AliAnalysisTaskEbyeChargeFB* AddTaskEbyeNetChargeFluctuations(
     // add your task to the manager
     mgr->AddTask(task);
     task->SetAnalysisType(MCthere);
-//    task->SetMagPolarity(MagPolarity);
     task->Setzvtxcut(zvtxcut);
     task->SettrackBit(trackBit);
-    task->SetTPCCrossedRows(TPCCrossedRows);
+    task->SetMaxTPCCluster(MaxTPCclus);
     task->SetNTPCCluster(TPCNclus);
     task->SetDCACut(DCAxyCut,DCAzCut);
     
