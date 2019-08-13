@@ -66,7 +66,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     task->SetMeanXYZv(0.0,0.0,0.0);
     task->SetSigmaMeanXYZv(1.0,1.0,10.0);
     task->SetZvtx(10.);
-    task->SetEventTriggerRequired(kTRUE);
+  // task->SetEventTriggerRequired(kTRUE);
 
     /// Quality cuts for tracks
     if(cutMode != 122)
