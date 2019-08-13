@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskPPvsRT_H
-#define AliAnalysisTaskPPvsRT_H
+#ifndef AliAnalysisTaskPPvsRT_TPCTOF_H
+#define AliAnalysisTaskPPvsRT_TPCTOF_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice */
 /* $Id$ */
@@ -32,14 +32,14 @@
 
 
 
-class AliAnalysisTaskPPvsRT : public AliAnalysisTaskSE
+class AliAnalysisTaskPPvsRT_TPCTOF : public AliAnalysisTaskSE
 {
 public:
     
     
-    AliAnalysisTaskPPvsRT();
-    AliAnalysisTaskPPvsRT(const char *name);
-    virtual ~AliAnalysisTaskPPvsRT();
+    AliAnalysisTaskPPvsRT_TPCTOF();
+    AliAnalysisTaskPPvsRT_TPCTOF(const char *name);
+    virtual ~AliAnalysisTaskPPvsRT_TPCTOF();
     
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -59,9 +59,6 @@ public:
     virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
     virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
     virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) { fAnalysisPbPb = isanaPbPb; }
-    virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
-    virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
-    virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
     virtual void  SetPeriod(const char* Period) { fPeriod = Period; }
     virtual void  SetMeanCh(const Double_t MeanCh) { fMeanChT = MeanCh; }
     
@@ -69,16 +66,12 @@ private:
     
     
     AliESDtrack* GetLeadingTrack();
-    TParticle* GetLeadingTrackMC(TObjArray* fTrks);
     TObjArray* SortRegions(AliESDtrack* Ltrk);
-    TObjArray* SortRegionsMC(TObjArray* TrksArray, TParticle* Ltrk);
     virtual Double_t DeltaPhi(Double_t phi, Double_t lphi,
                               Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
     int GetBinRT(TList* lt);
     virtual void ProduceArrayTrksESD(const int& r, TList* lt, const int& cent);
-    virtual void ProduceArrayV0ESD(AliESDEvent* event, const int& cent );
     short   GetPidCode(Int_t pdgCode) const;
-    virtual void ProcessMCTruthESD();
     
     bool selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
     bool IsGoodSPDvertexRes(const AliESDVertex* spdVertex = NULL);
@@ -89,6 +82,7 @@ private:
     double EtaCalibration(const int &centrality, const double &Eta);
     double EtaCalibrationEl(const int &centrality, const double &Eta);
     int GetIndex();
+    bool TOFPID(AliESDtrack* track);
     
     static const Double_t fgkClight;   // Speed of light (cm/ps)
     
@@ -165,53 +159,26 @@ private:
     TH2D* fPtLVsRt; 
     TH2D* fPtLVsRtMC; 
     
-    
-    // Histograms for PreCalibration
-    
-    TH2D *hMIPVsEta[3][6];
-    TProfile *pMIPVsEta[3][6];
-    TH2D *hMIPVsEtaV0s[6];
-    TProfile *pMIPVsEtaV0s[6];
-    TH2D *hPlateauVsEta[6];
-    TProfile *pPlateauVsEta[6];
-    TH2D *hPhi[6];
-    TH2D     *hMIPVsPhi[6][4];
-    TProfile *pMIPVsPhi[6][4];
-    TH2D     *hPlateauVsPhi[6][4];
-    TProfile *pPlateauVsPhi[6][4];
-    
-    
-    // Histograms for PostCalibration
-    
-    
+    // [rt][region][eta]
     TH2D *hPtVsP[4];
-    TH1D *hPtAll[3][6];
-    TH2D *hDeDxVsP[3][6][4];
-    TH2D *hnSigmaPi[6][4];
-    TH2D *hnSigmak[6][4];
-    TH2D *hnSigmap[6][4];
+    TH2D *hBetavsPMB[4];
+    TH1D *hPtpos_TPC[6][3];
+    TH1D *hPtpos_TPC_Eta[6][3][4];
+    TH1D *hPtneg_TPC[6][3];
+    TH1D *hPtneg_TPC_Eta[6][3][4];
+    TH1D *hPtpos_TOF[6][3];
+    TH1D *hPtpos_TOF_Eta[6][3][4];
+    TH1D *hPtneg_TOF[6][3];
+    TH1D *hPtneg_TOF_Eta[6][3][4];
+    TH2D *hnSigPipos[6][3][4];
+    TH2D *hnSigkpos[6][3][4];
+    TH2D *hnSigppos[6][3][4];
+    TH2D *hnSigPineg[6][3][4];
+    TH2D *hnSigkneg[6][3][4];
+    TH2D *hnSigpneg[6][3][4];
+    TH2D *hBetavsPpos[6][3][4];
+    TH2D *hBetavsPneg[6][3][4];
     
-    TH2D* histPiV0[6][4];
-    TH1D* histpPiV0[6][4];
-    TH2D* histPV0[6][4];
-    TH1D* histpPV0[6][4];
-    TH2D* histPiTof[6][4];
-    TH1D* histpPiTof[6][4];
-    TH2D* histEV0[6][4];
-    
-    TH1D* hMcIn[6][7];
-    TH1D* hMcOut[6][7];
-    TH2D* hDCAxyVsPtPi[6];
-    TH2D* hDCAxyVsPtPiC[6];
-    TH2D* hDCAxyVsPtp[6];
-    TH2D* hDCAxyVsPtpC[6];
-    TH2D* hDCApTPrim[6][7];
-    TH2D* hDCApTWDec[6][7];
-    TH2D* hDCApTMate[6][7];
-    
-    TH2D* hDCApTPrim2[6][7];
-    TH2D* hDCApTWDec2[6][7];
-    TH2D* hDCApTMate2[6][7];
     TF1* fEtaCalibration;
     TF1* fEtaCalibrationEl;
     TF1* fcutDCAxy;
@@ -219,12 +186,12 @@ private:
     TF1* fcutHigh;
     
     
-    AliAnalysisTaskPPvsRT(const AliAnalysisTaskPPvsRT&);            // not implemented
-    AliAnalysisTaskPPvsRT& operator=(const AliAnalysisTaskPPvsRT&); // not implemented
+    AliAnalysisTaskPPvsRT_TPCTOF(const AliAnalysisTaskPPvsRT_TPCTOF&);            // not implemented
+    AliAnalysisTaskPPvsRT_TPCTOF& operator=(const AliAnalysisTaskPPvsRT_TPCTOF&); // not implemented
     
     //TTree*        fTree;              //! Debug tree
     
-    ClassDef(AliAnalysisTaskPPvsRT, 1);    //Analysis task for high pt analysis
+    ClassDef(AliAnalysisTaskPPvsRT_TPCTOF, 1);    //Analysis task for high pt analysis
 };
 
 #endif

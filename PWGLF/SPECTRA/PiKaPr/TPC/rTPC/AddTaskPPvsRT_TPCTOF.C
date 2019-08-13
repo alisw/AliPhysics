@@ -1,6 +1,6 @@
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskPPvsRT.h"
+#include "AliAnalysisTaskPPvsRT_TPCTOF.h"
 #include "AliAnalysisFilter.h"
 #include "TInterpreter.h"
 #include "TChain.h"
@@ -8,12 +8,9 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
+AliAnalysisTaskPPvsRT_TPCTOF* AddTaskPPvsRT_TPCTOF(
 		bool AnalysisMC     = kFALSE,
 		int  system         = 1, // 0(pp) & 1 (Pb-Pb)
-		bool PostCalib      = kFALSE,
-		bool LowpT          = kFALSE,
-		bool MakePid        = kFALSE,
 		const double TrkLCut = 5.0,
 		const char* Period  = "l",
 		const double MeanCh = 7.266
@@ -53,13 +50,13 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 
 
 	// now we create an instance of your task
-	AliAnalysisTaskPPvsRT* task = new AliAnalysisTaskPPvsRT("taskHighPtDeDxpp");   
+	AliAnalysisTaskPPvsRT_TPCTOF* task = new AliAnalysisTaskPPvsRT_TPCTOF("taskHighPtDeDxpp");   
 	if(!task) return 0x0;
 
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
-	task->SetAddLowPt(LowpT);
+//	task->SetAddLowPt(LowpT);
 	task->SetPeriod(Period);
 	task->SetMeanCh(MeanCh);
 
@@ -71,15 +68,15 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 	else
 		task->SetAnalysisPbPb(kFALSE);
 	
-	task->SetLeadingCut(TrkLCut);
 	task->SetNcl(70);
+        task->SetLeadingCut(TrkLCut);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
 	task->SetTrackFilterGolden(trackFilterGolden);
 	task->SetTrackFilterTPC(trackFilterTPC);
 	task->SetTrackFilter2015PbPb(trackFilterGolden2015PbPb);
-	task->SetAnalysisTask(PostCalib);
-	task->SetAnalysisPID(MakePid);
+//	task->SetAnalysisTask(PostCalib);
+//	task->SetAnalysisPID(MakePid);
 
 	// add your task to the manager
 	mgr->AddTask(task);
