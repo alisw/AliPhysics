@@ -87,6 +87,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   void SetBDTSidebandCut(Double_t lcut, Double_t rcut) {fBDTSidebandCut[0]=lcut; fBDTSidebandCut[1]=rcut;} 
   void SetBDTSidebandSamplingFraction(Double_t f) {fBDTSidebandSamplingFraction=f;}
   void SetBDTSampleSideband(Bool_t sb) {fSampleSideband = sb;}
+  void SetBDTGetRespTree(Bool_t rt) {fGetRespTree = rt;}
   void SetBDTFullVarString(TString str) {fBDTFullVarString = str;}
   void SetBDTClassifierVarString(TString str) {fBDTClassifierVarString = str;}
   
@@ -203,6 +204,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   Double_t		fBDTSidebandCut[2];
   
   Bool_t 		fSampleSideband;
+  Bool_t		fGetRespTree;
   
   TString		fBDTFullVarString;
   TString		fBDTClassifierVarString;
