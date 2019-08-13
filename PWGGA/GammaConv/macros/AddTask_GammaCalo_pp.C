@@ -1086,7 +1086,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("n24a1113","4117911077032230000","01631031000000d0"); // std 20-40%
     cuts.AddCutCalo("n47a1113","4117911077032230000","01631031000000d0"); // std 40-70%
     cuts.AddCutCalo("n7aa1113","4117911077032230000","01631031000000d0"); // std 70-100%
-  } else if (trainConfig == 438{ // EMCAL clusters pp 5 TeV V0M mult cuts - EG2
+  } else if (trainConfig == 438){ // EMCAL clusters pp 5 TeV V0M mult cuts - EG2
     cuts.AddCutCalo("m01a2113","4117911077032230000","01631031000000d0"); // std 0-1%
     cuts.AddCutCalo("m15a2113","4117911077032230000","01631031000000d0"); // std 1-5%
     cuts.AddCutCalo("m5ka2113","4117911077032230000","01631031000000d0"); // std 5-20%
