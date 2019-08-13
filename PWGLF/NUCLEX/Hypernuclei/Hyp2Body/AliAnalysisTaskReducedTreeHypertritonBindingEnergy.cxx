@@ -7,6 +7,7 @@
 #include "AliMultEstimator.h"
 #include "AliAnalysisTask.h"
 #include "AliESDtrackCuts.h"
+#include "AliTimeRangeCut.h"
 #include "AliPIDResponse.h"
 #include "AliCentrality.h"
 #include "TDatabasePDG.h"
@@ -34,6 +35,7 @@ fPIDResponse(NULL),
 fESDtrackCuts_Pos(NULL),
 fESDtrackCuts_Neg(NULL),
 fESDeventCuts(),
+fTimeRangeCut(),
 fUtils(NULL),
 fOutputList(NULL),
 fQAList(NULL),
@@ -79,6 +81,7 @@ fPIDResponse(NULL),
 fESDtrackCuts_Pos(NULL),
 fESDtrackCuts_Neg(NULL),
 fESDeventCuts(),
+fTimeRangeCut(),
 fUtils(NULL),
 fOutputList(NULL),
 fQAList(NULL),
@@ -190,7 +193,7 @@ void AliAnalysisTaskReducedTreeHypertritonBindingEnergy::UserCreateOutputObjects
     //Track Cuts Object
     fESDtrackCuts_Pos = new AliESDtrackCuts ("fESDtrackCuts_Pos");
     fESDtrackCuts_Neg = new AliESDtrackCuts ("fESDtrackCuts_Neg");
-
+    
     
     PostData(1, fOutputList);
     PostData(2, fQAList);
@@ -200,12 +203,16 @@ void AliAnalysisTaskReducedTreeHypertritonBindingEnergy::UserExec(Option_t *)  {
     
     //Get Input Event
     if ( !GetInputEvent ()) return;
+    fTimeRangeCut.InitFromEvent(InputEvent());
+    Bool_t cutThisEvent = fTimeRangeCut.CutEvent(InputEvent());
+    if (cutThisEvent) return;
+    
     
     
     //Centrality
     AliMultSelection *multiplicitySelection = (AliMultSelection*) fESDevent->FindListObject("MultSelection");
     centrality = multiplicitySelection->GetMultiplicityPercentile("V0M");
-
+    
     
     //Load PID Response
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -232,7 +239,7 @@ void AliAnalysisTaskReducedTreeHypertritonBindingEnergy::UserExec(Option_t *)  {
         if ( V0->GetOnFlyStatus()) isOnTheFlyV0=1;//V0-Online
         if (!V0->GetOnFlyStatus()) isOnTheFlyV0=0;//V0-Offline
         if (!PassedMinimalQualityCutsV0(V0)) continue;
-
+        
         
         //Get V0 Daughters
         AliESDtrack *posTrack = (AliESDtrack*) fESDevent->GetTrack(V0->GetPindex());
@@ -241,14 +248,14 @@ void AliAnalysisTaskReducedTreeHypertritonBindingEnergy::UserExec(Option_t *)  {
         if (!negTrack) continue;
         if (posTrack->Charge() == negTrack->Charge()) continue;
         if (posTrack->GetID()  == negTrack->GetID() ) continue;
-
+        
         //Quality Requirements
         if (!PassedBasicTrackQualityCuts_Pos (posTrack)) continue;
         if (!PassedBasicTrackQualityCuts_Neg (negTrack)) continue;
         
         //Hypertriton Candidate Selection
         if (!IsHyperTritonCandidate(V0)) continue;
-
+        
         
         //Momentum Components of V0 Daughters
         Double_t posMomentum[3] = { 0.0, 0.0, 0.0 };
@@ -268,7 +275,7 @@ void AliAnalysisTaskReducedTreeHypertritonBindingEnergy::UserExec(Option_t *)  {
         chi2_TPC_Daughter1              = posTrack -> GetTPCchi2();
         nSigmaTPC_He3_Daughter1         = fPIDResponse -> NumberOfSigmasTPC (posTrack,AliPID::kHe3);
         nSigmaTPC_Pion_Daughter1        = fPIDResponse -> NumberOfSigmasTPC (posTrack,AliPID::kPion);
-
+        
         //Daughter2  (Negative Charge)
         px_Daughter2                    = negMomentum[0];
         py_Daughter2                    = negMomentum[1];
@@ -280,7 +287,7 @@ void AliAnalysisTaskReducedTreeHypertritonBindingEnergy::UserExec(Option_t *)  {
         chi2_TPC_Daughter2              = negTrack -> GetTPCchi2();
         nSigmaTPC_He3_Daughter2         = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kHe3);
         nSigmaTPC_Pion_Daughter2        = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kPion);
-
+        
         
         //Pair Variables
         cosPointingAngle = V0->GetV0CosineOfPointingAngle();
@@ -345,11 +352,11 @@ Bool_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::GetInputEvent ()  {
 }
 //_____________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::PassedBasicTrackQualityCuts_Pos (AliESDtrack *track)  {
-  
+    
     fESDtrackCuts_Pos -> SetAcceptKinkDaughters(false);
     fESDtrackCuts_Pos -> SetMinNClustersTPC(50);
     fESDtrackCuts_Pos -> SetRequireTPCRefit(true);
-    fESDtrackCuts_Pos -> SetMaxChi2PerClusterTPC(10);
+    fESDtrackCuts_Pos -> SetMaxChi2PerClusterTPC(10.0);
     fESDtrackCuts_Pos -> SetEtaRange (-1.0,1.0);
     if ( !fESDtrackCuts_Pos->AcceptTrack (track) ) return false;
     return true;
@@ -360,18 +367,18 @@ Bool_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::PassedBasicTrackQuali
     fESDtrackCuts_Neg -> SetAcceptKinkDaughters(false);
     fESDtrackCuts_Neg -> SetMinNClustersTPC(50);
     fESDtrackCuts_Neg -> SetRequireTPCRefit(true);
-    fESDtrackCuts_Neg -> SetMaxChi2PerClusterTPC(10);
+    fESDtrackCuts_Neg -> SetMaxChi2PerClusterTPC(10.0);
     fESDtrackCuts_Neg -> SetEtaRange (-1.0,1.0);
     if ( !fESDtrackCuts_Neg->AcceptTrack (track) ) return false;
     return true;
 }
 //_____________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::PassedMinimalQualityCutsV0 (AliESDv0 *V0)  {
- 
+    
     //Basic Cuts
     if (V0->GetDcaV0Daughters()>2.0) return false;
     if (V0->GetRr()<3.0) return false;
-    if (V0->GetV0CosineOfPointingAngle()<0.8) return false;
+    if (V0->GetV0CosineOfPointingAngle()<0.9) return false;
     
     return true;
 }
@@ -379,13 +386,39 @@ Bool_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::PassedMinimalQualityC
 Bool_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::IsHyperTritonCandidate (AliESDv0 *V0)  {
     
     //Get V0 Daughters
-    AliESDtrack *track0 = (AliESDtrack*) fESDevent->GetTrack(V0->GetPindex());
-    AliESDtrack *track1 = (AliESDtrack*) fESDevent->GetTrack(V0->GetNindex());
+    AliESDtrack *trackPos = (AliESDtrack*) fESDevent->GetTrack(V0->GetPindex());
+    AliESDtrack *trackNeg = (AliESDtrack*) fESDevent->GetTrack(V0->GetNindex());
     
     //Pair Requirements
-    if ( IsPionCandidate (track0) && (!Is3HeCandidate  (track1))) return false;
-    if ( Is3HeCandidate  (track0) && (!IsPionCandidate (track1))) return false;
-
+    if ( (!IsPionCandidate (trackPos)) && (!IsPionCandidate (trackNeg))) return false;
+    if ( (!Is3HeCandidate  (trackPos)) && (!Is3HeCandidate  (trackNeg))) return false;
+    if ( IsPionCandidate   (trackPos)  && (!Is3HeCandidate  (trackNeg))) return false;
+    if ( Is3HeCandidate    (trackPos)  && (!IsPionCandidate (trackNeg))) return false;
+    
+    //Momentum Components of V0 Daughters
+    Double_t posMomentum[3] = { 0.0, 0.0, 0.0 };
+    Double_t negMomentum[3] = { 0.0, 0.0, 0.0 };
+    V0->GetPPxPyPz(posMomentum[0],posMomentum[1],posMomentum[2]);
+    V0->GetNPxPyPz(negMomentum[0],negMomentum[1],negMomentum[2]);
+    
+    //Hypertriton
+    if (Is3HeCandidate (trackPos) && IsPionCandidate (trackNeg)) {
+        
+        TVector3 P1 (2.0*posMomentum[0],2.0*posMomentum[1],2.0*posMomentum[2]);
+        TVector3 P2 (negMomentum[0],negMomentum[1],negMomentum[2]);
+        Double_t m = InvariantMassHypertriton (P1,P2);
+        if (m>3.1) return false;
+    }
+    
+    //Anti-Hypertriton
+    if (IsPionCandidate (trackPos) && Is3HeCandidate (trackNeg)) {
+        
+        TVector3 P1 (2.0*negMomentum[0],2.0*negMomentum[1],2.0*negMomentum[2]);
+        TVector3 P2 (posMomentum[0],posMomentum[1],posMomentum[2]);
+        Double_t m = InvariantMassHypertriton (P1,P2);
+        if (m>3.1) return false;
+    }
+    
     return true;
 }
 //_____________________________________________________________________________________________________________________________________________________
@@ -393,7 +426,10 @@ Bool_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::IsPionCandidate (AliE
     
     Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kPion);
     if (TMath::Abs(nsigmaTPC) > 4.0) return false;
-    if (track->Pt()>1.5) return false;
+    if (track->Pt()>1.3) return false;
+    
+    Double_t dca_xy = GetTransverseDCA (track);
+    if (TMath::Abs (dca_xy) < 0.2) return false;
     
     return true;
 }
@@ -404,6 +440,22 @@ Bool_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::Is3HeCandidate (AliES
     if (TMath::Abs(nsigmaTPC) > 4.0) return false;
     
     return true;
+}
+//_____________________________________________________________________________________________________________________________________________________
+Double_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::InvariantMassHypertriton (TVector3 P1, TVector3 P2)  {
+    
+    //Mass Daughters
+    Double_t m3He  = AliPID::ParticleMass (AliPID::kHe3);
+    Double_t mpion = AliPID::ParticleMass (AliPID::kPion);
+    
+    //Invariant Mass Calculation
+    TVector3 P = P1 + P2;
+    
+    Double_t E1 = TMath::Sqrt(m3He*m3He + P1.Mag2());
+    Double_t E2 = TMath::Sqrt(mpion*mpion + P2.Mag2());
+    Double_t m  = TMath::Sqrt( (E1+E2)*(E1+E2) - P.Mag2() );
+    
+    return m;
 }
 //_____________________________________________________________________________________________________________________________________________________
 Double_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::GetDecayLengthV0 (AliESDv0 *V0)  {
@@ -420,7 +472,7 @@ Double_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::GetDecayLengthV0 (A
     AliESDVertex *vertex = (AliESDVertex*) fESDevent->GetPrimaryVertex();
     Double_t primVertex[3] = { 0.0, 0.0, 0.0 };
     vertex->GetXYZ(primVertex);
-
+    
     //Decay Length
     Double_t Dx = primVertex[0]-secVertex[0];
     Double_t Dy = primVertex[1]-secVertex[1];
@@ -433,9 +485,9 @@ Double_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::GetDecayLengthV0 (A
 Double_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::GetTransverseDCA (AliESDtrack *track)  {
     
     /*
-    Double_t impactParameter[2];
-    track -> GetImpactParameters(impactParameter[0],impactParameter[1]);
-    */
+     Double_t impactParameter[2];
+     track -> GetImpactParameters(impactParameter[0],impactParameter[1]);
+     */
     
     Double_t impactParameter[2];
     Double_t covarianceMatrix[3];
