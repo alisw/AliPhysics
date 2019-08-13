@@ -21,6 +21,7 @@ class AliPID;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliBalancePsi.h"
+#include "AliAODTrack.h"
 
 #include "AliPID.h"  
 #include "AliPIDResponse.h"
@@ -39,6 +40,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
  public:
   enum etriggerSel{kMB, kCentral15, kCentral18, kINT7, kppHighMult};
   enum eCorrProcedure{kNoCorr, kDataDrivCorr, kMCCorr, kMC1DCorr};
+  enum ePIDSel{kTrig, kAssoc, kBoth};
   
   AliAnalysisTaskBFPsi(const char *name = "AliAnalysisTaskBFPsi");
   virtual ~AliAnalysisTaskBFPsi();
@@ -66,8 +68,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void SetInputListForNUECorr3D(TString fileNUE);
  
   Double_t GetNUACorrection(Int_t gRun, Short_t vCharge, Double_t vVz, Float_t vEta, Float_t vPhi );
-  Double_t GetNUECorrection(Int_t gCentrality, Short_t vCharge, Double_t vPt);
+  Double_t GetNUECorrection(Int_t gCentrality, Short_t vCharge, Double_t vPt, Int_t poi);
 
+  Bool_t SetSelectPID(AliAODTrack* track, Int_t poi);  
   Int_t GetIndexRun(Int_t runNb);
   Int_t GetIndexCentrality(Double_t gCentrality);
   
@@ -289,25 +292,20 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void SetUseBayesianPID(Double_t gMinProbabilityValue) {
     fUsePID = kTRUE; fUsePIDnSigma = kFALSE; fUsePIDPropabilities = kTRUE;
     fMinAcceptedPIDProbability = gMinProbabilityValue; }
-
-  void SetUseNSigmaPID(Double_t gMaxNSigma) {
-    fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
-    fPIDNSigma = gMaxNSigma;} //not used at the moment. Values are hardcoded in the .cxx for the different species
   
-  void SetUseNSigmaPIDNewTrial(Double_t gMaxNSigmaNewTrial) {
-        fUsePIDNewTrial = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
-        fPIDNSigma = gMaxNSigmaNewTrial;}
+  void SetUseNSigmaPID(Int_t gMaxNSigmaAcc, Int_t gMaxNSigmaExcl, Float_t pidMomCut) {
+        fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
+        fPIDNSigmaAcc = gMaxNSigmaAcc;
+        fPIDNSigmaExcl = gMaxNSigmaExcl;
+        fPIDMomCut = pidMomCut;
+        fUseRapidity = kTRUE;
+  } // nsigma values for PID acceptance and rejection and pT threshold to move from TPC only and TPC+TOF for both methods: Bayes and nSigma Combined. usually 0.6 for pi and p and 0.4 for K.
     
-  void SetPIDMomCut(Float_t pidMomCut)  {fPIDMomCut = pidMomCut;} // pT threshold to move from TPC only and TPC+TOF for both methods: Bayes and nSigma Combined. usually 0.6 for pi and p and 0.4 for K.
-  
+    
   void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
     fPidDetectorConfig = detConfig;}
   void SetEventClass(TString receivedEventClass){
     fEventClass = receivedEventClass;
-  }
-
-  void SetUseRapidity(Bool_t useRapidity = kTRUE){
-    fUseRapidity = useRapidity;
   }
 
   void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
@@ -331,7 +329,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     }
 
     void SetVZEROCalibrationFile(const char* filename, const char* lhcPeriod);
-    void SetParticleOfInterest(AliPID::EParticleType poi);
+    void SetParticleOfInterest(AliPID::EParticleType trig, AliPID::EParticleType assoc);
     
 
  private:
@@ -368,6 +366,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliEventPoolManager*     fPoolMgr;         //! event pool manager
 
   TList *fList; //fList object
+  TList *fListCrossCorr; //fList object
   TList *fListBF; //fList object
   TList *fListBFS; //fList object
   TList *fListBFM; //fList object
@@ -403,13 +402,25 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistDCA;//DCA  (QA histogram)
   TH2F *fHistChi2;//track chi2 (QA histogram)
   TH2F *fHistPt;//transverse momentum (QA histogram)
+  TH2F *fHistPtTrig;//transverse momentum for triggers (QA cross correlations histogram)
+  TH2F *fHistPtAssoc;//transverse momentum for associated (QA cross correlations histogram)
   TH2F *fHistPtCorr;//transverse momentum after Corrrection (QA histogram)
+  TH2F *fHistPtCorrTrig;//transverse momentum after Corrrection for triggers (QA cross correlations histogram)
+  TH2F *fHistPtCorrAssoc;//transverse momentum after Corrrection for associated (QA cross correlations histogram)
   TH2F *fHistEta;//pseudorapidity (QA histogram)
   TH2F *fHistEtaCorr;//pseudorapidity after correction (QA histogram)
   TH2F *fHistRapidity;//rapidity (QA histogram)
+  TH2F *fHistRapidityTrig;//rapidity for triggers (QA cross correlations histogram)
+  TH2F *fHistRapidityAssoc;//rapidity for associated (QA cross correlations histogram)
   TH2F *fHistRapidityCorr;//rapidity after correction (QA histogram)
+  TH2F *fHistRapidityCorrTrig;//rapidity after correction for triggers (QA cross correlations histogram)
+  TH2F *fHistRapidityCorrAssoc;//rapidity after correction for associated (QA cross correlations histogram)
   TH2F *fHistPhi;//phi (QA histogram)
+  TH2F *fHistPhiTrig;//phi for triggers (QA cross correlations histogram)
+  TH2F *fHistPhiAssoc;//phi for associated (QA cross correlations histogram)
   TH2F *fHistPhiCorr;//phi after correction (QA histogram)
+  TH2F *fHistPhiCorrTrig;//phi after correction for triggers (QA cross correlations histogram)
+  TH2F *fHistPhiCorrAssoc;//phi after correction for associated (QA cross correlationshistogram)
   TH3F *fHistEtaVzPos;//eta vs Vz pos particles (QA histogram)
   TH3F *fHistEtaVzPosCorr;//eta vs Vz pos particles after correction(QA histogram) 
   TH3F *fHistEtaVzNeg;//eta vs Vz neg particles (QA histogram)
@@ -454,7 +465,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH3D *fHistNSigmaTPCTOFPbefPID;//+++++++++++++++
 
   TH2D *fHistdEdxVsPTPCafterPID;//TPC dEdx vs momentum after PID cuts (QA histogram)
+  TH2D *fHistdEdxVsPTPCafterPIDTrig;//TPC dEdx vs momentum after PID cuts for triggers (QA cross correlations histogram)
+  TH2D *fHistdEdxVsPTPCafterPIDAssoc;//TPC dEdx vs momentum after PID cuts for associated (QA cross correlations histogram)
   TH2D *fHistBetavsPTOFafterPID;//beta vs momentum after PID cuts (QA histogram)
+  TH2D *fHistBetavsPTOFafterPIDTrig;//beta vs momentum after PID cuts for triggers (QA cross correlations histogram)
+  TH2D *fHistBetavsPTOFafterPIDAssoc;//beta vs momentum after PID cuts for associated (QA cross correlations histogram)
   TH2D *fHistProbTPCvsPtafterPID; //TPC probability vs pT after PID cuts (QA histogram)
   TH2D *fHistProbTOFvsPtafterPID;//TOF probability vs pT after PID cuts (QA histogram)
   TH2D *fHistProbTPCTOFvsPtafterPID;//TOF/TPC probability vs pT after PID cuts (QA histogram)
@@ -480,6 +495,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   TH1F *fHistpTCorrPlus[kCENTRALITY]; //====correction
   TH1F *fHistpTCorrMinus[kCENTRALITY]; //===correction
+  TH1F *fHistpTCorrPlusTrig[kCENTRALITY]; //====correction for triggers (cross correlations)
+  TH1F *fHistpTCorrMinusTrig[kCENTRALITY]; //===correction for triggers (cross correlations)
+  TH1F *fHistpTCorrPlusAssoc[kCENTRALITY]; //====correction for associated (cross correlations)
+  TH1F *fHistpTCorrMinusAssoc[kCENTRALITY]; //===correction for associated (cross correlations)
   
   Double_t fCentralityArrayForCorrections[kCENTRALITY];
   Int_t fCentralityArrayBinsForCorrections;
@@ -489,16 +508,18 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliPIDResponse *fPIDResponse;     //! PID response object
   AliPIDCombined       *fPIDCombined;     //! combined PID object
   
-  AliPID::EParticleType fParticleOfInterest;//analyzed particle
+  AliPID::EParticleType fParticleOfInterest[2];//analyzed particle
   kDetectorUsedForPID   fPidDetectorConfig;//used detector for PID
-  Double_t fMassParticleOfInterest;//particle mass (for rapidity calculation) 
+  Double_t fMassParticleOfInterest[2];//particle mass (for rapidity calculation)
 
+    
   Bool_t fUsePID; //flag to use PID 
-  Bool_t fUsePIDNewTrial;
   Bool_t fUsePIDnSigma;//flag to use nsigma method for PID
   Bool_t fUsePIDPropabilities;//flag to use probability method for PID
   Bool_t fUseRapidity;//flag to use rapidity instead of pseudorapidity in correlation histograms
-  Double_t fPIDNSigma;//nsigma cut for PID
+  Bool_t fCrossCorr;//cross correlations or not
+  Double_t fPIDNSigmaAcc;//nsigma cut for PID acceptance
+  Double_t fPIDNSigmaExcl;//nsigma cut for exclusive PID
   Double_t fMinAcceptedPIDProbability;//probability cut for PID
 
   Bool_t   fElectronRejection;//flag to use electron rejection
@@ -520,8 +541,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fCentralityPercentileMin;//centrality percentile min
   Double_t fCentralityPercentileMax;//centrality percentile max
   Double_t fImpactParameterMin;//impact parameter min (used for MC)
-  Double_t fImpactParameterMax;//impact parameter max (used for MC)
-
+  Double_t fImpactParameterMax;//impact parameter max (used for MC)  
   TString fMultiplicityEstimator;//"V0M","V0A","V0C","TPC"
   Bool_t fUseMultiplicity;//use the multiplicity cuts
   Double_t fNumberOfAcceptedTracksMin;//min. number of number of accepted tracks (used for the multiplicity dependence study - pp)
@@ -645,7 +665,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 20); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 21); // example of analysis
 };
 
 
