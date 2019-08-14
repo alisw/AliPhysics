@@ -16,6 +16,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerNam
   if (!mgr) {
     Error("AddTaskFemto", "No analysis manager to connect to.");
     return NULL;
+    
   }
 
   // B. Check the analysis type using the event handlers connected to the analysis

@@ -169,6 +169,7 @@ protected:
   Bool_t fSaveConfigTMacro; //flag to save config TMacro in output list
   TString fUserName; //GRID user name
 
+  
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskFemto, 3);
   /// \endcond
