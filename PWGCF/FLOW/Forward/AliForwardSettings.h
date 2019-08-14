@@ -191,6 +191,9 @@ class AliForwardSettings : public TObject {
   Int_t kW4FourTwoB  = 10;
   Int_t kW4ThreeTwoA = 11;
   Int_t kW4ThreeTwoB = 12;
+  Int_t kWTwoTwoN    = 13; // Numerator of R_{n,n; 2}
+  Int_t kWTwoTwoD    = 14; // Denominator of R_{n,n; 2}
+
 
   Int_t  kW2 =1;               // <w2>
   Int_t  kW2Two=2;             // <w2*two>

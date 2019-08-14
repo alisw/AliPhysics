@@ -104,10 +104,10 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   constexpr Int_t dimensions = 7;
   Int_t ptnmax =  (fSettings.doPt ? 5 : 0);
 
-  Int_t dbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ;
-  Int_t rbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)} ; // n, pt, s, zvtx,eta,cent,kind
+  Int_t dbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kWTwoTwoD)} ;
+  Int_t rbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kWTwoTwoD)} ; // n, pt, s, zvtx,eta,cent,kind
   Double_t xmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
-  Double_t xmax[dimensions] = {3,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kW4ThreeTwoB)+1};
+  Double_t xmax[dimensions] = {3,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kWTwoTwoD)+1};
 
 
   // create a THn for each harmonic
@@ -199,10 +199,10 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fUtil.fevent = fInputEvent;
 
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
-  if (cent > 60.0){
-    //PostData(1, fOutputList);
-    return;
-  }
+  // if (cent > 60.0){
+  //   //PostData(1, fOutputList);
+  //   return;
+  // }
 
 
   fUtil.FillData(refDist,centralDist,forwardDist);
