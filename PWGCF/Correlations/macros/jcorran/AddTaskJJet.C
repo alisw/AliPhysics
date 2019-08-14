@@ -60,12 +60,12 @@ AliJJetTask* AddTaskJJet(
   #endif
   int nTrackJetFinder, nMCParticleJetFinder;
   if(doRecoTrackJet){
-    nTrackJetFinder       = 2*nR; 
+    nTrackJetFinder       = (1+doFullJets)*nR;
   }else{
     nTrackJetFinder       = 0;
   }
   if(doRecoMCPartleJet){
-    nMCParticleJetFinder  = 2*nR;
+    nMCParticleJetFinder  = (1+doFullJets)*nR;
   }else{
     nMCParticleJetFinder  = 0;
 
