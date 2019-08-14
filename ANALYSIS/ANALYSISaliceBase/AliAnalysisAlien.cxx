@@ -1382,7 +1382,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                } else {
                   cbase = res;
                   cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
-                  delete cbase;
+                  delete cbase; cbase = 0;
                }
                Info("CreateDataset", "Created dataset %s with %d files", file.Data(), nstart+ncount);
                break;
