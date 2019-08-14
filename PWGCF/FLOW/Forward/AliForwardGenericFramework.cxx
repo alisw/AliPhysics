@@ -173,9 +173,11 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
 
       Int_t refEtaBinA = fQvector->GetAxis(3)->FindBin(eta);
       Int_t refEtaBinB = refEtaBinA;
+      Int_t etaBinB = etaBin;
 
       if ((fSettings.etagap)) {
         refEtaBinB = fQvector->GetAxis(3)->FindBin(-eta);
+        etaBinB = fpvector->GetAxis(3)->FindBin(-eta);
       }
 
       Double_t refEtaA = fQvector->GetAxis(3)->GetBinCenter(refEtaBinA);
@@ -241,6 +243,17 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         y[6] = Double_t(fSettings.kW2A);
         cumuDiff->Fill(y, dn2diff);
         
+        if (eta > 0.0) {
+          // R_{n,n; 2} numerator
+          double over = (TwoDiff(-2,2,refEtaBinB, etaBin)*TwoDiff(2,-2,refEtaBinA, etaBinB)).Re();
+          y[6] = Double_t(fSettings.kWTwoTwoN);
+          cumuDiff->Fill(y, over);
+
+          // R_{n,n; 2} denominator
+          double under = (TwoDiff(-2,2,refEtaBinB, etaBinB)*TwoDiff(2,-2,refEtaBinA, etaBin)).Re();
+          y[6] = Double_t(fSettings.kWTwoTwoD);
+          cumuDiff->Fill(y, under);
+        }
 
         // four-particle cumulant
         double fourdiff = FourDiff(n, n, -n, -n, refEtaBinA, refEtaBinB, etaBin,etaBin).Re(); // A is same side
@@ -341,10 +354,25 @@ TComplex AliForwardGenericFramework::Two(Int_t n1, Int_t n2, Int_t eta1, Int_t e
   return formula;
 }
 
+
+
 TComplex AliForwardGenericFramework::TwoDiff(Int_t n1, Int_t n2, Int_t refetabin, Int_t diffetabin)
 {
   return p(n1,1, diffetabin)*Q(n2,1, refetabin);// - q(n1+n2,1, diffetabin);
 }
+
+
+// TComplex AliForwardGenericFramework::TwoTwoDiff1(Int_t n1, Int_t n2, Int_t ref1, Int_t ref2, Int_t diff1,Int_t diff2)
+// {
+//   // 
+//   return Q(n2,1, ref1)*p(n1,1, diff2)*Q(n2,1, ref2)*p(n1,1, diff1);// - q(n1+n2,1, diffetabin);
+// }
+
+// TComplex AliForwardGenericFramework::TwoTwoDiff2(Int_t n1, Int_t n2, Int_t ref1, Int_t ref2, Int_t diff1,Int_t diff2)
+// {
+//   // 
+//   return Q(n2,1, ref1)*p(n1,1, diff2)*Q(n2,1, ref2)*p(n1,1, diff1);// - q(n1+n2,1, diffetabin);
+// }
 
 TComplex AliForwardGenericFramework::Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4,Int_t eta1, Int_t eta2)
 {
