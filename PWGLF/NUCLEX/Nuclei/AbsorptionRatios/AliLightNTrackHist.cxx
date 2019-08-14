@@ -39,6 +39,7 @@ AliLightNTrackHist::AliLightNTrackHist()
         fTOFStatus[i]=0;
         fTPCClsCPiluUp[i]=0;
         fITShrdClsPileUp[i]=0;
+        fTrackChi2perNDF[i]=0;
     }
 }
 AliLightNTrackHist::AliLightNTrackHist(bool DCADist,bool CombSig,bool PlotPmass2dca3D) {
@@ -301,6 +302,7 @@ AliLightNTrackHist::AliLightNTrackHist(bool DCADist,bool CombSig,bool PlotPmass2
         
         TString TrackChi2perNDFname = Form("TrackChi2perNDF_%s",sName[i].Data());
         fTrackChi2perNDF[i] = new TH1F(TrackChi2perNDFname.Data(),TrackChi2perNDFname.Data(),200,-1,10);
+        fTrackChi2perNDF[i]->Sumw2();
         fTrackChi2perNDF[i]->GetXaxis()->SetTitle("#chi^{2}/NDF");
         fTrackCutQA[i]->Add(fTrackChi2perNDF[i]);
         
@@ -417,6 +419,7 @@ AliLightNTrackHist::~AliLightNTrackHist() {
         delete fTOFStatus[i];
         delete fTPCClsCPiluUp[i];
         delete fITShrdClsPileUp[i];
+        delete fTrackChi2perNDF[i];
     }
     delete fHistList;
     delete fP_mass2_DCAxyHist;
