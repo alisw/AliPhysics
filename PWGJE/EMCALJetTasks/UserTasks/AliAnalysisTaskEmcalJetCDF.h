@@ -37,6 +37,11 @@ public:
     void                        UserCreateOutputObjects();
     void                        Terminate ( Option_t *option );
 
+    void SetUseAliEventCuts      (Bool_t b)                { fUseAliEventCuts = b; }
+    void SetUseManualEvtCuts     (Bool_t input)            { fUseManualEventCuts = input;}
+  
+
+
 protected:
     void                        ExecOnce();
     Bool_t                      Run() ;
