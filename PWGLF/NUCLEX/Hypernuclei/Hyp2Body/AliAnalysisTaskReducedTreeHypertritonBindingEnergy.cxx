@@ -429,7 +429,7 @@ Bool_t AliAnalysisTaskReducedTreeHypertritonBindingEnergy::IsPionCandidate (AliE
     if (track->Pt()>1.3) return false;
     
     Double_t dca_xy = GetTransverseDCA (track);
-    if (TMath::Abs (dca_xy) < 0.2) return false;
+    if (TMath::Abs (dca_xy) < 0.1) return false;
     
     return true;
 }
