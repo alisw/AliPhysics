@@ -474,6 +474,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fUsePtDepTrackToCluster;                  // flag for switching on pT dependent matching parameters
     TF1*      fFuncPtDepEta;                            // TF1 for pT dep cutting in eta
     TF1*      fFuncPtDepPhi;                            // TF1 for pT dep cutting in phi
+    Int_t     fUseTimingEfficiencyMCSimCluster;         // flag for switching on TimingEfficiencyMCSimCluster
+    TF1*      fFuncTimingEfficiencyMCSimCluster;        // TF1 for TimingEfficiencyMCSimCluster
     Float_t   fMinTMDistSigma;                          // number of sigma's for TM using PHOS
     Bool_t    fUseEOverPVetoTM;                         // flag for switching on E/P veto (forbidding tracks to match clusters if clusterE/trackP > someValue
     Double_t  fEOverPMax;                               // maximum value for E/P of a track to be considered for TM
@@ -634,7 +636,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,90)
+    ClassDef(AliCaloPhotonCuts,91)
 };
 
 #endif
