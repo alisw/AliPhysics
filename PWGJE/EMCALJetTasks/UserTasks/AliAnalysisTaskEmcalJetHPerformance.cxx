@@ -548,7 +548,7 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
       std::make_pair("TPC_Neg", R"(TPC $\eta$ < 0: $<\cos(R * (\Psi_{\mathrm{V0M}} - \Psi_{\mathrm{TPC_{Pos}}}))>$)")
     };
     for (const auto& nameAndTitle: resolutionNamesToTitles) {
-      for (unsigned int R = 2; R < 5; R++) {
+      for (unsigned int R = 2; R < 9; R++) {
         std::string name = "QA/eventPlaneRes/%s/R%i";
         std::string title = "%s event plane res;Centrality (%%);R_{%i}";
         fHistManager.CreateTProfile(TString::Format(name.c_str(), nameAndTitle.first.c_str(), R),
@@ -813,10 +813,13 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
       // We need the centrality bin, but the bin provided by the base class isn't that fine grained
       // (and may cause problems elsewhere if it is). So we just calculate the value here.
       std::string name = "QA/eventPlaneRes/%s/R%i";
-      for (unsigned int R = 2; R < 5; R++) {
-        double vzero = vzeroQnVector->EventPlane(R);
-        double tpcPos = tpcPosQnVector->EventPlane(R);
-        double tpcNeg = tpcNegQnVector->EventPlane(R);
+      // The resolution is calculated by changing the leading term, but it is all with respect
+      // to the same harmonic. We measure with respect to the second order harmonic, so we retrieve
+      // that event plane.
+      double vzero = vzeroQnVector->EventPlane(2);
+      double tpcPos = tpcPosQnVector->EventPlane(2);
+      double tpcNeg = tpcNegQnVector->EventPlane(2);
+      for (unsigned int R = 2; R < 9; R++) {
         fHistManager.FillProfile(TString::Format(name.c_str(), "VZERO", R), fCent,
                      std::cos(R * (tpcPos - tpcNeg)));
         fHistManager.FillProfile(TString::Format(name.c_str(), "TPC_Pos", R), fCent,
