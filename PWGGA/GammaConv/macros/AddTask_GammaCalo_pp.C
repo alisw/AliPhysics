@@ -1548,6 +1548,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("o5k10113","244665107a012200000","0163103100000010"); // 5-20%
     cuts.AddCutCalo("p2610113","244665107a012200000","0163103100000010"); // 20-60%
     cuts.AddCutCalo("p6a10113","244665107a012200000","0163103100000010"); // 60-100%
+  } else if( trainConfig == 711){ // Timing cut efficiency studies
+    cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); //
+    cuts.AddCutCalo("00010113","24466510g0012200000","0163103100000010"); //
+    cuts.AddCutCalo("000ap113","24466510g0012200000","0163103100000010"); // PHI7
 
   // *********************************************************************************************************
   // 13 TeV 2015 pp Run2 - PHOS configurations
@@ -1665,9 +1669,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("000a2113","4117911070032230000","01631031000000d0"); // std EG2
     cuts.AddCutCalo("000a3113","4117911070032230000","01631031000000d0"); // std EG1
   } else if (trainConfig == 2005){ // Timing cut efficiency studies
-    cuts.AddCutCalo("00010113","4117911007032230000","01631031000000d0"); // Standard EDC
-    cuts.AddCutCalo("000a1113","4117911000032230000","01631031000000d0"); // std EMC7
-    cuts.AddCutCalo("000a2113","4117911000032230000","01631031000000d0"); // std EG2
+    cuts.AddCutCalo("00010113","4117911007032230000","01631031000000d0"); // Standard EDC - open timing cut
+    cuts.AddCutCalo("00010113","4117911077032230000","01631031000000d0"); // Standard EDC - standard timing cut
+    cuts.AddCutCalo("00010113","41179110j7032230000","01631031000000d0"); // Standard EDC - Timing efficiency cut
   } else if (trainConfig == 2006){ // EMCAL+DCAL clusters pp 5 TeV Sphericity Cuts
     cuts.AddCutCalo("00010113","4117911077032230000","01631031000000d0"); // std
     cuts.AddCutCalo("h0510113","4117911077032230000","01631031000000d0"); // std
