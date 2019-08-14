@@ -637,8 +637,9 @@ Bool_t AliCorrelationExtraction::NormalizeToNearSidePeak(TH2D* h) {
   Double_t norm = 0.;
   for (Int_t i=0; i<binNumbers.size(); ++i) norm += h->GetBinContent(binNumbers.at(i));
   norm /= binNumbers.size();
-  h->Scale(1./norm);
   binNumbers.clear();
+  if (!norm) return kFALSE;
+  h->Scale(1./norm);
   return kTRUE;
 }
 
