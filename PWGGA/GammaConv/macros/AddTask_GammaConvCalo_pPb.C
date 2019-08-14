@@ -1911,12 +1911,9 @@ void AddTask_GammaConvCalo_pPb(
 
   } else if (trainConfig == 2018){  // EMCal+DCAL clusters standard cuts, triggers, Nico TB NL + FineTuning 57, +-50ns timing (5)
     cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411790105f032230000","0h63103100000010"); // INT7
+  } else if (trainConfig == 2019){  // EMCal+DCAL clusters standard cuts, triggers, Nico TB NL + FineTuning 57, +-50ns timing (5)
     cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411790105f032230000","0h63103100000010"); // EG2+DG2
     cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411790105f032230000","0h63103100000010"); // EG1+DG1
-  } else if (trainConfig == 2019){  // EMCal+DCAL clusters standard cuts, triggers, Nico TB NL + FineTuning 57, +-50ns timing (5)
-    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411790105f022230000","0h63103100000010"); // INT7
-    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411790105f022230000","0h63103100000010"); // EG2+DG2
-    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411790105f022230000","0h63103100000010"); // EG1+DG1
 
   } else if (trainConfig == 2020){  // EMCal+DCAL clusters standard cuts, triggers, Nico TB NL + FineTuning 57, +-50ns timing (5)
     cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796105f032230000","0h63103100000010"); // INT7
