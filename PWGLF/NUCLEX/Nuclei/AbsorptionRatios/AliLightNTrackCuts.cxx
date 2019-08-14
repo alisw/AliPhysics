@@ -251,13 +251,13 @@ bool AliLightNTrackCuts::TrackingCuts(AliLightNTrack *Track) {
         }
     }
     if (pass && fCutTPCCrossedRows) {
-        if (Track->GetTPCCrossedRows()<70) {
+        if (Track->GetTPCCrossedRows()<fTPCCrossedRowsCut) {
             pass=false;
         } else {
             fHists->FillTrackCounter(11);
         }
         if (pass) {
-            if (Track->GetRatioCr()<0.83) {
+            if (Track->GetRatioCr()<fTPCRatio) {
                 pass=false;
             } else {
                 fHists->FillTrackCounter(12);
@@ -269,6 +269,11 @@ bool AliLightNTrackCuts::TrackingCuts(AliLightNTrack *Track) {
             pass=false;
         } else {
             fHists->FillTrackCounter(13);
+        }
+    }
+    if (pass && fCutChi2){
+        if(Track->GetTrackChi2perNDF()>fChi2perNDF) {
+            pass=false;
         }
     }
     
@@ -827,7 +832,10 @@ AliLightNTrackCuts* AliLightNTrackCuts::PrimProtonCuts(bool isMC,bool DCAPlots,b
     trackCuts->SetDCAVtxZ(0.2);
     trackCuts->SetDCAVtxXY(0.1);
     trackCuts->SetCutSharedCls(true);
+    trackCuts->SetTPCRatioCut(0.8);
+    trackCuts->SetChi2perNDFCut(4);
     trackCuts->SetCutTPCCrossedRows(true);
+    trackCuts->SetTPCCrossedRowsCut(70);
     trackCuts->SetPID(AliPID::kProton, 0.7,3.,1e30);
     trackCuts->SetRapidityRange(-1, 1);
     trackCuts->SetRejLowPtPionsTOF(false);
@@ -876,7 +884,10 @@ AliLightNTrackCuts* AliLightNTrackCuts::PrimDeuteronCuts(bool isMC,bool DCAPlots
     trackCuts->SetDCAVtxZ(0.2);
     trackCuts->SetDCAVtxXY(0.1);
     trackCuts->SetCutSharedCls(true);
+    trackCuts->SetTPCRatioCut(0.8);
+    trackCuts->SetChi2perNDFCut(4);
     trackCuts->SetCutTPCCrossedRows(true);
+    trackCuts->SetTPCCrossedRowsCut(70);
     trackCuts->SetPID(AliPID::kDeuteron, 1.4,3.,1e30);
     trackCuts->SetCutITSPID(true);
     trackCuts->SetRapidityRange(-1, 1);

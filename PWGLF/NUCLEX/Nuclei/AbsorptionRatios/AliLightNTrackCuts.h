@@ -43,6 +43,8 @@ public:
     void SetEtaRange(double etamin, double etamax){fetamin=etamin; fetamax=etamax; fcutEta = kTRUE;};
     double GetEtaMin() {return fetamin;}
     double GetEtaMax() {return fetamax;}
+    void SetChi2perNDFCut(double Chi2){fChi2perNDF = Chi2; fCutChi2 = kTRUE;};
+    void SetTPCRatioCut(double Ratio){fTPCRatio = Ratio;};
     void SetCutCharge(int charge){fcutCharge = kTRUE; fCharge = charge;};
     void SetCheckPileUpITS(bool check){fCheckPileUpITS=check;};
     void SetCheckPileUpTOF(bool check){fCheckPileUpTOF=check;};
@@ -57,6 +59,7 @@ public:
     void SetCutSharedCls(bool cutit){fCutSharedCls = cutit;};
     void SetCheckTPCRefit(bool cutit){fCheckTPCRefit=cutit;};
     void SetCutTPCCrossedRows(bool cutit){fCutTPCCrossedRows = cutit;};
+    void SetTPCCrossedRowsCut(double CrossedRows){fTPCCrossedRowsCut = CrossedRows;};
     void SetPID(AliPID::EParticleType pid, double pTPChresh, double sigValTPC, double sigValTOF)
     {fParticleID = pid; fPIDPTPCThreshold = pTPChresh; fNSigValueTPC = sigValTPC; fNSigValueTOF = sigValTOF; fCutPID = kTRUE;};
     void SetCutITSPID(bool cutit){fdoITSnSigmaCut = cutit;};
@@ -105,6 +108,9 @@ private:
     bool fcutPt;                        //
     double fetamin;                     //
     double fetamax;                     //
+    bool fCutChi2;                      //
+    double fChi2perNDF;                 //
+    double fTPCRatio;                   //
     bool fcutEta;			      //
     double fRapMin;		      //
     double fRapMax;		      //
@@ -126,6 +132,7 @@ private:
     bool fCutSharedCls;                 //
     bool fCheckTPCRefit;                //
     bool fCutTPCCrossedRows;            //
+    double fTPCCrossedRowsCut;            //
     bool fCutPID;                       //
     bool fCutHighPtSig;                 // Reject tracks which have a lower Sigma for other particles (implemented for electrons, pion, kaons and protons)
     AliPID::EParticleType fParticleID;  //
