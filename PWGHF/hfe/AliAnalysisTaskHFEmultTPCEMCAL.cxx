@@ -153,7 +153,7 @@ AliAnalysisTaskSE(),
 	IsM20(kFALSE),
 	fCutM20Min(0.02),
 	fCutM20Max(0.6),
-	fCutEopEMin(0.9),
+	fCutEopEMin(0.8),
 	fCutEopEMax(1.2),
 
 
@@ -335,7 +335,7 @@ AliAnalysisTaskHFEmultTPCEMCAL::AliAnalysisTaskHFEmultTPCEMCAL(const char *name)
 	IsM20(kFALSE),
 	fCutM20Min(0.02),
 	fCutM20Max(0.6),
-	fCutEopEMin(0.9),
+	fCutEopEMin(0.8),
 	fCutEopEMax(1.2),
 
 
