@@ -1548,10 +1548,15 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("o5k10113","244665107a012200000","0163103100000010"); // 5-20%
     cuts.AddCutCalo("p2610113","244665107a012200000","0163103100000010"); // 20-60%
     cuts.AddCutCalo("p6a10113","244665107a012200000","0163103100000010"); // 60-100%
-  } else if( trainConfig == 711){ // Timing cut efficiency studies
+  } else if( trainConfig == 711){ // New standard cut August 14 2019
     cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); //
     cuts.AddCutCalo("00010113","24466510g0012200000","0163103100000010"); //
     cuts.AddCutCalo("000ap113","24466510g0012200000","0163103100000010"); // PHI7
+  } else if( trainConfig == 712){ // Timing cut efficiency studies
+    cuts.AddCutCalo("00010113","244665107a012200000","0163103100000010"); // std timing +-30ns
+    cuts.AddCutCalo("00010113","24466510aa012200000","0163103100000010"); // timing -12.5 + 13 ns
+    cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); // std timing +-30ns    ,w MC Timing cut eff. corr.
+    cuts.AddCutCalo("00010113","24466510ia012200000","0163103100000010"); // timing -12.5 + 13 ns ,w MC Timing cut eff. corr.
 
   // *********************************************************************************************************
   // 13 TeV 2015 pp Run2 - PHOS configurations
