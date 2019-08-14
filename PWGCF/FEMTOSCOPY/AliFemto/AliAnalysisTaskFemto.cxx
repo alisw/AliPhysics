@@ -511,6 +511,7 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
 {
   if (fVerbose)
     AliInfo("Creating Femto Analysis objects\n");
+
   gSystem->SetIncludePath("-I$ROOTSYS/include -I./STEERBase/ -I./ESD/ -I./AOD/ -I./ANALYSIS/ -I./ANALYSISalice/ -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser");
   if(!fGridConfig)
     {
@@ -521,7 +522,7 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
   else
     {
       printf(Form("*** Executing alien-token-init %s ***\n"),fUserName.Data());
-      //gSystem->Exec(Form("alien-token-init %s",fUserName.Data()));
+      gSystem->Exec(Form("alien-token-init %s",fUserName.Data()));
       printf("*** Connect to AliEn ***\n");
       TGrid::Connect("alien://");
       TFile *fileConfig = TFile::Open(fConfigMacro.Data());
