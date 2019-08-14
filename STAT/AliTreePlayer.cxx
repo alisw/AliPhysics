@@ -1146,7 +1146,7 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
   //
 
   const Int_t kMaxDim=10;
-  if (tree=NULL){
+  if (tree== nullptr){
     ::Error("AliTreePlayer::MakeHistograms","Tree=0");
     return 0;
   }
