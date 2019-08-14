@@ -33,13 +33,15 @@ class AliGenReadersEMD : public AliGenReader
     void TrackAll() {fPcToTrack = kAll;}
     void SetStartEvent(Int_t nev) {fStartEvent = nev;}
     void SetNtupleName(TString s) {fNtupleName=s;}
+    void SetInvertPz() {fInvertPz=kTRUE;}
 
  protected:
     Int_t           fStartEvent;      	// points to the first event to read
     Int_t           fNcurrent;      	// points to the current event to read
     Int_t           fNparticle;     	// number of particles
     TTree          *fTreeNtuple;   	// pointer to the TTree
-    TString         fNtupleName; //name of the ntuple to be read
+    TString         fNtupleName;        // name of the ntuple to be read
+    Bool_t          fInvertPz;          // invert the particle momentum z component 
     //
     Int_t 	    fPcToTrack;		// flag for particles to be tracked
     Int_t           fOffset;		// Needed to correctly read next particle
