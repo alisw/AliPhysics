@@ -8,6 +8,7 @@ class TH1F;
 class TH2F;
 class TH2D;
 class TH3D;
+class TString;
 class TTree;
 class THnSparse;
 class AliESDEvent;
@@ -57,6 +58,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   void GetTrackImpactParameter(AliAODEvent *aodEvent, AliAODTrack *track, AliAODVertex * pvtx, Double_t &dcaxy); // Calculate IP from other vertex
 
   void GetCorrectedImpactParameter(AliAODEvent *aodEvent, AliAODTrack *track, Double_t primVertexZ, Double_t &dcaxy); // correct for effects in phi, z, and pt
+  TString GetPeriodNameByLPM(TString lTag);
   
   AliAnalysisTaskHFEIPCorrection(const AliAnalysisTaskHFEIPCorrection&); // not implemented
   AliAnalysisTaskHFEIPCorrection& operator=(const AliAnalysisTaskHFEIPCorrection&); // not implemented

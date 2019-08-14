@@ -585,11 +585,64 @@ double correctionMatrixLateRuns[40][12] = {
 
 Int_t AliAnalysisTaskHFEIPCorrection::ReturnRunBin(Int_t RunNr)
 {
-  Int_t runList[183]={
+  Int_t runList15o[183]={
   246994, 246991, 246989, 246984, 246982, 246980, 246949, 246948, 246945, 246942, 246937, 246930, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246855, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246806, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246755, 246751, 246750, 246676, 246675, 246671, 246648, 246639, 246583, 246575, 246568, 246567, 246553, 246543, 246540, 246495, 246493, 246488, 246487, 246434, 246433, 246431, 246428, 246424, 246392, 246391, 246390, 246276, 246275, 246272, 246271, 246225, 246222, 246220, 246217, 246187, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245996, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245793, 245785, 245775, 245766, 245759, 245752, 245738, 245731, 245729, 245705, 245702, 245700, 245692, 245683, 245554, 245545, 245544, 245543, 245542, 245540, 245535, 245507, 245505, 245504, 245501, 245497, 245496, 245454, 245453, 245452, 245450, 245446, 245441, 245439, 245411, 245410, 245409, 245407, 245401, 245397, 245396, 245353, 245349, 245347, 245346, 245345, 245343, 245341, 245259, 245256, 245253, 245233, 245232, 245231, 245230, 245152, 245151, 245148, 245146, 245145, 245068, 245066, 245064, 245061, 244983, 244982, 244980, 244975, 244972, 244918, 244917, 244911, 244889, 244827, 244824};
+
+
+  Int_t runList18r[171]={296649, 296690, 296691, 296692, 296693, 296694, 296696, 296698, 296749, 296750, 296752, 296780, 296781, 296782, 296783, 296784, 296785, 296786, 296787, 296790, 296791, 296792, 296793, 296794, 296799, 296835, 296836, 296838, 296839, 296848, 296849, 296850, 296851, 296852, 296890, 296891, 296893, 296894, 296899, 296900, 296903, 296930, 296931, 296932, 296934, 296935, 296938,  296940, 296941, 296966, 296967, 296968, 296969, 296970, 296971, 296972, 296973, 296974, 296975, 296976, 296977, 296979, 297028, 297029, 297030, 297031, 297035, 297036, 297085, 297116, 297117, 297118, 297119, 297123, 297124, 297127, 297128, 297129, 297132, 297133, 297193, 297194, 297195, 297196, 297218, 297219, 297220, 297221, 297222,  297277, 297278, 297310, 297311, 297312, 297313, 297315, 297316, 297317, 297318, 297319, 297320, 297321, 297322, 297323, 297324, 297325, 297326, 297328, 297329, 297331, 297332, 297333, 297335, 297336, 297363, 297366, 297367, 297370, 297371, 297372, 297379, 297380, 297403, 297404, 297405, 297406, 297407, 297408, 297413, 297414, 297415, 297441, 297442, 297443, 297444, 297445, 297446, 297447, 297448, 297449, 297450, 297451, 297452, 297479, 297481, 297483, 297484, 297485, 297512, 297513, 297537, 297538, 297539, 297540, 297541, 297542, 297543, 297544, 297547, 297548, 297549, 297555, 297556, 297557, 297558, 297588, 297589, 297590, 297595, 297623, 297624};
+
+  TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
+  
+  if(lProductionName.Contains("LHC15o"))
   for(int i=0;i<183;i++)
-    if(runList[i]==RunNr) return i+1;
+    if(runList15o[i]==RunNr) return i+1;
+
+  if(lProductionName.Contains("LHC18r"))
+  for(int i=0;i<171;i++)
+    if(runList18r[i]==RunNr) return i+1;
+  
   return 0;
+}
+
+TString AliAnalysisTaskHFEIPCorrection::GetPeriodNameByLPM(TString lTag)  // This is copied from the mult selection task
+{
+    //==================================
+    // Setup initial Info
+    Bool_t lLocated = kFALSE;
+    TString lProductionName = "";
+    
+    //==================================
+    // Get alirootVersion object title
+    AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!handler) return lProductionName; //failed!
+    TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+    if (!prodInfoData) return lProductionName; //failed!
+    TString lAlirootVersion(prodInfoData->GetTitle());
+    
+    //==================================
+    // Get Production name
+    TObjArray* lArrStr = lAlirootVersion.Tokenize(";");
+    if(lArrStr->GetEntriesFast()) {
+        TIter iString(lArrStr);
+        TObjString* os=0;
+        Int_t j=0;
+        while ((os=(TObjString*)iString())) {
+            if( os->GetString().Contains(lTag.Data()) ){
+                lLocated = kTRUE;
+                lProductionName = os->GetString().Data();
+                //Remove Label
+                lProductionName.ReplaceAll(lTag.Data(),"");
+                //Remove any remaining whitespace (just in case)
+                lProductionName.ReplaceAll("=","");
+                lProductionName.ReplaceAll(" ","");
+            }
+            j++;
+        }
+    }
+    //Memory cleanup
+    delete lArrStr;
+    //Return production name
+    return lProductionName;
 }
 
 
@@ -610,6 +663,8 @@ void AliAnalysisTaskHFEIPCorrection::Process(AliAODEvent *const aodEvent)
   AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*>( AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!(handler)) printf("AOD inputhandler not available \n");
 
+  
+  // TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
 
   AliPIDResponse *pid = NULL;
   if(handler){
@@ -757,6 +812,7 @@ if(!MultSelection){
   
         // Fill Event plane Q vectors
         if((TrackStatus & AliVTrack::kTPCrefit)) // require only ITS+ TPC refit
+          if(track->GetTPCNcls()>=60 && TMath::Abs(track->Pt())>0.25) // basic tracking cuts
         {
           if(TMath::Abs(track->Eta()) < 0.8)
           {
