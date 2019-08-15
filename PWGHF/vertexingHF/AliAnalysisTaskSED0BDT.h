@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskSED0BDT_H
-#define AliAnalysisTaskSED0BDT_H
+#ifndef ALIANALYSISTASKSED0BDT_H
+#define ALIANALYSISTASKSED0BDT_H
 
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
