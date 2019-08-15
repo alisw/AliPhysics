@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0BDT1 *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,1=PbPb*/,
+AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,1=PbPb*/,
 								     Float_t minC=0, Float_t maxC=0,
 								     TString finDirname="Loose", TString finname="",TString finObjname="D0toKpiCuts",
 								     TString BDTfilename="", TString BDTobjnamepre="BDT",
@@ -228,7 +228,7 @@ AliAnalysisTaskSED0BDT1 *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp
   TString taskname="BDTAnalysis";
   if (flag==0)taskname.Prepend("D0");
   else taskname.Prepend("LS");
-  AliAnalysisTaskSED0BDT1 *massD0Task = new AliAnalysisTaskSED0BDT1(taskname.Data(),RDHFD0toKpi);
+  AliAnalysisTaskSED0BDT *massD0Task = new AliAnalysisTaskSED0BDT(taskname.Data(),RDHFD0toKpi);
   massD0Task->SetDebugLevel(0);
   massD0Task->SetArray(flag);
   massD0Task->SetReadMC(readMC);
