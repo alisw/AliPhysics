@@ -2197,6 +2197,49 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 2301){ // Jet QA
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411791107l032230000","3l63103100000010"); //
 
+  // TB NL testconfigs diff aggregation thresholds
+  } else if ( trainConfig == 2400){ // LHC12 100 MeV aggregation TB NL
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","111110106f032230000","0163103100000010"); // std
+  } else if ( trainConfig == 2401){ // LHC12 100 MeV aggregation TB NL
+    cuts.AddCutPCMCalo("00052113","00200009f9730000dge0400000","111110106f032230000","0163103100000010"); // std
+    cuts.AddCutPCMCalo("00081113","00200009f9730000dge0400000","111110106f032230000","0163103100000010"); // std
+  } else if ( trainConfig == 2402){ // LHC12 50 MeV aggregation TB NL
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","111110206f032230000","0163103100000010"); // std
+  } else if ( trainConfig == 2403){ // LHC12 50 MeV aggregation TB NL
+    cuts.AddCutPCMCalo("00052113","00200009f9730000dge0400000","111110206f032230000","0163103100000010"); // std
+    cuts.AddCutPCMCalo("00081113","00200009f9730000dge0400000","111110206f032230000","0163103100000010"); // std
+  } else if ( trainConfig == 2404){ // LHC12 150 MeV aggregation TB NL
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","111110306f032230000","0163103100000010"); // std
+  } else if ( trainConfig == 2405){ // LHC12 150 MeV aggregation TB NL
+    cuts.AddCutPCMCalo("00052113","00200009f9730000dge0400000","111110306f032230000","0163103100000010"); // std
+    cuts.AddCutPCMCalo("00081113","00200009f9730000dge0400000","111110306f032230000","0163103100000010"); // std
+  } else if ( trainConfig == 2406){ // LHC12 300 MeV aggregation TB NL
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","111110406f032230000","0163103100000010"); // std
+  } else if ( trainConfig == 2407){ // LHC12 300 MeV aggregation TB NL
+    cuts.AddCutPCMCalo("00052113","00200009f9730000dge0400000","111110406f032230000","0163103100000010"); // std
+    cuts.AddCutPCMCalo("00081113","00200009f9730000dge0400000","111110406f032230000","0163103100000010"); // std
+
+  } else if (trainConfig == 2450){  // 100 MeV aggregation TB NL tests
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790107f032230000","0163103100000010"); // INT7
+  } else if (trainConfig == 2451){  // 100 MeV aggregation TB NL tests
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790107f032230000","0163103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790107f032230000","0163103100000010"); // EG1
+  } else if (trainConfig == 2452){  // 50 MeV aggregation TB NL tests
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790207f032230000","0163103100000010"); // INT7
+  } else if (trainConfig == 2453){  // 50 MeV aggregation TB NL tests
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790207f032230000","0163103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790207f032230000","0163103100000010"); // EG1
+  } else if (trainConfig == 2454){  // 150 MeV aggregation TB NL tests
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790307f032230000","0163103100000010"); // INT7
+  } else if (trainConfig == 2455){  // 150 MeV aggregation TB NL tests
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790307f032230000","0163103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790307f032230000","0163103100000010"); // EG1
+  } else if (trainConfig == 2456){  // 300 MeV aggregation TB NL tests
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790407f032230000","0163103100000010"); // INT7
+  } else if (trainConfig == 2457){  // 300 MeV aggregation TB NL tests
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790407f032230000","0163103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790407f032230000","0163103100000010"); // EG1
+
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
