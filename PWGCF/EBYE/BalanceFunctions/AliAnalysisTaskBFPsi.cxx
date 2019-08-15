@@ -188,9 +188,11 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fPIDCombined(0x0),
   fPidDetectorConfig(kTPCTOF),
   fUsePID(kFALSE),
+  fUsePIDMC(kFALSE),
   fUsePIDnSigma(kFALSE),
   fUsePIDPropabilities(kFALSE),
   fCrossCorr(kFALSE),
+  fPtCutsCrossCorr(kFALSE),
   fUseRapidity(kFALSE),
   fPIDNSigmaAcc(3.),
   fPIDNSigmaExcl(3.),
@@ -255,6 +257,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fCutGeoNcrNclFractionNcl(0.7),
   fPtMin(0.3),
   fPtMax(1.5),
+  fPtMinTrig(0.3),
+  fPtMinAssoc(0.3),
+  fPtMaxTrig(1.5),
+  fPtMaxAssoc(1.5),
   fEtaMin(-0.8),
   fEtaMax(0.8),
   fPhiMin(0.),
@@ -278,7 +284,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fExcludeElectronsInMC(kFALSE),
   fExcludeParticlesExtra(kFALSE),
   fUseMCPdgCode(kFALSE),
-  fPDGCodeToBeAnalyzed(-1),
+  fPDGCodeToBeAnalyzedTrig(-1),
+  fPDGCodeToBeAnalyzedAssoc(-1),
   fMotherPDGCodeToExclude(-1),
   fExcludeResonancePDGInMC(-1),
   fIncludeResonancePDGInMC(-1),
@@ -430,7 +437,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   }
 
   //PID QA lists
-  if(fUsePID || fElectronRejection) {
+  if(fUsePID || fUsePIDMC || fElectronRejection) {
     fHistListPIDQA = new TList();
     fHistListPIDQA->SetName("listQAPID");
     fHistListPIDQA->SetOwner();  
@@ -865,7 +872,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 
   //====================PID========================//
-  if(fUsePID) {
+  if(fUsePID || fUsePIDMC) {
     fPIDCombined = new AliPIDCombined();
     fPIDCombined->SetDefaultTPCPriors();
 
@@ -1000,9 +1007,9 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   PostData(2, fListBF);
   if(fRunShuffling) PostData(3, fListBFS);
   if(fRunMixing) PostData(4, fListBFM);
-  if(fUsePID || fElectronRejection)
+  if(!fUsePIDMC && fUsePID || fElectronRejection)
   PostData(5, fHistListPIDQA);//PID
-  if(fUsePID && fCrossCorr) 
+  if(fUsePID || fUsePIDMC && fCrossCorr)
   PostData(6, fListCrossCorr);//PID Cross Correlations
   AliInfo("Finished setting up the Output");
 
@@ -2558,6 +2565,10 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
         if(fUsePID) {
             Bool_t isPartIDselected = kFALSE;
             if (fCrossCorr){
+	       	if (fParticleOfInterest[0]==fParticleOfInterest[1]){
+	            AliError("Cross correlations enabled but the same particle type is provided");
+      		    continue;
+  		} 
                 isPartIDselected = SetSelectPID(aodTrack,kTrig);
                 if (isPartIDselected == kTRUE){
                     isTrigOrAssoc = kTrig;
@@ -2572,6 +2583,10 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
                 }
             }
             else{
+	        if (fParticleOfInterest[0]!=fParticleOfInterest[1]){
+ 	            AliError("Cross correlations disabled but the different particle type is provided");
+                    continue;
+                }
                 isPartIDselected = SetSelectPID(aodTrack,kBoth);
                 if (isPartIDselected == kTRUE)
                     isTrigOrAssoc = kBoth;
@@ -2590,8 +2605,25 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       
       // Kinematics cuts from ESD track cuts
-      if( vPt < fPtMin || vPt > fPtMax)  continue;
       
+      if (fCrossCorr){
+          if (fPtCutsCrossCorr){
+              if (isTrigOrAssoc==kTrig){
+                  if( vPt < fPtMinTrig || vPt > fPtMaxTrig)  continue;
+              }
+              else if (isTrigOrAssoc==kAssoc){
+                  if( vPt < fPtMinAssoc || vPt > fPtMaxAssoc)  continue;
+              }
+          }
+          else{
+              if( vPt < fPtMin || vPt > fPtMax)  continue;
+          }
+      }
+      else{
+      if( vPt < fPtMin || vPt > fPtMax)  continue;
+      }
+        
+        
       if (fUseRapidity) {
           if (fCrossCorr){
               if (isTrigOrAssoc==kTrig){
@@ -2983,7 +3015,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 
 	if(fUseMCPdgCode) {
 	  Int_t gPdgCode = aodTrack->PdgCode();
-	  if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
+	  if(TMath::Abs(fPDGCodeToBeAnalyzedTrig) != TMath::Abs(gPdgCode))//for now only foresees case of no cross correlations
 	    continue;
 	}
 	
@@ -3156,7 +3188,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
 
 	Int_t gPdgCode = AODmcTrackForPID->PdgCode();
-	if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
+	if(TMath::Abs(fPDGCodeToBeAnalyzedTrig) != TMath::Abs(gPdgCode))//for now only foresees case of no cross correlations
 	  continue;
       }
       
@@ -3262,7 +3294,22 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
 
       // Kinematics cuts from ESD track cuts
-      if( vPt < fPtMin || vPt > fPtMax)      continue;
+        if (fCrossCorr){
+            if (fPtCutsCrossCorr){
+                if (isTrigOrAssoc==kTrig){
+                    if( vPt < fPtMinTrig || vPt > fPtMaxTrig)  continue;
+                }
+                else if (isTrigOrAssoc==kAssoc){
+                    if( vPt < fPtMinAssoc || vPt > fPtMaxAssoc)  continue;
+                }
+            }
+            else{
+                if( vPt < fPtMin || vPt > fPtMax)      continue;
+            }
+        }
+        else{
+            if( vPt < fPtMin || vPt > fPtMax)      continue;
+        }
       
       if (fUseRapidity) {
           if (fCrossCorr){
@@ -3834,30 +3881,73 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	vPx     = track->Px();
 	vPy     = track->Py();
 	vY      = track->Y();//true Y
-	
-	if( vPt < fPtMin || vPt > fPtMax)      
-	  continue;
-	if (!fUseRapidity) {
-	  if( vEta < fEtaMin || vEta > fEtaMax)  continue;
-	}
-	else if (fUseRapidity){
-	  if( vY < fEtaMin || vY > fEtaMax)  continue;
-	}
 
 	// Remove neutral tracks
 	if( vCharge == 0 ) continue;
 	
-	//analyze one set of particles
+	
+    Int_t isTrigOrAssoc = -1.;
+    //analyze one set of particles
 	if(fUseMCPdgCode) {
-	  TParticle *particle = track->Particle();
+	 
+      TParticle *particle = track->Particle();
 	  if(!particle) continue;
 	  
-	  Int_t gPdgCode = particle->GetPdgCode();
-         if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
-	    continue;
- 	}
+      Int_t gPdgCode = particle->GetPdgCode();
+        
+      if (fPDGCodeToBeAnalyzedTrig==fPDGCodeToBeAnalyzedAssoc && fCrossCorr){
+          AliError("Cross correlations enabled but the same particle type is provided");
+          continue;
+      }
 
-	//Use the acceptance parameterization
+      if (fPDGCodeToBeAnalyzedTrig!=fPDGCodeToBeAnalyzedAssoc && !fCrossCorr){
+          AliError("Cross correlations disabled but the different particle type is provided");
+          continue;
+      }
+        
+      if (fCrossCorr){
+            if(TMath::Abs(gPdgCode) == TMath::Abs(fPDGCodeToBeAnalyzedTrig))
+	    	isTrigOrAssoc = kTrig;
+            else if(TMath::Abs(gPdgCode) == TMath::Abs(fPDGCodeToBeAnalyzedAssoc))
+            	isTrigOrAssoc = kAssoc;
+            else continue;
+      }
+        
+      else{
+          if(TMath::Abs(fPDGCodeToBeAnalyzedTrig) != TMath::Abs(gPdgCode))
+              continue;
+          else isTrigOrAssoc = kBoth;
+      }
+        
+ 	}
+   
+          if (fCrossCorr){
+              if (fPtCutsCrossCorr){
+                  if (isTrigOrAssoc==kTrig){
+                      if( vPt < fPtMinTrig || vPt > fPtMaxTrig)  continue;
+                  }
+                  else if (isTrigOrAssoc==kAssoc){
+                      if( vPt < fPtMinAssoc || vPt > fPtMaxAssoc)  continue;
+                  }
+              }
+              else {
+		  if( vPt < fPtMin || vPt > fPtMax)
+                      continue;
+              }
+          }
+          
+          else {
+          if( vPt < fPtMin || vPt > fPtMax)
+              continue;
+          }
+          
+          if (!fUseRapidity) {
+              if( vEta < fEtaMin || vEta > fEtaMax)  continue;
+          }
+          else if (fUseRapidity){
+              if( vY < fEtaMin || vY > fEtaMax)  continue;
+          }
+        //Use the acceptance parameterization
 	if(fAcceptanceParameterization) {
 	  Double_t gRandomNumber = gRandom->Rndm();
 	  if(gRandomNumber > fAcceptanceParameterization->Eval(track->Pt())) 
@@ -4036,6 +4126,19 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  fHistPhiNeg->Fill(vPhi,gCentrality);
 	}
 	
+    	if (fCrossCorr){
+        	if (isTrigOrAssoc==kTrig){
+       	   	 fHistPtTrig->Fill(vPt,gCentrality);
+                 fHistRapidityTrig->Fill(vY,gCentrality);
+                 fHistPhiTrig->Fill(vPhi,gCentrality);
+          	}
+        	else if (isTrigOrAssoc==kAssoc){
+                 fHistPtAssoc->Fill(vPt,gCentrality);
+                 fHistRapidityAssoc->Fill(vY,gCentrality);
+                 fHistPhiAssoc->Fill(vPhi,gCentrality);
+            }
+        }
+        
         TParticle *particle_pdg = track->Particle();
         if(!particle_pdg) continue;
         Int_t trackPdg = particle_pdg->GetPdgCode();
@@ -4121,18 +4224,29 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
 	
 	if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
-	  if(fExcludeResonancesLabel)
-	  tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kBoth, -1, kMotherLabel));
-	  else
-         tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction));
-       } 
-	else{
-         if(fExcludeResonancesLabel) 
-	  tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction, kBoth, -1, kMotherLabel));
-	  else 
-	  tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction));
+	  
+        if (fCrossCorr){
+            if(fExcludeResonancesLabel){
+                if (isTrigOrAssoc==kTrig)
+                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kTrig, -1, kMotherLabel));
+                else if (isTrigOrAssoc==kAssoc)
+                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kAssoc, -1, kMotherLabel));
+            }
+            else {
+                if (isTrigOrAssoc==kTrig)
+                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kTrig));
+                else if (isTrigOrAssoc==kAssoc)
+                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kAssoc));
+            }
+        }
+        else {
+            if(fExcludeResonancesLabel)
+                tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kBoth, -1, kMotherLabel));
+            else
+                tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kBoth));
+       }
 	}
-	nAcceptedTracks += 1;
+       nAcceptedTracks += 1;
       } //track loop
       
       if(nAcceptedTracks >= 2) { 
@@ -4259,16 +4373,15 @@ void  AliAnalysisTaskBFPsi::SetVZEROCalibrationFile(const char* filename,
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskBFPsi::SetParticleOfInterest(AliPID::EParticleType trig,AliPID::EParticleType assoc) {
+void AliAnalysisTaskBFPsi::SetParticleOfInterest(AliPID::EParticleType trig,AliPID::EParticleType assoc, Bool_t setCrossCorr) {
 
   // Function to set the particle of interest (for PID analysis)
   // and the corresponding mass
   fParticleOfInterest[0] = trig;
   fParticleOfInterest[1] = assoc;
   
-  if (fParticleOfInterest[0]!=fParticleOfInterest[1])
-      fCrossCorr = kTRUE;
-    
+  fCrossCorr = setCrossCorr;
+ 
   for (Int_t i = 0;i<2;i++){
       if(fParticleOfInterest[i] == AliPID::kElectron){
           fMassParticleOfInterest[i] = TDatabasePDG::Instance()->GetParticle(11)->Mass();
