@@ -970,6 +970,7 @@ AliFemtoXi *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
 
   //xi
   tFemtoXi->SetmassXi(tAODxi->MassXi());
+  tFemtoXi->SetmassOmega(tAODxi->MassOmega());
   tFemtoXi->SetdecayLengthXi(tAODxi->DecayLengthXi(fVe1[0], fVe1[1], fVe1[2]));
   tFemtoXi->SetdecayVertexXiX(tAODxi->DecayVertexXiX());
   tFemtoXi->SetdecayVertexXiY(tAODxi->DecayVertexXiY());

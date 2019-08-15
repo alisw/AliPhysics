@@ -20,9 +20,13 @@ public:
   enum XiType {
     kXiMinus = 0,
     kXiPlus = 1,
+    kOmegaMinus = 2,
+    kOmegaPlus = 3,
     kAll = 99,
     kXiMinusMC = 101,
-    kXiPlusMC = 102
+    kXiPlusMC = 102,
+    kOmegaMinusMC = 103,
+    kOmegsPlusMC = 104
   };
   typedef enum XiType AliFemtoXiType;
 
@@ -42,7 +46,8 @@ public:
   virtual AliFemtoParticleType Type(){return hbtXi;}
 
   bool IsPionNSigmaBac(float mom, float nsigmaTPCPi, float nsigmaTOFPi);  //!!!!! There is no need for this, as we can call AliFemtoV0TrackCut::IsPionNSigma
-
+  bool IsKaonNSigmaBac(float mom, float nsigmaTPCK, float nsigmaTOFK); //for kaons in Omegas  
+  
   void SetEtaXi(double x);
   void SetPtXi(double min, double max);
   void SetChargeXi(int x);  //!!!!!!!!!!!!!!!!!!!!!! To be deleted!!!  See comment at member fCharge
@@ -53,6 +58,8 @@ public:
   void SetNdofBac(double x);
   void SetStatusBac(unsigned long x);
   void SetInvariantMassXi(double min, double max);
+  void SetInvariantMassOmega(double min, double max);
+  void SetInvariantMassRejectXi(double min, double max);
   void SetInvariantMassRejectOmega(double min, double max);
   void SetMaxDcaXi(double x);
   void SetMinDcaXiBac(double x);
@@ -94,8 +101,12 @@ public:
   double fMaxDecayLengthXi;
   double fInvMassXiMin;
   double fInvMassXiMax;
-  double fInvMassRejectMin;
-  double fInvMassRejectMax;
+  double fInvMassOmegaMin;
+  double fInvMassOmegaMax;
+  double fInvMassRejectXiMin;
+  double fInvMassRejectXiMax;
+  double fInvMassRejectOmegaMin;
+  double fInvMassRejectOmegaMax;
   short  fParticleTypeXi;
 
   double fRadiusXiMin;
