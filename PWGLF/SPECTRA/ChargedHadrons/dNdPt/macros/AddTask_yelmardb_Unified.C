@@ -1,10 +1,13 @@
-AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, Int_t cutModeHigh = 101)
-{
+#include <array>
 
+AlidNdPtUnifiedAnalysisTask* anAddTask(Int_t cutModeLow=100, Int_t cutModeHigh=105, TString controll = "")
+// cut variation for studdy of cut systematics (cutMode == 100 - 119) and Matching Eff (cutMode == 2100 - 2199)
+// controll = "vz10" for vz<10 cut
+{
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-    if (!mgr) {
-        Error("AddTask_yelmardb_Unified", "No analysis manager found.");
+    if (!mgr){
+        Error("anAddTask.C", "No analysis manager found.");
         return 0;
     }
 
@@ -12,26 +15,33 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     AliLog::SetGlobalLogLevel(AliLog::kError);
     mgr->SetDebugLevel(0);
 
-
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
-    //AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+    char taskName[100] = "";
 
-  char taskName[100] = "";
+    AlidNdPtUnifiedAnalysisTask* task125 = NULL;
 
 
-  for(Int_t cutMode = cutModeLow; cutMode < cutModeHigh; cutMode++){
+    for(Int_t cutMode = cutModeLow; cutMode < cutModeHigh; cutMode++){
     sprintf(taskName, "dNdPt_cutMode_%d", cutMode);
 
-    AlidNdPtUnifiedAnalysisTask *task = new AlidNdPtUnifiedAnalysisTask("AlidNdPtUnifiedAnalysisTask_yelmardb");
+    AlidNdPtUnifiedAnalysisTask *task = new AlidNdPtUnifiedAnalysisTask(Form("AlidNdPtUnifiedAnalysisTask_%d", cutMode));
+    task125 = task;
+
     task->SetUseMC(hasMC);
     if(type.Contains("ESD")) task->SetUseESD();
-    //else task->SetUseAOD();
-    task->SetUseMultiplicity(kTRUE);
-    task->SelectCollisionCandidates(AliVEvent::kINT7);
-    task->SetTriggerMask(AliVEvent::kINT7 ); //kINT7
+    else task->SetUseAOD();
+    task->SetUseMultiplicity(kFALSE);
+    task->SetTriggerMask(AliVEvent::kINT7);
+    task->SelectCollisionCandidates(AliVEvent::kINT7); // kINT7 or kMB
 
+
+  Int_t multNbins = 100;
+  Double_t binsMult[101];
+  for (int i=0; i<=multNbins; i++) { binsMult[i] = -0.5 + i; }
+  binsMult[100] = 100.;
+  task->SetBinsMultCent(multNbins,binsMult);
 
     // change pt binning
     const Int_t ptNbins = 81;
@@ -42,25 +52,9 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     task->SetBinsPtReso(ptNbins-1, binsPt);
 
 
-    //task->SetBinsPtReso(ptNbins, bins);
-
-
-    //TFile *trkEffFile = TFile::Open("$UNIFIED/macros/trkEffParametrisation.root");
-    //if(!trkEffFile){printf("No trk eff file\n");}
-    //else TF1* trkEffParam = (TF1*)trkEffFile->Get("trkEffFun");
-    // trkEffParam->SetDirectory(0);
-    // trkEffFile->Close();
-
-    // task->SetTrkEffParametrisation(trkEffParam);
-
-    /// Acceptance cuts for tracks
-
     task->SetMinEta(-0.8);
     task->SetMaxEta(0.8);
     task->SetMinPt(0.15);
-
-    task->Set2013pA(kFALSE);
-    task->Set2015data(kTRUE);
 
     ///TOF pileup, kTRUE only for Matching efficiency studies
     task->SetTOFbunchCrossing(kFALSE);
@@ -68,9 +62,10 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     task->SetMeanXYZv(0.0,0.0,0.0);
     task->SetSigmaMeanXYZv(1.0,1.0,10.0);
     task->SetZvtx(10.);
-    //task->SetEventTriggerRequired(kTRUE); function not defined in the newest header
 
-    /// Quality cuts for tracks
+    task->Set2015data(kTRUE);    //only p-Pb 2013!!!
+
+        /// Quality cuts for tracks
     if(cutMode != 122)
     {
     // TPC
@@ -95,6 +90,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     task->SetGeometricalCut(kTRUE,3,130,1.5,0.85,0.7); ///if kTRUE comment CrossedRowsTPC cut
     //task->SetMinCrossedRowsTPC(120);
     }
+
 
     ///Switch Low/High to study systematics uncertanties
     if(cutMode==101){task->SetDCAtoVertexZ(1.0); }
@@ -132,10 +128,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     ///event cut for trigger efficieny
     if(cutMode == 122) {task->SetZvtx(30.);}
 
-
-
-
-    ///secondary scaling study
+        ///secondary scaling study
     if(cutMode == 123)
     {
     // TPC
@@ -199,8 +192,8 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
         }*/
 
 
-
     mgr->AddTask(task);
+
 
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(taskName,
@@ -211,9 +204,11 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     mgr->ConnectInput(task, 0, cinput);
     mgr->ConnectOutput(task, 1, coutput);
 
-    }
 
-    return task;
+   }
 
+    return task125;
 
 }
+
+
