@@ -393,7 +393,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fSPDConfig(0)
 ,fSPDConfigHist()
 ,fSPDConfigProfiles()
-,fSPDnTrAvg()
+,fSPDnTrAvg(0)
 ,fNonTagCorr()
 ,fAssPtHad_Nbins(0)
 ,fAssPtHad_Xmin()
@@ -844,7 +844,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fSPDConfig(0)
 ,fSPDConfigHist()
 ,fSPDConfigProfiles()
-,fSPDnTrAvg()
+,fSPDnTrAvg(0)
 ,fNonTagCorr()
 ,fAssPtHad_Nbins(0)
 ,fAssPtHad_Xmin()
@@ -1205,7 +1205,10 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     else  SPDConfigProfBin=1;// select first bin if configuration does not exist
     fSPDConfigProfiles.GetXaxis()->SetRange(SPDConfigProfBin, SPDConfigProfBin);
     TH2F* Configuration = (TH2F*)fSPDConfigProfiles.Project3D("zy");
-    if (fSPDnTrAvg!=0) delete fSPDnTrAvg;
+    if (fSPDnTrAvg!=0) {
+      cout << fSPDnTrAvg << endl;
+      delete fSPDnTrAvg;
+    }
     fSPDnTrAvg = (TProfile*) Configuration->ProfileX(Form("Prof_%i", fSPDConfig), 2, 1000); // neglecting 0 bin
     delete Configuration;
     cout <<  fRunNumber << "\t" << fSPDConfig << endl;
@@ -6716,7 +6719,7 @@ Double_t AliAnalysisTaskHaHFECorrel::Sphericity(const TObjArray* tracks, Double_
 void AliAnalysisTaskHaHFECorrel::PhotULSLSElectronAcceptance(const AliVVertex *pVtx, Float_t mult,  Int_t nMother, Int_t listMother[], Double_t EventWeight) {
   
   AliEventPool* fPool;
-  fPool = fPoolMgr->GetEventPool(mult, pVtx->GetZ(), 0.); // Get the buffer associated with the current centrality and z-vtx
+  fPool = fPoolMgr->GetEventPool(mult, pVtx->GetZ(), 1.0); // Get the buffer associated with the current centrality and z-vtx
   //  fPool->SetDebug(kTRUE);
   if (!fPool)
   {
