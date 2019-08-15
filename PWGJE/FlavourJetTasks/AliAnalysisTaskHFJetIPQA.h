@@ -223,7 +223,7 @@ protected:
     TH2D *fh2dCharmDeta; //!
     TH2D *fh2dBottomDeta; //!
 
-    THnSparse *fHLundIterative;//       iterative declustering
+    THnSparse *fHLundIterative;//!       iterative declustering
 
 
 private:
