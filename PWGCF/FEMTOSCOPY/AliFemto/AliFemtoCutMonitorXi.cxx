@@ -33,6 +33,7 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi():
   fParticleOrigin(0),
   fParticleId(0),
   fXiMass(0),
+  fOmegaMass(0),
   fDcaXiDaughters(0),
   fDcaXiToPrimVertex(0),
   fDcaBacToPrimVertex(0),
@@ -42,8 +43,10 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi():
   fPtXi(0),
   fPtBac(0),
   fdEdxBac(0),
-  fTOFtimeBac(0),
-  fnsigmaBac(0)
+  fTOFtimeBacPi(0),
+  fnsigmaBacPi(0),
+  fTOFtimeBacK(0),
+  fnsigmaBacK(0)
 
 {
   /// Default constructor
@@ -77,6 +80,7 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi():
 
   //Xi
   fXiMass = new TH1F("XiMass", "Mass Assuming Xi Hypothesis", 10000, 0, 5);
+  fOmegaMass = new TH1F("OmegaMass", "Mass Assuming Omega Hypothesis", 10000, 0, 5);
   fDcaXiDaughters = new TH1F("DcaXiDaughters", "DCA Xi Daughters", 500, 0, 2);
   fDcaXiToPrimVertex = new TH1F("DcaXiToPrimVertex", "DCA Xi to primary vertex", 500, 0, 3);
   fDcaBacToPrimVertex = new TH1F("DcaBacToPrimVertex", "DCA Xi to primary vertex", 500, 0, 3);
@@ -86,9 +90,10 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi():
   fPtXi = new TH1F("PtXi", "Pt distribution of Xis", 500, 0.0, 8.);
   fPtBac = new TH1F("PtBac", "Pt distribution of bachelor", 500, 0.0, 5.);
   fdEdxBac = new TH2D("dEdxBac","dEdx of bachelor",200, 0.1, 4.0, 250, 0.0, 500.0);
-  fTOFtimeBac = new TH2D("TOFtimeBac","TOF time of bachelor",100,0.,1.1,100,0.,3.0);
-  fnsigmaBac = new TH1D("fnsigmaBac","Number of sigmas of bachelor",200,-8,8);
-  
+  fTOFtimeBacPi = new TH2D("TOFtimeBac","TOF time of bachelor pion",100,0.,1.1,100,0.,3.0);
+  fnsigmaBacPi = new TH1D("fnsigmaBac","Number of sigmas of bachelor pion",200,-8,8);
+  fTOFtimeBacK = new TH2D("TOFtimeBacK","TOF time of bachelor kaon",100,0.,1.1,100,0.,3.0);
+  fnsigmaBacK = new TH1D("fnsigmaBacK","Number of sigmas of bachelor kaon",200,-8,8);
 
   fLambdaMass->Sumw2();
   fAntiLambdaMass->Sumw2();
@@ -112,6 +117,7 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi():
   fnsigmaNegAL->Sumw2();
 
   fXiMass->Sumw2();
+  fOmegaMass->Sumw2();
   fDcaXiDaughters->Sumw2();
   fDcaXiToPrimVertex->Sumw2();
   fDcaBacToPrimVertex->Sumw2();
@@ -121,8 +127,10 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi():
   fPtXi->Sumw2();
   fPtBac->Sumw2();
   fdEdxBac->Sumw2();
-  fTOFtimeBac->Sumw2();
-  fnsigmaBac->Sumw2();
+  fTOFtimeBacPi->Sumw2();
+  fnsigmaBacPi->Sumw2();
+  fTOFtimeBacK->Sumw2();
+  fnsigmaBacK->Sumw2();
 }
 
 AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const char *aName):
@@ -151,6 +159,7 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const char *aName):
   fParticleOrigin(0),
   fParticleId(0),
   fXiMass(0),
+  fOmegaMass(0),
   fDcaXiDaughters(0),
   fDcaXiToPrimVertex(0),
   fDcaBacToPrimVertex(0),
@@ -160,8 +169,10 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const char *aName):
   fPtXi(0),
   fPtBac(0),
   fdEdxBac(0),
-  fTOFtimeBac(0),
-  fnsigmaBac(0)
+  fTOFtimeBacPi(0),
+  fnsigmaBacPi(0),
+  fTOFtimeBacK(0),
+  fnsigmaBacK(0)
 {
   /// Normal constructor
 
@@ -219,6 +230,8 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const char *aName):
   //Xi
   snprintf(name, 200, "fXiMass%s", aName);
   fXiMass = new TH1F(name, "Mass Assuming Xi Hypothesis", 10000, 0, 5);
+  snprintf(name, 200, "fOmegaMass%s", aName);
+  fOmegaMass = new TH1F(name, "Mass Assuming Omega Hypothesis", 10000, 0, 5);
   snprintf(name, 200, "fDcaXiDaughters%s", aName);
   fDcaXiDaughters = new TH1F(name, "DCA Xi Daughters", 500, 0, 2);
   snprintf(name, 200, "fDcaXiToPrimVertex%s", aName);
@@ -237,11 +250,15 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const char *aName):
   fPtBac = new TH1F(name, "Pt distribution of bachelor", 500, 0.0, 5.);
   snprintf(name, 200, "fdEdxBac%s", aName);
   fdEdxBac = new TH2D(name,"dEdx of bachelor",200, 0.1, 4.0, 250, 0.0, 500.0);
-  snprintf(name, 200, "fTOFtimeBac%s", aName);
-  fTOFtimeBac = new TH2D(name,"TOF time of bachelor",100,0.,1.1,100,0.,3.0);
-  snprintf(name, 200, "fnSigmaBac%s", aName);
-  fnsigmaBac = new TH1D(name,"Number of sigmas of bachelor",200,-8,8);
-
+  snprintf(name, 200, "fTOFtimeBac%sPi", aName);
+  fTOFtimeBacPi = new TH2D(name,"TOF time of bachelor pion",100,0.,1.1,100,0.,3.0);
+  snprintf(name, 200, "fnSigmaBac%sPi", aName);
+  fnsigmaBacPi = new TH1D(name,"Number of sigmas of bachelor pion",200,-8,8);
+  snprintf(name, 200, "fTOFtimeBac%sK", aName);
+  fTOFtimeBacK = new TH2D(name,"TOF time of bachelor kaon",100,0.,1.1,100,0.,3.0);
+  snprintf(name, 200, "fnSigmaBac%sK", aName);
+  fnsigmaBacK = new TH1D(name,"Number of sigmas of bachelor kaon",200,-8,8);
+  
   fLambdaMass->Sumw2();
   fAntiLambdaMass->Sumw2();
   fK0ShortMass->Sumw2();
@@ -264,6 +281,7 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const char *aName):
   fnsigmaNegAL->Sumw2();
 
   fXiMass->Sumw2();
+  fOmegaMass->Sumw2();
   fDcaXiDaughters->Sumw2();
   fDcaXiToPrimVertex->Sumw2();
   fDcaBacToPrimVertex->Sumw2();
@@ -273,8 +291,10 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const char *aName):
   fPtXi->Sumw2();
   fPtBac->Sumw2();
   fdEdxBac->Sumw2();
-  fTOFtimeBac->Sumw2();
-  fnsigmaBac->Sumw2();
+  fTOFtimeBacPi->Sumw2();
+  fnsigmaBacPi->Sumw2();
+  fTOFtimeBacK->Sumw2();
+  fnsigmaBacK->Sumw2();
 }
 
 AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const AliFemtoCutMonitorXi &aCut):
@@ -303,6 +323,7 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const AliFemtoCutMonitorXi &aCut):
   fParticleOrigin(0),
   fParticleId(0),
   fXiMass(0),
+  fOmegaMass(0),
   fDcaXiDaughters(0),
   fDcaXiToPrimVertex(0),
   fDcaBacToPrimVertex(0),
@@ -312,8 +333,10 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const AliFemtoCutMonitorXi &aCut):
   fPtXi(0),
   fPtBac(0),
   fdEdxBac(0),
-  fTOFtimeBac(0),
-  fnsigmaBac(0)
+  fTOFtimeBacPi(0),
+  fnsigmaBacPi(0),
+  fTOFtimeBacK(0),
+  fnsigmaBacK(0)
 {
   /// copy constructor
 
@@ -368,6 +391,8 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const AliFemtoCutMonitorXi &aCut):
 
   if(fXiMass) delete fXiMass;
   fXiMass= new TH1F(*aCut.fXiMass);
+  if(fOmegaMass) delete fOmegaMass;
+  fOmegaMass= new TH1F(*aCut.fOmegaMass);
   if(fDcaXiDaughters) delete fDcaXiDaughters;
   fDcaXiDaughters = new TH1F(*aCut.fDcaXiDaughters);
   if(fDcaXiToPrimVertex) delete fDcaXiToPrimVertex;
@@ -388,10 +413,14 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const AliFemtoCutMonitorXi &aCut):
   fPtBac = new TH1F(*aCut.fPtBac);
   if(fdEdxBac) delete fdEdxBac;
   fdEdxBac = new TH2D(*aCut.fdEdxBac);
-  if(fTOFtimeBac) delete fTOFtimeBac;
-  fTOFtimeBac = new TH2D(*aCut.fTOFtimeBac);
-  if(fnsigmaBac) delete fnsigmaBac;
-  fnsigmaBac = new TH1D(*aCut.fnsigmaBac);
+  if(fTOFtimeBacPi) delete fTOFtimeBacPi;
+  fTOFtimeBacPi = new TH2D(*aCut.fTOFtimeBacPi);
+  if(fnsigmaBacPi) delete fnsigmaBacPi;
+  fnsigmaBacPi = new TH1D(*aCut.fnsigmaBacPi);
+  if(fTOFtimeBacK) delete fTOFtimeBacK;
+  fTOFtimeBacK = new TH2D(*aCut.fTOFtimeBacK);
+  if(fnsigmaBacK) delete fnsigmaBacK;
+  fnsigmaBacK = new TH1D(*aCut.fnsigmaBacK);
 
 
   fLambdaMass->Sumw2();
@@ -416,6 +445,7 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const AliFemtoCutMonitorXi &aCut):
   fnsigmaNegAL->Sumw2();
 
   fXiMass->Sumw2();
+  fOmegaMass->Sumw2();
   fDcaXiDaughters->Sumw2();
   fDcaXiToPrimVertex->Sumw2();
   fDcaBacToPrimVertex->Sumw2();
@@ -425,8 +455,10 @@ AliFemtoCutMonitorXi::AliFemtoCutMonitorXi(const AliFemtoCutMonitorXi &aCut):
   fPtXi->Sumw2();
   fPtBac->Sumw2();
   fdEdxBac->Sumw2();
-  fTOFtimeBac->Sumw2();
-  fnsigmaBac->Sumw2();
+  fTOFtimeBacPi->Sumw2();
+  fnsigmaBacPi->Sumw2();
+  fTOFtimeBacK->Sumw2();
+  fnsigmaBacK->Sumw2();
 }
 
 AliFemtoCutMonitorXi::~AliFemtoCutMonitorXi()
@@ -459,6 +491,7 @@ AliFemtoCutMonitorXi::~AliFemtoCutMonitorXi()
   delete fParticleId;
 
   delete fXiMass;
+  delete fOmegaMass;
   delete fDcaXiDaughters;
   delete fDcaXiToPrimVertex;
   delete fDcaBacToPrimVertex;
@@ -468,8 +501,10 @@ AliFemtoCutMonitorXi::~AliFemtoCutMonitorXi()
   delete fPtXi;
   delete fPtBac;
   delete fdEdxBac;
-  delete fTOFtimeBac;
-  delete fnsigmaBac;
+  delete fTOFtimeBacPi;
+  delete fnsigmaBacPi;
+  delete fTOFtimeBacK;
+  delete fnsigmaBacK;
 }
 
 AliFemtoCutMonitorXi& AliFemtoCutMonitorXi::operator=(const AliFemtoCutMonitorXi& aCut)
@@ -529,6 +564,8 @@ AliFemtoCutMonitorXi& AliFemtoCutMonitorXi::operator=(const AliFemtoCutMonitorXi
 
   if(fXiMass) delete fXiMass;
   fXiMass= new TH1F(*aCut.fXiMass);
+  if(fOmegaMass) delete fOmegaMass;
+  fOmegaMass= new TH1F(*aCut.fOmegaMass);
   if(fDcaXiDaughters) delete fDcaXiDaughters;
   fDcaXiDaughters = new TH1F(*aCut.fDcaXiDaughters);
   if(fDcaXiToPrimVertex) delete fDcaXiToPrimVertex;
@@ -549,10 +586,14 @@ AliFemtoCutMonitorXi& AliFemtoCutMonitorXi::operator=(const AliFemtoCutMonitorXi
   fPtBac = new TH1F(*aCut.fPtBac);
   if(fdEdxBac) delete fdEdxBac;
   fdEdxBac = new TH2D(*aCut.fdEdxBac);
-  if(fTOFtimeBac) delete fTOFtimeBac;
-  fTOFtimeBac = new TH2D(*aCut.fTOFtimeBac);
-  if(fnsigmaBac) delete fnsigmaBac;
-  fnsigmaBac = new TH1D(*aCut.fnsigmaBac);
+  if(fTOFtimeBacPi) delete fTOFtimeBacPi;
+  fTOFtimeBacPi = new TH2D(*aCut.fTOFtimeBacPi);
+  if(fnsigmaBacPi) delete fnsigmaBacPi;
+  fnsigmaBacPi = new TH1D(*aCut.fnsigmaBacPi);
+  if(fTOFtimeBacK) delete fTOFtimeBacK;
+  fTOFtimeBacK = new TH2D(*aCut.fTOFtimeBacK);
+  if(fnsigmaBacK) delete fnsigmaBacK;
+  fnsigmaBacK = new TH1D(*aCut.fnsigmaBacK);
 
   
 
@@ -578,6 +619,7 @@ AliFemtoCutMonitorXi& AliFemtoCutMonitorXi::operator=(const AliFemtoCutMonitorXi
   fnsigmaNegAL->Sumw2();
 
   fXiMass->Sumw2();
+  fOmegaMass->Sumw2();
   fDcaXiDaughters->Sumw2();
   fDcaXiToPrimVertex->Sumw2();
   fDcaBacToPrimVertex->Sumw2();
@@ -587,8 +629,10 @@ AliFemtoCutMonitorXi& AliFemtoCutMonitorXi::operator=(const AliFemtoCutMonitorXi
   fPtXi->Sumw2();
   fPtBac->Sumw2();
   fdEdxBac->Sumw2();
-  fTOFtimeBac->Sumw2();
-  fnsigmaBac->Sumw2();
+  fTOFtimeBacPi->Sumw2();
+  fnsigmaBacPi->Sumw2();
+  fTOFtimeBacK->Sumw2();
+  fnsigmaBacK->Sumw2();
 
   return *this;
 }
@@ -631,6 +675,7 @@ void AliFemtoCutMonitorXi::Fill(const AliFemtoXi* aXi)
 
 
   fXiMass->Fill(aXi->MassXi());
+  fOmegaMass->Fill(aXi->MassOmega());
   fDcaXiDaughters->Fill(aXi->DcaXiDaughters());
   fDcaXiToPrimVertex->Fill(aXi->DcaXiToPrimVertex());
   fDcaBacToPrimVertex->Fill(aXi->DcaBacToPrimVertex());
@@ -640,8 +685,10 @@ void AliFemtoCutMonitorXi::Fill(const AliFemtoXi* aXi)
   fPtXi->Fill(aXi->PtXi());
   fPtBac->Fill(aXi->PtBac());
   fdEdxBac->Fill(aXi->GetTPCMomentumBac(),aXi->DedxBac());
-  fTOFtimeBac->Fill(aXi->GetTPCMomentumBac(),aXi->BacNSigmaTOFPi());
-  fnsigmaBac->Fill(aXi->BacNSigmaTPCPi());
+  fTOFtimeBacPi->Fill(aXi->GetTPCMomentumBac(),aXi->BacNSigmaTOFPi());
+  fnsigmaBacPi->Fill(aXi->BacNSigmaTPCPi());
+  fTOFtimeBacK->Fill(aXi->GetTPCMomentumBac(),aXi->BacNSigmaTOFK());
+  fnsigmaBacK->Fill(aXi->BacNSigmaTPCK());
 
   
 
@@ -689,6 +736,7 @@ void AliFemtoCutMonitorXi::Write()
   fParticleOrigin->Write();
 
   fXiMass->Write();
+  fOmegaMass->Write();
   fDcaXiDaughters->Write();
   fDcaXiToPrimVertex->Write();
   fDcaBacToPrimVertex->Write();
@@ -698,8 +746,10 @@ void AliFemtoCutMonitorXi::Write()
   fPtXi->Write();
   fPtBac->Write();
   fdEdxBac->Write();
-  fTOFtimeBac->Write();
-  fnsigmaBac->Write();
+  fTOFtimeBacPi->Write();
+  fnsigmaBacPi->Write();
+  fTOFtimeBacK->Write();
+  fnsigmaBacK->Write();
 }
 
 TList *AliFemtoCutMonitorXi::GetOutputList()
@@ -733,6 +783,7 @@ TList *AliFemtoCutMonitorXi::GetOutputList()
   tOutputList->Add(fParticleOrigin);
 
   tOutputList->Add(fXiMass);
+  tOutputList->Add(fOmegaMass);
   tOutputList->Add(fDcaXiDaughters);
   tOutputList->Add(fDcaXiToPrimVertex);
   tOutputList->Add(fDcaBacToPrimVertex);
@@ -742,8 +793,10 @@ TList *AliFemtoCutMonitorXi::GetOutputList()
   tOutputList->Add(fPtXi);
   tOutputList->Add(fPtBac);
   tOutputList->Add(fdEdxBac);
-  tOutputList->Add(fTOFtimeBac);
-  tOutputList->Add(fnsigmaBac);
+  tOutputList->Add(fTOFtimeBacPi);
+  tOutputList->Add(fnsigmaBacPi);
+  tOutputList->Add(fTOFtimeBacK);
+  tOutputList->Add(fnsigmaBacK);
 
   return tOutputList;
 }
