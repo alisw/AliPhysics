@@ -26,7 +26,7 @@ public:
     kXiMinusMC = 101,
     kXiPlusMC = 102,
     kOmegaMinusMC = 103,
-    kOmegsPlusMC = 104
+    kOmegaPlusMC = 104
   };
   typedef enum XiType AliFemtoXiType;
 

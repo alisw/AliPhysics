@@ -187,6 +187,16 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 	}
     }
 
+    //Omega from kinematics information
+    if (fParticleTypeXi == kOmegaMinusMC || fParticleTypeXi == kOmegaPlusMC) {
+      if(!(aXi->MassOmega()>fInvMassOmegaMin && aXi->MassOmega()<fInvMassOmegaMax) || !(aXi->BacNSigmaTPCK()==0))
+	return false;
+      else
+	{
+	  return true;
+	}
+    }
+    
     //quality cuts
 
     if(aXi->TPCNclsBac()<fTPCNclsBac) return false;
