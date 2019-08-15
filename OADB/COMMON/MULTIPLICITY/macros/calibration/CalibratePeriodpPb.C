@@ -157,11 +157,11 @@ void CalibratePeriodpPb(  TString lPeriodName         = "LHC16s",
   for (Int_t i = 0; i < 20; i++){
     if (fitCorrZVtx[i] && enableZVtxCorr[i]){
       TString currentFormula = fitCorrZVtx[i]->GetExpFormula();
-      for (Int_t i = 0; i < fitCorrZVtx[i]->GetNpar(); i++){
+      for (Int_t k = 0; k < fitCorrZVtx[i]->GetNpar(); k++){
         #ifndef __CLING__
-          currentFormula.ReplaceAll(Form("[p%d]",i), Form("(%.10f)",fitCorrZVtx[i]->GetParameter(i)));
+          currentFormula.ReplaceAll(Form("[p%d]",k), Form("(%.10f)",fitCorrZVtx[i]->GetParameter(k)));
         #else
-          currentFormula.ReplaceAll(Form("[%d]",i), Form("(%.10f)",fitCorrZVtx[i]->GetParameter(i)));
+          currentFormula.ReplaceAll(Form("[%d]",k), Form("(%.10f)",fitCorrZVtx[i]->GetParameter(k)));
         #endif
       }
       currentFormula.ReplaceAll("x","(fEvSel_VtxZ)");
