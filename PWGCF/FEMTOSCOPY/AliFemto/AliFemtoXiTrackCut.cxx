@@ -261,7 +261,7 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   if(fBuildPurityAidXi) {fMinvPurityAidHistoXi->Fill(aXi->MassXi());}
 
   //invariant mass Xi
-  if(fParticleTypeXi == kXiPlus || fParticleType == kXiMinus)
+  if(fParticleTypeXi == kXiPlus || fParticleTypeXi == kXiMinus)
     {
       if(aXi->MassXi()<fInvMassXiMin || aXi->MassXi()>fInvMassXiMax)
 	{
@@ -269,7 +269,7 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 	}
     }
   //invariant mass Omega
-  if(fParticleTypeXi == kOmegaPlus || fParticleType == kOmegaMinus)
+  if(fParticleTypeXi == kOmegaPlus || fParticleTypeXi == kOmegaMinus)
     {
       if(aXi->MassOmega()<fInvMassOmegaMin || aXi->MassOmega()>fInvMassOmegaMax)
 	{
@@ -278,7 +278,7 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
     }
 
   //removing particles in the given Minv window (to reject omegas in Xi sample)
-  if(fParticleTypeXi == kXiPlus || fParticleType == kXiMinus)
+  if(fParticleTypeXi == kXiPlus || fParticleTypeXi == kXiMinus)
     {
       if(aXi->MassOmega()>fInvMassRejectOmegaMin && aXi->MassOmega()<fInvMassRejectOmegaMax)
 	{
@@ -288,7 +288,7 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 
 
   //removing particles in the given Minv window (to reject Xis in Omega sample)
-  if(fParticleTypeXi == kOmegaPlus || fParticleType == kOmegaMinus)
+  if(fParticleTypeXi == kOmegaPlus || fParticleTypeXi == kOmegaMinus)
     {
       if(aXi->MassXi()>fInvMassRejectXiMin && aXi->MassXi()<fInvMassRejectXiMax)
 	{
