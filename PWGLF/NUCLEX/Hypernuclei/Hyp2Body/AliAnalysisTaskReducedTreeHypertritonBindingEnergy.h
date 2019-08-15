@@ -7,6 +7,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisTask.h"
+#include "AliTimeRangeCut.h"
 #include "AliPIDResponse.h"
 #include "AliESDVertex.h"
 #include "AliEventCuts.h"
@@ -26,7 +27,6 @@ public:
     AliAnalysisTaskReducedTreeHypertritonBindingEnergy();
     AliAnalysisTaskReducedTreeHypertritonBindingEnergy(const char *name);
     virtual ~AliAnalysisTaskReducedTreeHypertritonBindingEnergy();
-    
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec (Option_t *option);
     
@@ -40,7 +40,8 @@ public:
     Double_t GetDecayLengthV0                (AliESDv0 *V0);
     Bool_t   Is3HeCandidate                  (AliESDtrack *track);
     Bool_t   IsPionCandidate                 (AliESDtrack *track);
-
+    Double_t InvariantMassHypertriton        (TVector3 P1, TVector3 P2);
+    
     virtual void   Terminate(Option_t *);
     
 private:
@@ -49,12 +50,13 @@ private:
     AliESDtrackCuts  *fESDtrackCuts_Pos;//!
     AliESDtrackCuts  *fESDtrackCuts_Neg;//!
     AliEventCuts      fESDeventCuts;//
+    AliTimeRangeCut   fTimeRangeCut;//
     AliAnalysisUtils *fUtils;//!
     TList            *fOutputList;//!
     TList            *fQAList;//!
     Double_t          fCentralityMin;//
     Double_t          fCentralityMax;//
-
+    
     
     
     
@@ -69,7 +71,7 @@ private:
     Int_t    iEvent;//
     Double_t zVertex;//
     Double_t centrality;//
-
+    
     //Variables for HyperTriton - First Daughter
     Double_t px_Daughter1;//
     Double_t py_Daughter1;//
@@ -81,7 +83,7 @@ private:
     Double_t chi2_TPC_Daughter1;//
     Double_t nSigmaTPC_He3_Daughter1;//
     Double_t nSigmaTPC_Pion_Daughter1;//
-
+    
     //Variables for HyperTriton - Second Daughter
     Double_t px_Daughter2;//
     Double_t py_Daughter2;//
@@ -101,7 +103,7 @@ private:
     Double_t radius;//
     Double_t chi2V0;//
     Double_t decayLength;//
-
+    
     
     AliAnalysisTaskReducedTreeHypertritonBindingEnergy(const AliAnalysisTaskReducedTreeHypertritonBindingEnergy&);
     AliAnalysisTaskReducedTreeHypertritonBindingEnergy& operator=(const AliAnalysisTaskReducedTreeHypertritonBindingEnergy&);
