@@ -2443,7 +2443,7 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
 
     // get boost vector
     TLorentzVector trigVec;
-    trigVec.SetPtEtaPhiM(trig->Pt(), trig->Eta(), trig->Phi(), ((PAIR*)trig)->Mass());
+    trigVec.SetPtEtaPhiM(trig->Pt(), trig->Eta(), trig->Phi(), 3.096916); //NOTE: J/psi mass from PDG
     TVector3 boostVec = trigVec.BoostVector();
 
     // fill TLorentzVector for associated track
