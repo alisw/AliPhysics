@@ -25,19 +25,11 @@ useEvent(kTRUE)
 //_____________________________________________________________________
 void AliForwardQCumulantRun2::CumulantsAccumulate(TH2D& dNdetadphi, TList* outputList, double cent, double vertexpos, TString detType)
 {
-  TList* eventList = static_cast<TList*>(outputList->FindObject("EventInfo"));
-  TH2F* fOutliers = static_cast<TH2F*>(eventList->FindObject("hOutliers"));
-  TH1D* fFMDHits = static_cast<TH1D*>(eventList->FindObject("FMDHits"));
-
   Int_t phibins = dNdetadphi.GetNbinsY();
 
   for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
 
     Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
-    Double_t runAvg = 0;
-    Double_t avgSqr = 0;
-    Double_t max = 0;
-    Int_t nInAvg = 0;
 
     for (Int_t phiBin = 1; phiBin <= phibins; phiBin++) {
     // Check for acceptance

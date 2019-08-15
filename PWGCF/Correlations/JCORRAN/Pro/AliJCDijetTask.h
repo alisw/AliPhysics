@@ -54,12 +54,11 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         void    SetBGSubtrSettings(int ktScheme, Bool_t usePionMasskt, Bool_t useDeltaPhiBGSubtr) {fktScheme=ktScheme; fusePionMassInktjets=usePionMasskt; fuseDeltaPhiBGSubtr=useDeltaPhiBGSubtr; }
         Bool_t  IsMC()const{ return fIsMC; }
         void    SetIsMC(Bool_t b) { fIsMC=b; }
-        void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi;}
+        void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi, double matchingR) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi; fmatchingR = matchingR; }
 
         // Methods specific for this class
         void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
         void SetJCatalystTaskNameDetMC(TString name){ fJCatalystDetMCTaskName=name; } // Setter for filter task name
-        void InitHistos(AliJCDijetHistos *histos);
 
     private:
 
@@ -80,6 +79,7 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         double fsubleadingJetCut;
         double fconstituentCut;
         double fdeltaPhiCut;
+        double fmatchingR;
         AliJCDijetHistos *fhistos;
         AliJCDijetHistos *fhistosDetMC;
         AliJCDijetAna *fana;

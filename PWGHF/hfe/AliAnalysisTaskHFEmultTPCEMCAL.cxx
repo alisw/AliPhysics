@@ -153,7 +153,7 @@ AliAnalysisTaskSE(),
 	IsM20(kFALSE),
 	fCutM20Min(0.02),
 	fCutM20Max(0.6),
-	fCutEopEMin(0.9),
+	fCutEopEMin(0.8),
 	fCutEopEMax(1.2),
 
 
@@ -204,7 +204,7 @@ AliAnalysisTaskSE(),
   fSPDWeightedCorrMultDist_max(0),
   Profile_Mean(0),
   Profile_MeanCorr(0),
-  fPeriod(0),
+   fPeriod(0),
    SPDntr(0),
   //------------------------Non-Hfe
 fNonHFE(new AliSelectNonHFE()),
@@ -335,7 +335,7 @@ AliAnalysisTaskHFEmultTPCEMCAL::AliAnalysisTaskHFEmultTPCEMCAL(const char *name)
 	IsM20(kFALSE),
 	fCutM20Min(0.02),
 	fCutM20Max(0.6),
-	fCutEopEMin(0.9),
+	fCutEopEMin(0.8),
 	fCutEopEMax(1.2),
 
 
@@ -386,7 +386,7 @@ AliAnalysisTaskHFEmultTPCEMCAL::AliAnalysisTaskHFEmultTPCEMCAL(const char *name)
   fSPDWeightedCorrMultDist_max(0),
   Profile_Mean(0),
   Profile_MeanCorr(0),
-  fPeriod(0),
+   fPeriod(0),
   SPDntr(0),
   
   //------------------------Non-Hfe
@@ -1486,7 +1486,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 		  GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
 		  fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
 
-		  if(TMath::Abs(fPhiDiff) > 0.05 || TMath::Abs(fEtaDiff)> 0.05) continue;
+		  if(TMath::Abs(fPhiDiff) > 0.01 || TMath::Abs(fEtaDiff)> 0.01) continue;
 
 		  /////////////////////////////////
 		  //Select EMCAL or DCAL clusters//
@@ -2695,7 +2695,12 @@ Bool_t AliAnalysisTaskHFEmultTPCEMCAL::GetNonHFEEffiULSLS(AliVTrack *track, AliV
 
 
 //===============================================================================
+TProfile* AliAnalysisTaskHFEmultTPCEMCAL::GetEstimatorHistogram(const AliAODEvent* fAOD)
+{
 
+  if (fPeriod < 0 || fPeriod > 5) return 0;   
+  return fMultEstimatorAvg[fPeriod];
+}
 /*
 TProfile* AliAnalysisTaskHFEmultTPCEMCAL::GetEstimatorHistogram(const AliAODEvent* fAOD)
 {
@@ -2719,13 +2724,6 @@ TProfile* AliAnalysisTaskHFEmultTPCEMCAL::GetEstimatorHistogram(const AliAODEven
   return fMultEstimatorAvg[period];
 }
 */
-TProfile* AliAnalysisTaskHFEmultTPCEMCAL::GetEstimatorHistogram(const AliAODEvent* fAOD)
-{
-
-  if (fPeriod < 0 || fPeriod > 5) return 0;   
-  return fMultEstimatorAvg[fPeriod];
-}
-
 Double_t AliAnalysisTaskHFEmultTPCEMCAL::GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult) {
   //
   // Correct the number of accepted tracklets based on a TProfile Hist

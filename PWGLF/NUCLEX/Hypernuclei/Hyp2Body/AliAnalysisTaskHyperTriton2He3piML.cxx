@@ -73,6 +73,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
       fFillGenericV0s{true},
+      fFillGenericTracklets{true},
       fFillTracklet{true},
       fSaveFileNames{false},
       fPropagetToPV{true},
@@ -108,6 +109,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fSGenericV0{},
       fRHyperTriton{},
       fRTracklets{},
+      fSGenericTracklets{},
       fRCollision{}
 {
 
@@ -162,6 +164,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
     fTreeV0->Branch("SHyperTriton", &fSHyperTriton);
     if (fFillGenericV0s)
       fTreeV0->Branch("SGenericV0", &fSGenericV0);
+    if (fFillGenericTracklets)
+      fTreeV0->Branch("SGenericTracklets", &fSGenericTracklets);
   }
 
   fListHist = new TList();
@@ -255,6 +259,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   {
     fSHyperTriton.clear();
     fSGenericV0.clear();
+    fSGenericTracklets.clear();
     for (int ilab = 0; ilab < mcEvent->GetNumberOfTracks(); ilab++)
     { // This is the begining of the loop on tracks
       AliVParticle *part = mcEvent->GetTrack(ilab);
@@ -309,6 +314,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
         v0part.fNegativeLabels = true;
         mcMap[ilab] = fSHyperTriton.size();
         fSHyperTriton.push_back(v0part);
+
       }
     }
   }
@@ -565,7 +571,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     int id1{-1}, id2{-1};
     tracklets->GetTrackletTrackIDs (iTracklet, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
     
-    if (id1 >= 0 && id2 > 0)  /// Both points are used in a track
+    if (id1 >= 0 && id2 >= 0)  /// Both points are used in a track
       continue;
 
     if (std::abs(deltaPhi) > fMaxDeltaPhi)
@@ -592,8 +598,19 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
         if (tracklets->GetLabel(iTracklet, 0) == tracklets->GetLabel(iTracklet, 1) && fMC && tracklets->GetLabel(iTracklet, 0) >= 0)
         {
           int ilab = tracklets->GetLabel(iTracklet, 0);
-          if (std::abs(mcEvent->GetTrack(ilab)->PdgCode()) == 1010010030)
+          AliVParticle* part = mcEvent->GetTrack(ilab);
+          if (std::abs(part->PdgCode()) == 1010010030)
             fSHyperTriton[mcMap[ilab]].fRecoTracklet = fRTracklets.size();
+          else {
+            AliVParticle* part = mcEvent->GetTrack(ilab);
+            SGenericTracklet gen;
+            gen.fPdgCode = part->PdgCode();
+            gen.fPx = part->Px();
+            gen.fPy = part->Py();
+            gen.fPz = part->Pz();
+            gen.fRecoIndex = fRTracklets.size();
+            fSGenericTracklets.emplace_back(gen);
+          }
         }
         fRTracklets.push_back(trkl);
         break;

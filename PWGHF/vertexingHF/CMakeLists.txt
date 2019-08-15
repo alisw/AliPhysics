@@ -17,9 +17,12 @@
 set(MODULE PWGHFvertexingHF)
 add_definitions(-D_MODULE_="${MODULE}")
 add_subdirectory (TMVA)
+add_subdirectory (vHFBDT)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
+
+include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -76,6 +79,7 @@ set(SRCS
   AliAnalysisTaskSEDplus.cxx
   AliAnalysisTaskSEDs.cxx
   AliAnalysisTaskSELambdac.cxx
+  AliAnalysisTaskSED0BDT.cxx
   AliAnalysisTaskSED0Mass.cxx
   AliAnalysisTaskSED0MassTMVA.cxx
   AliAnalysisTaskSELambdacTMVA.cxx
@@ -153,6 +157,7 @@ set(SRCS
   AliAnalysisTaskSEHFSystPID.cxx
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
   AliAnalysisTaskSEXicTopKpi.cxx
+  AliRDHFCutsXictopKpi.cxx
    )
 
 # Headers from sources
@@ -169,7 +174,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface TMVA)
+set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

@@ -19,9 +19,9 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 		Double_t TPCnsigmin= -1 ,
 		Double_t TPCnsigmax= 3 ,
 		Double_t TOFnsig= 3 ,
-		Double_t EopEMin= 0.8 ,
-		Double_t EopEMax=  1.2,
-        Double_t  M20Min= 0.02 ,
+		Double_t EopEMin= 0.8 ,		
+		Double_t EopEMax=  1.2,		
+	    Double_t  M20Min= 0.02 ,		
 		Double_t M20Max= 0.9,
 	
 		Double_t InvmassCut= 0.14,		
@@ -94,13 +94,13 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 	return;
       }
     }
-    
     taskhfe->SetMultiplVsZProfile_16k_MB(multEstimatorAvg[0]);
     taskhfe->SetMultiplVsZProfile_16k_EG2(multEstimatorAvg[1]);
     taskhfe->SetMultiplVsZProfile_16k_EG1(multEstimatorAvg[2]);
     taskhfe->SetMultiplVsZProfile_17d20a1_extra(multEstimatorAvg[3]);
 	taskhfe->SetMultiplVsZProfile_17c3b1(multEstimatorAvg[4]);
     taskhfe->SetEstimatorHistogram(period);
+    
   }
   
   	//taskhfe->SelectCollisionCandidates(AliVEvent::kINT5);
@@ -117,6 +117,7 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 	taskhfe->SetTPCnsigma(TPCnsigmin,TPCnsigmax);
 	taskhfe->SetEopE(EopEMin,EopEMax);
     taskhfe->SetShowerShapeEM20(M20Min,M20Max);
+
 
 	taskhfe->SetInvMassCut(InvmassCut);
 	taskhfe->SetAssoTPCclus(AssoTPCCluster);
@@ -166,6 +167,6 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
   mgr->ConnectOutput(taskhfe,1,coutput1);
   mgr->ConnectOutput(taskhfe,2,coutput2);
   
-
+  
   return taskhfe;
 }

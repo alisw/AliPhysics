@@ -1204,7 +1204,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
         }
       }
 
-      if(fOneHistAllBCs){
+      if(fReferenceRunByRunFileName.Length()!=0 && fFillHeavyHisto && amp>fMinCellEnergy && fOneHistAllBCs){
         if(isHighGain){
           fhTimeVsIdAllBCs->Fill(absId,hkdtime-offset-offsetPerSM-L1shiftOffset);
         }else{

@@ -59,6 +59,7 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
    void SetCutsond0Lcdaughters(Bool_t val = kTRUE) {fCutsond0Lcdaughters = val; return;}
    void ApplyD0CutLcdaughters(Double_t d0cutd1, Double_t d0cutd2){fCutD0Daughter[0]=d0cutd1; fCutD0Daughter[1]=d0cutd2;}
    void SetPtConfiguration(Double_t ptbin, Double_t ptlcupper, Double_t ptlclower, Double_t ptpionupper, Double_t ptpionlower, Double_t ptlbupper, Double_t ptlblower){fCutsPerPt[0]=ptbin;fCutsPerPt[1]=ptlcupper;fCutsPerPt[2]=ptlclower;fCutsPerPt[3]=ptpionupper;fCutsPerPt[4]=ptpionlower;fCutsPerPt[5]=ptlbupper;fCutsPerPt[6]=ptlblower;}
+   void SetNRotations(Double_t nrotations){fNRotations=nrotations;}
 
  private:
   AliAnalysisTaskSELbtoLcpi4(const AliAnalysisTaskSELbtoLcpi4&);
@@ -118,8 +119,9 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   Double_t fCutD0Daughter[2];
   Bool_t fCutsond0Lcdaughters;
   Double_t fCutsPerPt[7];
+  Double_t fNRotations;
   Bool_t fIsPromptLc;
-  ClassDef(AliAnalysisTaskSELbtoLcpi4,3);
+  ClassDef(AliAnalysisTaskSELbtoLcpi4,4);
 };
 
 #endif

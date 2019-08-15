@@ -188,8 +188,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetFilterMask(filterbit);
 	Reader->SetCovMatPresent(false);
 	Reader->SetDCAglobalTrack(1); //false for FB7, true for the rest //we do not use DCA at all
-	Reader->SetUseMultiplicity("MultSelection.RefMult08.Value");
-
+	//Reader->SetUseMultiplicity("MultSelection.RefMult08.Value");
+ Reader->SetUseMultiplicity("V0M");
  Reader->SetReadV0(kTRUE);
  Reader->SetReadCascade(kTRUE);
 
@@ -563,7 +563,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					if(ifMonitors)//ichg>8)
 					  {
 
-					    if(ichg>=20 && ichg<=26){
+					    if(ichg>=20 && ichg<=33){
 					      // //V0 monitors (memory leak problems?)
 					      cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", chrgs[ichg], imult));
 					      cutFail1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%i", chrgs[ichg], imult));

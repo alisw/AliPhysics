@@ -9,7 +9,7 @@
 #endif
 
 
-  AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Int_t MinNTr, Int_t MaxNTr, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t OneTimeCheck, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC, Bool_t IsAOD, Bool_t IsHFE, Bool_t UseTender, Bool_t UseEventWeights, Double_t EtaMax, Int_t ITSnCut, Float_t ITSSharedCluster,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut, Int_t PhotCorrCase, Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITSsa, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
+  AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Int_t MinNTr, Int_t MaxNTr, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t OneTimeCheck, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC, Bool_t IsAOD, Bool_t IsHFE, Bool_t UseTender, Bool_t UseEventWeights, Double_t EtaMax, Int_t ITSnCut, Float_t ITSSharedCluster,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut, Int_t PhotCorrCase, Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITSsa, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, Int_t VarOptE, Int_t VarOptH, Int_t VarOptPhot,  const char * ID="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -22,7 +22,7 @@
     return 0x0;
   }
 
-  TString type = mgr->GetInputEventHandler()->GetDataType();
+ 
 
   /*
   AliMCEventHandler* mcHand = new AliMCEventHandler();
@@ -34,11 +34,18 @@
   }
   */
 
+  // VarOption for variations affecting online efficiencies, 0 is default configuration
+  
 
+
+
+
+  //TString VarString = Form("_%i", VarOptE);
+  //ID+=VarString.Data();
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHaHFECorrel.C");
   AliAnalysisTaskHaHFECorrel *taskMB = 
-    ConfigHaHFECorrel(period, MinNTr, MaxNTr, TRDQA, TagEff, RecEff, OneTimeCheck,  CorrHadron, CorrLP, MCTruth, IsMC, IsAOD, IsHFE, UseTender, UseEventWeights, EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut, PhotCorrCase, InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITSsa, SigmaITScut, SigmaTOFcut, SigmaTPCcut, ID);
+    ConfigHaHFECorrel(period, MinNTr, MaxNTr, TRDQA, TagEff, RecEff, OneTimeCheck,  CorrHadron, CorrLP, MCTruth, IsMC, IsAOD, IsHFE, UseTender, UseEventWeights, EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut, PhotCorrCase, InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITSsa, SigmaITScut, SigmaTOFcut, SigmaTPCcut, VarOptE, VarOptH, VarOptPhot, ID);
   if (!taskMB) {
     Error("AddTaskHaHFECorrel", "No task found.");
   }
@@ -69,32 +76,55 @@
 
 
   TH1::AddDirectory(kFALSE);
-  printf("Loading SPDnTrAvg\n");
+  printf("Loading SPDnTr files\n");
   TString SPDnTrFileName;
-  if (IsMC) SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDnTrAvg_MC.root";
-  else SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDnTrAvg_Data.root";
+  if (IsMC) SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_MC.root"; //SPDnTrAvg_MC.root";
+  else SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_Data.root"; //SPDnTrAvg_Data.root";
   TFile *SPDnTrFile  = TFile::Open(SPDnTrFileName.Data());
   if (SPDnTrFile) {    
-    TProfile* SPDnTrAvg = (TProfile*)SPDnTrFile->Get("SPDnTrAvg");
-    if (SPDnTrAvg) taskMB->SetSPDnTrAvg(*SPDnTrAvg);
-    else printf("Could not load SPDnTrAvg\n");
-    }
-    else printf("Could not open SPDnTrAvg correction file \n");
+    TH3F* SPDConfigProfiles= (TH3F*)SPDnTrFile->Get("SPDConfigs_Hist");
+    TH1F* SPDConfigHist = (TH1F*) SPDnTrFile->Get("SPDConfigHist");
+    if (SPDConfigHist) taskMB->SetSPDConfigHist(*SPDConfigHist);
+    else printf("Could not load SPDConfigHist\n");
+    if (SPDConfigProfiles) taskMB->SetSPDConfigProfiles(*SPDConfigProfiles);
+    else printf("Could not load SPDConfigProfiles\n");
+  }
+  else printf("Could not open SPDnTrAvg correction file \n");
   TH1::AddDirectory(kTRUE);
 
   TH1::AddDirectory(kFALSE);
-  printf("Loading RecEffFiles\n");
-  TString RecEffFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/RecEff.root";
+  printf("Loading RecEffFiles: %i for hadrons, %i for electrons \n", VarOptH, VarOptE);
+  TString RecEffFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/RecEff_Periods.root";
   TFile *RecEffFile = TFile::Open(RecEffFileName.Data());
-  RecEffFile->ls();
+  //  RecEffFile->ls();
   //RecEffFile->ls();
   if (RecEffFile) {    
-    TH3F * HadRecEff = (TH3F*)RecEffFile->Get("HadRecEff");
-    TH2F * EleRecEff = (TH2F*)RecEffFile->Get("EleRecEff");
+    TH3F * HadRecEff = (TH3F*)RecEffFile->Get(Form("HadRecEff_%i", VarOptH));
+    TH3F * EleRecEff = (TH3F*)RecEffFile->Get(Form("EleRecEff_%i", VarOptE));
     if (HadRecEff) taskMB->SetHadRecEff(*HadRecEff);
-    else printf("Could not load HadRecEff\n");
+    else {
+      HadRecEff = (TH3F*)RecEffFile->Get(Form("HadRecEff_0"));
+      if (HadRecEff) {
+	taskMB->SetHadRecEff(*HadRecEff);
+	printf("WARNING: Could not load HadRecEff - using default values\n");
+      }
+      else {
+	printf("WARNING: Could not load HadRecEff\n");
+	return NULL;
+      }
+    }
     if (EleRecEff) taskMB->SetEleRecEff(*EleRecEff);
-    else printf("Could not load EleRecEff\n");
+    else {
+      EleRecEff = (TH3F*)RecEffFile->Get(Form("EleRecEff_0"));
+      if (EleRecEff) {
+	taskMB->SetEleRecEff(*EleRecEff);
+	printf("WARNING: Could not load EleRecEff - using default values\n");
+      }
+      else {
+	printf("WARNING: Could not load EleRecEff\n");
+	return NULL;
+      }
+    }
   }
   else printf("Could not open RecEff correction file \n");
   TH1::AddDirectory(kTRUE);
@@ -116,22 +146,25 @@
   
   TH1::AddDirectory(kFALSE);
   printf("Loading EventWeightFile\n");
-  TString EventWeightFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/TriggerVtxEff.root";
+  TString EventWeightFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/TrigVtxEff_Periods.root";
   TFile *EventWeightFile = TFile::Open(EventWeightFileName.Data());
   EventWeightFile->ls();
   if (EventWeightFile) {    
-    TH2F * TriggerWeight  = (TH2F*)EventWeightFile->Get("TrigEffPS");
+    TH3F * TriggerWeight  = (TH3F*)EventWeightFile->Get("TrigEff");
     if (TriggerWeight) taskMB->SetTriggerWeight(*TriggerWeight); 
-    TH1F * VtxWeight;
-    if (IsMC) VtxWeight = (TH1F*)EventWeightFile->Get("VtxWeightMC");
-    if (!IsMC || !VtxWeight) VtxWeight = (TH1F*)EventWeightFile->Get("VtxWeight");
+    TH2F * VtxWeight;
+    VtxWeight = (TH2F*)EventWeightFile->Get("VtxEff");
+    //    if (!IsMC || !VtxWeight) VtxWeight = (TH1F*)EventWeightFile->Get("VtxWeight");
     if (VtxWeight) taskMB->SetVtxWeight(*VtxWeight);
-    if (!VtxWeight || !TriggerWeight) print("Could no open EventWeight hists");
+    if (!VtxWeight || !TriggerWeight) printf("Could no open EventWeight hists");
   }
   else  printf("Could not open EventWeight file \n"); 
   TH1::AddDirectory(kTRUE);
-  
 
+  printf("Setting VarOptions: Electron - %i, Hadron - %i, Phot - %i", VarOptE, VarOptH, VarOptPhot);
+  taskMB->SetEleVarOpt(VarOptE);
+  taskMB->SetHadVarOpt(VarOptH);
+  taskMB->SetPhotVarOpt(VarOptPhot);
  
 
 
@@ -174,5 +207,5 @@
 
 
 
-  return NULL;
+  return taskMB;
 }

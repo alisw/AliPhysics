@@ -139,6 +139,8 @@ set(SRCS
   AliAnalysisTaskHFEBESpectraEMC.cxx
   AliAnalysisTaskHFETPCTOFMultiplicity.cxx
   AliAnalysisTaskQAHFE.cxx
+  AliAnalysisTask_QA_EMCALElectrons.cxx
+  AliAnalysisTaskHFEmultTPCEMCAL.cxx
   )
 
 # Headers from sources

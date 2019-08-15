@@ -107,6 +107,7 @@ public:
     AliAnalysisTaskHFJetIPQA& operator=(const AliAnalysisTaskHFJetIPQA&); // not implemented
     virtual ~AliAnalysisTaskHFJetIPQA(){;}
     virtual void   UserCreateOutputObjects();
+    virtual void   UserExecOnce();
     virtual void   Terminate(Option_t *option="");
     virtual Bool_t Run();
     virtual Bool_t IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits);
@@ -222,7 +223,7 @@ protected:
     TH2D *fh2dCharmDeta; //!
     TH2D *fh2dBottomDeta; //!
 
-    THnSparse *fHLundIterative;//       iterative declustering
+    THnSparse *fHLundIterative;//!       iterative declustering
 
 
 private:
@@ -398,7 +399,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 35)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 36)
 };
 
 #endif

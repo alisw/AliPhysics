@@ -9,6 +9,9 @@ class AliAnalysisDataContainer;
 AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
     TString OADBfilename="",
     TString Splinefilename="", 
+    Bool_t iMC = kFALSE,
+    Double_t cmim = 30.0,
+    Double_t cmax = 50.0,
     TString ContNameExt= "semicentral")
 {
     // get the manager via the static access member. since it's static, you don't need
@@ -28,7 +31,35 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
     // add your task to the manager
     task->SetOADBFileName(OADBfilename);
     task->SetqnPercentileSelection(Splinefilename);
-    task->SelectCollisionCandidates(AliVEvent::AliVEvent::kSemiCentral);
+    if(iMC)
+      {
+       task->SelectCollisionCandidates(AliVEvent::kMB);
+      }
+    else
+     {
+      Int_t centID = 0;
+      if(cmim==0.0)centID = 0;
+      if(cmim==30.0)centID = 1;
+
+       if(centID==0)
+         {
+          cout << "centrality selection : " << cmim << " ; " << cmax << " ; kCentral " << endl; 
+          task->SelectCollisionCandidates(AliVEvent::kCentral);
+          }
+       else if(centID==1)
+         {
+          cout << "centrality selection : " << cmim << " ; " << cmax << " ; kSemiCentral " << endl; 
+          task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+          }
+       else
+          {
+           task->SelectCollisionCandidates(AliVEvent::kINT7);
+          }
+     }
+
+    task->SetMinCentrality(cmim);
+    task->SetMaxCentrality(cmax);
+
     mgr->AddTask(task);
 
     TString containerName = mgr->GetCommonFileName();

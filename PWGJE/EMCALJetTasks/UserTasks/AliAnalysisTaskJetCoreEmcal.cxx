@@ -1025,7 +1025,7 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
     if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) { // loop over detector jets
       auto jet3 = jet1->ClosestJet();
       if(!jet3) {
-        Printf("jet3 can't be found");
+        if(fDebug) Printf("jet3 can't be found");
         continue;
       }
       ptJet3 = jet3->Pt();
@@ -1049,7 +1049,7 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 		fhPtDetPart->Fill(ptJet2,ptJet3);
 		Double_t fraction = 1.;
     if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) fraction = jetCont->GetFractionSharedPt(jet1); 
-    Printf("FRACTION shared pT = %f",fraction);
+    if(fDebug) Printf("FRACTION shared pT = %f",fraction);
     fhFractionSharedPtInclusive->Fill(ptCorr,fraction);
 		if(fraction < fMinFractionSharedPt) continue;
 
@@ -1322,16 +1322,14 @@ Int_t  AliAnalysisTaskJetCoreEmcal::SelectTrigger(TList *list,Double_t minT,Doub
 
 	Int_t im=0;
 
-	TString groupname = "";
 	AliParticleContainer* partCont = 0x0;
 	AliParticleContainer* partContDet = 0x0;
-	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) partCont = GetParticleContainer(1);
-  else if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPartCorr || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) {
+	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPartCorr || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) partCont = GetParticleContainer(1);
+  else if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) {
     partCont = GetParticleContainer(0);
     partContDet = GetParticleContainer(1);
   }
 	else partCont = GetParticleContainer(0);
-	groupname = partCont->GetName();
 	UInt_t iCount = 0;
   // loop over first container
 	for(auto part : partCont->accepted()) {

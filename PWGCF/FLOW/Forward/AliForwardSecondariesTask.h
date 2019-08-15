@@ -20,7 +20,7 @@
 #include "AliForwardFlowUtil.h"
 #include "AliFMDMCTrackDensity.h"
 #include "AliForwardFlowResultStorage.h"
-
+#include "THn.h"
 //#include "AliEventCuts.h"
 #include <TF1.h>
 class AliMCParticle;
@@ -31,6 +31,7 @@ class TCutG;
 class AliAODForwardMult;
 class TH2D;
 class AliESDEvent;
+
 /**
  * @defgroup pwglf_forward_tasks_flow Flow tasks
  *
@@ -163,6 +164,12 @@ Double_t WrapPi(Double_t phi);
   TList* fDeltaList; //!
   TRandom fRandom;
   AliFMDMCTrackDensity* fTrackDensity; //!
+  THnD* delta_phi_eta;//!
+  THnD* delta_eta_phi;//!
+  THnD* delta_eta_eta;//!
+  THnD* delta_phi_phi;//!
+  THnD* fnoPrim;//!
+
 
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;

@@ -185,6 +185,8 @@ public:
                                Bool_t enable_extra_hists,
                                Bool_t enable_extra_denoms);
 
+  /// Build with variable bins
+  ///
   AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
                                const std::vector<double> &obins,
                                const std::vector<double> &sbins,
@@ -212,30 +214,31 @@ public:
   /// Destructor - histograms destroyed, ModelManager is NOT
   virtual ~AliFemtoModelCorrFctnTrueQ3D();
 
-  ///
+  /// assignement operator - copy any histograms
   AliFemtoModelCorrFctnTrueQ3D& operator=(const AliFemtoModelCorrFctnTrueQ3D&);
 
   /// Set the MC model manager
-  virtual void SetManager(AliFemtoModelManager *);
+  virtual void SetManager(AliFemtoModelManager *manager)
+    { fManager = manager; }
 
   virtual AliFemtoString Report();
 
+  /// Add pair of particles from same event
   virtual void AddRealPair(AliFemtoPair* aPair);
+
+  /// Add pair of particles from differnt events
   virtual void AddMixedPair(AliFemtoPair* aPair);
 
-  /// Finish Data
+  /// no-op
   virtual void Finish();
 
   virtual TList* GetOutputList();
   virtual void AddOutputObjectsTo(TCollection &);
   virtual TList* AppendOutputList(TList &);
 
-  virtual AliFemtoCorrFctn* Clone() const;
-
-  Double_t GetQinvTrue(AliFemtoPair*);
-
-  //Special MC analysis for K selected by PDG code -->
-  void SetKaonPDG(Bool_t aSetKaonAna);
+  /// Return copied corr fctn
+  virtual AliFemtoCorrFctn* Clone() const
+    { return new AliFemtoModelCorrFctnTrueQ3D(*this); }
 
   /// Get a builder-pattern constructor object
   static Parameters Build()
@@ -264,19 +267,5 @@ protected:
   TH3F *fDenominatorRecWeighted;
 
 };
-
-inline
-void
-AliFemtoModelCorrFctnTrueQ3D::SetManager(AliFemtoModelManager *manager)
-{
-  fManager = manager;
-}
-
-inline
-AliFemtoCorrFctn*
-AliFemtoModelCorrFctnTrueQ3D::Clone() const
-{
-  return new AliFemtoModelCorrFctnTrueQ3D(*this);
-}
 
 #endif

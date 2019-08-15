@@ -430,14 +430,22 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   AliAnalysisDataContainer *coutBFM;
   if(gRunMixing) coutBFM = mgr->CreateContainer(Form("listBFPsiMixed_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutQAPID;
-  if(kUsePID || sigmaElectronRejection > 0) coutQAPID = mgr->CreateContainer(Form("listQAPIDPsi_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutQACrossCorr;
+  if(kUsePID || sigmaElectronRejection > 0) {
+  coutQAPID = mgr->CreateContainer(Form("listQAPIDPsi_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  coutQACrossCorr = mgr->CreateContainer(Form("listQAPIDPsiCrossCorr_%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  }
+    
 
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskBF, 1, coutQA);
   mgr->ConnectOutput(taskBF, 2, coutBF);
   if(gRunShuffling) mgr->ConnectOutput(taskBF, 3, coutBFS);
   if(gRunMixing) mgr->ConnectOutput(taskBF, 4, coutBFM);
-  if(kUsePID||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 5, coutQAPID);
+  if(kUsePID||sigmaElectronRejection > 0) {
+  mgr->ConnectOutput(taskBF, 5, coutQAPID);
+  mgr->ConnectOutput(taskBF, 6, coutQACrossCorr);
+  }
   //if((kUsePID && analysisType == "AOD")||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 5, coutQAPID);
   //if((kUsePID && analysisType == "ESD")||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 5, coutQAPID);
 

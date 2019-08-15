@@ -156,8 +156,8 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
-  PDGParticles.push_back(3312);
-  PDGParticles.push_back(3312);
+  PDGParticles.push_back(3334);
+  PDGParticles.push_back(3334);
   PDGParticles.push_back(3334);
   PDGParticles.push_back(3334);
 

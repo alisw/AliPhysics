@@ -1,5 +1,5 @@
 InputFile:
-    FileName: '$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC18qr/AnalysisResults_Dplusv2_3050_EP_SP_EPVsMass.root'
+    FileName: ['AnalysisResults_part1.root', 'AnalysisResults_part2.root']
     Suffix: '_v2_3050_centralcutsVZERO'
     Meson: 'Dplus'
     FlowMethod: 'EvShapeEP'

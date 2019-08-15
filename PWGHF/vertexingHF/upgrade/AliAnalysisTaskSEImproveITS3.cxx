@@ -84,6 +84,8 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3()
    fPt1ResPiUpgSA (0),
 */ fRunInVertexing(kFALSE),
    fImproveTracks(kTRUE),
+   fUpdateSTCovMatrix(kTRUE),
+   fUpdateSecVertCovMat(kTRUE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0), 
@@ -138,6 +140,8 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
    fPt1ResPiUpgSA (0),
   */ fRunInVertexing(isRunInVertexing),
    fImproveTracks(kTRUE),
+   fUpdateSTCovMatrix(kTRUE),
+   fUpdateSecVertCovMat(kTRUE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0),
@@ -306,12 +310,16 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
 
       // update secondary vertex
       Double_t pos[3];
+      Double_t covpos[6];
+          
       v12->GetXYZ(pos);
+      v12->GetCovMatrix(covpos);
+          
       
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
+      if(fUpdateSecVertCovMat) decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v12->GetChi2toNDF()); 
      
-      //!!!!TODO: covariance matrix
 
       // update d0 
       Double_t d0z0[2],covd0z0[3];
@@ -419,8 +427,11 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
 
       // update secondary vertex
       Double_t pos[3];
+      Double_t covpos[6];
       v123->GetXYZ(pos);
+      v123->GetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
+      if(fUpdateSecVertCovMat) decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v123->GetChi2toNDF()); 
       //TODO: covariance matrix
 
@@ -487,7 +498,9 @@ void AliAnalysisTaskSEImproveITS3::SmearTrack(AliAODTrack *track,const TClonesAr
   // Get reconstructed track parameters
   AliExternalTrackParam et; et.CopyFromVTrack(track);
   Double_t *param=const_cast<Double_t*>(et.GetParameter());
-//TODO:  Double_t *covar=const_cast<Double_t*>(et.GetCovariance());
+  // Get covariance
+  Double_t *covar=const_cast<Double_t*>(et.GetCovariance());
+    
 
   // Get MC info
   Int_t imc=track->GetLabel();
@@ -573,14 +586,46 @@ void AliAnalysisTaskSEImproveITS3::SmearTrack(AliAODTrack *track,const TClonesAr
   param[0]=d0rpn;
   param[1]=d0zn ;
   param[4]=pt1n ;
-
+  /*
+  Double_t d0zoinsigma = 0.;
+  if(covar[0] > 0.) d0zoinsigma = d0zo/TMath::Sqrt(covar[2]);
+  Double_t d0rpoinsigma = 0.;
+  if(covar[2] > 0.) d0rpoinsigma = d0rpo/TMath::Sqrt(covar[0]);
+  */
+  //update the covariance matix
+  if(fUpdateSTCovMatrix){
+        if(sd0rpo>0.)            covar[0]*=(sd0rpn/sd0rpo)*(sd0rpn/sd0rpo);//yy
+        if(sd0zo>0. && sd0rpo>0.)covar[1]*=(sd0rpn/sd0rpo)*(sd0zn/sd0zo);//yz
+        if(sd0zo>0.)             covar[2]*=(sd0zn/sd0zo)*(sd0zn/sd0zo);//zz
+        if(sd0rpo>0.)            covar[3]*=(sd0rpn/sd0rpo);//yl
+        if(sd0zo>0.)             covar[4]*=(sd0zn/sd0zo);//zl
+        if(sd0rpo>0.)            covar[6]*=(sd0rpn/sd0rpo);//ysenT
+        if(sd0zo>0.)             covar[7]*=(sd0zn/sd0zo);//zsenT
+        if(sd0rpo>0. && spt1o>0.)covar[10]*=(sd0rpn/sd0rpo)*(spt1n/spt1o);//ypt
+        if(sd0zo>0. && spt1o>0.) covar[11]*=(sd0zn/sd0zo)*(spt1n/spt1o);//zpt
+        if(spt1o>0.)             covar[12]*=(spt1n/spt1o);//sinPhipt
+        if(spt1o>0.)             covar[13]*=(spt1n/spt1o);//tanTpt
+        if(spt1o>0.)             covar[14]*=(spt1n/spt1o)*(spt1n/spt1o);//ptpt
+  }
+  /*
+  Double_t d0zninsigma = 0.;
+  if(covar[0] > 0.) d0zninsigma = d0zn/TMath::Sqrt(covar[2]);
+  Double_t d0rpninsigma = 0.;
+  if(covar[2] > 0.) d0rpninsigma = d0rpn/TMath::Sqrt(covar[0]);
+   */
+    
   // Copy the smeared parameters to the AOD track
   Double_t x[3];
   Double_t p[3];
   et.GetXYZ(x);
   et.GetPxPyPz(p);
+  Double_t cv[21];
+  et.GetCovarianceXYZPxPyPz(cv);
+    
   track->SetPosition(x,kFALSE);
   track->SetP(p,kTRUE);
+  track->SetCovMatrix(cv);
+    
 
 
   // Mark the track as "improved" with a trick (this is done with a trick using layer 7 (ie the 8th))

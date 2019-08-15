@@ -57,11 +57,14 @@ public:
   ///
   void AddKtRanges(const float data[], float stop_at = -1.0);
 
-  // /// Add low-high kt ranges in vector
-  // template <typename T>
-  // void AddKtRanges(const T &start, const T &stop);
-  void AddKtRanges(const std::vector<std::pair<float, float>>::const_iterator start,
-                   const std::vector<std::pair<float, float>>::const_iterator stop);
+  /// Add low-high kt ranges in vector
+  template <typename Iterator>
+  void AddKtRanges(const Iterator &start, const Iterator &stop)
+    {
+      for (Iterator it = start; it != stop; ++it) {
+        AddKtRange(it->first, it->second);
+      }
+    }
 
   /// Add low-high kt ranges in vector
   void AddKtRanges(const std::vector<std::pair<float, float>> &data)
@@ -95,14 +98,17 @@ public:
   virtual TList* GetOutputList();
   virtual void AddOutputObjectsTo(TCollection &);
 
-  virtual AliFemtoString Report() { return ""; };
+  virtual AliFemtoString Report()
+    { return ""; }
 
-  virtual void Finish() {};
+  virtual void Finish()
+    { }
+
+  virtual AliFemtoCorrFctn* Clone() const
+    { return new AliFemtoKtBinnedCorrFunc(*this); }
 
   /// Constant to return if no correlation is found
   static const UInt_t NPos = static_cast<UInt_t>(-1);
-
-  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoKtBinnedCorrFunc(*this); }
 
 private:
   AliFemtoKtBinnedCorrFunc(const AliFemtoKtBinnedCorrFunc&);
@@ -128,23 +134,6 @@ protected:
   /// Histogram monitoring kT distribution
   TH1D* fKtMonitor;
 };
-
-  // std::vector<std::pair<std::pair<Float_t, Float_t>, A >> fRanges;
-
-/*
-template <typename T>
-void AliFemtoKtBinnedCorrFunc::AddKtRanges(const T &start, const T &stop)
-*/
-inline
-void AliFemtoKtBinnedCorrFunc::AddKtRanges(
-  const std::vector<std::pair<float, float>>::const_iterator start,
-  const std::vector<std::pair<float, float>>::const_iterator stop)
-{
-  std::vector<std::pair<float, float>>::const_iterator it = start;
-  for (; it != stop; ++it) {
-    AddKtRange(it->first, it->second);
-  }
-}
 
 
 #endif /* end of include guard: ALIFEMTOKTBINNEDCORRFUNC_H_ */

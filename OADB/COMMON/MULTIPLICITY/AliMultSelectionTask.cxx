@@ -104,7 +104,8 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
-fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), 
+fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fkSkipVertexZ(kFALSE),
@@ -263,7 +264,8 @@ fOADB(nullptr)
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
 : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0),
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
-fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE),
+fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fkSkipVertexZ(kFALSE), 
@@ -429,11 +431,13 @@ fOADB(nullptr)
     // B - Debug AliPPVsMultUtils
     // M - Extra MC variables
     // T - Extra TH2D N gen particles vs N reco tracks
+    // S - use supercalib if available
     
     if ( lExtraOptions.Contains("A") ) fkDebugAliCentrality = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugAliPPVsMultUtils = kTRUE;
     if ( lExtraOptions.Contains("M") ) fkDebugIsMC = kTRUE;
     if ( lExtraOptions.Contains("T") ) fkDebugAdditional2DHisto = kTRUE;
+    if ( lExtraOptions.Contains("S") ) fkPreferSuperCalib = kTRUE;
 }
 
 
@@ -2113,6 +2117,8 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
                     lProductionName = lExceptionMap;
                 }
             }
+            //Attempt supercalib if requested
+            if( fkPreferSuperCalib ) lProductionName.Append("_SuperCalib");
         }else{
             AliWarning(" OADB for this period exists. Proceeding as usual.");
         }
@@ -2146,7 +2152,13 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     }
     
     //Open File without calling InitFromFile, don't load it all!
+    
     TFile * foadb = TFile::Open(fileName);
+    if( !foadb->IsOpen() && fkPreferSuperCalib ){
+        fileName.ReplaceAll("_SuperCalib", "");
+        foadb = TFile::Open(fileName);
+    }
+    
     if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", fileName.Data()));
     
     //Managed to open, save name of opened OADB file
@@ -2781,7 +2793,14 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber(int runNumber)
     
     //Registered Productions : Run 1 Pb-Pb
     if ( runNumber >= 136851 && runNumber <= 139517 ) lProductionName = "LHC10h";
-    
+  
+    //Registered Productions : Run 1 p-Pb
+    if ( runNumber >= 195344 && runNumber <= 195483 ) lProductionName = "LHC13b";
+    if ( runNumber >= 195529 && runNumber <= 195677 ) lProductionName = "LHC13c";
+    if ( runNumber >= 195681 && runNumber <= 195873 ) lProductionName = "LHC13d";
+    if ( runNumber >= 195935 && runNumber <= 196311 ) lProductionName = "LHC13e";
+    if ( runNumber >= 196433 && runNumber <= 197388 ) lProductionName = "LHC13f";
+  
     //Registered Productions : Run 2 pp
     if ( runNumber >= 225000 && runNumber <= 226606 ) lProductionName = "LHC15f";
     if ( runNumber >= 232914 && runNumber <= 234050 ) lProductionName = "LHC15h";

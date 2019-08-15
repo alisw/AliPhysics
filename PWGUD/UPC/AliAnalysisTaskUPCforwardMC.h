@@ -209,7 +209,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * This histogram records the invariant mass
                                  * distribution of the dimuon system.
                                  */
-        TH1F*                   fInvariantMassDistributionH;         //!
+        TH1F*                   fInvariantMassDistributionH;                        //!
+        TH1F*                   fInvariantMassDistributionRapidityBinsH[6];         //!
 
                                 /**
                                  * This histogram records the number of entries
@@ -231,7 +232,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * coherent component, so as to say, only
                                  * pt < 0.25 GeV/c for pt of the dimuon pair.
                                  */
-        TH1F*                   fInvariantMassDistributionCoherentH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentH;                      //!
+        TH1F*                   fInvariantMassDistributionCoherentRapidityBinsH[6];       //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -239,7 +241,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * coherent component, so as to say, only
                                  * pt > 0.25 GeV/c for pt of the dimuon pair.
                                  */
-        TH1F*                   fInvariantMassDistributionIncoherentH;     //!
+        TH1F*                   fInvariantMassDistributionIncoherentH;                    //!
+        TH1F*                   fInvariantMassDistributionIncoherentRapidityBinsH[6];     //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -1180,7 +1183,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 28);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 29);
 };
 
 #endif

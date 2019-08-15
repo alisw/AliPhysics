@@ -1,6 +1,7 @@
 ///
 /// \file AliAnalysisTaskFemto.cxx
 ///
+#include <sstream>
 
 #include "TROOT.h"
 #include "TChain.h"
@@ -9,6 +10,9 @@
 #include "TSystem.h"
 #include "TFile.h"
 #include "TInterpreter.h"
+#include "TMacro.h"
+#include "TFile.h"
+#include "TGrid.h"
 
 //#include "AliAnalysisTask.h"
 #include "AliAnalysisTaskSE.h"
@@ -37,7 +41,9 @@
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
                                            TString aConfigMacro,
                                            TString aConfigParams,
-                                           Bool_t aVerbose):
+                                           Bool_t aVerbose,
+					   Bool_t aGridConfig,
+					   TString aUserName):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
@@ -71,7 +77,11 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f4DcorrectionsProtonsMinus(NULL),
   f4DcorrectionsAll(NULL),
   f4DcorrectionsLambdas(NULL),
-  f4DcorrectionsLambdasMinus(NULL)
+  f4DcorrectionsLambdasMinus(NULL),
+  fGridConfig(aGridConfig),
+  fConfigTMacro(NULL),
+  fSaveConfigTMacro(NULL),
+  fUserName(aUserName)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -83,7 +93,9 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
 //________________________________________________________________________
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
                                            TString aConfigMacro,
-                                           Bool_t aVerbose):
+                                           Bool_t aVerbose,
+					   Bool_t aGridConfig,
+					   TString aUserName):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
@@ -117,7 +129,11 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f4DcorrectionsProtonsMinus(NULL),
   f4DcorrectionsAll(NULL),
   f4DcorrectionsLambdas(NULL),
-  f4DcorrectionsLambdasMinus(NULL)
+  f4DcorrectionsLambdasMinus(NULL),
+  fGridConfig(aGridConfig),
+  fConfigTMacro(NULL),
+  fSaveConfigTMacro(false),
+  fUserName(aUserName)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -161,7 +177,10 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto &aFemtoTas
   f4DcorrectionsProtonsMinus(aFemtoTask.f4DcorrectionsProtonsMinus),
   f4DcorrectionsAll(aFemtoTask.f4DcorrectionsAll),
   f4DcorrectionsLambdas(aFemtoTask.f4DcorrectionsLambdas),
-  f4DcorrectionsLambdasMinus(aFemtoTask.f4DcorrectionsLambdasMinus)
+  f4DcorrectionsLambdasMinus(aFemtoTask.f4DcorrectionsLambdasMinus),
+  fGridConfig(aFemtoTask.fGridConfig),
+  fConfigTMacro(aFemtoTask.fConfigTMacro),
+  fSaveConfigTMacro(aFemtoTask.fSaveConfigTMacro)
 {
   // copy constructor
 }
@@ -207,6 +226,10 @@ AliAnalysisTaskFemto &AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   f4DcorrectionsAll = aFemtoTask.f4DcorrectionsAll;
   f4DcorrectionsLambdas = aFemtoTask.f4DcorrectionsLambdas;
   f4DcorrectionsLambdasMinus = aFemtoTask.f4DcorrectionsLambdasMinus;
+
+  fGridConfig = aFemtoTask.fGridConfig;
+  fConfigTMacro = aFemtoTask.fConfigTMacro;
+  fSaveConfigTMacro = aFemtoTask.fSaveConfigTMacro;
 
   return *this;
 }
@@ -490,8 +513,24 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
     AliInfo("Creating Femto Analysis objects\n");
 
   gSystem->SetIncludePath("-I$ROOTSYS/include -I./STEERBase/ -I./ESD/ -I./AOD/ -I./ANALYSIS/ -I./ANALYSISalice/ -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser");
-  gROOT->LoadMacro(fConfigMacro);
-  //  fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
+  if(!fGridConfig)
+    {
+      gROOT->LoadMacro(fConfigMacro);
+      if(fSaveConfigTMacro)
+	fConfigTMacro = new TMacro(fConfigMacro);
+    }
+  else
+    {
+      printf(Form("*** Executing alien-token-init %s ***\n"),fUserName.Data());
+      gSystem->Exec(Form("alien-token-init %s",fUserName.Data()));
+      printf("*** Connect to AliEn ***\n");
+      TGrid::Connect("alien://");
+      TFile *fileConfig = TFile::Open(fConfigMacro.Data());
+      fConfigTMacro = dynamic_cast<TMacro*>(fileConfig->Get("ConfigFemtoAnalysis")->Clone());
+      LoadMacro(fConfigTMacro);
+      fileConfig->Close();
+    }
+
 
   TString cmd = Form("ConfigFemtoAnalysis(%s)", fConfigParams.Data());
   auto *femto_manager = reinterpret_cast<AliFemtoManager*>(gInterpreter->ProcessLine(cmd));
@@ -515,6 +554,10 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
     delete tOL;
   }
 
+
+  if(fSaveConfigTMacro && fConfigTMacro)
+    fOutputList->Add(fConfigTMacro);
+  
   PostData(0, fOutputList);
 }
 
@@ -631,6 +674,8 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     }
 
     // Post the output histogram list
+    if(fSaveConfigTMacro && fConfigTMacro)
+      fOutputList->Add(fConfigTMacro);
     PostData(0, fOutputList);
   }
 
@@ -674,6 +719,8 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     }
 
     // Post the output histogram list
+    if(fSaveConfigTMacro && fConfigTMacro)
+      fOutputList->Add(fConfigTMacro);
     PostData(0, fOutputList);
   }
 
@@ -692,6 +739,8 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
         fManager->ProcessEvent();
       }
       // Post the output histogram list
+      if(fSaveConfigTMacro && fConfigTMacro)
+	fOutputList->Add(fConfigTMacro);
       PostData(0, fOutputList);
     }
 
@@ -922,4 +971,38 @@ void AliAnalysisTaskFemto::Set4DCorrectionsLambdas(THnSparse *h1)
 void AliAnalysisTaskFemto::Set4DCorrectionsLambdasMinus(THnSparse *h1)
 {
   f4DcorrectionsLambdasMinus = h1;
+}
+
+
+ ////////////////////////////////////////////////////////////////////////////////
+ /// Load the macro into the interpreter.
+ /// Function copied from TMacro class of ROOT 6, not present in ROOT 5.34
+void AliAnalysisTaskFemto::LoadMacro(TMacro *macro)
+ {
+    if (macro == nullptr) {
+      return;
+    }
+
+    std::stringstream ss;
+    
+    TList *fLines = macro->GetListOfLines();
+    TIter next(fLines);
+    TObjString *obj;
+    while ((obj = (TObjString*) next())) {
+       ss << obj->GetName() << std::endl;
+    }
+    gInterpreter->LoadText(ss.str().c_str());
+
+    if(fSaveConfigTMacro)
+      fConfigTMacro = dynamic_cast<TMacro*>(macro->Clone());
+ }
+
+void AliAnalysisTaskFemto::SaveConfigTMacro(Bool_t save)
+{
+  fSaveConfigTMacro = save;
+}
+
+void AliAnalysisTaskFemto::SetGRIDUserName(TString aUserName)
+{
+  fUserName = aUserName;
 }

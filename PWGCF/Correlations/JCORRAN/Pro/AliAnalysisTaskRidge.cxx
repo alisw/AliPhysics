@@ -86,7 +86,6 @@ AliAnalysisTaskRidge::AliAnalysisTaskRidge()
 	, fEMpooltracklet() 
 	, fEMpoolMCALICE ()
 	, fEMpoolMCCMS ()
-	, fJetTask(NULL) 
 
 {
 }
@@ -103,7 +102,6 @@ AliAnalysisTaskRidge::AliAnalysisTaskRidge
 	, fEMpooltracklet() 
 	, fEMpoolMCALICE ()
 	, fEMpoolMCCMS ()
-	, fJetTask(0x0) 
 {
     DefineOutput (1, AliDirList::Class());
 }
@@ -118,7 +116,6 @@ AliAnalysisTaskRidge::AliAnalysisTaskRidge
 	, fEMpooltracklet(ap.fEMpooltracklet) 
 	, fEMpoolMCALICE(ap.fEMpoolMCALICE)
 	, fEMpoolMCCMS(ap.fEMpoolMCCMS)
-	, fJetTask(ap.fJetTask)
 {
     DefineOutput (1, AliDirList::Class());
 }

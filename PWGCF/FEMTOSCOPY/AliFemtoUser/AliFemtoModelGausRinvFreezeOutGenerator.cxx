@@ -27,7 +27,7 @@ AliFemtoModelGausRinvFreezeOutGenerator::AliFemtoModelGausRinvFreezeOutGenerator
 
 //_______________________
 AliFemtoModelGausRinvFreezeOutGenerator::AliFemtoModelGausRinvFreezeOutGenerator(const AliFemtoModelGausRinvFreezeOutGenerator &aModel):
-  AliFemtoModelFreezeOutGenerator(),
+  AliFemtoModelFreezeOutGenerator(aModel),
   fSizeInv(0),
   fSelectPrimary(false)
 {
@@ -38,7 +38,6 @@ AliFemtoModelGausRinvFreezeOutGenerator::AliFemtoModelGausRinvFreezeOutGenerator
 //_______________________
 AliFemtoModelGausRinvFreezeOutGenerator::~AliFemtoModelGausRinvFreezeOutGenerator()
 {
-  if (fRandom) delete fRandom;
 }
 //_______________________
 AliFemtoModelGausRinvFreezeOutGenerator& AliFemtoModelGausRinvFreezeOutGenerator::operator=(const AliFemtoModelGausRinvFreezeOutGenerator &aModel)
@@ -219,4 +218,3 @@ Bool_t AliFemtoModelGausRinvFreezeOutGenerator::GetSelectPrimaryFromHidden()
 {
   return fSelectPrimary;
 }
-

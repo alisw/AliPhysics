@@ -207,7 +207,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 				{
 
 					aniter = ichg * numOfMultBins + imult;
-					anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, multbino, multbins[imult], multbins[imult+1]);
+					anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(zvertbino, -10.0, 10.0, multbino, multbins[imult], multbins[imult+1]);
 					anetaphitpc[aniter]->SetNumEventsToMix(10);
 					anetaphitpc[aniter]->SetMinSizePartCollection(1);
 					anetaphitpc[aniter]->SetVerboseMode(kFALSE);//~~~~~~~~~~~~~~~~
@@ -215,7 +215,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//*** Event cut ***
 					mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 					mecetaphitpc[aniter]->SetEventMult(0.001,100000);
-					mecetaphitpc[aniter]->SetVertZPos(-7,7);//cm
+					mecetaphitpc[aniter]->SetVertZPos(-10,10);//cm
 
 					//****** event monitors **********	
 					cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", chrgs[ichg], imult));

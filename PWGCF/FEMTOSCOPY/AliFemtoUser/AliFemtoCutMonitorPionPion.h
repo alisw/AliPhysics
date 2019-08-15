@@ -103,7 +103,9 @@ namespace AliFemtoCutMonitorPionPion {
     Pion(const bool passing,
          const TString& typestr,
          const bool is_mc_analysis=kFALSE,
-         const bool suffix_output=kFALSE);
+         const bool suffix_output=kFALSE,
+         const bool wide_impact_range=kFALSE);
+
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoTrack* aEvent);
 

@@ -55,6 +55,7 @@
 #pragma link C++ class AliAnalysisTaskTritonVsMultiplicity_PbPb+;
 /// * ReducedTreeNuclei
 #pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
+#pragma link C++ class AliAnalysisTaskReducedTreeHypertriton+;
 /// * v2
 #pragma link C++ class AliAnalysisTaskNucleiv2+;
 #pragma link C++ class AliAnalysisTaskNucleiv2SP+;
@@ -81,6 +82,7 @@
 #pragma link C++ class AliReducedHypTritEvent+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 #pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
+#pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
 #pragma link C++ class RHyperTritonHe3pi+;
 #pragma link C++ class SHyperTritonHe3pi+;
 #pragma link C++ class std::vector<RHyperTritonHe3pi>+;
@@ -89,7 +91,9 @@
 #pragma link C++ class RTracklet+;
 #pragma link C++ class std::vector<RTracklet>+;
 #pragma link C++ class SGenericV0+;
+#pragma link C++ class SGenericTracklet+;
 #pragma link C++ class std::vector<SGenericV0>+;
+#pragma link C++ class std::vector<SGenericTracklet>+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
