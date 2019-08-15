@@ -1597,14 +1597,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","2446621044012200000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW
   } else if (trainConfig ==808){//PHOS Triggers
     cuts.AddCutCalo("00010113","2446600074012200000","0163103100000010"); //no Trigger
-    cuts.AddCutCalo("00061113","2446600074012200000","0163103100000010"); //PHI1
     cuts.AddCutCalo("00062113","2446600074012200000","0163103100000010"); //PHI7
-    cuts.AddCutCalo("00063113","2446600074012200000","0163103100000010"); //PHI8
-  } else if (trainConfig == 809){ // PHOS clusters with larger acceptance NCells 2
-    cuts.AddCutCalo("00010113","2446600004012200000","0163103100000010"); // INT7
-    cuts.AddCutCalo("00062113","2446600004012200000","0163103100000010"); // PHI7
-
-
   } else if( trainConfig == 870){ // PHOS HM trigger
     cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); // -50ns, 30ns timing cut, MB trigger
     cuts.AddCutCalo("00010113","2446600004012300000","0163103100000010"); // no timing, MB trigger
