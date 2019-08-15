@@ -378,8 +378,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
 // ############################################################################
 void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   // const double pi = TMath::Pi();
-std::cout << __LINE__ << "################################################################################################" << '\n';
-
+// std::cout << __LINE__ << "########################################################################################################################" << '\n';
   fGenNegPart.clear();
   fGenPosPart.clear();
   fGenNeuPart.clear();
@@ -408,7 +407,7 @@ std::cout << __LINE__ << "######################################################
     eventHandlerMC = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     eventHandler   = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   }
-  //
+    //
   fMC = eventHandlerMC->MCEvent();
   if (!fMC) { Printf("ERROR: fMC not available"); return; }
 
@@ -423,7 +422,7 @@ std::cout << __LINE__ << "######################################################
 
   // ##########################################################
   // calculating physics selection stuff
-  ULong64_t isSelected = AliVEvent::kMB;
+  ULong64_t isSelected = AliVEvent::kINT7;//kMB
   if( fSelectPhysics && !isAOD){
     if((!isAOD && eventHandler->GetEventSelection())){
       isSelected = eventHandler->IsEventSelected();
@@ -442,6 +441,7 @@ std::cout << __LINE__ << "######################################################
   if (fEventFilter) {
     if (!fEventFilter->IsSelected(fEvent)) return;
   }
+  // std::cout << __LINE__ << "################################################################################################" << std::endl;
   fHistEventStat->Fill(kFilteredEvents);
 
   // ##########################################################
@@ -509,6 +509,7 @@ std::cout << __LINE__ << "######################################################
     // check if correct generator used
     bool generatorForMCSignal  = CheckGenerator(iPart, fGeneratorMCSignalHashs);
     if (!generatorForMCSignal) continue;
+    // std::cout << __LINE__ << "################################################################################################" << '\n';
 
 
     // ##########################################################
@@ -523,6 +524,7 @@ std::cout << __LINE__ << "######################################################
     part.SetMotherID(motherID);
     part.SetGrandMotherID(grandmotherID);
     part.SetMCSignalPair(generatorForMCSignal);
+    // std::cout << __LINE__ << "################################################################################################" << '\n';
 
     // ##########################################################
     // check if electron comes from a mother with ele+pos as daughters
@@ -596,13 +598,15 @@ std::cout << __LINE__ << "######################################################
   // double op_angle = -99;
 
 /**/
+  std::cout << "fGenNegPart.size() " << fGenNegPart.size() << " fGenPosPart.size " << fGenPosPart.size()<< '\n';
   if (fDoPairing){
-    std::cout << "Doing two pairing..." << std::endl;
+        std::cout << "Doing two pairing..." << std::endl;
         // std::cout << "Bool fDoPairing is " << fDoPairing << endl;
     for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
       // if (fGenNegPart[neg_i].isMCSignal[0] == false) continue;
       for (unsigned int pos_i = 0; pos_i < fGenPosPart.size(); ++pos_i){
         // if (fGenPosPart[pos_i].isMCSignal[0] == false) continue;
+        // std::cout << "neg_i = " << neg_i<< ", pos_i = " << pos_i << endl;
         AliVParticle* mcPart1 = fMC->GetTrack(fGenNegPart[neg_i].GetTrackID());
         AliVParticle* mcPart2 = fMC->GetTrack(fGenPosPart[pos_i].GetTrackID());
 
@@ -618,7 +622,8 @@ std::cout << __LINE__ << "######################################################
 
 
         // Check if electrons are from MCSignal Generator
-        if (!fGenPosPart[pos_i].GetMCSignalPair() || !fGenNegPart[neg_i].GetMCSignalPair()) continue;
+        // if (!fGenPosPart[pos_i].GetMCSignalPair() || !fGenNegPart[neg_i].GetMCSignalPair()) continue;
+        // std::cout << __LINE__ << "################################################################################################" << std::endl;
         // Apply MC signals
         std::vector<Bool_t> mcSignal_acc(fPairMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
 
