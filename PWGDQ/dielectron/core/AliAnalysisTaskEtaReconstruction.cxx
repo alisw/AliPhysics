@@ -258,8 +258,8 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
       Generated->SetOwner();
       Generated->SetName("Generated");
       for (unsigned int i = 0; i < fSingleLegMCSignal.size(); ++i){
-          // std::cout << "fSingleLegMCSignal:" << (TString)fSingleLegMCSignal.at(i).GetName() << " enthaelt ele"  << endl;
-        // std::cout << "i = " << i << "Name = " << fSingleLegMCSignal.at(i).GetName() << endl;
+          // std::cout << "fSingleLegMCSignal:" << (TString)fSingleLegMCSignal.at(i).GetName() << " enthaelt ele"  << std::endl;
+        // std::cout << "i = " << i << "Name = " << fSingleLegMCSignal.at(i).GetName() << std::endl;
           TH3D* th3_tmp_pos = new TH3D(Form("Ngen_Pos_%s", fSingleLegMCSignal.at(i).GetName()),";p_{T};#eta;#varphi",fNptBins,fPtBins.data(),fNetaBins,fEtaBins.data(),fNphiBins,fPhiBins.data());
           th3_tmp_pos->Sumw2();
           fHistGenPosPart.push_back(th3_tmp_pos);
@@ -272,7 +272,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         if (((TString)fSingleLegMCSignal.at(i).GetName()).Contains("ele")) {
           Generated->Add(th3_tmp_neg);
         }
-          // std::cout << "fSingleLegMCSignal:" << (TString)fSingleLegMCSignal.at(i).GetName() << " enthaelt Photon"  << endl;
+          // std::cout << "fSingleLegMCSignal:" << (TString)fSingleLegMCSignal.at(i).GetName() << " enthaelt Photon"  << std::endl;
          TH3D* th3_tmp_neu = new TH3D(Form("Ngen_Neu_%s", fSingleLegMCSignal.at(i).GetName()),";p_{T};#eta;#varphi",fNptBins,fPtBins.data(),fNetaBins,fEtaBins.data(),fNphiBins,fPhiBins.data());
           th3_tmp_neu->Sumw2();
           fHistGenNeuPart.push_back(th3_tmp_neu);
@@ -533,13 +533,13 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // ##########################################################
     // Filling generated particle histograms according to MCSignals
     // for (size_t i = 0; i < fHistGenNegPart.size(); i++) {
-    //   std::cout << "get name of fHistGenNegPart.at(i)" << (fHistGenNegPart.at(i))->GetName()<< endl;
+    //   std::cout << "get name of fHistGenNegPart.at(i)" << (fHistGenNegPart.at(i))->GetName()<< std::endl;
     // }
     // for (size_t i = 0; i < fHistGenPosPart.size(); i++) {
-    //   std::cout << "get name of fHistGenPosPart.at(i)" << (fHistGenPosPart.at(i))->GetName()<< endl;
+    //   std::cout << "get name of fHistGenPosPart.at(i)" << (fHistGenPosPart.at(i))->GetName()<< std::endl;
     // }
     // for (size_t i = 0; i < fHistGenNeuPart.size(); i++) {
-    //   std::cout << "get name of fHistGenNeuPart.at(i)" << (fHistGenNeuPart.at(i))->GetName()<< endl;
+    //   std::cout << "get name of fHistGenNeuPart.at(i)" << (fHistGenNeuPart.at(i))->GetName()<< std::endl;
     // }
 
     for (unsigned int i = 0; i < part.isMCSignal.size(); ++i){
@@ -601,12 +601,12 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   std::cout << "fGenNegPart.size() " << fGenNegPart.size() << " fGenPosPart.size " << fGenPosPart.size()<< '\n';
   if (fDoPairing){
         std::cout << "Doing two pairing..." << std::endl;
-        // std::cout << "Bool fDoPairing is " << fDoPairing << endl;
+        // std::cout << "Bool fDoPairing is " << fDoPairing << std::endl;
     for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
       // if (fGenNegPart[neg_i].isMCSignal[0] == false) continue;
       for (unsigned int pos_i = 0; pos_i < fGenPosPart.size(); ++pos_i){
         // if (fGenPosPart[pos_i].isMCSignal[0] == false) continue;
-        // std::cout << "neg_i = " << neg_i<< ", pos_i = " << pos_i << endl;
+        // std::cout << "neg_i = " << neg_i<< ", pos_i = " << pos_i << std::endl;
         AliVParticle* mcPart1 = fMC->GetTrack(fGenNegPart[neg_i].GetTrackID());
         AliVParticle* mcPart2 = fMC->GetTrack(fGenPosPart[pos_i].GetTrackID());
 
@@ -636,10 +636,10 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
         if (CheckIfOneIsTrue(mcSignal_acc) == kFALSE) continue;
 
         // if (XpdgCodeMNegi != 22 /*&& mc->CheckParticleSource(fGenNegPart[neg_i].GetTrackID(), AliDielectronSignalMC::kSecondary) == true*/) {
-          // std::cout << "PDGCode of Particle neg_i:  " << XpdgCodeNegi << " " << fGenNegPart[neg_i].GetTrackID()  << " , PDGCode of neg_i's Mother: " << XpdgCodeMNegi << " " << fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetLabel() << " , PDGCode of neg_i's Mother: " << XpdgCodeGMNegi <<  " , Number of daughters: " << NDaughtersNegi << endl;
+          // std::cout << "PDGCode of Particle neg_i:  " << XpdgCodeNegi << " " << fGenNegPart[neg_i].GetTrackID()  << " , PDGCode of neg_i's Mother: " << XpdgCodeMNegi << " " << fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetLabel() << " , PDGCode of neg_i's Mother: " << XpdgCodeGMNegi <<  " , Number of daughters: " << NDaughtersNegi << std::endl;
         // }
         // if (XpdgCodeMPosi != 22 /*&& mc->CheckParticleSource(fGenPosPart[pos_i].GetTrackID(), AliDielectronSignalMC::kSecondary) == true*/) {
-          // std::cout << "PDGCode of Particle pos_i: " << XpdgCodePosi << " " << fGenPosPart[pos_i].GetTrackID()  << " , PDGCode of pos_i's Mother: " << XpdgCodeMPosi << " " << fMC->GetTrack(fGenPosPart[pos_i].GetMotherID())->GetLabel() << " , PDGCode of pos_i's Mother: " << XpdgCodeGMPosi <<  " , Number of daughters: " << NDaughtersPosi << endl;
+          // std::cout << "PDGCode of Particle pos_i: " << XpdgCodePosi << " " << fGenPosPart[pos_i].GetTrackID()  << " , PDGCode of pos_i's Mother: " << XpdgCodeMPosi << " " << fMC->GetTrack(fGenPosPart[pos_i].GetMotherID())->GetLabel() << " , PDGCode of pos_i's Mother: " << XpdgCodeGMPosi <<  " , Number of daughters: " << NDaughtersPosi << std::endl;
         // }
 
         // This if clause is needed here because smearing can potentially smear tracks into the selected kinematic region
@@ -719,10 +719,10 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     //##########################################################
     std::cout << "Doing four pairing..." << std::endl;
     // std::vector<int> MotherIDVec;
-    // std::cout << "Bool fDoFourPairing is " << fDoFourPairing << endl;
+    // std::cout << "Bool fDoFourPairing is " << fDoFourPairing << std::endl;
     for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
       if (fGenNegPart[neg_i].isMCSignal[0] == false) continue;
-      // std::cout << "neg_i = " << neg_i <<endl;
+      // std::cout << "neg_i = " << neg_i <<std::endl;
       for (unsigned int pos_i = 0; pos_i < fGenPosPart.size(); ++pos_i){
         if (fGenPosPart[pos_i].isMCSignal[0] == false) continue;
         for (unsigned int neg_j = 0; neg_j < fGenNegPart.size(); ++neg_j){
@@ -738,15 +738,15 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
             // if (fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetNDaughters() != 3 && fMC->GetTrack(fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetDaughterFirst())->GetNDaughters() != 2) continue;
             // if (fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->PdgCode() != 221     && fMC->GetTrack(fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetDaughterFirst())->PdgCode() != 22) continue;
 
-            // std::cout << "PdgCode of mcPart1: " << fMC->GetTrack(fGenNegPart[neg_i].GetTrackID())->PdgCode() << endl;
-            // std::cout << "PdgCode of mcPart2: " << fMC->GetTrack(fGenPosPart[pos_i].GetTrackID())->PdgCode() << endl;
-            // std::cout << "PdgCode of mcPart3: " << fMC->GetTrack(fGenNegPart[neg_j].GetTrackID())->PdgCode() << endl;
-            // std::cout << "PdgCode of mcPart4: " << fMC->GetTrack(fGenPosPart[pos_j].GetTrackID())->PdgCode() << endl;
-            // std::cout << "neg_i = " << neg_i<< ", pos_i = " << pos_i << ", neg_j = " << neg_j << ", pos_j = " << pos_j << endl;
-            // std::cout << "neg_i.isMCSignal[0] = " << fGenNegPart[neg_i].isMCSignal[0] << " neg_i.isMCSignal[1] = " << fGenNegPart[neg_i].isMCSignal[1] << endl;
-            // std::cout << "pos_i.isMCSignal[0] = " << fGenPosPart[pos_i].isMCSignal[0] << " pos_i.isMCSignal[1] = " << fGenPosPart[pos_i].isMCSignal[1] << endl;
-            // std::cout << "neg_j.isMCSignal[0] = " << fGenNegPart[neg_j].isMCSignal[0] << " neg_j.isMCSignal[1] = " << fGenNegPart[neg_j].isMCSignal[1] << endl;
-            // std::cout << "pos_j.isMCSignal[0] = " << fGenPosPart[pos_j].isMCSignal[0] << " pos_j.isMCSignal[1] = " << fGenPosPart[pos_j].isMCSignal[1] << endl;
+            // std::cout << "PdgCode of mcPart1: " << fMC->GetTrack(fGenNegPart[neg_i].GetTrackID())->PdgCode() << std::endl;
+            // std::cout << "PdgCode of mcPart2: " << fMC->GetTrack(fGenPosPart[pos_i].GetTrackID())->PdgCode() << std::endl;
+            // std::cout << "PdgCode of mcPart3: " << fMC->GetTrack(fGenNegPart[neg_j].GetTrackID())->PdgCode() << std::endl;
+            // std::cout << "PdgCode of mcPart4: " << fMC->GetTrack(fGenPosPart[pos_j].GetTrackID())->PdgCode() << std::endl;
+            // std::cout << "neg_i = " << neg_i<< ", pos_i = " << pos_i << ", neg_j = " << neg_j << ", pos_j = " << pos_j << std::endl;
+            // std::cout << "neg_i.isMCSignal[0] = " << fGenNegPart[neg_i].isMCSignal[0] << " neg_i.isMCSignal[1] = " << fGenNegPart[neg_i].isMCSignal[1] << std::endl;
+            // std::cout << "pos_i.isMCSignal[0] = " << fGenPosPart[pos_i].isMCSignal[0] << " pos_i.isMCSignal[1] = " << fGenPosPart[pos_i].isMCSignal[1] << std::endl;
+            // std::cout << "neg_j.isMCSignal[0] = " << fGenNegPart[neg_j].isMCSignal[0] << " neg_j.isMCSignal[1] = " << fGenNegPart[neg_j].isMCSignal[1] << std::endl;
+            // std::cout << "pos_j.isMCSignal[0] = " << fGenPosPart[pos_j].isMCSignal[0] << " pos_j.isMCSignal[1] = " << fGenPosPart[pos_j].isMCSignal[1] << std::endl;
             // AliVParticle* mcPart1 = fMC->GetTrack(fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetDaughterFirst()+0);  // for injected particle get all  daugters
             // AliVParticle* mcPart2 = fMC->GetTrack(fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetDaughterFirst()+1);  // for injected particle get all  daugters
             // AliVParticle* mcPart3 = fMC->GetTrack(fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetDaughterFirst()+2);  // for injected particle get all  daugters
@@ -766,12 +766,12 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
             // if (oldMother==true) continue;
             //
             // MotherIDVec.push_back(fGenNegPart[neg_i].GetMotherID());
-            // std::cout << "MotherID " << fGenNegPart[neg_i].GetMotherID() << " pushed back" << endl;
+            // std::cout << "MotherID " << fGenNegPart[neg_i].GetMotherID() << " pushed back" << std::endl;
             //
             // for (size_t i = 0; i < MotherIDVec.size(); i++) {
             //   std::cout << " MotherIDVec i= "<< i << ": " << MotherIDVec.at(i);
             // }
-            // std::cout << endl;
+            // std::cout << std::endl;
 
             AliVParticle* mcPart1 = fMC->GetTrack(fGenNegPart[neg_i].GetTrackID());  // normal particles from pos/neg vectors
             AliVParticle* mcPart2 = fMC->GetTrack(fGenPosPart[pos_i].GetTrackID());  // normal particles from pos/neg vectors
@@ -779,43 +779,43 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
             AliVParticle* mcPart4 = fMC->GetTrack(fGenPosPart[pos_j].GetTrackID());  // normal particles from pos/neg vectors
 
                         // if (fGenNegPart[neg_i].isMCSignal[0] == true && fGenNegPart[neg_i].isMCSignal[1] == true) {
-                        //   std::cout << "neg_i = " << neg_i << " neg_i.isMCSignal[0]: True && neg_i.isMCSignal[1]: True" << endl;
-                        //   std::cout << "neg_i.isMCSignal[0] = " << fGenNegPart[neg_i].isMCSignal[0] << " neg_i.isMCSignal[1] = " << fGenNegPart[neg_i].isMCSignal[1] << endl;
+                        //   std::cout << "neg_i = " << neg_i << " neg_i.isMCSignal[0]: True && neg_i.isMCSignal[1]: True" << std::endl;
+                        //   std::cout << "neg_i.isMCSignal[0] = " << fGenNegPart[neg_i].isMCSignal[0] << " neg_i.isMCSignal[1] = " << fGenNegPart[neg_i].isMCSignal[1] << std::endl;
                         //   int XpdgCode = fMC->GetTrack(fGenNegPart[neg_i].GetTrackID())->PdgCode();
                         //   int XpdgCodeM = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->PdgCode();
                         //   int XpdgCodeGM = fMC->GetTrack(fGenNegPart[neg_i].GetGrandMotherID())->PdgCode();
-                        //   std::cout << "PDGCode of Particle neg_i: " << XpdgCode <<  " , PDGCode of neg_i's Mother: " << XpdgCodeM <<  " , PDGCode of neg_i's GrandMother: " << XpdgCodeGM << endl;
+                        //   std::cout << "PDGCode of Particle neg_i: " << XpdgCode <<  " , PDGCode of neg_i's Mother: " << XpdgCodeM <<  " , PDGCode of neg_i's GrandMother: " << XpdgCodeGM << std::endl;
                         // }
                         // else if (fGenPosPart[pos_i].isMCSignal[0] == true && fGenPosPart[pos_i].isMCSignal[1] == true) {
-                        //   std::cout << "pos_i = " << neg_i << " pos_i.isMCSignal[0]: True && pos_i.isMCSignal[1]: True" << endl;
-                        //   std::cout << "pos_i.isMCSignal[0] = " << fGenPosPart[pos_i].isMCSignal[0] << " pos_i.isMCSignal[1] = " << fGenPosPart[pos_i].isMCSignal[1] << endl;
+                        //   std::cout << "pos_i = " << neg_i << " pos_i.isMCSignal[0]: True && pos_i.isMCSignal[1]: True" << std::endl;
+                        //   std::cout << "pos_i.isMCSignal[0] = " << fGenPosPart[pos_i].isMCSignal[0] << " pos_i.isMCSignal[1] = " << fGenPosPart[pos_i].isMCSignal[1] << std::endl;
                         //   int XpdgCode = fMC->GetTrack(fGenPosPart[pos_i].GetTrackID())->PdgCode();
                         //   int XpdgCodeM = fMC->GetTrack(fGenPosPart[pos_i].GetMotherID())->PdgCode();
                         //   int XpdgCodeGM = fMC->GetTrack(fGenPosPart[pos_i].GetGrandMotherID())->PdgCode();
-                        //   std::cout << "PDGCode of Particle pos_i: " << XpdgCode << " , PDGCode of pos_i's Mother: " << XpdgCodeM  <<  " , PDGCode of pos_i's GrandMother: " << XpdgCodeGM << endl;
+                        //   std::cout << "PDGCode of Particle pos_i: " << XpdgCode << " , PDGCode of pos_i's Mother: " << XpdgCodeM  <<  " , PDGCode of pos_i's GrandMother: " << XpdgCodeGM << std::endl;
                         // }
                         // else if (fGenNegPart[neg_j].isMCSignal[0] == true && fGenNegPart[neg_j].isMCSignal[1] == true) {
-                        //   std::cout << "neg_j = " << neg_i << " neg_j.isMCSignal[0]: True && neg_j.isMCSignal[1]: True" << endl;
-                        //   std::cout << "neg_j.isMCSignal[0] = " << fGenNegPart[neg_j].isMCSignal[0] << " neg_j.isMCSignal[1] = " << fGenNegPart[neg_j].isMCSignal[1] << endl;
+                        //   std::cout << "neg_j = " << neg_i << " neg_j.isMCSignal[0]: True && neg_j.isMCSignal[1]: True" << std::endl;
+                        //   std::cout << "neg_j.isMCSignal[0] = " << fGenNegPart[neg_j].isMCSignal[0] << " neg_j.isMCSignal[1] = " << fGenNegPart[neg_j].isMCSignal[1] << std::endl;
                         //   int XpdgCode = fMC->GetTrack(fGenNegPart[neg_j].GetTrackID())->PdgCode();
                         //   int XpdgCodeM = fMC->GetTrack(fGenNegPart[neg_j].GetMotherID())->PdgCode();
                         //   int XpdgCodeGM = fMC->GetTrack(fGenNegPart[neg_j].GetGrandMotherID())->PdgCode();
-                        //   std::cout << "PDGCode of Particle neg_j: " << XpdgCode <<  " , PDGCode of neg_j's Mother: " << XpdgCodeM <<  " , PDGCode of neg_j's GrandMother: " << XpdgCodeGM << endl;
+                        //   std::cout << "PDGCode of Particle neg_j: " << XpdgCode <<  " , PDGCode of neg_j's Mother: " << XpdgCodeM <<  " , PDGCode of neg_j's GrandMother: " << XpdgCodeGM << std::endl;
                         // }
                         // else if (fGenPosPart[pos_j].isMCSignal[0] == true && fGenPosPart[pos_j].isMCSignal[1] == true) {
-                        //   std::cout << "pos_j = " << pos_j << " pos_j.isMCSignal[0]: True && pos_j.isMCSignal[1]: True" << endl;
-                        //   std::cout << "pos_j.isMCSignal[0] = " << fGenPosPart[pos_j].isMCSignal[0] << " pos_j.isMCSignal[1] = " << fGenPosPart[pos_j].isMCSignal[1] << endl;
+                        //   std::cout << "pos_j = " << pos_j << " pos_j.isMCSignal[0]: True && pos_j.isMCSignal[1]: True" << std::endl;
+                        //   std::cout << "pos_j.isMCSignal[0] = " << fGenPosPart[pos_j].isMCSignal[0] << " pos_j.isMCSignal[1] = " << fGenPosPart[pos_j].isMCSignal[1] << std::endl;
                         //   int XpdgCode = fMC->GetTrack(fGenPosPart[pos_j].GetTrackID())->PdgCode();
                         //   int XpdgCodeM = fMC->GetTrack(fGenPosPart[pos_j].GetMotherID())->PdgCode();
                         //   int XpdgCodeGM = fMC->GetTrack(fGenPosPart[pos_j].GetGrandMotherID())->PdgCode();
-                        //   std::cout << "PDGCode of Particle pos_j: " << XpdgCode <<  " , PDGCode of pos_j's Mother: " << XpdgCodeM <<  " , PDGCode of pos_j's GrandMother: " << XpdgCodeGM << endl;
+                        //   std::cout << "PDGCode of Particle pos_j: " << XpdgCode <<  " , PDGCode of pos_j's Mother: " << XpdgCodeM <<  " , PDGCode of pos_j's GrandMother: " << XpdgCodeGM << std::endl;
                         // }
 
-                        // std::cout << "mcPart1 ID = " << &mcPart1 << " mcPart2 ID = " << &mcPart2 << " mcPart3 ID = " << &mcPart3 << " mcPart4 ID = " << &mcPart4 << endl;
+                        // std::cout << "mcPart1 ID = " << &mcPart1 << " mcPart2 ID = " << &mcPart2 << " mcPart3 ID = " << &mcPart3 << " mcPart4 ID = " << &mcPart4 << std::endl;
 
             // Check if electrons are from MCSignal Generator
             if (!fGenPosPart[pos_i].GetMCSignalPair() || !fGenNegPart[neg_i].GetMCSignalPair() || !fGenNegPart[neg_j].GetMCSignalPair() || !fGenPosPart[pos_j].GetMCSignalPair()) continue;
-            // std::cout << "Particle is Generated" << endl;
+            // std::cout << "Particle is Generated" << std::endl;
             // Apply MC signals
             std::vector<Bool_t> mcSignal_acc(fFourPairULSMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
 
@@ -825,11 +825,11 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
                         // i++;
                         // mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(mcPart3, mcPart4, &(fFourPairULSMCSignal[i]));
               mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(mcPart1, mcPart2, mcPart3, mcPart4, &(fFourPairULSMCSignal[i]), &(fFourPairULSMCSignal[i+1]));
-              // std::cout << "mcSignal_acc[0]: " << mcSignal_acc[0] << " , mcSignal_acc[1]: " << mcSignal_acc[1] << endl;
+              // std::cout << "mcSignal_acc[0]: " << mcSignal_acc[0] << " , mcSignal_acc[1]: " << mcSignal_acc[1] << std::endl;
             }
             // check if at least one mc signal is true
             if (CheckIfOneIsTrue(mcSignal_acc) == kFALSE) continue;
-            // std::cout << "CheckIfOneIsTrue is true" << endl;
+            // std::cout << "CheckIfOneIsTrue is true" << std::endl;
 
             // This if clause is needed here because smearing can potentially smear tracks into the selected kinematic region
             bool selectedByKinematicCuts = true;
@@ -838,7 +838,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
             if (fGenPosPart[pos_i].fPt < fPtMin || fGenPosPart[pos_i].fPt > fPtMax || fGenPosPart[pos_i].fEta < fEtaMin || fGenPosPart[pos_i].fEta > fEtaMax ||
                 fGenPosPart[pos_j].fPt < fPtMin || fGenPosPart[pos_j].fPt > fPtMax || fGenPosPart[pos_j].fEta < fEtaMin || fGenPosPart[pos_j].fEta > fEtaMax    ) selectedByKinematicCuts = false;
 
-            // std::cout << "Cheked Kinematics. Bool selectedByKinematicCuts is = " << selectedByKinematicCuts<< endl;
+            // std::cout << "Cheked Kinematics. Bool selectedByKinematicCuts is = " << selectedByKinematicCuts<< std::endl;
             if (selectedByKinematicCuts == true){
               // Construct pair variables from LorentzVectors
               TLorentzVector Lvec1;
@@ -879,55 +879,55 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
                       SourceVec.push_back(AliDielectronSignalMC::kSecondary);
                       SourceVec.push_back(AliDielectronSignalMC::kFinalState);
 
-                      std::cout << "neg_i = " << neg_i << " " << fGenNegPart[neg_i].GetTrackID() << ", pos_i = " << pos_i << " " << fGenPosPart[pos_i].GetTrackID() << ", neg_j = " << neg_j << " " << fGenNegPart[neg_j].GetTrackID() << ", pos_j = " << pos_j << " " << fGenPosPart[pos_j].GetTrackID() << endl;
-                      std::cout << "PDGCode of Particle neg_i: " << XpdgCodeNegi << " " << fGenNegPart[neg_i].GetTrackID()  << " , PDGCode of neg_i's Mother: " << XpdgCodeMNegi << " " << fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetLabel() <<  " , Number of daughters: " << NDaughtersNegi << endl;
+                      std::cout << "neg_i = " << neg_i << " " << fGenNegPart[neg_i].GetTrackID() << ", pos_i = " << pos_i << " " << fGenPosPart[pos_i].GetTrackID() << ", neg_j = " << neg_j << " " << fGenNegPart[neg_j].GetTrackID() << ", pos_j = " << pos_j << " " << fGenPosPart[pos_j].GetTrackID() << std::endl;
+                      std::cout << "PDGCode of Particle neg_i: " << XpdgCodeNegi << " " << fGenNegPart[neg_i].GetTrackID()  << " , PDGCode of neg_i's Mother: " << XpdgCodeMNegi << " " << fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetLabel() <<  " , Number of daughters: " << NDaughtersNegi << std::endl;
                       for (unsigned int i = 0; i < NDaughtersNegi; i++) {
                         int DaugtherPDG = fMC->GetTrack(fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetDaughterFirst()+i)->PdgCode();
                         std::cout << "PDG code negi daughter: "  << i+1 << " = " << DaugtherPDG << ", " << fMC->GetTrack(fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetDaughterFirst()+i)->GetLabel() << ", " ;
                         for (size_t j = 0; j < SourceVec.size(); j++) {
                           std::cout << mc->CheckParticleSource(fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->GetDaughterFirst()+i,SourceVec[j]) << " ";
                         }
-                        std::cout << endl;
+                        std::cout << std::endl;
                       }
-                      std::cout  << endl;
+                      std::cout  << std::endl;
 
-                      std::cout << "PDGCode of Particle pos_i: " << XpdgCodePosi << " " << fGenPosPart[pos_i].GetTrackID()  << " , PDGCode of pos_i's Mother: " << XpdgCodeMPosi << " " << fMC->GetTrack(fGenPosPart[pos_i].GetMotherID())->GetLabel() <<  " , Number of daughters: " << NDaughtersPosi << endl;
+                      std::cout << "PDGCode of Particle pos_i: " << XpdgCodePosi << " " << fGenPosPart[pos_i].GetTrackID()  << " , PDGCode of pos_i's Mother: " << XpdgCodeMPosi << " " << fMC->GetTrack(fGenPosPart[pos_i].GetMotherID())->GetLabel() <<  " , Number of daughters: " << NDaughtersPosi << std::endl;
                       for (unsigned int i = 0; i < NDaughtersPosi; i++) {
                         int DaugtherPDG = fMC->GetTrack(fMC->GetTrack(fGenPosPart[pos_i].GetMotherID())->GetDaughterFirst()+i)->PdgCode();
                         std::cout << "PDG code posi daughter: "  << i+1 << " = " << DaugtherPDG << ", " << fMC->GetTrack(fMC->GetTrack(fGenPosPart[pos_i].GetMotherID())->GetDaughterFirst()+i)->GetLabel() << ", ";
                         for (size_t j = 0; j < SourceVec.size(); j++) {
                           std::cout << mc->CheckParticleSource(fMC->GetTrack(fGenPosPart[pos_i].GetMotherID())->GetDaughterFirst()+i,SourceVec[j]) << " ";
                         }
-                        std::cout << endl;
+                        std::cout << std::endl;
                       }
-                      std::cout  << endl;
+                      std::cout  << std::endl;
 
-                      std::cout << "PDGCode of Particle neg_j: " << XpdgCodeNegj << " " << fGenNegPart[neg_j].GetTrackID()  <<  " , PDGCode of neg_j's Mother: " << XpdgCodeMNegj << " " << fMC->GetTrack(fGenNegPart[neg_j].GetMotherID())->GetLabel() <<  " , PDGCode of neg_j's GrandMother: " <<  XpdgCodeGMNegj << " " << fMC->GetTrack(fGenNegPart[neg_j].GetGrandMotherID())->GetLabel() << " , Number of daughters: " << NDaughtersNegj << endl;
+                      std::cout << "PDGCode of Particle neg_j: " << XpdgCodeNegj << " " << fGenNegPart[neg_j].GetTrackID()  <<  " , PDGCode of neg_j's Mother: " << XpdgCodeMNegj << " " << fMC->GetTrack(fGenNegPart[neg_j].GetMotherID())->GetLabel() <<  " , PDGCode of neg_j's GrandMother: " <<  XpdgCodeGMNegj << " " << fMC->GetTrack(fGenNegPart[neg_j].GetGrandMotherID())->GetLabel() << " , Number of daughters: " << NDaughtersNegj << std::endl;
                       for (unsigned int i = 0; i < NDaughtersNegj; i++) {
                         int DaugtherPDG = fMC->GetTrack(fMC->GetTrack(fGenNegPart[neg_j].GetMotherID())->GetDaughterFirst()+i)->PdgCode();
                         std::cout << "PDG code negj daughter: "  << i+1 << " = " << DaugtherPDG << ", " << fMC->GetTrack(fMC->GetTrack(fGenNegPart[neg_j].GetMotherID())->GetDaughterFirst()+i)->GetLabel() << ", ";
                         for (size_t j = 0; j < SourceVec.size(); j++) {
                           std::cout << mc->CheckParticleSource(fMC->GetTrack(fGenNegPart[neg_j].GetMotherID())->GetDaughterFirst()+i,SourceVec[j]) << " ";
                         }
-                        std::cout << endl;
+                        std::cout << std::endl;
                       }
-                      std::cout  << endl;
+                      std::cout  << std::endl;
 
-                      std::cout << "PDGCode of Particle pos_j: " << XpdgCodePosj << " " << fGenPosPart[pos_j].GetTrackID() <<  " , PDGCode of pos_j's Mother: " << XpdgCodeMPosj << " " << fMC->GetTrack(fGenPosPart[pos_j].GetMotherID())->GetLabel() <<  " , PDGCode of pos_j's GrandMother: " <<  XpdgCodeGMPosj << " " << fMC->GetTrack(fGenPosPart[pos_j].GetGrandMotherID())->GetLabel() <<  " , Number of daughters: " << NDaughtersPosj << endl;
+                      std::cout << "PDGCode of Particle pos_j: " << XpdgCodePosj << " " << fGenPosPart[pos_j].GetTrackID() <<  " , PDGCode of pos_j's Mother: " << XpdgCodeMPosj << " " << fMC->GetTrack(fGenPosPart[pos_j].GetMotherID())->GetLabel() <<  " , PDGCode of pos_j's GrandMother: " <<  XpdgCodeGMPosj << " " << fMC->GetTrack(fGenPosPart[pos_j].GetGrandMotherID())->GetLabel() <<  " , Number of daughters: " << NDaughtersPosj << std::endl;
                       for (unsigned int i = 0; i < NDaughtersPosj; i++) {
                         int DaugtherPDG = fMC->GetTrack(fMC->GetTrack(fGenPosPart[pos_j].GetMotherID())->GetDaughterFirst()+i)->PdgCode();
                         std::cout << "PDG code posj daughter: "  << i+1 << " = " << DaugtherPDG << ", " << fMC->GetTrack(fMC->GetTrack(fGenPosPart[pos_j].GetMotherID())->GetDaughterFirst()+i)->GetLabel() << ", ";
                         for (size_t j = 0; j < SourceVec.size(); j++) {
                           std::cout << mc->CheckParticleSource(fMC->GetTrack(fGenPosPart[pos_j].GetMotherID())->GetDaughterFirst()+i,SourceVec[j]) << " ";
                         }
-                        std::cout << endl;
+                        std::cout << std::endl;
                       }
-                      std::cout  << endl;
+                      std::cout  << std::endl;
 
-                      // std::cout << "PDGCode of Particle Neg_j: " << XpdgCodeNegj <<  " , PDGCode of Neg_j's Mother: " << XpdgCodeMNegj <<  " , PDGCode of Neg_j's GrandMother: " << XpdgCodeGMNegj << endl;
-                      // std::cout << "PDGCode of Particle pos_j: " << XpdgCodePosj <<  " , PDGCode of pos_j's Mother: " << XpdgCodeMPosj <<  " , PDGCode of pos_j's GrandMother: " << XpdgCodeGMPosj << endl;
-*/                      std::cout << "neg_i = " << neg_i<< ", pos_i = " << pos_i << ", neg_j = " << neg_j << ", pos_j = " << pos_j << endl;
-                      std::cout << "Mother Mass = " << mass << ", Mother Pt = " << pairpt << endl;
+                      // std::cout << "PDGCode of Particle Neg_j: " << XpdgCodeNegj <<  " , PDGCode of Neg_j's Mother: " << XpdgCodeMNegj <<  " , PDGCode of Neg_j's GrandMother: " << XpdgCodeGMNegj << std::endl;
+                      // std::cout << "PDGCode of Particle pos_j: " << XpdgCodePosj <<  " , PDGCode of pos_j's Mother: " << XpdgCodeMPosj <<  " , PDGCode of pos_j's GrandMother: " << XpdgCodeGMPosj << std::endl;
+*/                      std::cout << "neg_i = " << neg_i<< ", pos_i = " << pos_i << ", neg_j = " << neg_j << ", pos_j = " << pos_j << std::endl;
+                      std::cout << "Mother Mass = " << mass << ", Mother Pt = " << pairpt << std::endl;
 
               if (fCocktailFile) {
                 if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
@@ -956,10 +956,10 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     //##########################################################
 /*
     // std::vector<int> MotherIDVec;
-    // std::cout << "Bool fDoFourPairing is " << fDoFourPairing << endl;
+    // std::cout << "Bool fDoFourPairing is " << fDoFourPairing << std::endl;
     for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
       if (fGenNegPart[neg_i].isMCSignal[0] == false) continue;
-      // std::cout << "neg_i = " << neg_i <<endl;
+      // std::cout << "neg_i = " << neg_i <<std::endl;
       for (unsigned int pos_i = 0; pos_i < fGenPosPart.size(); ++pos_i){
         if (fGenPosPart[pos_i].isMCSignal[1] == false) continue;
         for (unsigned int neg_j = 0; neg_j < fGenNegPart.size(); ++neg_j){
@@ -979,7 +979,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
             // Check if electrons are from MCSignal Generator
             if (!fGenPosPart[pos_i].GetMCSignalPair() || !fGenNegPart[neg_i].GetMCSignalPair() || !fGenNegPart[neg_j].GetMCSignalPair() || !fGenPosPart[pos_j].GetMCSignalPair()) continue;
-            // std::cout << "Particle is Generated" << endl;
+            // std::cout << "Particle is Generated" << std::endl;
             // Apply MC signals
             std::vector<Bool_t> mcSignal_acc(fFourPairLSMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
 
@@ -989,11 +989,11 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
                         // i++;
                         // mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(mcPart3, mcPart4, &(fFourPairLSMCSignal[i]));
               mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(mcPart1, mcPart3, mcPart2, mcPart4, &(fFourPairLSMCSignal[i]), &(fFourPairLSMCSignal[i+1]));
-              // std::cout << "mcSignal_acc[0]: " << mcSignal_acc[0] << " , mcSignal_acc[1]: " << mcSignal_acc[1] << endl;
+              // std::cout << "mcSignal_acc[0]: " << mcSignal_acc[0] << " , mcSignal_acc[1]: " << mcSignal_acc[1] << std::endl;
             }
             // check if at least one mc signal is true
             if (CheckIfOneIsTrue(mcSignal_acc) == kFALSE) continue;
-            // std::cout << "CheckIfOneIsTrue is true" << endl;
+            // std::cout << "CheckIfOneIsTrue is true" << std::endl;
 
             // This if clause is needed here because smearing can potentially smear tracks into the selected kinematic region
             bool selectedByKinematicCuts = true;
@@ -1002,7 +1002,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
             if (fGenPosPart[pos_i].fPt < fPtMin || fGenPosPart[pos_i].fPt > fPtMax || fGenPosPart[pos_i].fEta < fEtaMin || fGenPosPart[pos_i].fEta > fEtaMax ||
                 fGenPosPart[pos_j].fPt < fPtMin || fGenPosPart[pos_j].fPt > fPtMax || fGenPosPart[pos_j].fEta < fEtaMin || fGenPosPart[pos_j].fEta > fEtaMax    ) selectedByKinematicCuts = false;
 
-            // std::cout << "Cheked Kinematics. Bool selectedByKinematicCuts is = " << selectedByKinematicCuts<< endl;
+            // std::cout << "Cheked Kinematics. Bool selectedByKinematicCuts is = " << selectedByKinematicCuts<< std::endl;
             if (selectedByKinematicCuts == true){
               // Construct pair variables from LorentzVectors
               TLorentzVector Lvec1;
@@ -1018,10 +1018,10 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
               double mass = LvecM.M();
               double pairpt = LvecM.Pt();
               double weight = 1.;
-                      std::cout << "neg_i = " << neg_i << " pos_i = " << pos_i << ", neg_j = " << neg_j << ", pos_j = " << pos_j << endl;
-                      // std::cout << "PDGCode of Particle Neg_j: " << XpdgCodeNegj <<  " , PDGCode of Neg_j's Mother: " << XpdgCodeMNegj <<  " , PDGCode of Neg_j's GrandMother: " << XpdgCodeGMNegj << endl;
-                      // std::cout << "PDGCode of Particle pos_j: " << XpdgCodePosj <<  " , PDGCode of pos_j's Mother: " << XpdgCodeMPosj <<  " , PDGCode of pos_j's GrandMother: " << XpdgCodeGMPosj << endl;
-                      std::cout << "Mother Mass = " << mass << ", Mother Pt = " << pairpt << endl;
+                      std::cout << "neg_i = " << neg_i << " pos_i = " << pos_i << ", neg_j = " << neg_j << ", pos_j = " << pos_j << std::endl;
+                      // std::cout << "PDGCode of Particle Neg_j: " << XpdgCodeNegj <<  " , PDGCode of Neg_j's Mother: " << XpdgCodeMNegj <<  " , PDGCode of Neg_j's GrandMother: " << XpdgCodeGMNegj << std::endl;
+                      // std::cout << "PDGCode of Particle pos_j: " << XpdgCodePosj <<  " , PDGCode of pos_j's Mother: " << XpdgCodeMPosj <<  " , PDGCode of pos_j's GrandMother: " << XpdgCodeGMPosj << std::endl;
+                      std::cout << "Mother Mass = " << mass << ", Mother Pt = " << pairpt << std::endl;
               if (fCocktailFile) {
                 if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
                   double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
