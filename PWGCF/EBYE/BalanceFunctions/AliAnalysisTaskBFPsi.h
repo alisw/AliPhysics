@@ -127,6 +127,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fPtMin  = ptmin;  fPtMax  = ptmax;
     fEtaMin = etamin; fEtaMax = etamax;
   }
+    
+  void SetPtCutsCrossCorr(Double_t ptminTrig, Double_t ptmaxTrig, Double_t ptminAssoc, Double_t ptmaxAssoc){
+    fPtCutsCrossCorr = kTRUE;
+    fPtMinTrig  = ptminTrig;  fPtMaxTrig  = ptmaxTrig;
+    fPtMinAssoc  = ptminAssoc;  fPtMaxAssoc  = ptmaxAssoc;
+  }
 
   void SetExtraDCACutsAOD(Double_t DCAxy, Double_t DCAz){
     fDCAxyCut  = DCAxy;
@@ -174,11 +180,15 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
      fMotherPDGCodeToExclude = gPdgResonanceCode;
   }
 
-  void SetPDGCode(Int_t gPdgCode) {
+  void SetPDGCode(Int_t gPdgCodeTrig, Int_t gPdgCodeAssoc, Bool_t setCrossCorr) {
     fUseMCPdgCode = kTRUE;
-    fPDGCodeToBeAnalyzed = gPdgCode;
-  }
-
+    fPDGCodeToBeAnalyzedTrig = gPdgCodeTrig;
+    fPDGCodeToBeAnalyzedAssoc = gPdgCodeAssoc;
+    fUseRapidity = kTRUE;
+    fUsePIDMC = kTRUE;
+    fCrossCorr = setCrossCorr;
+    }
+    
    void SetRejectInjectedSignals() {fExcludeInjectedSignals = kTRUE;}
 
    void SetRejectInjectedSignalsGenName(TString genToBeKept) {
@@ -329,7 +339,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     }
 
     void SetVZEROCalibrationFile(const char* filename, const char* lhcPeriod);
-    void SetParticleOfInterest(AliPID::EParticleType trig, AliPID::EParticleType assoc);
+    void SetParticleOfInterest(AliPID::EParticleType trig, AliPID::EParticleType assoc, Bool_t setCrossCorr);
     
 
  private:
@@ -513,11 +523,13 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fMassParticleOfInterest[2];//particle mass (for rapidity calculation)
 
     
-  Bool_t fUsePID; //flag to use PID 
+  Bool_t fUsePID; //flag to use PID
+  Bool_t fUsePIDMC; //flag to use PID in generated MC ("MC" analysis option)
   Bool_t fUsePIDnSigma;//flag to use nsigma method for PID
   Bool_t fUsePIDPropabilities;//flag to use probability method for PID
   Bool_t fUseRapidity;//flag to use rapidity instead of pseudorapidity in correlation histograms
   Bool_t fCrossCorr;//cross correlations or not
+  Bool_t fPtCutsCrossCorr;//flag to use different cuts on pt for trigger and associated particle in case of cross correlations
   Double_t fPIDNSigmaAcc;//nsigma cut for PID acceptance
   Double_t fPIDNSigmaExcl;//nsigma cut for exclusive PID
   Double_t fMinAcceptedPIDProbability;//probability cut for PID
@@ -600,6 +612,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Double_t fPtMin;//only used for AODs
   Double_t fPtMax;//only used for AODs
+  Double_t fPtMinTrig;//only used for AODs
+  Double_t fPtMinAssoc;//only used for AODs
+  Double_t fPtMaxTrig;//only used for AODs
+  Double_t fPtMaxAssoc;//only used for AODs
   Double_t fEtaMin;//only used for AODs
   Double_t fEtaMax;//only used for AODs
   Double_t fPhiMin;//only used for AODs
@@ -630,8 +646,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fExcludeElectronsInMC;//flag to exclude the electrons from the MC analysis
   Bool_t fExcludeParticlesExtra;//flag to exclude particles from the MC analysis (extra)
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC and MCAODrec
-  Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC and MCAODrec
-  Int_t fMotherPDGCodeToExclude; // exclude the resonance with this PDG with the label cut from the MC analysis 
+  Int_t fPDGCodeToBeAnalyzedTrig;//Analyze a set of particles in MC and MCAODrec
+  Int_t fPDGCodeToBeAnalyzedAssoc;//Analyze a set of particles in MC and MCAODrec
+  Int_t fMotherPDGCodeToExclude; // exclude the resonance with this PDG with the label cut from the MC analysis
   Int_t fExcludeResonancePDGInMC;// exclude the resonance with this PDG from the MC analysis
   Int_t fIncludeResonancePDGInMC;// include excluvely this resonance with this PDG to the MC and MCAODrec analysis
 
