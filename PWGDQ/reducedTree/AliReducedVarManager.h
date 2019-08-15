@@ -656,6 +656,8 @@ class AliReducedVarManager : public TObject {
     kTriggerRapAbs,   // absolute rapidity of J/psi candidate
     kAssociatedPt,          // pt of associated track
     kAssociatedPtBoosted,   // pt of associated track, after boost to trigger rest frame
+    kAssociatedPtOverTriggerGammaT, // pt of associated track / transverse gamma of J/psi candidate
+    kTriggerGammaT,                 // transverse gamma of J/psi candidate
     kAssociatedEta,         // eta of associated track
     kAssociatedEtaBoosted,
     kAssociatedPhi,         // phi of associated track
