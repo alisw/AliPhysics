@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated jul 24
+// Updated Aug 16
 
 
 #include "AliAnalysisManager.h"
@@ -595,7 +595,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         lVarV0CosPALambdaBar = lVarV0CosPAparLambdaBar[0]*TMath::Exp(lVarV0CosPAparLambdaBar[1]*V0pt) + lVarV0CosPAparLambdaBar[2]*TMath::Exp(lVarV0CosPAparLambdaBar[3]*V0pt) + lVarV0CosPAparLambdaBar[4];
         fHistPAparLambdabar->Fill(lVarV0CosPALambdaBar);
         
-        if(cosPointingAngle < 0.98) continue;
+        if(cosPointingAngle < 0.99) continue;
         
         if( ontheflystat == 0 )
         {
@@ -657,7 +657,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 if(TMath::Abs(eta) < 0.5)
                 {
                     //L
-                    if(proLT < 25. && PAngle < lVarV0CosPALambda && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1) //default
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1) //default
                     {
                         f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassLambda,mcpt);
                         if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -689,7 +689,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     }
                     
                     //L-BAR
-                    if(proLTbar < 25. && PAngle < lVarV0CosPALambdaBar && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25) //default
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25) //default
                     {
                         f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassAntiLambda,mcpt);
                         if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
@@ -724,7 +724,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 if(TMath::Abs(lRapLambda) < 0.5)
                 {
                     //L
-                    if(proLT < 25. && PAngle < lVarV0CosPALambda && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1) //default
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1) //default
                     {
                         
                         if(fTreeVariablePID == 3122)
@@ -744,7 +744,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     }
                     
                     //L-BAR
-                    if(proLTbar < 25. && PAngle < lVarV0CosPALambdaBar && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25) //default
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25) //default
                     {
                         
                         if(fTreeVariablePID == -3122)
