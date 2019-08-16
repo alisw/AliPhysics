@@ -598,9 +598,9 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   // double op_angle = -99;
 
 /**/
-  std::cout << "fGenNegPart.size() " << fGenNegPart.size() << " fGenPosPart.size " << fGenPosPart.size()<< '\n';
+  // std::cout << "fGenNegPart.size() " << fGenNegPart.size() << " fGenPosPart.size " << fGenPosPart.size()<< '\n';
   if (fDoPairing){
-        std::cout << "Doing two pairing..." << std::endl;
+        // std::cout << "Doing two pairing..." << std::endl;
         // std::cout << "Bool fDoPairing is " << fDoPairing << std::endl;
     for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
       // if (fGenNegPart[neg_i].isMCSignal[0] == false) continue;
@@ -717,7 +717,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     //##########################################################
     //############### Unlike Signe Pairing #####################
     //##########################################################
-    std::cout << "Doing four pairing..." << std::endl;
+    // std::cout << "Doing four pairing..." << std::endl;
     // std::vector<int> MotherIDVec;
     // std::cout << "Bool fDoFourPairing is " << fDoFourPairing << std::endl;
     for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
@@ -926,8 +926,9 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
                       // std::cout << "PDGCode of Particle Neg_j: " << XpdgCodeNegj <<  " , PDGCode of Neg_j's Mother: " << XpdgCodeMNegj <<  " , PDGCode of Neg_j's GrandMother: " << XpdgCodeGMNegj << std::endl;
                       // std::cout << "PDGCode of Particle pos_j: " << XpdgCodePosj <<  " , PDGCode of pos_j's Mother: " << XpdgCodeMPosj <<  " , PDGCode of pos_j's GrandMother: " << XpdgCodeGMPosj << std::endl;
-*/                      std::cout << "neg_i = " << neg_i<< ", pos_i = " << pos_i << ", neg_j = " << neg_j << ", pos_j = " << pos_j << std::endl;
-                      std::cout << "Mother Mass = " << mass << ", Mother Pt = " << pairpt << std::endl;
+*/
+                      // std::cout << "neg_i = " << neg_i<< ", pos_i = " << pos_i << ", neg_j = " << neg_j << ", pos_j = " << pos_j << std::endl;
+                      // std::cout << "Mother Mass = " << mass << ", Mother Pt = " << pairpt << std::endl;
 
               if (fCocktailFile) {
                 if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
