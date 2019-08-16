@@ -1084,7 +1084,7 @@ void AddTask_GammaCaloMerged_pPb(
   TString mcNameAdd   = "";
   if (generatorName.Contains("LHC18b9")){
     energy            = "8.16TeV";
-    mcName            = "EPOSJJ_LHC18b9";
+    mcName            = "LHC18b9";
   }
 
   EventCutList->SetOwner(kTRUE);
