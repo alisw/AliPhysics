@@ -1605,6 +1605,15 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig ==808){//PHOS Triggers
     cuts.AddCutCalo("00010113","2446600074012200000","0163103100000010"); //no Trigger
     cuts.AddCutCalo("00062113","2446600074012200000","0163103100000010"); //PHI7
+  } else if (trainConfig ==810){//PHOS Sphericity Check
+    cuts.AddCutCalo("h0510113","2446600074012200000","0163103100000010"); //  0.    - 0.5
+    cuts.AddCutCalo("h5a10113","2446600074012200000","0163103100000010"); //  0.5    - 1.
+    cuts.AddCutCalo("h0a10113","2446600074012200000","0163103100000010"); //  0.    - 1.
+  } else if (trainConfig ==811){//PHOS Mult Check
+    cuts.AddCutCalo("n0110113","2446600074012200000","0163103100000010"); // INT7 0-10%
+    cuts.AddCutCalo("n1210113","2446600074012200000","0163103100000010"); // INT7 10-20%
+    cuts.AddCutCalo("n2510113","2446600074012200000","0163103100000010"); // INT7 20-50%
+    cuts.AddCutCalo("n5a10113","2446600074012200000","0163103100000010"); // INT7 50-100%
   } else if( trainConfig == 870){ // PHOS HM trigger
     cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); // -50ns, 30ns timing cut, MB trigger
     cuts.AddCutCalo("00010113","2446600004012300000","0163103100000010"); // no timing, MB trigger
