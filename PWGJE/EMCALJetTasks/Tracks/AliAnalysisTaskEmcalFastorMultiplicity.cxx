@@ -62,7 +62,7 @@ void AliAnalysisTaskEmcalFastorMultiplicity::UserCreateOutputObjects()
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   const std::array<int, 15> thresholds = {{0, 1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 60, 80, 100}};
-  fHistos = new THistManager(Form("%s_histos"));
+  fHistos = new THistManager(Form("%s_histos", GetName()));
   for (auto t : thresholds)
   {
     fHistos->CreateTH2(Form("hFastorMultL0_ADC%d", t), Form("Multiplicity of FastORs with ADC >= %d at L0", t), 100, 0., 100, 6500, 0., 6500);
@@ -89,7 +89,7 @@ bool AliAnalysisTaskEmcalFastorMultiplicity::Run()
     AliErrorStream() << "Multiplicity object not available from event" << std::endl;
     return false;
   }
-  auto multval = mult->GetEstimator("V0A")->GetPercentile();
+  auto multval = mult->GetEstimator("V0M")->GetPercentile();
 
   std::map<int, int> countersL0, countersL1;
   const std::array<int, 15> thresholds = {{0, 1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 60, 80, 100}};
@@ -120,7 +120,7 @@ bool AliAnalysisTaskEmcalFastorMultiplicity::Run()
   for (auto t : thresholds)
   {
     fHistos->FillTH2(Form("hFastorMultL0_ADC%d", t), multval, countersL0[t]);
-    fHistos->FillTH2(Form("hFastorMultL0_ADC%d", t), multval, countersL1[t]);
+    fHistos->FillTH2(Form("hFastorMultL1_ADC%d", t), multval, countersL1[t]);
   }
 
   return true;
