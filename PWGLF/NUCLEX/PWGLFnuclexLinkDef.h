@@ -38,6 +38,7 @@
 #pragma link C++ class AliLightNTrackHist+;
 #pragma link C++ class AliLightNEventCuts+;
 #pragma link C++ class AliLightNTrackMCHist+;
+#pragma link C++ class AliAnalysisTaskAntipd+;
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;

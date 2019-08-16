@@ -63,6 +63,7 @@ set(SRCS
   Nuclei/AbsorptionRatios/AliLightNTrackHist.cxx
   Nuclei/AbsorptionRatios/AliLightNEventCuts.cxx
   Nuclei/AbsorptionRatios/AliLightNTrackMCHist.cxx
+  Nuclei/AbsorptionRatios/HMAnalysis/AliAnalysisTaskAntipd.cxx
   Nuclei/DeltaMasses/AliAnalysisNucleiMass.cxx
   Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
