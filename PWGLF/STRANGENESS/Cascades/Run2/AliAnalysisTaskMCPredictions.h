@@ -105,17 +105,17 @@ private:
     TH3D *fHist3d2pcSE[13]; //! base, unmixed 2pc
     TH3D *fHist3d2pcME[13]; //! base, mixed 2pc
     //Add some 2pc to the mixture: xi trigger
-    Long_t fBufferXiTriggerSize[13];
-    Double_t fBufferXiTriggersPhi[13][1000];
-    Double_t fBufferXiTriggersEta[13][1000];
+    Long_t fBufferXiTriggerSize[10];
+    Double_t fBufferXiTriggersPhi[10][1000];
+    Double_t fBufferXiTriggersEta[10][1000];
     TH3D *fHist3d2pcXiSE[13]; //! base, unmixed 2pc
     TH3D *fHist3d2pcXiME[13]; //! base, mixed 2pc
     //Add some 2pc to the mixture: phi trigger
     Long_t fBufferPhiTriggerSize[10];
     Double_t fBufferPhiTriggersPhi[10][1000];
     Double_t fBufferPhiTriggersEta[10][1000];
-    TH3D *fHist3d2pcPhiSE[12]; //! base, unmixed 2pc
-    TH3D *fHist3d2pcPhiME[12]; //! base, mixed 2pc
+    TH3D *fHist3d2pcPhiSE[13]; //! base, unmixed 2pc
+    TH3D *fHist3d2pcPhiME[13]; //! base, mixed 2pc
     
     AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
     AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
