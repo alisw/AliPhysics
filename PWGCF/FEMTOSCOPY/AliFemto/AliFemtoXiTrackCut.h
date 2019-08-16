@@ -71,6 +71,10 @@ public:
   void SetRadiusXiMin(double aRadiusMin);
   void SetRadiusXiMax(double aRadiusMax);
 
+  void SetSidebandAnalysis(bool sideband);
+  void SetInvariantMassXiSideband(double min1, double max1, double min2, double max2);
+  void SetInvariantMassOmegaSideband(double min1, double max1, double min2, double max2);  
+
   //-----The fMinvPurityAidHistoXi is built immediately before the (final) invariant mass cut, and thus may be used to calculate the purity of the Xi collection
   void SetMinvPurityAidHistoXi(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and automatically sets flag fBuildPurityAidXi=true
   TH1D* GetMinvPurityAidHistoXi();
@@ -114,6 +118,16 @@ public:
 
   bool fBuildPurityAidXi;
   TH1D* fMinvPurityAidHistoXi;
+
+  bool fSidebandAnalysis;
+  double fInvMassRange1XiMin;
+  double fInvMassRange1XiMax;
+  double fInvMassRange2XiMin;
+  double fInvMassRange2XiMax;
+  double fInvMassRange1OmegaMin;
+  double fInvMassRange1OmegaMax;
+  double fInvMassRange2OmegaMin;
+  double fInvMassRange2OmegaMax;
 
 
 #ifdef __ROOT__
