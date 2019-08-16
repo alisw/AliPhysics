@@ -504,7 +504,7 @@ void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, 
   }
   SetGenJetTreeVars(hfgenjet);
 #else
-  cout << "You need to have fastjet installed to get meaningful results" <<endl;
+  std::cout << "You need to have fastjet installed to get meaningful results" <<std::endl;
 #endif 
 
 }
@@ -519,7 +519,7 @@ void AliHFTreeHandler::SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPa
 	  
   SetGenJetTreeVars(hfjet);
 #else
-  cout << "You need to have fastjet installed to get meaningful results" <<endl;
+  std::cout << "You need to have fastjet installed to get meaningful results" <<std::endl;
 #endif 
 }
 #ifdef HAVE_FASTJET
