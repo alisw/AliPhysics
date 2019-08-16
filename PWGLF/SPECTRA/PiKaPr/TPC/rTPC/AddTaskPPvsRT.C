@@ -12,11 +12,12 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 		bool AnalysisMC     = kFALSE,
 		int  system         = 1, // 0(pp) & 1 (Pb-Pb)
 		bool PostCalib      = kFALSE,
-		bool LowpT          = kFALSE,
+		bool LowpT          = kTRUE,
 		bool MakePid        = kFALSE,
-		const double TrkLCut = 5.0,
+		const double TrkLCut= 5.0,
 		const char* Period  = "l",
-		const double MeanCh = 7.266
+		const double MeanCh = 7.266,
+		const char* flag_container = "rTPC_0"
 		)   
 {
 
@@ -49,7 +50,7 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 	// by default, a file is open for writing. here, we get the filename
 	TString fileName = AliAnalysisManager::GetCommonFileName();
 	//fileName += Form(":%.2f-%.2f",minCent,maxCent);      // create a subfolder in the file
-	fileName += ":Output";      // create a subfolder in the file
+	//fileName += ":Output";      // create a subfolder in the file
 
 
 	// now we create an instance of your task
@@ -86,7 +87,7 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 	// your task needs input: here we connect the manager to your task
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	// same for the output
-	mgr->ConnectOutput(task,1,mgr->CreateContainer("MyOutputContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_%s",flag_container), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 	// in the end, this macro returns a pointer to your task. this will be convenient later on
 	// when you will run your analysis in an analysis train on grid
 	return task;
