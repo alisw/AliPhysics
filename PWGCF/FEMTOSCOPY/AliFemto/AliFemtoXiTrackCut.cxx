@@ -41,6 +41,15 @@ AliFemtoXiTrackCut::AliFemtoXiTrackCut():
   , fRadiusXiMax(99999.0)
   , fBuildPurityAidXi(false)
   , fMinvPurityAidHistoXi(nullptr)
+  , fSidebandAnalysis(false)
+  , fInvMassRange1XiMin(0)
+  , fInvMassRange1XiMax(1000)
+  , fInvMassRange2XiMin(0)
+  , fInvMassRange2XiMax(1000)
+  , fInvMassRange1OmegaMin(0)
+  , fInvMassRange1OmegaMax(1000)
+  , fInvMassRange2OmegaMin(0)
+  , fInvMassRange2OmegaMax(1000)
 {
   // Default constructor
 }
@@ -83,6 +92,15 @@ AliFemtoXiTrackCut::AliFemtoXiTrackCut(const AliFemtoXiTrackCut& aCut) :
   , fRadiusXiMax(aCut.fRadiusXiMax)
   , fBuildPurityAidXi(aCut.fBuildPurityAidXi)
   , fMinvPurityAidHistoXi(nullptr)
+  , fSidebandAnalysis(aCut.fSidebandAnalysis)
+  , fInvMassRange1XiMin(aCut.fInvMassRange1XiMin)
+  , fInvMassRange1XiMax(aCut.fInvMassRange1XiMax)
+  , fInvMassRange2XiMin(aCut.fInvMassRange2XiMin)
+  , fInvMassRange2XiMax(aCut.fInvMassRange2XiMax)
+  , fInvMassRange1OmegaMin(aCut.fInvMassRange1OmegaMin)
+  , fInvMassRange1OmegaMax(aCut.fInvMassRange1OmegaMax)
+  , fInvMassRange2OmegaMin(aCut.fInvMassRange2OmegaMin)
+  , fInvMassRange2OmegaMax(aCut.fInvMassRange2OmegaMax)
 {
   //copy constructor
   if (aCut.fMinvPurityAidHistoXi) fMinvPurityAidHistoXi = new TH1D(*aCut.fMinvPurityAidHistoXi);
@@ -124,6 +142,15 @@ AliFemtoXiTrackCut& AliFemtoXiTrackCut::operator=(const AliFemtoXiTrackCut& aCut
   fRadiusXiMin = aCut.fRadiusXiMin;
   fRadiusXiMax = aCut.fRadiusXiMax;
   fBuildPurityAidXi = aCut.fBuildPurityAidXi;
+  fSidebandAnalysis = aCut.fSidebandAnalysis;
+  fInvMassRange1XiMin = aCut.fInvMassRange1XiMin;
+  fInvMassRange1XiMax = aCut.fInvMassRange1XiMax;
+  fInvMassRange2XiMin = aCut.fInvMassRange2XiMin;
+  fInvMassRange2XiMax = aCut.fInvMassRange2XiMax;
+  fInvMassRange1OmegaMin = aCut.fInvMassRange1OmegaMin;
+  fInvMassRange1OmegaMax = aCut.fInvMassRange1OmegaMax;
+  fInvMassRange2OmegaMin = aCut.fInvMassRange2OmegaMin;
+  fInvMassRange2OmegaMax = aCut.fInvMassRange2OmegaMax;
 
   if (aCut.fMinvPurityAidHistoXi != nullptr) {
     if (fMinvPurityAidHistoXi == nullptr) {
@@ -261,17 +288,32 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   if(fBuildPurityAidXi) {fMinvPurityAidHistoXi->Fill(aXi->MassXi());}
 
   //invariant mass Xi
-  if(fParticleTypeXi == kXiPlus || fParticleTypeXi == kXiMinus)
+  if((fParticleTypeXi == kXiPlus || fParticleTypeXi == kXiMinus) && !fSidebandAnalysis)
     {
       if(aXi->MassXi()<fInvMassXiMin || aXi->MassXi()>fInvMassXiMax)
 	{
 	  return false;
 	}
     }
+  else if((fParticleTypeXi == kXiPlus || fParticleTypeXi == kXiMinus) && fSidebandAnalysis)
+    {
+      if( (aXi->MassXi()<fInvMassRange1XiMin || aXi->MassXi()>fInvMassRange2XiMax) || (aXi->MassXi()>fInvMassRange1XiMax && aXi->MassXi()<fInvMassRange2XiMin) )
+	{
+	  return false;
+	}
+    }
+  
   //invariant mass Omega
-  if(fParticleTypeXi == kOmegaPlus || fParticleTypeXi == kOmegaMinus)
+  if((fParticleTypeXi == kOmegaPlus || fParticleTypeXi == kOmegaMinus) && !fSidebandAnalysis)
     {
       if(aXi->MassOmega()<fInvMassOmegaMin || aXi->MassOmega()>fInvMassOmegaMax)
+	{
+	  return false;
+	}
+    }
+  else if((fParticleTypeXi == kOmegaPlus || fParticleTypeXi == kOmegaMinus) && fSidebandAnalysis)
+    {
+      if( (aXi->MassOmega()<fInvMassRange1OmegaMin || aXi->MassOmega()>fInvMassRange2OmegaMax) || (aXi->MassOmega()>fInvMassRange1OmegaMax && aXi->MassOmega()<fInvMassRange2OmegaMin) )
 	{
 	  return false;
 	}
@@ -439,6 +481,30 @@ void AliFemtoXiTrackCut::SetMinvPurityAidHistoXi(const char* name, const char* t
   fMinvPurityAidHistoXi = new TH1D(name,title,nbins,aInvMassMin,aInvMassMax);
   fMinvPurityAidHistoXi->Sumw2();
 }
+
+
+void AliFemtoXiTrackCut::SetSidebandAnalysis(bool sideband)
+{
+  fSidebandAnalysis = sideband;
+}
+
+
+void AliFemtoXiTrackCut::SetInvariantMassXiSideband(double min1, double max1, double min2, double max2)
+{
+  fInvMassRange1XiMin = min1;
+  fInvMassRange1XiMax = max1;
+  fInvMassRange2XiMin = min2;
+  fInvMassRange2XiMax = max2;
+}
+
+void AliFemtoXiTrackCut::SetInvariantMassOmegaSideband(double min1, double max1, double min2, double max2)
+{
+  fInvMassRange1OmegaMin = min1;
+  fInvMassRange1OmegaMax = max1;
+  fInvMassRange2OmegaMin = min2;
+  fInvMassRange2OmegaMax = max2;
+}
+
 
 TList *AliFemtoXiTrackCut::GetOutputList()
 {
