@@ -3020,6 +3020,18 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPSigSmearing     = 0.020;
       fPSigSmearingCte  = 0.025;
       break;
+    case 13:     //d
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.0275;
+      fPSigSmearingCte  = 0.035;
+      break;
+    case 14:     //e
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.0275;
+      fPSigSmearingCte  = 0.04;
+      break;
 
     default:
       AliError("Warning: UseMCPSmearing not defined");
