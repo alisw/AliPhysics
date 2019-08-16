@@ -2388,14 +2388,18 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
       (*fConstLabels)[icon] = -1;
       (*fConstFound)[icon] = -1;
       (*fJetPt)[icon] = -1;
-      (*fLeadJetPhi)[icon] = -1;
-      (*fLeadJetEta)[icon] = -1;
-      (*fSubLeadJetPhi)[icon] = -1;
-      (*fSubLeadJetEta)[icon] = -1;
       (*fTrackFound)[icon] = -1;
       AliJBaseTrack *track = dynamic_cast<AliJBaseTrack*>(trackArray->At(icon));
       if (!track) continue;
       (*fTrackPt)[icon] = track->Pt();
+    }
+    int nAnti = fJetListOfList.GetEntries()-fnkt;
+    for( int iLead=0;iLead<nAnti/2;iLead++ ){
+      (*fLeadJetPhi)[iLead] = -1;
+      (*fLeadJetEta)[iLead] = -1;
+      (*fSubLeadJetPhi)[iLead] = -1;
+      (*fSubLeadJetEta)[iLead] = -1;
+
     }
   }
 
