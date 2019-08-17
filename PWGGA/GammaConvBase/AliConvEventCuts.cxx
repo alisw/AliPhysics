@@ -3969,6 +3969,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   // abort if mimicing not enabled
 
   if (!fMimicTrigger) return kTRUE;
+  if(!(fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 10)) return kTRUE;   // not the correct trigger for mimcking
 
     //Get the clusters
     TClonesArray * arrClustersMimic = NULL;
@@ -3989,7 +3990,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     Int_t runnumber = event->GetRunNumber();
     if(!fHistoTriggThresh || fRunNumberTriggerOADB != runnumber){
       fRunNumberTriggerOADB = runnumber;
-      TFile *fileTriggThresh=new TFile(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"read");
+      TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"read");
       if (!fileTriggThresh || fileTriggThresh->IsZombie())
       {
         AliFatal("OADB/PWGGA/EMCalTriggerMimicOADB.root was not found");
