@@ -4024,6 +4024,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 
   // Get individual threshold for every Supermodule (if no Supermodulewise was defined threshold is the same for all SMs)
   Float_t fTriggThresh[20] = {0};
+  fRandom.SetSeed(0);
   for(int iSM = 0; iSM < fHistoTriggThresh->GetNbinsX(); iSM++){
     fTriggThresh[iSM] = fRandom.Gaus(fHistoTriggThresh->GetBinContent(iSM + 1)*0.01, fHistoTriggThresh->GetBinError(iSM + 1)*0.01);
   }
