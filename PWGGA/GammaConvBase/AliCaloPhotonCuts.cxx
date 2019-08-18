@@ -1941,6 +1941,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     }
     if(fUseTimingEfficiencyMCSimCluster==1 && isMC && cluster->E() < 4 && cluster->E() > fMinEnergy){
       TRandom3 random;
+      random.SetSeed(0);
       if( random.Uniform(1) > fFuncTimingEfficiencyMCSimCluster->Eval(cluster->E()) ){
         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
         return kFALSE;
