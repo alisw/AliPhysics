@@ -100,6 +100,7 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   void CreateLabelMap(const AliAODEvent& source);
   Int_t GetNewLabel(Int_t i);
   void FilterMC(const AliAODEvent& source);
+  AliAODVertex* CloneAndStoreVertex(AliAODVertex* toClone);
  
   AliAnalysisCuts* fTrackCuts; // decides which tracks to keep
   AliAnalysisCuts* fV0Cuts;    // decides which V0s to keep
@@ -140,6 +141,9 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
 
   TString fInputArrayName; // name of array if tracks are stored in a TObjectArray
   TString fOutputArrayName; // name of the output array, where the NanoAODTracks are stored
+  
+  std::map<AliAODVertex*, std::vector<TObject*> > fKeepDaughters; //! Tracks needed as references to V0s and cascades
+  std::map<AliAODVertex*, AliAODVertex*> fClonedVertices; //! avoid that vertices are stored several times
 
   AliNanoAODReplicator(const AliNanoAODReplicator&);
   AliNanoAODReplicator& operator=(const AliNanoAODReplicator&);

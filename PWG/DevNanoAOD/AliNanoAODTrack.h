@@ -13,33 +13,6 @@
 //     list of comma separated variables.
 //     Only those variables are actually allocated and saved with the track.
 //     Attempts to use any other variable produces an AliFatal
-//    
-//     Allowed kin var:
-//      pt, theta, phi, chi2perNDF, posx, posy, posz, covmat, posDCAx,
-//      posDCAy, pDCAx, pDCAy, pDCAz, RAtAbsorberEnd, TPCncls, TPCnclsF,
-//      TPCNCrossedRows, TrackPhiOnEMCal, TrackEtaOnEMCal,
-//      TrackPtOnEMCal, ITSsignal, TPCsignal, TPCsignalTuned,
-//      TPCsignalN, TPCmomentum, TPCTgl, TOFsignal, integratedLenght,
-//      TOFsignalTuned, HMPIDsignal, HMPIDoccupancy, TRDsignal,
-//      TRDChi2, TRDnSlices
-
-//    Custom vars
-//      if the var name begins by "cst", it allows to add a track
-//      property not initially foreseen in the Vtrack or in the
-//      original AOD. For instance, you can add the value of the
-//      bayesian probability to be a kaon by using cstKBayes. Custom
-//      variables can be set at once using
-//      AliNanoAODTrack::SetCustomVariables(Double_t *vars), by
-//      providing them in the same order as they are defined. // FIXME: to be implemented
-//
-//
-//     TODO
-//      - Go through class again after implementation
-//      - Decide if you want to create a short or int array
-//      - in the constructor, set the covariant matrix only if requested
-//
-//     INFO/TO BE DECIDED
-//      - I think this should not support muons, since muons have already their specialized AOD class
 //     Author: Michele Floris, CERN
 //-------------------------------------------------------------------------
 
@@ -145,7 +118,7 @@ public:
 
 
   // Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
-  ULong64_t GetStatus() const { AliFatal("Not implemented"); return 0; }
+  ULong64_t GetStatus() const { return (ULong64_t(GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetStatus())) << 32) + GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetStatus()+1); }
   // ULong_t GetFlags() const { return fFlags; }
 
   Int_t   GetID() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetID()); }
@@ -367,9 +340,11 @@ public:
   // Dummy: FIXME why is this dummy?
   Int_t    PdgCode() const {return 0;}
 
+  // Trasient PID object, is owned by the track
+  virtual void  SetDetectorPID(const AliDetectorPID *pid);
+  virtual const AliDetectorPID* GetDetectorPID() const { return fDetectorPID; }
+
   //  needed  to inherit from VTrack, but not implemented
-  virtual void  SetDetectorPID(const AliDetectorPID */*pid*/)  {AliFatal("Not Implemented"); return ;}; 
-  virtual const AliDetectorPID* GetDetectorPID() const {AliFatal("Not Implemented"); return 0;}; 
   virtual UChar_t  GetTRDntrackletsPID() const  { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTRDntrackletsPID()); }; 
   virtual void      GetHMPIDpid(Double_t */*p*/) const  {AliFatal("Not Implemented"); return;}; 
   virtual Double_t GetBz() const  {AliFatal("Not Implemented"); return 0;}; 
@@ -402,6 +377,8 @@ private :
   TRef          fProdVertex;        // vertex of origin
   UInt_t        fNanoFlags;  // nano flags
   
+  mutable const AliDetectorPID* fDetectorPID; //!<! transient object to cache calibrated PID information
+
   static Int_t fgPIDIndexes[ENanoPIDResponse::kLAST][AliPID::kSPECIESC];
   
   const AliAODEvent* fAODEvent;     //! 

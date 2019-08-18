@@ -22,10 +22,16 @@ public:
   virtual ~AliReducedCaloClusterTrackMatcher();
   
   // setters
-  void SetMaximumMatchingDistance(Float_t max) { fMaxMatchingDistance=max; }
-  
+  void SetMaximumMatchingDistance(Float_t max);
+  void SetMaximumMatchingDeltaPhi(Float_t min, Float_t max);
+  void SetMaximumMatchingDeltaPhi(Float_t max);
+  void SetMaximumMatchingDeltaEta(Float_t min, Float_t max);
+  void SetMaximumMatchingDeltaEta(Float_t max);
+
   // getters
   Float_t             GetMaximumMatchingDistance() const { return fMaxMatchingDistance; }
+  void                GetMaximumMatchingDeltaPhi(Float_t &min, Float_t &max) const { min=fMinMatchingDeltaPhi; max=fMaxMatchingDeltaPhi; }
+  void                GetMaximumMatchingDeltaEta(Float_t &min, Float_t &max) const { min=fMinMatchingDeltaEta; max=fMaxMatchingDeltaEta; }
   std::vector<Int_t>  GetMatchedClusterIDsBefore() const { return fMatchedClusterIDsBefore; }
   std::vector<Int_t>  GetMatchedClusterIDsAfter() const { return fMatchedClusterIDsAfter; }
 
@@ -36,11 +42,17 @@ public:
   
 private:
   
+  Bool_t              fUseDistance;               // true: distance used for cluster-track matching
   Float_t             fMaxMatchingDistance;       // maximum distance for cluster-track matching
+  Bool_t              fUseDeltaEtaDeltaPhi;       // true: delta eta, delta phi used for cluster-track matching
+  Float_t             fMinMatchingDeltaPhi;       // minimum distance in phi for cluster-track matching
+  Float_t             fMaxMatchingDeltaPhi;       // maximum distance in phi for cluster-track matching
+  Float_t             fMinMatchingDeltaEta;       // minimum distance in eta for cluster-track matching
+  Float_t             fMaxMatchingDeltaEta;       // maximum distance in eta for cluster-track matching
   std::vector<Int_t>  fMatchedClusterIDsBefore;   // cluster IDs before matching
   std::vector<Int_t>  fMatchedClusterIDsAfter;    // cluster IDs after matching
 
-  ClassDef(AliReducedCaloClusterTrackMatcher, 1)
+  ClassDef(AliReducedCaloClusterTrackMatcher, 2)
 };
 
 #endif

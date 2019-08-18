@@ -27,6 +27,8 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
   fDoSigmaPtOverPtGen(kFALSE),
   fDoSeparateTRDrefit(kFALSE),
   fUseTRDUpdateFlag(kTRUE),
+  fUseQOverPtShift(kFALSE),
+  fQOverPtShift(0),
   fIsEsd(kFALSE),
   fGeneratorLevel(nullptr),
   fDetectorLevel(nullptr),
@@ -464,7 +466,14 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
       // reject particles generated from other generators in the cocktail but keep fake tracks (label == 0)
       if (label == 0 || track->GetGeneratorIndex() <= 0) mcGen = 0;
 
-      FillDetectorLevelTHnSparse(fCent, track->Eta(), track->Phi(), track->Pt(), sigma, mcGen, type, track->Charge());
+      double pt = track->Pt();
+      if(fUseQOverPtShift) {
+        double chargeval = track->Charge() > 0 ? 1. : -1.;
+        pt = 1./(fQOverPtShift*chargeval  + 1./pt);
+        AliDebugStream(1) <<  "Applying q/pt shift " << fQOverPtShift << ", before shift: " << track->Pt() << ", after shift: " << pt << std::endl;
+      }
+
+      FillDetectorLevelTHnSparse(fCent, track->Eta(), track->Phi(), pt, sigma, mcGen, type, track->Charge());
 
       if (fGeneratorLevel && label > 0) {
         AliAODMCParticle *part =  fGeneratorLevel->GetAcceptMCParticleWithLabel(label);

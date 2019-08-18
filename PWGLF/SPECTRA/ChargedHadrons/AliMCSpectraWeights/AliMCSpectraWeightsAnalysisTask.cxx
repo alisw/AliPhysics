@@ -35,6 +35,9 @@ AliMCSpectraWeightsAnalysisTask::AliMCSpectraWeightsAnalysisTask() : AliAnalysis
   // fstMCTrainOutput(""),
   fHistMCPartCorr(0),
   fHistMCGenPrimTrack(0),
+  fHistMCFractions(0),
+  fHistDataFractions(0),
+  fHistMCWeights(0),
   fBinsMultCent(0),
   fBinsPt(0),
   fBinsEta(0),
@@ -59,6 +62,9 @@ AliMCSpectraWeightsAnalysisTask::AliMCSpectraWeightsAnalysisTask(const char *nam
   // fstMCTrainOutput(""),
   fHistMCPartCorr(0),
   fHistMCGenPrimTrack(0),
+  fHistMCFractions(0),
+  fHistDataFractions(0),
+  fHistMCWeights(0),
   fBinsMultCent(0),
   fBinsPt(0),
   fBinsEta(0),
@@ -87,7 +93,7 @@ void AliMCSpectraWeightsAnalysisTask::UserCreateOutputObjects(){
   fOutputList = new TList();
   fOutputList -> SetOwner();
   if(fIsMC && fMCSpectraWeights){
-    printf("AliMCSpectraWeightsAnalysisTask:: Having non zero AliMCSpectraWeights obj\n");
+    // printf("AliMCSpectraWeightsAnalysisTask:: Having non zero AliMCSpectraWeights obj\n");
     if(fDebugLevel>0) printf("AliMCSpectraWeightsAnalysisTask:: obj status: %d\n", fMCSpectraWeights->GetTaskStatus());
     /// Standard track histogram pt:eta:zV:multcent
     Int_t nBinsTrack[4]={fBinsPt->GetSize()-1,fBinsEta->GetSize()-1,fBinsZv->GetSize()-1,fBinsMultCent->GetSize()-1};
@@ -106,12 +112,18 @@ void AliMCSpectraWeightsAnalysisTask::UserCreateOutputObjects(){
     fHistMCGenPrimTrack -> Sumw2();
 
     fHistMCPartCorr = fMCSpectraWeights->GetHistMCGenPrimTrackParticles();
+    fHistDataFractions = fMCSpectraWeights->GetHistDataFraction();
+    fHistMCFractions = fMCSpectraWeights->GetHistMCFraction();
+    fHistMCWeights = fMCSpectraWeights->GetHistMCWeights();
 
     fOutputList->Add(fHistMCGenPrimTrack);
     fOutputList->Add(fHistMCPartCorr);
-    fOutputList->Add(fMCSpectraWeights);
+    fOutputList->Add(fHistDataFractions);
+    fOutputList->Add(fHistMCFractions);
+    fOutputList->Add(fHistMCWeights);
+    // fOutputList->Add(fMCSpectraWeights);
   }
-  else printf("AliMCSpectraWeightsAnalysisTask:: Either running not MC or object of AliMCSpectraWeights is null pointer\n");
+  // else printf("AliMCSpectraWeightsAnalysisTask:: Either running not MC or object of AliMCSpectraWeights is null pointer\n");
 
   PostData(1, fOutputList);
 }
@@ -140,13 +152,13 @@ void AliMCSpectraWeightsAnalysisTask::UserExec(Option_t *option){
   Double_t zVertEvent = fEvent->GetPrimaryVertex()->GetZ();
   if(TMath::Abs(zVertEvent) > 10.) return;
 
-  Double_t multEvent = AliMCSpectraWeightsAnalysisTask::GetEventMultCent(fEvent);
+  // Double_t multEvent = AliMCSpectraWeightsAnalysisTask::GetEventMultCent(fEvent);
 
-  if(fDebugLevel>0) printf("AliMCSpectraWeightsAnalysisTask:: Event got accepted; now analysing\n");
+  // if(fDebugLevel>0) printf("AliMCSpectraWeightsAnalysisTask:: Event got accepted; now analysing\n");
 
   ///------------------- Loop over Generated Tracks (True MC)------------------------------
   if(fMCSpectraWeights->GetTaskStatus()<AliMCSpectraWeights::TaskState::kMCSpectraObtained)
-    fMCSpectraWeights->FillMCSpectra(fMCEvent, multEvent);
+    fMCSpectraWeights->FillMCSpectra(fMCEvent);
   else for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
     if(!fMCStack->IsPhysicalPrimary(iParticle)) continue; //reject non physical primaries;
     TParticle *mcGenParticle = fMCStack->Particle(iParticle);
@@ -164,9 +176,9 @@ void AliMCSpectraWeightsAnalysisTask::UserExec(Option_t *option){
     // pt range of published spectra
     if(pt < 0.15) continue;
     if(pt > 50) continue;
-    Double_t dWeight = fMCSpectraWeights->GetMCSpectraWeight(mcGenParticle ,multEvent);
+    Double_t dWeight = fMCSpectraWeights->GetMCSpectraWeight(mcGenParticle ,fMCEvent);
     if(fDebugLevel>0) printf("AliMCSpectraWeightsAnalysisTask:: got weight factor %lf for pid: %d\n", dWeight, mcGenParticle->GetPdgCode());
-    Double_t mcGenPrimTrackValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), zVertEvent, multEvent};
+    Double_t mcGenPrimTrackValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), zVertEvent, fMCSpectraWeights->GetMultOrCent()};
     fHistMCGenPrimTrack->Fill(mcGenPrimTrackValue, dWeight);
   }
   PostData(1, fOutputList);

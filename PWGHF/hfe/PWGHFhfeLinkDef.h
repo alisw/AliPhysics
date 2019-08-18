@@ -65,6 +65,7 @@
 #pragma link C++ class  AliHFEpidObject+;
 #pragma link C++ class  AliAnalysisTaskEHCorrel+;
 #pragma link C++ class  AliAnalysisTaskFlowTPCEMCalEP+;
+#pragma link C++ class  AliAnalysisTaskFlowTPCEMCalRun2+;
 #pragma link C++ class  AliAnalysisTaskHFECal+;
 #pragma link C++ class  AliAnalysisTaskEMCalHFEpA+;
 
@@ -129,4 +130,7 @@
 #pragma link C++ class  AliAnalysisTaskHFEBESpectraEMC+;
 
 #pragma link C++ class  AliAnalysisTaskHFETPCTOFMultiplicity+;
+#pragma link C++ class  AliAnalysisTaskQAHFE+;
+#pragma link C++ class  AliAnalysisTask_QA_EMCALElectrons+;
+#pragma link C++ class  AliAnalysisTaskHFEmultTPCEMCAL+;
 #endif

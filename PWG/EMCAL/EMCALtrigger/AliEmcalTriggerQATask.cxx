@@ -384,6 +384,7 @@ TObjArray AliEmcalTriggerQATask::AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber)
     tasks.Add(task);
     task->SetForceBeamType(beam);
     task->AddAcceptedTriggerClass(triggerClass.c_str());
+    task->SetWarnMissingCentrality(kFALSE);
     if (runnumber > 197692) {
       task->SetCentralityEstimation(kNewCentrality);
     }

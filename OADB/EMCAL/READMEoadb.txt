@@ -82,5 +82,15 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20190417: Update of EMCALBadChannels.root with additional bad channels for LHC18p
 - 20190423: Update of EMCALBadChannels.root with additional bad channels for LHC18d,j,k,l
 - 20190429: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with calibs for LHC18q,r
+- 20190513: Update of EMCALBadChannels.root with remaining run range for LHC18r bad channels
+- 20190520: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with calibs for remaining runs of LHC18r
+- 20190528: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC18q,r
+- 20190612: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC17n (XeXe)
+- 20190612: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated calibs for LHC17g, LHC18g and LHC18n (lower thresholds)
+- 20190617: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated calibs for LHC15o (with BC maps and good runs)
+- 20190626: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC18q and r (second update)
+- 20190716: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC18g (split in three ranges) and LHC18n
+- 20190722: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated calibs for LHC17f and new calibs for LHC16f_lowB
+- 20190722: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC17g and LHC18c
 
 */

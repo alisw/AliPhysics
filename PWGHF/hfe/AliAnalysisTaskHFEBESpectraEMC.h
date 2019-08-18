@@ -54,6 +54,7 @@ public:
     void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
     void GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
     
+    void    SetTrackMatchPar(Double_t deltaEta, Double_t deltaPhi){fDeltaEta = deltaEta; fDeltaPhi = deltaPhi;};
     void    SetM02Cut(Double_t m02Min, Double_t m02Max1, Double_t m02Max2) {fM02Min = m02Min; fM02Max1 = m02Max1; fM02Max2 = m02Max2;};
     void    SetM20Cut(Double_t m20Min, Double_t m20Max) {fM20Min = m20Min; fM20Max = m20Max;};
     void    SetEovPCut(Double_t eovpMin, Double_t eovpMax) {fEovPMin = eovpMin; fEovPMax = eovpMax;};
@@ -94,6 +95,7 @@ public:
     void    RecalImpactParam(const AliVTrack * const track, Double_t dz[2], Double_t covar[3]);
     AliAODVertex*   RemoveDaughtersFromPrimaryVtx(const AliVTrack * const track);
     
+    
 private:
     enum{
         kAODanalysis = BIT(20),
@@ -126,16 +128,18 @@ private:
     
     Bool_t              fRecalIP;//
     
-    Double_t            fTPCnSigma;//!
-    Double_t            fTPCnSigmaMin;//!
-    Double_t            fTPCnSigmaMax;//!
-    Double_t            fM02Min;//!
-    Double_t            fM02Max1;//!
-    Double_t            fM02Max2;//!
-    Double_t            fM20Min;//!
-    Double_t            fM20Max;//!
-    Double_t            fEovPMin;//!
-    Double_t            fEovPMax;//!
+    Double_t            fDeltaEta;//
+    Double_t            fDeltaPhi;//
+    Double_t            fTPCnSigma;//
+    Double_t            fTPCnSigmaMin;//
+    Double_t            fTPCnSigmaMax;//
+    Double_t            fM02Min;//
+    Double_t            fM02Max1;//
+    Double_t            fM02Max2;//
+    Double_t            fM20Min;//
+    Double_t            fM20Max;//
+    Double_t            fEovPMin;//
+    Double_t            fEovPMax;//
     Int_t               fNEle;//!
     Double_t            fTPCnSigmaHadMin;//
     Double_t            fTPCnSigmaHadMax;//
@@ -240,7 +244,9 @@ private:
     TH1F                *fInclsElecPt;//!
     TH1F                *fHadPt_AftEID;//!
     TH2F                *fHadEovp_AftEID;//!
+    TH2F                *fHadEovpNL_AftEID;//!
     TH2F                *fEop_AftEID;//!
+    TH2F                *fEopNL_AftEID;//!
     TH1F                *fNElecInEvt;//!
     TH1F                *fULSElecPt;//!
     TH1F                *fLSElecPt;//!

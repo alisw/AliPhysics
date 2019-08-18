@@ -193,18 +193,28 @@ public:
   static AliFemtoConfigObject ParseWithDefaults(const std::string &, const AliFemtoConfigObject &defaults);
 
   /// Create object in empty state
-  AliFemtoConfigObject();
+  AliFemtoConfigObject():
+    TObject()
+    , fTypeTag(kEMPTY)
+    , fPainter(NULL)
+    {
+    }
 
   /// Construct from TObject
-  AliFemtoConfigObject(const TObject *);
-  AliFemtoConfigObject(const TObject &);
-
+  AliFemtoConfigObject(const TObject *ptr);
+  AliFemtoConfigObject(const TObject &orig);
 
   /// Calls destructor on internal data
   virtual ~AliFemtoConfigObject();
 
   /// Copy value
-  AliFemtoConfigObject(AliFemtoConfigObject const &);
+  AliFemtoConfigObject(AliFemtoConfigObject const &orig):
+    TObject(orig)
+    , fTypeTag(kEMPTY)
+    , fPainter(NULL)
+    {
+      _CopyConstructValue(orig);
+    }
 
   /// Assign value
   AliFemtoConfigObject& operator=(AliFemtoConfigObject const &);
@@ -250,13 +260,60 @@ public:
 #ifdef ENABLE_MOVE_SEMANTICS
 
   /// Move constructor
-  AliFemtoConfigObject(AliFemtoConfigObject &&);
+  AliFemtoConfigObject(AliFemtoConfigObject &&orig):
+    TObject(orig)
+    , fTypeTag(kEMPTY)
+    , fPainter(nullptr)
+    {
+      _MoveConstructValue(std::move(orig));
+      /*
+      std::swap(fPainter, orig.fPainter);
+      if (fPainter) {
+        fPainter->ResetData(this);
+      }
+      */
+    }
 
   /// Move assignment
-  AliFemtoConfigObject& operator=(AliFemtoConfigObject &&rhs);
+  AliFemtoConfigObject& operator=(AliFemtoConfigObject &&rhs)
+    {
+      // not same type - destroy data and move
+      if (rhs.fTypeTag != fTypeTag) {
+        _DeleteValue();
+        _MoveConstructValue(std::move(rhs));
+      }
+      // same type - can move-assign data
+      else {
+        switch (rhs.fTypeTag) {
+          case kEMPTY: break;
+          case kBOOL: fValueBool = std::move(rhs.fValueBool); break;
+          case kFLOAT: fValueFloat = std::move(rhs.fValueFloat); break;
+          case kINT: fValueInt = std::move(rhs.fValueInt); break;
+          case kSTRING: fValueString = std::move(rhs.fValueString); break;
+          case kARRAY: fValueArray = std::move(rhs.fValueArray); break;
+          case kMAP: fValueMap = std::move(rhs.fValueMap); break;
+          case kRANGE: fValueRange = std::move(rhs.fValueRange); break;
+          case kRANGELIST: fValueRangeList = std::move(rhs.fValueRangeList); break;
+        }
+
+        rhs._DeleteValue();
+      }
+
+      // unsure if this is proper behavior
+      /*
+      delete fPainter;
+      fPainter = nullptr;
+      std::swap(fPainter, rhs.fPainter);
+      if (fPainter) {
+        fPainter->ResetData(this);
+      }
+      */
+
+      return *this;
+    }
 
   #define ConstructorDef(__type, __tag, __dest) AliFemtoConfigObject(__type &&v): fTypeTag(__tag), __dest(std::move(v)), fPainter(nullptr) { }
-    FORWARD_STANDARD_TYPES(ConstructorDef);
+    FORWARD_STANDARD_TYPES(ConstructorDef)
   #undef ConstructorDef
 
 #endif // move-semantics
@@ -662,6 +719,25 @@ public:
     StringValue_t pop_str(const Key_t &key, const char* _default)
       { StringValue_t res(_default); pop_and_load(key, res); return res; }
 
+    /// Pop generic number (int or float) out of object
+    FloatValue_t pop_num(const Key_t &key, FloatValue_t _default=NAN)
+      {
+        double res(_default);
+        if (const AliFemtoConfigObject *found = find(key)) {
+          if (found->is_float()) {
+            res = found->as_float();
+          }
+          else if (found->is_int()) {
+            res = found->as_int();
+          }
+          else {
+            return _default;
+          }
+          pop(key);
+        }
+        return res;
+      }
+
   #undef IMPL_POP_ITEM
 
 
@@ -931,8 +1007,12 @@ public:
   Popper pop_all() const
     { return Popper(*this); }
 
+  /// Return a pointer to new config object with values copied
+  virtual AliFemtoConfigObject* Clone(const char *newname="") const
+    { return new AliFemtoConfigObject(*this); }
+
   /// Return a new config object with values copied
-  AliFemtoConfigObject Clone() const
+  AliFemtoConfigObject DeepCopy() const
     { return AliFemtoConfigObject(*this); }
 
   /// return a string of valid JSON that may be parsed by other
@@ -1087,7 +1167,9 @@ private:
   void _MoveConstructValue(AliFemtoConfigObject &&);
 #endif
 
+  /// \cond CLASSIMP
   ClassDef(AliFemtoConfigObject, 1);
+  /// \endcond
 };
 
 
@@ -1190,7 +1272,6 @@ AliFemtoConfigObject::~AliFemtoConfigObject()
   delete fPainter;
 }
 
-
 inline
 void AliFemtoConfigObject::_DeleteValue()
 {
@@ -1259,23 +1340,6 @@ void AliFemtoConfigObject::_MoveConstructValue(AliFemtoConfigObject &&src)
 #endif
 
 inline
-AliFemtoConfigObject::AliFemtoConfigObject():
-  TObject()
-  , fTypeTag(kEMPTY)
-  , fPainter(NULL)
-{
-}
-
-inline
-AliFemtoConfigObject::AliFemtoConfigObject(AliFemtoConfigObject const &orig):
-  TObject(orig)
-  , fTypeTag(kEMPTY)
-  , fPainter(NULL)
-{
-  _CopyConstructValue(orig);
-}
-
-inline
 AliFemtoConfigObject&
 AliFemtoConfigObject::operator=(AliFemtoConfigObject const &rhs)
 {
@@ -1309,65 +1373,6 @@ AliFemtoConfigObject::operator=(AliFemtoConfigObject const &rhs)
   }
   return *this;
 }
-
-
-#ifdef ENABLE_MOVE_SEMANTICS
-
-inline
-AliFemtoConfigObject::AliFemtoConfigObject(AliFemtoConfigObject &&orig):
-  TObject(orig)
-  , fTypeTag(kEMPTY)
-  , fPainter(nullptr)
-{
-  _MoveConstructValue(std::move(orig));
-  /*
-  std::swap(fPainter, orig.fPainter);
-  if (fPainter) {
-    fPainter->ResetData(this);
-  }
-  */
-}
-
-/// Move assignment-operator
-inline
-AliFemtoConfigObject& AliFemtoConfigObject::operator=(AliFemtoConfigObject &&rhs)
-{
-  // not same type - destroy data and move
-  if (rhs.fTypeTag != fTypeTag) {
-    _DeleteValue();
-    _MoveConstructValue(std::move(rhs));
-  }
-  // same type - can move-assign data
-  else {
-    switch (rhs.fTypeTag) {
-      case kEMPTY: break;
-      case kBOOL: fValueBool = std::move(rhs.fValueBool); break;
-      case kFLOAT: fValueFloat = std::move(rhs.fValueFloat); break;
-      case kINT: fValueInt = std::move(rhs.fValueInt); break;
-      case kSTRING: fValueString = std::move(rhs.fValueString); break;
-      case kARRAY: fValueArray = std::move(rhs.fValueArray); break;
-      case kMAP: fValueMap = std::move(rhs.fValueMap); break;
-      case kRANGE: fValueRange = std::move(rhs.fValueRange); break;
-      case kRANGELIST: fValueRangeList = std::move(rhs.fValueRangeList); break;
-    }
-
-    rhs._DeleteValue();
-  }
-
-  // unsure if this is proper behavior
-  /*
-  delete fPainter;
-  fPainter = nullptr;
-  std::swap(fPainter, rhs.fPainter);
-  if (fPainter) {
-    fPainter->ResetData(this);
-  }
-  */
-
-  return *this;
-}
-
-#endif // move-semantics
 
 /*
 template <>

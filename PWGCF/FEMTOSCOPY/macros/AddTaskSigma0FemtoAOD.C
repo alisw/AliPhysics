@@ -247,6 +247,9 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoAOD(bool isMC = false, bool MomRes = false,
   antiv0Cuts->SetPDGCodeNegDaug(2212);  // Proton
   antiv0Cuts->SetPDGCodev0(-3122);      // Lambda
 
+  AliSigma0PhotonCuts *photon = AliSigma0PhotonCuts::PhotonCuts();
+  photon->SetV0ReaderName(V0ReaderName.Data());
+
   AliSigma0AODPhotonMotherCuts *sigmaCuts =
       AliSigma0AODPhotonMotherCuts::DefaultCuts();
   sigmaCuts->SetIsMC(isMC);
@@ -459,6 +462,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoAOD(bool isMC = false, bool MomRes = false,
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetV0Cuts(v0Cuts);
   task->SetAntiV0Cuts(antiv0Cuts);
+  task->SetPhotonCuts(photon);
   task->SetSigmaCuts(sigmaCuts);
   task->SetAntiSigmaCuts(antiSigmaCuts);
   task->SetCollectionConfig(config);

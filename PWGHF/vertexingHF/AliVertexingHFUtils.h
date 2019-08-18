@@ -172,6 +172,10 @@ class AliVertexingHFUtils : public TObject{
   static Int_t CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckBplusDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckLbDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckLbDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
 
 
   /// Simultaneus fit

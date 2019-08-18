@@ -20,7 +20,6 @@
 
 ClassImp(AliAnalysisTaskRhoSparse)
 
-//________________________________________________________________________
 AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse() : 
   AliAnalysisTaskRhoBase("AliAnalysisTaskRhoSparse"),
   fNExclLeadJets(0),
@@ -30,10 +29,8 @@ AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse() :
   fExcludeAreaExcludedJets(0),
   fHistOccCorrvsCent(0)
 {
-  // Constructor.
 }
 
-//________________________________________________________________________
 AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoBase(name, histo),
   fNExclLeadJets(0),
@@ -43,10 +40,8 @@ AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse(const char *name, Bool_t hist
   fExcludeAreaExcludedJets(0),
   fHistOccCorrvsCent(0)
 {
-  // Constructor.
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskRhoSparse::UserCreateOutputObjects()
 {
   if (!fCreateHisto) return;
@@ -57,7 +52,6 @@ void AliAnalysisTaskRhoSparse::UserCreateOutputObjects()
   fOutput->Add(fHistOccCorrvsCent);
 }
 
-//________________________________________________________________________
 Bool_t AliAnalysisTaskRhoSparse::IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2)
 {
   for (Int_t i = 0; i < jet1->GetNumberOfTracks(); ++i)
@@ -73,7 +67,6 @@ Bool_t AliAnalysisTaskRhoSparse::IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet
   return kFALSE;
 }
 
-//________________________________________________________________________
 Bool_t AliAnalysisTaskRhoSparse::IsJetSignal(AliEmcalJet* jet)
 {
   if(jet->Pt()>5){
@@ -83,10 +76,8 @@ Bool_t AliAnalysisTaskRhoSparse::IsJetSignal(AliEmcalJet* jet)
   }
 }
 
-//________________________________________________________________________
 Bool_t AliAnalysisTaskRhoSparse::Run() 
 {
-  // Run the analysis.
 
   fOutRho->SetVal(0);
   if (fOutRhoScaled)
@@ -248,9 +239,6 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
 
   return kTRUE;
 } 
-/**
- * Rho Sparse AddTask.
- */
 
 AliAnalysisTaskRhoSparse* AliAnalysisTaskRhoSparse::AddTaskRhoSparse(
     const char    *nTracks,

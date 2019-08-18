@@ -109,7 +109,7 @@ using std::endl;
 ClassImp(AliAnalysisTaskWeakDecayVertexer)
 
 AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer()
-: AliAnalysisTaskSE(), fListHist(0), fPIDResponse(0), fEventCuts(), fTrackTriggerCuts(nullptr), fTriggerParticleType(), fTriggerNsigma(5),
+: AliAnalysisTaskSE(), fListHist(0), fPIDResponse(0),
 //________________________________________________
 //Options for general task operation
 fTrigType(AliVEvent::kMB),
@@ -170,7 +170,7 @@ fHistV0Statistics(0)
 }
 
 AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer(const char *name, TString lExtraOptions)
-: AliAnalysisTaskSE(name), fListHist(0), fPIDResponse(0), fEventCuts(), fTrackTriggerCuts(nullptr), fTriggerParticleType(), fTriggerNsigma(5),
+: AliAnalysisTaskSE(name), fListHist(0), fPIDResponse(0),
 //________________________________________________
 //Options for general task operation
 fTrigType(AliVEvent::kMB),
@@ -484,15 +484,10 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     Info("UserExec","Number of pre-reco'ed V0 vertices: %i",nv0s);
     
     if( fkRunV0Vertexer ){
-        if ( !fkUseOptimalTrackParams ){
-            //reset all V0s, please
-            lESDevent->ResetV0s();
-        }else{
-            //reset only offline V0s, please
-            //important: reset cascades or RemoveV0s will NOT DO IT
-            lESDevent->ResetCascades();
-            SelectiveResetV0s(lESDevent, 0);
-        }
+        //reset only offline V0s, please
+        //important: reset cascades or RemoveV0s will NOT DO IT
+        lESDevent->ResetCascades();
+        SelectiveResetV0s(lESDevent, 0);
         if( !fkMonteCarlo ){
             Tracks2V0vertices(lESDevent);
         }else{
@@ -649,9 +644,12 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
     Double_t b=event->GetMagneticField();
     
     if (nentr<2) return 0;
-
-    std::vector<Long_t> indices[2][2]; /// 0 -> negative, 1 -> positive, 0 -> normal, 1 -> triggered
-
+    
+    TArrayI neg(nentr);
+    TArrayI pos(nentr);
+    
+    Long_t nneg=0, npos=0, nvtx=0;
+    
     Long_t i;
     for (i=0; i<nentr; i++) {
         AliESDtrack *esdTrack=event->GetTrack(i);
@@ -666,161 +664,149 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 &&fkExtraCleanup ) continue;
         
         Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
-        if (TMath::Abs(d)<fV0VertexerSels[2]) continue;
-        if (TMath::Abs(d)>fV0VertexerSels[6]) continue;
         
-        int isPos = esdTrack->GetSign() > 0.;
-        indices[isPos][0].push_back(i);
-        if (fTrackTriggerCuts) {
-           if (fTrackTriggerCuts->AcceptTrack(esdTrack) && 
-               std::abs(fPIDResponse->NumberOfSigmasTPC(esdTrack, fTriggerParticleType)) < fTriggerNsigma) {
-               indices[isPos][1].push_back(i);
-           }
-        }
+        //Select on single-track to PV DCA here, do not call that O(N^2)
+        if (esdTrack->GetSign() < 0. && TMath::Abs(d)>fV0VertexerSels[1]) neg[nneg++]=i;
+        if (esdTrack->GetSign() > 0. && TMath::Abs(d)>fV0VertexerSels[2]) pos[npos++]=i;
     }
-
-    Long_t nvtx{0l};
-    int useTrigger = fTrackTriggerCuts ? 1 : 0;
-    for (int trgIter = 0; trgIter < 1 + useTrigger; ++trgIter) {
-        for (Long_t nidx : indices[0][trgIter % 2]) {
-            AliESDtrack *ntrk=event->GetTrack(nidx);
-            if(!ntrk) continue;
+    
+    for (i=0; i<nneg; i++) {
+        Long_t nidx=neg[i];
+        AliESDtrack *ntrk=event->GetTrack(nidx);
+        if(!ntrk) continue;
+        
+        for (Int_t k=0; k<npos; k++) {
+            Int_t pidx=pos[k];
+            AliESDtrack *ptrk=event->GetTrack(pidx);
+            if(!ptrk) continue;
             
-            for (Long_t pidx : indices[1][(trgIter + useTrigger) % 2]) {
-                AliESDtrack *ptrk=event->GetTrack(pidx);
-                if(!ptrk) continue;
-                
-                fHistV0Statistics->Fill(0.5); //number of considered pairs
-                
-                Double_t lNegMassForTracking = ntrk->GetMassForTracking();
-                Double_t lPosMassForTracking = ptrk->GetMassForTracking();
-                
-                if (TMath::Abs(ntrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[1])
-                    if (TMath::Abs(ptrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[2]) continue;
-                
-                fHistV0Statistics->Fill(1.5); //pass distance to PV
-                
-                AliExternalTrackParam nt(*ntrk), pt(*ptrk);
-                Bool_t lUsedOptimalParams = kFALSE;
-                
-                if( fkUseOptimalTrackParams ){
-                    //reroute to pointers obtained with on-the-fly finding, please
-                    map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(nidx,pidx));
-                    if(iter != fOTFMap.end())
-                    {
-                        Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
-                        AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
-                        if(!v0_otf){
-                            AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
-                            fHistV0OptimalTrackParamUse->Fill(2.5);
-                        }else{
-                            AliExternalTrackParam ptimproved(*(v0_otf->GetParamP()));
-                            AliExternalTrackParam ntimproved(*(v0_otf->GetParamN()));
-                            if( v0_otf->GetParamP()->Charge() > 0 && v0_otf->GetParamN()->Charge() < 0 ) {
-                                //V0 daughter track swapping is required! Note: everything is swapped here... P->N, N->P
-                                pt = ptimproved;
-                                nt = ntimproved;
-                            }else{
-                                //swap charges if charges are swapped
-                                pt = ntimproved;
-                                nt = ptimproved;
-                            }
-                            fHistV0OptimalTrackParamUse->Fill(1.5);
-                            lUsedOptimalParams=kTRUE;
-                        }
+            fHistV0Statistics->Fill(0.5); //number of considered pairs
+            
+            Double_t lNegMassForTracking = ntrk->GetMassForTracking();
+            Double_t lPosMassForTracking = ptrk->GetMassForTracking();
+            
+            fHistV0Statistics->Fill(1.5); //pass distance to PV
+            
+            AliExternalTrackParam nt(*ntrk), pt(*ptrk);
+            Bool_t lUsedOptimalParams = kFALSE;
+            
+            if( fkUseOptimalTrackParams ){
+                //reroute to pointers obtained with on-the-fly finding, please
+                map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(nidx,pidx));
+                if(iter != fOTFMap.end())
+                {
+                    Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
+                    AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
+                    if(!v0_otf){
+                        AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
+                        fHistV0OptimalTrackParamUse->Fill(2.5);
                     }else{
-                        //OTF not available for this pair
-                        fHistV0OptimalTrackParamUse->Fill(0.5);
+                        AliExternalTrackParam ptimproved(*(v0_otf->GetParamP()));
+                        AliExternalTrackParam ntimproved(*(v0_otf->GetParamN()));
+                        if( v0_otf->GetParamP()->Charge() > 0 && v0_otf->GetParamN()->Charge() < 0 ) {
+                            //V0 daughter track swapping is required! Note: everything is swapped here... P->N, N->P
+                            pt = ptimproved;
+                            nt = ntimproved;
+                        }else{
+                            //swap charges if charges are swapped
+                            pt = ntimproved;
+                            nt = ptimproved;
+                        }
+                        fHistV0OptimalTrackParamUse->Fill(1.5);
+                        lUsedOptimalParams=kTRUE;
                     }
-                }
-                AliExternalTrackParam *ntp=&nt, *ptp=&pt;
-                Double_t xn, xp, dca;
-                
-                //Improved call: use own function, including XY-pre-opt stage
-                
-                //Re-propagate to closest position to the primary vertex if asked to do so
-                if (fkResetInitialPositions){
-                    Double_t dztemp[2], covartemp[3];
-                    //Safety margin: 250 -> exceedingly large... not sure this makes sense, but ok
-                    ntp->PropagateToDCA( vtxT3D , b , 250, dztemp, covartemp );
-                    ptp->PropagateToDCA( vtxT3D , b , 250, dztemp, covartemp );
-                }
-                
-                if( fkDoImprovedDCAV0DauPropagation ){
-                    //Improved: use own call
-                    dca=GetDCAV0Dau(ptp, ntp, xp, xn, b, lNegMassForTracking, lPosMassForTracking);
                 }else{
-                    //Old: use old call
-                    dca=nt.GetDCA(&pt,b,xn,xp);
+                    //OTF not available for this pair
+                    fHistV0OptimalTrackParamUse->Fill(0.5);
                 }
-                
-                if (dca > fV0VertexerSels[3]) continue;
-                
-                fHistV0Statistics->Fill(2.5); //pass dca
-                
-                if ((xn+xp) > 2*fV0VertexerSels[6] && fkPreselectX) continue;
-                if ((xn+xp) < 2*fV0VertexerSels[5] && fkPreselectX) continue;
-                
-                fHistV0Statistics->Fill(3.5); //pass X within R2D cut
-                
-                if(!fkDoMaterialCorrection){
-                    nt.PropagateTo(xn,b);
-                    pt.PropagateTo(xp,b);
-                }else{
-                    AliExternalTrackParam *ntp=&nt, *ptp=&pt;
-                    AliTrackerBase::PropagateTrackTo(ntp, xn, lNegMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
-                    AliTrackerBase::PropagateTrackTo(ptp, xp, lPosMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
-                }
-                
-                //select maximum eta range (after propagation)
-                if (TMath::Abs(nt.Eta())>0.8&&fkExtraCleanup) continue;
-                if (TMath::Abs(pt.Eta())>0.8&&fkExtraCleanup) continue;
-                
-                fHistV0Statistics->Fill(4.5); //pass eta cut
-                
-                AliESDv0 vertex(nt,nidx,pt,pidx);
-                
-                //Experimental: refit V0 if asked to do so
-                if( fkDoV0Refit ) vertex.Refit();
-                
-                //No selection: it was not previously applied, don't  apply now.
-                //if (vertex.GetChi2V0() > fChi2max) continue;
-                
-                Double_t x=vertex.Xv(), y=vertex.Yv();
-                Double_t r2=x*x + y*y;
-                if (r2 < fV0VertexerSels[5]*fV0VertexerSels[5]) continue;
-                if (r2 > fV0VertexerSels[6]*fV0VertexerSels[6]) continue;
-                
-                fHistV0Statistics->Fill(5.5); //pass radius cut
-                
-                Float_t cpa=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
-                
-                //Simple cosine cut (no pt dependence for now)
-                if (cpa < fV0VertexerSels[4]) continue;
-                
-                fHistV0Statistics->Fill(6.5); //pass cosPA
-                
-                vertex.SetDcaV0Daughters(dca);
-                vertex.SetV0CosineOfPointingAngle(cpa);
-                vertex.ChangeMassHypothesis(kK0Short);
-                
-                //pre-select on pT
-                Double_t lMomX       = 0. , lMomY = 0., lMomZ = 0.;
-                Double_t lTransvMom  = 0. ;
-                vertex.GetPxPyPz( lMomX, lMomY, lMomZ );
-                lTransvMom      = TMath::Sqrt( lMomX*lMomX   + lMomY*lMomY );
-                if(lTransvMom<fMinPtV0) continue;
-                if(lTransvMom>fMaxPtV0) continue;
-                
-                fHistV0Statistics->Fill(7.5); //within pT range
-                if (lUsedOptimalParams) fHistV0Statistics->Fill(8.5); //good V0, used OTF params
-                
-                event->AddV0(&vertex);
-                
-                nvtx++;
-                
-                //if ( nvtx % 10000 ) gObjectTable->Print(); //debug, REMOVE ME PLEASE
             }
+            AliExternalTrackParam *ntp=&nt, *ptp=&pt;
+            Double_t xn, xp, dca;
+            
+            //Improved call: use own function, including XY-pre-opt stage
+            
+            //Re-propagate to closest position to the primary vertex if asked to do so
+            if (fkResetInitialPositions){
+                Double_t dztemp[2], covartemp[3];
+                //Safety margin: 250 -> exceedingly large... not sure this makes sense, but ok
+                ntp->PropagateToDCA( vtxT3D , b , 250, dztemp, covartemp );
+                ptp->PropagateToDCA( vtxT3D , b , 250, dztemp, covartemp );
+            }
+            
+            if( fkDoImprovedDCAV0DauPropagation ){
+                //Improved: use own call
+                dca=GetDCAV0Dau(ptp, ntp, xp, xn, b, lNegMassForTracking, lPosMassForTracking);
+            }else{
+                //Old: use old call
+                dca=nt.GetDCA(&pt,b,xn,xp);
+            }
+            
+            if (dca > fV0VertexerSels[3]) continue;
+            
+            fHistV0Statistics->Fill(2.5); //pass dca
+            
+            if ((xn+xp) > 2*fV0VertexerSels[6] && fkPreselectX) continue;
+            if ((xn+xp) < 2*fV0VertexerSels[5] && fkPreselectX) continue;
+            
+            fHistV0Statistics->Fill(3.5); //pass X within R2D cut
+            
+            if(!fkDoMaterialCorrection){
+                nt.PropagateTo(xn,b);
+                pt.PropagateTo(xp,b);
+            }else{
+                AliExternalTrackParam *ntp=&nt, *ptp=&pt;
+                AliTrackerBase::PropagateTrackTo(ntp, xn, lNegMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                AliTrackerBase::PropagateTrackTo(ptp, xp, lPosMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+            }
+            
+            //select maximum eta range (after propagation)
+            if (TMath::Abs(nt.Eta())>0.8&&fkExtraCleanup) continue;
+            if (TMath::Abs(pt.Eta())>0.8&&fkExtraCleanup) continue;
+            
+            fHistV0Statistics->Fill(4.5); //pass eta cut
+            
+            AliESDv0 vertex(nt,nidx,pt,pidx);
+            
+            //Experimental: refit V0 if asked to do so
+            if( fkDoV0Refit ) vertex.Refit();
+            
+            //No selection: it was not previously applied, don't  apply now.
+            //if (vertex.GetChi2V0() > fChi2max) continue;
+            
+            Double_t x=vertex.Xv(), y=vertex.Yv();
+            Double_t r2=x*x + y*y;
+            if (r2 < fV0VertexerSels[5]*fV0VertexerSels[5]) continue;
+            if (r2 > fV0VertexerSels[6]*fV0VertexerSels[6]) continue;
+            
+            fHistV0Statistics->Fill(5.5); //pass radius cut
+            
+            Float_t cpa=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
+            
+            //Simple cosine cut (no pt dependence for now)
+            if (cpa < fV0VertexerSels[4]) continue;
+            
+            fHistV0Statistics->Fill(6.5); //pass cosPA
+            
+            vertex.SetDcaV0Daughters(dca);
+            vertex.SetV0CosineOfPointingAngle(cpa);
+            vertex.ChangeMassHypothesis(kK0Short);
+            
+            //pre-select on pT
+            Double_t lMomX       = 0. , lMomY = 0., lMomZ = 0.;
+            Double_t lTransvMom  = 0. ;
+            vertex.GetPxPyPz( lMomX, lMomY, lMomZ );
+            lTransvMom      = TMath::Sqrt( lMomX*lMomX   + lMomY*lMomY );
+            if(lTransvMom<fMinPtV0) continue;
+            if(lTransvMom>fMaxPtV0) continue;
+            
+            fHistV0Statistics->Fill(7.5); //within pT range
+            if (lUsedOptimalParams) fHistV0Statistics->Fill(8.5); //good V0, used OTF params
+            
+            event->AddV0(&vertex);
+            
+            nvtx++;
+            
+            //if ( nvtx % 10000 ) gObjectTable->Print(); //debug, REMOVE ME PLEASE
         }
     }
     Info("Tracks2V0vertices","Number of reconstructed V0 vertices: %ld",nvtx);

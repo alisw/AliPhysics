@@ -197,7 +197,7 @@ int EstimateSingleTrackPIDsyst(int maxEntries, int var4proj) {
   }
   
   short pdgMC             = -1;
-  unsigned char tagMC     = 0;
+  unsigned short tagMC    = 0;
   short n_sigma_TPC_pi_MC = -999;
   short n_sigma_TPC_K_MC  = -999;
   short n_sigma_TPC_p_MC  = -999;
@@ -290,7 +290,7 @@ int EstimateSingleTrackPIDsyst(int maxEntries, int var4proj) {
   if(!treePIDData) return 7;
   treePIDData->SetName("treePIDData");
 
-  unsigned char tagData     = 0;
+  unsigned short tagData    = 0;
   short n_sigma_TPC_pi_Data = -999;
   short n_sigma_TPC_K_Data  = -999;
   short n_sigma_TPC_p_Data  = -999;

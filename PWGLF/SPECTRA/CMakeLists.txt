@@ -67,6 +67,7 @@ set(SRCS
   ChargedHadrons/dNdPt/AliAnalysisTaskUEStudy.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskSpectra.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskSpectraV0M.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskFilterEventTPCdEdx.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
@@ -80,6 +81,8 @@ set(SRCS
   PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskSpherocity.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT_TPCTOF.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
@@ -143,6 +146,7 @@ set(SRCS
   Spherocity/AliTransverseEventShape.cxx
   Spherocity/AliSpherocityEstimator.cxx
   Spherocity/AliSpherocityUtils.cxx
+  Spherocity/macros/AliAnalysisSphericityTask.cxx
 )
 
 # Headers from sources

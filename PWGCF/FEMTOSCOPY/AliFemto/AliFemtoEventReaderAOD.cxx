@@ -649,43 +649,71 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     //  const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
 
     // For TPC Only tracks we have to copy PID information from corresponding global tracks
-    const Int_t pid_track_id = (fFilterBit == (1 << 7) || fFilterMask == 128)
-                             ? labels[-1 - fEvent->GetTrack(i)->GetID()]
-                             : i;
-    AliAODTrack *aodtrackpid = static_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
-    assert(aodtrackpid && "Not a standard AOD");
+    AliAODTrack *aodtrackpid;
+    if(fFilterBit == (1 << 7) || fFilterMask == 128){
+      const Int_t pid_track_id = labels[-1 - fEvent->GetTrack(i)->GetID()];
+      aodtrackpid = static_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
+      assert(aodtrackpid && "Not a standard AOD");
+    }
 
     //Pile-up removal
     if (fTrackPileUpRemoval) {
       //method which checks if track
       //have at least 1 hit in ITS or TOF.
       bool passTrackPileUp = false;
-
       //does tof timing exist for our track?
-      if (aodtrackpid->GetTOFBunchCrossing() == 0) {
-        passTrackPileUp = true;
-      }
+      
+      if(fFilterBit == (1 << 7) || fFilterMask == 128){
 
-      //check ITS refit
-      if (!(aodtrackpid->GetStatus() & AliESDtrack::kITSrefit)) {
-        continue;
-      }
+   	   if (aodtrackpid->GetTOFBunchCrossing() == 0) passTrackPileUp = true;
+           //check ITS refit
+     	    if (!(aodtrackpid->GetStatus() & AliESDtrack::kITSrefit)) {
+               delete trackCopy;
+               continue;
+	    }
+     
+      	   //loop over the 4 ITS Layrs and check for a hit!
+      	   for (int i = 0; i < 2; ++i) {
+               //we use layers 0, 1 /OR/ 0, 1, 4, 5
+               // if(i==2 || i==3) i+=2;
+               if (aodtrackpid->HasPointOnITSLayer(i)) passTrackPileUp = true;
+      	   }
 
-      //loop over the 4 ITS Layrs and check for a hit!
-      for (int i = 0; i < 2; ++i) {
-        //we use layers 0, 1 /OR/ 0, 1, 4, 5
-        // if(i==2 || i==3) i+=2;
-        if (aodtrackpid->HasPointOnITSLayer(i)) {
-          passTrackPileUp = true;
-        }
-      }
+      	   if (!passTrackPileUp){
+               delete trackCopy;
+	       continue;
+	   }
+     
+       }  
 
-      if (!passTrackPileUp) {
-        continue;
-      }
+       else{
+
+   	   if (aodtrack->GetTOFBunchCrossing() == 0) passTrackPileUp = true;
+           //check ITS refit
+     	    if (!(aodtrack->GetStatus() & AliESDtrack::kITSrefit)){ 
+               delete trackCopy;
+               continue;
+            }
+      	   //loop over the 4 ITS Layrs and check for a hit!
+      	   for (int i = 0; i < 2; ++i) {
+        	//we use layers 0, 1 /OR/ 0, 1, 4, 5
+        	// if(i==2 || i==3) i+=2;
+        	if (aodtrack->HasPointOnITSLayer(i)) passTrackPileUp = true;
+      	   }
+      	   if (!passTrackPileUp) {
+               delete trackCopy;
+	       continue;
+           }
+     
+       } 
+
     }
 
-    CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
+    if(fFilterBit == (1 << 7) || fFilterMask == 128)
+        CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
+    else 
+	CopyPIDtoFemtoTrack(aodtrack, trackCopy);
+
 
     if (mcP) {
       // Fill the hidden information with the simulated data
@@ -1824,6 +1852,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
 
   //xi
   tFemtoXi->SetmassXi(tAODxi->MassXi());
+  tFemtoXi->SetmassOmega(tAODxi->MassOmega());
   tFemtoXi->SetdecayLengthXi(tAODxi->DecayLengthXi(fV1[0], fV1[1], fV1[2]));
   tFemtoXi->SetdecayVertexXiX(tAODxi->DecayVertexXiX());
   tFemtoXi->SetdecayVertexXiY(tAODxi->DecayVertexXiY());

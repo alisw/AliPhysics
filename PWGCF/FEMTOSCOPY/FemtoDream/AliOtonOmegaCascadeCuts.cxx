@@ -499,6 +499,56 @@ bool AliOtonOmegaCascadeCuts::isSelected(AliOtonOmegaCascade *casc) {
         fHist->FillInvMassPerRunNumber(casc->GetEvtNumber(), casc->GetMass(fPDGCasc));
       }
     }
+//Kaon missidentification background removal cut, associated to the standard selection with XiCPA<0.995 cut
+    if (pass && fCPAXi == 0.995  ) {
+     //Fill some variables:
+     Float_t pipx,pipy,pipz;
+     Float_t prpx,prpy,prpz;
+     Int_t piNcl;
+     if(casc->GetBach()->GetCharge().at(0)==-1) {
+      prpx = casc->GetPosDaug()->GetMomentum().Px();
+      prpy = casc->GetPosDaug()->GetMomentum().Py();
+      prpz = casc->GetPosDaug()->GetMomentum().Pz();
+      pipx = casc->GetNegDaug()->GetMomentum().Px();
+      pipy = casc->GetNegDaug()->GetMomentum().Py();
+      pipz = casc->GetNegDaug()->GetMomentum().Pz();
+      piNcl = casc->GetNegDaug()->GetNClsTPC();
+     }else{
+      pipx = casc->GetPosDaug()->GetMomentum().Px();
+      pipy = casc->GetPosDaug()->GetMomentum().Py();
+      pipz = casc->GetPosDaug()->GetMomentum().Pz();
+      piNcl = casc->GetPosDaug()->GetNClsTPC();
+      prpx = casc->GetNegDaug()->GetMomentum().Px();
+      prpy = casc->GetNegDaug()->GetMomentum().Py();
+      prpz = casc->GetNegDaug()->GetMomentum().Pz();
+     }
+     Float_t op = casc->GetMomentum().Mag();//omega momentum
+     Float_t lpx = pipx+prpx;
+     Float_t lpy = pipy+prpy;
+     Float_t lpz = pipz+prpz;
+     Float_t lp = sqrt(pow(lpx,2)+pow(lpy,2)+pow(lpz,2));
+     Float_t pip = sqrt(pow(pipx,2)+pow(pipy,2)+pow(pipz,2));
+     Float_t prp = sqrt(pow(prpx,2)+pow(prpy,2)+pow(prpz,2));
+     Float_t kpx = casc->GetBach()->GetMomentum().Px();
+     Float_t kpy = casc->GetBach()->GetMomentum().Py();
+     Float_t kpz = casc->GetBach()->GetMomentum().Pz();
+     Float_t kp = sqrt(pow(kpx,2)+pow(kpy,2)+pow(kpz,2));
+     Float_t kPIDk = casc->GetBach()->GetnSigmaTPC(3);
+     Float_t lr = casc->Getv0TransverseRadius();
+     Float_t pi1E = sqrt(pow(0.13957018,2)+pow(pip,2));
+     Float_t pi2E = sqrt(pow(0.13957018,2)+pow(prp,2));
+     Float_t k0mass = sqrt(pow(pi1E+pi2E,2)-pow(lp,2));
+     //do the actual cut inspired by ntuple cut:
+     //momNEW = "op>2.&&op<4.&&lp>1.4&&lp<3.&&pip<.24&&kp>.56&&kp<1.24&&k0>.47&&kPIDk<2&&piNcl<150";
+     //!momNEW&&"lr<100&&kPIDk>-2.5&&piNcl>60
+     Bool_t isBkg = kFALSE;
+     if(op>2.&&op<4.&&lp>1.4&&lp<3.&&pip<.24&&kp>.56&&kp<1.24&&k0mass>.47&&kPIDk<2&&piNcl<150) isBkg = kTRUE;
+     Bool_t isSuperGoodOmega = kFALSE;
+     if(lr<100&&kPIDk>-2.5&&piNcl>60) isSuperGoodOmega = kTRUE;
+     if(isBkg) pass = false;
+     if(!isSuperGoodOmega) pass = false;
+    }
+//
     if (pass && fcutXiMass) {
       if(
            (casc->GetMass(fPDGCasc) < (fXiMass - fXiMassWidth))||(casc->GetMass(fPDGCasc) > (fXiMass + fXiMassWidth))

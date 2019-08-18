@@ -10,6 +10,8 @@
 #include "AliMCEvent.h"
 #include "AliVTrack.h"
 #include "AliAnalysisCuts.h"
+#include "AliEMCALGeometry.h"
+#include "AliDataFile.h"
 #include "TH1F.h"
 #include "TF1.h"
 #include "TObjArray.h"
@@ -154,6 +156,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16c3b,        //!< anchored LHC13[d-e] pass 2 - JJ
         kLHC16c3c,        //!< anchored LHC13[d-e] pass 2 - GJ
         kLHC18j5,         //!< anchored LHC13[b-c] pass 4 - General Purpose
+        kLHC19a4,         //!< anchored LHC13[b-f] pass 4 - jj
         kLHC15g2,         //!< anchored LHC13g pass 1
         kLHC15a3a,        //!< anchored LHC13g pass 1 - JJ
         kLHC15a3a_plus,   //!< anchored LHC13g pass 1 - JJ
@@ -221,6 +224,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18l8a,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8b,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8c,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h2a,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h2b,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h2c,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h3,         //!< anchored to LHC18qr    - general purpose Pythia8 with added GA signals
 
 
         // MC upgrade
@@ -278,13 +285,14 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17n,              //!< Xe-Xe 5.44 TeV
         kLHC17pq,             //!< pp 5 TeV
         // MC Xe-Xe
-        kLHC17j7,             //!< MC for Xe-Xe 5.44 TeV HIJING
         kLHC17XeXeHi,         //!< MC for Xe-Xe 5.44 TeV HIJING
-        // 5 TeV MC 2016
+        // 5 TeV MC 2017
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC18j2,             //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
         kLHC18b8,             //!< anchored LHC17p/q pass 1 - jet-jet MC w/GEANT3,
+        kLHC18b10,            //!< anchored LHC17p/q pass 1 - gamma-jet MC w/GEANT3,
+        kLHC18l2,             //!< anchored LHC17p/q pass 1 - gamma-jet MC w/GEANT3,
         kLHC17P1PHO,          //!< anchored LHC17p only low Intensity Phojet 5 TeV
         //13 TeV MC 2017
         kLHC17P1Pyt8NomB,     //!LHC17x Pythia8 MB productions nom B anchored to LHC17x
@@ -302,6 +310,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         // 2018
         kLHC18NomB,           //!< pp 13 TeV nominal B field
         kLHC18LowB,           //!< pp 13 TeV low B field
+        kLHC18P1JJ,           //!< pp 13 TeV JJ MCs
 
         //13 TeV LHC2018
         kLHC18P1Pyt8NomB,     //!LHC18x Pythia8 MB productions nom B anchored to LHC18x
@@ -425,10 +434,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       fNameHistoReweightingMultData = nameHistoMultData         ;
                                                                                       fNameHistoReweightingMultMC = nameHistoMultMC             ;
                                                                                     }
-      void    SetUseGammaPtReweightingWithHistogramFromFile( Bool_t gammareweight=kTRUE,
-							     TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCGammaSpectraInput.root",
-							     TString histoNameGamma = "",
-							     TString histoDataNameGamma = "")
+      void    SetUseGammaPtReweightingWithHistogramFromFile(  Bool_t gammareweight=kTRUE,
+                                                              TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCGammaSpectraInput.root",
+                                                              TString histoNameGamma = "",
+                                                              TString histoDataNameGamma = "")
                                                                                     {
                                                                                       AliInfo(Form("enabled pT reweighting for: Gamma : %i ", gammareweight));
                                                                                       fDoReweightHistoMCGamma = gammareweight                   ;
@@ -494,6 +503,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void      GetCorrectEtaShiftFromPeriod();
       void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event);
       TClonesArray*     GetArrayFromEvent(AliVEvent* event, const char *name, const char *clname=0);
+      AliEMCALGeometry* GetGeomEMCAL()                                              { return fGeomEMCAL;}
 
       Bool_t    InitializeCutsFromCutString(const TString analysisCutSelection);
       void      SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kAny) {
@@ -540,7 +550,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
-      void    LoadGammaPtReweightingHistosMCFromFile (); 
+      void    LoadGammaPtReweightingHistosMCFromFile ();
 
       // Event Cuts
       Bool_t    IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEvent);
@@ -591,6 +601,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
       Bool_t                      fDoLightOutput;                         ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
       Int_t                       fEventQuality;                          ///< EventQuality
+      AliEMCALGeometry*           fGeomEMCAL;                             ///< pointer to EMCal geometry
       //cuts
       Int_t                       fIsHeavyIon;                            ///< flag for heavy ion
       Int_t                       fDetectorCentrality;                    ///< centrality detecotor V0M or CL1
@@ -667,7 +678,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TF1*                        fFitDataEta;                            ///< fit to eta spectrum in Data
       TF1*                        fFitDataK0s;                            ///< fit to K0s spectrum in Data
       TH1D*                       hReweightMCHistGamma;                   ///< histogram MC   input for reweighting Gamma
-      TH1D*                       hReweightDataHistGamma;                 ///< histogram data input for reweighting Gamma 
+      TH1D*                       hReweightDataHistGamma;                 ///< histogram data input for reweighting Gamma
       Int_t                       fAddedSignalPDGCode;
       Bool_t                      fPreSelCut;                             // Flag for preselection cut used in V0Reader
       Bool_t                      fTriggerSelectedManually;               // Flag for manual trigger selection
@@ -688,6 +699,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       ULong_t                     fTriggersEMCAL;                         ///< list of fired EMCAL triggers
       ULong_t                     fTriggersEMCALSelected;                 ///< list of accepted triggers
       Bool_t                      fEMCALTrigInitialized;                  ///< EMCAL triggers initialized
+      TH1S*                       fHistoTriggThresh;                      ///< EMCal trigger thresholds
+      Int_t                       fRunNumberTriggerOADB;                  ///< last used runnumber of OADB trigger object
       // Primary secondary distinction
       Double_t                    fSecProdBoundary;                       ///< 3D radius of production (cm) for primary-secodary distinction
       Float_t                     fMaxPtJetMC;                            ///< maximum jet pt in event
@@ -707,7 +720,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,66)
+      ClassDef(AliConvEventCuts,72)
       /// \endcond
 };
 

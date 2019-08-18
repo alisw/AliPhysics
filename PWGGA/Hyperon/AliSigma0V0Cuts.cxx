@@ -477,7 +477,7 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent) {
 
       AliMCParticle *mcParticle =
           static_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
-      if (!mcParticle) continue;
+      if (mcParticle){
       v0Candidate.ProcessMCInfo(mcParticle, fMCEvent);
 
       fHistMCV0Pt->Fill(v0->Pt());
@@ -486,6 +486,7 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent) {
                                 fMCEvent->GetTrack(mcParticle->GetMother()))
                                 ->PdgCode();
       fHistV0Mother->Fill(v0->Pt(), TMath::Abs(pdgMother));
+      }
     }
 
     v0Candidate.SetPDGMass(fDataBasePDG.GetParticle(fPID)->Mass());

@@ -3,16 +3,27 @@ class LMEECutLib {
   public:
 
   enum LMEECutSet{
+    // Basic cuts used for QA stage
     kAllSpecies,
     kElectrons,
+    // Cuts used when creating TTrees
+    // TTrees used for MVA training (done locally)
     kTTreeCuts,
+    // Current primary analysis cut
     kCutSet1,
+    // Cut settings to obtain PID correction maps
     kV0_ITScorr,
     kV0_TPCcorr,
     kV0_TOFcorr,
+    // Select V0 particles
     kV0_trackCuts,
+    // Select electrons in MC via pdg code
     kPdgSel,
+    // Loose cuts used in conjuction with kPdgSelf
     kMCsel,
+    // Test setting (ignore)
+    kV0_allAcc,
+    // Loose cuts used to obtain resolution maps
     kResolutionTrackCuts,
     // Linearly increasing cuts over MVA output
     kPIDcut1,
@@ -60,7 +71,19 @@ class LMEECutLib {
     kCutVar19,
     kCutVar20,
     // Cut set used by Sebastian Scheid (also pPb at 5 TeV analysis)
-    kScheidCuts
+    kScheidCuts,
+    // Five different R factor binning schemes
+    kMixScheme1,
+    kMixScheme2,
+    kMixScheme3,
+    kMixScheme4,
+    kMixScheme5,
+    // Cut settings chosen to select regions in eta/phi that show similar
+    // acceptance between run1 and run2
+    // Select out regions in eta/phi where ITS coverage is "good"
+    kGoodEtaPhi,
+    // Invert the above selection
+    kBadEtaPhi
   };
 
 
@@ -73,13 +96,16 @@ class LMEECutLib {
   }
 
   // Getters
-  AliDielectronEventCuts*     GetEventCuts();
-  AliAnalysisCuts*            GetCentralityCuts(Int_t centSel);
+  AliDielectronEventCuts*     GetEventCuts(Bool_t reqAliEventCuts, Bool_t reqAliEventCutsCorrelated);
   AliDielectronMixingHandler* GetMixingHandler(Int_t cutSet);
 
+  AliAnalysisCuts*       GetTrackCuts(Int_t cutSet, Int_t PIDcuts);
+  AliAnalysisCuts*       GetPIDCuts(Int_t PIDcuts);
   AliDielectronCutGroup* GetPairCuts(Int_t cutSet);
-  AliAnalysisCuts* GetPIDCuts(Int_t PIDcuts);
-  AliAnalysisCuts* GetTrackCuts(Int_t cutSet, Int_t PIDcuts);
+  AliDielectronV0Cuts* GetV0finder();
+
+  // Define signal at MCtruth level
+  void SetSignalsMC(AliDielectron* die);
 
   // PID correction functions used within dielectron framework
   void SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim);
@@ -319,6 +345,9 @@ static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim
 // Eta correction for the centroid and width of electron sigmas in the ITS, can be one/two/three-dimensional
 TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection, Bool_t hasMC){
 
+  if(!wSDD){
+    return;
+  }
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionITSTTree() >>>>>>>>>>>>>>>>>>>>>> ");
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionITSTTree()\n";
@@ -550,7 +579,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 // the selection is hardcoded in the AddTask
-AliDielectronEventCuts* LMEECutLib::GetEventCuts() {
+AliDielectronEventCuts* LMEECutLib::GetEventCuts(Bool_t reqAliEventCuts, Bool_t reqAliEventCutsCorrelated){
 
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> GetEventCuts() >>>>>>>>>>>>>>>>>>>>>> ");
   AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCuts_acapon","Vertex Track && |vtxZ|<10 && ncontrib>0");
@@ -560,32 +589,17 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts() {
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,10.);
 
+  // Possibility to use AliEventCuts class for additional pile up rejection
+  if(reqAliEventCuts){
+    std::cout << "------ Using AliEventCuts class -------" << std::endl;
+    eventCuts->SetRequireAliEventCuts(reqAliEventCuts, reqAliEventCutsCorrelated);
+  }
+
+  eventCuts->Print();
   return eventCuts;
 }
 
-
-// Centrality selection done in Event selection
-AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
-  AliDielectronVarCuts* centCuts = 0x0;
-  switch(centSel){
-    case kAllSpecies:
-    case kElectrons:
-    case kTTreeCuts:
-    case kCutSet1:
-    case kV0_TPCcorr:
-    case kV0_ITScorr:
-    case kV0_TOFcorr:
-      centCuts = new AliDielectronVarCuts("centCutsHigh","cent00100");
-      centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,100.);
-      break;
-    default:
-      std::cout << "No Centrality selected" << std::endl;
-  }
-  return centCuts;
-}
-
-
-AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
+AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet){
   AliDielectronMixingHandler* mixingHandler = 0x0;
   switch (cutSet) {
     case kAllSpecies:
@@ -597,10 +611,43 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
       mixingHandler->SetDepth(60);
       mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
       break;
-    //[...]
-    case kTTreeCuts:
+    case kMixScheme1:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 5, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
       break;
-    default: cout << "No Mixer defined" << endl;
+    case kMixScheme2:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    case kMixScheme3:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 5, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    case kMixScheme4:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., 0., 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    case kMixScheme5:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 20, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    default:
+      std::cout << "No Mixer defined" << std::endl;
   }
   return mixingHandler;
 }
@@ -630,6 +677,7 @@ AliDielectronCutGroup* LMEECutLib::GetPairCuts(Int_t cutSet)  {
 
   allCuts->AddCut(convRejCut);
   allCuts->AddCut(pairMassCut);
+  allCuts->Print();
 
   return allCuts;
 
@@ -1181,26 +1229,26 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       trackCuts->AddCut(GetPIDCuts(PIDcuts));
       trackCuts->Print();
       return trackCuts;
-    case kV0_trackCuts:
+    case kV0_trackCuts: // Does not work for MC (checked 2019.05.08)
       // V0 specific track cuts
       gammaV0cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);
       // Cut on the angle between the total momentum vector of the daughter
       // tracks and a line connecting the primary and secondary vertices
-      gammaV0cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02), 1.0,  kFALSE);
-      gammaV0cuts->AddCut(AliDielectronVarManager::kChi2NDF, 0.0, 10.0, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02), 1.0);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kChi2NDF, 0.0, 10.0);
       // Restrict distance between legs
-      gammaV0cuts->AddCut(AliDielectronVarManager::kLegDist, 0.0, 0.25, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kLegDist, 0.0, 0.25);
       // Require minimum distance to secondary vertex
-      gammaV0cuts->AddCut(AliDielectronVarManager::kR, 3.0, 90.0, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kR, 3.0, 90.0);
       // Angle between daughter momentum plane and plane perpendicular to magnetic field
-      gammaV0cuts->AddCut(AliDielectronVarManager::kPsiPair, 0.0, 0.05, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kPsiPair, 0.0, 0.05);
       // Mass cut on V0 (mother) particle
-      gammaV0cuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.05, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.05);
       // Armenteros-Podolanksi variables
       // Pt
-      gammaV0cuts->AddCut(AliDielectronVarManager::kArmPt, 0.0, 0.05, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kArmPt, 0.0, 0.05);
       // Longitudinal momentum asymmentry between daughter particles
-      gammaV0cuts->AddCut(AliDielectronVarManager::kArmAlpha, -0.35, 0.35, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kArmAlpha, -0.35, 0.35);
       // Default setting is to exclude V0 tracks
       gammaV0cuts->SetExcludeTracks(kFALSE);
       // Standard track cut variables
@@ -1211,6 +1259,20 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       trackCuts->AddCut(gammaV0cuts);
       trackCuts->AddCut(trackCutsV0);
       trackCuts->AddCut(GetPIDCuts(PIDcuts));
+      trackCuts->Print();
+      return trackCuts;
+    case kV0_allAcc: // Cut setting to check MC V0 features
+      // No V0 track cuts applied as want to see distributions
+      gammaV0cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);
+      // Default setting is to exclude V0 tracks
+      gammaV0cuts->SetExcludeTracks(kFALSE);
+      /* // Standard track cut variables */
+      trackCutsV0->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0.0, 4.0);
+      trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCr, 100.0, 160.0);
+      trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1);
+      trackCuts->AddCut(gammaV0cuts);
+      trackCuts->AddCut(trackCutsV0);
+      /* trackCuts->AddCut(GetPIDCuts(PIDcuts)); */
       trackCuts->Print();
       return trackCuts;
     case kMCsel:
@@ -1806,9 +1868,272 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       trackCuts->AddCut(GetPIDCuts(PIDcuts));
       trackCuts->Print();
       return trackCuts;
+    case kGoodEtaPhi:
+
+      // Standard track cuts
+      varCutsFilter->AddCut(AliDielectronVarManager::kPt,  0.2, 100.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,        80.0,  200.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      100.0, 200.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,   1.1);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,    -1.0,  1.0);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,  3.0);
+      if(wSDD){
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      5.0,   100.0); // < 5
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01);
+      }else{
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0,   100.0); // < 3
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01);
+      }
+      varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0,   4.5);
+
+      // Select filterbit 4
+      trackCutsFilter->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//or 1<<4
+      trackCutsFilter->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kFirst);
+      // Refits
+      trackCutsFilter->SetRequireITSRefit(kTRUE);
+      trackCutsFilter->SetRequireTPCRefit(kTRUE);
+
+      trackCuts->AddCut(varCutsFilter);
+      trackCuts->AddCut(trackCutsFilter);
+      trackCuts->AddCut(GetPIDCuts(PIDcuts));
+
+      // Select out eta/phi regions
+      // Big OR cut group for all regions
+      AliDielectronCutGroup* etaPhiRegions = new AliDielectronCutGroup("etaPhiRegions", "etaPhiRegions", AliDielectronCutGroup::kCompOR);
+
+      // Define smaller regions with AND eta/phi selections
+      AliDielectronCutGroup* etaPhiRegion1 = new AliDielectronCutGroup("etaPhiRegion1", "etaPhiRegion1", AliDielectronCutGroup::kCompAND);
+      AliDielectronVarCuts* etaCut1        = new AliDielectronVarCuts("etaCut1", "etaCut1");
+      AliDielectronVarCuts* phiCut1        = new AliDielectronVarCuts("phiCut1", "phiCut1");
+      etaCut1->AddCut(AliDielectronVarManager::kEta, -0.8, 0.8);
+      phiCut1->AddCut(AliDielectronVarManager::kPhi,  0.0, 1.0);
+      etaPhiRegion1->AddCut(etaCut1);
+      etaPhiRegion1->AddCut(phiCut1);
+
+      AliDielectronCutGroup* etaPhiRegion2 = new AliDielectronCutGroup("etaPhiRegion2", "etaPhiRegion2", AliDielectronCutGroup::kCompAND);
+      AliDielectronVarCuts* etaCut2        = new AliDielectronVarCuts("etaCut2", "etaCut2");
+      AliDielectronVarCuts* phiCut2        = new AliDielectronVarCuts("phiCut2", "phiCut2");
+      etaCut2->AddCut(AliDielectronVarManager::kEta, -0.8, -0.5);
+      phiCut2->AddCut(AliDielectronVarManager::kPhi,  3.2, 3.6);
+      etaPhiRegion2->AddCut(etaCut2);
+      etaPhiRegion2->AddCut(phiCut2);
+
+      AliDielectronCutGroup* etaPhiRegion3 = new AliDielectronCutGroup("etaPhiRegion3", "etaPhiRegion3", AliDielectronCutGroup::kCompAND);
+      AliDielectronVarCuts* etaCut3        = new AliDielectronVarCuts("etaCut3", "etaCut3");
+      AliDielectronVarCuts* phiCut3        = new AliDielectronVarCuts("phiCut3", "phiCut3");
+      etaCut3->AddCut(AliDielectronVarManager::kEta, 0.5, 0.8);
+      phiCut3->AddCut(AliDielectronVarManager::kPhi, 3.0, 3.4);
+      etaPhiRegion3->AddCut(etaCut3);
+      etaPhiRegion3->AddCut(phiCut3);
+
+      AliDielectronCutGroup* etaPhiRegion4 = new AliDielectronCutGroup("etaPhiRegion4", "etaPhiRegion4", AliDielectronCutGroup::kCompAND);
+      AliDielectronVarCuts* etaCut4        = new AliDielectronVarCuts("etaCut4", "etaCut4");
+      AliDielectronVarCuts* phiCut4        = new AliDielectronVarCuts("phiCut4", "phiCut4");
+      etaCut4->AddCut(AliDielectronVarManager::kEta, -0.8, 0.8);
+      phiCut4->AddCut(AliDielectronVarManager::kPhi,  4.5, 4.9);
+      etaPhiRegion4->AddCut(etaCut4);
+      etaPhiRegion4->AddCut(phiCut4);
+
+      etaPhiRegions->AddCut(etaPhiRegion1);
+      etaPhiRegions->AddCut(etaPhiRegion2);
+      etaPhiRegions->AddCut(etaPhiRegion3);
+      etaPhiRegions->AddCut(etaPhiRegion4);
+
+      // Final group contianing eta/phi regions AND standard track+PID cuts
+      AliDielectronCutGroup* finalCutGroup = new AliDielectronCutGroup("finalCutGroup", "finalCutGroup", AliDielectronCutGroup::kCompAND);
+      finalCutGroup->AddCut(trackCuts);
+      finalCutGroup->AddCut(etaPhiRegions);
+
+      finalCutGroup->Print();
+      return finalCutGroup;
+    case kBadEtaPhi:
+
+      // Standard track cuts
+      varCutsFilter->AddCut(AliDielectronVarManager::kPt,  0.2, 100.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,        80.0,  200.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      100.0, 200.);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,   1.1);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,    -1.0,  1.0);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,  3.0);
+      if(wSDD){
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      5.0,   100.0); // < 5
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01);
+      }else{
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0,   100.0); // < 3
+        varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01);
+      }
+      varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0,   4.5);
+
+      // Select filterbit 4
+      trackCutsFilter->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//or 1<<4
+      trackCutsFilter->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kFirst);
+      // Refits
+      trackCutsFilter->SetRequireITSRefit(kTRUE);
+      trackCutsFilter->SetRequireTPCRefit(kTRUE);
+
+      trackCuts->AddCut(varCutsFilter);
+      trackCuts->AddCut(trackCutsFilter);
+      trackCuts->AddCut(GetPIDCuts(PIDcuts));
+
+      // Select out eta/phi regions
+      // Big OR cut group for all regions
+      AliDielectronCutGroup* etaPhiRegions = new AliDielectronCutGroup("etaPhiRegions", "etaPhiRegions", AliDielectronCutGroup::kCompOR);
+
+      // Define smaller regions with AND eta/phi selections
+      AliDielectronCutGroup* etaPhiRegion1 = new AliDielectronCutGroup("etaPhiRegion1", "etaPhiRegion1", AliDielectronCutGroup::kCompAND);
+      AliDielectronVarCuts* etaCut1        = new AliDielectronVarCuts("etaCut1", "etaCut1");
+      AliDielectronVarCuts* phiCut1        = new AliDielectronVarCuts("phiCut1", "phiCut1");
+      etaCut1->AddCut(AliDielectronVarManager::kEta, -0.8, 0.8);
+      phiCut1->AddCut(AliDielectronVarManager::kPhi,  1.0, 3.0);
+      etaPhiRegion1->AddCut(etaCut1);
+      etaPhiRegion1->AddCut(phiCut1);
+
+      AliDielectronCutGroup* etaPhiRegion2 = new AliDielectronCutGroup("etaPhiRegion2", "etaPhiRegion2", AliDielectronCutGroup::kCompAND);
+      AliDielectronVarCuts* etaCut2        = new AliDielectronVarCuts("etaCut2", "etaCut2");
+      AliDielectronVarCuts* phiCut2        = new AliDielectronVarCuts("phiCut2", "phiCut2");
+      etaCut2->AddCut(AliDielectronVarManager::kEta, -0.5, 0.5);
+      phiCut2->AddCut(AliDielectronVarManager::kPhi,  3.0, 4.5);
+      etaPhiRegion2->AddCut(etaCut2);
+      etaPhiRegion2->AddCut(phiCut2);
+
+      AliDielectronCutGroup* etaPhiRegion3 = new AliDielectronCutGroup("etaPhiRegion3", "etaPhiRegion3", AliDielectronCutGroup::kCompAND);
+      AliDielectronVarCuts* etaCut3        = new AliDielectronVarCuts("etaCut3", "etaCut3");
+      AliDielectronVarCuts* phiCut3        = new AliDielectronVarCuts("phiCut3", "phiCut3");
+      etaCut3->AddCut(AliDielectronVarManager::kEta, -0.8, -0.5);
+      phiCut3->AddCut(AliDielectronVarManager::kPhi, 3.0, 3.2);
+      etaPhiRegion3->AddCut(etaCut3);
+      etaPhiRegion3->AddCut(phiCut3);
+
+      AliDielectronCutGroup* etaPhiRegion4 = new AliDielectronCutGroup("etaPhiRegion4", "etaPhiRegion4", AliDielectronCutGroup::kCompAND);
+      AliDielectronVarCuts* etaCut4        = new AliDielectronVarCuts("etaCut4", "etaCut4");
+      AliDielectronVarCuts* phiCut4        = new AliDielectronVarCuts("phiCut4", "phiCut4");
+      etaCut4->AddCut(AliDielectronVarManager::kEta, -0.8 -0.5);
+      phiCut4->AddCut(AliDielectronVarManager::kPhi,  3.4, 4.5);
+      etaPhiRegion4->AddCut(etaCut4);
+      etaPhiRegion4->AddCut(phiCut4);
+
+      AliDielectronCutGroup* etaPhiRegion5 = new AliDielectronCutGroup("etaPhiRegion5", "etaPhiRegion5", AliDielectronCutGroup::kCompAND);
+      AliDielectronVarCuts* etaCut5        = new AliDielectronVarCuts("etaCut5", "etaCut5");
+      AliDielectronVarCuts* phiCut5        = new AliDielectronVarCuts("phiCut5", "phiCut5");
+      etaCut5->AddCut(AliDielectronVarManager::kEta, 0.5 0.8);
+      phiCut5->AddCut(AliDielectronVarManager::kPhi,  3.4, 4.5);
+      etaPhiRegion5->AddCut(etaCut5);
+      etaPhiRegion5->AddCut(phiCut5);
+
+      AliDielectronCutGroup* etaPhiRegion6 = new AliDielectronCutGroup("etaPhiRegion6", "etaPhiRegion6", AliDielectronCutGroup::kCompAND);
+      AliDielectronVarCuts* etaCut6        = new AliDielectronVarCuts("etaCut6", "etaCut6");
+      AliDielectronVarCuts* phiCut6        = new AliDielectronVarCuts("phiCut6", "phiCut6");
+      etaCut6->AddCut(AliDielectronVarManager::kEta, -0.8, 0.8);
+      phiCut6->AddCut(AliDielectronVarManager::kPhi,  4.9, TMath::Pi()*2);
+      etaPhiRegion6->AddCut(etaCut6);
+      etaPhiRegion6->AddCut(phiCut6);
+
+      etaPhiRegions->AddCut(etaPhiRegion1);
+      etaPhiRegions->AddCut(etaPhiRegion2);
+      etaPhiRegions->AddCut(etaPhiRegion3);
+      etaPhiRegions->AddCut(etaPhiRegion4);
+      etaPhiRegions->AddCut(etaPhiRegion5);
+      etaPhiRegions->AddCut(etaPhiRegion6);
+
+      // Final group contianing eta/phi regions AND standard track+PID cuts
+      AliDielectronCutGroup* finalCutGroup = new AliDielectronCutGroup("finalCutGroup", "finalCutGroup", AliDielectronCutGroup::kCompAND);
+      finalCutGroup->AddCut(trackCuts);
+      finalCutGroup->AddCut(etaPhiRegions);
+
+      finalCutGroup->Print();
+      return finalCutGroup;
     default:
       std::cout << "No Analysis Track Cut defined" << std::endl;
     }
     std::cout << "Track cuts not applied...." << std::endl;
     return 0x0;
+}
+
+AliDielectronV0Cuts* LMEECutLib::GetV0finder(){
+
+  // V0 finder to exclude conversions
+  AliDielectronV0Cuts* rejConversions = new AliDielectronV0Cuts("IsGamma", "IsGamma");
+  std::cout << "Adding V0 conversion cut!" << std::endl;
+  // which V0 finder you want to use
+  rejConversions->SetV0finder(AliDielectronV0Cuts::kAll);  // kAll(default), kOffline or kOnTheFly
+  // add some pdg codes (they are used then by the KF package and important for gamma conversions)
+  rejConversions->SetPdgCodes(22,11,11); // mother, daughter1 and 2
+  // add default PID cuts (defined in AliDielectronPID)
+  // requirement can be set to at least one(kAny) of the tracks or to both(kBoth)
+  rejConversions->SetDefaultPID(16, AliDielectronV0Cuts::kAny);
+  // add the pair cuts for V0 candidates
+  rejConversions->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.00, kFALSE);
+  rejConversions->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.00, kFALSE);
+  rejConversions->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+  rejConversions->AddCut(AliDielectronVarManager::kR,                             3.0,  90.00, kFALSE);
+  rejConversions->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
+  rejConversions->AddCut(AliDielectronVarManager::kM,                             0.0,   0.10, kFALSE);
+  rejConversions->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
+  // selection or rejection of V0 tracks
+  rejConversions->SetExcludeTracks(kTRUE);
+
+  return rejConversions;
+}
+
+//______________________________________________________________________________________
+//----------------------------- Define MC Signals --------------------------------------
+void LMEECutLib::SetSignalsMC(AliDielectron* die){
+
+  // Dielectrons originating from pion dalitz decays
+  AliDielectronSignalMC* PiDalitz = new AliDielectronSignalMC("Pi0","di-electrons from Pi0 dalitz");
+  PiDalitz->SetLegPDGs(11,-11);
+  PiDalitz->SetMotherPDGs(111,111);
+  PiDalitz->SetMothersRelation(AliDielectronSignalMC::kSame);
+  PiDalitz->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  PiDalitz->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  PiDalitz->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  die->AddSignalMC(PiDalitz);
+
+  // Used pdg codes (defined in AliDielectronMC::ComparePDG)
+  // 401: open charm meson
+  // 404: charged open charmed mesons NO s quark
+  // 405: neutral open charmed mesons
+  // 406: charged open charmed mesons with s quark
+  // 501: open beauty mesons
+  // 503: all beauty hadrons
+  // 504: charged open beauty mesons NO s quark
+  // 505: neutral open beauty mesons
+  // 506: charged open beauty mesons with s quark
+  // all D mesons
+
+  // decay channels
+  // (1) D -> e X
+  // (1) B -> e X
+  // (2) B -> D X -> e X Y
+  // (3) B -> e D X -> ee X Y always produces ULS pair
+
+  // Electrons from open beauty mesons and baryons
+  AliDielectronSignalMC* eleFinalStateFromB = new AliDielectronSignalMC("eleFinalStateFromB","eleFinalStateFromB");
+  eleFinalStateFromB->SetLegPDGs(11,-11);
+  eleFinalStateFromB->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalStateFromB->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  eleFinalStateFromB->SetMotherPDGs(502, 502);
+  eleFinalStateFromB->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  eleFinalStateFromB->SetCheckCorrelatedHF(kTRUE);
+  die->AddSignalMC(eleFinalStateFromB);
+
+  // Electrons from open charm mesons and baryons
+  AliDielectronSignalMC* eleFinalStateFromD = new AliDielectronSignalMC("eleFinalStateFromD","eleFinalStateFromD");
+  eleFinalStateFromD->SetLegPDGs(11,-11);
+  eleFinalStateFromD->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalStateFromD->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  eleFinalStateFromD->SetMotherPDGs(402, 402);
+  eleFinalStateFromD->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  eleFinalStateFromD->SetCheckCorrelatedHF(kTRUE);
+  die->AddSignalMC(eleFinalStateFromD);
+
+  AliDielectronSignalMC* eleFromJPsi = new AliDielectronSignalMC("eleFromJPsi", "eleFromJPsi");
+  eleFromJPsi->SetLegPDGs(11,-11);
+  eleFromJPsi->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFromJPsi->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  eleFromJPsi->SetMotherPDGs(443, 443);
+  eleFromJPsi->SetMothersRelation(AliDielectronSignalMC::kSame);
+  eleFromJPsi->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  die->AddSignalMC(eleFromJPsi);
+
 }

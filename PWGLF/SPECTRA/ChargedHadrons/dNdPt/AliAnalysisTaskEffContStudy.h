@@ -34,7 +34,7 @@ class AliAnalysisTaskEffContStudy : public AliAnalysisTaskMKBase
         virtual Bool_t          IsEventSelected();               //called for each event
         virtual void            AnaEvent();                      //called once for every selected event        
         virtual void            AnaTrackMC(Int_t flag = 0);    //called once for every track in DATA event
-        virtual void            AnaMCParticle(Int_t flag = 0);      //called once for every track in MC event        
+        virtual void            AnaParticleMC(Int_t flag = 0);      //called once for every track in MC event        
         
         static AliAnalysisTaskEffContStudy* AddTaskEffContStudy(const char* name = "TaskEffContStudy", const char* outfile = 0);
 

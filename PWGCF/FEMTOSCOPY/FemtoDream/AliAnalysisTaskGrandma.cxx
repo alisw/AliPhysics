@@ -104,6 +104,7 @@ void AliAnalysisTaskGrandma::UserCreateOutputObjects() {
   // might want to turn this off for systematics
 
   fEvent = new AliFemtoDreamEvent(true, fEvtCutQA, GetCollisionCandidates());
+  fEvent->SetCalcSpherocity(true);
 
   fFemtoTrack = new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(fIsMC);
@@ -117,7 +118,7 @@ void AliAnalysisTaskGrandma::UserCreateOutputObjects() {
   fFemtov0->GetNegDaughter()->SetUseMCInfo(fIsMC);
 
   //the pair cleaner you have to setup yourself depending on the pairs you want to investigate
-  fPairCleaner = new AliFemtoDreamPairCleaner(2, 2, false);  //false - full booking, true - minimal booking
+  fPairCleaner = new AliFemtoDreamPairCleaner(2, 3, false);  //false - full booking, true - minimal booking
 
   fQA = new TList();
   fQA->SetOwner();
@@ -294,13 +295,16 @@ void AliAnalysisTaskGrandma::UserExec(Option_t *) {
 
 
       fPairCleaner->ResetArray();
-      fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 0);
+      fPairCleaner->CleanTrackAndDecay(&Particles, &AntiDecays, 0);
       //  fPairCleaner->CleanTrackAndDecay(&Particles, &XiDecays, 2);
-      fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 1);
+      fPairCleaner->CleanTrackAndDecay(&AntiParticles, &Decays, 1);
+
       //  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiXiDecays, 3);
       //
         fPairCleaner->CleanDecay(&Decays, 0);
         fPairCleaner->CleanDecay(&AntiDecays, 1);
+        fPairCleaner->CleanDecayAndDecay(&Decays, &AntiDecays, 2);
+
       //  fPairCleaner->CleanDecay(&XiDecays, 2);
       //  fPairCleaner->CleanDecay(&AntiXiDecays, 3);
 

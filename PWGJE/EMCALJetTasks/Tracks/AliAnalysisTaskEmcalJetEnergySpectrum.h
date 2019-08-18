@@ -28,15 +28,19 @@
 #define __ALINANLYSISTASKJETENERGYSPECTRUM_H__
 
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisEmcalTriggerSelectionHelper.h"
+#include "AliVCluster.h"
 #include <vector>
 #include <TArrayD.h>
 
 class THistManager;
 class AliEventCuts;
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
 
-class AliAnalysisTaskEmcalJetEnergySpectrum : public AliAnalysisTaskEmcalJet {
+namespace EMCALJetTasks {
+
+class AliAnalysisTaskEmcalJetEnergySpectrum : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalTriggerSelectionHelperImpl {
 public:
   enum TriggerCluster_t {
     kTrgClusterANY,
@@ -72,9 +76,20 @@ public:
   void SetRequestTriggerClusters(bool doRequest) { fRequestTriggerClusters = doRequest; }
   void SetCentralityEstimator(EMCAL_STRINGVIEW centest) { fCentralityEstimator = centest; }
   void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
+  void SetUseMuonCalo(Bool_t doUse)                { fUseMuonCalo = doUse; }
+  void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; } 
 
 
-  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix = "");
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(
+    Bool_t isMC, 
+    AliJetContainer::EJetType_t jettype, 
+    AliJetContainer::ERecoScheme_t recoscheme, 
+    AliVCluster::VCluUserDefEnergy_t energydef, 
+    double radius, 
+    EMCAL_STRINGVIEW namepartcont, 
+    EMCAL_STRINGVIEW trigger, 
+    EMCAL_STRINGVIEW suffix = ""
+  );
 
 protected:
   virtual void UserCreateOutputObjects();
@@ -82,9 +97,6 @@ protected:
   virtual bool IsTriggerSelected();
   virtual Bool_t CheckMCOutliers();
   virtual void RunChanged(Int_t newrun);
-  std::vector<TriggerCluster_t> GetTriggerClusterIndices(EMCAL_STRINGVIEW triggerstring) const;
-  bool IsSelectEmcalTriggers(EMCAL_STRINGVIEW triggerstring) const;
-  std::string MatchTrigger(EMCAL_STRINGVIEW striggerstring);
 
 private:
   AliAnalysisTaskEmcalJetEnergySpectrum(const AliAnalysisTaskEmcalJetEnergySpectrum &);
@@ -105,11 +117,15 @@ private:
   Bool_t                        fRequestCentrality;             ///< Request centrality
   Bool_t                        fUseAliEventCuts;               ///< Flag switching on AliEventCuts;
   Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
+  Bool_t                        fUseMuonCalo;                   ///< Use events from the (muon)-calo-(fast) cluster
+  Double_t                      fScaleShift;                    ///< Artificial jet energy scale shift
   TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
 
   ClassDef(AliAnalysisTaskEmcalJetEnergySpectrum, 1);
 };
+
+}
 
 }
 #endif

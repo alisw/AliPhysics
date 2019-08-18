@@ -1,29 +1,55 @@
-Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Double_t nSigmaKaon = -1)
+Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool_t isPP = kFALSE, Double_t nSigmaKaon = -1)
 {
 
     // -- Values ------------------------------------------------------------------------------------
     /* invariant mass   */ Int_t imID = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
     /* transv. momentum */ Int_t ptID = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
-    /* angel to leading */ Int_t alID = task->CreateValue(AliRsnMiniValue::kAngleLeading,kFALSE);
+    /* angel to leading */ Int_t alID = task->CreateValue(AliRsnMiniValue::kAngleLeading, kFALSE);
+    /* pt of leading    */ Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
+    /* multiplicity     */ Int_t multID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
 
+    Printf("%f", nSigmaKaon);
     // Cuts
+
+    TString scheme;
+    AliRsnCutSet *cutSetKaon = new AliRsnCutSet("kaonCutSet", AliRsnTarget::kDaughter);
+
     AliRsnCutTrackQuality *trkQualityCut = new AliRsnCutTrackQuality("trackQualityCut");
-    trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
-    AliRsnCutSetDaughterParticle *cutSet = new AliRsnCutSetDaughterParticle("noPIDCutSet", trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kKaon, nSigmaKaon);
-    Int_t iTrackCutK = task->AddTrackCuts(cutSet);
+    trkQualityCut->SetDefaults2011(kTRUE, kTRUE);
+
+    cutSetKaon->AddCut(trkQualityCut);
+    if (!scheme.IsNull())
+        scheme += "&";
+    scheme += trkQualityCut->GetName();
+
+    if (nSigmaKaon >= 0)
+    {
+        AliRsnCutPIDNSigma *cutKTPC = new AliRsnCutPIDNSigma("cutNSigmaTPCK", AliPID::kKaon, AliRsnCutPIDNSigma::kTPC);
+        cutKTPC->SinglePIDRange(nSigmaKaon);
+        cutSetKaon->AddCut(cutKTPC);
+        if (!scheme.IsNull())
+            scheme += "&";
+        scheme += cutKTPC->GetName();
+    }
+    cutSetKaon->SetCutScheme(scheme.Data());
+
+    Int_t iTrackCutK = task->AddTrackCuts(cutSetKaon);
 
     // Defining output objects
-    const Int_t dims = 4;
-    TString name[dims] = {"Unlike", "Mixing", "LikePP", "LikeMM"};
-    TString comp[dims] = {"PAIR", "MIX", "PAIR", "PAIR"};
-    TString output[dims] = {"SPARSE", "SPARSE", "SPARSE", "SPARSE"};
-    Char_t charge1[dims] = {'+', '+', '+', '-'};
-    Char_t charge2[dims] = {'-', '-', '+', '-'};
-    Int_t pdgCode[dims] = {333, 333, 333, 333};
-    Double_t motherMass[dims] = {1.019461, 1.019461, 1.019461, 1.019461};
+    const Int_t dims = 6;
+    Int_t useIM[dims] = {1, 1, 1, 1, isMC, isMC};
+    TString name[dims] = {"Unlike", "Mixing", "LikePP", "LikeMM", "True", "Mother"};
+    TString comp[dims] = {"PAIR", "MIX", "PAIR", "PAIR", "TRUE", "MOTHER"};
+    TString output[dims] = {"SPARSE", "SPARSE", "SPARSE", "SPARSE", "SPARSE", "SPARSE"};
+    Char_t charge1[dims] = {'+', '+', '+', '-', '+', '+'};
+    Char_t charge2[dims] = {'-', '-', '+', '-', '-', '-'};
+    Int_t pdgCode[dims] = {333, 333, 333, 333, 333, 333};
+    Double_t motherMass[dims] = {1.019461, 1.019461, 1.019461, 1.019461, 1.019461, 1.019461};
 
     for (Int_t i = 0; i < dims; i++)
     {
+        if (!useIM[i])
+            continue;
         AliRsnMiniOutput *out = task->CreateOutput(name[i].Data(), output[i].Data(), comp[i].Data());
         out->SetCutID(0, iTrackCutK);
         out->SetCutID(1, iTrackCutK);
@@ -35,8 +61,13 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Double_t nSigmaKaon = -1)
         out->SetMotherMass(motherMass[i]);
 
         out->AddAxis(imID, 215, 0.985, 1.2);
-        out->AddAxis(ptID, 200, 0., 20.); //default use mother pt
-        out->AddAxis(alID, 100, -0.5*TMath::Pi(), 1.5*TMath::Pi()); //-pi/2, 3/2pi
+        out->AddAxis(ptID, 40, 0., 20.);
+        if(!isPP ) out->AddAxis(multID,100,0.,100.);
+        else out->AddAxis(multID, 20, 0., 200.); 
+
+        out->AddAxis(alID, 72, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
+        out->AddAxis(ptlID, 40, 0., 20.); 
+        
     }
     return kTRUE;
 }

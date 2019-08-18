@@ -20,7 +20,6 @@ auther : JunLee Kim
 #include "AliInputEventHandler.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliCentrality.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliMultiplicity.h"
@@ -56,6 +55,9 @@ AliAnalysisTaskInclusivef0f2RunTable::AliAnalysisTaskInclusivef0f2RunTable(Int_t
     else if (runnumber>=280282 && runnumber<=281961) fCollisionType=kPP;//LHC17o
     else if (runnumber>=282008 && runnumber<=282343) fCollisionType=kPP;//LHC17p
     else if (runnumber>=285471 && runnumber<=289971) fCollisionType=kPP;//LHC18
+    else if (runnumber>=265309 && runnumber<=265525) fCollisionType=kPA;//LHC16q
+    else if (runnumber>=295585 && runnumber<=296623) fCollisionType=kAA;//LHC18q
+    else if (runnumber>=296690 && runnumber<=297595) fCollisionType=kAA;//LHC18r
 //    else fCollisionType=kUnknownCollType;
     else fCollisionType=kPP;
 }   
@@ -139,6 +141,8 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  binType = AxisStr("Type",{"PN","PP","NN"});
 
  binMass = AxisFix("Mass",1000,0,5);
+ if( fOption.Contains("Fine") ) binMass = AxisFix("Mass",100000,0,5);
+
 
  binCharge = AxisFix("Charge",3,-1.5,1.5);
 
@@ -151,6 +155,10 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  binTrackPt = AxisFix("TrackPt",200,0,10);
 
  binSigma = AxisFix("Sigma",100,-10,10);
+
+ binSwitch = AxisFix("Switch",2,-0.5,1.5);
+
+ binEta = AxisFix("eta",32,-0.8,0.8);
 
  auto binV0Amp = AxisFix("binV0Amp",3000,0,3e3);
  auto binTrig = AxisFix("Trig",2,-0.5,1.5);
@@ -181,12 +189,24 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 //Distributions for correction in the event selection ****************
  CreateTHnSparse("TrigEffMult","TrigEffMult",2,
 	{binCent,binTrig},"s");
+ CreateTHnSparse("TrigEffMult0","TrigEffMult0",2,
+        {binCent,binTrig},"s");
 
  CreateTHnSparse("hRhoGenParticle","hRhoGenParticle",4,
         {binZ,binCent,binPt,binMass},"s");
  CreateTHnSparse("hF0GenParticle","hF0GenParticle",4,
         {binZ,binCent,binPt,binMass},"s");
  CreateTHnSparse("hF2GenParticle","hF2GenParticle",4,
+        {binZ,binCent,binPt,binMass},"s");
+
+ CreateTHnSparse("VtxSelection","VtxSelection",2,
+	{binCent,binSwitch},"s");
+ CreateTHnSparse("SignalLoss","SignalLoss",3,
+	{binCent,binPt,binSwitch},"s");
+ CreateTHnSparse("SignalLoss0","SignalLoss0",3,
+        {binCent,binPt,binSwitch},"s"); 
+
+ CreateTHnSparse("hF0GenParticleFromPion","hF0GenParticleFromPion",4,
         {binZ,binCent,binPt,binMass},"s");
 //********************************************
 
@@ -284,6 +304,10 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 	{binType,binZ,binCent,binPt,binMass,binExKaonNum},"s");
 //**********************************************
 
+//QA plots**************************************
+ CreateTHnSparse("hSinglePion","hSinglePion",4,
+	{binCent,binTrackPt,binCharge,binEta},"s");
+//**********************************************
 
 // fEMpool.resize(binCent.GetNbins(),
 //	vector<eventpool> (binZ.GetNbins()));
@@ -335,13 +359,23 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  double v0amplitude=0;
  for(int i=0;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
  fMultiplicity = fEvt -> GetMultiplicity();
+ IsMC = kFALSE;
+ if( fOption.Contains("MC") ){
+	IsMC = kTRUE;
+ }
 
+ fRunTable->SetColl(0);
+ if( fOption.Contains("pPb") ){
+	fRunTable->SetColl(1);
+ }
+ if( fOption.Contains("PbPb") ){
+	fRunTable->SetColl(2);
+ }
 
 // const AliVVertex* trackVtx = fEvt->GetPrimaryVertexTPC(); //for ESD
  const AliVVertex* trackVtx = fEvt->GetPrimaryVertex();
  const AliVVertex* spdVtx = fEvt->GetPrimaryVertexSPD();
  fZ = -15.5;
-
 
 // Generated True Particle distributions for efficiecny and acceptance correction
  Double_t genzvtx;
@@ -355,9 +389,11 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 	        for(Int_t iTracks = 0; iTracks < nTracksMC; iTracks++){
 	        	AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
 	        	if( !trackMC ) continue;
+			if( !trackMC->IsPrimary() ) continue;
 	        	Int_t pdgCode = trackMC->PdgCode();
 			if( pdgCode == 113 ){
 				if( fabs( trackMC->Y() ) > 0.5 ) continue;
+				if( fRunTable->IsPA() && trackMC->Y() > 0 ) continue;
 				if( trackMC->GetNDaughters() != 2 ) continue;
 			        AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ));
                                 AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ));
@@ -370,7 +406,8 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 			}
 			else if( pdgCode == 9010221 ){
 				if( fabs( trackMC->Y() ) > 0.5 ) continue;
-                                if( trackMC->GetNDaughters() != 2 ) continue;
+				if( fRunTable->IsPA() && trackMC->Y() > 0 ) continue;
+	                        if( trackMC->GetNDaughters() != 2 ) continue;
                                 AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ));
                                 AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ));
                                 if( !trackd2 ) continue;
@@ -379,9 +416,27 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
                                 if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->PdgCode() ) != 211 ) continue;
 				FillTHnSparse("hF0GenParticle",
 					{genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass()},1.0 );
+
+				FillTHnSparse("hF0GenParticleFromPion",
+					{genzvtx,fCent,
+					sqrt( pow( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ))->Px() +
+						   dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->Px(), 2) +
+					      pow( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ))->Py() +
+						   dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->Py(), 2) ),
+
+					sqrt( pow( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ))->E() +
+						   dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->E(), 2) - 
+					      pow( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ))->Px() +
+						   dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->Px(), 2) -
+					      pow( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ))->Py() +
+						   dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->Py(), 2) -
+					      pow( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ))->Pz() +
+						   dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->Pz(), 2) )}, 1.0 );
+
 			}
 			else if( pdgCode == 225 ){
 				if( fabs( trackMC->Y() ) > 0.5 ) continue;
+				if( fRunTable->IsPA() && trackMC->Y() > 0 ) continue;
                                 if( trackMC->GetNDaughters() != 2 ) continue;
                                 AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ));
                                 AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ));
@@ -398,8 +453,6 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 //***********************************************
 //***********************************************
 
-
-
  Bool_t IsTriggered = kFALSE;
  Bool_t IsNotPileup = kFALSE;
  Bool_t IsValidVtx = kFALSE;
@@ -414,30 +467,23 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 //
 
 //IsTriggered Flag Configuration
- if(fRunTable->IsAA() || fRunTable->IsPA()){
-        IsTriggered = (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7);
- }
- else if(fRunTable->IsPP() ){
-        IsTriggered = (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7);
-        if( fOption.Contains("kMB") ) IsTriggered = (inputHandler -> IsEventSelected()) & (AliVEvent::kMB);
-        if( fOption.Contains("HighMult") ) IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
- }
+
+ IsTriggered = (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7);
+ if( fOption.Contains("kMB") ) IsTriggered = (inputHandler -> IsEventSelected()) & (AliVEvent::kMB);
+ if( fOption.Contains("HighMult") ) IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
+ if( fOption.Contains("2018") ) IsTriggered = fEvt -> GetTriggerMask() & (AliVEvent::kINT7); 
 
  if( IsMC ){
         IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kINT7;
-//        if( fOption.Contains("HighMult") ){
-//                IsTriggered = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
-//        }
  }
 //*****************************
 
 
-
 //IsNotPileup Flag Configuration
  if( IsMC ) IsNotPileup = kTRUE;
- else if( !fRunTable->IsPP() ) IsNotPileup = kTRUE;
-// else if( !IsMC && fRunTable->IsPP() && !event->IsPileupFromSPD(3.,0.8,3.,2.,5.) ) IsNotPileup = kTRUE;
- else if( !IsMC && fRunTable->IsPP() && !event->IsPileupFromSPDInMultBins() ) IsNotPileup = kTRUE;
+ else if( fRunTable->IsAA() || fRunTable->IsPA() ) IsNotPileup = kTRUE;
+ else if( !IsMC && !event->IsPileupFromSPDInMultBins() &&
+	( fRunTable->IsPP() ) ) IsNotPileup = kTRUE;
 //*****************************
 
 
@@ -461,7 +507,8 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 
 
 //IsSelectedFromAliMultSelection Flag Configuration
- if( !IsMC && fRunTable->IsPP() && !fOption.Contains("HighMult") && !fOption.Contains("kMB") ){
+ if( !IsMC && !fOption.Contains("HighMult") && !fOption.Contains("kMB") &&
+	( fRunTable->IsPP() || fRunTable->IsPA() || fRunTable->IsAA() ) ){
 	if( sel->IsEventSelected() ) IsSelectedFromAliMultSelection = kTRUE;
 
 	if( sel->GetThisEventIsNotPileupInMultBins() &&
@@ -472,7 +519,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 		IsSelectedFromAliMultSelectionForSysZ = kTRUE;
 	}
  }
- if( fOption.Contains("HighMult")  ){
+ if( fOption.Contains("HighMult") ){
         if( sel->GetThisEventIsNotPileup() &&
         sel->GetThisEventIsNotPileupInMultBins() &&
         sel->GetThisEventHasNoInconsistentVertices() &&
@@ -483,9 +530,9 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 		}
 	}
  }
+
  if( IsMC ) IsSelectedFromAliMultSelection = kTRUE;
  if( IsMC && fabs(genzvtx)<15 ) IsSelectedFromAliMultSelectionForSysZ = kTRUE;
- if( !fRunTable->IsPP()) IsSelectedFromAliMultSelection = kTRUE;
  if( fOption.Contains("kMB") ) IsSelectedFromAliMultSelection = kTRUE;
 //***************************************************
 
@@ -515,7 +562,9 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 	fHistos->FillTH1("hZvtx",fZ,1);
  }
 
-
+ if( fOption.Contains("QAMode") && IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
+	if( this -> GoodTracksSelection(0x20, 5, 3, 2) ) FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+ }
 
  if( !fOption.Contains("EvtSelStudy") ){
 	if( !fOption.Contains("Sys") ){
@@ -559,39 +608,29 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 			}
 		}
 	}
-/*
-	else if( fOption.Contains("SysPID") ){
-		if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
-			if(this -> GoodTracksSelection(0x20, 5, 3, 2)) this -> FillTracks();
-			if(this -> GoodTracksSelection(0x20, 5, 3, 2.5)) this -> FillTracks();
-			if(this -> GoodTracksSelection(0x20, 5, 3.5, 2)) this -> FillTracks();
-			fHistos->FillTH1("hEvtNumberUsed",1,1);
-			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
-		}
-	}
-*/
  }
 
 
 //Trigger Efficiency**********************
- bool IsINEL=false;
+ bool IsINEL = false;
+ bool IsINEL0 = false;
  if( IsMC ){
         if( fEvt->IsA()==AliAODEvent::Class() ){
                 fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
                 AliAODMCHeader *cHeaderAOD  = dynamic_cast<AliAODMCHeader*>
                         (fEvt->FindListObject(AliAODMCHeader::StdBranchName()));
-                const Int_t nTracksMC = fMCArray->GetEntriesFast();
+		const Int_t nTracksMC = fMCArray->GetEntries();  
                 for(Int_t iTracks = 0; iTracks < nTracksMC; iTracks++){
                         AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
                         if( !trackMC ) continue;
-                        if( !(trackMC->IsPhysicalPrimary()) ) continue;
                         if( trackMC->Charge() == 0 ) continue;
-                        if( fabs( trackMC->Eta() ) > 1.0 ) continue;
+			IsINEL0 = true;
+                       	if( fabs( trackMC->Eta() ) > 1.0 ) continue;
                         IsINEL = true;
                 }
         }
  }      
-        
+
  if( IsINEL ){
         if( (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7) ){
                 FillTHnSparse("TrigEffMult",{fCent,1.0},1.0 );
@@ -600,7 +639,51 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
                 FillTHnSparse("TrigEffMult",{fCent,0.0},1.0 );
         }
  }
+
+ if( IsINEL0 ){
+        if( (inputHandler -> IsEventSelected()) & (AliVEvent::kINT7) ){
+                FillTHnSparse("TrigEffMult0",{fCent,1.0},1.0 );
+        }
+        else{
+                FillTHnSparse("TrigEffMult0",{fCent,0.0},1.0 );
+        }
+ }
 //************************************8
+
+//Corrections for event selection******************
+ if( IsMC && IsTriggered && IsINEL ){
+	if( IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() && IsGoodVtx ){
+		FillTHnSparse("VtxSelection",{fCent,1.0}, 1.0);
+	}
+	else{ FillTHnSparse("VtxSelection",{fCent,0.0}, 1.0); }
+ }
+
+ if( IsMC ){
+	const Int_t nTracksMC = fMCArray->GetEntriesFast();
+	for(Int_t iTracks = 0; iTracks < nTracksMC; iTracks++){
+		AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
+		if( !trackMC ) continue;
+		Int_t pdgCode = trackMC->PdgCode();
+		if( pdgCode == 9010221 ){
+			if( fabs( trackMC->Y() ) > 0.5 ) continue;
+			if( fRunTable->IsPA() && trackMC->Y() > 0 ) continue;
+			if( trackMC->GetNDaughters() != 2 ) continue;
+			AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ));
+			AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ));
+			if( !trackd2 ) continue; if( !trackd1 ) continue;
+			if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(0) ))->PdgCode() ) != 211 ) continue;
+			if( abs( dynamic_cast<AliAODMCParticle*>(fMCArray->At( trackMC->GetDaughterLabel(1) ))->PdgCode() ) != 211 ) continue;
+			FillTHnSparse("SignalLoss0",{fCent,trackMC->Pt(),0.0},1.0);
+ 			if( IsINEL>0 )FillTHnSparse("SignalLoss",{fCent,trackMC->Pt(),0.0},1.0);
+			if( IsTriggered && IsValidVtx && sel->GetThisEventHasGoodVertex2016() && sel->GetThisEventHasNoInconsistentVertices() ){
+//			if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
+				FillTHnSparse("SignalLoss",{fCent,trackMC->Pt(),1.0},1.0);
+				FillTHnSparse("SignalLoss0",{fCent,trackMC->Pt(),1.0},1.0);
+			}
+		}
+	}
+ }
+//************************************************
 
 
  PostData(1, fHistos->GetListOfHistograms());
@@ -641,7 +724,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 	}
  }
 
- if( centbin>=0 && zbin>=0 && fRunTable->IsPP() ){
+ if( centbin>=0 && zbin>=0 && fRunTable->IsPP() && fOption.Contains("AddMixing") ){
 	ep = &fEMpooltrk[trkbin][centbin][zbin];
 	ep -> push_back( tracklist() ); 
 	etl = &(ep->back());
@@ -676,11 +759,13 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 
 		if( track->Pt() < fptcut ) continue;
 		if( fabs( track->Eta() ) > fetacut ) continue;
+
+		FillTHnSparse("hSinglePion", {fCent,track->Pt(),static_cast<double>(track->Charge()),track->Eta()},1.0 );
 	}
 
 	goodtrackindices.push_back(it);
 		
-	if( fRunTable->IsPP() ) etl->push_back( (AliVTrack*) track -> Clone() );
+	if( fRunTable->IsPP() && fOption.Contains("AddMixing") ) etl->push_back( (AliVTrack*) track -> Clone() );
  }
 
  double genzvtx;
@@ -703,12 +788,18 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 		for(Int_t iTracks = 0; iTracks < nTracksMC; iTracks++){
 			AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
 			if( !trackMC ) continue;
+			if( !trackMC->IsPrimary() ) continue;
 			Int_t pdgCode = trackMC->GetPdgCode();
 			if( fabs( trackMC->Y() ) > 0.5 ) continue;
+			if( fRunTable->IsPA() && trackMC->Y() > 0 ) continue;
 			if( pdgCode == 113 || pdgCode == 9010221 || pdgCode == 225 ){
 				if( trackMC->GetNDaughters() != 2 ) continue;
 				Label1 = trackMC->GetDaughterLabel(0);
 				Label2 = trackMC->GetDaughterLabel(1);
+//				Label1 = trackMC->GetDaughter(0);
+  //                              Label2 = trackMC->GetDaughter(1);
+
+//				if( Label1<0 || Label2<0 ) continue;
 
 				AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label1 ));
 				AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label2 ));
@@ -737,27 +828,101 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 
 				trkl1 = trackd1->GetLabel();
 				trkl2 = trackd2->GetLabel();
-
+				
 				trk1count=0;
 				trk2count=0;
+
+				AliAODTrack* trackd1Recon;
+				AliAODTrack* trackd2Recon;
+
+				trkid1 = -1;
+				trkid2 = -1;
+
+/*
+				cout << endl << endl << endl;
+				cout << "Scan Started" << endl;
+                                cout << "MC : " << trkl1 << ", " << trkl2 << endl;
+                                for(UInt_t it=0;it<ntracks;it++){
+                                        track = (AliAODTrack*)fEvt->GetTrack(it);
+                                        if( !track ) continue;
+                                        cout << (int)track->GetLabel() << endl;
+					if( (int)track->GetLabel() == trkl1 ||
+					(int)track->GetLabel() == trkl2 ){
+						trackd1Recon = (AliAODTrack*)fEvt->GetTrack( it );
+						if( !trackd1Recon) cout << "FOUND BUT NO RECO TRACK" << endl;
+						else if( trackd1Recon ){
+							cout << "FOUND" << endl;
+							cout << "MOMENTUM : " << trackd1Recon->Px() << ", " << trackd1Recon->Py() << ", " << trackd1Recon->Pz() << endl;
+							cout << "TRUE : " << trackd1->Px() << ", " << trackd1->Py() << ", " << trackd1->Pz() << endl;
+							cout << "TRUE : " << trackd2->Px() << ", " << trackd2->Py() << ", " << trackd2->Pz() << endl;
+						}
+					}
+                                }
+
+
+*/
+
+
 				for(UInt_t it=0;it<ntracks;it++){
 					track = (AliAODTrack*)fEvt->GetTrack(it);
 					if( !track ) continue;
-					if( (int)track->GetLabel() == trkl1 && track->GetID() > -1){
-						trk1count++;
-						trkid1=it;
-					}
-					if( (int)track->GetLabel() == trkl2 && track->GetID() > -1){
-						trk2count++;
-						trkid2=it;
+					if( pdgCode == 9010221 ) cout << track->GetLabel() << ", " << track->GetMother() << endl;
+//					if( (int)track->GetLabel() == trkl1 || (int)track->GetLabel() == trkl2 ){
+					if( (int)track->GetLabel() == Label1 || (int)track->GetLabel() == Label2 ){
+						trackd1Recon = (AliAODTrack*)fEvt->GetTrack( it );
+						if( trackd1Recon ){
+							trkid1=it;
+							break;				
+						}		
 					}
 				}
-				if( trk2count == 0 || trk1count == 0 ) continue;
-				AliAODTrack* trackd1Recon = (AliAODTrack*)fEvt->GetTrack( trkid1 );
-				AliAODTrack* trackd2Recon = (AliAODTrack*)fEvt->GetTrack( trkid2 );
+				if( trkid1 == -1 ){
+//					cout << "MC : " << trkl1 << ", " << trkl2 << endl;
+//					for(UInt_t it=0;it<ntracks;it++){
+//						track = (AliAODTrack*)fEvt->GetTrack(it);
+//						if( !track ) continue;
+//						cout << (int)track->GetLabel() << endl;
+//					}
+					continue;
+				}
 
-				if( !trackd1Recon ) continue;
-				if( !trackd2Recon ) continue;
+				for(UInt_t it=0;it<ntracks;it++){
+					track = (AliAODTrack*)fEvt->GetTrack(it);
+					if( !track ) continue;
+					if( (int)track->GetLabel() == Label1 || (int)track->GetLabel() == Label2 ){
+					if( it == trkid1) continue;
+						trackd2Recon = (AliAODTrack*)fEvt->GetTrack( it );
+						if( trackd2Recon ){
+                                                        trkid2=it;
+                                                        break;
+                                                }
+					}
+				}
+				if( trkid2 == -1 ){
+//                                        cout << "MC : " << trkl1 << ", " << trkl2 << endl;
+//                                        for(UInt_t it=0;it<ntracks;it++){
+//                                                track = (AliAODTrack*)fEvt->GetTrack(it);
+//                                                if( !track ) continue;
+//                                                cout << (int)track->GetLabel() << endl;
+ //                                       }
+                                        continue;
+				}
+
+/*				cout << "MC : " << trkl1 << ", " << trkl2 << endl;
+				for(UInt_t it=0;it<ntracks;it++){
+					track = (AliAODTrack*)fEvt->GetTrack(it);
+					if( !track ) continue;
+					cout << (int)track->GetLabel() << endl;
+				}
+*/
+
+//				if( trk2count == 0 || trk1count == 0 ) continue;
+
+//				AliAODTrack* trackd1Recon = (AliAODTrack*)fEvt->GetTrack( trkid1 );
+//				AliAODTrack* trackd2Recon = (AliAODTrack*)fEvt->GetTrack( trkid2 );
+
+//				if( !trackd1Recon ) continue;
+//				if( !trackd2Recon ) continue;
 
 
 				if( trackd1Recon->Pt() < fptcut ) continue;
@@ -787,30 +952,26 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 				fHistos -> FillTH2("PID_TPC_NSIG_MC_TUNE",trackd2Recon->Pt(),fPIDResponse->NumberOfSigmasTPC(trackd2Recon, AliPID::kPion),1.0);
 
 				fPIDResponse->SetTunedOnData(false);
-/*
-				if( ( fabs( fPIDResponse->NumberOfSigmasTPC((AliVParticle*)trackd1Recon, AliPID::kPion) ) < TPCalonesig &&
-				      fabs( fPIDResponse->NumberOfSigmasTPC((AliVParticle*)trackd2Recon, AliPID::kPion) ) < TPCalonesig ) ||
-				    ( fabs( fPIDResponse->NumberOfSigmasTOF((AliVParticle*)trackd1Recon, AliPID::kPion) ) < TOFsig &&
-				      fabs( fPIDResponse->NumberOfSigmasTOF((AliVParticle*)trackd2Recon, AliPID::kPion) ) < TOFsig && 
-				      fabs( fPIDResponse->NumberOfSigmasTPC((AliVParticle*)trackd1Recon, AliPID::kPion) ) < TPCsig &&
-				      fabs( fPIDResponse->NumberOfSigmasTPC((AliVParticle*)trackd2Recon, AliPID::kPion) ) < TPCsig ) ){
-*/
+
 				PIDcut1 = 0;
 				PIDcut2 = 0;
 
 				if( ( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) < 0.01 
+//				if( ( fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,trackd1Recon) 
 				&& fabs( fPIDResponse->NumberOfSigmasTOF(trackd1Recon, AliPID::kPion) ) < TOFsig ) ||
 				fabs( fPIDResponse->NumberOfSigmasTPC(trackd1Recon, AliPID::kPion) ) < TPCalonesig ){
 					PIDcut1=1;
 				}
 
-                                if( ( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < 0.01 
+                                if( ( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < 0.01
+//				if( ( fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,trackd2Recon) 
                                 && fabs( fPIDResponse->NumberOfSigmasTOF(trackd2Recon, AliPID::kPion) ) < TOFsig ) ||
                                 fabs( fPIDResponse->NumberOfSigmasTPC(trackd2Recon, AliPID::kPion) ) < TPCalonesig ){
                                         PIDcut2=1;
                                 }
 
 				if( PIDcut1 && PIDcut2 ){
+
                                 	if( pdgCode == 113 ){
                                 		FillTHnSparse("hRhoTrueParticleADDPID",
                                 		        {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),(double)(trkbin+1)},1.0 );
@@ -825,15 +986,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 					}
 				}
                                 fPIDResponse->SetTunedOnData(true);
-/*
-                                if( ( fabs( fPIDResponse->NumberOfSigmasTPC((AliVParticle*)trackd1Recon, AliPID::kPion) ) < TPCalonesig &&
-                                      fabs( fPIDResponse->NumberOfSigmasTPC((AliVParticle*)trackd2Recon, AliPID::kPion) ) < TPCalonesig ) ||
-                                    ( fabs( fPIDResponse->NumberOfSigmasTOF((AliVParticle*)trackd1Recon, AliPID::kPion) ) < TOFsig &&
-                                      fabs( fPIDResponse->NumberOfSigmasTOF((AliVParticle*)trackd2Recon, AliPID::kPion) ) < TOFsig 
-//                                      fabs( fPIDResponse->NumberOfSigmasTPC((AliVParticle*)trackd1Recon, AliPID::kPion) ) < TPCsig &&
-//                                      fabs( fPIDResponse->NumberOfSigmasTPC((AliVParticle*)trackd2Recon, AliPID::kPion) ) < TPCsig ) ){
-				) ){
-*/
+
                                 PIDcut1 = 0;
                                 PIDcut2 = 0;
 
@@ -861,12 +1014,14 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
                                                 {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass(),(double)(trkbin+1)},1.0 );
                                 }
 			}
-
+/*
 			else if( pdgCode == 223 ){
 				if( trackMC->GetNDaughters() != 3 ) continue; //omega
 				Label1 = trackMC->GetDaughterLabel(0);
 				Label2 = trackMC->GetDaughterLabel(0)+1;
 				Label3 = trackMC->GetDaughterLabel(1);
+
+//				if( Label1<0 || Label2<0 ) continue;
 
 				AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label1 ));
                                 AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label2 ));
@@ -946,6 +1101,8 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
                                 Label1 = trackMC->GetDaughterLabel(0);
                                 Label2 = trackMC->GetDaughterLabel(1);
 
+//				if( Label1<0 || Label2<0 ) continue;
+
                                 AliAODMCParticle* trackd1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label1 ));
                                 AliAODMCParticle* trackd2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At( Label2 ));
 
@@ -1012,10 +1169,11 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
                                         {genzvtx,fCent,trackMC->Pt(),trackMC->GetCalcMass()},1.0 );
                                 }
 			}
+*/
 		}
 	}
  }
- if( fRunTable->IsPP() ){
+ if( fRunTable->IsPP() && fOption.Contains("AddMixing") ){
 	if (!goodtrackindices.size()) ep->pop_back();
 	if ( ep->size() > bookingsize ){
 	        for (auto it: ep->front()) delete it;
@@ -1033,19 +1191,6 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
  int ntracks = goodtrackindices.size();
 
  tracklist trackpool;
-
- int epsize=1;
- if( centbin>=0 && zbin>=0 && fRunTable->IsPP() ){
-	eventpool &ep = fEMpooltrk[trkbin][centbin][zbin];
-	epsize = ep.size();
-        if (ep.size()< 10 ) return;
-        int n = 0;
-        for (auto pool: ep){
-                if (n == (ep.size() -1 )) continue;
-                for (auto track: pool) trackpool.push_back((AliVTrack*)track);
-                n++;
-        }
- }
 
 
  int MotherID;
@@ -1072,7 +1217,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 		Rap_pair = 0.5*TMath::Log( (e1+e2+track1->Pz()+track2->Pz())/(e1+e2-track1->Pz()-track2->Pz()) );
 		else{ Rap_pair = -999; }
 		if( fabs( Rap_pair ) > 0.5 ) continue;
-
+                if( fRunTable->IsPA() && Rap_pair > 0 ) continue;
 		PiPiMass = sqrt( pow(e1+e2,2) -
 			pow(track1->Px()+track2->Px(),2) -
 			pow(track1->Py()+track2->Py(),2) -
@@ -1080,7 +1225,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 
 		PiPipT = sqrt( pow( track1->Px()+track2->Px(),2 ) +
 			       pow( track1->Py()+track2->Py(),2 ) );
-
+/*
 		if( IsMC ){
 			if( track1->GetLabel() < 0 || track2->GetLabel() < 0 ) continue;
 			if( dynamic_cast<AliAODMCParticle*>(fMCArray->At( track1->GetLabel() ))->GetMother() ==
@@ -1213,7 +1358,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 				}
 			}
 		}
-
+*/
 
 		if( track1->Charge()*track2->Charge() == -1 ){
 			FillTHnSparse("hInvMass",{1,fZ,fCent,
@@ -1229,7 +1374,22 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 		}
 	}
  }
- if( fRunTable->IsPP() ){
+
+ int epsize=1;
+ if( centbin>=0 && zbin>=0 && fRunTable->IsPP() && fOption.Contains("AddMixing") ){
+        eventpool &ep = fEMpooltrk[trkbin][centbin][zbin];
+        epsize = ep.size();
+        if (ep.size()< 10 ) return;
+        int n = 0;
+        for (auto pool: ep){
+                if (n == (ep.size() -1 )) continue;
+                for (auto track: pool) trackpool.push_back((AliVTrack*)track);
+                n++;
+        }
+ }
+
+
+ if( fRunTable->IsPP() && fOption.Contains("AddMixing") ){
  	for (UInt_t  it = 0; it < ntracks; it++) {
 		track1 =  (AliVTrack*) fEvt->GetTrack(goodtrackindices.at(it)) ;
 		if(!track1) continue;
@@ -1250,15 +1410,15 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 
 	                if( track1->Charge()*track2->Charge() == -1 ){
 	                        FillTHnSparse("hInvMassMixing",{1,fZ,fCent,
-	                                PiPipT, PiPiMass,(double)(trkbin+1)},1.0/((epsize-1.0)) );
+	                                PiPipT, PiPiMass,(double)(trkbin+1)},1.0);
 	                }
 	                else if( track1->Charge() + track2->Charge() == 2 ){
 	                        FillTHnSparse("hInvMassMixing",{2,fZ,fCent,
-	                                PiPipT, PiPiMass,(double)(trkbin+1)},1.0/((epsize-1.0)) );
+	                                PiPipT, PiPiMass,(double)(trkbin+1)},1.0);
 	                }
 	                else if( track1->Charge() + track2->Charge() == -2 ){
 	                        FillTHnSparse("hInvMassMixing",{3,fZ,fCent,
-	                                PiPipT, PiPiMass,(double)(trkbin+1)},1.0/((epsize-1.0)) );
+	                                PiPipT, PiPiMass,(double)(trkbin+1)},1.0);
 	                }
 	        }
 	}

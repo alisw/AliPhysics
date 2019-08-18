@@ -57,6 +57,8 @@ void AliAnalysisTaskFemtoDreamPhi::UserCreateOutputObjects() {
   fOutput->SetOwner();
 
   fEvent = new AliFemtoDreamEvent(false, true, fTrigger);
+ // fEvent->SetCalcSpherocity(true);
+
   fOutput->Add(fEvent->GetEvtCutList());
 
   fTrack = new AliFemtoDreamTrack();
@@ -137,7 +139,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserCreateOutputObjects() {
   }
 
   fPairCleaner =
-      new AliFemtoDreamPairCleaner(3, 0, fConfig->GetMinimalBookingME());
+      new AliFemtoDreamPairCleaner(3, 1, fConfig->GetMinimalBookingME());
   fOutput->Add(fPairCleaner->GetHistList());
 
   fPartColl =
@@ -185,6 +187,41 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
 
     if (!track) continue;
     fTrack->SetTrack(track);
+    //find mothers of MC Kaons (if phi->stop loop, else loop until arriving to g,q,p) and set MotherPDG
+    if (fIsMC) {
+        TClonesArray *mcarray = dynamic_cast<TClonesArray*> (Event->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (!mcarray) {
+          AliError("SPTrack: MC Array not found");
+        }
+        if (fTrack->GetID() >= 0) {
+          AliAODMCParticle * mcPart = (AliAODMCParticle*) mcarray->At(fTrack->GetID());
+          if (!(mcPart)) {
+            break;
+          }
+          int motherID = mcPart->GetMother();
+          int lastMother = motherID;
+          AliAODMCParticle *mcMother = nullptr;
+          while (motherID != -1) {
+            lastMother = motherID;
+            mcMother = (AliAODMCParticle *) mcarray->At(motherID);
+            motherID = mcMother->GetMother();
+            if (mcMother->GetPdgCode()==333) {
+              break;
+            }
+          }
+          if (lastMother != -1) {
+            mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
+          }
+          if (mcMother) {
+            fTrack->SetMotherPDG(mcMother->GetPdgCode());
+//          std::cout<<"Track Mother: "<<fTrack->GetMotherPDG()<<endl;
+            fTrack->SetMotherID(lastMother);
+         }
+        }
+        else {
+          break;  //if we don't have MC Information, don't use that track
+        }
+    }
     fTrack->SetInvMass(massKaon);
     if (fPosKaonCuts->isSelected(fTrack)) {
       Particles.push_back(*fTrack);
@@ -203,9 +240,17 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   fPhiParticle->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (const auto &posK : Particles) {
     for (const auto &negK : AntiParticles) {
-      fPhiParticle->Setv0(posK, negK);
+      fPhiParticle->Setv0(posK, negK, Event, false, false, true);
+      fPhiParticle->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+//      std::cout<<"ID mother kp: "<<posK.GetMotherID()<<endl;
+//      std::cout<<"ID mother km: "<<negK.GetMotherID()<<endl;
+//      std::cout<<"PDG kp: "<<posK.GetMCPDGCode()<<endl;
+//      std::cout<<"PDG km: "<<negK.GetMCPDGCode()<<endl;
+//      std::cout<<"PDG phi: "<<fPhiParticle->GetMCPDGCode()<<endl;
       if (fPhiCuts->isSelected(fPhiParticle)) {
+        fPhiParticle->SetCPA(gRandom->Uniform()); //cpacode needed for CleanDecay v0;
         V0Particles.push_back(*fPhiParticle);
+//      std::cout<<"PDG phi cut: "<<fPhiParticle->GetMCPDGCode()<<endl;
       }
     }
   }
@@ -213,7 +258,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   fPairCleaner->CleanTrackAndDecay(&Protons, &AntiProtons, 0);
   fPairCleaner->CleanTrackAndDecay(&Protons, &V0Particles, 1);
   fPairCleaner->CleanTrackAndDecay(&AntiProtons, &V0Particles, 2);
-
+  fPairCleaner->CleanDecay(&V0Particles, 0);
   fPairCleaner->ResetArray();
 
   fPairCleaner->StoreParticle(Protons);

@@ -258,6 +258,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
   hNGoodESDTracksVsNGoodVGammas(NULL),
   fHistoSPDClusterTrackletBackground(NULL),
   hNV0Tracks(NULL),
+  hESDEposEnegPsiPairpTleptonsDPhi(NULL),
   hEtaShift(NULL),
   fHistoDoubleCountTruePi0InvMassPt(NULL),
   fHistoDoubleCountTrueEtaInvMassPt(NULL),
@@ -483,6 +484,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
   hNGoodESDTracksVsNGoodVGammas(NULL),
   fHistoSPDClusterTrackletBackground(NULL),
   hNV0Tracks(NULL),
+  hESDEposEnegPsiPairpTleptonsDPhi(NULL),
   hEtaShift(NULL),
   fHistoDoubleCountTruePi0InvMassPt(NULL),
   fHistoDoubleCountTrueEtaInvMassPt(NULL),
@@ -711,6 +713,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
     hESDDalitzElectronAfterTPCdEdxVsPhi     = new TH2F*[fnCuts];
     hESDDalitzPositronAfterTPCdEdxVsPhi     = new TH2F*[fnCuts];
     hESDEposEnegPsiPairDPhi        = new TH2F*[fnCuts];
+    hESDEposEnegPsiPairpTleptonsDPhi    = new TH3F*[fnCuts];
     hESDEposEnegPsiPairEta        = new TH2F*[fnCuts];
     hESDEposEnegDPhiEta        = new TH2F*[fnCuts];
     hESDEposEnegDPhiEta        = new TH2F*[fnCuts];
@@ -953,6 +956,9 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 
       hESDEposEnegPsiPairDPhi[iCut] = new TH2F("ESD_EposEneg_PsiPair_DPhi","ESD_EposEneg_PsiPair_DPhi",100,-1.0,1.0,100,-1.0,1.0 );
       fQAFolder[iCut]->Add(hESDEposEnegPsiPairDPhi[iCut]);
+
+      hESDEposEnegPsiPairpTleptonsDPhi[iCut] = new TH3F("ESD_EposEneg_PsiPair_pTleptons_DPhi","ESD_EposEneg_PsiPair_DPhi",100,-1.0,1.0,100,-1.0,1.0,100,0,10);
+      fQAFolder[iCut]->Add(hESDEposEnegPsiPairpTleptonsDPhi[iCut]);
 
       hESDEposEnegPsiPairEta[iCut] = new TH2F("ESD_EposEneg_PsiPair_Eta","ESD_EposEneg_PsiPair_Eta",100,-1.0,1.0,600,-1.5,1.5);
       fQAFolder[iCut]->Add(hESDEposEnegPsiPairEta[iCut]);
@@ -1586,8 +1592,11 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *){
     fiCut = iCut;
     fNVirtualGammas = 0;
 
+    //ALERT Cross Check for the Vertex on the event.
+    if(!(fAODESDEvent->GetPrimaryVertex())){
+        continue;
+    }
     Int_t eventNotAccepted = ((AliConvEventCuts*)fCutEventArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
-
     if(eventNotAccepted){
       hNEvents[iCut]->Fill(eventNotAccepted); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       continue;
@@ -1915,13 +1924,6 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTruePhotonCandidates(AliAODConvers
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvDalitzV1::ProcessVirtualGammasCandidates(){ //NOTE Complet 4 Marzo
 
-  Double_t magField = fInputEvent->GetMagneticField();
-  if( magField  < 0.0 ){
-    magField =  1.0;
-  } else {
-    magField =  -1.0;
-  }
-
   for(Int_t virtualGammaIndex=0; virtualGammaIndex < fGoodVirtualGammas->GetEntries();  virtualGammaIndex++ ){
     AliAODConversionPhoton *Vgamma=dynamic_cast<AliAODConversionPhoton*>(fGoodVirtualGammas->At(virtualGammaIndex));
 
@@ -1938,8 +1940,10 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessVirtualGammasCandidates(){ //NOTE 
     if ( fDoMesonQA > 0 ) {
 //NOTE Only here on PsiPair are Constrained param
       Double_t psiPair = GetPsiPair(positronVgamma.get(),electronVgamma.get());
-      Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronVgamma->GetConstrainedParamPhiG()-positronVgamma->GetConstrainedParamPhiG());
+//      momPos[0]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Px();
+      Double_t deltaPhi = GetdeltaPhi(electronVgamma.get(),positronVgamma.get());
       hESDEposEnegPsiPairDPhi[fiCut]->Fill(deltaPhi,psiPair);
+      hESDEposEnegPsiPairpTleptonsDPhi[fiCut]->Fill(deltaPhi,psiPair,Vgamma->Pt());
       hESDEposEnegPsiPairEta[fiCut]->Fill(psiPair,Vgamma->Eta());
       hESDEposEnegDPhiEta[fiCut]->Fill(deltaPhi,Vgamma->Eta());
       hESDEposEnegInvMassPt[fiCut]->Fill(Vgamma->M(),Vgamma->Pt());
@@ -2148,7 +2152,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
           std::unique_ptr<AliDalitzAODESD> positronCandidate = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(lGoodPositronIndexPrev[j]));
 //NOTE Again only here Constrained Param
         Double_t psiPair = GetPsiPair(positronCandidate.get(),electronCandidate.get());
-        Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->GetConstrainedParamPhiG()-positronCandidate->GetConstrainedParamPhiG());
+        Double_t deltaPhi = GetdeltaPhi(electronCandidate.get(),positronCandidate.get());
 
         if( ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->IsFromGammaConversion(psiPair,deltaPhi) ){
           lElectronPsiIndex[i] = kFALSE;
@@ -3319,7 +3323,9 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos,
         TVector3 negDaughterB;
         TVector3 posDaughterA;
         TVector3 negDaughterA;
+        Double_t psiAngle=0;
   if (fAODESDEvent->GetIsESD()){
+//NOTE On ESD constrainedparam for the pt using the Kalman fit
     if( trackPos->GetConstrainedPxPyPzG(momPos) == 0 ) trackPos->GetConstrainedPxPyPzG( momPos );
     if( trackNeg->GetConstrainedPxPyPzG(momNeg) == 0 ) trackNeg->GetConstrainedPxPyPzG( momNeg );
         posDaughterA.SetXYZ( momPos[0], momPos[1], momPos[2] );
@@ -3328,7 +3334,7 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos,
         negDaughterB.SetXYZ( momNeg[0], momNeg[1], momNeg[2] );
   }
   else {
-   // Double_t dzp[2],covdzp[3],dzn[2],covdzn[3];
+//NOTE Meanwhile for AOD We calculate a AliExternalTrackParam for the tracks, and propagate the momentum, with the Dielectrons code fails for my work, returning to the last method.
     AliExternalTrackParam Positive;
     Positive.CopyFromVTrack(trackPos->GetDalitzVTrack());
     AliExternalTrackParam Negative;
@@ -3344,19 +3350,19 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos,
         // cout<<Radios<<" 3D "<<radiussum<<" 2D "<<endl;
         posDaughterB.SetXYZ( trackPos->GetPxG(), trackPos->GetPyG(), trackPos->GetPzG());
         negDaughterB.SetXYZ( trackNeg->GetPxG(), trackNeg->GetPyG(), trackNeg->GetPzG());
+        //ALERT update, I add this selection at the start.
     // activate the following two lines if you want to check that the event primary vertex is that reconstructed with tracks
-    //  TString title=vtxAOD->GetTitle();
-    //  if(!title.Contains("VertexerTracks")) { you could decide what to do in case the primary vertex is not reconstructed with tracks }fAODESDEvent
-    Double_t b=fInputEvent->GetMagneticField();
-    //Positive.PropagateToDCA(vtxAOD,b,3.,dzp,covdzp);
-    //Negative.PropagateToDCA(vtxAOD,b,3.,dzn,covdzn);
-    // --> see above what dz and covdz represent
+     TString title=vtxAOD->GetTitle();
+     if(!title.Contains("VertexerTracks")){
+         return 0.8;
+     }
 
+    Double_t b=fInputEvent->GetMagneticField();
     Positive.GetPxPyPzAt(radiussum,b,momPos);
     Negative.GetPxPyPzAt(radiussum,b,momNeg);
-//cout<<momPos[0]<<"propagado"<<trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Px()<<endl;
-    //Positive.PxPyPz(momPos);NOTE PxPyPz Propagate close to DCA
-    //Negative.PxPyPz(momNeg);NOTE PxPyPz Propagate close to DCA
+
+   //Positive.PxPyPz(momPos);//NOTE PxPyPz Propagate close to DCA
+   //Negative.PxPyPz(momNeg);//NOTE PxPyPz Propagate close to DCA
    momPos[0]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Px();
    momPos[1]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Py();
    momPos[2]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Pz();
@@ -3373,10 +3379,39 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos,
   Double_t deltaTheta = negDaughterA.Theta() - posDaughterA.Theta();
   Double_t openingAngle =  posDaughterA.Angle( negDaughterA );  //TMath::ACos( posDaughter.Dot(negDaughter)/(negDaughter.Mag()*posDaughter.Mag()) );
 
-  if( openingAngle < 1e-20 ) return 0.;
-
-  Double_t psiAngle = TMath::ASin( deltaTheta/openingAngle );
+  if( openingAngle < 1e-20 ) {
+      return 0.;
+  }
+  psiAngle = TMath::ASin( deltaTheta/openingAngle );
   return psiAngle;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskGammaConvDalitzV1::GetdeltaPhi(AliDalitzAODESD *trackelectronVgamma, AliDalitzAODESD *trackpositronVgamma ) const
+{
+//Function to calculate deltaPhi with constrained Param on AOD and ESD
+    Double_t magField = fInputEvent->GetMagneticField();
+    if( magField  < 0.0 ){
+        magField =  1.0;
+    } else {
+        magField =  -1.0;
+    }
+    Double_t deltaPhiC=0.0;
+    if (fAODESDEvent->GetIsESD()){
+        //NOTE On ESD constrainedparam for the pt using the Kalman fit
+        deltaPhiC = magField * TVector2::Phi_mpi_pi( trackelectronVgamma->GetConstrainedParamPhiG()-trackpositronVgamma->GetConstrainedParamPhiG());
+    }
+    else {
+        AliAODVertex *vtxAODPhi = (AliAODVertex*)fAODESDEvent->GetPrimaryVertex();
+        TString title=vtxAODPhi->GetTitle();
+        if(!title.Contains("VertexerTracks")){
+            return 0.8;
+        }
+        //We Use the Primary Vertex and Magnetic Field.
+   deltaPhiC =magField * TVector2::Phi_mpi_pi( trackelectronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Phi()-trackpositronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Phi());
+    }
+
+    return deltaPhiC;
 }
 
 //________________________________________________________________________

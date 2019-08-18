@@ -66,13 +66,14 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
   fConfig->GetXaxis()->SetBinLabel(8, "Max Transverse Radius");
   fConfig->GetXaxis()->SetBinLabel(9, "Min DCA to PV of Daug");
   fConfig->GetXaxis()->SetBinLabel(10, "Max Distance Daug to Vertex");
-  fConfig->GetXaxis()->SetBinLabel(11, "Inv Mass Cut");
-  fConfig->GetXaxis()->SetBinLabel(12, "Min Cos Pointing Angle");
-  fConfig->GetXaxis()->SetBinLabel(13, "Armenteros q_{T} low");
-  fConfig->GetXaxis()->SetBinLabel(14, "Armenteros q_{T} up");
-  fConfig->GetXaxis()->SetBinLabel(15, "Armenteros #alpha low");
-  fConfig->GetXaxis()->SetBinLabel(16, "Armenteros #alpha up");
-  fConfig->GetXaxis()->SetBinLabel(17, "Pileup requirement");
+  fConfig->GetXaxis()->SetBinLabel(11, "Inv Mass Cut down");
+  fConfig->GetXaxis()->SetBinLabel(12, "Inv Mass Cut up");
+  fConfig->GetXaxis()->SetBinLabel(13, "Min Cos Pointing Angle");
+  fConfig->GetXaxis()->SetBinLabel(14, "Armenteros q_{T} low");
+  fConfig->GetXaxis()->SetBinLabel(15, "Armenteros q_{T} up");
+  fConfig->GetXaxis()->SetBinLabel(16, "Armenteros #alpha low");
+  fConfig->GetXaxis()->SetBinLabel(17, "Armenteros #alpha up");
+  fConfig->GetXaxis()->SetBinLabel(18, "Pileup requirement");
 
   fHistList->Add(fConfig);
 
@@ -137,7 +138,7 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
     fv0CutQA[i]->Add(fpTDist[i]);
 
     TString etaname = Form("EtaDist_%s", sName[i].Data());
-    fetaDist[i] = new TH1F(etaname.Data(), etaname.Data(), 200, -10., 10.);
+    fetaDist[i] = new TH1F(etaname.Data(), etaname.Data(), 200, -2., 2.);
     fetaDist[i]->GetXaxis()->SetTitle("#eta");
     fv0CutQA[i]->Add(fetaDist[i]);
 

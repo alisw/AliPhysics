@@ -37,20 +37,35 @@ fHistNTPCclsVsRadius(nullptr),
 fPIDtree(nullptr),
 fPTPC(0),
 fPTOF(0),
+fPHMPID(0),
 fdEdxTPC(0),
+fdEdxITS(0),
 fToF(0),
 fPt(0),
 fTPCNcls(0),
 fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
+fTPCNcrossed(0),
+fTPCFindable(0),
+fITSclsMap(0),
+fHMPIDsignal(0),
+fHMPIDoccupancy(0),
+fTrackInfoMap(0),
 fEta(-9999),
+fPhi(9999),
 fPDGcode(-1),
 fTag(0),
-fNsigmaMaxForTag(0.02),
+fNsigmaMaxForKaonTag(0.2),
+fNsigmaMaxForNucleiTag(3.),
 fQtMinKinks(0.15),
 fRMinKinks(120),
 fRMaxKinks(210),
+fDeadZoneWidth(3.),
+fCutGeoNcrNclLength(130.),
+fCutGeoNcrNclGeom1Pt(1.5),
+fCutGeoNcrNclFractionNcr(0.85),
+fCutGeoNcrNclFractionNcl(0.7),
 fCentMin(0.),
 fCentMax(100.),
 fCentEstimator(kCentOff),
@@ -62,7 +77,10 @@ fESDtrackCuts(nullptr),
 fAOD(nullptr),
 fPIDresp(nullptr),
 fV0cuts(nullptr),
+fFillTreeWithPIDInfo(true),
 fFillTreeWithNsigmaPIDOnly(false),
+fFillTreeWithRawPIDOnly(false),
+fFillTreeWithTrackQualityInfo(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
 fPtMaxDownSampling(1.5),
@@ -80,18 +98,38 @@ fSigmaNsigmaTPCProtonData{},
 fPlimitsNsigmaTPCDataCorr{},
 fNPbinsNsigmaTPCDataCorr(0),
 fEtalimitsNsigmaTPCDataCorr{},
-fNEtabinsNsigmaTPCDataCorr(0)
+fNEtabinsNsigmaTPCDataCorr(0),
+fUseAliEventCuts(false),
+fAliEventCuts(),
+fApplyPbPbOutOfBunchPileupCuts(),
+fUseTimeRangeCutForPbPb2018(true),
+fTimeRangeCut()
 {
   //
   // default constructur
   //
 
-  for(int iVar=0; iVar<6; iVar++) fPIDNsigma[iVar] = -999.;
   for(int iHisto=0; iHisto<5; iHisto++) fHistArmenteroPlot[iHisto] = nullptr;
-  for(int iHisto=0; iHisto<kNHypo; iHisto++) {
-    fHistNsigmaTPCvsPt[iHisto] = nullptr;
-    fHistNsigmaTOFvsPt[iHisto] = nullptr;
+  
+  for(int iDet=0; iDet<kNMaxDet; iDet++) {
+    for(int iHypo=0; iHypo<kNMaxHypo; iHypo++) {
+      fPIDNsigma[iDet][iHypo]      = numeric_limits<short>::min();
+      fHistNsigmaVsPt[iDet][iHypo] = nullptr;
+    }
   }
+
+  fEnabledSpecies[kPion]     = true;
+  fEnabledSpecies[kKaon]     = true;
+  fEnabledSpecies[kProton]   = true;
+  fEnabledSpecies[kElectron] = false;
+  fEnabledSpecies[kDeuteron] = false;
+  fEnabledSpecies[kTriton]   = false;
+  fEnabledSpecies[kHe3]      = false;
+  
+  fEnabledDet[kITS]          = false;
+  fEnabledDet[kTPC]          = true;
+  fEnabledDet[kTOF]          = true;
+  fEnabledDet[kHMPID]        = false;
 
   for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
     fPlimitsNsigmaTPCDataCorr[iP] = 0.;
@@ -99,6 +137,8 @@ fNEtabinsNsigmaTPCDataCorr(0)
   for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
     fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
   }
+  
+  fAliEventCuts.SetManualMode();
 }
 
 //________________________________________________________________________
@@ -114,20 +154,35 @@ fHistNTPCclsVsRadius(nullptr),
 fPIDtree(nullptr),
 fPTPC(0),
 fPTOF(0),
+fPHMPID(0),
 fdEdxTPC(0),
+fdEdxITS(0),
 fToF(0),
 fPt(0),
 fTPCNcls(0),
 fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
+fTPCNcrossed(0),
+fTPCFindable(0),
+fITSclsMap(0),
+fHMPIDsignal(0),
+fHMPIDoccupancy(0),
+fTrackInfoMap(0),
 fEta(-9999),
+fPhi(9999),
 fPDGcode(-1),
 fTag(0),
-fNsigmaMaxForTag(0.02),
+fNsigmaMaxForKaonTag(0.2),
+fNsigmaMaxForNucleiTag(3.),
 fQtMinKinks(0.15),
 fRMinKinks(120),
 fRMaxKinks(210),
+fDeadZoneWidth(3.),
+fCutGeoNcrNclLength(130.),
+fCutGeoNcrNclGeom1Pt(1.5),
+fCutGeoNcrNclFractionNcr(0.85),
+fCutGeoNcrNclFractionNcl(0.7),
 fCentMin(0.),
 fCentMax(100.),
 fCentEstimator(kCentOff),
@@ -139,7 +194,10 @@ fESDtrackCuts(nullptr),
 fAOD(nullptr),
 fPIDresp(nullptr),
 fV0cuts(nullptr),
+fFillTreeWithPIDInfo(true),
 fFillTreeWithNsigmaPIDOnly(false),
+fFillTreeWithRawPIDOnly(false),
+fFillTreeWithTrackQualityInfo(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
 fPtMaxDownSampling(1.5),
@@ -157,18 +215,38 @@ fSigmaNsigmaTPCProtonData{},
 fPlimitsNsigmaTPCDataCorr{},
 fNPbinsNsigmaTPCDataCorr(0),
 fEtalimitsNsigmaTPCDataCorr{},
-fNEtabinsNsigmaTPCDataCorr(0)
+fNEtabinsNsigmaTPCDataCorr(0),
+fUseAliEventCuts(false),
+fAliEventCuts(),
+fApplyPbPbOutOfBunchPileupCuts(),
+fUseTimeRangeCutForPbPb2018(true),
+fTimeRangeCut()
 {
   //
   // standard constructur
   //
 
-  for(int iVar=0; iVar<6; iVar++) fPIDNsigma[iVar] = -999.;
   for(int iHisto=0; iHisto<5; iHisto++) fHistArmenteroPlot[iHisto] = nullptr;
-  for(int iHisto=0; iHisto<kNHypo; iHisto++) {
-    fHistNsigmaTPCvsPt[iHisto] = nullptr;
-    fHistNsigmaTOFvsPt[iHisto] = nullptr;
+  
+  for(int iDet=0; iDet<kNMaxDet; iDet++) {
+    for(int iHypo=0; iHypo<kNMaxHypo; iHypo++) {
+      fPIDNsigma[iDet][iHypo]      = numeric_limits<short>::min();
+      fHistNsigmaVsPt[iDet][iHypo] = nullptr;
+    }
   }
+
+  fEnabledSpecies[kPion]     = true;
+  fEnabledSpecies[kKaon]     = true;
+  fEnabledSpecies[kProton]   = true;
+  fEnabledSpecies[kElectron] = false;
+  fEnabledSpecies[kDeuteron] = false;
+  fEnabledSpecies[kTriton]   = false;
+  fEnabledSpecies[kHe3]      = false;
+  
+  fEnabledDet[kITS]          = false;
+  fEnabledDet[kTPC]          = true;
+  fEnabledDet[kTOF]          = true;
+  fEnabledDet[kHMPID]        = false;
 
   for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
     fPlimitsNsigmaTPCDataCorr[iP] = 0.;
@@ -176,6 +254,8 @@ fNEtabinsNsigmaTPCDataCorr(0)
   for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
     fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
   }
+
+  fAliEventCuts.SetManualMode();
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -220,7 +300,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(true);
 
-  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",8,-1.5,6.5);
+  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",13,-1.5,11.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from AOD");
@@ -232,6 +312,10 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Error on zVertex>0.5");
   fHistNEvents->GetXaxis()->SetBinLabel(8,"|zVertex|>10");
   fHistNEvents->GetXaxis()->SetBinLabel(9,"Good Z vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"Cent corr cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"V0mult vs. nTPC cls");  
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"excluded time range");  
+  fHistNEvents->GetXaxis()->SetBinLabel(13,"Selected events");  
   fOutputList->Add(fHistNEvents);
 
   TString armenteronames[5] = {"All","K0s","Lambda","AntiLambda","Gamma"};
@@ -256,34 +340,79 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fHistNTPCclsVsRadius = new TH2F("fHistNTPCclsVsRadius","N TPC clusters (mother) vs. #it{R} kinks;#it{R} (cm);N TPC clusters (mother)",50,0,250,160,-0.5,159.5);
   fOutputList->Add(fHistNTPCclsVsRadius);
 
+  TString detnames[kNMaxDet]       = {"ITS","TPC","TOF","HMPID"};
+  TString partnameshort[kNMaxHypo] = {"pi","K","p","e","d","t","He3"};
+  TString hyponames[kNMaxHypo]     = {"Pion","Kaon","Proton","Electron","Deuteron","Triton","He3"};
+  
   if(fIsMC) {
-    for(int iHisto=0; iHisto<kNHypo; iHisto++) {
-      fHistNsigmaTPCvsPt[iHisto] = new TH2F(Form("fHistNsigmaTPCvsPt_%s",hyponames[iHisto].Data()),Form(";#it{p}_{T} (GeV/#it{c});N_{#sigma}^{TPC}(%s)",hyponames[iHisto].Data()),500,0,50,1000,-50,50);
-      fHistNsigmaTOFvsPt[iHisto] = new TH2F(Form("fHistNsigmaTOFvsPt_%s",hyponames[iHisto].Data()),Form(";#it{p}_{T} (GeV/#it{c});N_{#sigma}^{TOF}(%s)",hyponames[iHisto].Data()),500,0,50,1000,-50,50);
-      fOutputList->Add(fHistNsigmaTPCvsPt[iHisto]);
-      fOutputList->Add(fHistNsigmaTOFvsPt[iHisto]);
+    for(int iDet=0; iDet<kNMaxDet; iDet++) {
+      if(!fEnabledDet[iDet]) 
+        continue;
+      for(int iHypo=0; iHypo<kNMaxHypo; iHypo++) {
+        if(!fEnabledSpecies[iHypo]) 
+          continue;
+        fHistNsigmaVsPt[iDet][iHypo] = new TH2F(Form("fHistNsigma%svsPt_%s",detnames[iDet].Data(),hyponames[iHypo].Data()),Form(";#it{p}_{T} (GeV/#it{c});N_{#sigma}^{%s}(%s)",detnames[iDet].Data(),hyponames[iHypo].Data()),500,0,50,1000,-50,50);
+        fOutputList->Add(fHistNsigmaVsPt[iDet][iHypo]);
+      }
     }
   }
 
   fPIDtree = new TTree("fPIDtree","fPIDtree");
-  TString PIDbranchnames[6] = {"n_sigma_TPC_pi","n_sigma_TPC_K","n_sigma_TPC_p","n_sigma_TOF_pi","n_sigma_TOF_K","n_sigma_TOF_p"};
-  for(int iVar=0; iVar<6; iVar++) {
-    fPIDtree->Branch(PIDbranchnames[iVar].Data(),&fPIDNsigma[iVar],Form("%s/S",PIDbranchnames[iVar].Data()));
-  }
   fPIDtree->Branch("pT",&fPt,"pT/s");
-  fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
-  fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
   fPIDtree->Branch("eta",&fEta,"eta/S");
-  if(!fFillTreeWithNsigmaPIDOnly) {
-    fPIDtree->Branch("dEdx",&fdEdxTPC,"dEdx/s");
-    fPIDtree->Branch("ToF",&fToF,"ToF/s");
-    fPIDtree->Branch("NclusterTPC",&fTPCNcls,"NclusterTPC/b");
-    fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
-    fPIDtree->Branch("TrackLength",&fTrackLength,"TrackLength/s");
-    fPIDtree->Branch("StartTimeRes",&fStartTimeRes,"StartTimeRes/s");
+  fPIDtree->Branch("phi",&fPhi,"phi/s");
+  if(fFillTreeWithPIDInfo) {
+    if(fEnabledDet[kITS])
+      fPIDtree->Branch("p",&fP,"p/s");
+    if(fEnabledDet[kTPC])
+      fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
+    if(fEnabledDet[kTOF])
+      fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
+    if(fEnabledDet[kHMPID])
+      fPIDtree->Branch("pHMPID",&fPHMPID,"pHMPID/s");
+    if(!fFillTreeWithRawPIDOnly) {
+      for(int iDet=0; iDet<kNMaxDet; iDet++) {
+        if(!fEnabledDet[iDet]) 
+          continue;
+        for(int iHypo=0; iHypo<kNMaxHypo; iHypo++) {
+          if(!fEnabledSpecies[iHypo]) 
+            continue;
+          fPIDtree->Branch(Form("n_sigma_%s_%s",detnames[iDet].Data(),partnameshort[iHypo].Data()),&fPIDNsigma[iDet][iHypo],Form("n_sigma_%s_%s/S",detnames[iDet].Data(),partnameshort[iHypo].Data()));
+        }
+      }
+    }
+    if(!fFillTreeWithNsigmaPIDOnly) {
+      if(fEnabledDet[kITS]) {
+        fPIDtree->Branch("dEdxITS",&fdEdxITS,"dEdxITS/s");
+        fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
+      }
+      if(fEnabledDet[kTPC]) {
+        fPIDtree->Branch("dEdxTPC",&fdEdxTPC,"dEdxTPC/s");
+        fPIDtree->Branch("ITSclsMap",&fITSclsMap,"ITSclsMap/b");
+      }
+      if(fEnabledDet[kTOF]) {
+        fPIDtree->Branch("ToF",&fToF,"ToF/s");
+        fPIDtree->Branch("TrackLength",&fTrackLength,"TrackLength/s");
+        fPIDtree->Branch("StartTimeRes",&fStartTimeRes,"StartTimeRes/s");
+      }
+      if(fEnabledDet[kHMPID]) {
+        fPIDtree->Branch("HMPIDsig",&fHMPIDsignal,"HMPIDsig/s");
+        fPIDtree->Branch("HMPIDocc",&fHMPIDoccupancy,"HMPIDocc/s");
+      }
+    }
+  } 
+  if(fFillTreeWithTrackQualityInfo) {
+      fPIDtree->Branch("NclusterTPC",&fTPCNcls,"NclusterTPC/b");
+      fPIDtree->Branch("NcrossedRowsTPC",&fTPCNcrossed,"NcrossedRowsTPC/b");
+      fPIDtree->Branch("NFindableTPC",&fTPCFindable,"NFindableClustersTPC/b");
   }
-  fPIDtree->Branch("tag",&fTag,"tag/b");
-  if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/S");
+  fPIDtree->Branch("trackbits",&fTrackInfoMap,"trackbits/b"); // basic track info always filled
+  fPIDtree->Branch("tag",&fTag,"tag/s");
+  if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/I");
+
+  if(fUseAliEventCuts) { //add QA plots if event cuts used
+    fAliEventCuts.AddQAplotsToList(fOutputList,true);
+  }
 
   // post data
   PostData(1, fOutputList);
@@ -319,6 +448,9 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     }
   }
 
+  if(fUseAliEventCuts)
+    fAliEventCuts.AcceptEvent(fAOD); //for QA plots
+
   if(TMath::Abs(fAOD->GetMagneticField())<0.001) return;
 
   AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
@@ -347,6 +479,28 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     return;
   }
 
+  if(fUseAliEventCuts) {
+    int sel = IsEventSelectedWithAliEventCuts();
+    if(sel>0) {
+      fHistNEvents->Fill(sel);   
+      PostData(1, fOutputList);
+      return;
+    }
+  }
+  else {
+    if(fUseTimeRangeCutForPbPb2018 && !fIsMC){
+      if(fAOD->GetRunNumber() != fRunNumberPrevEvent){
+        fTimeRangeCut.InitFromRunNumber(fAOD->GetRunNumber());
+      }
+      if(fTimeRangeCut.CutEvent(fAOD)){
+        fHistNEvents->Fill(10);   
+        PostData(1, fOutputList);
+        return;
+      }
+    }
+  }
+
+  fHistNEvents->Fill(11);   
   // load MC particles
   TClonesArray *arrayMC=0;
   if(fIsMC){
@@ -398,110 +552,257 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     }
 
     fPt = ConvertFloatToUnsignedShort(track->Pt()*1000);
+    fP = ConvertFloatToUnsignedShort(track->P()*1000);
     fPTPC = ConvertFloatToUnsignedShort(track->GetTPCmomentum()*1000);
     fPTOF = ConvertFloatToUnsignedShort(GetTOFmomentum(track)*1000);
-    fEta = ConvertFloatToShort(track->Eta()*1000);
-
-    if(!fFillTreeWithNsigmaPIDOnly) {
-      //TPC variables
-      fTPCNcls = static_cast<unsigned char>(track->GetTPCNcls());
-      fdEdxTPC = ConvertFloatToUnsignedShort(track->GetTPCsignal()*100);
-      fTPCNclsPID = static_cast<unsigned char>(track->GetTPCsignalN());
+    double momHMPID[3];
+    bool momHMPIDok = track->GetOuterHmpPxPyPz(momHMPID);
+    if(momHMPIDok)
+      fPHMPID = ConvertFloatToUnsignedShort(TMath::Sqrt(momHMPID[0]*momHMPID[0]+momHMPID[1]*momHMPID[1]+momHMPID[2]*momHMPID[2])*1000);
+    else
+      fPHMPID = numeric_limits<short>::min();
       
-      //TOF variables
-      fTrackLength = ConvertFloatToUnsignedShort(track->GetIntegratedLength()*10);
-      fStartTimeRes = ConvertFloatToUnsignedShort(fPIDresp->GetTOFResponse().GetStartTimeRes(track->P())*100);
+    fEta = ConvertFloatToShort(track->Eta()*1000);
+    fPhi = ConvertFloatToUnsignedShort(track->Phi()*1000);
 
-      if (!(track->GetStatus() & AliESDtrack::kTOFout) || !(track->GetStatus() & AliESDtrack::kTIME)) {
-        fToF = 0;
-      }
-      else {
-        if (fTrackLength < 3500) fToF = 0;
+    //charge
+    if(track->Charge()>0) {
+      fTag |= kPositiveTrack;
+      fTag &= ~kNegativeTrack;
+    }
+    else if(track->Charge()<0) {
+      fTag |= kNegativeTrack;
+      fTag &= ~kPositiveTrack;
+    }
+
+    if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
+      fTrackInfoMap |= kHasSPDAny;
+    else
+      fTrackInfoMap &= ~kHasSPDAny;
+    if(track->HasPointOnITSLayer(1))
+      fTrackInfoMap |= kHasSPDFirst;
+    else
+      fTrackInfoMap &= ~kHasSPDFirst;
+    if(track->GetStatus() & AliESDtrack::kITSrefit)
+      fTrackInfoMap |= kHasITSrefit;
+    else
+      fTrackInfoMap &= ~kHasITSrefit;
+    if(track->GetStatus() & AliESDtrack::kTPCrefit)
+      fTrackInfoMap |= kHasTPCrefit;
+    else
+      fTrackInfoMap &= ~kHasTPCrefit;
+    if(IsSelectedByGeometricalCut(track))
+      fTrackInfoMap |= kPassGeomCut;
+    else
+      fTrackInfoMap &= ~kPassGeomCut;
+
+    if(fFillTreeWithTrackQualityInfo) {
+      fTPCNcls = static_cast<unsigned char>(track->GetTPCNcls());
+      fTPCNcrossed = static_cast<unsigned char>(track->GetTPCNCrossedRows());
+      fTPCFindable = static_cast<unsigned char>(track->GetTPCNclsF());
+    }
+
+    //PID
+    bool isDetOk[kNMaxDet] = {false,false,false};
+    if (fPIDresp->CheckPIDStatus(AliPIDResponse::kITS,track) == AliPIDResponse::kDetPidOk) {
+      fTrackInfoMap &= ~kHasNoITS;
+      isDetOk[kITS] = true;
+    }
+    else {
+      fTrackInfoMap |= kHasNoITS;
+    }
+    if (fPIDresp->CheckPIDStatus(AliPIDResponse::kTPC,track) == AliPIDResponse::kDetPidOk) {
+      fTrackInfoMap &= ~kHasNoTPC;
+      isDetOk[kTPC] = true;
+    }
+    else {
+      fTrackInfoMap &= ~kHasNoTOF;
+    }
+    if (fPIDresp->CheckPIDStatus(AliPIDResponse::kTOF,track) == AliPIDResponse::kDetPidOk) {
+      fTrackInfoMap &= ~kHasNoTOF;
+      isDetOk[kTOF] = true;
+    }
+    else {
+      fTrackInfoMap |= kHasNoTOF;
+    }
+    if (fPIDresp->CheckPIDStatus(AliPIDResponse::kHMPID,track) == AliPIDResponse::kDetPidOk) {
+      isDetOk[kHMPID] = true;
+    }
+
+    if(fFillTreeWithPIDInfo) {
+      if(!fFillTreeWithNsigmaPIDOnly) { //raw variables
+        //ITS variables
+        fdEdxITS = ConvertFloatToUnsignedShort(track->GetITSsignal()*100);
+        fITSclsMap = track->GetITSClusterMap();
+
+        //TPC variables
+        fdEdxTPC = ConvertFloatToUnsignedShort(track->GetTPCsignal()*100);
+        fTPCNclsPID = static_cast<unsigned char>(track->GetTPCsignalN());
+        
+        //TOF variables
+        fTrackLength = ConvertFloatToUnsignedShort(track->GetIntegratedLength()*10);
+        fStartTimeRes = ConvertFloatToUnsignedShort(fPIDresp->GetTOFResponse().GetStartTimeRes(track->P())*100);
+
+        if (!(track->GetStatus() & AliESDtrack::kTOFout) || !(track->GetStatus() & AliESDtrack::kTIME)) {
+          fToF = 0;
+        }
         else {
-          float tof = track->GetTOFsignal();
-          float time0 = fPIDresp->GetTOFResponse().GetStartTime(track->P());
-          fToF = ConvertFloatToUnsignedShort((tof-time0)/10);
+          if (fTrackLength < 3500) fToF = 0;
+          else {
+            float tof = track->GetTOFsignal();
+            float time0 = fPIDresp->GetTOFResponse().GetStartTime(track->P());
+            fToF = ConvertFloatToUnsignedShort((tof-time0)/10);
+          }
+        }
+
+        //HMPID variables
+        fHMPIDsignal = ConvertFloatToUnsignedShort(track->GetHMPIDsignal()*100);
+        fHMPIDoccupancy = ConvertFloatToUnsignedShort(track->GetHMPIDoccupancy()*100);
+      }
+      if(!fFillTreeWithRawPIDOnly) { // nsigma
+        for(int iDet=0; iDet<kNMaxDet; iDet++) {
+          if(isDetOk[iDet]) {
+            FillNsigma(iDet, track);
+          }
+          else {
+            for(int iHypo=0; iHypo<kNMaxHypo; iHypo++) {
+              fPIDNsigma[iDet][iHypo] = numeric_limits<short>::min();
+            }
+          }
         }
       }
     }
 
-    bool isTPCok = false;
-    bool isTOFok = false;
-    if (fPIDresp->CheckPIDStatus(AliPIDResponse::kTPC,track) == AliPIDResponse::kDetPidOk) isTPCok = true;
-    if (fPIDresp->CheckPIDStatus(AliPIDResponse::kTOF,track) == AliPIDResponse::kDetPidOk) isTOFok = true;
-
-    if(isTPCok) {
-      float nSigmaTPCPion = fPIDresp->NumberOfSigmasTPC(track,AliPID::kPion);
-      float nSigmaTPCKaon = fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon);
-      float nSigmaTPCProton = fPIDresp->NumberOfSigmasTPC(track,AliPID::kProton);
-      if(fEnableNsigmaTPCDataCorr) {
-        float meanPion = 0., meanKaon = 0., meanProton = 0., sigmaPion = 1., sigmaKaon = 1., sigmaProton = 1.;
-        GetNsigmaTPCMeanSigmaData(meanPion, sigmaPion, AliPID::kPion, track->GetTPCmomentum(), track->Eta());
-        GetNsigmaTPCMeanSigmaData(meanKaon, sigmaKaon, AliPID::kKaon, track->GetTPCmomentum(), track->Eta());
-        GetNsigmaTPCMeanSigmaData(meanProton, sigmaProton, AliPID::kProton, track->GetTPCmomentum(), track->Eta());
-
-        if(nSigmaTPCPion>-990.)
-          nSigmaTPCPion = (nSigmaTPCPion-meanPion) / sigmaPion;
-        if(nSigmaTPCKaon>-990.)
-          nSigmaTPCKaon = (nSigmaTPCKaon-meanKaon) / sigmaKaon;
-        if(nSigmaTPCProton>-990.)
-          nSigmaTPCProton = (nSigmaTPCProton-meanProton) / sigmaProton;
-      }
-
-      fPIDNsigma[0] = ConvertFloatToShort(nSigmaTPCPion*100);
-      fPIDNsigma[1] = ConvertFloatToShort(nSigmaTPCKaon*100);
-      fPIDNsigma[2] = ConvertFloatToShort(nSigmaTPCProton*100);
-    }
-    else for(int iVar=0; iVar<3; iVar++) fPIDNsigma[iVar] = numeric_limits<short>::min();
-    if(isTOFok) {
-      fPIDNsigma[3] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kPion)*100);
-      fPIDNsigma[4] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon)*100);
-      fPIDNsigma[5] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kProton)*100);
-    }
-    else for(int iVar=3; iVar<6; iVar++) fPIDNsigma[iVar] = numeric_limits<short>::min();
-
     short trackid = track->GetID();
 
+    bool filltree = false;
     it = find(idPionFromK0s.begin(),idPionFromK0s.end(),trackid);
-    if(it!=idPionFromK0s.end()) fTag |= kIsPionFromK0s;
-    else fTag &= ~kIsPionFromK0s;
+    if(it!=idPionFromK0s.end()) {
+      fTag |= kIsPionFromK0s;
+      filltree = true;
+    }
+    else 
+      fTag &= ~kIsPionFromK0s;
+
     it = find(idPionFromL.begin(),idPionFromL.end(),trackid);
-    if(it!=idPionFromL.end()) fTag |= kIsPionFromL;
-    else fTag &= ~kIsPionFromL;
-    it = find(idProtonFromL.begin(),idProtonFromL.end(),trackid);
-    if(it!=idProtonFromL.end()) fTag |= kIsProtonFromL;
-    else fTag &= ~kIsProtonFromL;
-    it = find(idElectronFromGamma.begin(),idElectronFromGamma.end(),trackid);
-    if(it!=idElectronFromGamma.end()) fTag |= kIsElectronFromGamma;
-    else fTag &= ~kIsElectronFromGamma;
-    it = find(idKaonFromKinks.begin(),idKaonFromKinks.end(),trackid);
-    if(it!=idKaonFromKinks.end()) fTag |= kIsKaonFromKinks;
-    else fTag &= ~kIsKaonFromKinks;
-    if(TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon))<fNsigmaMaxForTag && isTOFok && isTPCok) fTag |= kIsKaonFromTOF;
-    else fTag &= ~kIsKaonFromTOF;
-    if(TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon))<fNsigmaMaxForTag && isTOFok && isTPCok) fTag |= kIsKaonFromTPC;
-    else fTag &= ~kIsKaonFromTPC;
+    if(it!=idPionFromL.end()) {
+      fTag |= kIsPionFromL;
+      filltree = true;
+    }
+    else
+      fTag &= ~kIsPionFromL;
     
+    it = find(idProtonFromL.begin(),idProtonFromL.end(),trackid);
+    if(it!=idProtonFromL.end()) {
+      filltree = true;
+      fTag |= kIsProtonFromL;
+    }
+    else
+      fTag &= ~kIsProtonFromL;
+
+    it = find(idElectronFromGamma.begin(),idElectronFromGamma.end(),trackid);
+    if(it!=idElectronFromGamma.end()) {
+      filltree = true;
+      fTag |= kIsElectronFromGamma;
+    }
+    else 
+      fTag &= ~kIsElectronFromGamma;
+
+    it = find(idKaonFromKinks.begin(),idKaonFromKinks.end(),trackid);
+    if(it!=idKaonFromKinks.end()) {
+      filltree = true;
+      fTag |= kIsKaonFromKinks;  
+    }
+    else 
+      fTag &= ~kIsKaonFromKinks;
+
+    if(TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon))<fNsigmaMaxForKaonTag && isDetOk[kTOF]) {
+      filltree = true;
+      fTag |= kIsKaonFromTOF;
+    }
+    else 
+      fTag &= ~kIsKaonFromTOF;
+    
+    if(TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon))<fNsigmaMaxForKaonTag && isDetOk[kTPC]) {
+      filltree = true;
+      fTag |= kIsKaonFromTPC;
+    }
+    else 
+      fTag &= ~kIsKaonFromTPC;
+
+    if(TMath::Abs(fPIDresp->NumberOfSigmasHMPID(track,AliPID::kKaon))<fNsigmaMaxForKaonTag && isDetOk[kHMPID]) {
+      filltree = true;
+      fTag |= kIsKaonFromHMPID;
+    }
+    else 
+      fTag &= ~kIsKaonFromHMPID;
+
+    if(isDetOk[kTPC] && isDetOk[kTOF] && TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kDeuteron))<fNsigmaMaxForNucleiTag && TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kDeuteron))<fNsigmaMaxForNucleiTag) {
+      filltree = true;
+      fTag |= kIsDeuteronFromTPCTOF;
+    }
+    else 
+      fTag &= ~kIsDeuteronFromTPCTOF;
+
+    if(isDetOk[kTPC] && isDetOk[kTOF] && TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kTriton))<fNsigmaMaxForNucleiTag && TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kTriton))<fNsigmaMaxForNucleiTag) {
+      filltree = true;
+      fTag |= kIsTritonFromTPCTOF;
+    }
+    else 
+      fTag &= ~kIsTritonFromTPCTOF;
+
+    if(isDetOk[kTPC] && isDetOk[kTOF] && TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kHe3))<fNsigmaMaxForNucleiTag && TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kHe3))<fNsigmaMaxForNucleiTag) {
+      filltree = true;
+      fTag |= kIsHe3FromTPCTOF;
+    }
+    else 
+      fTag &= ~kIsHe3FromTPCTOF;
+
     if(fIsMC) {
       fPDGcode = GetPDGcodeFromMC(track,arrayMC);
-      if(fPDGcode==211) {
-        fHistNsigmaTPCvsPt[kPion]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTPC(track,AliPID::kPion));
-        fHistNsigmaTOFvsPt[kPion]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTOF(track,AliPID::kPion));
-      }
-      else if(fPDGcode==321) {
-        fHistNsigmaTPCvsPt[kKaon]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon));
-        fHistNsigmaTOFvsPt[kKaon]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon));
-      }
-      else if(fPDGcode==2212) {
-        fHistNsigmaTPCvsPt[kProton]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTPC(track,AliPID::kProton));
-        fHistNsigmaTOFvsPt[kProton]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTOF(track,AliPID::kProton));
+      AliPIDResponse::EDetector det[4] = {AliPIDResponse::kITS,AliPIDResponse::kTPC,AliPIDResponse::kTOF,AliPIDResponse::kHMPID}; 
+      for(int iDet=0; iDet<kNMaxDet; iDet++) {
+        if(!fEnabledDet[iDet])
+          continue;
+  
+        switch(fPDGcode) {
+          case 211:
+            if(fEnabledSpecies[kPion])
+              fHistNsigmaVsPt[iDet][kPion]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kPion));
+            break;
+          case 321:
+            if(fEnabledSpecies[kKaon])
+              fHistNsigmaVsPt[iDet][kKaon]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kKaon));
+            break;
+          case 2212:
+            if(fEnabledSpecies[kProton])
+              fHistNsigmaVsPt[iDet][kProton]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kProton));
+            break;
+          case 11:
+            if(fEnabledSpecies[kElectron])
+              fHistNsigmaVsPt[iDet][kElectron]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kElectron));
+            break;
+          case 1000010020:
+            if(fEnabledSpecies[kDeuteron])
+              fHistNsigmaVsPt[iDet][kDeuteron]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kDeuteron));
+            break;
+          case 1000010030:
+            if(fEnabledSpecies[kTriton])
+              fHistNsigmaVsPt[iDet][kTriton]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kTriton));
+            break;
+          case 1000020030:
+            if(fEnabledSpecies[kHe3])
+              fHistNsigmaVsPt[iDet][kHe3]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kHe3));
+            break;
+        }
       }
     }
     else fPDGcode = 0;
     
-    if(fTag!=0 && ((fIsMC && fPDGcode>=0) || !fIsMC)) fPIDtree->Fill();
+    if(filltree && ((fIsMC && fPDGcode>=0) || !fIsMC)) fPIDtree->Fill();
 
     fTag = 0;
+    fTrackInfoMap = 0;
 
     // Post output data
     PostData(2, fPIDtree);
@@ -518,6 +819,35 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
 
   // Post output data
   PostData(1, fOutputList);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSEHFSystPID::EnableParticleSpecies(bool pi, bool kao, bool pr, bool el, bool deu, bool tr, bool He3) 
+{
+  // function to enable/disable different particle species
+  for(int iHypo=0; iHypo<kNMaxHypo; iHypo++)
+    fEnabledSpecies[iHypo] = false;
+
+  if(pi) fEnabledSpecies[kPion]      = true;
+  if(kao) fEnabledSpecies[kKaon]     = true;
+  if(pr) fEnabledSpecies[kProton]    = true;
+  if(el) fEnabledSpecies[kElectron]  = true;
+  if(deu) fEnabledSpecies[kDeuteron] = true;
+  if(tr) fEnabledSpecies[kTriton]    = true;
+  if(He3) fEnabledSpecies[kHe3]      = true;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSEHFSystPID::EnableDetectors(bool ITS, bool TPC, bool TOF, bool HMPID) 
+{
+  // function to enable/disable different PID detectors
+  for(int iDet=0; iDet<kNMaxDet; iDet++)
+    fEnabledDet[iDet] = false;
+
+  if(ITS)   fEnabledDet[kITS]  = true;
+  if(TPC)   fEnabledDet[kTPC]  = true;
+  if(TOF)   fEnabledDet[kTOF]  = true;
+  if(HMPID) fEnabledDet[kHMPID]  = true;
 }
 
 //________________________________________________________________________
@@ -651,6 +981,7 @@ short AliAnalysisTaskSEHFSystPID::GetPDGcodeFromMC(AliAODTrack* track, TClonesAr
 {
   // Get pdg code
   short pdg = -1;
+  if(!track) return pdg;
   int label = track->GetLabel();
   if(label<0) return pdg;
   AliAODMCParticle* partMC = dynamic_cast<AliAODMCParticle*>(arrayMC->At(label));
@@ -807,4 +1138,119 @@ void AliAnalysisTaskSEHFSystPID::GetNsigmaTPCMeanSigmaData(float &mean, float &s
       break;
     }
   }
+}
+
+//________________________________________________________________
+int AliAnalysisTaskSEHFSystPID::IsEventSelectedWithAliEventCuts() {
+
+  int run = fAOD->GetRunNumber();
+  if(fAOD->GetRunNumber()!=fRunNumberPrevEvent) {
+    if(run >= 244917 && run <= 246994)
+      fAliEventCuts.SetupRun2PbPb();
+    else if(run >= 295369 && run <= 297624)
+      fAliEventCuts.SetupPbPb2018();
+  }
+
+  // cut on correlations for out of bunch pileup in PbPb run2  
+  if(fApplyPbPbOutOfBunchPileupCuts==1){
+    if(!fAliEventCuts.PassedCut(AliEventCuts::kCorrelations))
+      return 8;
+  }
+  else if(fApplyPbPbOutOfBunchPileupCuts==2 && run >= 295369 && run <= 297624){
+    // Ionut cut on V0multiplicity vs. n TPC clusters (Pb-Pb 2018)
+    AliAODVZERO* v0data=(AliAODVZERO*)((AliAODEvent*)fAOD)->GetVZEROData();
+    float mTotV0=v0data->GetMTotV0A()+v0data->GetMTotV0C();
+    int nTPCcls=((AliAODEvent*)fAOD)->GetNumberOfTPCClusters();
+    float mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
+    if(mTotV0<mV0TPCclsCut){
+      return 9;
+    }
+  }
+
+  if(fUseTimeRangeCutForPbPb2018){
+    fAliEventCuts.UseTimeRangeCut();
+    if(!fAliEventCuts.PassedCut(AliEventCuts::kTriggerClasses))
+      return 10;
+  }
+  
+  return 0;
+}
+
+//________________________________________________________________
+bool AliAnalysisTaskSEHFSystPID::IsSelectedByGeometricalCut(AliAODTrack* track) {
+
+  // convert to ESD track here
+  AliESDtrack esdTrack(track);
+  // set the TPC cluster info
+  esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
+  esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
+  esdTrack.SetTPCPointsF(track->GetTPCNclsF());
+    
+  float nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
+  float lengthInActiveZoneTPC=esdTrack.GetLengthInActiveZone(0,fDeadZoneWidth,220.,fAOD->GetMagneticField());
+  double cutGeoNcrNclLength=fCutGeoNcrNclLength-TMath::Power(TMath::Abs(esdTrack.GetSigned1Pt()),fCutGeoNcrNclGeom1Pt);
+  if (lengthInActiveZoneTPC<cutGeoNcrNclLength) 
+    return false;
+  if (nCrossedRowsTPC<fCutGeoNcrNclFractionNcr*cutGeoNcrNclLength)       
+    return false;
+  if (esdTrack.GetTPCncls()<fCutGeoNcrNclFractionNcl*cutGeoNcrNclLength)
+    return false;
+
+  return true;
+}
+
+//________________________________________________________________
+bool AliAnalysisTaskSEHFSystPID::FillNsigma(int iDet, AliAODTrack* track) {
+  
+  if(iDet>=kNMaxDet)
+    return false;
+          
+    AliPID::EParticleType hypopidresp[7] = {AliPID::kPion,AliPID::kKaon,AliPID::kProton,AliPID::kElectron,AliPID::kDeuteron,AliPID::kTriton,AliPID::kHe3};
+
+    switch(iDet) {
+      case kITS:
+      {
+        for(int iHypo=0; iHypo<kNMaxHypo; iHypo++)
+          fPIDNsigma[iDet][iHypo] = ConvertFloatToShort(fPIDresp->NumberOfSigmasITS(track,hypopidresp[iHypo])*100);
+        break;
+      }
+      case kTPC:
+      {
+        float nSigmaTPC[kNMaxHypo];
+    
+        for(int iHypo=0; iHypo<kNMaxHypo; iHypo++)
+          nSigmaTPC[iHypo] = fPIDresp->NumberOfSigmasTPC(track,hypopidresp[iHypo]);
+
+        if(fEnableNsigmaTPCDataCorr) { //only pion, kaon and protons
+          float mean[kProton+1], sigma[kProton+1];
+          for(int iHypo=0; iHypo<=kProton; iHypo++) {
+            GetNsigmaTPCMeanSigmaData(mean[iHypo], sigma[iHypo], hypopidresp[iHypo], track->GetTPCmomentum(), track->Eta());
+
+            if(nSigmaTPC[iHypo]>-990.)
+              nSigmaTPC[iHypo] = (nSigmaTPC[iHypo]-mean[iHypo]) / sigma[iHypo];
+          }
+        }
+
+        for(int iHypo=0; iHypo<kNMaxHypo; iHypo++)
+          fPIDNsigma[iDet][iHypo] = ConvertFloatToShort(nSigmaTPC[iHypo]*100);
+  
+        break;
+      }
+      case kTOF:
+      {
+        for(int iHypo=0; iHypo<kNMaxHypo; iHypo++)
+          fPIDNsigma[iDet][iHypo] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,hypopidresp[iHypo])*100);
+
+        break;
+      }
+      case kHMPID:
+      {
+        for(int iHypo=0; iHypo<kNMaxHypo; iHypo++)
+          fPIDNsigma[iDet][iHypo] = ConvertFloatToShort(fPIDresp->NumberOfSigmasHMPID(track,hypopidresp[iHypo])*100);
+
+        break;
+      }
+    }    
+    
+  return true;
 }

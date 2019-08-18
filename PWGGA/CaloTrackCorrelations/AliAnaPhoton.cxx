@@ -59,7 +59,7 @@ fFillSSNLocMaxHisto(0),
 fFillTrackMultHistograms(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
-fPrimaryMom(),                fProdVertex(),
+fPrimaryMom(),                fPrimaryMom2(),              fProdVertex(),
 fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0), fNEBinCuts(0),
 fStudyActivityNearCluster(0), 
 // Histograms
@@ -177,8 +177,6 @@ fhDistance2Hijing(0)
     fhMCEDispersion [i]                  = 0;
     fhMCNCellsE     [i]                  = 0;
     fhMCMaxCellDiffClusterE[i]           = 0;
-    fhLambda0DispEta[i]                  = 0;
-    fhLambda0DispPhi[i]                  = 0;
     
     for(Int_t iover = 0 ; iover < 3; iover++)
       fhMCPtLambda0Overlaps[i][iover] = 0;

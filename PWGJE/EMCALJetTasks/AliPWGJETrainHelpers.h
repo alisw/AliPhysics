@@ -7,6 +7,7 @@
 /**
  * @class AliPWGJETrainHelpers
  * @brief Helpers for configure the PWGJE trains.
+ * @ingroup PWGJEBASE
  *
  * Set of helper functions to aid in configuration of PWGJE trains.
  *

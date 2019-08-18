@@ -39,20 +39,14 @@ class AliForwardSettings : public TObject {
   // Number of bins used along Z_vtx
   Int_t fNZvtxBins;
 
-  // type of analysis
-  TString qctype;
 
   Int_t fnoSamples;
   Int_t fNRefEtaBins; // eta bins in reference histograms
   Int_t fNDiffEtaBins; // eta bins in differential histograms
   Int_t fCentBins; // bins in centrality
 
-  UShort_t fFlowFlags;     //  Flow flags, e.g., eta-gap, sat. vtx.
-
   TH3F* nuacentral;
   TH3F* nuaforward;
-  TH3F* nuacentral_ref;
-  TH3F* nuaforward_ref;
   TH3F* seccorr_fwd;
   TH3F* seccorr_cen;
 
@@ -70,7 +64,6 @@ class AliForwardSettings : public TObject {
   Bool_t useTPC;
   Bool_t useSPD;
   Bool_t useITS;
-  Bool_t use_primaries;
   Bool_t use_primaries_cen;
   Bool_t use_primaries_fwd;
   Bool_t useEventcuts;
@@ -81,6 +74,12 @@ class AliForwardSettings : public TObject {
   Double_t fCutChargedDCAxyMax;
   Double_t fCutChargedDCAzMax;
   Bool_t doPt;
+  Bool_t stdQC;
+  Bool_t sec_corr;
+  Bool_t a5;
+  TString fileName;
+  Int_t fMaxConsequtiveStrips;
+
   // return true if good event
 
   // flags used for method of cumulant
@@ -121,35 +120,11 @@ class AliForwardSettings : public TObject {
     kGlobalComb = 96,
     kphiAcceptanceBin = 21 // phi acceptance bin in the FMD histogram (dNdetadphi)
   };
+
   // definition of different variables to save
   enum {
-    //kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-    //kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-    //kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
-    kW2 = 1,               // <w2>
-    //k3pWeight,         // M(M-1)(M-1) or (mp*M-2mq)(M-1)
-    kW2Two,            // <w2*two>
-    kW4,               // <w4>
-    kW4Four           // <w4*four>
-    /*
-    kCosphi1A,         // <cos(phi1)> for subevent A
-    kSinphi1A,         // <sin(phi1)> for subevent A
-    kCosphi1B,         // <cos(phi1)> for subevent B
-    kSinphi1B,         // <sin(phi1)> for subevent B
-    kCosphi1phi2p,     // <cos(phi1+phi2)>
-    kCosphi1phi2m,     // <cos(phi1-phi2)>
-    kSinphi1phi2p,     // <sin(phi1+phi2)>
-    kCosphi1phi2phi3m, // <cos(phi1-phi2-phi3)>
-    kSinphi1phi2phi3m, // <sin(phi1-phi2-phi3)>
-    kCosphi1phi2phi3p, // <cos(phi1+phi2-phi3)>
-    kSinphi1phi2phi3p,  // <sin(phi1+phi2-phi3)>
-    */
-  };
-
-
-  enum {
     kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-    kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+    kWA2,              // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
     kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
     k3pWeight,         // M(M-1)(M-1) or (mp*M-2mq)(M-1)
     kCosphi1A,         // <cos(phi1)> for subevent A
@@ -162,9 +137,79 @@ class AliForwardSettings : public TObject {
     kCosphi1phi2phi3m, // <cos(phi1-phi2-phi3)>
     kSinphi1phi2phi3m, // <sin(phi1-phi2-phi3)>
     kCosphi1phi2phi3p, // <cos(phi1+phi2-phi3)>
-    kSinphi1phi2phi3p  // <sin(phi1+phi2-phi3)>
+    kSinphi1phi2phi3p, // <sin(phi1+phi2-phi3)>
   };
 
+
+  // definition of different variables to save
+  // enum {
+  //   kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+  //   kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+  //   kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
+  //   kW2,               // <w2>
+  //   k3pWeight,         // M(M-1)(M-1) or (mp*M-2mq)(M-1)
+  //   kW2Two,            // <w2*two>
+  //   kW4,               // <w4>
+  //   kW4Four,           // <w4*four>
+  //   kCosphi1A,         // <cos(phi1)> for subevent A
+  //   kSinphi1A,         // <sin(phi1)> for subevent A
+  //   kCosphi1B,         // <cos(phi1)> for subevent B
+  //   kSinphi1B,         // <sin(phi1)> for subevent B
+  //   kCosphi1phi2p,     // <cos(phi1+phi2)>
+  //   kCosphi1phi2m,     // <cos(phi1-phi2)>
+  //   kSinphi1phi2p,     // <sin(phi1+phi2)>
+  //   kCosphi1phi2phi3m, // <cos(phi1-phi2-phi3)>
+  //   kSinphi1phi2phi3m, // <sin(phi1-phi2-phi3)>
+  //   kCosphi1phi2phi3p, // <cos(phi1+phi2-phi3)>
+  //   kSinphi1phi2phi3p,  // <sin(phi1+phi2-phi3)>
+  // };
+
+  // enum {
+  //   kW2A =1,               // <w2>
+  //   kW2B,               // <w2>
+  //   kW2TwoA,            // <w2*two>
+  //   kW2TwoB,            // <w2*two>
+  //   kW4A,               // <w4>
+  //   kW4B,               // <w4>
+  //   kW4FourA,           // <w4*four>
+  //   kW4FourB,           // <w4*four>
+  //   kW4FourTwoA,
+  //   kW4FourTwoB,
+  //   kW4ThreeTwoA,
+  //   kW4ThreeTwoB
+  // };
+
+  Int_t kW2A         = 1; // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+  Int_t kW2TwoA      = 2; // <w2*two>
+  Int_t kW4A         = 3; // <w4>
+  Int_t kW4FourA     = 4;  
+  Int_t kW2B         = 5; // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
+  Int_t kW2TwoB      = 6; // <w2*two>
+  Int_t kW4B         = 7; // <w4>
+  Int_t kW4FourB     = 8; // <w4*four>  
+  Int_t kW4FourTwoA  = 9;
+  Int_t kW4FourTwoB  = 10;
+  Int_t kW4ThreeTwoA = 11;
+  Int_t kW4ThreeTwoB = 12;
+  Int_t kWTwoTwoN    = 13; // Numerator of R_{n,n; 2}
+  Int_t kWTwoTwoD    = 14; // Denominator of R_{n,n; 2}
+
+
+  Int_t  kW2 =1;               // <w2>
+  Int_t  kW2Two=2;             // <w2*two>
+  Int_t  kW4=3;               // <w4>
+  Int_t  kW4Four=4;           // <w4*four>
+  Int_t  kW4FourTwo=5;
+  Int_t  kW4ThreeTwo=6;
+
+  // enum {
+  //   kW2 =1,               // <w2>
+  //   kW2Two,             // <w2*two>
+  //   kW4,               // <w4>
+  //   kW4Four,           // <w4*four>
+  //   kW4FourTwo,
+  //   kW4ThreeTwo
+  // };
   // definition of different variables to save
   enum {
     kN2 = 1,
@@ -172,6 +217,6 @@ class AliForwardSettings : public TObject {
   };
 
 private:
-  ClassDef(AliForwardSettings, 2);
+  ClassDef(AliForwardSettings, 1);
 };
 #endif

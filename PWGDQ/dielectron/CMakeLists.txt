@@ -24,6 +24,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
+		    ${AliPhysics_SOURCE_DIR}/OADB/macros
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations # what deps here?
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
@@ -31,6 +32,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
+		    ${AliPhysics_SOURCE_DIR}/PWG/PP
+		    ${AliPhysics_SOURCE_DIR}/PWG/PP/PilotTrain
                     ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/BtoJPSI
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
@@ -38,6 +41,12 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/LMEE
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/
+  		    ${AliPhysics_SOURCE_DIR}/PWGHF/base
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/hfe/
+		    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/
+		    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/macros
+
                    )
 
 # Sources in alphabetical order
@@ -79,6 +88,8 @@ set(SRCS
       core/AliAnalysisTaskRandomRejection.cxx
       core/AliAnalysisTaskElectronEfficiency.cxx
       core/AliAnalysisTaskElectronEfficiencyV2.cxx
+      core/AliAnalysisTask_JPsi_EMCal.cxx
+      core/AliAnalysisTaskEtaReconstruction.cxx
       JPSI/AliDielectronSignalBase.cxx
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx
@@ -92,6 +103,7 @@ set(SRCS
       LMEE/AliAnalysisTaskSimpleTreeMaker.cxx
       LMEE/AliDielectronReducedTrack.cxx
       LMEE/AliAnalysisTaskTGReducedTree.cxx
+      LMEE/AliAnalysisTaskReducedTreeDS.cxx
       LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
       LMEE/AliCocktailSmearing.cxx
       LMEE/AliAnalysisTaskCharm.cxx

@@ -57,6 +57,8 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   Bool_t IsAddedSignal(AliMCParticle * mcple);
   void PrintHierarchy(AliMCParticle * mcple, AliMCEvent* fMCEvent);
   Int_t MotherPDG(AliMCParticle * mcple, AliMCEvent* fMCEvent);
+  Int_t CharmSource(AliMCParticle * mcple, AliMCEvent* fMCEvent);
+  Int_t BeautySource(AliMCParticle * mcple, AliMCEvent* fMCEvent);
   TH1D * fCentrality;
   //TH2D * fSourceGenerator;
   // A lot of different histograms for cross checks and systematics so I only need to run the train once
@@ -74,13 +76,29 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   TH2D * fDCAConversion;
   TH2D * fDCADalitz;
   TH2D * fDCACharmNew;
+  TH3D * fDCACharmNewDPlus;
+  TH3D * fDCACharmNewDZero;
+  TH3D * fDCACharmNewDS;
+  TH3D * fDCACharmNewLambdaC;
+  TH3D * fDCACharmNewOtherC;
   TH2D * fDCACharmNew3050;
   TH2D * fDCACharmNew3050IP;
   TH2D * fDCACharmNew3050OOP;
+  TH3D * fDCACharmWeightedNew3050;
+  TH3D * fDCACharmWeightedNew3050IP;
+  TH3D * fDCACharmWeightedNew3050OOP;
   TH2D * fDCABeautyNew;
+  TH3D * fDCABeautyNewBZero;
+  TH3D * fDCABeautyNewBPlus;
+  TH3D * fDCABeautyNewBS;
+  TH3D * fDCABeautyNewLambdaB;
+  TH3D * fDCABeautyNewOtherB;
   TH2D * fDCABeautyNewHalfRAA;
   TH2D * fDCABeautyNewHalfRAAIP;
   TH2D * fDCABeautyNewHalfRAAOOP;
+  TH3D * fDCABeautyWeightedNewHalfRAA;
+  TH3D * fDCABeautyWeightedNewHalfRAAIP;
+  TH3D * fDCABeautyWeightedNewHalfRAAOOP;
   TH2D * fDCABeautyNewRAA;
   TH2D * fDCABeautyNewRAAIP;
   TH2D * fDCABeautyNewRAAOOP;

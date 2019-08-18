@@ -38,19 +38,21 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
   TString resName = "Secondaries";
 
 
+  task->fSettings.fileName = resName;
+  mgr->AddTask(task);
 
   AliAnalysisDataContainer *coutput_recon =
   mgr->CreateContainer(resName,
-   TList::Class(),
+   AliForwardFlowResultStorage::Class(), //TList::Class(),
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());
-  task->fSettings.fDataType = task->fSettings.kRECON;
-  mgr->AddTask(task);
+  //task->fSettings.fDataType = task->fSettings.kRECON;
+  mgr->ConnectOutput(task, 1, coutput_recon);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
-    AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
-    task->ConnectInput(1,valid);
-  mgr->ConnectOutput(task, 1, coutput_recon);
+  AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
+  task->ConnectInput(1,valid);
+
 
   return task;
 }

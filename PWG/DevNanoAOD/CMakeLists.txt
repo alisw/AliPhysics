@@ -40,6 +40,7 @@ set(SRCS
   AliAnalysisNanoAODCutsCRCZDC.cxx
   AliAnalysisNanoAODCutsJet.cxx
   AliNanoAODTrackMapping.cxx
+  AliAnalysisTaskNanoAODnormalisation.cxx
   tutorial/AliAnalysisTaskNanoSimple.cxx
   validation/AliAnalysisTaskNanoValidator.cxx
   )

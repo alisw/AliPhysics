@@ -14,7 +14,7 @@ class AliNanoFilterNormalisation;
 /// following tasks are not executed
 class AliAnalysisTaskNanoAODskimming : public AliAnalysisTaskSE {
   public:
-  AliAnalysisTaskNanoAODskimming(std::string taskName = "NanoAODskimming");
+  AliAnalysisTaskNanoAODskimming(std::string taskName = "NanoAODSkimming");
   virtual ~AliAnalysisTaskNanoAODskimming();
 
   virtual void UserExec(Option_t* /*option*/);
@@ -23,7 +23,7 @@ class AliAnalysisTaskNanoAODskimming : public AliAnalysisTaskSE {
   virtual void FinishTaskOutput();
 
   void AddEventCut(AliAnalysisCuts* cut) { fOtherEventCuts.Add(cut); }
-  static AliAnalysisTaskNanoAODskimming* AddTask(std::string name = "NanoAODskimming");
+  static AliAnalysisTaskNanoAODskimming* AddTask(std::string name = "NanoAODSkimming");
 
   AliAnalysisNanoAODEventCuts fEventCuts;
 

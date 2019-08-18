@@ -24,7 +24,7 @@ class AliFemtoDreamEvent {
     kV0C = 4,
   };
   AliFemtoDreamEvent();
-  AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA, UInt_t trigger);
+  AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA, UInt_t trigger, bool useEvtCuts = true);
   AliFemtoDreamEvent &operator=(const AliFemtoDreamEvent &obj);
   virtual ~AliFemtoDreamEvent();
   void SetEvent(AliAODEvent *evt);
@@ -192,12 +192,26 @@ class AliFemtoDreamEvent {
     return fspher;
   }
   ;
+  void SetSphero(double sphero) {
+    fsphero = sphero;
+  }
+  float GetSphero() const {
+    return fsphero;
+  }
+  void SetCalcSpherocity(bool calcsphero) {
+      fcalcsphero=calcsphero;
+  }
+
  private:
   AliFemtoDreamEvent(const AliFemtoDreamEvent&);
   int CalculateITSMultiplicity(AliAODEvent *evt);
   double CalculateSphericityEvent(AliAODEvent *evt);
+  double CalculateSphericityEvent(AliVEvent *evt);
+  double CalculateSpherocityEvent(AliAODEvent *evt);
+  double CalculateSpherocityEvent(AliVEvent *evt);
   AliAnalysisUtils *fUtils;   //!
   AliEventCuts *fEvtCuts;     //!
+  bool fuseAliEvtCuts;        //!
   TList *fEvtCutList;         //!
   float fxVtx;                //!
   float fyVtx;                //!
@@ -220,7 +234,9 @@ class AliFemtoDreamEvent {
   bool fisSelected;           //!
   MultEstimator fEstimator;   //!
   double fspher;            //!
-ClassDef(AliFemtoDreamEvent,4)
+  double fsphero;            //!
+  bool fcalcsphero;         //!
+ClassDef(AliFemtoDreamEvent,6)
 };
 
 #endif /* ALIFEMTODREAMEVENT_H_ */

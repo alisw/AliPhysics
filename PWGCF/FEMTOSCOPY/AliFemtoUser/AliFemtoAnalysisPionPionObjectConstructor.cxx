@@ -25,6 +25,7 @@
 #include "AliFemtoPairCutDetaDphi.h"
 #include "AliFemtoPairCutAntiGamma.h"
 #include "AliFemtoDummyPairCut.h"
+#include "AliFemtoPairCutRejectAll.h"
 #include "AliFemtoPairCutPt.h"
 
 #include "AliFemtoAnalysisPionPionCuts.h"
@@ -168,6 +169,8 @@ template<>
 AliFemtoConfigObject
 AliFemtoConfigObject::From<AliFemtoTrackCut>(const AliFemtoTrackCut &obj)
 {
+  RETURN_IF_CAST_FROM(AliFemtoTrackCutPionPionIdealAK);
+  RETURN_IF_CAST_FROM(AliFemtoTrackCutPionPionMisidentAK);
   RETURN_IF_CAST_FROM(AliFemtoTrackCutPionPionAK);
   RETURN_IF_CAST(AliFemtoESDTrackCut);
   RETURN_IF_CAST(AliFemtoAODTrackCut);
@@ -208,6 +211,8 @@ AliFemtoConfigObject::Into<AliFemtoTrackCut>(bool)
   }
 
   TRY_CONSTRUCTING_INTO(AliFemtoTrackCutPionPionAK);
+  TRY_CONSTRUCTING_INTO(AliFemtoTrackCutPionPionIdealAK);
+  TRY_CONSTRUCTING_INTO(AliFemtoTrackCutPionPionMisidentAK);
   TRY_CONSTRUCTING_CLASS(AliFemtoAODTrackCut);
   TRY_CONSTRUCTING_CLASS(AliFemtoESDTrackCut);
 
@@ -284,10 +289,13 @@ AliFemtoConfigObject::Into<AliFemtoParticleCut>(bool)
   }
 
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoTrackCutPionPionAK);
+  FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoTrackCutPionPionIdealAK);
+  FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoTrackCutPionPionMisidentAK);
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoESDTrackCut);
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoAODTrackCut);
   FORWARD_TO_BUILDER(AliFemtoV0TrackCut, AliFemtoV0TrackCut);
   // FORWARD_TO_BUILDER(AliFemtoV0TrackCut, AliFemtoXiTrackCut);
+
 
   Warning("AliFemtoConfigObject::Construct<AliFemtoParticleCut>",
           "Could not load class '%s'", classname.c_str());
@@ -310,6 +318,7 @@ AliFemtoConfigObject::From<AliFemtoPairCut>(const AliFemtoPairCut &obj)
   RETURN_IF_CAST(AliFemtoPairCutDetaDphi)
   RETURN_IF_CAST(AliFemtoShareQualityPairCut)
   RETURN_IF_CAST(AliFemtoDummyPairCut)
+  RETURN_IF_CAST(AliFemtoPairCutRejectAll)
 
   std::string classname = "AliFemtoPairCut";
   auto *cut_tclass = TClass::GetClass(classname.c_str());
@@ -340,6 +349,7 @@ AliFemtoConfigObject::Into<AliFemtoPairCut>(bool)
   TRY_CONSTRUCTING_CLASS(AliFemtoPairCutDetaDphi)
   TRY_CONSTRUCTING_CLASS(AliFemtoShareQualityPairCut)
   TRY_CONSTRUCTING_CLASS(AliFemtoDummyPairCut)
+  TRY_CONSTRUCTING_CLASS(AliFemtoPairCutRejectAll)
 
   Warning("AliFemtoConfigObject::Construct<ConstructAliFemtoPairCut>",
           "Could not load class %s", classname.c_str());
@@ -384,7 +394,7 @@ void
 AbstractConfiguration<AliFemtoCorrFctn>::Configure(AliFemtoCorrFctn &cf) const
 {
   if (!pair_cut_cfg.is_empty()) {
-    cf.SetPairSelectionCut(pair_cut_cfg.Clone().Into<AliFemtoPairCut>());
+    cf.SetPairSelectionCut(AliFemtoConfigObject(pair_cut_cfg).Into<AliFemtoPairCut>());
   }
 }
 

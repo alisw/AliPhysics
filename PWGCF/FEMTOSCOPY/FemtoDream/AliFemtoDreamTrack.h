@@ -23,7 +23,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   void SetTrack(AliESDtrack *track, AliMCEvent *mcEvent = nullptr,
                 const int multiplicity = -1, const bool TPCOnlyTrack = true,
                 const bool IsOmegaTrack = false);
-  UInt_t GetilterMap() const {
+  UInt_t GetFilterMap() const {
     return fFilterMap;
   }
   ;
@@ -190,9 +190,9 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   std::vector<bool> fITSHit;
   bool fTOFTiming;
   bool fTPCRefit;
-  float fnSigmaITS[5];
-  float fnSigmaTPC[5];
-  float fnSigmaTOF[5];
+  float fnSigmaITS[6];
+  float fnSigmaTPC[6];
+  float fnSigmaTOF[6];
   ULong_t fESDStatus;
   int fESDnClusterITS;
   int fESDnClusterTPC;
@@ -202,7 +202,8 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   AliVTrack *fVTrack;
   AliVTrack *fVGlobalTrack;
   AliAODTrack *fAODTrack;
-  AliAODTrack *fAODGlobalTrack;ClassDef(AliFemtoDreamTrack,4)
+  AliAODTrack *fAODGlobalTrack;
+  ClassDef(AliFemtoDreamTrack,5)
 };
 
 #endif /* ALIFEMTODREAMTRACK_H_ */

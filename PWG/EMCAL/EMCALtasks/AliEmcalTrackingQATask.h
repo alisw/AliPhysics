@@ -34,6 +34,7 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcalLight {
   void                   SetDoSigmaPtOverPtGen(Bool_t s)  {fDoSigmaPtOverPtGen = s; }
   void                   SetDoSeparateTRDrefit(Bool_t s)  {fDoSeparateTRDrefit = s; }
   void                   SetUseTRDUpdateFlag(Bool_t s)    {fUseTRDUpdateFlag   = s; }
+  void                   SetQOverPtShift(Double_t s)      {fUseQOverPtShift = true; fQOverPtShift = s; }
 
   static AliEmcalTrackingQATask* AddTaskTrackingQA(Bool_t isMC, const char *suffix = "");
 
@@ -58,6 +59,8 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcalLight {
   Bool_t                  fDoSigmaPtOverPtGen    ; ///<  MC: if true do sigma((ptgen - ptdet) / ptgen), otherwise do sigma((ptgen - ptdet) / ptdet)
   Bool_t                  fDoSeparateTRDrefit    ; ///<  Separate tracks into tracks with TRD refit and 4 tracklets (gold) or not (sub-gold)
   Bool_t                  fUseTRDUpdateFlag      ; ///<  Use TRD update flag to separate tracks into gold and semi-gold
+  Bool_t                  fUseQOverPtShift;      ; ///<  Apply Q/pt shift
+  Double_t                fQOverPtShift;         ; ///<  Q/pt shift
 
   // Service fields (non-streamed)
   Bool_t                  fIsEsd                 ; //!<! whether it is ESD data
@@ -82,6 +85,6 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcalLight {
   AliEmcalTrackingQATask(const AliEmcalTrackingQATask&);            // not implemented
   AliEmcalTrackingQATask &operator=(const AliEmcalTrackingQATask&); // not implemented
 
-  ClassDef(AliEmcalTrackingQATask, 4) // Track QA task (efficiency and pt resolution)
+  ClassDef(AliEmcalTrackingQATask, 5) // Track QA task (efficiency and pt resolution)
 };
 #endif

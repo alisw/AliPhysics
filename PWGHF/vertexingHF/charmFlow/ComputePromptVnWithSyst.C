@@ -62,7 +62,7 @@ void ComputePromptVnWithSyst(TString outFileName, TString inFileNameVn, TString 
     }
 
     //Apply prompt correction, if fprompt file is passed
-    TH1F *hfPromptCent = NULL, *hfPromptMin = NULL, *hfPromptMax = NULL; 
+    TH1F *hfPromptCent = NULL, *hfPromptMin = NULL, *hfPromptMax = NULL;
     TGraphAsymmErrors *gVnPromptStat = NULL, *gVnPromptSystFeedDown = NULL, *gfPrompt = NULL;
     TFile* inFilefPrompt = NULL;
     if(inFileNamefPrompt!="") {
@@ -134,7 +134,7 @@ void ComputePromptVnWithSyst(TString outFileName, TString inFileNameVn, TString 
     lineatzero->SetLineWidth(2);
     lineatzero->SetLineColor(kBlack);
     lineatzero->SetLineStyle(9);
-    
+
     TLegend* legPrompt = new TLegend(0.5,0.75,0.85,0.85);
     legPrompt->SetFillStyle(0);
     legPrompt->SetTextSize(0.04);
@@ -172,6 +172,7 @@ void ComputePromptVnWithSyst(TString outFileName, TString inFileNameVn, TString 
     gVnPromptSystFit->Write();
     gVnPromptSystResol->Write();
     gVnPromptSystData->Write();
+    gVnPromptSystFeedDown->Write();
     gVnPromptSystTot->Write();
     if(gfPrompt) gfPrompt->Write();
     outFile.Close();
@@ -199,7 +200,7 @@ TGraphAsymmErrors* CorrectVnForFeedDown(TGraphAsymmErrors *&gVnPromptSyst, TGrap
         double vnpromptstatunc = 2*vnobsstatunc/(1+fpromptcent);
         double vnpromptmin = 2*TMath::Sqrt(3)*vnobs/((TMath::Sqrt(3)+1)+fpromptmax*(TMath::Sqrt(3)-1));
         double vnpromptmax = 2*TMath::Sqrt(3)*vnobs/((TMath::Sqrt(3)-1)+fpromptmin*(TMath::Sqrt(3)+1));
-        
+
         gVnPromptStat->SetPoint(iPt,pt,vnprompt);
         gVnPromptStat->SetPointError(iPt,ptunclow,ptunchigh,vnpromptstatunc,vnpromptstatunc);
         gVnPromptSyst->SetPoint(iPt,pt,vnprompt);

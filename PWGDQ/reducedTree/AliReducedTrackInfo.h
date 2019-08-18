@@ -91,8 +91,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t   TRDGTUsagitta()        const {return fTRDGTUsagitta;}
   UChar_t   TRDGTUPID()            const {return fTRDGTUPID;}
 
-
-  Int_t    CaloClusterId() const {return fCaloClusterId;}
+  Float_t   EMCALnSigEle()  const {return fEMCALnSigEle;}
+  Int_t     CaloClusterId() const {return fCaloClusterId;}
   
   Float_t TrackParam(Int_t iPar = 0) {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
   Float_t CovMatrix(Int_t iCov = 0) {return (iCov>=0 && iCov<21 ? fCovMatrix[iCov] : 0.0);}
@@ -175,7 +175,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t  fTRDGTUPID;          // TRD online track pid
 
   // EMCAL/PHOS
-  Int_t  fCaloClusterId;          // ID for the calorimeter cluster (if any)
+  Float_t fEMCALnSigEle;        // EMCal n-sigma deviation from expected electron signal
+  Int_t   fCaloClusterId;       // ID for the calorimeter cluster (if any)
   
   // Track parameters stored at the primary vertex
   Float_t fTrackParam[6];     // parameters: x, y, z, px, py, pz
@@ -192,7 +193,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
 
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
   
-  ClassDef(AliReducedTrackInfo, 9);
+  ClassDef(AliReducedTrackInfo, 10);
 };
 
 //_______________________________________________________________________________

@@ -59,7 +59,8 @@ void AliVertexerHyperTriton3Body::Find2ProngClosestPoint(AliExternalTrackParam *
 }
 
 bool AliVertexerHyperTriton3Body::FindDecayVertex(AliExternalTrackParam *deuteronTrack,
-                                                  AliExternalTrackParam *protonTrack, AliExternalTrackParam *pionTrack,
+                                                  AliExternalTrackParam *protonTrack, 
+                                                  AliExternalTrackParam *pionTrack,
                                                   float b) {
 
   /// Cut on the charges
@@ -67,12 +68,8 @@ bool AliVertexerHyperTriton3Body::FindDecayVertex(AliExternalTrackParam *deutero
     return false;
 
   float initialGuesses[3][3];
-  // AliExternalTrackParam *tracks[3]{static_cast<AliExternalTrackParam *>(deuteronTrack),
-  //                                  static_cast<AliExternalTrackParam *>(protonTrack),
-  //                                  static_cast<AliExternalTrackParam *>(pionTrack)};
-  AliExternalTrackParam *tracks[3]{deuteronTrack,
-                                   protonTrack,
-                                   pionTrack};
+
+  AliExternalTrackParam *tracks[3]{deuteronTrack, protonTrack, pionTrack};
 
   TObjArray trArray(3);
   trArray.Add(deuteronTrack);

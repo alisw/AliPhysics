@@ -7,6 +7,7 @@
 
 #include <TList.h>
 #include <AliAnalysisTaskSE.h>
+#include <AliTimeRangeCut.h>
 #include <AliSignalMC.h>
 
 class AliAnalysisCuts;
@@ -68,6 +69,7 @@ public:
   
   // Cuts for selection of event to be written to tree
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
+  void SetTimeRangeReject(Bool_t reject=kTRUE) {fTimeRangeReject = reject;}
   // Cuts for selecting tracks included in the tree
   void SetTrackFilter(AliAnalysisCuts * const filter);
   void AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option=kFALSE);
@@ -131,7 +133,7 @@ public:
   Double_t Rapidity(Double_t r, Double_t z);
   Double_t Radius(Double_t eta, Double_t z);
 
-  Bool_t  IsTrackSelected(AliVParticle* track, std::vector<Bool_t>& filterDecision);
+  Bool_t  IsTrackSelected(AliVParticle* track, Double_t* values, std::vector<Bool_t>& filterDecision);
   Bool_t  IsSelectedTrackRequestedBaseTrack(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or);
   Bool_t  IsClusterSelected(AliVCluster* cluster, std::vector<Bool_t>& filterDecision);
   void    SetTrackFilterQualityFlags(AliReducedBaseTrack* track, std::vector<Bool_t> filterDecision);
@@ -219,6 +221,9 @@ public:
   AliReducedBaseEvent *fReducedEvent;     //! reduced event wise information
   TBits* fUsedVars;                       // used variables for the AliDielectronVarManager
   
+  AliTimeRangeCut     fTimeRangeCut;      //! time range selection based on OADB
+  Bool_t              fTimeRangeReject;   //  do not accept events if these are marked by fTimeRangeCut
+  
   void FillEventInfo();                     // fill reduced event information
   void FillTrackInfo();                     // fill reduced track information
   void FillMCTruthInfo();                   // fill MC truth particles
@@ -239,6 +244,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 14); //Analysis Task for creating a reduced event information tree
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 16); //Analysis Task for creating a reduced event information tree
 };
 #endif

@@ -59,7 +59,7 @@ TH1* YieldMean(TH1* hstat,
                TString logfilename = "log.root",
                Double_t minfit = 0.0,
                Double_t maxfit = 10.0,
-               Int_t trylimit = 10) {
+               Int_t trylimit = 1000) {
     if (maxfit > max)
         max = maxfit;
     if (minfit < min)
@@ -138,6 +138,55 @@ TH1* YieldMean(TH1* hstat,
     hlo = YieldMean_LowExtrapolationHisto(hstat, f, min, loprecision);
     hhi = YieldMean_HighExtrapolationHisto(hstat, f, max, hiprecision);
 
+    TCanvas* cQA = new TCanvas("cQA", "", 960, 720);
+    gStyle->SetOptStat(0);
+    gStyle->SetOptTitle(0);
+    gStyle->SetLegendBorderSize(0);
+    cQA->SetTickx();
+    cQA->SetTicky();
+    cQA->SetLogy();
+    cQA->SetTopMargin(0.05);
+    cQA->SetLeftMargin(0.10);
+    // cSignalFit->SetBottomMargin(0.01);
+    cQA->SetRightMargin(0.01);
+    cQA->SetFillStyle(0);
+    cQA->cd();
+    hstat->GetXaxis()->SetRangeUser(0, 10);
+    hstat->GetXaxis()->SetTitle("#it{P}_{T} (GeV/#it{c})");
+    hstat->GetYaxis()->SetTitle("1/N_{event}d^{2}N/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}");
+    hstat->SetMaximum(1e-2);
+    hstat->SetMinimum(1e-9);
+    hstat->SetMarkerStyle(4);
+    hstat->SetMarkerColor(kBlue);
+    hstat->SetLineColor(kBlue);
+    hstat->Draw("PZ");
+    hlo->SetMarkerStyle(2);
+    hlo->SetMarkerColor(kRed);
+    hlo->SetLineColor(kRed);
+    hlo->Draw("PZ same");
+    hhi->SetMarkerStyle(2);
+    hhi->SetMarkerColor(kGreen+2);
+    hhi->SetLineColor(kGreen+2);
+    hhi->Draw("PZ same");
+    f->SetLineStyle(4);
+    f->SetLineColor(kBlack);
+    f->SetLineWidth(2);
+    f->Draw("same");
+
+    auto lQA = new TLegend(0.6, 0.6, 0.85, 0.85);
+    lQA->SetFillStyle(0);
+    lQA->AddEntry(hstat, "Data (stat. uncert.)", "PLE");
+    lQA->AddEntry(hlo, "Low #it{p}_{T} extrapolated", "PLE");
+    lQA->AddEntry(hhi, "High #it{p}_{T} extrapolated", "PLE");
+    lQA->AddEntry(f, Form("Fit function(%s)",f->GetName()), "L");
+    lQA->Draw();
+
+    TFile* fQA = TFile::Open(logfilename.Data(), "UPDATE");
+    cQA->Write();
+    fQA->Close();
+    delete fQA;
+    
+
     /* random generation with integration (coarse) */
     TH1* hIntegral_tmp =
         new TH1F("hIntegral_tmp", "", 1000, 0.75 * integral, 1.25 * integral);
@@ -191,6 +240,14 @@ TH1* YieldMean(TH1* hstat,
     mean = hout->GetBinContent(kMean) * gaus->GetParameter(2) /
            gaus->GetParameter(1);
     hout->SetBinContent(kMeanStat, mean);
+
+    TFile* filewithstaterror = TFile::Open(logfilename.Data(), "UPDATE");
+    cCanvasStat->Write();
+    hIntegral->Write();
+    hMean->Write();
+    gaus->Write();
+    filewithstaterror->Close();
+    delete filewithstaterror;
 
     /*
      * SYSTEMATICS

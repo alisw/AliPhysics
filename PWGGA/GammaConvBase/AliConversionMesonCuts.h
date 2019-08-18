@@ -211,6 +211,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetSidebandMixingLeftHigh() const {return fSidebandMixingLeftHigh;}
     Double_t GetSidebandMixingRightLow() const {return fSidebandMixingRightLow;}
     Double_t GetSidebandMixingRightHigh() const {return fSidebandMixingRightHigh;}
+    Int_t    GetBackgroundMode() const {return fBackgroundMode;}
 
   protected:
     TRandom3    fRandom;                        ///<
@@ -297,16 +298,17 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDCARMesonPrimVtxCutOn;         ///< cut flag for the maximum distance in R between the production point of the Meson & the primary vertex
     Bool_t      fMinOpanPtDepCut;               ///<
     Bool_t      fMaxOpanPtDepCut;               ///<
-    Bool_t      fBackgroundUseSideband;         ///<
-    Bool_t      fBackgroundUseSidebandBothSides;///<
-    Bool_t      fBackgroundUseLikeSign;         ///<
+    Bool_t      fBackgroundUseSideband;         ///< enable sideband mixing on one side of NDM
+    Bool_t      fBackgroundUseSidebandBothSides;///< enable sideband mixing on both sides NDM
+    Bool_t      fBackgroundUseLikeSign;         ///< enable likesign mixing
+    Int_t       fBackgroundMode;                ///< default is 4: all pions from different event
     Bool_t      fDoJetAnalysis;                 ///< switch to run a jet analysis
     Bool_t      fDoJetQA;                       ///< switch to run a jet QA analysis
 
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,32)
+    ClassDef(AliConversionMesonCuts,33)
     /// \endcond
 };
 

@@ -63,6 +63,7 @@ public:
   void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg          = input;}
   void                        SetDoClusMixing(Bool_t input)                         { fDoClusMixing      = input;}
   void                        SetDoPosSwapMixing(Int_t input)                       { fDoPosSwapMixing   = input;}
+  void                        SetPSCorrectionLogMode(Bool_t input)                  { bLogPSMod          = input;}
   void                        SetClusterDepth(Int_t input)                          { fClusterDepth      = input;}
   void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples    = input;}
   void                        SetUseParamMassSigma(Bool_t input)                    { fUseParamMassSigma = input;}
@@ -233,13 +234,13 @@ public:
   THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
 
   // Position Swap Correction Histograms
-  THnSparseF      *fUDist;                     //!<! Mass modification dist. for same E pairs
-  THnSparseF      *fUTildeDist;                //!<! Pt modification dist. for same E pairs
-  THnSparseF      *fVDist;                     //!<! Mass modification dist. for same Pos pairs
-  THnSparseF      *fVTildeDist;                //!<! Pt modification dist. for same Pos Pairs
-  // 2D Versions
-  THnSparseF      *fUMatrix;                   //!<! Mass and Pt modification matrix for same E Pairs
-  THnSparseF      *fVMatrix;                   //!<! Mass and Pt modification matrix for same Pos Pairs
+  Bool_t          bLogPSMod;            ///<  Whether to store the scaling factors in log form
+  // 2D Maps: These store the initial mass,pt and final mass,pt
+  THnSparseF      *fPSMassPtMap;                     //!<! Mass,Pt 2D mapping for same E pairs
+  THnSparseF      *fESMassPtMap;                     //!<! Mass,Pt 2D mapping for same Pos pairs (Energy Swap)
+  // Scaling Versions: These store the scaling of the mass and pt
+  THnSparseF      *fUScaleMatrix;                   //!<! Mass and Pt modification scaling matrix for same E Pairs
+  THnSparseF      *fVScaleMatrix;                   //!<! Mass and Pt modification scaling matrix for same Pos Pairs
 
 
   TH2							*fEMCalMultvZvtx;            //!<! Histogram investigating z-vertex, EMCal Multiplicity for mixed cluster pairs

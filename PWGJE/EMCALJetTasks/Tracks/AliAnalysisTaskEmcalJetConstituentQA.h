@@ -35,7 +35,9 @@
 
 class THistManager;
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalJetConstituentQA : public AliAnalysisTaskEmcalJet {
 public:
@@ -91,6 +93,9 @@ private:
   ClassDef(AliAnalysisTaskEmcalJetConstituentQA, 1);
   /// \endcond
 };
+
+}
+
 }
 
 #endif

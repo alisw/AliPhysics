@@ -20,7 +20,7 @@ class AliMCEvent;
 
 class AliMCSpectraWeights : public TNamed {
   public:
-    enum ParticleType {kPion=0, kProtons=1, kKaon=2, kSigmaPlus=4, kSigmaMinus=3, kRest=5};/*!< enumerator of different particle types. */
+    enum ParticleType {kPion=0, kProtons=1, kKaon=2, kSigmaMinus=3, kSigmaPlus=4, kRest=5};/*!< enumerator of different particle types. */
     enum TaskState {kAllEmpty=0, kMCSpectraObtained, kDataFractionLoaded, kMCWeightCalculated};/*!< counter for the status of the task. */
     enum SysFlag {kNominal=0, kPionUp, kPionDown, kProtonUp, kProtonDown, kKaonUp, kKaonDown, kSigmaPlusUp, kSigmaPlusDown, kSigmaMinusUp, kSigmaMinusDown, kBylinkinUpper, kBylinkinLower, kHagedorn, kHagedornUpper, kHagedornLower, kExponential, kExponentialUpper, kExponentialLower, kBlastwave, kBlastwaveUpper, kBlastwaveLower};
 
@@ -28,9 +28,10 @@ class AliMCSpectraWeights : public TNamed {
     AliMCSpectraWeights(const char *collisionSystem, const char* name, AliMCSpectraWeights::SysFlag flag); /*!< constructor to be used.*/
     ~AliMCSpectraWeights();/*!< default destructor */
 
-    void Init();/* Function to start initalizing after all configs are made. */
+    void Init();/* Function to start initalizing after all setters are made. */
     Double_t GetMCSpectraWeight(TParticle* mcGenParticle, Float_t eventMultiplicityOrCentrality);/*main function to use. Will deliver correct weights to re-weight the abundances of different particle species */
-    void FillMCSpectra(AliMCEvent* mcEvent, Float_t eventMultiplicityOrCentrality);/*function to fill internal mc spectra for calculation of weight factors*/
+    Double_t GetMCSpectraWeight(TParticle* mcGenParticle, AliMCEvent* mcEvent);/* preferable to use this */
+    void FillMCSpectra(AliMCEvent* mcEvent);/*function to fill internal mc spectra for calculation of weight factors*/
 
     //Setter
     void SetBinsPt(TArrayD *bins){if(fBinsPt) delete fBinsPt; fBinsPt = new TArrayD(*bins);}/*!< Set bins in Pt using a TArrayD */
@@ -56,11 +57,10 @@ class AliMCSpectraWeights : public TNamed {
     THnF* GetHistMCFraction() const {return fHistMCFractions;}
     THnF* GetHistMCWeights() const {return fHistMCWeights;}
     AliMCSpectraWeights::SysFlag GetSysFlag() const {return fFlag;}
-    Double_t GetMultFromCent(int CentBin);
+    Double_t GetMultOrCent() const {return fMultOrCent;}
 
     //usefull functions
     Int_t IdentifyMCParticle(TParticle* mcParticle);
-
 
     ClassDef(AliMCSpectraWeights,1); // Class for reweighting mc particle abundances
 
@@ -70,6 +70,11 @@ class AliMCSpectraWeights : public TNamed {
     Bool_t LoadFromAliMCSpectraWeight(AliMCSpectraWeights* obj = 0);//!
     Bool_t LoadFromTHnF(const char* histname);//!
     Bool_t CalculateMCWeights();//!
+    Bool_t CalcMCFractions();//!
+    Bool_t CorrectFractionsforRest();//!
+    Double_t GetMultFromCent(int CentBin);//!
+    Double_t GetCentFromMult(double dMult);//!
+    void CountEventMult();//!
     // histograms
     THnF*       fHistMCGenPrimTrackParticle;// Histogram for MC particle information
     THnF*       fHistDataFractions;// Histogram for particle abundances from published data
@@ -94,7 +99,9 @@ class AliMCSpectraWeights : public TNamed {
     Bool_t        fUseMultiplicity; /* switch to use multiplicity instead of centrality */
     Int_t         fbTaskStatus;/* controls internal status of class */
     AliMCSpectraWeights::SysFlag       fFlag;// enum for systematic variation;
-};
 
+    AliMCEvent    *fMCEvent;		//!<! MC event
+    Double_t      fMultOrCent;//!
+};
 
 #endif /* __AliMCSpectraWeights__ */

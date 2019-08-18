@@ -4,7 +4,6 @@
 
 #include "AliFemtoModelCorrFctnTrueQ6D.h"
 #include "AliFemtoPair.h"
-#include "AliFemtoModelManager.h"
 #include "AliFemtoModelHiddenInfo.h"
 
 #include <TList.h>
@@ -21,9 +20,45 @@
 void
 AliFemtoModelCorrFctnTrueQ6D::UpdateQlimits()
 {
-  const auto aout = fHistogram->GetAxis(3),
-             aside = fHistogram->GetAxis(4),
-             along = fHistogram->GetAxis(5);
+  using Method = BinMethod;
+
+  std::array<Int_t, 3> axes;
+
+  switch (fBinMethod) {
+  case Method::kGenRecLSO:
+    axes = {2, 1, 0};
+    break;
+  case Method::kGenRecOSL:
+    axes = {0, 1, 2};
+    break;
+  case Method::kGenLSORecOSL:
+    axes = {2, 1, 0};
+    break;
+
+  case Method::kRecGenLSO:
+    axes = {5, 4, 3};
+    break;
+  case Method::kRecGenOSL:
+    axes = {3, 4, 5};
+    break;
+  case Method::kRecLSOGenOSL:
+    axes = {3, 4, 5};
+    break;
+
+  case Method::kGroupedAxisLSO:
+    axes = {5, 3, 1};
+    break;
+  case Method::kGroupedAxisOSL:
+    axes = {0, 2, 4};
+    break;
+
+  default:
+    throw std::invalid_argument(std::string(Form("Uknown binning method %d", fBinMethod)));
+  }
+
+  const auto aout = fHistogram->GetAxis(axes[0]),
+             aside = fHistogram->GetAxis(axes[1]),
+             along = fHistogram->GetAxis(axes[2]);
 
   fQlimits[0] = make_pair(aout->GetXmin(), aout->GetXmax());
   fQlimits[1] = make_pair(aside->GetXmin(), aside->GetXmax());
@@ -45,32 +80,26 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D()
 {
 }
 
-AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const HistType &hist, AliFemtoModelManager *mgr)
+AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const HistType &hist)
   : AliFemtoCorrFctn()
-  , fManager(mgr)
-  , fHistogram(reinterpret_cast<HistType*>(hist.Clone()))
-  , fRng(new TRandom())
+  , fHistogram(static_cast<HistType*>(hist.Clone()))
   , fBinMethod(kRecGenOSL)
   , fIgnoreZeroMassParticles(true)
-  , fUseFemtoWeight(true)
 {
-  UpdateQlimits();
   fBinMethod = GuessBinMethod(*fHistogram);
+  UpdateQlimits();
 }
 
-AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(HistType *&hist, AliFemtoModelManager *mgr)
+AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(HistType *&hist)
   : AliFemtoCorrFctn()
-  , fManager(mgr)
   , fHistogram(hist)
-  , fRng(new TRandom())
   , fBinMethod(kRecGenOSL)
   , fIgnoreZeroMassParticles(true)
-  , fUseFemtoWeight(true)
 {
   // take ownership of the pointer
   hist = nullptr;
-  UpdateQlimits();
   fBinMethod = GuessBinMethod(*fHistogram);
+  UpdateQlimits();
 }
 
 template <typename T>
@@ -149,10 +178,12 @@ AliFemtoModelCorrFctnTrueQ6D::GuessBinMethod(const HistType &hist)
  return Method::kGenLSORecOSL;
 }
 
+
 AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title)
   : AliFemtoModelCorrFctnTrueQ6D(title, 120, 0.3)
 {
 }
+
 
 AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title,
                                                            UInt_t nbins,
@@ -161,32 +192,67 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title,
 {
 }
 
-AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &name,
-                                                           UInt_t nbins,
-                                                           Double_t qmin,
-                                                           Double_t qmax)
-  : AliFemtoCorrFctn()
-  , fManager(nullptr)
-  , fHistogram(nullptr)
-  , fRng(new TRandom())
-  , fBinMethod(kRecGenOSL)
-  , fIgnoreZeroMassParticles(true)
-  , fUseFemtoWeight(true)
+
+AliFemtoModelCorrFctnTrueQ6D
+  ::AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                                 UInt_t nbins,
+                                 Double_t qmin,
+                                 Double_t qmax,
+                                 BinMethod binning)
+  : AliFemtoModelCorrFctnTrueQ6D(prefix,
+                                 nbins, qmin, qmax,
+                                 nbins, qmin, qmax,
+                                 nbins, qmin, qmax,
+                                 binning)
 {
-  std::vector<Int_t> nbins_v(6, static_cast<Int_t>(nbins));
-  std::vector<double> hist_min(6, qmin), hist_max(6, qmax);
+}
 
-  auto axis_titles = sort_q(fBinMethod,
-      "q_{o}", "q_{s}", "q_{l}",
-      "q_{t,o}", "q_{t,s}", "q_{t,l}");
 
-  TString title = "Momentum Correction Hypercube Histogram ";
+AliFemtoModelCorrFctnTrueQ6D
+  ::AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                                 Int_t nbins_out, Double_t qout_lo, Double_t qout_hi,
+                                 Int_t nbins_side, Double_t qside_lo, Double_t qside_hi,
+                                 Int_t nbins_long, Double_t qlong_lo, Double_t qlong_hi,
+                                 BinMethod binning)
+  : AliFemtoModelCorrFctnTrueQ6D(prefix,
+                                 nbins_out, qout_lo, qout_hi,
+                                 nbins_side, qside_lo, qside_hi,
+                                 nbins_long, qlong_lo, qlong_hi,
+                                 nbins_out, qout_lo, qout_hi,
+                                 nbins_side, qside_lo, qside_hi,
+                                 nbins_long, qlong_lo, qlong_hi,
+                                 binning)
+{
+}
+
+
+AliFemtoModelCorrFctnTrueQ6D
+  ::AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                                 Int_t nbins_out, Double_t qout_lo, Double_t qout_hi,
+                                 Int_t nbins_side, Double_t qside_lo, Double_t qside_hi,
+                                 Int_t nbins_long, Double_t qlong_lo, Double_t qlong_hi,
+                                 Int_t nbins_out_true, Double_t qout_lo_true, Double_t qout_hi_true,
+                                 Int_t nbins_side_true, Double_t qside_lo_true, Double_t qside_hi_true,
+                                 Int_t nbins_long_true, Double_t qlong_lo_true, Double_t qlong_hi_true,
+                                 BinMethod binning)
+  : AliFemtoCorrFctn()
+  , fHistogram(nullptr)
+  , fBinMethod(binning)
+  , fIgnoreZeroMassParticles(true)
+{
+  auto nbins_v = sort_q(fBinMethod, nbins_out, nbins_side, nbins_long, nbins_out_true, nbins_side_true, nbins_long_true);
+  auto hist_min = sort_q(fBinMethod, qout_lo, qside_lo, qlong_lo, qout_lo_true, qside_lo_true, qlong_lo_true);
+  auto hist_max = sort_q(fBinMethod, qout_hi, qside_hi, qlong_hi, qout_hi_true, qside_hi_true, qlong_hi_true);
+
+  auto axis_titles = sort_q(fBinMethod, "q_{o}", "q_{s}", "q_{l}", "q_{t,o}", "q_{t,s}", "q_{t,l}");
+
+  TString title = "Momentum Correction Hypercube Histogram;";
 
   for (const TString &axis_title : axis_titles) {
-    title += "; " + axis_title;
+    title += axis_title + ";";
   }
 
-  fHistogram = new HistType(name +"_Histogram", title, 6, nbins_v.data(), hist_min.data(), hist_max.data());
+  fHistogram = new HistType(prefix + "HyperCube", title, 6, nbins_v.data(), hist_min.data(), hist_max.data());
   UpdateQlimits();
 }
 
@@ -195,7 +261,6 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const Builder &params
   : AliFemtoModelCorrFctnTrueQ6D(params.title.Data(), params.bin_count, params.qmin, params.qmax)
 {
   fIgnoreZeroMassParticles = params.ignore_zeromass;
-  SetManager(params.mc_manager);
   UpdateQlimits();
   std::array<double, 2> a = {params.qout_range_min, params.qout_range_max},
                         b = {params.qside_range_min, params.qside_range_max},
@@ -205,14 +270,56 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const Builder &params
 }
 
 
+AliFemtoModelCorrFctnTrueQ6D::
+  AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                               const std::vector<double> &obins,
+                               const std::vector<double> &sbins,
+                               const std::vector<double> &lbins,
+                               BinMethod binning)
+  : AliFemtoCorrFctn()
+  , fHistogram(nullptr)
+  , fBinMethod(binning)
+  , fIgnoreZeroMassParticles(true)
+{
+  const Int_t
+    nobins = obins.size()-1,
+    nsbins = sbins.size()-1,
+    nlbins = lbins.size()-1;
+
+  auto nbins_v = sort_q(fBinMethod, nobins, nsbins, nlbins,
+                                    nobins, nsbins, nlbins);
+
+  auto hist_min = sort_q(fBinMethod, obins.front(), sbins.front(), lbins.front(),
+                                     obins.front(), sbins.front(), lbins.front());
+
+  auto hist_max = sort_q(fBinMethod, obins.front(), sbins.front(), lbins.front(),
+                                     obins.front(), sbins.front(), lbins.front());
+
+  auto axis_titles = sort_q(fBinMethod, "q_{o}", "q_{s}", "q_{l}", "q_{t,o}", "q_{t,s}", "q_{t,l}");
+
+  TString title = "Momentum Correction Hypercube Histogram;";
+
+  for (const TString &axis_title : axis_titles) {
+    title += axis_title + ";";
+  }
+
+  fHistogram = new HistType(prefix + "HyperCube", title, 6, nbins_v.data(), hist_min.data(), hist_max.data());
+
+  auto varbins = sort_q(fBinMethod, obins, sbins, lbins, obins, sbins, lbins);
+
+  // change axis bins after histogram created... that's ok, right?
+  for (int i=0; i<6; ++i) {
+    fHistogram->GetAxis(i)->Set(varbins[i].size()-1, varbins[i].data());
+  }
+
+  UpdateQlimits();
+}
+
 AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const AliFemtoModelCorrFctnTrueQ6D &orig)
   : AliFemtoCorrFctn(orig)
-  , fManager(orig.fManager)
   , fHistogram(reinterpret_cast<decltype(fHistogram)>(orig.fHistogram->Clone()))
-  , fRng(new TRandom())
   , fBinMethod(orig.fBinMethod)
   , fIgnoreZeroMassParticles(orig.fIgnoreZeroMassParticles)
-  , fUseFemtoWeight(orig.fUseFemtoWeight)
 {
   fQlimits[0] = orig.fQlimits[0];
   fQlimits[1] = orig.fQlimits[1];
@@ -223,7 +330,6 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const AliFemtoModelCo
 AliFemtoModelCorrFctnTrueQ6D::~AliFemtoModelCorrFctnTrueQ6D()
 {
   delete fHistogram;
-  delete fRng;
 }
 
 AliFemtoModelCorrFctnTrueQ6D&
@@ -234,7 +340,6 @@ AliFemtoModelCorrFctnTrueQ6D::operator=(const AliFemtoModelCorrFctnTrueQ6D& rhs)
     fHistogram = static_cast<HistType*>(rhs.fHistogram->Clone());
     fBinMethod = rhs.fBinMethod;
     fIgnoreZeroMassParticles = rhs.fIgnoreZeroMassParticles;
-    fUseFemtoWeight = rhs.fUseFemtoWeight;
     fQlimits[0] = rhs.fQlimits[0];
     fQlimits[1] = rhs.fQlimits[1];
     fQlimits[2] = rhs.fQlimits[2];
@@ -267,49 +372,44 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
   const AliFemtoLorentzVector p = p1 + p2,
                               d = p1 - p2;
 
-  Double_t k1 = p.Perp(),
-           k2 = d.x()*p.x() + d.y()*p.y();
+  #define FAST_DIVIDE(num, den) __builtin_expect(den == 0.0, 0) ? 0.0 : num / den
 
-  Double_t qout = (k1 == 0) ? 0.0 : k2/k1;
+  const Double_t
+    pt = p.Perp(),
+    E = p.e(),
+    pz = p.z(),
+    dE = d.e(),
+    dz = d.z(),
 
-  Double_t qside = (k1 == 0) ? 0.0 : 2.0 * (p2.x()*p1.y() - p1.x()*p2.y())/k1;
+    qout = FAST_DIVIDE(d.x()*p.x() + d.y()*p.y(), pt),
+
+    qside = FAST_DIVIDE(p2.x()*p1.y() - p1.x()*p2.y(), pt),
+
+    qlong = __builtin_expect(E == pz, 0) ? 0.0 : (E*dz - pz*dE) / std::sqrt(E*E - pz*pz);
 
   // Double_t beta = p.z()/p.t(),
   //         gamma = 1.0 / TMath::Sqrt((1.0-beta)*(1.0+beta)),
   //         qlong = gamma * (d.z() - beta*d.t());
 
-  Double_t pt = p.t(),
-           pz = p.z(),
-           dt = d.t(),
-           dz = d.z(),
-           qlong = (pt*dz - pz*dt) / TMath::Sqrt(pt*pt - pz*pz);
+  #undef FAST_DIVIDE
 
-  return std::make_tuple(qout, qside, qlong);
+  const double factor = std::copysign(1.0, qout);
+
+  return std::make_tuple(factor * qout, factor * qside, factor * qlong);
 }
 
 void
 AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1,
-                                      const AliFemtoParticle &particle2,
-                                      double femto_weight /* = 1.0 */)
+                                      const AliFemtoParticle &particle2)
 {
-  // Fill reconstructed histogram with "standard" particle momentum
-  Double_t q_out, q_side, q_long;
-  std::tie(q_out, q_side, q_long) = Qcms(particle1.FourMomentum(), particle2.FourMomentum());
-
   auto out_of_bounds = [] (double q, const std::pair<double,double> limit) {
     return q < limit.first || limit.second < q;
   };
 
-  if (out_of_bounds(q_out, fQlimits[0]) ||
-      out_of_bounds(q_side, fQlimits[1]) ||
-      out_of_bounds(q_long, fQlimits[2])) {
-    return;
-  }
-
   // Get generated momentum from hidden info
   const AliFemtoModelHiddenInfo
-    *info1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(particle1.HiddenInfo()),
-    *info2 = dynamic_cast<const AliFemtoModelHiddenInfo*>(particle2.HiddenInfo());
+    *info1 = static_cast<const AliFemtoModelHiddenInfo*>(particle1.HiddenInfo()),
+    *info2 = static_cast<const AliFemtoModelHiddenInfo*>(particle2.HiddenInfo());
 
   if (info1 == nullptr || info2 == nullptr) {
     return;
@@ -326,36 +426,34 @@ AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1,
   const AliFemtoThreeVector &true_momentum1 = *info1->GetTrueMomentum(),
                             &true_momentum2 = *info2->GetTrueMomentum();
 
-  const Double_t e1 = sqrt(mass1 * mass1 + true_momentum1.Mag2()),
-                 e2 = sqrt(mass2 * mass2 + true_momentum2.Mag2());
+  const Double_t e1 = std::sqrt(mass1 * mass1 + true_momentum1.Mag2()),
+                 e2 = std::sqrt(mass2 * mass2 + true_momentum2.Mag2());
 
   const AliFemtoLorentzVector p1(e1, true_momentum1),
                               p2(e2, true_momentum2);
 
-  // Fill generated-momentum histogram with "true" particle momentum
   Double_t true_q_out, true_q_side, true_q_long;
   std::tie(true_q_out, true_q_side, true_q_long) = Qcms(p1, p2);
+
+  if (out_of_bounds(true_q_out, fQlimits[0]) ||
+      out_of_bounds(true_q_side, fQlimits[1]) ||
+      out_of_bounds(true_q_long, fQlimits[2])) {
+    return;
+  }
+
+  Double_t q_out, q_side, q_long;
+  std::tie(q_out, q_side, q_long) = Qcms(particle1.FourMomentum(), particle2.FourMomentum());
 
   auto q = sort_q(fBinMethod,
                   q_out, q_side, q_long,
                   true_q_out, true_q_side, true_q_long);
 
-  fHistogram->Fill(q.data(), femto_weight);
+  fHistogram->Fill(q.data());
 }
 
 void
 AliFemtoModelCorrFctnTrueQ6D::AddRealPair(AliFemtoPair *pair)
 {
-  const AliFemtoParticle *p1 = pair->Track1(),
-                         *p2 = pair->Track2();
-
-  // randomize to avoid ordering biases
-  if (fRng->Uniform() >= 0.5) {
-    std::swap(p1, p2);
-  }
-
-  Double_t femto_weight = fUseFemtoWeight ? fManager->GetWeight(pair) : 1.0;
-  AddPair(*p1, *p2, femto_weight);
 }
 
 void
@@ -363,11 +461,6 @@ AliFemtoModelCorrFctnTrueQ6D::AddMixedPair(AliFemtoPair *pair)
 {
   const AliFemtoParticle *p1 = pair->Track1(),
                          *p2 = pair->Track2();
-
-  // randomize to avoid ordering biases
-  if (fRng->Uniform() >= 0.5) {
-    std::swap(p1, p2);
-  }
 
   AddPair(*p1, *p2);
 }
@@ -393,7 +486,6 @@ AliFemtoModelCorrFctnTrueQ6D::Builder::Builder(AliFemtoModelCorrFctnTrueQ6D::Bui
   , qmax(orig.qmax)
   , bin_method(orig.bin_method)
   , title(orig.title)
-  , mc_manager(orig.mc_manager)
   , qout_range_min(orig.qout_range_min)
   , qout_range_max(orig.qout_range_max)
   , qside_range_min(orig.qside_range_min)
@@ -414,7 +506,6 @@ AliFemtoModelCorrFctnTrueQ6D::Builder::operator=(AliFemtoModelCorrFctnTrueQ6D::B
     qmax = rhs.qmax;
     bin_method = rhs.bin_method;
     title = rhs.title;
-    mc_manager = rhs.mc_manager;
     qout_range_min = rhs.qout_range_min;
     qout_range_max = rhs.qout_range_max;
     qside_range_min = rhs.qside_range_min;

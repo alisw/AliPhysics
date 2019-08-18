@@ -34,16 +34,20 @@
 #pragma link C++ class AliAnalysisTaskUEStudy+;
 #pragma link C++ class AliAnalysisTaskSpectra+;
 #pragma link C++ class AliAnalysisTaskSpectraV0M+;
+#pragma link C++ class AliAnalysisTaskFilterEventTPCdEdx+;
 #pragma link C++ class AlidNdPtTrackDumpTask+;
 #pragma link C++ class AliPtResolAnalysis+;
 #pragma link C++ class AliPtResolAnalysisPbPb+;
 #pragma link C++ class AlimPtAnalysis+;
 #pragma link C++ class AlimPtMatrix+;
 #pragma link C++ class AlimPtMatrixZDC+;
+#pragma link C++ class AliMCSpectraWeightsAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectra+;
 #pragma link C++ class AliAnalysisTaskQAHighPtDeDxTest+;
 #pragma link C++ class AliAnalysisTaskPPvsMult+;
 #pragma link C++ class AliAnalysisTaskSpherocity+;
+#pragma link C++ class AliAnalysisTaskPPvsRT+;
+#pragma link C++ class AliAnalysisTaskPPvsRT_TPCTOF+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
@@ -129,6 +133,7 @@
 // spherocity analysis
 #pragma link C++ class AliTransverseEventShape+;
 #pragma link C++ class AliSpherocityUtils+;
+#pragma link C++ class AliAnalysisSphericityTask+;
 // lightweight class for spherocity estimation, used in 13TeV pp
 #pragma link C++ class AliSpherocityEstimator+;
 #endif

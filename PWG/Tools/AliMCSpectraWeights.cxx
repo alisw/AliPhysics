@@ -57,8 +57,8 @@ AliMCSpectraWeights::AliMCSpectraWeights(const char *collisionSystem, const char
     if (fstCollisionSystem.Contains("pp")) {
       fNCentralities = 10;
       fstCentralities = new TString[fNCentralities];
-      for (size_t icent = 0; icent < fNCentralities; icent++) {
-        fstCentralities[icent] = Form("%zu", icent);
+      for (int icent = 0; icent < fNCentralities; icent++) {
+        fstCentralities[icent] = Form("%d", icent);
       }
       Double_t mulBins[51] = {0};
       for (int i = 0; i < 51; ++i) {
@@ -100,7 +100,7 @@ AliMCSpectraWeights::AliMCSpectraWeights(const char *collisionSystem, const char
       TString cent[] = {"MB", "c0005", "c0510", "c0010", "c1020", "c2040", "c4060", "c6080"};
       fNCentralities = 8;
       fstCentralities = new TString[fNCentralities];
-      for (size_t icent = 0; icent < fNCentralities; icent++) {
+      for (int icent = 0; icent < fNCentralities; icent++) {
         fstCentralities[icent] = cent[icent];
       }
     }
@@ -114,7 +114,7 @@ AliMCSpectraWeights::AliMCSpectraWeights(const char *collisionSystem, const char
     fstPartTypes[AliMCSpectraWeights::ParticleType::kRest] = "Rest";
 
     fbTaskStatus = AliMCSpectraWeights::TaskState::kAllEmpty;
-    fstFilePublished = "alien://alice/cern.ch/user/p/phuhn/AllPublishedFractions.root";
+    fstFilePublished = "alien:///alice/cern.ch/user/p/phuhn/AllPublishedFractions.root";
     // fstFilePublished = "/home/alidock/particle-composition-correction/data/published/ppMult/ppDataMultFractions.root";
   }
 
@@ -141,7 +141,7 @@ void AliMCSpectraWeights::Init() {
 
   if (fstFileMCSpectra.Length() > 5) // *.root
   {
-    printf("AliMCSpectraWeights:: Opening %s \n", fstFileMCSpectra.Data());
+    // printf("AliMCSpectraWeights:: Opening %s \n", fstFileMCSpectra.Data());
     TFile* fInput = TFile::Open(fstFileMCSpectra.Data());
     if(fInput)
     {
@@ -151,21 +151,23 @@ void AliMCSpectraWeights::Init() {
           printf("AliMCSpectraWeights::WARNING: more than 1 list in the streamed file; please specify; using 1st list;\n\n");
       }
       else fstSavedListName  = fInput->GetListOfKeys()->At(0)->GetName();
-      printf("AliMCSpectraWeights:: Loading %s from list %s\n", fstSavedObjName.Data(), fstSavedListName.Data());
+      // printf("AliMCSpectraWeights:: Loading %s from list %s\n", fstSavedObjName.Data(), fstSavedListName.Data());
       TList *listMC = (TList*)fInput->Get(fstSavedListName);
       if(!listMC) {printf("AliMCSpectraWeights::ERROR: could not load list in streamed file\n");}
       else{
-        AliMCSpectraWeights* inWeights = (AliMCSpectraWeights*)listMC->FindObject(fstSavedObjName.Data());
-        if(AliMCSpectraWeights::LoadFromAliMCSpectraWeight(inWeights))
-          fbTaskStatus = AliMCSpectraWeights::TaskState::kMCSpectraObtained;
-        else fHistMCGenPrimTrackParticle = (THnF*)listMC->FindObject("fHistMCGenPrimTrackParticle");
-        //TODO hard coded histname
-        if(!fHistMCGenPrimTrackParticle) {printf("AliMCSpectraWeights::WARNING: Couln't get fHistMCGenPrimTrackParticle\n" ); return;}
+        fHistMCGenPrimTrackParticle = (THnF*)listMC->FindObject("fHistMCGenPrimTrackParticle");
+        if(!fHistMCGenPrimTrackParticle)
+        {
+          printf("AliMCSpectraWeights::WARNING: Couln't get fHistMCGenPrimTrackParticle\n" );
+          AliMCSpectraWeights* inWeights = (AliMCSpectraWeights*)listMC->FindObject(fstSavedObjName.Data());
+          if(AliMCSpectraWeights::LoadFromAliMCSpectraWeight(inWeights))
+            fbTaskStatus = AliMCSpectraWeights::TaskState::kMCSpectraObtained;
+        }
         if(fHistMCGenPrimTrackParticle->GetEntries()>0) fbTaskStatus = AliMCSpectraWeights::TaskState::kMCSpectraObtained;
         // if(inWeights) delete inWeights;
       }
     }
-    else printf("AliMCSpectraWeights::WARNING: %s can not be loaded\n ", fstFileMCSpectra.Data());
+    // else printf("AliMCSpectraWeights::WARNING: %s can not be loaded\n ", fstFileMCSpectra.Data());
     if(fInput) {fInput->Close(); delete fInput;}
   }
 
@@ -180,14 +182,14 @@ void AliMCSpectraWeights::Init() {
   {
     if(AliMCSpectraWeights::CalculateMCWeights())
     {
-      printf("AliMCSpectraWeights::Calculating MC Weight factors succsessfull\n");
+      // printf("AliMCSpectraWeights::Calculating MC Weight factors succsessfull\n");
       fbTaskStatus = AliMCSpectraWeights::TaskState::kMCWeightCalculated;
     }
-    else printf("AliMCSpectraWeights::WARNING Calculating weight factors not succsessfull\n");
+    // else printf("AliMCSpectraWeights::WARNING Calculating weight factors not succsessfull\n");
   }
 
-  printf("AliMCSpectraWeights: Status after init: %d\n",
-      AliMCSpectraWeights::GetTaskStatus());
+  // printf("AliMCSpectraWeights: Status after init: %d\n",
+      // AliMCSpectraWeights::GetTaskStatus());
 }
 
 void AliMCSpectraWeights::InitHistos() {
@@ -203,16 +205,12 @@ void AliMCSpectraWeights::InitHistos() {
     fBinsPt->GetAt(fBinsPt->GetSize() - 1),
     fBinsMultCent->GetAt(fBinsMultCent->GetSize() - 1),
     iNumberOfParticles};
-  // TString binNameTrackParticle[iNumberOfParticles] = {
-  // "Pion", "Kaon", "Proton", "SigmaPlus", "SigmaMinus", "Rest"};
 
   const Int_t iNumberOfParticlesDATA = 5;
   Int_t nBinsTrackParticleDATA[3] = {fBinsPt->GetSize() - 1, fBinsMultCent->GetSize() - 1,
     iNumberOfParticlesDATA};
   Double_t minTrackParticleDATA[3] = {fBinsPt->GetAt(0), fBinsMultCent->GetAt(0), 0};
   Double_t maxTrackParticleDATA[3] = {fBinsPt->GetAt(fBinsPt->GetSize() - 1), fBinsMultCent->GetAt(fBinsMultCent->GetSize() - 1), iNumberOfParticlesDATA};
-  // TString binNameTrackParticleDATA[iNumberOfParticlesDATA] = {
-  // "Pion", "Kaon", "Proton", "SigmaPlus", "SigmaMinus"};
 
   Int_t nBinsTrackParticleMC[3] = {fBinsPt->GetSize() - 1, fBinsMultCent->GetSize() - 1,
     iNumberOfParticles};
@@ -224,8 +222,6 @@ void AliMCSpectraWeights::InitHistos() {
     iNumberOfParticlesFRACTION};
   Double_t maxTrackParticleFRACTION[3] = {
     fBinsPt->GetAt(fBinsPt->GetSize() - 1), static_cast<Double_t>(fBinsMultCent->GetAt(fBinsMultCent->GetSize() - 1)), static_cast<Double_t>(iNumberOfParticlesFRACTION)};
-  // TString binNameTrackParticleFRACTION[iNumberOfParticlesFRACTION] = {
-  // "Pion", "Kaon", "Proton", "SigmaPlus", "SigmaMinus"};
 
   fHistMCGenPrimTrackParticle =
     new THnF("fHistMCGenPrimTrackParticle",
@@ -238,12 +234,6 @@ void AliMCSpectraWeights::InitHistos() {
       "multiplicity or centrality");
   fHistMCGenPrimTrackParticle->GetAxis(2)->SetTitle("Particle type");
   fHistMCGenPrimTrackParticle->Sumw2();
-
-  // for (Int_t ii = 1; ii <= fHistMCGenPrimTrackParticle->GetAxis(2)->GetNbins();
-  //     ii++) {
-  //   fHistMCGenPrimTrackParticle->GetAxis(2)->SetBinLabel(
-  //       ii, binNameTrackParticle[ii - 1].Data());
-  // }
 
   fHistDataFractions = new THnF(
       "fHistDataFractions", "DATA fractions histogram", 3,
@@ -265,11 +255,6 @@ void AliMCSpectraWeights::InitHistos() {
   fHistMCFractions->GetAxis(2)->SetTitle("Particle type");
   fHistMCFractions->Sumw2();
 
-  // for (Int_t ii = 1; ii <= fHistDataFractions->GetAxis(1)->GetNbins(); ii++) {
-  //   fHistDataFractions->GetAxis(1)->SetBinLabel(
-  //       ii, binNameTrackParticleDATA[ii - 1].Data());
-  // }
-
   fHistMCWeights = new THnF(
       "fHistMCWeights", "MC weight histogram for charged particle composition",
       3, nBinsTrackParticleFRACTION, minTrackParticleDATA,
@@ -281,12 +266,7 @@ void AliMCSpectraWeights::InitHistos() {
   fHistMCWeights->GetAxis(2)->SetTitle("Particle type");
   fHistMCWeights->Sumw2();
 
-  // for (Int_t ii = 1; ii <= fHistMCWeights->GetAxis(1)->GetNbins(); ii++) {
-  //   fHistMCWeights->GetAxis(1)->SetBinLabel(
-  //       ii, binNameTrackParticleFRACTION[ii - 1].Data());
-  // }
-
-  printf("AliMCSpectraWeights: init histos successful\n"); // works
+  // printf("AliMCSpectraWeights: init histos successful\n"); // works
 }
 
 void AliMCSpectraWeights::LoadMeasuredFractions() {
@@ -310,7 +290,7 @@ void AliMCSpectraWeights::LoadMeasuredFractions() {
     else if(fstPartTypes[ipart].Contains("SigmaPlus")) ibin = static_cast<int>(AliMCSpectraWeights::ParticleType::kSigmaPlus);
     else if(fstPartTypes[ipart].Contains("SigmaMinus")) ibin = static_cast<int>(AliMCSpectraWeights::ParticleType::kSigmaMinus);
     else continue;
-    for (size_t icent = 0; icent < fNCentralities; icent++) {
+    for (int icent = 0; icent < fNCentralities; icent++) {
       TString stFunction("Bylinkin");//TODO define functions with SysFlag
       TString stSystematic("");
       // switch (fFlag) {
@@ -330,7 +310,7 @@ void AliMCSpectraWeights::LoadMeasuredFractions() {
       Double_t binEntry[3] = {0.};
       binEntry[2] = static_cast<Double_t>(ibin);// particle type
       if(fUseMultiplicity) binEntry[1] = AliMCSpectraWeights::GetMultFromCent(icent);
-      else binEntry[1] = icent;
+      else binEntry[1] =  static_cast<Double_t>(icent);
       for (int ipt = 0; ipt < hist->GetNbinsX(); ++ipt) {
         binEntry[0] = hist->GetBinCenter(ipt);
         if(binEntry[0] < 0) continue;
@@ -351,13 +331,13 @@ void AliMCSpectraWeights::LoadMeasuredFractions() {
 Bool_t AliMCSpectraWeights::LoadFromAliMCSpectraWeight(
     AliMCSpectraWeights *obj)
 {
-  printf("AliMCSpectraWeights::DEBUG: Loading MC histogram from input object\n");
+  // printf("AliMCSpectraWeights::DEBUG: Loading MC histogram from input object\n");
   if(!obj) return kFALSE;
 
   if(fHistMCGenPrimTrackParticle) delete fHistMCGenPrimTrackParticle;
   fHistMCGenPrimTrackParticle = (THnF*)((THnF*)obj->GetHistMCGenPrimTrackParticles())->Clone("fHistMCGenPrimTrackParticleLoaded");
-  if(fHistMCGenPrimTrackParticle) printf("AliMCSpectraWeights:: loading successful\n");
-  else {printf("AliMCSpectraWeights::ERROR: problem with loading from object\n"); return kFALSE;}
+  if(!fHistMCGenPrimTrackParticle) //printf("AliMCSpectraWeights:: loading successful\n");
+    {printf("AliMCSpectraWeights::ERROR: problem with loading from object\n"); return kFALSE;}
   // fHistMCGenPrimTrackParticle->SetName("fHistMCGenPrimTrackParticleLoaded");
   // if(!fHistMCGenPrimTrackParticle->GetEntries()>0) {printf("AliMCSpectraWeights::ERROR: loaded hist from object has zero entries\n"); return kFALSE;}
   // TH1D* pTProjection = (TH1D*)fHistMCGenPrimTrackParticle->Projection(0);
@@ -368,103 +348,199 @@ Bool_t AliMCSpectraWeights::LoadFromAliMCSpectraWeight(
   return kTRUE;
 }
 
-Bool_t AliMCSpectraWeights::CalculateMCWeights(){
-  //TODO make constant ratio @large pT
-  //TODO mult/cent dependence
-  if (!fHistMCGenPrimTrackParticle || !fHistDataFractions)
+Bool_t AliMCSpectraWeights::CalcMCFractions(){
+  if (!fHistMCGenPrimTrackParticle)
     return kFALSE;
-  else printf("AliMCSpectraWeights:: start calculating weight factors\n");
+
+  for (int icent = 0; icent < fNCentralities; icent++) {
+    float currentMult = AliMCSpectraWeights::GetMultFromCent(icent);
+    float nextMult = 0;
+    float previousMult = 0;
+    float dMultHigh = 0;
+    float dMultLow = 0;
+    if(icent<fBinsMultCent->GetSize()-1)
+      nextMult = AliMCSpectraWeights::GetMultFromCent(icent+1);
+    if(icent>0)
+      previousMult = AliMCSpectraWeights::GetMultFromCent(icent-1);
+
+    if(icent==0) dMultHigh = fBinsMultCent->GetAt(fBinsMultCent->GetSize() - 1);
+    else dMultHigh = currentMult + (previousMult-currentMult)/2.;
+    if(icent==fBinsMultCent->GetSize()-1) dMultLow = 0.;
+    else dMultLow = currentMult + (currentMult-nextMult)/2.;
+
+    fHistMCGenPrimTrackParticle->GetAxis(1)->SetRangeUser(dMultLow, dMultHigh);
+
+    TH1D *h1pTMCAll = (TH1D *)fHistMCGenPrimTrackParticle->Projection(0);
+    if(!h1pTMCAll) {printf("AliMCSpectraWeights::ERROR could not create h1pTMCAll\n"); return kFALSE;}
+    h1pTMCAll->SetName("h1pTMCAll");
+
+    for (int ipart = 0; ipart < fNPartTypes; ++ipart) {
+      fHistMCGenPrimTrackParticle->GetAxis(2)->SetRange(ipart+1, ipart+1);
+      TH1D *h1MCFraction = (TH1D *)fHistMCGenPrimTrackParticle->Projection(0);
+      h1MCFraction->SetName("h1MCFraction_tmp");
+      h1MCFraction->Divide(h1pTMCAll);
+
+      for (int ipt = 0; ipt < fHistMCFractions->GetAxis(0)->GetNbins(); ++ipt) {
+        Double_t pt = fHistMCFractions->GetAxis(0)->GetBinCenter(ipt);
+        // fHistMCFractions : pt-mult-ipart
+        Double_t binEntry[3] = {pt,  currentMult, static_cast<Double_t>(ipart)};
+        //Write to fHistMCFractions
+        fHistMCFractions->SetBinContent(fHistMCFractions->GetBin(binEntry), h1MCFraction->GetBinContent(h1MCFraction->FindBin(pt)));
+      }
+      delete h1MCFraction;
+    }
+    fHistMCGenPrimTrackParticle->GetAxis(2)->SetRange(0, 0);
+    delete h1pTMCAll;
+  }
+    return kTRUE;
+}
+
+Bool_t AliMCSpectraWeights::CorrectFractionsforRest()
+{
+  if(!fHistMCGenPrimTrackParticle || !fHistDataFractions) return kFALSE;
+
+  for (int icent = 0; icent < fNCentralities; icent++) {
+    float currentMult = AliMCSpectraWeights::GetMultFromCent(icent);
+    float nextMult = 0;
+    float previousMult = 0;
+    float dMultHigh = 0;
+    float dMultLow = 0;
+    if(icent<fBinsMultCent->GetSize()-1)
+      nextMult = AliMCSpectraWeights::GetMultFromCent(icent+1);
+    if(icent>0)
+      previousMult = AliMCSpectraWeights::GetMultFromCent(icent-1);
+    if(icent==0) dMultHigh = fBinsMultCent->GetAt(fBinsMultCent->GetSize() - 1);
+    else dMultHigh = currentMult + (previousMult-currentMult)/2.;
+    if(icent==fBinsMultCent->GetSize()-1) dMultLow = 0.;
+    else dMultLow = currentMult + (currentMult-nextMult)/2.;
+
+    fHistMCGenPrimTrackParticle->GetAxis(1)->SetRangeUser(dMultLow, dMultHigh);
+    TH1D *h1pTMCAll = (TH1D *)fHistMCGenPrimTrackParticle->Projection(0);
+    if(!h1pTMCAll) {printf("AliMCSpectraWeights::ERROR could not create h1pTMCAll\n"); return kFALSE;}
+    h1pTMCAll->SetName("h1pTMCAll");
+    fHistMCGenPrimTrackParticle->GetAxis(2)->SetRange(1, AliMCSpectraWeights::ParticleType::kRest);
+    TH1D* h1RestCorrFactor = (TH1D*)fHistMCGenPrimTrackParticle->Projection(0);
+    h1RestCorrFactor->SetName("h1RestCorrFactor");
+    h1RestCorrFactor->Divide(h1pTMCAll);
+    fHistMCGenPrimTrackParticle->GetAxis(2)->SetRange(0, 0);
+
+    for (int ipart = 0; ipart < fNPartTypes; ++ipart) {
+      if(ipart == AliMCSpectraWeights::ParticleType::kRest) continue;
+      for (int ipt = 0; ipt < fHistDataFractions->GetAxis(0)->GetNbins(); ++ipt) {
+        Double_t pt = fHistDataFractions->GetAxis(0)->GetBinCenter(ipt);
+        // fHistMCFractions : pt-mult-ipart
+        Double_t binEntry[3] = {pt,  currentMult, static_cast<Double_t>(ipart)};
+        double value = fHistDataFractions->GetBinContent(fHistDataFractions->GetBin(binEntry));
+        fHistDataFractions->SetBinContent(fHistDataFractions->GetBin(binEntry), value*h1RestCorrFactor->GetBinContent(h1RestCorrFactor->FindBin(pt)));
+      }
+    }
+
+    delete h1pTMCAll;
+    delete h1RestCorrFactor;
+  }
+
+  return kTRUE;
+}
+
+Bool_t AliMCSpectraWeights::CalculateMCWeights(){
+  if (!AliMCSpectraWeights::CalcMCFractions()) return kFALSE;
+  if (!AliMCSpectraWeights::CorrectFractionsforRest()) return kFALSE;
   // correction of rest particles not measured in data fractions (see
   // AnalysisNote)
-  Int_t kRestPosition = static_cast<Int_t>(AliMCSpectraWeights::ParticleType::kRest);
-  // for (int i = 0; i < fNPartTypes; i++) {
-  // if(fstPartTypes[i].Contains("rest") || fstPartTypes[i].Contains("Rest")) {kRestPosition=i; break;}
-  // }
-  TH1D *h1pTMCAll = (TH1D *)fHistMCGenPrimTrackParticle->Projection(0);
-  if(!h1pTMCAll) {printf("AliMCSpectraWeights::ERROR could not create h1pTMCAll\n"); return kFALSE;}
-  h1pTMCAll->SetName("h1pTMCAll");
-  fHistMCGenPrimTrackParticle->GetAxis(2)->SetRange(0, kRestPosition - 1);
-  TH1D *h1pTMCRestFraction = (TH1D *)fHistMCGenPrimTrackParticle->Projection(0);
-  if(!h1pTMCRestFraction) {printf("AliMCSpectraWeights::ERROR could not create h1pTMCRestFraction\n"); return kFALSE;}
-  h1pTMCRestFraction->SetName("h1pTMCRestFraction");
-  h1pTMCRestFraction->Divide(h1pTMCAll);
-  for (int ipart = 0; ipart < fNPartTypes; ++ipart) {
-    if(ipart == AliMCSpectraWeights::ParticleType::kRest) continue;
-    // setting range
-    fHistDataFractions->GetAxis(2)->SetRange(ipart, ipart);
-    fHistMCGenPrimTrackParticle->GetAxis(2)->SetRange(ipart, ipart);
-    TH1D *h1DataFraction = (TH1D *)fHistDataFractions->Projection(0);
-    h1DataFraction->SetName("h1DataFraction_tmp");
-    TH1D *h1MCFraction = (TH1D *)fHistMCGenPrimTrackParticle->Projection(0);
-    h1MCFraction->SetName("h1MCFraction_tmp");
-    h1MCFraction->Divide(h1pTMCAll);
-    h1DataFraction->Multiply(h1pTMCRestFraction);// TODO here might be an issue due to binning
-    h1DataFraction->Divide(h1MCFraction);
-    for (int ipt = 0; ipt < fHistMCWeights->GetAxis(0)->GetNbins(); ++ipt) {
-      Double_t pt = fHistMCWeights->GetAxis(0)->GetBinCenter(ipt);
-      Double_t binEntry[2] = {pt, static_cast<Double_t>(ipart)};
-      fHistMCWeights->SetBinContent(
-          fHistMCWeights->GetBin(binEntry),
-          h1DataFraction->GetBinContent(h1DataFraction->FindBin(pt)));
-      //Write to fHistMCFractions
-      fHistMCFractions->SetBinContent(fHistMCFractions->GetBin(binEntry), h1MCFraction->GetBinContent(h1MCFraction->FindBin(pt)) );
+
+  for (int icent = 0; icent < fNCentralities; icent++) {
+    for (int ipart = 0; ipart < fNPartTypes; ipart++) {
+      if(ipart == AliMCSpectraWeights::ParticleType::kRest) continue;
+      for (int ipt = 0; ipt < fBinsPt->GetSize(); ipt++) {
+        Double_t pt = fHistMCWeights->GetAxis(0)->GetBinCenter(ipt);
+        Double_t binEntry[3] = {pt,  AliMCSpectraWeights::GetMultFromCent(icent), static_cast<Double_t>(ipart)};
+        // Double_t binEntryData[3] = {pt,  static_cast<Double_t>(icent), static_cast<Double_t>(ipart)};
+        Double_t dFractionMC = fHistMCFractions->GetBinContent(fHistMCFractions->GetBin(binEntry));
+        Double_t dFractionData = fHistDataFractions->GetBinContent(fHistDataFractions->GetBin(binEntry));
+        if(dFractionMC!=0)
+          fHistMCWeights->SetBinContent(fHistMCWeights->GetBin(binEntry), dFractionData/dFractionMC);
+      }
     }
-    delete h1DataFraction;
-    delete h1MCFraction;
   }
-  fHistDataFractions->GetAxis(1)->SetRange(0, kRestPosition-1);
-  fHistMCGenPrimTrackParticle->GetAxis(2)->SetRange(0, kRestPosition);
+
   return kTRUE;
+}
+
+void AliMCSpectraWeights::CountEventMult()
+{
+  fMultOrCent=0;
+  double eta = 0.8;
+  if(fstCollisionSystem.Contains("pp")) eta = 0.5;
+  AliStack* fMCStack = fMCEvent->Stack();
+  for (size_t ipart = 0; ipart < fMCStack->GetNtrack(); ipart++) {
+    TParticle *mcGenParticle = fMCStack->Particle(ipart);
+    if(!fMCStack->IsPhysicalPrimary(ipart)) continue;// secondary rejection
+    if(TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01) continue; // neutral rejection
+    double pEta = mcGenParticle->Eta();
+    if(TMath::Abs(pEta) > eta) continue; //acceptance cut
+    if(mcGenParticle->Pt() < 0.05) continue; //TODO hard coded low pT cut
+    ++fMultOrCent;
+  }
 }
 
 Double_t
 AliMCSpectraWeights::GetMCSpectraWeight(TParticle *mcGenParticle,
     Float_t eventMultiplicityOrCentrality) {
   Double_t weight = 1;
-  if (!mcGenParticle->GetPDG())
-    return 1;
-  // if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01)
-  //   return 1; // charge rejection
+  if (!mcGenParticle->GetPDG()) {return 1;}
+  if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01) {return 1;} // charge rejection
+  // if (!mcGenParticle->IsPrimary()) {printf("particle not primary\n"); return 1;}
   Int_t particleType = AliMCSpectraWeights::IdentifyMCParticle(mcGenParticle);
-  if (fbTaskStatus >= AliMCSpectraWeights::TaskState::kMCSpectraObtained) {
+  if (particleType == AliMCSpectraWeights::ParticleType::kRest) {return 1;}
+  if (fbTaskStatus == AliMCSpectraWeights::TaskState::kMCWeightCalculated) {
     // rest particles can not be tuned
-    if (particleType > AliMCSpectraWeights::ParticleType::kSigmaMinus)
-      return 1;
-
-    Double_t binEntry[2] = {0.};
-    binEntry[0] = mcGenParticle->Pt();
-    if(binEntry[0] < 0.15) return 1;
-    binEntry[1] = static_cast<Double_t>(particleType);
+    Double_t icent = AliMCSpectraWeights::GetCentFromMult(eventMultiplicityOrCentrality);
+    Double_t pt = mcGenParticle->Pt();
+    if(pt<0.15) return 1;
+    if(pt>=20) pt=19.9;
+    Double_t binEntry[3] = {pt, AliMCSpectraWeights::GetMultFromCent(icent),  static_cast<Double_t>(particleType)};
     weight = fHistMCWeights->GetBinContent(fHistMCWeights->GetBin(binEntry));
     if(weight==0) weight=1;// printf("AliMCSpectraWeights:: got weight 0; return 1;\n");}
   // printf("AliMCSpectraWeights:: got weight %lf for pid %d at pt %lf\n", weight, mcGenParticle->GetPdgCode(), binEntry[0]);
-} else {
-  printf("AliMCSpectraWeights: MC spectra not obtained, yet.\n");
-}
-return weight;
+  } //else printf("Status not right\n" );
+  return weight;
 }
 
-void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent,
-    Float_t eventMultiplicityOrCentrality) {
-  if (fbTaskStatus == AliMCSpectraWeights::TaskState::kMCSpectraObtained) {
-    printf("AliMCSpectraWeights:: MC spectra already obtained; step skipped\n");
-    return;
+Double_t
+AliMCSpectraWeights::GetMCSpectraWeight(TParticle *mcGenParticle,
+    AliMCEvent* mcEvent) {
+    if(mcEvent!=fMCEvent)
+    {
+      fMCEvent=mcEvent;
+      AliMCSpectraWeights::CountEventMult();
+    }
+    return AliMCSpectraWeights::GetMCSpectraWeight(mcGenParticle, fMultOrCent);
+}
+
+void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
+  if (fbTaskStatus >= AliMCSpectraWeights::TaskState::kMCSpectraObtained) return;
+
+  if(mcEvent!=fMCEvent)
+  {
+    fMCEvent=mcEvent;
+    AliMCSpectraWeights::CountEventMult();
   }
 
-  AliStack* fMCStack = mcEvent->Stack();
-  if (!fMCStack) {printf("AliMCSpectraWeights::ERROR: fMCStack not available\n"); return;}
+  AliStack* MCStack = fMCEvent->Stack();
+  if (!MCStack) {printf("AliMCSpectraWeights::ERROR: fMCStack not available\n"); return;}
 
-  for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
-    TParticle *mcGenParticle = fMCStack->Particle(iParticle);
+  for (Int_t iParticle = 0; iParticle < MCStack->GetNtrack(); iParticle++){
+    TParticle *mcGenParticle = MCStack->Particle(iParticle);
     if(!mcGenParticle) {printf("AliMCSpectraWeights::ERROR: mcGenParticle  not available\n"); continue;}
     if (!mcGenParticle->GetPDG()) continue;
-    if(!fMCStack->IsPhysicalPrimary(iParticle)) continue;
+    if(!MCStack->IsPhysicalPrimary(iParticle)) continue;
     float partEta = mcGenParticle->Eta();
+    if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01) continue;
     if(partEta > 0.8 || partEta < -0.8) continue; // apply same acceptance as in published spectra
     Int_t particleType = AliMCSpectraWeights::IdentifyMCParticle(mcGenParticle);
     if(particleType<0) continue;
     Double_t binEntry[3] = {static_cast<Double_t>(mcGenParticle->Pt()),
-      static_cast<Double_t>(eventMultiplicityOrCentrality),
+      static_cast<Double_t>(fMultOrCent),
       static_cast<Double_t>(particleType)};
     fHistMCGenPrimTrackParticle->Fill(binEntry);
   }
@@ -473,10 +549,8 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent,
 /// Function to return Particle ID for Histograms
 Int_t AliMCSpectraWeights::IdentifyMCParticle(TParticle *mcParticle) {
   // if(!mcParticle->GetPDG()) return -1;
-  if (TMath::Abs(mcParticle->GetPDG()->Charge()) < 0.01)
-    return -1; // charge rejection;
   Int_t ipdg = TMath::Abs(
-      mcParticle->GetPdgCode()); // Abs() because antiparticles are negaitve...
+    mcParticle->GetPdgCode()); // Abs() because antiparticles are negaitve...
   if (ipdg == 211)
     return static_cast<Int_t>(AliMCSpectraWeights::ParticleType::kPion);
   if (ipdg == 321)
@@ -509,8 +583,39 @@ Double_t AliMCSpectraWeights::GetMultFromCent(int CentBin){
       case 7: return 5.4;
       case 8: return 3.9;
       case 9: return 2.26;
-      default: return -2;
+      default: return 0;
     }
+  }
+  else if(fstCollisionSystem.Contains("ppb"))//TODO include other systems
+  {
+
+  }
+  else if(fstCollisionSystem.Contains("pbpb"))
+  {
+
+  }
+  else if(fstCollisionSystem.Contains("xexe"))
+  {
+
+  }
+
+  return -1;
+}
+
+Double_t AliMCSpectraWeights::GetCentFromMult(double dMult)
+{
+  if(fstCollisionSystem.Contains("pp"))
+  {
+    if(dMult > 18) return 0;
+    if(dMult > 14.5) return 1;
+    if(dMult > 12) return 2;
+    if(dMult > 10.9) return 3;
+    if(dMult > 9) return 4;
+    if(dMult > 7) return 5;
+    if(dMult > 5.7) return 6;
+    if(dMult > 4.3) return 7;
+    if(dMult > 3) return 8;
+    if(dMult > 0) return 9;
   }
   else if(fstCollisionSystem.Contains("ppb"))//TODO include other systems
   {

@@ -2,24 +2,11 @@
 // Setter jet cuts
 //==============================================================================
 
-Bool_t DefineCutsTaskpp(AliAnalysisTaskHFJetIPQA *task, Float_t minC, Float_t maxC)
+Bool_t DefineCutsTaskpp(AliJetContainer* cont, double radius)
 {
-    // define cuts for task
-    AliRDHFJetsCuts *cuts=new AliRDHFJetsCuts();
-    // jets
-    cuts->SetMinPtJet(5.);
-    cuts->SetMaxPtJet(250.);
-    // Set centrality
-    //cuts->SetMinCentrality(minC);
-    //cuts->SetMaxCentrality(maxC);
-    //cuts->SetUsePhysicsSelection(kFALSE);
-    //cuts->SetOptPileup(1);
-    //cuts->ConfigurePileupCuts(5,0.8);
-    cuts->SetTriggerClass("");
-    cuts->SetTriggerMask(AliVEvent::kINT7);
-    cuts->PrintAll();
-    // pPb minbias only
-    task->SetJetCuts(cuts);
+    cont->SetJetPtCut(5.);
+    cont->SetJetPtCutMax(1000.);
+    cont->SetJetEtaLimits(-0.9+radius, 0.9-radius);
     return kTRUE;
 }
 
@@ -169,6 +156,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         jetCont->SetRhoName(nrho);
         jetCont->ConnectParticleContainer(trackCont);
         jetCont->ConnectClusterContainer(clusterCont);
+        DefineCutsTaskpp(jetCont, jetradius);
     }
     
     if(isMC)
@@ -180,6 +168,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
             jetContMC->ConnectParticleContainer(trackContMC);
             jetContMC->SetIsParticleLevel(kTRUE);
             jetContMC->SetMaxTrackPt(1000);
+            DefineCutsTaskpp(jetContMC, jetradius);
         }
     }
 
@@ -198,7 +187,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     jetTask->SetIsPythia(isMC);
     // Setup jet cuts
     //==============================================================================
-    DefineCutsTaskpp(jetTask,-1.,100);
+  //  DefineCutsTaskpp(jetTask,-1.,100);
     if(IsESD) {
         // Setup initial ESD track cuts
         //==============================================================================

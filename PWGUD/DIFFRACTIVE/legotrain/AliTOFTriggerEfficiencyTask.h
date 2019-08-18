@@ -13,12 +13,8 @@
 #include "TArrayF.h"
 class TList;
 class TTree;
-class TH1D;
 class TH2D;
 class TObjString;
-class TClonesArray;
-class AliESDtrackCuts;
-class AliPIDCombined;
 
 class AliTOFTriggerEfficiencyTask : public AliAnalysisTaskSE {
  public: 
@@ -26,20 +22,12 @@ class AliTOFTriggerEfficiencyTask : public AliAnalysisTaskSE {
   virtual ~AliTOFTriggerEfficiencyTask(){};
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-  virtual void NotifyRun();
  protected:
   AliTOFTriggerEfficiencyTask(const  AliTOFTriggerEfficiencyTask &task);
   AliTOFTriggerEfficiencyTask& operator=(const  AliTOFTriggerEfficiencyTask &task);
-  AliESDtrackCuts* fTrackCutsBit0;  //!
-  AliESDtrackCuts* fTrackCutsBit5;  //!
-  TGeoHMatrix fMatOrig[18]; 
-  TGeoHMatrix fMatCurr[18];
-
-  Bool_t fIsMC;
   TList* fListOfHistos;             //! list of output histograms
   TTree* fTree;                     //! analysis tree
   TH2D* fTriggersVsRun;             //!
-  TClonesArray* fTracks;            //!
   TObjString fClassesFired;
   Int_t fRunNumber; 
   UInt_t fPeriod;
@@ -52,18 +40,12 @@ class AliTOFTriggerEfficiencyTask : public AliAnalysisTaskSE {
   Bool_t fVtxTPC;
   Int_t fVtxContributors;
   Int_t fNofTracklets;
-  Int_t fNofITSClusters[6];
   TBits fIR1;
   TBits fIR2;
-  TBits fFOmap;
-  TBits fFiredChipMap;
   UInt_t fTriggerMask[72];
   TArrayI fTOFhits;
   TArrayF fTOFhitTimes;
-  TArrayI fTrackIndices;
-  Int_t fNofTOFtrgPads;
-  
-  ClassDef(AliTOFTriggerEfficiencyTask,1)
+  ClassDef(AliTOFTriggerEfficiencyTask,2)
 };
 
 #endif

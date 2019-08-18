@@ -8,6 +8,9 @@ AliGFWFlowContainer::AliGFWFlowContainer():
   fIDName("MidV"),
   fPtRebin(1),
   fPtRebinEdges(0),
+  fXAxis(0),
+  fNbinsPt(0),
+  fbinsPt(0),
   fPropagateErrors(kFALSE)
 {
 };
@@ -19,6 +22,9 @@ AliGFWFlowContainer::AliGFWFlowContainer(const char *name):
   fIDName("MidV"),
   fPtRebin(1),
   fPtRebinEdges(0),
+  fXAxis(0),
+  fNbinsPt(0),
+  fbinsPt(0),
   fPropagateErrors(kFALSE)
 {
 };
@@ -38,12 +44,15 @@ void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Dou
   fProf = new TProfile2D(Form("%s_CorrProfile",this->GetName()),"CorrProfile",nMultiBins, multiBins,inputList->GetEntries(),0.5,inputList->GetEntries()+0.5);
   for(Int_t i=0;i<inputList->GetEntries();i++)
     fProf->GetYaxis()->SetBinLabel(i+1,inputList->At(i)->GetName());
+  fProf->Sumw2();
   if(nRandom) {
     fNRandom=nRandom;
     fProfRand = new TObjArray();
     fProfRand->SetOwner(kTRUE);
-    for(Int_t i=0;i<nRandom;i++)
+    for(Int_t i=0;i<nRandom;i++) {
       fProfRand->Add((TProfile2D*)fProf->Clone(Form("%s_Rand_%i",fProf->GetName(),i)));
+      ((TProfile2D*)fProfRand->At(i))->Sumw2();
+    };
   };
 };
 void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Double_t MultiMin, Double_t MultiMax, Int_t nRandom) {
@@ -57,18 +66,46 @@ void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Dou
   };
   fProf = new TProfile2D(Form("%s_CorrProfile",this->GetName()),"CorrProfile",nMultiBins, MultiMin,MultiMax,inputList->GetEntries(),0.5,inputList->GetEntries()+0.5);
   fProf->SetDirectory(0);
+  fProf->Sumw2();
   for(Int_t i=0;i<inputList->GetEntries();i++)
     fProf->GetYaxis()->SetBinLabel(i+1,inputList->At(i)->GetName());
   if(nRandom) {
     fNRandom=nRandom;
     fProfRand = new TObjArray();
     fProfRand->SetOwner(kTRUE);
-    for(Int_t i=0;i<nRandom;i++)
+    for(Int_t i=0;i<nRandom;i++) {
       fProfRand->Add((TProfile2D*)fProf->Clone(Form("%s_Rand_%i",fProf->GetName(),i)));
+      ((TProfile2D*)fProfRand->At(i))->Sumw2();
+    };
   };
-
 };
-
+Bool_t AliGFWFlowContainer::CreateBinsFromAxis(TAxis *inax) {
+  if(!inax) return kFALSE;
+  fNbinsPt=inax->GetNbins();
+  fbinsPt=new Double_t[fNbinsPt+1];
+  inax->GetLowEdge(fbinsPt);
+  fbinsPt[fNbinsPt] = inax->GetBinUpEdge(fNbinsPt);
+  return kTRUE;
+}
+void AliGFWFlowContainer::SetXAxis(TAxis *inax) {
+  fXAxis = (TAxis*)inax->Clone("pTAxis");
+  Bool_t success = CreateBinsFromAxis(fXAxis);
+  if(!success) printf("Something went wrong setting the x axis!\n");
+}
+void AliGFWFlowContainer::SetXAxis() {
+    if(!CreateBinsFromAxis(fXAxis)) { //Legacy; if fXAxis not defined, then setup default one
+      const Int_t NbinsPtForV2=24;
+      Double_t binsPtForV2[NbinsPtForV2+1] = {
+        0.2, 0.4, 0.6, 0.8, 1.0,
+        1.2, 1.4, 1.6, 1.8, 2.0,
+        2.2, 2.4, 2.6, 3.0, 3.4,
+        3.8, 4.2, 4.6, 5.2, 5.8,
+        6.6, 8.0, 12.0, 16.0, 20.0};
+      TAxis *tempax = new TAxis(NbinsPtForV2,binsPtForV2);
+      SetXAxis(tempax);
+      delete tempax;
+    }
+}
 Int_t AliGFWFlowContainer::FillProfile(const char *hname, Double_t multi, Double_t corr, Double_t w, Double_t rn) {
   if(!fProf) return -1;
   Int_t yin = fProf->GetYaxis()->FindBin(hname);
@@ -83,6 +120,44 @@ Int_t AliGFWFlowContainer::FillProfile(const char *hname, Double_t multi, Double
   };
   return 0;
 };
+void AliGFWFlowContainer::OverrideProfileErrors(TProfile2D *inpf) {
+  Int_t nBinsX = fProf->GetNbinsX();
+  Int_t nBinsY = fProf->GetNbinsY();
+  if((inpf->GetNbinsX()!= nBinsX) || (inpf->GetNbinsY() != nBinsY)) {
+    printf("Number of bins in two profiles do not match, not doing anything\n");
+    return;
+  };
+  if(!inpf->GetBinSumw2()->fArray) {
+    printf("Input profile has no BinSumw2()! Returning\n");
+    return;
+  }
+  if(!fProf->GetBinSumw2()->fArray) fProf->Sumw2();
+  Double_t *sumw2Prof = fProf->GetSumw2()->fArray;
+  Double_t *sumw2Targ = inpf->GetSumw2()->fArray;
+  Double_t *binsw2Prof= fProf->GetBinSumw2()->fArray;
+  Double_t *binsw2Targ= inpf->GetBinSumw2()->fArray;
+  Double_t *farrProf  = fProf->fArray;
+  Double_t *farrTarg  = inpf->fArray;
+  for(Int_t ix=1;ix<=nBinsX;ix++) {
+    Double_t xval = fProf->GetXaxis()->GetBinCenter(ix);
+    printf("Processing x-bin %i\n", ix);
+    for(Int_t iy=1;iy<=nBinsY;iy++) {
+      //printf("Processing bin [%i, %i] out of [%i, %i]\n",ix,iy,nBinsX, nBinsY);
+      Double_t yval = fProf->GetYaxis()->GetBinCenter(iy);
+      Int_t binno = fProf->FindBin(xval,yval);
+      Double_t h = fProf->GetBinContent(binno);
+      Double_t lEnt = inpf->GetBinEntries(binno);
+      fProf->SetBinEntries(binno,lEnt);
+      sumw2Prof[binno] = sumw2Targ[binno];
+      binsw2Prof[binno]= binsw2Targ[binno];
+      farrProf[binno]  = h*lEnt;
+      /*fProf->GetBinSumw2()->fArray[binno] = inpf->GetBinSumw2()->fArray[binno];
+      fProf->SetBinEntries(binno,inpf->GetBinEntries(binno));
+      fProf->GetSumw2()->fArray[binno] = inpf->GetSumw2()->fArray[binno];
+      fProf->SetBinContent(binno,h*fProf->GetBinEntries(binno));*/
+    }
+  }
+}
 Long64_t AliGFWFlowContainer::Merge(TCollection *collist) {
   Long64_t nmerged=0;
   AliGFWFlowContainer *l_FC = 0;
@@ -191,15 +266,50 @@ Bool_t AliGFWFlowContainer::OverrideMainWithSub(Int_t ind, Bool_t ExcludeChosen)
     fProf=0;
     for(Int_t i=0;i<fProfRand->GetEntries();i++) {
       if(i==ind) continue;
-      TProfile2D *tarprof = (TProfile2D*)fProfRand->At(ind);
+      TProfile2D *tarprof = (TProfile2D*)fProfRand->At(i);
       if(!fProf)
-	fProf = (TProfile2D*)tarprof->Clone(ts.Data());
+	     fProf = (TProfile2D*)tarprof->Clone(ts.Data());
       else
-	fProf->Add(tarprof);
+	     fProf->Add(tarprof);
     };
     return kTRUE;
   };
 };
+Bool_t AliGFWFlowContainer::RandomizeProfile(Int_t nSubsets) {
+  if(!fProfRand) {
+    printf("Cannot randomize profile, random array does not exist.\n");
+    return kFALSE;
+  };
+  Int_t l_Subsets = nSubsets?nSubsets:fProfRand->GetEntries();
+  TRandom *rndm = new TRandom(0);
+  for(Int_t i=0; i<l_Subsets; i++) {
+    Int_t rInd = TMath::FloorNint(rndm->Rndm()*fProfRand->GetEntries());
+    if(!i) {
+      TString ts(fProf->GetName());
+      delete fProf;
+      fProf = (TProfile2D*)fProfRand->At(rInd)->Clone(ts.Data());
+    } else fProf->Add((TProfile2D*)fProfRand->At(rInd));
+  }
+}
+Bool_t AliGFWFlowContainer::CreateStatisticsProfile(StatisticsType StatType, Int_t arg) {
+  switch(StatType) {
+    case kSingleSample:
+      //printf("Called kSingleSample\n");
+      return OverrideMainWithSub(arg,kFALSE);
+      break; //Just dummy
+    case kJackKnife:
+      //printf("Called JackKnife\n");
+      return OverrideMainWithSub(arg,kTRUE);
+      break; //Just dummy
+    case kBootstrap:
+      //printf("Called proper bootstrap\n");
+      return RandomizeProfile(arg);
+      break; //Just dummy
+    default:
+      return kFALSE;
+      break; //Just dummy
+  };
+}
 void AliGFWFlowContainer::SetIDName(TString newname) {
   fIDName = newname;
 };
@@ -227,19 +337,13 @@ TProfile *AliGFWFlowContainer::GetCorrXXVsMulti(const char *order, Int_t l_pti) 
 TProfile *AliGFWFlowContainer::GetCorrXXVsPt(const char *order, Double_t lminmulti, Double_t lmaxmulti) {
   Int_t minm = 1;
   Int_t maxm = fProf->GetXaxis()->GetNbins();
-  Int_t fNbinsPt=24;
-  Double_t fbinsPt[] = {
-    0.2, 0.4, 0.6, 0.8, 1.0,
-    1.2, 1.4, 1.6, 1.8, 2.0,
-    2.2, 2.4, 2.6, 3.0, 3.4,
-    3.8, 4.2, 4.6, 5.2, 5.8,
-    6.6, 8.0, 12.0, 16.0, 20.};
-
+  if(!fbinsPt) SetXAxis();
   if(lminmulti>0) {
-    minm=fProf->GetXaxis()->FindBin(lminmulti);
+    minm=fProf->GetXaxis()->FindBin(lminmulti+0.001);
     maxm=minm;
   };
-  if(lmaxmulti>lminmulti) maxm=fProf->GetXaxis()->FindBin(lmaxmulti);
+  if(lmaxmulti>lminmulti) maxm=fProf->GetXaxis()->FindBin(lmaxmulti-0.001);
+//  printf("Multiplicity bins: %i to %i\n",minm,maxm);
   AliProfileSubset *rhProfSub = new AliProfileSubset(*fProf);
   TProfile *retSubset=0;
   TString l_name("");
@@ -277,7 +381,7 @@ TH1D *AliGFWFlowContainer::ProfToHist(TProfile *inpf) {
   for(Int_t i=1;i<=rethist->GetNbinsX();i++) {
     if(inpf->GetBinContent(i)!=0) {
       rethist->SetBinContent(i,inpf->GetBinContent(i));
-      rethist->SetBinError(i,inpf->GetBinError(i));
+      rethist->SetBinError(i,inpf->GetBinError(i));//*TMath::Sqrt(inpf->GetBinEntries(i)));
     };
   };
   return rethist;
@@ -524,7 +628,7 @@ TH1D *AliGFWFlowContainer::GetVN4(TH1D *inh) {
     Double_t d4=inh->GetBinContent(i);
     Double_t d4e=inh->GetBinError(i);
     if(OnPt&&c4>=0) continue;
-    if(d4>=0) continue;
+    //if(d4>=0) continue;
     rethist->SetBinContent(i,OnPt?VDN4Value(d4,c4):VN4Value(d4));
     rethist->SetBinError(i,OnPt?VDN4Error(d4,d4e,c4,c4e):VN4Error(d4,d4e));
   };
@@ -540,7 +644,7 @@ TH1D *AliGFWFlowContainer::GetVN6(TH1D *inh) {
     Double_t d6=inh->GetBinContent(i);
     Double_t d6e=inh->GetBinError(i);
     if(OnPt && c6<=0) continue;
-    if(d6<=0) continue;
+    //if(d6<=0) continue;
     rethist->SetBinContent(i,OnPt?VDN6Value(d6,c6):VN6Value(d6));
     rethist->SetBinError(i,OnPt?VDN6Error(d6,d6e,c6,c6e):VN6Error(d6,d6e));
   };
@@ -556,7 +660,7 @@ TH1D *AliGFWFlowContainer::GetVN8(TH1D *inh) {
     Double_t d8=inh->GetBinContent(i);
     Double_t d8e=inh->GetBinError(i);
     if(OnPt && c8>0) continue;
-    if(d8>0) continue;
+    //if(d8>0) continue;
     rethist->SetBinContent(i,OnPt?VDN8Value(d8,c8):VN8Value(d8));
     rethist->SetBinError(i,OnPt?VDN8Error(d8,d8e,c8,c8e):VN8Error(d8,d8e));
   };
@@ -693,8 +797,10 @@ TH1D *AliGFWFlowContainer::GetVNN(Int_t n, Int_t c, Bool_t onPt, Double_t arg1, 
   return GetVN2VsX(n,onPt,arg1,arg2);
 };
 TProfile *AliGFWFlowContainer::GetRefFlowProfile(const char *order, Double_t m1, Double_t m2) {
-  Int_t nStartBin = fProf->GetXaxis()->FindBin(m1);
-  Int_t nStopBin = fProf->GetXaxis()->FindBin(m2);
+  Int_t nStartBin = fProf->GetXaxis()->FindBin(m1+0.001);
+  Int_t nStopBin = fProf->GetXaxis()->FindBin(m2-0.001);
+  if(nStartBin==0) nStartBin=1;
+  if(nStopBin<nStartBin) nStopBin=fProf->GetXaxis()->GetNbins();
   Int_t nBins = nStopBin-nStartBin+1;
   Double_t *l_bins = new Double_t[nBins+1];
   for(Int_t i=0;i<=nBins;i++) l_bins[i] = i; //dummy bins, will be merged anyways
@@ -887,7 +993,8 @@ Double_t AliGFWFlowContainer::VDN8Value(Double_t d8, Double_t c8) {
   return d8/c8 * VN8Value(c8);
 };
 Double_t AliGFWFlowContainer::VDN8Error(Double_t d8, Double_t d8e, Double_t c8, Double_t c8e) {
-  if(c8>0) return 0;
+  if(c8>0) return 1;
+  if(d8==0) return 1;
   if(!fPropagateErrors) return 0;
   Double_t vdn8v = VDN8Value(d8,c8);
   Double_t dd = d8e/d8;

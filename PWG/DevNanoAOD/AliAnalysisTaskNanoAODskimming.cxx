@@ -21,6 +21,7 @@ AliAnalysisTaskNanoAODskimming::AliAnalysisTaskNanoAODskimming(std::string taskN
 {
   fOtherEventCuts.SetOwner(true);
   DefineInput(0, TChain::Class());  
+  DefineOutput(1, AliNanoFilterNormalisation::Class());
 }
 
 AliAnalysisTaskNanoAODskimming::~AliAnalysisTaskNanoAODskimming() {
@@ -31,6 +32,7 @@ AliAnalysisTaskNanoAODskimming::~AliAnalysisTaskNanoAODskimming() {
 void AliAnalysisTaskNanoAODskimming::UserCreateOutputObjects() {
   std::string normName = std::string(fName) + "_scaler";
   fNormalisation = new AliNanoFilterNormalisation(normName.data(), normName.data());
+  PostData(1, fNormalisation);
 }
 
 void AliAnalysisTaskNanoAODskimming::UserExec(Option_t* /*option*/) {
@@ -80,7 +82,7 @@ void AliAnalysisTaskNanoAODskimming::FinishTaskOutput() {
   if (!nanoTree) return;
   TList* userInfo = nanoTree->GetUserInfo();
   if (!userInfo) return;
-  userInfo->Add(fNormalisation);
+  userInfo->Add(fNormalisation->Clone());
 }
 
 void AliAnalysisTaskNanoAODskimming::Terminate(Option_t *) {
@@ -103,5 +105,9 @@ AliAnalysisTaskNanoAODskimming* AliAnalysisTaskNanoAODskimming::AddTask(std::str
   mgr->AddTask(task);
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Skimming_Normalisation", AliNanoFilterNormalisation::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(), "NanoAODskimming"));
+  mgr->ConnectOutput(task, 1, coutput1);
+  
   return task;
 }

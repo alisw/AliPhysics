@@ -118,7 +118,7 @@ private:
    AliQnCorrectionsQnVector * GetQnVectorFromList(const TList *list, const char *subdetector, const char *expectedstep) const;
 
    Bool_t               fUseMC;           ///<  use or not MC info
-   Int_t                fEvNum;           //! absolute event counter
+   Int_t                fEvNum;           ///< absolute event counter
    UInt_t               fTriggerMask;   ///< trigger mask
    UInt_t               fSkipTriggerMask; ///< skip events with this trigger mask, even if they are consistent with fTriggerMask
    Bool_t               fUseCentrality;   ///<  if true, use centrality for event, otherwise use multiplicity
@@ -135,25 +135,25 @@ private:
    Double_t             fMaxDiffVz;       ///<  mixing --> max difference in Vz of prim vert
    Double_t             fMaxDiffAngle;    ///<  mixing --> max difference in reaction plane angle
 
-   TList               *fOutput;          //!<! output list
+   TList               *fOutput;          ///< output list
    TClonesArray         fHistograms;      ///< list of histogram definitions
    TClonesArray         fValues;          ///< list of values to be computed
    TH1F                *fHEventStat;      //!<! histogram of event statistics
    TH1F                *fHAEventsVsMulti; //!<! histogram of event statistics
    TH1F                *fHAEventsVsTracklets; //!<! histogram of event statistics
-   TH2F                *fHAEventVzCent;       //!<! histogram of vertex-z vs. multiplicity/centrality
-   TH2F                *fHAEventSpherocityCent; //!<! histogram of spherocity vs. multiplicity/centrality
-   TH2F                *fHAEventMultiCent;    //!<! histogram of multiplicity vs. centrality
+   TH2F                *fHAEventVzCent;       ///< histogram of vertex-z vs. multiplicity/centrality
+   TH2F                *fHAEventSpherocityCent; ///< histogram of spherocity vs. multiplicity/centrality
+   TH2F                *fHAEventMultiCent;    ///< histogram of multiplicity vs. centrality
    TH2F                *fHAEventRefMultiCent; //!<! histogram of reference multiplicity vs. centrality
    TH2F                *fHAEventPlane;        //!<! histogram of event plane vs. multiplicity/centrality
 
    AliRsnCutSet        *fEventCuts;       ///< cuts on events
    TObjArray            fTrackCuts;       ///< list of single track cuts
-   AliRsnEvent          fRsnEvent;        //!<! interface object to the event
+   AliRsnEvent          fRsnEvent;        ///< interface object to the event
    TTree               *fEvBuffer;        //!<! mini-event buffer
    AliTriggerAnalysis  *fTriggerAna;      //!<! trigger analysis
    AliESDtrackCuts     *fESDtrackCuts;    //!<! quality cut for ESD tracks
-   AliRsnMiniEvent     *fMiniEvent;       //!<! mini-event cursor
+   AliRsnMiniEvent     *fMiniEvent;       ///< mini-event cursor
    Bool_t               fBigOutput;       ///< flag if open file for output list
    Int_t                fMixPrintRefresh; ///< how often info in mixing part is printed
    Bool_t               fCheckDecay;      ///< check if the mother decayed via the requested channel
@@ -175,7 +175,7 @@ private:
    TObjArray            fResonanceFinders;  ///< list of AliRsnMiniResonanceFinder objects
 
 /// \cond CLASSIMP
-   ClassDef(AliRsnMiniAnalysisTask, 19);     
+   ClassDef(AliRsnMiniAnalysisTask, 20);     
 /// \endcond
 };
 

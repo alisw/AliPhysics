@@ -21,10 +21,13 @@
  */
  //#include "AliForwardTaskValidation.h"
 
-AliAnalysisTaskSE* AddTaskForwardValidation(TString name,TString suffix)
+AliAnalysisTaskSE* AddTaskForwardValidation(Bool_t esd, Bool_t mc, Bool_t useEventcuts,TString suffix)
 {
   std::cout << "AddTaskForwardValidation" << std::endl;
-    AliForwardTaskValidation* task = AliForwardTaskValidation::ConnectTask(name, suffix);
+    AliForwardTaskValidation* task = AliForwardTaskValidation::ConnectTask(suffix, suffix);
+    task->fSettings.mc = mc;
+    task->fSettings.esd = esd;
+    task->fSettings.useEventcuts = useEventcuts;
 
   return task;
 }

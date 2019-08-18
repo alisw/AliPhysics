@@ -62,7 +62,7 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
   	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
 	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0), 
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
-	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0) 
+	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0) 
 {
 //Dummy constructor
 }
@@ -80,7 +80,7 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0(const char *name, Bool_t _isMC)
   	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
 	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0), 
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
-	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0) 
+	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0)
 {
   Init();
   DefineOutput(1, TTree::Class());
@@ -201,9 +201,12 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
   	fListHist->Add(fFOchip);
   	fFOcount = new TH1I("fFOcount","fFOcount",30,0,30);
   	fListHist->Add(fFOcount);
-
   	fFOcorr = new TH2F("fFOcorr","fFOcorr",240,0,240,240,0,240);
   	fListHist->Add(fFOcorr);
+  	fGoodTracks = new TH1F("fGoodTracks","fGoodTracks",5,0,5);
+  	fListHist->Add(fGoodTracks);
+  	fTrackChi2 = new TH1F("fTrackChi2","fTrackChi2",100,0,10);
+  	fListHist->Add(fTrackChi2);
 
 	// TPC clusters
 	TPCclustersP = new TH1F("TPCclustersP","TPCclustersP",181,0,180); fListHist->Add(TPCclustersP);
@@ -324,9 +327,11 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 
     nGoodTracks++;
     // cout<<nGoodTracks<<" good tracks"<<endl;
-	if(nGoodTracks > 2) break;
+	if(nGoodTracks > 5) break; // just to know how many nGoodTrack are there
 
   }//Track loop end
+
+  	fGoodTracks->Fill(nGoodTracks);
 
   if(nGoodTracks == 2){ // fill tree variables
  // cout<<"two good tracks"<<endl;
@@ -417,6 +422,8 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		TrackPx_T[i] = trk->Px();
 		TrackPy_T[i] = trk->Py();
 		TrackPz_T[i] = trk->Pz();
+
+		fTrackChi2->Fill((Float_t)trk->GetTPCchi2()/trk->GetTPCNcls());
 
 		fITSmodule->Fill(ITSModuleInner_T[i]);
 		fITSmodule->Fill(ITSModuleOuter_T[i]);

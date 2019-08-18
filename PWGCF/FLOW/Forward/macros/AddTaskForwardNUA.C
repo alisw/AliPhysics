@@ -45,11 +45,9 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
   task->fSettings.esd = esd;
   std::cout << "Using tracktype = " << tracktype << std::endl;
   if (tracktype == 0){
-    task->fSettings.fFlowFlags = task->fSettings.kSPD;
     resName += "_SPD";
   }
   else{
-    task->fSettings.fFlowFlags = task->fSettings.kTPC;
     if (tracktype == 768){
       task->fSettings.tracktype = AliForwardSettings::kHybrid;
       resName += "_hybrid";

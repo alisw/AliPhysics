@@ -56,13 +56,8 @@ class AliESDInputHandler;
 #include "AliClusterContainer.h"
 #include "AliEmcalList.h"
 #include "AliEventCuts.h"
+#include "AliEmcalStringView.h"
 
-#if ROOT_VERSION_CODE > ROOT_VERSION(6,10,0) 
-#include "RStringView.h"
-#define EMCAL_STRINGVIEW const std::string_view
-#else 
-#define EMCAL_STRINGVIEW const std::string &
-#endif
 
 #include "AliAnalysisTaskSE.h"
 /**

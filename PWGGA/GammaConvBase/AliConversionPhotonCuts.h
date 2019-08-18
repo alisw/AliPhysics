@@ -239,9 +239,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t SetKappaTPCCut(Int_t kappaCut);
     void SetIsHeavyIon(Int_t isHeavyIon){fIsHeavyIon=isHeavyIon;}
     Int_t GetFirstTPCRow(Double_t radius);
-
+    void GetPhiRegions();
     Bool_t SetITSElectronPIDCut(Int_t ITSelectronPID);
     Bool_t SetTRDElectronPIDCut(Int_t TRDelectronPID);
+
 
     // Request Flags
     Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
@@ -257,9 +258,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
     Bool_t GetUseBDTPhotonCuts(){return fUseBDTPhotonCuts;}
-    Bool_t GetElecDeDxPostCalibrationInitialized() {return fElecDeDxPostCalibrationInitialized;}
-    Bool_t  InitializeElecDeDxPostCalibration(TString filename);
-    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t R);
+    Int_t GetDoElecDeDxPostCalibration() {return fDoElecDeDxPostCalibration;}
+    void  SetElecDeDxPostCalibrationCustomFile(TString filename){fFileNameElecDeDxPostCalibration = filename; return;};
+    Bool_t  LoadElecDeDxPostCalibration(Int_t runNumber);
+    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl);
 
 
   protected:
@@ -267,7 +269,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     AliPIDResponse*   fPIDResponse;                         ///< PID response
 
     Bool_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
-    TString           fV0ReaderName;						   ///< Name of the V0 reader
+    TString           fV0ReaderName;                        ///< Name of the V0 reader
 
     //cuts
     Double_t          fMaxR;                                ///< r cut
@@ -278,7 +280,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fEtaForPhiCutMax;                     ///< eta cut for phi sector selection
     Float_t           fMinPhiCut;                           ///< phi sector cut
     Float_t           fMaxPhiCut;                           ///< phi sector cut
-    Bool_t            fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
+    Int_t             fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
     Double_t          fPtCut;                               ///< pt cut
     Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
     Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
@@ -286,11 +288,13 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fMaxZ;                                ///< z cut
     Double_t          fMinClsTPC;                           ///< minimum clusters in the TPC
     Double_t          fMinClsTPCToF;                        ///< minimum clusters to findable clusters
+    Double_t          fMaxTPCChi2NDF;                       ///< maximum TPC track Chi2 per NDF
     Double_t          fLineCutZRSlope;                      ///< linecut
     Double_t          fLineCutZValue;                       ///< linecut
     Double_t          fLineCutZRSlopeMin;                   ///< linecut
     Double_t          fLineCutZValueMin;                    ///< linecut
     Double_t          fChi2CutConversion;                   ///< chi2cut
+    Double_t          fChi2CutConversionExpFunc;            ///< chi2cutexpfunction
     Double_t          fPIDProbabilityCutNegativeParticle;   ///<
     Double_t          fPIDProbabilityCutPositiveParticle;   ///<
     Bool_t            fDodEdxSigmaCut;                      ///< flag to use the dEdxCut based on sigmas
@@ -314,9 +318,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fPIDMinPKaonRejectionLowP;            ///< Momentum limit to apply kaon rejection
     Double_t          fPIDMinPProtonRejectionLowP;          ///< Momentum limit to apply proton rejection
     Double_t          fPIDMinPPionRejectionLowP;            ///< Momentum limit to apply proton rejection
-    Bool_t            fDoQtGammaSelection;                  ///< Select gammas using qtMax
+    Int_t             fDoQtGammaSelection;                  ///< Select gammas using qtMax
     Bool_t            fDo2DQt;                              ///< Select gammas using ellipse cut
     Double_t          fQtMax;                               ///< Maximum Qt from Armenteros to select Gammas
+    Double_t          fQtPtMax;                             ///< Maximum Qt vs Pt param from Armenteros to select Gammas
     Double_t          fNSigmaMass;                          ///< nsigma cut
     Bool_t            fUseEtaMinCut;                        ///< flag
     Bool_t            fUseOnFlyV0Finder;                    ///< flag
@@ -327,11 +332,12 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TF1 *             fFAsymmetryCut;                       ///<
     Double_t          fMinPPhotonAsymmetryCut;              ///< Min Momentum for Asymmetry Cut
     Double_t          fMinPhotonAsymmetry;                  ///< Asymmetry Cut
+    Double_t          fMaxPhotonAsymmetry;                  ///< Asymmetry Cut
     Bool_t            fUseCorrectedTPCClsInfo;              ///< flag to use corrected tpc cl info
     Bool_t            fUseTOFpid;                           ///< flag to use tof pid
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
-    Bool_t            fDo2DPsiPairChi2;                     ///<
+    Int_t             fDo2DPsiPairChi2;                     ///<
     Bool_t            fIncludeRejectedPsiPair;              ///<
     Float_t           fCosPAngleCut;                        ///<
     Bool_t            fDoToCloseV0sCut;                     ///<
@@ -374,6 +380,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoTPCdEdxafter;                   ///< TPC dEdx after cuts
     TH2F*             fHistoTPCdEdxSigbefore;               ///< TPC Sigma dEdx before cuts
     TH2F*             fHistoTPCdEdxSigafter;                ///< TPC Sigm dEdx after cuts
+    TH1F*             fHistoTPCChi2NDFBefore;               ///< TPC track Chi2 before cuts
+    TH1F*             fHistoTPCChi2NDFAfter;                ///< TPC track Chi2 after cuts
+    TH2F*             fHistoTPCChi2NDF2D;                   ///< TPC neg vs pos track Chi2 before cuts
     TH2F*             fHistoKappaafter;                     ///< Kappa vs photon pt after cuts
     TH2F*             fHistoTOFbefore;                      ///< TOF before cuts
     TH2F*             fHistoTOFSigbefore;                   ///< TOF Sigma before cuts
@@ -396,16 +405,25 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
     TProfile*         fProfileContainingMaterialBudgetWeights;
-    Bool_t            fElecDeDxPostCalibrationInitialized;  ///< flag to check that initialization worked  
+    TString           fFileNameElecDeDxPostCalibration;     ///< name of recalibration file (if no special non-OADB is required)
+    Int_t             fRecalibCurrentRun;                   ///< runnumber for correct loading of recalib from OADB
     Int_t             fnRBins;                              //
-    TH2F**            fHistoEleMapMean;  //[fnRBins]
-    TH2F**            fHistoEleMapWidth; //[fnRBins] 
-    TH2F**            fHistoPosMapMean;  //[fnRBins] 
-    TH2F**            fHistoPosMapWidth; //[fnRBins] 
+    TH2S**            fHistoEleMapRecalib;  //[fnRBins]
+    TH2S**            fHistoPosMapRecalib;  //[fnRBins]
+    Double_t          fGoodRegionCMin;                      ///< regions WITHOUT strong space charge distortions on C side
+    Double_t          fGoodRegionAMin;                      ///<
+    Double_t          fBadRegionCMin;                       ///< regions WITH strong space charge distortions on C side
+    Double_t          fBadRegionAMin;                       ///<
+    Double_t          fGoodRegionCMax;                      ///<
+    Double_t          fGoodRegionAMax;                      ///<
+    Double_t          fBadRegionCMax;                       ///<
+    Double_t          fBadRegionAMax;                       ///<
+    Double_t          fExcludeMinR;                         ///< r cut exclude region
+    Double_t          fExcludeMaxR;                         ///< r cut exclude region
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,21)
+    ClassDef(AliConversionPhotonCuts,27)
     /// \endcond
 };
 

@@ -118,7 +118,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
 
  enum TreeSize {
    nVar = 10,
-   nVar_Splittings =12
+   nVar_Splittings =10
   };
 
  //enum ECandidateType_t  { kD0toKpi, kDstartoKpipi, kD0toKpiLikeSign };
@@ -167,6 +167,8 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  Double_t GetJetRadius()                                          {return fJetRadius;}
  void SetJetMinPt(Double_t JetMinPt)                              {fJetMinPt = JetMinPt;}
  Double_t GetJetMinPt()                                           {return fJetMinPt;}
+ void SetTrackingEfficiencyt(Double_t TrackingEfficiency)         {fTrackingEfficiency = TrackingEfficiency;}
+ Double_t GetTrackingEfficiency()                                 {return fTrackingEfficiency;}
  void SetRejectedOrigin(UInt_t RejectedOrigin)                    {fRejectedOrigin = RejectedOrigin;}
  void SetAcceptedDecay(UInt_t AcceptedDecay)                      {fAcceptedDecay = AcceptedDecay;}
  void SetRejectISR(Bool_t RejectISR)                              {fRejectISR = RejectISR;}
@@ -201,6 +203,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
 
  Double_t                           fJetRadius             ;
  Double_t                           fJetMinPt              ;
+ Double_t                           fTrackingEfficiency    ;
  Double_t                           fShapesVar[nVar]       ;
 
    
@@ -242,7 +245,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  AliAnalysisTaskHFSubstructure(const AliAnalysisTaskHFSubstructure&);            
  AliAnalysisTaskHFSubstructure &operator=(const AliAnalysisTaskHFSubstructure&); 
 
- ClassDef(AliAnalysisTaskHFSubstructure, 2)
+ ClassDef(AliAnalysisTaskHFSubstructure, 3)
     
    };
 

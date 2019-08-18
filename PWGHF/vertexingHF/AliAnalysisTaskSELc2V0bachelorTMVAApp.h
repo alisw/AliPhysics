@@ -35,6 +35,10 @@
 #include "AliVertexingHFUtils.h"
 #include "AliAODRecoCascadeHF.h"
 
+#include <TMVA/Tools.h>
+#include <TMVA/Reader.h>
+#include <TMVA/MethodCuts.h>
+
 /// \class AliAnalysisTaskSELc2V0bachelorTMVAApp
 
 class IClassifierReader;
@@ -152,7 +156,31 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   void SetUsePIDresponseForNsigma(Bool_t flag) {fUsePIDresponseForNsigma = flag;}
   Bool_t GetUsePIDresponseForNsigma() const {return fUsePIDresponseForNsigma;}
-  
+
+  void SetNVars(Int_t n) {fNVars = n;}
+  Int_t GetNVars() const {return fNVars;}
+
+  void SetTimestampCut(UInt_t value) {fTimestampCut = value;}
+  UInt_t GetTimestampCut() const {return fTimestampCut;}
+
+  void SetTMVAReader(TMVA::Reader* r) {fReader = r;}
+  TMVA::Reader* GetTMVAReader() const {return fReader;}
+
+  void SetNVarsSpectators(Int_t n) {fNVarsSpectators = n;}
+  Int_t GetNVarsSpectators() const {return fNVarsSpectators;}
+
+  void SetNamesTMVAVariablesSpectators(TString names) {fNamesTMVAVarSpectators = names;}
+  TString GetNamesTMVAVariablesSpectators() {return fNamesTMVAVarSpectators;}
+
+  void SetUseXmlWeightsFile(Bool_t flag) {fUseXmlWeightsFile = flag;}
+  Bool_t GetUseXmlWeightsFile() const {return fUseXmlWeightsFile;}
+
+  void SetUseWeightsLibrary(Bool_t flag) {fUseWeightsLibrary = flag;}
+  Bool_t GetUseWeightsLibrary() const {return fUseWeightsLibrary;}
+
+  void SetXmlWeightsFile(TString fileName) {fXmlWeightsFile = fileName;}
+  TString GetXmlWeightsFile() const {return fXmlWeightsFile;}
+
  private:
   
   EBachelor CheckBachelor(AliAODRecoCascadeHF *part, AliAODTrack* bachelor, TClonesArray *mcArray);
@@ -308,7 +336,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   
   Bool_t fFillTree;                    /// flag to decide whether to fill the sgn and bkg trees
 
-  IClassifierReader *fBDTReader;       //!<! BDT reader
+  Bool_t fUseWeightsLibrary;           // flag to decide whether to use or not the BDT class
+  IClassifierReader *fBDTReader;       //!<! BDT reader using BDT class
   TString fTMVAlibName;                /// Name of the library to load to have the TMVA weights
   TString fTMVAlibPtBin;               /// Pt bin that will be in the library to be loaded for the TMVA
   TString fNamesTMVAVar;               /// vector of the names of the input variables
@@ -322,6 +351,12 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2D *fBDTHistoVsCosPAK0S;           //!<! BDT classifier vs V0 cosine of pointing angle
   TH2D *fBDTHistoVsSignd0;             //!<! BDT classifier vs V0 proton signed d0
   TH2D *fBDTHistoVsCosThetaStar;       //!<! BDT classifier vs proton emission angle in pK0s pair rest frame
+  TH2D* fBDTHistoVsnSigmaTPCpr;       //!<! BDT classifier vs nSigmaTPCpr
+  TH2D* fBDTHistoVsnSigmaTOFpr;       //!<! BDT classifier vs nSigmaTOFpr
+  TH2D* fBDTHistoVsnSigmaTPCpi;       //!<! BDT classifier vs nSigmaTPCpi
+  TH2D* fBDTHistoVsnSigmaTPCka;       //!<! BDT classifier vs nSigmaTPCka
+  TH2D* fBDTHistoVsBachelorP;       //!<! BDT classifier vs bachelor p
+  TH2D* fBDTHistoVsBachelorTPCP;       //!<! BDT classifier vs bachelor p at TPC wall
   TH2D *fHistoNsigmaTPC;               //!<! 
   TH2D *fHistoNsigmaTOF;               //!<! 
 
@@ -332,9 +367,21 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   Bool_t fUsePIDresponseForNsigma;  /// flag to decide if to take the nSigma from the PIDresponse or from AliAODPidHF
 
+  Int_t fNVars;  /// Number of training variables
+
+  UInt_t fTimestampCut; // cut on timestamp
+
+  Bool_t fUseXmlWeightsFile;                   // flag to decide whether to use or not the xml file
+  TMVA::Reader *fReader;                // TMVA reader using xml file
+  Float_t* fVarsTMVA;                   //[fNVars] // variables to be used by TMVA
+  Int_t fNVarsSpectators;               // number of spectator variables
+  Float_t* fVarsTMVASpectators;         //[fNVarsSpectators] // variables to be used by TMVA
+  TString fNamesTMVAVarSpectators;      // vector of the names of the spectators variables
+  TString fXmlWeightsFile;              // file with TMVA weights
+  TH2D *fBDTHistoTMVA;                  //!<! BDT histo file for the case in which the xml file is used
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 5); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 9); /// class for Lc->p K0
   /// \endcond    
 };
 

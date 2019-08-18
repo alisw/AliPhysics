@@ -354,7 +354,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   config->SetkTBinning(mTkTPlot);
   config->SetmTBinning(mTkTPlot);
   config->SetkTCentralityBinning(kTCentPlot);
-  config->SetInvMassPairs(InvMassPairs);
   if (kTCentPlot) {
     std::vector<float> centBins;
     centBins.push_back(20);

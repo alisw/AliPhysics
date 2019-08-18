@@ -1,7 +1,7 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition=0);
 void SetupCuts(AliDielectron *die, Int_t cutDefinition, TString userPathWeightFile, Double_t userTMVACutValue);
 void SetTPCCorr(AliDielectron *die);
-const AliDielectronEventCuts *GetEventCuts();
+//const AliDielectronEventCuts *GetEventCuts();
 void SetupMCsignals(AliDielectron* die);
 AliDielectronCutGroup* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Int_t MVACut=0., Bool_t useAODFilterCuts, TString TMVAweight);
         
@@ -9,6 +9,7 @@ Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
 Bool_t kRot = kFALSE;
 Bool_t kMix = kTRUE;
 Bool_t randomizeDau = kTRUE;
+Bool_t bUsePileUpCutsTPCClusters=kTRUE;
 
 // available cut defintions
 const Int_t nMax = 3; 
@@ -21,19 +22,15 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
   Int_t PIDCut=0;
   Int_t MVACut=0;
   
-  for(int glcut = 0; glcut <=30; ++glcut){
-//  for(int glcut = 0; glcut <=0; ++glcut){
-    ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
-    if(glcut>0 && glcut<21) continue;
-    PIDCut=glcut-10;
-    trackCut=glcut;
-    if(glcut==0) trackCut=-1;
-    if(glcut==0) PIDCut=0;
+//  for(int glcut = 0; glcut <=30; ++glcut){
+  for(int glcut = -999; glcut <=-999; ++glcut){
 
-    for(MVACut = 0; MVACut<10;MVACut++){
+    PIDCut=glcut;
+    trackCut=glcut;
+
+    MVACut = 0;
       
       TString name=TString::Format("DieleTr%d_PID%d_MVA%d",trackCut,PIDCut, MVACut);
-      //    cout<<"Diele name: "<<name.Data()<<endl;    
       AliDielectron * diel_low = new AliDielectron(Form("%s",name.Data()), Form("Name: %s",name.Data()));
       if(!diel_low){
         Printf("=======================================");
@@ -41,7 +38,7 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
         Printf("=======================================");
         return NULL; 
       }  
-      if(hasMC) SetupMCsignals(diel_low);
+
       if(kMix && !hasMC ){ // need second since there is a problem when mixing MC events (TRef?)
         AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
 
@@ -52,20 +49,32 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
         diel_low->SetMixingHandler(mix);
       }
 
-      if(usePIDCorr){
-       SetITSCorr(diel_low,hasMC);
-       SetTPCCorr(diel_low,hasMC);
-//       SetTOFCorr(diel_low,hasMC);
-      }
-
       diel_low->SetUseKF(kFALSE);   //keep this one, otherwise masses are slightly wrong and R factors very wrong!
       InitHistograms(diel_low,0,hasMC);
 
+      if(bUsePileUpCutsTPCClusters){
+        Double_t pileUpCutsTPCClustersMin = 2.0e+06;
+        Double_t pileUpCutsTPCClustersMax = 3.1e+06;        
+        
+        printf("Adding TPC-Cluster based Pile-up rejection! \n");
+        TF1* fFitMin = new TF1("fFit","pol6",0,90);
+        fFitMin->SetParameters(pileUpCutsTPCClustersMin,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+        TF1* fFitMax = new TF1("fFit","pol6",0,90);
+        fFitMax->SetParameters(pileUpCutsTPCClustersMax,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+               
+        AliDielectronEventCuts *pileUpCuts = new AliDielectronEventCuts("pileUpCuts","pileUpCuts");
+        pileUpCuts->SetMinCorrCutFunction(fFitMin, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+        pileUpCuts->SetMaxCorrCutFunction(fFitMax, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+
+        pileUpCuts->Print();
+        diel_low->GetEventFilter().AddCuts(pileUpCuts);
+    }      
+      
       std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
       diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
+      
       task->AddDielectron(diel_low);
       printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
-      }
 
   }
  return;
@@ -242,6 +251,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 //  histos->UserHistogram("Event","ZVertex","ZVertex;ZVertex/cm",120,-12.,12.,AliDielectronVarManager::kZvPrim);
   histos->UserHistogram("Event","Centrality","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentralityNew);
 //  histos->UserHistogram("Event","nEvTPC_eventplaneents",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnTPCrpH2);
+  histos->UserHistogram("Event","ZdcEpC",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi(),TMath::Pi()),AliDielectronVarManager::kQnZDCCrpH1);
+  histos->UserHistogram("Event","ZdcEpA",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi(),TMath::Pi()),AliDielectronVarManager::kQnZDCArpH1);
+  histos->UserHistogram("Event","ZdcEpA:ZdcEpC",";;ev plane;", 100,-TMath::Pi(),TMath::Pi(),100,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kQnZDCArpH1,AliDielectronVarManager::kQnZDCCrpH1);
 
 
   //add histograms to track class
@@ -271,7 +283,13 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
   histos->UserHistogram("Track","nSigmaITSEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);  
   histos->UserHistogram("Track","nSigmaTPCEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);  
   histos->UserHistogram("Track","nSigmaTOFEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle);  
- 
+//  histos->UserHistogram("Track","ZdcEpC",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnZDCCrpH1);
+//  histos->UserHistogram("Track","ZdcEpA",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnZDCArpH1);
+//  histos->UserHistogram("Track","ZdcEpA:ZdcEpC",";;ev plane;", 100,-TMath::Pi()/2.,TMath::Pi()/2.,100,-TMath::Pi()/2.,TMath::Pi()/2.,AliDielectronVarManager::kQnZDCArpH1,AliDielectronVarManager::kQnZDCCrpH1);
+//  histos->UserHistogram("Track","ZdcEpCRem",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  -TMath::Pi(),TMath::Pi()),AliDielectronVarManager::kZDCCrpH1);
+//  histos->UserHistogram("Track","ZdcEpARem",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  -TMath::Pi(),TMath::Pi()),AliDielectronVarManager::kZDCArpH1);
+//  histos->UserHistogram("Track","ZdcEpARem:ZdcEpCRem",";;ev plane;", 100,-TMath::Pi(),TMath::Pi(),100,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kZDCArpH1,AliDielectronVarManager::kZDCCrpH1);
+  
 //lmee mass spectrum
 //  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02 ,0.04 ,0.08 ,0.14 ,0.22 ,0.38 ,0.54 ,1.1 ,1.7 ,2.5 ,2.9 ,3.0 ,3.1 ,3.3 ,3.5 ,4.0 ,5.0"); //Carsten's binning
 //  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.4,0.6,1,2.5,8");
@@ -294,14 +312,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 //                        mbins, ptsqbins, centbins,
 //                        AliDielectronVarManager::kM, AliDielectronVarManager::kPtSq, AliDielectronVarManager::kCentrality);
 //
-//////angular deflection  
-//  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,3.1 ,5.0"); // for low ptee
-//  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 8");
-//  TVectorD* magbins= AliDielectronHelper::MakeLinBinning(20,0,100);
-//  histos->UserHistogram("Pair","InvMass_pPt_mag","Inv.Mass:PairPtSq:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); PairPlaneMag",
-//                        mbins, ptbins, magbins,
-//                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPairPlaneMagInPro);
-  
+
 //
 //  histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","InvMass:PairPt:PhivPair;Inv. Mass [GeV];Pair Pt [GeV];PhiV",
 //                        600,0.,6., 600,0.,6., 20,0.,TMath::Pi(),
@@ -346,20 +357,20 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 
 }
 
-const AliDielectronEventCuts *GetEventCuts(){
-
-  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex SPD && |vtxZ|<10 && ncontrib>0");
-  eventCuts->SetRequireVertex();
-  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
-  eventCuts->SetVertexZ(-10.,10.);
-  eventCuts->SetMinVtxContributors(1); 
-
-  //no centrality cuts for the moment
-  //Bool_t isRun2 = kTRUE;
-  //eventCuts->SetCentralityRange(0,80,isRun2);
-
-  return eventCuts;
-}
+//const AliDielectronEventCuts *GetEventCuts(){
+//
+//  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex SPD && |vtxZ|<10 && ncontrib>0");
+//  eventCuts->SetRequireVertex();
+//  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
+//  eventCuts->SetVertexZ(-10.,10.);
+//  eventCuts->SetMinVtxContributors(1); 
+//
+//  //no centrality cuts for the moment
+//  //Bool_t isRun2 = kTRUE;
+//  //eventCuts->SetCentralityRange(0,80,isRun2);
+//
+//  return eventCuts;
+//}
 
 
 void SetupMCsignals(AliDielectron* die){

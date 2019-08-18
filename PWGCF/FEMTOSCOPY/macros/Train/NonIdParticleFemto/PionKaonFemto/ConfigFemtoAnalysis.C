@@ -167,8 +167,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 
 	  //Mix events with respect to the z position of the primary vertex and event total multipliticy:
-	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(5);
+	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 4, multbins[imult], multbins[imult+1]);
+	  anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 	  
@@ -349,7 +349,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  
 	  //correlation function in kstarout, kstarside, kstarlong (run3DPRF)
 	  	  if(run3DPRF == 1) {
-		    ck3dprftpc[aniter] = new AliFemtoCorrFctn3DPRF(Form("ck3dPRF%stpcM%i", chrgs[ichg], imult),200,1.0);
+		    ck3dprftpc[aniter] = new AliFemtoCorrFctn3DPRF(Form("ck3dPRF%stpcM%i", chrgs[ichg], imult),100,0.5);
 		    //ck3dprfkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		    anetaphitpc[aniter]->AddCorrFctn(ck3dprftpc[aniter]);
 		  }

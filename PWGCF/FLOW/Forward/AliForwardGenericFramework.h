@@ -47,7 +47,7 @@ public:
    *
    * @param cent Event centrality
    */
-  void CumulantsAccumulate(TH2D& dNdetadphi, TList* outputList, double cent,double vertexpos,TString detType,Bool_t doRefFlow, Bool_t doDiffFlow);
+  void CumulantsAccumulate(TH2D*& dNdetadphi, double cent,double vertexpos,Bool_t useFMD,Bool_t doRefFlow, Bool_t doDiffFlow);
 
   void saveEvent(TList* outputList, double cent, double vertexpos,UInt_t r, Int_t ptn);
 
@@ -68,17 +68,17 @@ public:
   THnD* fpvector;//!    // Accumulated differential particles
   THnD* fqvector;//!    // Accumulated differential particles
 
-  TComplex Q(int n, int p, int etaBin);
-  TComplex p(int n, int p, int etaBin);
-  TComplex q(int n, int p, int etaBin);
+  TComplex Q(Int_t n, Int_t p, Int_t etaBin);
+  TComplex p(Int_t n, Int_t p, Int_t etaBin);
+  TComplex q(Int_t n, Int_t p, Int_t etaBin);
 
-  TH1F fAutoRef;
-  TH1F fAutoDiff;
+  // TH1F fAutoRef;
+  // TH1F fAutoDiff;
 
-  TComplex Two(int n1, int n2, int eta1, int eta2);
-  TComplex TwoDiff(int n1, int n2, int refetabin, int diffetabin);
-  TComplex Four(int n1, int n2, int n3, int n4,int eta1, int eta2);
-  TComplex FourDiff(int n1, int n2, int n3, int n4, int refetabin, int diffetabin,int qetabin);
+  TComplex Two(Int_t n1, Int_t n2, Int_t eta1, Int_t eta2);
+  TComplex TwoDiff(Int_t n1, Int_t n2, Int_t refetabin, Int_t diffetabin);
+  TComplex Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4,Int_t eta1, Int_t eta2);
+  TComplex FourDiff(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t refetabinA, Int_t refetabinB, Int_t diffetabin,Int_t qetabin);
 
 
   ClassDef(AliForwardGenericFramework, 1); // object for eta dependent cumulant ananlysis

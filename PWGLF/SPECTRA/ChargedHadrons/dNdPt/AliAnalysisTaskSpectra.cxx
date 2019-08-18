@@ -126,7 +126,7 @@ void AliAnalysisTaskSpectra::AnaTrackMC(Int_t flag)
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskSpectra::AnaMCParticle(Int_t flag)
+void AliAnalysisTaskSpectra::AnaParticleMC(Int_t flag)
 {            
     if (!fMCisPrim) return;    
     if (!fMCIsCharged) return;    

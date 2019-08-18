@@ -19,6 +19,8 @@
 #include "AliForwardSettings.h"
 #include "AliForwardFlowUtil.h"
 #include "AliFMDMCTrackDensity.h"
+#include "AliForwardFlowResultStorage.h"
+#include "THn.h"
 //#include "AliEventCuts.h"
 #include <TF1.h>
 class AliMCParticle;
@@ -29,6 +31,7 @@ class TCutG;
 class AliAODForwardMult;
 class TH2D;
 class AliESDEvent;
+
 /**
  * @defgroup pwglf_forward_tasks_flow Flow tasks
  *
@@ -161,41 +164,19 @@ Double_t WrapPi(Double_t phi);
   TList* fDeltaList; //!
   TRandom fRandom;
   AliFMDMCTrackDensity* fTrackDensity; //!
+  THnD* delta_phi_eta;//!
+  THnD* delta_eta_phi;//!
+  THnD* delta_eta_eta;//!
+  THnD* delta_phi_phi;//!
+  THnD* fnoPrim;//!
+
 
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;
   AliForwardFlowUtil fUtil;
 
-TF1 *fMultTOFLowCut; //!
-TF1 *fMultTOFHighCut; //!
-TF1 *fMultCentLowCut; //!
-
-
-  // Simple dN/deta of particles hitting the ITS or FMD
-  TH1F *fdNdeta;//!
-
-  // Check to see the abundance of pi0 and pich in a sample
-  TH1F *fPiCheck;//!
-
-  // dN/deta distribution based on origin of particles
-  TH2F *fdNdetaOrigin;//!
-  // X-ray plot showing the origin of secondary particles
-  TH2F *fxray;//!
-  // Distribution of observed particles relative to their primary particle
-  THn *fNsecondaries; //!
-  // Efficiency of various particle species to produces hits on the FMD
-  THn *fNprimaries; //!
-
-
-  // Cuts for various detector regions
-  TCutG *fITS;  //!
-  TCutG *fFMD1;  //!
-  TCutG *fFMD2;  //!
-  TCutG *fFMD3;  //!
-  TCutG *fPipe;  //!
-  TCutG *fEarlyDecay;  //!
-  TH1D* phihist; //!
   AliTrackReference* fStored; //! Last stored
+
   enum {
     kTPCOnly = 128, // TPC only tracks
     kHybrid = 768, // TPC only tracks
@@ -238,67 +219,39 @@ protected:
      */
     State& operator=(const State& o);
   } fState; //! State
+
   UShort_t fMaxConsequtiveStrips;
   Double_t fLowCutvalue;
-  Bool_t            fTrackGammaToPi0;
-  AliTrackReference*  ProcessRef(AliMCParticle*       particle,
-    AliMCParticle* mother,
-    AliTrackReference*   ref,std::vector< Int_t > listOfMothers, Double_t randomInt, Float_t event_vtx_z, Double_t v0cent);
+  Bool_t   fTrackGammaToPi0;
+
+  AliTrackReference*  ProcessRef(AliMCParticle* particle, AliMCParticle* mother, AliTrackReference* ref,
+                                 std::vector<Int_t> listOfMothers, Double_t randomInt, Float_t event_vtx_z);
 
   void BeginTrackRefs();
   void EndTrackRefs();
 
-  void StoreParticle(AliMCParticle*       particle,
-	  AliMCParticle* mother,
-	  AliTrackReference*   ref,std::vector< Int_t > listOfMothers, Double_t randomInt, Float_t event_vtx_z, Double_t v0cent) ;
+  void StoreParticle(AliMCParticle* particle, AliMCParticle* mother, AliTrackReference* ref,
+                     std::vector<Int_t> listOfMothers, Double_t randomInt, Float_t event_vtx_z);
 
-
-  Bool_t ProcessTrack(AliMCParticle* particle, AliMCParticle* mother, std::vector< Int_t > listOfMothers, Double_t randomInt, Float_t event_vtx_z, Double_t v0cent);
+  Bool_t ProcessTrack(AliMCParticle* particle, AliMCParticle* mother, 
+                     std::vector<Int_t> listOfMothers, Double_t randomInt, Float_t event_vtx_z);
 
   Double_t GetTrackRefTheta(const AliTrackReference* ref) const;
-
-  // Find the primary particle of a decay chain. If `p` is alreay the primary return p.
-  // If it was not possible to find the mother, return NULL.
-  AliMCParticle* GetMother(AliMCParticle* p);
-  AliMCParticle* GetMother(Int_t iTr, const AliMCEvent* event) const;
-  // Find the primary particle of a decay chain if it is charged.
-  // If `p` is alreay the primary return p. If it was not possible
-  // to find the mother or if the mother was not charged, return NULL
-  AliMCParticle* GetChargedMother(AliMCParticle*);
-
-  // Complimentary to `GetChargedMother`
-  AliMCParticle* GetNeutralMother(AliMCParticle*);
-
-  // Return pi0 if decay chain terminated with pi0 -> gamma where gamma IsPhysicalPrimary.
-  // Else, return NULL
-  AliMCParticle* GetPi0Mother(AliMCParticle*);
-
-  // Re-define the pi0 a physical primary. This returns the IsPhysicalPrimary particle
-  // or a pi0 if the IsPhysicalPrimary was a gamma from pi0 -> gamma + gamma
-  // AliMCParticle* GetMotherExtendedPrimaryDef(AliMCParticle* p);
-
   // Get the eta and phi coordinates where the FMD track reference was created
   // etaPhi is a 2-element array where the values will be written in.
   // If no FMD-reference was created, etaPhi will be NULL
-  void GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi);
   void GetTrackRefEtaPhi(AliTrackReference* ref, Double_t* etaPhi);
 
-  // Get the phi coordinate where the track ref was created
-  // Double_t GetTrackRefPhi(AliTrackReference* ref);
-  // Get the eta coordinate where the track ref was created
-  // Double_t GetTrackRefEta(AliTrackReference* ref);
 
-  // Find the first particle that interacted with material. If there was no material
-  // interaction return NULL.
-  AliMCParticle* GetIncidentParticleFromFirstMaterialInteraction(AliMCParticle* p);
+  // Find the primary particle of a decay chain. If `p` is alreay the primary return p.
+  // If it was not possible to find the mother, return NULL.
+  AliMCParticle* GetMother(Int_t iTr, const AliMCEvent* event) const;
+  AliMCParticle* GetMother(AliMCParticle* p);
 
-  // Find the first non-primary particle mother. Returns NULL if no
-  // such mother was found (includes the case where the given particle
-  // is already a primary
-  AliMCParticle* GetFirstNonPrimaryMother(AliMCParticle* p);
+  ClassDef(AliForwardSecondariesTask, 1); // Analysis task for secondary analysis
 
+  AliForwardFlowResultStorage* fStorage; //!
 
-  ClassDef(AliForwardSecondariesTask, 1); // Analysis task for flow analysis
 };
 
 #endif

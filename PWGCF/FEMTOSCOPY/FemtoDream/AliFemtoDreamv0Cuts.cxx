@@ -16,6 +16,7 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
       fHist(nullptr),
       fPosCuts(0),
       fNegCuts(0),
+      fCutDaughters(false),
       fMinimalBooking(false),
       fMCData(false),
       fCPAPlots(false),
@@ -55,6 +56,9 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
       fMinCPA(0),
       fCutInvMass(false),
       fInvMassCutWidth(0),
+      fCutInvMassSidebands(false),
+      fInvMassCutSBdown(0),
+      fInvMassCutSBup(0),
       fAxisMinMass(0),
       fAxisMaxMass(1),
       fNumberXBins(1),
@@ -70,6 +74,7 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts(const AliFemtoDreamv0Cuts& cuts)
       fHist(cuts.fHist),
       fPosCuts(cuts.fPosCuts),
       fNegCuts(cuts.fNegCuts),
+      fCutDaughters(cuts.fCutDaughters),
       fMinimalBooking(cuts.fMinimalBooking),
       fMCData(cuts.fMCData),
       fCPAPlots(cuts.fCPAPlots),
@@ -109,6 +114,9 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts(const AliFemtoDreamv0Cuts& cuts)
       fMinCPA(cuts.fMinCPA),
       fCutInvMass(cuts.fCutInvMass),
       fInvMassCutWidth(cuts.fInvMassCutWidth),
+      fCutInvMassSidebands(cuts.fCutInvMassSidebands),
+      fInvMassCutSBdown(cuts.fInvMassCutSBdown),
+      fInvMassCutSBup(cuts.fInvMassCutSBup),
       fAxisMinMass(cuts.fAxisMinMass),
       fAxisMaxMass(cuts.fAxisMaxMass),
       fNumberXBins(cuts.fNumberXBins),
@@ -126,6 +134,7 @@ AliFemtoDreamv0Cuts& AliFemtoDreamv0Cuts::operator=(
     this->fHist = cuts.fHist;
     this->fPosCuts = cuts.fPosCuts;
     this->fNegCuts = cuts.fNegCuts;
+    this->fCutDaughters = cuts.fCutDaughters;
     this->fMinimalBooking = cuts.fMinimalBooking;
     this->fMCData = cuts.fMCData;
     this->fCPAPlots = cuts.fCPAPlots;
@@ -165,6 +174,9 @@ AliFemtoDreamv0Cuts& AliFemtoDreamv0Cuts::operator=(
     this->fMinCPA = cuts.fMinCPA;
     this->fCutInvMass = cuts.fCutInvMass;
     this->fInvMassCutWidth = cuts.fInvMassCutWidth;
+    this->fCutInvMassSidebands = cuts.fCutInvMassSidebands;
+    this->fInvMassCutSBdown = cuts.fInvMassCutSBdown;
+    this->fInvMassCutSBup = cuts.fInvMassCutSBup;
     this->fAxisMinMass = cuts.fAxisMinMass;
     this->fAxisMaxMass = cuts.fAxisMaxMass;
     this->fNumberXBins = cuts.fNumberXBins;
@@ -213,18 +225,22 @@ AliFemtoDreamv0Cuts *AliFemtoDreamv0Cuts::LambdaSigma0Cuts(bool isMC,
   LambdaCuts->SetPlotCPADist(CPAPlots);
   LambdaCuts->SetPlotContrib(SplitContrib);
 
+  // Changes w.r.t the default Lambda cuts
+  // 1. Kaon rejection only 1sigma of the peak
+  // 2. CPA > 0.999
+  // 3. Timing cut only for one daughter
+
   LambdaCuts->SetCheckOnFlyStatus(false);  //online = kTRUE, offline = kFALSE
   LambdaCuts->SetCutCharge(0);
   LambdaCuts->SetPtRange(0.3, 999.);
-  LambdaCuts->SetKaonRejection(0., 0.);
+  LambdaCuts->SetKaonRejection(0.492, 0.503);
   LambdaCuts->SetCutMaxDecayVtx(100);
   LambdaCuts->SetCutTransverseRadius(0.2, 100);
   LambdaCuts->SetCutDCADaugToPrimVtx(0.05);
   LambdaCuts->SetCutDCADaugTov0Vtx(1.5);
-  LambdaCuts->SetCutCPA(0.99);
+  LambdaCuts->SetCutCPA(0.999);
   LambdaCuts->SetCutInvMass(0.006);
   LambdaCuts->SetAxisInvMassPlots(400, 1.0, 1.2);
-  LambdaCuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
   LambdaCuts->SetDaughterTimingCut(OneDaughterCombined);
 
   return LambdaCuts;
@@ -239,8 +255,10 @@ bool AliFemtoDreamv0Cuts::isSelected(AliFemtoDreamv0 *v0) {
       fHist->FillTrackCounter(0);
   }
   if (pass) {
-    if (!DaughtersPassCuts(v0)) {
-      pass = false;
+    if (fCutDaughters) {
+      if (!DaughtersPassCuts(v0)) {
+        pass = false;
+      }
     }
   }
   if (pass) {
@@ -249,7 +267,7 @@ bool AliFemtoDreamv0Cuts::isSelected(AliFemtoDreamv0 *v0) {
     }
   }
   if (pass) {
-    if(fDoArmenterosCut  && !ArmenterosSelection(v0)) {
+    if (fDoArmenterosCut && !ArmenterosSelection(v0)) {
       pass = false;
     }
   }
@@ -263,7 +281,6 @@ bool AliFemtoDreamv0Cuts::isSelected(AliFemtoDreamv0 *v0) {
       pass = false;
     }
   }
-
   v0->SetUse(pass);
   BookQA(v0);
   if (!fMinimalBooking) {
@@ -315,7 +332,8 @@ bool AliFemtoDreamv0Cuts::DaughtersPassCuts(AliFemtoDreamv0 *v0) {
         fHist->FillTrackCounter(2);
     }
   }
-  if(pass) pass = passD1 && passD2;
+  if (pass)
+    pass = passD1 && passD2;
   return pass;
 }
 bool AliFemtoDreamv0Cuts::MotherPassCuts(AliFemtoDreamv0 *v0) {
@@ -388,7 +406,8 @@ bool AliFemtoDreamv0Cuts::MotherPassCuts(AliFemtoDreamv0 *v0) {
     if (!TimingCut(v0)) {
       pass = false;
     } else {
-      if (!fMinimalBooking) fHist->FillTrackCounter(10);
+      if (!fMinimalBooking)
+        fHist->FillTrackCounter(10);
     }
   }
   return pass;
@@ -477,8 +496,8 @@ bool AliFemtoDreamv0Cuts::ArmenterosSelection(AliFemtoDreamv0 *v0) {
     float prefactorAlpha = (fPDGv0 > 0) ? 1.f : -1.f;  // for anti-particles
                                                        // negative to compensate
                                                        // for sign change of qt
-    if (armAlpha * prefactorAlpha > fArmenterosAlphaUp ||
-        armAlpha * prefactorAlpha < fArmenterosAlphaLow)
+    if (armAlpha * prefactorAlpha > fArmenterosAlphaUp
+        || armAlpha * prefactorAlpha < fArmenterosAlphaLow)
       pass = false;
   } else {
     if (!fMinimalBooking) {
@@ -499,6 +518,11 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
     float massv0 = TDatabasePDG::Instance()->GetParticle(fPDGv0)->Mass();
     if ((v0->Getv0Mass() < massv0 - fInvMassCutWidth)
         || (massv0 + fInvMassCutWidth < v0->Getv0Mass())) {
+      massPass = false;
+    }
+  } else if (fCutInvMassSidebands) {
+    if ((v0->Getv0Mass() < fInvMassCutSBdown)
+        || (fInvMassCutSBup < v0->Getv0Mass())) {
       massPass = false;
     }
   }
@@ -532,10 +556,12 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
 void AliFemtoDreamv0Cuts::Init() {
   //Cant be set externally cause else the lists don't exist. Needs to be changed in case
   //it is needed
-  fPosCuts->SetMinimalBooking(fMinimalBooking);
-  fPosCuts->Init();
-  fNegCuts->SetMinimalBooking(fMinimalBooking);
-  fNegCuts->Init();
+  if (fCutDaughters) {
+    fPosCuts->SetMinimalBooking(fMinimalBooking);
+    fPosCuts->Init();
+    fNegCuts->SetMinimalBooking(fMinimalBooking);
+    fNegCuts->Init();
+  }
   if (!fMinimalBooking) {
     fHist = new AliFemtoDreamv0Hist(fNumberXBins, fAxisMinMass, fAxisMaxMass,
                                     fCPAPlots, fRunNumberQA, fMinRunNumber,
@@ -545,23 +571,28 @@ void AliFemtoDreamv0Cuts::Init() {
     fHistList->SetOwner();
     fHistList->SetName("v0Cuts");
     fHistList->Add(fHist->GetHistList());
-    fPosCuts->SetName("PosCuts");
-    fHistList->Add(fPosCuts->GetQAHists());
-    fNegCuts->SetName("NegCuts");
-    fHistList->Add(fNegCuts->GetQAHists());
+    if (fCutDaughters) {
+      fPosCuts->SetName("PosCuts");
+      fHistList->Add(fPosCuts->GetQAHists());
+      fNegCuts->SetName("NegCuts");
+      fHistList->Add(fNegCuts->GetQAHists());
+    }
 
     if (fMCData) {
-      fMCHist = new AliFemtoDreamv0MCHist(
-          fNumberXBins, fAxisMinMass, fAxisMaxMass, fContribSplitting,
-          fCPAPlots, fDoMultBinning, fCheckMother);
+      fMCHist = new AliFemtoDreamv0MCHist(fNumberXBins, fAxisMinMass,
+                                          fAxisMaxMass, fContribSplitting,
+                                          fCPAPlots, fDoMultBinning,
+                                          fCheckMother);
       fMCHistList = new TList();
       fMCHistList->SetOwner();
       fMCHistList->SetName("v0MCCuts");
       fMCHistList->Add(fMCHist->GetHistList());
-      fPosCuts->SetMCName("PosCuts");
-      fMCHistList->Add(fPosCuts->GetMCQAHists());
-      fNegCuts->SetMCName("NegCuts");
-      fMCHistList->Add(fNegCuts->GetMCQAHists());
+      if (fCutDaughters) {
+        fPosCuts->SetMCName("PosCuts");
+        fMCHistList->Add(fPosCuts->GetMCQAHists());
+        fNegCuts->SetMCName("NegCuts");
+        fMCHistList->Add(fNegCuts->GetMCQAHists());
+      }
     }
   } else {
     fHist = new AliFemtoDreamv0Hist("MinimalBooking", fNumberXBins,
@@ -570,11 +601,12 @@ void AliFemtoDreamv0Cuts::Init() {
     fHistList->SetOwner();
     fHistList->SetName("v0Cuts");
     fHistList->Add(fHist->GetHistList());
-    fPosCuts->SetName("PosCuts");
-    fHistList->Add(fPosCuts->GetQAHists());
-    fNegCuts->SetName("NegCuts");
-    fHistList->Add(fNegCuts->GetQAHists());
-
+    if (fCutDaughters) {
+      fPosCuts->SetName("PosCuts");
+      fHistList->Add(fPosCuts->GetQAHists());
+      fNegCuts->SetName("NegCuts");
+      fHistList->Add(fNegCuts->GetQAHists());
+    }
   }
 }
 
@@ -598,7 +630,8 @@ void AliFemtoDreamv0Cuts::BookQA(AliFemtoDreamv0 *v0) {
         fHist->FillDCANegDaugToPrimVtxCut(i, v0->GetDCADaugNegVtx());
         fHist->FillDCADaugTov0VtxCut(i, v0->GetDaugDCA());
         fHist->FillCPACut(i, v0->GetCPA());
-        fHist->FillArmenterosPodolandski(i, v0->GetArmenterosAlpha(), v0->GetArmenterosQt());
+        fHist->FillArmenterosPodolandski(i, v0->GetArmenterosAlpha(),
+                                         v0->GetArmenterosQt());
         fHist->FillInvMass(i, v0->Getv0Mass());
       }
     }
@@ -606,7 +639,7 @@ void AliFemtoDreamv0Cuts::BookQA(AliFemtoDreamv0 *v0) {
   v0->GetPosDaughter()->SetUse(v0->UseParticle());
   v0->GetNegDaughter()->SetUse(v0->UseParticle());
 
-  if (v0->IsSet()) {
+  if (v0->IsSet() && fCutDaughters) {
     fPosCuts->BookQA(v0->GetPosDaughter());
     fNegCuts->BookQA(v0->GetNegDaughter());
   }
@@ -653,7 +686,8 @@ void AliFemtoDreamv0Cuts::BookMC(AliFemtoDreamv0 *v0) {
       fPosCuts->BookMC(v0->GetPosDaughter());
       fNegCuts->BookMC(v0->GetNegDaughter());
       v0->SetParticleOrigin(tmpOrg);
-      if (fCheckMother) fMCHist->FillMCMother(v0->GetPt(), v0->GetMotherPDG());
+      if (fCheckMother)
+        fMCHist->FillMCMother(v0->GetPt(), v0->GetMotherPDG());
     }
   }
 }
@@ -737,19 +771,24 @@ void AliFemtoDreamv0Cuts::BookTrackCuts() {
       fHist->FillConfig(9, fMaxDCADaugToDecayVtx);
     }
     if (fCutInvMass) {
-      fHist->FillConfig(10, fInvMassCutWidth);
+      float massv0 = TDatabasePDG::Instance()->GetParticle(fPDGv0)->Mass();
+      fHist->FillConfig(10, massv0 - fInvMassCutWidth);
+      fHist->FillConfig(11, massv0 + fInvMassCutWidth);
+    } else if (fCutInvMassSidebands) {
+      fHist->FillConfig(10, fInvMassCutSBdown);
+      fHist->FillConfig(11, fInvMassCutSBup);
     }
     if (fCutCPA) {
-      fHist->FillConfig(11, fMinCPA);
+      fHist->FillConfig(12, fMinCPA);
     }
-    if(fDoArmenterosCut) {
-      fHist->FillConfig(12, fArmenterosQtLow);
-      fHist->FillConfig(13, fArmenterosQtUp);
-      fHist->FillConfig(14, fArmenterosAlphaLow);
-      fHist->FillConfig(15, fArmenterosAlphaUp);
+    if (fDoArmenterosCut) {
+      fHist->FillConfig(13, fArmenterosQtLow);
+      fHist->FillConfig(14, fArmenterosQtUp);
+      fHist->FillConfig(15, fArmenterosAlphaLow);
+      fHist->FillConfig(16, fArmenterosAlphaUp);
     }
     if (fDoCombinedTimingCut) {
-      fHist->FillConfig(16, fCombinedTiming);
+      fHist->FillConfig(17, fCombinedTiming);
     }
   }
 }

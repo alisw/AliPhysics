@@ -114,6 +114,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 		     Double_t MaxRb=6.0,
 		     Bool_t isRbHypo=false,
 		     Double_t CentralHypo = 1.0,
+         Bool_t fChangeCentralHypo = false,
 		     Int_t ccestimator = kV0M,
 		     Bool_t isUseTaaForRaa=true,
 		     const char *shadRbcFile="",
@@ -278,7 +279,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     printf("File %s with A-A (p-A) results does not exist -> exiting\n",ABfile);
     return;
   }
-  
+
   TFile * ABf = new TFile(ABfile,"read");
   TH1D *hSigmaAB = (TH1D*)ABf->Get("histoSigmaCorr");
   //  TH2D *hSigmaABRcb = (TH2D*)ABf->Get("histoSigmaCorrRcb");
@@ -570,8 +571,12 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   Double_t ElossCentral[nbins+1];
   for(Int_t i=0; i<=nbins; i++) { ElossCentral[i]=0.; }
   //
-  for(Int_t ientry=0; ientry<=entries; ientry++){
+  Double_t   stdCentralHypo = CentralHypo; //central hypothesis passed to the macro
+  Double_t   stdMinHypo = MinHypo; //minimum hypothesis passed to the macro
+  Double_t   stdMaxHypo = MaxHypo; //maximum hypothesis passed to the macro
 
+  for(Int_t ientry=0; ientry<=entries; ientry++){
+    CentralHypo = stdCentralHypo;
     nSigmaAB->GetEntry(ientry);
     //    cout << " pt="<< pt<<" sigma-AB="<<sigmaAB<<endl;
     if ( !(sigmaAB>0.) ) continue;
@@ -603,6 +608,16 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     else  { ElossHypo = 1. / (RaaCharm / RaaBeauty) ; }
     if(isRbHypo) ElossHypo = RaaBeauty;
 
+    //change central hypothesis
+    if(fChangeCentralHypo && pt<3 && (decay==1 || decay==2 || decay==3)){
+      CentralHypo = 1.5;
+      printf("********* changed central hypothesis for pt<3 (%f): %f \n",pt,CentralHypo);
+    }
+    if(fChangeCentralHypo && pt>=24 && (decay==1 || decay==2 || decay==3)){
+      CentralHypo = 1.5;
+      printf("********* changed central hypothesis for pt>=24 (%f): %f \n",pt,CentralHypo);
+    }
+
     // If using shadowing hypothesis, change the central hypothesis too
     if(isShadHypothesis) CentralHypo = centralRbcShad[hABbin];
 
@@ -622,6 +637,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   // Calculation of the Raa and its uncertainties
   //
   for(Int_t ientry=0; ientry<entries; ientry++){
+    MinHypo = stdMinHypo;
+    MaxHypo = stdMaxHypo;
 
     nSigmaAB->GetEntry(ientry);
     if ( !(sigmaAB>0.) ) continue;
@@ -774,6 +791,16 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       MaxHypo = maxRbcShad[ hABbin ];
     }
 
+    if(fChangeCentralHypo && pt<3 && (decay==1 || decay==2 || decay==3)){
+      MinHypo = 1.0;
+      MaxHypo = 2.0;
+      printf("********* changed min and max hypothesis for pt<3 (%f): %f, minHypo=%f, maxHypo=%f \n",pt,CentralHypo,MinHypo,MaxHypo);
+    }
+    if(fChangeCentralHypo && pt>=24 && (decay==1 || decay==2 || decay==3)){
+      MinHypo = 1.0;
+      MaxHypo = 2.0;
+      printf("********* changed min and max hypothesis for pt>=24 (%f): %f, minHypo=%f, maxHypo=%f \n",pt,CentralHypo,MinHypo,MaxHypo);
+    }
     //    cout <<" pt "<< pt << " Raa charm " << RaaCharm << " Raa beauty " << RaaBeauty << " eloss hypo "<< ElossHypo
     if(ientry==0) cout<<" pt"<< pt<< " ElossCentral "<< ElossCentral[hABbin] << " min-hypo "<<MinHypo << " max-hypo "<<MaxHypo<<endl;
 

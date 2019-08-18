@@ -134,8 +134,9 @@ void  AliAnalysisTaskNanoValidator::UserExec(Option_t */*option*/)
     Double_t pos[3];
     track->GetXYZ(pos);
     
-    Printf("1) %f %f %f %d %d %d %d %d %d", track->Pt(), track->Phi(), track->Theta(), track->HasPointOnITSLayer(0), track->HasPointOnITSLayer(1), 
-           track->HasPointOnITSLayer(2), track->HasPointOnITSLayer(3), track->HasPointOnITSLayer(4), track->HasPointOnITSLayer(5)
+    Printf("1) %f %f %f %d %d %d %d %d %d %lld", track->Pt(), track->Phi(), track->Theta(), track->HasPointOnITSLayer(0), track->HasPointOnITSLayer(1), 
+           track->HasPointOnITSLayer(2), track->HasPointOnITSLayer(3), track->HasPointOnITSLayer(4), track->HasPointOnITSLayer(5),
+           track->GetStatus()
           );
     Printf("2) %f %f %f %d %d %d", pos[0], pos[1], pos[2], track->GetTPCncls(), track->GetID(), track->GetTPCNclsF()
           );

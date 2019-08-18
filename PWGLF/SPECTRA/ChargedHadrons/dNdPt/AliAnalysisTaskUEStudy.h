@@ -33,7 +33,7 @@ class AliAnalysisTaskUEStudy : public AliAnalysisTaskMKBase
         virtual Bool_t          IsEventSelected();               //called for each event
         virtual void            AnaEvent();                      //called once for every event                
         virtual void            AnaTrack(Int_t flag = 0);        //called once for every track
-        virtual void            AnaMCParticle(Int_t flag = 0);   //called once for every mc particle
+        virtual void            AnaParticleMC(Int_t flag = 0);   //called once for every mc particle
         
         
         static AliAnalysisTaskUEStudy* AddTaskUEStudy(const char* name = "TaskUEStudy", const char* outfile = 0);

@@ -96,6 +96,9 @@ class AliMCSpectraWeightsAnalysisTask : public AliAnalysisTaskSE {
     AliMCSpectraWeights *fMCSpectraWeights;//->
     THnF                 *fHistMCPartCorr;//!
     THnF                 *fHistMCGenPrimTrack;//!
+    THnF                 *fHistMCFractions;//!
+    THnF                 *fHistDataFractions;//!
+    THnF                 *fHistMCWeights;//!
 
     //binning
     TArrayD     	*fBinsMultCent;		///< Array of bins in multiplicity or centrality

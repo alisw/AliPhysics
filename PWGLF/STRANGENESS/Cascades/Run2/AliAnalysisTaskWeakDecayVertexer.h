@@ -20,6 +20,9 @@
 //
 // --- David Dobrigkeit Chinellato
 //
+// For questions, comments, etc, please write to:
+//      david.dobrigkeit.chinellato@cern.ch
+//
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 #ifndef AliAnalysisTaskWeakDecayVertexer_H
@@ -31,10 +34,8 @@ class TH1F;
 class AliESDpid;
 class AliESDEvent;
 class AliPhysicsSelection;
-class AliESDtrackCuts;
 
 #include "AliEventCuts.h"
-#include <AliPID.h>
 //For mapping functionality
 #include <map>
 
@@ -134,6 +135,11 @@ public:
     }
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
+    }
+    void SetUseStrictPileupCuts () {
+        //This will enable Ionut's pileup rejection in AliEventCuts
+        fEventCuts.fUseStrongVarCorrelationCut = true;
+        fEventCuts.fUseVariablesCorrelationCuts = true;
     }
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters
@@ -299,9 +305,6 @@ public:
     }
     //---------------------------------------------------------------------------------------
     
-    void SetTrackTriggerCuts(AliESDtrackCuts* cuts, AliPID::EParticleType species, float nsigma) {
-        fTrackTriggerCuts = cuts;
-    }
 
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -313,10 +316,7 @@ private:
 
     //Implementation of event selection utility
     AliEventCuts fEventCuts; /// Event cuts class
-    AliESDtrackCuts* fTrackTriggerCuts; //-> Track trigger cuts (at least one particle passing this cut is used in the V0 finding)
-    AliPID::EParticleType fTriggerParticleType;
-    float                 fTriggerNsigma;
-
+    
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
     //Min/Max Centrality

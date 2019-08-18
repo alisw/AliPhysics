@@ -103,7 +103,9 @@ namespace AliFemtoCutMonitorPionPion {
     Pion(const bool passing,
          const TString& typestr,
          const bool is_mc_analysis=kFALSE,
-         const bool suffix_output=kFALSE);
+         const bool suffix_output=kFALSE,
+         const bool wide_impact_range=kFALSE);
+
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoTrack* aEvent);
 
@@ -123,15 +125,20 @@ namespace AliFemtoCutMonitorPionPion {
     TH2F *fPtPhi;
     TH2F *fEtaPhi;
     TH1F *fChi2Tpc;
+    TH1F *fChi2Its;
     TH2F *fChiTpcIts;
+    TH2F *fClsTpcIts;
     TH2F *fdEdX;
     TH2F *fTofVsP;
     TH2F *fNsigTof;
     TH2F *fNsigTpc;
     TH2F *fImpact;
 
+    TH2F *fEtaY;
+
     TH1F *fMC_mass;
     TH2F *fMC_pt;
+    TH2F *fMC_rap;
     TH1I *fMC_type;
     // TH2I *fMC_parent;
     THnSparseI *fMC_parent;

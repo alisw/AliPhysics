@@ -8,7 +8,11 @@ AliAnalysisTaskSEHFSystPID *AddTaskHFSystPID(int system = 0,
                                             double ptmaxdownsampl = 0.,
                                             double centmin = 0.,
                                             double centmax = 100.,
-                                            int estim = AliAnalysisTaskSEHFSystPID::kCentOff) {
+                                            int estim = AliAnalysisTaskSEHFSystPID::kCentOff,
+                                            AliESDtrackCuts::ITSClusterRequirement SPDreq =  AliESDtrackCuts::kAny,
+                                            int nClsTPC = 50, 
+                                            bool useITSrefit=true, 
+                                            bool useTPCrefit=true) {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -28,11 +32,13 @@ AliAnalysisTaskSEHFSystPID *AddTaskHFSystPID(int system = 0,
 
     AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-    esdTrackCuts->SetRequireTPCRefit(kTRUE);
-    esdTrackCuts->SetRequireITSRefit(kTRUE);
-    esdTrackCuts->SetMinNClustersTPC(50);
+    if(useTPCrefit)
+        esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    if(useITSrefit)
+        esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetMinNClustersTPC(nClsTPC);
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,SPDreq);
     esdTrackCuts->SetMinDCAToVertexXY(0.);
     esdTrackCuts->SetMaxDCAToVertexZ(2.5);
     esdTrackCuts->SetPtRange(0.,1.e10);
@@ -42,11 +48,10 @@ AliAnalysisTaskSEHFSystPID *AddTaskHFSystPID(int system = 0,
     task->SetReadMC(readMC);
     task->SetTriggerInfo(trigClass.Data(),trigMask);
     task->SetESDtrackCuts(esdTrackCuts);
-    task->SetNsigmaKaonForTagging(nsigmafortag);
+    task->SetNsigmaForKaonTagging(nsigmafortag);
     if(fracdownsampl<1.)task->EnableDownSampling(fracdownsampl,ptmaxdownsampl);
     task->SetCentralityEstimator(estim);
     task->SetCentralityLimits(centmin,centmax);
-    task->SetfFillTreeWithNsigmaPIDOnly();
     mgr->AddTask(task);
 
     TString outputfile = AliAnalysisManager::GetCommonFileName();

@@ -43,7 +43,7 @@ class AliForwardFlowUtil : public TObject {
   void FillFromPrimariesITS(TH2D*& cen) const;
 
   // AOD
-  void FillFromForwardClusters(TH2D*& fwd) const;
+  void FillFromForwardClusters(TH2D*& fwd);
   void FillFromCentralClusters(TH2D*& cen) const;
   void FillFromTracklets(TH2D*& cen) const;
   void FillFromTracks(TH2D*& cen, UInt_t tracktype) const;
@@ -110,7 +110,6 @@ class AliForwardFlowUtil : public TObject {
      */
     State& operator=(const State& o);
   } fState; //! State
-  UShort_t fMaxConsequtiveStrips;
   Double_t fLowCutvalue;
   Bool_t            fTrackGammaToPi0;
   AliTrackReference*  ProcessRef(AliMCParticle* particle,AliTrackReference* ref,TH2D*& fwd);

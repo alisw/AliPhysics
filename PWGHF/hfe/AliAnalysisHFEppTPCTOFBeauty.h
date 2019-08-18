@@ -20,12 +20,14 @@ class AliAnalysisUtils;
 class TH1F;
 class TH2F;
 //class TF1;
+class TGraphErrors;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliESDtrack;
 class AliHFEcontainer;
 class AliHFEcuts;
 class AliHFEextraCuts;
+class AliHFEsignalCuts;
 class AliHFEpid;
 class AliHFEpidQAmanager;
 class AliCFManager;
@@ -82,9 +84,13 @@ public:
     void SetEtaCut(Float_t EtaMin, Float_t EtaMax);
     
     //Setter for the B correction function
-	void SetBcorrFunction(TF1* BcorrF) {fBcorr = BcorrF;};
+	//void SetBcorrFunction(TF1* BcorrF) {fBcorr = BcorrF;};
+	void SetBcorrFunction(TGraphErrors* BcorrF) {fBcorr = BcorrF;};
 	
-	
+	void SetLcD0Function(TGraphErrors* fHistWeightLcD0) {HistWeightLcD0 = fHistWeightLcD0;};
+	void SetDpD0Function(TGraphErrors* fHistWeightDpD0) {HistWeightDpD0 = fHistWeightDpD0;};
+	void SetDsD0Function(TGraphErrors* fHistWeightDsD0) {HistWeightDsD0 = fHistWeightDsD0;};
+	void SetDstarD0Function(TGraphErrors* fHistWeightDstarD0) {HistWeightDstarD0 = fHistWeightDstarD0;};
 	//Setter for the D correction function
 	void SetDcorrFunction1(TF1* DcorrF1) {fDcorr1 = DcorrF1;};
 	void SetDcorrFunction2(TF1* DcorrF2) {fDcorr2 = DcorrF2;};
@@ -109,8 +115,10 @@ public:
     void SetDcorrFunction21(TF1* DcorrF21) {fDcorr21 = DcorrF21;};
     void SetDcorrFunction22(TF1* DcorrF22) {fDcorr22 = DcorrF22;};
     
-    void SetHCFunction(TF1* HC) {fHC = HC;};
-    
+   // void SetHCFunction(TF1* HC) {fHC = HC;};
+   // void GetGammaAndDalitzElectronTemplates(TClonesArray *fMCarray, AliVTrack *track, Double_t fpt, Double_t NewDCA);
+    //void GetGammaAndDalitzElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2, Int_t PhotonicType);
+    //void GetHFElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2, Int_t PhotonicType);
     //Getters
     AliHFEpid *GetPID() const {return fPID;};
     //______________________________________________________________________
@@ -193,7 +201,8 @@ private:
     TList       			*fOutputList;
     AliPIDResponse 			*fPidResponse;
     AliSelectNonHFE 		*fNonHFE;
-    AliHFEextraCuts 		*fExtraCuts;    
+    AliHFEextraCuts 		*fExtraCuts;  
+    AliHFEsignalCuts 		*fSignalCuts;    
     
     //For the case of AOD analysis
     Bool_t					fIsAOD;					//flag for AOD analysis
@@ -222,9 +231,9 @@ private:
     TH1F				*fPt_1;//!
     TH1F				*fPt_2;//!
     TH1F				*fNAnalizedTracks;//!
-    TH1F				*fNAnalizedTracksHijing;//!
-    TH1F				*fITSnClus_1;//!
-    TH1F				*fITSnClus_2;//!
+   // TH1F				*fNAnalizedTracksHijing;//!
+    TH1F				*fPionsPt;//!
+    TH1F				*fKaonsPt;//!
     TH1F				*fTPCnClus_1;//!
     TH1F				*fTPCnClus_2;//!
     TH2F				*fTPCnsigma_p1;//!
@@ -239,12 +248,12 @@ private:
     TH2F                *fTOFnsigma_pt1;//!
     TH2F                *fTOFnsigma_pt2;//!
     TH2F                *fTOFnsigma_pt3;//!
-    TH2F                *fITSnsigma_p1;//!
-    TH2F                *fITSnsigma_p2;//!
-    TH2F                *fITSnsigma_p3;//!
-    TH2F                *fITSnsigma_pt1;//!
-    TH2F                *fITSnsigma_pt2;//!
-    TH2F                *fITSnsigma_pt3;//!
+    //TH2F                *fITSnsigma_p1;//!
+    //TH2F                *fITSnsigma_p2;//!
+    //TH2F                *fITSnsigma_p3;//!
+    //TH2F                *fITSnsigma_pt1;//!
+    //TH2F                *fITSnsigma_pt2;//!
+    //TH2F                *fITSnsigma_pt3;//!
     TH2F                *fTPCnsigma_TOFnsigma1;//!
     TH2F                *fTPCnsigma_TOFnsigma2;//!
     TH2F                *fTPCnsigma_TOFnsigma3;//!
@@ -254,12 +263,15 @@ private:
     TH2F                *fTPCnsigma_p_after_tof_pion;//!
     TH2F                *fTPCnsigma_p_after_tof_k;//!
     TH2F                *fTPCnsigma_pt_after_tof;//!
-    TH2F                *fTPCnsigma_p_after_tof_its;//!
-    TH2F                *fTPCnsigma_pt_after_tof_its;//!
+    //TH2F                *fTPCnsigma_p_after_tof_its;//!
+    //TH2F                *fTPCnsigma_pt_after_tof_its;//!
     TH1F                *fPtElec;//!
     TH1F                *fPElec;//!
     TH1F                *hPtD0;//!
     TH1F                *hPtLambdaC;//!
+     TH1F                *hPtDp;//!
+    TH1F                *hPtDstar;//!
+     TH1F                *hPtDs;//!
     TH1F				*fPtHad_f;//!
     TH1F				*fPHad_f;//!
     TH2F                *fDCAz_pt_had;//!
@@ -298,7 +310,7 @@ private:
     TH1F				*fResGausCorr_phi3;//!
     TH1F				*fResGausCorr_phi4;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_WoPID;//!
-    TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!
+    //TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Phytia;//!
     TH2F                *fDCAz_pt_ele;//!
     TH2F                *fDCAxy_pt_ele;//!
@@ -308,12 +320,22 @@ private:
     TH1F                *hCharmMotherPt_corr2;//! pt of mothers of eletrons from mesons D weighted
 	
 	TH2F                *hBeautyMotherPt;//!
-	TH2F 		    *hDCAPtProtons;//!
+	/*TH2F 		    *hDCAPtProtons;//!
 	TH2F 		    *hDCAPtProtons2;//!
-	TH2F 		    *hDCAPtProtons3;//!
+	TH2F 		    *hDCAPtProtons3;//!*/
 	TH2F                *hBeautyMotherPt2Daft;//!
 	TH1F                *hBeautyMotherPtbef;//!
 	TH1F                *hBeautyMotherPtaft;//!
+	TH2F			*fDCAxy_pt_Dalitz;//!
+    	/*TH2F			*fDCAxy_pt_DalitzFromFeeddown;//!
+   	TH2F			*fDCAxy_pt_Conversions;//!
+   	TH2F			*fDCAxy_pt_ConversionsFromFeeddown;//!
+    	TH2F			*fDCAxy_pt_ConversionsFromStrangeFeeddown;//!*/
+    	TH2F			*fDCAxy_pt_Dalitz2;//!
+    	//TH2F			*fDCAxy_pt_DalitzFromFeeddown2;//!
+    	TH2F			*fDCAxy_pt_Conversions2;//!
+    	TH2F			*fDCAxy_pt_Beauty2;//!
+    	TH2F			*fDCAxy_pt_Charm2;//!
 	TH1F				*fPtBeautyGenerated;//!
 	TH1F				*fPtBeautyReconstructedAll;//!
 	TH1F				*fPtGeneratedBmesons;//!
@@ -324,11 +346,21 @@ private:
     
     TH2F				*hCharmMotherPt_vsElecPt;//!
     TH2F				*hElecPt_vsCharmMotherPt;//!
+    TH2F				*hEleD0_WCorr;//!
+    TH2F				*hEleDp_WCorr_WFCorr;//!
+    TH2F				*hEleDs_WCorr_WFCorr;//!
+    TH2F				*hEleDstar_WCorr_WFCorr;//!
+    TH2F				*hEleLc_WCorr_WFCorr;//!
     
     TH2F				*hCharmMotherPt_vsElecPt_corr;//!
     TH2F				*hElecPt_vsCharmMotherPt_corr;//!
     
-    TF1					*fBcorr;
+    TF1					*fLcD01;
+    TGraphErrors				*HistWeightLcD0;
+    TGraphErrors				*HistWeightDstarD0;
+    TGraphErrors				*HistWeightDsD0;
+    TGraphErrors				*HistWeightDpD0;
+    TGraphErrors			*fBcorr;
     TF1					*fDcorr1;
     TF1					*fDcorr2;
     TF1					*fDcorr3;
@@ -351,7 +383,7 @@ private:
     TF1					*fDcorr20;
     TF1					*fDcorr21;
     TF1					*fDcorr22;
-    TF1					*fHC;
+   // TF1					*fHC;
     //For the HFE package
     AliHFEcuts 			*fCuts;            		// Cut Collection for HFE
     AliCFManager 		*fCFM;                  // Correction Framework Manager
@@ -388,10 +420,11 @@ private:
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
     Int_t               fNembMCeta; //! N > fNembMCeta = particles from eta generator
     
- 
+    Double_t 		probAcceptB;//!
+    Double_t 		probAcceptD;//!
     THnSparseF           *fD0;//! DCA
     THnSparseF           *fD0Data;//! DCA data
-    THnSparseF           *fD0HC;//! DCA HC
+    //THnSparseF           *fD0HC;//! DCA HC
     //______________________________________________________________________
     
     AliAnalysisHFEppTPCTOFBeauty(const AliAnalysisHFEppTPCTOFBeauty&); 			// not implemented

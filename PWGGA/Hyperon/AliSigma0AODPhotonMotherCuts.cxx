@@ -17,8 +17,12 @@ ClassImp(AliSigma0AODPhotonMotherCuts)
       fMCEvent(nullptr),
       fDataBasePDG(),
       fSigma(),
+      fLambda(),
+      fPhoton(),
       fSidebandUp(),
       fSidebandDown(),
+      fLambdaCandidates(),
+      fPhotonCandidates(),
       fPDG(0),
       fPDGDaughter1(0),
       fPDGDaughter2(0),
@@ -50,6 +54,7 @@ ClassImp(AliSigma0AODPhotonMotherCuts)
       fHistNLambdaGammaLabel(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
+      fHistInvMassK0Gamma(nullptr),
       fHistInvMassSelected(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
@@ -99,8 +104,12 @@ AliSigma0AODPhotonMotherCuts::AliSigma0AODPhotonMotherCuts(
       fMCEvent(nullptr),
       fDataBasePDG(),
       fSigma(),
+      fLambda(),
+      fPhoton(),
       fSidebandUp(),
       fSidebandDown(),
+      fLambdaCandidates(),
+      fPhotonCandidates(),
       fPDG(0),
       fPDGDaughter1(0),
       fPDGDaughter2(0),
@@ -132,6 +141,7 @@ AliSigma0AODPhotonMotherCuts::AliSigma0AODPhotonMotherCuts(
       fHistNLambdaGammaLabel(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
+      fHistInvMassK0Gamma(nullptr),
       fHistInvMassSelected(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
@@ -182,53 +192,63 @@ AliSigma0AODPhotonMotherCuts *AliSigma0AODPhotonMotherCuts::DefaultCuts() {
   AliSigma0AODPhotonMotherCuts *photonMotherCuts =
       new AliSigma0AODPhotonMotherCuts();
   photonMotherCuts->SetSigmaMassPt(true);
+  photonMotherCuts->SetMinPt(1.0);
   return photonMotherCuts;
 }
 
 //____________________________________________________________________________________________________
 void AliSigma0AODPhotonMotherCuts::SelectPhotonMother(
     AliVEvent *inputEvent, AliMCEvent *mcEvent,
-    std::vector<AliFemtoDreamBasePart> &photonCandidates,
-    std::vector<AliFemtoDreamBasePart> &lambdaCandidates) {
+    const std::vector<AliFemtoDreamBasePart> &photonCandidates,
+    const std::vector<AliFemtoDreamBasePart> &lambdaCandidates) {
   fInputEvent = inputEvent;
   fMCEvent = mcEvent;
+
+  fSigma.clear();
+  fSidebandUp.clear();
+  fSidebandDown.clear();
+  fLambda.clear();
+  fPhoton.clear();
+  fLambdaCandidates.clear();
+  fPhotonCandidates.clear();
 
   if(photonCandidates.size() == 0 || lambdaCandidates.size() == 0) {
     return;
   }
 
+  fLambdaCandidates.assign( lambdaCandidates.begin(), lambdaCandidates.end() );
+  fPhotonCandidates.assign( photonCandidates.begin(), photonCandidates.end() );
+
   if (fDoCleanUp) {
-    CleanUpClones(photonCandidates, lambdaCandidates);
+    CleanUpClones();
   }
 
-  if (!fIsLightweight) SingleV0QA(photonCandidates, lambdaCandidates);
+  if (!fIsLightweight) SingleV0QA();
 
   // Particle pairing
-  SigmaToLambdaGamma(photonCandidates, lambdaCandidates);
+  SigmaToLambdaGamma();
 }
 
 //____________________________________________________________________________________________________
-void AliSigma0AODPhotonMotherCuts::CleanUpClones(
-    std::vector<AliFemtoDreamBasePart> &photonCandidates,
-    std::vector<AliFemtoDreamBasePart> &lambdaCandidates) {
+void AliSigma0AODPhotonMotherCuts::CleanUpClones() {
   // Keep track of the fantastic situation before applying the cuts
 
   if (!fIsLightweight) {
-    fHistNPhotonBefore->Fill(photonCandidates.size());
-    fHistNLambdaBefore->Fill(lambdaCandidates.size());
+    fHistNPhotonBefore->Fill(fPhotonCandidates.size());
+    fHistNLambdaBefore->Fill(fLambdaCandidates.size());
   }
 
   // Do the checks for the photons
   int nPhotonKilledLabel = 0;
-  for (auto photon1 = photonCandidates.begin();
-       photon1 < photonCandidates.end(); ++photon1) {
+  for (auto photon1 = fPhotonCandidates.begin();
+       photon1 < fPhotonCandidates.end(); ++photon1) {
     if (!photon1->UseParticle()) continue;
     std::vector<int> photon1TrackLabels = photon1->GetIDTracks();
     std::vector<float> photon1Eta = photon1->GetEta();
     float photon1PosPhiStar = photon1->GetAveragePhiAtRadius(0);
     float photon1NegPhiStar = photon1->GetAveragePhiAtRadius(1);
 
-    for (auto photon2 = photon1 + 1; photon2 < photonCandidates.end();
+    for (auto photon2 = photon1 + 1; photon2 < fPhotonCandidates.end();
          ++photon2) {
       if (!photon1->UseParticle() || !photon2->UseParticle()) continue;
       std::vector<int> photon2TrackLabels = photon2->GetIDTracks();
@@ -267,15 +287,15 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones(
 
   // Do the checks for the Lambdas
   int nLambdaKilledLabel = 0;
-  for (auto lambda1 = lambdaCandidates.begin();
-       lambda1 < lambdaCandidates.end(); ++lambda1) {
+  for (auto lambda1 = fLambdaCandidates.begin();
+       lambda1 < fLambdaCandidates.end(); ++lambda1) {
     if (!lambda1->UseParticle()) continue;
     std::vector<int> lambda1TrackLabels = lambda1->GetIDTracks();
     std::vector<float> lambda1Eta = lambda1->GetEta();
     float lambda1PosPhiStar = lambda1->GetAveragePhiAtRadius(0);
     float lambda1NegPhiStar = lambda1->GetAveragePhiAtRadius(1);
 
-    for (auto lambda2 = lambda1 + 1; lambda2 < lambdaCandidates.end();
+    for (auto lambda2 = lambda1 + 1; lambda2 < fLambdaCandidates.end();
          ++lambda2) {
       if (!lambda1->UseParticle() || !lambda2->UseParticle()) continue;
       std::vector<int> lambda2TrackLabels = lambda2->GetIDTracks();
@@ -316,7 +336,7 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones(
 
   // Now do the exercise for photon-Lambda combination
   int nPhotonLambdaKilledLabel = 0;
-  for (auto photon = photonCandidates.begin(); photon < photonCandidates.end();
+  for (auto photon = fPhotonCandidates.begin(); photon < fPhotonCandidates.end();
        ++photon) {
     if (!photon->UseParticle()) continue;
     std::vector<int> photonTrackLabels = photon->GetIDTracks();
@@ -324,8 +344,8 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones(
     float photonPosPhiStar = photon->GetAveragePhiAtRadius(0);
     float photonNegPhiStar = photon->GetAveragePhiAtRadius(1);
 
-    for (auto lambda = lambdaCandidates.begin();
-         lambda < lambdaCandidates.end(); ++lambda) {
+    for (auto lambda = fLambdaCandidates.begin();
+         lambda < fLambdaCandidates.end(); ++lambda) {
       if (!lambda->UseParticle() || !photon->UseParticle()) continue;
       std::vector<int> lambdaTrackLabels = lambda->GetIDTracks();
       std::vector<float> lambdaEta = lambda->GetEta();
@@ -367,8 +387,8 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones(
 
   // Now take a look what changed for the Photons
   int nPhotonAfter = 0;
-  for (auto photon1 = photonCandidates.begin();
-       photon1 < photonCandidates.end(); ++photon1) {
+  for (auto photon1 = fPhotonCandidates.begin();
+       photon1 < fPhotonCandidates.end(); ++photon1) {
     if (!photon1->UseParticle()) continue;
     std::vector<int> photon1TrackLabels = photon1->GetIDTracks();
     std::vector<float> photon1Eta = photon1->GetEta();
@@ -376,7 +396,7 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones(
     float photon1NegPhiStar = photon1->GetAveragePhiAtRadius(1);
     ++nPhotonAfter;
 
-    for (auto photon2 = photon1 + 1; photon2 < photonCandidates.end();
+    for (auto photon2 = photon1 + 1; photon2 < fPhotonCandidates.end();
          ++photon2) {
       if (!photon2->UseParticle()) continue;
       std::vector<int> photon2TrackLabels = photon2->GetIDTracks();
@@ -397,7 +417,7 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones(
 
   // Now take a look what changed for the Lambdas
   int nLambdaAfter = 0;
-  for (auto photon = photonCandidates.begin(); photon < photonCandidates.end();
+  for (auto photon = fPhotonCandidates.begin(); photon < fPhotonCandidates.end();
        ++photon) {
     if (!photon->UseParticle()) continue;
     std::vector<int> photonTrackLabels = photon->GetIDTracks();
@@ -405,8 +425,8 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones(
     float photonPosPhiStar = photon->GetAveragePhiAtRadius(0);
     float photonNegPhiStar = photon->GetAveragePhiAtRadius(1);
 
-    for (auto lambda = lambdaCandidates.begin();
-         lambda < lambdaCandidates.end(); ++lambda) {
+    for (auto lambda = fLambdaCandidates.begin();
+         lambda < fLambdaCandidates.end(); ++lambda) {
       if (!lambda->UseParticle()) continue;
       std::vector<int> lambdaTrackLabels = lambda->GetIDTracks();
       std::vector<float> lambdaEta = lambda->GetEta();
@@ -426,8 +446,8 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones(
     }
   }
 
-  for (auto lambda1 = lambdaCandidates.begin();
-       lambda1 < lambdaCandidates.end(); ++lambda1) {
+  for (auto lambda1 = fLambdaCandidates.begin();
+       lambda1 < fLambdaCandidates.end(); ++lambda1) {
     if (!lambda1->UseParticle()) continue;
     ++nLambdaAfter;
     std::vector<int> lambda1TrackLabels = lambda1->GetIDTracks();
@@ -435,7 +455,7 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones(
     float lambda1PosPhiStar = lambda1->GetAveragePhiAtRadius(0);
     float lambda1NegPhiStar = lambda1->GetAveragePhiAtRadius(1);
 
-    for (auto lambda2 = lambda1 + 1; lambda2 < lambdaCandidates.end();
+    for (auto lambda2 = lambda1 + 1; lambda2 < fLambdaCandidates.end();
          ++lambda2) {
       if (!lambda2->UseParticle()) continue;
       std::vector<int> lambda2TrackLabels = lambda2->GetIDTracks();
@@ -464,11 +484,9 @@ void AliSigma0AODPhotonMotherCuts::CleanUpClones(
 }
 
 //____________________________________________________________________________________________________
-void AliSigma0AODPhotonMotherCuts::SingleV0QA(
-    const std::vector<AliFemtoDreamBasePart> &photonCandidates,
-    const std::vector<AliFemtoDreamBasePart> &lambdaCandidates) {
+void AliSigma0AODPhotonMotherCuts::SingleV0QA() {
   // Photon QA - keep track of kinematics
-  for (const auto &photon : photonCandidates) {
+  for (const auto &photon : fPhotonCandidates) {
     if (!photon.UseParticle()) continue;
     fHistPhotonPtPhi->Fill(photon.GetPt(), photon.GetPhi()[0]);
     fHistPhotonPtEta->Fill(photon.GetPt(), photon.GetEta()[0]);
@@ -476,7 +494,7 @@ void AliSigma0AODPhotonMotherCuts::SingleV0QA(
   }
 
   // Lambda QA - keep track of kinematics
-  for (const auto &lambda : lambdaCandidates) {
+  for (const auto &lambda : fLambdaCandidates) {
     if (!lambda.UseParticle()) continue;
     fHistLambdaPtPhi->Fill(lambda.GetPt(), lambda.GetPhi()[0]);
     fHistLambdaPtEta->Fill(lambda.GetPt(), lambda.GetEta()[0]);
@@ -485,24 +503,23 @@ void AliSigma0AODPhotonMotherCuts::SingleV0QA(
 }
 
 //____________________________________________________________________________________________________
-void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma(
-    const std::vector<AliFemtoDreamBasePart> &photonCandidates,
-    const std::vector<AliFemtoDreamBasePart> &lambdaCandidates) {
-  fSigma.clear();
-  fSidebandUp.clear();
-  fSidebandDown.clear();
+void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
+  static float massK0 = TDatabasePDG::Instance()->GetParticle(311)->Mass();
+
+  auto *dummy = static_cast<AliAODEvent*>(fInputEvent);
+
   int nSigma = 0;
   const float lambdaMass = fDataBasePDG.GetParticle(fPDGDaughter1)->Mass();
   // SAME EVENT
   AliFemtoDreamv0 sigma;
-  for (const auto &photon : photonCandidates) {
+  for (const auto &photon : fPhotonCandidates) {
     if (photon.GetPt() > fPhotonPtMax || photon.GetPt() < fPhotonPtMin)
       continue;
     if (!photon.UseParticle()) continue;
 
-    for (const auto &lambda : lambdaCandidates) {
+    for (const auto &lambda : fLambdaCandidates) {
       if (!lambda.UseParticle()) continue;
-      sigma.Setv0(lambda, photon, true, true, false);
+      sigma.Setv0(lambda, photon, dummy, true, true, false);
       sigma.Setv0Mass(sigma.GetInvMass() - lambda.GetInvMass() + lambdaMass -
                       photon.GetInvMass());
       const float invMass = sigma.GetInvMass();
@@ -514,6 +531,14 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma(
 
       if (!fIsLightweight) {
         fHistArmenterosBefore->Fill(armAlpha, armQt);
+
+        TLorentzVector track1, track2;
+        track1.SetXYZM(lambda.GetMomentum().Px(), lambda.GetMomentum().Py(),
+                       lambda.GetMomentum().Pz(), massK0);
+        track2.SetXYZM(photon.GetMomentum().Px(), photon.GetMomentum().Py(),
+                       photon.GetMomentum().Pz(), 0.f);
+        TLorentzVector trackSum = track1 + track2;
+        fHistInvMassK0Gamma->Fill(trackSum.M());
       }
       // Armenteros cut
       if (fArmenterosCut) {
@@ -540,6 +565,8 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma(
       if (invMass < GetMassSigmaPt(pT) + fSigmaMassCut &&
           invMass > GetMassSigmaPt(pT) - fSigmaMassCut) {
         fSigma.push_back(sigma);
+        fLambda.push_back(lambda);
+        fPhoton.push_back(photon);
         if (!fIsLightweight) {
           fHistInvMassSelected->Fill(pT, invMass);
           fHistMassCutPt->Fill(pT);
@@ -674,7 +701,7 @@ void AliSigma0AODPhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistograms->SetName(appendix);
   }
 
-  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 13, 0, 13);
+  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 14, 0, 14);
   fHistCutBooking->GetXaxis()->SetBinLabel(1, "#Sigma^{0} selection");
   fHistCutBooking->GetXaxis()->SetBinLabel(2, "#Sigma^{0} sb down");
   fHistCutBooking->GetXaxis()->SetBinLabel(3, "#Sigma^{0} sb up");
@@ -743,6 +770,10 @@ void AliSigma0AODPhotonMotherCuts::InitCutHistograms(TString appendix) {
         "fHistMassCutPt", "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
         100, 0, 10);
 
+    fHistInvMassK0Gamma = new TH1F("fHistInvMassK0Gamma",
+                                   "; M_{K^{0}#gamma} (GeV/#it{c}); Entries",
+                                   1000, 0.5, 3);
+
     fHistInvMassSelected = new TH2F("fHistInvMassSelected",
                                     "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                     "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
@@ -768,6 +799,7 @@ void AliSigma0AODPhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistEtaPhi = new TH2F("fHistEtaPhi", "; #eta; #phi", 100, -1, 1, 100,
                            -TMath::Pi(), TMath::Pi());
 
+    fHistograms->Add(fHistInvMassK0Gamma);
     fHistograms->Add(fHistNPhotonBefore);
     fHistograms->Add(fHistNPhotonAfter);
     fHistograms->Add(fHistNLambdaBefore);

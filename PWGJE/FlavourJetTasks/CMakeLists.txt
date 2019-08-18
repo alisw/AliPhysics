@@ -52,7 +52,6 @@ set(SRCS
     AliPicoV0RD.cxx
     AliPicoV0.cxx
     AliPicoBase.cxx
-    AliAnalysisTaskHFJetIPQA.cxx
    )
 
 if(FASTJET_FOUND)
@@ -68,7 +67,7 @@ if(FASTJET_FOUND)
            AliAnalysisTaskHFSubstructure.cxx
            AliDJetTTreeReader.cxx
            AliDJetTHnReader.cxx
-	   AliAnalysisTaskHFJetIPQA.cxx
+           AliAnalysisTaskHFJetIPQA.cxx
            )
 endif(FASTJET_FOUND)
 

@@ -50,6 +50,7 @@ AliAnalysisTaskEMCALTimeCalib* AddTaskEMCALTimeCalibration(TString  outputFile =
 							     Bool_t   fillHeavyHistos = kTRUE,
 							     Int_t    badMapType = 1,
 							     TString  badMapFileName = "",
+							     Bool_t   fillOneHistAllBCs=kFALSE,
                                  Bool_t mostEneCellOnly = kFALSE,
                                  TString  PARFileName = "")
 {
@@ -85,6 +86,8 @@ AliAnalysisTaskEMCALTimeCalib* AddTaskEMCALTimeCalibration(TString  outputFile =
   taskmbemcal->SetMinCellEnergy    (minCellEne);	   
   taskmbemcal->SetMinTime          (minTime);	   
   taskmbemcal->SetMaxTime          (maxTime);
+
+  if(fillOneHistAllBCs) taskmbemcal->SwithOnFillOneHistAllBCs();
 
   if(fillHeavyHistos) taskmbemcal->SwithOnFillHeavyHisto();
   else taskmbemcal->SwithOffFillHeavyHisto();

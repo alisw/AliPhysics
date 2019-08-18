@@ -16,6 +16,7 @@ class AliAODMCHeader;
 class AliAODMCParticle; // sample
 class AliEMCALTriggerPatchInfo;
 class AliMultSelection;
+class AliTPCParamSR;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
@@ -78,6 +79,7 @@ private:
     AliAODMCHeader *fMCheader;
     AliPIDResponse *fpidResponse; //!pid response
     AliEMCALGeometry *fEMCALGeo;
+    AliTPCParamSR    *fTPCparam; //!Access to TPC parameters //rh add
     
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
@@ -108,10 +110,11 @@ private:
     Int_t   fBitOption;// filter bit option - Global or ITSconstrained
     
     TString fCentralityEstimator;         // Centrality Estimator
-    
+    //Int_t   fCentBin; //rh add
+      
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
-    TH1F        *fCent;//! centrality
+    TH1F        *fCent;//! centrality    
     TH2F        *fMult;//! track multiplicity vs centrality
     TH2F        *fEvPlaneV0;//! V0 event plane
     TH2F        *fEvPlaneV0A;//! V0A event plane
@@ -154,6 +157,7 @@ private:
     TH2F        *fTPCnsigEta0;//!TPC Nsigma
     TH2F        *fTPCnsigEta1;//!TPC Nsigma
     TH2F        *fTPCnsigEta2;//!TPC Nsigma
+    TH2F        *fTPCnTrkVsSector[4]; //! #of tracks vs. TPC sector index // rh add
     TH1F        *fHistPtMatch;//!tracks matched to EMCAL
     TH2F        *fEMCTrkMatch;//!Distance of EMC cluster to closest track in phi and z
     TH1F        *fEMCTrkPt;//!tracks with EMCAL cluster
@@ -173,6 +177,7 @@ private:
     TH2F        *fHistNsigEop_Semi;//!pt vs E/p
     TH2F        *fHistNsigEop_Peri;//!pt vs E/p
     TH2F        *fHistEop;//!pt vs E/p
+    TH2F        *fHistEopHad;//!pt vs E/p
     TH2F        *fHistMcEopEle;//!pt vs E/p
     TH2F        *fHistMcEopHad;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt

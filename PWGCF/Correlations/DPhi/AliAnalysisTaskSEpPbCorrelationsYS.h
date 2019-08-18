@@ -56,6 +56,8 @@ public:
   virtual void SetRunType(Bool_t mode) { frun2 = mode; }
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
   virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
+  virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
+  virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
 
@@ -77,7 +79,7 @@ public:
     }
   }
   void DumpTObjTable(const char* note);
-  
+
   
 private:
   AliAnalysisTaskSEpPbCorrelationsYS(
@@ -110,7 +112,7 @@ private:
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
-
+ Int_t      ConvertRunNumber(Int_t run);
 
 /*
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
@@ -135,9 +137,10 @@ private:
   TString fcollisiontype;
   Bool_t fDataType;
   Bool_t frun2;
-  Bool_t fFMDcut;
   Bool_t fQA;
- 
+  Bool_t fFMDcut;
+  Int_t fFMDcutmode;
+  Bool_t fmakehole;
   Bool_t fOnfly;
   TString fAnaMode;
   TString fasso;
@@ -234,7 +237,7 @@ private:
   TH1F *fHistzvertex;
   TH1F *fHistCentrality;
   TH1F *fHistCentrality_beforecut;
-
+  TH2F* fHistCentzvertex;
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
@@ -261,6 +264,12 @@ private:
   TH2F*  fh2_SPDtrack_multcorr;
   TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;
+  TH1F* fHist_NeventRun;
+  TH1F* fHist_V0AMultRun;
+  TH1F* fHist_V0CMultRun;
+  TH1F* fHist_FMDAMultRun;
+  TH1F* fHist_FMDCMultRun;
+
   TH2D*  fhistfmdphiacc;
   AliTHn* fhistfmd;
   THnSparseF* fhistits;

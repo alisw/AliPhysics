@@ -6,6 +6,8 @@
 #include "AliVParticle.h"
 #include "AliGFWCuts.h"
 #include "TAxis.h"
+#include "TStopwatch.h"
+#include "AliGFW.h"
 
 class TList;
 class TH1D;
@@ -27,10 +29,8 @@ class AliGFWWeights;
 class AliGFWFlowContainer;
 class TObjArray;
 class TNamed;
-class AliGFW;
 class AliAODVertex;
 class AliAnalysisUtils;
-
 
 class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
  public:
@@ -47,6 +47,9 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   void SetCurrSystFlag(Int_t newval) { fCurrSystFlag = newval; };
   void SetWeightDir(const char *newval) { fWeightDir.Clear(); fWeightDir.Append(newval); };
   Bool_t SetInputWeightList(TList *inList);
+  vector<AliGFW::CorrConfig> corrconfigs; //! do not store
+  AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
+  void CreateCorrConfigs();
  protected:
   AliEventCuts fEventCuts, fEventCutsForPU;
  private:
@@ -84,7 +87,11 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   Bool_t AcceptParticle(AliVParticle *mPa);
   Bool_t InitRun();
   Bool_t LoadWeights(Int_t runno);
+  Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndm, Bool_t DisableOverlap=kFALSE);
   Bool_t FillFCs(TString head, TString hn, Double_t cent, Bool_t diff, Double_t rndmn);
+ // TStopwatch mywatch;
+ // TStopwatch mywatchFill;
+ // TStopwatch mywatchStore;
   ClassDef(AliAnalysisTaskGFWFlow,1);
 };
 

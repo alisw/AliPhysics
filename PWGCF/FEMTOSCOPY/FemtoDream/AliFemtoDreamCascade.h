@@ -24,6 +24,7 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   AliFemtoDreamCascade();
   virtual ~AliFemtoDreamCascade();
   void SetCascade(AliAODEvent *evt, AliAODcascade *casc);
+  void SetCascade(AliVEvent *evt, AliAODcascade *casc);
   void SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDcascade *casc);
   TString ClassName() {
     return "Cascade";

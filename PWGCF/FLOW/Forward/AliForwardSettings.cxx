@@ -13,16 +13,12 @@ AliForwardSettings::AliForwardSettings() :
   fZVtxAcceptanceLowEdge(-10),
   fZVtxAcceptanceUpEdge(10),
   fNZvtxBins(10),
-  qctype("std"),
   fnoSamples(10),
   fNRefEtaBins(1),
   fNDiffEtaBins(50),
   fCentBins(100),
-  fFlowFlags(),
   nuacentral(),
   nuaforward(),
-  nuacentral_ref(),
-  nuaforward_ref(),
   seccorr_fwd(),
   seccorr_cen(),
   doNUA(false),
@@ -37,7 +33,6 @@ AliForwardSettings::AliForwardSettings() :
   useTPC{kTRUE},
   useSPD(kFALSE),
   useITS(kFALSE),
-  use_primaries(kFALSE),
   use_primaries_cen(kFALSE),
   use_primaries_fwd(kFALSE),
   useEventcuts(kTRUE),
@@ -47,6 +42,11 @@ AliForwardSettings::AliForwardSettings() :
   fnoClusters(70),
   fCutChargedDCAxyMax(0.),
   fCutChargedDCAzMax(0.),
-  doPt(kFALSE)
+  doPt(kFALSE),
+  stdQC(kFALSE),
+  sec_corr(kFALSE),
+  a5(kFALSE),
+  fileName(""),
+  fMaxConsequtiveStrips(2)
 {
 }

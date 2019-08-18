@@ -37,6 +37,7 @@ set(SRCS
   AliFigure.cxx
   AliCanvas.cxx
   AliHelperPID.cxx
+  AliMCSpectraWeights.cxx
   AliNamedArrayI.cxx
   AliNamedString.cxx
   AliMCSpectraWeights.cxx

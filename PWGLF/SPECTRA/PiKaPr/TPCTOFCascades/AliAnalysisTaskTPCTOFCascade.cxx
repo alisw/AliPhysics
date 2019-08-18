@@ -381,7 +381,7 @@ AliAnalysisTaskTPCTOFCascade::InitEvent()
   /* event selection */
   fIsCollisionCandidate = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);
   fIsEventSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  fIsPileupFromSPD = fESDEvent->IsPileupFromSPD();
+  fIsPileupFromSPD = fESDEvent->IsPileupFromSPDInMultBins();
   FillHist(3);  
   if(fESDEvent->IsIncompleteDAQ()) return kFALSE;
   if(fAnUtils->IsSPDClusterVsTrackletBG(fESDEvent)) return kFALSE;
@@ -602,7 +602,7 @@ void AliAnalysisTaskTPCTOFCascade::ProcessCascades() {
     // Begin to evaluate Dca, Pointing Angle & Spatial position of Cascade
     Double_t lDcaXiDaughters          = casc->GetDcaXiDaughters();
     Double_t lXiCosineOfPointingAngle = casc->GetCascadeCosineOfPointingAngle(lPrimaryVtxPosition[0], lPrimaryVtxPosition[1], lPrimaryVtxPosition[2]);   
-    Double_t lDcaXiToPrimVertex = casc->GetD(lPrimaryVtxPosition[0], lPrimaryVtxPosition[1], lPrimaryVtxPosition[2]);
+    //Double_t lDcaXiToPrimVertex = casc->GetD(lPrimaryVtxPosition[0], lPrimaryVtxPosition[1], lPrimaryVtxPosition[2]);
 
     Double_t lPosXi[3] = {-1000.0, -1000.0, -1000.0};
     casc->GetXYZcascade(lPosXi[0], lPosXi[1], lPosXi[2]);
@@ -610,9 +610,11 @@ void AliAnalysisTaskTPCTOFCascade::ProcessCascades() {
     // Begin to evaluate Dca, Pointing Angle & Spatial position of V0
     Double_t lDcaV0DaughtersXi = casc->GetDcaV0Daughters();
     Double_t lV0toXiCosineOfPointingAngle = casc->GetV0CosineOfPointingAngle(lPosXi[0], lPosXi[1], lPosXi[2]);
-    Double_t lDcaV0ToPrimVertexXi = casc->GetD(lPosXi[0], lPosXi[1], lPosXi[2]);
+    Double_t lDcaXiToPrimVertex = casc->GetD(lPosXi[0], lPosXi[1], lPosXi[2]);
+    // Double_t lDcaV0ToPrimVertexXi = casc->GetD(lPosXi[0], lPosXi[1], lPosXi[2]);
     Double_t lPosV0[3] = {-1000.0, -1000.0, -1000.0};
     casc->GetXYZ(lPosV0[0], lPosV0[1], lPosV0[2]);
+    Double_t lDcaV0ToPrimVertexXi = casc->GetD(lPosV0[0], lPosV0[1], lPosV0[2]);
 /////////////////////////////////////////////////////////////////////////////
     //Calculate Radius for both V0 and Cascade
     Double_t lXiRadius = TMath::Sqrt(lPosXi[0]*lPosXi[0] + lPosXi[1]*lPosXi[1]); 
@@ -808,26 +810,27 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
     fAnalysisParticleArray->Clear();
     
     /* loop over primary particles */
-    Int_t nPrimaries = fMCEvent->GetNumberOfPrimaries();//fMCStack->GetNprimary();
+    Int_t nPrimaries = fMCEvent->GetNumberOfTracks();//fMCStack->GetNprimary();
     TParticle *particle;
     TParticlePDG *particlePDG;
     /* loop over primary particles */
     for (Int_t ipart = 0; ipart < nPrimaries; ipart++) {
       Bool_t OWSave=kFALSE; //Overwrite save -- used to add other particle than primaries
       /* get particle */
-      particle = fMCEvent->Particle(ipart);//((AliMCParticle*)fMCEvent->GetTrack(ipart))->Particle();//fMCStack->Particle(ipart);
+      //particle = fMCEvent->Particle(ipart);//((AliMCParticle*)fMCEvent->GetTrack(ipart))->Particle();//fMCStack->Particle(ipart);
+      particle = ((AliMCParticle*)fMCEvent->GetTrack(ipart))->Particle();
       if (!particle) continue;
       /* get particlePDG */
       particlePDG = particle->GetPDG();
       Int_t pdgcode = TMath::Abs(particle->GetPdgCode());
       if (!particlePDG) continue;
-      OWSave = ((pdgcode==333)||(pdgcode==310)||(pdgcode==3122)||(pdgcode==11));
+      OWSave = ((pdgcode==333)||(pdgcode==310)||(pdgcode==3122)||(pdgcode==11)||(pdgcode==313)||(pdgcode==323));
 
       /* check primary */
       if ((!fMCEvent->IsPhysicalPrimary(ipart))&&(!OWSave)) continue;
 
       /* check charged */
-      if ((particlePDG->Charge()==0.)&&(!OWSave)) continue;
+      //if ((particlePDG->Charge()==0.)&&(!OWSave)) continue;
       mcmulti++;
       /* check rapidity and pt cuts */
        if ( (TMath::Abs(particle->Energy() - particle->Pz()) < 1e-6)  ) continue;
@@ -836,8 +839,8 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
        if(std::isnan(PRap))
 	 continue;
 	
-      if (TMath::Abs(particle->Y()) > fRapidityCut) continue;
-      if (particle->Pt() < 0.15) continue;
+       // if (TMath::Abs(particle->Y()) > fRapidityCut) continue;
+       //if (particle->Pt() < 0.15) continue; //Maybe remove to properly correct for feeddown?
       //Get mother PDG code. In principle, can be optimized by only doing if for OWSace, as the rest of the particles are physical primaries
       Int_t indexMother = particle->GetFirstMother();
       Int_t lMotherPDG=0; //Just to be safe

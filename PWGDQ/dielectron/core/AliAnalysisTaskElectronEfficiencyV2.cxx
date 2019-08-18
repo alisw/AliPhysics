@@ -1,4 +1,5 @@
-/*************************************************************************
+
+ /*************************************************************************
  * Copyright(c) 1998-2018, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -39,6 +40,8 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TTree.h"
+#include "THnSparse.h"
 #include "TLorentzVector.h"
 
 #include "TChain.h"
@@ -82,7 +85,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
                                                                               , fOutputListSupportHistos(0x0)
                                                                               , fHistGenPosPart(), fHistGenNegPart(), fHistGenSmearedPosPart(), fHistGenSmearedNegPart(), fHistRecPosPart(), fHistRecNegPart()
-                                                                              , fHistGenPair(), fHistGenSmearedPair(), fHistRecPair(), fHistGenPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fHistRecPair_ULSandLS()
+                                                                              , fHistGenPair(), fHistGenSmearedPair(), fHistRecPair(), fHistGenPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fWriteLegsFromPair(false), fHistRecPair_ULSandLS(), fTHnSparseGenSmearedLegsFromPair(), fTHnSparseRecLegsFromPair(), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99) 
                                                                               , fDoPairing(false), fDoULSandLS(false), fDeactivateLS(false)
                                                                               , fGenNegPart(), fGenPosPart(), fRecNegPart(), fRecPosPart()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
@@ -114,7 +117,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
                                                                               , fOutputListSupportHistos(0x0)
                                                                               , fHistGenPosPart(), fHistGenNegPart(), fHistGenSmearedPosPart(), fHistGenSmearedNegPart(), fHistRecPosPart(), fHistRecNegPart()
-                                                                              , fHistGenPair(), fHistGenSmearedPair(), fHistRecPair(), fHistGenPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fHistRecPair_ULSandLS()
+                                                                              , fHistGenPair(), fHistGenSmearedPair(), fHistRecPair(), fHistGenPair_ULSandLS(), fHistGenSmearedPair_ULSandLS(), fWriteLegsFromPair(false), fHistRecPair_ULSandLS(), fTHnSparseGenSmearedLegsFromPair(), fTHnSparseRecLegsFromPair(), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99)
                                                                               , fDoPairing(false), fDoULSandLS(false), fDeactivateLS(false)
                                                                               , fGenNegPart(), fGenPosPart(), fRecNegPart(), fRecPosPart()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
@@ -266,6 +269,12 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
   const int fNResolutionthetaBins = fResolutionThetaBins.size()-1;
   const int fNmassBins = fMassBins.size()-1;
   const int fNpairptBins = fPairPtBins.size()-1;
+
+  const int nDim = 7;
+  Int_t nBins[nDim] = {fPtNBinsLegsFromPair, fEtaNBinsLegsFromPair, fPhiNBinsLegsFromPair, fPtNBinsLegsFromPair, fEtaNBinsLegsFromPair, fPhiNBinsLegsFromPair, fOpAngleNBinsLegsFromPair};
+  Double_t min[nDim] = {fPtMinLegsFromPair, fEtaMinLegsFromPair, fPhiMinLegsFromPair, fPtMinLegsFromPair, fEtaMinLegsFromPair, fPhiMinLegsFromPair, fOpAngleMinLegsFromPair};
+  Double_t max[nDim] = {fPtMaxLegsFromPair, fEtaMaxLegsFromPair, fPhiMaxLegsFromPair, fPtMaxLegsFromPair, fEtaMaxLegsFromPair, fPhiMaxLegsFromPair, fOpAngleMaxLegsFromPair};
+
   if (fNptBins < 2|| fNetaBins < 2 || fNphiBins < 2 || fNthetaBins < 2){
     std::cout << "No Pt, Eta and/or Phi binning given: #ptBins=" << fNptBins << " #etaBins=" << fNetaBins << " #phiBins=" << fNphiBins << " #thetaBins=" << fNthetaBins << std::endl;
     return;
@@ -392,6 +401,8 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
           th2_tmp->Sumw2();
           fHistGenPair.push_back(th2_tmp);
           GeneratedPairs->Add(th2_tmp);
+
+
         }
         if (fDoULSandLS == true){
           for (unsigned int i = 0; i < fSingleLegMCSignal.size(); ++i){
@@ -421,6 +432,20 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
           th2_tmp->Sumw2();
           fHistGenSmearedPair.push_back(th2_tmp);
           GeneratedSmearedPairs->Add(th2_tmp);
+
+          if (fWriteLegsFromPair){
+          
+            THnSparseF* fTHnSparseGenSmearedLegsFromPair_tmp= new THnSparseF(Form("fTHnSparseGenSmearedLegsFromPair_%s", fPairMCSignal.at(i).GetName()),Form("fTHnSparseGenSmearedLegsFromPair_%s;p_{t,Pos};#eta_{Pos};#phi_{Pos};p_{t,Neg};#eta_{Neg};#phi_{Neg};opAngle", fPairMCSignal.at(i).GetName()), nDim, nBins, min, max);
+            fTHnSparseGenSmearedLegsFromPair_tmp->GetAxis(0)->SetName("ptPos");
+            fTHnSparseGenSmearedLegsFromPair_tmp->GetAxis(1)->SetName("etaPos");
+            fTHnSparseGenSmearedLegsFromPair_tmp->GetAxis(2)->SetName("phiPos");
+            fTHnSparseGenSmearedLegsFromPair_tmp->GetAxis(3)->SetName("ptNeg");
+            fTHnSparseGenSmearedLegsFromPair_tmp->GetAxis(4)->SetName("etaNeg");
+            fTHnSparseGenSmearedLegsFromPair_tmp->GetAxis(5)->SetName("phiNeg");
+            fTHnSparseGenSmearedLegsFromPair_tmp->GetAxis(6)->SetName("opAngle");
+            fTHnSparseGenSmearedLegsFromPair.push_back(fTHnSparseGenSmearedLegsFromPair_tmp);
+            GeneratedSmearedPairs->Add(fTHnSparseGenSmearedLegsFromPair_tmp);
+          }
         }
         if (fDoULSandLS == true){
           for (unsigned int i = 0; i < fSingleLegMCSignal.size(); ++i){
@@ -453,6 +478,21 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
             th2_tmp->Sumw2();
             fHistRecPair.push_back(th2_tmp);
             list->Add(th2_tmp);
+
+            if (fWriteLegsFromPair){
+              THnSparseF* fTHnSparseRecLegsFromPair_tmp= new THnSparseF(Form("fTHnSparseRecLegsFromPair_%s", fPairMCSignal.at(i).GetName()),Form("fTHnSparseRecLegsFromPair_%s;p_{t,Pos};#eta_{Pos};#phi_{Pos};p_{t,Neg};#eta_{Neg};#phi_{Neg};opAngle", fPairMCSignal.at(i).GetName()), nDim, nBins, min, max);
+              fTHnSparseRecLegsFromPair_tmp->GetAxis(0)->SetName("ptPos");
+              fTHnSparseRecLegsFromPair_tmp->GetAxis(1)->SetName("etaPos");
+              fTHnSparseRecLegsFromPair_tmp->GetAxis(2)->SetName("phiPos");
+              fTHnSparseRecLegsFromPair_tmp->GetAxis(3)->SetName("ptNeg");
+              fTHnSparseRecLegsFromPair_tmp->GetAxis(4)->SetName("etaNeg");
+              fTHnSparseRecLegsFromPair_tmp->GetAxis(5)->SetName("phiNeg");
+              fTHnSparseRecLegsFromPair_tmp->GetAxis(6)->SetName("opAngle");
+              fTHnSparseRecLegsFromPair_tmp->SetName(Form("fTHnSparseRecLegsFromPairTest_%s;ptPos;etaPos;phiPos;ptNeg;etaNeg;phiNeg;opAngle", fPairMCSignal.at(i).GetName()));
+              fTHnSparseRecLegsFromPair_tmp->SetTitle(Form("fTHnSparseRecLegsFromPairTest_%s;ptPos;etaPos;phiPos;ptNeg;etaNeg;phiNeg;opAngle", fPairMCSignal.at(i).GetName()));
+              fTHnSparseRecLegsFromPair.push_back(fTHnSparseRecLegsFromPair_tmp);
+              list->Add(fTHnSparseRecLegsFromPair_tmp);
+            }
           }
           if (fDoULSandLS == true){
             for (unsigned int i = 0; i < fSingleLegMCSignal.size(); ++i){
@@ -989,6 +1029,14 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
   // DO PAIRING
   // ##########################################################
 
+  float ptPos       = -999;
+  float etaPos      = -999;
+  float phiPos      = -999;
+  float ptNeg       = -999;
+  float etaNeg      = -999;
+  float phiNeg      = -999;
+  float op_angle    = -999;
+
   if (fDoPairing){
     for (unsigned int neg_i = 0; neg_i < fGenNegPart.size(); ++neg_i){
       for (unsigned int pos_i = 0; pos_i < fGenPosPart.size(); ++pos_i){
@@ -1107,13 +1155,13 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
           if (fGenPosPart[pos_i].fPt_smeared < fPtMin || fGenPosPart[pos_i].fPt_smeared > fPtMax || fGenPosPart[pos_i].fEta_smeared < fEtaMin || fGenPosPart[pos_i].fEta_smeared > fEtaMax) continue;
 
           // Construct pair variables from LorentzVectors
-          TLorentzVector Lvec1;
-          TLorentzVector Lvec2;
-          Lvec1.SetPtEtaPhiM(fGenNegPart[neg_i].fPt_smeared, fGenNegPart[neg_i].fEta_smeared, fGenNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
-          Lvec2.SetPtEtaPhiM(fGenPosPart[pos_i].fPt_smeared, fGenPosPart[pos_i].fEta_smeared, fGenPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
-          TLorentzVector LvecM = Lvec1 + Lvec2;
-          double mass = LvecM.M();
-          double pairpt = LvecM.Pt();
+          TLorentzVector Lvec1_smeared;
+          TLorentzVector Lvec2_smeared;
+          Lvec1_smeared.SetPtEtaPhiM(fGenNegPart[neg_i].fPt_smeared, fGenNegPart[neg_i].fEta_smeared, fGenNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+          Lvec2_smeared.SetPtEtaPhiM(fGenPosPart[pos_i].fPt_smeared, fGenPosPart[pos_i].fEta_smeared, fGenPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+          TLorentzVector LvecM_smeared = Lvec1_smeared + Lvec2_smeared;
+          double massSmeared = LvecM_smeared.M();
+          double pairptSmeared = LvecM_smeared.Pt();
           double weight = 1.;
           if (fCocktailFile) {
             if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
@@ -1125,9 +1173,21 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             }
           }
 
-          for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
+          for (unsigned int i = 0; i <  mcSignal_acc.size(); ++i){
             if (mcSignal_acc[i] == kTRUE){
-              fHistGenSmearedPair.at(i)->Fill(mass, pairpt, weight * centralityWeight);
+              fHistGenSmearedPair.at(i)->Fill(massSmeared, pairptSmeared, weight * centralityWeight);
+              if (fWriteLegsFromPair){
+                ptNeg  = fGenNegPart[neg_i].fPt_smeared;
+                etaNeg = fGenNegPart[neg_i].fEta_smeared;
+                phiNeg = fGenNegPart[neg_i].fPhi_smeared;
+                ptPos  = fGenPosPart[pos_i].fPt_smeared;
+                etaPos = fGenPosPart[pos_i].fEta_smeared;
+                phiPos = fGenPosPart[pos_i].fPhi_smeared;
+                op_angle = Lvec2_smeared.Angle(Lvec1_smeared.Vect());
+               
+                double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
+                fTHnSparseGenSmearedLegsFromPair[i]->Fill(tuple);
+              }
             }
           } // end of loop over all MCsignals
         } // end of smearing
@@ -1309,6 +1369,19 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
               if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_i].isReconstructed[j] == kTRUE){
                 fHistRecPair.at(j * mcSignal_acc.size() + i)->Fill(mass, pairpt, weight * centralityWeight);
+
+                if (fWriteLegsFromPair){
+                  ptNeg  = fRecNegPart[neg_i].fPt;
+                  etaNeg = fRecNegPart[neg_i].fEta;
+                  phiNeg = fRecNegPart[neg_i].fPhi;
+                  ptPos  = fRecPosPart[pos_i].fPt;
+                  etaPos = fRecPosPart[pos_i].fEta;
+                  phiPos = fRecPosPart[pos_i].fPhi;
+                  op_angle = Lvec2.Angle(Lvec1.Vect());
+                  
+                  const double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
+                  fTHnSparseRecLegsFromPair.at(j * mcSignal_acc.size() + i)->Fill(tuple);
+                }
               }// is selected by cutsetting
             } // end of loop over all cutsettings
           } // is selected by MCSignal
@@ -1390,7 +1463,7 @@ void    AliAnalysisTaskElectronEfficiencyV2::FillTrackHistograms(AliVParticle* t
   // std::cout << "SITS    manager = " << values[AliDielectronVarManager::kNclsSITS] << std::endl;
   // std::cout << "TPCnSig manager = " << values[AliDielectronVarManager::kTPCnSigmaEle] << std::endl;
   // std::cout << fOutputListSupportHistos << std::endl;
-  TString genname;  
+  TString genname;
   (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(0)))->Fill(values[AliDielectronVarManager::kPt]);//hPt (reco)
   (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(1)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kITSnSigmaEle]);
   (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(2)))->Fill(values[AliDielectronVarManager::kPIn], values[AliDielectronVarManager::kTPCnSigmaEle]);
@@ -1420,7 +1493,7 @@ void    AliAnalysisTaskElectronEfficiencyV2::FillTrackHistograms(AliVParticle* t
   else (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(23)))->Fill( "none",1);
 }
 
-  
+
 // ############################################################################
 // ############################################################################
 AliAnalysisTaskElectronEfficiencyV2::Particle AliAnalysisTaskElectronEfficiencyV2::CreateParticle(AliVParticle* mcPart1){

@@ -52,8 +52,6 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fMinMass(0),
   fMaxMass(5),
   fTypeOfFit4Bkg(kExpo),
-  fParSig(0.1),
-  fSigmaVar(0.012),
   fPolDegreeBkg(4),
   fCurPolDegreeBkg(-1),
   fMassParticle(1.864),
@@ -66,6 +64,8 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fFixedMean(kFALSE),
   fFixedSigma(kFALSE),
   fBoundSigma(kFALSE),
+  fSigmaVar(0.012),
+  fParSig(0.1),
   fFixedSigma2Gaus(kFALSE),
   fFixedRawYield(-1.),
   fFrac2Gaus(0.2),
@@ -111,8 +111,6 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fMinMass(minvalue),
   fMaxMass(maxvalue),
   fTypeOfFit4Bkg(fittypeb),
-  fParSig(0.1),
-  fSigmaVar(0.012),
   fPolDegreeBkg(4),
   fCurPolDegreeBkg(-1),
   fMassParticle(1.864),
@@ -125,6 +123,8 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fFixedMean(kFALSE),
   fFixedSigma(kFALSE),
   fBoundSigma(kFALSE),
+  fSigmaVar(0.012),
+  fParSig(0.1),
   fFixedSigma2Gaus(kFALSE),
   fFixedRawYield(-1.),
   fFrac2Gaus(0.2),
@@ -405,6 +405,52 @@ void AliHFInvMassFitter::DrawHere(TVirtualPad* c, Double_t nsigma,Int_t writeFit
       if(fRflFunc)  pinfos->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));
       pinfos->AddText(Form("Signif (%.0f#sigma) = %.1f #pm %.1f ",nsigma,signif,errsignif));
       if(writeFitInfo>=2) pinfos->Draw();
+    }
+  }
+  c->Update();
+  return;
+}
+//______________________________________________________________________________
+void AliHFInvMassFitter::DrawHistoMinusFit(TVirtualPad* c, Int_t writeFitInfo){
+  /// Core method to draw the fit output
+  ///
+
+  gStyle->SetOptStat(0);
+  gStyle->SetCanvasColor(0);
+  gStyle->SetFrameFillColor(0);
+  c->cd();
+  TH1F* hInvMassMinusFit=(TH1F*)fHistoInvMass->Clone(Form("%sMinusFit",fHistoInvMass->GetName()));
+  hInvMassMinusFit->Reset("ICEM");
+  Double_t ymin=0;
+  Double_t ymax=1;
+  for(Int_t jst=1;jst<=fHistoInvMass->GetNbinsX();jst++){
+    Double_t integBkg=fBkgFuncRefit->Integral(fHistoInvMass->GetBinLowEdge(jst),fHistoInvMass->GetBinLowEdge(jst)+fHistoInvMass->GetBinWidth(jst))/fHistoInvMass->GetBinWidth(jst);
+    hInvMassMinusFit->SetBinContent(jst,fHistoInvMass->GetBinContent(jst)-integBkg);
+    hInvMassMinusFit->SetBinError(jst,fHistoInvMass->GetBinError(jst));
+    if(hInvMassMinusFit->GetBinCenter(jst)>fMinMass && hInvMassMinusFit->GetBinCenter(jst)<fMaxMass){
+      if(hInvMassMinusFit->GetBinContent(jst)+hInvMassMinusFit->GetBinError(jst)>ymax) ymax=hInvMassMinusFit->GetBinContent(jst)+hInvMassMinusFit->GetBinError(jst);
+      if(hInvMassMinusFit->GetBinContent(jst)-hInvMassMinusFit->GetBinError(jst)<ymin) ymin=hInvMassMinusFit->GetBinContent(jst)-hInvMassMinusFit->GetBinError(jst);
+    }
+  }
+  hInvMassMinusFit->GetXaxis()->SetRangeUser(fMinMass,fMaxMass);
+  hInvMassMinusFit->SetMarkerStyle(20);
+  hInvMassMinusFit->SetMinimum(ymin-0.08*TMath::Abs(ymin));
+  hInvMassMinusFit->SetMaximum(ymax+0.08*TMath::Abs(ymax));
+  hInvMassMinusFit->DrawCopy();
+  if(fSigFunc) fSigFunc->Draw("same");
+  if(fRflFunc) fRflFunc->Draw("same");
+  if(fSecFunc) fSecFunc->Draw("same");
+  if(writeFitInfo > 0){
+    TPaveText *pinfom=new TPaveText(0.15,0.6,0.48,.87,"NDC");
+    pinfom->SetBorderSize(0);
+    pinfom->SetFillStyle(0);
+    if(fTotFunc){
+      for(Int_t ipar=1; ipar<fNParsSig; ipar++){
+	pinfom->AddText(Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg)));
+      }
+      pinfom->AddText(Form("S = %.0f #pm %.0f ",fRawYield,fRawYieldErr));
+      if(fRflFunc)  pinfom->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));
+      pinfom->Draw();
     }
   }
   c->Update();

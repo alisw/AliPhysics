@@ -86,8 +86,8 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
     int harmonic = config["AnalysisOptions"]["Harmonic"].as<int>();
     double qnmin = config["AnalysisOptions"]["qnMin"].as<double>();
     double qnmax = config["AnalysisOptions"]["qnMax"].as<double>();
-    vector<double> PtMin = config["AnalysisOptions"]["PtMin"].as<vector<double>>();
-    vector<double> PtMax = config["AnalysisOptions"]["PtMax"].as<vector<double>>();    
+    vector<double> PtMin = config["AnalysisOptions"]["PtMin"].as<vector<double> >();
+    vector<double> PtMax = config["AnalysisOptions"]["PtMax"].as<vector<double> >();    
     bool useRefl = static_cast<bool>(config["AnalysisOptions"]["IncludeReflections"].as<int>());
     string reflFileName = config["AnalysisOptions"]["ReflFileName"].as<string>();
     string reflopt = config["AnalysisOptions"]["ReflOpt"].as<string>();
@@ -95,12 +95,12 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
     bool fixSigmaSecP = static_cast<bool>(config["AnalysisOptions"]["FixSigmaSecondPeak"].as<int>());
     string sigmaFileName = config["AnalysisOptions"]["SigmaFileName"].as<string>();
     
-    vector<double> MassMin = config["FitSystematicsOptions"]["MassMin"].as<vector<double>>();
-    vector<double> MassMax = config["FitSystematicsOptions"]["MassMax"].as<vector<double>>();
-    vector<int> Rebin = config["FitSystematicsOptions"]["Rebin"].as<vector<int>>();
-    vector<string> sBkgFunc = config["FitSystematicsOptions"]["BkgFunc"].as<vector<string>>();
-    vector<string> sSgnFunc = config["FitSystematicsOptions"]["SgnFunc"].as<vector<string>>();
-    vector<string> sVnBkgFunc = config["FitSystematicsOptions"]["VnBkgFunc"].as<vector<string>>();
+    vector<double> MassMin = config["FitSystematicsOptions"]["MassMin"].as<vector<double> >();
+    vector<double> MassMax = config["FitSystematicsOptions"]["MassMax"].as<vector<double> >();
+    vector<int> Rebin = config["FitSystematicsOptions"]["Rebin"].as<vector<int> >();
+    vector<string> sBkgFunc = config["FitSystematicsOptions"]["BkgFunc"].as<vector<string> >();
+    vector<string> sSgnFunc = config["FitSystematicsOptions"]["SgnFunc"].as<vector<string> >();
+    vector<string> sVnBkgFunc = config["FitSystematicsOptions"]["VnBkgFunc"].as<vector<string> >();
     double maxRedChi2 = config["FitSystematicsOptions"]["MaxRedChi2"].as<double>();
 
     int flowmethod = -1.;
@@ -1009,25 +1009,35 @@ void ResetAxes(THnSparseF *sparse, int axisnum) {
 //method that returns TList from task output file
 TList* LoadTListFromTaskOutput(YAML::Node config) {
     
-    string filename = config["InputFile"]["FileName"].as<string>();
+    vector<string> filename = config["InputFile"]["FileName"].as<vector<string> >();
     string suffix = config["InputFile"]["Suffix"].as<string>();
     string mesonname = config["InputFile"]["Meson"].as<string>();
     string flowmethodname = config["InputFile"]["FlowMethod"].as<string>();
     
-    TFile* infile = TFile::Open(filename.data());
-    if(!infile || !infile->IsOpen()) return NULL;
-    TDirectoryFile* dir = static_cast<TDirectoryFile*>(infile->Get(Form("PWGHF_D2H_HFvn_%s%s_%s",mesonname.data(),suffix.data(),flowmethodname.data())));
-    if(!dir) {
-        cerr << Form("TDirectory PWGHF_D2H_HFvn_%s%s_%s not found! Exit",mesonname.data(),suffix.data(),flowmethodname.data()) << endl;
-        return NULL;
-    }
-    TList* list = static_cast<TList*>(dir->Get(Form("coutputvn%s%s_%s",mesonname.data(),suffix.data(),flowmethodname.data())));
-    if(!list) {
-        cerr << Form("TList coutputvn%s%s_%s not found! Exit",mesonname.data(),suffix.data(),flowmethodname.data()) << endl;
-        return NULL;
-    }
+    TList* list = new TList();
     list->SetOwner();
-
+    TList* listtomerge = new TList();
+    for(unsigned int iFile=0; iFile<filename.size(); iFile++) {
+        TFile* infile = TFile::Open(filename[iFile].data());
+        if(!infile || !infile->IsOpen()) return NULL;
+        TDirectoryFile* dir = static_cast<TDirectoryFile*>(infile->Get(Form("PWGHF_D2H_HFvn_%s%s_%s",mesonname.data(),suffix.data(),flowmethodname.data())));
+        if(!dir) {
+            cerr << Form("TDirectory PWGHF_D2H_HFvn_%s%s_%s not found! Exit",mesonname.data(),suffix.data(),flowmethodname.data()) << endl;
+            return NULL;
+        }
+        TList* listtmp = static_cast<TList*>(dir->Get(Form("coutputvn%s%s_%s",mesonname.data(),suffix.data(),flowmethodname.data())));
+        if(!listtmp) {
+            cerr << Form("TList coutputvn%s%s_%s not found! Exit",mesonname.data(),suffix.data(),flowmethodname.data()) << endl;
+            return NULL;
+        }
+        if(iFile==0)
+            list = listtmp;
+        else
+            listtomerge->Add(listtmp);            
+    }
+    list->Merge(listtomerge);
+    
+    delete listtomerge;
     return list;
 }
 
