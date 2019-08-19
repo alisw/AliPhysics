@@ -201,6 +201,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetSelectionLow() const {return fSelectionLow;}
     Double_t GetSelectionHigh() const {return fSelectionHigh;}
     Double_t GetAcceptMassFlag() const {return fAcceptMesonMass;}
+    Double_t GetUsePtDepSelectionWindow() const {return fUsePtDepSelectionWindow;}
     Double_t GetMinPt() const {return fMinPt;}
     Bool_t   UseLikeSignMixing() {return fBackgroundUseLikeSign;}
     Bool_t   UseSidebandMixing() {return fBackgroundUseSideband;}
@@ -240,6 +241,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t    fMinPt;                         ///< min pT cut
     Double_t    fSelectionLow;                  ///< lower meson inv mass window for further selection
     Double_t    fSelectionHigh;                 ///< higher meson inv mass window for further selection
+    Double_t    fSelectionNSigmaLow;            ///< N of sigma for ptdep selection window cut min
+    Double_t    fSelectionNSigmaHigh;           ///< N of sigma for ptdep selection window cut max
     Double_t    fAlphaMinCutMeson;              ///< min value for meson alpha cut
     Double_t    fAlphaCutMeson;                 ///< max value for meson alpha cut
     Double_t    fRapidityCutMeson;              ///< max value for meson rapidity
@@ -270,11 +273,13 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fElectronLabelArraySize;        ///<
     Int_t*      fElectronLabelArray;            //[fElectronLabelArraySize] Array with elec/pos v0 label
     Int_t       fBackgroundHandler;             ///<
+    Int_t       fMassParamFunction;             ///< flag to set the functions that should be used to paramterize NDM mass and width
 
     Bool_t      fDoLightOutput;                 ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t      fDoMinPtCut;                    ///< do min pT cut
     Bool_t      fEnableMassCut;                 ///< flag to enable mass cut
     Bool_t      fAcceptMesonMass;               ///< flag to distinguish rejecting and accepting meson mass window for further analysis
+    Bool_t      fUsePtDepSelectionWindow;       ///< flago to enable selection of NDM with parametrisation for mass and width
     Bool_t      fUseRotationMethodInBG;         ///< flag to apply rotation method for meson bg estimation
     Bool_t      fUsePtmaxMethodForBG;           ///< flag to apply Ptmax method
     Bool_t      fDoBG;                          ///< flag to intialize BG
@@ -308,7 +313,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,33)
+    ClassDef(AliConversionMesonCuts,34)
     /// \endcond
 };
 

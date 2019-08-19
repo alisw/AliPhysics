@@ -100,6 +100,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMinPt(0.),
   fSelectionLow(0.0),
   fSelectionHigh(4),
+  fSelectionNSigmaLow(999),
+  fSelectionNSigmaHigh(999),
   fAlphaMinCutMeson(0),
   fAlphaCutMeson(1),
   fRapidityCutMeson(1),
@@ -128,10 +130,12 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fElectronLabelArraySize(500),
   fElectronLabelArray(NULL),
   fBackgroundHandler(0),
+  fMassParamFunction(0),
   fDoLightOutput(kFALSE),
   fDoMinPtCut(kFALSE),
   fEnableMassCut(kFALSE),
   fAcceptMesonMass(kTRUE),
+  fUsePtDepSelectionWindow(kFALSE),
   fUseRotationMethodInBG(kFALSE),
   fUsePtmaxMethodForBG(kFALSE),
   fDoBG(kTRUE),
@@ -199,6 +203,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fMinPt(ref.fMinPt),
   fSelectionLow(ref.fSelectionLow),
   fSelectionHigh(ref.fSelectionHigh),
+  fSelectionNSigmaLow(ref.fSelectionNSigmaLow),
+  fSelectionNSigmaHigh(ref.fSelectionNSigmaHigh),
   fAlphaMinCutMeson(ref.fAlphaMinCutMeson),
   fAlphaCutMeson(ref.fAlphaCutMeson),
   fRapidityCutMeson(ref.fRapidityCutMeson),
@@ -227,10 +233,12 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fElectronLabelArraySize(ref.fElectronLabelArraySize),
   fElectronLabelArray(NULL),
   fBackgroundHandler(ref.fBackgroundHandler),
+  fMassParamFunction(ref.fMassParamFunction),
   fDoLightOutput(ref.fDoLightOutput),
   fDoMinPtCut(ref.fDoMinPtCut),
   fEnableMassCut(ref.fEnableMassCut),
   fAcceptMesonMass(ref.fAcceptMesonMass),
+  fUsePtDepSelectionWindow(ref.fUsePtDepSelectionWindow),
   fUseRotationMethodInBG(ref.fUseRotationMethodInBG),
   fUsePtmaxMethodForBG(ref.fUsePtmaxMethodForBG),
   fDoBG(ref.fDoBG),
@@ -1844,6 +1852,10 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fMinPt = 0.5;
     fDoMinPtCut = kTRUE;
     break;
+  case 8: // for triggered omega
+    fMinPt = 5.0;
+    fDoMinPtCut = kTRUE;
+    break;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
@@ -1974,6 +1986,14 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
       fSelectionLow       = 0.120;
       fSelectionHigh      = 0.160;
       fAcceptMesonMass    = kTRUE;
+      break;
+    // Pt dependent around pi0 mass
+    case 24: //o
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = 2.;
+      fMassParamFunction   = 0;
       break;
     default:
       cout<<"Warning: SelectionCut not defined "<<selectionCut<<endl;
@@ -3615,6 +3635,7 @@ TLorentzVector AliConversionMesonCuts::SmearElectron(TLorentzVector particle)
 //________________________________________________________________________
 // function to determine whether meson was selected by mass range
 Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *meson, Int_t nominalRange = 0){
+
   if (fAcceptMesonMass){
       if (nominalRange == 0){
         if (meson->M() > fSelectionLow && meson->M() < fSelectionHigh)
@@ -3637,6 +3658,30 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
         else
           return kFALSE;
       }
+  } else if (fUsePtDepSelectionWindow){
+      // Determine correct mass parametrisation depending on what method is used
+      Float_t pt   = meson->Pt();
+      Float_t mass = 0;
+      Float_t sigma = 999;
+      switch(fMassParamFunction){
+        case 0: // EMC-EMC
+          mass = 0.125306 + 0.001210 * pt;
+          sigma =   0.0136138 + ( (-0.00104914) * pt ) + (7.61163e-05 * pt * pt);
+          fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
+          fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
+          break;
+        default:
+          mass = 0.125306 + 0.001210 * pt;
+          sigma =   0.0136138 + ( (-0.00104914) * pt ) + (7.61163e-05 * pt * pt);
+          fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
+          fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
+          break;
+      }
+      
+      if (meson->M() > fSelectionLow && meson->M() < fSelectionHigh)
+        return kTRUE;
+      else
+        return kFALSE;      
   } else {
     if (!(meson->M() > fSelectionLow && meson->M() < fSelectionHigh))
       return kTRUE;
