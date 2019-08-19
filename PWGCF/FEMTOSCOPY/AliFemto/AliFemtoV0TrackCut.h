@@ -119,6 +119,13 @@ public:
   void SetIgnoreOnFlyStatus(bool aIgnore);
   void SetNanoAODAnalysis(bool aNanoAOD);
 
+
+
+  void SetSidebandAnalysis(bool sideband);
+  void SetInvariantMassK0sSideband(double min1, double max1, double min2, double max2);
+  void SetInvariantMassLambdaSideband(double min1, double max1, double min2, double max2);
+  void SetInvariantMassAntiLambdaSideband(double min1, double max1, double min2, double max2);  
+
  protected:   // here are the quantities I want to cut on...
 
   double fInvMassLambdaMin;        ///< invariant mass Lambda min
@@ -196,6 +203,21 @@ public:
                             //NOTE IMPORTANT: If you set this to true, be sure to call AliFemtoSimpleAnalysis::SetV0SharedDaughterCut(true)
                             //otherwise, in many cases, you will receive multiple copies of the same V0.
   bool fNanoAODAnalysis;  //This will skip  verification od V0's daugters status
+
+
+  bool fSidebandAnalysis;
+  double fInvMassRange1K0sMin;
+  double fInvMassRange1K0sMax;
+  double fInvMassRange2K0sMin;
+  double fInvMassRange2K0sMax;
+  double fInvMassRange1LambdaMin;
+  double fInvMassRange1LambdaMax;
+  double fInvMassRange2LambdaMin;
+  double fInvMassRange2LambdaMax;
+  double fInvMassRange1AntiLambdaMin;
+  double fInvMassRange1AntiLambdaMax;
+  double fInvMassRange2AntiLambdaMin;
+  double fInvMassRange2AntiLambdaMax;
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
