@@ -126,6 +126,7 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
     fPtBin(100), //=100 (BF)  36
     fHistSurvived4EtaPtPhiPlus(0),
     fHistSurvived8EtaPtPhiPlus(0),
+    fESDtrackCuts(0x0),
     fUseRaaGeoCut(kFALSE),
     fDeadZoneWidth(3),
     fCutGeoNcrNclLength(130),
@@ -227,6 +228,7 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fPtBin(100), //=100 (BF)  36
     fHistSurvived4EtaPtPhiPlus(0),
     fHistSurvived8EtaPtPhiPlus(0),
+    fESDtrackCuts(0x0),
     fUseRaaGeoCut(kFALSE),
     fDeadZoneWidth(3),
     fCutGeoNcrNclLength(130),
@@ -611,7 +613,13 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		//Printf("Z Vertex: %lf", vertex->GetZ());
 		
 		fHistEventStats->Fill(4); //analyzed events
-		fHistVz->Fill(vertex->GetZ()); 
+		fHistVz->Fill(vertex->GetZ());
+
+		if (fUseRaaGeoCut){
+		  fESDtrackCuts = new AliESDtrackCuts();
+		  fESDtrackCuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
+		}
+		
 		
 	      //++++++++++++++++++CONTAMINATION++++++++++++++++++//
 	      Int_t nGoodAODTracks = fAOD->GetNumberOfTracks();
@@ -673,9 +681,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		Double_t phiRad = track->Phi();
 
 		if(fUseRaaGeoCut){
-		  AliESDtrackCuts *cuts = new AliESDtrackCuts();
-		  cuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
-		  if (!cuts->IsSelected(track))
+		  if (!fESDtrackCuts->IsSelected(track))
 		    continue;
 		}
 		
@@ -807,6 +813,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		fHistDCA->Fill(dcaZ,dcaXY);
 
 	      }//loop over tracks
+	      
 	      //++++++++++++++++++CONTAMINATION++++++++++++++++++//
 	      
 	      //++++++++++++++++++EFFICIENCY+++++++++++++++++++++//
@@ -920,13 +927,10 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
               if (!trackAOD->TestFilterBit(fAODTrackCutBit)) continue;
 
 	      if(fUseRaaGeoCut){
-		AliESDtrackCuts *cuts = new AliESDtrackCuts();
-		cuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
-		if (!cuts->IsSelected(trackAOD))
+		if (!fESDtrackCuts->IsSelected(trackAOD))
 		  continue;
 	      }
-	      
-
+	     
               Int_t label = TMath::Abs(trackAOD->GetLabel());
               if(IsLabelUsed(labelArray,label)) continue;
               labelArray.AddAt(label,labelCounter);
@@ -1168,7 +1172,9 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  
 	       }//end of mcGoods
 	      }//AOD track loop
-	      
+
+	      if (fUseRaaGeoCut) delete fESDtrackCuts;
+		 
 	      labelMCArray.Reset();
 	      labelArray.Reset();	       
 	      

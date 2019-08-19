@@ -188,7 +188,7 @@ void AliOtonOmegaAnalysis::Init(bool isMonteCarlo, UInt_t trigger) {
   }
   if (fConfig->GetUsePhiSpinning()) {
     fControlSample = new AliFemtoDreamControlSample(
-        fConfig, fConfig->GetMinimalBookingSample());
+        fConfig);
   }
 
   InitializeTreeBooking();
@@ -630,8 +630,7 @@ void AliOtonOmegaAnalysis::Make(AliAODEvent *evt, bool OmegaTreeFlag) {
                         fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
   }
   if (fConfig->GetUsePhiSpinning()) {
-    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),
-                             fEvent->GetMultiplicity());
+    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),fEvent);
   }
 }
 
@@ -772,8 +771,7 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
                         fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
   }
   if (fConfig->GetUsePhiSpinning()) {
-    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),
-                             fEvent->GetMultiplicity());
+    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),fEvent);
   }
 }
 

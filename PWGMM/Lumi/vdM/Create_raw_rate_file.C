@@ -9,7 +9,7 @@
 // Create the raw rate files for a given trigger and scan
 //-------------------------------------------------------
 
-void Create_DDL2_raw_rate_file(Int_t scan_type, Int_t scan, char *rate_name)
+void Create_DDL2_raw_rate_file(Int_t scan_type, Int_t scan, const char *rate_name)
 // scan_type: 1 => x-scan; 2 => y-scan
 
 // There are two steps"
@@ -40,9 +40,11 @@ void Create_DDL2_raw_rate_file(Int_t scan_type, Int_t scan, char *rate_name)
   Int_t aqflag;
   Double_t *raw_rate = new Double_t[3564];
   Double_t *counter = new Double_t[3564];
+  Double_t *r2V0M = new Double_t[3564];//--jgc
   g_vdm_Tree->ResetBranchAddresses();
   g_vdm_Tree->SetBranchAddress("c2orbit",&orbit);
   g_vdm_Tree->SetBranchAddress("aqflag",&aqflag);
+  g_vdm_Tree->SetBranchAddress("r2V0M",r2V0M);  //--jgc
   g_vdm_Tree->SetBranchAddress(ddl2_counter,counter);
 
   // set up output tree for rates
@@ -71,7 +73,6 @@ void Create_DDL2_raw_rate_file(Int_t scan_type, Int_t scan, char *rate_name)
   // -- bucket info
   Int_t *bunches = new Int_t [nIBC];
   GetBunchIndices(bunches);
-
   // loop over input data to fill the info
   for(Int_t k=0;k<nIBC;k++) { // loop over bunches
     if (k%10 == 0) cout << " Scan " << scan << "," << scan_type
@@ -84,7 +85,7 @@ void Create_DDL2_raw_rate_file(Int_t scan_type, Int_t scan, char *rate_name)
 	g_vdm_Tree->GetEntry(j);
 	if (aqflag==0) continue;
 	rate_orbits[i]+=orbit;
-	rate_counts[i]+=counter[bunches[k]];	
+	rate_counts[i]+=counter[bunches[k]];
       }  // end loop within a step
       // compute rate and error
       rate[i]=RateRaw(rate_counts[i],rate_orbits[i]);
@@ -116,7 +117,7 @@ void Create_DDL2_raw_rate_file(Int_t scan_type, Int_t scan, char *rate_name)
 
 }
 
-void Create_raw_rate_file(Int_t Fill, char *rate_name)
+void Create_raw_rate_file(Int_t Fill, const char *rate_name)
 {
   cout << " Starting, this will take some time " << endl;
   

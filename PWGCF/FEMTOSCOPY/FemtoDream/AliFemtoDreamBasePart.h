@@ -119,6 +119,7 @@ class AliFemtoDreamBasePart {
     return fPhiAtRadius;
   }
   ;
+  void ResizePhiAtRadii(size_t i) { fPhiAtRadius.resize(i); }
   float GetAveragePhiAtRadius(size_t iPart) {
     if (iPart > fPhiAtRadius.size()) {
       std::cout << "ERROR - AliFemtoDreamBasePart::GetAveragePhiAtRadius\n";

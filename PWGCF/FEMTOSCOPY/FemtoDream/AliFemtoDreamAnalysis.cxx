@@ -169,8 +169,7 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo, UInt_t trigger) {
                                                 fConfig->GetMinimalBookingME());
   }
   if (fConfig->GetUsePhiSpinning()) {
-    fControlSample = new AliFemtoDreamControlSample(
-        fConfig, fConfig->GetMinimalBookingSample());
+    fControlSample = new AliFemtoDreamControlSample(fConfig);
   }
   return;
 }
@@ -384,8 +383,7 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
                         fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
   }
   if (fConfig->GetUsePhiSpinning()) {
-    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),
-                             fEvent->GetMultiplicity());
+    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
   }
 }
 
@@ -459,8 +457,7 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
                         fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
   }
   if (fConfig->GetUsePhiSpinning()) {
-    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),
-                             fEvent->GetMultiplicity());
+    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),fEvent);
   }
 }
 

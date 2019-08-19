@@ -189,7 +189,8 @@ public:
   void     SwitchOffRunDepCorrection()                   { fUseRunCorrectionFactors = kFALSE ; }
   void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
                                                            SwitchOnRecalibration()           ; }      
-  // Time Recalibration  
+  // Time Recalibration
+  void     SetUseOneHistForAllBCs(Bool_t useOneHist)     { fDoUseMergedBC = useOneHist ; }
   void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
 
   void     RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & time,Bool_t isLGon = kFALSE) const;
@@ -202,16 +203,22 @@ public:
   TObjArray* GetEMCALTimeRecalibrationFactorsArray() const { return fEMCALTimeRecalibrationFactors ; }
 
   Float_t  GetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Bool_t isLGon = kFALSE) const { 
-    if(fEMCALTimeRecalibrationFactors) 
-      return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->GetBinContent(absID); 
-    else return 0 ; } 
+    if(fEMCALTimeRecalibrationFactors){
+      if(fDoUseMergedBC)
+        return (Float_t) ((TH1S*)fEMCALTimeRecalibrationFactors->At(1*isLGon))->GetBinContent(absID); 
+      else 
+        return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->GetBinContent(absID);
+    } else return 0 ; } 
   void     SetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Double_t c = 0, Bool_t isLGon=kFALSE) { 
     if(!fEMCALTimeRecalibrationFactors) InitEMCALTimeRecalibrationFactors() ;
-    ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->SetBinContent(absID,c) ; }  
+    if(fDoUseMergedBC)
+      ((TH1S*)fEMCALTimeRecalibrationFactors->At(isLGon))->SetBinContent(absID,c) ;
+    else
+      ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->SetBinContent(absID,c) ; }  
   
-  TH1F *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)const       { return (TH1F*)fEMCALTimeRecalibrationFactors->At(bc) ; }	
+  TH1  *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)const       { return (TH1*)fEMCALTimeRecalibrationFactors->At(bc) ; }
   void     SetEMCALChannelTimeRecalibrationFactors(const TObjArray *map);
-  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , const TH1F* h);
+  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , const TH1* h);
 
   Bool_t   IsLGOn()const { return fLowGain   ; }
   void     SwitchOffLG() { fLowGain = kFALSE ; }
@@ -488,6 +495,7 @@ private:
   // Time Recalibration with L1 phase 
   Bool_t     fUseL1PhaseInTimeRecalibration;   ///< Switch on or off the L1 phase in time recalibration
   TObjArray* fEMCALL1PhaseInTimeRecalibration; ///< Histogram with map of L1 phase per SM, EMCAL
+  Bool_t     fDoUseMergedBC;                   ///< flag for using one histo for all BCs
 
   // Recalibrate with run dependent corrections, energy
   Bool_t     fUseRunCorrectionFactors;   ///< Use Run Dependent Correction
@@ -561,7 +569,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 29) ;
+  ClassDef(AliEMCALRecoUtils, 30) ;
   /// \endcond
 
 };

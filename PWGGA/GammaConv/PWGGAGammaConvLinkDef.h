@@ -10,6 +10,7 @@
 #pragma link C++ class AliAnalysisTaskGammaConvV1+;
 #pragma link C++ class AliAnalysisTaskGammaConvDalitzV1+;
 #pragma link C++ class AliAnalysisTaskConversionQA+;
+#pragma link C++ class AliAnalysisTaskConversionTree+;
 #pragma link C++ class AliAnalysisTaskConvJet+;
 #pragma link C++ class AliAnalysisTaskClusterQA+;
 #pragma link C++ class AliAnalysisTaskMaterial+;

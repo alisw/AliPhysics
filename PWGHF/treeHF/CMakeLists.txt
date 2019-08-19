@@ -35,24 +35,42 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+		    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
   )
 
 # Sources - alphabetical order
 set(SRCS
 
   AliAnalysisTaskSEHFTreeCreator.cxx
+  AliHFJet.cxx
   AliHFTreeHandler.cxx
   AliHFTreeHandlerD0toKpi.cxx
   AliHFTreeHandlerDplustoKpipi.cxx
   AliHFTreeHandlerDstoKKpi.cxx
   AliHFTreeHandlerLctopKpi.cxx
   AliHFTreeHandlerBplustoD0pi.cxx
+  AliHFTreeHandlerBstoDspi.cxx
   AliHFTreeHandlerDstartoKpipi.cxx
   AliHFTreeHandlerLc2V0bachelor.cxx
+  AliHFTreeHandlerLbtoLcpi.cxx
   AliJetTreeHandler.cxx
   AliParticleTreeHandler.cxx
-
+  AliTrackletTreeHandler.cxx
   )
+
+if(FASTJET_FOUND)
+    set(SRCS ${SRCS}
+        AliHFJetFinder.cxx
+	)
+endif(FASTJET_FOUND)
+
+if(FASTJET_FOUND)
+    include_directories(${AliPhysics_SOURCE_DIR}/JETAN/JETAN)
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+    list(APPEND HDRS FJ_includes.h)
+endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -60,14 +78,27 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 # Add a shared library
 add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface PWGHFvertexingHF PWGEMCALbase PWGJETFW PWGTools)
+set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface PWGHFvertexingHF PWGEMCALbase PWGJETFW PWGJEEMCALJetTasks PWGTools)
+
+if(FASTJET_FOUND)
+  set(LIBDEPS
+    ${LIBDEPS}
+    fastjetcontribfragile
+    fastjetplugins
+    siscone_spherical
+    siscone
+    fastjettools
+    fastjet
+    )
+endif(FASTJET_FOUND)
+
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

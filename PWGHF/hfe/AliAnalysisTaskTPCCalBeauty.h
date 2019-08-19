@@ -212,6 +212,8 @@ private:
     TH1F                *fDWeightNew; //!
     TH1F                *fDWeightVar1; //!
     TH1F                *fDWeightVar2; //!
+    TH1F                *fLcWeightVar1; //!
+    TH1F                *fLcWeightVar2; //!
     TH1F                *fBWeight; //!
     TH1F                *fBWeightNew; //!
     TH1F                *fBWeightVar1; //!
@@ -297,6 +299,10 @@ private:
     TH1F                *fHFElecStack; //!
     TH1F                *fBElecStack; //!
     
+    TH1F                *fAllElecStackDiffPID; //!
+    TH1F                *fDElecStackDiffPID; //!
+    TH1F                *fBElecStackDiffPID; //!
+    
     TH1F                *fElecTPCTrk; //!
     TH1F                *fHFElecTPCTrk; //!
     TH1F                *fBElecTPCTrk; //!
@@ -304,6 +310,14 @@ private:
     TH1F                *fElecAftTrkCuts; //!
     TH1F                *fHFElecAftTrkCuts; //!
     TH1F                *fBElecAftTrkCuts; //!
+    
+    TH1F                *fElecAftLooseTrkCuts; //!
+    TH1F                *fHFElecAftLooseTrkCuts; //!
+    TH1F                *fBElecAftLooseTrkCuts; //!
+    
+    TH1F                *fElecAftLooseTrkCutsDiffPID; //!
+    TH1F                *fDElecAftLooseTrkCutsDiffPID; //!
+    TH1F                *fBElecAftLooseTrkCutsDiffPID; //!
     
     TH1F                *fElecAftTrkMatch; //!
     TH1F                *fHFElecAftTrkMatch; //!

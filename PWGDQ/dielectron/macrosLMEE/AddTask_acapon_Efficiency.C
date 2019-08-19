@@ -19,11 +19,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
-  
+
   TObjArray *arrNames = names.Tokenize(";");
   Int_t nDie          = arrNames->GetEntries();
   Printf("Number of implemented cuts: %i", nDie);
-  
+
   std::string resoFilenameFromAlien = "/alice/cern.ch/user/a/acapon/ResolutionFiles/";
   resoFilenameFromAlien.append(resoFilename);
 
@@ -90,7 +90,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   // Event selection. Is the same for all the different cutsettings
   task->SetEnablePhysicsSelection(kTRUE);
   task->SetTriggerMask(triggerNames);
-  task->SetEventFilter(cutlib->GetEventCuts()); // All cut sets have same event cuts
+  task->SetEventFilter(cutlib->GetEventCuts(kFALSE, kFALSE)); // All cut sets have same event cuts
 
   Double_t centMin = -99.;
   Double_t centMax = -90.;

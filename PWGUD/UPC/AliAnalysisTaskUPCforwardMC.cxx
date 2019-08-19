@@ -28,6 +28,7 @@
 #include "TH2D.h"
 #include "TH2F.h"
 #include "TH1.h"
+#include "THnSparse.h"
 #include <TFile.h>
 #include <TF2.h>
 #include <TF1.h>
@@ -91,10 +92,13 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fEtaMuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
+      fInvariantMassDistributionRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fInvariantMassDistributionCoherentH(0),
+      fInvariantMassDistributionCoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionIncoherentH(0),
+      fInvariantMassDistributionIncoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fDimuonPtDistributionH(0),
       fTemplatePtDistributionH(0),
       fDcaAgainstInvariantMassH(0),
@@ -170,8 +174,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       // fVectorCosThetaReconstructed(0),
       fCosThetaGeneratedHelicityFrame(0),
       fCosThetaReconHelicityFrame(0),
+      fPhiGeneratedHelicityFrame(0),
+      fPhiReconHelicityFrame(0),
       fCounterUPCevent(0),
       fBinMigrationHelicityH(0),
+      fBinMigrationForPhiHelicityH(0),
       fCheckHelicityRestFrameJPsiH(0),
       fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
       fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
@@ -210,7 +217,39 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMCCosThetaHeFrameForSignalExH(0),
       fMCPhiHeFrameForSignalExH(0),
       fEfficiencyPerRunH(0),
-      fMCEfficiencyPerRunH(0)
+      fMCEfficiencyPerRunH(0),
+      fEtaAndPhi(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fCosThetaAndPhiHelicityFrameMyBinningH(0),
+      fMCCosThetaAndPhiHelicityFrameMyBinningH(0),
+      fCosThetaHelicityFrameMyBinningH(0),
+      fMCCosThetaHelicityFrameMyBinningH(0),
+      fCosThetaHelicityFrameMyBinningSmallH(0),
+      fMCCosThetaHelicityFrameMyBinningSmallH(0),
+      fCosThetaHelicityFrameMySeventeenBinningH(0),
+      fMCCosThetaHelicityFrameMySeventeenBinningH(0),
+      fCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fMCCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fPhiHelicityFrameTwentyfiveBinsH(0),
+      fMCPhiHelicityFrameTwentyfiveBinsH(0),
+      fTildePhiHelicityFrameTwentyfiveBinsH(0),
+      fMCTildePhiHelicityFrameTwentyfiveBinsH(0),
+      fPhiHelicityFrameMyBinningH(0),
+      fMCPhiHelicityFrameMyBinningH(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -227,10 +266,13 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fEtaMuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
+      fInvariantMassDistributionRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
       fInvariantMassDistributionCoherentH(0),
+      fInvariantMassDistributionCoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionIncoherentH(0),
+      fInvariantMassDistributionIncoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fDimuonPtDistributionH(0),
       fTemplatePtDistributionH(0),
       fDcaAgainstInvariantMassH(0),
@@ -306,8 +348,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       // fVectorCosThetaReconstructed(0),
       fCosThetaGeneratedHelicityFrame(0),
       fCosThetaReconHelicityFrame(0),
+      fPhiGeneratedHelicityFrame(0),
+      fPhiReconHelicityFrame(0),
       fCounterUPCevent(0),
       fBinMigrationHelicityH(0),
+      fBinMigrationForPhiHelicityH(0),
       fCheckHelicityRestFrameJPsiH(0),
       fThetaDistribOfPositiveMuonRestFrameJPsiRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
       fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH{ 0, 0, 0, 0, 0, 0, 0, 0},
@@ -346,12 +391,50 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMCCosThetaHeFrameForSignalExH(0),
       fMCPhiHeFrameForSignalExH(0),
       fEfficiencyPerRunH(0),
-      fMCEfficiencyPerRunH(0)
+      fMCEfficiencyPerRunH(0),
+      fEtaAndPhi(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fCosThetaAndPhiHelicityFrameMyBinningH(0),
+      fMCCosThetaAndPhiHelicityFrameMyBinningH(0),
+      fCosThetaHelicityFrameMyBinningH(0),
+      fMCCosThetaHelicityFrameMyBinningH(0),
+      fCosThetaHelicityFrameMyBinningSmallH(0),
+      fMCCosThetaHelicityFrameMyBinningSmallH(0),
+      fCosThetaHelicityFrameMySeventeenBinningH(0),
+      fMCCosThetaHelicityFrameMySeventeenBinningH(0),
+      fCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fMCCosThetaHelicityFrameTwentyfiveBinsH(0),
+      fPhiHelicityFrameTwentyfiveBinsH(0),
+      fMCPhiHelicityFrameTwentyfiveBinsH(0),
+      fTildePhiHelicityFrameTwentyfiveBinsH(0),
+      fMCTildePhiHelicityFrameTwentyfiveBinsH(0),
+      fPhiHelicityFrameMyBinningH(0),
+      fMCPhiHelicityFrameMyBinningH(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
     for( Int_t iRun = 0; iRun < 60000; iRun++) {
-      fCounterGeneratedLevel[iRun] = 0;
+      fCounterGeneratedLevel[iRun]   = 0;
+      // fDeadZoneEtaVsPhiPerRunH[iRun] = 0x0;
     }
+    // fDeadZoneEtaVsPhiPerRunH[60000] = 0x0;
+    for( Int_t iRun = 0; iRun < 364; iRun++) {
+      fDeadZoneEtaVsPhiPerRunH[iRun] = 0x0;
+    }
+    fEtaAndPhi = new Double_t[2];
 
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -471,6 +554,15 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fInvariantMassDistributionH = new TH1F("fInvariantMassDistributionH", "fInvariantMassDistributionH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionH);
 
+  for( Int_t iRapidityBin = 0; iRapidityBin < 6; iRapidityBin++ ){
+    fInvariantMassDistributionRapidityBinsH[iRapidityBin]
+          = new TH1F( Form("fInvariantMassDistributionRapidityBinsH_%d", iRapidityBin),
+                      Form("fInvariantMassDistributionRapidityBinsH_%d", iRapidityBin),
+                      2000, 0, 20
+                      );
+    fOutputList->Add(fInvariantMassDistributionRapidityBinsH[iRapidityBin]);
+  }
+
   fEntriesAgainstRunNumberH = new TH1F("fEntriesAgainstRunNumberH", "fEntriesAgainstRunNumberH", 10000, 290000, 300000);
   fOutputList->Add(fEntriesAgainstRunNumberH);
 
@@ -489,8 +581,26 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fInvariantMassDistributionCoherentH = new TH1F("fInvariantMassDistributionCoherentH", "fInvariantMassDistributionCoherentH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionCoherentH);
 
+  for( Int_t iRapidityBin = 0; iRapidityBin < 6; iRapidityBin++ ){
+    fInvariantMassDistributionCoherentRapidityBinsH[iRapidityBin]
+          = new TH1F( Form("fInvariantMassDistributionCoherentRapidityBinsH_%d", iRapidityBin),
+                      Form("fInvariantMassDistributionCoherentRapidityBinsH_%d", iRapidityBin),
+                      2000, 0, 20
+                      );
+    fOutputList->Add(fInvariantMassDistributionCoherentRapidityBinsH[iRapidityBin]);
+  }
+
   fInvariantMassDistributionIncoherentH = new TH1F("fInvariantMassDistributionIncoherentH", "fInvariantMassDistributionIncoherentH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentH);
+
+  for( Int_t iRapidityBin = 0; iRapidityBin < 6; iRapidityBin++ ){
+    fInvariantMassDistributionIncoherentRapidityBinsH[iRapidityBin]
+          = new TH1F( Form("fInvariantMassDistributionIncoherentRapidityBinsH_%d", iRapidityBin),
+                      Form("fInvariantMassDistributionIncoherentRapidityBinsH_%d", iRapidityBin),
+                      2000, 0, 20
+                      );
+    fOutputList->Add(fInvariantMassDistributionIncoherentRapidityBinsH[iRapidityBin]);
+  }
 
   fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionH);
@@ -526,6 +636,8 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fBinMigrationHelicityH = new TH2F("fBinMigrationHelicityH", "fBinMigrationHelicityH", 1000, -1., 1., 1000, -1., 1.);
   fOutputList->Add(fBinMigrationHelicityH);
 
+  fBinMigrationForPhiHelicityH = new TH2F("fBinMigrationForPhiHelicityH", "fBinMigrationForPhiHelicityH", 1000, -3.14, 3.14, 1000, -3.14, 3.14);
+  fOutputList->Add(fBinMigrationForPhiHelicityH);
 
   //_______________________________
   // - MC-only plots
@@ -883,6 +995,295 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fMCEfficiencyPerRunH->SetFillColor(38);
   fMCEfficiencyPerRunH->LabelsDeflate();
   fOutputList->Add(fMCEfficiencyPerRunH);
+
+  /* - Eta vs Phi dead zones per Run.
+   * -
+   */
+  Int_t*    bins = new Int_t[2];
+  Double_t* xmin = new Double_t[2];
+  Double_t* xmax = new Double_t[2];
+  /* - [0] refers to Eta.
+   * - I am plotting from -5.0 to -2.0,
+   * - hence 150 bins are reasonable...  (REBIN 10x)
+   * - [1] refers to Phi.
+   * - To avoid problems related to TMath::Pi(),
+   * - I am plotting from -4 to 4.
+   * - Hence I had thought of 200 bins... (REBIN 10x)
+   */
+  bins[0] = 150;
+  bins[1] = 200;
+  xmin[0] = -5.0;
+  xmin[1] = -4.0;
+  xmax[0] = -2.0;
+  xmax[1] = +4.0;
+  Int_t listOfGoodRunNumbers[]       = { 295585, 295586, 295587, 295588, 295589, 295612,
+                                         295615, 295665, 295666, 295667, 295668, 295671,
+                                         295673, 295675, 295676, 295677, 295714, 295716,
+                                         295717, 295718, 295719, 295723, 295725, 295753,
+                                         295754, 295755, 295758, 295759, 295762, 295763,
+                                         295786, 295788, 295791, 295816, 295818, 295819,
+                                         295822, 295825, 295826, 295829, 295831, 295854,
+                                         295855, 295856, 295859, 295860, 295861, 295863,
+                                         295881, 295908, 295909, 295910, 295913, 295936,
+                                         295937, 295941, 295942, 295943, 295945, 295947,
+                                         296061, 296062, 296063, 296065, 296066, 296068,
+                                         296123, 296128, 296132, 296133, 296134, 296135,
+                                         296142, 296143, 296191, 296192, 296194, 296195,
+                                         296196, 296197, 296198, 296241, 296242, 296243,
+                                         296244, 296246, 296247, 296269, 296270, 296273,
+                                         296279, 296280, 296303, 296304, 296307, 296309,
+                                         296312, 296376, 296377, 296378, 296379, 296380,
+                                         296381, 296383, 296414, 296419, 296420, 296423,
+                                         296424, 296433, 296472, 296509, 296510, 296511,
+                                         296514, 296516, 296547, 296548, 296549, 296550,
+                                         296551, 296552, 296553, 296615, 296616, 296618,
+                                         296619, 296622, 296623,
+                                         296690, 296691, 296694, 296749, 296750, 296781,
+                                         296784, 296785, 296786, 296787, 296791, 296793,
+                                         296794, 296799, 296836, 296838, 296839, 296848,
+                                         296849, 296850, 296851, 296852, 296890, 296894,
+                                         296899, 296900, 296903, 296930, 296931, 296932,
+                                         296934, 296935, 296938, 296941, 296966, 296967,
+                                         296968, 296969, 296971, 296975, 296976, 296977,
+                                         296979, 297029, 297031, 297035, 297085, 297117,
+                                         297118, 297119, 297123, 297124, 297128, 297129,
+                                         297132, 297133, 297193, 297194, 297196, 297218,
+                                         297219, 297221, 297222, 297278, 297310, 297312,
+                                         297315, 297317, 297363, 297366, 297367, 297372,
+                                         297379, 297380, 297405, 297408, 297413, 297414,
+                                         297415, 297441, 297442, 297446, 297450, 297451,
+                                         297452, 297479, 297481, 297483, 297512, 297537,
+                                         297540, 297541, 297542, 297544, 297558, 297588,
+                                         297590, 297595,/*, 297623, 297624*/
+                                         244918, 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
+                                         245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
+                                         245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
+                                         245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
+                                         245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
+                                         245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
+                                         246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
+                                         246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
+                                         246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
+                                         246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
+                                         246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
+                                         246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
+                                         246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
+                                         246949, 246980, 246982, 246984, 246989, 246991, 246994
+                                       };
+  // for( Int_t iRuns = 0; iRuns < 60001; iRuns++ ) {
+  for( Int_t iRuns = 0; iRuns < 364; iRuns++ ) {
+    // fDeadZoneEtaVsPhiPerRunH[iRuns] = new THnSparseF( Form( "fDeadZoneEtaVsPhiPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+    //                                                   Form( "fDeadZoneEtaVsPhiPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+    //                                                   2, // number of dimensions
+    //                                                   bins,
+    //                                                   xmin,
+    //                                                   xmax
+    //                                                   );
+    fDeadZoneEtaVsPhiPerRunH[iRuns] = new TH2F( Form( "fDeadZoneEtaVsPhiPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+                                                Form( "fDeadZoneEtaVsPhiPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+                                                150, -5.0, -2.0,
+                                                // 200, -4.0,  4.0
+                                                200,  0.0,  8.0
+                                                );
+    fOutputList->Add(fDeadZoneEtaVsPhiPerRunH[iRuns]);
+  }
+
+  //________________________________________
+  /* - Templates for polarisation analysis.
+   * -
+   */
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 40; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 50; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins]);
+  }
+  //________________________________________
+
+  /* - My Variable binning for CosTheta and Phi.
+   * - 2D analysis.
+   */
+  const Int_t XBINS2 = 7;
+  const Int_t YBINS2 = 20;
+  Double_t MyVariableCosThetaBinning2[] = { -0.65, -0.35, -0.15, -0.05,
+                                             0.05,  0.15,  0.35,  0.65 };
+  Double_t MyVariablePhiBinning2[] = { -3.14*1,       -3.14*19*0.05, -3.14*18*0.05, -3.14*17*0.05,
+                                       -3.14*13*0.05, -3.14*9*0.05,  -3.14*6*0.05,  -3.14*4*0.05,
+                                       -3.14*2*0.05,  -3.14*1*0.05,   0,            +3.14*1*0.05,
+                                       +3.14*2*0.05,  +3.14*4*0.05,  +3.14*6*0.05,  +3.14*9*0.05,
+                                       +3.14*13*0.05, +3.14*17*0.05, +3.14*18*0.05, +3.14*19*0.05,
+                                       +3.14*1 };
+  fCosThetaAndPhiHelicityFrameMyBinningH =
+        new TH2F( "fCosThetaAndPhiHelicityFrameMyBinningH",
+                  "fCosThetaAndPhiHelicityFrameMyBinningH",
+                  XBINS2, MyVariableCosThetaBinning2,
+                  YBINS2, MyVariablePhiBinning2
+                  );
+  fOutputList->Add(fCosThetaAndPhiHelicityFrameMyBinningH);
+
+  fMCCosThetaAndPhiHelicityFrameMyBinningH =
+        new TH2F( "fMCCosThetaAndPhiHelicityFrameMyBinningH",
+                  "fMCCosThetaAndPhiHelicityFrameMyBinningH",
+                  XBINS2, MyVariableCosThetaBinning2,
+                  YBINS2, MyVariablePhiBinning2
+                  );
+  fOutputList->Add(fMCCosThetaAndPhiHelicityFrameMyBinningH);
+
+  //_____________________________________________
+  /* - My Variable binning for CosTheta and Phi.
+   * - 1D analysis.
+   */
+  const Int_t XBINS3 = 26;
+  const Int_t YBINS3 = 30;
+  Double_t MyVariableCosThetaBinning1D[] = { -0.65,  -0.5,  -0.4,  -0.35,  -0.3,
+                                             -0.25,  -0.2,  -0.15, -0.125, -0.1,
+                                             -0.075, -0.05, -0.025, 0,      0.025,
+                                              0.05,   0.075, 0.1,   0.125,  0.15,
+                                              0.2,    0.25,  0.3,   0.35,   0.4,
+                                              0.5,    0.65 };
+  Double_t MyVariablePhiBinning1D[] = { -3.14*1,      -3.14*14/15,  -3.14*13/15,  -3.14*12/15,
+                                        -3.14*11/15,  -3.14*10/15,  -3.14*9/15,   -3.14*8/15,
+                                        -3.14*7/15,   -3.14*6/15,   -3.14*5/15,   -3.14*4/15,
+                                        -3.14*3/15,   -3.14*2/15,   -3.14*1/15,    0,
+                                        +3.14*1/15,   +3.14*2/15,   +3.14*3/15,   +3.14*4/15,
+                                        +3.14*5/15,   +3.14*6/15,   +3.14*7/15,   +3.14*8/15,
+                                        +3.14*9/15,   +3.14*10/15,  +3.14*11/15,  +3.14*12/15,
+                                        +3.14*13/15,  +3.14*14/15,  +3.14*1 };
+  const Int_t XBINS4 = 9;
+  Double_t MyVariableCosThetaBinning1Dv2[] = { -0.65, -0.45, -0.3, -0.15,  -0.05,
+                                                0.05,  0.15,  0.3,  0.45,   0.65 };
+  const Int_t XBINS5 = 17;
+  Double_t MyVariableCosThetaBinning1Dv3[] = { -0.65,  -0.5,  -0.425, -0.35,
+                                               -0.275, -0.2,  -0.125, -0.075,
+                                               -0.025,  0.025, 0.075,  0.125,
+                                                0.2,    0.275, 0.35,   0.425,
+                                                0.5,    0.65 };
+  fCosThetaHelicityFrameMyBinningH =
+        new TH1F( "fCosThetaHelicityFrameMyBinningH",
+                  "fCosThetaHelicityFrameMyBinningH",
+                  XBINS3, MyVariableCosThetaBinning1D
+                  );
+  fOutputList->Add(fCosThetaHelicityFrameMyBinningH);
+
+  fMCCosThetaHelicityFrameMyBinningH =
+        new TH1F( "fMCCosThetaHelicityFrameMyBinningH",
+                  "fMCCosThetaHelicityFrameMyBinningH",
+                  XBINS3, MyVariableCosThetaBinning1D
+                  );
+  fOutputList->Add(fMCCosThetaHelicityFrameMyBinningH);
+
+  fCosThetaHelicityFrameMyBinningSmallH =
+        new TH1F( "fCosThetaHelicityFrameMyBinningSmallH",
+                  "fCosThetaHelicityFrameMyBinningSmallH",
+                  XBINS4, MyVariableCosThetaBinning1Dv2
+                  );
+  fOutputList->Add(fCosThetaHelicityFrameMyBinningSmallH);
+
+  fMCCosThetaHelicityFrameMyBinningSmallH =
+        new TH1F( "fMCCosThetaHelicityFrameMyBinningSmallH",
+                  "fMCCosThetaHelicityFrameMyBinningSmallH",
+                  XBINS4, MyVariableCosThetaBinning1Dv2
+                  );
+  fOutputList->Add(fMCCosThetaHelicityFrameMyBinningSmallH);
+
+  fCosThetaHelicityFrameMySeventeenBinningH =
+        new TH1F( "fCosThetaHelicityFrameMySeventeenBinningH",
+                  "fCosThetaHelicityFrameMySeventeenBinningH",
+                  XBINS5, MyVariableCosThetaBinning1Dv3
+                  );
+  fOutputList->Add(fCosThetaHelicityFrameMySeventeenBinningH);
+
+  fMCCosThetaHelicityFrameMySeventeenBinningH =
+        new TH1F( "fMCCosThetaHelicityFrameMySeventeenBinningH",
+                  "fMCCosThetaHelicityFrameMySeventeenBinningH",
+                  XBINS5, MyVariableCosThetaBinning1Dv3
+                  );
+  fOutputList->Add(fMCCosThetaHelicityFrameMySeventeenBinningH);
+
+  fPhiHelicityFrameMyBinningH =
+        new TH1F( "fPhiHelicityFrameMyBinningH",
+                  "fPhiHelicityFrameMyBinningH",
+                  YBINS3, MyVariablePhiBinning1D
+                  );
+  fOutputList->Add(fPhiHelicityFrameMyBinningH);
+
+  fMCPhiHelicityFrameMyBinningH =
+        new TH1F( "fMCPhiHelicityFrameMyBinningH",
+                  "fMCPhiHelicityFrameMyBinningH",
+                  YBINS3, MyVariablePhiBinning1D
+                  );
+  fOutputList->Add(fMCPhiHelicityFrameMyBinningH);
+
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 26; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 30; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins]);
+  }
+
+  fCosThetaHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fCosThetaHelicityFrameTwentyfiveBinsH",
+                  "fCosThetaHelicityFrameTwentyfiveBinsH",
+                  25, -1, 1
+                  );
+  fOutputList->Add(fCosThetaHelicityFrameTwentyfiveBinsH);
+
+  fMCCosThetaHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fMCCosThetaHelicityFrameTwentyfiveBinsH",
+                  "fMCCosThetaHelicityFrameTwentyfiveBinsH",
+                  25, -1, 1
+                  );
+  fOutputList->Add(fMCCosThetaHelicityFrameTwentyfiveBinsH);
+
+  fPhiHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fPhiHelicityFrameTwentyfiveBinsH",
+                  "fPhiHelicityFrameTwentyfiveBinsH",
+                  25, -3.14, 3.14
+                  );
+  fOutputList->Add(fPhiHelicityFrameTwentyfiveBinsH);
+
+  fMCPhiHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fMCPhiHelicityFrameTwentyfiveBinsH",
+                  "fMCPhiHelicityFrameTwentyfiveBinsH",
+                  25, -3.14, 3.14
+                  );
+  fOutputList->Add(fMCPhiHelicityFrameTwentyfiveBinsH);
+
+  fTildePhiHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fTildePhiHelicityFrameTwentyfiveBinsH",
+                  "fTildePhiHelicityFrameTwentyfiveBinsH",
+                  25, -3.14*7.0*0.25, 3.14*3.0*0.25
+                  );
+  fOutputList->Add(fTildePhiHelicityFrameTwentyfiveBinsH);
+
+  fMCTildePhiHelicityFrameTwentyfiveBinsH =
+        new TH1F( "fMCTildePhiHelicityFrameTwentyfiveBinsH",
+                  "fMCTildePhiHelicityFrameTwentyfiveBinsH",
+                  25, -3.14*7.0*0.25, 3.14*3.0*0.25
+                  );
+  fOutputList->Add(fMCTildePhiHelicityFrameTwentyfiveBinsH);
 
   //_______________________________
   // - End of the function
@@ -1348,6 +1749,22 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
   if (nGoodMuons>0) fCounterH->Fill(iSelectionCounter); // At least one good muon
   iSelectionCounter++;
 
+  /* - Filling the fDeadZoneEtaVsPhiPerRunH.
+   * -
+   */
+  // fEtaAndPhi[0] = 0;
+  // fEtaAndPhi[1] = 0;
+  // fEtaAndPhi[0] = track[0]->Eta();
+  // fEtaAndPhi[1] = track[0]->Phi();
+  // ((THnSparseF*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( fEtaAndPhi );
+  ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[0]->Eta(), track[0]->Phi() );
+  // fEtaAndPhi[0] = 0;
+  // fEtaAndPhi[1] = 0;
+  // fEtaAndPhi[0] = track[1]->Eta();
+  // fEtaAndPhi[1] = track[1]->Phi();
+  // ((THnSparseF*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( fEtaAndPhi );
+  ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[1]->Eta(), track[1]->Phi() );
+
   /* - Finally the core!!!
    * - What will be happening is that we will instantiate TLorentzVectors to
    * - obtain the invariant mass of the dimuon system. If everything goes fine
@@ -1367,6 +1784,19 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
         chargeOfMuons[indexMuon] = track[indexMuon]->Charge();
   }
   fInvariantMassDistributionH->Fill(possibleJPsi.Mag());
+  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
+    fInvariantMassDistributionRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.75 && possibleJPsi.Rapidity() <= -3.50 ) {
+    fInvariantMassDistributionRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.25 ) {
+    fInvariantMassDistributionRapidityBinsH[2]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -3.00 ) {
+    fInvariantMassDistributionRapidityBinsH[3]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.75 ) {
+    fInvariantMassDistributionRapidityBinsH[4]->Fill(possibleJPsi.Mag());
+  } else if ( possibleJPsi.Rapidity() > -2.75 && possibleJPsi.Rapidity() <= -2.50 ) {
+    fInvariantMassDistributionRapidityBinsH[5]->Fill(possibleJPsi.Mag());
+  }
   fInvariantMassDistributionExtendedH->Fill(possibleJPsi.Mag());
 
   /* - This is a TH2F histogram filled with DCA against the invariant mass of
@@ -1388,9 +1818,35 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
   if( ptOfTheDimuonPair < 0.25) {
         fInvariantMassDistributionCoherentH->Fill(possibleJPsi.Mag());
         fInvariantMassDistributionCoherentExtendedH->Fill(possibleJPsi.Mag());
+        if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.75 && possibleJPsi.Rapidity() <= -3.50 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.25 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[2]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -3.00 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[3]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.75 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[4]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -2.75 && possibleJPsi.Rapidity() <= -2.50 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[5]->Fill(possibleJPsi.Mag());
+        }
   } else {
         fInvariantMassDistributionIncoherentH->Fill(possibleJPsi.Mag());
         fInvariantMassDistributionIncoherentExtendedH->Fill(possibleJPsi.Mag());
+        if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.75 && possibleJPsi.Rapidity() <= -3.50 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.25 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[2]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -3.00 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[3]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.75 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[4]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -2.75 && possibleJPsi.Rapidity() <= -2.50 ) {
+          fInvariantMassDistributionIncoherentRapidityBinsH[5]->Fill(possibleJPsi.Mag());
+        }
   }
   fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
   if ( (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) fTemplatePtDistributionH->Fill(ptOfTheDimuonPair);
@@ -1465,6 +1921,16 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
                                                           possibleJPsiCopy
                                                           )
                                                         );
+
+    fCosThetaAndPhiHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                         muonsCopy2[1],
+                                                                         possibleJPsiCopy
+                                                                         ),
+                                                  CosPhiHelicityFrame( muonsCopy2[0],
+                                                                       muonsCopy2[1],
+                                                                       possibleJPsiCopy
+                                                                       )
+                                                  );
     /* - Now we are filling in terms of rapidity...
        - The easiest way to do so I have envisioned is to simply
        - check everytime if we are below the following threshold
@@ -1501,6 +1967,92 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
                                                                                         );
           break;
         }
+    }
+
+
+    /* - NEW:
+       -
+     */
+    Bool_t controlFlag2 = 0;
+    Bool_t controlFlag3 = 0;
+    if ( possibleJPsiCopy.Pt() < 0.25 ) {
+          Double_t CosThetaHelicityFrameValue = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          Double_t PhiHelicityFrameValue      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          for(Int_t iCosThetaBins = 0; iCosThetaBins < 40; iCosThetaBins++) {
+            if( controlFlag2 == 1) break;
+            if( (CosThetaHelicityFrameValue + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/40. ){
+                fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins]->Fill(possibleJPsiCopy.Mag());
+                controlFlag2 = 1;
+            }
+          }
+          for(Int_t iPhiBins = 0; iPhiBins < 50; iPhiBins++) {
+            if( controlFlag3 == 1) break;
+            if( (PhiHelicityFrameValue + 3.14) < 6.28*((Double_t)iPhiBins + 1.)/50. ){
+                fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins]->Fill(possibleJPsiCopy.Mag());
+                controlFlag3 = 1;
+            }
+          }
+
+    }
+
+    /* - NEW: analysis with purity of the binning
+     * - above 80% in CosTheta.
+     */
+    if ( (possibleJPsiCopy.Pt() < 0.25) && (possibleJPsiCopy.Mag() < 3.35) && (possibleJPsiCopy.Mag() > 2.85) ) {
+          Double_t CosThetaHelicityFrameValue10 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          Double_t PhiHelicityFrameValue10      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          Double_t TildePhiPositiveCosTheta    = PhiHelicityFrameValue10 - 0.25 * 3.14;
+          Double_t TildePhiNegativeCosTheta    = PhiHelicityFrameValue10 - 0.75 * 3.14;
+          fCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrameValue10 );
+          fPhiHelicityFrameTwentyfiveBinsH     ->Fill( PhiHelicityFrameValue10 );
+          if( CosThetaHelicityFrameValue10 > 0 ){
+            fTildePhiHelicityFrameTwentyfiveBinsH->Fill( TildePhiPositiveCosTheta );
+          } else {
+            fTildePhiHelicityFrameTwentyfiveBinsH->Fill( TildePhiNegativeCosTheta );
+          }
+    }
+
+    /* - NEW:
+     * - 1D analysis with
+     * - my variable binning.
+     */
+    Bool_t controlFlag5 = 0;
+    Bool_t controlFlag6 = 0;
+    Double_t MyVariableCosThetaBinning1D[] = { -0.65,  -0.5,  -0.4,  -0.35,  -0.3,
+                                               -0.25,  -0.2,  -0.15, -0.125, -0.1,
+                                               -0.075, -0.05, -0.025, 0,      0.025,
+                                                0.05,   0.075, 0.1,   0.125,  0.15,
+                                                0.2,    0.25,  0.3,   0.35,   0.4,
+                                                0.5,    0.65 };
+    Double_t MyVariablePhiBinning1D[] = { -3.14*1,      -3.14*14/15,  -3.14*13/15,  -3.14*12/15,
+                                          -3.14*11/15,  -3.14*10/15,  -3.14*9/15,   -3.14*8/15,
+                                          -3.14*7/15,   -3.14*6/15,   -3.14*5/15,   -3.14*4/15,
+                                          -3.14*3/15,   -3.14*2/15,   -3.14*1/15,    0,
+                                          +3.14*1/15,   +3.14*2/15,   +3.14*3/15,   +3.14*4/15,
+                                          +3.14*5/15,   +3.14*6/15,   +3.14*7/15,   +3.14*8/15,
+                                          +3.14*9/15,   +3.14*10/15,  +3.14*11/15,  +3.14*12/15,
+                                          +3.14*13/15,  +3.14*14/15,  +3.14*1 };
+    if ( possibleJPsiCopy.Pt() < 0.25 ) {
+          Double_t CosThetaHelicityFrameValue4 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          Double_t PhiHelicityFrameValue4      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          fCosThetaHelicityFrameMyBinningH         ->Fill( CosThetaHelicityFrameValue4 );
+          fCosThetaHelicityFrameMyBinningSmallH    ->Fill( CosThetaHelicityFrameValue4 );
+          fCosThetaHelicityFrameMySeventeenBinningH->Fill( CosThetaHelicityFrameValue4 );
+          fPhiHelicityFrameMyBinningH              ->Fill( PhiHelicityFrameValue4      );
+          for(Int_t iCosThetaBins = 0; iCosThetaBins < 26; iCosThetaBins++) {
+            if( controlFlag5 == 1) break;
+            if( CosThetaHelicityFrameValue4 < MyVariableCosThetaBinning1D[iCosThetaBins + 1] ){
+              fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins]->Fill( possibleJPsiCopy.Mag() );
+              controlFlag5 = 1;
+            }
+          }
+          for(Int_t iPhiBins = 0; iPhiBins < 30; iPhiBins++) {
+            if( controlFlag6 == 1) break;
+            if( PhiHelicityFrameValue4  < MyVariablePhiBinning1D[iPhiBins + 1] ){
+              fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins]->Fill( possibleJPsiCopy.Mag() );
+              controlFlag6 = 1;
+            }
+          }
     }
 
 
@@ -1582,7 +2134,13 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
   }
 
   // fVectorCosThetaReconstructed.push_back(cosThetaMuonsRestFrame[0]);
+  fCosThetaReconHelicityFrame = 0;
   fCosThetaReconHelicityFrame = cosThetaMuonsRestFrame[0];
+  fPhiReconHelicityFrame      = 0;
+  fPhiReconHelicityFrame      = CosPhiHelicityFrame( muonsCopy2[0],
+                                                     muonsCopy2[1],
+                                                     possibleJPsiCopy
+                                                     );
   /* - Mind that it could generate segmentation fault without
      - fCounterUPCevent-1, because we are incrementing the counter right after
      - it processes the MC events at Generated level...
@@ -1600,6 +2158,11 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
         fBinMigrationHelicityH->Fill( fCosThetaGeneratedHelicityFrame,
                                       fCosThetaReconHelicityFrame
                                     );
+  }
+  if ( fPhiReconHelicityFrame ) {
+        fBinMigrationForPhiHelicityH->Fill( fPhiGeneratedHelicityFrame,
+                                            fPhiReconHelicityFrame
+                                            );
   }
 
 
@@ -1744,6 +2307,10 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
                   // fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[0]);
                   fCosThetaGeneratedHelicityFrame = cosThetaMuonsRestFrameMC[0];
+                  fPhiGeneratedHelicityFrame      = CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                         muonsMCcopy[1],
+                                                                         possibleJPsiMC
+                                                                       );
                   /* - New part: filling all possible histograms!
                      -
                    */
@@ -1777,6 +2344,41 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                           possibleJPsiMC
                                                                           )
                                                                          );
+                  fMCCosThetaHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                   muonsMCcopy[1],
+                                                                                   possibleJPsiMC
+                                                                                   )
+                                                                                  );
+                  fMCCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                        muonsMCcopy[1],
+                                                                                        possibleJPsiMC
+                                                                                        )
+                                                                                       );
+                  fMCPhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                 muonsMCcopy[1],
+                                                                                 possibleJPsiMC
+                                                                                 )
+                                                                                );
+                  if( CosThetaHelicityFrame(muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC) > 0 ){
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC ) - 3.14*0.25 );
+                  } else {
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC ) - 3.14*0.75 );
+                  }
+                  fMCCosThetaHelicityFrameMyBinningSmallH->Fill( CosThetaHelicityFrame(  muonsMCcopy[0],
+                                                                                         muonsMCcopy[1],
+                                                                                         possibleJPsiMC
+                                                                                         )
+                                                                                        );
+                  fMCCosThetaHelicityFrameMySeventeenBinningH->Fill( CosThetaHelicityFrame(  muonsMCcopy[0],
+                                                                                             muonsMCcopy[1],
+                                                                                             possibleJPsiMC
+                                                                                             )
+                                                                                            );
+                  fMCPhiHelicityFrameMyBinningH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                            muonsMCcopy[1],
+                                                                            possibleJPsiMC
+                                                                            )
+                                                                           );
                   fMCInvariantMassDistributionForSignalExtractionHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
                                                                                                               muonsMCcopy[1],
                                                                                                               possibleJPsiMC
@@ -1879,11 +2481,24 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                                     possibleJPsiMC
                                                                                                     )
                                                                                );
+                  fMCCosThetaAndPhiHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                       muonsMCcopy[1],
+                                                                                       possibleJPsiMC
+                                                                                       ),
+                                                                CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                     muonsMCcopy[1],
+                                                                                     possibleJPsiMC
+                                                                                     )
+                                                                );
           } else  {
                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
                   // fVectorCosThetaGenerated.push_back(cosThetaMuonsRestFrameMC[1]);
                   fCosThetaGeneratedHelicityFrame = cosThetaMuonsRestFrameMC[1];
+                  fPhiGeneratedHelicityFrame      = CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                         muonsMCcopy[0],
+                                                                         possibleJPsiMC
+                                                                         );
                   /* - New part: filling all possible histograms!
                      -
                    */
@@ -1912,11 +2527,46 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                possibleJPsiMC
                                                                                )
                                                                               );
-                  fMCPhiHeFrameForSignalExH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],
+                  fMCPhiHeFrameForSignalExH->Fill( CosPhiHelicityFrame(   muonsMCcopy[1],
                                                                           muonsMCcopy[0],
                                                                           possibleJPsiMC
                                                                           )
                                                                          );
+                  fMCCosThetaHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                                   muonsMCcopy[0],
+                                                                                   possibleJPsiMC
+                                                                                   )
+                                                                                  );
+                  fMCCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                        muonsMCcopy[1],
+                                                                                        possibleJPsiMC
+                                                                                        )
+                                                                                       );
+                  fMCPhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                 muonsMCcopy[1],
+                                                                                 possibleJPsiMC
+                                                                                 )
+                                                                                );
+                  if( CosThetaHelicityFrame(muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC) > 0 ){
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC ) - 3.14*0.25 );
+                  } else {
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC ) - 3.14*0.75 );
+                  }
+                  fMCCosThetaHelicityFrameMyBinningSmallH->Fill( CosThetaHelicityFrame(  muonsMCcopy[1],
+                                                                                         muonsMCcopy[0],
+                                                                                         possibleJPsiMC
+                                                                                         )
+                                                                                        );
+                  fMCCosThetaHelicityFrameMySeventeenBinningH->Fill( CosThetaHelicityFrame(  muonsMCcopy[1],
+                                                                                             muonsMCcopy[0],
+                                                                                             possibleJPsiMC
+                                                                                             )
+                                                                                            );
+                  fMCPhiHelicityFrameMyBinningH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                            muonsMCcopy[0],
+                                                                            possibleJPsiMC
+                                                                            )
+                                                                           );
                   fMCInvariantMassDistributionForSignalExtractionHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
                                                                                                               muonsMCcopy[0],
                                                                                                               possibleJPsiMC
@@ -1993,6 +2643,15 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                         break;
                       }
                   }
+                  fMCCosThetaAndPhiHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                                       muonsMCcopy[0],
+                                                                                       possibleJPsiMC
+                                                                                       ),
+                                                                CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                                     muonsMCcopy[0],
+                                                                                     possibleJPsiMC
+                                                                                     )
+                                                                );
                   /* - What we do here is very similar.
                      - This time we divide firstly in bins of CosTheta.
                      - As many as needed.

@@ -43,6 +43,8 @@ public:
   void SetUseAliEventCuts(Bool_t opt=kTRUE){fUseAliEventCuts=opt;}
   void SetEnableEvPropNtuple(Bool_t dontuple) {fEnableEvPropNtuple=dontuple;}
   void SetEnableVertexNtuple(Bool_t dontuple) {fEnableVertexNtuple=dontuple;}
+
+  AliRDHFCuts* GetCutObject() { return (AliRDHFCuts*)fAnalysisCuts;}
   
 private:
 
@@ -63,6 +65,7 @@ private:
   TH2F *fHistNEventsVsCL1;               //!<! hist. for No. of events
   TH1F *fHistWhyRej;                     //!<! hist. for No. of events
   TH2F *fHistNEventsVsWhyRej;            //!<! hist. for No. of events
+  TH1F *fHistNEventsVsTime;              //!<! hist. for No. of events
   TH1F *fHistNTrackletsBeforePileup;     //!<! hist. for No. of tracklets
   TH1F *fHistNTrackletsAfterPileup;      //!<! hist. for No. of tracklets
   TH1F *fHistNCL1BeforePileup;           //!<! hist. for No. of tracklets
@@ -102,7 +105,7 @@ private:
 
   AliRDHFCutsD0toKpi *fAnalysisCuts;  /// Cuts for candidates
 
-  ClassDef(AliAnalysisTaskCheckEvSel,12);
+  ClassDef(AliAnalysisTaskCheckEvSel,13);
 };
 
 #endif

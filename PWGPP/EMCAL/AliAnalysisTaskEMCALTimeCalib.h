@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskEMCALTimeCalib_h
-#define AliAnalysisTaskEMCALTimeCalib_h
+#ifndef ALIANALYSISTASKEMCALTIMECALIB_H
+#define ALIANALYSISTASKEMCALTIMECALIB_H
 
 //_________________________________________________________________________
 /// \class AliAnalysisTaskEMCALTimeCalib
@@ -114,6 +114,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fL1PhaseList(0),
     fBadReco(kFALSE),
     fFillHeavyHisto(kFALSE),
+    fOneHistAllBCs(kFALSE),
     fBadChannelMapArray(0),
     fBadChannelMapSet(kFALSE),
     fSetBadChannelMapSource(0),
@@ -132,11 +133,19 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhTimeSumSq(),
     fhTimeEnt(),
     fhTimeSum(),
+    fhTimeSumSqAllBCs(0x0),
+    fhTimeEntAllBCs(0x0),
+    fhTimeSumAllBCs(0x0),
     fhTimeLGSumSq(),
     fhTimeLGEnt(),
     fhTimeLGSum(),
+    fhTimeLGSumSqAllBCs(0x0),
+    fhTimeLGEntAllBCs(0x0),
+    fhTimeLGSumAllBCs(0x0),
     fhAllAverageBC(),
     fhAllAverageLGBC(),
+    fhAllAverageAllBCs(0x0),
+    fhAllAverageLGAllBCs(0x0),
     fhRefRuns(0),
     fhTimeDsup(),
     fhTimeDsupBC(),
@@ -155,7 +164,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhRawCorrTimeVsIdBC(),
     fhRawCorrTimeVsIdLGBC(),
     fhTimeVsIdBC(),
-    fhTimeVsIdLGBC()
+    fhTimeVsIdLGBC(),
+    fhTimeVsIdAllBCs(0x0),
+    fhTimeVsIdLGAllBCs(0x0)
     { ; }
   
   AliAnalysisTaskEMCALTimeCalib(const char *name);
@@ -277,8 +288,10 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     if(fBadChannelMapArray) return (Int_t) ((TH2I*)fBadChannelMapArray->At(0))->GetBinContent(absId+1);
     else return 0;}//Channel is ok by default
 
-  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE, Bool_t isPAR=kFALSE);
+  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE, Bool_t oneHistoAllBCs=kFALSE, Bool_t isPAR=kFALSE);
   static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE, Bool_t justL1phase=kTRUE,TString PARfilename="");
+
+  void SwithOnFillOneHistAllBCs()  { fOneHistAllBCs = kTRUE ; }
 
   private:
   
@@ -358,6 +371,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   Bool_t         fFillHeavyHisto;       ///< flag to fill heavy histograms
 
+  Bool_t	 fOneHistAllBCs;		///< flag to use one histogram for all the BCs instead of four
+
   // bad channel map
   TObjArray     *fBadChannelMapArray;   ///< bad channel map array
   Bool_t         fBadChannelMapSet;     ///< flag whether bad channel map is set
@@ -381,13 +396,22 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1F		*fhTimeSumSq  [kNBCmask]; //!<!  4
   TH1F		*fhTimeEnt    [kNBCmask]; //!<!  4
   TH1F		*fhTimeSum    [kNBCmask]; //!<!  4
+  TH1F		*fhTimeSumSqAllBCs  	; //!
+  TH1F		*fhTimeEntAllBCs    	; //!
+  TH1F		*fhTimeSumAllBCs    	; //!
   TH1F		*fhTimeLGSumSq[kNBCmask]; //!<!  4
   TH1F		*fhTimeLGEnt  [kNBCmask]; //!<!  4
   TH1F		*fhTimeLGSum  [kNBCmask]; //!<!  4
+  TH1F		*fhTimeLGSumSqAllBCs  	; //!
+  TH1F		*fhTimeLGEntAllBCs    	; //!
+  TH1F		*fhTimeLGSumAllBCs    	; //!
 
   // histos with reference values after the first iteration  
   TH1F		*fhAllAverageBC   [kNBCmask]; ///> 4 BCmask High gain
   TH1F		*fhAllAverageLGBC [kNBCmask]; ///> 4 BCmask Low gain
+
+  TH1S		*fhAllAverageAllBCs	; ///> High gain
+  TH1S		*fhAllAverageLGAllBCs   ; ///> Low gain
 
   // histo with reference values run-by-run after the first iteration 
   TH1C		*fhRefRuns; ///< 20 entries per run: nSM
@@ -419,6 +443,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   //histos for raw time after wrong reconstruction correction (100ns and L1 phase) and new L1 phase
   TH2F          *fhTimeVsIdBC  [kNBCmask]; //!<! 4 BCmask HG
   TH2F          *fhTimeVsIdLGBC[kNBCmask]; //!<! 4 BCmask LG
+  TH2F          *fhTimeVsIdAllBCs        ; //! HG
+  TH2F          *fhTimeVsIdLGAllBCs      ; //! LG
 
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALTimeCalib(           const AliAnalysisTaskEMCALTimeCalib&);
@@ -427,7 +453,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   AliAnalysisTaskEMCALTimeCalib& operator=(const AliAnalysisTaskEMCALTimeCalib&); 
   
 /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTimeCalib, 5) ;
+  ClassDef(AliAnalysisTaskEMCALTimeCalib, 7) ;
 /// \endcond
 };
 

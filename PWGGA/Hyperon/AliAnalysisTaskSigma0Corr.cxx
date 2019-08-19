@@ -208,7 +208,7 @@ void AliAnalysisTaskSigma0Corr::UserExec(Option_t *option)
 
    AliAnalysisTaskSigma0Spectra::UserExec(option) ;
 
-   //    if ( 1>0 ) return;
+       if ( 1>0 ) return;
 
     //   if( 1>0 ){
  
@@ -220,7 +220,7 @@ void AliAnalysisTaskSigma0Corr::UserExec(Option_t *option)
    //    AliCaloParticle * trig = static_cast<AliCaloParticle*>(fPHOSEvent->At(fLeadingPHOS)) ;
     // printf("PHOS trig2 (%d)=%p \n",fLeadingPHOS,trig) ;
 
-   Int_t   trig = 1;
+   //   Int_t   trig = 1;
 }
 
    //   FillCorrelation(trig,"PHOS_single_track_all") ; 

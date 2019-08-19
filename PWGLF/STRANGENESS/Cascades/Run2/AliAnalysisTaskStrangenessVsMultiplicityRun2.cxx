@@ -2082,6 +2082,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //Copy IR information for this event
         fTreeVariableClosestNonEmptyBC = fClosestNonEmptyBC;
         
+        //This is the flag for ITS||TOF requirement cross-check 
+        Bool_t lITSorTOFsatisfied = kFALSE; 
+        if( 
+            (fTreeVariableNegTrackStatus & AliESDtrack::kITSrefit) ||
+            (fTreeVariablePosTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE; 
+        if( 
+            (TMath::Abs(fTreeVariableNegTOFExpTDiff+2500.) > 1e-6) || 
+            (TMath::Abs(fTreeVariablePosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;  
         
         //------------------------------------------------
         // Fill Tree!
@@ -2301,6 +2309,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 (
                  lV0Result->GetCutMinCrossedRowsOverLength()<0 ||
                  (lLeastNcrOverLength>lV0Result->GetCutMinCrossedRowsOverLength())
+                 )&&
+                //Check 17: ITS or TOF required 
+                (
+                 lV0Result->GetCutITSorTOF()==kFALSE || lITSorTOFsatisfied==kTRUE
                  )
                 )//end major if
             {
@@ -3073,6 +3085,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //Copy IR information for this event
         fTreeCascVarClosestNonEmptyBC = fClosestNonEmptyBC;
         
+        //This is the flag for ITS||TOF requirement cross-check 
+        Bool_t lITSorTOFsatisfied = kFALSE; 
+        if( 
+            (fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit) ||
+            (fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit) ||
+            (fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE; 
+        if( 
+            (TMath::Abs(fTreeCascVarBachTOFExpTDiff+2500.) > 1e-6) || 
+            (TMath::Abs(fTreeCascVarNegTOFExpTDiff+2500.)  > 1e-6) ||  
+            (TMath::Abs(fTreeCascVarPosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;  
+        
         //Valid or not valid
         lValidXiMinus = kTRUE;
         lValidXiPlus = kTRUE;
@@ -3542,6 +3565,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 (
                  lCascadeResult->GetCutLeastNumberOfCrossedRows()<0 ||
                  (lLeastNbrCrossedRows>lCascadeResult->GetCutLeastNumberOfCrossedRows())
+                 )&&
+                //Check 20: ITS or TOF required 
+                (
+                 lCascadeResult->GetCutITSorTOF()==kFALSE || lITSorTOFsatisfied==kTRUE
                  )
                 )//end major if
             {
@@ -4633,8 +4660,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
     //Explore TOF information use
     for(Int_t i = 0 ; i < lNPart ; i ++){
         //Create a new object from default
-        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_AtLeastOneTOF",lParticleNameV0[i].Data() ) );
-        lV0Result[lNV0]->SetCutAtLeastOneTOF(kTRUE);
+        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_ITSorTOF",lParticleNameV0[i].Data() ) );
+        lV0Result[lNV0]->SetCutITSorTOF(kTRUE);
         
         //Add result to pool
         lNV0++;
@@ -5711,8 +5738,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     
     //Explore TOF info use
     for(Int_t i = 0 ; i < 4 ; i ++){
-        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_AtLeastOneTOF",lParticleName[i].Data() ) );
-        lCascadeResult[lN] -> SetCutAtLeastOneTOF(kTRUE);
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSorTOF",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutITSorTOF(kTRUE);
         //Add result to pool
         lN++;
     }

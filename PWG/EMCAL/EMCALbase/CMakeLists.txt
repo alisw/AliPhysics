@@ -63,6 +63,7 @@ set(SRCS
   AliTrackContainer.cxx
   AliEmcalList.cxx
   AliAnalysisTaskEmcalEmbeddingHelper.cxx
+  AliAnalysisTaskEmcalEmbeddingHelperData.cxx
   AliEmcalEmbeddingQA.cxx
   )
 

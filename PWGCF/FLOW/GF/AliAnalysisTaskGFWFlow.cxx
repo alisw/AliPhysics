@@ -302,9 +302,9 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
   if(!fProduceWeights) {
     fWeightList = (TList*) GetInputData(1);
     if(!fWeightList) { AliFatal("Could not retrieve weight list!\n"); return; };
+    CreateCorrConfigs();
   };
   // printf("\n******************\nStarting the watch\n*****************\n");
-  CreateCorrConfigs();
   // mywatchFill.Reset();
   // mywatchStore.Reset();
   // mywatch.Start(kTRUE);

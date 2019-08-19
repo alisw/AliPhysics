@@ -35,7 +35,7 @@
 #include <AliStack.h>
 
 
-#include "AliPPVsMultUtils.h"
+// #include "AliPPVsMultUtils.h"
 #include "AliAnalysisUtils.h"
 
 #include "AliMultiplicity.h"
@@ -49,9 +49,9 @@
 #include "AliMultSelectionTask.h"
 
 
-class AliPPVsMultUtils;
+// class AliPPVsMultUtils;
 class AliTransverseEventShape;
-
+class AliMCSpectraWeights;
 
 class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 	public:
@@ -66,7 +66,7 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 
 		Double_t GetVtxCut() { return fVtxCut; }   
 		Double_t GetEtaCut() { return fEtaCut; }     
-
+                Double_t GetLeadMin() { return fLeadMin; }
 
 		virtual void  SetTrigger(UInt_t ktriggerInt = AliVEvent::kINT7) {ftrigBit = ktriggerInt;}  
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
@@ -74,16 +74,19 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		virtual void  SetAnalysisCorr(Bool_t isCorr) {fAnalysisCorr = isCorr;}
 		virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
+                virtual void  SetPtLeadMin(Double_t leadMin){fLeadMin = leadMin;}
 		virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;}
 		virtual void  SetAveMultiInTrans(Double_t value) {fAveMultiInTrans = value;}
-                virtual void  SetAveGenMultiInTrans(Double_t value) {fAveGenMultiInTrans = value;}	
+                virtual void  SetAveRecMultiInTrans(Double_t value) {fAveRecMultiInTrans = value;}
+		virtual void  SetAveGenMultiInTrans(Double_t value) {fAveGenMultiInTrans = value;}	
+		virtual void  SetMCSpectraWeightObject(AliMCSpectraWeights *obj) {fMCSpectraWeights = obj;}
 	
 		TObjArray*    FindLeadingObjects(TObjArray *array );
 		void          QSortTracks(TObjArray &a, Int_t first, Int_t last);
-                //TObjArray*    SortRegions(const TParticle* leading, TObjArray *array);
                 TObjArray*    SortRegions(const AliVParticle* leading, TObjArray *array);
 		TObjArray*    GetMinMaxRegion(TList *transv1, TList *transv2);
-	
+		TObjArray*    GetRegionAwTow(TList *region);
+  		void          FillRTResponseMatrix(const AliVParticle* leadingMC, const AliVParticle* leading, TList* listMaxMC, TList* listMax, TList* listMinMC, TList* listMin);	
 	private:
 			
 		virtual void AnalyseDataRT(AliESDEvent* esd);
@@ -104,11 +107,13 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		Bool_t fAnalysisMC;                 //
 		Bool_t fAnalysisCorr;                 //
 		AliAnalysisFilter *fTrackFilterDCA; //!
+		AliAnalysisFilter *fTrackFilterMatchEff; //!
 		TString       fAnalysisType;        // "ESD" or "AOD"
 		UInt_t       ftrigBit;		    //
 		TRandom*      fRandom;              //! random number generator
 		Bool_t        fPileUpRej;           // kTRUE is pile-up is rejected
-		AliPPVsMultUtils *fPPVsMultUtils;   //!	
+//		AliPPVsMultUtils *fPPVsMultUtils;   //!
+		AliMCSpectraWeights *fMCSpectraWeights;//!
 
 		//
 		// Cuts and options
@@ -116,6 +121,7 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 
 		Double_t     fVtxCut;             // Vtx cut on z position in cm
 		Double_t     fEtaCut;             // Eta cut used to select particles
+                Double_t     fLeadMin;             // Low limit to pT of the leading particle
 		//
 		// Help variables
 		//
@@ -131,7 +137,8 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		Bool_t fisTracklet;		  //
 		Bool_t fisMCvtxInZcut;		  //
 		Double_t fAveMultiInTrans;      //
-                Double_t fAveGenMultiInTrans;      //
+		Double_t fAveRecMultiInTrans;   //
+                Double_t fAveGenMultiInTrans;   //
 		//
 		// Output objects
 		//
@@ -147,6 +154,7 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		//
 
 		TH1F *INEL0;      		//!
+                TH1F *INEL0Gen;                    //!
 
 		TH1F *TrigINEL0;		//!
 		TH1F *TrueINEL0;		//!
@@ -217,21 +225,62 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		TH1F *fVtxPS;			//!
 
                 TH1F *Zvtx;			//!
-			
+  		TH2F *Phi;                      //!
+  		TH2F *Eta;                      //!
+  		TH2F *EtaPhi;                   //!	        
+		
 		TH1F *fhRTData;                  //!		
                 TH1F *fhRTReco;                  //! 
                 TH1F *fhRTTrue;                  //! 
+		
+		TH2F *fhRTResponse;              //!
 
 		TH1F *secondaries[18];		//!
 		TH1F *primariesTrackFilter[18];	//!
 		TH1F *pti[18];			//!
-		TH1F *pti0[18];                  //!
-		TH1F *pti1[18];                  //!
-		TH1F *pti2[18];                  //!
-		TH1F *pti3[18];                  //!
-		TH1F *pti4[18];                  //!
-		TH1F *pti5[18];                  //!
-		TH1F *ptiMB[18];		 //!
+		TH1F *pti1Trans[18];                  //!
+		TH1F *pti2Trans[18];                  //!
+		TH1F *pti3Trans[18];                  //!
+		TH1F *pti4Trans[18];                  //!
+		TH1F *pti5Trans[18];                  //!
+		TH1F *ptiMBTrans[18];		 //!
+		TH1F *pti1Tow[18];                  //!
+                TH1F *pti2Tow[18];                  //!
+                TH1F *pti3Tow[18];                  //!
+                TH1F *pti4Tow[18];                  //!
+                TH1F *pti5Tow[18];                  //!
+                TH1F *ptiMBTow[18];                 //!
+                TH1F *pti1Aw[18];                  //!
+                TH1F *pti2Aw[18];                  //!
+                TH1F *pti3Aw[18];                  //!
+                TH1F *pti4Aw[18];                  //!
+                TH1F *pti5Aw[18];                  //!
+                TH1F *ptiMBAw[18];                 //!
+		TH1F *ptiNoLead[18];             //!
+
+		TH1F *primariesTrackFilterME;	 //!
+		TH1F *ptiME;                      //!
+
+		TH1F *pTGen;			//!
+                TH1F *pTGenTrans;                    //!
+                TH1F *pTGenTow;                    //!
+                TH1F *pTGenAw;                    //!
+                TH1F *pTGenTrans1;                    //!
+                TH1F *pTGenTrans2;                    //!
+                TH1F *pTGenTrans3;                    //!
+                TH1F *pTGenTrans4;                    //!
+                TH1F *pTGenTrans5;                    //!
+                TH1F *pTGenTow1;                    //!
+                TH1F *pTGenTow2;                    //!
+                TH1F *pTGenTow3;                    //!
+                TH1F *pTGenTow4;                    //!
+                TH1F *pTGenTow5;                    //!
+                TH1F *pTGenAw1;                    //!
+                TH1F *pTGenAw2;                    //!
+                TH1F *pTGenAw3;                    //!
+                TH1F *pTGenAw4;                    //!
+                TH1F *pTGenAw5;                    //!
+
 		AliAnalysisFilter* fTrackFilter[18];//! track filter
 
 

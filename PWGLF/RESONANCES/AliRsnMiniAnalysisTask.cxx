@@ -1263,7 +1263,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeTracklets()
 /// For AODs, the filter bit 5 is used to select tracks for the computation. 
 /// For tESDs, the track filter set externally is used to select tracks. 
 ///
-/// \return Spherocity value if at least 2 good tracks are used for the computation. If not, returns -10.
+/// \return Spherocity value if at least 10 good tracks are used for the computation. If not, returns -10.
 /// 
 Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 {
@@ -1285,11 +1285,12 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
     if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
     if (track->Pt() < 0.15) continue;
     if(TMath::Abs(track->Eta()) > 0.8) continue;
-    pt[i1] = track->Pt();
+    //pt[i1] = track->Pt();
+    pt[i1] = 1.0;
     sumapt += pt[i1];
     GoodTracks++;
   }
-
+  if (GoodTracks < 10) return -10.0;
   //Getting thrust
   for(Int_t i = 0; i < 360/0.1; ++i){
 	Float_t numerador = 0;
@@ -1307,7 +1308,8 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 	  if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
 	  if (track->Pt() < 0.15) continue;
 	  if(TMath::Abs(track->Eta()) > 0.8) continue;
-	  pt[i1] = track->Pt();
+	  //pt[i1] = track->Pt();
+	  pt[i1] = 1.0;
 	  phi[i1] = track->Phi();
 	  Float_t pxA = pt[i1] * TMath::Cos( phi[i1] );
 	  Float_t pyA = pt[i1] * TMath::Sin( phi[i1] );
@@ -1320,7 +1322,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 	  }
   }
   spherocity=((Spherocity)*TMath::Pi()*TMath::Pi())/4.0;
-  if (GoodTracks > 2) return spherocity;
+  if (GoodTracks > 9) return spherocity;
   else return -10.0;
 }
 

@@ -183,7 +183,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
 
 
   auto trgclusters = GetTriggerClustersANY();
-  if(!fIsMC && fRequestTriggerClusters) GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses().Data());
+  if(!fIsMC && fRequestTriggerClusters) trgclusters = GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses().Data());
   Double_t weight = 1.;
   if(fUseDownscaleWeight) {
     weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data(), fTriggerSelectionString.Data(), fUseMuonCalo));
@@ -280,7 +280,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
   return true;
 }
 
-AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix){
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) {
     std::cerr << "Analysis manager not initialized" << std::endl;
@@ -336,8 +336,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   }
   if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kFullJet){
     clusters = task->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
-    clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
-    clusters->SetClusHadCorrEnergyCut(0.3);
+    clusters->SetDefaultClusterEnergy(energydef);
+    clusters->SetClusUserDefEnergyCut(energydef, 0.3);
   }
 
 

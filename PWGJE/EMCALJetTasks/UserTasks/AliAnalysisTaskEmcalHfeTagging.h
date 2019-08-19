@@ -6,6 +6,7 @@ class TH2;
 class TH3;
 class TH3F;
 class TTree;
+class TList;
 class THnSparse;
 class TClonesArray;
 class TArrayI;
@@ -193,7 +194,6 @@ protected:
     TH2F                                *fnTPCcutP;
     TH2F                                *fnTPCcutPt;
     TH1F                                *fnTPCSigma[5][18];
-    TH2F                                *fnTPCTrueParticles[5][18];
     TH2F                                *fnULSmLSpairsPerElectron;
     TH2F                                *fInvmassLS[5];
     TH2F                                *fInvmassULS[5];
@@ -211,8 +211,12 @@ protected:
     TH1F                                *fEtaPtEnh;
     TH1F                                *fGenHfePt;
     TH1F                                *fGenPePt;
-    TH1F                                *fUlsLsElecPt[5];
-    TH1F                                *fTotElecPt[5];
+    TH1F                                *fRecPEJetPt[5];
+    TH1F                                *fTotPEJetPt[5];
+    TH1F                                *fRecPEAng[5];
+    TH1F                                *fTotPEAng[5];
+    TH1F                                *fRecPEDisp[6];
+    TH1F                                *fTotPEDisp[6];
     TH2F                                *fPtP;
     TH1F                                *fptJetIE;               // pT of jets containing IE
     TH1F                                *fptJetPE;               // pT of jets containing PE
@@ -246,6 +250,36 @@ protected:
     TH2F                                *fnM20;
     TH2F                                *fnM02;
     TH2F                                *fnClsTime;
+    TH2F                                *fAngULS;
+    TH2F                                *fAngLS;
+    TH2F                                *fAngChargPart;
+    TH2F                                *fAngHadron;
+    TH2F                                *fAngIncElec;
+    TH2F                                *fAngPhotElec;
+    TH2F                                *fAngElecFromD;
+    TH2F                                *fAngElecFromB;
+    TH2F                                *fAngElecFromDFromB;
+    TH2F                                *fAngD;
+    TH2F                                *fAngB;
+    TH2F                                *fAngCharm;
+    TH2F                                *fAngBeauty;
+    TH2F                                *fAngQuark;
+    TH2F                                *fAngGluon;
+    TH2F                                *fDispULS;
+    TH2F                                *fDispLS;
+    TH2F                                *fDispChargPart;
+    TH2F                                *fDispHadron;
+    TH2F                                *fDispIncElec;
+    TH2F                                *fDispPhotElec;
+    TH2F                                *fDispElecFromD;
+    TH2F                                *fDispElecFromB;
+    TH2F                                *fDispElecFromDFromB;
+    TH2F                                *fDispD;
+    TH2F                                *fDispB;
+    TH2F                                *fDispCharm;
+    TH2F                                *fDispBeauty;
+    TH2F                                *fDispQuark;
+    TH2F                                *fDispGluon;
     TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw
     
 private:

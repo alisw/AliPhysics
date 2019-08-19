@@ -1054,6 +1054,7 @@ void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, cons
  * @param minJetPt cut on the minimum jet pt
  * @param lockTask lock the task - no further changes are possible if kTRUE
  * @param bFillGhosts add ghosts particles among the jet constituents in the output
+ * @param suffix Additional suffix (for subwagons) - not yet added to the jet container name
  * @return a pointer to the new AliEmcalJetTask instance
  */
 AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
@@ -1062,7 +1063,7 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
   const Double_t minTrPt, const Double_t minClPt,
   const Double_t ghostArea, const AliJetContainer::ERecoScheme_t reco,
   const TString tag, const Double_t minJetPt,
-  const Bool_t lockTask, const Bool_t bFillGhosts
+  const Bool_t lockTask, const Bool_t bFillGhosts, const char *suffix
 )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -1167,14 +1168,16 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
     break;
   }
 
-  TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, reco, radius, partCont, clusCont, tag);
+  TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, reco, radius, partCont, clusCont, tag),
+          taskname = name;
+  if(strlen(suffix)) taskname += TString::Format("_%s", suffix);
 
   Printf("Jet task name: %s", name.Data());
 
-  AliEmcalJetTask* mgrTask = static_cast<AliEmcalJetTask *>(mgr->GetTask(name.Data()));
+  AliEmcalJetTask* mgrTask = static_cast<AliEmcalJetTask *>(mgr->GetTask(taskname.Data()));
   if (mgrTask) return mgrTask;
 
-  AliEmcalJetTask* jetTask = new AliEmcalJetTask(name);
+  AliEmcalJetTask* jetTask = new AliEmcalJetTask(taskname);
   jetTask->SetJetType(jetType);
   jetTask->SetJetAlgo(jetAlgo);
   jetTask->SetRecombScheme(reco);

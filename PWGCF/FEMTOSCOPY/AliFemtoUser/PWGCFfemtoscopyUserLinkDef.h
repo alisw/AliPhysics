@@ -110,6 +110,7 @@
 #pragma link C++ class AliFemtoEventCutPionPionAK;
 #pragma link C++ class AliFemtoTrackCutPionPionAK;
 #pragma link C++ class AliFemtoTrackCutPionPionIdealAK;
+#pragma link C++ class AliFemtoTrackCutPionPionMisidentAK;
 #pragma link C++ class AliFemtoPairCutPionPionAKAvgSep;
 #pragma link C++ class AliFemtoPairCutPionPionAKDetaDphi;
 
@@ -182,3 +183,4 @@
 
 #pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle+;
 #pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle::ParentPIDInfo+;
+#pragma link C++ class AliFemtoCorrFctnPairsForCorrFit;

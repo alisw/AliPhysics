@@ -8,6 +8,7 @@ class TH1F;
 class TH2F;
 class TH2D;
 class TH3D;
+class TString;
 class TTree;
 class THnSparse;
 class AliESDEvent;
@@ -57,13 +58,10 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   void GetTrackImpactParameter(AliAODEvent *aodEvent, AliAODTrack *track, AliAODVertex * pvtx, Double_t &dcaxy); // Calculate IP from other vertex
 
   void GetCorrectedImpactParameter(AliAODEvent *aodEvent, AliAODTrack *track, Double_t primVertexZ, Double_t &dcaxy); // correct for effects in phi, z, and pt
+  TString GetPeriodNameByLPM(TString lTag);
   
   AliAnalysisTaskHFEIPCorrection(const AliAnalysisTaskHFEIPCorrection&); // not implemented
   AliAnalysisTaskHFEIPCorrection& operator=(const AliAnalysisTaskHFEIPCorrection&); // not implemented
-  TH2D * EPCent;
-  TH2D * EPCentCorrected;
-  TH2D * EPCentV0A;
-  TH2D * EPCentV0C;
   
   
   TH2D * fIPData;
@@ -74,13 +72,22 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH1D * EP2040V0C;
   
   TH2D * TPCnSigma;
-  
+
+  TH2D * EPCent;
+  TH2D * EPCentCorrected;
+  TH2D * EPCentV0A;
+  TH2D * EPCentV0C;
+
   TH1D * DeltaPhi;
+  AliHFEextraCuts * fExtraCuts;
 
   TH2D * fpTIP2040IP;
   TH2D * fpTIP2040OOP;
   TH2D * fpTIP3050IP;
   TH2D * fpTIP3050OOP;
+  
+  TH1D * EventSelectionSteps;
+
   TH3D * fPionV0pTRNoCuts;
   TH3D * fPionV0pTRWithCuts;
   TH3D * fPionV0pTRNoCutsIP;
@@ -98,7 +105,13 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH2D * fPionV0pTTPCIPWTOFnoFirst;
   TH2D * fPionV0pTTPCOOPWTOFnoFirst;
 
-  TH1D * EventSelectionSteps;
+  TH3D * fEPLowHighCent;
+  TH3D * fEPLowVZEROCent;
+  TH3D * fEPHighVZEROCent;
+  TH3D * fEPLowHighCent2;
+  TH3D * fEPLowVZEROCent2;
+  TH3D * fEPHighVZEROCent2;
+  
   TH3D * fDCARegionRun;
   TH3D * fDCAPhiZHadrons;
   TH3D * fDCAPhiZHadronsEarlyRuns;
@@ -119,13 +132,13 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH2D * fDCAKaons; // Should have less contamination, but have higher mass
   TH3D * fDCAWErrKaons;
   TH3D * fDCAKaonsFineBins;
+
   
   //AliHFEcuts * hfetrackCuts;           // Track cuts
-  AliHFEextraCuts * fExtraCuts;
   AliAODv0KineCuts * fAODV0Cuts;
   TRandom3 * fRd;
   
-  ClassDef(AliAnalysisTaskHFEIPCorrection, 2); // example of analysis
+  ClassDef(AliAnalysisTaskHFEIPCorrection, 1);
 };
 
 #endif

@@ -60,10 +60,11 @@ class AliFemtoDreamCascadeCuts {
     fMinRunNumber = iMinRun;
     fMaxRunNumber = iMaxRun;
   }
-  void SetXiMassRange(float mass, float width) {
+  void SetXiMassRange(float mass, float width, float widthExcl = -1.) {
     fcutXiMass = true;
     fXiMass = mass;
     fXiMassWidth = width;
+    fXiMassWidthExcl = widthExcl;
   }
   ;
   void SetXiCharge(int charge) {
@@ -228,6 +229,7 @@ class AliFemtoDreamCascadeCuts {
   bool fcutXiMass;    //
   float fXiMass;    //
   float fXiMassWidth;  //
+  float fXiMassWidthExcl;  //
   bool fcutXiCharge;  //
   int fXiCharge;  //
   bool fcutDCAXiDaug;  //

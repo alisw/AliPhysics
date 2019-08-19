@@ -16,7 +16,7 @@
 // with nested loops.                                                                   //
 //                                                                                      //
 // Author: Cindy Mordasini (cindy.mordasini@cern.ch)                                    //
-// Version: 27.02.2019                                                                  //
+// Version: 11.06.2019                                                                  //
 //--------------------------------------------------------------------------------------//
 
 #ifndef ALIANALYSISTASKTWOMULTICORRELATIONS_H
@@ -27,6 +27,7 @@
 #include "AliMCEvent.h"
 #include "AliVEvent.h"
 #include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 #include "TList.h"
 #include "TComplex.h"
 #include "TH2I.h"
@@ -76,7 +77,7 @@ public:
     this->fProcessBothMCandAOD = bothFiles;
   }
 
-  void SetGeneralParameters( Bool_t computeEtaGaps, Bool_t crosscheckWithNestedLoops, Bool_t doCorrelationPlot, Bool_t useNonUnitWeights)
+  void SetGeneralParameters(Bool_t computeEtaGaps, Bool_t crosscheckWithNestedLoops, Bool_t doCorrelationPlot, Bool_t useNonUnitWeights)
   {
     this->fComputeEtaGaps = computeEtaGaps;
     this->fCrosscheckWithNestedLoops = crosscheckWithNestedLoops;
@@ -93,10 +94,12 @@ public:
     this->fCentralityMax = maxCentrality;
   }
 
-  void SetHistoParameters(Int_t HNOTbins, Double_t HNOTmax, Int_t HFCbins, Double_t HFCmax)
+  void SetHistoParameters(Int_t HNOTbins, Double_t HNOTmax, Int_t HFNOTbins, Double_t HFNOTmax, Int_t HFCbins, Double_t HFCmax)
   {
-    this->fNumberOfBinsHNOT = HNOTbins;
-    this->fMaxBinHNOT = HNOTmax;
+    this->fNumberOfBinsHINOT = HNOTbins;
+    this->fMaxBinHINOT = HNOTmax;
+    this->fNumberOfBinsHFNOT = HFNOTbins;
+    this->fMaxBinHFNOT = HFNOTmax;
     this->fNumberOfBinsHFC = HFCbins;
     this->fMaxBinHFC = HFCmax;
   }
@@ -122,11 +125,10 @@ public:
     this->fGlobalFilter = globalFilter;
   }
 
-  void SetCorrelationSelection(Int_t minNumberOfTracks, Bool_t removeHMoutliersBefore, Bool_t removeHMoutliersAfter, Double_t minA, Double_t minB, Double_t maxA, Double_t maxB)
+  void SetCorrelationSelection(Int_t minNumberOfTracks, Bool_t removeOutliers, Double_t minA, Double_t minB, Double_t maxA, Double_t maxB)
   {
     this->fMultiplicityMin = minNumberOfTracks;
-    this->fCutOnTDCorrelationsBeforeTrackSelection = removeHMoutliersBefore;
-    this->fCutOnTDCorrelationsAfterTrackSelection = removeHMoutliersAfter;
+    this->fCutOnTDCorrelations = removeOutliers;
     this->fMultiplicityMinA = minA;
     this->fMultiplicityMinB = minB;
     this->fMultiplicityMaxA = maxA;
@@ -209,9 +211,12 @@ public:
 
 //--------------------------------------------------------------------------------------//
 // Methods called in 'UserExec'.
-  virtual void AnalyseMCevent(AliMCEvent *aMCevent);
-  virtual void AnalyseAODevent(AliAODEvent *aAODevent);
-  Bool_t ApplyTrackSelection(AliAODTrack *aAODtrack);
+  virtual void AnalyseAODevent(AliAODEvent *inputAODevent);
+  virtual void AnalyseMCevent(AliMCEvent *inputMCevent);
+  Bool_t ApplyEventSelectionAOD(AliAODEvent *aAODevent);
+  Bool_t ApplyEventSelectionMC(AliMCEvent *aMCevent);
+  Bool_t ApplyTrackSelectionAOD(AliAODTrack *aAODtrack);
+  Bool_t ApplyTrackSelectionMC(AliAODMCParticle *aMCtrack);
   virtual void CalculateQvectors(long long numberOfParticles, Double_t angles[], Double_t pWeights[]);
   TComplex Q(Int_t n, Int_t p);
   virtual void ComputeMultiparticleCorrelations(long long numberOfParticles, Double_t angles[], Double_t pWeights[]);
@@ -232,141 +237,146 @@ private:
   AliAnalysisTaskTwoMultiCorrelations& operator=(const AliAnalysisTaskTwoMultiCorrelations& aattmc);
 
 // General parameters of the analysis.
-  TList *fMainList; // Mother list in the output file.
+  TList     *fMainList;                             // Mother list in the output file.
 
-  Int_t fHighestFlowHarmonic; // Highest flow harmonic taken into account.
-  Int_t fMaxNumberOfParticlesInCorrelations;  // Maximum number of particles used in the correlators.
-  TComplex fQvectors[49][9];  // All needed combinations of Q-vectors. (size: [fHighestFlowHarmonic*fMaxNumberCorrelations+1][fMaxNumberCorrelations+1])
+  Int_t     fHighestFlowHarmonic;                   // Highest flow harmonic taken into account (v_6).
+  Int_t     fMaxNumberOfParticlesInCorrelations;    // Maximum number of particles used in the correlators (8-particle correlations).
+  TComplex  fQvectors[49][9];                       // All needed combinations of Q-vectors. (size: [fHighestFlowHarmonic*fMaxNumberOfParticlesInCorrelations+1][fMaxNumberOfParticlesInCorrelations+1])
 
-  Bool_t fProcessOnlyAOD; // Process only AOD files (or Reco)?
-  Bool_t fProcessOnlyMC;  // Process only MC files (or Kine)?
-  Bool_t fProcessBothMCandAOD;  // Process both MC and AOD files?
+  Bool_t    fProcessOnlyAOD;                        // Process only AOD files (or Reco)?
+  Bool_t    fProcessOnlyMC;                         // Process only MC files (or Kine)?
+  Bool_t    fProcessBothMCandAOD;                   // Process both MC and AOD files?
 
-  Bool_t fComputeEtaGaps; // Compute the eta gaps method for the 2-particle correlations?
-  Bool_t fCrosscheckWithNestedLoops;  // Crosscheck the results with the nested loops for the 2- and 4-particle correlations?
-  Bool_t fDoTDCorrelationHisto; // Fill of the 2D correlation histogram?
-  Bool_t fUseParticleWeights; // Use non-unit particle weights? [TBA: full gestion of the non-unit weights in the task.]
+  Bool_t    fComputeEtaGaps;                        // Compute the eta gaps method for the 2-particle correlations?
+  Bool_t    fCrosscheckWithNestedLoops;             // Crosscheck the results with the nested loops for the 2- and 4-particle correlations?
+  Bool_t    fDoTDCorrelationHisto;                  // Fill the 2D correlation histograms? (select this option only to set and check the cut as it is memory-greedy)
+  Bool_t    fUseParticleWeights;                    // Use non-unit particle weights? [TBA: full gestion of the non-unit weights in the task.]
 
 // Parameters related to the number of tracks.
-  TList *fMultiplicityList; // Daughter list for the histograms containing the number of tracks.
-  TH1D *fHistoCentrality; //! Distribution of the centrality of the events.
-  TH1I *fHistoInitialNumberOfTracks;  //! Distribution of the initial number of tracks.
-  TH1I *fHistoIntermediateNumberOfTracks; //! Distribution of the number of tracks before the track selection.
-  TH1I *fHistoFinalNumberOfTracks;  //! Distribution of the final number of tracks.
-  TH2I *fHistoFilterCorrelations; //! 2D correlation histogram with multiplicity for two filter bits before the track selection.
-  TH2I *fHistoFinalFilterCorrelations; //! 2D correlation histogram with multiplicity for two filter bits after the track selection.
+  TList     *fMultiplicityList;                     // Daughter list for the histograms containing the number of tracks.
+  TH1D      *fHistoInitialCentrality;               //! Centrality before the event selection.
+  TH1D      *fHistoFinalCentrality;                 //! Centrality after the event selection.
+  TH1I      *fHistoInitialNumberOfTracks;           //! Initial number of tracks without filter.
+  TH1I      *fHistoInitialNumberOfTracksMain;       //! Number of tracks before the removal of the outliers for the main filter bit.
+  TH1I      *fHistoInitialNumberOfTracksGlobal;     //! Number of tracks before the removal of the outliers for the global filter bit.
+  TH1I      *fHistoFinalNumberOfTracksMain;         //! Number of tracks after the removal of the outliers for the main filter bit.
+  TH1I      *fHistoFinalNumberOfTracksGlobal;       //! Number of tracks after the removal of the outliers for the global filter bit.
+  TH1I      *fHistoFinalNumberOfTracks;             //! Number of tracks after the track selection for the main filter bit.
+  TH2I      *fHistoInitialFilterCorrelations;       //! 2D correlation histogram with multiplicity for two filter bits before the outliers cuts.
+  TH2I      *fHistoFinalFilterCorrelations;         //! 2D correlation histogram with multiplicity for two filter bits after the outliers cuts.
 
-  Bool_t fCentralityFromVZero;  // Use the V0 detector to estimate the centrality of the events?
-  Bool_t fCentralityFromSPD;  // Use the SPD detector to estimate the centrality of the events? 
-  Double_t fCentralityMin;  // Minimum value of the centrality percentile.
-  Double_t fCentralityMax;  // Maximum value of the centrality percentile.
+  Bool_t    fCentralityFromVZero;                   // Use the V0 detector to estimate the centrality of the events?
+  Bool_t    fCentralityFromSPD;                     // Use the SPD detector to estimate the centrality of the events? 
+  Double_t  fCentralityMin;                         // Minimum value of the centrality percentile.
+  Double_t  fCentralityMax;                         // Maximum value of the centrality percentile.
 
-  Int_t fNumberOfBinsHNOT;  // Number of bins for the TH1I with the number of tracks.
-  Double_t fMaxBinHNOT; // Last bin for the TH1I with the number of tracks.
-  Int_t fNumberOfBinsHFC; // Number of bins for the TH2I with the correlations between the filters.
-  Double_t fMaxBinHFC;  // Last bin for the TH2I with the correlations between the filters.
+  Int_t     fNumberOfBinsHINOT;                     // Number of bins for the TH1I with the initial numbers of tracks.
+  Double_t  fMaxBinHINOT;                           // Last bin for the TH1I with the initial numbers of tracks.
+  Int_t     fNumberOfBinsHFNOT;                     // Number of bins for the TH1I with the final numbers of tracks.
+  Double_t  fMaxBinHFNOT;                           // Last bin for the TH1I with the final numbers of tracks.
+  Int_t     fNumberOfBinsHFC;                       // Number of bins for the TH2I with the correlations between the filters.
+  Double_t  fMaxBinHFC;                             // Last bin for the TH2I with the correlations between the filters.
 
 // Parameters related to the event selection criteria.
-  TList *fEventSelectionList; // Daughter list for the histograms containing the event selection criteria.
-  TH1D *fHistoInitialPVX; //! Initial distribution of the x-position of the PV.
-  TH1D *fHistoFinalPVX; //! Final distribution of the x-position of the PV.
-  TH1D *fHistoInitialPVY; //! Initial distribution of the y-position of the PV.
-  TH1D *fHistoFinalPVY; //! Final distribution of the y-position of the PV.
-  TH1D *fHistoInitialPVZ; //! Initial distribution of the z-position of the PV.
-  TH1D *fHistoFinalPVZ; //! Final distribution of the z-position of the PV.
+  TList     *fEventSelectionList;                   // Daughter list for the histograms containing the event selection criteria.
+  TH1D      *fHistoInitialPVX;                      //! x-position of the PV before the event selection.
+  TH1D      *fHistoFinalPVX;                        //! x-position of the PV after the event selection.
+  TH1D      *fHistoInitialPVY;                      //! y-position of the PV before the event selection.
+  TH1D      *fHistoFinalPVY;                        //! y-position of the PV after the event selection.
+  TH1D      *fHistoInitialPVZ;                      //! z-position of the PV before the event selection.
+  TH1D      *fHistoFinalPVZ;                        //! z-position of the PV after the event selection.
 
-  Bool_t fCutOnPVX; // Apply the cuts on the x-position of the PV?
-  Bool_t fCutOnPVY; // Apply the cuts on the y-position of the PV?
-  Bool_t fCutOnPVZ; // Apply the cuts on the z-position of the PV?
+  Bool_t    fCutOnPVX;                              // Apply the cuts on the x-position of the PV?
+  Bool_t    fCutOnPVY;                              // Apply the cuts on the y-position of the PV?
+  Bool_t    fCutOnPVZ;                              // Apply the cuts on the z-position of the PV?
 
-  Double_t fPVXMin; // Minimum cut on the x-position of the PV.
-  Double_t fPVXMax; // Maximum cut on the x-position of the PV.
-  Double_t fPVYMin; // Minimum cut on the y-position of the PV.
-  Double_t fPVYMax; // Maximum cut on the y-position of the PV.
-  Double_t fPVZMin; // Minimum cut on the z-position of the PV.
-  Double_t fPVZMax; // Maximum cut on the z-position of the PV.
+  Double_t  fPVXMin;                                // Minimum cut on the x-position of the PV.
+  Double_t  fPVXMax;                                // Maximum cut on the x-position of the PV.
+  Double_t  fPVYMin;                                // Minimum cut on the y-position of the PV.
+  Double_t  fPVYMax;                                // Maximum cut on the y-position of the PV.
+  Double_t  fPVZMin;                                // Minimum cut on the z-position of the PV.
+  Double_t  fPVZMax;                                // Maximum cut on the z-position of the PV.
 
 // Parameters related to the track selection criteria.
-  TList *fTrackSelectionList; // Daughter list for the histograms containing the track selection criteria.
-  TH1D *fHistoIntermediatePt; //! Distribution of the transverse momentum before the track selection.
-  TH1D *fHistoFinalPt;  //! Distribution of the transverse momentum after the full selection.
-  TH1D *fHistoIntermediateEta;  //! Distribution of the pseudorapidity before the track selection.
-  TH1D *fHistoFinalEta; //! Distribution of the pseudorapidity after the full selection.
-  TH1D *fHistoIntermediatePhi;  //! Distribution of the azimuthal angles before the track selection.
-  TH1D *fHistoFinalPhi; //! Distribution of the azimuthal angles after the full selection.
-  TH1I *fHistoIntermediateNumberOfTPC;  //! Distribution of the number of TPC clusters before the track selection.
-  TH1I *fHistoFinalNumberOfTPC; //! Distribution of the number of TPC clusters after the full selection.
-  TH1D *fHistoIntermediateChiSquare;  //! Distribution of the chi^2 of the track momentum in TPC before the track selection.
-  TH1D *fHistoFinalChiSquare; //! Distribution of the chi^2 of the track momentum in TPC after the full selection.
-  TH1D *fHistoIntermediateDCAxy;  //! Distribution of the xy-coordinate of the DCA before the track selection.
-  TH1D *fHistoFinalDCAxy; //! Distribution of the xy-coordinate of the DCA after the full selection.
-  TH1D *fHistoIntermediateDCAz; //! Distribution of the z-coordinate of the DCA before the track selection.
-  TH1D *fHistoFinalDCAz;  //! Distribution of the z-coordinate of the DCA after the full selection.
-  TH1I *fHistoIntermediateCharge; //! Distribution of the electric charge of the tracks before the track selection.
-  TH1I *fHistoFinalCharge;  //! Distribution of the electric charge of the tracks after the full selection.
-  TH1I *fHistoIntermediateNumberOfITS;  //! Distribution of the number of clusters in the ITS before the track selection.
-  TH1I *fHistoFinalNumberOfITS; //! Distribution of the number of clusters in the ITS after the track selection.
+  TList     *fTrackSelectionList;                   // Daughter list for the histograms containing the track selection criteria.
+  TH1D      *fHistoInitialPt;                       //! Distribution of the transverse momentum before the track selection.
+  TH1D      *fHistoFinalPt;                         //! Distribution of the transverse momentum after the track selection.
+  TH1D      *fHistoInitialEta;                      //! Distribution of the pseudorapidity before the track selection.
+  TH1D      *fHistoFinalEta;                        //! Distribution of the pseudorapidity after the track selection.
+  TH1D      *fHistoInitialPhi;                      //! Distribution of the azimuthal angles before the track selection.
+  TH1D      *fHistoFinalPhi;                        //! Distribution of the azimuthal angles after the track selection.
+  TH1I      *fHistoInitialNumberOfTPC;              //! Distribution of the number of TPC clusters before the track selection.
+  TH1I      *fHistoFinalNumberOfTPC;                //! Distribution of the number of TPC clusters after the track selection.
+  TH1D      *fHistoInitialChiSquare;                //! Distribution of the chi^2 in TPC before the track selection.
+  TH1D      *fHistoFinalChiSquare;                  //! Distribution of the chi^2 in TPC after the track selection.
+  TH1D      *fHistoInitialDCAxy;                    //! Distribution of the xy-coordinate of the DCA before the track selection.
+  TH1D      *fHistoFinalDCAxy;                      //! Distribution of the xy-coordinate of the DCA after the track selection.
+  TH1D      *fHistoInitialDCAz;                     //! Distribution of the z-coordinate of the DCA before the track selection.
+  TH1D      *fHistoFinalDCAz;                       //! Distribution of the z-coordinate of the DCA after the track selection.
+  TH1I      *fHistoInitialCharge;                   //! Distribution of the electric charge of the tracks before the track selection.
+  TH1I      *fHistoFinalCharge;                     //! Distribution of the electric charge of the tracks after the track selection.
+  TH1I      *fHistoInitialNumberOfITS;              //! Distribution of the number of clusters in the ITS before the track selection.
+  TH1I      *fHistoFinalNumberOfITS;                //! Distribution of the number of clusters in the ITS after the track selection.
 
-  Bool_t fCutOnTDCorrelationsBeforeTrackSelection;  // Apply the cuts on the number of tracks to remove high multiplicity outliers before the track selection?
-  Bool_t fCutOnTDCorrelationsAfterTrackSelection;  // Apply the cuts on the number of tracks to remove high multiplicity outliers after the track selection?
-  Bool_t fCutOnPt;  // Apply the cuts on the transverse momentum?
-  Bool_t fCutOnEta; // Apply the cuts on the pseudorapidity?
-  Bool_t fCutOnNumberOfTPC; // Apply the cut on the number of TPC clusters?
-  Bool_t fCutOnChiSquarePInTPC; // Apply the cuts on chi^2 of the track momentum in TPC?
-  Bool_t fCutOnDCAxy; // Apply the cut on the xy-coordinate of the DCA?
-  Bool_t fCutOnDCAz;  // Apply the cut on the z-coordinate of the DCA?
-  Bool_t fCutOnCharge;  // Apply the cut on the electric charge of the tracks?
-  Bool_t fCutOnNumberOfITS; // Apply the cut on the number of ITS clusters?
+  Bool_t    fCutOnTDCorrelations;                   // Apply the cuts on the number of tracks to remove high multiplicity outliers before the track selection?
+  Bool_t    fCutOnPt;                               // Apply the cuts on the transverse momentum?
+  Bool_t    fCutOnEta;                              // Apply the cuts on the pseudorapidity?
+  Bool_t    fCutOnNumberOfTPC;                      // Apply the cut on the number of TPC clusters?
+  Bool_t    fCutOnChiSquarePInTPC;                  // Apply the cuts on chi^2 of the track momentum in TPC?
+  Bool_t    fCutOnDCAxy;                            // Apply the cut on the xy-coordinate of the DCA?
+  Bool_t    fCutOnDCAz;                             // Apply the cut on the z-coordinate of the DCA?
+  Bool_t    fCutOnCharge;                           // Apply the cut on the electric charge of the tracks?
+  Bool_t    fCutOnNumberOfITS;                      // Apply the cut on the number of ITS clusters?
 
-  Int_t fMainFilter; // Main filter bit used in the analysis.
-  Int_t fGlobalFilter;  // Second filter bit used to remove high multiplicity outliers.
-  Int_t fMultiplicityMin;  // Strict minimum of the number of tracks required in an event to have an event weight which makes sense.
-  Double_t fMultiplicityMinA; // a in 'a(global multiplicity) + b' for the minimum boundary.
-  Double_t fMultiplicityMinB; // b in 'a(global multiplicity) + b' for the minimum boundary.
-  Double_t fMultiplicityMaxA; // a in 'a(global multiplicity) + b' for the maximum boundary.
-  Double_t fMultiplicityMaxB; // b in 'a(global multiplicity) + b' for the maximum boundary.
+  Int_t     fMainFilter;                            // Main filter bit used in the analysis.
+  Int_t     fGlobalFilter;                          // Second filter bit used to remove high multiplicity outliers.
+  Int_t     fMultiplicityMin;                       // Strict minimum of the number of tracks required in an event to do the analysis.
+  Double_t  fMultiplicityMinA;                      // a in 'a(global multiplicity) + b' for the minimum boundary.
+  Double_t  fMultiplicityMinB;                      // b in 'a(global multiplicity) + b' for the minimum boundary.
+  Double_t  fMultiplicityMaxA;                      // a in 'a(global multiplicity) + b' for the maximum boundary.
+  Double_t  fMultiplicityMaxB;                      // b in 'a(global multiplicity) + b' for the maximum boundary.
 
-  Double_t fPtMin;  // Minimum cut on the transverse momentum.
-  Double_t fPtMax;  // Maximum cut on the transverse momentum.
-  Double_t fEtaMin; // Minimum cut on the pseudorapidity.
-  Double_t fEtaMax; // Maximum cut on the pseudorapidity.
-  Int_t fNumberOfTPCMin;  // Minimum number of TPC clusters.
-  Double_t fChiSquarePInTPCMin; // Minimum cut on chi^2 of the track momentum in TPC.
-  Double_t fChiSquarePInTPCMax; // Maximum cut on chi^2 of the track momentum in TPC.
-  Double_t fDCAxyMax; // Maximum cut on the xy-coordinate of the DCA.
-  Double_t fDCAzMax;  // Maximum cut on the z-coordinate of the DCA.
-  Int_t fCharge;  // Electric charge of all the tracks.
-  Int_t fNumberOfITSMin;  // Minimum number of ITS clusters.
+  Double_t  fPtMin;                                 // Minimum cut on the transverse momentum.
+  Double_t  fPtMax;                                 // Maximum cut on the transverse momentum.
+  Double_t  fEtaMin;                                // Minimum cut on the pseudorapidity.
+  Double_t  fEtaMax;                                // Maximum cut on the pseudorapidity.
+  Int_t     fNumberOfTPCMin;                        // Minimum number of TPC clusters.
+  Double_t  fChiSquarePInTPCMin;                    // Minimum cut on chi^2 of the track momentum in TPC.
+  Double_t  fChiSquarePInTPCMax;                    // Maximum cut on chi^2 of the track momentum in TPC.
+  Double_t  fDCAxyMax;                              // Maximum cut on the xy-coordinate of the DCA.
+  Double_t  fDCAzMax;                               // Maximum cut on the z-coordinate of the DCA.
+  Int_t     fCharge;                                // Electric charge of all the tracks.
+  Int_t     fNumberOfITSMin;                        // Minimum number of ITS clusters.
 
 /// Brute-force method to remove the HM outliers.
-  Bool_t fCutOnTracksMax; // Apply maximum limits on the multiplicity to remove high multiplicity outliers?
-  Int_t fNumberOfTracksMaxZero; // Strict maximum number of tracks needed in one event for 0-5% centrality.
-  Int_t fNumberOfTracksMaxFive; // Strict maximum number of tracks needed in one event for 5-10% centrality.
-  Int_t fNumberOfTracksMaxTen;  // Strict maximum number of tracks needed in one event for 10-20% centrality.
-  Int_t fNumberOfTracksMaxTwenty; // Strict maximum number of tracks needed in one event for 20-30% centrality.
-  Int_t fNumberOfTracksMaxThirty; // Strict maximum number of tracks needed in one event for 30-40% centrality.
-  Int_t fNumberOfTracksMaxForty;  // Strict maximum number of tracks needed in one event for 40-50% centrality.
-  Int_t fNumberOfTracksMaxFifty;  // Strict maximum number of tracks needed in one event for 50-60% centrality.
-  Int_t fNumberOfTracksMaxSixty;  // Strict maximum number of tracks needed in one event for 60-70% centrality.
-  Int_t fNumberOfTracksMaxSeventy;  // Strict maximum number of tracks needed in one event for 70-80% centrality.
+  Bool_t    fCutOnTracksMax;                        // Apply maximum limits on the multiplicity to remove high multiplicity outliers?
+  Int_t     fNumberOfTracksMaxZero;                 // Strict maximum number of tracks needed in one event for 0-5% centrality.
+  Int_t     fNumberOfTracksMaxFive;                 // Strict maximum number of tracks needed in one event for 5-10% centrality.
+  Int_t     fNumberOfTracksMaxTen;                  // Strict maximum number of tracks needed in one event for 10-20% centrality.
+  Int_t     fNumberOfTracksMaxTwenty;               // Strict maximum number of tracks needed in one event for 20-30% centrality.
+  Int_t     fNumberOfTracksMaxThirty;               // Strict maximum number of tracks needed in one event for 30-40% centrality.
+  Int_t     fNumberOfTracksMaxForty;                // Strict maximum number of tracks needed in one event for 40-50% centrality.
+  Int_t     fNumberOfTracksMaxFifty;                // Strict maximum number of tracks needed in one event for 50-60% centrality.
+  Int_t     fNumberOfTracksMaxSixty;                // Strict maximum number of tracks needed in one event for 60-70% centrality.
+  Int_t     fNumberOfTracksMaxSeventy;              // Strict maximum number of tracks needed in one event for 70-80% centrality.
 
 // Parameters related to the multi-particle correlations.
-  TList *fMultiParticleCorrelationsList; // Daughter list with the multi-particle correlations.
-  TProfile *fProfileTwoParticleCorrelations;  //! <2>_{j,-j} for j = 1..6. (6 bins)
-  TProfile *fProfileFourParticleCorrelations; //! <4>_{j,k,-j,-k} for j = 1..6, k = j..6. (21 bins)
-  TProfile *fProfileFourParticleCorrelationsCrossCheck; //! <4>_{j,k,-j,-k} for j = 2..6, k = 1..j-1. (15 bins)
-  TProfile *fProfileSixParticleCorrelations;  //! <6>_{j,k,l,-j,-k,-l} for j = 1..4, k = 2..5 (k > j), l = 3..6 (l > k). (20 bins)
-  TProfile *fProfileTwoParticleCorrelationsNestedLoops; //! <2>_{j,-j} for j = 1..6 with nested loops. (6 bins)
-  TProfile *fProfileFourParticleCorrelationsNestedLoops;  //! <4>_{j,k,-j,-k} for j = 1..6, k = j..6 with nested loops. (21 bins)
+  TList     *fMultiParticleCorrelationsList;        // Daughter list with the multi-particle correlations.
+  TProfile  *fProfileTwoParticleCorrelations;       //! <2>_{j,-j} for j = 1..6. (6 bins)
+  TProfile  *fProfileFourParticleCorrelations;      //! <4>_{j,k,-j,-k} for j = 1..6, k = j..6. (21 bins)
+  TProfile  *fProfileFourParticleCorrelationsCrossCheck;    //! <4>_{j,k,-j,-k} for j = 2..6, k = 1..j-1. (15 bins)
+  TProfile  *fProfileSixParticleCorrelations;       //! <6>_{j,k,l,-j,-k,-l} for j = 1..4, k = 2..5 (k > j), l = 3..6 (l > k). (20 bins)
+  TProfile  *fProfileTwoParticleCorrelationsNestedLoops;    //! <2>_{j,-j} for j = 1..6 with nested loops. (6 bins)
+  TProfile  *fProfileFourParticleCorrelationsNestedLoops;   //! <4>_{j,k,-j,-k} for j = 1..6, k = j..6 with nested loops. (21 bins)
 
 // Parameters related to the 2-particle correlations with eta gaps.
-  TList *fTwoParticleCorrelationsWithEtaGapsList; // Daughter list with the 2-p correlations calculated with eta gaps.
-  TProfile *fProfileTwoParticleCorrelationsWithEtaGaps[6];  //! <2>_{j,-j} for j = 1..6 with the eta gaps method. (11 bins per profile).
+  TList     *fTwoParticleCorrelationsWithEtaGapsList;       // Daughter list with the 2-p correlations calculated with eta gaps.
+  TProfile  *fProfileTwoParticleCorrelationsWithEtaGaps[6]; //! <2>_{j,-j} for j = 1..6 with the eta gaps method. (11 bins per profile).
 
 //--------------------------------------------------------------------------------------//
 // Version number to handle properly objects written before and after the changes.
-// Version 11, date: 2019-05-21.
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 12);
+// Version 13, date: 2019-06-11.
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 13);
 
 };  // End: class AliAnalysisTaskTwoMultiCorrelations.
 

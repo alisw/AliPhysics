@@ -17,7 +17,13 @@ ClassImp(AliReducedCaloClusterTrackMatcher)
 
 //_______________________________________________________________________________
 AliReducedCaloClusterTrackMatcher::AliReducedCaloClusterTrackMatcher() :
+  fUseDistance(kFALSE),
   fMaxMatchingDistance(-999.),
+  fUseDeltaEtaDeltaPhi(kFALSE),
+  fMinMatchingDeltaPhi(-999.),
+  fMaxMatchingDeltaPhi(-999.),
+  fMinMatchingDeltaEta(-999.),
+  fMaxMatchingDeltaEta(-999.),
   fMatchedClusterIDsBefore(),
   fMatchedClusterIDsAfter()
 {
@@ -28,7 +34,13 @@ AliReducedCaloClusterTrackMatcher::AliReducedCaloClusterTrackMatcher() :
 
 //_______________________________________________________________________________
 AliReducedCaloClusterTrackMatcher::AliReducedCaloClusterTrackMatcher(const Char_t* name) :
+  fUseDistance(kFALSE),
   fMaxMatchingDistance(-999.),
+  fUseDeltaEtaDeltaPhi(kFALSE),
+  fMinMatchingDeltaPhi(-999.),
+  fMaxMatchingDeltaPhi(-999.),
+  fMinMatchingDeltaEta(-999.),
+  fMaxMatchingDeltaEta(-999.),
   fMatchedClusterIDsBefore(),
   fMatchedClusterIDsAfter()
 {
@@ -42,6 +54,60 @@ AliReducedCaloClusterTrackMatcher::~AliReducedCaloClusterTrackMatcher() {
   //
   // destructor
   //
+}
+
+//_______________________________________________________________________________
+void AliReducedCaloClusterTrackMatcher::SetMaximumMatchingDistance(Float_t max) {
+  //
+  // set maximum distance for cluster track matching
+  //
+  fMaxMatchingDistance = max;
+  fUseDistance = kTRUE;
+  fUseDeltaEtaDeltaPhi = kFALSE;
+}
+
+//_______________________________________________________________________________
+void AliReducedCaloClusterTrackMatcher::SetMaximumMatchingDeltaPhi(Float_t min, Float_t max) {
+  //
+  // set maximum distance in phi for cluster track matching
+  //
+  fMinMatchingDeltaPhi = min;
+  fMaxMatchingDeltaPhi = max;
+  fUseDistance = kFALSE;
+  fUseDeltaEtaDeltaPhi = kTRUE;
+}
+
+//_______________________________________________________________________________
+void AliReducedCaloClusterTrackMatcher::SetMaximumMatchingDeltaPhi(Float_t max) {
+  //
+  // set maximum distance in phi for cluster track matching
+  //
+  fMinMatchingDeltaPhi = -max;
+  fMaxMatchingDeltaPhi = max;
+  fUseDistance = kFALSE;
+  fUseDeltaEtaDeltaPhi = kTRUE;
+}
+
+//_______________________________________________________________________________
+void AliReducedCaloClusterTrackMatcher::SetMaximumMatchingDeltaEta(Float_t min, Float_t max) {
+  //
+  // set maximum distance in eta for cluster track matching
+  //
+  fMinMatchingDeltaEta = min;
+  fMaxMatchingDeltaEta = max;
+  fUseDistance = kFALSE;
+  fUseDeltaEtaDeltaPhi = kTRUE;
+}
+
+//_______________________________________________________________________________
+void AliReducedCaloClusterTrackMatcher::SetMaximumMatchingDeltaEta(Float_t max) {
+  //
+  // set maximum distance in eta for cluster track matching
+  //
+  fMinMatchingDeltaEta = -max;
+  fMaxMatchingDeltaEta = max;
+  fUseDistance = kFALSE;
+  fUseDeltaEtaDeltaPhi = kTRUE;
 }
 
 //_______________________________________________________________________________
@@ -91,7 +157,14 @@ Bool_t AliReducedCaloClusterTrackMatcher::IsClusterMatchedToTrack(AliReducedTrac
   dist      = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
 
   fMatchedClusterIDsBefore.push_back(track->CaloClusterId());
-  if (dist>fMaxMatchingDistance) return kFALSE;
+  if (fUseDistance) {
+    if (dist>fMaxMatchingDistance) return kFALSE;
+  }
+  if (fUseDeltaEtaDeltaPhi) {
+    if (deltaPhi<fMinMatchingDeltaPhi || deltaPhi>fMaxMatchingDeltaPhi) return kFALSE;
+    if (deltaEta<fMinMatchingDeltaEta || deltaEta>fMaxMatchingDeltaEta) return kFALSE;
+  }
+
   fMatchedClusterIDsAfter.push_back(track->CaloClusterId());
   return kTRUE;
 }

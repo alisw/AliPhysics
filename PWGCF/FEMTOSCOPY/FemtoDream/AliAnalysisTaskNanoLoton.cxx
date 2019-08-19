@@ -29,6 +29,9 @@ AliAnalysisTaskNanoLoton::AliAnalysisTaskNanoLoton()
       fPartColl(nullptr),
       fResults(nullptr),
       fResultsQA(nullptr),
+      fSample(nullptr),
+      fResultsSample(nullptr),
+      fResultsSampleQA(nullptr),
       fTrackBufferSize(2000),
       fGTI(nullptr) {
 }
@@ -54,6 +57,9 @@ AliAnalysisTaskNanoLoton::AliAnalysisTaskNanoLoton(const char* name)
       fPartColl(nullptr),
       fResults(nullptr),
       fResultsQA(nullptr),
+      fSample(nullptr),
+      fResultsSample(nullptr),
+      fResultsSampleQA(nullptr),
       fTrackBufferSize(2000),
       fGTI(nullptr) {
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
@@ -63,6 +69,8 @@ AliAnalysisTaskNanoLoton::AliAnalysisTaskNanoLoton(const char* name)
   DefineOutput(5, TList::Class());  //Output for the AntiLambda Cuts
   DefineOutput(6, TList::Class());  //Output for the Results
   DefineOutput(7, TList::Class());  //Output for the Results QA
+  DefineOutput(8, TList::Class());  //Output for the Results
+  DefineOutput(9, TList::Class());  //Output for the Results QA
 }
 
 AliAnalysisTaskNanoLoton::~AliAnalysisTaskNanoLoton() {
@@ -95,6 +103,9 @@ AliAnalysisTaskNanoLoton::~AliAnalysisTaskNanoLoton() {
   }
   if (fPartColl) {
     delete fPartColl;
+  }
+  if (fSample) {
+    delete fSample;
   }
 }
 
@@ -133,6 +144,9 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
                                                 fConfig->GetMinimalBookingME());
     fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,
                                                 fConfig->GetMinimalBookingME());
+    if (fConfig->GetUsePhiSpinning()) {
+      fSample = new AliFemtoDreamControlSample(fConfig);
+    }
   }
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
                                   GetCollisionCandidates(), false);
@@ -188,15 +202,36 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
   fResultsQA = new TList();
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
-  if (!fConfig->GetMinimalBookingME()) {
+
+  if (fConfig->GetUseEventMixing()) {
     fResults = fPartColl->GetHistList();
-    fResultsQA->Add(fPartColl->GetQAList());
-    fResultsQA->Add(fPairCleaner->GetHistList());
+    if (!fConfig->GetMinimalBookingME()) {
+      fResultsQA->Add(fPartColl->GetQAList());
+      fResultsQA->Add(fPairCleaner->GetHistList());
+    }
   } else {
     fResults = new TList();
     fResults->SetOwner();
     fResults->SetName("Results");
   }
+
+  fResultsSampleQA = new TList();
+  fResultsSampleQA->SetOwner();
+  fResultsSampleQA->SetName("ResultsSampleQA");
+
+  if (fConfig->GetUsePhiSpinning()) {
+    fResultsSample = fSample->GetHistList();
+
+    if (!fConfig->GetMinimalBookingSample()) {
+      fResultsSampleQA->Add(fSample->GetQAList());
+      fResultsQA->Add(fPairCleaner->GetHistList());
+    }
+  } else {
+    fResultsSample = new TList();
+    fResultsSample->SetOwner();
+    fResultsSample->SetName("ResultsSample");
+  }
+
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
@@ -204,6 +239,8 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
   PostData(5, fAntiLambdaList);
   PostData(6, fResults);
   PostData(7, fResultsQA);
+  PostData(8, fResultsSample);
+  PostData(9, fResultsSampleQA);
 }
 
 void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
@@ -247,8 +284,7 @@ void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
   AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
   fv0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iv0 = 0;
-      iv0
-          < static_cast<TClonesArray *>(aodEvt->GetV0s())->GetEntriesFast();
+      iv0 < static_cast<TClonesArray *>(aodEvt->GetV0s())->GetEntriesFast();
       ++iv0) {
     AliAODv0* casc = aodEvt->GetV0(iv0);
     fv0->Setv0(fInputEvent, casc, fEvent->GetMultiplicity());
@@ -270,9 +306,16 @@ void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
   fPairCleaner->StoreParticle(AntiProtons);
   fPairCleaner->StoreParticle(Lambdas);
   fPairCleaner->StoreParticle(AntiLambdas);
-
-  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
-                      fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
+  if (fPairCleaner->GetCounter() > 0) {
+    if (fConfig->GetUseEventMixing()) {
+      fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
+                          fEvent->GetZVertex(), fEvent->GetMultiplicity(),
+                          fEvent->GetV0MCentrality());
+    }
+    if (fConfig->GetUsePhiSpinning()) {
+      fSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
+    }
+  }
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
@@ -280,6 +323,8 @@ void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
   PostData(5, fAntiLambdaList);
   PostData(6, fResults);
   PostData(7, fResultsQA);
+  PostData(8, fResultsSample);
+  PostData(9, fResultsSampleQA);
 }
 
 //____________________________________________________________________________________________________

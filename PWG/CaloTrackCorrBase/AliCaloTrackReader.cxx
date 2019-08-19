@@ -48,7 +48,7 @@
 
 // ---- Jets ----
 #include "AliAODJet.h"
-#include "AliAODJetEventBackground.h"
+//#include "AliAODJetEventBackground.h"
 
 /// \cond CLASSIMP
 ClassImp(AliCaloTrackReader) ;
@@ -133,7 +133,9 @@ fEventPlaneMethod(""),
 fFillInputNonStandardJetBranch(kFALSE),
 fNonStandardJets(new TClonesArray("AliAODJet",100)),          fInputNonStandardJetBranchName("jets"),
 fFillInputBackgroundJetBranch(kFALSE), 
-fBackgroundJets(0x0),fInputBackgroundJetBranchName("jets"),
+//fBackgroundJets(0x0),
+fBackgroundJets(new TClonesArray("AliAODJet",100)),
+fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
 fMomentum(),                 fOutputContainer(0x0),           
 fhEMCALClusterEtaPhi(0),     fhEMCALClusterEtaPhiFidCut(0),     
@@ -218,7 +220,14 @@ void AliCaloTrackReader::DeletePointers()
     else               fNonStandardJets->Delete() ;
     delete fNonStandardJets ;
   }
-  delete fBackgroundJets ;
+
+  if(fBackgroundJets)
+  {
+    if(fDataType!=kMC) fBackgroundJets->Clear("C") ;
+    else               fBackgroundJets->Delete() ;
+    delete fBackgroundJets;
+  }
+  //  delete fBackgroundJets ;
 
   fRejectEventsWithBit.Reset();
   fAcceptEventsWithBit.Reset();
@@ -1158,10 +1167,12 @@ void AliCaloTrackReader::InitParameters()
   //Jets
   fInputNonStandardJetBranchName = "jets";
   fFillInputNonStandardJetBranch = kFALSE;
-  if(!fNonStandardJets) fNonStandardJets = new TClonesArray("AliAODJet",100);
+  //if(!fNonStandardJets) fNonStandardJets = new TClonesArray("AliAODJet",100);
+  if(!fNonStandardJets) fNonStandardJets = new TClonesArray("AliEmcalJet",100);
   fInputBackgroundJetBranchName = "jets";
   fFillInputBackgroundJetBranch = kFALSE; 
-  if(!fBackgroundJets) fBackgroundJets = new AliAODJetEventBackground();
+  //if(!fBackgroundJets) fBackgroundJets = new AliAODJetEventBackground();
+  if(!fBackgroundJets) fBackgroundJets = new TClonesArray("AliEmcalJet",100);
 
   fSmearShowerShapeWidth = 0.005;
   fSmearNLMMin = 1;
@@ -2571,6 +2582,7 @@ void AliCaloTrackReader::FillInputNonStandardJets()
   else
   {
     AliDebug(1,Form("AOD input jets %d", fNonStandardJets->GetEntriesFast()));
+    if(GetDebug()>3) fNonStandardJets->Print("");
   }
 }
 
@@ -2591,8 +2603,8 @@ void AliCaloTrackReader::FillInputBackgroundJets()
     AliFatal("No background jet branch name specified. Specify among existing ones.");
   }
   
-  fBackgroundJets = (AliAODJetEventBackground*)(fInputEvent->FindListObject(fInputBackgroundJetBranchName.Data()));
-  
+  fBackgroundJets = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(fInputBackgroundJetBranchName.Data()));
+    
   if(!fBackgroundJets)
   {
     //check if jet branch exist; exit if not
@@ -2603,7 +2615,7 @@ void AliCaloTrackReader::FillInputBackgroundJets()
   else
   {
     AliDebug(1,"FillInputBackgroundJets");
-    fBackgroundJets->Print("");
+    if(GetDebug()>3) fBackgroundJets->Print("");
   }
 }
 
@@ -3283,7 +3295,8 @@ void AliCaloTrackReader::ResetLists()
   fV0Mul[0] = 0;   fV0Mul[1] = 0;
   
   if(fNonStandardJets) fNonStandardJets -> Clear("C");
-  fBackgroundJets->Reset();
+  if(fBackgroundJets)  fBackgroundJets  -> Clear("C");
+  //fBackgroundJets->Reset();
 }
 
 //___________________________________________

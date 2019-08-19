@@ -1,8 +1,9 @@
 AliAnalysisTask *AddTask_dsekihat_LMeeTree(
   const UInt_t trigger = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral,
-  const Float_t minPt     = 0.2,
-  const Float_t maxEta    = 0.8,
-  const Float_t minNsigma = 5.0
+  const Float_t minPt     = 0.15,
+  const Float_t maxEta    = 0.9,
+  const Float_t minNsigma = -5.0,
+  const Float_t maxNsigma = +5.0
 )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -26,7 +27,8 @@ AliAnalysisTask *AddTask_dsekihat_LMeeTree(
   task->SelectCollisionCandidates(trigger); 
   task->SetMinPtCut(minPt);
   task->SetMaxEtaCut(maxEta);
-  task->SetMaxTPCNsigmaEleCut(minNsigma);
+  task->SetMinTPCNsigmaEleCut(minNsigma);
+  task->SetMaxTPCNsigmaEleCut(maxNsigma);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

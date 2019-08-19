@@ -300,7 +300,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F                       * fEOverPvsPt;                     ///<  Cluster E over track p vs. cluster pT before CPV
   TH2F                       * fEOverPvsPtWithCPV;              ///<  Cluster E over track p vs. cluster pT after CPV
   TH2F                       * fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
-  TH2F                       * fNCellsPerCluster;               //!<! Number of cells per cluster vs energy
+  TH2F                       * fNCellsPerCluster;               //!<! Number of cells per cluster vs pT
+  TH2F                       * fDTBCperCluster;                 //!<! Distance to bad channel per cluster vs pT
   TH1F                       * fPTbeforeNonLinScaling;          //!<! Pt distribution (before non-lin scaling in MC, when applied)
   TH1F                       * fPT;                             //!<! Pt distribution
   TH1F                       * fE;                              //!<! E distribution
@@ -423,7 +424,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator = ( const AliAnalysisTaskEMCALPhotonIsolation & ); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 27);            // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 28);            // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif

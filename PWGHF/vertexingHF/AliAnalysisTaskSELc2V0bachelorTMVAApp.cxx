@@ -70,6 +70,9 @@
 #include "AliKFVertex.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDUtils.h"
+#include <TMVA/Tools.h>
+#include <TMVA/Reader.h>
+#include <TMVA/MethodCuts.h>
 
 #include "IClassifierReader.h"
 
@@ -194,6 +197,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fNTracklets_All(0),
   fCentrality(0),
   fFillTree(0),
+  fUseWeightsLibrary(kFALSE),
   fBDTReader(0),
   fTMVAlibName(""),
   fTMVAlibPtBin(""),
@@ -220,7 +224,14 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fAODProtection(1),
   fUsePIDresponseForNsigma(kFALSE),
   fNVars(14),
-  fTimestampCut(0)
+  fTimestampCut(0),
+  fUseXmlWeightsFile(kTRUE),
+  fReader(0),
+  fVarsTMVA(0),
+  fNVarsSpectators(0),
+  fVarsTMVASpectators(0),
+  fXmlWeightsFile(""),
+  fBDTHistoTMVA(0)  
 {
   /// Default ctor
   //
@@ -338,6 +349,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fNTracklets_All(0),
   fCentrality(0),  
   fFillTree(0),
+  fUseWeightsLibrary(kFALSE),
   fBDTReader(0),
   fTMVAlibName(""),
   fTMVAlibPtBin(""),
@@ -364,8 +376,15 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fAODProtection(1),
   fUsePIDresponseForNsigma(kFALSE),
   fNVars(14),
-  fTimestampCut(0)
-
+  fTimestampCut(0),
+  fUseXmlWeightsFile(kTRUE),
+  fReader(0),
+  fVarsTMVA(0),
+  fNVarsSpectators(0),
+  fVarsTMVASpectators(0),
+  fNamesTMVAVarSpectators(""),
+  fXmlWeightsFile(""),
+  fBDTHistoTMVA(0)  
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -451,6 +470,20 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::~AliAnalysisTaskSELc2V0bachelorTMVAApp() 
     fBDTReader = 0;
   }
 
+  if (fReader) {
+    delete fReader;
+    fReader = 0;
+  }
+
+  if (fVarsTMVA) {
+    delete fVarsTMVA;
+    fVarsTMVA = 0;
+  }
+
+  if (fVarsTMVASpectators) {
+    delete fVarsTMVASpectators;
+    fVarsTMVASpectators = 0;
+  }
 }
 //_________________________________________________
 void AliAnalysisTaskSELc2V0bachelorTMVAApp::Init() {
@@ -721,6 +754,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   
 
   fBDTHisto = new TH2D("fBDTHisto", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
+  fBDTHistoTMVA = new TH2D("fBDTHistoTMVA", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
   if (fDebugHistograms) {    
     fBDTHistoVsMassK0S = new TH2D("fBDTHistoVsMassK0S", "K0S inv mass vs bdt output; bdt; m_{inv}(#pi^{+}#pi^{#minus})[GeV/#it{c}^{2}]", 1000, -1, 1, 1000, 0.485, 0.51);
     fBDTHistoVstImpParBach = new TH2D("fBDTHistoVstImpParBach", "d0 bachelor vs bdt output; bdt; d_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
@@ -759,6 +793,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fOutput->Add(fHistoMCLcK0SpGenLimAcc);
   fOutput->Add(fHistoCentrality);
   fOutput->Add(fBDTHisto);
+  fOutput->Add(fBDTHistoTMVA);
   if (fDebugHistograms) {    
     fOutput->Add(fBDTHistoVsMassK0S);
     fOutput->Add(fBDTHistoVstImpParBach);
@@ -980,20 +1015,37 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
  
   PostData(7, fListWeight);
 
-  // creating the BDT reader
-  if(!fFillTree){
+  if (!fFillTree) {
+    Printf("Booking methods");
+    // creating the BDT and TMVA reader
+    fVarsTMVA = new Float_t[fNVars];
+    fVarsTMVASpectators = new Float_t[fNVarsSpectators];
+    fReader = new TMVA::Reader( "!Color:!Silent" );
     std::vector<std::string> inputNamesVec;
     TObjArray *tokens = fNamesTMVAVar.Tokenize(",");
     for(Int_t i = 0; i < tokens->GetEntries(); i++){
       TString variable = ((TObjString*)(tokens->At(i)))->String();
       std::string tmpvar = variable.Data();
       inputNamesVec.push_back(tmpvar);
+      if (fUseXmlWeightsFile) fReader->AddVariable(variable.Data(), &fVarsTMVA[i]);
+    }      
+    delete tokens;
+    TObjArray *tokensSpectators = fNamesTMVAVarSpectators.Tokenize(",");
+    for(Int_t i = 0; i < tokensSpectators->GetEntries(); i++){
+      TString variable = ((TObjString*)(tokensSpectators->At(i)))->String();
+      if (fUseXmlWeightsFile) fReader->AddSpectator(variable.Data(), &fVarsTMVASpectators[i]);
     }
-    void* lib = dlopen(fTMVAlibName.Data(), RTLD_NOW);
-    void* p = dlsym(lib, Form("%s", fTMVAlibPtBin.Data()));
-    IClassifierReader* (*maker1)(std::vector<std::string>&) = (IClassifierReader* (*)(std::vector<std::string>&)) p;
-    fBDTReader = maker1(inputNamesVec);
+    delete tokensSpectators;
+    if (fUseWeightsLibrary) {
+      void* lib = dlopen(fTMVAlibName.Data(), RTLD_NOW);
+      void* p = dlsym(lib, Form("%s", fTMVAlibPtBin.Data()));
+      IClassifierReader* (*maker1)(std::vector<std::string>&) = (IClassifierReader* (*)(std::vector<std::string>&)) p;
+      fBDTReader = maker1(inputNamesVec);
+    }
+    
+    if (fUseXmlWeightsFile) fReader->BookMVA("BDT method", fXmlWeightsFile);
   }
+  
   return;
 }
 
@@ -1985,7 +2037,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     
     
     if(!fFillTree){
-      
       std::vector<Double_t> inputVars(fNVars);
       if (fNVars == 14) {
 	inputVars[0] = invmassK0s;
@@ -2028,12 +2079,21 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 	inputVars[8] = nSigmaTPCpi;
 	inputVars[9] = nSigmaTPCka;
       }
+
+      for (Int_t i = 0; i < fNVars; i++) {
+	fVarsTMVA[i] = inputVars[i];
+      }
       
       Double_t BDTResponse = -1;
-      BDTResponse = fBDTReader->GetMvaValue(inputVars);
-      //      Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc); 
+      Double_t tmva = -1;
+      if (fUseXmlWeightsFile) tmva = fReader->EvaluateMVA("BDT method");
+      if (fUseWeightsLibrary) BDTResponse = fBDTReader->GetMvaValue(inputVars);
+      //Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc);
+      //Printf("tmva = %f", tmva); 
       fBDTHisto->Fill(BDTResponse, invmassLc); 
-      if (fDebugHistograms) {    
+      fBDTHistoTMVA->Fill(tmva, invmassLc); 
+      if (fDebugHistograms) {
+	if (fUseXmlWeightsFile) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
 	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
 	fBDTHistoVstImpParBach->Fill(BDTResponse, part->Getd0Prong(0));
 	fBDTHistoVstImpParV0->Fill(BDTResponse, part->Getd0Prong(1));

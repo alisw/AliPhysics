@@ -61,6 +61,7 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
      0.90, 1.00, 1.10, 1.20, 1.30
   };
   deu->SetDCABins(34,dcabins);
+  deu->SetSigmaBins(400,10.);
 
   //deu->fEventCut.fCentralityFramework = !isMC;
 

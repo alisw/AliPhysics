@@ -58,7 +58,7 @@ public:
     double GetnSigmaTPC(Int_t i) const {return fnSigmaTPC[i];};
     double GetnSigmaTOF(Int_t i) const {return fnSigmaTOF[i];};
     double GetnSigmaITS(Int_t i) const {return fnSigmaITS[i];};
-    double GetRapidity(AliPID::EParticleType pid) const {return (fTrack->Y(pid)-0.465);};			//dy=0.465 for p-Pb collisions
+    double GetRapidity(AliPID::EParticleType pid) const {return (fTrack->Y(pid));};			//dy=0.465 for p-Pb collisions... return (fTrack->Y(pid)-0.465);
     TString ClassName(){return "TrackCuts";};
 private:
     void Reset();

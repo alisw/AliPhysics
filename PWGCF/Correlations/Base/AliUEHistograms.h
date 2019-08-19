@@ -90,9 +90,15 @@ class AliUEHistograms : public TNamed
   void SetSelectAssociatedCharge(Int_t selectCharge) { fAssociatedSelectCharge = selectCharge; }
   void SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
   void SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
-  void SetPairCuts(Float_t conversions, Float_t resonances) { fCutConversionsV = conversions; fCutResonancesV = resonances; }
-  void SetCutOnPhi(bool cutOnPhi) { fCutOnPhi = cutOnPhi; }
-  void SetCutOnRho(bool cutOnRho) { fCutOnRho = cutOnRho; }
+  void SetPairCuts(Float_t conversions, Float_t resonances) { fCutConversionsV = conversions; fCutK0sV = resonances; fCutLambdaV = resonances; }
+  void SetCutOnPhi(bool cutOnPhi) { if (cutOnPhi) fCutPhiV = 0.005; }
+  void SetCutOnRho(bool cutOnRho) { if (cutOnRho) fCutRhoV = 0.005; }
+  void SetCutOnK0s(Float_t cutOnK0sV) { fCutK0sV = cutOnK0sV; }
+  void SetCutOnLambda(Float_t cutOnLambdaV) { fCutLambdaV = cutOnLambdaV; }
+  void SetCutOnPhi(Float_t cutOnPhiV) { fCutPhiV = cutOnPhiV; }
+  void SetCutOnRho(Float_t cutOnRhoV) { fCutRhoV = cutOnRhoV; }
+  void SetCustomCut(Float_t cutCustomMass, Float_t cutCustomFirst, Float_t cutCustomSecond, Float_t cutCustomV) { fCutCustomMass = cutCustomMass; fCutCustomFirst = cutCustomFirst; fCutCustomSecond = cutCustomSecond; fCutCustomV = cutCustomV; }
+  
   void SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void SetOnlyOneEtaSide(Int_t flag)    { fOnlyOneEtaSide = flag; }
   void SetOnlyOneAssocEtaSide(Int_t flag)    { fOnlyOneAssocEtaSide = flag; }
@@ -155,9 +161,14 @@ protected:
   Float_t fTriggerRestrictEta;   // restrict eta range for trigger particle (default: -1 [off])
   Bool_t fEtaOrdering;           // activate eta ordering to prevent shape distortions. see FillCorrelation for the details
   Float_t fCutConversionsV;        // cut on conversions (inv mass)
-  Float_t fCutResonancesV;         // cut on resonances (inv mass)
-  bool fCutOnPhi;                // cut on Phi as well with the same resonance cut as for the others
-  bool fCutOnRho;                // cut on Rho as well with the same resonance cut as for the others
+  Float_t fCutK0sV;              // cut on K0s (inv mass)
+  Float_t fCutLambdaV;           // cut on Lambda (inv mass)
+  Float_t fCutPhiV;              // cut on Phi (inv mass)
+  Float_t fCutRhoV;              // cut on Rho (inv mass)
+  Float_t fCutCustomMass;       // user-defined inv mass value
+  Float_t fCutCustomFirst;      // user-defined mass of the 1st particle
+  Float_t fCutCustomSecond;     // user-defined mass of the 2nd particle
+  Float_t fCutCustomV;          // cut on user-defined value (inv mass)
   Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
   Int_t fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
   Int_t fOnlyOneAssocEtaSide;       // decides that only associated particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
@@ -171,7 +182,7 @@ protected:
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 31)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 33)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)

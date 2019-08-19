@@ -142,6 +142,13 @@ public:
                                 const float QsHi,
                                 const float QlHi);
 
+  /// Variable Bin Size
+  AliFemtoCorrFctn3DLCMSPosQuad(const TString &prefix,
+                                const TString &suffix,
+                                const std::vector<double> &out_bins,
+                                const std::vector<double> &side_bins,
+                                const std::vector<double> &long_bins);
+
   /// Copy Constructor
   AliFemtoCorrFctn3DLCMSPosQuad(const AliFemtoCorrFctn3DLCMSPosQuad& aCorrFctn);
 

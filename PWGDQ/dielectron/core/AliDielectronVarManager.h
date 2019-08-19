@@ -4042,7 +4042,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   if(qVecQnFrameworkZDCA != NULL){
     bZDCAqVector = kTRUE;
     qVectorZDCA->Set(qVecQnFrameworkZDCA->Qx(1),qVecQnFrameworkZDCA->Qy(1));
-    values[AliDielectronVarManager::kQnZDCArpH1] = TVector2::Phi_mpi_pi(qVectorZDCA->Phi())/2;
+    values[AliDielectronVarManager::kQnZDCArpH1] = TVector2::Phi_mpi_pi(qVectorZDCA->Phi());
   }
   delete qVectorZDCA;
 
@@ -4053,7 +4053,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   if(qVecQnFrameworkZDCC != NULL){
     bZDCCqVector = kTRUE;
     qVectorZDCC->Set(qVecQnFrameworkZDCC->Qx(1),qVecQnFrameworkZDCC->Qy(1));
-    values[AliDielectronVarManager::kQnZDCCrpH1] = TVector2::Phi_mpi_pi(qVectorZDCC->Phi())/2;
+    values[AliDielectronVarManager::kQnZDCCrpH1] = TVector2::Phi_mpi_pi(qVectorZDCC->Phi());
   }
   delete qVectorZDCC;
 
@@ -4216,6 +4216,16 @@ inline void AliDielectronVarManager::FillZDCEventPlane(Double_t * const values){
   
   AliAnalysisTaskZDCEP *fZDCEPTask = dynamic_cast<AliAnalysisTaskZDCEP*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP"));
 
+  // ZDCC = vQarray[0], ZDCA = vQarray[1], see AliFlowEventSimple
+  values[AliDielectronVarManager::kQnZDCCrpH1] = -999;
+  values[AliDielectronVarManager::kQnZDCArpH1] = -999;
+
+  // for QA store also components
+  values[AliDielectronVarManager::kQnZDCCX] = -999;
+  values[AliDielectronVarManager::kQnZDCCY] = -999;
+  values[AliDielectronVarManager::kQnZDCAX] = -999;
+  values[AliDielectronVarManager::kQnZDCAY] = -999;
+  
   if (fZDCEPTask != NULL) {
 
     // get ZDC Q-vectors
@@ -4236,8 +4246,8 @@ inline void AliDielectronVarManager::FillZDCEventPlane(Double_t * const values){
   }
 
   // ZDCC = vQarray[0], ZDCA = vQarray[1], see AliFlowEventSimple
-  values[AliDielectronVarManager::kQnZDCCrpH1] = TVector2::Phi_mpi_pi(vQarray[0].Phi())/2;
-  values[AliDielectronVarManager::kQnZDCArpH1] = TVector2::Phi_mpi_pi(vQarray[1].Phi())/2;
+  values[AliDielectronVarManager::kQnZDCCrpH1] = TVector2::Phi_mpi_pi(vQarray[0].Phi());
+  values[AliDielectronVarManager::kQnZDCArpH1] = TVector2::Phi_mpi_pi(vQarray[1].Phi());
 
   // for QA store also components
   values[AliDielectronVarManager::kQnZDCCX] = vQarray[0].X();

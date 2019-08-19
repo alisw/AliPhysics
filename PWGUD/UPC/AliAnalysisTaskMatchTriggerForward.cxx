@@ -141,7 +141,21 @@ AliAnalysisTaskMatchTriggerForward::AliAnalysisTaskMatchTriggerForward()
       fBGAFlagsAD(0),
       fBGCFlagsAD(0),
       fEfficiencyPerRunH(0),
-      fMCEfficiencyPerRunH(0)
+      fMCEfficiencyPerRunH(0),
+      fEfficiencyPerRunWithTriggeringH(0),
+      fSingleMuonPtDistributionH(0),
+      fZNCEnergyAgainstEntriesH(0),
+      fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyBeforeTimingSelectionH(0),
+      fZNAEnergyBeforeTimingSelectionH(0),
+      fZNCEnergyCalibratedH(0),
+      fZNAEnergyCalibratedH(0),
+      fZNCEnergyUncalibratedH(0),
+      fZNAEnergyUncalibratedH(0),
+      fZNCEnergyCalibratedHigherGainH(0),
+      fZNAEnergyCalibratedHigherGainH(0),
+      fZNCTimeAgainstEntriesH(0),
+      fZNATimeAgainstEntriesH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -208,12 +222,34 @@ AliAnalysisTaskMatchTriggerForward::AliAnalysisTaskMatchTriggerForward( const ch
       fBGAFlagsAD(0),
       fBGCFlagsAD(0),
       fEfficiencyPerRunH(0),
-      fMCEfficiencyPerRunH(0)
+      fMCEfficiencyPerRunH(0),
+      fEfficiencyPerRunWithTriggeringH(0),
+      fSingleMuonPtDistributionH(0),
+      fZNCEnergyAgainstEntriesH(0),
+      fZNAEnergyAgainstEntriesH(0),
+      fZNCEnergyBeforeTimingSelectionH(0),
+      fZNAEnergyBeforeTimingSelectionH(0),
+      fZNCEnergyCalibratedH(0),
+      fZNAEnergyCalibratedH(0),
+      fZNCEnergyUncalibratedH(0),
+      fZNAEnergyUncalibratedH(0),
+      fZNCEnergyCalibratedHigherGainH(0),
+      fZNAEnergyCalibratedHigherGainH(0),
+      fZNCTimeAgainstEntriesH(0),
+      fZNATimeAgainstEntriesH(0)
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
     for( Int_t iRun = 0; iRun < 60000; iRun++) {
       fCounterGeneratedLevel[iRun] = 0;
     }
+
+    for( Int_t iRun = 0; iRun < 364; iRun++) {
+      fDeadZoneEtaVsPhiPerRunH[iRun]               = 0x0;
+      fDeadZoneEtaVsPhiPerRunWithTriggeringH[iRun] = 0x0;
+      fZNCEnergyPerRunH[iRun]                      = 0x0;
+      fZNAEnergyPerRunH[iRun]                      = 0x0;
+    }
+
 
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -247,8 +283,9 @@ void AliAnalysisTaskMatchTriggerForward::UserCreateOutputObjects()
   fMuonTrackCuts = new AliMuonTrackCuts("StdMuonCuts", "StdMuonCuts");
   fMuonTrackCuts->SetFilterMask(    AliMuonTrackCuts::kMuEta     |
                                     AliMuonTrackCuts::kMuThetaAbs|
-                                    AliMuonTrackCuts::kMuPdca    |
-                                    AliMuonTrackCuts::kMuMatchLpt   );
+                                    AliMuonTrackCuts::kMuPdca    //|
+                                    // AliMuonTrackCuts::kMuMatchLpt
+                                    );
   fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
   fMuonTrackCuts->Print("mask");
 
@@ -303,6 +340,156 @@ void AliAnalysisTaskMatchTriggerForward::UserCreateOutputObjects()
   fMCEfficiencyPerRunH->LabelsDeflate();
   fOutputList->Add(fMCEfficiencyPerRunH);
 
+  fEfficiencyPerRunWithTriggeringH = new TH1F("fEfficiencyPerRunWithTriggeringH", "fEfficiencyPerRunWithTriggeringH", 3, 0, 3);
+  fEfficiencyPerRunWithTriggeringH->SetStats(0);
+  fEfficiencyPerRunWithTriggeringH->SetFillColor(38);
+  fEfficiencyPerRunWithTriggeringH->LabelsDeflate();
+  fOutputList->Add(fEfficiencyPerRunWithTriggeringH);
+
+  /* - Eta vs Phi dead zones per Run.
+   * -
+   */
+  /* - [0] refers to Eta.
+   * - I am plotting from -5.0 to -2.0,
+   * - hence 150 bins are reasonable...  (REBIN 10x)
+   * - [1] refers to Phi.
+   * - To avoid problems related to TMath::Pi(),
+   * - I am plotting from 0 to 8.
+   * - Hence I had thought of 200 bins... (REBIN 10x)
+   */
+  Int_t listOfGoodRunNumbers[]       = { 295585, 295586, 295587, 295588, 295589, 295612,
+                                         295615, 295665, 295666, 295667, 295668, 295671,
+                                         295673, 295675, 295676, 295677, 295714, 295716,
+                                         295717, 295718, 295719, 295723, 295725, 295753,
+                                         295754, 295755, 295758, 295759, 295762, 295763,
+                                         295786, 295788, 295791, 295816, 295818, 295819,
+                                         295822, 295825, 295826, 295829, 295831, 295854,
+                                         295855, 295856, 295859, 295860, 295861, 295863,
+                                         295881, 295908, 295909, 295910, 295913, 295936,
+                                         295937, 295941, 295942, 295943, 295945, 295947,
+                                         296061, 296062, 296063, 296065, 296066, 296068,
+                                         296123, 296128, 296132, 296133, 296134, 296135,
+                                         296142, 296143, 296191, 296192, 296194, 296195,
+                                         296196, 296197, 296198, 296241, 296242, 296243,
+                                         296244, 296246, 296247, 296269, 296270, 296273,
+                                         296279, 296280, 296303, 296304, 296307, 296309,
+                                         296312, 296376, 296377, 296378, 296379, 296380,
+                                         296381, 296383, 296414, 296419, 296420, 296423,
+                                         296424, 296433, 296472, 296509, 296510, 296511,
+                                         296514, 296516, 296547, 296548, 296549, 296550,
+                                         296551, 296552, 296553, 296615, 296616, 296618,
+                                         296619, 296622, 296623,
+                                         296690, 296691, 296694, 296749, 296750, 296781,
+                                         296784, 296785, 296786, 296787, 296791, 296793,
+                                         296794, 296799, 296836, 296838, 296839, 296848,
+                                         296849, 296850, 296851, 296852, 296890, 296894,
+                                         296899, 296900, 296903, 296930, 296931, 296932,
+                                         296934, 296935, 296938, 296941, 296966, 296967,
+                                         296968, 296969, 296971, 296975, 296976, 296977,
+                                         296979, 297029, 297031, 297035, 297085, 297117,
+                                         297118, 297119, 297123, 297124, 297128, 297129,
+                                         297132, 297133, 297193, 297194, 297196, 297218,
+                                         297219, 297221, 297222, 297278, 297310, 297312,
+                                         297315, 297317, 297363, 297366, 297367, 297372,
+                                         297379, 297380, 297405, 297408, 297413, 297414,
+                                         297415, 297441, 297442, 297446, 297450, 297451,
+                                         297452, 297479, 297481, 297483, 297512, 297537,
+                                         297540, 297541, 297542, 297544, 297558, 297588,
+                                         297590, 297595,/*, 297623, 297624*/
+                                         244918, 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
+                                         245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
+                                         245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
+                                         245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
+                                         245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
+                                         245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
+                                         246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
+                                         246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
+                                         246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
+                                         246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
+                                         246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
+                                         246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
+                                         246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
+                                         246949, 246980, 246982, 246984, 246989, 246991, 246994
+                                       };
+  for( Int_t iRuns = 0; iRuns < 364; iRuns++ ) {
+    fDeadZoneEtaVsPhiPerRunH[iRuns] = new TH2F( Form( "fDeadZoneEtaVsPhiPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+                                                Form( "fDeadZoneEtaVsPhiPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+                                                150, -5.0, -2.0,
+                                                // 200, -4.0,  4.0
+                                                200,  0.0,  8.0
+                                                );
+    fOutputList->Add(fDeadZoneEtaVsPhiPerRunH[iRuns]);
+  }
+
+  for( Int_t iRuns = 0; iRuns < 364; iRuns++ ) {
+    fDeadZoneEtaVsPhiPerRunWithTriggeringH[iRuns] = new TH2F( Form( "fDeadZoneEtaVsPhiPerRunWithTriggeringH_%d", listOfGoodRunNumbers[iRuns] ),
+                                                Form( "fDeadZoneEtaVsPhiPerRunWithTriggeringH_%d", listOfGoodRunNumbers[iRuns] ),
+                                                150, -5.0, -2.0,
+                                                // 200, -4.0,  4.0
+                                                200,  0.0,  8.0
+                                                );
+    fOutputList->Add(fDeadZoneEtaVsPhiPerRunWithTriggeringH[iRuns]);
+  }
+
+  /* - ZDC energy spectra for calibration.
+   * - Needed for XNXN analysis.
+   * -
+   */
+  fZNCEnergyAgainstEntriesH = new TH1F("fZNCEnergyAgainstEntriesH", "fZNCEnergyAgainstEntriesH", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyAgainstEntriesH);
+
+  fZNAEnergyAgainstEntriesH = new TH1F("fZNAEnergyAgainstEntriesH", "fZNAEnergyAgainstEntriesH", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyAgainstEntriesH);
+
+  fZNCEnergyBeforeTimingSelectionH = new TH1F("fZNCEnergyBeforeTimingSelectionH", "fZNCEnergyBeforeTimingSelectionH", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyBeforeTimingSelectionH);
+
+  fZNAEnergyBeforeTimingSelectionH = new TH1F("fZNAEnergyBeforeTimingSelectionH", "fZNAEnergyBeforeTimingSelectionH", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyBeforeTimingSelectionH);
+
+  fZNCEnergyCalibratedH = new TH1F("fZNCEnergyCalibratedH", "fZNCEnergyCalibratedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyCalibratedH);
+
+  fZNAEnergyCalibratedH = new TH1F("fZNAEnergyCalibratedH", "fZNAEnergyCalibratedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyCalibratedH);
+
+  fZNCEnergyUncalibratedH = new TH1F("fZNCEnergyUncalibratedH", "fZNCEnergyUncalibratedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyUncalibratedH);
+
+  fZNAEnergyUncalibratedH = new TH1F("fZNAEnergyUncalibratedH", "fZNAEnergyUncalibratedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyUncalibratedH);
+
+  fZNCEnergyCalibratedHigherGainH = new TH1F("fZNCEnergyCalibratedHigherGainH", "fZNCEnergyCalibratedHigherGainH", 20000, -80000, 3200000);
+  fOutputList->Add(fZNCEnergyCalibratedHigherGainH);
+
+  fZNAEnergyCalibratedHigherGainH = new TH1F("fZNAEnergyCalibratedHigherGainH", "fZNAEnergyCalibratedHigherGainH", 20000, -80000, 3200000);
+  fOutputList->Add(fZNAEnergyCalibratedHigherGainH);
+
+  for( Int_t iRuns = 0; iRuns < 364; iRuns++ ) {
+    fZNCEnergyPerRunH[iRuns] = new TH1F( Form( "fZNCEnergyPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+                                         Form( "fZNCEnergyPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+                                         20000, -10000, 400000
+                                         );
+    fOutputList->Add(fZNCEnergyPerRunH[iRuns]);
+  }
+
+  for( Int_t iRuns = 0; iRuns < 364; iRuns++ ) {
+    fZNAEnergyPerRunH[iRuns] = new TH1F( Form( "fZNAEnergyPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+                                         Form( "fZNAEnergyPerRunH_%d", listOfGoodRunNumbers[iRuns] ),
+                                         20000, -10000, 400000
+                                         );
+    fOutputList->Add(fZNAEnergyPerRunH[iRuns]);
+  }
+
+  fZNCTimeAgainstEntriesH = new TH1F("fZNCTimeAgainstEntriesH", "fZNCTimeAgainstEntriesH", 6000, -150, 150);
+  fOutputList->Add(fZNCTimeAgainstEntriesH);
+
+  fZNATimeAgainstEntriesH = new TH1F("fZNATimeAgainstEntriesH", "fZNATimeAgainstEntriesH", 6000, -150, 150);
+  fOutputList->Add(fZNATimeAgainstEntriesH);
+
+  fSingleMuonPtDistributionH = new TH1F("fSingleMuonPtDistributionH", "fSingleMuonPtDistributionH", 4000, 0, 20);
+  fOutputList->Add(fSingleMuonPtDistributionH);
+
   //_______________________________
   // - End of the function
   PostData(1, fOutputList);
@@ -332,24 +519,54 @@ void AliAnalysisTaskMatchTriggerForward::UserExec(Option_t *)
       PostData(1, fOutputList);
       return;
   }
-  fMCEvent = MCEvent();
-  if(!fMCEvent) {
-      PostData(1, fOutputList);
-      return;
+  // fMCEvent = MCEvent();
+  // if(!fMCEvent) {
+  //     PostData(1, fOutputList);
+  //     return;
+  // }
+  // if(fMCEvent) {
+  //   fRunNum    = fAOD->GetRunNumber();
+  //   SetLuminosityCap();
+  //   fCounterGeneratedLevel[ fRunNum - 240000 ] += 1;
+  //   // cout << "fCounterGeneratedLevel[ " << (fRunNum - 240000) << " ] = " << fCounterGeneratedLevel[ fRunNum - 240000 ] << endl;
+  //   // if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( (Int_t)fLumiPerRun * (Int_t)40000 ) ) {
+  //   if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 40000 ) ) {
+  //         PostData(1, fOutputList);
+  //         return;
+  //   }
+  //   ProcessMCParticles(fMCEvent);
+  //   fMCEfficiencyPerRunH->Fill( Form("%d", fRunNum) , 1 );
+  // }
+  /* - Trigger selection:
+   - here we verify which trigger was the event selected upon.
+   - The useful triggers are only those needed for the CTRUE
+   - analysis. Hence, if we cannot find them we return...
+   -
+ */
+
+  Int_t fCtrue = -1;
+  TString trigger = fAOD->GetFiredTriggerClasses();
+  if (trigger.Contains("CINT7-B-NOPF-MUFAST")) fCtrue = 1;
+  if (trigger.Contains("CINT7ZAC-B-NOPF-CENTNOTRD")) fCtrue = 1;
+  // if (trigger.Contains("CTRUE-B")) fCtrue = 1;
+  // if (trigger.Contains("CTRUE-A")) fCtrue = 2;
+  // if (trigger.Contains("CTRUE-C")) fCtrue = 3;
+  // if (trigger.Contains("CTRUE-E")) fCtrue = 4;
+  if ( fCtrue == -1 ) {
+    PostData(1, fOutputList);
+    return;
   }
-  if(fMCEvent) {
-    fRunNum    = fAOD->GetRunNumber();
-    SetLuminosityCap();
-    fCounterGeneratedLevel[ fRunNum - 240000 ] += 1;
-    // cout << "fCounterGeneratedLevel[ " << (fRunNum - 240000) << " ] = " << fCounterGeneratedLevel[ fRunNum - 240000 ] << endl;
-    // if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( (Int_t)fLumiPerRun * (Int_t)40000 ) ) {
-    if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 40000 ) ) {
-          PostData(1, fOutputList);
-          return;
-    }
-    ProcessMCParticles(fMCEvent);
-    fMCEfficiencyPerRunH->Fill( Form("%d", fRunNum) , 1 );
-  }
+  // if (    !(trigger.Contains("CMUP11-B-NOPF-MUFAST") ||
+  //           trigger.Contains("CMUP26-B-NOPF-MUFAST") ||
+  //           trigger.Contains("CMUP6-B-NOPF-MUFAST")  ||
+  //           trigger.Contains("CMUP10-B-NOPF-MUFAST") ||
+  //           trigger.Contains("CMUP13-B-NOPF-MUFAST")  )
+  //         )  {
+  //                 PostData(1, fOutputList);
+  //                 return;
+  //             }
+  fCounterH->Fill(3);
+
   /* - We are now checking if there were any tracks. If there were at least one,
      - then the histogram gets filled again. If not we are returning. There
      - would be no point in going further.
@@ -426,6 +643,15 @@ void AliAnalysisTaskMatchTriggerForward::UserExec(Option_t *)
 
   fZem1Energy = dataZDC->GetZEM1Energy();
   fZem2Energy = dataZDC->GetZEM2Energy();
+
+  /* - Reset Event information.
+   * -
+   */
+  fZNAEnergy  = -8999;
+  fZNCEnergy  = -8999;
+  fZPAEnergy  = -8999;
+  fZPCEnergy  = -8999;
+
   fZNAEnergy  = dataZDC->GetZNATowerEnergy()[0];
   fZNCEnergy  = dataZDC->GetZNCTowerEnergy()[0];
   fZPAEnergy  = dataZDC->GetZPATowerEnergy()[0];
@@ -433,6 +659,14 @@ void AliAnalysisTaskMatchTriggerForward::UserExec(Option_t *)
 
   fZNATime    = dataZDC->GetZNATime();
   fZNCTime    = dataZDC->GetZNCTime();
+
+  /* - Reset Event information.
+   * -
+   */
+  for (Int_t i=0;i<4;i++) fZNATDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZNCTDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZPATDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZPCTDC[i] = -999;
 
   for (Int_t i=0;i<4;i++) fZNATDC[i] = dataZDC->GetZNATDCm(i);
   for (Int_t i=0;i<4;i++) fZNCTDC[i] = dataZDC->GetZNCTDCm(i);
@@ -639,11 +873,11 @@ void AliAnalysisTaskMatchTriggerForward::UserExec(Option_t *)
   // END EVENT DATA EXTRACTION
   //_______________________________
   // APPLY TRIGGER MC!
-  if(!IsTriggered()) {
-    cout << "Ehm" ;
-    PostData(1, fOutputList);
-    return;
-  }
+  // if(!IsTriggered()) {
+  //   cout << "Ehm" ;
+  //   PostData(1, fOutputList);
+  //   return;
+  // }
   fCounterH->Fill(iSelectionCounter); // right trigger found
   iSelectionCounter++;
   //_______________________________
@@ -662,128 +896,140 @@ void AliAnalysisTaskMatchTriggerForward::UserExec(Option_t *)
      - Empty ADA decision
      - Empty ADC decision
    */
-  if(fV0ADecision != 0) {
-       PostData(1, fOutputList);
-       return;
-  }
-  if(fADADecision != 0) {
-       PostData(1, fOutputList);
-       return;
-  }
-  if(fADCDecision != 0) {
-       PostData(1, fOutputList);
-       return;
-  }
-  /* - 0 tracklets in SPD
-   */
-  if(fTracklets != 0) {
-       PostData(1, fOutputList);
-       return;
-  }
-  /* - Maximum 2 V0C cells fired.
-   */
-  if( fV0TotalNCells > 2 ) {
-       PostData(1, fOutputList);
-       return;
-  }
+  // if(fV0ADecision != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+  // if(fADADecision != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+  // if(fADCDecision != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+  // /* - 0 tracklets in SPD
+  //  */
+  // if(fTracklets != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+  // /* - Maximum 2 V0C cells fired.
+  //  */
+  // if( fV0TotalNCells > 2 ) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
 
-  /* - We are finally at the starting point. We loop over the tracks and select
-     - the good muons. Later on everything should happen in this loop. Let us
-     - see what the future has in hold.
-     -
-     - Saturday: I moved the creation of the AliAODTrack* track outside of the
-     - loop as it would have been otherwise created for each single iteration.
-     - This could have caused massive memory issues especially to grid. I have
-     - added a second AliAODTrack* track[2] to hold the second supposed muon.
-     - Now this is ready to send the information to two TLorentzVectors to
-     - obtain the invariant mass of the J/Psi through the Mag() method of the
-     - class. Hope for the best.
-   */
+
+
+
+  // loop over tracks and select good muons
   Int_t nGoodMuons = 0;
-  AliAODTrack* track[2];
-  track[0]         = 0x0;
-  track[1]         = 0x0;
   for(Int_t iTrack(0); iTrack < nTracks; iTrack++) {
-    /* - This should be another form of event selection.
-       - I am basically requesting the presence of TWO good muons only.
-       - Later I will be checking whether of they are likesign or unlikesign.
-     */
-    if(nGoodMuons > 2) {
-         PostData(1, fOutputList);
-         return;
-    }
-    track[nGoodMuons] = static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
-    if(!track[nGoodMuons]) return;
+    // get track
+    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+    if(!track) return;
 
     // is it a good muon track?
-    if(!track[nGoodMuons]->IsMuonTrack()) {
-        // track[nGoodMuons] = 0x0;
-        continue;
-    }
-    if(!fMuonTrackCuts->IsSelected(track[nGoodMuons])) {
-        // track[nGoodMuons] = 0x0;
-        continue;
-    }
-
-    // MUON SELECTION
-    /* - This is Eugeny Krishen's MUON selection from the talk in 14/1/2019 for
-       - the PWG-UD (UPC oriented) meeting. The event selection requires:
-       - Muon trigger matching >=2 (1 GeV/c threshold);
-       - (-4) < eta < (-2.5);
-       - (17.5 cm) < R_{abs} < (89.5 cm);
-       - p \times DCA cut;
-    */
+    if(!track->IsMuonTrack()) continue;
+    if(!fMuonTrackCuts->IsSelected(track)) continue;
 
     // increase counter
     nGoodMuons++;
+
+    // fill muon info
+    fEtaMuonH ->Fill(track->Eta());
+    fRAbsMuonH->Fill(track->GetRAtAbsorberEnd());
+    fEntriesAgainstRunNumberH->Fill(fRunNum);
+    /* - This is the last part of my try to obtain a proper RunNumbers histogram...
+       -
+     */
+    fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
+    fEfficiencyPerRunH               ->Fill( Form("%d", fRunNum) , 1 );
+    if( track->GetMatchTrigger() != 0 ) {
+      fEfficiencyPerRunWithTriggeringH->Fill( Form("%d", fRunNum) , 1 );
+      ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunWithTriggeringH_%d", fRunNum )) )->Fill( track->Eta(), track->Phi() );
+    }
+    ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d",                 fRunNum )) )->Fill( track->Eta(), track->Phi() );
+
+    fSingleMuonPtDistributionH->Fill( track->Pt() );
+
   }
-  /* - We need EXACTLY 2 good muons !!!!!
-     -
-   */
-  if( nGoodMuons != 2 ) {
-        PostData(1, fOutputList);
-        return;
-  }
-  /* - Implementing the track cut on the unlike muons
+
+
+
+
+  /* - ZDC plots for calibration of the energy spectra.
+   * -
    * -
    */
-  if( (track[0]->Charge()) == (track[1]->Charge()) ) {
-        PostData(1, fOutputList);
-        return;
-  }
-  for(Int_t iFilling = 0; iFilling < nGoodMuons; iFilling++) {
-        fEtaMuonH ->Fill(track[iFilling]->Eta());
-        fRAbsMuonH->Fill(track[iFilling]->GetRAtAbsorberEnd());
-  }
-  // store muons
-  fNumberMuonsH->Fill(nGoodMuons);
-  fEntriesAgainstRunNumberH->Fill(fRunNum);
-  /* - This is the last part of my try to obtain a proper RunNumbers histogram...
+  Bool_t isZNAfired = kFALSE;
+  Bool_t isZNCfired = kFALSE;
+  Bool_t isZNAfiredStrict = kFALSE;
+  Bool_t isZNCfiredStrict = kFALSE;
+  Int_t  counterZNA = 0;
+  Int_t  counterZNC = 0;
+  /* - Note that in C++ the && and || operators "short-circuit". That means that
+     - they only evaluate a parameter if required. If the first parameter to &&
+     - is false, or the first to || is true, the rest will not be evaluated.
+     - That means that writing:
+     - if ( (isZNAfired == 0) && (...) )
+     - should mean effectively
+     - if ( isZNAfired != 0 ) continue;
+     - hence it should be *at least* one hit!!!
      -
    */
-  fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
-  fEfficiencyPerRunH               ->Fill( Form("%d", fRunNum) , 1 );
-  if (nGoodMuons>0) fCounterH->Fill(iSelectionCounter); // At least one good muon
-  iSelectionCounter++;
-
-  /* - Finally the core!!!
-   * - What will be happening is that we will instantiate TLorentzVectors to
-   * - obtain the invariant mass of the dimuon system. If everything goes fine
-   * - after this we should be able to obtain the peak of the J/Psi. But
-   * - things never go as expected, so who knows!
-   */
-  TLorentzVector muons[2];
-  TLorentzVector possibleJPsi;
-  Double_t       chargeOfMuons[2];
-  for(int indexMuon = 0; indexMuon < 2; indexMuon++) {
-        muons[indexMuon].SetPtEtaPhiM(   track[indexMuon]->Pt(),
-                                         track[indexMuon]->Eta(),
-                                         track[indexMuon]->Phi(),
-                                         TDatabasePDG::Instance()->GetParticle(13)->Mass()
-                                       );
-        possibleJPsi += muons[indexMuon];
-        chargeOfMuons[indexMuon] = track[indexMuon]->Charge();
+  for(Int_t iZDC = 0; iZDC < 4 ; iZDC++) {
+    if ( (isZNAfired == 0) && (fZNATDC[iZDC] > -2.) && (fZNATDC[iZDC] < 2.) ) {
+      isZNAfired = kTRUE;
+      /* - After mail with Chiara Oppedisano, it seems like the best way
+         - to proceed is to firstly call the IsZNAfired() and then filling...
+         -
+         - If this doesn't appear in later pulls it is because this
+         - doesn't seem to suit my case...
+         -
+       */
+      if( dataZDC->IsZNAfired() ) fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
+      // fCounterZNAH->Fill(counterZNA);
+    }
+    if ( (isZNCfired == 0) && (fZNCTDC[iZDC] > -2.) && (fZNCTDC[iZDC] < 2.) ) {
+      isZNCfired = kTRUE;
+      if( dataZDC->IsZNCfired() ) fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
+      // fCounterZNCH->Fill(counterZNC);
+    }
+    counterZNA++;
+    counterZNC++;
   }
+
+  if ( isZNCfired != 0 ) {
+    fZNCEnergyAgainstEntriesH->Fill(fZNCEnergy);
+    // if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
+    // if ( calibrated == 1 ) {
+    //   fZNCEnergyCalibratedH          ->Fill( fZNCEnergy );
+    //   fZNCEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNCTowerEnergyLR()[0] );
+    // }
+    ((TH1F*) fOutputList->FindObject(Form( "fZNCEnergyPerRunH_%d", fRunNum )) )->Fill( fZNCEnergy );
+  }
+  fZNCEnergyBeforeTimingSelectionH->Fill(fZNCEnergy);
+  if ( isZNAfired != 0 ) {
+    fZNAEnergyAgainstEntriesH->Fill(fZNAEnergy);
+    // if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
+    // if ( calibrated == 1 ) {
+    //   fZNAEnergyCalibratedH          ->Fill( fZNAEnergy );
+    //   fZNAEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNATowerEnergyLR()[0] );
+    // }
+    ((TH1F*) fOutputList->FindObject(Form( "fZNAEnergyPerRunH_%d", fRunNum )) )->Fill( fZNAEnergy );
+  }
+  fZNAEnergyBeforeTimingSelectionH->Fill(fZNAEnergy);
+
+
+
+
+
+
+
+  fNumberMuonsH->Fill(nGoodMuons);
 
 
 

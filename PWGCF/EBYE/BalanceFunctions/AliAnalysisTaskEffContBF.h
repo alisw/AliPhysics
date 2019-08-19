@@ -282,6 +282,8 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   TH3F        *fHistSurvived4EtaPtPhiPlus;//!
   TH3F        *fHistSurvived8EtaPtPhiPlus;//!
 
+  AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
+
   Bool_t fUseRaaGeoCut; //flag to switch on GeoCut for 2018PbPb data pass1
   Float_t fDeadZoneWidth; //parameters of the cut as implemented in AliESDtrackCuts.h, default values implemented as suggested by DPG and D mesons analysis
   Float_t fCutGeoNcrNclLength;
@@ -292,7 +294,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   AliAnalysisTaskEffContBF(const AliAnalysisTaskEffContBF&); // not implemented
   AliAnalysisTaskEffContBF& operator=(const AliAnalysisTaskEffContBF&); // not implemented
   
-  ClassDef(AliAnalysisTaskEffContBF, 7); // example of analysis
+  ClassDef(AliAnalysisTaskEffContBF, 8); // example of analysis
 };
 
 #endif

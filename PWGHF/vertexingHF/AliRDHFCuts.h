@@ -19,6 +19,7 @@
 #include "AliAODEvent.h"
 #include "AliVEvent.h"
 #include "TObjArray.h"
+#include "AliTimeRangeCut.h"
 
 class AliAODTrack;
 class AliAODRecoDecayHF;
@@ -35,7 +36,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex,kRejectMVPileupEvent};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID,kLctoV0Cuts,kDplustoK0sCuts,kDstoK0sCuts};
-  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl,kMismatchOldNewCentrality,kBadTrackVertex,kBadCentrEstimCorrel};
+  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl,kMismatchOldNewCentrality,kBadTrackVertex,kBadCentrEstimCorrel,kBadTimeRange};
   enum EV0sel  {kAllV0s = 0, kOnlyOfflineV0s = 1, kOnlyOnTheFlyV0s = 2};
 
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
@@ -201,7 +202,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetUseCentralityCorrelationCuts(Bool_t opt){fApplyCentralityCorrCuts=opt;}
   void SetUsePbPbOutOfBunchPileupCut(Int_t opt){fApplyPbPbOutOfBunchPileupCuts=opt;}
   void SetUseAliEventCuts(){fUseAliEventCuts=kTRUE;}
-
+  void SetUseTimeRangeCutForPbPb2018(Bool_t opt){fUseTimeRangeCutForPbPb2018=opt;}
   AliEventCuts* GetAliEventCuts() const { return fAliEventCuts;}
 
   void SetTriggerClass(TString trclass0, TString trclass1="") {fTriggerClass[0]=trclass0; fTriggerClass[1]=trclass1;}
@@ -304,6 +305,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t GetMinRatioClsOverCrossRowsTPC() const {return fCutRatioClsOverCrossRowsTPC;}
   Float_t GetMinRatioSignalNOverCrossRowsTPC() const {return fCutRatioSignalNOverCrossRowsTPC;}
   Bool_t GetUseTPCtrackCutsOnThisDaughter() const {return fUseTPCtrackCutsOnThisDaughter;}
+  Bool_t GetUseTimeRangeCutForPbPb2018() const {return fUseTimeRangeCutForPbPb2018;}
+  
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
   virtual Int_t PreSelect(TObjArray aodtracks){return 3;}
@@ -377,7 +380,10 @@ class AliRDHFCuts : public AliAnalysisCuts
     }
     return kFALSE;
   }
-
+  Bool_t IsEventRejectedDueToTimeRangeCut(){
+    return fEvRejectionBits&(1<<kBadTimeRange);
+  }
+    
   void SetFixRefs(Bool_t fix=kTRUE) {fFixRefs=fix; return;}
   void SetUsePhysicsSelection(Bool_t use=kTRUE){fUsePhysicsSelection=use; return;}
   Bool_t GetUsePhysicsSelection() const { return fUsePhysicsSelection; }
@@ -518,12 +524,16 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fApplyCentralityCorrCuts; /// swicth to enable/disable cuts on centrality correlations
   Int_t fApplyPbPbOutOfBunchPileupCuts; /// switch for additional correlation cuts for out-of-bunch pileup (0=no cut, 1=AliEVentCuts, 2=Ionut cut vs. nTPC cls)
   Bool_t fUseAliEventCuts;  /// flag for using AliEventCuts
-
+  Bool_t fUseTimeRangeCutForPbPb2018; /// flag to enable the timestamp based selection of good events in the 7 runs of LHC18r with problems in TPC dE/dx
+  AliTimeRangeCut fTimeRangeCut;   /// object to manage time range cut
+  Int_t  fCurrentRun;              /// needed to use the time range cut
+  
+  
   Bool_t fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
   Int_t fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCuts,49);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,51);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

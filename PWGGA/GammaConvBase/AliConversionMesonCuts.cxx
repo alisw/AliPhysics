@@ -158,6 +158,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fBackgroundUseSideband(kFALSE),
   fBackgroundUseSidebandBothSides(kFALSE),
   fBackgroundUseLikeSign(kFALSE),
+  fBackgroundMode(4),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE)
 {
@@ -256,6 +257,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fBackgroundUseSideband(ref.fBackgroundUseSideband),
   fBackgroundUseSidebandBothSides(ref.fBackgroundUseSidebandBothSides),
   fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign),
+  fBackgroundMode(4),
   fDoJetAnalysis(ref.fDoJetAnalysis),
   fDoJetQA(ref.fDoJetQA)
 
@@ -2645,6 +2647,10 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
+
+    // only used for heavy meson task
+    // no pions from same event
+    fBackgroundMode             = 4;
     break;
   case 2: // mixed event with track multiplicity
     fUseRotationMethodInBG      = kFALSE;
@@ -2801,6 +2807,24 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoJetMixing                = kTRUE;
     fDoJetRotateMixing          = kTRUE;
     fDoJetPtMixing              = kTRUE;
+    break;
+  case 24: // o mixed event for three pions (pi- and pi+ same event)
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fBackgroundMode             = 1;
+    break;
+  case 25: // p mixed event for three pions (pi+ and pi0 same event)
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fBackgroundMode             = 2;
+    break;
+  case 26: // q mixed event for three pions (pi- and pi0 same event)
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fBackgroundMode             = 3;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
@@ -2977,6 +3001,36 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPBremSmearing    = 1.;
       fPSigSmearing     = 0.075;
       fPSigSmearingCte  = 0.050;
+      break;
+    case 10:     //a
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.020;
+      fPSigSmearingCte  = 0.030;
+      break;
+    case 11:     //b
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.025;
+      fPSigSmearingCte  = 0.030;
+      break;
+    case 12:     //c
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.020;
+      fPSigSmearingCte  = 0.025;
+      break;
+    case 13:     //d
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.0275;
+      fPSigSmearingCte  = 0.035;
+      break;
+    case 14:     //e
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.0275;
+      fPSigSmearingCte  = 0.04;
       break;
 
     default:

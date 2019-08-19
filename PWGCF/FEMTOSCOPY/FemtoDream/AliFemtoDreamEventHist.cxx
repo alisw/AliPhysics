@@ -31,6 +31,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist()
     fMultDistV0C[i] = nullptr;
     fMultDistRef08[i] = nullptr;
     fEvtSpher[i] = nullptr;
+    fEvtSphero[i] = nullptr;
   }
 }
 AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
@@ -38,7 +39,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fEventCutList->SetName("Event Cuts");
   fEventCutList->SetOwner();
 
-  fEvtCounter = new TH1F("EventCounter", "Event Counter", 12, 0, 12);
+  fEvtCounter = new TH1F("EventCounter", "Event Counter", 13, 0, 13);
   fEvtCounter->GetXaxis()->SetBinLabel(1, "Events");
   fEvtCounter->GetXaxis()->SetBinLabel(2, "AliEventCuts");
   fEvtCounter->GetXaxis()->SetBinLabel(3, "Phys. Sel.");
@@ -51,6 +52,8 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fEvtCounter->GetXaxis()->SetBinLabel(10, "RefMult08 Cleanup");
   fEvtCounter->GetXaxis()->SetBinLabel(11, "Sphericity");
   fEvtCounter->GetXaxis()->SetBinLabel(12, "Mult. percentile");
+  fEvtCounter->GetXaxis()->SetBinLabel(13, "Spherocity");
+
   fEventCutList->Add(fEvtCounter);
 
   fCutConfig = new TProfile("CutConfig", "Cut Config", 21, 0, 21);
@@ -68,6 +71,8 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
   fCutConfig->GetXaxis()->SetBinLabel(12, "Low Spher");
   fCutConfig->GetXaxis()->SetBinLabel(13, "Up Spher");
   fCutConfig->GetXaxis()->SetBinLabel(14, "Mult. percentile");
+  fCutConfig->GetXaxis()->SetBinLabel(15, "Low Sphero");
+  fCutConfig->GetXaxis()->SetBinLabel(16, "Up Sphero");
   fEventCutList->Add(fCutConfig);
 
   fCentVsMultPlots = centVsMultPlot;
@@ -207,6 +212,12 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
     fEvtSpher[i]->GetXaxis()->SetTitle("Sphericity S_{T}");
     fEvtCutQA[i]->Add(fEvtSpher[i]);
 
+    TString EvtSpheroName = Form("Spherocity_%s", sName[i].Data());
+    fEvtSphero[i] = new TH1F(EvtSpheroName.Data(), EvtSpheroName.Data(), 50, 0.,
+                            1.);
+    fEvtSphero[i]->GetXaxis()->SetTitle("Spherocity S_{0}");
+    fEvtCutQA[i]->Add(fEvtSphero[i]);
+
   }
 }
 
@@ -234,6 +245,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(
     fMultDistRef08[i] = hists.fMultDistRef08[i];
     fBField[i] = hists.fBField[i];
     fEvtSpher[i] = hists.fEvtSpher[i];
+    fEvtSphero[i] = hists.fEvtSphero[i];
   }
 }
 AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
@@ -261,6 +273,7 @@ AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
       this->fMultDistRef08[i] = hists.fMultDistRef08[i];
       this->fBField[i] = hists.fBField[i];
       this->fEvtSpher[i] = hists.fEvtSpher[i];
+      this->fEvtSphero[i] = hists.fEvtSphero[i];
     }
   }
   return *this;

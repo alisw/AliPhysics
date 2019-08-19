@@ -94,6 +94,11 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   cent(0),
   ZDCepA(0),
   ZDCepC(0),
+  TPCep(0),
+  TPCepA(0),
+  TPCepC(0),
+  fQnList(0),        
+  man(0),        
   fList(0x0), 
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100),         
@@ -225,7 +230,12 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString 
   n(0),
   cent(0),
   ZDCepA(0),        
-  ZDCepC(0),        
+  ZDCepC(0),
+  TPCep(0),
+  TPCepA(0),
+  TPCepC(0),     
+  fQnList(0),         
+  man(0),         
   fList(0x0), 
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100),         
@@ -355,7 +365,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     if (useTMVA) SetupTMVAReader(TMVAWeightFileName);  
   
     
-   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+   man=AliAnalysisManager::GetAnalysisManager();
    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
    inputHandler->SetNeedField();
 
@@ -387,6 +397,9 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("#tracks", &n);
   fTree->Branch("ZDCepA", &ZDCepA);
   fTree->Branch("ZDCepC", &ZDCepC);
+  fTree->Branch("TPCep", &TPCep);
+  fTree->Branch("TPCepA", &TPCepA);
+  fTree->Branch("TPCepC", &TPCepC);
   fTree->Branch("pt", &pt);
   fTree->Branch("eta", &eta);
   fTree->Branch("phi", &phi);
@@ -397,6 +410,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("EsigTOF", &EsigTOF);
   
   fTree->Branch("PsigTPC", &PsigTPC);
+  fTree->Branch("PsigITS", &PsigITS);
   
   fTree->Branch("NCrossedRowsTPC", &NCrossedRowsTPC);
   fTree->Branch("NClustersTPC", &NClustersTPC);
@@ -483,11 +497,7 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   }
 
   Double_t ZDCev[2];
-  
-  FillZDCEventPlane(ZDCev);
-  
-  ZDCepC=ZDCev[0];
-  ZDCepA=ZDCev[1];
+
   
   AliMultSelection *MultSelection = 0x0; 
   MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
@@ -499,9 +509,11 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   else cent = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
 
   if(cent<fCentralityPercentileMin || cent>fCentralityPercentileMax) return;
-  
+
   UInt_t selectedMask=(1<<evfilter->GetCuts()->GetEntries())-1;
-  varManager->SetFillMap(NULL);
+  TBits* fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
+  fUsedVars->SetBitNumber(AliDielectronVarManager::kP, kTRUE);  
+  varManager->SetFillMap(fUsedVars);
   varManager->SetEvent(event);
   if(selectedMask!=(evfilter->IsSelected(event))){
     fQAHist->Fill("Events_not_selected_filter",1);
@@ -541,6 +553,32 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
 
   n= acceptedTracks;
   if(acceptedTracks){
+
+if ((AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP")) != NULL){  
+  if(FillZDCEventPlane(ZDCev)){  
+    ZDCepC=ZDCev[0];
+    ZDCepA=ZDCev[1];
+  }
+}  
+  else{
+    ZDCepC=-999;
+    ZDCepA=-999;
+  }      
+
+  if ((AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections")) != NULL){  
+    AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections"));  
+    AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+    TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+  //  TList *qnlist = (TList*) event->FindListObject("qnVectorList");    
+    if(qnlist != NULL)  AliAnalysisTaskMLTreeMaker::FillQnEventplanes(qnlist);
+    else {
+      std::cout<<"No qnVectorList found!"<<std::endl;
+      TPCep=-99;
+    }
+  }  
+  else {
+    TPCep=-99;
+  }
   fTree->Fill();
   fQAHist->Fill("Events_track_and_cent_selected",1);
   }
@@ -852,6 +890,9 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2);
       PsigTPC.push_back(tempPsigTPC);
       
+      Double_t tempPsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 2);
+      PsigITS.push_back(tempPsigITS);
+      
 //      if(fPionSigmas){
 //        Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2);
 //        Double_t tempPsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 2);
@@ -995,6 +1036,44 @@ Bool_t AliAnalysisTaskMLTreeMaker::GetDCA(const AliVEvent* event, const AliAODTr
   return ok;
 }
 
+void AliAnalysisTaskMLTreeMaker::FillQnEventplanes(TList* qnlist){
+  TString qnListDetector;
+  TString fgQnVectorNorm="";
+  // TPC Eventplane q-Vector
+  qnListDetector = "TPC" + fgQnVectorNorm;
+  const AliQnCorrectionsQnVector *qVecQnFrameworkTPC = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,qnListDetector.Data(),"latest","latest");
+  TVector2 *qVectorTPC = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkTPC != NULL){
+    qVectorTPC->Set(qVecQnFrameworkTPC->Qx(2),qVecQnFrameworkTPC->Qy(2));
+    TPCep = TVector2::Phi_mpi_pi(qVectorTPC->Phi())/2;
+  }
+  delete qVectorTPC;
+  
+          
+  // TPC A-Side/Neg. Eta Eventplane q-Vector
+//  qnListDetector = "TPCNegEta" + fgQnVectorNorm;
+//  const AliQnCorrectionsQnVector *qVecQnFrameworkTPCaSide = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,qnListDetector.Data(),"latest","latest");
+//  TVector2 *qVectorTPCaSide = new TVector2(-200.,-200.);
+//  cout<<"TPC A-Side test"<<endl;
+//  if(qVecQnFrameworkTPCaSide != NULL){
+//    qVectorTPCaSide->Set(qVecQnFrameworkTPCaSide->Qx(2),qVecQnFrameworkTPCaSide->Qy(2));
+//    TPCepA = TVector2::Phi_mpi_pi(qVectorTPCaSide->Phi())/2;
+//    cout<<"qVecQnFrameworkTPCaSide->Qx(2):"<<qVecQnFrameworkTPCaSide->Qx(2)<<endl;
+//  }
+//  else cout<<"qVecQnFrameworkTPCaSide == NULL!"<<endl;
+//  delete qVectorTPCaSide;
+
+  // TPC C-Side/Pos. Eta Eventplane q-Vector
+//  qnListDetector = "TPCPosEta" + fgQnVectorNorm;
+//  const AliQnCorrectionsQnVector *qVecQnFrameworkTPCcSide = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,qnListDetector.Data(),"latest","latest");
+//  TVector2 *qVectorTPCcSide = new TVector2(-200.,-200.);
+//  if(qVecQnFrameworkTPCcSide != NULL){
+//    qVectorTPCcSide->Set(qVecQnFrameworkTPCcSide->Qx(2),qVecQnFrameworkTPCcSide->Qy(2));
+//    TPCepC = TVector2::Phi_mpi_pi(qVectorTPCcSide->Phi())/2;
+//  }
+//  delete qVectorTPCcSide;        
+}
+
 
 Bool_t AliAnalysisTaskMLTreeMaker::FillZDCEventPlane(Double_t* ZDCevArr){
   // this is a copy of the AliDielectronVarManager
@@ -1013,7 +1092,9 @@ Bool_t AliAnalysisTaskMLTreeMaker::FillZDCEventPlane(Double_t* ZDCevArr){
       // Get Q vectors for the subevents
       anEvent->GetZDC2Qsub(vQarray);
      } else { 
-      Printf("Flowevent not found. Aborting!!!\n");
+      Printf("AliAnalysisTaskMLTreeMaker::FillZDCEventPlane: Flowevent not found. Aborting!\n");
+      ZDCevArr[0]=-99;      
+      ZDCevArr[0]=-99;      
       return kFALSE;
     }
   } 
@@ -1023,8 +1104,8 @@ Bool_t AliAnalysisTaskMLTreeMaker::FillZDCEventPlane(Double_t* ZDCevArr){
   }
 
   // ZDCC = vQarray[0], ZDCA = vQarray[1], see AliFlowEventSimple
-  ZDCevArr[0] = TVector2::Phi_mpi_pi(vQarray[0].Phi())/2;
-  ZDCevArr[1] = TVector2::Phi_mpi_pi(vQarray[1].Phi())/2;
+  ZDCevArr[0] = TVector2::Phi_mpi_pi(vQarray[0].Phi());
+  ZDCevArr[1] = TVector2::Phi_mpi_pi(vQarray[1].Phi());
 
   return kTRUE;
 }

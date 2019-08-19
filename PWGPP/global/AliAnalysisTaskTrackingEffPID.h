@@ -77,6 +77,10 @@ public:
   }
   void SetUseMVPileup(bool flag) {fEventCut.fPileUpCutMV=flag;}
 
+  void SetUseImpactParameter(bool flag) {fUseImpPar=flag;}
+  void SetPtHardRange(double pmin, double pmax){
+    fSelectPtHardRange=kTRUE; fMinPtHard=pmin; fMaxPtHard=pmax;
+  }
   void SelectedGeneratorName(TString name){
     fGenerToKeep=name.Data(); fSelectOnGenerator=kTRUE;}
   void ExcludedGeneratorName(TString name){
@@ -104,11 +108,16 @@ private:
   TString fGenerToExclude;       /// generator name to exclude
   bool fKeepOnlyInjected;        /// flag to keep only injected particles
   bool fKeepOnlyUE;              /// flag to keep only underlying event
+  bool fUseImpPar;               /// flag to enable plots vs. impact parameter
+  bool fSelectPtHardRange;       /// flag to enable the cut on pthard
+  double fMinPtHard;             /// min pthard
+  double fMaxPtHard;             /// max pthard
   TList* fOutputList;                                     //!<! Output list
   TList* fListCuts;                                       //!<! Output with cuts
   TH1F*  fHistNEvents;                                    //!<!  histo with N of events  
   TH1D*  fHistNParticles;                                    //!<!  histo with N of particles
   TH1D*  fHistNTracks;                                    //!<!  histo with N of tracks
+  TH1D*  hHistXsecVsPtHard;                               //!<!  control plot
   THnSparseF* fGenerated[AliPID::kSPECIESC][2];           //!<! Generated particles (pt, eta, phi, mult, zvert)
   THnSparseF* fGeneratedEvSel[AliPID::kSPECIESC][2];      //!<! Generated particles after event selection
   THnSparseF* fReconstructed[AliPID::kSPECIESC][2];       //!<! Reconstructed particles (pt, eta, phi, mult, zvert)
@@ -117,7 +126,7 @@ private:
 
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskTrackingEffPID, 6);
+  ClassDef(AliAnalysisTaskTrackingEffPID, 8);
   /// \endcond
 };
 

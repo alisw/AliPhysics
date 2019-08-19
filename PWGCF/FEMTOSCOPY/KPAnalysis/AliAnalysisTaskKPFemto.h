@@ -42,7 +42,7 @@ class AliAnalysisTaskKPFemto : public AliAnalysisTaskSE {
   // void DoPairshh    (const Float_t centralityBin, int fieldsign);
   // void DoPairsh1h2    (const Float_t centralityBin, int fieldsign,Float_t );
   void DoPairshh    (const Int_t lcentrality, int fieldsign, const Double_t fSphericityvalue);
-  void DoPairsh1h2    (const Int_t lcentrality, int fieldsign, const Double_t fSphericityvalue);
+  void DoPairsh1h2    (const Float_t lcentrality, int fieldsign, const Double_t fSphericityvalue);
 
   double CalculateKstar(double momentum1[3], double momentum2[3], double mass1, double mass2); 
   double CalculateMass(double momentum1[3], double momentum2[3], double mass1, double mass2); 
@@ -231,7 +231,7 @@ class AliAnalysisTaskKPFemto : public AliAnalysisTaskSE {
 
   Int_t   tSignP1;
   Int_t   tSignP2;
-  Int_t   tCentrality;
+  Float_t tCentrality;
   Float_t tDCAxyP1;
   Float_t tDCAzP1; 
   Float_t tDCAxyP2; 

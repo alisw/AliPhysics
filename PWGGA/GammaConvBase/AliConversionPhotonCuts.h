@@ -261,7 +261,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Int_t GetDoElecDeDxPostCalibration() {return fDoElecDeDxPostCalibration;}
     void  SetElecDeDxPostCalibrationCustomFile(TString filename){fFileNameElecDeDxPostCalibration = filename; return;};
     Bool_t  LoadElecDeDxPostCalibration(Int_t runNumber);
-    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t R);
+    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl);
 
 
   protected:
@@ -269,7 +269,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     AliPIDResponse*   fPIDResponse;                         ///< PID response
 
     Bool_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
-    TString           fV0ReaderName;						   ///< Name of the V0 reader
+    TString           fV0ReaderName;                        ///< Name of the V0 reader
 
     //cuts
     Double_t          fMaxR;                                ///< r cut
@@ -321,6 +321,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Int_t             fDoQtGammaSelection;                  ///< Select gammas using qtMax
     Bool_t            fDo2DQt;                              ///< Select gammas using ellipse cut
     Double_t          fQtMax;                               ///< Maximum Qt from Armenteros to select Gammas
+    Double_t          fQtPtMax;                             ///< Maximum Qt vs Pt param from Armenteros to select Gammas
     Double_t          fNSigmaMass;                          ///< nsigma cut
     Bool_t            fUseEtaMinCut;                        ///< flag
     Bool_t            fUseOnFlyV0Finder;                    ///< flag
@@ -407,10 +408,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TString           fFileNameElecDeDxPostCalibration;     ///< name of recalibration file (if no special non-OADB is required)
     Int_t             fRecalibCurrentRun;                   ///< runnumber for correct loading of recalib from OADB
     Int_t             fnRBins;                              //
-    TH2F**            fHistoEleMapMean;  //[fnRBins]
-    TH2F**            fHistoEleMapWidth; //[fnRBins] 
-    TH2F**            fHistoPosMapMean;  //[fnRBins] 
-    TH2F**            fHistoPosMapWidth; //[fnRBins] 
+    TH2S**            fHistoEleMapRecalib;  //[fnRBins]
+    TH2S**            fHistoPosMapRecalib;  //[fnRBins]
     Double_t          fGoodRegionCMin;                      ///< regions WITHOUT strong space charge distortions on C side
     Double_t          fGoodRegionAMin;                      ///<
     Double_t          fBadRegionCMin;                       ///< regions WITH strong space charge distortions on C side
@@ -419,10 +418,12 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fGoodRegionAMax;                      ///<
     Double_t          fBadRegionCMax;                       ///<
     Double_t          fBadRegionAMax;                       ///<
+    Double_t          fExcludeMinR;                         ///< r cut exclude region
+    Double_t          fExcludeMaxR;                         ///< r cut exclude region
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,25)
+    ClassDef(AliConversionPhotonCuts,27)
     /// \endcond
 };
 

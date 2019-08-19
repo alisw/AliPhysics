@@ -36,7 +36,7 @@
 #include <TArrayD.h>
 #include <TString.h>
 
-
+#include <AliAODEvent.h>
 #include <AliVCluster.h>
 #include <AliVParticle.h>
 #include <AliLog.h>
@@ -53,6 +53,7 @@
 
 #include "AliEmcalList.h"
 
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 #include "AliAnalysisTaskEmcalJetCDF.h"
 
 using std::cout;
@@ -67,6 +68,10 @@ ClassImp ( AliAnalysisTaskEmcalJetCDF );
  */
 AliAnalysisTaskEmcalJetCDF::AliAnalysisTaskEmcalJetCDF() :
     AliAnalysisTaskEmcalJet (),
+    fUseAliEventCuts(kTRUE),
+    fEventCuts(0),
+    fEventCutList(0),
+    fUseManualEventCuts(kFALSE),
     fHistManager()
 {}
 
@@ -77,6 +82,10 @@ AliAnalysisTaskEmcalJetCDF::AliAnalysisTaskEmcalJetCDF() :
  */
 AliAnalysisTaskEmcalJetCDF::AliAnalysisTaskEmcalJetCDF ( const char *name ) :
     AliAnalysisTaskEmcalJet ( name, kTRUE ),
+    fUseAliEventCuts(kTRUE),
+    fEventCuts(0),
+    fEventCutList(0),
+    fUseManualEventCuts(kFALSE),
     fHistManager(name)
   {
   // Standard constructor.
@@ -106,6 +115,25 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
 
   namespace CDF = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetCDF_NS;
   TString histname = "", groupname = "", fullgroupname = "";
+
+  TH2I* fSPclsvsSPDtrksBef = (TH2I*)GetHistogram("fSPclsvsSPDtrksBef_task");
+  TH2F* fMultV0onvsMultV0ofBef = (TH2F*)GetHistogram("fMultV0onvsMultV0ofBef_task");
+
+  // Per event QA; N.B. Event is already selected
+  AliAODEvent* aod = dynamic_cast<AliAODEvent*> (InputEvent());
+  if (aod){
+    // fSPclsvsSPDtrksBef
+    Int_t nITSCls = aod->GetNumberOfITSClusters(0) + aod->GetNumberOfITSClusters(1);
+    AliAODTracklets* aodTrkl = (AliAODTracklets*)aod->GetTracklets();
+    Int_t nITSTrkls = aodTrkl->GetNumberOfTracklets();
+    fSPclsvsSPDtrksBef->Fill(nITSTrkls, nITSCls);
+
+    // fMultV0onvsMultV0ofBef
+    AliAODVZERO* aodV0 = aod->GetVZEROData();
+    Float_t  multV0Tot = aodV0->GetMTotV0A() + aodV0->GetMTotV0C();
+    UShort_t multV0On  = aodV0->GetTriggerChargeA() + aodV0->GetTriggerChargeC();
+    fMultV0onvsMultV0ofBef->Fill(multV0Tot, multV0On);
+    }
 
   AliJetContainer* jetCont = NULL;
   TIter next(&fJetCollArray);
@@ -462,6 +490,38 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   // Create user output.
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
+  // Intialize AliEventCuts
+  if (fUseAliEventCuts) {
+    fEventCutList = new TList();
+    fEventCutList->SetOwner();
+    fEventCutList->SetName("EventCutOutput");
+    
+    fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger);
+    if (fUseManualEventCuts) {
+      fEventCuts.SetManualMode();
+      fEventCuts.fMC = false;
+      fEventCuts.SetupLHC15o();
+      fEventCuts.fUseVariablesCorrelationCuts = true;
+      }
+    fEventCuts.AddQAplotsToList(fEventCutList);
+    fOutput->Add(fEventCutList);
+    }
+  
+  // Get the MC particle branch, in case it exists
+  fGeneratorLevel = GetMCParticleContainer("mcparticles");
+
+  // Initialize embedding QA
+  const AliAnalysisTaskEmcalEmbeddingHelper* embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if ( embeddingHelper ) {
+    if (fEmbeddingQA.Initialize()) { fEmbeddingQA.AddQAPlotsToList(fOutput); }
+    }
+
+  TH2I* fSPclsvsSPDtrksBef = new TH2I("fSPclsvsSPDtrksBef_task", "fSPclsvsSPDtrksBef_task;SPD N_{tracklets};SPD N_{clusters}", 1000, -0.5, 6999.5, 1000, -0.5, 24999.5);
+  fOutput->Add(fSPclsvsSPDtrksBef);
+
+  TH2F* fMultV0onvsMultV0ofBef = new TH2F("fMultV0onvsMultV0ofBef_task", "fMultV0onvsMultV0ofBef_task;V0 offline;V0 online", 1000, 0, 50000, 1000, 0, 50000);
+  fOutput->Add(fMultV0onvsMultV0ofBef);
+
   TString histname = "", histtitle = "", groupname = "", fullgroupname = "";
   AliJetContainer* jetCont = 0;
   TIter next(&fJetCollArray);
@@ -514,14 +574,14 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
       //#####################################
 
       //=====================================================================================
-      Int_t h5_nbin = 100; Double_t h5_binwidth = 1; Double_t h5_low = 0;
+      Int_t h5_nbin = 50; Double_t h5_binwidth = 1; Double_t h5_low = 0;
       Double_t h5_high = h5_low + h5_binwidth * h5_nbin;
       histname = TString::Format("%s/histo5_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s;N_{jets};Events", histname.Data()); // Distribution of jets in events
       fHistManager.CreateTH1(histname, histtitle, h5_nbin, h5_low, h5_high);
 
       //=====================================================================================
-      Int_t h7_xnbin = 300; Double_t h7_xbinwidth = 1; Double_t h7_xlow = 0;
+      Int_t h7_xnbin = 200; Double_t h7_xbinwidth = 1; Double_t h7_xlow = 0;
       Double_t h7_xhigh = h7_xlow + h7_xbinwidth * h7_xnbin;
       Int_t h7_ynbin = 100; Double_t h7_ybinwidth = 1; Double_t h7_ylow = 0;
       Double_t h7_yhigh = h7_ylow + h7_ybinwidth * h7_ynbin;
@@ -550,7 +610,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
       //=====================================================================================
       Int_t h15_xnbin = 60; Double_t h15_xbinwidth = 0.01; Double_t h15_xlow = 0.;
       Double_t h15_xhigh = h15_xlow + h15_xbinwidth * h15_xnbin;
-      Int_t h15_ynbin = 300; Double_t h15_ybinwidth = 1.; Double_t h15_ylow = 0.;
+      Int_t h15_ynbin = 150; Double_t h15_ybinwidth = 1.; Double_t h15_ylow = 0.;
       Double_t h15_yhigh = h15_ylow + h15_ybinwidth * h15_ynbin;
 
       histname = TString::Format("%s/histo15all_%d", groupname.Data(), cent);
@@ -604,7 +664,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
 
       //=====================================================================================
       // Distribution of girth (radial girth) g = sum_jet_parts ( r_i * ( pt_i/pt_jet ) )
-      Int_t hg_nbin = 40; Double_t hg_binwidth = 0.005; Double_t hg_low = 0.;
+      Int_t hg_nbin = 60; Double_t hg_binwidth = 0.005; Double_t hg_low = 0.;
       Double_t hg_high = hg_low + hg_binwidth * hg_nbin;
 
       //########################################################
@@ -632,7 +692,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
 
       //=====================================================================================
       // Distribution of dispersion d pt_D = sqrt ( sum (pt_i^2) )/sum (pt_i)
-      Int_t hptd_nbin = 110; Double_t hptd_binwidth = 0.01; Double_t hptd_low = 0.;
+      Int_t hptd_nbin = 100; Double_t hptd_binwidth = 0.01; Double_t hptd_low = 0.;
       Double_t hptd_high = hptd_low + hptd_binwidth * hptd_nbin;
 
       //########################################################

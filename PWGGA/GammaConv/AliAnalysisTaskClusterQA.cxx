@@ -87,9 +87,9 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_LeadingCell_Phi(0),
   fBuffer_ClusterM02(0),
   fBuffer_ClusterM20(0),
-  fBuffer_Event_Vertex_X(0),
-  fBuffer_Event_Vertex_Y(0),
-  fBuffer_Event_Vertex_Z(0),
+  // fBuffer_Event_Vertex_X(0),
+  // fBuffer_Event_Vertex_Y(0),
+  // fBuffer_Event_Vertex_Z(0),
   fBuffer_Event_Multiplicity(0),
   fBuffer_Event_NumActiveCells(0),
   // fBuffer_ClusterNLM_ID(0),
@@ -113,7 +113,9 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Cluster_MC_Label(-10),
   fBuffer_Mother_MC_Label(-10),
   fBuffer_Cluster_MC_EFracFirstLabel(-10),
-  fBuffer_Cluster_MC_EFracLeadingPi0(-10)
+  fBuffer_Cluster_MC_EFracLeadingPi0(-10),
+  fBuffer_Cluster_MC_LeadingPi0_Pt(-10),
+  fBuffer_Cluster_MC_LeadingPi0_E(-10)
 {
   // fBuffer_ClusterNLM_ID                      = new Int_t[kMaxActiveCells];
   // fBuffer_ClusterNLM_E                      = new Float_t[kMaxActiveCells];
@@ -180,9 +182,9 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_LeadingCell_Phi(0),
   fBuffer_ClusterM02(0),
   fBuffer_ClusterM20(0),
-  fBuffer_Event_Vertex_X(0),
-  fBuffer_Event_Vertex_Y(0),
-  fBuffer_Event_Vertex_Z(0),
+  // fBuffer_Event_Vertex_X(0),
+  // fBuffer_Event_Vertex_Y(0),
+  // fBuffer_Event_Vertex_Z(0),
   fBuffer_Event_Multiplicity(0),
   fBuffer_Event_NumActiveCells(0),
   // fBuffer_ClusterNLM_ID(0),
@@ -206,7 +208,9 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Cluster_MC_Label(-10),
   fBuffer_Mother_MC_Label(-10),
   fBuffer_Cluster_MC_EFracFirstLabel(-10),
-  fBuffer_Cluster_MC_EFracLeadingPi0(-10)
+  fBuffer_Cluster_MC_EFracLeadingPi0(-10),
+  fBuffer_Cluster_MC_LeadingPi0_Pt(-10),
+  fBuffer_Cluster_MC_LeadingPi0_E(-10)
 {
   // fBuffer_ClusterNLM_ID                      = new Int_t[kMaxActiveCells];
   // fBuffer_ClusterNLM_E                      = new Float_t[kMaxActiveCells];
@@ -290,9 +294,9 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
   fClusterTree->Branch("Event_Weight",                      &fBuffer_EventWeight,                     "Event_Weight/F");
   if(fSaveEventProperties)
   {
-    fClusterTree->Branch("Event_Vertex_X",                  &fBuffer_Event_Vertex_X,                  "Event_Vertex_X/F");
-    fClusterTree->Branch("Event_Vertex_Y",                  &fBuffer_Event_Vertex_Y,                  "Event_Vertex_Y/F");
-    fClusterTree->Branch("Event_Vertex_Z",                  &fBuffer_Event_Vertex_Z,                  "Event_Vertex_Z/F");
+    // fClusterTree->Branch("Event_Vertex_X",                  &fBuffer_Event_Vertex_X,                  "Event_Vertex_X/F");
+    // fClusterTree->Branch("Event_Vertex_Y",                  &fBuffer_Event_Vertex_Y,                  "Event_Vertex_Y/F");
+    // fClusterTree->Branch("Event_Vertex_Z",                  &fBuffer_Event_Vertex_Z,                  "Event_Vertex_Z/F");
     fClusterTree->Branch("Event_Multiplicity",              &fBuffer_Event_Multiplicity,              "Event_Multiplicity/F");
     fClusterTree->Branch("Event_NumActiveCells",            &fBuffer_Event_NumActiveCells,            "Event_NumActiveCells/I");
   }
@@ -330,6 +334,8 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
     fClusterTree->Branch("Mother_MC_Label",                 &fBuffer_Mother_MC_Label,                 "Mother_MC_Label/I");
     fClusterTree->Branch("Cluster_MC_EFracFirstLabel",      &fBuffer_Cluster_MC_EFracFirstLabel,      "Cluster_MC_EFracFirstLabel/F");
     fClusterTree->Branch("Cluster_MC_EFracLeadingPi0",      &fBuffer_Cluster_MC_EFracLeadingPi0,      "Cluster_MC_EFracLeadingPi0/F");
+    fClusterTree->Branch("Cluster_MC_LeadingPi0_Pt",        &fBuffer_Cluster_MC_LeadingPi0_Pt,        "Cluster_MC_LeadingPi0_Pt/F");
+    fClusterTree->Branch("Cluster_MC_LeadingPi0_E",        &fBuffer_Cluster_MC_LeadingPi0_E,        "Cluster_MC_LeadingPi0_E/F");
   }
 
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
@@ -458,9 +464,9 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
 
   if(fSaveEventProperties){
     // Vertex position x, y, z
-    fBuffer_Event_Vertex_X                  = fInputEvent->GetPrimaryVertex()->GetX();
-    fBuffer_Event_Vertex_Y                  = fInputEvent->GetPrimaryVertex()->GetY();
-    fBuffer_Event_Vertex_Z                  = fInputEvent->GetPrimaryVertex()->GetZ();
+    // fBuffer_Event_Vertex_X                  = fInputEvent->GetPrimaryVertex()->GetX();
+    // fBuffer_Event_Vertex_Y                  = fInputEvent->GetPrimaryVertex()->GetY();
+    // fBuffer_Event_Vertex_Z                  = fInputEvent->GetPrimaryVertex()->GetZ();
 
     // V0-based multiplicity of the event
     fBuffer_Event_Multiplicity              = fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C();
@@ -892,6 +898,7 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   TParticle *Photon = NULL;
+  TParticle *Pi0Dummy = NULL;
   if (!TrueClusterCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
   if (TrueClusterCandidate->GetCaloPhotonMCLabel(0) < 0){
       mcLabelCluster = -10;
@@ -903,8 +910,16 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
 
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0){
     fBuffer_Cluster_MC_EFracFirstLabel = cluster->GetClusterMCEdepFraction(0);
-    if(TrueClusterCandidate->GetNNeutralPionMCLabels()>0)
-      fBuffer_Cluster_MC_EFracLeadingPi0 = TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex());
+    if(TrueClusterCandidate->GetNNeutralPionMCLabels()>0){
+      if(TrueClusterCandidate->GetLeadingNeutralPionIndex()>-1){
+        fBuffer_Cluster_MC_EFracLeadingPi0 = TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex());
+        Pi0Dummy         = fMCEvent->Particle(TrueClusterCandidate->GetNeutralPionMCLabel(TrueClusterCandidate->GetLeadingNeutralPionIndex()));
+        if(Pi0Dummy){
+          fBuffer_Cluster_MC_LeadingPi0_Pt = Pi0Dummy->Pt();
+          fBuffer_Cluster_MC_LeadingPi0_E = Pi0Dummy->Energy();
+        }
+      }
+    }
     // check if leading pi0 comes not from label 0 in cluster
     // for this do:
     // -> check if neutral pions were found in cluster
@@ -1098,6 +1113,7 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidatesAOD(AliAODConversion
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   AliAODMCParticle *Photon = NULL;
+  AliAODMCParticle *Pi0Dummy = NULL;
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 
   if (AODMCTrackArray){
@@ -1116,8 +1132,16 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidatesAOD(AliAODConversion
 
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0){
     fBuffer_Cluster_MC_EFracFirstLabel = cluster->GetClusterMCEdepFraction(0);
-    if(TrueClusterCandidate->GetNNeutralPionMCLabels()>0)
-      fBuffer_Cluster_MC_EFracLeadingPi0 = TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex());
+    if(TrueClusterCandidate->GetNNeutralPionMCLabels()>0){
+      if(TrueClusterCandidate->GetLeadingNeutralPionIndex()>-1){
+        fBuffer_Cluster_MC_EFracLeadingPi0 = TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex());
+        Pi0Dummy         = (AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetNeutralPionMCLabel(TrueClusterCandidate->GetLeadingNeutralPionIndex()));
+        if(Pi0Dummy){
+          fBuffer_Cluster_MC_LeadingPi0_Pt = Pi0Dummy->Pt();
+          fBuffer_Cluster_MC_LeadingPi0_E = Pi0Dummy->E();
+        }
+      }
+    }
     // check if leading pi0 comes not from label 0 in cluster
     // for this do:
     // -> check if neutral pions were found in cluster
@@ -1441,14 +1465,17 @@ void AliAnalysisTaskClusterQA::ResetBuffer(){
   fBuffer_LeadingCell_Phi                 = 0;
   fBuffer_ClusterM02                      = 0;
   fBuffer_ClusterM20                      = 0;
-  fBuffer_Event_Vertex_X                  = 0;
-  fBuffer_Event_Vertex_Y                  = 0;
-  fBuffer_Event_Vertex_Z                  = 0;
+  // fBuffer_Event_Vertex_X                  = 0;
+  // fBuffer_Event_Vertex_Y                  = 0;
+  // fBuffer_Event_Vertex_Z                  = 0;
   fBuffer_Event_Multiplicity              = 0;
   fBuffer_Event_NumActiveCells            = 0;
   fBuffer_Cluster_MC_Label                = -10;
   fBuffer_Mother_MC_Label                 = -10;
-
+  fBuffer_Cluster_MC_EFracFirstLabel      = -10;
+  fBuffer_Cluster_MC_EFracLeadingPi0      = -10;
+  fBuffer_Cluster_MC_LeadingPi0_Pt        = -10;
+  fBuffer_Cluster_MC_LeadingPi0_E        = -10;
   for(Int_t cell = 0; cell < kMaxActiveCells; cell++){
     fBuffer_Cells_E[cell]                       = 0;
     fBuffer_Cells_RelativeEta[cell]             = 0;

@@ -99,8 +99,18 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fRunNumberTriggerCMUP13ClassProperlyH(0),
       fTriggersVsRunH(0),
       fInvariantMassDistributionCoherentH(0),
+      fInvariantMassDistributionCoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionCoherentShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentShiftPlusTwoH(0),
       fInvariantMassDistributionIncoherentH(0),
+      fInvariantMassDistributionIncoherentShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentShiftPlusTwoH(0),
       fDimuonPtDistributionH(0),
+      fDimuonPtDistributionShiftPlusOneH(0),
       fZNCEnergyAgainstEntriesH(0),
       fZNAEnergyAgainstEntriesH(0),
       fZNCEnergyBeforeTimingSelectionH(0),
@@ -166,17 +176,53 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fV0TotalNCells(0),
       // fVectorGoodRunNumbers(0),
       fInvariantMassDistributionCoherentZNCzeroZNAzeroH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH(0),
       fInvariantMassDistributionCoherentZNCzeroZNAanyH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH(0),
       fInvariantMassDistributionCoherentZNCanyZNAzeroH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH(0),
       fInvariantMassDistributionCoherentZNCanyZNAanyH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH(0),
       fInvariantMassDistributionIncoherentZNCzeroZNAzeroH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH(0),
       fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH(0),
       fDimuonPtDistributionZNCzeroZNAzeroH(0),
       fDimuonPtDistributionZNCzeroZNAanyH(0),
       fDimuonPtDistributionZNCanyZNAzeroH(0),
       fDimuonPtDistributionZNCanyZNAanyH(0),
+      fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH(0),
+      fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH(0),
+      fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH(0),
+      fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH(0),
       fDimuonPtDistributionCoherentZNCzeroZNAzeroH(0),
       fDimuonPtDistributionCoherentZNCzeroZNAanyH(0),
       fDimuonPtDistributionCoherentZNCanyZNAzeroH(0),
@@ -213,7 +259,41 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH(0),
+      fInvariantMassDistributionStrictPtH(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyStrictVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyStrictVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fCosThetaHelicityFrameJPsiAlreadyCorrectedH(0),
+      fDcaAgainstPtOfVectorMesonH(0),
+      fInvariantMassDistributionStrictPtStrictDcaH(0),
+      fInvariantMassDistributionVsPtStrictDcaH(0),
+      fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                               0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0 }
+
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -244,7 +324,16 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fRunNumberTriggerCMUP13ClassProperlyH(0),
       fTriggersVsRunH(0),
       fInvariantMassDistributionCoherentH(0),
+      fInvariantMassDistributionCoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionCoherentShiftMinusTwoH(0),
+      fInvariantMassDistributionCoherentShiftMinusOneH(0),
+      fInvariantMassDistributionCoherentShiftPlusOneH(0),
+      fInvariantMassDistributionCoherentShiftPlusTwoH(0),
       fInvariantMassDistributionIncoherentH(0),
+      fInvariantMassDistributionIncoherentShiftMinusTwoH(0),
+      fInvariantMassDistributionIncoherentShiftMinusOneH(0),
+      fInvariantMassDistributionIncoherentShiftPlusOneH(0),
+      fInvariantMassDistributionIncoherentShiftPlusTwoH(0),
       fDimuonPtDistributionH(0),
       fZNCEnergyAgainstEntriesH(0),
       fZNAEnergyAgainstEntriesH(0),
@@ -358,7 +447,40 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH(0),
+      fInvariantMassDistributionStrictPtH(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyStrictVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyStrictVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fCosThetaHelicityFrameJPsiAlreadyCorrectedH(0),
+      fDcaAgainstPtOfVectorMesonH(0),
+      fInvariantMassDistributionStrictPtStrictDcaH(0),
+      fInvariantMassDistributionVsPtStrictDcaH(0),
+      fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                               0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                    0, 0, 0, 0, 0 }
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -593,11 +715,47 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fInvariantMassDistributionCoherentH = new TH1F("fInvariantMassDistributionCoherentH", "fInvariantMassDistributionCoherentH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionCoherentH);
 
+  for( Int_t iRapidity = 0; iRapidity < 6; iRapidity++ ) {
+    fInvariantMassDistributionCoherentRapidityBinsH[iRapidity]
+            = new TH1F( Form("fInvariantMassDistributionCoherentRapidityBinsH_%d", iRapidity),
+                        Form("fInvariantMassDistributionCoherentRapidityBinsH_%d", iRapidity),
+                        2000, 0, 20);
+    fOutputList->Add(fInvariantMassDistributionCoherentRapidityBinsH[iRapidity]);
+  }
+
+
+  fInvariantMassDistributionCoherentShiftMinusTwoH = new TH1F("fInvariantMassDistributionCoherentShiftMinusTwoH", "fInvariantMassDistributionCoherentShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentShiftMinusTwoH);
+
+  fInvariantMassDistributionCoherentShiftMinusOneH = new TH1F("fInvariantMassDistributionCoherentShiftMinusOneH", "fInvariantMassDistributionCoherentShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentShiftMinusOneH);
+
+  fInvariantMassDistributionCoherentShiftPlusOneH = new TH1F("fInvariantMassDistributionCoherentShiftPlusOneH", "fInvariantMassDistributionCoherentShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentShiftPlusOneH);
+
+  fInvariantMassDistributionCoherentShiftPlusTwoH = new TH1F("fInvariantMassDistributionCoherentShiftPlusTwoH", "fInvariantMassDistributionCoherentShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentShiftPlusTwoH);
+
   fInvariantMassDistributionIncoherentH = new TH1F("fInvariantMassDistributionIncoherentH", "fInvariantMassDistributionIncoherentH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentH);
 
+  fInvariantMassDistributionIncoherentShiftMinusTwoH = new TH1F("fInvariantMassDistributionIncoherentShiftMinusTwoH", "fInvariantMassDistributionIncoherentShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentShiftMinusTwoH);
+
+  fInvariantMassDistributionIncoherentShiftMinusOneH = new TH1F("fInvariantMassDistributionIncoherentShiftMinusOneH", "fInvariantMassDistributionIncoherentShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentShiftMinusOneH);
+
+  fInvariantMassDistributionIncoherentShiftPlusOneH = new TH1F("fInvariantMassDistributionIncoherentShiftPlusOneH", "fInvariantMassDistributionIncoherentShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentShiftPlusOneH);
+
+  fInvariantMassDistributionIncoherentShiftPlusTwoH = new TH1F("fInvariantMassDistributionIncoherentShiftPlusTwoH", "fInvariantMassDistributionIncoherentShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentShiftPlusTwoH);
+
   fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionH);
+
+  fDimuonPtDistributionShiftPlusOneH = new TH1F("fDimuonPtDistributionShiftPlusOneH", "fDimuonPtDistributionShiftPlusOneH", 4000, 0.02, 20.02);
+  fOutputList->Add(fDimuonPtDistributionShiftPlusOneH);
 
   fZNCEnergyAgainstEntriesH = new TH1F("fZNCEnergyAgainstEntriesH", "fZNCEnergyAgainstEntriesH", 20000, -10000, 40000);
   fOutputList->Add(fZNCEnergyAgainstEntriesH);
@@ -729,26 +887,122 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fInvariantMassDistributionCoherentZNCzeroZNAzeroH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroH", "fInvariantMassDistributionCoherentZNCzeroZNAzeroH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroH);
 
+  fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH", "fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH", "fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH", "fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH", "fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH);
+
   fInvariantMassDistributionCoherentZNCzeroZNAanyH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyH", "fInvariantMassDistributionCoherentZNCzeroZNAanyH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH", "fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH", "fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH", "fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH);
+
+  fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH", "fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH);
 
   fInvariantMassDistributionCoherentZNCanyZNAzeroH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroH", "fInvariantMassDistributionCoherentZNCanyZNAzeroH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroH);
 
+  fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH", "fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH", "fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH", "fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH", "fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH);
+
   fInvariantMassDistributionCoherentZNCanyZNAanyH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyH", "fInvariantMassDistributionCoherentZNCanyZNAanyH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH", "fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH", "fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH", "fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH);
+
+  fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH = new TH1F("fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH", "fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH);
 
   fInvariantMassDistributionIncoherentZNCzeroZNAzeroH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroH", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroH);
 
+  fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH", "fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH);
+
   fInvariantMassDistributionIncoherentZNCzeroZNAanyH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyH", "fInvariantMassDistributionIncoherentZNCzeroZNAanyH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH", "fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH", "fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH", "fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH);
+
+  fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH", "fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH);
 
   fInvariantMassDistributionIncoherentZNCanyZNAzeroH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroH", "fInvariantMassDistributionIncoherentZNCanyZNAzeroH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroH);
 
+  fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH", "fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH", "fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH", "fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH", "fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH);
+
   fInvariantMassDistributionIncoherentZNCanyZNAanyH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyH", "fInvariantMassDistributionIncoherentZNCanyZNAanyH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH", "fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH", "fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH", "fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH);
+
+  fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH", "fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH", 2000, 0, 20);
+  fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH);
 
   fDimuonPtDistributionZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroH", "fDimuonPtDistributionZNCzeroZNAzeroH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroH);
@@ -761,6 +1015,18 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   fDimuonPtDistributionZNCanyZNAanyH = new TH1F("fDimuonPtDistributionZNCanyZNAanyH", "fDimuonPtDistributionZNCanyZNAanyH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyH);
+
+  fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH", "fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH", 4000, 0.02, 20.02);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH);
+
+  fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH = new TH1F("fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH", "fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH", 4000, 0.02, 20.02);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH);
+
+  fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH = new TH1F("fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH", "fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH", 4000, 0.02, 20.02);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH);
+
+  fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH = new TH1F("fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH", "fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH", 4000, 0.02, 20.02);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH);
 
   fDimuonPtDistributionCoherentZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionCoherentZNCzeroZNAzeroH", "fDimuonPtDistributionCoherentZNCzeroZNAzeroH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionCoherentZNCzeroZNAzeroH);
@@ -970,25 +1236,149 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
     fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins]);
   }
 
-  // for( Int_t iCosTheta = 0; iCosTheta < 10; iCosTheta++ ){
-  //   std::vector<TH1F> auxiliaryVector;
-  //   for( Int_t iPhi = 0; iPhi < 10; iPhi++ ){
-  //     // auxiliaryVector.push_back( new TH1F( Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
-  //     //                                      Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
-  //     //                                      2000, 0, 20
-  //     //                                      )
-  //     //                            );
-  //     TH1F* helphisto =         new TH1F( Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
-  //                                         Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
-  //                                         2000, 0, 20
-  //                                       );
-  //     auxiliaryVector.push_back( *helphisto );
-  //
-  //   }
-  //   fInvariantMassDistributionForSignalExtractionHelicityFrameH.push_back(auxiliaryVector);
-  //   for( Int_t iPhi = 0; iPhi < 10; iPhi++ ) fOutputList->Add(fInvariantMassDistributionForSignalExtractionHelicityFrameH[iCosTheta][iPhi]);
-  // }
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 40; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[iCosThetaBins]);
+  }
 
+  for(Int_t iPhiBins = 0; iPhiBins < 50; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[iPhiBins]);
+  }
+
+  /* - Invariant mass distributions for signal extraction for POLARISATION.
+     - The usage will be:    histo[CosTheta][Phi];
+     - My variable binning.
+     -
+   */
+  fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH = new TH1F**[7];
+  for( Int_t iCosTheta = 0; iCosTheta < 7; iCosTheta++ ){
+    fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH[iCosTheta] = new TH1F*[20];
+    for( Int_t iPhi = 0; iPhi < 20; iPhi++ ){
+      fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH[iCosTheta][iPhi] =
+          new TH1F( Form("fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH_%d_%d", iCosTheta, iPhi),
+                    Form("fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH_%d_%d", iCosTheta, iPhi),
+                    2000, 0, 20
+                    );
+      fOutputList->Add(fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH[iCosTheta][iPhi]);
+    }
+  }
+
+  fInvariantMassDistributionStrictPtH = new TH1F("fInvariantMassDistributionStrictPtH", "fInvariantMassDistributionStrictPtH", 8000, 0, 40);
+  fOutputList->Add(fInvariantMassDistributionStrictPtH);
+
+  /* - My variable binning
+   * - for 1D analysis.
+   */
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 26; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 30; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins]);
+  }
+
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 9; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyStrictVariableBinningH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyStrictVariableBinningH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyStrictVariableBinningH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyStrictVariableBinningH[iCosThetaBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 15; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyStrictVariableBinningH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyStrictVariableBinningH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyStrictVariableBinningH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyStrictVariableBinningH[iPhiBins]);
+  }
+
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 17; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH[iCosThetaBins]);
+  }
+
+  fCosThetaHelicityFrameJPsiAlreadyCorrectedH = new TH1F("fCosThetaHelicityFrameJPsiAlreadyCorrectedH", "fCosThetaHelicityFrameJPsiAlreadyCorrectedH", 100, -1., 1.);
+  fOutputList->Add(fCosThetaHelicityFrameJPsiAlreadyCorrectedH);
+
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 50; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH[iCosThetaBins]);
+  }
+
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 100; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH[iCosThetaBins]);
+  }
+
+  fDcaAgainstPtOfVectorMesonH = new TH2F("fDcaAgainstPtOfVectorMesonH", "fDcaAgainstPtOfVectorMesonH", 1000, 0, 10, 4000, 0, 40);
+  fOutputList->Add(fDcaAgainstPtOfVectorMesonH);
+
+  fInvariantMassDistributionStrictPtStrictDcaH = new TH1F("fInvariantMassDistributionStrictPtStrictDcaH", "fInvariantMassDistributionStrictPtStrictDcaH", 8000, 0, 40);
+  fOutputList->Add(fInvariantMassDistributionStrictPtStrictDcaH);
+
+  fInvariantMassDistributionVsPtStrictDcaH = new TH2F("fInvariantMassDistributionVsPtStrictDcaH", "fInvariantMassDistributionVsPtStrictDcaH", 2000, 0, 20, 1000, 0, 10);
+  fOutputList->Add(fInvariantMassDistributionVsPtStrictDcaH);
+
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 25; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[iCosThetaBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 25; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[iPhiBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 25; iPhiBins++ ){
+    fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[iPhiBins]);
+  }
 
   //_______________________________
   // - End of the function
@@ -1179,6 +1569,15 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
   fZem1Energy = dataZDC->GetZEM1Energy();
   fZem2Energy = dataZDC->GetZEM2Energy();
+
+  /* - Reset Event information.
+   * -
+   */
+  fZNAEnergy  = -8999;
+  fZNCEnergy  = -8999;
+  fZPAEnergy  = -8999;
+  fZPCEnergy  = -8999;
+
   fZNAEnergy  = dataZDC->GetZNATowerEnergy()[0];
   fZNCEnergy  = dataZDC->GetZNCTowerEnergy()[0];
   fZPAEnergy  = dataZDC->GetZPATowerEnergy()[0];
@@ -1186,6 +1585,14 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
   fZNATime    = dataZDC->GetZNATime();
   fZNCTime    = dataZDC->GetZNCTime();
+
+  /* - Reset Event information.
+   * -
+   */
+  for (Int_t i=0;i<4;i++) fZNATDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZNCTDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZPATDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZPCTDC[i] = -999;
 
   for (Int_t i=0;i<4;i++) fZNATDC[i] = dataZDC->GetZNATDCm(i);
   for (Int_t i=0;i<4;i++) fZNCTDC[i] = dataZDC->GetZNCTDCm(i);
@@ -1196,24 +1603,29 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      -
    */
   Bool_t calibrated = 0;
-  if ( fRunNum <= 245068 ) calibrated = 1;
-  if ( fRunNum <  295726 ) calibrated = 1;
-  if ( fRunNum == 296509 ) calibrated = 1;
-  if ( fRunNum >  296689 ) calibrated = 1;
-  if ( fRunNum >  296695 ) calibrated = 0;
-  if ( fRunNum == 297219 ) calibrated = 1;
-  if ( fRunNum == 297221 ) calibrated = 1;
-  if ( fRunNum == 297415 ) calibrated = 1;
+  if ( fRunNum <= 245068 ) {
+    calibrated = 1;
+  } else if ( ( fRunNum > 245068 ) && ( fRunNum <  246995 ) ){
+    calibrated = 0;
+  } else {
+    calibrated = 1;
+  }
+  // if ( fRunNum == 296509 ) calibrated = 1;
+  // if ( fRunNum >  296689 ) calibrated = 1;
+  // if ( fRunNum >  296695 ) calibrated = 0;
+  // if ( fRunNum == 297219 ) calibrated = 1;
+  // if ( fRunNum == 297221 ) calibrated = 1;
+  // if ( fRunNum == 297415 ) calibrated = 1;
 
-  if ( !calibrated ) {
+  if ( calibrated == 0 ) {
     if( fRunNum <= 246994 ) {
       fZNAEnergy *= (2500./250.);
       fZNCEnergy *= (2500./250.);
     }
-    if( fRunNum >  246994 ) {
-      fZNAEnergy *= (2500./190.);
-      fZNCEnergy *= (2500./190.);
-    }
+  //   if( fRunNum >  246994 ) {
+  //     fZNAEnergy *= (2500./190.);
+  //     fZNCEnergy *= (2500./190.);
+  //   }
   }
 
   /* - V0: we try to find the V0 object data in the nano-AOD. If we cannot,
@@ -1270,7 +1682,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   // fCounterH->Fill(17);
 
 
-
+  //_______________________________
+  /* - NOTE: total run selection.
+   * -
+   */
   fCounterH->Fill(15);
   Int_t listOfGoodRunNumbersLHC18q[] = { 295585, 295586, 295587, 295588, 295589, 295612,
                                          295615, 295665, 295666, 295667, 295668, 295671,
@@ -1311,6 +1726,48 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                                          297452, 297479, 297481, 297483, 297512, 297537,
                                          297540, 297541, 297542, 297544, 297558, 297588,
                                          297590, 297595/*, 297623, 297624*/ };
+  /* - RUN SELECTION WITHOUT FAULTY RUNS
+   * -
+   */
+  // Int_t listOfGoodRunNumbersLHC18q[] = { 295585, 295586, 295587, 295588, 295589, 295612,
+  //                                        295615, 295665, 295666, 295667, 295668, 295671,
+  //                                        295673, 295675, 295676, 295677, 295714, 295716,
+  //                                        295717, 295718, 295719, 295723, 295725, 295753,
+  //                                        295754, 295755, 295758, 295759, 295762, 295763,
+  //                                        295786, 295788, 295791, 295816, 295818, 295819,
+  //                                        295822, 295825, 295826, 295829, /*295831,*/ 295854,
+  //                                        295855, 295856, 295859, 295860, 295861, 295863,
+  //                                        295881, 295908, 295909, 295910, 295913, 295936,
+  //                                        295937, 295941, 295942, 295943, 295945, 295947,
+  //                                        296061, 296062, 296063, 296065, 296066, 296068,
+  //                                        296123, 296128, 296132, 296133, 296134, 296135,
+  //                                        296142, 296143, 296191, 296192, 296194, 296195,
+  //                                        /*296196, 296197, 296198,*/ 296241, 296242, 296243,
+  //                                        296244, 296246, 296247, 296269, 296270, 296273,
+  //                                        296279, 296280, 296303, 296304, 296307, 296309,
+  //                                        296312, 296376, 296377, 296378, 296379, 296380,
+  //                                        296381, 296383, 296414, 296419, 296420, 296423,
+  //                                        296424, 296433, 296472, 296509, 296510, 296511,
+  //                                        296514, 296516, 296547, 296548, 296549, 296550,
+  //                                        296551, 296552, 296553, 296615, 296616, 296618,
+  //                                        296619, 296622, 296623 };
+  // Int_t listOfGoodRunNumbersLHC18r[] = { 296690, 296691, 296694, 296749, 296750, 296781,
+  //                                        296784, 296785, 296786, 296787, 296791, 296793,
+  //                                        /*296794, 296799,*/ 296836, 296838, 296839, 296848,
+  //                                        296849, 296850, 296851, 296852, 296890, 296894,
+  //                                        /*296899, 296900, 296903,*/ 296930, 296931, /*296932,
+  //                                        296934, 296935, 296938, 296941,*/ 296966, 296967,
+  //                                        296968, 296969, 296971, 296975, 296976, 296977,
+  //                                        /*296979,*/ 297029, 297031, 297035, 297085, 297117,
+  //                                        297118, 297119, 297123, 297124, 297128, 297129,
+  //                                        297132, 297133, 297193, 297194, 297196, 297218,
+  //                                        297219, 297221, /*297222,*/ 297278, 297310, 297312,
+  //                                        297315, 297317, 297363, 297366, 297367, 297372,
+  //                                        297379, 297380, 297405, 297408, 297413, 297414,
+  //                                        297415, 297441, 297442, /*297446, 297450, 297451,
+  //                                        297452,*/ 297479, 297481, 297483, 297512, 297537,
+  //                                        297540, 297541, 297542, 297544, 297558, 297588,
+  //                                        297590, 297595/*, 297623, 297624*/ };
   /* - This good run number list has been taken from the analysis
      - note of Kay's talk for DIS 2017, see:
      - https://alice-notes.web.cern.ch/system/files/notes/analysis/596/2017-Feb-08-analysis_note-2017-Feb-08-analysis-note.pdf
@@ -1331,15 +1788,34 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                                          246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
                                          246949, 246980, 246982, 246984, 246989, 246991, 246994
                                        };
+  // Int_t listOfGoodRunNumbersLHC15o[] = { /*244918,*/ 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
+  //                                        245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
+  //                                        245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
+  //                                        245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
+  //                                        245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
+  //                                        245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
+  //                                        246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
+  //                                        246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
+  //                                        246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
+  //                                        246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
+  //                                        246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
+  //                                        246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
+  //                                        246859, 246864, 246865, /*246867, 246871,*/ 246930, 246937, 246942, 246945, 246948,
+  //                                        246949, 246980, 246982, 246984, 246989, 246991, 246994
+  //                                      };
+
   Int_t listOfRunNumbersZDC[] = { 296244, 296750, 296849, 297219, 297481 };
   Bool_t checkIfGoodRun = kFALSE;
   for( Int_t iRunLHC18q = 0; iRunLHC18q < 129; iRunLHC18q++){
+  // for( Int_t iRunLHC18q = 0; iRunLHC18q < 125; iRunLHC18q++){
     if( fRunNum == listOfGoodRunNumbersLHC18q[iRunLHC18q] ) checkIfGoodRun = kTRUE;
   }
   for( Int_t iRunLHC18r = 0; iRunLHC18r <  98; iRunLHC18r++){
+  // for( Int_t iRunLHC18r = 0; iRunLHC18r <  82; iRunLHC18r++){
     if( fRunNum == listOfGoodRunNumbersLHC18r[iRunLHC18r] ) checkIfGoodRun = kTRUE;
   }
   for( Int_t iRunLHC15o = 0; iRunLHC15o < 136/*137*/; iRunLHC15o++){
+  // for( Int_t iRunLHC15o = 0; iRunLHC15o < 134; iRunLHC15o++){
     if( fRunNum == listOfGoodRunNumbersLHC15o[iRunLHC15o] ) checkIfGoodRun = kTRUE;
   }
   // for( Int_t iRunZDC = 0; iRunZDC < 5; iRunZDC++){
@@ -1584,7 +2060,14 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      -
    */
   for(int indexMuonForDCA = 0; indexMuonForDCA < 2; indexMuonForDCA++) {
-        fDcaAgainstInvariantMassH->Fill(possibleJPsi.Mag(), track[indexMuonForDCA]->DCA());
+    fDcaAgainstInvariantMassH  ->Fill(possibleJPsi.Mag(), track[indexMuonForDCA]->DCA());
+    fDcaAgainstPtOfVectorMesonH->Fill(possibleJPsi.Pt(),  track[indexMuonForDCA]->DCA());
+  }
+  if( (track[0]->DCA() < 10) && (track[1]->DCA() < 10) ) {
+    if( (possibleJPsi.Pt() > 0.3) && (possibleJPsi.Pt() < 0.7) ){
+      fInvariantMassDistributionStrictPtStrictDcaH->Fill( possibleJPsi.Mag() );
+    }
+    fInvariantMassDistributionVsPtStrictDcaH->Fill( possibleJPsi.Mag(), possibleJPsi.Pt() );
   }
 
   /* - Now we are evaluating the pt of the dimuon pair. Generally speaking,
@@ -1597,15 +2080,49 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   if( ptOfTheDimuonPair < 0.25) {
         fInvariantMassDistributionCoherentH->Fill(possibleJPsi.Mag());
         fInvariantMassDistributionCoherentExtendedH->Fill(possibleJPsi.Mag());
+        if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[0]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.75 && possibleJPsi.Rapidity() <= -3.50 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[1]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.25 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[2]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -3.00 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[3]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.75 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[4]->Fill(possibleJPsi.Mag());
+        } else if ( possibleJPsi.Rapidity() > -2.75 && possibleJPsi.Rapidity() <= -2.50 ) {
+          fInvariantMassDistributionCoherentRapidityBinsH[5]->Fill(possibleJPsi.Mag());
+        }
   } else {
         fInvariantMassDistributionIncoherentH->Fill(possibleJPsi.Mag());
         fInvariantMassDistributionIncoherentExtendedH->Fill(possibleJPsi.Mag());
   }
   // fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
   if ( (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) {
-    fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
+    fDimuonPtDistributionH            ->Fill(ptOfTheDimuonPair);
+    fDimuonPtDistributionShiftPlusOneH->Fill(ptOfTheDimuonPair);
   }
 
+  if( ptOfTheDimuonPair < 0.200 ) {
+    fInvariantMassDistributionCoherentShiftMinusTwoH->Fill(possibleJPsi.Mag());
+  } else {
+    fInvariantMassDistributionIncoherentShiftMinusTwoH->Fill(possibleJPsi.Mag());
+  }
+  if( ptOfTheDimuonPair < 0.225 ) {
+    fInvariantMassDistributionCoherentShiftMinusOneH->Fill(possibleJPsi.Mag());
+  } else {
+    fInvariantMassDistributionIncoherentShiftMinusOneH->Fill(possibleJPsi.Mag());
+  }
+  if( ptOfTheDimuonPair < 0.275 ) {
+    fInvariantMassDistributionCoherentShiftPlusOneH ->Fill(possibleJPsi.Mag());
+  } else {
+    fInvariantMassDistributionIncoherentShiftPlusOneH ->Fill(possibleJPsi.Mag());
+  }
+  if( ptOfTheDimuonPair < 0.300 ) {
+    fInvariantMassDistributionCoherentShiftPlusTwoH ->Fill(possibleJPsi.Mag());
+  } else {
+    fInvariantMassDistributionIncoherentShiftPlusTwoH ->Fill(possibleJPsi.Mag());
+  }
 
 
 
@@ -1664,7 +2181,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
 
   /* - Now this is a critical part of  the analysis. What happens next is a
-     - differential analysisin terms of the energy perceived by the neutron ZDC.
+     - differential analysis in terms of the energy perceived by the neutron ZDC.
      - What it means is that now we may cut on those sensible values to select
      - only those J/Psi candidates falling under a certain peak of the neutron
      - ZNC energy distribution. It will be seen that the fZNCEnergyAgainstEntriesH
@@ -1865,45 +2382,129 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
           if( fZNCEnergy > -5000 ) {
                       if( fZNCEnergy < 1250 ) {
                                   if( fZNAEnergy > -5000 ) {
-                                              if( fZNAEnergy < 1000 ) {
-                                                          fDimuonPtDistributionZNCzeroZNAzeroH->Fill(ptOfTheDimuonPair);
-                                                          if( ptOfTheDimuonPair < 0.25) {
+                                              if( fZNAEnergy < 1250 ) {
+                                                          fDimuonPtDistributionZNCzeroZNAzeroH            ->Fill(ptOfTheDimuonPair);
+                                                          fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH->Fill(ptOfTheDimuonPair);
+                                                          if( ptOfTheDimuonPair < 0.25 ) {
                                                                     fInvariantMassDistributionCoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
                                                                     fDimuonPtDistributionCoherentZNCzeroZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
                                                                     fDimuonPtDistributionIncoherentZNCzeroZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           }
+                                                          if( ptOfTheDimuonPair < 0.200 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.225 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.275 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.300 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
                                               } else {
-                                                          fDimuonPtDistributionZNCzeroZNAanyH->Fill(ptOfTheDimuonPair);
-                                                          if( ptOfTheDimuonPair < 0.25) {
+                                                          fDimuonPtDistributionZNCzeroZNAanyH            ->Fill(ptOfTheDimuonPair);
+                                                          fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH->Fill(ptOfTheDimuonPair);
+                                                          if( ptOfTheDimuonPair < 0.25 ) {
                                                                     fInvariantMassDistributionCoherentZNCzeroZNAanyH->Fill(possibleJPsi.Mag());
                                                                     fDimuonPtDistributionCoherentZNCzeroZNAanyH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCzeroZNAanyH->Fill(possibleJPsi.Mag());
                                                                     fDimuonPtDistributionIncoherentZNCzeroZNAanyH->Fill(ptOfTheDimuonPair);
                                                           }
+                                                          if( ptOfTheDimuonPair < 0.200 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.225 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.275 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.300 ) {
+                                                            fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
                                               }
                                   }
                       } else {
                                   if( fZNAEnergy > -5000 ) {
-                                              if( fZNAEnergy < 1000 ) {
-                                                          fDimuonPtDistributionZNCanyZNAzeroH->Fill(ptOfTheDimuonPair);
-                                                          if( ptOfTheDimuonPair < 0.25) {
+                                              if( fZNAEnergy < 1250 ) {
+                                                          fDimuonPtDistributionZNCanyZNAzeroH            ->Fill(ptOfTheDimuonPair);
+                                                          fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH->Fill(ptOfTheDimuonPair);
+                                                          if( ptOfTheDimuonPair < 0.25 ) {
                                                                     fInvariantMassDistributionCoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
                                                                     fDimuonPtDistributionCoherentZNCanyZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
                                                                     fDimuonPtDistributionIncoherentZNCanyZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           }
+                                                          if( ptOfTheDimuonPair < 0.200 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.225 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.275 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.300 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
                                               } else {
-                                                          fDimuonPtDistributionZNCanyZNAanyH->Fill(ptOfTheDimuonPair);
-                                                          if( ptOfTheDimuonPair < 0.25) {
+                                                          fDimuonPtDistributionZNCanyZNAanyH            ->Fill(ptOfTheDimuonPair);
+                                                          fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH->Fill(ptOfTheDimuonPair);
+                                                          if( ptOfTheDimuonPair < 0.25 ) {
                                                                     fInvariantMassDistributionCoherentZNCanyZNAanyH->Fill(possibleJPsi.Mag());
                                                                     fDimuonPtDistributionCoherentZNCanyZNAanyH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCanyZNAanyH->Fill(possibleJPsi.Mag());
                                                                     fDimuonPtDistributionIncoherentZNCanyZNAanyH->Fill(ptOfTheDimuonPair);
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.200 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.225 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.275 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH->Fill(possibleJPsi.Mag());
+                                                          }
+                                                          if( ptOfTheDimuonPair < 0.300 ) {
+                                                            fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH->Fill(possibleJPsi.Mag());
+                                                          } else {
+                                                            fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH->Fill(possibleJPsi.Mag());
                                                           }
                                               }
                                   }
@@ -2004,7 +2605,347 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
   }
 
+  /* - NEW:
+     -
+   */
+  if ( possibleJPsiCopy.Pt() < 0.25 ) {
+        Double_t CosThetaHelicityFrameValue2 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t PhiHelicityFrameValue2      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        if(      CosThetaHelicityFrameValue2 < -0.95 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[0]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.90 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[1]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.85 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[2]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.80 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[3]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.75 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[4]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.70 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[5]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.65 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[6]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.60 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[7]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.55 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[8]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.50 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[9]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.45 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[10]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.40 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[11]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.35 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[12]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.30 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[13]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.25 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[14]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.20 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[15]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.15 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[16]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.10 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[17]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < -0.05 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[18]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 <  0.00 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[19]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.05 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[20]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.10 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[21]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.15 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[22]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.20 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[23]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.25 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[24]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.30 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[25]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.35 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[26]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.40 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[27]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.45 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[28]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.50 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[29]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.55 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[30]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.60 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[31]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.65 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[32]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.70 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[33]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.75 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[34]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.80 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[35]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.85 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[36]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.90 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[37]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +0.95 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[38]->Fill(possibleJPsiCopyMag);}
+        else if( CosThetaHelicityFrameValue2 < +1.00 ){fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[39]->Fill(possibleJPsiCopyMag);}
 
+        if( PhiHelicityFrameValue2 > -3.14 && PhiHelicityFrameValue2 < -3.0144 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[0]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -2.8888 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[1]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -2.7632 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[2]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -2.6376 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[3]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -2.5120 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[4]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -2.3864 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[5]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -2.2608 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[6]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -2.1352 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[7]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -2.0096 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[8]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -1.8840 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[9]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -1.7584 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[10]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -1.6328 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[11]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -1.5072 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[12]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -1.3816 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[13]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -1.2560 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[14]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -1.1304 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[15]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -1.0048 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[16]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -0.8792 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[17]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -0.7536 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[18]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -0.6280 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[19]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -0.5024 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[20]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -0.3768 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[21]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -0.2512 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[22]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < -0.1256 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[23]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 <  0.0000 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[24]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +0.1256 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[25]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +0.2512 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[26]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +0.3768 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[27]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +0.5024 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[28]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +0.6280 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[29]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +0.7536 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[30]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +0.8792 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[31]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +1.0048 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[32]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +1.1304 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[33]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +1.2560 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[34]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +1.3816 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[35]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +1.5072 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[36]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +1.6328 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[37]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +1.7584 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[38]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +1.8840 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[39]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +2.0096 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[40]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +2.1352 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[41]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +2.2608 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[42]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +2.3864 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[43]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +2.5120 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[44]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +2.6376 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[45]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +2.7632 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[46]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +2.8888 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[47]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +3.0144 ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[48]->Fill(possibleJPsiCopyMag);}
+        else if(                              PhiHelicityFrameValue2 < +3.14   ){fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[49]->Fill(possibleJPsiCopyMag);}
+
+  }
+
+  /* - NEW:
+     -
+   */
+  Bool_t controlFlag4 = 0;
+  Double_t MyVariableCosThetaBinning[] = { -0.65, -0.35, -0.15, -0.05,
+                                            0.05,  0.15,  0.35,  0.65 };
+  Double_t MyVariablePhiBinning[] = { -3.14*1,       -3.14*19*0.05, -3.14*18*0.05, -3.14*17*0.05,
+                                      -3.14*13*0.05, -3.14*9*0.05,  -3.14*6*0.05,  -3.14*4*0.05,
+                                      -3.14*2*0.05,  -3.14*1*0.05,   0,            +3.14*1*0.05,
+                                      +3.14*2*0.05,  +3.14*4*0.05,  +3.14*6*0.05,  +3.14*9*0.05,
+                                      +3.14*13*0.05, +3.14*17*0.05, +3.14*18*0.05, +3.14*19*0.05,
+                                      +3.14*1 };
+  if ( possibleJPsiCopy.Pt() < 0.25 ) {
+        Double_t CosThetaHelicityFrameValue3 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t PhiHelicityFrameValue3      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 7; iCosThetaBins++) {
+          if( controlFlag4 == 1) break;
+          if( CosThetaHelicityFrameValue3 < MyVariableCosThetaBinning[iCosThetaBins + 1] ){
+            for(Int_t iPhiBins = 0; iPhiBins < 20; iPhiBins++) {
+              if( controlFlag4 == 1) break;
+              if( PhiHelicityFrameValue3  < MyVariablePhiBinning[iPhiBins + 1] ){
+                  fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH[iCosThetaBins][iPhiBins]->Fill(possibleJPsiCopyMag);
+                  controlFlag4 = 1;
+              }
+            }
+          }
+        }
+  }
+
+  /* - NEW:
+   * - My variable binning for 1D analysis
+   */
+  Bool_t controlFlag5 = 0;
+  Bool_t controlFlag6 = 0;
+  Double_t MyVariableCosThetaBinning1D[] = { -0.65,  -0.5,  -0.4,  -0.35,  -0.3,
+                                             -0.25,  -0.2,  -0.15, -0.125, -0.1,
+                                             -0.075, -0.05, -0.025, 0,      0.025,
+                                              0.05,   0.075, 0.1,   0.125,  0.15,
+                                              0.2,    0.25,  0.3,   0.35,   0.4,
+                                              0.5,    0.65 };
+  Double_t MyVariablePhiBinning1D[] = { -3.14*1,      -3.14*14/15,  -3.14*13/15,  -3.14*12/15,
+                                        -3.14*11/15,  -3.14*10/15,  -3.14*9/15,   -3.14*8/15,
+                                        -3.14*7/15,   -3.14*6/15,   -3.14*5/15,   -3.14*4/15,
+                                        -3.14*3/15,   -3.14*2/15,   -3.14*1/15,    0,
+                                        +3.14*1/15,   +3.14*2/15,   +3.14*3/15,   +3.14*4/15,
+                                        +3.14*5/15,   +3.14*6/15,   +3.14*7/15,   +3.14*8/15,
+                                        +3.14*9/15,   +3.14*10/15,  +3.14*11/15,  +3.14*12/15,
+                                        +3.14*13/15,  +3.14*14/15,  +3.14*1 };
+  if ( possibleJPsiCopy.Pt() < 0.25 ) {
+        Double_t CosThetaHelicityFrameValue4 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t PhiHelicityFrameValue4      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 26; iCosThetaBins++) {
+          if( controlFlag5 == 1) break;
+          if( CosThetaHelicityFrameValue4 < MyVariableCosThetaBinning1D[iCosThetaBins + 1] ){
+            fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+            controlFlag5 = 1;
+          }
+        }
+        for(Int_t iPhiBins = 0; iPhiBins < 30; iPhiBins++) {
+          if( controlFlag6 == 1) break;
+          if( PhiHelicityFrameValue4  < MyVariablePhiBinning1D[iPhiBins + 1] ){
+            fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins]->Fill(possibleJPsiCopyMag);
+            controlFlag6 = 1;
+          }
+        }
+  }
+
+  /* - NEW:
+   * - My STRICT variable binning for 1D analysis
+   */
+  Bool_t controlFlag7 = 0;
+  Bool_t controlFlag8 = 0;
+  Double_t MyVariableCosThetaBinning1Dv2[] = { -0.65, -0.45, -0.3, -0.15,  -0.05,
+                                                0.05,  0.15,  0.3,  0.45,   0.65 };
+  Double_t MyVariablePhiBinning1Dv2[] = { -3.14*1,    -3.14*13/15,  -3.14*11/15,     -3.14*9/15,
+                                          -3.14*7/15, -3.14*5/15,   -3.14*3/15,      -3.14*1/15,
+                                          +3.14*1/15, +3.14*3/15,   +3.14*5/15,      +3.14*7/15,
+                                          +3.14*9/15, +3.14*11/15,  +3.14*13/15,     +3.14*1 };
+  if ( possibleJPsiCopy.Pt() < 0.25 ) {
+        Double_t CosThetaHelicityFrameValue5 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t PhiHelicityFrameValue5      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 9; iCosThetaBins++) {
+          if( controlFlag7 == 1) break;
+          if( CosThetaHelicityFrameValue5 < MyVariableCosThetaBinning1Dv2[iCosThetaBins + 1] ){
+            fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyStrictVariableBinningH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+            controlFlag7 = 1;
+          }
+        }
+        for(Int_t iPhiBins = 0; iPhiBins < 15; iPhiBins++) {
+          if( controlFlag8 == 1) break;
+          if( PhiHelicityFrameValue5  < MyVariablePhiBinning1Dv2[iPhiBins + 1] ){
+            fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyStrictVariableBinningH[iPhiBins]->Fill(possibleJPsiCopyMag);
+            controlFlag8 = 1;
+          }
+        }
+  }
+
+  /* - NEW:
+   * - My SEVENTEEN BINS variable binning for 1D analysis
+   */
+  Bool_t controlFlag9  = 0;
+  Bool_t controlFlag10 = 0;
+  Bool_t controlFlag11 = 0;
+  Bool_t controlFlag12 = 0;
+  Double_t MyVariableCosThetaBinning1Dv3[] = { -0.65,  -0.5,  -0.425, -0.35,
+                                               -0.275, -0.2,  -0.125, -0.075,
+                                               -0.025,  0.025, 0.075,  0.125,
+                                                0.2,    0.275, 0.35,   0.425,
+                                                0.5,    0.65 };
+  if ( possibleJPsiCopy.Pt() < 0.25 ) {
+        Double_t CosThetaHelicityFrameValue6 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t PhiHelicityFrameValue6      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t WeightFromAcceptance        =      AccEffCorrection( CosThetaHelicityFrameValue6 );
+        if ( ( possibleJPsiCopyMag > 2.85 ) && ( possibleJPsiCopyMag < 3.35 ) ) {
+          fCosThetaHelicityFrameJPsiAlreadyCorrectedH->Fill( CosThetaHelicityFrameValue6, 1/WeightFromAcceptance );
+        }
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 17; iCosThetaBins++) {
+          if( controlFlag9 == 1) break;
+          if( CosThetaHelicityFrameValue6 < MyVariableCosThetaBinning1Dv3[iCosThetaBins + 1] ){
+            fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+            controlFlag9 = 1;
+          }
+        }
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 50; iCosThetaBins++) {
+          if( controlFlag11 == 1) break;
+          if( (CosThetaHelicityFrameValue6 + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/50. ) {
+            fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+            controlFlag11 = 1;
+          }
+        }
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 100; iCosThetaBins++) {
+          if( controlFlag12 == 1) break;
+          if( (CosThetaHelicityFrameValue6 + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/100. ) {
+            fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+            controlFlag12 = 1;
+          }
+        }
+  }
+
+  /* - NEW:
+     -
+   */
+  Bool_t controlFlag13 = 0;
+  Bool_t controlFlag14 = 0;
+  Bool_t controlFlag15 = 0;
+  if ( possibleJPsiCopy.Pt() < 0.25 ) {
+        Double_t CosThetaHelicityFrameValue7 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t PhiHelicityFrameValue7      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        // Double_t TildePhiPositiveCosTheta    = CosThetaHelicityFrameValue7 - 0.25 * TMath::Pi();
+        // Double_t TildePhiNegativeCosTheta    = CosThetaHelicityFrameValue7 - 0.75 * TMath::Pi();
+        Double_t TildePhiPositiveCosTheta    = PhiHelicityFrameValue7 - 0.25 * 3.14;
+        Double_t TildePhiNegativeCosTheta    = PhiHelicityFrameValue7 - 0.75 * 3.14;
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 25; iCosThetaBins++) {
+          if( controlFlag13 == 1) break;
+          if( (CosThetaHelicityFrameValue7 + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/25. ){
+            fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+            controlFlag13 = 1;
+          }
+        }
+        for(Int_t iPhiBins = 0; iPhiBins < 25; iPhiBins++) {
+          if( controlFlag14 == 1) break;
+          if( (PhiHelicityFrameValue7 + 3.14) < 6.28*((Double_t)iPhiBins + 1.)/25. ){
+            fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[iPhiBins]->Fill(possibleJPsiCopyMag);
+            controlFlag14 = 1;
+          }
+        }
+        // for(Int_t iTildePhiBins = 0; iTildePhiBins < 25; iTildePhiBins++) {
+        //   if( controlFlag15 == 1) break;
+          if( CosThetaHelicityFrameValue7 > 0 ){
+            // if( (TildePhiPositiveCosTheta + 3.14*7.0*0.25) < (6.28*10.0*0.25)*((Double_t)iTildePhiBins + 1.)/25. ){
+            //   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[iTildePhiBins]->Fill(possibleJPsiCopyMag);
+            //   controlFlag15 = 1;
+            // }
+            if( TildePhiPositiveCosTheta > -3.14*((Double_t)7)*0.25 && TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)1)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[0] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)2)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[1] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)3)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[2] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)4)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[3] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)5)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[4] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)6)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[5] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)7)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[6] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)8)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[7] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)9)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[8] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)10)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[9] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)11)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[10]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)12)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[11]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)13)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[12]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)14)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[13]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)15)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[14]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)16)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[15]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)17)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[16]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)18)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[17]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)19)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[18]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)20)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[19]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)21)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[20]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)22)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[21]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)23)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[22]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)24)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[23]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)25)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[24]->Fill(possibleJPsiCopyMag);}
+
+          } else if( CosThetaHelicityFrameValue7 < 0 ){
+            // if( (TildePhiNegativeCosTheta + 3.14*4.0*0.25) < (6.28*10.0*0.25)*((Double_t)iTildePhiBins + 1.)/25. ){
+            //   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[iTildePhiBins]->Fill(possibleJPsiCopyMag);
+            //   controlFlag15 = 1;
+            // }
+            if( TildePhiNegativeCosTheta > -3.14*((Double_t)7)*0.25 && TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)1)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[0] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)2)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[1] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)3)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[2] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)4)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[3] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)5)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[4] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)6)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[5] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)7)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[6] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)8)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[7] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)9)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[8] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)10)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[9] ->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)11)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[10]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)12)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[11]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)13)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[12]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)14)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[13]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)15)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[14]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)16)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[15]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)17)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[16]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)18)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[17]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)19)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[18]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)20)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[19]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)21)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[20]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)22)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[21]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)23)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[22]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)24)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[23]->Fill(possibleJPsiCopyMag);}
+            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)25)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[24]->Fill(possibleJPsiCopyMag);}
+
+          }
+        // }
+  }
+
+
+  /* - Strict binning in Pt.
+   * - This is my hope to see the bottomonium states...
+   */
+  if ( (possibleJPsiCopy.Pt() > 0.4) && (possibleJPsiCopy.Pt() < 0.6) ) {
+    fInvariantMassDistributionStrictPtH->Fill( possibleJPsiCopy.Mag() );
+  }
 
   if ( (possibleJPsiCopy.Mag() > 2.8) && (possibleJPsiCopy.Mag() < 3.3) && (possibleJPsiCopy.Pt() < 0.25) ) {
     fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
@@ -2360,6 +3301,27 @@ Double_t AliAnalysisTaskUPCforward::CosPhiHelicityFrame(  TLorentzVector muonPos
   //
   Double_t phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxis),(pMu1Dimu.Vect()).Dot(xaxis));
   return   phi;
+}
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskUPCforward::AccEffCorrection( Double_t CosThetaToBeWeighted )
+{
+  Double_t val = 0;
+  Double_t par[13] = { 1.84270e-04, 1.35000e-02, 2.52572e+00, 4.49481e-01, 7.71374e-01,
+                       4.10537e-01,-1.91331e-03,-4.33903e+00, 4.44258e-01,-7.64919e-01,
+                       4.32631e-04, 1.48228e-02, 2.75000e+00 };
+  if (        CosThetaToBeWeighted < -0.550 ) {
+    val = par[0] + par[1] * ( CosThetaToBeWeighted + 0.650 ) + par[2] * ( CosThetaToBeWeighted + 0.650 ) * ( CosThetaToBeWeighted + 0.650 );
+  } else if ( CosThetaToBeWeighted < -0.125 ) {
+    val = par[3] + par[4] * CosThetaToBeWeighted;
+  } else if ( CosThetaToBeWeighted <  0.125 ) {
+    val = par[5] + par[6] * CosThetaToBeWeighted + par[7] * CosThetaToBeWeighted * CosThetaToBeWeighted;
+  } else if ( CosThetaToBeWeighted <  0.550 ) {
+    val = par[8] + par[9] * CosThetaToBeWeighted;
+  } else {
+    val = par[10] + par[11] * ( CosThetaToBeWeighted - 0.650 ) + par[12] * ( CosThetaToBeWeighted - 0.650 ) * ( CosThetaToBeWeighted - 0.650 );
+  }
+  return val;
+
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskUPCforward::Terminate(Option_t *)

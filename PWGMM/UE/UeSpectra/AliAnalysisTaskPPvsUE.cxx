@@ -66,7 +66,7 @@
 #include <AliAODHeader.h>
 
 
-#include "AliPPVsMultUtils.h"
+//#include "AliPPVsMultUtils.h"
 #include "AliAnalysisUtils.h"
 
 #include "AliMultiplicity.h"
@@ -79,6 +79,8 @@
 #include "AliCentrality.h"
 #include "AliMultSelectionTask.h"
 
+
+#include "AliMCSpectraWeights.h"
 
 // STL includes
 #include <iostream>
@@ -94,13 +96,15 @@ ClassImp(AliAnalysisTaskPPvsUE)
 	fAnalysisMC(kFALSE),
 	fAnalysisCorr(kTRUE),
 	fTrackFilterDCA(0x0),
+	fTrackFilterMatchEff(0x0),
 	fAnalysisType("ESD"),
 	ftrigBit(0x0),
 	fRandom(0x0),
 	fPileUpRej(kFALSE),
-	fPPVsMultUtils(0x0),
+// 	fPPVsMultUtils(0x0),
 	fVtxCut(10.0),  
 	fEtaCut(0.9),  
+	fLeadMin(6.0),
 	fTriggeredEventMB(-999),
 	fVtxStatus(-999),
 	fZvtx(-999),
@@ -121,6 +125,7 @@ ClassImp(AliAnalysisTaskPPvsUE)
         isINEL0Rec(kFALSE),
 	isINEL0True(kFALSE),
 	INEL0(0x0),
+	INEL0Gen(0x0),
 	TrigINEL0(0x0),
 	TrueINEL0(0x0),
 	ptvsdcaData(0x0),
@@ -179,11 +184,37 @@ ClassImp(AliAnalysisTaskPPvsUE)
 	fPS(0x0),
 	fVtxPS(0x0),
 	Zvtx(0x0),
+	Phi(0x0),
+	Eta(0x0),   
+	EtaPhi(0x0),
+	fhRTResponse(0x0),
 	fAveMultiInTrans(4.939),
+	fAveRecMultiInTrans(4.895),
 	fAveGenMultiInTrans(7.392),	
+	fMCSpectraWeights(0),
 	fhRTData(0x0),
         fhRTTrue(0x0),
-        fhRTReco(0x0)
+        fhRTReco(0x0),
+	ptiME(0x0),
+	pTGen(0x0),
+	pTGenTrans(0x0),
+	pTGenTow(0x0),
+        pTGenAw(0x0),
+	pTGenTrans1(0x0),
+	pTGenTrans2(0x0),
+	pTGenTrans3(0x0),
+	pTGenTrans4(0x0),
+	pTGenTrans5(0x0),
+        pTGenTow1(0x0),
+        pTGenTow2(0x0),
+        pTGenTow3(0x0),
+        pTGenTow4(0x0),
+        pTGenTow5(0x0),
+        pTGenAw1(0x0),
+        pTGenAw2(0x0),
+        pTGenAw3(0x0),
+        pTGenAw4(0x0),
+        pTGenAw5(0x0)
 
 {
 	for ( int i = 0 ; i < 18 ; i++ )
@@ -191,13 +222,27 @@ ClassImp(AliAnalysisTaskPPvsUE)
 	  secondaries[i] = 0;
 	  primariesTrackFilter[i] = 0;
 	  pti[i] = 0; 
-	  pti1[i] = 0;
-	  pti2[i] = 0;
-	  pti3[i] = 0;
-	  pti4[i] = 0;
-	  pti5[i] = 0;
-	  ptiMB[i] = 0; 
-  	  fTrackFilter[i] = 0;
+	  pti1Trans[i] = 0;
+	  pti2Trans[i] = 0;
+	  pti3Trans[i] = 0;
+	  pti4Trans[i] = 0;
+	  pti5Trans[i] = 0;
+	  ptiMBTrans[i] = 0; 
+  	  pti[i] = 0;
+          pti1Tow[i] = 0;
+          pti2Tow[i] = 0;
+          pti3Tow[i] = 0;
+          pti4Tow[i] = 0;
+          pti5Tow[i] = 0;
+          ptiMBTow[i] = 0;
+          pti1Aw[i] = 0;
+          pti2Aw[i] = 0;
+          pti3Aw[i] = 0;
+          pti4Aw[i] = 0;
+          pti5Aw[i] = 0;
+          ptiMBAw[i] = 0;
+	  ptiNoLead[i] = 0;
+	  fTrackFilter[i] = 0;
 
 	}
 }
@@ -211,13 +256,15 @@ AliAnalysisTaskPPvsUE::AliAnalysisTaskPPvsUE(const char *name):
 	fAnalysisMC(kFALSE),
 	fAnalysisCorr(kTRUE),
 	fTrackFilterDCA(0x0),
+	fTrackFilterMatchEff(0x0),
 	fAnalysisType("ESD"),
 	ftrigBit(0x0),
 	fRandom(0x0),
 	fPileUpRej(kFALSE),
-	fPPVsMultUtils(0x0),
+// 	fPPVsMultUtils(0x0),
 	fVtxCut(10.0),  
 	fEtaCut(0.9),  
+	fLeadMin(6.0),
 	fTriggeredEventMB(-999),
 	fVtxStatus(-999),
 	fZvtx(-999),
@@ -238,6 +285,7 @@ AliAnalysisTaskPPvsUE::AliAnalysisTaskPPvsUE(const char *name):
         isINEL0Rec(kFALSE),
 	isINEL0True(kFALSE),
 	INEL0(0x0),
+	INEL0Gen(0x0),
 	TrigINEL0(0x0),
 	TrueINEL0(0x0),
 	ptvsdcaData(0x0),
@@ -296,11 +344,37 @@ AliAnalysisTaskPPvsUE::AliAnalysisTaskPPvsUE(const char *name):
 	fPS(0x0),
 	fVtxPS(0x0),
 	Zvtx(0x0),
+        Phi(0x0),   
+        Eta(0x0),   
+        EtaPhi(0x0),
+	fhRTResponse(0x0),
 	fAveMultiInTrans(4.939),
+	fAveRecMultiInTrans(4.895),
 	fAveGenMultiInTrans(7.614),
+	fMCSpectraWeights(0),
 	fhRTData(0x0),
         fhRTTrue(0x0),
-        fhRTReco(0x0)
+        fhRTReco(0x0),
+	ptiME(0x0),
+        pTGen(0x0),
+        pTGenTrans(0x0),
+        pTGenTow(0x0),
+        pTGenAw(0x0),
+        pTGenTrans1(0x0),
+        pTGenTrans2(0x0),
+        pTGenTrans3(0x0),
+        pTGenTrans4(0x0),
+        pTGenTrans5(0x0),
+        pTGenTow1(0x0),
+        pTGenTow2(0x0),
+        pTGenTow3(0x0),
+        pTGenTow4(0x0),
+        pTGenTow5(0x0),
+        pTGenAw1(0x0),
+        pTGenAw2(0x0),
+        pTGenAw3(0x0),
+        pTGenAw4(0x0),
+        pTGenAw5(0x0)
 	
 {
 	for ( int i = 0 ; i < 18 ; i++ )
@@ -308,12 +382,26 @@ AliAnalysisTaskPPvsUE::AliAnalysisTaskPPvsUE(const char *name):
 	  secondaries[i] = 0;
 	  primariesTrackFilter[i] = 0;
 	  pti[i] = 0; 
-          pti1[i] = 0;
-          pti2[i] = 0;
-          pti3[i] = 0;
-          pti4[i] = 0;
-          pti5[i] = 0;
-	  ptiMB[i] =0;
+          pti1Trans[i] = 0;
+          pti2Trans[i] = 0;
+          pti3Trans[i] = 0;
+          pti4Trans[i] = 0;
+          pti5Trans[i] = 0;
+	  ptiMBTrans[i] =0;
+          pti[i] = 0;
+          pti1Tow[i] = 0;
+          pti2Tow[i] = 0;
+          pti3Tow[i] = 0;
+          pti4Tow[i] = 0;
+          pti5Tow[i] = 0;
+          ptiMBTow[i] =0;
+          pti1Aw[i] = 0;
+          pti2Aw[i] = 0;
+          pti3Aw[i] = 0;
+          pti4Aw[i] = 0;
+          pti5Aw[i] = 0;
+          ptiMBAw[i] =0;  
+	  ptiNoLead[i] = 0;
 	  fTrackFilter[i] = 0;
 	}
 	DefineOutput(1, TList::Class());
@@ -332,12 +420,12 @@ AliAnalysisTaskPPvsUE::~AliAnalysisTaskPPvsUE()
     fListOfObjects = 0x0;
   }
   
-  if (fPPVsMultUtils)
+/*  if (fPPVsMultUtils)
   {
     delete fPPVsMultUtils;
     fPPVsMultUtils = 0x0;
   }
-  
+ */ 
 }
 
 //______________________________________________________________________________
@@ -366,8 +454,10 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
   fListOfObjects->Add(fn1);
   
 
-  const Int_t nPtBins = 69;
-  Double_t xBins[nPtBins+1] = {0. ,  0.05, 0.1,  0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45, 0.5,  0.55, 0.6,  0.65, 0.7,  0.75, 0.8,  0.85, 0.9,  0.95, 1.0,  1.1 , 1.2,  1.3 , 1.4,  1.5 , 1.6,  1.7 , 1.8,  1.9 , 2.0,  2.2 , 2.4,  2.6 , 2.8,  3.0 , 3.2,  3.4 , 3.6,  3.8 , 4.0,  4.5 , 5.0,  5.5 , 6.0,  6.5 , 7.0,  8.0 , 9.0,  10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 60.0,200 };
+  const Int_t nPtBins = 51;
+  
+  Double_t xBins[nPtBins+1] = {0. ,  0.05, 0.1,  0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45, 0.5,  0.55, 0.6,  0.65, 0.7,  0.75, 0.8,  0.85, 0.9,  0.95, 1.0,  1.1 , 1.2,  1.3 , 1.4,  1.5 , 1.6,  1.7 , 1.8,  1.9 , 2.0,  2.2 , 2.4,  2.6 , 2.8,  3.0 , 3.2,  3.4 , 3.6,  3.8 , 4.0,  4.5 , 5.0,  5.5 , 6.0,  6.5 , 7.0,  8.0 , 10.0, 13.0, 20.0, 34.0};
+
 	  
   const int nBinsDCAxy = 121;
   double binsDCAxy[] = {-3.025,-2.975,-2.925,-2.875,-2.825,-2.775,-2.725,-2.675,-2.625,-2.575,-2.525,-2.475,-2.425,-2.375,-2.325,-2.275,-2.225, -2.175,-2.125,-2.075,-2.025,-1.975,-1.925,-1.875,-1.825,-1.775,-1.725,-1.675,-1.625,-1.575,-1.525,-1.475,-1.425,-1.375,-1.325,-1.275,-1.225,-1.175,-1.125,-1.075,-1.025,-0.975,-0.925,-0.875,-0.825,-0.775,-0.725,-0.675,-0.625,-0.575,-0.525,-0.475,-0.425,-0.375,-0.325,-0.275,-0.225,-0.175,-0.125,-0.075,-0.025,0.025,0.075,0.125,0.175,0.225,0.275,0.325,0.375,0.425,0.475,0.525,0.575,0.625,0.675,0.725,0.775,0.825,0.875,0.925,0.975,1.025,1.075,1.125,1.175,1.225,1.275,1.325,1.375,1.425,1.475,1.525,1.575,1.625,1.675,1.725,1.775,1.825,1.875,1.925,1.975,2.025,2.075,2.125,2.175,2.225,2.275,2.325,2.375,2.425,2.475,2.525,2.575,2.625,2.675,2.725,2.775,2.825,2.875,2.925,2.975,3.025};
@@ -376,12 +466,17 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
 	
   double binsDCAxyCentral[]= {-0.2305,-0.2295,-0.2285,-0.2275,-0.2265,-0.2255,-0.2245,-0.2235,-0.2225,-0.2215,-0.2205,-0.2195,-0.2185,-0.2175,-0.2165,-0.2155,-0.2145,-0.2135,-0.2125,-0.2115,-0.2105,-0.2095,-0.2085,-0.2075,-0.2065,-0.2055,-0.2045,-0.2035,-0.2025,-0.2015,-0.2005,-0.1995,-0.1985,-0.1975,-0.1965,-0.1955,-0.1945,-0.1935,-0.1925,-0.1915,-0.1905,-0.1895,-0.1885,-0.1875,-0.1865,-0.1855,-0.1845,-0.1835,-0.1825,-0.1815,-0.1805,-0.1795,-0.1785,-0.1775,-0.1765,-0.1755,-0.1745,-0.1735,-0.1725,-0.1715,-0.1705,-0.1695,-0.1685,-0.1675,-0.1665,-0.1655,-0.1645,-0.1635,-0.1625,-0.1615,-0.1605,-0.1595,-0.1585,-0.1575,-0.1565,-0.1555,-0.1545,-0.1535,-0.1525,-0.1515,-0.1505,-0.1495,-0.1485,-0.1475,-0.1465,-0.1455,-0.1445,-0.1435,-0.1425,-0.1415,-0.1405,-0.1395,-0.1385,-0.1375,-0.1365,-0.1355,-0.1345,-0.1335,-0.1325,-0.1315,-0.1305,-0.1295,-0.1285,-0.1275,-0.1265,-0.1255,-0.124,-0.1235,-0.1225,-0.1215,-0.1205,-0.1195,-0.1185,-0.1175,-0.1165,-0.1155,-0.1145,-0.1135,-0.1125,-0.1115,-0.1105,-0.1095,-0.1085,-0.1075,-0.1065,-0.1055,-0.1045,-0.1035,-0.1025,-0.1015,-0.1005,-0.0995,-0.0985,-0.0975,-0.0965,-0.0955,-0.0945,-0.0935,-0.0925,-0.0915,-0.0905,-0.0895,-0.0885,-0.0875,-0.0865,-0.0855,-0.0845,-0.0835,-0.0825,-0.0815,-0.0805,-0.0795,-0.0785,-0.0775,-0.0765,-0.0755,-0.0745,-0.0735,-0.0725,-0.0715,-0.0705,-0.0695,-0.0685,-0.0675,-0.0665,-0.0655,-0.0645,-0.0635,-0.0625,-0.0615,-0.0605,-0.0595,-0.0585,-0.0575,-0.0565,-0.0555,-0.0545,-0.0535,-0.0525,-0.0515,-0.0505,-0.0495,-0.0485,-0.0475,-0.0465,-0.0455,-0.0445,-0.0435,-0.0425,-0.0415,-0.0405,-0.0395,-0.0385,-0.0375,-0.0365,-0.0355,-0.0345,-0.0335,-0.0325,-0.0315,-0.0305,-0.0295,-0.0285,-0.0275,-0.0265,-0.0255,-0.0245,-0.0235,-0.0225,-0.0215,-0.0205,-0.0195,-0.0185,-0.0175,-0.0165,-0.0155,-0.0145,-0.0135,-0.0125,-0.0115,-0.0105,-0.0095,-0.0085,-0.0075,-0.0065,-0.0055,-0.0045,-0.0035,-0.0025,-0.0015,-0.0005,0.0005,0.0015,0.0025,0.0035,0.0045,0.0055,0.0065,0.0075,0.0085,0.0095,0.0105,0.0115,0.0125,0.0135,0.0145,0.0155,0.0165,0.0175,0.0185,0.0195,0.0205,0.0215,0.0225,0.0235,0.0245,0.0255,0.0265,0.0275,0.0285,0.0295,0.0305,0.0315,0.0325,0.0335,0.0345,0.0355,0.0365,0.0375,0.0385,0.0395,0.0405,0.0415,0.0425,0.0435,0.0445,0.0455,0.0465,0.0475,0.0485,0.0495,0.0505,0.0515,0.0525,0.0535,0.0545,0.0555,0.0565,0.0575,0.0585,0.0595,0.0605,0.0615,0.0625,0.0635,0.0645,0.0655,0.0665,0.0675,0.0685,0.0695,0.0705,0.0715,0.0725,0.0735,0.0745,0.0755,0.0765,0.0775,0.0785,0.0795,0.0805,0.0815,0.0825,0.0835,0.0845,0.0855,0.0865,0.0875,0.0885,0.0895,0.0905,0.0915,0.0925,0.0935,0.0945,0.0955,0.0965,0.0975,0.0985,0.0995,0.1005,0.1015,0.1025,0.1035,0.1045,0.1055,0.1065,0.1075,0.1085,0.1095,0.1105,0.1115,0.1125,0.1135,0.1145,0.1155,0.1165,0.1175,0.1185,0.1195,0.1205,0.1215,0.1225,0.1235,0.1245,0.1255,0.1265,0.1275,0.1285,0.1295,0.1305,0.1315,0.1325,0.1335,0.1345,0.1355,0.1365,0.1375,0.1385,0.1395,0.1405,0.1415,0.1425,0.1435,0.1445,0.1455,0.1465,0.1475,0.1485,0.1495,0.1505,0.1515,0.1525,0.1535,0.1545,0.1555,0.1565,0.1575,0.1585,0.1595,0.1605,0.1615,0.1625,0.1635,0.1645,0.1655,0.1665,0.1675,0.1685,0.1695,0.1705,0.1715,0.1725,0.1735,0.1745,0.1755,0.1765,0.1775,0.1785,0.1795,0.1805,0.1815,0.1825,0.1835,0.1845,0.1855,0.1865,0.1875,0.1885,0.1895,0.1905,0.1915,0.1925,0.1935,0.1945,0.1955,0.1965,0.1975,0.1985,0.1995,0.2005,0.2015,0.2025,0.2035,0.2045,0.2055,0.2065,0.2075,0.2085,0.2095,0.2105,0.2115,0.2125,0.2135,0.2145,0.2155,0.2165,0.2175,0.2185,0.2195,0.2205,0.2215,0.2225,0.2235,0.2245,0.2255,0.2265,0.2275,0.2285,0.2295,0.2305};
 
+  const Int_t nRTBins = 90;
+  Double_t RTEdge_Data[nRTBins + 1] = {0};
+  for(Int_t i = 0; i <= nRTBins; i++){
+   RTEdge_Data[i] = i/fAveMultiInTrans-1/(2*fAveMultiInTrans);
+   }
 
-  const Int_t nRTBins = 70;
   Double_t RTEdge_Rec[nRTBins + 1] = {0};
   for(Int_t i = 0; i <= nRTBins; i++){
-   RTEdge_Rec[i] = i/fAveMultiInTrans-1/(2*fAveMultiInTrans);
-  }
+   RTEdge_Rec[i] = i/fAveRecMultiInTrans-1/(2*fAveRecMultiInTrans);
+   }
+
   Double_t RTEdge_Gen[nRTBins + 1] = {0};
   for(Int_t i = 0; i <= nRTBins; i++){
    RTEdge_Gen[i] = i/fAveGenMultiInTrans-1/(2*fAveGenMultiInTrans);
@@ -399,8 +494,12 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
 				  160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,
 				  180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,
 				  200};
-
-
+  Int_t nphibins = 200;         
+  Float_t phimin = 0.;             
+  Float_t phimax = TMath::TwoPi();
+  Int_t netabins = 300;         
+  Float_t etamin = -1.5;           
+  Float_t etamax = 1.5;
 
   AliESDtrackCuts* esdTrackCutsRun2[18] = {0};
 	
@@ -446,7 +545,7 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
     esdTrackCutsRun2[iTc]->SetMinRatioCrossedRowsOverFindableClustersTPC(minratiocrossrowstpcover); 
     esdTrackCutsRun2[iTc]->SetMaxChi2PerClusterTPC(maxchi2perclustertpc);
     esdTrackCutsRun2[iTc]->SetMaxFractionSharedTPCClusters(maxfraclusterstpcshared); 
-    // esdTrackCutsRun2[iTc]->SetMaxChi2TPCConstrainedGlobal(maxchi2tpcglobal);    
+    //esdTrackCutsRun2[iTc]->SetMaxChi2TPCConstrainedGlobal(maxchi2tpcglobal); TODO VZ: check this cut   
 
     // ITS
     esdTrackCutsRun2[iTc]->SetRequireITSRefit(kTRUE);
@@ -462,9 +561,11 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
     esdTrackCutsRun2[iTc]->SetAcceptKinkDaughters(kFALSE);
     
     if ( iTc == 3 )
-      esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("4*(0.0026+0.0050/pt^1.01)");
+      // esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("4*(0.0026+0.0050/pt^1.01)");
+    	esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("6.5*(0.0026+0.0050/pt^1.01)");
     else if ( iTc == 4 )
-      esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("10*(0.0026+0.0050/pt^1.01)");
+      // esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("10*(0.0026+0.0050/pt^1.01)");
+    	esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("7.5*(0.0026+0.0050/pt^1.01)");
     else
       esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); // (7*(------))
     
@@ -507,7 +608,38 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
   esdTrackCutsDCA->SetAcceptKinkDaughters(kFALSE);  
   esdTrackCutsDCA->SetCutGeoNcrNcl(geowidth,geolenght,1.5,0.85,0.7); // Affects more or less 10% !!  
   fTrackFilterDCA->AddCuts(esdTrackCutsDCA);
-  
+ 
+
+
+
+
+
+  //___________________________________________________//
+  // track cuts for matching efficiency _______________//
+
+  AliESDtrackCuts* esdTrackCutsMatchEff = 0;
+
+  double maxdcazME = 3.;
+  double maxdcaxy = 3.;
+
+  fTrackFilterMatchEff = new AliAnalysisFilter("fTrackFilterMatchEff");
+  esdTrackCutsMatchEff = new AliESDtrackCuts("esdTrackCutsMatchEff");
+
+  // TPC
+  esdTrackCutsMatchEff->SetRequireTPCRefit(kTRUE);
+  esdTrackCutsMatchEff->SetMinRatioCrossedRowsOverFindableClustersTPC(minratiocrossrowstpcover);
+  esdTrackCutsMatchEff->SetMaxChi2PerClusterTPC(maxchi2perclustertpc);
+  esdTrackCutsMatchEff->SetMaxFractionSharedTPCClusters(maxfraclusterstpcshared);
+
+  // primary selection
+  esdTrackCutsMatchEff->SetAcceptKinkDaughters(kFALSE);
+  esdTrackCutsMatchEff->SetCutGeoNcrNcl(geowidth,geolenght,1.5,0.85,0.7);
+  esdTrackCutsMatchEff->SetMaxDCAToVertexZ(maxdcazME);
+  esdTrackCutsMatchEff->SetMaxDCAToVertexXY(maxdcaxy);
+  fTrackFilterMatchEff->AddCuts(esdTrackCutsMatchEff);
+
+
+ 
   // ----------------------------------------------------------------------------------------------------- //
     
   if ( fAnalysisMC )
@@ -530,6 +662,67 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
 
     effcomputationGen5 = new TH1F("effcomputationGen5","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
     fListOfObjects->Add(effcomputationGen5);	
+
+	// MC truth histos
+    pTGen = new TH1F("pTGen","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGen);
+
+    pTGenTrans = new TH1F("pTGenTrans","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTrans);
+
+    pTGenTow = new TH1F("pTGenTow","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTow);
+
+    pTGenAw = new TH1F("pTGenAw","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenAw);
+
+    pTGenTrans1 = new TH1F("pTGenTrans1","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTrans1);
+
+    pTGenTrans2 = new TH1F("pTGenTrans2","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTrans2);
+
+    pTGenTrans3 = new TH1F("pTGenTrans3","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTrans3);
+
+    pTGenTrans4 = new TH1F("pTGenTrans4","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTrans4);
+
+    pTGenTrans5 = new TH1F("pTGenTrans5","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTrans5);
+
+    pTGenTow1 = new TH1F("pTGenTow1","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTow1);
+
+    pTGenTow2 = new TH1F("pTGenTow2","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTow2);
+
+    pTGenTow3 = new TH1F("pTGenTow3","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTow3);
+
+    pTGenTow4 = new TH1F("pTGenTow4","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTow4);
+
+    pTGenTow5 = new TH1F("pTGenTow5","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenTow5);
+
+    pTGenAw1 = new TH1F("pTGenAw1","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenAw1);
+
+    pTGenAw2 = new TH1F("pTGenAw2","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenAw2);
+
+    pTGenAw3 = new TH1F("pTGenAw3","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenAw3);
+
+    pTGenAw4 = new TH1F("pTGenAw4","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenAw4);
+
+    pTGenAw5 = new TH1F("pTGenAw5","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+    fListOfObjects->Add(pTGenAw5);
+
+
+
 	// histos for signal loss
     
     sigLossTrueINEL0 = new TH1F("sigLossTrueINEL0","p_{T}^{gen};#it{p}_{T} (GeV/c)",nPtBins,xBins);
@@ -575,9 +768,13 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
     
     TrueINEL0 = new TH1F("TrueINEL0","",6,0,6);
     fListOfObjects->Add(TrueINEL0);
-    
-	// histos for Vtx correction MC ( not used, only to see the difference with data)
    
+
+	// event counter
+    INEL0Gen = new TH1F("INEL0Gen","", 7, 0, 7);
+    fListOfObjects->Add(INEL0Gen); 
+	
+	// histos for Vtx correction MC ( not used, only to see the difference with data)
    
     nchtrue = new TH1F("nchtrue","N_{ch}^{True}N_{ch}^{True}",multBins,xmultBins);
     fListOfObjects->Add(nchtrue);
@@ -698,6 +895,9 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
     
     fhRTReco = new TH1F("fhRTReco","Event counts vs. R_{T}",nRTBins,RTEdge_Rec);
     fListOfObjects->Add(fhRTReco);
+
+    fhRTResponse = new TH2F("hRTResponse","Event R_{T} response matrix", nRTBins, RTEdge_Gen, nRTBins, RTEdge_Rec);
+    fListOfObjects->Add(fhRTResponse);
  
     for ( int i = 0 ; i < 18 ; i++ ) // rec pT, secondaries, and "primaries" (all) that passes track fileters, i == 0  standard
     {	  
@@ -707,9 +907,10 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
 
       primariesTrackFilter[i] = new TH1F(Form("primariesTrackFilter%d",i),"p_{T}^{rec};#it{p}_{T} (GeV/c)",nPtBins,xBins);
       fListOfObjects->Add(primariesTrackFilter[i]);
-
     }
-    
+   
+      primariesTrackFilterME= new TH1F("primariesTrackFilterME","p_{T}^{rec};#it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(primariesTrackFilterME); 
     
   }
   else // for the data
@@ -729,14 +930,14 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
     
     // event counter
     
-    INEL0 = new TH1F("INEL0","", 6, 0, 6);
+    INEL0 = new TH1F("INEL0","", 7, 0, 7);
     fListOfObjects->Add(INEL0);	
 	// histos for vtx corrections, data driven
     
-    fPS = new TH1F("fPS","", 6, 0, 6);
+    fPS = new TH1F("fPS","", 7, 0, 7);
     fListOfObjects->Add(fPS);
     
-    fVtxPS = new TH1F("fVtxPS","", 6, 0, 6);
+    fVtxPS = new TH1F("fVtxPS","", 7, 0, 7);
     fListOfObjects->Add(fVtxPS);
 
     fhRTData = new TH1F("fhRTData","Event counts vs. R_{T}",nRTBins,RTEdge_Rec);
@@ -746,28 +947,69 @@ void AliAnalysisTaskPPvsUE::UserCreateOutputObjects()
     {
       // Histos for data -----------------------------------------------------------------------------------------------------------------
  
-      pti[i] = new TH1F(Form("pt%d",i),"p_{T}; #it{p}_{T} (GeV/c)}",nPtBins,xBins);
+      pti[i] = new TH1F(Form("ptAll%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
       fListOfObjects->Add(pti[i]);
-      pti1[i] = new TH1F(Form("pt1%d",i),"p_{T}; #it{p}_{T} (GeV/c)}",nPtBins,xBins);
-      fListOfObjects->Add(pti1[i]);
-      pti2[i] = new TH1F(Form("pt2%d",i),"p_{T}; #it{p}_{T} (GeV/c)}",nPtBins,xBins);
-      fListOfObjects->Add(pti2[i]);
-      pti3[i] = new TH1F(Form("pt3%d",i),"p_{T}; #it{p}_{T} (GeV/c)}",nPtBins,xBins);
-      fListOfObjects->Add(pti3[i]);
-      pti4[i] = new TH1F(Form("pt4%d",i),"p_{T}; #it{p}_{T} (GeV/c)}",nPtBins,xBins);
-      fListOfObjects->Add(pti4[i]);
-      pti5[i] = new TH1F(Form("pt5%d",i),"p_{T}; #it{p}_{T} (GeV/c)}",nPtBins,xBins);
-      fListOfObjects->Add(pti5[i]);
-      ptiMB[i] = new TH1F(Form("ptMB%d",i),"p_{T}; #it{p}_{T} (GeV/c)}",nPtBins,xBins);
-      fListOfObjects->Add(ptiMB[i]);
+      pti1Trans[i] = new TH1F(Form("pt1Trans%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti1Trans[i]);
+      pti2Trans[i] = new TH1F(Form("pt2Trans%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti2Trans[i]);
+      pti3Trans[i] = new TH1F(Form("pt3Trans%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti3Trans[i]);
+      pti4Trans[i] = new TH1F(Form("pt4Trans%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti4Trans[i]);
+      pti5Trans[i] = new TH1F(Form("pt5Trans%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti5Trans[i]);
+      ptiMBTrans[i] = new TH1F(Form("ptMBTrans%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(ptiMBTrans[i]);
+      pti1Tow[i] = new TH1F(Form("pt1Tow%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti1Tow[i]);
+      pti2Tow[i] = new TH1F(Form("pt2Tow%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti2Tow[i]);
+      pti3Tow[i] = new TH1F(Form("pt3Tow%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti3Tow[i]);
+      pti4Tow[i] = new TH1F(Form("pt4Tow%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti4Tow[i]);
+      pti5Tow[i] = new TH1F(Form("pt5Tow%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti5Tow[i]);
+      ptiMBTow[i] = new TH1F(Form("ptMBTow%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(ptiMBTow[i]);
+      pti1Aw[i] = new TH1F(Form("pt1Aw%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti1Aw[i]);
+      pti2Aw[i] = new TH1F(Form("pt2Aw%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti2Aw[i]);
+      pti3Aw[i] = new TH1F(Form("pt3Aw%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti3Aw[i]);
+      pti4Aw[i] = new TH1F(Form("pt4Aw%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti4Aw[i]);
+      pti5Aw[i] = new TH1F(Form("pt5Aw%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(pti5Aw[i]);
+      ptiMBAw[i] = new TH1F(Form("ptMBAw%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(ptiMBAw[i]);
+
+      ptiNoLead[i] = new TH1F(Form("ptNoLead%d",i),"p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(ptiNoLead[i]);
 
     // ----------------------------------------------------------------------------------------------------------------------------------
     }
 
+      ptiME = new TH1F("ptME","p_{T}; #it{p}_{T} (GeV/c)",nPtBins,xBins);
+      fListOfObjects->Add(ptiME);
+
  }
 
     Zvtx = new TH1F("Zvtx"," ; Vtx_z ; Entries",40,-10,10);
-    fListOfObjects->Add(Zvtx); 
+    fListOfObjects->Add(Zvtx);
+
+
+    Phi = new TH2F ("Phi","#phi",nPtBins, xBins, nphibins,phimin,phimax);
+    fListOfObjects->Add(Phi);
+
+    Eta  = new TH2F ("hEta","#eta", nPtBins, xBins, netabins,etamin,etamax);
+    fListOfObjects->Add(Eta);
+
+    EtaPhi  = new TH2F ("EtaPhi","eta vs. phi",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fListOfObjects->Add(EtaPhi);
+ 
   // Post output data.
   PostData(1,fListOfObjects);
 }
@@ -954,7 +1196,9 @@ void AliAnalysisTaskPPvsUE::CorrectionsMCRT(AliMCEvent* fMCEvent, AliESDEvent* e
         Double_t TrackRT  = 0.;
         Double_t nRecTracks = 0;
 	Int_t counting =0;
-
+	AliVParticle* LeadingMC = 0;
+	TObjArray *regionsMinMaxMC = 0x0;
+	
 	for ( int iT = 0 ; iT < fMCEvent->GetNumberOfTracks(); iT++ ) // loop over TRUE MC
         {
 		AliVParticle *mcParticle = fMCEvent->GetTrack(iT); 
@@ -988,19 +1232,28 @@ void AliAnalysisTaskPPvsUE::CorrectionsMCRT(AliMCEvent* fMCEvent, AliESDEvent* e
       	// leading object
        	TObjArray* LeadingTrackMC = 0x0; 
        	LeadingTrackMC = FindLeadingObjects(fCTSTracksMC);
-        AliVParticle* LeadingMC = 0;
  	if (LeadingTrackMC){ 
 		LeadingMC = (AliVParticle*)LeadingTrackMC->At(0);
  		// Sorting
 		TObjArray *regionSortedParticlesMC = 0x0;
                 regionSortedParticlesMC = SortRegions((AliVParticle*)LeadingTrackMC->At(0), fCTSTracksMC);
 		// Taking transverse regions 
-                TObjArray *regionsMinMaxMC = GetMinMaxRegion((TList*)regionSortedParticlesMC->At(2),(TList*)regionSortedParticlesMC->At(3));
-		
+                regionsMinMaxMC = GetMinMaxRegion((TList*)regionSortedParticlesMC->At(2),(TList*)regionSortedParticlesMC->At(3));
+        
+		// Taking toward region
+                TObjArray *towardMC = GetRegionAwTow((TList*)regionSortedParticlesMC->At(0));       
 
-                TList *listMax = (TList*)regionsMinMaxMC->At(0);
+                // Taking away region
+                TObjArray *awayMC = GetRegionAwTow((TList*)regionSortedParticlesMC->At(1));
+	
+		TList *listMax = (TList*)regionsMinMaxMC->At(0);
                 TList *listMin = (TList*)regionsMinMaxMC->At(1);
-                TList *transverse = new TList();
+		TList *listTow = (TList*) towardMC->At(0);
+		TList *listAw = (TList*) awayMC->At(0);
+
+                TList *toward = new TList();
+                TList *away = new TList();
+		TList *transverse = new TList();
 
                 // fill transverse list
                 for(Int_t j = 0; j < listMax->GetEntries(); j++){
@@ -1013,17 +1266,45 @@ void AliAnalysisTaskPPvsUE::CorrectionsMCRT(AliMCEvent* fMCEvent, AliESDEvent* e
                         transverse->Add(particle2);
                 }
 
+
+                // fill toward list
+                for(Int_t j = 0; j < listTow->GetEntries(); j++){
+                        AliVParticle* particleTow = (AliVParticle*)listTow->At(j);
+                        toward->Add(particleTow);
+                }
+
+                // fill away list
+                for(Int_t j = 0; j < listAw->GetEntries(); j++){
+                        AliVParticle* particleAw = (AliVParticle*)listAw->At(j);
+                        away->Add(particleAw);
+                }
+
         	Float_t LeadingPt = LeadingMC->Pt();
         	// select only plateau region
-        	if(LeadingPt > 5. && LeadingPt < 40.){
-                	nRecTracks = transverse->GetEntries();
+                if(LeadingPt > fLeadMin && LeadingPt < 40.){
+			nRecTracks = transverse->GetEntries();
                 	TrackRT = nRecTracks/fAveGenMultiInTrans;
                         
 			fhRTTrue->Fill(TrackRT);
+			if (TrackRT<1.) INEL0Gen->Fill(1);
+                        if (TrackRT>=1. && TrackRT<2.) INEL0Gen->Fill(2);
+                        if (TrackRT>=2. && TrackRT<3.) INEL0Gen->Fill(3);
+                        if (TrackRT>=3. && TrackRT<4.) INEL0Gen->Fill(4);
+                        if (TrackRT>=4.) INEL0Gen->Fill(5);
+
 			for(Int_t k = 0; k < nRecTracks; k++)
                         {
 				AliVParticle* particle = (AliVParticle*)transverse->At(k);
 				Float_t TrackPt  = particle->Pt();
+			 	if ((TMath::Abs( particle->Charge() ) == 3))
+                                {
+                                	if (TrackRT<1.) pTGenTrans1->Fill(TrackPt); 
+                                        if (TrackRT>=1. && TrackRT<2.) pTGenTrans2->Fill(TrackPt);
+                                        if (TrackRT>=2. && TrackRT<3.) pTGenTrans3->Fill(TrackPt);
+                                        if (TrackRT>=3. && TrackRT<4.) pTGenTrans4->Fill(TrackPt);
+                                        if (TrackRT>=4.) pTGenTrans5->Fill(TrackPt);
+					pTGenTrans->Fill(TrackPt); // all particles in transverse
+                                }
 				if (isINEL0Rec)
           			{
             				
@@ -1060,24 +1341,38 @@ void AliAnalysisTaskPPvsUE::CorrectionsMCRT(AliMCEvent* fMCEvent, AliESDEvent* e
                                         if (TrackRT>=4.) TrueINEL0->Fill(5);
 				}
 			}
+
+		        for(Int_t k = 0; k < toward->GetEntries(); k++)
+                        {
+                                AliVParticle* particle = (AliVParticle*)toward->At(k);
+                                Float_t TrackPt  = particle->Pt();
+				if ((TMath::Abs( particle->Charge() ) == 3))
+                                {
+                                	if (TrackRT<1.) pTGenTow1->Fill(TrackPt);
+                                	if (TrackRT>=1. && TrackRT<2.) pTGenTow2->Fill(TrackPt);
+                                	if (TrackRT>=2. && TrackRT<3.) pTGenTow3->Fill(TrackPt);
+                                	if (TrackRT>=3. && TrackRT<4.) pTGenTow4->Fill(TrackPt);
+                                	if (TrackRT>=4.) pTGenTow5->Fill(TrackPt);
+                                	pTGenTow->Fill(TrackPt); // all particles in toward
+                        	}
+			}
+
+
+                        for(Int_t k = 0; k < away->GetEntries(); k++)
+                        {
+                                AliVParticle* particle = (AliVParticle*)away->At(k);
+                                Float_t TrackPt  = particle->Pt();
+                                if ((TMath::Abs( particle->Charge() ) == 3))
+                                {
+                                        if (TrackRT<1.) pTGenAw1->Fill(TrackPt);
+                                        if (TrackRT>=1. && TrackRT<2.) pTGenAw2->Fill(TrackPt);
+                                        if (TrackRT>=2. && TrackRT<3.) pTGenAw3->Fill(TrackPt);
+                                        if (TrackRT>=3. && TrackRT<4.) pTGenAw4->Fill(TrackPt);
+                                        if (TrackRT>=4.) pTGenAw5->Fill(TrackPt);
+                                        pTGenAw->Fill(TrackPt); // all particles in away
+                                }
+                        }
 		}
-        	// for particle composition (TODO)  
-		/*if (isINEL0Rec)
-	          {
-	            if ((TMath::Abs( mcParticle->GetPDG()->Charge() ) == 3))
-	            {
-	              effcomputationGen->Fill(pt); //inclusive
-	              if (partPDG == 211)  effcomputationGenPi->Fill(pt); //pions
-	              else if (partPDG == 321)  effcomputationGenK->Fill(pt);//kaons
-	              else if (partPDG == 2212) effcomputationGenP->Fill(pt); //protons
-	              else if (partPDG == 3112) effcomputationGenSm->Fill(pt);//sigma-
-	              else if (partPDG == 3222) effcomputationGenSp->Fill(pt);//sigma+
-	              else if (partPDG == 3334) effcomputationGenO->Fill(pt);//omega-
-	              else if (partPDG == 3312) effcomputationGenXi->Fill(pt);//Xi-
-	              else effcomputationGenRest->Fill(pt);//rest
-	            }
-	            else if (partPDG == 3122) effcomputationGenL->Fill(pt); //Lambda 
-	            }*/
       	}
 
 
@@ -1093,6 +1388,8 @@ void AliAnalysisTaskPPvsUE::CorrectionsMCRT(AliMCEvent* fMCEvent, AliESDEvent* e
         TObjArray* fCTSTracks = new TObjArray();
         TrackRT  = 0.;
         nRecTracks = 0;
+	AliVParticle* LeadingReco = 0;
+	TObjArray *regionsMinMaxRECO = 0x0;
 
         for(Int_t iT = 0; iT < nESDTracks; iT++)
         {
@@ -1142,12 +1439,11 @@ void AliAnalysisTaskPPvsUE::CorrectionsMCRT(AliMCEvent* fMCEvent, AliESDEvent* e
 	// leading object 
         TObjArray *LeadingTrackReco = FindLeadingObjects(fCTSTracks);
     	if (LeadingTrackReco) {
-        	AliVParticle* LeadingReco = 0;
                 LeadingReco = (AliVParticle*)LeadingTrackReco->At(0);
                 // Sorting
                 TObjArray *regionSortedParticlesRECO = SortRegions((AliVParticle*)LeadingTrackReco->At(0), fCTSTracks);
                 // Taking transverse regions 
-                TObjArray *regionsMinMaxRECO = GetMinMaxRegion((TList*)regionSortedParticlesRECO->At(2),(TList*)regionSortedParticlesRECO->At(3));
+                regionsMinMaxRECO = GetMinMaxRegion((TList*)regionSortedParticlesRECO->At(2),(TList*)regionSortedParticlesRECO->At(3));
 
 
                 TList *listMax = (TList*)regionsMinMaxRECO->At(0);
@@ -1167,25 +1463,29 @@ void AliAnalysisTaskPPvsUE::CorrectionsMCRT(AliMCEvent* fMCEvent, AliESDEvent* e
 
         	Float_t LeadingPt = LeadingReco->Pt();
         	// select only plateau region
-        	if(LeadingPt > 5. && LeadingPt < 40.){
-                	nRecTracks = transverse->GetEntries();
-			TrackRT = nRecTracks/fAveMultiInTrans;
+                if(LeadingPt > fLeadMin && LeadingPt < 40.){ 	
+			nRecTracks = transverse->GetEntries();
+			TrackRT = nRecTracks/fAveRecMultiInTrans;
                         
 			fhRTReco->Fill(TrackRT);
 			for(Int_t k = 0; k < nRecTracks; k++){
 				AliVParticle* particle = (AliVParticle*)transverse->At(k);
 				if (particle->IsPhysicalPrimary()) {
                         	        Float_t TrackPt  = particle->Pt();
-					if (TrackRT<1.) effcomputationRec1->Fill(TrackPt); //  VZ: this is the same quantity to be used for inclusive tracking efficiency!
-                        	        if (TrackRT>=1. && TrackRT<2.) effcomputationRec2->Fill(TrackPt);
-                        	        if (TrackRT>=2. && TrackRT<3.) effcomputationRec3->Fill(TrackPt);
-                        	        if (TrackRT>=3. && TrackRT<4.) effcomputationRec4->Fill(TrackPt);
-                        	        if (TrackRT>=4.) effcomputationRec5->Fill(TrackPt);
-	
+	                                if (isINEL0Rec)
+                                	{
+						if (TrackRT<1.) effcomputationRec1->Fill(TrackPt); //  VZ: this is the same quantity to be used for inclusive tracking efficiency!
+                        	        	if (TrackRT>=1. && TrackRT<2.) effcomputationRec2->Fill(TrackPt);
+                        	        	if (TrackRT>=2. && TrackRT<3.) effcomputationRec3->Fill(TrackPt);
+                        	        	if (TrackRT>=3. && TrackRT<4.) effcomputationRec4->Fill(TrackPt);
+                        	        	if (TrackRT>=4.) effcomputationRec5->Fill(TrackPt);
+					}
 				}
 			}
 		}
 	}
+
+	if (LeadingMC && LeadingReco) FillRTResponseMatrix(LeadingMC, LeadingReco, (TList*)regionsMinMaxMC->At(0), (TList*)regionsMinMaxRECO->At(0), (TList*)regionsMinMaxMC->At(1), (TList*)regionsMinMaxRECO->At(1));
 }
 
 
@@ -1222,22 +1522,32 @@ void AliAnalysisTaskPPvsUE::AnalyzeMC(AliMCEvent* fMCEvent)
 	  	if ((TMath::Abs( mcParticle->GetPDG()->Charge()) == 3 )) fNchargedTrue++;
 	  	if ( !TMath::Abs(pt) > 0.15 ){
             		continue;
-          	}    
-          	if (isINEL0Rec) 
+          	}   
+		
+		// online reweighting for particle composition
+		 Double_t weight = 1.;
+		//TODO VZ: this is still not working
+		//Double_t weight = fMCSpectraWeights->GetMCSpectraWeight(mcParticle ,fMCEvent);
+    		// printf("Got weight factor %lf for pid: %d\n", weight, mcParticle->GetPdgCode());
+                
+		if ((TMath::Abs( mcParticle->GetPDG()->Charge() ) == 3)) pTGen->Fill(pt);
+		if (isINEL0Rec) 
 	  	{
 	    		if ((TMath::Abs( mcParticle->GetPDG()->Charge() ) == 3))
 	    		{
-	      			effcomputationGen->Fill(pt); //inclusive
-	      			if (partPDG == 211)  effcomputationGenPi->Fill(pt); //pions
-	      			else if (partPDG == 321)  effcomputationGenK->Fill(pt);//kaons
-	      			else if (partPDG == 2212) effcomputationGenP->Fill(pt); //protons
-	      			else if (partPDG == 3112) effcomputationGenSm->Fill(pt);//sigma-
-	      			else if (partPDG == 3222) effcomputationGenSp->Fill(pt);//sigma+
-	      			else if (partPDG == 3334) effcomputationGenO->Fill(pt);//omega-
-              			else if (partPDG == 3312) effcomputationGenXi->Fill(pt);//Xi-
-              			else effcomputationGenRest->Fill(pt);//rest
-	    		}
-	    		else if (partPDG == 3122) effcomputationGenL->Fill(pt); //Lambda 
+	      			effcomputationGen->Fill(pt, weight); //inclusive
+	      			// VZ: this is not needed if I use data driven correction
+	      			/*if (partPDG == 211)  effcomputationGenPi->Fill(pt, weight); //pions
+	      			else if (partPDG == 321)  effcomputationGenK->Fill(pt, weight);//kaons
+	      			else if (partPDG == 2212) effcomputationGenP->Fill(pt, weight); //protons
+	      			else if (partPDG == 3112) effcomputationGenSm->Fill(pt, weight);//sigma-
+	      			else if (partPDG == 3222) effcomputationGenSp->Fill(pt, weight);//sigma+
+	      			else if (partPDG == 3334) effcomputationGenO->Fill(pt, weight);//omega-
+              			else if (partPDG == 3312) effcomputationGenXi->Fill(pt, weight);//Xi-
+              			else effcomputationGenRest->Fill(pt, weight);//rest
+	    			*/
+			}
+	    		// else if (partPDG == 3122) effcomputationGenL->Fill(pt, weight); //Lambda 
 	    	}
 
 	   	if ( !( TMath::Abs( mcParticle->GetPDG()->Charge() ) == 3 ) ) continue;
@@ -1304,12 +1614,35 @@ void AliAnalysisTaskPPvsUE::AnalyseDataRT(AliESDEvent* esdEvent)
                 TObjArray *regionSortedParticlesRECO = SortRegions((AliVParticle*)LeadingTrackReco->At(0), fCTSTracks);
                 // Taking transverse regions 
                 TObjArray *regionsMinMaxRECO = GetMinMaxRegion((TList*)regionSortedParticlesRECO->At(2),(TList*)regionSortedParticlesRECO->At(3));
-			
+
+	    	// Taking toward region
+	    	TObjArray *towardRECO = GetRegionAwTow((TList*)regionSortedParticlesRECO->At(0));
+
+                // Taking away region
+                TObjArray *awayRECO = GetRegionAwTow((TList*)regionSortedParticlesRECO->At(1));
+	
+		INEL0->Fill(6); // filling histogram for events to normalise NoLead	
+		// for spectra without leading particle
+		for(Int_t i=0; i<4; i++) {
+   			for(Int_t j=0; j<((TList*)regionSortedParticlesRECO->At(i))->GetEntries(); j++){
+				AliVParticle* allNoLead = ((AliVParticle*)((TList*)regionSortedParticlesRECO->At(i))->At(j));
+				if(allNoLead != LeadingReco) {
+					Float_t TrackPtNoLead  = allNoLead->Pt();
+					ptiNoLead[i]->Fill(TrackPtNoLead);
+				}
+			}
+		}	
+					
 
                 TList *listMax = (TList*)regionsMinMaxRECO->At(0);
                 TList *listMin = (TList*)regionsMinMaxRECO->At(1);
-                TList *transverse = new TList();
-
+                TList *listTow = (TList*) towardRECO->At(0);
+                TList *listAw = (TList*) awayRECO->At(0);
+		
+		TList *transverse = new TList();
+		TList * toward = new TList();
+		TList * away = new TList();
+		
                 // fill transverse list
                 for(Int_t j = 0; j < listMax->GetEntries(); j++){
                 	AliVParticle* particle1 = (AliVParticle*)listMax->At(j);
@@ -1320,11 +1653,26 @@ void AliAnalysisTaskPPvsUE::AnalyseDataRT(AliESDEvent* esdEvent)
                         AliVParticle* particle2 = (AliVParticle*)listMin->At(j);
                         transverse->Add(particle2);
                 }
+
+		// fill toward list
+  		for(Int_t j = 0; j < listTow->GetEntries(); j++){
+   			AliVParticle* particleTow = (AliVParticle*)listTow->At(j);
+   			toward->Add(particleTow);
+   		}
+
+                // fill away list
+                for(Int_t j = 0; j < listAw->GetEntries(); j++){
+                        AliVParticle* particleAw = (AliVParticle*)listAw->At(j);
+                        away->Add(particleAw);
+                }
+
                                 
 		Float_t LeadingPt = LeadingReco->Pt();
+		Int_t nTotTracks = 0;
+		
 		// select only plateau region
-		if(LeadingPt > 5. && LeadingPt < 40.){
-                	nRecTracks = transverse->GetEntries();
+                if(LeadingPt > fLeadMin && LeadingPt < 40.){
+			nRecTracks = transverse->GetEntries();
 			TrackRT = nRecTracks/fAveMultiInTrans;
                         
 			fhRTData->Fill(TrackRT);
@@ -1339,14 +1687,39 @@ void AliAnalysisTaskPPvsUE::AnalyseDataRT(AliESDEvent* esdEvent)
                         {
                         	AliVParticle* particle = (AliVParticle*)transverse->At(k);
 		                Float_t TrackPt  = particle->Pt();
-				if (TrackRT<1.) pti1[0]->Fill(TrackPt);
-                                if (TrackRT>=1. && TrackRT<2.) pti2[0]->Fill(TrackPt);
-                                if (TrackRT>=2. && TrackRT<3.) pti3[0]->Fill(TrackPt);
-                                if (TrackRT>=3. && TrackRT<4.) pti4[0]->Fill(TrackPt);
-                                if (TrackRT>=4.) pti5[0]->Fill(TrackPt);
-                                ptiMB[0]->Fill(TrackPt);
+				if (TrackRT<1.) pti1Trans[0]->Fill(TrackPt);
+                                if (TrackRT>=1. && TrackRT<2.) pti2Trans[0]->Fill(TrackPt);
+                                if (TrackRT>=2. && TrackRT<3.) pti3Trans[0]->Fill(TrackPt);
+                                if (TrackRT>=3. && TrackRT<4.) pti4Trans[0]->Fill(TrackPt);
+                                if (TrackRT>=4.) pti5Trans[0]->Fill(TrackPt);
+                                ptiMBTrans[0]->Fill(TrackPt); // all particles in transverse
                         }
-                 }
+
+			for(Int_t k = 0; k < toward->GetEntries(); k++)
+   			{
+   				AliVParticle* particle = (AliVParticle*)toward->At(k);
+   				Float_t TrackPt  = particle->Pt();
+				if (TrackRT<1.) pti1Tow[0]->Fill(TrackPt);
+                                if (TrackRT>=1. && TrackRT<2.) pti2Tow[0]->Fill(TrackPt);
+                                if (TrackRT>=2. && TrackRT<3.) pti3Tow[0]->Fill(TrackPt);
+                                if (TrackRT>=3. && TrackRT<4.) pti4Tow[0]->Fill(TrackPt);
+                                if (TrackRT>=4.) pti5Tow[0]->Fill(TrackPt);
+                                ptiMBTow[0]->Fill(TrackPt); // all particles in toward
+   			}
+              
+                        for(Int_t k = 0; k < away->GetEntries(); k++)
+                        {
+                                AliVParticle* particle = (AliVParticle*)away->At(k);
+                                Float_t TrackPt  = particle->Pt();
+                                if (TrackRT<1.) pti1Aw[0]->Fill(TrackPt);
+                                if (TrackRT>=1. && TrackRT<2.) pti2Aw[0]->Fill(TrackPt);
+                                if (TrackRT>=2. && TrackRT<3.) pti3Aw[0]->Fill(TrackPt);
+                                if (TrackRT>=3. && TrackRT<4.) pti4Aw[0]->Fill(TrackPt);
+                                if (TrackRT>=4.) pti5Aw[0]->Fill(TrackPt);
+                                ptiMBAw[0]->Fill(TrackPt); // all particles in away
+                        }
+   
+		}
 	}
 
 }
@@ -1422,8 +1795,7 @@ void AliAnalysisTaskPPvsUE::CorrectionsDataRT(AliESDEvent* esdEvent, Bool_t isVt
                 Float_t LeadingPt = LeadingReco->Pt();
 
                 // select only plateau region
-		if(LeadingPt > 5. && LeadingPt < 40.){
-
+                if(LeadingPt > fLeadMin && LeadingPt < 40.){
                 	nRecTracks = transverse->GetEntries();
                         TrackRT = nRecTracks/fAveMultiInTrans;
                         
@@ -1432,7 +1804,7 @@ void AliAnalysisTaskPPvsUE::CorrectionsDataRT(AliESDEvent* esdEvent, Bool_t isVt
                         if (TrackRT>=2. && TrackRT<3.) fPS->Fill(3);
                         if (TrackRT>=3. && TrackRT<4.) fPS->Fill(4);
                         if (TrackRT>=4.) fPS->Fill(5);
-
+			fPS->Fill(6); // filling the inclusive case
                  }
 	}
 
@@ -1500,14 +1872,15 @@ void AliAnalysisTaskPPvsUE::CorrectionsDataRT(AliESDEvent* esdEvent, Bool_t isVt
 
 	                Float_t LeadingPt_vtx = LeadingReco_vtx->Pt();
 	                // select only plateau region
-	                if(LeadingPt_vtx > 5. && LeadingPt_vtx < 40.){
-	                	nRecTracks_vtx = transverse_vtx->GetEntries();
+	                if(LeadingPt_vtx > fLeadMin && LeadingPt_vtx < 40.){ 
+				nRecTracks_vtx = transverse_vtx->GetEntries();
 	                        TrackRT_vtx = nRecTracks_vtx/fAveMultiInTrans;
 	                        if (TrackRT_vtx<1.) fVtxPS->Fill(1);
 	                        if (TrackRT_vtx>=1. && TrackRT_vtx<2.) fVtxPS->Fill(2);
 	                        if (TrackRT_vtx>=2. && TrackRT_vtx<3.) fVtxPS->Fill(3);
 	                        if (TrackRT_vtx>=3. && TrackRT_vtx<4.) fVtxPS->Fill(4);
        	                      	if (TrackRT_vtx>=4.) fVtxPS->Fill(5);
+				fVtxPS->Fill(6); // filling inclusive case
 
                  	}
 		}
@@ -1538,7 +1911,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESD(AliESDEvent* esdEvent)
 	    if(!esdTrack) continue;
 	    Double_t eta = esdTrack->Eta();
 	    Double_t pt  = esdTrack->Pt();
-
+	    Double_t phi = esdTrack->Phi();
 	    if ( TMath::Abs(eta) > fEtaCut) continue;
 	    if ( !TMath::Abs(pt) > 0.15) continue;
 			
@@ -1552,6 +1925,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESD(AliESDEvent* esdEvent)
 
 	    eta = mcParticle->Eta(); // generated eta and pT used intead of recontructed
 	    pt = mcParticle->Pt();
+	    phi = mcParticle->Phi();
 	    if ( TMath::Abs(eta) > fEtaCut) continue;
 	    if ( !TMath::Abs(pt) > 0.15) continue;
 			
@@ -1561,7 +1935,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESD(AliESDEvent* esdEvent)
 	    {      
 	      
 		for ( int i = 0 ; i < 18 ; i++ ) // run over all the track cuts, i == 0 standard 
-	      { 
+		{ 
 	        UInt_t selectDebug = 0;
 		if (fTrackFilter[i])
 		{
@@ -1571,29 +1945,60 @@ void AliAnalysisTaskPPvsUE::AnalyzeESD(AliESDEvent* esdEvent)
 	   	}
 					
 		primariesTrackFilter[i]->Fill(pt); // "primaries" filtered with track filter
-					
+		Phi->Fill(pt, phi);
+		Eta->Fill(pt, eta);
+		EtaPhi->Fill(eta, phi);	
+
+
+ 		// for online particle composition
+ 		// TODO VZ: this is still not working
+ 		Double_t weight = 1.;
+ 		/*if (fMCSpectraWeights) {
+			Double_t weight = fMCSpectraWeights->GetMCSpectraWeight(mcParticle ,fMCEvent);
+        		//printf("I got the fMCSpectraWeights");
+		}
+		else {
+			//printf("Problem in getting fMCSpectraWeights");
+			Double_t weight = 1.; 
+		}
+		*/
+                //printf("Got weight factor %lf for pid: %d\n", weight, mcParticle->GetPdgCode());
+		
 		if (!(fMCEvent->IsPhysicalPrimary(mcLabel))) // secondary particles
 		{
 		  secondaries[i]->Fill(pt);
 		}
 		else
 		{
-		  if (i==0) effcomputationRec->Fill(pt); // rec pT for efficiency true primary particles
-		  if (i == 0) // for particle composition, only standar track cuts requires (i == 0)
+		  if (i==0) effcomputationRec->Fill(pt, weight); // rec pT for efficiency true primary particles
+		// this is not needed if I use the data driven correction
+		/*  if (i == 0) // for particle composition, only standar track cuts requires (i == 0)
 		  {
-		    if (partPDG == 211)  effcomputationRecPi->Fill(pt); //pions
-		    else if (partPDG == 321)  effcomputationRecK->Fill(pt);//kaons
-		    else if (partPDG == 2212) effcomputationRecP->Fill(pt); //protons
-		    else if (partPDG == 3112) effcomputationRecSm->Fill(pt);//sigma-
-		    else if (partPDG == 3222) effcomputationRecSp->Fill(pt);//sigma+
-		    else if (partPDG == 3334) effcomputationRecO->Fill(pt);//omega-
-		    else if (partPDG == 3312) effcomputationRecXi->Fill(pt);//Xi-
+		    if (partPDG == 211)  effcomputationRecPi->Fill(pt, weight); //pions
+		    else if (partPDG == 321)  effcomputationRecK->Fill(pt, weight);//kaons
+		    else if (partPDG == 2212) effcomputationRecP->Fill(pt, weight); //protons
+		    else if (partPDG == 3112) effcomputationRecSm->Fill(pt, weight);//sigma-
+		    else if (partPDG == 3222) effcomputationRecSp->Fill(pt, weight);//sigma+
+		    else if (partPDG == 3334) effcomputationRecO->Fill(pt, weight);//omega-
+		    else if (partPDG == 3312) effcomputationRecXi->Fill(pt, weight);//Xi-
 		    else effcomputationRecRest->Fill(pt);//Rest
 		  }
-		}	
+		
+		*/
+ 		}	
 	      }
+
+	    // for matching efficiency
+	    UInt_t selectDebug = 0;
+	    if (fTrackFilterMatchEff) {
+                  selectDebug = fTrackFilterMatchEff->IsSelected(esdTrack);
+                  if (!selectDebug)
+                  continue;
 	    }
-	    else // only for neutral particles (searching Lambdas)
+	    primariesTrackFilterME->Fill(pt);
+
+	    }
+	    /*else // only for neutral particles (searching Lambdas)
 	    {
 	      UInt_t selectDebug = 0;
 	      if (fTrackFilter[0])
@@ -1609,7 +2014,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESD(AliESDEvent* esdEvent)
 				
 	      if (partPDG == 3122) effcomputationRecL->Fill(pt); //Lambda	
 
-	     }
+	     }*/
 	   }
 	}
 	else // for real data
@@ -1620,6 +2025,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESD(AliESDEvent* esdEvent)
 			
 			Double_t eta  = esdTrack->Eta();
 			Double_t pt   = esdTrack->Pt();
+			Double_t phi  = esdTrack->Phi();
 
 			if( TMath::Abs(eta) > fEtaCut )
 			continue;
@@ -1627,7 +2033,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESD(AliESDEvent* esdEvent)
 			continue;
 			
 			for ( int i = 0 ; i < 18 ; i++ )
-			{
+ 			{
 				UInt_t selectDebug = 0;
 				if (fTrackFilter[i])
 				{
@@ -1637,7 +2043,20 @@ void AliAnalysisTaskPPvsUE::AnalyzeESD(AliESDEvent* esdEvent)
            				  continue;
 				}	
 				pti[i]->Fill(pt);
+				Phi->Fill(pt, phi);
+				Eta->Fill(pt, eta);
+				EtaPhi->Fill(eta, phi);
 			}
+			UInt_t selectDebug = 0;
+			// for matching efficiency calculation (use TPC only tracks)
+			if (fTrackFilterMatchEff)
+			{
+				selectDebug = fTrackFilterMatchEff->IsSelected(esdTrack);
+
+				if (!selectDebug)
+					continue;
+			}
+			ptiME->Fill(pt);
 		}//end of track loop
 	}  
 	fEvents->Fill(3);  
@@ -1700,7 +2119,6 @@ void AliAnalysisTaskPPvsUE::AnalyzeESDforDCA(AliESDEvent* esdEvent)
 	  if ( !TMath::Abs(pt) > 0.15) {
             continue;
           }
-          //FIXME	
 	  if (!(TMath::Abs(mcParticle->GetPDG()->Charge())  == 3) ){
             continue;
           }
@@ -1863,8 +2281,8 @@ TObjArray* AliAnalysisTaskPPvsUE::FindLeadingObjects(TObjArray *array)
 
   TObjArray* tracks = new TObjArray(nTracks);
   for(Int_t ipart = 0; ipart < nTracks; ++ipart){
-   //AliVParticle* part = (AliVParticle*)(array->At(ipart));
-  TParticle* part = (TParticle*) (array->At(ipart));
+   AliVParticle* part = (AliVParticle*)(array->At(ipart));
+
   if(!part) continue;
    tracks->AddLast(part);
    }
@@ -2021,4 +2439,44 @@ TObjArray* AliAnalysisTaskPPvsUE::GetMinMaxRegion(TList *transv1, TList *transv2
    }
 
   return regionParticles;
+}
+
+//__________________________________________________
+TObjArray* AliAnalysisTaskPPvsUE::GetRegionAwTow(TList *region)
+{
+// Returns list of particles
+  Double_t sumpT = 0.;
+
+  Int_t particles = region->GetEntries();
+
+// Loop on region 
+  for(Int_t i=0; i<particles; i++){
+   AliVParticle *part = (AliVParticle*)region->At(i);
+   sumpT +=  part->Pt();
+   }
+
+  TObjArray *regionParticles = new TObjArray;
+  regionParticles->AddLast(region);
+
+  return regionParticles;
+}
+
+//__________________________________________
+void AliAnalysisTaskPPvsUE::FillRTResponseMatrix(const AliVParticle* leadingMC, const AliVParticle* leading, TList* listMaxMC, TList* listMax, TList* listMinMC, TList* listMin){
+  Double_t  LeadingPt    = leading->Pt();
+
+  if(LeadingPt > 5. && LeadingPt < 40.){
+   Double_t nTracksMC = 0.;
+   Double_t nTracks   = 0.;
+   Double_t TrackRTMC = 0.;
+   Double_t TrackRT   = 0.;
+
+   nTracksMC = listMaxMC->GetEntries() + listMinMC->GetEntries();
+   nTracks   = listMax->GetEntries() + listMin->GetEntries();
+
+   TrackRTMC = nTracksMC/fAveGenMultiInTrans;
+   TrackRT   = nTracks/fAveRecMultiInTrans;
+
+   fhRTResponse->Fill(TrackRTMC, TrackRT);
+  }
 }

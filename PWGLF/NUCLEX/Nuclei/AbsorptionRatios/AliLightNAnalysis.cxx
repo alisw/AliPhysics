@@ -151,37 +151,27 @@ void AliLightNAnalysis::Make(AliAODEvent *evt) {
         AliFatal("No Input Event");
     }
     
+    Float_t lPercentile = 300;
+    AliMultSelection *MultSelection = 0x0;
+    MultSelection = (AliMultSelection*)evt->FindListObject("MultSelection");
+    if( !MultSelection) {
+        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+        AliWarning("AliMultSelection object not found!");
+    }else{
+        lPercentile = MultSelection->GetMultiplicityPercentile("V0M",true);
+        fEvtCuts->FillV0Mlpercentile(lPercentile);
+        fEvtCuts->FillV0MlpercentileHM(lPercentile);
+    }
+    
     fEvent->SetEvent(evt);
     if (!fEvtCuts->isSelected(fEvent)) {
         return;
     }
-    //  std::cout << "=============================" <<std::endl;
-    //  std::cout << "=============================" <<std::endl;
-    //  std::cout << "=========new Event===========" <<std::endl;
-    //  std::cout << "=============================" <<std::endl;
-    //  std::cout << "=============================" <<std::endl;
-    ResetGlobalTrackReference();
-    for(int iTrack = 0;iTrack<evt->GetNumberOfTracks();++iTrack){
-        AliAODTrack *track=static_cast<AliAODTrack*>(evt->GetTrack(iTrack));
-        if (!track) {
-            AliFatal("No Standard AOD");
-            return;
-        }
-        StoreGlobalTrackReference(track);
-    }
-    fLightNTrack->SetGlobalTrackInfo(fGTI,fTrackBufferSize);
-    for (int iTrack = 0;iTrack<evt->GetNumberOfTracks();++iTrack) {
-        AliAODTrack *track=static_cast<AliAODTrack*>(evt->GetTrack(iTrack));
-        if (!track) {
-            AliFatal("No Standard AOD");
-            return;
-        }
-        fLightNTrack->SetTrack(track);
-        fTrackCutsProton->isSelected(fLightNTrack);
-        fAntiTrackCutsProton->isSelected(fLightNTrack);
-        fTrackCutsDeuteron->isSelected(fLightNTrack);
-        fAntiTrackCutsDeuteron->isSelected(fLightNTrack);
-    }
+      //std::cout << "=============================" <<std::endl;
+      //std::cout << "=============================" <<std::endl;
+      //std::cout << "=========new Event===========" <<std::endl;
+      //std::cout << "=============================" <<std::endl;
+      //std::cout << "=============================" <<std::endl;
     
     // Loop over all MC particle that are in the MCParticles array
     if(fTrackCutsProton->GetIsMonteCarlo()){
@@ -213,11 +203,31 @@ void AliLightNAnalysis::Make(AliAODEvent *evt) {
                     if(particle->IsPhysicalPrimary()){
                         fAntiTrackCutsDeuteron->FillStackGeneratedPrimary(p);
                     }
-                }else{
-                    return;
                 }
             }
         }
+    }
+    ResetGlobalTrackReference();
+    for(int iTrack = 0;iTrack<evt->GetNumberOfTracks();++iTrack){
+        AliAODTrack *track=static_cast<AliAODTrack*>(evt->GetTrack(iTrack));
+        if (!track) {
+            AliFatal("No Standard AOD");
+            return;
+        }
+        StoreGlobalTrackReference(track);
+    }
+    fLightNTrack->SetGlobalTrackInfo(fGTI,fTrackBufferSize);
+    for (int iTrack = 0;iTrack<evt->GetNumberOfTracks();++iTrack) {
+        AliAODTrack *track=static_cast<AliAODTrack*>(evt->GetTrack(iTrack));
+        if (!track) {
+            AliFatal("No Standard AOD");
+            return;
+        }
+        fLightNTrack->SetTrack(track);
+        fTrackCutsProton->isSelected(fLightNTrack);
+        fAntiTrackCutsProton->isSelected(fLightNTrack);
+        fTrackCutsDeuteron->isSelected(fLightNTrack);
+        fAntiTrackCutsDeuteron->isSelected(fLightNTrack);
     }
 }
 

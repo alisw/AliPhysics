@@ -272,6 +272,7 @@ else()
   add_subdirectory(PWGPP)
   add_subdirectory(PWGUD)
   add_subdirectory(PWGMM)
+  add_subdirectory (ML)
 
   # Transition to Run3
   if(ROOT_VERSION_MAJOR EQUAL 6)

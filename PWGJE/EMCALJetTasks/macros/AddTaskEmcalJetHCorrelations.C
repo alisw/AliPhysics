@@ -16,13 +16,12 @@ PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations* AddTaskEmcalJetHCorr
    const Bool_t lessSparseAxes      = 0,
    const Bool_t widerTrackBin       = 0,
    // Corrections
-   const PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations::ESingleTrackEfficiency_t singleTrackEfficiency = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations::kEffDisable,
    const Bool_t embeddingCorrection = kFALSE,
    const char * embeddingCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
    const char * embeddingCorrectionHistName = "embeddingCorrection",
    const char *suffix               = "biased"
 )
-{  
+{
   PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations * task = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations::AddTaskEmcalJetHCorrelations(
                           nTracks, nCaloClusters,
                           trackBias, clusterBias,
@@ -31,7 +30,6 @@ PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations* AddTaskEmcalJetHCorr
                           trigEvent, mixEvent,
                           lessSparseAxes,
                           widerTrackBin,
-                          singleTrackEfficiency,
                           embeddingCorrection,
                           embeddingCorrectionFilename, embeddingCorrectionHistName,
                           suffix

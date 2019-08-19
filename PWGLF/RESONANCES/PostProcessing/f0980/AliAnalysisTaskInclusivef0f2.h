@@ -35,8 +35,11 @@ class AliAnalysisTaskInclusivef0f2RunTable {
         Bool_t IsAA(){
             return fCollisionType==kAA;
         }
+	void SetColl(int i){
+		fCollisionType = i;
+	}
     private:
-        Int_t  fCollisionType = kPP ; //! Is proton-proton collisions?
+        Int_t  fCollisionType; //! Is proton-proton collisions?
 };
 class AliAnalysisTaskInclusivef0f2 : public AliAnalysisTaskSE{
  public:
@@ -114,6 +117,8 @@ class AliAnalysisTaskInclusivef0f2 : public AliAnalysisTaskSE{
 	TAxis				binExKaonNum;
 	TAxis				binTrackPt;
 	TAxis				binSigma;
+	TAxis				binEta;
+	TAxis				binSwitch;
 
         Double_t                        fCent=-1;
         Double_t                        fZ=-30;

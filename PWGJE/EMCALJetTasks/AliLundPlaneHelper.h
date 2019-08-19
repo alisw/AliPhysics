@@ -136,10 +136,10 @@ public:
    * @param nsplitting Splitting number in the cluster tree
    */
   AliLundPlaneParameters(Double_t lndeltaR, Double_t lnprel, Double_t ptlower, int nsplitting):
-    fLnDeltaR(0),
-    fLnPtrel(0),
-    fPtLower(0),
-    fNSplitting(0),
+    fLnDeltaR(lndeltaR),
+    fLnPtrel(lnprel),
+    fPtLower(ptlower),
+    fNSplitting(nsplitting),
     fInitialized(true)
   {
   }

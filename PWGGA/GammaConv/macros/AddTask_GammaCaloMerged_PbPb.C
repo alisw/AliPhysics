@@ -51,6 +51,7 @@ void AddTask_GammaCaloMerged_PbPb(
   Bool_t    enableExoticsQA               = kFALSE,   // switch to run QA for exotic clusters
   Bool_t    runDetailedM02                = kFALSE,   // switch on very detailed M02 distribution
   // subwagon config
+  Int_t     maxAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
 ) {
 
@@ -222,6 +223,18 @@ void AddTask_GammaCaloMerged_PbPb(
     cuts.AddCutMergedCalo("55910113","1111100050032200000","1111100050022000001","0163300000000000"); //
     cuts.AddCutMergedCalo("50010113","1111100050032200000","1111100050022000001","0163300000000000"); //
 
+  } else if (trainConfig == 300){ // mEDC configs 0-90%
+    cuts.AddCutMergedCalo("10910123","4117901050032200000","4117901050022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 301){
+    cuts.AddCutMergedCalo("1098e123","4117901050032200000","4117901050022700001","0163300000000000"); // EG2+DG2
+    cuts.AddCutMergedCalo("1098d123","4117901050032200000","4117901050022700001","0163300000000000"); // EG1+DG1
+
+  } else if (trainConfig == 320){ // mEDC configs 0-10%
+    cuts.AddCutMergedCalo("10110123","4117901050032200000","4117901050022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 321){
+    cuts.AddCutMergedCalo("1018e123","4117901050032200000","4117901050022700001","0163300000000000"); // EG2+DG2
+    cuts.AddCutMergedCalo("1018d123","4117901050032200000","4117901050022700001","0163300000000000"); // EG1+DG1
+
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -355,6 +368,7 @@ void AddTask_GammaCaloMerged_PbPb(
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
+  if(maxAllowedPi0Overlaps>-1){ task->SetMaxNeutralPionOverlapsMC(maxAllowedPi0Overlaps);}
   task->SetEnableDetailedM02Distribtuon(runDetailedM02);
   task->SetSelectedMesonID(selectedMeson);
   task->SetEventCutList(numberOfCuts,EventCutList);

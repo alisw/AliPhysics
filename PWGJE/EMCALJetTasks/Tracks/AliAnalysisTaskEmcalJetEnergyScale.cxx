@@ -238,7 +238,7 @@ bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &tr
   return isEMCAL;
 }
 
-AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *suffix) {
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *suffix) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
     ::Error("EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
@@ -290,19 +290,8 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   AliClusterContainer *clusters(nullptr);
   if(addClusterContainer) {
     clusters = energyscaletask->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
-    switch(jettype){
-      case AliJetContainer::kChargedJet: break;     // Silence compiler
-      case AliJetContainer::kFullJet:
-        clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
-        clusters->SetClusHadCorrEnergyCut(0.3);
-        break;
-      case AliJetContainer::kNeutralJet:
-        clusters->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
-        clusters->SetClusNonLinCorrEnergyCut(0.3);
-        break;
-      case AliJetContainer::kUndefinedJetType:
-        break;
-    };
+    clusters->SetDefaultClusterEnergy(energydef);
+    clusters->SetClusUserDefEnergyCut(energydef, 0.3);
   }
   AliTrackContainer *tracks(nullptr);
   if(addTrackContainer) {

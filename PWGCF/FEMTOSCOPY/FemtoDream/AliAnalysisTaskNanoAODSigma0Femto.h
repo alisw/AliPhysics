@@ -13,6 +13,7 @@
 #include "AliFemtoDreamv0.h"
 #include "AliFemtoDreamv0Cuts.h"
 #include "AliSigma0PhotonCuts.h"
+#include "AliFemtoDreamControlSample.h"
 #include "AliMCEvent.h"
 #include "AliSigma0AODPhotonMotherCuts.h"
 #include "AliStack.h"
@@ -36,6 +37,8 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
+  void SetCheckDaughterCF(bool doIt) { fCheckDaughterCF = doIt; }
+  void SetGoDoThisFemtoJanitor(bool godothis) { fFemtoJanitor = godothis; }
   void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
   void SetEventCuts(AliFemtoDreamEventCuts *cuts) { fEvtCuts = cuts; }
@@ -85,9 +88,12 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   AliFemtoDreamCollConfig *fConfig;                  //
   AliFemtoDreamPairCleaner *fPairCleaner;            //!
   AliFemtoDreamPartCollection *fPartColl;            //!
+  AliFemtoDreamControlSample *fSample;               //!
 
   bool fIsMC;              //
   bool fIsLightweight;     //
+  bool fCheckDaughterCF;   //
+  bool fFemtoJanitor;      //
   float fV0PercentileMax;  //
   UInt_t fTrigger;         //
 
@@ -110,7 +116,9 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   TList *fAntiSigmaHistList;       //!
   TList *fResultList;              //!
   TList *fResultQAList;            //!
+  TList *fResultsSample;           //!
+  TList *fResultsSampleQA;         //!
 
-  ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 2)
+  ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 5)
 };
 #endif

@@ -7,8 +7,8 @@
 //-------------------------------------------------------
 // Compute hx or hy for a scan
 //-------------------------------------------------------
-void Compute_RateIntegral(Int_t scan_type, Int_t scan, char *rate_name,
-			  char *rate_type, char *sep_type, Int_t fit_type)
+void Compute_RateIntegral(Int_t scan_type, Int_t scan, const char *rate_name,
+			  const char *rate_type, const char *sep_type, Int_t fit_type, Int_t bc)
 // scan_type: 1 => x-scan; 2 => y-scan
 //
 // First get the right files and the trees inside them
@@ -76,12 +76,13 @@ void Compute_RateIntegral(Int_t scan_type, Int_t scan, char *rate_name,
   // and make a fit to the separation vs rate curve
   Int_t nIBC = GetNumberInteractingBunchCrossings();
   for(Int_t k=0;k<nIBC;k++) { // loop over bunches
+    if (bc > -1 && bc != k) continue; // this is to study one specific bc ...
     // get info
     rate_tree->GetEntry(k);
     sep_tree->GetEntry(k);
     // do fit
     chi2_dof = Fit_rate_separation(n_sep,sep,rate,rate_error,fit_type,
-				   area, rate_zero, par, par_err);
+				   area, rate_zero, par, par_err, scan, scan_type, bc);
     // save output
     h_tree->Fill();
   } // end loop over bunches
@@ -110,8 +111,9 @@ void Compute_RateIntegral(Int_t scan_type, Int_t scan, char *rate_name,
 // Compute hx and hy for a fill
 //-------------------------------------------------------
 
-void Create_hxhy_file(Int_t Fill, char *rate_name,
-		      char *rate_type, char *sep_type, Int_t fit_type)  
+void Create_hxhy_file(Int_t Fill, const char *rate_name,
+		      const char *rate_type, const char *sep_type, Int_t fit_type, Int_t bc = -1)
+// if bc = -1, all bunches are analysed. if it is > -1, the corresponding bc is plotted
 {
   // initialize
   Set_input_file_names(Fill);
@@ -120,9 +122,9 @@ void Create_hxhy_file(Int_t Fill, char *rate_name,
   // create files for all scans
   for(Int_t i=0;i<g_n_Scans_in_Fill;i++) {
     //x-scans
-    Compute_RateIntegral(1, i, rate_name, rate_type, sep_type, fit_type);
+    Compute_RateIntegral(1, i, rate_name, rate_type, sep_type, fit_type, bc);
     //y-scans
-    Compute_RateIntegral(2, i, rate_name, rate_type, sep_type, fit_type);
+    Compute_RateIntegral(2, i, rate_name, rate_type, sep_type, fit_type, bc);
   }
 
 }

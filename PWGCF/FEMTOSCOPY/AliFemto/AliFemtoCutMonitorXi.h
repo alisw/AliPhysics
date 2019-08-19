@@ -73,6 +73,7 @@ private:
 
 
   TH1F *fXiMass;
+  TH1F *fOmegaMass;
   TH1F *fDcaXiDaughters;
   TH1F *fDcaXiToPrimVertex;
   TH1F *fDcaBacToPrimVertex;
@@ -82,8 +83,10 @@ private:
   TH1F *fPtXi;
   TH1F *fPtBac;
   TH2D *fdEdxBac;
-  TH2D *fTOFtimeBac;
-  TH1D *fnsigmaBac;
+  TH2D *fTOFtimeBacPi;
+  TH1D *fnsigmaBacPi;
+  TH2D *fTOFtimeBacK;
+  TH1D *fnsigmaBacK;
 };
 
 #endif

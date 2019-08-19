@@ -30,6 +30,7 @@
 #include <TString.h>
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliJetContainer.h"
+#include "AliVCluster.h"
 
 class THistManager;
 class TRandom;
@@ -54,6 +55,7 @@ public:
   static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScale(
     AliJetContainer::EJetType_t       jetType,
     AliJetContainer::ERecoScheme_t    recoscheme,
+    AliVCluster::VCluUserDefEnergy_t  energydef,
     Double_t                          radius,
     Bool_t                            useDCAL,
     const char *                      namepartcont,

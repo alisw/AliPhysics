@@ -66,7 +66,7 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix
     {
       return new TH3F(prefix + name,
                       title + "; q_{out} (GeV); q_{side} (GeV); q_{long} (Gev)",
-                      nbins, qmin, qmax,
+                      nbins / 2 + 1, 0.0, qmax,
                       nbins, qmin, qmax,
                       nbins, qmin, qmax);
     };
@@ -115,6 +115,51 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const Parameters &par
 }
 
 
+AliFemtoModelCorrFctnTrueQ3D::
+  AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
+                               const std::vector<double> &obins,
+                               const std::vector<double> &sbins,
+                               const std::vector<double> &lbins,
+                               AliFemtoModelManager *mgr)
+  : AliFemtoCorrFctn()
+  , fManager(mgr)
+  , fNumeratorGenerated(nullptr)
+  , fNumeratorReconstructed(nullptr)
+  , fNumeratorGenUnweighted(nullptr)
+  , fNumeratorRecUnweighted(nullptr)
+  , fDenominatorGenerated(nullptr)
+  , fDenominatorReconstructed(nullptr)
+  , fDenominatorGenWeighted(nullptr)
+  , fDenominatorRecWeighted(nullptr)
+{
+
+  auto new_th3 = [&] (const TString &name, const TString &title)
+    {
+      return new TH3F(prefix + name,
+                      title + "; q_{out} (GeV); q_{side} (GeV); q_{long} (Gev)",
+                      obins.size()-1, obins.data(),
+                      sbins.size()-1, sbins.data(),
+                      lbins.size()-1, lbins.data());
+    };
+
+  fNumeratorGenerated = new_th3("NumGen", "Numerator (MC-Generated Momentum)");
+  fNumeratorReconstructed = new_th3("NumRec", "Numerator (Reconstructed Momentum)");
+  fDenominatorGenerated = new_th3("DenGen", "Denominator (MC-Generated Momentum)");
+  fDenominatorReconstructed = new_th3("DenRec", "Denominator (Reconstructed Momentum)");
+
+  fNumeratorGenerated->Sumw2();
+  fNumeratorReconstructed->Sumw2();
+
+  fNumeratorRecUnweighted = new_th3("NumRecUnweighted", "Numerator (Reconstructed Momentum - No femto weight)");
+  fNumeratorGenUnweighted = new_th3("NumGenUnweighted", "Numerator (Generated Momentum - No femto weight)");
+
+  fDenominatorGenWeighted = new_th3("DenGenWeight", "Denominator (Generated Momentum - with femto weight)");
+  fDenominatorRecWeighted = new_th3("DenRecWeight", "Denominator (Reconstructed Momentum - with femto weight)");
+
+  fDenominatorGenWeighted->Sumw2();
+  fDenominatorRecWeighted->Sumw2();
+}
+
 AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCorrFctnTrueQ3D& orig):
   AliFemtoCorrFctn(orig)
   , fManager(orig.fManager)
@@ -148,11 +193,12 @@ AliFemtoModelCorrFctnTrueQ3D::operator=(const AliFemtoModelCorrFctnTrueQ3D &rhs)
 {
   AliFemtoCorrFctn::operator=(rhs);
 
+  fManager = rhs.fManager;
+
   *fNumeratorGenerated = *rhs.fNumeratorGenerated;
   *fNumeratorReconstructed = *rhs.fNumeratorReconstructed;
   *fDenominatorGenerated = *rhs.fDenominatorGenerated;
   *fDenominatorReconstructed = *rhs.fDenominatorReconstructed;
-
 
   auto copy_if_present = [] (const TH3F* src, TH3F *&dest)
     {
@@ -162,7 +208,7 @@ AliFemtoModelCorrFctnTrueQ3D::operator=(const AliFemtoModelCorrFctnTrueQ3D &rhs)
       else if (src) {
         dest = new TH3F(*src);
       }
-      else {
+      else if (dest) {
         delete dest;
         dest = nullptr;
       }
@@ -229,27 +275,35 @@ AliFemtoModelCorrFctnTrueQ3D::AddOutputObjectsTo(TCollection &list)
 /// Return q{Out-Side-Long} tuple, calculated from momentum vectors p1 & p2
 static
 std::tuple<Double_t, Double_t, Double_t>
-Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
+Qlcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
 {
   const AliFemtoLorentzVector p = p1 + p2,
                               d = p1 - p2;
+
+  #define FAST_DIVIDE(num, den) __builtin_expect(den == 0.0, false) ? 0.0 : num / den
 
   Double_t k1 = p.Perp(),
            k2 = d.x()*p.x() + d.y()*p.y();
 
   // relative momentum out component in lab frame
-  Double_t qout = (k1 == 0) ? 0.0 : k2/k1;
+  Double_t qout = FAST_DIVIDE(k2, k1);
 
   // relative momentum side component in lab frame
-  Double_t qside = (k1 == 0) ? 0.0 : 2.0 * (p2.x()*p1.y() - p1.x()*p2.y())/k1;
+  Double_t qside = FAST_DIVIDE(2.0 * (p2.x()*p1.y() - p1.x()*p2.y()), k1);
 
   // relative momentum component in lab frame
   Double_t beta = p.z()/p.t(),
-          gamma = 1.0 / TMath::Sqrt((1.0-beta)*(1.0+beta));
+          gamma = 1.0 / TMath::Sqrt(1.0-beta*beta);
 
   Double_t qlong = gamma * (d.z() - beta*d.t());
 
-  // double qlong = (p.t()*d.z() - p.z()*d.t()) / TMath::Sqrt(p.t()*p.t() - p.z()*p.z());
+  #undef FAST_DIVIDE
+
+  // "flip" into positive qout region
+  Double_t factor = std::copysign(1.0, qout);
+  qout *= factor;
+  qside *= factor;
+  qlong *= factor;
 
   return std::make_tuple(qout, qside, qlong);
 }
@@ -266,9 +320,9 @@ fill_hists(TH3 *dest,
            double weight)
 {
   Double_t q_out, q_side, q_long;
-  std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
+  std::tie(q_out, q_side, q_long) = Qlcms(p1, p2);
 
-  TH3 *hist = dest ?: dest_unweighted;
+  TH3 *hist = dest ? dest : dest_unweighted;
 
   const Int_t dest_bin = hist->FindBin(q_out, q_long, q_side);
 

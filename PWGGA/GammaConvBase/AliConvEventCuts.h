@@ -10,6 +10,8 @@
 #include "AliMCEvent.h"
 #include "AliVTrack.h"
 #include "AliAnalysisCuts.h"
+#include "AliEMCALGeometry.h"
+#include "AliDataFile.h"
 #include "TH1F.h"
 #include "TF1.h"
 #include "TObjArray.h"
@@ -222,6 +224,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18l8a,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8b,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8c,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h2a,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h2b,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h2c,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC19h3,         //!< anchored to LHC18qr    - general purpose Pythia8 with added GA signals
 
 
         // MC upgrade
@@ -280,7 +286,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17pq,             //!< pp 5 TeV
         // MC Xe-Xe
         kLHC17XeXeHi,         //!< MC for Xe-Xe 5.44 TeV HIJING
-        // 5 TeV MC 2016
+        // 5 TeV MC 2017
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC18j2,             //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
@@ -497,6 +503,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void      GetCorrectEtaShiftFromPeriod();
       void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event);
       TClonesArray*     GetArrayFromEvent(AliVEvent* event, const char *name, const char *clname=0);
+      AliEMCALGeometry* GetGeomEMCAL()                                              { return fGeomEMCAL;}
 
       Bool_t    InitializeCutsFromCutString(const TString analysisCutSelection);
       void      SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kAny) {
@@ -594,6 +601,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
       Bool_t                      fDoLightOutput;                         ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
       Int_t                       fEventQuality;                          ///< EventQuality
+      AliEMCALGeometry*           fGeomEMCAL;                             ///< pointer to EMCal geometry
       //cuts
       Int_t                       fIsHeavyIon;                            ///< flag for heavy ion
       Int_t                       fDetectorCentrality;                    ///< centrality detecotor V0M or CL1
@@ -691,6 +699,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       ULong_t                     fTriggersEMCAL;                         ///< list of fired EMCAL triggers
       ULong_t                     fTriggersEMCALSelected;                 ///< list of accepted triggers
       Bool_t                      fEMCALTrigInitialized;                  ///< EMCAL triggers initialized
+      TH1S*                       fHistoTriggThresh;                      ///< EMCal trigger thresholds
+      Int_t                       fRunNumberTriggerOADB;                  ///< last used runnumber of OADB trigger object
       // Primary secondary distinction
       Double_t                    fSecProdBoundary;                       ///< 3D radius of production (cm) for primary-secodary distinction
       Float_t                     fMaxPtJetMC;                            ///< maximum jet pt in event
@@ -710,7 +720,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,69)
+      ClassDef(AliConvEventCuts,72)
       /// \endcond
 };
 

@@ -1490,28 +1490,28 @@ TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEven
     if(period<0 || period>3) return 0;
     }else if(fYearNumber==16){
     if(runNo>=252235 && runNo<=252375)period = 0;//16d
-    if(runNo>=252858 && runNo<=253591)period = 1;//16e
-    if(runNo>=254148 && runNo<=254332)period = 2;//16g
-    if(runNo>=254604  && runNo<=255469 )period = 3;//16h_1
+    if(runNo>=252603 && runNo<=253591)period = 1;//16e
+    if(runNo>=254124 && runNo<=254332)period = 2;//16g
+    if(runNo>=254378  && runNo<=255469 )period = 3;//16h_1
     if(runNo>=254418  && runNo<=254422 )period = 4;//16h_2 negative mag
-    if(runNo>=256222  && runNo<=256418 )period = 5;//16j
-    if(runNo>=256941  && runNo<=258537 )period = 6;//16k
-    if(runNo>=258962  && runNo<=259888)period = 7;//16l
-    if(runNo>=262424  && runNo<=264035 )period = 8;//16o
+    if(runNo>=256146  && runNo<=256420 )period = 5;//16j
+    if(runNo>=256504  && runNo<=258537 )period = 6;//16k
+    if(runNo>=258883  && runNo<=260187)period = 7;//16l
+    if(runNo>=262395  && runNo<=264035 )period = 8;//16o
     if(runNo>=264076  && runNo<=264347 )period = 9;//16p
     }else if(fYearNumber==17){
     if(runNo>=270822 && runNo<=270830)period = 0;//17e
     if(runNo>=270854 && runNo<=270865)period = 1;//17f
-    if(runNo>=271870 && runNo<=273103)period = 2;//17h
+    if(runNo>=271868 && runNo<=273103)period = 2;//17h
     if(runNo>=273591  && runNo<=274442)period = 3;//17i
     if(runNo>=274593  && runNo<=274671)period = 4;//17j 
     if(runNo>=274690  && runNo<=276508)period = 5;//17k
     if(runNo>=276551  && runNo<=278216)period = 6;//17l
     if(runNo>=278914  && runNo<=280140)period = 7;//17m
-    if(runNo>=280352   && runNo<=281961)period = 8;//17o
-    if(runNo>=282528  && runNo<=282704)period = 9;//17r
+    if(runNo>=280282   && runNo<=281961)period = 8;//17o
+    if(runNo>=282504  && runNo<=282704)period = 9;//17r
     }else if(fYearNumber==18){     
-      if(runNo>=285009 && runNo<=285396)period = 0;//18b
+      if(runNo>=285008 && runNo<=285447)period = 0;//18b
     if(runNo>=285978 && runNo<=286350)period = 1;//18d
     if(runNo>=286380 && runNo<=286937)period = 2;//18e
     if(runNo>=287000  && runNo<=287977)period = 3;//18f
@@ -1521,7 +1521,7 @@ TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEven
     if(runNo==288943)period = 7;//18j
     if(runNo>=289165   && runNo<=289201)period = 8;//18k
     if(runNo>=289240  && runNo<=289971)period = 9;//18l
-    if(runNo>=290323  && runNo<=292839)period = 10;//18m
+    if(runNo>=290222  && runNo<=292839)period = 10;//18m
     if(runNo>=293357   && runNo<=293359)period = 11;//18n
     if(runNo>=293368   && runNo<=293898)period = 12;//18o
     if(runNo>=294009  && runNo<=294925)period = 13;//18p

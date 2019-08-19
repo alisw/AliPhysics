@@ -26,6 +26,8 @@ public:
     void FillMultV0A(int i, double val){fMultDistV0A[i]->Fill(val);};
     void FillMultV0C(int i, double val){fMultDistV0C[i]->Fill(val);};
     void FillMultRef08(int i, double val){fMultDistRef08[i]->Fill(val);};
+    void FillV0Mpercentile(double val){fV0Mpercentile->Fill(val);};
+    void FillV0MpercentileHM(double val){fV0MpercentileHM->Fill(val);};
     TList *GetHistList() {return fEventCutList;};
     void SetName(TString name){fEventCutList->SetName(name.Data());};
 private:
@@ -33,6 +35,8 @@ private:
     TList *fEvtCutQA[2];      //!
     TH1F *fEvtCounter;        //!
     TProfile *fCutConfig;     //!
+    TH1F *fV0Mpercentile;      //!
+    TH1F *fV0MpercentileHM;      //!
     TH1F *fEvtNCont[2];       //!
     TH1F *fEvtVtxX[2];        //!
     TH1F *fEvtVtxY[2];        //!

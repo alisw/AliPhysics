@@ -112,6 +112,7 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
 
   //set single-track variables
   AddSingleTrackBranches();
+  if (fFillJets) AddJetBranches();
 
   //set PID variables
   if(fPidOpt != kNoPID) AddPidBranches(true, true, true, true, true);

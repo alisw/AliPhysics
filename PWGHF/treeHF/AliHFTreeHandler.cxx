@@ -16,6 +16,7 @@
 // L. van Doremalen, lennart.van.doremalen@cern.ch
 // J. Norman, jaime.norman@cern.ch
 // G. Luparello, grazia.luparello@cern.ch
+// N. Zardoshti, nima.zardoshti@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include <cmath>
@@ -69,7 +70,32 @@ AliHFTreeHandler::AliHFTreeHandler():
   fPlimitsNsigmaTPCDataCorr{},
   fNPbinsNsigmaTPCDataCorr(0),
   fEtalimitsNsigmaTPCDataCorr{},
-  fNEtabinsNsigmaTPCDataCorr(0)
+  fNEtabinsNsigmaTPCDataCorr(0),
+  fPtJet(-99.),
+  fPtGenJet(-99.),
+  fEtaJet(-99.),
+  fEtaGenJet(-99.),
+  fPhiJet(-99.),
+  fPhiGenJet(-99.),
+  fDeltaEtaJetHadron(-99.),
+  fDeltaEtaGenJetHadron(-99.),
+  fDeltaPhiJetHadron(-99.),
+  fDeltaPhiGenJetHadron(-99.),
+  fDeltaRJetHadron(-99.),
+  fDeltaRGenJetHadron(-99.),
+  fNTracksJet(-99.),
+  fNTracksGenJet(-99.),
+  fZgJet(-99.),
+  fZgGenJet(-99.),
+  fRgJet(-99.),
+  fRgGenJet(-99.),
+  fFillJets(false),
+  fDoJetSubstructure(false), 
+  fJetRadius(0.4),
+  fSubJetRadius(0.2),
+  fJetAlgorithm(0),
+  fSubJetAlgorithm(2),
+  fMinJetPt(0.0)
 {
   //
   // Default constructor
@@ -109,7 +135,7 @@ AliHFTreeHandler::AliHFTreeHandler():
 
 //________________________________________________________________
 AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
-    TObject(),
+  TObject(),
   fTreeVar(nullptr),
   fNProngs(-1),
   fCandType(0),
@@ -145,7 +171,32 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fPlimitsNsigmaTPCDataCorr{},
   fNPbinsNsigmaTPCDataCorr(0),
   fEtalimitsNsigmaTPCDataCorr{},
-  fNEtabinsNsigmaTPCDataCorr(0)
+  fNEtabinsNsigmaTPCDataCorr(0),
+  fPtJet(-99.),
+  fPtGenJet(-99.),
+  fEtaJet(-99.),
+  fEtaGenJet(-99.),
+  fPhiJet(-99.),
+  fPhiGenJet(-99.),
+  fDeltaEtaJetHadron(-99.),
+  fDeltaEtaGenJetHadron(-99.),
+  fDeltaPhiJetHadron(-99.),
+  fDeltaPhiGenJetHadron(-99.),
+  fDeltaRJetHadron(-99.),
+  fDeltaRGenJetHadron(-99.),
+  fNTracksJet(-99.),
+  fNTracksGenJet(-99.),
+  fZgJet(-99.),
+  fZgGenJet(-99.),
+  fRgJet(-99.),
+  fRgGenJet(-99.),
+  fFillJets(false),
+  fDoJetSubstructure(false), 
+  fJetRadius(0.4),
+  fSubJetRadius(0.2),
+  fJetAlgorithm(0),
+  fSubJetAlgorithm(2),
+  fMinJetPt(0.0)
 {
   //
   // Standard constructor
@@ -212,6 +263,8 @@ TTree* AliHFTreeHandler::BuildTreeMCGen(TString name, TString title) {
   fTreeVar->Branch("phi_cand",&fPhi);
   fTreeVar->Branch("dau_in_acc",&fDauInAcceptance);
 
+  if (fFillJets) AddGenJetBranches(); //Gen Jet Branches added here
+  
   return fTreeVar;
 }
 
@@ -279,12 +332,14 @@ void AliHFTreeHandler::AddSingleTrackBranches() {
       fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
       fTreeVar->Branch(Form("phi_prong%d",iProng),&fPhiProng[iProng]);
       fTreeVar->Branch(Form("p_prong%d",iProng),&fPProng[iProng]);
+      fTreeVar->Branch(Form("spdhits_prong%d",iProng),&fSPDhitsProng[iProng]);
     }
     else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
       fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
       fTreeVar->Branch(Form("phi_prong%d",iProng),&fPhiProng[iProng]);
       fTreeVar->Branch(Form("p_prong%d",iProng),&fPProng[iProng]);
+      fTreeVar->Branch(Form("spdhits_prong%d",iProng),&fSPDhitsProng[iProng]);
       fTreeVar->Branch(Form("nTPCcls_prong%d",iProng),&fNTPCclsProng[iProng]);
       fTreeVar->Branch(Form("nTPCclspid_prong%d",iProng),&fNTPCclsPidProng[iProng]);
       fTreeVar->Branch(Form("nTPCcrossrow_prong%d",iProng),&fNTPCCrossedRowProng[iProng]);
@@ -293,6 +348,47 @@ void AliHFTreeHandler::AddSingleTrackBranches() {
       fTreeVar->Branch(Form("ITSclsmap_prong%d",iProng),&fITSclsMapProng[iProng]);
     }
   }
+}
+
+//________________________________________________________________
+void AliHFTreeHandler::AddJetBranches() { //Jet branches added
+
+  fTreeVar->Branch("pt_jet",&fPtJet);
+  fTreeVar->Branch("pt_gen_jet",&fPtGenJet);
+  fTreeVar->Branch("eta_jet",&fEtaJet);
+  fTreeVar->Branch("eta_gen_jet",&fEtaGenJet);
+  fTreeVar->Branch("phi_jet",&fPhiJet);
+  fTreeVar->Branch("phi_gen_jet",&fPhiGenJet);
+  fTreeVar->Branch("delta_eta_jet",&fDeltaEtaJetHadron);
+  fTreeVar->Branch("delta_eta_gen_jet",&fDeltaEtaGenJetHadron);
+  fTreeVar->Branch("delta_phi_jet",&fDeltaPhiJetHadron);
+  fTreeVar->Branch("delta_phi_gen_jet",&fDeltaPhiGenJetHadron);
+  fTreeVar->Branch("delta_r_jet",&fDeltaRJetHadron);
+  fTreeVar->Branch("delta_r_gen_jet",&fDeltaRGenJetHadron);
+  fTreeVar->Branch("ntracks_jet",&fNTracksJet);
+  fTreeVar->Branch("ntracks_gen_jet",&fNTracksGenJet);
+  fTreeVar->Branch("zg_jet",&fZgJet);
+  fTreeVar->Branch("zg_gen_jet",&fZgGenJet);
+  fTreeVar->Branch("rg_jet",&fRgJet);
+  fTreeVar->Branch("rg_gen_jet",&fRgGenJet);
+
+    
+}
+
+//________________________________________________________________
+void AliHFTreeHandler::AddGenJetBranches() { //Gen jet branches added
+
+  fTreeVar->Branch("pt_jet",&fPtGenJet);
+  fTreeVar->Branch("eta_jet",&fEtaGenJet);
+  fTreeVar->Branch("phi_jet",&fPhiGenJet);
+  fTreeVar->Branch("delta_eta_jet",&fDeltaEtaGenJetHadron);
+  fTreeVar->Branch("delta_phi_jet",&fDeltaPhiGenJetHadron);
+  fTreeVar->Branch("delta_r_jet",&fDeltaRGenJetHadron);
+  fTreeVar->Branch("ntracks_jet",&fNTracksGenJet);
+  fTreeVar->Branch("zg_jet",&fZgGenJet);
+  fTreeVar->Branch("rg_jet",&fRgGenJet);
+
+    
 }
 
 //________________________________________________________________
@@ -371,12 +467,14 @@ bool AliHFTreeHandler::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
       fEtaProng[iProng]=prongtracks[iProng]->Eta();
       fPhiProng[iProng]=prongtracks[iProng]->Phi();
       fPProng[iProng]=prongtracks[iProng]->P();
+      fSPDhitsProng[iProng] = prongtracks[iProng]->GetITSClusterMap() & 0x3;
     }
     else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fPtProng[iProng]=prongtracks[iProng]->Pt();
       fEtaProng[iProng]=prongtracks[iProng]->Eta();
       fPhiProng[iProng]=prongtracks[iProng]->Phi();
       fPProng[iProng]=prongtracks[iProng]->P();
+      fSPDhitsProng[iProng] = prongtracks[iProng]->GetITSClusterMap() & 0x3;
       fNTPCclsProng[iProng]=prongtracks[iProng]->GetTPCNcls();
       fNTPCclsPidProng[iProng]=prongtracks[iProng]->GetTPCsignalN();
       fNTPCCrossedRowProng[iProng]=prongtracks[iProng]->GetTPCNCrossedRows();
@@ -388,6 +486,89 @@ bool AliHFTreeHandler::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
 
   return true;
 }
+
+
+//________________________________________________________________
+void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, Double_t invmass, TClonesArray *mcarray, AliAODMCParticle* mcPart) {
+#ifdef HAVE_FASTJET
+  AliHFJetFinder hfjetfinder;
+  SetJetParameters(hfjetfinder); 
+  AliHFJet hfjet(hfjetfinder.GetHFJet(array,cand,invmass));
+  SetJetTreeVars(hfjet);
+  
+  AliHFJet hfgenjet;
+  if (mcarray && mcPart){
+    AliHFJetFinder hfgenjetfinder;
+    SetJetParameters(hfgenjetfinder); 
+    hfgenjet=hfgenjetfinder.GetHFMCJet(mcarray,mcPart);
+  }
+  SetGenJetTreeVars(hfgenjet);
+#else
+  std::cout << "You need to have fastjet installed to get meaningful results" <<std::endl;
+#endif 
+
+}
+
+
+//________________________________________________________________
+void AliHFTreeHandler::SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart) {
+#ifdef HAVE_FASTJET
+  AliHFJetFinder hfjetfinder;
+  SetJetParameters(hfjetfinder);
+  AliHFJet hfjet(hfjetfinder.GetHFMCJet(array,mcPart));
+	  
+  SetGenJetTreeVars(hfjet);
+#else
+  std::cout << "You need to have fastjet installed to get meaningful results" <<std::endl;
+#endif 
+}
+#ifdef HAVE_FASTJET
+//________________________________________________________________
+void AliHFTreeHandler::SetJetParameters(AliHFJetFinder& hfjetfinder){
+
+  hfjetfinder.SetJetRadius(fJetRadius);
+  hfjetfinder.SetJetAlgorithm(fJetAlgorithm);
+  hfjetfinder.SetMinJetPt(fMinJetPt);
+  hfjetfinder.SetSubJetRadius(fSubJetRadius);
+  hfjetfinder.SetSubJetAlgorithm(fSubJetAlgorithm);
+  hfjetfinder.SetDoJetSubstructure(fDoJetSubstructure);
+
+}
+#endif
+//________________________________________________________________
+void AliHFTreeHandler::SetJetTreeVars(AliHFJet hfjet){
+
+  fPtJet=hfjet.GetPt();
+  fEtaJet=hfjet.GetEta();
+  fPhiJet=hfjet.GetPhi();
+  fDeltaEtaJetHadron=hfjet.GetDeltaEta();
+  fDeltaPhiJetHadron=hfjet.GetDeltaPhi();
+  fDeltaRJetHadron=hfjet.GetDeltaR();
+  fNTracksJet=hfjet.GetN();
+  if (fDoJetSubstructure){
+    fZgJet=hfjet.GetZg();
+    fRgJet=hfjet.GetRg();
+  }
+
+}
+
+//________________________________________________________________
+void AliHFTreeHandler::SetGenJetTreeVars(AliHFJet hfjet){
+
+  fPtGenJet=hfjet.GetPt();
+  fEtaGenJet=hfjet.GetEta();
+  fPhiGenJet=hfjet.GetPhi();
+  fDeltaEtaGenJetHadron=hfjet.GetDeltaEta();
+  fDeltaPhiGenJetHadron=hfjet.GetDeltaPhi();
+  fDeltaRGenJetHadron=hfjet.GetDeltaR();
+  fNTracksGenJet=hfjet.GetN();
+  if (fDoJetSubstructure){
+    fZgGenJet=hfjet.GetZg();
+    fRgGenJet=hfjet.GetRg();
+  }
+
+}
+
 
 //________________________________________________________________
 bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF) 

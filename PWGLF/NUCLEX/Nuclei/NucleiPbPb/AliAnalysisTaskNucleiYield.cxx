@@ -125,6 +125,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fMagField{0.f}
    ,fDCAzLimit{10.}
    ,fDCAzNbins{400}
+   ,fSigmaLimit{6.}
+   ,fSigmaNbins{240}
    ,fTOFlowBoundary{-2.4}
    ,fTOFhighBoundary{3.6}
    ,fTOFnBins{75}
@@ -300,10 +302,10 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     const float deltaDCAz = 2.f * fDCAzLimit / fDCAzNbins;
     for (int i = 0; i <= fDCAzNbins; ++i)
       dcazBins[i] = i * deltaDCAz - fDCAzLimit;
-    const int nSigmaBins = 240;
-    float sigmaBins[nSigmaBins + 1];
-    for (int i = 0; i <= nSigmaBins; ++i)
-      sigmaBins[i] = -6.f + i * 0.05;
+    float sigmaBins[fSigmaNbins + 1];
+    const float deltaSigma = 2.f * fSigmaLimit / fSigmaNbins;
+    for (int i = 0; i <= fSigmaNbins; ++i)
+      sigmaBins[i] = i * deltaSigma - fSigmaLimit;
     const int nTOFSigmaBins = 240;
     float tofSigmaBins[nTOFSigmaBins + 1];
     for (int i = 0; i <= nTOFSigmaBins; ++i)
@@ -326,11 +328,11 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       fTOFNoT0FillNsigma[iC] = new TH3F(Form("f%cTOFNoT0FillNsigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,nTOFSigmaBins,tofSigmaBins);
       fTPCcounts[iC] = new TH3F(Form("f%cTPCcounts",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
-          nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
+          nCentBins,centBins,nPtBins,pTbins,fSigmaNbins,sigmaBins);
       fTPCsignalTpl[iC] = new TH3F(Form("f%cTPCsignalTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
-          nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
+          nCentBins,centBins,nPtBins,pTbins,fSigmaNbins,sigmaBins);
       fTPCbackgroundTpl[iC] = new TH3F(Form("f%cTPCbackgroundTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
-          nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
+          nCentBins,centBins,nPtBins,pTbins,fSigmaNbins,sigmaBins);
       fHist2Phi[iC] = new TH2F(Form("fHist2Phi%c", letter[iC]), Form("%c; #Phi (rad) ;#it{p}_{T} (Gev/#it{c});", letter[iC]), 100, 0, TMath::TwoPi(), 100, 0, 7);
       fList->Add(fTOFsignal[iC]);
       fList->Add(fTOFT0FillSignal[iC]);
@@ -685,6 +687,17 @@ void AliAnalysisTaskNucleiYield::SetTOFBins(Int_t nbins, Float_t min, Float_t ma
 void AliAnalysisTaskNucleiYield::SetDCAzBins(Int_t nbins, Float_t limit) {
   fDCAzNbins = nbins;
   fDCAzLimit = limit;
+}
+
+/// This function sets the number of n\f$_{sigma}\f$ bins and the boundaries of the histogram
+///
+/// \param nbins Number of bins
+/// \param limit Boundaries of the histogram (symmetrical with respect to zero)
+/// \return void
+///
+void AliAnalysisTaskNucleiYield::SetSigmaBins(Int_t nbins, Float_t limit) {
+  fSigmaNbins = nbins;
+  fSigmaLimit = limit;
 }
 
 /// This function sets the particle type to be analysed

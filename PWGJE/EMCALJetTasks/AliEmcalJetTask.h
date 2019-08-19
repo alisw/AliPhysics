@@ -171,7 +171,8 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
       const TString tag                          = "Jet",
       const Double_t minJetPt                    = 0.,
       const Bool_t lockTask                      = kTRUE,
-      const Bool_t bFillGhosts                   = kFALSE
+      const Bool_t bFillGhosts                   = kFALSE,
+      const char *suffix                         = ""
     );
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)

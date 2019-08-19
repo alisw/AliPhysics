@@ -1460,12 +1460,13 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
      
         // fill histograms
         FillHistograms(track, tpcInnerC, centralityF, (Double_t)chi2(0,0));
-	TVectorD tofClInfo(5);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
+	TVectorD tofClInfo(6);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
 	tofClInfo[0]=track->GetTOFsignal();
 	tofClInfo[1]=track->GetTOFsignalToT();
 	tofClInfo[2]=track->GetTOFsignalRaw();
 	tofClInfo[3]=track->GetTOFsignalDz();
 	tofClInfo[4]=track->GetTOFsignalDx();
+	tofClInfo[5]=track->GetIntegratedLength();
 
 	//get the nSigma information; NB particle number ID in the vectors follow the convention of AliPID
         const Int_t nSpecies=AliPID::kSPECIES;

@@ -1,16 +1,24 @@
+#include "AliMultEstimator.h"
+#include "AliMultSelectionCuts.h"
+#include "AliMultSelection.h"
+#include "AliMultSelectionCalibrator.h"
+#include <TString.h>
+#include <TSystem.h>
+#include <TF1.h>
+#include <TFile.h>
+
 ////////////////////////////////////////////////////////////
 //
 // Default macro for calibrating minimum bias pp data.
 //
 ////////////////////////////////////////////////////////////
 
-CalibratePeriodPP(const Char_t* inputDir, TString lPeriodName = "LHC16k",
+void CalibratePeriodPP(const Char_t* inputDir, TString lPeriodName = "LHC16k",
                   TString lWhichData = "MB",
                   Long_t lRunToUseAsDefault = 257630, TString lRunIdentifier = "") {
 
     //Load ALICE stuff
-    TString gLibs[] =    {"STEER",
-                            "ANALYSIS", "ANALYSISalice", "ANALYSIScalib","OADB"
+    TString gLibs[] =    {"STEER", "ANALYSIS", "ANALYSISalice", "ANALYSIScalib","OADB"
                            };
     TString thislib = "lib";
     for(Int_t ilib = 0; ilib<5; ilib++) {
@@ -28,7 +36,7 @@ CalibratePeriodPP(const Char_t* inputDir, TString lPeriodName = "LHC16k",
 
     lCalib->SetRunToUseAsDefault( lRunToUseAsDefault );
     lCalib->SetSelectedTriggerClass(AliVEvent::kINT7);
-    
+
     //============================================================
     // --- Definition of Boundaries ---
     //============================================================
@@ -82,7 +90,7 @@ CalibratePeriodPP(const Char_t* inputDir, TString lPeriodName = "LHC16k",
         lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
     }
 
-    //Additional selections for pp: incompleteDAQ and asymmetric vzero 
+    //Additional selections for pp: incompleteDAQ and asymmetric vzero
 
 
 
@@ -153,10 +161,8 @@ CalibratePeriodPP(const Char_t* inputDir, TString lPeriodName = "LHC16k",
     /* From mail exchange with Cvetan
      -> ZNApp
     "-fZnaFired * fZnaTower + !fZnaFired * 1e6"
-
     -> ZNCpp
     "-fZncFired * fZncTower + !fZncFired * 1e6"
-
     -> ZNACpp
     "-0.89 * fZnaFired * fZnaTower - fZncFired * fZncTower + !fZnaFired * !fZncFired * 1e6"
     */

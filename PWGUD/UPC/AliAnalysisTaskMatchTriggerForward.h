@@ -196,6 +196,150 @@ class AliAnalysisTaskMatchTriggerForward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fMCEfficiencyPerRunH;  //!
 
+                                /**
+                                 * This histogram shows the entries distribution
+                                 * per run of the RECONSTRUCTED level.
+                                 * This has to be divided by the corresponding
+                                 * fMCEfficiencyPerRunH to extract the
+                                 * efficiency on a run-by-run basis.
+                                 * NOTE: this is with the GetTrigger() request.
+                                 */
+        TH1F*                   fEfficiencyPerRunWithTriggeringH;  //!
+
+                                /**
+                                 * This array of histograms shows the
+                                 * distribution of the dead zones of the
+                                 * detector on a run-by-run basis.
+                                 * To avoid a complicated logic, I have
+                                 * declared 60k histograms.
+                                 * This is because there are runs from about
+                                 * 240k to 300k.
+                                 * However, this is too heavy for ROOT.
+                                 * Hence, I have declared them as
+                                 * SPARSE. Most of these 60k histograms
+                                 * are empty anyway, so it is best to save
+                                 * on space...
+                                 */
+        TH2F*                   fDeadZoneEtaVsPhiPerRunH[364];               //!    number of total runs
+        TH2F*                   fDeadZoneEtaVsPhiPerRunWithTriggeringH[364]; //!    number of total runs
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. This plot should
+                                 * show the relative components of the 0 neutron
+                                 * peak, the 1 neutron peak and possibly the
+                                 * 2 neutrons peak. Anything higher than that,
+                                 * requires help from the user and is more like
+                                 * a guess...
+                                 */
+        TH1F*                   fZNCEnergyAgainstEntriesH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. This plot should
+                                 * show the relative components of the 0 neutron
+                                 * peak, the 1 neutron peak and possibly the
+                                 * 2 neutrons peak. Anything higher than that,
+                                 * requires help from the user and is more like
+                                 * a guess...
+                                 */
+        TH1F*                   fZNAEnergyAgainstEntriesH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. BEFORE timing
+                                 * selection.
+                                 */
+        TH1F*                   fZNCEnergyBeforeTimingSelectionH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. BEFORE timing
+                                 * selection.
+                                 */
+        TH1F*                   fZNAEnergyBeforeTimingSelectionH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 */
+        TH1F*                   fZNCEnergyCalibratedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 */
+        TH1F*                   fZNAEnergyCalibratedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. UNCALIBRATED.
+                                 */
+        TH1F*                   fZNCEnergyUncalibratedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. UNCALIBRATED.
+                                 */
+        TH1F*                   fZNAEnergyUncalibratedH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 * This is only a trial version for a possible
+                                 * future unified plot with the supposedly
+                                 * not calibrated runs. What happens here is
+                                 * that this plots are filled with the value
+                                 * obtained from the LOW RESOLUTION (HIGH GAIN)
+                                 * getter. This multiplies for 8 times the
+                                 * value obtained fro mnormal getters, and it
+                                 * should provide a better description of the
+                                 * lower part of the ZDC energy spectrum.
+                                 */
+        TH1F*                   fZNCEnergyCalibratedHigherGainH;         //!
+
+                                /**
+                                 * This histogram records the energy distri-
+                                 * bution of the neutron ZDC. CALIBRATED.
+                                 * This is only a trial version for a possible
+                                 * future unified plot with the supposedly
+                                 * not calibrated runs. What happens here is
+                                 * that this plots are filled with the value
+                                 * obtained from the LOW RESOLUTION (HIGH GAIN)
+                                 * getter. This multiplies for 8 times the
+                                 * value obtained fro mnormal getters, and it
+                                 * should provide a better description of the
+                                 * lower part of the ZDC energy spectrum.
+                                 */
+        TH1F*                   fZNAEnergyCalibratedHigherGainH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC.
+                                 */
+        TH1F*                   fZNCTimeAgainstEntriesH;         //!
+
+                                /**
+                                 * This histogram records the time distribution
+                                 * of neutron ZDC.
+                                 */
+        TH1F*                   fZNATimeAgainstEntriesH;         //!
+
+                                /**
+                                 * This array of histograms records the
+                                 * energy spectra
+                                 * of the neutron ZDC.
+                                 * On a run-by-run basis.
+                                 */
+        TH1F*                   fZNCEnergyPerRunH[364];         //!
+        TH1F*                   fZNAEnergyPerRunH[364];         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * for the single muons.
+                                 */
+        TH1F*                   fSingleMuonPtDistributionH;         //!
+
 
         //_______________________________
         // CUTS
@@ -280,7 +424,7 @@ class AliAnalysisTaskMatchTriggerForward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskMatchTriggerForward, 1);
+        ClassDef(AliAnalysisTaskMatchTriggerForward, 5);
 };
 
 #endif

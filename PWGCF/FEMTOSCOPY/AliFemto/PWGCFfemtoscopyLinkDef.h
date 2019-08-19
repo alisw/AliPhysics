@@ -28,6 +28,7 @@
 #pragma link C++ class AliFemtoEventReaderStandard+;
 #pragma link C++ class AliFemtoKinkCut+;
 #pragma link C++ class AliFemtoPairCut+;
+#pragma link C++ class AliFemtoPairCutRejectAll;
 #pragma link C++ class AliFemtoKTPairCut+;
 #pragma link C++ class AliFemtoParticleCut+;
 #pragma link C++ class AliFemtoTrackCut+;
@@ -109,7 +110,8 @@
 #pragma link C++ class AliFemtoTrioFctn+;
 #pragma link C++ class AliFemtoTrioMinvFctn+;
 #pragma link C++ class AliFemtoTrioDEtaDPhiFctn+;
-
+#pragma link C++ class AliFemtoEventReaderNanoAOD+;
+#pragma link C++ class AliFemtoEventReaderNanoAODChain+;
 
 #pragma link C++ class AliFemtoConfigObject-;
 #pragma link C++ class AliFemtoConfigObject::Painter;

@@ -39,14 +39,12 @@ public:
     kIsKaonFromKinks      = BIT(4),
     kIsKaonFromTOF        = BIT(5),
     kIsKaonFromTPC        = BIT(6),
-    kIsDeuteronFromTPCTOF = BIT(7),
-    kIsTritonFromTPCTOF   = BIT(8),
-    kIsHe3FromTPCTOF      = BIT(9),
-    kPositiveTrack        = BIT(11),
-    kNegativeTrack        = BIT(12),
-    kHasNoITS             = BIT(13),
-    kHasNoTPC             = BIT(14),
-    kHasNoTOF             = BIT(15)
+    kIsKaonFromHMPID      = BIT(7),
+    kIsDeuteronFromTPCTOF = BIT(8),
+    kIsTritonFromTPCTOF   = BIT(9),
+    kIsHe3FromTPCTOF      = BIT(10),
+    kPositiveTrack        = BIT(14),
+    kNegativeTrack        = BIT(15),
   };
 
   enum trackinfo {
@@ -54,7 +52,10 @@ public:
     kHasSPDFirst = BIT(1),
     kHasITSrefit = BIT(2),
     kHasTPCrefit = BIT(3),
-    kPassGeomCut = BIT(4)
+    kPassGeomCut = BIT(4),
+    kHasNoITS    = BIT(5),
+    kHasNoTPC    = BIT(6),
+    kHasNoTOF    = BIT(7)
   };
 
   enum centest {
@@ -92,6 +93,7 @@ public:
   void EnableNsigmaDataDrivenCorrection(int syst)                             {fEnableNsigmaTPCDataCorr=true; fSystNsigmaTPCDataCorr=syst;}
 
   void EnableSelectionWithAliEventCuts(bool useAliEventCuts=true, int opt=2)  {fUseAliEventCuts=useAliEventCuts; fApplyPbPbOutOfBunchPileupCuts=opt;}
+  void SetUseTimeRangeCutForPbPb2018(bool opt)                                {fUseTimeRangeCutForPbPb2018=opt;}
 
   void ConfigureCutGeoNcrNcl(double dz, double len, double onept, double fncr, double fncl) {
     fDeadZoneWidth=dz;  
@@ -102,7 +104,7 @@ public:
   }
 
   void EnableParticleSpecies(bool pi=true, bool kao=true, bool pr=true, bool el=false, bool deu=false, bool tr=false, bool He3=false);
-  void EnableDetectors(bool ITS=false, bool TPC=true, bool TOF=true);
+  void EnableDetectors(bool ITS=false, bool TPC=true, bool TOF=true, bool HMPID=false);
   
 private:
 
@@ -123,10 +125,10 @@ private:
   bool FillNsigma(int iDet, AliAODTrack* track);
   
   enum {kPion,kKaon,kProton,kElectron,kDeuteron,kTriton,kHe3};
-  enum {kITS,kTPC,kTOF};
+  enum {kITS,kTPC,kTOF,kHMPID};
 
   const float kCSPEED = 2.99792457999999984e-02; // cm / ps
-  static const int kNMaxDet = 3;
+  static const int kNMaxDet = 4;
   static const int kNMaxHypo = 7;
 
   TList *fOutputList;                                                                //!<! output list for histograms
@@ -148,6 +150,7 @@ private:
   unsigned short fP;                                                                 /// Momentum at primary vertex to fill the tree
   unsigned short fPTPC;                                                              /// TPC momentum to fill the tree
   unsigned short fPTOF;                                                              /// TOF momentum to fill the tree
+  unsigned short fPHMPID;                                                            /// HMPID momentum to fill the tree
   unsigned short fdEdxTPC;                                                           /// TPC dEdX to fill the tree
   unsigned short fdEdxITS;                                                           /// ITS dEdX to fill the tree
   unsigned short fToF;                                                               /// ToF signal to fill the tree
@@ -159,6 +162,8 @@ private:
   unsigned char fTPCNcrossed;                                                        /// number of TPC crossed rows
   unsigned char fTPCFindable;                                                        /// number of TPC findable clusters
   unsigned char fITSclsMap;                                                          /// ITS cluster map
+  unsigned short fHMPIDsignal;                                                       /// HMPID signal
+  unsigned short fHMPIDoccupancy;                                                    /// HMPID occupancy
   unsigned char fTrackInfoMap;                                                       /// bit map with some track info (see enum above)
   short fEta;                                                                        /// pseudorapidity of the track
   unsigned short fPhi;                                                               /// azimuthal angle of the track
@@ -215,8 +220,10 @@ private:
   bool fUseAliEventCuts;                                                             /// flag to enable usage of AliEventCuts foe event-selection
   AliEventCuts fAliEventCuts;                                                        /// event-cut object for centrality correlation event cuts
   int fApplyPbPbOutOfBunchPileupCuts;                                                /// option for Pb-Pb out-of bunch pileup cuts with AliEventCuts
+  bool fUseTimeRangeCutForPbPb2018;                                                  /// flag to enable time-range cut in PbPb 2018
+  AliTimeRangeCut fTimeRangeCut;                                                     /// object to manage time range cut
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 13);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 15);
 };
 
 #endif

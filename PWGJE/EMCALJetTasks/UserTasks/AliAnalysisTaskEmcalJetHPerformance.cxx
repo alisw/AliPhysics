@@ -4,6 +4,7 @@
 
 #include "AliAnalysisTaskEmcalJetHPerformance.h"
 
+#include <cmath>
 #include <map>
 #include <vector>
 #include <iostream>
@@ -21,10 +22,14 @@
 #include "yaml-cpp/yaml.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 #include "AliTrackContainer.h"
+#include "AliTLorentzVector.h"
 #include "AliClusterContainer.h"
 #include "AliEmcalContainerUtils.h"
 #include "AliJetContainer.h"
 #include "AliEmcalJet.h"
+#include "AliAnalysisTaskFlowVectorCorrections.h"
+#include "AliQnCorrectionsManager.h"
+#include "AliQnCorrectionsQnVector.h"
 
 #include "AliAnalysisTaskEmcalJetHUtils.h"
 
@@ -43,10 +48,13 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance():
   fHistManager(),
   fEmbeddingQA(),
   fCreateQAHists(false),
+  fCreateCellQAHists(false),
   fCreateResponseMatrix(false),
   fEmbeddedCellsName("emcalCells"),
   fPreviousEventTrigger(0),
   fPreviousEmbeddedEventSelected(false),
+  fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kDisableEff),
+  fFlowQnVectorManager(nullptr),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
   fMinFractionShared(0.),
@@ -64,10 +72,13 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
   fHistManager(name),
   fEmbeddingQA(),
   fCreateQAHists(false),
+  fCreateCellQAHists(false),
   fCreateResponseMatrix(false),
   fEmbeddedCellsName("emcalCells"),
   fPreviousEventTrigger(0),
   fPreviousEmbeddedEventSelected(false),
+  fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kDisableEff),
+  fFlowQnVectorManager(nullptr),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
   fMinFractionShared(0.),
@@ -86,8 +97,13 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const A
   fHistManager(other.fHistManager.GetName()),
   //fEmbeddingQA(other.fEmbeddingQA), // Cannot use because the THistManager (which is in the class) copy constructor is private.
   fCreateQAHists(other.fCreateQAHists),
+  fCreateCellQAHists(other.fCreateCellQAHists),
   fCreateResponseMatrix(other.fCreateResponseMatrix),
   fEmbeddedCellsName(other.fEmbeddedCellsName),
+  fPreviousEventTrigger(other.fPreviousEventTrigger),
+  fPreviousEmbeddedEventSelected(other.fPreviousEmbeddedEventSelected),
+  fEfficiencyPeriodIdentifier(other.fEfficiencyPeriodIdentifier),
+  fFlowQnVectorManager(other.fFlowQnVectorManager),
   fResponseMatrixFillMap(other.fResponseMatrixFillMap),
   fResponseFromThreeJetCollections(other.fResponseFromThreeJetCollections),
   fMinFractionShared(other.fMinFractionShared),
@@ -111,6 +127,21 @@ AliAnalysisTaskEmcalJetHPerformance & AliAnalysisTaskEmcalJetHPerformance::opera
 }
 
 /**
+ * Utility function to apply the determine the single track efficiency.
+ *
+ * @param trackEta Eta of the track
+ * @param trackPt pT of the track
+ *
+ * @return Track efficiency of the track (the entry in a histogram should be weighted as 1/(return value))
+ */
+double AliAnalysisTaskEmcalJetHPerformance::DetermineTrackingEfficiency(double trackPt, double trackEta)
+{
+  return AliAnalysisTaskEmcalJetHUtils::DetermineTrackingEfficiency(
+   trackPt, trackEta, fCentBin, fEfficiencyPeriodIdentifier,
+   "PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance");
+}
+
+/**
  * Retrieve task properties from the YAML configuration.
  */
 void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLConfig()
@@ -129,6 +160,7 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
   std::string baseName = "enable";
   // These are disabled by default.
   fYAMLConfig.GetProperty({baseName, "QAHists"}, fCreateQAHists, false);
+  fYAMLConfig.GetProperty({baseName, "CellQAHists"}, fCreateCellQAHists, false);
   fYAMLConfig.GetProperty({baseName, "responseMatrix"}, fCreateResponseMatrix, false);
 
   // Event cuts
@@ -155,6 +187,13 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
   fYAMLConfig.GetProperty({baseName, "cellsName"}, fCaloCellsName, false);
   // Defaults to "emcalCells" if not set.
   fYAMLConfig.GetProperty({baseName, "embeddedCellsName"}, fEmbeddedCellsName, false);
+  // Efficiency
+  std::string tempStr = "";
+  baseName = "efficiency";
+  res = fYAMLConfig.GetProperty({baseName, "periodIdentifier"}, tempStr, false);
+  if (res) {
+    fEfficiencyPeriodIdentifier = AliAnalysisTaskEmcalJetHUtils::fgkEfficiencyPeriodIdentifier.at(tempStr);
+  }
 
   // Response matrix properties
   baseName = "responseMatrix";
@@ -189,21 +228,121 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupJetContainersFromYAMLConfig()
       fYAMLConfig.GetProperty({baseName, jetName, "R"}, R, true);
 
       // Create jet container and set the name
-      AliDebugStream(1) << "Creating jet from jet collection name " << collectionName << " with acceptance " << acceptance << " and R=" << R << "\n";
-      AliJetContainer * jetCont = AddJetContainer(collectionName.c_str(), acceptance.c_str(), R);
+      AliDebugStream(1) << "Creating jet from jet collection name " << collectionName << " with acceptance "
+               << acceptance << " and R=" << R << "\n";
+      AliJetContainer* jetCont = AddJetContainer(collectionName.c_str(), acceptance.c_str(), R);
       jetCont->SetName(jetName.c_str());
+
+      // Jet area cut percentage
+      double jetAreaCut = -1;
+      bool res = fYAMLConfig.GetProperty({ baseName, jetName, "areaCutPercentage" }, jetAreaCut, false);
+      if (res) {
+        AliDebugStream(1) << "Setting jet area cut percentage of " << jetAreaCut << " for jet cont " << jetName
+                 << "\n";
+        jetCont->SetPercAreaCut(jetAreaCut);
+      }
+
+      // Rho name
+      std::string tempStr = "";
+      res = fYAMLConfig.GetProperty({ baseName, jetName, "rhoName" }, tempStr, false);
+      if (res) {
+        AliDebugStream(1) << "Setting rho name of " << tempStr << " for jet cont " << jetName << "\n";
+        jetCont->SetRhoName(tempStr.c_str());
+      }
 
       // Leading hadron type
       int leadingHadronType = -1;
-      bool res = fYAMLConfig.GetProperty({baseName, jetName, "leadingHadronType"}, leadingHadronType, false);
+      res = fYAMLConfig.GetProperty({ baseName, jetName, "leadingHadronType" }, leadingHadronType, false);
       if (res) {
-        AliDebugStream(1) << "Setting leading hadron type of " << leadingHadronType << " for jet cont " << jetName << "\n";
+        AliDebugStream(1) << "Setting leading hadron type of " << leadingHadronType << " for jet cont "
+                 << jetName << "\n";
         jetCont->SetLeadingHadronType(leadingHadronType);
       }
     }
     else {
       AliInfoStream() << "Unable to find definition of jet container corresponding to \"" << jetName << "\"\n";
     }
+  }
+}
+
+/**
+ * Setup particle containers based on the provided YAML configuration.
+ */
+void AliAnalysisTaskEmcalJetHPerformance::SetupParticleContainersFromYAMLConfig()
+{
+  std::string baseName = "particles";
+  // Retrieve the node just to see if it is exists. If so, then we can proceed
+  YAML::Node node;
+  fYAMLConfig.GetProperty(baseName, node);
+  // Iterate over all of the particle and track containers
+  for (const auto & n : node) {
+    std::string containerName = n.first.as<std::string>();
+
+    // Create the container.
+    std::string branchName = "";
+    fYAMLConfig.GetProperty({baseName, containerName, "branchName"}, branchName, true);
+    if (branchName == "usedefault") {
+      branchName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack);
+    }
+    AliParticleContainer * partCont = AliAnalysisTaskEmcalJetHUtils::CreateParticleOrTrackContainer(branchName);
+    this->AdoptParticleContainer(partCont);
+
+    // Configure the container
+    // Need to include the namespace so that AliDebug will work properly...
+    std::string taskName = "PWGJE::EMCALJetTasks::";
+    taskName += GetName();
+    std::vector<std::string> baseNameWithContainer = { baseName, containerName };
+    AliAnalysisTaskEmcalJetHUtils::ConfigureEMCalContainersFromYAMLConfig(baseNameWithContainer, containerName,
+                                       partCont, fYAMLConfig, taskName);
+
+    // Track specific properties
+    AliTrackContainer * trackCont = dynamic_cast<AliTrackContainer *>(partCont);
+    if (trackCont) {
+      AliAnalysisTaskEmcalJetHUtils::ConfigureTrackContainersFromYAMLConfig(baseNameWithContainer, trackCont,
+                                         fYAMLConfig, taskName);
+    }
+
+    AliDebugStream(2) << "Particle/track container: " << partCont->GetName()
+             << ", array class: " << partCont->GetClassName() << ", collection name: \""
+             << partCont->GetArrayName() << "\", min pt: " << partCont->GetMinPt() << "\n";
+  }
+}
+
+/**
+ * Setup cluster containers based on the provided YAML configuration.
+ */
+void AliAnalysisTaskEmcalJetHPerformance::SetupClusterContainersFromYAMLConfig()
+{
+  std::string baseName = "clusters";
+  // Retrieve the node just to see if it is exists. If so, then we can proceed
+  YAML::Node node;
+  fYAMLConfig.GetProperty(baseName, node);
+  // Iterate over all of the cluster containers
+  for (const auto & n : node) {
+    std::string containerName = n.first.as<std::string>();
+
+    // Create the container.
+    std::string branchName = "";
+    fYAMLConfig.GetProperty({baseName, containerName, "branchName"}, branchName, true);
+    if (branchName == "usedefault") {
+      branchName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kCluster);
+    }
+    AliClusterContainer * clusterCont = this->AddClusterContainer(branchName.c_str());
+
+    // Configure the container
+    // Need to include the namespace so that AliDebug will work properly...
+    std::string taskName = "PWGJE::EMCALJetTasks::";
+    taskName += GetName();
+    std::vector<std::string> baseNameWithContainer = { baseName, containerName };
+    AliAnalysisTaskEmcalJetHUtils::ConfigureEMCalContainersFromYAMLConfig(baseNameWithContainer, containerName,
+                                       clusterCont, fYAMLConfig, taskName);
+
+    // Cluster specific properties
+    AliAnalysisTaskEmcalJetHUtils::ConfigureClusterContainersFromYAMLConfig(baseNameWithContainer, clusterCont, fYAMLConfig, taskName);
+
+    AliDebugStream(2) << "Cluster container: " << clusterCont->GetName()
+             << ", array class: " << clusterCont->GetClassName() << ", collection name: \""
+             << clusterCont->GetArrayName() << "\", min pt: " << clusterCont->GetMinPt() << "\n";
   }
 }
 
@@ -227,6 +366,8 @@ bool AliAnalysisTaskEmcalJetHPerformance::Initialize()
   AliDebugStream(2) << "Configuring task from the YAML configuration.\n";
   RetrieveAndSetTaskPropertiesFromYAMLConfig();
   SetupJetContainersFromYAMLConfig();
+  SetupParticleContainersFromYAMLConfig();
+  SetupClusterContainersFromYAMLConfig();
   AliDebugStream(2) << "Finished configuring via the YAML configuration.\n";
 
   // Print the results of the initialization
@@ -322,14 +463,17 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupCellQAHistsWithPrefix(const std::
  */
 void AliAnalysisTaskEmcalJetHPerformance::SetupCellQAHists()
 {
-  std::string prefix = "QA/";
-  prefix += fCaloCellsName.Data();
-  SetupCellQAHistsWithPrefix(prefix);
-  auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
-  if (embeddingInstance) {
-    prefix = "QA/embedding/";
-    prefix += fEmbeddedCellsName;
+  // Only create and fill the cells QA if we've setup the cells name.
+  if (fCaloCellsName != "") {
+    std::string prefix = "QA/";
+    prefix += fCaloCellsName.Data();
     SetupCellQAHistsWithPrefix(prefix);
+    auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+    if (embeddingInstance) {
+      prefix = "QA/embedding/";
+      prefix += fEmbeddedCellsName;
+      SetupCellQAHistsWithPrefix(prefix);
+    }
   }
 }
 
@@ -339,25 +483,79 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupCellQAHists()
 void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
 {
   // Cell level QA
-  SetupCellQAHists();
+  if (fCreateCellQAHists) {
+    SetupCellQAHists();
+  }
+
+  // Tracks
+  AliTrackContainer * trackCont = nullptr;
+  TIter nextTrackColl(&fParticleCollArray);
+  while ((trackCont = static_cast<AliTrackContainer*>(nextTrackColl()))) {
+    std::string name = "QA/%s/fHistTrackPtEtaPhi";
+    std::string title = name + ";#it{p}_{T} (GeV);#eta;#phi";
+    fHistManager.CreateTH3(TString::Format(name.c_str(), trackCont->GetName()),
+                TString::Format(title.c_str(), trackCont-> GetName()), 50, 0, 25, 40, -1, 1, 72, 0,
+                TMath::TwoPi());
+    name = "QA/%s/fHistTrackPtEtaPhiEfficiencyCorrected";
+    title = name + ";#it{p}_{T} (GeV);#eta;#phi";
+    fHistManager.CreateTH3(TString::Format(name.c_str(), trackCont->GetName()),
+                TString::Format(title.c_str(), trackCont-> GetName()), 50, 0, 25, 40, -1, 1, 72, 0,
+                TMath::TwoPi());
+  }
 
   // Clusters
-  AliEmcalContainer* cont = 0;
+  AliClusterContainer * clusterCont = nullptr;
   TIter nextClusColl(&fClusterCollArray);
-  while ((cont = static_cast<AliClusterContainer*>(nextClusColl()))) {
+  while ((clusterCont = static_cast<AliClusterContainer*>(nextClusColl()))) {
     // Cluster time vs energy
     std::string name = "QA/%s/fHistClusterEnergyVsTime";
-    std::string title = name + ";E_{cluster} (GeV);t_{cluster} (s)";
-    fHistManager.CreateTH2(TString::Format(name.c_str(), cont->GetName()), TString::Format(title.c_str(), cont->GetName()), 1000, 0, 100, 300, -300e-9, 300e-9);
+    std::string title = name + ";#it{E}_{cluster} (GeV);t_{cluster} (s);counts";
+    fHistManager.CreateTH2(TString::Format(name.c_str(), clusterCont->GetName()),
+                TString::Format(title.c_str(), clusterCont->GetName()), 1000, 0, 100, 300, -300e-9,
+                300e-9);
+    // Hadronically corrected energy (which is usually what we're using)
+    name = "QA/%s/fHistClusterHadCorrEnergy";
+    title = name + ";#it{E}_{cluster}^{had.corr.} (GeV);counts";
+    fHistManager.CreateTH1(TString::Format(name.c_str(), clusterCont->GetName()), TString::Format(title.c_str(), clusterCont->GetName()), 200, 0, 100);
+    // Cluster eta-phi
+    name = "QA/%s/fHistClusterEtaPhi";
+    title = name + ";#eta_{cluster};#phi_{cluster};counts";
+    fHistManager.CreateTH2(TString::Format(name.c_str(), clusterCont->GetName()), TString::Format(title.c_str(), clusterCont->GetName()), 28, -0.7, 0.7, 72, 0, TMath::TwoPi());
   }
 
   // Jets
+  AliJetContainer * jetCont = nullptr;
   TIter nextJetColl(&fJetCollArray);
-  while ((cont = static_cast<AliJetContainer*>(nextJetColl()))) {
+  while ((jetCont = static_cast<AliJetContainer*>(nextJetColl()))) {
     // Jet pT
     std::string name = "QA/%s/fHistJetPt";
     std::string title = name + ";p_{T} (GeV)";
-    fHistManager.CreateTH1(TString::Format(name.c_str(), cont->GetName()), TString::Format(title.c_str(), cont->GetName()), 500, 0, 250);
+    fHistManager.CreateTH1(TString::Format(name.c_str(), jetCont->GetName()), TString::Format(title.c_str(), jetCont->GetName()), 600, -50, 250);
+  }
+
+  // Event plane resolution
+  // Only enable if the Qn vector corrections task is available.
+  auto qnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections*>(
+   AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+  if (qnVectorTask) {
+    // Setup the Qn corrections manager.
+    fFlowQnVectorManager = qnVectorTask->GetAliQnCorrectionsManager();
+    // Then setup the resolution histograms.
+    // Resolution are calculated via TProfiles as a function of centrality.
+    std::map<std::string, std::string> resolutionNamesToTitles = {
+      std::make_pair("VZERO", R"(VZERO: $<\cos(R * (\Psi_{\mathrm{TPC_{Pos}}} - \Psi_{\mathrm{TPC_{Neg}}}))>$)"),
+      std::make_pair("TPC_Pos", R"(TPC $\eta$ > 0: $<\cos(R * (\Psi_{\mathrm{V0M}} - \Psi_{\mathrm{TPC_{Neg}}}))>$)"),
+      std::make_pair("TPC_Neg", R"(TPC $\eta$ < 0: $<\cos(R * (\Psi_{\mathrm{V0M}} - \Psi_{\mathrm{TPC_{Pos}}}))>$)")
+    };
+    for (const auto& nameAndTitle: resolutionNamesToTitles) {
+      for (unsigned int R = 2; R < 9; R++) {
+        std::string name = "QA/eventPlaneRes/%s/R%i";
+        std::string title = "%s event plane res;Centrality (%%);R_{%i}";
+        fHistManager.CreateTProfile(TString::Format(name.c_str(), nameAndTitle.first.c_str(), R),
+                      TString::Format(title.c_str(), nameAndTitle.second.c_str(), R),
+                      10, 0, 100);
+      }
+    }
   }
 }
 
@@ -451,7 +649,6 @@ Bool_t AliAnalysisTaskEmcalJetHPerformance::Run()
  */
 void AliAnalysisTaskEmcalJetHPerformance::QAHists()
 {
-  // No additional processing is necessary
   // Continue on to filling the histograms
   FillQAHists();
 }
@@ -552,7 +749,23 @@ void AliAnalysisTaskEmcalJetHPerformance::FillCellQAHists()
  */
 void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
 {
-  FillCellQAHists();
+  if (fCreateCellQAHists) {
+    FillCellQAHists();
+  }
+
+  // Tracks
+  AliTrackContainer * trackCont = 0;
+  TIter nextTrackColl(&fParticleCollArray);
+  while ((trackCont = static_cast<AliTrackContainer*>(nextTrackColl()))) {
+    for (auto track : trackCont->accepted())
+    {
+      fHistManager.FillTH3(TString::Format("QA/%s/fHistTrackPtEtaPhi", trackCont->GetName()), track->Pt(),
+                 track->Eta(), track->Phi());
+      fHistManager.FillTH3(TString::Format("QA/%s/fHistTrackPtEtaPhiEfficiencyCorrected", trackCont->GetName()),
+                 track->Pt(), track->Eta(), track->Phi(),
+                 DetermineTrackingEfficiency(track->Pt(), track->Eta()));
+    }
+  }
 
   // Clusters
   AliClusterContainer* clusCont = 0;
@@ -561,19 +774,59 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
   while ((clusCont = static_cast<AliClusterContainer*>(nextClusColl()))) {
     for (auto clusIter : clusCont->accepted_momentum())
     {
+      AliTLorentzVector c = clusIter.first;
       cluster = clusIter.second;
       // Intentionally plotting against raw energy
       fHistManager.FillTH2(TString::Format("QA/%s/fHistClusterEnergyVsTime", clusCont->GetName()), cluster->E(), cluster->GetTOF());
+      // Hadronically corrected energy (which is usually what we're using)
+      fHistManager.FillTH1(TString::Format("QA/%s/fHistClusterHadCorrEnergy", clusCont->GetName()),
+                 cluster->GetHadCorrEnergy());
+      fHistManager.FillTH2(TString::Format("QA/%s/fHistClusterEtaPhi", clusCont->GetName()), c.Eta(),
+                 c.Phi_0_2pi());
     }
   }
 
   // Jets
   AliJetContainer * jetCont = 0;
+  double jetPt = 0;
   TIter nextJetColl(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(nextJetColl()))) {
+    double rhoVal = jetCont->GetRhoVal();
     for (auto jet : jetCont->accepted())
     {
-      fHistManager.FillTH1(TString::Format("QA/%s/fHistJetPt", jetCont->GetName()), jet->Pt());
+      jetPt = AliAnalysisTaskEmcalJetHUtils::GetJetPt(jet, rhoVal);
+      fHistManager.FillTH1(TString::Format("QA/%s/fHistJetPt", jetCont->GetName()), jetPt);
+    }
+  }
+
+  // Event plane resolution
+  // Only attempt to fill the histogram if the corrected Qn vectors are available.
+  if (fFlowQnVectorManager) {
+    // Retrieve the Qn vectors
+    const AliQnCorrectionsQnVector * vzeroQnVector = fFlowQnVectorManager->GetDetectorQnVector("VZEROQoverM");
+    const AliQnCorrectionsQnVector * tpcPosQnVector = fFlowQnVectorManager->GetDetectorQnVector("TPCPosEtaQoverM");
+    const AliQnCorrectionsQnVector * tpcNegQnVector = fFlowQnVectorManager->GetDetectorQnVector("TPCNegEtaQoverM");
+    if (vzeroQnVector == nullptr || tpcPosQnVector == nullptr || tpcNegQnVector == nullptr) {
+      AliWarningStream() << "Q vector unavailable. Skipping.\n";
+    }
+    else {
+      // We need the centrality bin, but the bin provided by the base class isn't that fine grained
+      // (and may cause problems elsewhere if it is). So we just calculate the value here.
+      std::string name = "QA/eventPlaneRes/%s/R%i";
+      // The resolution is calculated by changing the leading term, but it is all with respect
+      // to the same harmonic. We measure with respect to the second order harmonic, so we retrieve
+      // that event plane.
+      double vzero = vzeroQnVector->EventPlane(2);
+      double tpcPos = tpcPosQnVector->EventPlane(2);
+      double tpcNeg = tpcNegQnVector->EventPlane(2);
+      for (unsigned int R = 2; R < 9; R++) {
+        fHistManager.FillProfile(TString::Format(name.c_str(), "VZERO", R), fCent,
+                     std::cos(R * (tpcPos - tpcNeg)));
+        fHistManager.FillProfile(TString::Format(name.c_str(), "TPC_Pos", R), fCent,
+                     std::cos(R * (vzero - tpcNeg)));
+        fHistManager.FillProfile(TString::Format(name.c_str(), "TPC_Neg", R), fCent,
+                     std::cos(R * (vzero - tpcPos)));
+      }
     }
   }
 
@@ -596,6 +849,8 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
   AliJetContainer * jetsHybrid = GetJetContainer("hybridLevelJets");
   AliJetContainer * jetsDetLevel = GetJetContainer("detLevelJets");
   AliJetContainer * jetsPartLevel = GetJetContainer("partLevelJets");
+  // NOTE: Defaults to 0 if rho was not specified.
+  double rhoHybrid = jetsHybrid->GetRhoVal();
   if (!jetsHybrid) {
     AliErrorStream() << "Could not retrieve hybrid jet collection.\n";
     return;
@@ -633,18 +888,21 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
       AliDebugStream(4) << "Jet passed momentum fraction cut with value of " << sharedFraction << "\n";
     }
 
-    // Apply additional selection to jet 2
-    // TODO: Should we apply acceptance criteria to jet 2 here?
+    // NOTE: We apply no explicit event selection to jet 2 because the matching in the tagger
+    // only matches jets which are accepted.
 
-    // Get MC level jet
+    // Determine the jet to use to fill the response
+    // The jet that is passed may be the embedded detector level (for two stage matching), or it may
+    // be the embedded particle level (for direct matching).
     AliEmcalJet * jetToPass = 0;
     if (fResponseFromThreeJetCollections) {
+      // Retrieve the MC level jet
       AliEmcalJet * jet3 = jet2->ClosestJet();
-
-      // Accept jet 3
       UInt_t rejectionReason = 0;
       if (!jetsPartLevel->AcceptJet(jet3, rejectionReason)) {
-        // TODO: Store rejection reasons
+        // NOTE: This shouldn't ever happen because the tagger applies acceptance
+        //       cuts when matching. However, we keep the check here for good measure.
+        // NOTE: Could store rejection reasons if needed with below:
         //fHistRejectionReason2->Fill(jets2->GetRejectionReasonBitPosition(rejectionReason), jet2->Pt());
         continue;
       }
@@ -653,17 +911,17 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
       AliDebugStream(4) << "jet3 address: " << jet3 << "\n";
 
       // Use for the response
-      AliDebugStream(4) << "Using part level jet for response\n";
+      AliDebugStream(4) << "Using part level jet for response (ie. two stage matching)\n";
       jetToPass = jet3;
     }
     else {
       // Use for the response
-      AliDebugStream(4) << "Using det level jet for response\n";
+      AliDebugStream(4) << "Using one stage matching for response\n";
       jetToPass = jet2;
     }
 
     // Fill response
-    FillResponseMatrix(jet1, jetToPass);
+    FillResponseMatrix(jet1, jetToPass, rhoHybrid);
   }
 
 }
@@ -671,7 +929,7 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
 /**
  * If given multiple jet collections, handle creating a reasponse matrix
  */
-void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2)
+void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2, const double jet1Rho)
 {
   if (!jet1 || !jet2) {
     AliErrorStream() << "Null jet passed to fill response matrix";
@@ -682,8 +940,10 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
   AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
   // Create map from jetNumber to jet and initialize the objects
   std::map<unsigned int, ResponseMatrixFillWrapper> jetNumberToJet = {
-    std::make_pair(1, CreateResponseMatrixFillWrapper(jet1)),
-    std::make_pair(2, CreateResponseMatrixFillWrapper(jet2))
+    std::make_pair(1, CreateResponseMatrixFillWrapper(jet1, jet1Rho)),
+    // We would never want to rho subtract the second jet, regardless of whether it's external
+    // detector level or particle level.
+    std::make_pair(2, CreateResponseMatrixFillWrapper(jet2, 0))
   };
 
   // Fill histograms
@@ -715,14 +975,14 @@ void AliAnalysisTaskEmcalJetHPerformance::FillResponseMatrix(AliEmcalJet * jet1,
 /**
  *
  */
-AliAnalysisTaskEmcalJetHPerformance::ResponseMatrixFillWrapper AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrixFillWrapper(AliEmcalJet * jet) const
+AliAnalysisTaskEmcalJetHPerformance::ResponseMatrixFillWrapper AliAnalysisTaskEmcalJetHPerformance::CreateResponseMatrixFillWrapper(AliEmcalJet * jet, const double rho) const
 {
   ResponseMatrixFillWrapper wrapper;
   if (!jet) {
     AliErrorStream() << "Must pass valid jet to create object.\n";
     return wrapper;
   }
-  wrapper.fPt = jet->Pt();
+  wrapper.fPt = AliAnalysisTaskEmcalJetHUtils::GetJetPt(jet, rho);
   wrapper.fArea = jet->Area();
   wrapper.fPhi = jet->Phi();
   wrapper.fDistance = jet->ClosestJetDistance();
@@ -766,10 +1026,9 @@ AliAnalysisTaskEmcalJetHPerformance * AliAnalysisTaskEmcalJetHPerformance::AddTa
 
   // Create containers for input/output
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer * outputContainer = mgr->CreateContainer(task->GetName(),
-                TList::Class(),
-                AliAnalysisManager::kOutputContainer,
-							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer* outputContainer =
+   mgr->CreateContainer(task->GetName(), TList::Class(), AliAnalysisManager::kOutputContainer,
+              Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectOutput(task, 1, outputContainer);
 
   return task;
@@ -785,16 +1044,34 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
   std::stringstream tempSS;
   tempSS << std::boolalpha;
   tempSS << "Recycle unused embedded events: " << fRecycleUnusedEmbeddedEventsMode << "\n";
+  tempSS << "Particle collections:\n";
+  TIter nextParticleCont(&fParticleCollArray);
+  AliParticleContainer * particleCont;
+  while ((particleCont = static_cast<AliParticleContainer *>(nextParticleCont()))) {
+    tempSS << "\t" << particleCont->GetName() << ": " << particleCont->GetArrayName() << "\n";
+  }
+  tempSS << "Cluster collections:\n";
+  TIter nextClusterCont(&fClusterCollArray);
+  AliClusterContainer * clusterCont;
+  while ((clusterCont = static_cast<AliClusterContainer *>(nextClusterCont()))) {
+    tempSS << "\t" << clusterCont->GetName() << ": " << clusterCont->GetArrayName() << "\n";
+  }
   tempSS << "Jet collections:\n";
-  TIter next(&fJetCollArray);
+  TIter nextJetCont(&fJetCollArray);
   AliJetContainer * jetCont;
-  while ((jetCont = static_cast<AliJetContainer *>(next()))) {
+  while ((jetCont = static_cast<AliJetContainer *>(nextJetCont()))) {
     tempSS << "\t" << jetCont->GetName() << ": " << jetCont->GetArrayName() << "\n";
   }
   tempSS << "AliEventCuts\n";
   tempSS << "\tEnabled: " << !fUseBuiltinEventSelection << "\n";
+  tempSS << "Efficiency\n";
+  tempSS << "\tSingle track efficiency identifier: " << fEfficiencyPeriodIdentifier << "\n";
   tempSS << "QA Hists:\n";
   tempSS << "\tEnabled: " << fCreateQAHists << "\n";
+  tempSS << "\tCreate cell QA hists: " << fCreateCellQAHists << "\n";
+  // Use whether the pointer as null as a proxy. It's not ideal because it's not fully initialized
+  // until after UserCreateOutputObjects(). But it's good enough for these purposes.
+  tempSS << "\tCalculate event plane resolution (proxy - may not be accurate): " << (fFlowQnVectorManager != nullptr) << "\n";
   tempSS << "Response matrix:\n";
   tempSS << "\tEnabled: " << fCreateResponseMatrix << "\n";
   tempSS << "\tConstruct response from 3 jet collections: " << fResponseFromThreeJetCollections << "\n";
@@ -861,8 +1138,13 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWG
   //swap(first.fHistManager, second.fHistManager); // Skip here, because the THistManager copy constructor is private.
   //swap(first.fEmbeddingQA, second.fEmbeddingQA); // Skip here, because the THistManager copy constructor is private.
   swap(first.fCreateQAHists, second.fCreateQAHists);
+  swap(first.fCreateCellQAHists, second.fCreateCellQAHists);
   swap(first.fCreateResponseMatrix, second.fCreateResponseMatrix);
   swap(first.fEmbeddedCellsName, second.fEmbeddedCellsName);
+  swap(first.fPreviousEventTrigger, second.fPreviousEventTrigger);
+  swap(first.fPreviousEmbeddedEventSelected, second.fPreviousEmbeddedEventSelected);
+  swap(first.fEfficiencyPeriodIdentifier, second.fEfficiencyPeriodIdentifier);
+  swap(first.fFlowQnVectorManager, second.fFlowQnVectorManager);
   swap(first.fResponseMatrixFillMap, second.fResponseMatrixFillMap);
   swap(first.fResponseFromThreeJetCollections, second.fResponseFromThreeJetCollections);
   swap(first.fMinFractionShared, second.fMinFractionShared);

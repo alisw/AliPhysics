@@ -1,13 +1,16 @@
-class AliAnalysisTaskSELc2V0bachelorTMVAApp;
+class AliAnalysisTaskSELc2V0bachelorTMVAAppMine;
 
 AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars, TString library = "_6_12", TString finname="Lc2V0bachelorCuts.root",
-								    Float_t ptMin=0, Float_t ptMax=24,
-								    Bool_t theMCon=kTRUE,
-								    Bool_t fillTree=kFALSE,
-								    Bool_t onTheFly=kFALSE,
-								    Bool_t keepingOnlyHIJINGbkd=kFALSE,
-								    TString suffixName="",
-								    Bool_t debugFlag = kFALSE){
+									Float_t ptMin=0, Float_t ptMax=24,
+									Bool_t theMCon=kTRUE,
+									Bool_t fillTree=kFALSE,
+									Bool_t onTheFly=kFALSE,
+									Bool_t keepingOnlyHIJINGbkd=kFALSE,
+									TString suffixName="",
+									Bool_t debugFlag = kFALSE,
+									Bool_t useXmlWeightsFile = kTRUE,
+									Bool_t useWeightsLibrary = kFALSE,
+									TString xmlWeightsFile = "$ALICE_PHYSICS/PWGHF/vertexingHF/TMVA/LHC19c2a_TMVAClassification_BDT_2_4_noP.weights.xml"){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -56,11 +59,20 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
     return NULL;
   }
   
-  TString namesTMVAvars;
+  Int_t nvarsSpectators = 0;
+  TString namesTMVAvars, namesTMVAvarsSpectators;
   if (nvars == 14) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,bachelorP,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka,bachTPCmom";
-  else if (nvars == 11) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
+  else if (nvars == 11) {
+    namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
+    nvarsSpectators = 15;
+    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,massLc2Lambdapi,massLambda,massLambdaBar,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,dcaV0neg,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
+  }
   else if (nvars == 10) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
-  else if (nvars == 7) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
+  else if (nvars == 7) {
+    namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
+    nvarsSpectators = 15;
+    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,massLc2Lambdapi,massLambda,massLambdaBar,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,dcaV0neg,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
+  }
 
   //CREATE THE TASK
   printf("CREATE TASK\n");
@@ -71,11 +83,20 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
   task->SetTMVAlibName("libvertexingHFTMVA.so");
   task->SetTMVAlibPtBin(library);
   task->SetFillTree(fillTree);
+
+  Printf("************* fillTree = %d", (Int_t)fillTree);
   task->SetMC(theMCon);
   task->SetKeepingOnlyHIJINGBkg(keepingOnlyHIJINGbkd);
   task->SetK0sAnalysis(kTRUE);
   task->SetDebugLevel(0);
   task->SetDebugHistograms(debugFlag);
+  // TMVA reader
+  task->SetNVarsSpectators(nvarsSpectators);
+  task->SetNamesTMVAVariablesSpectators(namesTMVAvarsSpectators);
+  task->SetUseXmlWeightsFile(useXmlWeightsFile);
+  task->SetUseWeightsLibrary(useWeightsLibrary);
+  task->SetXmlWeightsFile(TString(gSystem->ExpandPathName(Form("%s", xmlWeightsFile.Data()))));
+  
   mgr->AddTask(task);
   
   // Create and connect containers for input/output  

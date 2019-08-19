@@ -3,6 +3,7 @@
 
 #include "vector"
 #include "AliAnalysisTaskSE.h"
+
 using namespace std;
 
 class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
@@ -12,6 +13,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     virtual ~AliAnalysisTaskReducedTreeDS();
     void SetMinPtCut(Float_t min){fMinPtCut = min;}
     void SetMaxEtaCut(Float_t max){fMaxEtaCut = max;}
+    void SetMinTPCNsigmaEleCut(Float_t min){fMinTPCNsigmaEleCut = min;}
     void SetMaxTPCNsigmaEleCut(Float_t max){fMaxTPCNsigmaEleCut = max;}
 
   protected:
@@ -19,6 +21,15 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
     virtual void ProcessMC(Option_t *option);
+
+    void FillTrackInfo();
+
+    void FillV0InfoESD();
+    void FillV0InfoAOD();
+
+    void FillMCInfoESD();
+    void FillMCInfoAOD();
+
     Double_t PsiPair(AliAODv0 *v0, Float_t Bz);
     Double_t PhivPair(AliAODv0 *v0, Float_t Bz);
     void ExtractQnVectors();
@@ -31,24 +42,55 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
         return;
       }
     }
-    Bool_t IsPrimaryElectron(AliAODMCParticle *p);
-    Bool_t IsLF(AliAODMCParticle *parent);
-    Bool_t IsHF(AliAODMCParticle *parent);
-    Bool_t IsEWBoson(AliAODMCParticle *parent);//parent is electro-weak boson, i.e. W/Z, gamma
+    Bool_t IsPrimaryElectron(AliVParticle *p);
+    Bool_t IsLF(AliVParticle *p);
+    Bool_t IsSemileptonicDecayFromHF(AliVParticle *p);
+    Bool_t IsEWBoson(AliVParticle *p);//parent is electro-weak boson, i.e. W/Z, gamma
+
+    Bool_t IsLFESD(AliVParticle *parent);
+    Bool_t IsSemileptonicDecayFromHFESD(AliVParticle *parent);
+
+    Int_t GetFirstMother(AliVParticle *p){
+      Int_t first_mother_index     = p->GetMother();
+      Int_t first_mother_index_tmp = p->GetMother();
+
+      while(first_mother_index_tmp > -1){
+        first_mother_index = first_mother_index_tmp;
+        AliVParticle *fmp = (AliVParticle*)fMCEvent->GetTrack(first_mother_index);
+        first_mother_index_tmp = fmp->GetMother();
+      }//end of mother loop
+      return first_mother_index;
+    }
 
     void ClearVectorElement();
     void ClearVectorMemory();
 
+    Float_t Median(vector<Float_t> vec){
+      size_t size = vec.size();
+      if(size == 0) return 0;
+
+      sort(vec.begin(), vec.end());
+      if(size%2 == 0) return (vec[size/2 - 1] + vec[size/2]) / 2.;
+      else return vec[size/2];
+    }
+
+    AliKFParticle *CreateMotherParticle(const AliVTrack* const pdaughter, const AliVTrack* const ndaughter, Int_t pspec, Int_t nspec) const;
+
   protected:
     Float_t fMinPtCut;
     Float_t fMaxEtaCut;
+    Float_t fMinTPCNsigmaEleCut;
     Float_t fMaxTPCNsigmaEleCut;
+    AliESDtrackCuts *fESDtrackCutsGlobalNoDCA;
     TTree *fTree;
     AliPIDResponse *fPIDResponse;     //! PID response object
     AliQnCorrectionsManager *fFlowQnVectorMgr;
     AliVEvent *fEvent; 
     AliESDEvent *fESDEvent;
     AliAODEvent *fAODEvent;
+    AliMCEvent *fMCEvent;
+    Bool_t fHasMC;
+    AliTimeRangeCut fTimeRangeCut;
     TClonesArray *fMCArray;
     Int_t fRunNumber;
     Float_t fMagneticField; //Bz in kG
@@ -66,7 +108,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Int_t fNTPCCluster;
     Int_t fNTrackTPCout;
     Int_t fNTrackTPC;//number of TPC track with kITSout
-    Int_t fNHybridTrack08;
+    Int_t fNITSCluster[2];
     Int_t fNSPDTracklet05;//|eta| < 0.5
     Int_t fNSPDTracklet10;//|eta| < 1.0
     Float_t fV0AMultiplicity;
@@ -75,6 +117,9 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Bool_t fIsPileupFromSPDInMultBins;
     Bool_t fIsPileupMV;//SPD multi vertexer
 
+    Int_t fTPCpileupMultiplicity[2];
+    Float_t fTPCpileupZ[2];
+
     Bool_t fIskINT7;
     Bool_t fIskCentral;
     Bool_t fIskSemiCentral;
@@ -82,6 +127,8 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Bool_t fIskHighMult;
     Bool_t fIskHighMultV0;
     Bool_t fIskHighMultSPD;
+
+    Bool_t fIsBadTimeRangeTPC;
 
     Bool_t fIsQnTPCAvailable;
     Float_t fQ2vectorTPC[2];//Q vector for event plane of 2nd harmonics
@@ -134,30 +181,29 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     //MC track info
     vector<vector<Float_t>>fTrackMCMomentum;
     vector<vector<Float_t>>fTrackMCProdVtx;//production vertex in MC for track
+    vector<Int_t>fTrackMCGeneratorIndex;
     vector<Int_t>fTrackMCIndex;
     vector<Int_t>fTrackMCPdgCode;
     vector<Int_t>fTrackMCMotherIndex;
     vector<Int_t>fTrackMCMotherPdgCode;
     vector<Int_t>fTrackMCFirstMotherIndex;
     vector<Int_t>fTrackMCFirstMotherPdgCode;
+    vector<vector<Float_t>> fTrackMCFirstMotherMomentum;
 
     //V0 info
-    vector<vector<Float_t>> fV0Momentum;//N
     vector<vector<vector<Float_t>>> fV0legMomentum;//N x 2 x 3
     vector<vector<Float_t>> fV0legPin;//N x 2
     vector<Float_t> fV0Lxy;//N 
     vector<Float_t> fV0alpha;//N 
     vector<Float_t> fV0qT;//N 
     vector<Float_t> fV0DCA;//N //DCA between daughters
-    vector<Float_t> fV0PsiPair;//N //Angle cut w.r.t. to magnetic field
-    vector<Float_t> fV0PhivPair;//N
     vector<Float_t> fV0PointingAngle;//N
-    vector<Float_t> fV0Chi2;//N
-    vector<vector<Float_t>> fV0Mass;//N x 4//K0S Lambda Anti-Lambda, Gamma
+    vector<vector<Float_t>> fV0Chi2;//N x 4//Gamma K0S Lambda Anti-Lambda
+    vector<vector<Float_t>> fV0Mass;//N x 4//Gamma K0S Lambda Anti-Lambda
     vector<vector<Float_t>> fV0legDCAxy;//N x 2
     vector<vector<Float_t>> fV0legDCAz;//N x 2
-    vector<vector<vector<Bool_t>>> fV0PointOnITSLayer;//N x 2 x 6
-    vector<vector<vector<Bool_t>>> fV0SharedPointOnITSLayer;//N x 2 x 6
+    vector<vector<vector<Bool_t>>> fV0legPointOnITSLayer;//N x 2 x 6
+    vector<vector<vector<Bool_t>>> fV0legSharedPointOnITSLayer;//N x 2 x 6
     vector<vector<Float_t>> fV0legTPCNsigmaEl;//N x 2//for post calibration
     vector<vector<Float_t>> fV0legTPCNsigmaPi;//N x 2//for post calibration
     vector<vector<Float_t>> fV0legTPCNsigmaKa;//N x 2//for post calibration
@@ -173,30 +219,35 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     vector<vector<Bool_t>>  fV0legIsTOFAvailable;//N x 2//for post calibration
 
     //MC V0 info //be carefull, there is no TRUE V0 object!
-    vector<vector<vector<Float_t>>> fV0MClegMomentum;//N x 2
+    vector<vector<vector<Float_t>>> fV0MClegMomentum;//N x 2 x 3
     vector<vector<vector<Float_t>>> fV0MClegProdVtx;//N x 2
+    vector<vector<Int_t>> fV0MClegGeneratorIndex;//N x 2
     vector<vector<Int_t>> fV0MClegIndex;//N x 2
     vector<vector<Int_t>> fV0MClegPdgCode;//N x 2
     vector<vector<Int_t>> fV0MClegMotherIndex;//N x 2
     vector<vector<Int_t>> fV0MClegMotherPdgCode;//N x 2
     vector<vector<Int_t>> fV0MClegFirstMotherIndex;//N x 2
     vector<vector<Int_t>> fV0MClegFirstMotherPdgCode;//N x 2
+    vector<vector<vector<Float_t>>> fV0MClegFirstMotherMomentum;//N x 2 x 3
 
     //MC variables for true electrons
     Float_t fMCVertex[3];//true vertex in MC
     vector<vector<Float_t>> fMCMomentum;
     vector<vector<Float_t>> fMCProdVtx;//production vertex of true electrons
+    vector<Int_t> fMCGeneratorIndex;
+    vector<TString> fMCGeneratorName;
     vector<Int_t> fMCIndex;
     vector<Int_t> fMCPdgCode;
     vector<Int_t> fMCMotherIndex;
     vector<Int_t> fMCMotherPdgCode;
     vector<Int_t> fMCFirstMotherIndex;
     vector<Int_t> fMCFirstMotherPdgCode;
+    vector<vector<Float_t>> fMCFirstMotherMomentum;
 
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 6);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 12);
 
 };
 

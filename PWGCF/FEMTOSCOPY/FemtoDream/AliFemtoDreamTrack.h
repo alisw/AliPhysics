@@ -23,7 +23,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   void SetTrack(AliESDtrack *track, AliMCEvent *mcEvent = nullptr,
                 const int multiplicity = -1, const bool TPCOnlyTrack = true,
                 const bool IsOmegaTrack = false);
-  UInt_t GetilterMap() const {
+  UInt_t GetFilterMap() const {
     return fFilterMap;
   }
   ;

@@ -183,6 +183,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
   fJJetJtAnalysis->SetMC(fDoMC);
   if(fDoLog) fJJetJtAnalysis->SetLog(fDoLog);
   fJJetJtAnalysis->SetLeadingJets(fLeadingJets);
+  fJJetJtAnalysis->SetMaxDeltaRCorr(fmaxDeltaRCorr);
   fJJetJtAnalysis->SetSide(fSide);
   fJJetJtAnalysis->SetnR(fJetTask->GetnR());
   fJJetJtAnalysis->Setnkt(fJetTask->Getnkt());
@@ -241,20 +242,26 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
   float fcent = -999;
   if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
     if(fDebug > 6) cout << fRunTable->GetPeriodName() << endl;
-    if(fSelector != ""){
-      fcent = sel->GetMultiplicityPercentile(fSelector);
-    }else{
-      if(fRunTable->IsPA() && !(fRunTable->GetPeriodName().BeginsWith("LHC13"))){
-        sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
-        if (sel) {
+    if(fRunTable->IsPA() && !(fRunTable->GetPeriodName().BeginsWith("LHC13"))){
+      sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
+      if (sel) {
+        if(fSelector != ""){
+          fcent = sel->GetMultiplicityPercentile(fSelector);
+        }else{
           fcent = sel->GetMultiplicityPercentile("V0A");
         }
-        else{
-          if(fDebug > 2) cout << "Sel not found" << endl;
-        }
+      }
+      else{
+        if(fDebug > 2) cout << "Sel not found" << endl;
+      }
+    }
+    else{
+      AliCentrality *cent = event->GetCentrality();
+      if( ! cent ) return;
+      if(fSelector != ""){
+          fcent = cent->GetCentralityPercentile(fSelector);
+
       }else{
-        AliCentrality *cent = event->GetCentrality();
-        if( ! cent ) return;
         if(fRunTable->GetPeriodName().BeginsWith("LHC13")){
           fcent = cent->GetCentralityPercentile("V0A");
         }else{

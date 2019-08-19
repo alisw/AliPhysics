@@ -10,6 +10,7 @@
 ClassImp(AliFemtoDreamPairCleaner)
 AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner()
     : fMinimalBooking(false),
+      fCounter(0),
       fParticles(),
       fHists(0) {
 }
@@ -17,6 +18,7 @@ AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner()
 AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner(
     const AliFemtoDreamPairCleaner& cleaner)
     : fMinimalBooking(cleaner.fMinimalBooking),
+      fCounter(0),
       fParticles(),
       fHists(cleaner.fHists) {
 }
@@ -25,6 +27,7 @@ AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner(int nTrackDecayChecks,
                                                    int nDecayDecayChecks,
                                                    bool MinimalBooking)
     : fMinimalBooking(MinimalBooking),
+      fCounter(0),
       fParticles(),
       fHists(nullptr) {
   if (!fMinimalBooking) {
@@ -45,6 +48,7 @@ AliFemtoDreamPairCleaner& AliFemtoDreamPairCleaner::operator=(
     return *this;
   }
   this->fMinimalBooking = cleaner.fMinimalBooking;
+  this->fCounter = cleaner.fCounter;
   this->fParticles = cleaner.fParticles;
   this->fHists = cleaner.fHists;
   return *this;
@@ -158,18 +162,17 @@ void AliFemtoDreamPairCleaner::CleanDecay(
 
 void AliFemtoDreamPairCleaner::StoreParticle(
     std::vector<AliFemtoDreamBasePart> Particles) {
-  int counter = 0;
   std::vector<AliFemtoDreamBasePart> tmpParticles;
   for (auto itPart : Particles) {
     if (itPart.UseParticle()) {
       tmpParticles.push_back(itPart);
-    } else {
-      counter++;
+      fCounter++;
     }
   }
   fParticles.push_back(tmpParticles);
 }
 void AliFemtoDreamPairCleaner::ResetArray() {
+  fCounter = 0;
   fParticles.clear();
 }
 

@@ -10,7 +10,12 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto)
 include_directories(${ROOT_INCLUDE_DIRS}
   ${AliPhysics_SOURCE_DIR}/OADB
   ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+  ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
   )
+
+
+set(ROOT_DEPENDENCIES)
+set(ALIROOT_DEPENDENCIES PWGDevNanoAOD)
 
 # Sources - alphabetical order
 set(SRCS
@@ -116,6 +121,8 @@ set(SRCS
   AliFemtoTrioFctn.cxx
   AliFemtoTrioMinvFctn.cxx
   AliFemtoTrioDEtaDPhiFctn.cxx
+  AliFemtoEventReaderNanoAOD.cxx
+  AliFemtoEventReaderNanoAODChain.cxx
   )
 
 # Headers from sources
@@ -150,6 +157,7 @@ set(HDRS ${HDRS}
   PhysicalConstants.h
   SystemOfUnits.h
   AliFemtoPairCut.h
+  AliFemtoPairCutRejectAll.h
   AliFemtoEventCut.h
   AliFemtoParticleCut.h
   AliFemtoTrackCollection.h
@@ -176,6 +184,8 @@ set(HDRS ${HDRS}
   AliFemtoTrioMinvFctn.h
   AliFemtoTrioDEtaDPhiFctn.h
   AliFemtoTrioFctnCollection.h
+  AliFemtoEventReaderNanoAOD.h
+  AliFemtoEventReaderNanoAODChain.h
   )
 
 set ( FSRCS
@@ -193,7 +203,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx ${FSRCS})
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice OADB)
+set(LIBDEPS ANALYSISalice OADB PWGDevNanoAOD)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

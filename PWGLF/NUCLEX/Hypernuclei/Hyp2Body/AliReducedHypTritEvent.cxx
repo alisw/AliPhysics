@@ -27,6 +27,7 @@ AliReducedHypTritTrack::~AliReducedHypTritTrack() {
 AliReducedHypTritV0::AliReducedHypTritV0() :
   TObject(),
   fPosition(),
+  fPvect(),
   fPiTrack(0x0),
   fHeTrack(0x0),
   fP(-1),
@@ -54,7 +55,8 @@ AliReducedHypTritEvent::AliReducedHypTritEvent() :
   fNumberV0s(0),
   fCentrality(-1),
   fRunNumber(0),
-  fTrigger() {
+  fTrigger(),
+  fTriggerClasses() {
   if (!fV0s) fV0s = new TClonesArray("AliReducedHypTritV0", 100000);
 }
 

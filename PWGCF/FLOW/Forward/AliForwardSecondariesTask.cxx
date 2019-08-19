@@ -69,11 +69,16 @@ ClassImp(AliForwardSecondariesTask)
 
 //_____________________________________________________________________
 AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
-  fOutputList(0),
+  fOutputList(0),    // output list
   fEventList(0),
   fDeltaList(0),
   fRandom(0),
   fTrackDensity(),
+  delta_phi_eta(),
+  delta_eta_phi(),
+  delta_eta_eta(),
+  delta_phi_phi(),
+  fnoPrim(),
   fSettings(),
   fUtil(),
   fStored(0),
@@ -95,6 +100,11 @@ AliForwardSecondariesTask::AliForwardSecondariesTask(const char* name) : AliAnal
   fDeltaList(0),
   fRandom(0),
   fTrackDensity(),
+  delta_phi_eta(),
+  delta_eta_phi(),
+  delta_eta_eta(),
+  delta_phi_phi(),
+  fnoPrim(),
   fSettings(),
   fUtil(),
   fStored(0),
@@ -128,54 +138,92 @@ void AliForwardSecondariesTask::UserCreateOutputObjects()
   this->fOutputList = new TList();
   this->fOutputList->SetOwner(kTRUE);
 
-    TRandom fRandom = TRandom();              // random integer to use for creation of samples (used for error bars).
-                                        // Needs to be created here, otherwise it will draw the same random number.
-    fDeltaList = new TList();
-    fDeltaList->SetName("Delta");
+  TRandom fRandom = TRandom();        // random integer to use for creation of samples (used for error bars).
+                                      // Needs to be created here, otherwise it will draw the same random number.
+  fDeltaList = new TList();
+  fDeltaList->SetName("Delta");
+  fEventList = new TList();
+  fEventList->SetName("EventInfo");
 
-    Int_t phibins = 4001;
-    Int_t etabins = 50;
-    fSettings.fnoSamples = 1;
-    fSettings.fCentBins = 1;
-    Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 5, etabins} ;
-    Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
-    Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; 
+  fOutputList->Add(fEventList);
+  fOutputList->Add(fDeltaList);
 
-    Int_t dimensions = 5;
+  Int_t phibins = fSettings.fNPhiBins;
+  Int_t etabins = fSettings.fNDiffEtaBins;
+  Int_t dimensions = 4;
+  fSettings.fCentBins = 1;
 
-    fDeltaList->Add(new THnD("delta_phi_eta", "delta_phi_eta",dimensions,bins_phi_eta, xmin_phi_eta, xmax_phi_eta)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+  Int_t bins_phi_eta[4] = {fSettings.fNZvtxBins, phibins+1, etabins, fSettings.fCentBins} ;
+  Double_t xmin_phi_eta[4] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), -4, 0};
+  Double_t xmax_phi_eta[4] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 6, 100}; 
 
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(0)->SetName("samples");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(1)->SetName("vertex");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(2)->SetName("phi_mother - phi_tr");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(3)->SetName("centrality");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(4)->SetName("eta");
+  Int_t bins_eta_phi[4] = {fSettings.fNZvtxBins, etabins+1, phibins, fSettings.fCentBins} ;
+  Double_t xmin_eta_phi[4] = {fSettings.fZVtxAcceptanceLowEdge, -6, 0, 0};
+  Double_t xmax_eta_phi[4] = {fSettings.fZVtxAcceptanceUpEdge, 6, 2*TMath::Pi(),100}; 
 
-    fEventList = new TList();
+  Int_t bins_eta_eta[4] = {fSettings.fNZvtxBins, etabins + 1, etabins, fSettings.fCentBins} ;
+  Double_t xmin_eta_eta[4] = {fSettings.fZVtxAcceptanceLowEdge, -6, -4, 0};
+  Double_t xmax_eta_eta[4] = {fSettings.fZVtxAcceptanceUpEdge, 6, 6, 100}; 
 
-    fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
-    fEventList->SetName("EventInfo");
 
-    Int_t bins_prim[4] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 1, etabins} ;
-    Double_t xmin_prim[4] = {0,fSettings.fZVtxAcceptanceLowEdge, 0, -6};
-    Double_t xmax_prim[4] = {10,fSettings.fZVtxAcceptanceUpEdge, 100, 6}; //
-    Int_t dimensions_prim = 4;
-    fDeltaList->Add(new THnD("fnoPrim", "fnoPrim", dimensions_prim, bins_prim, xmin_prim, xmax_prim)); //(samples,vertex, phi, cent, eta)
-    static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"))->GetAxis(0)->SetName("samples");
-    static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"))->GetAxis(1)->SetName("vertex");
-    static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"))->GetAxis(2)->SetName("centrality");
-    static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"))->GetAxis(3)->SetName("eta_mother");
+  Int_t bins_phi_phi[4] = {fSettings.fNZvtxBins, phibins + 1, phibins,fSettings.fCentBins} ;
+  Double_t xmin_phi_phi[4] = {fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, 0};
+  Double_t xmax_phi_phi[4] = {fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 2*TMath::Pi(), 100}; 
 
-    fOutputList->Add(fEventList);
-    fOutputList->Add(fDeltaList);
 
-    // do analysis
-    //PostData(1, fOutputList);
+  delta_phi_eta = new THnD("delta_phi_eta", "delta_phi_eta",dimensions,bins_phi_eta, xmin_phi_eta, xmax_phi_eta);
+  delta_eta_phi = new THnD("delta_eta_phi", "delta_eta_phi",dimensions,bins_eta_phi, xmin_eta_phi, xmax_eta_phi);
+  delta_eta_eta = new THnD("delta_eta_eta", "delta_eta_eta",dimensions,bins_eta_eta, xmin_eta_eta, xmax_eta_eta);
+  delta_phi_phi = new THnD("delta_phi_phi", "delta_phi_phi",dimensions,bins_phi_phi, xmin_phi_phi, xmax_phi_phi);
 
-    fStorage = new AliForwardFlowResultStorage(fSettings.fileName, fOutputList);
-    PostData(1, fStorage);
 
-  }
+  delta_phi_eta->GetAxis(0)->SetName("vertex");
+  delta_phi_eta->GetAxis(1)->SetName("phi_mother - phi_tr");
+  delta_phi_eta->GetAxis(2)->SetName("eta");
+  delta_phi_eta->GetAxis(3)->SetName("centrality");
+
+  delta_eta_phi->GetAxis(0)->SetName("vertex");
+  delta_eta_phi->GetAxis(1)->SetName("eta_mother - eta_tr");
+  delta_eta_phi->GetAxis(2)->SetName("phi");
+  delta_eta_phi->GetAxis(3)->SetName("centrality");
+
+  delta_eta_eta->GetAxis(0)->SetName("vertex");
+  delta_eta_eta->GetAxis(1)->SetName("eta_mother - eta_tr");
+  delta_eta_eta->GetAxis(2)->SetName("eta");
+  delta_eta_eta->GetAxis(3)->SetName("centrality");
+
+  delta_phi_phi->GetAxis(0)->SetName("vertex");
+  delta_phi_phi->GetAxis(1)->SetName("phi_mother - phi_tr");
+  delta_phi_phi->GetAxis(2)->SetName("phi");
+  delta_phi_phi->GetAxis(3)->SetName("centrality");
+
+  fDeltaList->Add(delta_phi_eta); // (vertex, phi_mother - phi_tr, centrality, eta_mother, eta_tr, eta_p)
+  fDeltaList->Add(delta_eta_phi); // (vertex, phi_mother - phi_tr, centrality, eta_mother, eta_tr, eta_p)
+  fDeltaList->Add(delta_eta_eta); // (vertex, phi_mother - phi_tr, centrality, eta_mother, eta_tr, eta_p)
+  fDeltaList->Add(delta_phi_phi); // (vertex, phi_mother - phi_tr, centrality, eta_mother, eta_tr, eta_p)
+
+
+
+  fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
+
+  Int_t bins_prim[3] = {fSettings.fNZvtxBins, etabins, 1} ;
+  Double_t xmin_prim[3] = {fSettings.fZVtxAcceptanceLowEdge, -4, 0};
+  Double_t xmax_prim[3] = {fSettings.fZVtxAcceptanceUpEdge, 6, 100}; //
+  Int_t dimensions_prim = 3;
+
+  fnoPrim = new THnD("fnoPrim", "fnoPrim", dimensions_prim, bins_prim, xmin_prim, xmax_prim);
+
+
+  fDeltaList->Add(fnoPrim); //(samples,vertex, phi, cent, eta)
+  fnoPrim->GetAxis(0)->SetName("vertex");
+  fnoPrim->GetAxis(1)->SetName("eta_mother");
+  fnoPrim->GetAxis(2)->SetName("centrality");
+
+
+
+  fStorage = new AliForwardFlowResultStorage(fSettings.fileName, fOutputList);
+  PostData(1, fStorage);
+}
 
 
 //_____________________________________________________________________
@@ -209,49 +257,57 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
     return;
   }
 
-  Double_t randomInt = static_cast<Double_t>(fRandom.Integer(fSettings.fnoSamples));
 
   std::vector<Int_t> listOfMothers;
 
   Int_t nTracks   = fAOD->GetNumberOfTracks();// stack->GetNtrack();
   
   static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
-  THnD* delta_phi_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-  THnD* fnoPrim = static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
 
-  // for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-  //   AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
+  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+    AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
 
-  //   // Ignore things that do not make a signal in the FMD
-  //   AliTrackReference* tr = fUtil.IsHitFMD(p);
-  //   if (tr && p->Charge() != 0){
+   // Ignore things that do not make a signal in the FMD
+    AliTrackReference* tr = fUtil.IsHitFMD(p);
+     if (tr && p->Charge() != 0){
 
-  //     AliMCParticle* mother = GetMother(p);
-  //     if (!mother) mother = p;
+       AliMCParticle* mother = GetMother(p);
+       if (!mother) mother = p;
 
-  //     Double_t phi_mother = mother->Phi();
+       Double_t phi_mother = mother->Phi();
+       Double_t eta_mother = mother->Eta();
 
-  //     Double_t *etaPhi = new Double_t[2];
-  //     this->GetTrackRefEtaPhi(tr, etaPhi);
+       Double_t *etaPhi = new Double_t[2];
+       this->GetTrackRefEtaPhi(tr, etaPhi);
 
-  //     Double_t phi_tr = etaPhi[1];
-  //     Double_t eta_tr = etaPhi[0];
+       Double_t phi_tr = etaPhi[1];
+       Double_t eta_tr = etaPhi[0];
 
-  //     // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
-  //     Double_t phi[5] = {randomInt,event_vtx_z, WrapPi(phi_mother - phi_tr), 10., eta_tr};
+       // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
+       Double_t phi[4] = {event_vtx_z, WrapPi(phi_mother - phi_tr), eta_tr,10.};
+       Double_t eta[4] = {event_vtx_z, eta_tr - eta_mother, phi_tr,10.};
 
-  //     delta_phi_eta->Fill(phi,1);
+       delta_phi_eta->Fill(phi,1);
+       delta_eta_phi->Fill(eta,1);
 
-  //     Double_t x_prim[4] =  {randomInt,event_vtx_z,10.,eta_tr};
-  //     Bool_t isNewPrimary = AddMotherIfFirstTimeSeen(mother,listOfMothers);
-  //     if (!isNewPrimary){
-  //       listOfMothers.push_back(mother->GetLabel());
-  //       fnoPrim->Fill(x_prim,1);
-  //     }
-  //   }
-  // }
+       Double_t phi1[4] = {event_vtx_z, WrapPi(phi_mother - phi_tr), phi_tr,10.};
+       Double_t eta1[4] = {event_vtx_z, eta_tr - eta_mother, eta_tr,10.};
 
 
+       delta_phi_phi->Fill(phi1,1);
+       delta_eta_eta->Fill(eta1,1);
+
+
+       Double_t x_prim[3] =  {event_vtx_z,eta_tr, 10.};
+       Bool_t isNewPrimary = AddMotherIfFirstTimeSeen(mother,listOfMothers);
+       if (!isNewPrimary){
+         listOfMothers.push_back(mother->GetLabel());
+         fnoPrim->Fill(x_prim,1);
+       }
+     }
+   }
+
+/*
   for (Int_t iTr = 0; iTr < nTracks; iTr++) {
     AliMCParticle* particle =
       static_cast<AliMCParticle*>(fAOD->GetTrack(iTr));
@@ -267,7 +323,7 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
     // arguments.
     ProcessTrack(particle, mother,listOfMothers, randomInt,event_vtx_z);
   }
-
+*/
     PostData(1, fOutputList);
   return;
 }
@@ -317,6 +373,7 @@ AliForwardSecondariesTask::StoreParticle(AliMCParticle* particle, AliMCParticle*
                                          std::vector< Int_t > listOfMothers, Double_t randomInt, Float_t event_vtx_z)
 {
   THnD* delta_phi_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+  THnD* delta_eta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
   THnD* fnoPrim = static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
 
   UInt_t packed = ref->UserId();
@@ -347,6 +404,12 @@ AliForwardSecondariesTask::StoreParticle(AliMCParticle* particle, AliMCParticle*
   Double_t phi_tr = (etaPhi[1]); //Wrap02pi
   Double_t eta_tr = etaPhi[0];
   Double_t phi[5] = {randomInt,event_vtx_z, WrapPi(phi_mother - phi_tr), v0cent, eta_tr};//Wrap02pi
+
+  delta_phi_eta->Fill(phi,1);
+
+
+  Double_t eta[5] = {randomInt,event_vtx_z, eta_mother - eta_tr, v0cent, phi_tr};//Wrap02pi
+  delta_eta_phi->Fill(eta,1);
 
   delta_phi_eta->Fill(phi,1);
 

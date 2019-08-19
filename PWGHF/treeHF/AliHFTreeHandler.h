@@ -19,6 +19,7 @@
 // L. van Doremalen, lennart.van.doremalen@cern.ch
 // J. Norman, jaime.norman@cern.ch
 // G. Luparello, grazia.luparello@cern.ch
+// N. Zardoshti, nima.zardoshti@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include <TTree.h>
@@ -27,6 +28,11 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODMCParticle.h"
 #include "AliAODPidHF.h"
+#include "AliHFJet.h"
+
+#ifdef HAVE_FASTJET
+#include "AliHFJetFinder.h"
+#endif
 
 class AliHFTreeHandler : public TObject
 {
@@ -81,6 +87,15 @@ class AliHFTreeHandler : public TObject
     TTree* BuildTreeMCGen(TString name, TString title);
     bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
 
+    void SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, Double_t invmass, TClonesArray *mcarray, AliAODMCParticle* mcPart);
+    void SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart);
+#ifdef HAVE_FASTJET
+    void SetJetParameters(AliHFJetFinder& hfjetfinder);
+#endif
+    void SetJetTreeVars(AliHFJet hfjet);
+    void SetGenJetTreeVars(AliHFJet hfjet);
+
+
     void FillTree() { //to be called for each candidate!
       if(fFillOnlySignal && !(fCandType&kSignal)) { //if fill only signal and not signal candidate, do not store 
         fCandType=0;
@@ -93,6 +108,10 @@ class AliHFTreeHandler : public TObject
     } 
     
     //common methods
+    void SetFillJets(bool FillJets) {fFillJets=FillJets;}
+    void SetDoJetSubstructure(bool DoJetSubstructure) {fDoJetSubstructure=DoJetSubstructure;}
+    void SetJetProperties(Double_t JetRadius,Int_t JetAlgorithm,Double_t MinJetPt) {fJetRadius=JetRadius;fJetAlgorithm=JetAlgorithm;fMinJetPt=MinJetPt;}
+    void SetSubJetProperties(Double_t SubJetRadius,Int_t SubJetAlgorithm) {fSubJetRadius=SubJetRadius;fSubJetAlgorithm=SubJetAlgorithm;}
     void SetOptPID(int PIDopt) {fPidOpt=PIDopt;}
     void SetOptSingleTrackVars(int opt) {fSingleTrackOpt=opt;}
     void SetFillOnlySignal(bool fillopt=true) {fFillOnlySignal=fillopt;}
@@ -155,7 +174,7 @@ class AliHFTreeHandler : public TObject
 
   protected:  
     //constant variables
-    static const unsigned int knMaxProngs   = 3;
+    static const unsigned int knMaxProngs   = 4;
     static const unsigned int knMaxDet4Pid  = 2;
     static const unsigned int knMaxHypo4Pid = 3;
 
@@ -164,6 +183,8 @@ class AliHFTreeHandler : public TObject
     //helper methods for derived clases (to be used in BuildTree and SetVariables functions)
     void AddCommonDmesonVarBranches();
     void AddSingleTrackBranches();
+    void AddJetBranches();
+    void AddGenJetBranches();
     void AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
     bool SetSingleTrackVars(AliAODTrack* prongtracks[]);
     bool SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
@@ -194,6 +215,7 @@ class AliHFTreeHandler : public TObject
     float fImpParXY; ///candidate impact parameter in the transverse plane
     float fDCA; ///DCA of candidates prongs
     float fPProng[knMaxProngs]; ///prong momentum
+    int fSPDhitsProng[knMaxProngs]; ///prong hits in the SPD
     float fTPCPProng[knMaxProngs]; ///prong TPC momentum
     float fTOFPProng[knMaxProngs]; ///prong TOF momentum
     float fPtProng[knMaxProngs]; ///prong pt
@@ -231,8 +253,34 @@ class AliHFTreeHandler : public TObject
     float fEtalimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxEtaBins+1]; /// vector of eta limits for data-driven NsigmaTPC correction
     int fNEtabinsNsigmaTPCDataCorr; /// number of eta bins for data-driven NsigmaTPC correction
 
+    float fPtJet; ///jet pt
+    float fPtGenJet; ///gen jet pt
+    float fEtaJet; ///jet pseudorapidity
+    float fEtaGenJet; ///gen jet pseudorapidity
+    float fPhiJet; ///jet azimuthal angle
+    float fPhiGenJet; ///gen jet azimuthal angle
+    float fDeltaEtaJetHadron; ///jet hadron pseudorapidity
+    float fDeltaEtaGenJetHadron; ///gen jet hadron pseudorapidity
+    float fDeltaPhiJetHadron; ///jet hadron azimuthal angle
+    float fDeltaPhiGenJetHadron; ///jet hadron azimuthal angle
+    float fDeltaRJetHadron; ///jet hadron distance
+    float fDeltaRGenJetHadron; ///gen jet hadron distance
+    float fNTracksJet;  //number of tracks in the jet
+    float fNTracksGenJet;  //number of tracks in the gen jet
+    float fZgJet; //zg
+    float fZgGenJet; //gen zg
+    float fRgJet; //Rg
+    float fRgGenJet; //gen Rg
+    bool  fFillJets; //fill jets
+    bool  fDoJetSubstructure; //fill jet substructure
+    Double_t fJetRadius; //Jet finding radius
+    Double_t fSubJetRadius; //Subjet finding radius
+    Int_t fJetAlgorithm; //Jet finding algorithm
+    Int_t fSubJetAlgorithm; //SubJet finding algorithm
+    Double_t fMinJetPt; //Jet finding mimimum Jet pT
+
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandler,8); ///
+  ClassDef(AliHFTreeHandler,9); ///
   /// \endcond
 };
 #endif

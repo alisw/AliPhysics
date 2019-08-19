@@ -24,10 +24,12 @@ class AliSigma0PhotonCuts : public TObject {
   static AliSigma0PhotonCuts *PhotonCuts();
 
   void PhotonCuts(AliAODEvent *inputEvent, AliMCEvent *mcEvent,
-                  const TClonesArray *photons, std::vector<AliFemtoDreamBasePart> &container);
-  bool ProcessPhoton(AliVEvent* event, AliAODConversionPhoton *PhotonCandidate, AliAODv0 *v0,
-                     AliVTrack *pos, AliVTrack *neg);
-  float ComputeInvMass(AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg, int pdgPos, int pgdNeg) const;
+                  const TClonesArray *photons,
+                  std::vector<AliFemtoDreamBasePart> &container);
+  bool ProcessPhoton(AliVEvent* event, AliAODConversionPhoton *PhotonCandidate,
+                     AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg);
+  float ComputeInvMass(AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg, int pdgPos,
+                       int pgdNeg) const;
   AliVTrack *GetTrack(AliVEvent * event, int label);
   void SetLightweight(bool isLightweight) {
     fIsLightweight = isLightweight;
@@ -64,6 +66,12 @@ class AliSigma0PhotonCuts : public TObject {
   void SetCPAMin(float cpamin) {
     fCPAMin = cpamin;
   }
+  void SetDCAzMax(float dcazmax) {
+    fDCAzMax = dcazmax;
+  }
+  void SetDCArMax(float dcarmax) {
+    fDCArMax = dcarmax;
+  }
 
   void SetElectronPtMin(float ptmin) {
     fElectronPtMin = ptmin;
@@ -79,6 +87,11 @@ class AliSigma0PhotonCuts : public TObject {
   }
   void SetElectronNSigmaTPCMin(float nsigmamin) {
     fElectronNSigmaTPCMin = nsigmamin;
+  }
+  void SetTransverseRadiusRejection(float low, float up) {
+    fDoTransvRadRejection = true;
+    fTransvRadRejectionLow = low;
+    fTransvRadRejectionUp = up;
   }
 
   void InitCutHistograms(TString appendix = TString(""));
@@ -109,12 +122,18 @@ class AliSigma0PhotonCuts : public TObject {
   float fPsiPairMax;  //
   float fChi2MaxFor2DPsiPair;  //
   float fCPAMin;  //
+  float fDCAzMax;  //
+  float fDCArMax;  //
 
   float fElectronPtMin;  //
   float fElectronEtaMax;  //
   float fElectronRatioFindable;  //
   float fElectronNSigmaTPCMax;  //
   float fElectronNSigmaTPCMin;  //
+
+  bool fDoTransvRadRejection;   //
+  float fTransvRadRejectionLow; //
+  float fTransvRadRejectionUp;  //
 
   // Histograms
   // =====================================================================
@@ -144,8 +163,10 @@ class AliSigma0PhotonCuts : public TObject {
   TH2F *fHistTransverseRadiusAfter;   //!
   TH2F *fHistCosPABefore;             //!
   TH2F *fHistCosPAAfter;              //!
-  TH2F *fHistDCADaughtersBefore;      //!
-  TH2F *fHistDCADaughtersAfter;       //!
+  TH2F *fHistDCArBefore;              //!
+  TH2F *fHistDCArAfter;               //!
+  TH2F *fHistDCAzBefore;              //!
+  TH2F *fHistDCAzAfter;               //!
   TH2F *fHistDCA;                     //!
   TH2F *fHistDecayLength;             //!
   TH2F *fHistArmenterosBefore;        //!
@@ -173,7 +194,7 @@ class AliSigma0PhotonCuts : public TObject {
   AliPIDResponse *fPIDResponse;  //!  pid response
 
  private:
-ClassDef(AliSigma0PhotonCuts, 1)
+ClassDef(AliSigma0PhotonCuts, 4)
 };
 
 #endif

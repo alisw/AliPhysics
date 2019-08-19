@@ -56,34 +56,31 @@ void Create_single_beam_intensity_file(Int_t scan, Int_t opt)
   Double_t cf_dcct_1b = 0;
   Double_t cf_dcct_2b = 0;  
 
-  // obtain the normalization at different times
-  // around the index chosen to normalize and then average
-  Int_t idx = FindIdxBetweenScans(scan);
-  Double_t counter = 0.0;
-  Int_t start = idx-gk_half_range;
-  Int_t end = idx+gk_half_range;
-  Int_t i = start;
-  while(i<=end) {
-    g_vdm_Tree->GetEntry(i);
-    counter += 1.0;
-    Double_t total_beam1 = 0;
-    Double_t total_beam2 = 0;    
-    for(Int_t j=0;j<3564;j++) { // get total intensity
+  // get the index of the tree and get the entry
+  Int_t idx_tree = FindIdxBetweenScans(scan);
+  g_vdm_Tree->GetEntry(idx_tree);
+  
+  // get the index of each histogram corresponding to the relative time
+  Int_t idx_DCCT1AH = GetHistogramIndex(DCCT1AH,timerel);
+  Int_t idx_DCCT1BH = GetHistogramIndex(DCCT1BH,timerel);  
+  Int_t idx_DCCT2AH = GetHistogramIndex(DCCT2AH,timerel);
+  Int_t idx_DCCT2BH = GetHistogramIndex(DCCT2BH,timerel);  
+
+  // get total intensity
+  Double_t total_beam1 = 0;
+  Double_t total_beam2 = 0;    
+  for(Int_t j=0;j<3564;j++) { // get total intensity
       total_beam1 += bunch1[j];
       total_beam2 += bunch2[j];      
-    }
-    // get correction factor 
-    cf_dcct_1a += ((DCCT1AH->GetBinContent(2*i+1))/total_beam1);
-    cf_dcct_1b += ((DCCT1BH->GetBinContent(2*i+1))/total_beam1);
-    cf_dcct_2a += ((DCCT2AH->GetBinContent(2*i+1))/total_beam2);
-    cf_dcct_2b += ((DCCT2BH->GetBinContent(2*i+1))/total_beam2);    
-    i++;
   }
-  // average
-  cf_dcct_1a /= counter;
-  cf_dcct_2a /= counter;
-  cf_dcct_1b /= counter;
-  cf_dcct_2b /= counter;  
+
+  // get correction factor 
+  cf_dcct_1a = ((DCCT1AH->GetBinContent(idx_DCCT1AH))/total_beam1);
+  cf_dcct_1b = ((DCCT1BH->GetBinContent(idx_DCCT1BH))/total_beam1);
+  cf_dcct_2a = ((DCCT2AH->GetBinContent(idx_DCCT2AH))/total_beam2);
+  cf_dcct_2b = ((DCCT2BH->GetBinContent(idx_DCCT2BH))/total_beam2);    
+
+  // print info
   cout << " cf_dcct_1a = " << cf_dcct_1a << " cf_dcct_1b = " << cf_dcct_1b << endl
        << " cf_dcct_2a = " << cf_dcct_2a << " cf_dcct_2b = " << cf_dcct_2b << endl;
   // correction factor is average over A and B factors
@@ -117,24 +114,14 @@ void Create_single_beam_intensity_file(Int_t scan, Int_t opt)
   intensity_tree->Branch("cf_dcct_2",&cf_dcct_2,"cf_dcct_2/D");      
 
   // get the intensities
-  //average over n_half_range before and after the chosen index
-  counter = 0.0;
-  Int_t m = start;
-  while(m<=end) {
-    g_vdm_Tree->GetEntry(m);
-    counter += 1.0;
-    for(Int_t j=0;j<nIBC;j++) {
-      Int_t idx1 = ((Int_t) (BucketA[j]/10.0));
-      Int_t idx2 = ((Int_t) (BucketC[j]/10.0));
-      bunch_intensity_1[j] += (bunch1[idx1]/gBeamA);
-      bunch_intensity_2[j] += (bunch2[idx2]/gBeamB);
-    }
-    m++;
-  } // end while
-  for(Int_t j=0;j<nIBC;j++) { // average
-    bunch_intensity_1[j] /= counter;
-    bunch_intensity_2[j] /= counter;
+  g_vdm_Tree->GetEntry(idx_tree);
+  for(Int_t j=0;j<nIBC;j++) {
+    Int_t idx1 = ((Int_t) (BucketA[j]/10.0));
+    Int_t idx2 = ((Int_t) (BucketC[j]/10.0));
+    bunch_intensity_1[j] = (bunch1[idx1]/gBeamA);
+    bunch_intensity_2[j] = (bunch2[idx2]/gBeamB);
   }
+
   intensity_tree->Fill();
 
   // save  tree

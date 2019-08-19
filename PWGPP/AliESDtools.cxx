@@ -20,12 +20,12 @@
 
 /// * Instance of the AliESDtools allow usage of functions in the TTree formulas.
 /// ** Cache information (e.g mean event properties)
-/// ** Set of static function to access pre-calculated variables 
+/// ** Set of static function to access pre-calculated variables
 /// * enabling  ESD track functionality in TTree::Draw queries
 /// ** Double_t AliESDtools::LoadESD(Int_t entry, Int_t verbose)
 
 /// Example usage for Tree queries mode (used e.g in N-Dimensional analysis pipeline):
-/*   
+/*
   /// 0.) Initialize tool e.g:
   tree = AliXRDPROOFtoolkit::MakeChainRandom("esd.list","esdTree",0,10)
   //.L $AliPhysics_SRC/PWGPP/AliESDtools.cxx+
@@ -47,7 +47,8 @@
 
 
 #include "TStopwatch.h"
-#include "TTree.h" 
+#include "TTree.h"
+#include "TGrid.h"
 #include "TChain.h"
 #include "TVectorF.h"
 #include "AliStack.h"
@@ -66,12 +67,15 @@
 #include <stdarg.h>
 #include "AliNDLocalRegression.h"
 #include "AliESDEvent.h"
+#include "AliLumiTools.h"
 #include "AliPIDResponse.h"
 #include "TTreeStream.h"
 #include "AliCentrality.h"
 #include "AliMultSelection.h"
 #include "AliESDtools.h"
-
+#include "AliMathBase.h"
+#include "AliESDTOFHit.h"
+#include "AliTOFGeometry.h"
 
 ClassImp(AliESDtools)
 AliESDtools*  AliESDtools::fgInstance;
@@ -82,12 +86,14 @@ AliESDtools::AliESDtools():
   fEvent(nullptr),
   fPIDResponse(nullptr),               // PID response parametrization
   fTaskMode(kFALSE),                   // switch - task mode
+  fHisITSVertex(nullptr),                            // ITS z vertex histogram
   fHisTPCVertexA(nullptr),
   fHisTPCVertexC(nullptr),
   fHisTPCVertex(nullptr),         // helper histogram phi counters
   fHisTPCVertexACut(nullptr),
   fHisTPCVertexCCut(nullptr),
   fTPCVertexInfo(nullptr),
+  fITSVertexInfo(nullptr),
   fHistPhiTPCCounterA(nullptr),
   fHistPhiTPCCounterC(nullptr),
   fHistPhiTPCCounterAITS(nullptr),      // helper histogram for TIdentity tree
@@ -125,17 +131,20 @@ void AliESDtools::Init(TTree *tree, AliESDEvent *event) {
     fTaskMode=kTRUE;
   }
   if (fHisTPCVertexA == nullptr) {
+    tools.fHisITSVertex = new TH1F("hisITSZ", "hisITS", 300, -15, 15);
     tools.fHisTPCVertexA = new TH1F("hisTPCZA", "hisTPCZA", 1000, -250, 250);
     tools.fHisTPCVertexC = new TH1F("hisTPCZC", "hisTPCZC", 1000, -250, 250);
     tools.fHisTPCVertex = new TH1F("hisTPCZ", "hisTPCZ", 1000, -250, 250);
     tools.fHisTPCVertexACut = new TH1F("hisTPCZACut", "hisTPCZACut", 1000, -250, 250);
     tools.fHisTPCVertexCCut = new TH1F("hisTPCZCCut", "hisTPCZCCut", 1000, -250, 250);
+
     tools.fHisTPCVertex->SetLineColor(1);
     tools.fHisTPCVertexA->SetLineColor(2);
     tools.fHisTPCVertexC->SetLineColor(4);
     tools.fHisTPCVertexACut->SetLineColor(3);
     tools.fHisTPCVertexCCut->SetLineColor(6);
-    tools.fTPCVertexInfo = new TVectorF(6);
+    tools.fTPCVertexInfo = new TVectorF(10);
+    tools.fITSVertexInfo = new TVectorF(10);
     tools.fCacheTrackCounters = new TVectorF(20);
     tools.fCacheTrackTPCCountersZ = new TVectorF(8);
     tools.fCacheTrackdEdxRatio = new TVectorF(27);
@@ -466,6 +475,7 @@ Int_t AliESDtools::CalculateEventVariables(){
   //AliVEvent *event=InputEvent();
   CacheTPCEventInformation();
   CachePileupVertexTPC(fEvent->GetEventNumberInFile());
+  CacheITSVertexInformation(true,0.1,0.2);
   //
   //
   const Int_t kNclTPCCut=60;
@@ -758,31 +768,44 @@ Double_t AliESDtools::LoadESD(Int_t entry, Int_t verbose) {
 /// \param entry
 /// \param verbose
 /// \return
-Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
+Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t doReset, Int_t verbose) {
   static Int_t oldEntry = -1;
+
   if (oldEntry != entry) {
+    if (doReset>0) {
+      fHisTPCVertexA->Reset();
+      fHisTPCVertexC->Reset();
+    }
     if (!fTaskMode) LoadESD(entry);
     oldEntry = entry;
     Int_t nNumberOfTracks = fEvent->GetNumberOfTracks();
     const Int_t bufSize = 20000;
     const Float_t kMinDCA = 3;
-    const Float_t kMinDCAZ = 4;
-    Float_t bufferP[bufSize], bufferM[bufSize];
+    const Float_t kMinDCAZ = 5;
+    Double_t bufferP[bufSize], bufferM[bufSize];
     Int_t counterP = 0, counterM = 0;
     Float_t dcaXY, dcaZ;
     for (Int_t iTrack = 0; iTrack < nNumberOfTracks; iTrack++) {
       AliESDtrack *track = fEvent->GetTrack(iTrack);
       if (track == nullptr) continue;
       if (track->IsOn(0x1)) continue;
+      //if (TMath::Abs(track->GetTgl())>1) continue;
+      if (track->HasPointOnITSLayer(0)) continue;
+      if (track->HasPointOnITSLayer(1)) continue;
+      const AliExternalTrackParam *param = track->GetInnerParam();
+      if (!param) continue;
+      // A-side c side cut
+      if (param->GetTgl()*param->GetZ()<0) continue;
       track->GetImpactParameters(dcaXY, dcaZ);
       if (TMath::Abs(dcaXY) > kMinDCA) continue;
       if (TMath::Abs(dcaZ) < kMinDCAZ) continue;
+
       Double_t tgl = track->Pz() / track->Pt();
-      if (tgl > 0.1) {
+      if (tgl > 0.0) {
         bufferP[counterP++] = track->GetZ();
         fHisTPCVertexA->Fill(track->GetZ());
       }
-      if (tgl < -0.1) {
+      if (tgl < -0.0) {
         bufferM[counterM++] = track->GetZ();
         fHisTPCVertexC->Fill(track->GetZ());
       }
@@ -790,14 +813,21 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
     (*fTPCVertexInfo)*=0;
     Double_t posZA = (counterP > 0) ? TMath::Median(counterP, bufferP) : 0;
     Double_t posZC = (counterM > 0) ? TMath::Median(counterM, bufferM) : 0;
+    Double_t posZALTM=0,posZCLTM=0, rmsZALTM=0,rmsZCLTM=0;
+    if (counterP>4) AliMathBase::EvaluateUni(counterP, bufferP, posZALTM, rmsZALTM, int(counterP*0.65));
+    if (counterM>4) AliMathBase::EvaluateUni(counterM, bufferM, posZCLTM, rmsZCLTM, int(counterM*0.65));
     (*fTPCVertexInfo)[0] = posZA;
     (*fTPCVertexInfo)[1] = -posZC;
-    (*fTPCVertexInfo)[2] = (posZC+posZA)*0.5;
+    (*fTPCVertexInfo)[2] = (-posZC+posZA)*0.5;
     (*fTPCVertexInfo)[3] = counterP;
     (*fTPCVertexInfo)[4] = counterM;
     (*fTPCVertexInfo)[5] = (counterP+counterM);
+    (*fTPCVertexInfo)[6] = posZALTM;
+    (*fTPCVertexInfo)[7] = posZCLTM;
+    (*fTPCVertexInfo)[8] = rmsZALTM;
+    (*fTPCVertexInfo)[9] = rmsZCLTM;
     if (verbose > 0) {
-      ::Info("AliESDtools::CachePileupVertexTPC", "%f\t%f\t%f\t%f\t", counterP, counterM, posZA, posZC);
+      ::Info("AliESDtools::CachePileupVertexTPC", "%d\t%d\t%f\t%f\t", counterP, counterM, posZA, posZC);
     }
   }
   return 1;
@@ -871,6 +901,12 @@ Int_t AliESDtools::DumpEventVariables() {
   const AliESDVertex *vertex = fEvent->GetPrimaryVertexTracks();
   const AliESDVertex *vertexSPD= fEvent->GetPrimaryVertexTracks();
   const AliESDVertex *vertexTPC= fEvent->GetPrimaryVertexTracks();
+  // additional counters
+  Int_t nCaloClusters= fEvent->GetNumberOfCaloClusters();
+  Int_t nTOFclusters = (fEvent->GetESDTOFClusters()!= nullptr) ?  fEvent->GetESDTOFClusters()->GetEntries():0;
+  Int_t nTOFhits = (fEvent->GetESDTOFHits()!= nullptr) ?  fEvent->GetESDTOFHits()->GetEntries():0;
+  Int_t nTOFmatches = (fEvent->GetESDTOFMatches()!= nullptr) ?  fEvent->GetESDTOFMatches()->GetEntries():0;
+
   Double_t TPCvZ,fVz, SPDvZ;
   TPCvZ=vertexTPC->GetZ();
   SPDvZ=vertexSPD->GetZ();
@@ -885,9 +921,25 @@ Int_t AliESDtools::DumpEventVariables() {
     if (track->IsOn(AliESDtrack::kTPCin)) TPCMult++;
   }
 
+  // retrieve interaction rate
+  static Float_t intrate=-1.;
+  static Int_t timeStampCache = -1;
+  TString ocdb="raw://";
+  if (gSystem->Getenv("CDB_PATH") ){
+    ocdb=gSystem->Getenv("CDB_PATH");
+  }
+  if (TMath::Abs(timeStampCache-timeStamp)>1 ){
+    TGraph *grLumiGraph = (TGraph*)AliLumiTools::GetLumiFromCTP(runNumber, ocdb.Data());
+    intrate = grLumiGraph->Eval(timeStamp);
+    delete grLumiGraph;
+    timeStampCache=timeStamp;
+  }
+
+  // dump event variables into tree
   (*fStreamer)<<"events"<<
-                     "run="                  << runNumber                 <<  // run Number
-                     "bField="               << bField                   <<  // b field
+                     "run="                  << runNumber             <<  // run Number
+                     "intrate="              << intrate               <<  // run Number
+                     "bField="               << bField                <<  // b field
                      "gid="                  << gid                   <<  // global event ID
                      "timeStampS="           << timeStampS            <<  // time stamp in seconds -event building
                      "timestamp="            << timeStamp             <<  // more precise timestamp based on LHC clock
@@ -922,6 +974,12 @@ Int_t AliESDtools::DumpEventVariables() {
                      "phiCountCITSOnly.="    << &phiCountCITSOnly      <<  // track count only ITS on C side
                      //
                      "tpcVertexInfo.="<<fTPCVertexInfo<<                   // TPC vertex information
+                     "itsVertexInfo.="<<fITSVertexInfo<<                   // ITS vertex information for pile up rejection
+                     //
+                     "nTOFclusters="<<nTOFclusters<<                       // tof mutliplicity estimators
+                     "nTOFhits="<<nTOFhits<<
+                     "nTOFmatches="<<nTOFmatches<<
+                     "nCaloClusters="<<nCaloClusters<<                     // calorimeter mutltiplicity estimators
                      "\n";
 
   return 0;
@@ -1049,4 +1107,121 @@ Int_t AliESDtools::SetDefaultAliases(TTree* tree) {
   /// mass and PID aliases
 
   return 1;
+}
+
+/// cache TOF information for the mutplicity
+Int_t  AliESDtools::CacheTOFEventInformation(Bool_t dumpStreamer){
+  if (fEvent== nullptr) return 0;
+  TClonesArray* hits = fEvent->GetESDTOFHits();
+  Int_t entries=hits->GetEntries();
+  for (Int_t iHit=0; iHit<entries; iHit++){
+    AliESDTOFHit*hit=(AliESDTOFHit*)hits->At(iHit);
+    if (hit== nullptr) continue;
+    Int_t ind[5];
+    AliTOFGeometry::GetVolumeIndices(hit->GetTOFchannel(),ind);
+    Double_t x,y,z;
+    x=AliTOFGeometry::GetX(ind);
+    y=AliTOFGeometry::GetY(ind);
+    z=AliTOFGeometry::GetY(ind);
+    if (dumpStreamer)
+      (*fStreamer)<<"TOFcl"<<
+        "x="<<x<<
+        "y="<<y<<
+        "z="<<z<<
+        "hit.="<<hit<<
+        "\n";
+  }
+}
+
+/// GetTOFHitInfo
+/// \param number  Index of TOF hit in the container
+/// \param coord   coordinate
+///                0,1,2 - x,y,z
+///                3 - |hit-vertex|
+///                4 - |hit-vertex|/time
+/// \return
+Double_t AliESDtools::SGetTOFHitInfo(Int_t number, Int_t coord){
+  if (fgInstance->fEvent== nullptr) return 0;
+  TClonesArray* hits = fgInstance->fEvent->GetESDTOFHits();
+  if (hits== nullptr) return 0;
+  AliESDTOFHit*hit=(AliESDTOFHit*)hits->At(number);
+  if (hit== nullptr) return 0;
+  Int_t ind[5];
+  AliTOFGeometry::GetVolumeIndices(hit->GetTOFchannel(),ind);
+  if (coord==0) return AliTOFGeometry::GetX(ind);
+  if (coord==1) return AliTOFGeometry::GetY(ind);
+  if (coord==2) return AliTOFGeometry::GetZ(ind);
+  const AliESDVertex *vertex=fgInstance->fEvent->GetPrimaryVertex();
+  if (vertex== nullptr) return 0;
+  //
+  Double_t dx,dy,dz;
+  dx=AliTOFGeometry::GetX(ind)-vertex->GetX();
+  dy=AliTOFGeometry::GetY(ind)-vertex->GetY();
+  dz=AliTOFGeometry::GetZ(ind)-vertex->GetZ();
+  if (coord==3) return TMath::Sqrt(dx*dx+dy*dy+dz*dz);
+  if (hit->GetTime()>0) return TMath::Sqrt(dx*dx+dy*dy+dz*dz)/hit->GetTime();
+  return 0;
+}
+
+
+/// cache TPC event information
+/// \return
+Int_t AliESDtools::CacheITSVertexInformation(Bool_t doReset, Double_t dcaCut, Double_t dcaZcut){
+  AliESDtools &tools=*this;
+  const Int_t kNCRCut=80;
+  const Double_t kDCACut=0.3;
+  const Float_t knTrackletCut=1.5;
+  // FILL DCA histograms
+  if(doReset) tools.fHisITSVertex->Reset();
+
+  Int_t nTracks=tools.fEvent->GetNumberOfTracks();
+  Int_t selected=0;
+  const Int_t knBuffer=20000;
+  Double_t bufferPrim[knBuffer], bufferPileUp[knBuffer];
+  Int_t nBufferPrim=0, nBufferPileUp=0;
+  for (Int_t iTrack=0; iTrack<nTracks; iTrack++){
+    AliESDtrack * pTrack = tools.fEvent->GetTrack(iTrack);
+    Float_t dcaXY,dcaz;
+    if (pTrack== nullptr) continue;
+    if (pTrack->IsOn(AliVTrack::kTPCin)==0) continue;
+    if (pTrack->GetTPCClusterInfo(3,1)<kNCRCut) continue;
+    pTrack->GetImpactParameters(dcaXY,dcaz);
+    if (TMath::Abs(dcaXY)>kDCACut) continue;
+    if (TMath::Abs(dcaXY)>dcaCut) continue;
+    pTrack->SetESDEvent(tools.fEvent);
+    selected++;
+    if (pTrack->HasPointOnITSLayer(0)==0) continue;
+    if (pTrack->HasPointOnITSLayer(1)==0) continue;
+    tools.fHisITSVertex->Fill(pTrack->GetZ());
+    if (TMath::Abs(dcaz)<dcaZcut){
+      bufferPrim[nBufferPrim]=pTrack->GetZ();
+      nBufferPrim++;
+    }else{
+      bufferPileUp[nBufferPileUp]=pTrack->GetZ();
+      nBufferPileUp++;
+    }
+  }
+  (*fITSVertexInfo)*=0;
+  /// median position
+  (*fITSVertexInfo)[0]=(nBufferPrim>0)?TMath::Median(nBufferPrim,bufferPrim):0;
+  (*fITSVertexInfo)[1]=(nBufferPileUp>0)?TMath::Median(nBufferPileUp, bufferPileUp):0;
+  // multiplicity
+  (*fITSVertexInfo)[2]=nBufferPrim;
+  (*fITSVertexInfo)[3]=nBufferPileUp;
+  /// LTM
+  Double_t LTM, RMS;
+  if (nBufferPrim>2) {
+    AliMathBase::EvaluateUni(nBufferPrim, bufferPrim, LTM,RMS, 0.95*nBufferPrim);
+    (*fITSVertexInfo)[4]=LTM;
+    (*fITSVertexInfo)[5]=RMS;
+  }
+  if (nBufferPileUp>2) {
+    Int_t nPoints= 0.7*nBufferPileUp;
+    if (nPoints<2) nPoints=2;
+    AliMathBase::EvaluateUni(nBufferPileUp, bufferPrim, LTM,RMS, 0.95*nPoints);
+    (*fITSVertexInfo)[6]=LTM;
+    (*fITSVertexInfo)[7]=RMS;
+  }
+  //
+  return selected;
 }

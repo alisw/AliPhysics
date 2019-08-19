@@ -178,6 +178,7 @@ public:
     void SetCutDCABachToPVWeighted   ( Double_t lCut ) { fCutDCABachToPVWeighted = lCut;    }
     
     void SetCutAtLeastOneTOF (Bool_t lCut) { fCutAtLeastOneTOF = lCut; }
+    void SetCutITSorTOF ( Bool_t lCut) { fCutITSorTOF = lCut; } 
     
     void SetCutIsCowboy (Int_t lCut) { fCutIsCowboy = lCut; }
     void SetCutIsCascadeCowboy (Int_t lCut) { fCutIsCascadeCowboy = lCut; }
@@ -287,6 +288,7 @@ public:
     Double_t GetCutDCABachToPVWeighted   () const { return fCutDCABachToPVWeighted;    }
     
     Bool_t GetCutAtLeastOneTOF () const { return fCutAtLeastOneTOF; }
+    Bool_t GetCutITSorTOF () const { return fCutITSorTOF; } 
     
     Int_t GetCutIsCowboy () const { return fCutIsCowboy; }
     Int_t GetCutIsCascadeCowboy () const { return fCutIsCascadeCowboy; }
@@ -437,12 +439,13 @@ private:
     Double_t fCutDCABachToPVWeighted;
     
     Bool_t fCutAtLeastOneTOF;
+    Bool_t fCutITSorTOF;
     
     //Cowboy/sailor checks
     Int_t fCutIsCowboy; //-1: sailor, 0: don't select, 1: cowboy
     Int_t fCutIsCascadeCowboy; //-1: sailor, 0: don't select, 1: cowboy
     
-    ClassDef(AliCascadeResult, 37)
+    ClassDef(AliCascadeResult, 38)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -480,5 +483,6 @@ private:
     // 35 - provision for prong-wise ITS refit requirement
     // 36 - cowboy/sailor check
     // 37 - modern track selections: parametric length, crossed rows + cr/L
+    // 38 - ITS or TOF requirement a la Fiorella added 
 };
 #endif

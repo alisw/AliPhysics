@@ -1,9 +1,14 @@
 #include "TROOT.h"
 #include "TSystem.h"
 AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
-    bool isMC=false,
-    TString CentEst="kInt7")
+    bool isMC = false,//1
+    TString CentEst = "kInt7",//2
+    bool DCAPlots = false,//3
+    bool CombSigma = false,//4
+    bool ContributionSplitting = false//5
+)
 {
+
   //Framework specific blabla
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -29,63 +34,125 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   //event collection
   evtCuts->CleanUpMult(false,false,false,true);
 
-  //Track Cuts are defined here
-  AliFemtoDreamTrackCuts *TrackCuts1=new AliFemtoDreamTrackCuts();
-  //This is used for the DCA distribution to estimate the fractions of
-  //primaries, secondaries etc. At the moment the splitting of secondary contributions
-  //is only done for protons!
-  TrackCuts1->SetPlotDCADist(false);
-  //A combined Sigma plot of the Sigma_TPC vs. Sigma_TOF in a TH3F, eats memory like
-  //a student on D-Day.
-  TrackCuts1->SetPlotCombSigma(false);
-
-  //Ill only comment on the non self speaking ones!
-  TrackCuts1->SetIsMonteCarlo(isMC);
-  TrackCuts1->SetCutCharge(1);
-  TrackCuts1->SetFilterBit(128);
+  //Track Cuts are defined here for deuterons
+  AliFemtoDreamTrackCuts *TrackCutsDeuteronDCA=AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+      isMC, true, CombSigma, ContributionSplitting);
+  TrackCutsDeuteronDCA->SetCutCharge(1);
+  AliFemtoDreamTrackCuts *TrackCutsDeuteronMass=new AliFemtoDreamTrackCuts();
+  TrackCutsDeuteronMass->SetPlotDCADist(DCAPlots);
+  TrackCutsDeuteronMass->SetPlotCombSigma(CombSigma);
+  TrackCutsDeuteronMass->SetPlotContrib(ContributionSplitting);
+  TrackCutsDeuteronMass->SetIsMonteCarlo(isMC);
+  TrackCutsDeuteronMass->SetCutCharge(1);
+  TrackCutsDeuteronMass->SetFilterBit(128);
   //You want to optimize this to only select regions with reasonable high purity
-  TrackCuts1->SetPtRange(0.4, 4.0);
+  TrackCutsDeuteronMass->SetPtRange(0.4, 4.0);
   //You want to ensure good tracking quality
-  TrackCuts1->SetEtaRange(-0.8, 0.8);
-  TrackCuts1->SetNClsTPC(80);
-  TrackCuts1->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
+  TrackCutsDeuteronMass->SetEtaRange(-0.8, 0.8);
+  TrackCutsDeuteronMass->SetNClsTPC(80);
+  TrackCutsDeuteronMass->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
   //You want to select primaries!
-  TrackCuts1->SetDCAVtxZ(0.2);
-  TrackCuts1->SetDCAVtxXY(0.1);
-  TrackCuts1->SetCutSharedCls(true);
-  TrackCuts1->SetCutTPCCrossedRows(true,70,0.83);
+  TrackCutsDeuteronMass->SetDCAVtxZ(0.2);
+  TrackCutsDeuteronMass->SetDCAVtxXY(0.1);
+  TrackCutsDeuteronMass->SetCutSharedCls(true);
+  TrackCutsDeuteronMass->SetCutTPCCrossedRows(true,70,0.83);
   //Here you define the PID
-  TrackCuts1->SetPID(AliPID::kDeuteron, 1.4);
+  TrackCutsDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
   //We are looking for pions rejecting them would be obstructive.
-  TrackCuts1->SetRejLowPtPionsTOF(true);
+  TrackCutsDeuteronMass->SetRejLowPtPionsTOF(false);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
-  TrackCuts1->SetCutSmallestSig(true);
+  TrackCutsDeuteronMass->SetCutSmallestSig(false);
 
   //The same things for anti deuterons
-  AliFemtoDreamTrackCuts *TrackCuts2=new AliFemtoDreamTrackCuts();
-  TrackCuts2->SetIsMonteCarlo(isMC);
-  TrackCuts2->SetCutCharge(-1);
-  TrackCuts2->SetFilterBit(128);
-  TrackCuts2->SetPtRange(0.4, 4.0);
-  TrackCuts2->SetEtaRange(-0.8, 0.8);
-  TrackCuts2->SetNClsTPC(80);
-  TrackCuts2->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
-  TrackCuts2->SetDCAVtxZ(0.2);
-  TrackCuts2->SetDCAVtxXY(0.1);
-  TrackCuts2->SetCutSharedCls(true);
-  TrackCuts2->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts2->SetPID(AliPID::kDeuteron, 1.4);
-  TrackCuts2->SetRejLowPtPionsTOF(true);
-  TrackCuts2->SetCutSmallestSig(true);
+   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronDCA=AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+      isMC, true, CombSigma, ContributionSplitting);
+  TrackCutsAntiDeuteronDCA->SetCutCharge(-1);
+  AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronMass=new AliFemtoDreamTrackCuts();
+  TrackCutsAntiDeuteronMass->SetPlotDCADist(DCAPlots);
+  TrackCutsAntiDeuteronMass->SetPlotCombSigma(CombSigma);
+  TrackCutsAntiDeuteronMass->SetPlotContrib(ContributionSplitting);
+  TrackCutsAntiDeuteronMass->SetIsMonteCarlo(isMC);
+  TrackCutsAntiDeuteronMass->SetCutCharge(-1);
+  TrackCutsAntiDeuteronMass->SetFilterBit(128);
+  //You want to optimize this to only select regions with reasonable high purity
+  TrackCutsAntiDeuteronMass->SetPtRange(0.4, 4.0);
+  //You want to ensure good tracking quality
+  TrackCutsAntiDeuteronMass->SetEtaRange(-0.8, 0.8);
+  TrackCutsAntiDeuteronMass->SetNClsTPC(80);
+  TrackCutsAntiDeuteronMass->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
+  //You want to select primaries!
+  TrackCutsAntiDeuteronMass->SetDCAVtxZ(0.2);
+  TrackCutsAntiDeuteronMass->SetDCAVtxXY(0.1);
+  TrackCutsAntiDeuteronMass->SetCutSharedCls(true);
+  TrackCutsAntiDeuteronMass->SetCutTPCCrossedRows(true,70,0.83);
+  //Here you define the PID
+  TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
+  //We are looking for pions rejecting them would be obstructive.
+  TrackCutsAntiDeuteronMass->SetRejLowPtPionsTOF(false);
+  //this checks if the sigma of the wanted hypothesis is the smallest, and if
+  //another particle has a smaller sigma, the track is rejected.
+  TrackCutsAntiDeuteronMass->SetCutSmallestSig(false);
 
-  //protons
-  AliFemtoDreamTrackCuts *TrackCuts3=AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
-  TrackCuts3->SetCutCharge(1);
+  //Track Cuts are defined here for deuterons
+  AliFemtoDreamTrackCuts *TrackCutsProtonDCA=AliFemtoDreamTrackCuts::PrimProtonCuts(
+      isMC, true, CombSigma, ContributionSplitting);
+  TrackCutsProtonDCA->SetCutCharge(1);
+  AliFemtoDreamTrackCuts *TrackCutsProtonMass=new AliFemtoDreamTrackCuts();
+  TrackCutsProtonMass->SetPlotDCADist(DCAPlots);
+  TrackCutsProtonMass->SetPlotCombSigma(CombSigma);
+  TrackCutsProtonMass->SetPlotContrib(ContributionSplitting);
+  TrackCutsProtonMass->SetIsMonteCarlo(isMC);
+  TrackCutsProtonMass->SetCutCharge(1);
+  TrackCutsProtonMass->SetFilterBit(128);
+  //You want to optimize this to only select regions with reasonable high purity
+  TrackCutsProtonMass->SetPtRange(0.5, 4.05);
+  //You want to ensure good tracking quality
+  TrackCutsProtonMass->SetEtaRange(-0.8, 0.8);
+  TrackCutsProtonMass->SetNClsTPC(80);
+  TrackCutsProtonMass->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
+  //You want to select primaries!
+  TrackCutsProtonMass->SetDCAVtxZ(0.2);
+  TrackCutsProtonMass->SetDCAVtxXY(0.1);
+  TrackCutsProtonMass->SetCutSharedCls(true);
+  TrackCutsProtonMass->SetCutTPCCrossedRows(true,70,0.83);
+  //Here you define the PID
+  TrackCutsProtonMass->SetPID(AliPID::kProton, 999.);
+  //We are looking for pions rejecting them would be obstructive.
+  TrackCutsProtonMass->SetRejLowPtPionsTOF(false);
+  //this checks if the sigma of the wanted hypothesis is the smallest, and if
+  //another particle has a smaller sigma, the track is rejected.
+  TrackCutsProtonMass->SetCutSmallestSig(false);
 
-  //antiprotons
-  AliFemtoDreamTrackCuts *TrackCuts4=AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
-  TrackCuts4->SetCutCharge(-1);
+  //The same things for anti deuterons
+   AliFemtoDreamTrackCuts *TrackCutsAntiProtonDCA=AliFemtoDreamTrackCuts::PrimProtonCuts(
+      isMC, true, CombSigma, ContributionSplitting);
+  TrackCutsAntiProtonDCA->SetCutCharge(-1);
+  AliFemtoDreamTrackCuts *TrackCutsAntiProtonMass=new AliFemtoDreamTrackCuts();
+  TrackCutsAntiProtonMass->SetPlotDCADist(DCAPlots);
+  TrackCutsAntiProtonMass->SetPlotCombSigma(CombSigma);
+  TrackCutsAntiProtonMass->SetPlotContrib(ContributionSplitting);
+  TrackCutsAntiProtonMass->SetIsMonteCarlo(isMC);
+  TrackCutsAntiProtonMass->SetCutCharge(-1);
+  TrackCutsAntiProtonMass->SetFilterBit(128);
+  //You want to optimize this to only select regions with reasonable high purity
+  TrackCutsAntiProtonMass->SetPtRange(0.5, 4.05);
+  //You want to ensure good tracking quality
+  TrackCutsAntiProtonMass->SetEtaRange(-0.8, 0.8);
+  TrackCutsAntiProtonMass->SetNClsTPC(80);
+  TrackCutsAntiProtonMass->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
+  //You want to select primaries!
+  TrackCutsAntiProtonMass->SetDCAVtxZ(0.2);
+  TrackCutsAntiProtonMass->SetDCAVtxXY(0.1);
+  TrackCutsAntiProtonMass->SetCutSharedCls(true);
+  TrackCutsAntiProtonMass->SetCutTPCCrossedRows(true,70,0.83);
+  //Here you define the PID
+  TrackCutsAntiProtonMass->SetPID(AliPID::kProton, 999.);
+  //We are looking for pions rejecting them would be obstructive.
+  TrackCutsAntiProtonMass->SetRejLowPtPionsTOF(false);
+  //this checks if the sigma of the wanted hypothesis is the smallest, and if
+  //another particle has a smaller sigma, the track is rejected.
+  TrackCutsAntiProtonMass->SetCutSmallestSig(false);
 
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
@@ -93,8 +160,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   //First we need to tell him about the particles we mix, from the
   //PDG code the mass is obtained.
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(211);
-  PDGParticles.push_back(211);
+  PDGParticles.push_back(2212);
+  PDGParticles.push_back(2212);
+  PDGParticles.push_back(1000010020);
+  PDGParticles.push_back(1000010020);
 
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -144,13 +213,34 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   NBins.push_back(750);
   NBins.push_back(750);
   NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
   std::vector<float> kMin;
   //minimum k* value
   kMin.push_back(0.);
   kMin.push_back(0.);
   kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
   //maximum k* value
   std::vector<float> kMax;
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
   kMax.push_back(3.);
   kMax.push_back(3.);
   kMax.push_back(3.);
@@ -217,10 +307,14 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
 
   //Throw all our settings to the task
   task->SetEventCuts(evtCuts);
-  task->SetTrackCutsPart1(TrackCuts1);
-  task->SetTrackCutsPart2(TrackCuts2);
-  task->SetTrackCutsPart3(TrackCuts3);
-  task->SetTrackCutsPart4(TrackCuts4);
+  task->SetTrackCutsDeuteronDCA(TrackCutsDeuteronDCA);
+  task->SetTrackCutsDeuteronMass(TrackCutsDeuteronMass);
+  task->SetTrackCutsAntiDeuteronDCA(TrackCutsAntiDeuteronDCA);
+  task->SetTrackCutsAntiDeuteronMass(TrackCutsAntiDeuteronMass);
+  task->SetTrackCutsProtonDCA(TrackCutsProtonDCA);
+  task->SetTrackCutsProtonMass(TrackCutsProtonMass);
+  task->SetTrackCutsAntiProtonDCA(TrackCutsAntiProtonDCA);
+  task->SetTrackCutsAntiProtonMass(TrackCutsAntiProtonMass);
   task->SetCollectionConfig(config);
 
   mgr->AddTask(task);
@@ -230,9 +324,15 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   mgr->ConnectInput(task, 0, cinput);
+  TString addon="";
+  if (CentEst=="kInt7") {
+    addon+="MB";
+  } else if (CentEst=="kHM") {
+    addon+="HM";
+  }
 
   AliAnalysisDataContainer *coutputQA;
-  TString QAName = Form("MyTask");
+  TString QAName = Form("%sQA",addon.Data());
   coutputQA = mgr->CreateContainer(
       QAName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,

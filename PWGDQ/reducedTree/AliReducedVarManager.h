@@ -15,6 +15,7 @@
 #include <TH3F.h>
 #include <TProfile2D.h>
 #include <TGraphErrors.h>
+#include <THn.h>
 
 #include <AliReducedPairInfo.h>
 
@@ -263,6 +264,12 @@ class AliReducedVarManager : public TObject {
     kTPCpileupContributorsAC,    // TPC pileup event contributors from A&C sides
     kTPCpileupContributorsA,     // TPC pileup event contributors from A side
     kTPCpileupContributorsC,     // TPC pileup event contributors from C side
+    kTPCpileupZAC2,      // TPC pileup event Z with larger DCAz selection from A&C sides  
+    kTPCpileupZA2,       // TPC pileup event Z with larger DCAz selection from A side
+    kTPCpileupZC2,       // TPC pileup event Z with larger DCAz selection from C side
+    kTPCpileupContributorsAC2,    // TPC pileup event contributors with larger DCAz selection from A&C sides
+    kTPCpileupContributorsA2,     // TPC pileup event contributors with larger DCAz selection from A side
+    kTPCpileupContributorsC2,     // TPC pileup event contributors with larger DCAz selection from C side
     kNTracksPerTrackingStatus,  // number of tracks with a given tracking flag
     kNTracksTPCoutBeforeClean=kNTracksPerTrackingStatus+kNTrackingStatus,      // TPCout tracks before ESD cleaning
     kNTracksTPCoutVsITSout,                              //  TPCout/ITSout
@@ -649,6 +656,8 @@ class AliReducedVarManager : public TObject {
     kTriggerRapAbs,   // absolute rapidity of J/psi candidate
     kAssociatedPt,          // pt of associated track
     kAssociatedPtBoosted,   // pt of associated track, after boost to trigger rest frame
+    kAssociatedPtOverTriggerGammaT, // pt of associated track / transverse gamma of J/psi candidate
+    kTriggerGammaT,                 // transverse gamma of J/psi candidate
     kAssociatedEta,         // eta of associated track
     kAssociatedEtaBoosted,
     kAssociatedPhi,         // phi of associated track
@@ -740,6 +749,8 @@ class AliReducedVarManager : public TObject {
   static TString GetVarUnit(Int_t var) {return fgVariableUnits[var];} 
 
   static void SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F* widthMap, Variables xVarDep, Variables yVarDep);
+  static void SetTPCpidCalibMaps(Int_t pid, THnF* centroidMap, THnF* widthMap, THnI* statusMap);
+  static void SetTPCpidCalibDepVars(Variables vars[]);
   static void SetPairEfficiencyMap(TH2F* effMap, Variables xVarDep, Variables yVarDep);
   static void SetAssociatedHadronEfficiencyMap(TH1F* map, Variables varX);
   static void SetAssociatedHadronEfficiencyMap(TH2F* map, Variables varX, Variables varY);
@@ -779,7 +790,11 @@ class AliReducedVarManager : public TObject {
   static TH2F* fgTPCelectronWidthMap;       // TPC electron width 2D map
   static Variables fgVarDependencyX;        // varX in the 2-D electron correction maps
   static Variables fgVarDependencyY;        // varY in the 2-D electron correction maps
-  static TH2F* fgPairEffMap;       // 2D pair efficiency map
+  static THnF* fgTPCpidCalibCentroid[3];    // TPC calib centroid 4D maps; [0] - electron, [1] - pion, [2] - proton
+  static THnF* fgTPCpidCalibWidth[3];       // TPC calib width 4D map
+  static THnI* fgTPCpidCalibStatus[3];      // TPC calib status 4D map
+  static Variables fgTPCpidCalibVars[4];    // variables used for TPC pid 4D calibration
+  static TH2F* fgPairEffMap;                // 2D pair efficiency map
   static Variables fgEffMapVarDependencyX;        // varX in the pair eff maps
   static Variables fgEffMapVarDependencyY;        // varY in the pair eff maps
   static TH1F* fgAssocHadronEffMap1D;       // 1D pair efficiency map
@@ -821,7 +836,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 11);
+  ClassDef(AliReducedVarManager, 12);
 };
 
 #endif

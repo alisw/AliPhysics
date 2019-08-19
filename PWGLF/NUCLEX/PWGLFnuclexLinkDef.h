@@ -11,6 +11,7 @@
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
 /// * LambdaNN
 #pragma link C++ class AliAnalysisTaskLNNntuple+;
+#pragma link C++ class AliAnalysisTaskLNNv0Bkg+;
 /// * Ps
 #pragma link C++ class AliAnalysisTaskPsEfficiency+;
 /// * dStar
@@ -37,6 +38,7 @@
 #pragma link C++ class AliLightNTrackHist+;
 #pragma link C++ class AliLightNEventCuts+;
 #pragma link C++ class AliLightNTrackMCHist+;
+#pragma link C++ class AliAnalysisTaskAntipd+;
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
@@ -54,15 +56,22 @@
 #pragma link C++ class AliAnalysisTaskTritonVsMultiplicity_PbPb+;
 /// * ReducedTreeNuclei
 #pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
+#pragma link C++ class AliAnalysisTaskReducedTreeHypertriton+;
 /// * v2
 #pragma link C++ class AliAnalysisTaskNucleiv2+;
 #pragma link C++ class AliAnalysisTaskNucleiv2SP+;
 #pragma link C++ class AliAnalysisTaskNucleiv2pPb+;
 #pragma link C++ class AliAnalysisTaskAllPtcv2+;
+#pragma link C++ class AliAnalysishDEventCollection+;  
+#pragma link C++ class AliReconstructed2pcFirst+;
+#pragma link C++ class AliReconstructed2pcSecond+;
+#pragma link C++ class AliAnalysishDEvent+;
+#pragma link C++ class AliAnalysishDEventCollection+;
+#pragma link C++ class AliAnalysisTaskDeuFlow2PC+;
+
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
 #pragma link C++ class AliAnalysisTaskNucleiKineCor+;
-
 /// Hypernuclei
 /// * Hyp2body
 #pragma link C++ class AliAnalysisTaskHelium3Pi+;
@@ -74,6 +83,7 @@
 #pragma link C++ class AliReducedHypTritEvent+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 #pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
+#pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
 #pragma link C++ class RHyperTritonHe3pi+;
 #pragma link C++ class SHyperTritonHe3pi+;
 #pragma link C++ class std::vector<RHyperTritonHe3pi>+;
@@ -82,12 +92,19 @@
 #pragma link C++ class RTracklet+;
 #pragma link C++ class std::vector<RTracklet>+;
 #pragma link C++ class SGenericV0+;
+#pragma link C++ class SGenericTracklet+;
 #pragma link C++ class std::vector<SGenericV0>+;
+#pragma link C++ class std::vector<SGenericTracklet>+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3ML+;
+#pragma link C++ class RHypertriton3+;
+#pragma link C++ class SHypertriton3+;
+#pragma link C++ class std::vector<RHypertriton3>+;
+#pragma link C++ class std::vector<SHypertriton3>+;
+#pragma link C++ class REvent+;
 
 /// Hyp3body Selector
 #ifdef __CLING__
@@ -107,4 +124,6 @@
 /// * NanoAOD
 #pragma link C++ class AliNanoFilterPID+;
 #pragma link C++ class AliNanoSkimmingPID+;
+/// * ChunkFilter
+#pragma link C++ class AliAnalysisTaskFilterHe3+;
 #endif

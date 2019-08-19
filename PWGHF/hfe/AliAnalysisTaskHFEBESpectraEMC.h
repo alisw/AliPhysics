@@ -244,7 +244,9 @@ private:
     TH1F                *fInclsElecPt;//!
     TH1F                *fHadPt_AftEID;//!
     TH2F                *fHadEovp_AftEID;//!
+    TH2F                *fHadEovpNL_AftEID;//!
     TH2F                *fEop_AftEID;//!
+    TH2F                *fEopNL_AftEID;//!
     TH1F                *fNElecInEvt;//!
     TH1F                *fULSElecPt;//!
     TH1F                *fLSElecPt;//!

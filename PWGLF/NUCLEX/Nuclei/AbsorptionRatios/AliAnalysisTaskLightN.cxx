@@ -64,27 +64,11 @@ AliAnalysisTaskLightN::AliAnalysisTaskLightN(const char *name,bool isMC)
     DefineOutput(4, TList::Class());  //Output for the Antitrack Cuts (Proton)
     DefineOutput(5, TList::Class());  //Output for the Track Cuts(Deuteron)
     DefineOutput(6, TList::Class());  //Output for the AntiTrack Cuts (Deuteron)
-    DefineOutput(7, TList::Class());  //test systrackT Proton
-    DefineOutput(8, TList::Class());  //test systrackT antiProton
-    DefineOutput(9, TList::Class());  //test systrackL Deuteron
-    DefineOutput(10, TList::Class());  //test systrackL antiDeuteron
-    DefineOutput(11, TList::Class());  //test systrackT Proton
-    DefineOutput(12, TList::Class());  //test systrackT antiProton
-    DefineOutput(13, TList::Class());  //test systrackL Deuteron
-    DefineOutput(14, TList::Class());  //test systrackL antiDeuteron
-    DefineOutput(15, TList::Class());  //test systrackT Proton
-    DefineOutput(16, TList::Class());  //test systrackT antiProton
-    DefineOutput(17, TList::Class());  //test systrackL Deuteron
-    DefineOutput(18, TList::Class());  //test systrackL antiDeuteron
-    DefineOutput(19, TList::Class());  //test systrackT Proton
-    DefineOutput(20, TList::Class());  //test systrackT antiProton
-    DefineOutput(21, TList::Class());  //test systrackL Deuteron
-    DefineOutput(22, TList::Class());  //test systrackL antiDeuteron
     if (fIsMC) {
-        DefineOutput(23, TList::Class());  //Output for the Track Cut MC Info (Proton)
-        DefineOutput(24, TList::Class()); //Output for the AntiTrack Cut MC Info (Proton)
-        DefineOutput(25, TList::Class()); //Output for the Track Cut MC Info (Deuteron)
-        DefineOutput(26, TList::Class()); //Output for the AntiTrack Cut MC Info (Deuteron)
+        DefineOutput(7, TList::Class());  //Output for the Track Cut MC Info (Proton)
+        DefineOutput(8, TList::Class()); //Output for the AntiTrack Cut MC Info (Proton)
+        DefineOutput(9, TList::Class()); //Output for the Track Cut MC Info (Deuteron)
+        DefineOutput(10, TList::Class()); //Output for the AntiTrack Cut MC Info (Deuteron)
     }
 }
 
@@ -157,10 +141,10 @@ void AliAnalysisTaskLightN::UserCreateOutputObjects() {
     } else {
         AliFatal("Event Cut Histograms not available");
     }
-    if(strcmp(fname,"LightN")==0)PostData(1,fQA);
-    if(strcmp(fname,"LightN")==0)PostData(2,fEvtHistListParticle);
-    if(strcmp(fname,"LightN")==0)PostData(3,fTrackCutHistListProton);
-    if(strcmp(fname,"LightN")==0)PostData(4,fAntiTrackCutHistListProton);
+    PostData(1,fQA);
+    PostData(2,fEvtHistListParticle);
+    PostData(3,fTrackCutHistListProton);
+    PostData(4,fAntiTrackCutHistListProton);
     
     if (fIsMC) {
         if (fTrackCutsProton->GetMCQAHists()) {
@@ -173,8 +157,8 @@ void AliAnalysisTaskLightN::UserCreateOutputObjects() {
         } else {
             AliFatal("No Antitrack Cut MC Histograms!");
         }
-        if(strcmp(fname,"LightN")==0)PostData(23,fTrackCutHistMCListProton);
-        if(strcmp(fname,"LightN")==0)PostData(24,fAntiTrackCutHistMCListProton);
+        PostData(7,fTrackCutHistMCListProton);
+        PostData(8,fAntiTrackCutHistMCListProton);
     }
     
     
@@ -189,8 +173,8 @@ void AliAnalysisTaskLightN::UserCreateOutputObjects() {
     } else {
         AliFatal("Event Cut Histograms not available");
     }
-    if(strcmp(fname,"LightN")==0)PostData(5,fTrackCutHistListDeuteron);
-    if(strcmp(fname,"LightN")==0)PostData(6,fAntiTrackCutHistListDeuteron);
+    PostData(5,fTrackCutHistListDeuteron);
+    PostData(6,fAntiTrackCutHistListDeuteron);
     
     if (fIsMC) {
         if (fTrackCutsDeuteron->GetMCQAHists()) {
@@ -203,30 +187,9 @@ void AliAnalysisTaskLightN::UserCreateOutputObjects() {
         } else {
             AliFatal("No Antitrack Cut MC Histograms!");
         }
-        if(strcmp(fname,"LightN")==0)PostData(25,fTrackCutHistMCListDeuteron);
-        if(strcmp(fname,"LightN")==0)PostData(26,fAntiTrackCutHistMCListDeuteron);
+        PostData(9,fTrackCutHistMCListDeuteron);
+        PostData(10,fAntiTrackCutHistMCListDeuteron);
     }
-    
-    //Systematics
-    if(strcmp(fname,"systematics1")==0)PostData(7,fTrackCutHistListProton);
-    if(strcmp(fname,"systematics1")==0)PostData(8,fAntiTrackCutHistListProton);
-    if(strcmp(fname,"systematics1")==0)PostData(9,fTrackCutHistListDeuteron);
-    if(strcmp(fname,"systematics1")==0)PostData(10,fAntiTrackCutHistListDeuteron);
-    
-    if(strcmp(fname,"systematics2")==0)PostData(11,fTrackCutHistListProton);
-    if(strcmp(fname,"systematics2")==0)PostData(12,fAntiTrackCutHistListProton);
-    if(strcmp(fname,"systematics2")==0)PostData(13,fTrackCutHistListDeuteron);
-    if(strcmp(fname,"systematics2")==0)PostData(14,fAntiTrackCutHistListDeuteron);
-    
-    if(strcmp(fname,"systematics3")==0)PostData(15,fTrackCutHistListProton);
-    if(strcmp(fname,"systematics3")==0)PostData(16,fAntiTrackCutHistListProton);
-    if(strcmp(fname,"systematics3")==0)PostData(17,fTrackCutHistListDeuteron);
-    if(strcmp(fname,"systematics3")==0)PostData(18,fAntiTrackCutHistListDeuteron);
-    
-    if(strcmp(fname,"systematics4")==0)PostData(19,fTrackCutHistListProton);
-    if(strcmp(fname,"systematics4")==0)PostData(20,fAntiTrackCutHistListProton);
-    if(strcmp(fname,"systematics4")==0)PostData(21,fTrackCutHistListDeuteron);
-    if(strcmp(fname,"systematics4")==0)PostData(22,fAntiTrackCutHistListDeuteron);
     
 }
 
@@ -258,10 +221,10 @@ void AliAnalysisTaskLightN::UserExec(Option_t *) {
         } else {
             AliFatal("AntiTrack Cut Histograms not available");
         }
-        if(strcmp(fname,"LightN")==0)PostData(1,fQA);
-        if(strcmp(fname,"LightN")==0)PostData(2,fEvtHistListParticle);
-        if(strcmp(fname,"LightN")==0)PostData(3,fTrackCutHistListProton);
-        if(strcmp(fname,"LightN")==0)PostData(4,fAntiTrackCutHistListProton);
+        PostData(1,fQA);
+        PostData(2,fEvtHistListParticle);
+        PostData(3,fTrackCutHistListProton);
+        PostData(4,fAntiTrackCutHistListProton);
         if (fIsMC) {
             if (fTrackCutsProton->GetMCQAHists()) {
                 fTrackCutHistMCListProton=fTrackCutsProton->GetMCQAHists();
@@ -273,8 +236,8 @@ void AliAnalysisTaskLightN::UserExec(Option_t *) {
             } else {
                 AliFatal("No Antitrack Cut MC Histograms!");
             }
-            if(strcmp(fname,"LightN")==0)PostData(23,fTrackCutHistMCListProton);
-            if(strcmp(fname,"LightN")==0)PostData(24,fAntiTrackCutHistMCListProton);
+            PostData(7,fTrackCutHistMCListProton);
+            PostData(8,fAntiTrackCutHistMCListProton);
         }
         
         if (fAnalysisParticle->GetTrackCutHistsDeuteron()) {
@@ -288,8 +251,8 @@ void AliAnalysisTaskLightN::UserExec(Option_t *) {
             AliFatal("AntiTrack Cut Histograms not available");
         }
         
-        if(strcmp(fname,"LightN")==0)PostData(5,fTrackCutHistListDeuteron);
-        if(strcmp(fname,"LightN")==0)PostData(6,fAntiTrackCutHistListDeuteron);
+        PostData(5,fTrackCutHistListDeuteron);
+        PostData(6,fAntiTrackCutHistListDeuteron);
         if (fIsMC) {
             if (fTrackCutsDeuteron->GetMCQAHists()) {
                 fTrackCutHistMCListDeuteron=fTrackCutsDeuteron->GetMCQAHists();
@@ -301,30 +264,8 @@ void AliAnalysisTaskLightN::UserExec(Option_t *) {
             } else {
                 AliFatal("No Antitrack Cut MC Histograms!");
             }
-            if(strcmp(fname,"LightN")==0)PostData(25,fTrackCutHistMCListDeuteron);
-            if(strcmp(fname,"LightN")==0)PostData(26,fAntiTrackCutHistMCListDeuteron);
+            PostData(9,fTrackCutHistMCListDeuteron);
+            PostData(10,fAntiTrackCutHistMCListDeuteron);
         }
-        
-        //Systematics
-        if(strcmp(fname,"systematics1")==0)PostData(7,fTrackCutHistListProton);
-        if(strcmp(fname,"systematics1")==0)PostData(8,fAntiTrackCutHistListProton);
-        if(strcmp(fname,"systematics1")==0)PostData(9,fTrackCutHistListDeuteron);
-        if(strcmp(fname,"systematics1")==0)PostData(10,fAntiTrackCutHistListDeuteron);
-        
-        if(strcmp(fname,"systematics2")==0)PostData(11,fTrackCutHistListProton);
-        if(strcmp(fname,"systematics2")==0)PostData(12,fAntiTrackCutHistListProton);
-        if(strcmp(fname,"systematics2")==0)PostData(13,fTrackCutHistListDeuteron);
-        if(strcmp(fname,"systematics2")==0)PostData(14,fAntiTrackCutHistListDeuteron);
-        
-        if(strcmp(fname,"systematics3")==0)PostData(15,fTrackCutHistListProton);
-        if(strcmp(fname,"systematics3")==0)PostData(16,fAntiTrackCutHistListProton);
-        if(strcmp(fname,"systematics3")==0)PostData(17,fTrackCutHistListDeuteron);
-        if(strcmp(fname,"systematics3")==0)PostData(18,fAntiTrackCutHistListDeuteron);
-        
-        if(strcmp(fname,"systematics4")==0)PostData(19,fTrackCutHistListProton);
-        if(strcmp(fname,"systematics4")==0)PostData(20,fAntiTrackCutHistListProton);
-        if(strcmp(fname,"systematics4")==0)PostData(21,fTrackCutHistListDeuteron);
-        if(strcmp(fname,"systematics4")==0)PostData(22,fAntiTrackCutHistListDeuteron);
-        
     }
 }

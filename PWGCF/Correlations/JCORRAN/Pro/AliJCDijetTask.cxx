@@ -28,96 +28,120 @@
 
 //______________________________________________________________________________
 AliJCDijetTask::AliJCDijetTask() :
-	AliAnalysisTaskSE("JCDijetBaseTask"),
-	fJCatalystTask(NULL),
-	fJCatalystTaskName("JCatalystTask"),
+    AliAnalysisTaskSE("JCDijetBaseTask"),
+    fJCatalystTask(NULL),
+    fJCatalystDetMCTask(NULL),
+    fJCatalystTaskName("JCatalystTask"),
+    fJCatalystDetMCTaskName("JCatalystDetMCTask"),
     fcentralityBins(0),
     fjetCone(0),
     fktJetCone(0),
     fktScheme(0),
     fusePionMassInktjets(0),
     fuseDeltaPhiBGSubtr(0),
-	fIsMC(kTRUE),
+    fIsMC(kTRUE),
     fparticleEtaCut(0),
     fleadingJetCut(0),
     fsubleadingJetCut(0),
     fconstituentCut(0),
     fdeltaPhiCut(0),
-	fhistos(NULL),
-	fCBin(-1),
-	fOutput(NULL)
+    fmatchingR(0),
+    fhistos(NULL),
+    fhistosDetMC(NULL),
+    fana(NULL),
+    fanaMC(NULL),
+    fCBin(-1),
+    fCBinDetMC(-1),
+    fOutput(NULL)
 {
 }
 
 //______________________________________________________________________________
 AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
-	AliAnalysisTaskSE(name), 
-	fJCatalystTask(NULL),
-	fJCatalystTaskName("JCatalystTask"),
+    AliAnalysisTaskSE(name), 
+    fJCatalystTask(NULL),
+    fJCatalystDetMCTask(NULL),
+    fJCatalystTaskName("JCatalystTask"),
+    fJCatalystDetMCTaskName("JCatalystDetMCTask"),
     fcentralityBins(0),
     fjetCone(0),
     fktJetCone(0),
     fktScheme(0),
     fusePionMassInktjets(0),
     fuseDeltaPhiBGSubtr(0),
-	fIsMC(kTRUE),
+    fIsMC(kTRUE),
     fparticleEtaCut(0),
     fleadingJetCut(0),
     fsubleadingJetCut(0),
     fconstituentCut(0),
     fdeltaPhiCut(0),
-	fhistos(NULL),
-	fCBin(-1),
-	fOutput(NULL)
+    fmatchingR(0),
+    fhistos(NULL),
+    fhistosDetMC(NULL),
+    fana(NULL),
+    fanaMC(NULL),
+    fCBin(-1),
+    fCBinDetMC(-1),
+    fOutput(NULL)
 {
-	// Constructor
-	AliInfo("---- AliJCDijetTask Constructor ----");
-	DefineOutput (1, TDirectory::Class());
+    // Constructor
+    AliInfo("---- AliJCDijetTask Constructor ----");
+    DefineOutput (1, TDirectory::Class());
 }
 
 //____________________________________________________________________________
 AliJCDijetTask::AliJCDijetTask(const AliJCDijetTask& ap) :
-	AliAnalysisTaskSE(ap.GetName()), 
-	fJCatalystTask(ap.fJCatalystTask),
-	fJCatalystTaskName(ap.fJCatalystTaskName),
+    AliAnalysisTaskSE(ap.GetName()), 
+    fJCatalystTask(ap.fJCatalystTask),
+    fJCatalystDetMCTask(ap.fJCatalystDetMCTask),
+    fJCatalystTaskName(ap.fJCatalystTaskName),
+    fJCatalystDetMCTaskName(ap.fJCatalystDetMCTaskName),
     fcentralityBins(ap.fcentralityBins),
     fjetCone(ap.fjetCone),
     fktJetCone(ap.fktJetCone),
     fktScheme(ap.fktScheme),
     fusePionMassInktjets(ap.fusePionMassInktjets),
     fuseDeltaPhiBGSubtr(ap.fuseDeltaPhiBGSubtr),
-	fIsMC(ap.fIsMC),
+    fIsMC(ap.fIsMC),
     fparticleEtaCut(ap.fparticleEtaCut),
     fleadingJetCut(ap.fleadingJetCut),
     fsubleadingJetCut(ap.fsubleadingJetCut),
     fconstituentCut(ap.fconstituentCut),
     fdeltaPhiCut(ap.fdeltaPhiCut),
-	fhistos(ap.fhistos),
-	fCBin(ap.fCBin),
-	fOutput( ap.fOutput )
+    fmatchingR(ap.fmatchingR),
+    fhistos(ap.fhistos),
+    fhistosDetMC(ap.fhistosDetMC),
+    fana(ap.fana),
+    fanaMC(ap.fanaMC),
+    fCBin(ap.fCBin),
+    fCBinDetMC(ap.fCBinDetMC),
+    fOutput( ap.fOutput )
 { 
 
-	AliInfo("----DEBUG AliJCDijetTask COPY ----");
+    AliInfo("----DEBUG AliJCDijetTask COPY ----");
 
 }
 
 //_____________________________________________________________________________
 AliJCDijetTask& AliJCDijetTask::operator = (const AliJCDijetTask& ap)
 {
-	// assignment operator
+    // assignment operator
 
-	AliInfo("----DEBUG AliJCDijetTask operator= ----");
-	this->~AliJCDijetTask();
-	new(this) AliJCDijetTask(ap);
-	return *this;
+    AliInfo("----DEBUG AliJCDijetTask operator= ----");
+    this->~AliJCDijetTask();
+    new(this) AliJCDijetTask(ap);
+    return *this;
 }
 
 //______________________________________________________________________________
 AliJCDijetTask::~AliJCDijetTask()
 {
-	// destructor 
-	delete fOutput;
-	delete fhistos;
+    // destructor 
+    delete fOutput;
+    delete fhistos;
+    delete fhistosDetMC;
+    delete fana;
+    delete fanaMC;
 
 }
 
@@ -125,23 +149,35 @@ AliJCDijetTask::~AliJCDijetTask()
 
 void AliJCDijetTask::UserCreateOutputObjects()
 {  
-	//=== create the jcorran outputs objects
-	if(fDebug > 1) printf("AliJCDijetTask::UserCreateOutPutData() \n");
-	//=== Get AnalysisManager
-	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+    //=== create the jcorran outputs objects
+    if(fDebug > 1) printf("AliJCDijetTask::UserCreateOutPutData() \n");
+    //=== Get AnalysisManager
+    AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 
-	fJCatalystTask = (AliJCatalystTask*)(man->GetTask( fJCatalystTaskName ));
+    fJCatalystTask = (AliJCatalystTask*)(man->GetTask( fJCatalystTaskName ));
+    if(fIsMC) fJCatalystDetMCTask = (AliJCatalystTask*)(man->GetTask( fJCatalystDetMCTaskName ));
 
-	OpenFile(1);
-	fOutput = gDirectory;
-	fOutput->cd();
+    OpenFile(1);
+    fOutput = gDirectory;
+    fOutput->cd();
 
 
-	fhistos = new AliJCDijetHistos();
-	fhistos->SetCentralityBinsHistos(fcentralityBins);
-	fhistos->CreateEventTrackHistos();
-    
-	fhistos->fHMG->Print();
+    fhistos = new AliJCDijetHistos();
+    fhistos->SetName("jcdijet");
+    fhistos->SetCentralityBinsHistos(fcentralityBins);
+    fhistos->CreateEventTrackHistos();
+    fhistos->fHMG->Print();
+    fana = new AliJCDijetAna();
+
+    if(fIsMC) {
+        fhistosDetMC = new AliJCDijetHistos();
+        fhistosDetMC->SetName("jcdijetDetMC");
+        fhistosDetMC->SetCentralityBinsHistos(fcentralityBins);
+        fhistosDetMC->CreateEventTrackHistos();
+        fhistosDetMC->fHMG->Print();
+        fanaMC = new AliJCDijetAna();
+    }
+
 
     TString sktScheme;
     switch (fktScheme) {
@@ -179,7 +215,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Dijet leading jet cut:      " << fleadingJetCut << endl;
     cout << "Dijet subleading jet cut:   " << fsubleadingJetCut << endl;
     cout << "Jet leading const. cut:     " << fconstituentCut << endl;
-    cout << "Dijet DeltaPhi cut :        pi/" << fdeltaPhiCut << endl;
+    cout << "Dijet DeltaPhi cut:         pi/" << fdeltaPhiCut << endl;
+    cout << "Matching R for MC:          " << fmatchingR << endl;
     cout << endl;
 
     if(fusePionMassInktjets && fktScheme!=0) {
@@ -187,112 +224,106 @@ void AliJCDijetTask::UserCreateOutputObjects()
         cout << endl;
     }
 
-    // Save information about the settings used.
-    fhistos->fh_info->Fill("Count", 1.0);
-    fhistos->fh_info->Fill("MC", IsMC());
-    for(unsigned i=0; i< fcentralityBins.size(); i++) fhistos->fh_info->Fill(Form("Cent bin border %02d",i), fcentralityBins.at(i));
-    fhistos->fh_info->Fill("Jet cone", fjetCone);
-    fhistos->fh_info->Fill("kt-jet cone", fktJetCone);
-    fhistos->fh_info->Fill("Scheme", fktScheme);
-    fhistos->fh_info->Fill("Use pion mass", fusePionMassInktjets);
-    fhistos->fh_info->Fill("Use DeltaPhi BG Subtr", fuseDeltaPhiBGSubtr);
-    fhistos->fh_info->Fill("Particle eta cut", fparticleEtaCut);
-    fhistos->fh_info->Fill("Particle pt cut", fparticlePtCut);
-    fhistos->fh_info->Fill("Leading jet cut", fleadingJetCut);
-    fhistos->fh_info->Fill("Subleading jet cut", fsubleadingJetCut);
-    fhistos->fh_info->Fill("Const. cut", fconstituentCut);
-    fhistos->fh_info->Fill("Delta phi cut pi/",fdeltaPhiCut);
+#if !defined(__CINT__) && !defined(__MAKECINT__)
+    fana->SetSettings(fDebug,
+                      fparticleEtaCut,
+                      fparticlePtCut,
+                      fjetCone,
+                      fktJetCone,
+                      fktScheme,
+                      fusePionMassInktjets,
+                      fuseDeltaPhiBGSubtr,
+                      fconstituentCut,
+                      fleadingJetCut,
+                      fsubleadingJetCut,
+                      fdeltaPhiCut,
+                      fmatchingR);
 
-    // Initialize fh_events so that the bin order is correct
-    for (unsigned iBin=0; iBin < fcentralityBins.size()-1; iBin++) {
-        fhistos->fh_events[iBin]->Fill("events",0.0);
-        fhistos->fh_events[iBin]->Fill("particles",0.0);
-        fhistos->fh_events[iBin]->Fill("acc. particles",0.0);
-        fhistos->fh_events[iBin]->Fill("no rho calc. events",0.0);
-        fhistos->fh_events[iBin]->Fill("rho calc. events",0.0);
-        fhistos->fh_events[iBin]->Fill("jets",0.0);
-        fhistos->fh_events[iBin]->Fill("acc. jets",0.0);
-        fhistos->fh_events[iBin]->Fill("const. cut jets",0.0);
-        fhistos->fh_events[iBin]->Fill("bg. subtr. jets",0.0);
-        fhistos->fh_events[iBin]->Fill("bg. subtr. const. cut jets",0.0);
-        fhistos->fh_events[iBin]->Fill("kt-jets",0.0);
-        fhistos->fh_events[iBin]->Fill("acc. kt-jets",0.0);
-        fhistos->fh_events[iBin]->Fill("leading jet drop",0.0);
-        fhistos->fh_events[iBin]->Fill("subleading jet drop",0.0);
-        fhistos->fh_events[iBin]->Fill("raw dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("raw dijets leading cut",0.0);
-        fhistos->fh_events[iBin]->Fill("raw acc. dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("raw deltaphi cut dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("bg. subtr. dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("bg. subtr. dijets leading cut",0.0);
-        fhistos->fh_events[iBin]->Fill("bg. subtr. acc. dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("bg. subtr. deltaphi cut dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("bg. subtr. const. cut dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("bg. subtr. const. cut dijets leading cut",0.0);
-        fhistos->fh_events[iBin]->Fill("bg. subtr. const. cut acc. dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("bg. subtr. const. cut deltaphi cut dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("const. cut dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("const. cut dijets leading cut",0.0);
-        fhistos->fh_events[iBin]->Fill("const. cut acc. dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("const. cut deltaphi cut dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("kt dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("kt dijets leading cut",0.0);
-        fhistos->fh_events[iBin]->Fill("kt acc. dijets",0.0);
-        fhistos->fh_events[iBin]->Fill("kt deltaphi cut dijets",0.0);
+    if(fIsMC) {
+        fanaMC->SetSettings(fDebug,
+                            fparticleEtaCut,
+                            fparticlePtCut,
+                            fjetCone,
+                            fktJetCone,
+                            fktScheme,
+                            fusePionMassInktjets,
+                            fuseDeltaPhiBGSubtr,
+                            fconstituentCut,
+                            fleadingJetCut,
+                            fsubleadingJetCut,
+                            fdeltaPhiCut,
+                            fmatchingR);
     }
 
-	// Load Custom Configuration and parameters
-	// override values with parameters
-	PostData(1, fOutput);
+    // Save information about the settings used.
+    // Done after SetSettings
+    fana->InitHistos(fhistos, fIsMC, fcentralityBins.size());
+    if(fIsMC) fanaMC->InitHistos(fhistosDetMC, fIsMC, fcentralityBins.size());
+
+#endif
+
+    // Load Custom Configuration and parameters
+    // override values with parameters
+    PostData(1, fOutput);
 
 }
 
 //______________________________________________________________________________
 void AliJCDijetTask::UserExec(Option_t* /*option*/) 
 {
-	// Processing of one event
-	if(fDebug > 5) cout << "------- AliJCDijetTask Exec-------"<<endl;
-	if(!((Entry()-1)%1000))  AliInfo(Form(" Processing event # %lld",  Entry())); 
-	if( fJCatalystTask->GetJCatalystEntry() != fEntry ) return;
-	fCBin = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
-	if(fCBin == -1) return;
+    // Processing of one event
+    if(fDebug > 5) cout << "------- AliJCDijetTask Exec-------"<<endl;
+    if(!((Entry()-1)%1000))  AliInfo(Form(" Processing event # %lld",  Entry())); 
+    if( fJCatalystTask->GetJCatalystEntry() != fEntry) return;
+    fCBin = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
+    if(fCBin == -1) return;
 
     fhistos->fh_events[fCBin]->Fill("events",1.0);
     fhistos->fh_centrality->Fill(fJCatalystTask->GetCentrality());
     fhistos->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
-	
+
     TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
 
-    AliJCDijetAna::CalculateJetsDijets(fInputList,
-                        fDebug,
-                        fCBin,
-                        fparticleEtaCut,
-                        fparticlePtCut,
-                        fjetCone,
-                        fktJetCone,
-                        fktScheme,
-                        fusePionMassInktjets,
-                        fuseDeltaPhiBGSubtr,
-                        fconstituentCut,
-                        fleadingJetCut,
-                        fsubleadingJetCut,
-                        fdeltaPhiCut,
-                        fhistos);
-	
+#if !defined(__CINT__) && !defined(__MAKECINT__)
+    fana->CalculateJets(fInputList, fhistos, fCBin);
+    fana->FillJetsDijets(fhistos, fCBin);
+#endif
+
+    if(fIsMC) {
+        if(fJCatalystDetMCTask->GetJCatalystEntry() != fEntry) return;
+        fCBinDetMC = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
+        if(fCBinDetMC == -1) return;
+
+        fhistosDetMC->fh_events[fCBin]->Fill("events",1.0);
+        fhistosDetMC->fh_centrality->Fill(fJCatalystTask->GetCentrality());
+        fhistosDetMC->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
+
+        TClonesArray *fInputListDetMC = (TClonesArray*)fJCatalystDetMCTask->GetInputList();
+
+#if !defined(__CINT__) && !defined(__MAKECINT__)
+        fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
+        fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC);
+
+        // Here response matrix calculation.
+        fana->CalculateResponse(fanaMC,fhistosDetMC);
+#endif
+    }
+
+
 }
 
 //______________________________________________________________________________
 void AliJCDijetTask::Init()
 {
-	// Intialisation of parameters
-	AliInfo("Doing initialization") ; 
+    // Intialisation of parameters
+    AliInfo("Doing initialization") ; 
 
 }
 
 //______________________________________________________________________________
 void AliJCDijetTask::Terminate(Option_t *)
 {
-	// Processing when the event loop is ended
-	cout<<"AliJCDijetTask Analysis DONE !!"<<endl; 
+    // Processing when the event loop is ended
+    cout<<"AliJCDijetTask Analysis DONE !!"<<endl; 
 }
 

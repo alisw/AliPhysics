@@ -2687,7 +2687,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
               fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data()),
          Form("#Delta #varphi vs #Delta #eta vs #it{p}_{T}^{trig} for associated #it{p}_{T} bin [%2.1f,%2.1f]%s", 
               fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data()),
-         fNTrigPtBins ,fTrigPtBinLimit[0] , fTrigPtBinLimit[fNTrigPtBins], 
+         fNTrigPtBins, fTrigPtBinLimit[0], fTrigPtBinLimit[fNTrigPtBins-1], 
          ndeltaphibins,deltaphimin,deltaphimax,
          ndeltaetabins,deltaetamin,deltaetamax);
         fhDeltaPhiDeltaEtaAssocPtBin[bin]->SetYTitle("#Delta #varphi (rad)");
@@ -3583,7 +3583,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
                 fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data()),
            Form("Mixed event #Delta #eta vs #Delta #varphi vs #it{p}_{T trigger} for associated #it{p}_{T} bin [%2.1f,%2.1f]%s", 
                 fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data()),
-           fNTrigPtBins  ,fTrigPtBinLimit[0] , fTrigPtBinLimit[fNTrigPtBins],
+           fNTrigPtBins  ,fTrigPtBinLimit[0] , fTrigPtBinLimit[fNTrigPtBins-1],
            ndeltaphibins ,deltaphimin,deltaphimax,
            ndeltaetabins ,deltaetamin,deltaetamax);
           fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin]->SetYTitle("#Delta #varphi (rad)");
@@ -3841,17 +3841,23 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fAssocPtBinLimit[18]  = 50.0 ;
   fAssocPtBinLimit[19]  = 100.0 ;
   
-  fNTrigPtBins         = 4.  ;
-  fTrigPtBinLimit[0]   = 10. ;
-  fTrigPtBinLimit[1]   = 12. ;
-  fTrigPtBinLimit[2]   = 16. ;
-  fTrigPtBinLimit[3]   = 20. ;
-  fTrigPtBinLimit[4]   = 25. ;
-  fTrigPtBinLimit[5]   = 30. ;
-  fTrigPtBinLimit[6]   = 40. ;
-  fTrigPtBinLimit[7]   = 50. ;
-  fTrigPtBinLimit[8]   = 75. ;
-  fTrigPtBinLimit[9]   = 100. ;
+  fNTrigPtBins         = 8   ;
+  fTrigPtBinLimit[0]   = 8.  ;
+  fTrigPtBinLimit[1]   = 10. ;
+  fTrigPtBinLimit[2]   = 12. ;
+  fTrigPtBinLimit[3]   = 16. ;
+  fTrigPtBinLimit[4]   = 20. ;
+  fTrigPtBinLimit[5]   = 25. ;
+  fTrigPtBinLimit[6]   = 30. ;
+  fTrigPtBinLimit[7]   = 40. ;
+  fTrigPtBinLimit[8]   = 50. ;
+  fTrigPtBinLimit[9]   = 60. ;
+  fTrigPtBinLimit[10]  = 80. ;
+  fTrigPtBinLimit[11]  = 100.;
+  fTrigPtBinLimit[11]  = 125.;
+  fTrigPtBinLimit[12]  = 150.;
+  fTrigPtBinLimit[13]  = 175.;
+  fTrigPtBinLimit[14]  = 200.;
 
   
   fUseMixStoredInReader = kTRUE;
@@ -4870,10 +4876,12 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliCaloTrackPart
       Int_t   n=0, nfrac = 0;
       Bool_t  isolated = kFALSE;
       Float_t coneptsum = 0, coneptlead = 0;
-      GetIsolationCut()->MakeIsolationCut(bgTracks,bgCalo,
-                                          GetReader(), GetCaloPID(),
-                                          kFALSE, aodParticle, "",
-                                          n,nfrac,coneptsum,coneptlead,isolated);
+      
+      GetIsolationCut()->MakeIsolationCut(aodParticle, GetReader(),
+                                          kFALSE, kFALSE, "",
+                                          bgTracks,bgCalo,
+                                          GetCalorimeter(), GetCaloPID(),
+                                          n, nfrac, coneptsum, coneptlead, isolated); 
       
       //printf("AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation() - Isolated? %d - cone %f, ptthres %f",
       //       isolated,GetIsolationCut()->GetConeSize(),GetIsolationCut()->GetPtThreshold());

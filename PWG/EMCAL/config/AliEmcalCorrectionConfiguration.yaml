@@ -75,6 +75,7 @@ CellBadChannel:                                     # Bad channel removal at the
 CellTimeCalib:                                      # Cell Time Calibration component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    doMergedBCs: false                              # Whether the task should create output histograms
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellEmulateCrosstalk:                               # Component to emulate crosstalk

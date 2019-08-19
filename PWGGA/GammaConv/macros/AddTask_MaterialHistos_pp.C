@@ -34,8 +34,9 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
 				TString fileNameExternalInputs        = "",
 				Int_t   doDeDxMaps              =  0,
  				Bool_t  enableElecDeDxPostCalibration = kFALSE,
-				Int_t   doMultiplicityWeighting           = 0,
-				Int_t   doWeightingGamma               = 0,        // enable Weighting
+				Int_t   doMultiplicityWeighting = 0,
+				Int_t   doWeightingGamma        = 0,        // enable Weighting
+				Int_t   enableMatBudWeightsPi0  = 0,        // 1 = three radial bins, 2 = 10 radial bins
 				TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
                               ){
 
@@ -318,6 +319,9 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   ConvCutList->SetOwner(kTRUE);
   AliConversionPhotonCuts **analysisCuts      = new AliConversionPhotonCuts*[numberOfCuts];
   cout<<"names"<< periodNameAnchor.Data()<< " " << periodName.Data()<< endl;
+  Bool_t initializedMatBudWeigths_existing    = kFALSE;
+
+
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i]          = new AliConvEventCuts();
 
@@ -371,6 +375,19 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
 
     analysisCuts[i]               = new AliConversionPhotonCuts();
+
+    if (enableMatBudWeightsPi0 > 0){
+      cout<< "Material budget weigthing enabled"<< endl;
+        if (isMC > 0){
+            if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
+                initializedMatBudWeigths_existing = kTRUE;
+		cout<< "Material budget weigthing enabled, went well"<< endl;
+	    }
+            else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
+        }
+        else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+    }
+
     if (enableElecDeDxPostCalibration){
       if (isMC == 0){
         if(fileNamedEdxPostCalib.CompareTo("") != 0){
@@ -394,6 +411,10 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
 
   fMaterialHistos->SetEventCutList(numberOfCuts,EventCutList);
   fMaterialHistos->SetConversionCutList(numberOfCuts,ConvCutList);
+  if (initializedMatBudWeigths_existing) {
+      fMaterialHistos->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
+  }
+
   mgr->AddTask(fMaterialHistos);
 
 

@@ -25,14 +25,19 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC);
   virtual ~AliAnalysisTaskFemtoDreamDeuteron();
   Float_t GetMass2sq(AliFemtoDreamTrack *track);
+  void InitHistograms(AliFemtoDreamTrackCuts *trkCuts, TString trkCutsName, TString MCName);
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *){};
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) {fEventCuts=evtCuts;};
-  void SetTrackCutsPart1(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsPart1=trkCuts;};
-  void SetTrackCutsPart2(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsPart2=trkCuts;};
-  void SetTrackCutsPart3(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsPart3=trkCuts;};
-  void SetTrackCutsPart4(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsPart4=trkCuts;};
+  void SetTrackCutsDeuteronDCA(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsDeuteronDCA=trkCuts;};
+  void SetTrackCutsDeuteronMass(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsDeuteronMass=trkCuts;};
+  void SetTrackCutsAntiDeuteronDCA(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsAntiDeuteronDCA=trkCuts;};
+  void SetTrackCutsAntiDeuteronMass(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsAntiDeuteronMass=trkCuts;};
+  void SetTrackCutsProtonDCA(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsProtonDCA=trkCuts;};
+  void SetTrackCutsProtonMass(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsProtonMass=trkCuts;};
+  void SetTrackCutsAntiProtonDCA(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsAntiProtonDCA=trkCuts;};
+  void SetTrackCutsAntiProtonMass(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsAntiProtonMass=trkCuts;};
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {fConfig=config;};
  private:
   void ResetGlobalTrackReference();
@@ -42,18 +47,24 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   AliFemtoDreamEvent *fEvent;               //!  on Runtime
   AliFemtoDreamTrack *fTrack;               //!
   AliFemtoDreamEventCuts *fEventCuts;       //   Stream these bad boys
-  AliFemtoDreamTrackCuts *fTrackCutsPart1;  //
-  AliFemtoDreamTrackCuts *fTrackCutsPart2;  //
-  AliFemtoDreamTrackCuts *fTrackCutsPart3;  //
-  AliFemtoDreamTrackCuts *fTrackCutsPart4;  //
+  AliFemtoDreamTrackCuts *fTrackCutsDeuteronDCA;  //
+  AliFemtoDreamTrackCuts *fTrackCutsDeuteronMass;  //
+  AliFemtoDreamTrackCuts *fTrackCutsAntiDeuteronDCA;  //
+  AliFemtoDreamTrackCuts *fTrackCutsAntiDeuteronMass;  //
+  AliFemtoDreamTrackCuts *fTrackCutsProtonDCA;  //
+  AliFemtoDreamTrackCuts *fTrackCutsProtonMass;  //
+  AliFemtoDreamTrackCuts *fTrackCutsAntiProtonDCA;  //
+  AliFemtoDreamTrackCuts *fTrackCutsAntiProtonMass;  //
   AliFemtoDreamCollConfig *fConfig;         //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
   AliAODTrack** fGTI;           //!
-  TH2F* fDInvMass; //!
-  TH2F* fAntiDInvMass; //! 
+  TH2F* fDRestMass; //!
+  TH2F* fAntiDRestMass; //!
+  TH2F* fPRestMass; //!
+  TH2F* fAntiPRestMass; //! 
   int fTrackBufferSize;                     //
-  ClassDef(AliAnalysisTaskFemtoDreamDeuteron,1)
+  ClassDef(AliAnalysisTaskFemtoDreamDeuteron,3)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOTUTORIAL_H_ */

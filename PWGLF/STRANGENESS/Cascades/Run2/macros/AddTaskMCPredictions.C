@@ -1,4 +1,4 @@
-AliAnalysisTaskMCPredictions *AddTaskMCPredictions( const TString lMasterJobSessionFlag = "")
+AliAnalysisTaskMCPredictions *AddTaskMCPredictions( Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 4000, Int_t lRebinFactor = 1, const TString lMasterJobSessionFlag = "")
 {
     // Creates, configures and attaches to the train a cascades check task.
     // Get the pointer to the existing analysis manager via the static access method.

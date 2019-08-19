@@ -24,16 +24,6 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/TMVA
 
 # Sources - alphabetical order
 set(SRCS
-  LHC19c2b_TMVAClassification_BDT_2_4.class.cxx
-  LHC19c2b_TMVAClassification_BDT_4_6.class.cxx
-  LHC19c2b_TMVAClassification_BDT_6_8.class.cxx
-  LHC19c2b_TMVAClassification_BDT_8_12.class.cxx
-  LHC19c2b_TMVAClassification_BDT_12_25.class.cxx
-  LHC19c2a_TMVAClassification_BDT_2_4.class.cxx
-  LHC19c2a_TMVAClassification_BDT_4_6.class.cxx
-  LHC19c2a_TMVAClassification_BDT_6_8.class.cxx
-  LHC19c2a_TMVAClassification_BDT_8_12.class.cxx
-  LHC19c2a_TMVAClassification_BDT_12_25.class.cxx
   LHC19c2b_TMVAClassification_BDT_2_4_noP.class.cxx
   LHC19c2b_TMVAClassification_BDT_4_6_noP.class.cxx
   LHC19c2b_TMVAClassification_BDT_6_8_noP.class.cxx
@@ -47,16 +37,6 @@ set(SRCS
   )
 
 set(HDRS
-  LHC19c2b_TMVAClassification_BDT_2_4.class.h
-  LHC19c2b_TMVAClassification_BDT_4_6.class.h
-  LHC19c2b_TMVAClassification_BDT_6_8.class.h
-  LHC19c2b_TMVAClassification_BDT_8_12.class.h
-  LHC19c2b_TMVAClassification_BDT_12_25.class.h
-  LHC19c2a_TMVAClassification_BDT_2_4.class.h
-  LHC19c2a_TMVAClassification_BDT_4_6.class.h
-  LHC19c2a_TMVAClassification_BDT_6_8.class.h
-  LHC19c2a_TMVAClassification_BDT_8_12.class.h
-  LHC19c2a_TMVAClassification_BDT_12_25.class.h
   LHC19c2b_TMVAClassification_BDT_2_4_noP.class.h
   LHC19c2b_TMVAClassification_BDT_4_6_noP.class.h
   LHC19c2b_TMVAClassification_BDT_6_8_noP.class.h
@@ -103,3 +83,5 @@ install(TARGETS ${MODULETMVA}
   LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+install(FILES LHC19c2a_TMVAClassification_BDT_2_4_noP.weights.xml DESTINATION PWGHF/vertexingHF/TMVA)

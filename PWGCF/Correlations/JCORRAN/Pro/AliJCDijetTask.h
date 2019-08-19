@@ -35,52 +35,59 @@ class AliJCDijetAna;
 
 class AliJCDijetTask : public AliAnalysisTaskSE {
 
- public:
-  AliJCDijetTask();
-  AliJCDijetTask(const char *name,  TString inputformat);
-  AliJCDijetTask(const AliJCDijetTask& ap);   
-  AliJCDijetTask& operator = (const AliJCDijetTask& ap);
-  virtual ~AliJCDijetTask();
+    public:
+        AliJCDijetTask();
+        AliJCDijetTask(const char *name,  TString inputformat);
+        AliJCDijetTask(const AliJCDijetTask& ap);   
+        AliJCDijetTask& operator = (const AliJCDijetTask& ap);
+        virtual ~AliJCDijetTask();
 
-  // methods to fill from AliAnalysisTaskSE
-  virtual void UserCreateOutputObjects(); 
-  virtual void Init();   
-  virtual void LocalInit() { Init(); }
-  virtual void UserExec(Option_t *option);
-  virtual void Terminate(Option_t* );
-  AliJCatalystTask *GetJCatalystTask() {return fJCatalystTask;}
-  void    SetCentralityBins( vector<double> centralityBins ) {fcentralityBins=centralityBins; }
-  void    SetJetConeSize(double jetCone, double ktjetCone) {fjetCone=jetCone; fktJetCone=ktjetCone; }
-  void    SetBGSubtrSettings(int ktScheme, Bool_t usePionMasskt, Bool_t useDeltaPhiBGSubtr) {fktScheme=ktScheme; fusePionMassInktjets=usePionMasskt; fuseDeltaPhiBGSubtr=useDeltaPhiBGSubtr; }
-  Bool_t  IsMC()const{ return fIsMC; }
-  void    SetIsMC(Bool_t b) { fIsMC=b; }
-  void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi;}
+        // methods to fill from AliAnalysisTaskSE
+        virtual void UserCreateOutputObjects(); 
+        virtual void Init();   
+        virtual void LocalInit() { Init(); }
+        virtual void UserExec(Option_t *option);
+        virtual void Terminate(Option_t* );
+        AliJCatalystTask *GetJCatalystTask() {return fJCatalystTask;}
+        void    SetCentralityBins( vector<double> centralityBins ) {fcentralityBins=centralityBins; }
+        void    SetJetConeSize(double jetCone, double ktjetCone) {fjetCone=jetCone; fktJetCone=ktjetCone; }
+        void    SetBGSubtrSettings(int ktScheme, Bool_t usePionMasskt, Bool_t useDeltaPhiBGSubtr) {fktScheme=ktScheme; fusePionMassInktjets=usePionMasskt; fuseDeltaPhiBGSubtr=useDeltaPhiBGSubtr; }
+        Bool_t  IsMC()const{ return fIsMC; }
+        void    SetIsMC(Bool_t b) { fIsMC=b; }
+        void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi, double matchingR) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi; fmatchingR = matchingR; }
 
-  // Methods specific for this class
-  void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
+        // Methods specific for this class
+        void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
+        void SetJCatalystTaskNameDetMC(TString name){ fJCatalystDetMCTaskName=name; } // Setter for filter task name
 
- private:
+    private:
 
-  AliJCatalystTask *fJCatalystTask;  //
-  TString           fJCatalystTaskName; // Name for JCatalyst task
-  vector<double> fcentralityBins;
-  double fjetCone;
-  double fktJetCone;
-  int  fktScheme;
-  Bool_t fusePionMassInktjets;
-  Bool_t fuseDeltaPhiBGSubtr;
-  Bool_t fIsMC;       // MC data or real data
-  double fparticleEtaCut;
-  double fparticlePtCut;
-  double fleadingJetCut;
-  double fsubleadingJetCut;
-  double fconstituentCut;
-  double fdeltaPhiCut;
-  AliJCDijetHistos *fhistos;
-  //AliJCDijetAna *fdijetAna;
-  int fCBin;
-  TDirectory     *fOutput; // Output directory
+        AliJCatalystTask *fJCatalystTask;  //
+        AliJCatalystTask *fJCatalystDetMCTask;  //
+        TString           fJCatalystTaskName; // Name for JCatalyst task
+        TString           fJCatalystDetMCTaskName; // Name for JCatalyst task
+        vector<double> fcentralityBins;
+        double fjetCone;
+        double fktJetCone;
+        int  fktScheme;
+        Bool_t fusePionMassInktjets;
+        Bool_t fuseDeltaPhiBGSubtr;
+        Bool_t fIsMC;       // MC data or real data
+        double fparticleEtaCut;
+        double fparticlePtCut;
+        double fleadingJetCut;
+        double fsubleadingJetCut;
+        double fconstituentCut;
+        double fdeltaPhiCut;
+        double fmatchingR;
+        AliJCDijetHistos *fhistos;
+        AliJCDijetHistos *fhistosDetMC;
+        AliJCDijetAna *fana;
+        AliJCDijetAna *fanaMC;
+        int fCBin;
+        int fCBinDetMC;
+        TDirectory     *fOutput; // Output directory
 
-  ClassDef(AliJCDijetTask, 1); 
+        ClassDef(AliJCDijetTask, 1); 
 };
 #endif // ALIJCDIJETTASK_H

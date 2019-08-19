@@ -91,17 +91,17 @@ AliLundPlaneData AliLundPlaneHelper::Evaluate(const AliEmcalJet &jet, const AliP
     fOutputJets=fClustSeqSA.inclusive_jets(0);
   
     fastjet::PseudoJet j1, j2, jj = fOutputJets[0];
-    while(jj.has_parents(j1,j2) && z < fHardCutoff){
-      nall=nall+1;
+    while(jj.has_parents(j1,j2)){
+      nall++;
       if(j1.perp() < j2.perp()) std::swap(j1,j2);
       z=j2.perp()/(j1.perp()+j2.perp());
       double delta_R=j1.delta_R(j2);
       double lndeltaR =log(1.0/delta_R);
       double lnpt_rel=log(j2.perp()*delta_R);
-      AliLundPlaneParameters currentsplitting(lndeltaR, lnpt_rel, fOutputJets[0].perp(), nall);
+      AliLundPlaneParameters currentsplitting(lndeltaR, lnpt_rel, j2.perp(), nall);
       result.InsertSplitting(currentsplitting);
+      jj=j1;
     }
-    jj=j1;
   } catch (fastjet::Error &e) {
     throw AliLundPlaneException(AliLundPlaneException::kFastjetError, e.message().data());
   }

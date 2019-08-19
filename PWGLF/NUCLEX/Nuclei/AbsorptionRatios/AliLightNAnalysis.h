@@ -8,8 +8,6 @@
  *      Author: bernhardhohlweger
  */
 
-#include "AliAODEvent.h"
-#include "AliAODTrack.h"
 #include "AliLightNEvent.h"
 #include "AliLightNEventCuts.h"
 #include "AliLightNTrack.h"
@@ -18,6 +16,9 @@
 #include <vector>
 #include "TClonesArray.h"
 #include <iostream>
+#include "AliMultSelection.h"
+#include "AliAODEvent.h"
+#include "AliAODTrack.h"
 class AliLightNAnalysis {
 public:
     AliLightNAnalysis();

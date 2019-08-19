@@ -8,7 +8,11 @@
 #include "AliFemtoDreamCollConfig.h"
 
 AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
+                                     int phiSpinning = 0,
+                                     int nSpins = 1,
+                                     double corrRange = 0.1,
                                      const char *cutVariation = "0") {
+
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -67,7 +71,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   Antiv0Cuts->SetPDGCodeNegDaug(2212);  //Proton
   Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
 
-  if (suffix != "0" && suffix != "999") {
+  if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);
     TrackCuts->SetMinimalBooking(true);
     AntiTrackCuts->SetMinimalBooking(true);
@@ -76,7 +80,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
-                                                                "Femto");
+                                                                "Femto", false);
   // Femto Collection
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
@@ -104,20 +108,14 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
-    if (suffix == "0") {
-      NBins.push_back(1500);
-      kMin.push_back(0.);
-      kMax.push_back(6.);
-    } else {
-      NBins.push_back(250);
-      kMin.push_back(0.);
-      kMax.push_back(1.);
-    }
+    NBins.push_back(1500);
+    kMin.push_back(0.);
+    kMax.push_back(6.);
   }
   pairQA[0] = 11;
   pairQA[4] = 11;
-  pairQA[2] = 13;
-  pairQA[6] = 13;
+  pairQA[2] = 12;
+  pairQA[6] = 12;
 
   closeRejection[0] = true;  // pp
   closeRejection[4] = true;  // barp barp
@@ -131,8 +129,26 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
 
-  config->SetMixingDepth(10);
-  config->SetUseEventMixing(true);
+  if (phiSpinning == 0) {
+    config->SetMixingDepth(10);
+    config->SetUseEventMixing(true);
+  } else if (phiSpinning == 1) {
+    config->SetUseEventMixing(false);
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
+    config->SetCorrelationRange(corrRange);
+    config->SetSpinningDepth(nSpins);
+  } else if (phiSpinning == 2) {
+    config->SetUseEventMixing(false);
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kStravinsky);
+    config->SetSpinningDepth(1);
+  } else if (phiSpinning == 3) {
+    config->SetUseEventMixing(false);
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
+    config->SetSpinningDepth(nSpins);
+  }
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
   std::vector<int> MultBins;
@@ -181,22 +197,23 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   config->SetZBins(ZVtxBins);
 
   config->SetMultBinning(true);
+  config->SetmTBinning(true);
+
   config->SetdPhidEtaPlotsSmallK(false);
   config->SetdPhidEtaPlots(false);
-
   config->SetPhiEtaBinnign(false);
 
-  if (suffix == "0" && fullBlastQA) {
+  if (fullBlastQA) {
     config->SetkTBinning(true);
-    config->SetmTBinning(true);
     config->SetPtQA(true);
   }
 
-  if (suffix != "0") {
+  if (!fullBlastQA) {
     config->SetMinimalBookingME(true);
+    config->SetMinimalBookingSample(true);
   }
   AliAnalysisTaskNanoLoton* task = new AliAnalysisTaskNanoLoton("femtoLoton");
-  if (suffix != "0" && suffix != "999") {
+  if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
   }
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
@@ -240,8 +257,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   coutputv0Cuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       v0CutsName.Data(),
-      TList::Class(),
-      AliAnalysisManager::kOutputContainer,
+      TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), v0CutsName.Data()));
   mgr->ConnectOutput(task, 4, coutputv0Cuts);
 
@@ -273,6 +289,28 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
   mgr->ConnectOutput(task, 7, coutputResultsQA);
+
+  AliAnalysisDataContainer *coutputResultsSample;
+  TString ResultsSampleName = Form("%sResultsSample%s", addon.Data(),
+                                   suffix.Data());
+  coutputResultsSample = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleName.Data()));
+  mgr->ConnectOutput(task, 8, coutputResultsSample);
+
+  AliAnalysisDataContainer *coutputResultsSampleQA;
+  TString ResultsSampleQAName = Form("%sResultsSampleQA%s", addon.Data(),
+                                     suffix.Data());
+  coutputResultsSampleQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleQAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
+  mgr->ConnectOutput(task, 9, coutputResultsSampleQA);
 
   return task;
 }

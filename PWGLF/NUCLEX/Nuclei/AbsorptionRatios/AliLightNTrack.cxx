@@ -232,7 +232,7 @@ void AliLightNTrack::SetMCInformation() {
         } else {
             this->SetMCPhi(mcPart->Phi());
             this->SetMCTheta(mcPart->Theta());
-            this->SetMCPDGCode(mcPart->PdgCode());
+            this->SetMCPDGCode(mcPart->GetPdgCode());
             this->SetMCPt(mcPart->Pt());
             this->SetMCMomentum(mcPart->Px(),mcPart->Py(),mcPart->Pz());
             
@@ -241,7 +241,7 @@ void AliLightNTrack::SetMCInformation() {
                 this->SetParticleOrigin(AliLightNBasePart::kPhysPrimary);
             } else if(mcPart->IsSecondaryFromWeakDecay() && !mcPart->IsSecondaryFromMaterial()) {
                 this->SetParticleOrigin(AliLightNBasePart::kWeak);
-                this->SetPDGMotherWeak(((AliAODMCParticle*)mcarray->At(mcPart->GetMother()))->PdgCode());
+                this->SetPDGMotherWeak(((AliAODMCParticle*)mcarray->At(mcPart->GetMother()))->GetPdgCode());
             } else if (mcPart->IsSecondaryFromMaterial()) {
                 this->SetParticleOrigin(AliLightNBasePart::kMaterial);
             } else {

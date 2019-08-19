@@ -209,7 +209,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * This histogram records the invariant mass
                                  * distribution of the dimuon system.
                                  */
-        TH1F*                   fInvariantMassDistributionH;         //!
+        TH1F*                   fInvariantMassDistributionH;                        //!
+        TH1F*                   fInvariantMassDistributionRapidityBinsH[6];         //!
 
                                 /**
                                  * This histogram records the number of entries
@@ -231,7 +232,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * coherent component, so as to say, only
                                  * pt < 0.25 GeV/c for pt of the dimuon pair.
                                  */
-        TH1F*                   fInvariantMassDistributionCoherentH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentH;                      //!
+        TH1F*                   fInvariantMassDistributionCoherentRapidityBinsH[6];       //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -239,7 +241,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * coherent component, so as to say, only
                                  * pt > 0.25 GeV/c for pt of the dimuon pair.
                                  */
-        TH1F*                   fInvariantMassDistributionIncoherentH;     //!
+        TH1F*                   fInvariantMassDistributionIncoherentH;                    //!
+        TH1F*                   fInvariantMassDistributionIncoherentRapidityBinsH[6];     //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -442,39 +445,6 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthRapidityBinH[8];
 
                                 /**
-                                 * This is the vector containing the GENERATED
-                                 * values of the cos(theta). It should be
-                                 * needed for the "bin migration" study...
-                                 * As far as I can imagine, in each event there
-                                 * should only be a single J/Psi because these
-                                 * are all UPC events, as such I should record
-                                 * all possible values for cos(theta) and plot
-                                 * only when the corresponding J/Psi falls
-                                 * inside the detector acceptance...
-                                 * The resulting plot should be TH2F and be like
-                                 * a lego plot. See for an example:
-                                 *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
-                                 */
-        // std::vector<Double_t>   fVectorCosThetaGenerated;           //!
-
-                                /**
-                                 * This is the vector containing the
-                                 * RECONSTRUCTED
-                                 * values of the cos(theta). It should be
-                                 * needed for the "bin migration" study...
-                                 * Actually if I fill everytime the TH2F
-                                 * as soon as I compute the cos(theta)
-                                 * there should be no real need for it...
-                                 * The only thing that matters is a counter to
-                                 * give me the proper value of the vector for
-                                 * the generated value I should consider inside
-                                 * the vector of the GENERATED level.
-                                 * It is important to remember there is at MOST
-                                 * a single J/Psi for UPC event!!!
-                                 */
-        // std::vector<Double_t>   fVectorCosThetaReconstructed;           //!
-
-                                /**
                                  * This is the GENERATED
                                  * value of the cos(theta) in the HELICITY
                                  * frame. It should be
@@ -490,6 +460,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
                                  */
         Double_t                fCosThetaGeneratedHelicityFrame;           //!
+        Double_t                fPhiGeneratedHelicityFrame;           //!
 
                                 /**
                                  * This is the RECONSTRUCTED
@@ -507,6 +478,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
                                  */
         Double_t                fCosThetaReconHelicityFrame;           //!
+        Double_t                fPhiReconHelicityFrame;           //!
 
                                 /**
                                  * Counter for the UPC events to access vectors.
@@ -522,8 +494,16 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                 /**
                                  * This histogram shows the bin migration for
                                  * the helicity Analysis...
+                                 * NOTE: this is only in CosTheta.
                                  */
         TH2F*                   fBinMigrationHelicityH;           //!
+
+                                /**
+                                 * This histogram shows the bin migration for
+                                 * the helicity Analysis...
+                                 * NOTE: this is only in Phi.
+                                 */
+        TH2F*                   fBinMigrationForPhiHelicityH;           //!
 
         //_______________________________
         // HELICITY AND COLLINS-SOPER
@@ -888,6 +868,56 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH2F*                   fMCInvariantMassDistributionForSignalExtractionHelicityFrameH;  //!
 
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 40 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: the mass range has been extended.
+                                 * Meaning there are no bounds on the invariant
+                                 * mass range BEFORE signal extraction.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[40];  //!
+
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 40 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: the mass range has been extended.
+                                 * Meaning there are no bounds on the invariant
+                                 * mass range BEFORE signal extraction.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[50];  //!
+
         //_______________________________
         // Efficiency plots.
                                 /**
@@ -911,6 +941,163 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH1F*                   fMCEfficiencyPerRunH;  //!
 
+                                /**
+                                 * This array of histograms shows the
+                                 * distribution of the dead zones of the
+                                 * detector on a run-by-run basis.
+                                 * To avoid a complicated logic, I have
+                                 * declared 60k histograms.
+                                 * This is because there are runs from about
+                                 * 240k to 300k.
+                                 * However, this is too heavy for ROOT.
+                                 * Hence, I have declared them as
+                                 * SPARSE. Most of these 60k histograms
+                                 * are empty anyway, so it is best to save
+                                 * on space...
+                                 */
+        // THnSparseF*             fDeadZoneEtaVsPhiPerRunH[60000 + 1]; //!
+        // THnSparseF*             fDeadZoneEtaVsPhiPerRunH[364]; //!    number of total runs
+        TH2F*                   fDeadZoneEtaVsPhiPerRunH[364]; //!    number of total runs
+
+                                /**
+                                 * This histogram shows CosTheta and Phi
+                                 * distribution with my variable binning.
+                                 * RECON level.
+                                 */
+        TH2F*                   fCosThetaAndPhiHelicityFrameMyBinningH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta and Phi
+                                 * distribution with my variable binning.
+                                 * GENERATED level.
+                                 */
+        TH2F*                   fMCCosThetaAndPhiHelicityFrameMyBinningH;   //!
+
+        /* - 1D analysis.
+         * - My variable binning.
+         */
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with my variable binning.
+                                 * RECON level.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameMyBinningH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with my variable binning.
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCCosThetaHelicityFrameMyBinningH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with my variable 17 binning.
+                                 * RECON level.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameMySeventeenBinningH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with my variable 17 binning.
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCCosThetaHelicityFrameMySeventeenBinningH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with my variable SMALL binning.
+                                 * RECON level.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameMyBinningSmallH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with my variable SMALL binning.
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCCosThetaHelicityFrameMyBinningSmallH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80%.
+                                 * RECON level.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80%.
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCCosThetaHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows Phi
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80% (?).
+                                 * RECON level.
+                                 */
+        TH1F*                   fPhiHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows Phi
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80% (?).
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCPhiHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows the TildePhi
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80% (?).
+                                 * RECON level.
+                                 */
+        TH1F*                   fTildePhiHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows the TildePhi
+                                 * distribution with 25 bins.
+                                 * This implies a purity well above 80% (?).
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCTildePhiHelicityFrameTwentyfiveBinsH;   //!
+
+                                /**
+                                 * This histogram shows  Phi
+                                 * distribution with my variable binning.
+                                 * RECON level.
+                                 */
+        TH1F*                   fPhiHelicityFrameMyBinningH;   //!
+
+                                /**
+                                 * This histogram shows  Phi
+                                 * distribution with my variable binning.
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCPhiHelicityFrameMyBinningH;   //!
+
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 * My variable binning.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[26];  //!
+
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 * My variable binning.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[30];  //!
+
 
         //_______________________________
         // CUTS
@@ -921,6 +1108,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         Int_t                   fRunNum;        //!
         Int_t                   fTracklets;     //!
         Double_t                fLumiPerRun;    //!
+        Double_t*               fEtaAndPhi;     //!
 
         UInt_t                  fL0inputs;      //!
       	UInt_t                  fL1inputs;      //!
@@ -995,7 +1183,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 20);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 29);
 };
 
 #endif

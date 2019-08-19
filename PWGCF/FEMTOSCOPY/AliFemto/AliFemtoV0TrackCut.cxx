@@ -70,8 +70,21 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fK0sMassOfMisIDV0(0),
   fLambdaMassOfMisIDV0(0),
   fAntiLambdaMassOfMisIDV0(0),
-  fIgnoreOnFlyStatus(false)
-
+  fIgnoreOnFlyStatus(false),
+  fNanoAODAnalysis(false),
+  fSidebandAnalysis(false),
+  fInvMassRange1K0sMin(0),
+  fInvMassRange1K0sMax(1000),
+  fInvMassRange2K0sMin(0),
+  fInvMassRange2K0sMax(1000),
+  fInvMassRange1LambdaMin(0),
+  fInvMassRange1LambdaMax(1000),
+  fInvMassRange2LambdaMin(0),
+  fInvMassRange2LambdaMax(1000),
+  fInvMassRange1AntiLambdaMin(0),
+  fInvMassRange1AntiLambdaMax(1000),
+  fInvMassRange2AntiLambdaMin(0),
+  fInvMassRange2AntiLambdaMax(1000)
 {
   // Default constructor
 }
@@ -143,7 +156,21 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut) :
   fInvMassRejectLambdaMax(aCut.fInvMassRejectLambdaMax),
   fInvMassRejectAntiLambdaMin(aCut.fInvMassRejectAntiLambdaMin),
   fInvMassRejectAntiLambdaMax(aCut.fInvMassRejectAntiLambdaMax),
-  fIgnoreOnFlyStatus(aCut.fIgnoreOnFlyStatus)
+  fIgnoreOnFlyStatus(aCut.fIgnoreOnFlyStatus),
+  fNanoAODAnalysis(aCut.fNanoAODAnalysis),
+  fSidebandAnalysis(aCut.fSidebandAnalysis),
+  fInvMassRange1K0sMin(aCut.fInvMassRange1K0sMin),
+  fInvMassRange1K0sMax(aCut.fInvMassRange1K0sMax),
+  fInvMassRange2K0sMin(aCut.fInvMassRange2K0sMin),
+  fInvMassRange2K0sMax(aCut.fInvMassRange2K0sMax),
+  fInvMassRange1LambdaMin(aCut.fInvMassRange1LambdaMin),
+  fInvMassRange1LambdaMax(aCut.fInvMassRange1LambdaMax),
+  fInvMassRange2LambdaMin(aCut.fInvMassRange2LambdaMin),
+  fInvMassRange2LambdaMax(aCut.fInvMassRange2LambdaMax),
+  fInvMassRange1AntiLambdaMin(aCut.fInvMassRange1AntiLambdaMin),
+  fInvMassRange1AntiLambdaMax(aCut.fInvMassRange1AntiLambdaMax),
+  fInvMassRange2AntiLambdaMin(aCut.fInvMassRange2AntiLambdaMin),
+  fInvMassRange2AntiLambdaMax(aCut.fInvMassRange2AntiLambdaMax)
 {
   //copy constructor
   if(aCut.fMinvPurityAidHistoV0) fMinvPurityAidHistoV0 = new TH1D(*aCut.fMinvPurityAidHistoV0);
@@ -233,6 +260,22 @@ AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut
     else fAntiLambdaMassOfMisIDV0 = 0;
 
   fIgnoreOnFlyStatus = aCut.fIgnoreOnFlyStatus;
+  fNanoAODAnalysis = aCut.fNanoAODAnalysis;
+
+
+  fSidebandAnalysis = aCut.fSidebandAnalysis;
+  fInvMassRange1K0sMin = aCut.fInvMassRange1K0sMin;
+  fInvMassRange1K0sMax = aCut.fInvMassRange1K0sMax;
+  fInvMassRange2K0sMin = aCut.fInvMassRange2K0sMin;
+  fInvMassRange2K0sMax = aCut.fInvMassRange2K0sMax;
+  fInvMassRange1LambdaMin = aCut.fInvMassRange1LambdaMin;
+  fInvMassRange1LambdaMax = aCut.fInvMassRange1LambdaMax;
+  fInvMassRange2LambdaMin = aCut.fInvMassRange2LambdaMin;
+  fInvMassRange2LambdaMax = aCut.fInvMassRange2LambdaMax;
+  fInvMassRange1AntiLambdaMin = aCut.fInvMassRange1AntiLambdaMin;
+  fInvMassRange1AntiLambdaMax = aCut.fInvMassRange1AntiLambdaMax;
+  fInvMassRange2AntiLambdaMin = aCut.fInvMassRange2AntiLambdaMin;
+  fInvMassRange2AntiLambdaMax = aCut.fInvMassRange2AntiLambdaMax;
 
   return *this;
 }
@@ -293,9 +336,10 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   if (aV0->TPCNclsNeg() < fTPCNclsDaughters) return false;
   if (aV0->NdofPos() > fNdofDaughters) return false;
   if (aV0->NdofNeg() > fNdofDaughters) return false;
-  if (!(aV0->StatusNeg() & fStatusDaughters)) return false;
-  if (!(aV0->StatusPos() & fStatusDaughters)) return false;
-
+  if(!fNanoAODAnalysis){
+    if (!(aV0->StatusNeg() & fStatusDaughters)) return false;
+    if (!(aV0->StatusPos() & fStatusDaughters)) return false;
+  }
   //fiducial volume radius
   if(aV0->RadiusV0()<fRadiusV0Min || aV0->RadiusV0()>fRadiusV0Max)
     return false;
@@ -358,7 +402,15 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
         }
         if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassLambda());
         //invariant mass lambda
-        if (aV0->MassLambda() < fInvMassLambdaMin || aV0->MassLambda() > fInvMassLambdaMax) return false;
+	if(!fSidebandAnalysis)
+	  {
+	    if (aV0->MassLambda() < fInvMassLambdaMin || aV0->MassLambda() > fInvMassLambdaMax) return false;
+	  }
+	else if(fSidebandAnalysis)
+	  {
+	    if( (aV0->MassLambda()<fInvMassRange1LambdaMin || aV0->MassLambda()>fInvMassRange2LambdaMax) || (aV0->MassLambda()>fInvMassRange1LambdaMax && aV0->MassLambda()<fInvMassRange2LambdaMin) )
+	      return false;
+	  }
       }
     }
   }
@@ -388,7 +440,16 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
         }
         if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassAntiLambda());
         //invariant mass antilambda
-        if (aV0->MassAntiLambda() < fInvMassLambdaMin || aV0->MassAntiLambda() > fInvMassLambdaMax) return false;
+	if(!fSidebandAnalysis)
+	  {
+	    if (aV0->MassAntiLambda() < fInvMassLambdaMin || aV0->MassAntiLambda() > fInvMassLambdaMax)
+	      return false;
+	  }
+	else if(fSidebandAnalysis)
+	  {
+	    if( (aV0->MassAntiLambda()<fInvMassRange1AntiLambdaMin || aV0->MassAntiLambda()>fInvMassRange2AntiLambdaMax) || (aV0->MassAntiLambda()>fInvMassRange1AntiLambdaMax && aV0->MassAntiLambda()<fInvMassRange2AntiLambdaMin) )
+	     return false;
+	  }
       }
     }
   }
@@ -427,12 +488,20 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
         }
         if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassK0Short());
         //invariant mass K0s
-        if (aV0->MassK0Short() < fInvMassK0sMin || aV0->MassK0Short() > fInvMassK0sMax) return false;
+	if(!fSidebandAnalysis)
+	  {
+	    if (aV0->MassK0Short() < fInvMassK0sMin || aV0->MassK0Short() > fInvMassK0sMax) return false;
+	  }
+	else if(fSidebandAnalysis)
+	  {
+	    if( (aV0->MassK0Short()<fInvMassRange1K0sMin || aV0->MassK0Short()>fInvMassRange2K0sMax) || (aV0->MassK0Short()>fInvMassRange1K0sMax && aV0->MassK0Short()<fInvMassRange2K0sMin) )
+	     return false;
+	  }
       }
     }
   }
-
   if (!pid_check) return false;
+
   return true;
 }
 //------------------------------
@@ -940,3 +1009,38 @@ TList *AliFemtoV0TrackCut::GetOutputList()
 
   return tOutputList;
 }
+
+
+void AliFemtoV0TrackCut::SetSidebandAnalysis(bool sideband)
+{
+  fSidebandAnalysis = sideband;
+}
+  
+void AliFemtoV0TrackCut::SetInvariantMassK0sSideband(double min1, double max1, double min2, double max2)
+{
+  fInvMassRange1K0sMin = min1;
+  fInvMassRange1K0sMax = max1;
+  fInvMassRange2K0sMin = min2;
+  fInvMassRange2K0sMax = max2;
+}
+
+void AliFemtoV0TrackCut::SetInvariantMassLambdaSideband(double min1, double max1, double min2, double max2)
+{
+  fInvMassRange1LambdaMin = min1;
+  fInvMassRange1LambdaMax = max1;
+  fInvMassRange2LambdaMin = min2;
+  fInvMassRange2LambdaMax = max2;
+}
+
+void AliFemtoV0TrackCut::SetInvariantMassAntiLambdaSideband(double min1, double max1, double min2, double max2)
+{
+  fInvMassRange1AntiLambdaMin = min1;
+  fInvMassRange1AntiLambdaMax = max1;
+  fInvMassRange2AntiLambdaMin = min2;
+  fInvMassRange2AntiLambdaMax = max2;
+}
+
+
+
+void AliFemtoV0TrackCut::SetInvariantMassLambdaSideband(double min1, double max1, double min2, double max2);
+void AliFemtoV0TrackCut::SetInvariantMassAntiLambdaSideband(double min1, double max1, double min2, double max2);  
