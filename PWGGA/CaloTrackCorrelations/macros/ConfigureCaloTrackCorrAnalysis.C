@@ -15,6 +15,7 @@
 ///   * Pi0 selection with the identification of merged clusters with AliAnaPi0EbE
 ///   * Tagging of pi0 as isolated with AliAnaParticleIsolation
 ///   * Correlation of the pi0 and charged tracks, twice, one without isolation condition, and other with isolation condition
+///   * Correlation of photon and reconstructed charged or full jet
 ///   * Particle correlation and isolation at generator level with AliAnaGeneratorKine
 ///   * Optionally, the QA tasks AliAnaCalorimeterQA, AliAnaChargedParticle and AliAnaClusterShapeStudies are executed
 ///
@@ -1555,6 +1556,87 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t pth
   return ana;
 }
 
+
+///
+/// Configure the task doing the trigger particle jet correlation
+///
+/// \param calorimeter : A string with the calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param isolationMatters : A bool identifying whether isolation matters
+/// \param gammaConeSize : A float setting the isolation cone size of photon higher limit
+/// \param simulation : A bool identifying the data as simulation
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+///
+AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis(TString calorimeter = "EMCAL",
+							      Bool_t  isolationMatters = kTRUE,
+							      Float_t gammaConeSize = 0.3,
+							      Bool_t simulation = kFALSE,
+							      Bool_t printSettings = kFALSE,
+							      Int_t debug = -1)
+{
+  AliAnaParticleJetFinderCorrelation *ana = new AliAnaParticleJetFinderCorrelation();
+  ana->SetDebug(debug);
+  //ana->SetDebug(3);
+  TString particle="Photon";
+  Bool_t isolation=kTRUE;
+  if(gammaConeSize>0) isolation=kTRUE;//only isolated photons 
+  else isolation=kFALSE;//only not isolated photons 
+
+  Double_t jetConeSize=0.3;
+  Double_t ptThresholdInCone=0.15;
+  Double_t jetMinPt=0.15,deltaPhi=1.5,minPtRatio=0.,maxPtRatio=5.;
+  
+  // Input / output delta AOD settings
+  //
+  //ana->SetInputAODName(Form("%s%s",particle.Data(),kGammaJetCorrelationName.Data()));
+  ana->SetInputAODName(Form("%sTrigger_%s",particle.Data(),kAnaCaloTrackCorr.Data()));
+  ana->SetAODObjArrayName(Form("%sJetCorr_%s",particle.Data(),kAnaCaloTrackCorr.Data()));
+
+  ana->SwitchOffFiducialCut();
+
+  ana->SetMakeCorrelationInHistoMaker(kFALSE);//must be set to false due to differences AliAODJet and AliEmcalJet
+
+  ana->SetIsolationMatters(isolationMatters); //set whether isolation matters or not
+  ana->SelectIsolated(isolation); // do correlation with isolated photons or not
+  ana->SetConeSize(jetConeSize); //was 1 - cone to calculate FF
+  ana->SetPtThresholdInCone(ptThresholdInCone);
+  ana->SetDeltaPhiCutRange(TMath::Pi()-deltaPhi,TMath::Pi()+deltaPhi);  // Delta phi cut for correlation
+  ana->SetJetConeSize(jetConeSize);//jet cone size / check the reco jet name
+  ana->SetJetMinPt(jetMinPt);//min jet pt
+  ana->SetJetAreaFraction(0.8);//min area fraction 
+  ana->SetMinPt(0.3);//min cluster pt repeated from reader
+  ana->SetGammaConeSize(TMath::Abs(gammaConeSize));//isolation cone repeated from isolation ana
+  ana->SetRatioCutRange(minPtRatio,maxPtRatio); // Delta pt cut for correlation
+
+  ana->UseJetRefTracks(kTRUE); //Working now
+  //Set Histograms bins and ranges
+  //SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below 0,100,200
+  //ana->SetHistoPtRangeAndNBins(0, 50, 200) ;
+  //ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  ana->SwitchOnBackgroundJetFromReader();
+  //background subtraction for photons
+  ana->SwitchOffBackgroundSubtractionGamma();//recomended
+
+  //ana->SwitchOnSaveGJTree();
+  ana->SwitchOffSaveGJTree();
+  ana->SwitchOnMostOpposite();
+  //ana->SwitchOnMostEnergetic();
+
+  ana->SwitchOnHistogramTracks();
+  ana->SwitchOnHistogramJetTracks();
+  ana->SwitchOnHistogramJetBkg();
+  
+  ana->AddToHistogramsName(Form("Ana%sJetCorr_",particle.Data()));
+
+  //if(useKinematics) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  //if(printSettings) 
+  ana->Print("");
+
+  return ana;
+}
+  
+
 ///
 /// Main method calling all the configuration
 /// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
@@ -1694,6 +1776,15 @@ void ConfigureCaloTrackCorrAnalysis
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); // Isolated gamma hadron correlation
       }
     } // correlation
+    
+    //Gamma-jet correlation
+    if ( analysisString.Contains("GammaJet") ) 
+    {
+      if( analysisString.Contains("Isolation") )
+	anaList->AddAt(ConfigureGammaJetAnalysis(calorimeter,kTRUE,isoCone,simulation,printSettings,debug), n++);
+      else
+	anaList->AddAt(ConfigureGammaJetAnalysis(calorimeter,kFALSE,isoCone,simulation,printSettings,debug), n++);
+    }// end of gamma-jet correlation
   }
   
   //
@@ -1768,10 +1859,9 @@ void ConfigureCaloTrackCorrAnalysis
   { 
     anaList->AddAt(ConfigureExoticAnalysis(col,simulation,calorimeter,year,printSettings,debug,histoString) , n++);
   }
-  
+
   printf("ConfigureCaloTrackCorrAnalysis() << End configuration for %s with total analysis %d>>\n",
          kAnaCaloTrackCorr.Data(), n);
 }
-
 
 
