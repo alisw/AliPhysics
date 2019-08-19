@@ -44,17 +44,328 @@ AliAnalysisTaskLightN* AddTaskLightN(Bool_t isMC, const char* suffix = "" ) {
         ContributionSplittingDaug=false;
     }
     
+    //Do the standard analysis using the suffix: "default" and "0"
+    //The other parameters, 1,2,... etc. are for systemactic variations
+    
     //Track Cuts Proton
     AliLightNTrackCuts *ProtonTrackCuts = AliLightNTrackCuts::PrimProtonCuts(isMC,DCAPlots,CombSigma,ContributionSplitting);
     ProtonTrackCuts->SetCutCharge(1);
+    if(strcmp (suffix,"0") == 0)ProtonTrackCuts->SetPID(AliPID::kProton, 0.7,3.,1e30);
+    //Systematic track cuts
+    if(strcmp (suffix,"1") == 0)ProtonTrackCuts->SetNClsTPC(60);
+    if(strcmp (suffix,"2") == 0)ProtonTrackCuts->SetNClsITS(1);
+    if(strcmp (suffix,"3") == 0)ProtonTrackCuts->SetTPCRatioCut(0.5);
+    if(strcmp (suffix,"4") == 0)ProtonTrackCuts->SetChi2perNDFCut(6);
+    if(strcmp (suffix,"5") == 0)ProtonTrackCuts->SetTPCCrossedRowsCut(50);
+    if(strcmp (suffix,"6") == 0)ProtonTrackCuts->SetNClsTPC(80);
+    if(strcmp (suffix,"7") == 0)ProtonTrackCuts->SetNClsITS(3);
+    if(strcmp (suffix,"8") == 0)ProtonTrackCuts->SetTPCRatioCut(0.9);
+    if(strcmp (suffix,"9") == 0)ProtonTrackCuts->SetChi2perNDFCut(3);
+    if(strcmp (suffix,"10") == 0)ProtonTrackCuts->SetTPCCrossedRowsCut(110);
+    if(strcmp (suffix,"11") == 0){
+        ProtonTrackCuts->SetNClsTPC(60);
+        ProtonTrackCuts->SetNClsITS(1);
+    }
+    if(strcmp (suffix,"12") == 0){
+        ProtonTrackCuts->SetTPCRatioCut(0.5);
+        ProtonTrackCuts->SetChi2perNDFCut(6);
+    }
+    if(strcmp (suffix,"13") == 0){
+        ProtonTrackCuts->SetTPCCrossedRowsCut(50);
+        ProtonTrackCuts->SetNClsTPC(80);
+    }
+    if(strcmp (suffix,"14") == 0){
+        ProtonTrackCuts->SetNClsITS(3);
+        ProtonTrackCuts->SetTPCRatioCut(0.9);
+    }
+    if(strcmp (suffix,"15") == 0){
+        ProtonTrackCuts->SetChi2perNDFCut(3);
+        ProtonTrackCuts->SetTPCCrossedRowsCut(110);
+    }
+    if(strcmp (suffix,"16") == 0){
+        ProtonTrackCuts->SetNClsTPC(60);
+        ProtonTrackCuts->SetNClsITS(1);
+        ProtonTrackCuts->SetTPCRatioCut(0.5);
+    }
+    if(strcmp (suffix,"17") == 0){
+        ProtonTrackCuts->SetChi2perNDFCut(6);
+        ProtonTrackCuts->SetTPCCrossedRowsCut(50);
+        ProtonTrackCuts->SetNClsTPC(80);
+    }
+    if(strcmp (suffix,"18") == 0){
+        ProtonTrackCuts->SetNClsITS(3);
+        ProtonTrackCuts->SetTPCRatioCut(0.9);
+        ProtonTrackCuts->SetChi2perNDFCut(3);
+    }
+    if(strcmp (suffix,"19") == 0){
+        ProtonTrackCuts->SetNClsTPC(60);
+        ProtonTrackCuts->SetChi2perNDFCut(3);
+    }
+    if(strcmp (suffix,"20") == 0){
+        ProtonTrackCuts->SetNClsITS(1);
+        ProtonTrackCuts->SetTPCCrossedRowsCut(110);
+    }
+    
+    //Systematic Secondary correction
+    if(strcmp (suffix,"21") == 0){
+        ProtonTrackCuts->SetDCAVtxXY(0.5);
+        ProtonTrackCuts->SetDCAVtxZ(1.0);
+    }
+    if(strcmp (suffix,"22") == 0){
+        ProtonTrackCuts->SetDCAVtxXY(0.05);
+        ProtonTrackCuts->SetDCAVtxZ(.1);
+    }
+    
+    //Systematic PID cuts
+    if(strcmp (suffix,"23") == 0)ProtonTrackCuts->SetPID(AliPID::kProton, 0.7,2.,2.);
+    if(strcmp (suffix,"24") == 0)ProtonTrackCuts->SetPID(AliPID::kProton, 0.7,4.,4.);
+    
+    
     AliLightNTrackCuts *AntiProtonTrackCuts = AliLightNTrackCuts::PrimProtonCuts(isMC,DCAPlots,CombSigma,ContributionSplitting);
     AntiProtonTrackCuts->SetCutCharge(-1);
+    if(strcmp (suffix,"0") == 0)AntiProtonTrackCuts->SetPID(AliPID::kProton, 0.7,3.,1e30);
+    //Systematic track cuts
+    if(strcmp (suffix,"1") == 0)AntiProtonTrackCuts->SetNClsTPC(60);
+    if(strcmp (suffix,"2") == 0)AntiProtonTrackCuts->SetNClsITS(1);
+    if(strcmp (suffix,"3") == 0)AntiProtonTrackCuts->SetTPCRatioCut(0.5);
+    if(strcmp (suffix,"4") == 0)AntiProtonTrackCuts->SetChi2perNDFCut(6);
+    if(strcmp (suffix,"5") == 0)AntiProtonTrackCuts->SetTPCCrossedRowsCut(50);
+    if(strcmp (suffix,"6") == 0)AntiProtonTrackCuts->SetNClsTPC(80);
+    if(strcmp (suffix,"7") == 0)AntiProtonTrackCuts->SetNClsITS(3);
+    if(strcmp (suffix,"8") == 0)AntiProtonTrackCuts->SetTPCRatioCut(0.9);
+    if(strcmp (suffix,"9") == 0)AntiProtonTrackCuts->SetChi2perNDFCut(3);
+    if(strcmp (suffix,"10") == 0)AntiProtonTrackCuts->SetTPCCrossedRowsCut(110);
+    if(strcmp (suffix,"11") == 0){
+        AntiProtonTrackCuts->SetNClsTPC(60);
+        AntiProtonTrackCuts->SetNClsITS(1);
+    }
+    if(strcmp (suffix,"12") == 0){
+        AntiProtonTrackCuts->SetTPCRatioCut(0.5);
+        AntiProtonTrackCuts->SetChi2perNDFCut(6);
+    }
+    if(strcmp (suffix,"13") == 0){
+        AntiProtonTrackCuts->SetTPCCrossedRowsCut(50);
+        AntiProtonTrackCuts->SetNClsTPC(80);
+    }
+    if(strcmp (suffix,"14") == 0){
+        AntiProtonTrackCuts->SetNClsITS(3);
+        AntiProtonTrackCuts->SetTPCRatioCut(0.9);
+    }
+    if(strcmp (suffix,"15") == 0){
+        AntiProtonTrackCuts->SetChi2perNDFCut(3);
+        AntiProtonTrackCuts->SetTPCCrossedRowsCut(110);
+    }
+    if(strcmp (suffix,"16") == 0){
+        AntiProtonTrackCuts->SetNClsTPC(60);
+        AntiProtonTrackCuts->SetNClsITS(1);
+        AntiProtonTrackCuts->SetTPCRatioCut(0.5);
+    }
+    if(strcmp (suffix,"17") == 0){
+        AntiProtonTrackCuts->SetChi2perNDFCut(6);
+        AntiProtonTrackCuts->SetTPCCrossedRowsCut(50);
+        AntiProtonTrackCuts->SetNClsTPC(80);
+    }
+    if(strcmp (suffix,"18") == 0){
+        AntiProtonTrackCuts->SetNClsITS(3);
+        AntiProtonTrackCuts->SetTPCRatioCut(0.9);
+        AntiProtonTrackCuts->SetChi2perNDFCut(3);
+    }
+    if(strcmp (suffix,"19") == 0){
+        AntiProtonTrackCuts->SetNClsTPC(60);
+        AntiProtonTrackCuts->SetChi2perNDFCut(3);
+    }
+    if(strcmp (suffix,"20") == 0){
+        AntiProtonTrackCuts->SetNClsITS(1);
+        AntiProtonTrackCuts->SetTPCCrossedRowsCut(110);
+    }
+    
+    //Systematic Secondary correction
+    if(strcmp (suffix,"21") == 0){
+        AntiProtonTrackCuts->SetDCAVtxXY(0.5);
+        AntiProtonTrackCuts->SetDCAVtxZ(1.0);
+    }
+    if(strcmp (suffix,"22") == 0){
+        AntiProtonTrackCuts->SetDCAVtxXY(0.05);
+        AntiProtonTrackCuts->SetDCAVtxZ(.1);
+    }
+    
+    //Systematic PID cuts
+    if(strcmp (suffix,"23") == 0)AntiProtonTrackCuts->SetPID(AliPID::kProton, 0.7,2.,2.);
+    if(strcmp (suffix,"24") == 0)ProtonTrackCuts->SetPID(AliPID::kProton, 0.7,4.,4.);
+    
     
     //Track Cuts Deuteron
     AliLightNTrackCuts *DeuteronTrackCuts = AliLightNTrackCuts::PrimDeuteronCuts(isMC,DCAPlots,CombSigma,ContributionSplitting);
     DeuteronTrackCuts->SetCutCharge(1);
+    //Systematic track cuts
+    if(strcmp (suffix,"1") == 0)DeuteronTrackCuts->SetNClsTPC(60);
+    if(strcmp (suffix,"2") == 0)DeuteronTrackCuts->SetNClsITS(1);
+    if(strcmp (suffix,"3") == 0)DeuteronTrackCuts->SetTPCRatioCut(0.5);
+    if(strcmp (suffix,"4") == 0)DeuteronTrackCuts->SetChi2perNDFCut(6);
+    if(strcmp (suffix,"5") == 0)DeuteronTrackCuts->SetTPCCrossedRowsCut(50);
+    if(strcmp (suffix,"6") == 0)DeuteronTrackCuts->SetNClsTPC(80);
+    if(strcmp (suffix,"7") == 0)DeuteronTrackCuts->SetNClsITS(3);
+    if(strcmp (suffix,"8") == 0)DeuteronTrackCuts->SetTPCRatioCut(0.9);
+    if(strcmp (suffix,"9") == 0)DeuteronTrackCuts->SetChi2perNDFCut(3);
+    if(strcmp (suffix,"10") == 0)DeuteronTrackCuts->SetTPCCrossedRowsCut(110);
+    if(strcmp (suffix,"11") == 0){
+        DeuteronTrackCuts->SetNClsTPC(60);
+        DeuteronTrackCuts->SetNClsITS(1);
+    }
+    if(strcmp (suffix,"12") == 0){
+        DeuteronTrackCuts->SetTPCRatioCut(0.5);
+        DeuteronTrackCuts->SetChi2perNDFCut(6);
+    }
+    if(strcmp (suffix,"13") == 0){
+        DeuteronTrackCuts->SetTPCCrossedRowsCut(50);
+        DeuteronTrackCuts->SetNClsTPC(80);
+    }
+    if(strcmp (suffix,"14") == 0){
+        DeuteronTrackCuts->SetNClsITS(3);
+        DeuteronTrackCuts->SetTPCRatioCut(0.9);
+    }
+    if(strcmp (suffix,"15") == 0){
+        DeuteronTrackCuts->SetChi2perNDFCut(3);
+        DeuteronTrackCuts->SetTPCCrossedRowsCut(110);
+    }
+    if(strcmp (suffix,"16") == 0){
+        DeuteronTrackCuts->SetNClsTPC(60);
+        DeuteronTrackCuts->SetNClsITS(1);
+        DeuteronTrackCuts->SetTPCRatioCut(0.5);
+    }
+    if(strcmp (suffix,"17") == 0){
+        DeuteronTrackCuts->SetChi2perNDFCut(6);
+        DeuteronTrackCuts->SetTPCCrossedRowsCut(50);
+        DeuteronTrackCuts->SetNClsTPC(80);
+    }
+    if(strcmp (suffix,"18") == 0){
+        DeuteronTrackCuts->SetNClsITS(3);
+        DeuteronTrackCuts->SetTPCRatioCut(0.9);
+        DeuteronTrackCuts->SetChi2perNDFCut(3);
+    }
+    if(strcmp (suffix,"19") == 0){
+        DeuteronTrackCuts->SetNClsTPC(60);
+        DeuteronTrackCuts->SetChi2perNDFCut(3);
+    }
+    if(strcmp (suffix,"20") == 0){
+        DeuteronTrackCuts->SetNClsITS(1);
+        DeuteronTrackCuts->SetTPCCrossedRowsCut(110);
+    }
+    
+    //Systematic Secondary correction
+    if(strcmp (suffix,"21") == 0){
+        DeuteronTrackCuts->SetDCAVtxXY(0.5);
+        DeuteronTrackCuts->SetDCAVtxZ(1.0);
+    }
+    if(strcmp (suffix,"22") == 0){
+        DeuteronTrackCuts->SetDCAVtxXY(0.05);
+        DeuteronTrackCuts->SetDCAVtxZ(.1);
+    }
+
+    //Systematic PID cuts
+    if(strcmp (suffix,"23") == 0){
+        DeuteronTrackCuts->SetPID(AliPID::kDeuteron, 0.7,2.,1e30);
+        DeuteronTrackCuts->SetCutITSPID(-1.,1e30,true);
+    }
+    if(strcmp (suffix,"24") == 0){
+        DeuteronTrackCuts->SetPID(AliPID::kDeuteron, 0.7,4.,1e30);
+        DeuteronTrackCuts->SetCutITSPID(-3.,1e30,true);
+    }
+    
+    //No ITS PID
+    if(strcmp (suffix,"25") == 0)DeuteronTrackCuts->SetCutITSPID(-2.,1e30,false);
+    
+    //ITS PID investigation
+    if(strcmp (suffix,"26") == 0){
+        DeuteronTrackCuts->SetPtRange(0.1,1.4);
+        DeuteronTrackCuts->SetCutITSPID(-2.,1e30,true);
+    }
+    if(strcmp (suffix,"27") == 0){
+        DeuteronTrackCuts->SetPtRange(0.1,1.4);
+        DeuteronTrackCuts->SetCutITSPID(-15.,-2.,true);
+    }
+    
+    
     AliLightNTrackCuts *AntiDeuteronTrackCuts = AliLightNTrackCuts::PrimDeuteronCuts(isMC,DCAPlots,CombSigma,ContributionSplitting);
     AntiDeuteronTrackCuts->SetCutCharge(-1);
+    //Systematic track cuts
+    if(strcmp (suffix,"1") == 0)AntiDeuteronTrackCuts->SetNClsTPC(60);
+    if(strcmp (suffix,"2") == 0)AntiDeuteronTrackCuts->SetNClsITS(1);
+    if(strcmp (suffix,"3") == 0)AntiDeuteronTrackCuts->SetTPCRatioCut(0.5);
+    if(strcmp (suffix,"4") == 0)AntiDeuteronTrackCuts->SetChi2perNDFCut(6);
+    if(strcmp (suffix,"5") == 0)AntiDeuteronTrackCuts->SetTPCCrossedRowsCut(50);
+    if(strcmp (suffix,"6") == 0)AntiDeuteronTrackCuts->SetNClsTPC(80);
+    if(strcmp (suffix,"7") == 0)AntiDeuteronTrackCuts->SetNClsITS(3);
+    if(strcmp (suffix,"8") == 0)AntiDeuteronTrackCuts->SetTPCRatioCut(0.9);
+    if(strcmp (suffix,"9") == 0)AntiDeuteronTrackCuts->SetChi2perNDFCut(3);
+    if(strcmp (suffix,"10") == 0)AntiDeuteronTrackCuts->SetTPCCrossedRowsCut(110);
+    if(strcmp (suffix,"11") == 0){
+        AntiDeuteronTrackCuts->SetNClsTPC(60);
+        AntiDeuteronTrackCuts->SetNClsITS(1);
+    }
+    if(strcmp (suffix,"12") == 0){
+        AntiDeuteronTrackCuts->SetTPCRatioCut(0.5);
+        AntiDeuteronTrackCuts->SetChi2perNDFCut(6);
+    }
+    if(strcmp (suffix,"13") == 0){
+        AntiDeuteronTrackCuts->SetTPCCrossedRowsCut(50);
+        AntiDeuteronTrackCuts->SetNClsTPC(80);
+    }
+    if(strcmp (suffix,"14") == 0){
+        AntiDeuteronTrackCuts->SetNClsITS(3);
+        AntiDeuteronTrackCuts->SetTPCRatioCut(0.9);
+    }
+    if(strcmp (suffix,"15") == 0){
+        AntiDeuteronTrackCuts->SetChi2perNDFCut(3);
+        AntiDeuteronTrackCuts->SetTPCCrossedRowsCut(110);
+    }
+    if(strcmp (suffix,"16") == 0){
+        AntiDeuteronTrackCuts->SetNClsTPC(60);
+        AntiDeuteronTrackCuts->SetNClsITS(1);
+        AntiDeuteronTrackCuts->SetTPCRatioCut(0.5);
+    }
+    if(strcmp (suffix,"17") == 0){
+        AntiDeuteronTrackCuts->SetChi2perNDFCut(6);
+        AntiDeuteronTrackCuts->SetTPCCrossedRowsCut(50);
+        AntiDeuteronTrackCuts->SetNClsTPC(80);
+    }
+    if(strcmp (suffix,"18") == 0){
+        AntiDeuteronTrackCuts->SetNClsITS(3);
+        AntiDeuteronTrackCuts->SetTPCRatioCut(0.9);
+        AntiDeuteronTrackCuts->SetChi2perNDFCut(3);
+    }
+    if(strcmp (suffix,"19") == 0){
+        AntiDeuteronTrackCuts->SetNClsTPC(60);
+        AntiDeuteronTrackCuts->SetChi2perNDFCut(3);
+    }
+    if(strcmp (suffix,"20") == 0){
+        AntiDeuteronTrackCuts->SetNClsITS(1);
+        AntiDeuteronTrackCuts->SetTPCCrossedRowsCut(110);
+    }
+    
+    //Systematic Secondary correction
+    if(strcmp (suffix,"21") == 0){
+        AntiDeuteronTrackCuts->SetDCAVtxXY(0.5);
+        AntiDeuteronTrackCuts->SetDCAVtxZ(1.0);
+    }
+    if(strcmp (suffix,"22") == 0){
+        AntiDeuteronTrackCuts->SetDCAVtxXY(0.05);
+        AntiDeuteronTrackCuts->SetDCAVtxZ(.1);
+    }
+    
+    //Systematic PID cuts
+    if(strcmp (suffix,"23") == 0){
+        AntiDeuteronTrackCuts->SetPID(AliPID::kDeuteron, 0.7,2.,1e30);
+        AntiDeuteronTrackCuts->SetCutITSPID(-1.,1e30,true);
+    }
+    if(strcmp (suffix,"24") == 0){
+        AntiDeuteronTrackCuts->SetPID(AliPID::kDeuteron, 0.7,4.,1e30);
+        AntiDeuteronTrackCuts->SetCutITSPID(-3.,1e30,true);
+    }
+    
+    //No ITS PID
+    if(strcmp (suffix,"25") == 0)AntiDeuteronTrackCuts->SetCutITSPID(-2.,1e30,false);
+    
     
     TString TaskName = Form("LightN_%s",suffix);
     AliAnalysisTaskLightN *task=new AliAnalysisTaskLightN(TaskName.Data(),isMC);
