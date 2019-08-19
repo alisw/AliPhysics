@@ -272,6 +272,7 @@ public:
                                                            if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ; }
   TObjArray* GetEMCALBadChannelStatusMapArray()    const { return fEMCALBadChannelMap ; }
   void     InitEMCALBadChannelStatusMap() ;
+  void     InitEMCALBadChannelStatusMap1D() ;
   void     SetEMCALBadChannelStatusSelection(Bool_t all, Bool_t dead, Bool_t hot, Bool_t warm);
   void     SetWarmChannelAsGood() 
            { fBadStatusSelection[0] = kFALSE; fBadStatusSelection[AliCaloCalibPedestal::kWarning] = kFALSE; }
@@ -280,12 +281,18 @@ public:
   void     SetHotChannelAsGood() 
            { fBadStatusSelection[0] = kFALSE; fBadStatusSelection[AliCaloCalibPedestal::kHot]     = kFALSE; } 
   Bool_t   GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Int_t & status) const ;
+  Bool_t   GetEMCALChannelStatus1D(Int_t iCell, Int_t & status) const ;
   void     SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t status = 1) { 
     if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap()               ;
     ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,status)    ; }
-  TH2I *   GetEMCALChannelStatusMap(Int_t iSM)     const { return (TH2I*)fEMCALBadChannelMap->At(iSM) ; }
+  void     SetEMCALChannelStatus1D(Int_t iCell, Double_t status = 1) { 
+    if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap1D()               ;
+    ((TH1C*)fEMCALBadChannelMap->At(0))->SetBinContent(iCell,status)    ; }
+  TH2I *   GetEMCALChannelStatusMap(Int_t iSM)     const;
+  TH1C *   GetEMCALChannelStatusMap1D()     const { return (TH1C*)fEMCALBadChannelMap->At(0) ; }
   void     SetEMCALChannelStatusMap(const TObjArray *map);
   void     SetEMCALChannelStatusMap(Int_t iSM , const TH2I* h);
+  void     SetEMCALChannelStatusMap1D(const TH1C* h);
   Bool_t   ClusterContainsBadChannel(const AliEMCALGeometry* geom, const UShort_t* cellList, Int_t nCells);
  
   //-----------------------------------------------------
@@ -504,6 +511,7 @@ private:
   Bool_t     fRemoveBadChannels;         ///< Check the channel status provided and remove clusters with bad channels
   Bool_t     fRecalDistToBadChannels;    ///< Calculate distance from highest energy tower of cluster to closes bad channel
   TObjArray* fEMCALBadChannelMap;        ///< Array of histograms with map of bad channels, EMCAL
+  Bool_t     fUse1Dmap;                  ///< Flag to use one 1D bad channel map (for all cells)
   Bool_t     fBadStatusSelection[4];     ///< Declare as bad all the types of bad channels or only some. 
                                          ///<   0- Set all types to bad if true
                                          ///<   1- Set dead as good if false
@@ -569,7 +577,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 30) ;
+  ClassDef(AliEMCALRecoUtils, 31) ;
   /// \endcond
 
 };

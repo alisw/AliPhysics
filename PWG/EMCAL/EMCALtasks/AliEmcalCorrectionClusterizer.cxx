@@ -205,6 +205,9 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   if (fClusterCollArray.GetEntries() > 1) {
     AliFatal("Passed more than one cluster container to the clusterizer, but the clusterizer only supports one cluster container!");
   }
+
+  // Load 1D bad channel map
+  GetProperty("load1DBadChMap", fLoad1DBadChMap);
   
   return kTRUE;
 }

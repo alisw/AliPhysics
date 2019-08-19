@@ -59,7 +59,8 @@ fPHOSGeoName (""),
 fEMCALGeo(0x0),                   fPHOSGeo(0x0), 
 fEMCALGeoMatrixSet(kFALSE),       fPHOSGeoMatrixSet(kFALSE), 
 fLoadEMCALMatrices(kFALSE),       fLoadPHOSMatrices(kFALSE),
-fRemoveBadChannels(kFALSE),       fPHOSBadChannelMap(0x0), 
+fRemoveBadChannels(kFALSE),       fLoad1DBadChMap(kFALSE),
+fPHOSBadChannelMap(0x0), 
 fNCellsFromPHOSBorder(0),
 fNMaskCellColumns(0),             fMaskCellColumns(0x0),
 fRecalibration(kFALSE),           fRunDependentCorrection(kFALSE),
@@ -132,9 +133,9 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
     {
       AliOADBContainer *contBC=new AliOADBContainer("");
       if(fOADBFilePathEMCAL!="")
-        contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePathEMCAL.Data()),"AliEMCALBadChannels"); 
+        contBC->InitFromFile(Form("%s/EMCALBadChannels%s.root",fOADBFilePathEMCAL.Data(), fLoad1DBadChMap ? "_1D" : ""),"AliEMCALBadChannels"); 
       else
-        contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"AliEMCALBadChannels"); 
+        contBC->InitFromFile(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALBadChannels%s.root", fLoad1DBadChMap ? "_1D" : "")).data(),"AliEMCALBadChannels"); 
       
       TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRunNumber);
       
@@ -143,25 +144,43 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
         SwitchOnDistToBadChannelRecalculation();
         AliInfo("Remove EMCAL bad cells");
         
-        for (Int_t i=0; i<nSM; ++i) 
-        {
-          TH2I *hbm = GetEMCALChannelStatusMap(i);
-          
+        if(fLoad1DBadChMap){
+          TH1C *hbm = GetEMCALChannelStatusMap1D();
+            
           if (hbm)
             delete hbm;
-          
-          hbm=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+            
+          hbm=(TH1C*)arrayBC->FindObject("EMCALBadChannelMap");
           
           if (!hbm) 
           {
-            AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
-            continue;
+            AliError("Can not get EMCALBadChannelMap");
           }
-          
+            
           hbm->SetDirectory(0);
-          SetEMCALChannelStatusMap(i,hbm);
-          
-        } // loop
+          SetEMCALChannelStatusMap1D(hbm);
+        }else{
+          for (Int_t i=0; i<nSM; ++i) 
+          {
+            TH2I *hbm = GetEMCALChannelStatusMap(i);
+            
+            if (hbm)
+              delete hbm;
+            
+            hbm=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+            
+            if (!hbm) 
+            {
+              AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
+              continue;
+            }
+            
+            hbm->SetDirectory(0);
+            SetEMCALChannelStatusMap(i,hbm);
+            
+          } // loop
+        }
+      
       } else AliInfo("Do NOT remove EMCAL bad channels"); // run array
       
       delete contBC;
@@ -1739,6 +1758,8 @@ void AliCalorimeterUtils::InitParameters()
   fPHOSGeoMatrixSet     = kFALSE;
   
   fRemoveBadChannels    = kFALSE;
+
+  fLoad1DBadChMap       = kFALSE;
   
   fNCellsFromPHOSBorder = 0;
   

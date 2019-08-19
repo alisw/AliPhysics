@@ -112,6 +112,7 @@ class AliEmcalCorrectionComponent : public TNamed {
  protected:
   PWG::Tools::AliYAMLConfiguration fYAMLConfig;           ///< Contains the %YAML configuration used to configure the component
   Bool_t                  fCreateHisto;                   ///< Flag to make some basic histograms
+  Bool_t                  fLoad1DBadChMap;                ///< Flag to load 1D bad channel map
   Int_t                   fRun;                           //!<! Run number
   TString                 fFilepass;                      ///< Input data pass number
   Bool_t                  fGetPassFromFileName;           ///< Get fFilepass from file name
