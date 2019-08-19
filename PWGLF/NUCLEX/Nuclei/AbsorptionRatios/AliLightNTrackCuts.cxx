@@ -48,6 +48,7 @@ AliLightNTrackCuts::AliLightNTrackCuts()
 ,fParticleID(AliPID::kUnknown)
 ,fNSigValueTPC()
 ,fNSigValueTOF()
+,fNSigValueITS()
 ,fPIDPTPCThreshold(0)
 ,fRejectPions(false)
 {}
@@ -293,7 +294,7 @@ bool AliLightNTrackCuts::ITSPIDAODCuts(AliLightNTrack *Track) {
     double p =Track->GetP();
     if (p<1.4) {
         double nSigITS=(Track->GetnSigmaITS((int)(fParticleID)));
-        if (nSigITS < -2) {
+        if (nSigITS < fNSigValueITS) {
             pass=false;
         }
     }
@@ -889,7 +890,7 @@ AliLightNTrackCuts* AliLightNTrackCuts::PrimDeuteronCuts(bool isMC,bool DCAPlots
     trackCuts->SetCutTPCCrossedRows(true);
     trackCuts->SetTPCCrossedRowsCut(70);
     trackCuts->SetPID(AliPID::kDeuteron, 1.4,3.,1e30);
-    trackCuts->SetCutITSPID(true);
+    trackCuts->SetCutITSPID(-2,true);
     trackCuts->SetRapidityRange(-1, 1);
     trackCuts->SetRejLowPtPionsTOF(false);
     trackCuts->SetCutSmallestSig(false);
