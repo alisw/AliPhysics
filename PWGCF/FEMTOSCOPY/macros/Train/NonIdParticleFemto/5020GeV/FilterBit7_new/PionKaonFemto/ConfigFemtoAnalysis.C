@@ -238,13 +238,17 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  dtc1etaphitpc[aniter]->SetPt(0.19,1.5);
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc1etaphitpc[aniter]->SetMass(PionMass);	  
-	  dtc1etaphitpc[aniter]->SetMostProbablePion();	 
+	  dtc1etaphitpc[aniter]->SetMostProbablePion();
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4); 	//DCA xy - parametry zalezno?ci DCA od pt
+      	  dtc1etaphitpc[aniter]->SetMaxImpactZ(3.2);	//DCA Z	  
  
 	  //Set particle 2:
 	  dtc2etaphitpc[aniter]->SetPt(0.19,1.5);
           dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc2etaphitpc[aniter]->SetMass(KaonMass);	  
 	  dtc2etaphitpc[aniter]->SetMostProbableKaon();
+	  dtc2etaphitpc[aniter]->SetMaxImpactXY(2.4); 	//DCA xy
+	  dtc2etaphitpc[aniter]->SetMaxImpactZ(3.2);	//DCA Z
 	  
 
 	  //============PION============
