@@ -175,7 +175,7 @@ anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 2, multbins[i
 	  //Select basic cuts:
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 	  mecetaphitpc[aniter]->SetEventMult(0.001,100000);
-	  mecetaphitpc[aniter]->SetVertZPos(-7,7); //VertZPos changed from (-10,10) to (-7,7)
+	  mecetaphitpc[aniter]->SetVertZPos(-10,10); 
 
 	  //Study the multiplicity distribution:
 	  if(turnOnMonitors == 1) {
@@ -231,16 +231,12 @@ anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 2, multbins[i
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc1etaphitpc[aniter]->SetMass(PionMass);	  
 	  dtc1etaphitpc[aniter]->SetMostProbablePion();	 
- 	  dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4); 	//DCA xy - parametry zalezno?ci DCA od pt
-      	  dtc1etaphitpc[aniter]->SetMaxImpactZ(3.2);	//DCA Z
 
 	  //Set particle 2:
 	  dtc2etaphitpc[aniter]->SetPt(0.7,4.0);
           dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc2etaphitpc[aniter]->SetMass(ProtonMass);	  
 	  dtc2etaphitpc[aniter]->SetMostProbableProton();
-	  dtc2etaphitpc[aniter]->SetMaxImpactXY(2.4); 	//DCA xy
-	  dtc2etaphitpc[aniter]->SetMaxImpactZ(3.2);	//DCA Z
 	  
 	  
 
