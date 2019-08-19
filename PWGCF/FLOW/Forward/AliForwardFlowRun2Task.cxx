@@ -104,16 +104,23 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   constexpr Int_t dimensions = 7;
   Int_t ptnmax =  (fSettings.doPt ? 5 : 0);
 
-  Int_t dbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kWTwoTwoD)} ;
-  Int_t rbins[dimensions] = {3,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kWTwoTwoD)} ; // n, pt, s, zvtx,eta,cent,kind
-  Double_t xmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
-  Double_t xmax[dimensions] = {3,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kWTwoTwoD)+1};
 
 
   // create a THn for each harmonic
+  Int_t rbins[dimensions] = {4,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.rW4Four)} ; // n, pt, s, zvtx,eta,cent,kind
+  Double_t rmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
+  Double_t rmax[dimensions] = {4,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kW4Four)+1};
 
-  fAnalysisList->Add(new THnD("reference", "reference", dimensions, rbins, xmin, xmax));
-  fAnalysisList->Add(new THnD("differential","differential", dimensions, dbins, xmin, xmax));
+  fAnalysisList->Add(new THnD("reference", "reference", dimensions, rbins, rmin, rmax));
+
+  Int_t std_dbins[dimensions] = {4,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.dW4Four)} ;
+  Int_t mixed_dbins[dimensions] = {4,ptnmax + 1,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.dWTwoTwoD)} ;
+  Double_t dmin[dimensions] = {0,0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
+  Double_t dmax[dimensions] = {4,double(ptnmax+1),double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.dW4Four)+1};
+
+  fAnalysisList->Add(new THnD("standard_differential","standard_differential", dimensions, std_dbins, dmin, dmax));
+  fAnalysisList->Add(new THnD("mixed_differential","mixed_differential", dimensions, mixed_dbins, dmin, dmax));
+
   // The THn has dimensions [n, pt, random samples, vertex position, eta, centrality, kind of variable to store]
   // set names
   THnD* reference = static_cast<THnD*>(fAnalysisList->At(0));
@@ -124,17 +131,24 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   reference->GetAxis(4)->SetName("eta");
   reference->GetAxis(5)->SetName("cent");
   reference->GetAxis(6)->SetName("identifier");
+  
+  THnD* standard_differential = static_cast<THnD*>(fAnalysisList->At(1));
+  standard_differential->GetAxis(0)->SetName("n");
+  standard_differential->GetAxis(1)->SetName("pt");
+  standard_differential->GetAxis(2)->SetName("samples");
+  standard_differential->GetAxis(3)->SetName("vertex");
+  standard_differential->GetAxis(4)->SetName("eta");
+  standard_differential->GetAxis(5)->SetName("cent");
+  standard_differential->GetAxis(6)->SetName("identifier");
 
-
-  THnD* differential = static_cast<THnD*>(fAnalysisList->At(1));
-  differential->GetAxis(0)->SetName("n");
-  differential->GetAxis(1)->SetName("pt");
-  differential->GetAxis(2)->SetName("samples");
-  differential->GetAxis(3)->SetName("vertex");
-  differential->GetAxis(4)->SetName("eta");
-  differential->GetAxis(5)->SetName("cent");
-  differential->GetAxis(6)->SetName("identifier");
-      
+  THnD* mixed_differential = static_cast<THnD*>(fAnalysisList->At(2));
+  mixed_differential->GetAxis(0)->SetName("n");
+  mixed_differential->GetAxis(1)->SetName("pt");
+  mixed_differential->GetAxis(2)->SetName("samples");
+  mixed_differential->GetAxis(3)->SetName("vertex");
+  mixed_differential->GetAxis(4)->SetName("eta");
+  mixed_differential->GetAxis(5)->SetName("cent");
+  mixed_differential->GetAxis(6)->SetName("identifier");
 
   // Make centralDist
   Int_t   centralEtaBins = (fSettings.useITS ? 200 : 400);
@@ -246,7 +260,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   centralDist->Reset();
   
-  if (!(fSettings.ref_mode & fSettings.kFMDref)) refDist->Reset();
+  if (!(fSettings.ref_mode & fSettings.kFMDref) || (fSettings.mc && fSettings.esd)) refDist->Reset();
   if ((fSettings.mc && fSettings.use_primaries_fwd) || (fSettings.mc && fSettings.esd)) forwardDist->Reset();
 
 
