@@ -44,13 +44,14 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerNam
   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
+  AliAnalysisTaskFemto *taskfemto;
   if(kGridConfig)
     {
-        AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE,kTRUE,userName);
+      taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE,kTRUE,userName);
     }
   else
     {
-      AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kFALSE,userName);
+      taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kFALSE,userName);
     }
   
   mgr->AddTask(taskfemto);
