@@ -338,7 +338,7 @@ void AliAnalysisTaskSEXicTopKpi::Init()
       Printf("Xic Cuts modified to assure mass window is large enough, current cuts are:");*/
       Printf("\n--- Adopted cuts ---");
       fCutsXic->PrintAll();
-    }
+    //}
   }
   
   if(fDebug>=0 || fSetTrackCutLcFilteringPP){// track cuts used for Lc filtering (in pp, 2018): need to set them to be sure that only tighter cuts than these are used
