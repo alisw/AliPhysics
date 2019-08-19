@@ -117,8 +117,8 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  };
 
  enum TreeSize {
-   nVar = 18,
-   nVar_Splittings =12
+   nVar = 10,
+   nVar_Splittings =10
   };
 
  //enum ECandidateType_t  { kD0toKpi, kDstartoKpipi, kD0toKpiLikeSign };
