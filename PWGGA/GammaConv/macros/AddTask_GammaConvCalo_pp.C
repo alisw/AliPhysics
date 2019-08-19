@@ -2005,13 +2005,13 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","4117901067032220000", "0163103100b00010"); // NL 01 TB
     cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","4117911067032220000", "0163103100b00010"); // NL 11
     cuts.AddCutPCMCalo("00010113", "00200009327000008250400000","4117912067032220000", "0163103100b00010"); // NL 12
-} else if ( trainConfig == 2037){ // Default cut, R Bins // without weights
+  } else if ( trainConfig == 2037){ // Default cut, R Bins // without weights
     cuts.AddCutPCMCalo("00010113", "00a00009327000008250400000","4117911067032220000", "0163103100b00010"); // RBins   min = 5,      max = 33.5
     cuts.AddCutPCMCalo("00010113", "00b00009327000008250400000","4117911067032220000", "0163103100b00010"); // RBins   min = 33.5,   max = 72
     cuts.AddCutPCMCalo("00010113", "00c00009327000008250400000","4117911067032220000", "0163103100b00010"); // RBins   min = 72,     max = 180
     cuts.AddCutPCMCalo("00010113", "00h00009327000008250400000","4117911067032220000", "0163103100b00010"); // RBins   min = 5,      max = 13
     cuts.AddCutPCMCalo("00010113", "00i00009327000008250400000","4117911067032220000", "0163103100b00010"); // RBins   min = 13,     max = 33.5
-} else if ( trainConfig == 2038){ // Default cut, R Bins // with weights
+  } else if ( trainConfig == 2038){ // Default cut, R Bins // with weights
     cuts.AddCutPCMCalo("00010113", "00a00009327000008250400000","4117911067032220000", "0163103100b00010"); // RBins   min = 5,      max = 33.5
     cuts.AddCutPCMCalo("00010113", "00b00009327000008250400000","4117911067032220000", "0163103100b00010"); // RBins   min = 33.5,   max = 72
     cuts.AddCutPCMCalo("00010113", "00c00009327000008250400000","4117911067032220000", "0163103100b00010"); // RBins   min = 72,     max = 180
