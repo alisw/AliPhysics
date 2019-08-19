@@ -318,7 +318,7 @@ void AliAnalysisTaskSEXicTopKpi::Init()
     fCutsXic->SetCuts(13,cutsArrayLctopKpi);
   }
   else{
-    
+    /*
     Double_t sigmaVtxMax[8]={0.09,0.09,0.05,0.035,0.035,0.03,0.03,0.025};
     Double_t sumd02[8]={0.0003,0.0003,0.0002,0.00015,0.00015,0.0001,0.,0.};
     if(fAnalysisType==0 || fAnalysisType==4){// assure mass range is large enough
@@ -335,9 +335,10 @@ void AliAnalysisTaskSEXicTopKpi::Init()
 	cutvalues[10][km]=sumd02[km];
       }
       fCutsXic->SetCuts(nvars,nptbins,cutvalues);
-      Printf("Xic Cuts modified to assure mass window is large enough, current cuts are:");
+      Printf("Xic Cuts modified to assure mass window is large enough, current cuts are:");*/
+      Printf("\n--- Adopted cuts ---");
       fCutsXic->PrintAll();
-    }
+    //}
   }
   
   if(fDebug>=0 || fSetTrackCutLcFilteringPP){// track cuts used for Lc filtering (in pp, 2018): need to set them to be sure that only tighter cuts than these are used
