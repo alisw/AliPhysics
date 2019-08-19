@@ -62,7 +62,7 @@ public:
     void SetTPCCrossedRowsCut(double CrossedRows){fTPCCrossedRowsCut = CrossedRows;};
     void SetPID(AliPID::EParticleType pid, double pTPChresh, double sigValTPC, double sigValTOF)
     {fParticleID = pid; fPIDPTPCThreshold = pTPChresh; fNSigValueTPC = sigValTPC; fNSigValueTOF = sigValTOF; fCutPID = kTRUE;};
-    void SetCutITSPID(double sigValITS, bool cutit){fNSigValueITS = sigValITS,fdoITSnSigmaCut = cutit;};
+    void SetCutITSPID(double sigValITSmin, double sigValITSmax, bool cutit){fNSigValueITSmin = sigValITSmin,fNSigValueITSmax = sigValITSmax, fdoITSnSigmaCut = cutit;};
     void SetRapidityRange(double Ymin, double Ymax){fRapMin = Ymin; fRapMax = Ymax; fCutRapidity = kTRUE;};
     void SetRejLowPtPionsTOF(bool use){fRejectPions = use;};
     void SetCutSmallestSig(bool cutit){fCutHighPtSig = cutit;};
@@ -138,7 +138,8 @@ private:
     AliPID::EParticleType fParticleID;  //
     double fNSigValueTPC;               // defaults to 3
     double fNSigValueTOF;
-    double fNSigValueITS;
+    double fNSigValueITSmin;
+    double fNSigValueITSmax;
     double fPIDPTPCThreshold;           // defaults to 0
     bool fRejectPions;                  // Supress Pions at low pT with the TOF, if information is available
     ClassDef(AliLightNTrackCuts,1);
