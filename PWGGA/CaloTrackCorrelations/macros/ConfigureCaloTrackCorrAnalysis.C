@@ -43,6 +43,7 @@
 #include "AliAnaGeneratorKine.h"
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliAnaCaloTrackCorrMaker.h"
+#include "AliAnaParticleJetFinderCorrelation.h"
 #endif
 
 /// Global name to be composed of the settings, used to set the AOD branch name
