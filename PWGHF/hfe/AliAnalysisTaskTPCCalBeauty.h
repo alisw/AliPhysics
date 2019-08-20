@@ -252,6 +252,8 @@ private:
     TH1F                *fAllDMesonPt; //!
     
     TH1F                *fLambdaCPt; //!
+    TH1F                *fD0MesonPtWeight;  //!
+    TH1F                *fLambdaCPtWeight; //!
     TH1F                *fEtaCPt; //!
     TH1F                *fCBaryonPt; //!
     

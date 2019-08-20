@@ -173,6 +173,8 @@ fDsMesonPt(0),
 fDStarMesonPt(0),
 fAllDMesonPt(0),
 fLambdaCPt(0),
+fD0MesonPtWeight(0),
+fLambdaCPtWeight(0),
 fEtaCPt(0),
 fCBaryonPt(0),
 fBMesonPt(0),
@@ -395,6 +397,8 @@ fDsMesonPt(0),
 fDStarMesonPt(0),
 fAllDMesonPt(0),
 fLambdaCPt(0),
+fD0MesonPtWeight(0),
+fLambdaCPtWeight(0),
 fEtaCPt(0),
 fCBaryonPt(0),
 fBMesonPt(0),
@@ -780,9 +784,12 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     if (fCentralityMin==0 && fCentralityMax==10 && fApplyCentrality) {
         Double_t ratio[13] = {0.106888,0.0650239,0.0343858,0.0172579,0.00957876,0.00640323,0.00399907,0.00269269,0.00163078,0.000942387,0.000441093,0.000353811,0.000143011};
         Double_t err[13] = {0.0284416,0.0093333,0.00373075,0.00203067,0.00114824,0.000768388,0.00053676,0.000303334,0.000199878,0.000129785,8.53822e-05,7.13313e-05,5.61316e-05};
-        Double_t ratioNew[13] = {0.197449,0.118714,0.0627949,0.0321233,0.0182153,0.0124903,0.00801369,0.00553768,0.00340667,0.00193131,0.00089526,0.000678224,0.00026223};
+        //Double_t ratioNew[13] = {0.197449,0.118714,0.0627949,0.0321233,0.0182153,0.0124903,0.00801369,0.00553768,0.00340667,0.00193131,0.00089526,0.000678224,0.00026223};
+        Double_t ratioNew[13] = {0.382299,0.223983,0.116971,0.0573891,0.0292338,0.0192381,0.011778,0.00863768,0.00534462,0.00301279,0.00159646,0.00131757,0.000523965};
         Double_t ratioVar1[13] = {0.249988,0.132914,0.0673368,0.0340132,0.0189431,0.01274,0.00801369,0.00543372,0.00326751,0.00179833,0.000779735,0.000564287,0.000159311};
         Double_t ratioVar2[13] = {0.144911,0.104514,0.058253,0.0302335,0.0174875,0.0122405,0.00801369,0.00564164,0.00354583,0.00206429,0.00101078,0.00079216,0.000365149};
+        Double_t wLcVar1[13] = {1.57532,1.46238,0.948202,0.497431,0.250927,0.151636,0.0827256,0.0487993,0.0218917,0.0076259,0.00180605,0.00055039,8.79344e-05};
+        Double_t wLcVar2[13] = {3.47398,1.72259,0.839403,0.514328,0.261815,0.145702,0.0895206,0.0380316,0.0234082,0.0051148,0.00266179,0.00049151,0};
         for (int idata=1; idata<14; idata++) {
             fDWeight->SetBinContent(idata,ratio[idata-1]);
             fDWeight->SetBinError(idata,err[idata-1]);
@@ -790,11 +797,14 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
             fDWeightNew->SetBinContent(idata,ratioNew[idata-1]);
             fDWeightVar1->SetBinContent(idata,ratioVar1[idata-1]);
             fDWeightVar2->SetBinContent(idata,ratioVar2[idata-1]);
+            fLcWeightVar1->SetBinContent(idata,wLcVar1[idata-1]);
+            fLcWeightVar2->SetBinContent(idata,wLcVar2[idata-1]);
         }
     }else if (fCentralityMin==30 && fCentralityMax==50 && fApplyCentrality) {
         Double_t ratio[13] = {0.079428,0.0402934,0.0258836,0.0165168,0.0117076,0.00807683,0.00545914,0.00413535,0.00218055,0.00147282,0.000578039,0.000286482,0.000286482};
         Double_t err[13] = {0.0112672,0.00212923,0.000929744,0.000665396,0.000505178,0.00041285,0.000325958,0.000210603,0.000152176,0.000110271,6.60032e-05,5.6821e-05,0};
-        Double_t ratioNew[13] = {0.0611667,0.0299809,0.0186145,0.0114545,0.00789462,0.0053161,0.00355211,0.002672,0.00141544,0.000970815,0.000391017,0.000201985,0.000107469};
+        //Double_t ratioNew[13] = {0.0611667,0.0299809,0.0186145,0.0114545,0.00789462,0.0053161,0.00355211,0.002672,0.00141544,0.000970815,0.000391017,0.000201985,0.000107469};
+        Double_t ratioNew[13] = {0.171312,0.0872016,0.0553106,0.034332,0.0236477,0.0159165,0.0106375,0.00797653,0.00422176,0.00292325,0.00118981,0.000624289,0.0003415285};
         Double_t ratioVar1[13] = {0.0705071,0.031752,0.019312,0.0118197,0.00807804,0.00538886,0.00355211,0.0026429,0.00137442,0.000931529,0.000360442,0.000168603,0.0000726835};
         Double_t ratioVar2[13] = {0.0518263,0.0282098,0.0179171,0.0110893,0.00771121,0.00524334,0.00355211,0.00270111,0.00145645,0.0010101,0.000421592,0.000235367,0.0001422545};
         Double_t wLcVar1[13] = {2.02089,0.889089,0.490217,0.266978,0.158602,0.0931538,0.0536931,0.0323656,0.0131682,0.00593832,0.00123755,0.000273619,0.};
@@ -977,6 +987,14 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fLambdaCPt->Sumw2();
         fOutputList->Add(fLambdaCPt);
     
+        fD0MesonPtWeight = new TH1F("fD0MesonPtWeight","D0 Spectrum w/weight; p_{T}(GeV/c); counts;",100,0,50.);
+        fD0MesonPtWeight->Sumw2();
+        fOutputList->Add(fD0MesonPtWeight);
+        
+        fLambdaCPtWeight = new TH1F("fLambdaCPtWeight","Lc Spectrum w/weight; p_{T}(GeV/c); counts;",100,0,50.);
+        fLambdaCPtWeight->Sumw2();
+        fOutputList->Add(fLambdaCPtWeight);
+        
         fEtaCPt = new TH1F("fEtaCPt","Eta_c Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
         fEtaCPt->Sumw2();
         fOutputList->Add(fEtaCPt);
@@ -1639,7 +1657,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     }
                 }
                 if(TrackPDG>4000 && TrackPDG<4999) fCBaryonPt->Fill(AODMCtrack->Pt());
-                if(TrackPDG==4122)fLambdaCPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==4122){
+                    fLambdaCPt->Fill(AODMCtrack->Pt());
+                    fLambdaCPtWeight->Fill(AODMCtrack->Pt(),fLcWeightVar1->GetBinContent(fLcWeightVar1->FindBin(AODMCtrack->Pt())));
+                }
                 if(TrackPDG==4132)fEtaCPt->Fill(AODMCtrack->Pt());
                 
                 if (TrackPDG<400 || TrackPDG>499) {
@@ -1648,7 +1669,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 fDMesonPDG->Fill(TrackPDG);
                 fAllDMesonPt->Fill(AODMCtrack->Pt());
                 
-                if(TrackPDG==421) fD0MesonPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==421) {
+                    fD0MesonPt->Fill(AODMCtrack->Pt());
+                    fD0MesonPtWeight->Fill(AODMCtrack->Pt(),fDWeightNew->GetBinContent(fDWeightNew->FindBin(AODMCtrack->Pt())));
+                }
                 if(TrackPDG==421 && fromDStar==kTRUE) fD0MesonFromDStarPt->Fill(AODMCtrack->Pt());
                 if(TrackPDG==411) fDPlusMesonPt->Fill(AODMCtrack->Pt());
                 if(TrackPDG==431) fDsMesonPt->Fill(AODMCtrack->Pt());
@@ -2066,7 +2090,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                             if (ilabelGM<0) {
                                 fPromptD0DCANoWeight->Fill(track->Pt(),DCA);
                                 if (momPt>1 && momPt<50.) {
-                                    dWeight = fDWeight->GetBinContent(fDWeight->FindBin(momPt));
+                                    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(momPt));
                                     fPromptD0DCAWeight->Fill(track->Pt(),DCA,dWeight);
                                 }
                             }
@@ -2078,7 +2102,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 if (pidGM==413) {
                                     fD0FromDStarDCANoWeight->Fill(track->Pt(),DCA);
                                     if (momPt>1 && momPt<50.) {
-                                        dWeight = fDWeight->GetBinContent(fDWeight->FindBin(momPt));
+                                        dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(momPt));
                                         fD0FromDStarDCAWeight->Fill(track->Pt(),DCA,dWeight);
                                     }
                                 }
