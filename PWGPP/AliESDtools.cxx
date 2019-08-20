@@ -795,7 +795,7 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t doReset, Int_t ver
       const AliExternalTrackParam *param = track->GetInnerParam();
       if (!param) continue;
       // A-side c side cut
-      if (param->GetTgl()*param->GetZ()<0) continue;
+      //if (param->GetTgl()*param->GetZ()<0) continue;
       track->GetImpactParameters(dcaXY, dcaZ);
       if (TMath::Abs(dcaXY) > kMinDCA) continue;
       if (TMath::Abs(dcaZ) < kMinDCAZ) continue;
