@@ -6179,6 +6179,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             if(isMC){
               energy *= FunctionNL_NicoTB_100MeV_MC(energy);
               energy /= FunctionNL_kSDM(energy, 0.972695, -3.37305, -0.202613) ;
+              if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
+                energy /= 1.01702;
+              }
             } else {
               energy /= FunctionNL_MartinTB_100MeV_Data(energy);
             }
@@ -6195,6 +6198,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(isMC){
             energy *= FunctionNL_NicoTB_100MeV_MC(energy);
             energy /= FunctionNL_kSDM(energy, 0.983116, -3.66061, -0.119073) ;
+            if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
+              energy /= 1.0175;
+            }
           } else {
             energy /= FunctionNL_MartinTB_100MeV_Data(energy);
           }
@@ -6210,6 +6216,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(isMC){
             energy *= FunctionNL_NicoTB_100MeV_MC(energy);
             energy /= (FunctionNL_DExp(energy, 1.0246042651, 0.6505466585, -3.8786840593, 1.0609702616, 0.1971682118, -2.8581050225));
+            if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
+              energy /= 1.0175;
+            }
           } else {
             energy /= FunctionNL_MartinTB_100MeV_Data(energy);
           }
@@ -6225,6 +6234,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(isMC){
             energy *= FunctionNL_NicoTB_100MeV_MC(energy);
             energy /= (FunctionNL_DPOW(energy, 1.0433754550, -0.0429771943, -0.4999999999, 1.1947967487, -0.1995689867, -0.0998279631));
+            if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
+              energy /= 1.0175;
+            }
           } else {
             energy /= FunctionNL_MartinTB_100MeV_Data(energy);
           }
