@@ -264,11 +264,11 @@ AliAnalysisTaskLightN* AddTaskLightN(Bool_t isMC, const char* suffix = "" ) {
 
     //Systematic PID cuts
     if(strcmp (suffix,"23") == 0){
-        DeuteronTrackCuts->SetPID(AliPID::kDeuteron, 0.7,2.,1e30);
+        DeuteronTrackCuts->SetPID(AliPID::kDeuteron, 1.4,2.,1e30);
         DeuteronTrackCuts->SetCutITSPID(-1.,1e30,true);
     }
     if(strcmp (suffix,"24") == 0){
-        DeuteronTrackCuts->SetPID(AliPID::kDeuteron, 0.7,4.,1e30);
+        DeuteronTrackCuts->SetPID(AliPID::kDeuteron, 1.4,4.,1e30);
         DeuteronTrackCuts->SetCutITSPID(-3.,1e30,true);
     }
     
@@ -355,11 +355,11 @@ AliAnalysisTaskLightN* AddTaskLightN(Bool_t isMC, const char* suffix = "" ) {
     
     //Systematic PID cuts
     if(strcmp (suffix,"23") == 0){
-        AntiDeuteronTrackCuts->SetPID(AliPID::kDeuteron, 0.7,2.,1e30);
+        AntiDeuteronTrackCuts->SetPID(AliPID::kDeuteron, 1.4,2.,1e30);
         AntiDeuteronTrackCuts->SetCutITSPID(-1.,1e30,true);
     }
     if(strcmp (suffix,"24") == 0){
-        AntiDeuteronTrackCuts->SetPID(AliPID::kDeuteron, 0.7,4.,1e30);
+        AntiDeuteronTrackCuts->SetPID(AliPID::kDeuteron, 1.4,4.,1e30);
         AntiDeuteronTrackCuts->SetCutITSPID(-3.,1e30,true);
     }
     
