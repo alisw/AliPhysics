@@ -66,6 +66,7 @@ class AliJJetJtAnalysis{
     } // TODO clean before event
     void SetJTracks(TClonesArray *tracks ){fTracks = tracks ;}
     void SetMCJTracks(TClonesArray *tracks ){fMCTracks = tracks ;}
+    void SetIncludeFullJets(int doFull){fDoFullJets = doFull;}
 
 
     int GetNJets(){ return GetJetList()->GetEntriesFast(); }
@@ -167,6 +168,7 @@ class AliJJetJtAnalysis{
     int nJetContainer; ///< Number of jet finders
     int fnR; ///< Number of jet resolution parameters
     int fnkt; ///< Marks how many kt-algorithms were reconstructed
+    int fDoFullJets; ///< Whether full jets should be included
 
     AliJCard * fCard; // comment needed
     AliJJetAnalysis *fJJetAnalysis;

@@ -101,6 +101,7 @@ AliJJetTask* AddTaskJJet(
   AliJJetTask *jtTask = new AliJJetTask(name, nJetFinder + nktFinders);
   jtTask->SetMC( isMC ) ; // Set isMC explicitly. 
   jtTask->SetnR( nR ) ; // Set number of jet resolution parameters. 
+  jtTask->SetIncludeFullJets(doFullJets); //Set whether full jets are included 
   jtTask->Setnkt( nktFinders ) ; // Set information about if kt algorithm reconstruction was done or not. 
   jtTask->SetDebug( debug );
   jtTask->SelectCollisionCandidates( trigger ); // WARNING: default is AliVEvent::kEMCEJE. Double check it!
@@ -150,7 +151,7 @@ AliJJetTask* AddTaskJJet(
     //for(int i=iStart ; i<iEnd; i++){
     for(int itype = iTypeStart; itype < 2; itype++){
       for(int iR = 0; iR < nR; iR++){
-        int iF = iStart + itype*nR + iR;
+        int iF = iStart + (itype-iTypeStart)*nR + iR;
         //== Variables
         double consize = bConeSizes[iR];
         AliJetContainer::EJetType_t jettype = bJetType[itype];
@@ -198,7 +199,7 @@ AliJJetTask* AddTaskJJet(
     //================= LOOP for configuraion
     for(int itype = iTypeStart; itype < 2; itype++){
       for(int iR = 0; iR < nR; iR++){
-        int iF = iStart + itype*nR + iR;
+        int iF = iStart + (itype-iTypeStart)*nR + iR;
         double consizeMC = bConeSizes[iR];
         AliJetContainer::EJetType_t jettype = bJetType[itype];
         TString type = bType[itype];
