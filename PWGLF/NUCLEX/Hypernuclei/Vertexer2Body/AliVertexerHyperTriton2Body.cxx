@@ -120,7 +120,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
 
                 float pdcaxy,pdcaz;
                 ptrk->GetImpactParameters(pdcaxy,pdcaz);
-                if (std::abs(ndcaxy) < fV0VertexerSels[1] && std::abs(pdcaxy) < fV0VertexerSels[2])
+                if (std::abs(ndcaxy) < fV0VertexerSels[1] || std::abs(pdcaxy) < fV0VertexerSels[2])
                     continue;
 
                 AliExternalTrackParam nt(*ntrk), pt(*ptrk);
