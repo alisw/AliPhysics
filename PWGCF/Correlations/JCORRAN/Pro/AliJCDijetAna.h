@@ -75,6 +75,7 @@ class AliJCDijetAna : public TObject
         double fSubleadingJetCut;
         double fDeltaPhiCut;
         double etaMaxCutForJet;
+        double etaMaxCutForKtJet;
         double MinJetPt;
         double fJetCone;
         double fktJetCone;
@@ -82,7 +83,7 @@ class AliJCDijetAna : public TObject
         double matchingR;
         bool bEvtHasAreaInfo;
 
-        enum jetClasses {iRaw, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, jetClassesSize};
+        enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, jetClassesSize};
         double phi, eta, pt, pt2, rho, rhom, area, mjj, ptpair, dPhi, deltaRMin, deltaR;
         bool leadingTrackOverThreshold;
         unsigned noTracks;
@@ -96,7 +97,11 @@ class AliJCDijetAna : public TObject
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         vector<fastjet::PseudoJet> chparticles;
         vector<fastjet::PseudoJet> ktchparticles;
+        // This list contains all accepted jets in different categories:
         vector<vector<fastjet::PseudoJet>> jets;
+        // These 'raw' lists contain all jets by fastjet:
+        vector<fastjet::PseudoJet> rawJets;
+        vector<fastjet::PseudoJet> rawKtJets;
         vector<fastjet::PseudoJet> rhoEstJets;
         vector<fastjet::PseudoJet> constituents;
         vector<vector<vector<fastjet::PseudoJet>>> dijets;
