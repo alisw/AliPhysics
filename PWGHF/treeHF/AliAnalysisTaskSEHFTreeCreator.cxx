@@ -34,6 +34,7 @@
 ////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TProcessID.h>
 #include <TClonesArray.h>
 #include <TCanvas.h>
 #include <TNtuple.h>
@@ -206,6 +207,9 @@ fnTracklets(0),
 fnTrackletsCorr(0),
 fRefMult(9.26),
 fnV0A(0),
+fMultGen(0),
+fMultGenV0A(0),
+fMultGenV0C(0),
 fTriggerMask(0),
 fTriggerBitINT7(false),
 fTriggerBitHighMultSPD(false),
@@ -2700,6 +2704,11 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
       nFilteredDs++;
       if((vHF->FillRecoCand(aod,ds))) {////Fill the data members of the candidate only if they are empty.
         
+        //To significantly speed up the task when only signal was requested
+        if(fWriteOnlySignal){
+          if(ds->MatchToMC(431,arrMC,3,pdgDstoKKpi) < 0) continue;
+        }
+        
         //Only looking at Ds -> phi pi -> KK pi.
         Int_t isSelectedFilt=fFiltCutsBstoDspi->IsSelected(ds,AliRDHFCuts::kAll,aod);
         Int_t isPhiKKpi=isSelectedFilt&4;
@@ -2734,6 +2743,21 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
           if(isSelectedPidAnalysis > 0) isSelAnPidCuts=kTRUE;
           if(isSelectedTopoAnalysis > 0) isSelAnTopoCuts=kTRUE;
           if(isSelectedTrackAnalysis > 0) isSelTracksAnCuts=kTRUE;
+          
+          Bool_t unsetvtx=kFALSE;
+          if(!ds->GetOwnPrimaryVtx()){
+            ds->SetOwnPrimaryVtx(vtx1);
+            unsetvtx=kTRUE;
+            // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
+            // Pay attention if you use continue inside this loop!!!
+          }
+          Bool_t recVtx=kFALSE;
+          AliAODVertex *origownvtx=0x0;
+          if(fFiltCutsBstoDspi->GetIsPrimaryWithoutDaughters()){
+            if(ds->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*ds->GetOwnPrimaryVtx());
+            if(fFiltCutsBstoDspi->RecalcOwnPrimaryVtx(ds,aod))recVtx=kTRUE;
+            else fFiltCutsBstoDspi->CleanOwnPrimaryVtx(ds,aod,origownvtx);
+          }
           
           //loop over all selected tracks for pion from Bs
           for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
@@ -2802,6 +2826,10 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
                   Short_t chargeMother = ds->Charge() + pionTrack->Charge();
                   if(chargeMother != 0) AliWarning("Bs0 got charge, please check!");
                   
+                  //Using filtering cuts, too many AliAODRecoDecay objects are built per event
+                  //The maximum number of TRef for a given TProcesssID is 2^24=16777216 can be reached.
+                  //Save current Object count, and set it back after filling the TTree to not get AliFatal
+                  Int_t ObjectNumber = TProcessID::GetObjectCount();
                   AliAODRecoDecayHF2Prong trackBs(vertexMother, px, py, pz, d0, d0err, dca);
                   
                   trackBs.SetCharge(chargeMother);
@@ -2848,10 +2876,15 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
                       fTreeHandlerBs->FillTree();
                     }
                   }//end hardcoded cuts Bs object
+                  //Restore Object count, to save space in the table keeping track of all referenced objects
+                  TProcessID::SetObjectCount(ObjectNumber);
                 }//end vertex Bs check
+                delete vertexMother; vertexMother = nullptr;
               }//end check pion ID with Ds daughters
             }//end Bs pion filtering cuts
           }//end track-loop
+          if(recVtx)fFiltCutsBstoDspi->CleanOwnPrimaryVtx(ds,aod,origownvtx);
+          if(unsetvtx) ds->UnsetOwnPrimaryVtx();
         }//end Ds filtering cuts
       } else{
         fNentries->Fill(39); //monitor how often this fails
@@ -2908,6 +2941,11 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
       fNentries->Fill(40);
       nFilteredLctopKpi++;
       if((vHF->FillRecoCand(aod,lctopkpi))) {////Fill the data members of the candidate only if they are empty.
+        
+        //To significantly speed up the task when only signal was requested
+        if(fWriteOnlySignal){
+          if(lctopkpi->MatchToMC(4122,arrMC,3,pdgLctopKpi) < 0) continue;
+        }
         
         //To be added in AliRDHFCutsLctopKpi IsSelected. If the case, move down after isSelectedFilt as for other mesons
         Bool_t unsetvtx=kFALSE;
@@ -3022,6 +3060,10 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                   Short_t chargeMother = lctopkpi->Charge() + pionTrack->Charge();
                   if(chargeMother != 0) AliWarning("Lb0 got charge, please check!");
                   
+                  //Using filtering cuts, too many AliAODRecoDecay objects are built per event
+                  //The maximum number of TRef for a given TProcesssID is 2^24=16777216 can be reached.
+                  //Save current Object count, and set it back after filling the TTree to not get AliFatal
+                  Int_t ObjectNumber = TProcessID::GetObjectCount();
                   AliAODRecoDecayHF2Prong trackLb(vertexMother, px, py, pz, d0, d0err, dca);
                   
                   trackLb.SetCharge(chargeMother);
@@ -3068,11 +3110,16 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                       fTreeHandlerLb->FillTree();
                     }
                   }//end hardcoded cuts Lb object
+                  //Restore Object count, to save space in the table keeping track of all referenced objects
+                  TProcessID::SetObjectCount(ObjectNumber);
                 }//end vertex Lb check
+                delete vertexMother; vertexMother = nullptr;
               }//end check pion ID with Lc daughters
             }//end Lb pion filtering cuts
           }//end track-loop
         }//end Lc filtering cuts
+        if(recVtx)fFiltCutsLbtoLcpi->CleanOwnPrimaryVtx(lctopkpi,aod,origownvtx);
+        if(unsetvtx) lctopkpi->UnsetOwnPrimaryVtx();
       } else{
         fNentries->Fill(43); //monitor how often this fails
       }
