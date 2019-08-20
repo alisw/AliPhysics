@@ -38,11 +38,13 @@ class AliHFTreeHandlerLbtoLcpi : public AliHFTreeHandler
 
     //Variables for Lb->Lcpi
     float fImpParProng[knMaxProngs]; ///prong impact parameter
-    //To do: Add Lb-specific variables here if needed.
-    //General ones (like dlen, cosp, DCA, ...) are already implemented in TreeHandler
-  
+    float fCosThetaStar; /// candidate costhetastar
+    float fImpParProd; /// daughter impact-parameter product
+    float fcTau; /// cTau of the Lb
+
     //Variables for Lc->pKpi
     float fInvMass_Lc; ///Lc invariant mass
+    float fImpPar_Lc; /// impact parameter Lc
     float fPt_Lc; ///Lc pt
     float fY_Lc; ///Lc rapidity
     float fEta_Lc; ///Lc pseudorapidity
@@ -62,7 +64,7 @@ class AliHFTreeHandlerLbtoLcpi : public AliHFTreeHandler
     float fSumImpParProngs_Lc; ///sum of Lc prong impact parameter squared
   
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerLbtoLcpi,1); ///
+    ClassDef(AliHFTreeHandlerLbtoLcpi,2); ///
     /// \endcond
 };
 #endif

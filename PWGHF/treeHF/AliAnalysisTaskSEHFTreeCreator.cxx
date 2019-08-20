@@ -34,6 +34,7 @@
 ////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TProcessID.h>
 #include <TClonesArray.h>
 #include <TCanvas.h>
 #include <TNtuple.h>
@@ -206,6 +207,9 @@ fnTracklets(0),
 fnTrackletsCorr(0),
 fRefMult(9.26),
 fnV0A(0),
+fMultGen(0),
+fMultGenV0A(0),
+fMultGenV0C(0),
 fTriggerMask(0),
 fTriggerBitINT7(false),
 fTriggerBitHighMultSPD(false),
@@ -1031,8 +1035,8 @@ std::string AliAnalysisTaskSEHFTreeCreator::GetPeriod(const AliVEvent* event){
   if(runNo>=285978 && runNo<=286350) return "LHC18d";
   if(runNo>=286380 && runNo<=286937) return "LHC18e";
   if(runNo>=287000 && runNo<=287977) return "LHC18f";
-  if(runNo>=288619 && runNo<=288750) return "LHC18q";
-  if(runNo>=288804 && runNo<=288806) return "LHC18g";
+  if(runNo>=288619 && runNo<=288750) return "LHC18g";
+  if(runNo>=288804 && runNo<=288806) return "LHC18h";
   if(runNo>=288861 && runNo<=288909) return "LHC18i";
   if(runNo==288943) return "LHC18j";
   if(runNo>=289165 && runNo<=289201) return "LHC18k";
@@ -2700,6 +2704,11 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
       nFilteredDs++;
       if((vHF->FillRecoCand(aod,ds))) {////Fill the data members of the candidate only if they are empty.
         
+        //To significantly speed up the task when only signal was requested
+        if(fWriteOnlySignal){
+          if(ds->MatchToMC(431,arrMC,3,pdgDstoKKpi) < 0) continue;
+        }
+        
         //Only looking at Ds -> phi pi -> KK pi.
         Int_t isSelectedFilt=fFiltCutsBstoDspi->IsSelected(ds,AliRDHFCuts::kAll,aod);
         Int_t isPhiKKpi=isSelectedFilt&4;
@@ -2734,6 +2743,21 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
           if(isSelectedPidAnalysis > 0) isSelAnPidCuts=kTRUE;
           if(isSelectedTopoAnalysis > 0) isSelAnTopoCuts=kTRUE;
           if(isSelectedTrackAnalysis > 0) isSelTracksAnCuts=kTRUE;
+          
+          Bool_t unsetvtx=kFALSE;
+          if(!ds->GetOwnPrimaryVtx()){
+            ds->SetOwnPrimaryVtx(vtx1);
+            unsetvtx=kTRUE;
+            // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
+            // Pay attention if you use continue inside this loop!!!
+          }
+          Bool_t recVtx=kFALSE;
+          AliAODVertex *origownvtx=0x0;
+          if(fFiltCutsBstoDspi->GetIsPrimaryWithoutDaughters()){
+            if(ds->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*ds->GetOwnPrimaryVtx());
+            if(fFiltCutsBstoDspi->RecalcOwnPrimaryVtx(ds,aod))recVtx=kTRUE;
+            else fFiltCutsBstoDspi->CleanOwnPrimaryVtx(ds,aod,origownvtx);
+          }
           
           //loop over all selected tracks for pion from Bs
           for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
@@ -2802,6 +2826,10 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
                   Short_t chargeMother = ds->Charge() + pionTrack->Charge();
                   if(chargeMother != 0) AliWarning("Bs0 got charge, please check!");
                   
+                  //Using filtering cuts, too many AliAODRecoDecay objects are built per event
+                  //The maximum number of TRef for a given TProcesssID is 2^24=16777216 can be reached.
+                  //Save current Object count, and set it back after filling the TTree to not get AliFatal
+                  Int_t ObjectNumber = TProcessID::GetObjectCount();
                   AliAODRecoDecayHF2Prong trackBs(vertexMother, px, py, pz, d0, d0err, dca);
                   
                   trackBs.SetCharge(chargeMother);
@@ -2828,7 +2856,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
                     //read mc
                     AliAODMCParticle *partBs=0x0;
                     if (fReadMC){
-                      //To check if MatchToMCB3Prong is doing what we want for Bs when there is a large stat MC.
+                      //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+                      //Effect is per mille level, but big enough to be rejected by MatchToMC() function. To fix.
                       labBs = trackBs.MatchToMCB3Prong(531,431,pdgDgBstoDspi,pdgDstoKKpi,arrMC);
 
                       if(labBs >= 0) {
@@ -2848,10 +2877,15 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
                       fTreeHandlerBs->FillTree();
                     }
                   }//end hardcoded cuts Bs object
+                  //Restore Object count, to save space in the table keeping track of all referenced objects
+                  TProcessID::SetObjectCount(ObjectNumber);
                 }//end vertex Bs check
+                delete vertexMother; vertexMother = nullptr;
               }//end check pion ID with Ds daughters
             }//end Bs pion filtering cuts
           }//end track-loop
+          if(recVtx)fFiltCutsBstoDspi->CleanOwnPrimaryVtx(ds,aod,origownvtx);
+          if(unsetvtx) ds->UnsetOwnPrimaryVtx();
         }//end Ds filtering cuts
       } else{
         fNentries->Fill(39); //monitor how often this fails
@@ -2888,7 +2922,6 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
   if(nSeleTrks<1) return;
   
   // Get AliAODPidHF Lb object for IsLbPionSelected function in LbTreeHandler
-  // This might be also affected by the PID bug in AliRDHFCutsLctopKpi still to be solved
   AliAODPidHF* fPidHFLc = fFiltCutsLbtoLcpi->GetPidHF();
   
   // vHF object is needed to call the method that refills the missing info of the candidates
@@ -2908,6 +2941,11 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
       fNentries->Fill(40);
       nFilteredLctopKpi++;
       if((vHF->FillRecoCand(aod,lctopkpi))) {////Fill the data members of the candidate only if they are empty.
+        
+        //To significantly speed up the task when only signal was requested
+        if(fWriteOnlySignal){
+          if(lctopkpi->MatchToMC(4122,arrMC,3,pdgLctopKpi) < 0) continue;
+        }
         
         //To be added in AliRDHFCutsLctopKpi IsSelected. If the case, move down after isSelectedFilt as for other mesons
         Bool_t unsetvtx=kFALSE;
@@ -3022,6 +3060,10 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                   Short_t chargeMother = lctopkpi->Charge() + pionTrack->Charge();
                   if(chargeMother != 0) AliWarning("Lb0 got charge, please check!");
                   
+                  //Using filtering cuts, too many AliAODRecoDecay objects are built per event
+                  //The maximum number of TRef for a given TProcesssID is 2^24=16777216 can be reached.
+                  //Save current Object count, and set it back after filling the TTree to not get AliFatal
+                  Int_t ObjectNumber = TProcessID::GetObjectCount();
                   AliAODRecoDecayHF2Prong trackLb(vertexMother, px, py, pz, d0, d0err, dca);
                   
                   trackLb.SetCharge(chargeMother);
@@ -3048,7 +3090,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                     //read mc
                     AliAODMCParticle *partLb=0x0;
                     if (fReadMC){
-                      //To check if MatchToMCB3Prong is doing what we want for Lb
+                      //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+                      //Effect is per mille level, but big enough to be rejected by MatchToMC() function. To fix.
                       labLb = trackLb.MatchToMCB3Prong(5122,4122,pdgDgLbtoLcpi,pdgLctopKpi,arrMC);
                       
                       if(labLb >= 0) {
@@ -3068,11 +3111,16 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                       fTreeHandlerLb->FillTree();
                     }
                   }//end hardcoded cuts Lb object
+                  //Restore Object count, to save space in the table keeping track of all referenced objects
+                  TProcessID::SetObjectCount(ObjectNumber);
                 }//end vertex Lb check
+                delete vertexMother; vertexMother = nullptr;
               }//end check pion ID with Lc daughters
             }//end Lb pion filtering cuts
           }//end track-loop
         }//end Lc filtering cuts
+        if(recVtx)fFiltCutsLbtoLcpi->CleanOwnPrimaryVtx(lctopkpi,aod,origownvtx);
+        if(unsetvtx) lctopkpi->UnsetOwnPrimaryVtx();
       } else{
         fNentries->Fill(43); //monitor how often this fails
       }
@@ -3097,7 +3145,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
       //Bplus&Bs&Lb are "always" primary
       if(absPDG != 521 && absPDG != 531 && absPDG != 5122) {
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,mcPart,kTRUE);//Prompt = 4, FeedDown = 5
-        if(orig!=4 && orig!=5) continue; //keep only prompt or feed-down (except for Bplus&Bs, since prompt and FD are not selected in the reco part)
+        if(orig!=4 && orig!=5) continue; //keep only prompt or feed-down
         
         if(orig==4){
           isPrimary = kTRUE;
@@ -3140,9 +3188,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
         fTreeHandlerGenD0->FillTree();
       }
       else if(absPDG == 431 && fWriteVariableTreeDs) {
-        //To fix when fWriteVariableTreeDs!=1. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
         deca = AliVertexingHFUtils::CheckDsDecay(arrayMC,mcPart,labDau);
-        if(deca!=1 || labDau[0]<0 || labDau[1]<0) continue;
+        if(deca!=fWriteVariableTreeDs || labDau[0]<0 || labDau[1]<0) continue;
         isDaugInAcc = CheckDaugAcc(arrayMC,3,labDau);
         fTreeHandlerGenDs->SetDauInAcceptance(isDaugInAcc);
         fTreeHandlerGenDs->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
@@ -3204,8 +3251,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
         }
       } else if(absPDG == 5122 && fWriteVariableTreeLb) {
         deca = AliVertexingHFUtils::CheckLbDecay(arrayMC,mcPart,labDau4pr);
-        //Only accept Lb-> pi Lc(->pKpi) decays
-        if(deca!=1 || labDau4pr[0]==-1 || labDau4pr[1]<0) continue;
+        if(deca<1 || labDau4pr[0]==-1 || labDau4pr[1]<0) continue;
         isDaugInAcc = CheckDaugAcc(arrayMC,4,labDau4pr);
         fTreeHandlerGenLb->SetDauInAcceptance(isDaugInAcc);
         fTreeHandlerGenLb->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
