@@ -1,18 +1,12 @@
-//**************************************************************************\
-//* This file is property of and copyright by the ALICE Project            *\
-//* ALICE Experiment at CERN, All rights reserved.                         *\
-//*                                                                        *\
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *\
-//*                  for The ALICE HLT Project.                            *\
-//*                                                                        *\
-//* Permission to use, copy, modify and distribute this software and its   *\
-//* documentation strictly for non-commercial purposes is hereby granted   *\
-//* without fee, provided that the above copyright notice appears in all   *\
-//* copies and that both the copyright notice and this permission notice   *\
-//* appear in the supporting documentation. The authors make no claims     *\
-//* about the suitability of this software for any purpose. It is          *\
-//* provided "as is" without express or implied warranty.                  *\
-//**************************************************************************
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 /// \file  TPCDistortionIRS.cxx
 /// \brief Implementation of TPCDistortionIRS class
@@ -125,9 +119,31 @@ void TPCDistortionIRS::moveBufferTo(char* newFlatBufferPtr)
 void TPCDistortionIRS::setActualBufferAddress(char* actualFlatBufferPtr)
 {
   /// Sets the actual location of the external flat buffer after it has been moved (i.e. to another maschine)
-  const char* oldFlatBufferPtr = mFlatBufferPtr;
+
   FlatObject::setActualBufferAddress(actualFlatBufferPtr);
-  relocateBufferPointers(oldFlatBufferPtr, mFlatBufferPtr);
+
+  size_t rowsOffset = 0;
+  size_t rowsSize = sizeof(RowSplineInfo) * mGeo.getNumberOfRows();
+
+  mRowSplineInfoPtr = reinterpret_cast<RowSplineInfo*>(mFlatBufferPtr + rowsOffset);
+
+  size_t scOffset = alignSize(rowsOffset + rowsSize, IrregularSpline2D3D::getClassAlignmentBytes());
+  size_t scSize = sizeof(IrregularSpline2D3D) * mNumberOfScenarios;
+
+  mScenarioPtr = reinterpret_cast<IrregularSpline2D3D*>(mFlatBufferPtr + scOffset);
+
+  size_t scBufferOffset = alignSize(scOffset + scSize, IrregularSpline2D3D::getBufferAlignmentBytes());
+  size_t scBufferSize = 0;
+
+  for (int i = 0; i < mNumberOfScenarios; i++) {
+    IrregularSpline2D3D& sp = mScenarioPtr[i];
+    sp.setActualBufferAddress(mFlatBufferPtr + scBufferOffset + scBufferSize);
+    scBufferSize = alignSize(scBufferSize + sp.getFlatBufferSize(), sp.getBufferAlignmentBytes());
+  }
+
+  size_t sliceDataOffset = alignSize(scBufferOffset + scBufferSize, IrregularSpline2D3D::getDataAlignmentBytes());
+
+  mSplineData = reinterpret_cast<char*>(mFlatBufferPtr + sliceDataOffset);
 }
 
 void TPCDistortionIRS::setFutureBufferAddress(char* futureFlatBufferPtr)

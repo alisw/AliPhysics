@@ -1,18 +1,12 @@
-//**************************************************************************\
-//* This file is property of and copyright by the ALICE Project            *\
-//* ALICE Experiment at CERN, All rights reserved.                         *\
-//*                                                                        *\
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *\
-//*                  for The ALICE HLT Project.                            *\
-//*                                                                        *\
-//* Permission to use, copy, modify and distribute this software and its   *\
-//* documentation strictly for non-commercial purposes is hereby granted   *\
-//* without fee, provided that the above copyright notice appears in all   *\
-//* copies and that both the copyright notice and this permission notice   *\
-//* appear in the supporting documentation. The authors make no claims     *\
-//* about the suitability of this software for any purpose. It is          *\
-//* provided "as is" without express or implied warranty.                  *\
-//**************************************************************************
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 /// \file  TPCFastTransform.cxx
 /// \brief Implementation of TPCFastTransform class
@@ -25,18 +19,17 @@
 #include <iostream>
 #endif
 
+#if !defined(GPUCA_GPUCODE) && !defined(GPUCA_STANDALONE)
+#include "TFile.h"
+#include "GPUCommonLogger.h"
+#endif
+
 using namespace GPUCA_NAMESPACE::gpu;
 
 TPCFastTransform::TPCFastTransform()
   : FlatObject(), mTimeStamp(0), mDistortion(), mApplyDistortion(1), mT0(0.f), mVdrift(0.f), mVdriftCorrY(0.f), mLdriftCorr(0.f), mTOFcorr(0.f), mPrimVtxZ(0.f)
 {
   // Default Constructor: creates an empty uninitialized object
-}
-
-void TPCFastTransform::relocateBufferPointers(const char* oldBuffer, char* actualBuffer)
-{
-  char* distBuffer = FlatObject::relocatePointer(oldBuffer, actualBuffer, mDistortion.getFlatBufferPtr());
-  mDistortion.setActualBufferAddress(distBuffer);
 }
 
 void TPCFastTransform::cloneFromObject(const TPCFastTransform& obj, char* newFlatBufferPtr)
@@ -65,17 +58,15 @@ void TPCFastTransform::cloneFromObject(const TPCFastTransform& obj, char* newFla
 void TPCFastTransform::moveBufferTo(char* newFlatBufferPtr)
 {
   /// See FlatObject for description
-  const char* oldFlatBufferPtr = mFlatBufferPtr;
   FlatObject::moveBufferTo(newFlatBufferPtr);
-  relocateBufferPointers(oldFlatBufferPtr, mFlatBufferPtr);
+  setActualBufferAddress(mFlatBufferPtr);
 }
 
 void TPCFastTransform::setActualBufferAddress(char* actualFlatBufferPtr)
 {
   /// See FlatObject for description
-  const char* oldFlatBufferPtr = mFlatBufferPtr;
   FlatObject::setActualBufferAddress(actualFlatBufferPtr);
-  relocateBufferPointers(oldFlatBufferPtr, mFlatBufferPtr);
+  mDistortion.setActualBufferAddress(mFlatBufferPtr);
 }
 
 void TPCFastTransform::setFutureBufferAddress(char* futureFlatBufferPtr)
@@ -155,3 +146,62 @@ void TPCFastTransform::print() const
   mDistortion.print();
 #endif
 }
+
+#if !defined(GPUCA_GPUCODE) && !defined(GPUCA_STANDALONE) && !defined(GPUCA_ALIROOT_LIB)
+
+int TPCFastTransform::writeToFile(std::string outFName, std::string name)
+{
+  /// store to file
+  assert(isConstructed());
+
+  if (outFName.empty())
+    outFName = "tpcFastTransform.root";
+
+  if (name.empty())
+    name = "TPCFastTransform";
+
+  TFile outf(outFName.data(), "recreate");
+  if (outf.IsZombie()) {
+    LOG(ERROR) << "Failed to open output file " << outFName;
+    return -1;
+  }
+
+  bool isBufferExternal = !isBufferInternal();
+  if (isBufferExternal)
+    adoptInternalBuffer(mFlatBufferPtr);
+  outf.WriteObjectAny(this, Class(), name.data());
+  outf.Close();
+  if (isBufferExternal)
+    clearInternalBufferPtr();
+  return 0;
+}
+
+TPCFastTransform* TPCFastTransform::loadFromFile(std::string inpFName, std::string name)
+{
+  /// load from file
+
+  if (inpFName.empty())
+    inpFName = "tpcFastTransform.root";
+
+  if (name.empty())
+    name = "TPCFastTransform";
+
+  TFile inpf(inpFName.data());
+  if (inpf.IsZombie()) {
+    LOG(ERROR) << "Failed to open input file " << inpFName;
+    return nullptr;
+  }
+  TPCFastTransform* transform = reinterpret_cast<TPCFastTransform*>(inpf.GetObjectChecked(name.data(), TPCFastTransform::Class()));
+  if (!transform) {
+    LOG(ERROR) << "Failed to load " << name << " from " << inpFName;
+    return nullptr;
+  }
+  if (transform->mFlatBufferSize > 0 && transform->mFlatBufferContainer == nullptr) {
+    LOG(ERROR) << "Failed to load " << name << " from " << inpFName << ": empty flat buffer container";
+    return nullptr;
+  }
+  transform->setActualBufferAddress(transform->mFlatBufferContainer);
+  return transform;
+}
+
+#endif

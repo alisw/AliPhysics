@@ -1,18 +1,12 @@
-//**************************************************************************\
-//* This file is property of and copyright by the ALICE Project            *\
-//* ALICE Experiment at CERN, All rights reserved.                         *\
-//*                                                                        *\
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *\
-//*                  for The ALICE HLT Project.                            *\
-//*                                                                        *\
-//* Permission to use, copy, modify and distribute this software and its   *\
-//* documentation strictly for non-commercial purposes is hereby granted   *\
-//* without fee, provided that the above copyright notice appears in all   *\
-//* copies and that both the copyright notice and this permission notice   *\
-//* appear in the supporting documentation. The authors make no claims     *\
-//* about the suitability of this software for any purpose. It is          *\
-//* provided "as is" without express or implied warranty.                  *\
-//**************************************************************************
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 /// \file  SemiregularSpline2D3D.h
 /// \brief Definition of SemiregularSpline2D3D class
@@ -283,9 +277,9 @@ inline void SemiregularSpline2D3D::correctEdges(T* data) const
       getSpline(data, u, gridV.knotIndexToU(2), x2, y2, z2);
       getSpline(data, u, gridV.knotIndexToU(3), x3, y3, z3);
 
-      T f1[3] = { x1, y1, z1 };
-      T f2[3] = { x2, y2, z2 };
-      T f3[3] = { x3, y3, z3 };
+      T f1[3] = {x1, y1, z1};
+      T f2[3] = {x2, y2, z2};
+      T f3[3] = {x3, y3, z3};
       for (int idim = 0; idim < 3; idim++) {
         f0[idim] = (T)(0.5 * f0[idim] + 1.5 * f1[idim] - 1.5 * f2[idim] + 0.5 * f3[idim]);
       }
@@ -305,9 +299,9 @@ inline void SemiregularSpline2D3D::correctEdges(T* data) const
       getSpline(data, u, gridV.knotIndexToU(nv - 3), x2, y2, z2);
       getSpline(data, u, gridV.knotIndexToU(nv - 2), x3, y3, z3);
 
-      T f0[3] = { x1, y1, z1 };
-      T f1[3] = { x2, y2, z2 };
-      T f2[3] = { x3, y3, z3 };
+      T f0[3] = {x1, y1, z1};
+      T f1[3] = {x2, y2, z2};
+      T f2[3] = {x3, y3, z3};
       T* f3 = data + getDataIndex(iu, nv - 1);
       for (int idim = 0; idim < 3; idim++) {
         f3[idim] = (T)(0.5 * f0[idim] - 1.5 * f1[idim] + 1.5 * f2[idim] + 0.5 * f3[idim]);

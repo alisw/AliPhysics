@@ -20,6 +20,7 @@
 #include "GPUTPCGMTracksToTPCSeeds.h"
 #include "GPUTPCGlobalMergerComponent.h"
 #include "GPUTPCGMMerger.h"
+#include "GPULogging.h"
 #include "AliTPCtracker.h"
 #include "AliTPCtrack.h"
 #include "AliTPCseed.h"
@@ -121,7 +122,7 @@ void GPUTPCGMTracksToTPCSeeds::UpdateParamsOuter(TObjArray* seeds)
       continue;
     }
     if (index > seeds->GetEntriesFast()) {
-      printf("Invalid number of offline seeds\n");
+      GPUError("Invalid number of offline seeds");
       return;
     }
     AliTPCseed* seed = (AliTPCseed*)seeds->UncheckedAt(index++);
@@ -143,7 +144,7 @@ void GPUTPCGMTracksToTPCSeeds::UpdateParamsInner(TObjArray* seeds)
       continue;
     }
     if (index > seeds->GetEntriesFast()) {
-      printf("Invalid number of offline seeds\n");
+      GPUError("Invalid number of offline seeds");
       return;
     }
     AliTPCseed* seed = (AliTPCseed*)seeds->UncheckedAt(index++);

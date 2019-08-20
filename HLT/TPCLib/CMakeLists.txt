@@ -26,7 +26,7 @@ if(ALIROOT_ONLINE_MODE)
     message(WARNING "Online build for non-HLT: Disabling GPU")
 else()
     set(ALIGPU_BUILD_TYPE "ALIROOT")
-    add_subdirectory(${AliRoot_SOURCE_DIR}/GPU/GPUTracking GPUTracking)
+    add_subdirectory(${AliRoot_SOURCE_DIR}/GPU/GPUTracking AliGPUTracking)
     add_subdirectory(${AliRoot_SOURCE_DIR}/GPU/TPCFastTransformation TPCFastTransformation)
     include_directories(${AliRoot_SOURCE_DIR}/GPU/Common
                         ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/SliceTracker
@@ -37,7 +37,7 @@ else()
                         ${AliRoot_SOURCE_DIR}/GPU/TPCFastTransformation)
     add_definitions(-DHAVE_ALIGPU)
     add_definitions(-DGPUCA_ALIROOT_LIB)
-    set(LIBDEPS ${LIBDEPS} GPUTracking)
+    set(LIBDEPS ${LIBDEPS} AliGPUTracking)
     set(LIBDEPS ${LIBDEPS} AliTPCFastTransformation)
 endif()
 

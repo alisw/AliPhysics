@@ -19,9 +19,9 @@
 
 #include "GPUTPCConvertKernel.h"
 #include "GPUConstantMem.h"
-#include "ClusterNativeAccessExt.h"
 #include "TPCFastTransform.h"
 #include "GPUTPCClusterData.h"
+#include "GPUO2DataTypes.h"
 
 using namespace GPUCA_NAMESPACE::gpu;
 
@@ -32,7 +32,7 @@ GPUd() void GPUTPCConvertKernel::Thread<0>(int nBlocks, int nThreads, int iBlock
   const int iSlice = iBlock / GPUCA_ROW_COUNT;
   const int iRow = iBlock % GPUCA_ROW_COUNT;
   GPUTPCConvert& convert = processors.tpcConverter;
-  const ClusterNativeAccessExt* native = convert.mClustersNative;
+  const o2::tpc::ClusterNativeAccess* native = convert.mClustersNative;
   GPUTPCClusterData* clusters = convert.mMemory->clusters[iSlice];
   const TPCFastTransform* transform = convert.mTransform;
   const int continuousMaxTimeBin = processors.param.continuousMaxTimeBin;
@@ -55,6 +55,10 @@ GPUd() void GPUTPCConvertKernel::Thread<0>(int nBlocks, int nThreads, int iBlock
     cout.amp = cin.qMax;
     cout.flags = cin.getFlags();
     cout.id = idOffset + k;
+#ifdef GPUCA_TPC_RAW_PROPAGATE_PAD_ROW_TIME
+    cout.pad = cin.getPad();
+    cout.time = cin.getTime();
+#endif
   }
 }
 #endif

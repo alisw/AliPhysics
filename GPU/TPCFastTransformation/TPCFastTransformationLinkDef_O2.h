@@ -1,18 +1,12 @@
-//**************************************************************************\
-//* This file is property of and copyright by the ALICE Project            *\
-//* ALICE Experiment at CERN, All rights reserved.                         *\
-//*                                                                        *\
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *\
-//*                  for The ALICE HLT Project.                            *\
-//*                                                                        *\
-//* Permission to use, copy, modify and distribute this software and its   *\
-//* documentation strictly for non-commercial purposes is hereby granted   *\
-//* without fee, provided that the above copyright notice appears in all   *\
-//* copies and that both the copyright notice and this permission notice   *\
-//* appear in the supporting documentation. The authors make no claims     *\
-//* about the suitability of this software for any purpose. It is          *\
-//* provided "as is" without express or implied warranty.                  *\
-//**************************************************************************
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 /// \file TPCFastTransformationLinkDef_O2.h
 /// \author Sergey Gorbunov
@@ -23,13 +17,15 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class o2::gpu::RegularSpline1D+;
-#pragma link C++ class o2::gpu::IrregularSpline1D+;
-#pragma link C++ class o2::gpu::IrregularSpline2D3D+;
-#pragma link C++ class o2::gpu::SemiregularSpline2D3D+;
-#pragma link C++ class o2::gpu::IrregularSpline2D3DCalibrator+;
-#pragma link C++ class o2::gpu::TPCFastTransformGeo+;
-#pragma link C++ class o2::gpu::TPCFastTransform+;
-#pragma link C++ class o2::gpu::TPCDistortionIRS+;
+#pragma link C++ class o2::gpu::RegularSpline1D + ;
+#pragma link C++ class o2::gpu::IrregularSpline1D + ;
+#pragma link C++ class o2::gpu::IrregularSpline2D3D + ;
+#pragma link C++ class o2::gpu::SemiregularSpline2D3D + ;
+#pragma link C++ class o2::gpu::IrregularSpline2D3DCalibrator + ;
+#pragma link C++ class o2::gpu::TPCFastTransformGeo + ;
+#pragma link C++ class o2::gpu::TPCFastTransformGeo::SliceInfo + ;
+#pragma link C++ class o2::gpu::TPCFastTransformGeo::RowInfo + ;
+#pragma link C++ class o2::gpu::TPCFastTransform + ;
+#pragma link C++ class o2::gpu::TPCDistortionIRS + ;
 
 #endif

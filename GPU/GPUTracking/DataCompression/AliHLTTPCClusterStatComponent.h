@@ -98,6 +98,6 @@ class AliHLTTPCClusterStatComponent : public AliHLTProcessor, public AliOptionPa
   FILE* fp;
 
  protected:
-  ClassDef(AliHLTTPCClusterStatComponent, 0)
+  ClassDef(AliHLTTPCClusterStatComponent, 0);
 };
 #endif

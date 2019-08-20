@@ -122,11 +122,7 @@ void GPUParam::SetDefaults(float solenoidBz)
   resetTimers = false;
 
   polynomialField.Reset(); // set very wrong initial value in order to see if the field was not properly initialised
-  if (AssumeConstantBz) {
-    GPUTPCGMPolynomialFieldManager::GetPolynomialField(GPUTPCGMPolynomialFieldManager::kUniform, BzkG, polynomialField);
-  } else {
-    GPUTPCGMPolynomialFieldManager::GetPolynomialField(BzkG, polynomialField);
-  }
+  GPUTPCGMPolynomialFieldManager::GetPolynomialField(BzkG, polynomialField);
 }
 
 void GPUParam::UpdateEventSettings(const GPUSettingsEvent* e, const GPUSettingsDeviceProcessing* p)
@@ -138,6 +134,12 @@ void GPUParam::UpdateEventSettings(const GPUSettingsEvent* e, const GPUSettingsD
   if (p) {
     debugLevel = p->debugLevel;
     resetTimers = p->resetTimers;
+  }
+  polynomialField.Reset();
+  if (AssumeConstantBz) {
+    GPUTPCGMPolynomialFieldManager::GetPolynomialField(GPUTPCGMPolynomialFieldManager::kUniform, BzkG, polynomialField);
+  } else {
+    GPUTPCGMPolynomialFieldManager::GetPolynomialField(BzkG, polynomialField);
   }
 }
 
@@ -269,7 +271,7 @@ GPUd() void MEM_LG(GPUParam)::GetClusterRMS2(int iRow, float z, float sinPhi, fl
 {
   int rowType = tpcGeometry.GetROC(iRow);
   if (rowType > 2) {
-    rowType = 2; //TODO: Add type 3
+    rowType = 2; // TODO: Add type 3
   }
   z = CAMath::Abs((250.f - 0.275f) - CAMath::Abs(z));
   float s2 = sinPhi * sinPhi;
@@ -307,7 +309,7 @@ GPUd() void MEM_LG(GPUParam)::GetClusterErrors2(int iRow, float z, float sinPhi,
   // Calibrated cluster error from OCDB for Y and Z
   int rowType = tpcGeometry.GetROC(iRow);
   if (rowType > 2) {
-    rowType = 2; //TODO: Add type 3
+    rowType = 2; // TODO: Add type 3
   }
   z = CAMath::Abs((250.f - 0.275f) - CAMath::Abs(z));
   float s2 = sinPhi * sinPhi;

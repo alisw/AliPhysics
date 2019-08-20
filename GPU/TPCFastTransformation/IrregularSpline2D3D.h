@@ -1,18 +1,12 @@
-//**************************************************************************\
-//* This file is property of and copyright by the ALICE Project            *\
-//* ALICE Experiment at CERN, All rights reserved.                         *\
-//*                                                                        *\
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *\
-//*                  for The ALICE HLT Project.                            *\
-//*                                                                        *\
-//* Permission to use, copy, modify and distribute this software and its   *\
-//* documentation strictly for non-commercial purposes is hereby granted   *\
-//* without fee, provided that the above copyright notice appears in all   *\
-//* copies and that both the copyright notice and this permission notice   *\
-//* appear in the supporting documentation. The authors make no claims     *\
-//* about the suitability of this software for any purpose. It is          *\
-//* provided "as is" without express or implied warranty.                  *\
-//**************************************************************************
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 /// \file  IrregularSpline2D3D.h
 /// \brief Definition of IrregularSpline2D3D class
@@ -144,7 +138,7 @@ class IrregularSpline2D3D : public FlatObject
 
   /// Get interpolated value for f(u,v) using data array correctedData[getNumberOfKnots()] with corrected edges
   template <typename T>
-  GPUd() void getSpline(const T* correctedData, float u, float v, T& x, T& y, T& z) const;
+  GPUd() void getSpline(GPUgeneric() const T* correctedData, float u, float v, GPUgeneric() T& x, GPUgeneric() T& y, GPUgeneric() T& z) const;
 
   /// Same as getSpline, but using vectorized calculation.
   /// \param correctedData should be at least 128-bit aligned
@@ -192,7 +186,6 @@ class IrregularSpline2D3D : public FlatObject
   void print() const;
 
  private:
-  void relocateBufferPointers(const char* oldBuffer, char* newBuffer);
 
   ///
   /// ====  Data members   ====
@@ -292,7 +285,7 @@ GPUd() void IrregularSpline2D3D::correctEdges(T* data) const
 }
 
 template <typename T>
-GPUdi() void IrregularSpline2D3D::getSpline(const T* correctedData, float u, float v, T& x, T& y, T& z) const
+GPUdi() void IrregularSpline2D3D::getSpline(GPUgeneric() const T* correctedData, float u, float v, GPUgeneric() T& x, GPUgeneric() T& y, GPUgeneric() T& z) const
 {
   // Get interpolated value for f(u,v) using data array correctedData[getNumberOfKnots()] with corrected edges
 

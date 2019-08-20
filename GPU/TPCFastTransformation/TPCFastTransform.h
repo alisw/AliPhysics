@@ -1,18 +1,12 @@
-//**************************************************************************\
-//* This file is property of and copyright by the ALICE Project            *\
-//* ALICE Experiment at CERN, All rights reserved.                         *\
-//*                                                                        *\
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *\
-//*                  for The ALICE HLT Project.                            *\
-//*                                                                        *\
-//* Permission to use, copy, modify and distribute this software and its   *\
-//* documentation strictly for non-commercial purposes is hereby granted   *\
-//* without fee, provided that the above copyright notice appears in all   *\
-//* copies and that both the copyright notice and this permission notice   *\
-//* appear in the supporting documentation. The authors make no claims     *\
-//* about the suitability of this software for any purpose. It is          *\
-//* provided "as is" without express or implied warranty.                  *\
-//**************************************************************************
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 /// \file  TPCFastTransform.h
 /// \brief Definition of TPCFastTransform class
@@ -25,8 +19,15 @@
 #include "FlatObject.h"
 #include "TPCFastTransformGeo.h"
 #include "TPCDistortionIRS.h"
-#include "GPUCommonDef.h"
 #include "GPUCommonMath.h"
+
+#if !defined(GPUCA_GPUCODE)
+#include <string>
+#endif // !GPUCA_GPUCODE
+
+#if !defined(GPUCA_GPUCODE) && !defined(GPUCA_STANDALONE)
+//#include "Rtypes.h"
+#endif
 
 namespace GPUCA_NAMESPACE
 {
@@ -132,9 +133,13 @@ class TPCFastTransform : public FlatObject
   /// taking calibration + alignment into account.
   ///
   GPUd() void Transform(int slice, int row, float pad, float time, float& x, float& y, float& z, float vertexTime = 0) const;
-  GPUd() void TransformInTimeFrame(int slice, int row, float pad, float time, float& x, float& y, float& z, float maxTimeBin) const;
 
+  /// Transformation in the time frame
+  GPUd() void TransformInTimeFrame(int slice, int row, float pad, float time, float& x, float& y, float& z, float maxTimeBin) const;
   GPUd() void InverseTransformInTimeFrame(int slice, int row, float /*x*/, float y, float z, float& pad, float& time, float maxTimeBin) const;
+
+  /// Ideal transformation with Vdrift only - without calibration
+  GPUd() void TransformIdeal(int slice, int row, float pad, float time, float& x, float& y, float& z, float vertexTime) const;
 
   GPUd() void convPadTimeToUV(int slice, int row, float pad, float time, float& u, float& v, float vertexTime) const;
   GPUd() void convPadTimeToUVinTimeFrame(int slice, int row, float pad, float time, float& u, float& v, float maxTimeBin) const;
@@ -159,6 +164,14 @@ class TPCFastTransform : public FlatObject
   /// Return mVDrift in cm / time bin
   GPUd() float getVDrift() const { return mVdrift; }
 
+#if !defined(GPUCA_GPUCODE)
+
+  int writeToFile(std::string outFName = "", std::string name = "");
+
+  static TPCFastTransform* loadFromFile(std::string inpFName = "", std::string name = "");
+
+#endif // !GPUCA_GPUCODE
+
   /// Print method
   void print() const;
 
@@ -170,11 +183,7 @@ class TPCFastTransform : public FlatObject
 
   /// _______________  Utilities  _______________________________________________
 
-  void relocateBufferPointers(const char* oldBuffer, char* actualBuffer);
-
   /// _______________  Data members  _______________________________________________
-
-  TPCFastTransformGeo mGeo; ///< TPC geometry information
 
   /// _______________  Calibration data. See Transform() method  ________________________________
 
@@ -209,7 +218,9 @@ class TPCFastTransform : public FlatObject
   ///
   float mTOFcorr;
 
-  float mPrimVtxZ;      ///< Z of the primary vertex, needed for the Time-Of-Flight correction
+  float mPrimVtxZ; ///< Z of the primary vertex, needed for the Time-Of-Flight correction
+
+  ClassDefNV(TPCFastTransform, 1);
 };
 
 // =======================================================================
@@ -273,7 +284,7 @@ GPUdi() void TPCFastTransform::getTOFcorrection(int slice, int /*row*/, float x,
 
   bool sideC = (slice >= getGeometry().getNumberOfSlicesA());
   float distZ = z - mPrimVtxZ;
-  float dv = -sqrt(x * x + y * y + distZ * distZ) * mTOFcorr;
+  float dv = -GPUCommonMath::Sqrt(x * x + y * y + distZ * distZ) * mTOFcorr;
   dz = sideC ? dv : -dv;
 }
 
@@ -330,6 +341,24 @@ GPUdi() void TPCFastTransform::InverseTransformInTimeFrame(int slice, int row, f
   float u = 0, v = 0;
   getGeometry().convLocalToUV(slice, y, z, u, v);
   convUVtoPadTimeInTimeFrame(slice, row, u, v, pad, time, maxTimeBin);
+}
+
+GPUdi() void TPCFastTransform::TransformIdeal(int slice, int row, float pad, float time, float& x, float& y, float& z, float vertexTime) const
+{
+  /// _______________ The main method: cluster transformation _______________________
+  ///
+  /// Transforms raw TPC coordinates to local XYZ withing a slice
+  /// Ideal transformation: only Vdrift from DCS.
+  /// No space charge distortions, no time of flight correction
+  ///
+
+  const TPCFastTransformGeo::RowInfo& rowInfo = getGeometry().getRowInfo(row);
+
+  x = rowInfo.x;
+  float u = (pad - 0.5 * rowInfo.maxPad) * rowInfo.padWidth;
+  float v = (time - mT0 - vertexTime) * mVdrift; // drift length cm
+
+  getGeometry().convUVtoLocal(slice, u, v, y, z);
 }
 
 } // namespace gpu
