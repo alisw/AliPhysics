@@ -996,7 +996,6 @@ void  AliMC::AddParticles()
     actmode[kz][0] = 0;
     actmode[kz][1] = 0;
     actmode[kz][2] = 0;
-    actmode[kz][3] = 0;
   }
   actbratio[0] = 50.;
   actmode[0][0] = -1000020030; // Helium3
