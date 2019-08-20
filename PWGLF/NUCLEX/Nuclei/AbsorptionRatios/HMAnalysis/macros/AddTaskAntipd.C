@@ -1,7 +1,4 @@
 AliAnalysisTaskAntipd* AddTaskAntipd(TString name = "TaskAntiPD",
-                                     TString option = "",
-                                     bool UseTOFcut = kFALSE,
-                                     ULong64_t triggerMask = AliVEvent::kINT7,
                                      int filterBit = 256,
                                      float lowp = 0.1,
                                      float eta  = 0.8,
@@ -13,7 +10,8 @@ AliAnalysisTaskAntipd* AddTaskAntipd(TString name = "TaskAntiPD",
                                      float momTOFanaProt = 0.7,
                                      float momTOFanaDeut = 1.4,
                                      float minITSnSigmaDeut = -2.0,
-                                     float maxITSnSigmaDeut = 1e30
+                                     float maxITSnSigmaDeut = 1e30,
+                                     const char* suffix = ""
                                      )
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -29,7 +27,7 @@ AliAnalysisTaskAntipd* AddTaskAntipd(TString name = "TaskAntiPD",
     if(!taskantipd) return 0x0;
 
     // event selection
-     taskantipd->SelectCollisionCandidates(triggerMask); //  trigger
+     //taskantipd->SelectCollisionCandidates(triggerMask); //  trigger
 
     // set AOD filter bit and further track cuts
     taskantipd->SetFilterBit(filterBit);
@@ -42,8 +40,8 @@ AliAnalysisTaskAntipd* AddTaskAntipd(TString name = "TaskAntiPD",
 
     // set PID cuts
     taskantipd->SetMaxTPCnSigma(maxTPCnSig);
-    taskantipd->SetUseTOFPidCut(UseTOFcut);
-    if (UseTOFcut) taskantipd->SetMaxTOFnSigma(maxTOFnSig);
+    //taskantipd->SetUseTOFPidCut(UseTOFcut);
+    //if (UseTOFcut) taskantipd->SetMaxTOFnSigma(maxTOFnSig);
     // momentum p from which a hit/cut in TOF is required
     taskantipd->SetMomForTOFanaProt(momTOFanaProt);
     taskantipd->SetMomForTOFanaDeut(momTOFanaDeut);
@@ -54,7 +52,7 @@ AliAnalysisTaskAntipd* AddTaskAntipd(TString name = "TaskAntiPD",
     mgr->AddTask(taskantipd);
 
     TString list = "Output";
-    list += option;
+    list += suffix;
     TString file = "Output_MyTask.root";
 
     // connect the manager to the task
