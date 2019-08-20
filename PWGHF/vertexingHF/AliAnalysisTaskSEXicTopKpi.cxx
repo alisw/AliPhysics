@@ -1822,8 +1822,12 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
   if(flagMC<0.5 || !p){  // generated particle associated to this reconstructed one is not a Lc or is absent
     varPointer[22]=1.;
   }
+  //
+  // flagMC==1 means that the reconstructed particle is connected to a generated Lc
+  // flagMC==4(5) means that the reconstructed particle is connected to a (non-)prompt generated Lc with found quark
+  //
   //else if(flagMC==1 && p && array_MC){ // flagMC==1 means that the reconstructed particle is connected to a generated Lc
-  else if(flagMC>0.5 && flagMC<5.5 && p && array_MC){ // flagMC==1 means that the reconstructed particle is connected to a generated Lc
+  else if(flagMC>0.5 && flagMC<5.5 && p && array_MC){ 
     //Int_t index_firstProng = p->GetDaughter(0); // old
     Int_t index_firstProng = p->GetDaughterLabel(0);
     AliAODMCParticle *mc_firstProng=(AliAODMCParticle*)array_MC->At(index_firstProng);
