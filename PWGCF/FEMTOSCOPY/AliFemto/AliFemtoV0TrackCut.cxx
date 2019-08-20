@@ -1039,8 +1039,3 @@ void AliFemtoV0TrackCut::SetInvariantMassAntiLambdaSideband(double min1, double 
   fInvMassRange2AntiLambdaMin = min2;
   fInvMassRange2AntiLambdaMax = max2;
 }
-
-
-
-void AliFemtoV0TrackCut::SetInvariantMassLambdaSideband(double min1, double max1, double min2, double max2);
-void AliFemtoV0TrackCut::SetInvariantMassAntiLambdaSideband(double min1, double max1, double min2, double max2);  
