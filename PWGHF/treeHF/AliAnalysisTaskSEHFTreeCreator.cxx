@@ -1035,8 +1035,8 @@ std::string AliAnalysisTaskSEHFTreeCreator::GetPeriod(const AliVEvent* event){
   if(runNo>=285978 && runNo<=286350) return "LHC18d";
   if(runNo>=286380 && runNo<=286937) return "LHC18e";
   if(runNo>=287000 && runNo<=287977) return "LHC18f";
-  if(runNo>=288619 && runNo<=288750) return "LHC18q";
-  if(runNo>=288804 && runNo<=288806) return "LHC18g";
+  if(runNo>=288619 && runNo<=288750) return "LHC18g";
+  if(runNo>=288804 && runNo<=288806) return "LHC18h";
   if(runNo>=288861 && runNo<=288909) return "LHC18i";
   if(runNo==288943) return "LHC18j";
   if(runNo>=289165 && runNo<=289201) return "LHC18k";
@@ -2856,7 +2856,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
                     //read mc
                     AliAODMCParticle *partBs=0x0;
                     if (fReadMC){
-                      //To check if MatchToMCB3Prong is doing what we want for Bs when there is a large stat MC.
+                      //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+                      //Effect is per mille level, but big enough to be rejected by MatchToMC() function. To fix.
                       labBs = trackBs.MatchToMCB3Prong(531,431,pdgDgBstoDspi,pdgDstoKKpi,arrMC);
 
                       if(labBs >= 0) {
@@ -2921,7 +2922,6 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
   if(nSeleTrks<1) return;
   
   // Get AliAODPidHF Lb object for IsLbPionSelected function in LbTreeHandler
-  // This might be also affected by the PID bug in AliRDHFCutsLctopKpi still to be solved
   AliAODPidHF* fPidHFLc = fFiltCutsLbtoLcpi->GetPidHF();
   
   // vHF object is needed to call the method that refills the missing info of the candidates
@@ -3090,7 +3090,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                     //read mc
                     AliAODMCParticle *partLb=0x0;
                     if (fReadMC){
-                      //To check if MatchToMCB3Prong is doing what we want for Lb
+                      //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+                      //Effect is per mille level, but big enough to be rejected by MatchToMC() function. To fix.
                       labLb = trackLb.MatchToMCB3Prong(5122,4122,pdgDgLbtoLcpi,pdgLctopKpi,arrMC);
                       
                       if(labLb >= 0) {
@@ -3144,7 +3145,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
       //Bplus&Bs&Lb are "always" primary
       if(absPDG != 521 && absPDG != 531 && absPDG != 5122) {
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,mcPart,kTRUE);//Prompt = 4, FeedDown = 5
-        if(orig!=4 && orig!=5) continue; //keep only prompt or feed-down (except for Bplus&Bs, since prompt and FD are not selected in the reco part)
+        if(orig!=4 && orig!=5) continue; //keep only prompt or feed-down
         
         if(orig==4){
           isPrimary = kTRUE;
@@ -3187,9 +3188,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
         fTreeHandlerGenD0->FillTree();
       }
       else if(absPDG == 431 && fWriteVariableTreeDs) {
-        //To fix when fWriteVariableTreeDs!=1. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
         deca = AliVertexingHFUtils::CheckDsDecay(arrayMC,mcPart,labDau);
-        if(deca!=1 || labDau[0]<0 || labDau[1]<0) continue;
+        if(deca!=fWriteVariableTreeDs || labDau[0]<0 || labDau[1]<0) continue;
         isDaugInAcc = CheckDaugAcc(arrayMC,3,labDau);
         fTreeHandlerGenDs->SetDauInAcceptance(isDaugInAcc);
         fTreeHandlerGenDs->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
@@ -3251,8 +3251,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
         }
       } else if(absPDG == 5122 && fWriteVariableTreeLb) {
         deca = AliVertexingHFUtils::CheckLbDecay(arrayMC,mcPart,labDau4pr);
-        //Only accept Lb-> pi Lc(->pKpi) decays
-        if(deca!=1 || labDau4pr[0]==-1 || labDau4pr[1]<0) continue;
+        if(deca<1 || labDau4pr[0]==-1 || labDau4pr[1]<0) continue;
         isDaugInAcc = CheckDaugAcc(arrayMC,4,labDau4pr);
         fTreeHandlerGenLb->SetDauInAcceptance(isDaugInAcc);
         fTreeHandlerGenLb->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
