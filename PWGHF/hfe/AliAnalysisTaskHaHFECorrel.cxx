@@ -1233,6 +1233,11 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
      nTrAccCorrMax=AliVertexingHFUtils::GetCorrectedNtracklets(fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMaxSPD); 
      nTrAccCorrMean=AliVertexingHFUtils::GetCorrectedNtracklets(fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMeanSPD);
   }
+  else {
+    nTrAccCorrMin= nTrAcc*1.;
+    nTrAccCorrMax=nTrAcc*1.;
+    nTrAccCorrMean=nTrAcc*1.;
+  }
 
 
   
@@ -2016,7 +2021,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   Double_t  XBinsHadRed[]={0.25,  0.5, 1., 2., 5., 10, 15, 30, 50}; 
 
   const  Int_t     NMultBins=4;
-  Double_t    XMultBins[]={-0.5,24.5,44.5,64.5,200};
+  Double_t    XMultBins[]={-0.5,24.5,44.5,64.5,500};
  
   const Int_t NVertexBins = 8;
   Double_t XVertexBins[]={-10,-7,-4,-2,0,2,4,7,10};  // Quantile
@@ -6738,7 +6743,7 @@ void AliAnalysisTaskHaHFECorrel::PhotULSLSElectronAcceptance(const AliVVertex *p
   //  fPool->SetDebug(kTRUE);
   if (!fPool)
   {
-    AliFatal(Form("No pool found for centrality = %f, zVtx = %f, maxPt = %f", mult, pVtx->GetZ(), 0.));
+    AliFatal(Form("No pool found for centrality = %f, zVtx = %f, maxPt = %f", mult, pVtx->GetZ(), 1.));
     return;
   }
 
