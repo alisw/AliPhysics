@@ -93,7 +93,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
   //AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
-  Reader->SetFilterBit(7);
+  Reader->SetFilterBit(8);
   //Reader->SetCentralityPreSelection(0.001, 950);
 
   AliFemtoManager* Manager=new AliFemtoManager();
@@ -237,7 +237,16 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
           dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc2etaphitpc[aniter]->SetMass(ProtonMass);	  
 	  dtc2etaphitpc[aniter]->SetMostProbableProton();
+
+
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4); 	//DCA xy 
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(3.2);	//DCA Z
+	  dtc2etaphitpc[aniter]->SetMaxImpactXY(2.4); 	//DCA xy
+	  dtc2etaphitpc[aniter]->SetMaxImpactZ(3.2);	//DCA Z
 	  
+	  //****** Track quality cuts ******
+	  dtc1etaphitpc[aniter]->SetminTPCncls(70);
+	  dtc2etaphitpc[aniter]->SetminTPCncls(70);	  
 
 	  //============PION============
 

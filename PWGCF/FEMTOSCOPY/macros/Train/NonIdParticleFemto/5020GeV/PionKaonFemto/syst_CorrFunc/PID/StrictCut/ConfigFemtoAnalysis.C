@@ -58,45 +58,9 @@
 #include "AliFemtoBetaTPairCut.h"
 #include "AliFemtoCutMonitorPairBetaT.h"
 #endif
-AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
-AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
 
-AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
-{
-  AliFemtoEventReaderAODMultSelection* Reader = new AliFemtoEventReaderAODMultSelection();
-  //  Reader->SetFilterMask(96);
-  Reader->SetFilterBit(7);
-  //Reader->SetReadV0(1);
-  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
-  Reader->SetEPVZERO(kTRUE);
-  Reader->SetCentralityFlattening(kTRUE);
-  //Reader->SetReadCascade(kTRUE);
-  Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
-
-  Reader->SetUseAliEventCuts(kTRUE);
-  Reader->SetTrackPileUpRemoval(kTRUE);
-  
-  if(mcAnalysis) Reader->SetReadMC(kTRUE);
-  
-  return Reader;
-}
-
-AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis)
-{
-  AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
-  Reader->SetFilterBit(7);
-  Reader->SetReadV0(1);
-  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
-  Reader->SetEPVZERO(kTRUE);
-  Reader->SetCentralityFlattening(kTRUE);
-  Reader->SetReadCascade(kTRUE);
-  Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
-  if(mcAnalysis) Reader->SetReadMC(kTRUE);
-  
-  return Reader;
-}
 //_
-AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid,int year) {
+AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid) {
 
 
   double PionMass = 0.13957018;//0.13956995;
@@ -108,7 +72,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   const int numOfkTbins = 2;
 
   int runmults[numOfMultBins] = {runcentrality0, runcentrality1, runcentrality2, runcentrality3, runcentrality4, runcentrality5, runcentrality6};
-  int multbins[numOfMultBins + 1] = {0, 50, 100, 200, 300, 400, 500, 900};
+  int multbins[numOfMultBins + 1] = {0.001, 50, 100, 200, 300, 400, 500, 900};
   
   int runch[numOfChTypes] = {1, 1, 1, 1};
   const char *chrgs[numOfChTypes] = { "PIpKp", "PImKm", "PIpKm","PImKp"};
@@ -127,21 +91,13 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
   int nbinssh = 100;
 
-  // create analysis managers
+  //AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
+  AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
+  Reader->SetFilterBit(7);
+  //Reader->SetCentralityPreSelection(0.001, 950);
+
   AliFemtoManager* Manager=new AliFemtoManager();
-  AliFemtoModelManager *modelMgr = new AliFemtoModelManager();
-//int year=2015;
-  // add event reader
-  if(year==2015)
-  {
-    AliFemtoEventReaderAODMultSelection* Reader2015 = GetReader2015(kFALSE);
-    Manager->SetEventReader(Reader2015);
-  }
-  else if(year==2011)
-  {
-    AliFemtoEventReaderAODChain* Reader2011 = GetReader2011(kFALSE);
-    Manager->SetEventReader(Reader2011);
-  }
+  Manager->SetEventReader(Reader);
 
   const int size = numOfMultBins * numOfChTypes;
   AliFemtoVertexMultAnalysis    *anetaphitpc[size];
@@ -211,14 +167,14 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 
 	  //Mix events with respect to the z position of the primary vertex and event total multipliticy:
-	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(5);
+	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 2, multbins[imult], multbins[imult+1]);
+	  anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 	  
 	  //Select basic cuts:
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
-	  mecetaphitpc[aniter]->SetEventMult(0,100000);
+	  mecetaphitpc[aniter]->SetEventMult(0.001,100000);
 	  mecetaphitpc[aniter]->SetVertZPos(-10,10);
 
 	  //Study the multiplicity distribution:
@@ -244,21 +200,20 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  //Basic track cut for pions:
 	  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
 	  dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(true);
-	  dtc1etaphitpc[aniter]->SetNsigma(3.0);
+	  dtc1etaphitpc[aniter]->SetNsigma(2.5);
 	  
 	  //Basic track cut for kaons:
 	  dtc2etaphitpc[aniter] = new AliFemtoKKTrackCutFull();
 	  dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(1.0);
-	  dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(3.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF450_500(2.0);
 	  dtc2etaphitpc[aniter]->UseNsigmaTOF450_500(true);
-	  dtc2etaphitpc[aniter]->SetNsigmaTPCge500(3.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTPCge500(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);
-
 
 	  //Set charge of particles:
 	  if (ichg == 0) {
@@ -290,7 +245,16 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  dtc2etaphitpc[aniter]->SetMass(KaonMass);	  
 	  dtc2etaphitpc[aniter]->SetMostProbableKaon();
 	  
-
+	  //** DCA******
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4); 	//DCA xy 
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(3.2);	//DCA Z
+	  dtc2etaphitpc[aniter]->SetMaxImpactXY(2.4); 	//DCA xy
+	  dtc2etaphitpc[aniter]->SetMaxImpactZ(3.2);	//DCA Z
+	  
+	  //****** Track quality cuts ******
+	  dtc1etaphitpc[aniter]->SetminTPCncls(70);
+	  dtc2etaphitpc[aniter]->SetminTPCncls(70);
+	  
 	  //============PION============
 
 	  //The cut monitor for particles to study the difference between reconstructed and true momentum: 
@@ -446,3 +410,23 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
   return Manager;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
