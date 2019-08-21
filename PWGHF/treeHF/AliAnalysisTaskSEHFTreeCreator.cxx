@@ -3092,13 +3092,21 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                     if (fReadMC){
                       //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
                       //Effect is per mille level, but big enough to be rejected by MatchToMC() function. To fix.
+                      AliAODMCHeader *mcHeader = 0x0;
+                      mcHeader = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+
                       labLb = trackLb.MatchToMCB3Prong(5122,4122,pdgDgLbtoLcpi,pdgLctopKpi,arrMC);
                       
                       if(labLb >= 0) {
                         partLb = (AliAODMCParticle*)arrMC->At(labLb);
                         ptGenLb = partLb->Pt();
                         issignal = kTRUE;
-                      } else isbkg = kTRUE;
+                      } else{
+                        //check whether background is from hijing
+                        Bool_t isHijing=kFALSE;
+                        if (mcHeader) isHijing= CheckGenerator(pionTrack,lctopkpi,mcHeader,arrMC);
+                        if (isHijing) isbkg = kTRUE;
+                        }
                       
                       if(issignal || isbkg) fTreeHandlerLb->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                     } //end read MC
@@ -3279,6 +3287,63 @@ Bool_t AliAnalysisTaskSEHFTreeCreator::CheckDaugAcc(TClonesArray* arrayMC,Int_t 
     }
   }
   return kTRUE;
+}
+//________________________________________________________________________
+Bool_t AliAnalysisTaskSEHFTreeCreator::CheckGenerator(AliAODTrack *p, AliAODRecoDecayHF3Prong *d, AliAODMCHeader *mcHeader,TClonesArray* arrMC){
+    Bool_t LcNotHijing;
+    Bool_t pionNotHijing;
+    LcNotHijing=IsCandidateInjected(d, mcHeader,arrMC);
+    pionNotHijing=IsTrackInjected(p,mcHeader,arrMC);
+    if(!LcNotHijing && !pionNotHijing) return kTRUE;
+    else return kFALSE;
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskSEHFTreeCreator::IsTrackInjected(AliAODTrack *part,AliAODMCHeader *header,TClonesArray *arrMC){
+    
+    AliVertexingHFUtils* ggg=new  AliVertexingHFUtils();
+    
+    Int_t lab=part->GetLabel();
+    if(lab<0) {delete ggg;return 1;} //
+    TString nameGen=ggg->GetGenerator(lab,header);
+    TString empty="";
+    Int_t countControl =0;
+    while(nameGen.IsWhitespace()){
+        AliAODMCParticle *mcpart= (AliAODMCParticle*)arrMC->At(lab);
+        if(!mcpart){
+            printf("AliVertexingHFUtils::IsTrackInjected - BREAK: No valid AliAODMCParticle at label %i\n",lab);
+            break;
+        }
+        Int_t mother = mcpart->GetMother();
+        if(mother<0){
+            printf("AliVertexingHFUtils::IsTrackInjected - BREAK: Reached primary particle without valid mother\n");
+            break;
+        }
+        lab=mother;
+        nameGen=ggg->GetGenerator(mother,header);
+        countControl++;
+        if(countControl>=10){ // 10 = arbitrary number; protection from infinite loops
+            printf("AliVertexingHFUtils::IsTrackInjected - BREAK: Protection from infinite loop active\n");
+            break;
+        }
+    }
+    if(nameGen.IsWhitespace() || nameGen.Contains("ijing")){delete ggg; return 0;}
+    
+    
+    delete ggg;
+    return 1;
+}
+//_____________________________________________________________
+Bool_t AliAnalysisTaskSEHFTreeCreator::IsCandidateInjected(AliAODRecoDecayHF *part, AliAODMCHeader *header,TClonesArray *arrMC){
+    
+    
+    Int_t nprongs=part->GetNProngs();
+    for(Int_t i=0;i<nprongs;i++){
+        AliAODTrack *daugh=(AliAODTrack*)part->GetDaughter(i);
+        Int_t lab=daugh->GetLabel();
+        if(lab<0) return 0;
+        if(IsTrackInjected(daugh,header,arrMC)) return kTRUE;
+    }
+    return kFALSE;
 }
 //________________________________________________________________________
 void AliAnalysisTaskSEHFTreeCreator::SelectGoodTrackForReconstruction(AliAODEvent *aod, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags)
