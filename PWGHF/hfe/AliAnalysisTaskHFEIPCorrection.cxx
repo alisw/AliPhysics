@@ -485,9 +485,9 @@ void AliAnalysisTaskHFEIPCorrection::GetCorrectedImpactParameter(AliAODEvent *ao
   int PhiBin = int(track->Phi()/(2.*TMath::Pi())*40); // phi bin
   double z_SPD1 = primVertexZ+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))); // z position of track in inner SPD layer
   int zBin = int((z_SPD1+12.)/24.*12.); // z bin
-  int pt = track->Pt();
+  double pt = track->Pt();
   double oldIP, dcaErr;
-  //fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,oldIP,dcaErr); // changed
+  fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,oldIP,dcaErr); // changed
     
   double correctionMatrixEarlyRuns[40][12] = {
 { -0.000683 , -0.00104 , -0.000436 , -0.000785 , -0.001 , -0.00117 , -0.00103 , -0.000972 , -0.00149 , -0.0014 , -0.00147 , -0.00158 },
@@ -949,6 +949,7 @@ if(!MultSelection){
               if(aodEvent->GetRunNumber() <= 246276) fDCAPhiZHadronsEarlyRuns->Fill(track->Phi(), dcaxyD, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
               else  fDCAPhiZHadronsLateRuns->Fill(track->Phi(), dcaxyD, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
               fDCAPhiZHadronsC->Fill(track->Phi(), IPCorrected, vtx[2]+4.5*TMath::Tan(TMath::Pi()/2.-2.*TMath::ATan(TMath::Exp(-track->Eta()))));
+              
               if(IsInMisalignedRegion(track, vtx[2])>0)fDCARegionRun->Fill(dcaxyD, IsInMisalignedRegion(track, vtx[2]) ,RunBin);
               else fDCARegionRun->Fill(dcaxyD, 5 ,RunBin);
             }
