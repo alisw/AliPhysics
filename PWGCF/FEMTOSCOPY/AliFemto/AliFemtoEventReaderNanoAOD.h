@@ -87,6 +87,18 @@ public:
 
   void SetCovMatPresent(Bool_t pres){fCovMatPresent = pres;}
 
+
+  void Set1DCorrectionsPions(TH1D *h1);
+  void Set1DCorrectionsKaons(TH1D *h1);
+  void Set1DCorrectionsProtons(TH1D *h1);
+  void Set1DCorrectionsPionsMinus(TH1D *h1);
+  void Set1DCorrectionsKaonsMinus(TH1D *h1);
+  void Set1DCorrectionsProtonsMinus(TH1D *h1);
+  void Set1DCorrectionsAll(TH1D *h1);
+  void Set1DCorrectionsLambdas(TH1D *h1);
+  void Set1DCorrectionsLambdasMinus(TH1D *h1);
+
+  
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
   virtual AliFemtoTrack *CopyAODtoFemtoTrack(AliNanoAODTrack *tAodTrack
@@ -146,7 +158,15 @@ private:
   Double_t fShiftPosition; ///< radius at which the spatial position of the track in the shifted coordinate system is calculated
   Bool_t fCovMatPresent; /// flag if covariance matrix is not present in NanoAOD
 
-
+  TH1D *f1DcorrectionsPions;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsKaons;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsProtons;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsPionsMinus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsKaonsMinus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsProtonsMinus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsAll;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsLambdas;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
