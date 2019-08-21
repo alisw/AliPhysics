@@ -60,6 +60,7 @@
 #include "AliMCParticleContainer.h"
 #include "AliJetContainer.h"
 
+class AliAODMCHeader;
 class AliAODEvent;
 class TClonesArray;
 class AliEmcalJet;
@@ -167,6 +168,10 @@ public:
     void ProcessMCGen(TClonesArray *mcarray);
   
     Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
+    Bool_t CheckGenerator(AliAODTrack *p,AliAODRecoDecayHF3Prong *d,AliAODMCHeader *mcHeader,TClonesArray* arrMC);
+    Bool_t IsCandidateInjected(AliAODRecoDecayHF *part, AliAODMCHeader *header,TClonesArray *arrMC);
+    Int_t IsTrackInjected(AliAODTrack *part,AliAODMCHeader *header,TClonesArray *arrMC);
+    
     void SelectGoodTrackForReconstruction(AliAODEvent *aod, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
     AliAODVertex* ReconstructDisplVertex(const AliVVertex *primary, TObjArray *tracks, Double_t bField, Double_t dispersion);
   
@@ -421,7 +426,7 @@ private:
     bool fCorrV0MVtx;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,17);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,18);
     /// \endcond
 };
 
