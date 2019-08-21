@@ -167,15 +167,15 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 
 	  //Mix events with respect to the z position of the primary vertex and event total multipliticy:
-anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 2, multbins[imult], multbins[imult+1]); //VertZPos changed from (-10,10) to (-7,7), VertZbins changed from 10 to 7, mult bins changed from 4 to 2
-	  anetaphitpc[aniter]->SetNumEventsToMix(3);   //change the Num from 5 to 3
+	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 2, multbins[imult], multbins[imult+1]);
+	  anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 	  
 	  //Select basic cuts:
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 	  mecetaphitpc[aniter]->SetEventMult(0.001,100000);
-	  mecetaphitpc[aniter]->SetVertZPos(-10,10); 
+	  mecetaphitpc[aniter]->SetVertZPos(-10,10);
 
 	  //Study the multiplicity distribution:
 	  if(turnOnMonitors == 1) {
@@ -231,14 +231,22 @@ anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 2, multbins[i
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc1etaphitpc[aniter]->SetMass(PionMass);	  
 	  dtc1etaphitpc[aniter]->SetMostProbablePion();	 
-
+ 
 	  //Set particle 2:
 	  dtc2etaphitpc[aniter]->SetPt(0.7,4.0);
           dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc2etaphitpc[aniter]->SetMass(ProtonMass);	  
 	  dtc2etaphitpc[aniter]->SetMostProbableProton();
+
+
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(1.2); 	//DCA xy 
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(1.6);	//DCA Z
+	  dtc2etaphitpc[aniter]->SetMaxImpactXY(1.2); 	//DCA xy
+	  dtc2etaphitpc[aniter]->SetMaxImpactZ(1.6);	//DCA Z
 	  
-	  
+	  //****** Track quality cuts ******
+	  dtc1etaphitpc[aniter]->SetminTPCncls(70);
+	  dtc2etaphitpc[aniter]->SetminTPCncls(70);	  
 
 	  //============PION============
 
