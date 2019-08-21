@@ -15,7 +15,7 @@ AliFemtoCorrFctn3DLCMSPosQuad::AliFemtoCorrFctn3DLCMSPosQuad(const Parameters &p
 }
 
 AliFemtoCorrFctn3DLCMSPosQuad::AliFemtoCorrFctn3DLCMSPosQuad(const TString &name, const int nbins, const float QHi)
-  : AliFemtoCorrFctn3DLCMSPosQuad(name, "", nbins / 2, nbins, nbins, QHi, QHi, QHi)
+  : AliFemtoCorrFctn3DLCMSPosQuad(name, "", nbins / 2 + 1, nbins, nbins, QHi, QHi, QHi)
 {
 }
 
@@ -40,7 +40,7 @@ AliFemtoCorrFctn3DLCMSPosQuad::AliFemtoCorrFctn3DLCMSPosQuad(const TString &pref
   auto new_hist = [&] (TString name, TString title)
     {
       return new TH3F(hist_name(name), title,
-                      nbins_out, 0, QoHi,
+                      nbins_out, 0.0, QoHi,
                       nbins_side, -QsHi, QsHi,
                       nbins_long, -QlHi, QlHi);
     };
@@ -109,14 +109,16 @@ AliFemtoCorrFctn3DLCMSPosQuad::~AliFemtoCorrFctn3DLCMSPosQuad()
 
 inline void fill_histograms(const AliFemtoPair &pair, TH3 &dest, TH3 *qinv_dest=nullptr)
 {
-  // flip about origin if qout would have been negative
-  const double factor = (pair.Track2()->Track()->Pt() > pair.Track1()->Track()->Pt())
-                      ? -1.0
-                      : 1.0;
+  const double
+    qo = pair.QOutCMS(),
+    qs = pair.QSideCMS(),
+    ql = pair.QLongCMS(),
+    // flip about origin if qout negative
+    f = std::copysign(1.0, qo),
 
-  const double qOut = factor * pair.QOutCMS(),
-              qSide = factor * pair.QSideCMS(),
-              qLong = factor * pair.QLongCMS();
+    qOut = f * qo,
+    qSide = f * qs,
+    qLong = f * ql;
 
   dest.Fill(qOut, qSide, qLong);
 

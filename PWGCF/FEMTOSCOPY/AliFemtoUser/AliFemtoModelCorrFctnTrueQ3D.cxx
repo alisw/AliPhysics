@@ -151,7 +151,7 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_
 }
 
 AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const Parameters &params):
-  AliFemtoModelCorrFctnTrueQ3D(params.prefix,
+  AliFemtoModelCorrFctnTrueQ3D(params.prefix.Data(),
                                params.bin_count_out,
                                params.bin_count_side,
                                params.bin_count_long,
