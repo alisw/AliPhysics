@@ -481,10 +481,15 @@ struct PairCutTrackAttrRemoveEE {
 
   bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2) const
     {
+      if (ee_minv_min == 0.0) {
+        return true;
+      }
+
       const double
         E_MASS = 0.000511,
         minv_sqrd = PairCutTrackAttrMinv::CalcMinvSqrd(track1.P(), track2.P(), E_MASS, E_MASS),
         minv = std::sqrt(minv_sqrd);
+
       return std::abs(minv - E_MASS) >= ee_minv_min;
     }
 
@@ -498,7 +503,9 @@ struct PairCutTrackAttrRemoveEE {
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("ee_minv_min", ee_minv_min);
+      if (ee_minv_min != 0.0) {
+        cfg.insert("ee_minv_min", ee_minv_min);
+      }
     }
 
   virtual ~PairCutTrackAttrRemoveEE() {}
