@@ -7,4 +7,5 @@
 #pragma link C++ class AliAnalysisTaskPPvsUE+;
 #pragma link C++ class AliAnalysisTaskUePid+;
 #pragma link C++ class AliAnalysisTaskUeMultDep+;
+#pragma link C++ class AliAnalysisTaskUeSpectraRT+;
 #endif

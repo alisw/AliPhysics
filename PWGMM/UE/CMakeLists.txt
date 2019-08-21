@@ -34,7 +34,8 @@ set(SRCS
   UeSpherocity/AliAnalysisTaskUeSpherocity.cxx
   UeSpherocity/AliAnalysisTaskUeRSpherocity.cxx
   UePid/AliAnalysisTaskUePid.cxx
-  UeMultDep/AliAnalysisTaskUeMultDep.cxx	
+  UeMultDep/AliAnalysisTaskUeMultDep.cxx
+  UeSpectraRT/AliAnalysisTaskUeSpectraRT.cxx		
   )
 
 # Headers from sources
@@ -98,4 +99,5 @@ install(FILES ${HDRS} DESTINATION include)
 	install(DIRECTORY UeSpectra DESTINATION  PWGMM/UE)
 	install(DIRECTORY UeSpherocity DESTINATION  PWGMM/UE)
 	install(DIRECTORY UePid DESTINATION  PWGMM/UE)
-install(DIRECTORY UeMultDep DESTINATION  PWGMM/UE)	
+install(DIRECTORY UeMultDep DESTINATION  PWGMM/UE)
+install(DIRECTORY UeSpectraRT DESTINATION  PWGMM/UE)		
