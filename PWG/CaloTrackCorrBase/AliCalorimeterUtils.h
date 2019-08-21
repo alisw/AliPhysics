@@ -146,6 +146,8 @@ class AliCalorimeterUtils : public TObject {
                                                              if(!fPHOSBadChannelMap) InitPHOSBadChannelStatusMap()    ; }
   void          SwitchOffBadChannelsRemoval()              { fRemoveBadChannels = kFALSE ; 
                                                              fEMCALRecoUtils->SwitchOffBadChannelsRemoval()           ; }
+
+  void          Load1DBadChannelMap()                      { fLoad1DBadChMap=kTRUE; }
   
   Bool_t        IsDistanceToBadChannelRecalculated() const { return fEMCALRecoUtils->IsDistanceToBadChannelRecalculated(); }
   void          SwitchOnDistToBadChannelRecalculation ()   { fEMCALRecoUtils->SwitchOnDistToBadChannelRecalculation() ; }
@@ -168,9 +170,11 @@ class AliCalorimeterUtils : public TObject {
                   ((TH2I*)fPHOSBadChannelMap->At(imod))->SetBinContent(iCol,iRow,c) ; }
     
   void          SetEMCALChannelStatusMap(Int_t iSM , TH2I* h) { fEMCALRecoUtils->SetEMCALChannelStatusMap(iSM,h)      ; }
+  void          SetEMCALChannelStatusMap1D(TH1C* h) { fEMCALRecoUtils->SetEMCALChannelStatusMap1D(h)      ; }
   void          SetPHOSChannelStatusMap(Int_t imod , TH2I* h) { fPHOSBadChannelMap ->AddAt(h,imod)                    ; }
   
   TH2I *        GetEMCALChannelStatusMap(Int_t iSM)  const { return fEMCALRecoUtils->GetEMCALChannelStatusMap(iSM)    ; }
+  TH1C *        GetEMCALChannelStatusMap1D()  const { return fEMCALRecoUtils->GetEMCALChannelStatusMap1D()    ; }
   TH2I *        GetPHOSChannelStatusMap(Int_t imod)  const { return (TH2I*)fPHOSBadChannelMap->At(imod)               ; }
 
   void          SetEMCALChannelStatusMap(TObjArray *map)   { fEMCALRecoUtils->SetEMCALChannelStatusMap(map)           ; }
@@ -421,6 +425,8 @@ class AliCalorimeterUtils : public TObject {
   TGeoHMatrix *      fPHOSMatrix[5];            ///<  Geometry matrices with alignments.
 
   Bool_t             fRemoveBadChannels;        ///<  Check the channel status provided and remove clusters with bad channels.
+
+  Bool_t             fLoad1DBadChMap;           ///<  Flag to load 1D bad channel map.
 
   TObjArray        * fPHOSBadChannelMap;        ///<  Array of histograms with map of bad channels, PHOS.
 

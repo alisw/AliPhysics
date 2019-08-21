@@ -35,7 +35,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Bool_t useNewRWTempCalib    = kFALSE,   // switch for usage of new temperature calib parameters (available for run1 and run2)
   TString customSMtemps       = "",       // location of custom SM-wise temperature OADB file (full path including file)
   TString customTempParams    = "",        // location of custom temperature calibration parameters OADB file (full path including file)
-  Bool_t useOneHistAllBCS     = kFALSE    // flag to use on histogram for the all the BCs
+  Bool_t useOneHistAllBCS     = kFALSE,    // flag to use on histogram for the all the BCs
+  Bool_t load1DBCmap          = kFALSE     // Flag to load 1D bad channel map
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -94,6 +95,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   #endif
 
   EMCALSupply->SwitchUseMergedBCs(useOneHistAllBCS);
+
+  if(load1DBCmap) EMCALSupply->Load1DBadChannelMap();
 
   if (pass) 
     EMCALSupply->SetPass(pass);
