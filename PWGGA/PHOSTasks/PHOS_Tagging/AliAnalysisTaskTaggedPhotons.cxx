@@ -1686,17 +1686,22 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
   //Parameterization of data 30.08.2014
 //  Double_t mpi0mean =  0.135 ;  
 
-  //Parameterization 13.10.2018
-  Double_t mpi0mean =1.34693e-01-3.68195e-04*TMath::TanH((pt-5.00834e+00)/1.81347e+00) ;  
+//   //Parameterization 13.10.2018
+//   Double_t mpi0mean =1.34693e-01-3.68195e-04*TMath::TanH((pt-5.00834e+00)/1.81347e+00) ;  
   
+  //Parameterization 21.08.2018 with updated NonLin Run2TuneMC
+  Double_t mpi0mean =1.36269e-01-1.81643456e-05/((pt-4.81920e-01)*(pt-4.81920e-01)+3.662247e-02)-2.15520e-04*exp(-pt/1.72016e+00) ;  
   
   
   //Double_t mpi0sigma=TMath::Sqrt(5.22245e-03*5.22245e-03 +2.86851e-03*2.86851e-03/pt) + 9.09932e-05*pt ;
   //Parameterization of data 30.08.2014
 //   Double_t mpi0sigma=TMath::Sqrt(4.67491e-03*4.67491e-03 +3.42884e-03*3.42884e-03/pt) + 1.24324e-04*pt ;
 
-  //Parameterization 13.10.2018
-  Double_t mpi0sigma=TMath::Sqrt(3.79261e-03*3.79261e-03/pt+4.76506e-03*4.76506e-03+4.87152e-05*4.87152e-05*pt*pt*pt) ;
+//   //Parameterization 13.10.2018
+//   Double_t mpi0sigma=TMath::Sqrt(3.79261e-03*3.79261e-03/pt+4.76506e-03*4.76506e-03+4.87152e-05*4.87152e-05*pt*pt*pt) ;
+  
+  //Parameterization 13.10.2018 with updated NonLin Run2TuneMC
+  Double_t mpi0sigma=TMath::Sqrt(2.59195e-05+1.101556186e-05/pt+2.e-8*pt*pt) ;
   
   return TMath::Abs(m-mpi0mean)/mpi0sigma ;
 }
