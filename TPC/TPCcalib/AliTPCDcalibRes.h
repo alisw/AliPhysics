@@ -664,7 +664,7 @@ inline Float_t AliTPCDcalibRes::GetDY2X(int ix, int iy)
   if (fUniformBins[kVoxF]) {
     return fDY2X[ix];
   }
-  return fMaxY2X[ix]*fY2XBinsDH[iy];
+  return 2.f*fMaxY2X[ix]*fY2XBinsDH[iy];
 }
 
 //________________________________________________________________
