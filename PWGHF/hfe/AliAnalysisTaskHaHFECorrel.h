@@ -195,7 +195,12 @@ public:
     void SetHadRecEff(TH3F & HadRecEff) {fHadRecEff = HadRecEff; fHadRecEff.SetName("fHadRecEff");}
     void SetEleRecEff(TH3F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
     //  void SetSPDnTrAvg(TProfile & SPDnTrAvg) {fSPDnTrAvg = SPDnTrAvg; fSPDnTrAvg.SetName("fSPDnTrAvg");}
-    void SetSPDConfigHist(TH1F & SPDConfigHist) {fSPDConfigHist = SPDConfigHist; fSPDConfigHist.SetName("SPDConfigHist");}
+    void SetSPDConfigHist(TH1I & SPDConfigHist) {fSPDConfigHist = SPDConfigHist; fSPDConfigHist.SetName("SPDConfigHist");
+      /* for (Int_t i=1; i<300; i++) { */
+      /* 	printf("%i, %s, %10.2f, %s, %10.2f", i, fSPDConfigHist.GetXaxis()->GetBinLabel(i), fSPDConfigHist.GetBinContent(i),  SPDConfigHist.GetXaxis()->GetBinLabel(i) ,  SPDConfigHist.GetBinContent(i)); */
+      /* } */
+
+    }
     void SetSPDConfigProfiles(TH3F & SPDConfigProfiles) {fSPDConfigProfiles = SPDConfigProfiles; fSPDConfigProfiles.SetName("fSPDConfigProfiles");}
     void SetNonTagCorr(TH1F & NonTagCorr) {fNonTagCorr = NonTagCorr; fNonTagCorr.SetName("fNonTagCorr");}
     void SetTriggerWeight(TH3F & TriggerWeight){fTriggerWeight = TriggerWeight; fTriggerWeight.SetName("fTriggerWeight");}
@@ -553,7 +558,7 @@ public:
     TH3F                  fHadRecEff;
     TH3F                  fEleRecEff;
     Int_t                 fSPDConfig;
-    TH1F                  fSPDConfigHist;
+    TH1I                  fSPDConfigHist;
     TH3F                  fSPDConfigProfiles;
     TProfile*             fSPDnTrAvg;               //!
     TH1F                  fNonTagCorr;
