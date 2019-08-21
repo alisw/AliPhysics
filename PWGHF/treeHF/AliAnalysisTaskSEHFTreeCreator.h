@@ -59,9 +59,8 @@
 #include "AliTrackContainer.h"
 #include "AliMCParticleContainer.h"
 #include "AliJetContainer.h"
-#include "AliAODMCHeader.h"
 
-
+class AliAODMCHeader;
 class AliAODEvent;
 class TClonesArray;
 class AliEmcalJet;
