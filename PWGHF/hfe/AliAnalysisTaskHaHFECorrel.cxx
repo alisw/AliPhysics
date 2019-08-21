@@ -1196,28 +1196,43 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   TObjString *obj = (TObjString*)  fSPDConfigHist.GetXaxis()->GetLabels()->FindObject(Form("%i", fRunNumber));
   if (obj) SPDConfigBin= (Int_t)obj->GetUniqueID();
   else return;  // exit event if unknow SPD configuration
-  if (fSPDConfig!=fSPDConfigHist.GetBinContent(SPDConfigBin)) {
+  if (fSPDConfig!=(Int_t) fSPDConfigHist.GetBinContent(SPDConfigBin)) {
     // for (Int_t i=1; i<fSPDConfigHist.GetXaxis()->GetNbins(); i++) cout << i << "\t" << fSPDConfigHist.GetXaxis()->GetBinLabel(i) << endl;
+    cout<< SPDConfigBin << endl;
     fSPDConfig = fSPDConfigHist.GetBinContent(SPDConfigBin);
+    cout << fSPDConfig << endl;
     Int_t SPDConfigProfBin;
     TObjString *obj = (TObjString*)  fSPDConfigProfiles.GetXaxis()->GetLabels()->FindObject(Form("%i", fSPDConfig));
     if (obj) SPDConfigProfBin= (Int_t)obj->GetUniqueID();
     else  SPDConfigProfBin=1;// select first bin if configuration does not exist
+    cout << SPDConfigProfBin << endl;
     fSPDConfigProfiles.GetXaxis()->SetRange(SPDConfigProfBin, SPDConfigProfBin);
-    TH2F* Configuration = (TH2F*)fSPDConfigProfiles.Project3D("zy");
+    TH2F* Configuration = 0;
+    Configuration = (TH2F*)fSPDConfigProfiles.Project3D("zy");
+    fSPDConfigProfiles.GetXaxis()->SetRange(0, 0);
     if (fSPDnTrAvg!=0) {
       cout << fSPDnTrAvg << endl;
       delete fSPDnTrAvg;
+      fSPDnTrAvg=0;
     }
-    fSPDnTrAvg = (TProfile*) Configuration->ProfileX(Form("Prof_%i", fSPDConfig), 2, 1000); // neglecting 0 bin
-    delete Configuration;
+    if (Configuration!=0) {
+      fSPDnTrAvg = (TProfile*) Configuration->ProfileX(Form("Prof_%i", fSPDConfig), 2, 1000); // neglecting 0 bin
+      delete Configuration;
+    }
+    else{
+      cout << "ProfileHist not created" << endl;
+      return;
+    }
+    Configuration=0;
     cout <<  fRunNumber << "\t" << fSPDConfig << endl;
     //   for (Int_t i=1; i<fSPDnTrAvg->GetXaxis()->GetNbins(); i++) cout << fSPDnTrAvg->GetBinContent(i) << endl;
   }
-  Double_t nTrAccCorrMin=AliVertexingHFUtils::GetCorrectedNtracklets(fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMinSPD); 
-  Double_t nTrAccCorrMax=AliVertexingHFUtils::GetCorrectedNtracklets(fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMaxSPD); 
-  Double_t nTrAccCorrMean=AliVertexingHFUtils::GetCorrectedNtracklets(fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMeanSPD);
-
+  Double_t nTrAccCorrMin, nTrAccCorrMax, nTrAccCorrMean;
+  if (fSPDnTrAvg!=0) {
+     nTrAccCorrMin=AliVertexingHFUtils::GetCorrectedNtracklets(fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMinSPD); 
+     nTrAccCorrMax=AliVertexingHFUtils::GetCorrectedNtracklets(fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMaxSPD); 
+     nTrAccCorrMean=AliVertexingHFUtils::GetCorrectedNtracklets(fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMeanSPD);
+  }
 
 
   

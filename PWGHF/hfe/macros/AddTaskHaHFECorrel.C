@@ -83,7 +83,7 @@
   TFile *SPDnTrFile  = TFile::Open(SPDnTrFileName.Data());
   if (SPDnTrFile) {    
     TH3F* SPDConfigProfiles= (TH3F*)SPDnTrFile->Get("SPDConfigs_Hist");
-    TH1F* SPDConfigHist = (TH1F*) SPDnTrFile->Get("SPDConfigHist");
+    TH1I* SPDConfigHist = (TH1I*) SPDnTrFile->Get("SPDConfigHist");
     if (SPDConfigHist) taskMB->SetSPDConfigHist(*SPDConfigHist);
     else printf("Could not load SPDConfigHist\n");
     if (SPDConfigProfiles) taskMB->SetSPDConfigProfiles(*SPDConfigProfiles);
