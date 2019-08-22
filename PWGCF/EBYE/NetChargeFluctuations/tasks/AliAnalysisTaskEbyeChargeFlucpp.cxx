@@ -61,10 +61,10 @@ fEtaUp(0.8),
 fAnalysisType(kFALSE),
 fzvtxcut(100),
 ftrackBit(768),
-fCutTPCMaxCls(100.),
-fCutTPCNCls(80.),
-fCutDCAxy(2.4),
-fCutDCAz(3.2),
+//fCutTPCMaxCls(100.),
+//fCutTPCNCls(80.),
+//fCutDCAxy(2.4),
+//fCutDCAz(3.2),
 fHistPosEffMatrixRec(0),
 fHistNegEffMatrixRec(0),
 fHistPosEffMatrixGen(0),
@@ -144,10 +144,10 @@ fEtaUp(0.8),
 fAnalysisType(kFALSE),
 fzvtxcut(100),
 ftrackBit(768),
-fCutTPCMaxCls(100.),
-fCutTPCNCls(80.),
-fCutDCAxy(2.4),
-fCutDCAz(3.2),
+//fCutTPCMaxCls(100.),
+//fCutTPCNCls(80.),
+//fCutDCAxy(2.4),
+//fCutDCAz(3.2),
 fHistPosEffMatrixRec(0),
 fHistNegEffMatrixRec(0),
 fHistPosEffMatrixGen(0),
@@ -229,12 +229,12 @@ fTreeMCgen(0x0)
 AliAnalysisTaskEbyeChargeFlucpp::~AliAnalysisTaskEbyeChargeFlucpp()
 {
     //destructor
-    if(fOutputList) 		        delete fOutputList;
-    if (fHistPosEffMatrixRec) 		delete fHistPosEffMatrixRec;
-    if (fHistNegEffMatrixRec) 		delete fHistNegEffMatrixRec;
-    if (fHistPosEffMatrixGen) 		delete fHistPosEffMatrixGen;
-    if (fHistNegEffMatrixGen) 		delete fHistNegEffMatrixGen;
-    if (fhCent)               		delete fhCent;
+    if(fOutputList) 			        delete fOutputList;
+    if (fHistPosEffMatrixRec) 		    delete fHistPosEffMatrixRec;
+    if (fHistNegEffMatrixRec) 		    delete fHistNegEffMatrixRec;
+    if (fHistPosEffMatrixGen) 		    delete fHistPosEffMatrixGen;
+    if (fHistNegEffMatrixGen) 		    delete fHistNegEffMatrixGen;
+    if (fhCent)               		    delete fhCent;
     if (fHistCentralityMultSelection)   delete fHistCentralityMultSelection;
     if (fEventStatistics)               delete fEventStatistics;
     if (fHistDCAz)                      delete fHistDCAz;
@@ -342,7 +342,7 @@ void AliAnalysisTaskEbyeChargeFlucpp::UserCreateOutputObjects()
     fhCent = new TH1F("fhCent","Multiplicity",100,0,100);
     fOutputList->Add(fhCent);
     
-    fHistCentralityMultSelection = new TH1D("fHistCentralityMultSelection","Centrality Percentile ;Centrality;Entries",100,0.,100.);  //new sk
+    fHistCentralityMultSelection = new TH1D("fHistCentralityMultSelection","Centrality Percentile ;Centrality;Entries",80,0.,80.);  //new sk
     fHistCentralityMultSelection->GetXaxis()->SetTitle("Centrality (%)");
     fOutputList->Add(fHistCentralityMultSelection);
     
@@ -453,10 +453,6 @@ void AliAnalysisTaskEbyeChargeFlucpp::doAODEvent(){
     Double_t yv=fPrimaryVtx->GetY();
     Double_t zv=fPrimaryVtx->GetZ();
     
-    fHistVx->Fill(xv);
-    fHistVy->Fill(yv);
-    fHistVz->Fill(zv);
-    
     fEventStatistics->Fill("found primary vertex",1);
     
     //===========================Centrality calculation =====================
@@ -474,6 +470,10 @@ void AliAnalysisTaskEbyeChargeFlucpp::doAODEvent(){
 //    fHistCentralityMultSelection->Fill(fCentrality);
     fhCent->Fill(lMultiPercentile); //multiplicity dist.
     fEventStatistics->Fill("centrality selection",1);
+    
+    fHistVx->Fill(xv);
+    fHistVy->Fill(yv);
+    fHistVz->Fill(zv);
     
     fHistZVertexCent->Fill(zv, fCentrality);
     
@@ -522,7 +522,7 @@ void AliAnalysisTaskEbyeChargeFlucpp::doAODEvent(){
                     
                     if(!AcceptTrack(track)) continue;
                     
-                    if(!PassDCA(fAOD, track)) continue;
+                 //   if(!PassDCA(fAOD, track)) continue;
                 
                    if ((track->Eta()<etaDownArray[ieta]) || (track->Eta()>etaUpArray[ieta])) continue;  // eta Cut
                     
@@ -1085,8 +1085,8 @@ Bool_t AliAnalysisTaskEbyeChargeFlucpp::AcceptTrack(AliAODTrack* aodtrack) const
     
     if(!aodtrack->TestFilterBit(ftrackBit)) return kFALSE;   // for hybrid tracks
 
-     if(aodtrack->GetTPCCrossedRows() < fCutTPCMaxCls) return kFALSE;
-     if(aodtrack->GetTPCNcls() < fCutTPCNCls) return kFALSE;
+//     if(aodtrack->GetTPCCrossedRows() < fCutTPCMaxCls) return kFALSE;
+//     if(aodtrack->GetTPCNcls() < fCutTPCNCls) return kFALSE;
 
     return kTRUE;
 }
@@ -1099,19 +1099,19 @@ Bool_t AliAnalysisTaskEbyeChargeFlucpp::PassDCA(AliAODEvent *fAOD,AliAODTrack* a
     
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
     Double_t d0z0[2]={-999,-999}, cov[3];
-    Double_t DCAxyCut = fCutDCAxy, DCAzCut = fCutDCAz;
+//    Double_t DCAxyCut = fCutDCAxy, DCAzCut = fCutDCAz;
     
     Float_t dxy, dz ;
     dxy = aodtrack->DCA();
     dz  = aodtrack->ZAtDCA();
-    if(TMath ::Abs(dxy) > DCAxyCut || TMath ::Abs(dz) > DCAzCut) return kFALSE;
+//    if(TMath ::Abs(dxy) > DCAxyCut || TMath ::Abs(dz) > DCAzCut) return kFALSE;
     
     fHistDCAz->Fill(dz);
     fHistDCAxy->Fill(dxy);
     
-  //  if(aodtrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 100., d0z0, cov))
-  //  if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
-    
+//    if(aodtrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 100., d0z0, cov))
+//    if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
+//
  //   cout << d0z0[0] << "\t" << d0z0[1] << endl;
     
 //    fHistDCAz->Fill(d0z0[1]);
