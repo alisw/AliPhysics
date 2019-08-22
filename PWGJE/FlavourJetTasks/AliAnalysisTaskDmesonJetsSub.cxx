@@ -2940,7 +2940,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
 
 
    //fill the mc efficiency//
-  for (auto& def : fJetDefinitions)GetEfficiencyDenominator(def);
+  for (auto& def : fJetDefinitions)GetEfficiencyDenominatorOneByOne(def);
 
   
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
