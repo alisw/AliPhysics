@@ -58,7 +58,7 @@
 #include <vector>
 using std::vector;
 
-
+Introducing a syntax error. This is supposed to blow up.
 #include "AliAnalysisTaskEMCALClusterTurnOn.h"
 
   /// \cond CLASSIMP
@@ -136,7 +136,7 @@ hFastOrIndexLeadingCluster(0),
 fOutTHnS_Clust(0),
 MaskedFastOrs()
 {
-
+Introduce
     // Default constructor.
   
     //fParticleCollArray.SetOwner(kTRUE);
