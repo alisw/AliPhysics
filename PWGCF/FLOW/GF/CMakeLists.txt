@@ -34,6 +34,7 @@ include_directories(
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskChargedFlow.cxx
+  AliAnalysisTaskFlowExample.cxx
   AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskUniFlow.cxx
   AliAnalysisTaskUniFlowMultiStrange.cxx
