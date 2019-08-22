@@ -2715,7 +2715,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
       }
 
       //location BPlus pion rotation around PV
-      for (Int_t iRot = 0; iRot < 1; ++iRot)
+      for (Int_t iRot = 0; iRot < fNumberOfRotations; ++iRot)
       {
         //we create a copy of the track that we will rotate
         AliAODTrack * trackBPlusPionRotated = new AliAODTrack(*trackBPlusPion);
