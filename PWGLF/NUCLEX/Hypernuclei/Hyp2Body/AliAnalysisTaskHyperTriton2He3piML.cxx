@@ -526,8 +526,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     v0part.fPzPi = piVector.Pz();
     v0part.fTPCmomHe3 = he3Track->GetTPCmomentum();
     v0part.fTPCmomPi = piTrack->GetTPCmomentum();
-    v0part.fDcaHe32PrimaryVertexXY = he3B[0];
-    v0part.fDcaPi2PrimaryVertexXY = piB[0];
+    v0part.fDcaHe32PrimaryVertexXY = std::abs(he3B[0]);
+    v0part.fDcaPi2PrimaryVertexXY = std::abs(piB[0]);
     v0part.fDcaHe32PrimaryVertex = he3DCA;
     v0part.fDcaPi2PrimaryVertex = piDCA;
     v0part.fDcaV0daughters = v0->GetDcaV0Daughters();

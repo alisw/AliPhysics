@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskEbyeChargeFlucPbPb_H
-#define AliAnalysisTaskEbyeChargeFlucPbPb_H
+#ifndef AliAnalysisTaskEbyeChargeFlucpPb_H
+#define AliAnalysisTaskEbyeChargeFlucpPb_H
 
 class TH1F;
 class TH1I;

@@ -35,11 +35,11 @@ public:
 
 private:
 
-  TH2D *fDTPCNumerator;        // Distance at the entrance to the TPC for real pairs
-  TH2D *fDTPCDenominator;      // Distance at the entrance to tht TPC for mixed pairs
-  TH2D *fRadDNumerator;        // Distance at the radius for real pairs
-  TH2D *fRadDDenominator;      // Distance at the radius for mixed pairs
-  Double_t fRadius;            // Radius at which to calculate the distance
+  TH2D *fDTPCNumerator;        ///< Distance at the entrance to the TPC for real pairs
+  TH2D *fDTPCDenominator;      ///< Distance at the entrance to tht TPC for mixed pairs
+  TH2D *fRadDNumerator;        ///< Distance at the radius for real pairs
+  TH2D *fRadDDenominator;      ///< Distance at the radius for mixed pairs
+  Double_t fRadius;            ///< Radius at which to calculate the distance
 
 #ifdef __ROOT__
   ClassDef(AliFemtoTPCInnerCorrFctn, 1)
@@ -48,4 +48,3 @@ private:
 
 
 #endif
-

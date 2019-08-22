@@ -3,6 +3,8 @@
 
 #include "vector"
 #include "AliAnalysisTaskSE.h"
+#include "AliESDv0KineCuts.h"
+#include "AliAODv0KineCuts.h"
 
 using namespace std;
 
@@ -26,9 +28,6 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
 
     void FillV0InfoESD();
     void FillV0InfoAOD();
-
-    void FillMCInfoESD();
-    void FillMCInfoAOD();
 
     Double_t PsiPair(AliAODv0 *v0, Float_t Bz);
     Double_t PhivPair(AliAODv0 *v0, Float_t Bz);
@@ -74,14 +73,14 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
       else return vec[size/2];
     }
 
-    AliKFParticle *CreateMotherParticle(const AliVTrack* const pdaughter, const AliVTrack* const ndaughter, Int_t pspec, Int_t nspec) const;
-
   protected:
     Float_t fMinPtCut;
     Float_t fMaxEtaCut;
     Float_t fMinTPCNsigmaEleCut;
     Float_t fMaxTPCNsigmaEleCut;
     AliESDtrackCuts *fESDtrackCutsGlobalNoDCA;
+    AliESDv0KineCuts *fESDv0KineCuts;
+    AliAODv0KineCuts *fAODv0KineCuts;
     TTree *fTree;
     AliPIDResponse *fPIDResponse;     //! PID response object
     AliQnCorrectionsManager *fFlowQnVectorMgr;
@@ -117,6 +116,8 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Bool_t fIsPileupFromSPDInMultBins;
     Bool_t fIsPileupMV;//SPD multi vertexer
 
+    vector<Float_t> fPileupTrackZA;
+    vector<Float_t> fPileupTrackZC;
     Int_t fTPCpileupMultiplicity[2];
     Float_t fTPCpileupZ[2];
 
@@ -193,13 +194,13 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     //V0 info
     vector<vector<vector<Float_t>>> fV0legMomentum;//N x 2 x 3
     vector<vector<Float_t>> fV0legPin;//N x 2
-    vector<Float_t> fV0Lxy;//N 
+    vector<Float_t> fV0Lxy;//N
     vector<Float_t> fV0alpha;//N 
     vector<Float_t> fV0qT;//N 
     vector<Float_t> fV0DCA;//N //DCA between daughters
     vector<Float_t> fV0PointingAngle;//N
-    vector<vector<Float_t>> fV0Chi2;//N x 4//Gamma K0S Lambda Anti-Lambda
-    vector<vector<Float_t>> fV0Mass;//N x 4//Gamma K0S Lambda Anti-Lambda
+    vector<Int_t> fV0Candidate;//N
+    vector<Float_t> fV0Mass;//N
     vector<vector<Float_t>> fV0legDCAxy;//N x 2
     vector<vector<Float_t>> fV0legDCAz;//N x 2
     vector<vector<vector<Bool_t>>> fV0legPointOnITSLayer;//N x 2 x 6
@@ -247,7 +248,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 12);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 13);
 
 };
 

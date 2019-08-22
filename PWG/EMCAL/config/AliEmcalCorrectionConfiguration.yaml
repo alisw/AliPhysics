@@ -66,6 +66,7 @@ CellEnergy:                                         # Cell Energy correction com
 CellBadChannel:                                     # Bad channel removal at the cell level component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    load1DBadChMap: false                           # Flag to load 1D bad channel map
     customBadChannelFilePath: ""                    # Full path to a custom bad channel OADB object
     acceptDead: false                               # Declare dead channels as good
     acceptHot: false                                # Declare hot channels as good
@@ -157,6 +158,7 @@ CellCombineCollections:                             # Utility task to combine tw
 Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    load1DBadChMap: false                           # Flag to load 1D bad channel map
     clusterizer: kClusterizerv3                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
     unfold: false                                   # Activate cluster unfolding
     unfoldRejectBelowThreshold: false               #  split (false-default) or reject (true) cell energy below threshold after UF

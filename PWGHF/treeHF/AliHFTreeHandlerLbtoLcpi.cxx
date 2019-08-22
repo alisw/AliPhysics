@@ -28,7 +28,11 @@ ClassImp(AliHFTreeHandlerLbtoLcpi);
 //________________________________________________________________
 AliHFTreeHandlerLbtoLcpi::AliHFTreeHandlerLbtoLcpi():
   AliHFTreeHandler(),
+  fCosThetaStar(-9999.),
+  fImpParProd(-9999.),
+  fcTau(-9999.),
   fInvMass_Lc(-9999.),
+  fImpPar_Lc(-9999.),
   fPt_Lc(-9999.),
   fY_Lc(-9999.),
   fEta_Lc(-9999.),
@@ -63,7 +67,11 @@ AliHFTreeHandlerLbtoLcpi::AliHFTreeHandlerLbtoLcpi():
 //________________________________________________________________
 AliHFTreeHandlerLbtoLcpi::AliHFTreeHandlerLbtoLcpi(int PIDopt):
   AliHFTreeHandler(PIDopt),
+  fCosThetaStar(-9999.),
+  fImpParProd(-9999.),
+  fcTau(-9999.),
   fInvMass_Lc(-9999.),
+  fImpPar_Lc(-9999.),
   fPt_Lc(-9999.),
   fY_Lc(-9999.),
   fEta_Lc(-9999.),
@@ -118,13 +126,16 @@ TTree* AliHFTreeHandlerLbtoLcpi::BuildTree(TString name, TString title)
   AddCommonDmesonVarBranches();
 
   //set Lb variables
-  //To add if any Lb-specific
+  fTreeVar->Branch("cos_t_star",&fCosThetaStar);
+  fTreeVar->Branch("imp_par_prod",&fImpParProd);
+  fTreeVar->Branch("ctau",&fcTau);
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d",iProng),&fImpParProng[iProng]);
   }
 
   //set Lc variables
   fTreeVar->Branch("inv_mass_Lc",&fInvMass_Lc);
+  fTreeVar->Branch("imp_par_Lc", &fImpPar_Lc);
   fTreeVar->Branch("pt_Lc",&fPt_Lc);
   fTreeVar->Branch("y_Lc",&fY_Lc);
   fTreeVar->Branch("eta_Lc",&fEta_Lc);
@@ -183,6 +194,9 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, unsigned int eventID,
   fCosPXY=((AliAODRecoDecayHF2Prong*)cand)->CosPointingAngleXY();
   fImpParXY=((AliAODRecoDecayHF2Prong*)cand)->ImpParXY();
   fDCA=((AliAODRecoDecayHF2Prong*)cand)->GetDCA();
+  fCosThetaStar=cand->CosThetaStar(0,5122,4122,211);
+  fImpParProd=cand->Prodd0d0();
+  fcTau=cand->Ct(5122);
 
   UInt_t prongs[2];
   prongs[0] = 4122; prongs[1] = 211;
@@ -192,7 +206,7 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, unsigned int eventID,
     fImpParProng[iProng]=candLc->Getd0Prong(iProng);
   }
   fImpParProng[3]=cand->Getd0Prong(1);
-  //To add if any more Lb-specific
+  fImpPar_Lc=cand->Getd0Prong(0);
 
   //Lc -> p K pi variables
   fPt_Lc=candLc->Pt();
@@ -213,9 +227,9 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, unsigned int eventID,
   fSumImpParProngs_Lc=candLc->Getd0Prong(0)*candLc->Getd0Prong(0)+candLc->Getd0Prong(1)*candLc->Getd0Prong(1)+candLc->Getd0Prong(2)*candLc->Getd0Prong(2);
   
   if(masshypo==1){ //pKpi
-    fInvMass=candLc->InvMassLcpKpi();
+    fInvMass_Lc=candLc->InvMassLcpKpi();
   } else{ //piKp
-    fInvMass=candLc->InvMassLcpiKp();
+    fInvMass_Lc=candLc->InvMassLcpiKp();
   }
   
   for(unsigned int iProng=0; iProng<3; iProng++) {

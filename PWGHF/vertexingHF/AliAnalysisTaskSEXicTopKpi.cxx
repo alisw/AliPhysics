@@ -318,7 +318,7 @@ void AliAnalysisTaskSEXicTopKpi::Init()
     fCutsXic->SetCuts(13,cutsArrayLctopKpi);
   }
   else{
-    
+    /*
     Double_t sigmaVtxMax[8]={0.09,0.09,0.05,0.035,0.035,0.03,0.03,0.025};
     Double_t sumd02[8]={0.0003,0.0003,0.0002,0.00015,0.00015,0.0001,0.,0.};
     if(fAnalysisType==0 || fAnalysisType==4){// assure mass range is large enough
@@ -335,9 +335,10 @@ void AliAnalysisTaskSEXicTopKpi::Init()
 	cutvalues[10][km]=sumd02[km];
       }
       fCutsXic->SetCuts(nvars,nptbins,cutvalues);
-      Printf("Xic Cuts modified to assure mass window is large enough, current cuts are:");
+      Printf("Xic Cuts modified to assure mass window is large enough, current cuts are:");*/
+      Printf("\n--- Adopted cuts ---");
       fCutsXic->PrintAll();
-    }
+    //}
   }
   
   if(fDebug>=0 || fSetTrackCutLcFilteringPP){// track cuts used for Lc filtering (in pp, 2018): need to set them to be sure that only tighter cuts than these are used
@@ -1817,10 +1818,16 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
   varPointer[20] = mass_piKp;
 
   // add info about weight to "convert" reconstructed true LC in Xic
-  if(flagMC!=1 || !p){  // generated particle associated to this reconstructed one is not a Lc or is absent
+  //if(flagMC!=1 || !p){  // generated particle associated to this reconstructed one is not a Lc or is absent
+  if(flagMC<0.5 || !p){  // generated particle associated to this reconstructed one is not a Lc or is absent
     varPointer[22]=1.;
   }
-  else if(flagMC==1 && p && array_MC){ // flagMC==1 means that the reconstructed particle is connected to a generated Lc
+  //
+  // flagMC==1 means that the reconstructed particle is connected to a generated Lc
+  // flagMC==4(5) means that the reconstructed particle is connected to a (non-)prompt generated Lc with found quark
+  //
+  //else if(flagMC==1 && p && array_MC){ // flagMC==1 means that the reconstructed particle is connected to a generated Lc
+  else if(flagMC>0.5 && flagMC<5.5 && p && array_MC){ 
     //Int_t index_firstProng = p->GetDaughter(0); // old
     Int_t index_firstProng = p->GetDaughterLabel(0);
     AliAODMCParticle *mc_firstProng=(AliAODMCParticle*)array_MC->At(index_firstProng);

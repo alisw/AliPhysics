@@ -98,7 +98,16 @@ AliFemtoEventReaderNanoAOD::AliFemtoEventReaderNanoAOD():
   fFlatCent(kFALSE),
   fPrimaryVertexCorrectionTPCPoints(kFALSE),
   fShiftPosition(0.),
-  fCovMatPresent(kTRUE)
+  fCovMatPresent(kTRUE),
+  f1DcorrectionsPions(0),
+  f1DcorrectionsKaons(0),
+  f1DcorrectionsProtons(0),
+  f1DcorrectionsPionsMinus(0),
+  f1DcorrectionsKaonsMinus(0),
+  f1DcorrectionsProtonsMinus(0),
+  f1DcorrectionsAll(0),
+  f1DcorrectionsLambdas(0),
+  f1DcorrectionsLambdasMinus(0)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -148,7 +157,16 @@ AliFemtoEventReaderNanoAOD::AliFemtoEventReaderNanoAOD(const AliFemtoEventReader
   fFlatCent(aReader.fFlatCent),
   fPrimaryVertexCorrectionTPCPoints(aReader.fPrimaryVertexCorrectionTPCPoints),
   fShiftPosition(aReader.fShiftPosition),
-  fCovMatPresent(kTRUE)
+  fCovMatPresent(kTRUE),
+  f1DcorrectionsPions(aReader.f1DcorrectionsPions),
+  f1DcorrectionsKaons(aReader.f1DcorrectionsKaons),
+  f1DcorrectionsProtons(aReader.f1DcorrectionsProtons),
+  f1DcorrectionsPionsMinus(aReader.f1DcorrectionsProtons),
+  f1DcorrectionsKaonsMinus(aReader.f1DcorrectionsKaonsMinus),
+  f1DcorrectionsProtonsMinus(aReader.f1DcorrectionsProtonsMinus),
+  f1DcorrectionsAll(aReader.f1DcorrectionsAll),
+  f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas),
+  f1DcorrectionsLambdasMinus(aReader.f1DcorrectionsLambdasMinus)
 {
   // copy constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -223,6 +241,16 @@ AliFemtoEventReaderNanoAOD &AliFemtoEventReaderNanoAOD::operator=(const AliFemto
   fShiftPosition = aReader.fShiftPosition;
   fCovMatPresent = aReader.fCovMatPresent;
 
+  f1DcorrectionsPions = aReader.f1DcorrectionsPions;
+  f1DcorrectionsKaons = aReader.f1DcorrectionsKaons;
+  f1DcorrectionsProtons = aReader.f1DcorrectionsProtons;
+  f1DcorrectionsPionsMinus = aReader.f1DcorrectionsProtons;
+  f1DcorrectionsKaonsMinus = aReader.f1DcorrectionsKaonsMinus;
+  f1DcorrectionsProtonsMinus = aReader.f1DcorrectionsProtonsMinus;
+  f1DcorrectionsAll = aReader.f1DcorrectionsAll;
+  f1DcorrectionsLambdas = aReader.f1DcorrectionsLambdas;
+  f1DcorrectionsLambdasMinus = aReader.f1DcorrectionsLambdasMinus;
+    
   return *this;
 }
 //__________________
@@ -727,6 +755,58 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   int kink_indexes[3] = { 0, 0, 0 };
   tFemtoTrack->SetKinkIndexes(kink_indexes);
 
+//Corrections
+  if (f1DcorrectionsPions) {
+    tFemtoTrack->SetCorrectionPion(f1DcorrectionsPions->GetBinContent(f1DcorrectionsPions->FindFixBin(tAodTrack->Pt())));
+    //cout<<"Setting pion correction to: "<<f1DcorrectionsPions->GetBinContent(f1DcorrectionsPions->FindFixBin(tAodTrack->Pt()))<<endl;
+  }
+  else {
+    tFemtoTrack->SetCorrectionPion(1.0);
+  }
+
+  if (f1DcorrectionsKaons) {
+    tFemtoTrack->SetCorrectionKaon(f1DcorrectionsKaons->GetBinContent(f1DcorrectionsKaons->FindFixBin(tAodTrack->Pt())));
+    //cout<<"Setting kaon correction to: "<<f1DcorrectionsKaons->GetBinContent(f1DcorrectionsKaons->FindFixBin(tAodTrack->Pt()))<<endl;
+  }
+  else {
+    tFemtoTrack->SetCorrectionKaon(1.0);
+  }
+
+  if (f1DcorrectionsProtons) {
+    tFemtoTrack->SetCorrectionProton(f1DcorrectionsProtons->GetBinContent(f1DcorrectionsProtons->FindFixBin(tAodTrack->Pt())));
+  }
+  else {
+    tFemtoTrack->SetCorrectionProton(1.0);
+  }
+
+  if (f1DcorrectionsPionsMinus) {
+    tFemtoTrack->SetCorrectionPionMinus(f1DcorrectionsPionsMinus->GetBinContent(f1DcorrectionsPionsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else {
+    tFemtoTrack->SetCorrectionPionMinus(1.0);
+  }
+
+  if (f1DcorrectionsKaonsMinus) {
+    tFemtoTrack->SetCorrectionKaonMinus(f1DcorrectionsKaonsMinus->GetBinContent(f1DcorrectionsKaonsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else {
+    tFemtoTrack->SetCorrectionKaonMinus(1.0);
+  }
+
+  if (f1DcorrectionsProtonsMinus) {
+    tFemtoTrack->SetCorrectionProtonMinus(f1DcorrectionsProtonsMinus->GetBinContent(f1DcorrectionsProtonsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else {
+    tFemtoTrack->SetCorrectionProtonMinus(1.0);
+  }
+
+  if (f1DcorrectionsAll) {
+    tFemtoTrack->SetCorrectionAll(f1DcorrectionsAll->GetBinContent(f1DcorrectionsAll->FindFixBin(tAodTrack->Pt())));
+  }
+  else {
+    tFemtoTrack->SetCorrectionAll(1.0);
+  }
+
   //
   /*******************************************************************/
   return tFemtoTrack;
@@ -938,6 +1018,24 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
    }
 
   tFemtoV0->SetOnFlyStatusV0(tAODv0->GetOnFlyStatus());
+
+
+  //corrections
+  if (f1DcorrectionsLambdas) {
+    tFemtoV0->SetCorrectionLambdas(f1DcorrectionsLambdas->GetBinContent(f1DcorrectionsLambdas->FindFixBin(tAODv0->Pt())));
+  }
+  else {
+    tFemtoV0->SetCorrectionLambdas(1.0);
+  }
+
+  if (f1DcorrectionsLambdasMinus) {
+    tFemtoV0->SetCorrectionLambdasMinus(f1DcorrectionsLambdasMinus->GetBinContent(f1DcorrectionsLambdasMinus->FindFixBin(tAODv0->Pt())));
+  }
+  else {
+    tFemtoV0->SetCorrectionLambdasMinus(1.0);
+  }
+  //*****************
+
   return tFemtoV0;
 }
 
@@ -1373,4 +1471,49 @@ void AliFemtoEventReaderNanoAOD::SetShiftPosition(Double_t dcagt)
 void AliFemtoEventReaderNanoAOD::SetPrimaryVertexCorrectionTPCPoints(bool correctTpcPoints)
 {
   fPrimaryVertexCorrectionTPCPoints = correctTpcPoints;
+}
+
+
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsPions(TH1D *h1)
+{
+  f1DcorrectionsPions = h1;
+}
+
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsKaons(TH1D *h1)
+{
+  f1DcorrectionsKaons = h1;
+}
+
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsProtons(TH1D *h1)
+{
+  f1DcorrectionsProtons = h1;
+}
+
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsPionsMinus(TH1D *h1)
+{
+  f1DcorrectionsPionsMinus = h1;
+}
+
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsKaonsMinus(TH1D *h1)
+{
+  f1DcorrectionsKaonsMinus = h1;
+}
+
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsProtonsMinus(TH1D *h1)
+{
+  f1DcorrectionsProtonsMinus = h1;
+}
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsAll(TH1D *h1)
+{
+  f1DcorrectionsAll = h1;
+}
+
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsLambdas(TH1D *h1)
+{
+  f1DcorrectionsLambdas = h1;
+}
+
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsLambdasMinus(TH1D *h1)
+{
+  f1DcorrectionsLambdasMinus = h1;
 }

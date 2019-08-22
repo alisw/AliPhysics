@@ -79,6 +79,7 @@ class AliForwardSettings : public TObject {
   Bool_t a5;
   TString fileName;
   Int_t fMaxConsequtiveStrips;
+  Bool_t standard_only;
 
   // return true if good event
 
@@ -179,28 +180,30 @@ class AliForwardSettings : public TObject {
   //   kW4ThreeTwoB
   // };
 
-  Int_t kW2A         = 1; // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-  Int_t kW2TwoA      = 2; // <w2*two>
-  Int_t kW4A         = 3; // <w4>
-  Int_t kW4FourA     = 4;  
-  Int_t kW2B         = 5; // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
-  Int_t kW2TwoB      = 6; // <w2*two>
-  Int_t kW4B         = 7; // <w4>
-  Int_t kW4FourB     = 8; // <w4*four>  
-  Int_t kW4FourTwoA  = 9;
-  Int_t kW4FourTwoB  = 10;
-  Int_t kW4ThreeTwoA = 11;
-  Int_t kW4ThreeTwoB = 12;
-  Int_t kWTwoTwoN    = 13; // Numerator of R_{n,n; 2}
-  Int_t kWTwoTwoD    = 14; // Denominator of R_{n,n; 2}
+  Int_t dW2A         = 1; // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+  Int_t dW2TwoA      = 2; // <w2*two>
+  Int_t dW2B         = 3; // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
+  Int_t dW2TwoB      = 4; // <w2*two>  Int_t kW4          = 3; // <w4>
+  Int_t dW4          = 5;
+  Int_t dW4Four      = 6;
+
+  Int_t dW4FourTwo   = 1;
+  Int_t dW4ThreeTwo  = 2;
+  Int_t dWTwoTwoN    = 3; // Numerator of R_{n,n; 2}
+  Int_t dWTwoTwoD    = 4; // Denominator of R_{n,n; 2}
+
+  Int_t rW2          = 1; // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+  Int_t rW2Two       = 2; // <w2*two>
+  Int_t rW4          = 3;
+  Int_t rW4Four      = 4;
 
 
   Int_t  kW2 =1;               // <w2>
   Int_t  kW2Two=2;             // <w2*two>
   Int_t  kW4=3;               // <w4>
   Int_t  kW4Four=4;           // <w4*four>
-  Int_t  kW4FourTwo=5;
-  Int_t  kW4ThreeTwo=6;
+  // Int_t  kW4FourTwo=5;
+  // Int_t  kW4ThreeTwo=6;
 
   // enum {
   //   kW2 =1,               // <w2>
