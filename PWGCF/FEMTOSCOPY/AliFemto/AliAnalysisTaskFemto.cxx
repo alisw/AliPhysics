@@ -43,7 +43,8 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
                                            TString aConfigParams,
                                            Bool_t aVerbose,
 					   Bool_t aGridConfig,
-					   TString aUserName):
+					   TString aUserName,
+					   TString aConfigFunName):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
@@ -81,7 +82,8 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   fGridConfig(aGridConfig),
   fConfigTMacro(NULL),
   fSaveConfigTMacro(NULL),
-  fUserName(aUserName)
+  fUserName(aUserName),
+  fconfigFunName(aConfigFunName)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -95,7 +97,8 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
                                            TString aConfigMacro,
                                            Bool_t aVerbose,
 					   Bool_t aGridConfig,
-					   TString aUserName):
+					   TString aUserName,
+					   TString aConfigFunName):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
@@ -133,7 +136,8 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   fGridConfig(aGridConfig),
   fConfigTMacro(NULL),
   fSaveConfigTMacro(false),
-  fUserName(aUserName)
+  fUserName(aUserName),
+  fconfigFunName(aConfigFunName)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -180,7 +184,9 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto &aFemtoTas
   f4DcorrectionsLambdasMinus(aFemtoTask.f4DcorrectionsLambdasMinus),
   fGridConfig(aFemtoTask.fGridConfig),
   fConfigTMacro(aFemtoTask.fConfigTMacro),
-  fSaveConfigTMacro(aFemtoTask.fSaveConfigTMacro)
+  fSaveConfigTMacro(aFemtoTask.fSaveConfigTMacro),
+  fUserName(aFemtoTask.fUserName),
+  fconfigFunName(aFemtoTask.fconfigFunName)
 {
   // copy constructor
 }
@@ -230,6 +236,8 @@ AliAnalysisTaskFemto &AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   fGridConfig = aFemtoTask.fGridConfig;
   fConfigTMacro = aFemtoTask.fConfigTMacro;
   fSaveConfigTMacro = aFemtoTask.fSaveConfigTMacro;
+  fUserName = aFemtoTask.fUserName;
+  fconfigFunName = aFemtoTask.fconfigFunName;
 
   return *this;
 }
@@ -564,13 +572,13 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
       printf("*** Connect to AliEn ***\n");
       TGrid::Connect("alien://");
       TFile *fileConfig = TFile::Open(fConfigMacro.Data());
-      fConfigTMacro = dynamic_cast<TMacro*>(fileConfig->Get("ConfigFemtoAnalysis")->Clone());
+      fConfigTMacro = dynamic_cast<TMacro*>(fileConfig->Get(fconfigFunName.Data())->Clone());
       LoadMacro(fConfigTMacro);
       fileConfig->Close();
     }
 
 
-  TString cmd = Form("ConfigFemtoAnalysis(%s)", fConfigParams.Data());
+  TString cmd = Form("%s(%s)", fconfigFunName.Data(),fConfigParams.Data());
   auto *femto_manager = reinterpret_cast<AliFemtoManager*>(gInterpreter->ProcessLine(cmd));
   if (femto_manager == nullptr) {
     AliError(Form("ConfigFemtoAnalysis function returned NULL (i.e. no manager)\n--- invoked function ---\n%s\n---", cmd.Data()));
