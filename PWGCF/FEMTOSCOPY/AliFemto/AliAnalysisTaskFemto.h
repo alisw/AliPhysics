@@ -71,12 +71,12 @@ public:
 
   /// Full Constructor - Set the name of the task, configuration macro filename
   /// and paramters, and optional verbosity flag.
-  AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose=kFALSE, Bool_t aGridConfig=kFALSE, TString aUserName = "");
+  AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose=kFALSE, Bool_t aGridConfig=kFALSE, TString aUserName = "", TString aConfigUserName ="ConfigFemtoAnalysis");
 
   /// Construct with task name, configuration filename, and verbosity flag.
   ///
   /// The paramters are set to the empty string.
-  AliAnalysisTaskFemto(TString name, TString aConfigMacro="ConfigFemtoAnalysis.C", Bool_t aVerbose=kFALSE, Bool_t aGridConfig=kFALSE, TString aUserName = "");
+  AliAnalysisTaskFemto(TString name, TString aConfigMacro="ConfigFemtoAnalysis.C", Bool_t aVerbose=kFALSE, Bool_t aGridConfig=kFALSE, TString aUserName = "", TString aConfigUserName ="ConfigFemtoAnalysis");
 
   /// Copy Constructor - should not be used
   AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask);
@@ -168,6 +168,7 @@ protected:
   TMacro *fConfigTMacro; //macro of the config file
   Bool_t fSaveConfigTMacro; //flag to save config TMacro in output list
   TString fUserName; //GRID user name
+  TString fconfigFunName; //name of the config fucntion (like "ConfigFemtoAnalysis")
 
   
   /// \cond CLASSIMP
@@ -214,7 +215,8 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto():
   fGridConfig(false),
   fConfigTMacro(NULL),
   fSaveConfigTMacro(false),
-  fUserName()
+  fUserName(),
+  fconfigFunName()
 {
   /* no-op */
 }
