@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/08/01
+//  Last Modified Date: 2019/08/22
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -2425,52 +2425,38 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 ((AliAODEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
             if (!Xicandidate)
                 continue;
-            temp1.SetXYZM(Xicandidate->MomXiX(), Xicandidate->MomXiY(),
-                          Xicandidate->MomXiZ(), Xicandidate->MassXi());
 
             AliAODTrack* pTrackXi = (AliAODTrack*)(Xicandidate->GetDaughter(0));
             AliAODTrack* nTrackXi = (AliAODTrack*)(Xicandidate->GetDaughter(1));
             AliAODTrack* bTrackXi =
                 (AliAODTrack*)(Xicandidate->GetDecayVertexXi()->GetDaughter(0));
 
-            
+            if (Xicandidate->ChargeXi() == -1) {  // Xi- has +proton, -pion
+                fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
+            } else {  // Xi+ has -proton, +pion
+                fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
+            }
+            fTPCNSigBachelorPion = GetTPCnSigma(
+                bTrackXi, AliPID::kPion);  // bachelor is always pion
+
+            temp1.SetXYZM(Xicandidate->MomXiX(), Xicandidate->MomXiY(),
+                          Xicandidate->MomXiZ(), Xicandidate->MassXi());
             for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
                 track1 = (AliVTrack*)trackpool.at(jt);
                 if (track1->GetID() == pTrackXi->GetID() ||
                     track1->GetID() == nTrackXi->GetID() ||
                     track1->GetID() == bTrackXi->GetID())
                     continue;
-                temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
-                              pionmass);
-                vecsum = temp1 + temp2;  // two pion vector sum
 
-                if ((Xicandidate->ChargeXi() == -1 && track1->Charge() == -1) ||
-                    (Xicandidate->ChargeXi() == +1 && track1->Charge() == +1))
-                    continue;  // check only unlike-sign
-
-                if ((vecsum.Rapidity() > fXi1530RapidityCut_high) ||
-                    (vecsum.Rapidity() < fXi1530RapidityCut_low))
-                    continue;  // rapidity cut
-
-                // Other default cuts
+                // PID Cut
                 Double_t fTPCNSigPion = GetTPCnSigma(track1, AliPID::kPion);
-                if ((abs(fTPCNSigPion) > fTPCNsigXi1530PionCut))
+                if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut)
                     continue;
-                // Xi PID
-                if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
-                    fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
-                } else {  // Xi+ has -proton, +pion
-                    fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
-                }
-                fTPCNSigBachelorPion = GetTPCnSigma(
-                    bTrackXi, AliPID::kPion);  // bachelor is always pion
-                if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut)
-                    continue;
-                if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut)
-                    continue;
-                if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
+                if ((abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut) ||
+                    (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) ||
+                    (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut))
                     continue;
 
                 // Xi1530Pion DCA zVetex Check
@@ -2486,10 +2472,11 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     continue;
                 if (fDCADist_Xi > fDCADist_XiDaughtersCut)
                     continue;
-
                 // DCA Lambda to PV Check
                 Double_t fDCADist_Lambda_PV =
                     fabs(Xicandidate->DcaV0ToPrimVertex());
+                Double_t fDCADist_Xi_PV = fabs(Xicandidate->DcaXiToPrimVertex(
+                    lPosPV[0], lPosPV[1], lPosPV[2]));
                 if (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)
                     continue;
 
@@ -2503,17 +2490,36 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     fLambdaCPA = Xicandidate->CosPointingAngle(lPosXi);
                 else
                     fLambdaCPA = Xicandidate->CosPointingAngle(lPosPV);
-                Double_t fXiCPA =
-                    Xicandidate->CosPointingAngleXi(lPosPV[0], lPosPV[1], lPosPV[2]);
+                Double_t fXiCPA = Xicandidate->CosPointingAngleXi(
+                    lPosPV[0], lPosPV[1], lPosPV[2]);
 
                 if (fLambdaCPA < fV0CosineOfPointingAngleCut)
                     continue;
                 if (fXiCPA < fCascadeCosineOfPointingAngleCut)
                     continue;
+
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->MassXi();
                 if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)
                     continue;
+
+                temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
+                              pionmass);
+                vecsum = temp1 + temp2;  // temp1 = cascade, temp2=pion
+                // Y cut
+                if ((vecsum.Rapidity() > fXi1530RapidityCut_high) ||
+                    (vecsum.Rapidity() < fXi1530RapidityCut_low))
+                    continue;
+                // Opening Angle - Not using in normal mode
+                if (fExoticFinder) {
+                    Double_t angle = temp1.Angle(temp2.Vect());
+                    if (abs(angle) < 0.0785398)  // 4.5 degree
+                        continue;
+                }
+                // Only use unlike-sign
+                if ((Xicandidate->ChargeXi() == -1 && track1->Charge() == -1) ||
+                    (Xicandidate->ChargeXi() == +1 && track1->Charge() == +1))
+                    continue; 
 
                 FillTHnSparse("hInvMass",
                               {(double)kDefaultOption, (double)kMixing,
