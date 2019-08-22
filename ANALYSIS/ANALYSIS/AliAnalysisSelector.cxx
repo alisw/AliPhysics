@@ -131,7 +131,7 @@ Bool_t AliAnalysisSelector::Notify()
    /// user if needed. The return value is currently not used.
 
    if (fAnalysis) return fAnalysis->Notify();
-   return kFALSE;
+   return kTRUE;
 }
 
 //______________________________________________________________________________

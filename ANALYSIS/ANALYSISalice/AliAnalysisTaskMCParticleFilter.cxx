@@ -78,7 +78,7 @@ Bool_t AliAnalysisTaskMCParticleFilter::Notify()
     TFile *curfile = tree->GetCurrentFile();
     if (!curfile) {
       Error("Notify","No current file");
-      return kFALSE;
+      return kFALSE; //PH What if we use memory resident tree??
     }
 
     TString fileName(curfile->GetName());
