@@ -625,7 +625,12 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	if (!Truth_Particle) continue;
 	//	if (TMath::Abs(Truth_Particle->Eta())>0.9) continue;
 	if (TMath::Abs(Truth_Particle->PdgCode())==fCandidatePDG){
-	  if (Truth_Particle->Y() < 0.2/15*Truth_Particle->Pt()*Truth_Particle->Pt()-1.9/15*Truth_Particle->Pt()-0.5 || Truth_Particle->Y() > -0.2/15*Truth_Particle->Pt()*Truth_Particle->Pt()+1.9/15*Truth_Particle->Pt()+0.5) continue;
+	  if (Truth_Particle->Pt() > 5.0){
+	    if (TMath::Abs(Truth_Particle->Y()) > 0.8) continue;
+	  }
+	  else{
+	    if(Truth_Particle->Y() < 0.2/15*Truth_Particle->Pt()*Truth_Particle->Pt()-1.9/15*Truth_Particle->Pt()-0.5 || Truth_Particle->Y() > -0.2/15*Truth_Particle->Pt()*Truth_Particle->Pt()+1.9/15*Truth_Particle->Pt()+0.5) continue;
+	  }
 	  std::pair<Int_t, Int_t> Inclusive_Jet_Truth_Labels;
 	  Inclusive_Jet_Truth_Labels.first=Truth_Particle->GetLabel(); 
 	  Inclusive_Jet_Truth_Labels.second=NTruthD; 
