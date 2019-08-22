@@ -285,6 +285,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         } else {
             fHistos->CreateTH1("hMult_QA", "", 1000, 0, 100, "s");
             fHistos->CreateTH1("hMult_QA_onlyMult", "", 1000, 0, 100, "s");
+            fHistos->CreateTH1("hMult_SkippedDataQA", "", 100, 0, 100, "s");
             fHistos->CreateTH1("hMult_ProcessedDataQA", "", 100, 0, 100, "s");
         }
         fHistos->CreateTH2("hPhiEta", "", 180, 0, 2 * pi, 40, -2, 2);
