@@ -4,8 +4,8 @@ TString names=("cut5_pt200");
 // TString generatorNameForMCSignal  = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6"; // neue MC
 // TString generatorNameForMCSignal  = "Hijing"; // neue MC
 // TString generatorNameForMCSignal  = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
-TString generatorNameForMCSignal  = "Hijing_0";
-// TString generatorNameForMCSignal  = "";
+// TString generatorNameForMCSignal  = "Hijing_0";
+TString generatorNameForMCSignal  = "";
 
 bool SetGeneratedSmearingHistos = false;
 
@@ -14,16 +14,16 @@ bool DoFourPairing = true;
 
 bool GetResolutionFromAlien = kTRUE;
 std::string resoFilename = "";
-std::string resoFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/resolution_PbPb2015_0080_deltaXvsP.root";
+std::string resoFilenameFromAlien = "/alice/cern.ch/user/f/feisenhu/data/resolution_PbPb2015_0080_deltaXvsP.root";
 
 bool DoCocktailWeighting = kFALSE;
 bool GetCocktailFromAlien = kTRUE;
 std::string CocktailFilename = "Cocktail_PbPb0080_5TeV_MotherPt.root";
-std::string CocktailFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/Cocktail_PbPb0080_5TeV_MotherPt.root";
+std::string CocktailFilenameFromAlien = "/alice/cern.ch/user/f/feisenhu/data/Cocktail_PbPb0080_5TeV_MotherPt.root";
 
 bool GetCentralityFromAlien = kFALSE;
 std::string centralityFilename = "";
-std::string centralityFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/centralityLHC16g1.root";
+std::string centralityFilenameFromAlien = "/alice/cern.ch/user/f/feisenhu/data/centralityLHC16g1.root";
 
 const Int_t triggerNames = AliVEvent::kMB;
 
@@ -42,10 +42,10 @@ const double maxGenEta =  1.5;
 // const double minEtaCut = -0.8;
 // const double maxEtaCut = 0.8;
 
-const double minPtCut = 0.;
+const double minPtCut = 0.02;
 const double maxPtCut = 100.;
-const double minEtaCut = -100;
-const double maxEtaCut = 100;
+const double minEtaCut = -0.8;
+const double maxEtaCut = 0.8;
 
 
 // binning of single leg histograms
@@ -73,11 +73,11 @@ const double maxThetaBin =  TMath::TwoPi();
 const int    stepsThetaBin = 60;
 
 const double minMassBin = 0;
-const double maxMassBin =  5;
-const int    stepsMassBin = 250;
+const double maxMassBin =  1;
+const int    stepsMassBin = 1000;
 const double minPairPtBin = 0;
 const double maxPairPtBin =  8;
-const int    stepsPairPtBin = 160;
+const int    stepsPairPtBin = 80;
 
 
 Int_t centrality = -1; // DUMMY!!!!!!! will be overwritten
@@ -259,9 +259,9 @@ std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
   eleDontCare.SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
 
 
-  // task->AddSingleLegMCSignal(eleFinalState);
+  task->AddSingleLegMCSignal(eleFinalState);
   // task->AddSingleLegMCSignal(partFinalState);
-  // task->AddSingleLegMCSignal(eleFinalStateFromPion);
+  task->AddSingleLegMCSignal(eleFinalStateFromPion);
   // task->AddSingleLegMCSignal(eleFinalStateFromD);
   // task->AddSingleLegMCSignal(eleFinalStateFromB);
   // task->AddSingleLegMCSignal(eleFinalStateFromSameMotherMeson);
@@ -286,8 +286,8 @@ std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
  std::vector<bool> DielectronsPairNotFromSameMother;
  DielectronsPairNotFromSameMother.push_back(true);
  DielectronsPairNotFromSameMother.push_back(true);
- // DielectronsPairNotFromSameMother.push_back(true);
- // DielectronsPairNotFromSameMother.push_back(false);
+ DielectronsPairNotFromSameMother.push_back(true);
+ DielectronsPairNotFromSameMother.push_back(false);
  // DielectronsPairNotFromSameMother.push_back(false);
  // DielectronsPairNotFromSameMother.push_back(false);
  // DielectronsPairNotFromSameMother.push_back(false);
@@ -461,6 +461,26 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
       ULSFourElePair2_FromEta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
       ULSFourElePair2_FromEta.SetGrandMotherPDGs(221, 221); //
 
+
+
+      // First Pair
+        AliDielectronSignalMC ULSFourElePair1_FinalState("ULSFourElePair1_FinalState","ULSFourElePair1_FinalState");
+        ULSFourElePair1_FinalState.SetLegPDGs(11,-11);
+        ULSFourElePair1_FinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        ULSFourElePair1_FinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+
+
+      // Second Pair
+        AliDielectronSignalMC ULSFourElePair2_Secondary_from_Photon("ULSFourElePair2_Secondary_from_Photon","ULSFourElePair2_Secondary_from_Photon");
+        ULSFourElePair2_Secondary_from_Photon.SetLegPDGs(11,-11);
+        ULSFourElePair2_Secondary_from_Photon.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        ULSFourElePair2_Secondary_from_Photon.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // FourElePair2_Secondary_from_Photon.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        // FourElePair2_Secondary_from_Photon.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+        // mother
+        ULSFourElePair2_Secondary_from_Photon.SetMothersRelation(AliDielectronSignalMC::kSame);
+        ULSFourElePair2_Secondary_from_Photon.SetMotherPDGs(22, 22); //
+
 //________________________________________________________
       // First Pair
         AliDielectronSignalMC ULSFourElePair1_FromPion("ULSFourElePair1_FromPion","ULSFourElePair1_FromPion");
@@ -486,8 +506,10 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
         ULSFourElePair2_FromPion.SetGrandMotherPDGs(111, 111); //
 
 //________________________________________________________
-      task->AddFourPairULSMCSignal(ULSFourElePair1_FromEta);
-      task->AddFourPairULSMCSignal(ULSFourElePair2_FromEta);
+      // task->AddFourPairULSMCSignal(ULSFourElePair1_FromEta);
+      // task->AddFourPairULSMCSignal(ULSFourElePair2_FromEta);
+      task->AddFourPairULSMCSignal(ULSFourElePair1_FinalState);
+      task->AddFourPairULSMCSignal(ULSFourElePair2_Secondary_from_Photon);
       // task->AddFourPairULSMCSignal(ULSFourElePair1_FromPion);
       // task->AddFourPairULSMCSignal(ULSFourElePair2_FromPion);
 
