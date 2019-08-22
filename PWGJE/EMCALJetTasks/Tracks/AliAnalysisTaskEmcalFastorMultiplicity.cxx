@@ -42,12 +42,14 @@ ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalFastorMultiplicity);
 using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalFastorMultiplicity::AliAnalysisTaskEmcalFastorMultiplicity() : AliAnalysisTaskEmcal(),
-                                                                                   fHistos(nullptr)
+                                                                                   fHistos(nullptr),
+                                                                                   fTriggerClass("INT7")
 {
 }
 
 AliAnalysisTaskEmcalFastorMultiplicity::AliAnalysisTaskEmcalFastorMultiplicity(const char *name) : AliAnalysisTaskEmcal(name, kTRUE),
-                                                                                                   fHistos(nullptr)
+                                                                                                   fHistos(nullptr),
+                                                                                                   fTriggerClass("INT7")
 {
 }
 
@@ -77,8 +79,19 @@ void AliAnalysisTaskEmcalFastorMultiplicity::UserCreateOutputObjects()
 
 bool AliAnalysisTaskEmcalFastorMultiplicity::IsTriggerSelected()
 {
-  // Select min. bias evetns for the moment
-  return (fInputHandler->IsEventSelected() & AliVEvent::kINT7);
+  if(fTriggerClass == "INT7")
+    return (fInputHandler->IsEventSelected() & AliVEvent::kINT7);
+  if(fTriggerClass.find("J") != std::string::npos) {
+    if(!(fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE))
+      return false;
+    return (fInputEvent->GetFiredTriggerClasses().Contains(fTriggerClass.data()));
+  }
+  if(fTriggerClass.find("G") != std::string::npos) {
+    if(!(fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA))
+      return false;
+    return (fInputEvent->GetFiredTriggerClasses().Contains(fTriggerClass.data()));
+  }
+  return false;
 }
 
 bool AliAnalysisTaskEmcalFastorMultiplicity::Run()

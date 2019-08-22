@@ -28,6 +28,7 @@
 #define __ALIANALYSISTASKEMCALFASTORMULTIPLICITY_H__
 
 #include "AliAnalysisTaskEmcal.h"
+#include <string>
 
 class THistManager;
 
@@ -43,6 +44,8 @@ public:
   AliAnalysisTaskEmcalFastorMultiplicity(const char *name);
   virtual ~AliAnalysisTaskEmcalFastorMultiplicity();
 
+  void SetTriggerClass(const char *name) { fTriggerClass = name; }
+
   static AliAnalysisTaskEmcalFastorMultiplicity *AddTaskEmcalFastorMultiplicity(const char *name);
 
 protected:
@@ -51,7 +54,8 @@ protected:
   bool Run();
 
 private:
-  THistManager *fHistos;
+  THistManager *fHistos;        //!<! Histogram manager
+  std::string fTriggerClass;    ///< Trigger class name
 
   AliAnalysisTaskEmcalFastorMultiplicity(const AliAnalysisTaskEmcalFastorMultiplicity &);
   AliAnalysisTaskEmcalFastorMultiplicity &operator=(const AliAnalysisTaskEmcalFastorMultiplicity &);
