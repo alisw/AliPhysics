@@ -20,19 +20,19 @@ AliFemtoEventCutEstimators::AliFemtoEventCutEstimators() :
   fEventMultEst1(),
   fEventMultEst2(),
   fEventMultEst3(),
-  fUseMultEst1(0), 
-  fUseMultEst2(0), 
-  fUseMultEst3(0), 
+  fUseMultEst1(0),
+  fUseMultEst2(0),
+  fUseMultEst3(0),
   fEventCentEst1(),
   fEventCentEst2(),
   fEventCentEst3(),
   fEventCentEst4(),
-  fUseCentEst1(0), 
-  fUseCentEst2(0), 
-  fUseCentEst3(0), 
+  fUseCentEst1(0),
+  fUseCentEst2(0),
+  fUseCentEst3(0),
   fUseCentEst4(0),
-  fNEventsPassed(0), 
-  fNEventsFailed(0) 
+  fNEventsPassed(0),
+  fNEventsFailed(0)
 {
   // Default constructor
   fEventMultEst1[0] = 0;  fEventMultEst1[1] = 10000;
@@ -44,7 +44,7 @@ AliFemtoEventCutEstimators::AliFemtoEventCutEstimators() :
   fEventCentEst4[0] = 0;  fEventCentEst4[1] = 1000.0;
   fVertZPos[0] = -100.0;
   fVertZPos[1] = 100.0;
-} 
+}
 //------------------------------
 AliFemtoEventCutEstimators::~AliFemtoEventCutEstimators(){
   // Default destructor
@@ -56,7 +56,7 @@ AliFemtoEventCutEstimators& AliFemtoEventCutEstimators::operator=(const AliFemto
     AliFemtoEventCut::operator=(c);
 
     fVerbose = c.fVerbose;
-    fUseMultEst1 = c.fUseMultEst1; fUseMultEst2 = c.fUseMultEst2; fUseMultEst3 = c.fUseMultEst3; 
+    fUseMultEst1 = c.fUseMultEst1; fUseMultEst2 = c.fUseMultEst2; fUseMultEst3 = c.fUseMultEst3;
     fUseCentEst1 = c.fUseCentEst1; fUseCentEst2 = c.fUseCentEst2; fUseCentEst3 = c.fUseCentEst3; fUseCentEst4 = c.fUseCentEst4;
 
     fNEventsPassed = 0;
@@ -81,7 +81,7 @@ bool AliFemtoEventCutEstimators::Pass(const AliFemtoEvent* event){
   // Pass events if they fall within the multiplicity and z-vertex
   // position range. Fail otherwise
   //  int mult =  event->NumberOfTracks();
-  
+
   bool goodEvent = true;
 
   if(fVerbose)
@@ -116,19 +116,17 @@ bool AliFemtoEventCutEstimators::Pass(const AliFemtoEvent* event){
   goodEvent ? fNEventsPassed++ : fNEventsFailed++ ;
   //   cout << "AliFemtoEventCutEstimators:: return : " << goodEvent << endl;
   //     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)) &&
-  return (goodEvent);
+  return goodEvent;
 }
-  //------------------------------
-AliFemtoString AliFemtoEventCutEstimators::Report(){
+
+//------------------------------
+AliFemtoString AliFemtoEventCutEstimators::Report()
+{
   // Prepare report
-  string stemp;
-  char ctemp[100];
-  snprintf(ctemp , 100, "\nMultiplicity:\t %d-%d",fEventMultEst2[0],fEventMultEst2[1]);
-  stemp = ctemp;
-  snprintf(ctemp , 100, "\nVertex Z-position:\t %E-%E",fVertZPos[0],fVertZPos[1]);
-  stemp += ctemp;
-  snprintf(ctemp , 100, "\nNumber of events which passed:\t%ld  Number which failed:\t%ld",fNEventsPassed,fNEventsFailed);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report("AliFemtoEventCutEstimators Report:");
+  report += Form("\nMultiplicity:\t %d-%d",fEventMultEst2[0],fEventMultEst2[1]);
+  report += Form("\nVertex Z-position:\t %E-%E",fVertZPos[0],fVertZPos[1]);
+  report += Form("\nNumber of events which passed:\t%ld  Number which failed:\t%ld",fNEventsPassed,fNEventsFailed);
+
+  return report;
 }

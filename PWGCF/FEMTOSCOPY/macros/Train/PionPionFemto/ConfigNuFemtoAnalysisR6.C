@@ -50,6 +50,7 @@
 #include "AliFemtoModelCorrFctnTrueQ3DByParent.h"
 #include "AliFemtoKtBinnedCorrFunc.h"
 #include "AliFemtoModelCorrFctnTrueQ.h"
+#include "AliFemtoCorrFctnInvMass.h"
 
 #include <TROOT.h>
 #include <TBase64.h>
@@ -169,6 +170,12 @@ struct MacroParams : public TNamed {
 
   bool do_ylm_cf { false };
   bool do_kt_ylm_cf { false };
+
+  bool do_minv_cf { false };
+  bool do_kt_minv_cf { false };
+
+  bool do_minvee_cf { false };
+  bool do_kt_minvee_cf { false };
 
   // monte-carlo correlation functions
   bool do_trueq_cf { false };
@@ -567,8 +574,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
                             ? new AliFemtoModelCorrFctnTrueQ3D("", obins, slbins, slbins, model_manager)
                             : AliFemtoModelCorrFctnTrueQ3D::Build()
                                   .NamePrefix("")
-                                  .BinCount(macro_config.q3d_bin_count)
-                                  .QRange(macro_config.q3d_maxq)
+                                  .PosOut(macro_config.q3d_bin_count, macro_config.q3d_maxq)
                                   .EnableExtraHists(macro_config.trueq3d_extra_bins)
                                   .EnableWeightedDenominators(macro_config.trueq3d_weighted_denoms)
                                   .Manager(model_manager).into_ptr();
@@ -641,6 +647,28 @@ ConfigFemtoAnalysis(const TString& param_str="")
                            .into_ptr();
 
         AddKtBinnedCorrFctn(*analysis, "KT_DEtaDPhiStar", kt_starcf, macro_config.kt_ranges);
+      }
+
+      if (macro_config.do_minv_cf) {
+        auto *minvcf = new AliFemtoCorrFctnInvMass("MINV", 3000, 0.0, 2.0, PionMass, PionMass);
+        analysis->AddCorrFctn(minvcf);
+      }
+
+      if (macro_config.do_kt_minv_cf) {
+        auto *minvcf = new AliFemtoCorrFctnInvMass("", 3000, 0.0, 2.0, PionMass, PionMass);
+        AddKtBinnedCorrFctn(*analysis, "KT_MINV", minvcf, macro_config.kt_ranges);
+      }
+
+      const double E_MASS = 0.000511;
+
+      if (macro_config.do_minvee_cf) {
+        auto *minvcf = new AliFemtoCorrFctnInvMass("MINVEE", 3000, 0.0, 2.0, E_MASS, E_MASS);
+        analysis->AddCorrFctn(minvcf);
+      }
+
+      if (macro_config.do_kt_minvee_cf) {
+        auto *minvcf = new AliFemtoCorrFctnInvMass("", 3000, 0.0, 2.0, E_MASS, E_MASS);
+        AddKtBinnedCorrFctn(*analysis, "KT_MINV_EE", minvcf, macro_config.kt_ranges);
       }
 
       if (macro_config.do_ylm_cf) {
