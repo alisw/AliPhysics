@@ -571,8 +571,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     int id1{-1}, id2{-1};
     tracklets->GetTrackletTrackIDs (iTracklet, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
     
-    if (id1 >= 0 && id2 >= 0)  /// Both points are used in a track
-      continue;
+    //if (id1 >= 0 && id2 >= 0)  /// Both points are used in a track
+    //  continue;
 
     if (std::abs(deltaPhi) > fMaxDeltaPhi)
       continue;
