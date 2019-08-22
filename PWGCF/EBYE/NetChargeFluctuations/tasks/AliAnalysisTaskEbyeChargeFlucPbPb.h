@@ -37,12 +37,12 @@ public:
     void                    SetAnalysisType(Bool_t IsMC = kTRUE){fAnalysisType = IsMC;};
     void                    FillMCEffMatrix();            // Prepare efficiency matrix
     AliEventCuts 	        fEventCuts;                   // Event cuts
-    void                    SetMaxTPCCluster(Int_t MaxTPCclus){fCutTPCMaxCls=MaxTPCclus;}
-    void                    SetNTPCCluster(Int_t TPCNclus){fCutTPCNCls=TPCNclus;}
-    void                    SetDCACut(Double_t DCAxyCut,Double_t DCAzCut){
-                            fCutDCAxy=DCAxyCut;
-                            fCutDCAz=DCAzCut;
-                             }
+//    void                    SetMaxTPCCluster(Int_t MaxTPCclus){fCutTPCMaxCls=MaxTPCclus;}
+//    void                    SetNTPCCluster(Int_t TPCNclus){fCutTPCNCls=TPCNclus;}
+//    void                    SetDCACut(Double_t DCAxyCut,Double_t DCAzCut){
+//                            fCutDCAxy=DCAxyCut;
+//                            fCutDCAz=DCAzCut;
+//                             }
     void                    Setzvtxcut(Int_t zvtxcut){fzvtxcut=zvtxcut;};
     void                    SettrackBit(Int_t trackBit){ftrackBit=trackBit;};
     
@@ -116,10 +116,10 @@ private:
    
     Int_t                   fzvtxcut;
     Int_t                   ftrackBit;
-    Int_t                   fCutTPCMaxCls; // no. of TPC crossed rows
-    Int_t                   fCutTPCNCls;  // TPC n clusters
-    Double_t                fCutDCAxy ;   // DCA xy cut
-    Double_t                fCutDCAz ;    //DCA z
+//    Int_t                   fCutTPCMaxCls; // no. of TPC crossed rows
+//    Int_t                   fCutTPCNCls;  // TPC n clusters
+//    Double_t                fCutDCAxy ;   // DCA xy cut
+//    Double_t                fCutDCAz ;    //DCA z
     
     
     Double_t                fEtaDown;
