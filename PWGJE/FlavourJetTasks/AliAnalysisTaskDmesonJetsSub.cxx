@@ -2567,9 +2567,13 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
           auto origin = IsPromptCharm(part, fMCContainer->GetArray());
      
       if(origin.first == kFromCharm){
-	if(TMath::Abs(part->Eta())<=0.9)EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);}
+         	if(part->Pt()>5) if(TMath::Abs(part->Y())<0.8) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);
+		if(part->Pt()<=5) if(TMath::Abs(part->Y())<(0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5)) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);}
         if(origin.first == kFromBottom){ 
-	  if(TMath::Abs(part->Eta())<=0.9)EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);}
+	 if(part->Pt()>5) if(TMath::Abs(part->Y())<0.8) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
+		if(part->Pt()<=5) if(TMath::Abs(part->Y())<(0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5)) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
+
+	    }
       
 	     }
 
