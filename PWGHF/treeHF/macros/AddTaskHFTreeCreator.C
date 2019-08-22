@@ -215,6 +215,10 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),AliAnalysisManager::kInputContainer);
     TString outputfile = AliAnalysisManager::GetCommonFileName();
     outputfile += ":PWGHF_TreeCreator";
+    if(fillTreeLb || fillTreeBs){
+      //Needed to run ITS2 production together with ITS2+ITS3 improver
+      outputfile += finDirname;
+    }
 
     AliAnalysisDataContainer *coutputEntries = mgr->CreateContainer(histoname,TH1F::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutputCounter = mgr->CreateContainer(countername,TH2F::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
