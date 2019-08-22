@@ -68,7 +68,7 @@ enum EEventHandlerFlags {
     virtual void         SetNeedField(Bool_t flag=kTRUE)  {}
     virtual TObject     *GetStatistics(Option_t *option="") const {return NULL;}
     //
-    virtual Bool_t       Notify() { return TNamed::Notify(); };
+    virtual Bool_t       Notify() { return kTRUE; } // By default use kTRUE to notify "no problem"
     // Security
     Bool_t               IsLocked() const {return TObject::TestBit(kHandlerLocked);}
     void                 Lock();
