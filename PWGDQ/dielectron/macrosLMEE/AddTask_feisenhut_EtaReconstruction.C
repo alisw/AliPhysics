@@ -25,7 +25,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
-      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
+      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/f/feisenhu/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
