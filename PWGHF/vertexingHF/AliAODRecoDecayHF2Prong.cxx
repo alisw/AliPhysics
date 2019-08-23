@@ -315,11 +315,11 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs, Int_t pdgabs3prong
   // loop on daughters and write the labels
   Int_t dgLabels[2] = {-1};
   
-  AliAODTrack *trk = (AliAODTrack*)GetDaughter(0);
+  AliAODTrack *trk = (AliAODTrack*)GetDaughter(1);
   if(!trk) return -1;
-  dgLabels[0] = trk->GetLabel();
+  dgLabels[1] = trk->GetLabel();
   
-  AliAODRecoDecayHF3Prong* daug3prong = (AliAODRecoDecayHF3Prong*)GetDaughter(1);
+  AliAODRecoDecayHF3Prong* daug3prong = (AliAODRecoDecayHF3Prong*)GetDaughter(0);
   if(!daug3prong) return -1;
   //Temp fix for not conserving momentum in ITS upgrade productions
   //Similar as daug3prong->MatchToMC(pdgabs3prong,mcArray,3,pdgDg3prong) but w/o mom conservation check
@@ -373,7 +373,9 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs, Int_t pdgabs3prong
         pySumDgs3pr += part3pr->Py();
         pzSumDgs3pr += part3pr->Pz();
         break;
-      } else break;
+      } else if(pdgMother3pr>pdgabs3prong || pdgMother3pr<10) {
+        break;
+      }
     }
     if(labMom3pr[i]==-1) return -1; // mother PDG not ok for this daughter
   } // end loop on daughters
@@ -402,7 +404,7 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs, Int_t pdgabs3prong
     AliWarning(Form("Mom. cons. not within 0.5%% perc for decay pdgabs = %d daughters = %d",pdgabs3prong,(Int_t)mother3pr->GetNDaughters()));
     return -1;
   }
-  dgLabels[1] = labMother3pr;
+  dgLabels[0] = labMother3pr;
   
   Int_t labMom[2] = {0, 0};
   Int_t lab, labMother, pdgMother, pdgPart;
@@ -445,7 +447,9 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs, Int_t pdgabs3prong
         pySumDgs += part->Py();
         pzSumDgs += part->Pz();
         break;
-      } else break;
+      } else if(pdgMother>pdgabs || pdgMother<10) {
+        break;
+      }
     }
     if (labMom[i] == -1) return -1; // mother PDG not ok for this daughter
   } // end loop on daughters
