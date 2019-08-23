@@ -200,4 +200,5 @@ Bool_t AliAnalysisTaskFlowExample::IsEventRejectedAddPileUp() const
     fMultCentLowCut.SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
     if(Double_t(multTrk) < fMultCentLowCut.Eval(v0Centr)) { return kTRUE; }
   }
+  return kFALSE;
 }
