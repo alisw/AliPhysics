@@ -202,6 +202,7 @@ fMC_NchEta08(0),
 fMC_NchEta10(0),
 fMC_NchEta14(0),
 fMC_b(0),
+fMC_Spherocity(0),
 
 //Histos
 fHistEventCounter(0),
@@ -362,6 +363,7 @@ fMC_NchEta08(0),
 fMC_NchEta10(0),
 fMC_NchEta14(0),
 fMC_b(0),
+fMC_Spherocity(0),
 
 //Histos
 fHistEventCounter(0),
@@ -595,6 +597,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fMC_NchEta14 =         new AliMultVariable("fMC_NchEta14");
     fMC_NchEta14->SetIsInteger(kTRUE);
     fMC_b =         new AliMultVariable("fMC_b");
+    fMC_Spherocity =         new AliMultVariable("fSpherocityMC");
     
     //Add to AliMultInput Object, will later bind to TTree object in a loop
     fInput->AddVariable( fAmplitude_V0A );
@@ -659,6 +662,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fInput->AddVariable( fMC_NchEta10 );
         fInput->AddVariable( fMC_NchEta14 );
         fInput->AddVariable( fMC_b );
+        fInput->AddVariable( fMC_Spherocity );
     }
     
     //Add Monte Carlo AliMultVariables for MC selection
@@ -1163,6 +1167,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fMC_NchEta08->SetValueInteger(0);
     fMC_NchEta10->SetValueInteger(0);
     fMC_b->SetValueInteger(0);
+    fMC_Spherocity->SetValue(0);
     
     if ( fkDebugIsMC ) {
         AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
@@ -1254,6 +1259,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
             fMC_NchEta10->SetValueInteger(lCounter_NchEta10);
             fMC_NchEta14->SetValueInteger(lCounter_NchEta14);
             fNPartINELgtONE->SetValue(npartINELgtONE);
+            
+            fMC_Spherocity->SetValue(GetTransverseSpherocityMC(stack));
         }
     }
     //------------------------------------------------
@@ -3178,3 +3185,51 @@ void AliMultSelectionTask::SetOADB ( TString lOADBfilename ){
     fileOADB -> Close() ;
 }
 
+//____________________________________________________________________
+Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliStack *lStack)
+{
+    Int_t lMinMulti = 10;
+    Int_t lNtracks = lStack->GetNtrack();
+    Int_t fMinimizingIndex = 0;
+    if(lNtracks < lMinMulti)
+        return -1;
+    Double_t stepSize=0.1;
+    Double_t RetTransverseSpherocity = 1000;
+    Double_t sumpt = 0;
+    Int_t steplimit = 360/stepSize;
+    for(Int_t i = 0; i < steplimit; ++i) {
+        //Divide the whole azimuth into segments and do the projection on these segments (below)
+        Double_t phiparam = ((TMath::Pi()) * i * stepSize) / 180;
+        Double_t nx = TMath::Cos(phiparam); // x component of a unitary vector n
+        Double_t ny = TMath::Sin(phiparam); // y component of a unitary vector n
+        
+        Double_t num = 0;
+        for(Int_t j = 0; j < lNtracks; j++) {
+            //get particle from stack
+            TParticle* particleOne = lStack->Particle(j);
+            if(!particleOne) continue;
+            if(!particleOne->GetPDG()) continue;
+            Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+            if(TMath::Abs(lThisCharge)<0.001) continue;
+            if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+            
+            Double_t gpt = particleOne -> Pt();
+            Double_t geta = particleOne -> Eta();
+            
+            if( gpt < 0.15 ) continue;
+            if( TMath::Abs(geta) > 0.80 ) continue; 
+            
+            Double_t fPx = particleOne -> Px();
+            Double_t fPy = particleOne -> Py();
+            num += TMath::Abs(ny*fPx - nx*fPy);
+            if(i==0)
+                sumpt += TMath::Sqrt(fPx*fPx + fPy*fPy);
+        }
+        
+        Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+        if(pFull < RetTransverseSpherocity)  //Select the lowest projection
+            RetTransverseSpherocity = pFull;
+    };
+    RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+    return RetTransverseSpherocity;
+};
