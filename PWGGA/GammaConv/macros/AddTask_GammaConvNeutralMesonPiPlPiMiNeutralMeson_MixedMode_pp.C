@@ -561,7 +561,6 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   } else if(trainConfig == 408)  { //Standard EMCal 13TeV + Triggers, testbeam nl
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0d200009327000008250404000","411790106f032220000","32c51070a","0103603p00000000","0453503000000000"); // PHI7
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0d200009327000008250404000","411790106f032220000","32c51070a","0103603p00000000","0453503000000000"); // INT7
-    
   } else {
     Error(Form("GammaConvNeutralMeson_MixedMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
