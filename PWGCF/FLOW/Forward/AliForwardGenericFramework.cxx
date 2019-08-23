@@ -159,9 +159,14 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
   TList* analysisList = static_cast<TList*>(outputList->FindObject("cumulants"));
 
   THnD* cumuRef = static_cast<THnD*>(analysisList->At(0));
-  THnD* standard_cumuDiff = static_cast<THnD*>(analysisList->At(1));
   THnD* mixed_cumuDiff = 0x0;
-  if (!fSettings.standard_only) mixed_cumuDiff = static_cast<THnD*>(analysisList->At(2));
+  THnD* standard_cumuDiff = 0x0;
+  if (!fSettings.standard_only) {
+    mixed_cumuDiff = static_cast<THnD*>(analysisList->At(2));
+  }
+  else {
+    standard_cumuDiff = static_cast<THnD*>(analysisList->At(1));
+  }
 
   // For each n we loop over the hists
   Double_t noSamples = static_cast<Double_t>(r);
@@ -229,32 +234,32 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
 
         Double_t y[7] = {Double_t(n-2),Double_t(ptn),noSamples, zvertex, eta, cent, Double_t(fSettings.dW2TwoB)};//kW2TwoB
+        if (fSettings.standard_only){
+          standard_cumuDiff->Fill(y, twodiff);
+          y[6] = Double_t(fSettings.dW2B);//kW2B
+          standard_cumuDiff->Fill(y, dn2diff);
 
-        standard_cumuDiff->Fill(y, twodiff);
-        y[6] = Double_t(fSettings.dW2B);//kW2B
-        standard_cumuDiff->Fill(y, dn2diff);
+          // A side
+          
+          twodiff = TwoDiff(n, -n, refEtaBinA, etaBin).Re();
+          dn2diff = TwoDiff(0,0, refEtaBinA, etaBin).Re();
 
-        // A side
-        
-        twodiff = TwoDiff(n, -n, refEtaBinA, etaBin).Re();
-        dn2diff = TwoDiff(0,0, refEtaBinA, etaBin).Re();
-
-        y[6] = Double_t(fSettings.dW2TwoA);
-        standard_cumuDiff->Fill(y, twodiff);
-        y[6] = Double_t(fSettings.dW2A);
-        standard_cumuDiff->Fill(y, dn2diff);
-        
+          y[6] = Double_t(fSettings.dW2TwoA);
+          standard_cumuDiff->Fill(y, twodiff);
+          y[6] = Double_t(fSettings.dW2A);
+          standard_cumuDiff->Fill(y, dn2diff);
+          
 
 
-        // four-particle cumulant
-        double fourdiff = FourDiff(n, n, -n, -n, refEtaBinA, refEtaBinB, etaBin,etaBin).Re(); // A is same side
-        double dn4diff = FourDiff(0,0,0,0, refEtaBinA, refEtaBinB, etaBin,etaBin).Re();
+          // four-particle cumulant
+          double fourdiff = FourDiff(n, n, -n, -n, refEtaBinA, refEtaBinB, etaBin,etaBin).Re(); // A is same side
+          double dn4diff = FourDiff(0,0,0,0, refEtaBinA, refEtaBinB, etaBin,etaBin).Re();
 
-        y[6] = Double_t(fSettings.dW4Four);//kW4FourB
-        standard_cumuDiff->Fill(y, fourdiff);
-        y[6] = Double_t(fSettings.dW4);//kW4B
-        standard_cumuDiff->Fill(y, dn4diff);
-
+          y[6] = Double_t(fSettings.dW4Four);//kW4FourB
+          standard_cumuDiff->Fill(y, fourdiff);
+          y[6] = Double_t(fSettings.dW4);//kW4B
+          standard_cumuDiff->Fill(y, dn4diff);
+        }
 
 
         if (!fSettings.standard_only){
