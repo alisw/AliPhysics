@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/08/22
+//  Last Modified Date: 2019/08/24
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -667,6 +667,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     // Event Mixing pool -----------------------------------------------------
     zbin = binZ.FindBin(fZ) - 1;           // Event mixing z-bin
     centbin = binCent.FindBin(fCent) - 1;  // Event mixing cent bin
+    if (isINEL)
+        centbin = 0;                       // for INEL case
     // -----------------------------------------------------------------------
 
     // Check tracks and casade, Fill histo************************************
