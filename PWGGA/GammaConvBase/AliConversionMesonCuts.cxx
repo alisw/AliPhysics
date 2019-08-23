@@ -3711,26 +3711,27 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           mass = 0.134699 + ( 0.001210 * pt );
           FWHM =   0.00560726 + ( (-0.000177656) * pt ) + (1.15805e-05 * pt * pt);
           sigma = FWHM/2.35;
-          if (sigma < 0.004 ) {sigma =0.004;}
-          else if (sigma > 0.02) {sigma =0.02;}
+          if (FWHM < 0.004 ) {FWHM =0.004;}
+          else if (FWHM > 0.02) {FWHM =0.02;}
+          sigma = FWHM/2.35;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 3: // PCM-PHOS
           mass = 0.134709 + (-0.000119899 * pt) + (3.6105e-06 *pt *pt);
           FWHM =   0.00389906 + ( (-5.38008e-05) * pt ) + (1.83739e-05 * pt * pt);
+          if (FWHM < 0.0025 ) {FWHM =0.0025;}
+          else if (FWHM > 0.02) {FWHM =0.02;}
           sigma = FWHM/2.35;
-          if (sigma < 0.0025 ) {sigma =0.0025;}
-          else if (sigma > 0.02) {sigma =0.02;}
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 4: // PCM-PCM
           mass = 0.134613 + (-0.000154418 * pt);
           FWHM =   0.00223215 + ( (0.000349362) * pt ) + (-1.13689e-05 * pt * pt);
+          if (FWHM < 0.001 ) {FWHM =0.001;}
+          else if (FWHM > 0.007) {FWHM =0.007;}
           sigma = FWHM/2.35;
-          if (sigma < 0.001 ) {sigma =0.001;}
-          else if (sigma > 0.007) {sigma =0.007;}
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
