@@ -558,11 +558,9 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0009b113","0d200009327000008250404000","411791106f032220000","32c51070a","0103603n00000000","0153503000000000"); // PHI7
   } else if(trainConfig == 407)  { //Standard EMCal 13TeV, testbeam nl
     cuts.AddCutHeavyMesonPCMCalo("00010113","0d200009327000008250404000","411790106f032220000","32c51070a","0103603n00000000","0153503000000000"); // INT7
-  } else if(trainConfig == 408)  { //Standard EMCal 13TeV + Triggers, testbeam nl
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0d200009327000008250404000","411790106f032220000","32c51070a","0103603n00000000","0153503000000000"); // INT7
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0d200009327000008250404000","411790106f032220000","32c51070a","0103603n00000000","0153503000000000"); // PHI7
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0d200009327000008250404000","411790106f032220000","32c51070a","0103603n00000000","0153503000000000"); // INT7
-    cuts.AddCutHeavyMesonPCMCalo("0009b113","0d200009327000008250404000","411790106f032220000","32c51070a","0103603n00000000","0153503000000000"); // PHI7
+  } else if(trainConfig == 408)  { //Standard EMCal 13TeV + Triggers, testbeam nl, no evt mixing
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0d200009327000008250404000","411790106f032220000","32c51070a","0103603n00000000","0453503000000000"); // PHI7
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0d200009327000008250404000","411790106f032220000","32c51070a","0103603n00000000","0453503000000000"); // INT7
     
   } else {
     Error(Form("GammaConvNeutralMeson_MixedMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
