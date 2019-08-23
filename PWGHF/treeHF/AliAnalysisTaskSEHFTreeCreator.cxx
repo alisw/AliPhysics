@@ -205,12 +205,17 @@ fFileName(""),
 fDirNumber(0),
 fnTracklets(0),
 fnTrackletsCorr(0),
+fnTrackletsCorrSHM(0),
 fRefMult(9.26),
+fRefMultSHM(9.26),
 fnV0A(0),
 fMultGen(0),
 fMultGenV0A(0),
 fMultGenV0C(0),
 fTriggerMask(0),
+fTriggerOnlineINT7(false),
+fTriggerOnlineHighMultSPD(false),
+fTriggerOnlineHighMultV0(false),
 fTriggerBitINT7(false),
 fTriggerBitHighMultSPD(false),
 fTriggerBitHighMultV0(false),
@@ -561,6 +566,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("n_tracklets", &fnTracklets);
   fTreeEvChar->Branch("V0Amult", &fnV0A);
   fTreeEvChar->Branch("trigger_bitmap", &fTriggerMask);
+  fTreeEvChar->Branch("trigger_online_INT7", &fTriggerOnlineINT7);
+  fTreeEvChar->Branch("trigger_online_HighMultSPD", &fTriggerOnlineHighMultSPD);
+  fTreeEvChar->Branch("trigger_online_HighMultV0", &fTriggerOnlineHighMultV0);
   fTreeEvChar->Branch("trigger_hasbit_INT7", &fTriggerBitINT7);
   fTreeEvChar->Branch("trigger_hasbit_HighMultSPD", &fTriggerBitHighMultSPD);
   fTreeEvChar->Branch("trigger_hasbit_HighMultV0", &fTriggerBitHighMultV0);
@@ -570,6 +578,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("trigger_hasclass_HighMultV0", &fTriggerClassHighMultV0m);
   fTreeEvChar->Branch("z_vtx_gen", &fzVtxGen);
   fTreeEvChar->Branch("n_tracklets_corr", &fnTrackletsCorr);
+  fTreeEvChar->Branch("n_tracklets_corr_shm", &fnTrackletsCorrSHM);
   fTreeEvChar->Branch("v0m", &fnV0M);
   fTreeEvChar->Branch("v0m_eq", &fnV0MEq);
   fTreeEvChar->Branch("v0m_corr", &fnV0MCorr);
@@ -1274,6 +1283,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   TProfile *estimatorAvg = fMultEstimatorAvg[GetPeriod(aod)];
   if (fCorrNtrVtx && estimatorAvg)
     fnTrackletsCorr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg, countTreta1, vtx->GetZ(), fRefMult));
+  TProfile *estimatorAvgSHM = fMultEstimatorAvgSHM[GetPeriod(aod)];
+  if (fCorrNtrVtx && estimatorAvgSHM)
+    fnTrackletsCorr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvgSHM, countTreta1, vtx->GetZ(), fRefMultSHM));
   
   //V0 multiplicities
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
@@ -1314,6 +1326,11 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fTriggerClassHighMultSPD = fTriggerClasses.Contains("CVHMSH2-B");
   fTriggerClassHighMultV0m = fTriggerClasses.Contains("CVHMV0M-B");
   
+  const auto triggerBits = aod->GetHeader()->GetL0TriggerInputs();
+  fTriggerOnlineINT7 = (triggerBits & (1  << 6) != 0) && (triggerBits & 1 << 5);
+  fTriggerOnlineHighMultSPD = (triggerBits & (1  << 7) != 0);
+  fTriggerOnlineHighMultV0 = (triggerBits & (1  << 9) != 0);
+
   fTreeEvChar->Fill();
   
   //get PID response
