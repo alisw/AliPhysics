@@ -92,10 +92,17 @@ public:
     
     void SetRefMult(Double_t refMult) { fRefMult = refMult; }
     Double_t GetRefMult() { return fRefMult; }
+    void SetRefMultSHM(Double_t refMult) { fRefMultSHM = refMult; }
+    Double_t GetRefMultSHM() { return fRefMultSHM; }
     void SetMultiplVsZProfile(std::string period, TProfile *hprof)
     {
         delete fMultEstimatorAvg[period];
         fMultEstimatorAvg[period] = new TProfile(*hprof);
+    }
+    void SetMultiplVsZProfileSHM(std::string period, TProfile *hprof)
+    {
+        delete fMultEstimatorAvgSHM[period];
+        fMultEstimatorAvgSHM[period] = new TProfile(*hprof);
     }
     std::string GetPeriod(const AliVEvent *ev);
     void SetCorrNtrVtx(bool corr = true) { fCorrNtrVtx = corr; }
@@ -324,12 +331,17 @@ private:
     unsigned int            fDirNumber;
     Int_t                   fnTracklets;                           /// number of tracklets
     Int_t                   fnTrackletsCorr;                       /// number of tracklets (corrected)
+    Int_t                   fnTrackletsCorrSHM;                    /// number of tracklets (corrected)
     Double_t                fRefMult;                              /// reference multiplicity
-    Int_t                   fnV0A;                                 /// V0A multiplicity 
+    Double_t                fRefMultSHM;                           /// reference multiplicity
+    Int_t                   fnV0A;                                 /// V0A multiplicity
     Int_t                   fMultGen;                              /// generated multiplicity around mid-rapidity [-1,1]
     Int_t                   fMultGenV0A;                           /// generated multiplicity in V0A range
     Int_t                   fMultGenV0C;                           /// generated multiplicity in V0C range
     ULong64_t               fTriggerMask;                          /// Trigger mask bitmap
+    Bool_t                  fTriggerOnlineINT7;                       /// Flag explicitly whether bitmap contains INT7
+    Bool_t                  fTriggerOnlineHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
+    Bool_t                  fTriggerOnlineHighMultV0;                 /// Flag explicitly whether bitmap kHighMultV0
     Bool_t                  fTriggerBitINT7;                       /// Flag explicitly whether bitmap contains INT7
     Bool_t                  fTriggerBitHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
     Bool_t                  fTriggerBitHighMultV0;                 /// Flag explicitly whether bitmap kHighMultV0
@@ -420,6 +432,7 @@ private:
     int fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
 
     std::map<std::string, TProfile*> fMultEstimatorAvg;
+    std::map<std::string, TProfile*> fMultEstimatorAvgSHM;
     bool fCorrNtrVtx;
     bool fCorrV0MVtx;
 
