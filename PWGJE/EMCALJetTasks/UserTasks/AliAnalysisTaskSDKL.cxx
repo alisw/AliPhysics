@@ -23,8 +23,8 @@
 ClassImp(AliAnalysisTaskSDKL)
 
 //________________________________________________________________________
-AliAnalysisTaskSDKL::AliAnalysisTaskSDKL() :
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskSDKL", kTRUE),
+AliAnalysisTaskSDKL::AliAnalysisTaskSDKL(const char *name) :
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fhAll(0),
   fhAllBackSub(0),
   fhRho(0),

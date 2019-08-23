@@ -30,7 +30,7 @@ struct split {
 class AliAnalysisTaskSDKL : public AliAnalysisTaskEmcalJet {
  public:
 
-  AliAnalysisTaskSDKL();
+  AliAnalysisTaskSDKL(const char *name = "AliAnalysisTaskSDKL") ;
   AliAnalysisTaskSDKL(const char *name, Int_t const backgroption);
   virtual ~AliAnalysisTaskSDKL();
 
