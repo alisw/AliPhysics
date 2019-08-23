@@ -112,8 +112,8 @@ Bool_t is_MSparse
         else task->SetEnergyCut(5);//eg2
     }
     if(trigger_index==6 || trigger_index==7){
-        if(config==29)task->SetEnergyCut(10);//eg1
-        if(config==30)task->SetEnergyCut(10);//eg1
+        if(config==29)task->SetEnergyCut(9.5);//eg1
+        if(config==30)task->SetEnergyCut(10.5);//eg1
         task->SetEnergyCut(10);//eg1
     }
     

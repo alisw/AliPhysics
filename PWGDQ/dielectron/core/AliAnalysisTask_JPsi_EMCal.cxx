@@ -193,11 +193,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fV0Mult_corr2(0)
 ,fSPDMult_corr(0)
 ,fRefMult(12.00)
-,gRandom(new TRandom3(0))
+,gRandom(new TRandom3(1607260721))
+//,gRandom(new TRandom3(0))
 
-,fRefMult_V0(139.0)
-,gRandom_V0(new TRandom3(0))
-
+,fRefMult_V0(103.5)
+,gRandom_V0(new TRandom3(1607260721))
+//,gRandom_V0(new TRandom3(0))
 
 ,fClus(0)
 ,fClus2(0)
@@ -487,10 +488,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fV0Mult_corr2(0)
 ,fSPDMult_corr(0)
 ,fRefMult(12.00)
-,gRandom(new TRandom3(0))
+,gRandom(new TRandom3(1607260721))
+//,gRandom(new TRandom3(0))
 
-,fRefMult_V0(139.0)
-,gRandom_V0(new TRandom3(0))
+,fRefMult_V0(103.5)
+,gRandom_V0(new TRandom3(1607260721))
+//,gRandom_V0(new TRandom3(0))
 
 ,fClus(0)
 ,fClus2(0)
@@ -769,7 +772,10 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 ///Output Tlist
 //Create TList
 	fOutputList = new TList();
-	fOutputList->SetOwner();	
+	fOutputList->SetOwner();
+    
+    
+    gRandom->SetSeed(1607260721);
 
 
 //Store the number of events
@@ -1258,7 +1264,9 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     //printf("Multiplicity from V0 = %d, multiplicity from SPD =%d, VertexZ = %f\n", fV0Mult, fSPDMult, fZvtx);
     
     
-    
+  
+    //printf("Seed is %u \n", gRandom->GetSeed());
+    //printf("Random is %f \n", gRandom->PoissonD(3));//fixed difference to check random generated
     
     //=======
     //correction for multiplicity
@@ -3368,6 +3376,7 @@ Double_t AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(TProfile2D* esti
     
     Double_t deltaM = 0;
     deltaM = uncorrectedNacc*(refMult/localAvg - 1);
+    
     
    
     
