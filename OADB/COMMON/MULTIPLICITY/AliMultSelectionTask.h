@@ -54,6 +54,7 @@ class AliMultSelection;
 class AliMultSelectionCuts;
 class AliOADBMultSelection;
 class AliOADBContainer;
+class AliStack; 
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -143,6 +144,8 @@ public:
     
     void SetOADB ( TString lOADBfilename );
     AliOADBContainer* GetOADB() {return fOADB;}; //for expert manipulation only
+    
+    static Double_t GetTransverseSpherocityMC( AliStack *lStack ); 
     
     // Static method for AddTaskMultSelection
     static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, TString lContainerAppend = "", const TString lMasterJobSessionFlag = "");
@@ -318,6 +321,7 @@ private:
     AliMultVariable *fMC_NchEta10;
     AliMultVariable *fMC_NchEta14;
     AliMultVariable *fMC_b;
+    AliMultVariable *fMC_Spherocity;
     
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
