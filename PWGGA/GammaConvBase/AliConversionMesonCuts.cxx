@@ -3710,7 +3710,6 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
         case 2: // PHOS-PHOS
           mass = 0.134699 + ( 0.001210 * pt );
           FWHM =   0.00560726 + ( (-0.000177656) * pt ) + (1.15805e-05 * pt * pt);
-          sigma = FWHM/2.35;
           if (FWHM < 0.004 ) {FWHM =0.004;}
           else if (FWHM > 0.02) {FWHM =0.02;}
           sigma = FWHM/2.35;
