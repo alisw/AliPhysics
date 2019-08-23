@@ -28,6 +28,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *ntracksMC            = "tracksMC",
                                            const char *nrhoMC               = "RhoMC",
                                            TString PathToWeights = 	"alien:///alice/cern.ch/user/k/kgarner/Weights_18_07_18.root",
+                                           TString PathToThresholds = "alien:///alice/cern.ch/user/k/kgarner/ThresholdHists_LHC16JJ.root",
                                           // TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
                                           // TString PathToJetProbabilityInput = "/home/katha/Uni/PhD/PhD/LinusCode/Anwendung/data/Binned_ResFct_XYSignificance_pp7TeV.root",
                                            TString PathToFlukaFactor="alien:///alice/cern.ch/user/k/kgarner/FlukaFactors_18_07_18.root",
@@ -141,6 +142,33 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         jetTask->SetFlukaFactor(g[0],g[1],g[2],g[3]);
         Printf("%s :: Weights written to analysis task.",taskname);
         if(fileFlukaCorrection) fileFlukaCorrection->Close();
+    }
+
+    // Load and setup Threshold values for Tagger
+    //==============================================================================
+    TFile* fileThresholds;
+    if( PathToThresholds.EqualTo("") ) {
+      } else {
+        fileThresholds=TFile::Open(PathToThresholds.Data());
+        if(!fileThresholds ||(fileThresholds&& !fileThresholds->IsOpen())){
+        printf("%s :: File with threshold values not found",taskname);
+        return 0x0;
+      }
+    }
+
+    Printf("%s :: File %s successfully loaded, setting up threshold functions.",taskname,PathToThresholds.Data());
+
+    if(fileThresholds){
+        printf("Going here *****************************\n");
+        TObjArray* threshfirst;
+        TObjArray* threshsec;
+        TObjArray* threshthird;
+        fileThresholds->GetObject("Prob_0.65",threshfirst);
+        fileThresholds->GetObject("Prob_0.54",threshsec);
+        fileThresholds->GetObject("Prob_0.50",threshthird);
+        printf("Pointers in the C file: %p, %p, %p\n",threshfirst, threshsec,threshthird);
+
+        jetTask->SetThresholds(threshfirst,threshsec,threshthird);
     }
 
     // Setup input containers

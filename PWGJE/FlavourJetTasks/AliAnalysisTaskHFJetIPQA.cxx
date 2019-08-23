@@ -81,6 +81,7 @@ fParam_Smear_Mean(0.),
 fGlobalVertex(kFALSE),
 fDoNotCheckIsPhysicalPrimary(kFALSE),
 fDoJetProb(kFALSE),
+fDoLundPlane(kFALSE),
 fGraphMean(nullptr),
 fGraphSigmaData(nullptr),
 fGraphSigmaMC(nullptr),
@@ -93,6 +94,22 @@ fGeant3FlukaAntiProton(nullptr),
 fGeant3FlukaLambda(nullptr),
 fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
+h1DThresholdsFirst(0),
+h1DThresholdsSecond(0),
+h1DThresholdsThird(0),
+h1DTrueBTagged(nullptr),
+h1DTrueBTaggedSingle1st(nullptr),
+h1DTrueBTaggedSingle2nd(nullptr),
+h1DTrueBTaggedSingle3rd(nullptr),
+h1DTrueBTaggedDouble(nullptr),
+h1DTrueBTaggedTripple(nullptr),
+h1DFalseBTagged(nullptr),
+h1DFalseBTaggedSingle1st(nullptr),
+h1DFalseBTaggedSingle2nd(nullptr),
+h1DFalseBTaggedSingle3rd(nullptr),
+h1DFalseBTaggedDouble(nullptr),
+h1DFalseBTaggedTripple(nullptr),
+kTagLevel(3),
 cCuts(0),
 fMCArray(nullptr),
 fMCEvent(nullptr),
@@ -160,6 +177,7 @@ fParam_Smear_Mean(0.),
 fGlobalVertex(kFALSE),
 fDoNotCheckIsPhysicalPrimary(kFALSE),
 fDoJetProb(kFALSE),
+fDoLundPlane(kFALSE),
 fGraphMean(nullptr),
 fGraphSigmaData(nullptr),
 fGraphSigmaMC(nullptr),
@@ -172,6 +190,22 @@ fGeant3FlukaAntiProton(nullptr),
 fGeant3FlukaLambda(nullptr),
 fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
+h1DThresholdsFirst(0),
+h1DThresholdsSecond(0),
+h1DThresholdsThird(0), 
+h1DTrueBTagged(nullptr),
+h1DTrueBTaggedSingle1st(nullptr),
+h1DTrueBTaggedSingle2nd(nullptr),
+h1DTrueBTaggedSingle3rd(nullptr),
+h1DTrueBTaggedDouble(nullptr),
+h1DTrueBTaggedTripple(nullptr),
+h1DFalseBTagged(nullptr),
+h1DFalseBTaggedSingle1st(nullptr),
+h1DFalseBTaggedSingle2nd(nullptr),
+h1DFalseBTaggedSingle3rd(nullptr),
+h1DFalseBTaggedDouble(nullptr),
+h1DFalseBTaggedTripple(nullptr),
+kTagLevel(3),
 cCuts(0),
 fMCArray(nullptr),
 fMCEvent(nullptr),
@@ -584,7 +618,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     else if(jetflavour==4)FillHist("fh1dJetRecPts",           jetpt, 1);    //this->fXsectionWeightingFactor );
                 }
 
-                RecursiveParents(jetrec, jetconrec);
+                if(fDoLundPlane)RecursiveParents(jetrec, jetconrec);
                
 
                 FillHist("fh1dJetRecEtaPhiAccepted",jetrec->Eta(),jetrec->Phi(), 1);   //this->fXsectionWeightingFactor );
@@ -631,13 +665,13 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
                     vp = static_cast<AliVParticle*>(jetrec->TrackAt(i, jetconrec->GetParticleContainer()->GetArray()));
                     if (!vp){
-                      Printf("ERROR: AliVParticle associated to constituent not found");
+                      AliError("AliVParticle associated to constituent not found");
                       continue;
                     }
 
                     AliVTrack *vtrack = dynamic_cast<AliVTrack*>(vp);
                     if (!vtrack) {
-                      printf("ERROR: Could not receive track%d\n", i);
+                      AliError(Form("Could not receive track%d\n", i));
                       continue;
                     }
 
@@ -873,10 +907,19 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 if((int)sImpParXYSig.size()>1) hasIPs[1]=kTRUE;
                 if((int)sImpParXYSig.size()>2) hasIPs[2]=kTRUE;
 
-                Double_t ipval [3] = {-9999};
-                if(hasIPs[0])ipval[0] =sImpParXYSig.at(0).first;
-                if(hasIPs[1])ipval[1] =sImpParXYSig.at(1).first;
-                if(hasIPs[2])ipval[2] =sImpParXYSig.at(2).first;
+                Double_t ipval [3] = {-9999.,-9999.,-9999.};
+                if(hasIPs[0]){
+                    ipval[0] =sImpParXYSig.at(0).first;
+                    //printf("HasIP0, ipval[0]=%f\n", ipval[0]);
+                  }
+                if(hasIPs[1]){
+                    ipval[1] =sImpParXYSig.at(1).first;
+                    //printf("HasIP1, ipval[1]=%f\n",ipval[1]);
+                  }
+                if(hasIPs[2]){
+                    ipval[2] =sImpParXYSig.at(2).first;
+                    //printf("HasIP2, ipval[2]=%f\n", ipval[2]);
+                  }
                 //if(hasIPs[0])printf("N=1: cursImParXY=%f, TrackWeight=%f,corridx=%i, pt=%f\n",sImpParXYSig.at(0).first, sImpParXYSig.at(0).second, sImpParXYSig.at(0).trackLabel, sImpParXYSig.at(0).trackpt);
                 //if(hasIPs[1])printf("N=2: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(1).first, sImpParXYSig.at(1).second, sImpParXYSig.at(1).trackLabel, sImpParXYSig.at(1).trackpt);
                 //if(hasIPs[2])printf("N=3: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(2).first, sImpParXYSig.at(2).second, sImpParXYSig.at(2).trackLabel, sImpParXYSig.at(2).trackpt);
@@ -893,6 +936,57 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                         if(!fIsMixSignalReady_n2 && hasIPs[1]) SetMixDCA(2,ipval[1] );
                         if(!fIsMixSignalReady_n3 && hasIPs[2]) SetMixDCA(3,ipval[2] );
                     }
+                }
+
+                int isBTaggedJet=DoJetTaggingThreshold(jetpt, hasIPs,ipval);
+                //printf("Receiving BTagged decision: %i\n", isBTaggedJet);
+                if(isBTaggedJet>0&&jetflavour==3&&hasIPs[0]){
+                    h1DTrueBTagged->Fill(jetpt);
+                    switch(isBTaggedJet){
+                      case 1:
+                        h1DTrueBTaggedSingle1st->Fill(jetpt);
+                        break;
+                      case 2:
+                        h1DTrueBTaggedSingle2nd->Fill(jetpt);
+                        break;
+                      case 3:
+                        h1DTrueBTaggedSingle3rd->Fill(jetpt);
+                        break;
+                      case 4:
+                        h1DTrueBTaggedDouble->Fill(jetpt);
+                        break;
+                      case 5:
+                        h1DTrueBTaggedTripple->Fill(jetpt);
+                        break;
+                    }
+
+                    //printf("################################ FoundJet with tagindex=%i!\n",isBTaggedJet);
+                }
+                if(isBTaggedJet&&jetflavour!=3&&hasIPs[0]&&jetflavour!=0){
+                    bool udg=kFALSE;
+                    h1DFalseBTagged->Fill(jetpt);
+
+                    switch(isBTaggedJet){
+                      case 1:
+                        h1DFalseBTaggedSingle1st->Fill(jetpt);
+                        break;
+                      case 2:
+                        h1DFalseBTaggedSingle2nd->Fill(jetpt);
+                        break;
+                      case 3:
+                        h1DFalseBTaggedSingle3rd->Fill(jetpt);
+                        break;
+                      case 4:
+                        h1DFalseBTaggedDouble->Fill(jetpt);
+                        break;
+                      case 5:
+                        h1DFalseBTaggedTripple->Fill(jetpt);
+                        break;
+                    }
+                    //printf("################################ Mistagged: flavour is=%i with tagindex=%i!\n",jetflavour,isBTaggedJet);
+                }
+                if(!isBTaggedJet&&jetflavour==3&&hasIPs[0]){
+                    //printf("################################ Missed one: flavour is=%i, ipval[1]=%f, ipval[2]=%f, ipval[3]=%f\n", jetflavour, ipval[0],ipval[2], ipval[2]);
                 }
 
 
@@ -1358,7 +1452,23 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   fHLundIterative = new THnSparseF("fHLundIterative",
                   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                   dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
-  fOutput->Add(fHLundIterative);
+  if(fDoLundPlane)fOutput->Add(fHLundIterative);
+
+
+  //Histograms for Tagging
+  h1DTrueBTagged=(TH1D*)AddHistogramm("h1DTrueBTagged","h1DTrueBTagged",500, 0, 500);
+  h1DTrueBTaggedSingle1st=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle1st","h1DTrueBTaggedSingle1st",500, 0, 500);
+  h1DTrueBTaggedSingle2nd=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle2nd","h1DTrueBTaggedSingle2nd",500, 0, 500);
+  h1DTrueBTaggedSingle3rd=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle3rd","h1DTrueBTaggedSingle3rd",500, 0, 500);
+  h1DTrueBTaggedDouble=(TH1D*)AddHistogramm("h1DTrueBTaggedDouble","h1DTrueBTaggedDouble",500, 0, 500);
+  h1DTrueBTaggedTripple=(TH1D*)AddHistogramm("h1DTrueBTaggedTripple","h1DTrueBTaggedTripple",500, 0, 500);
+
+  h1DFalseBTagged=(TH1D*)AddHistogramm("h1DFalseBTagged","h1DFalseBTagged",500, 0, 500);
+  h1DFalseBTaggedSingle1st=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle1st","h1DFalseBTaggedSingle1st",500, 0, 500);
+  h1DFalseBTaggedSingle2nd=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle2nd","h1DFalseBTaggedSingle2nd",500, 0, 500);
+  h1DFalseBTaggedSingle3rd=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle3rd","h1DFalseBTaggedSingle3rd",500, 0, 500);
+  h1DFalseBTaggedDouble=(TH1D*)AddHistogramm("h1DFalseBTaggedDouble","h1DFalseBTaggedDouble",500, 0, 500);
+  h1DFalseBTaggedTripple=(TH1D*)AddHistogramm("h1DFalseBTaggedTripple","h1DFalseBTaggedTripple",500, 0, 500);
 
   //Histograms for vertexing factor quicktest
   //fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_FULL","fh1dVERTEXFACTOR_VERTEXZ_FULL;;",400,-100,100,"s");
@@ -2871,14 +2981,14 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
               for(UInt_t i = 0; i < jet->GetNumberOfTracks(); i++) {//start trackloop jet
                 vp = static_cast<AliVParticle*>(jet->Track(i));
                 if (!vp){
-                  Printf("ERROR: AliVParticle associated to constituent not found\n");
+                  AliError("AliVParticle associated to constituent not found\n");
                   continue;
                 }
 
                 AliAODMCParticle * part = static_cast<AliAODMCParticle*>(vp);
 
                 if(!part){
-                    printf("ERROR: Finding no Part!\n");
+                    AliError("Finding no Part!\n");
                     return 0;
                 }       // if(!part->IsPrimary()) continue;
                 pdg = (abs(part->PdgCode()));
@@ -3504,6 +3614,75 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculatePSTrackPID(Double_t sign, Double_t s
     if(TMath::Abs(significance) >99) significance =99; //Limit to function definition range
     retval = sign * ((fResolutionFunction[20*species + 4*trclass +ptbin])).Eval(TMath::Abs(significance));
     return retval;
+}
+
+void AliAnalysisTaskHFJetIPQA::SetThresholds(TObjArray* threshfirst, TObjArray* threshsec, TObjArray* threshthird){
+    for(int iProbSet=0;iProbSet<3;iProbSet++){
+        h1DThresholdsFirst.push_back((TH1D*)threshfirst->At(iProbSet));
+        h1DThresholdsSecond.push_back((TH1D*)threshsec->At(iProbSet));
+        h1DThresholdsThird.push_back((TH1D*)threshthird->At(iProbSet));
+    }
+ }
+
+int AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval){
+  //threshold values for tracks with largest, second and third largest IP
+  int iJetPtBin=h1DThresholdsFirst[0]->FindBin(jetpt);
+  double IPthresN1[3];  //single tag, double tag, tripple tag
+  double IPthresN2[3];
+  double IPthresN3[3];
+
+  for(int iN=0;iN<3;iN++){
+    IPthresN1[iN]=h1DThresholdsFirst[iN]->GetBinContent(iJetPtBin);
+    IPthresN2[iN]=h1DThresholdsSecond[iN]->GetBinContent(iJetPtBin);
+    IPthresN3[iN]=h1DThresholdsThird[iN]->GetBinContent(iJetPtBin);
+  }
+
+  //printf("DoJetTaggingThreshold:\n");
+  //printf("      Single: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[0],IPthresN2[0], IPthresN3[0]);
+  //printf("      Double: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[1],IPthresN2[1], IPthresN3[1]);
+  //printf("      Tripple: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[2],IPthresN2[2], IPthresN3[2]);
+
+  if(hasIPs[2]){
+      //tripple tag
+      //printf("ipval[0]=%f, ipval[1]=%f, ipval[2]=%f\n", ipval[0],ipval[1],ipval[2]);
+      if(ipval[0]>IPthresN1[2]&&ipval[1]>IPthresN2[2]&&ipval[2]>IPthresN3[2]) return 5;
+      //double tag
+      if(kTagLevel<3){
+        //printf("Double catch\n");
+        if(ipval[2]>IPthresN3[1]&&ipval[1]>IPthresN2[1]) return 4;
+        if(ipval[2]>IPthresN3[1]&&ipval[0]>IPthresN1[1]) return 4;
+      }
+      //single tag
+      if(kTagLevel<2){
+        //printf("Single catch\n");
+        if(ipval[2]>IPthresN3[0]) return 3;
+      }
+  }
+
+  if(hasIPs[1]){
+      //printf("ipval[0]=%f, ipval[1]=%f", ipval[0],ipval[1]);
+      //double tag
+      if(kTagLevel<3){
+        //printf("Double catch\n");
+        if(ipval[0]>IPthresN1[1]&&ipval[1]>IPthresN2[1]) return 4;
+      }
+      //single tag
+      if(kTagLevel<2){
+        //printf("Single catch\n");
+        if(ipval[1]>IPthresN2[0]) return 2;
+      }
+  }
+
+  //single tag
+  if(hasIPs[0]){
+      //printf("ipval[0]=%f", ipval[0]);
+      if(kTagLevel<2){
+        //printf("Single catch\n");
+        if(ipval[0]>IPthresN1[0]) return 1;
+      }
+  }
+
+  return 0;
 }
 
 
