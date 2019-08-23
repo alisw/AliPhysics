@@ -152,6 +152,10 @@ public:
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
 
 
+    //JetTagging
+    int DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval);
+    void SetThresholds(TObjArray* threshfirst, TObjArray* threshsec, TObjArray* threshthird);
+    void setTagLevel(int taglevel){kTagLevel=taglevel;}
 
     Bool_t IsTrackAcceptedJP(AliVTrack *track, Int_t n);
     bool IsFromElectron(AliAODTrack *track);
@@ -178,17 +182,10 @@ public:
         fGlobalVertex = value;
     }
 
-   void setDoNotCheckIsPhysicalPrimary(Bool_t value)
-    {
-        fDoNotCheckIsPhysicalPrimary = value;
-    }
-     void setDoJetProb(Bool_t value)
-    {
-        fDoJetProb = value;
-    }
-    void useTreeForCorrelations(Bool_t value){
-        fUseTreeForCorrelations = value;
-    }
+    void setDoNotCheckIsPhysicalPrimary(Bool_t value){fDoNotCheckIsPhysicalPrimary = value;}
+    void setDoJetProb(Bool_t value){fDoJetProb = value;}
+    void setDoLundPlane(Bool_t dolundplane){fDoLundPlane=dolundplane;}
+    void useTreeForCorrelations(Bool_t value){fUseTreeForCorrelations = value;}
     //virtual Bool_t IsEventSelected();
     void FillCorrelations(bool bn[3], double v[3], double jetpt);
     void setFFillCorrelations(const Bool_t &value);
@@ -266,6 +263,8 @@ private:
     Bool_t   fGlobalVertex;//
     Bool_t fDoNotCheckIsPhysicalPrimary;//
     Bool_t fDoJetProb;
+    Bool_t fDoLundPlane;
+
     TGraph * fGraphMean;//!
     TGraph * fGraphSigmaData;//!
     TGraph * fGraphSigmaMC;//!
@@ -278,6 +277,27 @@ private:
     TGraph * fGeant3FlukaLambda;//!
     TGraph * fGeant3FlukaAntiLambda;//!
     TGraph * fGeant3FlukaKMinus;//!
+
+    //Histograms for tagging
+    std::vector<TH1D*> h1DThresholdsFirst; //0-> single probability, 1-> double probability, 2-> tripple probability
+    std::vector<TH1D*> h1DThresholdsSecond; //
+    std::vector<TH1D*> h1DThresholdsThird;//
+    TH1D* h1DTrueBTagged;//!
+    TH1D* h1DTrueBTaggedSingle1st;//!
+    TH1D* h1DTrueBTaggedSingle2nd;//!
+    TH1D* h1DTrueBTaggedSingle3rd;//!
+    TH1D* h1DTrueBTaggedDouble;//!
+    TH1D* h1DTrueBTaggedTripple;//!
+
+    TH1D* h1DFalseBTagged;//!
+    TH1D* h1DFalseBTaggedSingle1st;//!
+    TH1D* h1DFalseBTaggedSingle2nd;//!
+    TH1D* h1DFalseBTaggedSingle3rd;//!
+    TH1D* h1DFalseBTaggedDouble;//!
+    TH1D* h1DFalseBTaggedTripple;//!
+
+    int kTagLevel; //1: accept single splittings, 2: accept only 2+3, 3: accept only 3
+
     //! \brief cCuts
     TCanvas *cCuts; //
     //! \brief fMCArray
@@ -372,7 +392,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 37)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 38)
 };
 
 #endif
