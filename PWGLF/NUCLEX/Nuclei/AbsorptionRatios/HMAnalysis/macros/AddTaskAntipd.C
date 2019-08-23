@@ -1,4 +1,4 @@
-AliAnalysisTaskAntipd* AddTaskAntipd(TString name = "TaskAntiPD",
+AliAnalysisTaskAntipd* AddTaskAntipd( TString name = "TaskAntiPD",
                                      int filterBit = 256,
                                      float lowp = 0.1,
                                      float eta  = 0.8,
@@ -11,7 +11,7 @@ AliAnalysisTaskAntipd* AddTaskAntipd(TString name = "TaskAntiPD",
                                      float momTOFanaDeut = 1.4,
                                      float minITSnSigmaDeut = -2.0,
                                      float maxITSnSigmaDeut = 1e30,
-                                     const char* suffix = ""
+                                     const char* suffix =""
                                      )
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -49,14 +49,14 @@ AliAnalysisTaskAntipd* AddTaskAntipd(TString name = "TaskAntiPD",
     taskantipd->SetITSnSigmaRange(minITSnSigmaDeut,maxITSnSigmaDeut);
 
     // add task to the manager
+
     mgr->AddTask(taskantipd);
+    TString file = "AnalysisResults.root:";
+    TString OutputFile = Form("Output_%s",suffix);
 
-    TString list = "Output";
-    list += suffix;
-    TString file = "Output_MyTask.root";
 
-    // connect the manager to the task
-    mgr->ConnectInput(taskantipd,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskantipd,1,mgr->CreateContainer(list, TList::Class(), AliAnalysisManager::kOutputContainer, file));
+   mgr->ConnectInput(taskantipd,0,mgr->GetCommonInputContainer());
+   mgr->ConnectOutput(taskantipd,1,mgr->CreateContainer(OutputFile.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s%s",file.Data(),OutputFile.Data())));
+
     return taskantipd;
 }
