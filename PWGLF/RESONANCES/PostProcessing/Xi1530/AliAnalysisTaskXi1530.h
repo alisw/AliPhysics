@@ -59,6 +59,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void SetIsPrimaryMC(Bool_t isprimarymc) { IsPrimaryMC = isprimarymc; }
     void SetNoQA(Bool_t noQA) { fQA = noQA; }
     void SetXiCPAstudy(Bool_t input) { fCPAstudy = input; }
+    void SetINEL(Bool_t input) { isINEL = input; }
     // Set Functions for the cut study & Systematic study
     void SetTPCNsigXi1530PionCut(Int_t fSysOption, Double_t nXi1530PionCut) {
         if (fSysOption == 0)
@@ -339,6 +340,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t fSimplieEventCut = kFALSE;
     Bool_t IsNano = kFALSE;
     Bool_t fCPAstudy = kFALSE;
+    Bool_t isINEL = kFALSE;
     TString MultiplicityEstimator = "V0M";
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
@@ -346,7 +348,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     Double_t lPosPV[3];
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 27);
+    ClassDef(AliAnalysisTaskXi1530, 28);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -376,6 +378,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 25: Remove Fill event mix function
     // 26: try to update the version only.
     // 27: add Xi CPA study option // Change PV variable type
+    // 28: Add INEL variable
 };
 
 #endif
