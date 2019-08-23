@@ -106,7 +106,8 @@ AliMultSelectionTask::AliMultSelectionTask()
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), 
 fkDebug(kTRUE),
-fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
+fkDebugMCSpherocity(kFALSE), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fkSkipVertexZ(kFALSE),
 fDownscaleFactor(2.0), //2.0: no downscaling
@@ -203,6 +204,7 @@ fMC_NchEta10(0),
 fMC_NchEta14(0),
 fMC_b(0),
 fMC_Spherocity(0),
+fMC_SpherocityTracks(0),
 
 //Histos
 fHistEventCounter(0),
@@ -267,7 +269,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE),
 fkDebug(kTRUE),
-fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
+fkDebugMCSpherocity(kFALSE), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fkSkipVertexZ(kFALSE), 
 fDownscaleFactor(2.0), //2.0: no downscaling
@@ -364,6 +367,7 @@ fMC_NchEta10(0),
 fMC_NchEta14(0),
 fMC_b(0),
 fMC_Spherocity(0),
+fMC_SpherocityTracks(0),
 
 //Histos
 fHistEventCounter(0),
@@ -598,6 +602,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fMC_NchEta14->SetIsInteger(kTRUE);
     fMC_b =         new AliMultVariable("fMC_b");
     fMC_Spherocity =         new AliMultVariable("fSpherocityMC");
+    fMC_SpherocityTracks =         new AliMultVariable("fSpherocityTracksMC");
     
     //Add to AliMultInput Object, will later bind to TTree object in a loop
     fInput->AddVariable( fAmplitude_V0A );
@@ -663,6 +668,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fInput->AddVariable( fMC_NchEta14 );
         fInput->AddVariable( fMC_b );
         fInput->AddVariable( fMC_Spherocity );
+        fInput->AddVariable( fMC_SpherocityTracks );
     }
     
     //Add Monte Carlo AliMultVariables for MC selection
@@ -1260,7 +1266,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
             fMC_NchEta14->SetValueInteger(lCounter_NchEta14);
             fNPartINELgtONE->SetValue(npartINELgtONE);
             
-            fMC_Spherocity->SetValue(GetTransverseSpherocityMC(stack));
+            if ( fkDebugMCSpherocity ){
+                fMC_Spherocity->SetValue(GetTransverseSpherocityMC(stack));
+                fMC_SpherocityTracks->SetValue(GetTransverseSpherocityTracksMC(stack));
+            }
         }
     }
     //------------------------------------------------
@@ -3189,10 +3198,31 @@ void AliMultSelectionTask::SetOADB ( TString lOADBfilename ){
 Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliStack *lStack)
 {
     Int_t lMinMulti = 10;
-    Int_t lNtracks = lStack->GetNtrack();
+    Int_t lNtracks = 0;
     Int_t fMinimizingIndex = 0;
+    
+    //Reject based on multiplicity
+    for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
+        //get particle from stack
+        TParticle* particleOne = lStack->Particle(j);
+        if(!particleOne) continue;
+        if(!particleOne->GetPDG()) continue;
+        Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+        if(TMath::Abs(lThisCharge)<0.001) continue;
+        if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+        
+        Double_t gpt = particleOne -> Pt();
+        Double_t geta = particleOne -> Eta();
+        
+        if( gpt < 0.15 ) continue;
+        if( TMath::Abs(geta) > 0.80 ) continue;
+        
+        lNtracks ++;
+    }
+    
     if(lNtracks < lMinMulti)
         return -1;
+
     Double_t stepSize=0.1;
     Double_t RetTransverseSpherocity = 1000;
     Double_t sumpt = 0;
@@ -3204,7 +3234,7 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliStack *lStack)
         Double_t ny = TMath::Sin(phiparam); // y component of a unitary vector n
         
         Double_t num = 0;
-        for(Int_t j = 0; j < lNtracks; j++) {
+        for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
             //get particle from stack
             TParticle* particleOne = lStack->Particle(j);
             if(!particleOne) continue;
@@ -3232,4 +3262,92 @@ Double_t AliMultSelectionTask::GetTransverseSpherocityMC(AliStack *lStack)
     };
     RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
     return RetTransverseSpherocity;
+};
+
+Double_t AliMultSelectionTask::GetTransverseSpherocityTracksMC(AliStack *lStack)
+{
+    Int_t lMinMulti = 10;
+    Int_t lNtracks = 0;
+    Int_t fMinimizingIndex = 0;
+    
+    //Reject based on multiplicity
+    for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
+        //get particle from stack
+        TParticle* particleOne = lStack->Particle(j);
+        if(!particleOne) continue;
+        if(!particleOne->GetPDG()) continue;
+        Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+        if(TMath::Abs(lThisCharge)<0.001) continue;
+        if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+        
+        Double_t gpt = particleOne -> Pt();
+        Double_t geta = particleOne -> Eta();
+        
+        if( gpt < 0.15 ) continue;
+        if( TMath::Abs(geta) > 0.80 ) continue;
+        
+        lNtracks ++;
+    }
+    
+    
+    if(lNtracks < lMinMulti)
+        return -1;
+    
+    Double_t RetTransverseSpherocity = 1000;
+    Double_t sumpt = 0;
+    //const Double_t pt = 1;
+    for(Int_t i = 0; i < lStack->GetNtrack(); i++) {
+        //get particle from stack
+        TParticle* particleOne = lStack->Particle(i);
+        if(!particleOne) continue;
+        if(!particleOne->GetPDG()) continue;
+        Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+        if(TMath::Abs(lThisCharge)<0.001) continue;
+        if(! (lStack->IsPhysicalPrimary(i)) ) continue;
+        
+        Double_t gpt = particleOne -> Pt();
+        Double_t geta = particleOne -> Eta();
+        
+        if( gpt < 0.15 ) continue;
+        if( TMath::Abs(geta) > 0.80 ) continue;
+        
+        Double_t fPx = particleOne -> Px();
+        Double_t fPy = particleOne -> Py();
+        
+        Double_t pt = TMath::Sqrt(fPx*fPx + fPy*fPy);
+        Double_t nx =fPx / pt; // x component of a unitary vector n
+        Double_t ny =fPy / pt; // y component of a unitary vector n
+        
+        Double_t num = 0;
+        for(Int_t j = 0; j < lStack->GetNtrack(); j++) {
+            TParticle* particleTwo = lStack->Particle(j);
+            if(!particleTwo) continue;
+            if(!particleTwo->GetPDG()) continue;
+            if(TMath::Abs(particleTwo->GetPDG()->Charge()/3.)<0.001) continue;
+            if(! (lStack->IsPhysicalPrimary(j)) ) continue;
+            
+            Double_t gpt2 = particleTwo -> Pt();
+            Double_t geta2 = particleTwo -> Eta();
+            
+            if( gpt2 < 0.15 ) continue;
+            if( TMath::Abs(geta2) > 0.80 ) continue;
+            
+            Double_t fPx2 = particleTwo -> Px();
+            Double_t fPy2 = particleTwo -> Py();
+            num += TMath::Abs(ny*fPx2 - nx*fPy2);
+            
+            if(i==0)
+                sumpt += TMath::Sqrt(fPx2*fPx2 + fPy2*fPy2);
+        }
+        
+        Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+        if(pFull < RetTransverseSpherocity)  { //Select the lowest projection
+            RetTransverseSpherocity = pFull;
+            fMinimizingIndex = i;
+        };
+    };
+    
+    RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+    return RetTransverseSpherocity;
+    
 };
