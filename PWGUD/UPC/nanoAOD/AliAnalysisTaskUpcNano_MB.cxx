@@ -188,6 +188,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeJPsi ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
+  fTreeJPsi ->Branch("fFOCrossFiredChips", &fFOCrossFiredChips);
   if(isMC){
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
 	fTreeJPsi ->Branch("fTOFmask", &fTOFmask);
@@ -224,6 +225,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeRho ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
   fTreeRho ->Branch("fTriggers", &fTriggers, "fTriggers[8]/O");
+  fTreeRho ->Branch("fFOCrossFiredChips", &fFOCrossFiredChips);
   
   if(isMC){ 
     fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
@@ -332,7 +334,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 
   AliVEvent *fEvent = InputEvent();
   if(!fEvent) return;
-  
+
   fRunNumber = fEvent->GetRunNumber();
   TString trigger = fEvent->GetFiredTriggerClasses();
   
@@ -406,7 +408,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Int_t fADAdecision = fADdata->GetADADecision();
   Int_t fADCdecision = fADdata->GetADCDecision();
   if( fADAdecision != 0 || fADCdecision != 0) return;
-    
+
   fHistEvents->Fill(1);
   //cout<<"Event, tracks = "<<fEvent ->GetNumberOfTracks()<<endl; 
   
@@ -449,7 +451,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Double_t TrackPtALL[7]={0,0,0,0,0,0,0};
   Double_t MeanPt = -1;
   //Track loop
-  for(Int_t iTrack=0; iTrack<fEvent ->GetNumberOfTracks(); iTrack++) {
+  for(Int_t iTrack=0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
   Bool_t goodTPCTrack = kTRUE;
   Bool_t goodITSTrack = kTRUE;
     if(isESD){ 
@@ -494,7 +496,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	//cout<<"good its track"<<endl;
     	}
      
-	
     if(nGoodTracksTPC + nGoodTracksITS > 6) break;
     //if(nGoodTracksTPC > 4) break;
     }
@@ -579,16 +580,27 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   //Two track loop
   nHighPt = 0;
   fInEtaRec = kTRUE;
-  //if(nGoodTracksTPC == 2 && nGoodTracksLoose == 2 && nGoodTracksITS == 0){
-  if(nGoodTracksSPD == 2 && nGoodTracksTOF == 2){
+  Int_t crossedFO[4][2];
+  if(nGoodTracksTPC == 2 && nGoodTracksLoose == 2 && nGoodTracksITS == 0){
+  //if(nGoodTracksSPD == 2 && nGoodTracksTOF == 2){
   //if(nGoodTracksTPC == 2){
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
+
+	if(isESD){ 
+    	  AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
+	  if( !trk ) continue;
+	  crossedFO[0][iTrack] = trk->GetITSModuleIndex(0);
+	  crossedFO[1][iTrack] = trk->GetITSModuleIndex(1);
+	  crossedFO[2][iTrack] = trk->GetITSModuleIndex(6);
+	  crossedFO[3][iTrack] = trk->GetITSModuleIndex(7);
+	  }
+	  
     	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
 	
 	if(TMath::Abs(trk->Eta())>cutEta) fInEtaRec = kFALSE;
 	
 	if(trk->Pt() > 1.0) nHighPt++;
-
+	
 	Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
     	Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
 	Float_t fPIDTPCPion = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
@@ -610,6 +622,11 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
  	
 	dEdx[iTrack] = trk->GetTPCsignal();
     	}
+	
+  TBits fFOCrossedChips = SetCrossed(crossedFO);
+  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
+  TBits fFOFiredChips = mult->GetFastOrFiredChips();
+  fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
  
   fChannel = 0;
   if(qTrack[0]*qTrack[1]<0)fSign = -1;
@@ -712,6 +729,61 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   PostData(1, fOutputList);
 
 }//UserExec
+
+//_____________________________________________________________________________
+TBits AliAnalysisTaskUpcNano_MB::SetCrossed(Int_t spd[4][2]){
+  TBits crossed(1200);
+  Int_t chipId2;
+  if (spd[0][0]>0) { crossed.SetBitNumber(GetChipId(spd[0][0],chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[0][1]>0) { crossed.SetBitNumber(GetChipId(spd[0][1],chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[1][0]>0) { crossed.SetBitNumber(GetChipId(spd[1][0],chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[1][1]>0) { crossed.SetBitNumber(GetChipId(spd[1][1],chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[2][0]>0) { crossed.SetBitNumber(GetChipId(spd[2][0],chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[2][1]>0) { crossed.SetBitNumber(GetChipId(spd[2][1],chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[3][0]>0) { crossed.SetBitNumber(GetChipId(spd[3][0],chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[3][1]>0) { crossed.SetBitNumber(GetChipId(spd[3][1],chipId2)); crossed.SetBitNumber(chipId2); }
+  return crossed;
+}
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskUpcNano_MB::GetChipId(Int_t index, Int_t &chipId2, Bool_t debug){
+  Int_t status   = (index%1000000)/100000;
+  Int_t iModule  = index/1000000;           // 0 - 239
+  Int_t iPhi     = iModule/4;               // 0-19 - inner, 20-59 outer
+  Int_t iModuleZ = iModule%4;               // 0-3
+  Int_t iSign    = (index%100000)/10000;    // 1-4
+  Int_t signZ    = iPhi<20 ? (iSign%2==1 ? 1 : -1) : (iSign%2==0 ? 1 : -1); // 1 or -1
+  Int_t iX       = (index%10000)/100;       // ??
+  Int_t iZ       = index%100;               // 0-36 [mm]
+  Int_t signZiZ  = (36-signZ*iZ);
+  Int_t chipId   = iModule*5+signZiZ*5/72;
+  if (chipId<0) return 1200;
+  if (chipId>=1200) return 1201;
+  if (signZiZ<0) return 1202;
+  if (signZiZ>72) return 1203;
+  if (signZiZ==72 && chipId%20==0 && chipId>=400) return 1204;
+  chipId2=chipId;
+  
+  if (signZiZ==0  && chipId%20!=0)  chipId2=chipId-1;
+  if (signZiZ==72 && chipId%20!=19) chipId2=chipId+1;
+  if (signZiZ==13)  chipId2=chipId+1;
+  if (signZiZ==14)  chipId2=chipId+1;
+  if (signZiZ==15)  chipId2=chipId-1;
+  if (signZiZ==16)  chipId2=chipId-1;
+  if (signZiZ==27)  chipId2=chipId+1;
+  if (signZiZ==28)  chipId2=chipId+1;
+  if (signZiZ==29)  chipId2=chipId-1;
+  if (signZiZ==30)  chipId2=chipId-1;
+  if (signZiZ==42)  chipId2=chipId+1;
+  if (signZiZ==43)  chipId2=chipId+1;
+  if (signZiZ==44)  chipId2=chipId-1;
+  if (signZiZ==45)  chipId2=chipId-1;
+  if (signZiZ==56)  chipId2=chipId+1;
+  if (signZiZ==57)  chipId2=chipId+1;
+  if (signZiZ==58)  chipId2=chipId-1;
+  if (signZiZ==59)  chipId2=chipId-1;
+  if (debug) printf("%4i %4i %3i %3i %3i\n",chipId,chipId2,iX,signZiZ,iSign);
+  return chipId;
+}
 
 
 //_____________________________________________________________________________
