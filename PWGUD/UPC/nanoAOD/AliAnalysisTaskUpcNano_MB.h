@@ -11,6 +11,7 @@ class TTree;
 class TList;
 class TFile;
 class AliTOFTriggerMask;
+class TBits;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -29,6 +30,8 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   void SetIsESD(Bool_t ESD){isESD = ESD;}
   void SetCutEta(Float_t cut){cutEta = cut;}
   Double_t GetMedian(Double_t *daArray);
+  TBits SetCrossed(Int_t spd[4][2]);
+  Int_t GetChipId(Int_t index, Int_t &chipId2, Bool_t debug=0);
   void FillTree(TTree *t, TLorentzVector v);
  private:
  
@@ -74,11 +77,12 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH1D *hBCmod4;
   TH2D *hSPDeff;
   AliTOFTriggerMask *fTOFmask;
+  TBits fFOCrossFiredChips;
   
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 23); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 24); 
 };
 
 #endif
