@@ -115,6 +115,12 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fZNAEnergyAgainstEntriesH(0),
       fZNCEnergyBeforeTimingSelectionH(0),
       fZNAEnergyBeforeTimingSelectionH(0),
+      fZNCEnergyAgainstEntriesExtendedH(0),
+      fZNAEnergyAgainstEntriesExtendedH(0),
+      fZNCEnergyAgainstEntriesExtendedHv2(0),
+      fZNAEnergyAgainstEntriesExtendedHv2(0),
+      fZNCEnergyBeforeTimingSelectionExtendedH(0),
+      fZNAEnergyBeforeTimingSelectionExtendedH(0),
       fZNCEnergyCalibratedH(0),
       fZNAEnergyCalibratedH(0),
       fZNCEnergyUncalibratedH(0),
@@ -351,6 +357,12 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fZNAEnergyAgainstEntriesH(0),
       fZNCEnergyBeforeTimingSelectionH(0),
       fZNAEnergyBeforeTimingSelectionH(0),
+      fZNCEnergyAgainstEntriesExtendedH(0),
+      fZNAEnergyAgainstEntriesExtendedH(0),
+      fZNCEnergyAgainstEntriesExtendedHv2(0),
+      fZNAEnergyAgainstEntriesExtendedHv2(0),
+      fZNCEnergyBeforeTimingSelectionExtendedH(0),
+      fZNAEnergyBeforeTimingSelectionExtendedH(0),
       fZNCEnergyCalibratedH(0),
       fZNAEnergyCalibratedH(0),
       fZNCEnergyUncalibratedH(0),
@@ -828,6 +840,24 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   fZNAEnergyBeforeTimingSelectionH = new TH1F("fZNAEnergyBeforeTimingSelectionH", "fZNAEnergyBeforeTimingSelectionH", 20000, -10000, 40000);
   fOutputList->Add(fZNAEnergyBeforeTimingSelectionH);
+
+  fZNCEnergyAgainstEntriesExtendedH = new TH1F("fZNCEnergyAgainstEntriesExtendedH", "fZNCEnergyAgainstEntriesExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyAgainstEntriesExtendedH);
+
+  fZNAEnergyAgainstEntriesExtendedH = new TH1F("fZNAEnergyAgainstEntriesExtendedH", "fZNAEnergyAgainstEntriesExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyAgainstEntriesExtendedH);
+
+  fZNCEnergyAgainstEntriesExtendedHv2 = new TH1F("fZNCEnergyAgainstEntriesExtendedHv2", "fZNCEnergyAgainstEntriesExtendedHv2", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyAgainstEntriesExtendedHv2);
+
+  fZNAEnergyAgainstEntriesExtendedHv2 = new TH1F("fZNAEnergyAgainstEntriesExtendedHv2", "fZNAEnergyAgainstEntriesExtendedHv2", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyAgainstEntriesExtendedHv2);
+
+  fZNCEnergyBeforeTimingSelectionExtendedH = new TH1F("fZNCEnergyBeforeTimingSelectionExtendedH", "fZNCEnergyBeforeTimingSelectionExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNCEnergyBeforeTimingSelectionExtendedH);
+
+  fZNAEnergyBeforeTimingSelectionExtendedH = new TH1F("fZNAEnergyBeforeTimingSelectionExtendedH", "fZNAEnergyBeforeTimingSelectionExtendedH", 20000, -10000, 400000);
+  fOutputList->Add(fZNAEnergyBeforeTimingSelectionExtendedH);
 
   fZNCEnergyCalibratedH = new TH1F("fZNCEnergyCalibratedH", "fZNCEnergyCalibratedH", 20000, -10000, 40000);
   fOutputList->Add(fZNCEnergyCalibratedH);
@@ -2368,23 +2398,33 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   }
 
   if ( isZNCfired != 0 ) {
-    fZNCEnergyAgainstEntriesH->Fill(fZNCEnergy);
+    fZNCEnergyAgainstEntriesH        ->Fill(fZNCEnergy);
+    fZNCEnergyAgainstEntriesExtendedH->Fill(fZNCEnergy);
     if ( calibrated == 0 ) fZNCEnergyUncalibratedH->Fill(fZNCEnergy);
     if ( calibrated == 1 ) {
       fZNCEnergyCalibratedH          ->Fill( fZNCEnergy );
       fZNCEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNCTowerEnergyLR()[0] );
     }
   }
-  fZNCEnergyBeforeTimingSelectionH->Fill(fZNCEnergy);
+  fZNCEnergyBeforeTimingSelectionH        ->Fill(fZNCEnergy);
+  fZNCEnergyBeforeTimingSelectionExtendedH->Fill(fZNCEnergy);
+  if ( dataZDC->IsZNCfired() ) {
+    fZNCEnergyAgainstEntriesExtendedHv2->Fill(fZNCEnergy);
+  }
+  if ( dataZDC->IsZNAfired() ) {
+    fZNAEnergyAgainstEntriesExtendedHv2->Fill(fZNAEnergy);
+  }
   if ( isZNAfired != 0 ) {
-    fZNAEnergyAgainstEntriesH->Fill(fZNAEnergy);
+    fZNAEnergyAgainstEntriesH        ->Fill(fZNAEnergy);
+    fZNAEnergyAgainstEntriesExtendedH->Fill(fZNAEnergy);
     if ( calibrated == 0 ) fZNAEnergyUncalibratedH->Fill(fZNAEnergy);
     if ( calibrated == 1 ) {
       fZNAEnergyCalibratedH          ->Fill( fZNAEnergy );
       fZNAEnergyCalibratedHigherGainH->Fill( dataZDC->GetZNATowerEnergyLR()[0] );
     }
   }
-  fZNAEnergyBeforeTimingSelectionH->Fill(fZNAEnergy);
+  fZNAEnergyBeforeTimingSelectionH        ->Fill(fZNAEnergy);
+  fZNAEnergyBeforeTimingSelectionExtendedH->Fill(fZNAEnergy);
 
   /* - CHECKS for the timing:
      - Stricter timing window AND without timing window at all!
