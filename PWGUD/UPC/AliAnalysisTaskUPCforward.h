@@ -374,7 +374,9 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * requires help from the user and is more like
                                  * a guess...
                                  */
-        TH1F*                   fZNCEnergyAgainstEntriesH;         //!
+        TH1F*                   fZNCEnergyAgainstEntriesH;                 //!
+        TH1F*                   fZNCEnergyAgainstEntriesExtendedH;         //!
+        TH1F*                   fZNCEnergyAgainstEntriesExtendedHv2;       //!
 
                                 /**
                                  * This histogram records the energy distri-
@@ -385,21 +387,25 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * requires help from the user and is more like
                                  * a guess...
                                  */
-        TH1F*                   fZNAEnergyAgainstEntriesH;         //!
+        TH1F*                   fZNAEnergyAgainstEntriesH;                 //!
+        TH1F*                   fZNAEnergyAgainstEntriesExtendedH;         //!
+        TH1F*                   fZNAEnergyAgainstEntriesExtendedHv2;       //!
 
                                 /**
                                  * This histogram records the energy distri-
                                  * bution of the neutron ZDC. BEFORE timing
                                  * selection.
                                  */
-        TH1F*                   fZNCEnergyBeforeTimingSelectionH;         //!
+        TH1F*                   fZNCEnergyBeforeTimingSelectionH;                 //!
+        TH1F*                   fZNCEnergyBeforeTimingSelectionExtendedH;         //!
 
                                 /**
                                  * This histogram records the energy distri-
                                  * bution of the neutron ZDC. BEFORE timing
                                  * selection.
                                  */
-        TH1F*                   fZNAEnergyBeforeTimingSelectionH;         //!
+        TH1F*                   fZNAEnergyBeforeTimingSelectionH;                 //!
+        TH1F*                   fZNAEnergyBeforeTimingSelectionExtendedH;         //!
 
                                 /**
                                  * This histogram records the energy distri-
@@ -1534,7 +1540,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 38);
+        ClassDef(AliAnalysisTaskUPCforward, 39);
 };
 
 #endif
