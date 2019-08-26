@@ -2089,6 +2089,14 @@ void LMEECutLib::SetSignalsMC(AliDielectron* die){
   PiDalitz->SetCheckBothChargesMothers(kTRUE,kTRUE);
   die->AddSignalMC(PiDalitz);
 
+  // Dielectron pairs from same mother (excluding conversions)
+  AliDielectronSignalMC* pair_sameMother = new AliDielectronSignalMC("sameMother","sameMother");
+  pair_sameMother->SetLegPDGs(11,-11);
+  pair_sameMother->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pair_sameMother->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  pair_sameMother->SetMothersRelation(AliDielectronSignalMC::kSame);
+  pair_sameMother->SetMotherPDGs(22,22,kTRUE,kTRUE); // Exclude conversion
+  die->AddSignalMC(pair_sameMother);
   // Used pdg codes (defined in AliDielectronMC::ComparePDG)
   // 401: open charm meson
   // 404: charged open charmed mesons NO s quark
