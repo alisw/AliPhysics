@@ -208,7 +208,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePhi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreePhi ->Branch("fTriggers", &fTriggers, "fTriggers[9]/O");
   if(isMC) fTreePhi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
-  fOutputList->Add(fTreePhi);
+  //fOutputList->Add(fTreePhi);
   
   fTreeRho = new TTree("fTreeRho", "fTreeRho");
   fTreeRho ->Branch("fPt", &fPt, "fPt/F");
