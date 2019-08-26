@@ -707,6 +707,7 @@ public:
     kCentralitySPD,          // centrality using SPD (from second layer)
     //centrality determination for Run 2
     kCentralityNew,          //event centrality V0M
+    kCentralityV0Mcali,      //event centrality V0M, using the calibrated events
     kCentralityCL0,          //event centrality CL0
     kCentralityCL1,          //event centrality CL1
     kCentralitySPDClusters,          //event centrality SPD
@@ -2642,6 +2643,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   //Centrality Run2 - from 2015 on
   values[AliDielectronVarManager::kCentralityNew] = 0.;
+  values[AliDielectronVarManager::kCentralityV0Mcali] = 0.;
   values[AliDielectronVarManager::kCentralityCL0] = 0.;
   values[AliDielectronVarManager::kCentralityCL1] = 0.;
   values[AliDielectronVarManager::kCentralitySPDClusters]  = 0.;
@@ -2658,6 +2660,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   }
   else {
     values[AliDielectronVarManager::kCentralityNew]          = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+    values[AliDielectronVarManager::kCentralityV0Mcali]      = multSelection->GetMultiplicityPercentile("V0M",kTRUE);
     values[AliDielectronVarManager::kCentralityCL0]          = multSelection->GetMultiplicityPercentile("CL0",kFALSE);
     values[AliDielectronVarManager::kCentralityCL1]          = multSelection->GetMultiplicityPercentile("CL1",kFALSE);
     values[AliDielectronVarManager::kCentralitySPDClusters]  = multSelection->GetMultiplicityPercentile("SPDClustersCorr",kFALSE);
