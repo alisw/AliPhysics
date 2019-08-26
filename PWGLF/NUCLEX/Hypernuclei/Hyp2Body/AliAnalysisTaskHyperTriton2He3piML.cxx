@@ -320,6 +320,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   }
 
   fRHyperTriton.clear();
+  std::vector<int> he3TrackIndices;
 
   auto customNsigma = [this](double mom, double sig) -> double {
     const float bg = mom / AliPID::ParticleMass(AliPID::kHe3);
@@ -550,6 +551,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     v0part.fTOFmatchPi = HasTOF(piTrack);
     v0part.fMatter = (pTrack == he3Track);
     fRHyperTriton.push_back(v0part);
+    he3TrackIndices.push_back(aHyperTriton ? lKeyNeg : lKeyPos);
 
     fHistNsigmaPi->Fill(piTrack->Pt(), v0part.fTPCnSigmaPi);
     fHistNsigmaHe3->Fill(he3Vector.Pt(), v0part.fTPCnSigmaHe3);
@@ -559,32 +561,36 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   fRTracklets.clear();
   AliMultiplicity *tracklets = esdEvent->GetMultiplicity();
   int nTracklets = tracklets->GetNumberOfTracklets();
-  for (int iTracklet = 0; iTracklet < nTracklets; iTracklet++)
+  
+  
+  for (size_t iHyper{0}; iHyper < fRHyperTriton.size(); ++iHyper)
   {
-    double theta = tracklets->GetTheta(iTracklet);
-    double phi = tracklets->GetPhi(iTracklet);
-    double deltaTheta = tracklets->GetDeltaTheta(iTracklet);
-    double deltaPhi = tracklets->GetDeltaPhi(iTracklet);
-    fHistTrackletThetaPhi->Fill(theta, phi);
-    fHistTrackletDThetaDPhi->Fill(deltaTheta, deltaPhi);
-    
-    int id1{-1}, id2{-1};
-    tracklets->GetTrackletTrackIDs (iTracklet, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
-    
-    //if (id1 >= 0 && id2 >= 0)  /// Both points are used in a track
-    //  continue;
-
-    if (std::abs(deltaPhi) > fMaxDeltaPhi)
-      continue;
-    if (std::abs(deltaTheta) > fMaxDeltaTheta)
-      continue;
-
-    double cx = std::cos(phi) * std::sin(theta);
-    double cy = std::sin(phi) * std::sin(theta);
-    double cz = std::cos(theta);
-
-    for (const auto &v0 : fRHyperTriton)
+    const auto &v0 = fRHyperTriton[iHyper];
+    for (int iTracklet = 0; iTracklet < nTracklets; iTracklet++)
     {
+      double theta = tracklets->GetTheta(iTracklet);
+      double phi = tracklets->GetPhi(iTracklet);
+      double deltaTheta = tracklets->GetDeltaTheta(iTracklet);
+      double deltaPhi = tracklets->GetDeltaPhi(iTracklet);
+      fHistTrackletThetaPhi->Fill(theta, phi);
+      fHistTrackletDThetaDPhi->Fill(deltaTheta, deltaPhi);
+
+      int id1{-1}, id2{-1};
+      tracklets->GetTrackletTrackIDs (iTracklet, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
+
+      if (id1 >= 0 && id2 >= 0 && id1 != he3TrackIndices[iHyper] && id2 != he3TrackIndices[iHyper])  /// Both points are used in a track that is not the candidate He3
+       continue;
+
+      if (std::abs(deltaPhi) > fMaxDeltaPhi)
+        continue;
+      if (std::abs(deltaTheta) > fMaxDeltaTheta)
+        continue;
+
+      double cx = std::cos(phi) * std::sin(theta);
+      double cy = std::sin(phi) * std::sin(theta);
+      double cz = std::cos(theta);
+
+
       const double cosp = (v0.fDecayX * cx + v0.fDecayY * cy + v0.fDecayZ * cz) / std::sqrt(v0.fDecayX * v0.fDecayX + v0.fDecayY * v0.fDecayY + v0.fDecayZ * v0.fDecayZ);
       fHistTrackletCosP->Fill(cosp);
       if (cosp > fMinTrackletCosP)
