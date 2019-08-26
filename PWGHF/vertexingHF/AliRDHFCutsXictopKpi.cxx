@@ -353,8 +353,8 @@ Int_t AliRDHFCutsXictopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODE
     // From the cutobject, only the upper limit is set.
     // The lower limit is hardocoded, in order to discard candidates with 
     // mass lower than the Lc.
-    if(mXicpKpi-mLcPDG>fCutsRD[GetGlobalIndex(0,ptbin)] && (mLcPDG-mXicpKpi)>0.18) okXicpKpi = 0;
-    if(mXicpiKp-mLcPDG>fCutsRD[GetGlobalIndex(0,ptbin)] && (mLcPDG-mXicpiKp)>0.18) okXicpiKp = 0;
+    if(mXicpKpi-mLcPDG>fCutsRD[GetGlobalIndex(0,ptbin)] || (mLcPDG-mXicpKpi)>0.18) okXicpKpi = 0;
+    if(mXicpiKp-mLcPDG>fCutsRD[GetGlobalIndex(0,ptbin)] || (mLcPDG-mXicpiKp)>0.18) okXicpiKp = 0;
     if(!okXicpKpi && !okXicpiKp) return 0;
 
   switch (fCutsStrategy) {

@@ -1119,6 +1119,23 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
         Int_t pdgMother_checkQuark = AliVertexingHFUtils::CheckOrigin(mcArray,part,kTRUE);
         if(pdgMother_checkQuark==4) isTrueLambdaCorXic*=4;      // from quark c
         else if(pdgMother_checkQuark==5) isTrueLambdaCorXic*=5; // from quark b
+        //
+        // check if it is pKpi or piKp
+        //
+        AliAODTrack* trk_prong = (AliAODTrack*) io3Prong->GetDaughter(0);
+        Int_t prLabel = TMath::Abs(trk_prong->GetLabel());
+        if(prLabel>0){
+          AliAODMCParticle* partMC_prong = (AliAODMCParticle*) mcArray->At(prLabel);
+          Int_t pdg_prong = -1;
+          if(partMC_prong)  pdg_prong = TMath::Abs(partMC_prong->GetPdgCode());
+          if(pdg_prong==2212){      // 1st prong is a proton ---> pKpi
+            isTrueLambdaCorXic*=10;
+          }
+          else if(pdg_prong==211){  // 1st prong is a pion ---> piKp
+            isTrueLambdaCorXic*=20;
+          }
+        }
+        else{printf("---> Lc prong label %d\n",prLabel);}
       }
 	  }
 	  else {
@@ -1129,6 +1146,23 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
         Int_t pdgMother_checkQuark = AliVertexingHFUtils::CheckOrigin(mcArray,part,kTRUE);
         if(pdgMother_checkQuark==4) isTrueLambdaCorXic*=4;      // from quark c
         else if(pdgMother_checkQuark==5) isTrueLambdaCorXic*=5; // from quark b
+        //
+        // check if it is pKpi or piKp
+        //
+        AliAODTrack* trk_prong = (AliAODTrack*) io3Prong->GetDaughter(0);
+        Int_t prLabel = TMath::Abs(trk_prong->GetLabel());
+        if(prLabel>0){
+          AliAODMCParticle* partMC_prong = (AliAODMCParticle*) mcArray->At(prLabel);
+          Int_t pdg_prong = -1;
+          if(partMC_prong)  pdg_prong = TMath::Abs(partMC_prong->GetPdgCode());
+          if(pdg_prong==2212){      // 1st prong is a proton ---> pKpi
+            isTrueLambdaCorXic*=10;
+          }
+          else if(pdg_prong==211){  // 1st prong is a pion ---> piKp
+            isTrueLambdaCorXic*=20;
+          }
+        }
+        else{printf("---> Xic prong label %d\n",prLabel);}
       }
 	  }
 	  //  static Int_t CheckLcpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
@@ -1271,10 +1305,20 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     // fill the tree
     if(fFillTree){
       if(candPt<fpT_down){  // downsampling for low pT
-        if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down)     FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        //if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down)     FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down){
+          // fill only with true generated particles for MC
+          if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+          else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        }   
       } 
       else{   // downsampling for high pT
-        if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down)    FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        //if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down)    FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down){
+          // fill only with true generated particles for MC
+          if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+          else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        }
       }
     }
 
@@ -1822,12 +1866,20 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
   if(flagMC<0.5 || !p){  // generated particle associated to this reconstructed one is not a Lc or is absent
     varPointer[22]=1.;
   }
-  //
+  ///////////////////////////////////////////////////////////
   // flagMC==1 means that the reconstructed particle is connected to a generated Lc
   // flagMC==4(5) means that the reconstructed particle is connected to a (non-)prompt generated Lc with found quark
-  //
+  // ---
+  // UPDATE
+  // Information about generated pKpi (*=10) or piKp (*=20), therefore the generated Lc have
+  //  - flagMC = 40: prompt Lc decaying in pKpi
+  //  - flagMC = 80: prompt Lc decaying in piKp
+  //  - flagMC = 50: non-prompt Lc decaying in pKpi
+  //  - flagMC = 100: non-prompt Lc decaying in piKp
+  // ---
+  ///////////////////////////////////////////////////////////
   //else if(flagMC==1 && p && array_MC){ // flagMC==1 means that the reconstructed particle is connected to a generated Lc
-  else if(flagMC>0.5 && flagMC<5.5 && p && array_MC){ 
+  else if(flagMC>0.5 /*&& flagMC<5.5*/ && p && array_MC){ 
     //Int_t index_firstProng = p->GetDaughter(0); // old
     Int_t index_firstProng = p->GetDaughterLabel(0);
     AliAODMCParticle *mc_firstProng=(AliAODMCParticle*)array_MC->At(index_firstProng);
