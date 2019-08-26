@@ -414,7 +414,7 @@ identified. See the example below for an illustrative example:
 embeddingHelper->SetAutoConfigurePtHardBins();
 // Tells it the base path of where to write the auto configuration file.
 // It may be simpler and better to put this file on the test train machine instead.
-embeddingHelper->SetAutoConfigureBasePath("/alice/cern.ch/user/a/alitrain/");
+embeddingHelper->SetAutoConfigureBasePath("/home/alitrain/train-workdir/");
 // Identifies the type of train this train is running on.
 embeddingHelper->SetAutoConfigureTrainTypePath("PWGJE/Jets_EMC_PbPb/");
 // This value must be unique for your train run. Probably best to use your name!
@@ -440,7 +440,7 @@ as well as define the base and train type paths, such that all you need to do is
 
 # Optimization of Event Selection and Computing                                 {#emcEmbeddingEventSelection}
 
-**It is highly recommended to follow the advice of this section. It will often substantially improve performance!**
+It is **highly recommended** to follow the advice of this section. It will often substantially improve performance!
 
 It is important to take care when applying event selection during embedding. For example, if the embedding helper
 is run with `AliVEvent::kAny`, but your task is run with `AliVEvent::kAnyINT`, some good embedded events will be
@@ -492,7 +492,7 @@ eventCuts->SetCentralityRange(0, 10);
 Note that this alternative approach will **not** work with automatic setup of AliEventCuts!
 
 If wanting to run embedding on only a random subset of events, this can be done via SetRandomRejectionFactor(factor),
-where factor defines a rejection factor. The fraction of events kept is then equal to 1 / factor. This may be useful 
+where factor defines a rejection factor. The fraction of events kept is then equal to 1 / factor. This may be useful
 if only a fraction of events is needed in the analysis and one wishes to reduce the running time.
 
 # Note on jets and jet finding                                                  {#emcEmbeddingJetFinding}
@@ -505,7 +505,7 @@ follows:
 
 To apply an artificial efficiency to the embedded input objects, it is best to do so via the jet finder. There
 are two different approaches available: to apply a constant additional tracking efficiency, or to apply a
-pT-dependent additional tracking efficiency. For the constant case, one should use: 
+pT-dependent additional tracking efficiency. For the constant case, one should use:
 
 ~~~{.cxx}
 // Create the finder jet task as usual (called "jetTask")
