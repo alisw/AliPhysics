@@ -6260,8 +6260,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= 1.02231;
           }
         } else if( fCurrentMC==kPPb5T16DPMJet || fCurrentMC==k17g8a) {
-          if(fClusterType==1 || fClusterType==3 ){
-            energy /= FunctionNL_kSDM(energy, 0.938791, -3.1117, -0.329165) ;   //  2019 01 23
+          if(fClusterType==1 || fClusterType==3 || fClusterType== 4){
+            energy /= FunctionNL_kSDM(energy, 0.949519, -3.34992, -0.472659) ;   //  2019 08 26
           } else if (fClusterType==2){
             energy /= FunctionNL_kSDM(energy, 1.00712, -2.10075, -1.94799) ; // 2019 02 07
             energy /= FunctionNL_kSDM(energy, 0.988456, -4.34666, -0.188688) ; // 2019 02 14
