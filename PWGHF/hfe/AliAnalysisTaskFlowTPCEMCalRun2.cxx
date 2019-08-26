@@ -137,9 +137,11 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fHistPhoReco0(0),
 	fHistPhoReco1(0),
 	fHistPhoReco2(0),
-	fPi000_0(0),
-	fPi000_1(0),
-	fEta000(0),
+        fPi010(0),
+        fEta010(0),
+	fPi3050_0(0),
+	fPi3050_1(0),
+	fEta3050(0),
 	fHistPhoPi0(0),
 	fHistPhoEta(0),
 	fHistPhoPi01(0),
@@ -324,9 +326,11 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fHistPhoReco0(0),
 	fHistPhoReco1(0),
 	fHistPhoReco2(0),
-	fPi000_0(0),
-	fPi000_1(0),
-	fEta000(0),
+        fPi010(0),
+        fEta010(0),
+	fPi3050_0(0),
+	fPi3050_1(0),
+	fEta3050(0),
 	fHistPhoPi0(0),
 	fHistPhoEta(0),
 	fHistPhoPi01(0),
@@ -679,16 +683,24 @@ fHistPhoReco2 = new TH1F("fHistPhoReco2","P_{T} (HFE)",500,0,100);
 fOutputList->Add(fHistPhoReco2);
 
 //Pi0 Weight
-fPi000_0 = new TF1("fPi000_0","[0]*x/pow([1]+x/[2],[3])");
-fPi000_0->SetParameters(0.937028,0.674846,9.02659,10.);
-fPi000_1 = new TF1("fPi000_1","[0]*x/pow([1]+x/[2],[3])");
-fPi000_1->SetParameters(2.7883,0.,2.5684,5.63827);
+
+fPi010 = new TF1("fPi010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+fPi010->SetParameters(2.75146e-02,-1.33252e+00,3.53590e+00,1.04521e+00,3.15246e+00);  // HIJING + Data
+
+fPi3050_0 = new TF1("fPi3050_0","[0]*x/pow([1]+x/[2],[3])");
+fPi3050_0->SetParameters(0.937028,0.674846,9.02659,10.);
+fPi3050_1 = new TF1("fPi3050_1","[0]*x/pow([1]+x/[2],[3])");
+fPi3050_1->SetParameters(2.7883,0.,2.5684,5.63827);
 
 
 //Eta Weight
-fEta000 = new TF1("fEta000","[0]*x/pow([1]+x/[2]+x*x/[3],[4])",0,100);
-fEta000 -> SetParameters(5.87918e+01,2.14009e-01,4.03579e+00,2.38693e+00,2.52382e+00);
-//fOutputList -> Add(fEta000);
+
+fEta010 = new TF1("fEta010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+fEta010->SetParameters(2.50883e-02,-1.63341e+00,6.58911e+00,8.07446e-01,3.12257e+00);
+
+fEta3050 = new TF1("fEta3050","[0]*x/pow([1]+x/[2]+x*x/[3],[4])",0,100);
+fEta3050 -> SetParameters(5.87918e+01,2.14009e-01,4.03579e+00,2.38693e+00,2.52382e+00);
+//fOutputList -> Add(fEta3050);
 
 fHistPhoPi0 = new TH1F("fHistPhoPi0","total pi0 in sample;p_{T}(GeV/c)",600,0,60);
 fHistPhoPi0->Sumw2();
@@ -1843,22 +1855,34 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 	if(iEmbPi0){
 
-		cout << "pTmom=" << pTmom <<endl;
-                if(pTmom<4.0)
-                   {
-		    WeightPho = fPi000_0 -> Eval(pTmom);
-                   }
-                else
-                   {
-		    WeightPho = fPi000_1 -> Eval(pTmom);
-                   }
-
-	}
+           if(lPercentile>=0 && lPercentile<10.0)
+             {
+                WeightPho = fPi010->Eval(pTmom);
+             }
+    
+            if(lPercentile>=30.0 && lPercentile<50.0)
+             {
+              if(pTmom<4.0)
+                 {
+	          WeightPho = fPi3050_0 -> Eval(pTmom);
+                  }
+               else
+                  {
+	           WeightPho = fPi3050_1 -> Eval(pTmom);
+                  }
+              }
+	    }
 
 	if(iEmbEta){
 
-		WeightPho = fEta000 -> Eval(pTmom);
-
+           if(lPercentile>=0 && lPercentile<10.0)
+             {
+                WeightPho = fEta010->Eval(pTmom);
+             }
+           if(lPercentile>=30 && lPercentile<50.0)
+             {
+		WeightPho = fEta3050 -> Eval(pTmom);
+             }
 	}
 
 	//////// calculation of electron v2 at low pt using TPC and TOF info. //////
