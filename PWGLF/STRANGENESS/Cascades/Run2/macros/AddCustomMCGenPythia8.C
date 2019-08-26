@@ -15,6 +15,8 @@ AliGenerator* AddMCGenPythia8(TString lSystem = "pp", TString lConfig = "", Floa
         genP = CreatePythiaMonashMoreQCD(e_cms);
     if( lSystem.EqualTo("pp-ropes") )
         genP = CreatePythiaMonashRopes(e_cms);
+    if( lSystem.EqualTo("pp-shoving") )
+        genP = CreatePythiaMonashShoving(e_cms);
     
     return gener;
 }
@@ -114,7 +116,6 @@ AliGenerator* CreatePythiaMonashNoCR(Float_t e_cms)
 
 AliGenerator* CreatePythiaMonashRopes(Float_t e_cms)
 {
-    
     gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8/xmldoc"));
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
@@ -131,17 +132,95 @@ AliGenerator* CreatePythiaMonashRopes(Float_t e_cms)
     AliPythia8::Instance()->ReadString("Random:seed = 0");
     
     //============================================================
-    // Specific settings go here: color ropes - CHECK ME !
+    // Specific settings go here: color ropes
+    // updated 26th August 2019
+    // brand new configuration from Christian  Bierlich
+    //============================================================
     (AliPythia8::Instance())->ReadString("Beams:idA = 2212");
     (AliPythia8::Instance())->ReadString("Beams:idB = 2212");
-    (AliPythia8::Instance())->ReadString(Form("Tune:pp = %d",14));
-    (AliPythia8::Instance())->ReadString("Ropewalk:RopeHadronization = on"); //! Rope Hadronization framework
-    (AliPythia8::Instance())->ReadString("Ropewalk:doShoving = off"); //! Enable the string shoving mechanism
-    (AliPythia8::Instance())->ReadString("Ropewalk:doFlavour = on"); //! Enable the flavour ropes mechanism
-    (AliPythia8::Instance())->ReadString("Ropewalk:r0 = 0.5"); //! The transverse radius of a string, in units of fm
-    (AliPythia8::Instance())->ReadString("Ropewalk:m0 = 0.2"); //! Imposed lower mass cutoff
-    (AliPythia8::Instance())->ReadString("Ropewalk:beta = 0.1"); //! This parameter controls how large a fraction of the parameter will scale with string tension
-    (AliPythia8::Instance())->ReadString("PartonVertex:setVertex = on"); //! Enabling setting of vertex information.
+    (AliPythia8::Instance())->ReadString(Form("Tune:pp = %d",14)); //should be default, but ok
+
+    // QCD based CR
+    (AliPythia8::Instance())->ReadString("MultiPartonInteractions:pT0Ref = 2.15");
+    (AliPythia8::Instance())->ReadString("BeamRemnants:remnantMode = 1");
+    (AliPythia8::Instance())->ReadString("BeamRemnants:saturation = 5");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:mode = 1");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowDoubleJunRem = off");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:m0 = 0.3");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowJunctions = on");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:junctionCorrection = 1.2");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationMode = 2");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationPar = 0.18");
+    (AliPythia8::Instance())->ReadString("Ropewalk:RopeHadronization = on");
+    
+    (AliPythia8::Instance())->ReadString("Ropewalk:doShoving = on");
+    (AliPythia8::Instance())->ReadString("Ropewalk:tInit = 1.5"); // Propagation time
+    (AliPythia8::Instance())->ReadString("Ropewalk:deltat = 0.05");
+    (AliPythia8::Instance())->ReadString("Ropewalk:tShove 0.1");
+    (AliPythia8::Instance())->ReadString("Ropewalk:gAmplitude = 0."); // Set shoving strength to 0 explicitly
+    
+    (AliPythia8::Instance())->ReadString("Ropewalk:doFlavour = on");
+    (AliPythia8::Instance())->ReadString("Ropewalk:r0 = 0.5");
+    (AliPythia8::Instance())->ReadString("Ropewalk:m0 = 0.2");
+    (AliPythia8::Instance())->ReadString("Ropewalk:beta = 0.1");
+    
+    // Enabling setting of vertex information.
+    (AliPythia8::Instance())->ReadString("PartonVertex:setVertex = on");
+    (AliPythia8::Instance())->ReadString("PartonVertex:protonRadius = 0.7");
+    (AliPythia8::Instance())->ReadString("PartonVertex:emissionWidth = 0.1");
+    //============================================================
+    
+    return gener;
+}
+
+AliGenerator* CreatePythiaMonashShoving(Float_t e_cms)
+{
+    gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8/xmldoc"));
+    gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
+    gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
+    
+    AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
+    
+    //Standard setting setup
+    //Set process (min-bias)
+    gener->SetProcess(kPyMbDefault);
+    //Centre of mass energy
+    gener->SetEnergyCMS(e_cms); // in GeV
+    //random seed based on time
+    AliPythia8::Instance()->ReadString("Random:setSeed = on");
+    AliPythia8::Instance()->ReadString("Random:seed = 0");
+    
+    //============================================================
+    // Specific settings go here: shoving
+    // updated 26th August 2019
+    // brand new configuration from Christian  Bierlich
+    //============================================================
+    (AliPythia8::Instance())->ReadString("Beams:idA = 2212");
+    (AliPythia8::Instance())->ReadString("Beams:idB = 2212");
+    (AliPythia8::Instance())->ReadString(Form("Tune:pp = %d",14)); //should be default, but ok
+    
+    // Enabling flavour ropes, setting model parameters.
+    // The model is still untuned. These parameter values
+    // are choosen for illustrative purposes.
+    (AliPythia8::Instance())->ReadString("Ropewalk:RopeHadronization = on");
+    (AliPythia8::Instance())->ReadString("Ropewalk:doShoving = on");
+    (AliPythia8::Instance())->ReadString("Ropewalk:doFlavour = off");
+    (AliPythia8::Instance())->ReadString("Ropewalk:rCutOff = 10.0");
+    (AliPythia8::Instance())->ReadString("Ropewalk:limitMom = on");
+    (AliPythia8::Instance())->ReadString("Ropewalk:pTcut = 2.0");
+    (AliPythia8::Instance())->ReadString("Ropewalk:r0 = 0.41");
+    (AliPythia8::Instance())->ReadString("Ropewalk:m0 = 0.2");
+    (AliPythia8::Instance())->ReadString("Ropewalk:gAmplitude = 10.0");
+    (AliPythia8::Instance())->ReadString("Ropewalk:gExponent = 1.0");
+    (AliPythia8::Instance())->ReadString("Ropewalk:deltat = 0.1");
+    (AliPythia8::Instance())->ReadString("Ropewalk:tShove = 1.");
+    (AliPythia8::Instance())->ReadString("Ropewalk:deltay = 0.1");
+    (AliPythia8::Instance())->ReadString("Ropewalk:tInit = 1.5");
+    
+    // Enabling setting of vertex information.
+    (AliPythia8::Instance())->ReadString("PartonVertex:setVertex = on");
+    (AliPythia8::Instance())->ReadString("PartonVertex:protonRadius = 0.7");
+    (AliPythia8::Instance())->ReadString("PartonVertex:emissionWidth = 0.1");
     //============================================================
     
     return gener;
