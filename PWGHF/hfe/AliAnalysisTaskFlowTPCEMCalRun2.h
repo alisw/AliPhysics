@@ -162,9 +162,11 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH1F* fHist_eff_HFE;
 		TH1F* fHist_eff_TPC;
 
-		TF1* fPi000_0;
-		TF1* fPi000_1;
-		TF1* fEta000;
+		TF1* fPi010;
+		TF1* fEta010;
+		TF1* fPi3050_0;
+		TF1* fPi3050_1;
+		TF1* fEta3050;
 
 		TH1F* fHistPhoReco0;
 		TH1F* fHistPhoReco1;
