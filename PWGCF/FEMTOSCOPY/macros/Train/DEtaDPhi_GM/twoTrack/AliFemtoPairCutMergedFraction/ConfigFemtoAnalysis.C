@@ -649,14 +649,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  }
 
 					//******** Two - track cuts ************
-					sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
-					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);
-					sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
-                 sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-                 sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
-                 sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
-                 sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
-								 sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
+          sqpcetaphitpc[aniter] = new AliFemtoPairCutMergedFraction(0.03, 0.03, 0.01, 0.8, 2.5);
+          sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);
+          sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
+          sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
+          sqpcetaphitpc[aniter]->SetMaxEEMinv(0.002);
+          sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.008);
 					// sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 					//sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
 					// sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);	// two track cuts on splitting and merging  //1- wylaczany 0 -wlaczany
