@@ -449,65 +449,54 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
   pair_sameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
   pair_sameMother.SetMotherPDGs(22,22,kTRUE,kTRUE); // Exclude conversion
 
-  //###################################################################
-  // Signals for specific dielectron decay channels
-  AliDielectronSignalMC pair_sameMother_pion("sameMother_pion","sameMother_pion");
-  pair_sameMother_pion.SetLegPDGs(11,-11);
-  pair_sameMother_pion.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  pair_sameMother_pion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  // Set mother properties
-  pair_sameMother_pion.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother_pion.SetMotherPDGs(111,111);
+  // Used pdg codes (defined in AliDielectronMC::ComparePDG)
+  // 401: open charm meson
+  // 404: charged open charmed mesons NO s quark
+  // 405: neutral open charmed mesons
+  // 406: charged open charmed mesons with s quark
+  // 501: open beauty mesons
+  // 503: all beauty hadrons
+  // 504: charged open beauty mesons NO s quark
+  // 505: neutral open beauty mesons
+  // 506: charged open beauty mesons with s quark
+  // all D mesons
 
-  AliDielectronSignalMC pair_sameMother_eta("sameMother_eta","sameMother_eta");
-  pair_sameMother_eta.SetLegPDGs(11,-11);
-  pair_sameMother_eta.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  pair_sameMother_eta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  // Set mother properties
-  pair_sameMother_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother_eta.SetMotherPDGs(221,221);
+  // decay channels
+  // (1) D -> e X
+  // (1) B -> e X
+  // (2) B -> D X -> e X Y
+  // (3) B -> e D X -> ee X Y always produces ULS pair
 
-  AliDielectronSignalMC pair_sameMother_etaP("sameMother_etaP","sameMother_etaP");
-  pair_sameMother_etaP.SetLegPDGs(11,-11);
-  pair_sameMother_etaP.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  pair_sameMother_etaP.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  // Set mother properties
-  pair_sameMother_etaP.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother_etaP.SetMotherPDGs(331,331);
+  // Electrons from open beauty mesons and baryons
+  AliDielectronSignalMC eleFinalStateFromB("eleFinalStateFromB","eleFinalStateFromB");
+  eleFinalStateFromB.SetLegPDGs(11,-11);
+  eleFinalStateFromB.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalStateFromB.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  eleFinalStateFromB.SetMotherPDGs(502, 502);
+  eleFinalStateFromB.SetCheckBothChargesMothers(kTRUE,kTRUE);
+  eleFinalStateFromB.SetCheckCorrelatedHF(kTRUE);
 
-  AliDielectronSignalMC pair_sameMother_rho("sameMother_rho","sameMother_rho");
-  pair_sameMother_rho.SetLegPDGs(11,-11);
-  pair_sameMother_rho.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  pair_sameMother_rho.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  // Set mother properties
-  pair_sameMother_rho.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother_rho.SetMotherPDGs(113, 113);
+  // Electrons from open charm mesons and baryons
+  AliDielectronSignalMC eleFinalStateFromD("eleFinalStateFromD","eleFinalStateFromD");
+  eleFinalStateFromD.SetLegPDGs(11,-11);
+  eleFinalStateFromD.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalStateFromD.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  eleFinalStateFromD.SetMotherPDGs(402, 402);
+  eleFinalStateFromD.SetCheckBothChargesMothers(kTRUE,kTRUE);
+  eleFinalStateFromD.SetCheckCorrelatedHF(kTRUE);
 
-  AliDielectronSignalMC pair_sameMother_omega("sameMother_omega","sameMother_omega");
-  pair_sameMother_omega.SetLegPDGs(11,-11);
-  pair_sameMother_omega.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  pair_sameMother_omega.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  // Set mother properties
-  pair_sameMother_omega.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother_omega.SetMotherPDGs(223, 223);
-
-  AliDielectronSignalMC pair_sameMother_phi("sameMother_phi","sameMother_phi");
-  pair_sameMother_phi.SetLegPDGs(11,-11);
-  pair_sameMother_phi.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  pair_sameMother_phi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  // Set mother properties
-  pair_sameMother_phi.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother_phi.SetMotherPDGs(333, 333);
-
-  AliDielectronSignalMC pair_sameMother_jpsi("sameMother_jpsi","sameMother_jpsi");
-  pair_sameMother_jpsi.SetLegPDGs(11,-11);
-  pair_sameMother_jpsi.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  pair_sameMother_jpsi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  // Set mother properties
-  pair_sameMother_jpsi.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother_jpsi.SetMotherPDGs(443, 443);
+  AliDielectronSignalMC eleFromJPsi("eleFromJPsi", "eleFromJPsi");
+  eleFromJPsi.SetLegPDGs(11,-11);
+  eleFromJPsi.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFromJPsi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  eleFromJPsi.SetMotherPDGs(443, 443);
+  eleFromJPsi.SetMothersRelation(AliDielectronSignalMC::kSame);
+  eleFromJPsi.SetCheckBothChargesMothers(kTRUE,kTRUE);
 
   task->AddPairMCSignal(pair_sameMother);
+  task->AddPairMCSignal(eleFinalStateFromD);
+  task->AddPairMCSignal(eleFinalStateFromB);
+  task->AddPairMCSignal(eleFromJPsi);
   // task->AddPairMCSignal(pair_sameMother_pion);
   // task->AddPairMCSignal(pair_sameMother_eta);
   // task->AddPairMCSignal(pair_sameMother_etaP);
