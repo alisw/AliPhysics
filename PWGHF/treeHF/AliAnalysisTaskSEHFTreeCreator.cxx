@@ -85,6 +85,7 @@
 #include "AliAnalysisTaskSEHFTreeCreator.h"
 #include "AliAODPidHF.h"
 #include "AliESDUtils.h"
+#include "AliMultSelection.h"
 
 using std::cout;
 using std::endl;
@@ -227,6 +228,7 @@ fnV0M(0),
 fnV0MEq(0),
 fnV0MCorr(0),
 fnV0MEqCorr(0),
+fPercV0M(0.),
 fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
@@ -586,6 +588,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("mult_gen", &fMultGen);
   fTreeEvChar->Branch("mult_gen_v0a", &fMultGenV0A);
   fTreeEvChar->Branch("mult_gen_v0c", &fMultGenV0C);
+  fTreeEvChar->Branch("perc_v0m", &fPercV0M);
   fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
   
   if(fWriteVariableTreeD0){
@@ -1302,6 +1305,10 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     fnV0MCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroA, vtx->GetZ()) + AliESDUtils::GetCorrV0C(vzeroC, vtx->GetZ()));
     fnV0MEqCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroAEq, vtx->GetZ()) + AliESDUtils::GetCorrV0C(vzeroCEq, vtx->GetZ()));
   }
+
+  // multiplicity percentiles
+  const auto multSel = static_cast<AliMultSelection*>(aod->FindListObject("MultSelection"));
+  fPercV0M = multSel ? multSel->GetMultiplicityPercentile("V0M") : -1.;
   
   // generated multiplicity
   fMultGen = -1;
