@@ -839,7 +839,7 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
        if(std::isnan(PRap))
 	 continue;
 	
-       // if (TMath::Abs(particle->Y()) > fRapidityCut) continue;
+       if (TMath::Abs(particle->Y()) > fRapidityCut) continue;
        //if (particle->Pt() < 0.15) continue; //Maybe remove to properly correct for feeddown?
       //Get mother PDG code. In principle, can be optimized by only doing if for OWSace, as the rest of the particles are physical primaries
       Int_t indexMother = particle->GetFirstMother();
