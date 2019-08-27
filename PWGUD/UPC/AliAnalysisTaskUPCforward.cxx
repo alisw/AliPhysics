@@ -3122,10 +3122,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
         Double_t TildePhiPositiveCosTheta    = PhiHelicityFrameValue7 - 0.25 * 3.14;
         Double_t TildePhiNegativeCosTheta    = PhiHelicityFrameValue7 - 0.75 * 3.14;
         if( TildePhiPositiveCosTheta < 0. ) {
-          TildePhiPositiveCosTheta += 2 * TMath::Pi();
+          TildePhiPositiveCosTheta += 2. * TMath::Pi();
         }
         if( TildePhiNegativeCosTheta < 0. ) {
-          TildePhiNegativeCosTheta += 2 * TMath::Pi();
+          TildePhiNegativeCosTheta += 2. * TMath::Pi();
         }
         for(Int_t iCosThetaBins = 0; iCosThetaBins < 25; iCosThetaBins++) {
           if( controlFlag13 == 1) break;
