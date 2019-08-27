@@ -932,7 +932,7 @@ void AliReducedAnalysisJpsi2ee::LoopOverMCTracks(Int_t trackArray /*=1*/) {
          if(!mother->IsMCKineParticle()) continue;
       
          // apply selections on the jpsi mother
-         UInt_t motherDecisions = CheckMotherMCTruth(mother);
+         UInt_t motherDecisions = CheckMotherMCTruth(mother,kTRUE);
          if(!motherDecisions) continue;
          
          Double_t pt = mother->Pt();
@@ -1047,7 +1047,7 @@ void AliReducedAnalysisJpsi2ee::LoopOverMCTracks(Int_t trackArray /*=1*/) {
 }
 
 //___________________________________________________________________________
-UInt_t AliReducedAnalysisJpsi2ee::CheckMotherMCTruth(AliReducedTrackInfo* mother) {
+UInt_t AliReducedAnalysisJpsi2ee::CheckMotherMCTruth(AliReducedTrackInfo* mother, Bool_t checkReweight) {
    //
    // Check the mother pure MC truth against all defined selections and return a bit map with all decisions
    //
@@ -1058,6 +1058,9 @@ UInt_t AliReducedAnalysisJpsi2ee::CheckMotherMCTruth(AliReducedTrackInfo* mother
       AliReducedInfoCut* cut = (AliReducedInfoCut*)fJpsiMotherMCcuts.At(i);
       // If no MC bit was requested for the mother, skip this mother signal
       // The MC cut will be applied just at the daughter level (this is likely an MC signal without a mother, e.g. electrons from gamma-gamma continuum from Starlight)
+       
+      //check if reweight is needed for this MC signal
+       if (checkReweight && (((AliReducedTrackCut*)cut)->GetApplyReweightMCpt())==kFALSE) continue;
       if(!((AliReducedTrackCut*)cut)->GetMCFilterMap()) continue;
       if(cut->IsSelected(mother)) 
          decisionMap |= (UInt_t(1)<<i);
