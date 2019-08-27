@@ -9,6 +9,8 @@ AliGenerator* AddMCGenPythia8(TString lSystem = "pp", TString lConfig = "", Floa
     AliGenerator *genP = NULL;
     if( lSystem.EqualTo("pp") )
         genP = CreatePythiaMonash(e_cms);
+    if( lSystem.EqualTo("pp-experimental") )
+        genP = CreatePythiaMonashExperimental(e_cms);
     if( lSystem.EqualTo("pp-nocr") )
         genP = CreatePythiaMonashNoCR(e_cms);
     if( lSystem.EqualTo("pp-moreqcd") )
@@ -44,6 +46,35 @@ AliGenerator* CreatePythiaMonash(Float_t e_cms)
     (AliPythia8::Instance())->ReadString("Beams:idA = 2212");
     (AliPythia8::Instance())->ReadString("Beams:idB = 2212");
     (AliPythia8::Instance())->ReadString(Form("Tune:pp = %d",14));
+    //============================================================
+    
+    return gener;
+}
+
+AliGenerator* CreatePythiaMonashExperimental(Float_t e_cms)
+{
+    
+    gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8/xmldoc"));
+    gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
+    gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
+    
+    AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
+    
+    //Standard setting setup
+    //Set process (min-bias)
+    gener->SetProcess(kPyMbDefault);
+    //Centre of mass energy
+    gener->SetEnergyCMS(e_cms); // in GeV
+    //random seed based on time
+    AliPythia8::Instance()->ReadString("Random:setSeed = on");
+    AliPythia8::Instance()->ReadString("Random:seed = 0");
+    
+    //============================================================
+    // Specific settings go here
+    (AliPythia8::Instance())->ReadString("Beams:idA = 2212");
+    (AliPythia8::Instance())->ReadString("Beams:idB = 2212");
+    (AliPythia8::Instance())->ReadString(Form("Tune:pp = %d",14));
+    (AliPythia8::Instance())->ReadString(Form("MultipartonInteractions:pT0Ref = %.2f",2.0+gRandom->Uniform()));
     //============================================================
     
     return gener;
