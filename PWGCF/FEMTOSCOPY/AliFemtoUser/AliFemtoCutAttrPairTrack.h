@@ -195,8 +195,8 @@ struct PairCutTrackAttrShareQuality {
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
     {
-      cfg.insert("share_quality_max", share_quality_max);
-      cfg.insert("share_fraction_max", share_fraction_max);
+      cfg.insert("share_quality_max", std::min({share_quality_max, 1.0}));
+      cfg.insert("share_fraction_max", std::min({share_fraction_max, 1.0}));
     }
 
   virtual ~PairCutTrackAttrShareQuality() {}
