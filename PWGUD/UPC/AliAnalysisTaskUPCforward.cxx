@@ -2408,10 +2408,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   }
   fZNCEnergyBeforeTimingSelectionH        ->Fill(fZNCEnergy);
   fZNCEnergyBeforeTimingSelectionExtendedH->Fill(fZNCEnergy);
-  if ( dataZDC->IsZNCfired() ) {
+  if ( dataZDC->IsZNCfired() && ( isZNCfired != 0 ) ) {
     fZNCEnergyAgainstEntriesExtendedHv2->Fill(fZNCEnergy);
   }
-  if ( dataZDC->IsZNAfired() ) {
+  if ( dataZDC->IsZNAfired() && ( isZNAfired != 0 ) ) {
     fZNAEnergyAgainstEntriesExtendedHv2->Fill(fZNAEnergy);
   }
   if ( isZNAfired != 0 ) {
@@ -2450,8 +2450,8 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   /* - Filling the v2 histogram only if the
    * - ZNC or the ZNA have detected any activity at all...
    */
-  if( dataZDC->IsZNCfired() == 0 ) {
-        if( dataZDC->IsZNAfired() == 0 ) {
+  if( isZNCfired == 0 ) {
+        if( isZNAfired == 0 ) {
               fDimuonPtDistributionZNCzeroZNAzeroHv2            ->Fill(ptOfTheDimuonPair);
               // fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
               if( ptOfTheDimuonPair < 0.25 ) {
@@ -2511,7 +2511,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
               // }
         }
   } else {
-        if( dataZDC->IsZNAfired() == 0 ) {
+        if( isZNAfired == 0 ) {
               fDimuonPtDistributionZNCanyZNAzeroHv2            ->Fill(ptOfTheDimuonPair);
               // fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
               if( ptOfTheDimuonPair < 0.25 ) {
