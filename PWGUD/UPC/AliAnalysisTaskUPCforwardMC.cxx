@@ -1274,14 +1274,16 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fTildePhiHelicityFrameTwentyfiveBinsH =
         new TH1F( "fTildePhiHelicityFrameTwentyfiveBinsH",
                   "fTildePhiHelicityFrameTwentyfiveBinsH",
-                  25, -3.14*7.0*0.25, 3.14*3.0*0.25
+                  // 25, -3.14*7.0*0.25, 3.14*3.0*0.25
+                  25, 0, 2. * 3.14
                   );
   fOutputList->Add(fTildePhiHelicityFrameTwentyfiveBinsH);
 
   fMCTildePhiHelicityFrameTwentyfiveBinsH =
         new TH1F( "fMCTildePhiHelicityFrameTwentyfiveBinsH",
                   "fMCTildePhiHelicityFrameTwentyfiveBinsH",
-                  25, -3.14*7.0*0.25, 3.14*3.0*0.25
+                  // 25, -3.14*7.0*0.25, 3.14*3.0*0.25
+                  25, 0, 2. * 3.14
                   );
   fOutputList->Add(fMCTildePhiHelicityFrameTwentyfiveBinsH);
 
@@ -2001,8 +2003,14 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
     if ( (possibleJPsiCopy.Pt() < 0.25) && (possibleJPsiCopy.Mag() < 3.35) && (possibleJPsiCopy.Mag() > 2.85) ) {
           Double_t CosThetaHelicityFrameValue10 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
           Double_t PhiHelicityFrameValue10      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
-          Double_t TildePhiPositiveCosTheta    = PhiHelicityFrameValue10 - 0.25 * 3.14;
-          Double_t TildePhiNegativeCosTheta    = PhiHelicityFrameValue10 - 0.75 * 3.14;
+          Double_t TildePhiPositiveCosTheta     = PhiHelicityFrameValue10 - 0.25 * 3.14;
+          Double_t TildePhiNegativeCosTheta     = PhiHelicityFrameValue10 - 0.75 * 3.14;
+          if( TildePhiPositiveCosTheta < 0. ) {
+            TildePhiPositiveCosTheta += 2 * TMath::Pi();
+          }
+          if( TildePhiNegativeCosTheta < 0. ) {
+            TildePhiNegativeCosTheta += 2 * TMath::Pi();
+          }
           fCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrameValue10 );
           fPhiHelicityFrameTwentyfiveBinsH     ->Fill( PhiHelicityFrameValue10 );
           if( CosThetaHelicityFrameValue10 > 0 ){
@@ -2360,9 +2368,27 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                  )
                                                                                 );
                   if( CosThetaHelicityFrame(muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC) > 0 ){
-                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC ) - 3.14*0.25 );
+                    Double_t PhiHelicityFrameValueTruth  = CosPhiHelicityFrame( muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC );
+                    Double_t TildePhiPositiveCosTheta    = PhiHelicityFrameValueTruth - 0.25 * 3.14;
+                    Double_t TildePhiNegativeCosTheta    = PhiHelicityFrameValueTruth - 0.75 * 3.14;
+                    if( TildePhiPositiveCosTheta < 0. ) {
+                      TildePhiPositiveCosTheta += 2. * TMath::Pi();
+                    }
+                    if( TildePhiNegativeCosTheta < 0. ) {
+                      TildePhiNegativeCosTheta += 2. * TMath::Pi();
+                    }
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( TildePhiPositiveCosTheta );
                   } else {
-                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC ) - 3.14*0.75 );
+                    Double_t PhiHelicityFrameValueTruth  = CosPhiHelicityFrame( muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC );
+                    Double_t TildePhiPositiveCosTheta    = PhiHelicityFrameValueTruth - 0.25 * 3.14;
+                    Double_t TildePhiNegativeCosTheta    = PhiHelicityFrameValueTruth - 0.75 * 3.14;
+                    if( TildePhiPositiveCosTheta < 0. ) {
+                      TildePhiPositiveCosTheta += 2. * TMath::Pi();
+                    }
+                    if( TildePhiNegativeCosTheta < 0. ) {
+                      TildePhiNegativeCosTheta += 2. * TMath::Pi();
+                    }
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( TildePhiNegativeCosTheta );
                   }
                   fMCCosThetaHelicityFrameMyBinningSmallH->Fill( CosThetaHelicityFrame(  muonsMCcopy[0],
                                                                                          muonsMCcopy[1],
@@ -2548,9 +2574,27 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                  )
                                                                                 );
                   if( CosThetaHelicityFrame(muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC) > 0 ){
-                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC ) - 3.14*0.25 );
+                    Double_t PhiHelicityFrameValueTruth  = CosPhiHelicityFrame( muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC );
+                    Double_t TildePhiPositiveCosTheta    = PhiHelicityFrameValueTruth - 0.25 * 3.14;
+                    Double_t TildePhiNegativeCosTheta    = PhiHelicityFrameValueTruth - 0.75 * 3.14;
+                    if( TildePhiPositiveCosTheta < 0. ) {
+                      TildePhiPositiveCosTheta += 2. * TMath::Pi();
+                    }
+                    if( TildePhiNegativeCosTheta < 0. ) {
+                      TildePhiNegativeCosTheta += 2. * TMath::Pi();
+                    }
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( TildePhiPositiveCosTheta );
                   } else {
-                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC ) - 3.14*0.75 );
+                    Double_t PhiHelicityFrameValueTruth  = CosPhiHelicityFrame( muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC );
+                    Double_t TildePhiPositiveCosTheta    = PhiHelicityFrameValueTruth - 0.25 * 3.14;
+                    Double_t TildePhiNegativeCosTheta    = PhiHelicityFrameValueTruth - 0.75 * 3.14;
+                    if( TildePhiPositiveCosTheta < 0. ) {
+                      TildePhiPositiveCosTheta += 2. * TMath::Pi();
+                    }
+                    if( TildePhiNegativeCosTheta < 0. ) {
+                      TildePhiNegativeCosTheta += 2. * TMath::Pi();
+                    }
+                    fMCTildePhiHelicityFrameTwentyfiveBinsH->Fill( TildePhiNegativeCosTheta );
                   }
                   fMCCosThetaHelicityFrameMyBinningSmallH->Fill( CosThetaHelicityFrame(  muonsMCcopy[1],
                                                                                          muonsMCcopy[0],
