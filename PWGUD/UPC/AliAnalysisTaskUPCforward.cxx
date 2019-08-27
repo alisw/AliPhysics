@@ -3121,9 +3121,15 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
         // Double_t TildePhiNegativeCosTheta    = CosThetaHelicityFrameValue7 - 0.75 * TMath::Pi();
         Double_t TildePhiPositiveCosTheta    = PhiHelicityFrameValue7 - 0.25 * 3.14;
         Double_t TildePhiNegativeCosTheta    = PhiHelicityFrameValue7 - 0.75 * 3.14;
+        if( TildePhiPositiveCosTheta < 0. ) {
+          TildePhiPositiveCosTheta += 2 * TMath::Pi();
+        }
+        if( TildePhiNegativeCosTheta < 0. ) {
+          TildePhiNegativeCosTheta += 2 * TMath::Pi();
+        }
         for(Int_t iCosThetaBins = 0; iCosThetaBins < 25; iCosThetaBins++) {
           if( controlFlag13 == 1) break;
-          if( (CosThetaHelicityFrameValue7 + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/25. ){
+          if( (CosThetaHelicityFrameValue7 + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/25. ) {
             fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
             controlFlag13 = 1;
           }
@@ -3135,72 +3141,87 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
             controlFlag14 = 1;
           }
         }
-        // for(Int_t iTildePhiBins = 0; iTildePhiBins < 25; iTildePhiBins++) {
-        //   if( controlFlag15 == 1) break;
-          if( CosThetaHelicityFrameValue7 > 0 ){
+        if( (CosThetaHelicityFrameValue7 > 0) || (CosThetaHelicityFrameValue7 == 0) ){
+          for(Int_t iTildePhiBins = 0; iTildePhiBins < 25; iTildePhiBins++) {
+            if( controlFlag15 == 1) break;
+            if( (TildePhiPositiveCosTheta) < 6.28*((Double_t)iTildePhiBins + 1.)/25. ){
+              fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[iTildePhiBins]->Fill(possibleJPsiCopyMag);
+              controlFlag15 = 1;
+            }
+          }
+        } else if ( CosThetaHelicityFrameValue7 < 0 ){
+          for(Int_t iTildePhiBins = 0; iTildePhiBins < 25; iTildePhiBins++) {
+            if( controlFlag15 == 1) break;
+            if( (TildePhiNegativeCosTheta) < 6.28*((Double_t)iTildePhiBins + 1.)/25. ){
+              fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[iTildePhiBins]->Fill(possibleJPsiCopyMag);
+              controlFlag15 = 1;
+            }
+          }
+        }
             // if( (TildePhiPositiveCosTheta + 3.14*7.0*0.25) < (6.28*10.0*0.25)*((Double_t)iTildePhiBins + 1.)/25. ){
             //   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[iTildePhiBins]->Fill(possibleJPsiCopyMag);
             //   controlFlag15 = 1;
             // }
-            if( TildePhiPositiveCosTheta > -3.14*((Double_t)7)*0.25 && TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)1)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[0] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)2)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[1] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)3)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[2] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)4)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[3] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)5)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[4] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)6)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[5] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)7)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[6] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)8)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[7] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)9)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[8] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)10)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[9] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)11)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[10]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)12)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[11]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)13)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[12]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)14)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[13]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)15)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[14]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)16)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[15]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)17)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[16]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)18)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[17]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)19)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[18]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)20)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[19]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)21)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[20]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)22)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[21]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)23)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[22]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)24)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[23]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)25)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[24]->Fill(possibleJPsiCopyMag);}
-
-          } else if( CosThetaHelicityFrameValue7 < 0 ){
-            // if( (TildePhiNegativeCosTheta + 3.14*4.0*0.25) < (6.28*10.0*0.25)*((Double_t)iTildePhiBins + 1.)/25. ){
-            //   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[iTildePhiBins]->Fill(possibleJPsiCopyMag);
-            //   controlFlag15 = 1;
-            // }
-            if( TildePhiNegativeCosTheta > -3.14*((Double_t)7)*0.25 && TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)1)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[0] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)2)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[1] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)3)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[2] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)4)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[3] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)5)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[4] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)6)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[5] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)7)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[6] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)8)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[7] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)9)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[8] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)10)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[9] ->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)11)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[10]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)12)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[11]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)13)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[12]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)14)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[13]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)15)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[14]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)16)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[15]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)17)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[16]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)18)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[17]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)19)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[18]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)20)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[19]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)21)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[20]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)22)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[21]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)23)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[22]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)24)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[23]->Fill(possibleJPsiCopyMag);}
-            else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)25)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[24]->Fill(possibleJPsiCopyMag);}
-
-          }
-        // }
+          // if( CosThetaHelicityFrameValue7 > 0 ){
+          //   if( TildePhiPositiveCosTheta > -3.14*((Double_t)7)*0.25 && TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)1)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[0] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)2)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[1] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)3)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[2] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)4)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[3] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)5)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[4] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)6)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[5] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)7)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[6] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)8)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[7] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)9)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[8] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)10)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[9] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)11)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[10]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)12)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[11]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)13)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[12]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)14)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[13]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)15)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[14]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)16)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[15]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)17)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[16]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)18)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[17]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)19)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[18]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)20)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[19]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)21)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[20]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)22)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[21]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)23)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[22]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)24)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[23]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiPositiveCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)25)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[24]->Fill(possibleJPsiCopyMag);}
+          //
+          // } else if( CosThetaHelicityFrameValue7 < 0 ){
+          //   // if( (TildePhiNegativeCosTheta + 3.14*4.0*0.25) < (6.28*10.0*0.25)*((Double_t)iTildePhiBins + 1.)/25. ){
+          //   //   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[iTildePhiBins]->Fill(possibleJPsiCopyMag);
+          //   //   controlFlag15 = 1;
+          //   // }
+          //   if( TildePhiNegativeCosTheta > -3.14*((Double_t)7)*0.25 && TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)1)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[0] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)2)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[1] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)3)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[2] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)4)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[3] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)5)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[4] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)6)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[5] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)7)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[6] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)8)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[7] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)9)/((Double_t)25) ) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[8] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)10)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[9] ->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)11)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[10]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)12)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[11]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)13)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[12]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)14)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[13]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)15)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[14]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)16)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[15]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)17)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[16]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)18)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[17]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)19)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[18]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)20)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[19]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)21)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[20]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)22)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[21]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)23)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[22]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)24)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[23]->Fill(possibleJPsiCopyMag);}
+          //   else if(                                                   TildePhiNegativeCosTheta < ( -3.14*((Double_t)7)*0.25 + 3.14*((Double_t)10)*0.25*((Double_t)25)/((Double_t)25)) ){fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[24]->Fill(possibleJPsiCopyMag);}
+          //
+          // }
+        // } oldddd
   }
 
 
