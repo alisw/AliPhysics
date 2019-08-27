@@ -61,6 +61,8 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		void SelectPhotonicElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Double_t TrkPt, Double_t DCAxy, Int_t Bsign, Double_t TrkPhiPI, Double_t PsinV0A);
 		void CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
 		void SetDCA(Double_t xy, Double_t z){DCAxy = xy, DCAz = z;};
+		void SetPIDcuts(Double_t tpcnsig, Double_t emceop, Double_t emcss_mim, Double_t emcss_max){ftpcnsig = tpcnsig; femceop = emceop; femcss_mim = emcss_mim; femcss_max = emcss_max;};
+		void SetMasscuts(Double_t invmass, Double_t invmass_pt){finvmass = invmass; finvmass_pt = invmass_pt;};
 
 		void SetMinCentrality(float mincentr=30.) {fMinCentr = mincentr;}
 		void SetMaxCentrality(float maxcentr=50.) {fMaxCentr = maxcentr;}
@@ -88,7 +90,9 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 
 		//cut parameter
 		Double_t DCAxy, DCAz;
-		Double_t massMin;
+                Double_t ftpcnsig, femceop, femcss_mim, femcss_max;
+		Double_t finvmass, finvmass_pt; 
+                Double_t massMin;
 		Int_t Nch;
 
 		//		TClonesArray *fTracks_tender;//Tender tracks

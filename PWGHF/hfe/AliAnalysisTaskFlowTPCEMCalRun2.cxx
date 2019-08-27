@@ -187,7 +187,13 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	DCAxy(3.0),
 	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
-	fDCAxy_Pt_had(0),
+	fDCAxy_Pt_had(0), 
+        ftpcnsig(-1.0),
+        femceop(0.9),
+        femcss_mim(0.01),
+        femcss_max(0.35),
+        finvmass(0.1),
+        finvmass_pt(0.15),
 	massMin(0.1),
 	fDCAxy_Pt_LS(0),
 	fDCAxy_Pt_ULS(0),
@@ -377,6 +383,12 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
+        ftpcnsig(-1.0),
+        femceop(0.9),
+        femcss_mim(0.01),
+        femcss_max(0.35),
+        finvmass(0.1),
+        finvmass_pt(0.15),
 	massMin(0.1),
 	fDCAxy_Pt_LS(0),
 	fDCAxy_Pt_ULS(0),
@@ -987,6 +999,15 @@ Double_t CutDCAz = DCAz;
 
 //PID cut
 Double_t CutEopHad = -3.5;
+
+cout << "cut selections ---------------------" << endl;
+cout << "tpcnsig = " << ftpcnsig << endl; 
+cout << "emceop = " << femceop << endl; 
+cout << "emcss_mim = " << femcss_mim << endl; 
+cout << "emcss_max = " << femcss_max << endl; 
+cout << "invmass = " << finvmass << endl; 
+cout << "invmass_pt = " << finvmass_pt << endl; 
+cout << "-------------------------------------" << endl;
 
 //===================================================
 
@@ -1989,9 +2010,11 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 		Double_t TrkPhicos2_elehigh = -999;
 		Double_t TrkPhisin2_elehigh = -999;
 
-		if((fTPCnSigma > -1 && fTPCnSigma <3) && (m20 > 0.01 && m20 < 0.3)){ //TPC nsigma & shower shape cut
+		//if((fTPCnSigma > -1 && fTPCnSigma <3) && (m20 > 0.01 && m20 < 0.3)){ //TPC nsigma & shower shape cut
+		if((fTPCnSigma > ftpcnsig && fTPCnSigma <3) && (m20 > femcss_mim && m20 < femcss_max)){ //TPC nsigma & shower shape cut
 
-			if(eop>0.9 && eop<1.3){ //eop cut
+			//if(eop>0.9 && eop<1.3){ //eop cut
+			if(eop>femceop && eop<1.3){ //eop cut
 
 				////electron v2////
 
@@ -2210,7 +2233,8 @@ Double_t CutmassMin = massMin;
         //}
 
         //-------loose cut on partner electron
-        if(ptAsso <0.2) continue;
+        //if(ptAsso <0.2) continue;
+        if(ptAsso <finvmass_pt) continue;
         if(aAssotrack->Eta()<-0.6 || aAssotrack->Eta()>0.6) continue;
         if(nsigma < -3 || nsigma > 3) continue;
 
@@ -2237,7 +2261,8 @@ Double_t CutmassMin = massMin;
 		fInvmassLS->Fill(mass);
 		fInvmassLS_2D->Fill(mass,track->Pt());
 
-		if(mass<CutmassMin){
+		//if(mass<CutmassMin){
+		if(mass<finvmass){
 
 			fDCAxy_Pt_LS -> Fill(TrkPt,DCAxy*charge*Bsign);
 			TrkPhiEPV0A_phoLS = TrkPhiPI - PsinV0A;
