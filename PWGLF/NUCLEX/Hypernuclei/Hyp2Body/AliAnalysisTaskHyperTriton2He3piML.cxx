@@ -329,14 +329,19 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     return (sig - expS) / (fCustomResolution * expS);
   };
 
-  esdEvent->ResetV0s();
-  std::vector<AliESDv0> V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent);
-  for (int iV0 = 0; iV0 < int(V0Vector.size());
-       iV0++)
+  std::vector<AliESDv0> V0Vector;
+  if (!fUseOnTheFly) {
+    esdEvent->ResetV0s();
+    V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent);
+  }
+
+  int nV0s = fUseOnTheFly ? esdEvent->GetNumberOfV0s() : V0Vector.size();
+
+  for (int iV0 = 0; iV0 < nV0s; iV0++)
   { // This is the begining of the V0 loop (we analyse only offline
     // V0s)
 
-    AliESDv0 *v0 = &V0Vector[iV0];
+    AliESDv0 *v0 = fUseOnTheFly ? esdEvent->GetV0(iV0) : &V0Vector[iV0];
     if (!v0)
       continue;
     if (v0->GetOnFlyStatus() != 0 && !fUseOnTheFly)
