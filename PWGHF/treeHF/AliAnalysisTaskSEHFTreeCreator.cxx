@@ -1285,7 +1285,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     fnTrackletsCorr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg, countTreta1, vtx->GetZ(), fRefMult));
   TProfile *estimatorAvgSHM = fMultEstimatorAvgSHM[GetPeriod(aod)];
   if (fCorrNtrVtx && estimatorAvgSHM)
-    fnTrackletsCorr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvgSHM, countTreta1, vtx->GetZ(), fRefMultSHM));
+    fnTrackletsCorrSHM = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvgSHM, countTreta1, vtx->GetZ(), fRefMultSHM));
   
   //V0 multiplicities
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
