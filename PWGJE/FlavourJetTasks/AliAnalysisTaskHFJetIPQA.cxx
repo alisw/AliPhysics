@@ -101,13 +101,15 @@ h1DTrueBTagged(nullptr),
 h1DTrueBTaggedSingle1st(nullptr),
 h1DTrueBTaggedSingle2nd(nullptr),
 h1DTrueBTaggedSingle3rd(nullptr),
-h1DTrueBTaggedDouble(nullptr),
+h1DTrueBTaggedDouble12(nullptr),
+h1DTrueBTaggedDouble23(nullptr),
 h1DTrueBTaggedTripple(nullptr),
 h1DFalseBTagged(nullptr),
 h1DFalseBTaggedSingle1st(nullptr),
 h1DFalseBTaggedSingle2nd(nullptr),
 h1DFalseBTaggedSingle3rd(nullptr),
-h1DFalseBTaggedDouble(nullptr),
+h1DFalseBTaggedDouble12(nullptr),
+h1DFalseBTaggedDouble23(nullptr),
 h1DFalseBTaggedTripple(nullptr),
 kTagLevel(3),
 cCuts(0),
@@ -197,13 +199,15 @@ h1DTrueBTagged(nullptr),
 h1DTrueBTaggedSingle1st(nullptr),
 h1DTrueBTaggedSingle2nd(nullptr),
 h1DTrueBTaggedSingle3rd(nullptr),
-h1DTrueBTaggedDouble(nullptr),
+h1DTrueBTaggedDouble12(nullptr),
+h1DTrueBTaggedDouble23(nullptr),
 h1DTrueBTaggedTripple(nullptr),
 h1DFalseBTagged(nullptr),
 h1DFalseBTaggedSingle1st(nullptr),
 h1DFalseBTaggedSingle2nd(nullptr),
 h1DFalseBTaggedSingle3rd(nullptr),
-h1DFalseBTaggedDouble(nullptr),
+h1DFalseBTaggedDouble12(nullptr),
+h1DFalseBTaggedDouble23(nullptr),
 h1DFalseBTaggedTripple(nullptr),
 kTagLevel(3),
 cCuts(0),
@@ -937,58 +941,34 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                         if(!fIsMixSignalReady_n3 && hasIPs[2]) SetMixDCA(3,ipval[2] );
                     }
                 }
+                bool kTagDec[7]={kFALSE};
+                DoJetTaggingThreshold(jetpt, hasIPs,ipval, kTagDec);
 
-                int isBTaggedJet=DoJetTaggingThreshold(jetpt, hasIPs,ipval);
-                //printf("Receiving BTagged decision: %i\n", isBTaggedJet);
-                if(isBTaggedJet>0&&jetflavour==3&&hasIPs[0]){
+                //printf("Receiving BTagged decision: %i\n", kTagDec[Full]);
+                if(kTagDec[Full]&&jetflavour==3&&hasIPs[0]){
                     h1DTrueBTagged->Fill(jetpt);
-                    switch(isBTaggedJet){
-                      case 1:
-                        h1DTrueBTaggedSingle1st->Fill(jetpt);
-                        break;
-                      case 2:
-                        h1DTrueBTaggedSingle2nd->Fill(jetpt);
-                        break;
-                      case 3:
-                        h1DTrueBTaggedSingle3rd->Fill(jetpt);
-                        break;
-                      case 4:
-                        h1DTrueBTaggedDouble->Fill(jetpt);
-                        break;
-                      case 5:
-                        h1DTrueBTaggedTripple->Fill(jetpt);
-                        break;
-                    }
+                    if(kTagDec[Single1st]) h1DTrueBTaggedSingle1st->Fill(jetpt);
+                    if(kTagDec[Single2nd]) h1DTrueBTaggedSingle2nd->Fill(jetpt);
+                    if(kTagDec[Single3rd]) h1DTrueBTaggedSingle3rd->Fill(jetpt);
+                    if(kTagDec[Double12]) h1DTrueBTaggedDouble12->Fill(jetpt);
+                    if(kTagDec[Double23]) h1DTrueBTaggedDouble23->Fill(jetpt);
+                    if(kTagDec[Triple]) h1DTrueBTaggedTripple->Fill(jetpt);
 
-                    //printf("################################ FoundJet with tagindex=%i!\n",isBTaggedJet);
+                    //printf("################################ FoundJet with tagindex=%i!\n",kTagDec[Full]);
                 }
-                if(isBTaggedJet&&jetflavour!=3&&hasIPs[0]&&jetflavour!=0){
-                    bool udg=kFALSE;
+                if(kTagDec[Full]&&jetflavour!=3&&hasIPs[0]&&jetflavour!=0){
                     h1DFalseBTagged->Fill(jetpt);
-
-                    switch(isBTaggedJet){
-                      case 1:
-                        h1DFalseBTaggedSingle1st->Fill(jetpt);
-                        break;
-                      case 2:
-                        h1DFalseBTaggedSingle2nd->Fill(jetpt);
-                        break;
-                      case 3:
-                        h1DFalseBTaggedSingle3rd->Fill(jetpt);
-                        break;
-                      case 4:
-                        h1DFalseBTaggedDouble->Fill(jetpt);
-                        break;
-                      case 5:
-                        h1DFalseBTaggedTripple->Fill(jetpt);
-                        break;
-                    }
-                    //printf("################################ Mistagged: flavour is=%i with tagindex=%i!\n",jetflavour,isBTaggedJet);
+                    if(kTagDec[Single1st]) h1DFalseBTaggedSingle1st->Fill(jetpt);
+                    if(kTagDec[Single2nd]) h1DFalseBTaggedSingle2nd->Fill(jetpt);
+                    if(kTagDec[Single3rd]) h1DFalseBTaggedSingle3rd->Fill(jetpt);
+                    if(kTagDec[Double12]) h1DFalseBTaggedDouble12->Fill(jetpt);
+                    if(kTagDec[Double23]) h1DFalseBTaggedDouble23->Fill(jetpt);
+                    if(kTagDec[Triple]) h1DFalseBTaggedTripple->Fill(jetpt);
+                    //printf("################################ Mistagged: flavour is=%i with tagindex=%i!\n",jetflavour,kTagDec[Full]);
                 }
-                if(!isBTaggedJet&&jetflavour==3&&hasIPs[0]){
+                if(!kTagDec[Full]&&jetflavour==3&&hasIPs[0]){
                     //printf("################################ Missed one: flavour is=%i, ipval[1]=%f, ipval[2]=%f, ipval[3]=%f\n", jetflavour, ipval[0],ipval[2], ipval[2]);
                 }
-
 
                 if(sImpParXY.size()!=0){
                   FillHist("fh2dNoAcceptedTracksvsJetArea",(int)sImpParXY.size(),jetrec->Area(),1);
@@ -1456,19 +1436,21 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
 
   //Histograms for Tagging
-  h1DTrueBTagged=(TH1D*)AddHistogramm("h1DTrueBTagged","h1DTrueBTagged",500, 0, 500);
-  h1DTrueBTaggedSingle1st=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle1st","h1DTrueBTaggedSingle1st",500, 0, 500);
-  h1DTrueBTaggedSingle2nd=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle2nd","h1DTrueBTaggedSingle2nd",500, 0, 500);
-  h1DTrueBTaggedSingle3rd=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle3rd","h1DTrueBTaggedSingle3rd",500, 0, 500);
-  h1DTrueBTaggedDouble=(TH1D*)AddHistogramm("h1DTrueBTaggedDouble","h1DTrueBTaggedDouble",500, 0, 500);
-  h1DTrueBTaggedTripple=(TH1D*)AddHistogramm("h1DTrueBTaggedTripple","h1DTrueBTaggedTripple",500, 0, 500);
+  h1DTrueBTagged=(TH1D*)AddHistogramm("h1DTrueBTagged","h1DTrueBTagged",500, 0, 250);
+  h1DTrueBTaggedSingle1st=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle1st","h1DTrueBTaggedSingle1st",500, 0, 250);
+  h1DTrueBTaggedSingle2nd=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle2nd","h1DTrueBTaggedSingle2nd",500, 0, 250);
+  h1DTrueBTaggedSingle3rd=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle3rd","h1DTrueBTaggedSingle3rd",500, 0, 250);
+  h1DTrueBTaggedDouble12=(TH1D*)AddHistogramm("h1DTrueBTaggedDouble12","h1DTrueBTaggedDouble",500, 0, 250);
+  h1DTrueBTaggedDouble23=(TH1D*)AddHistogramm("h1DTrueBTaggedDouble23","h1DTrueBTaggedDouble",500, 0, 250);
+  h1DTrueBTaggedTripple=(TH1D*)AddHistogramm("h1DTrueBTaggedTripple","h1DTrueBTaggedTripple",500, 0, 250);
 
-  h1DFalseBTagged=(TH1D*)AddHistogramm("h1DFalseBTagged","h1DFalseBTagged",500, 0, 500);
-  h1DFalseBTaggedSingle1st=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle1st","h1DFalseBTaggedSingle1st",500, 0, 500);
-  h1DFalseBTaggedSingle2nd=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle2nd","h1DFalseBTaggedSingle2nd",500, 0, 500);
-  h1DFalseBTaggedSingle3rd=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle3rd","h1DFalseBTaggedSingle3rd",500, 0, 500);
-  h1DFalseBTaggedDouble=(TH1D*)AddHistogramm("h1DFalseBTaggedDouble","h1DFalseBTaggedDouble",500, 0, 500);
-  h1DFalseBTaggedTripple=(TH1D*)AddHistogramm("h1DFalseBTaggedTripple","h1DFalseBTaggedTripple",500, 0, 500);
+  h1DFalseBTagged=(TH1D*)AddHistogramm("h1DFalseBTagged","h1DFalseBTagged",500, 0, 250);
+  h1DFalseBTaggedSingle1st=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle1st","h1DFalseBTaggedSingle1st",500, 0, 250);
+  h1DFalseBTaggedSingle2nd=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle2nd","h1DFalseBTaggedSingle2nd",500, 0, 250);
+  h1DFalseBTaggedSingle3rd=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle3rd","h1DFalseBTaggedSingle3rd",500, 0, 250);
+  h1DFalseBTaggedDouble12=(TH1D*)AddHistogramm("h1DFalseBTaggedDouble12","h1DTrueBTaggedDouble",500, 0, 250);
+  h1DFalseBTaggedDouble23=(TH1D*)AddHistogramm("h1DFalseBTaggedDouble23","h1DTrueBTaggedDouble",500, 0, 250);
+  h1DFalseBTaggedTripple=(TH1D*)AddHistogramm("h1DFalseBTaggedTripple","h1DFalseBTaggedTripple",500, 0, 250);
 
   //Histograms for vertexing factor quicktest
   //fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_FULL","fh1dVERTEXFACTOR_VERTEXZ_FULL;;",400,-100,100,"s");
@@ -3624,7 +3606,7 @@ void AliAnalysisTaskHFJetIPQA::SetThresholds(TObjArray* threshfirst, TObjArray* 
     }
  }
 
-int AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval){
+void AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval, bool *kTagDec){
   //threshold values for tracks with largest, second and third largest IP
   int iJetPtBin=h1DThresholdsFirst[0]->FindBin(jetpt);
   double IPthresN1[3];  //single tag, double tag, tripple tag
@@ -3637,25 +3619,24 @@ int AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs, 
     IPthresN3[iN]=h1DThresholdsThird[iN]->GetBinContent(iJetPtBin);
   }
 
-  //printf("DoJetTaggingThreshold:\n");
-  //printf("      Single: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[0],IPthresN2[0], IPthresN3[0]);
-  //printf("      Double: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[1],IPthresN2[1], IPthresN3[1]);
-  //printf("      Tripple: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[2],IPthresN2[2], IPthresN3[2]);
+  /*printf("DoJetTaggingThreshold:\n");
+  printf("      Single: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[0],IPthresN2[0], IPthresN3[0]);
+  printf("      Double: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[1],IPthresN2[1], IPthresN3[1]);
+  printf("      Tripple: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[2],IPthresN2[2], IPthresN3[2]);*/
 
   if(hasIPs[2]){
       //tripple tag
       //printf("ipval[0]=%f, ipval[1]=%f, ipval[2]=%f\n", ipval[0],ipval[1],ipval[2]);
-      if(ipval[0]>IPthresN1[2]&&ipval[1]>IPthresN2[2]&&ipval[2]>IPthresN3[2]) return 5;
+      if(ipval[0]>IPthresN1[2]&&ipval[1]>IPthresN2[2]&&ipval[2]>IPthresN3[2]){kTagDec[Full]=kTRUE; kTagDec[Triple]=kTRUE;}
       //double tag
       if(kTagLevel<3){
         //printf("Double catch\n");
-        if(ipval[2]>IPthresN3[1]&&ipval[1]>IPthresN2[1]) return 4;
-        if(ipval[2]>IPthresN3[1]&&ipval[0]>IPthresN1[1]) return 4;
+        if(ipval[2]>IPthresN3[1]&&ipval[1]>IPthresN2[1]) {kTagDec[Full]=kTRUE; kTagDec[Double23]=kTRUE;}
       }
       //single tag
       if(kTagLevel<2){
         //printf("Single catch\n");
-        if(ipval[2]>IPthresN3[0]) return 3;
+        if(ipval[2]>IPthresN3[0]) {kTagDec[Full]=kTRUE; kTagDec[Single3rd]=kTRUE;}
       }
   }
 
@@ -3664,12 +3645,12 @@ int AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs, 
       //double tag
       if(kTagLevel<3){
         //printf("Double catch\n");
-        if(ipval[0]>IPthresN1[1]&&ipval[1]>IPthresN2[1]) return 4;
+        if(ipval[0]>IPthresN1[1]&&ipval[1]>IPthresN2[1]) {kTagDec[Full]=kTRUE; kTagDec[Double12]=kTRUE;}
       }
       //single tag
       if(kTagLevel<2){
         //printf("Single catch\n");
-        if(ipval[1]>IPthresN2[0]) return 2;
+        if(ipval[1]>IPthresN2[0]) {kTagDec[Full]=kTRUE; kTagDec[Single2nd]=kTRUE;}
       }
   }
 
@@ -3678,11 +3659,10 @@ int AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs, 
       //printf("ipval[0]=%f", ipval[0]);
       if(kTagLevel<2){
         //printf("Single catch\n");
-        if(ipval[0]>IPthresN1[0]) return 1;
+        if(ipval[0]>IPthresN1[0]) {kTagDec[Full]=kTRUE; kTagDec[Single1st]=kTRUE;}
       }
   }
 
-  return 0;
 }
 
 
