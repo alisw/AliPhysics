@@ -241,12 +241,12 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
 
   // centrality
   float fcent = -999;
-  if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
+  if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){ //Only check centrality for PbPb and pPb events
     if(fDebug > 6) cout << fRunTable->GetPeriodName() << endl;
-    if(fRunTable->IsPA() && !(fRunTable->GetPeriodName().BeginsWith("LHC13"))){
-      sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
+    if(fRunTable->IsPA() && !(fRunTable->GetPeriodName().BeginsWith("LHC13"))){ //LHC13 datasets use the AliCentrality class, newer datasets use the AliMultSelection class
+      sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection"); 
       if (sel) {
-        if(fSelector != ""){
+        if(fSelector != ""){ //If centrality selector is set in wagon configuration, otherwise default to V0A
           fcent = sel->GetMultiplicityPercentile(fSelector);
         }else{
           fcent = sel->GetMultiplicityPercentile("V0A");
@@ -256,12 +256,11 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
         if(fDebug > 2) cout << "Sel not found" << endl;
       }
     }
-    else{
+    else{ //For LHC13 datasets
       AliCentrality *cent = event->GetCentrality();
       if( ! cent ) return;
       if(fSelector != ""){
           fcent = cent->GetCentralityPercentile(fSelector);
-
       }else{
         if(fRunTable->GetPeriodName().BeginsWith("LHC13")){
           fcent = cent->GetCentralityPercentile("V0A");
