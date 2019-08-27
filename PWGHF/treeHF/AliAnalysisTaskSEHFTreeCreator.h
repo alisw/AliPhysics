@@ -353,6 +353,7 @@ private:
     Int_t                   fnV0MEq;                               /// V0M multiplicity (equalized)
     Int_t                   fnV0MCorr;                             /// V0M multiplicity (corrected)
     Int_t                   fnV0MEqCorr;                           /// V0M multiplicity (equalized + corrected)
+    Float_t                 fPercV0M;                              /// V0M multiplicity percentile
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
