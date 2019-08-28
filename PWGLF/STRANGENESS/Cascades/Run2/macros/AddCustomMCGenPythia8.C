@@ -4,7 +4,7 @@ R__LOAD_LIBRARY(libpythia6)
 #include "AliGenerator.h"
 #include "AliGenPythia.h"
 
-AliGenerator* AddMCGenPythia8(TString lSystem = "pp", TString lConfig = "", Float_t e_cms = 13000.)
+AliGenerator* AddCustomMCGenPythia8(TString lSystem = "pp", TString lConfig = "", Float_t e_cms = 13000.)
 {
     gSystem->Load("liblhapdf");
     AliGenerator *genP = NULL;
