@@ -121,6 +121,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t SetMassCut(Int_t massCut);
 	void SetPeriodName(TString periodName){fPeriodName = periodName;}
 	Double_t GetMassCut(){return fMassCut;}
+	void SetPrefilterRunFlag(Int_t runflag){fRunFlag = runflag;}
 	
 	// Request Flags
 	Double_t GetEtaCut(){ return  fEtaCut;}
@@ -169,6 +170,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
     Bool_t fUsePtDepXYDCA;
     Bool_t fUseDCAToVertex2D;
     TString fMaxDCAToVertexXYPtDep;
+	Int_t  fRunFlag; // runflag used to set track prefiltering
 	
 
 
@@ -205,7 +207,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,10)
+    ClassDef(AliPrimaryPionCuts,11)
 };
 
 #endif
