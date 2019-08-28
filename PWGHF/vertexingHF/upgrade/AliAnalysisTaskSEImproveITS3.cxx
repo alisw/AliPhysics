@@ -341,16 +341,17 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
       decay->SetDCA(dca);
 
       
-      delete v12;
-
       Double_t px[2],py[2],pz[2];
       for (Int_t i=0;i<2;++i) {
-        const AliAODTrack *t=static_cast<AliAODTrack*>(decay->GetDaughter(i));
-        px[i]=t->Px();
-        py[i]=t->Py();
-        pz[i]=t->Pz();
+        AliExternalTrackParam t;
+        t.CopyFromVTrack(static_cast<AliAODTrack*>(decay->GetDaughter(i)));
+        t.PropagateToDCA(v12,bz,100.,d0z0,covd0z0);
+        px[i]=t.Px();
+        py[i]=t.Py();
+        pz[i]=t.Pz();
       }
       decay->SetPxPyPzProngs(2,px,py,pz);
+      delete v12;
     }
   }
 
@@ -471,16 +472,18 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
                                         +(v23->GetY()-pos[1])*(v23->GetY()-pos[1])
                                         +(v23->GetZ()-pos[2])*(v23->GetZ()-pos[2])));
  
-      delete v123;delete v12;delete v23;
 
       Double_t px[3],py[3],pz[3];
       for (Int_t i=0;i<3;++i) {
-        const AliAODTrack *t=static_cast<AliAODTrack*>(decay->GetDaughter(i));
-        px[i]=t->Px();
-        py[i]=t->Py();
-        pz[i]=t->Pz();
+        AliExternalTrackParam t;
+        t.CopyFromVTrack(static_cast<AliAODTrack*>(decay->GetDaughter(i)));
+        t.PropagateToDCA(v123,bz,100.,d0z0,covd0z0);
+        px[i]=t.Px();
+        py[i]=t.Py();
+        pz[i]=t.Pz();
       }
       decay->SetPxPyPzProngs(3,px,py,pz);
+      delete v123;delete v12;delete v23;
     }
   }
 }
