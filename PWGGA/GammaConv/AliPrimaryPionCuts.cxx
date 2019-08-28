@@ -132,6 +132,77 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 }
 
 //________________________________________________________________________
+AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnalysisCuts(ref),
+	fHistograms(NULL),
+    fDoLightOutput(ref.fDoLightOutput),
+	fPIDResponse(NULL),
+	fEsdTrackCuts(ref.fEsdTrackCuts),
+	fEsdTrackCutsGC(ref.fEsdTrackCutsGC),
+	fEtaCut(ref.fEtaCut),
+	fEtaShift(ref.fEtaShift),
+	fDoEtaCut(ref.fDoEtaCut),
+	fPtCut(ref.fPtCut),
+	fMinClsTPC(ref.fMinClsTPC), // minimum clusters in the TPC
+    fChi2PerClsTPC(ref.fChi2PerClsTPC), // maximum Chi2 per cluster in the TPC
+    fRequireTPCRefit(ref.fRequireTPCRefit), // require a refit in the TPC
+	fMinClsTPCToF(ref.fMinClsTPCToF), // minimum clusters to findable clusters
+	fMinClsITS(ref.fMinClsITS), // minimum clusters to findable clusters
+	fDodEdxSigmaITSCut(ref.fDodEdxSigmaITSCut),
+	fDodEdxSigmaTPCCut(ref.fDodEdxSigmaTPCCut),
+	fDoTOFsigmaCut(ref.fDoTOFsigmaCut), // RRnewTOF
+	fPIDnSigmaAbovePionLineITS(ref.fPIDnSigmaAbovePionLineITS),
+	fPIDnSigmaBelowPionLineITS(ref.fPIDnSigmaBelowPionLineITS),
+	fPIDnSigmaAbovePionLineTPC(ref.fPIDnSigmaAbovePionLineTPC),
+	fPIDnSigmaBelowPionLineTPC(ref.fPIDnSigmaBelowPionLineTPC),
+	fPIDnSigmaAbovePionLineTOF(ref.fPIDnSigmaAbovePionLineTOF),
+	fPIDnSigmaBelowPionLineTOF(ref.fPIDnSigmaBelowPionLineTOF),
+	fUseCorrectedTPCClsInfo(ref.fUseCorrectedTPCClsInfo),
+	fUseTOFpid(ref.fUseTOFpid),
+	fRequireTOF(ref.fRequireTOF),
+	fDoMassCut(ref.fDoMassCut),
+	fMassCut(ref.fMassCut),
+	fUse4VecForMass(ref.fUse4VecForMass),
+	fRequireVertexConstrain(ref.fRequireVertexConstrain),
+	fDoWeights(ref.fDoWeights),
+    fMaxDCAToVertexZ(ref.fMaxDCAToVertexZ),
+	fMaxDCAToVertexXY(ref.fMaxDCAToVertexXY),
+	fUsePtDepXYDCA(ref.fUsePtDepXYDCA),
+	fUseDCAToVertex2D(ref.fUseDCAToVertex2D),
+	fMaxDCAToVertexXYPtDep(ref.fMaxDCAToVertexXYPtDep),
+	fRunFlag(ref.fRunFlag),
+	fCutString(NULL),
+	fCutStringRead(""),
+	fHistCutIndex(NULL),
+	fHistdEdxCuts(NULL),
+	fHistITSdEdxbefore(NULL),
+	fHistITSdEdxafter(NULL),
+	fHistTPCdEdxbefore(NULL),
+	fHistTPCdEdxafter(NULL),
+	fHistTPCdEdxSignalbefore(NULL),
+	fHistTPCdEdxSignalafter(NULL),
+	fHistTOFbefore(NULL),
+	fHistTOFafter(NULL),
+	fHistTrackDCAxyPtbefore(NULL),
+	fHistTrackDCAxyPtafter(NULL),
+	fHistTrackDCAzPtbefore(NULL),
+	fHistTrackDCAzPtafter(NULL),
+	fHistTrackNFindClsPtTPCbefore(NULL),
+	fHistTrackNFindClsPtTPCafter(NULL),
+	fHistTrackSelectedEta(NULL),
+	fHistTrackSelectedPhi(NULL),
+	fHistTrackSelectedPt(NULL),
+	fHistTrackSelectedPtWithoutITS(NULL),
+	fStringITSClusterCut(""),
+	fPeriodName(ref.fPeriodName)
+{
+	for(Int_t jj=0;jj<kNCuts;jj++){ fCuts[jj]=0; }
+	fCutString=new TObjString((GetCutNumber()).Data());
+
+	// Using standard function for setting Cuts
+	if (fEsdTrackCuts==NULL) fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+}
+
+//________________________________________________________________________
 AliPrimaryPionCuts::~AliPrimaryPionCuts() {
 		// Destructor
 	//Deleting fHistograms leads to seg fault it it's added to output collection of a task
