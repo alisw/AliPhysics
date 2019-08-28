@@ -6,6 +6,7 @@ R__LOAD_LIBRARY(libpythia6)
 
 AliGenerator* AddMCGenPythia8(TString lSystem = "pp", TString lConfig = "", Float_t e_cms = 13000.)
 {
+    gSystem->Load("liblhapdf");
     AliGenerator *genP = NULL;
     if( lSystem.EqualTo("pp") )
         genP = CreatePythiaMonash(e_cms);
@@ -25,11 +26,16 @@ AliGenerator* AddMCGenPythia8(TString lSystem = "pp", TString lConfig = "", Floa
 
 AliGenerator* CreatePythiaMonash(Float_t e_cms)
 {
-    
+    gSystem->Load("libpythia6");
+    gSystem->Load("libEGPythia6");
+    gSystem->Load("libAliPythia6");
+    gSystem->Load("libpythia8");
+    gSystem->Load("libAliPythia8");
     gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8/xmldoc"));
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
     
+    AliPythia8 *pythia = AliPythia8::Instance();            // For ROOT6 needs to be created before AliGenPythiaPlus object, otherwise ending in "illegal instruction"
     AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
     
     //Standard setting setup
@@ -47,17 +53,23 @@ AliGenerator* CreatePythiaMonash(Float_t e_cms)
     (AliPythia8::Instance())->ReadString("Beams:idB = 2212");
     (AliPythia8::Instance())->ReadString(Form("Tune:pp = %d",14));
     //============================================================
-    
+    (AliPythia8::Instance())->SetDecayLonglived();
+
     return gener;
 }
 
 AliGenerator* CreatePythiaMonashExperimental(Float_t e_cms)
 {
-    
+    gSystem->Load("libpythia6");
+    gSystem->Load("libEGPythia6");
+    gSystem->Load("libAliPythia6");
+    gSystem->Load("libpythia8");
+    gSystem->Load("libAliPythia8");
     gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8/xmldoc"));
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
     
+    AliPythia8 *pythia = AliPythia8::Instance();            // For ROOT6 needs to be created before AliGenPythiaPlus object, otherwise ending in "illegal instruction"
     AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
     
     //Standard setting setup
@@ -76,17 +88,23 @@ AliGenerator* CreatePythiaMonashExperimental(Float_t e_cms)
     (AliPythia8::Instance())->ReadString(Form("Tune:pp = %d",14));
     (AliPythia8::Instance())->ReadString(Form("MultipartonInteractions:pT0Ref = %.2f",2.0+gRandom->Uniform()));
     //============================================================
-    
+    (AliPythia8::Instance())->SetDecayLonglived();
+
     return gener;
 }
 
 AliGenerator* CreatePythiaMonashMoreQCD(Float_t e_cms)
 {
-    
+    gSystem->Load("libpythia6");
+    gSystem->Load("libEGPythia6");
+    gSystem->Load("libAliPythia6");
+    gSystem->Load("libpythia8");
+    gSystem->Load("libAliPythia8");
     gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8/xmldoc"));
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
     
+    AliPythia8 *pythia = AliPythia8::Instance();            // For ROOT6 needs to be created before AliGenPythiaPlus object, otherwise ending in "illegal instruction"
     AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
     
     //Standard setting setup
@@ -109,17 +127,23 @@ AliGenerator* CreatePythiaMonashMoreQCD(Float_t e_cms)
     (AliPythia8::Instance())->ReadString("ColourReconnection:junctionCorrection = 1.2");
     (AliPythia8::Instance())->ReadString("MultiPartonInteractions:pT0Ref = 2.15");
     //============================================================
-    
+    (AliPythia8::Instance())->SetDecayLonglived();
+
     return gener;
 }
 
 AliGenerator* CreatePythiaMonashNoCR(Float_t e_cms)
 {
-    
+    gSystem->Load("libpythia6");
+    gSystem->Load("libEGPythia6");
+    gSystem->Load("libAliPythia6");
+    gSystem->Load("libpythia8");
+    gSystem->Load("libAliPythia8");
     gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8/xmldoc"));
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
     
+    AliPythia8 *pythia = AliPythia8::Instance();            // For ROOT6 needs to be created before AliGenPythiaPlus object, otherwise ending in "illegal instruction"
     AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
     
     //Standard setting setup
@@ -141,16 +165,23 @@ AliGenerator* CreatePythiaMonashNoCR(Float_t e_cms)
     (AliPythia8::Instance())->ReadString("PartonLevel:earlyResDec = off");
     (AliPythia8::Instance())->ReadString("MultipartonInteractions:pT0Ref = 2.30");
     //============================================================
-    
+    (AliPythia8::Instance())->SetDecayLonglived();
+
     return gener;
 }
 
 AliGenerator* CreatePythiaMonashRopes(Float_t e_cms)
 {
+    gSystem->Load("libpythia6");
+    gSystem->Load("libEGPythia6");
+    gSystem->Load("libAliPythia6");
+    gSystem->Load("libpythia8");
+    gSystem->Load("libAliPythia8");
     gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8/xmldoc"));
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
-    
+
+    AliPythia8 *pythia = AliPythia8::Instance();            // For ROOT6 needs to be created before AliGenPythiaPlus object, otherwise ending in "illegal instruction"
     AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
     
     //Standard setting setup
@@ -200,16 +231,23 @@ AliGenerator* CreatePythiaMonashRopes(Float_t e_cms)
     (AliPythia8::Instance())->ReadString("PartonVertex:protonRadius = 0.7");
     (AliPythia8::Instance())->ReadString("PartonVertex:emissionWidth = 0.1");
     //============================================================
-    
+    (AliPythia8::Instance())->SetDecayLonglived();
+
     return gener;
 }
 
 AliGenerator* CreatePythiaMonashShoving(Float_t e_cms)
 {
+    gSystem->Load("libpythia6");
+    gSystem->Load("libEGPythia6");
+    gSystem->Load("libAliPythia6");
+    gSystem->Load("libpythia8");
+    gSystem->Load("libAliPythia8");
     gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8/xmldoc"));
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
     
+    AliPythia8 *pythia = AliPythia8::Instance();            // For ROOT6 needs to be created before AliGenPythiaPlus object, otherwise ending in "illegal instruction"
     AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
     
     //Standard setting setup
@@ -253,6 +291,7 @@ AliGenerator* CreatePythiaMonashShoving(Float_t e_cms)
     (AliPythia8::Instance())->ReadString("PartonVertex:protonRadius = 0.7");
     (AliPythia8::Instance())->ReadString("PartonVertex:emissionWidth = 0.1");
     //============================================================
-    
+    (AliPythia8::Instance())->SetDecayLonglived();
+
     return gener;
 }
