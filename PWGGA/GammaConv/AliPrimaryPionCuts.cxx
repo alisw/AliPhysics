@@ -1384,6 +1384,8 @@ void AliPrimaryPionCuts::SetHybridTrackCutsAODFiltering(Int_t runflag= 1000){
 		fEsdTrackCuts->SetPtRange(0.15, 1E+15);
 
 	 	fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+	} else{
+		AliFatal(Form("Runflag %d is an invalid option for track preselection! ",runflag));
 	}
 }
 
