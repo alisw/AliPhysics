@@ -2685,7 +2685,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBplus(TClonesArray *array2prong, Ali
                   
                   Double_t dca = secondTrack.GetDCA(&firstTrack, bfield, xdummy, ydummy);
                   Short_t chargeMother = dfromB->Charge() + pionTrack->Charge();
-                  if(chargeMother != 0) AliWarning("Bplus does not have charge, please check!");
+                  if(chargeMother == 0) AliWarning("Bplus does not have charge, please check!");
                   
                   //Using filtering cuts, too many AliAODRecoDecay objects are built per event
                   //The maximum number of TRef for a given TProcesssID is 2^24=16777216 can be reached.

@@ -2347,29 +2347,29 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int
       if(nResDau!=2) return -1;
       Int_t indFirstResDau=mcDau->GetDaughterFirst();
       for(Int_t resDau=0; resDau<2; resDau++){
-	Int_t indResDau=indFirstResDau+resDau;
-	if(indResDau<0) return -1;
-	TParticle* resdau=mcEvent->Particle(indResDau);
-	if(!resdau) return -1;
-	Int_t pdgresdau=resdau->GetPdgCode();
-	if(TMath::Abs(pdgresdau)==321){
-	  if(pdgD*pdgresdau<0) return -1;
-	  sumPxDau+=resdau->Px();
-	  sumPyDau+=resdau->Py();
-	  sumPzDau+=resdau->Pz();
-	  nKaons++;
-	  arrayDauLab[nFoundKpi++]=indResDau;
-	  if(nFoundKpi>3) return -1;
-	}
-	if(TMath::Abs(pdgresdau)==211){
-	  if(pdgD*pdgresdau>0) return -1;
-	  sumPxDau+=resdau->Px();
-	  sumPyDau+=resdau->Py();
-	  sumPzDau+=resdau->Pz();
-	  nPions++;
-	  arrayDauLab[nFoundKpi++]=indResDau;
-	  if(nFoundKpi>3) return -1;
-	}
+        Int_t indResDau=indFirstResDau+resDau;
+        if(indResDau<0) return -1;
+        TParticle* resdau=mcEvent->Particle(indResDau);
+        if(!resdau) return -1;
+        Int_t pdgresdau=resdau->GetPdgCode();
+        if(TMath::Abs(pdgresdau)==321){
+          if(pdgD*pdgresdau<0) return -1;
+          sumPxDau+=resdau->Px();
+          sumPyDau+=resdau->Py();
+          sumPzDau+=resdau->Pz();
+          nKaons++;
+          arrayDauLab[nFoundKpi++]=indResDau;
+          if(nFoundKpi>3) return -1;
+        }
+        if(TMath::Abs(pdgresdau)==211){
+          if(pdgD*pdgresdau>0) return -1;
+          sumPxDau+=resdau->Px();
+          sumPyDau+=resdau->Py();
+          sumPzDau+=resdau->Pz();
+          nPions++;
+          arrayDauLab[nFoundKpi++]=indResDau;
+          if(nFoundKpi>3) return -1;
+        }
       }
     }else if(TMath::Abs(pdgdau)==211){
       if(pdgD*pdgdau<0) return -1;
@@ -2384,6 +2384,10 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int
 
   if(nPions!=2) return -1;
   if(nKaons!=1) return -1;
+  //Temp fix for not conserving momentum in ITS upgrade productions
+  if(TMath::Abs(part->Px()-sumPxDau)<0.1) return 1;
+  if(TMath::Abs(part->Py()-sumPyDau)<0.1) return 1;
+  if(TMath::Abs(part->Pz()-sumPzDau)<0.1) return 1;
   if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
   if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
   if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
@@ -2419,29 +2423,29 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(TClonesArray* arrayMC, AliAODMCPartic
       if(nResDau!=2) return -1;
       Int_t indFirstResDau=dau->GetDaughterLabel(0);
       for(Int_t resDau=0; resDau<2; resDau++){
-	Int_t indResDau=indFirstResDau+resDau;
-	if(indResDau<0) return -1;
-	AliAODMCParticle* resdau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indResDau));
-	if(!resdau) return -1;
-	Int_t pdgresdau=resdau->GetPdgCode();
-	if(TMath::Abs(pdgresdau)==321){
-	  if(pdgD*pdgresdau<0) return -1;
-	  sumPxDau+=resdau->Px();
-	  sumPyDau+=resdau->Py();
-	  sumPzDau+=resdau->Pz();
-	  nKaons++;
-	  arrayDauLab[nFoundKpi++]=indResDau;
-	  if(nFoundKpi>3) return -1;
-	}
-	if(TMath::Abs(pdgresdau)==211){
-	  if(pdgD*pdgresdau>0) return -1;
-	  sumPxDau+=resdau->Px();
-	  sumPyDau+=resdau->Py();
-	  sumPzDau+=resdau->Pz();
-	  nPions++;
-	  arrayDauLab[nFoundKpi++]=indResDau;
-	  if(nFoundKpi>3) return -1;
-	}
+        Int_t indResDau=indFirstResDau+resDau;
+        if(indResDau<0) return -1;
+        AliAODMCParticle* resdau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indResDau));
+        if(!resdau) return -1;
+        Int_t pdgresdau=resdau->GetPdgCode();
+        if(TMath::Abs(pdgresdau)==321){
+          if(pdgD*pdgresdau<0) return -1;
+          sumPxDau+=resdau->Px();
+          sumPyDau+=resdau->Py();
+          sumPzDau+=resdau->Pz();
+          nKaons++;
+          arrayDauLab[nFoundKpi++]=indResDau;
+          if(nFoundKpi>3) return -1;
+        }
+        if(TMath::Abs(pdgresdau)==211){
+          if(pdgD*pdgresdau>0) return -1;
+          sumPxDau+=resdau->Px();
+          sumPyDau+=resdau->Py();
+          sumPzDau+=resdau->Pz();
+          nPions++;
+          arrayDauLab[nFoundKpi++]=indResDau;
+          if(nFoundKpi>3) return -1;
+        }
       }
     }else if(TMath::Abs(pdgdau)==211){
       if(pdgD*pdgdau<0) return -1;
@@ -2456,6 +2460,10 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(TClonesArray* arrayMC, AliAODMCPartic
 
   if(nPions!=2) return -1;
   if(nKaons!=1) return -1;
+  //Temp fix for not conserving momentum in ITS upgrade productions
+  if(TMath::Abs(mcPart->Px()-sumPxDau)<0.1) return 1;
+  if(TMath::Abs(mcPart->Py()-sumPyDau)<0.1) return 1;
+  if(TMath::Abs(mcPart->Pz()-sumPzDau)<0.1) return 1;
   if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
   if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
   if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
