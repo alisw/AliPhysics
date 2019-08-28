@@ -106,6 +106,16 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   void SetBayesPIDThr(Double_t Thr){
       fBayesPIDThr = Thr;
   }
+
+  void SetTOFBCPileUpCut(){
+    fUseTOFBCPileUpCut = kTRUE;
+  }
+
+  void SetTPCInOutRowsCut(Int_t innermostRows = 2,  Int_t outermostRows = 20){
+    fUseTPCInOutRowsCut = kTRUE;
+    fInRows = innermostRows;
+    fOutRows = outermostRows; 
+  }
   
   //Track cuts
   void SetMinNumberOfTPCClusters(Double_t min) {
@@ -269,6 +279,12 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Double_t fEtaRangeMax; // acceptance cuts
   Double_t fPtRangeMin;  // acceptance cuts
   Double_t fPtRangeMax;  // acceptance cuts
+
+  Bool_t fUseTOFBCPileUpCut;
+  
+  Bool_t fUseTPCInOutRowsCut;
+  Int_t fInRows;
+  Int_t fOutRows; 
   
   Double_t fDCAxyCut;//2D DCA cut
   Double_t fDCAzCut;//2D DCA cut
