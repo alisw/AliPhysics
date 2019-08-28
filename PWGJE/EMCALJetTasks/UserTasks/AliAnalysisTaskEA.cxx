@@ -201,6 +201,8 @@ fRandom(0)
       fhClusterPhiIncl[itg] = 0x0;
       fhClusterEtaIncl[itg] = 0x0;
 
+      fhTrackPtEtaPhiV0norm[itg] = 0x0;
+
       fhRho[itg] = 0x0;
     
       for(Int_t i=0; i<fkTTbins; i++){
@@ -470,6 +472,8 @@ fRandom(0)
 
       fhJetPhiIncl[itg]=0x0;
       fhJetEtaIncl[itg]=0x0;
+
+      fhTrackPtEtaPhiV0norm[itg] = 0x0;
 
       fhClusterPhiIncl[itg] = 0x0;
       fhClusterEtaIncl[itg] = 0x0;
@@ -1246,14 +1250,16 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    //READ  TRACK AND JET CONTAINERS
    //Container operations   http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerIterateTechniques
 
-   fTrkContainerDetLevel = static_cast<AliTrackContainer*> (GetTrackContainer(fMyTrackContainerName.Data())); //track container detector-level   real data only
+   //fTrkContainerDetLevel = static_cast<AliTrackContainer*> (GetTrackContainer(fMyTrackContainerName.Data())); //track container detector-level   real data only
+   fTrkContainerDetLevel = static_cast<AliTrackContainer*> (GetTrackContainer(0)); //track container detector-level   real data only
    fJetContainerDetLevel = static_cast<AliJetContainer*> (GetJetContainer(fMyJetContainerName.Data()));       //detector-level AKT jets    real data or hybrid event
    fKTJetContainerDetLevel = static_cast<AliJetContainer*> (GetJetContainer(fMyKTJetContainerName.Data()));     //detector-level KT jets    real data or hybrid event
 
    rho = GetMyRho(fKTJetContainerDetLevel); //estimated backround pt density
 
    if( fMode != AliAnalysisTaskEA::kNormal){  //particle level particles and jets  for  MC and embedding
-      fParticleContainerPartLevel = GetParticleContainer(fMyParticleContainerName.Data()); //pythia particle level particles 
+      //fParticleContainerPartLevel = GetParticleContainer(fMyParticleContainerName.Data()); //pythia particle level particles 
+      fParticleContainerPartLevel = GetParticleContainer(1); //pythia particle level particles 
       fJetContainerPartLevel      = static_cast<AliJetContainer*> (GetJetContainer(fMyJetParticleContainerName.Data()));   //pythia particle level AKT jets
       fKTJetContainerPartLevel    = static_cast<AliJetContainer*> (GetJetContainer(fMyKTJetParticleContainerName.Data()));   //pythia particle level KT jets
 
@@ -1262,7 +1268,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
    if( fMode == AliAnalysisTaskEA::kEmbedding){ //Detector level pythia  for  embedding
 
-      fTrkContainerDetLevelEMB = static_cast<AliTrackContainer*> (GetTrackContainer(fMyDetLevelContainerName.Data())); //pythia detector level tracks 
+      //fTrkContainerDetLevelEMB = static_cast<AliTrackContainer*> (GetTrackContainer(fMyDetLevelContainerName.Data())); //pythia detector level tracks 
+      fTrkContainerDetLevelEMB = static_cast<AliTrackContainer*> (GetTrackContainer(2)); //pythia detector level tracks 
       fJetContainerDetLevelEMB = static_cast<AliJetContainer*> (GetJetContainer(fMyJetDetLevelContainerName.Data()));  //pythia detector level AKT jets 
       fKTJetContainerDetLevelEMB = static_cast<AliJetContainer*> (GetJetContainer(fMyKTJetDetLevelContainerName.Data()));  //pythia detector level KT jets 
 
@@ -1431,7 +1438,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
 
    //_________________________________________________________
-   //LOOP OVER TRACKS DETECTOR LEVEL 
+   //LOOP OVER TRACKS DETECTOR LEVEL
+   Double_t tmparr[4]; 
  
    for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
       // trackIterator is a std::map of AliTLorentzVector and AliVTrack
@@ -1444,6 +1452,12 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             if(!trigflag[itg]) continue; 
             fhTrackPhiIncl[itg]->Fill(track->Pt(), track->Phi());
             fhTrackEtaIncl[itg]->Fill(track->Pt(), track->Eta());
+
+            tmparr[0] = track->Pt();
+            tmparr[1] = track->Eta();
+            tmparr[2] = track->Phi();
+            tmparr[3] = fMultV0Mnorm;
+            fhTrackPtEtaPhiV0norm[itg]->Fill(tmparr);
          }
       }
    }
@@ -2452,6 +2466,22 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       object = Form("Azim dist clusters vs pT %s",trig[itg].Data());
       fhClusterPhiIncl[itg] = new TH2D( name.Data(), object.Data(), 50, 0, 100, 50,0,2*TMath::Pi());
       fOutput->Add((TH2D*) fhClusterPhiIncl[itg]);
+   }
+
+   const Int_t ktdim = 4;
+   Int_t   tbins[ktdim] = { 50,   40,         140, 10};
+   Double_t txmin[ktdim] = { 0., -0.9, 0,  0.};  
+   Double_t txmax[ktdim] = {50.,  0.9, 2*TMath::Pi(), 10.};  
+
+
+   for(Int_t itg=kMB; itg<=kHM; itg++){
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue; 
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kGA) continue; 
+
+      name = Form("fhTrackPtEtaPhiV0norm_%s",trig[itg].Data());
+
+      fhTrackPtEtaPhiV0norm[itg] = new  THnSparseF(name.Data(),"Tracks pt eta phi V0nom", ktdim, tbins, txmin, txmax);
+      fOutput->Add((THnSparse*) fhTrackPtEtaPhiV0norm[itg]); 
    }
 
 
