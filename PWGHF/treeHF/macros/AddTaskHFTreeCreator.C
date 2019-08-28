@@ -60,7 +60,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     if(!looseCutsDplustoKpipi && fillTreeDplus)    ::Fatal("AddTaskHFTreeCreator", "looseCutsDplustoKpipi : check your cut file");
     AliRDHFCutsLctopKpi* looseCutsLctopKpi           =(AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiFilteringCuts");
     if(!looseCutsLctopKpi && fillTreeLctopKpi)        ::Fatal("AddTaskHFTreeCreator", "looseCutsLctopKpi : check your cut file");
-    AliRDHFCutsBPlustoD0Pi* looseCutsBplustoD0pi   =(AliRDHFCutsBPlustoD0Pi*)filecuts->Get("BplustoD0piFilteringCuts");
+    AliRDHFCutsD0toKpi* looseCutsBplustoD0pi   =(AliRDHFCutsD0toKpi*)filecuts->Get("BplustoD0piFilteringCuts");
     if(!looseCutsBplustoD0pi && fillTreeBplus)    ::Fatal("AddTaskHFTreeCreator", "looseCutsBplustoD0pi : check your cut file");
     AliRDHFCutsDstoKKpi* looseCutsBstoDspi   =(AliRDHFCutsDstoKKpi*)filecuts->Get("BstoDspiFilteringCuts");
     if(!looseCutsBstoDspi && fillTreeBs)    ::Fatal("AddTaskHFTreeCreator", "looseCutsBstoDspi : check your cut file");
@@ -78,7 +78,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     if(!analysisCutsDplustoKpipi && fillTreeDplus) ::Fatal("AddTaskHFTreeCreator", "analysisCutsDplustoKpipi : check your cut file");
     AliRDHFCutsLctopKpi*     analysisCutsLctopKpi    =(AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiAnalysisCuts");
     if(!analysisCutsLctopKpi && fillTreeLctopKpi) ::Fatal("AddTaskHFTreeCreator", "analysisCutsLctopKpi : check your cut file");
-    AliRDHFCutsBPlustoD0Pi* analysisCutsBplustoD0pi=(AliRDHFCutsBPlustoD0Pi*)filecuts->Get("BplustoD0piAnalysisCuts");
+    AliRDHFCutsD0toKpi* analysisCutsBplustoD0pi=(AliRDHFCutsD0toKpi*)filecuts->Get("BplustoD0piAnalysisCuts");
     if(!analysisCutsBplustoD0pi && fillTreeBplus) ::Fatal("AddTaskHFTreeCreator", "analysisCutsBplustoD0pi : check your cut file");
     AliRDHFCutsDstoKKpi* analysisCutsBstoDspi   =(AliRDHFCutsDstoKKpi*)filecuts->Get("BstoDspiAnalysisCuts");
     if(!analysisCutsBstoDspi && fillTreeBs)    ::Fatal("AddTaskHFTreeCreator", "analysisCutsBstoDspi : check your cut file");
