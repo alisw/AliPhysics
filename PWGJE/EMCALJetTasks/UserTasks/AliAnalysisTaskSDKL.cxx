@@ -530,6 +530,14 @@ void AliAnalysisTaskSDKL::FillTree(std::vector<fastjet::PseudoJet> const & jets,
   for (auto jet : jets) {
 
     if ( jet.pt() < 30. ) continue; //hard-coded jet-pt cut
+
+    //jet area cut
+    if ( jet.has_area() ) {
+      auto jarea = jet.area_4vector().perp();
+      auto area_nominal = TMath::Pi() * 0.4 * 0.4;
+      if ( jarea < (0.6 * area_nominal) ) continue;
+    }
+
     int nconst = 0;
     for (auto c : jet.constituents() ) {
       if ( c.pt() > 1.e-5 ) nconst++;
