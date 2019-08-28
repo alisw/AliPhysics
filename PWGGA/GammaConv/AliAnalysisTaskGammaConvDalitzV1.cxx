@@ -258,7 +258,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
   hNGoodESDTracksVsNGoodVGammas(NULL),
   fHistoSPDClusterTrackletBackground(NULL),
   hNV0Tracks(NULL),
-  hESDEposEnegPsiPairpTleptonsDPhi(NULL),
+  //hESDEposEnegPsiPairpTleptonsDPhi(NULL),
   hEtaShift(NULL),
   fHistoDoubleCountTruePi0InvMassPt(NULL),
   fHistoDoubleCountTrueEtaInvMassPt(NULL),
@@ -484,7 +484,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
   hNGoodESDTracksVsNGoodVGammas(NULL),
   fHistoSPDClusterTrackletBackground(NULL),
   hNV0Tracks(NULL),
-  hESDEposEnegPsiPairpTleptonsDPhi(NULL),
+  //hESDEposEnegPsiPairpTleptonsDPhi(NULL),
   hEtaShift(NULL),
   fHistoDoubleCountTruePi0InvMassPt(NULL),
   fHistoDoubleCountTrueEtaInvMassPt(NULL),
@@ -713,7 +713,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
     hESDDalitzElectronAfterTPCdEdxVsPhi     = new TH2F*[fnCuts];
     hESDDalitzPositronAfterTPCdEdxVsPhi     = new TH2F*[fnCuts];
     hESDEposEnegPsiPairDPhi        = new TH2F*[fnCuts];
-    hESDEposEnegPsiPairpTleptonsDPhi    = new TH3F*[fnCuts];
+    //hESDEposEnegPsiPairpTleptonsDPhi    = new TH3F*[fnCuts];
     hESDEposEnegPsiPairEta        = new TH2F*[fnCuts];
     hESDEposEnegDPhiEta        = new TH2F*[fnCuts];
     hESDEposEnegDPhiEta        = new TH2F*[fnCuts];
@@ -957,8 +957,8 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
       hESDEposEnegPsiPairDPhi[iCut] = new TH2F("ESD_EposEneg_PsiPair_DPhi","ESD_EposEneg_PsiPair_DPhi",100,-1.0,1.0,100,-1.0,1.0 );
       fQAFolder[iCut]->Add(hESDEposEnegPsiPairDPhi[iCut]);
 
-      hESDEposEnegPsiPairpTleptonsDPhi[iCut] = new TH3F("ESD_EposEneg_PsiPair_pTleptons_DPhi","ESD_EposEneg_PsiPair_DPhi",100,-1.0,1.0,100,-1.0,1.0,100,0,10);
-      fQAFolder[iCut]->Add(hESDEposEnegPsiPairpTleptonsDPhi[iCut]);
+      //hESDEposEnegPsiPairpTleptonsDPhi[iCut] = new TH3F("ESD_EposEneg_PsiPair_pTleptons_DPhi","ESD_EposEneg_PsiPair_DPhi",100,-1.0,1.0,100,-1.0,1.0,100,0,10);
+      //fQAFolder[iCut]->Add(hESDEposEnegPsiPairpTleptonsDPhi[iCut]);
 
       hESDEposEnegPsiPairEta[iCut] = new TH2F("ESD_EposEneg_PsiPair_Eta","ESD_EposEneg_PsiPair_Eta",100,-1.0,1.0,600,-1.5,1.5);
       fQAFolder[iCut]->Add(hESDEposEnegPsiPairEta[iCut]);
@@ -1943,7 +1943,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessVirtualGammasCandidates(){ //NOTE 
 //      momPos[0]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Px();
       Double_t deltaPhi = GetdeltaPhi(electronVgamma.get(),positronVgamma.get());
       hESDEposEnegPsiPairDPhi[fiCut]->Fill(deltaPhi,psiPair);
-      hESDEposEnegPsiPairpTleptonsDPhi[fiCut]->Fill(deltaPhi,psiPair,Vgamma->Pt());
+      //hESDEposEnegPsiPairpTleptonsDPhi[fiCut]->Fill(deltaPhi,psiPair,Vgamma->Pt());
       hESDEposEnegPsiPairEta[fiCut]->Fill(psiPair,Vgamma->Eta());
       hESDEposEnegDPhiEta[fiCut]->Fill(deltaPhi,Vgamma->Eta());
       hESDEposEnegInvMassPt[fiCut]->Fill(Vgamma->M(),Vgamma->Pt());
