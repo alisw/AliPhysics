@@ -310,7 +310,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   AliAnalysisTaskEffContBF(const AliAnalysisTaskEffContBF&); // not implemented
   AliAnalysisTaskEffContBF& operator=(const AliAnalysisTaskEffContBF&); // not implemented
   
-  ClassDef(AliAnalysisTaskEffContBF, 8); // example of analysis
+  ClassDef(AliAnalysisTaskEffContBF, 9); // example of analysis
 };
 
 #endif
