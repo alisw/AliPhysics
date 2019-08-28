@@ -241,6 +241,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fModifySPDDefaultParams(kFALSE),
   fMinVtxPileUpContrSPD(5),
   fMinPileUpZdistSPD(0.8),
+  fUseTOFBCPileUpCut(kFALSE),
+  fUseTPCInOutRowsCut(kFALSE),
+  fInRows(2),
+  fOutRows(20), 
   fDetailedTracksQA(kFALSE),
   fVxMax(0.8),
   fVyMax(0.8),
@@ -2497,7 +2501,24 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	if (!fESDtrackCuts->IsSelected(aodTrack))
 	  continue;
       }
-     
+
+      if (fUseTOFBCPileUpCut) {
+	if (!aodTrack->GetTOFBunchCrossing()==0)
+	  continue;
+      }
+      
+      if (fUseTPCInOutRowsCut) {
+	const TBits& bmap = aodTrack->GetTPCClusterMap();
+	// require at least 20 out of 25 and 3 out of 5 innermost rows
+	int nset25 = 0, nset5 = 0;
+	for (int i=0;i<25; i++) {
+	  if (!bmap.TestBitNumber(i)) continue;
+	  nset25++;
+	  if (i<5) nset5++;
+	}
+	if((nset5<fInRows) || (nset25<fOutRows))
+	  continue;
+      }
       
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
