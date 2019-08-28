@@ -107,9 +107,7 @@ fHistNpart(0),
 fHistNchVsNpart(0),
 fHistB(0),
 fHistNchVsB(0),
-fkDo2pc(kFALSE),
-fNumberOfEventsToMix(1),
-fAtMixEvent(0)
+fkDo2pc(kFALSE)
 {
     for(Int_t ih=0; ih<10; ih++){
         fBufferChargedTriggerSize[ih] = 0;
@@ -126,16 +124,14 @@ fAtMixEvent(0)
     }
     for(Int_t ih=0; ih<13; ih++){
         fHistPt[ih]          = 0x0;
+        fHistEta[ih]         = 0x0;
         fHistPtVsV0MMult[ih] = 0x0;
         fHistPtVsSPDMult[ih] = 0x0;
         fHistPtVsNpart[ih]   = 0x0;
         fHistPtVsB[ih]       = 0x0;
         fHist3d2pcSE[ih]     = 0x0;
-        fHist3d2pcME[ih]     = 0x0;
         fHist3d2pcXiSE[ih]   = 0x0;
-        fHist3d2pcXiME[ih]   = 0x0;
         fHist3d2pcPhiSE[ih]  = 0x0;
-        fHist3d2pcPhiME[ih]  = 0x0;
     }
 }
 
@@ -154,9 +150,7 @@ fHistNpart(0),
 fHistNchVsNpart(0),
 fHistB(0),
 fHistNchVsB(0),
-fkDo2pc(kFALSE), 
-fNumberOfEventsToMix(1),
-fAtMixEvent(0)
+fkDo2pc(kFALSE)
 {
     for(Int_t ih=0; ih<10; ih++){
         fBufferChargedTriggerSize[ih] = 0;
@@ -173,16 +167,14 @@ fAtMixEvent(0)
     }
     for(Int_t ih=0; ih<13; ih++){
         fHistPt[ih]          = 0x0;
+        fHistEta[ih]         = 0x0;
         fHistPtVsV0MMult[ih] = 0x0;
         fHistPtVsSPDMult[ih] = 0x0;
         fHistPtVsNpart[ih]   = 0x0;
         fHistPtVsB[ih]       = 0x0;
         fHist3d2pcSE[ih]     = 0x0;
-        fHist3d2pcME[ih]     = 0x0;
         fHist3d2pcXiSE[ih]   = 0x0;
-        fHist3d2pcXiME[ih]   = 0x0;
         fHist3d2pcPhiSE[ih]  = 0x0;
-        fHist3d2pcPhiME[ih]  = 0x0;
     }
     DefineOutput(1, TList::Class()); // Event Counter Histo
 }
@@ -213,6 +205,9 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     //Settings for transverse momentum
     Int_t lNPtBins = 400;
     Double_t lMaxPt = 40.0;
+    
+    Int_t lNEtaBins = 400;
+    Double_t lMaxAbsEta = 2;
     
     //Settings for charged particle counters (integers!)
     Int_t lNNchBins = fSmallMultRange/fRebinFactor;
@@ -299,6 +294,12 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
         if(! fHistPt[ih] ) {
             fHistPt[ih] = new TH1D(Form("fHistPt_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPt[ih]);
+        }
+    }
+    for(Int_t ih=0; ih<13; ih++){
+        if(! fHistEta[ih] ) {
+            fHistEta[ih] = new TH1D(Form("fHistEta_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
+            fListHist->Add(fHistEta[ih]);
         }
     }
     for(Int_t ih=0; ih<13; ih++){
@@ -518,15 +519,18 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(ilab);
         
         for(Int_t ih=0; ih<13; ih++){
-            if( TMath::Abs(lThisPDG) == lPDGCodes[ih] && TMath::Abs(lThisRap) < 0.5 ) {
+            if( TMath::Abs(lThisPDG) == lPDGCodes[ih] ) {
                 //Check if primary (if needed) and if not don't use this particle
                 if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
                 //Fill Histograms
-                fHistPt[ih]->Fill(lThisPt);
-                fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
-                fHistPtVsSPDMult[ih]->Fill(lNchEta14,lThisPt);
-                fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
-                fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
+                fHistEta[ih] -> Fill ( lPart -> Eta() );
+                if( TMath::Abs(lThisRap) < 0.5 ) {
+                    fHistPt[ih]->Fill(lThisPt);
+                    fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
+                    fHistPtVsSPDMult[ih]->Fill(lNchEta14,lThisPt);
+                    fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
+                    fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
+                }
             }
         }
     }//End of loop on tracks
