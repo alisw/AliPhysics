@@ -37,7 +37,6 @@
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsLctopKpi.h"
-#include "AliRDHFCutsBPlustoD0Pi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsLctoV0.h"
 #include "AliNormalizationCounter.h"
@@ -170,6 +169,7 @@ public:
     void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
     void ProcessDstar(TClonesArray *arrayDstar, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
     void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
+    void ProcessBplus(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessBs(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessLb(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessMCGen(TClonesArray *mcarray);
@@ -220,7 +220,7 @@ private:
     AliRDHFCutsDstoKKpi     *fFiltCutsDstoKKpi;                    //      DstoKKpi filtering (or loose) cuts
     AliRDHFCutsDplustoKpipi *fFiltCutsDplustoKpipi;                //      DplustoKpipi filtering (or loose) cuts
     AliRDHFCutsLctopKpi     *fFiltCutsLctopKpi    ;                //      LctopKpi filtering (or loose) cuts
-    AliRDHFCutsBPlustoD0Pi  *fFiltCutsBplustoD0pi;                 //      BplustoD0pi filtering (or loose) cuts
+    AliRDHFCutsD0toKpi      *fFiltCutsBplustoD0pi;                 //      BplustoD0pi filtering (or loose) cuts
     AliRDHFCutsDstoKKpi     *fFiltCutsBstoDspi;                    //      BstoDspi filtering (or loose) cuts
     AliRDHFCutsDStartoKpipi *fFiltCutsDstartoKpipi;                //      DstartoKpipi filtering (or loose) cuts
     AliRDHFCutsLctoV0       *fFiltCutsLc2V0bachelor;               //      Lc2V0bachelor filtering (or loose) cuts
@@ -229,7 +229,7 @@ private:
     AliRDHFCutsDstoKKpi     *fCutsDstoKKpi;                        //      DstoKKpi analysis cuts
     AliRDHFCutsDplustoKpipi *fCutsDplustoKpipi;                    //      DplustoKpipi analysis cuts
     AliRDHFCutsLctopKpi     *fCutsLctopKpi;                        //      LctopKpi analysis cuts
-    AliRDHFCutsBPlustoD0Pi  *fCutsBplustoD0pi;                     //      BplustoD0pi analysis cuts
+    AliRDHFCutsD0toKpi      *fCutsBplustoD0pi;                     //      BplustoD0pi analysis cuts
     AliRDHFCutsDstoKKpi     *fCutsBstoDspi;                        //      BstoDspi analysis cuts
     AliRDHFCutsDStartoKpipi *fCutsDstartoKpipi;                    //      DstartoKpipi analysis cuts
     AliRDHFCutsLctoV0       *fCutsLc2V0bachelor;                   //      Lc2V0bachelor analysis cuts
@@ -438,7 +438,7 @@ private:
     bool fCorrV0MVtx;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,18);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,19);
     /// \endcond
 };
 

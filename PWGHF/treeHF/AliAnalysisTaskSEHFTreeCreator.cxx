@@ -286,7 +286,7 @@ fCorrV0MVtx(false)
     fFiltCutsDstoKKpi     =(AliRDHFCutsDstoKKpi*)fListCuts->FindObject("DstoKKpiFilteringCuts");
     fFiltCutsDplustoKpipi =(AliRDHFCutsDplustoKpipi*)fListCuts->FindObject("DplustoKpipiFilteringCuts");
     fFiltCutsLctopKpi     =(AliRDHFCutsLctopKpi*)fListCuts->FindObject("LctopKpiFilteringCuts");
-    fFiltCutsBplustoD0pi  =(AliRDHFCutsBPlustoD0Pi*)fListCuts->FindObject("BplustoD0piFilteringCuts");
+    fFiltCutsBplustoD0pi  =(AliRDHFCutsD0toKpi*)fListCuts->FindObject("BplustoD0piFilteringCuts");
     fFiltCutsBstoDspi     =(AliRDHFCutsDstoKKpi*)fListCuts->FindObject("BstoDspiFilteringCuts");
     fFiltCutsDstartoKpipi =(AliRDHFCutsDStartoKpipi*)fListCuts->FindObject("DstartoKpipiFilteringCuts");
     fFiltCutsLc2V0bachelor=(AliRDHFCutsLctoV0*)fListCuts->FindObject("Lc2V0bachelorFilteringCuts");
@@ -295,7 +295,7 @@ fCorrV0MVtx(false)
     fCutsDstoKKpi         =(AliRDHFCutsDstoKKpi*)fListCuts->FindObject("DstoKKpiAnalysisCuts");
     fCutsDplustoKpipi     =(AliRDHFCutsDplustoKpipi*)fListCuts->FindObject("DplustoKpipiAnalysisCuts");
     fCutsLctopKpi         =(AliRDHFCutsLctopKpi*)fListCuts->FindObject("LctopKpiAnalysisCuts");
-    fCutsBplustoD0pi      =(AliRDHFCutsBPlustoD0Pi*)fListCuts->FindObject("BplustoD0piAnalysisCuts");
+    fCutsBplustoD0pi      =(AliRDHFCutsD0toKpi*)fListCuts->FindObject("BplustoD0piAnalysisCuts");
     fCutsBstoDspi         =(AliRDHFCutsDstoKKpi*)fListCuts->FindObject("BstoDspiAnalysisCuts");
     fCutsDstartoKpipi     =(AliRDHFCutsDStartoKpipi*)fListCuts->FindObject("DstartoKpipiAnalysisCuts");
     fCutsLc2V0bachelor    =(AliRDHFCutsLctoV0*)fListCuts->FindObject("Lc2V0bachelorAnalysisCuts");
@@ -496,7 +496,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(23,"n. LctopKpi after filtering");
   fNentries->GetXaxis()->SetBinLabel(24,"n. LctopKpi after selection");
   fNentries->GetXaxis()->SetBinLabel(25,"n. of not on-the-fly rec LctopKpi");
-  fNentries->GetXaxis()->SetBinLabel(26,"n. Bplus after filtering");
+  fNentries->GetXaxis()->SetBinLabel(26,"n. Bplus D0's after filtering");
   fNentries->GetXaxis()->SetBinLabel(27,"n. Bplus after selection");
   fNentries->GetXaxis()->SetBinLabel(28,"n. of not on-the-fly rec Bplus");
   fNentries->GetXaxis()->SetBinLabel(29,"n. of Dstar candidates");
@@ -507,10 +507,10 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(34,"n. Lc2V0bachelor after filtering");
   fNentries->GetXaxis()->SetBinLabel(35,"n. Lc2V0bachelor after selection");
   fNentries->GetXaxis()->SetBinLabel(36,"n. of not on-the-fly rec Lc2V0bachelor");
-  fNentries->GetXaxis()->SetBinLabel(37,"n. Bs after filtering");
+  fNentries->GetXaxis()->SetBinLabel(37,"n. Bs Ds's after filtering");
   fNentries->GetXaxis()->SetBinLabel(38,"n. Bs after selection");
   fNentries->GetXaxis()->SetBinLabel(39,"n. of not on-the-fly rec Bs");
-  fNentries->GetXaxis()->SetBinLabel(40,"n. Lb after filtering");
+  fNentries->GetXaxis()->SetBinLabel(40,"n. Lb Lc's after filtering");
   fNentries->GetXaxis()->SetBinLabel(41,"n. Lb after selection");
   fNentries->GetXaxis()->SetBinLabel(42,"n. of not on-the-fly rec Lb");
   
@@ -1343,10 +1343,11 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   //get PID response
   if(!fPIDresp) fPIDresp = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
   
-  if(fWriteVariableTreeD0 || fWriteVariableTreeBplus) Process2Prong(array2prong,aod,mcArray,aod->GetMagneticField());
+  if(fWriteVariableTreeD0) Process2Prong(array2prong,aod,mcArray,aod->GetMagneticField());
   if(fWriteVariableTreeDs || fWriteVariableTreeDplus || fWriteVariableTreeLctopKpi) Process3Prong(array3Prong,aod,mcArray,aod->GetMagneticField());
   if(fWriteVariableTreeDstar) ProcessDstar(arrayDstar,aod,mcArray,aod->GetMagneticField());
   if(fWriteVariableTreeLc2V0bachelor) ProcessCasc(arrayCasc,aod,mcArray,aod->GetMagneticField());
+  if(fWriteVariableTreeBplus) ProcessBplus(array2prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
   if(fWriteVariableTreeBs) ProcessBs(array3Prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
   if(fWriteVariableTreeLb) ProcessLb(array3Prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
   if(fFillMCGenTrees && fReadMC) ProcessMCGen(mcArray);
@@ -1580,20 +1581,13 @@ void AliAnalysisTaskSEHFTreeCreator::Terminate(Option_t */*option*/)
 void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield){
   
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-  //Needed separate one for Bplus, because D0 deletes its daughters from PV
-  AliAODVertex *vtx1_Bplus = (AliAODVertex*)aod->GetPrimaryVertex();
   
   Int_t n2prong = array2prong->GetEntriesFast();
   if(fDebug>2) printf("Number of D0->Kpi: %d\n",n2prong);
   
   Int_t pdgDgD0toKpi[2]={321,211};
-  Int_t pdgDgD0topiK[2]={211,321};
   Int_t nSelectedD0=0;
   Int_t nFilteredD0=0;
-  
-  Int_t pdgDgBplustoD0piInt[2] = {211,421};
-  Int_t nSelectedBplus = 0;
-  Int_t nFilteredBplus = 0;
   
   // vHF object is needed to call the method that refills the missing info of the candidates
   // if they have been deleted in dAOD reconstruction phase
@@ -1757,152 +1751,6 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
         fNentries->Fill(14); //monitor how often this fails
       }
     }//end D0
-    
-    //*************************************
-    //Bplus (need to be reconstructed on the fly using a D0 candidate)
-    
-    //D0 from Bplus
-    Bool_t isD0fromBplustagged=kTRUE;
-    AliAODRecoDecayHF2Prong *dfromB = (AliAODRecoDecayHF2Prong*)array2prong->UncheckedAt(i2prong);
-    if(fUseSelectionBit && dfromB->GetSelectionMap()) if(!dfromB->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
-      isD0fromBplustagged=kFALSE;
-    }
-    
-    if(isD0fromBplustagged && fWriteVariableTreeBplus){
-      fNentries->Fill(25);
-      nFilteredBplus++;
-      if ((vHF->FillRecoCand(aod, dfromB))) { //Fill the data members of the candidate only if they are empty.
-        
-        Int_t isSelectedFilt=fFiltCutsBplustoD0pi->IsD0forD0ptbinSelectedMVA(dfromB, AliRDHFCuts::kAll, aod, vtx1_Bplus, bfield);
-        if(isSelectedFilt > 0){
-          
-          //loop over all tracks for pion from Bplus
-          for (Int_t iTrack = 0; iTrack < aod->GetNumberOfTracks(); ++iTrack){
-            
-            AliAODTrack* pionTrack = dynamic_cast<AliAODTrack*>(aod->GetTrack(iTrack));
-            if (!pionTrack) AliFatal("Not a standard AOD");
-            
-            if(fFiltCutsBplustoD0pi->IsBplusPionSelectedMVA(pionTrack, AliRDHFCuts::kAll, aod, vtx1_Bplus, bfield) > 0){
-              
-              //we check if the IDs of the tracks are different
-              AliAODTrack* twoProngdaughter0 = (AliAODTrack*)dfromB->GetDaughter(0);
-              AliAODTrack* twoProngdaughter1 = (AliAODTrack*)dfromB->GetDaughter(1);
-              UShort_t idProng0 = twoProngdaughter0->GetID();
-              UShort_t idProng1 = twoProngdaughter1->GetID();
-              if (pionTrack->GetID() != idProng0 && pionTrack->GetID() != idProng1){
-                
-                //Pre reconstructing vertex cuts (to speed things up)
-                if(fFiltCutsBplustoD0pi->IsD0SelectedPreRecVtxMVA(dfromB,pionTrack,vtx1_Bplus,bfield,0) > 0){
-                  
-                  //we use the BPlus pion and D0 tracks to reconstruct the vertex for the BPlus
-                  AliExternalTrackParam firstTrack;
-                  firstTrack.CopyFromVTrack(pionTrack);
-                  AliExternalTrackParam secondTrack;
-                  secondTrack.CopyFromVTrack(dfromB);
-                  
-                  // we calculate the vertex of the mother candidate
-                  TObjArray daughterTracks;
-                  daughterTracks.Add(&firstTrack);
-                  daughterTracks.Add(&secondTrack);
-                  Double_t dispersion = 0;
-                  AliAODVertex *vertexMother = ReconstructDisplVertex(vtx1_Bplus, &daughterTracks, bfield, dispersion);
-                  
-                  if (vertexMother){ //check if calculation vertex Bplus succeeded
-                    
-                    //use the new vertex to create the BPlus candidate
-                    Double_t xdummy = 0., ydummy = 0.;
-                    Double_t d0z0[2], covd0z0[3], d0[2], d0err[2];
-                    
-                    firstTrack.PropagateToDCA(vertexMother, bfield, 100., d0z0, covd0z0);
-                    secondTrack.PropagateToDCA(vertexMother, bfield, 100., d0z0, covd0z0);
-                    
-                    //we reconstruct the mother decay prong
-                    Double_t px[2], py[2], pz[2];
-                    px[0] = firstTrack.Px();
-                    py[0] = firstTrack.Py();
-                    pz[0] = firstTrack.Pz();
-                    px[1] = secondTrack.Px();
-                    py[1] = secondTrack.Py();
-                    pz[1] = secondTrack.Pz();
-                    
-                    UShort_t id[2];
-                    id[0] = firstTrack.GetID();
-                    id[1] = secondTrack.GetID();
-                    
-                    firstTrack.PropagateToDCA(vtx1_Bplus, bfield, 100., d0z0, covd0z0);
-                    d0[0] = d0z0[0];
-                    d0err[0] = TMath::Sqrt(covd0z0[0]);
-                    secondTrack.PropagateToDCA(vtx1_Bplus, bfield, 100., d0z0, covd0z0);
-                    d0[1] = d0z0[0];
-                    d0err[1] = TMath::Sqrt(covd0z0[0]);
-                    
-                    Double_t dca = secondTrack.GetDCA(&firstTrack, bfield, xdummy, ydummy);
-                    Short_t chargeMother = dfromB->Charge() + pionTrack->Charge();
-                    
-                    AliAODRecoDecayHF2Prong trackBPlus(vertexMother, px, py, pz, d0, d0err, dca);
-                    
-                    trackBPlus.SetCharge(chargeMother);
-                    trackBPlus.GetSecondaryVtx()->AddDaughter(pionTrack);
-                    trackBPlus.GetSecondaryVtx()->AddDaughter(dfromB);
-                    trackBPlus.SetPrimaryVtxRef((AliAODVertex*)aod->GetPrimaryVertex());
-                    trackBPlus.SetProngIDs(2, id);
-                    
-                    if(fFiltCutsBplustoD0pi->IsSelected(&trackBPlus, 0, aod) > 0){
-                      
-                      Bool_t isSelAnCuts=kFALSE;
-                      Int_t isSelectedAnalysis=fCutsBplustoD0pi->IsD0forD0ptbinSelectedMVA(dfromB, AliRDHFCuts::kAll, aod, vtx1_Bplus, bfield);
-                      if(isSelectedAnalysis > 0) isSelAnCuts=kTRUE;
-                      
-                      Bool_t isSelAnCutsBplus = kTRUE;
-                      if(fCutsBplustoD0pi->IsD0forD0ptbinSelectedMVA(dfromB, AliRDHFCuts::kAll, aod, vtx1_Bplus, bfield) < 1) isSelAnCutsBplus = kFALSE;
-                      if(fCutsBplustoD0pi->IsBplusPionSelectedMVA(pionTrack, AliRDHFCuts::kAll, aod, vtx1_Bplus, bfield) < 1) isSelAnCutsBplus = kFALSE;
-                      if(fCutsBplustoD0pi->IsD0SelectedPreRecVtxMVA(dfromB,pionTrack,vtx1_Bplus,bfield,0) > 0) isSelAnCutsBplus = kFALSE;
-                      if(fCutsBplustoD0pi->IsSelected(&trackBPlus, 0, aod) < 1) isSelAnCutsBplus = kFALSE;
-                      
-                      fNentries->Fill(26);
-                      nSelectedBplus++;
-                      
-                      Int_t labBplus = -1;
-                      if (fReadMC) labBplus = trackBPlus.MatchToMCB2Prong(521,421,pdgDgBplustoD0piInt,pdgDgD0topiK,arrMC);
-                      
-                      bool issignal = kFALSE;
-                      bool isbkg =    kFALSE;
-                      bool isFD =     kFALSE;
-                      bool isprompt = kTRUE;
-                      bool isrefl =   kFALSE;
-                      Int_t masshypo = 0;
-                      Float_t ptGenBplus = -99.;
-                      
-                      if(labBplus >= 0) {issignal = kTRUE;}
-                      else isbkg = kTRUE;
-                      
-                      if (fReadMC) {
-                        fTreeHandlerBplus->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
-                      }
-                      fTreeHandlerBplus->SetIsSelectedStd(isSelAnCutsBplus,isSelAnCutsBplus,isSelAnCutsBplus,isSelAnCutsBplus);
-                      fTreeHandlerBplus->SetVariables(fRunNumber,fEventID,ptGenBplus,&trackBPlus, bfield, masshypo, fPIDresp);
-                      if (fFillJets){
-                        AliAODRecoDecayHF2Prong *trackBPlusptr=&trackBPlus;
-                        UInt_t prong_pdg[2]={211,421};
-                        fTreeHandlerBplus->SetJetVars(aod->GetTracks(),trackBPlusptr,trackBPlusptr->InvMass(2,prong_pdg),nullptr,nullptr);
-                      }
-                      fTreeHandlerBplus->FillTree();
-                      
-                    } // end Bplus is selected filt
-                  } // end calculation vertex Bplus
-                  
-                  delete vertexMother; vertexMother = nullptr;
-                  
-                } // end pre RecVtx selection
-              } // end track ID check
-            } //end Bplus pion pre selection
-          } //end loop over pion track
-        } //end D0 filt pre selection
-      } else {
-        fNentries->Fill(27); //monitor how often this fails
-      }
-    }//end Bplus
-    
   }//end loop on candidates
   
   delete vHF;
@@ -2682,6 +2530,240 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
   return;
 }
 //--------------------------------------------------------
+void AliAnalysisTaskSEHFTreeCreator::ProcessBplus(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader){
+  
+  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+  
+  Int_t n2prong = array2prong->GetEntriesFast();
+  if(fDebug>2) printf("Number of 2prongs: %d\n",n2prong);
+  
+  Int_t pdgDgD0toKpi[2]={321,211};
+  Int_t pdgDgD0topiK[2]={211,321};
+  Int_t nSelectedD0=0;
+  Int_t nFilteredD0=0;
+  
+  Int_t pdgDgBplustoD0piInt[2] = {211,421};
+  UInt_t pdgDgBplustoD0piUInt[2] = {211,421};
+  Int_t nSelectedBplus = 0;
+  Int_t nFilteredBplus = 0;
+  
+  // Select good track before hand to save time
+  Int_t nTracks= aod->GetNumberOfTracks();
+  if (nTracks==0) return;
+  Bool_t seleTrkFlags[nTracks];
+  Int_t nSeleTrks=0;
+  SelectGoodTrackForReconstruction(aod, nTracks, nSeleTrks, seleTrkFlags);
+  if(nSeleTrks<1) return;
+  
+  // Get AliAODPidHF Bplus object for IsBsPionSelected function in BplusTreeHandler
+  AliAODPidHF* fPidHFD0 = fFiltCutsBplustoD0pi->GetPidHF();
+
+  // vHF object is needed to call the method that refills the missing info of the candidates
+  // if they have been deleted in dAOD reconstruction phase
+  // in order to reduce the size of the file
+  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
+  
+  for (Int_t i2prong = 0; i2prong < n2prong; i2prong++) {
+    
+    //D0 from Bplus
+    Bool_t isD0fromBplustagged=kTRUE;
+    AliAODRecoDecayHF2Prong *dfromB = (AliAODRecoDecayHF2Prong*)array2prong->UncheckedAt(i2prong);
+    if(fUseSelectionBit && dfromB->GetSelectionMap()) if(!dfromB->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
+      isD0fromBplustagged=kFALSE;
+    }
+    
+    if(isD0fromBplustagged && fWriteVariableTreeBplus){
+      nFilteredD0++;
+      if ((vHF->FillRecoCand(aod, dfromB))) { //Fill the data members of the candidate only if they are empty.
+        
+        //To significantly speed up the task when only signal was requested
+        if(fWriteOnlySignal){
+          if(dfromB->MatchToMC(421,arrMC,2,pdgDgD0toKpi) < 0) continue;
+        }
+        
+        Int_t isSelectedFilt=fFiltCutsBplustoD0pi->IsSelected(dfromB,AliRDHFCuts::kAll,aod);
+        if(isSelectedFilt > 0){
+          fNentries->Fill(25);
+          nSelectedD0++;
+
+          //test analysis cuts
+          Bool_t isSelAnCuts=kFALSE;
+          Bool_t isSelAnPidCuts=kFALSE;
+          Bool_t isSelAnTopoCuts=kFALSE;
+          Bool_t isSelTracksAnCuts=kFALSE;
+
+          //analysis cuts
+          Int_t isSelectedAnalysis = fCutsBplustoD0pi->IsSelected(dfromB,AliRDHFCuts::kAll,aod); //selected
+          Int_t isSelectedPidAnalysis = fCutsBplustoD0pi->IsSelectedPID(dfromB); //selected
+          bool isUsePidAn = fCutsBplustoD0pi->GetIsUsePID();
+          if(isUsePidAn) fCutsBplustoD0pi->SetUsePID(kFALSE);
+          Int_t isSelectedTopoAnalysis = fCutsBplustoD0pi->IsSelected(dfromB,AliRDHFCuts::kAll,aod);
+          fCutsBplustoD0pi->SetUsePID(isUsePidAn);
+          Int_t isSelectedTrackAnalysis = fCutsBplustoD0pi->IsSelected(dfromB,AliRDHFCuts::kTracks,aod);
+          
+          if(isSelectedAnalysis > 0) isSelAnCuts=kTRUE;
+          if(isSelectedPidAnalysis > 0) isSelAnPidCuts=kTRUE;
+          if(isSelectedTopoAnalysis > 0) isSelAnTopoCuts=kTRUE;
+          if(isSelectedTrackAnalysis > 0) isSelTracksAnCuts=kTRUE;
+          
+          Bool_t unsetvtx=kFALSE;
+          if(!dfromB->GetOwnPrimaryVtx()){
+            dfromB->SetOwnPrimaryVtx(vtx1);
+            unsetvtx=kTRUE;
+            // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
+            // Pay attention if you use continue inside this loop!!!
+          }
+          Bool_t recVtx=kFALSE;
+          AliAODVertex *origownvtx=0x0;
+          if(fFiltCutsBplustoD0pi->GetIsPrimaryWithoutDaughters()){
+            if(dfromB->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dfromB->GetOwnPrimaryVtx());
+            if(fFiltCutsBplustoD0pi->RecalcOwnPrimaryVtx(dfromB,aod))recVtx=kTRUE;
+            else fFiltCutsBplustoD0pi->CleanOwnPrimaryVtx(dfromB,aod,origownvtx);
+          }
+          
+          //loop over all selected tracks for pion from Bplus
+          for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+            if(!seleTrkFlags[iTrack]) continue;
+            nFilteredBplus++;
+          
+            AliAODTrack* pionTrack = dynamic_cast<AliAODTrack*>(aod->GetTrack(iTrack));
+            if (!pionTrack) AliFatal("Not a standard AOD");
+            //To check what is usual statement with charge? Or isn't there any?
+            //if (dfromB->Charge() != -1.*pionTrack->Charge()) continue;
+
+            if(fTreeHandlerBplus->IsBplusPionSelected(pionTrack, fFiltCutsBplustoD0pi, fPidHFD0, aod, vtx1)){
+
+              //we check if the IDs of the tracks are different
+              AliAODTrack* twoProngdaughter0 = (AliAODTrack*)dfromB->GetDaughter(0);
+              AliAODTrack* twoProngdaughter1 = (AliAODTrack*)dfromB->GetDaughter(1);
+              UShort_t idProng0 = twoProngdaughter0->GetID();
+              UShort_t idProng1 = twoProngdaughter1->GetID();
+              if (pionTrack->GetID() != idProng0 && pionTrack->GetID() != idProng1){
+                
+                //we use the Bplus pion and D0 tracks to reconstruct the vertex for the Bplus
+                //(order swapped wrt to Bs and Lb because of already existing MatchToMC function)
+                AliExternalTrackParam firstTrack;
+                firstTrack.CopyFromVTrack(pionTrack);
+                AliExternalTrackParam secondTrack;
+                secondTrack.CopyFromVTrack(dfromB);
+                
+                // we calculate the vertex of the mother candidate
+                TObjArray daughterTracks;
+                daughterTracks.Add(&firstTrack);
+                daughterTracks.Add(&secondTrack);
+                Double_t dispersion = 0;
+                AliAODVertex *vertexMother = ReconstructDisplVertex(vtx1, &daughterTracks, bfield, dispersion);
+                
+                if (vertexMother){ //check if calculation vertex Bplus succeeded
+                  
+                  //use the new vertex to create the Bplus candidate
+                  Double_t xdummy = 0., ydummy = 0.;
+                  Double_t d0z0[2], covd0z0[3], d0[2], d0err[2];
+                  
+                  firstTrack.PropagateToDCA(vertexMother, bfield, 100., d0z0, covd0z0);
+                  secondTrack.PropagateToDCA(vertexMother, bfield, 100., d0z0, covd0z0);
+                  
+                  //we reconstruct the mother decay prong
+                  Double_t px[2], py[2], pz[2];
+                  px[0] = firstTrack.Px();
+                  py[0] = firstTrack.Py();
+                  pz[0] = firstTrack.Pz();
+                  px[1] = secondTrack.Px();
+                  py[1] = secondTrack.Py();
+                  pz[1] = secondTrack.Pz();
+                  
+                  UShort_t id[2];
+                  id[0] = firstTrack.GetID();
+                  id[1] = secondTrack.GetID();
+                  
+                  firstTrack.PropagateToDCA(vtx1, bfield, 100., d0z0, covd0z0);
+                  d0[0] = d0z0[0];
+                  d0err[0] = TMath::Sqrt(covd0z0[0]);
+                  secondTrack.PropagateToDCA(vtx1, bfield, 100., d0z0, covd0z0);
+                  d0[1] = d0z0[0];
+                  d0err[1] = TMath::Sqrt(covd0z0[0]);
+                  
+                  Double_t dca = secondTrack.GetDCA(&firstTrack, bfield, xdummy, ydummy);
+                  Short_t chargeMother = dfromB->Charge() + pionTrack->Charge();
+                  if(chargeMother != 0) AliWarning("Bplus does not have charge, please check!");
+                  
+                  //Using filtering cuts, too many AliAODRecoDecay objects are built per event
+                  //The maximum number of TRef for a given TProcesssID is 2^24=16777216 can be reached.
+                  //Save current Object count, and set it back after filling the TTree to not get AliFatal
+                  Int_t ObjectNumber = TProcessID::GetObjectCount();
+                  AliAODRecoDecayHF2Prong trackBplus(vertexMother, px, py, pz, d0, d0err, dca);
+                  
+                  trackBplus.SetCharge(chargeMother);
+                  trackBplus.GetSecondaryVtx()->AddDaughter(pionTrack);
+                  trackBplus.GetSecondaryVtx()->AddDaughter(dfromB);
+                  trackBplus.SetPrimaryVtxRef((AliAODVertex*)aod->GetPrimaryVertex());
+                  trackBplus.SetProngIDs(2, id);
+                  
+                  /*Add some hardcoded cuts Bplus object for the moment. To be moved to TreeHandler when there are more*/
+                  Double_t invmassBplus = trackBplus.InvMass(2, pdgDgBplustoD0piUInt);
+                  Double_t massBplusPDG = TDatabasePDG::Instance()->GetParticle(521)->Mass();
+                  if(TMath::Abs(invmassBplus-massBplusPDG) < 0.3){
+                    
+                    fNentries->Fill(26);
+                    nSelectedBplus++;
+                  
+                    Int_t labBplus = -1;
+                    bool issignal = kFALSE;
+                    bool isbkg =    kFALSE;
+                    bool isFD =     kFALSE;
+                    bool isprompt = kTRUE; //beauty, so "always" prompt
+                    bool isrefl =   kFALSE; //To check, do we have reflections?
+                    Float_t ptGenBplus = -99.;
+                    //read mc
+                    AliAODMCParticle *partBplus=0x0;
+                    if (fReadMC){
+                      //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+                      //Effect is per mille level, but big enough to be rejected by MatchToMC() function.
+                      //Momentum conservation check turned off in MatchToMCB2Prong (to fix to loosening cut from 0.001% to 0.5%)
+                      labBplus = trackBplus.MatchToMCB2Prong(521,421,pdgDgBplustoD0piInt,pdgDgD0topiK,arrMC);
+                      
+                      if(labBplus >= 0) {
+                        partBplus = (AliAODMCParticle*)arrMC->At(labBplus);
+                        ptGenBplus = partBplus->Pt();
+                        issignal = kTRUE;
+                      } else {
+                        //check whether background is from hijing
+                        Bool_t isHijing=kFALSE;
+                        if (mcHeader) isHijing= IsCandidateFromHijing(dfromB,mcHeader,arrMC,pionTrack);
+                        if (isHijing) isbkg = kTRUE;
+                      }
+                      
+                      if(issignal || isbkg) fTreeHandlerBplus->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
+                    } //end read MC
+
+                    // fill tree
+                    if(!fReadMC || (issignal || isbkg)) {
+                      fTreeHandlerBplus->SetIsSelectedStd(isSelAnCuts,isSelAnTopoCuts,isSelAnPidCuts,isSelTracksAnCuts);
+                      fTreeHandlerBplus->SetVariables(fRunNumber, fEventID, ptGenBplus, &trackBplus, bfield, 0, fPIDresp);
+                      if (fFillJets) fTreeHandlerBplus->SetJetVars(aod->GetTracks(),&trackBplus,trackBplus.InvMass(2,pdgDgBplustoD0piUInt),arrMC,partBplus);
+                      fTreeHandlerBplus->FillTree();
+                    }
+                  }//end hardcoded cuts Bplus object
+                  //Restore Object count, to save space in the table keeping track of all referenced objects
+                  TProcessID::SetObjectCount(ObjectNumber);
+                }//end vertex Bplus check
+                delete vertexMother; vertexMother = nullptr;
+              }//end check pion ID with D0 daughters
+            }//end Bplus pion filtering cuts
+          }//end track-loop
+          if(recVtx)fFiltCutsBplustoD0pi->CleanOwnPrimaryVtx(dfromB,aod,origownvtx);
+          if(unsetvtx) dfromB->UnsetOwnPrimaryVtx();
+        }//end D0 filtering cuts
+      } else {
+        fNentries->Fill(27); //monitor how often this fails
+      }
+    }//end Bplus
+  }//end loop on candidates
+  
+  delete vHF;
+  return;
+}
+//--------------------------------------------------------
 void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader){
   
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
@@ -2724,7 +2806,6 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
     }
     
     if(isDstagged && fWriteVariableTreeBs){
-      fNentries->Fill(36);
       nFilteredDs++;
       if((vHF->FillRecoCand(aod,ds))) {////Fill the data members of the candidate only if they are empty.
         
@@ -2739,8 +2820,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
         Int_t isPhipiKK=isSelectedFilt&8;
 
         if(isPhiKKpi || isPhipiKK){
+          fNentries->Fill(36);
           nSelectedDs++;
-          fNentries->Fill(37);
           
           //Set mass hypothesis for Ds, for filling TTree in correct way
           //Assuming here that candidate never satisfies isPhiKKpi and isPhipiKK (due to tight Ds mass cut)
@@ -2867,7 +2948,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
                   Double_t massBsPDG = TDatabasePDG::Instance()->GetParticle(531)->Mass();
                   if(TMath::Abs(invmassBs-massBsPDG) < 0.3){
                     
-                    fNentries->Fill(38);
+                    fNentries->Fill(37);
                     nSelectedBs++;
                     
                     Int_t labBs = -1;
@@ -2881,7 +2962,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
                     AliAODMCParticle *partBs=0x0;
                     if (fReadMC){
                       //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
-                      //Effect is per mille level, but big enough to be rejected by MatchToMC() function. To fix.
+                      //Effect is per mille level, but big enough to be rejected by MatchToMC() function.
+                      //Temporary fix implemented, loosening cut from 0.001% to 0.5%
                       labBs = trackBs.MatchToMCB3Prong(531,431,pdgDgBstoDspi,pdgDstoKKpi,arrMC);
 
                       if(labBs >= 0) {
@@ -2917,7 +2999,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
           if(unsetvtx) ds->UnsetOwnPrimaryVtx();
         }//end Ds filtering cuts
       } else{
-        fNentries->Fill(39); //monitor how often this fails
+        fNentries->Fill(38); //monitor how often this fails
       }
     }//end Ds-loop
   }//end loop on cadidates
@@ -2967,7 +3049,6 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
       isLctopKpitagged=kFALSE;
     }
     if(isLctopKpitagged && fWriteVariableTreeLb){
-      fNentries->Fill(40);
       nFilteredLctopKpi++;
       if((vHF->FillRecoCand(aod,lctopkpi))) {////Fill the data members of the candidate only if they are empty.
         
@@ -2993,8 +3074,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
         //Only looking at Lc -> p K pi
         Int_t isSelectedFilt = fFiltCutsLbtoLcpi->IsSelected(lctopkpi,AliRDHFCuts::kAll,aod);
         if(isSelectedFilt){
+          fNentries->Fill(39);
           nSelectedLctopKpi++;
-          fNentries->Fill(41);
           
           //Set mass hypothesis for Lc, for filling TTree in correct way
           //Assuming here that candidate never satisfies pKpi and piKp (due to tight Lc mass cut)
@@ -3106,7 +3187,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                   Double_t massLbPDG = TDatabasePDG::Instance()->GetParticle(5122)->Mass();
                   if(TMath::Abs(invmassLb-massLbPDG) < 0.3){
                     
-                    fNentries->Fill(42);
+                    fNentries->Fill(40);
                     nSelectedLb++;
                     
                     Int_t labLb = -1;
@@ -3120,7 +3201,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                     AliAODMCParticle *partLb=0x0;
                     if (fReadMC){
                       //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
-                      //Effect is per mille level, but big enough to be rejected by MatchToMC() function. To fix.
+                      //Effect is per mille level, but big enough to be rejected by MatchToMC() function.
+                      //Temporary fix implemented, loosening cut from 0.001% to 0.5%
                       labLb = trackLb.MatchToMCB3Prong(5122,4122,pdgDgLbtoLcpi,pdgLctopKpi,arrMC);
                       
                       if(labLb >= 0) {
@@ -3156,7 +3238,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
         if(recVtx)fFiltCutsLbtoLcpi->CleanOwnPrimaryVtx(lctopkpi,aod,origownvtx);
         if(unsetvtx) lctopkpi->UnsetOwnPrimaryVtx();
       } else{
-        fNentries->Fill(43); //monitor how often this fails
+        fNentries->Fill(41); //monitor how often this fails
       }
     }//end Lc-loop
   }//end loop on cadidates
