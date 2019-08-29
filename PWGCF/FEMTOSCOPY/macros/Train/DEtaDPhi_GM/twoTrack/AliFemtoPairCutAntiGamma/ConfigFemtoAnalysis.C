@@ -233,8 +233,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoCutMonitorXi             *cutPass2Xi[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorXi             *cutFail2Xi[numOfMultBins*numOfChTypes];
 	//	 AliFemtoShareQualityTPCEntranceSepPairCut			*sqpcetaphitpcsame[numOfMultBins*numOfChTypes];
-	// AliFemtoPairCutAntiGamma	*sqpcetaphitpc[numOfMultBins*numOfChTypes];
-	AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoPairCutAntiGamma	*sqpcetaphitpc[numOfMultBins*numOfChTypes];
+	// AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	//AliFemtoShareQualityPairCut			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0PairCut               *sqp1cetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0TrackPairCut          *sqp2cetaphitpc[numOfMultBins*numOfChTypes];
