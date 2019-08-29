@@ -45,7 +45,8 @@ AliGenReadersEMD::AliGenReadersEMD():
     fZfrag(0),
     fNpro(0),
     fEpro(0),
-    fNtupleName(0)
+    fNtupleName(0),
+    fInvertPz(kFALSE)
 {
 // Std constructor
     for(int i=0; i<70; i++){
@@ -77,7 +78,8 @@ AliGenReadersEMD::AliGenReadersEMD(const AliGenReadersEMD &reader):
     fZfrag(0),
     fNpro(0),
     fEpro(0),
-    fNtupleName(0)
+    fNtupleName(0),
+    fInvertPz(kFALSE)
 {
     // Copy Constructor
     for(int i=0; i<70; i++){
@@ -215,6 +217,10 @@ TParticle* AliGenReadersEMD::NextParticle()
 	pdgCode = 1e10+1e6*fZfrag+10.*fAfrag;
 //    printf(" pc%d fragment: PDG code %d,  momentum (%f, %f, %f) \n", fNparticle, pdgCode, p[0],p[1],p[2]);
       }
+    }
+
+    if(fInvertPz){
+      p[2] = - p[2];
     }
 
     Float_t ptot = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
