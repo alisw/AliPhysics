@@ -79,7 +79,6 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fNeutralDecayParticleSidebandCandidates(nullptr),
   fPosPionCandidates(nullptr),
   fNegPionCandidates(nullptr),
-  fGoodVirtualParticles(nullptr),
   fEventCutArray(nullptr),
   fGammaCutArray(nullptr),
   fClusterCutArray(nullptr),
@@ -319,7 +318,6 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fNeutralDecayParticleSidebandCandidates(nullptr),
   fPosPionCandidates(nullptr),
   fNegPionCandidates(nullptr),
-  fGoodVirtualParticles(nullptr),
   fEventCutArray(nullptr),
   fGammaCutArray(nullptr),
   fClusterCutArray(nullptr),
@@ -564,10 +562,6 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::~AliAnalysisTaskNeutralMesonT
     delete fNegPionCandidates;
   }
 
-  if(fGoodVirtualParticles){
-    delete fGoodVirtualParticles;
-  }
-
   if(fBGHandlerPiPl){
     for(int icut = 0; icut < fnCuts; icut++)
       delete fBGHandlerPiPl[icut];
@@ -766,8 +760,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   fPosPionCandidates->SetOwner(kTRUE);
   fNegPionCandidates            = new TList();
   fNegPionCandidates->SetOwner(kTRUE);
-  fGoodVirtualParticles         = new TList();
-  fGoodVirtualParticles->SetOwner(kTRUE);
 
   fCutFolder                    = new TList*[fnCuts];
   fESDList                      = new TList*[fnCuts];
@@ -2178,7 +2170,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
     if(fInputEvent->IsA()==AliESDEvent::Class()) ProcessPionCandidates(); // Process this cuts gammas
     if(fInputEvent->IsA()==AliAODEvent::Class()) ProcessPionCandidatesAOD();
 
-    CalculateMesonCandidates();
+    //CalculateMesonCandidates();
     
     if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation()){
       if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing()){
@@ -2199,7 +2191,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
     if(fNeutralDecayParticleSidebandCandidates) fNeutralDecayParticleSidebandCandidates->Clear();
     fPosPionCandidates->Clear();
     fNegPionCandidates->Clear();
-    fGoodVirtualParticles->Clear(); // delete this cuts good gammas
   }
 
   fSelectorNegPionIndex.clear();
@@ -3477,7 +3468,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
 
   vector<Int_t> lGoodNegPionIndexPrev(0);
   vector<Int_t> lGoodPosPionIndexPrev(0);
-
   for(UInt_t i = 0; i < fSelectorNegPionIndex.size(); i++){
 
     AliESDtrack* negPionCandidate =dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorNegPionIndex[i]));
@@ -3536,7 +3526,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
       }
     }
   }
-
   for(UInt_t i = 0; i < fSelectorPosPionIndex.size(); i++){
     AliESDtrack* posPionCandidate = dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorPosPionIndex[i]));
     if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(posPionCandidate) ) continue;
@@ -3765,65 +3754,84 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
 
 
       if(survivesMassCut){
-          fGoodVirtualParticles->Add( vParticle );
+          //fGoodVirtualParticles->Add( vParticle );
           if(!fDoLightOutput){
             fHistoPionPionInvMassPt[fiCut]->Fill( vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
           }
+          CalculateMesonCandidates(vParticle);
+          delete vParticle;
+          vParticle=0x0;
       }else{
           delete vParticle;
+          vParticle=0x0;
+      }
+    }
+  }
+
+  Double_t clsToFPos = -1.0;
+  Double_t clsToFNeg = -1.0;
+
+  Float_t dcaToVertexXYPos = -1.0;
+  Float_t dcaToVertexZPos  = -1.0;
+  Float_t dcaToVertexXYNeg = -1.0;
+  Float_t dcaToVertexZNeg  = -1.0;
+
+  if ( fDoMesonQA>0 ) {
+    for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
+      AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
+
+      clsToFNeg = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetNFindableClustersTPC(negPionCandidate);
+
+      Float_t bNeg[2];
+      Float_t bCovNeg[3];
+      negPionCandidate->GetImpactParameters(bNeg,bCovNeg);
+      if (bCovNeg[0]<=0 || bCovNeg[2]<=0) {
+        AliDebug(1, "Estimated b resolution lower or equal zero!");
+        bCovNeg[0]=0; bCovNeg[2]=0;
       }
 
-      Double_t clsToFPos = -1.0;
-      Double_t clsToFNeg = -1.0;
+      dcaToVertexXYNeg = bNeg[0];
+      dcaToVertexZNeg  = bNeg[1];
 
-      Float_t dcaToVertexXYPos = -1.0;
-      Float_t dcaToVertexZPos  = -1.0;
-      Float_t dcaToVertexXYNeg = -1.0;
-      Float_t dcaToVertexZNeg  = -1.0;
+      if(!fDoLightOutput){
+        fHistoNegPionEta[fiCut]->Fill(negPionCandidate->Eta(), fWeightJetJetMC);
+        fHistoNegPionClsTPC[fiCut]->Fill(clsToFNeg,negPionCandidate->Pt(), fWeightJetJetMC);
 
-      if ( fDoMesonQA>0 ) {
-        clsToFPos = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetNFindableClustersTPC(posPionCandidate);
-        clsToFNeg = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetNFindableClustersTPC(negPionCandidate);
+        fHistoPionDCAxy[fiCut]->Fill(  dcaToVertexXYNeg, negPionCandidate->Pt(), fWeightJetJetMC );
+        fHistoPionDCAz[fiCut]->Fill(   dcaToVertexZNeg,  negPionCandidate->Pt(), fWeightJetJetMC );
 
-        Float_t bPos[2];
-        Float_t bCovPos[3];
-        posPionCandidate->GetImpactParameters(bPos,bCovPos);
-        if (bCovPos[0]<=0 || bCovPos[2]<=0) {
-          AliDebug(1, "Estimated b resolution lower or equal zero!");
-          bCovPos[0]=0; bCovPos[2]=0;
-        }
+        fHistoPionTPCdEdxNSigma[fiCut]->Fill( negPionCandidate->P(),((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negPionCandidate, AliPID::kPion), fWeightJetJetMC );
 
-        Float_t bNeg[2];
-        Float_t bCovNeg[3];
-        negPionCandidate->GetImpactParameters(bNeg,bCovNeg);
-        if (bCovNeg[0]<=0 || bCovNeg[2]<=0) {
-          AliDebug(1, "Estimated b resolution lower or equal zero!");
-          bCovNeg[0]=0; bCovNeg[2]=0;
-        }
+        fHistoPionTPCdEdx[fiCut]->Fill(negPionCandidate->P(), TMath::Abs(negPionCandidate->GetTPCsignal()), fWeightJetJetMC);
+      }
+    }
 
-        dcaToVertexXYPos = bPos[0];
-        dcaToVertexZPos  = bPos[1];
-        dcaToVertexXYNeg = bNeg[0];
-        dcaToVertexZNeg  = bNeg[1];
+    for(UInt_t i = 0; i < lGoodPosPionIndexPrev.size(); i++){
+      AliVTrack* posPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[i]));
 
-        if(!fDoLightOutput){
-          fHistoNegPionEta[fiCut]->Fill(negPionCandidate->Eta(), fWeightJetJetMC);
-          fHistoPosPionEta[fiCut]->Fill(posPionCandidate->Eta(), fWeightJetJetMC);
-          
-          fHistoNegPionClsTPC[fiCut]->Fill(clsToFNeg,negPionCandidate->Pt(), fWeightJetJetMC);
-          fHistoPosPionClsTPC[fiCut]->Fill(clsToFPos,posPionCandidate->Pt(), fWeightJetJetMC);
+      clsToFPos = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetNFindableClustersTPC(posPionCandidate);
 
-          fHistoPionDCAxy[fiCut]->Fill(  dcaToVertexXYNeg, negPionCandidate->Pt(), fWeightJetJetMC );
-          fHistoPionDCAz[fiCut]->Fill(   dcaToVertexZNeg,  negPionCandidate->Pt(), fWeightJetJetMC );
-          fHistoPionDCAxy[fiCut]->Fill(  dcaToVertexXYPos, posPionCandidate->Pt(), fWeightJetJetMC );
-          fHistoPionDCAz[fiCut]->Fill(   dcaToVertexZPos,  posPionCandidate->Pt(), fWeightJetJetMC );
+      Float_t bPos[2];
+      Float_t bCovPos[3];
+      posPionCandidate->GetImpactParameters(bPos,bCovPos);
+      if (bCovPos[0]<=0 || bCovPos[2]<=0) {
+        AliDebug(1, "Estimated b resolution lower or equal zero!");
+        bCovPos[0]=0; bCovPos[2]=0;
+      }
 
-          fHistoPionTPCdEdxNSigma[fiCut]->Fill( posPionCandidate->P(),((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posPionCandidate, AliPID::kPion), fWeightJetJetMC );
-          fHistoPionTPCdEdxNSigma[fiCut]->Fill( negPionCandidate->P(),((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negPionCandidate, AliPID::kPion), fWeightJetJetMC );
+      dcaToVertexXYPos = bPos[0];
+      dcaToVertexZPos  = bPos[1];
 
-          fHistoPionTPCdEdx[fiCut]->Fill(posPionCandidate->P(), TMath::Abs(posPionCandidate->GetTPCsignal()), fWeightJetJetMC);
-          fHistoPionTPCdEdx[fiCut]->Fill(negPionCandidate->P(), TMath::Abs(negPionCandidate->GetTPCsignal()), fWeightJetJetMC);
-        }
+      if(!fDoLightOutput){
+        fHistoPosPionEta[fiCut]->Fill(posPionCandidate->Eta(), fWeightJetJetMC);
+        fHistoPosPionClsTPC[fiCut]->Fill(clsToFPos,posPionCandidate->Pt(), fWeightJetJetMC);
+
+        fHistoPionDCAxy[fiCut]->Fill(  dcaToVertexXYPos, posPionCandidate->Pt(), fWeightJetJetMC );
+        fHistoPionDCAz[fiCut]->Fill(   dcaToVertexZPos,  posPionCandidate->Pt(), fWeightJetJetMC );
+
+        fHistoPionTPCdEdxNSigma[fiCut]->Fill( posPionCandidate->P(),((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posPionCandidate, AliPID::kPion), fWeightJetJetMC );
+
+        fHistoPionTPCdEdx[fiCut]->Fill(posPionCandidate->P(), TMath::Abs(posPionCandidate->GetTPCsignal()), fWeightJetJetMC);
       }
     }
   }
@@ -4152,69 +4160,86 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
       }
 
       if(survivesMassCut){
-          fGoodVirtualParticles->Add( vParticle );
           if(!fDoLightOutput){
             fHistoPionPionInvMassPt[fiCut]->Fill( vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
           }
+          CalculateMesonCandidates(vParticle);
+          delete vParticle;
+          vParticle=0x0;
       }else{
           delete vParticle;
           vParticle=0x0;
       }
+      delete virtualPhoton;
+      virtualPhoton=0x0;
+    }
+  }
 
-      Double_t clsToFPos = -1.0;
-      Double_t clsToFNeg = -1.0;
+  Double_t clsToFPos = -1.0;
+  Double_t clsToFNeg = -1.0;
 
-      Float_t dcaToVertexXYPos = -1.0;
-      Float_t dcaToVertexZPos  = -1.0;
-      Float_t dcaToVertexXYNeg = -1.0;
-      Float_t dcaToVertexZNeg  = -1.0;
+  Float_t dcaToVertexXYPos = -1.0;
+  Float_t dcaToVertexZPos  = -1.0;
+  Float_t dcaToVertexXYNeg = -1.0;
+  Float_t dcaToVertexZNeg  = -1.0;
 
-      if ( fDoMesonQA>0 ) {
-        clsToFPos = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetNFindableClustersTPC(posPionCandidate);
-        clsToFNeg = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetNFindableClustersTPC(negPionCandidate);
+  if ( fDoMesonQA>0 ) {
+    for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
+      AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
 
-        Float_t bPos[2];
-        Float_t bCovPos[3];
-        posPionCandidate->GetImpactParameters(bPos,bCovPos);
-        if (bCovPos[0]<=0 || bCovPos[2]<=0) {
-          AliDebug(1, "Estimated b resolution lower or equal zero!");
-          bCovPos[0]=0; bCovPos[2]=0;
-        }
+      clsToFNeg = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetNFindableClustersTPC(negPionCandidate);
 
-        Float_t bNeg[2];
-        Float_t bCovNeg[3];
-        negPionCandidate->GetImpactParameters(bNeg,bCovNeg);
-        if (bCovNeg[0]<=0 || bCovNeg[2]<=0) {
-          AliDebug(1, "Estimated b resolution lower or equal zero!");
-          bCovNeg[0]=0; bCovNeg[2]=0;
-        }
-
-        dcaToVertexXYPos = bPos[0];
-        dcaToVertexZPos  = bPos[1];
-        dcaToVertexXYNeg = bNeg[0];
-        dcaToVertexZNeg  = bNeg[1];
-
-        if(!fDoLightOutput){
-          fHistoNegPionEta[fiCut]->Fill( negPionCandidate->Eta(), fWeightJetJetMC );
-          fHistoPosPionEta[fiCut]->Fill( posPionCandidate->Eta(), fWeightJetJetMC );
-
-          fHistoNegPionClsTPC[fiCut]->Fill(clsToFNeg,negPionCandidate->Pt(), fWeightJetJetMC);
-          fHistoPosPionClsTPC[fiCut]->Fill(clsToFPos,posPionCandidate->Pt(), fWeightJetJetMC);
-
-          fHistoPionDCAxy[fiCut]->Fill(  dcaToVertexXYNeg, negPionCandidate->Pt(), fWeightJetJetMC );
-          fHistoPionDCAz[fiCut]->Fill(   dcaToVertexZNeg,  negPionCandidate->Pt(), fWeightJetJetMC );
-          fHistoPionDCAxy[fiCut]->Fill(  dcaToVertexXYPos, posPionCandidate->Pt(), fWeightJetJetMC );
-          fHistoPionDCAz[fiCut]->Fill(   dcaToVertexZPos,  posPionCandidate->Pt(), fWeightJetJetMC );
-
-          fHistoPionTPCdEdxNSigma[fiCut]->Fill( posPionCandidate->P(),((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posPionCandidate, AliPID::kPion), fWeightJetJetMC );
-          fHistoPionTPCdEdxNSigma[fiCut]->Fill( negPionCandidate->P(),((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negPionCandidate, AliPID::kPion), fWeightJetJetMC );
-
-          fHistoPionTPCdEdx[fiCut]->Fill( posPionCandidate->P(), TMath::Abs(posPionCandidate->GetTPCsignal()), fWeightJetJetMC );
-          fHistoPionTPCdEdx[fiCut]->Fill( negPionCandidate->P(), TMath::Abs(negPionCandidate->GetTPCsignal()), fWeightJetJetMC );
-        }
+      Float_t bNeg[2];
+      Float_t bCovNeg[3];
+      negPionCandidate->GetImpactParameters(bNeg,bCovNeg);
+      if (bCovNeg[0]<=0 || bCovNeg[2]<=0) {
+        AliDebug(1, "Estimated b resolution lower or equal zero!");
+        bCovNeg[0]=0; bCovNeg[2]=0;
       }
 
-      delete virtualPhoton;
+      dcaToVertexXYNeg = bNeg[0];
+      dcaToVertexZNeg  = bNeg[1];
+
+      if(!fDoLightOutput){
+        fHistoNegPionEta[fiCut]->Fill(negPionCandidate->Eta(), fWeightJetJetMC);
+        fHistoNegPionClsTPC[fiCut]->Fill(clsToFNeg,negPionCandidate->Pt(), fWeightJetJetMC);
+
+        fHistoPionDCAxy[fiCut]->Fill(  dcaToVertexXYNeg, negPionCandidate->Pt(), fWeightJetJetMC );
+        fHistoPionDCAz[fiCut]->Fill(   dcaToVertexZNeg,  negPionCandidate->Pt(), fWeightJetJetMC );
+
+        fHistoPionTPCdEdxNSigma[fiCut]->Fill( negPionCandidate->P(),((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negPionCandidate, AliPID::kPion), fWeightJetJetMC );
+
+        fHistoPionTPCdEdx[fiCut]->Fill(negPionCandidate->P(), TMath::Abs(negPionCandidate->GetTPCsignal()), fWeightJetJetMC);
+      }
+    }
+
+    for(UInt_t i = 0; i < lGoodPosPionIndexPrev.size(); i++){
+      AliVTrack* posPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[i]));
+
+      clsToFPos = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetNFindableClustersTPC(posPionCandidate);
+
+      Float_t bPos[2];
+      Float_t bCovPos[3];
+      posPionCandidate->GetImpactParameters(bPos,bCovPos);
+      if (bCovPos[0]<=0 || bCovPos[2]<=0) {
+        AliDebug(1, "Estimated b resolution lower or equal zero!");
+        bCovPos[0]=0; bCovPos[2]=0;
+      }
+
+      dcaToVertexXYPos = bPos[0];
+      dcaToVertexZPos  = bPos[1];
+
+      if(!fDoLightOutput){
+        fHistoPosPionEta[fiCut]->Fill(posPionCandidate->Eta(), fWeightJetJetMC);
+        fHistoPosPionClsTPC[fiCut]->Fill(clsToFPos,posPionCandidate->Pt(), fWeightJetJetMC);
+
+        fHistoPionDCAxy[fiCut]->Fill(  dcaToVertexXYPos, posPionCandidate->Pt(), fWeightJetJetMC );
+        fHistoPionDCAz[fiCut]->Fill(   dcaToVertexZPos,  posPionCandidate->Pt(), fWeightJetJetMC );
+
+        fHistoPionTPCdEdxNSigma[fiCut]->Fill( posPionCandidate->P(),((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posPionCandidate, AliPID::kPion), fWeightJetJetMC );
+
+        fHistoPionTPCdEdx[fiCut]->Fill(posPionCandidate->P(), TMath::Abs(posPionCandidate->GetTPCsignal()), fWeightJetJetMC);
+      }
     }
   }
 }
@@ -4791,23 +4816,19 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates(){
+void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates(AliAODConversionPhoton *vParticle){
 
   // Conversion Gammas
-  if( fNeutralDecayParticleCandidates->GetEntries() > 0 && fGoodVirtualParticles->GetEntries() > 0 ){
-    for(Int_t mesonIndex=0; mesonIndex<fNeutralDecayParticleCandidates->GetEntries(); mesonIndex++){
-      AliAODConversionMother *neutralDecayMeson=dynamic_cast<AliAODConversionMother*>(fNeutralDecayParticleCandidates->At(mesonIndex));
-      if (neutralDecayMeson==nullptr) continue;
 
-      for(Int_t virtualParticleIndex=0;virtualParticleIndex<fGoodVirtualParticles->GetEntries();virtualParticleIndex++){
-        AliAODConversionPhoton *vParticle=dynamic_cast<AliAODConversionPhoton*>(fGoodVirtualParticles->At(virtualParticleIndex));
+  if( fNeutralDecayParticleCandidates->GetEntries() > 0){
+    for(Int_t mesonIndex=0; mesonIndex<fNeutralDecayParticleCandidates->GetEntries(); mesonIndex++){
+      AliAODConversionMother *neutralDecayMeson= (AliAODConversionMother*) fNeutralDecayParticleCandidates->At(mesonIndex);
+      if (neutralDecayMeson==nullptr) continue;
         if (vParticle==nullptr) continue;
         //Check for same Electron ID
-
         AliAODConversionMother* mesoncand = new AliAODConversionMother(neutralDecayMeson,vParticle);
-        mesoncand->SetLabels(mesonIndex,virtualParticleIndex);
+        //mesoncand->SetLabels(mesonIndex,virtualParticleIndex);
         if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesoncand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-
           AliVTrack *negPionCandidatetmp = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(vParticle->GetTrackLabel(1)));
           AliVTrack *posPionCandidatetmp = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(vParticle->GetTrackLabel(0)));
           if(!(negPionCandidatetmp || posPionCandidatetmp)) continue;
@@ -4882,9 +4903,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
             }
           }
         }
-        delete mesoncand;
-        mesoncand=0x0;
-      }
+       delete mesoncand;
+       mesoncand=0x0;
     }
   }
 

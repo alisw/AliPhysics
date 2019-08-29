@@ -109,7 +109,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void ProcessPionCandidatesAOD();
     void ProcessMCParticles();
     void ProcessAODMCParticles();
-    void CalculateMesonCandidates();
+    void CalculateMesonCandidates(AliAODConversionPhoton *vParticle);
     void CalculateBackground(Int_t mode);
     void UpdateEventByEventData();
 
@@ -158,7 +158,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TList*                            fNeutralDecayParticleSidebandCandidates;            //!<! good neutral pion candidates from sideband
     TList*                            fPosPionCandidates;                                 //!<! good positive pion candidates
     TList*                            fNegPionCandidates;                                 //!<! good negative pion candidates
-    TList*                            fGoodVirtualParticles;                              //!<! combination of pi+pi- candidates
     TList*                            fEventCutArray;                                     ///< array with event cuts
     TList*                            fGammaCutArray;                                     ///< array with Conversion Cuts
     TList*                            fClusterCutArray;                                   ///< array with Cluster Cuts
@@ -406,7 +405,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 10);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 11);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
