@@ -51,6 +51,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // Possibility to set generator. If nothing set all generators are taken into account
   // task->SetGeneratorName(generatorName);
   task->SetGeneratorMCSignalName(generatorNameForMCSignal);
+  task->SetGeneratorULSSignalName(generatorNameForULSSignal);
 
   // #########################################################
   // #########################################################
@@ -126,6 +127,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetDoFourPairing(DoFourPairing);
+  task->SetULSandLS(DoULSLS);
 
   // #########################################################
   // #########################################################
@@ -133,8 +135,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // e.g. secondaries and primaries. or primaries from charm and resonances
   AddSingleLegMCSignal(task);
   AddPairMCSignal(task);
-  AddFourPairULSMCSignal(task);
-  AddFourPairLSMCSignal(task);
+  AddFourPairMCSignal(task);
   std::vector<bool> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
   task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
 
@@ -148,15 +149,16 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // Set mean and width correction for ITS, TPC and TOF
 
 
-  // #########################################################
-  // #########################################################
-  // Adding cutsettings
-  // TObjArray*  arrNames=names.Tokenize(";");
-  // const Int_t nDie=arrNames->GetEntriesFast();
+  // // #########################################################
+  // // #########################################################
+  // // Adding cutsettings
+  // // TObjArray*  arrNames=names.Tokenize(";");
+  // // const Int_t nDie=arrNames->GetEntriesFast();
   //
   // for (int iCut = 0; iCut < nDie; ++iCut){
   //   TString cutDefinition(arrNames->At(iCut)->GetName());
-  //   AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+  //   // AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+  //   AliAnalysisFilter* filter = SetupTrackCutsAndSettings(iCut);
   //   task->AddTrackCuts(filter);
   //   // DoAdditionalWork(task);
   // }

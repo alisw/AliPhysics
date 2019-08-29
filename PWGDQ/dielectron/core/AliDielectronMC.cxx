@@ -1788,289 +1788,281 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
 
   /*  ------ \/ ------ added by feisenhut ------ \/ ------  */
 
-/*
-// Define MCSignal for 2 pairs
-// One pair is from a primary decay and the second pair is from a secondary decay (e.g. photo conversoin)
-// Thus the mother of pair one should be the grand mother of the second pair
-Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair1, const AliDielectronPair* pair2, const AliDielectronSignalMC* P1signalMC, const AliDielectronSignalMC* P2signalMC) const {
-  //
-  // Check if the pair corresponds to the MC truth in signalMC
-  //
 
-  //? if (pair1->IsA() == pair2->IsA()) {
-  //?   AliError("AliDielectron::IsMCTruth(): Same pair type");
-  //? }
+  //________________________________________________________________________________
+  // Define IsMCTruth for 2 pairs
+Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair1, const AliDielectronPair* pair2, const AliDielectronSignalMC* signalMC1, const AliDielectronSignalMC* signalMC2) const {
+    //
+    // Check if the pair corresponds to the MC truth in signalMC
+    //
+    // legs (daughters)
+    const AliVParticle * mcD1 = pair1->GetFirstDaughterP();
+    const AliVParticle * mcD2 = pair1->GetSecondDaughterP();
+    const AliVParticle * mcD3 = pair2->GetFirstDaughterP();
+    const AliVParticle * mcD4 = pair2->GetSecondDaughterP();
+    Int_t labelD1 = (mcD1 ? TMath::Abs(mcD1->GetLabel()) : -1);
+    Int_t labelD2 = (mcD2 ? TMath::Abs(mcD2->GetLabel()) : -1);
+    Int_t labelD3 = (mcD3 ? TMath::Abs(mcD3->GetLabel()) : -1);
+    Int_t labelD4 = (mcD4 ? TMath::Abs(mcD4->GetLabel()) : -1);
+    Int_t d1Pdg = GetPdgFromLabel(labelD1);
+    Int_t d2Pdg = GetPdgFromLabel(labelD2);
+    Int_t d3Pdg = GetPdgFromLabel(labelD3);
+    Int_t d4Pdg = GetPdgFromLabel(labelD4);
 
-  // legs (daughters)
-  const AliVParticle * mcP1D1 = pair1->GetFirstDaughterP();
-  const AliVParticle * mcP1D2 = pair1->GetSecondDaughterP();
-  const AliVParticle * mcP2D1 = pair2->GetFirstDaughterP();
-  const AliVParticle * mcP2D2 = pair2->GetSecondDaughterP();
-  Int_t labelP1D1 = (mcP1D1 ? TMath::Abs(mcP1D1->GetLabel()) : -1);
-  Int_t labelP1D2 = (mcP1D2 ? TMath::Abs(mcP1D2->GetLabel()) : -1);
-  Int_t labelP2D1 = (mcP2D1 ? TMath::Abs(mcP2D1->GetLabel()) : -1);
-  Int_t labelP2D2 = (mcP2D2 ? TMath::Abs(mcP2D2->GetLabel()) : -1);
-  Int_t P1d1Pdg = GetPdgFromLabel(labelP1D1);
-  Int_t P1d2Pdg = GetPdgFromLabel(labelP1D2);
-  Int_t P2d1Pdg = GetPdgFromLabel(labelP2D1);
-  Int_t P2d2Pdg = GetPdgFromLabel(labelP2D2);
+    // mothers
+    AliVParticle* mcM1=0x0;
+    AliVParticle* mcM2=0x0;
+    AliVParticle* mcM3=0x0;
+    AliVParticle* mcM4=0x0;
 
-  // mothers
-  AliVParticle* mcP1M1=0x0;
-  AliVParticle* mcP1M2=0x0;
-  AliVParticle* mcP2M1=0x0;
-  AliVParticle* mcP2M2=0x0;
+    // grand-mothers
+    AliVParticle* mcG1 = 0x0;
+    AliVParticle* mcG2 = 0x0;
+    AliVParticle* mcG3 = 0x0;
+    AliVParticle* mcG4 = 0x0;
 
-  // grand-mothers
-  AliVParticle* mcP1G1 = 0x0;
-  AliVParticle* mcP1G2 = 0x0;
-  AliVParticle* mcP2G1 = 0x0;
-  AliVParticle* mcP2G2 = 0x0;
+    // make direct(1-1 and 2-2) and cross(1-2 and 2-1) comparisons for the whole branch
+    Bool_t directTerm = kTRUE;
+    // daughters
+    directTerm = directTerm && mcD1 && ComparePDG(d1Pdg, signalMC1->GetLegPDG(1), signalMC1->GetLegPDGexclude(1), signalMC1->GetCheckBothChargesLegs(1)) && CheckParticleSource(labelD1, signalMC1->GetLegSource(1));
+    directTerm = directTerm && mcD2 && ComparePDG(d2Pdg, signalMC1->GetLegPDG(2), signalMC1->GetLegPDGexclude(2), signalMC1->GetCheckBothChargesLegs(2)) && CheckParticleSource(labelD2, signalMC1->GetLegSource(2));
+    directTerm = directTerm && mcD3 && ComparePDG(d3Pdg, signalMC2->GetLegPDG(1), signalMC2->GetLegPDGexclude(1), signalMC2->GetCheckBothChargesLegs(1)) && CheckParticleSource(labelD3, signalMC2->GetLegSource(1));
+    directTerm = directTerm && mcD4 && ComparePDG(d4Pdg, signalMC2->GetLegPDG(2), signalMC2->GetLegPDGexclude(2), signalMC2->GetCheckBothChargesLegs(2)) && CheckParticleSource(labelD4, signalMC2->GetLegSource(2));
 
-  // make direct(1-1 and 2-2) and cross(1-2 and 2-1) comparisons for the whole branch
-  Bool_t directTerm = kTRUE;
-  // daughters
-  directTerm = directTerm && mcP1D1 && ComparePDG(P1d1Pdg, P1signalMC->GetLegPDG(1), P1signalMC->GetLegPDGexclude(1), P1signalMC->GetCheckBothChargesLegs(1)) && CheckParticleSource(labelP1D1, P1signalMC->GetLegSource(1));
-  directTerm = directTerm && mcP1D2 && ComparePDG(P1d2Pdg, P1signalMC->GetLegPDG(2), P1signalMC->GetLegPDGexclude(2), P1signalMC->GetCheckBothChargesLegs(2)) && CheckParticleSource(labelP1D2, P1signalMC->GetLegSource(2));
-  directTerm = directTerm && mcP2D1 && ComparePDG(P2d1Pdg, P2signalMC->GetLegPDG(1), P2signalMC->GetLegPDGexclude(1), P2signalMC->GetCheckBothChargesLegs(1)) && CheckParticleSource(labelP2D1, P2signalMC->GetLegSource(1));
-  directTerm = directTerm && mcP2D2 && ComparePDG(P2d2Pdg, P2signalMC->GetLegPDG(2), P2signalMC->GetLegPDGexclude(2), P2signalMC->GetCheckBothChargesLegs(2)) && CheckParticleSource(labelP2D2, P2signalMC->GetLegSource(2));
 
-  // mothers
-  Int_t labelP1M1 = -1;
-  if(P1signalMC->GetMotherPDG(1)!=0 || P1signalMC->GetMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
-    labelP1M1 = GetMothersLabel(labelP1D1);
-    if(labelP1D1>-1 && labelP1M1>-1) mcP1M1 = GetMCTrackFromMCEvent(labelP1M1);
-    directTerm = directTerm && (mcP1M1 || P1signalMC->GetMotherPDGexclude(1))
-                 && ComparePDG((mcP1M1 ? mcP1M1->PdgCode() : 0), P1signalMC->GetMotherPDG(1), P1signalMC->GetMotherPDGexclude(1), P1signalMC->GetCheckBothChargesMothers(1))
-                 && CheckParticleSource(labelP1M1, P1signalMC->GetMotherSource(1))
-                 && CheckRadiativeDecision(labelP1M1, P1signalMC);
-  }
-
-  Int_t labelP1M2 = -1;
-  if(P1signalMC->GetMotherPDG(2)!=0 || P1signalMC->GetMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
-    labelP1M2 = GetMothersLabel(labelP1D2);
-    if(labelP1D2>-1 && labelP1M2>-1) mcP1M2 = GetMCTrackFromMCEvent(labelP1M2);
-    directTerm = directTerm && (mcP1M2 || P1signalMC->GetMotherPDGexclude(2))
-                 && ComparePDG((mcP1M2 ? mcP1M2->PdgCode() : 0), P1signalMC->GetMotherPDG(2), P1signalMC->GetMotherPDGexclude(2),P1signalMC->GetCheckBothChargesMothers(2))
-                 && CheckParticleSource(labelP1M2, P1signalMC->GetMotherSource(2))
-                 && CheckRadiativeDecision(labelP1M2, P1signalMC);
-  }
-
-  Int_t labelP2M1 = -1;
-  if(P2signalMC->GetMotherPDG(1)!=0 || P2signalMC->GetMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
-    labelP2M1 = GetMothersLabel(labelP2D1);
-    if(labelP2D1>-1 && labelP2M1>-1) mcP2M1 = GetMCTrackFromMCEvent(labelP2M1);
-    directTerm = directTerm && (mcP2M1 || P2signalMC->GetMotherPDGexclude(1))
-                 && ComparePDG((mcP2M1 ? mcP2M1->PdgCode() : 0), P2signalMC->GetMotherPDG(1), P2signalMC->GetMotherPDGexclude(1), P2signalMC->GetCheckBothChargesMothers(1))
-                 && CheckParticleSource(labelP2M1, P2signalMC->GetMotherSource(1))
-                 && CheckRadiativeDecision(labelP2M1, P2signalMC);
-  }
-
-  Int_t labelP2M2 = -1;
-  if(P2signalMC->GetMotherPDG(2)!=0 || P2signalMC->GetMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
-    labelP2M2 = GetMothersLabel(labelP2D2);
-    if(labelP2D2>-1 && labelP2M2>-1) mcP2M2 = GetMCTrackFromMCEvent(labelP2M2);
-    directTerm = directTerm && (mcP2M2 || P2signalMC->GetMotherPDGexclude(2))
-                 && ComparePDG((mcP2M2 ? mcP2M2->PdgCode() : 0), P2signalMC->GetMotherPDG(2), P2signalMC->GetMotherPDGexclude(2), P2signalMC->GetCheckBothChargesMothers(2))
-                 && CheckParticleSource(labelP2M2, P2signalMC->GetMotherSource(2))
-                 && CheckRadiativeDecision(labelP2M2, P2signalMC);
-  }
-
-  // grand-mothers
-  Int_t labelP1G1 = -1;
-  if(P1signalMC->GetGrandMotherPDG(1)!=0 || P1signalMC->GetGrandMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
-    labelP1G1 = GetMothersLabel(labelP1M1);
-    if(mcP1M1 && labelP1G1>-1) mcP1G1 = GetMCTrackFromMCEvent(labelP1G1);
-    directTerm = directTerm && (mcP1G1 || P1signalMC->GetGrandMotherPDGexclude(1))
-                 && ComparePDG((mcP1G1 ? mcP1G1->PdgCode() : 0), P1signalMC->GetGrandMotherPDG(1), P1signalMC->GetGrandMotherPDGexclude(1), P1signalMC->GetCheckBothChargesGrandMothers(1))
-                 && CheckParticleSource(labelP1G1, P1signalMC->GetGrandMotherSource(1));
-  }
-
-  Int_t labelP1G2 = -1;
-  if(P1signalMC->GetGrandMotherPDG(2)!=0 || P1signalMC->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
-    labelP1G2 = GetMothersLabel(labelP1M2);
-    if(mcP1M2 && labelP1G2>-1) mcP1G2 = GetMCTrackFromMCEvent(labelP1G2);
-    directTerm = directTerm && (mcP1G2 || P1signalMC->GetGrandMotherPDGexclude(2))
-                 && ComparePDG((mcP1G2 ? mcP1G2->PdgCode() : 0), P1signalMC->GetGrandMotherPDG(2), P1signalMC->GetGrandMotherPDGexclude(2), P1signalMC->GetCheckBothChargesGrandMothers(2))
-                 && CheckParticleSource(labelP1G2, P1signalMC->GetGrandMotherSource(2));
-  }
-
-  Int_t labelP2G1 = -1;
-  if(P2signalMC->GetGrandMotherPDG(1)!=0 || P2signalMC->GetGrandMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
-    labelP2G1 = GetMothersLabel(labelP2M1);
-    if(mcP2M1 && labelP2G1>-1) mcP2G1 = GetMCTrackFromMCEvent(labelP2G1);
-    directTerm = directTerm && (mcP2G1 || P2signalMC->GetGrandMotherPDGexclude(1))
-                 && ComparePDG((mcP2G1 ? mcP2G1->PdgCode() : 0), P2signalMC->GetGrandMotherPDG(1), P2signalMC->GetGrandMotherPDGexclude(1), P2signalMC->GetCheckBothChargesGrandMothers(1))
-                 && CheckParticleSource(labelP2G1, P2signalMC->GetGrandMotherSource(1));
-  }
-
-  Int_t labelP2G2 = -1;
-  if(P2signalMC->GetGrandMotherPDG(2)!=0 || P2signalMC->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
-    labelP2G2 = GetMothersLabel(labelP2M2);
-    if(mcP2M2 && labelP2G2>-1) mcP2G2 = GetMCTrackFromMCEvent(labelP2G2);
-    directTerm = directTerm && (mcP2G2 || P2signalMC->GetGrandMotherPDGexclude(2))
-                 && ComparePDG((mcP2G2 ? mcP2G2->PdgCode() : 0), P2signalMC->GetGrandMotherPDG(2), P2signalMC->GetGrandMotherPDGexclude(2), P2signalMC->GetCheckBothChargesGrandMothers(2))
-                 && CheckParticleSource(labelP2G2, P2signalMC->GetGrandMotherSource(2));
-  }
-
-  // Cross term
-  Bool_t crossTerm = kTRUE;
-  // daughters
-  crossTerm = crossTerm && mcP1D2 && ComparePDG(P1d2Pdg, P1signalMC->GetLegPDG(1), P1signalMC->GetLegPDGexclude(1), P1signalMC->GetCheckBothChargesLegs(1)) && CheckParticleSource(labelP1D2, P1signalMC->GetLegSource(1));
-  crossTerm = crossTerm && mcP1D1 && ComparePDG(P1d1Pdg, P1signalMC->GetLegPDG(2), P1signalMC->GetLegPDGexclude(2), P1signalMC->GetCheckBothChargesLegs(2)) && CheckParticleSource(labelP1D1, P1signalMC->GetLegSource(2));
-  crossTerm = crossTerm && mcP2D2 && ComparePDG(P2d2Pdg, P2signalMC->GetLegPDG(1), P2signalMC->GetLegPDGexclude(1), P2signalMC->GetCheckBothChargesLegs(1)) && CheckParticleSource(labelP2D2, P2signalMC->GetLegSource(1));
-  crossTerm = crossTerm && mcP2D1 && ComparePDG(P2d1Pdg, P2signalMC->GetLegPDG(2), P2signalMC->GetLegPDGexclude(2), P2signalMC->GetCheckBothChargesLegs(2)) && CheckParticleSource(labelP2D1, P2signalMC->GetLegSource(2));
-
-  // mothers
-  if(P1signalMC->GetMotherPDG(1)!=0 || P1signalMC->GetMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
-    if(!mcP1M2 && labelP1D2>-1) {
-      labelP1M2 = GetMothersLabel(labelP1D2);
-      if(labelP1M2>-1) mcP1M2 = GetMCTrackFromMCEvent(labelP1M2);
+    // mothers
+    Int_t labelM1 = -1;
+    if(signalMC1->GetMotherPDG(1)!=0 || signalMC1->GetMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+      labelM1 = GetMothersLabel(labelD1);
+      if(labelD1>-1 && labelM1>-1) mcM1 = GetMCTrackFromMCEvent(labelM1);
+      directTerm = directTerm && (mcM1 || signalMC1->GetMotherPDGexclude(1))
+                   && ComparePDG((mcM1 ? mcM1->PdgCode() : 0), signalMC1->GetMotherPDG(1), signalMC1->GetMotherPDGexclude(1),signalMC1->GetCheckBothChargesMothers(1))
+                   && CheckParticleSource(labelM1, signalMC1->GetMotherSource(1))
+                   && CheckRadiativeDecision(labelM1, signalMC1);
     }
-    crossTerm = crossTerm && (mcP1M2 || P1signalMC->GetMotherPDGexclude(1)) && ComparePDG((mcP1M2 ? mcP1M2->PdgCode() : 0), P1signalMC->GetMotherPDG(1), P1signalMC->GetMotherPDGexclude(1), P1signalMC->GetCheckBothChargesMothers(1)) && CheckParticleSource(labelP1M2, P1signalMC->GetMotherSource(1)) && CheckRadiativeDecision(labelP1M2,P1signalMC);
-  }
 
-  if(P1signalMC->GetMotherPDG(2)!=0 || P1signalMC->GetMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
-    if(!mcP1M1 && labelP1D1>-1) {
-      labelP1M1 = GetMothersLabel(labelP1D1);
-      if(labelP1M1>-1) mcP1M1 = GetMCTrackFromMCEvent(labelP1M1);
+    Int_t labelM2 = -1;
+    if(signalMC1->GetMotherPDG(2)!=0 || signalMC1->GetMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+      labelM2 = GetMothersLabel(labelD2);
+      if(labelD2>-1 && labelM2>-1) mcM2 = GetMCTrackFromMCEvent(labelM2);
+      directTerm = directTerm && (mcM2 || signalMC1->GetMotherPDGexclude(2))
+                   && ComparePDG((mcM2 ? mcM2->PdgCode() : 0),signalMC1->GetMotherPDG(2),signalMC1->GetMotherPDGexclude(2),signalMC1->GetCheckBothChargesMothers(2))
+                   && CheckParticleSource(labelM2, signalMC1->GetMotherSource(2))
+                   && CheckRadiativeDecision(labelM2,signalMC1);
     }
-    crossTerm = crossTerm && (mcP1M1 || P1signalMC->GetMotherPDGexclude(2)) && ComparePDG((mcP1M1 ? mcP1M1->PdgCode() : 0), P1signalMC->GetMotherPDG(2), P1signalMC->GetMotherPDGexclude(2), P1signalMC->GetCheckBothChargesMothers(2)) && CheckParticleSource(labelP1M1, P1signalMC->GetMotherSource(2)) && CheckRadiativeDecision(labelP1M1,P1signalMC);
-  }
 
-  if(P2signalMC->GetMotherPDG(1)!=0 || P2signalMC->GetMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
-    if(!mcP2M2 && labelP2D2>-1) {
-      labelP2M2 = GetMothersLabel(labelP2D2);
-      if(labelP2M2>-1) mcP2M2 = GetMCTrackFromMCEvent(labelP2M2);
+    Int_t labelM3 = -1;
+    if(signalMC2->GetMotherPDG(1)!=0 || signalMC2->GetMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+      labelM3 = GetMothersLabel(labelD3);
+      if(labelD3>-1 && labelM3>-1) mcM3 = GetMCTrackFromMCEvent(labelM3);
+      directTerm = directTerm && (mcM3 || signalMC2->GetMotherPDGexclude(1))
+                   && ComparePDG((mcM3 ? mcM3->PdgCode() : 0), signalMC2->GetMotherPDG(1), signalMC2->GetMotherPDGexclude(1),signalMC2->GetCheckBothChargesMothers(1))
+                   && CheckParticleSource(labelM3, signalMC2->GetMotherSource(1))
+                   && CheckRadiativeDecision(labelM3, signalMC2);
     }
-    crossTerm = crossTerm && (mcP2M2 || P2signalMC->GetMotherPDGexclude(1)) && ComparePDG((mcP2M2 ? mcP2M2->PdgCode() : 0), P2signalMC->GetMotherPDG(1), P2signalMC->GetMotherPDGexclude(1), P2signalMC->GetCheckBothChargesMothers(1)) && CheckParticleSource(labelP2M2, P2signalMC->GetMotherSource(1)) && CheckRadiativeDecision(labelP2M2,P2signalMC);
-  }
 
-  if(P2signalMC->GetMotherPDG(2)!=0 || P2signalMC->GetMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
-    if(!mcP2M1 && labelP2D1>-1) {
-      labelP2M1 = GetMothersLabel(labelP2D1);
-      if(labelP2M1>-1) mcP2M1 = GetMCTrackFromMCEvent(labelP2M1);
+    Int_t labelM4 = -1;
+    if(signalMC2->GetMotherPDG(2)!=0 || signalMC2->GetMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+      labelM4 = GetMothersLabel(labelD4);
+      if(labelD4>-1 && labelM4>-1) mcM4 = GetMCTrackFromMCEvent(labelM4);
+      directTerm = directTerm && (mcM4 || signalMC2->GetMotherPDGexclude(2))
+                   && ComparePDG((mcM4 ? mcM4->PdgCode() : 0),signalMC2->GetMotherPDG(2),signalMC2->GetMotherPDGexclude(2),signalMC2->GetCheckBothChargesMothers(2))
+                   && CheckParticleSource(labelM4, signalMC2->GetMotherSource(2))
+                   && CheckRadiativeDecision(labelM4,signalMC2);
     }
-    crossTerm = crossTerm && (mcP2M1 || P2signalMC->GetMotherPDGexclude(2)) && ComparePDG((mcP2M1 ? mcP2M1->PdgCode() : 0), P2signalMC->GetMotherPDG(2), P2signalMC->GetMotherPDGexclude(2), P2signalMC->GetCheckBothChargesMothers(2)) && CheckParticleSource(labelP2M1, P2signalMC->GetMotherSource(2)) && CheckRadiativeDecision(labelP2M1,P2signalMC);
-  }
 
-  // grand-mothers
-  if(P1signalMC->GetGrandMotherPDG(1)!=0 || P1signalMC->GetGrandMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
-    if(!mcP1G2 && mcP1M2) {
-      labelP1G2 = GetMothersLabel(labelP1M2);
-      if(labelP1G2>-1) mcP1G2 = GetMCTrackFromMCEvent(labelP1G2);
+    // grand-mothers
+    Int_t labelG1 = -1;
+    if(signalMC1->GetGrandMotherPDG(1)!=0 || signalMC1->GetGrandMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+      labelG1 = GetMothersLabel(labelM1);
+      if(mcM1 && labelG1>-1) mcG1 = GetMCTrackFromMCEvent(labelG1);
+      directTerm = directTerm && (mcG1 || signalMC1->GetGrandMotherPDGexclude(1))
+                   && ComparePDG((mcG1 ? mcG1->PdgCode() : 0), signalMC1->GetGrandMotherPDG(1), signalMC1->GetGrandMotherPDGexclude(1), signalMC1->GetCheckBothChargesGrandMothers(1))
+                   && CheckParticleSource(labelG1, signalMC1->GetGrandMotherSource(1));
     }
-    crossTerm = crossTerm && (mcP1G2 || P1signalMC->GetGrandMotherPDGexclude(1)) && ComparePDG((mcP1G2 ? mcP1G2->PdgCode() : 0), P1signalMC->GetGrandMotherPDG(1), P1signalMC->GetGrandMotherPDGexclude(1), P1signalMC->GetCheckBothChargesGrandMothers(1)) && CheckParticleSource(labelP1G2, P1signalMC->GetGrandMotherSource(1));
-  }
 
-  if(P1signalMC->GetGrandMotherPDG(2)!=0 || P1signalMC->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
-    if(!mcP1G1 && mcP1M1) {
-      labelP1G1 = GetMothersLabel(labelP1M1);
-      if(labelP1G1>-1) mcP1G1 = GetMCTrackFromMCEvent(labelP1G1);
+    Int_t labelG2 = -1;
+    if(signalMC1->GetGrandMotherPDG(2)!=0 || signalMC1->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+      labelG2 = GetMothersLabel(labelM2);
+      if(mcM2 && labelG2>-1) mcG2 = GetMCTrackFromMCEvent(labelG2);
+      directTerm = directTerm && (mcG2 || signalMC1->GetGrandMotherPDGexclude(2)) && ComparePDG((mcG2 ? mcG2->PdgCode() : 0),signalMC1->GetGrandMotherPDG(2),signalMC1->GetGrandMotherPDGexclude(2),signalMC1->GetCheckBothChargesGrandMothers(2))
+                   && CheckParticleSource(labelG2, signalMC1->GetGrandMotherSource(2));
     }
-    crossTerm = crossTerm && (mcP1G1 || P1signalMC->GetGrandMotherPDGexclude(2)) && ComparePDG((mcP1G1 ? mcP1G1->PdgCode() : 0), P1signalMC->GetGrandMotherPDG(2), P1signalMC->GetGrandMotherPDGexclude(2), P1signalMC->GetCheckBothChargesGrandMothers(2)) && CheckParticleSource(labelP1G1, P1signalMC->GetGrandMotherSource(2));
-  }
 
-  if(P2signalMC->GetGrandMotherPDG(1)!=0 || P2signalMC->GetGrandMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
-    if(!mcP2G2 && mcP2M2) {
-      labelP2G2 = GetMothersLabel(labelP2M2);
-      if(labelP2G2>-1) mcP2G2 = GetMCTrackFromMCEvent(labelP2G2);
+    Int_t labelG3 = -1;
+    if(signalMC2->GetGrandMotherPDG(1)!=0 || signalMC2->GetGrandMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+      labelG3 = GetMothersLabel(labelM3);
+      if(mcM3 && labelG3>-1) mcG3 = GetMCTrackFromMCEvent(labelG3);
+      directTerm = directTerm && (mcG3 || signalMC2->GetGrandMotherPDGexclude(1))
+                   && ComparePDG((mcG3 ? mcG3->PdgCode() : 0), signalMC2->GetGrandMotherPDG(1), signalMC2->GetGrandMotherPDGexclude(1), signalMC2->GetCheckBothChargesGrandMothers(1))
+                   && CheckParticleSource(labelG3, signalMC2->GetGrandMotherSource(1));
     }
-    crossTerm = crossTerm && (mcP2G2 || P2signalMC->GetGrandMotherPDGexclude(1)) && ComparePDG((mcP2G2 ? mcP2G2->PdgCode() : 0), P2signalMC->GetGrandMotherPDG(1), P2signalMC->GetGrandMotherPDGexclude(1), P2signalMC->GetCheckBothChargesGrandMothers(1)) && CheckParticleSource(labelP2G2, P2signalMC->GetGrandMotherSource(1));
-  }
 
-  if(P2signalMC->GetGrandMotherPDG(2)!=0 || P2signalMC->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
-    if(!mcP2G1 && mcP2M1) {
-      labelP2G1 = GetMothersLabel(labelP2M1);
-      if(labelP2G1>-1) mcP2G1 = GetMCTrackFromMCEvent(labelP2G1);
+    Int_t labelG4 = -1;
+    if(signalMC2->GetGrandMotherPDG(2)!=0 || signalMC2->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+      labelG4 = GetMothersLabel(labelM4);
+      if(mcM4 && labelG4>-1) mcG4 = GetMCTrackFromMCEvent(labelG4);
+      directTerm = directTerm && (mcG4 || signalMC2->GetGrandMotherPDGexclude(2)) && ComparePDG((mcG4 ? mcG4->PdgCode() : 0),signalMC2->GetGrandMotherPDG(2),signalMC2->GetGrandMotherPDGexclude(2),signalMC2->GetCheckBothChargesGrandMothers(2))
+                   && CheckParticleSource(labelG4, signalMC2->GetGrandMotherSource(2));
     }
-    crossTerm = crossTerm && (mcP2G1 || P2signalMC->GetGrandMotherPDGexclude(2)) && ComparePDG((mcP2G1 ? mcP2G1->PdgCode() : 0), P2signalMC->GetGrandMotherPDG(2), P2signalMC->GetGrandMotherPDGexclude(2), P2signalMC->GetCheckBothChargesGrandMothers(2)) && CheckParticleSource(labelP2G1, P2signalMC->GetGrandMotherSource(2));
-  }
 
-  Bool_t motherRelation = kTRUE;
-  if(P1signalMC->GetMothersRelation()==AliDielectronSignalMC::kSame) {
-    motherRelation = motherRelation && HaveSameMother(pair);
-  }
-  if(P1signalMC->GetMothersRelation()==AliDielectronSignalMC::kDifferent) {
-    motherRelation = motherRelation && !HaveSameMother(pair);
-  }
-  if(P2signalMC->GetMothersRelation()==AliDielectronSignalMC::kSame) {
-    motherRelation = motherRelation && HaveSameMother(pair);
-  }
-  if(P2signalMC->GetMothersRelation()==AliDielectronSignalMC::kDifferent) {
-    motherRelation = motherRelation && !HaveSameMother(pair);
-  }
+    // Cross term
+    Bool_t crossTerm = kTRUE;
+    // daughters
+    crossTerm = crossTerm && mcD2 && ComparePDG(d2Pdg, signalMC1->GetLegPDG(1), signalMC1->GetLegPDGexclude(1), signalMC1->GetCheckBothChargesLegs(1)) && CheckParticleSource(labelD2, signalMC1->GetLegSource(1));
+    crossTerm = crossTerm && mcD1 && ComparePDG(d1Pdg, signalMC1->GetLegPDG(2), signalMC1->GetLegPDGexclude(2), signalMC1->GetCheckBothChargesLegs(2)) && CheckParticleSource(labelD1, signalMC1->GetLegSource(2));
+    crossTerm = crossTerm && mcD4 && ComparePDG(d4Pdg, signalMC2->GetLegPDG(1), signalMC2->GetLegPDGexclude(1), signalMC2->GetCheckBothChargesLegs(1)) && CheckParticleSource(labelD4, signalMC2->GetLegSource(1));
+    crossTerm = crossTerm && mcD3 && ComparePDG(d3Pdg, signalMC2->GetLegPDG(2), signalMC2->GetLegPDGexclude(2), signalMC2->GetCheckBothChargesLegs(2)) && CheckParticleSource(labelD3, signalMC2->GetLegSource(2));
 
-  // check geant process if set
-  Bool_t processGEANT = kTRUE;
-  if(P1signalMC->GetCheckGEANTProcess()) {
-    if(!CheckGEANTProcess(labelP1D1,P1signalMC->GetGEANTProcess()) &&
-       !CheckGEANTProcess(labelP1D2,P1signalMC->GetGEANTProcess())   ) processGEANT= kFALSE;
-  }
+    // mothers
+    if(signalMC1->GetMotherPDG(1)!=0 || signalMC1->GetMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+      if(!mcM2 && labelD2>-1) {
+        labelM2 = GetMothersLabel(labelD2);
+        if(labelM2>-1) mcM2 = GetMCTrackFromMCEvent(labelM2);
+      }
+      crossTerm = crossTerm && (mcM2 || signalMC1->GetMotherPDGexclude(1)) && ComparePDG((mcM2 ? mcM2->PdgCode() : 0), signalMC1->GetMotherPDG(1), signalMC1->GetMotherPDGexclude(1), signalMC1->GetCheckBothChargesMothers(1)) && CheckParticleSource(labelM2, signalMC1->GetMotherSource(1)) && CheckRadiativeDecision(labelM2,signalMC1);
+    }
 
-  if(P2signalMC->GetCheckGEANTProcess()) {
-  if(!CheckGEANTProcess(labelP2D1,P2signalMC->GetGEANTProcess()) &&
-     !CheckGEANTProcess(labelP2D2,P2signalMC->GetGEANTProcess())   ) processGEANT= kFALSE;
-   }
+    if(signalMC1->GetMotherPDG(2)!=0 || signalMC1->GetMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+      if(!mcM1 && labelD1>-1) {
+        labelM1 = GetMothersLabel(labelD1);
+        if(labelM1>-1) mcM1 = GetMCTrackFromMCEvent(labelM1);
+      }
+      crossTerm = crossTerm && (mcM1 || signalMC1->GetMotherPDGexclude(2)) && ComparePDG((mcM1 ? mcM1->PdgCode() : 0), signalMC1->GetMotherPDG(2), signalMC1->GetMotherPDGexclude(2), signalMC1->GetCheckBothChargesMothers(2)) && CheckParticleSource(labelM1, signalMC1->GetMotherSource(2)) && CheckRadiativeDecision(labelM1,signalMC1);
+    }
 
-  // check particle stack for pdg code
-  Bool_t pdgInStack = kTRUE;
-  if (P1signalMC->GetCheckStackForPDG()) {
-    pdgInStack = CheckStackParticle(labelP1M1,P1signalMC->GetStackPDG()) && CheckStackParticle(labelP1M2,P1signalMC->GetStackPDG());
-  }
-  if (P2signalMC->GetCheckStackForPDG()) {
-    pdgInStack = CheckStackParticle(labelP2M1,P2signalMC->GetStackPDG()) && CheckStackParticle(labelP2M2,P2signalMC->GetStackPDG());
-  }
-  // check is first mothers are closed (correlated charm/beauty)
-  Bool_t correlated = kTRUE;
-  if (P1signalMC->GetCheckCorrelatedHF()){
-    Int_t labelP1firstmother1 = GetFirstMothersLabelInChain(labelP1D1);
-    Int_t labelP1minfirstmother1 = GetMinLabelParticlePrimaryAround(labelP1firstmother1);
-    Int_t labelP1maxfirstmother1 = GetMaxLabelParticlePrimaryAround(labelP1firstmother1);
-    Int_t labelP1firstmother2 = GetFirstMothersLabelInChain(labelP1D2);
-    Int_t labelP1minfirstmother2 = GetMinLabelParticlePrimaryAround(labelP1firstmother2);
-    Int_t labelP1maxfirstmother2 = GetMaxLabelParticlePrimaryAround(labelP1firstmother2);
+    if(signalMC2->GetMotherPDG(1)!=0 || signalMC2->GetMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+      if(!mcM4 && labelD4>-1) {
+        labelM4 = GetMothersLabel(labelD4);
+        if(labelM4>-1) mcM4 = GetMCTrackFromMCEvent(labelM4);
+      }
+      crossTerm = crossTerm && (mcM4 || signalMC2->GetMotherPDGexclude(1)) && ComparePDG((mcM4 ? mcM4->PdgCode() : 0), signalMC2->GetMotherPDG(1), signalMC2->GetMotherPDGexclude(1), signalMC2->GetCheckBothChargesMothers(1)) && CheckParticleSource(labelM4, signalMC2->GetMotherSource(1)) && CheckRadiativeDecision(labelM4,signalMC2);
+    }
 
-    if(labelP1firstmother1==-1 || labelP1minfirstmother1==-1 || labelP1maxfirstmother1==-1) correlated = kFALSE; // security
-    if(labelP1firstmother2==-1 || labelP1minfirstmother2==-1 || labelP1maxfirstmother2==-1) correlated = kFALSE; // security
-    if(labelP1firstmother1<labelP1minfirstmother2 || labelP1firstmother1>labelP1maxfirstmother2) correlated = kFALSE;
-    if(labelP1firstmother2<labelP1minfirstmother1 || labelP1firstmother2>labelP1maxfirstmother1) correlated = kFALSE;
-  }
+    if(signalMC2->GetMotherPDG(2)!=0 || signalMC2->GetMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+      if(!mcM3 && labelD3>-1) {
+        labelM3 = GetMothersLabel(labelD3);
+        if(labelM3>-1) mcM1 = GetMCTrackFromMCEvent(labelM3);
+      }
+      crossTerm = crossTerm && (mcM3 || signalMC2->GetMotherPDGexclude(2)) && ComparePDG((mcM3 ? mcM3->PdgCode() : 0), signalMC2->GetMotherPDG(2), signalMC2->GetMotherPDGexclude(2), signalMC2->GetCheckBothChargesMothers(2)) && CheckParticleSource(labelM3, signalMC2->GetMotherSource(2)) && CheckRadiativeDecision(labelM3,signalMC2);
+    }
 
-  if (P2signalMC->GetCheckCorrelatedHF()){
-    Int_t labelP2firstmother1 = GetFirstMothersLabelInChain(labelP2D1);
-    Int_t labelP2minfirstmother1 = GetMinLabelParticlePrimaryAround(labelP2firstmother1);
-    Int_t labelP2maxfirstmother1 = GetMaxLabelParticlePrimaryAround(labelP2firstmother1);
-    Int_t labelP2firstmother2 = GetFirstMothersLabelInChain(labelP2D2);
-    Int_t labelP2minfirstmother2 = GetMinLabelParticlePrimaryAround(labelP2firstmother2);
-    Int_t labelP2maxfirstmother2 = GetMaxLabelParticlePrimaryAround(labelP2firstmother2);
+    // grand-mothers
+    if(signalMC1->GetGrandMotherPDG(1)!=0 || signalMC1->GetGrandMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+      if(!mcG2 && mcM2) {
+        labelG2 = GetMothersLabel(labelM2);
+        if(labelG2>-1) mcG2 = GetMCTrackFromMCEvent(labelG2);
+      }
+      crossTerm = crossTerm && (mcG2 || signalMC1->GetGrandMotherPDGexclude(1)) && ComparePDG((mcG2 ? mcG2->PdgCode() : 0), signalMC1->GetGrandMotherPDG(1), signalMC1->GetGrandMotherPDGexclude(1), signalMC1->GetCheckBothChargesGrandMothers(1)) && CheckParticleSource(labelG2, signalMC1->GetGrandMotherSource(1));
+    }
 
-    if(labelP2firstmother1==-1 || labelP2minfirstmother1==-1 || labelP2maxfirstmother1==-1) correlated = kFALSE; // security
-    if(labelP2firstmother2==-1 || labelP2minfirstmother2==-1 || labelP2maxfirstmother2==-1) correlated = kFALSE; // security
-    if(labelP2firstmother1<labelP2minfirstmother2 || labelP2firstmother1>labelP2maxfirstmother2) correlated = kFALSE;
-    if(labelP2firstmother2<labelP2minfirstmother1 || labelP2firstmother2>labelP2maxfirstmother1) correlated = kFALSE;
-  }
+    if(signalMC1->GetGrandMotherPDG(2)!=0 || signalMC1->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+      if(!mcG1 && mcM1) {
+        labelG1 = GetMothersLabel(labelM1);
+        if(labelG1>-1) mcG1 = GetMCTrackFromMCEvent(labelG1);
+      }
+      crossTerm = crossTerm && (mcG1 || signalMC1->GetGrandMotherPDGexclude(2)) && ComparePDG((mcG1 ? mcG1->PdgCode() : 0), signalMC1->GetGrandMotherPDG(2), signalMC1->GetGrandMotherPDGexclude(2), signalMC1->GetCheckBothChargesGrandMothers(2)) && CheckParticleSource(labelG1, signalMC1->GetGrandMotherSource(2));
+    }
 
-  // check if a mother is also a grandmother
-  Bool_t motherIsGrandmother = kTRUE;
-  if (P1signalMC->GetCheckMotherGrandmotherRelation()) {
-    motherIsGrandmother = kFALSE;
-    // motherIsGrandmother = MotherIsGrandmother(labelM1,labelM2,labelG1,labelG2, signalMC->GetMotherIsGrandmother());
-    motherIsGrandmother = MotherIsGrandmother(labelP1M1,labelP1M2,labelP1G1,labelP1G2,labelP2M1,labelP2M2,labelP2G1,labelP2G2, P1signalMC->GetMotherIsGrandmother());
-  }
-  if (P2signalMC->GetCheckMotherGrandmotherRelation()) {
-    motherIsGrandmother = kFALSE;
-    // motherIsGrandmother = MotherIsGrandmother(labelM1,labelM2,labelG1,labelG2, signalMC->GetMotherIsGrandmother());
-    motherIsGrandmother = MotherIsGrandmother(labelP1M1,labelP1M2,labelP1G1,labelP1G2,labelP2M1,labelP2M2,labelP2G1,labelP2G2, P2signalMC->GetMotherIsGrandmother());
-  }
+    if(signalMC2->GetGrandMotherPDG(1)!=0 || signalMC2->GetGrandMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+      if(!mcG4 && mcM4) {
+        labelG4 = GetMothersLabel(labelM2);
+        if(labelG4>-1) mcG4 = GetMCTrackFromMCEvent(labelG4);
+      }
+      crossTerm = crossTerm && (mcG4 || signalMC2->GetGrandMotherPDGexclude(1)) && ComparePDG((mcG4 ? mcG4->PdgCode() : 0), signalMC2->GetGrandMotherPDG(1), signalMC2->GetGrandMotherPDGexclude(1), signalMC2->GetCheckBothChargesGrandMothers(1)) && CheckParticleSource(labelG4, signalMC2->GetGrandMotherSource(1));
+    }
 
-  return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack && correlated);
+    if(signalMC2->GetGrandMotherPDG(2)!=0 || signalMC2->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+      if(!mcG3 && mcM3) {
+        labelG3 = GetMothersLabel(labelM3);
+        if(labelG3>-1) mcG3 = GetMCTrackFromMCEvent(labelG3);
+      }
+      crossTerm = crossTerm && (mcG3 || signalMC2->GetGrandMotherPDGexclude(2)) && ComparePDG((mcG3 ? mcG3->PdgCode() : 0), signalMC2->GetGrandMotherPDG(2), signalMC2->GetGrandMotherPDGexclude(2), signalMC2->GetCheckBothChargesGrandMothers(2)) && CheckParticleSource(labelG3, signalMC2->GetGrandMotherSource(2));
+    }
+
+    Bool_t motherRelation1 = kTRUE;
+    Bool_t motherRelation2 = kTRUE;
+    if(signalMC1->GetMothersRelation()==AliDielectronSignalMC::kSame) {
+      motherRelation1 = motherRelation1 && HaveSameMother(pair1);
+    }
+    if(signalMC1->GetMothersRelation()==AliDielectronSignalMC::kDifferent) {
+      motherRelation1 = motherRelation1 && !HaveSameMother(pair1);
+    }
+    if(signalMC2->GetMothersRelation()==AliDielectronSignalMC::kSame) {
+      motherRelation2 = motherRelation2 && HaveSameMother(pair2);
+    }
+    if(signalMC2->GetMothersRelation()==AliDielectronSignalMC::kDifferent) {
+      motherRelation2 = motherRelation2 && !HaveSameMother(pair2);
+    }
+    // check geant process if set
+    Bool_t processGEANT1 = kTRUE;
+    Bool_t processGEANT2 = kTRUE;
+    if(signalMC1->GetCheckGEANTProcess()) {
+      if(!CheckGEANTProcess(labelD1,signalMC1->GetGEANTProcess()) &&
+         !CheckGEANTProcess(labelD2,signalMC1->GetGEANTProcess())   ) processGEANT1= kFALSE;
+    }
+    if(signalMC2->GetCheckGEANTProcess()) {
+      if(!CheckGEANTProcess(labelD3,signalMC2->GetGEANTProcess()) &&
+         !CheckGEANTProcess(labelD4,signalMC2->GetGEANTProcess())   ) processGEANT2= kFALSE;
+    }
+
+    // check particle stack for pdg code
+    Bool_t pdgInStack1 = kTRUE;
+    Bool_t pdgInStack2 = kTRUE;
+    if (signalMC1->GetCheckStackForPDG()) {
+      pdgInStack1 = CheckStackParticle(labelM1,signalMC1->GetStackPDG()) && CheckStackParticle(labelM2,signalMC1->GetStackPDG());
+    }
+    if (signalMC2->GetCheckStackForPDG()) {
+      pdgInStack2 = CheckStackParticle(labelM3,signalMC2->GetStackPDG()) && CheckStackParticle(labelM4,signalMC2->GetStackPDG());
+    }
+    // check is first mothers are closed (correlated charm/beauty)
+    Bool_t correlated1 = kTRUE;
+    Bool_t correlated2 = kTRUE;
+    if (signalMC1->GetCheckCorrelatedHF()){
+      Int_t labelfirstmother1 = GetFirstMothersLabelInChain(labelD1);
+      Int_t labelminfirstmother1 = GetMinLabelParticlePrimaryAround(labelfirstmother1);
+      Int_t labelmaxfirstmother1 = GetMaxLabelParticlePrimaryAround(labelfirstmother1);
+      Int_t labelfirstmother2 = GetFirstMothersLabelInChain(labelD2);
+      Int_t labelminfirstmother2 = GetMinLabelParticlePrimaryAround(labelfirstmother2);
+      Int_t labelmaxfirstmother2 = GetMaxLabelParticlePrimaryAround(labelfirstmother2);
+      if(labelfirstmother1==-1 || labelminfirstmother1==-1 || labelmaxfirstmother1==-1) correlated1 = kFALSE; // security
+      if(labelfirstmother2==-1 || labelminfirstmother2==-1 || labelmaxfirstmother2==-1) correlated1 = kFALSE; // security
+      if(labelfirstmother1<labelminfirstmother2 || labelfirstmother1>labelmaxfirstmother2) correlated1 = kFALSE;
+      if(labelfirstmother2<labelminfirstmother1 || labelfirstmother2>labelmaxfirstmother1) correlated1 = kFALSE;
+    }
+    if (signalMC2->GetCheckCorrelatedHF()){
+      Int_t labelfirstmother1 = GetFirstMothersLabelInChain(labelD3);
+      Int_t labelminfirstmother1 = GetMinLabelParticlePrimaryAround(labelfirstmother1);
+      Int_t labelmaxfirstmother1 = GetMaxLabelParticlePrimaryAround(labelfirstmother1);
+      Int_t labelfirstmother2 = GetFirstMothersLabelInChain(labelD4);
+      Int_t labelminfirstmother2 = GetMinLabelParticlePrimaryAround(labelfirstmother2);
+      Int_t labelmaxfirstmother2 = GetMaxLabelParticlePrimaryAround(labelfirstmother2);
+      if(labelfirstmother1==-1 || labelminfirstmother1==-1 || labelmaxfirstmother1==-1) correlated2 = kFALSE; // security
+      if(labelfirstmother2==-1 || labelminfirstmother2==-1 || labelmaxfirstmother2==-1) correlated2 = kFALSE; // security
+      if(labelfirstmother1<labelminfirstmother2 || labelfirstmother1>labelmaxfirstmother2) correlated2 = kFALSE;
+      if(labelfirstmother2<labelminfirstmother1 || labelfirstmother2>labelmaxfirstmother1) correlated2 = kFALSE;
+    }
+
+    // check if a mother is also a grandmother
+    Bool_t motherIsGrandmother1 = kTRUE;
+    Bool_t motherIsGrandmother2 = kTRUE;
+    if (signalMC1->GetCheckMotherGrandmotherRelation()) {
+      motherIsGrandmother1 = kFALSE;
+      motherIsGrandmother1 = MotherIsGrandmother(labelM1,labelM2,labelG1,labelG2, signalMC1->GetMotherIsGrandmother());
+    }
+    if (signalMC2->GetCheckMotherGrandmotherRelation()) {
+      motherIsGrandmother2 = kFALSE;
+      motherIsGrandmother2 = MotherIsGrandmother(labelM3,labelM4,labelG3,labelG4, signalMC2->GetMotherIsGrandmother());
+    }
+
+    return ((directTerm || crossTerm) && motherRelation1 && motherRelation2 && processGEANT1 && processGEANT2 && motherIsGrandmother1 && motherIsGrandmother2 && pdgInStack1 && pdgInStack2 && correlated1 && correlated2);
 
 }
-*/
+
+
 
 //________________________________________________________________________________
-// Define MCSignal for 4 particles
+// Define IsMCTruth for 4 particles
 Bool_t AliDielectronMC::IsMCTruth(AliVParticle* mcD1, AliVParticle* mcD2, AliVParticle* mcD3, AliVParticle* mcD4, const AliDielectronSignalMC* signalMC1, const AliDielectronSignalMC* signalMC2) const {
   //
   // Check if the pair corresponds to the MC truth in signalMC

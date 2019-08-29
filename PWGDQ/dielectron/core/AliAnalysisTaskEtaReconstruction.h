@@ -60,8 +60,7 @@ public:
    // MC Signal setter
    void   AddSingleLegMCSignal(AliDielectronSignalMC signal1)         {fSingleLegMCSignal.push_back(signal1);}
    void   AddPairMCSignal(AliDielectronSignalMC signal1)              {fPairMCSignal.push_back(signal1);}
-   void   AddFourPairULSMCSignal(AliDielectronSignalMC signal1)          {fFourPairULSMCSignal.push_back(signal1);}
-   void   AddFourPairLSMCSignal (AliDielectronSignalMC signal1)           {fFourPairLSMCSignal.push_back(signal1);}
+   void   AddFourPairMCSignal(AliDielectronSignalMC signal1)          {fFourPairMCSignal.push_back(signal1);}
    void   AddMCSignalsWhereDielectronPairNotFromSameMother(std::vector<bool> vec) {fDielectronPairNotFromSameMother = vec;}
 
    // PID correction functions
@@ -72,6 +71,7 @@ public:
    // Generator
    void   SetGeneratorName         (TString generatorName) { fGeneratorName = generatorName;}
    void   SetGeneratorMCSignalName (TString generatorName) { fGeneratorMCSignalName  = generatorName;}
+   void   SetGeneratorULSSignalName(TString generatorName) { fGeneratorULSSignalName = generatorName;}
 
    // Event setter
    void   SetEnablePhysicsSelection(Bool_t selectPhysics)   {fSelectPhysics = selectPhysics;}
@@ -107,10 +107,12 @@ public:
    // Pair related setter
    void   SetDoPairing(Bool_t doPairing) {fDoPairing = doPairing;}
    void   SetDoFourPairing(Bool_t doFourPairing) {fDoFourPairing = doFourPairing;}
+   void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
+   void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
 
-   // Single leg from Pair related setter
-   // void   SetWriteTreeLegFromPair(bool enable){fWriteLegFromPair = enable;}
+   // Single legs from Pair related setter
+   // void   SetWriteTreeLegsFromPair(bool enable){fWriteLegsFromPair = enable;}
 
    // Set Cocktail waiting
    void SetDoCocktailWeighting(bool doCocktailWeight) { fDoCocktailWeighting = doCocktailWeight; }
@@ -129,20 +131,22 @@ public:
   class Particle{
   public:
     Particle() :
-      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fGrandMotherID(0), fMCSignalPair(false), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
+      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fGrandMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
     Particle(double pt, double eta, double phi, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fGrandMotherID(0), fMCSignalPair(false), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
+      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fGrandMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
 
     void SetTrackID(int id) {fTrackID = id;}
     void SetMotherID(int id) {fMotherID = id;}
     void SetGrandMotherID(int id) {fGrandMotherID = id;}
     void SetMCSignalPair (bool value) {fMCSignalPair = value;}
+    void SetULSSignalPair(bool value) {fULSSignalPair = value;}
     void SetDielectronPairFromSameMother(std::vector<Bool_t> vec){DielectronPairFromSameMother = vec;}
 
     int  GetTrackID() {return fTrackID;}
     int  GetMotherID() {return fMotherID;}
     int  GetGrandMotherID() {return fGrandMotherID;}
     bool GetMCSignalPair() {return fMCSignalPair;}
+    bool GetULSSignalPair() {return fULSSignalPair;}
 
     double  fPt;
     double  fEta;
@@ -155,6 +159,7 @@ public:
     int     fMotherID;
     int     fGrandMotherID;
     bool    fMCSignalPair;
+    bool    fULSSignalPair;
     std::vector<Bool_t> isMCSignal;
     std::vector<Bool_t> isReconstructed;
     std::vector<Bool_t> DielectronPairFromSameMother;
@@ -197,6 +202,7 @@ private:
   TList* fSingleElectronList;
   TList* fPairList;
   TList* fFourPairList;
+  TList* fResolutionList;
 
   std::vector<double> fPtBins;
   std::vector<double> fEtaBins;
@@ -218,14 +224,15 @@ private:
 
   std::vector<AliDielectronSignalMC> fSingleLegMCSignal;
   std::vector<AliDielectronSignalMC> fPairMCSignal;
-  std::vector<AliDielectronSignalMC> fFourPairULSMCSignal;
-  std::vector<AliDielectronSignalMC> fFourPairLSMCSignal;
+  std::vector<AliDielectronSignalMC> fFourPairMCSignal;
   std::vector<bool> fDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
 
   TString fGeneratorName;
   TString fGeneratorMCSignalName;
+  TString fGeneratorULSSignalName;
   std::vector<unsigned int> fGeneratorHashs;
   std::vector<unsigned int> fGeneratorMCSignalHashs;
+  std::vector<unsigned int> fGeneratorULSSignalHashs;
 
   AliPIDResponse* fPIDResponse;
   AliVEvent*      fEvent;
@@ -264,14 +271,23 @@ private:
   std::vector<TH3D*> fHistRecNegPart;
 
   std::vector<TH2D*> fHistGenPair;
-  std::vector<TH2D*> fHistGenULSFourPair;
-  std::vector<TH2D*> fHistGenLSFourPair;
+  std::vector<TH2D*> fHistGenFourPair;
   std::vector<TH2D*> fHistGenSmearedPair;
+  std::vector<TH2D*> fHistGenSmearedFourPair;
   std::vector<TH2D*> fHistRecPair;
+  std::vector<TH2D*> fHistRecFourPair;
+  std::vector<TH2D*> fHistGenPair_ULSandLS;
+  std::vector<TH2D*> fHistGenFourPair_ULSandLS;
+  std::vector<TH2D*> fHistGenSmearedPair_ULSandLS;
+  std::vector<TH2D*> fHistGenSmearedFourPair_ULSandLS;
+  std::vector<TH2D*> fHistRecPair_ULSandLS;
+  std::vector<TH2D*> fHistRecFourPair_ULSandLS;
 
 
   Bool_t fDoPairing;
   Bool_t fDoFourPairing;
+  Bool_t fDoULSandLS;
+  Bool_t fDeactivateLS;
   std::vector<Particle> fGenNegPart;
   std::vector<Particle> fGenPosPart;
   std::vector<Particle> fGenNeuPart;
