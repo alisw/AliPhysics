@@ -21,6 +21,9 @@
 #include <TString.h>
 #include "AliHFTreeHandlerBplustoD0pi.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliESDVertex.h"
+#include "AliESDtrackCuts.h"
+#include "AliRDHFCutsD0toKpi.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFTreeHandlerBplustoD0pi);
@@ -248,4 +251,33 @@ bool AliHFTreeHandlerBplustoD0pi::SetVariables(int runnumber, unsigned int event
   if(!setpid) return false;
 
   return true;
+}
+
+//________________________________________________________________
+Int_t AliHFTreeHandlerBplustoD0pi::IsBplusPionSelected(TObject* obj, AliRDHFCutsD0toKpi* cutsD0, AliAODPidHF* fPidHFD0, AliAODEvent* aod, AliAODVertex *vtx) {
+  
+  AliAODTrack* candidatePion = (AliAODTrack*)obj;
+  if (!candidatePion){ AliWarning("No pion object. Track rejected."); return 0; }
+  
+  AliESDtrackCuts* fTrackCuts = cutsD0->GetTrackCuts();
+  if (!fTrackCuts){ AliWarning("No fTrackCuts object. Track rejected.");  return 0; }
+  
+  Double_t pos[3],cov[6];
+  vtx->GetXYZ(pos);
+  vtx->GetCovarianceMatrix(cov);
+  const AliESDVertex vESD(pos,cov,100.,100);
+  
+  if(!cutsD0->IsDaughterSelected(candidatePion,&vESD,fTrackCuts,aod)) return 0;
+  
+  if(!cutsD0->GetIsUsePID()) return 1;
+  else {
+    
+    if(!fPidHFD0){ AliWarning("AliAODPidHF not created. Track accepted"); return 1; }
+    
+    Int_t isPion=fPidHFD0->MakeRawPid(candidatePion,AliPID::kPion);
+    if(isPion) return 1;
+    else       return 0;
+  }
+  
+  return 1;
 }

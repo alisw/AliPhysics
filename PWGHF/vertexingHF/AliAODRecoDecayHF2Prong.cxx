@@ -189,8 +189,8 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB2Prong(Int_t pdgabs,Int_t pdgabs2prong,
     // If yes, return label (>=0) of the AliAODMCParticle
     // 
     // NB: This function is only for non-resonant decays
-    // NB: No cut on mom conservation due to long decay time
-    
+    // NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
+
     // Check number of daughters. Candidate is AliAODRecoDecayHF2Prong, so only continue when 2 daughters
     Int_t ndg = GetNDaughters();
     if (!ndg) { AliError("HF2Prong: No daughters available"); return -1;}
@@ -280,19 +280,19 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB2Prong(Int_t pdgabs,Int_t pdgabs2prong,
     
     // check the number of daughters (we are not looking at resonant decay)
     if(mother->GetNDaughters() != 2) return -1;
-    
+  
     // Check for mom conservation
     mother = (AliAODMCParticle*)mcArray->At(labMother);
     Double_t pxMother = mother->Px();
     Double_t pyMother = mother->Py();
     Double_t pzMother = mother->Pz();
-    if ((TMath::Abs(pxMother - pxSumDgs) / (TMath::Abs(pxMother) + 1.e-13)) > 0.005 ||
-        (TMath::Abs(pyMother - pySumDgs) / (TMath::Abs(pyMother) + 1.e-13)) > 0.005 ||
+    // within 0.5% (Temp fix: 0.00001 -> 0.005)
+    if ((TMath::Abs(pxMother - pxSumDgs) / (TMath::Abs(pxMother) + 1.e-13)) > 0.005 &&
+        (TMath::Abs(pyMother - pySumDgs) / (TMath::Abs(pyMother) + 1.e-13)) > 0.005 &&
         (TMath::Abs(pzMother - pzSumDgs) / (TMath::Abs(pzMother) + 1.e-13)) > 0.005)
     {
-        // Only show warning if mom conservation is not within 0.5%. 
-        // This can be due to large propagation distance through magnetic field.
         AliWarning(Form("Mom. cons. not within 0.5%% perc for decay pdgabs = %d daughters = %d",pdgabs,(Int_t)mother->GetNDaughters()));
+        return -1;
     }
     return labMother;
 }
@@ -304,7 +304,7 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs, Int_t pdgabs3prong
   // If no, return -1
   // If yes, return label (>=0) of the AliAODMCParticle
   //
-  // NB: No cut on mom conservation due to long decay time
+  // NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
   //
   
   // Check number of daughters. Candidate is AliAODRecoDecayHF2Prong, so only continue when 2 daughters
