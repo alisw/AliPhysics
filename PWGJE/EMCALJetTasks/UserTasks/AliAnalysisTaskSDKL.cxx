@@ -268,15 +268,25 @@ Bool_t AliAnalysisTaskSDKL::FillHistograms() {
 //  fastjet::Selector sel_jets = fastjet::SelectorAbsEtaMax(0.9 - 0.4); //max_eta_jet
   std::vector<fastjet::PseudoJet> jets_backsub = sel_jets( clust_seq_backsub.inclusive_jets() );
 
-  //analyze back sub jets
+  std::vector<fastjet::PseudoJet> jets_backsub_filtered;
   for (auto jet : jets_backsub) {
     auto jet_pt = jet.pt();
-    if (jet_pt < 10.) continue; //hard-coded jet-pt cut
-    std::vector<split> splits = ReclusterFindHardSplits(jet);
-    FillSparseFromSplits( fhAllBackSub, splits, jet_pt );
+    if (jet_pt < 10.) continue;
+    if ( jet.has_area() ) {
+      auto jarea = jet.area_4vector().perp();
+      auto area_nominal = TMath::Pi() * 0.4 * 0.4;
+      if (jarea < (0.6 * area_nominal)) continue;
+    }
+    jets_backsub_filtered.push_back(jet);
   }
 
-  FillTree(jets_backsub, fTreeBackSub);
+  //analyze back sub jets
+  for (auto jet : jets_backsub_filtered) {
+    std::vector<split> splits = ReclusterFindHardSplits(jet);
+    FillSparseFromSplits( fhAllBackSub, splits, jet.pt() );
+  }
+
+  FillTree(jets_backsub_filtered, fTreeBackSub);
 
   event_full.clear();
   event_backsub.clear();
@@ -534,13 +544,6 @@ void AliAnalysisTaskSDKL::FillTree(std::vector<fastjet::PseudoJet> const & jets,
   for (auto jet : jets) {
 
     if ( jet.pt() < 30. ) continue; //hard-coded jet-pt cut
-
-    //jet area cut
-    if ( jet.has_area() ) {
-      auto jarea = jet.area_4vector().perp();
-      auto area_nominal = TMath::Pi() * 0.4 * 0.4;
-      if ( jarea < (0.6 * area_nominal) ) continue;
-    }
 
     int nconst = 0;
     for (auto c : jet.constituents() ) {
