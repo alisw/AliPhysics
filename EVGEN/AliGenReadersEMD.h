@@ -33,7 +33,7 @@ class AliGenReadersEMD : public AliGenReader
     void TrackAll() {fPcToTrack = kAll;}
     void SetStartEvent(Int_t nev) {fStartEvent = nev;}
     void SetNtupleName(TString s) {fNtupleName=s;}
-    void SetInvertPz(Bool_t invert = kTrue) {fInvertPz=invert;}
+    void SetInvertPz(Bool_t invert = kTRUE) {fInvertPz=invert;}
     Bool_t GetInvertPz() const { return fInvertPz; }
 
  protected:
