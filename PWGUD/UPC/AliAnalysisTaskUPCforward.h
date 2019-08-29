@@ -748,6 +748,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2[3];      //!
 
 
                                 /**
@@ -774,6 +775,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -799,6 +801,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -824,6 +827,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -849,6 +853,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -874,6 +879,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -899,6 +905,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -924,6 +931,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -941,6 +949,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroH;                     //!
         TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH;         //!
         TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[3];        //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -958,6 +967,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fDimuonPtDistributionZNCzeroZNAanyH;                     //!
         TH1F*                   fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH;         //!
         TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[3];        //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -975,6 +985,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fDimuonPtDistributionZNCanyZNAzeroH;                     //!
         TH1F*                   fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH;         //!
         TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[3];        //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -992,6 +1003,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fDimuonPtDistributionZNCanyZNAanyH;                     //!
         TH1F*                   fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH;         //!
         TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv2[3];        //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -1540,7 +1552,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 39);
+        ClassDef(AliAnalysisTaskUPCforward, 40);
 };
 
 #endif
