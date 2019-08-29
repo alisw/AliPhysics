@@ -79,9 +79,9 @@ using namespace std;
 
 
 static const int nHists              = 4;
-static const int nRt                 = 6;
-static const double CentMin[nRt]   = {0.0,0.5,1.0,2.0,3.0,0.0};
-static const double CentMax[nRt]   = {0.5,1.0,2.0,3.0,10.0,10.0};
+static const int nRt                 = 5;
+static const double CentMin[nRt]   = {0.0,0.5,1.5,2.5,0.0};
+static const double CentMax[nRt]   = {0.5,1.5,2.5,5.0,5.0};
 static const double C_Value = TMath::C()*(1.e2/1.e12); // cm/ps
 
 ClassImp(AliAnalysisTaskPPvsRT_TPCTOF)
@@ -439,11 +439,12 @@ void AliAnalysisTaskPPvsRT_TPCTOF::UserCreateOutputObjects()
      
      */
     
-    const Int_t nBinsRT = 80;
-    Double_t binsRT[nBinsRT+1] = {0};
+    const int nBinsRT = 80;
+    double binsRT[nBinsRT+1] = {0};
     
     for(Int_t i = 0; i <= nBinsRT; ++i){
         binsRT[i] = (double)(i-1)/8.0;
+	printf("edges :: %f\n",binsRT[i]);
     }
     
     fRT = new TH1D("hRT","hRT; R_{T}; Entries",nBinsRT,binsRT);
@@ -638,12 +639,12 @@ void AliAnalysisTaskPPvsRT_TPCTOF::UserExec(Option_t *)
     fEvents->Fill(0.5);
     
     UInt_t fSelectMask= fInputHandler->IsEventSelected();
-    Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7;
+    bool isINT7selected = fSelectMask&AliVEvent::kINT7;
     if(!isINT7selected)
         return;
     fEvents->Fill(1.5);
     
-    Int_t INEL = -1;
+    int INEL = -1;
     INEL = AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1.0);
     if( INEL < 1 )
         return;
@@ -693,7 +694,9 @@ void AliAnalysisTaskPPvsRT_TPCTOF::UserExec(Option_t *)
         fRT->Fill(Rt);
         fPtLVsRt->Fill(LeadingTrack->Pt(),Rt);
         
-        Int_t BinRT = GetBinRT(listTrans);
+        int BinRT = GetBinRT(listTrans);
+	if(BinRT<0) 
+	return;
         ProduceArrayTrksESD(0,listToward,BinRT);
         ProduceArrayTrksESD(1,listAway,BinRT);
         ProduceArrayTrksESD(2,listTrans,BinRT);
@@ -900,23 +903,24 @@ Double_t AliAnalysisTaskPPvsRT_TPCTOF::DeltaPhi(Double_t phi, Double_t Lphi,
     return dphi;
 }
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPPvsRT_TPCTOF::GetBinRT(TList* listT){
+int AliAnalysisTaskPPvsRT_TPCTOF::GetBinRT(TList* listT){
     
     double rt = -999.0;
     rt = (double)listT->GetEntries()/fMeanChT;
+    int r = -10;
     
     if(rt < 0.5)
-        rt = 0;
-    else if(rt >= 0.5 && rt < 1.0)
-        rt = 1;
-    else if(rt >= 1.0 && rt < 2.0)
-        rt = 2;
-    else if(rt >= 2.0 && rt < 3.0)
-        rt = 3;
+        r = 0;
+    else if(rt >= 0.5 && rt < 1.5)
+        r = 1;
+    else if(rt >= 1.5 && rt < 2.5)
+        r = 2;
+    else if(rt >= 2.5 && rt < 5.0)
+        r = 3;
     else
-        rt = 4;
+        r = -10;
     
-    return rt;
+    return r;
 }
 //_____________________________________________________________________________
 Short_t AliAnalysisTaskPPvsRT_TPCTOF::GetPidCode(Int_t pdgCode) const
@@ -996,27 +1000,27 @@ void AliAnalysisTaskPPvsRT_TPCTOF::ProduceArrayTrksESD(const int& region, TList 
         
         if(esdTrack->Charge()>0){
             hnSigPipos[rt][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
-            hnSigPipos[5][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
+            hnSigPipos[4][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
             hnSigkpos[rt][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
-            hnSigkpos[5][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
+            hnSigkpos[4][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
             hnSigppos[rt][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
-            hnSigppos[5][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
+            hnSigppos[4][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
             hPtpos_TPC_Eta[rt][region][nh]->Fill(pt);
-            hPtpos_TPC_Eta[5][region][nh]->Fill(pt);
+            hPtpos_TPC_Eta[4][region][nh]->Fill(pt);
             hPtpos_TPC[rt][region]->Fill(pt);
-            hPtpos_TPC[5][region]->Fill(pt);
+            hPtpos_TPC[4][region]->Fill(pt);
         }        
         else{
             hnSigPineg[rt][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
-            hnSigPineg[5][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
+            hnSigPineg[4][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
             hnSigkneg[rt][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
-            hnSigkneg[5][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
+            hnSigkneg[4][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
             hnSigpneg[rt][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
-            hnSigpneg[5][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
+            hnSigpneg[4][region][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
             hPtneg_TPC_Eta[rt][region][nh]->Fill(pt);
-            hPtneg_TPC_Eta[5][region][nh]->Fill(pt);
+            hPtneg_TPC_Eta[4][region][nh]->Fill(pt);
             hPtneg_TPC[rt][region]->Fill(pt);
-            hPtneg_TPC[5][region]->Fill(pt);
+            hPtneg_TPC[4][region]->Fill(pt);
         }
         
         bool IsTOFout = kFALSE;
@@ -1024,7 +1028,6 @@ void AliAnalysisTaskPPvsRT_TPCTOF::ProduceArrayTrksESD(const int& region, TList 
         if(!IsTOFout)
             continue;
         
-//        double nTOFClusters = esdTrack->GetNTOFclusters();
         double trkLength = esdTrack->GetIntegratedLength();
         double beta = trkLength/((esdTrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(esdTrack->P()))*C_Value);
 
@@ -1032,19 +1035,19 @@ void AliAnalysisTaskPPvsRT_TPCTOF::ProduceArrayTrksESD(const int& region, TList 
         
         if(esdTrack->Charge() < 0){
             hBetavsPneg[rt][region][nh]->Fill(esdTrack->P(),beta);
-            hBetavsPneg[5][region][nh]->Fill(esdTrack->P(),beta);
+            hBetavsPneg[4][region][nh]->Fill(esdTrack->P(),beta);
             hPtneg_TOF_Eta[rt][region][nh]->Fill(pt);
-            hPtneg_TOF_Eta[5][region][nh]->Fill(pt);
+            hPtneg_TOF_Eta[4][region][nh]->Fill(pt);
             hPtneg_TOF[rt][region]->Fill(pt);
-            hPtneg_TOF[5][region]->Fill(pt);
+            hPtneg_TOF[4][region]->Fill(pt);
         }
         else{
             hBetavsPpos[rt][region][nh]->Fill(esdTrack->P(),beta);
-            hBetavsPpos[5][region][nh]->Fill(esdTrack->P(),beta);
+            hBetavsPpos[4][region][nh]->Fill(esdTrack->P(),beta);
             hPtpos_TOF_Eta[rt][region][nh]->Fill(pt);
-            hPtpos_TOF_Eta[5][region][nh]->Fill(pt);
+            hPtpos_TOF_Eta[4][region][nh]->Fill(pt);
             hPtpos_TOF[rt][region]->Fill(pt);
-            hPtpos_TOF[5][region]->Fill(pt);
+            hPtpos_TOF[4][region]->Fill(pt);
         }
         
     }//end of track loop

@@ -113,19 +113,19 @@ private:
     // Cuts and options
     //
     
-    Double_t     fVtxCut;             // Vtx cut on z position in cm
+    double     fVtxCut;             // Vtx cut on z position in cm
     double       fLeadingCut;
-    Int_t        fNcl;
-    Double_t     fEtaCut;             // Eta cut used to select particles
-    Int_t        cent; //minimum centrality
-    Float_t      fMinCent; //minimum centrality
-    Float_t      fMaxCent; //maximum centrality
+    int        fNcl;
+    double     fEtaCut;             // Eta cut used to select particles
+    int        cent; //minimum centrality
+    float      fMinCent; //minimum centrality
+    float      fMaxCent; //maximum centrality
     const Double_t fDeDxMIPMin;
     const Double_t fDeDxMIPMax;
     const Double_t fdEdxHigh;
     const Double_t fdEdxLow;
     TString  fPeriod;
-    Double_t fMeanChT;
+    double fMeanChT;
     
     //
     // Help variables
@@ -168,50 +168,50 @@ private:
     
     // Histograms for PreCalibration
     
-    TH2D *hMIPVsEta[3][6];
-    TProfile *pMIPVsEta[3][6];
-    TH2D *hMIPVsEtaV0s[6];
-    TProfile *pMIPVsEtaV0s[6];
-    TH2D *hPlateauVsEta[6];
-    TProfile *pPlateauVsEta[6];
-    TH2D *hPhi[6];
-    TH2D     *hMIPVsPhi[6][4];
-    TProfile *pMIPVsPhi[6][4];
-    TH2D     *hPlateauVsPhi[6][4];
-    TProfile *pPlateauVsPhi[6][4];
+    TH2D *hMIPVsEta[3][5];
+    TProfile *pMIPVsEta[3][5];
+    TH2D *hMIPVsEtaV0s[5];
+    TProfile *pMIPVsEtaV0s[5];
+    TH2D *hPlateauVsEta[5];
+    TProfile *pPlateauVsEta[5];
+    TH2D *hPhi[5];
+    TH2D     *hMIPVsPhi[5][4];
+    TProfile *pMIPVsPhi[5][4];
+    TH2D     *hPlateauVsPhi[5][4];
+    TProfile *pPlateauVsPhi[5][4];
     
     
     // Histograms for PostCalibration
     
     
     TH2D *hPtVsP[4];
-    TH1D *hPtAll[3][6];
-    TH2D *hDeDxVsP[3][6][4];
-    TH2D *hnSigmaPi[6][4];
-    TH2D *hnSigmak[6][4];
-    TH2D *hnSigmap[6][4];
+    TH1D *hPtAll[3][5];
+    TH2D *hDeDxVsP[3][5][4];
+    TH2D *hnSigmaPi[5][4];
+    TH2D *hnSigmak[5][4];
+    TH2D *hnSigmap[5][4];
     
-    TH2D* histPiV0[6][4];
-    TH1D* histpPiV0[6][4];
-    TH2D* histPV0[6][4];
-    TH1D* histpPV0[6][4];
-    TH2D* histPiTof[6][4];
-    TH1D* histpPiTof[6][4];
-    TH2D* histEV0[6][4];
+    TH2D* histPiV0[5][4];
+    TH1D* histpPiV0[5][4];
+    TH2D* histPV0[5][4];
+    TH1D* histpPV0[5][4];
+    TH2D* histPiTof[5][4];
+    TH1D* histpPiTof[5][4];
+    TH2D* histEV0[5][4];
     
-    TH1D* hMcIn[6][7];
-    TH1D* hMcOut[6][7];
-    TH2D* hDCAxyVsPtPi[6];
-    TH2D* hDCAxyVsPtPiC[6];
-    TH2D* hDCAxyVsPtp[6];
-    TH2D* hDCAxyVsPtpC[6];
-    TH2D* hDCApTPrim[6][7];
-    TH2D* hDCApTWDec[6][7];
-    TH2D* hDCApTMate[6][7];
+    TH1D* hMcIn[5][7];
+    TH1D* hMcOut[5][7];
+    TH2D* hDCAxyVsPtPi[5];
+    TH2D* hDCAxyVsPtPiC[5];
+    TH2D* hDCAxyVsPtp[5];
+    TH2D* hDCAxyVsPtpC[5];
+    TH2D* hDCApTPrim[5][7];
+    TH2D* hDCApTWDec[5][7];
+    TH2D* hDCApTMate[5][7];
     
-    TH2D* hDCApTPrim2[6][7];
-    TH2D* hDCApTWDec2[6][7];
-    TH2D* hDCApTMate2[6][7];
+    TH2D* hDCApTPrim2[5][7];
+    TH2D* hDCApTWDec2[5][7];
+    TH2D* hDCApTMate2[5][7];
     TF1* fEtaCalibration;
     TF1* fEtaCalibrationEl;
     TF1* fcutDCAxy;
