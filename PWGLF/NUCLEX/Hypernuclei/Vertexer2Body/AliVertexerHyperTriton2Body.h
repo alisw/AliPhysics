@@ -175,6 +175,8 @@ class AliVertexerHyperTriton2Body : public TNamed
     AliESDtrackCuts *fHe3Cuts; //->
     AliESDtrackCuts *fPiCuts;  //->
 
+    bool fLikeSign;
+
   private:
     bool fMC;
     Bool_t fkDoV0Refit;
