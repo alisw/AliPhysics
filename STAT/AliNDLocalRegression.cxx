@@ -1209,3 +1209,13 @@ AliNDLocalRegression * AliNDLocalRegression::MakeRegression(TTree* tree, TString
   tree->SetAlias(regressionName,TString::Format("AliNDLocalRegression::GetCorrND(%d,%s+0)",hashIndex, varExp.Data()).Data());
   return regression;
 }
+
+
+Bool_t AliNDLocalRegression::RemoveQAInformation(){
+  //
+  delete fLocalFitQuality;
+  fLocalFitQuality=0;
+  delete fLocalFitCovar;
+  fLocalFitCovar=0;
+  return 0;
+}
