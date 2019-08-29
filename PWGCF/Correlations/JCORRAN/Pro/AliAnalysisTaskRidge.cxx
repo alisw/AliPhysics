@@ -798,8 +798,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	}
 //****
 
-
-	PostData(1, fHistos->GetListOfHistograms());
+	PostData(1, fOutput);
 }
 
 Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
