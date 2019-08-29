@@ -47,7 +47,7 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
 
   //Last three for MVA, first two for standard analysis (TBD: Merge them?)
-  Int_t IsD0FromBPlusSelected(Double_t ptBPlus, TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t bCutArray[68]);
+  Int_t IsD0FromBPlusSelected(Double_t ptBPlus, TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t bCutArray[75]);
   Int_t IsD0forD0ptbinSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
   Int_t IsBplusPionSelectedMVA(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, AliAODVertex *primaryVertex, Double_t bz);
   Int_t IsD0FromBPlusSelectedMVA(Double_t ptBPlus, TObject* obj,Int_t selectionLevel, AliAODEvent* aod, AliAODVertex *primaryVertex, Double_t bz);
@@ -66,7 +66,6 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   void AddTrackCutsSoftPi(const AliESDtrackCuts *cuts){ fTrackCutsSoftPi = new AliESDtrackCuts(*cuts); return;}
   virtual AliESDtrackCuts *GetTrackCutsSoftPi() const {return fTrackCutsSoftPi;}
 
-  void SetGetCutInfo(Bool_t value){fGetCutInfo = value;}
   void InitializeCuts();
   void InitializeCutsForCutOptimization(Int_t nCutsForOptimization, Int_t nVariables);
   void SetCutsForCutOptimization(Int_t glIndex,Float_t *cutsRDForCutOptimization);
@@ -102,7 +101,7 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   Bool_t GetIsCutUsedD0forD0ptbin(Int_t nCutIndex, Int_t ptbin) const {return fIsCutUsedD0forD0ptbin[GetGlobalIndexD0forD0ptbin(nCutIndex,ptbin)];}
 
   //Last two for MVA, first two for standard analysis (TBD: Merge them?)
-  Int_t ApplyCutOnVariable(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue, Bool_t bCutArray[68]);
+  Int_t ApplyCutOnVariable(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue, Bool_t bCutArray[75]);
   Int_t ApplyCutOnVariableD0forD0ptbin(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue, Bool_t bCutArray[29]);
   Int_t ApplyCutOnVariableMVA(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue);
   Int_t ApplyCutOnVariableD0forD0ptbinMVA(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue);
@@ -222,7 +221,6 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   Float_t fMaxPtPid;                                  ///
   Float_t fTPCflag;                                   ///
   Double_t fCircRadius;                               /// Radius for circular PID nsigma cut
-  Bool_t fGetCutInfo;                                 ///
 
   Bool_t * fIsCutUsed;                                //[fGlobalIndex]
 
@@ -286,7 +284,7 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   Float_t * fSigmaForCutOptimization;                 //[fnPtBins]
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsBPlustoD0Pi,3) ///
+  ClassDef(AliRDHFCutsBPlustoD0Pi,4) ///
   /// \endcond
 };
 
