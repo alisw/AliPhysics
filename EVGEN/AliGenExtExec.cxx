@@ -244,7 +244,7 @@ Bool_t AliGenExtExec::StopGen()
   // kill generator if running
 
   if (fPID == 0) {
-    AliError("generator not running, nothing killed");
+    AliInfo("trying to stop generator, but no process running ...");
     return kFALSE;
   }
 
