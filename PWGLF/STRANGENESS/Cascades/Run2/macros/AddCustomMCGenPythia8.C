@@ -4,8 +4,19 @@ R__LOAD_LIBRARY(libpythia6)
 #include "AliGenerator.h"
 #include "AliGenPythia.h"
 
+AliGenerator* CreatePythiaMonash(Float_t e_cms);
+AliGenerator* CreatePythiaMonashExperimental(Float_t e_cms);
+AliGenerator* CreatePythiaMonashMoreQCD(Float_t e_cms);
+AliGenerator* CreatePythiaMonashRopes(Float_t e_cms);
+AliGenerator* CreatePythiaMonashShoving(Float_t e_cms);
+
 AliGenerator* AddCustomMCGenPythia8(TString lSystem = "pp", TString lConfig = "", Float_t e_cms = 13000.)
 {
+    gSystem->Load("libpythia6");
+    gSystem->Load("libEGPythia6");
+    gSystem->Load("libAliPythia6");
+    gSystem->Load("libpythia8");
+    gSystem->Load("libAliPythia8");
     gSystem->Load("liblhapdf");
     AliGenerator *genP = NULL;
     if( lSystem.EqualTo("pp") )
@@ -21,16 +32,12 @@ AliGenerator* AddCustomMCGenPythia8(TString lSystem = "pp", TString lConfig = ""
     if( lSystem.EqualTo("pp-shoving") )
         genP = CreatePythiaMonashShoving(e_cms);
     
-    return gener;
+    return genP;
 }
+
 
 AliGenerator* CreatePythiaMonash(Float_t e_cms)
 {
-    gSystem->Load("libpythia6");
-    gSystem->Load("libEGPythia6");
-    gSystem->Load("libAliPythia6");
-    gSystem->Load("libpythia8");
-    gSystem->Load("libAliPythia8");
     gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8/xmldoc"));
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
@@ -295,3 +302,4 @@ AliGenerator* CreatePythiaMonashShoving(Float_t e_cms)
 
     return gener;
 }
+
