@@ -33,7 +33,8 @@ class AliGenReadersEMD : public AliGenReader
     void TrackAll() {fPcToTrack = kAll;}
     void SetStartEvent(Int_t nev) {fStartEvent = nev;}
     void SetNtupleName(TString s) {fNtupleName=s;}
-    void SetInvertPz() {fInvertPz=kTRUE;}
+    void SetInvertPz(Bool_t invert = kTrue) {fInvertPz=invert;}
+    Bool_t GetInvertPz() const { return fInvertPz; }
 
  protected:
     Int_t           fStartEvent;      	// points to the first event to read
