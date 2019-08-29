@@ -73,6 +73,7 @@ fTriggerClass(""),
 fTriggerMask(AliVEvent::kINT7),
 fIsMC(false),
 fSystem(0),
+fConversionFactordEdx(100.),
 fESDtrackCuts(nullptr),
 fAOD(nullptr),
 fPIDresp(nullptr),
@@ -190,6 +191,7 @@ fTriggerClass(""),
 fTriggerMask(AliVEvent::kINT7),
 fIsMC(false),
 fSystem(system),
+fConversionFactordEdx(100.),
 fESDtrackCuts(nullptr),
 fAOD(nullptr),
 fPIDresp(nullptr),
@@ -632,11 +634,11 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     if(fFillTreeWithPIDInfo) {
       if(!fFillTreeWithNsigmaPIDOnly) { //raw variables
         //ITS variables
-        fdEdxITS = ConvertFloatToUnsignedShort(track->GetITSsignal()*100);
+        fdEdxITS = ConvertFloatToUnsignedShort(track->GetITSsignal()*fConversionFactordEdx);
         fITSclsMap = track->GetITSClusterMap();
 
         //TPC variables
-        fdEdxTPC = ConvertFloatToUnsignedShort(track->GetTPCsignal()*100);
+        fdEdxTPC = ConvertFloatToUnsignedShort(track->GetTPCsignal()*fConversionFactordEdx);
         fTPCNclsPID = static_cast<unsigned char>(track->GetTPCsignalN());
 
         //TOF variables
@@ -977,17 +979,16 @@ void AliAnalysisTaskSEHFSystPID::GetTaggedV0s(vector<short> &idPionFromK0s, vect
 }
 
 //________________________________________________________________________
-short AliAnalysisTaskSEHFSystPID::GetPDGcodeFromMC(AliAODTrack* track, TClonesArray* arrayMC)
+int AliAnalysisTaskSEHFSystPID::GetPDGcodeFromMC(AliAODTrack* track, TClonesArray* arrayMC)
 {
   // Get pdg code
-  short pdg = -1;
+  int pdg = -1;
   if(!track) return pdg;
   int label = track->GetLabel();
   if(label<0) return pdg;
   AliAODMCParticle* partMC = dynamic_cast<AliAODMCParticle*>(arrayMC->At(label));
   if(!partMC) return pdg;
   pdg = TMath::Abs(partMC->GetPdgCode());
-  if(partMC->GetPdgCode()>numeric_limits<short>::max()) pdg = -1;
 
   return pdg;
 }
