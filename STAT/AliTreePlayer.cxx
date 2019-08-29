@@ -1700,3 +1700,93 @@ TTree* AliTreePlayer::LoadTrees(const char *inputDataList, const char *chRegExp,
   return treeBase;
 }
 
+
+
+/// AddMetadata to the input tree - see https://alice.its.cern.ch/jira/browse/ATO-290
+/// \param tree         - input tree
+/// \param varTagName   - tag to register
+/// \param varTagValue  - value
+/// \return             - return has list
+/// Currently supported metadata
+///* Drawing  :
+///  * <varName>.AxisTitle
+///  *<varName>.Legend
+///  * <varname>.Color
+///  * <varname>.MarkerStyle
+///* This metadata than can be used by the TStatToolkit
+///  * TStatToolkit::MakeGraphSparse
+///  * TStatToolkit::MakeGraphErrors
+///
+THashList*  AliTreePlayer::AddMetadata(TTree* tree, const char *varTagName,const char *varTagValue){
+  if (!tree) return NULL;
+  THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
+  if (metaData == NULL){
+    metaData=new THashList;
+    metaData->SetName("metaTable");
+    tree->GetUserInfo()->AddLast(metaData);
+  }
+  if (varTagName!=NULL && varTagValue!=NULL){
+    TNamed * named = TStatToolkit::GetMetadata(tree, varTagName,NULL,kTRUE);
+    if (named==NULL){
+      metaData->AddLast(new TNamed(varTagName,varTagValue));
+    }else{
+      named->SetTitle(varTagValue);
+    }
+  }
+  return metaData;
+}
+
+/// Get metadata description
+/// In case metadata contains friend part - friend path os returned as prefix
+/// Metadata are supposed to be added into tree using TStatToolkit::AddMetadata() function
+/// \param tree          - input tree
+/// \param varTagName    - tag name
+/// \param prefix        - friend prefix in case metadata are in friend tree
+/// \param fullMatch     - request full match in varTagName (to enable different metadata for tree and friend tree)
+/// \return              - metadata description
+/// TODO: too many string operations - to be speed up using char array arithmetic
+TNamed* AliTreePlayer::GetMetadata(TTree* tree, const char *varTagName, TString * prefix,Bool_t fullMatch){
+  //
+
+  if (!tree) return 0;
+  TTree * treeMeta=tree;
+
+  THashList * metaData = (THashList*) treeMeta->GetUserInfo()->FindObject("metaTable");
+  if (metaData == NULL){
+    metaData=new THashList;
+    metaData->SetName("metaTable");
+    tree->GetUserInfo()->AddLast(metaData);
+    return 0;
+  }
+  TNamed * named = (TNamed*)metaData->FindObject(varTagName);
+  if (named || fullMatch) return named;
+
+  TString metaName(varTagName);
+  Int_t nDots= metaName.CountChar('.');
+  if (prefix!=NULL) *prefix="";
+  if (nDots>1){ //check if friend name expansion needed
+    while (nDots>1){
+      TList *fList= treeMeta->GetListOfFriends();
+      if (fList!=NULL){
+        Int_t nFriends= fList->GetEntries();
+        for (Int_t kf=0; kf<nFriends; kf++){
+          TPRegexp regFriend(TString::Format("^%s.",fList->At(kf)->GetName()).Data());
+          if (metaName.Contains(regFriend)){
+            treeMeta=treeMeta->GetFriend(fList->At(kf)->GetName());
+            regFriend.Substitute(metaName,"");
+            if (prefix!=NULL){
+              (*prefix)+=fList->At(kf)->GetName();
+              // (*prefix)+=""; /// FIX use prefix as it is
+            }
+          }
+        }
+      }
+      if (nDots == metaName.CountChar('.')) break;
+      nDots=metaName.CountChar('.');
+    }
+  }
+
+  named = (TNamed*)metaData->FindObject(metaName.Data());
+  return named;
+
+}
