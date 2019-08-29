@@ -274,9 +274,7 @@ ClassImp(AliAnalysisTaskUeSpectraRT)
         ptli9(0x0),
         ptli10(0x0),
         ptli11(0x0),
-        ptliMB(0x0),
-        hRefMult08(0x0),
-        hV0Mmult(0x0)
+        ptliMB(0x0)
 
 {
 	for ( int i = 0 ; i < 18 ; i++ )
@@ -512,9 +510,7 @@ AliAnalysisTaskUeSpectraRT::AliAnalysisTaskUeSpectraRT(const char *name):
         ptli9(0x0),
         ptli10(0x0),
         ptli11(0x0),
-        ptliMB(0x0),
-	hRefMult08(0x0),
-        hV0Mmult(0x0)
+        ptliMB(0x0)
 	
 {
 	for ( int i = 0 ; i < 18 ; i++ )
@@ -1267,13 +1263,6 @@ void AliAnalysisTaskUeSpectraRT::UserCreateOutputObjects()
           
       ptliMB = new TH1F("ptlMB","p_{T}^{leading}; #it{p}_{T}^{leading} (GeV/c)",nPtBins,xBins);
       fListOfObjects->Add(ptliMB);
-
-      hRefMult08 = new TH1F("hRefMult08","Multiplicity (-0.8 < #eta < 0.8);RefMult08;count",multBins,xmultBins);   
-      fListOfObjects->Add(hRefMult08);
-      
-      hV0Mmult = new TH1F("hV0Mmult","V0M ;V0M percentile;count",multBins,xmultBins);
-      fListOfObjects->Add(hV0Mmult);
-      
       
  
     for ( int i = 0 ; i < 18 ; i++ )
@@ -1514,23 +1503,6 @@ void AliAnalysisTaskUeSpectraRT::UserExec(Option_t *)
 	
 	if (isINEL0Rec)
 		fn1->Fill(7); //PS + GetPrimaryVertex + isVtxInZCut
-
-	// -------------------------------------- multiplcity estimators section ------------------------------------------ //
-	
-	ftrackmult08 = -999;
-	fv0mpercentile = -999;
-	
-	ftrackmult08=AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 0.8);     //tracklets
-	hRefMult08->Fill(ftrackmult08);
-	
-	fMultSelection = (AliMultSelection*) fESD->FindListObject("MultSelection"); // Esto es para 13 TeV
-	if (!fMultSelection)
-	  cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
-	else
-	  fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
-	hV0Mmult->Fill(fv0mpercentile);
-	cout<<"------- V0M mult ==  "<<fv0mpercentile<<"--------"<<endl;
-	// ------------------------------------------ end of mult estimators -------------------------------------------------//
 
 
 	//________ calculate RT and binned spectra ___

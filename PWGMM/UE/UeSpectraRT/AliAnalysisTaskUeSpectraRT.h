@@ -360,14 +360,6 @@ class AliAnalysisTaskUeSpectraRT : public AliAnalysisTaskSE {
 		TH1F *pTGenAw10;                    //!
 		TH1F *pTGenAw11;                    //!
 
-		//Mult
-		TH1F * hRefMult08;
-		TH1F * hV0Mmult;
-
-		Double_t ftrackmult08;       //       
-		Double_t fv0mpercentile;     //
-
-
 		AliAnalysisFilter* fTrackFilter[18];//! track filter
 
 
