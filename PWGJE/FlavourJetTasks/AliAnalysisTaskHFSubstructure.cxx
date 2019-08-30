@@ -1429,6 +1429,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
   if (fJetShapeType == kDataInclusive){
 
+    TRandom3 Random;
+    Random.SetSeed(0);
+    Double_t Random_Number;
 
     AliHFTrackContainer* Track_Container=dynamic_cast<AliHFTrackContainer*>(GetTrackContainer(0));
     if (!Track_Container) return kTRUE;
@@ -1444,6 +1447,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
       if(!Track) continue;
       if(Track->Pt() > 100.0 || TMath::Abs(Track->Eta()) > 0.9) continue;
+      Random_Number=Random.Rndm();
+      if(Random_Number > fTrackingEfficiency) continue;
       fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
     }
     fFastJetWrapper->Run();
