@@ -1625,7 +1625,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoEventSphericity[iCut]->Sumw2();
         fHistoEventSphericityAxis[iCut]->Sumw2();
         fHistoEventSphericityvsNtracks[iCut]->Sumw2();
-        if(fDoJetAnalysis){ fHistoEventSphericityvsNJets[iCut]->Sumw2(); fHistoEventMultiplicityvsNJets[iCut]->Sumw2(); }
+        if(fDoJetAnalysis){
+          fHistoEventSphericityvsNJets[iCut]->Sumw2();
+          fHistoEventMultiplicityvsNJets[iCut]->Sumw2();
+        }
         fHistoTrueSphericityvsRecSphericity[iCut]->Sumw2();
         fHistoTrueMultiplicityvsRecMultiplicity[iCut]->Sumw2();
         fHistoEventSphericityvsHighpt[iCut]->Sumw2();
