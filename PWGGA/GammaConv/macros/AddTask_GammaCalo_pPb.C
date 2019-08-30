@@ -1370,10 +1370,8 @@ void AddTask_GammaCalo_pPb(
   // ===============================================================================================
   // INT7 triggers
   } else if (trainConfig == 500) {  // PHOS  INT7
-    cuts.AddCutCalo("80010113","24466420ha012200000","0163103100000010"); // standard
-    cuts.AddCutCalo("80010113","24466000ha012200000","0163103100000010"); // standard without non-lin
-    cuts.AddCutCalo("80010113","244664205a012200000","0163103100000010"); // standard
-    cuts.AddCutCalo("80010113","244660005a012200000","0163103100000010"); // standard without non-lin
+    cuts.AddCutCalo("80010113","24466410ha012200000","0163103100000010"); // standard without non-lin
+    cuts.AddCutCalo("80010113","244664105a012200000","0163103100000010"); // standard without non-lin
   } else if (trainConfig == 501) {  // PHOS  INT7
     cuts.AddCutCalo("80010113","2446600041012200000","0163103100000010"); // no non lin
     cuts.AddCutCalo("80010113","2446600011012200000","0163103100000010"); // no non lin 1000 \mus
@@ -1386,19 +1384,19 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","2446651051012200000","0163103100000010"); //
     cuts.AddCutCalo("80010113","2446652051012200000","0163103100000010"); //
   } else if (trainConfig == 503) {  // PHOS  INT7 with cents
-    cuts.AddCutCalo("80010113","24466420ha012200000","0163103100000010"); // non lin 0-100%
-    cuts.AddCutCalo("80110113","24466420ha012200000","0163103100000010"); // non lin 0-10%
-    cuts.AddCutCalo("81210113","24466420ha012200000","0163103100000010"); // non lin 10-20%
-    cuts.AddCutCalo("82410113","24466420ha012200000","0163103100000010"); // non lin 20-40%
-    cuts.AddCutCalo("84610113","24466420ha012200000","0163103100000010"); // non lin 40-60%
-    cuts.AddCutCalo("86810113","24466420ha012200000","0163103100000010"); // non lin 60-80%
-    cuts.AddCutCalo("88010113","24466420ha012200000","0163103100000010"); // non lin 80-100%
+    cuts.AddCutCalo("80010113","24466410ha012200000","0163103100000010"); // non lin 0-100%
+    cuts.AddCutCalo("80110113","24466410ha012200000","0163103100000010"); // non lin 0-10%
+    cuts.AddCutCalo("81210113","24466410ha012200000","0163103100000010"); // non lin 10-20%
+    cuts.AddCutCalo("82410113","24466410ha012200000","0163103100000010"); // non lin 20-40%
+    cuts.AddCutCalo("84610113","24466410ha012200000","0163103100000010"); // non lin 40-60%
+    cuts.AddCutCalo("86810113","24466410ha012200000","0163103100000010"); // non lin 60-80%
+    cuts.AddCutCalo("88010113","24466410ha012200000","0163103100000010"); // non lin 80-100%
   } else if (trainConfig == 504) {  // PHOS  INT7 with cents
-    cuts.AddCutCalo("80010113","24466420ha012200000","0163103100000010"); // non lin 0-100%
-    cuts.AddCutCalo("80210113","24466420ha012200000","0163103100000010"); // non lin 0-20%
-    cuts.AddCutCalo("86010113","24466420ha012200000","0163103100000010"); // non lin 60-100%
-    cuts.AddCutCalo("a0110113","24466420ha012200000","0163103100000010"); // non lin 0-5%
-    cuts.AddCutCalo("a1210113","24466420ha012200000","0163103100000010"); // non lin 5-10%
+    cuts.AddCutCalo("80010113","24466410ha012200000","0163103100000010"); // non lin 0-100%
+    cuts.AddCutCalo("80210113","24466410ha012200000","0163103100000010"); // non lin 0-20%
+    cuts.AddCutCalo("86010113","24466410ha012200000","0163103100000010"); // non lin 60-100%
+    cuts.AddCutCalo("a0110113","24466410ha012200000","0163103100000010"); // non lin 0-5%
+    cuts.AddCutCalo("a1210113","24466410ha012200000","0163103100000010"); // non lin 5-10%
   } else if (trainConfig == 505) {  // PHOS  INT7 with cents
     cuts.AddCutCalo("80110113","24466420ha012200000","0163103100000010"); // non lin 0-10%
     cuts.AddCutCalo("81210113","24466420ha012200000","0163103100000010"); // non lin 10-20%
