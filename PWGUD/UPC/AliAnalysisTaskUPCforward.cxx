@@ -2524,14 +2524,16 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
    */
   if( isZNCfired == 0 ) {
         if( isZNAfired == 0 ) {
-              fDimuonPtDistributionZNCzeroZNAzeroHv2            ->Fill(ptOfTheDimuonPair);
-              // fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
-              if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
-                fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[0]->Fill(ptOfTheDimuonPair);
-              } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
-                fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[1]->Fill(ptOfTheDimuonPair);
-              } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
-                fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+              if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+                  fDimuonPtDistributionZNCzeroZNAzeroHv2            ->Fill(ptOfTheDimuonPair);
+                  // fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[0]->Fill(ptOfTheDimuonPair);
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[1]->Fill(ptOfTheDimuonPair);
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+                  }
               }
               if( ptOfTheDimuonPair < 0.25 ) {
                   fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2->Fill(possibleJPsi.Mag());
@@ -2573,14 +2575,16 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
               //     fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
               // }
         } else {
-              fDimuonPtDistributionZNCzeroZNAanyHv2            ->Fill(ptOfTheDimuonPair);
-              // fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
-              if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
-                fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[0]->Fill(ptOfTheDimuonPair);
-              } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
-                fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[1]->Fill(ptOfTheDimuonPair);
-              } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
-                fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+              if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+                  fDimuonPtDistributionZNCzeroZNAanyHv2            ->Fill(ptOfTheDimuonPair);
+                  // fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[0]->Fill(ptOfTheDimuonPair);
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[1]->Fill(ptOfTheDimuonPair);
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+                  }
               }
               if( ptOfTheDimuonPair < 0.25 ) {
                   fInvariantMassDistributionCoherentZNCzeroZNAanyHv2->Fill(possibleJPsi.Mag());
@@ -2626,14 +2630,16 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
         }
   } else {
         if( isZNAfired == 0 ) {
-              fDimuonPtDistributionZNCanyZNAzeroHv2            ->Fill(ptOfTheDimuonPair);
-              // fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
-              if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
-                fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[0]->Fill(ptOfTheDimuonPair);
-              } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
-                fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[1]->Fill(ptOfTheDimuonPair);
-              } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
-                fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+              if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+                  fDimuonPtDistributionZNCanyZNAzeroHv2            ->Fill(ptOfTheDimuonPair);
+                  // fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[0]->Fill(ptOfTheDimuonPair);
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[1]->Fill(ptOfTheDimuonPair);
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+                  }
               }
               if( ptOfTheDimuonPair < 0.25 ) {
                   fInvariantMassDistributionCoherentZNCanyZNAzeroHv2->Fill(possibleJPsi.Mag());
@@ -2677,14 +2683,16 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
               //     fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
               // }
         } else {
-              fDimuonPtDistributionZNCanyZNAanyHv2            ->Fill(ptOfTheDimuonPair);
-              // fDimuonPtDistributionZNCanyZNAanyShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
-              if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
-                fDimuonPtDistributionZNCanyZNAanyRapidityHv2[0]->Fill(ptOfTheDimuonPair);
-              } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
-                fDimuonPtDistributionZNCanyZNAanyRapidityHv2[1]->Fill(ptOfTheDimuonPair);
-              } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
-                fDimuonPtDistributionZNCanyZNAanyRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+              if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+                  fDimuonPtDistributionZNCanyZNAanyHv2            ->Fill(ptOfTheDimuonPair);
+                  // fDimuonPtDistributionZNCanyZNAanyShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2[0]->Fill(ptOfTheDimuonPair);
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2[1]->Fill(ptOfTheDimuonPair);
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2[2]->Fill(ptOfTheDimuonPair);
+                  }
               }
               if( ptOfTheDimuonPair < 0.25 ) {
                   fInvariantMassDistributionCoherentZNCanyZNAanyHv2->Fill(possibleJPsi.Mag());
