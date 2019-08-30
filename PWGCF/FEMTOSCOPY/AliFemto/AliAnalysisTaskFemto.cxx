@@ -567,8 +567,6 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
     }
   else
     {
-      printf(Form("*** Executing alien-token-init %s ***\n"),fUserName.Data());
-      gSystem->Exec(Form("alien-token-init %s",fUserName.Data()));
       printf("*** Connect to AliEn ***\n");
       TGrid::Connect("alien://");
       TFile *fileConfig = TFile::Open(fConfigMacro.Data());
