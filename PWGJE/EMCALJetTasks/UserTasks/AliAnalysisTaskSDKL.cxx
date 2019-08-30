@@ -202,10 +202,10 @@ void AliAnalysisTaskSDKL::UserCreateOutputObjects()
   fhAllBackSub = new THnSparseD("hAllBackSub", "hAllBackSub", 15, bins, xmin, xmax);
   fOutput->Add(fhAllBackSub);
 
-  fhRho = new TH1F("fhRho","fhRho",1000,0,100);
+  fhRho = new TH1F("fhRho","fhRho",1000,0,1000);
   fOutput->Add(fhRho);
 
-  fhRhoSparse = new TH1F("fhRhoSparse","fhRhoSparse",1000,0,100);
+  fhRhoSparse = new TH1F("fhRhoSparse","fhRhoSparse",1000,0,1000);
   fOutput->Add(fhRhoSparse);
 
   fTree = new TNtuple("JetTrackTree", "jet track tree", "pt:eta:phi:jetm");
