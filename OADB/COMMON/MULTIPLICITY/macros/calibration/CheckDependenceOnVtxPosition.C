@@ -312,11 +312,11 @@ void CheckDependenceOnVtxPosition(
     Int_t maxNTracklets       = 500;
     Int_t maxZN               = 2000;
     Int_t nBinsZvtx           = 120;
-    if (!lPeriodName.CompareTo("LHC17n")){
-      maxAmplitudeV0A     = 1000*10;
+    if (!lPeriodName.CompareTo("LHC17n") || !lPeriodName.CompareTo("LHC18d2")){
+      maxAmplitudeV0A     = 1000*30;
       maxSPDCl            = 500*10;
       maxRefMult          = 200*10;
-      maxNTracklets       = 500*10;
+      maxNTracklets       = 500*8;
       maxZN               = 2000*10;
     }
     if (isLowStat)
@@ -337,6 +337,7 @@ void CheckDependenceOnVtxPosition(
         lRunStats[ix] = 0;
     }
 
+    auto h2V0MvsNTracklets      = new TH2F("h2V0MvsNTracklets","h2V0MvsNTracklets",1000,0,maxAmplitudeV0A,maxNTracklets,0,maxNTracklets);
     auto h2V0AvsVtxZ            = new TH2F("h2V0AvsVtxZ","h2V0AvsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
     auto h2V0CvsVtxZ            = new TH2F("h2V0CvsVtxZ","h2V0CvsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
     auto h2V0MvsVtxZ            = new TH2F("h2V0MvsVtxZ","h2V0MvsVtxZ",1000,0,maxAmplitudeV0A,nBinsZvtx,-12,12);
@@ -448,6 +449,7 @@ void CheckDependenceOnVtxPosition(
           h2ZNAvsVtxZ->Fill((Bool_t)fZnaFired*fZnaTower+!((Bool_t)fZnaFired)*0, fEvSel_VtxZ);
           h2ZNCvsVtxZ->Fill((Bool_t)fZncFired*fZncTower+!((Bool_t)fZncFired)*0, fEvSel_VtxZ);
 
+          h2V0MvsNTracklets->Fill(fAmplitude_V0A+fAmplitude_V0C, fnTracklets);
 
           hprofVtxZvsV0A->Fill(fEvSel_VtxZ, fAmplitude_V0A);
           hprofVtxZvsV0C->Fill(fEvSel_VtxZ, fAmplitude_V0C);
@@ -529,6 +531,7 @@ void CheckDependenceOnVtxPosition(
     //Write buffer to file
 //     for(Int_t iRun=0; iRun<lNRuns; iRun++) sTree[iRun]->Write();
     TFile *fOutput = new TFile (nameOutputFile.Data(), "RECREATE");
+      h2V0MvsNTracklets->Write();
       h2V0AvsVtxZ->Write();
       h2V0CvsVtxZ->Write();
       h2V0MvsVtxZ->Write();
