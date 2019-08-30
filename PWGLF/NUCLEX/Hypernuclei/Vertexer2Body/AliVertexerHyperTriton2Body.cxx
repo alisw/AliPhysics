@@ -12,7 +12,7 @@
 ClassImp(AliVertexerHyperTriton2Body)
 
     AliVertexerHyperTriton2Body::AliVertexerHyperTriton2Body()
-    : TNamed(), fHe3Cuts{nullptr}, fPiCuts{nullptr}, fLikeSign{false},
+    : TNamed(), fHe3Cuts{nullptr}, fPiCuts{nullptr}, fLikeSign{false}, fRotation{false},
       //________________________________________________
       //Flags for V0 vertexer
       fMC{kFALSE},
@@ -221,12 +221,30 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 AliESDtrack *ntrk = event->GetTrack(nidx);
                 if (!ntrk)
                     continue;
-                for (auto &pidx : tracks[0][index > 0 ? 0 : 1])
+                if (fRotation && index == 1) {  
+                    double params[5]{ntrk->GetY(), ntrk->GetZ(), -ntrk->GetSnp(), ntrk->GetTgl(), ntrk->GetSigned1Pt()};
+                    ntrk->SetParamOnly(ntrk->GetX(), ntrk->GetAlpha(),params);
+                }
+                for (auto &pidx : tracks[0][index == 1 ? 0 : 1])
                 {
                     AliESDtrack *ptrk = event->GetTrack(pidx);
                     if (!ptrk)
                         continue;
+                    if (fRotation && index == 0) {
+                        double params[5]{ptrk->GetY(), ptrk->GetZ(), -ptrk->GetSnp(), ptrk->GetTgl(), ptrk->GetSigned1Pt()};
+                        ptrk->SetParamOnly(ptrk->GetX(), ptrk->GetAlpha(),params);
+                    }
+                    
                     CreateV0(nidx, ntrk, pidx, ptrk);
+                    
+                    if (fRotation && index == 0) { /// Restore the params
+                        double params[5]{ptrk->GetY(), ptrk->GetZ(), -ptrk->GetSnp(), ptrk->GetTgl(), ptrk->GetSigned1Pt()};
+                        ptrk->SetParamOnly(ptrk->GetX(), ptrk->GetAlpha(),params);
+                    }
+                }
+                if (fRotation && index == 1) {  
+                    double params[5]{ntrk->GetY(), ntrk->GetZ(), -ntrk->GetSnp(), ntrk->GetTgl(), ntrk->GetSigned1Pt()};
+                    ntrk->SetParamOnly(ntrk->GetX(), ntrk->GetAlpha(),params);
                 }
             }
         }
