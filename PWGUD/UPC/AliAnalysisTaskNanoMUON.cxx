@@ -431,22 +431,27 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
       // get track
       AliMCParticle *MCPart = static_cast<AliMCParticle*>(fMC->GetTrack(iMCParticle)); 
       if(!MCPart) return;
-      // Particle is primary for LHC16b2
-      if(fPeriod==91){
-        if(MCPart->GetMother() >= 0) continue;
-      }// Particle is not primary and it is coming from J/Psi decay for LHC18l7
-      if(fPeriod==90){
-        if(MCPart->GetMother() == -1) continue;
+      // Particle is primary (for LHC16b2) or is not primary and it is coming from J/Psi or Psi' decay (for LHC18l7)
+      if(MCPart->GetMother() == -1){
+        // if muons increase counter and store indices
+        if(MCPart->PdgCode() == 13){
+          idxMCPosMuons[nGoodMCPosMuons] = iMCParticle;
+          nGoodMCPosMuons++;
+        } else  if(MCPart->PdgCode() == -13){
+          idxMCNegMuons[nGoodMCNegMuons] = iMCParticle;
+          nGoodMCNegMuons++;
+        }
+      } else {
         AliMCParticle *MCMother = static_cast<AliMCParticle*>(fMC->GetTrack(MCPart->GetMother()));
         if(MCMother->PdgCode() != 443 && MCMother->PdgCode() != 100443) continue;
-      }
-      // if muons increase counter and store indices
-      if (MCPart->PdgCode() == 13) {
-        idxMCPosMuons[nGoodMCPosMuons] = iMCParticle;
-        nGoodMCPosMuons++;
-      } else  if (MCPart->PdgCode() == -13) {
-        idxMCNegMuons[nGoodMCNegMuons] = iMCParticle;
-        nGoodMCNegMuons++;
+        // if muons increase counter and store indices
+        if(MCPart->PdgCode() == 13){
+          idxMCPosMuons[nGoodMCPosMuons] = iMCParticle;
+          nGoodMCPosMuons++;
+        } else  if(MCPart->PdgCode() == -13){
+          idxMCNegMuons[nGoodMCNegMuons] = iMCParticle;
+          nGoodMCNegMuons++;
+        }
       } 
     }
     // store number of muons
