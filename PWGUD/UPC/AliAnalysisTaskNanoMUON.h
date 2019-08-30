@@ -23,7 +23,7 @@ class AliAnalysisTaskNanoMUON : public AliAnalysisTaskSE
         virtual void   			NotifyRun();								// Implement the Notify run to search for the new parameters at each new runs
 		void 					TwoMuonAna(Int_t *pos, Int_t *neg);			// Analyses two muons and extracs dimuon information
 		void 					TwoMCMuonAna(Int_t *MCpos, Int_t *MCneg);	// Analyses two MC muons and extracs MC dimuon information
-		void 					SetPeriod(Int_t period);
+		void 					SetPeriod(Int_t period){fPeriod = period;}  // 0: 2018 q, 1: 2018 r, 2: 2015 o, 3: 2016 r, 4: 2016 s, 90: LHC18l7, 91: LHC16b2
 		void 					SetMC(Bool_t flag){fIsMC = flag;}	
 		void 					PostAllData();	
 	
