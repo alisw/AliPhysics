@@ -3077,7 +3077,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
               else nSigmaBin = 0;
             }
 
-            if(nSigmaBin == 10) std::cout << "nSigmaBin has wrong value" << endl;
+            if(nSigmaBin == 10) std::cout << "nSigmaBin has wrong value" << std::endl;
 
             Int_t nStartVariable = 0;
             Int_t nStartFillNumber = 0;
