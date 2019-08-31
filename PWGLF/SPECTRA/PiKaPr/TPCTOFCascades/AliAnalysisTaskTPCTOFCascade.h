@@ -107,6 +107,7 @@ public AliAnalysisTaskSE
   AliESDEvent *fESDEvent; // ESD event
   AliMCEvent *fMCEvent; // MC event
   //AliStack *fMCStack; // MC stack
+  AliESDtrackCuts *fTrackCutsV0;
   AliESDtrackCuts *fTrackCuts2010; //! ITSTPC track cuts 2010
   AliESDtrackCuts *fTrackCuts2011; //! ITSTPC track cuts 2011
   AliESDtrackCuts *fTrackCutsTPCRefit; //! TPC only track cuts + refit
