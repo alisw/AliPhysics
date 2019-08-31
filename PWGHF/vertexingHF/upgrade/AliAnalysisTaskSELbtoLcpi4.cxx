@@ -334,11 +334,11 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       HPiAODtrk=0;
       continue;
     }
-    /*if(HPiAODtrk->Pt()>fCutsPerPt[3] || HPiAODtrk->Pt()<fCutsPerPt[4]){
+    if(HPiAODtrk->Pt()>fCutsPerPt[3] || HPiAODtrk->Pt()<fCutsPerPt[4]){
       HPiAODtrk=0;
       continue;
     }
-    */
+  
     //basic PID pion 
     Double_t nsigmatofPi= fPIDResponse->NumberOfSigmasTOF(HPiAODtrk,AliPID::kPion); 
     if(nsigmatofPi>-990. && (nsigmatofPi<-3 || nsigmatofPi>3)){HPiAODtrk=0;continue;}
@@ -368,13 +368,6 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       HPiAODtrk=0;
       continue;
     }
-    //going to previous version for testing improver
-      
-      if(chargedHPi->Pt()>fCutsPerPt[3] || chargedHPi->Pt()< fCutsPerPt[4]){
-          HPiAODtrk=0;
-          delete chargedHPi;
-          continue;
-      }
       
        //out for the large pt cuts
     ((TH1F*)fOutput->FindObject("fDCALcBg"))->Fill(dAtDCALc);
