@@ -48,7 +48,8 @@ AliHFTreeHandlerLbtoLcpi::AliHFTreeHandlerLbtoLcpi():
   fDist12toPrim_Lc(-9999.),
   fDist23toPrim_Lc(-9999.),
   fNormd0MeasMinusExp_Lc(-9999.),
-  fSumImpParProngs_Lc(-9999.)
+  fSumImpParProngs_Lc(-9999.),
+  fChi2Prim(-9999.)
 {
   //
   // Default constructor
@@ -87,7 +88,9 @@ AliHFTreeHandlerLbtoLcpi::AliHFTreeHandlerLbtoLcpi(int PIDopt):
   fDist12toPrim_Lc(-9999.),
   fDist23toPrim_Lc(-9999.),
   fNormd0MeasMinusExp_Lc(-9999.),
-  fSumImpParProngs_Lc(-9999.)
+  fSumImpParProngs_Lc(-9999.),
+  fChi2Prim(-9999.)
+
 {
   //
   // Standard constructor
@@ -129,6 +132,7 @@ TTree* AliHFTreeHandlerLbtoLcpi::BuildTree(TString name, TString title)
   fTreeVar->Branch("cos_t_star",&fCosThetaStar);
   fTreeVar->Branch("imp_par_prod",&fImpParProd);
   fTreeVar->Branch("ctau",&fcTau);
+  fTreeVar->Branch("Chi2Prim",&fChi2Prim);
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d",iProng),&fImpParProng[iProng]);
   }
@@ -180,6 +184,8 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, unsigned int eventID,
   fPtGen=ptgen;
  
   AliAODRecoDecayHF3Prong* candLc = (AliAODRecoDecayHF3Prong*)cand->GetDaughter(0); //Lc
+  AliAODVertex* aodvtx=candLc->GetPrimaryVtx();
+
   
   //topological variables
   //common (Lb -> Lc pi)
@@ -197,7 +203,9 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, unsigned int eventID,
   fCosThetaStar=cand->CosThetaStar(0,5122,4122,211);
   fImpParProd=cand->Prodd0d0();
   fcTau=cand->Ct(5122);
-
+  fChi2Prim=aodvtx->GetChi2();
+    
+    
   UInt_t prongs[2];
   prongs[0] = 4122; prongs[1] = 211;
   fInvMass=((AliAODRecoDecayHF2Prong*)cand)->InvMass(2,prongs);
