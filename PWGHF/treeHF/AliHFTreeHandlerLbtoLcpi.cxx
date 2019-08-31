@@ -184,7 +184,7 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, unsigned int eventID,
   fPtGen=ptgen;
  
   AliAODRecoDecayHF3Prong* candLc = (AliAODRecoDecayHF3Prong*)cand->GetDaughter(0); //Lc
-  AliAODVertex* aodvtx=cand->GetPrimaryVtx();
+  AliAODVertex* aodvtx=candLc->GetPrimaryVtx();
 
   
   //topological variables
