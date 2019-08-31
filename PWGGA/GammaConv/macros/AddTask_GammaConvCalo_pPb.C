@@ -186,7 +186,7 @@ void AddTask_GammaConvCalo_pPb(
   // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinMaxM20", 14 "RecConv", 15 "MaximumDispersion", 16 "NLM"
 
   //************************************************ PCM- EDC analysis 5 TeV pPb *********************************************
-  } else if (trainConfig == 1){ // EMC  INT7 run1 & run2
+  if (trainConfig == 1){ // EMC  INT7 run1 & run2
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411790105f032230000","0h63103100000010"); // 0-100% without NL
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC
   } else if (trainConfig == 2){ // EMC EMC triggers
