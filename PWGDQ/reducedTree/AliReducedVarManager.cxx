@@ -364,6 +364,10 @@ void AliReducedVarManager::SetVariableDependencies() {
     fgUsedVars[kNTPCclusters] = kTRUE;
     fgUsedVars[kNTPCclustersFromPileup] = kTRUE;
   }
+  if(fgUsedVars[kNTracksTPCoutFromPileup]) {
+    fgUsedVars[kNTracksTPCoutBeforeClean] = kTRUE;
+    fgUsedVars[kVZEROTotalMultFromChannels] = kTRUE;
+  }
 }
 
 //__________________________________________________________________
@@ -796,10 +800,8 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     }
   }
   
-  fgUsedVars[kNTracksTPCoutFromPileup] = kTRUE;
-  if(values[kVZEROTotalMultFromChannels]>0.0)
-     values[kNTracksTPCoutFromPileup] = 0.0;
-  else fgUsedVars[kNTracksTPCoutFromPileup] = kFALSE;
+  if(values[kVZEROTotalMultFromChannels]>0.0) 
+     values[kNTracksTPCoutFromPileup] = values[kNTracksTPCoutBeforeClean] - (-3.2+TMath::Sqrt(3.2*3.2+4.0*1.6e-5*values[kVZEROTotalMultFromChannels]))/(2.0*1.6e-5);
   
   Float_t tpcClustersExpectationWOpileup = 0.001;
   if(fgUsedVars[kNTPCclustersFromPileup] && values[kVZEROTotalMultFromChannels]>0.0) {
