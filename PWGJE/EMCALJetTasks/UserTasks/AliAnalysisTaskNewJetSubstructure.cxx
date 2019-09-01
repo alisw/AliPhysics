@@ -247,8 +247,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms()
   AliJetContainer *jetCont = GetJetContainer(0);
   //container zero is always the base containe: the data container, the embedded subtracted in the case of embedding or the detector level in case of pythia
  
-  if (fCentSelectOn)
-    if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
+  if (fCentSelectOn) if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
  
     Float_t rhoVal=0, rhoMassVal = 0.;
   if(jetCont) {
@@ -784,15 +783,16 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(AliEmcalJet *f
    fastjet::PseudoJet j1;
    fastjet::PseudoJet j2;
    jj=fOutputJets[0];
-  
+   int flagSubjet=0;
    double nall=0;
    double nsd=0;
-   double xkt=0;
-   double z=0;
+  
+  
    double zg=0;
    double xktg=0;
    double Rg=0;
-   double delta_R=0;
+  
+   doule cumtf=0;
     while(jj.has_parents(j1,j2)){
       nall=nall+1;
  
