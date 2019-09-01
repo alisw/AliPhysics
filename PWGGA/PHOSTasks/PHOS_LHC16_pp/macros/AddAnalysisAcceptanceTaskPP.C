@@ -2,7 +2,7 @@ AliAnalysisTaskPP13 * AddAnalysisAcceptanceTaskPP(
 	Bool_t isMC = kFALSE,
 	TString description = "",
 	TString suff = "",
-	Int_t minDistanceMaximum = 4,
+	Int_t minDistanceMaximum = 5,
 	Float_t scale = 1 // Scale parameter in cm
 )
 {
