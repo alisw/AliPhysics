@@ -792,7 +792,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(AliEmcalJet *f
    double xktg=0;
    double Rg=0;
   
-   doule cumtf=0;
+   double cumtf=0;
     while(jj.has_parents(j1,j2)){
       nall=nall+1;
  
@@ -989,9 +989,11 @@ Bool_t AliAnalysisTaskNewJetSubstructure::CheckClosePartner(Int_t index, AliEmca
             mindps = dps;
         }
 	if(TMath::Abs(mindps)<fPhiCutValue && TMath::Abs(deta)<fEtaCutValue) return kTRUE;
-     } }
-	 return kFALSE;
-      }}
+     }}
+
+      }
+      return kFALSE;
+}
 
 
 
