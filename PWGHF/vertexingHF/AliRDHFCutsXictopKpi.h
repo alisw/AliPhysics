@@ -116,10 +116,104 @@ class AliRDHFCutsXictopKpi : public AliRDHFCuts
   }
 
   AliKFParticle* ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field,Bool_t constraint) const;
+
+  // function for PID cuts exploration
+  void ExplorePID(AliPIDResponse* pid_resp, AliAODRecoDecayHF3Prong* cand, UInt_t PIDcase, Bool_t &is_pKpi_passed, Bool_t &is_piKp_passed);
+
  protected:
   AliAODPidHF *fPidObjprot;
   AliAODPidHF *fPidObjpion;
   Bool_t fUseImpParProdCorrCut; /// switch for cut on d0p*d0K vs. d0K*d0pi
+
+  // --- functions for PID cuts exploration ---
+  // Home-made functions for PID
+  //
+  // NB: functions tuned on TH2 PID plots from pp @ 5 TeV!
+  //
+  Float_t func_TPCprot_up(Float_t x)
+  {
+      Float_t value;
+      if(x<4)     value = 3.9-1.938*x+0.585*x*x-0.0764*x*x*x+0.003*x*x*x*x;
+      else        value = 3.9-1.938*4+0.585*4*4-0.0764*4*4*4+0.003*4*4*4*4;
+      return TMath::Min(value,(Float_t) 3.);
+  }
+  Float_t func_TPCprot_down(Float_t x)
+  {
+      Float_t value;
+      if(x<3)     value = 5.6-57.89*x+123.78*x*x-116.83*x*x*x+55.44*x*x*x*x-13*x*x*x*x*x+1.2*x*x*x*x*x*x;
+      else        value = -2.375;
+      return TMath::Max(value,(Float_t) -3.);
+  }
+  Float_t func_TPCpion_up(Float_t x)
+  {
+      Float_t value;
+      value = 4.23-3.85*x+2.6*x*x-0.59*x*x*x+0.044*x*x*x*x;
+      return TMath::Min(value,(Float_t) 3.);
+  }
+  Float_t func_TPCpion_down(Float_t x)
+  {
+      Float_t value;
+      if(x<1.4)   value = -2-16.33*x+20.93*x*x-6.63*x*x*x;
+      else        value = -1.63636;
+      return TMath::Max(value,(Float_t) -3.);
+  }
+  Float_t func_TPCkaon_up(Float_t x)
+  {
+      Float_t value;
+      if(x<2.1)   value = 2.24+3.05*x-4.47*x*x+1.37*x*x*x+9.16e-8;
+      else        value = 1.625;
+      return TMath::Min(value,(Float_t) 3.);
+  }
+  Float_t func_TPCkaon_down(Float_t x)
+  {
+      Float_t value;
+      if(x<2)   value = -9.04 + 31.41*x - 43.81*x*x+23.83*x*x*x-4.44*x*x*x*x;
+      else      value = -1.7875;
+      return TMath::Max(value,(Float_t) -3.);
+  }
+  Float_t func_TOFprot_up(Float_t x)
+  {
+      Float_t value;
+      if(x<6)     value = 1.45+2.11*x-1.19*x*x+0.24*x*x*x-0.016*x*x*x*x;
+      else        value = 1.45+2.11*6-1.19*6*6+0.24*6*6*6-0.016*6*6*6*6;
+      return TMath::Min(value,(Float_t) 3.);
+  }
+  Float_t func_TOFprot_down(Float_t x)
+  {
+      Float_t value;
+      if(x<5)     value = 0.019-6.93*x+5.15*x*x-1.61*x*x*x+0.24*x*x*x*x-0.014*x*x*x*x*x;
+      else        value = 0.019-6.93*5+5.15*5*5-1.61*5*5*5+0.24*5*5*5*5-0.014*5*5*5*5*5;
+      return TMath::Max(value,(Float_t) -3.);
+  }
+  Float_t func_TOFpion_up(Float_t x)
+  {
+      Float_t value;
+      if(x<1.7)                   value = 2.4;
+      else if(1.7<x && x<3.42)    value = 7.1848 -4.15*x+0.78*x*x;
+      else                        value = 2.18;
+      return TMath::Min(value,(Float_t) 3.);
+  }
+  Float_t func_TOFpion_down(Float_t x)
+  {
+      Float_t value = -3.;
+      return TMath::Max(value,(Float_t) -3.);
+  }
+  Float_t func_TOFkaon_up(Float_t x)
+  {
+      Float_t value;
+      if(x<6)     value = 1.68+1.19*x-0.644*x*x+0.115*x*x*x-0.0065*x*x*x*x;
+      else        value = 1.68+1.19*6-0.644*6*6+0.115*6*6*6-0.0065*6*6*6*6;
+      return TMath::Min(value,(Float_t) 3.);
+  }
+  Float_t func_TOFkaon_down(Float_t x)
+  {
+      Float_t value;
+      if(x<3)     value = -0.64-5*x+3.78*x*x-0.94*x*x*x+0.072*x*x*x*x;
+      else        value = -0.64-5*3+3.78*3*3-0.94*3*3*3+0.072*3*3*3*3;
+      return TMath::Max(value,(Float_t) -3.);
+  }
+  //-------------------------
+
 
 private:
   EPIDStrategy fPIDStrategy;                /// PIS strategy (nsigma, combined)

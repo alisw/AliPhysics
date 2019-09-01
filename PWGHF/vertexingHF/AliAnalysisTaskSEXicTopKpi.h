@@ -100,6 +100,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // require the calculation of dist12 and dist23
   void SetCalculate_dist12_dist23(Bool_t flag){ fCompute_dist12_dist23 = flag; }
   Short_t SetMapCutsResponse(Int_t massHypo_filtering, Int_t response_onlyCuts, Int_t response_onlyPID);
+
+  // exporation of PID cuts with standard strategy
+  void SetExplorePIDstd(Bool_t flag){ fExplore_PIDstdCuts=flag; }
   
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
@@ -261,8 +264,10 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   Bool_t fCompute_dist12_dist23;  /// flag to require the calculation of dist12 and dist23
 
+  Bool_t fExplore_PIDstdCuts; /// flag to switch on the exporation of PID cuts with standard strategy
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,2); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,3); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 
