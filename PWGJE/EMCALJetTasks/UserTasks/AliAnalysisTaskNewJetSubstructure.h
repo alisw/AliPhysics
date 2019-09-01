@@ -123,6 +123,7 @@ class AliAnalysisTaskNewJetSubstructure : public AliAnalysisTaskEmcalJet {
   TH1F                                *fPtJet;
  
   THnSparse                           *fHLundIterative;//       iterative declustering
+   THnSparse                           *fHLundIterativeMC;//       iterative declustering
   THnSparse                           *fHCheckResolutionSubjets;//     to evaluate energy resolution of subjets as function fo apperture angle 
  
 
