@@ -97,22 +97,14 @@ private:
     TH2D *fHistPtVsB[13];           //! for keeping track of base spectra
   
     Bool_t fkDo2pc;
-    //Add some 2pc to the mixture: Charged hadron trigger
-    Long_t fBufferChargedTriggerSize[10];
-    Double_t fBufferChargedTriggersPhi[10][1000];
-    Double_t fBufferChargedTriggersEta[10][1000];
+    Float_t fMinPtTriggerCharged; //for charged trigger
+    Float_t fMinPtTriggerXi; //for xi trigger
+    Float_t fMinPtTriggerPhi; //for phi trigger
+    TH1D *fEtaTriggerCharged;
+    TH1D *fEtaTriggerXi;
+    TH1D *fEtaTriggerPhi;
     TH3D *fHist3d2pcSE[13]; //!
-
-    //Add some 2pc to the mixture: xi trigger
-    Long_t fBufferXiTriggerSize[10];
-    Double_t fBufferXiTriggersPhi[10][1000];
-    Double_t fBufferXiTriggersEta[10][1000];
     TH3D *fHist3d2pcXiSE[13]; //!
-
-    //Add some 2pc to the mixture: phi trigger
-    Long_t fBufferPhiTriggerSize[10];
-    Double_t fBufferPhiTriggersPhi[10][1000];
-    Double_t fBufferPhiTriggersEta[10][1000];
     TH3D *fHist3d2pcPhiSE[13]; //!
     
     AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented

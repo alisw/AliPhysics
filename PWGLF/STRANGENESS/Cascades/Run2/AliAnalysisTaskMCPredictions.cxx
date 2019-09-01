@@ -107,21 +107,14 @@ fHistNpart(0),
 fHistNchVsNpart(0),
 fHistB(0),
 fHistNchVsB(0),
-fkDo2pc(kFALSE)
+fkDo2pc(kFALSE),
+fMinPtTriggerCharged(0.15),
+fMinPtTriggerXi(0.8),
+fMinPtTriggerPhi(0.4),
+fEtaTriggerCharged(0),
+fEtaTriggerXi(0),
+fEtaTriggerPhi(0)
 {
-    for(Int_t ih=0; ih<10; ih++){
-        fBufferChargedTriggerSize[ih] = 0;
-        fBufferXiTriggerSize[ih]      = 0;
-        fBufferPhiTriggerSize[ih]     = 0;
-        for(Int_t jh=0; jh<1000; jh++){
-            fBufferChargedTriggersPhi[ih][jh] = -100;
-            fBufferChargedTriggersEta[ih][jh] = -100;
-            fBufferXiTriggersPhi[ih][jh]      = -100;
-            fBufferXiTriggersEta[ih][jh]      = -100;
-            fBufferPhiTriggersPhi[ih][jh]     = -100;
-            fBufferPhiTriggersEta[ih][jh]     = -100;
-        }
-    }
     for(Int_t ih=0; ih<13; ih++){
         fHistPt[ih]          = 0x0;
         fHistEta[ih]         = 0x0;
@@ -150,21 +143,14 @@ fHistNpart(0),
 fHistNchVsNpart(0),
 fHistB(0),
 fHistNchVsB(0),
-fkDo2pc(kFALSE)
+fkDo2pc(kFALSE),
+fMinPtTriggerCharged(0.15),
+fMinPtTriggerXi(0.8),
+fMinPtTriggerPhi(0.4),
+fEtaTriggerCharged(0),
+fEtaTriggerXi(0),
+fEtaTriggerPhi(0)
 {
-    for(Int_t ih=0; ih<10; ih++){
-        fBufferChargedTriggerSize[ih] = 0;
-        fBufferXiTriggerSize[ih]      = 0;
-        fBufferPhiTriggerSize[ih]     = 0;
-        for(Int_t jh=0; jh<1000; jh++){
-            fBufferChargedTriggersPhi[ih][jh] = -100;
-            fBufferChargedTriggersEta[ih][jh] = -100;
-            fBufferXiTriggersPhi[ih][jh]      = -100;
-            fBufferXiTriggersEta[ih][jh]      = -100;
-            fBufferPhiTriggersPhi[ih][jh]     = -100;
-            fBufferPhiTriggersEta[ih][jh]     = -100;
-        }
-    }
     for(Int_t ih=0; ih<13; ih++){
         fHistPt[ih]          = 0x0;
         fHistEta[ih]         = 0x0;
@@ -333,6 +319,35 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
             fHist3d2pcSE[ih] = new TH3D(Form("fHist3d2pcSE_%s",lPartNames[ih].Data()),"",64,-1.6,1.6,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
             fListHist->Add(fHist3d2pcSE[ih]);
         }
+    }
+    //2pc histograms
+    for(Int_t ih=0; ih<13; ih++){
+        if(! fHist3d2pcPhiSE[ih] ) {
+            fHist3d2pcPhiSE[ih] = new TH3D(Form("fHist3d2pcPhiSE_%s",lPartNames[ih].Data()),"",64,-1.6,1.6,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+            fListHist->Add(fHist3d2pcPhiSE[ih]);
+        }
+    }
+    //2pc histograms
+    for(Int_t ih=0; ih<13; ih++){
+        if(! fHist3d2pcXiSE[ih] ) {
+            fHist3d2pcXiSE[ih] = new TH3D(Form("fHist3d2pcXiSE_%s",lPartNames[ih].Data()),"",64,-1.6,1.6,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+            fListHist->Add(fHist3d2pcXiSE[ih]);
+        }
+    }
+    if(! fEtaTriggerCharged ) {
+        //Histogram Output: Event-by-Event
+        fEtaTriggerCharged = new TH1D( "fEtaTriggerCharged", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
+        fListHist->Add(fEtaTriggerCharged);
+    }
+    if(! fEtaTriggerXi ) {
+        //Histogram Output: Event-by-Event
+        fEtaTriggerXi = new TH1D( "fEtaTriggerXi", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
+        fListHist->Add(fEtaTriggerXi);
+    }
+    if(! fEtaTriggerPhi ) {
+        //Histogram Output: Event-by-Event
+        fEtaTriggerPhi = new TH1D( "fEtaTriggerPhi", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
+        fListHist->Add(fEtaTriggerPhi);
     }
 
     //List of Histograms: Normal
@@ -547,7 +562,9 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         TArrayI lValidXi(lMCstack->GetNtrack());
         //----- Determine valid triggers ----------------------------------------------------------------
         for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
-        {   // This is the begining of the loop on tracks
+        {
+            // Determine if within acceptance, otherwise fully reject from list
+            // done such that this check is done O(N) and not O(N^2)
             TParticle* particleOne = lMCstack->Particle(iCurrentLabelStack);
             if(!particleOne) continue;
             Double_t geta = particleOne -> Eta();
@@ -576,9 +593,17 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
             Double_t geta = particleOne -> Eta();
             Double_t gphi = particleOne -> Phi();
             
-            for (Int_t ilab = iCurrentLabelStack+1;  ilab < lNValidParticles; ilab++)
+            if( particleOne -> Pt() > fMinPtTriggerCharged && lTrigIsCharged && lTrigIsPrimary )
+                fEtaTriggerCharged -> Fill( geta );
+            if( particleOne -> Pt() > fMinPtTriggerXi && lTrigIsPrimary && TMath::Abs(particleOne->GetPdgCode())==3312 )
+                fEtaTriggerXi      -> Fill( geta );
+            if( particleOne -> Pt() > fMinPtTriggerPhi && TMath::Abs(particleOne->GetPdgCode())==333 )
+                fEtaTriggerPhi     -> Fill( geta );
+            
+            for (Int_t ilab = 0;  ilab < lNValidParticles; ilab++)
             {   // This is the begining of the loop on tracks
                 
+                if(ilab == iCurrentLabelStack) continue; //remove auto-correlations
                 TParticle* lPart = 0x0;
                 lPart = lMCstack->Particle( lValidParticles[ilab] );
                 if(!lPart) {
