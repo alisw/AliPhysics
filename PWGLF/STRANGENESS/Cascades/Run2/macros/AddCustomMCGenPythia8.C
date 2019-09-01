@@ -14,7 +14,7 @@ AliGenerator* AddCustomMCGenPythia8( TString lTune          = "pp",
     return genP;
 }
 
-AliGenerator* CreatePythia8Gen( TString lTune,
+AliGenerator* CreatePythia8GenCustom( TString lTune,
                                 Float_t e_cms
                                ) {
     

@@ -191,8 +191,8 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
     
     //Settings for transverse momentum
-    Int_t lNPtBins = 400;
-    Double_t lMaxPt = 40.0;
+    Int_t lNPtBins = 200;
+    Double_t lMaxPt = 20.0;
     
     Int_t lNEtaBins = 400;
     Double_t lMaxAbsEta = 2;
@@ -547,13 +547,13 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         }
         
         lThisPDG = lPart->GetPdgCode();
-        
         //Continue if this is not a particle of the right PDG Code (avoids y-calculation problems)
         Bool_t lContinue = kTRUE;
         for(Int_t ih=0; ih<23; ih++) if( lThisPDG == lPDGCodes[ih] ) lContinue = kFALSE;
         if ( lContinue ) continue;
             
-        lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
+        //lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
+        lThisRap   = lPart->Y();
         lThisPt    = lPart->Pt();
         
         //Use Physical Primaries only for filling These Histos
