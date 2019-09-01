@@ -155,8 +155,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
 
     private:
       static const Int_t      fPIDNumSpecies = 5; // Number of considered species for PID
-      static const Int_t      fFlowNumHarmonicsMax = 7; // maximum harmonics length of flow vector array
-      static const Int_t      fFlowNumWeightPowersMax = 5; // maximum weight power length of flow vector array
+      static const Int_t      fFlowNumHarmonicsMax = 13; // maximum harmonics length of flow vector array
+      static const Int_t      fFlowNumWeightPowersMax = 9; // maximum weight power length of flow vector array
 
       const char*             GetSpeciesName(PartSpecies species) const;
       const char*             GetSpeciesName(Int_t species) const { return GetSpeciesName(PartSpecies(species)); }
@@ -236,8 +236,12 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TComplex                TwoGap(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (with eta gap)
       TComplex                Three(Int_t n1, Int_t n2, Int_t n3) const; // Three particle reference correlation calculations (no eta gap)
       TComplex                Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (no eta gap)
-      TComplex                FourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (no eta gap)
+      TComplex                FourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (with eta gap)
       TComplex                Four3sub(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (with 3 sub-events)
+      TComplex                Five(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5) const; // Five particle reference correlation calculations (no eta gap)
+      TComplex                Six(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (no eta gap)
+      TComplex                Seven(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7) const; // Seven particle reference correlation calculations (no eta gap)
+      TComplex                Eight(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (no eta gap)
 
       TComplex                TwoDiff(Int_t n1, Int_t n2) const; // Two particle diff. correlation calculations (no eta gap)
       TComplex                TwoDiffGapPos(Int_t n1, Int_t n2) const; // Two particle diff. correlation calculations (with eta gap)
