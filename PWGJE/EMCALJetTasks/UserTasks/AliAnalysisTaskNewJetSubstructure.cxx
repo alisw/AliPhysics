@@ -77,6 +77,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure() :
   fDerivSubtrOrder(0),
   fPtJet(0x0),
   fHLundIterative(0x0),
+  fHLundIterativeMC(0x0),
   fHCheckResolutionSubjets(0x0),
   fTreeSubstructure(0)
 
@@ -116,6 +117,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(const char 
   fDerivSubtrOrder(0),
   fPtJet(0x0),
   fHLundIterative(0x0),
+  fHLundIterativeMC(0x0),
   fHCheckResolutionSubjets(0x0),  
   fTreeSubstructure(0)
   
@@ -158,6 +160,17 @@ AliAnalysisTaskNewJetSubstructure::~AliAnalysisTaskNewJetSubstructure()
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
   fOutput->Add(fHLundIterative);
 
+
+//log(1/theta),log(kt),jetpT,depth, tf, omega// 
+   const Int_t dimSpec2   = 7;
+   const Int_t nBinsSpec2[7]     = {50,100,100,20,100,50,100};
+   const Double_t lowBinSpec2[7] = {0.,-10,0,0,0,0,0};
+   const Double_t hiBinSpec2[7]  = {5.,10.,200,20,200,100,50};
+   fHLundIterativeMC = new THnSparseF("fHLundIterativeMC",
+                   "LundIterativePlotMC [log(1/theta),log(z*theta),pTjet,algo]",
+                   dimSpec2,nBinsSpec2,lowBinSpec2,hiBinSpec2);
+  fOutput->Add(fHLundIterativeMC);
+  
 
   //// 
    const Int_t dimResol   = 5;
@@ -778,23 +791,34 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(AliEmcalJet *f
    double xktg=0;
    double Rg=0;
    double delta_R=0;
-    while(jj.has_parents(j1,j2) && z<fHardCutoff){
+    while(jj.has_parents(j1,j2)){
       nall=nall+1;
  
 
       if(j1.perp() < j2.perp()) swap(j1,j2);
-    
-          delta_R = j1.delta_R(j2);
-          xkt=j2.perp()*sin(delta_R);
-          z=j1.perp()/(j2.perp()+j1.perp());
+         double delta_R = j1.delta_R(j2);
+         double xkt=j2.perp()*sin(delta_R);
+         double lnpt_rel = log(xkt);
+	 double y = log(1./delta_R);
+	 double form=2*0.197*j2.e()/(xkt*xkt); 
+         double rad=j2.e();
+         double z=j2.perp()/(j2.perp()+j1.perp());
 	 if(z>fHardCutoff) nsd=nsd+1;
-         if(z>fHardCutoff){
+         if(z>fHardCutoff && flagSubjet==0){
 	   zg=z;
 	   xktg=xkt;
 	   Rg=delta_R;
-	   break;}
-     
-    jj=j1;} 
+	   flagSubjet=1;}
+	 if(lnpt_rel>0) cumtf=cumtf+form;   
+	 
+	 Double_t LundEntries[7] = {y,lnpt_rel,fOutputJets[0].perp(),nall,form,rad, cumtf};  
+         fHLundIterativeMC->Fill(LundEntries);
+
+
+
+
+      
+    jj=j1;}
      
    average1=xktg;
    average2=nsd;
