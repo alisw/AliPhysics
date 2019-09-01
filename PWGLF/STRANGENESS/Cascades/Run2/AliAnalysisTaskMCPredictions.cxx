@@ -97,8 +97,9 @@ AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions()
 fListHist(0),
 fHistEventCounter(0),
 fSmallMultRange(1000),
-fLargeMultRange(4000),
+fLargeMultRange(2000),
 fRebinFactor(1),
+fkSelectINELgtZERO(kTRUE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -107,22 +108,15 @@ fHistNpart(0),
 fHistNchVsNpart(0),
 fHistB(0),
 fHistNchVsB(0),
-fkDo2pc(kFALSE)
+fkDo2pc(kFALSE),
+fMinPtTriggerCharged(0.15),
+fMinPtTriggerXi(0.8),
+fMinPtTriggerPhi(0.4),
+fEtaTriggerCharged(0),
+fEtaTriggerXi(0),
+fEtaTriggerPhi(0)
 {
-    for(Int_t ih=0; ih<10; ih++){
-        fBufferChargedTriggerSize[ih] = 0;
-        fBufferXiTriggerSize[ih]      = 0;
-        fBufferPhiTriggerSize[ih]     = 0;
-        for(Int_t jh=0; jh<1000; jh++){
-            fBufferChargedTriggersPhi[ih][jh] = -100;
-            fBufferChargedTriggersEta[ih][jh] = -100;
-            fBufferXiTriggersPhi[ih][jh]      = -100;
-            fBufferXiTriggersEta[ih][jh]      = -100;
-            fBufferPhiTriggersPhi[ih][jh]     = -100;
-            fBufferPhiTriggersEta[ih][jh]     = -100;
-        }
-    }
-    for(Int_t ih=0; ih<13; ih++){
+    for(Int_t ih=0; ih<23; ih++){
         fHistPt[ih]          = 0x0;
         fHistEta[ih]         = 0x0;
         fHistPtVsV0MMult[ih] = 0x0;
@@ -142,6 +136,7 @@ fHistEventCounter(0),
 fSmallMultRange(lNSmallBinning),
 fLargeMultRange(lNLargeBinning),
 fRebinFactor(lRebinFactor),
+fkSelectINELgtZERO(kTRUE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -150,22 +145,15 @@ fHistNpart(0),
 fHistNchVsNpart(0),
 fHistB(0),
 fHistNchVsB(0),
-fkDo2pc(kFALSE)
+fkDo2pc(kFALSE),
+fMinPtTriggerCharged(0.15),
+fMinPtTriggerXi(0.8),
+fMinPtTriggerPhi(0.4),
+fEtaTriggerCharged(0),
+fEtaTriggerXi(0),
+fEtaTriggerPhi(0)
 {
-    for(Int_t ih=0; ih<10; ih++){
-        fBufferChargedTriggerSize[ih] = 0;
-        fBufferXiTriggerSize[ih]      = 0;
-        fBufferPhiTriggerSize[ih]     = 0;
-        for(Int_t jh=0; jh<1000; jh++){
-            fBufferChargedTriggersPhi[ih][jh] = -100;
-            fBufferChargedTriggersEta[ih][jh] = -100;
-            fBufferXiTriggersPhi[ih][jh]      = -100;
-            fBufferXiTriggersEta[ih][jh]      = -100;
-            fBufferPhiTriggersPhi[ih][jh]     = -100;
-            fBufferPhiTriggersEta[ih][jh]     = -100;
-        }
-    }
-    for(Int_t ih=0; ih<13; ih++){
+    for(Int_t ih=0; ih<23; ih++){
         fHistPt[ih]          = 0x0;
         fHistEta[ih]         = 0x0;
         fHistPtVsV0MMult[ih] = 0x0;
@@ -282,45 +270,49 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     }
     
     //Identified Particles
-    //Int_t lPDGCodes[13] = {211, 321, 2212, 310, 3122, 3312, 3334, 333, 313, 421, 431, 4122};
-    TString lPartNames[13] = {
-        "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "D0", "D0s", "Lambdac", "JPsi"
+    TString lPartNames[23] = {
+        "PiPlus", "PiMinus", "KaPlus", "KaMinus", "Proton", "AntiProton",
+        "K0Short", "Lambda", "AntiLambda",
+        "XiMinus", "XiPlus", "OmegaMinus", "OmegaPlus",
+        "Phi", "KStar", "AntiKStar",
+        "D0", "AntiD0", "D0s", "AntiD0s",
+        "Lambdac", "AntiLambdac", "JPsi"
     };
 
     //Main Output: Histograms
     
     //Event counter histogram: Multiplicity, Npart, b (if available)
-    for(Int_t ih=0; ih<13; ih++){
+    for(Int_t ih=0; ih<23; ih++){
         if(! fHistPt[ih] ) {
             fHistPt[ih] = new TH1D(Form("fHistPt_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPt[ih]);
         }
     }
-    for(Int_t ih=0; ih<13; ih++){
+    for(Int_t ih=0; ih<23; ih++){
         if(! fHistEta[ih] ) {
             fHistEta[ih] = new TH1D(Form("fHistEta_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
             fListHist->Add(fHistEta[ih]);
         }
     }
-    for(Int_t ih=0; ih<13; ih++){
+    for(Int_t ih=0; ih<23; ih++){
         if(! fHistPtVsV0MMult[ih] ) {
             fHistPtVsV0MMult[ih] = new TH2D(Form("fHistPtVsV0MMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPtVsV0MMult[ih]);
         }
     }
-    for(Int_t ih=0; ih<13; ih++){
+    for(Int_t ih=0; ih<23; ih++){
         if(! fHistPtVsSPDMult[ih] ) {
             fHistPtVsSPDMult[ih] = new TH2D(Form("fHistPtVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPtVsSPDMult[ih]);
         }
     }
-    for(Int_t ih=0; ih<13; ih++){
+    for(Int_t ih=0; ih<23; ih++){
         if(! fHistPtVsNpart[ih] ) {
             fHistPtVsNpart[ih] = new TH2D(Form("fHistPtVsNpart_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",500,-0.5,499.5,lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPtVsNpart[ih]);
         }
     }
-    for(Int_t ih=0; ih<13; ih++){
+    for(Int_t ih=0; ih<23; ih++){
         if(! fHistPtVsB[ih] ) {
             fHistPtVsB[ih] = new TH2D(Form("fHistPtVsB_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",400,0,20,lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPtVsB[ih]);
@@ -328,11 +320,40 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     }
     
     //2pc histograms
-    for(Int_t ih=0; ih<13; ih++){
+    for(Int_t ih=0; ih<23; ih++){
         if(! fHist3d2pcSE[ih] ) {
             fHist3d2pcSE[ih] = new TH3D(Form("fHist3d2pcSE_%s",lPartNames[ih].Data()),"",64,-1.6,1.6,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
             fListHist->Add(fHist3d2pcSE[ih]);
         }
+    }
+    //2pc histograms
+    for(Int_t ih=0; ih<23; ih++){
+        if(! fHist3d2pcPhiSE[ih] ) {
+            fHist3d2pcPhiSE[ih] = new TH3D(Form("fHist3d2pcPhiSE_%s",lPartNames[ih].Data()),"",64,-1.6,1.6,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+            fListHist->Add(fHist3d2pcPhiSE[ih]);
+        }
+    }
+    //2pc histograms
+    for(Int_t ih=0; ih<23; ih++){
+        if(! fHist3d2pcXiSE[ih] ) {
+            fHist3d2pcXiSE[ih] = new TH3D(Form("fHist3d2pcXiSE_%s",lPartNames[ih].Data()),"",64,-1.6,1.6,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+            fListHist->Add(fHist3d2pcXiSE[ih]);
+        }
+    }
+    if(! fEtaTriggerCharged ) {
+        //Histogram Output: Event-by-Event
+        fEtaTriggerCharged = new TH1D( "fEtaTriggerCharged", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
+        fListHist->Add(fEtaTriggerCharged);
+    }
+    if(! fEtaTriggerXi ) {
+        //Histogram Output: Event-by-Event
+        fEtaTriggerXi = new TH1D( "fEtaTriggerXi", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
+        fListHist->Add(fEtaTriggerXi);
+    }
+    if(! fEtaTriggerPhi ) {
+        //Histogram Output: Event-by-Event
+        fEtaTriggerPhi = new TH1D( "fEtaTriggerPhi", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
+        fListHist->Add(fEtaTriggerPhi);
     }
 
     //List of Histograms: Normal
@@ -411,6 +432,9 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     }//End of loop on tracks
     //----- End Loop on Stack ------------------------------------------------------------
     
+    //Reject non-INEL>0 if requested
+    if( !lEvSel_INELgtZEROStackPrimaries && fkSelectINELgtZERO ) return;
+    
     //------------------------------------------------
     // Acquire information on Npart, Ncoll, b
     //------------------------------------------------
@@ -482,12 +506,30 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     //------------------------------------------------
     
     //~All relevant PWG-LF Identified Particle Information (for looping)
-    Int_t lPDGCodes[13] = {211, 321, 2212, 310, 3122, 3312, 3334, 333, 313, 421, 431, 4122, 443};
-    TString lPartNames[13] = {
-        "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "D0", "D0s", "Lambdac", "JPsi"
+    Int_t lPDGCodes[23] = {
+        211, -211, 321, -321, 2212, -2212,
+        310, 3122, -3122,
+        3312, -3312, 3334, -3334,
+        333, 313, -313,
+        421, -421, 431, -431,
+        4122, -4122, 443
     };
-    Bool_t lCheckIsPhysicalPrimary[13] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE };
-    
+    TString lPartNames[23] = {
+        "PiPlus", "PiMinus", "KaPlus", "KaMinus", "Proton", "AntiProton",
+        "K0Short", "Lambda", "AntiLambda",
+        "XiMinus", "XiPlus", "OmegaMinus", "OmegaPlus",
+        "Phi", "KStar", "AntiKStar",
+        "D0", "AntiD0", "D0s", "AntiD0s",
+        "Lambdac", "AntiLambdac", "JPsi"
+    };
+    Bool_t lCheckIsPhysicalPrimary[23] = {
+        kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE,
+        kTRUE, kTRUE, kTRUE,
+        kTRUE, kTRUE, kTRUE, kTRUE,
+        kFALSE, kFALSE, kFALSE,
+        kFALSE, kFALSE, kFALSE, kFALSE,
+        kFALSE, kFALSE, kFALSE
+    };
     Int_t lThisPDG  = 0;
     Double_t lThisRap  = 0;
     Double_t lThisPt   = 0;
@@ -508,7 +550,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         
         //Continue if this is not a particle of the right PDG Code (avoids y-calculation problems)
         Bool_t lContinue = kTRUE;
-        for(Int_t ih=0; ih<13; ih++) if( TMath::Abs(lThisPDG) == lPDGCodes[ih] ) lContinue = kFALSE;
+        for(Int_t ih=0; ih<23; ih++) if( lThisPDG == lPDGCodes[ih] ) lContinue = kFALSE;
         if ( lContinue ) continue;
             
         lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
@@ -518,8 +560,8 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         //if ( lMCstack->IsPhysicalPrimary(ilab)!=kTRUE ) continue;
         lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(ilab);
         
-        for(Int_t ih=0; ih<13; ih++){
-            if( TMath::Abs(lThisPDG) == lPDGCodes[ih] ) {
+        for(Int_t ih=0; ih<23; ih++){
+            if( lThisPDG == lPDGCodes[ih] ) {
                 //Check if primary (if needed) and if not don't use this particle
                 if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
                 //Fill Histograms
@@ -547,19 +589,21 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         TArrayI lValidXi(lMCstack->GetNtrack());
         //----- Determine valid triggers ----------------------------------------------------------------
         for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
-        {   // This is the begining of the loop on tracks
-            TParticle* particleOne = lMCstack->Particle(iCurrentLabelStack);
-            if(!particleOne) continue;
-            Double_t geta = particleOne -> Eta();
+        {
+            // Determine if within acceptance, otherwise fully reject from list
+            // done such that this check is done O(N) and not O(N^2)
+            TParticle* lThisParticle = lMCstack->Particle(iCurrentLabelStack);
+            if(!lThisParticle) continue;
+            Double_t geta = lThisParticle -> Eta();
             if( TMath::Abs(geta)<0.8 ) lValidParticles[lNValidParticles++]=iCurrentLabelStack;
         }
         //----- Loop on Stack ----------------------------------------------------------------
         for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < lNValidParticles; iCurrentLabelStack++)
         {   // This is the begining of the loop on tracks
-            TParticle* particleOne = lMCstack->Particle(lValidParticles[iCurrentLabelStack]);
-            if(!particleOne) continue;
-            if(!particleOne->GetPDG()) continue;
-            Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+            TParticle* lTriggerParticle = lMCstack->Particle(lValidParticles[iCurrentLabelStack]);
+            if(!lTriggerParticle) continue;
+            if(!lTriggerParticle->GetPDG()) continue;
+            Double_t lThisCharge = lTriggerParticle->GetPDG()->Charge()/3.;
             //if(TMath::Abs(lThisCharge)<0.001) continue;
             //if(! (lMCstack->IsPhysicalPrimary(lValidParticles[iCurrentLabelStack])) ) continue;
             
@@ -568,41 +612,48 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
             Bool_t lTrigIsPrimary = kTRUE;
             if ( !lMCstack->IsPhysicalPrimary(lValidParticles[iCurrentLabelStack]) ) lTrigIsPrimary = kFALSE;
             Bool_t lTrigIsPhi = kTRUE;
-            if (particleOne->GetPdgCode()!=333) lTrigIsPhi = kFALSE;
+            if (lTriggerParticle->GetPdgCode()!=333) lTrigIsPhi = kFALSE;
             
             if( ((!lTrigIsCharged)||(!lTrigIsPrimary)) && !lTrigIsPhi ) continue;
             
-            //Double_t gpt = particleOne -> Pt();
-            Double_t geta = particleOne -> Eta();
-            Double_t gphi = particleOne -> Phi();
+            Double_t geta = lTriggerParticle -> Eta();
+            Double_t gphi = lTriggerParticle -> Phi();
             
-            for (Int_t ilab = iCurrentLabelStack+1;  ilab < lNValidParticles; ilab++)
+            if( lTriggerParticle -> Pt() > fMinPtTriggerCharged && lTrigIsCharged && lTrigIsPrimary )
+                fEtaTriggerCharged -> Fill( geta );
+            if( lTriggerParticle -> Pt() > fMinPtTriggerXi && lTrigIsPrimary && TMath::Abs(lTriggerParticle->GetPdgCode())==3312 )
+                fEtaTriggerXi      -> Fill( geta );
+            if( lTriggerParticle -> Pt() > fMinPtTriggerPhi && TMath::Abs(lTriggerParticle->GetPdgCode())==333 )
+                fEtaTriggerPhi     -> Fill( geta );
+            
+            for (Int_t ilab = 0;  ilab < lNValidParticles; ilab++)
             {   // This is the begining of the loop on tracks
                 
-                TParticle* lPart = 0x0;
-                lPart = lMCstack->Particle( lValidParticles[ilab] );
-                if(!lPart) {
+                if(ilab == iCurrentLabelStack) continue; //remove auto-correlations
+                TParticle* lAssociatedParticle = 0x0;
+                lAssociatedParticle = lMCstack->Particle( lValidParticles[ilab] );
+                if(!lAssociatedParticle) {
                     Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", ilab );
                     continue;
                 }
                 
-                lThisPDG = lPart->GetPdgCode();
+                lThisPDG = lAssociatedParticle->GetPdgCode();
                 
                 //Continue if this is not a particle of the right PDG Code (avoids y-calculation problems)
                 Bool_t lContinue = kTRUE;
-                for(Int_t ih=0; ih<13; ih++) if( TMath::Abs(lThisPDG) == lPDGCodes[ih] ) lContinue = kFALSE;
+                for(Int_t ih=0; ih<23; ih++) if( lThisPDG == lPDGCodes[ih] ) lContinue = kFALSE;
                 if ( lContinue ) continue;
                 
-                Double_t geta2 = lPart -> Eta();
-                Double_t gphi2 = lPart -> Phi();
+                Double_t geta2 = lAssociatedParticle -> Eta();
+                Double_t gphi2 = lAssociatedParticle -> Phi();
 
-                lThisPt    = lPart->Pt();
+                lThisPt    = lAssociatedParticle->Pt();
 
                 lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(ilab);
                 
                 if( lTrigIsCharged && lTrigIsPrimary ){
-                    for(Int_t ih=0; ih<13; ih++){
-                        if( TMath::Abs(lThisPDG) == lPDGCodes[ih] && TMath::Abs(geta2) < 0.8 ) {
+                    for(Int_t ih=0; ih<23; ih++){
+                        if( lThisPDG == lPDGCodes[ih] && TMath::Abs(geta2) < 0.8 ) {
                             //Check if primary (if needed) and if not don't use this particle
                             if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
                             //Fill 2pc same-event histograms, please
@@ -610,9 +661,9 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
                         }
                     }
                 }
-                if( TMath::Abs( particleOne->GetPdgCode() ) == 3312 ){
-                    for(Int_t ih=0; ih<13; ih++){
-                        if( TMath::Abs(lThisPDG) == lPDGCodes[ih] && TMath::Abs(geta2) < 0.8 ) {
+                if( lTriggerParticle->GetPdgCode() == 3312 ){
+                    for(Int_t ih=0; ih<23; ih++){
+                        if( lThisPDG == lPDGCodes[ih] && TMath::Abs(geta2) < 0.8 ) {
                             //Check if primary (if needed) and if not don't use this particle
                             if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
                             //Fill 2pc same-event histograms, please
@@ -620,9 +671,9 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
                         }
                     }
                 }
-                if( TMath::Abs( particleOne->GetPdgCode() ) == 333 ){
-                    for(Int_t ih=0; ih<13; ih++){
-                        if( TMath::Abs(lThisPDG) == lPDGCodes[ih] && TMath::Abs(geta2) < 0.8 ) {
+                if( TMath::Abs( lTriggerParticle->GetPdgCode() ) == 333 ){
+                    for(Int_t ih=0; ih<23; ih++){
+                        if( lThisPDG == lPDGCodes[ih] && TMath::Abs(geta2) < 0.8 ) {
                             //Check if primary (if needed) and if not don't use this particle
                             if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
                             //Fill 2pc same-event histograms, please
