@@ -64,6 +64,7 @@ class AliAnalysisTaskNewJetSubstructure : public AliAnalysisTaskEmcalJet {
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
   void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
    void SetCheckTracksOn(Bool_t t)                         { fTrackCheckPlots =t;}
+   void SetFillLundMC(Bool_t t)                            { fDoFillMCLund = t;}
    void SetCheckResolution(Bool_t t)                       {fCheckResolution = t;} 
    void SetSubjetCutoff(Float_t t)                            {fSubjetCutoff = t;}
    void SetHardCutoff(Float_t t)                            {fHardCutoff = t;}
@@ -106,6 +107,7 @@ class AliAnalysisTaskNewJetSubstructure : public AliAnalysisTaskEmcalJet {
   Float_t                             fCentMax;                     // max centrality value
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
   Bool_t                              fTrackCheckPlots;              //switch on qa plots
+  Bool_t                              fDoFillMCLund;                  //to fill the matched mc plane 
   Bool_t                              fCheckResolution;              //check subjet energy resolution 
   Float_t                             fSubjetCutoff;                 //angular cutoff for subjets at det/gen level
   Float_t                             fMinPtConst;                   //constituent pt cutoff   

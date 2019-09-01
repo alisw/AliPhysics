@@ -64,6 +64,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure() :
   fCentMax(10),
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
+  fDoFillMCLund(kFALSE),
   fCheckResolution(kFALSE),
   fSubjetCutoff(0.1),
   fMinPtConst(1),
@@ -104,6 +105,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(const char 
   fCentMax(10),
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
+  fDoFillMCLund(kFALSE),
   fCheckResolution(kFALSE),
   fSubjetCutoff(0.1),
   fMinPtConst(1),
@@ -810,9 +812,9 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(AliEmcalJet *f
 	   Rg=delta_R;
 	   flagSubjet=1;}
 	 if(lnpt_rel>0) cumtf=cumtf+form;   
-	 
+	 if(fDoFillMCLund==kTRUE){ 
 	 Double_t LundEntries[7] = {y,lnpt_rel,fOutputJets[0].perp(),nall,form,rad, cumtf};  
-         fHLundIterativeMC->Fill(LundEntries);
+         fHLundIterativeMC->Fill(LundEntries);}
 
 
 
