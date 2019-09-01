@@ -99,6 +99,7 @@ fHistEventCounter(0),
 fSmallMultRange(1000),
 fLargeMultRange(4000),
 fRebinFactor(1),
+fkSelectINELgtZERO(kTRUE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -135,6 +136,7 @@ fHistEventCounter(0),
 fSmallMultRange(lNSmallBinning),
 fLargeMultRange(lNLargeBinning),
 fRebinFactor(lRebinFactor),
+fkSelectINELgtZERO(kTRUE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -426,6 +428,9 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     }//End of loop on tracks
     //----- End Loop on Stack ------------------------------------------------------------
     
+    //Reject non-INEL>0 if requested
+    if( !lEvSel_INELgtZEROStackPrimaries && fkSelectINELgtZERO ) return;
+    
     //------------------------------------------------
     // Acquire information on Npart, Ncoll, b
     //------------------------------------------------
@@ -565,18 +570,18 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         {
             // Determine if within acceptance, otherwise fully reject from list
             // done such that this check is done O(N) and not O(N^2)
-            TParticle* particleOne = lMCstack->Particle(iCurrentLabelStack);
-            if(!particleOne) continue;
-            Double_t geta = particleOne -> Eta();
+            TParticle* lThisParticle = lMCstack->Particle(iCurrentLabelStack);
+            if(!lThisParticle) continue;
+            Double_t geta = lThisParticle -> Eta();
             if( TMath::Abs(geta)<0.8 ) lValidParticles[lNValidParticles++]=iCurrentLabelStack;
         }
         //----- Loop on Stack ----------------------------------------------------------------
         for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < lNValidParticles; iCurrentLabelStack++)
         {   // This is the begining of the loop on tracks
-            TParticle* particleOne = lMCstack->Particle(lValidParticles[iCurrentLabelStack]);
-            if(!particleOne) continue;
-            if(!particleOne->GetPDG()) continue;
-            Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+            TParticle* lTriggerParticle = lMCstack->Particle(lValidParticles[iCurrentLabelStack]);
+            if(!lTriggerParticle) continue;
+            if(!lTriggerParticle->GetPDG()) continue;
+            Double_t lThisCharge = lTriggerParticle->GetPDG()->Charge()/3.;
             //if(TMath::Abs(lThisCharge)<0.001) continue;
             //if(! (lMCstack->IsPhysicalPrimary(lValidParticles[iCurrentLabelStack])) ) continue;
             
@@ -585,43 +590,42 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
             Bool_t lTrigIsPrimary = kTRUE;
             if ( !lMCstack->IsPhysicalPrimary(lValidParticles[iCurrentLabelStack]) ) lTrigIsPrimary = kFALSE;
             Bool_t lTrigIsPhi = kTRUE;
-            if (particleOne->GetPdgCode()!=333) lTrigIsPhi = kFALSE;
+            if (lTriggerParticle->GetPdgCode()!=333) lTrigIsPhi = kFALSE;
             
             if( ((!lTrigIsCharged)||(!lTrigIsPrimary)) && !lTrigIsPhi ) continue;
             
-            //Double_t gpt = particleOne -> Pt();
-            Double_t geta = particleOne -> Eta();
-            Double_t gphi = particleOne -> Phi();
+            Double_t geta = lTriggerParticle -> Eta();
+            Double_t gphi = lTriggerParticle -> Phi();
             
-            if( particleOne -> Pt() > fMinPtTriggerCharged && lTrigIsCharged && lTrigIsPrimary )
+            if( lTriggerParticle -> Pt() > fMinPtTriggerCharged && lTrigIsCharged && lTrigIsPrimary )
                 fEtaTriggerCharged -> Fill( geta );
-            if( particleOne -> Pt() > fMinPtTriggerXi && lTrigIsPrimary && TMath::Abs(particleOne->GetPdgCode())==3312 )
+            if( lTriggerParticle -> Pt() > fMinPtTriggerXi && lTrigIsPrimary && TMath::Abs(lTriggerParticle->GetPdgCode())==3312 )
                 fEtaTriggerXi      -> Fill( geta );
-            if( particleOne -> Pt() > fMinPtTriggerPhi && TMath::Abs(particleOne->GetPdgCode())==333 )
+            if( lTriggerParticle -> Pt() > fMinPtTriggerPhi && TMath::Abs(lTriggerParticle->GetPdgCode())==333 )
                 fEtaTriggerPhi     -> Fill( geta );
             
             for (Int_t ilab = 0;  ilab < lNValidParticles; ilab++)
             {   // This is the begining of the loop on tracks
                 
                 if(ilab == iCurrentLabelStack) continue; //remove auto-correlations
-                TParticle* lPart = 0x0;
-                lPart = lMCstack->Particle( lValidParticles[ilab] );
-                if(!lPart) {
+                TParticle* lAssociatedParticle = 0x0;
+                lAssociatedParticle = lMCstack->Particle( lValidParticles[ilab] );
+                if(!lAssociatedParticle) {
                     Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", ilab );
                     continue;
                 }
                 
-                lThisPDG = lPart->GetPdgCode();
+                lThisPDG = lAssociatedParticle->GetPdgCode();
                 
                 //Continue if this is not a particle of the right PDG Code (avoids y-calculation problems)
                 Bool_t lContinue = kTRUE;
                 for(Int_t ih=0; ih<13; ih++) if( TMath::Abs(lThisPDG) == lPDGCodes[ih] ) lContinue = kFALSE;
                 if ( lContinue ) continue;
                 
-                Double_t geta2 = lPart -> Eta();
-                Double_t gphi2 = lPart -> Phi();
+                Double_t geta2 = lAssociatedParticle -> Eta();
+                Double_t gphi2 = lAssociatedParticle -> Phi();
 
-                lThisPt    = lPart->Pt();
+                lThisPt    = lAssociatedParticle->Pt();
 
                 lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(ilab);
                 
@@ -635,7 +639,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
                         }
                     }
                 }
-                if( TMath::Abs( particleOne->GetPdgCode() ) == 3312 ){
+                if( TMath::Abs( lTriggerParticle->GetPdgCode() ) == 3312 ){
                     for(Int_t ih=0; ih<13; ih++){
                         if( TMath::Abs(lThisPDG) == lPDGCodes[ih] && TMath::Abs(geta2) < 0.8 ) {
                             //Check if primary (if needed) and if not don't use this particle
@@ -645,7 +649,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
                         }
                     }
                 }
-                if( TMath::Abs( particleOne->GetPdgCode() ) == 333 ){
+                if( TMath::Abs( lTriggerParticle->GetPdgCode() ) == 333 ){
                     for(Int_t ih=0; ih<13; ih++){
                         if( TMath::Abs(lThisPDG) == lPDGCodes[ih] && TMath::Abs(geta2) < 0.8 ) {
                             //Check if primary (if needed) and if not don't use this particle

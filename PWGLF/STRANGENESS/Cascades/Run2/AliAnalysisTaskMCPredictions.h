@@ -63,6 +63,7 @@ public:
     Double_t ComputeDeltaPhi( Double_t phi1, Double_t phi2) const;
     
     void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
+    void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; } 
     
 //---------------------------------------------------------------------------------------
 
@@ -77,7 +78,8 @@ private:
     
     Int_t fSmallMultRange;
     Int_t fLargeMultRange;
-    Int_t fRebinFactor; 
+    Int_t fRebinFactor;
+    Bool_t fkSelectINELgtZERO;
     
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1D *fHistV0MMult;
