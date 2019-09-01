@@ -32,7 +32,7 @@ AliGenerator* CreatePythia8Gen( TString lTune,
     AliGenPythiaPlus* gener = new AliGenPythiaPlus(pythia);
     
     std::cout << "*****************************************************************" << std::endl;
-    std::cout << " Configure PYTHIA using tune "<< lTune,Data()<< std::endl;
+    std::cout << " Desired PYTHIA configuration: "<< lTune.Data()<< std::endl;
     std::cout << "*****************************************************************" << std::endl;
     // set process (MB)
     gener->SetProcess(kPyMbDefault);
