@@ -2318,9 +2318,11 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
          auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
 
 	 if(origin.first == kFromCharm) {
-	   if(TMath::Abs(aodMcPart->Eta())<=0.9) EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
+	  	if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
+	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
           if(origin.first == kFromBottom) {
-	    if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}
+	    	if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
+	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}
       }
 
   }
@@ -2331,9 +2333,13 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
       if(MCtruthPdgCode == -fCandidatePDG){
       auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
       if(origin.first == kFromCharm){
-	if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
+ 
+      	  if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
+	  if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
         if(origin.first == kFromBottom){
-	  if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}
+	  if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
+	  if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
+	  }
   }
 
   }
@@ -2347,18 +2353,26 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
       if (i == 0){
       auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
       if(origin.first == kFromCharm){
-	if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
+	if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
+	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
+      }
         if(origin.first == kFromBottom){
-	  if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}}
+	if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
+	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
+
+
+	}}
     }
     else if (MCtruthPdgCode == -fCandidatePDG){
       if (i == 1){
 
        auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
       if(origin.first == kFromCharm){
-	if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
+		if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
+	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
         if(origin.first == kFromBottom){
-	  if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}}
+	  	if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
+	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}}
       
     }
   }
@@ -2444,9 +2458,13 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominator(Al
           auto origin = IsPromptCharm(part, fMCContainer->GetArray());
      
       if(origin.first == kFromCharm){
-	if(TMath::Abs(part->Eta())<=0.9) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);}
+	if(part->Pt()>5) if(TMath::Abs(part->Y())<0.8) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);
+        if(part->Pt()<=5) if(TMath::Abs(part->Y())<(0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5)) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);
+      }
         if(origin.first == kFromBottom){ 
-	  if(TMath::Abs(part->Eta())<=0.9) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);}
+	  if(part->Pt()>5)if(TMath::Abs(part->Y())<0.8) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
+	  if(part->Pt()<=5) if(TMath::Abs(part->Y())<(0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5)) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
+	}
        
 	     }
 
@@ -2549,9 +2567,13 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
           auto origin = IsPromptCharm(part, fMCContainer->GetArray());
      
       if(origin.first == kFromCharm){
-	if(TMath::Abs(part->Eta())<=0.9)EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);}
+         	if(part->Pt()>5) if(TMath::Abs(part->Y())<0.8) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);
+		if(part->Pt()<=5) if(TMath::Abs(part->Y())<(0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5)) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);}
         if(origin.first == kFromBottom){ 
-	  if(TMath::Abs(part->Eta())<=0.9)EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);}
+	 if(part->Pt()>5) if(TMath::Abs(part->Y())<0.8) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
+		if(part->Pt()<=5) if(TMath::Abs(part->Y())<(0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5)) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
+
+	    }
       
 	     }
 
@@ -2918,7 +2940,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
 
 
    //fill the mc efficiency//
-  for (auto& def : fJetDefinitions)GetEfficiencyDenominator(def);
+  //for (auto& def : fJetDefinitions)GetEfficiencyDenominatorOneByOne(def);
 
   
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
@@ -2941,7 +2963,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
         for (auto& def : fJetDefinitions) {
           if (FindJet(charmCand, DmesonJet, def,im)) {
             Double_t jetPt = DmesonJet.fJets[def.GetName()].fMomentum.Pt();
-	    ExtractEfficiencies(charmCand,DmesonJet,def,im);
+	    //ExtractEfficiencies(charmCand,DmesonJet,def,im);
             if (jetPt > maxJetPt[&def]) maxJetPt[&def] = jetPt;
           }
           else {

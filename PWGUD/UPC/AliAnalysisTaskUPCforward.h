@@ -374,7 +374,9 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * requires help from the user and is more like
                                  * a guess...
                                  */
-        TH1F*                   fZNCEnergyAgainstEntriesH;         //!
+        TH1F*                   fZNCEnergyAgainstEntriesH;                 //!
+        TH1F*                   fZNCEnergyAgainstEntriesExtendedH;         //!
+        TH1F*                   fZNCEnergyAgainstEntriesExtendedHv2;       //!
 
                                 /**
                                  * This histogram records the energy distri-
@@ -385,21 +387,25 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * requires help from the user and is more like
                                  * a guess...
                                  */
-        TH1F*                   fZNAEnergyAgainstEntriesH;         //!
+        TH1F*                   fZNAEnergyAgainstEntriesH;                 //!
+        TH1F*                   fZNAEnergyAgainstEntriesExtendedH;         //!
+        TH1F*                   fZNAEnergyAgainstEntriesExtendedHv2;       //!
 
                                 /**
                                  * This histogram records the energy distri-
                                  * bution of the neutron ZDC. BEFORE timing
                                  * selection.
                                  */
-        TH1F*                   fZNCEnergyBeforeTimingSelectionH;         //!
+        TH1F*                   fZNCEnergyBeforeTimingSelectionH;                 //!
+        TH1F*                   fZNCEnergyBeforeTimingSelectionExtendedH;         //!
 
                                 /**
                                  * This histogram records the energy distri-
                                  * bution of the neutron ZDC. BEFORE timing
                                  * selection.
                                  */
-        TH1F*                   fZNAEnergyBeforeTimingSelectionH;         //!
+        TH1F*                   fZNAEnergyBeforeTimingSelectionH;                 //!
+        TH1F*                   fZNAEnergyBeforeTimingSelectionExtendedH;         //!
 
                                 /**
                                  * This histogram records the energy distri-
@@ -730,12 +736,19 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * Shift -1 => pt < 0.225 GeV/c
                                  * Shift +1 => pt < 0.275 GeV/c
                                  * Shift +2 => pt < 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroH;                   //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusTwoH;      //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftMinusOneH;      //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAzeroRapidityHv2[3];      //!
 
 
                                 /**
@@ -750,12 +763,19 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * Shift -1 => pt < 0.225 GeV/c
                                  * Shift +1 => pt < 0.275 GeV/c
                                  * Shift +2 => pt < 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyH;                   //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusTwoH;      //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftMinusOneH;      //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCzeroZNAanyRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -769,12 +789,19 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * Shift -1 => pt < 0.225 GeV/c
                                  * Shift +1 => pt < 0.275 GeV/c
                                  * Shift +2 => pt < 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroH;                   //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusTwoH;      //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftMinusOneH;      //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAzeroRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -788,12 +815,19 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * Shift -1 => pt < 0.225 GeV/c
                                  * Shift +1 => pt < 0.275 GeV/c
                                  * Shift +2 => pt < 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
-        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyH;                   //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusTwoH;      //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftMinusOneH;      //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionCoherentZNCanyZNAanyRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -807,12 +841,19 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * Shift -1 => pt > 0.225 GeV/c
                                  * Shift +1 => pt > 0.275 GeV/c
                                  * Shift +2 => pt > 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroH;                   //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusTwoH;      //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftMinusOneH;      //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -826,12 +867,19 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * Shift -1 => pt > 0.225 GeV/c
                                  * Shift +1 => pt > 0.275 GeV/c
                                  * Shift +2 => pt > 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyH;                   //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusTwoH;      //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftMinusOneH;      //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCzeroZNAanyRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -845,12 +893,19 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * Shift -1 => pt > 0.225 GeV/c
                                  * Shift +1 => pt > 0.275 GeV/c
                                  * Shift +2 => pt > 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
-        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroH;                  //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroH;                   //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusTwoH;      //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftMinusOneH;      //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAzeroRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -864,12 +919,19 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * Shift -1 => pt > 0.225 GeV/c
                                  * Shift +1 => pt > 0.275 GeV/c
                                  * Shift +2 => pt > 0.300 GeV/c
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyH;                   //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusTwoH;      //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftMinusOneH;      //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusOneH;       //!
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyShiftPlusTwoH;       //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyHv2;                 //!
+        TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyRapidityHv2[3];      //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -878,9 +940,16 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * ZNC=0n, ZNA=0n.
                                  *
                                  * Shift +1 => 20 MeV/c shift
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
         TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroH;                     //!
         TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH;         //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[3];        //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -889,9 +958,16 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * ZNC=0n, ZNA=Xn.
                                  *
                                  * Shift +1 => 20 MeV/c shift
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
         TH1F*                   fDimuonPtDistributionZNCzeroZNAanyH;                     //!
         TH1F*                   fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH;         //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[3];        //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -900,9 +976,16 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * ZNC=Xn, ZNA=0n.
                                  *
                                  * Shift +1 => 20 MeV/c shift
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
         TH1F*                   fDimuonPtDistributionZNCanyZNAzeroH;                     //!
         TH1F*                   fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH;         //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[3];        //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -911,9 +994,16 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * ZNC=Xn, ZNA=Xn.
                                  *
                                  * Shift +1 => 20 MeV/c shift
+                                 *
+                                 *
+                                 * NEW: v2 uses the isZNAfired() methods
+                                 * instead of the threshold to extract the
+                                 * numbers.
                                  */
         TH1F*                   fDimuonPtDistributionZNCanyZNAanyH;                     //!
         TH1F*                   fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH;         //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv2;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv2[3];        //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -1462,7 +1552,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 37);
+        ClassDef(AliAnalysisTaskUPCforward, 40);
 };
 
 #endif

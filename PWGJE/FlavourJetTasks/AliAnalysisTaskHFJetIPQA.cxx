@@ -66,16 +66,6 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
 AliAnalysisTaskEmcalJet(),
 fh1dTracksAccepeted(nullptr),
 fh1dCuts(nullptr),
-fh2dManifoldParton(nullptr),
-fh2dLightNotContrib(nullptr),
-fh2dCharmNotContrib(nullptr),
-fh2dBottomNotContrib(nullptr),
-fh2dLightNMatch(nullptr),
-fh2dCharmNMatch(nullptr),
-fh2dBottomNMatch(nullptr),
-fh2dLightDeta(nullptr),
-fh2dCharmDeta(nullptr),
-fh2dBottomDeta(nullptr),
 fHLundIterative(nullptr),
 fHistManager(),
 fEventVertex(nullptr),
@@ -85,14 +75,13 @@ fUsePIDJetProb(kFALSE),
 fDoMCCorrection(kFALSE),
 fDoUnderlyingEventSub(kFALSE),
 fDoFlavourMatching(kFALSE),
-fPythia6(kFALSE),
-fPythia8(kFALSE),
 fFillCorrelations(kFALSE),
 fParam_Smear_Sigma(1.),
 fParam_Smear_Mean(0.),
 fGlobalVertex(kFALSE),
 fDoNotCheckIsPhysicalPrimary(kFALSE),
 fDoJetProb(kFALSE),
+fDoLundPlane(kFALSE),
 fGraphMean(nullptr),
 fGraphSigmaData(nullptr),
 fGraphSigmaMC(nullptr),
@@ -105,6 +94,24 @@ fGeant3FlukaAntiProton(nullptr),
 fGeant3FlukaLambda(nullptr),
 fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
+h1DThresholdsFirst(0),
+h1DThresholdsSecond(0),
+h1DThresholdsThird(0),
+h1DTrueBTagged(nullptr),
+h1DTrueBTaggedSingle1st(nullptr),
+h1DTrueBTaggedSingle2nd(nullptr),
+h1DTrueBTaggedSingle3rd(nullptr),
+h1DTrueBTaggedDouble12(nullptr),
+h1DTrueBTaggedDouble23(nullptr),
+h1DTrueBTaggedTripple(nullptr),
+h1DFalseBTagged(nullptr),
+h1DFalseBTaggedSingle1st(nullptr),
+h1DFalseBTaggedSingle2nd(nullptr),
+h1DFalseBTaggedSingle3rd(nullptr),
+h1DFalseBTaggedDouble12(nullptr),
+h1DFalseBTaggedDouble23(nullptr),
+h1DFalseBTaggedTripple(nullptr),
+kTagLevel(3),
 cCuts(0),
 fMCArray(nullptr),
 fMCEvent(nullptr),
@@ -114,8 +121,6 @@ fMcEvtSampled(kFALSE),
 fBackgroundFactorLinus{0},
 fPUdsgJet(100),fPSJet(100),fPCJet(100),fPBJet(100),
 fJetCont(10),
-fHardProcess(0,SQuarks(0,0,0,0)),
-fQuarkVec(0,SQuarks(0,0,0,0)),
 fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 fCombined(nullptr),
 fXsectionWeightingFactor(1),
@@ -159,16 +164,6 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
 AliAnalysisTaskEmcalJet(name, kTRUE),
 fh1dTracksAccepeted(nullptr),
 fh1dCuts(nullptr),
-fh2dManifoldParton(nullptr),
-fh2dLightNotContrib(nullptr),
-fh2dCharmNotContrib(nullptr),
-fh2dBottomNotContrib(nullptr),
-fh2dLightNMatch(nullptr),
-fh2dCharmNMatch(nullptr),
-fh2dBottomNMatch(nullptr),
-fh2dLightDeta(nullptr),
-fh2dCharmDeta(nullptr),
-fh2dBottomDeta(nullptr),
 fHLundIterative(nullptr),
 fHistManager(name),
 fEventVertex(nullptr),
@@ -178,14 +173,13 @@ fUsePIDJetProb(kFALSE),
 fDoMCCorrection(kFALSE),
 fDoUnderlyingEventSub(kFALSE),
 fDoFlavourMatching(kFALSE),
-fPythia6(kFALSE),
-fPythia8(kFALSE),
 fFillCorrelations(kFALSE),
 fParam_Smear_Sigma(1.),
 fParam_Smear_Mean(0.),
 fGlobalVertex(kFALSE),
 fDoNotCheckIsPhysicalPrimary(kFALSE),
 fDoJetProb(kFALSE),
+fDoLundPlane(kFALSE),
 fGraphMean(nullptr),
 fGraphSigmaData(nullptr),
 fGraphSigmaMC(nullptr),
@@ -198,6 +192,24 @@ fGeant3FlukaAntiProton(nullptr),
 fGeant3FlukaLambda(nullptr),
 fGeant3FlukaAntiLambda(nullptr),
 fGeant3FlukaKMinus(nullptr),
+h1DThresholdsFirst(0),
+h1DThresholdsSecond(0),
+h1DThresholdsThird(0), 
+h1DTrueBTagged(nullptr),
+h1DTrueBTaggedSingle1st(nullptr),
+h1DTrueBTaggedSingle2nd(nullptr),
+h1DTrueBTaggedSingle3rd(nullptr),
+h1DTrueBTaggedDouble12(nullptr),
+h1DTrueBTaggedDouble23(nullptr),
+h1DTrueBTaggedTripple(nullptr),
+h1DFalseBTagged(nullptr),
+h1DFalseBTaggedSingle1st(nullptr),
+h1DFalseBTaggedSingle2nd(nullptr),
+h1DFalseBTaggedSingle3rd(nullptr),
+h1DFalseBTaggedDouble12(nullptr),
+h1DFalseBTaggedDouble23(nullptr),
+h1DFalseBTaggedTripple(nullptr),
+kTagLevel(3),
 cCuts(0),
 fMCArray(nullptr),
 fMCEvent(nullptr),
@@ -207,8 +219,6 @@ fMcEvtSampled(kFALSE),
 fBackgroundFactorLinus{0},
 fPUdsgJet(100),fPSJet(100),fPCJet(100),fPBJet(100),
 fJetCont(10),
-fHardProcess(0,SQuarks(0,0,0,0)),
-fQuarkVec(0,SQuarks(0,0,0,0)),
 fAnalysisCuts{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 fCombined(nullptr),
 fXsectionWeightingFactor(1.),
@@ -528,10 +538,11 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         FillTrackHistograms(trackV,dca,cov,TrackWeight);
     }
     AliJetContainer *  jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
-    fAnalysisCuts[bAnalysisCut_MinJetPt]=jetconrec->GetJetPtCut();
-    fAnalysisCuts[bAnalysisCut_MaxJetPt]=jetconrec->GetJetPtCutMax();
-    fAnalysisCuts[bAnalysisCut_MinJetEta]=jetconrec->GetMinEta();
-    fAnalysisCuts[bAnalysisCut_MaxJetEta]=jetconrec->GetMaxEta();
+    //fAnalysisCuts[bAnalysisCut_MinJetPt]=jetconrec->GetJetPtCut();
+    //fAnalysisCuts[bAnalysisCut_MaxJetPt]=jetconrec->GetJetPtCutMax();
+    //fAnalysisCuts[bAnalysisCut_MinJetEta]=jetconrec->GetMinEta();
+    //fAnalysisCuts[bAnalysisCut_MaxJetEta]=jetconrec->GetMaxEta();
+
     //printf("In Program %f < jetpt <%f, %f < jeteta < %f\n",fAnalysisCuts[bAnalysisCut_MinJetPt],fAnalysisCuts[bAnalysisCut_MaxJetPt],fAnalysisCuts[bAnalysisCut_MinJetEta],fAnalysisCuts[bAnalysisCut_MaxJetEta] );
     FillHist("fh1dNoJetsPerEvent",jetconrec->GetNJets(),1);
 
@@ -611,7 +622,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     else if(jetflavour==4)FillHist("fh1dJetRecPts",           jetpt, 1);    //this->fXsectionWeightingFactor );
                 }
 
-                RecursiveParents(jetrec, jetconrec);
+                if(fDoLundPlane)RecursiveParents(jetrec, jetconrec);
                
 
                 FillHist("fh1dJetRecEtaPhiAccepted",jetrec->Eta(),jetrec->Phi(), 1);   //this->fXsectionWeightingFactor );
@@ -658,13 +669,13 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
                     vp = static_cast<AliVParticle*>(jetrec->TrackAt(i, jetconrec->GetParticleContainer()->GetArray()));
                     if (!vp){
-                      Printf("ERROR: AliVParticle associated to constituent not found");
+                      AliError("AliVParticle associated to constituent not found");
                       continue;
                     }
 
                     AliVTrack *vtrack = dynamic_cast<AliVTrack*>(vp);
                     if (!vtrack) {
-                      printf("ERROR: Could not receive track%d\n", i);
+                      AliError(Form("Could not receive track%d\n", i));
                       continue;
                     }
 
@@ -900,10 +911,19 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 if((int)sImpParXYSig.size()>1) hasIPs[1]=kTRUE;
                 if((int)sImpParXYSig.size()>2) hasIPs[2]=kTRUE;
 
-                Double_t ipval [3] = {-9999};
-                if(hasIPs[0])ipval[0] =sImpParXYSig.at(0).first;
-                if(hasIPs[1])ipval[1] =sImpParXYSig.at(1).first;
-                if(hasIPs[2])ipval[2] =sImpParXYSig.at(2).first;
+                Double_t ipval [3] = {-9999.,-9999.,-9999.};
+                if(hasIPs[0]){
+                    ipval[0] =sImpParXYSig.at(0).first;
+                    //printf("HasIP0, ipval[0]=%f\n", ipval[0]);
+                  }
+                if(hasIPs[1]){
+                    ipval[1] =sImpParXYSig.at(1).first;
+                    //printf("HasIP1, ipval[1]=%f\n",ipval[1]);
+                  }
+                if(hasIPs[2]){
+                    ipval[2] =sImpParXYSig.at(2).first;
+                    //printf("HasIP2, ipval[2]=%f\n", ipval[2]);
+                  }
                 //if(hasIPs[0])printf("N=1: cursImParXY=%f, TrackWeight=%f,corridx=%i, pt=%f\n",sImpParXYSig.at(0).first, sImpParXYSig.at(0).second, sImpParXYSig.at(0).trackLabel, sImpParXYSig.at(0).trackpt);
                 //if(hasIPs[1])printf("N=2: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(1).first, sImpParXYSig.at(1).second, sImpParXYSig.at(1).trackLabel, sImpParXYSig.at(1).trackpt);
                 //if(hasIPs[2])printf("N=3: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(2).first, sImpParXYSig.at(2).second, sImpParXYSig.at(2).trackLabel, sImpParXYSig.at(2).trackpt);
@@ -921,7 +941,34 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                         if(!fIsMixSignalReady_n3 && hasIPs[2]) SetMixDCA(3,ipval[2] );
                     }
                 }
+                bool kTagDec[7]={kFALSE};
+                DoJetTaggingThreshold(jetpt, hasIPs,ipval, kTagDec);
 
+                //printf("Receiving BTagged decision: %i\n", kTagDec[Full]);
+                if(kTagDec[Full]&&jetflavour==3&&hasIPs[0]){
+                    h1DTrueBTagged->Fill(jetpt);
+                    if(kTagDec[Single1st]) h1DTrueBTaggedSingle1st->Fill(jetpt);
+                    if(kTagDec[Single2nd]) h1DTrueBTaggedSingle2nd->Fill(jetpt);
+                    if(kTagDec[Single3rd]) h1DTrueBTaggedSingle3rd->Fill(jetpt);
+                    if(kTagDec[Double12]) h1DTrueBTaggedDouble12->Fill(jetpt);
+                    if(kTagDec[Double23]) h1DTrueBTaggedDouble23->Fill(jetpt);
+                    if(kTagDec[Triple]) h1DTrueBTaggedTripple->Fill(jetpt);
+
+                    //printf("################################ FoundJet with tagindex=%i!\n",kTagDec[Full]);
+                }
+                if(kTagDec[Full]&&jetflavour!=3&&hasIPs[0]&&jetflavour!=0){
+                    h1DFalseBTagged->Fill(jetpt);
+                    if(kTagDec[Single1st]) h1DFalseBTaggedSingle1st->Fill(jetpt);
+                    if(kTagDec[Single2nd]) h1DFalseBTaggedSingle2nd->Fill(jetpt);
+                    if(kTagDec[Single3rd]) h1DFalseBTaggedSingle3rd->Fill(jetpt);
+                    if(kTagDec[Double12]) h1DFalseBTaggedDouble12->Fill(jetpt);
+                    if(kTagDec[Double23]) h1DFalseBTaggedDouble23->Fill(jetpt);
+                    if(kTagDec[Triple]) h1DFalseBTaggedTripple->Fill(jetpt);
+                    //printf("################################ Mistagged: flavour is=%i with tagindex=%i!\n",jetflavour,kTagDec[Full]);
+                }
+                if(!kTagDec[Full]&&jetflavour==3&&hasIPs[0]){
+                    //printf("################################ Missed one: flavour is=%i, ipval[1]=%f, ipval[2]=%f, ipval[3]=%f\n", jetflavour, ipval[0],ipval[2], ipval[2]);
+                }
 
                 if(sImpParXY.size()!=0){
                   FillHist("fh2dNoAcceptedTracksvsJetArea",(int)sImpParXY.size(),jetrec->Area(),1);
@@ -1026,6 +1073,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                                 sImpParXYZ.clear();
                                 sImpParXYZSig.clear();
                             }//end jetloop
+
                             return kTRUE;
                         }
 
@@ -1384,7 +1432,25 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   fHLundIterative = new THnSparseF("fHLundIterative",
                   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                   dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
-  fOutput->Add(fHLundIterative);
+  if(fDoLundPlane)fOutput->Add(fHLundIterative);
+
+
+  //Histograms for Tagging
+  h1DTrueBTagged=(TH1D*)AddHistogramm("h1DTrueBTagged","h1DTrueBTagged",500, 0, 250);
+  h1DTrueBTaggedSingle1st=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle1st","h1DTrueBTaggedSingle1st",500, 0, 250);
+  h1DTrueBTaggedSingle2nd=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle2nd","h1DTrueBTaggedSingle2nd",500, 0, 250);
+  h1DTrueBTaggedSingle3rd=(TH1D*)AddHistogramm("h1DTrueBTaggedSingle3rd","h1DTrueBTaggedSingle3rd",500, 0, 250);
+  h1DTrueBTaggedDouble12=(TH1D*)AddHistogramm("h1DTrueBTaggedDouble12","h1DTrueBTaggedDouble",500, 0, 250);
+  h1DTrueBTaggedDouble23=(TH1D*)AddHistogramm("h1DTrueBTaggedDouble23","h1DTrueBTaggedDouble",500, 0, 250);
+  h1DTrueBTaggedTripple=(TH1D*)AddHistogramm("h1DTrueBTaggedTripple","h1DTrueBTaggedTripple",500, 0, 250);
+
+  h1DFalseBTagged=(TH1D*)AddHistogramm("h1DFalseBTagged","h1DFalseBTagged",500, 0, 250);
+  h1DFalseBTaggedSingle1st=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle1st","h1DFalseBTaggedSingle1st",500, 0, 250);
+  h1DFalseBTaggedSingle2nd=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle2nd","h1DFalseBTaggedSingle2nd",500, 0, 250);
+  h1DFalseBTaggedSingle3rd=(TH1D*)AddHistogramm("h1DFalseBTaggedSingle3rd","h1DFalseBTaggedSingle3rd",500, 0, 250);
+  h1DFalseBTaggedDouble12=(TH1D*)AddHistogramm("h1DFalseBTaggedDouble12","h1DTrueBTaggedDouble",500, 0, 250);
+  h1DFalseBTaggedDouble23=(TH1D*)AddHistogramm("h1DFalseBTaggedDouble23","h1DTrueBTaggedDouble",500, 0, 250);
+  h1DFalseBTaggedTripple=(TH1D*)AddHistogramm("h1DFalseBTaggedTripple","h1DFalseBTaggedTripple",500, 0, 250);
 
   //Histograms for vertexing factor quicktest
   //fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_FULL","fh1dVERTEXFACTOR_VERTEXZ_FULL;;",400,-100,100,"s");
@@ -1398,30 +1464,6 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   fHistManager.CreateTH1("fh1dNoParticlesPerEvent","fh1dNoParticlesvsEvent;#;No Particles/Event",5000, 0, 5000,"s");
   fHistManager.CreateTH1("fh1dNoJetsPerEvent","fh1dNoJetsPerEvent;#;No Jets/Event",400, 0, 100,"s");
   fHistManager.CreateTH1("fh1dEventsAcceptedInRun","fh1dEventsAcceptedInRun;Events Accepted;count",1,0,1,"s");
-
-  fh2dLightNotContrib=(TH2D*)AddHistogramm("fh2dLightNotContrib",";particle pt (GeV/c);jet pt (GeV/c)",500,0,100,250,0,250);
-  fh2dCharmNotContrib=(TH2D*)AddHistogramm("fh2dCharmNotContrib",";particle pt (GeV/c);jet pt (GeV/c)",500,0,100,250,0,250);
-  fh2dBottomNotContrib=(TH2D*)AddHistogramm("fh2dBottomNotContrib",";particle pt (GeV/c);jet pt (GeV/c)",500,0,100,250,0,250);
-  fh2dManifoldParton=(TH2D*)AddHistogramm("fh2dManifoldParton",";Number of Flavours per Jet;jet pt GeV/c",50,0,50,250,0,250);
-  fh2dLightNMatch=(TH2D*)AddHistogramm("fh2dLightNMatch",";Number of particles within jet;particle pt (GeV/c)",50,0,50,200,0,50);
-  fh2dCharmNMatch=(TH2D*)AddHistogramm("fh2dCharmNMatch",";Number of particles within jet;particle pt (GeV/c)",50,0,50,200,0,50);
-  fh2dBottomNMatch=(TH2D*)AddHistogramm("fh2dBottomNMatch",";Number of particles within jet;particle pt (GeV/c)",50,0,50,200,0,50);
-  fh2dLightDeta=(TH2D*)AddHistogramm("fh2dLightDeta",";particle pt (GeV/c);#Delta R",200,0,50,200,0,10);
-  fh2dCharmDeta=(TH2D*)AddHistogramm("fh2dCharmDeta",";particle pt (GeV/c);#Delta R",200,0,50,200,0,10);
-  fh2dBottomDeta=(TH2D*)AddHistogramm("fh2dBottomDeta",";particle pt (GeV/c);#Delta R",200,0,50,200,0,10);
-
-  fOutput->Add(fh2dLightNotContrib);
-  fOutput->Add(fh2dCharmNotContrib);
-  fOutput->Add(fh2dBottomNotContrib);
-  fOutput->Add(fh2dLightNMatch);
-  fOutput->Add(fh2dCharmNMatch);
-  fOutput->Add(fh2dBottomNMatch);
-  fOutput->Add(fh2dManifoldParton);
-  fOutput->Add(fh2dLightDeta);
-  fOutput->Add(fh2dCharmDeta);
-  fOutput->Add(fh2dBottomDeta);
-
-
 
 
   //In-Out of jet particle composition in pythia events
@@ -1757,10 +1799,17 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     PostData(1, fOutput);
 }
 
-void AliAnalysisTaskHFJetIPQA::PrintSettings(){
-    fOutput=dynamic_cast<AliEmcalList*>(GetOutputData(1));
-    fh1dCuts=dynamic_cast<TH1D*>(fOutput->First());
+void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
+    AliJetContainer *  jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+    fAnalysisCuts[bAnalysisCut_MinJetPt]=jetconrec->GetJetPtCut();
+    fAnalysisCuts[bAnalysisCut_MaxJetPt]=jetconrec->GetJetPtCutMax();
+    fAnalysisCuts[bAnalysisCut_MinJetEta]=jetconrec->GetMinEta();
+    fAnalysisCuts[bAnalysisCut_MaxJetEta]=jetconrec->GetMaxEta();
 
+    PrintSettings();
+}
+
+void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     TString jetcuts="";
     TString trackcuts="";
     TString vertexcuts="";
@@ -2826,17 +2875,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
         else
             return kTRUE;
     }
-/*! \brief mysort
- *
- * custom strcut sorter function
-*/
-Bool_t AliAnalysisTaskHFJetIPQA::myquarksort(const SQuarks& i, const SQuarks& j)
-        {
-            if(i.first <= j.first)
-                return kFALSE;
-            else
-                return kTRUE;
-        }
 /*! \brief GetPtCorrected
  *
  *
@@ -2875,6 +2913,16 @@ Bool_t AliAnalysisTaskHFJetIPQA::myquarksort(const SQuarks& i, const SQuarks& j)
     {
         return kTRUE;
     }
+
+
+/*! \brief IsParton
+ *
+ *
+ */
+    Bool_t AliAnalysisTaskHFJetIPQA::IsParton(int pdg){
+      return ((pdg==1)||(pdg==2)||(pdg==3)||(pdg==4)||(pdg==5)||(pdg==21));
+    }
+
 /*! \brief IsJetTaggedJetProb
  *
  * unused
@@ -2883,303 +2931,184 @@ Bool_t AliAnalysisTaskHFJetIPQA::myquarksort(const SQuarks& i, const SQuarks& j)
     {
         return kTRUE;
     }
+    /*! \brief IsMCJetPartonFast
+     *
+     * Fast jet parton MC matcher
+     */
+        Int_t  AliAnalysisTaskHFJetIPQA::IsMCJetPartonFast(const AliEmcalJet *jet, Double_t radius,Bool_t &is_udg)
+        {
+            fJetCont.clear();
+            fPUdsgJet.clear();
+            fPSJet.clear();
+            fPCJet.clear();
+            fPBJet.clear();
+            daughtermother.clear();
 
-/*! \brief IsParton
- *
- * Return kTRUE if particle is parton
- */
-Bool_t AliAnalysisTaskHFJetIPQA::IsParton(int pdg){
-  return ((pdg==1)||(pdg==2)||(pdg==3)||(pdg==4)||(pdg==5)||(pdg==21));
-}
+            double p_udsg_max=-999;
+            double p_s_max=-999;
+            AliVParticle *vp=0x0;
+            Int_t pdg=0;
+            Double_t p=0;
+            int kJetOrigin=-999;
 
-/*! \brief StoreDaughters
- *
- * Store all daughters of MC particles
- */
-void  AliAnalysisTaskHFJetIPQA::StoreDaughters(AliAODMCParticle* part, int kFirstMotherLabel){
-    int kDaughLabel1=part->GetDaughterFirst();
-    int kDaughLabel2=part->GetDaughterLast();
+            //printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+            //printf("Starting loop\n");
+            if(!jet) return 0;
+            if(!(jet->GetNumberOfTracks()>fNoJetConstituents)){
+              //printf("Throwing away jets with only too few constituent!\n");
+              return 0;
+            }
 
-    for(int idaughter=kDaughLabel1;idaughter<=kDaughLabel2;idaughter++){
-      if(idaughter==-1)continue;
-      daughtermother.emplace(idaughter,kFirstMotherLabel);
-      //printf("Pushing daughters to vector %i, Mother Label=%i, kFirstMother=%i\n",idaughter, part->GetMother(), kFirstMotherLabel);
-    }
-}
+            if(fDoFlavourMatching){
+              for(UInt_t i = 0; i < jet->GetNumberOfTracks(); i++) {//start trackloop jet
+                vp = static_cast<AliVParticle*>(jet->Track(i));
+                if (!vp){
+                  AliError("AliVParticle associated to constituent not found\n");
+                  continue;
+                }
 
-/*! \brief DoJetPartonMatching
- *
- * Performs matching of parton daughters to jet constituents. Returns the number of parton daughters that are matched with constituents.
- */
-int AliAnalysisTaskHFJetIPQA::DoJetPartonMatching(const AliEmcalJet *jet, int partonlabel){
-  int nFit=0;
-  int kPartLabel=0;
-  int kFirstMotherLabel=0;
-  AliVParticle *vp=0x0;
-  std::map<int ,int >::iterator it = daughtermother.begin();
+                AliAODMCParticle * part = static_cast<AliAODMCParticle*>(vp);
 
-  //loop over daughtermother
-  while(it != daughtermother.end()){
-    kPartLabel=it->first;
-    kFirstMotherLabel=it->second;
+                if(!part){
+                    AliError("Finding no Part!\n");
+                    return 0;
+                }       // if(!part->IsPrimary()) continue;
+                pdg = (abs(part->PdgCode()));
+                fJetCont.push_back(part->Label());
+                //printf("Daugther pdg=%i, Label=%i, Mother =%i, p=%f, MCStatusCode=%i\n",pdg, part->GetLabel(), part->GetMother(), p, part->MCStatusCode());
+              }//end trackloop jet
+            }
 
-    if(kFirstMotherLabel!=partonlabel){
-        it++;
-        continue;
-    }
-    //printf("Withing daughtermother Label %i, firstmotherlabel %i\n", kPartLabel, kFirstMotherLabel);
+            for(Int_t iPrim = 0 ; iPrim<fMCArray->GetEntriesFast();iPrim++){//start trackloop MC
 
-    //loop over jet constituents
-    for(UInt_t i = 0; i < jet->GetNumberOfTracks(); i++) {//start trackloop jet
-      vp = static_cast<AliVParticle*>(jet->Track(i));
-      if (!vp){
-        Printf("ERROR: AliVParticle associated to constituent not found\n");
-        continue;
-      }
-      AliAODMCParticle * part = static_cast<AliAODMCParticle*>(vp);
-      if(!part){
-        printf("ERROR: Finding no Part!\n");
-        return 0;
-      }
-      //printf("Jet Constitutent: %i\n", part->Label());
-      if(kPartLabel==part->Label()){
-          //printf("Found matching for label %i\n",part->Label());
-          nFit++;
-      }
-    }//end trackloop jet
-    it++;
-  }
-  //printf("Number of fits: %i\n",nFit);
-  return nFit;
-}
+                        AliAODMCParticle * part = static_cast<AliAODMCParticle*>(fMCArray->At(iPrim));
+                        if(!part) return 0;
+                        if(!part->IsPrimary()) continue;
+                        Double_t eta = part->Eta();
+                        Double_t phi= part->Phi();
+                        Double_t etajet = jet->Eta();
+                        Double_t phijet = jet->Phi();
+                         p=part->P();
 
-/*! \brief DoFlavourVectorFill
- *
- * Fills parton vectors. If fDoFlavourMatching=kTRUE, only partons that have been matched to jet constituents are filled. If kFALSE, alls partons are accepted.
- */
-void AliAnalysisTaskHFJetIPQA::DoFlavourVectorFill(int kJetOrigin, double partonpt, double jetpt, int kPartonsInJet, double deta){
-    if(abs(kJetOrigin) == 5) {
-      if(kPartonsInJet==0){
-          fh2dBottomNotContrib->Fill(partonpt,jetpt);
-          //printf("Entry in fh2dBottomNotContrib\n");
-      }
-      if(kPartonsInJet>0||!fDoFlavourMatching){
-          fh2dBottomNMatch->Fill(kPartonsInJet,partonpt);
-          fh2dBottomDeta->Fill(partonpt,deta);
-          fPBJet.push_back(partonpt);
-          //printf("Pushing back bottom\n");
-      }
-    }
-    else if(abs(kJetOrigin)== 4) {
-      if(kPartonsInJet==0){
-          fh2dCharmNotContrib->Fill(partonpt,jetpt);
-          //printf("Entry in fh2dCharmNotContrib\n");
-      }
-      if(kPartonsInJet>0||!fDoFlavourMatching){
-          fh2dCharmNMatch->Fill(kPartonsInJet,partonpt);
-          fh2dCharmDeta->Fill(partonpt,deta);
-          fPCJet.push_back(partonpt);
-          //printf("Pushing back charm\n");
-      }
-    }
-    else if(abs(kJetOrigin) == 3 ) {
-      if(kPartonsInJet==0){
-          fh2dLightNotContrib->Fill(partonpt,jetpt);
-          //printf("Entry in fh2dLightNotContrib\n");
-      }
-      if(kPartonsInJet>0||!fDoFlavourMatching){
-          fh2dLightNMatch->Fill(kPartonsInJet,partonpt);
-          fh2dLightDeta->Fill(partonpt,deta);
-          fPSJet.push_back(partonpt);
-          //printf("Strange pushed with p=%f",partonpt);
-      }
-    }
-    else if(abs(kJetOrigin)== 1 ||abs(kJetOrigin)== 2 ||  abs(kJetOrigin) == 21) {
-      if(kPartonsInJet==0){
-          fh2dLightNotContrib->Fill(partonpt,jetpt);
-          //printf("Entry in fh2dLightNotContrib\n");
-      }
-      if(kPartonsInJet>0||!fDoFlavourMatching){
-          fh2dLightNMatch->Fill(kPartonsInJet,partonpt);
-          fh2dLightDeta->Fill(partonpt,deta);
-          fPUdsgJet.push_back(partonpt);
-          //printf("Light pushed with p=%f",partonpt);
-      }
-    }
-}
-/*! \brief DoFlavourDecision
- *
- * Perform final decision on flavor assigned to jet depending on particle flavour ordering (bottom accepted
- *  above charm accepted above light flavours) and pt ordering (of light flavours, the hardest is accepted)
- */
-int AliAnalysisTaskHFJetIPQA::DoFlavourDecision(){
-      double p_udsg_max=-999;  // maximal pt of light quarks
-      double p_s_max=-999;      // maximal pt of strange quarks
-      bool is_udg=kFALSE;
+                        Int_t pdg = (abs(part->PdgCode()));
+                        Double_t deta = etajet - eta;
+                        Double_t dphi = phijet-phi;
+                        dphi = TVector2::Phi_mpi_pi(dphi);
+                        Double_t  d = sqrt(deta * deta + dphi * dphi);
+                      //   printf("LINE %i, deta%f, dphi%f, d=%f, fDoFlavourMatching=%i\n",__LINE__, deta,dphi,d,fDoFlavourMatching);
+                        if(!fDoFlavourMatching) {
+                          //if(!((part->GetStatus()==11) ||(part->GetStatus()==12))) continue;
+                          if(!IsParton(pdg)) continue;
+                          if(d > radius) continue;
+                          kJetOrigin=pdg;
+                        }
+                        else{
 
-      if(fPCJet.size() ==0&& fPBJet.size()==0&& fPSJet.size()==0&&fPUdsgJet.size()==0) return 0; //udsg
-      //check for c jet
-      for (Int_t icj = 0 ; icj <(Int_t)fPCJet.size();++icj ){
-          //printf("Charm Flavour Jet!\n");
-          return 2;
-      }
-      //check for b jet
-      for (Int_t icj = 0 ; icj <(Int_t)fPBJet.size();++icj ){
-          //printf("Bottom Flavour Jet!\n");
-          return 3;
-      }
-      //check for s and light jet
-      if(fPUdsgJet.size()!=0){
-        std::sort(fPUdsgJet.begin(), fPUdsgJet.end());
-        p_udsg_max=fPUdsgJet[fPUdsgJet.size()-1];
-      }
-      if(fPSJet.size()!=0){
-        std::sort(fPSJet.begin(), fPSJet.end());
-        p_s_max=fPSJet[fPSJet.size()-1];
-      }
+                          if(IsParton(pdg)){
+                            if(d > fDaughtersRadius) continue;
+                          }
 
-      //take hardest
-      if(p_s_max>p_udsg_max){
-        //printf("S prefered with psmax=%f, pudsgmax=%f\n", p_s_max,p_udsg_max);
-        return 4;
-      }
-      else{
-          if(fPUdsgJet.size()!=0){
-              //printf("Light prefered with psmax=%f, pudsgmax=%f\n", p_s_max,p_udsg_max);
-              is_udg =kTRUE;
-              return 1;
-          }
-      }
-      return 0;
-}
+                          //printf("i=%i, Mother Label %i, Mother PdG %i,Daughter:%i, Last Daughter: %i, MCStatusCode=%i, d=%f, p=%f\n", iPrim, part->Label(), part->PdgCode(), part->GetDaughterLabel(0),part->GetDaughterLabel(1),part->MCStatusCode(), d,p);
 
-/*! \brief IsMCJetPartonFast
- *
- * Fast jet parton MC matcher
- */
-Int_t  AliAnalysisTaskHFJetIPQA::IsMCJetPartonFast(const AliEmcalJet *jet, Double_t radius,Bool_t &is_udg){
-  fJetCont.clear();
-  fPUdsgJet.clear();
-  fPSJet.clear();
-  fPCJet.clear();
-  fPBJet.clear();
-  daughtermother.clear();
-  fHardProcess.clear();
-  fQuarkVec.clear();
+                          int kFirstDaugh=part->GetDaughterLabel(0);
+                          int NDaugh=part->GetNDaughters();
+                          for(int idaugh=0;idaugh<NDaugh;idaugh++){
+                            int kDaughLabel=kFirstDaugh+idaugh;
+                            //printf("Dauglabel=%i, kFirstDaugh=%i, kLastDaugh=%i\n",kDaughLabel, kFirstDaugh,kLastDaugh);
 
+                            bool IsDaughter=std::find(fJetCont.begin(), fJetCont.end(),kDaughLabel) != fJetCont.end();
+                            if(IsDaughter){
+                              if(IsParton(pdg)){
+                                //printf("Directly matched %i with daughter =%i\n",part->GetLabel(), kDaughLabel);
+                                kJetOrigin=part->PdgCode();
+                              }
+                              else{
+                                  bool Is2ndDaughter=daughtermother.find(part->Label()) != daughtermother.end();
+                                  if(Is2ndDaughter){
+                                      kJetOrigin=daughtermother.find(part->Label())->second;
+                                      //printf("Matched with %i with 2nd daughter =%i\n",part->GetLabel(), kDaughLabel);
+                                  }
+                              }
+                            }//end is jet daughter
+                            else{
+                              if(IsParton(pdg)){
+                                //printf("Writing Quarks in map: partlabel=%i, daughlabel=%i, status=%i\n", part->GetLabel(),kDaughLabel, part->MCStatusCode());
+                                daughtermother.emplace(kDaughLabel, part->PdgCode());
+                              }
+                              else{
+                                bool Is2ndDaughter=daughtermother.find(part->Label()) != daughtermother.end();
+                                if(Is2ndDaughter){
+                                  //printf("Writing Daughters in map: partlabel=%i, daughlabel=%i, status=%i\n", part->GetLabel(),kDaughLabel, part->MCStatusCode());
+                                  int kOriginalQuark=daughtermother.find(part->Label())->second;
+                                  daughtermother.emplace(kDaughLabel, kOriginalQuark);
+                                }
+                              //printf("Asking for daughlabel%i\n",part->Label());
+                              }
+                            }//end related to jet?
+                          }//end daughterloop
+                        }//end else DoMatchFlavours
 
-  int kPartonsInJet=-1;      //number of partons contributed to the jet by one flavour
-  int kPartonsPerJet=0;     //how many flavors matched with jet
-  int kJetOrigin=-999;      //label of flavor that is matched with jet
-  int kStoreRun=0;          //if find hardest process go back 2 steps in the particle listing and store daughters of hardest process particles
+                        //printf("i=%i, Mother Label %i, Mother PdG %i,Daughter:%i, Last Daughter: %i, MCStatusCode=%i, d=%f, p=%f\n", iPrim, part->Label(), part->PdgCode(), part->GetDaughterLabel(0),part->GetLastDaughter(),part->MCStatusCode(), d,p);
 
-  if(!jet) return 0;
-  if(!(jet->GetNumberOfTracks()>fNoJetConstituents)){
-    return 0;
-  }
-  //************************************
-  //loop over all partons within event
-  for(Int_t iPrim = 0 ; iPrim<fMCArray->GetEntriesFast();iPrim++){//start trackloop filling fQuarkVec
-    AliAODMCParticle * part = static_cast<AliAODMCParticle*>(fMCArray->At(iPrim));
-    if(!part) return 0;
+                        if(abs(kJetOrigin) == 5) {
+                            fPBJet.push_back(p);
+                        }
+                        else if(abs(kJetOrigin)== 4) {
+                            fPCJet.push_back(p);
+                        }
+                        else if(abs(kJetOrigin) == 3 ) {
+                            fPSJet.push_back(p);
+                            //printf("Strange pushed with p=%f",p);
+                        }
+                        else if(abs(kJetOrigin)== 1 ||abs(kJetOrigin)== 2 ||  abs(kJetOrigin) == 21) {
+                            fPUdsgJet.push_back(p);
+                            //printf("Light pushed with p=%f",p);
+                        }
 
-    //initialise variables
-    Double_t eta = part->Eta();
-    Double_t phi= part->Phi();
-    Double_t etajet = jet->Eta();
-    Double_t phijet = jet->Phi();
-    Double_t deta = etajet - eta;
-    Double_t dphi = phijet-phi;
-    Double_t pt=part->Pt();
-    Int_t pdg = (abs(part->GetPdgCode()));
-    Int_t kPartLabel=iPrim;
-    dphi = TVector2::Phi_mpi_pi(dphi);
-    Double_t  d = sqrt(deta * deta + dphi * dphi);
-    Int_t kMotherLabel=part->GetMother();
+        }//end trackloop MC
 
-    SQuarks q(pt,  kPartLabel,pdg,d);
-
-    //if(kStoreRun>0)printf("Doing kStorerun %i, iPrim=%i\n",kStoreRun,iPrim);
-
-    if(fPythia6){
-      if(!IsParton(pdg)) continue;
-      //printf("Going into Pythia 6 loop\n");
-      if(!(part->MCStatusCode()==11)&&(part->MCStatusCode()==12)){
-        continue;
-      }
-      else{
-        fQuarkVec.push_back(q);
-      }
-    }
-    if(fPythia8){
-      //printf("Going into Pythia 8 loop\n");
-      for(int iquark=0;iquark<fHardProcess.size();iquark++){
-        if(!IsParton(pdg)) continue;
-        if((pt==fHardProcess[iquark].first)&&(TMath::Abs(pt)>0.0000000001)&&(kMotherLabel!=fHardProcess[iquark].second)&&(kStoreRun==0)){
-          //printf("Found pairing of quarks! q1_label=%i, q2_label=%i, q1_pdg=%i, q2_pdg=%i, q1pt=%.10f, q2pt=%.10f\n", iPrim, fHardProcess[iquark].second, pdg, fHardProcess[iquark].HasPDG, pt, fHardProcess[iquark].first);
-
-          fQuarkVec.push_back(q);
-          fQuarkVec.push_back(fHardProcess[iquark]);
-
-          daughtermother.emplace(q.second, q.second);
-          daughtermother.emplace(fHardProcess[iquark].second,fHardProcess[iquark].second);
-          //printf("Pushing: q1_label=%i, q2_label=%i\n", q.second, fHardProcess[iquark].second);
-          kStoreRun=3;
+        /*printf("Inside JetCont:\n");
+          for(int i=0;i<fJetCont.size();i++){
+          printf("%f\n", fJetCont[i]);
         }
-      }
+        printf("Inside map:\n");
+          for (auto& x: daughtermother) {
+          std::cout << x.first << ": " << x.second << '\n';
+        }*/
+        if(fPCJet.size() ==0&& fPBJet.size()==0&& fPSJet.size()==0&&fPUdsgJet.size()==0) return 0; //udsg
+        //check for b jet
+        for (Int_t icj = 0 ; icj <(Int_t)fPBJet.size();++icj ){
+            //printf("Bottom Flavour Jet!\n");
+            return 3;
+        }
+        //check for c jet
+        for (Int_t icj = 0 ; icj <(Int_t)fPCJet.size();++icj ){
+            //printf("Charm Flavour Jet!\n");
+            return 2;
+        }
+        //check for s and light jet
+        if(fPUdsgJet.size()!=0){
+          std::sort(fPUdsgJet.begin(), fPUdsgJet.end());
+          p_udsg_max=fPUdsgJet[fPUdsgJet.size()-1];
+        }
+        if(fPSJet.size()!=0){
+          std::sort(fPSJet.begin(), fPSJet.end());
+          p_s_max=fPSJet[fPSJet.size()-1];
+        }
 
-      if(kStoreRun==0)fHardProcess.push_back(q);
-      if(kStoreRun!=3){  //Only store daughters if not only just now hardest process particles have been found. Otherwise double counting.
-          int kMotherLabel=-999;
-          std::map<int,int>::iterator it;
-          it = daughtermother.find(kPartLabel);
-          if(it != daughtermother.end()){
-            kMotherLabel=it->second;
-            //printf("Found daughter with %i, pdg =%i, kMotherLabel=%i\n",iPrim,pdg,kMotherLabel);
-          }
-          if(kMotherLabel!=-999)StoreDaughters(part,kMotherLabel);
-      }
-      if(kStoreRun>0){  //if found hardest process particles go back 2 steps in eventlisting to store daughter particles
-        kStoreRun=kStoreRun-1;
-        if(kStoreRun==2)iPrim=iPrim-2;
-      }
+        if(p_s_max>p_udsg_max){
+          //printf("S prefered with psmax=%f, pudsgmax=%f\n", p_s_max,p_udsg_max);
+          return 4;
+        }
+        else{
+            if(fPUdsgJet.size()!=0){
+                //printf("Light prefered with psmax=%f, pudsgmax=%f\n", p_s_max,p_udsg_max);
+                is_udg =kTRUE;
+                return 1;
+            }
+        }
+        return 0;
     }
-  }//end trackloop filling fQuarkVec
-
-  //printf("Inside QuarkVec:\n");
-  //for(int i=0;i<fQuarkVec.size();i++){
-  //  printf("pt =%f, label =%i, pdg=%i, deta=%f\n", fQuarkVec[i].first, fQuarkVec[i].second, fQuarkVec[i].HasPDG, fQuarkVec[i].HasDETA);
-  //}
-
- //**************************************
- //loop over jet constituents
- for(int iquark=0;iquark<fQuarkVec.size();iquark++){
-    kJetOrigin=-999;
-    kPartonsInJet=-1;
-    if(fQuarkVec[iquark].HasDETA<fDaughtersRadius){
-        kJetOrigin=fQuarkVec[iquark].HasPDG;
-        //printf("Found quark with right radius: Label=%i, deta=%f, pt=%f, pdg=%i\n",fQuarkVec[iquark].second, fQuarkVec[iquark].HasDETA,fQuarkVec[iquark].first, fQuarkVec[iquark].HasPDG);
-
-        if(fDoFlavourMatching){
-          kPartonsInJet=DoJetPartonMatching(jet, fQuarkVec[iquark].second);
-          if(kPartonsInJet==0){
-              //printf("No Jet matched!\n");
-          }
-          else{
-              kPartonsPerJet=kPartonsPerJet+1;
-          }
-        }//fJetLoop for DoFlavourMatching
-    }
-    DoFlavourVectorFill(kJetOrigin, fQuarkVec[iquark].first,jet->Pt(),kPartonsInJet, fQuarkVec[iquark].HasDETA);
-  }//end trackloop MC
-
-  if(kPartonsPerJet>1){
-      //printf("More than one, exactly %i partons matched to jet\n",kPartonsPerJet);
-      fh2dManifoldParton->Fill(kPartonsPerJet,jet->Pt());
-  }
-
-  return DoFlavourDecision();
-}
 
 
 /*! \brief RecursiveParents
@@ -3669,10 +3598,75 @@ Double_t AliAnalysisTaskHFJetIPQA::CalculatePSTrackPID(Double_t sign, Double_t s
     return retval;
 }
 
+void AliAnalysisTaskHFJetIPQA::SetThresholds(TObjArray* threshfirst, TObjArray* threshsec, TObjArray* threshthird){
+    for(int iProbSet=0;iProbSet<3;iProbSet++){
+        h1DThresholdsFirst.push_back((TH1D*)threshfirst->At(iProbSet));
+        h1DThresholdsSecond.push_back((TH1D*)threshsec->At(iProbSet));
+        h1DThresholdsThird.push_back((TH1D*)threshthird->At(iProbSet));
+    }
+ }
+
+void AliAnalysisTaskHFJetIPQA::DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval, bool *kTagDec){
+  //threshold values for tracks with largest, second and third largest IP
+  int iJetPtBin=h1DThresholdsFirst[0]->FindBin(jetpt);
+  double IPthresN1[3];  //single tag, double tag, tripple tag
+  double IPthresN2[3];
+  double IPthresN3[3];
+
+  for(int iN=0;iN<3;iN++){
+    IPthresN1[iN]=h1DThresholdsFirst[iN]->GetBinContent(iJetPtBin);
+    IPthresN2[iN]=h1DThresholdsSecond[iN]->GetBinContent(iJetPtBin);
+    IPthresN3[iN]=h1DThresholdsThird[iN]->GetBinContent(iJetPtBin);
+  }
+
+  /*printf("DoJetTaggingThreshold:\n");
+  printf("      Single: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[0],IPthresN2[0], IPthresN3[0]);
+  printf("      Double: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[1],IPthresN2[1], IPthresN3[1]);
+  printf("      Tripple: iJetPtBin=%i, IPthresN1=%f, IPthresN2=%f, IPthresN3=%f\n", iJetPtBin, IPthresN1[2],IPthresN2[2], IPthresN3[2]);*/
+
+  if(hasIPs[2]){
+      //tripple tag
+      //printf("ipval[0]=%f, ipval[1]=%f, ipval[2]=%f\n", ipval[0],ipval[1],ipval[2]);
+      if(ipval[0]>IPthresN1[2]&&ipval[1]>IPthresN2[2]&&ipval[2]>IPthresN3[2]){kTagDec[Full]=kTRUE; kTagDec[Triple]=kTRUE;}
+      //double tag
+      if(kTagLevel<3){
+        //printf("Double catch\n");
+        if(ipval[2]>IPthresN3[1]&&ipval[1]>IPthresN2[1]) {kTagDec[Full]=kTRUE; kTagDec[Double23]=kTRUE;}
+      }
+      //single tag
+      if(kTagLevel<2){
+        //printf("Single catch\n");
+        if(ipval[2]>IPthresN3[0]) {kTagDec[Full]=kTRUE; kTagDec[Single3rd]=kTRUE;}
+      }
+  }
+
+  if(hasIPs[1]){
+      //printf("ipval[0]=%f, ipval[1]=%f", ipval[0],ipval[1]);
+      //double tag
+      if(kTagLevel<3){
+        //printf("Double catch\n");
+        if(ipval[0]>IPthresN1[1]&&ipval[1]>IPthresN2[1]) {kTagDec[Full]=kTRUE; kTagDec[Double12]=kTRUE;}
+      }
+      //single tag
+      if(kTagLevel<2){
+        //printf("Single catch\n");
+        if(ipval[1]>IPthresN2[0]) {kTagDec[Full]=kTRUE; kTagDec[Single2nd]=kTRUE;}
+      }
+  }
+
+  //single tag
+  if(hasIPs[0]){
+      //printf("ipval[0]=%f", ipval[0]);
+      if(kTagLevel<2){
+        //printf("Single catch\n");
+        if(ipval[0]>IPthresN1[0]) {kTagDec[Full]=kTRUE; kTagDec[Single1st]=kTRUE;}
+      }
+  }
+
+}
+
 
 void AliAnalysisTaskHFJetIPQA::Terminate(Option_t *){
-
-    PrintSettings();
 
     printf("\n*********************************\n");
     printf("Corrections:\n");

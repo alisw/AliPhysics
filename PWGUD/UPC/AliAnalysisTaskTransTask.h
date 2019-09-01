@@ -22,6 +22,7 @@ class AliAnalysisTaskTransTask : public AliAnalysisTaskSE
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
+	void 			SetIsMC(Bool_t MC){isMC = MC;}
 
         virtual void            RunAOD();
         virtual void            RunESD();
@@ -64,10 +65,12 @@ class AliAnalysisTaskTransTask : public AliAnalysisTaskSE
 	UShort_t fBCrossNum;
 	TH1I *fCounter; //! analysis counter
 	
+	Bool_t isMC;
+	
         AliAnalysisTaskTransTask(const AliAnalysisTaskTransTask&); // not implemented
         AliAnalysisTaskTransTask& operator=(const AliAnalysisTaskTransTask&); // not implemented
 
-        ClassDef(AliAnalysisTaskTransTask, 3);
+        ClassDef(AliAnalysisTaskTransTask, 4);
 };
 
 #endif

@@ -93,13 +93,6 @@ public:
         Int_t trackLabel=-1 ;
         Double_t trackpt=-99;
     };
-    struct SQuarks {
-        SQuarks(Double_t pt, int label, int pdg, double deta): first(pt),second(label),HasPDG(pdg),HasDETA(deta){}
-        Double_t first; // to be compatible with std::pair
-        int second;// to be compatible with std::pair
-        int HasPDG; // added for electron contribution check
-        double HasDETA;
-    };
     //FUNCTION DEFINITIONS
     AliAnalysisTaskHFJetIPQA();
     AliAnalysisTaskHFJetIPQA(const char *name);
@@ -107,6 +100,7 @@ public:
     AliAnalysisTaskHFJetIPQA& operator=(const AliAnalysisTaskHFJetIPQA&); // not implemented
     virtual ~AliAnalysisTaskHFJetIPQA(){;}
     virtual void   UserCreateOutputObjects();
+    virtual void   UserExecOnce();
     virtual void   Terminate(Option_t *option="");
     virtual Bool_t Run();
     virtual Bool_t IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits);
@@ -143,10 +137,6 @@ public:
         fProductionNumberPtHard = value;
     }
     void RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont);   //Based on AliAnalysisTaskEmcalQGTagging::RecursiveParents
-    void StoreDaughters(AliAODMCParticle* part, int kFirstMotherLabel);
-    int DoJetPartonMatching(const AliEmcalJet *jet, int partonlabel);
-    void DoFlavourVectorFill(int kJetOrigin, double partonpt, double jetpt, int kPartonsInJet, double deta);
-    int DoFlavourDecision();
     Bool_t IsParton(int pdg);
     Double_t CalculateJetProb(AliEmcalJet *jet);
     Double_t CalculatePSTrack(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass);
@@ -160,9 +150,22 @@ public:
     void setfDoFlavourMatching(Bool_t value){fDoFlavourMatching=value;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
-    void setIsPythia(int i=0){if(i==6)fPythia6=kTRUE;if(i==8)fPythia8=kTRUE;}
 
 
+    //JetTagging
+    enum TaggingType{
+          Full,
+          Single1st,
+          Single2nd,
+          Single3rd,
+          Double12,
+          Double23,
+          Triple,
+    };
+
+    void DoJetTaggingThreshold(double jetpt, bool* hasIPs, double* ipval, bool* kTagDec);
+    void SetThresholds(TObjArray* threshfirst, TObjArray* threshsec, TObjArray* threshthird);
+    void setTagLevel(int taglevel){kTagLevel=taglevel;}
 
     Bool_t IsTrackAcceptedJP(AliVTrack *track, Int_t n);
     bool IsFromElectron(AliAODTrack *track);
@@ -189,17 +192,10 @@ public:
         fGlobalVertex = value;
     }
 
-   void setDoNotCheckIsPhysicalPrimary(Bool_t value)
-    {
-        fDoNotCheckIsPhysicalPrimary = value;
-    }
-     void setDoJetProb(Bool_t value)
-    {
-        fDoJetProb = value;
-    }
-    void useTreeForCorrelations(Bool_t value){
-        fUseTreeForCorrelations = value;
-    }
+    void setDoNotCheckIsPhysicalPrimary(Bool_t value){fDoNotCheckIsPhysicalPrimary = value;}
+    void setDoJetProb(Bool_t value){fDoJetProb = value;}
+    void setDoLundPlane(Bool_t dolundplane){fDoLundPlane=dolundplane;}
+    void useTreeForCorrelations(Bool_t value){fUseTreeForCorrelations = value;}
     //virtual Bool_t IsEventSelected();
     void FillCorrelations(bool bn[3], double v[3], double jetpt);
     void setFFillCorrelations(const Bool_t &value);
@@ -210,19 +206,9 @@ public:
 
 protected:
     TH1D *fh1dTracksAccepeted; //!
-    TH1D *fh1dCuts; //!
-    TH2D *fh2dManifoldParton; //!
-    TH2D *fh2dLightNotContrib; //!
-    TH2D *fh2dCharmNotContrib; //!
-    TH2D *fh2dBottomNotContrib; //!
-    TH2D *fh2dLightNMatch; //!
-    TH2D *fh2dCharmNMatch; //!
-    TH2D *fh2dBottomNMatch; //!
-    TH2D *fh2dLightDeta; //!
-    TH2D *fh2dCharmDeta; //!
-    TH2D *fh2dBottomDeta; //!
+    TH1D* fh1dCuts;//!
 
-    THnSparse *fHLundIterative;//       iterative declustering
+    THnSparse *fHLundIterative;//!       iterative declustering
 
 
 private:
@@ -258,7 +244,6 @@ private:
     Bool_t IsPromptBMeson(AliVParticle * part );
     Double_t GetValImpactParameter(TTypeImpPar type, Double_t *impar, Double_t *cov);
     static Bool_t mysort(const SJetIpPati& i, const SJetIpPati& j);
-    static Bool_t myquarksort(const SQuarks& i, const SQuarks& j);
     Int_t IsMCJetPartonFast(const AliEmcalJet *jet,  Double_t radius,Bool_t &is_udg);
     Int_t GetRunNr(AliVEvent * event){return event->GetRunNumber();}
     Double_t GetPtCorrected(const AliEmcalJet* jet);
@@ -281,8 +266,6 @@ private:
     Bool_t   fDoMCCorrection;//  Bool to turn on/off MC correction. Take care: some histograms may still be influenced by weighting.
     Bool_t   fDoUnderlyingEventSub;//
     Bool_t   fDoFlavourMatching;//
-    Bool_t   fPythia6;//
-    Bool_t   fPythia8;//
 
     Bool_t   fFillCorrelations;//
     Double_t fParam_Smear_Sigma;//
@@ -290,6 +273,8 @@ private:
     Bool_t   fGlobalVertex;//
     Bool_t fDoNotCheckIsPhysicalPrimary;//
     Bool_t fDoJetProb;
+    Bool_t fDoLundPlane;
+
     TGraph * fGraphMean;//!
     TGraph * fGraphSigmaData;//!
     TGraph * fGraphSigmaMC;//!
@@ -302,6 +287,29 @@ private:
     TGraph * fGeant3FlukaLambda;//!
     TGraph * fGeant3FlukaAntiLambda;//!
     TGraph * fGeant3FlukaKMinus;//!
+
+    //Histograms for tagging
+    std::vector<TH1D*> h1DThresholdsFirst; //0-> single probability, 1-> double probability, 2-> tripple probability
+    std::vector<TH1D*> h1DThresholdsSecond; //
+    std::vector<TH1D*> h1DThresholdsThird;//
+    TH1D* h1DTrueBTagged;//!
+    TH1D* h1DTrueBTaggedSingle1st;//!
+    TH1D* h1DTrueBTaggedSingle2nd;//!
+    TH1D* h1DTrueBTaggedSingle3rd;//!
+    TH1D* h1DTrueBTaggedDouble12;//!
+    TH1D* h1DTrueBTaggedDouble23;//!
+    TH1D* h1DTrueBTaggedTripple;//!
+
+    TH1D* h1DFalseBTagged;//!
+    TH1D* h1DFalseBTaggedSingle1st;//!
+    TH1D* h1DFalseBTaggedSingle2nd;//!
+    TH1D* h1DFalseBTaggedSingle3rd;//!
+    TH1D* h1DFalseBTaggedDouble12;//!
+    TH1D* h1DFalseBTaggedDouble23;//!
+    TH1D* h1DFalseBTaggedTripple;//!
+
+    int kTagLevel; //1: accept single splittings, 2: accept only 2+3, 3: accept only 3
+
     //! \brief cCuts
     TCanvas *cCuts; //
     //! \brief fMCArray
@@ -316,8 +324,6 @@ private:
     std::vector <Double_t > fPCJet;//!
     std::vector <Double_t > fPBJet;//!
     std::vector <Double_t > fJetCont;//!
-    std::vector <SQuarks > fHardProcess;//!
-    std::vector <SQuarks > fQuarkVec;//!
     std::map<int, int> daughtermother;//!
 
     TGraph fResolutionFunction[200];//[200]<-
@@ -398,7 +404,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 35)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 39)
 };
 
 #endif

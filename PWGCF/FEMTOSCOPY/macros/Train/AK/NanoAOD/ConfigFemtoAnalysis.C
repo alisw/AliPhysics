@@ -140,7 +140,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int setMostProb2 = atoi(parameter[16]);
 	int setMostProb3 = atoi(parameter[17]);
 
-	Bool_t ifMonitors=kFALSE; //if(atoi(parameter[19]))ifMonitors=kTRUE;//kTRUE 
+	Bool_t ifMonitors=kTRUE; //if(atoi(parameter[19]))ifMonitors=kTRUE;//kTRUE 
 	Bool_t ifV0Monitors = kFALSE;//TRUE;
 	double nSigmaVal2 = atof(parameter[20]); //3.0 (or 2.0)
 
@@ -174,7 +174,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetFilterMask(filterbit);
 	Reader->SetCovMatPresent(false);
 	Reader->SetDCAglobalTrack(1); //false for FB7, true for the rest //we do not use DCA at all
-	Reader->SetUseMultiplicity("MultSelection.RefMult08");
+	Reader->SetUseMultiplicity("V0M");
 	
 
 	AliFemtoManager* Manager = new AliFemtoManager();

@@ -421,12 +421,12 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         hyp3r.fPosYPi  = pi->GetY();
         hyp3r.fPosZPi  = pi->GetZ();
 
-        hyp3r.fDCAxyDeu = dcaDecayDeu[0];
-        hyp3r.fDCAzDeu  = dcaDecayDeu[1];
-        hyp3r.fDCAxyP   = dcaDecayP[0];
-        hyp3r.fDCAzP    = dcaDecayP[1];
-        hyp3r.fDCAxyPi  = dcaDecayPi[0];
-        hyp3r.fDCAzPi   = dcaDecayPi[1];
+        hyp3r.fDCAxyDeu = std::abs(dcaDecayDeu[0]);
+        hyp3r.fDCAzDeu  = std::abs(dcaDecayDeu[1]);
+        hyp3r.fDCAxyP   = std::abs(dcaDecayP[0]);
+        hyp3r.fDCAzP    = std::abs(dcaDecayP[1]);
+        hyp3r.fDCAxyPi  = std::abs(dcaDecayPi[0]);
+        hyp3r.fDCAzPi   = std::abs(dcaDecayPi[1]);
 
         hyp3r.fNClusterTPCDeu = deu->GetTPCNcls();
         hyp3r.fNClusterTPCP   = p->GetTPCNcls();

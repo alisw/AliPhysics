@@ -535,7 +535,7 @@ void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
   histoEventSelection->Sumw2();
   fOutputList->Add(histoEventSelection);
 
-  histoEventMultiplicity = new TH2D("histoEventMultiplicity","Events vs multiplicity percentile (V0A)",10,0,100, 4,0,4);
+  histoEventMultiplicity = new TH2D("histoEventMultiplicity","Events vs multiplicity percentile (V0A)",1000,0,100, 4,0,4);
   histoEventMultiplicity->GetXaxis()->SetTitle("Multiplicity percentile");
   histoEventMultiplicity->GetYaxis()->SetTitle("trigger");
   histoEventMultiplicity->Sumw2();

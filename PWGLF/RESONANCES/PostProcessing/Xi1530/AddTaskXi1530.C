@@ -64,7 +64,13 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
         taskXi1530->SetExoticFinder(kTRUE);  // default: kFALSE
         std::cout << "AliAnaylsisTaskXi1530:: ExoticFinder mode " << std::endl;
     }
-    
+    if (foption.Contains("INEL")) {
+        taskXi1530->fEventCuts.fCentralityFramework = 0;
+        taskXi1530->fEventCuts.SelectOnlyInelGt0(false);
+        taskXi1530->SetINEL(kTRUE);  // default: kFALSE
+        std::cout << "AliAnaylsisTaskXi1530:: Inelastic mode " << std::endl;
+    }
+
     if(!taskXi1530) return 0x0;
     mgr->AddTask(taskXi1530);
     

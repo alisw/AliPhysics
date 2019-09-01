@@ -78,12 +78,11 @@ using namespace std;
 //
 
 
-//static const Double_t AliAnalysisTaskPPvsRT::fgkClight = 2.99792458e-2;
-static float Magf                    = 1;
-static const int nHists              = 4;
-static const int nRt                 = 5;
-static const int CentMin[nRt]   = {0,1,2,3,0};
-static const int CentMax[nRt]   = {1,2,3,10,10};
+static float Magf                = 1;
+static const int nHists          = 4;
+static const int nRt             = 5;
+static const double CentMin[nRt] = {0.0,0.5,1.5,2.5,0.0};
+static const double CentMax[nRt] = {0.5,1.5,2.5,5.0,5.0};
 
 ClassImp(AliAnalysisTaskPPvsRT)
 AliAnalysisTaskPPvsRT::AliAnalysisTaskPPvsRT():
@@ -105,6 +104,7 @@ fAnalysisMC(kFALSE),
 fAnalysisPbPb(kFALSE),
 fRandom(0x0),
 fVtxCut(0x0),
+fLeadingCut(5.0),
 fNcl(70),
 fEtaCut(0.9),
 cent(3),
@@ -146,11 +146,8 @@ fRT(0x0),
 fRTMC(0x0),
 fPtLVsRt(0x0),
 fPtLVsRtMC(0x0),
-//fEtaCalibrationNeg(0x0),
 fEtaCalibration(0x0),
 fEtaCalibrationEl(0x0),
-//felededxfitPos(0x0),
-//felededxfitNeg(0x0),
 fcutDCAxy(0x0),
 fcutLow(0x0),
 fcutHigh(0x0)
@@ -236,6 +233,7 @@ fAnalysisMC(kFALSE),
 fAnalysisPbPb(kFALSE),
 fRandom(0x0),
 fVtxCut(0x0),
+fLeadingCut(5.0),
 fNcl(70),
 fEtaCut(0.9),
 cent(3),
@@ -326,10 +324,10 @@ fcutHigh(0x0)
         }
         
     }
+
     for(Int_t j=0; j<nHists; ++j)
         hPtVsP[j]=0;
     
-    // Default constructor (should not be used)
     for(Int_t cent=0; cent<nRt; ++cent){
         for(Int_t pid=0; pid<7; ++pid){
             hMcIn[cent][pid]=0;
@@ -484,10 +482,10 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
  
   */
     
-    const Int_t nBinsRT = 80;
-    Double_t binsRT[nBinsRT+1] = {0};
+    const int nBinsRT = 80;
+    double binsRT[nBinsRT+1] = {0};
     
-    for(Int_t i = 0; i <= nBinsRT; ++i){
+    for(int i = 0; i <= nBinsRT; ++i){
         binsRT[i] = (double)(i-1)/8.0;
     }
     
@@ -533,68 +531,64 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
     for(Int_t i = 0; i<nRt; ++i){
         
         for(Int_t r = 0; r<3; ++r){
-            hMIPVsEta[r][i] = new TH2D(Form("hMIPVsEta_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #eta; dE/dx_{MIP, primary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
-            pMIPVsEta[r][i] = new TProfile(Form("pMIPVsEta_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #eta; #LT dE/dx #GT_{MIP, primary tracks}",50,-0.8,0.8, fDeDxMIPMin, fDeDxMIPMax);
-            hPtAll[r][i] = new TH1D(Form("hPt_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),";#it{p}_{T};Counts",nPtBins,ptBins);
+            hMIPVsEta[r][i] = new TH2D(Form("hMIPVsEta_%s_%.1f_%.1f",Region[r],CentMin[i],CentMax[i]),"; #eta; dE/dx_{MIP, primary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
+            pMIPVsEta[r][i] = new TProfile(Form("pMIPVsEta_%s_%.1f_%.1f",Region[r],CentMin[i],CentMax[i]),"; #eta; #LT dE/dx #GT_{MIP, primary tracks}",50,-0.8,0.8, fDeDxMIPMin, fDeDxMIPMax);
+            hPtAll[r][i] = new TH1D(Form("hPt_%s_%.1f_%.1f",Region[r],CentMin[i],CentMax[i]),";#it{p}_{T};Counts",nPtBins,ptBins);
             hPtAll[r][i]->Sumw2();
         }
         
-        hMIPVsEtaV0s[i] = new TH2D(Form("hMIPVsEtaV0s_%d_%d",CentMin[i],CentMax[i]),"; #eta; dE/dx_{MIP, secondary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
-        pMIPVsEtaV0s[i] = new TProfile(Form("pMIPVsEtaV0s_%d_%d",CentMin[i],CentMax[i]),"; #eta; #LT dE/dx #GT_{MIP, secondary tracks}",50,-0.8,0.8,fDeDxMIPMin, fDeDxMIPMax);
-        hPlateauVsEta[i] = new TH2D(Form("hPlateauVsEta_%d_%d",CentMin[i],CentMax[i]),"; #eta; dE/dx_{Plateau, primary tracks}",50,-0.8,0.8,50, 60, 110);
-        pPlateauVsEta[i] = new TProfile(Form("pPlateauVsEta_%d_%d",CentMin[i],CentMax[i]),"; #eta; #LT dE/dx #GT_{Plateau, primary tracks}",50,-0.8,0.8, 60, 110);
-        hPhi[i] = new TH2D(Form("histPhi_%d_%d",CentMin[i],CentMax[i]), ";pt; #phi'", nPtBinsV0s, ptBinsV0s, 90, -0.05, 0.4);
-        
-        
-        hDCAxyVsPtPi[i] = new TH2D(Form("hDCAxyVsPtPi_%d_%d",CentMin[i],CentMax[i]), "hDCAxyVsPtPi; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
-        hDCAxyVsPtPiC[i] = new TH2D(Form("hDCAxyVsPtPiC_%d_%d",CentMin[i],CentMax[i]), "hDCAxyVsPtPi Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
+        hMIPVsEtaV0s[i] = new TH2D(Form("hMIPVsEtaV0s_%.1f_%.1f",CentMin[i],CentMax[i]),"; #eta; dE/dx_{MIP, secondary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
+        pMIPVsEtaV0s[i] = new TProfile(Form("pMIPVsEtaV0s_%.1f_%.1f",CentMin[i],CentMax[i]),"; #eta; #LT dE/dx #GT_{MIP, secondary tracks}",50,-0.8,0.8,fDeDxMIPMin, fDeDxMIPMax);
+        hPlateauVsEta[i] = new TH2D(Form("hPlateauVsEta_%.1f_%.1f",CentMin[i],CentMax[i]),"; #eta; dE/dx_{Plateau, primary tracks}",50,-0.8,0.8,50, 60, 110);
+        pPlateauVsEta[i] = new TProfile(Form("pPlateauVsEta_%.1f_%.1f",CentMin[i],CentMax[i]),"; #eta; #LT dE/dx #GT_{Plateau, primary tracks}",50,-0.8,0.8, 60, 110);
+        hPhi[i] = new TH2D(Form("histPhi_%.1f_%.1f",CentMin[i],CentMax[i]), ";pt; #phi'", nPtBinsV0s, ptBinsV0s, 90, -0.05, 0.4);              
+        hDCAxyVsPtPi[i] = new TH2D(Form("hDCAxyVsPtPi_%.1f_%.1f",CentMin[i],CentMax[i]), "hDCAxyVsPtPi; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+        hDCAxyVsPtPiC[i] = new TH2D(Form("hDCAxyVsPtPiC_%.1f_%.1f",CentMin[i],CentMax[i]), "hDCAxyVsPtPi Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
         hDCAxyVsPtPi[i]->Sumw2();
-        hDCAxyVsPtPiC[i]->Sumw2();
-        
-        hDCAxyVsPtp[i] = new TH2D(Form("hDCAxyVsPtp_%d_%d",CentMin[i],CentMax[i]), "hDCAxyVsPtp; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
-        hDCAxyVsPtpC[i] = new TH2D(Form("hDCAxyVsPtpC_%d_%d",CentMin[i],CentMax[i]), "hDCAxyVsPtp Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
+        hDCAxyVsPtPiC[i]->Sumw2();        
+        hDCAxyVsPtp[i] = new TH2D(Form("hDCAxyVsPtp_%.1f_%.1f",CentMin[i],CentMax[i]), "hDCAxyVsPtp; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+        hDCAxyVsPtpC[i] = new TH2D(Form("hDCAxyVsPtpC_%.1f_%.1f",CentMin[i],CentMax[i]), "hDCAxyVsPtp Close; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
         hDCAxyVsPtp[i]->Sumw2();
         hDCAxyVsPtpC[i]->Sumw2();
         
         for(Int_t j=0; j<nHists; j++) {
-            
-            
+                        
             for(Int_t r = 0; r<3; ++r){
-                hDeDxVsP[r][i][j] = new TH2D( Form("hDeDxVsP_%s_%d_%d_%s",Region[r],CentMin[i],CentMax[i],ending[j]), ";#it{p} [GeV/c]; dE/dx", nPtBins, ptBins, fdEdxHigh-fdEdxLow, fdEdxLow, fdEdxHigh);
+                hDeDxVsP[r][i][j] = new TH2D( Form("hDeDxVsP_%s_%.1f_%.1f_%s",Region[r],CentMin[i],CentMax[i],ending[j]), ";#it{p} [GeV/c]; dE/dx", nPtBins, ptBins, fdEdxHigh-fdEdxLow, fdEdxLow, fdEdxHigh);
                 hDeDxVsP[r][i][j]->Sumw2();
             }
             
-            hnSigmaPi[i][j] = new TH2D(Form("hnSigmaPi_%d_%d_%s",CentMin[i],CentMax[i],ending[j]), ";#it{p}_{T};nSigmaPi", nPtBins, ptBins, 40, -10, 10);
+            hnSigmaPi[i][j] = new TH2D(Form("hnSigmaPi_%.1f_%.1f_%s",CentMin[i],CentMax[i],ending[j]), ";#it{p}_{T};nSigmaPi", nPtBins, ptBins, 40, -10, 10);
             hnSigmaPi[i][j]->Sumw2();
             
-            hnSigmak[i][j] = new TH2D(Form("hnSigmak_%d_%d_%s",CentMin[i],CentMax[i],ending[j]), ";#it{p}_{T};nSigmak", nPtBins, ptBins, 40, -10, 10);
+            hnSigmak[i][j] = new TH2D(Form("hnSigmak_%.1f_%.1f_%s",CentMin[i],CentMax[i],ending[j]), ";#it{p}_{T};nSigmak", nPtBins, ptBins, 40, -10, 10);
             hnSigmak[i][j]->Sumw2();
             
-            hnSigmap[i][j] = new TH2D(Form("hnSigmap_%d_%d_%s",CentMin[i],CentMax[i],ending[j]), ";#it{p}_{T};nSigmap", nPtBins, ptBins, 40, -10, 10);
+            hnSigmap[i][j] = new TH2D(Form("hnSigmap_%.1f_%.1f_%s",CentMin[i],CentMax[i],ending[j]), ";#it{p}_{T};nSigmap", nPtBins, ptBins, 40, -10, 10);
             hnSigmap[i][j]->Sumw2();
             
-            hMIPVsPhi[i][j] = new TH2D(Form("hMIPVsPhi_%d_%d_%s",CentMin[i],CentMax[i],ending[j]), Form("%s; #phi (rad); dE/dx MIP",LatexEta[j]), nPhiBins, 0, 2*TMath::Pi(),fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
+            hMIPVsPhi[i][j] = new TH2D(Form("hMIPVsPhi_%.1f_%.1f_%s",CentMin[i],CentMax[i],ending[j]), Form("%s; #phi (rad); dE/dx MIP",LatexEta[j]), nPhiBins, 0, 2*TMath::Pi(),fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
             hMIPVsPhi[i][j]->Sumw2();
             
-            pMIPVsPhi[i][j] = new TProfile(Form("pMIPVsPhi_%d_%d_%s",CentMin[i],CentMax[i],ending[j]), Form("%s; #phi (rad); dE/dx MIP",LatexEta[j]),  nPhiBins, 0, 2*TMath::Pi(),fDeDxMIPMin, fDeDxMIPMax);
+            pMIPVsPhi[i][j] = new TProfile(Form("pMIPVsPhi_%.1f_%.1f_%s",CentMin[i],CentMax[i],ending[j]), Form("%s; #phi (rad); dE/dx MIP",LatexEta[j]),  nPhiBins, 0, 2*TMath::Pi(),fDeDxMIPMin, fDeDxMIPMax);
             pMIPVsPhi[i][j]->Sumw2();
             
-            hPlateauVsPhi[i][j] = new TH2D(Form("hPlateauVsPhi_%d_%d_%s",CentMin[i],CentMax[i],ending[j]),Form("%s; #phi (rad); dE/dx Plateau",LatexEta[j]), nPhiBins, 0, 2*TMath::Pi(),20, 70, 90);
+            hPlateauVsPhi[i][j] = new TH2D(Form("hPlateauVsPhi_%.1f_%.1f_%s",CentMin[i],CentMax[i],ending[j]),Form("%s; #phi (rad); dE/dx Plateau",LatexEta[j]), nPhiBins, 0, 2*TMath::Pi(),20, 70, 90);
             hPlateauVsPhi[i][j]->Sumw2();
             
-            pPlateauVsPhi[i][j] = new TProfile(Form("pPlateauVsPhi_%d_%d_%s",CentMin[i],CentMax[i],ending[j]), Form("%s; #phi (rad); dE/dx Plateau",LatexEta[j]), nPhiBins, 0, 2*TMath::Pi(),fDeDxMIPMax, 95);
+            pPlateauVsPhi[i][j] = new TProfile(Form("pPlateauVsPhi_%.1f_%.1f_%s",CentMin[i],CentMax[i],ending[j]), Form("%s; #phi (rad); dE/dx Plateau",LatexEta[j]), nPhiBins, 0, 2*TMath::Pi(),fDeDxMIPMax, 95);
             pPlateauVsPhi[i][j]->Sumw2();
             
-            histPiV0[i][j] = new TH2D(Form("hPiV0_%d_%d_%s",CentMin[i],CentMax[i],ending[j]), "Pions id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
+            histPiV0[i][j] = new TH2D(Form("hPiV0_%.1f_%.1f_%s",CentMin[i],CentMax[i],ending[j]), "Pions id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
             histPiV0[i][j]->Sumw2();
             
-            histPV0[i][j] = new TH2D(Form("hPV0_%d_%d_%s",CentMin[i],CentMax[i],ending[j]), "Protons id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
+            histPV0[i][j] = new TH2D(Form("hPV0_%.1f_%.1f_%s",CentMin[i],CentMax[i],ending[j]), "Protons id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
             histPV0[i][j]->Sumw2();
             
-            histPiTof[i][j] = new TH2D(Form("hPiTOF_%d_%d_%s",CentMin[i],CentMax[i],ending[j]), "Primary Pions from TOF; #it{p} (GeV/#it{c}); d#it{e}d#it{x}", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
+            histPiTof[i][j] = new TH2D(Form("hPiTOF_%.1f_%.1f_%s",CentMin[i],CentMax[i],ending[j]), "Primary Pions from TOF; #it{p} (GeV/#it{c}); d#it{e}d#it{x}", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
             histPiTof[i][j]->Sumw2();
             
-            histEV0[i][j] = new TH2D(Form("hEV0_%d_%d_%s",CentMin[i],CentMax[i],ending[j]), "Electrons id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
+            histEV0[i][j] = new TH2D(Form("hEV0_%.1f_%.1f_%s",CentMin[i],CentMax[i],ending[j]), "Electrons id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
             histEV0[i][j]->Sumw2();
             
         }// eta loop
@@ -660,15 +654,10 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
     else{
         for(Int_t cent=0; cent<nRt; cent++) {
             for(Int_t pid=0; pid<7; pid++) {
-                hMcIn[cent][pid] = new TH1D(Form("hIn_%s_%d_%d",Pid[pid],CentMin[cent],CentMax[cent]), Form("MC in (pid %s)", Pid[pid]),nPtBins,ptBins);
+                hMcIn[cent][pid] = new TH1D(Form("hIn_%s_%.1f_%.1f",Pid[pid],CentMin[cent],CentMax[cent]), Form("MC in (pid %s)", Pid[pid]),nPtBins,ptBins);
                 hMcIn[cent][pid]->Sumw2();
-                hMcOut[cent][pid] = new TH1D(Form("hMcOut_%s_%d_%d",Pid[pid],CentMin[cent],CentMax[cent]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
+                hMcOut[cent][pid] = new TH1D(Form("hMcOut_%s_%.1f_%.1f",Pid[pid],CentMin[cent],CentMax[cent]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
                 hMcOut[cent][pid]->Sumw2();
-                //            }	// pid Eff
-                //        }	// cent Eff
-                
-                //        for(Int_t i_cent=0; i_cent<nRt; ++i_cent){
-                //            for(Int_t pid=0; pid<7; ++pid){
                 hDCApTPrim[cent][pid] = 0;
                 hDCApTPrim[cent][pid] = new TH2D(Form("hDCA_%s_Prim_%d",Pid[pid],cent),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
                 hDCApTPrim[cent][pid]->Sumw2();
@@ -846,7 +835,9 @@ void AliAnalysisTaskPPvsRT::UserExec(Option_t *)
         fRT->Fill(Rt);
         fPtLVsRt->Fill(LeadingTrack->Pt(),Rt);
         
-        Int_t BinRT = GetBinRT(listTrans);
+        int BinRT = GetBinRT(listTrans);
+	if(BinRT < 0)
+		return;
         ProduceArrayTrksESD(0,listToward,BinRT);
         ProduceArrayTrksESD(1,listAway,BinRT);
         ProduceArrayTrksESD(2,listTrans,BinRT);
@@ -948,7 +939,7 @@ AliESDtrack* AliAnalysisTaskPPvsRT::GetLeadingTrack(){
     PtTrks = 0x0;
     fTrks = 0x0;
     
-    if(LeadingTrk->Pt() < 5.0)
+    if(LeadingTrk->Pt() < fLeadingCut)
         return 0x0;
     
     else
@@ -988,7 +979,7 @@ TParticle* AliAnalysisTaskPPvsRT::GetLeadingTrackMC(TObjArray* TrksArray){
             LeadingTrk = (TParticle*)(TrksArray->At(it));
     }
     
-    if(LeadingTrk->Pt() < 5.0)
+    if(LeadingTrk->Pt() < fLeadingCut)
         return 0x0;
     
     else
@@ -1157,21 +1148,24 @@ Double_t AliAnalysisTaskPPvsRT::DeltaPhi(Double_t phi, Double_t Lphi,
     return dphi;
 }
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPPvsRT::GetBinRT(TList* listT){
+int AliAnalysisTaskPPvsRT::GetBinRT(TList* listT){
     
     double rt = -999.0;
     rt = (double)listT->GetEntries()/fMeanChT;
+     int r = -10;
     
-    if(rt < 1.0)
-        rt = 0;
-    else if(rt >= 1.0 && rt < 2.0)
-        rt = 1;
-    else if(rt >= 2.0 && rt < 3.0)
-        rt = 2;
+    if(rt < 0.5)
+        r = 0;
+    else if(rt >= 0.5 && rt < 1.5)
+        r = 1;
+    else if(rt >= 1.5 && rt < 2.5)
+        r = 2;
+    else if(rt >= 2.5 && rt < 5.0)
+        r = 3;
     else
-        rt = 3;
+        r = -10;
     
-    return rt;
+    return r;
 }
 //_____________________________________________________________________________
 Short_t AliAnalysisTaskPPvsRT::GetPidCode(Int_t pdgCode) const
@@ -1254,7 +1248,6 @@ void AliAnalysisTaskPPvsRT::ProcessMCTruthESD()
     
     Int_t BinRT = GetBinRT(listTrans);
     
-    
     for (Int_t iTracks = 0; iTracks < listTrans->GetEntries(); iTracks++) {
         
         TParticle* trackMC = (TParticle*)listTrans->At(iTracks);
@@ -1266,10 +1259,9 @@ void AliAnalysisTaskPPvsRT::ProcessMCTruthESD()
         pidCodeMC = GetPidCode(pdgCode);
         
         hMcIn[BinRT][0]->Fill(trackMC->Pt());
+        hMcIn[5][0]->Fill(trackMC->Pt());
         hMcIn[BinRT][pidCodeMC]->Fill(trackMC->Pt());
-        
-        hMcIn[4][0]->Fill(trackMC->Pt());
-        hMcIn[4][pidCodeMC]->Fill(trackMC->Pt());
+        hMcIn[5][pidCodeMC]->Fill(trackMC->Pt());
         
     }//MC track loop
     
@@ -1336,8 +1328,8 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int& region, TList *lt, co
                 if( fMCStack->IsPhysicalPrimary(label) ){
                     if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
                         hMcOut[Cent][0]->Fill(esdTrack->Pt());
-                        hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
                         hMcOut[4][0]->Fill(esdTrack->Pt());
+                        hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
                         hMcOut[4][pidCode]->Fill(esdTrack->Pt());
                     }
                     
@@ -1399,15 +1391,15 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int& region, TList *lt, co
             if( momentum <= 0.6 && momentum >= 0.4 ){//only p:0.4-0.6 GeV, pion MIP
                 if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
                     hMIPVsEta[region][Cent]->Fill(eta,dedxUnc);
-                    pMIPVsEta[region][Cent]->Fill(eta,dedxUnc);
                     hMIPVsEta[region][4]->Fill(eta,dedxUnc);
+                    pMIPVsEta[region][Cent]->Fill(eta,dedxUnc);
                     pMIPVsEta[region][4]->Fill(eta,dedxUnc);
                 }
                 if( dedxUnc > 70 && dedxUnc < 90 ){
                     if(TMath::Abs(beta-1)<0.1){
                         hPlateauVsEta[Cent]->Fill(eta,dedxUnc);
-                        pPlateauVsEta[Cent]->Fill(eta,dedxUnc);
                         hPlateauVsEta[4]->Fill(eta,dedxUnc);
+                        pPlateauVsEta[Cent]->Fill(eta,dedxUnc);
                         pPlateauVsEta[4]->Fill(eta,dedxUnc);
                     }
                 }
@@ -1417,15 +1409,15 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int& region, TList *lt, co
             if( momentum <= 0.6 && momentum >= 0.4 ){//only p:0.4-0.6 GeV, pion MIP
                 if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
                     hMIPVsEta[region][Cent]->Fill(eta,dedx);
-                    pMIPVsEta[region][Cent]->Fill(eta,dedx);
                     hMIPVsEta[region][4]->Fill(eta,dedx);
+                    pMIPVsEta[region][Cent]->Fill(eta,dedx);
                     pMIPVsEta[region][4]->Fill(eta,dedx);
                 }
                 if( dedxUnc > 70 && dedxUnc < 90 ){
                     if(TMath::Abs(beta-1)<0.1){
                         hPlateauVsEta[Cent]->Fill(eta,dedx);
-                        pPlateauVsEta[Cent]->Fill(eta,dedx);
                         hPlateauVsEta[4]->Fill(eta,dedx);
+                        pPlateauVsEta[Cent]->Fill(eta,dedx);
                         pPlateauVsEta[4]->Fill(eta,dedx);
                     }
                 }
@@ -1456,15 +1448,15 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int& region, TList *lt, co
         if( momentum <= 0.6 && momentum >= 0.4  ){
             if( dedx < fDeDxMIPMax && dedx > fDeDxMIPMin ){
                 hMIPVsPhi[Cent][nh]->Fill(phi,dedx);
-                pMIPVsPhi[Cent][nh]->Fill(phi,dedx);
                 hMIPVsPhi[4][nh]->Fill(phi,dedx);
+                pMIPVsPhi[Cent][nh]->Fill(phi,dedx);
                 pMIPVsPhi[4][nh]->Fill(phi,dedx);
             }
             if( dedx > 70 && dedx < 90 ){
                 if(TMath::Abs(beta-1)<0.1){
                     hPlateauVsPhi[Cent][nh]->Fill(phi,dedx);
-                    pPlateauVsPhi[Cent][nh]->Fill(phi,dedx);
                     hPlateauVsPhi[4][nh]->Fill(phi,dedx);
+                    pPlateauVsPhi[Cent][nh]->Fill(phi,dedx);
                     pPlateauVsPhi[4][nh]->Fill(phi,dedx);
                 }
             }
@@ -1701,8 +1693,8 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const int&
                             if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
                                 if(momentum<0.6&&momentum>0.4){
                                     hMIPVsEtaV0s[Cent]->Fill(eta,dedx);
-                                    pMIPVsEtaV0s[Cent]->Fill(eta,dedx);
                                     hMIPVsEtaV0s[4]->Fill(eta,dedx);
+                                    pMIPVsEtaV0s[Cent]->Fill(eta,dedx);
                                     pMIPVsEtaV0s[4]->Fill(eta,dedx);
                                 }
                             }

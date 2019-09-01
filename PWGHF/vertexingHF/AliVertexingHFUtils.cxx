@@ -508,7 +508,7 @@ Double_t AliVertexingHFUtils::GetCorrectedNtracklets(TProfile* estimatorAvg, Dou
 
   Double_t deltaM = uncorrectedNacc*(refMult/localAvg - 1);
 
-  Double_t correctedNacc = uncorrectedNacc + (deltaM>0 ? 1 : -1) * gRandom->Poisson(TMath::Abs(deltaM));
+  Double_t correctedNacc = std::max(0., uncorrectedNacc + (deltaM>0 ? 1 : -1) * gRandom->Poisson(TMath::Abs(deltaM)));
 
   return correctedNacc;
 }
@@ -2347,29 +2347,29 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int
       if(nResDau!=2) return -1;
       Int_t indFirstResDau=mcDau->GetDaughterFirst();
       for(Int_t resDau=0; resDau<2; resDau++){
-	Int_t indResDau=indFirstResDau+resDau;
-	if(indResDau<0) return -1;
-	TParticle* resdau=mcEvent->Particle(indResDau);
-	if(!resdau) return -1;
-	Int_t pdgresdau=resdau->GetPdgCode();
-	if(TMath::Abs(pdgresdau)==321){
-	  if(pdgD*pdgresdau<0) return -1;
-	  sumPxDau+=resdau->Px();
-	  sumPyDau+=resdau->Py();
-	  sumPzDau+=resdau->Pz();
-	  nKaons++;
-	  arrayDauLab[nFoundKpi++]=indResDau;
-	  if(nFoundKpi>3) return -1;
-	}
-	if(TMath::Abs(pdgresdau)==211){
-	  if(pdgD*pdgresdau>0) return -1;
-	  sumPxDau+=resdau->Px();
-	  sumPyDau+=resdau->Py();
-	  sumPzDau+=resdau->Pz();
-	  nPions++;
-	  arrayDauLab[nFoundKpi++]=indResDau;
-	  if(nFoundKpi>3) return -1;
-	}
+        Int_t indResDau=indFirstResDau+resDau;
+        if(indResDau<0) return -1;
+        TParticle* resdau=mcEvent->Particle(indResDau);
+        if(!resdau) return -1;
+        Int_t pdgresdau=resdau->GetPdgCode();
+        if(TMath::Abs(pdgresdau)==321){
+          if(pdgD*pdgresdau<0) return -1;
+          sumPxDau+=resdau->Px();
+          sumPyDau+=resdau->Py();
+          sumPzDau+=resdau->Pz();
+          nKaons++;
+          arrayDauLab[nFoundKpi++]=indResDau;
+          if(nFoundKpi>3) return -1;
+        }
+        if(TMath::Abs(pdgresdau)==211){
+          if(pdgD*pdgresdau>0) return -1;
+          sumPxDau+=resdau->Px();
+          sumPyDau+=resdau->Py();
+          sumPzDau+=resdau->Pz();
+          nPions++;
+          arrayDauLab[nFoundKpi++]=indResDau;
+          if(nFoundKpi>3) return -1;
+        }
       }
     }else if(TMath::Abs(pdgdau)==211){
       if(pdgD*pdgdau<0) return -1;
@@ -2384,6 +2384,10 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int
 
   if(nPions!=2) return -1;
   if(nKaons!=1) return -1;
+  //Temp fix for not conserving momentum in ITS upgrade productions
+  if(TMath::Abs(part->Px()-sumPxDau)<0.1) return 1;
+  if(TMath::Abs(part->Py()-sumPyDau)<0.1) return 1;
+  if(TMath::Abs(part->Pz()-sumPzDau)<0.1) return 1;
   if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
   if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
   if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
@@ -2419,29 +2423,29 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(TClonesArray* arrayMC, AliAODMCPartic
       if(nResDau!=2) return -1;
       Int_t indFirstResDau=dau->GetDaughterLabel(0);
       for(Int_t resDau=0; resDau<2; resDau++){
-	Int_t indResDau=indFirstResDau+resDau;
-	if(indResDau<0) return -1;
-	AliAODMCParticle* resdau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indResDau));
-	if(!resdau) return -1;
-	Int_t pdgresdau=resdau->GetPdgCode();
-	if(TMath::Abs(pdgresdau)==321){
-	  if(pdgD*pdgresdau<0) return -1;
-	  sumPxDau+=resdau->Px();
-	  sumPyDau+=resdau->Py();
-	  sumPzDau+=resdau->Pz();
-	  nKaons++;
-	  arrayDauLab[nFoundKpi++]=indResDau;
-	  if(nFoundKpi>3) return -1;
-	}
-	if(TMath::Abs(pdgresdau)==211){
-	  if(pdgD*pdgresdau>0) return -1;
-	  sumPxDau+=resdau->Px();
-	  sumPyDau+=resdau->Py();
-	  sumPzDau+=resdau->Pz();
-	  nPions++;
-	  arrayDauLab[nFoundKpi++]=indResDau;
-	  if(nFoundKpi>3) return -1;
-	}
+        Int_t indResDau=indFirstResDau+resDau;
+        if(indResDau<0) return -1;
+        AliAODMCParticle* resdau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indResDau));
+        if(!resdau) return -1;
+        Int_t pdgresdau=resdau->GetPdgCode();
+        if(TMath::Abs(pdgresdau)==321){
+          if(pdgD*pdgresdau<0) return -1;
+          sumPxDau+=resdau->Px();
+          sumPyDau+=resdau->Py();
+          sumPzDau+=resdau->Pz();
+          nKaons++;
+          arrayDauLab[nFoundKpi++]=indResDau;
+          if(nFoundKpi>3) return -1;
+        }
+        if(TMath::Abs(pdgresdau)==211){
+          if(pdgD*pdgresdau>0) return -1;
+          sumPxDau+=resdau->Px();
+          sumPyDau+=resdau->Py();
+          sumPzDau+=resdau->Pz();
+          nPions++;
+          arrayDauLab[nFoundKpi++]=indResDau;
+          if(nFoundKpi>3) return -1;
+        }
       }
     }else if(TMath::Abs(pdgdau)==211){
       if(pdgD*pdgdau<0) return -1;
@@ -2456,11 +2460,363 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(TClonesArray* arrayMC, AliAODMCPartic
 
   if(nPions!=2) return -1;
   if(nKaons!=1) return -1;
+  //Temp fix for not conserving momentum in ITS upgrade productions
+  if(TMath::Abs(mcPart->Px()-sumPxDau)<0.1) return 1;
+  if(TMath::Abs(mcPart->Py()-sumPyDau)<0.1) return 1;
+  if(TMath::Abs(mcPart->Pz()-sumPzDau)<0.1) return 1;
   if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
   if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
   if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
   return 1;
 
+}
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
+  /// Checks the Bs decay channel. Returns >= 1 for Bs->Dspi->KKpipi, <0 in other cases
+  /// Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
+  
+  if(label<0) return -1;
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
+  if(TMath::Abs(pdgD)!=531) return -1;
+  
+  Int_t nDau=mcPart->GetNDaughters();
+  if(nDau!=2) return -1;
+  
+  Int_t labelFirstDau = mcPart->GetDaughterFirst();
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundKpi=0;
+  Int_t decayBs = -1;
+  
+  for(Int_t iDau=0; iDau<nDau; iDau++){
+    Int_t indDau = labelFirstDau+iDau;
+    if(indDau<0) return -1;
+    TParticle* dau=mcEvent->Particle(indDau);
+    if(!dau) return -1;
+    Int_t pdgdau=dau->GetPdgCode();
+    if(TMath::Abs(pdgdau)==431){
+      //Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
+      Int_t labDauDs[3] = {-1,-1,-1};
+      Int_t decayDs = CheckDsDecay(mcEvent, indDau, labDauDs);
+      
+      //Temp fix for not conserving momentum in ITS upgrade productions
+      if(decayDs==-2){
+        AliMCParticle* mcDs = (AliMCParticle*)mcEvent->GetTrack(indDau);
+        Int_t labelFirstDauDs = mcDs->GetDaughterFirst();
+        if(mcDs->GetNDaughters() > 1){
+          TParticle* dauDs1 = mcEvent->Particle(labelFirstDauDs);
+          TParticle* dauDs2 = mcEvent->Particle(labelFirstDauDs+1);
+          if(dauDs1 && dauDs2){
+            Int_t pdgdauDs1=dauDs1->GetPdgCode();
+            Int_t pdgdauDs2=dauDs2->GetPdgCode();
+            if(TMath::Abs(pdgdauDs1)==313 || TMath::Abs(pdgdauDs2)==313) decayDs=2;
+            else if(TMath::Abs(pdgdauDs1)==333 || TMath::Abs(pdgdauDs2)==333) decayDs=1;
+            else if(TMath::Abs(pdgdauDs1)==9010221 || TMath::Abs(pdgdauDs2)==9010221) decayDs=4;
+            else decayDs=3;
+          }
+        }
+      }
+      
+      if (decayDs < 0 || labDauDs[0] == -1) return -1;
+      decayBs = decayDs;
+      nPions++;
+      nKaons+=2;
+      for(Int_t iDs = 0; iDs < 3; iDs++){
+        TParticle* dauDs=mcEvent->Particle(labDauDs[iDs]);
+        sumPxDau+=dauDs->Px();
+        sumPyDau+=dauDs->Py();
+        sumPzDau+=dauDs->Pz();
+        arrayDauLab[nFoundKpi++]=labDauDs[iDs];
+      }
+      if(nFoundKpi>4) return -1;
+    }else if(TMath::Abs(pdgdau)==211){
+      //Temp fix for Bs->Ds+pi- and Bs->Ds-pi+ decays in ITS upgrade productions
+      //if(pdgD*pdgdau>0) return -1;
+      nPions++;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      arrayDauLab[nFoundKpi++]=indDau;
+      if(nFoundKpi>4) return -1;
+    }
+  }
+  
+  if(nPions!=2) return -1;
+  if(nKaons!=2) return -1;
+  //Temp fix for not conserving momentum in ITS upgrade productions
+  if(TMath::Abs(part->Px()-sumPxDau)<0.1) return decayBs;
+  if(TMath::Abs(part->Py()-sumPyDau)<0.1) return decayBs;
+  if(TMath::Abs(part->Pz()-sumPzDau)<0.1) return decayBs;
+  if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+  if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+  if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
+  return decayBs;
+}
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+  /// Checks the Bs decay channel. Returns >= 1 for Bs->Dspi->KKpipi, <0 in other cases
+  /// Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
+  
+  Int_t pdgD=mcPart->GetPdgCode();
+  if(TMath::Abs(pdgD)!=531) return -1;
+  
+  Int_t nDau=mcPart->GetNDaughters();
+  if(nDau!=2) return -1;
+  
+  Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundKpi=0;
+  Int_t decayBs = -1;
+  
+  for(Int_t iDau=0; iDau<nDau; iDau++){
+    Int_t indDau = labelFirstDau+iDau;
+    if(indDau<0) return -1;
+    AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
+    if(!dau) return -1;
+    Int_t pdgdau=dau->GetPdgCode();
+    if(TMath::Abs(pdgdau)==431){
+      //Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
+      Int_t labDauDs[3] = {-1,-1,-1};
+      Int_t decayDs = CheckDsDecay(arrayMC, dau, labDauDs);
+      
+      //Temp fix for not conserving momentum in ITS upgrade productions
+      if(decayDs==-2){
+        Int_t labelFirstDauDs = dau->GetDaughterLabel(0);
+        if(dau->GetNDaughters() > 1){
+          AliAODMCParticle* dauDs1=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labelFirstDauDs));
+          AliAODMCParticle* dauDs2=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labelFirstDauDs+1));
+          if(dauDs1 && dauDs2){
+            Int_t pdgdauDs1=dauDs1->GetPdgCode();
+            Int_t pdgdauDs2=dauDs2->GetPdgCode();
+            if(TMath::Abs(pdgdauDs1)==313 || TMath::Abs(pdgdauDs2)==313) decayDs=2;
+            else if(TMath::Abs(pdgdauDs1)==333 || TMath::Abs(pdgdauDs2)==333) decayDs=1;
+            else if(TMath::Abs(pdgdauDs1)==9010221 || TMath::Abs(pdgdauDs2)==9010221) decayDs=4;
+            else decayDs=3;
+          }
+        }
+      }
+      
+      if (decayDs < 0 || labDauDs[0] == -1) return -1;
+      decayBs = decayDs;
+      nPions++;
+      nKaons+=2;
+      for(Int_t iDs = 0; iDs < 3; iDs++){
+        AliAODMCParticle* dauDs=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDs[iDs]));
+        sumPxDau+=dauDs->Px();
+        sumPyDau+=dauDs->Py();
+        sumPzDau+=dauDs->Pz();
+        arrayDauLab[nFoundKpi++]=labDauDs[iDs];
+      }
+      if(nFoundKpi>4) return -1;
+    }else if(TMath::Abs(pdgdau)==211){
+      //Temp fix for Bs->Ds+pi- and Bs->Ds-pi+ decays in ITS upgrade productions
+      //if(pdgD*pdgdau>0) return -1;
+      nPions++;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      arrayDauLab[nFoundKpi++]=indDau;
+      if(nFoundKpi>4) return -1;
+    }
+  }
+  
+  if(nPions!=2) return -1;
+  if(nKaons!=2) return -1;
+  //Temp fix for not conserving momentum in ITS upgrade productions
+  if(TMath::Abs(mcPart->Px()-sumPxDau)<0.1) return decayBs;
+  if(TMath::Abs(mcPart->Py()-sumPyDau)<0.1) return decayBs;
+  if(TMath::Abs(mcPart->Pz()-sumPzDau)<0.1) return decayBs;
+  if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
+  if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
+  if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+  return decayBs;
+}
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckLbDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
+  /// Checks the Lb decay channel. Returns >= 1 for Lb->Lcpi->pKpipi, <0 in other cases
+  /// Returns 1 for non-resonant Lc decays and 2, 3 or 4 for resonant ones, -1 in other cases
+  
+  if(label<0) return -1;
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
+  if(TMath::Abs(pdgD)!=5122) return -1;
+  
+  Int_t nDau=mcPart->GetNDaughters();
+  if(nDau!=2) return -1;
+  
+  Int_t labelFirstDau = mcPart->GetDaughterFirst();
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Int_t nProtons=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundpKpi=0;
+  Int_t decayLb = -1;
+  
+  for(Int_t iDau=0; iDau<nDau; iDau++){
+    Int_t indDau = labelFirstDau+iDau;
+    if(indDau<0) return -1;
+    TParticle* dau=mcEvent->Particle(indDau);
+    if(!dau) return -1;
+    Int_t pdgdau=dau->GetPdgCode();
+    if(TMath::Abs(pdgdau)==4122){
+      Int_t labDauLc[3] = {-1,-1,-1};
+      //Returns 1 for non-resonant decays and 2, 3 or 4 for resonant ones, -1 in other cases
+      Int_t decayLc = CheckLcpKpiDecay(mcEvent, indDau, labDauLc);
+      
+      //Temp fix for not conserving momentum in ITS upgrade productions
+      if(decayLc==-2){
+        AliMCParticle* mcLc = (AliMCParticle*)mcEvent->GetTrack(indDau);
+        Int_t labelFirstDauLc = mcLc->GetDaughterFirst();
+        if(mcLc->GetNDaughters() > 1){
+          TParticle* dauLc1 = mcEvent->Particle(labelFirstDauLc);
+          TParticle* dauLc2 = mcEvent->Particle(labelFirstDauLc+1);
+          if(dauLc1 && dauLc2){
+            Int_t pdgdauLc1=dauLc1->GetPdgCode();
+            Int_t pdgdauLc2=dauLc2->GetPdgCode();
+            if(TMath::Abs(pdgdauLc1)==313 || TMath::Abs(pdgdauLc2)==313) decayLc=2;
+            else if(TMath::Abs(pdgdauLc1)==2224 || TMath::Abs(pdgdauLc2)==2224) decayLc=3;
+            else if(TMath::Abs(pdgdauLc1)==3124 || TMath::Abs(pdgdauLc2)==3124) decayLc=4;
+            else decayLc=1;
+          }
+        }
+      }
+      
+      if (decayLc < 0 || labDauLc[0] == -1) return -1;
+      decayLb = decayLc;
+      nProtons++;
+      nKaons++;
+      nPions++;
+      for(Int_t iLc = 0; iLc < 3; iLc++){
+        TParticle* dauLc=mcEvent->Particle(labDauLc[iLc]);
+        sumPxDau+=dauLc->Px();
+        sumPyDau+=dauLc->Py();
+        sumPzDau+=dauLc->Pz();
+        arrayDauLab[nFoundpKpi++]=labDauLc[iLc];
+      }
+      if(nFoundpKpi>4) return -1;
+    }else if(TMath::Abs(pdgdau)==211){
+      //Temp fix for Lb->Lc+pi- and Lb->Lc-pi+ decays in ITS upgrade productions
+      //if(pdgD*pdgdau>0) return -1;
+      nPions++;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      arrayDauLab[nFoundpKpi++]=indDau;
+      if(nFoundpKpi>4) return -1;
+    }
+  }
+  
+  if(nProtons!=1) return -1;
+  if(nKaons!=1) return -1;
+  if(nPions!=2) return -1;
+  //Temp fix for not conserving momentum in ITS upgrade productions
+  if(TMath::Abs(part->Px()-sumPxDau)<0.1) return decayLb;
+  if(TMath::Abs(part->Py()-sumPyDau)<0.1) return decayLb;
+  if(TMath::Abs(part->Pz()-sumPzDau)<0.1) return decayLb;
+  if(TMath::Abs(part->Px()-sumPxDau)>0.001) return -2;
+  if(TMath::Abs(part->Py()-sumPyDau)>0.001) return -2;
+  if(TMath::Abs(part->Pz()-sumPzDau)>0.001) return -2;
+  return decayLb;
+}
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckLbDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+  /// Checks the Lb decay channel. Returns >= 1 for Lb->Lcpi->pKpipi, <0 in other cases
+  /// Returns 1 for non-resonant Lc decays and 2, 3 or 4 for resonant ones, -1 in other cases
+  
+  Int_t pdgD=mcPart->GetPdgCode();
+  if(TMath::Abs(pdgD)!=5122) return -1;
+  
+  Int_t nDau=mcPart->GetNDaughters();
+  if(nDau!=2) return -1;
+  
+  Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Int_t nProtons=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundpKpi=0;
+  Int_t decayLb = -1;
+  
+  for(Int_t iDau=0; iDau<nDau; iDau++){
+    Int_t indDau = labelFirstDau+iDau;
+    if(indDau<0) return -1;
+    AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
+    if(!dau) return -1;
+    Int_t pdgdau=dau->GetPdgCode();
+    if(TMath::Abs(pdgdau)==4122){
+      Int_t labDauLc[3] = {-1,-1,-1};
+      //Returns 1 for non-resonant decays and 2, 3 or 4 for resonant ones, -1 in other cases
+      Int_t decayLc = CheckLcpKpiDecay(arrayMC, dau, labDauLc);
+      
+      //Temp fix for not conserving momentum in ITS upgrade productions
+      if(decayLc==-2){
+        Int_t labelFirstDauLc = dau->GetDaughterLabel(0);
+        if(dau->GetNDaughters() > 1){
+          AliAODMCParticle* dauLc1=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labelFirstDauLc));
+          AliAODMCParticle* dauLc2=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labelFirstDauLc+1));
+          if(dauLc1 && dauLc2){
+            Int_t pdgdauLc1=dauLc1->GetPdgCode();
+            Int_t pdgdauLc2=dauLc2->GetPdgCode();
+            if(TMath::Abs(pdgdauLc1)==313 || TMath::Abs(pdgdauLc2)==313) decayLc=2;
+            else if(TMath::Abs(pdgdauLc1)==2224 || TMath::Abs(pdgdauLc2)==2224) decayLc=3;
+            else if(TMath::Abs(pdgdauLc1)==3124 || TMath::Abs(pdgdauLc2)==3124) decayLc=4;
+            else decayLc=1;
+          }
+        }
+      }
+
+      if (decayLc < 0 || labDauLc[0] == -1) return -1;
+      decayLb = decayLc;
+      nProtons++;
+      nKaons++;
+      nPions++;
+      for(Int_t iLc = 0; iLc < 3; iLc++){
+        AliAODMCParticle* dauLc=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauLc[iLc]));
+        sumPxDau+=dauLc->Px();
+        sumPyDau+=dauLc->Py();
+        sumPzDau+=dauLc->Pz();
+        arrayDauLab[nFoundpKpi++]=labDauLc[iLc];
+      }
+      if(nFoundpKpi>4) return -1;
+    }else if(TMath::Abs(pdgdau)==211){
+      //Temp fix for Lb->Lc+pi- and Lb->Lc-pi+ decays in ITS upgrade productions
+      //if(pdgD*pdgdau>0) return -1;
+      nPions++;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      arrayDauLab[nFoundpKpi++]=indDau;
+      if(nFoundpKpi>4) return -1;
+    }
+  }
+  
+  if(nProtons!=1) return -1;
+  if(nKaons!=1) return -1;
+  if(nPions!=2) return -1;
+  //Temp fix for not conserving momentum in ITS upgrade productions
+  if(TMath::Abs(mcPart->Px()-sumPxDau)<0.1) return decayLb;
+  if(TMath::Abs(mcPart->Py()-sumPyDau)<0.1) return decayLb;
+  if(TMath::Abs(mcPart->Pz()-sumPzDau)<0.1) return decayLb;
+  if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
+  if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
+  if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+  return decayLb;
 }
 //________________________________________________________________________
 Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod,

@@ -121,6 +121,10 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
     fEtaRangeMax(1.6),
     fPtRangeMin(0.0),
     fPtRangeMax(20.0),
+    fUseTOFBCPileUpCut(kFALSE),
+    fUseTPCInOutRowsCut(kFALSE),
+    fInRows(2),
+    fOutRows(20), 
     fEtaBin(100), //=100 (BF) 16
     fdEtaBin(64), //=64 (BF)  16
     fPtBin(100), //=100 (BF)  36
@@ -222,7 +226,11 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fEtaRangeMin(0.0), 
     fEtaRangeMax(1.6),
     fPtRangeMin(0.0),
-    fPtRangeMax(20.0), 
+    fPtRangeMax(20.0),
+    fUseTOFBCPileUpCut(kFALSE),
+    fUseTPCInOutRowsCut(kFALSE),
+    fInRows(2),
+    fOutRows(20), 
     fEtaBin(100), //=100 (BF) 16
     fdEtaBin(64), //=64 (BF)  16
     fPtBin(100), //=100 (BF)  36
@@ -684,6 +692,24 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  if (!fESDtrackCuts->IsSelected(track))
 		    continue;
 		}
+
+		if (fUseTOFBCPileUpCut) {
+		  if (!track->GetTOFBunchCrossing()==0)
+		    continue;
+		}
+		 
+		if (fUseTPCInOutRowsCut) {
+		  const TBits& bmap = track->GetTPCClusterMap();
+		  // require at least 20 out of 25 and 3 out of 5 innermost rows
+		  int nset25 = 0, nset5 = 0;
+		  for (int i=0;i<25; i++) {
+		    if (!bmap.TestBitNumber(i)) continue;
+		    nset25++;
+		    if (i<5) nset5++;
+		  }
+		  if((nset5<fInRows) || (nset25<fOutRows))
+		    continue;
+		}
 		
 		Int_t label = TMath::Abs(track->GetLabel());
 		if(label > nMCParticles) continue;
@@ -928,6 +954,24 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 
 	      if(fUseRaaGeoCut){
 		if (!fESDtrackCuts->IsSelected(trackAOD))
+		  continue;
+	      }
+
+	      if (fUseTOFBCPileUpCut) {
+		if (!trackAOD->GetTOFBunchCrossing()==0)
+		  continue;
+	      }
+	      
+	      if (fUseTPCInOutRowsCut) {
+		const TBits& bmap = trackAOD->GetTPCClusterMap();
+		// require at least 20 out of 25 and 3 out of 5 innermost rows
+		int nset25 = 0, nset5 = 0;
+		for (int i=0;i<25; i++) {
+		  if (!bmap.TestBitNumber(i)) continue;
+		  nset25++;
+		  if (i<5) nset5++;
+		}
+		if((nset5<fInRows) || (nset25<fOutRows))
 		  continue;
 	      }
 	     

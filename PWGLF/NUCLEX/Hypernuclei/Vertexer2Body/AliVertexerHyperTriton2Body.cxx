@@ -12,7 +12,7 @@
 ClassImp(AliVertexerHyperTriton2Body)
 
     AliVertexerHyperTriton2Body::AliVertexerHyperTriton2Body()
-    : TNamed(), fHe3Cuts{nullptr}, fPiCuts{nullptr},
+    : TNamed(), fHe3Cuts{nullptr}, fPiCuts{nullptr}, fLikeSign{false}, fRotation{false},
       //________________________________________________
       //Flags for V0 vertexer
       fMC{kFALSE},
@@ -100,128 +100,171 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
     {
         SelectTracksMC(event, mcEvent, tracks);
     }
-    for (int index{0}; index < 2; ++index)
-    {
-        for (auto &nidx : tracks[1][index])
+
+    auto CreateV0 = [&](int nidx, AliESDtrack* ntrk, int pidx, AliESDtrack* ptrk) {
+        Double_t lNegMassForTracking = ntrk->GetMassForTracking();
+        Double_t lPosMassForTracking = ptrk->GetMassForTracking();
+
+        float ndcaxy,ndcaz;
+        ntrk->GetImpactParameters(ndcaxy,ndcaz);
+        float pdcaxy,pdcaz;
+        ptrk->GetImpactParameters(pdcaxy,pdcaz);
+        if (std::abs(ndcaxy) < fV0VertexerSels[1] || std::abs(pdcaxy) < fV0VertexerSels[2])
+            return;
+
+        AliExternalTrackParam nt(*ntrk), pt(*ptrk);
+
+        AliExternalTrackParam *ntp = &nt, *ptp = &pt;
+        Double_t xn, xp, dca;
+
+        //Improved call: use own function, including XY-pre-opt stage
+
+        //Re-propagate to closest position to the primary vertex if asked to do so
+        if (fkResetInitialPositions)
         {
-            AliESDtrack *ntrk = event->GetTrack(nidx);
-            if (!ntrk)
-                continue;
-            float ndcaxy,ndcaz;
-            ntrk->GetImpactParameters(ndcaxy,ndcaz);
-            for (auto &pidx : tracks[0][index > 0 ? 0 : 1])
+            Double_t dztemp[2], covartemp[3];
+            //Safety margin: 250 -> exceedingly large... not sure this makes sense, but ok
+            ntp->PropagateToDCA(vtxT3D, fMagneticField, 250, dztemp, covartemp);
+            ptp->PropagateToDCA(vtxT3D, fMagneticField, 250, dztemp, covartemp);
+        }
+
+        if (fkDoImprovedDCAV0DauPropagation)
+        {
+            //Improved: use own call
+            dca = GetDCAV0Dau(ptp, ntp, xp, xn, fMagneticField, lNegMassForTracking, lPosMassForTracking);
+        }
+        else
+        {
+            //Old: use old call
+            dca = nt.GetDCA(&pt, fMagneticField, xn, xp);
+        }
+
+        if (dca > fV0VertexerSels[3])
+            return;
+
+        if ((xn + xp) > 2 * fV0VertexerSels[6] && fkPreselectX)
+            return;
+        if ((xn + xp) < 2 * fV0VertexerSels[5] && fkPreselectX)
+            return;
+
+        if (!fkDoMaterialCorrection)
+        {
+            nt.PropagateTo(xn, fMagneticField);
+            pt.PropagateTo(xp, fMagneticField);
+        }
+        else
+        {
+            AliTrackerBase::PropagateTrackTo(ntp, xn, lNegMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE);
+            AliTrackerBase::PropagateTrackTo(ptp, xp, lPosMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE);
+        }
+
+        //select maximum eta range (after propagation)
+        AliESDv0 vertex(nt, nidx, pt, pidx);
+
+        //Experimental: refit V0 if asked to do so
+        if (fkDoV0Refit)
+            vertex.Refit();
+
+        //No selection: it was not previously applied, don't  apply now.
+        //if (vertex.GetChi2V0() > fChi2max) continue;
+
+        Double_t x = vertex.Xv(), y = vertex.Yv();
+        Double_t r2 = x * x + y * y;
+        if (r2 < fV0VertexerSels[5] * fV0VertexerSels[5])
+            return;
+        if (r2 > fV0VertexerSels[6] * fV0VertexerSels[6])
+            return;
+
+        Int_t posCharge = (std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5) + 1;
+        Int_t negCharge = (std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5) + 1;
+        Double_t posMom[3], negMom[3];
+        vertex.GetNPxPyPz(negMom[0],negMom[1],negMom[2]);
+        vertex.GetPPxPyPz(posMom[0],posMom[1],posMom[2]);
+        Double_t momV0[3] = {posCharge * posMom[0] + negCharge * negMom[0], posCharge * posMom[1] + negCharge * negMom[1], posCharge * posMom[2] + negCharge * negMom[2]};
+        Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
+        Double_t SPos[3];
+        vertex.GetXYZ(SPos[0], SPos[1], SPos[2]);
+
+        deltaPos[0] = SPos[0] - fPrimaryVertexX;
+        deltaPos[1] = SPos[1] - fPrimaryVertexY;
+        deltaPos[2] = SPos[2] - fPrimaryVertexZ;
+        Double_t momV02 = momV0[0] * momV0[0] + momV0[1] * momV0[1] + momV0[2] * momV0[2];
+        Double_t deltaPos2 = deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1] + deltaPos[2] * deltaPos[2];
+
+        double cpa = (deltaPos[0] * momV0[0] +
+                       deltaPos[1] * momV0[1] +
+                       deltaPos[2] * momV0[2]) /
+                      TMath::Sqrt(momV02 * deltaPos2);
+        //   Float_t cpa = vertex.GetV0CosineOfPointingAngle(fPrimaryVertexX, fPrimaryVertexY, fPrimaryVertexZ);
+
+        //Simple cosine cut (no pt dependence for now)
+        if (cpa < fV0VertexerSels[4])
+            return;
+        vertex.SetDcaV0Daughters(dca);
+        vertex.SetV0CosineOfPointingAngle(cpa);
+        vertex.ChangeMassHypothesis(kK0Short);
+
+        //pre-select on pT
+        double lTransvMom = std::hypot(momV0[0],momV0[1]);
+        if (lTransvMom < fMinPtV0)
+            return;
+        if (lTransvMom > fMaxPtV0)
+            return;
+        v0s.push_back(vertex);
+    };
+
+    if (!fLikeSign) {
+        for (int index{0}; index < 2; ++index)
+        {
+            for (auto &nidx : tracks[1][index])
             {
-                AliESDtrack *ptrk = event->GetTrack(pidx);
-                if (!ptrk)
+                AliESDtrack *ntrk = event->GetTrack(nidx);
+                if (!ntrk)
                     continue;
-
-                Double_t lNegMassForTracking = ntrk->GetMassForTracking();
-                Double_t lPosMassForTracking = ptrk->GetMassForTracking();
-
-                float pdcaxy,pdcaz;
-                ptrk->GetImpactParameters(pdcaxy,pdcaz);
-                if (ndcaxy < fV0VertexerSels[1] && pdcaxy < fV0VertexerSels[2])
-                    continue;
-
-                AliExternalTrackParam nt(*ntrk), pt(*ptrk);
-
-                AliExternalTrackParam *ntp = &nt, *ptp = &pt;
-                Double_t xn, xp, dca;
-
-                //Improved call: use own function, including XY-pre-opt stage
-
-                //Re-propagate to closest position to the primary vertex if asked to do so
-                if (fkResetInitialPositions)
-                {
-                    Double_t dztemp[2], covartemp[3];
-                    //Safety margin: 250 -> exceedingly large... not sure this makes sense, but ok
-                    ntp->PropagateToDCA(vtxT3D, fMagneticField, 250, dztemp, covartemp);
-                    ptp->PropagateToDCA(vtxT3D, fMagneticField, 250, dztemp, covartemp);
+                if (fRotation && index == 1) {  
+                    double params[5]{ntrk->GetY(), ntrk->GetZ(), -ntrk->GetSnp(), ntrk->GetTgl(), ntrk->GetSigned1Pt()};
+                    ntrk->SetParamOnly(ntrk->GetX(), ntrk->GetAlpha(),params);
                 }
-
-                if (fkDoImprovedDCAV0DauPropagation)
+                for (auto &pidx : tracks[0][index == 1 ? 0 : 1])
                 {
-                    //Improved: use own call
-                    dca = GetDCAV0Dau(ptp, ntp, xp, xn, fMagneticField, lNegMassForTracking, lPosMassForTracking);
+                    AliESDtrack *ptrk = event->GetTrack(pidx);
+                    if (!ptrk)
+                        continue;
+                    if (fRotation && index == 0) {
+                        double params[5]{ptrk->GetY(), ptrk->GetZ(), -ptrk->GetSnp(), ptrk->GetTgl(), ptrk->GetSigned1Pt()};
+                        ptrk->SetParamOnly(ptrk->GetX(), ptrk->GetAlpha(),params);
+                    }
+                    
+                    CreateV0(nidx, ntrk, pidx, ptrk);
+                    
+                    if (fRotation && index == 0) { /// Restore the params
+                        double params[5]{ptrk->GetY(), ptrk->GetZ(), -ptrk->GetSnp(), ptrk->GetTgl(), ptrk->GetSigned1Pt()};
+                        ptrk->SetParamOnly(ptrk->GetX(), ptrk->GetAlpha(),params);
+                    }
                 }
-                else
+                if (fRotation && index == 1) {  
+                    double params[5]{ntrk->GetY(), ntrk->GetZ(), -ntrk->GetSnp(), ntrk->GetTgl(), ntrk->GetSigned1Pt()};
+                    ntrk->SetParamOnly(ntrk->GetX(), ntrk->GetAlpha(),params);
+                }
+            }
+        }
+    } else {
+        for (int index{0}; index < 2; ++index)
+        {
+            for (int charge{0}; charge < 2; ++charge) {
+                for (auto &nidx : tracks[charge][index])
                 {
-                    //Old: use old call
-                    dca = nt.GetDCA(&pt, fMagneticField, xn, xp);
+                    AliESDtrack *ntrk = event->GetTrack(nidx);
+                    if (!ntrk)
+                        continue;
+                    for (auto &pidx : tracks[charge][index > 0 ? 0 : 1])
+                    {
+                        AliESDtrack *ptrk = event->GetTrack(pidx);
+                        if (!ptrk)
+                            continue;
+                        CreateV0(nidx, ntrk, pidx, ptrk);
+                    }
                 }
-
-                if (dca > fV0VertexerSels[3])
-                    continue;
-
-                if ((xn + xp) > 2 * fV0VertexerSels[6] && fkPreselectX)
-                    continue;
-                if ((xn + xp) < 2 * fV0VertexerSels[5] && fkPreselectX)
-                    continue;
-
-                if (!fkDoMaterialCorrection)
-                {
-                    nt.PropagateTo(xn, fMagneticField);
-                    pt.PropagateTo(xp, fMagneticField);
-                }
-                else
-                {
-                    AliTrackerBase::PropagateTrackTo(ntp, xn, lNegMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE);
-                    AliTrackerBase::PropagateTrackTo(ptp, xp, lPosMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE);
-                }
-
-                //select maximum eta range (after propagation)
-                AliESDv0 vertex(nt, nidx, pt, pidx);
-
-                //Experimental: refit V0 if asked to do so
-                if (fkDoV0Refit)
-                    vertex.Refit();
-
-                //No selection: it was not previously applied, don't  apply now.
-                //if (vertex.GetChi2V0() > fChi2max) continue;
-
-                Double_t x = vertex.Xv(), y = vertex.Yv();
-                Double_t r2 = x * x + y * y;
-                if (r2 < fV0VertexerSels[5] * fV0VertexerSels[5])
-                    continue;
-                if (r2 > fV0VertexerSels[6] * fV0VertexerSels[6])
-                    continue;
-
-                Int_t posCharge = (std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5) + 1;
-                Int_t negCharge = (std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5) + 1;
-                Double_t posMom[3], negMom[3];
-                vertex.GetNPxPyPz(negMom[0],negMom[1],negMom[2]);
-                vertex.GetPPxPyPz(posMom[0],posMom[1],posMom[2]);
-                Double_t momV0[3] = {posCharge * posMom[0] + negCharge * negMom[0], posCharge * posMom[1] + negCharge * negMom[1], posCharge * posMom[2] + negCharge * negMom[2]};
-                Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
-                Double_t SPos[3];
-                vertex.GetXYZ(SPos[0], SPos[1], SPos[2]);
-
-                deltaPos[0] = SPos[0] - fPrimaryVertexX;
-                deltaPos[1] = SPos[1] - fPrimaryVertexY;
-                deltaPos[2] = SPos[2] - fPrimaryVertexZ;
-                Double_t momV02 = momV0[0] * momV0[0] + momV0[1] * momV0[1] + momV0[2] * momV0[2];
-                Double_t deltaPos2 = deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1] + deltaPos[2] * deltaPos[2];
-
-                double cpa = (deltaPos[0] * momV0[0] +
-                               deltaPos[1] * momV0[1] +
-                               deltaPos[2] * momV0[2]) /
-                              TMath::Sqrt(momV02 * deltaPos2);
-                //   Float_t cpa = vertex.GetV0CosineOfPointingAngle(fPrimaryVertexX, fPrimaryVertexY, fPrimaryVertexZ);
-
-                //Simple cosine cut (no pt dependence for now)
-                if (cpa < fV0VertexerSels[4])
-                    continue;
-                vertex.SetDcaV0Daughters(dca);
-                vertex.SetV0CosineOfPointingAngle(cpa);
-                vertex.ChangeMassHypothesis(kK0Short);
-
-                //pre-select on pT
-                double lTransvMom = std::hypot(momV0[0],momV0[1]);
-                if (lTransvMom < fMinPtV0)
-                    continue;
-                if (lTransvMom > fMaxPtV0)
-                    continue;
-                v0s.push_back(vertex);
             }
         }
     }

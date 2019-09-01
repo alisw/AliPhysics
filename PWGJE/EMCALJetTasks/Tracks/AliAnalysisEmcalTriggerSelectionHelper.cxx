@@ -26,9 +26,11 @@
  ************************************************************************************/
 #include <array>
 #include <algorithm>
+#include <iostream>
 
 #include "AliAnalysisEmcalTriggerSelectionHelper.h"
 #include "AliEmcalTriggerStringDecoder.h"
+#include "AliLog.h"
 
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelperImpl)
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelper)
@@ -69,6 +71,7 @@ std::string AliAnalysisEmcalTriggerSelectionHelperImpl::MatchTrigger(EMCAL_STRIN
 
 std::vector<AliAnalysisEmcalTriggerSelectionHelper::TriggerCluster_t> AliAnalysisEmcalTriggerSelectionHelperImpl::GetTriggerClusterIndices(EMCAL_STRINGVIEW triggerstring) const {
   // decode trigger string in order to determine the trigger clusters
+  AliDebugGeneralStream("AliAnalysisEmcalTriggerSelectionHelperImpl::GetTriggerClusterIndices", 4) << "Triggerstring: " << triggerstring.data() << std::endl;
   std::vector<TriggerCluster_t> result;
   result.emplace_back(kTrgClusterANY);      // cluster ANY always included 
 
@@ -82,6 +85,7 @@ std::vector<AliAnalysisEmcalTriggerSelectionHelper::TriggerCluster_t> AliAnalysi
        isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
        isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
        isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
+  AliDebugGeneralStream("AliAnalysisEmcalTriggerSelectionHelperImpl::GetTriggerClusterIndices", 4) << "Selected trigger clusters: CENT: " << (isCENT ? "yes" : "no") << ", CENTNOTRD: " << (isCENTNOTRD ? "yes" : "no") << ", CALO: " << (isCALO ? "yes" : "no") << ", CALOFAST: " << (isCALOFAST ? "yes" :  "no") << std::endl;
   if(isCENT || isCENTNOTRD) {
     if(isCENT) {
       result.emplace_back(kTrgClusterCENT);
@@ -107,4 +111,11 @@ std::vector<AliAnalysisEmcalTriggerSelectionHelper::TriggerCluster_t> AliAnalysi
     }
   }
   return result;
+}
+
+std::string AliAnalysisEmcalTriggerSelectionHelperImpl::GetNameTriggerCluster(TriggerCluster_t clust) const{
+  const std::array<std::string, kTrgClusterN> kNamesTriggerCluster = {{"ANY", "CENT", "CENTNOTRD", "CALO", "CALOFAST", 
+                                                                       "CENTBOTH", "OnlyCENT", "OnlyCENTNOTRD", "CALOBOTH", 
+                                                                       "OnluCALO", "OnlyCALOFAST"}};
+  return kNamesTriggerCluster[clust];
 }

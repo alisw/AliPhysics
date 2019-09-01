@@ -89,6 +89,7 @@ set(SRCS
       core/AliAnalysisTaskElectronEfficiency.cxx
       core/AliAnalysisTaskElectronEfficiencyV2.cxx
       core/AliAnalysisTask_JPsi_EMCal.cxx
+      core/AliAnalysisTaskEtaReconstruction.cxx
       JPSI/AliDielectronSignalBase.cxx
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx

@@ -78,6 +78,9 @@ public:
     void FillITSSharedPileUp(int i,int iCrit,int yesno){
         fITShrdClsPileUp[i]->Fill(iCrit,yesno);
     }
+    void FillTrackChi2perNDF(int i ,double Chi2perNDF){
+        fTrackChi2perNDF[i]->Fill(Chi2perNDF);
+    }
     void SetName(TString name){fHistList->SetName(name.Data());};
     TList *GetHistList(){return fHistList;};
 private:
@@ -116,6 +119,7 @@ private:
     TH3F *fP_mass2_DCAxyHist;    //!
     TH2F *fTPCClsCPiluUp[2];  //!
     TH2F *fITShrdClsPileUp[2];//!
+    TH1F *fTrackChi2perNDF[2]; //!
     ClassDef(AliLightNTrackHist,1);
 };
 

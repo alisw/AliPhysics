@@ -17,11 +17,17 @@
 
 #include "AliEventCuts.h"
 #include "AliYAMLConfiguration.h"
+// NOTE: AliAnalysisTaskSE is just needed for AliQnCorrectionsVarManagerTask...
+#include "AliAnalysisTaskSE.h"
+#include "AliQnCorrectionsVarManagerTask.h"
 class AliEmcalJet;
 class AliEmcalContainer;
 class AliParticleContainer;
 class AliTrackContainer;
 class AliClusterContainer;
+class AliAnalysisTaskFlowVectorCorrections;
+class AliQnCorrectionsManager;
+class AliQnCorrectionsHistos;
 
 namespace PWGJE {
 namespace EMCALJetTasks {
@@ -57,6 +63,9 @@ class AliAnalysisTaskEmcalJetHUtils {
                              AliClusterContainer* clusterCont,
                              PWG::Tools::AliYAMLConfiguration& yamlConfig,
                              std::string taskName);
+
+  // AddTask for Qn flow vector corrections
+  static AliAnalysisTaskFlowVectorCorrections * AddTaskFlowQnVectorCorrections(const std::string & configFilename);
 
   static double GetJetPt(const AliEmcalJet * jet, const double rho);
 
@@ -114,6 +123,22 @@ class AliAnalysisTaskEmcalJetHUtils {
   static double LHC15oEtaEfficiency(const double trackEta, const double params[13]);
   static double LHC15oEtaEfficiencyImpl(const double trackEta, const double params[13], const int index);
 
+};
+
+/**
+ * All functions in the FlowVectorCorrections static class are copied diretly from the AddTask. I wish I didn't have
+ * to do this, but I need it in compiled code, so I have no choice.
+ */
+class FlowVectorCorrections {
+ public:
+  static void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager, AliQnCorrectionsVarManagerTask::Variables varForEventMultiplicity);
+  static void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager, AliQnCorrectionsVarManagerTask::Variables varForEventMultiplicity);
+  static void AddSPD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager, AliQnCorrectionsVarManagerTask::Variables varForEventMultiplicity);
+  static void AddTZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager, AliQnCorrectionsVarManagerTask::Variables varForEventMultiplicity);
+  static void AddZDC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager, AliQnCorrectionsVarManagerTask::Variables varForEventMultiplicity);
+  static void AddFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager, AliQnCorrectionsVarManagerTask::Variables varForEventMultiplicity);
+  static void AddRawFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager, AliQnCorrectionsVarManagerTask::Variables varForEventMultiplicity);
+  static void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos* histos, TString histClass);
 };
 
 } /* namespace EMCALJetTasks */

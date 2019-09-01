@@ -223,7 +223,8 @@ const std::vector<Int_t> parent_codes = {
 AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                                        const TString& typestr,
                                        const bool is_mc_analysis,
-                                       const bool suffix_output):
+                                       const bool suffix_output,
+                                       const bool wide_impact_range):
   AliFemtoCutMonitor()
   , fAllowCharge(0)
   , fYPt(nullptr)
@@ -355,21 +356,24 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     128, 0, 6.0,
     sig_nbins, -sig_max, sig_max);
 
+
+  const double impact_range = wide_impact_range ? 3.25 : 0.25;
+
   fImpact = new TH2F(
     hist_name("impact"),
     hist_title("Track impact parameter components",
                 "z (cm); "
                 "r (cm); "
                 "N_{#pi} "),
-    256, -0.25, 0.25,
-    128, 0, 0.25
-  );
+    257, -impact_range, impact_range,
+    129, 0, impact_range);
 
-  fEtaY = new TH2F(hist_name("eta_y"),
-                   hist_title("Rapidity vs PseudoRapidity",
-                              "pseudorapidity, #eta; rapidity, y"),
-                   400, -2.1, 2.1,
-                   400, -2.1, 2.1);
+  fEtaY = new TH2F(
+    hist_name("eta_y"),
+    hist_title("Rapidity vs PseudoRapidity",
+               "pseudorapidity, #eta; rapidity, y"),
+    400, -2.1, 2.1,
+    400, -2.1, 2.1);
 
   if (is_mc_analysis) {
     fMC_mass = new TH1F(
@@ -377,10 +381,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
       hist_title("M_{inv}",
                 "M_{inv} (GeV);"
                 "N_{#pi}"),
-      144, 0.0, 1.5
-      // 144, 0.0120, 0.5,
-    );
-    fMC_mass->Sumw2();
+      144, 0.0, 1.5);
 
     fMC_pt = new TH2F(
       hist_name("mc_Pt"),
@@ -388,17 +389,14 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                  "p_{T}^{reconstrcted};"
                  "p_{T}^{true}"),
       144,  0.0, 3.0,
-      144,  0.0, 3.0
-    );
-    fMC_pt->Sumw2();
+      144,  0.0, 3.0);
 
     fMC_type = new TH1I(
       hist_name("mc_pdg"),
       hist_title("PDG Code",
                  "Code;"
                  "N_{code};"),
-      codes.size(), -0.5, codes.size() - 0.5
-    );
+      codes.size(), -0.5, codes.size() - 0.5);
 
     fMC_rap = new TH2F(
       hist_name("mc_rapidity"),
@@ -626,24 +624,21 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
     hist_title("#Delta #eta vs #Delta #phi*",
                "#Delta #eta; #Delta #phi*"),
     145, -0.2, 0.2,
-    145, -0.2, 0.2
-  );
+    145, -0.2, 0.2);
 
   fQinvDeta = new TH2F(
     hist_name("QinvDeta"),
     hist_title("Q_{inv} vs #Delta #eta",
                "Q_{inv} (GeV); #Delta #eta"),
     100, 0.0, 1.2,
-    75, -0.1, 0.1
-  );
+    75, -0.1, 0.1);
 
   fQinvDphiStar = new TH2F(
     hist_name("QinvDphiStar"),
     hist_title("Q_{inv} vs #Delta #phi*",
                "Q_{inv} (GeV); #Delta #phi*"),
     100, 0.0, 1.2,
-    75, -0.1, 0.1
-  );
+    75, -0.1, 0.1);
 
   if (is_mc_analysis) {
     fMCTrue_minv = new TH2F(

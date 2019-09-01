@@ -46,7 +46,8 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypCrossCheck.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
-	Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskReducedTreeHypertritonBindingEnergy.cxx
+  Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3ML.cxx
   Hypernuclei/Vertexer2Body/AliVertexerHyperTriton2Body.cxx
@@ -62,6 +63,7 @@ set(SRCS
   Nuclei/AbsorptionRatios/AliLightNTrackHist.cxx
   Nuclei/AbsorptionRatios/AliLightNEventCuts.cxx
   Nuclei/AbsorptionRatios/AliLightNTrackMCHist.cxx
+  Nuclei/AbsorptionRatios/HMAnalysis/AliAnalysisTaskAntipd.cxx
   Nuclei/DeltaMasses/AliAnalysisNucleiMass.cxx
   Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
@@ -70,6 +72,7 @@ set(SRCS
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx
+  Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeHypertriton.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_PbPb.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
@@ -102,7 +105,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice OADB PWGPPevcharQn PWGflowTasks EVGEN PWGLFcommonutils)
+set(ALIROOT_DEPENDENCIES ANALYSISalice OADB PWGPPevcharQn PWGflowTasks EVGEN PWGLFcommonutils PWGDevNanoAOD)
 
 # Generate the ROOT map
 # Dependecies

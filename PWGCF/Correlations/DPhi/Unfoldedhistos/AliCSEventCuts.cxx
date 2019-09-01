@@ -1904,7 +1904,7 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
       fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-1000+2.8*x");
       break;
     case kLHC18r:
-      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-4000.000000+x*0.012500+x/1000.0*x/1000.0*0.001300");
+      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-2000.0+x*0.012987+x/1000.0*x/1000.0*0.001300");
       break;
     default:
       fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-1000+2.8*x");

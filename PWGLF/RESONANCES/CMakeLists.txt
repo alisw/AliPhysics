@@ -47,6 +47,7 @@ set(SRCS
   AliRsnValuePair.cxx
   AliRsnValueEvent.cxx
   AliRsnCutEventUtils.cxx
+  AliRsnEventCuts.cxx
   AliRsnCutPrimaryVertex.cxx
   AliRsnCutTrackQuality.cxx
   AliRsnCutTrue.cxx
@@ -100,6 +101,7 @@ set(SRCS
   AliRsnMiniResonanceFinder.cxx
   AliRsnTrainManager.cxx
   AliRsnMiniTaskPhiVn.cxx
+  AliRsnCutPIDkink.cxx
   PostProcessing/Xi1530/AliAnalysisTaskXi1530.cxx
   PostProcessing/f0980/AliAnalysisTaskInclusivef0f2.cxx
   )

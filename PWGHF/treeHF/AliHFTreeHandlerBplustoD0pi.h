@@ -22,6 +22,7 @@
 /////////////////////////////////////////////////////////////
 
 #include "AliHFTreeHandler.h"
+#include "AliRDHFCutsD0toKpi.h"
 
 class AliHFTreeHandlerBplustoD0pi : public AliHFTreeHandler
 {
@@ -33,18 +34,20 @@ class AliHFTreeHandlerBplustoD0pi : public AliHFTreeHandler
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
     virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
+    Int_t IsBplusPionSelected(TObject* obj, AliRDHFCutsD0toKpi* cutsD0, AliAODPidHF* fPidHFD0, AliAODEvent* aod, AliAODVertex *vtx);
 
   private:
 
+    //Variables for B+->D0pi
     float fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
     float fCosThetaStar; ///vector of candidate cos theta star
     float fImpParProd; ///vector of candidate product of impact parameter
     float fNormd0MeasMinusExp; ///vector of candidate topomatic variable
     float fAngleProngs; ///vector of angle between candidates prongs
-    
+  
+    //Variables for D0->Kpi
     float fInvMass_D0; ///vector of candidate invariant mass D0
     float fPt_D0; ///vector of D0 pt
-    //We save Y, Eta and Phi in common framework only for the Bplus and the 3 prongs, so missing D0 candidate. Added as Bplus specific variables. (Could be deleted if output size grows to big?)
     float fY_D0; ///vector of D0 rapidity
     float fEta_D0; ///vector of D0 pseudorapidity
     float fPhi_D0; ///vector of D0 azimuthal angle

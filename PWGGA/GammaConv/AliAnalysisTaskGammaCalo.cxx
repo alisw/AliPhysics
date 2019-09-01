@@ -284,6 +284,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoEventSphericityAxis(NULL),
   fHistoEventSphericityvsNtracks(NULL),
   fHistoEventSphericityvsNJets(NULL),
+  fHistoEventMultiplicityvsNJets(NULL),
   fHistoTrueSphericityvsRecSphericity(NULL),
   fHistoTrueMultiplicityvsRecMultiplicity(NULL),
   fHistoEventSphericityvsHighpt(NULL),
@@ -685,6 +686,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoEventSphericityAxis(NULL),
   fHistoEventSphericityvsNtracks(NULL),
   fHistoEventSphericityvsNJets(NULL),
+  fHistoEventMultiplicityvsNJets(NULL),
   fHistoTrueSphericityvsRecSphericity(NULL),
   fHistoTrueMultiplicityvsRecMultiplicity(NULL),
   fHistoEventSphericityvsHighpt(NULL),
@@ -1303,6 +1305,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoEventSphericityAxis   = new TH1F*[fnCuts];
     fHistoEventSphericityvsNtracks    = new TH2F*[fnCuts];
     fHistoEventSphericityvsNJets      = new TH2F*[fnCuts];
+    fHistoEventMultiplicityvsNJets      = new TH2F*[fnCuts];
     if(fIsMC >0){
       fHistoTrueSphericityvsRecSphericity     = new TH2F*[fnCuts];
       fHistoTrueMultiplicityvsRecMultiplicity = new TH2F*[fnCuts];
@@ -1501,6 +1504,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoEventSphericityvsNJets[iCut]->GetXaxis()->SetTitle("S");
       fHistoEventSphericityvsNJets[iCut]->GetYaxis()->SetTitle("NJets");
       fESDList[iCut]->Add(fHistoEventSphericityvsNJets[iCut]);
+      fHistoEventMultiplicityvsNJets[iCut]  = new TH2F("Multiplicity vs NJets", "EventSphericity vs NJets", 100, 0, 100, 10, 0, 10);
+      fHistoEventMultiplicityvsNJets[iCut]->GetXaxis()->SetTitle("Mult");
+      fHistoEventMultiplicityvsNJets[iCut]->GetYaxis()->SetTitle("NJets");
+      fESDList[iCut]->Add(fHistoEventMultiplicityvsNJets[iCut]);
       }
       if(fIsMC>0){
         fHistoTrueSphericityvsRecSphericity[iCut]  = new TH2F("True Sphericity vs rec. Sphericity", "True Sphericity vs rec. Sphericity", 50, 0, 1, 50, 0, 1);
@@ -1618,7 +1625,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoEventSphericity[iCut]->Sumw2();
         fHistoEventSphericityAxis[iCut]->Sumw2();
         fHistoEventSphericityvsNtracks[iCut]->Sumw2();
-        if(fDoJetAnalysis) fHistoEventSphericityvsNJets[iCut]->Sumw2();
+        if(fDoJetAnalysis){
+          fHistoEventSphericityvsNJets[iCut]->Sumw2();
+          fHistoEventMultiplicityvsNJets[iCut]->Sumw2();
+        }
         fHistoTrueSphericityvsRecSphericity[iCut]->Sumw2();
         fHistoTrueMultiplicityvsRecMultiplicity[iCut]->Sumw2();
         fHistoEventSphericityvsHighpt[iCut]->Sumw2();
@@ -3379,6 +3389,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
                 fHistoEventSphericityvsNtracks[iCut]->Fill(fV0Reader->GetSphericity(), fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
             }
             fHistoEventSphericityvsNJets[iCut]->Fill(fV0Reader->GetSphericity(), fConvJetReader->GetNJets(), fWeightJetJetMC);
+            fHistoEventMultiplicityvsNJets[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fConvJetReader->GetNJets(), fWeightJetJetMC);
             if(fIsMC>0){
                 fHistoTrueSphericityvsRecSphericity[iCut]->Fill(fV0Reader->GetSphericityTrue(), fV0Reader->GetSphericity(), fWeightJetJetMC);
                 fHistoTrueMultiplicityvsRecMultiplicity[iCut]->Fill(fV0Reader->GetNumberOfTruePrimaryTracks(), fV0Reader->GetNumberOfRecTracks(), fWeightJetJetMC);
@@ -3398,6 +3409,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
                 fHistoEventSphericityvsNtracks[iCut]->Fill(fV0Reader->GetSphericity(), fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
             }
             fHistoEventSphericityvsNJets[iCut]->Fill(fV0Reader->GetSphericity(), fConvJetReader->GetNJets(), fWeightJetJetMC);
+            fHistoEventMultiplicityvsNJets[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fConvJetReader->GetNJets(), fWeightJetJetMC);
             if(fIsMC>0){
                 fHistoTrueSphericityvsRecSphericity[iCut]->Fill(fV0Reader->GetSphericityTrue(), fV0Reader->GetSphericity(), fWeightJetJetMC);
                 fHistoTrueMultiplicityvsRecMultiplicity[iCut]->Fill(fV0Reader->GetNumberOfTruePrimaryTracks(), fV0Reader->GetNumberOfRecTracks(), fWeightJetJetMC);

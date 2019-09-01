@@ -64,12 +64,9 @@ AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
 AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
 {
   AliFemtoEventReaderAODMultSelection* Reader = new AliFemtoEventReaderAODMultSelection();
-  Reader->SetFilterMask(128);
-  //Reader->SetReadV0(1);
+  Reader->SetFilterMask(1);
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
-  Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
-  //Reader->SetReadCascade(kTRUE);
   Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
 
   Reader->SetUseAliEventCuts(kTRUE);
@@ -415,7 +412,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 	  //Spherical harmonics (without kT bins)
 	  if(runSHCorrFctn == 1) {
-	    cylmetaphitpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),3,nbinssh,0.0,shqmax,runshlcms);
+	    cylmetaphitpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),1,nbinssh,0.0,shqmax,runshlcms);
 	    anetaphitpc[aniter]->AddCorrFctn(cylmetaphitpc[aniter]);
 	  }
 

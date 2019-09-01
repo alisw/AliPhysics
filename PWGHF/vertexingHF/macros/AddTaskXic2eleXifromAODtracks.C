@@ -129,16 +129,37 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
     }
   }
 
- 
-
-  
 
 	TF1 * weightfit = new TF1("weightfit","expo");
 	weightfit -> SetParameter(0,7.85860e-01);
 	weightfit -> SetParameter(1,-1.45351e-01);
     task -> SetFunction(weightfit);
-    
-  mgr->AddTask(task);
+
+	//============== weight process for the acceptance phi distribution
+	// =========== electron =================================
+	  TF1 * AccWeight = new TF1("AccWeight","expo+pol4(2)");
+      AccWeight -> SetParameter(0,7.25182e+00);
+      AccWeight -> SetParameter(1,-1.59753e+01);
+      AccWeight -> SetParameter(2,1.48939e-01);
+      AccWeight -> SetParameter(3,-2.29063e-01);
+      AccWeight -> SetParameter(4,1.78563e-01);
+      AccWeight -> SetParameter(5,-5.70464e-02);
+      AccWeight -> SetParameter(6,6.25614e-03);
+      task -> SetFunctionElectron(AccWeight);
+   // ============== positron ================================
+      TF1 * AccWeightPositron = new TF1("AccWeightPositron","expo+pol4(2)");
+      AccWeightPositron -> SetParameter(0,7.23466e+00);
+      AccWeightPositron -> SetParameter(1,-1.59978e+01);
+      AccWeightPositron -> SetParameter(2,1.25472e-01);
+      AccWeightPositron -> SetParameter(3,-1.80599e-01);
+      AccWeightPositron -> SetParameter(4,1.43474e-01);
+      AccWeightPositron -> SetParameter(5,-4.66011e-02);
+      AccWeightPositron -> SetParameter(6,5.17285e-03);
+ 
+      task -> SetFunctionPositron(AccWeightPositron);
+
+
+	mgr->AddTask(task);
 
   // Create and connect containers for input/output  
   TString outputfile = AliAnalysisManager::GetCommonFileName();

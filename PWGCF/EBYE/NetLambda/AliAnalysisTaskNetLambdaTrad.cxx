@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated jul 24
+// Updated Aug 21
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -122,7 +122,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     //V0 hists//
     
     
-    f3fHistCentVsInvMassLambda1point0 = new TH3F("f3fHistCentVsInvMassLambda1point0","Cent vs. #Lambda Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+    f3fHistCentVsInvMassLambda1point0 = new TH3F("f3fHistCentVsInvMassLambda1point0","Cent vs. #Lambda Inv Mass vs. pT dca at 2",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
     fListHist->Add(f3fHistCentVsInvMassLambda1point0);
     
     f3fHistCentVsInvMassLambda1point0Masscut = new TH3F("f3fHistCentVsInvMassLambda1point0Masscut","Cent vs. #Lambda Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
@@ -364,7 +364,6 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if(TMath::Abs(neta) > 0.8) continue;
         if(dcaDaughters > 0.8) continue;
         if(v0Radius < 5.0) continue;
-//        if(v0Radius > 200.) continue;
         
         Float_t PAngle = 0.0;
         Float_t lVarV0CosPALambda= 0.0;
@@ -392,39 +391,39 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         lVarV0CosPALambdaBar = lVarV0CosPAparLambdaBar[0]*TMath::Exp(lVarV0CosPAparLambdaBar[1]*V0pt) + lVarV0CosPAparLambdaBar[2]*TMath::Exp(lVarV0CosPAparLambdaBar[3]*V0pt) + lVarV0CosPAparLambdaBar[4];
         fHistPAparLambdabar->Fill(lVarV0CosPALambdaBar);
         
-        if(cosPointingAngle < 0.98) continue;
-
+        if(cosPointingAngle < 0.99) continue;
+        
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         Int_t iptbin = GetPtBin(V0pt);
         
         if( ontheflystat == 0 )
         {
             
-                if(TMath::Abs(eta) < 0.5)
+            if(TMath::Abs(eta) < 0.5)
+            {
+                if(dcaV0ToVertex < 2 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3.0 && TMath::Abs(negpion)  <= 3.0) //Default
                 {
-                    if(proLT < 25. && PAngle < lVarV0CosPALambda && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 4. && TMath::Abs(negpion)  <= 4.) //Default
-                    {
                     f3fHistCentVsInvMassLambda1point0->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
-                            {
-                                ptChEta1point0[iptbin] += 1;
-                                f3fHistCentVsInvMassLambda1point0Masscut->Fill(fCentrality,invMassLambda,V0pt);
-                            }
-                    }
-                    if(proLTbar < 25. && PAngle < lVarV0CosPALambdaBar && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 4. && TMath::Abs(pospion)  <= 4.) //default
                     {
-                    f3fHistCentVsInvMassAntiLambda1point0->Fill(fCentrality,invMassAntiLambda,V0pt);
-                    if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
-                            {
-                                ptChEta1point0[iptbin+fNptBins] += 1;
-                                f3fHistCentVsInvMassAntiLambda1point0Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
-                            }
+                        ptChEta1point0[iptbin] += 1;
+                        f3fHistCentVsInvMassLambda1point0Masscut->Fill(fCentrality,invMassLambda,V0pt);
                     }
                 }
+                if(dcaV0ToVertex < 2 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3.0 && TMath::Abs(pospion)  <= 3.0) //default
+                {
+                    f3fHistCentVsInvMassAntiLambda1point0->Fill(fCentrality,invMassAntiLambda,V0pt);
+                    if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
+                    {
+                        ptChEta1point0[iptbin+fNptBins] += 1;
+                        f3fHistCentVsInvMassAntiLambda1point0Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
+                    }
+                }
+            }
             
             if(TMath::Abs(lRapLambda) < 0.5)
             {
-                if(proLT < 25. && PAngle < lVarV0CosPALambda && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 4. && TMath::Abs(negpion)  <= 4.) //Default
+                if(dcaV0ToVertex < 2 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3.0 && TMath::Abs(negpion)  <= 3.0) //Default
                 {
                     f3fHistCentVsInvMassLambda1point0Rap->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -433,7 +432,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         f3fHistCentVsInvMassLambda1point0MasscutRap->Fill(fCentrality,invMassLambda,V0pt);
                     }
                 }
-                if(proLTbar < 25. && PAngle < lVarV0CosPALambdaBar && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 4. && TMath::Abs(pospion)  <= 4.) //default
+                if(dcaV0ToVertex < 2 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3.0 && TMath::Abs(pospion)  <= 3.0) //default
                 {
                     f3fHistCentVsInvMassAntiLambda1point0Rap->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)

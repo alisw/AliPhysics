@@ -17,7 +17,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
  Bool_t Config_pkx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
  Bool_t Config_pk0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
  Bool_t Config_Lambdapi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);*/
- Bool_t Config_Lambdakx(
+Bool_t Config_Lambdakx(
                        AliRsnMiniAnalysisTask *task,
                        TString     lname="Lambdakx",
                        Bool_t      isMC=kFALSE,
@@ -26,7 +26,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
                        Int_t       TrackCutsLambda=0,
                        Int_t       TrackCutsK=0
                        );
- Bool_t Config_Lambdak0(
+Bool_t Config_Lambdak0(
                        AliRsnMiniAnalysisTask *task,
                        TString     lname="Lambdak0",
                        Bool_t      isMC=kFALSE,
@@ -242,6 +242,7 @@ AliRsnMiniAnalysisTask* AddTaskXi1820(
 
 //=============================
 
+
 Bool_t Config_Lambdakx(AliRsnMiniAnalysisTask* task,
                        TString lname,
                        Bool_t isMC,
@@ -277,7 +278,7 @@ Bool_t Config_Lambdakx(AliRsnMiniAnalysisTask* task,
     //new
     
     //Int_t V0Cuts=TrackCutsLambda%1000;
-    Int_t checkAC=1;
+    Int_t checkAC=0;
     
     Int_t v0d_xrows=70;//70
     Float_t v0d_rtpc=0.8;//0.8
@@ -386,11 +387,12 @@ Bool_t Config_Lambdakx(AliRsnMiniAnalysisTask* task,
         Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
 #ifdef __CINT__
         gROOT->LoadMacro(
-            "$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+                         "$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
 #endif
         AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput());
         AddMonitorOutput(isMC, cutSetK->GetMonitorOutput());
-
+        
+        
         AddMonitorOutput_P(pname,cutSetLambda->GetMonitorOutput());
         AddMonitorOutput_Pt(pname,cutSetLambda->GetMonitorOutput());
         AddMonitorOutput_V0NPt(pname,cutSetLambda->GetMonitorOutput());
@@ -716,6 +718,7 @@ Bool_t Config_Lambdakx(AliRsnMiniAnalysisTask* task,
 
 //=============================
 
+
 Bool_t Config_Lambdak0(AliRsnMiniAnalysisTask* task,
                        TString lname,
                        Bool_t isMC,
@@ -818,7 +821,7 @@ Bool_t Config_Lambdak0(AliRsnMiniAnalysisTask* task,
     // selections for Lambda
     
     //Int_t LambdaCuts=TrackCutsLambda%1000;
-    Int_t checkAC=1;
+    Int_t checkAC=0;
     if((TrackCutsLambda/10000)%10) task->SetCheckDecay(false);
     
     Float_t lambda_piPIDCut=5.0;//5.0

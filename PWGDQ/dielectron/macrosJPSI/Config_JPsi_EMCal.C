@@ -45,38 +45,87 @@ Bool_t is_MSparse
 	
 	if(trigger_index==7) task->SetEMCalTriggerDG1();
 	if(trigger_index==8) task->SetEMCalTriggerDG2();
-
+//========================================================================================
    //track cuts
-	task->SetEtaCut(-0.9,0.9);
     task->SetPtCutMainEle(1.0);
-    task->SetPtCutPartner(1.0);
     task->SetRejectKinkMother(kTRUE);
     task->SetTPCandITSrefit(kTRUE);
-    task->SetITSncls(2);
-    task->SetITSpixel(1); //1 kAny, 2 kBoth, 3 kFirst
-    task->SetTPCncls(85);
-    task->SetTPCnclsPID(85);
+    task->SetTPCnclsPID(85);//not used inside the task
     task->SetTPCchi2(4.0);
-    task->SetDCACut(1.0,3.0); //xy, z
     
+    
+    if(config==1)task->SetEtaCut(-0.8,0.8);
+	else task->SetEtaCut(-0.9,0.9);
+    
+    if(config==2)task->SetPtCutPartner(2.0);
+    else task->SetPtCutPartner(1.0);
+   
+    if(config==3)task->SetITSncls(3);
+    else if(config==4)task->SetITSncls(4);
+    else task->SetITSncls(2);
+    
+    if(config==5)task->SetITSpixel(2); //1 kAny, 2 kBoth, 3 kFirst
+    else if(config==6)task->SetITSpixel(3); //1 kAny, 2 kBoth, 3 kFirst
+    else task->SetITSpixel(1); //1 kAny, 2 kBoth, 3 kFirst
+    
+    if(config==7)task->SetTPCncls(70);
+    else if(config==8)task->SetTPCncls(80);
+    else if(config==9)task->SetTPCncls(90);
+    else if(config==10)task->SetTPCncls(110);
+    else task->SetTPCncls(85);
+
+    
+    if(config==11)task->SetDCACut(2.0,3.0); //xy, z
+    else if(config==12)task->SetDCACut(0.5,3.0); //xy, z
+    else if(config==13)task->SetDCACut(1.0,4.0); //xy, z
+    else if(config==14)task->SetDCACut(1.0,2.0); //xy, z
+    else task->SetDCACut(1.0,3.0); //xy, z
+//=========================================================================================
     
     //PID cuts
-    task->SetTPCnsigmaCut(-2.25,3.0);
-	task->SetEoverPCut(0.8,1.3);
+    if(config==15)task->SetTPCnsigmaCut(-3.0,3.0);
+    else if(config==16)task->SetTPCnsigmaCut(-2.5,3.0);
+    else if(config==17)task->SetTPCnsigmaCut(-2.0,3.0);
+    else if(config==18)task->SetTPCnsigmaCut(-1.0,3.0);
+    else if(config==19)task->SetTPCnsigmaCut(0,3.0);
+    else if(config==20)task->SetTPCnsigmaCut(1.0,3.0);
+    
+    else if(config==21)task->SetTPCnsigmaCut(-2.25,2.5);
+    else if(config==22)task->SetTPCnsigmaCut(-2.25,4.0);
+    else task->SetTPCnsigmaCut(-2.25,3.0);
+    
+	if(config==23)task->SetEoverPCut(0.75,1.3);
+    else if(config==24)task->SetEoverPCut(0.85,1.3);
+    else if(config==25)task->SetEoverPCut(0.9,1.3);
+    else if(config==26)task->SetEoverPCut(0.8,1.4);
+    else task->SetEoverPCut(0.8,1.3);
+    
+    
 	task->SetEnergyCut(1);
     
     if(trigger_index==3)task->SetEnergyCut(7);//eg1 16l
-    if(trigger_index==4 || trigger_index==8)task->SetEnergyCut(5);//eg2
-	if(trigger_index==6 || trigger_index==7)task->SetEnergyCut(10);//eg1
+    
+    if(trigger_index==4 || trigger_index==8){
+        
+        if(config==27)task->SetEnergyCut(4.5);//eg2
+        else if(config==28)task->SetEnergyCut(5.5);//eg2
+        else task->SetEnergyCut(5);//eg2
+    }
+    if(trigger_index==6 || trigger_index==7){
+        if(config==29)task->SetEnergyCut(9.5);//eg1
+        else if(config==30)task->SetEnergyCut(10.5);//eg1
+        else task->SetEnergyCut(10);//eg1
+    }
     
    // if(period=="17h2h")task->SetEnergyCut(7);//eg1 16l to test
     
     if(trigger_index==30)task->SetEnergyCut(7);//eg1 16l to test
-    if(trigger_index==60)task->SetEnergyCut(11);//eg1 16k to test
+    if(trigger_index==60)task->SetEnergyCut(10);//eg1 16k to test
     if(trigger_index==40)task->SetEnergyCut(5);//eg1 16l to test
     
     
-    //Jpsi analysis
+    //Jpsi analysis (cut online only for efficiencies in MC)
+    //For data, cut is applied offline
     task->SetMassCut(2.92, 3.16);
     
     

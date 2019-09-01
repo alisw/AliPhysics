@@ -43,6 +43,7 @@ using namespace std;
 void CharmHadronYieldRatioESE(string cfgFileName);
 void ApplySelection(THnSparseF *sparse, int axisnum, double min, double max);
 void ResetAxes(THnSparseF *sparse, int axisnum = -1);
+TList* LoadTListFromTaskOutput(YAML::Node config);
 bool LoadD0toKpiReflHistos(string reflFileName, int nPtBins, TH1F* hMCSgn[], TH1F* hMCRefl[]);
 void SetStyle();
 void SetGraphStyle(TGraphAsymmErrors* graph, int color, int markerstyle, float markersize = 1.5, int linewidth = 2);
@@ -63,21 +64,19 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
         return;
     }
 
-    string filename = config["InputFile"]["FileName"].as<string>();
-    string suffix = config["InputFile"]["Suffix"].as<string>();
     string mesonname = config["InputFile"]["Meson"].as<string>();
     string flowmethodname = config["InputFile"]["FlowMethod"].as<string>();
 
     int harmonic = config["AnalysisOptions"]["Harmonic"].as<int>();
     double qnmin = config["AnalysisOptions"]["qnMin"].as<double>();
     double qnmax = config["AnalysisOptions"]["qnMax"].as<double>();
-    vector<double> PtMin = config["AnalysisOptions"]["PtMin"].as<vector<double>>();
-    vector<double> PtMax = config["AnalysisOptions"]["PtMax"].as<vector<double>>();    
-    vector<double> MassMin = config["AnalysisOptions"]["MassMin"].as<vector<double>>();
-    vector<double> MassMax = config["AnalysisOptions"]["MassMax"].as<vector<double>>();
-    vector<int> Rebin = config["AnalysisOptions"]["Rebin"].as<vector<int>>();
-    vector<string> sBkgFunc = config["AnalysisOptions"]["BkgFunc"].as<vector<string>>();
-    vector<string> sSgnFunc = config["AnalysisOptions"]["SgnFunc"].as<vector<string>>();
+    vector<double> PtMin = config["AnalysisOptions"]["PtMin"].as<vector<double> >();
+    vector<double> PtMax = config["AnalysisOptions"]["PtMax"].as<vector<double> >();    
+    vector<double> MassMin = config["AnalysisOptions"]["MassMin"].as<vector<double> >();
+    vector<double> MassMax = config["AnalysisOptions"]["MassMax"].as<vector<double> >();
+    vector<int> Rebin = config["AnalysisOptions"]["Rebin"].as<vector<int> >();
+    vector<string> sBkgFunc = config["AnalysisOptions"]["BkgFunc"].as<vector<string> >();
+    vector<string> sSgnFunc = config["AnalysisOptions"]["SgnFunc"].as<vector<string> >();
     bool useRefl = static_cast<bool>(config["AnalysisOptions"]["IncludeReflections"].as<int>());
     string reflFileName = config["AnalysisOptions"]["ReflFileName"].as<string>();
     string reflopt = config["AnalysisOptions"]["ReflOpt"].as<string>();
@@ -116,19 +115,8 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
     PtLims[nPtBins] = PtMax[nPtBins-1];
 
     //Load input file    
-    TFile* infile = TFile::Open(filename.data());
-    if(!infile || !infile->IsOpen()) return;
-    TDirectoryFile* dir = static_cast<TDirectoryFile*>(infile->Get(Form("PWGHF_D2H_HFvn_%s%s_%s",mesonname.data(),suffix.data(),flowmethodname.data())));
-    if(!dir) {
-        cerr << Form("TDirectory PWGHF_D2H_HFvn_%s%s_%s not found! Exit",mesonname.data(),suffix.data(),flowmethodname.data()) << endl;
-        return;
-    }
-    TList* list = static_cast<TList*>(dir->Get(Form("coutputvn%s%s_%s",mesonname.data(),suffix.data(),flowmethodname.data())));
-    if(!list) {
-        cerr << Form("TList coutputvn%s%s_%s not found! Exit",mesonname.data(),suffix.data(),flowmethodname.data()) << endl;
-        return;
-    }
-    list->SetOwner();
+    TList* list = LoadTListFromTaskOutput(config);
+    if(!list) return;
     THnSparseF* sMassVsPtVsPhiVsCentrVsqn = static_cast<THnSparseF*>(list->FindObject("fHistMassPtPhiqnCentr"));
     TH3F* hPerqnVsqnVsCentr = static_cast<TH3F*>(list->FindObject("fHistPercqnVsqnVsCentr"));
 
@@ -605,6 +593,42 @@ void ResetAxes(THnSparseF *sparse, int axisnum) {
         sparse->GetAxis(axisnum)->SetRange(-1,-1);
     else
         for(int iAxis=0; iAxis<sparse->GetNdimensions(); iAxis++) sparse->GetAxis(iAxis)->SetRange(-1,-1);
+}
+
+//___________________________________________________________________________________//
+//method that returns TList from task output file
+TList* LoadTListFromTaskOutput(YAML::Node config) {
+    
+    vector<string> filename = config["InputFile"]["FileName"].as<vector<string> >();
+    string suffix = config["InputFile"]["Suffix"].as<string>();
+    string mesonname = config["InputFile"]["Meson"].as<string>();
+    string flowmethodname = config["InputFile"]["FlowMethod"].as<string>();
+    
+    TList* list = new TList();
+    list->SetOwner();
+    TList* listtomerge = new TList();
+    for(unsigned int iFile=0; iFile<filename.size(); iFile++) {
+        TFile* infile = TFile::Open(filename[iFile].data());
+        if(!infile || !infile->IsOpen()) return NULL;
+        TDirectoryFile* dir = static_cast<TDirectoryFile*>(infile->Get(Form("PWGHF_D2H_HFvn_%s%s_%s",mesonname.data(),suffix.data(),flowmethodname.data())));
+        if(!dir) {
+            cerr << Form("TDirectory PWGHF_D2H_HFvn_%s%s_%s not found! Exit",mesonname.data(),suffix.data(),flowmethodname.data()) << endl;
+            return NULL;
+        }
+        TList* listtmp = static_cast<TList*>(dir->Get(Form("coutputvn%s%s_%s",mesonname.data(),suffix.data(),flowmethodname.data())));
+        if(!listtmp) {
+            cerr << Form("TList coutputvn%s%s_%s not found! Exit",mesonname.data(),suffix.data(),flowmethodname.data()) << endl;
+            return NULL;
+        }
+        if(iFile==0)
+            list = listtmp;
+        else
+            listtomerge->Add(listtmp);            
+    }
+    list->Merge(listtomerge);
+    
+    delete listtomerge;
+    return list;
 }
 
 //__________________________________________________________

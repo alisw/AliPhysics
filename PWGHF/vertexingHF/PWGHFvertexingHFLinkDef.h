@@ -45,6 +45,7 @@
 #pragma link C++ class AliAnalysisTaskSEDplus+;
 #pragma link C++ class AliAnalysisTaskSEDs+;
 #pragma link C++ class AliAnalysisTaskSELambdac+;
+#pragma link C++ class AliAnalysisTaskSED0BDT+;
 #pragma link C++ class AliAnalysisTaskSED0Mass+;
 #pragma link C++ class AliAnalysisTaskSED0MassTMVA+;
 #pragma link C++ class AliAnalysisTaskSED0MassCutVarFDSub+;
@@ -123,5 +124,6 @@
 #pragma link C++ class IClassifierReader+;
 #pragma link C++ class AliAnalysisTaskSELbtoLcpi4+;
 #pragma link C++ class AliAnalysisTaskSEXicTopKpi+;
+#pragma link C++ class AliRDHFCutsXictopKpi+;
 
 #endif

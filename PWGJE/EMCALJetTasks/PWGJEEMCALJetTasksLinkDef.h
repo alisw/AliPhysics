@@ -240,6 +240,7 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelper+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelperImpl+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetIterativeDeclustering+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalFastorMultiplicity+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::Test;
 #pragma link C++ class PWGJE::EMCALJetTasks::Test::AliAnalysisTaskEmcalTriggerSelectionTest+;
 
@@ -278,13 +279,16 @@
 #pragma link C++ class AliAnalysisTaskJetSubstructure+;
 #pragma link C++ class AliAnalysisTaskSoftDrop+;
 #pragma link C++ class AliAnalysisTaskSoftDropResponse+;
+#pragma link C++ class AliAnalysisTaskSDKL+;
+#pragma link C++ class AliAnalysisTaskSDKLResponse+;
 #pragma link C++ class AliEmcalJetTree+;
 #pragma link C++ class AliAnalysisTaskJetExtractor+;
 #pragma link C++ class std::vector<AliAnalysisTaskJetExtractor::SimpleSecondaryVertex>+;
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
 #pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
 #pragma link C++ class AliAnalysisTaskSVtaskMCFilter+;
-#pragma link C++ class AliAnalysisTaskEA+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEA+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliLundPlaneHelper+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalSoftDropData+;
 #ifdef WITH_ROOUNFOLD

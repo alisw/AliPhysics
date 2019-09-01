@@ -1433,14 +1433,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     AliAODEvent *lAODevent = 0x0;
     lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
     if (!lAODevent) {
-        AliWarning("ERROR: lAODevent not available \n");
-        return;
+        AliWarning("ERROR: lAODevent not available from InputEvent() trying with AODEvent()");
+        
+        //  assume that the AOD is in the general output...
+        lAODevent  = AODEvent();
+        if(!lAODevent){
+            AliWarning("ERROR: lAODevent not available from AODEvent() Aborting event!");
+            return;
+        }
     }
+    fHistEventCounter->Fill(0.5);
     
     Double_t lMagneticField = -10;
     lMagneticField = lAODevent->GetMagneticField( );
-    
-    fHistEventCounter->Fill(0.5);
     
     //------------------------------------------------
     // Primary Vertex Requirements Section:

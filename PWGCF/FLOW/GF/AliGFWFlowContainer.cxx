@@ -339,10 +339,11 @@ TProfile *AliGFWFlowContainer::GetCorrXXVsPt(const char *order, Double_t lminmul
   Int_t maxm = fProf->GetXaxis()->GetNbins();
   if(!fbinsPt) SetXAxis();
   if(lminmulti>0) {
-    minm=fProf->GetXaxis()->FindBin(lminmulti);
+    minm=fProf->GetXaxis()->FindBin(lminmulti+0.001);
     maxm=minm;
   };
-  if(lmaxmulti>lminmulti) maxm=fProf->GetXaxis()->FindBin(lmaxmulti);
+  if(lmaxmulti>lminmulti) maxm=fProf->GetXaxis()->FindBin(lmaxmulti-0.001);
+//  printf("Multiplicity bins: %i to %i\n",minm,maxm);
   AliProfileSubset *rhProfSub = new AliProfileSubset(*fProf);
   TProfile *retSubset=0;
   TString l_name("");
@@ -627,7 +628,7 @@ TH1D *AliGFWFlowContainer::GetVN4(TH1D *inh) {
     Double_t d4=inh->GetBinContent(i);
     Double_t d4e=inh->GetBinError(i);
     if(OnPt&&c4>=0) continue;
-    if(d4>=0) continue;
+    //if(d4>=0) continue;
     rethist->SetBinContent(i,OnPt?VDN4Value(d4,c4):VN4Value(d4));
     rethist->SetBinError(i,OnPt?VDN4Error(d4,d4e,c4,c4e):VN4Error(d4,d4e));
   };
@@ -643,7 +644,7 @@ TH1D *AliGFWFlowContainer::GetVN6(TH1D *inh) {
     Double_t d6=inh->GetBinContent(i);
     Double_t d6e=inh->GetBinError(i);
     if(OnPt && c6<=0) continue;
-    if(d6<=0) continue;
+    //if(d6<=0) continue;
     rethist->SetBinContent(i,OnPt?VDN6Value(d6,c6):VN6Value(d6));
     rethist->SetBinError(i,OnPt?VDN6Error(d6,d6e,c6,c6e):VN6Error(d6,d6e));
   };
@@ -659,7 +660,7 @@ TH1D *AliGFWFlowContainer::GetVN8(TH1D *inh) {
     Double_t d8=inh->GetBinContent(i);
     Double_t d8e=inh->GetBinError(i);
     if(OnPt && c8>0) continue;
-    if(d8>0) continue;
+    //if(d8>0) continue;
     rethist->SetBinContent(i,OnPt?VDN8Value(d8,c8):VN8Value(d8));
     rethist->SetBinError(i,OnPt?VDN8Error(d8,d8e,c8,c8e):VN8Error(d8,d8e));
   };
@@ -796,8 +797,8 @@ TH1D *AliGFWFlowContainer::GetVNN(Int_t n, Int_t c, Bool_t onPt, Double_t arg1, 
   return GetVN2VsX(n,onPt,arg1,arg2);
 };
 TProfile *AliGFWFlowContainer::GetRefFlowProfile(const char *order, Double_t m1, Double_t m2) {
-  Int_t nStartBin = fProf->GetXaxis()->FindBin(m1);
-  Int_t nStopBin = fProf->GetXaxis()->FindBin(m2);
+  Int_t nStartBin = fProf->GetXaxis()->FindBin(m1+0.001);
+  Int_t nStopBin = fProf->GetXaxis()->FindBin(m2-0.001);
   if(nStartBin==0) nStartBin=1;
   if(nStopBin<nStartBin) nStopBin=fProf->GetXaxis()->GetNbins();
   Int_t nBins = nStopBin-nStartBin+1;

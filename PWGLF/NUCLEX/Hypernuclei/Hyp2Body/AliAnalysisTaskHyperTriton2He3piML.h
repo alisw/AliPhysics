@@ -75,6 +75,7 @@ struct RTracklet
   float fPhi;
   Double32_t fDeltaTheta; //[-0.12,0.12,8]
   Double32_t fDeltaPhi;   //[-0.12,0.12,8]
+  bool fSharedCluster;
 };
 
 struct SHyperTritonHe3pi
@@ -102,6 +103,15 @@ struct SGenericV0
   float fDecayX;
   float fDecayY;
   float fDecayZ;
+  float fPx;
+  float fPy;
+  float fPz;
+};
+
+struct SGenericTracklet
+{ /// For the other V0s that are reconstructed
+  int fRecoIndex;
+  long fPdgCode;
   float fPx;
   float fPy;
   float fPz;
@@ -145,6 +155,7 @@ public:
 
   AliEventCuts fEventCuts; /// Event cuts class
   bool fFillGenericV0s;
+  bool fFillGenericTracklets; /// To check what is the background
   bool fFillTracklet;
   bool fSaveFileNames;
   bool fPropagetToPV;
@@ -190,6 +201,7 @@ private:
   std::vector<SGenericV0> fSGenericV0;          //!
   std::vector<RHyperTritonHe3pi> fRHyperTriton; //!
   std::vector<RTracklet> fRTracklets;           //!
+  std::vector<SGenericTracklet> fSGenericTracklets;  //!
   RCollision fRCollision;                       //!
 
   AliAnalysisTaskHyperTriton2He3piML(

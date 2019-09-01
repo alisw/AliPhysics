@@ -10,7 +10,7 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
 					     Int_t system=0/*0=pp,1=PbPb*/,
 					     Float_t minC=0, Float_t maxC=0,
 					     TString finDirname="",
-					       TString finname="",TString finObjname="D0toKpiCuts",TString strLcCutFile="",TString strLcCutObjName="")
+					       TString finname="",TString finObjname="D0toKpiCuts",TString strLcCutFile="",TString strLcCutObjName="",TString suffix="")
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -37,7 +37,7 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
     //AliNormalizationCounter
     out2name="normalizationCounter";
     out3name="outputList";
-
+    filename+=suffix.Data();
     
     inname="cinputmassD0_1";
 
@@ -96,16 +96,22 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
   massXicTask->SetMaxChi2Cut(1.5);
   if(!strLcCutFile.IsNull()){
     TFile *flc=TFile::Open(strLcCutFile.Data(),"READ");
+    //printf("\n===== Lc cut file open: %s =====\n\n",strLcCutFile.Data());
+    printf("\n===== Xic cut file open: %s =====\n\n",strLcCutFile.Data());
     if(!flc){
-      Printf("Wrong file for Lc cuts");
+      Printf("Wrong file for Xic cuts");
       return 0x0;
     }
-    AliRDHFCutsLctopKpi* cutsLc=(AliRDHFCutsLctopKpi*)flc->Get(strLcCutObjName.Data());
-    if(!cutsLc){
+
+    //AliRDHFCutsLctopKpi* cutsLc=(AliRDHFCutsLctopKpi*)flc->Get(strLcCutObjName.Data());
+    //if(!cutsLc){    
+    AliRDHFCutsXictopKpi* cutsXic=(AliRDHFCutsXictopKpi*)flc->Get(strLcCutObjName.Data());
+    if(!cutsXic){
       Printf("Wrong object name for Lc cuts");
       return 0x0;
     }
-    massXicTask->SetLcCuts(cutsLc);
+    //massXicTask->SetLcCuts(cutsLc);
+    massXicTask->SetXicCuts(cutsXic);
   }
   if(system==0){
     massXicTask->SetRecalcOwnPrimVtx(kTRUE);

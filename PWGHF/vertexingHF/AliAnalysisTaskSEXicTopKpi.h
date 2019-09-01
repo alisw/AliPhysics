@@ -25,6 +25,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsLctopKpi.h"
+#include "AliRDHFCutsXictopKpi.h"
 #include "AliNormalizationCounter.h"
 #include "AliAODMCParticle.h"
 #include "AliVertexerTracks.h"
@@ -69,7 +70,8 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
   void SetAnalysisType(Int_t antype){fAnalysisType=antype;};
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;} 
-  void SetLcCuts(AliRDHFCutsLctopKpi *cuts){fCutsLc=cuts;}
+  //void SetLcCuts(AliRDHFCutsLctopKpi *cuts){fCutsLc=cuts;}
+  void SetXicCuts(AliRDHFCutsXictopKpi *cuts){fCutsXic=cuts;}
   Int_t CheckXicpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab)const;
   void SetRecalcOwnPrimVtx(Bool_t recVtx){fRecalPrimVtx=recVtx;}
   Bool_t GetIsRecalcOwnPrimVtx(){return fRecalPrimVtx;}
@@ -94,6 +96,10 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     fLowpT_down = down_lowpT;
     fHighpT_down = down_highpT;
   }
+
+  // require the calculation of dist12 and dist23
+  void SetCalculate_dist12_dist23(Bool_t flag){ fCompute_dist12_dist23 = flag; }
+  Short_t SetMapCutsResponse(Int_t massHypo_filtering, Int_t response_onlyCuts, Int_t response_onlyPID);
   
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
@@ -146,7 +152,8 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Double_t Weight_fromLc_toXic(AliAODMCParticle* p, AliAODMCParticle* prong);
 
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts 
-  AliRDHFCutsLctopKpi *fCutsLc;  // Lc Cuts
+  //AliRDHFCutsLctopKpi *fCutsLc;  // Lc Cuts
+  AliRDHFCutsXictopKpi *fCutsXic;  // Xic Cuts
   AliNormalizationCounter *fCounter;//!<! AliNormalizationCounter on output slot 5
   AliPIDResponse *fPidResponse; //!<!PID response 
   Bool_t    fReadMC;              ///  flag for MC array: kTRUE = read it, kFALSE = do not read it
@@ -252,8 +259,10 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Float_t fLowpT_down;      /// downsampling factor at low pT
   Float_t fHighpT_down;     /// downsampling factor at high pT
 
+  Bool_t fCompute_dist12_dist23;  /// flag to require the calculation of dist12 and dist23
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,1); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,2); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

@@ -64,6 +64,7 @@
 #include "AliAODRecoCascadeHF.h"
 
 #include "AliRDHFCutsLctopKpi.h"
+#include "AliRDHFCutsXictopKpi.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSEXicTopKpi.h"
@@ -81,7 +82,8 @@ ClassImp(AliAnalysisTaskSEXicTopKpi);
 AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   AliAnalysisTaskSE(),
   fCuts(0x0),
-  fCutsLc(0x0),
+  //fCutsLc(0x0),
+  fCutsXic(0x0),
   fCounter(0),
   fPidResponse(0),
   fReadMC(kFALSE),
@@ -138,6 +140,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fpT_down(-1)
   ,fLowpT_down(-1)
   ,fHighpT_down(-1)
+  ,fCompute_dist12_dist23(kFALSE)
 {
   /// Default constructor
 
@@ -147,7 +150,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
 AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFCutsD0toKpi* cuts):
   AliAnalysisTaskSE(name),
   fCuts(0x0),
-  fCutsLc(0x0),
+  //fCutsLc(0x0),
+  fCutsXic(0x0),
   fCounter(0),
   fPidResponse(0),
   fReadMC(kFALSE),
@@ -204,6 +208,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fpT_down(-1)
   ,fLowpT_down(-1)
   ,fHighpT_down(-1)
+  ,fCompute_dist12_dist23(kFALSE)
 {
   /// Default constructor
 
@@ -221,9 +226,13 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
     delete fCuts;
     fCuts = 0;
   }
-  if(fCutsLc){
-    delete fCutsLc;
-    fCutsLc =0;
+  //if(fCutsLc){
+  //  delete fCutsLc;
+  //  fCutsLc =0;
+  //}
+  if(fCutsXic){
+    delete fCutsXic;
+    fCutsXic =0;
   }
   if (fNentries){
     delete fNentries;
@@ -286,8 +295,8 @@ void AliAnalysisTaskSEXicTopKpi::Init()
 //   const char* nameoutput=GetOutputSlot(4)->GetContainer()->GetName();
 //   copyfCuts->SetName(nameoutput);
 
-  if(!fCutsLc){
-    fCutsLc = new AliRDHFCutsLctopKpi("CutsLctopKpi");
+  if(!fCutsXic){
+    fCutsXic = new AliRDHFCutsXictopKpi("CutsXictopKpi");
     //Float_t cutsArrayLctopKpi[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};
     //Float_t cutsArrayLctopKpi[13]={0.18,0.4,0.5,0.,0.,0.01,0.06,0.005,0.7,0.0,0.,0.05,0.4};
     Float_t cutsArrayLctopKpi[13]={0.40,0.4,0.5,0.,0.,0.00,0.06,0.000,0.0,-1.,0.,0.05,0.4}; // default filtering cuts in pp collisions with enlarged mass cut (from 0.18 to 0.400) to store also candidates in Xic mass window
@@ -306,29 +315,30 @@ void AliAnalysisTaskSEXicTopKpi::Init()
       "Sum d0^2 (cm^2)",
       "dca cut (cm)",
       "cut on pTpion [GeV/c]" */
-    fCutsLc->SetCuts(13,cutsArrayLctopKpi);
+    fCutsXic->SetCuts(13,cutsArrayLctopKpi);
   }
   else{
-    
+    /*
     Double_t sigmaVtxMax[8]={0.09,0.09,0.05,0.035,0.035,0.03,0.03,0.025};
     Double_t sumd02[8]={0.0003,0.0003,0.0002,0.00015,0.00015,0.0001,0.,0.};
     if(fAnalysisType==0 || fAnalysisType==4){// assure mass range is large enough
-      Int_t nvars=fCutsLc->GetNVars();
-      Int_t nptbins=fCutsLc->GetNPtBins();
+      Int_t nvars=fCutsXic->GetNVars();
+      Int_t nptbins=fCutsXic->GetNPtBins();
       Float_t **cutvalues=new Float_t*[nvars];
       for(Int_t iv=0;iv<nvars;iv++){
 	cutvalues[iv]=new Float_t[nptbins];
       }
-      fCutsLc->GetCuts(cutvalues);
+      fCutsXic->GetCuts(cutvalues);
       for(Int_t km=0;km<nptbins;km++){
-	cutvalues[0][km]=0.40;
+	//cutvalues[0][km]=0.40;
 	cutvalues[6][km]=sigmaVtxMax[km]; // TO BE CHANGED IN FUTURE
 	cutvalues[10][km]=sumd02[km];
       }
-      fCutsLc->SetCuts(nvars,nptbins,cutvalues);
-      Printf("Lc Cuts modified to assure mass window is large enough, current cuts are:");
-      fCutsLc->PrintAll();
-    }
+      fCutsXic->SetCuts(nvars,nptbins,cutvalues);
+      Printf("Xic Cuts modified to assure mass window is large enough, current cuts are:");*/
+      Printf("\n--- Adopted cuts ---");
+      fCutsXic->PrintAll();
+    //}
   }
   
   if(fDebug>=0 || fSetTrackCutLcFilteringPP){// track cuts used for Lc filtering (in pp, 2018): need to set them to be sure that only tighter cuts than these are used
@@ -342,7 +352,7 @@ void AliAnalysisTaskSEXicTopKpi::Init()
     esdTrCuts->SetMinDCAToVertexXY(0.);
     esdTrCuts->SetPtRange(0.4,1.e10);// ORIGINAL VALUE IS 0.3 BUT WE CUT AT 0.4 in ANALYSIS
     esdTrCuts->SetEtaRange(-0.8,+0.8);
-    fCutsLc->AddTrackCuts(esdTrCuts);
+    fCutsXic->AddTrackCuts(esdTrCuts);
   }
 
   if((fAnalysisType==0 || fAnalysisType==3) && !fESDtrackCutsSoftPion){
@@ -368,6 +378,8 @@ void AliAnalysisTaskSEXicTopKpi::Init()
     }
   }
 
+  // print wheter we require the calulcation of dist12 and dist23
+  if(fCompute_dist12_dist23)  printf("\n\n===== fCompute_dist12_dist23 is kTRUE ---> dist12 and dist23 calculated =====\n\n");
 
   // Post the data
   //  PostData(4,copyfCuts);
@@ -449,7 +461,8 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   ftrackSelStatusPion=new TArrayI(10000);
 
   
-  fhistInvMassCheck=new TH2F("fhistInvMassCheck","InvDistrCheck",1000,1.600,2.800,5,-0.5,4.5);
+  //fhistInvMassCheck=new TH2F("fhistInvMassCheck","InvDistrCheck",1000,1.600,2.800,5,-0.5,4.5);
+  fhistInvMassCheck=new TH2F("fhistInvMassCheck","InvDistrCheck",1000,1.600,2.800,5,-0.5,15.5);
   //  fhistCheckPIDTOFTPC=new TH3F("fhistCheckPIDTOFTPC","fhistCheckPIDTOFTPC",
   fhistMCSpectrumAccLc=new TH2F("fhistMCSpectrumAccLc","fhistMCSpectrumAccLc",250,0,50,15,-0.5,14.5); // 
   fhistMCSpectrumAccXic=new TH2F("fhistMCSpectrumAccXic","fhistMCSpectrumAccXic",250,0,50,15,-0.5,14.5); // 
@@ -496,12 +509,14 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   // 
   //  Rescaling of reconstructed to Lc as they were Xic added in the end of the tree
   //
-  Float_t var[23];
-  TString varNames[23]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic"};
+  Float_t var[33];
+  Short_t resp;
+  TString varNames[34]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","massHypoFilt_respCuts_respPID"};
   fTreeVar=new TTree("T","tree with variables");
-  for(Int_t k=0;k<23;k++){
+  for(Int_t k=0;k<33;k++){
     fTreeVar->Branch(varNames[k].Data(),&var[k]);
   }
+  fTreeVar->Branch(varNames[33].Data(),&resp);
   fOutput->Add(fTreeVar);
 
 
@@ -548,6 +563,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 
 {
   if(fDebug>=0)Printf("AliAnalysisTaskSEXicTopKpi: User Exec");
+  
   /// Execute analysis for current event  
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   if(!aod) {
@@ -573,14 +589,14 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   fPidResponse=inputHandler->GetPIDResponse();
   if(!fPidResponse)return;
 
-  if(fCutsLc->GetIsUsePID()){
-    fCutsLc->GetPidHF()->SetPidResponse(fPidResponse);
-    fCutsLc->GetPidpion()->SetPidResponse(fPidResponse);
-    fCutsLc->GetPidprot()->SetPidResponse(fPidResponse);
+  if(fCutsXic->GetIsUsePID()){
+    fCutsXic->GetPidHF()->SetPidResponse(fPidResponse);
+    fCutsXic->GetPidpion()->SetPidResponse(fPidResponse);
+    fCutsXic->GetPidprot()->SetPidResponse(fPidResponse);
     //fUtilPid=new AliAODpidUtil(fPidResponse);
-    fCutsLc->GetPidHF()->SetOldPid(kFALSE);
-    fCutsLc->GetPidpion()->SetOldPid(kFALSE);
-    fCutsLc->GetPidprot()->SetOldPid(kFALSE);
+    fCutsXic->GetPidHF()->SetOldPid(kFALSE);
+    fCutsXic->GetPidpion()->SetOldPid(kFALSE);
+    fCutsXic->GetPidprot()->SetOldPid(kFALSE);
   }
   
 
@@ -612,7 +628,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   AliAODMCHeader *mcHeader = 0;
   TClonesArray *lcArray = 0;
   
-  if(fDebug>=0){   
+  if(fDebug>=0){
     lcArray=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
     if(!lcArray){
       Printf("Array of filtered Lc not present, delta-file not associated?");
@@ -643,8 +659,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  
 	  Bool_t isInAcc=kTRUE;
 	  // check GenAcc level
-	  if(fCutsLc){
-	    if(!fCutsLc->IsInFiducialAcceptance(mcpart->Pt(),mcpart->Y())){
+	  if(fCutsXic){
+	    if(!fCutsXic->IsInFiducialAcceptance(mcpart->Pt(),mcpart->Y())){
 	      isInAcc=kFALSE;
 	    }
 	  }
@@ -674,8 +690,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  }	  
 	  Bool_t isInAcc=kTRUE;
 	  // check GenAcc level
-	  if(fCutsLc){
-	    if(!fCutsLc->IsInFiducialAcceptance(mcpart->Pt(),mcpart->Y())){
+	  if(fCutsXic){
+	    if(!fCutsXic->IsInFiducialAcceptance(mcpart->Pt(),mcpart->Y())){
 	      isInAcc=kFALSE;
 	    }	     
 	  }
@@ -804,7 +820,6 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   ftrackSelStatusKaon->Reset();
   ftrackSelStatusPion->Reset();
 
-  
   Int_t pdgDg[3]={211,321,2212};
 
   if(fDebug>=0){   
@@ -833,7 +848,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	unsetvtx=kTRUE;
       }
       Int_t iSel=3,iSelTrackCuts=3,iSelCuts=3,iSelPID=0;
-      if(!fCutsLc->IsInFiducialAcceptance(d->Pt(),d->Y(4122)))iSel=0;
+      if(!fCutsXic->IsInFiducialAcceptance(d->Pt(),d->Y(4122)))iSel=0;
       if(!iSel){
  	if(unsetvtx)d->UnsetOwnPrimaryVtx();
  	continue;
@@ -882,7 +897,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	}
       }
 
-      iSelCuts=fCutsLc->IsSelected(d,AliRDHFCuts::kCandidate,(AliAODEvent*)aod);
+      iSelCuts=fCutsXic->IsSelected(d,AliRDHFCuts::kCandidate,(AliAODEvent*)aod);
 
       if(part){
 	fhistMCSpectrumAccLc->Fill(part->Pt(),kRecoCuts+2);
@@ -904,7 +919,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     }
   }
   
-  
+  Print("\nLoop on tracks\n");
   
   // SELECT TRACKS: could consider to include common tracks (dca) to reduce cpu time (call once propagatetodca)
   for(Int_t itrack=0;itrack<aod->GetNumberOfTracks();itrack++){
@@ -960,12 +975,14 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   // 
   //  Rescaling of reconstructed to Lc as they were Xic added in the end of the tree
   //
-  Float_t var[23];
-  TString varNames[23]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic"};
+  Float_t var[33];
+  Short_t resp;
+  TString varNames[34]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","massHypoFilt_respCuts_respPID"};
   if(fFillTree){
-    for(Int_t k=0;k<23;k++){
+    for(Int_t k=0;k<33;k++){
       fTreeVar->SetBranchAddress(varNames[k].Data(),&var[k]);
     }
+    fTreeVar->SetBranchAddress(varNames[33].Data(),&resp);
   }
 
   // NOW LOOP OVER SELECTED TRACKS
@@ -1070,7 +1087,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	fhistMonitoring->Fill(9);
 	Double_t candPt=io3Prong->Pt();
 	//	  Printf("InvMass %f, decay length: %f)",io3Prong->InvMassLcpKpi(),io3Prong->CtLc());
-	if(!fCutsLc->IsInFiducialAcceptance(candPt,io3Prong->Y(4122))){
+	if(!fCutsXic->IsInFiducialAcceptance(candPt,io3Prong->Y(4122))){
 	  AliAODVertex *vtx3 = (AliAODVertex*)io3Prong->GetSecondaryVtx();
 	  if(vtx3){delete vtx3;vtx3=0;}
 	  delete io3Prong;
@@ -1087,8 +1104,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	AliAODVertex *origownvtx=0x0;
 	if(fRecalPrimVtx && fDebug<0){
 	  if(io3Prong->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*io3Prong->GetOwnPrimaryVtx());
-	  if(fCutsLc->RecalcOwnPrimaryVtx(io3Prong,aod))recPrimVtx=kTRUE;
-	  else fCutsLc->CleanOwnPrimaryVtx(io3Prong,aod,origownvtx);
+	  if(fCutsXic->RecalcOwnPrimaryVtx(io3Prong,aod))recPrimVtx=kTRUE;
+	  else fCutsXic->CleanOwnPrimaryVtx(io3Prong,aod,origownvtx);
 	}
 
 	Int_t isTrueLambdaCorXic=0;
@@ -1097,12 +1114,56 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  Int_t partind=io3Prong->MatchToMC(4122,mcArray,3,pdgDg);
 	  if(partind>=0){
 	    part=(AliAODMCParticle*)mcArray->At(partind);
-	    if(part)isTrueLambdaCorXic=1;
+	    if(part){
+        isTrueLambdaCorXic=1;
+        Int_t pdgMother_checkQuark = AliVertexingHFUtils::CheckOrigin(mcArray,part,kTRUE);
+        if(pdgMother_checkQuark==4) isTrueLambdaCorXic*=4;      // from quark c
+        else if(pdgMother_checkQuark==5) isTrueLambdaCorXic*=5; // from quark b
+        //
+        // check if it is pKpi or piKp
+        //
+        AliAODTrack* trk_prong = (AliAODTrack*) io3Prong->GetDaughter(0);
+        Int_t prLabel = TMath::Abs(trk_prong->GetLabel());
+        if(prLabel>0){
+          AliAODMCParticle* partMC_prong = (AliAODMCParticle*) mcArray->At(prLabel);
+          Int_t pdg_prong = -1;
+          if(partMC_prong)  pdg_prong = TMath::Abs(partMC_prong->GetPdgCode());
+          if(pdg_prong==2212){      // 1st prong is a proton ---> pKpi
+            isTrueLambdaCorXic*=10;
+          }
+          else if(pdg_prong==211){  // 1st prong is a pion ---> piKp
+            isTrueLambdaCorXic*=20;
+          }
+        }
+        else{printf("---> Lc prong label %d\n",prLabel);}
+      }
 	  }
 	  else {
 	    partind=io3Prong->MatchToMC(4232,mcArray,3,pdgDg);
 	    if(partind>=0)part=(AliAODMCParticle*)mcArray->At(partind);
-	    if(part)isTrueLambdaCorXic=3;
+	    if(part){
+        isTrueLambdaCorXic=3;
+        Int_t pdgMother_checkQuark = AliVertexingHFUtils::CheckOrigin(mcArray,part,kTRUE);
+        if(pdgMother_checkQuark==4) isTrueLambdaCorXic*=4;      // from quark c
+        else if(pdgMother_checkQuark==5) isTrueLambdaCorXic*=5; // from quark b
+        //
+        // check if it is pKpi or piKp
+        //
+        AliAODTrack* trk_prong = (AliAODTrack*) io3Prong->GetDaughter(0);
+        Int_t prLabel = TMath::Abs(trk_prong->GetLabel());
+        if(prLabel>0){
+          AliAODMCParticle* partMC_prong = (AliAODMCParticle*) mcArray->At(prLabel);
+          Int_t pdg_prong = -1;
+          if(partMC_prong)  pdg_prong = TMath::Abs(partMC_prong->GetPdgCode());
+          if(pdg_prong==2212){      // 1st prong is a proton ---> pKpi
+            isTrueLambdaCorXic*=10;
+          }
+          else if(pdg_prong==211){  // 1st prong is a pion ---> piKp
+            isTrueLambdaCorXic*=20;
+          }
+        }
+        else{printf("---> Xic prong label %d\n",prLabel);}
+      }
 	  }
 	  //  static Int_t CheckLcpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
 	  //  AliVertexingHFUtils::CheckLcpKpiDecay(mcArray,)
@@ -1127,10 +1188,14 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	    }
 	  }
 	}
-	if(fReadMC && isTrueLambdaCorXic==1){
+	//if(fReadMC && isTrueLambdaCorXic==1){
+    // MAYBE WE'LL CAHNGE IT !!!
+	if(fReadMC && (isTrueLambdaCorXic==1 || isTrueLambdaCorXic==4 || isTrueLambdaCorXic==5)){
 	  fhistMCSpectrumAccLc->Fill(part->Pt(),kReco);
 	}
-	if(fReadMC && isTrueLambdaCorXic==3){
+  //if(fReadMC && isTrueLambdaCorXic==3){
+    //if(fReadMC && isTrueLambdaCorXic==1){
+	if(fReadMC && (isTrueLambdaCorXic==3 || isTrueLambdaCorXic==12 || isTrueLambdaCorXic==15)){
 	  fhistMCSpectrumAccXic->Fill(part->Pt(),kReco);
 	}
 	if(fDebug>=0){
@@ -1163,9 +1228,42 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	
 	
 	Int_t isSeleCuts=3,pidreject;
-	if(fCutsLc && (fAnalysisType==0 || fAnalysisType==2 || fAnalysisType==3)){// TO BE FIXED FOR CASE 0: SHOULD NOT DELETE, WE MUST ADD A BIT TO THE HISTOGRAM OR DUPLICATE THE HISTO FOR INCLUDING XIC
-	  isSeleCuts=fCutsLc->IsSelected(io3Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)aod);
-	  massHypothesis=isSeleCuts&massHypothesis;
+	if(fCutsXic && (fAnalysisType==0 || fAnalysisType==2 || fAnalysisType==3)){// TO BE FIXED FOR CASE 0: SHOULD NOT DELETE, WE MUST ADD A BIT TO THE HISTOGRAM OR DUPLICATE THE HISTO FOR INCLUDING XIC
+
+    if(fCompute_dist12_dist23)  FillDist12and23(io3Prong,aod->GetMagneticField());
+      // here cuts + PID are considered
+    isSeleCuts=fCutsXic->IsSelected(io3Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)aod);
+    //printf("\n==============\n");
+    //printf("massHypothesis %d\n",massHypothesis);
+    //printf("isSeleCuts     %d\n",isSeleCuts);
+    //pidreject = fCutsXic->GetIsSelectedPID();  // 0: none; 1: case pKpi; 2: case piKp; 3: not distinguished pKpi or piKp
+	  
+    // store info for different selections (massHypothesis filtering, cut selection, PID selection)
+    Int_t isPIDused = fCutsXic->GetIsUsePID();
+    fCutsXic->SetUsePID(kFALSE);   // disable PID temporarly
+    Int_t resp_onlyCuts = fCutsXic->IsSelected(io3Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)aod);
+    Int_t resp_onlyPID = 3;
+    if(isPIDused){  // if the PID is supposed to be used, let's restore it in the cutobject
+      fCutsXic->SetUsePID(kTRUE);  // restoring PID
+      resp_onlyPID = fCutsXic->IsSelected(io3Prong,AliRDHFCuts::kPID,(AliAODEvent*)aod);
+    }
+      //
+      // fill the tree entry with a map
+      //  - first two bits: massHypothesis
+      //  - 3rd and 4th bit: resp_onlyCuts
+      //  - last 3 bits: resp_onlyPID
+      //
+      resp = SetMapCutsResponse(massHypothesis,resp_onlyCuts,resp_onlyPID);
+
+
+      //POSTPONED!!!
+      //
+    //massHypothesis=isSeleCuts&massHypothesis;
+      //
+      //
+
+    //printf("massHypothesis & isSeleCuts %d\ncandPt %.2f\n==============\n",massHypothesis,candPt);
+
 /*
 	  if(fFillTree==1){
 	    FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
@@ -1207,15 +1305,31 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     // fill the tree
     if(fFillTree){
       if(candPt<fpT_down){  // downsampling for low pT
-        if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down)     FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        //if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down)     FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down){
+          // fill only with true generated particles for MC
+          if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+          else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        }   
       } 
       else{   // downsampling for high pT
-        if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down)    FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        //if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down)    FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down){
+          // fill only with true generated particles for MC
+          if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+          else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,mcArray);
+        }
       }
     }
 
-	  if(!massHypothesis){
-	    if(recPrimVtx)fCutsLc->CleanOwnPrimaryVtx(io3Prong,aod,origownvtx);	    
+    // POSTPONED HERE !!!
+    //
+    massHypothesis=isSeleCuts&massHypothesis;
+    //
+    //
+
+	  if(!massHypothesis){  // true wheter massHypothesis, after PID and cuts, is null
+	    if(recPrimVtx)fCutsXic->CleanOwnPrimaryVtx(io3Prong,aod,origownvtx);	    
 	    AliAODVertex *vtx3 = (AliAODVertex*)io3Prong->GetSecondaryVtx();
 	    if(vtx3){delete vtx3;  vtx3=0;}
 	    delete io3Prong;
@@ -1231,13 +1345,17 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	fDist23All->Fill(io3Prong->GetDist23toPrim()*10000.);
 	
 	if(fReadMC){
-	  if(isTrueLambdaCorXic==1 || isTrueLambdaCorXic==3){
+	  //if(isTrueLambdaCorXic==1 || isTrueLambdaCorXic==3){
+        // MAYBE WE'LL CAHNGE IT !!!
+	  if(isTrueLambdaCorXic==1 || isTrueLambdaCorXic==3 || isTrueLambdaCorXic==4 || isTrueLambdaCorXic==5 || isTrueLambdaCorXic==12 || isTrueLambdaCorXic==15){
 	    fCosPointDistrSignal->Fill(io3Prong->CosPointingAngle());
 	    fDist12Signal->Fill(io3Prong->GetDist12toPrim()*10000.);
 	    //	    Printf("Dist 12, online x10000: %f",io3Prong->GetDist12toPrim()*10000.); 
 	    fDist23Signal->Fill(io3Prong->GetDist23toPrim()*10000.);	    
-	    if(isTrueLambdaCorXic==1)fhistMCSpectrumAccLc->Fill(part->Pt(),kRecoCuts);
-	    if(isTrueLambdaCorXic==3)fhistMCSpectrumAccXic->Fill(part->Pt(),kRecoCuts);
+	    //if(isTrueLambdaCorXic==1)fhistMCSpectrumAccLc->Fill(part->Pt(),kRecoCuts);
+	    if(isTrueLambdaCorXic==1 || isTrueLambdaCorXic==4 || isTrueLambdaCorXic==5)fhistMCSpectrumAccLc->Fill(part->Pt(),kRecoCuts);
+	    //if(isTrueLambdaCorXic==3)fhistMCSpectrumAccXic->Fill(part->Pt(),kRecoCuts);
+	    if(isTrueLambdaCorXic==3 || isTrueLambdaCorXic==12 || isTrueLambdaCorXic==15)fhistMCSpectrumAccXic->Fill(part->Pt(),kRecoCuts);
 	  }
 	}
 	
@@ -1314,7 +1432,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	
 	
 	// NOW DELETE VTX AND CANDIDATE
-	if(recPrimVtx)fCutsLc->CleanOwnPrimaryVtx(io3Prong,aod,origownvtx);	    
+	if(recPrimVtx)fCutsXic->CleanOwnPrimaryVtx(io3Prong,aod,origownvtx);	    
 	AliAODVertex *vtx3 = (AliAODVertex*)io3Prong->GetSecondaryVtx();
 	if(vtx3){delete vtx3;vtx3=0;}
 	delete io3Prong;
@@ -1684,16 +1802,30 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
   varPointer[1]=cand->CosPointingAngle();
   varPointer[2]=cand->DecayLengthXY();
   varPointer[3]=cand->NormalizedDecayLengthXY();
+    // REMOVE! put prong 0 in position 4, prong 1 in position 5, prong 2 in position 6
+  /*
+  UInt_t indices_prongs[3];
   if(massHypothesis<=1 || massHypothesis==3){
     varPointer[4]=cand->PtProng(0);
     varPointer[5]=cand->PtProng(1);
     varPointer[6]=cand->PtProng(2);
+    indices_prongs[0]=0;
+    indices_prongs[1]=1;
+    indices_prongs[2]=2;
   }
   else if(massHypothesis==2){
     varPointer[4]=cand->PtProng(2);
     varPointer[5]=cand->PtProng(1);
     varPointer[6]=cand->PtProng(0);
+    indices_prongs[0]=2;
+    indices_prongs[1]=1;
+    indices_prongs[2]=0;
   }
+  */
+  varPointer[4]=cand->PtProng(0);
+  varPointer[5]=cand->PtProng(1);
+  varPointer[6]=cand->PtProng(2);
+
   varPointer[7]=cand->GetReducedChi2();
   varPointer[8]=cand->GetSigmaVert(aod);
   varPointer[9]=0;
@@ -1709,32 +1841,95 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
   varPointer[21]=flagMC;	
 
   // add mass (mfaggin)
-  Double_t mass_pKpi = -1.;
-  Double_t mass_piKp = -1.;
-  if(massHypothesis==3){
-    mass_pKpi = cand->InvMassLcpKpi();
-    mass_piKp = cand->InvMassLcpiKp();
-  }
-  else if(massHypothesis==1){ // p K pi
-    mass_pKpi = cand->InvMassLcpKpi();
-  }
-  else if(massHypothesis==2){ // pi K p
-    mass_piKp = cand->InvMassLcpiKp();
-  }
+    // old
+  //Double_t mass_pKpi = -1.;
+  //Double_t mass_piKp = -1.;
+  //if(massHypothesis==3){
+  //  mass_pKpi = cand->InvMassLcpKpi();
+  //  mass_piKp = cand->InvMassLcpiKp();
+  //}
+  //else if(massHypothesis==1){ // p K pi
+  //  mass_pKpi = cand->InvMassLcpKpi();
+  //}
+  //else if(massHypothesis==2){ // pi K p
+  //  mass_piKp = cand->InvMassLcpiKp();
+  //}
+    // modified
+  Double_t mass_pKpi = cand->InvMassLcpKpi();
+  Double_t mass_piKp = cand->InvMassLcpiKp();
+
   varPointer[19] = mass_pKpi;
   varPointer[20] = mass_piKp;
 
   // add info about weight to "convert" reconstructed true LC in Xic
-  if(flagMC!=1 || !p){  // generated particle associated to this reconstructed one is not a Lc or is absent
+  //if(flagMC!=1 || !p){  // generated particle associated to this reconstructed one is not a Lc or is absent
+  if(flagMC<0.5 || !p){  // generated particle associated to this reconstructed one is not a Lc or is absent
     varPointer[22]=1.;
   }
-  else if(flagMC==1 && p && array_MC){ // flagMC==1 means that the reconstructed particle is connected to a generated Lc
+  ///////////////////////////////////////////////////////////
+  // flagMC==1 means that the reconstructed particle is connected to a generated Lc
+  // flagMC==4(5) means that the reconstructed particle is connected to a (non-)prompt generated Lc with found quark
+  // ---
+  // UPDATE
+  // Information about generated pKpi (*=10) or piKp (*=20), therefore the generated Lc have
+  //  - flagMC = 40: prompt Lc decaying in pKpi
+  //  - flagMC = 80: prompt Lc decaying in piKp
+  //  - flagMC = 50: non-prompt Lc decaying in pKpi
+  //  - flagMC = 100: non-prompt Lc decaying in piKp
+  // ---
+  ///////////////////////////////////////////////////////////
+  //else if(flagMC==1 && p && array_MC){ // flagMC==1 means that the reconstructed particle is connected to a generated Lc
+  else if(flagMC>0.5 /*&& flagMC<5.5*/ && p && array_MC){ 
     //Int_t index_firstProng = p->GetDaughter(0); // old
     Int_t index_firstProng = p->GetDaughterLabel(0);
     AliAODMCParticle *mc_firstProng=(AliAODMCParticle*)array_MC->At(index_firstProng);
     varPointer[22]=Weight_fromLc_toXic(p,mc_firstProng);
   }
   else  varPointer[22]=999.;
+
+  // store the PID variables (nSigma)
+  Float_t nSigma_TPC_prot_0=99, nSigma_TOF_prot_0=99, nSigma_TPC_pion_0=99, nSigma_TOF_pion_0=99;
+  Float_t nSigma_TPC_kaon_1=99, nSigma_TOF_kaon_1=99; 
+  Float_t nSigma_TPC_prot_2=99, nSigma_TOF_prot_2=99, nSigma_TPC_pion_2=99, nSigma_TOF_pion_2=99;
+  AliPIDResponse::EDetPidStatus status_TPC_0, status_TPC_1, status_TPC_2, status_TOF_0, status_TOF_1, status_TOF_2;
+  status_TPC_0 = fPidResponse->CheckPIDStatus(AliPIDResponse::kTPC,(AliAODTrack*)cand->GetDaughter(0));
+  status_TOF_0 = fPidResponse->CheckPIDStatus(AliPIDResponse::kTOF,(AliAODTrack*)cand->GetDaughter(0));
+  status_TPC_1 = fPidResponse->CheckPIDStatus(AliPIDResponse::kTPC,(AliAODTrack*)cand->GetDaughter(1));
+  status_TOF_1 = fPidResponse->CheckPIDStatus(AliPIDResponse::kTOF,(AliAODTrack*)cand->GetDaughter(1));
+  status_TPC_2 = fPidResponse->CheckPIDStatus(AliPIDResponse::kTPC,(AliAODTrack*)cand->GetDaughter(2));
+  status_TOF_2 = fPidResponse->CheckPIDStatus(AliPIDResponse::kTOF,(AliAODTrack*)cand->GetDaughter(2));
+  if(status_TPC_0 == AliPIDResponse::kDetPidOk){
+    nSigma_TPC_pion_0 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(0),AliPID::kPion);
+    nSigma_TPC_prot_0 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(0),AliPID::kProton);
+  }
+  if(status_TOF_0 == AliPIDResponse::kDetPidOk){
+    nSigma_TOF_pion_0 = fPidResponse->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(0),AliPID::kPion);
+    nSigma_TOF_prot_0 = fPidResponse->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(0),AliPID::kProton);
+  }
+  if(status_TPC_1 == AliPIDResponse::kDetPidOk){
+    nSigma_TPC_kaon_1 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(1),AliPID::kKaon);
+  }
+  if(status_TOF_1 == AliPIDResponse::kDetPidOk){
+    nSigma_TOF_kaon_1 = fPidResponse->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(1),AliPID::kKaon);
+  }
+  if(status_TPC_2 == AliPIDResponse::kDetPidOk){
+    nSigma_TPC_pion_2 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(2),AliPID::kPion);
+    nSigma_TPC_prot_2 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(2),AliPID::kProton);
+  }
+  if(status_TOF_2 == AliPIDResponse::kDetPidOk){
+    nSigma_TOF_pion_2 = fPidResponse->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(2),AliPID::kPion);
+    nSigma_TOF_prot_2 = fPidResponse->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(2),AliPID::kProton);
+  }
+  varPointer[23] = nSigma_TPC_prot_0;
+  varPointer[24] = nSigma_TOF_prot_0;
+  varPointer[25] = nSigma_TPC_pion_0;
+  varPointer[26] = nSigma_TOF_pion_0;
+  varPointer[27] = nSigma_TPC_kaon_1;
+  varPointer[28] = nSigma_TOF_kaon_1;
+  varPointer[29] = nSigma_TPC_prot_2;
+  varPointer[30] = nSigma_TOF_prot_2;
+  varPointer[31] = nSigma_TPC_pion_2;
+  varPointer[32] = nSigma_TOF_pion_2;
 
   fTreeVar->Fill();
 }
@@ -1806,4 +2001,40 @@ Double_t AliAnalysisTaskSEXicTopKpi::Weight_fromLc_toXic(AliAODMCParticle* p, Al
   Double_t exp_Lc  = TMath::Exp(-ct1/(gamma_Lc*cTau_Lc));
 
   return exp_Xic/exp_Lc; 
+}
+//________________________________________________________________________
+Short_t AliAnalysisTaskSEXicTopKpi::SetMapCutsResponse(Int_t massHypo_filtering, Int_t response_onlyCuts, Int_t response_onlyPID)
+{
+  //
+  // Create the following map:
+  //    - massHypothesis in 0 and 1 bits (00: massHypothesis = 0; 01: massHypothesis = 1; 10: massHypothesis = 2; 11: massHypothesis = 3)
+  //    - resp_onlyCuts  in 2 and 3 bits (same logic, but two bits left)
+  //    - resp_onlyPID   in 4 and 5 bits (same logic, but two bits left further) 
+  //
+
+  Short_t returnValue = 0;
+  // massHypthesis
+  if(massHypo_filtering==1)       SETBIT(returnValue,0);
+  else if(massHypo_filtering==2)  SETBIT(returnValue,1);
+  else if(massHypo_filtering==3){
+    SETBIT(returnValue,0);
+    SETBIT(returnValue,1);
+  }
+  // resp_onlyCuts
+  if(response_onlyCuts==1)        SETBIT(returnValue,2);
+  else if(response_onlyCuts==2)   SETBIT(returnValue,3);
+  else if (response_onlyCuts==3)
+  {
+    SETBIT(returnValue,2);
+    SETBIT(returnValue,3);
+  }
+  //resp_onlyPID
+  if(response_onlyPID==1)         SETBIT(returnValue,4);
+  else if(response_onlyPID==2)    SETBIT(returnValue,5);
+  else if(response_onlyPID==3){
+    SETBIT(returnValue,4);
+    SETBIT(returnValue,5);
+  }
+  
+  return returnValue;
 }

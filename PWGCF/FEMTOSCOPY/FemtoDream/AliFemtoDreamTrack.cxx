@@ -272,6 +272,7 @@ void AliFemtoDreamTrack::SetESDTrackingInformation(const bool TPCOnlyTrack) {
   //loop over the 6 ITS Layrs and check for a hit!
   for (int i = 0; i < 6; ++i) {
     fITSHit.push_back(fESDTrack->HasPointOnITSLayer(i));
+    if (i == 2 || i == 3) continue;
     if (fESDTrack->HasPointOnITSLayer(i)) {
       this->fHasITSHit = true;
     }
@@ -474,6 +475,7 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
   // loop over the 6 ITS Layrs and check for a hit!
   for (int i = 0; i < 6; ++i) {
     fITSHit.push_back(fVGlobalTrack->HasPointOnITSLayer(i));
+    if (i == 2 || i == 3) continue;
     if (fVGlobalTrack->HasPointOnITSLayer(i)) {
       this->fHasITSHit = true;
     }
@@ -589,6 +591,7 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
   for (int i = 0; i < 6; ++i) {
     fITSHit.push_back(fAODGlobalTrack->HasPointOnITSLayer(i));
     if (fAODGlobalTrack->HasPointOnITSLayer(i)) {
+      if (i == 2 || i == 3) continue;
       this->fHasITSHit = true;
     }
   }

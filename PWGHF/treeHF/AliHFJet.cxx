@@ -28,17 +28,17 @@ ClassImp(AliHFJet);
 
 
 AliHFJet::AliHFJet():
-  fID(-9.),
-  fHFMeson(-9.),
-  fPt(-9.),
-  fEta(-9.),
-  fPhi(-9.),
-  fDeltaEta(-9.),
-  fDeltaPhi(-9.),
-  fDeltaR(-9.),
-  fN(-9.),
-  fZg(-9.),
-  fRg(-9.)
+  fID(-99.),
+  fHFMeson(-99.),
+  fPt(-99.),
+  fEta(-99.),
+  fPhi(-99.),
+  fDeltaEta(-99.),
+  fDeltaPhi(-99.),
+  fDeltaR(-99.),
+  fN(-99.),
+  fZg(-99.),
+  fRg(-99.)
 {
 }
 
@@ -72,16 +72,16 @@ AliHFJet::~AliHFJet()
 // Reset the current object
 void AliHFJet::Reset()
 {
-  fID =-9;
-  fHFMeson=-9;
-  fPt = -9;
-  fEta = -9;
-  fPhi = -9;
-  fDeltaEta = -9;
-  fDeltaPhi = -9;
-  fDeltaR = -9;
-  fN=-9;
-  fZg=-9;
-  fRg=-9;
+  fID =-99.;
+  fHFMeson=-99.;
+  fPt = -99.;
+  fEta = -99.;
+  fPhi = -99.;
+  fDeltaEta = -99.;
+  fDeltaPhi = -99.;
+  fDeltaR = -99.;
+  fN=-99.;
+  fZg=-99.;
+  fRg=-99.;
 
 }

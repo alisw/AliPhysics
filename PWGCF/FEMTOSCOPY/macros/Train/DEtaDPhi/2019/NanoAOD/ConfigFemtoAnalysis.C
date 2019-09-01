@@ -53,6 +53,7 @@
  #include "AliFemtoPairCutPt.h"
  #include "AliFemtoCorrFctnDPhiStarDEta.h"
  #include "AliFemtoPairCutRadialDistance.h"
+ #include "AliFemtoCorrFctnDEtaDPhiStar.h"
 
  #include "AliFemtoV0PairCut.h"
  #include "AliFemtoV0TrackPairCut.h"
@@ -72,7 +73,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 	const int numOfMultBins = 5;
-	const int numOfChTypes = 38; //34 + 4 xi
+	const int numOfChTypes = 45; //34 + 4 xi+7
 	const int numOfkTbins = 5;
 
 	bool performSharedDaughterCut = true;
@@ -157,8 +158,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
 	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,1500};
 
-	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 1, 1, 1, 1, /* lambdas */ 1, 1, 1,/* Xis */ 1, 1, 1, 1};
-	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL","PXim","aPXim" ,"PXip","aPXip"};
+	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 1, 1, 1, 1, /* lambdas */ 1, 1, 1,/* p-Xi */ 1, 1, 1, 1,/*L-Xi*/ 1, 1, 1, 1,/*Xi-Xi*/ 1, 1, 1};
+	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL","PXim","aPXim" ,"PXip","aPXip","LXim","aLXim" ,"LXip","aLXip","XimXim","XipXim" ,"XipXip"};
 
 
 	double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
@@ -187,10 +188,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetFilterMask(filterbit);
 	Reader->SetCovMatPresent(false);
 	Reader->SetDCAglobalTrack(1); //false for FB7, true for the rest //we do not use DCA at all
-	Reader->SetUseMultiplicity("MultSelection.RefMult08.Value");
-
-	Reader->SetReadV0(kTRUE);
-	Reader->SetReadCascade(kTRUE);
+	//Reader->SetUseMultiplicity("MultSelection.RefMult08.Value");
+ Reader->SetUseMultiplicity("V0M");
+ Reader->SetReadV0(kTRUE);
+ Reader->SetReadCascade(kTRUE);
 
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
@@ -246,12 +247,13 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	//	AliFemtoCorrFctnDYDPhiSimpleWithCorrections	*cdydpyphinocorr[numOfMultBins*numOfChTypes];
 	AliFemtoCorrFctnDEtaDPhiCorrections *cdedpetaphiPt[numOfMultBins*numOfChTypes*numOfkTbins];
 
-	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta08[500];
+	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta08[5000];
 	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta12[500];
 	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta16[500];
 	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta20[500];
 
         AliFemtoCorrFctnNonIdDR         *cnonidtpc[numOfMultBins*numOfChTypes];
+        AliFemtoCorrFctnDEtaDPhiStar  *cdetadphistar[numOfMultBins*numOfChTypes];
 
 
 	// *** Third QA task - HBT analysis with all pair cuts off, TPC only ***
@@ -561,7 +563,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					if(ifMonitors)//ichg>8)
 					  {
 
-					    if(ichg>=20 && ichg<=26){
+					    if(ichg>=20 && ichg<=33){
 					      // //V0 monitors (memory leak problems?)
 					      cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", chrgs[ichg], imult));
 					      cutFail1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%i", chrgs[ichg], imult));
@@ -790,29 +792,77 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
 					    anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
 					  }
+            if(ichg == 38) //LXim
+              {
+                anetaphitpc[aniter]->SetFirstParticleCut(tXiCut[aniter]);
+                anetaphitpc[aniter]->SetSecondParticleCut(dtc4etaphitpc[aniter]);
+                anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
+              }
+            if(ichg == 39) //aLXim
+              {
+                anetaphitpc[aniter]->SetFirstParticleCut(tXiCut[aniter]);
+                anetaphitpc[aniter]->SetSecondParticleCut(dtc5etaphitpc[aniter]);
+                anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
+              }
+            if(ichg == 40) //LXip
+              {
+                anetaphitpc[aniter]->SetFirstParticleCut(tAXiCut[aniter]);
+                anetaphitpc[aniter]->SetSecondParticleCut(dtc4etaphitpc[aniter]);
+                anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
+              }
+            if(ichg == 41) //aLXip
+              {
+                anetaphitpc[aniter]->SetFirstParticleCut(tAXiCut[aniter]);
+                anetaphitpc[aniter]->SetSecondParticleCut(dtc5etaphitpc[aniter]);
+                anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
+              }
+              if(ichg == 42) //Xim-Xim
+                {
+                  anetaphitpc[aniter]->SetFirstParticleCut(tXiCut[aniter]);
+                  anetaphitpc[aniter]->SetSecondParticleCut(tXiCut[aniter]);
+                  anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
+                }
+              if(ichg == 43) //XipXim
+                {
+                  anetaphitpc[aniter]->SetFirstParticleCut(tXiCut[aniter]);
+                  anetaphitpc[aniter]->SetSecondParticleCut(tAXiCut[aniter]);
+                  anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
+                }
+                if(ichg == 44) //Xip-Xip
+                {
+                  anetaphitpc[aniter]->SetFirstParticleCut(tAXiCut[aniter]);
+                  anetaphitpc[aniter]->SetSecondParticleCut(tAXiCut[aniter]);
+                  anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
+                }
 
 					//**** Correlation functions *******
 					//***without corrections*****
-					if(ichg >=34)
-					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),23, 23);
-					else if(ichg >= 13 || ichg < 34)
+					if(ichg >=38)
+					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),11, 11);
+					else if(ichg >= 13 || ichg < 38)
 					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),23, 23);
 					else
 					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),29, 29);
 
 
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphinocorr[aniter]);
-
-        /*if(ichg==0 || ichg==1 || ichg==31 || ichg==33) //PP, aPaP, LL, ALAL
-            {
+					if(ichg==0 || ichg==1 || ichg==31 || ichg==33) //PP, aPaP, LL, ALAL
+                                        {
 					  cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //femto qinv, for identical mass particles
 					  anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
-				  	}
+					}
 					if(ichg==2 || ichg==27 || ichg==28 || ichg==29 || ichg==30 || ichg==32 || ichg==34 || ichg == 35 || ichg == 36 || ichg == 37) //PaP, PL, APL, PAL, APAL, LAL, PXim, aPXim, PXip, aPXip
-            {
+                                        {
 					  cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult), nbinssh, 0.0,shqmax); //for non-identical partcles
 					  anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
-            }*/
+                                        }
+
+          //if(ichg <= 8 || ichg >= 33){
+        //cdetadphistar[aniter] =  new AliFemtoCorrFctnDEtaDPhiStar(Form("cDEtaDPhiStar%stpcM%i", chrgs[ichg], imult),0.8, 50, -0.1, 0.1, 50, -0.1, 0.1);
+        //  std::cout<<cdetadphistar[aniter]<<std::endl;
+         //cdphistardeta08[aniter] = new AliFemtoCorrFctnDPhiStarDEta(Form("cdphistardeta08%stpcM%i", chrgs[ichg], imult), 0.8, 50, -0.1, 0.1, 50, -0.1, 0.1);
+        //  anetaphitpc[aniter]->AddCorrFctn(cdphistardeta08[aniter]);
+        //  }
 
 
 					//***with corrections****

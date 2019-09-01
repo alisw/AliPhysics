@@ -77,9 +77,9 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fcalcsphero(false) {
   if (fuseAliEvtCuts) {
     fEvtCuts = new AliEventCuts();
+    std::cout << "Setting up Event Cuts correspondingly for pp trigger: "
+        << trigger << std::endl;
     if (trigger != AliVEvent::kINT7) {
-      std::cout << "Setting up Event Cuts correspondingly for pp trigger: "
-                << trigger << std::endl;
       fEvtCuts->OverrideAutomaticTriggerSelection(trigger);
     }
   }

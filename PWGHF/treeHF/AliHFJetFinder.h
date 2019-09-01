@@ -18,6 +18,7 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODMCParticle.h"
 #include "AliHFJet.h"
+#include "AliTLorentzVector.h"
 #include "AliFJWrapper.h"
 #include "FJ_includes.h"
 
@@ -53,13 +54,13 @@ class AliHFJetFinder : public TObject
   virtual ~AliHFJetFinder();
 
   void SetFJWrapper(); 
-  AliHFJet GetHFJet(TClonesArray *array, AliAODRecoDecayHF *cand);
+  AliHFJet GetHFJet(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass=0);
   AliHFJet GetHFMCJet(TClonesArray *array, AliAODMCParticle *mcpart);
-  std::vector<AliHFJet> GetHFJets(TClonesArray *array, AliAODRecoDecayHF *cand);
+  std::vector<AliHFJet> GetHFJets(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass);
   std::vector<AliHFJet> GetHFMCJets(TClonesArray *array, AliAODMCParticle *mcpart);
   std::vector<AliHFJet> GetJets(TClonesArray *array);
   std::vector<AliHFJet> GetMCJets(TClonesArray *array);
-  void FindJets(TClonesArray *array, AliAODRecoDecayHF *cand=nullptr);
+  void FindJets(TClonesArray *array, AliAODRecoDecayHF *cand=nullptr, Double_t invmass=0);
   void FindMCJets(TClonesArray *array, AliAODMCParticle *mcpart=nullptr);
   #if !defined(__CINT__) && !defined(__MAKECINT__)
   void SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODRecoDecayHF *cand=nullptr);
@@ -70,6 +71,7 @@ class AliHFJetFinder : public TObject
   fastjet::AreaType AreaType(Int_t area);
   #endif
   Bool_t CheckTrack(AliAODTrack *track);
+  Bool_t CheckFilterBits(AliAODTrack *track);
   Bool_t CheckParticle(AliAODMCParticle *particle);
   Int_t Find_Candidate_Jet();
   Float_t RelativePhi(Float_t phi_1, Float_t phi_2);
@@ -113,7 +115,10 @@ class AliHFJetFinder : public TObject
 
   Float_t                  fMinTrackPt;
   Float_t                  fMaxTrackPt;
+  Float_t                  fMinTrackE;
+  Float_t                  fMaxTrackE;
   Float_t                  fMaxTrackEta;
+  Float_t                  fMaxTrackPhi;
 
   Float_t                  fMinParticlePt;
   Float_t                  fMaxParticlePt;

@@ -75,6 +75,7 @@ protected:
 
   TBinning *GetDefaultPtBinning() const;
   TBinning *GetZgBinning() const;
+  TBinning *GetRgBinning(double R) const;
 
   Double_t GetDownscaleWeight() const;
   std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;

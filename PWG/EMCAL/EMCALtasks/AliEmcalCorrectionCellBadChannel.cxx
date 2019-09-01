@@ -65,6 +65,9 @@ Bool_t AliEmcalCorrectionCellBadChannel::Initialize()
   Bool_t warm = kFALSE;
   GetProperty("acceptWarm", warm);
   if ( warm ) fRecoUtils->SetWarmChannelAsGood();
+
+  // Load 1D bad channel map
+  GetProperty("load1DBadChMap", fLoad1DBadChMap);
   
   return kTRUE;
 }

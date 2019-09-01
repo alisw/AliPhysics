@@ -20,6 +20,7 @@ class AliAnalysisUtils;
 class TH1F;
 class TH2F;
 //class TF1;
+class TGraphErrors;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliESDtrack;
@@ -83,9 +84,13 @@ public:
     void SetEtaCut(Float_t EtaMin, Float_t EtaMax);
     
     //Setter for the B correction function
-	void SetBcorrFunction(TF1* BcorrF) {fBcorr = BcorrF;};
+	//void SetBcorrFunction(TF1* BcorrF) {fBcorr = BcorrF;};
+	void SetBcorrFunction(TGraphErrors* BcorrF) {fBcorr = BcorrF;};
 	
-	
+	void SetLcD0Function(TGraphErrors* fHistWeightLcD0) {HistWeightLcD0 = fHistWeightLcD0;};
+	void SetDpD0Function(TGraphErrors* fHistWeightDpD0) {HistWeightDpD0 = fHistWeightDpD0;};
+	void SetDsD0Function(TGraphErrors* fHistWeightDsD0) {HistWeightDsD0 = fHistWeightDsD0;};
+	void SetDstarD0Function(TGraphErrors* fHistWeightDstarD0) {HistWeightDstarD0 = fHistWeightDstarD0;};
 	//Setter for the D correction function
 	void SetDcorrFunction1(TF1* DcorrF1) {fDcorr1 = DcorrF1;};
 	void SetDcorrFunction2(TF1* DcorrF2) {fDcorr2 = DcorrF2;};
@@ -126,7 +131,7 @@ private:
     
     //Find Mothers (Find HFE and NonHFE from MC information)
     Bool_t FindMother(Int_t mcIndex);
-    /*
+    
    
     // Returns the resolution Gaus which is correction to the resolution in different phi regions
     Float_t GetDCAResolMC_phi1(Float_t x);
@@ -141,7 +146,7 @@ private:
     Float_t GetDCAMeanMC_phi3(Float_t x);
     Float_t GetDCAMeanMC_phi4(Float_t x);
     
-    */
+    
     
     //Select HFE for the reconstruction efficiency calculation
     Bool_t IsHFelectronsMC(AliVTrack *track);
@@ -227,8 +232,8 @@ private:
     TH1F				*fPt_2;//!
     TH1F				*fNAnalizedTracks;//!
    // TH1F				*fNAnalizedTracksHijing;//!
-    //TH1F				*fITSnClus_1;//!
-   // TH1F				*fITSnClus_2;//!
+    TH1F				*fPionsPt;//!
+    TH1F				*fKaonsPt;//!
     TH1F				*fTPCnClus_1;//!
     TH1F				*fTPCnClus_2;//!
     TH2F				*fTPCnsigma_p1;//!
@@ -264,6 +269,9 @@ private:
     TH1F                *fPElec;//!
     TH1F                *hPtD0;//!
     TH1F                *hPtLambdaC;//!
+     TH1F                *hPtDp;//!
+    TH1F                *hPtDstar;//!
+     TH1F                *hPtDs;//!
     TH1F				*fPtHad_f;//!
     TH1F				*fPHad_f;//!
     TH2F                *fDCAz_pt_had;//!
@@ -281,7 +289,7 @@ private:
     TH2F                *fDCAxy_pt_BaryonB_beautybef;//!
     TH2F                *fDCAxy_pt_BaryonBD_beautybef;//!
     TH2F				*fDCAxy_pt_had_onlyDCA;//!
-   /* TH2F				*fDCAxy_pt_had_onlyDCA_phi1;//!
+    TH2F				*fDCAxy_pt_had_onlyDCA_phi1;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi2;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi3;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi4;//!
@@ -300,7 +308,7 @@ private:
     TH1F				*fResGausCorr_phi1;//!
     TH1F				*fResGausCorr_phi2;//!
     TH1F				*fResGausCorr_phi3;//!
-    TH1F				*fResGausCorr_phi4;//!*/
+    TH1F				*fResGausCorr_phi4;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_WoPID;//!
     //TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Phytia;//!
@@ -338,11 +346,21 @@ private:
     
     TH2F				*hCharmMotherPt_vsElecPt;//!
     TH2F				*hElecPt_vsCharmMotherPt;//!
+    TH2F				*hEleD0_WCorr;//!
+    TH2F				*hEleDp_WCorr_WFCorr;//!
+    TH2F				*hEleDs_WCorr_WFCorr;//!
+    TH2F				*hEleDstar_WCorr_WFCorr;//!
+    TH2F				*hEleLc_WCorr_WFCorr;//!
     
     TH2F				*hCharmMotherPt_vsElecPt_corr;//!
     TH2F				*hElecPt_vsCharmMotherPt_corr;//!
     
-    TF1					*fBcorr;
+    TF1					*fLcD01;
+    TGraphErrors				*HistWeightLcD0;
+    TGraphErrors				*HistWeightDstarD0;
+    TGraphErrors				*HistWeightDsD0;
+    TGraphErrors				*HistWeightDpD0;
+    TGraphErrors			*fBcorr;
     TF1					*fDcorr1;
     TF1					*fDcorr2;
     TF1					*fDcorr3;
@@ -402,7 +420,8 @@ private:
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
     Int_t               fNembMCeta; //! N > fNembMCeta = particles from eta generator
     
- 
+    Double_t 		probAcceptB;//!
+    Double_t 		probAcceptD;//!
     THnSparseF           *fD0;//! DCA
     THnSparseF           *fD0Data;//! DCA data
     //THnSparseF           *fD0HC;//! DCA HC

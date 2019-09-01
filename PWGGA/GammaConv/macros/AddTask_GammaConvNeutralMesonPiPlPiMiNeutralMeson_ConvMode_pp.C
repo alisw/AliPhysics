@@ -37,6 +37,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     Double_t  tolerance                   = -1,
     TString   periodNameV0Reader          = "",                       // period Name for V0Reader
     Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
+    Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -95,6 +96,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     AliPrimaryPionCuts *fPionCuts=0;
     if( PionCuts!=""){
       fPionCuts= new AliPrimaryPionCuts(PionCuts.Data(),PionCuts.Data());
+      fPionCuts->SetPrefilterRunFlag(prefilterRunFlag);
       if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
       fPionCuts->SetPeriodName(periodNameV0Reader);
       if(fPionCuts->InitializeCutsFromCutString(PionCuts.Data())){
@@ -275,7 +277,23 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     cuts.AddCutHeavyMesonPCM("00000113","00200009227000008280400000","32c51070a","0103603500000000","0153503000000000");
     cuts.AddCutHeavyMesonPCM("00000113","00200009227000008210400000","32c51070a","0103603500000000","0153503000000000");
     cuts.AddCutHeavyMesonPCM("00000113","00200009227000008220400000","32c51070a","0103603500000000","0153503000000000");
-
+  } else if ( trainConfig == 150){ // super loose track cuts
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","302010708","0103603500000000","0153503000000000"); // no ITS cut
+  } else if ( trainConfig == 151){ // ITS clusterCuts track
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","302010708","0103603500000000","0153503000000000"); // no ITS cut
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","312010708","0103603500000000","0153503000000000"); // hot first layer of SPD
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","322010708","0103603500000000","0153503000000000"); // hit in any layer SPD and ITS refit
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","372010708","0103603500000000","0153503000000000"); // hit in any layer SPD min 1 cls in ITS total
+  } else if ( trainConfig == 152){ // TPC cluster cut
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","302010708","0103603500000000","0153503000000000"); // min 80 clusters
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","30c010708","0103603500000000","0153503000000000"); // min 80 clusters + TPC refit
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","30a010708","0103603500000000","0153503000000000"); // min 80 clusters + TPC refit + chi2 etc
+  } else if ( trainConfig == 153){ // DCA cut
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","30c510708","0103603500000000","0153503000000000"); // no DCA cut
+  } else if ( trainConfig == 154){ // pt cut
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","30c030708","0103603500000000","0153503000000000"); // stricter pt cut of 150MeV like in AOD preselection
+  } else if ( trainConfig == 155){ // mass cut use 4 vec
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","30201070a","0103603500000000","0153503000000000"); // no ITS cut  
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //                                          ETA PRIME MESON
@@ -311,15 +329,15 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     
     // pp 13 TeV
   } else if ( trainConfig == 401) { //Standard 13TeV
-    cuts.AddCutHeavyMesonPCM("00010113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // V0AND
+    cuts.AddCutHeavyMesonPCM("00010113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // V0AND
   } else if ( trainConfig == 402) { //Standard 13TeV + PHI7
-    cuts.AddCutHeavyMesonPCM("00010113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // V0AND
-    cuts.AddCutHeavyMesonPCM("00062113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // PHI7
+    cuts.AddCutHeavyMesonPCM("00010113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // V0AND
+    cuts.AddCutHeavyMesonPCM("00062113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // PHI7
   } else if ( trainConfig == 403) { //Standard 13TeV + PHOS Triggers
-    cuts.AddCutHeavyMesonPCM("00010113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // V0AND
-    cuts.AddCutHeavyMesonPCM("00061113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // PHI1
-    cuts.AddCutHeavyMesonPCM("00062113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // PHI7
-    cuts.AddCutHeavyMesonPCM("00063113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // PHI8
+    cuts.AddCutHeavyMesonPCM("00010113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // V0AND
+    cuts.AddCutHeavyMesonPCM("00061113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // PHI1
+    cuts.AddCutHeavyMesonPCM("00062113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // PHI7
+    cuts.AddCutHeavyMesonPCM("00063113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // PHI8
   } else if ( trainConfig == 404) { //Standard 13TeV, and some Triggers
     cuts.AddCutHeavyMesonPCM("00010113","0d200009327000008250404000","32c51070a","0103603500000000","0153503000000000"); // V0AND
     cuts.AddCutHeavyMesonPCM("00052113","0d200009327000008250404000","32c51070a","0103603500000000","0153503000000000"); // EMC7
@@ -327,13 +345,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     cuts.AddCutHeavyMesonPCM("00085113","0d200009327000008250404000","32c51070a","0103603500000000","0153503000000000"); // EG2
     cuts.AddCutHeavyMesonPCM("00062113","0d200009327000008250404000","32c51070a","0103603500000000","0153503000000000"); // PHI7
   } else if ( trainConfig == 406) { //Standard 13TeV, and some more Triggers
-    cuts.AddCutHeavyMesonPCM("00010113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // V0AND
-    cuts.AddCutHeavyMesonPCM("00061113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // PHI1
-    cuts.AddCutHeavyMesonPCM("00062113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // PHI7
-    cuts.AddCutHeavyMesonPCM("00063113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // PHI8
-    cuts.AddCutHeavyMesonPCM("0008e113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // PHI1
-    cuts.AddCutHeavyMesonPCM("0008d113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // PHI7
-    cuts.AddCutHeavyMesonPCM("0009b113","0d200009327000008250404000","32c51070a","0103603n00000000","0153503000000000"); // PHI8
+    cuts.AddCutHeavyMesonPCM("00010113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // V0AND
+    cuts.AddCutHeavyMesonPCM("00061113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // PHI1
+    cuts.AddCutHeavyMesonPCM("00062113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // PHI7
+    cuts.AddCutHeavyMesonPCM("00063113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // PHI8
+    cuts.AddCutHeavyMesonPCM("0008e113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // PHI1
+    cuts.AddCutHeavyMesonPCM("0008d113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // PHI7
+    cuts.AddCutHeavyMesonPCM("0009b113","0d200009327000008250404000","32c51070a","0103603s00000000","0153503000000000"); // PHI8
   } else {
     Error(Form("GammaConvNeutralMeson_ConvMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -417,6 +435,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
 
     TString cutName( Form("%s_%s_%s_%s_%s",(cuts.GetEventCut(i)).Data(), (cuts.GetPhotonCut(i)).Data(),(cuts.GetPionCut(i)).Data(),(cuts.GetNDMCut(i)).Data(), (cuts.GetMesonCut(i)).Data() ) );
     analysisPionCuts[i] = new AliPrimaryPionCuts();
+    analysisPionCuts[i]->SetPrefilterRunFlag(prefilterRunFlag);
     analysisPionCuts[i]->SetPeriodName(periodNameV0Reader);
     if(runLightOutput>0) analysisPionCuts[i]->SetLightOutput(kTRUE);
     if( !analysisPionCuts[i]->InitializeCutsFromCutString((cuts.GetPionCut(i)).Data())) {
