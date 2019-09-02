@@ -9,7 +9,7 @@
 #include "AliFemtoManager.h"
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
-#include "AliFemtoEventReaderAODChain.h"
+#include "AliFemtoEventReaderAODMultSelection.h"
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoMJTrackCut.h"
@@ -153,7 +153,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	int runmults[numOfMultBins] = {0, 0, 0, 0, 1};
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
-	int multbins[numOfMultBins+1] = {2, 20, 50, 150, 2, 15000};
+	int multbins[numOfMultBins+1] = {2, 20, 50, 150, 0, 1000};
 
 	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 1, 1, 1, 1, /* lambdas */ 1, 1, 1,/* Xis */ 0, 0, 0, 0};
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL","PXim","aPXim" ,"PXip","aPXip"};
@@ -181,10 +181,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	//Reader->SetUseMultiplicity(AliFemtoEventReaderESDChain::kGlobalCount);
 
 
-	AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
+	AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
 	Reader->SetFilterMask(filterbit);
 	Reader->SetDCAglobalTrack(ifGlobalTracks); //false for FB7, true for the rest //we do not use DCA at all
-	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
+	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
 	Reader->SetMinPlpContribSPD(minPlpContribSPD);
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetReadV0(kTRUE);
@@ -303,7 +303,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc1etaphitpc[aniter]->SetCharge(1.0);
 					dtc1etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 					dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal);
-					dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
+					// dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
 					dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
 					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==34 || ichg==36) //protons
@@ -652,7 +652,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);
 					sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
                  sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-                 sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
+								 sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
                  sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
                  sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
 								 sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
