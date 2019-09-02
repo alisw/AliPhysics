@@ -6294,7 +6294,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= FunctionNL_kSDM(energy, 0.987513, -4.34641, -0.522125) ;
             energy /= 0.9935;
           }
-        } else if( fCurrentMC==kPPb5T13P4JJ ){
+        } else if( fCurrentMC==kPPb5T13P4JJ  ){
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.965112, -3.45484, -1.33685) ;
           }
@@ -7259,7 +7259,7 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.Contains("LHC13b4_plus"))        return kPPb5T13P4JJ;
   else if(  namePeriod.Contains("LHC13e7"))             return kPPb5T13P2HIJAdd;
   else if(  namePeriod.Contains("LHC18j5"))             return kPPb5T13P4DPMJet;
-  else if(  namePeriod.Contains("LHC19a4"))             return kLHC19a4;
+  else if(  namePeriod.Contains("LHC19a4"))             return kPPb5T13P4JJ;
   // pPb 5 TeV 2013 MC JJ EMC enhanced
   else if ( namePeriod.CompareTo("LHC16c3a") == 0 ||
             namePeriod.CompareTo("LHC16c3a2") == 0 )    return k16c3a;
