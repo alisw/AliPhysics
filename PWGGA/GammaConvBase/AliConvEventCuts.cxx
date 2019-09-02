@@ -1373,7 +1373,7 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
 //     break;
   case 3:
     fSpecialTrigger=3; //specific centrality trigger selection
-    //fOfflineTriggerMask=AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+    fOfflineTriggerMask=AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
     fTriggerSelectedManually = kTRUE;
     fSpecialTriggerName="AliVEvent::kCentral/kSemiCentral/kINT7";
     break;
@@ -1877,28 +1877,28 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
-    case 10: // 8DG1 - CINT8 DG1
+    case 10: //a) 8DG1 - CINT8 DG1
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DG1";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
-    case 11: // 7DG2 - CINT7 DG2
+    case 11: //b) 7DG2 - CINT7 DG2
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7DG2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
-    case 12: // 8DG2 - CINT8 DG2
+    case 12: //c) 8DG2 - CINT8 DG2
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DG2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
-    case 13: // Gamma Low EMC and DMC
+    case 13: //d) Gamma Low EMC and DMC
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=2;
       fSpecialSubTriggerName="7EG1";
@@ -1906,7 +1906,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
-    case 14: // Gamma Low EMC and DMC
+    case 14: //e) Gamma Low EMC and DMC
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=2;
       fSpecialSubTriggerName="7EG2";
@@ -4129,14 +4129,6 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if (firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
     }
 
-    // select manually PbPb kINT7 | kCentral | kSemiCentral
-    if ( fIsHeavyIon == 1 && fSpecialTrigger == 3  && fTriggerSelectedManually) {
-      if (firedTrigClass.Contains("CENT")){
-        if ( firedTrigClass.Contains("CV0H7") || firedTrigClass.Contains("CMID7") ) isSelected = 1;
-      }
-    }
-
-
     if (fOfflineTriggerMask){
       isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
       if (isSelected && !fPreSelCut){
@@ -4528,6 +4520,15 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
         }
       }
     }
+
+    //******************************************************//
+    // uncomment the following lines for trigger debugging
+    //   if (!fPreSelCut){
+    //     if (isSelected) cout << fSpecialTrigger << "\t"<<  fSpecialTriggerName.Data() <<  "\t"<<  fSpecialSubTrigger << "\t" << fSpecialSubTriggerName.Data()  << endl;
+    //   } else {
+    //      cout << "Preselection: " << firedTrigClass.Data() << endl;
+    //   }
+    //******************************************************//
   }
   fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
 
@@ -4586,6 +4587,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
   }
 
   if(hTriggerClassSelected && isSelected){
+
     if (mimickedTrigger){
       if (!fIsSDDFired) hTriggerClassSelected->Fill(33);
       if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassSelected->Fill(0);
