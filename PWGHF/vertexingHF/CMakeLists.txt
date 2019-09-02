@@ -79,7 +79,6 @@ set(SRCS
   AliAnalysisTaskSECleanupVertexingHF.cxx
   AliAnalysisTaskSECompareHF.cxx
   AliAnalysisTaskSEDplus.cxx
-  AliAnalysisTaskSEDs.cxx
   AliAnalysisTaskSELambdac.cxx
   AliAnalysisTaskSED0BDT.cxx
   AliAnalysisTaskSED0Mass.cxx
@@ -161,6 +160,14 @@ set(SRCS
   AliAnalysisTaskSEXicTopKpi.cxx
   AliRDHFCutsXictopKpi.cxx
    )
+
+# Sources for ROOT6 only - alphabetical order
+if(ROOT_VERSION_MAJOR EQUAL 6)
+  set(SRCS
+      ${SRCS}
+      AliAnalysisTaskSEDs.cxx
+  )
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
