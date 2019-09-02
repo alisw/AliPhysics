@@ -51,7 +51,11 @@ AliGenerator* CreatePythia8GenCustom( TString lTune,
         // Specific settings go here
     }
     if ( lTune.EqualTo("pp-experimental") ){
-        (AliPythia8::Instance())->ReadString(Form("MultipartonInteractions:pT0Ref = %.2f",2.0+gRandom->Uniform()));
+        TRandom3 gRand3;
+        gRand3.SetSeed(0);
+        Float_t lRandpT0Ref = 2.0+(((Float_t)((Int_t)(10.*gRand3.Uniform())))/10.);
+        (AliPythia8::Instance())->ReadString(Form("MultipartonInteractions:pT0Ref = %.2f",lRandpT0Ref));
+        std::cout << " Random pT0Ref: "<< lRandpT0Ref << std::endl;
     }
     if ( lTune.EqualTo("pp-moreqcd") ){
         (AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = on");
