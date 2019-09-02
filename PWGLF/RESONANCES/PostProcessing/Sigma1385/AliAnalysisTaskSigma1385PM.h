@@ -1,5 +1,5 @@
-#ifndef AliAnalysisSigma1385_H
-#define AliAnalysisSigma1385_H
+#ifndef AliAnalysisTaskSigma1385PM_H
+#define AliAnalysisTaskSigma1385PM_H
 
 #include <THnSparse.h>
 #include <TNtupleD.h>
@@ -10,11 +10,11 @@ class THistManager;
 class AliPIDResponse;
 class AliESDtrackCuts;
 
-class AliAnalysisSigma1385 : public AliAnalysisTaskSE {
+class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
    public:
-    AliAnalysisSigma1385();
-    AliAnalysisSigma1385(const char* name, Bool_t MCcase);
-    virtual ~AliAnalysisSigma1385();
+    AliAnalysisTaskSigma1385PM();
+    AliAnalysisTaskSigma1385PM(const char* name, Bool_t MCcase);
+    virtual ~AliAnalysisTaskSigma1385PM();
 
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t* option);
@@ -152,7 +152,7 @@ class AliAnalysisSigma1385 : public AliAnalysisTaskSE {
     std::vector<UInt_t> goodtrackindices;  //!
     std::vector<UInt_t> goodv0indices;     //!
 
-    ClassDef(AliAnalysisSigma1385, 1);
+    ClassDef(AliAnalysisTaskSigma1385PM, 1);
 };
 
 #endif
