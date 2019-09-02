@@ -80,7 +80,7 @@
 // Xi1530
 #pragma link C++ class AliAnalysisTaskXi1530+;
 // Sigma1385
-#pragma link C++ class AliAnalysisTaskSigma1385PM+ ;
+#pragma link C++ class AliAnalysisSigma1385+ ;
 //f0980
 #pragma link C++ class AliAnalysisTaskInclusivef0f2+;
 
