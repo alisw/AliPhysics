@@ -97,6 +97,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   TPCep(0),
   TPCepA(0),
   TPCepC(0),
+  NTPCclsEv(0),        
   fQnList(0),        
   man(0),        
   fList(0x0), 
@@ -233,7 +234,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString 
   ZDCepC(0),
   TPCep(0),
   TPCepA(0),
-  TPCepC(0),     
+  TPCepC(0), 
+  NTPCclsEv(0),          
   fQnList(0),         
   man(0),         
   fList(0x0), 
@@ -394,6 +396,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fList->Add(fQAHist);
   
   fTree->Branch("centrality", &cent);
+  fTree->Branch("NTPCclsEv", &NTPCclsEv);
   fTree->Branch("#tracks", &n);
   fTree->Branch("ZDCepA", &ZDCepA);
   fTree->Branch("ZDCepC", &ZDCepC);
@@ -551,6 +554,10 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   
   runn = event->GetRunNumber();
 
+  AliAODHeader *header = dynamic_cast<AliAODHeader*>(event->GetHeader());
+  
+  NTPCclsEv= header->GetNumberOfTPCClusters();  
+  
   n= acceptedTracks;
   if(acceptedTracks){
 
