@@ -137,7 +137,6 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16c3b,
       k16c3c,
       kPPb5T13P4DPMJet,
-      kLHC19a4,
       // pp 2.76TeV 2013
       k15g2,
       kPP2T13P1JJ,
@@ -320,7 +319,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_kTestBeamv3(Float_t e);
     Float_t     FunctionNL_kTestBeamv4(Float_t e);
     Float_t     FunctionNL_kTestBeamMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
-    
+
     void        InitCutHistograms(TString name="");
     void        SetFillCutHistograms(TString name="")           {if(!fHistograms){InitCutHistograms(name);} return;}
     TList*      GetCutHistograms()                              {return fHistograms;}
@@ -480,6 +479,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fUsePtDepTrackToCluster;                  // flag for switching on pT dependent matching parameters
     TF1*      fFuncPtDepEta;                            // TF1 for pT dep cutting in eta
     TF1*      fFuncPtDepPhi;                            // TF1 for pT dep cutting in phi
+    TRandom3  fRandom;                                  // random for effi generation
     Int_t     fUseTimingEfficiencyMCSimCluster;         // flag for switching on TimingEfficiencyMCSimCluster
     TF1*      fFuncTimingEfficiencyMCSimCluster;        // TF1 for TimingEfficiencyMCSimCluster
     Float_t   fMinTMDistSigma;                          // number of sigma's for TM using PHOS
@@ -642,7 +642,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,92)
+    ClassDef(AliCaloPhotonCuts,93)
 };
 
 #endif
