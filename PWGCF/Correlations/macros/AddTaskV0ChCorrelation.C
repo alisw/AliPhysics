@@ -125,7 +125,7 @@ AliAnalysisDataContainer *coutput7
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
    
-    TFile *file = TFile::Open("alien:///alice/cern.ch/user/m/manaam/Efficiency/Efficiency/V0Efficiency0_10.root");
+    TFile *file = TFile::Open("alien:///alice/cern.ch/user/m/manaam/Efficiency/V0Efficiency0_10.root");
 
     if(!file) {
       printf("ERROR: efficiency file is not available!\n");
