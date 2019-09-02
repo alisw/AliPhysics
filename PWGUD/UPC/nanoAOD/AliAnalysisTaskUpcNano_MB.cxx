@@ -478,7 +478,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     	TrackPtALL[nGoodTracksTPC+nGoodTracksITS] = trk->Pt();
     	nGoodTracksTPC++;
 	}
-     	
+    /*/ 	
     if(goodITSTrack){
     	TrackIndexITS[nGoodTracksITS] = iTrack;
 	TrackIndexALL[nGoodTracksTPC+nGoodTracksITS] = iTrack;
@@ -486,9 +486,10 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     	nGoodTracksITS++;
 	//cout<<"good its track"<<endl;
     	}
+     /*/
      
-    if(nGoodTracksTPC + nGoodTracksITS > 6) break;
-    //if(nGoodTracksTPC > 4) break;
+    //if(nGoodTracksTPC + nGoodTracksITS > 6) break;
+    if(nGoodTracksTPC > 4) break;
     }
     
   //{"Analyzed","2 TPC"," 2TPC+2ITS","4TPC","3TPC+1ITS","4TPC+ITS","2TPC+1ITS","2ITS","4ITS"};
@@ -501,13 +502,14 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(nGoodTracksTPC == 0 && nGoodTracksITS == 2)fHistEvents->Fill(8);
   if(nGoodTracksTPC == 0 && nGoodTracksITS == 4)fHistEvents->Fill(9);
      
-  if(nGoodTracksTPC+nGoodTracksITS == 4 && nGoodTracksTPC > 1 && nGoodTracksSPD > 1){
-    	MeanPt = GetMedian(TrackPtALL);
+  //if(nGoodTracksTPC+nGoodTracksITS == 4 && nGoodTracksTPC > 1 && nGoodTracksSPD > 1){
+  if(nGoodTracksTPC == 4){
+    	MeanPt = GetMedian(TrackPtTPC);
   	for(Int_t iTrack=0; iTrack<4; iTrack++) {
-	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexALL[iTrack]));
+	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
 	if(trk->Pt() > 1.0) nHighPt++;
       		if(trk->Pt() > MeanPt){
-			if(!trk->HasPointOnITSLayer(0) || !trk->HasPointOnITSLayer(1))continue;    
+			//if(!trk->HasPointOnITSLayer(0) || !trk->HasPointOnITSLayer(1))continue;    
       			qLepton[nLepton] = trk->Charge();
 			Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
     			Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
@@ -572,9 +574,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   nHighPt = 0;
   fInEtaRec = kTRUE;
   Int_t crossedFO[4][2];
-  if(nGoodTracksTPC == 2 && nGoodTracksLoose == 2 && nGoodTracksITS == 0){
+  //if(nGoodTracksTPC == 2 && nGoodTracksLoose == 2 && nGoodTracksITS == 0){
   //if(nGoodTracksSPD == 2 && nGoodTracksTOF == 2){
-  //if(nGoodTracksTPC == 2){
+  if(nGoodTracksTPC == 2){
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
 
 	if(isESD){ 
