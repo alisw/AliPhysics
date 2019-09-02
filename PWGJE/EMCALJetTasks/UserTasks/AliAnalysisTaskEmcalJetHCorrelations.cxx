@@ -161,8 +161,6 @@ bool AliAnalysisTaskEmcalJetHCorrelations::Initialize()
 void AliAnalysisTaskEmcalJetHCorrelations::RetrieveAndSetTaskPropertiesFromYAMLConfig()
 {
   // Base class options
-  // Recycle unused embedded events
-  fYAMLConfig.GetProperty("recycleUnusedEmbeddedEventsMode", fRecycleUnusedEmbeddedEventsMode, false);
   // Task physics (trigger) selection.
   std::string baseName = "eventCuts";
   std::vector<std::string> physicsSelection;
@@ -1504,7 +1502,6 @@ std::string AliAnalysisTaskEmcalJetHCorrelations::toString() const
 {
   std::stringstream tempSS;
   tempSS << std::boolalpha;
-  tempSS << "Recycle unused embedded events: " << fRecycleUnusedEmbeddedEventsMode << "\n";
   tempSS << "Jet collections:\n";
   TIter next(&fJetCollArray);
   AliJetContainer * jetCont;

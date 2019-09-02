@@ -1,6 +1,6 @@
 configurationName: "Default configuration"          # Optional - Simply for user convenience
 pass: ""                                            # Attempts to automatically retrieve the pass if not specified. Usually of the form "pass#".
-recycleUnusedEmbeddedEventsMode: false              # True if embedded events should be recycled by using the internal event selection of the embedding helper.
+recycleUnusedEmbeddedEventsMode: false              # DEPRECATED! This is handled directly by the embedding helper. True if embedded events should be recycled by using the internal event selection of the embedding helper.
 # Look at the documentation for a full explanation of the input objects!
 inputObjects:                                       # Define all of the input objects for the corrections
     cells:                                          # Configure cells
