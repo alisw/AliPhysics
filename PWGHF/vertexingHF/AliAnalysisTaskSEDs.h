@@ -23,6 +23,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliLog.h"
+#include "AliExternalBDT.h"
 
 class AliNormalizationCounter;
 
@@ -79,6 +80,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 
   Double_t GetPtWeightFromHistogram(Double_t pt);
 
+  /// methods for ML application
+  void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
+  void SetMLConfigFile(TString path = ""){fConfigPath = path;}
+
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -91,8 +96,12 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
+  /// methods for ML application
+  Bool_t SetMLVariables(TString path);
+  std::string GetFile(const std::string path);
+  double CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF);
 
-  enum {kMaxPtBins=24,knVarForSparse=15,knVarForSparseAcc=3,kVarForImpPar=3};
+  enum {kMaxPtBins=24,knVarForSparse=16,knVarForSparseAcc=3,kVarForImpPar=3};
     
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
@@ -152,11 +161,11 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH3F*   fPtProng0Hist3D;   //!<! Pt prong0 vs Ds mass vs pt
   TH3F*   fPtProng1Hist3D;   //!<! Pt prong1 vs Ds mass vs pt
   TH3F*   fPtProng2Hist3D;   //!<! Pt prong2 vs Ds mass vs pt
-  TNtuple *fNtupleDs; //!<! output ntuple
-  Int_t fFillNtuple;                 /// 0 not to fill ntuple
-  /// 1 for filling ntuple for events through Phi
-  /// 2 for filling ntuple for events through K0Star
-  /// 3 for filling all
+  TNtuple *fNtupleDs;        //!<! output ntuple
+  Int_t fFillNtuple;         /// 0 not to fill ntuple
+                             /// 1 for filling ntuple for events through Phi
+                             /// 2 for filling ntuple for events through K0Star
+                             /// 3 for filling all
   Bool_t   fUseCentrAxis; /// off = kFALSE (default)
 
   Int_t   fSystem;                    /// 0 = pp, 1 = pPb,PbPb
@@ -201,8 +210,17 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TString fCentEstName; /// name of the centrality estimator (to fill axis of sparse)
   Bool_t fUseFinPtBinsForSparse; ///flag to fill pt axis of sparse with 0.1 GeV/c wide bins
 
+  /// variables for ML application
+  Bool_t fApplyML;                        /// flag to enable ML application
+  TString fConfigPath;                    /// path to ML config file
+  Int_t fNumVars;                         /// number of variables used in the model
+  std::vector<std::string> fModelPaths;   /// vector of model paths
+  std::vector<double> fModelOutputCuts;    /// vector of thresholds on model output
+  std::vector<double> fPtBinsModel;        /// vector of pt bin lims
+  std::vector<AliExternalBDT> fModels;    //!<! vector of ML models (BDTs for now)
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,30);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,31);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

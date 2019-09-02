@@ -1,9 +1,9 @@
-AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
-			       Int_t storeNtuple=0,Bool_t storeNsparse=kFALSE,Bool_t storeNsparseDplus=kFALSE,Bool_t readMC=kFALSE,
-			       TString filename="", TString postname="", Bool_t doCutVarHistos = kFALSE, Int_t AODProtection = 1,
-			       Bool_t fillNTrklAxis = kFALSE, Bool_t fillCentrAxis = kFALSE,
-			       Bool_t useRotBkg=kFALSE, Bool_t useBkgFromPhiSB=kFALSE, Bool_t useCutV0multTPCout=kFALSE,
-			       Bool_t storeNsparseImpPar = kFALSE)
+AliAnalysisTaskSEDs *AddTaskDs(Int_t system = 0/*0=pp,1=PbPb*/,
+                               Int_t storeNtuple = 0, Bool_t storeNsparse = kFALSE, Bool_t storeNsparseDplus=  kFALSE,Bool_t readMC = kFALSE,
+                               TString filename = "", TString postname = "", Bool_t doCutVarHistos = kFALSE, Int_t AODProtection = 1,
+                               Bool_t fillNTrklAxis = kFALSE, Bool_t fillCentrAxis = kFALSE, Bool_t useRotBkg = kFALSE, Bool_t useBkgFromPhiSB = kFALSE, 
+                               Bool_t useCutV0multTPCout = kFALSE, Bool_t storeNsparseImpPar = kFALSE, Bool_t applyML = kFALSE, TString confFileML = "",
+                               TString cutObjName = "AnalysisCuts")
 {
   //
   // Test macro for the AliAnalysisTaskSE for Ds candidates
@@ -43,9 +43,9 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
     }
     else ::Fatal("AddTaskDs", "Standard cut object not available for PbPb: analysis will not start!\n");
   }
-  else {analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get("AnalysisCuts");
+  else {analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(cutObjName.Data());
     if (!analysiscuts)
-	{ ::Fatal("AddTaskDs", "Cut object named \"AnalysisCuts\" not found in cutfile.");
+	{ ::Fatal("AddTaskDs", "Cut object not found in cutfile");
 	  return NULL;
 	}
 }
@@ -70,6 +70,9 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
   dsTask->SetSystem(system);
   dsTask->SetFillTracklets(fillNTrklAxis);
   dsTask->SetFillCentralityAxis(fillCentrAxis);
+  dsTask->SetDoMLApplication(applyML);
+  if(applyML)
+    dsTask->SetMLConfigFile(confFileML);
   mgr->AddTask(dsTask);
     
   // Create containers for input/output
