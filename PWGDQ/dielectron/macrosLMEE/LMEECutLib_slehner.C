@@ -801,8 +801,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
   TMVACuts->AddTMVAInput("centrality",(Float_t) AliDielectronVarManager::kCentrality);
 
   TMVACuts->SetTMVAWeights("BDTG method", weightFile.Data());
-  Printf("Use TMVA cut value = %f _________",-1. + 0.02*MVACut);
-  TMVACuts->SetTMVACutValue(-1. + 0.02*MVACut);
+  Printf("Use TMVA cut value = %f _________",-1. + 0.2*MVACut);
+  TMVACuts->SetTMVACutValue(-1. + 0.2*MVACut);
   }
 
   if(MVACut!=0) trackCuts->AddCut(TMVACuts);
