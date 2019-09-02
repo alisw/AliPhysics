@@ -479,6 +479,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fUsePtDepTrackToCluster;                  // flag for switching on pT dependent matching parameters
     TF1*      fFuncPtDepEta;                            // TF1 for pT dep cutting in eta
     TF1*      fFuncPtDepPhi;                            // TF1 for pT dep cutting in phi
+    TRandom3  fRandom;                                  // random for effi generation
     Int_t     fUseTimingEfficiencyMCSimCluster;         // flag for switching on TimingEfficiencyMCSimCluster
     TF1*      fFuncTimingEfficiencyMCSimCluster;        // TF1 for TimingEfficiencyMCSimCluster
     Float_t   fMinTMDistSigma;                          // number of sigma's for TM using PHOS
