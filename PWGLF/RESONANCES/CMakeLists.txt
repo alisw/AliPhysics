@@ -103,6 +103,7 @@ set(SRCS
   AliRsnMiniTaskPhiVn.cxx
   AliRsnCutPIDkink.cxx
   PostProcessing/Xi1530/AliAnalysisTaskXi1530.cxx
+  PostProcessing/Sigma1385/AliAnalysisTaskSigma1385PM.cxx
   PostProcessing/f0980/AliAnalysisTaskInclusivef0f2.cxx
   )
 
