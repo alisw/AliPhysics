@@ -298,6 +298,11 @@ void AddTask_GammaConvCalo_pPb(
 
   //************************************************ PCM - EDC analysis 8 TeV pPb *********************************************
   // 8 TeV pPb variations with new PCM cut
+  } else if (trainConfig == 2020) { // PCM variations
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
+
   } else if (trainConfig == 2730) { // PCM variations
     cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
     cuts.AddCutPCMCalo("80010023","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); // no SPD pileup cut
