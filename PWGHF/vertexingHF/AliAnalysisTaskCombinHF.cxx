@@ -75,6 +75,12 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fPtVsYVsMultGenAccFeeddw(0x0),
   fPtVsYVsMultGenAccEvSelFeeddw(0x0),
   fPtVsYVsMultRecoFeeddw(0x0),
+  fPtVsYVsPtBGenFeeddw(0x0),
+  fPtVsYVsPtBGenLargeAccFeeddw(0x0),
+  fPtVsYVsPtBGenLimAccFeeddw(0x0),
+  fPtVsYVsPtBGenAccFeeddw(0x0),
+  fPtVsYVsPtBGenAccEvSelFeeddw(0x0),
+  fPtVsYVsPtBRecoFeeddw(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
   fMassVsPtVsYLSpp(0x0),
@@ -198,6 +204,12 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fPtVsYVsMultGenAccFeeddw(0x0),
   fPtVsYVsMultGenAccEvSelFeeddw(0x0),
   fPtVsYVsMultRecoFeeddw(0x0),
+  fPtVsYVsPtBGenFeeddw(0x0),
+  fPtVsYVsPtBGenLargeAccFeeddw(0x0),
+  fPtVsYVsPtBGenLimAccFeeddw(0x0),
+  fPtVsYVsPtBGenAccFeeddw(0x0),
+  fPtVsYVsPtBGenAccEvSelFeeddw(0x0),
+  fPtVsYVsPtBRecoFeeddw(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
   fMassVsPtVsYLSpp(0x0),
@@ -326,6 +338,12 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fPtVsYVsMultGenAccFeeddw;
     delete fPtVsYVsMultGenAccEvSelFeeddw;
     delete fPtVsYVsMultRecoFeeddw;
+    delete fPtVsYVsPtBGenFeeddw;
+    delete fPtVsYVsPtBGenLargeAccFeeddw;
+    delete fPtVsYVsPtBGenLimAccFeeddw;
+    delete fPtVsYVsPtBGenAccFeeddw;
+    delete fPtVsYVsPtBGenAccEvSelFeeddw;
+    delete fPtVsYVsPtBRecoFeeddw;
     delete fMassVsPtVsY;
     delete fMassVsPtVsYLSpp;
     delete fMassVsPtVsYLSmm;
@@ -517,7 +535,24 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     fPtVsYVsMultRecoFeeddw = new TH3F("hPtVsYVsMultRecoFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultRecoFeeddw);
  
-  }
+    fPtVsYVsPtBGenFeeddw = new TH3F("hPtVsYVsPtBGenFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBGenFeeddw);
+    
+    fPtVsYVsPtBGenLargeAccFeeddw = new TH3F("hPtVsYVsPtBGenLargeAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBGenLargeAccFeeddw);
+    
+    fPtVsYVsPtBGenLimAccFeeddw = new TH3F("hPtVsYVsPtBGenLimAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBGenLimAccFeeddw);
+    
+    fPtVsYVsPtBGenAccFeeddw = new TH3F("hPtVsYVsPtBGenAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBGenAccFeeddw);
+    
+    fPtVsYVsPtBGenAccEvSelFeeddw = new TH3F("hPtVsYVsPtBGenAccEvSelFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBGenAccEvSelFeeddw);
+ 
+    fPtVsYVsPtBRecoFeeddw = new TH3F("hPtVsYVsPtBRecoFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBRecoFeeddw);
+ }
   
   
   Int_t nMassBins=static_cast<Int_t>(fMaxMass*1000.-fMinMass*1000.);
@@ -1092,6 +1127,8 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
       if(isGoodDecay){
         Double_t ptgen=part->Pt();
         Double_t ygen=part->Y();
+	Double_t ptbmoth=0.;
+	if(orig==5) ptbmoth=AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,part);
 	if(fAnalysisCuts->IsInFiducialAcceptance(ptgen,ygen)){
 	  fHistCheckOrigin->Fill(orig,isInj);
 	  if(orig==4){
@@ -1101,18 +1138,28 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
 	    if(isEvSel && isInAcc) fPtVsYVsMultGenAccEvSelPrompt->Fill(ptgen,ygen,fMultiplicity);
 	  }else if(orig==5){
 	    fPtVsYVsMultGenFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	    fPtVsYVsPtBGenFeeddw->Fill(ptgen,ygen,ptbmoth);
 	    if(TMath::Abs(ygen)<0.5){
 	      fPtVsYVsMultGenLimAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
-	      Double_t ptbmoth=AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,part);
+	      fPtVsYVsPtBGenLimAccFeeddw->Fill(ptgen,ygen,ptbmoth);
 	      fBMohterPtGen->Fill(ptbmoth);
 	    }
-	    if(isInAcc) fPtVsYVsMultGenAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
-	    if(isEvSel && isInAcc) fPtVsYVsMultGenAccEvSelFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	    if(isInAcc){
+	      fPtVsYVsMultGenAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	      fPtVsYVsPtBGenAccFeeddw->Fill(ptgen,ygen,ptbmoth);
+	    }
+	    if(isEvSel && isInAcc){
+	      fPtVsYVsMultGenAccEvSelFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	      fPtVsYVsMultGenAccEvSelFeeddw->Fill(ptgen,ygen,ptbmoth);
+	    }
 	  }
 	}
         if(TMath::Abs(ygen)<0.9){
 	  if(orig==4) fPtVsYVsMultGenLargeAccPrompt->Fill(ptgen,ygen,fMultiplicity);
-	  else if(orig==5) fPtVsYVsMultGenLargeAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	  else if(orig==5){
+	    fPtVsYVsMultGenLargeAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	    fPtVsYVsPtBGenLargeAccFeeddw->Fill(ptgen,ygen,ptbmoth);
+	  }
 	}
       }
     }
@@ -1162,7 +1209,11 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 		  fHistCheckOriginRecoD->Fill(orig,isInj);
 		  if(labD<200000) fHistCheckOriginRecoVsGen->Fill(fOrigContainer[labD],orig);
 		  if(orig==4) fPtVsYVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
-		  else if(orig==5) fPtVsYVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+		  else if(orig==5){
+		    Double_t ptbmoth=AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,dmes);
+		    fPtVsYVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+		    fPtVsYVsPtBRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),ptbmoth);
+		  }
 		}
 	      }else{
 		fMassVsPtVsYRefl->Fill(mass,pt,rapid);
