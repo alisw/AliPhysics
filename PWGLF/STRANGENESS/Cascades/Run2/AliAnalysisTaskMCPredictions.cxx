@@ -552,8 +552,8 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         for(Int_t ih=0; ih<23; ih++) if( lThisPDG == lPDGCodes[ih] ) lContinue = kFALSE;
         if ( lContinue ) continue;
             
-        //lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
-        lThisRap   = lPart->Y();
+        lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
+        //lThisRap   = lPart->Y();
         lThisPt    = lPart->Pt();
         
         //Use Physical Primaries only for filling These Histos
