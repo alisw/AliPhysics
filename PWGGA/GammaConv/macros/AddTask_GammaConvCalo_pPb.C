@@ -189,17 +189,19 @@ void AddTask_GammaConvCalo_pPb(
   if (trainConfig == 1){ // EMC  INT7 run1 & run2
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411790105f032230000","0h63103100000010"); // 0-100% without NL
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC
-  } else if (trainConfig == 2){ // EMC EMC triggers
-    cuts.AddCutPCMCalo("80052113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EMC7
-    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG2
-    cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG1
-  } else if (trainConfig == 3){ // EMC  INT7 run1 & run2
+  } else if (trainConfig == 2){ // EMC  INT7 run1 & run2
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); // 0-100% PCM NL
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC
-  } else if (trainConfig == 4){ // EMC EMC triggers
+  } else if (trainConfig == 3){ // EMC EMC triggers
+    cuts.AddCutPCMCalo("80052113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EMC7
     cuts.AddCutPCMCalo("80052113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EMC7
-    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG2
+  } else if (trainConfig == 4){ // EMC EMC triggers
+    cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG1
     cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG1
+  } else if (trainConfig == 5){ // EMC EMC triggers
+    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG2
+    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG2
+
 
   //************************************************ PCM- EDC analysis 5 TeV pPb cent dep ************************************
   } else if (trainConfig == 100){ // EMC  INT7 run1 & run2
