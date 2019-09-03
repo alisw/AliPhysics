@@ -104,9 +104,10 @@ public:
   void SetPtBinWidth(Double_t binw){fPtBinWidth=binw;}
   void SetEtaAccCut(Double_t etacut){fEtaAccCut=etacut;}
   void SetPtAccCut(Double_t ptcut){fPtAccCut=ptcut;}
-  void SetMultiplicityRange(Double_t mmin=-0.5, Double_t mmax=199.5){
+  void SetMultiplicityRange(Double_t mmin=-0.5, Double_t mmax=199.5, Int_t nbins=200){
     fMinMultiplicity=mmin;
     fMaxMultiplicity=mmax;
+    fNumOfMultBins=nbins;
   }
 
   void SetPIDstrategy(Int_t strat){fPIDstrategy=strat;}
@@ -272,13 +273,14 @@ private:
   TObjString* fEventInfo;  /// unique event Id for event mixing checks
   Double_t fVtxZ;         /// zVertex
   Double_t fMultiplicity; /// multiplicity
+  Int_t fNumOfMultBins; /// number of bins for multiplcities in MC histos
   Double_t fMinMultiplicity;  /// lower limit for multiplcities in MC histos
   Double_t fMaxMultiplicity; /// upper limit for multiplcities in MC histos
   TObjArray* fKaonTracks; /// array of kaon-compatible tracks (TLorentzVectors)
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,26); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,27); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
