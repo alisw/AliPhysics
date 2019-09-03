@@ -184,7 +184,14 @@ public:
         fEnableNsigmaTPCDataCorr=true; 
         fSystemForNsigmaTPCDataCorr=syst; 
     }
-  
+
+    void ApplyPhysicsSelectionOnline(bool apply=true) { fApplyPhysicsSelOnline = apply; }
+
+    void EnableEventDownsampling(float fractokeep) {
+        fEnableEventDownsampling = true;
+        fFracToKeepEventDownsampling = fractokeep;
+    }
+
     // Particles (tracks or MC particles)
     //-----------------------------------------------------------------------------------------------
     void                        SetFillParticleTree(Bool_t b) {fFillParticleTree = b;}
@@ -437,8 +444,13 @@ private:
     bool fCorrNtrVtx;
     bool fCorrV0MVtx;
 
+    bool fApplyPhysicsSelOnline;                                   /// flag to apply physics selection in the task
+    bool fEnableEventDownsampling;                                 /// flag to apply event downsampling
+    float fFracToKeepEventDownsampling;                            /// fraction of events to be kept by event downsampling
+    unsigned long fSeedEventDownsampling;                          /// seed for event downsampling
+
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,19);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,20);
     /// \endcond
 };
 
