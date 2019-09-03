@@ -45,6 +45,7 @@
 #include <TH2F.h>
 #include <TDatabasePDG.h>
 #include <THnSparse.h>
+#include <TRandom3.h>
 #include <AliAnalysisDataSlot.h>
 #include <AliAnalysisDataContainer.h>
 #include "TChain.h"
@@ -276,7 +277,11 @@ fDoJetSubstructure(false),
 fEnableNsigmaTPCDataCorr(false),
 fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone),
 fCorrNtrVtx(false),
-fCorrV0MVtx(false)
+fCorrV0MVtx(false),
+fApplyPhysicsSelOnline(false),
+fEnableEventDownsampling(false),
+fFracToKeepEventDownsampling(1.1),
+fSeedEventDownsampling(0)
 {
   fParticleCollArray.SetOwner(kTRUE);
   fJetCollArray.SetOwner(kTRUE);
@@ -1066,6 +1071,12 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
 {
   /// Execute analysis for current event:
   
+  if(fEnableEventDownsampling) {
+        gRandom->SetSeed(fSeedEventDownsampling);
+        if(gRandom->Rndm() > fFracToKeepEventDownsampling)
+            return;
+  }
+
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
   fNentries->Fill(0); // all events
@@ -1230,8 +1241,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   
   fCentrality = fEvSelectionCuts->GetCentrality(aod);
   if(fCentrality<0) fCentrality=-1.;
+  bool isEvRejPhysSel = fEvSelectionCuts->IsEventRejectedDuePhysicsSelection();
   //normalisation counter
-  if(!fEvSelectionCuts->IsEventRejectedDuePhysicsSelection()){
+  if(!isEvRejPhysSel){
     if(isEvSel){
       //selected events with primary vertex
       fHistoNormCounter->Fill(0.,fCentrality);
@@ -1258,11 +1270,11 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
       fHistoNormCounter->Fill(3.,fCentrality);
     }
   }
-  
+
   Bool_t isEvRejCent  = fEvSelectionCuts->IsEventRejectedDueToCentrality();
   
-  if(!isEvSel && isEvRejCent){
-    return; //cut only centrality, else tag only
+  if(!isEvSel && (isEvRejCent || (fApplyPhysicsSelOnline && isEvRejPhysSel))){
+    return; //cut only centrality and physics selection if enabled, else tag only
   }
   if(isEvSel) fNentries->Fill(4);
   // AOD primary vertex
