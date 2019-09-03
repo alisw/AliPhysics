@@ -187,9 +187,10 @@ public:
 
     void ApplyPhysicsSelectionOnline(bool apply=true) { fApplyPhysicsSelOnline = apply; }
 
-    void EnableEventDownsampling(float fractokeep) {
+    void EnableEventDownsampling(float fractokeep, unsigned long seed) {
         fEnableEventDownsampling = true;
         fFracToKeepEventDownsampling = fractokeep;
+        fSeedEventDownsampling = seed;
     }
 
     // Particles (tracks or MC particles)
