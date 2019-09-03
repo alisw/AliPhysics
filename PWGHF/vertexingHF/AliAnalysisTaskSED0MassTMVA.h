@@ -111,7 +111,7 @@ class AliAnalysisTaskSED0MassTMVA : public AliAnalysisTaskSE
   AliAnalysisTaskSED0MassTMVA(const AliAnalysisTaskSED0MassTMVA &source);
   AliAnalysisTaskSED0MassTMVA& operator=(const AliAnalysisTaskSED0MassTMVA& source);
   void	   DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList *ListDetSignal);
-  Double_t GetBeautyMotherY(TClonesArray* arrayMC, AliAODMCParticle *mcPart);t
+  Double_t GetBeautyMotherY(TClonesArray* arrayMC, AliAODMCParticle *mcPart);
   void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts, TList *listout);
   void     FillVarHists(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
   void     FillCandVariables(AliAODEvent *aodev, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts);
