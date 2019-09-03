@@ -15,7 +15,7 @@
 #include <AliTRDdigitsFilter.h>
 #endif
 
-AliAnalysisTask  *AddTRDdigitsFilter(Int_t runNumber)
+AliAnalysisTask  *AddTRDdigitsFilter(TString cfg)
 {
   //gSystem->Load("libTRDrec");
   // pointer to the analysis manager
@@ -36,26 +36,31 @@ AliAnalysisTask  *AddTRDdigitsFilter(Int_t runNumber)
   /////////////////////////
   AliTRDdigitsFilter *filterTask = new AliTRDdigitsFilter();
 
-  if (runNumber >= 295274 && runNumber <= 297624) {
+  //if (runNumber >= 295274 && runNumber <= 29762) {
+  if ( cfg == "PbPb-2018" ) {
 
     // LHC18q,r  -  Pb-Pb 2018
 
-    filterTask->GetV0cuts()->SetMode(AliESDv0KineCuts::kPurity,
+    filterTask->GetV0KineCuts()->SetMode(AliESDv0KineCuts::kPurity,
                                      AliESDv0KineCuts::kPbPb);
 
-    filterTask->AcceptParticles("v0elec", AliTRDdigitsFilter::kPidV0Electron,
-                                1.5, 99999999., 1.0);
+    filterTask->AcceptTracks("v0elec", AliTRDdigitsFilter::kPidV0Electron,
+                                2.0, 99999999., 1.0);
 
-    filterTask->AcceptParticles("v0pilo", AliTRDdigitsFilter::kPidV0Pion,
-                                2.0, 2.5, 0.5);
+    filterTask->AcceptTracks("v0pilo", AliTRDdigitsFilter::kPidV0Pion,
+                                2.0, 2.5, 0.3);
 
-    filterTask->AcceptParticles("v0pihi", AliTRDdigitsFilter::kPidV0Pion,
+    filterTask->AcceptTracks("v0pihi", AliTRDdigitsFilter::kPidV0Pion,
                                 2.5, 99999999., 1.0);
 
-    filterTask->AcceptParticles("v0prot", AliTRDdigitsFilter::kPidV0Proton,
+    filterTask->AcceptTracks("v0prot", AliTRDdigitsFilter::kPidV0Proton,
                                 2.0, 99999999., 1.0);
+
+    filterTask->AcceptEvents("cent", 0.0, 2.0, 1.0e-2);
   }
 
+  cout << "filter task set up" << endl;
+  filterTask->PrintSettings();
 
   mgr->AddTask(filterTask);
 
