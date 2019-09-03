@@ -1273,7 +1273,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
 
   Bool_t isEvRejCent  = fEvSelectionCuts->IsEventRejectedDueToCentrality();
   
-  if(!isEvSel && isEvRejCent || (fApplyPhysicsSelOnline && isEvRejPhysSel)){
+  if(!isEvSel && (isEvRejCent || (fApplyPhysicsSelOnline && isEvRejPhysSel))){
     return; //cut only centrality and physics selection if enabled, else tag only
   }
   if(isEvSel) fNentries->Fill(4);
