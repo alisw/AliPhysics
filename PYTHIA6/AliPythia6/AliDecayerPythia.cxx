@@ -657,8 +657,6 @@ void  AliDecayerPythia::ForceBeautyUpgrade()
    } else {
      ForceParticleDecay( 5122, 4122, 1);
    }
-   // Xi_c
-   ForceParticleDecay( 4232, 3312, 1);
    // B+ -> D0pi+
    const Int_t prod[2]={421,211};
    Int_t mult[2]={1,1};
@@ -666,6 +664,9 @@ void  AliDecayerPythia::ForceBeautyUpgrade()
    // B0 -> D*-pi+
    const Int_t prod2[2]={413,211};
    ForceParticleDecay(511,prod2,mult,2,1);
+   // Bs -> Ds-pi+
+   const Int_t prod3[2]={431,211};
+   ForceParticleDecay(531,prod3,mult,2,1);
    // force charm hadronic decays (D mesons and Lc)
    ForceHadronicD(0,0,0);
 }
@@ -695,18 +696,17 @@ Int_t AliDecayerPythia::CountProducts(Int_t channel, Int_t particle)
 void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, Int_t optForceLcChannel, Int_t optUsePionicD0)
 {
 
-  // Xic->Xipipi
-  Int_t Xic = 4232;
-  Int_t productsX[3] = {3312, 211,211}, multX[3] = {1, 1, 1};
-  ForceParticleDecay(Xic, productsX, multX, 3);
-//
+  // OmegaC -> Omega pi
+  Int_t iOmegaC=4332;
+  Int_t productsOc[2]={211, 3334},multOc[2]={1,1};
+  ForceParticleDecay(iOmegaC, productsOc, multOc, 2,1);
 
 
   // Force golden D decay modes
 //
-  const Int_t kNHadrons = 5;
+  const Int_t kNHadrons = 7;
   Int_t channel;
-  Int_t hadron[kNHadrons] = {411,  421, 431, 4112, 4122};
+  Int_t hadron[kNHadrons] = {411,  421, 431, 4112, 4122, 4232, 4132};
 
  
   // for D+ -> K0* (-> K- pi+) pi+
@@ -732,7 +732,9 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
   Int_t iLambda=3122;
   //for Lambda_c -> antiK0 p
   Int_t iK0bar=-311;
-
+  // for Xic+->Xi-pi+pi+, Xic+->Xi0*pi+,Xi0*->Xi-pi+ and Xic0->Xi-pi+ channels 
+  Int_t iXiMinus=3312,iXiStar0=3324; 
+  
 
   Int_t decayP1[kNHadrons][4] = 
     { 
@@ -740,7 +742,9 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
       {kKMinus, kPiPlus,    0      , 0},
       {kKPlus , iKstarbar0, 0      , 0},
       {-1     , -1        , -1     , -1},
-      {kProton, iKstarbar0, 0      , 0}
+      {kProton, iKstarbar0, 0      , 0},
+      {kProton, iKstarbar0, 0      , 0},
+      {kPiPlus, iXiMinus,   0      , 0}
     };
   Int_t decayP2[kNHadrons][4] = 
     { 
@@ -748,7 +752,9 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
       {kKMinus   , kPiPlus, kPiPlus, kPiMinus},
       {iPhi      , kPiPlus, 0      , 0},
       {-1        , -1     , -1     , -1},
-      {iDeltaPP  , kKMinus, 0      , 0}
+      {iDeltaPP  , kKMinus, 0      , 0},
+      {kProton   , kKMinus, kPiPlus, 0},
+      {-1        ,     -1 , -1     , -1}
     };
   Int_t decayP3[kNHadrons][4] = 
     { 
@@ -756,7 +762,9 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
       {kKMinus   , kPiPlus, iRho0   , 0},
       {kKPlus    , iK0bar , 0       , 0},
       {-1        , -1     , -1      , -1},
-      {kProton   , kKMinus, kPiPlus , 0}
+      {kProton   , kKMinus, kPiPlus , 0},
+      {kPiPlus   , kPiPlus, iXiMinus, 0},
+      {-1        ,     -1 , -1     , -1}
     };
   // for Lambda_c -> Lambda_1520 pi+ -> p K- pi+, D0-> K*0 pi+ pi- -> K3pi
     Int_t decayP4[kNHadrons][4] =
@@ -765,7 +773,9 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
       {iKstarbar0  , kPiPlus , kPiMinus,  0},
       {-1          , -1      , -1      , -1},
       {-1          , -1      , -1      , -1},
-      {iLambda1520 , kPiPlus ,  0      ,  0}
+      {iLambda1520 , kPiPlus ,  0      ,  0},
+      {kPiPlus     , iXiStar0, 0      ,  0},
+      {-1          ,      -1 , -1     , -1}
     };
   // for Lambda_c -> Lambda pi+, D0 -> pi0 pi+ pi- 
     Int_t decayP5[kNHadrons][4] =
@@ -774,7 +784,9 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
       {kPiPlus   , kPiMinus, kPi0   ,  0},
       {-1        , -1     , -1      , -1},
       {-1        , -1     , -1      , -1},
-      {iLambda   , kPiPlus,  0      ,  0}
+      {iLambda   , kPiPlus,  0      ,  0},
+      {-1          , -1      , -1      , -1},
+      {-1          , -1      , -1      , -1}
     };
 
     // for Lambda_c -> K0bar p, D0 -> K- pi+ pi0, D+ -> K0s pi+ pi0
@@ -784,7 +796,10 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
       {kKMinus   , kPiPlus, kPi0    ,  0},
       {-1        , -1     , -1      , -1},
       {-1        , -1     , -1      , -1},
-      {kProton    , iK0bar,  0      ,  0}
+      {kProton    , iK0bar,  0      ,  0},
+      {-1          , -1      , -1      , -1},
+      {-1          , -1      , -1      , -1}
+
     };
 
   if(optUse4Bodies==0){

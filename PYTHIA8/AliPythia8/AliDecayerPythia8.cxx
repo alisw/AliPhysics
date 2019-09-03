@@ -18,6 +18,7 @@
 // Implementation of AliDecayer using Pythia8
 // Author: andreas.morsch@cern.ch
 #include <TMath.h>
+#include <TRandom.h>
 #include <TPDGCode.h>
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
@@ -611,10 +612,7 @@ void AliDecayerPythia8::ForceDecay()
 	fPythia8->ReadString("3122:onIfAll = 2212 211 ");
 	break;
     case kBeautyUpgrade:
-        fPythia8->ReadString("5122:onMode = off");
-        fPythia8->ReadString("4122:onMode = off");
-	fPythia8->ReadString("5122:onIfAll = 4122");
-	fPythia8->ReadString("4122:onIfAll = 3122");
+      ForceBeautyUpgrade();
 	break;
     case kAll:
 	break;
@@ -676,6 +674,34 @@ void  AliDecayerPythia8::SwitchOffHeavyFlavour()
     fPythia8->ReadString("TimeShower:nGluonToQuark = 3");
 }
 
+void AliDecayerPythia8::ForceBeautyUpgrade(){
+  // what about particle signs?
+
+  // Bs -> Ds- pi+
+  fPythia8->ReadString("531:onMode = off");
+  fPythia8->ReadString("531:onIfMatch = 431 211");
+
+  //Lb: 50% to Lc any, 50% to Lc pion
+  fPythia8->ReadString("5122:onMode = off");
+  if(gRandom->Rndm()<0.50) {
+    fPythia8->ReadString("5122:onIfAll = 4122");
+  }
+  else {
+    fPythia8->ReadString("5122:onIfMatch = 4122 211");
+  }
+  
+  // B0 -> D*-pi+
+  fPythia8->ReadString("511:onMode = off");
+  fPythia8->ReadString("511:onIfMatch = 413 211");
+
+  // B+ -> D0bar pi-
+  fPythia8->ReadString("521:onMode = off");
+  fPythia8->ReadString("521:onIfMatch = 421 211");
+
+  ForceHadronicD(0,0,0);
+
+}
+
 
 void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, Int_t optForceLcChannel)
 {
@@ -699,11 +725,19 @@ void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, I
     fPythia8->ReadString("3124:onIfAll = 2212 321");
 
 
+    // Omega_c->Omega pi
+    fPythia8->ReadString("4332:onMode = off");
+    fPythia8->ReadString("4332:onIfMatch = 3334 211");
+
+
     fPythia8->ReadString("411:onMode = off");
     fPythia8->ReadString("421:onMode = off");
     fPythia8->ReadString("431:onMode = off");
     fPythia8->ReadString("4112:onMode = off");
     fPythia8->ReadString("4122:onMode = off");
+    fPythia8->ReadString("4232:onMode = off");
+    fPythia8->ReadString("4132:onMode = off");
+
 
     // D+/- -> K pi pi 
     fPythia8->ReadString("411:onIfMatch = 321 211 211");
@@ -755,6 +789,20 @@ void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, I
     if (optForceLcChannel == 2) { // force only Lc -> p K0S
     fPythia8->ReadString("4122:onIfMatch = 2212 311");
     }
+
+    // Xic+ -> pK*0
+    fPythia8->ReadString("4232:onIfMatch = 2212 313");
+    // Xic+ -> p K- pi+
+    fPythia8->ReadString("4232:onIfMatch = 2212 321 211");
+    // Xic+ -> Xi*0 pi+, Xi*->Xi- pi+
+    fPythia8->ReadString("4232:onIfMatch = 3324 211");
+    // Xic+ -> Xi- pi+ pi+
+    fPythia8->ReadString("4232:onIfMatch = 3312 211 211");
+    
+    // Xic0 -> Xi- pi+
+    fPythia8->ReadString("4132:onIfMatch = 3312 211");
+       
+    
 }
 
 //___________________________________________________________________________
