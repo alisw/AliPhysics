@@ -49,6 +49,20 @@ const std::map<std::string, AliAnalysisTaskEmcalJetHUtils::ELeadingHadronBiasTyp
   { "kBoth", AliAnalysisTaskEmcalJetHUtils::kBoth}
 };
 
+const std::map<std::string, AliEmcalJet::JetAcceptanceType> AliAnalysisTaskEmcalJetHUtils::fgkJetAcceptanceMap = {
+  {"kTPC", AliEmcalJet::kTPC},
+  {"kTPCfid", AliEmcalJet::kTPCfid},
+  {"kEMCAL", AliEmcalJet::kEMCAL},
+  {"kEMCALfid", AliEmcalJet::kEMCALfid},
+  {"kDCAL", AliEmcalJet::kDCAL},
+  {"kDCALfid", AliEmcalJet::kDCALfid},
+  {"kDCALonly", AliEmcalJet::kDCALonly},
+  {"kDCALonlyfid", AliEmcalJet::kDCALonlyfid},
+  {"kPHOS", AliEmcalJet::kPHOS},
+  {"kPHOSfid", AliEmcalJet::kPHOSfid},
+  {"kUser", AliEmcalJet::kUser}
+};
+
 const std::map<std::string, AliAnalysisTaskEmcalJetHUtils::EEfficiencyPeriodIdentifier_t> AliAnalysisTaskEmcalJetHUtils::fgkEfficiencyPeriodIdentifier = {
   { "DisableEff", AliAnalysisTaskEmcalJetHUtils::kDisableEff},
   { "LHC11h", AliAnalysisTaskEmcalJetHUtils::kLHC11h},
@@ -225,7 +239,7 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
   if (manualMode) {
     AliInfoGeneralStream(taskName.c_str()) << "Configuring manual event cuts.\n";
     eventCuts.SetManualMode();
-    // Confgure manual mode via YAML
+    // Configure manual mode via YAML
     // Select the period
     typedef void (AliEventCuts::*MFP)();
     std::map<std::string, MFP> eventCutsPeriods = { std::make_pair("LHC11h", &AliEventCuts::SetupRun1PbPb),
@@ -454,6 +468,28 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureClusterContainersFromYAMLConfig(
                           << (tempBool ? "enabled" : "disabled") << "\n";
     clusterCont->SetIncludePHOS(tempBool);
   }
+}
+
+/**
+ * Determines the jet acceptance that is retrieved from a YAML configuration. Note that the result is an OR of
+ * all of the individual acceptances selected in the input.
+ *
+ * @return The desired jet acceptance. Note that a `UInt_t` is explicitly passed for the acceptance, so it's fine to return it here.
+ */
+UInt_t AliAnalysisTaskEmcalJetHUtils::DetermineJetAcceptanceFromYAML(const std::vector<std::string> & selections)
+{
+  UInt_t jetAcceptance = 0;
+  for (auto selection : selections) {
+    auto sel = fgkJetAcceptanceMap.find(selection);
+    AliDebugGeneralStream("AliAnalysisTaskEmcalJetHUtils", 3) << "Adding jet acceptance: " << selection << "\n";
+    if (sel != fgkJetAcceptanceMap.end()) {
+      jetAcceptance |= sel->second;
+    } else {
+      AliFatalGeneralF("AliAnalysisTaskEmcalJetHUtils", "Could not find jet acceptance with key \"%s\"",
+               selection.c_str());
+    }
+  }
+  return jetAcceptance;
 }
 
 /**

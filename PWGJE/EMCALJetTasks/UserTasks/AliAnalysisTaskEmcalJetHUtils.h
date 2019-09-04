@@ -5,7 +5,7 @@
  * @class AliAnalysisTaskEmcalJetHUtils
  * @brief Jet-hadron correlations utilities class
  *
- * Contains funtionality that is shared between the various classes. Could have been
+ * Contains functionality that is shared between the various classes. Could have been
  * a namespace except it wouldn't play nice with ROOT.
  *
  * @author Raymond Ehlers <raymond.ehlers@cern.ch>, Yale University
@@ -20,7 +20,7 @@
 // NOTE: AliAnalysisTaskSE is just needed for AliQnCorrectionsVarManagerTask...
 #include "AliAnalysisTaskSE.h"
 #include "AliQnCorrectionsVarManagerTask.h"
-class AliEmcalJet;
+#include "AliEmcalJet.h"
 class AliEmcalContainer;
 class AliParticleContainer;
 class AliTrackContainer;
@@ -63,6 +63,9 @@ class AliAnalysisTaskEmcalJetHUtils {
                              AliClusterContainer* clusterCont,
                              PWG::Tools::AliYAMLConfiguration& yamlConfig,
                              std::string taskName);
+  // Determine jet acceptance from YAML
+  static const std::map<std::string, AliEmcalJet::JetAcceptanceType> fgkJetAcceptanceMap;
+  static UInt_t DetermineJetAcceptanceFromYAML(const std::vector<std::string> & selections);
 
   // AddTask for Qn flow vector corrections
   static AliAnalysisTaskFlowVectorCorrections * AddTaskFlowQnVectorCorrections(const std::string & configFilename);
