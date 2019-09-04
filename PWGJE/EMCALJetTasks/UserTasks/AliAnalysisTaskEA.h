@@ -218,6 +218,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   Double_t  fMultV0M;                                  //!  mult. V0A+V0C
 
   Double_t  fMultV0Mnorm;                              //!  mult. V0M/mean
+  Double_t  fAsymV0M;                                  //!  V0A-V0C / V0A + V0C
 
 
   Double_t  fMultV0A_PartLevel;                        //!  mult. V0A       particle level
@@ -225,6 +226,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   Double_t  fMultV0M_PartLevel;                        //!  mult. V0A+V0C   particle level
 
   Double_t  fMultV0Mnorm_PartLevel;                    //!  mult. V0M normalized by mean V0M  particle level
+  Double_t  fAsymV0M_PartLevel;                        //!  V0A-V0C / V0A + V0C
 
 
   // ########## CUTS 
@@ -276,6 +278,13 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH1D* fhSignalTTH_PartLevel[fkCE][fkTTbins];  //! particle level distributions of centrality estimators biased with hadron TT in min bias
    TH1D* fhSignalTTC_PartLevel[fkCE][fkTTbins];  //! particle level distributions of centrality estimators biased with cluster TT in min bias
 
+   TH2D* fhV0MAssymVsV0Mnorm[kTG];                    //! V0AC asymmetry versus V0Mnorm  in inclusive events
+   TH2D* fhV0MAssymVsV0Mnorm_PartLevel;               //! V0AC asymmetry versus V0Mnorm  in inclusive events
+
+   TH2D* fhV0MAssymVsV0MnormTTH[kTG][fkTTbins];       //! V0AC asymmetry versus V0Mnorm  in TTH events 
+   TH2D* fhV0MAssymVsV0MnormTTH_PartLevel[fkTTbins];  //! V0AC asymmetry versus V0Mnorm  in TTH events
+
+
    TH2D* fhV0AvsV0C;                                   //! V0A vs V0C in MB 
 //   TH2D* fhV0MvsV0Mnorm;                               //! V0M vs V0Mnorm in MB 
    TH2D* fhV0AvsSPD;                                   //! V0A vs SPD in MB 
@@ -293,35 +302,39 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D* fhMeanTrackPt[kTG];                               //! mean track pT 
 
    //hadron TT
-   TH2D* fhTTH_CentV0M[kTG][fkTTbins];                    //! counter of semi-inclusive hadron TT versus V0M    centrality
+//   TH2D* fhTTH_CentV0M[kTG][fkTTbins];                    //! counter of semi-inclusive hadron TT versus V0M    centrality
    TH2D* fhTTH_V0Mnorm1[kTG][fkTTbins];                   //! counter of semi-inclusive hadron TT versus V0M/mean 
 
    TH2D* fhTTH_V0Mnorm1_PartLevel[fkTTbins];         //! counter of semi-inclusive hadron TT   V0M/mean particle level
 
    //EMCAL cluster TT
-   TH2D* fhTTC_CentV0M[kTG][fkTTbins];                    //! counter of semi-inclusive emcal TT in MB versus V0M  centrality 
+//   TH2D* fhTTC_CentV0M[kTG][fkTTbins];                    //! counter of semi-inclusive emcal TT in MB versus V0M  centrality 
    TH2D* fhTTC_V0Mnorm1[kTG][fkTTbins];                   //! counter of semi-inclusive emcal TT in MB versus V0M/mean
 
    TH2D* fhTTC_V0Mnorm1_PartLevel[fkTTbins];            //! counter of semi-inclusive emcal TT in MB versus V0M/mean particle level
 
    //recoil jet yields with hadron TT
-   TH2D* fhRecoilJetPtTTH_CentV0M[kTG][fkTTbins];         //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M centrality  
-   TH2D* fhRecoilJetPtTTH_V0Mnorm1[kTG][fkTTbins];        //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
+//   TH2D* fhRecoilJetPtTTH_CentV0M[kTG][fkTTbins];         //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M centrality  
+   TH2D* fhRecoilJetPtTTH_V0Mnorm1[kTG][fkTTbins];       //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
+   TH2D* fhRecoilJetPtTTH_V0Mnorm1_PartLevel[fkTTbins];  //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
 
-   TH3D* fhRecoilJetPhiTTH_V0Mnorm1[kTG][fkTTbins];           //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  
-   TH3D* fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[fkTTbins]; //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level 
+   TH3D* fhRecoilJetPhiTTH_V0Mnorm1[kTG][fkTTbins];        //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  
+   TH3D* fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[fkTTbins];   //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level 
 
-   TH2D* fhRecoilJetPtTTH_V0Mnorm1_PartLevel[fkTTbins]; //! pT spectrum of recoil jets associated to semi-inclusive hadron TT  versus V0M/mean
+   THnSparse *fhRecoilJetTTH_V0Mnorm1[kTG][fkTTbins];      //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
+   THnSparse *fhRecoilJetTTH_V0Mnorm1_PartLevel[fkTTbins]; //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
 
+
+   
    //recoil jet yields with EMCAL cluster TT
-   TH2D* fhRecoilJetPtTTC_CentV0M[kTG][fkTTbins];         //! pT spectrum of recoil jets associated to semi-inclusive emcal TT versus V0M    centrality 
+//   TH2D* fhRecoilJetPtTTC_CentV0M[kTG][fkTTbins];         //! pT spectrum of recoil jets associated to semi-inclusive emcal TT versus V0M    centrality 
    TH2D* fhRecoilJetPtTTC_V0Mnorm1[kTG][fkTTbins];        //! pT spectrum of recoil jets associated to semi-inclusive emcal TT versus V0M/mean
 
    TH2D* fhRecoilJetPtTTC_V0Mnorm1_PartLevel[fkTTbins];   //! pT spectrum of recoil jets associated to semi-inclusive emcal TT in MB versus V0M/mean
 
 
-   TH2D* fhDeltaPtTTH_RC_CentV0M[kTG][fkTTbins];         //! delta pT spectrum from random cones  in events with hadron TT versus V0M centrality  
-   TH2D* fhDeltaPtTTC_RC_CentV0M[kTG][fkTTbins];         //! delta pT spectrum from random cones  in events with emcal  TT versus V0M centrality   
+//   TH2D* fhDeltaPtTTH_RC_CentV0M[kTG][fkTTbins];         //! delta pT spectrum from random cones  in events with hadron TT versus V0M centrality  
+//   TH2D* fhDeltaPtTTC_RC_CentV0M[kTG][fkTTbins];         //! delta pT spectrum from random cones  in events with emcal  TT versus V0M centrality   
 
    TH2D* fhDeltaPtTTH_RC_V0Mnorm1[kTG][fkTTbins];         //! delta pT spectrum from random cones  in events with hadron TT  versus V0M/mean V0M  
    TH2D* fhDeltaPtTTC_RC_V0Mnorm1[kTG][fkTTbins];         //! delta pT spectrum from random cones  in events with emcal  TT  versus V0M/mean V0M  
@@ -442,7 +455,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 16); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 17); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }
