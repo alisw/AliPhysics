@@ -221,16 +221,20 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupJetContainersFromYAMLConfig()
     bool res = fYAMLConfig.GetProperty(std::vector<std::string>({baseName, jetName}), node, false);
     if (res) {
       // Retrieve jet container properties
-      std::string collectionName = "", acceptance = "";
+      std::string collectionName = "";
       double R = -1;
       fYAMLConfig.GetProperty({baseName, jetName, "collection"}, collectionName, true);
-      fYAMLConfig.GetProperty({baseName, jetName, "acceptance"}, acceptance, true);
       fYAMLConfig.GetProperty({baseName, jetName, "R"}, R, true);
+
+      // Determine the jet acceptance.
+      std::vector<std::string> jetAcceptances;
+      fYAMLConfig.GetProperty({baseName, jetName, "acceptance"}, jetAcceptances, true);
+      UInt_t jetAcceptance = AliAnalysisTaskEmcalJetHUtils::DetermineJetAcceptanceFromYAML(jetAcceptances);
 
       // Create jet container and set the name
       AliDebugStream(1) << "Creating jet from jet collection name " << collectionName << " with acceptance "
-               << acceptance << " and R=" << R << "\n";
-      AliJetContainer* jetCont = AddJetContainer(collectionName.c_str(), acceptance.c_str(), R);
+               << jetAcceptance << " and R=" << R << "\n";
+      AliJetContainer* jetCont = AddJetContainer(collectionName.c_str(), jetAcceptance, R);
       jetCont->SetName(jetName.c_str());
 
       // Jet area cut percentage
@@ -257,6 +261,24 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupJetContainersFromYAMLConfig()
         AliDebugStream(1) << "Setting leading hadron type of " << leadingHadronType << " for jet cont "
                  << jetName << "\n";
         jetCont->SetLeadingHadronType(leadingHadronType);
+      }
+
+      // Leading hadron cut
+      double leadingHadronBias = 0.;
+      res = fYAMLConfig.GetProperty({ baseName, jetName, "leadingHadronBias" }, leadingHadronBias, false);
+      if (res) {
+        AliDebugStream(1) << "Setting leading hadron bias of " << leadingHadronBias << " for jet cont "
+                 << jetName << "\n";
+        jetCont->SetMinTrackPt(leadingHadronBias);
+      }
+
+      // Max track pt
+      double maxTrackPt = 0.;
+      res = fYAMLConfig.GetProperty({ baseName, jetName, "maxTrackPt" }, maxTrackPt, false);
+      if (res) {
+        AliDebugStream(1) << "Setting max track pt of " << maxTrackPt << " for jet cont "
+                 << jetName << "\n";
+        jetCont->SetMinTrackPt(maxTrackPt);
       }
     }
     else {
