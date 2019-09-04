@@ -1023,48 +1023,66 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80%.
                                  * RECON level.
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fCosThetaHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fCosThetaCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows CosTheta
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80%.
-                                 * GENERATED level.
+                                 * GENERATED level..
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fMCCosThetaHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fMCCosThetaCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows Phi
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80% (?).
-                                 * RECON level.
+                                 * RECON level..
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fPhiHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fPhiCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows Phi
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80% (?).
-                                 * GENERATED level.
+                                 * GENERATED level..
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fMCPhiHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fMCPhiCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows the TildePhi
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80% (?).
-                                 * RECON level.
+                                 * RECON level..
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fTildePhiHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fTildePhiCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows the TildePhi
                                  * distribution with 25 bins.
                                  * This implies a purity well above 80% (?).
-                                 * GENERATED level.
+                                 * GENERATED level..
+                                 *
+                                 * NB: CS => Collins-Soper Frame
                                  */
         TH1F*                   fMCTildePhiHelicityFrameTwentyfiveBinsH;   //!
+        TH1F*                   fMCTildePhiCsFrameTwentyfiveBinsH;         //!
 
                                 /**
                                  * This histogram shows  Phi
@@ -1183,7 +1201,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 29);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 30);
 };
 
 #endif
