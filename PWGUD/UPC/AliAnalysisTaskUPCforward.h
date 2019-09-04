@@ -1487,10 +1487,15 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * Signal extraction in Phi, CosTheta, and
                                  * TildePhi, with 25 bins only...
                                  *
+                                 * NB: He => helicity frame
+                                 * NB: Cs => CS       frame
                                  */
-        TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[25];  //!
+        TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[25];       //!
         TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[25];  //!
         TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[25];  //!
+        TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBinsH[25];       //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaCsFrameTwentyfiveBinsH[25];  //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBinsH[25];  //!
 
         //_______________________________
         // CUTS
@@ -1552,7 +1557,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 40);
+        ClassDef(AliAnalysisTaskUPCforward, 41);
 };
 
 #endif
