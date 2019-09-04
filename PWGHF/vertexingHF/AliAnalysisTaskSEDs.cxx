@@ -59,33 +59,32 @@ ClassImp(AliAnalysisTaskSEDs);
 
 //________________________________________________________________________
 AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
-  fOutput(0),
-  fHistNEvents(0),
-  fHistoPtWeight(0x0),
-  fPtVsMass(0),
-  fPtVsMassPhi(0),
-  fPtVsMassK0st(0),
-  fYVsPt(0),
-  fYVsPtSig(0),
-  fHistAllV0multNTPCout(0),
-  fHistSelV0multNTPCout(0),
-  fCosPHist3D(0x0),
-  fCosPxyHist3D(0x0),
-  fDLenHist3D(0x0),
-  fDLenxyHist3D(0x0),
-  fNDLenxyHist3D(0x0),
-  fSigVertHist3D(0x0),
-  fDCAHist3D(0x0),
-  fNormIPHist3D(0x0),
-  fCosPiDsHist3D(0x0),
-  fCosPiKPhiHist3D(0x0),
-  fPtProng0Hist3D(0x0),
-  fPtProng1Hist3D(0x0),
-  fPtProng2Hist3D(0x0),
-  fNtupleDs(0),
+  fOutput(nullptr),
+  fHistNEvents(nullptr),
+  fHistoPtWeight(nullptr),
+  fPtVsMass(nullptr),
+  fPtVsMassPhi(nullptr),
+  fPtVsMassK0st(nullptr),
+  fYVsPt(nullptr),
+  fYVsPtSig(nullptr),
+  fHistAllV0multNTPCout(nullptr),
+  fHistSelV0multNTPCout(nullptr),
+  fCosPHist3D(nullptr),
+  fCosPxyHist3D(nullptr),
+  fDLenHist3D(nullptr),
+  fDLenxyHist3D(nullptr),
+  fNDLenxyHist3D(nullptr),
+  fSigVertHist3D(nullptr),
+  fDCAHist3D(nullptr),
+  fNormIPHist3D(nullptr),
+  fCosPiDsHist3D(nullptr),
+  fCosPiKPhiHist3D(nullptr),
+  fPtProng0Hist3D(nullptr),
+  fPtProng1Hist3D(nullptr),
+  fPtProng2Hist3D(nullptr),
+  fNtupleDs(nullptr),
   fFillNtuple(0),
-  fUseCentrAxis(0),
-  fSystem(0),
+  fSystem(kpp),
   fReadMC(kFALSE),
   fWriteOnlySignal(kFALSE),
   fDoCutVarHistos(kTRUE),
@@ -98,21 +97,19 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   fDoBkgPhiSB(kFALSE),
   fDoCutV0multTPCout(kFALSE),
   fUseWeight(kFALSE),
-  fUseTrkl(kFALSE),
   fAODProtection(1),
   fNPtBins(0),
-  fListCuts(0),
+  fListCuts(nullptr),
   fMassRange(0.8),
   fMassBinSize(0.002),
   fminMass(1.6),
   fmaxMass(2.5),
   fMaxDeltaPhiMass4Rot(0.010),
-  fCounter(0),
-  fAnalysisCuts(0),
-  fnSparse(0),
-  fImpParSparse(0x0),
+  fCounter(nullptr),
+  fAnalysisCuts(nullptr),
+  fnSparse(nullptr),
+  fImpParSparse(nullptr),
   fMultSelectionObjectName("MultSelection"),
-  fCentEstName("off"),
   fUseFinPtBinsForSparse(kFALSE),
   fApplyML(kFALSE),
   fConfigPath(""),
@@ -120,89 +117,93 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   fModelPaths(),
   fModelOutputCuts(),
   fPtBinsModel(),
-  fModels()
+  fModels(),
+  fFillBkgSparse(kFALSE),
+  fKeepOnlyBkgFromHIJING(kFALSE)
 {
   /// Default constructor
 
-  for (Int_t i = 0; i < 3; i++)
+  for (Int_t iHist = 0; iHist < 3; iHist++)
   {
-    fHistCentrality[i] = 0;
-    fHistCentralityMult[i] = 0;
+    fHistCentrality[iHist] = nullptr;
+    fHistCentralityMult[iHist] = nullptr;
   }
-  for (Int_t i = 0; i < 4; i++)
+  for (Int_t iHist = 0; iHist < 4; iHist++)
   {
-    fChanHist[i] = 0;
+    fChanHist[iHist] = nullptr;
   }
-  for (Int_t i = 0; i < 4 * kMaxPtBins; i++)
+  for (Int_t iHist = 0; iHist < 4 * kMaxPtBins; iHist++)
   {
-    fPtCandHist[i] = 0;
-    fMassHist[i] = 0;
-    fMassHistPhi[i] = 0;
-    fMassHistK0st[i] = 0;
-    fCosPHist[i] = 0;
-    fDLenHist[i] = 0;
-    fSumd02Hist[i] = 0;
-    fSigVertHist[i] = 0;
-    fPtMaxHist[i] = 0;
-    fDCAHist[i] = 0;
-    fPtProng0Hist[i] = 0;
-    fPtProng1Hist[i] = 0;
-    fPtProng2Hist[i] = 0;
-    fDalitz[i] = 0;
-    fDalitzPhi[i] = 0;
-    fDalitzK0st[i] = 0;
+    fPtCandHist[iHist] = nullptr;
+    fMassHist[iHist] = nullptr;
+    fMassHistPhi[iHist] = nullptr;
+    fMassHistK0st[iHist] = nullptr;
+    fCosPHist[iHist] = nullptr;
+    fDLenHist[iHist] = nullptr;
+    fSumd02Hist[iHist] = nullptr;
+    fSigVertHist[iHist] = nullptr;
+    fPtMaxHist[iHist] = nullptr;
+    fDCAHist[iHist] = nullptr;
+    fPtProng0Hist[iHist] = nullptr;
+    fPtProng1Hist[iHist] = nullptr;
+    fPtProng2Hist[iHist] = nullptr;
+    fDalitz[iHist] = nullptr;
+    fDalitzPhi[iHist] = nullptr;
+    fDalitzK0st[iHist] = nullptr;
   }
-  for (Int_t i = 0; i < kMaxPtBins; i++)
+  for (Int_t iPt = 0; iPt < kMaxPtBins; iPt++)
   {
-    fMassHistKK[i] = 0;
-    fMassHistKpi[i] = 0;
-    fMassHistKKVsKKpi[i] = 0;
-    fMassHistKpiVsKKpi[i] = 0;
-    fMassRotBkgHistPhi[i] = 0;
-    fMassLSBkgHistPhi[i] = 0;
-    fMassRSBkgHistPhi[i] = 0;
+    fMassHistKK[iPt] = nullptr;
+    fMassHistKpi[iPt] = nullptr;
+    fMassHistKKVsKKpi[iPt] = nullptr;
+    fMassHistKpiVsKKpi[iPt] = nullptr;
+    fMassRotBkgHistPhi[iPt] = nullptr;
+    fMassLSBkgHistPhi[iPt] = nullptr;
+    fMassRSBkgHistPhi[iPt] = nullptr;
   }
-  for (Int_t i = 0; i < kMaxPtBins + 1; i++)
+  for (Int_t iPt = 0; iPt < kMaxPtBins + 1; iPt++)
   {
-    fPtLimits[i] = 0;
+    fPtLimits[iPt] = 0;
   }
-  for (Int_t i = 0; i < 4; i++)
+  for (Int_t iHist = 0; iHist < 5; iHist++)
   {
-    fnSparseMC[i] = 0;
-    fnSparseMCDplus[i] = 0;
-    fImpParSparseMC[i] = 0;
+    fnSparseMC[iHist] = nullptr;
+  }
+  for (Int_t iHist = 0; iHist < 4; iHist++)
+  {
+    fnSparseMCDplus[iHist] = nullptr;
+    fImpParSparseMC[iHist] = nullptr;
   }
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *analysiscuts, Int_t fillNtuple) : AliAnalysisTaskSE(name),
-  fOutput(0),
-  fHistNEvents(0),
-  fHistoPtWeight(0x0),
-  fPtVsMass(0),
-  fPtVsMassPhi(0),
-  fPtVsMassK0st(0),
-  fYVsPt(0),
-  fYVsPtSig(0),
-  fHistAllV0multNTPCout(0),
-  fHistSelV0multNTPCout(0),
-  fCosPHist3D(0x0),
-  fCosPxyHist3D(0x0),
-  fDLenHist3D(0x0),
-  fDLenxyHist3D(0x0),
-  fNDLenxyHist3D(0x0),
-  fSigVertHist3D(0x0),
-  fDCAHist3D(0x0),
-  fNormIPHist3D(0x0),
-  fCosPiDsHist3D(0x0),
-  fCosPiKPhiHist3D(0x0),
-  fPtProng0Hist3D(0x0),
-  fPtProng1Hist3D(0x0),
-  fPtProng2Hist3D(0x0),
+  fOutput(nullptr),
+  fHistNEvents(nullptr),
+  fHistoPtWeight(nullptr),
+  fPtVsMass(nullptr),
+  fPtVsMassPhi(nullptr),
+  fPtVsMassK0st(nullptr),
+  fYVsPt(nullptr),
+  fYVsPtSig(nullptr),
+  fHistAllV0multNTPCout(nullptr),
+  fHistSelV0multNTPCout(nullptr),
+  fCosPHist3D(nullptr),
+  fCosPxyHist3D(nullptr),
+  fDLenHist3D(nullptr),
+  fDLenxyHist3D(nullptr),
+  fNDLenxyHist3D(nullptr),
+  fSigVertHist3D(nullptr),
+  fDCAHist3D(nullptr),
+  fNormIPHist3D(nullptr),
+  fCosPiDsHist3D(nullptr),
+  fCosPiKPhiHist3D(nullptr),
+  fPtProng0Hist3D(nullptr),
+  fPtProng1Hist3D(nullptr),
+  fPtProng2Hist3D(nullptr),
   fNtupleDs(0),
   fFillNtuple(fillNtuple),
-  fUseCentrAxis(0),
-  fSystem(0),
+  fSystem(kpp),
   fReadMC(kFALSE),
   fWriteOnlySignal(kFALSE),
   fDoCutVarHistos(kTRUE),
@@ -215,21 +216,19 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   fDoBkgPhiSB(kTRUE),
   fDoCutV0multTPCout(kFALSE),
   fUseWeight(kFALSE),
-  fUseTrkl(kFALSE),
   fAODProtection(1),
   fNPtBins(0),
-  fListCuts(0),
+  fListCuts(nullptr),
   fMassRange(0.8),
   fMassBinSize(0.002),
   fminMass(1.6),
   fmaxMass(2.5),
   fMaxDeltaPhiMass4Rot(0.010),
-  fCounter(0),
+  fCounter(nullptr),
   fAnalysisCuts(analysiscuts),
-  fnSparse(0),
-  fImpParSparse(0x0),
+  fnSparse(nullptr),
+  fImpParSparse(nullptr),
   fMultSelectionObjectName("MultSelection"),
-  fCentEstName("off"),
   fUseFinPtBinsForSparse(kFALSE),
   fApplyML(kFALSE),
   fConfigPath(""),
@@ -237,59 +236,64 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   fModelPaths(),
   fModelOutputCuts(),
   fPtBinsModel(),
-  fModels()
+  fModels(),
+  fFillBkgSparse(kFALSE),
+  fKeepOnlyBkgFromHIJING(kFALSE)
 {
   /// Default constructor
   /// Output slot #1 writes into a TList container
 
-  for (Int_t i = 0; i < 3; i++)
+  for (Int_t iHist = 0; iHist < 3; iHist++)
   {
-    fHistCentrality[i] = 0;
-    fHistCentralityMult[i] = 0;
+    fHistCentrality[iHist] = nullptr;
+    fHistCentralityMult[iHist] = nullptr;
   }
-  for (Int_t i = 0; i < 4; i++)
+  for (Int_t iHist = 0; iHist < 4; iHist++)
   {
-    fChanHist[i] = 0;
+    fChanHist[iHist] = nullptr;
   }
-  for (Int_t i = 0; i < 4 * kMaxPtBins; i++)
+  for (Int_t iHist = 0; iHist < 4 * kMaxPtBins; iHist++)
   {
-    fPtCandHist[i] = 0;
-    fMassHist[i] = 0;
-    fMassHistPhi[i] = 0;
-    fMassHistK0st[i] = 0;
-    fCosPHist[i] = 0;
-    fDLenHist[i] = 0;
-    fSumd02Hist[i] = 0;
-    fSigVertHist[i] = 0;
-    fPtMaxHist[i] = 0;
-    fDCAHist[i] = 0;
-    fPtProng0Hist[i] = 0;
-    fPtProng1Hist[i] = 0;
-    fPtProng2Hist[i] = 0;
-    fDalitz[i] = 0;
-    fDalitzPhi[i] = 0;
-    fDalitzK0st[i] = 0;
+    fPtCandHist[iHist] = nullptr;
+    fMassHist[iHist] = nullptr;
+    fMassHistPhi[iHist] = nullptr;
+    fMassHistK0st[iHist] = nullptr;
+    fCosPHist[iHist] = nullptr;
+    fDLenHist[iHist] = nullptr;
+    fSumd02Hist[iHist] = nullptr;
+    fSigVertHist[iHist] = nullptr;
+    fPtMaxHist[iHist] = nullptr;
+    fDCAHist[iHist] = nullptr;
+    fPtProng0Hist[iHist] = nullptr;
+    fPtProng1Hist[iHist] = nullptr;
+    fPtProng2Hist[iHist] = nullptr;
+    fDalitz[iHist] = nullptr;
+    fDalitzPhi[iHist] = nullptr;
+    fDalitzK0st[iHist] = nullptr;
   }
-  for (Int_t i = 0; i < kMaxPtBins; i++)
+  for (Int_t iPt = 0; iPt < kMaxPtBins; iPt++)
   {
-    fMassHistKK[i] = 0;
-    fMassHistKpi[i] = 0;
-    fMassHistKKVsKKpi[i] = 0;
-    fMassHistKpiVsKKpi[i] = 0;
-    fMassRotBkgHistPhi[i] = 0;
-    fMassLSBkgHistPhi[i] = 0;
-    fMassRSBkgHistPhi[i] = 0;
+    fMassHistKK[iPt] = nullptr;
+    fMassHistKpi[iPt] = nullptr;
+    fMassHistKKVsKKpi[iPt] = nullptr;
+    fMassHistKpiVsKKpi[iPt] = nullptr;
+    fMassRotBkgHistPhi[iPt] = nullptr;
+    fMassLSBkgHistPhi[iPt] = nullptr;
+    fMassRSBkgHistPhi[iPt] = nullptr;
   }
-  for (Int_t i = 0; i < kMaxPtBins + 1; i++)
+  for (Int_t iPt = 0; iPt < kMaxPtBins + 1; iPt++)
   {
-    fPtLimits[i] = 0;
+    fPtLimits[iPt] = 0;
   }
 
-  for (Int_t i = 0; i < 4; i++)
+  for (Int_t iHist = 0; iHist < 5; iHist++)
   {
-    fnSparseMC[i] = 0;
-    fnSparseMCDplus[i] = 0;
-    fImpParSparseMC[i] = 0;
+    fnSparseMC[iHist] = nullptr;
+  }
+  for (Int_t iHist = 0; iHist < 4; iHist++)
+  {
+    fnSparseMCDplus[iHist] = nullptr;
+    fImpParSparseMC[iHist] = nullptr;
   }
 
   Int_t nptbins = fAnalysisCuts->GetNPtBins();
@@ -322,22 +326,22 @@ void AliAnalysisTaskSEDs::SetPtBins(Int_t n, Float_t *lim)
     fPtLimits[2] = 3.;
     fPtLimits[3] = 5.;
     fPtLimits[4] = 10.;
-    for (Int_t i = 5; i < kMaxPtBins + 1; i++)
-      fPtLimits[i] = 99999999.;
+    for (Int_t iPt = 5; iPt < kMaxPtBins + iPt; iPt++)
+      fPtLimits[iPt] = 999.;
   }
   else
   {
     fNPtBins = n;
-    for (Int_t i = 0; i < fNPtBins + 1; i++)
-      fPtLimits[i] = lim[i];
-    for (Int_t i = fNPtBins + 1; i < kMaxPtBins + 1; i++)
-      fPtLimits[i] = 99999999.;
+    for (Int_t iPt = 0; iPt < fNPtBins + 1; iPt++)
+      fPtLimits[iPt] = lim[iPt];
+    for (Int_t iPt = fNPtBins + 1; iPt < kMaxPtBins + 1; iPt++)
+      fPtLimits[iPt] = 999.;
   }
   if (fDebug > 1)
   {
     printf("Number of Pt bins = %d\n", fNPtBins);
-    for (Int_t i = 0; i < fNPtBins; i++)
-      printf(" Bin%d = %8.2f-%8.2f\n", i, fPtLimits[i], fPtLimits[i + 1]);
+    for (Int_t iPt = 0; iPt < fNPtBins; iPt++)
+      printf(" Bin%d = %8.2f-%8.2f\n", iPt, fPtLimits[iPt], fPtLimits[iPt + 1]);
   }
 }
 //________________________________________________________________________
@@ -363,62 +367,65 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     delete fPtProng1Hist3D;
     delete fPtProng2Hist3D;
 
-    for (Int_t i = 0; i < 4; i++)
+    for (Int_t iHist = 0; iHist < 4; iHist++)
     {
-      delete fChanHist[i];
+      delete fChanHist[iHist];
     }
-    for (Int_t i = 0; i < 4 * fNPtBins; i++)
+    for (Int_t iHist = 0; iHist < 4 * fNPtBins; iHist++)
     {
-      delete fMassHist[i];
-      delete fMassHistPhi[i];
-      delete fMassHistK0st[i];
-      delete fCosPHist[i];
-      delete fDLenHist[i];
-      delete fSumd02Hist[i];
-      delete fSigVertHist[i];
-      delete fPtMaxHist[i];
-      delete fPtCandHist[i];
-      delete fDCAHist[i];
-      delete fPtProng0Hist[i];
-      delete fPtProng1Hist[i];
-      delete fPtProng2Hist[i];
-      delete fDalitz[i];
-      delete fDalitzPhi[i];
-      delete fDalitzK0st[i];
+      delete fMassHist[iHist];
+      delete fMassHistPhi[iHist];
+      delete fMassHistK0st[iHist];
+      delete fCosPHist[iHist];
+      delete fDLenHist[iHist];
+      delete fSumd02Hist[iHist];
+      delete fSigVertHist[iHist];
+      delete fPtMaxHist[iHist];
+      delete fPtCandHist[iHist];
+      delete fDCAHist[iHist];
+      delete fPtProng0Hist[iHist];
+      delete fPtProng1Hist[iHist];
+      delete fPtProng2Hist[iHist];
+      delete fDalitz[iHist];
+      delete fDalitzPhi[iHist];
+      delete fDalitzK0st[iHist];
     }
-    for (Int_t i = 0; i < fNPtBins; i++)
+    for (Int_t iPt = 0; iPt < fNPtBins; iPt++)
     {
-      delete fMassHistKK[i];
-      delete fMassHistKpi[i];
-      delete fMassHistKKVsKKpi[i];
-      delete fMassHistKpiVsKKpi[i];
-      delete fMassRotBkgHistPhi[i];
-      delete fMassLSBkgHistPhi[i];
-      delete fMassRSBkgHistPhi[i];
+      delete fMassHistKK[iPt];
+      delete fMassHistKpi[iPt];
+      delete fMassHistKKVsKKpi[iPt];
+      delete fMassHistKpiVsKKpi[iPt];
+      delete fMassRotBkgHistPhi[iPt];
+      delete fMassLSBkgHistPhi[iPt];
+      delete fMassRSBkgHistPhi[iPt];
     }
     delete fPtVsMass;
     delete fPtVsMassPhi;
     delete fPtVsMassK0st;
     delete fYVsPt;
     delete fYVsPtSig;
-    for (Int_t i = 0; i < 3; i++)
+    for (Int_t iHist = 0; iHist < 3; iHist++)
     {
-      delete fHistCentrality[i];
-      delete fHistCentralityMult[i];
+      delete fHistCentrality[iHist];
+      delete fHistCentralityMult[iHist];
     }
 
     delete fnSparse;
     if (fFillImpParSparse)
     {
       delete fImpParSparse;
-      for (Int_t i = 0; i < 4; i++)
-        delete fImpParSparseMC[i];
+      for (Int_t iHist = 0; iHist < 4; iHist++)
+        delete fImpParSparseMC[iHist];
     }
-    for (Int_t i = 0; i < 4; i++)
+    for (Int_t iHist = 0; iHist < 5; iHist++)
     {
-      delete fnSparseMC[i];
-      if (fFillSparseDplus)
-        delete fnSparseMCDplus[i];
+      delete fnSparseMC[iHist];
+    }
+    if (fFillSparseDplus)
+    {
+      for (Int_t iHist = 0; iHist < 4; iHist++)
+          delete fnSparseMCDplus[iHist];
     }
   }
   if (fHistoPtWeight)
@@ -428,49 +435,6 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
   delete fNtupleDs;
   delete fCounter;
   delete fAnalysisCuts;
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskSEDs::GetCentralityAxisName(Int_t flag)
-{
-  //
-  // set centrality estimator
-  //
-  switch(flag) 
-  {
-    case 0:
-      fCentEstName = "off";
-    break;
-    case 1:
-      fCentEstName = "V0M";
-    break;
-    case 2:
-      fCentEstName = "TRK";
-    break;
-    case 3:
-      fCentEstName = "TKL";
-    break;
-    case 4:
-      fCentEstName = "CL1";
-    break;
-    case 5:
-      fCentEstName = "ZNA";
-    break;
-    case 6:
-      fCentEstName = "ZPA";
-    break;
-    case 7:
-      fCentEstName = "V0A";
-    break;
-    case 8:
-      fCentEstName = "CL0";
-    break;
-    default:
-      AliWarning("Centrality estimator not valid");
-    break;
-  }
-
-  return;
 }
 
 //________________________________________________________________________
@@ -487,11 +451,6 @@ void AliAnalysisTaskSEDs::Init()
 
   AliRDHFCutsDstoKKpi *analysis = new AliRDHFCutsDstoKKpi(*fAnalysisCuts);
   analysis->SetName("AnalysisCuts");
-
-  if(fUseCentrAxis) {
-    Int_t centest = fAnalysisCuts->GetUseCentrality();
-    GetCentralityAxisName(centest);
-  }
 
   fListCuts->Add(analysis);
   PostData(2, fListCuts);
@@ -546,10 +505,10 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fHistCentralityMult[0] = new TH2F("hCentrMult", "centrality vs mult", 100, 0.5, 30000.5, 40, 0., 100.);
   fHistCentralityMult[1] = new TH2F("hCentrMult(selectedCent)", "centrality vs mult(selectedCent)", 100, 0.5, 30000.5, 40, 0., 100.);
   fHistCentralityMult[2] = new TH2F("hCentrMult(OutofCent)", "centrality vs mult(OutofCent)", 100, 0.5, 30000.5, 40, 0., 100.);
-  for (Int_t i = 0; i < 3; i++)
+  for (Int_t iHist = 0; iHist < 3; iHist++)
   {
-    fOutput->Add(fHistCentrality[i]);
-    fOutput->Add(fHistCentralityMult[i]);
+    fOutput->Add(fHistCentrality[iHist]);
+    fOutput->Add(fHistCentralityMult[iHist]);
   }
   if (fDoCutV0multTPCout)
   {
@@ -574,104 +533,104 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   Int_t index;
   for (Int_t iType = 0; iType < 4; iType++)
   {
-    for (Int_t i = 0; i < fNPtBins; i++)
+    for (Int_t iPt = 0; iPt < fNPtBins; iPt++)
     {
       if (iType == 0)
       {
         htype = "All";
-        index = GetHistoIndex(i);
+        index = GetHistoIndex(iPt);
       }
       else if (iType == 1)
       {
         htype = "Sig";
-        index = GetSignalHistoIndex(i);
+        index = GetSignalHistoIndex(iPt);
       }
       else if (iType == 2)
       {
         htype = "Bkg";
-        index = GetBackgroundHistoIndex(i);
+        index = GetBackgroundHistoIndex(iPt);
       }
       else
       {
         htype = "ReflSig";
-        index = GetReflSignalHistoIndex(i);
+        index = GetReflSignalHistoIndex(iPt);
       }
-      hisname.Form("hMass%sPt%d", htype.Data(), i);
+      hisname.Form("hMass%sPt%d", htype.Data(), iPt);
       fMassHist[index] = new TH1F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass);
       fMassHist[index]->Sumw2();
-      hisname.Form("hMass%sPt%dphi", htype.Data(), i);
+      hisname.Form("hMass%sPt%dphi", htype.Data(), iPt);
       fMassHistPhi[index] = new TH1F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass);
       fMassHistPhi[index]->Sumw2();
-      hisname.Form("hMass%sPt%dk0st", htype.Data(), i);
+      hisname.Form("hMass%sPt%dk0st", htype.Data(), iPt);
       fMassHistK0st[index] = new TH1F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass);
       fMassHistK0st[index]->Sumw2();
-      hisname.Form("hCosP%sPt%d", htype.Data(), i);
+      hisname.Form("hCosP%sPt%d", htype.Data(), iPt);
       fCosPHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0.5, 1.);
-      hisname.Form("hCosPxy%sPt%d", htype.Data(), i);
+      hisname.Form("hCosPxy%sPt%d", htype.Data(), iPt);
       fCosPxyHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0.5, 1.);
-      hisname.Form("hDLen%sPt%d", htype.Data(), i);
+      hisname.Form("hDLen%sPt%d", htype.Data(), iPt);
       fDLenHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0., 0.5);
-      hisname.Form("hDLenxy%sPt%d", htype.Data(), i);
+      hisname.Form("hDLenxy%sPt%d", htype.Data(), iPt);
       fDLenxyHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0., 0.5);
-      hisname.Form("hNDLenxy%sPt%d", htype.Data(), i);
+      hisname.Form("hNDLenxy%sPt%d", htype.Data(), iPt);
       fNDLenxyHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0., 11.);
-      hisname.Form("hSumd02%sPt%d", htype.Data(), i);
+      hisname.Form("hSumd02%sPt%d", htype.Data(), iPt);
       fSumd02Hist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0., 1.);
-      hisname.Form("hSigVert%sPt%d", htype.Data(), i);
+      hisname.Form("hSigVert%sPt%d", htype.Data(), iPt);
       fSigVertHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0., 0.1);
-      hisname.Form("hPtMax%sPt%d", htype.Data(), i);
+      hisname.Form("hPtMax%sPt%d", htype.Data(), iPt);
       fPtMaxHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0.5, 20.);
-      hisname.Form("hPtCand%sPt%d", htype.Data(), i);
+      hisname.Form("hPtCand%sPt%d", htype.Data(), iPt);
       fPtCandHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0.5, 20.);
-      hisname.Form("hDCA%sPt%d", htype.Data(), i);
+      hisname.Form("hDCA%sPt%d", htype.Data(), iPt);
       fDCAHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0., 0.1);
-      hisname.Form("hNormIP%sPt%d", htype.Data(), i);
+      hisname.Form("hNormIP%sPt%d", htype.Data(), iPt);
       fNormIPHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0., 6.);
-      hisname.Form("hCosPiDs%sPt%d", htype.Data(), i);
+      hisname.Form("hCosPiDs%sPt%d", htype.Data(), iPt);
       fCosPiDsHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0.5, 1.);
-      hisname.Form("hCosPiKPhi%sPt%d", htype.Data(), i);
+      hisname.Form("hCosPiKPhi%sPt%d", htype.Data(), iPt);
       fCosPiKPhiHist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0., 0.5);
-      hisname.Form("hPtProng0%sPt%d", htype.Data(), i);
+      hisname.Form("hPtProng0%sPt%d", htype.Data(), iPt);
       fPtProng0Hist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0.0, 20.);
-      hisname.Form("hPtProng1%sPt%d", htype.Data(), i);
+      hisname.Form("hPtProng1%sPt%d", htype.Data(), iPt);
       fPtProng1Hist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0.0, 20.);
-      hisname.Form("hPtProng2%sPt%d", htype.Data(), i);
+      hisname.Form("hPtProng2%sPt%d", htype.Data(), iPt);
       fPtProng2Hist[index] = new TH1F(hisname.Data(), hisname.Data(), 100, 0.0, 20.);
-      hisname.Form("hDalitz%sPt%d", htype.Data(), i);
+      hisname.Form("hDalitz%sPt%d", htype.Data(), iPt);
       fDalitz[index] = new TH2F(hisname.Data(), hisname.Data(), 100, 0., 2., 100, 0., 2.);
-      hisname.Form("hDalitz%sPt%dphi", htype.Data(), i);
+      hisname.Form("hDalitz%sPt%dphi", htype.Data(), iPt);
       fDalitzPhi[index] = new TH2F(hisname.Data(), hisname.Data(), 100, 0., 2., 100, 0., 2.);
-      hisname.Form("hDalitz%sPt%dk0st", htype.Data(), i);
+      hisname.Form("hDalitz%sPt%dk0st", htype.Data(), iPt);
       fDalitzK0st[index] = new TH2F(hisname.Data(), hisname.Data(), 100, 0., 2., 100, 0., 2.);
     }
   }
 
-  for (Int_t i = 0; i < 4 * fNPtBins; i++)
+  for (Int_t iHist = 0; iHist < 4 * fNPtBins; iHist++)
   {
-    fOutput->Add(fMassHist[i]);
-    fOutput->Add(fMassHistPhi[i]);
-    fOutput->Add(fMassHistK0st[i]);
-    fOutput->Add(fPtCandHist[i]);
+    fOutput->Add(fMassHist[iHist]);
+    fOutput->Add(fMassHistPhi[iHist]);
+    fOutput->Add(fMassHistK0st[iHist]);
+    fOutput->Add(fPtCandHist[iHist]);
     if (fDoCutVarHistos)
     {
-      fOutput->Add(fCosPHist[i]);
-      fOutput->Add(fCosPxyHist[i]);
-      fOutput->Add(fDLenHist[i]);
-      fOutput->Add(fDLenxyHist[i]);
-      fOutput->Add(fNDLenxyHist[i]);
-      fOutput->Add(fSumd02Hist[i]);
-      fOutput->Add(fSigVertHist[i]);
-      fOutput->Add(fPtMaxHist[i]);
-      fOutput->Add(fDCAHist[i]);
-      fOutput->Add(fNormIPHist[i]);
-      fOutput->Add(fCosPiDsHist[i]);
-      fOutput->Add(fCosPiKPhiHist[i]);
-      fOutput->Add(fPtProng0Hist[i]);
-      fOutput->Add(fPtProng1Hist[i]);
-      fOutput->Add(fPtProng2Hist[i]);
-      fOutput->Add(fDalitz[i]);
-      fOutput->Add(fDalitzPhi[i]);
-      fOutput->Add(fDalitzK0st[i]);
+      fOutput->Add(fCosPHist[iHist]);
+      fOutput->Add(fCosPxyHist[iHist]);
+      fOutput->Add(fDLenHist[iHist]);
+      fOutput->Add(fDLenxyHist[iHist]);
+      fOutput->Add(fNDLenxyHist[iHist]);
+      fOutput->Add(fSumd02Hist[iHist]);
+      fOutput->Add(fSigVertHist[iHist]);
+      fOutput->Add(fPtMaxHist[iHist]);
+      fOutput->Add(fDCAHist[iHist]);
+      fOutput->Add(fNormIPHist[iHist]);
+      fOutput->Add(fCosPiDsHist[iHist]);
+      fOutput->Add(fCosPiKPhiHist[iHist]);
+      fOutput->Add(fPtProng0Hist[iHist]);
+      fOutput->Add(fPtProng1Hist[iHist]);
+      fOutput->Add(fPtProng2Hist[iHist]);
+      fOutput->Add(fDalitz[iHist]);
+      fOutput->Add(fDalitzPhi[iHist]);
+      fOutput->Add(fDalitzK0st[iHist]);
     }
   }
 
@@ -679,10 +638,10 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fChanHist[1] = new TH1F("hChanSig", "KKpi and piKK candidates", 64, -0.5, 63.5);
   fChanHist[2] = new TH1F("hChanBkg", "KKpi and piKK candidates", 64, -0.5, 63.5);
   fChanHist[3] = new TH1F("hChanReflSig", "KKpi and piKK candidates", 64, -0.5, 63.5);
-  for (Int_t i = 0; i < 4; i++)
+  for (Int_t iHist = 0; iHist < 4; iHist++)
   {
-    fChanHist[i]->SetMinimum(0);
-    fOutput->Add(fChanHist[i]);
+    fChanHist[iHist]->SetMinimum(0);
+    fOutput->Add(fChanHist[iHist]);
   }
 
   fCosPHist3D = new TH3F("fCosPHist3D", "CosP vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
@@ -722,39 +681,39 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fYVsPt = new TH2F("hYVsPt", "YvsPt (prod. cuts)", (Int_t)fPtLimits[fNPtBins] * 2, 0., fPtLimits[fNPtBins], 80, -2., 2.);
   fYVsPtSig = new TH2F("hYVsPtSig", "YvsPt (MC, only sig., prod. cuts)", (Int_t)fPtLimits[fNPtBins] * 2, 0., fPtLimits[fNPtBins], 80, -2., 2.);
 
-  for (Int_t i = 0; i < fNPtBins; i++)
+  for (Int_t iPt = 0; iPt < fNPtBins; iPt++)
   {
-    hisname.Form("hMassKKPt%d", i);
-    fMassHistKK[i] = new TH1F(hisname.Data(), hisname.Data(), 200, 0.95, 1.35);
-    fMassHistKK[i]->Sumw2();
-    fOutput->Add(fMassHistKK[i]);
-    hisname.Form("hMassKpiPt%d", i);
-    fMassHistKpi[i] = new TH1F(hisname.Data(), hisname.Data(), 200, 0.7, 1.1);
-    fMassHistKpi[i]->Sumw2();
-    fOutput->Add(fMassHistKpi[i]);
-    hisname.Form("hMassKKVsKKpiPt%d", i);
-    fMassHistKKVsKKpi[i] = new TH2F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass, 200, 0.95, 1.15);
-    fOutput->Add(fMassHistKKVsKKpi[i]);
-    hisname.Form("hMassKpiVsKKpiPt%d", i);
-    fMassHistKpiVsKKpi[i] = new TH2F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass, 200, 0.7, 1.1);
-    fOutput->Add(fMassHistKpiVsKKpi[i]);
+    hisname.Form("hMassKKPt%d", iPt);
+    fMassHistKK[iPt] = new TH1F(hisname.Data(), hisname.Data(), 200, 0.95, 1.35);
+    fMassHistKK[iPt]->Sumw2();
+    fOutput->Add(fMassHistKK[iPt]);
+    hisname.Form("hMassKpiPt%d", iPt);
+    fMassHistKpi[iPt] = new TH1F(hisname.Data(), hisname.Data(), 200, 0.7, 1.1);
+    fMassHistKpi[iPt]->Sumw2();
+    fOutput->Add(fMassHistKpi[iPt]);
+    hisname.Form("hMassKKVsKKpiPt%d", iPt);
+    fMassHistKKVsKKpi[iPt] = new TH2F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass, 200, 0.95, 1.15);
+    fOutput->Add(fMassHistKKVsKKpi[iPt]);
+    hisname.Form("hMassKpiVsKKpiPt%d", iPt);
+    fMassHistKpiVsKKpi[iPt] = new TH2F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass, 200, 0.7, 1.1);
+    fOutput->Add(fMassHistKpiVsKKpi[iPt]);
     if (fDoRotBkg)
     {
-      hisname.Form("hMassAllPt%dphi_RotBkg", i);
-      fMassRotBkgHistPhi[i] = new TH1F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass);
-      fMassRotBkgHistPhi[i]->Sumw2();
-      fOutput->Add(fMassRotBkgHistPhi[i]);
+      hisname.Form("hMassAllPt%dphi_RotBkg", iPt);
+      fMassRotBkgHistPhi[iPt] = new TH1F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass);
+      fMassRotBkgHistPhi[iPt]->Sumw2();
+      fOutput->Add(fMassRotBkgHistPhi[iPt]);
     }
     if (fDoBkgPhiSB)
     {
-      hisname.Form("fMassLSBkgHistPhiPt%d", i);
-      fMassLSBkgHistPhi[i] = new TH1F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass);
-      fMassLSBkgHistPhi[i]->Sumw2();
-      fOutput->Add(fMassLSBkgHistPhi[i]);
-      hisname.Form("fMassRSBkgHistPhiPt%d", i);
-      fMassRSBkgHistPhi[i] = new TH1F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass);
-      fMassRSBkgHistPhi[i]->Sumw2();
-      fOutput->Add(fMassRSBkgHistPhi[i]);
+      hisname.Form("fMassLSBkgHistPhiPt%d", iPt);
+      fMassLSBkgHistPhi[iPt] = new TH1F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass);
+      fMassLSBkgHistPhi[iPt]->Sumw2();
+      fOutput->Add(fMassLSBkgHistPhi[iPt]);
+      hisname.Form("fMassRSBkgHistPhiPt%d", iPt);
+      fMassRSBkgHistPhi[iPt] = new TH1F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass);
+      fMassRSBkgHistPhi[iPt]->Sumw2();
+      fOutput->Add(fMassRSBkgHistPhi[iPt]);
     }
   }
 
@@ -884,7 +843,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     fHistNEvents->Fill(9);
   if (fAnalysisCuts->IsEventRejectedDueToCentrality())
   {
-    fHistNEvents->Fill(10);
+    if(fSystem != kUpgr) // no physics selection can be applied for upgrade studies
+        fHistNEvents->Fill(10);
+    else
+        isEvSel = kTRUE;
+
     fHistCentrality[2]->Fill(evCentr);
     fHistCentralityMult[2]->Fill(ntracks, evCentr);
   }
@@ -996,7 +959,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
       fHistNEvents->Fill(15);
       continue;
     }
-    
+
     if (!(vHF->FillRecoCand(aod, d)))
     {                         ////Fill the data members of the candidate only if they are empty.
       fHistNEvents->Fill(14); //monitor how often this fails
@@ -1013,7 +976,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     }
 
     Bool_t recVtx = kFALSE;
-    AliAODVertex *origownvtx = 0x0;
+    AliAODVertex *origownvtx = nullptr;
 
     Double_t ptCand = d->Pt();
     Int_t iPtBin = TMath::BinarySearch(fNPtBins, fPtLimits, (Float_t)ptCand);
@@ -1108,7 +1071,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         Int_t pdgCode0 = -999;
         Int_t isMCSignal = -1;
 
-        AliAODMCParticle *partDs = 0x0;
+        AliAODMCParticle *partDs = nullptr;
         Int_t orig=0;
         Float_t trueImpParDsFromB = 99999.;
 
@@ -1157,10 +1120,18 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           }
           else
           {
+            Bool_t isCandInjected = kFALSE;
+            if(fKeepOnlyBkgFromHIJING) {
+                isCandInjected = AliVertexingHFUtils::IsCandidateInjected(d, mcHeader, arrayMC);
+            }
+            if(!isCandInjected) {
+                indexMCpiKK = GetBackgroundHistoIndex(iPtBin);
+                indexMCKKpi = GetBackgroundHistoIndex(iPtBin);
+                fChanHist[2]->Fill(retCodeAnalysisCuts);
+                orig=6;
+            }
+
             labDplus = d->MatchToMC(411, arrayMC, nProng, pdgDstoKKpi);
-            indexMCpiKK = GetBackgroundHistoIndex(iPtBin);
-            indexMCKKpi = GetBackgroundHistoIndex(iPtBin);
-            fChanHist[2]->Fill(retCodeAnalysisCuts);
             if (labDplus >= 0)
             {
               partDs = (AliAODMCParticle*)arrayMC->At(labDplus);
@@ -1206,32 +1177,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             if (isK0starKKpi)
               fMassHistK0st[indexMCKKpi]->Fill(invMass_KKpi, weightKKpi);
           }
-          if (isPhiKKpi && fFillImpParSparse)
-          {
-            Double_t impParxy = d->ImpParXY() * 10000.;
-            Double_t array4ImpPar[3] = {invMass_KKpi, ptCand, impParxy};
-            if (!fReadMC) fImpParSparse->Fill(array4ImpPar);
-            else
-            {
-              if (orig == 4 && indexMCKKpi == GetSignalHistoIndex(iPtBin)) fImpParSparseMC[0]->Fill(array4ImpPar);
-              else if (orig == 5 && indexMCKKpi == GetSignalHistoIndex(iPtBin))
-              {
-                fImpParSparseMC[1]->Fill(array4ImpPar);
-                trueImpParDsFromB = GetTrueImpactParameterDstoPhiPi(mcHeader, arrayMC, partDs) * 10000;
-                Double_t array4ImpParTrueB[3] = {invMass_KKpi, ptCand, trueImpParDsFromB};
-                fImpParSparseMC[2]->Fill(array4ImpParTrueB);
-              }
-              else
-                fImpParSparseMC[3]->Fill(array4ImpPar);
-            }
-          }
-          if (isPhiKKpi && fFillNtuple == 4)
-          {
-            Float_t impParxy = d->ImpParXY() * 10000.;
-            Float_t tmp[4] = {(Float_t)ptCand, (Float_t)invMass_KKpi, impParxy, (Float_t)orig};
-            fNtupleDs->Fill(tmp);
-            PostData(4, fNtupleDs);
-          }
         }
         if (ispiKK)
         {
@@ -1267,37 +1212,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             if (isK0starpiKK)
               fMassHistK0st[indexMCpiKK]->Fill(invMass_piKK, weightpiKK);
           }
-          if (isPhipiKK && fFillImpParSparse)
-          {
-            Double_t impParxy = d->ImpParXY() * 10000.;
-            Double_t array4ImpPar[3] = {invMass_piKK, ptCand, impParxy};
-            if (!fReadMC)
-              fImpParSparse->Fill(array4ImpPar);
-            else
-            {
-              if (orig == 4 && indexMCpiKK == GetSignalHistoIndex(iPtBin)) 
-                fImpParSparseMC[0]->Fill(array4ImpPar);
-              else if (orig == 5 && indexMCpiKK == GetSignalHistoIndex(iPtBin))
-              {
-                fImpParSparseMC[1]->Fill(array4ImpPar);
-                trueImpParDsFromB = GetTrueImpactParameterDstoPhiPi(mcHeader, arrayMC, partDs) * 10000;
-                Double_t array4ImpParTrueB[3] = {invMass_piKK, ptCand, trueImpParDsFromB};
-                fImpParSparseMC[2]->Fill(array4ImpParTrueB);
-              }
-              else
-                fImpParSparseMC[3]->Fill(array4ImpPar);
-            }
-          }
-          if (isPhipiKK && fFillNtuple == 4)
-          {
-            Float_t impParxy = d->ImpParXY() * 10000.;
-            Float_t tmp[4] = {(Float_t)ptCand, (Float_t)invMass_piKK, impParxy, (Float_t)orig};
-            fNtupleDs->Fill(tmp);
-            PostData(4, fNtupleDs);
-          }
         }
 
-        ///////////////////// CODE FOR NSPARSE /////////////////////////
+        ///////////////////// CODE FOR NSPARSES /////////////////////////
 
         if (fFillSparse && (isPhiKKpi || isPhipiKK))
         {
@@ -1352,7 +1269,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               normIP = normIPprong[ip];
             else if (TMath::Abs(normIPprong[ip]) > TMath::Abs(normIP))
               normIP = normIPprong[ip];
-            
+
             //get PID info for ML application
             if(fApplyML)
             {
@@ -1367,7 +1284,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               Pid_HF->GetnSigmaTOF(track,2,sigTOF_Pi);
               sigCombK[ip] = CombineNsigmaDiffDet(sigTPC_K, sigTOF_K);
               sigCombPi[ip] = CombineNsigmaDiffDet(sigTPC_Pi, sigTOF_Pi);
-            }          
+            }
           }
 
           if (isPhiKKpi)
@@ -1388,7 +1305,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
             Double_t var4nSparse[knVarForSparse] = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000,
                                                     normdlxy, cosp * 100, cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10,
-                                                    TMath::Abs(normIP), absimpparxy * 10000, modelPred, nTracklets, evCentr};
+                                                    TMath::Abs(normIP), absimpparxy * 10000, modelPred};
 
             if(!fApplyML || (modelPred > modelLim))
             {
@@ -1402,6 +1319,10 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                 {
                   if (orig == 4) fnSparseMC[2]->Fill(var4nSparse, ptWeight);
                   else if (orig == 5) fnSparseMC[3]->Fill(var4nSparse, ptWeight);
+                }
+                else if(indexMCKKpi == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
+                {
+                    fnSparseMC[4]->Fill(var4nSparse, ptWeight);
                 }
                 else if (fFillSparseDplus && labDplus >= 0 && pdgCode0 == 321)
                 {
@@ -1429,8 +1350,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
             Double_t var4nSparse[knVarForSparse] = {invMass_piKK, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000,
                                                     normdlxy, cosp * 100, cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10,
-                                                    TMath::Abs(normIP), absimpparxy * 10000, modelPred, nTracklets, evCentr};
-            
+                                                    TMath::Abs(normIP), absimpparxy * 10000, modelPred};
+
             if(!fApplyML || (modelPred > modelLim))
             {
               if (!fReadMC)
@@ -1444,6 +1365,10 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                   if (orig == 4) fnSparseMC[2]->Fill(var4nSparse, ptWeight);
                   else if (orig == 5) fnSparseMC[3]->Fill(var4nSparse, ptWeight);
                 }
+                else if(indexMCpiKK == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
+                {
+                    fnSparseMC[4]->Fill(var4nSparse, ptWeight);
+                }
                 else if (fFillSparseDplus && labDplus >= 0 && pdgCode0 == 211)
                 {
                   if (orig == 4) fnSparseMCDplus[2]->Fill(var4nSparse, ptWeight);
@@ -1453,6 +1378,52 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             }
           }
         }
+
+        if(fFillImpParSparse && (isPhiKKpi || isPhipiKK))
+        {
+          Double_t impParxy = d->ImpParXY() * 10000.;
+          Double_t array4ImpPar[3] = {invMass_KKpi, ptCand, impParxy};
+          if (isPhiKKpi)
+          {
+            if (!fReadMC)
+                fImpParSparse->Fill(array4ImpPar);
+            else
+            {
+              if (orig == 4 && indexMCKKpi == GetSignalHistoIndex(iPtBin))
+                fImpParSparseMC[0]->Fill(array4ImpPar);
+              else if (orig == 5 && indexMCKKpi == GetSignalHistoIndex(iPtBin))
+              {
+                fImpParSparseMC[1]->Fill(array4ImpPar);
+                trueImpParDsFromB = GetTrueImpactParameterDstoPhiPi(mcHeader, arrayMC, partDs) * 10000;
+                Double_t array4ImpParTrueB[3] = {invMass_KKpi, ptCand, trueImpParDsFromB};
+                fImpParSparseMC[2]->Fill(array4ImpParTrueB);
+              }
+              else if (indexMCKKpi == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
+                fImpParSparseMC[3]->Fill(array4ImpPar);
+            }
+          }
+          if (isPhipiKK)
+          {
+            if (!fReadMC)
+              fImpParSparse->Fill(array4ImpPar);
+            else
+            {
+              if (orig == 4 && indexMCpiKK == GetSignalHistoIndex(iPtBin))
+                fImpParSparseMC[0]->Fill(array4ImpPar);
+              else if (orig == 5 && indexMCpiKK == GetSignalHistoIndex(iPtBin))
+              {
+                fImpParSparseMC[1]->Fill(array4ImpPar);
+                trueImpParDsFromB = GetTrueImpactParameterDstoPhiPi(mcHeader, arrayMC, partDs) * 10000;
+                Double_t array4ImpParTrueB[3] = {invMass_piKK, ptCand, trueImpParDsFromB};
+                fImpParSparseMC[2]->Fill(array4ImpParTrueB);
+              }
+              else if (indexMCpiKK == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
+                fImpParSparseMC[3]->Fill(array4ImpPar);
+            }
+          }
+        }
+
+
         ////////////////////////////////////////////////////////////////
 
         if (fDoCutVarHistos)
@@ -1670,6 +1641,21 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           }
           PostData(4, fNtupleDs);
         }
+        else if(fFillNtuple == 4)
+        {
+          Float_t impParxy = d->ImpParXY() * 10000.;
+          if (isPhiKKpi)
+          {
+            Float_t tmp[4] = {(Float_t)ptCand, (Float_t)invMass_KKpi, impParxy, (Float_t)orig};
+            fNtupleDs->Fill(tmp);
+          }
+          if (isPhipiKK)
+          {
+            Float_t tmp[4] = {(Float_t)ptCand, (Float_t)invMass_piKK, impParxy, (Float_t)orig};
+            fNtupleDs->Fill(tmp);
+          }
+          PostData(4, fNtupleDs);
+        }
       } //if(retCodeAnalysisCuts
     }   // if(isFidAcc)
 
@@ -1758,7 +1744,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
           if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
-            Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10, nTracklets};
+            Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};
             Double_t ptWeight = 1.;
             if (fUseWeight && fHistoPtWeight)
             {
@@ -1798,7 +1784,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
           if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
-            Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10, nTracklets};
+            Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};
             Double_t ptWeight = 1.;
             if (fUseWeight && fHistoPtWeight)
             {
@@ -1903,16 +1889,6 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   Double_t maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
 
   Int_t nSparseAxes = knVarForSparse;
-  Int_t nTrklBins = 300;
-  if (!fUseTrkl) {
-    nTrklBins = 1;
-    nSparseAxes--;
-  }
-  Int_t nCentrBins = 101;
-  if (!fUseCentrAxis) {
-    nCentrBins = 1;
-    nSparseAxes--;
-  }
   Int_t nMLBins = 151;
   if(!fApplyML) {
     nMLBins = 1;
@@ -1923,92 +1899,95 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   if(fUseFinPtBinsForSparse)
     nPtBins = nPtBins*10;
 
-  Int_t nBinsReco[knVarForSparse] = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nMLBins, nTrklBins, nCentrBins};
-  Double_t xminReco[knVarForSparse] = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., 0.85, 1., 0.};
-  Double_t xmaxReco[knVarForSparse] = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 1., 301., 101.};
-  TString axis[knVarForSparse] = {"invMassDsAllPhi", "p_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP", "cosP_{xy}", 
-                                  "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", "ML model output", "N tracklets", 
-                                  Form("Percentile (%s)", fCentEstName.Data())};
+  Int_t nBinsReco[knVarForSparse];
+  Double_t xminReco[knVarForSparse];
+  Double_t xmaxReco[knVarForSparse];
+  TString axis[knVarForSparse] = {"invMassDsAllPhi", "#it{p}_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP", "cosP_{xy}",
+                                  "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", "ML model output"};
 
-  if (fSystem == 1)
-  { //pPb,PbPb
+  if (fSystem == kpp)
+  {
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., 0.85};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 1.};
+    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
+    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
+    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
+  }
+  else if (fSystem == kPbPb)
+  {
     nInvMassBins = (Int_t)(0.45 / fMassBinSize + 0.5);
     minMass = massDs - 0.5 * nInvMassBins * fMassBinSize;
     maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
-    nBinsReco[0] = nInvMassBins; //Ds mass
-    xminReco[0] = minMass;
-    xmaxReco[0] = maxMass;
-
-    nBinsReco[2] = 15; //#Delta Mass(KK)
-    xmaxReco[2] = 15.;
-
-    nBinsReco[3] = 10;  //dlen
-    nBinsReco[4] = 10;  //dlenxy
-    nBinsReco[5] = 10; //ndlenxy
-
-    nBinsReco[6] = 10; //cosP
-    xminReco[6] = 95.;
-    xmaxReco[6] = 100.;
-
-    nBinsReco[7] = 20; //cosPxy
-    xminReco[7] = 90.;
-    xmaxReco[7] = 100.;
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, nMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., 0.85};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 1.};
+    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
+    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
+    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
+  }
+  else if (fSystem == kUpgr)
+  {
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, nMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., 0.85};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., 1.};
+    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
+    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
+    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
   }
 
-  Int_t nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, nTrklBins};
-  Double_t xminAcc[knVarForSparseAcc] = {0., -10., 1.};
-  Double_t xmaxAcc[knVarForSparseAcc] = {fPtLimits[fNPtBins], 10., 301.};
+  Int_t nBinsAcc[knVarForSparseAcc] = {nPtBins, 20};
+  Double_t xminAcc[knVarForSparseAcc] = {0., -10.};
+  Double_t xmaxAcc[knVarForSparseAcc] = {fPtLimits[fNPtBins], 10.};
 
   if (fReadMC)
   {
-    TString label[2] = {"fromC", "fromB"};
-    for (Int_t i = 0; i < 2; i++)
+    TString label[3] = {"fromC", "fromB", "bkg"};
+    for (Int_t iHist = 0; iHist < 2; iHist++)
     {
-      TString titleSparse = Form("MC nSparse (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[i].Data());
-      fnSparseMC[i] = new THnSparseF(Form("fnSparseAcc_%s", label[i].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
-      fnSparseMC[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
-      fnSparseMC[i]->GetAxis(1)->SetTitle("y");
-      fnSparseMC[i]->GetAxis(2)->SetTitle("N tracklets");
-      fOutput->Add(fnSparseMC[i]);
+      TString titleSparse = Form("MC nSparse (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist].Data());
+      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAcc_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+      fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
+      fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
+      fOutput->Add(fnSparseMC[iHist]);
 
       //Dplus
       if (fFillSparseDplus)
       {
-        titleSparse = Form("MC nSparse D^{+} (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[i].Data());
-        fnSparseMCDplus[i] = new THnSparseF(Form("fnSparseAccDplus_%s", label[i].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
-        fnSparseMCDplus[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
-        fnSparseMCDplus[i]->GetAxis(1)->SetTitle("y");
-        fnSparseMCDplus[i]->GetAxis(2)->SetTitle("N tracklets");
-        fOutput->Add(fnSparseMCDplus[i]);
+        titleSparse = Form("MC nSparse D^{+} (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist].Data());
+        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseAccDplus_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+        fnSparseMCDplus[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
+        fnSparseMCDplus[iHist]->GetAxis(1)->SetTitle("#it{y}");
+        fOutput->Add(fnSparseMCDplus[iHist]);
       }
     }
-    for (Int_t i = 2; i < 4; i++)
+    for (Int_t iHist = 2; iHist < 5; iHist++)
     {
-      fnSparseMC[i] = new THnSparseF(Form("fnSparseReco_%s", label[i - 2].Data()), Form("MC nSparse (Reco Step)- %s", label[i - 2].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
-      for (Int_t j = 0; j < nSparseAxes; j++)
+      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist - 2].Data()), Form("MC nSparse (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
+      for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
       {
-        fnSparseMC[i]->GetAxis(j)->SetTitle(Form("%s", axis[j].Data()));
+        fnSparseMC[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
       }
-      fOutput->Add(fnSparseMC[i]);
+      fOutput->Add(fnSparseMC[iHist]);
 
       //Dplus
-      if (fFillSparseDplus)
+      if (fFillSparseDplus && iHist<4)
       {
-        fnSparseMCDplus[i] = new THnSparseF(Form("fnSparseRecoDplus_%s", label[i - 2].Data()), Form("MC nSparse D^{+} (Reco Step)- %s", label[i - 2].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
-        for (Int_t j = 0; j < nSparseAxes; j++)
+        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseRecoDplus_%s", label[iHist - 2].Data()), Form("MC nSparse D^{+} (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
+        for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
         {
-          fnSparseMCDplus[i]->GetAxis(j)->SetTitle(Form("%s", axis[j].Data()));
+          fnSparseMCDplus[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
         }
-        fOutput->Add(fnSparseMCDplus[i]);
+        fOutput->Add(fnSparseMCDplus[iHist]);
       }
     }
   } //end MC
   else
   {
     fnSparse = new THnSparseF("fnSparse", "nSparse", nSparseAxes, nBinsReco, xminReco, xmaxReco);
-    for (Int_t j = 0; j < nSparseAxes; j++)
+    for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
     {
-      fnSparse->GetAxis(j)->SetTitle(Form("%s", axis[j].Data()));
+      fnSparse->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
     }
     fOutput->Add(fnSparse);
   }
@@ -2025,7 +2004,7 @@ void AliAnalysisTaskSEDs::CreateImpactParameterSparses()
   Double_t maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
 
   //dimensions for THnSparse
-  TString axTit[kVarForImpPar] = {"M_{K#pi#pi} (GeV/c^{2})", "p_{T} (GeV/c)", "Imp Par (#mum)"};
+  TString axTit[kVarForImpPar] = {"M_{K#pi#pi} (GeV/c^{2})", "#it{p}_{T} (GeV/c)", "Imp Par (#mum)"};
 
   Int_t nbins[kVarForImpPar] = {nInvMassBins, (Int_t)fPtLimits[fNPtBins] * 2, 1000};
   Double_t xmin[kVarForImpPar] = {minMass, 0., -1000};
@@ -2148,7 +2127,7 @@ bool AliAnalysisTaskSEDs::SetMLVariables(TString path)
 
   if(((unsigned int)num_models == fModelPaths.size()) && (fModelPaths.size() == fModelOutputCuts.size()) && (fModelOutputCuts.size() == (fPtBinsModel.size()-1)))
     return kTRUE;
-    
+
   return kFALSE;
 }
 
