@@ -1113,7 +1113,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           {
             Bool_t isCandInjected = kFALSE;
             if(fKeepOnlyBkgFromHIJING) {
-                Bool_t isCandInjected = AliVertexingHFUtils::IsCandidateInjected(d, mcHeader, arrayMC);
+                isCandInjected = AliVertexingHFUtils::IsCandidateInjected(d, mcHeader, arrayMC);
             }
             if(!isCandInjected) {
                 indexMCpiKK = GetBackgroundHistoIndex(iPtBin);
@@ -1952,7 +1952,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     }
     for (Int_t iHist = 2; iHist < 5; iHist++)
     {
-      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist - 3].Data()), Form("MC nSparse (Reco Step)- %s", label[iHist - 3].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
+      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist - 2].Data()), Form("MC nSparse (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
       for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
       {
         fnSparseMC[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
@@ -1960,7 +1960,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       fOutput->Add(fnSparseMC[iHist]);
 
       //Dplus
-      if (fFillSparseDplus)
+      if (fFillSparseDplus && iHist<4)
       {
         fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseRecoDplus_%s", label[iHist - 3].Data()), Form("MC nSparse D^{+} (Reco Step)- %s", label[iHist - 3].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
         for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
