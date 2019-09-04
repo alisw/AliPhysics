@@ -118,6 +118,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   fModelOutputCuts(),
   fPtBinsModel(),
   fModels(),
+  fFillBkgSparse(kFALSE),
   fKeepOnlyBkgFromHIJING(kFALSE)
 {
   /// Default constructor
@@ -236,6 +237,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   fModelOutputCuts(),
   fPtBinsModel(),
   fModels(),
+  fFillBkgSparse(kFALSE),
   fKeepOnlyBkgFromHIJING(kFALSE)
 {
   /// Default constructor
@@ -416,11 +418,14 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
       for (Int_t iHist = 0; iHist < 4; iHist++)
         delete fImpParSparseMC[iHist];
     }
-    for (Int_t iHist = 0; iHist < 4; iHist++)
+    for (Int_t iHist = 0; iHist < 5; iHist++)
     {
       delete fnSparseMC[iHist];
-      if (fFillSparseDplus)
-        delete fnSparseMCDplus[iHist];
+    }
+    if (fFillSparseDplus)
+    {
+      for (Int_t iHist = 0; iHist < 4; iHist++)
+          delete fnSparseMCDplus[iHist];
     }
   }
   if (fHistoPtWeight)
@@ -1311,7 +1316,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                   if (orig == 4) fnSparseMC[2]->Fill(var4nSparse, ptWeight);
                   else if (orig == 5) fnSparseMC[3]->Fill(var4nSparse, ptWeight);
                 }
-                else if(indexMCKKpi == GetBackgroundHistoIndex(iPtBin))
+                else if(indexMCKKpi == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
                 {
                     fnSparseMC[4]->Fill(var4nSparse, ptWeight);
                 }
@@ -1356,7 +1361,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                   if (orig == 4) fnSparseMC[2]->Fill(var4nSparse, ptWeight);
                   else if (orig == 5) fnSparseMC[3]->Fill(var4nSparse, ptWeight);
                 }
-                else if(indexMCpiKK == GetBackgroundHistoIndex(iPtBin))
+                else if(indexMCpiKK == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
                 {
                     fnSparseMC[4]->Fill(var4nSparse, ptWeight);
                 }
@@ -1389,7 +1394,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                 Double_t array4ImpParTrueB[3] = {invMass_KKpi, ptCand, trueImpParDsFromB};
                 fImpParSparseMC[2]->Fill(array4ImpParTrueB);
               }
-              else if (indexMCKKpi == GetBackgroundHistoIndex(iPtBin))
+              else if (indexMCKKpi == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
                 fImpParSparseMC[3]->Fill(array4ImpPar);
             }
           }
@@ -1408,7 +1413,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                 Double_t array4ImpParTrueB[3] = {invMass_piKK, ptCand, trueImpParDsFromB};
                 fImpParSparseMC[2]->Fill(array4ImpParTrueB);
               }
-              else if (indexMCpiKK == GetBackgroundHistoIndex(iPtBin))
+              else if (indexMCpiKK == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
                 fImpParSparseMC[3]->Fill(array4ImpPar);
             }
           }

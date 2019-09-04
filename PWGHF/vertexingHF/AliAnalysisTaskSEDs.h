@@ -75,11 +75,12 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
   void SetSystem(Int_t system){fSystem = system;}
 
-  void SetUseFinePtBinsForSparse(bool usefinebins=kTRUE) {fUseFinPtBinsForSparse=usefinebins;} //use only in case of few candidates (e.g. MC signal only)
+  void SetUseFinePtBinsForSparse(Bool_t usefinebins=kTRUE) {fUseFinPtBinsForSparse=usefinebins;} //use only in case of few candidates (e.g. MC signal only)
 
   Double_t GetPtWeightFromHistogram(Double_t pt);
 
-  void SetKeepOnlyBkgFromHIJING(bool keeponlyhijing=true) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
+  void SetKeepOnlyBkgFromHIJING(Bool_t keeponlyhijing=true) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
+  void SetFillBkgSparse(Bool_t dofill=true) {fFillBkgSparse = dofill;}
 
   /// methods for ML application
   void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
@@ -107,11 +108,11 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
 
-  TList*  fOutput;                    //!<! list send on output slot 0
-  TH1F*   fHistNEvents;               //!<! hist. for No. of events
-  TH1F*   fHistoPtWeight;             //-> user-defined histogram to calculate the Pt weights
-  TH1F*   fChanHist[4];               //!<! hist. with KKpi and piKK candidates (sig,bkg,tot)
-  TH1F*   fMassHist[4*kMaxPtBins];    //!<! hist. of mass spectra (sig,bkg,tot)
+  TList*  fOutput;                        //!<! list send on output slot 0
+  TH1F*   fHistNEvents;                   //!<! hist. for No. of events
+  TH1F*   fHistoPtWeight;                 //-> user-defined histogram to calculate the Pt weights
+  TH1F*   fChanHist[4];                   //!<! hist. with KKpi and piKK candidates (sig,bkg,tot)
+  TH1F*   fMassHist[4*kMaxPtBins];        //!<! hist. of mass spectra (sig,bkg,tot)
   TH1F*   fMassHistPhi[4*kMaxPtBins];     //!<! hist. of mass spectra via phi (sig,bkg,tot)
   TH1F*   fMassHistK0st[4*kMaxPtBins];    //!<! hist. of mass spectra via K0* (sig,bkg,tot)
   TH1F*   fMassHistKK[kMaxPtBins];        //!<! hist. of mass spectra of KK
@@ -140,83 +141,85 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F*   fDalitz[4*kMaxPtBins];          //!<! dalitz plot (sig,bkg,tot)
   TH2F*   fDalitzPhi[4*kMaxPtBins];       //!<! dalitz plot via phi (sig,bkg,tot)
   TH2F*   fDalitzK0st[4*kMaxPtBins];      //!<! dalitz plot via K0* (sig,bkg,tot)
-  TH2F*   fPtVsMass;       //!<! hist. of pt vs. mass (prod. cuts)
-  TH2F*   fPtVsMassPhi;    //!<! hist. of pt vs. mass (phi selection)
-  TH2F*   fPtVsMassK0st;   //!<! hist. of pt vs. mass (K0* selection)
-  TH2F*   fYVsPt;          //!<! hist. of Y vs. Pt (prod. cuts)
-  TH2F*   fYVsPtSig;       //!<! hist. of Y vs. Pt (MC, only sig, prod. cuts)
-  TH2F*   fHistAllV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (all)
-  TH2F*   fHistSelV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (sel)
-  TH1F*   fHistCentrality[3];     //!<!hist. for cent distr (all,sel ev, )
-  TH2F*   fHistCentralityMult[3]; //!<!hist. for cent distr vs mult (all,sel ev, )
-  TH3F*   fCosPHist3D;       //!<! cosP vs Ds mass vs pt
-  TH3F*   fCosPxyHist3D;     //!<! cosPxy vs Ds mass vs pt
-  TH3F*   fDLenHist3D;       //!<! Dlen vs Ds mass vs pt
-  TH3F*   fDLenxyHist3D;     //!<! Dlenxy vs Ds mass vs pt
-  TH3F*   fNDLenxyHist3D;    //!<! NDlenxy vs Ds mass vs pt
-  TH3F*   fSigVertHist3D;    //!<! SigVert vs Ds mass vs pt
-  TH3F*   fDCAHist3D;        //!<! DCA vs Ds mass vs pt
-  TH3F*   fNormIPHist3D;     //!<! nIP vs Ds mass vs pt
-  TH3F*   fCosPiDsHist3D;    //!<! cosPiDs vs Ds mass vs pt
-  TH3F*   fCosPiKPhiHist3D;  //!<! cosPiKPhi vs Ds mass vs pt
-  TH3F*   fPtProng0Hist3D;   //!<! Pt prong0 vs Ds mass vs pt
-  TH3F*   fPtProng1Hist3D;   //!<! Pt prong1 vs Ds mass vs pt
-  TH3F*   fPtProng2Hist3D;   //!<! Pt prong2 vs Ds mass vs pt
-  TNtuple *fNtupleDs;        //!<! output ntuple
-  Int_t fFillNtuple;         /// 0 not to fill ntuple
-                             /// 1 for filling ntuple for events through Phi
-                             /// 2 for filling ntuple for events through K0Star
-                             /// 3 for filling all
+  TH2F*   fPtVsMass;                      //!<! hist. of pt vs. mass (prod. cuts)
+  TH2F*   fPtVsMassPhi;                   //!<! hist. of pt vs. mass (phi selection)
+  TH2F*   fPtVsMassK0st;                  //!<! hist. of pt vs. mass (K0* selection)
+  TH2F*   fYVsPt;                         //!<! hist. of Y vs. Pt (prod. cuts)
+  TH2F*   fYVsPtSig;                      //!<! hist. of Y vs. Pt (MC, only sig, prod. cuts)
+  TH2F*   fHistAllV0multNTPCout;          //!<! histo for V0mult vs #tracks TPCout (all)
+  TH2F*   fHistSelV0multNTPCout;          //!<! histo for V0mult vs #tracks TPCout (sel)
+  TH1F*   fHistCentrality[3];             //!<!hist. for cent distr (all,sel ev, )
+  TH2F*   fHistCentralityMult[3];         //!<!hist. for cent distr vs mult (all,sel ev, )
+  TH3F*   fCosPHist3D;                    //!<! cosP vs Ds mass vs pt
+  TH3F*   fCosPxyHist3D;                  //!<! cosPxy vs Ds mass vs pt
+  TH3F*   fDLenHist3D;                    //!<! Dlen vs Ds mass vs pt
+  TH3F*   fDLenxyHist3D;                  //!<! Dlenxy vs Ds mass vs pt
+  TH3F*   fNDLenxyHist3D;                 //!<! NDlenxy vs Ds mass vs pt
+  TH3F*   fSigVertHist3D;                 //!<! SigVert vs Ds mass vs pt
+  TH3F*   fDCAHist3D;                     //!<! DCA vs Ds mass vs pt
+  TH3F*   fNormIPHist3D;                  //!<! nIP vs Ds mass vs pt
+  TH3F*   fCosPiDsHist3D;                 //!<! cosPiDs vs Ds mass vs pt
+  TH3F*   fCosPiKPhiHist3D;               //!<! cosPiKPhi vs Ds mass vs pt
+  TH3F*   fPtProng0Hist3D;                //!<! Pt prong0 vs Ds mass vs pt
+  TH3F*   fPtProng1Hist3D;                //!<! Pt prong1 vs Ds mass vs pt
+  TH3F*   fPtProng2Hist3D;                //!<! Pt prong2 vs Ds mass vs pt
+  TNtuple *fNtupleDs;                     //!<! output ntuple
+  Int_t fFillNtuple;                      /// 0 not to fill ntuple
+                                          /// 1 for filling ntuple for events through Phi
+                                          /// 2 for filling ntuple for events through K0Star
+                                          /// 3 for filling all
 
-  Int_t   fSystem;                    /// 0 = pp, 1 = pPb,PbPb
-  Bool_t  fReadMC;                    ///  flag for access to MC
-  Bool_t  fWriteOnlySignal;           ///  flag to control ntuple writing in MC
-  Bool_t  fDoCutVarHistos;            ///  flag to create and fill histos with distributions of cut variables
-  Bool_t  fUseSelectionBit;           /// flag for usage of HasSelectionBit
-  Bool_t  fFillSparse;                /// flag for usage of THnSparse
-  Bool_t  fFillSparseDplus;           /// flag for usage of THnSparse
-  Bool_t  fFillImpParSparse;          /// flag for usage of sparse for imp. parameter
-  Bool_t  fFillAcceptanceLevel;       /// flag for filling true reconstructed Ds at acceptance level (see FillMCGenAccHistos)
-  Bool_t fDoRotBkg;                   ///flag to create rotational bkg (rotating pi track)
-  Bool_t fDoBkgPhiSB;                 ///flag to create bkg from phi sidebands
-  Bool_t fDoCutV0multTPCout;          ///flag to activate cut on V0mult vs #tracks TPCout
-  Bool_t fUseWeight;                  /// flag to decide whether to use pt-weights != 1 when filling the container or not
-  Int_t fAODProtection;               /// flag to activate protection against AOD-dAOD mismatch.
-  /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-  UChar_t fNPtBins;                   /// number of Pt bins
-  TList *fListCuts; //list of cuts
-  Float_t fPtLimits[kMaxPtBins+1];    ///  limits for pt bins
-  Double_t fMassRange;                /// range for mass histogram
-  Double_t fMassBinSize;              /// bin size for inv. mass histo
+  Int_t   fSystem;                        /// 0 = pp, 1 = pPb,PbPb
+  Bool_t  fReadMC;                        ///  flag for access to MC
+  Bool_t  fWriteOnlySignal;               ///  flag to control ntuple writing in MC
+  Bool_t  fDoCutVarHistos;                ///  flag to create and fill histos with distributions of cut variables
+  Bool_t  fUseSelectionBit;               /// flag for usage of HasSelectionBit
+  Bool_t  fFillSparse;                    /// flag for usage of THnSparse
+  Bool_t  fFillSparseDplus;               /// flag for usage of THnSparse
+  Bool_t  fFillImpParSparse;              /// flag for usage of sparse for imp. parameter
+  Bool_t  fFillAcceptanceLevel;           /// flag for filling true reconstructed Ds at acceptance level (see FillMCGenAccHistos)
+  Bool_t fDoRotBkg;                       ///flag to create rotational bkg (rotating pi track)
+  Bool_t fDoBkgPhiSB;                     ///flag to create bkg from phi sidebands
+  Bool_t fDoCutV0multTPCout;              ///flag to activate cut on V0mult vs #tracks TPCout
+  Bool_t fUseWeight;                      /// flag to decide whether to use pt-weights != 1 when filling the container or not
+  Int_t fAODProtection;                   /// flag to activate protection against AOD-dAOD mismatch.
+                                          /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+  UChar_t fNPtBins;                       /// number of Pt bins
+  TList *fListCuts;                       /// list of cuts
+  Float_t fPtLimits[kMaxPtBins+1];        ///  limits for pt bins
+  Double_t fMassRange;                    /// range for mass histogram
+  Double_t fMassBinSize;                  /// bin size for inv. mass histo
   Double_t fminMass;
   Double_t fmaxMass;
-  Double_t fMaxDeltaPhiMass4Rot;     ///flag to set mass window of phi meson (when using pion rotation to create bkg)
+  Double_t fMaxDeltaPhiMass4Rot;          ///flag to set mass window of phi meson (when using pion rotation to create bkg)
 
-  AliNormalizationCounter *fCounter;//!<!Counter for normalization
-  AliRDHFCutsDstoKKpi *fAnalysisCuts; /// Cuts for Analysis
+  AliNormalizationCounter *fCounter;      //!<!Counter for normalization
+  AliRDHFCutsDstoKKpi *fAnalysisCuts;     /// Cuts for Analysis
 
-  THnSparseF *fnSparse;       ///!<!THnSparse for candidates on data
-  THnSparseF *fnSparseMC[5];  ///!<!THnSparse for MC
+  THnSparseF *fnSparse;                   ///!<!THnSparse for candidates on data
+  THnSparseF *fnSparseMC[5];              ///!<!THnSparse for MC
   ///[0]: Acc step prompt Ds
   ///[1]: Acc step FD Ds
   ///[2]: Selected prompt Ds
   ///[3]: Selected FD Ds
-  THnSparseF *fnSparseMCDplus[4];  ///!<!THnSparse for MC for D+->kkpi
-  THnSparseF *fImpParSparse;       ///!<!THnSparse for imp. par. on data
-  THnSparseF *fImpParSparseMC[4];     ///!<!THnSparse for imp. par. on MC
+  ///[4]: Selected bkg candidates
+  THnSparseF *fnSparseMCDplus[4];         ///!<!THnSparse for MC for D+->kkpi
+  THnSparseF *fImpParSparse;              ///!<!THnSparse for imp. par. on data
+  THnSparseF *fImpParSparseMC[4];         ///!<!THnSparse for imp. par. on MC
 
-  TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
-  Bool_t fUseFinPtBinsForSparse; ///flag to fill pt axis of sparse with 0.1 GeV/c wide bins
+  TString fMultSelectionObjectName;       /// name of the AliMultSelection object to be considered
+  Bool_t fUseFinPtBinsForSparse;          ///flag to fill pt axis of sparse with 0.1 GeV/c wide bins
 
   /// variables for ML application
   Bool_t fApplyML;                        /// flag to enable ML application
   TString fConfigPath;                    /// path to ML config file
   Int_t fNumVars;                         /// number of variables used in the model
   std::vector<std::string> fModelPaths;   /// vector of model paths
-  std::vector<double> fModelOutputCuts;    /// vector of thresholds on model output
-  std::vector<double> fPtBinsModel;        /// vector of pt bin lims
+  std::vector<double> fModelOutputCuts;   /// vector of thresholds on model output
+  std::vector<double> fPtBinsModel;       /// vector of pt bin lims
   std::vector<AliExternalBDT> fModels;    //!<! vector of ML models (BDTs for now)
 
+  Bool_t fFillBkgSparse;                  /// flag to fill bkg sparse
   Bool_t fKeepOnlyBkgFromHIJING;          /// flag to keep the background from HIJING only
 
   /// \cond CLASSIMP
