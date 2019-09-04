@@ -1204,7 +1204,7 @@ void AliAnalysisTaskEmcalJetHPerformance::FillJetMatchingQA(AliJetContainer& con
   }
 
   // Number of accepted jets
-  name = "jetMatching/" + prefix + "fNAccJets";
+  name = "jetMatching/" + prefix + "/fNAccJets";
   fHistManager.FillTH1(name.c_str(), contBase.GetNAcceptedJets());
 }
 
