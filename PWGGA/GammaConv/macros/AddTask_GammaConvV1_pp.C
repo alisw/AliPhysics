@@ -712,19 +712,6 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0020008929700000iih0400000", "0152103500000000"); // pt dep Qt, chi2-psipair exp
     cuts.AddCutPCM("00010113", "0020008929700000i280400000", "0152103500000000"); // pt dep Qt, open chi2-psipair
     cuts.AddCutPCM("00010113", "00200089297000001ih0400000", "0152103500000000"); // chi2-psipair, open Qt
-  } else if (trainConfig == 304) { // dEdx recalib
-    cuts.AddCutPCM("00010113", "0d200009327000008250404000", "0163103100000010"); // MB
-    cuts.AddCutPCM("00049113", "0d200009327000008250404000", "0163103100000010"); // HSE
-    cuts.AddCutPCM("0004a113", "0d200009327000008250404000", "0163103100000010"); // HQU
-    cuts.AddCutPCM("0004b113", "0d200009327000008250404000", "0163103100000010"); // HJT
-    cuts.AddCutPCM("00062113", "0d200009327000008250404000", "0163103100000010"); // PHI7
-    cuts.AddCutPCM("00074113", "0d200009327000008250404000", "0163103100000010"); // V0M
-    cuts.AddCutPCM("00076113", "0d200009327000008250404000", "0163103100000010"); // V0M /w pileup condition
-    cuts.AddCutPCM("0008d113", "0d200009327000008250404000", "0163103100000010"); // EG1
-    cuts.AddCutPCM("0008e113", "0d200009327000008250404000", "0163103100000010"); // EG2
-
-
-
 
     // High mult triggers
   } else if (trainConfig == 310) {
@@ -737,6 +724,26 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00074013", "00200089227300008250404000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
     cuts.AddCutPCM("00076113", "00200089227300008250404000", "0152103500000000"); // for V0 High-Mult trigger
     cuts.AddCutPCM("00076013", "00200089227300008250404000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
+
+  } else if (trainConfig == 312) { // dEdx recalib MB
+    cuts.AddCutPCM("00010113", "0d200009327000008250404000", "0163103100000010"); // MB
+  } else if (trainConfig == 313) { // dEdx recalib TRD Triggers
+    cuts.AddCutPCM("00049113", "0d200009327000008250404000", "0163103100000010"); // HSE
+    cuts.AddCutPCM("0004a113", "0d200009327000008250404000", "0163103100000010"); // HQU
+    cuts.AddCutPCM("0004b113", "0d200009327000008250404000", "0163103100000010"); // HJT
+  } else if (trainConfig == 314) { // dEdx recalib PHOS Trigger
+    cuts.AddCutPCM("00062113", "0d200009327000008250404000", "0163103100000010"); // PHI7
+  } else if (trainConfig == 315) { // dEdx recalib PHOS Trigger, /w calo cut number
+    cuts.AddCutPCM("00062113", "0d200009327000008250404000", "0163103100000010","2446600040012300000"); // PHI7
+  } else if (trainConfig == 316) { // dEdx recalib V0M
+    cuts.AddCutPCM("00074113", "0d200009327000008250404000", "0163103100000010"); // V0M
+    cuts.AddCutPCM("00076113", "0d200009327000008250404000", "0163103100000010"); // V0M /w pileup condition
+  } else if (trainConfig == 317) { // dEdx recalib EMC Triggers
+    cuts.AddCutPCM("0008d113", "0d200009327000008250404000", "0163103100000010"); // EG1
+    cuts.AddCutPCM("0008e113", "0d200009327000008250404000", "0163103100000010"); // EG2
+  } else if (trainConfig == 318) { // dEdx recalib EMC Triggers, /w calo cut number
+    cuts.AddCutPCM("0008d113", "0d200009327000008250404000", "0163103100000010", "411791106f032230000"); // EG1
+    cuts.AddCutPCM("0008e113", "0d200009327000008250404000", "0163103100000010", "411791106f032230000"); // EG2
 
   // EMCal triggered sets
   } else if (trainConfig == 320) { // EMC triggers +-1000 ns
