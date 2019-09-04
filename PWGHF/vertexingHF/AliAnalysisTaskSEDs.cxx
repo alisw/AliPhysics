@@ -843,7 +843,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     fHistNEvents->Fill(9);
   if (fAnalysisCuts->IsEventRejectedDueToCentrality())
   {
-    fHistNEvents->Fill(10);
+    if(fSystem != kUpgr) // no physics selection can be applied for upgrade studies
+        fHistNEvents->Fill(10);
+    else
+        isEvSel = kTRUE;
+
     fHistCentrality[2]->Fill(evCentr);
     fHistCentralityMult[2]->Fill(ntracks, evCentr);
   }
