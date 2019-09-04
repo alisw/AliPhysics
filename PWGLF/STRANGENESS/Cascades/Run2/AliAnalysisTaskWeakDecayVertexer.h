@@ -71,7 +71,9 @@ public:
     }
     void SetDoMaterialCorrections( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
-        fkDoMaterialCorrection = lOpt;
+        //fkDoMaterialCorrection = lOpt;
+        std::cout<<"THIS OPTION DOES NOTHING"<<std::endl; 
+        //NEVER USE THIS
     }
     void SetXYCase1Preoptimization( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
