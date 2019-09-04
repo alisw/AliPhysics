@@ -1890,39 +1890,41 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   if(fUseFinPtBinsForSparse)
     nPtBins = nPtBins*10;
 
-  Int_t nBinsReco[knVarForSparse] = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nMLBins};
-  Double_t xminReco[knVarForSparse] = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., 0.85};
-  Double_t xmaxReco[knVarForSparse] = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 1.};
+  Int_t nBinsReco[knVarForSparse];
+  Double_t xminReco[knVarForSparse];
+  Double_t xmaxReco[knVarForSparse];
   TString axis[knVarForSparse] = {"invMassDsAllPhi", "#it{p}_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP", "cosP_{xy}",
                                   "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", "ML model output"};
 
-  if (fSystem == kPbPb)
+  if (fSystem == kpp)
+  {
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., 0.85};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 1.};
+    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
+    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
+    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
+  }
+  else if (fSystem == kPbPb)
   {
     nInvMassBins = (Int_t)(0.45 / fMassBinSize + 0.5);
     minMass = massDs - 0.5 * nInvMassBins * fMassBinSize;
     maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
-    nBinsReco[0] = nInvMassBins; //Ds mass
-    xminReco[0] = minMass;
-    xmaxReco[0] = maxMass;
-
-    nBinsReco[2] = 15; //#Delta Mass(KK)
-    xmaxReco[2] = 15.;
-
-    nBinsReco[3] = 10;  //dlen
-    nBinsReco[4] = 10;  //dlenxy
-    nBinsReco[5] = 10; //ndlenxy
-
-    nBinsReco[6] = 10; //cosP
-    xminReco[6] = 95.;
-    xmaxReco[6] = 100.;
-
-    nBinsReco[7] = 20; //cosPxy
-    xminReco[7] = 90.;
-    xmaxReco[7] = 100.;
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, nMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., 0.85};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 1.};
+    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
+    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
+    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
   }
   else if (fSystem == kUpgr)
   {
-    //TODO
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, nMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., 0.85};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., 1.};
+    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
+    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
+    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
   }
 
   Int_t nBinsAcc[knVarForSparseAcc] = {nPtBins, 20};
@@ -1962,7 +1964,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       //Dplus
       if (fFillSparseDplus && iHist<4)
       {
-        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseRecoDplus_%s", label[iHist - 3].Data()), Form("MC nSparse D^{+} (Reco Step)- %s", label[iHist - 3].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
+        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseRecoDplus_%s", label[iHist - 2].Data()), Form("MC nSparse D^{+} (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
         for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
         {
           fnSparseMCDplus[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
