@@ -17,7 +17,7 @@
 //***************************************************************************************
 //This AddTask is supposed to set up the main task
 //($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson.cxx) for
-//pp together with all supporting classes
+//pPb together with all supporting classes
 //***************************************************************************************
 
 //***************************************************************************************
@@ -56,7 +56,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
   TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
-    cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+    cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
 
   Int_t isHeavyIon = 2;
@@ -65,7 +65,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error(Form("AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp_%i",trainConfig), "No analysis manager found.");
+    Error(Form("AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb_%i",trainConfig), "No analysis manager found.");
     return ;
   }
 
@@ -144,23 +144,23 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
    //************************************************ PCM- EDC analysis 5 TeV pPb *********************************************
   // no event mixing background
   if (trainConfig == 1){ // INT7 run1 & run2
-    cuts.AddCutHeavyMesonPCMCalo("80010113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, INT7
+    cuts.AddCutHeavyMesonPCM("80010113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, INT7
   } else if (trainConfig == 2){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("80052113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EMC7
+    cuts.AddCutHeavyMesonPCM("80052113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EMC7
   } else if (trainConfig == 3){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("80083113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG1
+    cuts.AddCutHeavyMesonPCM("80083113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG1
   } else if (trainConfig == 4){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("80085113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG2
+    cuts.AddCutHeavyMesonPCM("80085113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG2
 
     // EMCal + EDC triggers
   } else if (trainConfig == 5){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("8008d113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG1
+    cuts.AddCutHeavyMesonPCM("8008d113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG1
   } else if (trainConfig == 6){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("8008e113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG2
+    cuts.AddCutHeavyMesonPCM("8008e113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG2
 
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 501){ // PHOS  PHI7 run1
-    cuts.AddCutHeavyMesonPCMCalo("80062113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000");  // 0-100%
+    cuts.AddCutHeavyMesonPCM("80062113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000");  // 0-100%
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -172,22 +172,22 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
 
   // no event mixing background
   }else if (trainConfig == 1001){ // EMC  INT7 run1 & run2
-    cuts.AddCutHeavyMesonPCMCalo("80010113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100% 
+    cuts.AddCutHeavyMesonPCM("80010113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100% 
   } else if (trainConfig == 1002){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("80052113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EMC7
+    cuts.AddCutHeavyMesonPCM("80052113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EMC7
   } else if (trainConfig == 1003){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("80083113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG1
+    cuts.AddCutHeavyMesonPCM("80083113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG1
   } else if (trainConfig == 1004){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("80085113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG2
+    cuts.AddCutHeavyMesonPCM("80085113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG2
 
     // EMCal + EDC triggers
   } else if (trainConfig == 1005){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("8008d113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG1
+    cuts.AddCutHeavyMesonPCM("8008d113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG1
   } else if (trainConfig == 1006){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("8008e113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG2
+    cuts.AddCutHeavyMesonPCM("8008e113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG2
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  PHI7 run1
-    cuts.AddCutHeavyMesonPCMCalo("80062113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000");  // 0-100% 
+    cuts.AddCutHeavyMesonPCM("80062113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000");  // 0-100% 
 
  
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -200,23 +200,23 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
 
   // no event mixing background
   }else if (trainConfig == 2001){ // EMC  INT7 run1 & run2
-    cuts.AddCutHeavyMesonPCMCalo("80010113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL
+    cuts.AddCutHeavyMesonPCM("80010113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL
   } else if (trainConfig == 2002){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("80052113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EMC7
+    cuts.AddCutHeavyMesonPCM("80052113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EMC7
   } else if (trainConfig == 2003){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("80083113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EG1
+    cuts.AddCutHeavyMesonPCM("80083113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EG1
   } else if (trainConfig == 2004){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("80085113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EG2
+    cuts.AddCutHeavyMesonPCM("80085113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EG2
 
     // EMCal + EDC triggers
   } else if (trainConfig == 2005){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("8008d113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EG1
+    cuts.AddCutHeavyMesonPCM("8008d113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EG1
   } else if (trainConfig == 2006){ // EMC EMC triggers
-    cuts.AddCutHeavyMesonPCMCalo("8008e113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EG2
+    cuts.AddCutHeavyMesonPCM("8008e113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EG2
   
   //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 2501){ // PHOS  PHI7 run1
-    cuts.AddCutHeavyMesonPCMCalo("80062113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL
+    cuts.AddCutHeavyMesonPCM("80062113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL
   } else {
     Error(Form("GammaConvNeutralMeson_ConvMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
