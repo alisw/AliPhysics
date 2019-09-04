@@ -31,7 +31,9 @@ class AliNormalizationCounter;
 class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 {
  public:
-    
+
+  enum {kpp, kPbPb, kUpgr};
+
   AliAnalysisTaskSEDs();
   AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts, Int_t fillNtuple=0);
   virtual ~AliAnalysisTaskSEDs();
@@ -53,8 +55,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetUseBkgFromPhiSB(Bool_t flag=kFALSE) {fDoBkgPhiSB=flag;}
   void SetPhiMassRange4RotBkg(Double_t range) {fMaxDeltaPhiMass4Rot=range;}
   void SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
-  void SetFillTracklets(Bool_t flag) {fUseTrkl=flag;}
-  void SetFillCentralityAxis(Bool_t usecentraxis=kTRUE) {fUseCentrAxis=usecentraxis;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   Bool_t GetUseWeight() const {return fUseWeight;}
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t nTracklets);
@@ -62,7 +62,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void CreateCutVarsAndEffSparses();
   void CreateImpactParameterSparses();
   Float_t GetTrueImpactParameterDstoPhiPi(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDs) const;
-  void GetCentralityAxisName(Int_t flag);
 
   void SetPtWeightsFromFONLL5anddataoverLHC16i2a();
   void SetPtWeightsFromFONLL5overLHC16i2abc();
@@ -80,6 +79,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 
   Double_t GetPtWeightFromHistogram(Double_t pt);
 
+  void SetKeepOnlyBkgFromHIJING(bool keeponlyhijing=true) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
+
   /// methods for ML application
   void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
@@ -90,7 +91,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
-    
+
  private:
   Int_t GetHistoIndex(Int_t iPtBin) const { return iPtBin*4;}
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+1;}
@@ -101,11 +102,11 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   std::string GetFile(const std::string path);
   double CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF);
 
-  enum {kMaxPtBins=24,knVarForSparse=16,knVarForSparseAcc=3,kVarForImpPar=3};
-    
+  enum {kMaxPtBins=36,knVarForSparse=14,knVarForSparseAcc=2,kVarForImpPar=3};
+
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
-    
+
   TList*  fOutput;                    //!<! list send on output slot 0
   TH1F*   fHistNEvents;               //!<! hist. for No. of events
   TH1F*   fHistoPtWeight;             //-> user-defined histogram to calculate the Pt weights
@@ -166,7 +167,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
                              /// 1 for filling ntuple for events through Phi
                              /// 2 for filling ntuple for events through K0Star
                              /// 3 for filling all
-  Bool_t   fUseCentrAxis; /// off = kFALSE (default)
 
   Int_t   fSystem;                    /// 0 = pp, 1 = pPb,PbPb
   Bool_t  fReadMC;                    ///  flag for access to MC
@@ -181,7 +181,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fDoBkgPhiSB;                 ///flag to create bkg from phi sidebands
   Bool_t fDoCutV0multTPCout;          ///flag to activate cut on V0mult vs #tracks TPCout
   Bool_t fUseWeight;                  /// flag to decide whether to use pt-weights != 1 when filling the container or not
-  Bool_t fUseTrkl;                    /// flag to fill sparse with Ntracklets 
   Int_t fAODProtection;               /// flag to activate protection against AOD-dAOD mismatch.
   /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins;                   /// number of Pt bins
@@ -192,12 +191,12 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Double_t fminMass;
   Double_t fmaxMass;
   Double_t fMaxDeltaPhiMass4Rot;     ///flag to set mass window of phi meson (when using pion rotation to create bkg)
-    
+
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   AliRDHFCutsDstoKKpi *fAnalysisCuts; /// Cuts for Analysis
-    
+
   THnSparseF *fnSparse;       ///!<!THnSparse for candidates on data
-  THnSparseF *fnSparseMC[4];  ///!<!THnSparse for MC
+  THnSparseF *fnSparseMC[5];  ///!<!THnSparse for MC
   ///[0]: Acc step prompt Ds
   ///[1]: Acc step FD Ds
   ///[2]: Selected prompt Ds
@@ -205,9 +204,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   THnSparseF *fnSparseMCDplus[4];  ///!<!THnSparse for MC for D+->kkpi
   THnSparseF *fImpParSparse;       ///!<!THnSparse for imp. par. on data
   THnSparseF *fImpParSparseMC[4];     ///!<!THnSparse for imp. par. on MC
-   
+
   TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
-  TString fCentEstName; /// name of the centrality estimator (to fill axis of sparse)
   Bool_t fUseFinPtBinsForSparse; ///flag to fill pt axis of sparse with 0.1 GeV/c wide bins
 
   /// variables for ML application
@@ -219,8 +217,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   std::vector<double> fPtBinsModel;        /// vector of pt bin lims
   std::vector<AliExternalBDT> fModels;    //!<! vector of ML models (BDTs for now)
 
+  Bool_t fKeepOnlyBkgFromHIJING;          /// flag to keep the background from HIJING only
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,31);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,32);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
