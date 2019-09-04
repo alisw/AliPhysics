@@ -90,6 +90,8 @@ private:
     TH2D *fHistNchVsNpart;
     TH1D *fHistB;
     TH2D *fHistNchVsB;
+    TH1D *fHistNMPI;
+    TH2D *fHistNchVsNMPI;
     
     TH1D *fHistPt[23];              //! for keeping track of base spectra
     TH1D *fHistEta[23];              //! for keeping track of base spectra
@@ -97,6 +99,7 @@ private:
     TH2D *fHistPtVsSPDMult[23];     //! for keeping track of base spectra
     TH2D *fHistPtVsNpart[23];       //! for keeping track of base spectra
     TH2D *fHistPtVsB[23];           //! for keeping track of base spectra
+    TH2D *fHistPtVsNMPI[23];       //! for keeping track of base spectra
   
     Bool_t fkDo2pc;
     Float_t fMinPtTriggerCharged; //for charged trigger

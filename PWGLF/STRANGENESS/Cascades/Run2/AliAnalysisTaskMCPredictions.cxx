@@ -85,7 +85,7 @@ class AliAODv0;
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenHepMCEventHeader.h"
-
+#include "AliGenPythiaEventHeader.h"
 
 using std::cout;
 using std::endl;
@@ -108,6 +108,8 @@ fHistNpart(0),
 fHistNchVsNpart(0),
 fHistB(0),
 fHistNchVsB(0),
+fHistNMPI(0),
+fHistNchVsNMPI(0),
 fkDo2pc(kTRUE),
 fMinPtTriggerCharged(0.15),
 fMinPtTriggerXi(0.8),
@@ -123,6 +125,7 @@ fEtaTriggerPhi(0)
         fHistPtVsSPDMult[ih] = 0x0;
         fHistPtVsNpart[ih]   = 0x0;
         fHistPtVsB[ih]       = 0x0;
+        fHistPtVsNMPI[ih]   = 0x0;
         fHist3d2pcSE[ih]     = 0x0;
         fHist3d2pcXiSE[ih]   = 0x0;
         fHist3d2pcPhiSE[ih]  = 0x0;
@@ -145,6 +148,8 @@ fHistNpart(0),
 fHistNchVsNpart(0),
 fHistB(0),
 fHistNchVsB(0),
+fHistNMPI(0),
+fHistNchVsNMPI(0),
 fkDo2pc(kTRUE),
 fMinPtTriggerCharged(0.15),
 fMinPtTriggerXi(0.8),
@@ -160,6 +165,7 @@ fEtaTriggerPhi(0)
         fHistPtVsSPDMult[ih] = 0x0;
         fHistPtVsNpart[ih]   = 0x0;
         fHistPtVsB[ih]       = 0x0;
+        fHistPtVsNMPI[ih]   = 0x0;
         fHist3d2pcSE[ih]     = 0x0;
         fHist3d2pcXiSE[ih]   = 0x0;
         fHist3d2pcPhiSE[ih]  = 0x0;
@@ -268,6 +274,20 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
         //Keeps track of some basics
         fListHist->Add(fHistNchVsB);
     }
+    //___________________________________________________
+    if(! fHistNMPI ) {
+        //Histogram Output: Event-by-Event
+        fHistNMPI = new TH1D( "fHistNMPI", ";N_{MPI};Count",50,-0.5,49.5);
+        //Keeps track of some basics
+        fListHist->Add(fHistNMPI);
+    }
+    if(! fHistNchVsNMPI ) {
+        //Histogram Output: Event-by-Event
+        fHistNchVsNMPI = new TH2D( "fHistNchVsNMPI", ";N_{part};Count",50,-0.5,49.5,lNNchBins,lLowNchBound,lHighNchBound);
+        //Keeps track of some basics
+        fListHist->Add(fHistNchVsNMPI);
+    }
+    //___________________________________________________
     
     //Identified Particles
     TString lPartNames[23] = {
@@ -316,6 +336,12 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
         if(! fHistPtVsB[ih] ) {
             fHistPtVsB[ih] = new TH2D(Form("fHistPtVsB_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",400,0,20,lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPtVsB[ih]);
+        }
+    }
+    for(Int_t ih=0; ih<23; ih++){
+        if(! fHistPtVsNMPI[ih] ) {
+            fHistPtVsNMPI[ih] = new TH2D(Form("fHistPtVsNMPI_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",50,-0.5,49.5,lNPtBins,0,lMaxPt);
+            fListHist->Add(fHistPtVsNMPI[ih]);
         }
     }
     
@@ -447,6 +473,14 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     Int_t fMC_NPart = -1;
     Int_t fMC_NColl = -1;
     Float_t fMC_b = -1;
+    Int_t fMC_NMPI = -1;
+    
+    if (mcGenH->InheritsFrom(AliGenPythiaEventHeader::Class())){
+        AliGenPythiaEventHeader *fMcPythiaHeader = dynamic_cast <AliGenPythiaEventHeader*> (mcGenH);
+        if(fMcPythiaHeader){
+            fMC_NMPI = fMcPythiaHeader->GetNMPI();
+        }
+    }
     
     //DPMJet/HIJING info if available
     if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
@@ -500,6 +534,8 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     fHistNchVsNpart     -> Fill ( fMC_NPart, lNchEta5  );
     fHistB              -> Fill ( fMC_b );
     fHistNchVsB         -> Fill ( fMC_b, lNchEta5  );
+    fHistNMPI           -> Fill ( fMC_NMPI );
+    fHistNchVsNMPI      -> Fill ( fMC_NMPI, lNchEta5  );
     
     //------------------------------------------------
     // Fill Spectra as Needed
@@ -572,6 +608,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
                     fHistPtVsSPDMult[ih]->Fill(lNchEta14,lThisPt);
                     fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
                     fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
+                    fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
                 }
             }
         }
@@ -649,7 +686,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
 
                 lThisPt    = lAssociatedParticle->Pt();
 
-                lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(ilab);
+                lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(lValidParticles[ilab]);
                 
                 if( lTrigIsCharged && lTrigIsPrimary ){
                     for(Int_t ih=0; ih<23; ih++){
