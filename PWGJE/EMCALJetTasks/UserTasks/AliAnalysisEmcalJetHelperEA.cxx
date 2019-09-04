@@ -39,12 +39,12 @@ ClassImp(PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA);
 AliAnalysisEmcalJetHelperEA::AliAnalysisEmcalJetHelperEA():
    TObject(),
    fnRun(0),
-   fMeanV0A_PartLevel(12.6936),
-   fMeanV0C_PartLevel(12.5898),
-   fMeanV0M_PartLevel(25.2834),
-   fMeanV0A_DetLevel(40.2292),
-   fMeanV0C_DetLevel(56.0226),
-   fMeanV0M_DetLevel(96.2518)
+   fMeanV0A_PartLevel(12.709),
+   fMeanV0C_PartLevel(12.6056),
+   fMeanV0M_PartLevel(25.3146),
+   fMeanV0A_DetLevel(40.2976),
+   fMeanV0C_DetLevel(56.3623),
+   fMeanV0M_DetLevel(96.6599)
 {
    //default constructor
 
@@ -1972,6 +1972,55 @@ Double_t AliAnalysisEmcalJetHelperEA::GetV0M(Int_t runnumber) const {
 
    return  fMeanV0M[irun]; 
 }
+
+//_____________________________________________________________________________________________
+
+Double_t AliAnalysisEmcalJetHelperEA::GetV0A(Int_t runnumber) const { 
+
+   //get V0A for the given run number
+   Long64_t irun = 0;
+
+   if(runnumber < fRuns[0]){
+       printf("AliAnalysisEmcalJetHelperEA: RUN NOT FOUND  %d", runnumber); //index will remain 0
+   }else{
+
+      irun = TMath::BinarySearch((Long64_t) fnRun, fRuns.GetArray(), runnumber); //index of the given run number
+
+      if(fRuns[irun] != runnumber){
+
+         printf("AliAnalysisEmcalJetHelperEA: RUN NOT FOUND  %d", runnumber);
+
+         if(runnumber > fRuns[fnRun-1])  irun = fnRun-1;  //index will correspond to the last run in the list
+      }
+   }
+
+   return  fMeanV0A[irun]; 
+}
+
+//_____________________________________________________________________________________________
+
+Double_t AliAnalysisEmcalJetHelperEA::GetV0C(Int_t runnumber) const { 
+
+   //get V0C for the given run number
+   Long64_t irun = 0;
+
+   if(runnumber < fRuns[0]){
+       printf("AliAnalysisEmcalJetHelperEA: RUN NOT FOUND  %d", runnumber); //index will remain 0
+   }else{
+
+      irun = TMath::BinarySearch((Long64_t) fnRun, fRuns.GetArray(), runnumber); //index of the given run number
+
+      if(fRuns[irun] != runnumber){
+
+         printf("AliAnalysisEmcalJetHelperEA: RUN NOT FOUND  %d", runnumber);
+
+         if(runnumber > fRuns[fnRun-1])  irun = fnRun-1;  //index will correspond to the last run in the list
+      }
+   }
+
+   return  fMeanV0C[irun]; 
+}
+
 
 
 
