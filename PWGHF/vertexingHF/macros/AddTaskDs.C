@@ -1,7 +1,6 @@
 AliAnalysisTaskSEDs *AddTaskDs(Int_t system = AliAnalysisTaskSEDs::kpp/*0=pp,1=PbPb*/,
                                Int_t storeNtuple = 0, Bool_t storeNsparse = kFALSE, Bool_t storeNsparseDplus=  kFALSE,Bool_t readMC = kFALSE,
-                               TString filename = "", TString postname = "", Bool_t doCutVarHistos = kFALSE, Int_t AODProtection = 1,
-                               Bool_t fillNTrklAxis = kFALSE, Bool_t fillCentrAxis = kFALSE, Bool_t useRotBkg = kFALSE, Bool_t useBkgFromPhiSB = kFALSE,
+                               TString filename = "", TString postname = "", Bool_t doCutVarHistos = kFALSE, Int_t AODProtection = 1, Bool_t useRotBkg = kFALSE, Bool_t useBkgFromPhiSB = kFALSE,
                                Bool_t useCutV0multTPCout = kFALSE, Bool_t storeNsparseImpPar = kFALSE, Bool_t applyML = kFALSE, TString confFileML = "",
                                TString cutObjName = "AnalysisCuts")
 {
@@ -71,8 +70,6 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system = AliAnalysisTaskSEDs::kpp/*0=pp,1=P
   if(system==AliAnalysisTaskSEDs::kPbPb || system==AliAnalysisTaskSEDs::kUpgr) {
     dsTask->SetKeepOnlyBkgFromHIJING(kTRUE);
   }
-  dsTask->SetFillTracklets(fillNTrklAxis);
-  dsTask->SetFillCentralityAxis(fillCentrAxis);
   dsTask->SetDoMLApplication(applyML);
   if(applyML)
     dsTask->SetMLConfigFile(confFileML);
