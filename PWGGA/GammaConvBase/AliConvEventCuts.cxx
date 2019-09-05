@@ -184,6 +184,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fMaxFacPtHard(2.5),
   fMaxFacPtHardSingleParticle(1.5),
   fMimicTrigger(kFALSE),
+  fPathTriggerMimicSpecialInput(""),
   fRejectTriggerOverlap(kFALSE),
   fDoMultiplicityWeighting(kFALSE),
   fPathReweightingMult(""),
@@ -312,6 +313,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fMaxFacPtHard(ref.fMaxFacPtHard),
   fMaxFacPtHardSingleParticle(ref.fMaxFacPtHardSingleParticle),
   fMimicTrigger(ref.fMimicTrigger),
+  fPathTriggerMimicSpecialInput(ref.fPathTriggerMimicSpecialInput),
   fRejectTriggerOverlap(ref.fRejectTriggerOverlap),
   fDoMultiplicityWeighting(ref.fDoMultiplicityWeighting),
   fPathReweightingMult(ref.fPathReweightingMult),
@@ -3990,19 +3992,36 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     Int_t runnumber = event->GetRunNumber();
     if(!fHistoTriggThresh || fRunNumberTriggerOADB != runnumber){
       fRunNumberTriggerOADB = runnumber;
-      TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"read");
-      if (!fileTriggThresh || fileTriggThresh->IsZombie())
-      {
-        AliFatal("OADB/PWGGA/EMCalTriggerMimicOADB.root was not found");
-      }
-      if (fileTriggThresh) delete fileTriggThresh;
       std::unique_ptr<AliOADBContainer> contfileTriggThresh(new AliOADBContainer(""));
-      contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"AliEMCalTriggerMimic");
-      if(!contfileTriggThresh){
-        AliFatal("AliOADBContainer could not be loaded from PWGGA/EMCalTriggerMimicOADB.root");
-      } else{
-        contfileTriggThresh->SetOwner(kTRUE);
+
+      if(!fPathTriggerMimicSpecialInput.CompareTo("")){ // load from standard OADB on EOS
+        TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"read");
+        if (!fileTriggThresh || fileTriggThresh->IsZombie())
+        {
+          AliFatal("OADB/PWGGA/EMCalTriggerMimicOADB.root was not found");
+        }
+        if (fileTriggThresh) delete fileTriggThresh;
+        contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"AliEMCalTriggerMimic");
+        if(!contfileTriggThresh){
+          AliFatal("AliOADBContainer could not be loaded from PWGGA/EMCalTriggerMimicOADB.root");
+        } else{
+          contfileTriggThresh->SetOwner(kTRUE);
+        }
+      } else { // load from special OADB file from AliEn
+        TFile *fileTriggThresh=TFile::Open(Form("%s",fPathTriggerMimicSpecialInput.Data()),"read");
+        if (!fileTriggThresh || fileTriggThresh->IsZombie())
+        {
+          AliFatal(Form("%s was not found",fPathTriggerMimicSpecialInput.Data()));
+        }
+        if (fileTriggThresh) delete fileTriggThresh;
+        contfileTriggThresh->InitFromFile(Form("%s",fPathTriggerMimicSpecialInput.Data()),"AliEMCalTriggerMimic");
+        if(!contfileTriggThresh){
+          AliFatal(Form("AliOADBContainer could not be loaded from %s",fPathTriggerMimicSpecialInput.Data()));
+        } else{
+          contfileTriggThresh->SetOwner(kTRUE);
+        }
       }
+
       TObjArray *arrayTriggThresh=(TObjArray*)contfileTriggThresh->GetObject(runnumber);
       if (!arrayTriggThresh)
       {

@@ -399,6 +399,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       fPathWeightsFlatCent=pathC                                ;
                                                                                       fNameHistoNotFlatCentrality = histoCentNotFlat            ;
                                                                                     }
+      void    SetCustomTriggerMimicOADBFile(TString pathOADB="")
+                                                                                    {
+                                                                                      AliInfo(Form("setting custom trigger mimic OADB from file: %s",pathOADB.Data()));
+                                                                                      fPathTriggerMimicSpecialInput=pathOADB                                ;
+                                                                                    }
       void    SetUseReweightingWithHistogramFromFile( Bool_t pi0reweight=kTRUE,
                                 Bool_t etareweight=kFALSE,
                                 Bool_t k0sreweight=kFALSE,
@@ -708,6 +713,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t                     fMaxFacPtHard;                          ///< maximum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHardSingleParticle;            ///< maximum factor between maximum single particle pt (pi0/eta) and pt hard generated
       Bool_t                      fMimicTrigger;                          ///< enable trigger mimiking
+      TString                     fPathTriggerMimicSpecialInput;          ///< set special trigger mimiking OADB file
       Bool_t                      fRejectTriggerOverlap;                  ///< enable trigger overlap rejections
       //
       Bool_t                      fDoMultiplicityWeighting;               ///< Flag for multiplicity weighting
@@ -720,7 +726,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,72)
+      ClassDef(AliConvEventCuts,73)
       /// \endcond
 };
 
