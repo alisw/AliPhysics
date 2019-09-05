@@ -1,4 +1,4 @@
-configurationName: "EMCAL electron configuration"   # Optional - Simply for user convenience
+configurationName: "EMCAL electron configuration for pp/pPb MC"   # Optional - Simply for user convenience
 pass: "pass#"                                            # Attempts to automatically retrieve the pass if not specified. Usually of the form "pass#".
 inputObjects:                                       # Define all of the input objects for the corrections
     clusterContainers:                              # Configure clusters
@@ -18,11 +18,11 @@ inputObjects:                                       # Define all of the input ob
 sharedParameters:
     enableMCGenRemovTrack: false                     # apply the MC generators rejection also for track matching
 CellEnergy:                                         # Cell Energy correction component
-    enabled: true                                  # Whether to enable the task
+    enabled: false                                  # Whether to enable the task
 CellBadChannel:                                     # Bad channel removal at the cell level component
     enabled: true                                  # Whether to enable the task
 CellTimeCalib:                                      # Cell Time Calibration component
-    enabled: true                                  # Whether to enable the task
+    enabled: false                                  # Whether to enable the task
 Clusterizer:                                        # Clusterizer component
     enabled: true                                  # Whether to enable the task
     clusterizer: kClusterizerv2                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
@@ -41,7 +41,7 @@ ClusterExotics:                                     # Cluster exotics identifica
 ClusterNonLinearity:                                # Cluster non-linearity correction component
     enabled: true                                  # Whether to enable the task
     createHistos: true                             # Whether the task should create output histograms        
-    nonLinFunct: kBeamTestCorrectedv3               # Sets the non-linearity function. Possible options are defined in the header of the cluster non-linearity correction component
+    nonLinFunct: kPi0MCv3               # Sets the non-linearity function. Possible options are defined in the header of the cluster non-linearity correction component
 ClusterTrackMatcher:                                # Cluster-track matcher component
     enabled: true                                  # Whether to enable the task
     createHistos: true                             # Whether the task should create output histograms        
