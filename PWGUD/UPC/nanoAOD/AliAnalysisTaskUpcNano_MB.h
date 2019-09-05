@@ -30,7 +30,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   void SetIsESD(Bool_t ESD){isESD = ESD;}
   void SetCutEta(Float_t cut){cutEta = cut;}
   Double_t GetMedian(Double_t *daArray);
-  TBits SetCrossed(Int_t spd[4][2]);
+  void SetCrossed(Int_t spd[4], TBits crossed);
   Int_t GetChipId(Int_t index, Int_t &chipId2, Bool_t debug=0);
   Bool_t IsSTGFired(TBits bits, Int_t dphiMin=4, Int_t dphiMax=10, Bool_t tolerance = 1);
   void FillTree(TTree *t, TLorentzVector v);
