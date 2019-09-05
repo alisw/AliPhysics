@@ -40,6 +40,9 @@
 #include "AliAODTrack.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliVertexingHFUtils.h"
+#include "AliGenEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliAnalysisTaskCombinHF.h"
 
 /// \cond CLASSIMP
@@ -56,6 +59,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistEventMultCentEvSel(0x0),
   fHistEventMultZv(0x0),
   fHistEventMultZvEvSel(0x0),
+  fHistXsecVsPtHard(0x0),
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
   fHistCheckOrigin(0x0),
@@ -145,6 +149,9 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fGoUpToQuark(kTRUE),
   fFullAnalysis(0),
   fSignalOnlyMC(kFALSE),
+  fSelectPtHardRange(kFALSE),
+  fMinPtHard(0.),
+  fMaxPtHard(999999.),
   fPIDstrategy(knSigma),
   fmaxPforIDPion(0.8),
   fmaxPforIDKaon(2.),
@@ -186,6 +193,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistEventMultCentEvSel(0x0),
   fHistEventMultZv(0x0),
   fHistEventMultZvEvSel(0x0),
+  fHistXsecVsPtHard(0x0),
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
   fHistCheckOrigin(0x0),
@@ -275,6 +283,9 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fGoUpToQuark(kTRUE),
   fFullAnalysis(0),
   fSignalOnlyMC(kFALSE),
+  fSelectPtHardRange(kFALSE),
+  fMinPtHard(0.),
+  fMaxPtHard(999999.),
   fPIDstrategy(knSigma),
   fmaxPforIDPion(0.8),
   fmaxPforIDKaon(2.),
@@ -321,6 +332,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fHistEventMultCentEvSel;
     delete fHistEventMultZv;
     delete fHistEventMultZvEvSel;
+    delete fHistXsecVsPtHard;
     delete fHistTrackStatus;
     delete fHistTrackEtaMultZv;
     delete fHistCheckOrigin;
@@ -461,6 +473,9 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistEventMultZvEvSel = new TH2F("hEventMultZvEvSel"," ; z_{vertex} (cm) ; N_{tracklets} (|#eta|<1)",30,-15.,15.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistEventMultZvEvSel);
 
+  fHistXsecVsPtHard = new TH1F("hXsecVsPtHard", " ; pthard (GeV/c) ; Xsec", 200,0.,100.);
+  fOutput->Add(fHistXsecVsPtHard);
+  
   fHistTrackStatus  = new TH1F("hTrackStatus", "",8,-0.5,7.5);
   fHistTrackStatus->GetXaxis()->SetBinLabel(1,"Not OK");
   fHistTrackStatus->GetXaxis()->SetBinLabel(2,"Track OK");
@@ -814,6 +829,24 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     if(!mcHeader) {
       printf("AliAnalysisTaskCombinHF::UserExec: MC header branch not found!\n");
       return;
+    }
+    // selection on pt hard bins in Pb-Pb
+    if(fSelectPtHardRange){
+      TList *lh=mcHeader->GetCocktailHeaders();
+      if(lh){
+	Int_t nh=lh->GetEntries();
+	for(Int_t i=0;i<nh;i++){
+	  AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+	  TString genname=gh->GetName();
+	  if(genname.Contains("ythia") || genname.Contains("YTHIA")){
+	    AliGenPythiaEventHeader* pyth=(AliGenPythiaEventHeader*)lh->At(i);
+	    Double_t ptha=pyth->GetPtHard();
+	    Double_t xsec=pyth->GetXsection();
+	    if(ptha<fMinPtHard || ptha>fMaxPtHard) return;
+	    fHistXsecVsPtHard->SetBinContent(fHistXsecVsPtHard->GetXaxis()->FindBin(ptha),xsec);
+	  }
+	}
+      }
     }
     Double_t zMCVertex = mcHeader->GetVtxZ();
     if (TMath::Abs(zMCVertex) < fAnalysisCuts->GetMaxVtxZ()){ // only cut on zVertex applied to count the signal
