@@ -262,7 +262,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void  SetElecDeDxPostCalibrationCustomFile(TString filename){fFileNameElecDeDxPostCalibration = filename; return;};
     Bool_t  LoadElecDeDxPostCalibration(Int_t runNumber);
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl, Double_t R);
-    void ForceTPCRecalibrationAsFunctionOfConvR(){fUseCorrectedTPCClsInfo = kFALSE;}
+    void ForceTPCRecalibrationAsFunctionOfConvR(){fIsRecalibDepTPCCl = kFALSE;}
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
