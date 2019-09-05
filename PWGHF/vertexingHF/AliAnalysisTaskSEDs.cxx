@@ -1889,7 +1889,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   Double_t maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
 
   Int_t nSparseAxes = knVarForSparse;
-  Int_t nMLBins = 151;
+  Int_t nMLBins = 300;
   if(!fApplyML) {
     nMLBins = 1;
     nSparseAxes--;
