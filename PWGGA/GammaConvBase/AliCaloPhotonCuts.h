@@ -433,6 +433,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t     fPHOSInitialized;                        // flag for PHOS initialization
     Int_t      fPHOSCurrentRun;                         // PHOS: current processed run for bad channel map
     TObjArray* fEMCALBadChannelsMap;                    // pointer to EMCAL bad channel map
+    TH1C*      fEMCALBadChannelsMap1D;                  // pointer to EMCAL bad channel map (1D)
     TH2I**     fPHOSBadChannelsMap;                     // pointer to PHOS bad channel map
     TProfile*  fBadChannels;                            // TProfile with bad channels
     Int_t      fNMaxEMCalModules;                       // max number of EMCal Modules
@@ -642,7 +643,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,93)
+    ClassDef(AliCaloPhotonCuts,94)
 };
 
 #endif
