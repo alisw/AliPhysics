@@ -140,7 +140,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hPositrondEdxMapsR2(NULL),
   hElectrondEdxMapsR2(NULL),
   hPositrondEdxMapsR3(NULL),
-  hElectrondEdxMapsR3(NULL), 
+  hElectrondEdxMapsR3(NULL),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE)
 {
 
@@ -251,8 +251,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hPositrondEdxMapsR1(NULL),
   hElectrondEdxMapsR1(NULL),
   hPositrondEdxMapsR2(NULL),
-  hElectrondEdxMapsR2(NULL), 
-  hPositrondEdxMapsR3(NULL),   
+  hElectrondEdxMapsR2(NULL),
+  hPositrondEdxMapsR3(NULL),
   hElectrondEdxMapsR3(NULL),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE)
 {
@@ -644,13 +644,13 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 
 	hMCTrueConversionAsymP[iCut]               = new TH2F("ESD_TrueConversionMapping_AsymP","ESD_TrueConversionMapping_AsymP",nBinsPt,0.01,20.,500,0.,1.);
 	fTrueList[iCut]->Add(hMCTrueConversionAsymP[iCut]);
-	    
+
 	AxisAfter = hMCTrueConversionAsymP[iCut]->GetXaxis();
 	AxisAfter->Set(bins, newBins);
 
 	if ((fDoMultWeights>0 && fIsMC>0) || ( fDoMaterialBudgetWeightingOfGammasForTrueMesons>0 && fIsMC>0) ) {
 	  hMCTrueConversionRPt[iCut] ->Sumw2();
-	  hMCTrueConversionRPtMCRPt[iCut] -> Sumw2();  
+	  hMCTrueConversionRPtMCRPt[iCut] -> Sumw2();
 	  hMCTrueConversionDCA[iCut] ->Sumw2();
 	  hMCTrueConversionChi2[iCut] ->Sumw2();
 	  hMCTrueConversionAsymP[iCut] ->Sumw2();
@@ -1029,12 +1029,12 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
       Charge = negTrack->Charge();
       P = negTrack->P();
       Eta = negTrack->Eta();
-      electronNSigmaTPCCor = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,negTrack->GetTPCNcls());
+      electronNSigmaTPCCor = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,negTrack->GetTPCNcls(),gamma->GetConversionRadius());
 
       Charge = posTrack->Charge();
       P = posTrack->P();
       Eta = posTrack->Eta();
-      positronNSigmaTPCCor = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetCorrectedElectronTPCResponse(Charge,positronNSigmaTPC,P,Eta,posTrack->GetTPCNcls());
+      positronNSigmaTPCCor = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetCorrectedElectronTPCResponse(Charge,positronNSigmaTPC,P,Eta,posTrack->GetTPCNcls(),gamma->GetConversionRadius());
     }
 
     hESDConversionWOWeightRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),fWeightMultMC);
@@ -1085,7 +1085,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
     hESDConversionChi2[fiCut]->Fill(gamma->GetChi2perNDF(),fWeightMultMC);
 
     hESDConversionMass[fiCut]->Fill(gamma->GetInvMassPair(),fWeightMultMC);
-  
+
 
     if(gamma->GetPhotonP()!=0 && negTrack->P()!=0) {
       if(gamma->GetConversionRadius() > 5. ){

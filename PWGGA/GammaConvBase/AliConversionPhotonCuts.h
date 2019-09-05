@@ -261,8 +261,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Int_t GetDoElecDeDxPostCalibration() {return fDoElecDeDxPostCalibration;}
     void  SetElecDeDxPostCalibrationCustomFile(TString filename){fFileNameElecDeDxPostCalibration = filename; return;};
     Bool_t  LoadElecDeDxPostCalibration(Int_t runNumber);
-    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl);
-
+    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl, Double_t R);
+    void ForceTPCRecalibrationAsFunctionOfConvR(){fIsRecalibDepTPCCl = kFALSE;}
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
@@ -371,7 +371,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fSwitchToKappa;                       ///< switches from standard dEdx nSigma TPC cuts to Kappa TPC
     Float_t           fKappaMinCut;                         ///< maximum Kappa cut
     Float_t           fKappaMaxCut;                         ///< maximum Kappa cut
-    Bool_t            fDoElecDeDxPostCalibration;                   ///<
+    Bool_t            fDoElecDeDxPostCalibration;           ///<
+    Bool_t            fIsRecalibDepTPCCl;                   ///<
     // Histograms
     TH1F*             fHistoEtaDistV0s;                     ///< eta-distribution of all V0s after Finder selection
     TH1F*             fHistoEtaDistV0sAfterdEdxCuts;        ///< eta-distribution of all V0s after Finder selection after dEdx cuts
@@ -423,7 +424,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,27)
+    ClassDef(AliConversionPhotonCuts,28)
     /// \endcond
 };
 
