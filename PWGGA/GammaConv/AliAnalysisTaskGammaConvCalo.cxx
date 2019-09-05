@@ -2514,7 +2514,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
           fHistoTrueSecondaryConvGammaFromXFromK0sMCPtESDPt[iCut]->Sumw2();
           fHistoTrueSecondaryConvGammaFromXFromK0lMCPtESDPt[iCut]->Sumw2();
           fHistoTrueSecondaryConvGammaFromXFromLambdaMCPtESDPt[iCut]->Sumw2();
-        }	
+        }
       }
 
       if (fIsMC > 1){
