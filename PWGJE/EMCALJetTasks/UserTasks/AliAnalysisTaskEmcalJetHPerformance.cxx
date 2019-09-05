@@ -150,8 +150,6 @@ double AliAnalysisTaskEmcalJetHPerformance::DetermineTrackingEfficiency(double t
 void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLConfig()
 {
   // Base class options
-  // Recycle unused embedded events
-  fYAMLConfig.GetProperty("recycleUnusedEmbeddedEventsMode", fRecycleUnusedEmbeddedEventsMode, false);
   // Task physics (trigger) selection.
   std::vector<std::string> physicsSelection;
   bool res = fYAMLConfig.GetProperty(std::vector<std::string>({"eventCuts", "physicsSelection"}), physicsSelection, false);
@@ -1425,7 +1423,6 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
 {
   std::stringstream tempSS;
   tempSS << std::boolalpha;
-  tempSS << "Recycle unused embedded events: " << fRecycleUnusedEmbeddedEventsMode << "\n";
   tempSS << "Particle collections:\n";
   TIter nextParticleCont(&fParticleCollArray);
   AliParticleContainer * particleCont;
