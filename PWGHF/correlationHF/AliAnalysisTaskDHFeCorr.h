@@ -15,7 +15,7 @@
  *   - Vertex Z: corresponds to the yaml parameter 'zvxt_range'. The value should of the format [min,max].
  *   - Multiplicity: corresponds to the yaml parameters 'estimator' and 'multiplicity_range'. The value of 'estimator'
  *   should be also defined added to AliAnalysisTaskDHFeCorr::fgkMultiplicityEstimators. The values allowed are set
- *   using 'multiplicity_range' in the format [min,max].
+ * using 'multiplicity_range' in the format [min,max].
  *
  * -# D-meson selection: corresponds to the yaml parameter 'D_meson' and the sub parameter 'selection'. The cuts are
  * implemented in the standard D-meson selection framework, with the AliRDHFCuts as the base class.
@@ -41,8 +41,7 @@
  *     - Minimum number of clusters in the ITS: set with 'min_ITS_hits'
  *     - Requirement in the ITS SPD: set with 'pixel_req'. Possible values can be found at
  *     AliAnalysisTaskDHFeCorr::ITSPixel_t
- *     - The DCA to the primary vertex can be recalculated (needed if a cut on the DCA is applied) by setting
- *     'recalculate_dca' to true. The DCA maximum values can be set using 'dca_z' and 'dca_xy'
+ *     - The DCA maximum values can be set using 'dca_z' and 'dca_xy'
  *   - Particle identification, under 'PID' sub parameter
  *     - TPC N sigma selection: set the maximun and minimum with 'TPC_selection'
  *     - TOF N sigma selection: set the maximun and minimum with 'TOF_selection'. It can be turned on and off by
@@ -75,6 +74,13 @@ class TClonesArray;
 
 namespace AliDHFeCorr {
     //structure to hold the D meson or electron during the selection process in the task
+    typedef struct AliEvent{
+        UInt_t fGridPID{0};
+        UInt_t fEventNumber{0};
+        Float_t fCentrality{-1.};
+        Float_t fVtxZ{-999.};
+    } AliEvent;
+    
     typedef struct AliDMeson {
         AliAODRecoDecayHF *fRecoObj{nullptr};
         Int_t fGridPID{0}; ///<PID of the grid job used to create the tree
@@ -119,9 +125,10 @@ namespace AliDHFeCorr {
         //Single-track information
         std::vector<Float_t> fPtDaughters;
         std::vector<Float_t> fD0Daughters;
+        std::vector<UInt_t> fIDDaughters; ///< ID obtained using GetID()
         
-        std::vector<Float_t> fNSigmaTPCDaughters; ///< The PID response (n sigma)
-        std::vector<Float_t> fNSigmaTOFDaughters; ///< The PID response (n sigma)
+        std::vector<Float_t> fNSigmaTPCDaughters; ///< The PID TPC response (n sigma)
+        std::vector<Float_t> fNSigmaTOFDaughters; ///< The PID TOF response (n sigma)
 
         //MC Level information
         Float_t fPtMC{-999.};///< Transverse momentum (MC information)
@@ -136,9 +143,8 @@ namespace AliDHFeCorr {
         
         UInt_t fGridPID{0};
         UInt_t fEventNumber{0};
-        Float_t fCentrality{-1.};
-        Float_t fVtxZ{-999.};
         
+        UInt_t fID{0};
         Char_t fCharge{0};
         Float_t fPt{-999.};
         Float_t fP{-999.};
@@ -184,7 +190,7 @@ namespace AliDHFeCorr {
 
         Float_t fMultMin{0.};
         Float_t fMultMax{101.};
-        std::string fMultiEstimator = "ZNA";
+        std::string fMultiEstimator = "VOM";
     } AliEventSelection;
 
     typedef struct AliElectronSelection {
@@ -411,20 +417,22 @@ private:
     TList fOptEvent; ///< List with histograms from the event QA
     TList fOptElectron; ///< List with with histograms from the electron QA
     TList fOptDMeson; ///< List with with histograms from the D meson QA
-
+    
+    std::unique_ptr<TTree> fEventTree; ///< Tree with the event information
     std::unique_ptr<TTree> fElectronTree; ///< Tree with the electron information
     std::unique_ptr<TTree> fDmesonTree; ///< Tree with the D meson information
 
-    ULong_t fGridPID{0}; ///< ID of the process on GRID
-    ULong_t fEventNumber{0}; ///< Unique number for each event
+    UInt_t fGridPID{0}; ///< ID of the process on GRID
+    UInt_t fEventNumber{0}; ///< Unique number for each event
     Float_t fVtxZ{-999.}; ///< Vertex Z
     Float_t fCentrality{-1.}; ///< Centrality
 
     AliDHFeCorr::AliElectron fElectron; ///< Electron information that will be used in the fElectronTree
     AliDHFeCorr::AliDMeson fDmeson;///< D meson information that will be used in the fDmesonTree
 
-    bool fIsMC{false}; //<<Flag for MC analysis
-    bool fIsEffMode{false}; //<<Fills only the trees with true D mesons and electrons. No correlation analysis.
+    bool fIsMC{false}; ///< Flag for MC analysis
+    bool fIsEffMode{false}; ///< Fills only the trees with true D mesons and electrons. No correlation analysis.
+    bool fKeepAllCandidates{true}; ///< Keep all candidates (even if no electron is present)
     DMeson_t fDmesonSpecies{kD0}; ///< The D meson species (D0, D+ or D*)
 
     //YAML configuration
@@ -440,6 +448,7 @@ private:
     
     void CheckConfiguration() const;
     
+    void AddEventVariables(std::unique_ptr<TTree> &tree);
     void AddElectronVariables(std::unique_ptr<TTree> &tree);
     void AddDMesonVariables(std::unique_ptr<TTree> &tree, DMeson_t meson_species);
     void AddElectronMCVariables(std::unique_ptr<TTree> &tree);
@@ -461,6 +470,7 @@ private:
     AliDHFeCorr::AliEventQAHistograms fEventQAAfterCuts; //! QA histograms for events after the selection
 
     AliDHFeCorr::AliElectronQAHistograms fElectronQABeforeCuts; //! QA histograms for electrons before the selection
+    AliDHFeCorr::AliElectronQAHistograms fElectronQAAfterTrackCuts; //! QA histograms for electrons before the selection
     AliDHFeCorr::AliElectronQAHistograms fElectronQAAfterCuts;  //! QA histograms for electrons after the selection
 
     AliDHFeCorr::AliDMesonQAHistos fDMesonQABeforeCuts; //! QA histograms for D mesons before the selection
@@ -488,9 +498,12 @@ private:
     void SetGridPID();
     void PostOutput(); //< Function to post the data
 
-    //Analysis steps
     static float GetMaxd0MeasMinusExp(AliAODRecoDecayHF *candidate, float b_field);
     static std::vector<Float_t> MakeBins(Float_t start, Float_t end, Int_t n_bins);
+    
+    //Analysis steps
+    std::vector<AliDHFeCorr::AliElectron> ElectronAnalysis();
+    std::vector<AliDHFeCorr::AliDMeson> DMesonAnalysis();
 
     //Select Events
     bool IsSelectedEvent(AliAODEvent *event, const AliDHFeCorr::AliEventSelection &selection);
@@ -527,7 +540,7 @@ private:
     void FillElectronTree(const std::vector<AliDHFeCorr::AliElectron> &tracks);
     void FillDMesonTree(const std::vector<AliDHFeCorr::AliDMeson> &d_mesons);
     
-ClassDef(AliAnalysisTaskDHFeCorr, 1);
+ClassDef(AliAnalysisTaskDHFeCorr, 2);
     
 };
 
