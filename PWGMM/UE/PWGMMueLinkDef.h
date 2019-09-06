@@ -2,6 +2,7 @@
 
 //underlying event using transverse spherocity
 #pragma link C++ class AliAnalysisTaskUeSpherocity+;
+#pragma link C++ class AliAnalysisTaskGenUeSpherocity+;
 #pragma link C++ class AliAnalysisTaskUeRSpherocity+;
 //spectra versus transverse activity classifier
 #pragma link C++ class AliAnalysisTaskPPvsUE+;
