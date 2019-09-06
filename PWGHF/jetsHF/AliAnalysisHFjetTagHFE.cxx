@@ -229,7 +229,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fMCparticleMother(0),
   iMCcorr(kTRUE),
   iDCApTweight(kTRUE),
-  iMCEtaFull(kFALSE)
+  iMCEtaFull(kFALSE),
+  fPtHardMax(0.0)
   //fmcData(kFALSE)
 {
   // Default constructor.
@@ -420,7 +421,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fMCparticleMother(0),
   iMCcorr(kTRUE),
   iDCApTweight(kTRUE),
-  iMCEtaFull(kFALSE)
+  iMCEtaFull(kFALSE),
+  fPtHardMax(0.0)
   //fmcData(kFALSE)
 {
   // Standard constructor.
@@ -1243,9 +1245,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
      if(fmcData)
        {
         MakeParticleLevelJet(pthard);
+        pthard += fPtHardMax;
        }
      if(idbHFEj)cout << "check fmcData ..." << endl;
 
+     
+   
 
   /////////////////////////////
   //EMCAL cluster information//
