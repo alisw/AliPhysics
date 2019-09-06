@@ -174,7 +174,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         
         //-------------------------------------------------------------------GEN-----------------------------------------------------------------------------------------------
         
-        f2fHistGenCentVsPtLambda = new TH2F( "f2fHistGenCentVsPtLambda", "Centrality Vs #Lambda Gen Pt DCA at 2",CentbinNum, CentBins,fNptBins, LambdaPtBins);
+        f2fHistGenCentVsPtLambda = new TH2F( "f2fHistGenCentVsPtLambda", "Centrality Vs #Lambda Gen Pt DCA at 0.1",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistGenCentVsPtLambda);
         
         f2fHistGenCentVsPtAntiLambda = new TH2F( "f2fHistGenCentVsPtAntiLambda", "Centrality Vs #bar{#Lambda} Gen Pt",CentbinNum, CentBins,fNptBins, LambdaPtBins);
@@ -596,6 +596,9 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         
         if(cosPointingAngle < 0.99) continue;
         
+    
+
+        
         if( ontheflystat == 0 )
         {
             if(fIsMC)
@@ -649,14 +652,14 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         
                     }
                 }
-                
                 Int_t iptbinRecTag = GetPtBin(mcpt);
                 Int_t iptbinRec = GetPtBin(mcpt);
-                
+                if( iptbinRec < 0 || iptbinRec > fNptBins-1 ) continue;
+                if( iptbinRecTag < 0 || iptbinRecTag > fNptBins-1 ) continue;
                 if(TMath::Abs(eta) < 0.5)
                 {
                     //L
-                    if(dcaV0ToVertex < 2 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1) //default
+                    if(dcaV0ToVertex < 0.1 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1) //default
                     {
                         f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassLambda,mcpt);
                         if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -688,7 +691,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     }
                     
                     //L-BAR
-                    if(dcaV0ToVertex < 2 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25) //default
+                    if(dcaV0ToVertex < 0.1 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25) //default
                     {
                         f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassAntiLambda,mcpt);
                         if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
@@ -719,50 +722,6 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                     }
                 } //eta
-                
-                if(TMath::Abs(lRapLambda) < 0.5)
-                {
-                    //L
-                    if(dcaV0ToVertex < 2 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1) //default
-                    {
-                        
-                        if(fTreeVariablePID == 3122)
-                        {
-                            if(isPrim){f2fHistRecPrimariesCentVsPtLambdaFourSigthreeRap->Fill(fCentrality,mcpt);}
-                            if(isSecFromWeakDecay)
-                            {
-                                if(isPrimParent)
-                                {
-                                    if ((fTreeVariablePIDParent == 3312) || (fTreeVariablePIDParent == 3322))
-                                    {
-                                        f3fHistLambdafromXiFourSigthreeRap->Fill(mcpt,fCentrality,fTreeVariablePtParent);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    //L-BAR
-                    if(dcaV0ToVertex < 2 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25) //default
-                    {
-                        
-                        if(fTreeVariablePID == -3122)
-                        {
-                            if(isPrim){f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreeRap->Fill(fCentrality,mcpt);}
-                            if(isSecFromWeakDecay)
-                            {
-                                if(isPrimParent)
-                                {
-                                    if ((fTreeVariablePIDParent == -3312) || (fTreeVariablePIDParent == -3322))
-                                        
-                                    {
-                                        f3fHistAntiLambdafromXiFourSigthreeRap->Fill(mcpt,fCentrality,fTreeVariablePtParent);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }//rap
             } //MC condition
         }// zero onfly V0
     }// end of V0 loop
