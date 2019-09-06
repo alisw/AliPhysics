@@ -253,11 +253,13 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
     }
   }
 
+  // NOTE: The bit encoding doesn't preserve the order defined here. It's
+  //       just using the bit values.
   UInt_t cifras = 0; // bit coded, see GetDimParams() below
   if(fDoLessSparseAxes) {
-    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9;
+    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7;
   } else {
-    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<9;
+    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<8 | 1<<9;
   }
   fhnJH = NewTHnSparseF("fhnJH", cifras);
   fhnJH->Sumw2();
@@ -268,9 +270,9 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
     // significantly for any of the EP orientations. However, it will be included so this can be demonstrated for the central
     // analysis if so desired.
     if(fDoLessSparseAxes) {
-      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9;
+      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7;
     } else {
-      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<9;
+      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<8 | 1<<9;
     }
     fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
     fhnMixedEvents->Sumw2();
@@ -278,7 +280,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
   }
 
   // Trigger THnSparse
-  cifras = 1<<0 | 1<<1 | 1<<9;
+  cifras = 1<<0 | 1<<1 | 1<<7;
   fhnTrigger = NewTHnSparseF("fhnTrigger", cifras);
   fhnTrigger->Sumw2();
   fOutput->Add(fhnTrigger);
@@ -532,7 +534,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
             double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           } else {
-            double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
+            double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle, zVertex, deltaR};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           }
         }
@@ -649,7 +651,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
                 double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
                 FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventJESCorrection);
               } else {
-                double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
+                double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle, zVertex, deltaR};
                 FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventJESCorrection);
               }
             }
@@ -935,24 +937,31 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
       break;
 
     case 7:
+      label = "Event plane angle";
+      nbins = 3;
+      xmin = 0;
+      xmax = TMath::Pi()/2.;
+      break;
+
+    case 8:
+      label = "Z vertex (cm)";
+      nbins = 10;
+      xmin = -10;
+      xmax = 10;
+      break;
+
+    case 9:
       label = "deltaR";
       nbins = 10;
       xmin = 0.;
       xmax = 5.0;
       break;
 
-    case 8:
+    case 10:
       label = "Leading track";
       nbins = 20;
       xmin = 0;
       xmax = 50;
-      break;
-
-    case 9:
-      label = "Event plane angle";
-      nbins = 3;
-      xmin = 0;
-      xmax = TMath::Pi()/2.;
       break;
   }
 }
