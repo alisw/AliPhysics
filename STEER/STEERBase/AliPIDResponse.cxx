@@ -96,6 +96,7 @@ fResolutionCorrection(NULL),
 fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(kFALSE),
 fUseTPCMultiplicityCorrection(kFALSE),
+fUseTPCPileupCorrection(kFALSE),
 fUseTPCNewResponse(kTRUE),
 fTRDPIDResponseObject(NULL),
 fTRDdEdxParams(NULL),
@@ -174,6 +175,7 @@ fResolutionCorrection(NULL),
 fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(other.fUseTPCEtaCorrection),
 fUseTPCMultiplicityCorrection(other.fUseTPCMultiplicityCorrection),
+fUseTPCPileupCorrection(other.fUseTPCPileupCorrection),
 fUseTPCNewResponse(other.fUseTPCNewResponse),
 fTRDPIDResponseObject(NULL),
 fTRDdEdxParams(NULL),
@@ -242,6 +244,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fOADBvoltageMaps=NULL;
     fUseTPCEtaCorrection=other.fUseTPCEtaCorrection;
     fUseTPCMultiplicityCorrection=other.fUseTPCMultiplicityCorrection;
+    fUseTPCPileupCorrection=other.fUseTPCPileupCorrection;
     fUseTPCNewResponse=other.fUseTPCNewResponse;
     fTRDPIDResponseObject=NULL;
     fTRDdEdxParams=NULL;
@@ -326,7 +329,7 @@ Float_t AliPIDResponse::NumberOfSigmasTPC( const AliVParticle *vtrack,
   //get number of sigmas according the selected TPC gain configuration scenario
   const AliVTrack *track=static_cast<const AliVTrack*>(vtrack);
 
-  Float_t nSigma=fTPCResponse.GetNumberOfSigmas(track, type, dedxSource, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
+  Float_t nSigma=fTPCResponse.GetNumberOfSigmas(track, type, dedxSource, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, fUseTPCPileupCorrection);
 
   return nSigma;
 }
@@ -618,8 +621,14 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, TString recoP
     }
     fTPCResponse.SetCurrentEventMultiplicity(numESDtracks);
   }
-  else
+  else {
     fTPCResponse.SetCurrentEventMultiplicity(0);
+  }
+
+  // Set up TPC pileup correction for PbPb
+  if (fUseTPCPileupCorrection) {
+    SetEventPileupProperties(event);
+  }
 
   //TOF resolution
   SetTOFResponse(event, (AliPIDResponse::EStartTimeType_t)fTOFPIDParams->GetStartTimeMethod());
@@ -1337,6 +1346,19 @@ Bool_t AliPIDResponse::InitializeTPCResponse()
   }
 
   const Bool_t returnValue = fTPCResponse.InitFromOADB(fRun, recopass, recoPassName, fileNamePIDresponse, fUseTPCMultiplicityCorrection);
+
+  // ---| Check for pileup correction |-----------------------------------------
+  if ( fUseTPCMultiplicityCorrection && !fTPCResponse.IsPileupCorrectionRequested() ) {
+    AliInfo("Pilup correction requested, but not configured in OADB. Most probably this is ok. Dactivating the pileup correction");
+    fUseTPCPileupCorrection = kFALSE;
+  }
+
+  if ( fUseTPCPileupCorrection && !fTPCResponse.GetPileupCorrectionObject() ) {
+    AliWarning("Pileup correction was requested in OADB, but object not set properly");
+
+    // don't calculate event pileup properties in case we cannot use the pileup correction
+    fUseTPCPileupCorrection = kFALSE;
+  }
   AliInfo("------------------------------------------------------------------------------------------");
 
   return returnValue;
@@ -2570,7 +2592,7 @@ Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID:
   if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))
     GetTPCsignalTunedOnData(track);
 
-  return fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
+  return fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, fUseTPCPileupCorrection);
 }
 
 //______________________________________________________________________________
@@ -2674,7 +2696,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTPC(const AliVPartic
   if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))
     GetTPCsignalTunedOnData(track);
 
-  val=fTPCResponse.GetSignalDelta(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, ratio);
+  val=fTPCResponse.GetSignalDelta(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, fUseTPCPileupCorrection, ratio);
 
   return GetTPCPIDStatus(track);
 }
@@ -2814,8 +2836,8 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
   for (Int_t j=0; j<nSpecies; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
 
-    bethe=fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
-    sigma=fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
+    bethe=fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, fUseTPCPileupCorrection);
+    sigma=fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, fUseTPCPileupCorrection);
 
     if (TMath::Abs(dedx-bethe) > fRange*sigma) {
       p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
@@ -3296,4 +3318,19 @@ Float_t AliPIDResponse::GetTOFsignalTunedOnData(const AliVTrack *t) const
   tofSignal = t->GetTOFsignal() + fTOFResponse.GetTailRandomValue(t->Pt(),t->Eta(),t->GetTOFsignal(),addmism);
   const_cast<AliVTrack*>(t)->SetTOFsignalTunedOnData(tofSignal);
   return (Float_t)tofSignal;
+}
+
+//_________________________________________________________________________
+void AliPIDResponse::SetEventPileupProperties(const AliVEvent* /*vevent*/)
+{
+  static Bool_t warned = kFALSE;
+  if (!warned) {
+    AliWarning("==========================================================");
+    AliWarning(">>>>                TPC PID in trouble                <<<<");
+    AliWarning(">>>>       only relevant for PbPb 2015 / 18           <<<<");
+    AliWarning(">>>>         pile up correction requested,            <<<<");
+    AliWarning(">>>> but setting of pileup properties not implemented <<<<");
+    AliWarning("==========================================================");
+  }
+  warned = kTRUE;
 }

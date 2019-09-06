@@ -24,6 +24,7 @@ include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
 include_directories(
                     ${AliRoot_BINARY_DIR}/version
+                    ${AliRoot_SOURCE_DIR}/STAT
                    )
 
 # Sources - alphabetical order
@@ -167,7 +168,7 @@ add_library(STEERBase SHARED $<TARGET_OBJECTS:STEERBase-object>)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS Core EG Geom Gpad Graf3d Graf Hist MathCore Matrix Minuit Net Physics RIO Tree TreePlayer VMC)
+set(LIBDEPS Core EG Geom Gpad Graf3d Graf Hist MathCore Matrix Minuit Net Physics RIO Tree TreePlayer VMC STAT)
 generate_rootmap("STEERBase" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

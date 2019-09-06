@@ -48,6 +48,9 @@ public:
   void SetUseTPCMultiplicityCorrection(Bool_t useMultiplicityCorrection = kTRUE) { fUseTPCMultiplicityCorrection = useMultiplicityCorrection; };
   Bool_t UseTPCMultiplicityCorrection() const { return fUseTPCMultiplicityCorrection; };
 
+  void SetUseTPCPileupCorrection(Bool_t usePileupCorrection = kTRUE) { fUseTPCPileupCorrection = usePileupCorrection; };
+  Bool_t UseTPCPileupCorrection() const { return fUseTPCPileupCorrection; };
+
 
   void SetUseTRDEtaCorrection(Bool_t useTRDEtaCorrection) { fUseTRDEtaCorrection = useTRDEtaCorrection; };
   Bool_t UseTRDEtaCorrection() const { return fUseTRDEtaCorrection; };
@@ -82,6 +85,8 @@ private:
   
   Bool_t fUseTPCEtaCorrection;          ///< Use TPC eta correction
   Bool_t fUseTPCMultiplicityCorrection; ///< Use TPC multiplicity correction
+  Bool_t fUseTPCPileupCorrection;       ///< Use TPC multiplicity correction
+
   Bool_t fUseTRDEtaCorrection;          ///< Use TRD eta correction
   Bool_t fUseTRDClusterCorrection;      ///< Use TRD cluster correction
   Bool_t fUseTRDCentralityCorrection;   ///< Use TRD centrality correction

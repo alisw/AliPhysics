@@ -51,6 +51,7 @@ fTunedOnDataMask(0),
 fRecoPassTuned(0),
 fUseTPCEtaCorrection(kTRUE),
 fUseTPCMultiplicityCorrection(kTRUE),
+fUseTPCPileupCorrection(kTRUE),
 fUseTRDEtaCorrection(kTRUE),
 fUseTRDClusterCorrection(kTRUE),
 fUseTRDCentralityCorrection(kTRUE),
@@ -80,6 +81,7 @@ fTunedOnDataMask(0),
 fRecoPassTuned(0),
 fUseTPCEtaCorrection(kTRUE),
 fUseTPCMultiplicityCorrection(kTRUE),
+fUseTPCPileupCorrection(kTRUE),
 fUseTRDEtaCorrection(kTRUE),
 fUseTRDClusterCorrection(kTRUE),
 fUseTRDCentralityCorrection(kTRUE),
@@ -176,6 +178,7 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
 
     fPIDResponse->SetUseTPCEtaCorrection(fUseTPCEtaCorrection);
     fPIDResponse->SetUseTPCMultiplicityCorrection(fUseTPCMultiplicityCorrection);
+    fPIDResponse->SetUseTPCPileupCorrection(fUseTPCPileupCorrection);
 
     fPIDResponse->SetUseTRDEtaCorrection(fUseTRDEtaCorrection);
     fPIDResponse->SetUseTRDClusterCorrection(fUseTRDClusterCorrection);

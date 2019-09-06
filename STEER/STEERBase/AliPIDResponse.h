@@ -177,6 +177,11 @@ public:
   void SetUseTPCMultiplicityCorrection(Bool_t useMultiplicityCorrection = kTRUE) { fUseTPCMultiplicityCorrection = useMultiplicityCorrection; };
   Bool_t UseTPCMultiplicityCorrection() const { return fUseTPCMultiplicityCorrection; };
 
+  void SetUseTPCPileupCorrection(Bool_t usePileupCorrection = kTRUE) { fUseTPCPileupCorrection = usePileupCorrection; if (!usePileupCorrection) fTPCResponse.SetPileupCorrectionStrategy(AliTPCPIDResponse::kNoPileupCorrection);};
+  Bool_t UseTPCPileupCorrection() const { return fUseTPCPileupCorrection; };
+
+  virtual void SetEventPileupProperties(const AliVEvent* event);
+
   // TRD setting
   void SetUseTRDEtaCorrection(Bool_t useTRDEtaCorrection = kTRUE) { fUseTRDEtaCorrection = useTRDEtaCorrection; };
   Bool_t UseTRDEtaCorrection() const { return fUseTRDEtaCorrection; };
@@ -269,6 +274,7 @@ private:
   AliOADBContainer* fOADBvoltageMaps;   //! container with the voltage maps
   Bool_t fUseTPCEtaCorrection;          // Use TPC eta correction
   Bool_t fUseTPCMultiplicityCorrection; // Use TPC multiplicity correction
+  Bool_t fUseTPCPileupCorrection;       // Use TPC pileup correction
   Bool_t fUseTPCNewResponse;            // Use new method for TPC PID response
 
   AliTRDPIDResponseObject *fTRDPIDResponseObject; //! TRD PID Response Object

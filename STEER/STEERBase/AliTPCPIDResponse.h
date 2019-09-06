@@ -29,6 +29,7 @@
 class TH2D;
 class TSpline3;
 class AliOADBContainer;
+class AliNDLocalRegression;
 
 class AliTPCPIDResponse: public TNamed {
 public:
@@ -68,6 +69,12 @@ public:
     kdEdxInfo=1
   };
 
+  enum ETPCPileupCorrectionStrategy {
+    kPileupCorrectionInExpectedSignal = 0, // modifiy the expected signal as done for the eta and multiplicity correction
+    kPileupCorrectionInTrackSignal = 1, // directly modify the dEdx
+    kNoPileupCorrection = 2 // don't do pileup correction, this takes preceedence over the flag in GetExpectedSigma, etc
+  };
+
   void SetSigma(Float_t res0, Float_t resN2);
   void SetBetheBlochParameters(Double_t kp1,
                                Double_t kp2,
@@ -99,10 +106,6 @@ public:
   
   Double_t GetTrackTanTheta(const AliVTrack *track) const;
   
-  Double_t GetEtaCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
-    
-  Double_t GetEtaCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
-
   const TH2D* GetSigmaPar1Map() const { return fhEtaSigmaPar1; };
   Double_t GetSigmaPar0() const { return fSigmaPar0; };
   Bool_t SetSigmaParams(TH2D* hSigmaPar1Map, Double_t sigmaPar0);
@@ -136,14 +139,14 @@ public:
   void SetCurrentEventMultiplicity(Int_t value) { fCurrentEventMultiplicity = value;  };
   Int_t GetCurrentEventMultiplicity() const { return fCurrentEventMultiplicity; };
 
+  Double_t GetEtaCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
   Double_t GetMultiplicityCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
-  
   Double_t GetMultiplicitySigmaCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
 
   Double_t GetMultiplicityCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
-  
-  Double_t GetEtaAndMultiplicityCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species,
-                                                   ETPCdEdxSource dedxSource = kdEdxDefault) const;
+  Double_t GetEtaAndMultiplicityCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
+  Double_t GetEtaCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
+  Double_t GetCorrectedTrackdEdx(const AliVTrack *track, AliPID::EParticleType species, Bool_t applyEtaCorrection, Bool_t applyMultiplicityCorrection, Bool_t applyPileupCorrection, ETPCdEdxSource dedxSource = kdEdxDefault);
   
   // Fast functions for expert use only
   Double_t GetEtaCorrectionFast(const AliVTrack *track, Double_t dEdxSplines) const;
@@ -161,23 +164,27 @@ public:
                               AliPID::EParticleType species,
                               ETPCdEdxSource dedxSource = kdEdxDefault,
                               Bool_t correctEta = kFALSE,
-                              Bool_t correctMultiplicity = kFALSE) const;
+                              Bool_t correctMultiplicity = kFALSE,
+                              Bool_t usePileupCorrection = kFALSE) const;
   Double_t GetExpectedSigma( const AliVTrack* track, 
                              AliPID::EParticleType species,
                              ETPCdEdxSource dedxSource = kdEdxDefault,
                              Bool_t correctEta = kFALSE,
-                             Bool_t correctMultiplicity = kFALSE) const;
+                             Bool_t correctMultiplicity = kFALSE,
+                             Bool_t usePileupCorrection = kFALSE) const;
   Float_t GetNumberOfSigmas( const AliVTrack* track,
                              AliPID::EParticleType species,
                              ETPCdEdxSource dedxSource = kdEdxDefault,
                              Bool_t correctEta = kFALSE,
-                             Bool_t correctMultiplicity = kFALSE) const;
+                             Bool_t correctMultiplicity = kFALSE,
+                             Bool_t usePileupCorrection = kFALSE) const;
   
   Float_t GetSignalDelta( const AliVTrack* track,
                           AliPID::EParticleType species,
                           ETPCdEdxSource dedxSource = kdEdxDefault,
                           Bool_t correctEta = kFALSE,
                           Bool_t correctMultiplicity = kFALSE,
+                          Bool_t usePileupCorrection = kFALSE,
                           Bool_t ratio = kFALSE) const;
   
   void SetResponseFunction(TObject* o,
@@ -236,6 +243,19 @@ public:
   Double_t EvaldEdxSpline(Double_t bg,Int_t entry);
   static   Double_t SEvaldEdx(Double_t bg,Int_t entry){ return (fgInstance!=0)? fgInstance->EvaldEdxSpline(bg,entry):0;};
 
+  //===| Pileup correction |====================================================
+  void SetEventPileupProperties(Double_t shift, Double_t pileup, Double_t mult) { fEventPileupProperties[0] = shift; fEventPileupProperties[1] = pileup; fEventPileupProperties[2] = mult; }
+
+  void SetPileupCorrectionStrategy(ETPCPileupCorrectionStrategy strategy) { fPileupCorrectionStrategy = strategy; }
+
+  void SetPileupCorrectionObject(AliNDLocalRegression* correction) { fPileupCorrection = correction; }
+  const AliNDLocalRegression* GetPileupCorrectionObject() const { return fPileupCorrection; }
+
+  Bool_t IsPileupCorrectionRequested() const { return fPileupCorrectionRequested; }
+
+  Double_t GetPileupCorrectionValue(const AliVTrack* track) const;
+
+  static AliNDLocalRegression* GetPileupCorrectionFromFile(const TString fileName);
   //===| dEdx type functions |==================================================
   void SetdEdxType(ETPCdEdxType dEdxType, Int_t dEdxChargeType=0, Int_t dEdxWeightType=0, Double_t dEdxIROCweight=1., Double_t dEdxOROCmedWeight=1., Double_t dEdxOROClongWeight=1.) {
     fdEdxType=dEdxType; fdEdxChargeType=dEdxChargeType; fdEdxWeightType=dEdxWeightType; fIROCweight=dEdxIROCweight; fOROCmedWeight=dEdxOROCmedWeight; fOROClongWeight=dEdxOROClongWeight; }
@@ -270,7 +290,8 @@ protected:
                              Double_t dEdx,
                              const TSpline3* responseFunction,
                              Bool_t correctEta,
-                             Bool_t correctMultiplicity) const; 
+                             Bool_t correctMultiplicity,
+                             Bool_t usePileupCorrection) const;
   
   Double_t GetExpectedSigma(const AliVTrack* track, 
                             AliPID::EParticleType species,
@@ -279,7 +300,8 @@ protected:
                             Int_t nPoints,
                             const TSpline3* responseFunction,
                             Bool_t correctEta,
-                            Bool_t correctMultiplicity) const;
+                            Bool_t correctMultiplicity,
+                            Bool_t usePileupCorrection) const;
   //
   // function for numberical debugging 0 registed splines can be used in the TFormula and tree visualizations
   //
@@ -298,6 +320,7 @@ private:
   
   TObjArray fResponseFunctions; //! ObjArray of response functions individually for each particle
   AliOADBContainer* fOADBContainer; //! OADB container with response functions
+  AliNDLocalRegression* fPileupCorrection; // pileup correction object
   TVectorF fVoltageMap; //!stores a map of voltages wrt nominal for all chambers
   Float_t fLowGainIROCthreshold;  //voltage threshold below which the IROC is considered low gain
   Float_t fBadIROCthreshhold;     //voltage threshold for bad IROCS
@@ -317,6 +340,7 @@ private:
   Double_t fSigmaPar0; // Parameter 0 of the dEdx sigma parametrisation
   
   Int_t fCurrentEventMultiplicity; // Multiplicity of the current event
+  Double_t fEventPileupProperties[3]; //! current event properties: shift, pileup, multiplicity
   Bool_t fIsNewPbPbParam;
   TF1* fCorrFuncSlope;
   TF1* fCorrFuncCurv;
@@ -332,13 +356,16 @@ private:
   Double_t         fOROCmedWeight;    // OROC medium pad size weight to use for dEdx calculation from AliTPCdEdxInfo
   Double_t         fOROClongWeight;   // OROC long pad size weight to use for dEdx calculation from AliTPCdEdxInfo
 
+  ETPCPileupCorrectionStrategy fPileupCorrectionStrategy; // Pileup correction strategy
+  Bool_t fPileupCorrectionRequested; // If pileup correction was configured in the OADB object
+
   // Information on reconstruction data used
   TString fRecoPassNameUsed;          //! Name or number of the actually used reconstruction pass
   //
   //
   static AliTPCPIDResponse*   fgInstance;     //! Instance of this class (singleton implementation)
   TObjArray                   fSplineArray;   //array of registered splines
-  ClassDef(AliTPCPIDResponse,6)   // TPC PID class
+  ClassDef(AliTPCPIDResponse, 7)   // TPC PID class
 };
 
 

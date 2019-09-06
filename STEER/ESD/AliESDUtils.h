@@ -21,6 +21,7 @@
 #endif
 
 #include <TObjArray.h>
+#include "TVectorFfwd.h"
 
 class AliVEvent;
 class AliESDEvent;
@@ -39,6 +40,7 @@ namespace AliESDUtils {
   Float_t GetCorrV0A0(Float_t v0araw,Float_t zv);
   Float_t GetCorrV0A(Float_t v0araw,Float_t zv);
   Float_t GetCorrV0C(Float_t v0craw,Float_t zv);
+  void GetTPCPileupVertexInfo(const AliESDEvent* event, TVectorF& vertexInfo);
 }  
 
 #endif

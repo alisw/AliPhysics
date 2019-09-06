@@ -30,6 +30,7 @@
 #include "AliESDVZERO.h"
 #include "AliVertexerTracks.h"
 #include "TClonesArray.h"
+#include "AliMathBase.h"
 
 //______________________________________________________________________________
 Float_t AliESDUtils::GetCorrV0(const AliVEvent* esd, Float_t &v0CorrResc, Float_t *v0multChCorr, Float_t *v0multChCorrResc)
@@ -267,4 +268,58 @@ Float_t AliESDUtils::GetCorrV0A0(Float_t  v0a0raw, Float_t zv)
   zv -= pars[0];
   Float_t corr = 1 + zv*(pars[1] + zv*pars[2]);
   return corr>0 ? v0a0raw/corr : -1;
+}
+//________________________________________________________________________
+void AliESDUtils::GetTPCPileupVertexInfo(const AliESDEvent* event, TVectorF& vertexInfo)
+{
+  vertexInfo.ResizeTo(10);
+  vertexInfo.Zero();
+
+  const Int_t nNumberOfTracks = event->GetNumberOfTracks();
+  const Int_t bufSize = 20000;
+  const Float_t kMinDCA = 3;
+  const Float_t kMinDCAZ = 5;
+  Double_t bufferP[bufSize], bufferM[bufSize];
+  Int_t counterP = 0, counterM = 0;
+  Float_t dcaXY, dcaZ;
+  for (Int_t iTrack = 0; iTrack < nNumberOfTracks; iTrack++) {
+    AliESDtrack *track = event->GetTrack(iTrack);
+    if (track == nullptr) continue;
+    if (track->IsOn(0x1)) continue;
+    //if (TMath::Abs(track->GetTgl())>1) continue;
+    if (track->HasPointOnITSLayer(0)) continue;
+    if (track->HasPointOnITSLayer(1)) continue;
+    const AliExternalTrackParam *param = track->GetInnerParam();
+    if (!param) continue;
+    // A-side c side cut
+    //if (param->GetTgl()*param->GetZ()<0) continue;
+    track->GetImpactParameters(dcaXY, dcaZ);
+    if (TMath::Abs(dcaXY) > kMinDCA) continue;
+    if (TMath::Abs(dcaZ) < kMinDCAZ) continue;
+
+    const Double_t tgl = track->Pz() / track->Pt();
+    if (tgl > 0.0) {
+      bufferP[counterP++] = track->GetZ();
+    }
+    if (tgl < -0.0) {
+      bufferM[counterM++] = track->GetZ();
+    }
+  }
+
+  Double_t posZA = (counterP > 0) ? TMath::Median(counterP, bufferP) : 0;
+  Double_t posZC = (counterM > 0) ? TMath::Median(counterM, bufferM) : 0;
+  Double_t posZALTM=0,posZCLTM=0, rmsZALTM=0,rmsZCLTM=0;
+  if (counterP>4) AliMathBase::EvaluateUni(counterP, bufferP, posZALTM, rmsZALTM, int(counterP*0.65));
+  if (counterM>4) AliMathBase::EvaluateUni(counterM, bufferM, posZCLTM, rmsZCLTM, int(counterM*0.65));
+
+  vertexInfo[0] = posZA;
+  vertexInfo[1] = -posZC;
+  vertexInfo[2] = (-posZC+posZA)*0.5;
+  vertexInfo[3] = counterP;
+  vertexInfo[4] = counterM;
+  vertexInfo[5] = (counterP+counterM);
+  vertexInfo[6] = posZALTM;
+  vertexInfo[7] = posZCLTM;
+  vertexInfo[8] = rmsZALTM;
+  vertexInfo[9] = rmsZCLTM;
 }
