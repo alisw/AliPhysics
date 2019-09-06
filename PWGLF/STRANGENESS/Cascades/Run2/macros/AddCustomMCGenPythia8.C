@@ -44,6 +44,7 @@ AliGenerator* CreatePythia8GenCustom( TString lTune,
     (AliPythia8::Instance())->ReadString("Beams:idA = 2212");
     (AliPythia8::Instance())->ReadString("Beams:idB = 2212");
     (AliPythia8::Instance())->ReadString("PhaseSpace:pTHatMax = -1.0"); //this should be fixed in the constructor
+    (AliPythia8::Instance())->ReadString("Main:timesAllowErrors = 50000");
     
     if ( lTune.EqualTo("pp") ){
         // Specific settings go here
