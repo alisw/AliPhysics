@@ -13,6 +13,7 @@ class TFile;
 class AliTOFTriggerMask;
 class TBits;
 
+#include "AliTimeRangeCut.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
@@ -37,6 +38,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
  private:
  
   AliPIDResponse *fPIDResponse;
+  AliTimeRangeCut fTimeRangeCut;
   AliESDtrackCuts *fTrackCutsBit0;
   AliESDtrackCuts *fTrackCutsBit1;
   AliESDtrackCuts *fTrackCutsBit5;
@@ -82,7 +84,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 25); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 26); 
 };
 
 #endif
