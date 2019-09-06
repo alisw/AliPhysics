@@ -43,6 +43,7 @@
 #include "TObjArray.h"
 #include "AliDataFile.h"
 #include "TString.h"
+#include "AliTimeRangeCut.h"
 
 #include "AliESDEvent.h" 
 #include "AliESDtrack.h" 
@@ -99,7 +100,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name) 
-  : AliAnalysisTaskSE(name),fPIDResponse(0),fTrackCutsBit0(0),fTrackCutsBit1(0),fTrackCutsBit5(0),isMC(kFALSE), isESD(kFALSE),cutEta(0.9),fOutputList(0),
+  : AliAnalysisTaskSE(name),fPIDResponse(0), fTrackCutsBit0(0),fTrackCutsBit1(0),fTrackCutsBit5(0),isMC(kFALSE), isESD(kFALSE),cutEta(0.9),fOutputList(0),
     	fHistEvents(0),
 	fHistMCTriggers(0),
     	fTreePhi(0),
@@ -359,8 +360,19 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     if(fRunNumber != fLoadedRun){
       if(!fSPDfile)fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDEfficiency18qr.root");
       if(!fTOFfile)fTOFfile = AliDataFile::OpenOADB("PWGUD/UPC/TOFEfficiency18qr.root");
-      hTOFeff  = (TH2F*) fTOFfile->Get(Form("ltm%i",fRunNumber));
-      hSPDeff   = (TH1D*) fSPDfile->Get(Form("eff%i",fRunNumber));
+      if(fTOFfile->Get(Form("ltm%i",fRunNumber))) hTOFeff  = (TH2F*) fTOFfile->Get(Form("ltm%i",fRunNumber));
+      if(fSPDfile->Get(Form("eff%i",fRunNumber))) hSPDeff  = (TH1D*) fSPDfile->Get(Form("eff%i",fRunNumber));
+      
+      Int_t tempRun = fRunNumber;
+      while(!hTOFeff){
+        tempRun--;
+        hTOFeff  = (TH2F*) fTOFfile->Get(Form("ltm%i",tempRun));
+      }
+      tempRun = fRunNumber;
+      while(!hSPDeff){
+        tempRun--;
+        hSPDeff  = (TH1D*) fSPDfile->Get(Form("eff%i",tempRun));
+      }
       fLoadedRun = fRunNumber;
       }
     RunMC(fEvent);
@@ -399,6 +411,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Int_t fADAdecision = fADdata->GetADADecision();
   Int_t fADCdecision = fADdata->GetADCDecision();
   if( fADAdecision != 0 || fADCdecision != 0) return;
+  
+  fTimeRangeCut.InitFromEvent(InputEvent());
+  if(fTimeRangeCut.CutEvent(InputEvent()))return;
 
   fHistEvents->Fill(1);
   //cout<<"Event, tracks = "<<fEvent ->GetNumberOfTracks()<<endl; 
