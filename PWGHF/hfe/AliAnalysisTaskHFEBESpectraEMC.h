@@ -31,6 +31,8 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
     
+    void IsAnalysispp(Bool_t isPP) {fIsAnapp = isPP;};
+
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
     Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
@@ -118,7 +120,8 @@ private:
     TClonesArray  *fMCArray;//! MC array
     
     AliMultSelection *fMultSelection;
-    
+    Bool_t  fIsAnapp;// Is analysis pp
+
     Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
     

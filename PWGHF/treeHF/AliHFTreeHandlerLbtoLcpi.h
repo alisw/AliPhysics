@@ -41,7 +41,7 @@ class AliHFTreeHandlerLbtoLcpi : public AliHFTreeHandler
     float fCosThetaStar; /// candidate costhetastar
     float fImpParProd; /// daughter impact-parameter product
     float fcTau; /// cTau of the Lb
-    float fChi2Prim;// chi2 of primary vertex
+    float fChi2OverNDF; /// chi2 over NDF of secondary vertex
 
     //Variables for Lc->pKpi
     float fInvMass_Lc; ///Lc invariant mass
@@ -65,7 +65,7 @@ class AliHFTreeHandlerLbtoLcpi : public AliHFTreeHandler
     float fSumImpParProngs_Lc; ///sum of Lc prong impact parameter squared
   
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerLbtoLcpi,3); ///
+    ClassDef(AliHFTreeHandlerLbtoLcpi,4); ///
     /// \endcond
 };
 #endif

@@ -335,44 +335,50 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0d200079227300008250404000", "204c4640263202223710", "0152103500000000"); // min pT no cut
     cuts.AddCutPCMDalitz("00010113", "0d200049227300008250404000", "204c4640263202223710", "0152103500000000"); // min pT 75 MeV
     cuts.AddCutPCMDalitz("00010113", "0d200019227300008250404000", "204c4640263202223710", "0152103500000000"); // min pT 100 MeV
-    cuts.AddCutPCMDalitz("00010113", "0d200008227300008250404000", "204c4640263202223710", "0152103500000000"); // TPC cluster 35%
-    cuts.AddCutPCMDalitz("00010113", "0d200006227300008250404000", "204c4640263202223710", "0152103500000000"); // TPC cluster 70%
   } else if (trainConfig == 413){
     cuts.AddCutPCMDalitz("00010113", "0d200009327300008250404000", "204c4640263202223710", "0152103500000000"); // edEdx -4,5
     cuts.AddCutPCMDalitz("00010113", "0d200009627300008250404000", "204c4640263202223710", "0152103500000000"); // edEdx -2.5,4
     cuts.AddCutPCMDalitz("00010113", "0d200009257300008250404000", "204c4640263202223710", "0152103500000000"); // pidEdx 2,-10
     cuts.AddCutPCMDalitz("00010113", "0d200009217300008250404000", "204c4640263202223710", "0152103500000000"); // pidEdx 0,-10
-    cuts.AddCutPCMDalitz("00010113", "0d200009226300008250404000", "204c4640263202223710", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
-    cuts.AddCutPCMDalitz("00010113", "0d200009227600008250404000", "204c4640263202223710", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
   } else if (trainConfig == 414){
     cuts.AddCutPCMDalitz("00010113", "0d200009227300002250404000", "204c4640263202223710", "0152103500000000"); // qT max 0.06 2D
     cuts.AddCutPCMDalitz("00010113", "0d200009227300009250404000", "204c4640263202223710", "0152103500000000"); // qT max 0.03 2D
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008260404000", "204c4640263202223710", "0152103500000000"); // Psi pair 0.05 2D, chi2 30.
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008280404000", "204c4640263202223710", "0152103500000000"); // Psi pair 0.2  2D, chi2 30.
-    cuts.AddCutPCMDalitz("00010113", "0d200009227300008850404000", "204c4640263202223710", "0152103500000000"); // chi2 20. psi pair 0.1 2D
-    cuts.AddCutPCMDalitz("00010113", "0d200009227300008150404000", "204c4640263202223710", "0152103500000000"); // chi2 50. psi pair 0.1 2D
   } else if (trainConfig == 415){
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008254404000", "204c4640263202223710", "0152103500000000"); // Photon Asymmetry Cut
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250604000", "204c4640263202223710", "0152103500000000"); // CosPA 0.9
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250004000", "204c4640263202223710", "0152103500000000"); // no CosPA
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250400000", "204c4640263202223710", "0152103500000000"); // no double counting
-    cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152101500000000"); // meson alpha pt dep
-    cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152107500000000"); // meson alpha < 0.85
   } else if (trainConfig == 416) {//Primary cut, dE/dx sigma, min pT, max pT for pions.
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640863202223710", "0152103500000000");//Standard with kBoth on electrons
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640863002223710", "0152103500000000");//No PsiPair cut with kBoth on electrons
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152103500000000");//Standard
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263002223710", "0152103500000000");//No PsiPair on electrons
+  } else if (trainConfig == 417) {//Systematic for TPC cluster and pion energy
+    cuts.AddCutPCMDalitz("00010113", "0d200008227300008250404000", "204c4640263202223710", "0152103500000000"); // TPC cluster 35%
+    cuts.AddCutPCMDalitz("00010113", "0d200006227300008250404000", "204c4640263202223710", "0152103500000000"); // TPC cluster 70%
+    cuts.AddCutPCMDalitz("00010113", "0d200009226300008250404000", "204c4640263202223710", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
+    cuts.AddCutPCMDalitz("00010113", "0d200009227600008250404000", "204c4640263202223710", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
+  } else if (trainConfig == 418) {//Systematic for chi2 psi pair on Photons
+    cuts.AddCutPCMDalitz("00010113", "0d200009227300008850404000", "204c4640263202223710", "0152103500000000"); // chi2 20. psi pair 0.1 2D
+    cuts.AddCutPCMDalitz("00010113", "0d200009227300008150404000", "204c4640263202223710", "0152103500000000"); // chi2 50. psi pair 0.1 2D
+    cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152101500000000"); // meson alpha pt dep
+    cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152107500000000"); // meson alpha < 0.85
+  } else if (trainConfig == 419) {//Cross chech of efficiency show for range on TPC.
+    cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152103500000000");// Standard
+    cuts.AddCutPCMDalitz("00010113", "0dm00009227300008250404000", "204c4640263202223710", "0152103500000000");// exclusion of range o transition between chambers of TPC 52 to 72 cm.
 
-    //  6XX for lowB,    65X  lowB and MBW
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////  6XX for lowB,    65X  lowB and MBW ////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   } else if (trainConfig == 606) {  // low B   eta<0.8
     cuts.AddCutPCMDalitz("00010113", "0d200089266300008850404000", "10477400234202361710", "0263103100900000"); //prim electron Pt > 0.05 GeV & sec. electrons pt > 0.02 GeV
   } else if ( trainConfig ==607 ) { // low B
     cuts.AddCutPCMDalitz("00010113", "0da00089266300008850404000", "10477400234202361710", "0263103100900000"); //prim electron Pt >
     cuts.AddCutPCMDalitz("00010113", "0db00089266300008850404000", "10477400234202361710", "0263103100900000"); //prim electron Pt
     cuts.AddCutPCMDalitz("00010113", "0dc00089266300008850404000", "10477400234202361710", "0263103100900000");
-
-
     // to be used with weights
   } else if (trainConfig == 656) {  // low B   eta<0.8
     cuts.AddCutPCMDalitz("00010113", "0d200089266300008850404000", "10477400234202361710", "0263103100900000"); //prim electron Pt > 0.05 GeV & sec. electrons pt > 0.02 GeV

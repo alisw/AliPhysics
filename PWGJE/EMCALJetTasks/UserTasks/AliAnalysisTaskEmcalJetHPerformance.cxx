@@ -150,8 +150,6 @@ double AliAnalysisTaskEmcalJetHPerformance::DetermineTrackingEfficiency(double t
 void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLConfig()
 {
   // Base class options
-  // Recycle unused embedded events
-  fYAMLConfig.GetProperty("recycleUnusedEmbeddedEventsMode", fRecycleUnusedEmbeddedEventsMode, false);
   // Task physics (trigger) selection.
   std::vector<std::string> physicsSelection;
   bool res = fYAMLConfig.GetProperty(std::vector<std::string>({"eventCuts", "physicsSelection"}), physicsSelection, false);
@@ -765,6 +763,7 @@ Bool_t AliAnalysisTaskEmcalJetHPerformance::Run()
   // Jet matching
   if (fPerformJetMatching) {
     // Setup
+    AliDebugStream(1) << "Performing jet matching\n";
     // We don't perform any additional jet matching initialization because we will restrict
     // the jets accepted via the jet acceptance cuts (ie. EMCal fiducial cuts)
     // Retrieve the releveant jet collections
@@ -785,18 +784,27 @@ Bool_t AliAnalysisTaskEmcalJetHPerformance::Run()
       return kFALSE;
     }
 
+    // Now, begin the actual matching.
+    // Hybrid <-> det first
+    AliDebugStream(2) << "Matching hybrid to detector level jets.\n";
     // First, we reset the tagging
     ResetMatching(*jetsHybrid);
     ResetMatching(*jetsDetLevel);
-    ResetMatching(*jetsPartLevel);
-
     // Next, we perform the matching
     PerformGeometricalJetMatching(*jetsHybrid, *jetsDetLevel, fMaxJetMatchingDistance);
+    // Now, begin the next matching stage
+    // det <-> particle
+    AliDebugStream(2) << "Matching detector level to particle level jets.\n";
+    // First, we reset the tagging. We need to reset the det matching again to ensure
+    // that it doesn't accidentally keep some latent matches to the hybrid jets.
+    ResetMatching(*jetsDetLevel);
+    ResetMatching(*jetsPartLevel);
+    // Next, we perform the matching
     PerformGeometricalJetMatching(*jetsDetLevel, *jetsPartLevel, fMaxJetMatchingDistance);
 
     // Fill QA hists.
     FillJetMatchingQA(*jetsHybrid, *jetsDetLevel, "hybridToDet");
-    FillJetMatchingQA(*jetsHybrid, *jetsPartLevel, "detToPart");
+    FillJetMatchingQA(*jetsDetLevel, *jetsPartLevel, "detToPart");
   }
 
   // Response matrix
@@ -1071,18 +1079,19 @@ bool AliAnalysisTaskEmcalJetHPerformance::PerformGeometricalJetMatching(AliJetCo
     double distance = maxDist;
 
     // Loop over all accepted jets and brute force search for the closest jet.
-    auto tagAcceptedIt = contTag.accepted();
-    for (AliJetIterableContainer::iterator jetTagIt = tagAcceptedIt.begin(); jetTagIt != tagAcceptedIt.end(); ++jetTagIt) {
-      auto jet2 = *jetTagIt;
+    // NOTE: current_index() returns the jet index in the underlying array, not
+    //       the index within the accepted jets that are returned.
+    int contTagAcceptedIndex = 0;
+    for (auto jet2 : contTag.accepted()) {
       double dR = jet1->DeltaR(jet2);
       if (dR < distance && dR < maxDist) {
-        faMatchIndexTag[countBase] = jetTagIt.current_index();
+        faMatchIndexTag[countBase] = contTagAcceptedIndex;
         distance = dR;
       }
+      contTagAcceptedIndex++;
     }
 
     // Let us know whether a match was found successfully.
-    // test whether indices are matching:
     if (faMatchIndexTag[countBase] >= 0 && distance < maxDist) {
       AliDebugStream(1) << "Found closest tag jet for " << countBase << " with match index "
                << faMatchIndexTag[countBase] << " and distance " << distance << "\n";
@@ -1099,18 +1108,19 @@ bool AliAnalysisTaskEmcalJetHPerformance::PerformGeometricalJetMatching(AliJetCo
     double distance = maxDist;
 
     // Loop over all accepted jets and brute force search for the closest jet.
-    auto baseAcceptedIt = contBase.accepted();
-    for (AliJetIterableContainer::iterator jetBaseIt = baseAcceptedIt.begin(); jetBaseIt != baseAcceptedIt.end(); ++jetBaseIt) {
-      auto jet2 = *jetBaseIt;
+    // NOTE: current_index() returns the jet index in the underlying array, not
+    //       the index within the accepted jets that are returned.
+    int contBaseAcceptedIndex = 0;
+    for (auto jet2 : contBase.accepted()) {
       double dR = jet1->DeltaR(jet2);
       if (dR < distance && dR < maxDist) {
-        faMatchIndexBase[countTag] = jetBaseIt.current_index();
+        faMatchIndexBase[countTag] = contBaseAcceptedIndex;
         distance = dR;
       }
+      contBaseAcceptedIndex++;
     }
 
     // Let us know whether a match was found successfully.
-    // test whether indices are matching:
     if (faMatchIndexBase[countTag] >= 0 && distance < maxDist) {
       AliDebugStream(1) << "Found closest base jet for " << countTag << " with match index "
                << faMatchIndexBase[countTag] << " and distance " << distance << "\n";
@@ -1159,16 +1169,19 @@ void AliAnalysisTaskEmcalJetHPerformance::FillJetMatchingQA(AliJetContainer& con
   // Fill histograms.
   std::string name = "";
   std::string centBin = std::to_string(fCentBin);
+  AliDebugStream(2) << "Filling matching hists with prefix: " << prefix << "\n";
   for (auto jet1 : contBase.accepted()) {
     // Setup
     Double_t ptJet1 = jet1->Pt() - contBase.GetRhoVal() * jet1->Area();
     // Record jet 1 only properties
+    AliDebugStream(4) << "jet1: " << jet1->toString() << "\n";
     name = "jetMatching/" + prefix + "/fh2PtJet1VsLeadPtAllSel_" + centBin;
     fHistManager.FillTH2(name.c_str(), ptJet1, jet1->MaxTrackPt());
 
     // Retrieve jet 2
     AliEmcalJet * jet2 = jet1->ClosestJet();
     if (!jet2) { continue; }
+    AliDebugStream(4) << "jet2: " << jet2->toString() << "\n";
     Double_t ptJet2 = jet2->Pt() - contTag.GetRhoVal() * jet2->Area();
     // This will retrieve the fraction of jet2's momentum in jet1.
     Double_t fraction = contBase.GetFractionSharedPt(jet1);
@@ -1410,7 +1423,6 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
 {
   std::stringstream tempSS;
   tempSS << std::boolalpha;
-  tempSS << "Recycle unused embedded events: " << fRecycleUnusedEmbeddedEventsMode << "\n";
   tempSS << "Particle collections:\n";
   TIter nextParticleCont(&fParticleCollArray);
   AliParticleContainer * particleCont;

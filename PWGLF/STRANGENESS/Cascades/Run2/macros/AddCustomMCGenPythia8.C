@@ -43,10 +43,12 @@ AliGenerator* CreatePythia8GenCustom( TString lTune,
     //random seed based on time
     (AliPythia8::Instance())->ReadString("Beams:idA = 2212");
     (AliPythia8::Instance())->ReadString("Beams:idB = 2212");
+    (AliPythia8::Instance())->ReadString("PhaseSpace:pTHatMax = -1.0"); //this should be fixed in the constructor
     
     if ( lTune.EqualTo("pp") ){
         // Specific settings go here
         // default: do nothing, Monash 2013 will do its thing
+          (AliPythia8::Instance())->ReadString(Form("Tune:pp = %d",14));
     }
     if ( lTune.EqualTo("pp-experimental") ){
         // This is me testing a few things

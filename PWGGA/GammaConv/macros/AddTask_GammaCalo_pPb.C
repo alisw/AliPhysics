@@ -55,6 +55,7 @@ void AddTask_GammaCalo_pPb(
 
   TString fileNamePtWeights     = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
+  TString fileNameCustomTriggerMimicOADB   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FTRM:");
 
   TString addTaskName                 = "AddTask_GammaCalo_pPb";
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
@@ -2100,21 +2101,21 @@ void AddTask_GammaCalo_pPb(
 
   // no TM
   } else if (trainConfig == 2030){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("80010123","4117947050032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117947050032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008d123","4117947050032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("80010123","4117931050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117931050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117931050032230000","01631031000000d0"); // EG1
   } else if (trainConfig == 2031){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("80010123","4117948050032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117948050032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008d123","4117948050032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("80010123","4117932050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117932050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117932050032230000","01631031000000d0"); // EG1
   } else if (trainConfig == 2032){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("80010123","4117957050032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117957050032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008d123","4117957050032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("80010123","4117933050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117933050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117933050032230000","01631031000000d0"); // EG1
   } else if (trainConfig == 2033){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
-    cuts.AddCutCalo("80010123","4117958050032230000","01631031000000d0"); // INT7
-    cuts.AddCutCalo("8008e123","4117958050032230000","01631031000000d0"); // EG2
-    cuts.AddCutCalo("8008d123","4117958050032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("80010123","4117934050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117934050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117934050032230000","01631031000000d0"); // EG1
   } else if (trainConfig == 2034){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
     cuts.AddCutCalo("80010123","4117965050032230000","01631031000000d0"); // INT7
     cuts.AddCutCalo("8008e123","4117965050032230000","01631031000000d0"); // EG2
@@ -2383,6 +2384,8 @@ void AddTask_GammaCalo_pPb(
     if (enableMultiplicityWeighting) analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameMultWeights, dataInputMultHisto, mcInputMultHisto );
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+    if(fileNameCustomTriggerMimicOADB.CompareTo("") != 0)
+      analysisEventCuts[i]->SetCustomTriggerMimicOADBFile(fileNameCustomTriggerMimicOADB);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     if(fMinPtHardSet)
       analysisEventCuts[i]->SetMinFacPtHard(minFacPtHard);

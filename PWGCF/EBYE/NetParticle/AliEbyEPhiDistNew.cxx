@@ -1210,13 +1210,13 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
   //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
   //ITS--------------
   Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.2  };
-  Double_t ptHighITS[5]      = { 0., 0., 0.2,  0.2,  0.2  };
+  Double_t ptHighITS[5]      = { 0., 0., 0.4,  0.4,  0.2  };
   //TPC---------------
   Double_t ptLowTPC[5]       = { 0., 0., 0.3,  0.3, 0.3  };
-  Double_t ptHighTPC[5]      = { 0., 0., 1.55,  1.55,   1.55  };
+  Double_t ptHighTPC[5]      = { 0., 0., 1.0,  1.0,   1.55  };
   //TOF----
-  Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.2,  0.2  };
-  Double_t ptHighTOF[5]      = { 0., 0., 0.2,  0.2,    0.2  };
+  Double_t ptLowTOF[5]       = { 0., 0., 1.0,  1.0,  0.2  };
+  Double_t ptHighTOF[5]      = { 0., 0., 1.55,  1.55,    0.2  };
   //TPCTOF----------
   Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.69  };
   Double_t ptHighTPCTOF[5]   = { 0., 0., 0.65,  0.69,   0.69  };
@@ -1313,11 +1313,14 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
   
   
   if (fParticleSpecies == 2) {//for Pion: TPC+TOF
-    isAccepted = isAcceptedTPC;
+      if(fPidStrategy == 0){
+          isAccepted = isAcceptedTPC && isAcceptedTOF;
+      }
   }
   
   if( fParticleSpecies == 3){//for kaon: TPC and/or TOF
-    isAccepted =  isAcceptedTPC;
+      if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
+      else isAccepted =  isAcceptedTPC;
   }
   
   if( fParticleSpecies == 4){//for proton

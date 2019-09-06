@@ -105,6 +105,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fPHOSInitialized(kFALSE),
   fPHOSCurrentRun(-1),
   fEMCALBadChannelsMap(NULL),
+  fEMCALBadChannelsMap1D(NULL),
   fPHOSBadChannelsMap(NULL),
   fBadChannels(NULL),
   fNMaxEMCalModules(12),
@@ -306,6 +307,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fPHOSInitialized(kFALSE),
   fPHOSCurrentRun(-1),
   fEMCALBadChannelsMap(NULL),
+  fEMCALBadChannelsMap1D(NULL),
   fPHOSBadChannelsMap(NULL),
   fBadChannels(NULL),
   fNMaxEMCalModules(ref.fNMaxEMCalModules),
@@ -1660,6 +1662,9 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
       if(emcalCorrComponent){
         fEMCALRecUtils        = emcalCorrComponent->GetRecoUtils();
         fEMCALBadChannelsMap  = fEMCALRecUtils->GetEMCALBadChannelStatusMapArray();
+        fEMCALBadChannelsMap1D  = fEMCALRecUtils->GetEMCALChannelStatusMap1D();
+        if(!fEMCALBadChannelsMap1D || fEMCALBadChannelsMap1D->GetNbinsX()<1e3)
+          fEMCALBadChannelsMap1D = NULL;
       }
     }
     if (fEMCALRecUtils) fEMCALInitialized = kTRUE;
@@ -1698,13 +1703,21 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
       Int_t icol = -1;Int_t irow = -1;
 
       fNactiveEmcalCells = 0;
-      for(Int_t iCell=nMinCells;iCell<nMaxCells;iCell++){
-        fGeomEMCAL->GetCellIndex(iCell,imod,iTower,iIphi,iIeta);
-        if (fEMCALBadChannelsMap->GetEntries() <= imod) continue;
-        fGeomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,irow,icol);
-        Int_t iBadCell      = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
-        if(iBadCell > 0) fBadChannels->Fill(iCell,1);
-        else { fBadChannels->Fill(iCell,0); fNactiveEmcalCells++; }
+      if(fEMCALBadChannelsMap1D){
+        for(Int_t iCell=nMinCells;iCell<nMaxCells;iCell++){
+          Int_t iBadCell      = (Int_t) fEMCALBadChannelsMap1D->GetBinContent(iCell);
+          if(iBadCell > 0) fBadChannels->Fill(iCell,1);
+          else { fBadChannels->Fill(iCell,0); fNactiveEmcalCells++; }
+        }
+      } else {
+        for(Int_t iCell=nMinCells;iCell<nMaxCells;iCell++){
+          fGeomEMCAL->GetCellIndex(iCell,imod,iTower,iIphi,iIeta);
+          if (fEMCALBadChannelsMap->GetEntries() <= imod) continue;
+          fGeomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,irow,icol);
+          Int_t iBadCell      = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
+          if(iBadCell > 0) fBadChannels->Fill(iCell,1);
+          else { fBadChannels->Fill(iCell,0); fNactiveEmcalCells++; }
+        }
       }
     }
   }
@@ -2329,7 +2342,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     cells = event->GetEMCALCells();
     fGeomEMCAL = AliEMCALGeometry::GetInstance();
     if(!fGeomEMCAL) AliFatal("EMCal geometry not initialized!");
-    if(!fEMCALBadChannelsMap) AliFatal("EMCal bad channels map not initialized!");
+    if(!fEMCALBadChannelsMap && !fEMCALBadChannelsMap1D) AliFatal("EMCal bad channels map not initialized!");
     nModules = fGeomEMCAL->GetNumberOfSuperModules();
     if( fClusterType == 3) {nModules = 8; nModulesStart = 12;}
     if( fClusterType == 4) {nModules = 20;}
@@ -2368,7 +2381,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
       nMod = fGeomEMCAL->GetSuperModuleNumber(cellNumber);
       fGeomEMCAL->GetCellIndex(cellNumber,imod,iTower,iIphi,iIeta);
-      if (fEMCALBadChannelsMap->GetEntries() <= imod) doBadCell=kFALSE;
+      if (fEMCALBadChannelsMap->GetEntries() <= imod && !fEMCALBadChannelsMap1D) doBadCell=kFALSE;
       fGeomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,irow,icol);
     }else if( fClusterType == 2 ){
       fGeomPHOS->AbsToRelNumbering(cellNumber,relid);
@@ -2379,7 +2392,10 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
 
     Int_t iBadCell = 0;
     if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && doBadCell){
-      iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
+      if(fEMCALBadChannelsMap1D)
+        iBadCell = (Int_t) fEMCALBadChannelsMap1D->GetBinContent(cellNumber);
+      else
+        iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
     }else if( fClusterType == 2 && doBadCell){
       iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[nMod])->GetBinContent(relid[2],relid[3]);
     }
@@ -2585,7 +2601,7 @@ Double_t AliCaloPhotonCuts::GetTotalEnergyDeposit(AliVEvent *event)
     cells = event->GetEMCALCells();
     fGeomEMCAL = AliEMCALGeometry::GetInstance();
     if(!fGeomEMCAL) AliFatal("EMCal geometry not initialized!");
-    if(!fEMCALBadChannelsMap) AliFatal("EMCal bad channels map not initialized!");
+    if(!fEMCALBadChannelsMap && !fEMCALBadChannelsMap1D) AliFatal("EMCal bad channels map not initialized!");
     nModules = fGeomEMCAL->GetNumberOfSuperModules();
   } else if( fClusterType == 2 ){ //PHOS
     cells = event->GetPHOSCells();
@@ -2615,7 +2631,7 @@ Double_t AliCaloPhotonCuts::GetTotalEnergyDeposit(AliVEvent *event)
     if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
       nMod = fGeomEMCAL->GetSuperModuleNumber(cellNumber);
       fGeomEMCAL->GetCellIndex(cellNumber,imod,iTower,iIphi,iIeta);
-      if (fEMCALBadChannelsMap->GetEntries() <= imod) doBadCell=kFALSE;
+      if (fEMCALBadChannelsMap->GetEntries() <= imod && !fEMCALBadChannelsMap1D) doBadCell=kFALSE;
       fGeomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,irow,icol);
     }else if( fClusterType == 2 ){
       fGeomPHOS->AbsToRelNumbering(cellNumber,relid);
@@ -2626,7 +2642,10 @@ Double_t AliCaloPhotonCuts::GetTotalEnergyDeposit(AliVEvent *event)
 
     Int_t iBadCell = 0;
     if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && doBadCell){
-      iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
+      if(fEMCALBadChannelsMap1D)
+        iBadCell = (Int_t) fEMCALBadChannelsMap1D->GetBinContent(cellNumber);
+      else
+        iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
     }else if( fClusterType == 2 && doBadCell){
       iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[nMod])->GetBinContent(relid[2],relid[3]);
     }
@@ -3093,8 +3112,11 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannel(AliVCluster* cluster, AliVEv
       if(irow == largestCellirow && icol == largestCellicol) continue;
 
       Int_t iBadCell = 0;
-      if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && largestCelliMod<fEMCALBadChannelsMap->GetEntries()){
-        iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(largestCelliMod))->GetBinContent(icol,irow);
+      if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && (largestCelliMod<fEMCALBadChannelsMap->GetEntries() || fEMCALBadChannelsMap1D) ){
+        if(fEMCALBadChannelsMap1D)
+          iBadCell = (Int_t) fEMCALBadChannelsMap1D->GetBinContent(fGeomEMCAL->GetAbsCellIdFromCellIndexes(largestCelliMod, icol, irow));
+        else
+          iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(largestCelliMod))->GetBinContent(icol,irow);
       }else if( fClusterType == 2 && fPHOSBadChannelsMap[largestCelliMod+1]){
         iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[largestCelliMod+1])->GetBinContent(icol,irow);
       }
@@ -3142,8 +3164,11 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannel(AliVCluster* cluster, AliVEv
       for (Int_t icol = nMinCols;icol < nMaxCols;icol++)
       {
         Int_t iBadCell = 0;
-        if( (fClusterType == 1 || fClusterType == 4) && largestCelliMod<fEMCALBadChannelsMap->GetEntries()){
-          iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(largestCelliMod))->GetBinContent(icol,irow);
+        if( (fClusterType == 1 || fClusterType == 4) && (largestCelliMod<fEMCALBadChannelsMap->GetEntries() || fEMCALBadChannelsMap1D)){
+          if(fEMCALBadChannelsMap1D)
+            iBadCell = (Int_t) fEMCALBadChannelsMap1D->GetBinContent(fGeomEMCAL->GetAbsCellIdFromCellIndexes(largestCelliMod, icol, irow));
+          else
+            iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(largestCelliMod))->GetBinContent(icol,irow);
         }else if( fClusterType == 2 && fPHOSBadChannelsMap[largestCelliMod+1]){
           iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[largestCelliMod+1])->GetBinContent(icol,irow);
         }
