@@ -322,8 +322,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
                 ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(v0ESD->GetPindex()));
             AliESDtrack* nTrackV0 =
                 ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(v0ESD->GetNindex()));
-            if (TMath::Abs(((pTrackV0->GetSign()) - (nTrackV0->GetSign()))) <
-                0.1)
+            if (TMath::Abs(((pTrackV0->GetSign()) - (nTrackV0->GetSign()))) < 0.1)
                 AcceptedV0 = kFALSE;
 
             // PID cuts
@@ -363,9 +362,9 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
 
             // CPA cut
             Double_t fLambdaCPA =
-                v0ESD->GetV0CosineOfPointingAngle(PVx, PVy, PVz);
+                fabs(v0ESD->GetV0CosineOfPointingAngle(PVx, PVy, PVz));
 
-            if (fLambdaCPA < fV0CosineOfPointingAngleCut)
+            if (fLambdaCPA < fV0CosineOfPointingAngleCut || fLambdaCPA >= 1)
                 AcceptedV0 = kFALSE;
 
             // Mass window cut
@@ -393,6 +392,9 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
                 (AliAODTrack*)(v0AOD->GetSecondaryVtx()->GetDaughter(0));
             AliAODTrack* nTrackV0 =
                 (AliAODTrack*)(v0AOD->GetSecondaryVtx()->GetDaughter(1));
+
+            if (TMath::Abs(((pTrackV0->Charge()) - (nTrackV0->Charge()))) < 0.1)
+                AcceptedV0 = kFALSE;
 
             // PID cuts
             Double_t fTPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
@@ -422,13 +424,18 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
             if (fDCADistLambda_PV > fDCArDistLambdaPVCut)
                 AcceptedV0 = kFALSE;
 
-            Double_t fLambdaCPA = v0AOD->CosPointingAngle(vertex);
+            Double_t fLambdaCPA = fabs(v0AOD->CosPointingAngle(vertex));
 
-            if (fLambdaCPA < fV0CosineOfPointingAngleCut)
+            if (fLambdaCPA < fV0CosineOfPointingAngleCut || fLambdaCPA >= 1)
                 AcceptedV0 = kFALSE;
 
             // Mass window cut
-            Double_t fMassV0 = v0AOD->MassLambda();
+            Double_t fMassV0 = -999;
+            if (fPIDLambda)
+                fMassV0 = v0AOD->MassLambda();
+            if (fPIDAntiLambda)
+                fMassV0 = v0AOD->MassAntiLambda();
+
             if (fabs(fMassV0 - v0Mass) > fV0MassWindowCut)
                 AcceptedV0 = kFALSE;
 
