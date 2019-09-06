@@ -401,7 +401,7 @@ void AliHFInvMassFitter::DrawHere(TVirtualPad* c, Double_t nsigma,Int_t writeFit
 
       pinfos->AddText(Form("S = %.0f #pm %.0f ",fRawYield,fRawYieldErr));
       pinfos->AddText(Form("B (%.0f#sigma) = %.0f #pm %.0f",nsigma,bkg,errbkg));
-      pinfos->AddText(Form("S/B (%.0f#sigma) = %.4f ",nsigma,fRawYield/bkg));
+      pinfos->AddText(Form("S/B (%.0f#sigma) = %.4g ",nsigma,fRawYield/bkg));
       if(fRflFunc)  pinfos->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));
       pinfos->AddText(Form("Signif (%.0f#sigma) = %.1f #pm %.1f ",nsigma,signif,errsignif));
       if(writeFitInfo>=2) pinfos->Draw();
@@ -1120,7 +1120,8 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
     }
     for(Int_t j=1;j<=fHistoTemplRfl->GetNbinsX();j++){
       if(isPoissErr){
-	fHistoTemplRfl->SetBinError(j,TMath::Sqrt(fHistoTemplRfl->GetBinContent(j)));
+	if(fHistoTemplRfl->GetBinContent(j)>0) fHistoTemplRfl->SetBinError(j,TMath::Sqrt(fHistoTemplRfl->GetBinContent(j)));
+	else fHistoTemplRfl->SetBinError(j,0);
       }
       else fHistoTemplRfl->SetBinError(j,0.001*fHistoTemplRfl->GetBinContent(j));
     }
