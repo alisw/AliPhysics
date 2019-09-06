@@ -200,6 +200,9 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         fXiMassWindowCut = 0.015;
         fTPCNsigXi1530PionCut = 1.5;
     }
+    void SetExoticFinder2(Bool_t exotic) {
+        fExoticFinder2 = exotic;
+    }
     void SetUseSimpleEventCut(Bool_t fInput) { fSimplieEventCut = fInput; };
 
     Bool_t GoodTracksSelection();
@@ -337,6 +340,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t IsPrimaryMC = kTRUE;
     Bool_t fQA = kTRUE;
     Bool_t fExoticFinder = kFALSE;
+    Bool_t fExoticFinder2 = kFALSE;
     Bool_t fSimplieEventCut = kFALSE;
     Bool_t IsNano = kFALSE;
     Bool_t fCPAstudy = kFALSE;
@@ -348,7 +352,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     Double_t lPosPV[3];
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 28);
+    ClassDef(AliAnalysisTaskXi1530, 29);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -379,6 +383,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 26: try to update the version only.
     // 27: add Xi CPA study option // Change PV variable type
     // 28: Add INEL variable
+    // 29: Add Special finder
 };
 
 #endif

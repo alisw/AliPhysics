@@ -254,7 +254,10 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
                     {binType_V0M, binCent, AxisFix("V0MSig", 25000, 0, 25000),
                      AxisFix("SPDNtrk", 4000, 0, 4000)},
                     "s");
-
+    if (fExoticFinder2)
+        CreateTHnSparse("hInvMass_hf", "InvMass", 4,
+                        {binType, binCent, binPt, binMass},
+                        "s");
     auto binTrklet =
         AxisVar("nTrklet", {0, 5, 10, 15, 20, 25, 30, 35, 40, 100});
 
@@ -448,7 +451,12 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     fHistos->CreateTH1("hTotalInvMass_data", "", 2000, 0.5, 2.5, "s");
     fHistos->CreateTH1("hTotalInvMass_LS", "", 2000, 0.5, 2.5, "s");
     fHistos->CreateTH1("hTotalInvMass_Mix", "", 2000, 0.5, 2.5, "s");
-
+    if (fExoticFinder2){
+        fHistos->CreateTH1("hTotalInvMass_HFp", "", 2500, 0.5, 3.0, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFn", "", 2500, 0.5, 3.0, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFpMix", "", 2500, 0.5, 3.0, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFnMix", "", 2500, 0.5, 3.0, "s");
+    }
     fEMpool.resize(binCent.GetNbins() + 1,
                    std::vector<eventpool>(binZ.GetNbins() + 1));
     PostData(1, fHistos->GetListOfHistograms());
@@ -1351,11 +1359,13 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
 void AliAnalysisTaskXi1530::FillTracks() {
     AliVTrack* track1;           // charged track, pion
+    AliVTrack* track2;           // charged track, pion
     AliESDcascade* Xicandidate;  // Cascade
     tracklist trackpool;
 
-    TLorentzVector temp1, temp2;
+    TLorentzVector temp1, temp2, temp3;
     TLorentzVector vecsum;  // Xi1530 candidate
+    TLorentzVector vecsum2;  // for
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
 
     // for DCA value
@@ -1659,6 +1669,38 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     if ((int)sign == (int)kLS)
                         fHistos->FillTH1("hTotalInvMass_LS", vecsum.M());
                 }
+                if (fExoticFinder2) {
+                    for (UInt_t k = 0; k < ntracks; k++) {
+                        if (j == k)  // same pion
+                            continue;
+                        track2 =
+                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                        if (track1->GetID() == track2->GetID())
+                            continue;
+                        temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
+                                      pionmass);
+
+                        vecsum2 =
+                            vecsum + temp3;  // vecsum = Xi1530, temp3=pion
+                        // Y cut
+                        if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
+                            (vecsum2.Rapidity() < fXi1530RapidityCut_low))
+                            continue;
+                        int sign2 = kData;
+                        if (track2->Charge() > 0)
+                            sign2 = kData;
+                        else
+                            sign2 = kLS;
+                        FillTHnSparse("hInvMass", {(double)sign2, (double)fCent,
+                                                   vecsum2.Pt(), vecsum2.M()});
+                        if (track2->Charge() > 0)
+                            fHistos->FillTH1("hTotalInvMass_HFp",
+                                             vecsum.M());
+                        else
+                            fHistos->FillTH1("hTotalInvMass_HFn",
+                                             vecsum.M());
+                    }
+                }
 
                 // Fill the QA Histos
                 if (fQA) {
@@ -1937,17 +1979,50 @@ void AliAnalysisTaskXi1530::FillTracks() {
                               {(double)kDefaultOption, (double)kMixing,
                                (double)fCent, vecsum.Pt(), vecsum.M()});
                 fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
+                if (fExoticFinder2) {
+                    for (UInt_t k = 0; k < ntracks; k++) {
+                        if (jt == k)  // same pion
+                            continue;
+                        track2 =
+                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                        if (track1->GetID() == track2->GetID())
+                            continue;
+                        temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
+                                      pionmass);
+                        vecsum2 =
+                            vecsum + temp3;  // vecsum = Xi1530, temp3=pion
+                        // Y cut
+                        if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
+                            (vecsum2.Rapidity() < fXi1530RapidityCut_low))
+                            continue;
+                        int sign2 = kMixing;
+                        if (track2->Charge() > 0)
+                            sign2 = kMixing;
+                        else
+                            sign2 = kMCReco;
+                        FillTHnSparse("hInvMass", {(double)sign2, (double)fCent,
+                                                   vecsum2.Pt(), vecsum2.M()});
+                        if (track2->Charge() > 0)
+                            fHistos->FillTH1("hTotalInvMass_HFpMix",
+                                             vecsum.M());
+                        else
+                            fHistos->FillTH1("hTotalInvMass_HFnMix",
+                                             vecsum.M());
+                    }
+                }
             }
         }
     }       // mix loop
 }
 void AliAnalysisTaskXi1530::FillTracksAOD() {
     AliVTrack* track1;         // charged track, pion
+    AliVTrack* track2;         // charged track, pion
     AliAODcascade* Xicandidate;  // Cascade
     tracklist trackpool;
 
-    TLorentzVector temp1, temp2;
+    TLorentzVector temp1, temp2, temp3;
     TLorentzVector vecsum;  // Xi1530 candidate
+    TLorentzVector vecsum2; // for 
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
 
     // for DCA value
@@ -2255,6 +2330,37 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     if ((int)sign == (int)kLS)
                         fHistos->FillTH1("hTotalInvMass_LS", vecsum.M());
                 }
+                if(fExoticFinder2){
+                    for (UInt_t k = 0; k < ntracks; k++) {
+                        if( j == k ) // same pion
+                            continue;
+                        track2 =
+                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                        if(track1->GetID() == track2->GetID())
+                            continue;
+                        temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
+                                      pionmass);
+
+                        vecsum2 = vecsum + temp3;  // vecsum = Xi1530, temp3=pion
+                        // Y cut
+                        if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
+                            (vecsum2.Rapidity() < fXi1530RapidityCut_low))
+                            continue;
+                        int sign2 = kData;
+                        if (track2->Charge() > 0)
+                            sign2 = kData;
+                        else
+                            sign2 = kLS;
+                        FillTHnSparse("hInvMass", {(double)sign2, (double)fCent,
+                                                   vecsum2.Pt(), vecsum2.M()});
+                        if (track2->Charge() > 0)
+                            fHistos->FillTH1("hTotalInvMass_HFp",
+                                             vecsum.M());
+                        else
+                            fHistos->FillTH1("hTotalInvMass_HFn",
+                                             vecsum.M());
+                    }
+                }
 
                 // Fill the QA Histos
                 if (fQA) {
@@ -2528,6 +2634,37 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                               {(double)kDefaultOption, (double)kMixing,
                                (double)fCent, vecsum.Pt(), vecsum.M()});
                 fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
+                if (fExoticFinder2) {
+                    for (UInt_t k = 0; k < ntracks; k++) {
+                        if (i == k)  // same pion
+                            continue;
+                        track2 =
+                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                        if (track1->GetID() == track2->GetID())
+                            continue;
+                        temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
+                                      pionmass);
+                        vecsum2 =
+                            vecsum + temp3;  // vecsum = Xi1530, temp3=pion
+                        // Y cut
+                        if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
+                            (vecsum2.Rapidity() < fXi1530RapidityCut_low))
+                            continue;
+                        int sign2 = kMixing;
+                        if (track2->Charge() > 0)
+                            sign2 = kMixing;
+                        else
+                            sign2 = kMCReco;
+                        FillTHnSparse("hInvMass", {(double)sign2, (double)fCent,
+                                                   vecsum2.Pt(), vecsum2.M()});
+                        if (track2->Charge() > 0)
+                            fHistos->FillTH1("hTotalInvMass_HFpMix", 
+                                            vecsum.M());
+                        else
+                            fHistos->FillTH1("hTotalInvMass_HFnMix",
+                                             vecsum.M());
+                    }
+                }
             }
         }
     }       // mix loop
