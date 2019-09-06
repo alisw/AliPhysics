@@ -457,11 +457,10 @@ is effectively applied to all other tasks. Thus, be certain that any other event
 is less restrictive than that in the embedding helper to ensure that no good embedded events are lost.
 
 To configure this mode, internal event selection must be enabled in the embedding helper via
-`SetUseInternalEventSelection(true)`, and then selection on the outcome from the embedding helper must be enabled
-in other tasks. In the case of the EMCal Correction Task, this option can be enabled in the %YAML configuration.
-In the case of tasks derived from AliAnalysisTaskEmcal, set the option `task->SetRecycleUnusedEmbeddedEventsMode(true)`.
-If your task does not inherit from AliAnalysisTaskEmcal, it should check `EmbeddedEventUsed()` each event and then
-react as appropriate.
+`SetUseInternalEventSelection(true)`. The embedding helper will then break execution early if the internal event
+is not selected. This will prevent later tasks from executing. This means that the count of the number of rejected
+events is only accurate in the embedding helper (the number of accepted events will be the same in the embedding helper
+and user tasks).
 
 ## Configuring internal event selection (centrality, etc)
 
