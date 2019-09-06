@@ -370,11 +370,10 @@ const float zero = 1e-20;
 
 // Input files
 //char const* datafile = "LHC15678_1288_1289"; //LHC16 no vertexer
-char const* datafile = "AOD439_441_HM_17"; //LHC16 no vertexer
+char const* datafile = "AOD439_441"; //LHC16 no vertexer
 //char const* datafile = "LHC16q_pass1_CENT_wSDD";  //pPb
 
 //char const* rsnmcfile = "LHC17f2b_cent"; // pPb
-
 
 char const* rsnmcfile = "LHC18c6b4_298"; //LHC16 pass2
 char const* rsnmcfile2 = "LHC18c6b_part1_298"; //LHC16
@@ -389,7 +388,7 @@ char const* genmcfile = "LHC161718_GenMC_AOD308309310";
 //char const* genmcfile = "LHC15g3a3_novertexer";
 //char const* genmcfile = "LHC17f2b_cent";  // pPb
 
-TString inputDirectory = "Xi1530MB";
+TString inputDirectory = "Xi1530INEL";
 
 // FIT SETUP -----------------
 double peakRange[2] = {1.512, 1.552};
@@ -412,7 +411,7 @@ bool fbkgfit = false;
 // ---------------------------
 
 // Mix? LS? Background -------
-int bkgtype = 3;  // 2 for LS, 3 for Mix
+int bkgtype = 2;  // 2 for LS, 3 for Mix
 // ---------------------------
 
 // Analysis options ----------
@@ -430,10 +429,10 @@ Double1D NormalizeRange_R = {1.6, 1.8}; // Norminal
 
 // Axis Range
 Double1D DrawRange = {1.448, 1.75};
-Double1D FitRange = {1.484, 1.675}; // +-rstep
+Double1D FitRange = {1.484, 1.75};
 double lstep = 0.001;
 double rstep = 0.012;
-Double1D IntegralRange = {1.516, 1.548}; // +-
+Double1D IntegralRange = {1.516, 1.548};
 Double1D IntegralRangeMC = {1.4, 1.7};
 
 // Rebin
@@ -467,21 +466,16 @@ TObject* LoadXi1530ResultList(TString fname,
 //_______________________DrawXi1530_________________________
 //__________________________________________________________
 //__________________________________________________________
-void DrawXi1530(const int sys = 1,
-                double multi_start = 0,
-                double multi_end = 100,
-                char const* inputOptions = "",
+void DrawXi1530INEL(const int sys = 1,
+                char const* inputOptions = "Default",
                 const int OptionNumber = 1) {
     // Start!
     cout << "== Xi(1530)0 Postprocessing Macro ==" << endl;
     cout << "Cut Systematic option(Default: 1): " << sys << endl;
-    cout << "Multiplicity Range: " << multi_start << "-" << multi_end << endl;
     cout << "Input options: " << inputOptions << endl;
     cout << "Option number: " << OptionNumber << endl;
 
-    Double1D centbin = {multi_start, multi_end};
-    Double1D fullcentbin = {0, 100};
-    Double1D fullcentbin_Effi = {0, 100};
+    Double1D centbin = {-1, 999};
     bool isVertexCutEnd = false;
     bool fpPb = false;
     bool fAA = false;
@@ -507,13 +501,6 @@ void DrawXi1530(const int sys = 1,
     if (Options.Contains("NormBoth")) {
         normleft = 1;
         normright = 1;
-    }
-    //---------------------------------------
-    if (multi_end < 1) {  // Automatic HM mode
-        inputDirectory = "Xi1530HM";
-        fHM = true;
-        fAA = true;
-        fullcentbin = {0, 0.1};
     }
     // Fit variation check
     if (Options.Contains("FitVarLm")){
@@ -611,11 +598,6 @@ void DrawXi1530(const int sys = 1,
         FitRange[0] = FitRange[0]+lstep*rebin*OptionNumber;
         FitRange[1] = FitRange[1]-rstep*OptionNumber;
     }
-
-    if (Options.Contains("MCcheck")){
-        fullcentbin = centbin;
-        fullcentbin_Effi = centbin;
-    }
     if (Options.Contains("vertexcut")){
         isVertexCutEnd = true;
     }
@@ -674,14 +656,14 @@ void DrawXi1530(const int sys = 1,
     double vertexeffi_e = zero;
 
     // Load DATA
-    auto clist = LoadXi1530ResultList(datafile, inputDirectory);
+    auto clist = LoadXi1530ResultList(datafile, "Xi1530INEL");
     auto hInvMass = BSTHnSparseHelper::Load("hInvMass", clist);
     auto clist_MC = LoadXi1530ResultList(
-        rsnmcfile, "Xi1530MB");  // From Resonance Injected MC
+        rsnmcfile, "Xi1530INEL");  // From Resonance Injected MC
     auto hInvMass_MC = BSTHnSparseHelper::Load("hInvMass", clist_MC);
     auto hInvMass_MC_MB = BSTHnSparseHelper::Load("hInvMass", clist_MC);
     auto clist_MC_General = LoadXi1530ResultList(
-         genmcfile, "Xi1530MB");  // From General Purpose MC
+         genmcfile, "Xi1530INEL");  // From General Purpose MC
          //genmcfile, "Xi1530test");  // From General Purpose MC
     auto hInvMass_MC_General =
         BSTHnSparseHelper::Load("hInvMass", clist_MC_General);
@@ -694,29 +676,21 @@ void DrawXi1530(const int sys = 1,
     hInvMass_MC_General.SetBin("Pt", ptbin);
     hInvMass_MC_MB.SetBin("Pt", ptbin);
     hInvMass_MC_General_MB.SetBin("Pt", ptbin);
- 
-
-    // Multiplicity percentile binning
-    hInvMass.SetBin("Cent", centbin);
-    hInvMass_MC.SetBin("Cent", centbin);          
-    hInvMass_MC_MB.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
-    hInvMass_MC_General.SetBin("Cent", centbin);  // for Trigger Efficiency
-    hInvMass_MC_General_MB.SetBin("Cent", fullcentbin_Effi);  // for MC reconstruction Efficiency, we use full bin
     
     //further RsnMC
     
     auto clist_MC2 = LoadXi1530ResultList(
-        rsnmcfile2, "Xi1530MB");  // From Resonance Injected MC
+        rsnmcfile2, "Xi1530INEL");  // From Resonance Injected MC
     auto clist_MC3 = LoadXi1530ResultList(
-        rsnmcfile3, "Xi1530MB");  // From Resonance Injected MC
+        rsnmcfile3, "Xi1530INEL");  // From Resonance Injected MC
     auto clist_MC4 = LoadXi1530ResultList(
-        rsnmcfile4, "Xi1530MB");  // From Resonance Injected MC
+        rsnmcfile4, "Xi1530INEL");  // From Resonance Injected MC
     auto clist_MC5 = LoadXi1530ResultList(
-        rsnmcfile5, "Xi1530MB");  // From Resonance Injected MC
+        rsnmcfile5, "Xi1530INEL");  // From Resonance Injected MC
     auto clist_MC6 = LoadXi1530ResultList(
-        rsnmcfile6, "Xi1530MB");  // From Resonance Injected MC
+        rsnmcfile6, "Xi1530INEL");  // From Resonance Injected MC
     auto clist_MC7 = LoadXi1530ResultList(
-        rsnmcfile7, "Xi1530MB");  // From Resonance Injected MC
+        rsnmcfile7, "Xi1530INEL");  // From Resonance Injected MC
     auto hInvMass_MC2 = BSTHnSparseHelper::Load("hInvMass", clist_MC2);
     auto hInvMass_MC3 = BSTHnSparseHelper::Load("hInvMass", clist_MC3);
     auto hInvMass_MC4 = BSTHnSparseHelper::Load("hInvMass", clist_MC4);
@@ -743,21 +717,6 @@ void DrawXi1530(const int sys = 1,
     hInvMass_MC_MB6.SetBin("Pt", ptbin);
     hInvMass_MC_MB7.SetBin("Pt", ptbin);
 
-    hInvMass_MC2.SetBin("Cent", centbin);         
-    hInvMass_MC3.SetBin("Cent", centbin);         
-    hInvMass_MC4.SetBin("Cent", centbin);         
-    hInvMass_MC5.SetBin("Cent", centbin);         
-    hInvMass_MC6.SetBin("Cent", centbin);  
-    hInvMass_MC7.SetBin("Cent", centbin);   
-    hInvMass_MC_MB2.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
-    hInvMass_MC_MB3.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
-    hInvMass_MC_MB4.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
-    hInvMass_MC_MB5.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
-    hInvMass_MC_MB6.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
-    hInvMass_MC_MB7.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
-    
-    
-
     cout << "DATA AXES " << endl;
     hInvMass.PrintAxis("all");
     cout << "RSN MC AXES " << endl;
@@ -767,33 +726,16 @@ void DrawXi1530(const int sys = 1,
 
     // output files
     TString savefile =
-        Form("AnalysisResults_Extracted_%i_Multi_%.2f-%.2f_%s%i.root", sys,
-             multi_start, multi_end, inputOptions, OptionNumber);
+        Form("AnalysisResults_Extracted_%i_INEL_%s%i.root", sys, inputOptions, OptionNumber);
     TFile* output = new TFile(savefile.Data(), "RECREATE");
 
     // Basic QA Plots
     // ------------------------------------------------------------------------------------------
     TH1D* hNumberofEvent = (TH1D*)clist->FindObject(
         "fNormalisationHist");  // N of Event through event cuts
+    hNumberofEvent->Write("hNumberofEvent");
     TH1D* hMultQA = (TH1D*)clist->FindObject(
         "hMult_QA");  // Multiplicty distribution after all event cuts
-
-    hNumberofEvent->Write("hNumberofEvent");
-
-    double eventfraction = 0.;
-    if (!fHM)
-        eventfraction =
-            hMultQA->Integral(hMultQA->GetXaxis()->FindBin(multi_start),
-                              hMultQA->GetXaxis()->FindBin(multi_end)) /
-            hMultQA->Integral(hMultQA->GetXaxis()->FindBin(0.),
-                              hMultQA->GetXaxis()->FindBin(100));
-    else
-        eventfraction =
-            hMultQA->Integral(hMultQA->GetXaxis()->FindBin(multi_start),
-                              hMultQA->GetXaxis()->FindBin(multi_end)) /
-            hMultQA->Integral(hMultQA->GetXaxis()->FindBin(0.),
-                              hMultQA->GetXaxis()->FindBin(0.1));
-
     hMultQA->Rebin(10);
     hMultQA->GetXaxis()->SetTitle("Multiplicity Percentile (%)");
     hMultQA->GetYaxis()->SetTitle("# of Event");
@@ -802,27 +744,11 @@ void DrawXi1530(const int sys = 1,
     // --------------------------------------------------------------------------------------
     auto hInvMass_MC_General_Trig =
         BSTHnSparseHelper::Load("htriggered_CINT7", clist_MC_General);
-    auto htrue_cent =
-        hInvMass_MC_General_Trig.GetTH1("true", 1, {1, -1, -1}); // MC True INEL>0
-    auto hReco_cent =
-        hInvMass_MC_General_Trig.GetTH1("Reco", 1, {2, -1, -1}); // True INEL>0 && Triggered
-    auto hVtx_cent =
-        hInvMass_MC_General_Trig.GetTH1("Vtx", 1, {3, -1, -1}); // True INEL>0 && triggered && good vtx  
-    double sumtrue = htrue_cent->Integral(htrue_cent->GetXaxis()->FindBin(multi_start+0.0001),
-            htrue_cent->GetXaxis()->FindBin(multi_end-0.0001));
-    double sumreco = hReco_cent->Integral(hReco_cent->GetXaxis()->FindBin(multi_start+0.0001),
-            hReco_cent->GetXaxis()->FindBin(multi_end-0.0001));
-    double sumvtx = hVtx_cent->Integral(hVtx_cent->GetXaxis()->FindBin(multi_start+0.0001),
-            hVtx_cent->GetXaxis()->FindBin(multi_end-0.0001));
-
-    triggereffi = sumreco / sumtrue;
-    triggereffi_e = sqrt(triggereffi*(1-triggereffi)/sumtrue);
-    //triggereffi_e = sqrt(pow(sqrt(sumreco)/sumtrue,2)+pow(sqrt(sumtrue)*sumreco/pow(sumtrue,2),2));
-    Double1D tempbin = {multi_start, multi_end};
-    if(fAA){
-        triggereffi = 1;
-        triggereffi_e = zero;
-    }
+    
+    Double1D tempbin = {0, 100};
+    triggereffi=0.7401; // https://alice-notes.web.cern.ch/node/665
+    triggereffi_e = 0.0325;
+    
     TH1D* htriggereffi =
         new TH1D("TrigEffi", "Trigger Efficiency", 1, &tempbin[0]);
     htriggereffi->SetBinContent(1, triggereffi);
@@ -831,9 +757,11 @@ void DrawXi1530(const int sys = 1,
 
     // Vertexer Loss Correction
     // -----------------------------------------------------------------------------------------
-    vertexeffi = sumvtx/sumreco;
-    vertexeffi_e = sqrt(vertexeffi*(1-vertexeffi)/sumreco);
-    //vertexeffi = 1;
+    double aftertrigger = hNumberofEvent->GetBinContent(2);
+    double aftervtxcut = hNumberofEvent->GetBinContent(4);
+    vertexeffi = aftervtxcut/aftertrigger;
+    vertexeffi_e = sqrt(vertexeffi*(1-vertexeffi)/aftertrigger);
+    //vertexeffi = 0.931264;
     //vertexeffi_e = 1e-10;
     //vertexeffi_e = sqrt(pow(sqrt(sumvtx)/sumreco,2)+pow(sqrt(sumreco)*sumvtx/pow(sumreco,2),2));
     
@@ -842,8 +770,8 @@ void DrawXi1530(const int sys = 1,
     hvertexeffi->SetBinContent(1, vertexeffi);
     hvertexeffi->SetBinError(1, vertexeffi_e);
     hvertexeffi->Write("hVertexEffi");
-    cout << "number of event after pileupcut: " << sumreco << endl;
-    cout << "number of event after vertex selection: " << sumvtx << endl;
+    cout << "number of event after pileupcut: " << aftertrigger << endl;
+    cout << "number of event after vertex selection: " << aftervtxcut << endl;
     cout << "trigeffi : " << triggereffi << ", vertexeffi: " << vertexeffi << endl;
 
     if(isVertexCutEnd){
@@ -858,7 +786,7 @@ void DrawXi1530(const int sys = 1,
         // ---------------------------------------------------------------------------------------------
         if(n < 1){
             normleft = 1;
-            normright = 0;
+            normright = 1;
 
         }
         else{
@@ -866,9 +794,9 @@ void DrawXi1530(const int sys = 1,
             normright = 1;
         }
         auto hSig =
-            hInvMass.GetTH1("Signal", 4, {sys, 1, 1, j, -1});  // -1 => inv mass
+            hInvMass.GetTH1("Signal", 4, {sys, 1, -1, j, -1});  // -1 => inv mass
         auto hBkg = hInvMass.GetTH1("Bkg", 4,
-                                    {1, bkgtype, 1, j, -1});  // -1 => inv mass
+                                    {1, bkgtype, -1, j, -1});  // -1 => inv mass
         auto hBkg_norm = GetNorBkg(hSig, hBkg, normleft, normright);
 
         // rebin
@@ -916,32 +844,28 @@ void DrawXi1530(const int sys = 1,
         // MC data
         // --------------------------------------------------------------------------------------------
         // After Trigger selection Gen MC
-        auto hTrueInput_Gen = // INELg0|vz<10
-            hInvMass_MC_General.GetTH1("trueinput", 4, {1, 8, 1, j, -1});
+        auto hTrueInput_Gen = // INEL10
+            hInvMass_MC_General.GetTH1("trueinput", 4, {1, 7, -1, j, -1});
         // After All event cut Gen MC
         auto hInput_Gen = // after all event cut
-            hInvMass_MC_General.GetTH1("input", 4, {1, 5, 1, j, -1});
+            hInvMass_MC_General.GetTH1("input", 4, {1, 5, -1, j, -1});
         // True After All event cut
-        auto hInput = hInvMass_MC_MB.GetTH1("input", 4, {1, 6, 1, j, -1});
+        auto hInput = hInvMass_MC_MB.GetTH1("input", 4, {1, 6, -1, j, -1});
         // My reconstruction in All event cut
-        auto hReco = hInvMass_MC_MB.GetTH1("recon", 4, {sys, 4, 1, j, -1});
+        auto hReco = hInvMass_MC_MB.GetTH1("recon", 4, {sys, 4, -1, j, -1});
 
-        
-        //Further Rsn MC
-        
-        hInput->Add(hInvMass_MC_MB2.GetTH1("input", 4, {1, 6, 1, j, -1}));
-        hInput->Add(hInvMass_MC_MB3.GetTH1("input", 4, {1, 6, 1, j, -1}));
-        hInput->Add(hInvMass_MC_MB4.GetTH1("input", 4, {1, 6, 1, j, -1}));
-        hInput->Add(hInvMass_MC_MB5.GetTH1("input", 4, {1, 6, 1, j, -1}));
-        hInput->Add(hInvMass_MC_MB6.GetTH1("input", 4, {1, 6, 1, j, -1}));
-        hInput->Add(hInvMass_MC_MB7.GetTH1("input", 4, {1, 6, 1, j, -1}));
-        hReco->Add(hInvMass_MC_MB2.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
-        hReco->Add(hInvMass_MC_MB3.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
-        hReco->Add(hInvMass_MC_MB4.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
-        hReco->Add(hInvMass_MC_MB5.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
-        hReco->Add(hInvMass_MC_MB6.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
-        hReco->Add(hInvMass_MC_MB7.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
-        
+        hInput->Add(hInvMass_MC_MB2.GetTH1("input", 4, {1, 6, -1, j, -1}));
+        hInput->Add(hInvMass_MC_MB3.GetTH1("input", 4, {1, 6, -1, j, -1}));
+        hInput->Add(hInvMass_MC_MB4.GetTH1("input", 4, {1, 6, -1, j, -1}));
+        hInput->Add(hInvMass_MC_MB5.GetTH1("input", 4, {1, 6, -1, j, -1}));
+        hInput->Add(hInvMass_MC_MB6.GetTH1("input", 4, {1, 6, -1, j, -1}));
+        hInput->Add(hInvMass_MC_MB7.GetTH1("input", 4, {1, 6, -1, j, -1}));
+        hReco->Add(hInvMass_MC_MB2.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+        hReco->Add(hInvMass_MC_MB3.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+        hReco->Add(hInvMass_MC_MB4.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+        hReco->Add(hInvMass_MC_MB5.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+        hReco->Add(hInvMass_MC_MB6.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+        hReco->Add(hInvMass_MC_MB7.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
         
         Double_t Input_number_Gen = hInput_Gen->Integral(
             hInput_Gen->GetXaxis()->FindBin(IntegralRangeMC[0]),
@@ -977,7 +901,6 @@ void DrawXi1530(const int sys = 1,
         Double_t ecutratio_e = ecutratio * (ecuteffi_e/ecuteffi); // use the percentage of error here.
 
         cout << "True input: " << True_Input_number_Gen << ", after event cuts: " << Input_number_Gen << endl;
-        cout << "SL: " << ecuteffi << ", error: " << ecuteffi_e << ", fraction: " << ecuteffi_e/ecuteffi << endl;
         cout << "old error: " << sqrt(pow(sqrt(True_Input_number_Gen)/Input_number_Gen,2)+pow(sqrt(Input_number_Gen)*True_Input_number_Gen/pow(Input_number_Gen,2),2))
              << ", new error: " << ecutratio_e << endl;
         //Double_t ecutratio_e = sqrt(pow(sqrt(True_Input_number_Gen)/Input_number_Gen,2)+pow(sqrt(Input_number_Gen)*True_Input_number_Gen/pow(Input_number_Gen,2),2));
@@ -1275,15 +1198,7 @@ void DrawXi1530(const int sys = 1,
     hXispectrum->SetMinimum(1.0e-9);
     hXispectrum->SetMaximum(3.0e-2);
     //double nOfEventMultibin = hNumberofEvent->GetBinContent(9) * eventfraction;
-    double nOfEventMultibin = zero;
-    double eventMultiratio = zero;
-    if(!fHM) 
-        eventMultiratio = (multi_end - multi_start) / 100;
-    else
-        eventMultiratio = (multi_end - multi_start) / 0.1;
-    //nOfEventMultibin = hNumberofEvent->GetBinContent(5) * eventMultiratio;
-    nOfEventMultibin = hMultQA->Integral(hMultQA->GetXaxis()->FindBin(multi_start),
-                              hMultQA->GetXaxis()->FindBin(multi_end));
+    double nOfEventMultibin = hNumberofEvent->GetBinContent(5);
     for (int ipTbin = 1; ipTbin < (int)ptbin.size() - 2; ipTbin++) {
         // for debuging
         cout << "RawYield[" << ipTbin << "]: " << RawYield[ipTbin]
@@ -1293,9 +1208,7 @@ void DrawXi1530(const int sys = 1,
              << ", centbin: " << centbin[0]
              << " - " << centbin[1]
              << ", # of Events: " << hNumberofEvent->GetBinContent(5)
-             << ", # of Events in mutlbin: " << nOfEventMultibin
-             << "(" << eventMultiratio*100
-             << "%) , pt_points_e[" << ipTbin << "]: " << pt_points_e[ipTbin] 
+             << ", pt_points_e[" << ipTbin << "]: " << pt_points_e[ipTbin] 
              << ", Vertex lost correction: " << vertexeffi
              << ", Trigger Efficiency: " << triggereffi << endl;
         

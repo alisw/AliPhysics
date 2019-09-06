@@ -12,7 +12,7 @@ TString savepath = "./data";
 
 //functions
 double myLevyPt(Double_t* x, Double_t* par);
-void PlotXi1530(TString finputfile, char const* options = "SAVE") {
+void PlotXi1530INEL(TString finputfile, char const* options = "SAVE") {
     // Default Canvas
     Double_t w = 1920;
     Double_t h = 1080;
@@ -22,21 +22,11 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
     vector<double> DrawRange = {1.484, 1.8};
     string ftemp = finputfile.Data();
 
-    savepath =
-        finputfile(finputfile.Index("Multi_") - 2,
-                   finputfile.Index("root") - finputfile.Index("Multi_") + 1);
+    savepath = finputfile(finputfile.Index("INEL_") - 2,
+                   finputfile.Index("root") - finputfile.Index("INEL_") + 1);
 
-    double multi_start =
-        atof(ftemp
-                 .substr(finputfile.Index("Multi_") + 6,
-                         finputfile.Index("-") - finputfile.Index("Multi_") - 6)
-                 .c_str());
-    ;
-    double multi_end =
-        atof(ftemp
-                 .substr(finputfile.Index("-") + 1,
-                         ftemp.find_last_of("_") - finputfile.Index("-") - 1)
-                 .c_str());
+    double multi_start =0;
+    double multi_end = 100;
     cout << "Multi bin: " << multi_start << "-" << multi_end << endl;
     
     TFile* inputfile = new TFile(finputfile.Data());
@@ -60,15 +50,7 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
     hNumberofEvent->Draw("HIST text");
     SaveCanvas(cQA, "hNumberofEvent", Form("%s/QA/", savepath.Data()),
                savetype);
-    // Multi QA
-    auto hMultQA = (TH1D*)inputfile->Get("hMultQA");
-    hMultQA->Draw("E");
-    SaveCanvas(cQA, "hhMultQA", Form("%s/QA/", savepath.Data()), savetype);
-    hMultQA->SetMinimum(0.);
-    hMultQA->Draw("E");
-    SaveCanvas(cQA, "hhMultQA_from_0", Form("%s/QA/", savepath.Data()),
-               savetype);
-
+    
     // Trigger Effi
     auto TriggerEffi = (TH1D*)inputfile->Get("hTriggerEffi");
     TriggerEffi->SetTitle(Form("Int7 Trigger Efficiency in %.2f-%.2f bin",
@@ -194,7 +176,7 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
         fitresult->Draw("same");
 
         // Legend
-        auto legend_fit = new TLegend(0.15, 0.76, 0.5, 0.89);
+        auto legend_fit = new TLegend(0.42, 0.59, 0.7, 0.72);
         legend_fit->SetFillStyle(0);
         legend_fit->AddEntry(Sigfit, "data", "LE");
         legend_fit->AddEntry(fitresult, Form("Voigt+Pol(2)"), "L");
@@ -213,21 +195,21 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
             bkgfactor = 4;
         if(finputfile.Contains("Corey"))
             bkgfactor = 2;
-        t2->DrawLatex(0.58, 0.855,
+        t2->DrawLatex(0.42, 0.855,
                       Form("#bf{#chi^{2}/NDF: %.1f/%.1f }",
                            fitresult->GetChisquare(), (double)fitresult->GetNDF()));
         t->DrawLatex(
-            0.66, 0.81,
-            Form("#bf{Mean: %.4f #pm %6f}", fitresult->GetParameter(bkgfactor),
-                 fitresult->GetParError(bkgfactor)));
-        t->DrawLatex(0.66, 0.77,
-                     Form("#bf{Sigma: %.4f #pm %.6f}",
-                          fitresult->GetParameter(bkgfactor + 1),
-                          fitresult->GetParError(bkgfactor+1)));
-        t->DrawLatex(0.66, 0.73,
-                     Form("#bf{Gamma: %.4f #pm %.6f}",
-                          fitresult->GetParameter(bkgfactor + 2),
-                          fitresult->GetParError(bkgfactor+2)));
+            0.42, 0.81,
+            Form("#bf{Mean: %.4f #pm %.2f(#times10^{-4})}", fitresult->GetParameter(bkgfactor),
+                 fitresult->GetParError(bkgfactor)*1e4));
+        t->DrawLatex(0.42, 0.77,
+                     Form("#bf{Sigma(#times10^{3}): %.2f #pm %.2f}",
+                          fitresult->GetParameter(bkgfactor + 1)*1e3,
+                          fitresult->GetParError(bkgfactor+1)*1e3));
+        t->DrawLatex(0.42, 0.73,
+                     Form("#bf{Gamma(#times10^{3}): %.2f #pm %.2f}",
+                          fitresult->GetParameter(bkgfactor + 2)*1e3,
+                          fitresult->GetParError(bkgfactor+2)*1e3));
         if ((bin == 3) || (bin == 1))
             SavePad((TPad*)gPad, Form("hFit_%d", bin),
                     Form("%s/", savepath.Data()), savetype);
@@ -287,11 +269,11 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
         if (bin == 0 || bin == ptbin.size() - 2) {
             t2->DrawLatex(0.45, 0.14, "#color[2]{For Feasibility Check Only}");
         }
-        t->DrawLatex(0.66, 0.81,
+        t->DrawLatex(0.5, 0.81,
                      Form("#bf{Mean: %.4f}", fitresult->GetParameter(2)));
-        t->DrawLatex(0.66, 0.77,
+        t->DrawLatex(0.5, 0.77,
                      Form("#bf{Sigma: %.4f}", fitresult->GetParameter(3)));
-        t->DrawLatex(0.66, 0.73,
+        t->DrawLatex(0.5, 0.73,
                      Form("#bf{Gamma: %.4f}", fitresult->GetParameter(4)));
         fitmeanMC.push_back(fitresult->GetParameter(2));
         fitsigmaMC.push_back(fitresult->GetParameter(3));
