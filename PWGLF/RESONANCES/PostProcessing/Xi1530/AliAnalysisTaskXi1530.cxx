@@ -1691,13 +1691,14 @@ void AliAnalysisTaskXi1530::FillTracks() {
                             sign2 = kData;
                         else
                             sign2 = kLS;
-                        FillTHnSparse("hInvMass", {(double)sign2, (double)fCent,
-                                                   vecsum2.Pt(), vecsum2.M()});
+                        FillTHnSparse("hInvMass_hf",
+                                      {(double)sign2, (double)fCent,
+                                       vecsum2.Pt(), vecsum2.M()});
                         if (track2->Charge() > 0)
                             fHistos->FillTH1("hTotalInvMass_HFp",
                                              vecsum.M());
                         else
-                            fHistos->FillTH1("hTotalInvMass_HFn",
+                            fHistos->FillTH1("hTotalInvMass_HFnMix",
                                              vecsum.M());
                     }
                 }
@@ -2000,8 +2001,9 @@ void AliAnalysisTaskXi1530::FillTracks() {
                             sign2 = kMixing;
                         else
                             sign2 = kMCReco;
-                        FillTHnSparse("hInvMass", {(double)sign2, (double)fCent,
-                                                   vecsum2.Pt(), vecsum2.M()});
+                        FillTHnSparse("hInvMass_hf",
+                                      {(double)sign2, (double)fCent,
+                                       vecsum2.Pt(), vecsum2.M()});
                         if (track2->Charge() > 0)
                             fHistos->FillTH1("hTotalInvMass_HFpMix",
                                              vecsum.M());
@@ -2351,8 +2353,9 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                             sign2 = kData;
                         else
                             sign2 = kLS;
-                        FillTHnSparse("hInvMass", {(double)sign2, (double)fCent,
-                                                   vecsum2.Pt(), vecsum2.M()});
+                        FillTHnSparse("hInvMass_hf",
+                                      {(double)sign2, (double)fCent,
+                                       vecsum2.Pt(), vecsum2.M()});
                         if (track2->Charge() > 0)
                             fHistos->FillTH1("hTotalInvMass_HFp",
                                              vecsum.M());
@@ -2655,8 +2658,9 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                             sign2 = kMixing;
                         else
                             sign2 = kMCReco;
-                        FillTHnSparse("hInvMass", {(double)sign2, (double)fCent,
-                                                   vecsum2.Pt(), vecsum2.M()});
+                        FillTHnSparse("hInvMass_hf",
+                                      {(double)sign2, (double)fCent,
+                                       vecsum2.Pt(), vecsum2.M()});
                         if (track2->Charge() > 0)
                             fHistos->FillTH1("hTotalInvMass_HFpMix", 
                                             vecsum.M());
