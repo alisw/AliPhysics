@@ -1689,8 +1689,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                             continue;
                         
                         // Mass window
-                        double massEXO = vecsum2.M();
-                        if (abs(massEXO - massXi1530) > 0.05)
+                        double mXi1530 = vecsum.M();
+                        if (abs(mXi1530 - massXi1530) > 0.05)
                             continue;
 
                         int sign2 = kData;
@@ -2005,8 +2005,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                             continue;
                         
                         // Mass window
-                        double massEXO = vecsum2.M();
-                        if (abs(massEXO - massXi1530) > 0.05)
+                        double mXi1530 = vecsum.M();
+                        if (abs(mXi1530 - massXi1530) > 0.05)
                             continue;
 
                         int sign2 = kMixing;
@@ -2363,8 +2363,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                             continue;
 
                         // Mass window
-                        double massEXO = vecsum2.M();
-                        if (abs(massEXO - massXi1530) > 0.05)
+                        double mXi1530 = vecsum.M();
+                        if (abs(mXi1530 - massXi1530) > 0.05)
                             continue;
 
                         int sign2 = kData;
@@ -2674,8 +2674,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                             continue;
                         
                         // Mass window
-                        double massEXO = vecsum2.M();
-                        if (abs(massEXO - massXi1530) > 0.05)
+                        double mXi1530 = vecsum.M();
+                        if (abs(mXi1530 - massXi1530) > 0.05)
                             continue;
 
                         int sign2 = kMixing;
