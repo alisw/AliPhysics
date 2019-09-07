@@ -9,6 +9,7 @@
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <TSystem.h>
 #include <TFile.h>
 #include <TChain.h>
 #include <TH1D.h>
@@ -16,11 +17,13 @@
 #include <TArrayD.h>
 #include <TVector2.h>
 #include <TString.h>
+#include <TPRegexp.h>
 #include "THistManager.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliEmcalEmbeddingQA.h"
+#include "AliEmcalJetTask.h"
 
 /// \class AliAnalysisTaskEmcalJetCDF
 /// \brief Analysis of jet shapes and FF of all jets and leading jets
@@ -345,6 +348,60 @@ inline bool SaveManager ( const char* file_name) {
 inline Double_t JetPtRho(const AliEmcalJet* jet, Double_t rho) {
   return jet->Pt() - jet->Area() * rho;
   }
+
+/// Add to a AliAnalysisTaskEmcalJet task a jet container with attributes given by the AliEmcalJetTask jet finder
+/// \param AliAnalysisTaskEmcalJet* task
+/// \param AliEmcalJetTask* jf
+/// \param AliEmcalJet::JetAcceptanceType acc
+/// \return Jet container
+inline AliJetContainer* AddJetContainerJetTask(AliAnalysisTaskEmcalJet* task, AliEmcalJetTask* jf, AliEmcalJet::JetAcceptanceType acc ) {
+return task->AddJetContainer ( static_cast<AliAnalysisTaskEmcalJet::EJetType_t>(jf->GetJetType()),
+                               static_cast<AliAnalysisTaskEmcalJet::EJetAlgo_t>(jf->GetJetAlgo()),
+                               static_cast<AliAnalysisTaskEmcalJet::ERecoScheme_t>(jf->GetRecombScheme()),
+                               jf->GetRadius(),
+                               static_cast<UInt_t>(acc),
+                               jf->GetJetsTag() );
+}
+
+/// Add to a AliAnalysisTaskEmcalJet task a jet container with attributes given by the AliEmcalJetTask jet finder and custom particle and cluster containers
+/// \param AliAnalysisTaskEmcalJet* task
+/// \param AliEmcalJetTask* jf
+/// \param AliEmcalJet::JetAcceptanceType acc
+/// \param AliParticleContainer* partcont
+/// \param AliClusterContainer* cluscont
+/// \return Jet container
+inline AliJetContainer* AddJetContainerJetTaskCustomPartClus(AliAnalysisTaskEmcalJet* task, AliEmcalJetTask* jf, AliEmcalJet::JetAcceptanceType acc, AliParticleContainer* partcont, AliClusterContainer* cluscont ) {
+return task->AddJetContainer ( static_cast<AliAnalysisTaskEmcalJet::EJetType_t>(jf->GetJetType()),
+                               static_cast<AliAnalysisTaskEmcalJet::EJetAlgo_t>(jf->GetJetAlgo()),
+                               static_cast<AliAnalysisTaskEmcalJet::ERecoScheme_t>(jf->GetRecombScheme()),
+                               jf->GetRadius(),
+                               static_cast<UInt_t>(acc),
+                               partcont,
+                               cluscont,
+                               jf->GetJetsTag() );
+}
+
+/// Load in macro/task environment a file with key=value pairs. The environment variables can later be checked and acted upon
+/// \param const char* file
+inline void load_config(const char* file) {
+std::ifstream filestream(file);
+std::string str;
+TPRegexp regex ("[a-zA-Z0-9_]+=[^\r^\n^\t^\f^\v^ ]+");
+
+while (std::getline(filestream, str)) {
+    TString line (str);
+    TString pair = line(regex);
+    if (!pair.IsNull()) {
+        TObjArray* decl = pair.Tokenize("=");
+        TString key   = ((TObjString*)decl->At(0))->GetString();
+        TString value = ((TObjString*)decl->At(1))->GetString();
+        value = value.Strip(TString::EStripType::kBoth, '\"');
+        value = value.Strip(TString::EStripType::kBoth, '\'');
+        gSystem->Setenv(key.Data(), value.Data());
+        delete decl;
+        }
+    }
+}
 
 } // namespace AliAnalysisTaskEmcalJetCDF_NS
 } // namespace EMCALJetTasks
