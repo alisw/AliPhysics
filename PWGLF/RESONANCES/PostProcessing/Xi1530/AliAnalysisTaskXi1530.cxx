@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/08/24
+//  Last Modified Date: 2019/09/07
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -68,6 +68,7 @@
 const Double_t pi = TMath::Pi();
 const Double_t pionmass = AliPID::ParticleMass(AliPID::kPion);
 const Double_t Ximass = 1.32171;
+const Double_t massXi1530 = 1.532;
 enum {
     kData = 1,
     kLS,
@@ -1689,7 +1690,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                         
                         // Mass window
                         double massEXO = vecsum2.M();
-                        if (abs(massEXO - massXi130) > 0.05)
+                        if (abs(massEXO - massXi1530) > 0.05)
                             continue;
 
                         int sign2 = kData;
@@ -2005,7 +2006,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                         
                         // Mass window
                         double massEXO = vecsum2.M();
-                        if (abs(massEXO - massXi130) > 0.05)
+                        if (abs(massEXO - massXi1530) > 0.05)
                             continue;
 
                         int sign2 = kMixing;
@@ -2363,7 +2364,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                         // Mass window
                         double massEXO = vecsum2.M();
-                        if (abs(massEXO - massXi130) > 0.05)
+                        if (abs(massEXO - massXi1530) > 0.05)
                             continue;
 
                         int sign2 = kData;
@@ -2674,7 +2675,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                         
                         // Mass window
                         double massEXO = vecsum2.M();
-                        if (abs(massEXO - massXi130) > 0.05)
+                        if (abs(massEXO - massXi1530) > 0.05)
                             continue;
 
                         int sign2 = kMixing;
