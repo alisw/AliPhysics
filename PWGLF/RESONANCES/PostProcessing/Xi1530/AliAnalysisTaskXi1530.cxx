@@ -1686,6 +1686,12 @@ void AliAnalysisTaskXi1530::FillTracks() {
                         if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
                             (vecsum2.Rapidity() < fXi1530RapidityCut_low))
                             continue;
+                        
+                        // Mass window
+                        double massEXO = vecsum2.M();
+                        if (abs(massEXO - massXi130) > 0.05)
+                            continue;
+
                         int sign2 = kData;
                         if (track2->Charge() > 0)
                             sign2 = kData;
@@ -1696,10 +1702,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
                                        vecsum2.Pt(), vecsum2.M()});
                         if (track2->Charge() > 0)
                             fHistos->FillTH1("hTotalInvMass_HFp",
-                                             vecsum.M());
+                                             vecsum2.M());
                         else
                             fHistos->FillTH1("hTotalInvMass_HFnMix",
-                                             vecsum.M());
+                                             vecsum2.M());
                     }
                 }
 
@@ -1996,6 +2002,12 @@ void AliAnalysisTaskXi1530::FillTracks() {
                         if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
                             (vecsum2.Rapidity() < fXi1530RapidityCut_low))
                             continue;
+                        
+                        // Mass window
+                        double massEXO = vecsum2.M();
+                        if (abs(massEXO - massXi130) > 0.05)
+                            continue;
+
                         int sign2 = kMixing;
                         if (track2->Charge() > 0)
                             sign2 = kMixing;
@@ -2006,10 +2018,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
                                        vecsum2.Pt(), vecsum2.M()});
                         if (track2->Charge() > 0)
                             fHistos->FillTH1("hTotalInvMass_HFpMix",
-                                             vecsum.M());
+                                             vecsum2.M());
                         else
                             fHistos->FillTH1("hTotalInvMass_HFnMix",
-                                             vecsum.M());
+                                             vecsum2.M());
                     }
                 }
             }
@@ -2348,6 +2360,12 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                         if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
                             (vecsum2.Rapidity() < fXi1530RapidityCut_low))
                             continue;
+
+                        // Mass window
+                        double massEXO = vecsum2.M();
+                        if (abs(massEXO - massXi130) > 0.05)
+                            continue;
+
                         int sign2 = kData;
                         if (track2->Charge() > 0)
                             sign2 = kData;
@@ -2358,10 +2376,10 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                                        vecsum2.Pt(), vecsum2.M()});
                         if (track2->Charge() > 0)
                             fHistos->FillTH1("hTotalInvMass_HFp",
-                                             vecsum.M());
+                                             vecsum2.M());
                         else
                             fHistos->FillTH1("hTotalInvMass_HFn",
-                                             vecsum.M());
+                                             vecsum2.M());
                     }
                 }
 
@@ -2653,6 +2671,12 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                         if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
                             (vecsum2.Rapidity() < fXi1530RapidityCut_low))
                             continue;
+                        
+                        // Mass window
+                        double massEXO = vecsum2.M();
+                        if (abs(massEXO - massXi130) > 0.05)
+                            continue;
+
                         int sign2 = kMixing;
                         if (track2->Charge() > 0)
                             sign2 = kMixing;
@@ -2663,10 +2687,10 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                                        vecsum2.Pt(), vecsum2.M()});
                         if (track2->Charge() > 0)
                             fHistos->FillTH1("hTotalInvMass_HFpMix", 
-                                            vecsum.M());
+                                            vecsum2.M());
                         else
                             fHistos->FillTH1("hTotalInvMass_HFnMix",
-                                             vecsum.M());
+                                             vecsum2.M());
                     }
                 }
             }
