@@ -1414,8 +1414,12 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * -0.05, 0.05, 0.15, 0.35, 0.65] vs
                                  * 3.14*[1, 19/20, 18/20, 17/20, 13/20, 9/20,
                                  * 6/20, 4/20, 2/20, 1/10, 0, negative side].
+                                 *
+                                 * NOTE: the first is in the helicity frame,
+                                 *       the second with Collins-Soper.
                                  */
         TH1F***                 fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH;  //!
+        TH1F***                 fInvariantMassDistributionForSignalExtractionCsFrameMyBinningH;        //!
 
                                 /**
                                  * This histogram shows the invariant mass
@@ -1557,7 +1561,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 41);
+        ClassDef(AliAnalysisTaskUPCforward, 42);
 };
 
 #endif
