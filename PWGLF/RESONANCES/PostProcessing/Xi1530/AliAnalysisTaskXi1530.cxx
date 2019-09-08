@@ -454,13 +454,13 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     fHistos->CreateTH1("hTotalInvMass_Mix", "", 1300, 1.2, 2.5, "s");
     if (fExoticFinder2){
         fHistos->CreateTH1("hTotalInvMass_HFpp", "", 2000, 1.5, 3.5, "s");
-        fHistos->CreateTH1("hTotalInvMass_HFap", "", 2000, 1.5, 3.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFnp", "", 2000, 1.5, 3.5, "s");
         fHistos->CreateTH1("hTotalInvMass_HFpn", "", 2000, 1.5, 3.5, "s");
-        fHistos->CreateTH1("hTotalInvMass_HFan", "", 2000, 1.5, 3.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFnn", "", 2000, 1.5, 3.5, "s");
         fHistos->CreateTH1("hTotalInvMass_HFppMix", "", 2000, 1.5, 3.5, "s");
-        fHistos->CreateTH1("hTotalInvMass_HFapMix", "", 2000, 1.5, 3.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFnpMix", "", 2000, 1.5, 3.5, "s");
         fHistos->CreateTH1("hTotalInvMass_HFpnMix", "", 2000, 1.5, 3.5, "s");
-        fHistos->CreateTH1("hTotalInvMass_HFanMix", "", 2000, 1.5, 3.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFnnMix", "", 2000, 1.5, 3.5, "s");
     }
     fEMpool.resize(binCent.GetNbins() + 1,
                    std::vector<eventpool>(binZ.GetNbins() + 1));
@@ -2047,12 +2047,22 @@ void AliAnalysisTaskXi1530::FillTracks() {
                         FillTHnSparse("hInvMass_hf",
                                       {(double)sign2, (double)fCent,
                                        vecsum2.Pt(), vecsum2.M()});
-                        if (track2->Charge() > 0)
-                            fHistos->FillTH1("hTotalInvMass_HFpMix",
-                                             vecsum2.M());
-                        else
-                            fHistos->FillTH1("hTotalInvMass_HFnMix",
-                                             vecsum2.M());
+                        if (track2->Charge() > 0) {
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFppMix",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnpMix",
+                                                 vecsum2.M());
+                        }
+                        else{
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFpnMix",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnnMix",
+                                                 vecsum2.M());
+                        }
                     }
                 }
             }
@@ -2741,12 +2751,21 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                         FillTHnSparse("hInvMass_hf",
                                       {(double)sign2, (double)fCent,
                                        vecsum2.Pt(), vecsum2.M()});
-                        if (track2->Charge() > 0)
-                            fHistos->FillTH1("hTotalInvMass_HFpMix", 
-                                            vecsum2.M());
-                        else
-                            fHistos->FillTH1("hTotalInvMass_HFnMix",
-                                             vecsum2.M());
+                        if (track2->Charge() > 0) {
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFppMix",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnpMix",
+                                                 vecsum2.M());
+                        } else {
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFpnMix",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnnMix",
+                                                 vecsum2.M());
+                        }
                     }
                 }
             }
