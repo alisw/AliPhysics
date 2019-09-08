@@ -120,6 +120,14 @@ struct SGenericTracklet
 class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE
 {
 public:
+
+  enum kReducedTrigger { 
+    kINT7 = BIT(0),
+    kCentral = BIT(1),
+    kSemiCentral = BIT(2),
+    kPositiveB = BIT(3)
+  };
+
   AliAnalysisTaskHyperTriton2He3piML(bool mc = false, std::string name = "HyperTriton2He3piML");
   virtual ~AliAnalysisTaskHyperTriton2He3piML();
 
@@ -157,6 +165,7 @@ public:
   bool fFillGenericV0s;
   bool fFillGenericTracklets; /// To check what is the background
   bool fFillTracklet;
+  bool fStoreAllEvents;   
   bool fSaveFileNames;
   bool fPropagetToPV;
   AliVertexerHyperTriton2Body fV0Vertexer; //
