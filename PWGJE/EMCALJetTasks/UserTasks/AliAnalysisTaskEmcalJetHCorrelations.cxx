@@ -910,9 +910,9 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
 
     case 3:
       label = "#Delta#eta";
-      nbins = 24;
-      xmin = -1.2;
-      xmax = 1.2;
+      nbins = 28;
+      xmin = -1.4;
+      xmax = 1.4;
       break;
 
     case 4:
