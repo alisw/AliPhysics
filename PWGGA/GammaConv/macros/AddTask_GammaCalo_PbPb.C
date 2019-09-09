@@ -992,12 +992,19 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("10410013","411790000k032220000","01631031000000d0"); // 0-40
     cuts.AddCutCalo("14810013","411790000k032220000","01631031000000d0"); // 40-80
   } else if (trainConfig == 302){ // EMCAL clusters - 0-80% centrality for XeXe EMCal cluster QA - TB nl
-    cuts.AddCutCalo("10810013","411796505k032220000","01631031000000d0"); // 0-80
+    cuts.AddCutCalo("10810013","411790105k032220000","01631031000000d0"); // 0-80
   } else if (trainConfig == 303){ // EMCAL clusters - diff centralities for XeXe EMCal cluster QA - TB nl
-    cuts.AddCutCalo("10210013","411796505k032220000","01631031000000d0"); // 0-20
-    cuts.AddCutCalo("12410013","411796505k032220000","01631031000000d0"); // 20-40
-    cuts.AddCutCalo("10410013","411796505k032220000","01631031000000d0"); // 0-40
-    cuts.AddCutCalo("14810013","411796505k032220000","01631031000000d0"); // 40-80
+    cuts.AddCutCalo("10210013","411790105k032220000","01631031000000d0"); // 0-20
+    cuts.AddCutCalo("12410013","411790105k032220000","01631031000000d0"); // 20-40
+    cuts.AddCutCalo("10410013","411790105k032220000","01631031000000d0"); // 0-40
+    cuts.AddCutCalo("14810013","411790105k032220000","01631031000000d0"); // 40-80
+  } else if (trainConfig == 304){ // EMCAL clusters - 0-80% centrality for XeXe EMCal cluster QA - TB nl + pp PCM-EMC tuning
+    cuts.AddCutCalo("10810013","411793105k032220000","01631031000000d0"); // 0-80
+  } else if (trainConfig == 305){ // EMCAL clusters - diff centralities for XeXe EMCal cluster QA - TB nl + pp PCM-EMC tuning
+    cuts.AddCutCalo("10210013","411793105k032220000","01631031000000d0"); // 0-20
+    cuts.AddCutCalo("12410013","411793105k032220000","01631031000000d0"); // 20-40
+    cuts.AddCutCalo("10410013","411793105k032220000","01631031000000d0"); // 0-40
+    cuts.AddCutCalo("14810013","411793105k032220000","01631031000000d0"); // 40-80
 
   // **********************************************************************************************************
   // ***************************** PHOS configurations XeXe run 2 *********************************************
