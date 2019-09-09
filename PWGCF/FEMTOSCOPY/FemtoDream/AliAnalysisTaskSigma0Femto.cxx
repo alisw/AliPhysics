@@ -316,6 +316,13 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
         (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel2());
     if (!pos || !neg) continue;
 
+    // cut on the DCA to the PV in transverse plane
+    PhotonCandidate->CalculateDistanceOfClossetApproachToPrimVtx(inputEvent->GetPrimaryVertex());
+    const float DCAr = PhotonCandidate->GetDCArToPrimVtx();
+    if (DCAr > 0.75) {
+      continue;
+    }
+
     // pile up check
     if (fPhotonLegPileUpCut) {
       bool posTrackITS =
