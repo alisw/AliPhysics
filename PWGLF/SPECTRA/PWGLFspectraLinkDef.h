@@ -80,6 +80,7 @@
 #pragma link C++ class AliAnalysisTaskKinkpp5TeVMC+;
 #pragma link C++ class AliAnalysisTaskKinkPbPb+;
 #pragma link C++ class AliAnalysisTaskKinkPbPbMC+;
+#pragma link C++ class AliAnalysisKinkTaskPbPb2018+;
 
 #pragma link C++ class AliAnalysisTaskSpectraBoth+;
 #pragma link C++ class AliSpectraBothEventCuts+;
