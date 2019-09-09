@@ -177,6 +177,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fHist_FMDAMultRun(0),
       fHist_FMDCMultRun(0),
       fhistfmdphiacc(0),  
+      fhFMDmultchannel(0),
       fhistfmd(0),
       fhistits(0), 
       fhSecFMD(0),
@@ -371,6 +372,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fHist_FMDAMultRun(0),
       fHist_FMDCMultRun(0),
       fhistfmdphiacc(0),  
+      fhFMDmultchannel(0),
       fhistfmd(0),
       fhistits(0), 
       fhSecFMD(0),
@@ -700,6 +702,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      fh2_FMD_eta_phi_prim=new TH2D("fh2_FMD_eta_phi_prim","fh2_FMD_eta_phi_prim",200,-4,6,20,0,2*TMath::Pi());
      fOutputList2->Add(fh2_FMD_eta_phi_prim);
 
+     
+     
      for(Int_t i=0;i<4;i++){
        fhrefetaFMD[i]=new TH1D(Form("fhrefetaFMD_%d",i),Form("fhrefetaFMD_%d",i),200,-4,6);
        fhrefphiFMD[i]=new TH1D(Form("fhrefphiFMD_%d",i),Form("fhrefphiFMD_%d",i),100,0,2*TMath::Pi());
@@ -761,6 +765,9 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    
    fhistfmdphiacc=new TH2D("fhistfmdphiacc","fhistfmdphiacc",200,-4,6,20,0,100);
    fOutputList2->Add(fhistfmdphiacc);
+
+   fhFMDmultchannel=new TH2F("fhFMDmultchannel","fhFMDmultchannel",200,-4,6,100,0,100);
+   fOutputList2->Add(fhFMDmultchannel);
    
    const Int_t ifmdbin[4]={200,20,20,20};
    fhistfmd=new AliTHn("fhistfmd","fhistfmd",1,4,ifmdbin);
@@ -1058,12 +1065,11 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      fHistTriggerTrack->SetBinLimits(0, binning_pt_lead);
 	 //     fHistTriggerTrack->SetBinLimits(1, binning_cent_trig);
      if(fcollisiontype=="HMPP")  fHistTriggerTrack->SetBinLimits(1,binning_cent_HMPP);
-	 else fHistTriggerTrack->SetBinLimits(1,binning_cent);
-
+     else fHistTriggerTrack->SetBinLimits(1,binning_cent_trig);
      fHistTriggerTrack->SetBinLimits(2, -10.,10.);
+
      if(fAnaMode=="TPCFMD"||fAnaMode=="TPCFMDC")	   fHistTriggerTrack->SetBinLimits(3, binning_eta_tpcfmd);
      else fHistTriggerTrack->SetBinLimits(3, binning_eta_itsfmd); 
-     
      fHistTriggerTrack->SetVarTitle(0, "leading p_{T} GeV/c");
      fHistTriggerTrack->SetVarTitle(1, "centrality");
      fHistTriggerTrack->SetVarTitle(2, "zvertex");
@@ -1862,15 +1868,16 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	   }else if(eta<0){
 	     if(fAnaMode=="TPCFMDC" || fAnaMode=="ITSFMDC" ||fAnaMode=="FMDFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));
 	   }
-	   
+	   fhFMDmultchannel->Fill(eta,mostProbableN);
 	   Double_t cont[4]={eta,phi,lCentrality,fPrimaryZVtx};
 	   fhistfmd->Fill(cont,0,mostProbableN);
 	   fh2_FMD_eta_phi->Fill(eta,phi,mostProbableN);
+
+	     
 	 }
        }
      }
      
-     //	 cout<<nFMD_fwd_hits<<endl;
      
      delete hphiacceptance;
      
@@ -1900,8 +1907,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      fHist_V0CMultRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()),nV0C_hits);
      fHist_FMDAMultRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()),nFMD_fwd_hits);
      fHist_FMDCMultRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()),nFMD_bwd_hits);
-     
-     
+
      if(fFMDcut){
        //       if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) 
        Double_t FMDcutapar0=0.;
@@ -1945,7 +1951,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fHistCentrality->Fill(lCentrality);
    fHistzvertex->Fill(tPrimaryVtxPosition[2]);
    fHistCentzvertex->Fill(lCentrality, tPrimaryVtxPosition[2]);
-   
+
+     
    DumpTObjTable("End of FMD vs V0 cuts");
    
 
@@ -2004,11 +2011,11 @@ if(fAnaMode=="TPCTPC"){
   }
  
  DumpTObjTable("End of TPC/ITS track fill");
- 
+
  FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
  FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
  DumpTObjTable("End of fill  Correlation");
-
+ 
  selectedTracksLeading->Clear();
  delete selectedTracksLeading;
  selectedTracksAssociated->Clear();
@@ -3910,13 +3917,14 @@ void AliAnalysisTaskSEpPbCorrelationsYS::DumpTObjTable(const char* note)
 }
 
  Int_t AliAnalysisTaskSEpPbCorrelationsYS::ConvertRunNumber(Int_t run){
-  switch(run){	
-  case  265309 : return 0;
-  case  265332 : return 1;
-  case  265334 : return 2;
-  case  265336 : return 3;
-  case  265338 : return 4;
-  case  265339 : return 5;
+   if( (265309<run && run< 265525) || (267161<run && run<267166)){
+   switch(run){
+   case  265309 : return 0;
+   case  265332 : return 1;
+   case  265334 : return 2;
+   case  265336 : return 3;
+   case  265338 : return 4;
+   case  265339 : return 5;
   case  265342 : return 6;
   case  265343 : return 7;
   case  265344 : return 8;
@@ -3947,11 +3955,440 @@ void AliAnalysisTaskSEpPbCorrelationsYS::DumpTObjTable(const char* note)
   case  267164 : return 33; //16t
   case  267163 : return 34; //16t
   case  267161 : return 35; //16t
-
   default : return 199;
-
-
-  } 
+  }
+ } else if(run> 280281 && run<281962){
+     switch(run){
+     case 281961  : return 0;
+       //     case 281959 : return 1;
+     case 281956 : return 1;
+     case 281953:return 2;
+     case 281940:return 3;
+     case 281939:return 4;
+     case 281932:return 5;
+     case 281931:return 6;
+     case 281928:return 7;
+     case 281920:return 8;
+     case 281918:return 9;
+     case 281915:return 10;//
+     case 281895:return 11;//
+     case 281894:return 12;//
+     case 281892:return 13;//
+     case 281633:return 14;//
+     case 281583:return 15;
+       //     case 281581:return 12;
+       //     case 281580:return 13;
+     case 281574:return 16;
+     case 281569:return 17;
+     case 281568:return 18;
+     case 281562:return 19;
+     case 281557:return 20;
+     case 281511:return 21;
+     case 281509:return 22;
+     case 281477:return 23;
+     case 281475:return 24;
+     case 281450:return 25;
+     case 281449:return 26;
+     case 281444:return 27;
+     case 281443:return 28;
+     case 281441:return 29;
+     case 281415:return 30;
+     case 281321:return 31;
+     case 281301:return 32;
+     case 281277:return 33;
+     case 281275:return 34;
+     case 281273:return 35;
+     case 281271:return 36;
+     case 281243:return 37;
+     case 281242:return 38;
+     case 281241:return 39;
+     case 281240:return 40;
+     case 281213:return 41;
+     case 281212:return 42;
+     case 281191:return 43;
+     case 281190:return 44;
+     case 281189:return 45;
+     case 281181:return 46;
+     case 281180:return 47;//
+     case 281179:return 48;
+     case 281081:return 49;
+     case 281080:return 50;
+     case 281062:return 51;
+     case 281061:return 52;
+     case 281060:return 53;
+     case 280999:return 54;
+     case 280998:return 55;
+     case 280997:return 56;
+     case 280994:return 57;
+     case 280990:return 58;
+     case 280947:return 59;
+     case 280940:return 60;
+     case 280936:return 61;
+     case 280897:return 62;
+     case 280890:return 63;//
+     case 280881:return 64;//
+     case 280880:return 65;
+     case 280856:return 66;
+     case 280849:return 67;
+     case 280848:return 68;
+     case 280847:return 69;
+     case 280845:return 70;//
+     case 280844:return 71;
+     case 280842:return 72;
+     case 280793:return 73;
+     case 280792:return 74;
+     case 280787:return 75;
+     case 280786:return 76;
+     case 280768:return 77;
+     case 280767:return 78;
+     case 280766:return 79;
+     case 280765:return 80;
+     case 280764:return 81;
+     case 280763:return 82;
+     case 280762:return 83;
+     case 280761:return 84;
+     case 280757:return 85;
+     case 280756:return 86;
+     case 280755:return 87;
+     case 280754:return 88;
+     case 280753:return 89;
+     case 280729:return 90;
+     case 280706:return 91;
+     case 280705:return 92;
+     case 280681:return 93;
+     case 280679:return 94;
+       //     case 280676:return 88;
+       //     case 280673:return 89;
+     case 280671:return 95;
+       //     case 280650:return 91;
+       //     case 280648:return 92;
+     case 280647:return 96;
+     case 280645:return 97;
+     case 280639:return 98;
+     case 280637:return 99;
+     case 280636:return 100;
+     case 280634:return 101;
+     case 280613:return 102;
+     case 280583:return 103;
+     case 280581:return 104;
+     case 280576:return 105;//
+     case 280575:return 106;//
+     case 280574:return 107;
+     case 280551:return 108;
+     case 280550:return 109;
+     case 280547:return 110;
+     case 280546:return 111;
+     case 280519:return 112;
+     case 280518:return 113;
+     case 280499:return 114;
+     case 280448:return 115;
+     case 280447:return 116;
+     case 280446:return 117;
+     case 280445:return 118;
+     case 280443:return 119;
+     case 280419:return 120;
+     case 280415:return 121;
+     case 280413:return 122;//
+     case 280406:return 123;
+     case 280405:return 124;
+     case 280403:return 125;
+     case 280375:return 126;
+     case 280374:return 127;
+       //     case 280352:return 122;
+     case 280351:return 128;
+     case 280350:return 129;
+     case 280349:return 130;
+     case 280348:return 131;
+     case 280312:return 132;
+     case 280310:return 133;
+     case 280290:return 134;
+     case 280286:return 135;
+     case 280285:return 136;
+     case 280284:return 137;
+     case 280283:return 138;
+     case 280282:return 139;
+     default : return 199;
+     }
+   }     else if (run>274689  && run<286509){
+     switch(run){
+       //LHC17k
+     case 276508:return 0;
+     case 276507:return 1;
+     case 276506:return 2;
+     case 276462:return 3;
+     case 276439:return 4;
+     case 276438:return 5;
+     case 276437:return 6;
+     case 276435:return 7;
+     case 276351:return 8;
+     case 276348:return 9;       
+     case 276312:return 10;
+     case 276307:return 11;
+     case 276302:return 12;
+     case 276297:return 13;
+     case 276294:return 14;
+     case 276292:return 15;
+     case 276291:return 16;
+     case 276290:return 17;
+     case 276259:return 18;
+     case 276257:return 19;
+     case 276230:return 20;
+     case 276205:return 21;
+     case 276178:return 22;
+     case 276170:return 23;
+     case 276104:return 24;
+     case 276102:return 25;
+     case 276099:return 26;
+     case 276098:return 27;
+     case 276097:return 28;
+     case 276045:return 29;
+     case 276041:return 30;
+     case 276040:return 31;
+     case 276020:return 32;
+     case 276019:return 33;
+     case 276017:return 34;
+     case 276013:return	35;
+     case 276012:return 36;
+     case 275925:return 37;
+     case 275924:return 38;
+     case 275847:return 39;
+     case 275664:return 40;
+     case 275661:return 41;
+     case 275657:return 42;
+     case 275650:return 43;
+     case 275648:return 44;
+     case 275647:return 45;
+     case 275624:return 46;
+     case 275623:return 47;       
+     case 275622:return 48;
+     case 275621:return 49;
+     case 275617:return 50;
+     case 275612:return 51;
+     case 275559:return 52;
+     case 275558:return 53;
+     case 275515:return 54;
+     case 275472:return 55;
+     case 275471:return 56;
+     case 275467:return 57;
+     case 275459:return 58;
+     case 275457:return 59;
+     case 275456:return 60;
+     case 275453:return 61;
+     case 275452:return 62;
+     case 275448:return 63;
+     case 275443:return 64;
+     case 275406:return 65;
+     case 275404:return 66;
+     case 275401:return 67;
+     case 275395:return 68;
+     case 275394:return 69;
+     case 275372:return 70;
+     case 275369:return 71;
+     case 275361:return 72;
+     case 275360:return 73;
+     case 275333:return 74;
+     case 275332:return 75;
+     case 275328:return 76;
+     case 275326:return 77;
+     case 275324:return 78;
+     case 275322:return 79;
+     case 275314:return 80;
+     case 275283:return 81;
+     case 275247:return 82;
+     case 275246:return 83;
+     case 275245:return 84;
+     case 275239:return 85;
+     case 275188:return 86;
+     case 275184:return 87;
+     case 275180:return 88;
+     case 275177:return 89;
+     case 275174:return 90;
+     case 275173:return 91;
+     case 275151:return 92;
+     case 275150:return 93;
+     case 275149:return 94;
+     case 275076:return 95;
+     case 275075:return 96;
+     case 275073:return 97;
+     case 275068:return 98;
+     case 275067:return 99;
+     case 274979:return 100;
+     case 274978:return 101;
+     case 274886:return 102;
+     case 274882:return 103;
+     case 274878:return 104;
+     case 274877:return 105;
+     case 274822:return 106;
+     case 274821:return 107;
+     case 274817:return 108;
+     case 274815:return 109;
+     case 274811:return 110;
+     case 274807:return 111;
+     case 274806:return 112;
+     case 274803:return 113;
+     case 274802:return 114;
+     case 274801:return 115;
+     case 274708:return 116;
+     case 274690:return 117;
+     default:return 199;
+     }
+   }     else if (run> 271867 && run<273104){
+     switch(run){
+       //LHC17h
+     case 273103:return 0;
+     case 273100:return 1;
+     case 273099:return 2;
+     case 272949:return 3;
+     case 272947:return 4;
+     case 272939:return 5;
+     case 272935:return 6;
+     case 272934:return 7;
+     case 272933:return 8;
+     case 272932:return 9;
+     case 272905:return 10;
+     case 272903:return 11;
+     case 272871:return 12;
+     case 272870:return 13;
+     case 272836:return 14;
+     case 272833:return 15;
+     case 272829:return 16;
+     case 272828:return 17;
+     case 272784:return 18;
+     case 272782:return 19;
+     case 272764:return 20;
+     case 272763:return 21;
+     case 272760:return 22;
+     case 272749:return 23;
+     case 272747:return 24;
+     case 272746:return 25;
+     case 272712:return 26;
+     case 272692:return 27;
+     case 272610:return 28;
+     case 272608:return 29;
+     case 272607:return 30;
+     case 272585:return 31;
+     case 272577:return 32;
+     case 272575:return 33;
+     case 272574:return 34;
+     case 272521:return 35;
+     case 272468:return 36;
+     case 272463:return 37;
+     case 272462:return 38;
+     case 272461:return 39;
+     case 272413:return 40;
+     case 272411:return 41;
+     case 272400:return 42;
+     case 272399:return 43;
+     case 272395:return 44;
+     case 272394:return 45;
+     case 272389:return 46;
+     case 272388:return 47;
+     case 272360:return 48;
+     case 272359:return 49;
+     case 272335:return 50;
+     case 272194:return 51;
+     case 272156:return 52;
+     case 272155:return 53;
+     case 272154:return 54;
+     case 272153:return 55;
+     case 272152:return 56;
+     case 272123:return 57;
+     case 272101:return 58;
+     case 272100:return 59;
+     case 272041:return 60;
+     case 272040:return 61;
+     case 272039:return 62;
+     case 272038:return 63;
+     case 272036:return 64;
+     case 271886:return 65;
+     case 271881:return 66;
+     case 271880:return 67;
+     case 271874:return 68;
+     case 271873:return 69;
+     case 271871:return 70;
+     case 271870:return 71;
+     case 271868:return 72;
+     default:return 199;
+     }
+   }     else if (run>273590  && run<27443){
+     switch(run){
+       //LHC17k
+     case 274442:return 0;
+     case 274390:return 1;
+     case 274389:return 2;
+     case 274388:return 3;
+     case 274387:return 4;
+     case 274386:return 5;
+     case 274385:return 6;
+     case 274364:return 7;
+     case 274363:return 8;
+     case 274360:return 9;
+     case 274352:return 10;
+     case 274351:return 11;
+     case 274329:return 12;
+     case 274283:return 13;
+     case 274281:return 14;
+     case 274280:return 15;
+     case 274278:return 16;
+     case 274276:return 17;
+     case 274271:return 18;
+     case 274270:return 19;
+     case 274269:return 20;
+     case 274268:return 21;
+     case 274266:return 22;
+     case 274264:return 23;
+     case 274263:return 24;
+     case 274259:return 25;
+     case 274258:return 26;
+     case 274232:return 27;
+     case 274212:return 28;
+     case 274174:return 29;
+     case 274148:return 30;
+     case 274147:return 31;
+     case 274125:return 32;
+     case 274094:return 33;
+     case 274092:return 34;
+     case 274064:return 35;
+     case 274058:return 36;
+     case 273986:return 37;
+     case 273985:return 38;
+     case 273946:return 39;
+     case 273943:return 40;
+     case 273942:return 41;
+     case 273918:return 42;
+     case 273889:return 43;
+     case 273887:return 44;
+     case 273886:return 45;
+     case 273885:return 46;
+     case 273825:return 47;
+     case 273824:return 48;
+     case 273719:return 49;
+     case 273711:return 50;
+     case 273709:return 51;
+     case 273695:return 52;
+     case 273690:return 53;
+     case 273689:return 54;
+     case 273687:return 55;
+     case 273654:return 56;
+     case 273653:return 57;
+     case 273593:return 58;
+     case 273592:return 59;
+     case 273591:return 60;
+     default :return 199;
+       }
+   }     else if (run>274652 && run<274672){
+     switch(run){
+       //LHC17j
+     case 274671:return 0;
+     case 274669:return 1;
+     case 274667:return 2;
+     case 274657:return 3;
+     case 274653:return 4;
+     default:return 199;
+     }
+   } else{
+     return 199;
+   }
 
 }
 

@@ -271,6 +271,8 @@ private:
   TH1F* fHist_FMDCMultRun;
 
   TH2D*  fhistfmdphiacc;
+  TH2F* fhFMDmultchannel;
+  
   AliTHn* fhistfmd;
   THnSparseF* fhistits;
   AliTHn* fhSecFMD;
