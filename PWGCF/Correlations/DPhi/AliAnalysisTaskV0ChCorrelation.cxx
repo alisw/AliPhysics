@@ -1937,7 +1937,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("AfAP"))->Fill(lPtArmV0, lAlphaV0);
       
       //--------------------check whether it is K0s/ Lambda/ AntiLambda candidates------------------------------
-      if(ctK &&lCPA > 0.98 && lPtArmV0 > TMath::Abs(fPtArmV0AlphaV0 *lAlphaV0) && xyn > 0.1 && xyp > 0.1 && isPosPionForTPC  && isNegPionForTPC && (massK0s > 0.40 )&& (massK0s < 0.58)){
+      if(ctK &&lCPA > 0.983 && lPtArmV0 > TMath::Abs(fPtArmV0AlphaV0 *lAlphaV0) && xyn > 0.15 && xyp > 0.15 && isPosPionForTPC  && isNegPionForTPC && (massK0s > 0.40 )&& (massK0s < 0.58)){
         selectedK0s->Add(v0);
         Double_t spK0s[4] = {massK0s, lPt, lCent, lPVz};
         if(fEffCorr){
@@ -1967,7 +1967,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
     
       // check whether it is Lambda candidates
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.25 && xyp > 0.1 && isPosProtonForTPC && isNegPionForTPC && (massLambda > 1.07) && (massLambda < 1.15)){
+      if(ctL && lCPA > fLambdaCPA && xyn > 0.28 && xyp > 0.15 && isPosProtonForTPC && isNegPionForTPC && (massLambda > 1.07) && (massLambda < 1.15)){
         selectedLambda->Add(v0);
         Double_t spLambda[4] = {massLambda, lPt, lCent, lPVz};
         if(fEffCorr){
@@ -2008,7 +2008,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
 
     // check whether it is AntiLambda candidates   
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.1 && xyp > 0.25 && isPosPionForTPC && isNegProtonForTPC && (massAntiLambda > 1.07) && (massAntiLambda < 1.15)){
+      if(ctL && lCPA > fLambdaCPA && xyn > 0.15 && xyp > 0.28 && isPosPionForTPC && isNegProtonForTPC && (massAntiLambda > 1.07) && (massAntiLambda < 1.15)){
         selectedAntiLambda->Add(v0);
         Double_t spAntiLambda[4] = {massAntiLambda, lPt, lCent, lPVz};
         if(fEffCorr){
