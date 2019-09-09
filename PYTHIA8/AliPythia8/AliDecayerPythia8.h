@@ -37,7 +37,7 @@ class AliDecayerPythia8 : public TVirtualMCDecayer {
   AliDecayerPythia8 operator=(const AliDecayerPythia8&);
   void     SwitchOffHeavyFlavour();
   void     ForceHadronicD(Int_t optUser4Bodies = 1,Int_t optUseDtoV0 =1, Int_t optForceLcChannel = 0);
-
+  void  ForceBeautyUpgrade();
   AliTPythia8*  fPythia8;          // Pointer to pythia8
   Int_t         fDebug;            // Debug level
  

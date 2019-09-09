@@ -70,8 +70,11 @@ GenFunc AliGenITSULib::GetPt(Int_t iPID, const char * sForm) const
    case kLb    :    func=PtLbDist; break;  
    case kLc    :    func=PtLcDist; break;  
    case kXi_c  :    func=PtLcDist; break;
+   case kXi_czero  :    func=PtLcDist; break;
+   case kOmega_c  :    func=PtLcDist; break;
    case kBplus :    func=PtLbDist; break;
    case kBzero :    func=PtLbDist; break;
+   case kBs    :    func=PtLbDist; break;
    case kDs    :    func=PtLcDist; break;
    case kDplus :    func=PtLcDist; break;
    case kOmega_ccc: func=PtLbDist;   break;    
@@ -88,7 +91,7 @@ GenFunc AliGenITSULib::GetY(Int_t iPID, const char *sForm) const
 {
  GenFunc func;
 
- if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kBplus && TMath::Abs(iPID) != kBzero && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs  && TMath::Abs(iPID) != kOmega_ccc) {
+ if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kBplus && TMath::Abs(iPID) != kBzero && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs  && TMath::Abs(iPID) != kOmega_ccc && TMath::Abs(iPID) != kBs && TMath::Abs(iPID) != kXi_czero && TMath::Abs(iPID) != kOmega_c) {
   AliError(Form("Unknown PID: %i, form: %s, returning 0",iPID,sForm));   //////////	
   func=0;
  } else { 
@@ -99,36 +102,43 @@ GenFunc AliGenITSULib::GetY(Int_t iPID, const char *sForm) const
 
 GenFuncIp AliGenITSULib::GetIp(Int_t iPID, const char *sForm) const
 {
- AliDebug(1,Form(" %i - %s",iPID,sForm));
+  AliDebug(1,Form(" %i - %s",iPID,sForm));
  // Return pointer to particle type parameterisation
- GenFuncIp id;
+  GenFuncIp id;
+  
+  if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kBplus && TMath::Abs(iPID) != kBzero && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs && TMath::Abs(iPID)!=kOmega_ccc && TMath::Abs(iPID) != kBs && TMath::Abs(iPID) != kXi_czero && TMath::Abs(iPID) != kOmega_c) {
+    AliError(Form("Unknown PID: %i, form: %s, return 0",iPID,sForm));   //////////	
+    id = 0;
+  } else {
+    switch (iPID){
+    case kLc    :                                  return id=IpLcPlus;
+    case -kLc   :                                  return id=IpLcMinus;
+    case kLb    :                                  return id=IpLb;
+    case -kLb   :                                  return id=IpLbBar;
+    case kXi_c  :                                  return id=IpXic;
+    case -kXi_c :                                  return id=IpXicBar;
+    case kBplus :                                  return id=IpBPlus;
+    case kBzero :                                  return id=IpB0;
+    case -kBzero:                                  return id=IpB0Bar;
+    case -kBplus:                                  return id=IpBMinus;
+    case kDs    :                                  return id=IpDsPlus;
+    case -kDs   :                                  return id=IpDsMinus;
+    case kDplus :                                  return id=IpDPlus;
+    case -kDplus:                                  return id=IpDMinus;
+    case  kOmega_ccc:                              return id=IpOmegaccc;
+    case kXi_czero  :                              return id=IpXicZero;
+    case -kXi_czero :                              return id=IpXicZeroBar;
+    case kOmega_c  :                              return id=IpOmegac;
+    case -kOmega_c :                              return id=IpOmegacBar;
+    case kBs   :                                   return id=IpBs;
+    case -kBs   :                                  return id=IpBsBar;
 
- if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kBplus && TMath::Abs(iPID) != kBzero && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs && TMath::Abs(iPID)!=kOmega_ccc) {
-  AliError(Form("Unknown PID: %i, form: %s, return 0",iPID,sForm));   //////////	
-  id = 0;
- } else {
-  switch (iPID){
-   case kLc    :                                  return id=IpLcPlus;
-   case -kLc   :                                  return id=IpLcMinus;
-   case kLb    :                                  return id=IpLb;
-   case -kLb   :                                  return id=IpLbBar;
-   case kXi_c  :                                  return id=IpXic;
-   case -kXi_c :                                  return id=IpXicBar;
-   case kBplus :                                  return id=IpBPlus;
-   case kBzero :                                  return id=IpB0;
-   case -kBzero:                                  return id=IpB0Bar;
-   case -kBplus:                                  return id=IpBMinus;
-   case kDs    :                                  return id=IpDsPlus;
-   case -kDs   :                                  return id=IpDsMinus;
-   case kDplus :                                  return id=IpDPlus;
-   case -kDplus:                                  return id=IpDMinus;
-   case  kOmega_ccc:                              return id=IpOmegaccc;
-   default  : AliFatal(Form("Unknown particle type: %i",iPID));  id=0;
+    default  : AliFatal(Form("Unknown particle type: %i",iPID));  id=0;
+    }
+    
   }
 
- }
-
- return id;
+  return id;
 }
 
 Int_t AliGenITSULib::IpOmegaccc(TRandom* ran)
