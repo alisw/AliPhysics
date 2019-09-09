@@ -818,7 +818,8 @@ void AddTask_GammaConvCalo_pPb(
     if(fMaxPtHardSet)
       analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     if(fSingleMaxPtHardSet)
-      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     if (enableLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);
