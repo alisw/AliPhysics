@@ -129,7 +129,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fnSigmaPIDtpcKaon(0x0),
   fOutput(0x0),
   fVertexerTracks(0x0),
-  fSetTrackCutLcFilteringPP(kTRUE),
+  fSetTrackCutLcFilteringPP(kFALSE),
   fCutSelLevel(0),
   fApplykFirst(kFALSE),
   fMaxPtTrackkFirst(0.),
@@ -198,7 +198,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fnSigmaPIDtpcKaon(0x0),
   fOutput(0x0),
   fVertexerTracks(0x0),
-  fSetTrackCutLcFilteringPP(kTRUE),
+  fSetTrackCutLcFilteringPP(kFALSE),
   fCutSelLevel(0),
   fApplykFirst(kFALSE),
   fMaxPtTrackkFirst(0.),
@@ -1649,10 +1649,11 @@ AliESDtrack* AliAnalysisTaskSEXicTopKpi::SelectTrack(AliAODTrack *aodtr, Int_t &
     return 0x0;   
   }
   
-  AliESDtrackCuts *esdTrCutsAll=fCuts->GetTrackCuts();
+  //AliESDtrackCuts *esdTrCutsAll=fCuts->GetTrackCuts();
+  AliESDtrackCuts *esdTrCutsAll=fCutsXic->GetTrackCuts();
   //  esdTrCutsAll->SetMinDCAToVertexXYPtDep("0.0025*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
-  esdTrCutsAll->SetMaxDCAToVertexXY(0.15);
-  esdTrCutsAll->SetMaxDCAToVertexZ(0.25);
+  //esdTrCutsAll->SetMaxDCAToVertexXY(0.15);
+  //esdTrCutsAll->SetMaxDCAToVertexZ(0.25);
   AliESDtrackCuts::ITSClusterRequirement spdreq=esdTrCutsAll->GetClusterRequirementITS(AliESDtrackCuts::kSPD);
 
   if(fApplykFirst){
