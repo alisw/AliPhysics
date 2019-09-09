@@ -495,7 +495,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
     fEventCutList = new TList();
     fEventCutList->SetOwner();
     fEventCutList->SetName("EventCutOutput");
-    
+
     fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger);
     if (fUseManualEventCuts) {
       fEventCuts.SetManualMode();
@@ -506,7 +506,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
     fEventCuts.AddQAplotsToList(fEventCutList);
     fOutput->Add(fEventCutList);
     }
-  
+
   // Get the MC particle branch, in case it exists
   fGeneratorLevel = GetMCParticleContainer("mcparticles");
 
