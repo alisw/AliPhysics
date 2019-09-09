@@ -219,8 +219,9 @@ TObjArray*  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, co
   }
   else { // will modify esdEvent
     // reset old vertex info
-    if (esdEv->GetPileupVerticesTracks()) esdEv->GetPileupVerticesTracks()->Clear();
-    ((AliESDVertex*)esdEv->GetPrimaryVertexTracks())->SetNContributors(-1);
+    if (esdEv->GetPileupVerticesTracks()) esdEv->GetPileupVerticesTracks()->Clear("C");
+    static AliESDVertex vtxDummy(0,0,0,"PrimaryVertex");
+    esdEv->SetPrimaryVertexTracks(&vtxDummy);
     //
   }
   AliESDVertex *pvtx=vtFinder->FindPrimaryVertex(esdEv);
