@@ -71,7 +71,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   
   Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma;
   Int_t fChannel, fSign, fRunNumber;
-  Bool_t fTriggerInputsMC[11], fTriggers[9], fInEtaGen, fInEtaRec;
+  Bool_t fTriggerInputsMC[11], fTriggers[10], fInEtaGen, fInEtaRec;
   
   TFile *fSPDfile;
   TFile *fTOFfile;
