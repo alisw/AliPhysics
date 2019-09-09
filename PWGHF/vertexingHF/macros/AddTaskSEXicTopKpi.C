@@ -90,10 +90,14 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
   massXicTask->SetDebugLevel(-1);
   massXicTask->SetReadMC(readMC);
   massXicTask->SetSystem(system); //0=pp, 1=pPb, 2=PbPb
-  massXicTask->SetUseLcTrackFilteringCut(kTRUE);
-  massXicTask->SetMaxPtSPDkFirst(kTRUE,1.);
+
+  // moved in RunAnalysis (i.e.: macro customization)
+  //massXicTask->SetUseLcTrackFilteringCut(kTRUE);
+  //massXicTask->SetMaxPtSPDkFirst(kTRUE,1.);
   //massXicTask->SetFillTree(2);  // moved in RunAnalysis (i.e.: macro customization)
-  massXicTask->SetMaxChi2Cut(1.5);
+  //massXicTask->SetMaxChi2Cut(1.5);
+
+
   if(!strLcCutFile.IsNull()){
     TFile *flc=TFile::Open(strLcCutFile.Data(),"READ");
     //printf("\n===== Lc cut file open: %s =====\n\n",strLcCutFile.Data());

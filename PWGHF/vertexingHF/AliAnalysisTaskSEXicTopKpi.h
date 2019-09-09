@@ -78,7 +78,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetSystem(Int_t sys){fSys=sys;}
   Int_t GetSystem(){return fSys;}
   void FillDist12and23(AliAODRecoDecayHF3Prong *pr,Double_t magfield);
-  void SetUseLcTrackFilteringCut(Bool_t useLcTrackFilteringCut){useLcTrackFilteringCut=fSetTrackCutLcFilteringPP;}
+  void SetUseLcTrackFilteringCut(Bool_t useLcTrackFilteringCut){fSetTrackCutLcFilteringPP=useLcTrackFilteringCut;}
   Int_t FlagCandidateWithVariousCuts(AliAODRecoDecayHF3Prong *pr,AliAODEvent *aod,Int_t itrack1,Int_t itrack2,Int_t itrack3,Int_t massHypo);
   void SetMaxPtSPDkFirst(Bool_t applykfirst,Double_t minpt){
     fApplykFirst=applykfirst;
