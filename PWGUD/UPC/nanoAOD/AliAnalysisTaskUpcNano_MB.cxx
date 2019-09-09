@@ -709,7 +709,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  }
   } 
   
- 
   //Two track loop
   if(nGoodTracksITS == 2 && nGoodTracksTPC== 0){
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
@@ -759,7 +758,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 }//UserExec
 
 //_____________________________________________________________________________
-void AliAnalysisTaskUpcNano_MB::SetCrossed(Int_t spd[4], TBits crossed){
+void AliAnalysisTaskUpcNano_MB::SetCrossed(Int_t spd[4], TBits &crossed){
 
   Int_t chipId2;
   for(Int_t iLayer = 0; iLayer<4 ;iLayer++)
@@ -809,6 +808,7 @@ Int_t AliAnalysisTaskUpcNano_MB::GetChipId(Int_t index, Int_t &chipId2, Bool_t d
 Bool_t AliAnalysisTaskUpcNano_MB::IsSTGFired(TBits bits, Int_t dphiMin, Int_t dphiMax, Bool_t tolerance){
   Int_t n1 = bits.CountBits(400);
   Int_t n0 = bits.CountBits()-n1;
+  //cout<<n0<<" "<<n1<<endl;
   if (n0<1 || n1<1) return 0;
   Bool_t stg = 0;
   Bool_t l0[20]={0};
