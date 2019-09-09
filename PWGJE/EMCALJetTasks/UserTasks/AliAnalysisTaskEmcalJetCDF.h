@@ -19,6 +19,8 @@
 #include <TString.h>
 #include <TPRegexp.h>
 #include "THistManager.h"
+#include "FJ_includes.h"
+#include "AliFJWrapper.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJet.h"
