@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/04/05)                      //
+//                         (Last Modified 2019/09/09)                      //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -1207,146 +1207,190 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
   
   Double_t pt = track->Pt();
   
-  //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
-  //ITS--------------
-  Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.2  };
-  Double_t ptHighITS[5]      = { 0., 0., 0.4,  0.4,  0.2  };
-  //TPC---------------
-  Double_t ptLowTPC[5]       = { 0., 0., 0.3,  0.3, 0.3  };
-  Double_t ptHighTPC[5]      = { 0., 0., 1.0,  1.0,   1.55  };
-  //TOF----
-  Double_t ptLowTOF[5]       = { 0., 0., 1.0,  1.0,  0.2  };
-  Double_t ptHighTOF[5]      = { 0., 0., 1.55,  1.55,    0.2  };
-  //TPCTOF----------
-  Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.69  };
-  Double_t ptHighTPCTOF[5]   = { 0., 0., 0.65,  0.69,   0.69  };
-  
-
-  //--------------------------TPC PID----------------
-  if (fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk) {
-    pid[1] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track, fParticleSpecies);
-      
-      if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
-	isAcceptedTPC = kTRUE;
-      
-      if (TMath::Abs(pid[1]) < fNSigmaMaxTPClow)  // Anywhere withing Mim Nsigma TPC
-	isAcceptedTPClow = kTRUE;                 // extra identifier
-      
-      if (track->Pt() < fMaxPtForTPClow)         // if less than a pt when low nsigma should be applied
-	isAcceptedTPC = isAcceptedTPClow;        // --------nslow-----|ptlow|----------------nshigh------
+    //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
+    //ITS--------------
+    Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.3  };
+    Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6,  1.1  };
+    //TPC---------------
+    Double_t ptLowTPC[5]       = { 0., 0., 0.2,  0.3, 0.3  };
+    Double_t ptHighTPC[5]      = { 0., 0., 1.0,  1.0,   2.0  };
+    //TOF----
+    Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.6,  1.1  };
+    Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0,    2.0  };
+    //TPCTOF----------
+    Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.8  };
+    Double_t ptHighTPCTOF[5]   = { 0., 0., 2.0,  2.00,   2.0  };
     
-    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
-    if (TMath::Abs(pid[1]) > nSigma) isAcceptedTPC = kFALSE;
-  }
-  
-  //--------------------------------ITS PID--------------------------
-  if (fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk) {
-    pid[0] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kITS, track, fParticleSpecies);
-    if (TMath::Abs(pid[0]) < fNSigmaMaxITS) 
-      isAcceptedITS = kTRUE;
     
-    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
-    if (TMath::Abs(pid[0]) > nSigma)
-      isAcceptedITS = kFALSE;
-  }
-  
-  
-  //-------------------------------TOF--------------------------
-  if ( fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) {
-    pid[2] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTOF, track, fParticleSpecies);
-    hasPIDTOF = kTRUE;
-    if (TMath::Abs(pid[2]) < fNSigmaMaxTOF) 
-      isAcceptedTOF = kTRUE;
-    
-    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron));
-    if (TMath::Abs(pid[2]) > nSigma)
-      isAcceptedTOF = kFALSE;
-  }
-
-  
-  if (fIsMC && isAcceptedTOF) {
-    Int_t tofLabel[3];  
-    if (track->InheritsFrom("AliESDtrack")) {
-      (dynamic_cast<AliESDtrack*>(track))->GetTOFLabel(tofLabel);
-    } else if (track->InheritsFrom("AliAODTrack")) {
-      (dynamic_cast<AliAODTrack*>(track))->GetTOFLabel(tofLabel);
+    //--------------------------------ITS PID--------------------------
+    if(fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk){
+        pid[0] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kITS, track, fParticleSpecies);
+        
+        if(TMath::Abs(pid[0]) < fNSigmaMaxITS) isAcceptedITS = kTRUE;
+        
+        Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kPion));
+        Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kKaon));
+        Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
+        
+        if (TMath::Abs(pid[0]) > nSigmaEl) isAcceptedITS = kFALSE;
+        
+        if( fPidStrategy == 2){
+            if( TMath::Abs(pid[0]) > nSigmaPion) isAcceptedITS = kFALSE;
+            if( TMath::Abs(pid[0]) > nSigmaKaon) isAcceptedITS = kFALSE;
+        }
+        
     }
     
-    Bool_t hasMatchTOF = kTRUE;
-    if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0]) || tofLabel[1] > 0) {
-      hasMatchTOF = kFALSE;
+    //--------------------------TPC PID----------------
+    if (fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk) {
+        
+        pid[1] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track, fParticleSpecies);
+        
+        if(fParticleSpecies == 3){////kaon------
+            if( track->Pt() > 0.4 && track->Pt() < 0.8){
+                // if( track->Pt() > 0.525 && track->Pt() < 0.6){
+                if (TMath::Abs(pid[1]) < 2.)  // nsigma < 1
+                    isAcceptedTPC = kTRUE;
+            }
+            //            else if( track->Pt() >= 0.6 && track->Pt() < 0.8){
+            //                if(pid[1] > -0.5 && pid[1] < 1.)  // asymmetry cut on nsigma
+            //                    isAcceptedTPC = kTRUE;
+            //            }
+            else
+                if(TMath::Abs(pid[1]) < fNSigmaMaxTPC ) isAcceptedTPC = kTRUE;
+            
+        }//kaon------
+        else{
+            
+            if (TMath::Abs(pid[1]) < fNSigmaMaxTPC ) isAcceptedTPC = kTRUE;
+        }
+        
+        Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
+        Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kPion));
+        Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kKaon));
+        
+        if (TMath::Abs(pid[1]) > nSigmaEl) isAcceptedTPC = kFALSE;
+        
+        if( fPidStrategy == 2){
+            if( pt > 0.9 ){
+                if (TMath::Abs(pid[1]) > nSigmaPion) isAcceptedTPC = kFALSE;
+                if (TMath::Abs(pid[1]) > nSigmaKaon) isAcceptedTPC = kFALSE;
+            }
+        }
+        
+        
+        
     }
     
-    if(fIsAOD) {
-      
-    } else {
-      TParticle *matchedTrack = fMCStack->Particle(TMath::Abs(tofLabel[0]));
-      if (TMath::Abs(matchedTrack->GetFirstMother()) == TMath::Abs(track->GetLabel())) 
-	hasMatchTOF = kTRUE;
+    
+    //-------------------------------TOF--------------------------
+    if ( fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) {
+        pid[2] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTOF, track, fParticleSpecies);
+        hasPIDTOF = kTRUE;
+        if (TMath::Abs(pid[2]) < fNSigmaMaxTOF) isAcceptedTOF = kTRUE;
+        
+        Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron));
+        Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kPion));
+        Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kKaon));
+        
+        if (TMath::Abs(pid[2]) > nSigmaEl) isAcceptedTOF = kFALSE;
+        
+        if( fPidStrategy == 2){
+            if( pt > 0.9 ){
+                if (TMath::Abs(pid[2]) > nSigmaPion) isAcceptedTOF = kFALSE;
+                if (TMath::Abs(pid[2]) > nSigmaKaon) isAcceptedTOF = kFALSE;
+            }
+        }
+        
     }
-    isAcceptedTOF = hasMatchTOF;
-  }
-  
-  
-  Short_t c    = 0;
-  Double_t p   = 0;
-  Double_t tpc = 0;
-  Double_t tof = 0;
-  Double_t its = 0;
-  
-  if (fIsQA && (fCentrality == 0 || fCentrality == 1)) {
-    c   = track->Charge();
-    p   = track->P();
-    tpc = track->GetTPCsignal();
-    tof = TOFBetaCalc(track);    // => GetTOFsignal();
-    its = track->GetITSsignal();
     
-    fHistTOF->Fill(p,c*tof);
-    fHistTPC->Fill(p,c*tpc);
-    fHistITS->Fill(p,c*its);
-    fHistTPCTOF->Fill(c*tpc,c*tof);
     
-    fHistNsITS->Fill(p,pid[0]);
-    fHistNsTPC->Fill(p,pid[1]);
-    fHistNsTOF->Fill(p,pid[2]);
-  }
-  
-  
-  if (fParticleSpecies == 2) {//for Pion: TPC+TOF
-      if(fPidStrategy == 0){
-          isAccepted = isAcceptedTPC && isAcceptedTOF;
-      }
-  }
-  
-  if( fParticleSpecies == 3){//for kaon: TPC and/or TOF
-      if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
-      else isAccepted =  isAcceptedTPC;
-  }
-  
-  if( fParticleSpecies == 4){//for proton
-      isAccepted =  isAcceptedTPC;
-  }//for proton
-  
-  
-  if (fIsQA && isAccepted && (fCentrality == 0 || fCentrality == 1)) {
-    fHistTOFc->Fill(p,c*tof);
-    fHistTPCc->Fill(p,c*tpc);
-    fHistITSc->Fill(p,c*its);
+    if (fIsMC && isAcceptedTOF) {
+        Int_t tofLabel[3];
+        if (track->InheritsFrom("AliESDtrack")) {
+            (dynamic_cast<AliESDtrack*>(track))->GetTOFLabel(tofLabel);
+        } else if (track->InheritsFrom("AliAODTrack")) {
+            (dynamic_cast<AliAODTrack*>(track))->GetTOFLabel(tofLabel);
+        }
+        
+        Bool_t hasMatchTOF = kTRUE;
+        if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0]) || tofLabel[1] > 0) {
+            hasMatchTOF = kFALSE;
+        }
+        
+        if(fIsAOD) {
+            //------
+        } else {
+            TParticle *matchedTrack = fMCStack->Particle(TMath::Abs(tofLabel[0]));
+            if (TMath::Abs(matchedTrack->GetFirstMother()) == TMath::Abs(track->GetLabel()))
+                hasMatchTOF = kTRUE;
+        }
+        isAcceptedTOF = hasMatchTOF;
+    }
     
-    fHistTPCTOFc->Fill(c*tpc,c*tof);
+    //--------Combined--PID------------
     
-    fHistNsITSc->Fill(p,pid[0]);
-    fHistNsTPCc->Fill(p,pid[1]);
-    fHistNsTOFc->Fill(p,pid[2]);
-  }
-  
-  delete [] pid;
-  return isAccepted;
-  
-  PostData(1, fThnList);
-  
+    if (fParticleSpecies == 2){//for Pion: TPC+TOF---
+        
+        if(fPidStrategy == 0){
+            isAccepted = isAcceptedTPC;
+        }
+        else if( fPidStrategy == 1){
+            Double_t nsigCombined = TMath::Sqrt( pid[1]*pid[1] +  pid[2]*pid[2] );
+            if( nsigCombined < fNSigmaMaxTOF ) isAccepted = kTRUE;
+        }
+        else if( fPidStrategy == 2){
+            isAccepted = isAcceptedTOF;
+        }
+    }
+    else if( fParticleSpecies == 3){//for kaon: TPC and/or TOF
+        
+        if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
+        else isAccepted =  isAcceptedTPC;
+    }
+    
+    else if( fParticleSpecies == 4){//for proton
+        
+        if(fPidStrategy == 0){
+            //ITS+TPC and TPC+TOF
+            if( pt >= ptLowITS[fParticleSpecies] && pt <= ptHighITS[fParticleSpecies] ) isAccepted = isAcceptedITS && isAcceptedTPC;
+            else isAccepted = isAcceptedTPC && isAcceptedTOF;
+        }
+        else if( fPidStrategy == 1){
+            
+            if( pt >= ptLowITS[fParticleSpecies] && pt <= ptHighITS[fParticleSpecies] ) {
+                Double_t nsigCompITSTPC = TMath::Sqrt( pid[1]*pid[1] +  pid[0]*pid[0] );
+                if( nsigCompITSTPC < fNSigmaMaxTPC ) isAccepted = kTRUE;
+            }
+            else {
+                Double_t nsigCompTPCTOF = TMath::Sqrt( pid[1]*pid[1] +  pid[2]*pid[2] );
+                if( nsigCompTPCTOF < fNSigmaMaxTPC ) isAccepted = kTRUE;
+            }
+        }
+        else if( fPidStrategy == 2){
+            isAccepted = isAcceptedTOF && isAcceptedTPC;
+        }
+        else if( fPidStrategy == 3){
+            if( pt >= 0.3 && pt <= 0.575 ) isAccepted = isAcceptedITS && isAcceptedTPC;
+            else if( pt >= 0.825 && pt < 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+            else isAccepted =  isAcceptedTPC;
+            
+        }
+        else if( fPidStrategy == 4){
+            if( pt >= 0.825 && pt < 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+            else isAccepted =  isAcceptedTPC;
+        }
+        
+    }//for proton
+    
+    
+    delete [] pid;
+    return isAccepted;
+    
+    
 }//IsPidPassed
 
 
 //----------------------------------------------------------------------------------
+
 
