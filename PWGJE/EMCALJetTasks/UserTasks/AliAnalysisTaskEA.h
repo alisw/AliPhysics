@@ -307,11 +307,18 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    TH2D* fhTTH_V0Mnorm1_PartLevel[fkTTbins];         //! counter of semi-inclusive hadron TT   V0M/mean particle level
 
+   TH3D* fhTTH_3D_V0Mnorm1[kTG][fkTTbins];           //! counter of semi-inclusive hadron l TT in MB versus V0M/mean
+
+   TH3D* fhTTH_3D_V0Mnorm1_PartLevel[fkTTbins];      //! counter of semi-inclusive hadron TT in MB versus V0M/mean particle level
+
+
+
    //EMCAL cluster TT
 //   TH2D* fhTTC_CentV0M[kTG][fkTTbins];                    //! counter of semi-inclusive emcal TT in MB versus V0M  centrality 
    TH2D* fhTTC_V0Mnorm1[kTG][fkTTbins];                   //! counter of semi-inclusive emcal TT in MB versus V0M/mean
 
    TH2D* fhTTC_V0Mnorm1_PartLevel[fkTTbins];            //! counter of semi-inclusive emcal TT in MB versus V0M/mean particle level
+
 
    //recoil jet yields with hadron TT
 //   TH2D* fhRecoilJetPtTTH_CentV0M[kTG][fkTTbins];         //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M centrality  
@@ -455,7 +462,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 17); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 18); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

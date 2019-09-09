@@ -238,7 +238,8 @@ fRandom(0)
          fhMultTTC[itg][i] = 0x0;  
          
          //fhTTH_CentV0M[itg][i]  = 0x0;
-         fhTTH_V0Mnorm1[itg][i] = 0x0;
+	 fhTTH_V0Mnorm1[itg][i] = 0x0;
+         fhTTH_3D_V0Mnorm1[itg][i] = 0x0;
 
          //fhTTC_CentV0M[itg][i]  = 0x0;
          fhTTC_V0Mnorm1[itg][i] = 0x0;
@@ -247,6 +248,7 @@ fRandom(0)
       }
  
       fhTTH_V0Mnorm1_PartLevel[i] = 0x0;
+      fhTTH_3D_V0Mnorm1_PartLevel[i] = 0x0;
                
       fhTTC_V0Mnorm1_PartLevel[i] = 0x0;
 
@@ -527,6 +529,7 @@ fRandom(0)
          
          //fhTTH_CentV0M[itg][i]  = 0x0;
          fhTTH_V0Mnorm1[itg][i] = 0x0;
+         fhTTH_3D_V0Mnorm1[itg][i] = 0x0;
 
          //fhTTC_CentV0M[itg][i]  = 0x0;
          fhTTC_V0Mnorm1[itg][i] = 0x0;
@@ -535,6 +538,7 @@ fRandom(0)
       }
  
       fhTTH_V0Mnorm1_PartLevel[i] = 0x0;
+      fhTTH_3D_V0Mnorm1_PartLevel[i] = 0x0;
       fhTTC_V0Mnorm1_PartLevel[i] = 0x0;
 
       fhV0MAssymVsV0MnormTTH_PartLevel[i] = 0x0;
@@ -1856,7 +1860,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                if(!trigflag[itg]) continue; //check which trigger fired
    
                //fhTTH_CentV0M[itg][itt]->Fill(fCentralityV0M, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0M centrality
-               fhTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm,  fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
+	       fhTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm,  fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
+               fhTTH_3D_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, fAsymV0M, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
             }
    
             //recoil jets
@@ -2210,6 +2215,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                   if(!fFillSigTT && itt>0) continue;  // Do not fill signal 
 
                   fhTTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fTTH_PartLevel[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
+                  fhTTH_3D_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fAsymV0M_PartLevel, fTTH_PartLevel[itt][idx].Pt());
                 
                   //recoil jets  PARTICLE LEVEL
                   for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
@@ -2837,13 +2843,13 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       if((fMode == AliAnalysisTaskEA::kMC) && itg == kGA) continue;
    
       name = Form("fhV0MAssymVsV0Mnorm_%s",trig[itg].Data()); 
-      fhV0MAssymVsV0Mnorm[itg] = new TH2D(name.Data(),name.Data(),10,0,10,20,-1,1);
+      fhV0MAssymVsV0Mnorm[itg] = new TH2D(name.Data(),name.Data(),10,0,10,21,-1,1.1);
       fOutput->Add((TH2D*) fhV0MAssymVsV0Mnorm[itg]); 
    }
 
    if(fMode == AliAnalysisTaskEA::kMC){
       name = Form("fhV0MAssymVsV0Mnorm_MB_PartLevel");
-      fhV0MAssymVsV0Mnorm_PartLevel = new TH2D(name.Data(),name.Data(),10,0,10,20,-1,1);
+      fhV0MAssymVsV0Mnorm_PartLevel = new TH2D(name.Data(),name.Data(),10,0,10,21,-1,1.1);
       fOutput->Add((TH2D*) fhV0MAssymVsV0Mnorm_PartLevel); 
    } 
    for(Int_t itg=kMB; itg<=kGA; itg++){
@@ -2852,7 +2858,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    
       for(Int_t itt=0; itt<fnHadronTTBins; itt++){
          name = Form("fhV0MAssymVsV0Mnorm_%s_TTH%d_%d",trig[itg].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); 
-         fhV0MAssymVsV0MnormTTH[itg][itt] = new TH2D(name.Data(),name.Data(),10,0,10,20,-1,1);
+         fhV0MAssymVsV0MnormTTH[itg][itt] = new TH2D(name.Data(),name.Data(),10,0,10,21,-1,1.1);
          fOutput->Add((TH2D*) fhV0MAssymVsV0MnormTTH[itg][itt]); 
       }
    }
@@ -2860,7 +2866,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    if(fMode == AliAnalysisTaskEA::kMC){
       for(Int_t itt=0; itt<fnHadronTTBins; itt++){
          name = Form("fhV0MAssymVsV0Mnorm_MB_TTH%d_%d_PartLevel",  fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
-         fhV0MAssymVsV0MnormTTH_PartLevel[itt] = new TH2D(name.Data(),name.Data(),10,0,10,20,-1,1);
+         fhV0MAssymVsV0MnormTTH_PartLevel[itt] = new TH2D(name.Data(),name.Data(),10,0,10,21,-1,1.1);
          fOutput->Add((TH2D*) fhV0MAssymVsV0MnormTTH_PartLevel[itt]);
       } 
    } 
@@ -2975,6 +2981,13 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          fhTTH_V0Mnorm1[itg][itt] = new TH2D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 100, 0, 100);
          fOutput->Add((TH2D*) fhTTH_V0Mnorm1[itg][itt]); 
       }
+
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+         name = Form("hTT_%s_3D_TTH%d_%d_V0Mnorm", trig[itg].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhTTH_3D_V0Mnorm1[itg][itt] = new TH3D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 21, -1, 1.1, 100, 0, 100);
+         fOutput->Add((TH3D*) fhTTH_3D_V0Mnorm1[itg][itt]); 
+      }
+
    }
 
 
@@ -2984,6 +2997,12 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          name = Form("hTT_MB_TTH%d_%d_V0Mnorm_PartLevel", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
          fhTTH_V0Mnorm1_PartLevel[itt] = new TH2D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 100, 0, 100);
          fOutput->Add((TH2D*) fhTTH_V0Mnorm1_PartLevel[itt]); 
+      }
+
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+         name = Form("hTT_MB_3D_TTH%d_%d_V0Mnorm_PartLevel", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         fhTTH_3D_V0Mnorm1_PartLevel[itt] = new TH3D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 21, -1, 1.1, 100, 0, 100);
+         fOutput->Add((TH3D*) fhTTH_3D_V0Mnorm1_PartLevel[itt]); 
       }
    }
 
@@ -3060,9 +3079,9 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
    //recoil jet distribution as a function V0norm, V0 assymetery, jet pt, jet |dphi|
    const Int_t rldim = 4;
-   Int_t   rlbins[ktdim] = {10,  20,  26, 50};
+   Int_t   rlbins[ktdim] = {10,  21, 130, 50};
    Double_t rlmin[ktdim] = { 0., -1, -10,  0.};  
-   Double_t rlmax[ktdim] = {10.,  1, 120, TMath::Pi()};  
+   Double_t rlmax[ktdim] = {10., 1.1, 120, TMath::Pi()};  
 
 
    for(Int_t itg=kMB; itg<=kHM; itg++){
