@@ -256,6 +256,7 @@
 #pragma link C++ class AliEmcalJetUtilityConstSubtractor+;
 #pragma link C++ class AliEmcalJetUtilityEventSubtractor+;
 #pragma link C++ class AliEmcalJetUtilitySoftDrop+;
+#pragma link C++ class AliFJWrapper+;
 #pragma link C++ class AliEmcalJetTask+;
 #pragma link C++ class AliEmcalJetFinder+;
 #pragma link C++ class AliJetEmbeddingFromAODTask+;
