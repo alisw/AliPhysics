@@ -91,30 +91,56 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     if(SwitchFillMCTemp){
         TString DMesonWeightMaps, BMesonWeightMaps;
         
-        DMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/DMesonpTWeight.root";
-        BMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/BMesonpTWeight.root";
+        if(IsPPAnalysis){
+            DMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/DMesonpTWeight.root";
+            BMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/BMesonpTWeight.root";
         
-        printf("\n### reading file %s ...\n",DMesonWeightMaps.Data());
-        printf("\n### reading file %s ...\n",BMesonWeightMaps.Data());
+            printf("\n### reading file %s ...\n",DMesonWeightMaps.Data());
+            printf("\n### reading file %s ...\n",BMesonWeightMaps.Data());
         
-        TFile* f2 = TFile::Open(DMesonWeightMaps.Data());
-        if(f2){
-            TH1 *D1 = (TH1*)f2->Get("RatD0");
-            TH1 *D2 = (TH1*)f2->Get("RatD0Up");
-            TH1 *D3 = (TH1*)f2->Get("RatD0Down");
+            TFile* f2 = TFile::Open(DMesonWeightMaps.Data());
+            if(f2){
+                TH1 *D1 = (TH1*)f2->Get("RatD0");
+                TH1 *D2 = (TH1*)f2->Get("RatD0Up");
+                TH1 *D3 = (TH1*)f2->Get("RatD0Down");
             
-            hfecalqa7->SetDmesonWeightHist(D1,D2,D3);
-        }
-        //  f2->Close();
-        TFile* f3 = TFile::Open(BMesonWeightMaps.Data());
-        if(f3){
-            TH1 *B1 = (TH1*)f3->Get("RatBMes");
-            TH1 *B2 = (TH1*)f3->Get("RatBMesMin");
-            TH1 *B3 = (TH1*)f3->Get("RatBMesMax");
+                hfecalqa7->SetDmesonWeightHist(D1,D2,D3);
+            }
+            //  f2->Close();
+            TFile* f3 = TFile::Open(BMesonWeightMaps.Data());
+            if(f3){
+                TH1 *B1 = (TH1*)f3->Get("RatBMes");
+                TH1 *B2 = (TH1*)f3->Get("RatBMesMin");
+                TH1 *B3 = (TH1*)f3->Get("RatBMesMax");
             
-            hfecalqa7->SetBmesonWeightHist(B1,B2,B3);
+                hfecalqa7->SetBmesonWeightHist(B1,B2,B3);
+            }
+            //  f3->Close();
         }
-        //  f3->Close();
+        
+        if(!IsPPAnalysis){
+            DMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/CharmpTWeight_PbPb3050.root";
+            BMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/BeautypTWeight_PbPb3050.root";
+            
+            printf("\n### reading file %s ...\n",DMesonWeightMaps.Data());
+            printf("\n### reading file %s ...\n",BMesonWeightMaps.Data());
+            
+            TFile* f2 = TFile::Open(DMesonWeightMaps.Data());
+            if(f2){
+                TH1 *D0 = (TH1*)f2->Get("WeightD0");
+                TH1 *DPlus = (TH1*)f2->Get("WeightDPlus");
+                TH1 *Ds = (TH1*)f2->Get("WeightDs");
+                TH1 *Lc = (TH1*)f2->Get("WeightLc");
+                
+                hfecalqa7->SetDmesonWeightHistPbPb(D0,DPlus,Ds,Lc);
+            }
+            TFile* f3 = TFile::Open(BMesonWeightMaps.Data());
+            if(f3){
+                TH1 *B = (TH1*)f3->Get("WeightB");
+                
+                hfecalqa7->SetBmesonWeightHistPbPb(B);
+            }
+        }
     }
     
     TString containerName7 = mgr->GetCommonFileName();

@@ -92,6 +92,11 @@ public:
     void SetBmesonWeightHist(TH1 *B1, TH1 *B2, TH1 *B3);
     void    GetBWeight(AliAODMCParticle *Part, Double_t &BCentWeight, Double_t &BMinWeight, Double_t &BMaxWeight);
     void    GetDWeight(AliAODMCParticle *Part, Double_t &DCentWeight, Double_t &DMinWeight, Double_t &DMaxWeight);
+    
+    void SetDmesonWeightHistPbPb(TH1 *D0, TH1 *DPlus, TH1 *Ds, TH1 *Lc);
+    void SetBmesonWeightHistPbPb(TH1 *B);
+    void GetDWeightPbPb(AliAODMCParticle *Part, Int_t PDG, Double_t &DCentWeight);
+    void GetBWeightPbPb(AliAODMCParticle *Part, Double_t &BCentWeight);
 
     void    SwitchRecalImpPar(Bool_t fSwitch) {fRecalIP = fSwitch;};
     void    RecalImpactParam(const AliVTrack * const track, Double_t dz[2], Double_t covar[3]);
@@ -175,6 +180,11 @@ private:
     TH1F                *fBcent;//
     TH1F                *fBMin;//
     TH1F                *fBMax;//
+    TH1F                *fD0;//
+    TH1F                *fDPlus;//
+    TH1F                *fDs;//
+    TH1F                *fLc;//
+    TH1F                *fB;//
     Double_t            fWeightB;//!
     Double_t            fWeightBMin;//!
     Double_t            fWeightBMax;//!
