@@ -2700,7 +2700,7 @@ void AliAnalysisTaskHFEBESpectraEMC::SetDmesonWeightHistPbPb(TH1 *D0, TH1 *DPlus
 //________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::SetBmesonWeightHistPbPb(TH1 *B)
 {
-    fB = (TH1F *)B->Clone();
+    fB = (TH1D *)B->Clone();
 }
 /*
 //________________________________________________________________________
