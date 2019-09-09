@@ -184,7 +184,7 @@ private:
     TH1F                *fDPlus;//
     TH1F                *fDs;//
     TH1F                *fLc;//
-    TH1F                *fB;//
+    TH1D                *fB;//
     Double_t            fWeightB;//!
     Double_t            fWeightBMin;//!
     Double_t            fWeightBMax;//!
