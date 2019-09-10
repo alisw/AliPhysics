@@ -2640,6 +2640,10 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Doubl
             if(MomPDG>4000 && MomPDG<5000) {
                 fDBaryonElecDCA->Fill(TrkPt,TrkDCA);
                 fpidSort = 9; //Mom is c Baryon
+                if(!fIsAnapp)
+                {
+                    if(MomPDG == 4122) GetDWeightPbPb(MCPartMom, MomPDG, fWeightD); //For Lc
+                }
             }
             if(MomPDG == 411) fpidSort = 11; //Mom is D+
             if(MomPDG == 421) fpidSort = 12; //Mom is D0
