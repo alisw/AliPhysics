@@ -164,7 +164,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     Double_t fSigmaStarYCutLow = -0.5;
 
     std::vector<UInt_t> goodtrackindices;  //!
-    std::vector<UInt_t> goodv0indices;     //!
+    std::vector<std::vector<UInt_t>> goodv0indices;  //!
 
     ClassDef(AliAnalysisTaskSigma1385PM, 2);
     // Add rapidity/radius/Lifetime/Y cut of lambda
