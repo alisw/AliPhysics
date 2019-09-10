@@ -1,261 +1,320 @@
-
-
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //
 // Modified version of AliAnalysisTaskCheckCascade.h
 // Used bits of code from AliAnalysisTaskCheckPerformanceStrange
 //
-// --- David Dobrigkeit Chinellato
+// --- Georgijs Skorodumovs
 //
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-//#ifndef AliAnalysisTaskStrangeCascadesDiscrete_H
-//#define AliAnalysisTaskStrangeCascadesDiscrete_H
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 #ifndef ALIANALYSISTASKSTRANGECASCADESDISCRETE_H
 #define ALIANALYSISTASKSTRANGECASCADESDISCRETE_H
 
-/*class TList;
-class TH1F;
-class TH2F;
-class TH3F;
-class TVector3;
-class THnSparse;
-class TRandom3;
-class TProfile;
+class AliRunningCascadeTrack : public TObject//public TObject
+{
+private:
+    // Track properties
+    TLorentzVector TLV_pos; // TLorentzVector of pion from Lambda decay
+    TLorentzVector TLV_neg; // TLorentzVector of proton from Lambda decay
+    TLorentzVector TLV_bach; // TLorentzVector bachelor track, either kaon or pion
+    Short_t dca_pos_to_prim[2];  // xy, z, range is 0..180 cm
+    Short_t dca_neg_to_prim[2]; // xy, z, range is 0..180 cm
+    Short_t dca_bach_to_prim[2]; // xy, z, range is 0..180 cm
+    Short_t dca_V0_to_prim;  // 0..120
+    Short_t dca_Omega_to_prim[2]; // xy, z; 0..40, pm40
+    Short_t dca_pos_to_neg; //0..1.5 cm
+    Short_t dca_bach_to_Lambda; //0...2.0 cm
+    Short_t dca_bach_to_pos; // 0..500.0 cm
+    
+    Short_t nSigma_dEdx_pos[2]; //pos is either [0]=proton(if Omega-) or [1]=pion(if Omega+)
+    Short_t nSigma_dEdx_neg[2]; //neg is either [0]=pion(Omega-) or [1]=proton
+    Short_t nSigma_dEdx_bach[2]; //bach is either [0]=kaon(Omega) or [1]=pion(Xi)
+    
+    Short_t nSigma_TOF_pos[2];
+    Short_t nSigma_TOF_neg[2];
+    Short_t nSigma_TOF_bach[2];
+    
+    Short_t CosPointingAngle; //also stores the charge of the bachelor track! (cos(THeta)*e_bach)
+    Int_t   LeastNumberOfTPCclus;
+    Short_t MaxChi2perclus;
+    Short_t MinTrackLength;
+    Float_t CascadeDecayPos[3];
+    Float_t V0fromCascadePos[3];
+    
+    TClonesArray* defaultarray;
+    
+public:
+    //if use declarations only -> results in "undefined reference"
+    /*   AliRunningCascadeTrack(); //default constructor
+     AliRunningCascadeTrack(const char* name);
+     AliRunningCascadeTrack(const AliRunningCascadeTrack&); //copy operator
+     AliRunningCascadeTrack& operator=(const AliRunningCascadeTrack&); //copy assignment
+     virtual ~AliRunningCascadeTrack(); //default destructor*/
+    
+    AliRunningCascadeTrack():
+    TLV_pos(),
+    TLV_neg(),
+    TLV_bach(),
+    dca_V0_to_prim(-500),
+    dca_pos_to_neg(-500),
+    dca_bach_to_Lambda(-500),
+    dca_bach_to_pos(-500),
+    CosPointingAngle(-2),
+    LeastNumberOfTPCclus(-1),
+    MaxChi2perclus(-1),
+    MinTrackLength(-1),
+    defaultarray(0)
+    {
+        //  defaultarray = new TClonesArray("default array", 10);
+    }
+    
+    AliRunningCascadeTrack(const char* name):
+    TLV_pos(),
+    TLV_neg(),
+    TLV_bach(),
+    dca_V0_to_prim(-500),
+    dca_pos_to_neg(-500),
+    dca_bach_to_Lambda(-500),
+    dca_bach_to_pos(-500),
+    CosPointingAngle(-2),
+    LeastNumberOfTPCclus(-1),
+    MaxChi2perclus(-1),
+    MinTrackLength(-1),
+    defaultarray(0)
+    {
+        //  defaultarray = new TClonesArray("default array", 10);
+    }
+    
+    AliRunningCascadeTrack(const AliRunningCascadeTrack&): //copy constructor
+    // TObject(),
+    TObject(),
+    TLV_pos(),
+    TLV_neg(),
+    TLV_bach(),
+    dca_V0_to_prim(-500),
+    dca_pos_to_neg(-500),
+    dca_bach_to_Lambda(-500),
+    dca_bach_to_pos(-500),
+    CosPointingAngle(-2),
+    LeastNumberOfTPCclus(-1),
+    MaxChi2perclus(-1),
+    MinTrackLength(-1),
+    defaultarray(0)
+    {
+    }
+    
+    AliRunningCascadeTrack& operator=(const AliRunningCascadeTrack&)
+    {
+        return *this;
+        
+    }
+    
+    virtual ~AliRunningCascadeTrack()
+    {
+        //   delete[] defaultarray;
+        // defaultarray = NULL;
+    }
+    
+    // setters
+    void set_TLV_pos(TLorentzVector tlv)   { TLV_pos   = tlv; }
+    void set_TLV_neg(TLorentzVector tlv)   { TLV_neg   = tlv; }
+    void set_TLV_bach(TLorentzVector tlv)   { TLV_bach   = tlv; }
+    
+    void set_dca_pos_to_prim(Float_t f1, Float_t f2)   { dca_pos_to_prim[0]   = (Short_t)(f1*100.0); dca_pos_to_prim[1]   = (Short_t)(f2*100.0); }
+    void set_dca_neg_to_prim(Float_t f1, Float_t f2)   { dca_neg_to_prim[0]   = (Short_t)(f1*100.0); dca_neg_to_prim[1]   = (Short_t)(f2*100.0); }
+    void set_dca_bach_to_prim(Float_t f1, Float_t f2)   { dca_bach_to_prim[0]   = (Short_t)(f1*100.0); dca_bach_to_prim[1]   = (Short_t)(f2*100.0); }
+    void set_dca_V0_to_prim(Float_t f)  { dca_V0_to_prim  = (Short_t)(f*100.0); }
+    void set_dca_Omega_to_prim(Float_t f1, Float_t f2)   { dca_Omega_to_prim[0]   = (Short_t)(f1*100.0); dca_Omega_to_prim[1]   = (Short_t)(f2*100.0); }
+    void set_dca_pos_to_neg(Float_t f)  { dca_pos_to_neg = (Short_t)(f*100.0); }
+    void set_dca_bach_to_Lambda(Float_t f)  { dca_bach_to_Lambda = (Short_t)(f*100.0); }
+    void set_dca_bach_to_pos(Float_t f)  { dca_bach_to_pos = (Short_t)(f*10.0); }
+    void set_nSigma_dEdx_pos(Float_t f1, Float_t f2)   { nSigma_dEdx_pos[0]   = (Short_t)(f1*10); nSigma_dEdx_pos[1]   = (Short_t)(f2*10); }
+    void set_nSigma_dEdx_neg(Float_t f1, Float_t f2)   { nSigma_dEdx_neg[0]   = (Short_t)(f1*10); nSigma_dEdx_neg[1]   = (Short_t)(f2*10); }
+    void set_nSigma_dEdx_bach(Float_t f1, Float_t f2)   { nSigma_dEdx_bach[0]   = (Short_t)(f1*10); nSigma_dEdx_bach[1]   = (Short_t)(f2*10); }
+    void set_nSigma_TOF_pos(Float_t f1, Float_t f2)   { nSigma_TOF_pos[0]   = (Short_t)(f1*10); nSigma_TOF_pos[1]   = (Short_t)(f2*10); }
+    void set_nSigma_TOF_neg(Float_t f1, Float_t f2)   { nSigma_TOF_neg[0]   = (Short_t)(f1*10); nSigma_TOF_neg[1]   = (Short_t)(f2*10); }
+    void set_nSigma_TOF_bach(Float_t f1, Float_t f2)   { nSigma_TOF_bach[0]   = (Short_t)(f1*10); nSigma_TOF_bach[1]   = (Short_t)(f2*10); }
+    void set_CosPointingAngle(Float_t f)    {CosPointingAngle = (Short_t)(f*1000.);} //pay attention to this!
+    void set_LeastNumberOfTPCclus(Int_t i)      {LeastNumberOfTPCclus = i; }
+    void set_MaxChi2perclus(Float_t f)   {MaxChi2perclus = (Short_t)(f*100.); }
+    void set_MinTrackLength(Float_t f)    {MinTrackLength = (Short_t)(f*100.); }
+    void set_CascadeDecayPos(Float_t f1, Float_t f2, Float_t f3)
+    {
+        CascadeDecayPos[0] = f1;
+        CascadeDecayPos[1] = f2;
+        CascadeDecayPos[2] = f3;
+    }
+    void set_V0fromCascadePos(Float_t f1, Float_t f2, Float_t f3)
+    {
+        V0fromCascadePos[0] = f1;
+        V0fromCascadePos[1] = f2;
+        V0fromCascadePos[2] = f3;
+    }
+    
+    // getters
+    TLorentzVector get_TLV_pos() const     { return TLV_pos; }
+    TLorentzVector get_TLV_neg() const     { return TLV_neg; }
+    TLorentzVector get_TLV_bach() const     { return TLV_bach; }
+    
+    Float_t get_dca_pos_to_prim(Int_t i) const   { return ((Float_t)dca_pos_to_prim[i])/100.0; }
+    Float_t get_dca_neg_to_prim(Int_t i) const   { return ((Float_t)dca_neg_to_prim[i])/100.0; }
+    Float_t get_dca_bach_to_prim(Int_t i)  const { return ((Float_t)dca_bach_to_prim[i])/100.0; }
+    Float_t get_dca_V0_to_prim() const  { return ((Float_t)dca_V0_to_prim)/100.0; }
+    Float_t get_dca_Omega_to_prim(Int_t i) const  { return ((Float_t)dca_pos_to_prim[i])/100.0; }
+    Float_t get_dca_pos_to_neg() const { return ((Float_t)dca_pos_to_neg)/100.0; }
+    Float_t get_dca_bach_to_Lambda()  const { return ((Float_t)dca_bach_to_Lambda)/100.0; }
+    Float_t get_dca_bach_to_pos() const { return ((Float_t)dca_bach_to_pos)/10.0; }
+    Float_t get_nSigma_dEdx_pos(Int_t i)  const { return ((Float_t)nSigma_dEdx_pos[i])/10.; }
+    Float_t get_nSigma_dEdx_neg(Int_t i)  const {return ((Float_t)nSigma_dEdx_neg[i])/10.;}
+    Float_t get_nSigma_dEdx_bach(Int_t i)const   { return ((Float_t)nSigma_dEdx_bach[i])/10.; }
+    Float_t get_nSigma_TOF_pos(Int_t i) const  { return ((Float_t)nSigma_TOF_pos[i])/10.;}
+    Float_t get_nSigma_TOF_neg(Int_t i) const  { return ((Float_t)nSigma_TOF_neg[i])/10.;}
+    Float_t get_nSigma_TOF_bach(Int_t i) const  {return ((Float_t)nSigma_TOF_bach[i])/10.;}
+    
+    Float_t get_CosPointingAngle()  const  {return ((Float_t)CosPointingAngle)/1000.;} //pay attention to cos! should not be negative
+    Int_t get_LeastNumberOfTPCclus()   const   {return LeastNumberOfTPCclus; }
+    Float_t get_MaxChi2perclus() const  {return ((Float_t)MaxChi2perclus)/100.; }
+    Float_t get_MinTrackLength() const   {return ((Float_t)MinTrackLength)/100.; }
+    
+    Float_t  get_CascadeDecayPos(Int_t i) const {return CascadeDecayPos[i];}
+    Float_t  get_V0fromCascadePos(Int_t i) const {return V0fromCascadePos[i];}
+    
+    //   ClassDef(AliRunningCascadeTrack,1);  // A simple track of a particle
+};
 
-class AliESDpid;
-class AliESDtrackCuts;
-class AliAnalysisUtils;
-class AliESDEvent;
-class AliESDtrack;
-class AliPhysicsSelection;
-class AliPIDResponse;
-class AliCFContainer;
-class AliV0Result;
-class AliCascadeResult;
-class AliExternalTrackParam;
 
-#include "AliAnalysisTaskSE.h"
-#include "AliEventCuts.h"
 
-#include <stdio.h>*/
-/*class TTree;
-class TParticle;
-class TVector3;
-class AliESDVertex;
-class AliAODVertex;
-class AliESDv0;
-class AliAODv0;
 
-class TList;
-class TH1F;
-class TH2F;
-class TH3F;
-class TVector3;
-class THnSparse;
-class TRandom3;
-class TProfile;
+class AliRunningCascadeEvent : public TObject //public TObject //public TObject   //public AliRunningCascadeTrack
+{
+private:
+    Float_t x;
+    Float_t y;
+    Float_t z;
+    Int_t     id; // Run id
+    Int_t     N_tracks; // total number of tracks
+    Float_t   centrality; //
+    Bool_t    MVPPileUpFlag;
+    Int_t     multiplicity;
+    Long64_t  trigger_word;
+    Short_t   magfield; //magnetic field
+    UShort_t      fNumTracks; // number of tracks in event
+    TClonesArray* fTracks;      //->
+    
+public:
+    
+    /*  AliRunningCascadeEvent();
+     AliRunningCascadeEvent(const char *name);
+     virtual ~AliRunningCascadeEvent();
+     AliRunningCascadeEvent(const AliRunningCascadeEvent&);
+     AliRunningCascadeEvent& operator =(const AliRunningCascadeEvent&) //copy assignment
+     {
+     return *this;
+     }*/
+    
+    AliRunningCascadeEvent() :
+    x(-1),y(-1),z(-1),id(-1),N_tracks(0),centrality(0),
+    MVPPileUpFlag(0),multiplicity(0),trigger_word(0),magfield(0),fNumTracks(0), fTracks(0x0)
+    {
+        fTracks = new TClonesArray( "AliRunningCascadeTrack", 10 );
+    }
+    
+    
+    AliRunningCascadeEvent(const char* name) :
+    x(-1),y(-1),z(-1),id(-1),N_tracks(0),centrality(0),
+    MVPPileUpFlag(0),multiplicity(0),trigger_word(0),magfield(0),fNumTracks(0), fTracks(0x0)
+    {
+        fTracks      = new TClonesArray( "AliRunningCascadeTrack", 10 );
+    }
+    
+    
+    AliRunningCascadeEvent(const AliRunningCascadeEvent&): TObject(), // copy constructor
+    x(-1),y(-1),z(-1),id(-1),N_tracks(0),centrality(0),
+    MVPPileUpFlag(0),multiplicity(0),trigger_word(0),magfield(0),fNumTracks(0), fTracks(0x0)
+    {
+        
+    }
+    
+    AliRunningCascadeEvent& operator =(const AliRunningCascadeEvent&) //copy assignment
+    {
+        return *this;
+    }
+    
+    virtual ~AliRunningCascadeEvent()
+    {
+        delete fTracks;
+        fTracks = NULL;
+    }
+    
+    
+    //----setters and getters-------------------------------------------------------------------
+    void       setx(Float_t r)                    { x = r;                         }
+    Float_t    getx() const                       { return x;                      }
+    
+    void       sety(Float_t r)                    { y = r;                         }
+    Float_t    gety() const                       { return y;                      }
+    
+    void       setz(Float_t r)                    { z = r;                         }
+    Float_t    getz() const                       { return z;                      }
+    
+    void       setid(Int_t  r)                    { id = r;                        }
+    Int_t      getid() const                      { return id;                     }
+    
+    void       setN_tracks(Int_t r)                 { N_tracks = r;                    }
+    Int_t      getN_tracks() const                    { return N_tracks;                 }
+    
+    void       setcentrality(Float_t r)             {centrality  = r;                }
+    Float_t    getcentrality() const              { return centrality;             }
+    
+    void       setMVPPileUpFlag(Bool_t r)             {MVPPileUpFlag  = r;                }
+    Bool_t      getMVPPileUpFlag() const              { return MVPPileUpFlag;             }
+    
+    void       setmultiplicity(Int_t r)             {multiplicity  = r;                }
+    Int_t      getmultiplicity() const              { return multiplicity;             }
+    
+    void       settrigger_word(Long64_t r)             { trigger_word = r;                }
+    Long64_t      gettrigger_word() const              { return trigger_word;             }
+    
+    void       setmagfield(Short_t r)             { magfield = r;                }
+    Long64_t      getmagfield() const              { return magfield;             }
+    
+    UShort_t getNumTracks() const        {return fNumTracks;}
+    //---------------------------------------------------------------------------------------------------------------------
+    
+    AliRunningCascadeTrack* createTrack()
+    {
+        if (fNumTracks == fTracks->GetSize())
+            fTracks->Expand( fNumTracks + 10 );
+        if (fNumTracks >= 10000)
+        {
+            Fatal( "AliRunningCascadeEvent::createTrack()", "ERROR: Too many tracks (>10000)!" );
+            exit( 2 );
+        }
+        
+        //  new ((*fTracks)[fNumTracks++]) AliRunningCascadeTrack; //original by Alex
+        //  return (AliRunningCascadeTrack*)((*fTracks)[fNumTracks - 1]); //original by Alex
+        AliRunningCascadeTrack* track = new ((*fTracks)[fNumTracks++]) AliRunningCascadeTrack;
+        return track;
+    }
+    
+    void ClearTrackList()
+    {
+        fNumTracks   = 0;
+        fTracks      ->Clear();
+    }
+    
+    AliRunningCascadeTrack* getTrack(UShort_t i) const
+    {
+        return i < fNumTracks ? (AliRunningCascadeTrack*)((*fTracks)[i]) : NULL;
+    }
+    
+    //  ClassDef(AliRunningCascadeEvent,1);  // A simple event compiled of tracks
+};
 
-class AliESDpid;
-class AliESDtrackCuts;
-class AliAnalysisUtils;
-class AliESDEvent;
-class AliESDtrack;
-class AliPhysicsSelection;
-class AliPIDResponse;
-class AliCFContainer;
-class AliV0Result;
-class AliCascadeResult;
-class AliExternalTrackParam;
-class AliMultSelection;
-class AliOADBMultSelection; */
 
 
 class AliAnalysisTaskStrangeCascadesDiscrete : public AliAnalysisTaskSE {
-public:
-    AliAnalysisTaskStrangeCascadesDiscrete();
-    AliAnalysisTaskStrangeCascadesDiscrete(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, Bool_t lRunVertexers, Bool_t lUseLightVertexer, Double_t lCascaderMaxChi2,
-                                           Double_t lCascaderV0MinImpactParam,
-                                           Double_t lCascaderV0MassWindow,
-                                           Double_t lCascaderBachMinImpactParam,
-                                           Double_t lCascaderMaxDCAV0andBach,
-                                           Double_t lCascaderMinCosAngle,
-                                           Double_t lCascaderMinRadius,
-                                           Double_t lCascaderMaxRadius,
-                                           const char *name, TString lExtraOptions = "");
-    
-    
-    virtual ~AliAnalysisTaskStrangeCascadesDiscrete();
-    
-    virtual void   UserCreateOutputObjects();
-    
-    virtual void   UserExec(Option_t *option);
-    virtual void   Terminate(Option_t *);
-    Double_t MyRapidity(Double_t rE, Double_t rPz) const;
-    Double_t GetCosOfProtonLambdaRestOmegaRest(Double_t pXi[3],Double_t mXi,
-                                               Double_t pL[3], Double_t mL,
-                                               Double_t pp[3], Double_t mp);
-    Double_t DzetaFromMomenta(Double_t p1[3], Double_t p2[3], Double_t pp[3]);
-   // Double_t GetThetaOfDaughterInRestOfMotherWorld(Double_t pMother[3],Double_t mMother,Double_t pDaughter[3], Double_t mDaughter);
-    
-    //Fix on-the-fly v0s
-    void CheckChargeV0(AliESDv0 *v0);
-    
-    void SetSaveV0s                (Bool_t lSaveV0s        = kTRUE ) {
-        fkSaveV0Tree        = lSaveV0s;
-    }
-    void SetSaveCascades           (Bool_t lSaveCascades   = kTRUE ) {
-        fkSaveCascadeTree   = lSaveCascades;
-    }
-    void SetPreselectDedx (Bool_t lPreselectDedx= kTRUE ) {
-        fkPreselectDedx   = lPreselectDedx;
-    }
-    void SetUseOnTheFlyV0Cascading( Bool_t lUseOnTheFlyV0Cascading = kTRUE ){
-        //Highly experimental, use with care!
-        fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
-    }
-    
-    //---------------------------------------------------------------------------------------
-    //Task Configuration: trigger selection
-    void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
-    //---------------------------------------------------------------------------------------
-    //Task Configuration: Meant to enable quick re-execution of vertexer if needed
-    void SetRunVertexers ( Bool_t lRunVertexers = kTRUE) {
-        fkRunVertexers = lRunVertexers;
-    }
-    void SetUseLightVertexers ( Bool_t lUseLightVertexers = kTRUE) {
-        fkUseLightVertexer = lUseLightVertexers;
-    }
-    void SetDoV0Refit ( Bool_t lDoV0Refit = kTRUE) {
-        fkDoV0Refit = lDoV0Refit;
-    }
-    void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
-        fkExtraCleanup = lExtraCleanup;
-    }
-    //---------------------------------------------------------------------------------------
-    void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
-        fkDoExtraEvSels = lUseExtraEvSels;
-    }
-    void SetPileupRejectionMode ( Int_t lMode = 1 ){
-        //mode switch
-        // 0 -> no rejection
-        // 1 -> Ionut
-        // 2 -> Anti-Ionut
-        fkPileupRejectionMode = lMode;
-    }
-    void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
-        fkUseOldCentrality = lUseOldCent;
-    }
-    //---------------------------------------------------------------------------------------
-    void SetSelectCharge ( Int_t lCharge = -1) {
-        fkSelectCharge = lCharge;
-    }
-    //---------------------------------------------------------------------------------------
-    //Task Configuration: Skip Event Selections after trigger (VZERO test)
-    void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
-        fkDownScaleV0 = lOpt;
-        fDownScaleFactorV0 = lVal;
-    }
-    void SetDownScaleCascade ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001 ) {
-        fkDownScaleCascade = lOpt;
-        fDownScaleFactorCascade = lVal;
-    }
-    //---------------------------------------------------------------------------------------
-    //Setters for the V0 Vertexer Parameters
-    void SetV0VertexerMaxChisquare   ( Double_t lParameter ) {
-        fV0VertexerSels[0] = lParameter;
-    }
-    void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ) {
-        fV0VertexerSels[1] = lParameter;
-    }
-    void SetV0VertexerDCASecondtoPV  ( Double_t lParameter ) {
-        fV0VertexerSels[2] = lParameter;
-    }
-    void SetV0VertexerDCAV0Daughters ( Double_t lParameter ) {
-        fV0VertexerSels[3] = lParameter;
-    }
-    void SetV0VertexerCosinePA       ( Double_t lParameter ) {
-        fV0VertexerSels[4] = lParameter;
-    }
-    void SetV0VertexerMinRadius      ( Double_t lParameter ) {
-        fV0VertexerSels[5] = lParameter;
-    }
-    void SetV0VertexerMaxRadius      ( Double_t lParameter ) {
-        fV0VertexerSels[6] = lParameter;
-    }
-    //---------------------------------------------------------------------------------------
-    //Setters for the Cascade Vertexer Parameters
-    void SetCascVertexerMaxChisquare         ( Double_t lParameter ) {
-        fCascadeVertexerSels[0] = lParameter;
-    }
-    void SetCascVertexerMinV0ImpactParameter ( Double_t lParameter ) {
-        fCascadeVertexerSels[1] = lParameter;
-    }
-    void SetCascVertexerV0MassWindow         ( Double_t lParameter ) {
-        fCascadeVertexerSels[2] = lParameter;
-    }
-    void SetCascVertexerDCABachToPV          ( Double_t lParameter ) {
-        fCascadeVertexerSels[3] = lParameter;
-    }
-    void SetCascVertexerDCACascadeDaughters  ( Double_t lParameter ) {
-        fCascadeVertexerSels[4] = lParameter;
-    }
-    void SetCascVertexerCascadeCosinePA      ( Double_t lParameter ) {
-        fCascadeVertexerSels[5] = lParameter;
-    }
-    void SetCascVertexerCascadeMinRadius     ( Double_t lParameter ) {
-        fCascadeVertexerSels[6] = lParameter;
-    }
-    void SetCascVertexerCascadeMaxRadius     ( Double_t lParameter ) {
-        fCascadeVertexerSels[7] = lParameter;
-    }
-    //---------------------------------------------------------------------------------------
-    void SetMinPt     ( Float_t lMinPt ) {
-        fMinPtToSave = lMinPt;
-    }
-    void SetMaxPt     ( Float_t lMaxPt ) {
-        fMaxPtToSave = lMaxPt;
-    }
-    void SetLambdaWindowParameters     ( Double_t *fMeanPars, Double_t *fSigmaPars ) {
-        for(Int_t ipar=0; ipar<5; ipar++) fLambdaMassMean[ipar]  = fMeanPars[ipar];
-        for(Int_t ipar=0; ipar<4; ipar++) fLambdaMassSigma[ipar] = fSigmaPars[ipar];
-    }
-    void SetLambdaWindowParametersStandard (){
-        fLambdaMassMean[0] =  1.15768e+00;
-        fLambdaMassMean[1] = -4.15945e-02;
-        fLambdaMassMean[2] = -7.14294e-04;
-        fLambdaMassMean[3] = -1.62793e-02;
-        fLambdaMassMean[4] = -7.84067e+00;
-        fLambdaMassSigma[0] = 1.30345e-03;
-        fLambdaMassSigma[1] = 2.89679e-04;
-        fLambdaMassSigma[2] = 1.52661e-03;
-        fLambdaMassSigma[3] =-2.58251e+00;
-    }
-    //---------------------------------------------------------------------------------------
-    //Superlight mode: add another configuration, please
-    void AddConfiguration( AliV0Result      *lV0Result      );
-    void AddConfiguration( AliCascadeResult *lCascadeResult );
-    //---------------------------------------------------------------------------------------
-    //Functions for analysis Bookkeepinp
-    // 1- Configure standard vertexing
-    void SetupStandardVertexing();
-    void SetupLooseVertexing();
-    // 2- Standard Topological Selection QA Sweeps
-    void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
-    void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
-    // 3 - Standard analysis configurations + systematics
-    void AddStandardV0Configuration(Bool_t lUseFull = kFALSE, Bool_t lDoSweepLooseTight = kFALSE, Int_t lSweepFullNumb = 0);
-    void AddStandardV0RadiusSweep();
-    void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE, Bool_t lDoSystematics = kTRUE);
-    void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
-    void AddCascadeConfigurationPreliminaryCrosscheck(); //
-    //---------------------------------------------------------------------------------------
-    Float_t GetDCAz(AliESDtrack *lTrack);
-    Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
-    //---------------------------------------------------------------------------------------
-    
-    
 private:
+    
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
     // your data member object is created on the worker nodes and streaming is not needed.
     // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
@@ -267,18 +326,22 @@ private:
     TList  *fListXiPlus;   // List of XiPlus outputs
     TList  *fListOmegaMinus;   // List of XiMinus outputs
     TList  *fListOmegaPlus;   // List of XiPlus outputs
+    TList *fEventList;
     TTree  *fTreeEvent;              //! Output Tree, Events
-    TTree  *fTreeV0;              //! Output Tree, V0s
+    // TTree  *fTreeV0;              //! Output Tree, V0s
     TTree  *fTreeCascade;              //! Output Tree, Cascades
-   // TTree *fTreeV0Cascade;       //! Combined output 
+    // TTree *fTreeV0Cascade;       //! Combined output
     
-   
+    //--------------------------------------------------------------------------------------
+    AliRunningCascadeEvent* Cascade_Event;
+    AliRunningCascadeTrack* Cascade_Track;
     
-    
-    
+    TTree *fTreeCascadeAsEvent;     //!
+    //   AliRunningCascadeEvent* Cascade_Event;
+    //  AliRunningCascadeTrack* Cascade_Track;
     
     //private variables used for tests of programm running (no physical importance)-------
-   // TTree *fNumberEventTree;  //! a test tree
+    // TTree *fNumberEventTree;  //! a test tree
     
     //----------------------------------------
     
@@ -471,6 +534,8 @@ private:
     Float_t fTreeCascVarMassAsXi;     //!
     Float_t fTreeCascVarMassAsOmega;  //!
     Float_t fTreeCascVarPt;           //!
+    Float_t fTreeCascVarP;           //!
+    Float_t fTreeCascVarPz;          //!
     Float_t fTreeCascVarRapXi;        //!
     Float_t fTreeCascVarRapOmega;     //!
     Float_t fTreeCascVarNegEta;       //!
@@ -478,10 +543,13 @@ private:
     Float_t fTreeCascVarBachEta;      //!
     Float_t fTreeCascVarDCACascDaughters; //!
     Float_t fTreeCascVarDCABachToPrimVtx; //!
+    Float_t fTreeCascVarDCABachToPrimVtxZ; //!
     Float_t fTreeCascVarDCAV0Daughters;   //!
     Float_t fTreeCascVarDCAV0ToPrimVtx;   //!
     Float_t fTreeCascVarDCAPosToPrimVtx;  //!
+    Float_t fTreeCascVarDCAPosToPrimVtxZ; //!
     Float_t fTreeCascVarDCANegToPrimVtx;  //!
+    Float_t fTreeCascVarDCANegToPrimVtxZ;  //!
     Float_t fTreeCascVarCascCosPointingAngle;         //!
     Float_t fTreeCascVarCascDCAtoPVxy;         //!
     Float_t fTreeCascVarCascDCAtoPVz;         //!
@@ -701,12 +769,27 @@ private:
     Float_t fTreeCascVarMassOmegaScratch;
     Float_t fTreeCascVarBackgroundMassOmega;
     Float_t fTreeCascVarBackgroundMassXi;
-
-
-
-    
+    Double_t fTreeVariableAlphaXi;
+    Double_t fTreeVariablePtArmXi;
+    Int_t fkEsdTrackMultiplicity; //!
+    ULong64_t fkEsdEventTriggerWord; //!
+    Float_t fTreeCascVarBachP;//!
+    Float_t fTreeCascVarBachPt;//!
+    Float_t fTreeCascVarNegP;//!
+    Float_t fTreeCascVarNegPt;//!
+    Float_t fTreeCascVarPosP;//!
+    Float_t fTreeCascVarPosPt;//!
+    Bool_t fkMomentaNeeded;
+    Bool_t fkITSPID;
+    Bool_t fkMassesAndBackgroundFromScratch;
+    Bool_t fkDiscreteSymmetryInfo;
+    Bool_t fkMultiplicityInfo;
+    Bool_t fkExtraInfoCascadeKinematics;
+    Int_t fRunNum;
+    Int_t fNtracks;
     Float_t lMWindow[3];
-
+    
+    
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
     //===========================================================================================
@@ -716,12 +799,212 @@ private:
     TH1D *fHistEventCounter; //!
     TH1D *fHistEventCounterDifferential; //!
     TH1D *fHistCentrality; //!
+    TH1D *fHistCentralityFast; //!
+    TH1D *fHistZVertexEvent; //!
     
-    AliAnalysisTaskStrangeCascadesDiscrete(const AliAnalysisTaskStrangeCascadesDiscrete&);            // not implemented
-    AliAnalysisTaskStrangeCascadesDiscrete& operator=(const AliAnalysisTaskStrangeCascadesDiscrete&); // not implemented
+public:
+    AliAnalysisTaskStrangeCascadesDiscrete();
+    AliAnalysisTaskStrangeCascadesDiscrete(Bool_t lSaveEventTree,
+                                                Bool_t lSaveV0Tree,
+                                                Bool_t lSaveCascadeTree,
+                                                Bool_t lRunVertexers,
+                                                Bool_t lUseLightVertexer,
+                                                Bool_t lMomentaNeeded,
+                                                Bool_t lExtraInfoCascadeKinematics,
+                                                Bool_t lDiscreteSymmetryInfo,
+                                                Bool_t lMassesAndBackgroundFromScratch,
+                                                Double_t lCascaderMaxChi2,
+                                                Double_t lCascaderV0MinImpactParam,
+                                                Double_t lCascaderV0MassWindow,
+                                                Double_t lCascaderBachMinImpactParam,
+                                                Double_t lCascaderMaxDCAV0andBach,
+                                                Double_t lCascaderMinCosAngle,
+                                                Double_t lCascaderMinRadius,
+                                                Double_t lCascaderMaxRadius,
+                                                const char *name, TString lExtraOptions = "");
     
-    ClassDef(AliAnalysisTaskStrangeCascadesDiscrete, 4);
-    //1: first implementation
+    
+    
+    AliAnalysisTaskStrangeCascadesDiscrete(const AliAnalysisTaskStrangeCascadesDiscrete&); //copy constructor
+    AliAnalysisTaskStrangeCascadesDiscrete& operator=(const AliAnalysisTaskStrangeCascadesDiscrete&);// copy assignment
+    virtual ~AliAnalysisTaskStrangeCascadesDiscrete();
+    
+    virtual void   UserCreateOutputObjects();
+    
+    virtual void   UserExec(Option_t *option);
+    virtual void   Terminate(Option_t *);
+    Double_t MyRapidity(Double_t rE, Double_t rPz) const;
+    Double_t GetCosOfProtonLambdaRestOmegaRest(Double_t pXi[3],Double_t mXi,
+                                               Double_t pL[3], Double_t mL,
+                                               Double_t pp[3], Double_t mp);
+    Double_t DzetaFromMomenta(Double_t p1[3], Double_t p2[3], Double_t pp[3]);
+    
+    //Fix on-the-fly v0s
+    void CheckChargeV0(AliESDv0 *v0);
+    
+    void SetSaveV0s                (Bool_t lSaveV0s        = kTRUE ) {
+        fkSaveV0Tree        = lSaveV0s;
+    }
+    void SetSaveCascades           (Bool_t lSaveCascades   = kTRUE ) {
+        fkSaveCascadeTree   = lSaveCascades;
+    }
+    void SetPreselectDedx (Bool_t lPreselectDedx= kTRUE ) {
+        fkPreselectDedx   = lPreselectDedx;
+    }
+    void SetUseOnTheFlyV0Cascading( Bool_t lUseOnTheFlyV0Cascading = kTRUE ){
+        //Highly experimental, use with care!
+        fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
+    }
+    
+    //---------------------------------------------------------------------------------------
+    //Task Configuration: trigger selection
+    void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
+    //---------------------------------------------------------------------------------------
+    //Task Configuration: Meant to enable quick re-execution of vertexer if needed
+    void SetRunVertexers ( Bool_t lRunVertexers = kTRUE) {
+        fkRunVertexers = lRunVertexers;
+    }
+    void SetUseLightVertexers ( Bool_t lUseLightVertexers = kTRUE) {
+        fkUseLightVertexer = lUseLightVertexers;
+    }
+    void SetDoV0Refit ( Bool_t lDoV0Refit = kTRUE) {
+        fkDoV0Refit = lDoV0Refit;
+    }
+    void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
+        fkExtraCleanup = lExtraCleanup;
+    }
+    //---------------------------------------------------------------------------------------
+    void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
+        fkDoExtraEvSels = lUseExtraEvSels;
+    }
+    void SetPileupRejectionMode ( Int_t lMode = 1 ){
+        //mode switch
+        // 0 -> no rejection
+        // 1 -> Ionut
+        // 2 -> Anti-Ionut
+        fkPileupRejectionMode = lMode;
+    }
+    void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
+        fkUseOldCentrality = lUseOldCent;
+    }
+    //---------------------------------------------------------------------------------------
+    void SetSelectCharge ( Int_t lCharge = -1) {
+        fkSelectCharge = lCharge;
+    }
+    //---------------------------------------------------------------------------------------
+    //Task Configuration: Skip Event Selections after trigger (VZERO test)
+    void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
+        fkDownScaleV0 = lOpt;
+        fDownScaleFactorV0 = lVal;
+    }
+    void SetDownScaleCascade ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001 ) {
+        fkDownScaleCascade = lOpt;
+        fDownScaleFactorCascade = lVal;
+    }
+    //---------------------------------------------------------------------------------------
+    //Setters for the V0 Vertexer Parameters
+    void SetV0VertexerMaxChisquare   ( Double_t lParameter ) {
+        fV0VertexerSels[0] = lParameter;
+    }
+    void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ) {
+        fV0VertexerSels[1] = lParameter;
+    }
+    void SetV0VertexerDCASecondtoPV  ( Double_t lParameter ) {
+        fV0VertexerSels[2] = lParameter;
+    }
+    void SetV0VertexerDCAV0Daughters ( Double_t lParameter ) {
+        fV0VertexerSels[3] = lParameter;
+    }
+    void SetV0VertexerCosinePA       ( Double_t lParameter ) {
+        fV0VertexerSels[4] = lParameter;
+    }
+    void SetV0VertexerMinRadius      ( Double_t lParameter ) {
+        fV0VertexerSels[5] = lParameter;
+    }
+    void SetV0VertexerMaxRadius      ( Double_t lParameter ) {
+        fV0VertexerSels[6] = lParameter;
+    }
+    //---------------------------------------------------------------------------------------
+    //Setters for the Cascade Vertexer Parameters
+    void SetCascVertexerMaxChisquare         ( Double_t lParameter ) {
+        fCascadeVertexerSels[0] = lParameter;
+    }
+    void SetCascVertexerMinV0ImpactParameter ( Double_t lParameter ) {
+        fCascadeVertexerSels[1] = lParameter;
+    }
+    void SetCascVertexerV0MassWindow         ( Double_t lParameter ) {
+        fCascadeVertexerSels[2] = lParameter;
+    }
+    void SetCascVertexerDCABachToPV          ( Double_t lParameter ) {
+        fCascadeVertexerSels[3] = lParameter;
+    }
+    void SetCascVertexerDCACascadeDaughters  ( Double_t lParameter ) {
+        fCascadeVertexerSels[4] = lParameter;
+    }
+    void SetCascVertexerCascadeCosinePA      ( Double_t lParameter ) {
+        fCascadeVertexerSels[5] = lParameter;
+    }
+    void SetCascVertexerCascadeMinRadius     ( Double_t lParameter ) {
+        fCascadeVertexerSels[6] = lParameter;
+    }
+    void SetCascVertexerCascadeMaxRadius     ( Double_t lParameter ) {
+        fCascadeVertexerSels[7] = lParameter;
+    }
+    //---------------------------------------------------------------------------------------
+    void SetMinPt     ( Float_t lMinPt ) {
+        fMinPtToSave = lMinPt;
+    }
+    void SetMaxPt     ( Float_t lMaxPt ) {
+        fMaxPtToSave = lMaxPt;
+    }
+    void SetLambdaWindowParameters     ( Double_t *fMeanPars, Double_t *fSigmaPars ) {
+        for(Int_t ipar=0; ipar<5; ipar++) fLambdaMassMean[ipar]  = fMeanPars[ipar];
+        for(Int_t ipar=0; ipar<4; ipar++) fLambdaMassSigma[ipar] = fSigmaPars[ipar];
+    }
+    void SetLambdaWindowParametersStandard (){
+        fLambdaMassMean[0] =  1.15768e+00;
+        fLambdaMassMean[1] = -4.15945e-02;
+        fLambdaMassMean[2] = -7.14294e-04;
+        fLambdaMassMean[3] = -1.62793e-02;
+        fLambdaMassMean[4] = -7.84067e+00;
+        fLambdaMassSigma[0] = 1.30345e-03;
+        fLambdaMassSigma[1] = 2.89679e-04;
+        fLambdaMassSigma[2] = 1.52661e-03;
+        fLambdaMassSigma[3] =-2.58251e+00;
+    }
+    //---------------------------------------------------------------------------------------
+    //Superlight mode: add another configuration, please
+    void AddConfiguration( AliV0Result      *lV0Result      );
+    void AddConfiguration( AliCascadeResult *lCascadeResult );
+    //---------------------------------------------------------------------------------------
+    //Functions for analysis Bookkeepinp
+    // 1- Configure standard vertexing
+    void SetupStandardVertexing();
+    void SetupLooseVertexing();
+    // 2- Standard Topological Selection QA Sweeps
+    void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
+    void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
+    // 3 - Standard analysis configurations + systematics
+    void AddStandardV0Configuration(Bool_t lUseFull = kFALSE, Bool_t lDoSweepLooseTight = kFALSE, Int_t lSweepFullNumb = 0);
+    void AddStandardV0RadiusSweep();
+    void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE, Bool_t lDoSystematics = kTRUE);
+    void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
+    void AddCascadeConfigurationPreliminaryCrosscheck(); //
+    //---------------------------------------------------------------------------------------
+    Float_t GetDCAz(AliESDtrack *lTrack);
+    Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
+    Bool_t GoodTrack(AliESDtrack* trackESD);
+    Int_t GetITSstatus(const AliVTrack * const track, Int_t layer) const;
+    Bool_t CheckTOFstatus(AliESDtrack* trackESD);
+    Int_t EventTriggerWord(AliESDEvent* lESDevent);
+    
+    
+    
+    
+    ClassDef(AliAnalysisTaskStrangeCascadesDiscrete, 1);
 };
 
 #endif
+
+
+
