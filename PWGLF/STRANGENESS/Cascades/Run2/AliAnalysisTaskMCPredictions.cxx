@@ -96,6 +96,7 @@ AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions()
 : AliAnalysisTaskSE(),
 fListHist(0),
 fHistEventCounter(0),
+fHistChargedEta(0),
 fSmallMultRange(1000),
 fLargeMultRange(2000),
 fRebinFactor(1),
@@ -136,6 +137,7 @@ AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions(const char *name, Int
 : AliAnalysisTaskSE(name),
 fListHist(0),
 fHistEventCounter(0),
+fHistChargedEta(0),
 fSmallMultRange(lNSmallBinning),
 fLargeMultRange(lNLargeBinning),
 fRebinFactor(lRebinFactor),
@@ -218,6 +220,11 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
         //Keeps track of some basics
         fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
         fListHist->Add(fHistEventCounter);
+    }
+    if(! fHistChargedEta ) {
+        //Histogram Output: Event-by-Event
+        fHistChargedEta = new TH1D( "fHistChargedEta", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
+        fListHist->Add(fHistChargedEta);
     }
     //___________________________________________________
     if(! fHistV0MMult ) {
@@ -444,8 +451,11 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         if(TMath::Abs(lThisCharge)<0.001) continue;
         if(! (lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
         
-        //Double_t gpt = particleOne -> Pt();
+        Double_t gpt = particleOne -> Pt();
         Double_t geta = particleOne -> Eta();
+        
+        //keep track of base eta distribution
+        if ( gpt > fMinPtTriggerCharged ) fHistChargedEta->Fill( geta );
         
         if( TMath::Abs(geta) < 0.5 ) lNchEta5++;
         if( TMath::Abs(geta) < 0.8 ) lNchEta8++;

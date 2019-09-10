@@ -75,6 +75,7 @@ private:
 
     //Histograms (Desired objects in this cross-checking task) 
     TH1D *fHistEventCounter; //! histogram for event counting
+    TH1D *fHistChargedEta; //! histogram for event counting
     
     Int_t fSmallMultRange;
     Int_t fLargeMultRange;
