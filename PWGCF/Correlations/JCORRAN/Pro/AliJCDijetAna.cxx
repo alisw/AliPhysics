@@ -319,6 +319,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
             fhistos->fh_jetPhi[lCBin][iAcc]->Fill(phi - TMath::Pi()); //Pseudojet.phi range 0-2pi
             fhistos->fh_jetEtaPhi[lCBin][iAcc]->Fill(eta,phi - TMath::Pi());
             fhistos->fh_jetPt[lCBin][iAcc]->Fill(pt);
+            fhistos->fh_jetPt_ALICE[lCBin][iAcc]->Fill(pt);
             if(bEvtHasAreaInfo) fhistos->fh_jetArea[lCBin][iAcc]->Fill(area);
             if(bEvtHasAreaInfo) fhistos->fh_jetAreaRho[lCBin][iAcc]->Fill(area*rho);
 
@@ -339,6 +340,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 fhistos->fh_jetPhi[lCBin][iConstCut]->Fill(phi - TMath::Pi());
                 fhistos->fh_jetEtaPhi[lCBin][iConstCut]->Fill(eta,phi - TMath::Pi());
                 fhistos->fh_jetPt[lCBin][iConstCut]->Fill(pt);
+                fhistos->fh_jetPt_ALICE[lCBin][iConstCut]->Fill(pt);
                 if(bEvtHasAreaInfo) fhistos->fh_jetArea[lCBin][iConstCut]->Fill(area);
                 if(bEvtHasAreaInfo) fhistos->fh_jetAreaRho[lCBin][iConstCut]->Fill(area*rho);
 
@@ -364,6 +366,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                     fhistos->fh_jetPhi[lCBin][iBGSubtr]->Fill(phi - TMath::Pi());
                     fhistos->fh_jetEtaPhi[lCBin][iBGSubtr]->Fill(eta,phi - TMath::Pi());
                     fhistos->fh_jetPt[lCBin][iBGSubtr]->Fill(pt2);
+                    fhistos->fh_jetPt_ALICE[lCBin][iBGSubtr]->Fill(pt2);
                     if(bEvtHasAreaInfo) fhistos->fh_jetArea[lCBin][iBGSubtr]->Fill(area); // Assuming bg subtracted jet has the same area.
                     if(bEvtHasAreaInfo) fhistos->fh_jetAreaRho[lCBin][iBGSubtr]->Fill(area*rho);
 
@@ -375,6 +378,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                         fhistos->fh_jetPhi[lCBin][iBGSubtrConstCut]->Fill(phi - TMath::Pi());
                         fhistos->fh_jetEtaPhi[lCBin][iBGSubtrConstCut]->Fill(eta,phi - TMath::Pi());
                         fhistos->fh_jetPt[lCBin][iBGSubtrConstCut]->Fill(pt2);
+                        fhistos->fh_jetPt_ALICE[lCBin][iBGSubtrConstCut]->Fill(pt2);
                         if(bEvtHasAreaInfo) fhistos->fh_jetArea[lCBin][iBGSubtrConstCut]->Fill(area);
                         if(bEvtHasAreaInfo) fhistos->fh_jetAreaRho[lCBin][iBGSubtrConstCut]->Fill(area*rho);
 
@@ -399,6 +403,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
             fhistos->fh_jetPhi[lCBin][iktJets]->Fill(phi - TMath::Pi()); //Pseudojet.phi range 0-2pi
             fhistos->fh_jetEtaPhi[lCBin][iktJets]->Fill(eta,phi - TMath::Pi());
             fhistos->fh_jetPt[lCBin][iktJets]->Fill(pt);
+            fhistos->fh_jetPt_ALICE[lCBin][iktJets]->Fill(pt);
             if(bEvtHasAreaInfo) fhistos->fh_jetArea[lCBin][iktJets]->Fill(area);
             if(bEvtHasAreaInfo) fhistos->fh_jetAreaRho[lCBin][iktJets]->Fill(area*rho);
         }
@@ -483,9 +488,12 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
     unsigned Njets = jets[iAcc].size();
     unsigned NjetsDetMC = jetsDetMC[iAcc].size();
     double maxpt=0;
+    double minR=0;
     double deltaRMatch=0;
+    double ptTrue, ptDetMC;
     unsigned maxptIndex;
     bool bfound;
+    bool bJetMatch[NjetsDetMC] = {false};
     bool bLeadingMatch    = false;
     bool bSubleadingMatch = false;
     bool bSubleadingMatchDeltaPhi = false;
@@ -496,8 +504,10 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
         bfound=false;
         deltaR=0;
         deltaRMatch=0;
+        minR=999.0;
         for (ujetDetMC = 0; ujetDetMC < NjetsDetMC; ujetDetMC++) { //Det MC jets
             deltaR = DeltaR(jets[iAcc][ujet], jetsDetMC[iAcc][ujetDetMC]);
+            if(deltaR<minR) minR=deltaR;
             if(deltaR < matchingR && jetsDetMC[iAcc][ujetDetMC].pt() > maxpt) {
                 maxpt = jetsDetMC[iAcc][ujetDetMC].pt();
                 maxptIndex = ujetDetMC;
@@ -508,13 +518,22 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
                 //cout << "found, detPt vs truePt: " << maxpt << " <> " << jets[iAcc][ujet].pt() << ", index: " << maxptIndex << endl;
             }
         }
+        fhistos->fh_jetResponseDeltaRClosest->Fill(minR);
         if(bfound) {
-            fhistos->fh_jetResponse->Fill(jetsDetMC[iAcc][maxptIndex].pt(), jets[iAcc][ujet].pt());
+            ptTrue = jets[iAcc][ujet].pt();
+            ptDetMC = jetsDetMC[iAcc][maxptIndex].pt();
+            fhistos->fh_jetResponse->Fill(ptDetMC, ptTrue);
             fhistos->fh_jetResponseDeltaR->Fill(deltaRMatch);
+            fhistos->fh_jetResponseDeltaPt->Fill((ptTrue-ptDetMC)/ptTrue);
             fhistos->fh_responseInfo->Fill("True jet has pair",1.0);
+            bJetMatch[maxptIndex] = true;
         } else {
-            fhistos->fh_jetResponse->Fill(-1, jets[iAcc][ujet].pt());
             fhistos->fh_responseInfo->Fill("True jet has no pair",1.0);
+        }
+    }
+    for (ujetDetMC = 0; ujetDetMC < NjetsDetMC; ujetDetMC++) { //Det MC jets
+        if(!bJetMatch[ujetDetMC]) {
+            fhistos->fh_responseInfo->Fill("Det jet has no pair",1.0);
         }
     }
 
@@ -525,20 +544,19 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
     if(bHasDijet) {
         dijet = dijets[iAcc][0][0] + dijets[iAcc][0][1];
         if(anaDetMC->HasDijet()) {
+            dijetDetMC = dijetsDetMC[iAcc][0][0] + dijetsDetMC[iAcc][0][1];
             if(bLeadingMatch && bSubleadingMatch) {
-                dijetDetMC = dijetsDetMC[iAcc][0][0] + dijetsDetMC[iAcc][0][1];
                 fhistos->fh_dijetResponse->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_responseInfo->Fill("Dijet match",1.0);
             } else {
                 fhistos->fh_responseInfo->Fill("Dijet not match",1.0);
             }
         } else {
-            fhistos->fh_dijetResponse->Fill(-1, dijet.m());
             fhistos->fh_responseInfo->Fill("Dijet det not found",1.0);
         }
     } else {
         if(anaDetMC->HasDijet()) {
-            fhistos->fh_dijetResponse->Fill(dijetDetMC.m(), -1);
+            //dijetDetMC = dijetsDetMC[iAcc][0][0] + dijetsDetMC[iAcc][0][1];
             fhistos->fh_responseInfo->Fill("Dijet true not found",1.0);
         }
     }
@@ -547,25 +565,24 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
     if(bHasDeltaPhiDijet) {
         dijet = dijets[iAcc][1][0] + dijets[iAcc][1][1];
         if(anaDetMC->HasDeltaPhiDijet()) {
+            dijetDetMC = dijetsDetMC[iAcc][1][0] + dijetsDetMC[iAcc][1][1];
             // Check subleading jet match.
             if(DeltaR(dijets[iAcc][1][1], dijetsDetMC[iAcc][1][1]) < matchingR) {
                 bSubleadingMatchDeltaPhi = true;
             }
 
             if(bLeadingMatch && bSubleadingMatchDeltaPhi) {
-                dijetDetMC = dijetsDetMC[iAcc][1][0] + dijetsDetMC[iAcc][1][1];
                 fhistos->fh_dijetResponseDeltaPhiCut->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_responseInfo->Fill("Dijet DPhi match",1.0);
             } else {
                 fhistos->fh_responseInfo->Fill("Dijet DPhi not match",1.0);
             }
         } else {
-            fhistos->fh_dijetResponseDeltaPhiCut->Fill(-1, dijet.m());
             fhistos->fh_responseInfo->Fill("Dijet DPhi det not found",1.0);
         }
     } else {
         if(anaDetMC->HasDeltaPhiDijet()) {
-            fhistos->fh_dijetResponseDeltaPhiCut->Fill(dijetDetMC.m(), -1);
+            //dijetDetMC = dijetsDetMC[iAcc][1][0] + dijetsDetMC[iAcc][1][1];
             fhistos->fh_responseInfo->Fill("Dijet DPhi true not found",1.0);
         }
     }
@@ -671,6 +688,7 @@ void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBi
         if(bIsMC) {
             histos->fh_responseInfo->Fill("True jet has pair",0.0);
             histos->fh_responseInfo->Fill("True jet has no pair",0.0);
+            histos->fh_responseInfo->Fill("Det jet has no pair",0.0);
             histos->fh_responseInfo->Fill("Dijet match",0.0);
             histos->fh_responseInfo->Fill("Dijet not match",0.0);
             histos->fh_responseInfo->Fill("Dijet det not found",0.0);
