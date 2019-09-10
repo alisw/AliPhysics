@@ -202,7 +202,7 @@ AliAnalysisTaskNewJetSubstructure::~AliAnalysisTaskNewJetSubstructure()
 
  
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 10;
+  const Int_t nVar = 12;
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeSubstructure = new TTree(nameoutput, nameoutput);
   TString *fShapesVarNames = new TString [nVar];
@@ -218,7 +218,8 @@ AliAnalysisTaskNewJetSubstructure::~AliAnalysisTaskNewJetSubstructure()
   fShapesVarNames[7] = "ngMatch";
   fShapesVarNames[8] = "zgMatch"; 
   fShapesVarNames[9] = "rgMatch";
- 
+  fShapesVarNames[10] = "LeadingTrackPt";
+  fShapesVarNames[11] = "LeadingTrackPtMatch";
 
 
    for(Int_t ivar=0; ivar < nVar; ivar++){
@@ -417,10 +418,12 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms()
 
   
       fShapesVar[0] = ptSubtracted;
+      fShapesVar[10] = jet1->MaxTrackPt();
       IterativeParents(jet1,jetCont);
      
       
       Float_t ptMatch=0.;
+      Float_t leadTrackMatch=0.;
       Double_t ktgMatch=0;;
       Double_t nsdMatch=0;
       Double_t zgMatch=0;
@@ -435,6 +438,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms()
          if(fJetShapeSub==kConstSub) kMatched = 3;
         
          ptMatch=jet3->Pt();
+	 leadTrackMatch=jet3->MaxTrackPt();
 	 IterativeParentsMCAverage(jet3,kMatched, aver1, aver2,aver3,aver4);
 	 ktgMatch=aver1;
 	 nsdMatch=aver2;
@@ -447,7 +451,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms()
         if(fJetShapeSub==kConstSub) kMatched = 3;
         if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
-
+        leadTrackMatch=jet3->MaxTrackPt();
         IterativeParentsMCAverage(jet3,kMatched, aver1, aver2,aver3,aver4);
 	 ktgMatch=aver1;
 	 nsdMatch=aver2;
@@ -461,6 +465,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms()
       if (fJetShapeType == kMCTrue || fJetShapeType == kData || fJetShapeType == kGenOnTheFly) {
        
         ptMatch=0.;
+	leadTrackMatch=0.;
         ktgMatch=0.;
         nsdMatch=0.;
 	zgMatch=0;
@@ -476,6 +481,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms()
       fShapesVar[7] = nsdMatch;
       fShapesVar[8] = zgMatch;
       fShapesVar[9]=rgMatch;
+      fShapesVar[11] =  leadTrackMatch;
       
       fTreeSubstructure->Fill();
       
