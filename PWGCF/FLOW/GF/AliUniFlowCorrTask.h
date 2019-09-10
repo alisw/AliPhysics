@@ -23,6 +23,8 @@ class AliUniFlowCorrTask : public TObject
         Bool_t                fbDoPOIs; // which particles are procesed (RFPs / POIs / both )
         Int_t                 fiNumHarm; // correlation order <M>
         Int_t                 fiNumGaps; // number of subevents
+        Int_t                 fMaxWeightPower; //max power in q vector filling
+        Int_t                 fMaxHarm; //max harm in q vector filling
         TString               fsName; // automatically generated name: see Init() for format
         TString               fsLabel; // automatically generated label see Init() for format
         std::vector<Int_t>    fiHarm; // harmonics n1,n2,...,nM
@@ -30,7 +32,7 @@ class AliUniFlowCorrTask : public TObject
     protected:
     private:
 
-    ClassDef(AliUniFlowCorrTask, 1);
+    ClassDef(AliUniFlowCorrTask, 2);
 };
 
 

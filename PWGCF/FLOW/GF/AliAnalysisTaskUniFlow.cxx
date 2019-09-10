@@ -2800,7 +2800,6 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
     Int_t iNumGaps = task->fiNumGaps;
 
     if(iNumGaps > 1) { AliError("Too many gaps! Not implemented yet!"); return kFALSE; }
-    //if(iNumHarm > 4) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
     if(iNumHarm > 8) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
 
 
@@ -2808,7 +2807,7 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
     if(iNumGaps > 0) { dGap = task->fdGaps[0]; }
 
     // Fill anyway -> needed for any correlations
-    FillRefsVectors(dGap); // TODO might check if previous task uses different Gap and if so, not fill it
+    FillRefsVectors(task, dGap); // TODO might check if previous task uses different Gap and if so, not fill it
 
     for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) {
         AliDebug(2,Form("Processing species '%s'",GetSpeciesName(PartSpecies(iSpec))));
@@ -2821,6 +2820,7 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
 
         // here-after only POIs survive (Refs are dealt with already)
         if(!task->fbDoPOIs) { continue; }
+        if(iNumHarm > 4) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
         if(!fProcessSpec[iSpec]) { continue; }
 
         // NB: skip flow if Kaons are used only for Phi (flow not needed) not as full PID
@@ -3176,7 +3176,7 @@ Bool_t AliAnalysisTaskUniFlow::CalculateFlow()
   return kTRUE;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::FillRefsVectors(const Double_t dGap)
+void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, const Double_t dGap)
 {
   // Filling Q flow vector with RFPs
   // return kTRUE if succesfull (i.e. no error occurs), kFALSE otherwise
@@ -3187,10 +3187,13 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const Double_t dGap)
   Bool_t bHas3sub = kFALSE;
   if(dEtaGap > -1.0) { bHasGap = kTRUE; }
 
+  Int_t maxHarm = task->fMaxHarm;
+  Int_t maxWeightPower = task->fMaxWeightPower;
+
   // clearing output (global) flow vectors
-  ResetFlowVector(fFlowVecQpos);
-  ResetFlowVector(fFlowVecQneg);
-  if(bHas3sub) { ResetFlowVector(fFlowVecQmid); }
+  ResetFlowVector(fFlowVecQpos, maxHarm, maxWeightPower);
+  ResetFlowVector(fFlowVecQneg, maxHarm, maxWeightPower);
+  if(bHas3sub) { ResetFlowVector(fFlowVecQmid, maxHarm, maxWeightPower); }
 
   for (auto part = fVector[kRefs]->begin(); part != fVector[kRefs]->end(); part++)
   {
@@ -3205,8 +3208,8 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const Double_t dGap)
 
     if(!bHasGap) // no eta gap
     {
-      for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
-        for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
+      for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+        for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
         {
           Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
           Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
@@ -3218,8 +3221,8 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const Double_t dGap)
       // RFP in positive eta acceptance
       if(dEta > dEtaLimit)
       {
-        for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
-          for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
           {
             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
@@ -3229,8 +3232,8 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const Double_t dGap)
       // RFP in negative eta acceptance
       if(dEta < -dEtaLimit)
       {
-        for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
-          for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
           {
             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
@@ -3241,8 +3244,8 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const Double_t dGap)
       // RFP in middle (for 3sub) if gap > 0
       if(bHas3sub && (TMath::Abs(dEta) < dEtaLimit) )
       {
-        for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
-          for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
           {
             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
@@ -3386,12 +3389,12 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const Double_t dEtaGap, const Part
    return iTracksFilled;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax])
+void AliAnalysisTaskUniFlow::ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm, Int_t maxWeightPower)
 {
   // Reset RFPs (Q) array values to TComplex(0,0,kFALSE) for given array
   // *************************************************************
-  for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; ++iHarm) {
-    for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; ++iPower) {
+  for(Int_t iHarm(0); iHarm <= maxHarm; ++iHarm) {
+    for(Int_t iPower(0); iPower <= maxWeightPower; ++iPower) {
       array[iHarm][iPower](0.0,0.0);
     }
   }
@@ -4107,6 +4110,9 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     {
       AliUniFlowCorrTask* task = fVecCorrTask.at(iTask);
       if(!task) { fInit = kFALSE; AliError(Form("AliUniFlowCorrTask %d does not exists\n",iTask)); return; }
+
+      if(fFlowNumHarmonicsMax < task->fMaxHarm) { printf("MAX WEIGHT POWER ERROR \n"); return; }
+      if(fFlowNumWeightPowersMax < task->fMaxWeightPower) { printf("MAX HARM ERROR. Task %s   max harm %d \n", task->fsName.Data(), task->fMaxHarm); return; }
 
       Bool_t bHasGap = task->HasGap();
       const char* corName = task->fsName.Data();
