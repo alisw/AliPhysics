@@ -451,11 +451,11 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         if(TMath::Abs(lThisCharge)<0.001) continue;
         if(! (lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
         
-        //Double_t gpt = particleOne -> Pt();
+        Double_t gpt = particleOne -> Pt();
         Double_t geta = particleOne -> Eta();
         
         //keep track of base eta distribution
-        fHistChargedEta->Fill( geta );
+        if ( gpt > fMinPtTriggerCharged ) fHistChargedEta->Fill( geta );
         
         if( TMath::Abs(geta) < 0.5 ) lNchEta5++;
         if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
