@@ -171,34 +171,12 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
     fEvtList->SetName("EventCuts");
     fEvtList->SetOwner();
   }
-  if (!fProton->GetMinimalBooking()) {
-    fProtonList = fProton->GetQAHists();
-  } else {
-    fProtonList = new TList();
-    fProtonList->SetName("TrackCuts");
-    fProtonList->SetOwner();
-  }
-  if (!fAntiProton->GetMinimalBooking()) {
-    fAntiProtonList = fAntiProton->GetQAHists();
-  } else {
-    fAntiProtonList = new TList();
-    fAntiProtonList->SetName("AntiTrackCuts");
-    fAntiProtonList->SetOwner();
-  }
-  if (!fLambda->GetMinimalBooking()) {
-    fLambdaList = fLambda->GetQAHists();
-  } else {
-    fLambdaList = new TList();
-    fLambdaList->SetName("LambdaCuts");
-    fLambdaList->SetOwner();
-  }
-  if (!fAntiLambda->GetMinimalBooking()) {
-    fAntiLambdaList = fAntiLambda->GetQAHists();
-  } else {
-    fAntiLambdaList = new TList();
-    fAntiLambdaList->SetName("AntiLambdaCuts");
-    fAntiLambdaList->SetOwner();
-  }
+
+  fProtonList = fProton->GetQAHists();
+  fAntiProtonList = fAntiProton->GetQAHists();
+  fLambdaList = fLambda->GetQAHists();
+  fAntiLambdaList = fAntiLambda->GetQAHists();
+
   fResultsQA = new TList();
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
