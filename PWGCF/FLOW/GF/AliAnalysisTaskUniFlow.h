@@ -216,9 +216,9 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    FillQAPhi(QAindex iQAindex, const AliPicoTrack* part) const; // filling QA plots for V0s candidates
 
       // Flow related methods
-      void                    FillRefsVectors(Double_t dGap); // fill flow vector Q with RFPs for reference flow
+      void                    FillRefsVectors(const AliUniFlowCorrTask* task, Double_t dGap); // fill flow vector Q with RFPs for reference flow
       Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Int_t& indStart, Int_t& tracksInBin, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
-      void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]); // set values to TComplex(0,0,0) for given array
+      void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm = 8, Int_t maxWeightPower = 4); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
 
       TComplex                Q(Int_t n, Int_t p) const;
