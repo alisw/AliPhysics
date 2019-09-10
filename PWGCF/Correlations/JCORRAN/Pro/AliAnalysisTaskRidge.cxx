@@ -711,7 +711,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	}
 
 //	if( !fOption.Contains("EvtSelStudy") && IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
-	if( !fOption.Contains("EvtSelStudy") && IsTriggered && IsNotPileup && IsValidVtx && fabs(fZ) < 10 && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
+	if( !fOption.Contains("EvtSelStudy") && IsTriggered && IsNotPileup && IsValidVtx && fabs(fZ) < 10.0 && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
 		if( IsMC && fEvt->IsA()==AliAODEvent::Class() ){
 			fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
 			if (fabs(fZ_gen)<10.0){
@@ -734,7 +734,8 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 	if( !fOption.Contains("EvtSelStudy") && IsTriggered && IsNotPileup && IsValidVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
 		if( !fOption.Contains("EffCorrection") && IsGoodVtx ){
-			if( fOption.Contains("Glb") ){ 		if( this -> GoodTracksSelection( 4 ) ){ this -> FillTracks(); } }
+			if( fOption.Contains("Glb") && !fOption.Contains("SDD") ){ 
+								if( this -> GoodTracksSelection( 4 ) ){ this -> FillTracks(); } }
 			else if( fOption.Contains("GlbSDD") ){ 	if( this -> GoodTracksSelection( 5 ) ){ this -> FillTracks(); } }
 			else{ 					if( this -> GoodTracksSelection( 1 ) ){ this -> FillTracks(); } }
 
