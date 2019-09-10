@@ -121,6 +121,7 @@
 #pragma link C++ class AliPP13ParticlesHistogram+;
 #pragma link C++ class AliPP13PhotonTimecutStudySelection+;
 #pragma link C++ class AliPP13SpectrumSelection+;
+#pragma link C++ class AliPP13SpectrumSelectionSimple+;
 #pragma link C++ class AliPP13TagAndProbeSelection+;
 #pragma link C++ class AliPP13MesonSelectionMC+;
 #pragma link C++ class AliPP13EfficiencySelectionMC+;
