@@ -56,6 +56,18 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     void SetMinCPAV0(Double_t lParameter) {
         fV0CosineOfPointingAngleCut = lParameter;
     }
+    void SetMaxRapidity0(Double_t lParameter) {
+        fMaxLambdaRapidity = lParameter;
+    }
+    void SetLowRadiusV0(Double_t lParameter) {
+        fLambdaLowRadius = lParameter;
+    }
+    void SetHighRadiusV0(Double_t lParameter) {
+        fLambdaHighRadius = lParameter;
+    }
+    void SetLifetimeV0(Double_t lParameter) {
+        fLambdaLifetime = lParameter;
+    }
     void SetMaxMassWindowV0(Double_t lParameter) {
         fV0MassWindowCut = lParameter;
     }
@@ -120,9 +132,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     mixingpool fEMpool;                //!
     TAxis binCent;                     //!
     TAxis binZ;                        //!
-    Double_t PVx = 999;
-    Double_t PVy = 999;
-    Double_t PVz = 999;
+    Double_t lPosPV[3];
     Double_t fZ = 999;
 
     Double_t fCent = -1;
@@ -131,18 +141,22 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     Int_t zbin = -1;
 
     // Pion cuts
-    UInt_t fFilterBit = 32;
-    Double_t fTPCNsigSigmaStarPionCut = 3;
+    UInt_t fFilterBit = 32.0;
+    Double_t fTPCNsigSigmaStarPionCut = 3.0;
     Double_t fSigmaStarPionEtaCut = 0.8;
     Double_t fSigmaStarPionZVertexCut = 2.0;  // 2.0
-    Double_t fSigmaStarPionXYVertexSigmaCut = 7;
+    Double_t fSigmaStarPionXYVertexSigmaCut = 7.0;
 
     // Lambda cuts
-    Double_t fTPCNsigLambdaProtonCut = 3;
-    Double_t fTPCNsigLambdaPionCut = 3;
+    Double_t fTPCNsigLambdaProtonCut = 3.0;
+    Double_t fTPCNsigLambdaPionCut = 3.0;
     Double_t fDCADistLambdaDaughtersCut = 0.5;    // 0.5
     Double_t fDCArDistLambdaPVCut = 0.3;          // 0.3
     Double_t fV0CosineOfPointingAngleCut = 0.99;  // 0.99
+    Double_t fMaxLambdaRapidity = 0.5;
+    Double_t fLambdaLowRadius = 0.5;
+    Double_t fLambdaHighRadius = 200.0;
+    Double_t fLambdaLifetime = 30.0;
     Double_t fV0MassWindowCut = 0.01;
 
     // Sigma Star cut
@@ -150,9 +164,10 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     Double_t fSigmaStarYCutLow = -0.5;
 
     std::vector<UInt_t> goodtrackindices;  //!
-    std::vector<UInt_t> goodv0indices;     //!
+    std::vector<std::vector<UInt_t>> goodv0indices;  //!
 
-    ClassDef(AliAnalysisTaskSigma1385PM, 1);
+    ClassDef(AliAnalysisTaskSigma1385PM, 2);
+    // Add rapidity/radius/Lifetime/Y cut of lambda
 };
 
 #endif
