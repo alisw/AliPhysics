@@ -1209,14 +1209,14 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       else arrClusPtBinning[i]                = maxClusterPt;
     }
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kPbPb5TeV  ){
-    nBinsPt                   = 88;
+    nBinsPt                   = 108;
     minPt                     = 0;
-    maxPt                     = 20;
+    maxPt                     = 40;
     for(Int_t i=0; i<nBinsPt+1;i++){
       if (i < 1) arrPtBinning[i]              = 0.5*i;
       else if(i<56) arrPtBinning[i]           = 0.5+0.1*(i-1);
       else if(i<80) arrPtBinning[i]           = 6.+0.25*(i-56);
-      else if(i<88) arrPtBinning[i]           = 12.+1.0*(i-80);
+      else if(i<108) arrPtBinning[i]          = 12.+1.0*(i-80);
       else arrPtBinning[i]                    = maxPt;
     }
     nBinsQAPt                 = 92;
