@@ -101,7 +101,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false,
   if (suffix == "4") {
     v0Cuts->SetEtaMax(0.9);
     v0Cuts->SetTPCclusterMin(70);
-    v0Cuts->SetDaughterDCAtoPV(5.f);
+    v0Cuts->SetDaughterDCAtoPV(0.05);
     v0Cuts->SetPIDnSigma(5.f);
     v0Cuts->SetV0OnFlyStatus(false);
     v0Cuts->SetV0PtMin(0.3);
@@ -144,7 +144,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false,
   if (suffix == "4") {
     antiv0Cuts->SetEtaMax(0.9);
     antiv0Cuts->SetTPCclusterMin(70);
-    antiv0Cuts->SetDaughterDCAtoPV(5.f);
+    antiv0Cuts->SetDaughterDCAtoPV(0.05);
     antiv0Cuts->SetPIDnSigma(5.f);
     antiv0Cuts->SetV0OnFlyStatus(false);
     antiv0Cuts->SetV0PtMin(0.3);
