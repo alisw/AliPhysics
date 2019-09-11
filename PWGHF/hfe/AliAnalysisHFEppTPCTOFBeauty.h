@@ -82,11 +82,11 @@ public:
     
     //Setter for the Eta cut
     void SetEtaCut(Float_t EtaMin, Float_t EtaMax);
-    
+    void SetKtoPiFunction(TF1* KPicorrF) {fKPicorr = KPicorrF;};    
     //Setter for the B correction function
 	//void SetBcorrFunction(TF1* BcorrF) {fBcorr = BcorrF;};
 	void SetBcorrFunction(TGraphErrors* BcorrF) {fBcorr = BcorrF;};
-	
+	void SetD0D0Function(TGraphErrors* fHistWeightD0D0) {HistWeightD0 = fHistWeightD0D0;};
 	void SetLcD0Function(TGraphErrors* fHistWeightLcD0) {HistWeightLcD0 = fHistWeightLcD0;};
 	void SetDpD0Function(TGraphErrors* fHistWeightDpD0) {HistWeightDpD0 = fHistWeightDpD0;};
 	void SetDsD0Function(TGraphErrors* fHistWeightDsD0) {HistWeightDsD0 = fHistWeightDsD0;};
@@ -115,10 +115,14 @@ public:
     void SetDcorrFunction21(TF1* DcorrF21) {fDcorr21 = DcorrF21;};
     void SetDcorrFunction22(TF1* DcorrF22) {fDcorr22 = DcorrF22;};
     
+    void SetDcorrFunction(TGraphErrors* DcorrF) {fDcorr = DcorrF;};
+    //void SetDcorrFunction(TF1* DcorrF) {fDcorr = DcorrF;};
    // void SetHCFunction(TF1* HC) {fHC = HC;};
    // void GetGammaAndDalitzElectronTemplates(TClonesArray *fMCarray, AliVTrack *track, Double_t fpt, Double_t NewDCA);
     //void GetGammaAndDalitzElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2, Int_t PhotonicType);
     //void GetHFElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2, Int_t PhotonicType);
+    void GetMCTemplateWeight(TClonesArray *mcArray);
+    void SetBDMesonpTWeightCalc(Bool_t fSwitch) {fCalculateBDMesonpTWeights = fSwitch;};
     //Getters
     AliHFEpid *GetPID() const {return fPID;};
     //______________________________________________________________________
@@ -177,6 +181,7 @@ private:
     //Flags for specifcs analysis
     Bool_t				fIsMC;
     Bool_t				fIsPP;
+    Bool_t				fCalculateBDMesonpTWeights;
     
     //Weight to normalize the amount of pi and eta
     //Double_t CalculateWeight(Int_t pdg_particle, Double_t x);
@@ -271,7 +276,16 @@ private:
     TH1F                *hPtLambdaC;//!
      TH1F                *hPtDp;//!
     TH1F                *hPtDstar;//!
+    TH1F                *hPtDstarDp;//!
+    TH1F                *hPtDstarD0;//!
      TH1F                *hPtDs;//!
+     
+     TH1F                *hPtD0_AFCorr;//!
+    
+     TH1F                *hPtDp_AFCorr;//!
+     TH1F                *hPtDstarD0_AFCorr;//!
+     TH1F                *hPtDs_AFCorr;//!
+     
     TH1F				*fPtHad_f;//!
     TH1F				*fPHad_f;//!
     TH2F                *fDCAz_pt_had;//!
@@ -282,6 +296,27 @@ private:
     TH2F                *fDCAxy_pt_charmaft;//!
     TH2F                *fDCAxy_pt_beautybef;//!
     TH2F                *fDCAxy_pt_beautyaft;//!
+        TH2F                *fDCAxy_pt_beautybaryons;//!
+       //  TH2F                *fDCAxy_pt_beautybaryons_corr;//!
+
+    TH2F		*fDCAxy_pt_DstarDplusbef;//!
+    TH2F		*fDCAxy_pt_Dplusbef;//!
+    TH2F		*fDCAxy_pt_DstarDzerobef;//!
+    TH2F		*fDCAxy_pt_Dzerobef;//!
+    TH2F		*fDCAxy_pt_DstarDsbef;//!
+    TH2F		*fDCAxy_pt_Dsbef;//!
+    TH2F		*fDCAxy_pt_charmmesonsbef;//!
+    TH2F		*fDCAxy_pt_DstarDplusAft;//!
+    TH2F		*fDCAxy_pt_DplusAft;//!
+    TH2F		*fDCAxy_pt_DstarDzeroAft;//!
+    TH2F		*fDCAxy_pt_DzeroAft;//!
+    TH2F		*fDCAxy_pt_DstarDsAft;//!
+    TH2F		*fDCAxy_pt_DsAft;//!
+    TH2F		*fDCAxy_pt_charmmesonsAft;//!
+    TH2F		*fDCAxy_pt_Lc;//!
+    TH2F		*fDCAxy_pt_charmbaryons;//!
+
+    TH2F		*fDCAxy_pt_beautybaryons_corr;//!
     TH2F                *fDCAxy_pt_MesonB_beautybef;//!
     TH2F                *fDCAxy_pt_MesonB_beautyaft;//!
     TH2F                *fDCAxy_pt_MesonBD_beautybef;//!
@@ -289,6 +324,7 @@ private:
     TH2F                *fDCAxy_pt_BaryonB_beautybef;//!
     TH2F                *fDCAxy_pt_BaryonBD_beautybef;//!
     TH2F				*fDCAxy_pt_had_onlyDCA;//!
+    TH2F                                *fDCAxy_pt_ele_onlyDCA;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi1;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi2;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi3;//!
@@ -305,6 +341,25 @@ private:
     TH2F				*fDCAxy_pt_had_ResCorr_phi2;//!
     TH2F				*fDCAxy_pt_had_ResCorr_phi3;//!
     TH2F				*fDCAxy_pt_had_ResCorr_phi4;//!
+    TH2F                                *fDCAxy_pt_ele_onlyDCA_phi1;//!
+    TH2F                                *fDCAxy_pt_ele_onlyDCA_phi2;//!
+    TH2F                                *fDCAxy_pt_ele_onlyDCA_phi3;//!
+    TH2F                                *fDCAxy_pt_ele_onlyDCA_phi4;//!
+    TH2F                                *fDCAxy_pt_ele_phi1_ChB;//!
+    TH2F                                *fDCAxy_pt_ele_phi1_B;//!
+    TH2F                                *fDCAxy_pt_ele_phi2_ChB;//!
+    TH2F                                *fDCAxy_pt_ele_phi2_B;//!
+    TH2F                                *fDCAxy_pt_ele_phi3_ChB;//!
+    TH2F                                *fDCAxy_pt_ele_phi3_B;//!
+    TH2F                                *fDCAxy_pt_ele_phi4_ChB;//!
+    TH2F                                *fDCAxy_pt_ele_phi4_B;//!
+    TH2F                                *fDCAxy_pt_ele_ResCorr_phi1;//!
+    TH2F                                *fDCAxy_pt_ele_ResCorr_phi2;//!
+    TH2F                                *fDCAxy_pt_ele_ResCorr_phi3;//!
+    TH2F                                *fDCAxy_pt_ele_ResCorr_phi4;//!
+
+
+
     TH1F				*fResGausCorr_phi1;//!
     TH1F				*fResGausCorr_phi2;//!
     TH1F				*fResGausCorr_phi3;//!
@@ -318,6 +373,17 @@ private:
     TH1F                *hCharmMotherPt;//! pt of mothers of eletrons from mesons D
     TH1F                *hCharmMotherPt_corr;//! pt of mothers of eletrons from mesons D corrected statistically
     TH1F                *hCharmMotherPt_corr2;//! pt of mothers of eletrons from mesons D weighted
+	TH1F                *fBHadpT;//!
+        TH1F                *fBMesonpT;//!
+        TH1F                *fBMesonpT_Corr;//!
+     //   TH1F                *fBMesonpTG;//!
+       // TH1F                *fBMesonpTGG;//!
+        TH1F                *fDHadpT;//!
+        TH1F                *fDMesonpT;//!
+        TH1F                *fBDHadpT;//!
+        TH1F                *fD0pT;//!
+        TH1F                *fLambdaCpT;//!
+        TH1F                *fLambdaCpT_AFCorr;//!
 	
 	TH2F                *hBeautyMotherPt;//!
 	/*TH2F 		    *hDCAPtProtons;//!
@@ -360,7 +426,10 @@ private:
     TGraphErrors				*HistWeightDstarD0;
     TGraphErrors				*HistWeightDsD0;
     TGraphErrors				*HistWeightDpD0;
+    TGraphErrors				*HistWeightD0;
     TGraphErrors			*fBcorr;
+    TGraphErrors			*fDcorr;
+    TF1					*fKPicorr;
     TF1					*fDcorr1;
     TF1					*fDcorr2;
     TF1					*fDcorr3;
