@@ -25,7 +25,8 @@ AliAnalysisHFEppTPCTOFBeauty* AddTaskHFEppTPCTOFBeauty( ///-> to run locally
             Float_t DCAxy,
             Float_t DCAz,
             Int_t IsBcorr = 0,
-            Int_t IsDcorr = 0
+            Int_t IsDcorr = 0,
+            Bool_t fIsCalculateBDMesonpTWeights = kTRUE
             
 )           
 {
@@ -43,7 +44,7 @@ AliAnalysisHFEppTPCTOFBeauty* AddTaskHFEppTPCTOFBeauty( ///-> to run locally
 	}
 	
 	//_______________________
-    AliAnalysisHFEppTPCTOFBeauty *task = ConfigHFEppTPCTOFBeauty(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,EtaMin,EtaMax,DCAxy,DCAz,IsBcorr,IsDcorr);
+    AliAnalysisHFEppTPCTOFBeauty *task = ConfigHFEppTPCTOFBeauty(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,EtaMin,EtaMax,DCAxy,DCAz,IsBcorr,IsDcorr,fIsCalculateBDMesonpTWeights);
     //_____________________________________________________
 	//Trigger
 		//if(!isMC){
@@ -70,7 +71,7 @@ AliAnalysisHFEppTPCTOFBeauty* AddTaskHFEppTPCTOFBeauty( ///-> to run locally
 }
 
 
-AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t EtaMin, Float_t EtaMax, Float_t DCAxy, Float_t DCAz, Int_t IsBcorr, Int_t IsDcorr)
+AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t EtaMin, Float_t EtaMax, Float_t DCAxy, Float_t DCAz, Int_t IsBcorr, Int_t IsDcorr, Double_t fIsCalculateBDMesonpTWeights)
 {
     ///_______________________________________________________________________________________________________________
     ///Track selection: Cuts used to ensure a minimum quality level of the tracks selected to perform the analysis
@@ -126,6 +127,7 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
     {
         pid->SetHasMCData(kTRUE);
         task->SetMCanalysis();
+        task->SetBDMesonpTWeightCalc(fIsCalculateBDMesonpTWeights);
     }
     //______________________________________
    
@@ -135,23 +137,32 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
 		//task->SetHCFunction(fHadCont);
     
     if(isMCc){
+    //D correction
+    
+    TFile *f = new TFile("DMesonWeight_pp5TeV_Aug30.root");
+    TGraphErrors *fDmeson = (TGraphErrors *) f->Get("DCentral");
+   
+     TFile *fSt = new TFile("KPi_ratio_5TeV_pp.root");
+    TF1 *fStrangeWeight = (TF1 *) fSt->Get("f2");
+    task->SetKtoPiFunction(fStrangeWeight);
+ 
     ///B correction
     //TFile *f = new TFile("FractionWeights_Graph_Aug01.root");
-    //TFile *f = new TFile("FractionWeights_Graph_Aug15_Updated.root");
-    TString filenameDFraction = "FractionWeights_Graph_Aug15_Updated.root";
-    TFile *fileDFraction = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filenameDFraction.Data()));
-    //TFile *fileDFraction = TFile::Open(Form("%s", filenameDFraction.Data()));
-    TGraphErrors *fLc = (TGraphErrors *) fileDFraction->Get("hWeight_Lc");
-    TGraphErrors *fDp = (TGraphErrors *) fileDFraction->Get("hWeight_Dp");
-    TGraphErrors *fDstar = (TGraphErrors *) fileDFraction->Get("hWeight_Dstar");
-    TGraphErrors *fDs = (TGraphErrors *) fileDFraction->Get("hWeight_Ds");
+    TFile *f = new TFile("FractionWeights_Graph_Sep02_Final.root");
+    TGraphErrors *fLc = (TGraphErrors *) f->Get("hWeight_Lc");
+    TGraphErrors *fDp = (TGraphErrors *) f->Get("hWeight_Dp");
+    TGraphErrors *fDstar = (TGraphErrors *) f->Get("hWeight_Dstar");
+    TGraphErrors *fDs = (TGraphErrors *) f->Get("hWeight_Ds");
+    TGraphErrors *fD0 = (TGraphErrors *) f->Get("hWeight_D0");
     task->SetLcD0Function(fLc);
     task->SetDpD0Function(fDp);
     task->SetDstarD0Function(fDstar);
     task->SetDsD0Function(fDs);
-   TString filenameBweight = "BMesonWeight_pp5TeV_ScaledToOne_July29.root";
-   //TFile *BweightFileEnh = TFile::Open(Form("%s", filenameBweight.Data()));
-   TFile *BweightFileEnh = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filenameBweight.Data()));
+    task->SetD0D0Function(fD0);
+  // TString filenameBweight = "BMesonWeight_pp5TeV_ScaledToOne_July29.root";
+    TString filenameBweight = "BMesonWeight_pp5TeV_Aug29.root";
+   TFile *BweightFileEnh = TFile::Open(Form("%s", filenameBweight.Data()));
+   //TFile *BweightFileEnh = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filenameBweight.Data()));
     
     ///Default FONLL
     if(IsBcorr == 0){
@@ -186,8 +197,9 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
  
     // Default
     if(IsDcorr == 0){
-    
-    		TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/0.296109)*(1.42911e-03/(TMath::Power(TMath::Exp( - 6.08657e-01*x[0] + 9.8566e-03 * x[0] * x[0] ) + x[0] / 3.50791e+00, 4.40766e+00)))/(3.53468e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.20266e+00)))",1.0,36);
+    		TF1 *fDmesonShape = new TF1("fDmesonShape","(1.44336e-03/(TMath::Power(TMath::Exp( - 6.08651e-01*x[0] + 9.8566e-03 * x[0] * x[0] ) + x[0] / 3.50784e+00, 4.40766e+00)))/(1.60027e-02 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69999e+00, 4.51198e+00)))",0.0,36);  
+		task->SetDcorrFunction(fDmeson);
+    		/*TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/0.296109)*(1.42911e-03/(TMath::Power(TMath::Exp( - 6.08657e-01*x[0] + 9.8566e-03 * x[0] * x[0] ) + x[0] / 3.50791e+00, 4.40766e+00)))/(3.53468e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.20266e+00)))",1.0,36);
     
 		task->SetDcorrFunction22(fDmesonShape22);
     
@@ -252,13 +264,17 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
 		task->SetDcorrFunction14(fDmesonShape14);
     
 		TF1 *fDmesonShape15 = new TF1("fDmesonShape15","(1/0.10011)*(1.42911e-03/(TMath::Power(TMath::Exp( - 6.08657e-01*x[0] + 9.8566e-03 * x[0] * x[0] ) + x[0] / 3.50791e+00, 4.40766e+00)))/(3.53468e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.20266e+00)))",9.0,36);  
-		task->SetDcorrFunction15(fDmesonShape15);
+		task->SetDcorrFunction15(fDmesonShape15);*/
 	}
     
     // Data up tilted 
     
      if(IsDcorr == 1){
-		TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/0.318842)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57173e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.0,36);  
+     
+     		TF1 *fDmesonShape = new TF1("fDmesonShape","(1.92351e-03/(TMath::Power(TMath::Exp( - 5.46426e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 3.48352e+00, 4.65766e+00)))/(1.02198e-02 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69999e+00, 4.51197e+00)))",0.0,36);  
+		task->SetDcorrFunction(fDmesonShape);
+     
+		/*TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/0.318842)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57173e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.0,36);  
 		task->SetDcorrFunction22(fDmesonShape22);
     
 		TF1 *fDmesonShape21 = new TF1("fDmesonShape21","(1/0.307014)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57173e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.1,36);
@@ -322,7 +338,7 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
 		task->SetDcorrFunction14(fDmesonShape14);
     
 		TF1 *fDmesonShape15 = new TF1("fDmesonShape15","(1/0.0963444)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57173e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",9.0,36);  
-		task->SetDcorrFunction15(fDmesonShape15);
+		task->SetDcorrFunction15(fDmesonShape15);*/
 	}
    
     
