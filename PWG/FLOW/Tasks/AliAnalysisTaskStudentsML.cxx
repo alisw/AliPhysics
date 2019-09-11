@@ -63,6 +63,14 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fTotalMultAfterTrackSeletion(NULL),
  fMultiHistoAfterTrackSeletion(NULL),
  fMultiHistoBeforeMultCut(NULL),
+ fTPCClustersBeforeCut(NULL),
+ fTPCClustersAfterCut(NULL),
+ fITSClustersBeforeCut(NULL),
+ fITSClustersAfterCut(NULL),
+ fChiSquareTPCBeforeCut(NULL),
+ fChiSquareTPCAfterCut(NULL),
+ fDCAzBeforeCut(NULL),
+ fDCAzAfterCut(NULL),
  //SelectionCuts
  bMultCut(kFALSE),
  fMainFilter(0),
@@ -74,9 +82,9 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMinCentrality(0.),
  fMaxCentrality(100.),
      //Global
- bCutOnVertexX(kFALSE), 
- bCutOnVertexY(kFALSE),
- bCutOnVertexZ(kFALSE), 
+ bCutOnVertexX(kTRUE), 
+ bCutOnVertexY(kTRUE),
+ bCutOnVertexZ(kTRUE), 
  fMinVertexX(-44.),
  fMaxVertexX(-44.),
  fMinVertexY(-44.),
@@ -93,10 +101,19 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
    //Physics
  bCutOnEta(kTRUE),
  bCutOnPt(kTRUE),
+ bNumberTPCCluster(kTRUE),
+ bNumberITSCluster(kTRUE),
+ bChiSquareTPC(kTRUE),
+ bDCAz(kTRUE),
  fMinEtaCut(-0.8),
  fMaxEtaCut(0.8),
  fMinPtCut(0.2),
  fMaxPtCut(5.0),
+ fMinTPCCluster(70.),
+ fMinITSCluster(2.),
+ fMinChiSquareTPC(0.1),
+ fMaxChiSquareTPC(4.0),
+ fMaxDCAz(2.4),
  //Variables for the correlation
  fMaxCorrelator(10),
  bUseWeights(kFALSE),
@@ -174,6 +191,14 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fTotalMultAfterTrackSeletion(NULL),
  fMultiHistoAfterTrackSeletion(NULL),
  fMultiHistoBeforeMultCut(NULL),
+ fTPCClustersBeforeCut(NULL),
+ fTPCClustersAfterCut(NULL),
+ fITSClustersBeforeCut(NULL),
+ fITSClustersAfterCut(NULL),
+ fChiSquareTPCBeforeCut(NULL),
+ fChiSquareTPCAfterCut(NULL),
+ fDCAzBeforeCut(NULL),
+ fDCAzAfterCut(NULL),
  //SelectionCuts
  bMultCut(kFALSE),
  fMainFilter(0),
@@ -185,9 +210,9 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fMinCentrality(0.),
  fMaxCentrality(100.),
      //Global
- bCutOnVertexX(kFALSE), 
- bCutOnVertexY(kFALSE),
- bCutOnVertexZ(kFALSE), 
+ bCutOnVertexX(kTRUE), 
+ bCutOnVertexY(kTRUE),
+ bCutOnVertexZ(kTRUE), 
  fMinVertexX(-44.),
  fMaxVertexX(-44.),
  fMinVertexY(-44.),
@@ -204,10 +229,19 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
    //Physics
  bCutOnEta(kTRUE),
  bCutOnPt(kTRUE),
+ bNumberTPCCluster(kTRUE),
+ bNumberITSCluster(kTRUE),
+ bChiSquareTPC(kTRUE),
+ bDCAz(kTRUE),
  fMinEtaCut(-0.8),
  fMaxEtaCut(0.8),
  fMinPtCut(0.2),
  fMaxPtCut(5.0),
+ fMinTPCCluster(70.),
+ fMinITSCluster(2.),
+ fMinChiSquareTPC(0.1),
+ fMaxChiSquareTPC(4.0),
+ fMaxDCAz(2.4),
  //Variables for the correlation
  fMaxCorrelator(10),
  bUseWeights(kFALSE),
@@ -325,10 +359,19 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
      Double_t phi = aTrack->Phi(); // azimuthal angle
      Double_t eta = aTrack->Eta(); // pseudorapidity
      Double_t pt = aTrack->Pt(); // Pt (transverse momentum)
+     Int_t NumberOfTPCClusters = aTrack->GetTPCNcls(); //number of TPC clusters of the track
+     Int_t NumberOfITSClusters = aTrack->GetITSNcls(); //number of ITS clusters of the track
+     Double_t ChiSquareInTPC = (aTrack->GetTPCchi2())/(aTrack->GetNcls(1)); //chi square in the TPC
+     Double_t ValueDCAz = aTrack->ZAtDCA();  //z-coordinate of DCA
 
       // Fill some control histograms with the particles before track selection:
      fPhiHistBeforeTrackSeletion->Fill(phi); 
      fEtaHistBeforeTrackSeletion->Fill(eta);
+     fTPCClustersBeforeCut->Fill(NumberOfTPCClusters);
+     fITSClustersBeforeCut->Fill(NumberOfITSClusters);
+     fChiSquareTPCBeforeCut->Fill(ChiSquareInTPC);
+     fDCAzBeforeCut->Fill(ValueDCAz);
+
 
       if(!TrackSelection(aTrack)){continue;} //Track did not pass physics selection 
 	
@@ -336,6 +379,10 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
      fPtHist->Fill(pt);
      fPhiHistAfterTrackSeletion->Fill(phi); 
      fEtaHistAfterTrackSeletion->Fill(eta);
+     fTPCClustersAfterCut->Fill(NumberOfTPCClusters);
+     fITSClustersAfterCut->Fill(NumberOfITSClusters);
+     fChiSquareTPCAfterCut->Fill(ChiSquareInTPC);
+     fDCAzAfterCut->Fill(ValueDCAz);
 
      //Fill angle array  
      fAngles->AddAt(phi,fParticles);
@@ -526,6 +573,14 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  // o) Book histogam for Vertex Z before Cut
  // p) Book histogam for Vertex Z after Cut
  // q) Book histogram to debug
+ // r) Book histogram for number of TPC clustes before cut
+ // s) Book histogram for number of TPC clustes after cut
+ // t) Book histogram for number of ITC clusters before the cut
+ // u) Book histogram for number of ITC clusters after the cut
+ // v) Book histogram for chi square TPC before cut
+ // w) Book histogram for chi square TPC after cut
+ // x) Book histogram for DCAz before cut
+ // y) Book histogram for DCAz after cut
 
  // a) Book histogram to hold pt spectra:
  fPtHist = new TH1F("fPtHist","atrack->Pt()",fNbins,fMinBin,fMaxBin);
@@ -618,6 +673,38 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  // q) Book histogram to debug
  fCounterHistogram = new TH1F("fCounterHistogram","Histogram for some checks",3,0.,3.); 
  fControlHistogramsList->Add(fCounterHistogram);
+
+ // r) Book histogram for number of TPC clustes before cut
+ fTPCClustersBeforeCut = new TH1F("fTPCClustersBeforeCut","fTPCClustersBeforeCut",170,0.,170.); 
+ fControlHistogramsList->Add(fTPCClustersBeforeCut);
+
+ // s) Book histogram for number of TPC clustes after cut
+ fTPCClustersAfterCut = new TH1F("fTPCClustersAfterCut","fTPCClustersAfterCut",170,0.,170.); 
+ fControlHistogramsList->Add(fTPCClustersAfterCut);
+
+ // t) Book histogram for number of ITC clusters before the cut
+ fITSClustersBeforeCut = new TH1F("fITSClustersBeforeCut","fITSClustersBeforeCut",10,0.,10.); 
+ fControlHistogramsList->Add(fITSClustersBeforeCut);
+
+ // u) Book histogram for number of ITC clusters after the cut
+ fITSClustersAfterCut = new TH1F("fITSClustersAfterCut","fITSClustersAfterCut",10,0.,10.); 
+ fControlHistogramsList->Add(fITSClustersAfterCut);
+
+ // v) Book histogram for chi square TPC before cut
+ fChiSquareTPCBeforeCut = new TH1F("fChiSquareTPCBeforeCut","fChiSquareTPCBeforeCut",1000,0.,20.); 
+ fControlHistogramsList->Add(fChiSquareTPCBeforeCut);
+
+ // w) Book histogram for chi square TPC after cut
+ fChiSquareTPCAfterCut = new TH1F("fChiSquareTPCAfterCut","fChiSquareTPCAfterCut",1000,0.,20.); 
+ fControlHistogramsList->Add(fChiSquareTPCAfterCut);
+
+ // x) Book histogram for DCAz before cut
+ fDCAzBeforeCut = new TH1F("fDCAzBeforeCut","fDCAzBeforeCut",1000,0.,10.); 
+ fControlHistogramsList->Add(fDCAzBeforeCut);
+
+ // y) Book histogram for DCAz after cut
+ fDCAzAfterCut = new TH1F("fDCAzAfterCut","fDCAzAfterCut",1000,0.,10.); 
+ fControlHistogramsList->Add(fDCAzAfterCut);
 
 } //void AliAnalysisTaskStudentsML::BookControlHistograms()
 
@@ -788,6 +875,10 @@ void AliAnalysisTaskStudentsML::Cosmetics()
  	Double_t phi = aTrack->Phi(); // azimuthal angle*/
  	Double_t eta = aTrack->Eta(); // pseudorapidity
  	Double_t pt = aTrack->Pt(); // Pt (transverse momentum)
+	Int_t NumberOfTPCClusters = aTrack->GetTPCNcls(); //number of TPC clusters of the track
+	Int_t NumberOfITSClusters = aTrack->GetITSNcls(); //number of ITS clusters of the track
+	Double_t ChiSquareInTPC = (aTrack->GetTPCchi2())/(aTrack->GetNcls(1)); //chi square in the TPC
+	Double_t ValueDCAz = aTrack->ZAtDCA();  //z-coordinate of DCA
 
 	if(bCutOnEta) 
 	{
@@ -800,6 +891,29 @@ void AliAnalysisTaskStudentsML::Cosmetics()
 	  if(pt<fMinPtCut) return kFALSE;
 	  if(pt>fMaxPtCut) return kFALSE;
 	}
+
+	if(bNumberTPCCluster) 
+	{
+	  if(NumberOfTPCClusters<fMinTPCCluster) return kFALSE;
+	  
+	}
+
+	if(bNumberITSCluster) 
+	{
+	  if(NumberOfITSClusters<fMinITSCluster) return kFALSE;
+	}
+
+	if(bChiSquareTPC) 
+	{
+	  if(ChiSquareInTPC<fMinChiSquareTPC) return kFALSE;
+	  if(ChiSquareInTPC>fMaxChiSquareTPC) return kFALSE;
+	}
+
+	if(bDCAz) 
+	{
+	  if(ValueDCAz>fMaxDCAz) return kFALSE;
+	}
+
 
     return kTRUE;
 
