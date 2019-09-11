@@ -79,7 +79,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   if ( histoString != "" ) 
     ana->AddToHistogramsName(Form("%s_%s",  histoString.Data(), (ana->GetAddedHistogramsStringToName()).Data()) );
 
-  histoRanges->SetHistoPtRangeAndNBins(0, 100, 200) ; // Energy and pt histograms
+  histoRanges->SetHistoPtRangeAndNBins(0, 200, 400) ; // Energy and pt histograms
   
   if(calorimeter=="EMCAL")
   {
@@ -288,15 +288,16 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   if(calorimeter == "PHOS")
   {
     ana->SetNCellCut(2);// At least 3 cells
-    ana->SetMinPt(0.3);
+    ana->SetMinEnergy(0.3);
+    ana->SetMaxEnergy(200);
     ana->SetMinDistanceToBadChannel(2, 4, 5);
     ana->SetTimeCut(-1e10,1e10); // open cut
   }
   else
   {//EMCAL
     ana->SetNCellCut(1);// At least 2 cells
-    ana->SetMinEnergy(0.5); 
-    ana->SetMaxEnergy(100);
+    ana->SetMinEnergy(0.7); 
+    ana->SetMaxEnergy(300);
     ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off
                                  // restrict to less than 100 ns when time calibration is on
     ana->SetMinDistanceToBadChannel(2, 4, 6);
@@ -409,14 +410,15 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
   if(calorimeter == "PHOS")
   {
     ana->SetNCellCut(2);// At least 2 cells
-    ana->SetMinPt(0.3);
+    ana->SetMinEnergy(0.3);
+    ana->SetMaxEnergy(200);
     ana->SetMinDistanceToBadChannel(2);
   }
   else 
   {// EMCAL
     ana->SetNCellCut(1);// At least 2 cells
-    ana->SetMinPt(0.5); // no effect minium EMCAL cut.
-    ana->SetMaxPt(100); 
+    ana->SetMinEnergy(0.7); // no effect minium EMCAL cut.
+    ana->SetMaxEnergy(300); 
     //ana->SetTimeCut(400,900);// Time window of [400-900] ns
     ana->SetMinDistanceToBadChannel(2);
   }
@@ -593,7 +595,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     
     // cluster splitting settings
     ana->SetMinEnergy(6);
-    ana->SetMaxEnergy(100.);
+    ana->SetMaxEnergy(300.);
     
     ana->SetNLMMinEnergy(0, 10);
     ana->SetNLMMinEnergy(1, 6);
@@ -858,6 +860,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   ana->SetDebug(debug);
   
   ana->SetMinPt(5);
+  ana->SetMaxPt(200);
   ana->SetCalorimeter(calorimeter);
   if(calorimeter == "DCAL") 
   {
