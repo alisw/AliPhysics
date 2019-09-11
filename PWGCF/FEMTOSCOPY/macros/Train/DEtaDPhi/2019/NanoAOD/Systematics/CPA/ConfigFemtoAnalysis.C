@@ -390,7 +390,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc4etaphitpc[aniter]->SetMaxDcaV0Daughters(1.0); //0.5
 					dtc4etaphitpc[aniter]->SetMaxDcaV0(0.6); //0.5
 					dtc4etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.06, 0.06); //0.05
-					dtc4etaphitpc[aniter]->SetMaxCosPointingAngle(0.99); //0.9993
+					dtc4etaphitpc[aniter]->SetMaxCosPointingAngle(0.998); //0.9993
 					dtc4etaphitpc[aniter]->SetMaxV0DecayLength(60.0); //60
 					dtc4etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
 					dtc4etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
@@ -421,7 +421,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc5etaphitpc[aniter]->SetMaxDcaV0Daughters(1.0); //0.5
 					dtc5etaphitpc[aniter]->SetMaxDcaV0(0.6); //0.5
 					dtc5etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.06, 0.06); //0.05
-					dtc5etaphitpc[aniter]->SetMaxCosPointingAngle(0.99); //0.9993
+					dtc5etaphitpc[aniter]->SetMaxCosPointingAngle(0.998); //0.9993
 					dtc5etaphitpc[aniter]->SetMaxV0DecayLength(60.0); //60
 					dtc5etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
           dtc5etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
@@ -451,7 +451,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
   					tXiCut[aniter]->SetMass(XiMass);
   	        tXiCut[aniter]->SetNanoAODAnalysis(kTRUE);
   					tXiCut[aniter]->SetInvariantMassXi(XiMass-0.005,XiMass+0.005); //++ bylo 006
-          	tXiCut[aniter]->SetMinCosPointingAngleXi(0.97); //++ bylo 0.99
+          	tXiCut[aniter]->SetMinCosPointingAngleXi(0.99); //++ bylo 0.99
   					tXiCut[aniter]->SetMaxDecayLengthXi(100.);
   					tXiCut[aniter]->SetMaxDcaXi(100);
   					tXiCut[aniter]->SetInvariantMassRejectOmega(1.667,1.677);//++ NEW: omega rejection od 1.667 do 1.677 !
@@ -517,7 +517,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
   					tAXiCut[aniter]->SetEtaXi(0.8);
   					tAXiCut[aniter]->SetMass(XiMass);
   				  tAXiCut[aniter]->SetInvariantMassXi(XiMass-0.005,XiMass+0.005);
-            tAXiCut[aniter]->SetMinCosPointingAngleXi(0.97);
+            tAXiCut[aniter]->SetMinCosPointingAngleXi(0.99);
   					tAXiCut[aniter]->SetMaxDecayLengthXi(100.0);
   					tAXiCut[aniter]->SetMaxDcaXi(100);
   					tAXiCut[aniter]->SetInvariantMassRejectOmega(1.667,1.677);//++ NEW: omega rejection od 1.667 do 1.677 !
@@ -576,7 +576,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
             tOmegaCut[aniter]->SetNanoAODAnalysis(kTRUE);
             tOmegaCut[aniter]->SetInvariantMassOmega(OmegaMass-0.005,OmegaMass+0.005); //++ bylo 006
 
-            tOmegaCut[aniter]->SetMinCosPointingAngleXi(0.97); //++ bylo 0.99
+            tOmegaCut[aniter]->SetMinCosPointingAngleXi(0.99); //++ bylo 0.99
             tOmegaCut[aniter]->SetMaxDecayLengthXi(100.);
             tOmegaCut[aniter]->SetMaxDcaXi(100);
             tOmegaCut[aniter]->SetInvariantMassRejectXi(XiMass - 0.005,XiMass + 0.005);//++ NEW: omega rejection od 1.667 do 1.677 !
@@ -632,7 +632,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
             tAOmegaCut[aniter]->SetEtaXi(0.8);
             tAOmegaCut[aniter]->SetMass(OmegaMass);
             tAOmegaCut[aniter]->SetInvariantMassOmega(OmegaMass-0.005,OmegaMass+0.005);
-            tAOmegaCut[aniter]->SetMinCosPointingAngleXi(0.97);
+            tAOmegaCut[aniter]->SetMinCosPointingAngleXi(0.99);
             tAOmegaCut[aniter]->SetMaxDecayLengthXi(100.0);
             tAOmegaCut[aniter]->SetMaxDcaXi(100);
             tAOmegaCut[aniter]->SetInvariantMassRejectXi(XiMass - 0.005, XiMass + 0.005);//++ NEW: omega rejection od 1.667 do 1.677 !
