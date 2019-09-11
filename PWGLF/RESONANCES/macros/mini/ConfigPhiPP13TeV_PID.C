@@ -507,8 +507,14 @@ Bool_t ConfigPhiPP13TeV_PID(
             out->SetCutID(1, iCutQ);
             out->SetDaughter(0, AliRsnDaughter::kKaon);
             out->SetDaughter(1, AliRsnDaughter::kKaon);
-            out->SetCharge(0, '+');
-            out->SetCharge(1, '-');
+            if (mPDG1 == 3122)
+                out->SetCharge(0, '0');
+            else
+                out->SetCharge(0, '+');
+            if (mPDG2 == 3122)
+                out->SetCharge(1, '0');
+            else
+                out->SetCharge(1, '-');
             out->SetMotherPDG(mPDG0);
             out->SetMotherMass(mMass);
             out->SetPairCuts(cutsPair);
@@ -519,10 +525,8 @@ Bool_t ConfigPhiPP13TeV_PID(
                 out->SetDaughterTrue(0, AliRsnDaughter::kKaon);
             else if (mPDG1 == 2212)
                 out->SetDaughterTrue(0, AliRsnDaughter::kProton);
-            else if (mPDG1 == 3122) {
+            else if (mPDG1 == 3122)
                 out->SetDaughterTrue(0, AliRsnDaughter::kLambda);
-                out->SetCharge(0, '0');
-            }
 
             if (mPDG2 == 211)
                 out->SetDaughterTrue(1, AliRsnDaughter::kPion);
@@ -530,10 +534,8 @@ Bool_t ConfigPhiPP13TeV_PID(
                 out->SetDaughterTrue(1, AliRsnDaughter::kKaon);
             else if (mPDG2 == 2212)
                 out->SetDaughterTrue(1, AliRsnDaughter::kProton);
-            else if (mPDG2 == 3122) {
+            else if (mPDG2 == 3122)
                 out->SetDaughterTrue(1, AliRsnDaughter::kLambda);
-                out->SetCharge(1, '0');
-            }
 
             out->AddAxis(ptID, 200, 0., 20.);
             out->AddAxis(centID, nmult, multbins);
