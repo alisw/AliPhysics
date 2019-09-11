@@ -5211,3 +5211,11 @@ void AliReconstruction::SetRun1PIDforTracking(Bool_t val)
   AliESDpid::SetNSpeciesForTracking(val ? AliPID::kSPECIES : AliPID::kSPECIESC); // 5/9 in run1/run2
   AliESDtrack::SetTrackEMuAsPi(!val); // false/true in run1/run2
 }
+
+//___________________________________________________
+void AliReconstruction::SetPIDforTrackingOptimisedForNuclei(Int_t val)
+{
+  // set/unset pid for tracking as in Run1
+  AliInfoF("Impose PID for tracking optimised for nuclei, dE/dx threshold between 3He and pi: %i",val);
+  AliESDpid::SetOnly3HeOrPi(val);
+}

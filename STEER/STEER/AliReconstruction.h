@@ -111,6 +111,7 @@ public:
     {fLoadAlignData = detectors;};
 
   void           SetRun1PIDforTracking(Bool_t val=kTRUE);
+  void           SetPIDforTrackingOptimisedForNuclei(Int_t val = 130);
   void           SetTreeBuffSize(Long64_t sz=30000000) {fTreeBuffSize = sz;}
   //*** Global reconstruction flag setters
   void SetRunMultFinder(Bool_t flag=kTRUE) {fRunMultFinder=flag;};
