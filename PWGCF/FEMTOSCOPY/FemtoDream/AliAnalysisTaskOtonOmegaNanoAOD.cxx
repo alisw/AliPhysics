@@ -303,6 +303,10 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserCreateOutputObjects() {
  fOmegaTree->Branch("TrackPhi",&fTTrackPhi,"fTTrackPhi[fTnCascade][3]/F");
  fOmegaTree->Branch("TrackID",&fTTrackID,"fTTrackID[fTnCascade][3]/I");
 
+ //intialize the random:
+ frndm = new TRandom3();
+
+
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
@@ -494,8 +498,11 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
 
 
   //fill Tree
-  if(fTnProton>0&&fTnCascade>0) fOmegaTree->Fill();
-  //if(fTnProton>0||fTnCascade>0) fOmegaTree->Fill();
+  //if(fTnProton>0&&fTnCascade>0) fOmegaTree->Fill(); //Fill when at least 1 proton AND 1 cascade
+  ////if(fTnProton>0||fTnCascade>0) fOmegaTree->Fill(); //Fill when at least 1 proton OR 1 cascade
+  // -> Now fill also 2% of events with protons
+  Float_t r3=frndm->Rndm();
+  if( (fTnProton>0&&fTnCascade>0) || (fTnProton>0&&r3<.03) ) fOmegaTree->Fill();
 
  
   //pair cleaner
