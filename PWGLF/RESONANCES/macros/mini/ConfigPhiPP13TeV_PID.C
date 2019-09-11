@@ -415,25 +415,25 @@ Bool_t ConfigPhiPP13TeV_PID(
                 mPDG1 = 321;
                 mPDG2 = 2212;
             } else if (i == 10) {
-                mName.Form("Xim");
+                mName.Form("Xim_Lpi");
                 mMass = 1.32171;
                 mPDG0 = 3312;
                 mPDG1 = 3122;
                 mPDG2 = 211;
             } else if (i == 11) {
-                mName.Form("Xip");
+                mName.Form("Xip_piL");
                 mMass = 1.32171;
                 mPDG0 = -3312;
                 mPDG1 = 211;
                 mPDG2 = 3122;
             } else if (i == 12) {
-                mName.Form("Omegam");
+                mName.Form("Omegam_LK");
                 mMass = 1.67245;
                 mPDG0 = 3334;
                 mPDG1 = 3122;
                 mPDG2 = 321;
             } else if (i == 13) {
-                mName.Form("Omegap");
+                mName.Form("Omegap_KL");
                 mMass = 1.67245;
                 mPDG0 = -3334;
                 mPDG1 = 321;
