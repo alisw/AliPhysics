@@ -88,6 +88,11 @@
 #include "AliESDUtils.h"
 #include "AliMultSelection.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliTriggerConfiguration.h"
+#include "AliTriggerInput.h"
+
 using std::cout;
 using std::endl;
 
@@ -1345,10 +1350,22 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fTriggerClassHighMultSPD = fTriggerClasses.Contains("CVHMSH2-B");
   fTriggerClassHighMultV0m = fTriggerClasses.Contains("CVHMV0M-B");
   
+  // bits for CTP inputs
+  AliCDBEntry* cdbEntry = AliCDBManager::Instance()->Get("GRP/CTP/Config", fRunNumber);
+  AliTriggerConfiguration *trgCfg = cdbEntry ? static_cast<AliTriggerConfiguration*>(cdbEntry->GetObject()) : nullptr;
+  TObjArray inputs;
+  if (trgCfg)
+    inputs = trgCfg->GetInputs();
+  const auto inputSHM = trgCfg ? static_cast<AliTriggerInput*>(inputs.FindObject("0SHM")) : nullptr;
+  const auto inputV0M = trgCfg ? static_cast<AliTriggerInput*>(inputs.FindObject("0VHM")) : nullptr;
+  const auto inputV0A = trgCfg ? static_cast<AliTriggerInput*>(inputs.FindObject("0V0A")) : nullptr;
+  const auto inputV0C = trgCfg ? static_cast<AliTriggerInput*>(inputs.FindObject("0V0C")) : nullptr;
   const auto triggerBits = aod->GetHeader()->GetL0TriggerInputs();
-  fTriggerOnlineINT7 = (triggerBits & (1  << 6) != 0) && (triggerBits & 1 << 5);
-  fTriggerOnlineHighMultSPD = (triggerBits & (1  << 7) != 0);
-  fTriggerOnlineHighMultV0 = (triggerBits & (1  << 9) != 0);
+  fTriggerOnlineHighMultSPD = inputSHM ? TESTBIT(triggerBits, inputSHM->GetIndexCTP() - 1) : -1;
+  fTriggerOnlineHighMultV0 = inputV0M ? TESTBIT(triggerBits, inputV0M->GetIndexCTP() - 1) : -1;
+  fTriggerOnlineINT7 = (inputV0C && inputV0A) ?
+                       (TESTBIT(triggerBits, inputV0C->GetIndexCTP() - 1) &&
+                        TESTBIT(triggerBits, inputV0A->GetIndexCTP() - 1)) : -1;
 
   fTreeEvChar->Fill();
   
