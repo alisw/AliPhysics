@@ -2139,25 +2139,25 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 		if(phi_d0 > 315.0 || phi_d0 < 45.0){
 		DCAMCMean_phi1 = GetDCAMeanMC_phi1(fPt); ///mean of the MC
 		float Meancorrection_phi1 = gRandom->Gaus(DCAMCMean_phi1,0.0); 
-		DataDCAResCorr =  (DCAxy + correction_phi1)*track->Charge()*signB;
+		DataDCAResCorr =  (DCAxy + Meancorrection_phi1)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 45.0 && phi_d0 < 135.0){
 		DCAMCMean_phi2 = GetDCAMeanMC_phi2(fPt); ///mean of the MC
 		float Meancorrection_phi2 = gRandom->Gaus(DCAMCMean_phi2,0.0); 
-		DataDCAResCorr =  (DCAxy + correction_phi2)*track->Charge()*signB;
+		DataDCAResCorr =  (DCAxy + Meancorrection_phi2)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 135.0 && phi_d0 < 225.0){
 		DCAMCMean_phi3 = GetDCAMeanMC_phi3(fPt); ///mean of the MC
 		float Meancorrection_phi3 = gRandom->Gaus(DCAMCMean_phi3,0.0); 
-		DataDCAResCorr =  (DCAxy + correction_phi3)*track->Charge()*signB;
+		DataDCAResCorr =  (DCAxy + Meancorrection_phi3)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 225.0 && phi_d0 < 315.0){
 		DCAMCMean_phi4 = GetDCAMeanMC_phi4(fPt); ///mean of the MC
 		float Meancorrection_phi4 = gRandom->Gaus(DCAMCMean_phi4,0.0);  
-		DataDCAResCorr =  (DCAxy + correction_phi4)*track->Charge()*signB;
+		DataDCAResCorr =  (DCAxy + Meancorrection_phi4)*track->Charge()*signB;
 		}
  		}
 		
@@ -2502,25 +2502,25 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
            	if(phi_d0 > 315.0 || phi_d0 < 45.0){
 		DCAMCRes_phi1 = GetDCAResolMC_phi1(fPt); ///resolution of the MC
 		float Rescorrection_phi1 = gRandom->Gaus(0.0,DCAMCRes_phi1); 
-		DCAResCorr =  (DCAxy + correction_phi1)*track->Charge()*signB;
+		DCAResCorr =  (DCAxy + Rescorrection_phi1)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 45.0 && phi_d0 < 135.0){
 		DCAMCRes_phi2 = GetDCAResolMC_phi2(fPt); ///resolution of the MC
 		float Rescorrection_phi2 = gRandom->Gaus(0.0,DCAMCRes_phi2); 
-		DCAResCorr =  (DCAxy + correction_phi2)*track->Charge()*signB;
+		DCAResCorr =  (DCAxy + Rescorrection_phi2)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 135.0 && phi_d0 < 225.0){
 		DCAMCRes_phi3 = GetDCAResolMC_phi3(fPt); ///resolution of the MC
 		float Rescorrection_phi3 = gRandom->Gaus(0.0,DCAMCRes_phi3); 
-		DCAResCorr =  (DCAxy + correction_phi3)*track->Charge()*signB;
+		DCAResCorr =  (DCAxy + Rescorrection_phi3)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 225.0 && phi_d0 < 315.0){
 		DCAMCRes_phi4 = GetDCAResolMC_phi4(fPt); ///resolution of the MC
 		float Rescorrection_phi4 = gRandom->Gaus(0.0,DCAMCRes_phi4); 
-		DCAResCorr =  (DCAxy + correction_phi4)*track->Charge()*signB;
+		DCAResCorr =  (DCAxy + Rescorrection_phi4)*track->Charge()*signB;
 		}
 		}
 		
