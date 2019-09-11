@@ -354,8 +354,19 @@ void AliPDG::AddParticlesToPdgDataBase()
 		       0.05, 0, "Special", ionCode);
   }
 
+  ionCode = 2010010030;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("CTriton","CTriton", 4.162, kFALSE,
+       3.3e-12, 3, "Ion", ionCode);
+    pdgDB->AddAntiParticle("AntiCTriton", - ionCode);
+  }
 
-
+  ionCode = 2010010020;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("CDeuteron","CDeuteron", 3.226, kFALSE,
+		       3.3e-12, 3, "Ion", ionCode);
+    pdgDB->AddAntiParticle("AntiCDeuteron", - ionCode);
+  }
 
   // Special resonances
 
