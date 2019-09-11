@@ -207,6 +207,7 @@ fNcontributors(0),
 fNtracks(0),
 fIsEvRej(0),
 fRunNumber(0),
+fRunNumberCDB(0),
 fEventID(0),
 fFileName(""),
 fDirNumber(0),
@@ -286,7 +287,8 @@ fCorrV0MVtx(false),
 fApplyPhysicsSelOnline(false),
 fEnableEventDownsampling(false),
 fFracToKeepEventDownsampling(1.1),
-fSeedEventDownsampling(0)
+fSeedEventDownsampling(0),
+fCdbEntry(nullptr)
 {
   fParticleCollArray.SetOwner(kTRUE);
   fJetCollArray.SetOwner(kTRUE);
@@ -599,6 +601,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("mult_gen_v0a", &fMultGenV0A);
   fTreeEvChar->Branch("mult_gen_v0c", &fMultGenV0C);
   fTreeEvChar->Branch("perc_v0m", &fPercV0M);
+  fTreeEvChar->Branch("mult_v0m", &fMultV0M);
   fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
   
   if(fWriteVariableTreeD0){
@@ -1326,7 +1329,10 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   // multiplicity percentiles
   const auto multSel = static_cast<AliMultSelection*>(aod->FindListObject("MultSelection"));
   fPercV0M = multSel ? multSel->GetMultiplicityPercentile("V0M") : -1.;
-  
+  // multiplicity from mult selection task
+  const auto multEst = multSel ? multSel->GetEstimator("V0M") : nullptr;
+  fMultV0M = multEst ? multEst->GetValue() : -1.;
+
   // generated multiplicity
   fMultGen = -1;
   fMultGenV0A = -1;
@@ -1351,8 +1357,12 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fTriggerClassHighMultV0m = fTriggerClasses.Contains("CVHMV0M-B");
   
   // bits for CTP inputs
-  AliCDBEntry* cdbEntry = AliCDBManager::Instance()->Get("GRP/CTP/Config", fRunNumber);
-  AliTriggerConfiguration *trgCfg = cdbEntry ? static_cast<AliTriggerConfiguration*>(cdbEntry->GetObject()) : nullptr;
+  if (fRunNumberCDB != fRunNumber) {
+    fCdbEntry = AliCDBManager::Instance()->Get("GRP/CTP/Config", fRunNumber);
+    fRunNumberCDB = fRunNumber;
+  }
+
+  AliTriggerConfiguration *trgCfg = fCdbEntry ? static_cast<AliTriggerConfiguration*>(fCdbEntry->GetObject()) : nullptr;
   TObjArray inputs;
   if (trgCfg)
     inputs = trgCfg->GetInputs();
