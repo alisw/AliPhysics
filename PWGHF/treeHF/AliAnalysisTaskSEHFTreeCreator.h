@@ -64,6 +64,7 @@ class AliAODEvent;
 class TClonesArray;
 class AliEmcalJet;
 class AliRhoParameter;
+class AliCDBEntry;
 
 class AliAnalysisTaskSEHFTreeCreator : public AliAnalysisTaskSE
 {
@@ -334,6 +335,7 @@ private:
     Int_t                   fNtracks;                              /// number of tracks
     Int_t                   fIsEvRej;                              /// flag with information about rejection of the event
     Int_t                   fRunNumber;                            /// run number
+    Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
     UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
     TString                 fFileName;
     unsigned int            fDirNumber;
@@ -362,6 +364,7 @@ private:
     Int_t                   fnV0MCorr;                             /// V0M multiplicity (corrected)
     Int_t                   fnV0MEqCorr;                           /// V0M multiplicity (equalized + corrected)
     Float_t                 fPercV0M;                              /// V0M multiplicity percentile
+    Float_t                 fMultV0M;                              /// V0M multiplicity from mult selection task
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
@@ -450,8 +453,10 @@ private:
     float fFracToKeepEventDownsampling;                            /// fraction of events to be kept by event downsampling
     unsigned long fSeedEventDownsampling;                          /// seed for event downsampling
 
+    AliCDBEntry *fCdbEntry;
+
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,20);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,21);
     /// \endcond
 };
 
