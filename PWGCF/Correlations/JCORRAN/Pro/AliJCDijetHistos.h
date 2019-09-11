@@ -69,6 +69,7 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_rhom;       //! // for event mt density
 
         AliJTH1D fh_jetPt;      //! // for pt dist of jets
+        AliJTH1D fh_jetPt_ALICE;//! // for pt dist of jets, with ALICE bins
         AliJTH1D fh_jetEta;     //! // for eta dist of jets
         AliJTH1D fh_jetPhi;     //! // for phi dist of jets
         AliJTH2D fh_jetEtaPhi;  //! // for (eta,phi) dist of jets
@@ -84,6 +85,8 @@ class AliJCDijetHistos : public AliJHistogramInterface
 
         AliJTH1D fh_responseInfo;             //! // for counting response related things.
         AliJTH1D fh_jetResponseDeltaR;        //! // true jet vs. detector jet deltaR
+        AliJTH1D fh_jetResponseDeltaRClosest; //! // true jet vs. detector jet deltaR no limits
+        AliJTH1D fh_jetResponseDeltaPt;       //! // true jet vs. detector jet pt normed with true jet pt
         AliJTH1D fh_jetDeltaRMin;             //! // Minimum deltaR between jets
         AliJTH1D fh_jetBGSubtrDeltaR;         //! // DeltaR between BG subtr jet and raw jet.
         AliJTH2D fh_jetResponse;              //! // Jet response matrix
