@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/09/09)                      //
+//                         (Last Modified 2019/09/11)                      //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -1098,7 +1098,7 @@ Int_t AliEbyEPhiDistNew::GetPtBin(Double_t pt){
     }//for 
   }
   else {
-    Double_t pidPtBins[25] = { 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5, 1.55 };
+      Double_t pidPtBins[25] = { 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5, 1.55 };
     for(Int_t iBin = 0; iBin < fNptBins; iBin++){
       
       if( iBin == fNptBins-1){
@@ -1252,10 +1252,10 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
                 if (TMath::Abs(pid[1]) < 2.)  // nsigma < 1
                     isAcceptedTPC = kTRUE;
             }
-            //            else if( track->Pt() >= 0.6 && track->Pt() < 0.8){
-            //                if(pid[1] > -0.5 && pid[1] < 1.)  // asymmetry cut on nsigma
-            //                    isAcceptedTPC = kTRUE;
-            //            }
+//            else if( track->Pt() >= 0.6 && track->Pt() < 0.8){
+//                if(pid[1] > -0.5 && pid[1] < 1.)  // asymmetry cut on nsigma
+//                    isAcceptedTPC = kTRUE;
+//            }
             else
                 if(TMath::Abs(pid[1]) < fNSigmaMaxTPC ) isAcceptedTPC = kTRUE;
             
@@ -1392,5 +1392,3 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
 
 
 //----------------------------------------------------------------------------------
-
-
