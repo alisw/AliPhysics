@@ -56,30 +56,14 @@ const Double_t pionMass = AliPID::ParticleMass(AliPID::kPion);
 const Double_t v0Mass = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
 
 enum {
-    kSigmaStarPCode = 3224,  // Sigma(1385)+
-    kSigmaStarNCode = 3114,  // Sigma(1385)-
-    kLambdaCode = 3122,      // Lambda
-    kProtonCode = 2212,      // Proton+
-    kPionCode = 211,         // Pion+
-};
-enum {
-    kSigmaStarP = 1,
-    kSigmaStarN,
-    kAntiSigmaStarP,
-    kAntiSigmaStarN,
-    kSigmaStarP_MIX,  // 5
-    kSigmaStarN_MIX,
-    kAntiSigmaStarP_MIX,
-    kAntiSigmaStarN_MIX,
-    kSigmaStarP_GEN,  // 9
-    kSigmaStarN_GEN,
-    kAntiSigmaStarP_GEN,
-    kAntiSigmaStarN_GEN,
-    kSigmaStarP_REC,  // 13
-    kSigmaStarN_REC,
-    kAntiSigmaStarP_REC,
-    kAntiSigmaStarN_REC,
-    kAllType
+    kBefore = 1, // 1
+    kTrackCut,
+    kEtaCut,
+    kpTcut,
+    kPIDcut,
+    kPVDCAcut,
+    krDCACut,
+    kAll
 };
 
 class AliAnalysisTaskNanoCheck;
@@ -108,12 +92,12 @@ AliAnalysisTaskNanoCheck::AliAnalysisTaskNanoCheck(const char* name,
 AliAnalysisTaskNanoCheck::~AliAnalysisTaskNanoCheck() {}
 //_____________________________________________________________________________
 void AliAnalysisTaskNanoCheck::UserCreateOutputObjects() {
-    fTrackCuts = new AliESDtrackCuts();
-    fTrackCuts->GetStandardITSTPCTrackCuts2011(kTRUE, kTRUE);
-    fTrackCuts->SetEtaRange(-0.8, 0.8);
-    fTrackCuts->SetPtRange(0.15, 1e20);
+    fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+    //fTrackCuts->GetStandardITSTPCTrackCuts2011();
+    //fTrackCuts->SetEtaRange(-0.8, 0.8);
+    //fTrackCuts->SetPtRange(0.15, 1e20);
 
-    fHistos = new THistManager("Sigma1385hists");
+    fHistos = new THistManager("NanoCheckhists");
 
     std::vector<double> centaxisbin = {
         0,  1,  5,  10, 15, 20, 30,
@@ -122,9 +106,12 @@ void AliAnalysisTaskNanoCheck::UserCreateOutputObjects() {
     auto binPt = AxisFix("Pt", 200, 0, 20);
     auto binMass = AxisFix("Mass", 2000, 1.0, 3.0);
     binZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10});
+    auto hNumofTracks = AxisStr("Type", {"before", "trackCut", "etaCut", "pTcut", "nPIDcut",
+                                    "dPVDCAcut", "rDCACut", "all"});
 
     fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
     fHistos->CreateTH1("hMultiplicity", "", 100, 0, 100, "s");
+    //fHistos->CreateTH1("QA/hNtracks", "", {hNumofTracks});
     fHistos->CreateTH2("QA/hTPCPIDPion", "", 200, 0, 20, 2000, 0, 200);
     fHistos->CreateTH1("QA/hEtaPion", "", 40, -2, 2);
     fHistos->CreateTH1("QA/hDCADPVPion", "", 300, 0, 3, "s");
@@ -266,7 +253,7 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
         fHistos->FillTH1("QA/hDCADPVPion", pionZ);
         fHistos->FillTH1("QA/hEtaPion", fEta);
         fHistos->FillTH2("QA/hTPCPIDPion", track->GetTPCmomentum(), track->GetTPCsignal());
-
+        
         if (abs(fTPCNSigPion) > fTPCNsigSigmaStarPionCut)
             continue;
         if (fEta > fSigmaStarPionEtaCut)
