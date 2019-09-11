@@ -1995,7 +1995,20 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 		 ///////////////////
 		// With PID cuts //
 	       ///////////////////
-	       
+	       float DCAMCMean_phi1 = 999;
+            	float DCAMCMean_phi2 = 999;
+            	float DCAMCMean_phi3 = 999;
+            	float DCAMCMean_phi4 = 999;
+            	
+            	float DCAMCRes_phi1 = 999;
+            	float DCAMCRes_phi2 = 999;
+            	float DCAMCRes_phi3 = 999;
+            	float DCAMCRes_phi4 = 999;
+            	
+            	float correction_phi1 = 999;
+            	float correction_phi2 = 999;
+            	float correction_phi3 = 999;
+            	float correction_phi4 = 999;
 	       Double_t phi_d0 = (track->Phi()*180.0/TMath::Pi());
         if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
 			fDCAxy_pt_had_onlyDCA->Fill(fPt,DCAxy);
@@ -2008,17 +2021,17 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			fDCAxy_pt_had_phi1_B->Fill(fPt,TMath::Sqrt(cov[0]));
 			
 			if(fIsMC){
-			float DCAMCRes_phi1 = GetDCAResolMC_phi1(fPt); ///resolution of the MC
+			DCAMCRes_phi1 = GetDCAResolMC_phi1(fPt); ///resolution of the MC
 			}else{
-			float DCAMCRes_phi1 = 0.0;
+			DCAMCRes_phi1 = 0.0;
 			}
 			if(!fIsMC){
-			float DCAMCMean_phi1 = GetDCAMeanMC_phi1(fPt); ///mean of the MC
+			DCAMCMean_phi1 = GetDCAMeanMC_phi1(fPt); ///mean of the MC
 			}
 			else{
-			float DCAMCMean_phi1 = 0.0;
+			DCAMCMean_phi1 = 0.0;
 			}
-			float correction_phi1 = gRandom->Gaus(DCAMCMean_phi1,DCAMCRes_phi1); 
+			correction_phi1 = gRandom->Gaus(DCAMCMean_phi1,DCAMCRes_phi1); 
 			float DCAResCorr_phi1 =  DCAxy + correction_phi1;
 			
 			//fResGausCorr_phi1->Fill(correction_phi1);
@@ -2031,17 +2044,17 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			fDCAxy_pt_had_phi2_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAxy_pt_had_phi2_B->Fill(fPt,TMath::Sqrt(cov[0]));
 			if(fIsMC){
-			float DCAMCRes_phi2 = GetDCAResolMC_phi2(fPt); ///resolution of the MC
+			DCAMCRes_phi2 = GetDCAResolMC_phi2(fPt); ///resolution of the MC
 			}else{
-			float DCAMCRes_phi2 = 0.0;
+			DCAMCRes_phi2 = 0.0;
 			}
 			if(!fIsMC){
-			float DCAMCMean_phi2 = GetDCAMeanMC_phi2(fPt); ///mean of the MC
+			DCAMCMean_phi2 = GetDCAMeanMC_phi2(fPt); ///mean of the MC
 			}
 			else{
-			float DCAMCMean_phi2 = 0.0;
+			DCAMCMean_phi2 = 0.0;
 			}
-			float correction_phi2 = gRandom->Gaus(DCAMCMean_phi2,DCAMCRes_phi2); 
+			correction_phi2 = gRandom->Gaus(DCAMCMean_phi2,DCAMCRes_phi2); 
 			float DCAResCorr_phi2 =  DCAxy + correction_phi2;
 			
 			//fResGausCorr_phi2->Fill(correction_phi2);
@@ -2054,17 +2067,17 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			fDCAxy_pt_had_phi3_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAxy_pt_had_phi3_B->Fill(fPt,TMath::Sqrt(cov[0]));
 			if(fIsMC){
-			float DCAMCRes_phi3 = GetDCAResolMC_phi3(fPt); ///resolution of the MC
+			DCAMCRes_phi3 = GetDCAResolMC_phi3(fPt); ///resolution of the MC
 			}else{
-			float DCAMCRes_phi3 = 0.0;
+			DCAMCRes_phi3 = 0.0;
 			}
 			if(!fIsMC){
-			float DCAMCMean_phi3 = GetDCAMeanMC_phi3(fPt); ///mean of the MC
+			DCAMCMean_phi3 = GetDCAMeanMC_phi3(fPt); ///mean of the MC
 			}
 			else{
-			float DCAMCMean_phi3 = 0.0;
+			DCAMCMean_phi3 = 0.0;
 			}
-			float correction_phi3 = gRandom->Gaus(DCAMCMean_phi3,DCAMCRes_phi3); 
+			correction_phi3 = gRandom->Gaus(DCAMCMean_phi3,DCAMCRes_phi3); 
 			float DCAResCorr_phi3 =  DCAxy + correction_phi3;
 			
 			//fResGausCorr_phi3->Fill(correction_phi3);
@@ -2077,17 +2090,17 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			fDCAxy_pt_had_phi4_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAxy_pt_had_phi4_B->Fill(fPt,TMath::Sqrt(cov[0]));
 			if(fIsMC){
-			float DCAMCRes_phi4 = GetDCAResolMC_phi4(fPt); ///resolution of the MC
+			DCAMCRes_phi4 = GetDCAResolMC_phi4(fPt); ///resolution of the MC
 			}else{
-			float DCAMCRes_phi4 = 0.0;
+			DCAMCRes_phi4 = 0.0;
 			}
 			if(!fIsMC){
-			float DCAMCMean_phi4 = GetDCAMeanMC_phi4(fPt); ///mean of the MC
+			DCAMCMean_phi4 = GetDCAMeanMC_phi4(fPt); ///mean of the MC
 			}
 			else{
-			float DCAMCMean_phi4 = 0.0;
+			DCAMCMean_phi4 = 0.0;
 			}
-			float correction_phi4 = gRandom->Gaus(DCAMCMean_phi4,DCAMCRes_phi4); 
+			correction_phi4 = gRandom->Gaus(DCAMCMean_phi4,DCAMCRes_phi4); 
 			float DCAResCorr_phi4 =  DCAxy + correction_phi4;
 			
 			//fResGausCorr_phi4->Fill(correction_phi4);
