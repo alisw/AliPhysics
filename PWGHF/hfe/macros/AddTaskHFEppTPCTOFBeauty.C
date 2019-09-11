@@ -139,21 +139,35 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
     if(isMCc){
     //D correction
     
-    TFile *f = new TFile("DMesonWeight_pp5TeV_Aug30.root");
-    TGraphErrors *fDmeson = (TGraphErrors *) f->Get("DCentral");
+   // TFile *f = new TFile("DMesonWeight_pp5TeV_Aug30.root");
+    
+     TString filenameDweight = "DMesonWeight_pp5TeV_Aug30.root";
+     //TFile *DweightFileEnh = TFile::Open(Form("%s", filenameDweight.Data()));
+     TFile *DweightFileEnh = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filenameDweight.Data()));
+    
+     TGraphErrors *fDmeson = (TGraphErrors *)DweightFileEnh->Get("DCentral");
    
-     TFile *fSt = new TFile("KPi_ratio_5TeV_pp.root");
-    TF1 *fStrangeWeight = (TF1 *) fSt->Get("f2");
-    task->SetKtoPiFunction(fStrangeWeight);
+   
+     TString filenameStrweight = "KPi_ratio_5TeV_pp.root";
+     //TFile *StrweightFileEnh = TFile::Open(Form("%s", filenameStrweight.Data()));
+     TFile *StrweightFileEnh = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filenameStrweight.Data()));
+     //TFile *fSt = new TFile("KPi_ratio_5TeV_pp.root");
+     TF1 *fStrangeWeight = (TF1 *)StrweightFileEnh->Get("f2");
+     task->SetKtoPiFunction(fStrangeWeight);
  
     ///B correction
     //TFile *f = new TFile("FractionWeights_Graph_Aug01.root");
-    TFile *f = new TFile("FractionWeights_Graph_Sep02_Final.root");
-    TGraphErrors *fLc = (TGraphErrors *) f->Get("hWeight_Lc");
-    TGraphErrors *fDp = (TGraphErrors *) f->Get("hWeight_Dp");
-    TGraphErrors *fDstar = (TGraphErrors *) f->Get("hWeight_Dstar");
-    TGraphErrors *fDs = (TGraphErrors *) f->Get("hWeight_Ds");
-    TGraphErrors *fD0 = (TGraphErrors *) f->Get("hWeight_D0");
+   // TFile *f = new TFile("FractionWeights_Graph_Sep02_Final.root");
+    
+     TString filenameFractweight = "FractionWeights_Graph_Sep02_Final.root";
+   //TFile *FractweightFileEnh = TFile::Open(Form("%s", filenameFractweight.Data()));
+   TFile *FractweightFileEnh = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filenameFractweight.Data()));
+    
+    TGraphErrors *fLc = (TGraphErrors *)FractweightFileEnh->Get("hWeight_Lc");
+    TGraphErrors *fDp = (TGraphErrors *)FractweightFileEnh->Get("hWeight_Dp");
+    TGraphErrors *fDstar = (TGraphErrors *)FractweightFileEnh->Get("hWeight_Dstar");
+    TGraphErrors *fDs = (TGraphErrors *)FractweightFileEnh->Get("hWeight_Ds");
+    TGraphErrors *fD0 = (TGraphErrors *)FractweightFileEnh->Get("hWeight_D0");
     task->SetLcD0Function(fLc);
     task->SetDpD0Function(fDp);
     task->SetDstarD0Function(fDstar);
@@ -161,8 +175,8 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
     task->SetD0D0Function(fD0);
   // TString filenameBweight = "BMesonWeight_pp5TeV_ScaledToOne_July29.root";
     TString filenameBweight = "BMesonWeight_pp5TeV_Aug29.root";
-   TFile *BweightFileEnh = TFile::Open(Form("%s", filenameBweight.Data()));
-   //TFile *BweightFileEnh = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filenameBweight.Data()));
+   //TFile *BweightFileEnh = TFile::Open(Form("%s", filenameBweight.Data()));
+   TFile *BweightFileEnh = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filenameBweight.Data()));
     
     ///Default FONLL
     if(IsBcorr == 0){

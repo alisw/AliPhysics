@@ -1973,11 +1973,12 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                 fTPCnsigma_pt_after_tof_its->Fill(fPt,fTPCnSigma);
             }*/
         }
-        
+        if(fIsMC){
 	if(fTOFnSigma_kaon >= -3 && fTOFnSigma_kaon <= 3){
 	   if(fTPCnSigma_kaon >= -3 && fTPCnSigma_kaon <= 3){
                     if(TMath::Abs(fMCparticle->GetPdgCode()) == 321) fKaonsPt->Fill(fPt);
 	  }
+	}
 	}
         
         //////////////////////////////////////////////
