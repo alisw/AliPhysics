@@ -245,7 +245,7 @@ Bool_t AliAnalysisTaskSDKL::FillHistograms() {
 
   //fill full event
   std::vector <fastjet::PseudoJet> event_full;
-  FillAllTracks(fTracksCont, nullptr, event_full);
+  AddTracksToEvent(fTracksCont, event_full);
 
 //  get jets without backgr subtraction
 //  fastjet::JetDefinition jet_def_full(fastjet::antikt_algorithm, 0.4, fastjet::E_scheme);
@@ -372,7 +372,7 @@ std::vector<split> AliAnalysisTaskSDKL::FindHardSplits(fastjet::PseudoJet const 
 
 void AliAnalysisTaskSDKL::FillSparseFromSplits(THnSparse *histo, std::vector<split> const & splits, const double jet_pt) {
 
-  auto nsd = splits.size();
+  int nsd = splits.size();
 
   float zg[4] = {0.0};
   float rg[4] = {0.0};
@@ -515,25 +515,17 @@ std::vector<fastjet::PseudoJet> AliAnalysisTaskSDKL::GetBackSubEvent(std::vector
 
 }
 
-void AliAnalysisTaskSDKL::FillAllTracks(AliParticleContainer* cont1, AliParticleContainer* cont2, std::vector <fastjet::PseudoJet> & full_event) {
+void AliAnalysisTaskSDKL::AddTracksToEvent(AliParticleContainer* cont, std::vector <fastjet::PseudoJet> & full_event) {
 
-  Double_t track_p[3];
-
-  if (cont1) {
-    cont1->ResetCurrentID();
-    for ( auto track : cont1->accepted() ) {
+  if (cont) {
+    cont->ResetCurrentID();
+    for ( auto track : cont->accepted() ) {
+      Double_t track_p[3];
       track->PxPyPz(track_p);
       Double_t ptot = sqrt( track_p[0]*track_p[0] + track_p[1]*track_p[1] + track_p[2]*track_p[2] );
-      full_event.push_back( fastjet::PseudoJet(track_p[0], track_p[1], track_p[2], ptot) ); //massless particle
-    }
-  }
-
-  if (cont2) {
-    cont2->ResetCurrentID();
-    for ( auto track : cont2->accepted() ) {
-      track->PxPyPz(track_p);
-      Double_t ptot = sqrt( track_p[0]*track_p[0] + track_p[1]*track_p[1] + track_p[2]*track_p[2] );
-      full_event.push_back( fastjet::PseudoJet(track_p[0], track_p[1], track_p[2], ptot) ); //massless particle
+      fastjet::PseudoJet pj(track_p[0], track_p[1], track_p[2], ptot); //massless particle
+      pj.set_user_index( track->GetLabel() );
+      full_event.push_back( pj );
     }
   }
 
