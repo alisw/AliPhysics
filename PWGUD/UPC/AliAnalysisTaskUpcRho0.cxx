@@ -220,7 +220,8 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	// load SPD effi
 	if (isUsingEffi) {
 		std::cout<<"Using efficiency file: "<<fEfficiencyFileName<<std::endl;
-		fSPDfile = AliDataFile::OpenOADB(fEfficiencyFileName.Data());
+		if (fEfficiencyFileName.Contains("alien")) fSPDfile = TFile::Open(fEfficiencyFileName.Data());  // private efficiency file
+		else fSPDfile = AliDataFile::OpenOADB(fEfficiencyFileName.Data()); // open OADB effciency file
 		fSPDfile->Print();
 		fSPDfile->Map();
 		hSPDeff = (TH2D*) fSPDfile->Get("hEff");
