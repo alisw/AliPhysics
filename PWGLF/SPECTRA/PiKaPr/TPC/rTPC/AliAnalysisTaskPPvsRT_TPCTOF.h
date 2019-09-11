@@ -168,8 +168,10 @@ private:
     TH1D *hPtneg_TPC_Eta[5][3][4];
     TH1D *hPtpos_TOF[5][3];
     TH1D *hPtpos_TOF_Eta[5][3][4];
+    TH1D *hPpos_TOF_Eta[5][3][4];
     TH1D *hPtneg_TOF[5][3];
     TH1D *hPtneg_TOF_Eta[5][3][4];
+    TH1D *hPneg_TOF_Eta[5][3][4];
     TH2D *hnSigPipos[5][3][4];
     TH2D *hnSigkpos[5][3][4];
     TH2D *hnSigppos[5][3][4];

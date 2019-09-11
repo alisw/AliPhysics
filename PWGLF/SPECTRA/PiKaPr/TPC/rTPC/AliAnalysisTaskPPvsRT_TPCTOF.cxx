@@ -153,10 +153,10 @@ fcutHigh(0x0)
     
     for(Int_t i = 0; i<nRt; ++i){
         
-   //     hDCAxyVsPtPi[i]=0;
-     //   hDCAxyVsPtp[i]=0;
-       // hDCAxyVsPtPiC[i]=0;
-      //  hDCAxyVsPtpC[i]=0;
+        //     hDCAxyVsPtPi[i]=0;
+        //   hDCAxyVsPtp[i]=0;
+        // hDCAxyVsPtPiC[i]=0;
+        //  hDCAxyVsPtpC[i]=0;
         
         for(Int_t r= 0; r < 3; r++){
             hPtpos_TPC[i][r]=0;
@@ -168,6 +168,8 @@ fcutHigh(0x0)
                 
                 hPtpos_TPC_Eta[i][r][j]=0;
                 hPtneg_TPC_Eta[i][r][j]=0;
+                hPpos_TOF_Eta[i][r][j]=0;
+                hPneg_TOF_Eta[i][r][j]=0;
                 hPtpos_TOF_Eta[i][r][j]=0;
                 hPtneg_TOF_Eta[i][r][j]=0;
                 
@@ -186,23 +188,23 @@ fcutHigh(0x0)
     
     for(Int_t j=0; j<nHists; ++j){
         hPtVsP[j]=0;
-	hBetavsPMB[j]=0;
-	}    
-
+        hBetavsPMB[j]=0;
+    }    
+    
     //default constructor
- /*   for(Int_t cent=0;cent<nRt;++cent){
-        for(Int_t pid=0;pid<7;++pid){
-            hMcIn[cent][pid]     = 0;
-            hMcOut[cent][pid]    = 0;
-            hDCApTPrim[cent][pid]  = 0;
-            hDCApTWDec[cent][pid]  = 0;
-            hDCApTMate[cent][pid]  = 0;
-            hDCApTPrim2[cent][pid] = 0;
-            hDCApTWDec2[cent][pid] = 0;
-            hDCApTMate2[cent][pid] = 0;
-        }
-    }
-   */ 
+    /*   for(Int_t cent=0;cent<nRt;++cent){
+     for(Int_t pid=0;pid<7;++pid){
+     hMcIn[cent][pid]     = 0;
+     hMcOut[cent][pid]    = 0;
+     hDCApTPrim[cent][pid]  = 0;
+     hDCApTWDec[cent][pid]  = 0;
+     hDCApTMate[cent][pid]  = 0;
+     hDCApTPrim2[cent][pid] = 0;
+     hDCApTWDec2[cent][pid] = 0;
+     hDCApTMate2[cent][pid] = 0;
+     }
+     }
+     */ 
 }
 
 
@@ -273,7 +275,7 @@ fcutHigh(0x0)
 {
     
     for(Int_t i = 0; i<nRt; ++i){
-
+        
         for(Int_t r= 0; r < 3; r++){
             hPtpos_TPC[i][r]=0;
             hPtneg_TPC[i][r]=0;
@@ -284,6 +286,8 @@ fcutHigh(0x0)
                 
                 hPtpos_TPC_Eta[i][r][j]=0;
                 hPtneg_TPC_Eta[i][r][j]=0;
+                hPpos_TOF_Eta[i][r][j]=0;
+                hPneg_TOF_Eta[i][r][j]=0;
                 hPtpos_TOF_Eta[i][r][j]=0;
                 hPtneg_TOF_Eta[i][r][j]=0;
                 
@@ -302,8 +306,8 @@ fcutHigh(0x0)
     
     for(Int_t j=0; j<nHists; ++j){
         hPtVsP[j]=0;
-	hBetavsPMB[j]=0;
-	}    
+        hBetavsPMB[j]=0;
+    }    
     
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());//esto es nuevo
@@ -366,19 +370,19 @@ void AliAnalysisTaskPPvsRT_TPCTOF::UserCreateOutputObjects()
         3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00,
         9.00, 10.00};
     /*
-    const Int_t ndcaBins = 100;
-    Double_t dcaBins[ndcaBins+1] = {
-        -4.0, -3.9, -3.8, -3.7, -3.6, -3.5, -3.4, -3.3, -3.2, -3.1,
-        -3.0, -2.9, -2.8, -2.7, -2.6, -2.5, -2.4, -2.3, -2.2, -2.1,
-        -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1,
-        -1.0, -0.95, -0.9, -0.85, -0.8, -0.75, -0.7, -0.65, -0.6,
-        -0.55, -0.5, -0.45, -0.4, -0.35, -0.3, -0.25, -0.2, -0.15,
-        -0.1, -0.05, 0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4,
-        0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
-        1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2,
-        2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4,
-        3.5, 3.6, 3.7, 3.8, 3.9, 4.0};
-   */ 
+     const Int_t ndcaBins = 100;
+     Double_t dcaBins[ndcaBins+1] = {
+     -4.0, -3.9, -3.8, -3.7, -3.6, -3.5, -3.4, -3.3, -3.2, -3.1,
+     -3.0, -2.9, -2.8, -2.7, -2.6, -2.5, -2.4, -2.3, -2.2, -2.1,
+     -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1,
+     -1.0, -0.95, -0.9, -0.85, -0.8, -0.75, -0.7, -0.65, -0.6,
+     -0.55, -0.5, -0.45, -0.4, -0.35, -0.3, -0.25, -0.2, -0.15,
+     -0.1, -0.05, 0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4,
+     0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
+     1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2,
+     2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4,
+     3.5, 3.6, 3.7, 3.8, 3.9, 4.0};
+     */ 
     fMultN = new TH1F("hMultN","hMult_Near; #it{N}_{ch}; Entries",131,-0.5,130.5);
     fMultN->Sumw2();
     fListOfObjects->Add(fMultN);
@@ -444,7 +448,7 @@ void AliAnalysisTaskPPvsRT_TPCTOF::UserCreateOutputObjects()
     
     for(Int_t i = 0; i <= nBinsRT; ++i){
         binsRT[i] = (double)(i-1)/8.0;
-	printf("edges :: %f\n",binsRT[i]);
+        printf("edges :: %f\n",binsRT[i]);
     }
     
     fRT = new TH1D("hRT","hRT; R_{T}; Entries",nBinsRT,binsRT);
@@ -462,16 +466,16 @@ void AliAnalysisTaskPPvsRT_TPCTOF::UserCreateOutputObjects()
     fPtLVsRtMC->Sumw2();
     
     
-//    const Int_t nDeltaPiBins   = 80;
-//    const Double_t deltaPiLow  = 20;
-//    const Double_t deltaPiHigh = 100;
+    //    const Int_t nDeltaPiBins   = 80;
+    //    const Double_t deltaPiLow  = 20;
+    //    const Double_t deltaPiHigh = 100;
     
     const char *Region[3]      = {"Near","Away","Transverse"};
-//    const Char_t *Pid[7]       = {"Ch","Pion","Kaon","Proton","Electron","Muon","Oher"};
+    //    const Char_t *Pid[7]       = {"Ch","Pion","Kaon","Proton","Electron","Muon","Oher"};
     
     
     const Char_t* ending[nHists] = {"02", "24", "46", "68"};
-//    const Char_t* LatexEta[nHists] = {"|#eta|<0.2", "0.2<|#eta|<0.4", "0.4<|#eta|<0.6", "0.6<|#eta|<0.8" };
+    //    const Char_t* LatexEta[nHists] = {"|#eta|<0.2", "0.2<|#eta|<0.4", "0.4<|#eta|<0.6", "0.6<|#eta|<0.8" };
     
     fcutDCAxy = new TF1("fMaxDCAxy","[0]+[1]/(x^[2])",0,1e10);
     fcutDCAxy->SetParameter(0,0.0105);
@@ -501,6 +505,14 @@ void AliAnalysisTaskPPvsRT_TPCTOF::UserCreateOutputObjects()
                 hPtpos_TPC_Eta[i][r][j]->Sumw2();
                 hPtneg_TPC_Eta[i][r][j] = new TH1D(Form("hPtneg_TPC_%s_%.1f_%.1f_%s",Region[r],CentMin[i],CentMax[i],ending[j]),";#it{p}_{T};Counts",nPtBins,ptBins);
                 hPtneg_TPC_Eta[i][r][j]->Sumw2();
+
+                hPpos_TOF_Eta[i][r][j] = new TH1D(Form("hPpos_TOF_%s_%.1f_%.1f_%s",Region[r],CentMin[i],CentMax[i],ending[j]),";#it{p}_{T};Counts",nPtBins,ptBins);
+                hPpos_TOF_Eta[i][r][j]->Sumw2();
+                hPneg_TOF_Eta[i][r][j] = new TH1D(Form("hPneg_TOF_%s_%.1f_%.1f_%s",Region[r],CentMin[i],CentMax[i],ending[j]),";#it{p}_{T};Counts",nPtBins,ptBins);
+                hPneg_TOF_Eta[i][r][j]->Sumw2();
+
+
+
                 hPtpos_TOF_Eta[i][r][j] = new TH1D(Form("hPtpos_TOF_%s_%.1f_%.1f_%s",Region[r],CentMin[i],CentMax[i],ending[j]),";#it{p}_{T};Counts",nPtBins,ptBins);
                 hPtpos_TOF_Eta[i][r][j]->Sumw2();
                 hPtneg_TOF_Eta[i][r][j] = new TH1D(Form("hPtneg_TOF_%s_%.1f_%.1f_%s",Region[r],CentMin[i],CentMax[i],ending[j]),";#it{p}_{T};Counts",nPtBins,ptBins);
@@ -525,42 +537,44 @@ void AliAnalysisTaskPPvsRT_TPCTOF::UserCreateOutputObjects()
         }
     } // centrality loop
     
-        for(int i=0; i<nRt; ++i){
+    for(int i=0; i<nRt; ++i){
+        
+        for(int r =0; r < 3; r++){
+            fListOfObjects->Add(hPtpos_TPC[i][r]);
+            fListOfObjects->Add(hPtneg_TPC[i][r]);
+            fListOfObjects->Add(hPtpos_TOF[i][r]);
+            fListOfObjects->Add(hPtneg_TOF[i][r]);
             
-            for(int r =0; r < 3; r++){
-                fListOfObjects->Add(hPtpos_TPC[i][r]);
-                fListOfObjects->Add(hPtneg_TPC[i][r]);
-                fListOfObjects->Add(hPtpos_TOF[i][r]);
-                fListOfObjects->Add(hPtneg_TOF[i][r]);
-                
-                for(int j=0; j<nHists; ++j){
-                    fListOfObjects->Add(hPtpos_TPC_Eta[i][r][j]);
-                    fListOfObjects->Add(hPtneg_TPC_Eta[i][r][j]);
-                    fListOfObjects->Add(hPtpos_TOF_Eta[i][r][j]);
-                    fListOfObjects->Add(hPtneg_TOF_Eta[i][r][j]);
-                    fListOfObjects->Add(hnSigPipos[i][r][j]);
-                    fListOfObjects->Add(hnSigkpos[i][r][j]);
-                    fListOfObjects->Add(hnSigppos[i][r][j]);
-                    fListOfObjects->Add(hBetavsPpos[i][r][j]);
-                    fListOfObjects->Add(hnSigPineg[i][r][j]);
-                    fListOfObjects->Add(hnSigkneg[i][r][j]);
-                    fListOfObjects->Add(hnSigpneg[i][r][j]);
-                    fListOfObjects->Add(hBetavsPneg[i][r][j]);
-                }
+            for(int j=0; j<nHists; ++j){
+                fListOfObjects->Add(hPtpos_TPC_Eta[i][r][j]);
+                fListOfObjects->Add(hPtneg_TPC_Eta[i][r][j]);
+                fListOfObjects->Add(hPpos_TOF_Eta[i][r][j]);
+                fListOfObjects->Add(hPneg_TOF_Eta[i][r][j]);
+                fListOfObjects->Add(hPtpos_TOF_Eta[i][r][j]);
+                fListOfObjects->Add(hPtneg_TOF_Eta[i][r][j]);
+                fListOfObjects->Add(hnSigPipos[i][r][j]);
+                fListOfObjects->Add(hnSigkpos[i][r][j]);
+                fListOfObjects->Add(hnSigppos[i][r][j]);
+                fListOfObjects->Add(hBetavsPpos[i][r][j]);
+                fListOfObjects->Add(hnSigPineg[i][r][j]);
+                fListOfObjects->Add(hnSigkneg[i][r][j]);
+                fListOfObjects->Add(hnSigpneg[i][r][j]);
+                fListOfObjects->Add(hBetavsPneg[i][r][j]);
             }
         }
+    }
+    
+    for(int j=0; j<nHists; j++){
+        hPtVsP[j] = new TH2D(Form("hPtVsP_%s",ending[j]),";#it{p} [GeV/c]; #it{p}_{T}",nPtBins,ptBins,nPtBins,ptBins);
+        hPtVsP[j]->Sumw2();
+        fListOfObjects->Add(hPtVsP[j]);
         
-        for(int j=0; j<nHists; j++){
-            hPtVsP[j] = new TH2D(Form("hPtVsP_%s",ending[j]),";#it{p} [GeV/c]; #it{p}_{T}",nPtBins,ptBins,nPtBins,ptBins);
-            hPtVsP[j]->Sumw2();
-            fListOfObjects->Add(hPtVsP[j]);
-
-	hBetavsPMB[j] = new TH2D(Form("hBetavsP_MB_%s",ending[j]), ";#it{p}_{T};nBetavsP_neg", nPtBins, ptBins, 300, 0.3, 1.1);
-	hBetavsPMB[j]->Sumw2();
-            fListOfObjects->Add(hBetavsPMB[j]);
-	
-        }
-
+        hBetavsPMB[j] = new TH2D(Form("hBetavsP_MB_%s",ending[j]), ";#it{p}_{T};nBetavsP_neg", nPtBins, ptBins, 300, 0.3, 1.1);
+        hBetavsPMB[j]->Sumw2();
+        fListOfObjects->Add(hBetavsPMB[j]);
+        
+    }
+    
     fEventCuts.AddQAplotsToList(fListOfObjects);
     PostData(1, fListOfObjects);
     
@@ -695,12 +709,12 @@ void AliAnalysisTaskPPvsRT_TPCTOF::UserExec(Option_t *)
         fPtLVsRt->Fill(LeadingTrack->Pt(),Rt);
         
         int BinRT = GetBinRT(listTrans);
-	if(BinRT<0) 
-	return;
+        if(BinRT<0) 
+            return;
         ProduceArrayTrksESD(0,listToward,BinRT);
         ProduceArrayTrksESD(1,listAway,BinRT);
         ProduceArrayTrksESD(2,listTrans,BinRT);
-
+        
         printf("********* Info about Event **********\n");
         printf(" %d Nch in the Near region\n",listToward->GetEntries());
         printf(" %d Nch in the Away region\n",listAway->GetEntries());
@@ -964,7 +978,7 @@ void AliAnalysisTaskPPvsRT_TPCTOF::ProduceArrayTrksESD(const int& region, TList 
         
         if(esdTrack->GetTPCsignalN() < fNcl)
             continue;
-        
+
         if(esdTrack->Pt() < 0.15)
             continue;
         
@@ -981,7 +995,7 @@ void AliAnalysisTaskPPvsRT_TPCTOF::ProduceArrayTrksESD(const int& region, TList 
         float dcaxy = 0.;
         float dcaz = 0.;
         esdTrack->GetImpactParameters(dcaxy,dcaz);
-
+        
         if(TMath::Abs(dcaxy) > GetMaxDCApTDep(fcutDCAxy,pt))
             continue;
         
@@ -1030,12 +1044,16 @@ void AliAnalysisTaskPPvsRT_TPCTOF::ProduceArrayTrksESD(const int& region, TList 
         
         double trkLength = esdTrack->GetIntegratedLength();
         double beta = trkLength/((esdTrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(esdTrack->P()))*C_Value);
-
-            hBetavsPMB[nh]->Fill(esdTrack->P(),beta);
+        
+        hBetavsPMB[nh]->Fill(esdTrack->P(),beta);
         
         if(esdTrack->Charge() < 0){
             hBetavsPneg[rt][region][nh]->Fill(esdTrack->P(),beta);
             hBetavsPneg[4][region][nh]->Fill(esdTrack->P(),beta);
+
+            hPneg_TOF_Eta[rt][region][nh]->Fill(esdTrack->P());
+            hPneg_TOF_Eta[4][region][nh]->Fill(esdTrack->P());
+
             hPtneg_TOF_Eta[rt][region][nh]->Fill(pt);
             hPtneg_TOF_Eta[4][region][nh]->Fill(pt);
             hPtneg_TOF[rt][region]->Fill(pt);
@@ -1044,6 +1062,10 @@ void AliAnalysisTaskPPvsRT_TPCTOF::ProduceArrayTrksESD(const int& region, TList 
         else{
             hBetavsPpos[rt][region][nh]->Fill(esdTrack->P(),beta);
             hBetavsPpos[4][region][nh]->Fill(esdTrack->P(),beta);
+
+            hPpos_TOF_Eta[rt][region][nh]->Fill(esdTrack->P());
+            hPpos_TOF_Eta[4][region][nh]->Fill(esdTrack->P());
+
             hPtpos_TOF_Eta[rt][region][nh]->Fill(pt);
             hPtpos_TOF_Eta[4][region][nh]->Fill(pt);
             hPtpos_TOF[rt][region]->Fill(pt);
