@@ -442,8 +442,14 @@ Bool_t ConfigPhiPP13TeV_PID(
 
             AliRsnMiniOutput* out = task->CreateOutput(
                 Form("%s_true", mName.Data()), "HIST", "TRUE");
-            out->SetCutID(0, iCutQ);
-            out->SetCutID(1, iCutQ);
+            if (mPDG1 == 3122)
+                out->SetCutID(0, -1);
+            else
+                out->SetCutID(0, iCutQ);
+            if (mPDG2 == 3122)
+                out->SetCutID(1, -1);
+            else
+                out->SetCutID(1, iCutQ);
             //out->SetDaughter(0, AliRsnDaughter::kKaon);
             //out->SetDaughter(1, AliRsnDaughter::kKaon);
             if (mPDG1 == 3122)
@@ -551,8 +557,14 @@ Bool_t ConfigPhiPP13TeV_PID(
 
             AliRsnMiniOutput* out = task->CreateOutput(
                 Form("%s_true", mName.Data()), "HIST", "TRUE");
-            out->SetCutID(0, iCutQ);
-            out->SetCutID(1, iCutQ);
+            if (mPDG1 == 3122)
+                out->SetCutID(0, -1);
+            else
+                out->SetCutID(0, iCutQ);
+            if (mPDG2 == 3122)
+                out->SetCutID(1, -1);
+            else
+                out->SetCutID(1, iCutQ);
             //out->SetDaughter(0, AliRsnDaughter::kKaon);
             //out->SetDaughter(1, AliRsnDaughter::kKaon);
             if (mPDG1 == 3122)
