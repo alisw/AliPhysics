@@ -58,7 +58,7 @@ class AliAnalysisTaskSDKL : public AliAnalysisTaskEmcalJet {
 
   std::vector<fastjet::PseudoJet> GetBackSubEvent(std::vector <fastjet::PseudoJet> const & full_event, Double_t & rho, Double_t & rho_sparse, Int_t opt = 0);
 
-  void                 FillAllTracks(AliParticleContainer* cont1, AliParticleContainer* cont2, std::vector <fastjet::PseudoJet> & full_event);
+  void                 AddTracksToEvent(AliParticleContainer* cont, std::vector <fastjet::PseudoJet> & full_event);
   void                 FillTree(std::vector<fastjet::PseudoJet> const & jets, TNtuple* tree);
   void                 FillTree(AliJetContainer *jets, TNtuple* tree);
 

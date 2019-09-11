@@ -23,10 +23,15 @@ class AliParticleContainer;
 
 struct mjet {
   double pt;
+  double pt_scalar;
   double eta;
   double phi;
   double area;
-  std::vector<split> splits;
+  std::vector<double> track_pts;
+  std::vector<int>    track_labels;
+  std::vector<split>  splits;
+  AliEmcalJet        *pointerAJet;
+  fastjet::PseudoJet *pointerPJet;
 };
 
 class AliAnalysisTaskSDKLResponse : public AliAnalysisTaskSDKL {
@@ -60,8 +65,6 @@ class AliAnalysisTaskSDKLResponse : public AliAnalysisTaskSDKL {
   void                        ExecOnce();
   Bool_t                      FillHistograms()   ;
   Bool_t                      Run()              ;
-
-  TH1                        *fhDist;                       //!<!
 
   THnSparse                  *fhResponse[4];                //!<! distribution of all
   TH2F                       *fhPtDeltaPt;                  //!<!
@@ -99,13 +102,15 @@ class AliAnalysisTaskSDKLResponse : public AliAnalysisTaskSDKL {
   AliAnalysisTaskSDKLResponse(const AliAnalysisTaskSDKLResponse&);            // not implemented
   AliAnalysisTaskSDKLResponse &operator=(const AliAnalysisTaskSDKLResponse&); // not implemented
 
-  int FillResponseFromMjets( mjet const & mjet1, mjet const & mjet2, THnSparse* hr[4] );
+  int FillResponseFromMjets( mjet const & mjet1, mjet const & mjet2, THnSparse* hr[4], Float_t const dist, Float_t const eshare, Bool_t const iscl);
   int FillDeltasFromMjets( mjet const & mjet1, mjet const & mjet2, TH2F *hptdpt, TH2F *h1[4], TH2F *h2[4], TH2F *h3[4] );
 
   Float_t CalcDist(mjet const & mjet1, mjet const & mjet2);
+  Float_t CalcEnergyShare(mjet const & mjet1, mjet const & mjet2);
+  Bool_t IsClosestPair(int const i, int const j, std::vector <mjet> const & mjet_container1, std::vector <mjet> const & mjet_container2);
 
   void FillMjetContainer(AliJetContainer *jet_container, std::vector <mjet> & mjet_container);
-  void FillMjetContainer(std::vector <fastjet::PseudoJet> const & jet_container, std::vector <mjet> & mjet_container);
+  void FillMjetContainer(std::vector <fastjet::PseudoJet> & jet_container, std::vector <mjet> & mjet_container);
 
   Double_t                   fFractionEventsDumpedToTree;
   TRandom                    *fRandom; //!<!
