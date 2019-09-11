@@ -359,7 +359,7 @@ Bool_t ConfigPhiPP13TeV_PID(
     Int_t mPDG0, mPDG1, mPDG2;
 
     if (isMC) {
-        for (Int_t i = 0; i < 10; i++) {
+        for (Int_t i = 0; i < 14; i++) {
             if (!i) {
                 mName.Form("pi0_ee");
                 mMass = 0.134977;
@@ -414,37 +414,91 @@ Bool_t ConfigPhiPP13TeV_PID(
                 mPDG0 = -3124;
                 mPDG1 = 321;
                 mPDG2 = 2212;
+            } else if (i == 10) {
+                mName.Form("Xim_Lpi");
+                mMass = 1.32171;
+                mPDG0 = 3312;
+                mPDG1 = 3122;
+                mPDG2 = 211;
+            } else if (i == 11) {
+                mName.Form("Xip_piL");
+                mMass = 1.32171;
+                mPDG0 = -3312;
+                mPDG1 = 211;
+                mPDG2 = 3122;
+            } else if (i == 12) {
+                mName.Form("Omegam_LK");
+                mMass = 1.67245;
+                mPDG0 = 3334;
+                mPDG1 = 3122;
+                mPDG2 = 321;
+            } else if (i == 13) {
+                mName.Form("Omegap_KL");
+                mMass = 1.67245;
+                mPDG0 = -3334;
+                mPDG1 = 321;
+                mPDG2 = 3122;
             }
 
             AliRsnMiniOutput* out = task->CreateOutput(
                 Form("%s_true", mName.Data()), "HIST", "TRUE");
-            out->SetCutID(0, iCutQ);
-            out->SetCutID(1, iCutQ);
-            out->SetDaughter(0, AliRsnDaughter::kKaon);
-            out->SetDaughter(1, AliRsnDaughter::kKaon);
-            out->SetCharge(0, '+');
-            out->SetCharge(1, '-');
+            if (mPDG1 == 3122)
+                out->SetCutID(0, -1);
+            else
+                out->SetCutID(0, iCutQ);
+            if (mPDG2 == 3122)
+                out->SetCutID(1, -1);
+            else
+                out->SetCutID(1, iCutQ);
+            //out->SetDaughter(0, AliRsnDaughter::kKaon);
+            //out->SetDaughter(1, AliRsnDaughter::kKaon);
+            if (mPDG1 == 3122)
+                out->SetCharge(0, '0');
+            else
+                out->SetCharge(0, '+');
+            if (mPDG2 == 3122)
+                out->SetCharge(1, '0');
+            else
+                out->SetCharge(1, '-');
             out->SetMotherPDG(mPDG0);
             out->SetMotherMass(mMass);
             out->SetPairCuts(cutsPair);
 
-            if (mPDG1 == 11)
+            if (mPDG1 == 11){
+                out->SetDaughter(0, AliRsnDaughter::kElectron);
                 out->SetDaughterTrue(0, AliRsnDaughter::kElectron);
-            else if (mPDG1 == 211)
+            }
+            else if (mPDG1 == 211) {
+                out->SetDaughter(0, AliRsnDaughter::kPion);
                 out->SetDaughterTrue(0, AliRsnDaughter::kPion);
-            else if (mPDG1 == 321)
+            } else if (mPDG1 == 321) {
+                out->SetDaughter(0, AliRsnDaughter::kKaon);
                 out->SetDaughterTrue(0, AliRsnDaughter::kKaon);
-            else if (mPDG1 == 2212)
+            } else if (mPDG1 == 2212) {
+                out->SetDaughter(0, AliRsnDaughter::kProton);
                 out->SetDaughterTrue(0, AliRsnDaughter::kProton);
+            } else if (mPDG1 == 3122) {
+                out->SetDaughter(0, AliRsnDaughter::kLambda);
+                out->SetDaughterTrue(0, AliRsnDaughter::kLambda);
+            }
 
-            if (mPDG2 == 11)
+            if (mPDG2 == 11) {
+                out->SetDaughter(1, AliRsnDaughter::kElectron);
                 out->SetDaughterTrue(1, AliRsnDaughter::kElectron);
-            else if (mPDG2 == 211)
+            }
+            if (mPDG2 == 211) {
+                out->SetDaughter(1, AliRsnDaughter::kPion);
                 out->SetDaughterTrue(1, AliRsnDaughter::kPion);
-            else if (mPDG2 == 321)
+            } else if (mPDG2 == 321) {
+                out->SetDaughter(1, AliRsnDaughter::kKaon);
                 out->SetDaughterTrue(1, AliRsnDaughter::kKaon);
-            else if (mPDG2 == 2212)
+            } else if (mPDG2 == 2212) {
+                out->SetDaughter(1, AliRsnDaughter::kProton);
                 out->SetDaughterTrue(1, AliRsnDaughter::kProton);
+            } else if (mPDG2 == 3122) {
+                out->SetDaughter(1, AliRsnDaughter::kLambda);
+                out->SetDaughterTrue(1, AliRsnDaughter::kLambda);
+            }
 
             out->AddAxis(imID, 215, 0.985, 1.2);
             out->AddAxis(ptID, 100, 0., 20.);
@@ -503,36 +557,57 @@ Bool_t ConfigPhiPP13TeV_PID(
 
             AliRsnMiniOutput* out = task->CreateOutput(
                 Form("%s_true", mName.Data()), "HIST", "TRUE");
-            out->SetCutID(0, iCutQ);
-            out->SetCutID(1, iCutQ);
-            out->SetDaughter(0, AliRsnDaughter::kKaon);
-            out->SetDaughter(1, AliRsnDaughter::kKaon);
-            out->SetCharge(0, '+');
-            out->SetCharge(1, '-');
+            if (mPDG1 == 3122)
+                out->SetCutID(0, -1);
+            else
+                out->SetCutID(0, iCutQ);
+            if (mPDG2 == 3122)
+                out->SetCutID(1, -1);
+            else
+                out->SetCutID(1, iCutQ);
+            //out->SetDaughter(0, AliRsnDaughter::kKaon);
+            //out->SetDaughter(1, AliRsnDaughter::kKaon);
+            if (mPDG1 == 3122)
+                out->SetCharge(0, '0');
+            else
+                out->SetCharge(0, '+');
+            if (mPDG2 == 3122)
+                out->SetCharge(1, '0');
+            else
+                out->SetCharge(1, '-');
             out->SetMotherPDG(mPDG0);
             out->SetMotherMass(mMass);
             out->SetPairCuts(cutsPair);
 
-            if (mPDG1 == 211)
+            if (mPDG1 == 211){
+                out->SetDaughter(0, AliRsnDaughter::kPion);
                 out->SetDaughterTrue(0, AliRsnDaughter::kPion);
-            else if (mPDG1 == 321)
+            }
+            else if (mPDG1 == 321){
+                out->SetDaughter(0, AliRsnDaughter::kKaon);
                 out->SetDaughterTrue(0, AliRsnDaughter::kKaon);
-            else if (mPDG1 == 2212)
+            }
+            else if (mPDG1 == 2212){
+                out->SetDaughter(0, AliRsnDaughter::kProton);
                 out->SetDaughterTrue(0, AliRsnDaughter::kProton);
-            else if (mPDG1 == 3122) {
+            }
+            else if (mPDG1 == 3122){
+                out->SetDaughter(0, AliRsnDaughter::kLambda);
                 out->SetDaughterTrue(0, AliRsnDaughter::kLambda);
-                out->SetCharge(0, '0');
             }
 
-            if (mPDG2 == 211)
+            if (mPDG2 == 211) {
+                out->SetDaughter(1, AliRsnDaughter::kPion);
                 out->SetDaughterTrue(1, AliRsnDaughter::kPion);
-            else if (mPDG2 == 321)
+            } else if (mPDG2 == 321) {
+                out->SetDaughter(1, AliRsnDaughter::kKaon);
                 out->SetDaughterTrue(1, AliRsnDaughter::kKaon);
-            else if (mPDG2 == 2212)
+            } else if (mPDG2 == 2212) {
+                out->SetDaughter(1, AliRsnDaughter::kProton);
                 out->SetDaughterTrue(1, AliRsnDaughter::kProton);
-            else if (mPDG2 == 3122) {
+            } else if (mPDG2 == 3122) {
+                out->SetDaughter(1, AliRsnDaughter::kLambda);
                 out->SetDaughterTrue(1, AliRsnDaughter::kLambda);
-                out->SetCharge(1, '0');
             }
 
             out->AddAxis(ptID, 200, 0., 20.);
