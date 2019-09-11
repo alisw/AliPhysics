@@ -128,6 +128,7 @@ class AliAnalysisTaskOtonOmegaNanoAOD : public AliAnalysisTaskSE {
   Float_t fTVz;
   Int_t fTMult;
   //protons:
+  TRandom3 *frndm;
   const Int_t MAXPROTONS = 150;
   Int_t fTnProton;
   Float_t fTProtonP[150];
