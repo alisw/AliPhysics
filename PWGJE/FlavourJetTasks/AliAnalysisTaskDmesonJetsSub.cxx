@@ -2280,7 +2280,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   
 
  if(fMCMode==kSignalOnly){
-
+     fMCContainer->SetCharge(AliParticleContainer::EChargeCut_t::kCharged);
     fFastJetWrapper->Clear();
     fFastJetWrapper->SetR(jetDef.fRadius);
     fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
