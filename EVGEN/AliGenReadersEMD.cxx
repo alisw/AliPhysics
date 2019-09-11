@@ -202,9 +202,9 @@ TParticle* AliGenReadersEMD::NextParticle()
 
     if(fPcToTrack==kAll || fPcToTrack==kNucleons){
       if(fNparticle>=fNneu && fNparticle<(fNneu+fNpro)){
-        p[0] = fPxpro[fNparticle];
-        p[1] = fPypro[fNparticle];
-        p[2] = fPzpro[fNparticle];
+        p[0] = fPxpro[fNparticle-fNneu];
+        p[1] = fPypro[fNparticle-fNneu];
+        p[2] = fPzpro[fNparticle-fNneu];
 	pdgCode = 2212;
 //    printf(" pc%d p: PDG code %d,  momentum (%f, %f, %f) \n", fNparticle, pdgCode, p[0],p[1],p[2]);
       }
