@@ -2309,7 +2309,8 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
     if(myflag==0) return kFALSE;
     if(TMath::Abs(jeteta)>0.5) return kFALSE;
   
- 
+          Double_t maxFiducialY=-0.2/15*aodMcPart->Pt()*aodMcPart->Pt()+1.9/15*aodMcPart->Pt()+0.5;
+	  Double_t minFiducialY = 0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5;	
    
     if (isSelected == 1) { // selected as a D0
     if (i != 0) return kFALSE; // only one mass hypothesis thanks to PID
@@ -2318,10 +2319,10 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
          auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
 
 	 if(origin.first == kFromCharm) {
-	  	if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
+	  	if(aodMcPart->Pt()<=5) if(aodMcPart->Y()>=minFiducialY && aodMcPart->Y()<=maxFiducialY) EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
 	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
           if(origin.first == kFromBottom) {
-	    	if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
+	    	if(aodMcPart->Pt()<=5) if(aodMcPart->Y()>=minFiducialY && aodMcPart->Y()<=maxFiducialY)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
 	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}
       }
 
@@ -2334,10 +2335,10 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
       auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
       if(origin.first == kFromCharm){
  
-      	  if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
+      	  if(aodMcPart->Pt()<=5) if(aodMcPart->Y()>=minFiducialY && aodMcPart->Y()<=maxFiducialY)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
 	  if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
         if(origin.first == kFromBottom){
-	  if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
+	  if(aodMcPart->Pt()<=5) if(aodMcPart->Y()>=minFiducialY && aodMcPart->Y()<=maxFiducialY)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
 	  if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
 	  }
   }
@@ -2353,11 +2354,11 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
       if (i == 0){
       auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
       if(origin.first == kFromCharm){
-	if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
+	if(aodMcPart->Pt()<=5) if(aodMcPart->Y()>=minFiducialY && aodMcPart->Y()<=maxFiducialY)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
 	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
       }
         if(origin.first == kFromBottom){
-	if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
+	if(aodMcPart->Pt()<=5) if(aodMcPart->Y()>=minFiducialY && aodMcPart->Y()<=maxFiducialY)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
 	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
 
 
@@ -2368,10 +2369,10 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
 
        auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
       if(origin.first == kFromCharm){
-		if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
+		if(aodMcPart->Pt()<=5) if(aodMcPart->Y()>=minFiducialY && aodMcPart->Y()<=maxFiducialY)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);
 	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
         if(origin.first == kFromBottom){
-	  	if(aodMcPart->Pt()<=5) if(TMath::Abs(aodMcPart->Y())<(0.2/15*aodMcPart->Pt()*aodMcPart->Pt()-1.9/15*aodMcPart->Pt()-0.5))EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
+	  	if(aodMcPart->Pt()<=5) if(aodMcPart->Y()>=minFiducialY && aodMcPart->Y()<=maxFiducialY)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);
 	if(aodMcPart->Pt()>5) if(TMath::Abs(aodMcPart->Y())<0.8)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}}
       
     }
@@ -2456,14 +2457,15 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominator(Al
           if(TMath::Abs(jeteta)>0.5) continue;
 	  
           auto origin = IsPromptCharm(part, fMCContainer->GetArray());
-     
+	  Double_t maxFiducialY=-0.2/15*part->Pt()*part->Pt()+1.9/15*part->Pt()+0.5;
+	  Double_t minFiducialY = 0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5;	
       if(origin.first == kFromCharm){
 	if(part->Pt()>5) if(TMath::Abs(part->Y())<0.8) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);
-        if(part->Pt()<=5) if(TMath::Abs(part->Y())<(0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5)) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);
+        if(part->Pt()<=5) if(part->Y()>=minFiducialY && part->Y()<=maxFiducialY) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);
       }
         if(origin.first == kFromBottom){ 
 	  if(part->Pt()>5)if(TMath::Abs(part->Y())<0.8) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
-	  if(part->Pt()<=5) if(TMath::Abs(part->Y())<(0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5)) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
+	  if(part->Pt()<=5) if(part->Y()>=minFiducialY && part->Y()<=maxFiducialY) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
 	}
        
 	     }
@@ -2565,13 +2567,14 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
           if(TMath::Abs(jeteta)>0.5) continue;
 	  
           auto origin = IsPromptCharm(part, fMCContainer->GetArray());
-     
+          Double_t maxFiducialY=-0.2/15*part->Pt()*part->Pt()+1.9/15*part->Pt()+0.5;
+	  Double_t minFiducialY = 0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5;	
       if(origin.first == kFromCharm){
          	if(part->Pt()>5) if(TMath::Abs(part->Y())<0.8) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);
-		if(part->Pt()<=5) if(TMath::Abs(part->Y())<(0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5)) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);}
+		if(part->Pt()<=5) if(part->Y()>=minFiducialY && part->Y()<=maxFiducialY) EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);}
         if(origin.first == kFromBottom){ 
 	 if(part->Pt()>5) if(TMath::Abs(part->Y())<0.8) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
-		if(part->Pt()<=5) if(TMath::Abs(part->Y())<(0.2/15*part->Pt()*part->Pt()-1.9/15*part->Pt()-0.5)) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
+		if(part->Pt()<=5) if(part->Y()>=minFiducialY && part->Y()<=maxFiducialY) EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);
 
 	    }
       
@@ -2940,7 +2943,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
 
 
    //fill the mc efficiency//
-  //for (auto& def : fJetDefinitions)GetEfficiencyDenominatorOneByOne(def);
+  for (auto& def : fJetDefinitions)GetEfficiencyDenominator(def);
 
   
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
@@ -2963,7 +2966,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
         for (auto& def : fJetDefinitions) {
           if (FindJet(charmCand, DmesonJet, def,im)) {
             Double_t jetPt = DmesonJet.fJets[def.GetName()].fMomentum.Pt();
-	    //ExtractEfficiencies(charmCand,DmesonJet,def,im);
+	    ExtractEfficiencies(charmCand,DmesonJet,def,im);
             if (jetPt > maxJetPt[&def]) maxJetPt[&def] = jetPt;
           }
           else {
