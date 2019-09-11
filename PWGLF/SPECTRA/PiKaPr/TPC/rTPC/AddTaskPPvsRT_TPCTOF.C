@@ -14,7 +14,8 @@ AliAnalysisTaskPPvsRT_TPCTOF* AddTaskPPvsRT_TPCTOF(
 		const double TrkLCut = 5.0,
 		const char* Period  = "l",
 		const double MeanCh = 7.266,
-		const char* flag_container = "tpc_tof_0"
+	        const int ncl = 70, 
+		const char* flag_container = "tpc_tof"		
 		)   
 {
 
@@ -69,7 +70,7 @@ AliAnalysisTaskPPvsRT_TPCTOF* AddTaskPPvsRT_TPCTOF(
 	else
 		task->SetAnalysisPbPb(kFALSE);
 	
-	task->SetNcl(70);
+	task->SetNcl(ncl);
         task->SetLeadingCut(TrkLCut);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
@@ -84,7 +85,7 @@ AliAnalysisTaskPPvsRT_TPCTOF* AddTaskPPvsRT_TPCTOF(
 	// your task needs input: here we connect the manager to your task
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	// same for the output
-	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_%s",flag_container), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_%s_ncl_%d",flag_container,ncl), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 	// in the end, this macro returns a pointer to your task. this will be convenient later on
 	// when you will run your analysis in an analysis train on grid
 	return task;
