@@ -233,7 +233,7 @@ private:
   // Track cuts
   Double_t fMaxnSigmaTPCTOF;
 
-  // Global Histograms
+  // Globaal Histograms
   TH1F *fHistzvertex;
   TH1F *fHistCentrality;
   TH1F *fHistCentrality_beforecut;
@@ -248,6 +248,8 @@ private:
   AliTHn* fhistmcprim;
   TH2D*fhmcprimvzeta;
 
+  TH1F*frefetac;
+  TH1F*frefetaa;
   TH1F*frefvz;
   TH2D*fhcorr[10];
 
@@ -272,6 +274,8 @@ private:
 
   TH2D*  fhistfmdphiacc;
   TH2F* fhFMDmultchannel;
+  TH2D* fhFMDmult_runbyrun_cside[31];
+  TH2D* fhFMDmult_runbyrun_aside[65];
   
   AliTHn* fhistfmd;
   THnSparseF* fhistits;

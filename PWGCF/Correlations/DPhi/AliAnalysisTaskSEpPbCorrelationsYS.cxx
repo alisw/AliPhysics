@@ -160,6 +160,8 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fHistPIDQA(0),
       fhistmcprim(0),
       fhmcprimvzeta(0),
+      frefetaa(0),
+      frefetac(0),
       frefvz(0),
       fhmcprimpdgcode(0),
       fh2_FMD_acceptance_prim(0),
@@ -271,6 +273,13 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
   for(Int_t i=0;i<10;i++){
     fhcorr[i]=0;
   }
+  for(Int_t i=0;i<31;i++){
+    fhFMDmult_runbyrun_cside[i]=0;
+  }
+  for(Int_t i=0;i<65;i++){
+    fhFMDmult_runbyrun_aside[i]=0;
+  }
+     
 }
 AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const char *name)
     : AliAnalysisTaskSE(name),
@@ -355,6 +364,8 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fHistPIDQA(0),
       fhistmcprim(0),
       fhmcprimvzeta(0),
+      frefetaa(0),
+      frefetac(0),
       frefvz(0),
       fhmcprimpdgcode(0),
       fh2_FMD_acceptance_prim(0),
@@ -470,6 +481,15 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
         for(Int_t i=0;i<10;i++){
           fhcorr[i]=0;
         }
+	for(Int_t i=0;i<31;i++){
+	  fhFMDmult_runbyrun_cside[i]=0;
+	}
+	
+	for(Int_t i=0;i<65;i++){
+	  fhFMDmult_runbyrun_aside[i]=0;
+	}
+
+	  
         DefineOutput(1, TList::Class());
         DefineOutput(2, TList::Class());
         DefineOutput(3, TList::Class());
@@ -520,7 +540,11 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 
   fEventCuts.AddQAplotsToList(fOutputList);
 
-
+  frefetac=new TH1F("frefetac","frefetac",30,-3.4,-1.9);
+  fOutputList2->Add(frefetac);
+  frefetaa=new TH1F("frefetaa","frefetaa",62,1.9,5.0);
+  fOutputList2->Add(frefetaa);
+  
   frefvz=new TH1F("frefvz","z-vertex",10,-10,10);
   fOutputList2->Add(frefvz);
   ///    TGrid::Connect("alien://");
@@ -768,6 +792,15 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 
    fhFMDmultchannel=new TH2F("fhFMDmultchannel","fhFMDmultchannel",200,-4,6,100,0,100);
    fOutputList2->Add(fhFMDmultchannel);
+
+   for(Int_t i=0;i<31;i++){
+     fhFMDmult_runbyrun_cside[i]=new TH2D(Form("fhFMDmult_runbyrun_cside_%d",i),Form("fhFMDmult_runbyrun_%d",i),200,-0.5,199.5,100,0,100);
+     fOutputList2->Add(fhFMDmult_runbyrun_cside[i]);
+   }
+   for(Int_t i=0;i<65;i++){
+     fhFMDmult_runbyrun_aside[i]=new TH2D(Form("fhFMDmult_runbyrun_aside_%d",i),Form("fhFMDmult_runbyrun_%d",i),200,-0.5,199.5,100,0,100);
+     fOutputList2->Add(fhFMDmult_runbyrun_aside[i]);
+   }
    
    const Int_t ifmdbin[4]={200,20,20,20};
    fhistfmd=new AliTHn("fhistfmd","fhistfmd",1,4,ifmdbin);
@@ -1859,26 +1892,29 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	   if((eta>-2.1 && eta<-1.9) && (17*2*TMath::Pi()/20.<phi && 20*2*TMath::Pi()/20.>phi)) continue;
 	 }
 	 
-	 
 	 if (mostProbableN > 0) {
 	   if(eta>0){
+	     Int_t nfmdetabin1=frefetaa->FindBin(eta);
+	     Double_t runbin1=ConvertRunNumber(fEvent->GetRunNumber());
+	     fhFMDmult_runbyrun_aside[nfmdetabin1-1]->Fill(runbin1,mostProbableN);
+	     
 	     if(fAnaMode=="TPCFMD" || fAnaMode=="ITSFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));			
 	     if(fAnaMode=="FMDFMD") selectedTracksLeading->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	
-	     
 	   }else if(eta<0){
+	     Int_t nfmdetabin=frefetac->FindBin(eta);
+	     Double_t runbin=ConvertRunNumber(fEvent->GetRunNumber());
+	     fhFMDmult_runbyrun_cside[nfmdetabin-1]->Fill(runbin,mostProbableN);
+	     
 	     if(fAnaMode=="TPCFMDC" || fAnaMode=="ITSFMDC" ||fAnaMode=="FMDFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));
 	   }
 	   fhFMDmultchannel->Fill(eta,mostProbableN);
+
 	   Double_t cont[4]={eta,phi,lCentrality,fPrimaryZVtx};
 	   fhistfmd->Fill(cont,0,mostProbableN);
 	   fh2_FMD_eta_phi->Fill(eta,phi,mostProbableN);
-
-	     
 	 }
        }
      }
-     
-     
      delete hphiacceptance;
      
      if(nFMD_fwd_hits==0. || nFMD_bwd_hits==0.){
@@ -1926,6 +1962,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	 FMDcutapar1=600;
 	 FMDcutcpar0=2.;
 	 FMDcutcpar1=600;
+	 break;
+       case 3:
+	 FMDcutapar0=1.5;
+	 FMDcutapar1=100;
+	 FMDcutcpar0=2.3;
+	 FMDcutcpar1=100;
 	 break;
        default: break;
        }
@@ -3917,7 +3959,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::DumpTObjTable(const char* note)
 }
 
  Int_t AliAnalysisTaskSEpPbCorrelationsYS::ConvertRunNumber(Int_t run){
-   if( (265309<run && run< 265525) || (267161<run && run<267166)){
+   if( (265308<run && run< 265526) || (267160<run && run<267167)){
    switch(run){
    case  265309 : return 0;
    case  265332 : return 1;
