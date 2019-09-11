@@ -773,6 +773,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   for(Int_t i=0;i<6;++i) values[kITSnClusters+i] = event->ITSClusters(i+1);
   values[kSPDnSingleClusters] = event->SPDnSingleClusters();
   if(fgUsedVars[kSDDandSSDclusters]) {
+     values[kSDDandSSDclusters] = 0.0;
      for(Int_t i=2;i<6;++i) values[kSDDandSSDclusters] += event->ITSClusters(i+1);  
   }
   
