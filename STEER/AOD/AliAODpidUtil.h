@@ -27,6 +27,7 @@ public:
   //TODO: isMC???
   AliAODpidUtil(Bool_t isMC = kFALSE): AliPIDResponse(isMC) {;}
   virtual ~AliAODpidUtil() {;}
+  virtual void SetEventPileupProperties(const AliVEvent* vevent);
 
 protected:
   virtual Float_t GetSignalDeltaTOFold(const AliVParticle *track, AliPID::EParticleType type, Bool_t ratio=kFALSE) const;

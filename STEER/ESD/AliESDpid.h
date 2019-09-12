@@ -51,6 +51,8 @@ AliESDpid& operator=(const AliESDpid& a){if (this==&a) return *this; AliPIDRespo
   Float_t GetNMaxSigmaTOFTPCMismatch() const {return fRangeTOFMismatch;}
 
   void SetEventHandler(AliVEventHandler *event){fEventHandler=event;};
+
+  virtual void SetEventPileupProperties(const AliVEvent* vevent);
   
   static void       SetUseElectronExclusionBands(Bool_t val);
   static Bool_t     GetUseElectronExclusionBands()           {return fgUseElectronExclusionBands;}
