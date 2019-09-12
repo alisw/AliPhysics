@@ -280,36 +280,36 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
       if (omu) fOMU.SetBitNumber(bc);
       if (stg) fSTG.SetBitNumber(bc);
     }
+  }
 
-    TClonesArray* tofClusters = esd->GetESDTOFClusters();
+  TClonesArray* tofClusters = esd->GetESDTOFClusters();
 
-    Int_t nTOFhits = 0;
-    for (Int_t icl=0;icl<tofClusters->GetEntriesFast();icl++){
-      AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
-      if (cl->GetNMatchableTracks()!=1) continue;
-      nTOFhits+=cl->GetNTOFhits();
-    }
+  Int_t nTOFhits = 0;
+  for (Int_t icl=0;icl<tofClusters->GetEntriesFast();icl++){
+    AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
+    if (cl->GetNMatchableTracks()!=1) continue;
+    nTOFhits+=cl->GetNTOFhits();
+  }
 
-    fTOFhits.Reset();
-    fTOFhitTimes.Reset();
-    fTrackIndices.Reset();
-    fTOFhits.Set(nTOFhits);
-    fTOFhitTimes.Set(nTOFhits);
-    fTrackIndices.Set(nTOFhits);
-    Int_t hitCounts=0;
-    for (Int_t icl=0;icl<tofClusters->GetEntriesFast();icl++){
-      AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
-      if (cl->GetNMatchableTracks()!=1) continue;
-      Int_t trackIndex = cl->GetTrackIndex(0);
-      for (Int_t ihit=0;ihit<cl->GetNTOFhits();ihit++){
-        AliESDTOFHit* hit = (AliESDTOFHit*) cl->GetTOFHit(ihit);
-        Float_t t = hit->GetTime();
-        Int_t channel = hit->GetTOFchannel();
-        fTOFhits.AddAt(channel,hitCounts);
-        fTOFhitTimes.AddAt(t,hitCounts);
-        fTrackIndices.AddAt(trackIndex,hitCounts);
-        hitCounts++;
-      }
+  fTOFhits.Reset();
+  fTOFhitTimes.Reset();
+  fTrackIndices.Reset();
+  fTOFhits.Set(nTOFhits);
+  fTOFhitTimes.Set(nTOFhits);
+  fTrackIndices.Set(nTOFhits);
+  Int_t hitCounts=0;
+  for (Int_t icl=0;icl<tofClusters->GetEntriesFast();icl++){
+    AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
+    if (cl->GetNMatchableTracks()!=1) continue;
+    Int_t trackIndex = cl->GetTrackIndex(0);
+    for (Int_t ihit=0;ihit<cl->GetNTOFhits();ihit++){
+      AliESDTOFHit* hit = (AliESDTOFHit*) cl->GetTOFHit(ihit);
+      Float_t t = hit->GetTime();
+      Int_t channel = hit->GetTOFchannel();
+      fTOFhits.AddAt(channel,hitCounts);
+      fTOFhitTimes.AddAt(t,hitCounts);
+      fTrackIndices.AddAt(trackIndex,hitCounts);
+      hitCounts++;
     }
   }
 
