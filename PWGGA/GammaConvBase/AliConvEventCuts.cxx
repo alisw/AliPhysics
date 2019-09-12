@@ -4014,7 +4014,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
           AliFatal(Form("%s was not found",fPathTriggerMimicSpecialInput.Data()));
         }
         if (fileTriggThresh) delete fileTriggThresh;
-        contfileTriggThresh->InitFromFile(Form("%s",fPathTriggerMimicSpecialInput.Data()),"AliEMCalTriggerMimic");
+        contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB(((char*)Form("PWGGA/%s",fPathTriggerMimicSpecialInput.Data()))).data(),"AliEMCalTriggerMimic");
         if(!contfileTriggThresh){
           AliFatal(Form("AliOADBContainer could not be loaded from %s",fPathTriggerMimicSpecialInput.Data()));
         } else{
