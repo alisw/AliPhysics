@@ -37,7 +37,8 @@ AliJCDijetTask::AliJCDijetTask() :
     fjetCone(0),
     fktJetCone(0),
     fktScheme(0),
-    fusePionMassInktjets(0),
+    fantiktScheme(0),
+    fusePionMass(0),
     fuseDeltaPhiBGSubtr(0),
     fIsMC(kTRUE),
     fparticleEtaCut(0),
@@ -67,7 +68,8 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fjetCone(0),
     fktJetCone(0),
     fktScheme(0),
-    fusePionMassInktjets(0),
+    fantiktScheme(0),
+    fusePionMass(0),
     fuseDeltaPhiBGSubtr(0),
     fIsMC(kTRUE),
     fparticleEtaCut(0),
@@ -100,7 +102,8 @@ AliJCDijetTask::AliJCDijetTask(const AliJCDijetTask& ap) :
     fjetCone(ap.fjetCone),
     fktJetCone(ap.fktJetCone),
     fktScheme(ap.fktScheme),
-    fusePionMassInktjets(ap.fusePionMassInktjets),
+    fantiktScheme(ap.fantiktScheme),
+    fusePionMass(ap.fusePionMass),
     fuseDeltaPhiBGSubtr(ap.fuseDeltaPhiBGSubtr),
     fIsMC(ap.fIsMC),
     fparticleEtaCut(ap.fparticleEtaCut),
@@ -180,6 +183,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
 
 
     TString sktScheme;
+    TString santiktScheme;
     switch (fktScheme) {
         case 0:  sktScheme = "E_scheme";
                  break;
@@ -198,6 +202,24 @@ void AliJCDijetTask::UserCreateOutputObjects()
         default: sktScheme = "Unknown, check macro arguments!";
                  break;
     }
+    switch (fantiktScheme) {
+        case 0:  santiktScheme = "E_scheme";
+                 break;
+        case 1:  santiktScheme = "pt_scheme";
+                 break;
+        case 2:  santiktScheme = "pt2_scheme";
+                 break;
+        case 3:  santiktScheme = "Et_scheme";
+                 break;
+        case 4:  santiktScheme = "Et2_scheme";
+                 break;
+        case 5:  santiktScheme = "BIpt_scheme";
+                 break;
+        case 6:  santiktScheme = "BIpt2_scheme";
+                 break;
+        default: santiktScheme = "Unknown, check macro arguments!";
+                 break;
+    }
 
     cout << endl;
     cout << "===========SETTINGS===========" << endl;
@@ -208,7 +230,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Jet cone size:              " << fjetCone << endl;
     cout << "kt-jet cone size:           " << fktJetCone << endl;
     cout << "Using kt-jet scheme:        " << sktScheme.Data() << endl;
-    cout << "Using pion mass in kt-jets: " << fusePionMassInktjets << endl;
+    cout << "Using antikt-jet scheme:    " << santiktScheme.Data() << endl;
+    cout << "Using pion mass:            " << fusePionMass << endl;
     cout << "Using DeltaPhi in BG subtr: " << fuseDeltaPhiBGSubtr << endl;
     cout << "Particle eta cut:           " << fparticleEtaCut << endl;
     cout << "Particle pt cut:            " << fparticlePtCut << endl;
@@ -219,8 +242,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Matching R for MC:          " << fmatchingR << endl;
     cout << endl;
 
-    if(fusePionMassInktjets && fktScheme!=0) {
-        cout << "Warning: Using pion mass for kt-jets but not using E_scheme!" << endl;
+    if(fusePionMass && (fktScheme!=0 || fantiktScheme!=0)) {
+        cout << "Warning: Using pion mass for jets but not using E_scheme!" << endl;
         cout << endl;
     }
 
@@ -231,7 +254,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
                       fjetCone,
                       fktJetCone,
                       fktScheme,
-                      fusePionMassInktjets,
+                      fantiktScheme,
+                      fusePionMass,
                       fuseDeltaPhiBGSubtr,
                       fconstituentCut,
                       fleadingJetCut,
@@ -246,7 +270,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
                             fjetCone,
                             fktJetCone,
                             fktScheme,
-                            fusePionMassInktjets,
+                            fantiktScheme,
+                            fusePionMass,
                             fuseDeltaPhiBGSubtr,
                             fconstituentCut,
                             fleadingJetCut,

@@ -98,6 +98,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_jetDeltaRMin(obj.fh_jetDeltaRMin),
     fh_jetBGSubtrDeltaR(obj.fh_jetBGSubtrDeltaR),
     fh_jetResponse(obj.fh_jetResponse),
+    fh_jetResponse_ALICE(obj.fh_jetResponse_ALICE),
     fh_dijetResponse(obj.fh_dijetResponse),
     fh_dijetResponseDeltaPhiCut(obj.fh_dijetResponseDeltaPhiCut)
 {
@@ -321,6 +322,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_jetResponse
         << TH2D("h_jetResponse", "h_jetResponse", NBINSJet, LogBinsXJet, NBINSJet, LogBinsXJet )
+        << "END" ;
+
+    fh_jetResponse_ALICE
+        << TH2D("h_jetResponse_ALICE", "h_jetResponse_ALICE", nALICEBins, ptBinsALICE, nALICEBins, ptBinsALICE )
         << "END" ;
 
     fh_dijetResponse
