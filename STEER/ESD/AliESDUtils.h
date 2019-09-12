@@ -41,6 +41,7 @@ namespace AliESDUtils {
   Float_t GetCorrV0A(Float_t v0araw,Float_t zv);
   Float_t GetCorrV0C(Float_t v0craw,Float_t zv);
   void GetTPCPileupVertexInfo(const AliESDEvent* event, TVectorF& vertexInfo);
+  void GetITSPileupVertexInfo(const AliESDEvent* event, TVectorF& vertexInfo, Double_t dcaCut=0.05,  Double_t dcaZcut=0.15);
 }  
 
 #endif
