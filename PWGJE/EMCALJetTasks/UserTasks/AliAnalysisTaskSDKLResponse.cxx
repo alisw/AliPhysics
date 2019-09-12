@@ -256,7 +256,7 @@ void AliAnalysisTaskSDKLResponse::UserCreateOutputObjects() {
   //                        0    1  2    3     4    5    6        7    8    9   10
   Int_t bins[nbins]    = { 10,  10, 2,  200,  20,  20,  20,     200,  20,  20,  20};
   Double_t xmin[nbins] = {0.0, 0.0, 0,  0.0, 0.0, 0.0, 0.0,      0., 0.0, 0.0, 0.0};
-  Double_t xmax[nbins] = {0.8, 1.0, 2, 200., 0.5, 0.4, 0.3,    200., 0.5, 0.4, 0.3};
+  Double_t xmax[nbins] = {0.8, 1.0, 2, 200., 0.5, 0.4, 0.2,    200., 0.5, 0.4, 0.2};
 
   fhResponse[0] = new THnSparseD("hResponse_1", "hResponse_1", nbins, bins, xmin, xmax); //by splits
   fhResponse[1] = new THnSparseD("hResponse_2", "hResponse_2", nbins, bins, xmin, xmax);
