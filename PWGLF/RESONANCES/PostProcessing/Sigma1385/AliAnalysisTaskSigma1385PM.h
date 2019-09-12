@@ -127,13 +127,13 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     Bool_t IsMC = kFALSE;
     Bool_t IsPrimaryMC = kFALSE;
     Bool_t fFillnTuple = kFALSE;
+    Bool_t IsNano = kFALSE;
     TNtupleD* fNtupleSigma1385;        //! Ntuple for the analysis
     TClonesArray* fMCArray = nullptr;  //!
     mixingpool fEMpool;                //!
     TAxis binCent;                     //!
     TAxis binZ;                        //!
     Double_t lPosPV[3];
-    Double_t fZ = 999;
 
     Double_t fCent = -1;
     Int_t fnMix = 10;
@@ -166,8 +166,9 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
     std::vector<UInt_t> goodtrackindices;  //!
     std::vector<std::vector<UInt_t>> goodv0indices;  //!
 
-    ClassDef(AliAnalysisTaskSigma1385PM, 2);
+    ClassDef(AliAnalysisTaskSigma1385PM, 3);
     // Add rapidity/radius/Lifetime/Y cut of lambda
+    // Add NanoOption
 };
 
 #endif
