@@ -90,6 +90,7 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_jetDeltaRMin;             //! // Minimum deltaR between jets
         AliJTH1D fh_jetBGSubtrDeltaR;         //! // DeltaR between BG subtr jet and raw jet.
         AliJTH2D fh_jetResponse;              //! // Jet response matrix
+        AliJTH2D fh_jetResponse_ALICE;              //! // Jet response matrix
         AliJTH2D fh_dijetResponse;            //! // Dijet response matrix
         AliJTH2D fh_dijetResponseDeltaPhiCut; //! // Dijet response matrix with deltaPhi cut
 };

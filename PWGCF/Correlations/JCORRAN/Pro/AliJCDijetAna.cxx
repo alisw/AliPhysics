@@ -34,7 +34,7 @@ AliJCDijetAna::AliJCDijetAna() :
     fDebug(0),
     fParticleEtaCut(0),
     fParticlePtCut(0),
-    fusePionMassInkt(0),
+    fusePionMass(0),
     fUseDeltaPhiBGSubtr(0),
     fConstituentCut(0),
     fLeadingJetCut(0),
@@ -55,6 +55,7 @@ AliJCDijetAna::AliJCDijetAna() :
     constituents(),
     dijets(),
     ktScheme(),
+    antiktScheme(),
     jetAreaVector(),
     jet_bgSubtracted(),
     jet_def(),
@@ -81,7 +82,7 @@ AliJCDijetAna::AliJCDijetAna(const AliJCDijetAna& obj) :
     fDebug(obj.fDebug),
     fParticleEtaCut(obj.fParticleEtaCut),
     fParticlePtCut(obj.fParticlePtCut),
-    fusePionMassInkt(obj.fusePionMassInkt),
+    fusePionMass(obj.fusePionMass),
     fUseDeltaPhiBGSubtr(obj.fUseDeltaPhiBGSubtr),
     fConstituentCut(obj.fConstituentCut),
     fLeadingJetCut(obj.fLeadingJetCut),
@@ -102,6 +103,7 @@ AliJCDijetAna::AliJCDijetAna(const AliJCDijetAna& obj) :
     constituents(obj.constituents),
     dijets(obj.dijets),
     ktScheme(obj.ktScheme),
+    antiktScheme(obj.antiktScheme),
     jetAreaVector(obj.jetAreaVector),
     jet_bgSubtracted(obj.jet_bgSubtracted),
     jet_def(obj.jet_def),
@@ -132,7 +134,8 @@ void AliJCDijetAna::SetSettings(int    lDebug,
                                 double lJetCone,
                                 double lktJetCone,
                                 int    lktScheme,
-                                bool   lusePionMassInkt,
+                                int    lantiktScheme,
+                                bool   lusePionMass,
                                 bool   luseDeltaPhiBGSubtr,
                                 double lConstituentCut,
                                 double lLeadingJetCut,
@@ -142,7 +145,7 @@ void AliJCDijetAna::SetSettings(int    lDebug,
     fDebug = lDebug;
     fParticleEtaCut = lParticleEtaCut;
     fParticlePtCut = lParticlePtCut;
-    fusePionMassInkt = lusePionMassInkt;
+    fusePionMass = lusePionMass;
     fUseDeltaPhiBGSubtr = luseDeltaPhiBGSubtr;
     fConstituentCut = lConstituentCut;
     fLeadingJetCut = lLeadingJetCut;
@@ -196,9 +199,27 @@ void AliJCDijetAna::SetSettings(int    lDebug,
         default: ktScheme = fastjet::external_scheme;
                  ::Error("AliJCDijetAna","Unknown recombination scheme!");
     }
+    switch (lantiktScheme) {
+        case 0:  antiktScheme = fastjet::E_scheme;
+                 break;
+        case 1:  antiktScheme = fastjet::pt_scheme;
+                 break;
+        case 2:  antiktScheme = fastjet::pt2_scheme;
+                 break;
+        case 3:  antiktScheme = fastjet::Et_scheme;
+                 break;
+        case 4:  antiktScheme = fastjet::Et2_scheme;
+                 break;
+        case 5:  antiktScheme = fastjet::BIpt_scheme;
+                 break;
+        case 6:  antiktScheme = fastjet::BIpt2_scheme;
+                 break;
+        default: antiktScheme = fastjet::external_scheme;
+                 ::Error("AliJCDijetAna","Unknown recombination scheme!");
+    }
 
     //Jet definitions and other fastjet settings
-    jet_def = fastjet::JetDefinition(fastjet::antikt_algorithm, fJetCone, fastjet::pt_scheme); //Other option: fastjet::E_scheme
+    jet_def = fastjet::JetDefinition(fastjet::antikt_algorithm, fJetCone, antiktScheme); //Other option: fastjet::E_scheme
     jet_def_bge = fastjet::JetDefinition(fastjet::kt_algorithm, fktJetCone, ktScheme);
 
     area_spec = fastjet::GhostedAreaSpec(ghost_maxrap, repeat, ghost_area);
@@ -239,9 +260,14 @@ void AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhisto
             fhistos->fh_phi[lCBin]->Fill(phi);
             fhistos->fh_etaPhi[lCBin]->Fill(eta,phi);
             fhistos->fh_pt[lCBin]->Fill(pt);
-            chparticles.push_back(fastjet::PseudoJet(trk->Px(), trk->Py(), trk->Pz(), trk->E()));
-            if(fusePionMassInkt) ktchparticles.push_back(fastjet::PseudoJet(trk->Px(), trk->Py(), trk->Pz(), TMath::Sqrt(trk->Px()*trk->Px() + trk->Py()*trk->Py() + trk->Pz()*trk->Pz() + pionmass*pionmass)));            
-            else ktchparticles.push_back(fastjet::PseudoJet(trk->Px(), trk->Py(), trk->Pz(), trk->E()));
+            if(fusePionMass) {
+                chparticles.push_back(fastjet::PseudoJet(trk->Px(), trk->Py(), trk->Pz(), TMath::Sqrt(trk->Px()*trk->Px() + trk->Py()*trk->Py() + trk->Pz()*trk->Pz() + pionmass*pionmass)));
+                ktchparticles.push_back(fastjet::PseudoJet(trk->Px(), trk->Py(), trk->Pz(), TMath::Sqrt(trk->Px()*trk->Px() + trk->Py()*trk->Py() + trk->Pz()*trk->Pz() + pionmass*pionmass)));
+                }
+            else {
+                chparticles.push_back(fastjet::PseudoJet(trk->Px(), trk->Py(), trk->Pz(), trk->E()));
+                ktchparticles.push_back(fastjet::PseudoJet(trk->Px(), trk->Py(), trk->Pz(), trk->E()));
+            }
         }
     }
     if(chparticles.size()==0) return; // We are not intereted in empty events.
@@ -523,6 +549,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
             ptTrue = jets[iAcc][ujet].pt();
             ptDetMC = jetsDetMC[iAcc][maxptIndex].pt();
             fhistos->fh_jetResponse->Fill(ptDetMC, ptTrue);
+            fhistos->fh_jetResponse_ALICE->Fill(ptDetMC, ptTrue);
             fhistos->fh_jetResponseDeltaR->Fill(deltaRMatch);
             fhistos->fh_jetResponseDeltaPt->Fill((ptTrue-ptDetMC)/ptTrue);
             fhistos->fh_responseInfo->Fill("True jet has pair",1.0);
@@ -638,8 +665,9 @@ void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBi
     for(int i=0; i< nCentBins; i++) histos->fh_info->Fill(Form("Cent bin border %02d",i), nCentBins);
     histos->fh_info->Fill("Jet cone", fJetCone);
     histos->fh_info->Fill("kt-jet cone", fktJetCone);
-    histos->fh_info->Fill("Scheme", ktScheme);
-    histos->fh_info->Fill("Use pion mass", fusePionMassInkt);
+    histos->fh_info->Fill("kt scheme", ktScheme);
+    histos->fh_info->Fill("antikt scheme", antiktScheme);
+    histos->fh_info->Fill("Use pion mass", fusePionMass);
     histos->fh_info->Fill("Use DeltaPhi BG Subtr", fUseDeltaPhiBGSubtr);
     histos->fh_info->Fill("Particle eta cut", fParticleEtaCut);
     histos->fh_info->Fill("Particle pt cut", fParticlePtCut);

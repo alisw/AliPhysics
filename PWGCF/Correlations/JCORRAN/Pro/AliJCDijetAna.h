@@ -46,7 +46,8 @@ class AliJCDijetAna : public TObject
                          double lJetCone,
                          double lktJetCone,
                          int    lktScheme,
-                         bool   lusePionMassInkt,
+                         int    lantiktScheme,
+                         bool   lusePionMass,
                          bool   luseDeltaPhiBGSubtr,
                          double lConstituentCut,
                          double lLeadingJetCut,
@@ -68,7 +69,7 @@ class AliJCDijetAna : public TObject
         int fDebug;
         double fParticleEtaCut;
         double fParticlePtCut;
-        bool fusePionMassInkt;
+        bool fusePionMass;
         bool fUseDeltaPhiBGSubtr;
         double fConstituentCut;
         double fLeadingJetCut;
@@ -107,6 +108,7 @@ class AliJCDijetAna : public TObject
         vector<vector<vector<fastjet::PseudoJet>>> dijets;
 
         fastjet::RecombinationScheme ktScheme;
+        fastjet::RecombinationScheme antiktScheme;
         fastjet::PseudoJet jetAreaVector;
         fastjet::PseudoJet jet_bgSubtracted;
         fastjet::PseudoJet dijet;
