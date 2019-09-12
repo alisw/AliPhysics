@@ -2095,6 +2095,15 @@ void AliAnalysisTaskESDfilter::ConvertPrimaryVertices(const AliESDEvent& esd)
   mVTPC->SetName(vtxT->GetName());
   mVTPC->SetTitle(vtxT->GetTitle());
   mVTPC->SetNContributors(vtxT->GetNContributors());
+
+  // Add custom TPC and ITS pileup infos
+  AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
+  static TVectorF vtiTPC(10), vtiITS(8);
+  AliESDUtils::GetTPCPileupVertexInfo(&esd, vtiTPC);
+  AliESDUtils::GetITSPileupVertexInfo(&esd, vtiITS);
+  header->SetTPCPileUpInfo(&vtiTPC);
+  header->SetITSPileUpInfo(&vtiITS);
+  //
 }
 
 //______________________________________________________________________________

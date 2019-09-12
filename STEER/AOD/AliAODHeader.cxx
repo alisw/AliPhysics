@@ -548,6 +548,10 @@ void AliAODHeader::Clear(Option_t* /*opt*/)
     fEventplaneQx = -999.;
     fEventplaneQy = -999.;
   }
+  delete fTPCPileUpInfo;
+  fTPCPileUpInfo = nullptr;
+  delete fITSPileUpInfo;
+  fITSPileUpInfo = nullptr;
   return;
 }
 
@@ -750,6 +754,7 @@ void AliAODHeader::SetTPCPileUpInfo(const TVectorF* src)
       delete fTPCPileUpInfo;
       fTPCPileUpInfo = new TVectorF(*src);
     }
+    else *fTPCPileUpInfo = *src;
   }
   else {
     delete fTPCPileUpInfo;
@@ -764,6 +769,7 @@ void AliAODHeader::SetITSPileUpInfo(const TVectorF* src)
       delete fITSPileUpInfo;
       fITSPileUpInfo = new TVectorF(*src);
     }
+    else *fITSPileUpInfo = *src;
   }
   else {
     delete fITSPileUpInfo;
