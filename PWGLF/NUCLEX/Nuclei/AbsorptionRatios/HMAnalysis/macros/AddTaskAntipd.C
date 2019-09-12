@@ -51,12 +51,18 @@ AliAnalysisTaskAntipd* AddTaskAntipd( TString name = "TaskAntiPD",
     // add task to the manager
 
     mgr->AddTask(taskantipd);
-    TString file = "AnalysisResults.root:";
-    TString OutputFile = Form("Output_%s",suffix);
+    //TString file = "AnalysisResults.root";
+    //TString OutputFile = Form("Output_%s",suffix);
 
 
+   //mgr->ConnectInput(taskantipd,0,mgr->GetCommonInputContainer());
+   //mgr->ConnectOutput(taskantipd,1,mgr->CreateContainer(OutputFile.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s%s",file.Data(),OutputFile.Data())));
+
+   TString list = Form("Output_%s",suffix);
+   TString file = "AnalysisResults.root";
+   // connect the manager to the task
    mgr->ConnectInput(taskantipd,0,mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(taskantipd,1,mgr->CreateContainer(OutputFile.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s%s",file.Data(),OutputFile.Data())));
+   mgr->ConnectOutput(taskantipd,1,mgr->CreateContainer(list, TList::Class(), AliAnalysisManager::kOutputContainer, file));
 
     return taskantipd;
 }
