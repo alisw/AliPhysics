@@ -143,7 +143,7 @@ class AliFJWrapper
   void SetEventSub(Bool_t b) {fEventSub = b;}
   void SetMaxDelR(Double_t r)  {fMaxDelR = r;}
   void SetAlpha(Double_t a)  {fAlpha = a;}
-  void SetRParam(Double_t r) {fRParam =r;}
+
 
  protected:
   TString                                fName;               //!
@@ -179,7 +179,6 @@ class AliFJWrapper
   Int_t                                  fNGhostRepeats;      //!
   Double_t                               fGhostArea;	      //!
   Double_t                               fMaxRap;	      //!
-  Double_t                               fRParam;             //!
   Double_t                               fR;                  //!
   Double_t                               fMinJetPt;
   // no setters for the moment - used default values in the constructor
@@ -1255,7 +1254,7 @@ Int_t AliFJWrapper::DoEventConstituentSubtraction() {
   //Do constituent subtraction
 #ifdef FASTJET_VERSION
   CreateEventConstituentSub();
-  fEventSubCorrectedVectors = fEventConstituentSubtractor->subtract_event(fEventSubInputVectors,fRParam); //second argument max rap?
+  fEventSubCorrectedVectors = fEventConstituentSubtractor->subtract_event(fEventSubInputVectors,fMaxRap); //second argument max rap?
   //clear constituent subtracted jets
   if(fEventConstituentSubtractor) { delete fEventConstituentSubtractor; fEventConstituentSubtractor = NULL; }
   
