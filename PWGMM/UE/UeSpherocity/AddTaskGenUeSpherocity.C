@@ -9,7 +9,7 @@ AliAnalysisTask *AddTaskGenUeSpherocity(TString suffixName =""){
   AliAnalysisTaskGenUeSpherocity* taskUeSpherocityMM = new  AliAnalysisTaskGenUeSpherocity("AliAnalysisTaskGenUeSpherocity");
   
   taskUeSpherocityMM -> SetYRange(0.5);
-  
+
   // Get the pointer to the existing analysis manager via the static access method
   //===========================================================================
 
@@ -35,19 +35,19 @@ AliAnalysisTask *AddTaskGenUeSpherocity(TString suffixName =""){
   inname	+= finDirname.Data();
   outBasic	+= finDirname.Data();
 
-  
+
   // Input and Output Slots
   //===========================================================================
 
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWGMM_SimSpherocityMM";
-  
+
   AliAnalysisDataContainer *coutSim = mgr->CreateContainer(outBasic,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
   mgr->ConnectInput (taskUeSpherocityMM, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskUeSpherocityMM, 1, coutSim);
-  
+
   return taskUeSpherocityMM;
-  
+
 }
 

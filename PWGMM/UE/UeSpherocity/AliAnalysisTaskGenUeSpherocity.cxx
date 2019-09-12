@@ -27,6 +27,8 @@
 #include <TTree.h>
 #include <TMath.h>
 #include <TFile.h>
+#include <TF1.h>
+#include <TRandom.h>
 #include <TTreeStream.h>
 #include "TChain.h"
 #include <THnSparse.h>
@@ -70,6 +72,13 @@ using namespace std;
 
 const Char_t * estimators[3]={"Mid05","Mid08","V0M"};
 
+TF1 * fNchEff; // efficiency for pions
+TF1* k_neg;
+TF1* k_pos;
+TF1* p_neg;
+TF1* p_pos;
+
+
 ClassImp( AliAnalysisTaskGenUeSpherocity )
 
 	//_____________________________________________________________________________
@@ -80,7 +89,6 @@ ClassImp( AliAnalysisTaskGenUeSpherocity )
 		fMcHandler(0x0),
 		fStack(0),
 		fSizeStep(0.1),
-		fNrec(-1),
 		fY(0.5),
 		fHistEvt(0x0),
 		fHistPart(0x0),
@@ -97,7 +105,6 @@ AliAnalysisTaskGenUeSpherocity::AliAnalysisTaskGenUeSpherocity(const char *name)
 	fMcHandler(0x0),
 	fStack(0),
 	fSizeStep(0.1),
-	fNrec(-1),
 	fY(0.5),
 	fHistEvt(0x0),
 	fHistPart(0x0),
@@ -140,9 +147,13 @@ void AliAnalysisTaskGenUeSpherocity::UserCreateOutputObjects(){
 	InitHisto<TH1F>("fHistMultPrimary","Multiplicity Primary", 100, 0., 2000., "N_{prim.}", "Entries");
 	InitHisto<TH1F>("fHistEta","Eta Distr.", 200, -1., 1., "#eta", "N_{part}");
 	InitHisto<TH1F>("fHistY", "Y Distr.", 200, -1., 1., "#it{y}", "N_{part}");
+	InitHisto<TH1F>("fHistYRec", "Y Distr. rec", 200, -1., 1., "#it{y}", "N_{part}");
 
-	for(Int_t i=0; i<11; i++)
+	for(Int_t i=0; i<11; i++){
 		InitHisto<TH1F>(Form("fHistPt_%s",pidNames[i].Data()), "Generated #it{p}_{T} distribution",2000,0.,20., "#it{p}_{T} (GeV/#it{c})", "Entries");
+
+		InitHisto<TH1F>(Form("fHistPtRec_%s",pidNames[i].Data()), "Rec #it{p}_{T} distribution",2000,0.,20., "#it{p}_{T} (GeV/#it{c})", "Entries");
+	}
 
 	for(Int_t i=0; i<3; i++){
 		InitHisto<TH2D>(Form("fMult_%s",estimators[i]),Form("Selection bias %s",estimators[i]),300,-0.5,299.5,100,-5,5,"Nch","#eta");
@@ -151,6 +162,14 @@ void AliAnalysisTaskGenUeSpherocity::UserCreateOutputObjects(){
 
 		InitHisto<TH1F>(Form("fNch_%s",estimators[i]),Form("Nch %s",estimators[i]),300,-0.5,299.5,"Nch","counts");
 		InitHisto<TH1F>(Form("fNchSoSel_%s",estimators[i]),Form("Nch %s (after So cuts)",estimators[i]),300,-0.5,299.5,"Nch","counts");
+
+		InitHisto<TH2D>(Form("fMultRec_%s",estimators[i]),Form("Selection bias %s",estimators[i]),300,-0.5,299.5,100,-5,5,"Ntrk","#eta");
+
+		InitHisto<TH2D>(Form("fSoVsNchRec_%s",estimators[i]),Form("So vs Ntrk %s",estimators[i]),300,-0.5,299.5,200,0.0,1.0,"Ntrk","Spherocity");
+		InitHisto<TH2D>(Form("fSoWeighedVsNchRec_%s",estimators[i]),Form("So vs Ntrk %s",estimators[i]),300,-0.5,299.5,200,0.0,1.0,"Ntrk","Spherocity (pT weighted)");
+
+		InitHisto<TH1F>(Form("fNchRec_%s",estimators[i]),Form("Ntrk %s",estimators[i]),300,-0.5,299.5,"Ntrk","counts");
+		InitHisto<TH1F>(Form("fNchSoSelRec_%s",estimators[i]),Form("Ntrk %s (after So cuts)",estimators[i]),300,-0.5,299.5,"Ntrk","counts");
 	}
 	// ### List of outputs
 	PostData(1, fListOfObjects);
@@ -208,6 +227,33 @@ template <class T> T* AliAnalysisTaskGenUeSpherocity::InitHisto(const char* hnam
 void AliAnalysisTaskGenUeSpherocity::Init(){
 	//
 	fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+
+	// efficiency for positive and negative pions, same for all charged particles
+	fNchEff = new TF1("ch_Eff",
+			"(x>=0.15&&x<[0])*([1]+x*[2])+(x>=[0]&&x<[3])*([4]+[5]*x+[6]*x*x)+(x>=[3])*([7])", 0.0, 1e3);
+	fNchEff->SetParameters(0.4,0.559616,0.634754,1.5,0.710963,0.312747,-0.163094,0.813976);
+
+	k_neg = new TF1("k_neg_Eff",
+			"(x>=0.25&&x<[0])*([1]+[2]*x+[3]*x*x+[4]*x*x*x+[5]*x*x*x*x)+(x>=[0]&&x<[6])*([7]+[8]*x)+(x>=[6])*([9])", 0.0, 1e3);
+	k_neg->SetParameters(1.4, -0.437094, 4.03935, -6.10465, 4.41681, -1.21593, 3.6, 0.693548, 0.0206902,
+			0.784834);
+
+	k_pos = new TF1("k_pos_Eff",
+			"(x>=0.25&&x<[0])*([1]+[2]*x+[3]*x*x+[4]*x*x*x+[5]*x*x*x*x)+(x>=[0]&&x<[6])*([7]+[8]*x)+(x>=[6])*([9])", 0.0, 1e3);
+	k_pos->SetParameters(1.0, -0.437094, 4.03935, -6.10465, 4.41681, -1.21593, 3.0, 0.694729, 0.0238144,
+			0.784834);
+
+	p_neg = new TF1("p_neg_Eff",
+			"(x>=0.3&&x<[0])*([1]+[2]*x)+(x>=[0]&&x<[3])*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x)+(x>=[3])*([9])", 0.0, 1e3);
+	p_neg->SetParameters(0.4, -1.49693, 5.55626, 2.4, 0.21432, 2.0683, -2.28951, 1.04733, -0.171858,
+			0.802333);
+
+	p_pos = new TF1("p_pos_Eff",
+			"(x>=0.3&&x<[0])*([1]+[2]*x)+(x>=[0]&&x<[3])*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x)+(x>=[3])*([9])", 0.0, 1e3);
+	p_pos->SetParameters(0.35, -1.49693, 5.55626, 2.2, 0.477826, 1.10708, -1.08169, 0.419493, -0.0565612,
+			0.802333);
+
+
 }
 
 //______________________________________________________________________________
@@ -236,44 +282,46 @@ void AliAnalysisTaskGenUeSpherocity::UserExec(Option_t *){
 	Bool_t isEventMCSelected = IsMCEventSelected(fMcEvent);
 	if( !isEventMCSelected ) return;
 
-	vector<Int_t> mult_estimators;
-	vector<Float_t> pt_so;
-	vector<Float_t> eta_so;
-	vector<Float_t> phi_so;
 
-	fNrec = -1;
-	fNrec = GetMultipliciy( mult_estimators, pt_so, eta_so, phi_so, fMcEvent );
+	// GENERATOR LEVEL
+	vector<Int_t> mult_estimators_gen;
+	vector<Float_t> pt_so_gen;
+	vector<Float_t> eta_so_gen;
+	vector<Float_t> phi_so_gen;
+	Int_t fNso_gen = -1;
+	fNso_gen = GetMultipliciy( kFALSE, mult_estimators_gen, pt_so_gen, eta_so_gen, phi_so_gen, fMcEvent );
 
-	Float_t spherocity_ptWeighted=-0.5;
-	Float_t spherocity=-0.5;
+	// PSEUDO REC LEVEL
+	vector<Int_t> mult_estimators_rec;
+	vector<Float_t> pt_so_rec;
+	vector<Float_t> eta_so_rec;
+	vector<Float_t> phi_so_rec;
+	Int_t fNso_rec = -1;
+	fNso_rec = GetMultipliciy( kTRUE, mult_estimators_rec, pt_so_rec, eta_so_rec, phi_so_rec, fMcEvent );
 
-	if(fNrec>2){
-		spherocity_ptWeighted = GetSpherocity(pt_so, eta_so, phi_so, kTRUE);
-		spherocity = GetSpherocity(pt_so, eta_so, phi_so, kFALSE);
+	cout<<" true="<<fNso_gen<<"  rec="<<fNso_rec<<endl;
+
+	// mult_estimators[3]: mult in |eta|<1
+	Bool_t fIsInel0_gen = kFALSE;
+	if(mult_estimators_gen[3]>0)
+		fIsInel0_gen = kTRUE;// is INEL>0
+
+
+	Bool_t fIsInel0_rec = kFALSE;
+	if(mult_estimators_rec[3]>0)
+		fIsInel0_rec = kTRUE;// is INEL>0
+
+	if(fIsInel0_gen)
+		MakeAnaGen(fNso_gen, mult_estimators_gen, pt_so_gen, eta_so_gen, phi_so_gen, fMcEvent);
+
+	if(fIsInel0_rec)
+		MakeAnaRec(fNso_rec, mult_estimators_rec, pt_so_rec, eta_so_rec, phi_so_rec, fMcEvent);
+
+
+	if(fIsInel0_gen&&fIsInel0_rec){
+		ParticleSel( kTRUE, mult_estimators_rec, fMcEvent );
+		ParticleSel( kFALSE, mult_estimators_gen, fMcEvent );
 	}
-	// ### Event and particle selection
-	EventSel( fMcEvent );
-	for(Int_t i=0;i<3;++i)
-		FillHisto(Form("fNch_%s",estimators[i]),1.0*mult_estimators[i]);
-
-	if(spherocity>=0&&spherocity<=1){
-
-		for(Int_t i=0;i<3;++i){
-			FillHisto(Form("fNchSoSel_%s",estimators[i]),1.0*mult_estimators[i]);
-			FillHisto(Form("fSoVsNch_%s",estimators[i]),1.0*mult_estimators[i],spherocity);
-		}
-
-	}
-	if(spherocity_ptWeighted>=0&&spherocity_ptWeighted<=1){
-
-		for(Int_t i=0;i<3;++i){
-			FillHisto(Form("fSoWeighedVsNch_%s",estimators[i]),1.0*mult_estimators[i],spherocity_ptWeighted);
-		}
-		ParticleSel( mult_estimators, fMcEvent );
-	}
-
-
-
 	// ### Post data for all output slots
 	PostData(1, fListOfObjects);
 
@@ -311,15 +359,14 @@ void AliAnalysisTaskGenUeSpherocity::EventSel(TObject* obj){
 }
 //_____________________________________________________________________________
 
-Int_t AliAnalysisTaskGenUeSpherocity::GetMultipliciy(vector<Int_t> &multArray, vector<Float_t> &ptArray,  vector<Float_t> &etaArray, vector<Float_t> &phiArray, TObject* obj){
+Int_t AliAnalysisTaskGenUeSpherocity::GetMultipliciy(Bool_t fIsPseudoRec, vector<Int_t> &multArray, vector<Float_t> &ptArray,  vector<Float_t> &etaArray, vector<Float_t> &phiArray, TObject* obj){
+
 
 	Int_t mult_so=0;
-
 	multArray.clear();
 	ptArray.clear();
 	etaArray.clear();
 	phiArray.clear();
-
 
 	if ( !obj ) return -1;
 
@@ -330,6 +377,7 @@ Int_t AliAnalysisTaskGenUeSpherocity::GetMultipliciy(vector<Int_t> &multArray, v
 
 	Int_t mult_Eta5   = 0;
 	Int_t mult_Eta8   = 0;
+	Int_t mult_Eta1   = 0;
 	Int_t mult_VZEROM = 0;
 
 	// ### particle loop
@@ -347,8 +395,12 @@ Int_t AliAnalysisTaskGenUeSpherocity::GetMultipliciy(vector<Int_t> &multArray, v
 			continue;
 
 		Double_t etaPart = mcPart -> Eta();
-		if( TMath::Abs(etaPart) < 0.5 ) mult_Eta5++;
 		if( (2.8 < etaPart && etaPart < 5.1) || (-3.7 < etaPart && etaPart <-1.7) ) mult_VZEROM++;
+
+		if(fIsPseudoRec)
+			if(!IsGoodTrack(-1,qPart,mcPart->Pt())) continue;
+
+		if( TMath::Abs(etaPart) < 0.5 ) mult_Eta5++;
 		if( TMath::Abs(etaPart) < 0.8 ){ 
 			mult_Eta8++;
 
@@ -361,19 +413,23 @@ Int_t AliAnalysisTaskGenUeSpherocity::GetMultipliciy(vector<Int_t> &multArray, v
 			}
 
 		}
+		if( TMath::Abs(etaPart) < 1 )
+			if(mcPart -> Pt()>0)
+				mult_Eta1++;// for INEL>0
 
 	} // particle loop
 
 	multArray.push_back(mult_Eta5);
 	multArray.push_back(mult_Eta8);
 	multArray.push_back(mult_VZEROM);
+	multArray.push_back(mult_Eta1);
 
 	return mult_so;
 }
 
 //______________________________________________________________________________
 
-void AliAnalysisTaskGenUeSpherocity::ParticleSel(const vector<Int_t> &mult, TObject* obj){
+void AliAnalysisTaskGenUeSpherocity::ParticleSel(Bool_t fIsPseudoRec, const vector<Int_t> &mult, TObject* obj){
 
 
 
@@ -405,13 +461,17 @@ void AliAnalysisTaskGenUeSpherocity::ParticleSel(const vector<Int_t> &mult, TObj
 		if( event->IsPhysicalPrimary(ipart) ){
 			Double_t qPart = mcPart->GetPDG()->Charge()/3.;
 			if(TMath::Abs(qPart)>0.001)
-				for(Int_t i=0;i<3;i++)
-					FillHisto(Form("fMult_%s",estimators[i]),1.0*mult[i],mcPart->Eta());
+				for(Int_t i=0;i<3;i++){
+					if(fIsPseudoRec)			
+						FillHisto(Form("fMultRec_%s",estimators[i]),1.0*mult[i],mcPart->Eta());
+					else
+						FillHisto(Form("fMult_%s",estimators[i]),1.0*mult[i],mcPart->Eta());
+				}
 		}
 
 		Int_t pPDG = TMath::Abs(mcPart->GetPdgCode());
 		pidCodeMC = GetPidCode(pPDG);
-
+		Double_t qPart = mcPart->GetPDG()->Charge()/3.;
 		Bool_t isSelectedPart = kTRUE;
 		for(Int_t i=0; i<11; i++) 
 			if( pidCodeMC == i ) 
@@ -439,9 +499,14 @@ void AliAnalysisTaskGenUeSpherocity::ParticleSel(const vector<Int_t> &mult, TObj
 				if( isPrimary[i] == kTRUE && isPhysPrim == kFALSE ) 
 					continue;
 
-				if(!i) FillHisto("fHistY",y);
-				FillHisto(Form("fHistPt_%s",pidNames[i].Data()),ipt);
-
+				if(fIsPseudoRec){
+					if(!IsGoodTrack(pidCodeMC,qPart,mcPart->Pt())) continue;
+					if(!i) FillHisto("fHistYRec",y);
+					FillHisto(Form("fHistPtRec_%s",pidNames[i].Data()),ipt);
+				}else{
+					if(!i) FillHisto("fHistY",y);
+					FillHisto(Form("fHistPt_%s",pidNames[i].Data()),ipt);
+				}
 
 			}
 		}
@@ -450,7 +515,7 @@ void AliAnalysisTaskGenUeSpherocity::ParticleSel(const vector<Int_t> &mult, TObj
 
 }
 
-Float_t AliAnalysisTaskGenUeSpherocity::GetSpherocity( const vector<Float_t> &pt, const vector<Float_t> &eta, const vector<Float_t> &phi, const Bool_t isPtWeighted ){
+Float_t AliAnalysisTaskGenUeSpherocity::GetSpherocity(Int_t fNso_gen, const vector<Float_t> &pt, const vector<Float_t> &eta, const vector<Float_t> &phi, const Bool_t isPtWeighted ){
 
 
 	Float_t spherocity = -10.0;
@@ -460,11 +525,11 @@ Float_t AliAnalysisTaskGenUeSpherocity::GetSpherocity( const vector<Float_t> &pt
 	//computing total pt
 	Float_t sumapt = 0;
 	if(isPtWeighted)
-		for(Int_t i1 = 0; i1 < fNrec; ++i1){
+		for(Int_t i1 = 0; i1 < fNso_gen; ++i1){
 			sumapt += pt[i1];
 		}
 	else
-		sumapt = 1.0*fNrec;
+		sumapt = 1.0*fNso_gen;
 	//Getting thrust
 	for(Int_t i = 0; i < 360/(fSizeStep); ++i){
 		Float_t numerador = 0;
@@ -474,7 +539,7 @@ Float_t AliAnalysisTaskGenUeSpherocity::GetSpherocity( const vector<Float_t> &pt
 		phiparam=( (TMath::Pi()) * i * fSizeStep ) / 180; // parametrization of the angle
 		nx = TMath::Cos(phiparam);            // x component of an unitary vector n
 		ny = TMath::Sin(phiparam);            // y component of an unitary vector n
-		for(Int_t i1 = 0; i1 < fNrec; ++i1){
+		for(Int_t i1 = 0; i1 < fNso_gen; ++i1){
 
 			Float_t pxA = 0;
 			Float_t pyA = 0;
@@ -561,6 +626,96 @@ Int_t AliAnalysisTaskGenUeSpherocity::GetPidCode(Int_t pdgCode) const  {
 	};
 
 	return pidCode;
+}
+
+Bool_t AliAnalysisTaskGenUeSpherocity::IsGoodTrack(Int_t pid, Double_t charge, Double_t pt){
+
+	Double_t efficiency;
+	if(pid==0)
+		efficiency = fNchEff->Eval(pt);
+	if(pid==1&&charge<0)
+		efficiency = k_neg->Eval(pt);
+	if(pid==1&&charge>0)
+		efficiency = k_pos->Eval(pt);
+	if(pid==2&&charge<0)
+		efficiency = p_neg->Eval(pt);
+	if(pid==2&&charge>0)
+		efficiency = p_pos->Eval(pt);
+	else
+		efficiency = fNchEff->Eval(pt);
+
+
+	if(gRandom->Uniform(0.0,1.0)<efficiency)
+		return kTRUE;
+	else
+		return kFALSE;
+
+}
+void AliAnalysisTaskGenUeSpherocity::MakeAnaGen(Int_t fNso_gen, vector<Int_t> &mult_estimators, vector<Float_t> &pt_so,  vector<Float_t> &eta_so, vector<Float_t> &phi_so, TObject* obj){
+
+
+
+	Float_t spherocity_ptWeighted=-0.5;
+	Float_t spherocity=-0.5;
+
+	if(fNso_gen>2){
+		spherocity_ptWeighted = GetSpherocity(fNso_gen, pt_so, eta_so, phi_so, kTRUE);
+		spherocity = GetSpherocity(fNso_gen, pt_so, eta_so, phi_so, kFALSE);
+	}
+	// ### Event and particle selection
+	EventSel( fMcEvent );
+	for(Int_t i=0;i<3;++i)
+		FillHisto(Form("fNch_%s",estimators[i]),1.0*mult_estimators[i]);
+
+
+	if(spherocity>=0&&spherocity<=1){
+
+		for(Int_t i=0;i<3;++i){
+			FillHisto(Form("fNchSoSel_%s",estimators[i]),1.0*mult_estimators[i]);
+			FillHisto(Form("fSoVsNch_%s",estimators[i]),1.0*mult_estimators[i],spherocity);
+		}
+
+	}
+	if(spherocity_ptWeighted>=0&&spherocity_ptWeighted<=1){
+
+		for(Int_t i=0;i<3;++i){
+			FillHisto(Form("fSoWeighedVsNch_%s",estimators[i]),1.0*mult_estimators[i],spherocity_ptWeighted);
+		}
+	}
+
+}
+void AliAnalysisTaskGenUeSpherocity::MakeAnaRec(Int_t fNso_gen, vector<Int_t> &mult_estimators, vector<Float_t> &pt_so,  vector<Float_t> &eta_so, vector<Float_t> &phi_so, TObject* obj){
+
+
+
+	Float_t spherocity_ptWeighted=-0.5;
+	Float_t spherocity=-0.5;
+
+	if(fNso_gen>2){
+		spherocity_ptWeighted = GetSpherocity(fNso_gen, pt_so, eta_so, phi_so, kTRUE);
+		spherocity = GetSpherocity(fNso_gen, pt_so, eta_so, phi_so, kFALSE);
+	}
+	// ### Event and particle selection
+	EventSel( fMcEvent );
+	for(Int_t i=0;i<3;++i)
+		FillHisto(Form("fNchRec_%s",estimators[i]),1.0*mult_estimators[i]);
+
+
+	if(spherocity>=0&&spherocity<=1){
+
+		for(Int_t i=0;i<3;++i){
+			FillHisto(Form("fNchSoSelRec_%s",estimators[i]),1.0*mult_estimators[i]);
+			FillHisto(Form("fSoVsNchRec_%s",estimators[i]),1.0*mult_estimators[i],spherocity);
+		}
+
+	}
+	if(spherocity_ptWeighted>=0&&spherocity_ptWeighted<=1){
+
+		for(Int_t i=0;i<3;++i){
+			FillHisto(Form("fSoWeighedVsNchRec_%s",estimators[i]),1.0*mult_estimators[i],spherocity_ptWeighted);
+		}
+	}
+
 }
 
 
