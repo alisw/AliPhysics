@@ -4008,7 +4008,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
           contfileTriggThresh->SetOwner(kTRUE);
         }
       } else { // load from special OADB file from AliEn
-        TFile *fileTriggThresh=TFile::Open(Form("%s",fPathTriggerMimicSpecialInput.Data()),"read");
+        TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB(((char*)Form("PWGGA/%s",fPathTriggerMimicSpecialInput.Data()))).data(),"read");
         if (!fileTriggThresh || fileTriggThresh->IsZombie())
         {
           AliFatal(Form("%s was not found",fPathTriggerMimicSpecialInput.Data()));
