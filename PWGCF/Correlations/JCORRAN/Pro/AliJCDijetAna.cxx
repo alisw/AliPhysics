@@ -519,7 +519,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
     double ptTrue, ptDetMC;
     unsigned maxptIndex;
     bool bfound;
-    bool bJetMatch[NjetsDetMC] = {false};
+    std::vector<bool> bJetMatch(NjetsDetMC, false);
     bool bLeadingMatch    = false;
     bool bSubleadingMatch = false;
     bool bSubleadingMatchDeltaPhi = false;
