@@ -54,21 +54,26 @@ class AliAnalysisTaskGenUeSpherocity : public AliAnalysisTaskSE { //
 		virtual void Init();
 		virtual void UserExec(Option_t *option);
 		virtual void Terminate(Option_t *);
-
 		void SetYRange(Float_t y){ fY=y; }
 
 	private:
 
 		void	EventSel(TObject* obj);
-		Int_t       GetMultipliciy(std::vector<Int_t> &mult, std::vector<Float_t> &ptArray,  std::vector<Float_t> &etaArray, std::vector<Float_t> &phiArray, TObject* obj);
-		void 	ParticleSel(const std::vector<Int_t> &mult, TObject *obj);
+		Int_t       GetMultipliciy(Bool_t fIsPseudoRec, std::vector<Int_t> &mult, std::vector<Float_t> &ptArray,  std::vector<Float_t> &etaArray, std::vector<Float_t> &phiArray, TObject* obj);
+		void 	ParticleSel(Bool_t fIsPseudoRec, const std::vector<Int_t> &mult, TObject *obj);
 		Float_t     GetSpherocity(
+				Int_t fNso_gen,
 				const std::vector<Float_t> &pt,
 				const std::vector<Float_t> &eta,
 				const std::vector<Float_t> &phi,
 				const Bool_t isPtWeighted
 				);
 		Int_t	GetPidCode(Int_t pdgCode) const;
+		Bool_t  IsGoodTrack(Int_t pid, Double_t charge,Double_t pt);
+		void    MakeAnaGen(Int_t fNso_gen, std::vector<Int_t> &multArray, std::vector<Float_t> &ptArray,  std::vector<Float_t> &etaArray, std::vector<Float_t> &phiArray, TObject* obj);
+		void    MakeAnaRec(Int_t fNso_gen, std::vector<Int_t> &multArray, std::vector<Float_t> &ptArray,  std::vector<Float_t> &etaArray, std::vector<Float_t> &phiArray, TObject* obj);
+
+
 
 	protected:
 
