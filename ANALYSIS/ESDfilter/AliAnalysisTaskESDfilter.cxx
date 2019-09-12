@@ -67,7 +67,8 @@
 
 using std::cout;
 using std::endl;
-ClassImp(AliAnalysisTaskESDfilter)
+
+ClassImp(AliAnalysisTaskESDfilter);
 
 AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   AliAnalysisTaskSE(),
@@ -407,6 +408,12 @@ TClonesArray& AliAnalysisTaskESDfilter::V0s()
 TClonesArray& AliAnalysisTaskESDfilter::Vertices()
 {
   return *(AODEvent()->GetVertices());
+}
+
+//______________________________________________________________________________
+TClonesArray& AliAnalysisTaskESDfilter::Kinks()
+{
+  return *(AODEvent()->GetKinks());
 }
 
 //______________________________________________________________________________
@@ -962,9 +969,9 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
   }
   UInt_t posInt;
 
-  for (Int_t nV0 = 0; nV0 < esd.GetNumberOfV0s(); ++nV0) {
+  for (Int_t nV0 = 0; nV0 < esd.GetNumberOfV0s(); ++nV0)  {
     if (fAddPCMv0s) {posInt = (UInt_t) nV0;}
-    if (fUsedV0[nV0]){
+    if (fUsedV0[nV0]) {
 	if(fbitfieldPCMv0sA){
 	  if(fbitfieldPCMv0sA->TestBitNumber(posInt) && posInt <= fbitfieldPCMv0sA->GetNbits()){
 	    fv0Histos->Fill(5);
@@ -997,13 +1004,13 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
     UInt_t selectV0 = 0;
 
     //Add PCM V0s
-    if(fbitfieldPCMv0sA){
+    if(fbitfieldPCMv0sA) {
       if(fbitfieldPCMv0sA->TestBitNumber(posInt) && posInt <= fbitfieldPCMv0sA->GetNbits()){
 	selectV0 = 2;
 	fv0Histos->Fill(1);
       }
     }
-    if(fbitfieldPCMv0sB){
+    if(fbitfieldPCMv0sB) {
       if(fbitfieldPCMv0sB->TestBitNumber(posInt) && posInt <= fbitfieldPCMv0sB->GetNbits()){
 	selectV0 = 2;
 	fv0Histos->Fill(2);
@@ -1824,174 +1831,106 @@ void AliAnalysisTaskESDfilter::ConvertKinks(const AliESDEvent& esd)
   // The loop is on the tracks in order to find the mother and daugther of each kink
 
   Double_t covTr[21]={0.};
+  Double_t chi2(0.0);
+  Double_t covVtx[6] = { 0. };
+  Double_t motherPos[3] = { 0. };
+  Double_t p[3] = { 0. };
+  Double_t pos[3] = { 0. };
   //  Double_t pid[10]={0.};
   AliAODPid* detpid(0x0);
   Int_t tofLabel[3] = {0};
 
-  fNumberOfKinks = esd.GetNumberOfKinks();
+  // fNumberOfKinks = esd.GetNumberOfKinks();
 
   const AliESDVertex* vtx = esd.GetPrimaryVertex();
 
-  for (Int_t iTrack=0; iTrack<esd.GetNumberOfTracks(); ++iTrack)
-  {
+  for (Int_t iTrack=0; iTrack<esd.GetNumberOfTracks(); ++iTrack) {
+    
     AliESDtrack * esdTrack = esd.GetTrack(iTrack);
+    Int_t indexkink = esdTrack->GetKinkIndex(0);
+    if(indexkink>=0) continue; // we look for mother kink
 
-    Int_t ikink = esdTrack->GetKinkIndex(0);
-
-    if (ikink && fNumberOfKinks) {
-      // Negative kink index: mother, positive: daughter
-      // Search for the second track of the kink
-
-      for (Int_t jTrack = iTrack+1; jTrack<esd.GetNumberOfTracks(); ++jTrack) {
-        AliESDtrack * esdTrack1 = esd.GetTrack(jTrack);
-        Int_t jkink = esdTrack1->GetKinkIndex(0);
-
-        if ( TMath::Abs(ikink)==TMath::Abs(jkink) ) {
-          // The two tracks are from the same kink
-          if (fUsedKink[TMath::Abs(ikink)-1]) continue; // skip used kinks
-
-          Int_t imother = -1;
-          Int_t idaughter = -1;
-
-          if (ikink<0 && jkink>0) {
-            imother = iTrack;
-            idaughter = jTrack;
-          } else if (ikink>0 && jkink<0) {
-	    imother = jTrack;
-            idaughter = iTrack;
-          } else {
-            //cerr << "Error: Wrong combination of kink indexes: "
-            //	   << ikink << " " << jkink << endl;
-            continue;
-          }
-
-          // Add the mother track if it passed primary track selection cuts
-          AliAODTrack * mother = NULL;
-
-          UInt_t selectInfo = 0;
-          if (fTrackFilter) {
-            selectInfo = fTrackFilter->IsSelected(esd.GetTrack(imother));
-            if (!selectInfo) continue;
-          }
-
-          if (!fUsedTrack[imother]) {
-            fUsedTrack[imother] = kTRUE;
-            AliESDtrack *esdTrackM = esd.GetTrack(imother);
-            Double_t p[3] = { 0. };
-            Double_t pos[3] = { 0. };
-            esdTrackM->GetPxPyPz(p);
-            esdTrackM->GetXYZ(pos);
-            esdTrackM->GetCovarianceXYZPxPyPz(covTr);
-	    //            esdTrackM->GetESDpid(pid);
-	    esdTrackM->GetTOFLabel(tofLabel);
-            if(fMChandler)fMChandler->SelectParticle(esdTrackM->GetLabel());
-            mother = new(Tracks()[fNumberOfTracks++]) AliAODTrack(esdTrackM->GetID(),
-								  esdTrackM->GetLabel(),
-								  p,
-								  kTRUE,
-								  pos,
-								  kFALSE,
-								  covTr,
-								  (Short_t)esdTrackM->GetSign(),
-								  esdTrackM->GetITSClusterMap(),
-								  // pid,
-								  fPrimaryVertex,
-								  kTRUE, // check if this is right
-								  vtx->UsesTrack(esdTrack->GetID()),
-								  AliAODTrack::kPrimary,
-								  selectInfo);
-	    mother->SetITSSharedMap(esdTrackM->GetITSSharedMap());
-	    mother->SetITSchi2(esdTrackM->GetITSchi2());
-	    mother->SetPIDForTracking(esdTrackM->GetPIDForTracking());
-            mother->SetTPCFitMap(esdTrackM->GetTPCFitMap());
-            mother->SetTPCClusterMap(esdTrackM->GetTPCClusterMap());
-            mother->SetTPCSharedMap (esdTrackM->GetTPCSharedMap());
-            mother->SetChi2perNDF(Chi2perNDF(esdTrackM));
-            mother->SetTPCPointsF(esdTrackM->GetTPCNclsF());
-	    mother->SetTPCNCrossedRows(UShort_t(esdTrackM->GetTPCCrossedRows()));
-	    mother->SetIntegratedLength(esdTrackM->GetIntegratedLength());
-	    mother->SetTOFLabel(tofLabel);
-	    CopyChi2TPCConstrainedVsGlobal(esdTrackM, mother);
-	    CopyCaloProps(esdTrackM,mother);
-            fAODTrackRefs->AddAt(mother, imother);
-            if (esdTrackM->GetSign() > 0) ++fNumberOfPositiveTracks;
-            mother->SetFlags(esdTrackM->GetStatus());
-            mother->ConvertAliPIDtoAODPID();
-            fPrimaryVertex->AddDaughter(mother);
-            mother->ConvertAliPIDtoAODPID();
-            SetAODPID(esdTrackM,mother,detpid);
-          }
-          else {
-            //cerr << "Error: event " << esd.GetEventNumberInFile() << " kink " << TMath::Abs(ikink)-1
-            //     << " track " << imother << " has already been used!" << endl;
-          }
-
-          // Add the kink vertex
-          AliESDkink * kink = esd.GetKink(TMath::Abs(ikink)-1);
-
-          AliAODVertex * vkink = new(Vertices()[fNumberOfVertices++]) AliAODVertex(kink->GetPosition(),
-										   NULL,
-										   0.,
-										   mother,
-										   esdTrack->GetID(),  // ID of mother's track!
-										   AliAODVertex::kKink);
-          // Add the daughter track
-          AliAODTrack * daughter = NULL;
-          if (!fUsedTrack[idaughter]) {
-            fUsedTrack[idaughter] = kTRUE;
-            AliESDtrack *esdTrackD = esd.GetTrack(idaughter);
-            Double_t p[3] = { 0. };
-            Double_t pos[3] = { 0. };
-            esdTrackD->GetPxPyPz(p);
-            esdTrackD->GetXYZ(pos);
-            esdTrackD->GetCovarianceXYZPxPyPz(covTr);
-	    //            esdTrackD->GetESDpid(pid);
-	    esdTrackD->GetTOFLabel(tofLabel);
-            selectInfo = 0;
-            if (fTrackFilter) selectInfo = fTrackFilter->IsSelected(esdTrackD);
-            if(fMChandler)fMChandler->SelectParticle(esdTrackD->GetLabel());
-            daughter = new(Tracks()[fNumberOfTracks++]) AliAODTrack(esdTrackD->GetID(),
-								    esdTrackD->GetLabel(),
-								    p,
-								    kTRUE,
-								    pos,
-								    kFALSE,
-								    covTr,
-								    (Short_t)esdTrackD->GetSign(),
-								    esdTrackD->GetITSClusterMap(),
-								    // pid,
-								    vkink,
-								    kTRUE, // check if this is right
-								    vtx->UsesTrack(esdTrack->GetID()),
-								    AliAODTrack::kFromDecayVtx,
-								    selectInfo);
-	    daughter->SetITSSharedMap(esdTrackD->GetITSSharedMap());
-	    daughter->SetITSchi2(esdTrackD->GetITSchi2());
-	    daughter->SetPIDForTracking(esdTrackD->GetPIDForTracking());
-            daughter->SetTPCFitMap(esdTrackD->GetTPCFitMap());
-            daughter->SetTPCClusterMap(esdTrackD->GetTPCClusterMap());
-            daughter->SetTPCSharedMap (esdTrackD->GetTPCSharedMap());
-	    daughter->SetTPCPointsF(esdTrackD->GetTPCNclsF());
-	    daughter->SetTPCNCrossedRows(UShort_t(esdTrackD->GetTPCCrossedRows()));
-	    daughter->SetIntegratedLength(esdTrackD->GetIntegratedLength());
-	    daughter->SetTOFLabel(tofLabel);
-	    CopyChi2TPCConstrainedVsGlobal(esdTrackD, daughter);
-	    CopyCaloProps(esdTrackD,daughter);
-            fAODTrackRefs->AddAt(daughter, idaughter);
-            if (esdTrackD->GetSign() > 0) ++fNumberOfPositiveTracks;
-            daughter->SetFlags(esdTrackD->GetStatus());
-            daughter->ConvertAliPIDtoAODPID();
-            vkink->AddDaughter(daughter);
-            daughter->ConvertAliPIDtoAODPID();
-            SetAODPID(esdTrackD,daughter,detpid);
-          } else {
-            //cerr << "Error: event " << esd.GetEventNumberInFile() << " kink " << TMath::Abs(ikink)-1
-            //     << " track " << idaughter << " has already been used!" << endl;
-          }
-        }
-      }
+    int kinkESDIdx = TMath::Abs(indexkink)-1;
+    AliESDkink *kink = esd.GetKink(kinkESDIdx);
+       
+    // kink selection
+    if (!kink || (fKinkFilter && !fKinkFilter->IsSelected(kink)) ) continue;
+    
+    AliAODTrack * mother = NULL;
+    
+    if (!fUsedTrack[iTrack]) { // add mother track if not yet added, w/o check for the quality!
+      fUsedTrack[iTrack] = kTRUE;
+      UInt_t selectInfo = fTrackFilter ? fTrackFilter->IsSelected(esdTrack) : 0;
+      esdTrack->GetPxPyPz(p);
+      esdTrack->GetXYZ(motherPos);
+      esdTrack->GetCovarianceXYZPxPyPz(covTr);
+      esdTrack->GetTOFLabel(tofLabel);
+      if (fMChandler) fMChandler->SelectParticle( esdTrack->GetLabel() );
+      mother = new(Tracks()[fNumberOfTracks++]) AliAODTrack(esdTrack->GetID(),
+							    esdTrack->GetLabel(),
+							    p,
+							    kTRUE,
+							      motherPos,
+							    kFALSE,
+							    covTr,
+							    (Short_t)esdTrack->GetSign(),
+							    esdTrack->GetITSClusterMap(),
+							    fPrimaryVertex,
+							    kTRUE, // check if this is right
+							    vtx->UsesTrack(esdTrack->GetID()),
+							    AliAODTrack::kPrimary,
+							    selectInfo);
+      mother->SetITSSharedMap(esdTrack->GetITSSharedMap());
+      mother->SetITSchi2(esdTrack->GetITSchi2());
+      mother->SetPIDForTracking(esdTrack->GetPIDForTracking());
+      mother->SetTPCFitMap(esdTrack->GetTPCFitMap());
+      mother->SetTPCClusterMap(esdTrack->GetTPCClusterMap());
+      mother->SetTPCSharedMap (esdTrack->GetTPCSharedMap());
+      mother->SetChi2perNDF(Chi2perNDF(esdTrack));
+      mother->SetTPCPointsF(esdTrack->GetTPCNclsF());
+      mother->SetTPCNCrossedRows(UShort_t(esdTrack->GetTPCCrossedRows()));
+      mother->SetIntegratedLength(esdTrack->GetIntegratedLength());
+      mother->SetTOFLabel(tofLabel);
+      CopyChi2TPCConstrainedVsGlobal(esdTrack, mother);
+      CopyCaloProps(esdTrack,mother);
+      fAODTrackRefs->AddAt(mother, iTrack);
+      if (esdTrack->GetSign() > 0) ++fNumberOfPositiveTracks;
+      mother->SetFlags(esdTrack->GetStatus());
+      mother->ConvertAliPIDtoAODPID();
+      fPrimaryVertex->AddDaughter(mother);
+      mother->ConvertAliPIDtoAODPID();
+      SetAODPID(esdTrack,mother,detpid);
     }
-  }
+    else {
+      mother = static_cast<AliAODTrack*>(fAODTrackRefs->At(iTrack));
+    }
+    
+    // add kink to AOD
+    const TVector3 vposKink(kink->GetPosition()); //reco kink vtx position
+    for (Int_t j=0; j<3; j++) pos[j]=vposKink[j];
+    AliAODVertex * vkink = new(Vertices()[fNumberOfVertices++]) AliAODVertex(pos,
+									     NULL,
+									     0.,
+									     mother,
+									     kinkESDIdx,  // ID of ESD kink
+									     AliAODVertex::kKink);
+    fPrimaryVertex->AddDaughter(vkink);
+    
+    Float_t kinkAngle = TMath::RadToDeg()*kink->GetAngle(2);
+    Double_t radius = kink->GetR();
+    Float_t qT = kink->GetQt();
+    const TVector3 motherMfromKink(kink->GetMotherP());
+    const TVector3 daughterMKink(kink->GetDaughterP());
+
+    AliAODkink* aodkink = new(Kinks()[fNumberOfKinks++]) AliAODkink(vkink,
+								    kinkAngle,
+								    radius,
+								    qT,
+								    motherMfromKink,
+								    daughterMKink);
+       
+  } // loop over tracks
+
 }
 
 //______________________________________________________________________________

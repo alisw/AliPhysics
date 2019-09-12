@@ -125,6 +125,7 @@ private:
 
   TClonesArray& Tracks();
   TClonesArray& V0s();
+  TClonesArray& Kinks();
   TClonesArray& Vertices();
   TClonesArray& Cascades();
   
