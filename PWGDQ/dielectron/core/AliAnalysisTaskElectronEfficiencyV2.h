@@ -47,8 +47,6 @@ public:
    // called at end of analysis
    virtual void Terminate(Option_t* option);
 
-   void SetRun1Analysis(Bool_t answer){ run1analysis = answer; }
-
    enum Detector {kITS, kTPC, kTOF};
    Bool_t               GetEnablePhysicsSelection() const   {return fSelectPhysics; }
    Int_t                GetTriggerMask() const              {return fTriggerMask; }
@@ -77,7 +75,8 @@ public:
    void   SetEnablePhysicsSelection(Bool_t selectPhysics)   {fSelectPhysics = selectPhysics;}
    void   SetTriggerMask(Int_t triggermask)                 {fTriggerMask = triggermask;}
    void   SetEventFilter(AliAnalysisCuts * const filter)    {fEventFilter = filter;}
-   void   SetCentrality(double cent_min, double cent_max)             {fMinCentrality = cent_min; fMaxCentrality = cent_max;} //For pp and pPb analysis use SetCentrality(-1, -1)
+   void   SetCentrality(double cent_min, double cent_max)   {fMinCentrality = cent_min; fMaxCentrality = cent_max;} // To ignore centrality use SetCentrality(-1, -1)
+   void   SetCentralityEstimator(TString estimator)         {fCentralityEst = estimator;}
 
    void   SetCentralityFile(std::string filename) {fCentralityFilename = filename; }
 
@@ -118,14 +117,14 @@ public:
    // Single leg from Pair related setter
    void   SetWriteLegsFromPair(bool enable){fWriteLegsFromPair = enable;}
    void   SetPtMinLegsFromPair(const double ptMin){fPtMinLegsFromPair = ptMin;}
-   void   SetPtMaxLegsFromPair(const double ptMax){fPtMaxLegsFromPair = ptMax;}  
+   void   SetPtMaxLegsFromPair(const double ptMax){fPtMaxLegsFromPair = ptMax;}
    void   SetEtaMinLegsFromPair(const double etaMin){fEtaMinLegsFromPair = etaMin;}
-   void   SetEtaMaxLegsFromPair(const double etaMax){fEtaMaxLegsFromPair = etaMax;} 
+   void   SetEtaMaxLegsFromPair(const double etaMax){fEtaMaxLegsFromPair = etaMax;}
    void   SetPhiMinLegsFromPair(const double phiMin){fPhiMinLegsFromPair = phiMin;}
-   void   SetPhiMaxLegsFromPair(const double phiMax){fPhiMaxLegsFromPair = phiMax;} 
+   void   SetPhiMaxLegsFromPair(const double phiMax){fPhiMaxLegsFromPair = phiMax;}
    void   SetOpAngleMinLegsFromPair(const double opAngleMin){fOpAngleMinLegsFromPair = opAngleMin;}
-   void   SetOpAngleMaxLegsFromPair(const double opAngleMax){fOpAngleMaxLegsFromPair = opAngleMax;} 
-   void   SetPtNBinsLegsFromPair(const int ptNBins){fPtNBinsLegsFromPair = ptNBins;} 
+   void   SetOpAngleMaxLegsFromPair(const double opAngleMax){fOpAngleMaxLegsFromPair = opAngleMax;}
+   void   SetPtNBinsLegsFromPair(const int ptNBins){fPtNBinsLegsFromPair = ptNBins;}
    void   SetEtaNBinsLegsFromPair(const int etaNBins){fEtaNBinsLegsFromPair = etaNBins;}
    void   SetPhiNBinsLegsFromPair(const int phiNBins){fPhiNBinsLegsFromPair = phiNBins;}
    void   SetOpAngleNBinsLegsFromPair(const int opAngleNBins){fOpAngleNBinsLegsFromPair = opAngleNBins;}
@@ -291,6 +290,7 @@ private:
   TH1F* fHistNTracks;
   Double_t fMinCentrality;
   Double_t fMaxCentrality;
+  TString fCentralityEst; // Which centrality estimator to use.
 
   TFile* fCentralityFile;
   std::string fCentralityFilename;
@@ -314,11 +314,11 @@ private:
   bool fWriteLegsFromPair;
   double fPtMinLegsFromPair;
   double fPtMaxLegsFromPair;
-  double fEtaMinLegsFromPair; 
+  double fEtaMinLegsFromPair;
   double fEtaMaxLegsFromPair;
   double fPhiMinLegsFromPair;
   double fPhiMaxLegsFromPair;
-  double fOpAngleMinLegsFromPair; 
+  double fOpAngleMinLegsFromPair;
   double fOpAngleMaxLegsFromPair;
   int fPtNBinsLegsFromPair;
   int fEtaNBinsLegsFromPair;
@@ -354,7 +354,6 @@ private:
   TH1* fPostPIDCntrdCorrTOF;     // post pid correction object for centroids in TOF
   TH1* fPostPIDWdthCorrTOF;      // post pid correction object for widths in TOF
 
-  Bool_t run1analysis;
 
 
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
