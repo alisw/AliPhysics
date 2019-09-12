@@ -58,6 +58,7 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     THistManager* fHistos = nullptr;  //!
     AliAODVertex* vertex = nullptr;   //!
     Bool_t IsMC = kFALSE;
+    Bool_t IsNano = kFALSE;
     TClonesArray* fMCArray = nullptr;  //!
     TAxis binCent;                     //!
     TAxis binZ;                        //!
@@ -71,10 +72,10 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
 
     // Pion cuts
     UInt_t fFilterBit = 32.0;
-    Double_t fTPCNsigSigmaStarPionCut = 3.0;
-    Double_t fSigmaStarPionEtaCut = 0.8;
-    Double_t fSigmaStarPionZVertexCut = 2.0;  // 2.0
-    Double_t fSigmaStarPionXYVertexSigmaCut = 7.0;
+    Double_t fTPCNsigNanoCheckerPionCut = 3.0;
+    Double_t fNanoCheckerPionEtaCut = 0.8;
+    Double_t fNanoCheckerPionZVertexCut = 2.0;  // 2.0
+    Double_t fNanoCheckerPionXYVertexSigmaCut = 7.0;
 
     // Lambda cuts
     Double_t fTPCNsigLambdaProtonCut = 3.0;
@@ -89,8 +90,8 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     Double_t fV0MassWindowCut = 0.01;
 
     // Sigma Star cut
-    Double_t fSigmaStarYCutHigh = 0.5;
-    Double_t fSigmaStarYCutLow = -0.5;
+    Double_t fNanoCheckerYCutHigh = 0.5;
+    Double_t fNanoCheckerYCutLow = -0.5;
 
 
     std::vector<UInt_t> goodtrackindices;  //!
