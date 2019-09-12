@@ -19,10 +19,10 @@
 #include <TBits.h>
 #include "AliCentrality.h"
 #include "AliEventplane.h"
+#include <TVectorF.h>
 
 class TGeoHMatrix;
 class TString;
-
 
 class AliAODHeader : public AliVAODHeader {
 
@@ -227,6 +227,11 @@ class AliAODHeader : public AliVAODHeader {
   void       SetT0spread(Int_t i, Float_t t) {
     if ((i>=0)&&(i<kT0SpreadSize)) fT0spread[i]=t;}
 
+  const TVectorF* GetTPCPileUpInfo() const {return fTPCPileUpInfo;}
+  const TVectorF* GetITSPileUpInfo() const {return fITSPileUpInfo;}
+  void SetTPCPileUpInfo(const TVectorF* src);
+  void SetITSPileUpInfo(const TVectorF* src);
+  
   Int_t  FindIRIntInteractionsBXMap(Int_t difference) const;
   void   SetIRInt2InteractionMap(TBits bits) { fIRInt2InteractionsMap = bits; }
   void   SetIRInt1InteractionMap(TBits bits) { fIRInt1InteractionsMap = bits; }
@@ -297,10 +302,11 @@ class AliAODHeader : public AliVAODHeader {
   AliEventplane* fEventplaneP;	    ///< Pointer to full event plane information
   Float_t     fVZEROEqFactors[64];  ///< V0 channel equalization factors for event-plane reconstruction
   Float_t     fT0spread[kT0SpreadSize]; ///< spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
+  TVectorF*   fTPCPileUpInfo;           ///< custom info about TPC pileup used by TPC PID
+  TVectorF*   fITSPileUpInfo;           ///< custom info about TPC pileup used by TPC PID
   TBits   fIRInt2InteractionsMap;  ///< map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
   TBits   fIRInt1InteractionsMap;  ///< map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
-  ClassDef(AliAODHeader, 32);
-
+  ClassDef(AliAODHeader, 33);
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 
