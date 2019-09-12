@@ -166,7 +166,7 @@ fHistV0OptimalTrackParamUseBachelor(0),
 fHistV0Statistics(0)
 //________________________________________________
 {
-    
+    SetUseImprovedFinding(); 
 }
 
 AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer(const char *name, TString lExtraOptions)
@@ -227,7 +227,7 @@ fHistV0OptimalTrackParamUseBachelor(0),
 fHistV0Statistics(0)
 //________________________________________________
 {
-    
+    SetUseImprovedFinding(); 
     //Re-vertex: Will only apply for cascade candidates
     
     fV0VertexerSels[0] =  33.  ;  // max allowed chi2
