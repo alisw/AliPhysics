@@ -124,6 +124,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMode(0),
   fMesonKind(0),
   fIsMergedClusterCut(0),
+  fUsePtDepSelectionWindow(kFALSE),
   fSelectionWindowCut(-1),
   fNDegreeRotationPMForBG(0),
   fNumberOfBGEvents(0),
@@ -135,7 +136,6 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoMinPtCut(kFALSE),
   fEnableMassCut(kFALSE),
   fAcceptMesonMass(kTRUE),
-  fUsePtDepSelectionWindow(kFALSE),
   fUseRotationMethodInBG(kFALSE),
   fUsePtmaxMethodForBG(kFALSE),
   fDoBG(kTRUE),
@@ -227,6 +227,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fMode(ref.fMode),
   fMesonKind(ref.fMesonKind),
   fIsMergedClusterCut(ref.fIsMergedClusterCut),
+  fUsePtDepSelectionWindow(ref.fUsePtDepSelectionWindow),
   fSelectionWindowCut(ref.fSelectionWindowCut),
   fNDegreeRotationPMForBG(ref.fNDegreeRotationPMForBG),
   fNumberOfBGEvents(ref. fNumberOfBGEvents),
@@ -238,7 +239,6 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoMinPtCut(ref.fDoMinPtCut),
   fEnableMassCut(ref.fEnableMassCut),
   fAcceptMesonMass(ref.fAcceptMesonMass),
-  fUsePtDepSelectionWindow(ref.fUsePtDepSelectionWindow),
   fUseRotationMethodInBG(ref.fUseRotationMethodInBG),
   fUsePtmaxMethodForBG(ref.fUsePtmaxMethodForBG),
   fDoBG(ref.fDoBG),
@@ -1614,6 +1614,12 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
         UpdateCutString();
         return kTRUE;
       } else return kFALSE;
+    } else if(fUsePtDepSelectionWindow){
+      if( SetSelectionWindowCutPtDep(value)) {
+        fCuts[kSelectionCut] = value;
+        UpdateCutString();
+        return kTRUE;
+      } else return kFALSE;
     } else {
       if( SetSelectionWindowCut(value)) {
         fCuts[kSelectionCut] = value;
@@ -2063,6 +2069,130 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowMergedCut(Int_t selectionCut){
       break;
     case 9:   //min mass cut around 0
       fEnableMassCut = kTRUE;
+      break;
+    default:
+      cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
+      return kFALSE;
+  }
+
+  return kTRUE;
+
+}
+
+Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
+  // Set Cut
+  fSelectionWindowCut = selectionCut;
+  switch(fSelectionWindowCut){
+    case 0: // EMC-EMC - 99 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 99.;
+      fSelectionNSigmaHigh = 99.;
+      fMassParamFunction   = 0;
+      break;
+    case 1: // EMC-EMC - 2 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = 2.;
+      fMassParamFunction   = 0;
+      break;
+    case 2: // PCM-EMC 2 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = 2.;
+      fMassParamFunction   = 1;
+      break;
+    case 3: // PHOS-PHOS 2 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = 2.;
+      fMassParamFunction   = 2;
+      break;
+    case 4: // PCM-PHOS 2 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = 2.;
+      fMassParamFunction   = 3;
+    case 5: //PCM-PCM 2 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = 2.;
+      fMassParamFunction   = 4;
+      break;
+    case 6: // EMC-EMC - 1 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 1.;
+      fSelectionNSigmaHigh = 1.;
+      fMassParamFunction   = 0;
+      break;
+    case 7: // EMC-EMC - 3 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = 3.;
+      fMassParamFunction   = 0;
+      break;
+    case 8: // PCM-EMC 1 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 1.;
+      fSelectionNSigmaHigh = 1.;
+      fMassParamFunction   = 1;
+      break;
+    case 9: // PCM-EMC 3 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = 3.;
+      fMassParamFunction   = 1;
+      break;
+    case 10: // a PHOS-PHOS 1 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 1.;
+      fSelectionNSigmaHigh = 1.;
+      fMassParamFunction   = 2;
+      break;
+    case 11: // b PHOS-PHOS 3 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = 3.;
+      fMassParamFunction   = 2;
+      break;
+    case 12: // c PCM-PHOS 1 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 1.;
+      fSelectionNSigmaHigh = 1.;
+      fMassParamFunction   = 3;
+      break;
+    case 13: // d PCM-PHOS 3 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = 3.;
+      fMassParamFunction   = 3;
+      break;
+    case 14: //e // PCM-PCM 1 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 1.;
+      fSelectionNSigmaHigh = 1.;
+      fMassParamFunction   = 4;
+      break;
+    case 15: // f // PCM-PCM 3 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = 3.;
+      fMassParamFunction   = 4;
       break;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
