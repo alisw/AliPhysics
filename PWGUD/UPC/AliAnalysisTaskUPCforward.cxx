@@ -2529,12 +2529,20 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
          - doesn't seem to suit my case...
          -
        */
-      if( dataZDC->IsZNAfired() ) fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
+      if( dataZDC->IsZNAfired() ) {
+        if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+          fZNATimeAgainstEntriesH->Fill(fZNATDC[iZDC]);
+        }
+      }
       fCounterZNAH->Fill(counterZNA);
     }
     if ( (isZNCfired == 0) && (fZNCTDC[iZDC] > -2.) && (fZNCTDC[iZDC] < 2.) ) {
       isZNCfired = kTRUE;
-      if( dataZDC->IsZNCfired() ) fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
+      if( dataZDC->IsZNCfired() ) {
+        if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+          fZNCTimeAgainstEntriesH->Fill(fZNCTDC[iZDC]);
+        }
+      }    
       fCounterZNCH->Fill(counterZNC);
     }
     counterZNA++;
