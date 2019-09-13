@@ -92,6 +92,7 @@ class AliAnalysisTaskSDKLResponse : public AliAnalysisTaskSDKL {
 
   TNtuple                    *fTreeDL;                      //!<!
   TNtuple                    *fTreeDLUEBS;                  //!<!
+  TNtuple                    *fTreePL;                      //!<!
 
   AliJetContainer            *fJetsCont1;                   //! Jets
   AliJetContainer            *fJetsCont2;                   //! Jets
