@@ -2027,10 +2027,10 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			DCAMCRes_phi1 = 0.0;
 			}
 			if(!fIsMC){
-			DCAMCMean_phi1 = GetDCAMeanMC_phi1(fPt); ///mean of the MC
+			DCAMCMean_phi1 = GetDCAMeanData_phi1(fPt); ///mean of the MC
 			}
 			else{
-			DCAMCMean_phi1 = 0.0;
+			DCAMCMean_phi1 = GetDCAMeanMC_phi1(fPt);
 			}
 			correction_phi1 = gRandom->Gaus(DCAMCMean_phi1,DCAMCRes_phi1); 
 			float DCAResCorr_phi1 =  DCAxy + correction_phi1;
@@ -2050,10 +2050,10 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			DCAMCRes_phi2 = 0.0;
 			}
 			if(!fIsMC){
-			DCAMCMean_phi2 = GetDCAMeanMC_phi2(fPt); ///mean of the MC
+			DCAMCMean_phi2 = GetDCAMeanData_phi2(fPt); ///mean of the MC
 			}
 			else{
-			DCAMCMean_phi2 = 0.0;
+			DCAMCMean_phi2 = GetDCAMeanMC_phi2(fPt);
 			}
 			correction_phi2 = gRandom->Gaus(DCAMCMean_phi2,DCAMCRes_phi2); 
 			float DCAResCorr_phi2 =  DCAxy + correction_phi2;
@@ -2073,10 +2073,10 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			DCAMCRes_phi3 = 0.0;
 			}
 			if(!fIsMC){
-			DCAMCMean_phi3 = GetDCAMeanMC_phi3(fPt); ///mean of the MC
+			DCAMCMean_phi3 = GetDCAMeanData_phi3(fPt); ///mean of the MC
 			}
 			else{
-			DCAMCMean_phi3 = 0.0;
+			DCAMCMean_phi3 = GetDCAMeanMC_phi3(fPt);
 			}
 			correction_phi3 = gRandom->Gaus(DCAMCMean_phi3,DCAMCRes_phi3); 
 			float DCAResCorr_phi3 =  DCAxy + correction_phi3;
@@ -2096,10 +2096,10 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			DCAMCRes_phi4 = 0.0;
 			}
 			if(!fIsMC){
-			DCAMCMean_phi4 = GetDCAMeanMC_phi4(fPt); ///mean of the MC
+			DCAMCMean_phi4 = GetDCAMeanData_phi4(fPt); ///mean of the MC
 			}
 			else{
-			DCAMCMean_phi4 = 0.0;
+			DCAMCMean_phi4 = GetDCAMeanMC_phi4(fPt);
 			}
 			correction_phi4 = gRandom->Gaus(DCAMCMean_phi4,DCAMCRes_phi4); 
 			float DCAResCorr_phi4 =  DCAxy + correction_phi4;
@@ -2138,25 +2138,25 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
             	
 		if(!fIsMC){
 		if(phi_d0 > 315.0 || phi_d0 < 45.0){
-		DCAMCMean_phi1 = GetDCAMeanMC_phi1(fPt); ///mean of the MC
+		DCAMCMean_phi1 = GetDCAMeanData_phi1(fPt); ///mean of the MC
 		float Meancorrection_phi1 = gRandom->Gaus(DCAMCMean_phi1,0.0); 
 		DataDCAResCorr =  (DCAxy + Meancorrection_phi1)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 45.0 && phi_d0 < 135.0){
-		DCAMCMean_phi2 = GetDCAMeanMC_phi2(fPt); ///mean of the MC
+		DCAMCMean_phi2 = GetDCAMeanData_phi2(fPt); ///mean of the MC
 		float Meancorrection_phi2 = gRandom->Gaus(DCAMCMean_phi2,0.0); 
 		DataDCAResCorr =  (DCAxy + Meancorrection_phi2)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 135.0 && phi_d0 < 225.0){
-		DCAMCMean_phi3 = GetDCAMeanMC_phi3(fPt); ///mean of the MC
+		DCAMCMean_phi3 = GetDCAMeanData_phi3(fPt); ///mean of the MC
 		float Meancorrection_phi3 = gRandom->Gaus(DCAMCMean_phi3,0.0); 
 		DataDCAResCorr =  (DCAxy + Meancorrection_phi3)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 225.0 && phi_d0 < 315.0){
-		DCAMCMean_phi4 = GetDCAMeanMC_phi4(fPt); ///mean of the MC
+		DCAMCMean_phi4 = GetDCAMeanData_phi4(fPt); ///mean of the MC
 		float Meancorrection_phi4 = gRandom->Gaus(DCAMCMean_phi4,0.0);  
 		DataDCAResCorr =  (DCAxy + Meancorrection_phi4)*track->Charge()*signB;
 		}
@@ -2501,26 +2501,30 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
             	
             	if(fIsMC){
            	if(phi_d0 > 315.0 || phi_d0 < 45.0){
+           	DCAMCMean_phi1 = GetDCAMeanMC_phi1(fPt);
 		DCAMCRes_phi1 = GetDCAResolMC_phi1(fPt); ///resolution of the MC
-		float Rescorrection_phi1 = gRandom->Gaus(0.0,DCAMCRes_phi1); 
+		float Rescorrection_phi1 = gRandom->Gaus(DCAMCMean_phi1,DCAMCRes_phi1); 
 		DCAResCorr =  (DCAxy + Rescorrection_phi1)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 45.0 && phi_d0 < 135.0){
+		DCAMCMean_phi2 = GetDCAMeanMC_phi2(fPt);
 		DCAMCRes_phi2 = GetDCAResolMC_phi2(fPt); ///resolution of the MC
-		float Rescorrection_phi2 = gRandom->Gaus(0.0,DCAMCRes_phi2); 
+		float Rescorrection_phi2 = gRandom->Gaus(DCAMCMean_phi2,DCAMCRes_phi2); 
 		DCAResCorr =  (DCAxy + Rescorrection_phi2)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 135.0 && phi_d0 < 225.0){
+		DCAMCMean_phi3 = GetDCAMeanMC_phi3(fPt);
 		DCAMCRes_phi3 = GetDCAResolMC_phi3(fPt); ///resolution of the MC
-		float Rescorrection_phi3 = gRandom->Gaus(0.0,DCAMCRes_phi3); 
+		float Rescorrection_phi3 = gRandom->Gaus(DCAMCMean_phi3,DCAMCRes_phi3); 
 		DCAResCorr =  (DCAxy + Rescorrection_phi3)*track->Charge()*signB;
 		}
 			
 		if(phi_d0 > 225.0 && phi_d0 < 315.0){
+		DCAMCMean_phi4 = GetDCAMeanMC_phi4(fPt);
 		DCAMCRes_phi4 = GetDCAResolMC_phi4(fPt); ///resolution of the MC
-		float Rescorrection_phi4 = gRandom->Gaus(0.0,DCAMCRes_phi4); 
+		float Rescorrection_phi4 = gRandom->Gaus(DCAMCMean_phi4,DCAMCRes_phi4); 
 		DCAResCorr =  (DCAxy + Rescorrection_phi4)*track->Charge()*signB;
 		}
 		}
@@ -3674,147 +3678,298 @@ Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi1(Float_t x){
     
 // Return the DCA resolution of the track (in MC) accordingly to its pT
 
-float MeanGaus = 0;
+float MeanMCGaus = 0;
 
-if (x >= 0.90 && x < 1.10) MeanGaus = -0.000047; 
-if (x >= 1.10 && x < 1.30) MeanGaus = -0.000025; 
-if (x >= 1.30 && x < 1.50) MeanGaus = -0.000056; 
-if (x >= 1.50 && x < 1.70) MeanGaus = -0.000081; 
-if (x >= 1.70 && x < 1.90) MeanGaus = -0.000102; 
-if (x >= 1.90 && x < 2.10) MeanGaus = -0.000167; 
-if (x >= 2.10 && x < 2.30) MeanGaus = -0.000200; 
-if (x >= 2.30 && x < 2.50) MeanGaus = -0.000220; 
-if (x >= 2.50 && x < 2.70) MeanGaus = -0.000257; 
-if (x >= 2.70 && x < 2.90) MeanGaus = -0.000290; 
-if (x >= 2.90 && x < 3.10) MeanGaus = -0.000316; 
-if (x >= 3.10 && x < 3.30) MeanGaus = -0.000297; 
-if (x >= 3.30 && x < 3.50) MeanGaus = -0.000316; 
-if (x >= 3.50 && x < 3.70) MeanGaus = -0.000298; 
-if (x >= 3.70 && x < 3.90) MeanGaus = -0.000319; 
-if (x >= 3.90 && x < 4.10) MeanGaus = -0.000335; 
-if (x >= 4.10 && x < 4.30) MeanGaus = -0.000349; 
-if (x >= 4.30 && x < 4.50) MeanGaus = -0.000405; 
-if (x >= 4.50 && x < 4.70) MeanGaus = -0.000365; 
-if (x >= 4.70 && x < 5.00) MeanGaus = -0.000385; 
-if (x >= 5.00 && x < 5.50) MeanGaus = -0.000293; 
-if (x >= 5.50 && x < 6.00) MeanGaus = -0.000365; 
-if (x >= 6.00 && x < 6.50) MeanGaus = -0.000290; 
-if (x >= 6.50 && x < 7.00) MeanGaus = -0.000389; 
-if (x >= 7.00 && x < 8.00) MeanGaus = -0.000307; 
-
-
+if (x >= 0.90 && x < 1.10) MeanMCGaus = 0.000287; 
+if (x >= 1.10 && x < 1.30) MeanMCGaus = 0.000247; 
+if (x >= 1.30 && x < 1.50) MeanMCGaus = 0.000264; 
+if (x >= 1.50 && x < 1.70) MeanMCGaus = 0.000273; 
+if (x >= 1.70 && x < 1.90) MeanMCGaus = 0.000286; 
+if (x >= 1.90 && x < 2.10) MeanMCGaus = 0.000329; 
+if (x >= 2.10 && x < 2.30) MeanMCGaus = 0.000344; 
+if (x >= 2.30 && x < 2.50) MeanMCGaus = 0.000350; 
+if (x >= 2.50 && x < 2.70) MeanMCGaus = 0.000374; 
+if (x >= 2.70 && x < 2.90) MeanMCGaus = 0.000383; 
+if (x >= 2.90 && x < 3.10) MeanMCGaus = 0.000392; 
+if (x >= 3.10 && x < 3.30) MeanMCGaus = 0.000365; 
+if (x >= 3.30 && x < 3.50) MeanMCGaus = 0.000405; 
+if (x >= 3.50 && x < 3.70) MeanMCGaus = 0.000384; 
+if (x >= 3.70 && x < 3.90) MeanMCGaus = 0.000386; 
+if (x >= 3.90 && x < 4.10) MeanMCGaus = 0.000391; 
+if (x >= 4.10 && x < 4.30) MeanMCGaus = 0.000385; 
+if (x >= 4.30 && x < 4.50) MeanMCGaus = 0.000455; 
+if (x >= 4.50 && x < 4.70) MeanMCGaus = 0.000401; 
+if (x >= 4.70 && x < 5.00) MeanMCGaus = 0.000431; 
+if (x >= 5.00 && x < 5.50) MeanMCGaus = 0.000345; 
+if (x >= 5.50 && x < 6.00) MeanMCGaus = 0.000381; 
+if (x >= 6.00 && x < 6.50) MeanMCGaus = 0.000322; 
+if (x >= 6.50 && x < 7.00) MeanMCGaus = 0.000414; 
+if (x >= 7.00 && x < 8.00) MeanMCGaus = 0.000333; 
 
 
-return MeanGaus;   
+
+
+return MeanMCGaus;   
 }
 
 Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi2(Float_t x){
     
 // Return the DCA resolution of the track (in MC) accordingly to its pT
 
-float MeanGaus = 0;
+float MeanMCGaus = 0;
 
-if (x >= 0.90 && x < 1.10) MeanGaus = 0.001693; 
-if (x >= 1.10 && x < 1.30) MeanGaus = 0.001638; 
-if (x >= 1.30 && x < 1.50) MeanGaus = 0.001470; 
-if (x >= 1.50 && x < 1.70) MeanGaus = 0.001312; 
-if (x >= 1.70 && x < 1.90) MeanGaus = 0.001156; 
-if (x >= 1.90 && x < 2.10) MeanGaus = 0.001087; 
-if (x >= 2.10 && x < 2.30) MeanGaus = 0.001030; 
-if (x >= 2.30 && x < 2.50) MeanGaus = 0.000971; 
-if (x >= 2.50 && x < 2.70) MeanGaus = 0.000935; 
-if (x >= 2.70 && x < 2.90) MeanGaus = 0.000816; 
-if (x >= 2.90 && x < 3.10) MeanGaus = 0.000803; 
-if (x >= 3.10 && x < 3.30) MeanGaus = 0.000747; 
-if (x >= 3.30 && x < 3.50) MeanGaus = 0.000697; 
-if (x >= 3.50 && x < 3.70) MeanGaus = 0.000623; 
-if (x >= 3.70 && x < 3.90) MeanGaus = 0.000670; 
-if (x >= 3.90 && x < 4.10) MeanGaus = 0.000646; 
-if (x >= 4.10 && x < 4.30) MeanGaus = 0.000566; 
-if (x >= 4.30 && x < 4.50) MeanGaus = 0.000560; 
-if (x >= 4.50 && x < 4.70) MeanGaus = 0.000540; 
-if (x >= 4.70 && x < 5.00) MeanGaus = 0.000406; 
-if (x >= 5.00 && x < 5.50) MeanGaus = 0.000406; 
-if (x >= 5.50 && x < 6.00) MeanGaus = 0.000357; 
-if (x >= 6.00 && x < 6.50) MeanGaus = 0.000338; 
-if (x >= 6.50 && x < 7.00) MeanGaus = 0.000319; 
-if (x >= 7.00 && x < 8.00) MeanGaus = 0.000363; 
+if (x >= 0.90 && x < 1.10) MeanMCGaus = -0.000481; 
+if (x >= 1.10 && x < 1.30) MeanMCGaus = -0.000431; 
+if (x >= 1.30 && x < 1.50) MeanMCGaus = -0.000380; 
+if (x >= 1.50 && x < 1.70) MeanMCGaus = -0.000332; 
+if (x >= 1.70 && x < 1.90) MeanMCGaus = -0.000292; 
+if (x >= 1.90 && x < 2.10) MeanMCGaus = -0.000272; 
+if (x >= 2.10 && x < 2.30) MeanMCGaus = -0.000251; 
+if (x >= 2.30 && x < 2.50) MeanMCGaus = -0.000223; 
+if (x >= 2.50 && x < 2.70) MeanMCGaus = -0.000216; 
+if (x >= 2.70 && x < 2.90) MeanMCGaus = -0.000166; 
+if (x >= 2.90 && x < 3.10) MeanMCGaus = -0.000175; 
+if (x >= 3.10 && x < 3.30) MeanMCGaus = -0.000141; 
+if (x >= 3.30 && x < 3.50) MeanMCGaus = -0.000147; 
+if (x >= 3.50 && x < 3.70) MeanMCGaus = -0.000111; 
+if (x >= 3.70 && x < 3.90) MeanMCGaus = -0.000148; 
+if (x >= 3.90 && x < 4.10) MeanMCGaus = -0.000124; 
+if (x >= 4.10 && x < 4.30) MeanMCGaus = -0.000110; 
+if (x >= 4.30 && x < 4.50) MeanMCGaus = -0.000094; 
+if (x >= 4.50 && x < 4.70) MeanMCGaus = -0.000103; 
+if (x >= 4.70 && x < 5.00) MeanMCGaus = -0.000039; 
+if (x >= 5.00 && x < 5.50) MeanMCGaus = -0.000058; 
+if (x >= 5.50 && x < 6.00) MeanMCGaus = -0.000028; 
+if (x >= 6.00 && x < 6.50) MeanMCGaus = -0.000105; 
+if (x >= 6.50 && x < 7.00) MeanMCGaus = -0.000033; 
+if (x >= 7.00 && x < 8.00) MeanMCGaus = -0.000032; 
 
 
-return MeanGaus;   
+
+return MeanMCGaus;   
 }
 
 Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi3(Float_t x){
     
 // Return the DCA resolution of the track (in MC) accordingly to its pT
 
-float MeanGaus = 0;
+float MeanMCGaus = 0;
 
-if (x >= 0.90 && x < 1.10) MeanGaus = 0.000433; 
-if (x >= 1.10 && x < 1.30) MeanGaus = 0.000426; 
-if (x >= 1.30 && x < 1.50) MeanGaus = 0.000327; 
-if (x >= 1.50 && x < 1.70) MeanGaus = 0.000295; 
-if (x >= 1.70 && x < 1.90) MeanGaus = 0.000251; 
-if (x >= 1.90 && x < 2.10) MeanGaus = 0.000238; 
-if (x >= 2.10 && x < 2.30) MeanGaus = 0.000213; 
-if (x >= 2.30 && x < 2.50) MeanGaus = 0.000222; 
-if (x >= 2.50 && x < 2.70) MeanGaus = 0.000185; 
-if (x >= 2.70 && x < 2.90) MeanGaus = 0.000137; 
-if (x >= 2.90 && x < 3.10) MeanGaus = 0.000146; 
-if (x >= 3.10 && x < 3.30) MeanGaus = 0.000081; 
-if (x >= 3.30 && x < 3.50) MeanGaus = 0.000114; 
-if (x >= 3.50 && x < 3.70) MeanGaus = 0.000132; 
-if (x >= 3.70 && x < 3.90) MeanGaus = 0.000088; 
-if (x >= 3.90 && x < 4.10) MeanGaus = 0.000082; 
-if (x >= 4.10 && x < 4.30) MeanGaus = -0.000009; 
-if (x >= 4.30 && x < 4.50) MeanGaus = 0.000025; 
-if (x >= 4.50 && x < 4.70) MeanGaus = 0.000092; 
-if (x >= 4.70 && x < 5.00) MeanGaus = 0.000089; 
-if (x >= 5.00 && x < 5.50) MeanGaus = -0.000001; 
-if (x >= 5.50 && x < 6.00) MeanGaus = 0.000043; 
-if (x >= 6.00 && x < 6.50) MeanGaus = -0.000016; 
-if (x >= 6.50 && x < 7.00) MeanGaus = 0.000027; 
-if (x >= 7.00 && x < 8.00) MeanGaus = 0.000014;
+if (x >= 0.90 && x < 1.10) MeanMCGaus = 0.000319; 
+if (x >= 1.10 && x < 1.30) MeanMCGaus = 0.000265; 
+if (x >= 1.30 && x < 1.50) MeanMCGaus = 0.000269; 
+if (x >= 1.50 && x < 1.70) MeanMCGaus = 0.000268; 
+if (x >= 1.70 && x < 1.90) MeanMCGaus = 0.000273; 
+if (x >= 1.90 && x < 2.10) MeanMCGaus = 0.000288; 
+if (x >= 2.10 && x < 2.30) MeanMCGaus = 0.000279; 
+if (x >= 2.30 && x < 2.50) MeanMCGaus = 0.000261; 
+if (x >= 2.50 && x < 2.70) MeanMCGaus = 0.000270; 
+if (x >= 2.70 && x < 2.90) MeanMCGaus = 0.000264; 
+if (x >= 2.90 && x < 3.10) MeanMCGaus = 0.000240; 
+if (x >= 3.10 && x < 3.30) MeanMCGaus = 0.000281; 
+if (x >= 3.30 && x < 3.50) MeanMCGaus = 0.000248; 
+if (x >= 3.50 && x < 3.70) MeanMCGaus = 0.000231; 
+if (x >= 3.70 && x < 3.90) MeanMCGaus = 0.000265; 
+if (x >= 3.90 && x < 4.10) MeanMCGaus = 0.000244; 
+if (x >= 4.10 && x < 4.30) MeanMCGaus = 0.000284; 
+if (x >= 4.30 && x < 4.50) MeanMCGaus = 0.000215; 
+if (x >= 4.50 && x < 4.70) MeanMCGaus = 0.000193; 
+if (x >= 4.70 && x < 5.00) MeanMCGaus = 0.000207; 
+if (x >= 5.00 && x < 5.50) MeanMCGaus = 0.000260; 
+if (x >= 5.50 && x < 6.00) MeanMCGaus = 0.000213; 
+if (x >= 6.00 && x < 6.50) MeanMCGaus = 0.000275; 
+if (x >= 6.50 && x < 7.00) MeanMCGaus = 0.000161; 
+if (x >= 7.00 && x < 8.00) MeanMCGaus = 0.000179; 
 
-return MeanGaus;   
+return MeanMCGaus;   
 }
 
 Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi4(Float_t x){
     
 // Return the DCA resolution of the track (in MC) accordingly to its pT
 
-float MeanGaus = 0;
+float MeanMCGaus = 0;
 
-if (x >= 0.90 && x < 1.10) MeanGaus = 0.002023; 
-if (x >= 1.10 && x < 1.30) MeanGaus = 0.001979; 
-if (x >= 1.30 && x < 1.50) MeanGaus = 0.001823; 
-if (x >= 1.50 && x < 1.70) MeanGaus = 0.001620; 
-if (x >= 1.70 && x < 1.90) MeanGaus = 0.001465; 
-if (x >= 1.90 && x < 2.10) MeanGaus = 0.001293; 
-if (x >= 2.10 && x < 2.30) MeanGaus = 0.001192; 
-if (x >= 2.30 && x < 2.50) MeanGaus = 0.001074; 
-if (x >= 2.50 && x < 2.70) MeanGaus = 0.000998; 
-if (x >= 2.70 && x < 2.90) MeanGaus = 0.000912; 
-if (x >= 2.90 && x < 3.10) MeanGaus = 0.000846; 
-if (x >= 3.10 && x < 3.30) MeanGaus = 0.000782; 
-if (x >= 3.30 && x < 3.50) MeanGaus = 0.000728; 
-if (x >= 3.50 && x < 3.70) MeanGaus = 0.000664; 
-if (x >= 3.70 && x < 3.90) MeanGaus = 0.000609; 
-if (x >= 3.90 && x < 4.10) MeanGaus = 0.000521; 
-if (x >= 4.10 && x < 4.30) MeanGaus = 0.000513; 
-if (x >= 4.30 && x < 4.50) MeanGaus = 0.000435; 
-if (x >= 4.50 && x < 4.70) MeanGaus = 0.000416; 
-if (x >= 4.70 && x < 5.00) MeanGaus = 0.000363; 
-if (x >= 5.00 && x < 5.50) MeanGaus = 0.000317; 
-if (x >= 5.50 && x < 6.00) MeanGaus = 0.000289; 
-if (x >= 6.00 && x < 6.50) MeanGaus = 0.000271; 
-if (x >= 6.50 && x < 7.00) MeanGaus = 0.000216; 
-if (x >= 7.00 && x < 8.00) MeanGaus = 0.000173; 
-
-
+if (x >= 0.90 && x < 1.10) MeanMCGaus = -0.000715; 
+if (x >= 1.10 && x < 1.30) MeanMCGaus = -0.000714; 
+if (x >= 1.30 && x < 1.50) MeanMCGaus = -0.000609; 
+if (x >= 1.50 && x < 1.70) MeanMCGaus = -0.000480; 
+if (x >= 1.70 && x < 1.90) MeanMCGaus = -0.000378; 
+if (x >= 1.90 && x < 2.10) MeanMCGaus = -0.000264; 
+if (x >= 2.10 && x < 2.30) MeanMCGaus = -0.000195; 
+if (x >= 2.30 && x < 2.50) MeanMCGaus = -0.000122; 
+if (x >= 2.50 && x < 2.70) MeanMCGaus = -0.000088; 
+if (x >= 2.70 && x < 2.90) MeanMCGaus = -0.000031; 
+if (x >= 2.90 && x < 3.10) MeanMCGaus = -0.000017; 
+if (x >= 3.10 && x < 3.30) MeanMCGaus = 0.000041; 
+if (x >= 3.30 && x < 3.50) MeanMCGaus = 0.000067; 
+if (x >= 3.50 && x < 3.70) MeanMCGaus = 0.000112; 
+if (x >= 3.70 && x < 3.90) MeanMCGaus = 0.000139; 
+if (x >= 3.90 && x < 4.10) MeanMCGaus = 0.000177; 
+if (x >= 4.10 && x < 4.30) MeanMCGaus = 0.000169; 
+if (x >= 4.30 && x < 4.50) MeanMCGaus = 0.000262; 
+if (x >= 4.50 && x < 4.70) MeanMCGaus = 0.000213; 
+if (x >= 4.70 && x < 5.00) MeanMCGaus = 0.000265; 
+if (x >= 5.00 && x < 5.50) MeanMCGaus = 0.000276; 
+if (x >= 5.50 && x < 6.00) MeanMCGaus = 0.000286; 
+if (x >= 6.00 && x < 6.50) MeanMCGaus = 0.000278; 
+if (x >= 6.50 && x < 7.00) MeanMCGaus = 0.000298; 
+if (x >= 7.00 && x < 8.00) MeanMCGaus = 0.000324; 
 
 
-return MeanGaus;   
+
+
+return MeanMCGaus;   
+}
+
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanData_phi1(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanDataGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanDataGaus = 0.000240; 
+if (x >= 1.10 && x < 1.30) MeanDataGaus = 0.000222; 
+if (x >= 1.30 && x < 1.50) MeanDataGaus = 0.000208; 
+if (x >= 1.50 && x < 1.70) MeanDataGaus = 0.000191; 
+if (x >= 1.70 && x < 1.90) MeanDataGaus = 0.000184; 
+if (x >= 1.90 && x < 2.10) MeanDataGaus = 0.000162; 
+if (x >= 2.10 && x < 2.30) MeanDataGaus = 0.000144; 
+if (x >= 2.30 && x < 2.50) MeanDataGaus = 0.000130; 
+if (x >= 2.50 && x < 2.70) MeanDataGaus = 0.000117; 
+if (x >= 2.70 && x < 2.90) MeanDataGaus = 0.000093; 
+if (x >= 2.90 && x < 3.10) MeanDataGaus = 0.000077; 
+if (x >= 3.10 && x < 3.30) MeanDataGaus = 0.000068; 
+if (x >= 3.30 && x < 3.50) MeanDataGaus = 0.000089; 
+if (x >= 3.50 && x < 3.70) MeanDataGaus = 0.000087; 
+if (x >= 3.70 && x < 3.90) MeanDataGaus = 0.000067; 
+if (x >= 3.90 && x < 4.10) MeanDataGaus = 0.000057; 
+if (x >= 4.10 && x < 4.30) MeanDataGaus = 0.000036; 
+if (x >= 4.30 && x < 4.50) MeanDataGaus = 0.000049; 
+if (x >= 4.50 && x < 4.70) MeanDataGaus = 0.000036; 
+if (x >= 4.70 && x < 5.00) MeanDataGaus = 0.000046; 
+if (x >= 5.00 && x < 5.50) MeanDataGaus = 0.000052; 
+if (x >= 5.50 && x < 6.00) MeanDataGaus = 0.000016; 
+if (x >= 6.00 && x < 6.50) MeanDataGaus = 0.000032; 
+if (x >= 6.50 && x < 7.00) MeanDataGaus = 0.000025; 
+if (x >= 7.00 && x < 8.00) MeanDataGaus = 0.000026; 
+
+
+
+
+return MeanDataGaus;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanData_phi2(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanDataGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanDataGaus = 0.001212; 
+if (x >= 1.10 && x < 1.30) MeanDataGaus = 0.001207; 
+if (x >= 1.30 && x < 1.50) MeanDataGaus = 0.001090; 
+if (x >= 1.50 && x < 1.70) MeanDataGaus = 0.000980; 
+if (x >= 1.70 && x < 1.90) MeanDataGaus = 0.000864; 
+if (x >= 1.90 && x < 2.10) MeanDataGaus = 0.000815; 
+if (x >= 2.10 && x < 2.30) MeanDataGaus = 0.000778; 
+if (x >= 2.30 && x < 2.50) MeanDataGaus = 0.000747; 
+if (x >= 2.50 && x < 2.70) MeanDataGaus = 0.000719; 
+if (x >= 2.70 && x < 2.90) MeanDataGaus = 0.000650; 
+if (x >= 2.90 && x < 3.10) MeanDataGaus = 0.000628; 
+if (x >= 3.10 && x < 3.30) MeanDataGaus = 0.000607; 
+if (x >= 3.30 && x < 3.50) MeanDataGaus = 0.000550; 
+if (x >= 3.50 && x < 3.70) MeanDataGaus = 0.000512; 
+if (x >= 3.70 && x < 3.90) MeanDataGaus = 0.000521; 
+if (x >= 3.90 && x < 4.10) MeanDataGaus = 0.000521; 
+if (x >= 4.10 && x < 4.30) MeanDataGaus = 0.000456; 
+if (x >= 4.30 && x < 4.50) MeanDataGaus = 0.000466; 
+if (x >= 4.50 && x < 4.70) MeanDataGaus = 0.000437; 
+if (x >= 4.70 && x < 5.00) MeanDataGaus = 0.000367; 
+if (x >= 5.00 && x < 5.50) MeanDataGaus = 0.000348; 
+if (x >= 5.50 && x < 6.00) MeanDataGaus = 0.000328; 
+if (x >= 6.00 && x < 6.50) MeanDataGaus = 0.000233; 
+if (x >= 6.50 && x < 7.00) MeanDataGaus = 0.000287; 
+if (x >= 7.00 && x < 8.00) MeanDataGaus = 0.000331; 
+
+
+
+return MeanDataGaus;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanData_phi3(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanDataGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanDataGaus = 0.000752; 
+if (x >= 1.10 && x < 1.30) MeanDataGaus = 0.000691; 
+if (x >= 1.30 && x < 1.50) MeanDataGaus = 0.000595; 
+if (x >= 1.50 && x < 1.70) MeanDataGaus = 0.000563; 
+if (x >= 1.70 && x < 1.90) MeanDataGaus = 0.000523; 
+if (x >= 1.90 && x < 2.10) MeanDataGaus = 0.000527; 
+if (x >= 2.10 && x < 2.30) MeanDataGaus = 0.000492; 
+if (x >= 2.30 && x < 2.50) MeanDataGaus = 0.000483; 
+if (x >= 2.50 && x < 2.70) MeanDataGaus = 0.000455; 
+if (x >= 2.70 && x < 2.90) MeanDataGaus = 0.000400; 
+if (x >= 2.90 && x < 3.10) MeanDataGaus = 0.000386; 
+if (x >= 3.10 && x < 3.30) MeanDataGaus = 0.000362; 
+if (x >= 3.30 && x < 3.50) MeanDataGaus = 0.000362; 
+if (x >= 3.50 && x < 3.70) MeanDataGaus = 0.000364; 
+if (x >= 3.70 && x < 3.90) MeanDataGaus = 0.000353; 
+if (x >= 3.90 && x < 4.10) MeanDataGaus = 0.000326; 
+if (x >= 4.10 && x < 4.30) MeanDataGaus = 0.000275; 
+if (x >= 4.30 && x < 4.50) MeanDataGaus = 0.000241; 
+if (x >= 4.50 && x < 4.70) MeanDataGaus = 0.000286; 
+if (x >= 4.70 && x < 5.00) MeanDataGaus = 0.000296; 
+if (x >= 5.00 && x < 5.50) MeanDataGaus = 0.000259; 
+if (x >= 5.50 && x < 6.00) MeanDataGaus = 0.000256; 
+if (x >= 6.00 && x < 6.50) MeanDataGaus = 0.000259; 
+if (x >= 6.50 && x < 7.00) MeanDataGaus = 0.000189; 
+if (x >= 7.00 && x < 8.00) MeanDataGaus = 0.000193; 
+
+
+return MeanDataGaus;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanData_phi4(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanDataGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanDataGaus = 0.001308; 
+if (x >= 1.10 && x < 1.30) MeanDataGaus = 0.001265; 
+if (x >= 1.30 && x < 1.50) MeanDataGaus = 0.001213; 
+if (x >= 1.50 && x < 1.70) MeanDataGaus = 0.001140; 
+if (x >= 1.70 && x < 1.90) MeanDataGaus = 0.001086; 
+if (x >= 1.90 && x < 2.10) MeanDataGaus = 0.001029; 
+if (x >= 2.10 && x < 2.30) MeanDataGaus = 0.000997; 
+if (x >= 2.30 && x < 2.50) MeanDataGaus = 0.000952; 
+if (x >= 2.50 && x < 2.70) MeanDataGaus = 0.000910; 
+if (x >= 2.70 && x < 2.90) MeanDataGaus = 0.000881; 
+if (x >= 2.90 && x < 3.10) MeanDataGaus = 0.000829; 
+if (x >= 3.10 && x < 3.30) MeanDataGaus = 0.000823; 
+if (x >= 3.30 && x < 3.50) MeanDataGaus = 0.000795; 
+if (x >= 3.50 && x < 3.70) MeanDataGaus = 0.000776; 
+if (x >= 3.70 && x < 3.90) MeanDataGaus = 0.000748; 
+if (x >= 3.90 && x < 4.10) MeanDataGaus = 0.000699; 
+if (x >= 4.10 && x < 4.30) MeanDataGaus = 0.000682; 
+if (x >= 4.30 && x < 4.50) MeanDataGaus = 0.000697; 
+if (x >= 4.50 && x < 4.70) MeanDataGaus = 0.000629; 
+if (x >= 4.70 && x < 5.00) MeanDataGaus = 0.000628; 
+if (x >= 5.00 && x < 5.50) MeanDataGaus = 0.000593; 
+if (x >= 5.50 && x < 6.00) MeanDataGaus = 0.000575; 
+if (x >= 6.00 && x < 6.50) MeanDataGaus = 0.000549; 
+if (x >= 6.50 && x < 7.00) MeanDataGaus = 0.000514; 
+if (x >= 7.00 && x < 8.00) MeanDataGaus = 0.000497; 
+
+
+
+
+return MeanDataGaus;   
 }
 
 

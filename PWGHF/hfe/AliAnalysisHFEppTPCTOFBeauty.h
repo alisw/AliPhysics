@@ -151,6 +151,12 @@ private:
     Float_t GetDCAMeanMC_phi4(Float_t x);
     
     
+    Float_t GetDCAMeanData_phi1(Float_t x);
+    Float_t GetDCAMeanData_phi2(Float_t x);
+    Float_t GetDCAMeanData_phi3(Float_t x);
+    Float_t GetDCAMeanData_phi4(Float_t x);
+    
+    
     
     //Select HFE for the reconstruction efficiency calculation
     Bool_t IsHFelectronsMC(AliVTrack *track);
