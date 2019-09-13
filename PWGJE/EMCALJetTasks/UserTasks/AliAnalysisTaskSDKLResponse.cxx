@@ -52,6 +52,7 @@ AliAnalysisTaskSDKLResponse::AliAnalysisTaskSDKLResponse() :
   fhPtDeltaPtAreaBackSubSparse(0),
   fTreeDL(0),
   fTreeDLUEBS(0),
+  fTreePL(0),
   fJetsCont1(0),
   fJetsCont2(0),
   fTracksCont1(0),
@@ -87,6 +88,7 @@ AliAnalysisTaskSDKLResponse::AliAnalysisTaskSDKLResponse(const char *name, Int_t
   fhPtDeltaPtAreaBackSubSparse(0),
   fTreeDL(0),
   fTreeDLUEBS(0),
+  fTreePL(0),
   fJetsCont1(0),
   fJetsCont2(0),
   fTracksCont1(0),
@@ -98,6 +100,7 @@ AliAnalysisTaskSDKLResponse::AliAnalysisTaskSDKLResponse(const char *name, Int_t
   // SetMakeGeneralHistograms(kTRUE);
   DefineOutput(2, TTree::Class());
   DefineOutput(3, TTree::Class());
+  DefineOutput(4, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -105,6 +108,7 @@ AliAnalysisTaskSDKLResponse::~AliAnalysisTaskSDKLResponse()
 {
   if (fTreeDL)      delete fTreeDL;
   if (fTreeDLUEBS)  delete fTreeDLUEBS;
+  if (fTreePL)      delete fTreePL;
   if (fRandom)      delete fRandom;
   // Destructor.
 }
@@ -235,10 +239,17 @@ AliAnalysisTaskSDKLResponse* AliAnalysisTaskSDKLResponse::AddTaskSoftDropRespons
                                                             TTree::Class(),AliAnalysisManager::kOutputContainer,
                                                             Form("%s", AliAnalysisManager::GetCommonFileName()));
 
+  TString contname4(name);
+  contname4 += "_treePL";
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(contname4.Data(),
+                                                            TTree::Class(),AliAnalysisManager::kOutputContainer,
+                                                            Form("%s", AliAnalysisManager::GetCommonFileName()));
+
   mgr->ConnectInput  (jetTask, 0,  cinput1 );
   mgr->ConnectOutput (jetTask, 1, coutput1 );
   mgr->ConnectOutput (jetTask, 2, coutput2 );
   mgr->ConnectOutput (jetTask, 3, coutput3 );
+  mgr->ConnectOutput (jetTask, 4, coutput4 );
 
   return jetTask;
 }
@@ -340,10 +351,10 @@ void AliAnalysisTaskSDKLResponse::UserCreateOutputObjects() {
 
   }
 
-  fhRho = new TH1F("fhRho","fhRho",1000,0,100);
+  fhRho = new TH1F("fhRho","fhRho",1000,0,1000);
   fOutput->Add(fhRho);
 
-  fhRhoSparse = new TH1F("fhRhoSparse","fhRhoSparse",1000,0,100);
+  fhRhoSparse = new TH1F("fhRhoSparse","fhRhoSparse",1000,0,1000);
   fOutput->Add(fhRhoSparse);
 
   fhPtDeltaPtAreaBackSub = new TH2F("fhPtDeltaPtAreaBackSub","fhPtDeltaPtAreaBackSub",20,0.,200.,200,-20.,20.);
@@ -357,6 +368,9 @@ void AliAnalysisTaskSDKLResponse::UserCreateOutputObjects() {
 
   fTreeDLUEBS = new TNtuple("JetTrackTreeDLUEBS", "jet-track tree dl+ue backgr sub", "pt:eta:phi:jetm");
   PostData(3, fTreeDLUEBS);
+
+  fTreePL = new TNtuple("JetTrackTreePL", "jet-track tree pl", "pt:eta:phi:jetm");
+  PostData(4, fTreePL);
 
   fRandom = new TRandom;
 
@@ -384,6 +398,12 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
 //    for (auto jet : fJetsCont1->accepted()) {
 //    }
 //  }
+
+  //dump pl jets
+  if (isDumpEventToTree) {
+    FillTree(fJetsCont1, fTreePL);
+    PostData(4, fTreePL);
+  }
 
   std::vector<fastjet::PseudoJet> event_dl;
   AddTracksToEvent(fTracksCont2, event_dl); //only pythia det level tracks
