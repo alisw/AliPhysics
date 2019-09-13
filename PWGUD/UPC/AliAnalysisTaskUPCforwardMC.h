@@ -254,9 +254,11 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * This histogram records the pt-ditribution
                                  * of the dimuon pairs. This is the template
                                  * to be used for the Pt-distribution fit.
+                                 *
+                                 * Rapidity bin study too.
                                  */
-        TH1F*                   fTemplatePtDistributionH;         //!
-
+        TH1F*                   fTemplatePtDistributionH;              //!
+        TH1F*                   fTemplatePtDistributionRapidityH[3];   //!
 
                                 /**
                                  * This histogram records the invariant mass
@@ -1244,7 +1246,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 31);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 32);
 };
 
 #endif

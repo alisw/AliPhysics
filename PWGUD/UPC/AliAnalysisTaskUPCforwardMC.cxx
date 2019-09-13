@@ -101,6 +101,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fInvariantMassDistributionIncoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fDimuonPtDistributionH(0),
       fTemplatePtDistributionH(0),
+      fTemplatePtDistributionRapidityH{ 0, 0, 0 },
       fDcaAgainstInvariantMassH(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
@@ -301,6 +302,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fInvariantMassDistributionIncoherentRapidityBinsH{ 0, 0, 0, 0, 0, 0},
       fDimuonPtDistributionH(0),
       fTemplatePtDistributionH(0),
+      fTemplatePtDistributionRapidityH{ 0, 0, 0 },
       fDcaAgainstInvariantMassH(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
@@ -659,6 +661,15 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
 
   fTemplatePtDistributionH = new TH1F("fTemplatePtDistributionH", "fTemplatePtDistributionH", 4000, 0, 20);
   fOutputList->Add(fTemplatePtDistributionH);
+
+  for( Int_t iRapidityBin = 0; iRapidityBin < 3; iRapidityBin++ ){
+    fTemplatePtDistributionRapidityH[iRapidityBin] =
+          new TH1F( Form( "fTemplatePtDistributionRapidityH_%d", iRapidityBin),
+                    Form( "fTemplatePtDistributionRapidityH_%d", iRapidityBin),
+                    4000, 0, 20
+                    );
+    fOutputList->Add(fTemplatePtDistributionRapidityH[iRapidityBin]);
+  }
 
   fDcaAgainstInvariantMassH = new TH2F("fDcaAgainstInvariantMassH", "fDcaAgainstInvariantMassH", 4000, 0, 40, 2000, -100, 100);
   fOutputList->Add(fDcaAgainstInvariantMassH);
@@ -2055,7 +2066,16 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
         }
   }
   fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
-  if ( (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) fTemplatePtDistributionH->Fill(ptOfTheDimuonPair);
+  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+    fTemplatePtDistributionH->Fill(ptOfTheDimuonPair);
+    if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+      fTemplatePtDistributionRapidityH[0]->Fill(possibleJPsi.Mag());
+    } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+      fTemplatePtDistributionRapidityH[1]->Fill(possibleJPsi.Mag());
+    } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+      fTemplatePtDistributionRapidityH[2]->Fill(possibleJPsi.Mag());
+    }
+  }
 
 
   /* - Filling the J/Psi's polarization plots.
