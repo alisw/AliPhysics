@@ -1614,9 +1614,10 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig ==806){//Comparing CellQA Config from GammaConv
     cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); // INT7
   } else if (trainConfig ==807){//Non Lin Studies
-    cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); // INT7
-    cuts.AddCutCalo("00010113","2446611044012200000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM
-    cuts.AddCutCalo("00010113","2446621044012200000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW
+    cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); // No Nonlin
+    cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); // 55 Nonlin
+    //cuts.AddCutCalo("00010113","2446611044012200000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM
+    //cuts.AddCutCalo("00010113","2446621044012200000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW
   } else if (trainConfig ==808){//PHOS Triggers
     cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); //no Trigger
     cuts.AddCutCalo("00062113","24466510ga012200000","0163103100000010"); //PHI7
@@ -1632,9 +1633,6 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig ==812){//PHOS Triggers Timing Cut 0
     cuts.AddCutCalo("00010113","244665100a012200000","0163103100000010"); //no Trigger
     cuts.AddCutCalo("00062113","244665100a012200000","0163103100000010"); //PHI7
-  } else if (trainConfig ==813){//NonLin Check
-    cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); // No Nonlin
-    cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); // 55 Nonlin
   } else if( trainConfig == 870){ // PHOS HM trigger
     cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); // -50ns, 30ns timing cut, MB trigger
     cuts.AddCutCalo("00010113","2446600004012300000","0163103100000010"); // no timing, MB trigger
