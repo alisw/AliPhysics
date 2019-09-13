@@ -112,6 +112,8 @@ public:
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
+  void Set1DCorrectionsXiMinus(TH1D *h1);
+  void Set1DCorrectionsXiPlus(TH1D *h1);
 
   void Set4DCorrectionsPions(THnSparse *h1);
   void Set4DCorrectionsKaons(THnSparse *h1);
@@ -153,6 +155,8 @@ protected:
   TH1D                 *f1DcorrectionsAll; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsLambdas; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsLambdasMinus; //file with corrections, pT dependant
+  TH1D                 *f1DcorrectionsXiMinus; //file with corrections, pT dependant
+  TH1D                 *f1DcorrectionsXiPlus; //file with corrections, pT dependant
 
   THnSparse            *f4DcorrectionsPions; //file with corrections, pT dependant
   THnSparse            *f4DcorrectionsKaons; //file with corrections, pT dependant
@@ -170,7 +174,7 @@ protected:
   TString fUserName; //GRID user name
   TString fconfigFunName; //name of the config fucntion (like "ConfigFemtoAnalysis")
 
-  
+
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskFemto, 3);
   /// \endcond
@@ -203,6 +207,8 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto():
   f1DcorrectionsAll(NULL),
   f1DcorrectionsLambdas(NULL),
   f1DcorrectionsLambdasMinus(NULL),
+  f1DcorrectionsXiMinus(NULL),
+  f1DcorrectionsXiPlus(NULL),
   f4DcorrectionsPions(NULL),
   f4DcorrectionsKaons(NULL),
   f4DcorrectionsProtons(NULL),
