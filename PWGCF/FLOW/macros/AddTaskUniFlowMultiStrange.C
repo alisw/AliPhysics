@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-// AddUniFlowMultiStange.C                                                     //
-// Author: Ya Zhu ya.zhu@cern.ch       //
+// AddUniFlow                                                     //
+// Author: Vojtech Pacik (vojtech.pacik@cern.ch), NBI, 2016       //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(TString name = "name")
+AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMS(TString name = "name")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
