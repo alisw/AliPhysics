@@ -90,6 +90,7 @@ fnSigma(0),
 fnSigmaAftTrkMatch(0),
 fCentCheck(0),
 fTrigCheck(0),
+fITSLayerCheck(0),
 fEMCTrkMatch(0),
 fInvmassLS(0),
 fInvmassULS(0),
@@ -314,6 +315,7 @@ fnSigma(0),
 fnSigmaAftTrkMatch(0),
 fCentCheck(0),
 fTrigCheck(0),
+fITSLayerCheck(0),
 fEMCTrkMatch(0),
 fInvmassLS(0),
 fInvmassULS(0),
@@ -589,6 +591,12 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fTrigCheck->GetXaxis()->SetBinLabel(1,"INT7");
     fTrigCheck->GetXaxis()->SetBinLabel(2,"EG1");
     fTrigCheck->GetXaxis()->SetBinLabel(3,"DGl");
+    
+    fITSLayerCheck = new TH1F("fITSLayerCheck", "No. of tracks; Counts",3,-0.5,2.5);
+    fOutputList->Add(fITSLayerCheck);
+    fITSLayerCheck->GetXaxis()->SetBinLabel(1,"kAny");
+    fITSLayerCheck->GetXaxis()->SetBinLabel(2,"kFirst");
+    fITSLayerCheck->GetXaxis()->SetBinLabel(3,"kBoth");
     
     fEMCTrkMatch = new TH2F("fEMCTrkMatch","EMCal cluster distance from closest track", 100, -0.3, 0.3,100,-0.3,0.3);
     fOutputList->Add(fEMCTrkMatch);
@@ -1808,6 +1816,17 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         // Apply track cuts //
         //////////////////////
         if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //global cuts with loose DCA cut
+        
+        if (fApplyITSLayer == 0) { //kAny (also included in kTrkGlobalNoDCA)
+            if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;
+        }
+        if (fApplyITSLayer == 1) { //kFirst
+            if(!(track->HasPointOnITSLayer(0))) continue;
+        }
+        if (fApplyITSLayer == 2) { //kBoth
+            if(!(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))) continue;
+        }
+        fITSLayerCheck->Fill(fApplyITSLayer);
         
         Bool_t kinkmotherpass = kTRUE;
         for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {

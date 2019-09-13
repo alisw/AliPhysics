@@ -29,7 +29,8 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
                                      Double_t maxEoPCut = 1.2,
                                      Bool_t timeCut = kFALSE,
                                      Int_t nTpcCrossRows=0,
-                                     Int_t itsChi2 = -100)
+                                     Int_t itsChi2 = -100,
+                                     Int_t itsLayer = 0)
 {
     // get the manager via the static access member
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -57,6 +58,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEemc->SetPileUpCut2(pileup2);
     taskBFEemc->SetEoPShift(shiftEoP);
     taskBFEemc->SetTimeCut(timeCut);
+    taskBFEemc->SetITSLayer(itsLayer);
     taskBFEemc->SetTPCnCrossRows(nTpcCrossRows);
     taskBFEemc->SetITSChi2(itsChi2);
     taskBFEemc->SetSSCut(m20Cut);
@@ -98,6 +100,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEdc->SetPileUpCut2(pileup2);
     taskBFEdc->SetEoPShift(shiftEoP);
     taskBFEdc->SetTimeCut(timeCut);
+    taskBFEdc->SetITSLayer(itsLayer);
     taskBFEdc->SetTPCnCrossRows(nTpcCrossRows);
     taskBFEdc->SetITSChi2(itsChi2);
     taskBFEdc->SetSSCut(m20Cut);
@@ -171,6 +174,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEeg01emc->SetPileUpCut2(pileup2);
         taskBFEeg01emc->SetEoPShift(shiftEoP);
         taskBFEeg01emc->SetTimeCut(timeCut);
+        taskBFEeg01emc->SetITSLayer(itsLayer);
         taskBFEeg01emc->SetTPCnCrossRows(nTpcCrossRows);
         taskBFEeg01emc->SetITSChi2(itsChi2);
         taskBFEeg01emc->SetSSCut(m20Cut);
@@ -258,6 +262,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEdg01dc->SetPileUpCut2(pileup2);
         taskBFEdg01dc->SetEoPShift(shiftEoP);
         taskBFEdg01dc->SetTimeCut(timeCut);
+        taskBFEdg01dc->SetITSLayer(itsLayer);
         taskBFEdg01dc->SetTPCnCrossRows(nTpcCrossRows);
         taskBFEdg01dc->SetITSChi2(itsChi2);
         taskBFEdg01dc->SetSSCut(m20Cut);

@@ -51,6 +51,7 @@ public:
     void            SetPileUpCut2(Bool_t EnablePileupRejVZEROTPCout){fEnablePileupRejVZEROTPCout = EnablePileupRejVZEROTPCout;};
     void            SetEoPShift(Bool_t EnableShiftEoP){fShiftEoP = EnableShiftEoP;};
     void            SetTimeCut(Bool_t EnableTimeCut){fApplyTimeCut = EnableTimeCut;};
+    void            SetITSLayer(Int_t EnableLayer){fApplyITSLayer = EnableLayer;};
     void            SetTPCnCrossRows(Int_t nTpcCrossRowCut){fNCrossRows = nTpcCrossRowCut;};
     void            SetITSChi2(Int_t itsChi2Cut){fItsChi2 = itsChi2Cut;};
     
@@ -101,6 +102,7 @@ private:
     Bool_t              fEnablePileupRejVZEROTPCout; //add additional pile-up cuts
     Bool_t              fShiftEoP; //apply E/p shift in MC
     Bool_t              fApplyTimeCut; //apply cluster timing cuts
+    Int_t              fApplyITSLayer; //0=kAny, 1=kFirst, 2=kBoth
     Int_t              fNCrossRows; //set N of TPC crossed rows
     Int_t              fItsChi2; //set max ITS chi-2. if negative, does not apply any cut
     Double_t            fMinEoPCut;      // set min eID E/p cut
@@ -151,6 +153,7 @@ private:
     TH2F                *fnSigmaAftTrkMatch;  //! track dEdx after matching cal
     TH1F                *fCentCheck;     //! event centrality
     TH1F                *fTrigCheck;     //! checking trigger used
+    TH1F                *fITSLayerCheck;  //! checking ITS layer requirement
     TH2F                *fEMCTrkMatch;   //! plots distance of cluster from closest track
     
     TH1F                *fInvmassLS;     //! Plots LS mass dist
