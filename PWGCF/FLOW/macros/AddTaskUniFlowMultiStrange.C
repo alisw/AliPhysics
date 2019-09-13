@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMS(TString name = "name")
+AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(TString name = "name")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
