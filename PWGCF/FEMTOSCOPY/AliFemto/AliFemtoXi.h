@@ -43,43 +43,43 @@ public:
   float MomXiZ() const ;                  // Momentum components of Xi
   float AlphaXi() const ;                 // Armenteros-Podolanski variable
   float PtArmXi() const ;                 // Armenteros-Podolanski variable
-  float EXi() const ;                     // Energy assuming xi hypothesis		     
-  float EOmega() const ;                  // Energy assuming omega hypothesis		     
-  float EBacKaon() const ;                // Energy of bac. daughter assuming kaon	     
-  float EBacPion() const ;                // Energy of bac. daughter assuming pion	     
-  float MassXi() const ;                  // Mass assuming Xi hypothesis		     
-  float MassOmega() const ;               // Mass assuming Omega hypothesis		     
-  float RapXi() const ;                   // Rapidity assuming (anti) xi		     
-  float RapOmega() const ;                // Rapidity assuming (anti) omega		     
-  float CTauXi() const ;                  // Lifetime (ctau) const assuming (anti) xi	     
-  float CTauOmega() const ;               // Lifetime (ctau) const assuming (anti) omega     
-  float PtXi() const ;                    // Transverse momentum			     
-  float PtotXi() const ;                  // Total momentum				     
-  float PtBac() const ;                   // Transverse momentum of bac. daughter	     
-  float PtotBac() const ;                 // Total momentum of bac. daughter		     
-  float DedxBac() const;                  // dedx of Bac track				     
-  unsigned short   IdBac() const;         // Id of bac. track				     
-  unsigned short   KeyBac() const;        // Id of bac. track    
+  float EXi() const ;                     // Energy assuming xi hypothesis
+  float EOmega() const ;                  // Energy assuming omega hypothesis
+  float EBacKaon() const ;                // Energy of bac. daughter assuming kaon
+  float EBacPion() const ;                // Energy of bac. daughter assuming pion
+  float MassXi() const ;                  // Mass assuming Xi hypothesis
+  float MassOmega() const ;               // Mass assuming Omega hypothesis
+  float RapXi() const ;                   // Rapidity assuming (anti) xi
+  float RapOmega() const ;                // Rapidity assuming (anti) omega
+  float CTauXi() const ;                  // Lifetime (ctau) const assuming (anti) xi
+  float CTauOmega() const ;               // Lifetime (ctau) const assuming (anti) omega
+  float PtXi() const ;                    // Transverse momentum
+  float PtotXi() const ;                  // Total momentum
+  float PtBac() const ;                   // Transverse momentum of bac. daughter
+  float PtotBac() const ;                 // Total momentum of bac. daughter
+  float DedxBac() const;                  // dedx of Bac track
+  unsigned short   IdBac() const;         // Id of bac. track
+  unsigned short   KeyBac() const;        // Id of bac. track
 
   AliFemtoThreeVector NominalTpcEntrancePointBac() const;
   AliFemtoThreeVector NominalTpcPointBac(int i) const;
-  AliFemtoThreeVector NominalTpcExitPointBac() const;        
-  AliFemtoThreeVector NominalTpcPointBacShifted() const;                    
+  AliFemtoThreeVector NominalTpcExitPointBac() const;
+  AliFemtoThreeVector NominalTpcPointBacShifted() const;
 
-  void SetdecayLengthXi(const float x);  
-  void SetdecayVertexXi(const AliFemtoThreeVector v);  
+  void SetdecayLengthXi(const float x);
+  void SetdecayVertexXi(const AliFemtoThreeVector v);
   void SetdecayVertexXiX(const float x);
   void SetdecayVertexXiY(const float x);
   void SetdecayVertexXiZ(const float x);
-  void SetdcaXiDaughters(const float x); 
-  void SetdcaXiToPrimVertex(const float x);  
-  void SetdcaBacToPrimVertex(const float x); 
-  void SetmomBac(const AliFemtoThreeVector v);  
-  void SetmomBacX(const float x);  
-  void SetmomBacY(const float x);  
-  void SetmomBacZ(const float x);  
+  void SetdcaXiDaughters(const float x);
+  void SetdcaXiToPrimVertex(const float x);
+  void SetdcaBacToPrimVertex(const float x);
+  void SetmomBac(const AliFemtoThreeVector v);
+  void SetmomBacX(const float x);
+  void SetmomBacY(const float x);
+  void SetmomBacZ(const float x);
 
-  void SettpcHitsBac(const int& word);      
+  void SettpcHitsBac(const int& word);
 
   void SetTrackTopologyMapBac(unsigned int word, const unsigned long& m);
 
@@ -87,22 +87,22 @@ public:
   void SetmomXiX( float x);
   void SetmomXiY( float x);
   void SetmomXiZ( float x);
-  void SetalphaXi( float x);       
-  void SetptArmXi( float x);       
-  void SeteXi( float x);     
-  void SeteOmega( float x);    
-  void SeteBacPion( float x);  
-  void SeteBacKaon( float x);    
-  void SetmassXi( float x);  
+  void SetalphaXi( float x);
+  void SetptArmXi( float x);
+  void SeteXi( float x);
+  void SeteOmega( float x);
+  void SeteBacPion( float x);
+  void SeteBacKaon( float x);
+  void SetmassXi( float x);
   void SetmassOmega( float x);
-  void SetrapXi( float x);    
-  void SetrapOmega( float x);   
-  void SetcTauXi( float x);   
-  void SetcTauOmega( float x);  
-  void SetptXi( float x);         
-  void SetptotXi( float x);       
-  void SetptBac( float x);        
-  void SetptotBac( float x);      
+  void SetrapXi( float x);
+  void SetrapOmega( float x);
+  void SetcTauXi( float x);
+  void SetcTauOmega( float x);
+  void SetptXi( float x);
+  void SetptotXi( float x);
+  void SetptBac( float x);
+  void SetptotBac( float x);
   void SetidBac(const unsigned short& s);
   void SetdedxBac(float x);
   void SetkeyBac(const unsigned short& s);
@@ -166,8 +166,13 @@ public:
   void SetRadiusXi(double aRadiusXi);
   double RadiusXi() const;
 
-protected: 
-  int   fCharge;                           // Charge                
+  float CorrectionXiMinus()const;
+  void  SetCorrectionXiMinus(const double& x);
+  float CorrectionXiPlus()const;
+  void  SetCorrectionXiPlus(const double& x);
+
+protected:
+  int   fCharge;                           // Charge
   float fDecayLengthXi;                    // Decay Length of th Xi
   AliFemtoThreeVector fDecayVertexXi;      // Xi decay vertex location
   float fDcaXiDaughters;                   // Dca of Xi daughters
@@ -193,20 +198,20 @@ protected:
   float fAlphaXi;             // Armenteros-Podolanski variable
   float fPtArmXi;	      // Armenteros-Podolanski variable
 
-  float fEXi;                 // Energy assuming xi hypothesis		     
-  float fEOmega;	      // Energy assuming omega hypothesis		     
-  float fEBacPion;	      // Energy of bac. daughter assuming kaon	     
-  float fEBacKaon;	      // Energy of bac. daughter assuming pion	     
-  float fMassXi;	      // Mass assuming Xi hypothesis		     
-  float fMassOmega;	      // Mass assuming Omega hypothesis		     
-  float fRapXi;		      // Rapidity assuming (anti) xi		     
-  float fRapOmega;	      // Rapidity assuming (anti) omega		     
-  float fCTauXi;	      // Lifetime (ctau) const assuming (anti) xi	     
-  float fCTauOmega;	      // Lifetime (ctau) const assuming (anti) omega     
-  float fPtXi;		      // Transverse momentum			     
-  float fPtotXi;	      // Total momentum				     
-  float fPtBac;		      // Transverse momentum of bac. daughter	     
-  float fPtotBac;	      // Total momentum of bac. daughter		     
+  float fEXi;                 // Energy assuming xi hypothesis
+  float fEOmega;	      // Energy assuming omega hypothesis
+  float fEBacPion;	      // Energy of bac. daughter assuming kaon
+  float fEBacKaon;	      // Energy of bac. daughter assuming pion
+  float fMassXi;	      // Mass assuming Xi hypothesis
+  float fMassOmega;	      // Mass assuming Omega hypothesis
+  float fRapXi;		      // Rapidity assuming (anti) xi
+  float fRapOmega;	      // Rapidity assuming (anti) omega
+  float fCTauXi;	      // Lifetime (ctau) const assuming (anti) xi
+  float fCTauOmega;	      // Lifetime (ctau) const assuming (anti) omega
+  float fPtXi;		      // Transverse momentum
+  float fPtotXi;	      // Total momentum
+  float fPtBac;		      // Transverse momentum of bac. daughter
+  float fPtotBac;	      // Total momentum of bac. daughter
 
   unsigned short   fKeyBac;   // Key of bac. track
 
@@ -218,7 +223,7 @@ protected:
 
   //!!!!!!!!! new below 1.09.2015
   double fCosPointingAngleXi; // Cosine of Xi pointing angle
-  double fCosPointingAngleV0toXi; //Cosing of V0 pointing angle to Xi decay vertex 
+  double fCosPointingAngleV0toXi; //Cosing of V0 pointing angle to Xi decay vertex
     //AliFemtoV0 has fCosPointingAngle, but this is the pointing angle to the primary vertex.
     //What is more important here is the V0 pointing angle to the Xi decay vertex
   double fPhiXi;  //Phi angle of Xi
@@ -245,15 +250,20 @@ protected:
   double fTOFPionTimeBac;
   double fTOFKaonTimeBac;
 
+
+  float fCorrXiMinus;    //corrections for xi particles
+  float fCorrXiPlus;    //corrections for xi particles
+
+
   double fRadiusXi;
-  
+
 };
 
 inline float AliFemtoXi::DecayLengthXi() const { return fDecayLengthXi; }
-inline AliFemtoThreeVector AliFemtoXi::DecayVertexXi() const { return fDecayVertexXi; } 
-inline float AliFemtoXi::DecayVertexXiX() const { return fDecayVertexXi.x(); } 
-inline float AliFemtoXi::DecayVertexXiY() const { return fDecayVertexXi.y(); } 
-inline float AliFemtoXi::DecayVertexXiZ() const { return fDecayVertexXi.z(); } 
+inline AliFemtoThreeVector AliFemtoXi::DecayVertexXi() const { return fDecayVertexXi; }
+inline float AliFemtoXi::DecayVertexXiX() const { return fDecayVertexXi.x(); }
+inline float AliFemtoXi::DecayVertexXiY() const { return fDecayVertexXi.y(); }
+inline float AliFemtoXi::DecayVertexXiZ() const { return fDecayVertexXi.z(); }
 inline float AliFemtoXi::DcaXiDaughters() const { return fDcaXiDaughters; }
 inline float AliFemtoXi::DcaXiToPrimVertex() const { return fDcaXiToPrimVertex; }
 inline float AliFemtoXi::DcaBacToPrimVertex() const { return fDcaBachelorToPrimVertex; }
@@ -293,19 +303,19 @@ inline AliFemtoThreeVector AliFemtoXi::NominalTpcEntrancePointBac() const {retur
 inline AliFemtoThreeVector AliFemtoXi::NominalTpcExitPointBac() const {return fNominalTpcExitPointBac;}
 inline AliFemtoThreeVector AliFemtoXi::NominalTpcPointBacShifted() const  {return fNominalTpcPointBacShifted;}
 
-inline void AliFemtoXi::SetdecayLengthXi(const float x){ fDecayLengthXi= x;}   
+inline void AliFemtoXi::SetdecayLengthXi(const float x){ fDecayLengthXi= x;}
 inline void AliFemtoXi::SetdecayVertexXiX(const float x){ fDecayVertexXi.SetX(x);}
 inline void AliFemtoXi::SetdecayVertexXiY(const float x){ fDecayVertexXi.SetY(x);}
 inline void AliFemtoXi::SetdecayVertexXiZ(const float x){ fDecayVertexXi.SetZ(x);}
 inline void AliFemtoXi::SetdecayVertexXi(const AliFemtoThreeVector v){ fDecayVertexXi = v; }
-inline void AliFemtoXi::SetdcaXiDaughters(const float x){fDcaXiDaughters= x;} 
-inline void AliFemtoXi::SetdcaXiToPrimVertex(const float x){fDcaXiToPrimVertex= x;}   
-inline void AliFemtoXi::SetdcaBacToPrimVertex(const float x){ fDcaBachelorToPrimVertex = x;} 
+inline void AliFemtoXi::SetdcaXiDaughters(const float x){fDcaXiDaughters= x;}
+inline void AliFemtoXi::SetdcaXiToPrimVertex(const float x){fDcaXiToPrimVertex= x;}
+inline void AliFemtoXi::SetdcaBacToPrimVertex(const float x){ fDcaBachelorToPrimVertex = x;}
 inline void AliFemtoXi::SetmomBac(const AliFemtoThreeVector v){fMomBachelor = v; }
 inline void AliFemtoXi::SetmomBacX(const float x){fMomBachelor.SetX(x);}
 inline void AliFemtoXi::SetmomBacY(const float x){fMomBachelor.SetY(x);}
 inline void AliFemtoXi::SetmomBacZ(const float x){fMomBachelor.SetZ(x);}
-inline void AliFemtoXi::SetTrackTopologyMapBac(unsigned int word, const unsigned long& m){fTopologyMapBachelor[word]=m;} 
+inline void AliFemtoXi::SetTrackTopologyMapBac(unsigned int word, const unsigned long& m){fTopologyMapBachelor[word]=m;}
 inline void AliFemtoXi::SetmomXi(AliFemtoThreeVector v){fMomXi= v; }
 inline void AliFemtoXi::SetmomXiX(const float x){fMomXi.SetX(x);}
 inline void AliFemtoXi::SetmomXiY(const float x){fMomXi.SetY(x);}
@@ -313,23 +323,23 @@ inline void AliFemtoXi::SetmomXiZ(const float x){fMomXi.SetZ(x);}
 
 inline void AliFemtoXi::SetalphaXi( float x){fAlphaXi= x;}
 inline void AliFemtoXi::SetptArmXi( float x){fPtArmXi = x;}
-inline void AliFemtoXi::SeteXi( float x){fEXi= x;}       
+inline void AliFemtoXi::SeteXi( float x){fEXi= x;}
 inline void AliFemtoXi::SeteOmega( float x){fEOmega= x;}
 inline void AliFemtoXi::SeteBacPion( float x){fEBacPion= x;}
 inline void AliFemtoXi::SeteBacKaon( float x){fEBacKaon= x;}
-inline void AliFemtoXi::SetmassXi( float x){fMassXi = x;} 
-inline void AliFemtoXi::SetmassOmega( float x){fMassOmega= x;}  
+inline void AliFemtoXi::SetmassXi( float x){fMassXi = x;}
+inline void AliFemtoXi::SetmassOmega( float x){fMassOmega= x;}
 inline void AliFemtoXi::SetrapXi( float x){fRapXi= x;}
-inline void AliFemtoXi::SetrapOmega( float x){fRapOmega = x;}   
-inline void AliFemtoXi::SetcTauXi( float x){fCTauXi = x;}   
-inline void AliFemtoXi::SetcTauOmega( float x){fCTauOmega = x;}   
-inline void AliFemtoXi::SetptXi( float x){fPtXi = x;}          
+inline void AliFemtoXi::SetrapOmega( float x){fRapOmega = x;}
+inline void AliFemtoXi::SetcTauXi( float x){fCTauXi = x;}
+inline void AliFemtoXi::SetcTauOmega( float x){fCTauOmega = x;}
+inline void AliFemtoXi::SetptXi( float x){fPtXi = x;}
 inline void AliFemtoXi::SetptotXi( float x){fPtotXi = x;}
 inline void AliFemtoXi::SetptBac( float x){fPtBac = x;}
-inline void AliFemtoXi::SetptotBac( float x){fPtotBac = x;}    
+inline void AliFemtoXi::SetptotBac( float x){fPtotBac = x;}
 inline void AliFemtoXi::SetidBac(const unsigned short& s){ fKeyBac= s;}
 inline void AliFemtoXi::SetkeyBac(const unsigned short& s){ fKeyBac= s;}
-inline void AliFemtoXi::SettpcHitsBac(const int& i){fTpcHitsBac=i;} 
+inline void AliFemtoXi::SettpcHitsBac(const int& i){fTpcHitsBac=i;}
 inline void AliFemtoXi::SetdedxBac(float x){fDedxBachelor=x;}
 
 inline void AliFemtoXi::SetNominalTpcEntrancePointBac(AliFemtoThreeVector x) {fNominalTpcEntrancePointBac=x;}
@@ -385,9 +395,12 @@ inline float AliFemtoXi::BacNSigmaTOFPi() const {return fBacNSigmaTOFPi;}
 inline float AliFemtoXi::BacNSigmaTOFP() const {return fBacNSigmaTOFP;}
 
 inline int AliFemtoXi::ChargeXi() const {return fCharge;}
- 
+
 inline void AliFemtoXi::SetRadiusXi(double aRadiusXi) {fRadiusXi = aRadiusXi;}
 inline double AliFemtoXi::RadiusXi() const {return fRadiusXi;}
+
+
+
 
 #endif
 
@@ -418,19 +431,3 @@ inline double AliFemtoXi::RadiusXi() const {return fRadiusXi;}
  *
  *
  ***********************************************************************/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

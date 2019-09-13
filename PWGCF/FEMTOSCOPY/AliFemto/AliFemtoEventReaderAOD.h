@@ -150,6 +150,8 @@ public:
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
+  void Set1DCorrectionsXiPlus(TH1D *h1);
+  void Set1DCorrectionsXiMinus(TH1D *h1);
 
   void Set4DCorrectionsPions(THnSparse *h1);
   void Set4DCorrectionsKaons(THnSparse *h1);
@@ -248,6 +250,8 @@ private:
   TH1D *f1DcorrectionsAll;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdas;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsXiPlus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsXiMinus;    ///<file with corrections, pT dependant
 
   THnSparse *f4DcorrectionsPions;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsKaons;    ///<file with corrections, pT dependant
