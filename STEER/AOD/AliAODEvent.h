@@ -188,7 +188,7 @@ public:
   virtual AliAODVertex *GetPrimaryVertexSPD() const;
   virtual AliAODVertex *GetVertex() const { return GetPrimaryVertexSPD(); }
   virtual AliAODVertex *GetPrimaryVertexTPC() const;
-
+  virtual AliAODVertex *GetPrimaryVertexTracks() const {return GetVertex(0);}
   // -- Pileup vertices
   Int_t         GetNumberOfPileupVerticesTracks()   const;
   Int_t         GetNumberOfPileupVerticesSPD()    const;
