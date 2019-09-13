@@ -48,9 +48,9 @@ AliAnalysisTask *AddTaskHFEnpepplowB13(Bool_t MCthere,
     // Default settings (TOF-TPC pp)
     // ESD analysis of LHC15n, 5 TeV analysis
     
-    const int	kDefTPCcl	= 120;
-    const int	kDefTPCclPID	=  90;
-    const int	kDefITScl	=   4;
+    const int	kDefTPCcl	= 100;
+    const int	kDefTPCclPID	=  80;
+    const int	kDefITScl	=   3;
     const double	kDefDCAr	=   1.;
     const double	kDefDCAz	=   2.;
     const double	kDefTOFs	=   3.;
