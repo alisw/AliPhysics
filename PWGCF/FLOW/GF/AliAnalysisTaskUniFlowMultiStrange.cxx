@@ -66,8 +66,8 @@
 //        - 4-particle cumulants has to be setup by invoking AliAnalysisTaskUniFlowMultiStrange::SetFlowDoFourCorrelations(kTRUE)
 //
 // =================================================================================================
-#ifndef ALIANALYSISTASKUNIFLOWMS_CXX
-#define ALIANALYSISTASKUNIFLOWMS_CXX
+#ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
+#define ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
 
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
@@ -5007,7 +5007,7 @@ Double_t AliAnalysisTaskUniFlowMultiStrange::GetFlowWeightCascade(const AliAODca
   if(dWeight <= 0.0) { dWeight = 1.0; }
   return dWeight;
 }
-/*
+
 AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
 fbDoRefs(0),
 fbDoPOIs(0),
@@ -5060,7 +5060,7 @@ fsLabel(TString())
     fsName = sName;
     fsLabel = sLabel;
 }
-*/
+
 void AliAnalysisTaskUniFlowMultiStrange::CorrTask::Print() const
 {
   printf("CorrTask::Print() : '%s' (%s) | fbDoRefs %d | fbDoPOIs %d | fiHarm[%d] = { ",fsName.Data(), fsLabel.Data(), fbDoRefs, fbDoPOIs, fiNumHarm);

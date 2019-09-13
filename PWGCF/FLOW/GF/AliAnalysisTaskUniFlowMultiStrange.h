@@ -4,8 +4,8 @@
 
 //#ifndef ALIANALYSISTASKUNIFLOW_H
 //#define ALIANALYSISTASKUNIFLOW_H
-#ifndef ALIANALYSISTASKUNIFLOWMS_H
-#define ALIANALYSISTASKUNIFLOWMS_H
+#ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
+#define ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -720,7 +720,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       ClassDef(AliAnalysisTaskUniFlowMultiStrange, 7);
 };
-
+/*
 AliAnalysisTaskUniFlowMultiStrange::CorrTask::CorrTask() :
 fbDoRefs(0),
 fbDoPOIs(0),
@@ -773,5 +773,5 @@ fsLabel(TString())
     fsName = sName;
     fsLabel = sLabel;
 }
-
+*/
 #endif
