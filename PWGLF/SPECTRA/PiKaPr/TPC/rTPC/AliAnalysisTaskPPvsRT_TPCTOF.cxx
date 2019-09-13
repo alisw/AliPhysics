@@ -988,7 +988,15 @@ void AliAnalysisTaskPPvsRT_TPCTOF::ProduceArrayTrksESD(const int& region, TList 
             if (!selectDebug)
                 continue;
         }
-        
+
+//	if((esdTrack->GetTPCCrossedRows()<60)){
+//	printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//	printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//	printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//	printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//	printf("CrossRows = %f\n",esdTrack->GetTPCCrossedRows());
+//	}        
+
         double eta      = esdTrack->Eta();
         double pt       = esdTrack->Pt();
         
