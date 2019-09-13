@@ -312,6 +312,10 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(!fEvent) return;
 
   fRunNumber = fEvent->GetRunNumber();
+  
+  fTimeRangeCut.InitFromEvent(InputEvent());
+  if(fTimeRangeCut.CutEvent(InputEvent()))return;
+  
   TString trigger = fEvent->GetFiredTriggerClasses();
   
   if(!isMC){
@@ -397,9 +401,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Int_t fADCdecision = fADdata->GetADCDecision();
   if( fADAdecision != 0 || fADCdecision != 0) return;
   
-  fTimeRangeCut.InitFromEvent(InputEvent());
-  if(fTimeRangeCut.CutEvent(InputEvent()))return;
-
   fHistEvents->Fill(1);
   //cout<<"Event, tracks = "<<fEvent ->GetNumberOfTracks()<<endl; 
   
@@ -594,7 +595,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   //Two track loop
   nHighPt = 0;
   fInEtaRec = kTRUE;
-  if(nGoodTracksTPC == 2 && nGoodTracksSPD == 2 && nGoodTracksITS == 0){
+  if(nGoodTracksTPC == 2 && nGoodTracksSPD == 2){
   //if(nGoodTracksTPC == 2){
   	fFOCrossedChips.ResetAllBits(kFALSE);
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
