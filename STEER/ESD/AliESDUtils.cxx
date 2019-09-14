@@ -219,8 +219,9 @@ TObjArray*  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, co
   }
   else { // will modify esdEvent
     // reset old vertex info
-    if (esdEv->GetPileupVerticesTracks()) esdEv->GetPileupVerticesTracks()->Clear();
-    ((AliESDVertex*)esdEv->GetPrimaryVertexTracks())->SetNContributors(-1);
+    if (esdEv->GetPileupVerticesTracks()) esdEv->GetPileupVerticesTracks()->Clear("C");
+    static AliESDVertex vtxDummy(0,0,0,"PrimaryVertex");
+    esdEv->SetPrimaryVertexTracks(&vtxDummy);
     //
   }
   AliESDVertex *pvtx=vtFinder->FindPrimaryVertex(esdEv);
@@ -269,6 +270,7 @@ Float_t AliESDUtils::GetCorrV0A0(Float_t  v0a0raw, Float_t zv)
   Float_t corr = 1 + zv*(pars[1] + zv*pars[2]);
   return corr>0 ? v0a0raw/corr : -1;
 }
+
 //________________________________________________________________________
 void AliESDUtils::GetTPCPileupVertexInfo(const AliESDEvent* event, TVectorF& vertexInfo)
 {
@@ -322,4 +324,62 @@ void AliESDUtils::GetTPCPileupVertexInfo(const AliESDEvent* event, TVectorF& ver
   vertexInfo[7] = posZCLTM;
   vertexInfo[8] = rmsZALTM;
   vertexInfo[9] = rmsZCLTM;
+}
+
+//________________________________________________________________________
+void AliESDUtils::GetITSPileupVertexInfo(const AliESDEvent* event, TVectorF& vertexInfo,
+					 Double_t dcaCut, Double_t dcaZcut)
+{
+  vertexInfo.ResizeTo(8);
+  vertexInfo.Zero();
+  
+  const Int_t kNCRCut=80;
+  const Double_t kDCACut=0.3;
+  const Float_t knTrackletCut=1.5;
+
+  Int_t nTracks=event->GetNumberOfTracks();
+  const Int_t knBuffer=20000;
+  Double_t bufferPrim[knBuffer], bufferPileUp[knBuffer];
+  Int_t nBufferPrim=0, nBufferPileUp=0;
+  for (Int_t iTrack=0; iTrack<nTracks; iTrack++){
+    AliESDtrack * pTrack = event->GetTrack(iTrack);
+    Float_t dcaXY,dcaz;
+    if (pTrack== nullptr) continue;
+    if (pTrack->IsOn(AliVTrack::kTPCin)==0) continue;
+    if (pTrack->GetTPCClusterInfo(3,1)<kNCRCut) continue;
+    pTrack->GetImpactParameters(dcaXY,dcaz);
+    if (TMath::Abs(dcaXY)>kDCACut) continue;
+    if (TMath::Abs(dcaXY)>dcaCut) continue;
+    pTrack->SetESDEvent(event);
+    if (pTrack->HasPointOnITSLayer(0)==0) continue;
+    if (pTrack->HasPointOnITSLayer(1)==0) continue;
+    if (TMath::Abs(dcaz)<dcaZcut){
+      bufferPrim[nBufferPrim]=pTrack->GetZ();
+      nBufferPrim++;
+    }else{
+      bufferPileUp[nBufferPileUp]=pTrack->GetZ();
+      nBufferPileUp++;
+    }
+  }
+  /// median position
+  vertexInfo[0]=(nBufferPrim>0)?TMath::Median(nBufferPrim,bufferPrim):0;
+  vertexInfo[1]=(nBufferPileUp>0)?TMath::Median(nBufferPileUp, bufferPileUp):0;
+  // multiplicity
+  vertexInfo[2]=nBufferPrim;
+  vertexInfo[3]=nBufferPileUp;
+  /// LTM
+  Double_t LTM, RMS;
+  if (nBufferPrim>2) {
+    AliMathBase::EvaluateUni(nBufferPrim, bufferPrim, LTM,RMS, 0.95*nBufferPrim);
+    vertexInfo[4]=LTM;
+    vertexInfo[5]=RMS;
+  }
+  if (nBufferPileUp>2) {
+    Int_t nPoints= 0.7*nBufferPileUp;
+    if (nPoints<2) nPoints=2;
+    AliMathBase::EvaluateUni(nBufferPileUp, bufferPrim, LTM,RMS, 0.95*nPoints);
+    vertexInfo[6]=LTM;
+    vertexInfo[7]=RMS;
+  }
+  //
 }

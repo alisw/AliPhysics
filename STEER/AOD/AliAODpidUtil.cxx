@@ -104,14 +104,23 @@ Float_t AliAODpidUtil::GetNumberOfSigmasTOFold(const AliVParticle *vtrack, AliPI
 void AliAODpidUtil::SetEventPileupProperties(const AliVEvent* vevent)
 {
   static Bool_t warned = kFALSE;
+  static TVectorF dummyVertexInfo(10); // to be used with old AODs w/o vertex info
   if (!warned) {
-    AliError("========================================================");
-    AliError(">>>>              TPC PID in trouble                <<<<");
-    AliError(">>>>       pile up correction requested,            <<<<");
-    AliError(">>>>  but not yet fully implemented in AOD          <<<<");
-    AliError("========================================================");
+    // make sure that provided event is AOD
+    if (!vevent->InheritsFrom(AliAODEvent::Class())) {
+      AliFatal("Provided AliVEvent must be AliAODEvent");
+    }
+
+    if (!((AliAODHeader*)vevent->GetHeader())->GetTPCPileUpInfo()) {
+      AliError("========================================================");
+      AliError(">>>>              TPC PID in trouble                <<<<");
+      AliError(">>>>  pile-up correction requested, but 1st         <<<<");
+      AliError(">>>>  provided event has no pile-up info stored.    <<<<");
+      AliError(">>>>  All events will be treated as pile-up free    <<<<");
+      AliError("========================================================");
+    }
+    warned = kTRUE;
   }
-  warned = kTRUE;
 
   // ===| Extract event information |===========================================
   //
@@ -127,9 +136,9 @@ void AliAODpidUtil::SetEventPileupProperties(const AliVEvent* vevent)
   }
 
   // ---| TPC pileup vertex info |----------------------------------------------
-  TVectorF tpcVertexInfo(10);
-  // TODO: Implement retrieval of tpcVertexInfo
-
+  AliAODHeader* header = (AliAODHeader*)vevent->GetHeader();
+  const TVectorF &tpcVertexInfo = header->GetTPCPileUpInfo() ? *header->GetTPCPileUpInfo() : dummyVertexInfo;
+  
   // ===| calculate derived variables |=========================================
   const Double_t shiftM = 0.5 * (tpcVertexInfo[1] + tpcVertexInfo[0]) - 25.;
   const Double_t multSSD = itsClustersPerLayer[4] + itsClustersPerLayer[5];
