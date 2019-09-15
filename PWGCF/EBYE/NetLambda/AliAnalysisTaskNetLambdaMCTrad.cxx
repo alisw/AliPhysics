@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Aug 21
+// Updated Sep15
 
 
 #include "AliAnalysisManager.h"
@@ -596,8 +596,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         
         if(cosPointingAngle < 0.99) continue;
         
-    
-
+        
+        
         
         if( ontheflystat == 0 )
         {
@@ -659,7 +659,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 if(TMath::Abs(eta) < 0.5)
                 {
                     //L
-                    if(dcaV0ToVertex < 0.1 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1) //default
+                    if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1) //default
                     {
                         f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassLambda,mcpt);
                         if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -691,7 +691,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     }
                     
                     //L-BAR
-                    if(dcaV0ToVertex < 0.1 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25) //default
+                    if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25) //default
                     {
                         f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassAntiLambda,mcpt);
                         if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
