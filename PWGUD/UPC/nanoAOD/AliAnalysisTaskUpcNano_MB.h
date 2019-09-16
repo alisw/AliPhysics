@@ -29,7 +29,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   
   void SetIsMC(Bool_t MC){isMC = MC;}
   void SetIsESD(Bool_t ESD){isESD = ESD;}
-  void SetCutEta(Float_t cut){cutEta = cut;}
+  void SetParameters(Float_t cutE, Bool_t checkS, Bool_t storeR){cutEta = cutE; checkStack = checkS; storeRho = storeR;}
   Double_t GetMedian(Double_t *daArray);
   void SetCrossed(Int_t spd[4], TBits &crossed);
   Int_t GetChipId(Int_t index, Int_t &chipId2, Bool_t debug=0);
@@ -45,6 +45,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   Bool_t isMC; 
   Bool_t isESD;
   Float_t cutEta;
+  Bool_t checkStack, storeRho;
 
   TList *fOutputList;		//<
   TH1D *fHistEvents;		//!
@@ -87,7 +88,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 27); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 28); 
 };
 
 #endif

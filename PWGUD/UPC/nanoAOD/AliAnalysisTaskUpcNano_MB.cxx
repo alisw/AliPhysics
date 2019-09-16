@@ -63,7 +63,7 @@ using std::endl;
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB() 
-  : AliAnalysisTaskSE(),fPIDResponse(0), fTrackCutsBit0(0),fTrackCutsBit1(0),fTrackCutsBit5(0),isMC(kFALSE), isESD(kFALSE),cutEta(0.9),fOutputList(0),
+  : AliAnalysisTaskSE(),fPIDResponse(0), fTrackCutsBit0(0),fTrackCutsBit1(0),fTrackCutsBit5(0),isMC(kFALSE), isESD(kFALSE),cutEta(0.9),checkStack(kFALSE),storeRho(kFALSE),fOutputList(0),
     	fHistEvents(0),
 	fHistMCTriggers(0),
     	fTreePhi(0),
@@ -100,7 +100,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name) 
-  : AliAnalysisTaskSE(name),fPIDResponse(0), fTrackCutsBit0(0),fTrackCutsBit1(0),fTrackCutsBit5(0),isMC(kFALSE), isESD(kFALSE),cutEta(0.9),fOutputList(0),
+  : AliAnalysisTaskSE(name),fPIDResponse(0), fTrackCutsBit0(0),fTrackCutsBit1(0),fTrackCutsBit5(0),isMC(kFALSE), isESD(kFALSE),cutEta(0.9),checkStack(kFALSE),storeRho(kFALSE),fOutputList(0),
     	fHistEvents(0),
 	fHistMCTriggers(0),
     	fTreePhi(0),
@@ -582,7 +582,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	}
 	
   //Two track loop
-  nHighPt = 0;
+  
+  TLorentzVector vMC, vLabelPart;
+  
   fInEtaRec = kTRUE;
   if(nGoodTracksTPC == 2 && nGoodTracksSPD == 2){
   	fFOCrossedChips.ResetAllBits(kFALSE);
@@ -600,9 +602,18 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	  
     	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
 	
-	if(TMath::Abs(trk->Eta())>cutEta) fInEtaRec = kFALSE;
+	if(isMC && checkStack){
+	  AliMCEvent *mc = MCEvent();
+          if(!mc) return;
+          AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(trk->GetLabel());
+          if(!mcPart) continue;
+        
+          TParticlePDG *partGen = pdgdat->GetParticle(mcPart->PdgCode());
+          vLabelPart.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
+          vMC += vLabelPart;
+	  }
 	
-	if(trk->Pt() > 1.0) nHighPt++;
+	if(TMath::Abs(trk->Eta())>cutEta) fInEtaRec = kFALSE;
 	
 	Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
     	Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
@@ -638,7 +649,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   
   if(qTrack[0]*qTrack[1]<0)fSign = -1;
   if(qTrack[0]*qTrack[1]>0)fSign = 1;
-  
 
   if(nSigmaDistProton < 4){ 
   	  fPIDsigma = nSigmaDistProton;
@@ -651,18 +661,26 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  vJPsiCandidate = vMuon[0]+vMuon[1];
   	  fChannel = 1;
   	  FillTree(fTreeJPsi,vJPsiCandidate);
+	  if(isMC && checkStack){ 
+            fChannel *= 100;
+            FillTree(fTreeJPsi,vMC);
+            }
   	  }
   if(nSigmaDistPion < nSigmaDistElectron){
   	  fPIDsigma = nSigmaDistPion; 
 	  fChannel = 0;
   	  vRhoCandidate = vPion[0]+vPion[1];
-  	  //FillTree(fTreeJPsi,vRhoCandidate);
+  	  if(storeRho)FillTree(fTreeJPsi,vRhoCandidate);
   	  }  
   if(nSigmaDistMuon > nSigmaDistElectron){ 
   	  fPIDsigma = nSigmaDistElectron;
   	  vJPsiCandidate = vElectron[0]+vElectron[1];
   	  fChannel = -1;
   	  FillTree(fTreeJPsi,vJPsiCandidate);
+	  if(isMC && checkStack){ 
+            fChannel *= 100;
+            FillTree(fTreeJPsi,vMC);
+            }
   	  }
 
   hTPCPIDPionCorr->Fill(nSigmaPion[0],nSigmaPion[1]);
