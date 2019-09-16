@@ -73,6 +73,7 @@
 #pragma link C++ class AliAODTrdTracklet+;
 #pragma link C++ class AliNanoAODStorage+;
 #pragma link C++ class AliNanoAODHeader+;
+#pragma link C++ class AliAODkink+;
 
 #pragma link C++ method AliAODTrack::SetPosition<double>(double const*, bool);
 

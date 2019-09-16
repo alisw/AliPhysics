@@ -24,6 +24,7 @@
 #include "AliAODTrack.h"
 #include "AliAODVertex.h"
 #include "AliAODv0.h"
+#include "AliAODkink.h"
 #include "AliAODcascade.h"
 #include "AliAODTracklets.h"
 #include "AliAODJet.h"
@@ -52,6 +53,7 @@ public:
 		       kAODTracks,
 		       kAODVertices,
 		       kAODv0,
+		       kAODkink,
 		       kAODcascade,
 		       kAODTracklets,
 		       kAODJets,
@@ -206,6 +208,15 @@ public:
   Int_t         AddV0(const AliAODv0* v0)
   {new((*fV0s)[fV0s->GetEntriesFast()]) AliAODv0(*v0); return fV0s->GetEntriesFast()-1;}
 
+  // Kinks
+  TClonesArray *GetKinks()                 const { return fKinks; }
+  Int_t         GetNumberOfKinks()         const { return fKinks ? fKinks->GetEntriesFast() : 0; }
+  //using AliVEvent::GetKink;
+  AliAODkink     *GetAODkink(Int_t nkink)    const { return fKinks ? (AliAODkink*)fKinks->UncheckedAt(nkink) : 0; }
+  Int_t         AddKink(const AliAODkink* kink)
+  {new((*fKinks)[fKinks->GetEntriesFast()]) AliAODkink(*kink); return fKinks->GetEntriesFast()-1;}
+
+  
   // Cascades
   TClonesArray  *GetCascades(){
     FixCascades();
@@ -301,6 +312,7 @@ public:
   void    ResetStd(Int_t trkArrSize = 0,
 		   Int_t vtxArrSize = 0,
 		   Int_t v0ArrSize = 0,
+		   Int_t kinkArrSize = 0,
 		   Int_t cascadeArrSize = 0,
 		   Int_t jetSize = 0,
 		   Int_t caloClusSize = 0,
@@ -361,6 +373,7 @@ private:
   TClonesArray    *fTracks;       //!<! charged tracks
   TClonesArray    *fVertices;     //!<! vertices
   TClonesArray    *fV0s;          //!<! V0s
+  TClonesArray    *fKinks;       //!<!  kinks
   TClonesArray    *fCascades;     //!<! Cascades
   AliAODTracklets *fTracklets;    //!<! SPD tracklets
   TClonesArray    *fJets;         //!<! jets
@@ -385,7 +398,7 @@ private:
 
   static const char* fAODListName[kAODListN]; //!<!
 
-  ClassDef(AliAODEvent,94);
+  ClassDef(AliAODEvent,95);
 };
 
 #endif

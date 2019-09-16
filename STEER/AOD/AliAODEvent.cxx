@@ -36,6 +36,7 @@ ClassImp(AliAODEvent)
 						      "tracks",
 						      "vertices",
 						      "v0s",
+						      "kinks",
 						      "cascades",
 						      "tracklets",
 						      "jets",
@@ -67,6 +68,7 @@ AliAODEvent::AliAODEvent() :
   fTracks(0),
   fVertices(0),
   fV0s(0),
+  fKinks(0),
   fCascades(0),
   fTracklets(0),
   fJets(0),
@@ -103,6 +105,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   fTracks(new TClonesArray(*aod.fTracks)),
   fVertices(new TClonesArray(*aod.fVertices)),
   fV0s(new TClonesArray(*aod.fV0s)),
+  fKinks(new TClonesArray(*aod.fKinks)),
   fCascades(new TClonesArray(*aod.fCascades)),
   fTracklets(new AliAODTracklets(*aod.fTracklets)),
   fJets(new TClonesArray(*aod.fJets)),
@@ -129,6 +132,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   AddObject(fTracks);
   AddObject(fVertices);
   AddObject(fV0s);
+  AddObject(fKinks);
   AddObject(fCascades);
   AddObject(fTracklets);
   AddObject(fJets);
@@ -317,6 +321,7 @@ void AliAODEvent::CreateStdContent()
   AddObject(new TClonesArray("AliAODTrack", 0));
   AddObject(new TClonesArray("AliAODVertex", 0));
   AddObject(new TClonesArray("AliAODv0", 0));
+  AddObject(new TClonesArray("AliAODkink", 0));
   AddObject(new TClonesArray("AliAODcascade", 0));
   AddObject(new AliAODTracklets());
   AddObject(new TClonesArray("AliAODJet", 0));
@@ -411,6 +416,7 @@ void AliAODEvent::GetStdContent()
   fTracks        = (TClonesArray*)fAODObjects->FindObject("tracks");
   fVertices      = (TClonesArray*)fAODObjects->FindObject("vertices");
   fV0s           = (TClonesArray*)fAODObjects->FindObject("v0s");
+  fKinks         = (TClonesArray*)fAODObjects->FindObject("kinks");
   fCascades      = (TClonesArray*)fAODObjects->FindObject("cascades");
   fTracklets     = (AliAODTracklets*)fAODObjects->FindObject("tracklets");
   fJets          = (TClonesArray*)fAODObjects->FindObject("jets");
@@ -435,6 +441,7 @@ void AliAODEvent::GetStdContent()
 void AliAODEvent::ResetStd(Int_t trkArrSize, 
             Int_t vtxArrSize, 
             Int_t v0ArrSize,
+	    Int_t kinkArrSize,
             Int_t cascadeArrSize,
             Int_t jetSize, 
             Int_t caloClusSize, 
@@ -462,6 +469,11 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
     fV0s->Delete();
     if (v0ArrSize > fV0s->GetSize()) 
       fV0s->Expand(v0ArrSize);
+  }
+  if (fKinks) {
+    fKinks->Delete();
+    if (kinkArrSize > fKinks->GetSize()) 
+      fKinks->Expand(kinkArrSize);
   }
   if (fCascades) {
     fCascades->Delete();
@@ -544,6 +556,8 @@ void AliAODEvent::ClearStd()
     fVertices      ->Delete();
   if (fV0s)
     fV0s           ->Delete();
+  if (fKinks)
+    fKinks         ->Delete();
   if (fCascades)
     fCascades      ->Delete();
   if (fTracklets)
