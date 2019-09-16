@@ -50,7 +50,6 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     void SetOption(char* option) { fOption = option; }
     void SetFilterBit(UInt_t filterbit) { fFilterBit = filterbit; }
-    void SetFilterBit_Xi(UInt_t filterbit) { fFilterBit_Xi = filterbit; }
     void SetMixing(Bool_t setmixing) { fsetmixing = setmixing; }
     void SetIsAA(Bool_t isaa) { IsAA = isaa; }
     void SetIsMC(Bool_t ismc) { IsMC = ismc; }
@@ -253,15 +252,11 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     TString fOption;
 
     AliESDtrackCuts* fTrackCuts = nullptr;   //!
-    AliESDtrackCuts* fTrackCuts2 = nullptr;  //!
-    AliESDtrackCuts* fTrackCuts3 = nullptr;  //!
     AliVEvent* fEvt = nullptr;               //!
     UInt_t fFilterBit = 32;
-    UInt_t fFilterBit_Xi = 128;  // not using for the moment.
 
     Double_t fCent = -1;
     Double_t ftrackmult = -1;
-    Double_t fZ = -30;
     std::vector<UInt_t> goodtrackindices;    //!
     std::vector<UInt_t> goodcascadeindices;  //!
 
@@ -352,7 +347,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     Double_t lPosPV[3];
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 29);
+    ClassDef(AliAnalysisTaskXi1530, 30);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -384,6 +379,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 27: add Xi CPA study option // Change PV variable type
     // 28: Add INEL variable
     // 29: Add Special finder
+    // 30: Remove unused variables and reformatting
 };
 
 #endif
