@@ -188,34 +188,16 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeJPsi ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
   fTreeJPsi ->Branch("fTriggers", &fTriggers, "fTriggers[10]/O");
-  //fTreeJPsi ->Branch("fFOCrossFiredChips", &fFOCrossFiredChips);
+  fTreeJPsi ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
+  fTreeJPsi ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");
+  fTreeJPsi ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
+  fTreeJPsi ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
+  fTreeJPsi ->Branch("fNGoodTracksITS", &fNGoodTracksITS, "fNGoodTracksITS/I");
+  fTreeJPsi ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
   if(isMC){
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
-	//fTreeJPsi ->Branch("fTOFmask", &fTOFmask);
 	}
   fOutputList->Add(fTreeJPsi);
-  
-  fTreeRho = new TTree("fTreeRho", "fTreeRho");
-  fTreeRho ->Branch("fPt", &fPt, "fPt/F");
-  fTreeRho ->Branch("fY", &fY, "fY/F");
-  fTreeRho ->Branch("fM", &fM, "fM/F");
-  fTreeRho ->Branch("fChannel", &fChannel, "fChannel/I");
-  fTreeRho ->Branch("fSign", &fSign, "fSign/I");
-  fTreeRho ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/F");
-  fTreeRho ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/F");
-  fTreeRho ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/F");
-  fTreeRho ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
-  fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
-  fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  fTreeRho ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
-  fTreeRho ->Branch("fTriggers", &fTriggers, "fTriggers[10]/O");
-  //fTreeRho ->Branch("fFOCrossFiredChips", &fFOCrossFiredChips);
-  
-  if(isMC){ 
-    fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
-    //fTreeRho ->Branch("fTOFmask", &fTOFmask);
-    }
-  //fOutputList->Add(fTreeRho);
 
   fTreePsi2s = new TTree("fTreePsi2s", "fTreePsi2s");
   fTreePsi2s ->Branch("fPt", &fPt, "fPt/F");
@@ -232,9 +214,14 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreePsi2s ->Branch("fTriggers", &fTriggers, "fTriggers[10]/O");
+  fTreePsi2s ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
+  fTreePsi2s ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");
+  fTreePsi2s ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
+  fTreePsi2s ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
+  fTreePsi2s ->Branch("fNGoodTracksITS", &fNGoodTracksITS, "fNGoodTracksITS/I");
+  fTreePsi2s ->Branch("fNGoodTracksLoose", &fNGoodTracksLoose, "fNGoodTracksLoose/I");
   if(isMC){ 
     fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[11]/O");
-    //fTreePsi2s ->Branch("fTOFmask", &fTOFmask);
     }
   fOutputList->Add(fTreePsi2s);
     
@@ -298,6 +285,11 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   
   hTriggerCounter = new TH2I("hTriggerCounter","Number of analyzed UPC triggers per run",3,1,4,3000,295000,298000);
   fOutputList->Add(hTriggerCounter);
+  
+  hADdecision = new TH2I("hADdecision","hADdecision",7,-2,5,7,-2,5);
+  fOutputList->Add(hADdecision);
+  hV0decision = new TH2I("hV0decision","hV0decision",7,-2,5,7,-2,5);
+  fOutputList->Add(hV0decision);
       
   PostData(1, fOutputList);
 
@@ -393,13 +385,13 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 		}
   } 
  
-  Int_t fV0Adecision = fV0data->GetV0ADecision();
-  Int_t fV0Cdecision = fV0data->GetV0CDecision();
-  if( fV0Adecision != 0 || fV0Cdecision != 0) return;
+  fV0Adecision = fV0data->GetV0ADecision();
+  fV0Cdecision = fV0data->GetV0CDecision();
+  hV0decision->Fill(fV0Adecision,fV0Cdecision);
   
-  Int_t fADAdecision = fADdata->GetADADecision();
-  Int_t fADCdecision = fADdata->GetADCDecision();
-  if( fADAdecision != 0 || fADCdecision != 0) return;
+  fADAdecision = fADdata->GetADADecision();
+  fADCdecision = fADdata->GetADCDecision();
+  hADdecision->Fill(fADAdecision,fADCdecision);
   
   fHistEvents->Fill(1);
   //cout<<"Event, tracks = "<<fEvent ->GetNumberOfTracks()<<endl; 
@@ -432,10 +424,10 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Short_t qLepton[5];
   UInt_t nPion = 0, nLepton = 0, nHighPt = 0;
   UInt_t nGoodTracksTPC=0;
-  UInt_t nGoodTracksITS=0;
+  fNGoodTracksITS = 0; 
   UInt_t nGoodTracksSPD=0;
   UInt_t nGoodTracksTOF=0;
-  UInt_t nGoodTracksLoose=0;
+  fNGoodTracksLoose=0;
   Int_t TrackIndexTPC[5] = {-1,-1,-1,-1,-1};
   Int_t TrackIndexITS[5] = {-1,-1,-1,-1,-1};
   Int_t TrackIndexALL[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
@@ -449,7 +441,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     if(isESD){ 
     	AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(iTrack));
 	if( !trk ) continue;
-	if(fTrackCutsBit0->AcceptTrack(trk))nGoodTracksLoose++;
+	if(fTrackCutsBit0->AcceptTrack(trk) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1))) fNGoodTracksLoose++;
 	
     	if(!fTrackCutsBit5->AcceptTrack(trk)) goodTPCTrack = kFALSE;
 	else if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
@@ -461,7 +453,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(fEvent->GetTrack(iTrack));
     	if( !trk ) continue;
     
-    	if(trk->TestFilterBit(1<<0) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)))nGoodTracksLoose++;
+    	if(trk->TestFilterBit(1<<0) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)))fNGoodTracksLoose++;
     	if(!(trk->TestFilterBit(1<<5)))goodTPCTrack = kFALSE;
     	else{
     		if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
@@ -475,41 +467,38 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     if(goodTPCTrack){
     	TrackIndexTPC[nGoodTracksTPC] = iTrack;
     	TrackPtTPC[nGoodTracksTPC] = trk->Pt();
-	TrackIndexALL[nGoodTracksTPC+nGoodTracksITS] = iTrack;
-    	TrackPtALL[nGoodTracksTPC+nGoodTracksITS] = trk->Pt();
+	TrackIndexALL[nGoodTracksTPC+fNGoodTracksITS] = iTrack;
+    	TrackPtALL[nGoodTracksTPC+fNGoodTracksITS] = trk->Pt();
     	nGoodTracksTPC++;
 	}
      	
     if(goodITSTrack){
-    	TrackIndexITS[nGoodTracksITS] = iTrack;
-	TrackIndexALL[nGoodTracksTPC+nGoodTracksITS] = iTrack;
-    	TrackPtALL[nGoodTracksTPC+nGoodTracksITS] = trk->Pt();
-    	nGoodTracksITS++;
-	//cout<<"good its track"<<endl;
+    	TrackIndexITS[fNGoodTracksITS] = iTrack;
+	TrackIndexALL[nGoodTracksTPC+fNGoodTracksITS] = iTrack;
+    	TrackPtALL[nGoodTracksTPC+fNGoodTracksITS] = trk->Pt();
+    	fNGoodTracksITS++;
     	}
      
      
-    if(nGoodTracksTPC > 4 || nGoodTracksITS > 4) break;
-    //if(nGoodTracksTPC > 4) break;
+    if(nGoodTracksTPC > 4 || fNGoodTracksITS > 4) break;
     }
     
   //{"Analyzed","2 TPC"," 2TPC+2ITS","4TPC","3TPC+1ITS","4TPC+ITS","2TPC+1ITS","2ITS","4ITS"};
-  if(nGoodTracksTPC == 2 && nGoodTracksITS == 0)fHistEvents->Fill(2);
-  if(nGoodTracksTPC == 2 && nGoodTracksITS == 2)fHistEvents->Fill(3);
-  if(nGoodTracksTPC == 4 && nGoodTracksITS == 0)fHistEvents->Fill(4);
-  if(nGoodTracksTPC == 3 && nGoodTracksITS == 1)fHistEvents->Fill(5);
-  if(nGoodTracksTPC == 4 && nGoodTracksITS != 0)fHistEvents->Fill(6);
-  if(nGoodTracksTPC == 2 && nGoodTracksITS != 0 && nGoodTracksITS != 2)fHistEvents->Fill(7);
-  if(nGoodTracksTPC == 0 && nGoodTracksITS == 2)fHistEvents->Fill(8);
-  if(nGoodTracksTPC == 0 && nGoodTracksITS == 4)fHistEvents->Fill(9);
+  if(nGoodTracksTPC == 2 && fNGoodTracksITS == 0)fHistEvents->Fill(2);
+  if(nGoodTracksTPC == 2 && fNGoodTracksITS == 2)fHistEvents->Fill(3);
+  if(nGoodTracksTPC == 4 && fNGoodTracksITS == 0)fHistEvents->Fill(4);
+  if(nGoodTracksTPC == 3 && fNGoodTracksITS == 1)fHistEvents->Fill(5);
+  if(nGoodTracksTPC == 4 && fNGoodTracksITS != 0)fHistEvents->Fill(6);
+  if(nGoodTracksTPC == 2 && fNGoodTracksITS != 0 && fNGoodTracksITS != 2)fHistEvents->Fill(7);
+  if(nGoodTracksTPC == 0 && fNGoodTracksITS == 2)fHistEvents->Fill(8);
+  if(nGoodTracksTPC == 0 && fNGoodTracksITS == 4)fHistEvents->Fill(9);
   
   Int_t crossedFO[4];
   TBits fFOCrossedChips(1200); 
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   TBits fFOFiredChips = mult->GetFastOrFiredChips();
      
-  if(nGoodTracksTPC+nGoodTracksITS == 4 && nGoodTracksTPC > 1 && nGoodTracksSPD > 1){
-  //if(nGoodTracksTPC == 4){
+  if(nGoodTracksTPC+fNGoodTracksITS == 4 && nGoodTracksTPC > 1 && nGoodTracksSPD > 1){
   	fFOCrossedChips.ResetAllBits(kFALSE);
     	MeanPt = GetMedian(TrackPtALL);
   	for(Int_t iTrack=0; iTrack<4; iTrack++) {
@@ -573,12 +562,12 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 		fChannel = 0;
 		if((nSigmaDistMuon < nSigmaDistElectron)){
 			fPIDsigma = nSigmaDistMuon; 
-			if(nGoodTracksITS == 0)fChannel = 1;
+			if(fNGoodTracksITS == 0)fChannel = 1;
 			else fChannel = 10;
 			}
 		if((nSigmaDistMuon > nSigmaDistElectron)){
 			fPIDsigma = nSigmaDistElectron;
-			if(nGoodTracksITS == 0)fChannel = -1;
+			if(fNGoodTracksITS == 0)fChannel = -1;
 			else fChannel = -10;
 			}
 		if(nSigmaDistProton < 3){ 
@@ -596,7 +585,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   nHighPt = 0;
   fInEtaRec = kTRUE;
   if(nGoodTracksTPC == 2 && nGoodTracksSPD == 2){
-  //if(nGoodTracksTPC == 2){
   	fFOCrossedChips.ResetAllBits(kFALSE);
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
 
@@ -668,7 +656,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  fPIDsigma = nSigmaDistPion; 
 	  fChannel = 0;
   	  vRhoCandidate = vPion[0]+vPion[1];
-  	  FillTree(fTreeJPsi,vRhoCandidate);
+  	  //FillTree(fTreeJPsi,vRhoCandidate);
   	  }  
   if(nSigmaDistMuon > nSigmaDistElectron){ 
   	  fPIDsigma = nSigmaDistElectron;
