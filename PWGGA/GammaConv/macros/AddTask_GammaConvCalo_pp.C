@@ -2201,9 +2201,9 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113", "00200009f9730000dg60400000","4117911067032230000", "0163103100b00010"); // Psi pair 0.05 2D
     cuts.AddCutPCMCalo("00010113", "00200009f9730000dg80400000","4117911067032230000", "0163103100b00010"); // Psi pair 0.2  2D
   } else if (trainConfig == 2035) {
-    cuts.AddCutPCMCalo("00010113", "00200009f9730000dge0400000","4117911067032220000", "0163103100500010"); // smearing (fPSigSmearing= 0.030,  fPSigSmearingCte= 0.020)
-    cuts.AddCutPCMCalo("00010113", "00200009f9730000dge0400000","4117911067032220000", "0163103100a00010"); // smearing (fPSigSmearing= 0.020,  fPSigSmearingCte= 0.030)
+    cuts.AddCutPCMCalo("00010113", "00200009f9730000dge0400000","4117911067032220000", "0163103100a00010"); // smearing (fPSigSmearing= 0.0275, fPSigSmearingCte= 0.025)
     cuts.AddCutPCMCalo("00010113", "00200009f9730000dge0400000","4117911067032220000", "0163103100b00010"); // smearing (fPSigSmearing= 0.025,  fPSigSmearingCte= 0.030)
+    cuts.AddCutPCMCalo("00010113", "00200009f9730000dge0400000","4117911067032220000", "0163103100c00010"); // smearing (fPSigSmearing= 0.0275, fPSigSmearingCte= 0.020)
     cuts.AddCutPCMCalo("00010113", "00200009f9730000dge0400000","4117911067032220000", "0163103100d00010"); // smearing (fPSigSmearing= 0.0275, fPSigSmearingCte= 0.035)
     cuts.AddCutPCMCalo("00010113", "00200009f9730000dge0400000","4117911067032220000", "0163103100e00010"); // smearing (fPSigSmearing= 0.0275, fPSigSmearingCte= 0.040)
   } else if ( trainConfig == 2036){ // qT 2D pT dep
