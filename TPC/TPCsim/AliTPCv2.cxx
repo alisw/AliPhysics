@@ -318,16 +318,16 @@ void AliTPCv2::CreateGeometry()
   //  Outer field cage guard rings. Inner placed in the drift gas, outer placed in the outer insulator (CO2)
   //
   TGeoTube *ogri = new TGeoTube(257.985,258.,0.6); // placed in the drift volume
-  TGeoTube *ogro = new TGeoTube(260.0676.,260.0826,0.6); //placed in the outer insulator
+  TGeoTube *ogro = new TGeoTube(260.0676,260.0826,0.6); //placed in the outer insulator
   //
   TGeoVolume *ogriv = new TGeoVolume("TPC_OGRI",ogri,m3);
   TGeoVolume *ogrov = new TGeoVolume("TPC_OGRO",ogro,m3);
   //
-    for(Int_t i=0; i<24; i+10){
-    v9->AddNode(ogriv,(i+1), new TGeoTranslation(0.,0.,(i+1)*10));
-    v9->AddNode(ogriv,(i+26), new TGeoTranslation(0.,0.,-(i+1)*10));
-    v2->AddNode(ogrov,(i+1), new TGeoTranslation(0.,0.,(i+1)*10));
-    v2->AddNode(ogrov,(i+26), new TGeoTranslation(0.,0.,-(i+1)*10));
+  for(Int_t i=0; i<24; i+10){
+     v9->AddNode(ogriv,(i+1), new TGeoTranslation(0.,0.,(i+1)*10));
+     v9->AddNode(ogriv,(i+26), new TGeoTranslation(0.,0.,-(i+1)*10));
+     v2->AddNode(ogrov,(i+1), new TGeoTranslation(0.,0.,(i+1)*10));
+     v2->AddNode(ogrov,(i+26), new TGeoTranslation(0.,0.,-(i+1)*10));
   }
   //
   //--------------------------------------------------------------------
