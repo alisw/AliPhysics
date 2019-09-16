@@ -314,6 +314,22 @@ void AliTPCv2::CreateGeometry()
   v2->AddNode(v3,1); v2->AddNode(v4,1); 
   //
   v1->AddNode(v2,1);
+  //
+  //  Outer field cage guard rings. Inner placed in the drift gas, outer placed in the outer insulator (CO2)
+  //
+  TGeoTube *ogri = new TGeoTube(257.985,258.,0.6); // placed in the drift volume
+  TGeoTube *ogro = new TGeoTube(260.0676,260.0826,0.6); //placed in the outer insulator
+  //
+  TGeoVolume *ogriv = new TGeoVolume("TPC_OGRI",ogri,m3);
+  TGeoVolume *ogrov = new TGeoVolume("TPC_OGRO",ogro,m3);
+  //
+  for(Int_t i=0; i<24; i++){
+     v9->AddNode(ogriv,(i+1), new TGeoTranslation(0.,0.,(i+1)*10));
+     v9->AddNode(ogriv,(i+25), new TGeoTranslation(0.,0.,-(i+1)*10));
+     v2->AddNode(ogrov,(i+1), new TGeoTranslation(0.,0.,(i+1)*10));
+     v2->AddNode(ogrov,(i+25), new TGeoTranslation(0.,0.,-(i+1)*10));
+  }
+  //
   //--------------------------------------------------------------------
   // Tpc Inner INsulator (CO2) 
   // the cones, the central drum and the inner f.c. sandwich with a piece
@@ -548,6 +564,42 @@ void AliTPCv2::CreateGeometry()
   v1->AddNode(hvsm,1,new TGeoTranslation(0.,0.,-163.8)); 
   v1->AddNode(hvss,1,new TGeoTranslation(0.,0.,163.8)); 
   v9->AddNode(tv100,1);
+  //
+  // guard rings for IFC - outer placed in inner insulator, inner placed in the drift gas (3 different radii)
+  // AL, 1.2 cm wide, 0.015 cm thick, volumes TPC_IGR1 - outer, TPC_IGR2-4 - outer
+  //
+  TGeoTube *igro = new TGeoTube(76.6774,76.6624,0.6); 
+  TGeoTube *igrio = new TGeoTube(78.845,78.86,0.6); //outer part
+  TGeoTube *igrim = new TGeoTube(78.795,78.81,0.6);
+  TGeoTube *igric = new TGeoTube(78.785,78.8,0.6);
+  //
+  // volumes
+  //
+  TGeoVolume *igrov = new TGeoVolume("TPC_IGR1",igro,m3);
+  TGeoVolume *igriov = new TGeoVolume("TPC_IGR2",igrio,m3);
+  TGeoVolume *igrimv = new TGeoVolume("TPC_IGR3",igrim,m3);
+  TGeoVolume *igricv = new TGeoVolume("TPC_IGR4",igric,m3);
+  //
+  // outer guard rings for IFC placement - every 10 cm
+  //
+  for(Int_t i=0; i<24; i++){
+    v5->AddNode(igrov,(i+1), new TGeoTranslation(0.,0.,(i+1)*10));
+    v5->AddNode(igrov,(i+25), new TGeoTranslation(0.,0.,-(i+1)*10));
+  }
+  //
+  // inner guard rings for IFC placement
+  //
+  for(Int_t i=0; i<9; i++){
+    v9->AddNode(igricv,(i+1), new TGeoTranslation(0.,0.,(i+1)*10));
+    v9->AddNode(igricv,(i+10), new TGeoTranslation(0.,0.,-(i+1)*10));		
+  }
+  v9->AddNode(igrimv,1,new TGeoTranslation(0.,0.,100.));
+  v9->AddNode(igrimv,2,new TGeoTranslation(0.,0.,-100.));
+  //
+  for(Int_t i=0; i<13; i++){
+    v9->AddNode(igriov,i+1, new TGeoTranslation(0.,0.,100+(i+1)*10));
+    v9->AddNode(igriov,i+14, new TGeoTranslation(0.,0.,-(100+(i+1)*10)));
+  }
   //
   // central drum 
   //
@@ -1728,7 +1780,6 @@ TGeoVolume *outplleftv = new TGeoVolume("TPC_OPLL", outplleft, m6);
 //
 //  support + holder + plug
 //
-
  
  TGeoVolumeAssembly *tpcohpl = new TGeoVolumeAssembly("TPC_OHPL"); 
  //
