@@ -1,4 +1,4 @@
-AliAnalysisTaskPP13 * AddSimpleAnalysisTaskPP(
+AliAnalysisTaskPP13 * AddTOFAnalysisTask(
 	Bool_t isMC = kFALSE,
 	TString description = "",
 	TString suff = ""
@@ -6,19 +6,13 @@ AliAnalysisTaskPP13 * AddSimpleAnalysisTaskPP(
 {
 	// Setup Analysis Selections
 	//
-	TList * selections = new TList();
 
 	AliPP13ClusterCuts cuts_pi0 = AliPP13ClusterCuts::GetClusterCuts();
-	AliPP13ClusterCuts cuts_eta = AliPP13ClusterCuts::GetClusterCuts();
-	cuts_eta.fAsymmetryCut = 0.7;
+	AliPP13SelectionWeights & data_weights_plain = AliPP13SelectionWeights::Init(AliPP13SelectionWeights::kPlain);
 
-
-	AliPP13SelectionWeights & data_weights = AliPP13SelectionWeights::Init(AliPP13SelectionWeights::kData);
-
-	selections->Add(new AliPP13SpectrumSelectionSimple("SimplePhys", "Physics Selection", cuts_pi0, &data_weights));
-	selections->Add(new AliPP13SpectrumSelectionSimple("SimpleEta", "Physics Selection for eta meson", cuts_eta, &data_weights));
-
-	delete &data_weights;
+	TList * selections = new TList();
+	selections->Add(new AliPP13TagAndProbeSelection("TagAndProbleTOF", "Cluster p_{T} Selection", cuts_pi0, &data_weights_plain));
+	delete &data_weights_plain;
 
 	// Setup the main task
 	//
