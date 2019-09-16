@@ -420,7 +420,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   config->SetmTBinning(mTkTPlot);
   config->SetkTCentralityBinning(kTCentPlot);
   if (kTCentPlot) {
-    std::vector<float> centBins;
+    std::vector<int> centBins;
     centBins.push_back(20);
     centBins.push_back(40);
     centBins.push_back(90);
@@ -463,7 +463,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   config->SetSpinningDepth(10);
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
-  config->SetUseStravinskyMethod(stravinskyPhiSpin);
+  config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin); 
+  //config->SetUseStravinskyMethod(stravinskyPhiSpin);
   config->SetMinimalBookingME(false);
   config->SetMinimalBookingSample(true);
   if (!notpp) {
