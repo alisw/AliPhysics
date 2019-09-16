@@ -32,6 +32,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
   bool eventMixing = true;  //13
   bool InvMassPairs = false;  //20
 
+
+  
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
