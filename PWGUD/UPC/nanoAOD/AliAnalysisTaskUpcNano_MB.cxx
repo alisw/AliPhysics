@@ -641,15 +641,16 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   
   fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
   fTriggers[9] = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
- 
-  fChannel = 0;
-  if(qTrack[0]*qTrack[1]<0)fSign = -1;
-  if(qTrack[0]*qTrack[1]>0)fSign = 1;
-  vRhoCandidate = vPion[0]+vPion[1];
 
   Float_t nSigmaDistMuon = TMath::Sqrt(TMath::Power(nSigmaMuon[0],2) + TMath::Power(nSigmaMuon[1],2));
+  Float_t nSigmaDistPion = TMath::Sqrt(TMath::Power(nSigmaPion[0],2) + TMath::Power(nSigmaPion[1],2));
   Float_t nSigmaDistElectron = TMath::Sqrt(TMath::Power(nSigmaElectron[0],2) + TMath::Power(nSigmaElectron[1],2));
   Float_t nSigmaDistProton = TMath::Sqrt(TMath::Power(nSigmaProton[0],2) + TMath::Power(nSigmaProton[1],2));
+  
+  
+  if(qTrack[0]*qTrack[1]<0)fSign = -1;
+  if(qTrack[0]*qTrack[1]>0)fSign = 1;
+  
 
   if(nSigmaDistProton < 4){ 
   	  fPIDsigma = nSigmaDistProton;
@@ -663,6 +664,12 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  fChannel = 1;
   	  FillTree(fTreeJPsi,vJPsiCandidate);
   	  }
+  if(nSigmaDistPion < nSigmaDistElectron){
+  	  fPIDsigma = nSigmaDistPion; 
+	  fChannel = 0;
+  	  vRhoCandidate = vPion[0]+vPion[1];
+  	  FillTree(fTreeJPsi,vRhoCandidate);
+  	  }  
   if(nSigmaDistMuon > nSigmaDistElectron){ 
   	  fPIDsigma = nSigmaDistElectron;
   	  vJPsiCandidate = vElectron[0]+vElectron[1];
