@@ -3183,8 +3183,8 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
     case 10:     //a
       fUseMCPSmearing   = 1;
       fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.020;
-      fPSigSmearingCte  = 0.030;
+      fPSigSmearing     = 0.0275;
+      fPSigSmearingCte  = 0.025;
       break;
     case 11:     //b
       fUseMCPSmearing   = 1;
@@ -3195,8 +3195,8 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
     case 12:     //c
       fUseMCPSmearing   = 1;
       fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.020;
-      fPSigSmearingCte  = 0.025;
+      fPSigSmearing     = 0.0275;
+      fPSigSmearingCte  = 0.020;
       break;
     case 13:     //d
       fUseMCPSmearing   = 1;
@@ -3872,11 +3872,11 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
       }
-      
+
       if (meson->M() > fSelectionLow && meson->M() < fSelectionHigh)
         return kTRUE;
       else
-        return kFALSE;      
+        return kFALSE;
   } else {
     if (!(meson->M() > fSelectionLow && meson->M() < fSelectionHigh))
       return kTRUE;

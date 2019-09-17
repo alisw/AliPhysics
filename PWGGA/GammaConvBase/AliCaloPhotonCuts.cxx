@@ -5747,7 +5747,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         if(fClusterType==2) energy /= FunctionNL_kSDM(energy, 0.964058, -2.46552, -0.384301);
         if(fClusterType==4){
             energy *= FunctionNL_NicoTB_100MeV_MC(energy);
-            energy /= FunctionNL_kSDM(energy, 0.991236,-3.48689,-0.192788);
+            energy /= FunctionNL_DExp(energy, 1.0159084018,1.2750123076,-5.3386138658,1.0298030020,0.1990324073,-3.2530714859,1.0000000000,1.0000000000);
         }
 
       } else if ( fCurrentMC==kPP13T17b1JJdecay || fCurrentMC==kPP13T17c1JJdecay){
@@ -5981,6 +5981,35 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= (FunctionNL_kSDM(energy, 0.94723, -3.44986, -0.483821));
           }
         } else fPeriodNameAvailable = kFALSE;
+      }
+      break;
+    // PCM-EDC based nonlinearity ******* shifting   MC
+    case 19:
+      if(isMC>0){
+        //pp 13 TeV MCs for LHC16 || LHC17 || LHC18
+        if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
+          if(fClusterType==4){
+            energy /= (FunctionNL_ExpExp(energy, 0.9872432434, 0.3665071019, -2.8842177373, 7.4181896132)/FunctionNL_ExpExp(energy, 1.0469170329, 0.2974710295, -2.4204052267, 7.2038176960));
+          }
+        }
+      }
+      break;
+    // PCM-EDC based nonlinearity ******* shifting  data and MC
+    case 20:
+      if(isMC>0){
+        //pp 13 TeV MCs for LHC16 || LHC17 || LHC18
+        if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
+          if(fClusterType==4){
+            energy /= FunctionNL_ExpExp(energy, 0.9872432434, 0.3665071019, -2.8842177373, 7.4181896132);
+          }
+        }
+      } else if (isMC == 0){
+        //pp 13 TeV LHC16 || LHC17 || LHC18
+        if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
+          if(fClusterType==4){
+            energy /= FunctionNL_ExpExp(energy, 1.0469170329, 0.2974710295, -2.4204052267, 7.2038176960);
+          }
+        }
       }
       break;
 
@@ -7102,6 +7131,16 @@ Float_t AliCaloPhotonCuts::FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Fl
 //________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionNL_PHOSOnlyMC(Float_t e, Float_t p0, Float_t p1, Float_t p2){
   return p0*(1+p1/(1.+e*e/p2/p2)) ;
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_ExpExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3){
+    // "[0] - TMath::Exp(-[1]*x+[2]) + TMath::Exp(-[3]*x)";
+    Float_t ret = ( p0 - TMath::Exp(-p1*e+p2) + TMath::Exp(-p3*e));
+    if (ret != 0.)
+      return ret;
+    else
+      return 1.;
 }
 
 
