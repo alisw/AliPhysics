@@ -1614,8 +1614,8 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig ==806){//Comparing CellQA Config from GammaConv
     cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); // INT7
   } else if (trainConfig ==807){//Non Lin Studies
-    cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); // No Nonlin
-    cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); // 55 Nonlin
+    cuts.AddCutCalo("00010113","24466000ga012200000","0163103100000010"); // No Nonlin
+    //cuts.AddCutCalo("00010113","24466510ga012200000","0163103100000010"); // 55 Nonlin
     //cuts.AddCutCalo("00010113","2446611044012200000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM
     //cuts.AddCutCalo("00010113","2446621044012200000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW
   } else if (trainConfig ==808){//PHOS Triggers
