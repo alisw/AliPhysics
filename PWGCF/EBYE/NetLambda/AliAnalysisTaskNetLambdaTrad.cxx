@@ -405,7 +405,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             
             if(TMath::Abs(eta) < 0.5)
             {
-                if(dcaV0ToVertex < 0.1 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3.0 && TMath::Abs(negpion)  <= 3.0) //Default
+                if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3.0 && TMath::Abs(negpion)  <= 3.0) //Default
                 {
                     f3fHistCentVsInvMassLambda1point0->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -419,7 +419,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         f3fHistCentVsInvMassLambda1point0MasscutRap->Fill(fCentrality,invMassLambda,V0pt);
                     }
                 }
-                if(dcaV0ToVertex < 0.1 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3.0 && TMath::Abs(pospion)  <= 3.0) //default
+                if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3.0 && TMath::Abs(pospion)  <= 3.0) //default
                 {
                     f3fHistCentVsInvMassAntiLambda1point0->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
