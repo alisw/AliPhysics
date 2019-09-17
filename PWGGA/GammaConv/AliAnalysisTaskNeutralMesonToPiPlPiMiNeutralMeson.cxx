@@ -172,6 +172,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoMCNegPionsFromNeutralMesonEta(nullptr),
   fHistoMCNegPionsFromNeutralMesonPhi(nullptr),
   fHistoMCHNMPiPlPiMiNDMPt(nullptr),
+  fHistoMCHNMPiPlPiMiNDMEta(nullptr),
+  fHistoMCHNMPiPlPiMiNDMPhi(nullptr),
   fHistoMCHNMPiPlPiMiNDMInAccPt(nullptr),
   fHistoMCHeavyAllPt(nullptr),
   fHistoMCHeavyAllEta(nullptr),
@@ -411,6 +413,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoMCNegPionsFromNeutralMesonEta(nullptr),
   fHistoMCNegPionsFromNeutralMesonPhi(nullptr),
   fHistoMCHNMPiPlPiMiNDMPt(nullptr),
+  fHistoMCHNMPiPlPiMiNDMEta(nullptr),
+  fHistoMCHNMPiPlPiMiNDMPhi(nullptr),
   fHistoMCHNMPiPlPiMiNDMInAccPt(nullptr),
   fHistoMCHeavyAllPt(nullptr),
   fHistoMCHeavyAllEta(nullptr),
@@ -1286,6 +1290,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoMCHNMPiPlPiMiNDMPt                     = new TH1F*[fnCuts];
     fHistoMCHNMPiPlPiMiNDMInAccPt                = new TH1F*[fnCuts];
     if(!fDoLightOutput){
+      fHistoMCHNMPiPlPiMiNDMEta                    = new TH1F*[fnCuts];
+      fHistoMCHNMPiPlPiMiNDMPhi                    = new TH1F*[fnCuts];
       fHistoDoubleCountTruePi0InvMassPt               = new TH2F*[fnCuts];
       fHistoDoubleCountTrueHNMInvMassPt               = new TH2F*[fnCuts];
     }
@@ -1671,6 +1677,20 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoMCHNMPiPlPiMiNDMInAccPt[iCut]->GetYaxis()->SetTitle("A #times N_{HNM}");
       fHistoMCHNMPiPlPiMiNDMInAccPt[iCut]->Sumw2();
       fMCList[iCut]->Add(fHistoMCHNMPiPlPiMiNDMInAccPt[iCut]);
+
+      if(!fDoLightOutput){
+        fHistoMCHNMPiPlPiMiNDMEta[iCut]         = new TH1F("MC_HNM_Eta","MC_HNM_Eta",200,-2,2);
+        fHistoMCHNMPiPlPiMiNDMEta[iCut]->GetXaxis()->SetTitle("#eta");
+        fHistoMCHNMPiPlPiMiNDMEta[iCut]->GetYaxis()->SetTitle("N_{HNM}");
+        fHistoMCHNMPiPlPiMiNDMEta[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCHNMPiPlPiMiNDMEta[iCut]);
+
+        fHistoMCHNMPiPlPiMiNDMPhi[iCut]         = new TH1F("MC_HNM_Phi","MC_HNM_Phi",200,0,2 * TMath::Pi());
+        fHistoMCHNMPiPlPiMiNDMPhi[iCut]->GetXaxis()->SetTitle("#phi");
+        fHistoMCHNMPiPlPiMiNDMPhi[iCut]->GetYaxis()->SetTitle("N_{HNM}");
+        fHistoMCHNMPiPlPiMiNDMPhi[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCHNMPiPlPiMiNDMPhi[iCut]);
+      }
 
       fTrueList[iCut]                           = new TList();
       fTrueList[iCut]->SetName(nameTrueRecList.Data());
@@ -4475,8 +4495,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
             }
           }
         }
-        if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson)fHistoMCHNMPiPlPiMiNDMPt[fiCut]->Fill(particle->Pt(), weighted); 	// All MC eta, omega OR eta prime in respective decay channel
-
+        if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
+          fHistoMCHNMPiPlPiMiNDMPt[fiCut]->Fill(particle->Pt(), weighted); 	// All MC eta, omega OR eta prime in respective decay channel
+          if(!fDoLightOutput){
+            fHistoMCHNMPiPlPiMiNDMEta[fiCut]->Fill(particle->Eta(),weighted);
+            fHistoMCHNMPiPlPiMiNDMPhi[fiCut]->Fill(particle->Phi(),weighted);
+          }
+        }
         if(labelNDM>-1){
           TParticle *particleNDM    = fMCEvent->Particle(labelNDM);
           if(particleNDM->GetDaughter(0)>-1 && particleNDM->GetDaughter(1)>-1){
@@ -4761,7 +4786,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
             }
           }
           if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson)fHistoMCHNMPiPlPiMiNDMPt[fiCut]->Fill(particle->Pt(), weighted); 	// All MC eta, omega OR eta prime in respective decay channel
-
+          if(!fDoLightOutput){
+            fHistoMCHNMPiPlPiMiNDMEta[fiCut]->Fill(particle->Eta(),weighted);
+            fHistoMCHNMPiPlPiMiNDMPhi[fiCut]->Fill(particle->Phi(),weighted);
+          }
           if(labelNDM>-1){
             AliAODMCParticle* particleNDM    = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelNDM));
             if(particleNDM->GetDaughterLabel(0)>-1 && particleNDM->GetDaughterLabel(1)>-1){
