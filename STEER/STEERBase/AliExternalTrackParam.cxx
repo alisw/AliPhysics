@@ -3075,8 +3075,8 @@ Double_t  AliExternalTrackParam::GetParameterAtRadius(Double_t r, Double_t bz, I
   //     no correction for material is used
   //  
   // r  - radius of interest
-  // bz - magentic field 
-  // retun values dependens on parType:
+  // bz - magnetic field
+  // return values depends on parType:
   //    parType = 0  -gx 
   //    parType = 1  -gy 
   //    parType = 2  -gz 
@@ -3089,6 +3089,10 @@ Double_t  AliExternalTrackParam::GetParameterAtRadius(Double_t r, Double_t bz, I
   //    parType = 7  - global position phi
   //    parType = 8  - global direction phi
   //    parType = 9  - direction phi- positionphi
+  //    parType =10  - local position phi - assuming ALICE TPC/TRD,TOF ideal frame
+  //    parType =11  - local sector (int)
+  //    parType =12  - radial distance to closest edge (cm)
+  //    parType =13  - delta sector (unit)
   if (parType<0) {
     parType=-1;
      return 0;
@@ -3111,6 +3115,21 @@ Double_t  AliExternalTrackParam::GetParameterAtRadius(Double_t r, Double_t bz, I
 
   if (parType==6) return TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
   if (parType==7) return TMath::ATan2(xyz[1],xyz[0]);
+  if (parType>=10) {
+    Double_t phi = TMath::ATan2(xyz[1], xyz[0]);
+    if (phi < 0) phi += TMath::TwoPi();
+    const Float_t phiSec = TMath::DegToRad() * 20.;
+    Double_t sector = phi / phiSec;
+    if (parType == 10) return (sector - int(sector) - 0.5) * phiSec;
+    if (parType == 11) return int(sector);
+    if (parType == 12 ) {
+      Double_t dSector = (sector - int(sector));
+      if (dSector > 0.5) dSector -= 1;
+      return TMath::Tan(dSector * phiSec) * r;
+    }
+    if (parType==13) return sector - int(sector);
+    if (parType==14) return sector;
+  }
   //
   // momenta parameters
   //
