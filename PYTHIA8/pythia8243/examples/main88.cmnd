@@ -1,0 +1,45 @@
+! main88.cmnd.
+! This file contains commands to be read in for a Pythia8 run.
+! Lines not beginning with a letter or digit are comments.
+
+! Number of events generated
+Main:numberOfEvents       = 1000
+
+! Shower options
+HadronLevel:all           = on
+PartonLevel:MPI           = on
+
+! Core process for merging
+Merging:Process           = pp>LEPTONS,NEUTRINOS
+
+! Maximal number of additional LO jets.
+Merging:nJetMax           = 2
+! Maximal number of additional NLO jets.
+Merging:nJetMaxNLO        = 1
+
+! Merging scale value.
+Merging:TMS               = 15
+
+! Values of (fixed) scales in the matrix element calculation.
+Merging:muFacInME         = 80.4
+Merging:muRenInME         = 91.188
+! Values of (fixed) scales for the PS lowest multiplicity process.
+Merging:muFac             = 80.4
+Merging:muRen             = 91.188
+
+! Include PDFs into the choice of histories.
+Merging:includeRedundant  = on
+
+! Switch off enforced rapidity ordering
+SpaceShower:rapidityOrder = off
+
+! Since UNLOPS is a next-to-leading order merging method, next-to-leading
+! order PDFs are necessary in the matrix element calculation. However, the
+! parton shower and multiparton interactions favour leading-order PDFs,
+! since multiparton interactions probe the incoming hadron at small momentum
+! scales. Until a NLO-merged tune becomes available, LO PDFs should be used
+! throughout the shower.
+! Example PDF files generated with CTEQ6M PDFs.
+PDF:pSet                  = LHAPDF5:cteq6m.LHpdf
+SpaceShower:alphaSvalue   = 0.118
+TimeShower:alphaSvalue    = 0.118

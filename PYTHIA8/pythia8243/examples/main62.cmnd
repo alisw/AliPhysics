@@ -1,0 +1,26 @@
+! 1) Settings used in the main program.
+Main:numberOfEvents   = 100        ! number of events to generate
+Main:timesAllowErrors = 3          ! how many aborts before run stops
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showChangedParticleData = on  ! list changed particle data
+Next:numberCount       = 0      ! print message every n events
+Next:numberShowInfo    = 0         ! print event information n times
+Next:numberShowProcess = 0         ! print process record n times
+Next:numberShowEvent   = 2        ! print event record n times
+
+! 3) MG5 input file
+Beams:frameType = 4
+Beams:LHEF = main62.lhe
+
+! 4) Off for testing purposes only
+PartonLevel:MPI = off
+PartonLevel:ISR = off
+PartonLevel:FSR = off
+
+! 5) Examples of other possible modifications.
+ParticleDecays:limitTau0 = on
+ParticleDecays:tau0Max = 10
+! Be more forgiving with momentum mismatches.
+Check:epTolErr               = 1e-2

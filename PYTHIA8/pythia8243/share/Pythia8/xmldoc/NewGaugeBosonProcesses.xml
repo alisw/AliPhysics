@@ -1,0 +1,394 @@
+<chapter name="New-Gauge-Boson Processes"> 
+ 
+<h2>New-Gauge-Boson Processes</h2> 
+ 
+This page contains the production of new <ei>Z'^0</ei> and 
+<ei>W'^+-</ei> gauge bosons, e.g. within the context of a new 
+<ei>U(1)</ei> or <ei>SU(2)</ei> gauge group, and also a 
+(rather speculative) horizontal gauge boson <ei>R^0</ei>. 
+Left-right-symmetry scenarios also contain new gauge bosons, 
+but are described 
+<aloc href="LeftRightSymmetryProcesses">separately</aloc>. 
+ 
+<h3><ei>Z'^0</ei></h3> 
+ 
+This group only contains one subprocess, with the full 
+<ei>gamma^*/Z^0/Z'^0</ei> interference structure for couplings 
+to fermion pairs. It is possible to pick only a subset, e.g, only 
+the pure <ei>Z'^0</ei> piece. No higher-order processes are 
+available explicitly, but the ISR showers contain automatic 
+matching to the <ei>Z'^0</ei> + 1 jet matrix elements, as for 
+the corresponding &nbsp <ei>gamma^*/Z^0</ei> process. 
+ 
+<flag name="NewGaugeBoson:ffbar2gmZZprime" default="off"> 
+Scattering <ei>f fbar &rarr;Z'^0</ei>. 
+Code 3001. 
+</flag> 
+ 
+<modepick name="Zprime:gmZmode" default="0" min="0" max="6"> 
+Choice of full <ei>gamma^*/Z^0/Z'^0</ei> structure or not in 
+the above process. Note that, with the <ei>Z'^0</ei> part switched 
+off, this process is reduced to what already exists among 
+<aloc href="ElectroweakProcesses">electroweak processes</aloc>, 
+so those options are here only for crosschecks. 
+<option value="0">full <ei>gamma^*/Z^0/Z'^0</ei> structure, 
+with interference included.</option> 
+<option value="1">only pure <ei>gamma^*</ei> contribution.</option> 
+<option value="2">only pure <ei>Z^0</ei> contribution.</option> 
+<option value="3">only pure <ei>Z'^0</ei> contribution.</option> 
+<option value="4">only the <ei>gamma^*/Z^0</ei> contribution, 
+including interference.</option> 
+<option value="5">only the <ei>gamma^*/Z'^0</ei> contribution, 
+including interference.</option> 
+<option value="6">only the <ei>Z^0/Z'^0</ei> contribution, 
+including interference.</option> 
+<note>Note</note>: irrespective of the option used, the particle produced 
+will always be assigned code 32 for <ei>Z'^0</ei>, and open decay channels 
+is purely dictated by what is set for the <ei>Z'^0</ei>. 
+</modepick> 
+ 
+<p/> 
+The couplings of the <ei>Z'^0</ei> to quarks and leptons can 
+either be assumed universal, i.e. generation-independent, or not. 
+In the former case eight numbers parametrize the vector and axial 
+couplings of down-type quarks, up-type quarks, leptons and neutrinos, 
+respectively. Depending on your assumed neutrino nature you may 
+want to restrict your freedom in that sector, but no limitations 
+are enforced by the program. The default corresponds to the same 
+couplings as that of the Standard Model <ei>Z^0</ei>, with axial 
+couplings <ei>a_f = +-1</ei> and vector couplings 
+<ei>v_f = a_f - 4 e_f sin^2(theta_W)</ei>, with 
+<ei>sin^2(theta_W) = 0.23</ei>. Without universality 
+the same eight numbers have to be set separately also for the 
+second and the third generation. The choice of fixed axial and 
+vector couplings implies a resonance width that increases linearly 
+with the <ei>Z'^0</ei> mass. 
+ 
+<p/> 
+By a suitable choice of the parameters, it is possible to simulate 
+just about any imaginable <ei>Z'^0</ei> scenario, with full 
+interference effects in cross sections and decay angular 
+distributions and generation-dependent couplings; the default values 
+should mainly be viewed as placeholders. The conversion 
+from the coupling conventions in a set of different <ei>Z'^0</ei> 
+models in the literature to those used in PYTHIA is described in 
+<ref>Cio08</ref>. 
+ 
+<flag name="Zprime:universality" default="on"> 
+If on then you need only set the first-generation couplings 
+below, and these are automatically also used for the second and 
+third generation. If off, then couplings can be chosen separately 
+for each generation. 
+</flag> 
+ 
+<p/> 
+Here are the couplings always valid for the first generation, 
+and normally also for the second and third by trivial analogy: 
+ 
+<parm name="Zprime:vd" default="-0.693"> 
+vector coupling of <ei>d</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:ad" default="-1."> 
+axial coupling of <ei>d</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:vu" default="0.387"> 
+vector coupling of <ei>u</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:au" default="1."> 
+axial coupling of <ei>u</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:ve" default="-0.08"> 
+vector coupling of <ei>e</ei> leptons. 
+</parm> 
+ 
+<parm name="Zprime:ae" default="-1."> 
+axial coupling of <ei>e</ei> leptons. 
+</parm> 
+ 
+<parm name="Zprime:vnue" default="1."> 
+vector coupling of <ei>nu_e</ei> neutrinos. 
+</parm> 
+ 
+<parm name="Zprime:anue" default="1."> 
+axial coupling of <ei>nu_e</ei> neutrinos. 
+</parm> 
+ 
+<p/> 
+Here are the further couplings that are specific for 
+a scenario with <code>Zprime:universality</code> switched off: 
+ 
+<parm name="Zprime:vs" default="-0.693"> 
+vector coupling of <ei>s</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:as" default="-1."> 
+axial coupling of <ei>s</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:vc" default="0.387"> 
+vector coupling of <ei>c</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:ac" default="1."> 
+axial coupling of <ei>c</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:vmu" default="-0.08"> 
+vector coupling of <ei>mu</ei> leptons. 
+</parm> 
+ 
+<parm name="Zprime:amu" default="-1."> 
+axial coupling of <ei>mu</ei> leptons. 
+</parm> 
+ 
+<parm name="Zprime:vnumu" default="1."> 
+vector coupling of <ei>nu_mu</ei> neutrinos. 
+</parm> 
+ 
+<parm name="Zprime:anumu" default="1."> 
+axial coupling of <ei>nu_mu</ei> neutrinos. 
+</parm> 
+ 
+<parm name="Zprime:vb" default="-0.693"> 
+vector coupling of <ei>b</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:ab" default="-1."> 
+axial coupling of <ei>b</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:vt" default="0.387"> 
+vector coupling of <ei>t</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:at" default="1."> 
+axial coupling of <ei>t</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:vtau" default="-0.08"> 
+vector coupling of <ei>tau</ei> leptons. 
+</parm> 
+ 
+<parm name="Zprime:atau" default="-1."> 
+axial coupling of <ei>tau</ei> leptons. 
+</parm> 
+ 
+<parm name="Zprime:vnutau" default="1."> 
+vector coupling of <ei>nu_tau</ei> neutrinos. 
+</parm> 
+ 
+<parm name="Zprime:anutau" default="1."> 
+axial coupling of <ei>nu_tau</ei> neutrinos. 
+</parm> 
+ 
+<p/> 
+The coupling to the decay channel <ei>Z'^0 &rarr; W^+ W^-</ei> is 
+more model-dependent. By default it is therefore off, but can be 
+switched on as follows. 
+ 
+<parm name="Zprime:coup2WW" default="0." min="0."> 
+the coupling <ei>Z'^0 &rarr; W^+ W^-</ei> is taken to be this number 
+times <ei>m_W^2 / m_Z'^2</ei> times the <ei>Z^0 &rarr; W^+ W^-</ei> 
+coupling. Thus a unit value corresponds to the 
+<ei>Z^0 &rarr; W^+ W^-</ei> coupling, scaled down by a factor 
+<ei>m_W^2 / m_Z'^2</ei>, and gives a <ei>Z'^0</ei> partial 
+width into this channel that again increases linearly. If you 
+cancel this behaviour, by letting <code>Zprime:coup2WW</code> be 
+proportional to <ei>m_Z'^2 / m_W^2</ei>, you instead obtain a 
+partial width that goes like the fifth power of the <ei>Z'^0</ei> 
+mass. These two extremes correspond to the "extended gauge model" 
+and the "reference model", respectively, of <ref>Alt89</ref>. 
+Note that this channel only includes the pure <ei>Z'</ei> part, 
+while <ei>f fbar &rarr; gamma^*/Z^*0 &rarr; W^+ W^-</ei> is available 
+as a separate electroweak process. 
+</parm> 
+ 
+Furthermore, we have left some amount of 
+freedom in the choice of decay angular correlations in this 
+channel, but obviously alternative shapes could be imagined. 
+ 
+<parm name="Zprime:anglesWW" default="0." min="0." max="1."> 
+in the decay chain <ei>Z'^0 &rarr; W^+ W^- &rarr;f_1 fbar_2 f_3 fbar_4</ei> 
+the decay angular distributions is taken to be a mixture of two 
+possible shapes. This parameter gives the fraction that is distributed 
+as in Higgs <ei>h^0 &rarr; W^+ W^-</ei> (longitudinal bosons), 
+with the remainder (by default all) is taken to be the same as for 
+<ei>Z^0 &rarr; W^+ W^-</ei> (a mixture of transverse and longitudinal 
+bosons). 
+</parm> 
+ 
+<p/> 
+A massive <ei>Z'^0</ei> is also likely to decay into Higgs bosons 
+and potentially into other now unknown particles. Such possibilities 
+clearly are quite model-dependent, and have not been included 
+for now. 
+ 
+<p/> 
+Finally, to allow the exploration of more BSM physics scenarios, 
+we include the possibility of the <ei>Z'^0</ei> (and hence the 
+<ei>gamma</ei> and <ei>Z^0</ei>) coupling to a fourth generation of fermions. 
+This provides redundancy with and extensions beyond those processes 
+implemented as 
+<aloc href="Fourth-Generation Processes">fourth-generation processes</aloc>. 
+By default, the decay channels for the fourth-generation and not included. 
+They are enabled using: 
+<flag name="Zprime:coup2gen4" default="off"> 
+<ei> Z'^0 </ei> couples to 4th generation fermions. 
+</flag> 
+ 
+<p/> 
+Here are the further couplings that are specific for 
+a scenario with <code>Zprime:universality</code> switched off: 
+ 
+<parm name="Zprime:vbPrime" default="-0.693"> 
+vector coupling of <ei>b'</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:abPrime" default="-1."> 
+axial coupling of <ei>b'</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:vtPrime" default="0.387"> 
+vector coupling of <ei>t'</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:atPrime" default="1."> 
+axial coupling of <ei>t'</ei> quarks. 
+</parm> 
+ 
+<parm name="Zprime:vtauPrime" default="-0.08"> 
+vector coupling of <ei>tau'</ei> leptons. 
+</parm> 
+ 
+<parm name="Zprime:atauPrime" default="-1."> 
+axial coupling of <ei>tau'</ei> leptons. 
+</parm> 
+ 
+<parm name="Zprime:vnutauPrime" default="1."> 
+vector coupling of <ei>nu_tau'</ei> neutrinos. 
+</parm> 
+ 
+<parm name="Zprime:anutauPrime" default="1."> 
+axial coupling of <ei>nu_tau'</ei> neutrinos. 
+</parm> 
+ 
+ 
+<h3><ei>W'^+-</ei></h3> 
+ 
+The <ei>W'^+-</ei> implementation is less ambitious than the 
+<ei>Z'^0</ei>. Specifically, while indirect detection of a 
+<ei>Z'^0</ei> through its interference contribution is 
+a possible discovery channel in lepton colliders, there is no 
+equally compelling case for <ei>W^+-/W'^+-</ei> interference 
+effects being of importance for discovery, and such interference 
+has therefore not been implemented for now. Related to this, a 
+<ei>Z'^0</ei> could appear on its own in a new <ei>U(1)</ei> group, 
+while <ei>W'^+-</ei> would have to sit in a <ei>SU(2)</ei> group 
+and thus have a <ei>Z'^0</ei> partner that is likely to be found 
+first. Only one process is implemented but, like for the 
+<ei>W^+-</ei>, the ISR showers contain automatic matching to the 
+<ei>W'^+-</ei> + 1 jet matrix elements. 
+ 
+<flag name="NewGaugeBoson:ffbar2Wprime" default="off"> 
+Scattering <ei>f fbar' &rarr; W'^+-</ei>. 
+Code 3021. 
+</flag> 
+ 
+<p/> 
+The couplings of the <ei>W'^+-</ei> are here assumed universal, 
+i.e. the same for all generations. One may set vector and axial 
+couplings freely, separately for the <ei>q qbar'</ei> and the 
+<ei>l nu_l</ei> decay channels. The defaults correspond to the 
+<ei>V - A</ei> structure and normalization of the Standard Model 
+<ei>W^+-</ei>, but can be changed to simulate a wide selection 
+of models. One limitation is that, for simplicity, the same 
+Cabibbo--Kobayashi--Maskawa quark mixing matrix is assumed as for 
+the standard <ei>W^+-</ei>. Depending on your assumed neutrino 
+nature you may want to restrict your freedom in the lepton sector, 
+but no limitations are enforced by the program. 
+ 
+<parm name="Wprime:vq" default="1."> 
+vector coupling of quarks. 
+</parm> 
+ 
+<parm name="Wprime:aq" default="-1."> 
+axial coupling of quarks. 
+</parm> 
+ 
+<parm name="Wprime:vl" default="1."> 
+vector coupling of leptons. 
+</parm> 
+ 
+<parm name="Wprime:al" default="-1."> 
+axial coupling of leptons. 
+</parm> 
+ 
+<p/> 
+The coupling to the decay channel <ei>W'^+- &rarr; W^+- Z^0</ei> is 
+more model-dependent, like for <ei>Z'^0 &rarr; W^+ W^-</ei> described 
+above. By default it is therefore off, but can be 
+switched on as follows. Furthermore, we have left some amount of 
+freedom in the choice of decay angular correlations in this 
+channel, but obviously alternative shapes could be imagined. 
+ 
+<parm name="Wprime:coup2WZ" default="0." min="0."> 
+the coupling <ei>W'^0 &rarr; W^+- Z^0</ei> is taken to be this number 
+times <ei>m_W^2 / m_W'^2</ei> times the <ei>W^+- &rarr; W^+- Z^0</ei> 
+coupling. Thus a unit value corresponds to the 
+<ei>W^+- &rarr; W^+- Z^0</ei> coupling, scaled down by a factor 
+<ei>m_W^2 / m_W'^2</ei>, and gives a <ei>W'^+-</ei> partial 
+width into this channel that increases linearly with the 
+<ei>W'^+-</ei> mass. If you cancel this behaviour, by letting 
+<code>Wprime:coup2WZ</code> be proportional to <ei>m_W'^2 / m_W^2</ei>, 
+you instead obtain a partial width that goes like the fifth power 
+of the <ei>W'^+-</ei> mass. These two extremes correspond to the 
+"extended gauge model" and the "reference model", respectively, 
+of <ref>Alt89</ref>. 
+</parm> 
+ 
+<parm name="Wprime:anglesWZ" default="0." min="0." max="1."> 
+in the decay chain <ei>W'^+- &rarr; W^+- Z^0 &rarr;f_1 fbar_2 f_3 fbar_4</ei> 
+the decay angular distributions is taken to be a mixture of two 
+possible shapes. This parameter gives the fraction that is distributed 
+as in Higgs <ei>H^+- &rarr; W^+- Z^0</ei> (longitudinal bosons), 
+with the remainder (by default all) is taken to be the same as for 
+<ei>W^+- &rarr; W^+- Z^0</ei> (a mixture of transverse and longitudinal 
+bosons). 
+</parm> 
+ 
+<p/> 
+A massive <ei>W'^+-</ei> is also likely to decay into Higgs bosons 
+and potentially into other now unknown particles. Such possibilities 
+clearly are quite model-dependent, and have not been included 
+for now. 
+ 
+<h3><ei>R^0</ei></h3> 
+ 
+The <ei>R^0</ei> boson (particle code 41) represents one possible 
+scenario for a horizontal gauge boson, i.e. a gauge boson 
+that couples between the generations, inducing processes like 
+<ei>s dbar &rarr; R^0 &rarr; mu^- e^+</ei>. Experimental limits on 
+flavour-changing neutral currents forces such a boson to be fairly 
+heavy. In spite of being neutral the antiparticle is distinct from 
+the particle: one carries a net positive generation number and 
+the other a negative one. This particular model has no new 
+parameters beyond the <ei>R^0</ei> mass. Decays are assumed isotropic. 
+For further details see <ref>Ben85</ref>. 
+ 
+<flag name="NewGaugeBoson:ffbar2R0" default="off"> 
+Scattering <ei>f_1 fbar_2 &rarr; R^0 &rarr; f_3 fbar_4</ei>, where 
+<ei>f_1</ei> and <ei>fbar_2</ei> are separated by <ei>+-</ei> one 
+generation and similarly for <ei>f_3</ei> and <ei>fbar_4</ei>. 
+Thus possible final states are e.g. <ei>d sbar</ei>, <ei>u cbar</ei> 
+<ei>s bbar</ei>, <ei>c tbar</ei>, <ei>e- mu+</ei> and 
+<ei>mu- tau+</ei>. 
+Code 3041. 
+</flag> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

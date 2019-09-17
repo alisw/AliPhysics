@@ -1,0 +1,232 @@
+<html>
+<head>
+<title>Fourth-Generation Processes</title>
+<link rel="stylesheet" type="text/css" href="pythia.css"/>
+<link rel="shortcut icon" href="pythia32.gif"/>
+</head>
+<body>
+ 
+<h2>Fourth-Generation Processes</h2> 
+<ol id="toc">
+  <li><a href="#section0">Production processes</a></li>
+  <li><a href="#section1">Parameters</a></li>
+</ol>
+
+ 
+A fourth generation can be accommodated within the Standard Model, 
+without the introduction of any new concepts. Many experimental 
+constraints exist, but it has not been fully excluded. Therefore 
+we offer a simple implementation, along the lines of the top. 
+It could also be useful as a template for studies of other 
+new particles with similar characteristics. 
+ 
+<p/> 
+The fourth generation are given names as in the third, but with a prime, 
+i.e. <i>b'</i> with PDG code 7, <i>t'</i> with code 8, 
+<i>tau'</i> with code 17, and <i>nu'_tau</i> with code 18. 
+Most important for you is to assign a mass hierarchy, to decide which 
+fermions can decay into which. The current implementation assumes that 
+mass splittings are big enough that fourth-generation fermions can 
+decay to third-generation ones by the emission of an on-shell <i>W</i>. 
+To this end, the standard three-generation CKM mixing matrix has been 
+extended to include a fourth generation, see below. Since no mixing has 
+been implemented in the neutrino sector it would be assumed that the 
+lighter of <i>tau'</i> and <i>nu'_tau</i> is stable. No decay modes 
+have been implemented that go beyond the Standard Model, so 
+modifications would be needed if e.g. also SUSY is included in the game. 
+ 
+<a name="section0"></a> 
+<h3>Production processes</h3> 
+ 
+<h4>1) <i>b'</i> processes</h4> 
+ 
+Different ways to produce <i>b'</i> quarks, singly or in pairs. 
+For a <i>b' t'</i> pair see section 3 below. 
+ 
+<a name="anchor1"></a>
+<p/><code>flag&nbsp; </code><strong> FourthBottom:all &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of <i>b'</i> production. 
+Also includes the process <i>f fbar' &rarr; t' b'bar</i> in section 3 below. 
+   
+ 
+<a name="anchor2"></a>
+<p/><code>flag&nbsp; </code><strong> FourthBottom:gg2bPrimebPrimebar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>g g &rarr; b' b'bar</i>. 
+Code 801. 
+   
+ 
+<a name="anchor3"></a>
+<p/><code>flag&nbsp; </code><strong> FourthBottom:qqbar2bPrimebPrimebar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; b' b'bar</i> by gluon exchange. 
+Code 802. 
+   
+ 
+<a name="anchor4"></a>
+<p/><code>flag&nbsp; </code><strong> FourthBottom:qq2bPrimeq(t:W) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q q' &rarr; b' q''</i> by <i>t</i>-channel exchange 
+of a <i>W^+-</i> boson. 
+Code 803. 
+   
+ 
+<a name="anchor5"></a>
+<p/><code>flag&nbsp; </code><strong> FourthBottom:ffbar2bPrimebPrimebar(s:gmZ) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar &rarr; b' b'bar</i> by <i>s</i>-channel exchange 
+of a <i>gamma^*/Z^0</i> boson. 
+Code 804. 
+   
+ 
+<a name="anchor6"></a>
+<p/><code>flag&nbsp; </code><strong> FourthBottom:ffbar2bPrimeqbar(s:W) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar' &rarr; b' qbar''</i> by <i>s</i>-channel exchange 
+of a <i>W^+-</i> boson. Here <i>q''</i> is either <i>u</i> or 
+<i>c</i>. 
+Code 805. 
+   
+ 
+<a name="anchor7"></a>
+<p/><code>flag&nbsp; </code><strong> FourthBottom:ffbar2bPrimetbar(s:W) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar' &rarr; b' tbar</i> by <i>s</i>-channel exchange 
+of a <i>W^+-</i> boson. 
+Code 806. 
+   
+ 
+<h4>2) <i>t'</i> processes</h4> 
+ 
+Different ways to produce <i>t'</i> quarks, singly or in pairs. 
+For a <i>b' t'</i> pair see section 3 below. 
+ 
+<a name="anchor8"></a>
+<p/><code>flag&nbsp; </code><strong> FourthTop:all &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of <i>t'</i> production. 
+Also includes the process <i>f fbar' &rarr; t' b'bar</i> in section 3 below. 
+   
+ 
+<a name="anchor9"></a>
+<p/><code>flag&nbsp; </code><strong> FourthTop:gg2tPrimetPrimebar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>g g &rarr; t' t'bar</i>. 
+Code 821. 
+   
+ 
+<a name="anchor10"></a>
+<p/><code>flag&nbsp; </code><strong> FourthTop:qqbar2tPrimetPrimebar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; t' t'bar</i> by gluon exchange. 
+Code 822. 
+   
+ 
+<a name="anchor11"></a>
+<p/><code>flag&nbsp; </code><strong> FourthTop:qq2tPrimeq(t:W) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q q' &rarr; t' q''</i> by <i>t</i>-channel exchange 
+of a <i>W^+-</i> boson. 
+Code 823. 
+   
+ 
+<a name="anchor12"></a>
+<p/><code>flag&nbsp; </code><strong> FourthTop:ffbar2tPrimetPrimebar(s:gmZ) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar &rarr; t' t'bar</i> by <i>s</i>-channel exchange 
+of a <i>gamma^*/Z^0</i> boson. 
+Code 824. 
+   
+ 
+<a name="anchor13"></a>
+<p/><code>flag&nbsp; </code><strong> FourthTop:ffbar2tPrimeqbar(s:W) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar' &rarr; t' qbar''</i> by <i>s</i>-channel exchange 
+of a <i>W^+-</i> boson. 
+Code 825. 
+   
+ 
+<h4>3) Pair-processes with different flavours</h4> 
+ 
+Different ways to produce two different fourth-generation fermions. 
+ 
+<a name="anchor14"></a>
+<p/><code>flag&nbsp; </code><strong> FourthPair:ffbar2tPrimebPrimebar(s:W) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar' &rarr; t' b'bar</i> by <i>s</i>-channel exchange 
+of a <i>W^+-</i> boson. 
+Code 841. 
+   
+ 
+<a name="anchor15"></a>
+<p/><code>flag&nbsp; </code><strong> FourthPair:ffbar2tauPrimenuPrimebar(s:W) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar' &rarr; tau' nu'_taubar</i> by <i>s</i>-channel 
+exchange of a <i>W^+-</i> boson. 
+Code 842. 
+   
+ 
+<p/> 
+Missing in this list is scatterings <i>q q' &rarr; t' b'</i> by 
+<i>t</i>-channel exchange of a <i>W^+-</i> boson, since currently 
+the matrix element for such processes have not been implemented for 
+two massive particles in the final state. Since this process would 
+involve two CKM-suppressed vertices it ought to be small. 
+ 
+<a name="section1"></a> 
+<h3>Parameters</h3> 
+ 
+The Cabibbo-Kobayashi-Maskawa matrix is extended by seven further values. 
+So as not to mess up the Standard Model, the normal 3 * 3 matrix is 
+kept unitary, and so the new off-diagonal elements lead to a slight 
+breaking of this. For exploratory studies this should be good enough; 
+more detailed 4 * 4 tunes to data would only make sense the day there 
+are evidence for the existence of a fourth generation. 
+ 
+<a name="anchor16"></a>
+<p/><code>parm&nbsp; </code><strong> FourthGeneration:VubPrime &nbsp;</strong> 
+ (<code>default = <strong>0.001</strong></code>; <code>minimum = 0.0</code>; <code>maximum = 1.0</code>)<br/>
+The <i>V_ub'</i> matrix element in the 4 * 4 CKM matrix. 
+   
+ 
+<a name="anchor17"></a>
+<p/><code>parm&nbsp; </code><strong> FourthGeneration:VcbPrime &nbsp;</strong> 
+ (<code>default = <strong>0.01</strong></code>; <code>minimum = 0.0</code>; <code>maximum = 1.0</code>)<br/>
+The <i>V_cb'</i> matrix element in the 4 * 4 CKM matrix. 
+   
+ 
+<a name="anchor18"></a>
+<p/><code>parm&nbsp; </code><strong> FourthGeneration:VtbPrime &nbsp;</strong> 
+ (<code>default = <strong>0.1</strong></code>; <code>minimum = 0.0</code>; <code>maximum = 1.0</code>)<br/>
+The <i>V_tb'</i> matrix element in the 4 * 4 CKM matrix. 
+   
+ 
+<a name="anchor19"></a>
+<p/><code>parm&nbsp; </code><strong> FourthGeneration:VtPrimed &nbsp;</strong> 
+ (<code>default = <strong>0.001</strong></code>; <code>minimum = 0.0</code>; <code>maximum = 1.0</code>)<br/>
+The <i>V_t'd</i> matrix element in the 4 * 4 CKM matrix. 
+   
+ 
+<a name="anchor20"></a>
+<p/><code>parm&nbsp; </code><strong> FourthGeneration:VtPrimes &nbsp;</strong> 
+ (<code>default = <strong>0.01</strong></code>; <code>minimum = 0.0</code>; <code>maximum = 1.0</code>)<br/>
+The <i>V_t's</i> matrix element in the 4 * 4 CKM matrix. 
+   
+ 
+<a name="anchor21"></a>
+<p/><code>parm&nbsp; </code><strong> FourthGeneration:VtPrimeb &nbsp;</strong> 
+ (<code>default = <strong>0.1</strong></code>; <code>minimum = 0.0</code>; <code>maximum = 1.0</code>)<br/>
+The <i>V_t'b</i> matrix element in the 4 * 4 CKM matrix. 
+   
+ 
+<a name="anchor22"></a>
+<p/><code>parm&nbsp; </code><strong> FourthGeneration:VtPrimebPrime &nbsp;</strong> 
+ (<code>default = <strong>0.99</strong></code>; <code>minimum = 0.0</code>; <code>maximum = 1.0</code>)<br/>
+The <i>V_t'b'</i> matrix element in the 4 * 4 CKM matrix. 
+   
+ 
+</body>
+</html>
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

@@ -1,0 +1,83 @@
+<html>
+<head>
+<title>Top Processes</title>
+<link rel="stylesheet" type="text/css" href="pythia.css"/>
+<link rel="shortcut icon" href="pythia32.gif"/>
+</head>
+<body>
+ 
+<h2>Top Processes</h2> 
+ 
+Different ways to produce top quarks, singly or in pairs. 
+ 
+<a name="anchor1"></a>
+<p/><code>flag&nbsp; </code><strong> Top:all &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of top production. 
+   
+ 
+<a name="anchor2"></a>
+<p/><code>flag&nbsp; </code><strong> Top:gg2ttbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>g g &rarr; t tbar</i>. 
+Code 601. 
+   
+ 
+<a name="anchor3"></a>
+<p/><code>flag&nbsp; </code><strong> Top:qqbar2ttbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; t tbar</i> by gluon exchange. 
+Code 602. 
+   
+ 
+<a name="anchor4"></a>
+<p/><code>flag&nbsp; </code><strong> Top:qq2tq(t:W) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q q' &rarr; t q''</i> by <i>t</i>-channel exchange 
+of a <i>W^+-</i> boson. 
+Code 603. 
+   
+ 
+<a name="anchor5"></a>
+<p/><code>flag&nbsp; </code><strong> Top:ffbar2ttbar(s:gmZ) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar &rarr; t tbar</i> by <i>s</i>-channel exchange 
+of a <i>gamma^*/Z^0</i> boson. 
+Code 604. 
+   
+ 
+<a name="anchor6"></a>
+<p/><code>flag&nbsp; </code><strong> Top:ffbar2tqbar(s:W) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar' &rarr; t q''</i> by <i>s</i>-channel exchange 
+of a <i>W^+-</i> boson. 
+Code 605. 
+   
+ 
+<a name="anchor7"></a>
+<p/><code>flag&nbsp; </code><strong> Top:gmgm2ttbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>gamma gamma &rarr; t tbar</i>. 
+Code 606. 
+   
+ 
+<a name="anchor8"></a>
+<p/><code>flag&nbsp; </code><strong> Top:ggm2ttbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>g gamma &rarr; t tbar</i>. 
+Code 607 when <i>g gamma &rarr; t tbar</i> and 617 
+when <i>gamma g &rarr; t tbar</i>. 
+   
+ 
+<p/> 
+By default top always decays to a <i>W</i> and a down-type quark. 
+It is possible to switch on the <i>t &rarr; H+ b</i> decay mode. 
+Note that its partial width is calculated using the <i>tan(beta)</i> 
+value stored in <code>HiggsHchg:tanBeta</code>, so that it can be used 
+without having to read in a SUSY parameter file. For the <i>H+</i> to 
+decay also <code>Higgs:useBSM = on</code> is necessary. 
+ 
+</body>
+</html>
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

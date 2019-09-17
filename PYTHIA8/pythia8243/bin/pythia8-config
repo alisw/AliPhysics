@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+# pythia8-config is a part of the PYTHIA event generator.
+# Copyright (C) 2018 Torbjorn Sjostrand.
+# PYTHIA is licenced under the GNU GPL v2 or later, see COPYING for details.
+# Please respect the MCnet Guidelines, see GUIDELINES for details.
+# Author: Philip Ilten, October 2014 - November 2017.
+#
+# Configuration tool for the PYTHIA event generator library. Eaxmple usage is:
+#     ./pythia8-config --cxxflags --ldflags --hepmc2
+# For help please use:
+#     ./pythia8-config --help
+# which will print a full list of options.
+
+################################################################################
+# VARIABLES: Global variables not defined via command line arguments.
+#     CFG_FILE: The Makefile configuration file.
+#     USAGE:    Text printed when the --help option is passed.
+################################################################################
+CFG_FILE=/usr/share/Pythia8/examples/Makefile.inc
+read -d "" USAGE << "BLOCKTEXT"
+Usage: ./pythia8-config [OPTIONS]
+
+Configuration tool for the PYTHIA event generator library. The available 
+options are defined below. All available options (without arguments) for the 
+PYTHIA configuration script are also valid for this script. See 
+"./configuration --help" in the top PYTHIA 8 directory for more details. 
+
+Available options.
+--help       : Print this help message (also -h, --h, and -help).
+--config     : Print the argument(s) used to configure Pythia.
+--prefix     : Installation prefix (cf. autoconf). Note that if the installation
+               is spread over multiple directories, the binary directory with
+               the trailing "bin" removed is then returned.
+--bindir     : PYTHIA binary directory (equivalent to --prefix-bin).
+--libdir     : PYTHIA library directory (equivalent to --prefix-lib).
+--includedir : PYTHIA header directory (equivalent to --prefix-include).
+--datadir    : PYTHIA share directory (equivalent to --prefix-share).
+--xmldoc     : PYTHIA xmldoc directory.
+--cxxflags   : Returns the PYTHIA -I flag string needed for compilation.
+--cflags     : Equivalent to --cxxflags.
+--ldflags    : Returns the PYTHIA -L/-l flag string needed for compilation.
+--libs       : Equivalent to --ldflags.
+--PACKAGE    : Provides the -I/-L/-l flags needed to link with an external
+               PACKAGE from the following list.
+  fastjet3 : Jet building of jets using the FastJet package, version 3.
+  hepmc    : Deprecated flag kept for compatibility (equivalent to --hepmc2).
+  hepmc2   : Export PYTHIA events to the HEPMC format, version 2.
+  hepmc3   : Export PYTHIA events to the HEPMC format, version 3.
+  lhapdf5  : Support the use of external PDF sets via LHAPDF, version 5.
+  lhapdf6  : Support the use of external PDF sets via LHAPDF, version 6.
+  root     : Use ROOT trees and histograms with PYTHIA.
+  boost    : Needed when either GZIP or LHAPDF6 is enabled.
+  gzip     : Enable reading of GZIPPED files using BOOST and the libz library.
+BLOCKTEXT
+
+################################################################################
+# MAIN: The main execution of the script.
+################################################################################
+
+# Check if help requested.
+for VAR in "$@"; do
+    if [ "$VAR" = "-h" ] || [ "$VAR" = "--h" ] || [ "$VAR" = "-help" ] \
+	|| [ "$VAR" = "--help" ]; then echo "$USAGE"; exit; fi; done
+
+# Read the configuration (use local version first, then installed version).
+PREFIX=$(cd "$(dirname "${BASH_SOURCE[0]}")"; cd ../; pwd)
+if [ -f $PREFIX/Makefile.inc ]; then CFG_FILE="$PREFIX/Makefile.inc"
+elif [ ! -f $CFG_FILE ]; then
+    echo "Error: cannot find valid configuration for Pythia 8"; exit; fi
+while read LINE; do
+    if [[ $LINE == \#\ --* ]]; then CONFIG+=${LINE#?}; fi
+    if [[ $LINE != *=* ]]; then continue; fi
+    VAR=${LINE%%=*}; VAL=${LINE#*=};
+    eval $VAR=\"$VAL\"; done < $CFG_FILE
+
+# Check if configuration is requested.
+for VAR in "$@"; do
+    if [ "$VAR" = "--config" ]; then echo "./configure$CONFIG"; exit; fi; done
+
+# Change the prefixes if local version.
+if [ "$CFG_FILE" = "$PREFIX/Makefile.inc" ]; then
+    PREFIX_BIN="$PREFIX/bin"; PREFIX_INCLUDE="$PREFIX/include"
+    PREFIX_LIB="$PREFIX/lib"; PREFIX_SHARE="$PREFIX/share/Pythia8"; fi
+
+# Parse the arguments.
+for VAR in "$@"; do
+    if [[ $VAR != --* ]]; then continue; fi
+    VAR=$(echo ${VAR#--} | awk '{print toupper($0)}'); VAR=${VAR//"-"/"_"}
+
+    # Handle the equivalent arguments.
+    if   [ "$VAR" = "BINDIR" ];     then VAR="PREFIX_BIN"
+    elif [ "$VAR" = "LIBDIR" ];     then VAR="PREFIX_LIB"
+    elif [ "$VAR" = "INCLUDEDIR" ]; then VAR="PREFIX_INCLUDE"
+    elif [ "$VAR" = "DATADIR" ];    then VAR="PREFIX_SHARE"
+    elif [ "$VAR" = "XMLDOC" ];     then VAR="PREFIX_SHARE/xmldoc"
+    elif [ "$VAR" = "LIBS" ];       then VAR="LDFLAGS"
+    elif [ "$VAR" = "CFLAGS" ];     then VAR="CXXFLAGS"
+    elif [ "$VAR" = "HEPMC" ];      then VAR="HEPMC2"; fi
+    
+    # All "--with" arguments.
+    if [[ $VAR = WITH_* ]]; then
+	VAR=${VAR#WITH_}; eval VAL=\$${VAR}_USE
+	if [ -z "$VAL" ]; then eval OUT=\"$OUT \$$VAR\" 
+	else OUT="$OUT $VAL"; fi;
+    # All "--prefix" arguments.
+    elif [[ $VAR = PREFIX* ]]; then eval OUT=\"$OUT \$$VAR\"
+    # Flag arguments.
+    elif [ "$VAR" = "CXXFLAGS" ]; then OUT="$OUT -I$PREFIX_INCLUDE"
+    elif [ "$VAR" = "LDFLAGS" ]; then 
+	OUT="$OUT -L$PREFIX_LIB -lpythia8"
+	if [ "$GZIP_USE" = "true" ]; then 
+	    OUT="$OUT -L$BOOST_LIB -lboost_iostreams -L$GZIP_LIB -lz"; fi
+    # Package arguments.
+    elif [ "$VAR" = "FASTJET3" ]; then
+	OUT="$OUT -I$FASTJET3_INCLUDE -L$FASTJET3_LIB -lfastjet"
+    elif [ "$VAR" = "HEPMC2" ]; then
+	OUT="$OUT -I$HEPMC2_INCLUDE -L$HEPMC2_LIB -lHepMC"
+    elif [ "$VAR" = "HEPMC3" ]; then
+	OUT="$OUT -I$HEPMC3_INCLUDE -L$HEPMC3_LIB -lHepMC"
+    elif [ "$VAR" = "LHAPDF5" ]; then
+	OUT="$OUT -I$LHAPDF5_INCLUDE -L$LHAPDF5_LIB -lLHAPDF -lgfortran"
+    elif [ "$VAR" = "LHAPDF6" ]; then
+	OUT="$OUT -I$LHAPDF6_INCLUDE -L$LHAPDF6_LIB -lLHAPDF"
+    elif [ "$VAR" = "ROOT" ] && [ "$ROOT_USE" = "true" ]; then
+	OUT="$OUT -I$ROOT_INCLUDE `${ROOT_BIN}root-config --glibs`"
+    elif [ "$VAR" = "BOOST" ]; then
+	OUT="$OUT -I$BOOST_INCLUDE -L$BOOST_LIB -lboost_iostreams"
+    elif [ "$VAR" = "GZIP" ]; then
+	OUT="$OUT -I$GZIP_INCLUDE -L$GZIP_LIB -lz"
+    # All remaining arguments.
+    else eval OUT=\"$OUT \$$VAR\"; fi; done
+
+# Print the output.
+if [ "$VAR" = "LDFLAGS" ]; then OUT+=" -ldl"; fi
+echo $OUT

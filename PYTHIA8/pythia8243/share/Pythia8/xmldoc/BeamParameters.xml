@@ -1,0 +1,443 @@
+<chapter name="Beam Parameters"> 
+ 
+<h2>Beam Parameters</h2> 
+ 
+The settings on this page relate to the beam identities and energies, 
+to a beam momentum spread and to a beam interaction spot. 
+As always, momenta and energies are to be given in units of GeV, 
+and of space and time in mm. 
+ 
+<h3>Incoming beams</h3> 
+ 
+The identities and energies of the two incoming beam particles 
+should be specified using the settings in this section. 
+Note that, if nothing is done, you will default to LHC at 14 TeV. 
+ 
+<p/> 
+Currently the beam particles must be either a hadron pair, a lepton 
+pair, a photon pair, a lepton and a hadron or a photon and a hadron. 
+In the first category <ei>p p</ei> and <ei>pbar p</ei> 
+combinations dominate, but it is also possible to combine with 
+<ei>pi^+</ei>, <ei>pi^-</ei> and <ei>pi^0</ei>. In the second 
+<ei>e^+ e^-</ei> and <ei>mu^+ mu^-</ei> would be the most useful 
+combinations, but also others should work if combined with an 
+appropriate hard process. 
+ 
+<modeopen name="Beams:idA" default="2212"> 
+The PDG <code>id</code> code for the first incoming particle. 
+Allowed codes include 
+<br/><ei>2212 = p</ei>, <ei>-2212 = pbar</ei>, 
+<br/><ei>2112 = n</ei>, <ei>-2112 = nbar</ei>, 
+<br/><ei>211 = pi^+</ei>, <ei>-211 = pi^-</ei>, <ei>111 = pi^0</ei>, 
+<br/><ei>990 = Pomeron</ei> (used in diffractive machinery; 
+here mainly for debug purposes), 
+<br/><ei>22 = gamma</ei> (for <ei>gamma-gamma</ei> and <ei>gamma-hadron</ei> 
+interactions, more info <aloc href="Photoproduction">here</aloc>), 
+<br/><ei>11 = e^-</ei>, <ei>-11 = e^+</ei>, 
+<br/><ei>13 = mu^-</ei>, <ei>-13 = mu^+</ei>, 
+<br/>and a few more leptons/neutrinos in a few combinations. 
+<br/>Recently <aloc href="HeavyIons">heavy-ion collisions</aloc> have 
+been implemented in PYTHIA. Therefore a handful of nuclei have been 
+added as allowed incoming beams, using PDG codes of the format 
+<code>100ZZZAAAI</code>: 
+1000020040 = <sup>4</sup>He , 1000030060 = <sup>6</sup>Li, 
+1000060120 = <sup>12</sup>C, 1000080160 = <sup>16</sup>O, 
+1000290630 = <sup>63</sup>Cu, 1000791970 = <sup>197</sup>Au, and 
+1000822080 = <sup>208</sup>Pb. More can be added using the function 
+<code>ParticleData::addParticle</code>. 
+</modeopen> 
+ 
+<modeopen name="Beams:idB" default="2212"> 
+The PDG <code>id</code> code for the second incoming particle. 
+</modeopen> 
+ 
+<modepick name="Beams:frameType" default="1" min="1" max="5"> 
+Choice of frame for the two colliding particles. For options 
+1 - 3 the beam identities are specified above, while they are 
+obtained by the Les Houches information for options 4 and 5. 
+<option value="1">the beams are colliding in their CM frame, 
+and therefore only the CM energy needs to be provided, see 
+<code>Beams:eCM</code> below. 
+</option> 
+<option value="2">the beams are back-to-back, but with different energies, 
+see <code>Beams:eA</code> and <code>Beams:eB</code> below. 
+This option could also be used for fixed-target configurations. 
+</option> 
+<option value="3">the beams are not back-to-back, and therefore the 
+three-momentum of each incoming particle needs to be specified, see 
+<code>Beams:pxA</code> through <code>Beams:pzB</code> below. 
+</option> 
+<option value="4">the beam and event information is stored in a 
+<aloc href="LesHouchesAccord">Les Houches Event File</aloc>, 
+see <code>Beams:LHEF</code> below. 
+</option> 
+<option value="5">the beam and event information is obtained by a 
+pointer to an <code><aloc href="LesHouchesAccord">LHAup</aloc></code> 
+class instance. 
+</option> 
+</modepick> 
+ 
+<parm name="Beams:eCM" default="14000." min="10."> 
+Collision CM energy, to be set if <code>Beams:frameType</code> = 1. 
+</parm> 
+ 
+<parm name="Beams:eA" default="7000." min="0."> 
+The energy of the first incoming particle, moving in the 
+<ei>+z </ei>direction, to be set if <code>Beams:frameType</code> = 2. 
+If the particle energy is smaller than its mass 
+it is assumed to be at rest. 
+</parm> 
+ 
+<parm name="Beams:eB" default="7000." min="0."> 
+The energy of the second incoming particle, moving in the 
+<ei>-z</ei> direction, to be set if <code>Beams:frameType</code> = 2. 
+If the particle energy is smaller than its mass 
+it is assumed to be at rest. 
+</parm> 
+ 
+<parm name="Beams:pxA" default="0."> 
+The <ei>p_x</ei> component of the first incoming particle, 
+to be set if <code>Beams:frameType</code> = 3. 
+</parm> 
+ 
+<parm name="Beams:pyA" default="0."> 
+The <ei>p_y</ei> component of the first incoming particle, 
+to be set if <code>Beams:frameType</code> = 3. 
+</parm> 
+ 
+<parm name="Beams:pzA" default="7000."> 
+The <ei>p_z</ei> component of the first incoming particle, 
+to be set if <code>Beams:frameType</code> = 3. 
+</parm> 
+ 
+<parm name="Beams:pxB" default="0."> 
+The <ei>p_x</ei> component of the second incoming particle, 
+to be set if <code>Beams:frameType</code> = 3. 
+</parm> 
+ 
+<parm name="Beams:pyB" default="0."> 
+The <ei>p_y</ei> component of the second incoming particle, 
+to be set if <code>Beams:frameType</code> = 3. 
+</parm> 
+ 
+<parm name="Beams:pzB" default="-7000."> 
+The <ei>p_z</ei> component of the second incoming particle, 
+to be set if <code>Beams:frameType</code> = 3. 
+</parm> 
+ 
+<word name="Beams:LHEF" default="void"> 
+The name of a Les Houches Event File, 
+to be set if <code>Beams:frameType</code> = 4. 
+</word> 
+ 
+<word name="Beams:LHEFheader" default="void"> 
+As some information in a Les Houches Event File init block is only known 
+at the end of generation, some programs choose to output this as a 
+separate file. If <code>Beams:LHEFheader</code> is given, information up 
+till the end of the init block is read from this file, with 
+the events themselves read as usual from the file given in 
+<code>Beams:LHEF</code>. 
+</word> 
+ 
+<flag name="Beams:newLHEFsameInit" default="off"> 
+Allow to begin reading events from a new LHEF or or a new 
+<code>LHAup</code> instance without a completely new initialization. 
+Only useful when <code>Beams:frameType</code> = 4 or 5. 
+</flag> 
+ 
+<flag name="Beams:readLHEFheaders" default="on"> 
+Read in LHEF header blocks and store them in the 
+<aloc href="EventInformation">Info</aloc> class. See also 
+<aloc href="LesHouchesAccord">LHAupLHEF</aloc> for more information. 
+</flag> 
+ 
+<mode name="Beams:nSkipLHEFatInit" default="0"> 
+Skip the first <ei>nSkip</ei> events of the input stream 
+(cf. the <code>LHAup::skipEvent(nSkip)</code> method). 
+Only used when <code>Beams:frameType</code> = 4 or 5. 
+</mode> 
+ 
+<flag name="Beams:strictLHEFscale" default="off"> 
+Always use the <code>SCALUP</code> value read from LHEF 
+as production scale for particles, also including particles 
+coming from resonance decays. By default, the production scale 
+of resonance decay products (W-, Z-, H-bosons, top quarks) will 
+be set to <ei>M/2</ei>, where <ei>M</ei> is the mass of the resonance. 
+</flag> 
+ 
+<flag name="Beams:setProductionScalesFromLHEF" default="off"> 
+If enabled, production scales for all particles in an input Les Houches 
+event will be set by using auxiliary information provided in the 
+input event. Depending on which LHEF version is used, different 
+information will be read. For LHEF 1.0, scale information can be 
+transferred by including a line starting with the hashtag 
+(#) character at the end of the event. The hashtag should be 
+followed by the sequential scale values of the particles with status 1. 
+For LHEF 3.0, the standardised <ei>&lt;scales&gt;</ei> tag is used 
+instead. In this case, please ensure that production scale of 
+the final state particle with position <ei>i</ei> in the input event 
+will be transferred as the value of a scales tag attribute which contains 
+<ei>i</ei> at the end of the attribute name, separated from the rest of 
+the name by an underscore (_). An example <ei>&lt;scales&gt;</ei> tag 
+would be <ei>&lt;scales muf="100" pt_start_3="100" pt_start_4="50"&gt; 
+&lt;/scales&gt;</ei>. This could be used to set the production scales 
+of particles three and four to 100 GeV and 50 GeV, respectively, provided 
+that these particles have status 1. 
+</flag> 
+ 
+<h3>Variable collision energy</h3> 
+ 
+There are two different machineries that can provide an event-by-event 
+spread of collision energies. The one in this section is intended 
+to allow for very large variations in collision energy, more-or-less 
+from threshold to the highest LHC/FCC/cosmic-ray energies. This is made 
+possible by interpolation in a grid of CM energies. Such a strategy 
+requires the processes to have a smooth and well-understood energy 
+dependence. In practice this limits us to the soft QCD processes 
+betweeen two incoming hadrons. Thus the framework is convenient e.g. 
+for studies of cosmic-ray cascades, or for secondary collisions in 
+general. 
+ 
+<p/> 
+The core extension in this option is that the multiparticle interactions 
+(MPI) machinery is initialized over a (logarithmically spaced) grid of 
+collision energies, from the maximal energy provided at the 
+initialization down to a lower cutoff (see <code>eMinPert</code> below). 
+For each new event, with a new CM energy, a suitable interpolation is 
+then performed among the generation coefficients determined at 
+initialization. The MPI framework is what is needed to simulate 
+hadronic nondiffractive events (<code>SoftQCD:nonDiffractive</code>). 
+Pretty much the same strategy is already used for diffraction, to handle 
+MPIs inside the variable-mass diffractive systems. Thus all the 
+<aloc href="QCDProcesses">Soft QCD processes</aloc> can be used 
+within this framework. It is not possible to generate other processes 
+with this framework, however, and the program will abort if you try. 
+ 
+<p/> 
+The initalization of involves setting up optimal coefficients for 
+the kinematics selection in the subsequent MPI generation, and 
+finding the associated maximum of the differentialcross section. 
+At a fixed energy this typically takes less than a second, and so 
+normally is not noticeable.It is a major fraction of the full PYTHIA 
+initialization time, however. Thus the initialization over a grid of 
+energies raises the total initialization time appreciable, to the order 
+of ten seconds. Initialization of diffraction contributes comparable 
+numbers, when switched on. You should therefore not be surprised that 
+the startup time is longer than usual. The subsequent event generation 
+should not become noticeably slower, however. 
+ 
+<p/> 
+There are three main settings in this framework. 
+ 
+<flag name="Beams:allowVariableEnergy" default="off"> 
+Master switch to allow collision energies below the initialization one, 
+as described above. 
+</flag> 
+ 
+<parm name="Beams:eMinPert" default="10." min="10."> 
+The lowest CM energy that collisions are allowed to have. The highest 
+is set by the full energy at initialization, as calculated in the 
+respective options above. If you do not want to generate events with 
+a higher collision energy than this you can save some initialization 
+time by raising this number accordingly, so that fewer grid energies need 
+to be used. You should not lower the value below the default one, however, 
+since the perturbative MPI machinery cannot be made to work at lower 
+energies. If you do want to generate events with lower energies, it 
+is possible in a nonperturbative framework, see next. 
+</parm> 
+ 
+<parm name="Beams:eWidthPert" default="10." min="1."> 
+A simpler low-mass description can be used for energies below the 
+threshold energy <ei>e_min</ei> = <code>eMinPert</code> above, with 
+only longitudinally stretched strings. A gradual switch-over between 
+the simple low-energy and perturbative high-energy regimes is then 
+natural. The probability for the latter picture is parametrized as 
+<eq> 
+P_pert = 1 - exp( (e_CM - e_min) / e_width ) 
+</eq> 
+which vanishes for the CM energy <ei>e_CM &lt; e_min</ei>, and is 
+<ei>1 - 1/e = 0.632</ei> for <ei>e_CM = e_min + e_width</ei>. 
+The current parameter is this <ei>e_width.</ei> 
+</parm> 
+ 
+<p/> 
+To input the variable energy, the normal argument-less 
+<code>Pythia::next()</code> method has three siblings that take 
+relevent arguments as required by the <code>Beams:frameType</code>. 
+ 
+<method name="bool Pythia::next(double eCM)"> 
+events created by the collision of two particles coming in along the 
+<ei>+-z</ei> axis in their common rest frame, with the CM energy as 
+argument, to be used for <code>Beams:frameType = 1</code>. 
+</method> 
+ 
+<method name="bool Pythia::next(double eA, double eB)"> 
+events created by the collision of two particles coming in along the 
+<ei>+-z</ei> axis, with the respective energies as arguments, to be 
+used for <code>Beams:frameType = 2</code>. 
+</method> 
+ 
+<method name="bool Pythia::next(double pxA, double pyA, double pzA, 
+double pxB, double pyB, double pzB)"> 
+events created by two incoming particles with arbitrary three-momenta, 
+to be used for <code>Beams:frameType = 3</code>. 
+</method> 
+ 
+ 
+<h3>Beam momentum spread</h3> 
+ 
+This framework currently is intended for a modest beam spread, such as 
+experienced at hadron colliders. Thus it can be safely assumed that the 
+physics does not change over the CM energy range probed, so that the 
+parameters of the physics initialization at the nominal energy can be 
+used as is. Therefore it can be used for all processes implemented in 
+PYTHIA. It can <b>not</b> be used for the more extensive energy spread, 
+however, e.g. as expected at linear <ei>e^+ e^-</ei> colliders. Also, 
+any attempt to combine it with external Les Houches input of 
+parton-level events is at own risk. This option cannot be combined with 
+the variable-collision-energy option above, but will be switced off in 
+such a case. 
+ 
+<p/> 
+On this page you can set the momentum spread according to a simple 
+Gaussian distribution. If you instead want a more sophisticated 
+parametrization, you can write and link your own 
+<code><aloc href="BeamShape">BeamShape</aloc></code> class. 
+ 
+<flag name="Beams:allowMomentumSpread" default="off"> 
+Allow the beam momenta to be smeared around their initialization 
+nominal values. 
+</flag> 
+ 
+<parm name="Beams:sigmaPxA" default="0." min="0."> 
+The width of a Gaussian distribution of the <ei>p_x</ei> spread of the 
+first incoming particle. 
+</parm> 
+ 
+<parm name="Beams:sigmaPyA" default="0." min="0."> 
+The width of a Gaussian distribution of the <ei>p_y</ei> spread of the 
+first incoming particle. 
+</parm> 
+ 
+<parm name="Beams:sigmaPzA" default="0." min="0."> 
+The width of a Gaussian distribution of the <ei>p_z</ei> spread of the 
+first incoming particle. 
+</parm> 
+ 
+<parm name="Beams:maxDevA" default="5." min="0."> 
+The triply Gaussian distribution <ei>(p_x, p_y, p_z)</ei> is restricted to 
+a maximal total deviation from the nominal values <ei>(p_x0, p_y0, p_z0)</ei> 
+for the first incoming particle, like 
+<eq> 
+(p_x - p_x0)^2/sigma_px^2 + (p_y - p_y0)^2/sigma_py^2 + 
+(p_z - p_z0)^2/sigma_pz^2 &lt; maxDev^2 
+</eq> 
+(Note the absence of a factor 2 in the denominator, unlike the Gaussians 
+used to pick <ei>(p_x, p_y, p_z)</ei>.) 
+</parm> 
+ 
+<parm name="Beams:sigmaPxB" default="0." min="0."> 
+The width of a Gaussian distribution of the <ei>p_x</ei> spread of the 
+second incoming particle. 
+</parm> 
+ 
+<parm name="Beams:sigmaPyB" default="0." min="0."> 
+The width of a Gaussian distribution of the <ei>p_y</ei> spread of the 
+second incoming particle. 
+</parm> 
+ 
+<parm name="Beams:sigmaPzB" default="0." min="0."> 
+The width of a Gaussian distribution of the <ei>p_z</ei> spread of the 
+second incoming particle. 
+</parm> 
+ 
+<parm name="Beams:maxDevB" default="5." min="0."> 
+The triply Gaussian distribution <ei>(p_x, p_y, p_z)</ei> is restricted to 
+a maximal total deviation from the nominal values <ei>(p_x0, p_y0, p_z0)</ei>, 
+for the second incoming particle, like 
+<eq> 
+(p_x - p_x0)^2/sigma_px^2 + (p_y - p_y0)^2/sigma_py^2 + 
+(p_z - p_z0)^2/sigma_pz^2 &lt; maxDev^2 
+</eq> 
+(Note the absence of a factor 2 in the denominator, unlike the Gaussians 
+used to pick <ei>(p_x, p_y, p_z)</ei>.) 
+</parm> 
+ 
+<h3>Beam interaction vertex</h3> 
+ 
+On this page you can set the spread of the interaction vertex according to 
+a simple Gaussian distribution. If you instead want a more sophisticated 
+parametrization, you can write and link your own 
+<code><aloc href="BeamShape">BeamShape</aloc></code> class. 
+ 
+<flag name="Beams:allowVertexSpread" default="off"> 
+Allow the interaction vertex of the two colliding beams to be smeared. 
+If off, then the vertex is set to be the origin. 
+</flag> 
+ 
+<parm name="Beams:sigmaVertexX" default="0." min="0."> 
+The width of a Gaussian distribution of the <ei>x</ei> location of the 
+interaction vertex. 
+</parm> 
+ 
+<parm name="Beams:sigmaVertexY" default="0." min="0."> 
+The width of a Gaussian distribution of the <ei>y</ei> location of the 
+interaction vertex. 
+</parm> 
+ 
+<parm name="Beams:sigmaVertexZ" default="0." min="0."> 
+The width of a Gaussian distribution of the <ei>z</ei> location of the 
+interaction vertex. 
+</parm> 
+ 
+<parm name="Beams:maxDevVertex" default="5." min="0."> 
+The triply Gaussian distribution of interaction vertex position 
+<ei>(x, y, z)</ei> is restricted to a maximal total deviation from the 
+origin, like 
+<eq> 
+x^2/sigma_x^2 + y^2/sigma_y^2 + z^2/sigma_z^2 &lt; maxDevVertex^2 
+</eq> 
+(Note the absence of a factor 2 in the denominator, unlike the Gaussians 
+used to pick <ei>(x, y, z)</ei>.) 
+</parm> 
+ 
+<parm name="Beams:sigmaTime" default="0." min="0."> 
+The width of a Gaussian distribution of the collision time (in units of 
+mm/c). Note that, if the above space parametrization is viewed as the 
+effect of two incoming beams along the <ei>+-z</ei> axis, with each beam 
+having a Gaussian spread, then the spread of the time would also become 
+a Gaussian with the same width as the <ei>z</ei> one (times the 
+velocity of the beams, which we expect is close to unity). For flexibility 
+we have not enforced any such relation, however. 
+</parm> 
+ 
+<parm name="Beams:maxDevTime" default="5." min="0."> 
+The collision time is restricted to be in the range 
+<ei>|t| &lt; sigma_t * maxDevTime</ei>. 
+</parm> 
+ 
+<p/> 
+The distributions above are all centered at the origin. It is also 
+possible to shift the above distributions to be centered around another 
+nominal position. You must have <code>Beams:allowVertexSpread = on</code> 
+to use this possibility. 
+ 
+<parm name="Beams:offsetVertexX" default="0."> 
+The <ei>x</ei> location of the interaction vertex is centered at this value. 
+</parm> 
+ 
+<parm name="Beams:offsetVertexY" default="0."> 
+The <ei>y</ei> location of the interaction vertex is centered at this value. 
+</parm> 
+ 
+<parm name="Beams:offsetVertexZ" default="0."> 
+The <ei>z</ei> location of the interaction vertex is centered at this value. 
+</parm> 
+ 
+<parm name="Beams:offsetTime" default="0."> 
+The time <ei>t</ei> of the interaction vertex is centered at this value. 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

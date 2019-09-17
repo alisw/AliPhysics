@@ -1,0 +1,1279 @@
+<LesHouchesEvents version="1.0">
+<header>
+<!--
+#*********************************************************************
+#                                                                    *
+#                       MadGraph/MadEvent                            *
+#                                                                    *
+#                      The new web generation                        *
+#                                                                    *
+#                   http://madgraph.hep.uiuc.edu                     *
+#                   http://madgraph.phys.ucl.ac.be                   *
+#                   http://madgraph.roma2.infn.it                    *
+#                                                                    *
+#            CP3 team                      Tim Stelzer               *
+#      Universite de Louvain          University of Illinois         *
+#                                                                    *
+#....................................................................*
+#                                                                    *
+# This file contains all the information necessary to reproduce      *
+# the events generated:                                              *
+#                                                                    *
+# 1. software version                                                *
+# 2. proc_card.dat      : code generation info including model       *
+# 3. param_card.dat     : model primary parameters in the LH format  *
+# 4. run_card.dat       : running parameters (collider and cuts)     *
+# 5. pythia_card.dat    : present only in the pythia event file      *
+# 6. pgs_card.dat       : present only in the pgs event file         *
+#                                                                    *
+#                                                                    *
+#*********************************************************************
+-->
+<MGVersion>
+# MG/ME version    : 4.4.48
+# madgraph version : 4.4.5
+# template version : 2.4.25
+# helas version    : 3.8
+# model version    : sm_1.2.1
+</MGVersion>
+<MGProcCard>
+#*********************************************************************
+#                        MadGraph/MadEvent                           *
+#                   http://madgraph.hep.uiuc.edu                     *
+#                                                                    *
+#                          proc_card.dat                             *
+#                                                                    *
+# This file is used to generate the code for a specific process.     *
+# Some notation/conventions:                                         *
+#                                                                    *
+# 0. Do not modify the TAGS and their order.                         *
+# 1. hash/pound is a comment.                                        *
+# 2. The number after the @ is used as an identifier for the class   *
+#    of processes. It can be any positive integer.                   *
+# 3. The number of lines for the max couplings depends on how many   *
+#    different classes of couplings are present in the model         *
+#    In the SM these are just two: QED (which include EW) and QCD    *
+# 4. Write "end_coup" after  the couplings list,                     *
+#    to tell MG that the couplings input is over.                    *
+# 5. Write "done" after the proc list to                             *
+#    to tell MG that the proc input is over.                         *
+# 6. Some model names available at present are:                      *
+#    sm     =  Standard Model                                        *
+#    smckm =  Standard Model with Cabibbo matrix                     *
+#    mssm   =  Minimal Supersymmetric Standard Model                 *
+#    2hdm   =  Generic Two Higgs Doublet model                       *
+#    heft   =  Higgs EFT (+Standard Model)                           *
+#    usrmod =  User Model                                            *
+# 7. Don't leave spaces between the particles name in the            *
+#    definition of the multiparticles.                               *
+#*********************************************************************
+#*********************************************************************
+# Process(es) requested : mg2 input                                  *
+#*********************************************************************
+# Begin PROCESS # This is TAG. Do not modify this line
+pp>e+vej  @1       # First Process
+QCD=99             # Max QCD couplings
+QED=2              # Max QED couplings
+end_coup           # End the couplings input
+done               # this tells MG there are no more procs
+# End PROCESS  # This is TAG. Do not modify this line
+#*********************************************************************
+# Model information                                                  *
+#*********************************************************************
+# Begin MODEL  # This is TAG. Do not modify this line
+sm           
+# End   MODEL  # This is TAG. Do not modify this line
+#*********************************************************************
+# Start multiparticle definitions                                    *
+#*********************************************************************
+# Begin MULTIPARTICLES # This is TAG. Do not modify this line
+P uu~dd~cc~ss~g
+J uu~dd~cc~ss~g
+L+ e+mu+
+L- e-mu-
+vl vevm
+vl~ ve~vm~
+# End  MULTIPARTICLES # This is TAG. Do not modify this line
+</MGProcCard>
+<slha>
+#******************************************************************
+#                      MadGraph/MadEvent                          *
+#******************************************************************
+#   Les Houches friendly file for the SM parameters of MadGraph   *
+#        Spectrum and decay widths produced by SMCalc             *
+#******************************************************************
+#*Please note the following IMPORTANT issues:                     *
+#                                                                 *
+#0. REFRAIN from editing this file by hand! Some of the parame-   *
+#   ters are not independent                                      *
+#   (such as G_Fermi, alpha_em, sin(theta_W),MZ,MW) and serious   *
+#   problems might be encountered (such as violation of unitarity *
+#   or gauge invariance).  Always use a calculator.               *
+#                                                                 *
+#1. alpha_S(MZ) has been used in the calculation of the parameters*
+#   but, for consistency, it will be reset by madgraph to the     *
+#   value expected IF the pdfs for collisions with hadrons are    *
+#   used. This value is KEPT by madgraph when no pdf are used     *
+#   lpp(i)=0 .                                                    *
+#                                                                 *
+#2. Values of the charm and bottom kinematic (pole) masses are    *
+#   those used in the matrix elements and phase space UNLESS they *
+#   are set to ZERO from the start in the model (particles.dat)   *
+#   This happens, for example,  when using 5-flavor QCD where     *
+#   charm and bottom are treated as partons in the initial state  *
+#   and a zero mass might be hardwired in the model definition.   *
+#                                                                 *
+#******************************************************************
+Block SMINPUTS      # Standard Model inputs
+     1         1.32506980E+02   # alpha_em(MZ)(-1) SM MSbar
+     2         1.16639000E-05   # G_Fermi
+     3         1.18000000E-01   # alpha_s(MZ) SM MSbar
+     4         9.11880000E+01   # Z mass (as input parameter)
+Block MGYUKAWA     # Yukawa masses m/v=y/sqrt(2)
+#    PDG          YMASS
+     5         4.20000000E+00   # mbottom for the Yukawa  y_b
+     4         1.42000000E+00   # mcharm  for the Yukawa  y_c
+     6         1.64500000E+02   # mtop    for the Yukawa  y_t
+    15         1.77700000E+00   # mtau    for the Yukawa  y_ta
+Block MGCKM     # CKM elements for MadGraph
+     1   1     9.75000000E-01   # Vud for Cabibbo matrix
+Block MASS      #  Mass spectrum (kinematic masses)
+#       PDG       Mass
+         5     4.70000000E+00   # bottom   pole mass
+         6     1.74300000E+02   # top      pole mass
+        15     1.77700000E+00   # tau      mass
+        23     9.11880000E+01   # Z        mass
+        24     8.04190000E+01   # W        mass
+        25     1.20000000E+02   # H        mass
+#            PDG       Width
+DECAY         6     1.50833649E+00   # top width
+DECAY        23     2.44140351E+00   # Z   width
+DECAY        24     2.04759951E+00   # W   width
+DECAY        25     5.75308848E-03   # H   width
+#        BR           NDA        ID1       ID2
+     8.27451012E-02    2           4        -4   # BR( H -> c  cbar  )
+     7.17809696E-01    2           5        -5   # BR( H -> b  bbar  )
+     0.00000000E+00    2           6        -6   # BR( H -> t  tbar  )
+     4.31720144E-02    2          15       -15   # BR( H -> tau- tau+)
+     6.90597075E-03    2          23        23   # BR( H -> Z   Z^(*))
+     7.45906395E-02    2          24       -24   # BR( H -> W   W^(*))
+     3.01765558E-02    2          21        21   # BR( H -> g   g    )
+     1.42800773E-03    2          22        22   # BR( H -> A   A    )
+</slha>
+<MGRunCard>
+#*********************************************************************
+#                       MadGraph/MadEvent                            *
+#                  http://madgraph.hep.uiuc.edu                      *
+#                                                                    *
+#                        run_card.dat                                *
+#                                                                    *
+#  This file is used to set the parameters of the run.               *
+#                                                                    *
+#  Some notation/conventions:                                        *
+#                                                                    *
+#   Lines starting with a '# ' are info or comments                  *
+#                                                                    *
+#   mind the format:   value    = variable     ! comment             *
+#*********************************************************************
+#
+#*******************                                                 
+# Running parameters
+#*******************                                                 
+#                                                                    
+#*********************************************************************
+# Tag name for the run (one word)                                    *
+#*********************************************************************
+  'fermi'     = run_tag ! name of the run 
+#*********************************************************************
+# Run to generate the grid pack                                      *
+#*********************************************************************
+  .false.     = gridpack  !True = setting up the grid pack
+#*********************************************************************
+# Number of events and rnd seed                                      *
+#*********************************************************************
+  100         = nevents ! Number of unweighted events requested 
+     25490 = iseed   ! rnd seed (0=assigned automatically=default))
+#*********************************************************************
+# Collider type and energy                                           *
+#*********************************************************************
+        1     = lpp1  ! beam 1 type (0=NO PDF)
+        1    = lpp2  ! beam 2 type (0=NO PDF)
+   3500.0    = ebeam1  ! beam 1 energy in GeV
+   3500.0    = ebeam2  ! beam 2 energy in GeV
+#*********************************************************************
+# Beam polarization from -100 (left-handed) to 100 (right-handed)    *
+#*********************************************************************
+        0     = polbeam1 ! beam polarization for beam 1
+        0     = polbeam2 ! beam polarization for beam 2
+#*********************************************************************
+# PDF CHOICE: this automatically fixes also alpha_s and its evol.    *
+#*********************************************************************
+# 'cteq6_l'    = pdlabel     ! PDF set  
+ 'lhapdf'    = pdlabel        ! PDF label
+ 10042       = lhaid          ! PDF set 
+#*********************************************************************
+# Renormalization and factorization scales                           *
+#*********************************************************************
+ T        = fixed_ren_scale  ! if .true. use fixed ren scale
+ T        = fixed_fac_scale  ! if .true. use fixed fac scale
+ 91.188	  = scale            ! fixed ren scale
+ 80.4     = dsqrt_q2fact1    ! fixed fact scale for pdf1
+ 80.4     = dsqrt_q2fact2    ! fixed fact scale for pdf2
+ 1        = scalefact        ! scale factor for event-by-event scales
+#*********************************************************************
+# Matching - Warning! ickkw > 0 is still beta
+#*********************************************************************
+ 0        = ickkw            ! 0 no matching, 1 MLM, 2 CKKW matching
+ 1        = highestmult      ! for ickkw=2, highest mult group
+ 1        = ktscheme         ! for ickkw=1, 1 Durham kT, 2 Pythia pTE
+ 1        = alpsfact         ! scale factor for QCD emission vx
+ F        = chcluster        ! cluster only according to channel diag
+ F        = pdfwgt           ! for ickkw=1, perform pdf reweighting
+#*********************************************************************
+#                                                                    
+#**********************************
+# BW cutoff (M+/-bwcutoff*Gamma)
+#**********************************
+  15d0  = bwcutoff
+#*******************                                                 
+# Standard Cuts
+#*******************                                                 
+#                                                                    
+#*********************************************************************
+# Minimum and maximum pt's                                           *
+#*********************************************************************
+ 0d0 = ptj       ! minimum pt for the jets 
+ 0d0  = ptb       ! minimum pt for the b 
+ 0d0 = pta       ! minimum pt for the photons 
+ 0d0 = ptl       ! minimum pt for the charged leptons 
+ 0d0  = misset    ! minimum missing Et (sum of neutrino's momenta)
+ 0d0  = ptheavy   ! minimum pt for one heavy final state
+ 0d0 = ptonium   ! minimum pt for the quarkonium states
+ 1d9 = ptjmax    ! maximum pt for the jets
+ 1d9 = ptbmax    ! maximum pt for the b
+ 1d9 = ptamax    ! maximum pt for the photons
+ 1d9 = ptlmax    ! maximum pt for the charged leptons
+ 1d9 = missetmax ! maximum missing Et (sum of neutrino's momenta)
+#*********************************************************************
+# Minimum and maximum E's (in the lab frame)                         *
+#*********************************************************************
+ 0d0  = ej     ! minimum E for the jets 
+ 0d0  = eb     ! minimum E for the b 
+ 0d0  = ea     ! minimum E for the photons 
+ 0d0  = el     ! minimum E for the charged leptons 
+ 1d9  = ejmax ! maximum E for the jets
+ 1d9  = ebmax ! maximum E for the b
+ 1d9  = eamax ! maximum E for the photons
+ 1d9  = elmax ! maximum E for the charged leptons
+#*********************************************************************
+# Maximum and minimum rapidity                                       *
+#*********************************************************************
+ 1d9  = etaj    ! max rap for the jets 
+ 1d9  = etab    ! max rap for the b 
+ 1d9  = etaa    ! max rap for the photons 
+ 1d9  = etal    ! max rap for the charged leptons 
+ 1d9  = etaonium ! max rap for the quarkonium states
+ 0d0  = etajmin ! min rap for the jets
+ 0d0  = etabmin ! min rap for the b
+ 0d0  = etaamin ! min rap for the photons
+ 0d0  = etalmin ! main rap for the charged leptons
+#*********************************************************************
+# Minimum and maximum DeltaR distance                                *
+#*********************************************************************
+ 0d0 = drjj    ! min distance between jets 
+ 0d0 = drbb    ! min distance between b's 
+ 0d0 = drll    ! min distance between leptons 
+ 0d0 = draa    ! min distance between gammas 
+ 0d0 = drbj    ! min distance between b and jet 
+ 0d0 = draj    ! min distance between gamma and jet 
+ 0d0 = drjl    ! min distance between jet and lepton 
+ 0d0 = drab    ! min distance between gamma and b 
+ 0d0 = drbl    ! min distance between b and lepton 
+ 0d0 = dral    ! min distance between gamma and lepton 
+ 1d9 = drjjmax ! max distance between jets
+ 1d9 = drbbmax ! max distance between b's
+ 1d9 = drllmax ! max distance between leptons
+ 1d9 = draamax ! max distance between gammas
+ 1d9 = drbjmax ! max distance between b and jet
+ 1d9 = drajmax ! max distance between gamma and jet
+ 1d9 = drjlmax ! max distance between jet and lepton
+ 1d9 = drabmax ! max distance between gamma and b
+ 1d9 = drblmax ! max distance between b and lepton
+ 1d9 = dralmax ! maxdistance between gamma and lepton
+#*********************************************************************
+# Minimum and maximum invariant mass for pairs                       *
+#*********************************************************************
+ 0d0   = mmjj    ! min invariant mass of a jet pair 
+ 0d0   = mmbb    ! min invariant mass of a b pair 
+ 0d0   = mmaa    ! min invariant mass of gamma gamma pair
+ 0d0   = mmll    ! min invariant mass of l+l- (same flavour) lepton pair
+ 1d9   = mmjjmax ! max invariant mass of a jet pair
+ 1d9   = mmbbmax ! max invariant mass of a b pair
+ 1d9   = mmaamax ! max invariant mass of gamma gamma pair
+ 1d9   = mmllmax ! max invariant mass of l+l- (same flavour) lepton pair
+#*********************************************************************
+# Minimum and maximum invariant mass for all letpons                 *
+#*********************************************************************
+ 0d0   = mmnl    ! min invariant mass for all letpons (l+- and vl) 
+ 1d9   = mmnlmax ! max invariant mass for all letpons (l+- and vl) 
+#*********************************************************************
+# Inclusive cuts                                                     *
+#*********************************************************************
+ 0d0  = xptj ! minimum pt for at least one jet  
+ 0d0  = xptb ! minimum pt for at least one b 
+ 0d0  = xpta ! minimum pt for at least one photon 
+ 0d0  = xptl ! minimum pt for at least one charged lepton 
+#*********************************************************************
+# Control the pt's of the jets sorted by pt                          *
+#*********************************************************************
+ 0d0   = ptj1min ! minimum pt for the leading jet in pt
+ 0d0   = ptj2min ! minimum pt for the second jet in pt
+ 0d0   = ptj3min ! minimum pt for the third jet in pt
+ 0d0   = ptj4min ! minimum pt for the fourth jet in pt
+ 1d9   = ptj1max ! maximum pt for the leading jet in pt 
+ 1d9   = ptj2max ! maximum pt for the second jet in pt
+ 1d9   = ptj3max ! maximum pt for the third jet in pt
+ 1d9   = ptj4max ! maximum pt for the fourth jet in pt
+ 0   = cutuse  ! reject event if fails any (0) / all (1) jet pt cuts
+#*********************************************************************
+# Control the Ht(k)=Sum of k leading jets                            *
+#*********************************************************************
+ 0d0 = htjmin ! minimum jet HT=Sum(jet pt)
+ 1d9 = htjmax ! maximum jet HT=Sum(jet pt)
+ 0d0 = ht2min ! minimum Ht for the two leading jets
+ 0d0 = ht3min ! minimum Ht for the three leading jets
+ 0d0 = ht4min ! minimum Ht for the four leading jets
+ 1d9 = ht2max ! maximum Ht for the two leading jets
+ 1d9 = ht3max ! maximum Ht for the three leading jets
+ 1d9 = ht4max ! maximum Ht for the four leading jets
+#*********************************************************************
+# WBF cuts                                                           *
+#*********************************************************************
+ 0   = xetamin ! minimum rapidity for two jets in the WBF case  
+ 0   = deltaeta ! minimum rapidity for two jets in the WBF case 
+#*********************************************************************
+# maximal pdg code for quark to be considered as a jet               *
+# otherwise b cuts are applied                                       *
+#*********************************************************************
+ 4 = maxjetflavor
+#*********************************************************************
+# Jet measure cuts                                                   *
+#*********************************************************************
+ 0   = xqcut   ! minimum kt jet measure between partons
+#*********************************************************************
+ 30d0  = ktdurham    ! minimum durham kt jet measure between partons
+ 0.4   = dparameter  ! D parameter for hadronic kT
+ T     = dokt        ! T: enable durham kt cut
+#*********************************************************************
+</MGRunCard>
+<MGGenerationInfo>
+#  Number of Events        :         100
+#  Integrated weight (pb)  :  .45148E+03
+#  Truncated wgt (pb)      :  .00000E+00
+#  Unit wgt                :  .45148E+01
+</MGGenerationInfo>
+</header>
+<init>
+     2212     2212  0.35000000000E+04  0.35000000000E+04 0 0 10042 10042 3  1
+  0.45148000000E+03  0.16937000000E+03  0.45148000000E+01   1
+</init>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.21770084573E+02  0.21770084573E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.57251329959E+03  0.57251329959E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.49642376101E+02 -0.79249970754E+02 -0.24549194153E+03  0.27502915422E+03  0.81423700157E+02 0.  0.
+      -11    1    3    3    0    0  0.19795487834E+02 -0.31862246975E+02 -0.10260178437E+03  0.10924371963E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.69437863935E+02 -0.47387723779E+02 -0.14289015716E+03  0.16578543460E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.49642376101E+02  0.79249970754E+02 -0.30525127349E+03  0.31925422994E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        4   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.44763582618E+02  0.44763582618E+02  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.19560307388E+03  0.19560307388E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.58900031250E+02  0.12421205031E+02 -0.14938693493E+03  0.18015361857E+03  0.80717841533E+02 0.  0.
+      -11    1    3    3    0    0  0.21420131338E+02 -0.33185482604E+02 -0.42299855262E+02  0.57873794047E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.37479899911E+02  0.45606687635E+02 -0.10708707967E+03  0.12227982453E+03  0.00000000000E+00 0. -1.
+        3    1    1    2  501    0 -0.58900031250E+02 -0.12421205031E+02 -0.14525563263E+01  0.60213037920E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.51955446632E+03  0.51955446632E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.12780905702E+02  0.12780905702E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.59196724780E+02 -0.46636073649E+01  0.24055841591E+03  0.25957814530E+03  0.77372221069E+02 0.  0.
+      -11    1    3    3    0    0 -0.18212204064E+02 -0.71621884254E+01  0.38578690378E+02  0.43258486695E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.77408928844E+02  0.24985810605E+01  0.20197972554E+03  0.21631965861E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.59196724780E+02  0.46636073649E+01  0.26621514470E+03  0.27275722672E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.26151964471E+02  0.26151964471E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.23057230023E+03  0.23057230023E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.45004849865E+02  0.24432012577E+02 -0.16800688814E+03  0.19388877380E+03  0.82122971157E+02 0.  0.
+      -11    1    3    3    0    0 -0.31970745683E+02 -0.71493284251E+01 -0.13138821066E+02  0.35296885067E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.13034104182E+02  0.31581341002E+02 -0.15486806707E+03  0.15859188873E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.45004849865E+02 -0.24432012577E+02 -0.36413447619E+02  0.62835490906E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.47980872174E+03  0.47980872174E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.17129159561E+02  0.17129159561E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.53577527236E+02  0.48927414020E+02  0.28741835295E+03  0.30725146974E+03  0.80806638232E+02 0.  0.
+      -11    1    3    3    0    0  0.76931365265E+00  0.52797422567E+02  0.11769367011E+03  0.12899596760E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.54346840889E+02 -0.38700085473E+01  0.16972468284E+03  0.17825550214E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.53577527236E+02 -0.48927414020E+02  0.17526120923E+03  0.18968641155E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.39747931075E+03  0.39747931075E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.99218240887E+01  0.99218240887E+01  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.27018767030E+02  0.15644192047E+02  0.18574383448E+03  0.20318677510E+03  0.76219020011E+02 0.  0.
+      -11    1    3    3    0    0 -0.20745520090E+02  0.18569782341E+02  0.33288216663E+02  0.43397220977E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.47764287120E+02 -0.29255902935E+01  0.15245561781E+03  0.15978955412E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.27018767030E+02 -0.15644192047E+02  0.20181365218E+03  0.20421435974E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.15679767827E+04  0.15679767827E+04  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.12162252050E+02  0.12162252050E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.11468836080E+03  0.40576906518E+02  0.97279494954E+03  0.98456222408E+03  0.90735074781E+02 0.  0.
+      -11    1    3    3    0    0 -0.22054316396E+01 -0.22521087544E+02  0.16230328958E+03  0.16387318609E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.11248292916E+03  0.63097994062E+02  0.81049165996E+03  0.82068903799E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.11468836080E+03 -0.40576906518E+02  0.58301958108E+03  0.59557681064E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.76772668809E+02  0.76772668809E+02  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.55683134235E+02  0.55683134235E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.33443124152E+02  0.58324502557E+01  0.34463275330E+02  0.95968586503E+02  0.82884209714E+02 0.  0.
+      -11    1    3    3    0    0  0.36276053965E+02  0.24120024224E+02 -0.12640700172E+02  0.45359838632E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.28329298131E+01 -0.18287573968E+02  0.47103975503E+02  0.50608747871E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.33443124152E+02 -0.58324502557E+01 -0.13373740757E+02  0.36487216540E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00  0.12473707338E+02  0.12473707338E+02  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.83700163945E+03  0.83700163945E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.56744576294E+02  0.30590747629E+02 -0.71588753112E+03  0.72314847907E+03  0.79328587476E+02 0.  0.
+      -11    1    3    3    0    0  0.28396902162E+02  0.21802962540E+02 -0.94529106993E+02  0.10108167637E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.28347674131E+02  0.87877850891E+01 -0.62135842413E+03  0.62206680271E+03  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501 -0.56744576294E+02 -0.30590747629E+02 -0.10864040099E+03  0.12632686772E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.15091519630E+03  0.15091519630E+03  0.00000000000E+00 0.  1.
+        4   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.28916244262E+02  0.28916244262E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.11252075404E+02 -0.29341939392E+02  0.11960416331E+03  0.14831487950E+03  0.81881554640E+02 0.  0.
+      -11    1    3    3    0    0  0.20036767313E+02 -0.53585318311E+02  0.57693811064E+02  0.81249210568E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.87846919086E+01  0.24243378919E+02  0.61910352250E+02  0.67065668930E+02  0.00000000000E+00 0. -1.
+        3    1    1    2  501    0 -0.11252075404E+02  0.29341939392E+02  0.23947887228E+01  0.31516561063E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.35296821160E+03  0.35296821160E+03  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.22515261316E+02  0.22515261316E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.43485210425E+02  0.22915821727E+02  0.30668267964E+03  0.32088380096E+03  0.80598072661E+02 0.  0.
+      -11    1    3    3    0    0 -0.44277652742E+02 -0.17824946149E+02  0.21976153839E+03  0.22488524406E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.79244231658E+00  0.40740767876E+02  0.86921141248E+02  0.95998556905E+02  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501  0.43485210425E+02 -0.22915821727E+02  0.23770270644E+02  0.54599671956E+02  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.47390805952E+03  0.47390805952E+03  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.79500545900E+01  0.79500545900E+01  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.56378346586E+01 -0.30746623723E+02  0.39728770072E+03  0.40640779450E+03  0.79703439266E+02 0.  0.
+      -11    1    3    3    0    0 -0.23267067110E+02 -0.20775075706E+02  0.52801194970E+02  0.61326392139E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.17629232451E+02 -0.99715480172E+01  0.34448650575E+03  0.34508140236E+03  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501  0.56378346586E+01  0.30746623723E+02  0.68670304203E+02  0.75450319610E+02  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.47101630805E+03  0.47101630805E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.79823463912E+01  0.79823463912E+01  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.28464800857E+02 -0.18892603762E+02  0.29544583493E+03  0.30796370017E+03  0.79913852838E+02 0.  0.
+      -11    1    3    3    0    0 -0.74533575292E+01  0.97164254781E+01  0.20352816689E+01  0.12413856532E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.21011443327E+02 -0.28609029240E+02  0.29341055326E+03  0.29554984363E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.28464800857E+02  0.18892603762E+02  0.16758812673E+03  0.17103495428E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.66392945065E+03  0.66392945065E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.82807278620E+01  0.82807278620E+01  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.26133379614E+02 -0.39161949930E+02  0.31387190738E+03  0.32720582578E+03  0.79570511690E+02 0.  0.
+      -11    1    3    3    0    0 -0.47024687025E+02 -0.20978163299E+02  0.27312918031E+03  0.27794055778E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.20891307411E+02 -0.18183786631E+02  0.40742727066E+02  0.49265267992E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.26133379614E+02  0.39161949930E+02  0.34177681541E+03  0.34500435273E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.10221653631E+02  0.10221653631E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.51023349684E+03  0.51023349684E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.38834309067E+02  0.14263853846E+02 -0.42605341596E+03  0.43571194986E+03  0.81313153424E+02 0.  0.
+      -11    1    3    3    0    0 -0.36456202245E+02 -0.27110802336E+02 -0.15543261469E+03  0.16193624670E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.23781068211E+01  0.41374656182E+02 -0.27062080126E+03  0.27377570316E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.38834309067E+02 -0.14263853846E+02 -0.73958427258E+02  0.84743200610E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.40041700858E+01  0.40041700858E+01  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.11175649192E+04  0.11175649192E+04  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.24686767449E+02  0.20501123617E+02 -0.52170806759E+03  0.52884712312E+03  0.80437797581E+02 0.  0.
+      -11    1    3    3    0    0 -0.27700419620E+02 -0.26421099354E+02 -0.28039375084E+03  0.28299477601E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.30136521711E+01  0.46922222972E+02 -0.24131431675E+03  0.24585234711E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.24686767449E+02 -0.20501123617E+02 -0.59185268152E+03  0.59272196617E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.85892408006E+03  0.85892408006E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.12827937735E+02  0.12827937735E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.59831158001E+02  0.58871066621E+02  0.36689039342E+03  0.38525050728E+03  0.82242462396E+02 0.  0.
+      -11    1    3    3    0    0  0.47267229731E+02  0.64110826645E+02  0.16832963625E+03  0.18622367072E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.12563928271E+02 -0.52397600240E+01  0.19856075717E+03  0.19902683655E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.59831158001E+02 -0.58871066621E+02  0.47920574891E+03  0.48650151052E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.13848108249E+03  0.13848108249E+03  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.10912319734E+03  0.10912319734E+03  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.33732589988E+02 -0.68269794582E+02 -0.63244659595E+02  0.12771314683E+03  0.80697635813E+02 0.  0.
+      -11    1    3    3    0    0 -0.52839928613E+02 -0.59102893772E+02 -0.23529353216E+02  0.82697282729E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.19107338624E+02 -0.91669008097E+01 -0.39715306379E+02  0.45015864099E+02  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501  0.33732589988E+02  0.68269794582E+02  0.92602544745E+02  0.11989113300E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.13389318759E+03  0.13389318759E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.54971514361E+02  0.54971514361E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.20938303537E+02 -0.35694355106E+02  0.10625310368E+03  0.13927128876E+03  0.79964181301E+02 0.  0.
+      -11    1    3    3    0    0  0.27993391737E+02 -0.26313530499E+02  0.66639657335E+01  0.38992823795E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.70550881993E+01 -0.93808246071E+01  0.99589137946E+02  0.10027846497E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.20938303537E+02  0.35694355106E+02 -0.27331430447E+02  0.49593413189E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.13721247335E+04  0.13721247335E+04  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.52831963686E+01  0.52831963686E+01  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.44780478948E+02 -0.34698870463E+01  0.12302263386E+04  0.12335988763E+04  0.79322204196E+02 0.  0.
+      -11    1    3    3    0    0  0.53322786610E+01  0.34153131216E+02  0.61129391146E+03  0.61227045965E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.39448200287E+02 -0.37623018262E+02  0.61893242714E+03  0.62132841668E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.44780478948E+02  0.34698870463E+01  0.13661519854E+03  0.14380905355E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.36147988888E+03  0.36147988888E+03  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.46172537727E+02  0.46172537727E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.30912215071E+02  0.33244296368E+02  0.34177426525E+01  0.92476481820E+02  0.80495157888E+02 0.  0.
+      -11    1    3    3    0    0  0.53417567336E+02  0.36505552759E+02  0.15775102126E+02  0.66595388200E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.22505352265E+02 -0.32612563908E+01 -0.12357359474E+02  0.25881093620E+02  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501 -0.30912215071E+02 -0.33244296368E+02  0.31188960850E+03  0.31517594479E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.32497612954E+03  0.32497612954E+03  0.00000000000E+00 0. -1.
+        4   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.14059086118E+02  0.14059086118E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.36575809523E+02 -0.13320205922E+02  0.16253459762E+03  0.18563193033E+03  0.80786758851E+02 0.  0.
+      -11    1    3    3    0    0  0.61404074191E+01 -0.13615458277E+02  0.15301340019E+03  0.15374064507E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.30435402104E+02  0.29525235476E+00  0.95211974291E+01  0.31891285262E+02  0.00000000000E+00 0. -1.
+        3    1    1    2  501    0 -0.36575809523E+02  0.13320205922E+02  0.14838244580E+03  0.15340328533E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.33231035049E+03  0.33231035049E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.12750914276E+02  0.12750914276E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.37188921993E+02 -0.10256801741E+02  0.24667475050E+03  0.26259675535E+03  0.81365874222E+02 0.  0.
+      -11    1    3    3    0    0  0.24456138162E+02 -0.13204492554E+02  0.63862472837E+02  0.69648235830E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.61645060155E+02  0.29476908127E+01  0.18281227766E+03  0.19294851952E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.37188921993E+02  0.10256801741E+02  0.72884685722E+02  0.82464509420E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 5   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.96265116739E+01  0.96265116739E+01  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.10426029440E+04  0.10426029440E+04  0.00000000000E+00 0. -1.
+      -11    1    1    2    0    0  0.58320146180E+02  0.30347173236E+02 -0.17814177200E+03  0.18988596921E+03  0.00000000000E+00 0.  1.
+       12    1    1    2    0    0 -0.40479339401E+02  0.73156768130E+01 -0.72095163289E+03  0.72212419500E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.17840806779E+02 -0.37662850049E+02 -0.13388302747E+03  0.14021929149E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.81367810059E+03  0.81367810059E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.33587832879E+02  0.33587832879E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.21442208546E+02 -0.64486383111E+02  0.77167408739E+03  0.77878897381E+03  0.80081874739E+02 0.  0.
+      -11    1    3    3    0    0  0.20922738318E+02 -0.23174973820E+01  0.70091714879E+02  0.73184563041E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.42364946864E+02 -0.62168885729E+02  0.70158237251E+03  0.70560441076E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.21442208546E+02  0.64486383111E+02  0.84161803279E+01  0.68476959668E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.40316793914E+01  0.40316793914E+01  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.99455695807E+03  0.99455695807E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.38336263695E+02 -0.54553871741E+01 -0.78522041448E+03  0.78966396772E+03  0.74152897681E+02 0.  0.
+      -11    1    3    3    0    0 -0.10813124113E+02 -0.19236006474E+02 -0.62372189985E+02  0.66160695897E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.27523139582E+02  0.13780619300E+02 -0.72284822449E+03  0.72350327182E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.38336263695E+02  0.54553871741E+01 -0.20530486420E+03  0.20892466975E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.13130087276E+04  0.13130087276E+04  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.45590861189E+01  0.45590861189E+01  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.51927579389E+02  0.19308799048E+02  0.99022780462E+03  0.99455939173E+03  0.74350355817E+02 0.  0.
+      -11    1    3    3    0    0 -0.23125940844E+02  0.99817391789E+01  0.80960792962E+02  0.84788526665E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.28801638545E+02  0.93270598688E+01  0.90926701166E+03  0.90977086507E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.51927579389E+02 -0.19308799048E+02  0.31822183688E+03  0.32300842201E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.82300121439E+03  0.82300121439E+03  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.17504310286E+02  0.17504310286E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.28267404796E+02 -0.21759197199E+02  0.79893693317E+03  0.80423512276E+03  0.84978824824E+02 0.  0.
+      -11    1    3    3    0    0 -0.12096940964E+02 -0.82029539980E+01  0.23800461433E+02  0.27930026842E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.40364345760E+02 -0.13556243201E+02  0.77513647173E+03  0.77630509592E+03  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501 -0.28267404796E+02  0.21759197199E+02  0.65599709419E+01  0.36270401920E+02  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.23924885011E+02  0.23924885011E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.33118182666E+03  0.33118182666E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.50842594682E+02  0.21104013684E+02 -0.27313094489E+03  0.29033841323E+03  0.81642711351E+02 0.  0.
+      -11    1    3    3    0    0  0.75016334403E+01 -0.11605159124E+02 -0.14629610858E+03  0.14694728854E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.58344228122E+02  0.32709172808E+02 -0.12683483631E+03  0.14339112470E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.50842594682E+02 -0.21104013684E+02 -0.34125996765E+02  0.64768298440E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.47461846566E+02  0.47461846566E+02  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.12467703748E+03  0.12467703748E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.40831313093E+02  0.58599194183E+01 -0.69914143096E+01  0.90696182808E+02  0.80469763994E+02 0.  0.
+      -11    1    3    3    0    0 -0.42020367913E+02  0.32326745990E+02 -0.25046972020E+02  0.58635148445E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.11890548195E+01 -0.26466826572E+02  0.18055557711E+02  0.32061034362E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.40831313093E+02 -0.58599194183E+01 -0.70223776603E+02  0.81442701238E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.73552986873E+01  0.73552986873E+01  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.47336680389E+03  0.47336680389E+03  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.30615868075E+02  0.29577645242E+01 -0.33440614075E+03  0.34557014476E+03  0.81517962618E+02 0.  0.
+      -11    1    3    3    0    0  0.56503868504E+02  0.14021394779E+02 -0.24573160901E+03  0.25253378058E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.25888000428E+02 -0.11063630255E+02 -0.88674531743E+02  0.93036364183E+02  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501 -0.30615868075E+02 -0.29577645242E+01 -0.13160536445E+03  0.13515195781E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.83112782688E+03  0.83112782688E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.10828872968E+02  0.10828872968E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.66053442710E+02  0.42059743458E+02  0.49416503709E+03  0.50655334415E+03  0.79152556952E+02 0.  0.
+      -11    1    3    3    0    0 -0.77687388363E+01  0.11228127920E+02  0.13238029460E+02  0.19017612460E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.73822181546E+02  0.30831615538E+02  0.48092700763E+03  0.48753573169E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.66053442710E+02 -0.42059743458E+02  0.32613391682E+03  0.33540335570E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.55102974125E+03  0.55102974125E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.10003740380E+02  0.10003740380E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.30380050959E+02  0.24213066994E+02  0.48534614438E+03  0.49314042949E+03  0.78213702306E+02 0.  0.
+      -11    1    3    3    0    0 -0.58824857789E+01 -0.12504300185E+02  0.16765094413E+02  0.21726241109E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.36262536738E+02  0.36717367180E+02  0.46858104996E+03  0.47141418838E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.30380050959E+02 -0.24213066994E+02  0.55679856491E+02  0.67893052137E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.11319707251E+04  0.11319707251E+04  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.22111127962E+02  0.22111127962E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.42488453235E+01  0.43877923877E+02  0.11062493768E+04  0.11098511105E+04  0.77707651401E+02 0.  0.
+      -11    1    3    3    0    0 -0.27163202528E+01 -0.21899536429E+02  0.37454305406E+03  0.37519257380E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.15325250706E+01  0.65777460306E+02  0.73170632270E+03  0.73465853673E+03  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501  0.42488453235E+01 -0.43877923877E+02  0.36102203432E+01  0.44230742491E+02  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.10793169934E+02  0.10793169934E+02  0.00000000000E+00 0.  1.
+       -3   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.69330147761E+03  0.69330147761E+03  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.34368183765E+02 -0.90709112316E+01 -0.65041579582E+03  0.65620537105E+03  0.79380904836E+02 0.  0.
+      -11    1    3    3    0    0  0.40919285534E+02 -0.18905730479E+02 -0.63586468030E+03  0.63746035660E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.65511017692E+01  0.98348192478E+01 -0.14551115520E+02  0.18745014455E+02  0.00000000000E+00 0. -1.
+       -4    1    1    2    0  502 -0.34368183765E+02  0.90709112316E+01 -0.32092511848E+02  0.47889276488E+02  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.29604173940E+02  0.29604173940E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.35312694598E+03  0.35312694598E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.50655320667E+02 -0.41897590511E+02 -0.29264436765E+03  0.31010298859E+03  0.78751304839E+02 0.  0.
+      -11    1    3    3    0    0 -0.13525100812E+01  0.20727257587E+02 -0.71302318866E+02  0.74266204739E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.52007830748E+02 -0.62624848098E+02 -0.22134204879E+03  0.23583678386E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.50655320667E+02  0.41897590511E+02 -0.30878404390E+02  0.72628131328E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.65705544644E+03  0.65705544644E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.14333749120E+02  0.14333749120E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.12595265162E+02 -0.32563016436E+02  0.62576186217E+03  0.63257390537E+03  0.85748742707E+02 0.  0.
+      -11    1    3    3    0    0 -0.83727195828E+01  0.13586746910E+02  0.24886039388E+02  0.29563779888E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.20967984745E+02 -0.46149763346E+02  0.60087582278E+03  0.60301012549E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.12595265162E+02  0.32563016436E+02  0.16959835157E+02  0.38815290189E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.26929945165E+03  0.26929945165E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.18026421790E+02  0.18026421790E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.24393433437E+02 -0.36646788237E+02  0.19854795660E+03  0.21863846533E+03  0.80271170209E+02 0.  0.
+      -11    1    3    3    0    0 -0.28212369458E+02  0.19723770753E+02  0.87898225928E+02  0.94398427129E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.38189360214E+01 -0.56370558990E+02  0.11064973068E+03  0.12424003820E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.24393433437E+02  0.36646788237E+02  0.52725073251E+02  0.68687408106E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.93634503777E+02  0.93634503777E+02  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.12431965726E+03  0.12431965726E+03  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.35797114242E+02  0.71158656666E+02 -0.63641817062E+02  0.13175016182E+03  0.83443612426E+02 0.  0.
+      -11    1    3    3    0    0  0.55052892178E+02  0.18531823240E+02 -0.22778862698E+02  0.62394919629E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.19255777935E+02  0.52626833426E+02 -0.40862954365E+02  0.69355242194E+02  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501 -0.35797114242E+02 -0.71158656666E+02  0.32956663577E+02  0.86203999216E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.17850833661E+02  0.17850833661E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.67083315031E+03  0.67083315031E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.32084912238E+02  0.22210501159E+02 -0.64217040944E+03  0.64819145018E+03  0.79035266608E+02 0.  0.
+      -11    1    3    3    0    0  0.32538025178E+02 -0.24283751707E+02 -0.25018193635E+03  0.25345497619E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.45311294015E+00  0.46494252866E+02 -0.39198847310E+03  0.39473647400E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.32084912238E+02 -0.22210501159E+02 -0.10811907202E+02  0.40492533786E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.20586767948E+01  0.20586767948E+01  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.25460221891E+04  0.25460221891E+04  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.57635198743E+01 -0.42800092651E+02 -0.11869583243E+04  0.11903886525E+04  0.79309609995E+02 0.  0.
+      -11    1    3    3    0    0  0.11674467876E+02  0.15876627203E+02 -0.10557958523E+03  0.10740302281E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.59109480013E+01 -0.58676719854E+02 -0.10813787391E+04  0.10829856297E+04  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.57635198743E+01  0.42800092651E+02 -0.13570051880E+04  0.13576922134E+04  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.39322593858E+02  0.39322593858E+02  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.17506411784E+03  0.17506411784E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.14036293937E+02 -0.61827571233E+02 -0.68524127602E+02  0.12198625451E+03  0.78520214686E+02 0.  0.
+      -11    1    3    3    0    0  0.22435692396E+02 -0.45161676774E+02 -0.10588709785E+02  0.51527256061E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.36471986332E+02 -0.16665894459E+02 -0.57935417817E+02  0.70458998451E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.14036293937E+02  0.61827571233E+02 -0.67217396382E+02  0.92400457188E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.35710355243E+03  0.35710355243E+03  0.00000000000E+00 0.  1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.15873138186E+03  0.15873138186E+03  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.15023724970E+03  0.62599549154E+01  0.29239143245E+03  0.33849334346E+03  0.80464747343E+02 0.  0.
+      -11    1    3    3    0    0 -0.12811432096E+03  0.36172198945E+02  0.22127633627E+03  0.25823424290E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.22122928742E+02 -0.29912244029E+02  0.71115096175E+02  0.80259100562E+02  0.00000000000E+00 0. -1.
+       -2    1    1    2    0  502  0.15023724970E+03 -0.62599549154E+01 -0.94019261882E+02  0.17734159083E+03  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.48505925336E+01  0.48505925336E+01  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.87025105234E+03  0.87025105234E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.65849610789E+01 -0.35763596428E+02 -0.45672703338E+03  0.46481349490E+03  0.78291797009E+02 0.  0.
+      -11    1    3    3    0    0 -0.74051116395E+01 -0.37671167653E+02 -0.45963758998E+03  0.46123818866E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.82015056061E+00  0.19075712251E+01  0.29105566081E+01  0.35753062372E+01  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.65849610789E+01  0.35763596428E+02 -0.40867342643E+03  0.41028814998E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.51837974095E+01  0.51837974095E+01  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.13585670109E+04  0.13585670109E+04  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.24448744833E+02  0.55267993546E+02 -0.10147279586E+04  0.10197454684E+04  0.80967265497E+02 0.  0.
+      -11    1    3    3    0    0  0.28819431324E+02  0.36195220621E+02 -0.22171047167E+03  0.22648661520E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.43706864907E+01  0.19072772925E+02 -0.79301748697E+03  0.79325885322E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.24448744833E+02 -0.55267993546E+02 -0.33865525482E+03  0.34400533986E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.59774424000E+03  0.59774424000E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.88798505318E+02  0.88798505318E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.12814393370E+03  0.64889124129E+02  0.51717970684E+03  0.54267035578E+03  0.79904941631E+02 0.  0.
+      -11    1    3    3    0    0  0.48553839529E+01  0.24984829041E+02  0.75049771013E+02  0.79248246445E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.13299931765E+03  0.39904295088E+02  0.44212993583E+03  0.46342210933E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.12814393370E+03 -0.64889124129E+02 -0.82339721589E+01  0.14387238954E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.15393707083E+04  0.15393707083E+04  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.10824410813E+02  0.10824410813E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.28496228991E+02  0.11176793161E+03  0.94020842435E+03  0.95065733167E+03  0.80332903821E+02 0.  0.
+      -11    1    3    3    0    0 -0.62211206788E+00  0.13035476455E+02  0.15610242048E+02  0.20346752238E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.29118341059E+02  0.98732455160E+02  0.92459818230E+03  0.93031057943E+03  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501 -0.28496228991E+02 -0.11176793161E+03  0.58833787312E+03  0.59953778742E+03  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.64649615591E+02  0.64649615591E+02  0.00000000000E+00 0.  1.
+        4   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.98542165148E+02  0.98542165148E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.28643678175E+02  0.40245143575E+02  0.74393928258E+01  0.98783230516E+02  0.85221183897E+02 0.  0.
+      -11    1    3    3    0    0  0.34986105051E+02  0.32460716625E+02  0.41517351700E+02  0.63256747962E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.63424268766E+01  0.77844269494E+01 -0.34077958875E+02  0.35526482554E+02  0.00000000000E+00 0. -1.
+        3    1    1    2  501    0 -0.28643678175E+02 -0.40245143575E+02 -0.41331942383E+02  0.64408550223E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.53736385848E+03  0.53736385848E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.72543115387E+01  0.72543115387E+01  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.67805231287E+01  0.32113858880E+02  0.43021202769E+03  0.43946689908E+03  0.83495456153E+02 0.  0.
+      -11    1    3    3    0    0 -0.37717424301E+02  0.10846014980E+02  0.15641854927E+03  0.16126686793E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.44497947429E+02  0.21267843900E+02  0.27379347841E+03  0.27820003115E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.67805231287E+01 -0.32113858880E+02  0.99897519260E+02  0.10515127094E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.12771264060E+04  0.12771264060E+04  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.50555587191E+01  0.50555587191E+01  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.41863082465E+02 -0.42580467332E+02  0.86006350719E+03  0.86586998776E+03  0.80349147043E+02 0.  0.
+      -11    1    3    3    0    0  0.42617381934E+02  0.10424227645E+02  0.50058363968E+03  0.50250262295E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.75429946853E+00 -0.53004694976E+02  0.35947986751E+03  0.36336736480E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.41863082465E+02  0.42580467332E+02  0.41200734011E+03  0.41631197698E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.11703394534E+04  0.11703394534E+04  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.15240006326E+02  0.15240006326E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.36179653203E+02  0.43033186122E+02  0.11079358417E+04  0.11121953464E+04  0.79346309657E+02 0.  0.
+      -11    1    3    3    0    0 -0.88868176992E+01  0.75797063908E+01  0.18747130711E+02  0.22088059844E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.27292835503E+02  0.35453479731E+02  0.10891887109E+04  0.10901072865E+04  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.36179653203E+02 -0.43033186122E+02  0.47163605367E+02  0.73384113300E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.13107573839E+02  0.13107573839E+02  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.30983494149E+03  0.30983494149E+03  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.18920648562E+02  0.31087384855E+02 -0.23723424665E+03  0.25320122279E+03  0.80661979873E+02 0.  0.
+      -11    1    3    3    0    0  0.19858100944E+02  0.78689564856E+01 -0.22667168294E+03  0.22767590232E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.93745238192E+00  0.23218428370E+02 -0.10562563713E+02  0.25525320471E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.18920648562E+02 -0.31087384855E+02 -0.59493121000E+02  0.69741292542E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.66607758378E+02  0.66607758378E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.10141469634E+03  0.10141469634E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.44523079069E+02  0.15192340253E+02 -0.64137608917E+02  0.11258420050E+03  0.79677208483E+02 0.  0.
+      -11    1    3    3    0    0  0.19189015013E+01  0.39173503880E+02 -0.35930406417E+02  0.53190597801E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.46441980570E+02 -0.23981163627E+02 -0.28207202500E+02  0.59393602695E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.44523079069E+02 -0.15192340253E+02  0.29330670957E+02  0.55438254219E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.22985114570E+02  0.22985114570E+02  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.19505129496E+03  0.19505129496E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.22201603369E+02 -0.34554001298E+02 -0.13992579636E+03  0.16588380189E+03  0.79065270791E+02 0.  0.
+      -11    1    3    3    0    0  0.31338687468E+02 -0.23375768996E+02 -0.17887038248E+02  0.42994023372E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.91370840990E+01 -0.11178232302E+02 -0.12203875811E+03  0.12288977852E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.22201603369E+02  0.34554001298E+02 -0.32140384027E+02  0.52152607636E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.20316786010E+04  0.20316786010E+04  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.31802004675E+01  0.31802004675E+01  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.11230105664E+02 -0.31946804017E+02  0.18994858769E+04  0.19014761009E+04  0.80112746402E+02 0.  0.
+      -11    1    3    3    0    0  0.20036180797E+02 -0.32133167580E+02  0.36390712191E+03  0.36587208471E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.88060751330E+01  0.18636356271E+00  0.15355787550E+04  0.15356040162E+04  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.11230105664E+02  0.31946804017E+02  0.12901252359E+03  0.13338270054E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.57560890477E+01  0.57560890477E+01  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.16114331324E+04  0.16114331324E+04  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.72041182140E+02  0.32822209600E+02 -0.87623418172E+03  0.88346303427E+03  0.80332822283E+02 0.  0.
+      -11    1    3    3    0    0 -0.10726378613E+02 -0.60996771621E+01 -0.32127746236E+02  0.34415887869E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.82767560753E+02  0.38921886762E+02 -0.84410643548E+03  0.84904714640E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.72041182140E+02 -0.32822209600E+02 -0.72944286162E+03  0.73372618717E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00  0.20087361335E+03  0.20087361335E+03  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.38137443994E+02  0.38137443994E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.64892188342E+02  0.23487665318E+02  0.10504781462E+03  0.14906322356E+03  0.80138222669E+02 0.  0.
+      -11    1    3    3    0    0  0.15931016678E+01  0.38986297115E+02  0.52129010529E+02  0.65114538118E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.63299086674E+02 -0.15498631797E+02  0.52918804094E+02  0.83948685446E+02  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501 -0.64892188342E+02 -0.23487665318E+02  0.57688354735E+02  0.89947833781E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.50335509321E+03  0.50335509321E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.12882360044E+02  0.12882360044E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.29953996531E+01 -0.52432565345E+02  0.40243263603E+03  0.41372303948E+03  0.80352850150E+02 0.  0.
+      -11    1    3    3    0    0 -0.34367961299E+02 -0.46467459251E+02  0.32266593025E+03  0.32780128748E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.31372561646E+02 -0.59651060941E+01  0.79766705785E+02  0.85921752000E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.29953996531E+01  0.52432565345E+02  0.88040097133E+02  0.10251441377E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.12931863090E+04  0.12931863090E+04  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.81377898574E+01  0.81377898574E+01  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.83194620158E+02 -0.11604904387E+02  0.61548658899E+03  0.62651360921E+03  0.81483388917E+02 0.  0.
+      -11    1    3    3    0    0  0.70825702950E+02 -0.38815531863E+02  0.34241154365E+03  0.35180760500E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.12368917208E+02  0.27210627476E+02  0.27307504534E+03  0.27470600421E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.83194620158E+02  0.11604904387E+02  0.66956193016E+03  0.67481048966E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.10506143464E+04  0.10506143464E+04  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.21463871681E+02  0.21463871681E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.45079174337E+02  0.13309824306E+03  0.62145249446E+03  0.64084171989E+03  0.68757783635E+02 0.  0.
+      -11    1    3    3    0    0  0.11588989519E+02  0.61123303376E+02  0.14443275794E+03  0.15726151615E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.33490184818E+02  0.71974939689E+02  0.47701973652E+03  0.48358020374E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.45079174337E+02 -0.13309824306E+03  0.40769798022E+03  0.43123649816E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.13659123925E+02  0.13659123925E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.77386907423E+03  0.77386907423E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.41261484074E+02  0.66929887992E+02 -0.29628776299E+03  0.31699029760E+03  0.80711153512E+02 0.  0.
+      -11    1    3    3    0    0  0.12835530126E+02 -0.96295196309E+01 -0.22784791756E+02  0.27867996291E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.54097014200E+02  0.76559407623E+02 -0.27350297123E+03  0.28912230131E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.41261484074E+02 -0.66929887992E+02 -0.46392218732E+03  0.47053790056E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.14930984504E+02  0.14930984504E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.43412727552E+03  0.43412727552E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.35088658326E+02  0.11202006419E+02 -0.39521701788E+03  0.40510710041E+03  0.80985015227E+02 0.  0.
+      -11    1    3    3    0    0  0.12762276492E+02 -0.23858447743E+02 -0.17324669835E+03  0.17534685546E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.47850934817E+02  0.35060454162E+02 -0.22197031953E+03  0.22976024495E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.35088658326E+02 -0.11202006419E+02 -0.23979273132E+02  0.43951159608E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.10278139294E+02  0.10278139294E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.38625511479E+03  0.38625511479E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.35903851341E+02 -0.10611940350E+02 -0.27676450850E+03  0.29049168947E+03  0.79907000099E+02 0.  0.
+      -11    1    3    3    0    0 -0.13462853505E+02 -0.26423354668E+02 -0.16018556546E+03  0.16290751203E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.49366704846E+02  0.15811414317E+02 -0.11657894304E+03  0.12758417743E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.35903851341E+02  0.10611940350E+02 -0.99212466995E+02  0.10604156462E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.30847697965E+02  0.30847697965E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.41620154508E+03  0.41620154508E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.34534962269E+02  0.63918896073E+02 -0.35235184035E+03  0.36725311943E+03  0.73788518336E+02 0.  0.
+      -11    1    3    3    0    0  0.55892474611E+01 -0.47606846224E+01 -0.14944935455E+01  0.74924839815E+01  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.40124209730E+02  0.68679580695E+02 -0.35085734680E+03  0.35976063545E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.34534962269E+02 -0.63918896073E+02 -0.33002006769E+02  0.79796123620E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.74562972233E+03  0.74562972233E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.49255453564E+01  0.49255453564E+01  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.76034744323E+01 -0.29772279383E+02  0.62851566711E+03  0.63423474848E+03  0.79231123513E+02 0.  0.
+      -11    1    3    3    0    0 -0.76005627806E+01 -0.30802274507E+02  0.85155127485E+02  0.90873232617E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.29116516247E-02  0.10299951234E+01  0.54336053962E+03  0.54336151586E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.76034744323E+01  0.29772279383E+02  0.11218850987E+03  0.11632051921E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.24772508878E+02  0.24772508878E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.55839961778E+03  0.55839961778E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.53162445098E+01 -0.88601133834E+02 -0.42598818879E+03  0.44365667771E+03  0.86526801139E+02 0.  0.
+      -11    1    3    3    0    0 -0.49570005095E+01  0.88458707032E+01 -0.45769258304E+01  0.11125175621E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.35924400026E+00 -0.97447004537E+02 -0.42141126296E+03  0.43253150209E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.53162445098E+01  0.88601133834E+02 -0.10763892011E+03  0.13951544895E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.56472282001E+03  0.56472282001E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.23118139155E+02  0.23118139155E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.59714881770E+02  0.14065442092E+02  0.50831678788E+03  0.51804276732E+03  0.78858405821E+02 0.  0.
+      -11    1    3    3    0    0 -0.25542279591E+02 -0.31490469126E+02  0.15759095251E+03  0.16272358774E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.34172602179E+02  0.45555911218E+02  0.35072583537E+03  0.35531917958E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.59714881770E+02 -0.14065442092E+02  0.33287892977E+02  0.69798191845E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.20362583918E+03  0.20362583918E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.23581697180E+02  0.23581697180E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.43825242228E+02 -0.14698625681E+01  0.14187525217E+03  0.16907255117E+03  0.80833953437E+02 0.  0.
+      -11    1    3    3    0    0  0.23184870806E+02 -0.35566653931E+01 -0.21559562006E+01  0.23554962325E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.20640371422E+02  0.20868028250E+01  0.14403120837E+03  0.14551758884E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.43825242228E+02  0.14698625681E+01  0.38168889834E+02  0.58134985194E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.26385908029E+02  0.26385908029E+02  0.00000000000E+00 0.  1.
+       -3   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.16485612695E+03  0.16485612695E+03  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.33727661632E+02  0.31770522418E+01 -0.13006804493E+03  0.15633866339E+03  0.79852567520E+02 0.  0.
+      -11    1    3    3    0    0 -0.58588072932E+02 -0.73474789915E+01 -0.79673680705E+02  0.99168760880E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.24860411300E+02  0.10524531233E+02 -0.50394364227E+02  0.57169902514E+02  0.00000000000E+00 0. -1.
+       -4    1    1    2    0  502  0.33727661632E+02 -0.31770522418E+01 -0.84021739853E+01  0.34903371582E+02  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.22004668591E+02  0.22004668591E+02  0.00000000000E+00 0.  1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.24615062661E+03  0.24615062661E+03  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.49020288210E+02  0.13945952132E+02 -0.16158505502E+03  0.18746239080E+03  0.80218076019E+02 0.  0.
+      -11    1    3    3    0    0  0.40119503029E+02 -0.27982972213E+02 -0.11005452201E+03  0.12043512391E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.89007851808E+01  0.41928924345E+02 -0.51530533012E+02  0.67027266885E+02  0.00000000000E+00 0. -1.
+       -2    1    1    2    0  502 -0.49020288210E+02 -0.13945952132E+02 -0.62560903000E+02  0.80692904405E+02  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.13406314576E+03  0.13406314576E+03  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.36646974297E+03  0.36646974297E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.16561267559E+02  0.81042951400E+02 -0.34333537193E+03  0.36215865479E+03  0.80233895993E+02 0.  0.
+      -11    1    3    3    0    0 -0.60246957908E+01  0.23473493049E+02 -0.16015825391E+02  0.29048382025E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.22585963350E+02  0.57569458351E+02 -0.32731954654E+03  0.33311027277E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.16561267559E+02 -0.81042951400E+02  0.11092877473E+03  0.13837423394E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.13051317934E+02  0.13051317934E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.15862727492E+04  0.15862727492E+04  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.22599328008E+02 -0.13067887311E+03 -0.86691854295E+03  0.88067848860E+03  0.80368791642E+02 0.  0.
+      -11    1    3    3    0    0  0.24073629704E+02 -0.53549332384E+02 -0.46986851859E+03  0.47352243390E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.46672957713E+02 -0.77129540724E+02 -0.39705002436E+03  0.40715605470E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.22599328008E+02  0.13067887311E+03 -0.70630288836E+03  0.71864557858E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.31510019859E+03  0.31510019859E+03  0.00000000000E+00 0.  1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.43411767743E+02  0.43411767743E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.30155412335E+02  0.85081596732E+02  0.77181100172E+02  0.14407939259E+03  0.81570350924E+02 0.  0.
+      -11    1    3    3    0    0 -0.57779889398E+01  0.94753158795E+02  0.54863129437E+02  0.10964264330E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.24377423395E+02 -0.96715620623E+01  0.22317970735E+02  0.34436749292E+02  0.00000000000E+00 0. -1.
+       -2    1    1    2    0  502  0.30155412335E+02 -0.85081596732E+02  0.19450733067E+03  0.21443257374E+03  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.14844301753E+03  0.14844301753E+03  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.46740714897E+02  0.46740714897E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.31289881023E+02 -0.59266212226E+02  0.27945266094E+02  0.95526113527E+02  0.62070604173E+02 0.  0.
+      -11    1    3    3    0    0  0.12659628781E+02 -0.10058310215E+02 -0.19043753456E+02  0.24982000539E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.18630252242E+02 -0.49207902011E+02  0.46989019550E+02  0.70544112988E+02  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501 -0.31289881023E+02  0.59266212226E+02  0.73757036539E+02  0.99657618901E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.11449025088E+04  0.11449025088E+04  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.40928621044E+01  0.40928621044E+01  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.16463413418E+02  0.35263600962E+02  0.95322480524E+03  0.95741604457E+03  0.80581558349E+02 0.  0.
+      -11    1    3    3    0    0  0.40671006171E+02  0.24546160239E+02  0.30740259805E+03  0.31105144593E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.24207592753E+02  0.10717440723E+02  0.64582220718E+03  0.64636459864E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.16463413418E+02 -0.35263600962E+02  0.18758484150E+03  0.19157932637E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.48067230059E+03  0.48067230059E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.43611065617E+02  0.43611065617E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.67827835434E+02 -0.42962510135E+02  0.42903259919E+03  0.44359351846E+03  0.79119188044E+02 0.  0.
+      -11    1    3    3    0    0 -0.29191881703E+02  0.22397971184E+02  0.14116985280E+03  0.14588612823E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.38635953731E+02 -0.65360481320E+02  0.28786274639E+03  0.29770739023E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.67827835434E+02  0.42962510135E+02  0.80286357845E+01  0.80689847746E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.54154736030E+03  0.54154736030E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.15854787273E+02  0.15854787273E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.31948192941E+02  0.12428111932E+02  0.51390512593E+03  0.52115178333E+03  0.79533375458E+02 0.  0.
+      -11    1    3    3    0    0 -0.57647508863E+01 -0.11991114463E+02  0.14306425297E+02  0.19536964545E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.37712943827E+02  0.24419226395E+02  0.49959870064E+03  0.50161481879E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.31948192941E+02 -0.12428111932E+02  0.11787447088E+02  0.36250364236E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.24938755393E+03  0.24938755393E+03  0.00000000000E+00 0. -1.
+       -3   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.37148676788E+02  0.37148676788E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.32385754794E+02 -0.32076623842E+02  0.27500921771E+02  0.96257858155E+02  0.80196805720E+02 0.  0.
+      -11    1    3    3    0    0 -0.98955440893E-01  0.25318867573E+02  0.14892425733E+01  0.25362821034E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.32484710235E+02 -0.57395491415E+02  0.26011679198E+02  0.70895037122E+02  0.00000000000E+00 0. -1.
+       -4    1    1    2    0  502 -0.32385754794E+02  0.32076623842E+02  0.18473795537E+03  0.19027837257E+03  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.26292663583E+01  0.26292663583E+01  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.18393731542E+04  0.18393731542E+04  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.70898945921E+01  0.33665429364E+02 -0.16365569400E+04  0.16388806792E+04  0.80172532368E+02 0.  0.
+      -11    1    3    3    0    0 -0.10629178102E+02  0.52387197751E+02 -0.66766903403E+03  0.66980544706E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.35392835097E+01 -0.18721768387E+02 -0.96888790600E+03  0.96907523213E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.70898945921E+01 -0.33665429364E+02 -0.20018694785E+03  0.20312174140E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.22593125438E+02  0.22593125438E+02  0.00000000000E+00 0. -1.
+       -3   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.24275645546E+03  0.24275645546E+03  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.10519875142E+02  0.31608601565E+02 -0.70306043547E+02  0.11183418175E+03  0.80337867675E+02 0.  0.
+      -11    1    3    3    0    0 -0.18815098349E+02  0.62679394006E+01 -0.80786141562E+02  0.83184708082E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.82952232071E+01  0.25340662165E+02  0.10480098015E+02  0.28649473667E+02  0.00000000000E+00 0. -1.
+       -4    1    1    2    0  502  0.10519875142E+02 -0.31608601565E+02 -0.14985728648E+03  0.15351539915E+03  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.33906646628E+03  0.33906646628E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.32831498344E+02  0.32831498344E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.36597272711E+02 -0.40299924406E+02  0.30122885872E+03  0.31723074038E+03  0.83265076964E+02 0.  0.
+      -11    1    3    3    0    0  0.19132504306E+02 -0.38979619551E+02  0.11952199734E+03  0.12716513402E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.55729777017E+02 -0.13203048553E+01  0.18170686138E+03  0.19006560636E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.36597272711E+02  0.40299924406E+02  0.50061092210E+01  0.54667224245E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.30204855156E+03  0.30204855156E+03  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.11642082615E+02  0.11642082615E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.22120942749E+02 -0.20722937184E+02  0.15964804780E+03  0.17946492526E+03  0.76166816913E+02 0.  0.
+      -11    1    3    3    0    0 -0.32911227287E+02 -0.39741161863E+02  0.68668003039E+02  0.85894141064E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.10790284539E+02  0.19018224679E+02  0.90980044757E+02  0.93570784192E+02  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501  0.22120942749E+02  0.20722937184E+02  0.13075842115E+03  0.13422570892E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.72754444436E+02  0.72754444436E+02  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.65853128253E+02  0.65853128253E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.14600570856E+02  0.37975262490E+02  0.24717441651E+02  0.94192355059E+02  0.81276999202E+02 0.  0.
+      -11    1    3    3    0    0  0.18670851888E+02  0.94528010454E+01  0.51042066517E+02  0.55165647936E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.40702810323E+01  0.28522461444E+02 -0.26324624866E+02  0.39026707123E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.14600570856E+02 -0.37975262490E+02 -0.17816125467E+02  0.44415217630E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.14675333463E+03  0.14675333463E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.41817945407E+02  0.41817945407E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.57938756394E+01  0.31570926322E+02  0.12412236535E+03  0.15117565949E+03  0.80108838837E+02 0.  0.
+      -11    1    3    3    0    0 -0.41386366076E+02  0.19821764771E+02  0.48464401622E+02  0.66742279555E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.35592490437E+02  0.11749161551E+02  0.75657963724E+02  0.84433379936E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.57938756394E+01 -0.31570926322E+02 -0.19186976119E+02  0.37395620550E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.66051340160E+02  0.66051340160E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.12921570176E+03  0.12921570176E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.38079810584E+02 -0.28921622946E+02 -0.96725150226E+02  0.13684736389E+03  0.84171931596E+02 0.  0.
+      -11    1    3    3    0    0  0.23270937854E+02  0.28801971429E+02 -0.41223755122E+02  0.55411985104E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.14808872730E+02 -0.57723594375E+02 -0.55501395104E+02  0.81435378783E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.38079810584E+02  0.28921622946E+02  0.33560788629E+02  0.58419678031E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.88655045533E+01  0.88655045533E+01  0.00000000000E+00 0.  1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.79643893257E+03  0.79643893257E+03  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.37842974121E+02 -0.25715612617E+02 -0.70474451654E+03  0.71067879578E+03  0.79411168995E+02 0.  0.
+      -11    1    3    3    0    0  0.12177730345E+01 -0.42628098491E+02 -0.48349421177E+03  0.48537129145E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.39060747156E+02  0.16912485874E+02 -0.22125030477E+03  0.22530750433E+03  0.00000000000E+00 0. -1.
+       -2    1    1    2    0  502  0.37842974121E+02  0.25715612617E+02 -0.82828911484E+02  0.94625641346E+02  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.23534056623E+02  0.23534056623E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.37593546614E+03  0.37593546614E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.12051232104E+02  0.74374650658E+02 -0.26008378886E+03  0.28030843877E+03  0.72473600433E+02 0.  0.
+      -11    1    3    3    0    0 -0.12576767641E+02  0.42662432857E+02 -0.52184768550E+02  0.68567545750E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.24627999745E+02  0.31712217802E+02 -0.20789902031E+03  0.21174089302E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.12051232104E+02 -0.74374650658E+02 -0.92317620657E+02  0.11916108400E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.26779224635E+03  0.26779224635E+03  0.00000000000E+00 0. -1.
+       -3   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.72473659337E+02  0.72473659337E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0  0.55732666127E+02  0.11129429392E+03  0.93205307640E+02  0.17927003072E+03  0.89207424630E+02 0.  0.
+      -11    1    3    3    0    0 -0.85524162645E+01  0.24112840093E+01  0.41869928494E+02  0.42802441830E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.64285082392E+02  0.10888300991E+03  0.51335379146E+02  0.13646758889E+03  0.00000000000E+00 0. -1.
+       -4    1    1    2    0  502 -0.55732666127E+02 -0.11129429392E+03  0.10211327937E+03  0.16099587496E+03  0.00000000000E+00 0.  1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.46388741853E+03  0.46388741853E+03  0.00000000000E+00 0. -1.
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00 -0.14251866627E+02  0.14251866627E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.17535817535E+02 -0.47383493276E+02  0.17523554650E+03  0.19912662721E+03  0.79945084737E+02 0.  0.
+      -11    1    3    3    0    0 -0.44543180529E+02 -0.10551058114E+02  0.62333004478E+02  0.77335782185E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.27007362994E+02 -0.36832435162E+02  0.11290254202E+03  0.12179084502E+03  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501  0.17535817535E+02  0.47383493276E+02  0.27440000540E+03  0.27901265795E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       -1   -1    0    0    0  501  0.00000000000E+00  0.00000000000E+00  0.27005761571E+03  0.27005761571E+03  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.79191603246E+02  0.79191603246E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.13240367194E+02  0.12292360474E+03  0.41677928378E+02  0.15549007889E+03  0.84584839021E+02 0.  0.
+      -11    1    3    3    0    0  0.87582221020E+01  0.11905997291E+03  0.52802504892E+02  0.13053768853E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.21998589296E+02  0.38636318325E+01 -0.11124576514E+02  0.24952390358E+02  0.00000000000E+00 0. -1.
+       21    1    1    2  502  501  0.13240367194E+02 -0.12292360474E+03  0.14918808409E+03  0.19375914007E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.12795564547E+02  0.12795564547E+02  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.47461224197E+03  0.47461224197E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.57017439799E+02 -0.74355780812E+01 -0.25997777871E+03  0.27753828206E+03  0.78312044559E+02 0.  0.
+      -11    1    3    3    0    0  0.92738256377E+01 -0.43822496016E+01  0.26457250617E+01  0.10592819013E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.47743614161E+02 -0.30533284796E+01 -0.26262350377E+03  0.26694546305E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.57017439799E+02  0.74355780812E+01 -0.20183889871E+03  0.20986952446E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.13761837779E+03  0.13761837779E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.38085309428E+02  0.38085309428E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.18453114026E+02  0.46198571159E+02  0.66685873360E+02  0.11609023560E+03  0.80963644315E+02 0.  0.
+      -11    1    3    3    0    0 -0.13379882953E+02  0.61337553448E+02  0.18681868119E+02  0.65500602495E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.50732310726E+01 -0.15138982288E+02  0.48004005241E+02  0.50589633102E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.18453114026E+02 -0.46198571159E+02  0.32847194999E+02  0.59613451617E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        4   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.33082890506E+02  0.33082890506E+02  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.26357703179E+03  0.26357703179E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.45931155314E+02 -0.33821440156E+02 -0.46481991756E+02  0.10400989760E+03  0.73511375975E+02 0.  0.
+      -11    1    3    3    0    0 -0.18497511260E+02 -0.58279319820E+01 -0.22676187427E+02  0.29838434782E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.64428666574E+02 -0.27993508174E+02 -0.23805804330E+02  0.74171462816E+02  0.00000000000E+00 0. -1.
+        3    1    1    2  501    0 -0.45931155314E+02  0.33821440156E+02 -0.18401214953E+03  0.19265002470E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.28025022782E+02  0.28025022782E+02  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.59609666031E+03  0.59609666031E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.29383368699E+02  0.48229861982E+02 -0.55826327354E+03  0.56680060541E+03  0.80097077097E+02 0.  0.
+      -11    1    3    3    0    0  0.89149321774E+01  0.50418524934E+02 -0.19846210666E+03  0.20496026798E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.38298300877E+02 -0.21886629521E+01 -0.35980116688E+03  0.36184033742E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.29383368699E+02 -0.48229861982E+02 -0.98083639854E+01  0.57321077685E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.27739220982E+01  0.27739220982E+01  0.00000000000E+00 0. -1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.22273948506E+04  0.22273948506E+04  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.62524133777E+01 -0.43415461146E+02 -0.19416896582E+04  0.19438575807E+04  0.80619913226E+02 0.  0.
+      -11    1    3    3    0    0 -0.32580112588E+01 -0.14376197494E+02 -0.55613658035E+02  0.57534065143E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.95104246365E+01 -0.29039263651E+02 -0.18860760001E+04  0.18863235155E+04  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.62524133777E+01  0.43415461146E+02 -0.28293127032E+03  0.28631119200E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.47214571110E+02  0.47214571110E+02  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.28340630829E+03  0.28340630829E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0 -0.85627865909E+02  0.55166569141E+02 -0.12949556502E+03  0.18310967669E+03  0.79903507854E+02 0.  0.
+      -11    1    3    3    0    0 -0.84886985154E+02  0.72575577151E+02 -0.10712801599E+03  0.15475602236E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.74088075477E+00 -0.17409008010E+02 -0.22367549037E+02  0.28353654335E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.85627865909E+02 -0.55166569141E+02 -0.10669617216E+03  0.14751120271E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.19862249542E+03  0.19862249542E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.26854743189E+02  0.26854743189E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.42557289062E+02 -0.25438827979E+02  0.13363648725E+03  0.16292925550E+03  0.78923854151E+02 0.  0.
+      -11    1    3    3    0    0 -0.13879119318E+02 -0.31085779642E+02  0.68964139003E+02  0.76909089953E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.56436408380E+02  0.56469516630E+01  0.64672348244E+02  0.86020165550E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.42557289062E+02  0.25438827979E+02  0.38131264983E+02  0.62547983105E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.89545104230E+02  0.89545104230E+02  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.42745202229E+02  0.42745202229E+02  0.00000000000E+00 0.  1.
+       24    2    1    2    0    0 -0.34127716469E+02 -0.92023825617E+01  0.39852768861E+02  0.96267431294E+02  0.80185973000E+02 0.  0.
+      -11    1    3    3    0    0  0.14241955489E+02  0.15106544403E+02 -0.96655158255E+01  0.22901161021E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0 -0.48369671958E+02 -0.24308926965E+02  0.49518284686E+02  0.73366270273E+02  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0  0.34127716469E+02  0.92023825617E+01  0.69471331405E+01  0.36022875164E+02  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00  0.66799024333E+01  0.66799024333E+01  0.00000000000E+00 0.  1.
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00 -0.51390245246E+03  0.51390245246E+03  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.29053815473E+02 -0.21025194803E+02 -0.30463279938E+03  0.31484273771E+03  0.70983265795E+02 0.  0.
+      -11    1    3    3    0    0  0.17488981180E+02 -0.42220252831E+02 -0.11610237109E+03  0.12477249210E+03  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.11564834293E+02  0.21195058027E+02 -0.18853042829E+03  0.19007024561E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.29053815473E+02  0.21025194803E+02 -0.20258975065E+03  0.20573961718E+03  0.00000000000E+00 0. -1.
+</event>
+<event>
+ 6   1  0.4514800E+01  0.8040000E+02  0.7546772E-02  0.1297830E+00
+        2   -1    0    0  502    0  0.00000000000E+00  0.00000000000E+00  0.21929483601E+03  0.21929483601E+03  0.00000000000E+00 0. -1.
+       21   -1    0    0  501  502  0.00000000000E+00  0.00000000000E+00 -0.18169599239E+02  0.18169599239E+02  0.00000000000E+00 0. -1.
+       24    2    1    2    0    0  0.34628427257E+02 -0.12547840950E+02  0.15881961196E+03  0.18137217039E+03  0.79470867373E+02 0.  0.
+      -11    1    3    3    0    0 -0.15991554477E+01 -0.24801592254E+02  0.85039590287E+01  0.26267729168E+02  0.00000000000E+00 0.  1.
+       12    1    3    3    0    0  0.36227582705E+02  0.12253751304E+02  0.15031565293E+03  0.15510444122E+03  0.00000000000E+00 0. -1.
+        1    1    1    2  501    0 -0.34628427257E+02  0.12547840950E+02  0.42305624814E+02  0.56092264866E+02  0.00000000000E+00 0. -1.
+</event>
+</LesHouchesEvents>

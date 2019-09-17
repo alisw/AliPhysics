@@ -1,0 +1,401 @@
+<chapter name="Heavy Ions"> 
+ 
+<h2>Heavy Ions</h2> 
+ 
+PYTHIA does not normally handle collisions involving heavy ions, but it 
+includes a facility where a model for combining several nucleon-nucleon 
+collisions into one heavy ion collision can be implemented. One such model, 
+called <a href="#Angantyr" target="page">Angantyr</a>, is provided with PYTHIA 
+and is inspired by the old Fritiof program from the Lund group 
+<ref>And87</ref> with recent improvements <ref>Bie16a</ref> (see below). 
+ 
+<p/> 
+ 
+To allow for the generation of collisions with heavy ions, PYTHIA includes a 
+handful of nuclei with PDG numbers on the form 100ZZZAAAI: 
+<sup>4</sup>He (1000020040), 
+<sup>6</sup>Li (1000030060), 
+<sup>12</sup>C (1000060120), 
+<sup>16</sup>O (1000080160), 
+<sup>63</sup>Cu (1000290630), 
+<sup>129</sup>Xe (1000541290), 
+<sup>197</sup>Au (1000791970), and 
+<sup>208</sup>Pb (1000822080), but more can be added using the function 
+<code>ParticleData::addParticle</code>. 
+ 
+<modepick name="HeavyIon:mode" default="1" min="1" max="2"> 
+This is the master switch for heavy ions, and determines the mode 
+of operation of the HeavyIon model. 
+<option value="1">  The heavy ion machinery will be used in case of ion beams. 
+</option> 
+<option value="2">  Even collisions without ions are treated using 
+the heavy ion machinery. (Typically only used 
+for debugging purposes.) 
+</option> 
+</modepick> 
+ 
+<p/> 
+ 
+If <code>HeavyIon:mode</code> is on, the normal initialization in 
+<code>Pythia::init()</code> is early on diverted to an object with 
+the base class <code>HeavyIons</code> which may instantiate 
+secondary <code>Pythia</code> objects needed to generate different types of 
+nucleon-nucleon collisions that can be merged together into a full 
+heavy ion event. This is all done in the virtual 
+<code>HeavyIons::init()</code> function. Subsequent calls to 
+<code>Pythia::next()</code> will then also be diverted to the virtual 
+function <code>HeavyIons::next()</code> which will be responsible for 
+building up the heavy ion collision. The final event will be available in the 
+primary <code>Pythia</code> object. 
+ 
+<flag name="HeavyIon:showInit" default="on"> 
+Output detailed initialization information from the heavy ion 
+model. Typically there will be several <code>Pythia</code> object initialised 
+in a heavy ion run, this flag can be used to reduce the amount of output. 
+If off, only the output from initialisation of the primary <code>Pythia</code> 
+object will be shown 
+</flag> 
+ 
+<p/> 
+ 
+The <code>HeavyIon</code> class is very simple and flexible and basically only 
+specifies that the <code>HeavyIons::init()</code> and 
+<code>HeavyIons::next()</code> functions are overridden in a subclass. But 
+there are a few additional helper classes that should be generic enough to be 
+used by any model implemented. 
+ 
+<ul> 
+<li> The <code>Nucleon</code> class represents a single nucleon in a nuclei. 
+It can be a proton or a neutron (<code>id()</code>), it has a position in 
+impact parameter space (<code>Vec2</code>), 
+both absolute (<code>bPos()</code>) and relative to the nuclei 
+(<code>nPos()</code>), and optionally it can be in a particular state 
+represented by a vector of real numbers which are completely model dependent. 
+</li> 
+<li> The <code>SubCollision</code> class represents a potential 
+nucleon-nucleon  collision between a projectile and a target 
+<code>Nucleon</code>. 
+</li> 
+<li> The <code>NucleusModel</code> class is a base class for implementing a 
+model for the distribution in impact parameter 
+space of nucleons in a nucleus. There are two ready-made subclasses called 
+<code>WoodsSaxonModel</code>, implementing a standard Woods-Saxon 
+distribution, and <code>GLISSANDOModel</code>, implementing the more 
+advanced model in <ref>Bro09,Ryb14</ref>. 
+<flag name="HeavyIon:WSHardCore" default="on"> 
+  In the default Woods-Saxon model for nucleon distributions, assume 
+  that there is a minimum distance between nucleons defined by a hard 
+  core radius in 
+  <code>HeavyIon:WSRh</code>. 
+</flag> 
+<parm name="HeavyIon:WSRh" default="0.9" min="0.0"> 
+  The hard core radius in units of fermi, defining the minimum 
+  distance between nucleons in a nucleus in the default Woods-Saxon 
+  model for nucleon distributions. 
+</parm> 
+<flag name="HeavyIon:gaussHardCore" default="off"> 
+  Option to use a Gaussian profile of the hard core instead of a sharp 
+  cut-off, inspired by <ref>Bay95</ref>. 
+</flag> 
+ 
+<parm name="HeavyIon:WSR" default="0.0" min="0.0"> 
+The radius of a nucleon in units of fermi in the default Woods-Saxon 
+model for nucleon distributions. If zero, the size is given by the 
+formulae <ref>Ryb14</ref>, based on the number of nucleons in the 
+nuclei and whether a hard core is used or not. 
+</parm> 
+ 
+<parm name="HeavyIon:WSa" default="0.0" min="0.0"> 
+The <i>skin width</i> of a nucleus in units of fermi in the default 
+Woods-Saxon model for nucleon distributions.  If zero, the size is 
+given by the numbers in <ref>Ryb14</ref>, based on the number of 
+nucleons in the nuclus and whether a hard core is used or not. 
+</parm> 
+</li> 
+<li> The <code>ImpactParameterGenerator</code> is used to sample the impact 
+parameter space for the colliding nuclei. The base class implements a Gaussian 
+sampling, which means that the events produced will always be weighted. Other 
+distributions can be implemented in subclasses. 
+<parm name="HeavyIon:bWidth" default="0.0" min="0.0"> 
+  The width in fermi of the distribution by which the impact parameter 
+  is sampled. If zero, a suitable width must be guessed by the 
+  <code>ImpactParamerGenerator</code> 
+ itself. 
+</parm> 
+</li> 
+<li> The <code>SubCollisionModel</code> is used to generate individual, 
+potential nucleon-nucleon <code>SubCollision</code>s. Two subclasses are 
+available, one called <code>NaiveSubCollisionModel</code> which treats 
+nucleons as simple black disks, and one implementing a more advanced 
+model called <code>DoubleStrikman</code> described below. 
+</li> 
+<li> The <code>HIInfo</code> class contains information related to the 
+generated heavy ion events. 
+</li> 
+<li> The <code>HIUserHooks</code> class is provided to simplify the 
+customization of a model implemented as a <code>HeavyIons</code> subclass. It 
+can be used to eg. change the <code>ImpactParamerGenerator</code> used, in a 
+way similar to how the <code>UserHooks</code> and <code>MergingHooks</code> 
+classes are used. 
+</li> 
+</ul> 
+ 
+<h3><a name="Angantyr">Angantyr</a> - the default heavy ion model</h3> 
+ 
+The default model in PYTHIA is called Angantyr and is inspired by the old 
+Fritiof model <ref>And86</ref> with improvements described in 
+<ref>Bie16a</ref>. The main idea is to stack parton level events, 
+corresponding to individual nucleon-nucleon sub-collisions, on top of 
+each other and hadronise them together. 
+<br/><strong>Please note:</strong> although it is possible to use 
+<aloc href="Ropewalk">Rope Hadronisation</aloc> in heavy ion collisions, 
+these two modules have not yet been validated to work properly together. 
+Also the parameters in the model have not been properly tuned, so the 
+results from running must not be taken as definitive predictions. 
+ 
+<p/> 
+ 
+To determine which projectile nucleon interacts with which target nucleon, 
+special care is taken to determine in which way the nucleons interact. In 
+a standard <i>Glauber</i> calculations one typicaly only cares about if a 
+sub-collision is inelastic or not, but in Angantyr this is divided up, so that 
+each inelastic sub-collision can either be single-diffractive, 
+double-diffractive or absorptive (ie. non-diffractive). To achieve this, 
+Angantyr uses a model with fluctuating radii of the nucleons resulting in a 
+fluctuating nucleon-nucleon cross section inspired by the model by Strikman et 
+al. <ref>Alv13</ref>. The model for this includes a number of parameters which 
+should be fitted to reproduce inclusive nucleon-nucleon cross sections. To be 
+consistent, the values used comes from PYTHIA's internal model of 
+<aloc href="TotalCrossSections">total cross sections</aloc>. 
+ 
+<p/> 
+ 
+The default model for nucleon fluctuations has three parameters, the general 
+fitting machinery in <code>SubCollisionModel</code> allows for up to eight 
+parameters. 
+ 
+<pvec name="HeavyIon:SigFitDefPar" 
+      default="17.24,2.15,0.33,0.0,0.0,0.0,0.0,0.0"> 
+These are the default values of the parameters of the 
+<code>SubCollisionModel</code> in Angantyr. They will be used as starting 
+point when fitting to the inclusive nucleon cross sections. 
+</pvec> 
+ 
+<p/> 
+ 
+The fitting procedure in <code>SubCollisionModel</code> is a kind of genetic 
+algorith where a population of parameter values are allowed to evolve for a 
+number of generations. In the end the the parameter set in the final 
+population  which gives the best inclusive cross sections is picked. 
+Eight different cross sections may be fitted to but it is possible to select 
+only some of them: 
+<pvec name="HeavyIon:SigFitErr" 
+      default="0.02,0.02,0.1,0.05,0.05,0.0,0.1,0.0" min="0.0" max="1.0"> 
+The relative error assumed in the calculation of goodness of fit 
+corresponding to the different cross sections fitted to. The cross 
+sections are obtained from the 
+<aloc href="TotalCrossSections"><code>SigmaTotal</code></aloc> and are given 
+as (in order) total, non-diffractive, double diffractive, wounded 
+target, wounded projectile, central diffractive, and elastic cross 
+sections, and in addition the elastic slope parameter. A relative 
+error of zero for one of these cross sections means the corresponding 
+cross section not be used in the fit. 
+</pvec> 
+ 
+<mode name="HeavyIon:SigFitNInt" default="100000" min="0"> 
+The number of integration points used for each parameter setting to calculate 
+the cross sections. 
+</mode> 
+ 
+<mode name="HeavyIon:SigFitNPop" default="20" min="1"> 
+  The number individuals (parameter settings) in a population in each 
+  generation. 
+</mode> 
+ 
+<mode name="HeavyIon:SigFitNGen" default="20" min="0"> 
+The number of generation used in the genetic algorithm. If set to zero, no 
+fitting will be performed and the values in <code>HeavyIon:SigFitDefPar</code> 
+will be used. 
+</mode> 
+ 
+<parm name="HeavyIon:SigFitFuzz" default="0.2" min="0.0" max="0.5"> 
+A parameter determining the probability that an individual parameter setting 
+will evolves further away from the best parameter set in each generation. 
+</parm> 
+ 
+<flag name="HeavyIon:SigFitPrint" default="on"> Controls the output from the 
+fitting procedure. If on, extensive information about the fitting will be 
+printed. 
+</flag> 
+ 
+<modepick name="Angantyr:CollisionModel" default="1" min="0" max="3"> 
+The Angantyr model has a couple of option for the SubCollisionModel 
+<option value="0"> A simplified model with fixed nucleon radii. 
+</option> 
+<option value="1"> The default model with fluctuating radii and cross 
+sections. 
+</option> 
+<option value="2"> Fluctuating radii and cross sections but different 
+treatment of opacity. 
+</option> 
+<option value="3"> Black disks with no fluctuations, ie. no diffraction. 
+</option> 
+</modepick> 
+ 
+<flag name="Angantyr:GlauberOnly" default="off"> If switched on, the 
+event generation will stop after SubCollisions has been determined, allowing 
+the user to read out the nucleon configuration only. 
+</flag> 
+ 
+<p/> 
+ 
+After all possible nucleon-nucleon sub-collisions has been determined, 
+they are ordered in increasing nucleon-nucleon impact parameter. This 
+list is then gone through in order several time. First all absorptive 
+sub-collisions are treated. One full nucleon-nucleon non-diffractive 
+minimum bias event is generated for each possible absorptive 
+sub-colision. These are also ordered in impact parameter. Note that 
+one target nucleon can interact absorptively with several target 
+nucleons, in a first round only those absorptive sub-collisions 
+involving nucleons that have not already interacted absorptively are 
+are assigned a non-diffractive event. 
+ 
+<p/> 
+ 
+If PYTHIA is not set up to generate minimum bias events, one or more of the 
+generated non-diffractive events will be replaced by events generated with the 
+selected signal process, and the cross section reported will be modified 
+accordingly. 
+ 
+<p /> 
+ 
+In a second round only those potential absorptive sub-collisions are 
+considered where one nucleon has already been assinged a full 
+non-diffractive event. In the Angantyr model it is then assumed that 
+the other nuclean will contribute to the final state as if it had just 
+been diffractively excited. Therefore a corresponding 
+single-diffractive event is generated, the elastically scattered beam 
+particle is discarded and the rest is added to the previous 
+non-diffractive event, shuffling a bit with the kinematics so that the 
+total emergy and momentum is conserved. 
+ 
+<p/> 
+ 
+To generate these single-diffraction events to emulate multiple 
+absorptive sub-collisions a special <code>Pythia</code> object is 
+used. To allow flexibility this object need not have exactly the same 
+settings as the the one generating events for normal 
+single-diffraction sub-collisions. To manipulate this <code>Pythia</code> 
+object a special form of settings can be used. All settings available for 
+<aloc href="Diffraction"><code>Diffraction</code></aloc>, 
+<aloc href="MultipartonInteractions"> 
+  <code>MultipartonInteractions</code></aloc>, 
+<aloc href="PDFSelection"><code>PDF</code></aloc>, 
+<aloc href="TotalCrossSections"><code>SigmaDiffractive</code></aloc> and 
+<aloc href="PDFSelection"><code>PDF</code></aloc> 
+can be set separately for this <code>Pythia</code> object by prefixing 
+their names with <code>HI</code>. 
+ 
+As an example, setting <code>HISigmaDiffractive:PomFlux</code> and 
+<code>HIPDF:PomSet</code> will set the 
+<code>SigmaDiffractive:PomFlux</code> and <code>PDF:PomSet</code> options 
+for this <code>Pythia</code> object. 
+ 
+<modepick name="Angantyr:SASDmode" default="4" min="0" max="4"> 
+Determines how to generate single-diffraction events as secondary absorptive 
+(SASD) sub-collisions. 
+<option value="0"> Standard singel-diffraction events as speicfied by 
+<code>HIDiffraction</code> settings above. 
+</option> 
+<option value="1"> Always use <code>HIPDF:PomSet = 11</code> and use the 
+same initial <code>HIMultipartonInteractions:pT0Ref</code> as for 
+non-diffractive events for the total nucleon-nucleon collision energy, 
+independent of the mass of the diffractive system. 
+</option> 
+<option value="2"> (Experimental) As for option <code>1</code> but also 
+rescale the pomeron 
+proton non-diffractive cross section to match the pp non-diffractive one. 
+</option> 
+<option value="3"> (Experimental) As for option <code>1</code> but use the full 
+  nucleon-nucleon cross section for the non-diffractive nucleon-Pomeron in the 
+  multiple interaction machinery. Also rescale the Pomeron PDF with the log of 
+  the ratio of maximum and minimum Pomeron-nucleon collision energy. 
+</option> 
+<option value="4"> As for option <code>3</code> but no rescaling of the Pomeron 
+ PDF. 
+</option> 
+</modepick> 
+ 
+<modepick name="Angantyr:impactMode" default="2" min="0" max="2"> 
+Determines how to bias non-diffractive minimum-bias sub-collisions in pythia to 
+be appropriately central. 
+<option value="0"> If we have N pirmary sub-collisions and Na secondary 
+sub-collisions, generate N+Na non-diffractive events and pick the N most central. 
+</option> 
+<option value="1"> Use UserHooks to force Pythia to produce events with a 
+particular impact parameter for the N primary sub collisions according to the 
+generated impact parameter in the SubCollisionModel. 
+</option> 
+<option value="2"> As for option <code>1</code> but also the secondary 
+absorptive sub-collisions have their impact parameter set. 
+</option> 
+</modepick> 
+ 
+<parm name="Angantyr:impactFudge" default="0.85" min="0.0" max="4.0"> 
+Multiplicative factor used to compensate for the fact that the 
+<code>SubColllisionModel</code> in Angantyr may have a different 
+impact parameter profile than what is assumed in the MPI overlap 
+calculation in Pythia. 
+</parm> 
+ 
+<mode name="Angantyr:SDTries" default="1" min="1"> 
+When adding single diffractive sub-collisions to other 
+sub-collisions, there might not be enough energy for the 
+diffractive mass. One option here is to  say that the diffractive 
+sub-event simply fails, but setting this larger than unity allows 
+for regenerating the single diffractive sub-event a number of times 
+to see if a small enough diffractive system is produced. 
+</mode> 
+ 
+<modepick name="Angantyr:SDRecoil" default="1" min="1" max="2"> 
+Determines which particles in a primary sub-collision will take the 
+recoil when adding single diffractive sub-collisions to other 
+sub-collisions. The choice may be overridded by a user-defined 
+<code>HIUserHooks::findRecoilers</code> function. 
+<option value="1">  Only elastically scattered nucleons and nucleon 
+remnants will take recoil. 
+</option> 
+<option value="2">  All particles outside the added diffractive system's 
+rapidity range are considered. 
+</option> 
+</modepick> 
+ 
+<flag name="Angantyr:SDTest" default="off"> 
+Used in conjunction with <code>HeavyIon:mode = 2</code> and proton 
+beams to generate single diffractive events that would be used as 
+secondary non-diffractive scatterings in the Angantyr heavy ion model 
+for the given nucleon energies. Used for tuning special 
+<code>HI</code>-prefixed parameters of the secondary absorptive 
+sub-collisions. 
+</flag> 
+ 
+<parm name="Angantyr:SDTestB" default="-1.0"> 
+In conjunction with <code>Angantyr:SDTest = on</code> and 
+<code>Angantyr:impactMode = 2</code> only pick diffractive 
+events with a particular impact parameter (as defined by the scaled value 
+given in <code>Info::bMPI()</code>). If negative, the standard impact 
+parameter distribution is used. 
+</parm> 
+ 
+<p/> 
+ 
+After all absorptive sub-collisions have been dealt with, the 
+diffractive and elastic sub-collisions are dealt with in a similar 
+way. In the end there will be a number of parton level events which 
+are finally stacked together, and then hadronised. Finally nucleus 
+remnants constructed from the non-interacting nucleans, are added to 
+complete the full nucleaus-nucleus collision. 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

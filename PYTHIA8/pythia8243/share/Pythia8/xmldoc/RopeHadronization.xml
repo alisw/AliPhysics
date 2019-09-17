@@ -1,0 +1,258 @@
+<chapter name="Rope Hadronization"> 
+ 
+<h2>Rope Hadronization</h2> 
+ 
+In collisions of protons, there are often tens of multiparton interactions, 
+all producing Lund strings occupying the same area in transverse space of 
+<ei>~1</ei> fm<ei>^2</ei>. The Rope Hadronization framework describes the 
+interactions between such overlapping strings, by (a) allowing nearby strings 
+to shove each other with an interaction potential derived from the colour 
+superconductor analogy <ref>Bie16b</ref>, <ref>Bie17</ref> and (b) at 
+hadronization time, colour charges at string endpoints and in gluon "kinks" 
+can act together coherently to form a "rope", which is hadronized with a 
+larger, effective string tension <ref>Bie14</ref>. 
+The latter has noticeable effects on the flavour composition of the hadronic 
+final state <ref>Bie15</ref>, and this effect is denoted "flavour ropes" below. 
+ 
+<p/> 
+Since both models deal with string overlaps in transverse space, it is 
+necessary to provide such information, as it is not present in the Pythia MPI 
+model. The information is provided through the 
+<aloc href="VertexInformation">Parton Vertex</aloc> methods. The string 
+shoving mechanism is exemplified in the <code>main101</code> example, 
+and the flavour ropes in <code>main102</code>. 
+A simpler version of flavour composition ropes exist <ref>Bie16c</ref>, 
+which do not require vertex information. This can be enabled by a switch. 
+ 
+<h3>Main settings</h3> 
+ 
+The main settings are common for both the string shoving and the flavour rope 
+models. 
+ 
+<flag name="Ropewalk:RopeHadronization" default="off"> 
+Master switch for all aspects of rope hadronization. 
+The Rope Hadronization framework is intended to work seamlessly with the rest 
+of Pythia 8. It is, however, still a new model, and no Pythia tunes with ropes 
+enabled exists yet. Therefore Rope Hadronization must be explicitly switched 
+on, and it is up to the user to provide a sensible tune. 
+</flag> 
+ 
+<flag name="Ropewalk:doShoving" default="off"> 
+Enable the string shoving mechanism. In addition to this, the above 
+<code>Ropewalk:RopeHadronization</code> flag must also be switched on. 
+</flag> 
+ 
+<flag name="Ropewalk:doFlavour" default="off"> 
+Enable the flavour ropes mechanism. In addition to this, the above 
+<code>Ropewalk:RopeHadronization</code> flag must also be switched on. 
+</flag> 
+ 
+<parm name="Ropewalk:r0" default="0.5" min="0." max="10."> 
+The transverse radius of a string, in units of fm. This can be viewed as an 
+overall strength parameter of the Rope Hadronization framework, as all effects 
+scale with increasing string overlap. Notice that the value for the string 
+radius must be seen compared to the parameters which determines string 
+placement in the transverse plane, as described in 
+<aloc href="VetexInformation">Vertex Information</aloc>. 
+</parm> 
+ 
+<parm name="Ropewalk:m0" default="0.2" min="0.01" max="5.0"> 
+Imposed lower mass cutoff to allow for calculation of rapidities of dipoles 
+composed of massless gluons. 
+</parm> 
+ 
+<h3>String shoving</h3> 
+ 
+The string shoving mechanism allows strings to push each other, before 
+hadronization, as described in <ref>Bie16b</ref>. 
+ 
+<p/> 
+String shoving divides the event up in many small rapidity slices (in 
+the lab frame), and all string pieces in all slices are allowed to push 
+each other with a force: 
+ 
+<eq> 
+f(d_\perp) = \frac{g_A \kappa d_\perp}{R^2} 
+\exp\left(-\frac{d^2_\perp }{4R^2}\right), 
+</eq> 
+ 
+where <ei>d_\perp</ei> is the distance in transverse space between two string 
+pieces, calculated dynamically using 
+<aloc href="VetexInformation">Vertex Information</aloc>. Model parameters are 
+<ei>g_A</ei>, the amplitude of the shoving force, <ei>R</ei>, the string 
+radius, and <ei>g_E</ei>, a parameter dividing the equilibrium string radius 
+to account for the effect of strings starting out with a vanishing string 
+radius. 
+ 
+<p/> 
+The model should be used with some caution. Simply switching it on, one will 
+not retain full description of single particle observables in minimum bias pp 
+collisions, as the excitation gluons will increase multiplicity. Besides normal 
+tuning, one can use the parameter <code>FragmentationSystems:mJoin</code> to 
+join the excitation gluons together, in order to recover single particle 
+observables. 
+ 
+<parm name="Ropewalk:rCutOff" default="6.0" min="0." max="100."> 
+This parameter gives the maximum cut-off radius, at which strings stops 
+interacting. The purpose of the parameter is to decrease computation time by 
+not calculating arbitrarily small pushes. In pp collisions at LHC energies, 
+no significant variation in the results is observed by increasing this value 
+above the default. 
+</parm> 
+ 
+<parm name="Ropewalk:gAmplitude" default="5.0" min="0." max="100."> 
+The amplitude of the shoving force. Note that many traditional 
+Min Bias/UE observables, such as multiplicity and <ei>p_\perp</ei>, as 
+well as transverse quantities, are sensitive to this parameter. As 
+such, a change of this, in principle warrants a full retuning of the 
+MPI framework. 
+</parm> 
+ 
+<parm name="Ropewalk:gExponent" default="1.0" min="0." max="100."> 
+This value multiplies the string radius in the shoving 
+force, allowing for a variation between string radius in the flavour rope 
+treatment and the shoving treatment, if one wishes to run both simultaneously. 
+</parm> 
+ 
+<parm name="Ropewalk:deltay" default="0.2" min="0.01" max="10."> 
+This value gives the width of the rapidity slices in which the event is 
+split before shoving. 
+</parm> 
+ 
+<parm name="Ropewalk:tShove" default="1.0" min="0." max="100."> 
+The total shoving time in units of fm/c. 
+</parm> 
+ 
+<parm name="Ropewalk:deltat" default="0.1" min="0.01" max="100.0"> 
+The size of the steps taken in time during shoving. Since the whole 
+event needs to be retraced after every time step, this should not be 
+too small. 
+</parm> 
+ 
+<parm name="Ropewalk:tInit" default="1.5" min="0." max="100."> 
+The strings are allowed to propagate for some time, given in fm/c 
+by this parameter, before shoving takes place. This accounts for the 
+fact that the strings are created with a vanishing transverse size, 
+and only shove each other when their transverse size is large enough 
+for interaction. Furthermore, the physical value of this parameter is 
+largely connected to the values set for 
+<aloc href="VetexInformation">Vertex Information</aloc>. 
+</parm> 
+ 
+<flag name="Ropewalk:shoveGluonLoops" default="on"> 
+Allow for shoving of strings which form a gluon loop. 
+This is mainly a technical setting, and should be kept switched on, 
+unless the user has a specific intention of switching it off. 
+</flag> 
+ 
+<flag name="Ropewalk:shoveJunctionStrings" default="on"> 
+Allow for shoving of strings that includes a junction topology from 
+eg. beam remnants. This is mainly a technical setting, and should be 
+kept switched on, unless the user has a specific intention of 
+switching it off. 
+</flag> 
+ 
+<flag name="Ropewalk:shoveMiniStrings" default="on"> 
+Allow for shoving of ministrings. This is mainly a technical setting, and 
+should be kept switched on, unless the user has a specific intention of 
+switching it off. 
+</flag> 
+ 
+<flag name="Ropewalk:limitMom" default="on"> 
+It is possible to switch off shoving for dipoles with a <ei>p_\perp</ei> 
+above a given value. This is intended as a cut-off to disallow string segments 
+moving so fast that they would anyway escape shoving from soft strings to 
+have gluonic excitations added to them. 
+</flag> 
+ 
+<parm name="Ropewalk:pTcut" default="2.0" min="0." max="1000."> 
+The value of <ei>p_\perp</ei> at which shoving is turned off, if the flag 
+<code>Ropewalk:limitMom</code> is on. 
+</parm> 
+ 
+<h3>Flavour Ropes</h3> 
+ 
+The Flavour Ropes mechanism allows strings situated close in impact parameter 
+space to interact coherently, forming a rope, which hadronizes with a larger, 
+effective string tension. The model is described in ref. <ref>Bie14</ref>, 
+building on an older idea by Biro et al. <ref>Bir84</ref>. 
+ 
+<p/> 
+In the flavour rope formalism, a rope is described as an SU(3) multiplet, 
+characterized uniquely by two quantum numbers <ei>p</ei> and <ei>q</ei>. 
+The quantum numbers are calculated, following ref. <ref>Bir84</ref>, by 
+a random walk procedure in colour space, taking <ei>m, n</ei> steps, 
+where <ei>m</ei> and <ei>n</ei> signify the number of overlapping 
+strings which are respectively parallel or anti-parallel to the 
+hadronizing string. 
+ 
+<p/> 
+When the rope quantum numbers have been determined, the effective string 
+tension is calculated per individual breaking, using a lattice QCD 
+determination of the string tension <ref>Bal00</ref>. The effective 
+string tension is then used to rescale the hadronization parameters 
+described in the section on <aloc href="Fragmentation">String 
+Fragmentation</aloc>. One point to note regarding the rescaling is the 
+fragmentation parameter <code>StringFlav:probQQtoQ</code>, describing 
+baryon relative to meson production. Baryon production is, as suggested 
+by eg. the popcorn hadronization model <ref>Ede97</ref>, more complicated 
+than meson production. The current modelling of this in the flavour ropes 
+framework is limited, but intended to be extended in the future. 
+ 
+<parm name="Ropewalk:beta" default="0.2" min="0." max="1.0"> 
+In the current implementation of the rope model, the theoretical ignorance 
+about baryon production has been parameterized, assuming that the parameter 
+<code>StringFlav:probQQtoQ</code> will factorize into two parts, 
+one which will scale with effective string tension, one which will not. 
+This parameter controls how large a fraction of the parameter will scale 
+with string tension. 
+</parm> 
+ 
+<flag name="Ropewalk:alwaysHighest" default="off"> 
+Setting this flag on will skip the random walk procedure for flavour ropes, 
+and assume that one always ends up in the highest possible SU(3) multiplet. 
+This would be adequate for situations where all lower multiplets are assumed 
+handled by colour reconnection and junction formation. 
+</flag> 
+ 
+<flag name="Ropewalk:doBuffon" default="off"> 
+Setting this flag on, enables a simpler treatment of flavour ropes. This is not 
+reliant on vertex information, but string-string overlaps are decided randomly 
+&aacute; la Buffon's needle <ref>Bie16c</ref>: All strings are thrown randomly 
+into a circular area in transverse space to estimate overlaps. 
+</flag> 
+ 
+<parm name="Ropewalk:stringProtonRatio" default="0.2" min="0." max="10.0"> 
+Only used if <code>Ropewalk:buffonRope</code> is enabled. The ratio of the 
+string transverse area to a proton transverse area. Determines the amount of 
+overlap in collisions. 
+</parm> 
+ 
+<parm name="Ropewalk:rapiditySpan" default="0.5" min="0." max="10.0"> 
+Only used if <code>Ropewalk:buffonRope</code> is enabled. Determines how far in 
+rapidity from a string break overlaps are counted. 
+</parm> 
+ 
+<flag name="Ropewalk:setFixedKappa" default="off"> 
+Setting this flag gives the user the possibility to ignore the generator 
+space-time information altogether, using only a provided string tension. 
+This could be useful for (toy) studies of hadronization in very dense 
+environments, such as central heavy ion collisions. 
+</flag> 
+ 
+<parm name="Ropewalk:presetKappa" default="0." min="0." max="100.0"> 
+The effective string tension is normally calculated dynamically using overlaps 
+of strings, based on <aloc href="VertexInformation">Parton Vertex</aloc> 
+information. By setting <code>Ropewalk:setFixedKappa</code>, this information 
+is ignored, and a preset value provided in the <code>presetKappa</code> 
+variable is used. 
+</parm> 
+ 
+<parm name="StringFlav:kappa" default="0.2" min="0.0" max="10." > 
+A base value of the string tension can be added, and modified along with other 
+parameters, to allow for studies of exotic quark production in the Rope model. 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

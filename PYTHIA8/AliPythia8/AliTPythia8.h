@@ -62,6 +62,8 @@
 #include "TGenerator.h"
 #include "Pythia8/Pythia.h"
 
+using std::endl;
+using std::cout; 
 
 class TClonesArray;
 class TObjArray;

@@ -1,0 +1,17 @@
+<chapter name="Program Methods"> 
+ 
+<h2>Program Methods</h2> 
+ 
+This is an alphabetical index of all methods that are documented 
+elsewhere on these pages, beginning with the few methods that 
+do not belong to a class. Many of them are only intended for experts, 
+while undocumented ones are only for code authors. 
+ 
+<p/> 
+The index is constructed dynamically from the methods described 
+on the other webpages, as part of the conversion from xml to 
+html and php. Therefore this xml page is only a dummy one. 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

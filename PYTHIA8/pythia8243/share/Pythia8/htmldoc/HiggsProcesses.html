@@ -1,0 +1,1255 @@
+<html>
+<head>
+<title>Higgs Processes</title>
+<link rel="stylesheet" type="text/css" href="pythia.css"/>
+<link rel="shortcut icon" href="pythia32.gif"/>
+</head>
+<body>
+ 
+<h2>Higgs Processes</h2> 
+<ol id="toc">
+  <li><a href="#section0">Standard-Model Higgs, basic processes</a></li>
+  <li><a href="#section1">Standard-Model Higgs, further processes</a></li>
+  <li><a href="#section2">Beyond-the-Standard-Model Higgs, introduction</a></li>
+  <li><a href="#section3">Beyond-the-Standard-Model Higgs, basic processes</a></li>
+  <li><a href="#section4">Beyond-the-Standard-Model Higgs, further processes</a></li>
+  <li><a href="#section5">Parameters for Beyond-the-Standard-Model Higgs production and decay</a></li>
+</ol>
+
+ 
+This page documents Higgs production within and beyond the Standard Model 
+(SM and BSM for short). This includes several different processes and, 
+for the BSM scenarios, a large set of parameters that would only be fixed 
+within a more specific framework such as MSSM. Some choices can be made 
+irrespective of the particular model: 
+ 
+<a name="anchor1"></a>
+<p/><code>flag&nbsp; </code><strong> Higgs:cubicWidth &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+The partial width of a Higgs particle to a pair of gauge bosons, 
+<i>W^+ W^-</i> or <i>Z^0 Z^0</i>, depends cubically on the 
+Higgs mass. When selecting the Higgs according to a Breit-Wigner, 
+so that the actual mass <i>mHat</i> does not agree with the 
+nominal <i>m_Higgs</i> one, an ambiguity arises which of the 
+two to use [<a href="Bibliography.html#refSey95" target="page">Sey95</a>]. The default is to use a linear 
+dependence on <i>mHat</i>, i.e. a width proportional to 
+<i>m_Higgs^2 * mHat</i>, while <code>on</code> gives a 
+<i>mHat^3</i> dependence. This does not affect the widths to 
+fermions, which only depend linearly on <i>mHat</i>. 
+This flag is used both for SM and BSM Higgs bosons. 
+   
+ 
+<a name="anchor2"></a>
+<p/><code>flag&nbsp; </code><strong> Higgs:runningLoopMass &nbsp;</strong> 
+ (<code>default = <strong>on</strong></code>)<br/>
+The partial width of a Higgs particle to a pair of gluons or photons, 
+or a <i>gamma Z^0</i> pair, proceeds in part through quark loops, 
+mainly <i>b</i> and <i>t</i>. There is some ambiguity what kind 
+of masses to use. Default is running MSbar ones, but alternatively 
+fixed pole masses are allowed (as was standard in PYTHIA 6), which 
+typically gives a noticeably higher cross section for these channels. 
+(For a decay to a pair of fermions, such as top, the running mass is 
+used for couplings and the fixed one for phase space.) 
+   
+ 
+<a name="anchor3"></a>
+<p/><code>flag&nbsp; </code><strong> Higgs:clipWings &nbsp;</strong> 
+ (<code>default = <strong>on</strong></code>)<br/>
+The Breit-Wigner shape of a Higgs is nontrivial, owing to the rapid 
+width variation with the mass of a Higgs. This implies that a Higgs 
+of low nominal mass may still acquire a non-negligible high-end tail. 
+The validity of the calculation may be questioned in these wings. 
+With this option on, the <code>Higgs:wingsFac</code> value is used to 
+cut away the wings. 
+<br/><b>Warning:</b> with this option on, the allowed mass range is 
+shrunk, but never widened. This can lead to inconsistencies if a run 
+consists of several subruns with different Higgs masses. The 
+<code>id:mMin</code> and <code>id:mMax</code> values should therefore be 
+reset (e.g. to the defaults 50. and 0.) when <code>id:m0</code> is 
+changed. 
+   
+ 
+<a name="anchor4"></a>
+<p/><code>parm&nbsp; </code><strong> Higgs:wingsFac &nbsp;</strong> 
+ (<code>default = <strong>50.</strong></code>; <code>minimum = 0.</code>)<br/>
+With <code>Higgs:clipWings</code> on, all Higgs masses which deviate 
+from the nominal one by  than <code>Higgs:wingsFac</code> 
+times the nominal width are forbidden. This is achieved by setting 
+the <code>mMin</code> and <code>mMax</code> values of the Higgs states 
+at initialization. These changes never  allow a wider range than already 
+set by the user, alternatively by the current default values, see 
+warning above. 
+   
+ 
+<p/> 
+One setting is specific to the Standard Model: 
+ 
+<a name="anchor5"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:NLOWidths &nbsp;</strong> 
+ (<code>default = <strong>on</strong></code>)<br/>
+The partial width of the SM Higgs particle are multiplied by the 
+respective factors needed to bring the LO widths encoded in PYTHIA 
+to the NLO ones recommended by the LHCXSWG. The multiplicative 
+factors have been derived for a 125 GeV Higgs, but should apply for a 
+reasonable mass range around that value. 
+   
+ 
+<a name="section0"></a> 
+<h3>Standard-Model Higgs, basic processes</h3> 
+ 
+This section provides the standard set of processes that can be 
+run together to provide a reasonably complete overview of possible 
+production channels for a single SM Higgs. 
+The main parameter is the choice of Higgs mass, which can be set in the 
+normal <code>ParticleData</code> database; thereafter the properties 
+within the SM are essentially fixed. 
+ 
+<a name="anchor6"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:all &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of Higgs production within the Standard Model. 
+   
+ 
+<a name="anchor7"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:ffbar2H &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; H^0</i>, where <i>f</i> sums over available 
+flavours except top. Related to the mass-dependent Higgs point coupling 
+to fermions, so at hadron colliders the bottom contribution will 
+dominate. 
+Code 901. 
+   
+ 
+<a name="anchor8"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:gg2H &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; H^0</i> via loop contributions primarily from 
+top. 
+Code 902. 
+   
+ 
+<a name="anchor9"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:gmgm2H &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>gamma gamma &rarr; H^0</i> via loop contributions primarily 
+from top and <i>W</i>. 
+Code 903. 
+   
+ 
+<a name="anchor10"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:ffbar2HZ &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; H^0 Z^0</i> via <i>s</i>-channel <i>Z^0</i> 
+exchange. 
+Code 904. 
+   
+ 
+<a name="anchor11"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:ffbar2HW &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; H^0 W^+-</i> via <i>s</i>-channel 
+<i>W^+-</i> exchange. 
+Code 905. 
+   
+ 
+<a name="anchor12"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:ff2Hff(t:ZZ) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f f' &rarr; H^0 f f'</i> via <i>Z^0 Z^0</i> fusion. 
+Code 906. 
+   
+ 
+<a name="anchor13"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:ff2Hff(t:WW) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f_1 f_2 &rarr; H^0 f_3 f_4</i> via <i>W^+ W^-</i> fusion. 
+Code 907. 
+   
+ 
+<a name="anchor14"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:gg2Httbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; H^0 t tbar</i> via <i>t tbar</i> fusion 
+(or, alternatively put, Higgs radiation off a top line). 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 908. 
+   
+ 
+<a name="anchor15"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:qqbar2Httbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; H^0 t tbar</i> via <i>t tbar</i> fusion 
+(or, alternatively put, Higgs radiation off a top line). 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 909. 
+   
+ 
+<a name="section1"></a> 
+<h3>Standard-Model Higgs, further processes</h3> 
+ 
+A number of further production processes has been implemented, that 
+are specializations of some of the above ones to the high-<i>pT</i> 
+region. The sets therefore could not be used simultaneously 
+without unphysical double-counting, as further explained below. 
+They are not switched on by the <code>HiggsSM:all</code> flag, but 
+have to be switched on for each separate process after due consideration. 
+ 
+<p/> 
+The first three processes in this section are related to the Higgs 
+point coupling to fermions, and so primarily are of interest for 
+<i>b</i> quarks. It is here useful to begin by reminding that 
+a process like <i>b bbar &rarr; H^0</i> implies that a <i>b/bbar</i> 
+is taken from each incoming hadron, leaving behind its respective 
+antiparticle. The initial-state showers will then add one 
+<i>g &rarr; b bbar</i> branching on either side, so that effectively 
+the process becomes <i>g g &rarr; H0 b bbar</i>. This would be the 
+same basic process as the <i>g g &rarr; H^0 t tbar</i> one used for top. 
+The difference is that (a) no PDF's are defined for top and 
+(b) the shower approach would not be good enough to provide sensible 
+kinematics for the <i>H^0 t tbar</i> subsystem. By contrast, owing 
+to the <i>b</i> being much lighter than the Higgs, multiple 
+gluon emissions must be resummed for <i>b</i>, as is done by PDF's 
+and showers, in order to obtain a sensible description of the total 
+production rate,  when the <i>b</i> quarks predominantly are produced 
+at small <i>pT</i> values. 
+ 
+<a name="anchor16"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:qg2Hq &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q g &rarr; H^0 q</i>. This process gives first-order 
+corrections to the <i>f fbar &rarr; H^0</i> one above, and should only be 
+used to study  the high-<i>pT</i> tail, while <i>f fbar &rarr; H^0</i> 
+should be used for inclusive production. Only the dominant <i>c</i> 
+and <i>b</i> contributions are included, and generated separately 
+for technical reasons. Note that another first-order process would be 
+<i>q qbar &rarr; H^0 g</i>, which is not explicitly implemented here, 
+but is obtained from showering off the lowest-order process. It does not 
+contain any <i>b</i> at large <i>pT</i>, however, so is less 
+interesting for many applications. 
+Code 911. 
+   
+ 
+<a name="anchor17"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:gg2Hbbbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; H^0 b bbar</i>. This process is yet one order 
+higher of the <i>b bbar &rarr; H^0</i> and <i>b g &rarr; H^0 b</i> chain, 
+where now two quarks should be required above some large <i>pT</i> 
+threshold. 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 912. 
+   
+ 
+<a name="anchor18"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:qqbar2Hbbbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; H^0 b bbar</i> via an <i>s</i>-channel 
+gluon, so closely related to the previous one, but typically less 
+important owing to the smaller rate of (anti)quarks relative to 
+gluons. 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 913. 
+   
+ 
+<p/> 
+The second set of processes are predominantly first-order corrections 
+to the <i>g g &rarr; H^0</i> process, again dominated by the top loop. 
+We here only provide the kinematical expressions obtained in the 
+limit that the top quark goes to infinity, but scaled to the 
+finite-top-mass coupling in <i>g g &rarr; H^0</i>. (Complete loop 
+expressions are available e.g. in PYTHIA 6.4 but are very lengthy.) 
+This provides a reasonably accurate description for "intermediate" 
+<i>pT</i> values, but fails when the <i>pT</i> scale approaches 
+the top mass. 
+ 
+<a name="anchor19"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:gg2Hg(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; H^0 g</i> via loop contributions primarily 
+from top. 
+Code 914. 
+   
+ 
+<a name="anchor20"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:qg2Hq(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q g &rarr; H^0 q</i> via loop contributions primarily 
+from top. Not to be confused with the <code>HiggsSM:qg2Hq</code> 
+process above, with its direct fermion-to-Higgs coupling. 
+Code 915. 
+   
+ 
+<a name="anchor21"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsSM:qqbar2Hg(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; H^0 g</i> via an <i>s</i>-channel gluon 
+and loop contributions primarily from top. Is strictly speaking a 
+"new" process, not directly derived from <i>g g &rarr; H^0</i>, and 
+could therefore be included in the standard mix without double-counting, 
+but is numerically negligible. 
+Code 916. 
+   
+ 
+<a name="section2"></a> 
+<h3>Beyond-the-Standard-Model Higgs, introduction</h3> 
+ 
+Further Higgs multiplets arise in a number of scenarios. We here 
+concentrate on the MSSM scenario with two Higgs doublets, but with 
+flexibility enough that also other two-Higgs-doublet scenarios could 
+be represented by a suitable choice of parameters. Conventionally the 
+Higgs states are labeled <i>h^0, H^0, A^0</i> and <i>H^+-</i>. 
+If the scalar and pseudocalar states mix the resulting states are 
+labeled <i>H_1^0, H_2^0, H_3^0</i>. In process names and parameter 
+explanations both notations will be used, but for settings labels 
+we have adapted the shorthand hybrid notation <code>H1</code> for 
+<i>h^0(H_1^0)</i>, <code>H2</code> for <i>H^0(H_2^0)</i> and 
+<code>A3</code> for <i>A^0(H_3^0)</i>. (Recall that the 
+<code>Settings</code> database does not distinguish upper- and lowercase 
+characters, so that the user has one thing less to worry about, but here 
+it causes problems with <i>h^0</i> vs. <i>H^0</i>.) We leave the issue 
+of mass ordering between <i>H^0</i> and <i>A^0</i> open, and thereby 
+also that of <i>H_2^0</i> and <i>H_3^0</i>. 
+ 
+<a name="anchor22"></a>
+<p/><code>flag&nbsp; </code><strong> Higgs:useBSM &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Master switch to initialize and use the two-Higgs-doublet states. 
+If off, only the above SM Higgs processes can be used, with couplings 
+as predicted in the SM. If on, only the below BSM Higgs processes can 
+be used, with couplings that can be set freely, also found further down 
+on this page. 
+   
+ 
+<a name="section3"></a> 
+<h3>Beyond-the-Standard-Model Higgs, basic processes</h3> 
+ 
+This section provides the standard set of processes that can be 
+run together to provide a reasonably complete overview of possible 
+production channels for a single neutral Higgs state in a two-doublet 
+scenarios such as MSSM. The list of processes for neutral states closely 
+mimics the one found for the SM Higgs. Some of the processes 
+vanish for a pure pseudoscalar <i>A^0</i>, but are kept for flexibility 
+in cases of mixing with the scalar <i>h^0</i> and <i>H^0</i> states, 
+or for use in the context of non-MSSM models. This should work well to 
+represent e.g. that a small admixture of the "wrong" parity would allow 
+a process such as <i>q qbar &rarr; A^0 Z^0</i>, which otherwise is 
+forbidden. However, note that the loop integrals e.g. for 
+<i>g g &rarr; h^0/H^0/A^0</i> are hardcoded to be for scalars for the 
+former two particles and for a pseudoscalar for the latter one, 
+so absolute rates would not be correctly represented in the case of 
+large scalar/pseudoscalar mixing. 
+ 
+<a name="anchor23"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:all &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of Higgs production beyond the Standard Model, 
+as listed below. 
+   
+ 
+<h4>1) <i>h^0(H_1^0)</i> processes</h4> 
+ 
+<a name="anchor24"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:allH1 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of <i>h^0(H_1^0)</i> production processes. 
+   
+ 
+<a name="anchor25"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2H1 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; h^0(H_1^0)</i>, where <i>f</i> sums over 
+available flavours except top. 
+Code 1001. 
+   
+ 
+<a name="anchor26"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2H1 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; h^0(H_1^0)</i> via loop contributions primarily 
+from top. 
+Code 1002. 
+   
+ 
+<a name="anchor27"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gmgm2H1 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>gamma gamma &rarr; h^0(H_1^0)</i> via loop contributions 
+primarily from top and <i>W</i>. 
+Code 1003. 
+   
+ 
+<a name="anchor28"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2H1Z &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; h^0(H_1^0) Z^0</i> via <i>s</i>-channel 
+<i>Z^0</i> exchange. 
+Code 1004. 
+   
+ 
+<a name="anchor29"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2H1W &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; h^0(H_1^0) W^+-</i> via <i>s</i>-channel 
+<i>W^+-</i> exchange. 
+Code 1005. 
+   
+ 
+<a name="anchor30"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ff2H1ff(t:ZZ) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f f' &rarr; h^0(H_1^0) f f'</i> via <i>Z^0 Z^0</i> fusion. 
+Code 1006. 
+   
+ 
+<a name="anchor31"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ff2H1ff(t:WW) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f_1 f_2 &rarr; h^0(H_1^0) f_3 f_4</i> via <i>W^+ W^-</i> 
+fusion. 
+Code 1007. 
+   
+ 
+<a name="anchor32"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2H1ttbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; h^0(H_1^0) t tbar</i> via <i>t tbar</i> fusion 
+(or, alternatively put, Higgs radiation off a top line). 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1008. 
+   
+ 
+<a name="anchor33"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qqbar2H1ttbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; h^0(H_1^0) t tbar</i> via <i>t tbar</i> 
+fusion (or, alternatively put, Higgs radiation off a top line). 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1009. 
+   
+ 
+<h4>2) <i>H^0(H_2^0)</i> processes</h4> 
+ 
+<a name="anchor34"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:allH2 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of <i>H^0(H_2^0)</i> production processes. 
+   
+ 
+<a name="anchor35"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2H2 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; H^0(H_2^0)</i>, where <i>f</i> sums over 
+available flavours except top. 
+Code 1021. 
+   
+ 
+<a name="anchor36"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2H2 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; H^0(H_2^0)</i> via loop contributions primarily 
+from top. 
+Code 1022. 
+   
+ 
+<a name="anchor37"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gmgm2H2 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>gamma gamma &rarr; H^0(H_2^0)</i> via loop contributions 
+primarily from top and <i>W</i>. 
+Code 1023. 
+   
+ 
+<a name="anchor38"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2H2Z &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; H^0(H_2^0) Z^0</i> via <i>s</i>-channel 
+<i>Z^0</i> exchange. 
+Code 1024. 
+   
+ 
+<a name="anchor39"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2H2W &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; H^0(H_2^0) W^+-</i> via <i>s</i>-channel 
+<i>W^+-</i> exchange. 
+Code 1025. 
+   
+ 
+<a name="anchor40"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ff2H2ff(t:ZZ) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f f' &rarr; H^0(H_2^0) f f'</i> via <i>Z^0 Z^0</i> fusion. 
+Code 1026. 
+   
+ 
+<a name="anchor41"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ff2H2ff(t:WW) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f_1 f_2 &rarr; H^0(H_2^0) f_3 f_4</i> via <i>W^+ W^-</i> 
+fusion. 
+Code 1027. 
+   
+ 
+<a name="anchor42"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2H2ttbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; H^0(H_2^0) t tbar</i> via <i>t tbar</i> fusion 
+(or, alternatively put, Higgs radiation off a top line). 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1028. 
+   
+ 
+<a name="anchor43"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qqbar2H2ttbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; H^0(H_2^0) t tbar</i> via <i>t tbar</i> 
+fusion (or, alternatively put, Higgs radiation off a top line). 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1029. 
+   
+ 
+<h4>3) <i>A^0(H_3^0)</i> processes</h4> 
+ 
+<a name="anchor44"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:allA3 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of <i>A^0(H_3^0)</i> production processes. 
+   
+ 
+<a name="anchor45"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2A3 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; A^0(H_3^0)</i>, where <i>f</i> sums over 
+available flavours except top. 
+Code 1041. 
+   
+ 
+<a name="anchor46"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2A3 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; A^0(A_3^0)</i> via loop contributions primarily 
+from top. 
+Code 1042. 
+   
+ 
+<a name="anchor47"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gmgm2A3 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>gamma gamma &rarr; A^0(A_3^0)</i> via loop contributions 
+primarily from top and <i>W</i>. 
+Code 1043. 
+   
+ 
+<a name="anchor48"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2A3Z &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; A^0(A_3^0) Z^0</i> via <i>s</i>-channel 
+<i>Z^0</i> exchange. 
+Code 1044. 
+   
+ 
+<a name="anchor49"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2A3W &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; A^0(A_3^0) W^+-</i> via <i>s</i>-channel 
+<i>W^+-</i> exchange. 
+Code 1045. 
+   
+ 
+<a name="anchor50"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ff2A3ff(t:ZZ) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f f' &rarr; A^0(A_3^0) f f'</i> via <i>Z^0 Z^0</i> fusion. 
+Code 1046. 
+   
+ 
+<a name="anchor51"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ff2A3ff(t:WW) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f_1 f_2 &rarr; A^0(A_3^0) f_3 f_4</i> via <i>W^+ W^-</i> 
+fusion. Code 1047. 
+   
+ 
+<a name="anchor52"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2A3ttbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; A^0(A_3^0) t tbar</i> via <i>t tbar</i> fusion 
+(or, alternatively put, Higgs radiation off a top line). 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1048. 
+   
+ 
+<a name="anchor53"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qqbar2A3ttbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; A^0(A_3^0) t tbar</i> via <i>t tbar</i> 
+fusion (or, alternatively put, Higgs radiation off a top line). 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1049. 
+   
+ 
+<h4>4) <i>H+-</i> processes</h4> 
+ 
+<a name="anchor54"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:allH+- &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of <i>H^+-</i> production processes. 
+   
+ 
+<a name="anchor55"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2H+- &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar' &rarr; H^+-</i>, where <i>f, fbar'</i> sums over 
+available incoming flavours. Since couplings are assumed 
+generation-diagonal, in practice this means <i>c sbar &rarr; H^+</i> 
+and <i>s cbar &rarr; H^-</i>. 
+Code 1061. 
+   
+ 
+<a name="anchor56"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:bg2H+-t &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>b g &rarr; H^+ tbar</i>. At hadron colliders this is the 
+dominant process for single-charged-Higgs production. 
+Code 1062. 
+   
+ 
+<h4>5) Higgs-pair processes</h4> 
+ 
+<a name="anchor57"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:allHpair &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of Higgs pair-production processes. 
+   
+ 
+<a name="anchor58"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2A3H1 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; A^0(H_3) h^0(H_1)</i>. 
+Code 1081. 
+   
+ 
+<a name="anchor59"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2A3H2 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; A^0(H_3) H^0(H_2)</i>. 
+Code 1082. 
+   
+ 
+<a name="anchor60"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2H+-H1 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; H^+- h^0(H_1)</i>. 
+Code 1083. 
+   
+ 
+<a name="anchor61"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2H+-H2 &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; H^+- H^0(H_2)</i>. 
+Code 1084. 
+   
+ 
+<a name="anchor62"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:ffbar2H+H- &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr; H+ H-</i>. 
+Code 1085. 
+   
+ 
+<a name="section4"></a> 
+<h3>Beyond-the-Standard-Model Higgs, further processes</h3> 
+ 
+This section mimics the above section on "Standard-Model Higgs, 
+further processes", i.e. it contains higher-order corrections 
+to the processes already listed. The two sets therefore could not 
+be used simultaneously without unphysical double-counting. 
+They are not controlled by any group flag, but have to be switched 
+on for each separate process after due consideration. We refer to 
+the standard-model description for a set of further comments on 
+the processes. 
+ 
+<h4>1) <i>h^0(H_1^0)</i> processes</h4> 
+ 
+<a name="anchor63"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qg2H1q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q g &rarr; h^0 q</i>. This process gives first-order 
+corrections to the <i>f fbar &rarr; h^0</i> one above, and should only be 
+used to study  the high-<i>pT</i> tail, while <i>f fbar &rarr; h^0</i> 
+should be used for inclusive production. Only the dominant <i>c</i> 
+and <i>b</i> contributions are included, and generated separately 
+for technical reasons. Note that another first-order process would be 
+<i>q qbar &rarr; h^0 g</i>, which is not explicitly implemented here, 
+but is obtained from showering off the lowest-order process. It does not 
+contain any <i>b</i> at large <i>pT</i>, however, so is less 
+interesting for many applications. 
+Code 1011. 
+   
+ 
+<a name="anchor64"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2H1bbbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; h^0 b bbar</i>. This process is yet one order 
+higher of the <i>b bbar &rarr; h^0</i> and <i>b g &rarr; h^0 b</i> chain, 
+where now two quarks should be required above some large <i>pT</i> 
+threshold. 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1012. 
+   
+ 
+<a name="anchor65"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qqbar2H1bbbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; h^0 b bbar</i> via an <i>s</i>-channel 
+gluon, so closely related to the previous one, but typically less 
+important owing to the smaller rate of (anti)quarks relative to 
+gluons. 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1013. 
+   
+ 
+<a name="anchor66"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2H1g(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; h^0 g</i> via loop contributions primarily 
+from top. 
+Code 1014. 
+   
+ 
+<a name="anchor67"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qg2H1q(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q g &rarr; h^0 q</i> via loop contributions primarily 
+from top. Not to be confused with the <code>HiggsBSM:qg2H1q</code> 
+process above, with its direct fermion-to-Higgs coupling. 
+Code 1015. 
+   
+ 
+<a name="anchor68"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qqbar2H1g(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; h^0 g</i> via an <i>s</i>-channel gluon 
+and loop contributions primarily from top. Is strictly speaking a 
+"new" process, not directly derived from <i>g g &rarr; h^0</i>, and 
+could therefore be included in the standard mix without double-counting, 
+but is numerically negligible. 
+Code 1016. 
+   
+ 
+<h4>2) <i>H^0(H_2^0)</i> processes</h4> 
+ 
+<a name="anchor69"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qg2H2q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q g &rarr; H^0 q</i>. This process gives first-order 
+corrections to the <i>f fbar &rarr; H^0</i> one above, and should only be 
+used to study  the high-<i>pT</i> tail, while <i>f fbar &rarr; H^0</i> 
+should be used for inclusive production. Only the dominant <i>c</i> 
+and <i>b</i> contributions are included, and generated separately 
+for technical reasons. Note that another first-order process would be 
+<i>q qbar &rarr; H^0 g</i>, which is not explicitly implemented here, 
+but is obtained from showering off the lowest-order process. It does not 
+contain any <i>b</i> at large <i>pT</i>, however, so is less 
+interesting for many applications. 
+Code 1031. 
+   
+ 
+<a name="anchor70"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2H2bbbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; H^0 b bbar</i>. This process is yet one order 
+higher of the <i>b bbar &rarr; H^0</i> and <i>b g &rarr; H^0 b</i> chain, 
+where now two quarks should be required above some large <i>pT</i> 
+threshold. 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1032. 
+   
+ 
+<a name="anchor71"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qqbar2H2bbbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; H^0 b bbar</i> via an <i>s</i>-channel 
+gluon, so closely related to the previous one, but typically less 
+important owing to the smaller rate of (anti)quarks relative to 
+gluons. 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1033. 
+   
+ 
+<a name="anchor72"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2H2g(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; H^0 g</i> via loop contributions primarily 
+from top. 
+Code 1034. 
+   
+ 
+<a name="anchor73"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qg2H2q(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q g &rarr; H^0 q</i> via loop contributions primarily 
+from top. Not to be confused with the <code>HiggsBSM:qg2H1q</code> 
+process above, with its direct fermion-to-Higgs coupling. 
+Code 1035. 
+   
+ 
+<a name="anchor74"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qqbar2H2g(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; H^0 g</i> via an <i>s</i>-channel gluon 
+and loop contributions primarily from top. Is strictly speaking a 
+"new" process, not directly derived from <i>g g &rarr; H^0</i>, and 
+could therefore be included in the standard mix without double-counting, 
+but is numerically negligible. 
+Code 1036. 
+   
+ 
+<h4>3) <i>A^0(H_3^0)</i> processes</h4> 
+ 
+<a name="anchor75"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qg2A3q &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q g &rarr; A^0 q</i>. This process gives first-order 
+corrections to the <i>f fbar &rarr; A^0</i> one above, and should only be 
+used to study  the high-<i>pT</i> tail, while <i>f fbar &rarr; A^0</i> 
+should be used for inclusive production. Only the dominant <i>c</i> 
+and <i>b</i> contributions are included, and generated separately 
+for technical reasons. Note that another first-order process would be 
+<i>q qbar &rarr; A^0 g</i>, which is not explicitly implemented here, 
+but is obtained from showering off the lowest-order process. It does not 
+contain any <i>b</i> at large <i>pT</i>, however, so is less 
+interesting for many applications. 
+Code 1051. 
+   
+ 
+<a name="anchor76"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2A3bbbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; A^0 b bbar</i>. This process is yet one order 
+higher of the <i>b bbar &rarr; A^0</i> and <i>b g &rarr; A^0 b</i> chain, 
+where now two quarks should be required above some large <i>pT</i> 
+threshold. 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1052. 
+   
+ 
+<a name="anchor77"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qqbar2A3bbbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; A^0 b bbar</i> via an <i>s</i>-channel 
+gluon, so closely related to the previous one, but typically less 
+important owing to the smaller rate of (anti)quarks relative to 
+gluons. 
+Warning: unfortunately this process is rather slow, owing to a 
+lengthy cross-section expression and inefficient phase-space selection. 
+Code 1053. 
+   
+ 
+<a name="anchor78"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:gg2A3g(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; A^0 g</i> via loop contributions primarily 
+from top. 
+Code 1054. 
+   
+ 
+<a name="anchor79"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qg2A3q(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q g &rarr; A^0 q</i> via loop contributions primarily 
+from top. Not to be confused with the <code>HiggsBSM:qg2H1q</code> 
+process above, with its direct fermion-to-Higgs coupling. 
+Code 1055. 
+   
+ 
+<a name="anchor80"></a>
+<p/><code>flag&nbsp; </code><strong> HiggsBSM:qqbar2A3g(l:t) &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; A^0 g</i> via an <i>s</i>-channel gluon 
+and loop contributions primarily from top. Is strictly speaking a 
+"new" process, not directly derived from <i>g g &rarr; A^0</i>, and 
+could therefore be included in the standard mix without double-counting, 
+but is numerically negligible. 
+Code 1056. 
+   
+ 
+<a name="section5"></a> 
+<h3>Parameters for Beyond-the-Standard-Model Higgs production and decay</h3> 
+ 
+This section offers a big flexibility to set couplings of the various 
+Higgs states to fermions and gauge bosons, and also to each other. 
+The intention is that, for scenarios like MSSM, you should use standard 
+input from the <a href="SUSYLesHouchesAccord.html" target="page">SUSY Les Houches 
+Accord</a>, rather than having to set it all yourself. In other cases, 
+however, the freedom is there for you to use. Kindly note that some 
+of the internal calculations of partial widths from the parameters provided 
+do not include mixing between the scalar and pseudoscalar states. 
+ 
+<p/> 
+Masses would be set in the <code>ParticleData</code> database, 
+while couplings are set below. When possible, the couplings of the Higgs 
+states are normalized to the corresponding coupling within the SM. 
+When not, their values within the MSSM are indicated, from which 
+it should be straightforward to understand what to use instead. 
+The exception is some couplings that vanish also in the MSSM, where the 
+normalization has been defined in close analogy with nonvanishing ones. 
+Some parameter names are asymmetric but crossing can always be used, 
+i.e. the coupling for <i>A^0 &rarr; H^0 Z^0</i> obviously is also valid 
+for <i>H^0 &rarr; A^0 Z^0</i> and <i>Z^0 &rarr; H^0 A^0</i>. 
+Note that couplings usually appear quadratically in matrix elements. 
+ 
+<a name="anchor81"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH1:coup2d &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>h^0(H_1^0)</i> coupling to down-type quarks. 
+   
+ 
+<a name="anchor82"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH1:coup2u &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>h^0(H_1^0)</i> coupling to up-type quarks. 
+   
+ 
+<a name="anchor83"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH1:coup2l &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>h^0(H_1^0)</i> coupling to (charged) leptons. 
+   
+ 
+<a name="anchor84"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH1:coup2Z &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>h^0(H_1^0)</i> coupling to <i>Z^0</i>. 
+   
+ 
+<a name="anchor85"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH1:coup2W &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>h^0(H_1^0)</i> coupling to <i>W^+-</i>. 
+   
+ 
+<a name="anchor86"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH1:coup2Hchg &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>h^0(H_1^0)</i> coupling to <i>H^+-</i> (in loops). 
+Is <i>sin(beta - alpha) + cos(2 beta) sin(beta + alpha) / 
+(2 cos^2theta_W)</i> in the MSSM. 
+   
+ 
+<a name="anchor87"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:coup2d &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>H^0(H_2^0)</i> coupling to down-type quarks. 
+   
+ 
+<a name="anchor88"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:coup2u &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>H^0(H_2^0)</i> coupling to up-type quarks. 
+   
+ 
+<a name="anchor89"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:coup2l &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>H^0(H_2^0)</i> coupling to (charged) leptons. 
+   
+ 
+<a name="anchor90"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:coup2Z &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>H^0(H_2^0)</i> coupling to <i>Z^0</i>. 
+   
+ 
+<a name="anchor91"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:coup2W &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>H^0(H_2^0)</i> coupling to <i>W^+-</i>. 
+   
+ 
+<a name="anchor92"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:coup2Hchg &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>H^0(H_2^0)</i> coupling to <i>H^+-</i> (in loops). 
+Is <i>cos(beta - alpha) + cos(2 beta) cos(beta + alpha) / 
+(2 cos^2theta_W)</i> in the MSSM. 
+   
+ 
+<a name="anchor93"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:coup2H1H1 &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>H^0(H_2^0)</i> coupling to a <i>h^0(H_1^0)</i> pair. 
+Is <i>cos(2 alpha) cos(beta + alpha) - 2 sin(2 alpha) 
+sin(beta + alpha)</i> in the MSSM. 
+   
+ 
+<a name="anchor94"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:coup2A3A3 &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>H^0(H_2^0)</i> coupling to an <i>A^0(H_3^0)</i> pair. 
+Is <i>cos(2 beta) cos(beta + alpha)</i> in the MSSM. 
+   
+ 
+<a name="anchor95"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:coup2H1Z &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>H^0(H_2^0)</i> coupling to a <i>h^0(H_1^0) Z^0</i> pair. 
+Vanishes in the MSSM. 
+   
+ 
+<a name="anchor96"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:coup2A3H1 &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>H^0(H_2^0)</i> coupling to an <i>A^0(H_3^0) h^0(H_1^0)</i> pair. 
+Vanishes in the MSSM. 
+   
+ 
+<a name="anchor97"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:coup2HchgW &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>H^0(H_2^0)</i> coupling to a <i>H^+- W-+</i> pair. 
+Is <i>sin(beta - alpha)</i> in the MSSM. 
+   
+ 
+<a name="anchor98"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:coup2d &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>A^0(H_3^0)</i> coupling to down-type quarks. 
+   
+ 
+<a name="anchor99"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:coup2u &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>A^0(H_3^0)</i> coupling to up-type quarks. 
+   
+ 
+<a name="anchor100"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:coup2l &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>A^0(H_3^0)</i> coupling to (charged) leptons. 
+   
+ 
+<a name="anchor101"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:coup2H1Z &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>A^0(H_3^0)</i> coupling to a <i>h^0(H_1^0) Z^0</i> pair. 
+Is <i>cos(beta - alpha)</i> in the MSSM. 
+   
+ 
+<a name="anchor102"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:coup2H2Z &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>A^0(H_3^0)</i> coupling to a <i>H^0(H_2^0) Z^0</i> pair. 
+Is <i>sin(beta - alpha)</i> in the MSSM. 
+   
+ 
+<a name="anchor103"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:coup2Z &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>A^0(H_3^0)</i> coupling to <i>Z^0</i>. 
+Vanishes in the MSSM. 
+   
+ 
+<a name="anchor104"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:coup2W &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>A^0(H_3^0)</i> coupling to <i>W^+-</i>. 
+Vanishes in the MSSM. 
+   
+ 
+<a name="anchor105"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:coup2H1H1 &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>A^0(H_3^0)</i> coupling to a <i>h^0(H_1^0)</i> pair. 
+Vanishes in the MSSM. 
+   
+ 
+<a name="anchor106"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:coup2Hchg &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>A^0(H_3^0)</i> coupling to <i>H^+-</i>. 
+Vanishes in the MSSM. 
+   
+ 
+<a name="anchor107"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:coup2HchgW &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>A^0(H_3^0)</i> coupling to a <i>H^+- W-+</i> pair. 
+Is 1 in the MSSM. 
+   
+ 
+<a name="anchor108"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsHchg:tanBeta &nbsp;</strong> 
+ (<code>default = <strong>5.</strong></code>)<br/>
+The <i>tan(beta)</i> value, which leads to an enhancement of the 
+<i>H^+-</i> coupling to down-type fermions and suppression to 
+up-type ones. The same angle also appears in many other places, 
+but this particular parameter is only used for the charged-Higgs case. 
+   
+ 
+<a name="anchor109"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsHchg:coup2H1W &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+The <i>H^+-</i> coupling to a <i>h^0(H_1^0) W^+-</i> pair. 
+Is <i>cos(beta - alpha)</i> in the MSSM. 
+   
+ 
+<a name="anchor110"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsHchg:coup2H2W &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>H^+-</i> coupling to a <i>H^0(H_2^0) W^+-</i> pair. 
+Is <i>sin(beta - alpha)</i> in the MSSM. 
+   
+ 
+<p/> 
+Another set of parameters are not used in the production stage but 
+exclusively for the description of angular distributions in decays. 
+ 
+<a name="anchor111"></a>
+<p/><code>mode&nbsp; </code><strong> HiggsH1:parity &nbsp;</strong> 
+ (<code>default = <strong>1</strong></code>; <code>minimum = 0</code>; <code>maximum = 4</code>)<br/>
+possibility to modify angular decay correlations in the decay of a 
+<i>h^0(H_1)</i> decay <i>Z^0 Z^0</i> or <i>W^+ W^-</i> to four 
+fermions, or <i>tau^+ tau^-</i> to any final state. Currently it 
+does not affect the partial width of the channels, which is only based 
+on the above parameters. 
+<br/><code>option </code><strong> 0</strong> : isotropic decays.   
+<br/><code>option </code><strong> 1</strong> : assuming the <i>h^0(H_1)</i> is a pure scalar 
+(CP-even), as in the MSSM.   
+<br/><code>option </code><strong> 2</strong> : assuming the <i>h^0(H_1)</i> is a pure pseudoscalar 
+(CP-odd).   
+<br/><code>option </code><strong> 3</strong> : assuming the <i>h^0(H_1)</i> is a mixture of the two, 
+including the CP-violating interference term. The parameter 
+<i>eta</i>, see below, sets the strength of the CP-odd admixture, 
+with the interference term being proportional to <i>eta</i> 
+and the CP-odd one to <i>eta^2</i>. Intended for decays into 
+<i>W^+ W^-</i> or <i>Z^0 Z^0</i>.   
+<br/><code>option </code><strong> 4</strong> : same as <code>3</code> but now <i>phi</i>, see 
+below, sets the CP-mixing angle. The CP-even term is proportional 
+to <i>sin^2(phi)</i>, the interference to <i>sin(phi)cos(phi)</i>, 
+and the CP-odd term to <i>cos^2(phi)</i>. Consequently <i>phi=0</i> is 
+pure CP-odd and <i>phi=pi/2</i> is pure CP-even. Intended for decays 
+of <i>h -> f fbar</i>, notably for <i>tau</i> lepton polarization, 
+whereas <i>W^+ W^-</i> and <i>Z^0 Z^0</i> decays are isotropic. 
+   
+   
+ 
+<a name="anchor112"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH1:etaParity &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>eta</i> value of CP-violation in the 
+<code>HiggsH1:parity = 3</code> option. 
+   
+ 
+<a name="anchor113"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH1:phiParity &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>phi</i> value of CP-mixing in the 
+<code>HiggsH1:parity = 4</code> option. 
+   
+ 
+<a name="anchor114"></a>
+<p/><code>mode&nbsp; </code><strong> HiggsH2:parity &nbsp;</strong> 
+ (<code>default = <strong>1</strong></code>; <code>minimum = 0</code>; <code>maximum = 4</code>)<br/>
+possibility to modify angular decay correlations in the decay of a 
+<i>H^0(H_2)</i> decay <i>Z^0 Z^0</i> or <i>W^+ W^-</i> to four 
+fermions, or <i>tau^+ tau^-</i> to any final state. Currently it 
+does not affect the partial width of the channels, which is only based 
+on the above parameters. 
+<br/><code>option </code><strong> 0</strong> : isotropic decays.   
+<br/><code>option </code><strong> 1</strong> : assuming the <i>H^0(H_2)</i> is a pure scalar 
+(CP-even), as in the MSSM.   
+<br/><code>option </code><strong> 2</strong> : assuming the <i>H^0(H_2)</i> is a pure pseudoscalar 
+(CP-odd).   
+<br/><code>option </code><strong> 3</strong> : assuming the <i>H^0(H_2)</i> is a mixture of the two, 
+including the CP-violating interference term. The parameter 
+<i>eta</i>, see below, sets the strength of the CP-odd admixture, 
+with the interference term being proportional to <i>eta</i> 
+and the CP-odd one to <i>eta^2</i>. Intended or decays into 
+<i>W^+ W^-</i> or <i>Z^0 Z^0</i>.   
+<br/><code>option </code><strong> 4</strong> : same as <code>3</code> but now <i>phi</i>, see 
+below, sets the CP-mixing angle. The CP-even term is proportional 
+to <i>sin^2(phi)</i>, the interference to <i>sin(phi)cos(phi)</i>, 
+and the CP-odd term to <i>cos^2(phi)</i>. Consequently <i>phi=0</i> is 
+pure CP-odd and <i>phi=pi/2</i> is pure CP-even. Intended for decays 
+of <i>H -> f fbar</i>, notably for <i>tau</i> lepton polarization, 
+whereas <i>W^+ W^-</i> and <i>Z^0 Z^0</i> decays are isotropic. 
+   
+   
+ 
+<a name="anchor115"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:etaParity &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>eta</i> value of CP-violation in the 
+<code>HiggsH2:parity = 3</code> option. 
+   
+ 
+<a name="anchor116"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsH2:phiParity &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>phi</i> value of CP-mixing in the 
+<code>HiggsH2:parity = 4</code> option. 
+   
+ 
+<a name="anchor117"></a>
+<p/><code>mode&nbsp; </code><strong> HiggsA3:parity &nbsp;</strong> 
+ (<code>default = <strong>2</strong></code>; <code>minimum = 0</code>; <code>maximum = 4</code>)<br/>
+possibility to modify angular decay correlations in the decay of a 
+<i>A^0(H_3)</i> decay <i>Z^0 Z^0</i> or <i>W^+ W^-</i> to four 
+fermions, or <i>tau^+ tau^-</i> to any final state. Currently it 
+does not affect the partial width of the channels, which is only based 
+on the above parameters. 
+<br/><code>option </code><strong> 0</strong> : isotropic decays.   
+<br/><code>option </code><strong> 1</strong> : assuming the <i>A^0(H_3)</i> is a pure scalar 
+(CP-even).   
+<br/><code>option </code><strong> 2</strong> : assuming the <i>A^0(H_3)</i> is a pure pseudoscalar 
+(CP-odd), as in the MSSM.   
+<br/><code>option </code><strong> 3</strong> : assuming the <i>A^0(H_3)</i> is a mixture of the two, 
+including the CP-violating interference term. The parameter 
+<i>eta</i>, see below, sets the strength of the CP-odd admixture, 
+with the interference term being proportional to <i>eta</i> 
+and the CP-odd one to <i>eta^2</i>. Intended for decays into 
+<i>W^+ W^-</i> or <i>Z^0 Z^0</i>.   
+<br/><code>option </code><strong> 4</strong> : same as <code>3</code> but now <i>phi</i>, see 
+below, sets the CP-mixing angle. The CP-even term is proportional 
+to <i>sin^2(phi)</i>, the interference to <i>sin(phi)cos(phi)</i>, 
+and the CP-odd term to <i>cos^2(phi)</i>. Consequently <i>phi=0</i> is 
+pure CP-odd and <i>phi=pi/2</i> is pure CP-even. Intended for decays 
+of <i>A -> f fbar</i>, notably for <i>tau</i> lepton polarization, 
+whereas <i>W^+ W^-</i> and <i>Z^0 Z^0</i> decays are isotropic. 
+   
+   
+ 
+<a name="anchor118"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:etaParity &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>eta</i> value of CP-violation in the 
+<code>HiggsA3:parity = 3</code> option. 
+   
+ 
+<a name="anchor119"></a>
+<p/><code>parm&nbsp; </code><strong> HiggsA3:phiParity &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+The <i>phi</i> value of CP-mixing in the 
+<code>HiggsA3:parity = 4</code> option. 
+   
+ 
+</body>
+</html>
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

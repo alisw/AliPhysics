@@ -1,0 +1,387 @@
+<html>
+<head>
+<title>Compositeness Processes</title>
+<link rel="stylesheet" type="text/css" href="pythia.css"/>
+<link rel="shortcut icon" href="pythia32.gif"/>
+</head>
+<body>
+ 
+<h2>Compositeness Processes</h2> 
+<ol id="toc">
+  <li><a href="#section0">Excited fermions, production processes</a></li>
+  <li><a href="#section1">Excited fermions, parameters</a></li>
+  <li><a href="#section2">Contact interactions, production processes</a></li>
+  <li><a href="#section3">Contact interactions, parameters</a></li>
+</ol>
+
+ 
+Compositeness scenarios may give rise to sharp resonances of excited 
+quarks and leptons. An excited copy of the first generation is 
+implemented, consisting of spin 1/2 particles. The possibility of 
+contact interactions between SM fermions is also implemented in the 
+context of <i>2 &rarr; 2</i> quark or fermion-lepton scattering. 
+ 
+<p/> 
+Related to excited fermions, the current implementation contains gauge 
+interaction production by quark-gluon fusion or lepton-photon fusion 
+and contact interaction production by quark-quark or quark-antiquark 
+scattering. For both the <i>2 &rarr; 1</i> and <i>2 &rarr; 2</i> processes 
+a non-trivial angular dependence is included in the decay, however, 
+only decays into gauge bosons are supported, i.e. not decays through 
+contact interactions. In additions to the compositeness scale and couplings 
+listed below, you are expected to change the excited-fermion masses in 
+accordance with what is desired. See [<a href="Bibliography.html#refBau90" target="page">Bau90</a>] for conventions. 
+ 
+<p/> 
+The contact interactions are implemented according to [<a href="Bibliography.html#refEic83" target="page">Eic83</a>]. 
+The processes include the SM contributions as well as interference. 
+For this reason the processes below converge toward the SM equivalents 
+when the contact interaction contributions are close to zero, e.g. 
+<code>HardQCD:qq2qq</code> and <code>HardQCD:qqbar2qqbarNew</code> in 
+the case of quark scattering. 
+ 
+<p/> 
+It should also be noted that the <i>gamma*/Z/Z'</i> production process 
+available with <i>NewGaugeBoson:ffbar2gmZZprime</i> is prepared for 
+pair-production of excited quarks and leptons, assuming the same gauge 
+couplings as for the non-excited fermions. What is missing is the 
+actual decay channels in the list of <i>Z'</i> decay modes, which 
+have to be added by hand, e.g. by 
+<br/>32:addChannel = 1 1. 100 4000001 -4000001 
+<br/>You can use <i>Zprime:gmZmode</i> to decide which gauge boson 
+propagators actually are included in the simulation, and thus e.g. 
+switch off the <i>Z'</i> part of the propagator. You may also want to 
+switch off other decay channels and set the minimal mass to be at the 
+threshold for the studied pair production (or suitably below it, 
+if the excited fermions have a non-negligible width). 
+ 
+<a name="section0"></a> 
+<h3>Excited fermions, production processes</h3> 
+ 
+A few different production processes have been implemented, which normally 
+would not overlap and therefore could be run together. 
+ 
+<a name="anchor1"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:all &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Common switch for the group of implemented processes that produce an 
+excited fermion. 
+   
+ 
+<a name="anchor2"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:dg2dStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>d g &rarr; d^*</i>. 
+Code 4001. 
+   
+ 
+<a name="anchor3"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:ug2uStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>u g &rarr; u^*</i>. 
+Code 4002. 
+   
+ 
+<a name="anchor4"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:sg2sStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>s g &rarr; s^*</i>. 
+Code 4003. 
+   
+ 
+<a name="anchor5"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:cg2cStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>c g &rarr; c^*</i>. 
+Code 4004. 
+   
+ 
+<a name="anchor6"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:bg2bStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>b g &rarr; b^*</i>. 
+Code 4005. 
+   
+ 
+<a name="anchor7"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:egm2eStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>e gamma &rarr; e^*</i>. 
+Code 4011. 
+   
+ 
+<a name="anchor8"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:mugm2muStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>mu gamma &rarr; mu^*</i>. 
+Code 4013. 
+   
+ 
+<a name="anchor9"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:taugm2tauStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>tau gamma &rarr; tau^*</i>. 
+Code 4015. 
+   
+ 
+<a name="anchor10"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qq2dStarq &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q q(bar) &rarr; d^* q(bar)</i>. 
+Code 4021. 
+   
+ 
+<a name="anchor11"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qq2uStarq &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q q(bar) &rarr; u^* q(bar)</i>. 
+Code 4022. 
+   
+ 
+<a name="anchor12"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qq2sStarq &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q q(bar) &rarr; s^* q(bar)</i>. 
+Code 4023. 
+   
+ 
+<a name="anchor13"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qq2cStarq &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q q(bar) &rarr; c^* q(bar)</i>. 
+Code 4024. 
+   
+ 
+<a name="anchor14"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qq2bStarq &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q q(bar) &rarr; b^* q(bar)</i>. 
+Code 4025. 
+   
+ 
+<a name="anchor15"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2eStare &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; e^*+- e^-+</i>. 
+Code 4031. 
+   
+ 
+<a name="anchor16"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2nueStarnue &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; nu_e^* nu_ebar</i>. 
+Code 4032. 
+   
+ 
+<a name="anchor17"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2muStarmu &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; mu^*+- mu^-+</i>. 
+Code 4033. 
+   
+ 
+<a name="anchor18"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2numuStarnumu &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; nu_mu^* nu_mubar</i>. 
+Code 4034. 
+   
+ 
+<a name="anchor19"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2tauStartau &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; tau^*+- tau^-+</i>. 
+Code 4035. 
+   
+ 
+<a name="anchor20"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2nutauStarnutau &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; nu_tau^* nu_taubar</i>. 
+Code 4036. 
+   
+ 
+<a name="anchor21"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2eStareStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; e^*+- e^*-+</i>. 
+Code 4051. 
+   
+ 
+<a name="anchor22"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2nueStarnueStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; nu_e^* nu_e^*bar</i>. 
+Code 4052. 
+   
+ 
+<a name="anchor23"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2muStarmuStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; mu^*+- mu^*-+</i>. 
+Code 4053. 
+   
+ 
+<a name="anchor24"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2numuStarnumuStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; nu_mu^* nu_mu^*bar</i>. 
+Code 4054. 
+   
+ 
+<a name="anchor25"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2tauStartauStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; tau^*+- tau^*-+</i>. 
+Code 4055. 
+   
+ 
+<a name="anchor26"></a>
+<p/><code>flag&nbsp; </code><strong> ExcitedFermion:qqbar2nutauStarnutauStar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; nu_tau^* nu_tau^*bar</i>. 
+Code 4056. 
+   
+ 
+<a name="section1"></a> 
+<h3>Excited fermions, parameters</h3> 
+ 
+The basic couplings of the model are 
+ 
+<a name="anchor27"></a>
+<p/><code>parm&nbsp; </code><strong> ExcitedFermion:Lambda &nbsp;</strong> 
+ (<code>default = <strong>1000.</strong></code>; <code>minimum = 100.</code>)<br/>
+Compositeness scale <i>Lambda</i> in GeV. 
+   
+ 
+<a name="anchor28"></a>
+<p/><code>parm&nbsp; </code><strong> ExcitedFermion:coupF &nbsp;</strong> 
+ (<code>default = <strong>1.0</strong></code>; <code>minimum = 0.0</code>)<br/>
+Strength <i>f</i> of the <i>SU(2)</i> coupling. 
+   
+ 
+<a name="anchor29"></a>
+<p/><code>parm&nbsp; </code><strong> ExcitedFermion:coupFprime &nbsp;</strong> 
+ (<code>default = <strong>1.0</strong></code>; <code>minimum = 0.0</code>)<br/>
+Strength <i>f'</i> of the <i>U(1)</i> coupling. 
+   
+ 
+<a name="anchor30"></a>
+<p/><code>parm&nbsp; </code><strong> ExcitedFermion:coupFcol &nbsp;</strong> 
+ (<code>default = <strong>1.0</strong></code>; <code>minimum = 0.0</code>)<br/>
+Strength <i>f_c</i> of the <i>SU(3)</i> coupling. 
+   
+ 
+<a name="anchor31"></a>
+<p/><code>parm&nbsp; </code><strong> ExcitedFermion:contactDec &nbsp;</strong> 
+ (<code>default = <strong>1.0</strong></code>; <code>minimum = 0.0</code>)<br/>
+Strength of contact-interaction decay channels, implemented as 
+three-body decays <i>l^* &rarr; l f fbar</i> for excited leptons 
+and neutrinos, where unity corresponds to the same normalization 
+as for the production channels. 
+   
+ 
+<a name="section2"></a> 
+<h3>Contact interactions, production processes</h3> 
+ 
+The processes including contact interactions are 
+ 
+<a name="anchor32"></a>
+<p/><code>flag&nbsp; </code><strong> ContactInteractions:QCqq2qq &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q q &rarr; q q</i> including contact interactions. 
+Code 4201. 
+   
+ 
+<a name="anchor33"></a>
+<p/><code>flag&nbsp; </code><strong> ContactInteractions:QCqqbar2qqbar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>q qbar &rarr; q' qbar'</i> including contact interactions. 
+Code 4202. 
+   
+ 
+<a name="anchor34"></a>
+<p/><code>flag&nbsp; </code><strong> ContactInteractions:QCffbar2eebar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar &rarr; e- e+</i> including contact interactions. 
+Code 4203. 
+   
+ 
+<a name="anchor35"></a>
+<p/><code>flag&nbsp; </code><strong> ContactInteractions:QCffbar2mumubar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar &rarr; mu- mu+</i> including contact interactions. 
+Code 4204. 
+   
+ 
+<a name="anchor36"></a>
+<p/><code>flag&nbsp; </code><strong> ContactInteractions:QCffbar2tautaubar &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scatterings <i>f fbar &rarr; tau- tau+</i> including contact interactions. 
+Code 4205. 
+   
+ 
+<a name="section3"></a> 
+<h3>Contact interactions, parameters</h3> 
+ 
+<a name="anchor37"></a>
+<p/><code>mode&nbsp; </code><strong> ContactInteractions:nQuarkNew &nbsp;</strong> 
+ (<code>default = <strong>3</strong></code>; <code>minimum = 0</code>; <code>maximum = 5</code>)<br/>
+Number of allowed outgoing new quark flavours in the above 
+<i>q qbar &rarr; q' qbar'</i> process. Similar to <i>HardQCD:nQuarkNew</i> 
+for the QCD processes. 
+   
+ 
+<a name="anchor38"></a>
+<p/><code>parm&nbsp; </code><strong> ContactInteractions:Lambda &nbsp;</strong> 
+ (<code>default = <strong>1000.</strong></code>; <code>minimum = 100.</code>)<br/>
+Compositeness scale <i>Lambda</i> in GeV. Its overall normalization 
+is largely a matter of convention. The choice made here for the 
+<i>q qbar &rarr; l- l+</i> processes is such that the pure contact 
+interaction part of the left-left interactions (i.e. disregarding 
+<i>gamma^*</i>, <i>Z^0</i> and interference terms) has the form 
+<i>d(sigmaHat)/d(tHat) = pi * uHat^2 / (3 * sHat^2 * Lambda^4)</i>. 
+The corresponding part of the <i>q qbar &rarr; q' qbar'</i> cross section 
+is a factor 3 larger from colour. 
+   
+ 
+<a name="anchor39"></a>
+<p/><code>mode&nbsp; </code><strong> ContactInteractions:etaLL &nbsp;</strong> 
+ (<code>default = <strong>0</strong></code>; <code>minimum = -1</code>; <code>maximum = 1</code>)<br/>
+Helicity parameter. 
+<br/><code>option </code><strong> 1</strong> :    
+<br/><code>option </code><strong> 0</strong> :    
+<br/><code>option </code><strong> -1</strong> :    
+   
+ 
+<a name="anchor40"></a>
+<p/><code>mode&nbsp; </code><strong> ContactInteractions:etaRR &nbsp;</strong> 
+ (<code>default = <strong>0</strong></code>; <code>minimum = -1</code>; <code>maximum = 1</code>)<br/>
+Helicity parameter. 
+<br/><code>option </code><strong> 1</strong> :    
+<br/><code>option </code><strong> 0</strong> :    
+<br/><code>option </code><strong> -1</strong> :    
+   
+ 
+<a name="anchor41"></a>
+<p/><code>mode&nbsp; </code><strong> ContactInteractions:etaLR &nbsp;</strong> 
+ (<code>default = <strong>0</strong></code>; <code>minimum = -1</code>; <code>maximum = 1</code>)<br/>
+Helicity parameter. 
+<br/><code>option </code><strong> 1</strong> :    
+<br/><code>option </code><strong> 0</strong> :    
+<br/><code>option </code><strong> -1</strong> :    
+   
+ 
+<a name="anchor42"></a>
+<p/><code>mode&nbsp; </code><strong> ContactInteractions:etaRL &nbsp;</strong> 
+ (<code>default = <strong>0</strong></code>; <code>minimum = -1</code>; <code>maximum = 1</code>)<br/>
+Helicity parameter.   Implemented only for the <i>q qbar &rarr; l- l+</i> process. 
+<br/><code>option </code><strong> 1</strong> :    
+<br/><code>option </code><strong> 0</strong> :    
+<br/><code>option </code><strong> -1</strong> :    
+   
+ 
+</body>
+</html>
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

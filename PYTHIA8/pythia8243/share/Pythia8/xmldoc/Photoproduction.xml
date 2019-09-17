@@ -1,0 +1,328 @@
+<chapter name="Photoproduction"> 
+ 
+<h2>Photoproduction</h2> 
+ 
+<p> 
+Interactions involving one or two photons, either in photon-photon or 
+photon-hadron collision or photons emitted from lepton beams. 
+Includes both direct and resolved contributions and also soft QCD and MPIs 
+for events with resolved photons. Only (quasi-)real photons are considered 
+so virtuality of the photons is restricted. The PDF set for resolved photons 
+is selected in the <aloc href="PDFSelection">PDF selection</aloc>. 
+This page describes some of the special features related to these collisions 
+and introduces the relevant parameters. 
+</p> 
+ 
+<h3>Types of photon processes</h3> 
+ 
+<p> 
+Photons can be either resolved or act as point-like particles (direct). 
+Therefore for a photon-photon interaction there are four different 
+contributions, resolved-resolved, resolved-direct, direct-resolved and 
+direct-direct. In case of photon-hadron collisions there are two 
+contributions. With the default value of the parameter below, a mix of 
+relevant contributions is generated but each process type can also be 
+generated individually. Note that for photon-hadron collisions the code 
+for direct contribution depends on which of the beams is photon. 
+The sample main program <code>main69.cc</code> demonstrates different 
+possibilities. 
+</p> 
+ 
+<modepick name="Photon:ProcessType" default="0" min="0" max="4"> 
+Sets desired contribution for interactions with one or two photons. 
+<option value="0"> Mix of relevant contributions below. </option> 
+<option value="1"> Resolved-Resolved: Both colliding photons are 
+resolved and the partonic content is given by the PDFs. Hard processes 
+and non-diffractive events can be generated. </option> 
+<option value="2"> Resolved-Direct: Photon A is resolved and photon B 
+unresolved, i.e. act as an initiator for the hard process. Hard processes 
+with a parton and a photon in the initial state can be generated. 
+In case of photon-hadron collision this provides the direct contribution 
+when hadron is beam A and photon beam B.</option> 
+<option value="3"> Direct-Resolved: As above but now photon A is unresolved 
+and photon B resolved. Direct contribution of photon-hadron when photon 
+beam A.</option> 
+<option value="4"> Direct-Direct: Both photons are unresolved. Hard 
+processes with two photon initiators can be generated.</option> 
+</modepick> 
+ 
+<p> 
+The type of the generated process can be obtained from 
+<aloc href="EventInformation">Info class</aloc> with method 
+<code>int Info::photonMode()</code> which follows the conventions above. 
+</p> 
+ 
+<h3>Resolved photon</h3> 
+ 
+<p> 
+Photons can either interact directly as an unresolved particle or as a 
+hadronic state ("Vector Meson Dominance"). In the latter case the hard 
+process can be simulated using PDFs to describe the partonic structure 
+of the resolved photon. The evolution equations for photons include an 
+additional term that corresponds to <ei>gamma &rarr; q qbar</ei> splittings. 
+Due to this, the PDFs are somewhat different for photons than for hadrons 
+and some parts of event generation need special attention. 
+</p> 
+ 
+<h4>Process-level generation</h4> 
+ 
+<p> 
+Due to the additional term in the evolution equations the quarks in a 
+resolved photon may carry a very large fraction <ei>(x~1)</ei> of the photon 
+momentum. In these cases it may happen that, after the hard process, there is 
+no energy left to construct the beam remnants. This is true especially if 
+a heavy quark is taken out from the beam and a corresponding massive 
+antiquark needs to be added to the remnant system to conserve flavour. Even 
+though these events are allowed based on the PDFs alone, they are not physical 
+and should be rejected. Therefore some amount of errors can be expected when 
+generating events close to the edge of phase space, e.g. when collision 
+energy is low. 
+</p> 
+ 
+<h4>Spacelike showers</h4> 
+ 
+<p> 
+The parton showers are generated according to the DGLAP evolution equations. 
+Due to the <ei>gamma &rarr; q qbar</ei> splitting in the photon evolution, 
+a few modifications are needed for the ISR algorithm. 
+<ul> 
+<li> 
+The additional term corresponds to a possibility to find the original beam 
+photon during the backwards evolution, which is added to the QED part of the 
+spacelike shower evolution. If this splitting happens there is no need to 
+construct the beam remnants for the given beam. 
+</li> 
+<li> 
+The heavy quark production threshold with photon beams is handled in a 
+similar manner as for hadrons, but now the splitting that is forced 
+to happen is <ei>gamma &rarr; Q Qbar</ei>. 
+</li> 
+<li> 
+As the splittings in backwards evolution increases the <ei>x</ei> of the 
+parton taken from the beam, the splittings can lead to a situation where 
+there is no room left for massive beam remnants. To make sure that the 
+required  remnants can be constructed, splittings that would not leave 
+room for the beam remnants are not allowed. 
+</li> 
+</ul> 
+</p> 
+ 
+<h4>MPIs with photon beams</h4> 
+ 
+<p> 
+Multiparton interactions with resolved photon beams are generated as with 
+hadron beams. The only difference follows again from the additional 
+<ei>gamma &rarr; q qbar</ei> splittings where the beam photon becomes 
+unresolved. If this splitting happens during the interleaved evolution 
+for either of the photon beams no further MPIs below the branching scale 
+<ei>pT</ei> are allowed since the photon is not resolved anymore. 
+</p> 
+ 
+<p> 
+If there have been multiple interactions and a <ei>gamma &rarr; q qbar 
+</ei> splitting occur, the kinematics of this branching are not constructed 
+in the spacelike shower. Instead the <ei>pT</ei> scale of the branching is 
+stored and the relevant momenta are then fixed in the beam remnant handling. 
+Therefore the status codes for the partons related to this splitting 
+actually refer to beam remnants. 
+</p> 
+ 
+<p> 
+If there are no MPIs before the <ei>gamma &rarr; q qbar</ei> splitting, 
+this splitting is constructed in the spacelike shower in the usual way, 
+but the mother beam photon is not added to the event record, since a copy 
+of it already exists at the top of the event record. This is unlike the 
+documentation of other ISR splittings, where the mother of the branching 
+is shown, but consistent with the photon not being added (a second time) 
+for events that contain several MPIs. Optionally the photon can be shown, 
+using the following flag. 
+ 
+<flag name="Photon:showUnres" default="off"> 
+Show the evolution steps of the beam photon in the event record, if on. 
+</flag> 
+</p> 
+ 
+<p> 
+Based on comparisons with charged hadron production in photon-photon 
+collision data from LEP, the default MPI parametrization tuned to 
+proton-(anti)proton collisions produces too much hadrons from the 
+additional interactions. Such differences are not surprising, given 
+that the photon is less hadron-like than the proton, e.g. with less 
+well developed PDFs, leaving less room for MPIs. Therefore a different 
+parametrization for <ei>pT0(eCM)</ei> is used in case of photon-photon 
+collisions, where the default values are tuned to the LEP data 
+(a reference to this study will be added later). By default, 
+a logarithmic dependence on <ei>eCM</ei> is used. 
+<note>Note:</note> These parameters override the choices made in 
+<aloc href="MultipartonInteractions">Multiparton Interactions</aloc> 
+when photon-photon collisions are generated. 
+</p> 
+ 
+<modepick name="PhotonPhoton:pT0parametrization" default="1" min="0" max="1"> 
+Choice of <ei>pT0</ei> parametrization. See 
+<aloc href="MultipartonInteractions">Multiparton Interactions</aloc> for 
+further details. 
+<option value="0">Power law in <ei>eCM</ei>.</option> 
+<option value="1">Logarithmic in <ei>eCM</ei>.</option> 
+</modepick> 
+ 
+<parm name="PhotonPhoton:ecmRef" default="100.0" min="1."> 
+The <ei>ecmRef</ei> reference energy scale. 
+</parm> 
+ 
+<parm name="PhotonPhoton:pT0Ref" default="1.52" min="0.5" max="10.0"> 
+The value of <ei>pT0</ei> at the reference energy scale. 
+</parm> 
+ 
+<parm name="PhotonPhoton:ecmPow" default="0.413" min="0.0" max="0.5"> 
+The <ei>ecmPow</ei> energy rescaling pace. 
+</parm> 
+ 
+<p/> 
+Alternatively, or in combination, a sharp cut can be used. 
+<parm name="PhotonPhoton:pTmin" default="0.2" min="0.1" 
+max="10.0"> 
+More details in 
+<aloc href="MultipartonInteractions">Multiparton Interactions</aloc>. 
+</parm> 
+ 
+<p> 
+A similar study for photon-hadron collisions will follow, current 
+recommendation is to use value <ei>pT0Ref = 3.0 GeV</ei> set in 
+<aloc href="MultipartonInteractions">Multiparton Interactions</aloc> page. 
+</p> 
+ 
+<p> 
+The total cross section for photon-photon collisions is paramerized as in 
+<ref>Sch97</ref>. Approximate diffractive cross sections have been defined 
+according to the assumed VMD contribution. 
+</p> 
+ 
+<h4>Beam Remnants</h4> 
+ 
+<p> 
+To construct the beam remnants, one should know whether the parton 
+taken from the beam is a valence parton or not. The valence partons of a 
+photon includes the partons that originate from <ei>gamma &rarr; q qbar</ei> 
+splittings of the original beam photon and the valence partons from the 
+hadron-like part of the PDF. In either case, the flavour of the valence 
+quarks can fluctuate. Unfortunately the decomposition to the different 
+components are typically not provided in the PDF sets and some further 
+assumptions are needed to decide the valence content. 
+</p> 
+ 
+<p> 
+When ISR is applied for photon beams it is possible to end up to the original 
+beam photon during the evolution. Therefore there are three possibilities for 
+the remnants: 
+<ul> 
+<li> 
+Remnants need to be constructed for both beams. 
+</li> 
+<li> 
+Remnants are constructed only for one side. 
+</li> 
+<li> 
+No need for remnants on either side. 
+</li> 
+</ul> 
+The last case is the simplest as all the partons in the event are already 
+generated by the parton showers. In the first case the remnants and 
+primordial <ei>kT</ei> are constructed similarly as for normal hadronic 
+interactions <ref>Sjo04</ref>. For the second case the momenta of the 
+remnant partons can not be balanced between the two beams as the kinematics 
+of the other side are already fixed. In these cases the momenta are balanced 
+between the scattered system and the remnants. 
+</p> 
+ 
+<p> 
+Since the primordial <ei>kT</ei> increases the invariant mass of the remnants 
+and the scattered system, it may again happen that there is no room for the 
+remnant partons after <ei>kT</ei> is added, so the kinematics can not be 
+constructed. In this case new values for <ei>kT</ei> are sampled. If this 
+does not work, a new shower is generated and in some rare cases the 
+parton-level generation fails and the hard process is rejected. The inclusion 
+of additional MPIs increases the invariant mass of the remnants and takes 
+more momentum from the beam particles. Even though the MPIs that would 
+not leave enough room for the remnants are rejected, these can still lead 
+to a situation where the kinematics cannot be constructed due to the added 
+primordial <ei>kT</ei>. This may cause some amount of errors especially when 
+the invariant mass of <ei>gamma-gamma</ei> system is small. 
+</p> 
+ 
+<h3>Photons from lepton beams</h3> 
+ 
+<p> 
+Interaction of photons from leptons including photon-photon interactions in 
+lepton-lepton collisions and photon-hadron lepton-hadron collisions can be 
+set up as described in 
+<aloc href="PDFSelection">PDF selection</aloc>. Since the current 
+framework can handle only (quasi-)real photons, a upper limit for the 
+photon virtuality needs to be set. This can be done with the parameter 
+<code>Photon:Q2max</code>. The upper limit for virtuality will set also 
+the upper limit for the <ei>k_T</ei> of the photon, which in turn will 
+be the same as the <ei>k_T</ei> of the scattered lepton. Also some other 
+cuts can be imposed. 
+ 
+<parm name="Photon:Q2max" default="1.0" max="2.0"> 
+Upper limit for (quasi-)real photon virtuality in <ei>GeV^2</ei>. Too low 
+value might cause problems, e.g. if the lower <ei>Q^2</ei> limit derived from 
+kinematics becomes larger than upper limit. 
+</parm> 
+ 
+<parm name="Photon:Wmin" default="10.0" min="5.0"> 
+Lower limit for invariant mass of <ei>gamma-gamma</ei> system in <ei>GeV</ei>. 
+In lepton-hadron collisions <ei>W</ei> corresponds to invariant mass of 
+photon-hadron system. 
+</parm> 
+ 
+<parm name="Photon:Wmax" default="-1.0"> 
+Upper limit for invariant mass of <ei>gamma-gamma</ei> 
+(<ei>gamma-hadron</ei>) system in <ei>GeV</ei>. 
+A value below <code>Photon:Wmin</code> means that the invariant mass of 
+the original <ei>l+l-</ei> (<ei>lepton-hadron</ei>) system is used as an 
+upper limit. 
+</parm> 
+ 
+<parm name="Photon:thetaAMax" default="-1.0" max="3.141593"> 
+Upper limit for scattering angle of lepton A in <ei>rad</ei>. A negative 
+value means that no cut is applied. Since <ei>k_T</ei> depends on virtuality 
+of the emitted photon, the <code>Photon:Q2max</code> cut is usually more 
+restrictive unless a very small angle is used. This cut is only applied 
+when the colliding beams are defined in their CM frame 
+(<code>Beams:frameType=1</code>). Furthermore, in case of <ei>2 &rarr; 1</ei> 
+processes with direct photons the scattered lepton kinematics is modified 
+later in the event generation, so accurate rejection can be obtained only 
+based on the final lepton momenta in the event record. 
+</parm> 
+ 
+<parm name="Photon:thetaBMax" default="-1.0" max="3.141593"> 
+As above but for lepton B. 
+</parm> 
+ 
+<flag name="Photon:sampleQ2" default="on"> 
+Determines whether the sampling for the photon virtuality is done. This can 
+be used only with <code>PDF:lepton2gammaSet = 2</code> option where 
+<ei>Q^2</ei>-integrated photon is provided by the user with 
+<code>Pythia::setPhotonFluxPtr(PDF*, PDF*)</code> method. In this case the 
+virtuality and the transverse momentum of the photon (and recoiling particle) 
+is set to zero which strictly speaking is kinematically not possible. The 
+error here is, however, very small for the cases where the virtualities 
+are negligible (e.g. photons from heavy ions).</flag> 
+</p> 
+ 
+<h4>MPIs with lepton beams</h4> 
+ 
+<p> 
+The invariant mass of <ei>gamma-gamma</ei> or <ei>gamma-hadron</ei> system 
+from lepton beams will vary. Therefore, to generate MPIs and non-diffractive 
+events in <ei>gamma-gamma</ei> and <ei>gamma-hadron</ei> 
+collisions from lepton beams, the MPI framework is initialized with five 
+values of <ei>W</ei> from <code>Photon:Wmin</code> to 
+<code>Photon:Wmax</code>. The parameter values are then interpolated 
+for the sampled <ei>W</ei>. 
+</p> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

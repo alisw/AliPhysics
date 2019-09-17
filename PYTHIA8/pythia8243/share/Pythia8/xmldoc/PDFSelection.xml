@@ -1,0 +1,685 @@
+<chapter name="PDF Selection"> 
+ 
+<h2>PDF Selection</h2> 
+ 
+This page contains several subsections. The first deals with how to 
+pick the parton distribution set for protons, including from LHAPDF, 
+to be used for all proton and antiproton beams. The second is a special 
+option that allows a separate PDF set to be used for the hard process 
+only, while the first choice would still apply to everything else. 
+The third introduces the possibility of nuclear modifications. 
+Further sections give access to pion, Pomeron and photon PDF's, 
+respectively, the second being used to describe diffractive systems. 
+Towards the end comes the possibility to switch off the lepton 
+"parton density", and photons from lepton beams. More information 
+on PDF classes is found <aloc href="PartonDistributions">here</aloc>. 
+ 
+<flag name="PDF:extrapolate" default="off"> 
+Allow PDF sets to be extrapolated to small <ei>x</ei> values, instead of 
+being frozen at <ei>x_min</ei>. This is a global flag that affects all 
+PDF sets used, whenever extrapolation has been implemented. Among 
+internal PDFs, all Pomeron sets are affected by this flag, as are 
+the CTEQ6/CT09 proton ones, the NNPDF 3.1 ones and others accessed 
+by the <code>LHAGrid1</code> approach. For the rest some by default 
+extrapolate to small <ei>x</ei> (GRV 94 L, MRST/MSTW) while others are 
+frozen at the border (CTEQ 5 L, NNPDF 2.3). When in doubt, check whether 
+and how the behaviour depends on the choice made for your region of 
+interest. When LHAPDF (5 or 6) is used, the extrapolation switch is set 
+according to the choice here, and the behaviour is according to the 
+rules of the respective program. 
+<br/>To put the issue in context, parton densities have a guaranteed 
+range of validity in <ei>x</ei> and <ei>Q^2</ei>, and what should be done 
+beyond that range usually is not explained by the authors of PDF sets. 
+Nevertheless these boundaries very often are exceeded, e.g. minimum-bias 
+studies at LHC may sample <ei>x</ei> values down to <ei>10^-8</ei>, while 
+many PDF sets stop already at <ei>10^-5</ei>. The default behaviour is 
+then that the PDF's are frozen at the boundary, i.e. <ei>xf(x,Q^2)</ei> is 
+fixed at its value at <ei>x_min</ei> for all values <ei>x &lt; 
+x_min</ei>, and so on. This is a conservative approach. Alternatively, 
+if you switch on extrapolation, then parametrizations will be extended 
+beyond the boundaries, by some prescription. In some cases this will 
+provide a more realistic answer, in others complete rubbish. Another 
+problem is that some of the PDF-set codes will write a warning message 
+anytime the limits are exceeded, thus swamping your output 
+file. Therefore you should study a set seriously before you run it 
+with this switch on. 
+<note>Warning:</note>It has been found out that the LHAPDF program by 
+default uses a damping of PDFs at low <ei>Q</ei> scales, below 
+<ei>Q_min</ei>, based on an anomalous dimension ansatz. This overlaps 
+with the damping imposed in the MPI framework by the <ei>p_T0</ei> 
+parameter, and to have both would probably imply doublecounting of 
+effects. Therefore, as of version 8.227, PDFs are frozen below 
+<ei>Q_min</ei>. This change affects the LHAPDF 5 interface. The native 
+LHAPDF 6 interface already contained this restriction, as does the PDFs 
+that come with PYTHIA. Also limits at <ei>Q_max</ei> and <ei>x_max</ei> 
+are checked and PDFs frozen outside them, so the extrapolate option now 
+is strictly a choice of low-<ei>x</ei> behaviour. 
+</flag> 
+ 
+<h3>Parton densities for protons</h3> 
+ 
+PYTHIA comes with a reasonably complete list of recent LO fits built-in, 
+both ones within the normal LO context and ones with modifications for 
+better matching to event generators. In addition two older sets are 
+included for backwards reference (most studies to date are based on 
+CTEQ 5L). Therefore there is no real need to link any external PDF sets. 
+ 
+<p/> 
+If the internal PDF sets are not sufficient, the 
+<a href="http://projects.hepforge.org/lhapdf/" target="page">LHAPDF 
+library</a> <ref>Wha05,Buc15</ref> gives you access to a much wider 
+selection. 
+<note>Warning 1:</note> owing to previous problems with the behaviour 
+of PDF's beyond the <ei>x</ei> and <ei>Q^2</ei> boundaries of a set, 
+you should only use LHAPDF <b>version 5.3.0 or later</b>. 
+<note>Warning 2:</note> the behaviour of the LHAPDF sets need not be 
+identical with the implementation found in PYTHIA. Specifically we 
+are aware of the following points that may influence a comparison. 
+<br/>(a) CTEQ 5L in PYTHIA is the parametrization, in LHAPDF the grid 
+interpolation. 
+<br/>(b) MRST LO* and LO** in PYTHIA is based on an updated edition, 
+where one makes use of the expanded MSTW grid format, while LHAPDF 
+is based on the original smaller grid. 
+<br/>(c) The CTEQ 6 and CT09MC sets in PYTHIA are frozen at the 
+boundaries of the grid, by recommendation of the authors, while 
+LHAPDF also offers an option with a smooth extrapolation outside 
+the grid boundaries. 
+ 
+<p/> 
+If you do not want to install LHAPDF, it is possible to use LHAPDF6 
+data grids natively in PYTHIA. This is based on a simplified 
+implementation of interpolation in a <code>.dat</code> "lhagrid1" 
+file, and so does not give fully identical results, and also is not 
+foolproof. 
+ 
+<p/> 
+The selection of parton densities is made once and then is propagated 
+through the program. It is essential to make an informed choice, 
+for several reasons <ref>Kas10</ref>: 
+<note>Warning 1:</note> the choice of PDF set affects a number of 
+properties of events. A change of PDF therefore requires a complete 
+retuning e.g.  of the multiparton-interactions model for minimum-bias and 
+underlying events. Conversely, the 
+<aloc href="Tunes">pp physics tunes</aloc> are all made for a specific 
+PDF tune, and the chosen (or default) tune will therefore overwrite 
+the <code>PDF:pSet</code> default value described below. If you want 
+to set <code>PDF:pSet</code> differently it should be done <i>after</i> 
+the <code>Tune:pp</code> value, if any, has been set. 
+<note>Warning 2:</note> People often underestimate the differences 
+between different sets on the market. The sets for the same order are 
+constructed to behave more or less similarly at large <ei>x</ei> and 
+<ei>Q^2</ei>, while the multiparton interactions are dominated by the 
+behaviour in the region of small <ei>x</ei> and <ei>Q^2</ei>. A good 
+PDF parametrization ought to be sensible down to <ei>x = 10^-6</ei> 
+(<ei>x = 10^-7</ei>) and <ei>Q^2 = 1</ei> GeV^2 for Tevatron (LHC) 
+applications. Unfortunately there are distributions on the market that 
+completely derail in that region. The <code>main51.cc</code> and 
+<code>main52.cc</code> programs in the <code>examples</code> 
+subdirectory provide some examples of absolutely minimal sanity checks 
+before a new PDF set is put in production. 
+<note>Warning 3:</note> NLO and LO sets tend to have quite different 
+behaviours, e.g. NLO ones have less gluons at small x, which then is 
+compensated by positive corrections in the NLO matrix elements. 
+Therefore do not blindly assume that an NLO tune has to be better than 
+an LO one when combined with the LO matrix elements in PYTHIA. There are 
+explicit examples where such thinking can lead you down the wrong alley, 
+especially if you study low-<ei>pT</ei> physics. A longer discussion on 
+this point can be found in <a href="../pdfdoc/pdfwarning.pdf">this note</a>. 
+In the list below you should therefore be extra cautious when using 
+set 6 or set 9. 
+ 
+<word name="PDF:pSet" default="13"> 
+Parton densities to be used for proton beams (and, by implication, 
+antiproton ones). Note that the choice of a string input (rather than 
+e.g. an integer) allows to pick either an internal, LHAPDF5 or LHAPDF6 
+set in one single setting, by some behind-the-scenes machinations. 
+<option value="1">GRV 94L, LO <ei>alpha_s(M_Z) = 0.128</ei> 
+(this set is out of date, but retained for historical comparisons).</option> 
+<option value="2">CTEQ 5L, LO <ei>alpha_s(M_Z) = 0.127</ei> 
+(this set is also out of date, but not badly so, and many tunes 
+are based on it).</option> 
+<option value="3">MRST LO* (2007), 
+NLO <ei>alpha_s(M_Z) = 0.12032</ei>.</option> 
+<option value="4">MRST LO** (2008), 
+NLO <ei>alpha_s(M_Z) = 0.11517</ei>.</option> 
+<option value="5">MSTW 2008 LO (central member), 
+LO <ei>alpha_s(M_Z) = 0.13939</ei>.</option> 
+<option value="6">MSTW 2008 NLO (central member), 
+NLO <ei>alpha_s(M_Z) = 0.12018</ei> (NLO, see Warning 3 above).</option> 
+<option value="7">CTEQ6L, NLO <ei>alpha_s(M_Z) = 0.1180</ei>.</option> 
+<option value="8">CTEQ6L1, LO <ei>alpha_s(M_Z) = 0.1298</ei>.</option> 
+<option value="9">CTEQ66.00 (NLO, central member), 
+NLO <ei>alpha_s(M_Z) = 0.1180</ei> (NLO, see Warning 3 above).</option> 
+<option value="10">CT09MC1, LO <ei>alpha_s(M_Z) = 0.1300</ei>.</option> 
+<option value="11">CT09MC2, NLO <ei>alpha_s(M_Z) = 0.1180</ei>.</option> 
+<option value="12">CT09MCS, NLO <ei>alpha_s(M_Z) = 0.1180</ei>.</option> 
+<option value="13">NNPDF2.3 QCD+QED LO <ei>alpha_s(M_Z) = 0.130</ei>. 
+</option> 
+<option value="14">NNPDF2.3 QCD+QED LO <ei>alpha_s(M_Z) = 0.119</ei>. 
+</option> 
+<option value="15">NNPDF2.3 QCD+QED NLO <ei>alpha_s(M_Z) = 0.119</ei>. 
+</option> 
+<option value="16">NNPDF2.3 QCD+QED NNLO <ei>alpha_s(M_Z) = 0.119</ei>. 
+</option> 
+<note>Warning :</note>the following four NNPDF 3.1 sets are quite 
+different from the NNPDF 2.3 ones, and cannot be used interchangeably, 
+but need retuning of the MPI framework. Some also do not contain QED 
+evolution. 
+<option value="17">NNPDF3.1 QCD LO <ei>alpha_s(M_Z) = 0.130</ei>. 
+</option> 
+<option value="18">NNPDF3.1 QCD LO <ei>alpha_s(M_Z) = 0.118</ei>. 
+</option> 
+<option value="19">NNPDF3.1 QCD+LUXQED NLO <ei>alpha_s(M_Z) = 0.118</ei>. 
+</option> 
+<option value="20">NNPDF3.1 QCD+LUXQED NNLO <ei>alpha_s(M_Z) = 0.118</ei>. 
+</option> 
+<option value="21">NNPDF3.1sx+LHCb NLO+NLLx LUXQED 
+<ei>alpha_s(M_Z) = 0.118</ei> <ref>Ber18</ref>. While at NLO, the 
+additional small-<ei>x</ei> resummation, anchored by LHC-b data, offers 
+a more reasonable small-<ei>x</ei> behaviour than most NLO PDFs, as 
+required for the successful usage e.g. with traditional "improved LL" 
+parton showers. The photon part is unchanged from the earlier NNPDF 3.1 
+QED analysis <ref>Ber17</ref>. 
+<note>Warning :</note>in version 8.235 the 21 identifier was used to 
+denote and earlier attempt to obtain a more reasonable small-<ei>x</ei> 
+behaviour. This PDF set is superseded by the new 21 and 22 sets, and has 
+been removed, as was forewarned. 
+</option> 
+<option value="22">NNPDF3.1sx+LHCb NNLO+NLLx LUXQED 
+<ei>alpha_s(M_Z) = 0.118</ei>. Comments as for 21, but this set is at 
+NNLO rather than NLO. 
+</option> 
+<option value="LHAPDF5:set/member">Use an external LHAPDF set 
+where <code>set</code> is the name of the set to use 
+and <code>member</code> is the member of the set to use. The value 
+for <code>set</code> is the name of the PDF set to use while the value 
+for <code>member</code> must be an integer and is the member of the 
+set to use. If member is not supplied, then <code>0</code> is assumed. 
+</option> 
+<option value="LHAPDF6:set/member">Same as 
+for <code>LHAPDF5:set/member</code> but now the LHAPDF6 library is 
+used instead. 
+</option> 
+<option value="LHAGrid1:filename">Use the internal implementation 
+of interpolation in <code>.dat</code> files in the default "lhagrid1" 
+LHAPDF6 format. This is a simplified implementation, with cubic 
+interpolation in <ei>ln(x)</ei> and in <ei>ln(Q2)</ei>. If 
+there are several <ei>Q^2</ei> subgrids they have to have the same 
+<ei>x</ei> grid. (Linear interpolation in <ei>ln(Q2)</ei> is used, 
+should a subgrid contain fewer than four <ei>Q2</ei> values.) 
+Other restrictions may also apply, so use with caution. 
+If the <code>filename</code> begins with a / it is supposed to contain 
+the absolute path to the file, and if not the file is supposed to be 
+located in the standard <code>share/Pythia8/xmldoc</code> directory. 
+Note that, unlike LHAPDF, there is no explicit hierarchy of a set 
+containing separate members; each <code>.dat</code> file can be used 
+without any reference to the set it is a member of. 
+</option> 
+<note>Warning 1:</note> the <ei>alpha_s(M_Z)</ei> values and the order of the 
+running in the description above is purely informative, and does not 
+affect any other parts of the program. Instead you have the freedom to 
+set <ei>alpha_s(M_Z)</ei> value and running separately for 
+<aloc href="CouplingsAndScales">hard processes</aloc> 
+(including resonance decays), 
+<aloc href="MultipartonInteractions">multiparton interactions</aloc>, 
+<aloc href="SpacelikeShowers">initial-state radiation</aloc>, and 
+<aloc href="TimelikeShowers">final-state radiation</aloc>. 
+<note>Warning 2:</note> in order for <code>LHAPDF</code> PDF sets to work 
+you must have compiled the appropriate LHAPDF plugins for PYTHIA and 
+have set the <code>LHAPATH</code> environment variable 
+(or <code>LHAPDF_DATA_PATH</code>) to provide the data-files directory 
+of your local LHAPDF installation. See the README file in 
+the <code>examples</code> directory for further instructions. 
+<note>Warning 3:</note> it is technically possible to simultaneously 
+use <code>LHAPDF5</code> and <code>LHAPDF6</code> PDF sets at the same 
+time for the two beams, but such a configuration is not officially 
+supported and strongly discouraged. 
+</word> 
+ 
+<word name="PDF:pSetB" default="void"> 
+Parton densities to be used by <ei>proton beam B</ei>, with the same 
+options available as for <code>PDF:pSet</code>. If this option is set 
+to <code>void</code> then the same PDF set as <code>PDF:pSet</code> is 
+used. 
+</word> 
+ 
+<p/> 
+If you want to use PDF's not found in LHAPDF, or you want to interface 
+LHAPDF another way, you have full freedom to use the more generic 
+<aloc href="PartonDistributions">interface options</aloc>. 
+ 
+<h3>Parton densities for protons in the hard process</h3> 
+ 
+The above options provides a PDF set that will be used everywhere: 
+for the hard process, the parton showers and the multiparton interactions 
+alike. As already mentioned, therefore a change of PDF should be 
+accompanied by a <b>complete</b> retuning of the whole MPI framework, 
+and maybe more. There are cases where one may want to explore 
+different PDF options for the hard process, but would not want to touch 
+the rest. If several different sets are to be compared, a simple 
+reweighting based on the <aloc href="EventInformation">originally 
+used</aloc> flavour, <ei>x</ei>, <ei>Q^2</ei> and PDF values may offer the 
+best route. The options in this section allow a choice of the PDF set 
+for the hard process alone, while the choice made in the previous section 
+would still be used for everything else. The hardest interaction 
+of the minimum-bias process is part of the multiparton-interactions 
+framework and so does not count as a hard process here. 
+ 
+<p/> 
+Of course it is inconsistent to use different PDF's in different parts 
+of an event, but if the <ei>x</ei> and <ei>Q^2</ei> ranges mainly accessed 
+by the components are rather different then the contradiction would not be 
+too glaring. Furthermore, since standard PDF's are one-particle-inclusive 
+we anyway have to 'invent' our own PDF modifications to handle configurations 
+where more than one parton is kicked out of the proton <ref>Sjo04</ref>. 
+ 
+<p/> 
+The PDF choices that can be made are the same as above, so we do not 
+repeat the detailed discussion. 
+ 
+<flag name="PDF:useHard" default="off"> 
+If on then select a separate PDF set for the hard process, using the 
+variables below. If off then use the same PDF set for everything, 
+as already chosen above. 
+</flag> 
+ 
+<word name="PDF:pHardSet" default="void"> 
+Parton densities to be used by the proton beams of the hard process, 
+with the same options available as for <code>PDF:pSet</code>. If this 
+option is set to <code>void</code> then the same PDF set 
+as <code>PDF:pSet</code> is used. 
+</word> 
+ 
+<word name="PDF:pHardSetB" default="void"> 
+Parton densities to be used by <ei>proton beam B</ei> of the hard 
+process, with the same options available as 
+for <code>PDF:pSet</code>. If this option is set to <code>void</code> 
+then the same PDF set as <code>PDF:pHardSet</code> is used. 
+</word> 
+ 
+<h3>Nuclear modifications of parton densities</h3> 
+ 
+<p/> 
+Nuclear modifications of the PDFs are implemented for the hard-process 
+generation only. The final PDF value is calculated for an average nucleon 
+within given nucleus, i.e. 
+<ei>f_i^A(x,Q^2) = (Z/A)*f_i^(p/A) + ((A-Z)/A)*f_i^(n/A)</ei>, where 
+<ei>A</ei> is the nuclear mass number and <ei>Z</ei> the number of protons, 
+set using the PDG code for nucleus. The neutron PDFs are obtained by 
+applying isospin symmetry, e.g. <ei>f_u^(n/A)(x,Q^2) = f_d^(p/A)(x,Q^2)</ei>. 
+The nuclear PDFs implemented provide only the nuclear modification so the 
+full PDF is calculated by multiplying the selected free proton PDF with the 
+modification. 
+<p/> 
+ 
+<flag name="PDF:useHardNPDFA" default="off"> 
+If on, the hard processes are generated with nuclear modifications for 
+beam A. 
+</flag> 
+ 
+<flag name="PDF:useHardNPDFB" default="off"> 
+If on, the hard processes are generated with nuclear modifications for 
+beam B. 
+</flag> 
+ 
+<modepick name="PDF:nPDFSetA" default="1" min="0" max="3"> 
+The nuclear modication to be used for beam A if enabled with the switch above. 
+<option value = "0"> Only Isospin effect.</option> 
+<option value = "1"> EPS09, LO <ref>Esk09</ref>.</option> 
+<option value = "2"> EPS09, NLO <ref>Esk09</ref>. The grid files can be 
+found from 
+<a href="https://www.jyu.fi/science/en/physics/research/highenergy/urhic/npdfs/eps09"> 
+here</a> and are to be stored in the same folder as other PDF grid files 
+(usually share/Pythia8/xmldoc/). 
+</option> 
+<option value = "3"> EPPS16, NLO <ref>Esk16</ref>. The grid files can be 
+found from 
+<a href="https://www.jyu.fi/science/en/physics/research/highenergy/urhic/npdfs/epps16-nuclear-pdfs"> 
+here</a>. 
+</option> 
+</modepick> 
+ 
+<modepick name="PDF:nPDFSetB" default="1" min="0" max="3"> 
+The nuclear modication to be used for beam B. Same options as above. 
+<option value = "0"> Only Isospin effect.</option> 
+<option value = "1"> EPS09, LO. </option> 
+<option value = "2"> EPS09, NLO.</option> 
+<option value = "3"> EPPS16, NLO.</option> 
+</modepick> 
+ 
+<modeopen name="PDF:nPDFBeamA" default="100822080"> 
+The PDG code for nuclear beam A, provides the number of protons and 
+neutrons. Default code for Pb. 
+</modeopen> 
+ 
+<modeopen name="PDF:nPDFBeamB" default="100822080"> 
+The PDG code for nucleus B. 
+</modeopen> 
+ 
+<h3>Parton densities for pions</h3> 
+ 
+The parton densities of the pion are considerably less well known than 
+those of the proton. There are only rather few sets on the market, 
+and none particularly recent. Only one comes built-in, but others can 
+be accessed from LHAPDF. Input parametrizations are for the <ei>pi+</ei>. 
+>From this the <ei>pi-</ei> is obtained by charge conjugation and the 
+<ei>pi0</ei> from averaging (half the pions have <ei>d dbar</ei> 
+valence quark content, half <ei>u ubar</ei>. 
+ 
+<p/> 
+Much of the switches are taken over from the proton case, with obvious 
+modifications; therefore the description is briefer. Currently we have 
+not seen the need to allow separate parton densities for hard processes. 
+When using LHAPDF the <code>PDF:extrapolateLHAPDF</code> switch of the 
+proton also applies to pions. 
+ 
+<word name="PDF:piSet" default="1"> 
+Parton densities that can be used for pion beams, currently with 
+only one internal choice. 
+<option value="1">GRV 92 L.</option> 
+<option value="LHAPDF5:set/member">Use an external LHAPDF set 
+where <code>set</code> is the name of the set to use 
+and <code>member</code> is the member of the set to use. The value 
+for <code>set</code> can either be a relative path to the LHAPDF path, 
+or an absolute path. The value for <code>member</code> must be an 
+integer. 
+</option> 
+<option value="LHAPDF6:set/member">Same as 
+for <code>LHAPDF5:set/member</code> but now the LHAPDF6 library is 
+used instead. 
+</option> 
+<option value="LHAGrid1:filename">Use the internal implementation 
+of interpolation in <code>.dat</code> files in the default "lhagrid1" 
+LHAPDF6 format, cf. the corresponding proton option. 
+</option> 
+</word> 
+ 
+<word name="PDF:piSetB" default="void"> 
+Parton density for <ei>pion beam B</ei>. If this option is set 
+to <code>void</code> then the same PDF set as <code>PDF:piSet</code> 
+is used. 
+</word> 
+ 
+<h3>Parton densities for Pomerons</h3> 
+ 
+The Pomeron is introduced in the description of diffractive events, 
+i.e. a diffractive system is viewed as a Pomeron-proton collision at a 
+reduced CM energy. Here the PDF's are even less well known. 
+Most experimental parametrizations are NLO, which makes them less 
+well suited for Monte Carlo applications. Furthermore note that 
+the momentum sum is arbitrarily normalized to a non-unity value. 
+ 
+<word name="PDF:PomSet" default="6"> 
+Parton densities that can be used for Pomeron beams. 
+<option value="1"><ei>Q^2</ei>-independent parametrizations 
+<ei>xf(x) = N_ab x^a (1 - x)^b</ei>, where <ei>N_ab</ei> ensures 
+unit momentum sum. The <ei>a</ei> and <ei>b</ei> parameters can be 
+set separately for the gluon and the quark distributions. The 
+momentum fraction of gluons and quarks can be freely mixed, and 
+production of <ei>s</ei> quarks can be suppressed relative to 
+that of <ei>d</ei> and <ei>u</ei> ones, with antiquarks as likely 
+as quarks. See further below how to set the six parameters of this 
+approach. 
+</option> 
+<option value="2"><ei>pi0</ei> distributions, as specified in the 
+section above. 
+</option> 
+<option value="3">the H1 2006 Fit A NLO <ei>Q^2</ei>-dependent 
+parametrization, based on a tune to their data <ref>H1P06</ref>, 
+rescaled by the factor <code>PomRescale</code> below. 
+</option> 
+<option value="4">the H1 2006 Fit B NLO <ei>Q^2</ei>-dependent 
+parametrization, based on a tune to their data <ref>H1P06</ref>, 
+rescaled by the factor <code>PomRescale</code> below. 
+</option> 
+<option value="5">the H1 2007 Jets NLO <ei>Q^2</ei>-dependent 
+parametrization, based on a tune to their data <ref>H1P07</ref>, 
+rescaled by the factor <code>PomRescale</code> below. 
+</option> 
+<option value="6">the H1 2006 Fit B LO <ei>Q^2</ei>-dependent 
+parametrization, based on a tune to their data <ref>H1P06</ref>, 
+rescaled by the factor <code>PomRescale</code> below. 
+</option> 
+<option value="7">the ACTW B NLO <ei>Q^2</ei>-dependent 
+parametrization with <ei>epsilon=0.14</ei>, 
+based on a tune to H1 and ZEUS data <ref>Alv99</ref>, 
+rescaled by the factor <code>PomRescale</code> below. 
+</option> 
+<option value="8">the ACTW D NLO <ei>Q^2</ei>-dependent 
+parametrization with <ei>epsilon=0.14</ei>, 
+based on a tune to H1 and ZEUS data <ref>Alv99</ref>, 
+rescaled by the factor <code>PomRescale</code> below. 
+</option> 
+<option value="9">the ACTW SG NLO <ei>Q^2</ei>-dependent 
+parametrization with <ei>epsilon=0.14</ei>, 
+based on a tune to H1 and ZEUS data <ref>Alv99</ref>, 
+rescaled by the factor <code>PomRescale</code> below. 
+</option> 
+<option value="10">the ACTW D NLO <ei>Q^2</ei>-dependent 
+parametrization with <ei>epsilon=0.19</ei>, 
+based on a tune to H1 and ZEUS data <ref>Alv99</ref>, 
+rescaled by the factor <code>PomRescale</code> below. 
+</option> 
+<option value="11">a rescaling of the proton PDF, 
+<ei>xf^pom(x)=xf^p(x x_pom)</ei>, used in the 
+<code>Angantyr</code> model for Heavy Ion collisions. For high <ei>x</ei> 
+there is an additional suppression by <ei>(1-x)^p</ei>, where the power is 
+given by <code>PDF:PomHixSupp</code> below. 
+</option> 
+<option value="12">The GKG18-DPDF LO Fit A central member 
+<ei>Q^2</ei>-dependent parametrization based on a tune to 
+H1 and ZEUS data <ref>Goh18</ref>. 
+</option> 
+<option value="13">The GKG18-DPDF LO Fit B central member 
+<ei>Q^2</ei>-dependent parametrization based on a tune to 
+H1 and ZEUS data <ref>Goh18</ref>. 
+</option> 
+<option value="14">The GKG18-DPDF NLO Fit A central member 
+<ei>Q^2</ei>-dependent parametrization based on a tune to 
+H1 and ZEUS data <ref>Goh18</ref>. 
+</option> 
+<option value="15">The GKG18-DPDF NLO Fit B central member 
+<ei>Q^2</ei>-dependent parametrization based on a tune to 
+H1 and ZEUS data <ref>Goh18</ref>. 
+</option> 
+<option value="LHAPDF5:set/member">Use an external LHAPDF5 set, 
+cf. the corresponding proton option. 
+</option> 
+<option value="LHAPDF6:set/member">Use an external LHAPDF6 set, 
+cf. the corresponding proton option. 
+</option> 
+<option value="LHAGrid1:filename">Use the internal implementation 
+for a LHAPDF6 set, cf. the corresponding proton option. 
+</option> 
+</word> 
+ 
+<parm name="PDF:PomGluonA" default="0." min="-0.5" max="2."> 
+the parameter <ei>a</ei> in the ansatz <ei>xg(x) = N_ab x^a (1 - x)^b</ei> 
+for option 1 above. 
+</parm> 
+ 
+<parm name="PDF:PomGluonB" default="3." min="0." max="10."> 
+the parameter <ei>b</ei> in the ansatz <ei>xg(x) = N_ab x^a (1 - x)^b</ei> 
+for option 1 above. 
+</parm> 
+ 
+<parm name="PDF:PomQuarkA" default="0." min="-0.5" max="2."> 
+the parameter <ei>a</ei> in the ansatz <ei>xq(x) = N_ab x^a (1 - x)^b</ei> 
+for option 1 above. 
+</parm> 
+ 
+<parm name="PDF:PomQuarkB" default="3." min="0." max="10."> 
+the parameter <ei>b</ei> in the ansatz <ei>xq(x) = N_ab x^a (1 - x)^b</ei> 
+for option 1 above. 
+</parm> 
+ 
+<parm name="PDF:PomQuarkFrac" default="0.2" min="0." max="1."> 
+the fraction of the Pomeron momentum carried by quarks 
+for option 1 above, with the rest carried by gluons. 
+</parm> 
+ 
+<parm name="PDF:PomStrangeSupp" default="0.5" min="0." max="1."> 
+the suppression of the <ei>s</ei> quark density relative to that of the 
+<ei>d</ei> and <ei>u</ei> ones for option 1 above. 
+</parm> 
+ 
+<parm name="PDF:PomRescale" default="1.0" min="0.5" max="5.0"> 
+Rescale several of the fits above by this uniform factor, e.g. to bring 
+up their momentum sum to around unity. By default many of the sets have 
+a momentum sum of order 0.5, suggesting that a factor around 2.0 
+should be used. You can use <code>examples/main51.cc</code> to get 
+a more precise value. Note that also other parameters in the 
+<aloc href="Diffraction">diffraction</aloc> framework may need to 
+be retuned when this parameter is changed. Specifically 
+<code>Diffraction:PomFluxRescale</code> should be set to the inverse 
+of <code>PDF:PomRescale</code> to preserve the cross section for hard 
+diffractive processes. 
+</parm> 
+ 
+<parm name="PDF:PomHixSupp" default="0." min="0." max="10."> 
+the power in the suppression of the high-x PDF for option 11 above. 
+</parm> 
+ 
+<h3>Parton densities for photons</h3> 
+ 
+Photon PDFs describe the partonic content of the resolved photons and 
+can be used to generate any process initiated by quarks and gluons. 
+ 
+<p/> 
+There are several PDF sets available for photons, although there have not 
+been much activity recently. Currently one internal set is included, but 
+more sets are available from LHAPDF5. The sets from LHAPDF5 can only be 
+used as PDFs in the hard process (see <code>PDF:GammaHardSet</code> below). 
+In case of photons the parton shower and beam remnant generation 
+require additional methods that are provided only for internal sets. 
+Currently no photon PDFs have been included in LHAPDF6. 
+ 
+<modepick name="PDF:GammaSet" default="1" min="1" max="1"> 
+Parton densities that can be used for resolved photon beams. 
+<option value="1"> CJKL, based on <ref>Cor03</ref> but the rescaling 
+for heavy quarks due to kinematic constraints in DIS is undone to obtain 
+correct behaviour for photon-photon/hadron collisions.</option> 
+</modepick> 
+ 
+<word name="PDF:GammaHardSet" default="void"> 
+Parton densities to be used by the beams of the hard process. For photons 
+the other options are the ones provided by LHAPDF5. If this option is set 
+to <code>void</code> then the same PDF set as <code>PDF:GammaSet</code> is 
+used. 
+</word> 
+ 
+<h3>Parton densities for leptons</h3> 
+ 
+For electrons/muons/taus there is no need to choose between different 
+parametrizations, since only one implementation is available, and 
+should be rather uncontroversial (apart from some technical details). 
+However, insofar as e.g. <ei>e^+ e^-</ei> data often are corrected 
+back to a world without any initial-state photon radiation, it is 
+useful to have a corresponding option available here. 
+ 
+<flag name="PDF:lepton" default="on"> 
+Use parton densities for lepton beams or not. If off the colliding 
+leptons carry the full beam energy, if on part of the energy is 
+radiated away by initial-state photons. In the latter case the 
+initial-state showers will generate the angles and energies of the 
+set of photons that go with the collision. In addition one collinear 
+photon per beam carries any leftover amount of energy not described 
+by shower emissions. If the initial-state showers are switched off 
+these collinear photons will carry the full radiated energy. 
+</flag> 
+ 
+<p/> 
+Neutrinos are always taken pointlike. Do note that the phase space 
+selection machinery currently does not allow one resolved and one 
+unresolved lepton beam. For lepton-neutrino collisions to work you must 
+therefore set <code>PDF:lepton = off</code>. 
+ 
+<h4>Photons from lepton beams</h4> 
+ 
+Lepton beams can emit photons and therefore may have partonic 
+content. The PDFs describing these can be obtained by convoluting 
+the photon flux with the selected photon PDFs. The photon flux 
+is modelled according to equivalent photon approximation (EPA) which 
+gives the flux of bremsstrahlung photons. 
+ 
+<flag name="PDF:lepton2gamma" default="off"> 
+Gives photon beams from leptons. Both, unresolved (direct) and resolved 
+contributions are included, see <aloc href="Photoproduction"> 
+Photoproduction</aloc> for details. Can be used only with charged leptons. 
+The applied photon PDF set is selected with the <code>PDF:GammaSet</code> 
+and <code>PDF:GammaHardSet</code> options above. Events with two unresolved 
+photon initiators can be generated also with the <code>PDF:lepton = on</code> 
+but then additional phase-space cuts (e.g. cut on the invariant mass of the 
+photon-photon pair) are not applied. 
+</flag> 
+ 
+<modepick name="PDF:lepton2gammaSet" default="1" min="1" max="2"> 
+The type of photon flux. 
+<option value="1"> Convolute the photon flux from EPA with the selected photon 
+PDF set. Convolution integral is performed "on the fly", meaning that the 
+actual integral is not computed but the <ei>x_gamma</ei> is sampled 
+event-by-event. Since the final PDF value depends on the sampled value for 
+<ei>x_gamma</ei> the phase-space sampling is set up using an overestimate for 
+the PDFs. This makes the process selection somewhat less efficient compared 
+to the case where the PDFs are fixed (e.g. for protons).</option> 
+<option value="2"> Uses an approximation of the photon flux to sample 
+processes and corrects this later with an externally provided flux. For 
+leptons a bit less efficient than option 1 but allows straightforward 
+implementation of photon fluxes from different particles. To use this option 
+user has to provide the external photon flux using method 
+<code>Pythia::setPhotonFluxPtr(PDF*, PDF*)</code> as demostrated in the 
+sample program <code>main70.cc</code>.</option> 
+</modepick> 
+ 
+<modepick name="PDF:lepton2gammaApprox" default="1" min="1" max="2"> 
+Controls which type of overestimate is used for photon flux sampling. 
+<option value="1"> Estimate optimized for photons from leptons. Works 
+reasonable well also for photoproduction in p+p.</option> 
+<option value="2"> Estimate optimized for ultraperipheral heavy-ion collisions 
+as presented in <code>main70.cc</code>. Here the estimate is divided into two 
+regions, a power-law in <ei>x_gamma</ei> below <ei>x_cut</ei> and an 
+exponential fall-off above, see the related parameters below. Default values 
+are optimized for p+Pb collisions where Pb-nucleus provide the photons but 
+they should work reasonably well also for other similar 
+configurations.</option> 
+<note>Note:</note> Parameters do not affect the flux itself, only the sampling 
+efficiency. 
+</modepick> 
+ 
+<parm name="PDF:gammaFluxApprox2bMin" default="7.336" min="0.0"> 
+Minimal allowed impact parameter for which the flux is considered. Units in 
+<code>fm</code>. Should match the flux provided by user. 
+</parm> 
+ 
+<parm name="PDF:gammaFluxApprox2mBeam" default="0.9314" min="0.0"> 
+Per-nucleon mass used for the overestimate. Units in 
+<code>GeV</code> and should again match to the user-provided flux. 
+</parm> 
+ 
+<parm name="PDF:gammaFluxApprox2xPow" default="1.15" min="0.0"> 
+Value of the exponent of the power law. The default value should work well 
+for the foreseen cases, so vary with caution. 
+</parm> 
+ 
+<parm name="PDF:gammaFluxApprox2xCut" default="0.01" min="0.0" max = "1.0"> 
+Value that defines at which <ei>x_gamma</ei> different approximations are 
+used. As above, vary with caution. 
+</parm> 
+ 
+<h3>Incoming parton selection</h3> 
+ 
+There is one useful degree of freedom to restrict the set of incoming 
+quark flavours for hard processes. It does not change the PDF's as such, 
+only which quarks are allowed to contribute to the hard-process cross 
+sections. Note that separate but similarly named modes are available 
+for multiparton interactions and spacelike showers. 
+ 
+<modeopen name="PDFinProcess:nQuarkIn" default="5" min="0" max="5"> 
+Number of allowed incoming quark flavours in the beams; a change 
+to 4 would thus exclude <ei>b</ei> and <ei>bbar</ei> as incoming 
+partons, etc. 
+</modeopen> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

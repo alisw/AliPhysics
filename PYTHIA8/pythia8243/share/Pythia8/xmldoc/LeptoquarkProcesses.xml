@@ -1,0 +1,83 @@
+<chapter name="Leptoquark Processes"> 
+ 
+<h2>Leptoquark Processes</h2> 
+ 
+Leptoquarks arise in many scenarios, and can have widely different 
+characteristics, with respect to spin, isospin am d flavour. 
+The current implementation in no sense attempts to exhaust these 
+possibilities, but only to encode one of the simplest possibilities, 
+with a single scalar leptoquark, denoted <ei>LQ</ei> and assigned PDG 
+code 42. The leptoquark is assumed to carry specific quark 
+and lepton quantum numbers, by default <ei>u</ei> quark plus electron. 
+These flavour numbers are conserved, i.e. a process such as 
+<ei>u e^- &rarr; LQ &rarr; d nu_e</ei> is not allowed. 
+ 
+<p/> 
+Although only one leptoquark is implemented, its flavours may be 
+changed arbitrarily to study the different possibilities. The 
+flavours of the leptoquark are defined by the quark and lepton 
+flavours in the decay mode list. Therefore, to change from the 
+current <ei>u e^-</ei> to <ei>c mu^+</ei>, say, you only need 
+a line 
+<br/><code>pythia.readString("42:0:products = 4 -13");</code> 
+<br/>in your main program, or the equivalent in a command file. 
+The former must always be a quark, while the latter could be a lepton 
+or an antilepton; a charge-conjugate partner is automatically defined 
+by the program. At initialization, the charge is recalculated as a 
+function of the flavours defined; also the leptoquark name is redefined 
+to be of the type <code>LQ_q,l</code>, where actual quark and lepton 
+flavours are displayed. 
+ 
+<p/> 
+The leptoquark is likely to be fairly long-lived, in which case it 
+could have time to fragment into a mesonic- or baryonic-type state, which 
+would decay later on. Currently this possibility is not handled; therefore 
+the leptoquark is always assumed to decay before fragmentation. 
+For that reason the leptoquark can also not be put stable. 
+ 
+<h3>Production processes</h3> 
+ 
+Four production processes have been implemented, which normally would 
+not overlap and therefore could be run together. 
+ 
+<flag name="LeptoQuark:all" default="off"> 
+Common switch for the group of lowest-order <ei>LQ</ei> production 
+processes, i.e. the four ones below. 
+</flag> 
+ 
+<flag name="LeptoQuark:ql2LQ" default="off"> 
+Scatterings <ei>q l &rarr; LQ</ei>. 
+Code 3201. 
+</flag> 
+ 
+<flag name="LeptoQuark:qg2LQl" default="off"> 
+Scatterings <ei>q g &rarr; LQ l</ei>. 
+Code 3202. 
+</flag> 
+ 
+<flag name="LeptoQuark:gg2LQLQbar" default="off"> 
+Scatterings <ei>g g &rarr; LQ LQbar</ei>. 
+Code 3203. 
+</flag> 
+ 
+<flag name="LeptoQuark:qqbar2LQLQbar" default="off"> 
+Scatterings <ei>q qbar &rarr; LQ LQbar</ei>. 
+Code 3204. 
+</flag> 
+ 
+<h3>Parameters</h3> 
+ 
+In the above scenario the main free parameters are the leptoquark flavour 
+content, set as already described, and the <ei>LQ</ei> mass, set as usual. 
+In addition there is one further parameter. 
+ 
+<parm name="LeptoQuark:kCoup" default="1.0" min="0.0"> 
+multiplicative factor in the <ei>LQ &rarr; q l</ei> squared Yukawa coupling, 
+and thereby in the <ei>LQ</ei> width and the <ei>q l &rarr; LQ</ei> and 
+other cross sections. Specifically, <ei>lambda^2/(4 pi) = k alpha_em</ei>, 
+i.e. it corresponds to the $k$ factor of <ref>Hew88</ref>. 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

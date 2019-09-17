@@ -1,0 +1,348 @@
+<chapter name="Electroweak Processes"> 
+ 
+<h2>Electroweak Processes</h2> 
+ 
+This page contains processes involving Prompt-photon, <ei>gamma^*/Z^0</ei> 
+and <ei>W^+-</ei> production, plus a few with <ei>t</ei>-channel boson 
+exchange. 
+ 
+<h3>Prompt photon processes</h3> 
+ 
+This group collects the processes where one or two photons are 
+produced by the hard process. Additional sources of photons 
+include parton showers and hadron decays. A <ei>pT</ei> cut 
+is required to stay away from the unphysical low-<ei>pT</ei> region. 
+An eikonalized description, intended to be valid at all <ei>pT</ei>, 
+is included as part of the multiparton-interactions framework. 
+ 
+<flag name="PromptPhoton:all" default="off"> 
+Common switch for the group of all prompt photon processes, 
+as listed separately in the following. 
+</flag> 
+ 
+<flag name="PromptPhoton:qg2qgamma" default="off"> 
+Scattering <ei>q g &rarr; q gamma</ei>. 
+Code 201. 
+</flag> 
+ 
+<flag name="PromptPhoton:qqbar2ggamma" default="off"> 
+Scattering <ei>q qbar &rarr; g gamma</ei>. 
+Code 202. 
+</flag> 
+ 
+<flag name="PromptPhoton:gg2ggamma" default="off"> 
+Scattering <ei>g g &rarr; g gamma</ei>. 
+<note>Note:</note> This is a box graph. The full quark-mass dependence 
+in the loop leads to very complicated expressions. The current 
+implementation is based on assuming five massless quarks (see below), 
+and thus is questionable at small (<ei>pT &lt; m_b</ei>) or large 
+(<ei>pT > m_t</ei>) transverse momenta. 
+Code 203. 
+</flag> 
+ 
+<flag name="PromptPhoton:ffbar2gammagamma" default="off"> 
+Scattering <ei>q qbar &rarr; gamma gamma</ei>. 
+Code 204. 
+</flag> 
+ 
+<flag name="PromptPhoton:gg2gammagamma" default="off"> 
+Scattering <ei>g g &rarr; gamma gamma</ei>. 
+<note>Note:</note> This is a box graph. The full quark-mass dependence 
+in the loop leads to very complicated expressions. The current 
+implementation is based on assuming five massless quarks (see below), 
+and thus is questionable at small (<ei>pT &lt; m_b</ei>) or large 
+(<ei>pT > m_t</ei>) transverse momenta. 
+Code 205. 
+</flag> 
+ 
+<modeopen name="PromptPhoton:nQuarkLoop" default="5" min="3" max="6"> 
+Number of quark flavours included in the box graphs responsible for 
+<ei>g g &rarr; g gamma</ei> and <ei>g g&rarr; gamma gamma</ei> processes. 
+Owing to the complexity if the massive expressions, quarks are treated 
+as massless. The default value should be applicable in the range of 
+transverse momenta above the <ei>b</ei> mass but below the <ei>t</ei> one. 
+</modeopen> 
+ 
+<h3>Weak boson processes</h3> 
+ 
+Under this heading we group processes involving the production 
+of a single electroweak gauge boson, i.e. a <ei>gamma^*/Z^0</ei> 
+or a <ei>W^+-</ei>, or a pair of them, or one of them in 
+combination with a parton. Since the three sets are partly 
+conflicting, each is associated with its own group flag. 
+In addition, <ei>t</ei>-channel exchange of such a boson 
+between two fermions form a separate group. 
+ 
+<p/> 
+Note that the <ei>Z^0</ei> and <ei>W^+-</ei> decay modes generated with 
+the processes below only include those Standard-Model ones that are 
+allowed for on-shell decays. Thus several other processes that receive 
+contributions from off-shell resonances are listed separately, e.g. 
+for <aloc href="TopProcesses">top</aloc> or 
+<aloc href="FourthGenerationProcesses">fourth generation fermions</aloc>. 
+ 
+<p/> 
+There is one flag that can be used to influence the <ei>gamma^*/Z^0</ei> 
+structure in all the processes below where it is produced, unless 
+otherwise stated. 
+<modepick name="WeakZ0:gmZmode" default="0" min="0" max="2"> 
+Choice of full <ei>gamma^*/Z^0</ei> structure or not in relevant 
+processes. 
+<option value="0">full <ei>gamma^*/Z^0</ei> structure, 
+with interference included.</option> 
+<option value="1">only pure <ei>gamma^*</ei> contribution.</option> 
+<option value="2">only pure <ei>Z^0</ei> contribution.</option> 
+<note>Note</note>: irrespective of the option used, the particle produced 
+will always be assigned code 23 for <ei>Z^0</ei>, and open decay channels 
+is purely dictated by what is set for the <ei>Z^0</ei>. 
+</modepick> 
+ 
+<h4>Boson exchange</h4> 
+ 
+The two processes in this subgroup is included as part of the 
+multiparton-interactions framework. 
+ 
+<flag name="WeakBosonExchange:all" default="off"> 
+Common switch for the group of <ei>gamma^*/Z^0</ei> 
+or <ei>W^+-</ei> exchange between two fermions. 
+</flag> 
+ 
+<flag name="WeakBosonExchange:ff2ff(t:gmZ)" default="off"> 
+Scattering <ei>f f' &rarr; f f'</ei> via <ei>gamma^*/Z^0</ei> 
+<ei>t</ei>-channel exchange, with full interference 
+between the <ei>gamma^*</ei> and <ei>Z^0</ei>. 
+Code 211. 
+</flag> 
+ 
+<flag name="WeakBosonExchange:ff2ff(t:W)" default="off"> 
+Scattering <ei>f_1 f_2 &rarr; f_3 f_4</ei> via <ei>W^+-</ei> 
+<ei>t</ei>-channel exchange. 
+Code 212. 
+</flag> 
+ 
+<h4>Single boson</h4> 
+ 
+<flag name="WeakSingleBoson:all" default="off"> 
+Common switch for the group of a single <ei>gamma^*/Z^0</ei> 
+or <ei>W^+-</ei> production. 
+</flag> 
+ 
+<flag name="WeakSingleBoson:ffbar2gmZ" default="off"> 
+Scattering <ei>f fbar &rarr; gamma^*/Z^0</ei>, with full interference 
+between the <ei>gamma^*</ei> and <ei>Z^0</ei>. 
+Code 221. 
+</flag> 
+ 
+<flag name="WeakSingleBoson:ffbar2W" default="off"> 
+Scattering <ei>f fbar' &rarr; W^+-</ei>. 
+Code 222. 
+</flag> 
+ 
+<flag name="WeakSingleBoson:ffbar2ffbar(s:gm)" default="off"> 
+Scattering <ei>f fbar &rarr; gamma^* &rarr; f' fbar'</ei>. Subset of 
+process 221, but written as a <ei>2 &rarr; 2</ei> process, so that 
+<ei>pT</ei> can be used as ordering variable, e.g. in multiparton 
+interactions. Hardcoded for the final state being either of the 
+five quark flavours or three lepton ones. Not included in the 
+<code>WeakSingleBoson:all</code> set, but included in the 
+multiparton-interactions framework. 
+Code 223. 
+</flag> 
+ 
+<flag name="WeakSingleBoson:ffbar2ffbar(s:gmZ)" default="off"> 
+Scattering <ei>f fbar &rarr; gamma^*/Z^0 &rarr; f' fbar'</ei>. Equivalent 
+to process 221, but written as a <ei>2 &rarr; 2</ei> process, so that 
+<ei>pT</ei> could be used as cut or ordering variable. Final-state 
+flavour selection is based on the <ei>Z^0</ei> allowed decay modes, 
+and the <code>WeakZ0:gmZmode</code> options are implemented. 
+Not included in the <code>WeakSingleBoson:all</code> set. 
+Code 224. 
+</flag> 
+ 
+<flag name="WeakSingleBoson:ffbar2ffbar(s:W)" default="off"> 
+Scattering <ei>f_1 fbar_2 &rarr; W+- &rarr; f_3 f_4</ei>. Almost equivalent 
+to process 222, but written as a <ei>2 &rarr; 2</ei> process, so that 
+<ei>pT</ei> could be used as cut or ordering variable. Final-state 
+flavour selection is based on the <ei>W</ei> allowed decay modes. 
+There are two simplifications relative to the implementation in 
+process 222. Firstly, it is not possible to set different decay modes 
+for the <ei>W^+</ei> and the <ei>W^-</ei>; instead the allowed 
+<ei>W^+</ei> ones will be used throughout, with charge conjugation 
+for the <ei>W^-</ei>. Secondly, quark mass corrections are neglected 
+in the decay angular distribution. 
+Not included in the <code>WeakSingleBoson:all</code> set. 
+Code 225. 
+</flag> 
+ 
+<h4>Boson pair</h4> 
+ 
+Note that, in the decay of the two vector bosons produced by an 
+<ei>f fbar &rarr; V V</ei> process, the full four-fermion correlations 
+from the leading-order <ei>f fbar &rarr; V V &rarr; 4f</ei> matrix elements 
+are included <ref>Gun86</ref> (with some extensions by the authors). 
+The matrix elements are provided in the double-resonant approach, i.e. 
+excludes graph like 
+<ei>f fbar &rarr; V &rarr; f fbar &rarr; f fbar V &rarr; 4f</ei>. 
+ 
+<flag name="WeakDoubleBoson:all" default="off"> 
+Common switch for the group of pair production of <ei>gamma^*/Z^0</ei> 
+and <ei>W^+-</ei>. 
+</flag> 
+ 
+<flag name="WeakDoubleBoson:ffbar2gmZgmZ" default="off"> 
+Scattering <ei>f fbar' &rarr; gamma^*/Z^0 gamma^*/Z^0</ei>. 
+Code 231. 
+</flag> 
+ 
+<flag name="WeakDoubleBoson:ffbar2ZW" default="off"> 
+Scattering <ei>f fbar' &rarr; Z^0 W^+-</ei>. Note that here the 
+<ei>gamma^*</ei> contribution is not (currently) included. 
+Code 232. 
+</flag> 
+ 
+<flag name="WeakDoubleBoson:ffbar2WW" default="off"> 
+Scattering <ei>f fbar &rarr; W^+ W^-</ei>. 
+Code 233. 
+</flag> 
+ 
+<h4>Boson and parton</h4> 
+ 
+<flag name="WeakBosonAndParton:all" default="off"> 
+Common switch for the group of production of a single electroweak 
+gauge boson, i.e. a <ei>gamma^*/Z^0</ei> or a <ei>W^+-</ei>, in 
+association with a parton, i.e. a quark, gluon, photon or lepton. 
+These processes give first-order corrections to the ones in the 
+<code>WeakSingleBoson</code> class, and both sets cannot be used 
+simultaneously without unphysical double-counting. The current class 
+should only be used to study the high-<ei>pT</ei> tail of the 
+gauge-boson production processes (for LHC applications at least 
+<ei>pT</ei> > 20 GeV), while the ones in <code>WeakSingleBoson</code> 
+should be used for inclusive production. 
+</flag> 
+ 
+<flag name="WeakBosonAndParton:qqbar2gmZg" default="off"> 
+Scattering <ei>q qbar &rarr; gamma^*/Z^0 g</ei>. 
+Code 241. 
+</flag> 
+ 
+<flag name="WeakBosonAndParton:qg2gmZq" default="off"> 
+Scattering <ei>q g &rarr; gamma^*/Z^0 q </ei>. 
+Code 242. 
+</flag> 
+ 
+<flag name="WeakBosonAndParton:ffbar2gmZgm" default="off"> 
+Scattering <ei>f fbar &rarr; gamma^*/Z^0 gamma</ei>. 
+Code 243. 
+</flag> 
+ 
+<flag name="WeakBosonAndParton:fgm2gmZf" default="off"> 
+Scattering <ei>f gamma &rarr;  gamma^*/Z^0 f</ei>. 
+Code 244. 
+</flag> 
+ 
+<flag name="WeakBosonAndParton:qqbar2Wg" default="off"> 
+Scattering <ei>q qbar &rarr; W^+- g</ei>. 
+Code 251. 
+</flag> 
+ 
+<flag name="WeakBosonAndParton:qg2Wq" default="off"> 
+Scattering <ei>q g &rarr; W^+- q</ei>. 
+Code 252. 
+</flag> 
+ 
+<flag name="WeakBosonAndParton:ffbar2Wgm" default="off"> 
+Scattering <ei>f fbar &rarr; W^+- gamma</ei>. 
+Code 253. 
+</flag> 
+ 
+<flag name="WeakBosonAndParton:fgm2Wf" default="off"> 
+Scattering <ei>f gamma &rarr; W^+- f</ei>. 
+Code 254. 
+</flag> 
+ 
+<h3> Photon Collision Processes</h3> 
+ 
+A few electroweak two-photon production processes are available. 
+To use them, photon PDFs have to be defined for the incoming 
+beam particles. This is the case for the internal NNPDF 2.3 QCD+QED 
+sets, as well as some further ones available in the LHAPDF library, 
+but not for all PDFs. 
+ 
+<flag name="PhotonCollision:all" default="off"> 
+Common switch for the group of six processes presented below. 
+</flag> 
+ 
+<flag name="PhotonCollision:gmgm2qqbar" default="off"> 
+Scatterings <ei>gamma gamma &rarr; q qbar</ei>, where <ei>q</ei> 
+is a light quark (<ei>u, d, s</ei>) . 
+Code 261. 
+</flag> 
+ 
+<flag name="PhotonCollision:gmgm2ccbar" default="off"> 
+Scattering <ei>gamma gamma &rarr; c cbar</ei>. 
+Code 262. 
+</flag> 
+ 
+<flag name="PhotonCollision:gmgm2bbbar" default="off"> 
+Scattering <ei>gamma gamma &rarr; b bbar</ei>. 
+Code 263. 
+</flag> 
+ 
+<flag name="PhotonCollision:gmgm2ee" default="off"> 
+Scattering <ei>gamma gamma &rarr; e+ e-</ei>. 
+Code 264. 
+</flag> 
+ 
+<flag name="PhotonCollision:gmgm2mumu" default="off"> 
+Scattering <ei>gamma gamma &rarr; mu+ mu-</ei>. 
+Code 265. 
+</flag> 
+ 
+<flag name="PhotonCollision:gmgm2tautau" default="off"> 
+Scattering <ei>gamma gamma &rarr; tau+ tau-</ei>. 
+Code 266. 
+</flag> 
+ 
+<h3> Photon-Parton Processes</h3> 
+ 
+<p> 
+Photon-parton production processes. See comment related to PDFs above. 
+Also relevant for direct-resolved processes in photon-photon collisions. 
+Two instances of a given process are created when mixing processes where 
+the direct photon can come from either side. In this case the process 
+code in the parentheses is used when the direct photon is from side A. 
+</p> 
+ 
+<flag name="PhotonParton:all" default="off"> 
+Common switch for the processes 271-274 (also 281-284 when relevant). 
+</flag> 
+ 
+<flag name="PhotonParton:ggm2qqbar" default="off"> 
+Scattering <ei>g gamma &rarr; q qbar</ei>, where <ei>q</ei> 
+is a light quark (<ei>u, d, s</ei>). 
+Code 271 (281). 
+</flag> 
+ 
+<flag name="PhotonParton:ggm2ccbar" default="off"> 
+Scattering <ei>g gamma &rarr; c cbar</ei>. 
+Code 272 (282). 
+</flag> 
+ 
+<flag name="PhotonParton:ggm2bbbar" default="off"> 
+Scattering <ei>g gamma &rarr; b bbar</ei>. 
+Code 273 (283). 
+</flag> 
+ 
+<flag name="PhotonParton:qgm2qg" default="off"> 
+Scattering <ei>q gamma &rarr; q g</ei>. 
+Code 274 (284). 
+</flag> 
+ 
+<flag name="PhotonParton:qgm2qgm" default="off"> 
+Scattering <ei>q gamma &rarr; q gamma</ei>. 
+Code 275 (285). 
+</flag> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

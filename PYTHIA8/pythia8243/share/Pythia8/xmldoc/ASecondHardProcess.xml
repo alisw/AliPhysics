@@ -1,0 +1,439 @@
+<chapter name="A Second Hard Process"> 
+ 
+<h2>A Second Hard Process</h2> 
+ 
+When you have selected a set of hard processes for hadron beams, the 
+<aloc href="MultipartonInteractions">multiparton interactions</aloc> 
+framework can add further interactions to build up a realistic 
+underlying event. These further interactions can come from a wide 
+variety of processes, and will occasionally be quite hard. They 
+do represent a realistic random mix, however, which means one cannot 
+predetermine what will happen. Occasionally there may be cases 
+where one wants to specify also the second hard interaction rather 
+precisely. The options on this page allow you to do precisely that. 
+ 
+<flag name="SecondHard:generate" default="off"> 
+Generate two hard scatterings in a collision between hadron beams. 
+The hardest process can be any combination of internal processes, 
+available in the normal <aloc href="ProcessSelection">process 
+selection</aloc> machinery, or external input. Here you must further 
+specify which set of processes to allow for the second hard one, see 
+the following. 
+</flag> 
+ 
+<parm name="SecondHard:maxPDFreweight" default="2." min="1." max="10."> 
+The two scatterings are first generated as if independent, but then 
+a weight is evaluated, that takes into account how the PDF of one is 
+modified by the presence of the other, averaged over the two possibilities. 
+This weight typically is a bit below unity, by momentum conservation, 
+but has a tail towards larger weights by correlations between partons. 
+The parameter tells how large such weights are compensated by standard 
+hit-and miss. A large value implies inefficiency in the generation, 
+while a small one means some events will be assigned a leftover weight 
+above unity. 
+</parm> 
+ 
+<h3>Process Selection</h3> 
+ 
+In principle the whole <aloc href="ProcessSelection">process 
+selection</aloc> allowed for the first process could be repeated 
+for the second one. However, this would probably be overkill. 
+Therefore here a more limited set of prepackaged process collections 
+are made available, that can then be further combined at will. 
+Since the description is almost completely symmetric between the 
+first and the second process, you always have the possibility 
+to pick one of the two processes according to the complete list 
+of possibilities. 
+ 
+<p/> 
+Here comes the list of allowed sets of processes, to combine at will: 
+ 
+<flag name="SecondHard:TwoJets" default="off"> 
+Standard QCD <ei>2 &rarr; 2</ei> processes involving gluons and 
+<ei>d, u, s, c, b</ei> quarks. 
+</flag> 
+ 
+<flag name="SecondHard:PhotonAndJet" default="off"> 
+A prompt photon recoiling against a quark or gluon jet. 
+</flag> 
+ 
+<flag name="SecondHard:TwoPhotons" default="off"> 
+Two prompt photons recoiling against each other. 
+</flag> 
+ 
+<flag name="SecondHard:Charmonium" default="off"> 
+Production of charmonium via colour singlet and colour octet channels. 
+</flag> 
+ 
+<flag name="SecondHard:Bottomonium" default="off"> 
+Production of bottomonium via colour singlet and colour octet channels. 
+</flag> 
+ 
+<flag name="SecondHard:SingleGmZ" default="off"> 
+Scattering <ei>q qbar &rarr; gamma^*/Z^0</ei>, with full interference 
+between the <ei>gamma^*</ei> and <ei>Z^0</ei>. 
+</flag> 
+ 
+<flag name="SecondHard:SingleW" default="off"> 
+Scattering <ei>q qbar' &rarr; W^+-</ei>. 
+</flag> 
+ 
+<flag name="SecondHard:GmZAndJet" default="off"> 
+Scattering <ei>q qbar &rarr; gamma^*/Z^0 g</ei> and 
+<ei>q g &rarr; gamma^*/Z^0 q</ei>. 
+</flag> 
+ 
+<flag name="SecondHard:WAndJet" default="off"> 
+Scattering <ei>q qbar' &rarr; W^+- g</ei> and 
+<ei>q g &rarr; W^+- q'</ei>. 
+</flag> 
+ 
+<flag name="SecondHard:TopPair" default="off"> 
+Production of a top pair, either via QCD processes or via an 
+intermediate <ei>gamma^*/Z^0</ei> resonance. 
+</flag> 
+ 
+<flag name="SecondHard:SingleTop" default="off"> 
+Production of a single top, either via a <ei>t-</ei> or 
+an <ei>s-</ei>channel <ei>W^+-</ei> resonance. 
+</flag> 
+ 
+<p/> 
+A further process collection comes with a warning flag: 
+ 
+<flag name="SecondHard:TwoBJets" default="off"> 
+The <ei>q qbar &rarr; b bbar</ei> and <ei>g g &rarr; b bbar</ei> processes. 
+These are already included in the <code>TwoJets</code> sample above, 
+so it would be double-counting to include both, but we assume there 
+may be cases where the <ei>b</ei> subsample will be of special interest. 
+This subsample does not include flavour-excitation or gluon-splitting 
+contributions to the <ei>b</ei> rate, however, so, depending 
+on the topology if interest, it may or may not be a good approximation. 
+</flag> 
+ 
+<h3>Cuts and scales</h3> 
+ 
+The second hard process obeys exactly the same selection rules for 
+<aloc href="PhaseSpaceCuts">phase space cuts</aloc> and 
+<aloc href="CouplingsAndScales">couplings and scales</aloc> 
+as the first one does. Specifically, a <ei>pTmin</ei> cut for 
+<ei>2 &rarr; 2</ei> processes would apply to the first and the second hard 
+process alike, and ballpark half of the time the second could be 
+generated with a larger <ei>pT</ei> than the first. (Exact numbers 
+depending on the relative shape of the two cross sections.) That is, 
+first and second is only used as an administrative distinction between 
+the two, not as a physics ordering one. 
+ 
+<p/> 
+Optionally it is possible to pick the mass and <ei>pT</ei> 
+<aloc href="PhaseSpaceCuts">phase space cuts</aloc> separately for 
+the second hard interaction. The main application presumably would 
+be to allow a second process that is softer than the first, but still 
+hard. But one is also free to make the second process harder than the 
+first, if desired. So long as the two <ei>pT</ei> (or mass) ranges 
+overlap the ordering will not be the same in all events, however. 
+ 
+<h3>Cross-section calculation</h3> 
+ 
+As an introduction, a brief reminder of Poissonian statistics. 
+Assume a stochastic process in time, for now not necessarily a 
+high-energy physics one, where the probability for an event to occur 
+at any given time is independent of what happens at other times. 
+Then the probability for <ei>n</ei> events to occur in a finite 
+time interval is 
+<eq> 
+P_n = &lt;n&gt;^n exp(-&lt;n&gt;) / n! 
+</eq> 
+where <ei>&lt;n&gt;</ei> is the average number of events. If this 
+number is small we can approximate <ei>exp(-&lt;n&gt;) = 1 </ei>, 
+so that <ei>P_1 = &lt;n&gt;</ei> and 
+<ei>P_2 = &lt;n&gt;^2 / 2 = P_1^2 / 2</ei>. 
+ 
+<p/> 
+Now further assume that the events actually are of two different 
+kinds <ei>a</ei> and <ei>b</ei>, occurring independently of each 
+other, such that <ei>&lt;n&gt; = &lt;n_a&gt; + &lt;n_b&gt;</ei>. 
+It then follows that the probability of having one event of type 
+<ei>a</ei> (or <ei>b</ei>) and nothing else is 
+<ei>P_1a = &lt;n_a&gt;</ei> (or <ei>P_1b = &lt;n_b&gt;</ei>). 
+From 
+<eq> 
+P_2 = (&lt;n_a&gt; + &lt;n_b&gt)^2 / 2 = (P_1a + P_1b)^2 / 2 = 
+(P_1a^2 + 2 P_1a P_1b + P_1b^2) / 2 
+</eq> 
+it is easy to read off that the probability to have exactly two 
+events of kind <ei>a</ei> and none of <ei>b</ei> is 
+<ei>P_2aa = P_1a^2 / 2</ei> whereas that of having one <ei>a</ei> 
+and one <ei>b</ei> is <ei>P_2ab = P_1a P_1b</ei>. Note that the 
+former, with two identical events, contains a factor <ei>1/2</ei> 
+while the latter, with two different ones, does not. If viewed 
+in a time-ordered sense, the difference is that the latter can be 
+obtained two ways, either first an <ei>a</ei> and then a <ei>b</ei> 
+or else first a <ei>b</ei> and then an <ei>a</ei>. 
+ 
+<p/> 
+To translate this language into cross-sections for high-energy 
+events, we assume that interactions can occur at different <ei>pT</ei> 
+values independently of each other inside inelastic nondiffractive 
+(sometimes equated with "minbias") events. Then the above probabilities 
+translate into 
+<ei>P_n = sigma_n / sigma_ND</ei> where <ei>sigma_ND</ei> is the 
+total nondiffractive cross section. Again we want to assume that 
+<ei>exp(-&lt;n&gt;)</ei> is close to unity, i.e. that the total 
+hard cross section above <ei>pTmin</ei> is much smaller than 
+<ei>sigma_ND</ei>. The hard cross section is dominated by QCD 
+jet production, and a reasonable precaution is to require a 
+<ei>pTmin</ei> of at least 20 GeV at LHC energies. 
+(For <ei>2 &rarr; 1</ei> processes such as 
+<ei>q qbar &rarr; gamma^*/Z^0 (&rarr; f fbar)</ei> one can instead make a 
+similar cut on mass.) Then the generic equation 
+<ei>P_2 = P_1^2 / 2</ei> translates into 
+<ei>sigma_2/sigma_ND = (sigma_1 / sigma_ND)^2 / 2</ei> or 
+<ei>sigma_2 = sigma_1^2 / (2 sigma_ND)</ei>. 
+ 
+<p/> 
+Again different processes <ei>a, b, c, ...</ei> contribute, 
+and by the same reasoning we obtain 
+<ei>sigma_2aa = sigma_1a^2 / (2 sigma_ND)</ei>, 
+<ei>sigma_2ab = sigma_1a sigma_1b / sigma_ND</ei>, 
+and so on. 
+ 
+<p/> 
+There is one important correction to this picture: all collisions 
+do no occur under equal conditions. Some are more central in impact 
+parameter, others more peripheral. This leads to a further element of 
+variability: central collisions are likely to have more activity 
+than the average, peripheral less. Integrated over impact 
+parameter standard cross sections are recovered, but correlations 
+are affected by a "trigger bias" effect: if you select for events 
+with a hard process you favour events at small impact parameter 
+which have above-average activity, and therefore also increased 
+chance for further interactions. (In PYTHIA this is the origin 
+of the "pedestal effect", i.e. that events with a hard interaction 
+have more underlying activity than the level found in minimum-bias 
+events.) 
+ 
+<p/> 
+When you specify a matter overlap profile in the multiparton-interactions 
+scenario, such an enhancement/depletion factor <ei>f_impact</ei> is 
+chosen event-by-event and can be averaged during the course of the run. 
+As an example, the double Gaussian form used in Tune A gives 
+approximately <ei>&lt;f_impact&gt; = 2.5</ei>. In general, the more 
+uneven the distribution the higher the <ei>&lt;f_impact&gt;</ei>. 
+Also the <ei>pT0</ei> parameter value has an impact, even if it is 
+less important over a realistic range of values, although it implies 
+that <ei>&lt;f_impact&gt;</ei> is energy-dependent. The origin of this 
+effect is as follows. A lower <ei>pT0</ei> implies more MPI activity 
+at all impact parameters, so that the nondiffractive cross section 
+<ei>sigma_ND</ei> increases, or equivalently the proton size. But if 
+<ei>sigma_ND</ei> is fixed by data then the input radius of the matter 
+overlap profile (not explicitly specified but implicitly adjusted at 
+initialization) has to be shrunk  so that the output value can stay 
+constant. This means that the proton matter is more closely packed and 
+therefore <ei>&lt;f_impact&gt;</ei> goes up. 
+ 
+<p/> 
+The above equations therefore have to be modified to 
+<ei>sigma_2aa = &lt;f_impact&gt; sigma_1a^2 / (2 sigma_ND)</ei>, 
+<ei>sigma_2ab = &lt;f_impact&gt; sigma_1a sigma_1b / sigma_ND</ei>. 
+Experimentalists often instead use the notation 
+<ei>sigma_2ab = sigma_1a sigma_1b / sigma_eff</ei>, 
+from which we see that PYTHIA "predicts" 
+<ei>sigma_eff = sigma_ND / &lt;f_impact&gt;</ei>. 
+When the generation of multiparton interactions is switched off it is 
+not possible to calculate <ei>&lt;f_impact&gt;</ei> and therefore 
+it is set to unity. 
+ 
+<p/> 
+When this recipe is to be applied to calculate 
+actual cross sections, it is useful to distinguish three cases, 
+depending on which set of processes are selected to study for 
+the first and second interaction. 
+ 
+<p/> 
+(1) The processes <ei>a</ei> for the first interaction and 
+<ei>b</ei> for the second one have no overlap at all. 
+For instance, the first could be <code>TwoJets</code> and the 
+second <code>TwoPhotons</code>. In that case, the two interactions 
+can be selected independently, and cross sections tabulated 
+for each separate subprocess in the two above classes. At the 
+end of the run, the cross sections in <ei>a</ei> should be multiplied 
+by <ei>&lt;f_impact&gt; sigma_1b / sigma_ND</ei> to bring them to 
+the correct overall level, and those in <ei>b</ei> by 
+<ei>&lt;f_impact&gt; sigma_1a / sigma_ND</ei>. 
+ 
+<p/> 
+(2) Exactly the same processes <ei>a</ei> are selected for the 
+first and second interaction. In that case it works as above, 
+with <ei>a = b</ei>, and it is only necessary to multiply by an 
+additional factor <ei>1/2</ei>. A compensating factor of 2 
+is automatically obtained for picking two different subprocesses, 
+e.g. if <code>TwoJets</code> is selected for both interactions, 
+then the combination of the two subprocesses <ei>q qbar &rarr; g g</ei> 
+and <ei>g g &rarr; g g</ei> can trivially be obtained two ways. 
+ 
+<p/> 
+(3) The list of subprocesses partly but not completely overlap. 
+For instance, the first process is allowed to contain <ei>a</ei> 
+or <ei>c</ei> and the second <ei>b</ei> or <ei>c</ei>, where 
+there is no overlap between <ei>a</ei> and <ei>b</ei>. Then, 
+when an independent selection for the first and second interaction 
+both pick one of the subprocesses in <ei>c</ei>, half of those 
+events have to be thrown, and the stored cross section reduced 
+accordingly. Considering the four possible combinations of first 
+and second process, this gives a 
+<eq> 
+sigma'_1 = sigma_1a + sigma_1c * (sigma_2b + sigma_2c/2) / 
+(sigma_2b + sigma_2c) 
+</eq> 
+with the factor <ei>1/2</ei> for the <ei>sigma_1c sigma_2c</ei> term. 
+At the end of the day, this <ei>sigma'_1</ei> should be multiplied 
+by the normalization factor 
+<eq> 
+f_1norm = &lt;f_impact&gt; (sigma_2b + sigma_2c) / sigma_ND 
+</eq> 
+here without a factor <ei>1/2</ei> (or else it would have been 
+double-counted). This gives the correct 
+<eq> 
+(sigma_2b + sigma_2c) * sigma'_1 = sigma_1a * sigma_2b 
++ sigma_1a * sigma_2c + sigma_1c * sigma_2b + sigma_1c * sigma_2c/2 
+</eq> 
+The second interaction can be handled in exact analogy. 
+ 
+<p/> 
+For the considerations above it is assumed that the phase space cuts 
+are the same for the two processes. It is possible to set the mass and 
+transverse momentum cuts differently, however. This changes nothing 
+for processes that already are different. For two collisions of the 
+same type it is partly a matter of interpretation what is intended. 
+If we consider the case of the same process in two non-overlapping 
+phase space regions, most likely we want to consider them as 
+separate processes, in the sense that we expect a factor 2 relative 
+to Poissonian statistics from either of the two hardest processes 
+populating either of the two phase space regions. In total we are 
+therefore lead to adopt the same strategy as in case (3) above: 
+only in the overlapping part of the two allowed phase space regions 
+could two processes be identical and thus appear with a 1/2 factor, 
+elsewhere the two processes are never identical and do not 
+include the 1/2 factor. We reiterate, however, that the case of 
+partly but not completely overlapping phase space regions for one and 
+the same process is tricky, and not to be used without prior 
+deliberation. 
+ 
+<p/> 
+The listing obtained with the <code>pythia.stat()</code> 
+already contain these corrections factors, i.e. cross sections 
+are for the occurrence of two interactions of the specified kinds. 
+There is not a full tabulation of the matrix of all the possible 
+combinations of a specific first process together with a specific 
+second one (but the information is there for the user to do that, 
+if desired). Instead <code>pythia.stat()</code> shows this 
+matrix projected onto the set of processes and associated cross 
+sections for the first and the second interaction, respectively. 
+Up to statistical fluctuations, these two sections of the 
+<code>pythia.stat()</code> listing both add up to the same 
+total cross section for the event sample. 
+ 
+<p/> 
+There is a further special feature to be noted for this listing, 
+and that is the difference between the number of "selected" events 
+and the number of "accepted" ones. Here is how that comes about. 
+Originally the first and second process are selected completely 
+independently. The generation (in)efficiency is reflected in the 
+different number of initially tried events for the first and second 
+process, leading to the same number of selected events. While 
+acceptable on their own, the combination of the two processes may 
+be unacceptable, however. It may be that the two processes added 
+together use more energy-momentum than kinematically allowed, or, 
+even if not, are disfavoured when the PYTHIA approach to provide 
+correlated parton densities is applied. Alternatively, referring 
+to case (3) above, it may be because half of the events should 
+be thrown for identical processes. Taken together, it is these 
+effects that reduced the event number from "selected" to "accepted". 
+(A further reduction may occur if a 
+<aloc href="UserHooks">user hook</aloc> rejects some events.) 
+ 
+<p/> 
+It is allowed to use external Les Houches Accord input for the 
+hardest process, and then pick an internal one for the second hardest. 
+In this case PYTHIA does not have access to your thinking concerning 
+the external process, and cannot know whether it overlaps with the 
+internal or not. (External events <ei>q qbar' &rarr; e+ nu_e</ei> could 
+agree with the internal <ei>W</ei> ones, or be a <ei>W'</ei> resonance 
+in a BSM scenario, to give one example.) Therefore the combined cross 
+section is always based on the scenario (1) above. Corrections for 
+correlated parton densities are included also in this case, however. 
+That is, an external event that takes a large fraction of the incoming 
+beam momenta stands a fair chance of being rejected when it has to be 
+combined with another hard process. For this reason the "selected" and 
+"accepted" event numbers are likely to disagree. 
+ 
+<p/> 
+In the cross section calculation above, the <ei>sigma'_1</ei> 
+cross sections are based on the number of accepted events, while 
+the <ei>f_1norm</ei> factor is evaluated based on the cross sections 
+for selected events. That way the suppression by correlations 
+between the two processes does not get to be double-counted. 
+ 
+<p/> 
+The <code>pythia.stat()</code> listing contains two final 
+lines, indicating the summed cross sections <ei>sigma_1sum</ei> and 
+<ei>sigma_2sum</ei> for the first and second set of processes, at 
+the "selected" stage above, plus information on the <ei>sigma_ND</ei> 
+and <ei>&lt;f_impact&gt;</ei> used. The total cross section 
+generated is related to this by 
+<eq> 
+&lt;f_impact&gt; * (sigma_1sum * sigma_2sum / sigma_ND) * 
+(n_accepted / n_selected) 
+</eq> 
+ with an additional factor of <ei>1/2</ei> for case 2 above. 
+ 
+<p/> 
+The error quoted for the cross section of a process is a combination 
+in quadrature of the error on this process alone with the error on 
+the normalization factor, including the error on 
+<ei>&lt;f_impact&gt;</ei>. As always it is a purely statistical one 
+and of course hides considerably bigger systematic uncertainties. 
+ 
+<br/> 
+<note>Warning:</note> the calculational machinery above has not (yet) 
+been implemented for the case that the two interactions are to be 
+associated with different impact-parameter profiles, as is the case 
+for <code>MultipartonInteractions:bProfile = 4</code>, i.e. when the 
+radius depends on the <ei>x</ei> value. Results for the double 
+cross section therefore cannot be trusted in this case. 
+ 
+<h3>Event information</h3> 
+ 
+Normally the <code>process</code> event record only contains the 
+hardest interaction, but in this case also the second hardest 
+is stored there. If both of them are <ei>2 &rarr; 2</ei> ones, the 
+first would be stored in lines 3 - 6 and the second in 7 - 10. 
+For both, status codes 21 - 29 would be used, as for a hardest 
+process. Any resonance decay chains would occur after the two 
+main processes, to allow normal parsing. The beams in 1 and 2 
+only appear in one copy. This structure is echoed in the 
+full <code>event</code> event record. 
+ 
+<p/> 
+Most of the properties accessible by the 
+<code><aloc href="EventInformation">pythia.info</aloc></code> 
+methods refer to the first process, whether that happens to be the 
+hardest or not. The code and <ei>pT</ei> scale of the second process 
+are accessible by the <code>info.codeMPI(1)</code> and 
+<code>info.pTMPI(1)</code>, however. 
+ 
+<p/> 
+The <code>sigmaGen()</code> and <code>sigmaErr()</code> methods provide 
+the cross section and its error for the event sample as a whole, 
+combining the information from the two hard processes as described 
+above. In particular, the former should be used to give the 
+weight of the generated event sample. The statistical error estimate 
+is somewhat cruder and gives a larger value than the 
+subprocess-by-subprocess one  employed in 
+<code>pythia.stat()</code>, but this number is 
+anyway less relevant, since systematical errors are likely to dominate. 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

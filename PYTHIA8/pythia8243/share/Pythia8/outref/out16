@@ -1,0 +1,554 @@
+ PYTHIA settings will be read from file main16.cmnd
+
+ *------------------------------------------------------------------------------------* 
+ |                                                                                    | 
+ |  *------------------------------------------------------------------------------*  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  |   PPP   Y   Y  TTTTT  H   H  III    A      Welcome to the Lund Monte Carlo!  |  | 
+ |  |   P  P   Y Y     T    H   H   I    A A     This is PYTHIA version 8.201      |  | 
+ |  |   PPP     Y      T    HHHHH   I   AAAAA    Last date of change: 14 Oct 2014  |  | 
+ |  |   P       Y      T    H   H   I   A   A                                      |  | 
+ |  |   P       Y      T    H   H  III  A   A    Now is 14 Oct 2014 at 10:01:21    |  | 
+ |  |                                                                              |  | 
+ |  |   Torbjorn Sjostrand;  Department of Astronomy and Theoretical Physics,      |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      e-mail: torbjorn@thep.lu.se                                             |  | 
+ |  |   Jesper Roy Christiansen;  Department of Astronomy and Theoretical Physics, |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      e-mail: Jesper.Roy.Christiansen@thep.lu.se                              |  | 
+ |  |   Nishita Desai;  Institut fuer Theoretische Physik,                         |  | 
+ |  |     Universitaet Heidelberg, Philosophenweg 16, D-69120 Heidelberg, Germany; |  | 
+ |  |      e-mail: Nishita.Desai@cern.ch                                           |  | 
+ |  |   Philip Ilten;  Massachusetts Institute of Technology,                      |  | 
+ |  |      stationed at CERN, CH-1211 Geneva 23, Switzerland;                      |  | 
+ |  |      e-mail: philten@cern.ch                                                 |  | 
+ |  |   Stephen Mrenna;  Computing Division, Simulations Group,                    |  | 
+ |  |      Fermi National Accelerator Laboratory, MS 234, Batavia, IL 60510, USA;  |  | 
+ |  |      e-mail: mrenna@fnal.gov                                                 |  | 
+ |  |   Stefan Prestel;  Theoretical Physics Group,                                |  | 
+ |  |      SLAC National Accelerator Laboratory, Menlo Park, CA 94025, USA;        |  | 
+ |  |      e-mail: prestel@slac.stanford.edu                                       |  | 
+ |  |   Christine O. Rasmussen;  Department of Astronomy and Theoretical Physics,  |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      e-mail: christine.rasmussen@thep.lu.se                                  |  | 
+ |  |   Peter Skands;  School of Physics,                                          |  | 
+ |  |      Monash University, PO Box 27, 3800 Melbourne, Australia;                |  | 
+ |  |      e-mail: peter.skands@monash.edu                                         |  | 
+ |  |                                                                              |  | 
+ |  |   The main program reference is 'An Introduction to PYTHIA 8.2',             |  | 
+ |  |   T. Sjostrand et al, arXiv:1410.3012 [hep-ph]                               |  | 
+ |  |                                                                              |  | 
+ |  |   The main physics reference is the 'PYTHIA 6.4 Physics and Manual',         |  | 
+ |  |   T. Sjostrand, S. Mrenna and P. Skands, JHEP05 (2006) 026 [hep-ph/0603175]. |  | 
+ |  |                                                                              |  | 
+ |  |   An archive of program versions and documentation is found on the web:      |  | 
+ |  |   http://www.thep.lu.se/~torbjorn/Pythia.html                                |  | 
+ |  |                                                                              |  | 
+ |  |   This program is released under the GNU General Public Licence version 2.   |  | 
+ |  |   Please respect the MCnet Guidelines for Event Generator Authors and Users. |  | 
+ |  |                                                                              |  | 
+ |  |   Disclaimer: this program comes without any guarantees.                     |  | 
+ |  |   Beware of errors and use common sense when interpreting results.           |  | 
+ |  |                                                                              |  | 
+ |  |   Copyright (C) 2014 Torbjorn Sjostrand                                      |  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  *------------------------------------------------------------------------------*  | 
+ |                                                                                    | 
+ *------------------------------------------------------------------------------------* 
+
+
+ *-------  PYTHIA Process Initialization  --------------------------*
+ |                                                                  |
+ | We collide p+ with p+ at a CM energy of 1.400e+04 GeV            |
+ |                                                                  |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | Subprocess                                    Code |   Estimated |
+ |                                                    |    max (mb) |
+ |                                                    |             |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | g g -> H (SM)                                  902 |   2.868e-07 |
+ |                                                                  |
+ *-------  End PYTHIA Process Initialization -----------------------*
+
+ *-------  PYTHIA Multiparton Interactions Initialization  ---------* 
+ |                                                                  | 
+ |                   sigmaNonDiffractive =   57.54 mb               | 
+ |                                                                  | 
+ |    pT0 =  2.65 gives sigmaInteraction =  331.95 mb: accepted     | 
+ |                                                                  | 
+ *-------  End PYTHIA Multiparton Interactions Initialization  -----* 
+
+ *-------  PYTHIA Flag + Mode + Parm + Word + FVec + MVec + PVec Settings (changes only)  -------------------------* 
+ |                                                                                                                 | 
+ | Name                                          |                      Now |      Default         Min         Max | 
+ |                                               |                          |                                      | 
+ | BeamRemnants:halfScaleForKT                   |                  1.50000 |      1.00000         0.0             | 
+ | BeamRemnants:primordialKThard                 |                  1.80000 |      2.00000         0.0             | 
+ | BeamRemnants:primordialKTsoft                 |                  0.90000 |      0.50000         0.0             | 
+ | ColourReconnection:range                      |                  1.80000 |     10.00000         0.0    10.00000 | 
+ | Diffraction:largeMassSuppress                 |                  4.00000 |      2.00000         0.0             | 
+ | HiggsSM:gg2H                                  |                       on |          off                         | 
+ | MultipartonInteractions:alphaSvalue           |                  0.13000 |      0.12700   0.0600000     0.25000 | 
+ | MultipartonInteractions:bProfile              |                        3 |            1           0           4 | 
+ | MultipartonInteractions:ecmPow                |                  0.21500 |      0.24000         0.0     0.50000 | 
+ | MultipartonInteractions:ecmRef                |                 7000.000 |     1800.000     1.00000             | 
+ | MultipartonInteractions:expPow                |                  1.85000 |      1.00000     0.40000    10.00000 | 
+ | MultipartonInteractions:pT0Ref                |                  2.28000 |      2.15000     0.50000    10.00000 | 
+ | Next:numberCount                              |                      100 |         1000           0             | 
+ | Next:numberShowEvent                          |                        0 |            1           0             | 
+ | PDF:pSet                                      |                       13 |            2                         | 
+ | SigmaDiffractive:dampen                       |                       on |          off                         | 
+ | SigmaDiffractive:maxAX                        |                 65.00000 |     15.00000         0.0             | 
+ | SigmaDiffractive:maxXB                        |                 65.00000 |     15.00000         0.0             | 
+ | SigmaDiffractive:maxXX                        |                 65.00000 |     15.00000         0.0             | 
+ | SigmaProcess:alphaSvalue                      |                  0.13000 |      0.12650   0.0600000     0.25000 | 
+ | SigmaTotal:zeroAXB                            |                       on |          off                         | 
+ | SpaceShower:alphaSvalue                       |                  0.13650 |      0.13700   0.0600000     0.25000 | 
+ | SpaceShower:ecmRef                            |                 7000.000 |     1800.000     1.00000             | 
+ | SpaceShower:rapidityOrder                     |                       on |          off                         | 
+ | Stat:showPartonLevel                          |                       on |          off                         | 
+ | StringFlav:etaSup                             |                  0.60000 |      0.63000         0.0     1.00000 | 
+ | StringFlav:mesonBvector                       |                  2.20000 |      3.00000         0.0     3.00000 | 
+ | StringFlav:mesonCvector                       |                  0.88000 |      1.06000         0.0     3.00000 | 
+ | StringFlav:mesonSvector                       |                  0.55000 |      0.72500         0.0     3.00000 | 
+ | StringFlav:mesonUDvector                      |                  0.50000 |      0.62000         0.0     3.00000 | 
+ | StringFlav:popcornSpair                       |                  0.90000 |      0.50000         0.0     1.00000 | 
+ | StringFlav:probQQ1toQQ0                       |                0.0275000 |    0.0270000         0.0     1.00000 | 
+ | StringFlav:probQQtoQ                          |                0.0810000 |    0.0900000         0.0     1.00000 | 
+ | StringFlav:probSQtoQQ                         |                  0.91500 |      1.00000         0.0     1.00000 | 
+ | StringFlav:probStoUD                          |                  0.21700 |      0.19000         0.0     1.00000 | 
+ | StringPT:sigma                                |                  0.33500 |      0.30400         0.0     1.00000 | 
+ | StringZ:aExtraDiquark                         |                  0.97000 |      0.50000         0.0     2.00000 | 
+ | StringZ:aLund                                 |                  0.68000 |      0.30000         0.0     2.00000 | 
+ | StringZ:bLund                                 |                  0.98000 |      0.80000     0.20000     2.00000 | 
+ | StringZ:rFactB                                |                  0.85500 |      0.67000         0.0     2.00000 | 
+ | StringZ:rFactC                                |                  1.32000 |      1.00000         0.0     2.00000 | 
+ | TimeShower:alphaSvalue                        |                  0.13650 |      0.13830   0.0600000     0.25000 | 
+ | TimeShower:pTmin                              |                  0.50000 |      0.40000     0.10000     2.00000 | 
+ | TimeShower:pTminChgQ                          |                  0.50000 |      0.40000     0.10000     2.00000 | 
+ |                                                                                                                 | 
+ *-------  End PYTHIA Flag + Mode + Parm + Word + FVec + MVec + PVec Settings  ------------------------------------* 
+
+ --------  PYTHIA Particle Data Table (changed only)  ------------------------------------------------------------------------------
+ 
+      id   name            antiName         spn chg col      m0        mWidth      mMin       mMax       tau0    res dec ext vis wid
+             no onMode   bRatio   meMode     products 
+
+      25  h0                                  1   0   0  125.00000    0.00404  124.79824  125.20176  0.00000e+00   1   1   0   0   0
+              0     1   0.0000000  100        1       -1 
+              1     1   0.0000000  100        2       -2 
+              2     1   0.0004394  100        3       -3 
+              3     1   0.0267649  100        4       -4 
+              4     1   0.5772432  100        5       -5 
+              5     1   0.0000000  100        6       -6 
+              6     1   0.0000000  100       11      -11 
+              7     1   0.0002207  100       13      -13 
+              8     1   0.0636166  100       15      -15 
+              9     1   0.0854879  100       21       21 
+             10     1   0.0022970  100       22       22 
+             11     1   0.0015480  100       22       23 
+             12     1   0.0266650  100       23       23 
+             13     1   0.2157172  100       24      -24 
+             14     1   0.0000000  103  1000022  1000022 
+             15     1   0.0000000  103  1000023  1000022 
+             16     1   0.0000000  103  1000023  1000023 
+             17     1   0.0000000  103  1000025  1000022 
+             18     1   0.0000000  103  1000025  1000023 
+             19     1   0.0000000  103  1000025  1000025 
+             20     1   0.0000000  103  1000035  1000022 
+             21     1   0.0000000  103  1000035  1000023 
+             22     1   0.0000000  103  1000035  1000025 
+             23     1   0.0000000  103  1000035  1000035 
+             24     1   0.0000000  103  1000024 -1000024 
+             25     1   0.0000000  103  1000024 -1000037 
+             26     1   0.0000000  103  1000037 -1000024 
+             27     1   0.0000000  103  1000037 -1000037 
+             28     1   0.0000000  103  1000001 -1000001 
+             29     1   0.0000000  103  2000001 -2000001 
+             30     1   0.0000000  103  1000001 -2000001 
+             31     1   0.0000000  103 -1000001  2000001 
+             32     1   0.0000000  103  1000002 -1000002 
+             33     1   0.0000000  103  2000002 -2000002 
+             34     1   0.0000000  103  1000002 -2000002 
+             35     1   0.0000000  103 -1000002  2000002 
+             36     1   0.0000000  103  1000003 -1000003 
+             37     1   0.0000000  103  2000003 -2000003 
+             38     1   0.0000000  103  1000003 -2000003 
+             39     1   0.0000000  103 -1000003  2000003 
+             40     1   0.0000000  103  1000004 -1000004 
+             41     1   0.0000000  103  2000004 -2000004 
+             42     1   0.0000000  103  1000004 -2000004 
+             43     1   0.0000000  103 -1000004  2000004 
+             44     1   0.0000000  103  1000005 -1000005 
+             45     1   0.0000000  103  2000005 -2000005 
+             46     1   0.0000000  103  1000005 -2000005 
+             47     1   0.0000000  103 -1000005  2000005 
+             48     1   0.0000000  103  1000006 -1000006 
+             49     1   0.0000000  103  2000006 -2000006 
+             50     1   0.0000000  103  1000006 -2000006 
+             51     1   0.0000000  103 -1000006  2000006 
+             52     1   0.0000000  103  1000011 -1000011 
+             53     1   0.0000000  103  2000011 -2000011 
+             54     1   0.0000000  103  1000011 -2000011 
+             55     1   0.0000000  103 -1000011  2000011 
+             56     1   0.0000000  103  1000012 -1000012 
+             57     1   0.0000000  103  2000012 -2000012 
+             58     1   0.0000000  103  1000012 -2000012 
+             59     1   0.0000000  103 -1000012  2000012 
+             60     1   0.0000000  103  1000013 -1000013 
+             61     1   0.0000000  103  2000013 -2000013 
+             62     1   0.0000000  103  1000013 -2000013 
+             63     1   0.0000000  103 -1000013  2000013 
+             64     1   0.0000000  103  1000014 -1000014 
+             65     1   0.0000000  103  2000014 -2000014 
+             66     1   0.0000000  103  1000014 -2000014 
+             67     1   0.0000000  103 -1000014  2000014 
+             68     1   0.0000000  103  1000015 -1000015 
+             69     1   0.0000000  103  2000015 -2000015 
+             70     1   0.0000000  103  1000015 -2000015 
+             71     1   0.0000000  103 -1000015  2000015 
+             72     1   0.0000000  103  1000016 -1000016 
+             73     1   0.0000000  103  2000016 -2000016 
+             74     1   0.0000000  103  1000016 -2000016 
+             75     1   0.0000000  103 -1000016  2000016 
+
+ --------  End PYTHIA Particle Data Table  -----------------------------------------------------------------------------------------
+
+
+ --------  PYTHIA Info Listing  ---------------------------------------- 
+ 
+ Beam A: id =   2212, pz =  7.000e+03, e =  7.000e+03, m =  9.383e-01.
+ Beam B: id =   2212, pz = -7.000e+03, e =  7.000e+03, m =  9.383e-01.
+
+ In 1: id =   21, x =  1.703e-01, pdf =  3.859e-01 at Q2 =  1.563e+04.
+ In 2: id =   21, x =  4.682e-04, pdf =  5.460e+01 at same Q2.
+
+ Subprocess g g -> H (SM) with code 902 is 2 -> 1.
+ It has sHat =  1.563e+04.
+     alphaEM =  7.846e-03,  alphaS =  1.238e-01    at Q2 =  1.563e+04.
+
+ Impact parameter b =  8.716e-01 gives enhancement factor =  9.428e-01.
+ Max pT scale for MPI =  1.400e+04, ISR =  1.400e+04, FSR =  1.400e+04.
+ Number of MPI =     5, ISR =    11, FSRproc =    51, FSRreson =    27.
+
+ --------  End PYTHIA Info Listing  ------------------------------------
+
+ --------  PYTHIA Event Listing  (hard process)  -----------------------------------------------------------------------------------
+ 
+    no        id   name            status     mothers   daughters     colours      p_x        p_y        p_z         e          m 
+     0        90   (system)           -11     0     0     0     0     0     0      0.000      0.000      0.000  14000.000  14000.000
+     1      2212   (p+)               -12     0     0     3     0     0     0      0.000      0.000   7000.000   7000.000      0.938
+     2      2212   (p+)               -12     0     0     4     0     0     0      0.000      0.000  -7000.000   7000.000      0.938
+     3        21   (g)                -21     1     0     5     0   101   102      0.000      0.000   1191.840   1191.840      0.000
+     4        21   (g)                -21     2     0     5     0   102   101      0.000      0.000     -3.278      3.278      0.000
+     5        25   (h0)               -22     3     4     6     7     0     0      0.000      0.000   1188.562   1195.117    125.000
+     6        21   g                   23     5     0     0     0   103   104     21.851     27.181     98.401    104.398      0.000
+     7        21   g                   23     5     0     0     0   104   103    -21.851    -27.181   1090.161   1090.719      0.000
+                                   Charge sum:  0.000           Momentum sum:      0.000      0.000   1188.562   1195.117    125.000
+
+ --------  End PYTHIA Event Listing  -----------------------------------------------------------------------------------------------
+ PYTHIA Warning in Pythia::check: energy-momentum not quite conserved  
+ PYTHIA Warning in Pythia::check: not quite matched particle energy/momentum/mass  
+
+ Pythia::next(): 100 events have been generated 
+
+ Pythia::next(): 200 events have been generated 
+
+ Pythia::next(): 300 events have been generated 
+ PYTHIA Error in StringFragmentation::fragment: stuck in joining  
+ PYTHIA Error in Pythia::next: hadronLevel failed; try again  
+ PYTHIA Warning in TimeShower::findMEcorr: ME weight above PS one  
+
+ Pythia::next(): 400 events have been generated 
+ PYTHIA Error in BeamRemnants::setKinematics: kinematics construction failed  
+ PYTHIA Error in SpaceShower::pT2nearQCDthreshold: stuck in loop  
+ PYTHIA Warning in StringFragmentation::fragmentToJunction: bad convergence junction rest frame  
+
+ Pythia::next(): 500 events have been generated 
+
+ Pythia::next(): 600 events have been generated 
+
+ Pythia::next(): 700 events have been generated 
+
+ Pythia::next(): 800 events have been generated 
+
+ Pythia::next(): 900 events have been generated 
+
+ *-------  PYTHIA Event and Cross Section Statistics  -------------------------------------------------------------*
+ |                                                                                                                 |
+ | Subprocess                                    Code |            Number of events       |      sigma +- delta    |
+ |                                                    |       Tried   Selected   Accepted |     (estimated) (mb)   |
+ |                                                    |                                   |                        |
+ |-----------------------------------------------------------------------------------------------------------------|
+ |                                                    |                                   |                        |
+ | g g -> H (SM)                                  902 |        9442       1000       1000 |   3.015e-08  7.100e-10 |
+ |                                                    |                                   |                        |
+ | sum                                                |        9442       1000       1000 |   3.015e-08  7.100e-10 |
+ |                                                                                                                 |
+ *-------  End PYTHIA Event and Cross Section Statistics ----------------------------------------------------------*
+
+ *-------  PYTHIA Multiparton Interactions Statistics  --------*
+ |                                                             |
+ |  Note: excludes hardest subprocess if already listed above  |
+ |                                                             |
+ | Subprocess                               Code |       Times |
+ |                                               |             |
+ |-------------------------------------------------------------|
+ |                                               |             |
+ | g g -> g g                                111 |        5361 |
+ | g g -> q qbar (uds)                       112 |          72 |
+ | q g -> q g                                113 |        2302 |
+ | q q(bar)' -> q q(bar)'                    114 |         235 |
+ | q qbar -> g g                             115 |           2 |
+ | q qbar -> q' qbar' (uds)                  116 |           0 |
+ | g g -> c cbar                             121 |          22 |
+ | q qbar -> c cbar                          122 |           0 |
+ | g g -> b bbar                             123 |           6 |
+ | q qbar -> b bbar                          124 |           0 |
+ | q g -> q gamma (udscb)                    201 |           1 |
+ | q qbar -> g gamma                         202 |           0 |
+ | g g -> g gamma                            203 |           0 |
+ | f fbar -> gamma gamma                     204 |           0 |
+ | g g -> gamma gamma                        205 |           0 |
+ | f f' -> f f' (t-channel gamma*/Z0)        211 |           0 |
+ | f_1 f_2 -> f_3 f_4 (t-channel W+-)        212 |           0 |
+ | f fbar -> f' fbar' (s-channel gamma*)     223 |           0 |
+ | g g -> ccbar(3S1)[3S1(1)] g               401 |           0 |
+ | g g -> ccbar(3S1)[3S1(8)] g               402 |           2 |
+ | q g -> ccbar(3S1)[3S1(8)] q               403 |           0 |
+ | q qbar -> ccbar(3S1)[3S1(8)] g            404 |           0 |
+ | g g -> ccbar(3S1)[1S0(8)] g               405 |           0 |
+ | q g -> ccbar(3S1)[1S0(8)] q               406 |           0 |
+ | q qbar -> ccbar(3S1)[1S0(8)] g            407 |           0 |
+ | g g -> ccbar(3S1)[3PJ(8)] g               408 |           0 |
+ | q g -> ccbar(3S1)[3PJ(8)] q               409 |           0 |
+ | q qbar -> ccbar(3S1)[3PJ(8)] g            410 |           0 |
+ | g g -> ccbar(3PJ)[3PJ(1)] g               411 |           6 |
+ | q g -> ccbar(3PJ)[3PJ(1)] q               412 |           3 |
+ | q qbar -> ccbar(3PJ)[3PJ(1)] g            413 |           0 |
+ | g g -> ccbar(3PJ)[3S1(8)] g               414 |           0 |
+ | q g -> ccbar(3PJ)[3S1(8)] q               415 |           0 |
+ | q qbar -> ccbar(3PJ)[3S1(8)] g            416 |           0 |
+ | g g -> ccbar(3DJ)[3DJ(1)] g               417 |           0 |
+ | g g -> ccbar(3DJ)[3PJ(8)] g               418 |           0 |
+ | q g -> ccbar(3DJ)[3PJ(8)] q               419 |           0 |
+ | q qbar -> ccbar(3DJ)[3PJ(8)] g            420 |           0 |
+ | g g -> bbbar(3S1)[3S1(1)] g               501 |           0 |
+ | g g -> bbbar(3S1)[3S1(8)] g               502 |           0 |
+ | q g -> bbbar(3S1)[3S1(8)] q               503 |           0 |
+ | q qbar -> bbbar(3S1)[3S1(8)] g            504 |           0 |
+ | g g -> bbbar(3S1)[1S0(8)] g               505 |           0 |
+ | q g -> bbbar(3S1)[1S0(8)] q               506 |           0 |
+ | q qbar -> bbbar(3S1)[1S0(8)] g            507 |           0 |
+ | g g -> bbbar(3S1)[3PJ(8)] g               508 |           0 |
+ | q g -> bbbar(3S1)[3PJ(8)] q               509 |           0 |
+ | q qbar -> bbbar(3S1)[3PJ(8)] g            510 |           0 |
+ | g g -> bbbar(3PJ)[3PJ(1)] g               511 |           0 |
+ | q g -> bbbar(3PJ)[3PJ(1)] q               512 |           0 |
+ | q qbar -> bbbar(3PJ)[3PJ(1)] g            513 |           0 |
+ | g g -> bbbar(3PJ)[3S1(8)] g               514 |           0 |
+ | q g -> bbbar(3PJ)[3S1(8)] q               515 |           0 |
+ | q qbar -> bbbar(3PJ)[3S1(8)] g            516 |           0 |
+ |                                                             |
+ | sum                                           |        8012 |
+ |                                               |             |
+ *-------  End PYTHIA Multiparton Interactions Statistics -----*
+
+ *-------  PYTHIA Error and Warning Messages Statistics  ----------------------------------------------------------* 
+ |                                                                                                                 | 
+ |  times   message                                                                                                | 
+ |                                                                                                                 | 
+ |      1   Error in BeamRemnants::setKinematics: kinematics construction failed                                   | 
+ |      1   Error in Pythia::next: hadronLevel failed; try again                                                   | 
+ |     10   Error in SpaceShower::pT2nearQCDthreshold: stuck in loop                                               | 
+ |      1   Error in StringFragmentation::fragment: stuck in joining                                               | 
+ |      5   Warning in Pythia::check: energy-momentum not quite conserved                                          | 
+ |      2   Warning in Pythia::check: not quite matched particle energy/momentum/mass                              | 
+ |      1   Warning in StringFragmentation::fragmentToJunction: bad convergence junction rest frame                | 
+ |      1   Warning in TimeShower::findMEcorr: ME weight above PS one                                              | 
+ |                                                                                                                 | 
+ *-------  End PYTHIA Error and Warning Messages Statistics  ------------------------------------------------------* 
+
+
+  2014-10-14 10:01       Higgs branching ratios by flavour
+
+        5.40*10^ 2       8                        
+        5.20*10^ 2       X                        
+        5.00*10^ 2       X                        
+        4.80*10^ 2       X                        
+        4.60*10^ 2       X                        
+        4.40*10^ 2       X                        
+        4.20*10^ 2       X                        
+        4.00*10^ 2       X                        
+        3.80*10^ 2       X                        
+        3.60*10^ 2       X                        
+        3.40*10^ 2       X                        
+        3.20*10^ 2       X                        
+        3.00*10^ 2       X                        
+        2.80*10^ 2       X                        
+        2.60*10^ 2       X                        
+        2.40*10^ 2       X                  5     
+        2.20*10^ 2       X                  X     
+        2.00*10^ 2       X                  X     
+        1.80*10^ 2       X                  X     
+        1.60*10^ 2       X                  X     
+        1.40*10^ 2       X                  X     
+        1.20*10^ 2       X                  X     
+        1.00*10^ 2       X               7  X     
+        0.80*10^ 2       X         4     X  X     
+        0.60*10^ 2       X         X     X  X     
+        0.40*10^ 2      5X         X     X 7X     
+        0.20*10^ 2     1XX         X     X2XX 1   
+
+          Contents                                
+            *10^ 2  000005000000000000000000200000
+            *10^ 1  000033000000000600000903300000
+            *10^ 0  000105000000000700000545003000
+            *10^-1  000000000000000000000000000000
+
+          Low edge  -                             
+            *10^ 1  000000000001111111111222222222
+            *10^ 0  001234567890123456789012345678
+            *10^-1  555555555555555555555555555555
+
+   Entries  =        1000    Mean =  1.2289e+01    Underflow =  0.0000e+00    Low edge  = -5.0000e-01
+   All chan =  1.0000e+03    Rms  =  8.6472e+00    Overflow  =  0.0000e+00    High edge =  2.9500e+01
+
+
+  2014-10-14 10:01       Higgs rapidity
+
+        2.70*10^-1                                                       X                                              
+        2.60*10^-1                                                       X  5                                           
+        2.50*10^-1                                                    55 X  X                                           
+        2.40*10^-1                                                    XX X  X                                           
+        2.30*10^-1                                                   XXX X XX                                           
+        2.20*10^-1                                                  XXXX X XX                                           
+        2.10*10^-1                                             X  5 XXXX5X XX                                           
+        2.00*10^-1                                             X  X XXXXXX XX                                           
+        1.90*10^-1                                             X XX XXXXXX5XX                                           
+        1.80*10^-1                                             X XXXXXXXXXXXX                                           
+        1.70*10^-1                                          5  XXXXXXXXXXXXXX                                           
+        1.60*10^-1                                          X  XXXXXXXXXXXXXX                                           
+        1.50*10^-1                                          X XXXXXXXXXXXXXXX                                           
+        1.40*10^-1                                          XXXXXXXXXXXXXXXXX X55                                       
+        1.30*10^-1                                        X XXXXXXXXXXXXXXXXX5XXX                                       
+        1.20*10^-1                                        XXXXXXXXXXXXXXXXXXXXXXX                                       
+        1.10*10^-1                                        XXXXXXXXXXXXXXXXXXXXXXXX                                      
+        1.00*10^-1                                        XXXXXXXXXXXXXXXXXXXXXXXX                                      
+        0.90*10^-1                                        XXXXXXXXXXXXXXXXXXXXXXXX5                                     
+        0.80*10^-1                                      5 XXXXXXXXXXXXXXXXXXXXXXXXX                                     
+        0.70*10^-1                                     5XXXXXXXXXXXXXXXXXXXXXXXXXXXX                                    
+        0.60*10^-1                                     XXXXXXXXXXXXXXXXXXXXXXXXXXXXX5                                   
+        0.50*10^-1                                    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX5                                  
+        0.40*10^-1                                    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                                  
+        0.30*10^-1                                    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX5                                 
+        0.20*10^-1                                  5XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                                 
+        0.10*10^-1                               5 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX5555                             
+
+          Contents                                                                                                      
+            *10^-1  0000000000000000000000000000000000000011111211212222221221111100000000000000000000000000000000000000
+            *10^-2  0000000000000000000000000000000112567732645179082344078352433187542000000000000000000000000000000000
+            *10^-3  0000000000000000000000000000050050055000500000500055505055055050555555500000000000000000000000000000
+            *10^-4  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+          Low edge  --------------------------------------------------                                                  
+            *10^ 1  1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^ 0  0999998888877777666665555544444333332222211111000000000111112222233333444445555566666777778888899999
+            *10^-1  0864208642086420864208642086420864208642086420864202468024680246802468024680246802468024680246802468
+
+   Entries  =        1000    Mean =  8.0000e-03    Underflow =  0.0000e+00    Low edge  = -1.0000e+01
+   All chan =  5.0000e+00    Rms  =  1.5483e+00    Overflow  =  0.0000e+00    High edge =  1.0000e+01
+
+
+  2014-10-14 10:01       charged pseudorapidity
+
+        2.40*10^ 1                                                     2 3                                              
+        2.32*10^ 1                                         5  2   83583X4X 67                                           
+        2.24*10^ 1                                         X89XX78XXXXXXXX8XX4X                                         
+        2.16*10^ 1                                         XXXXXXXXXXXXXXXXXXXX77                                       
+        2.08*10^ 1                                       46XXXXXXXXXXXXXXXXXXXXXX8                                      
+        2.00*10^ 1                                      9XXXXXXXXXXXXXXXXXXXXXXXXX12                                    
+        1.92*10^ 1                                     8XXXXXXXXXXXXXXXXXXXXXXXXXXXX5                                   
+        1.84*10^ 1                                   25XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX5                                  
+        1.76*10^ 1                                   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX9                                 
+        1.68*10^ 1                                 29XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX33                               
+        1.60*10^ 1                                6XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                               
+        1.52*10^ 1                               5XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX22                             
+        1.44*10^ 1                              7XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX2                            
+        1.36*10^ 1                            28XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX1                           
+        1.28*10^ 1                            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX7                          
+        1.20*10^ 1                          42XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX9                         
+        1.12*10^ 1                         3XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                        
+        1.04*10^ 1                         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX92                      
+        0.96*10^ 1                        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX4                     
+        0.88*10^ 1                      19XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX4                    
+        0.80*10^ 1                      XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX4                   
+        0.72*10^ 1                    2XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX1                  
+        0.64*10^ 1                   4XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX4                 
+        0.56*10^ 1                  3XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX2                
+        0.48*10^ 1                 5XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX4               
+        0.40*10^ 1                5XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX9              
+        0.32*10^ 1              27XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX82            
+        0.24*10^ 1            17XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX62          
+        0.16*10^ 1         369XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX753       
+        0.08*10^ 1  1244689XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX764321
+
+          Contents                                                                                                      
+            *10^ 1  0000000000000000000000011111111111111222222222222222222222222211111111111111100000000000000000000000
+            *10^ 0  0000000111122234556788901123445667899002222222322323232221211099887664432211099876544332211110000000
+            *10^-1  1123467025715953095107665394176177008348235312067063742899433623705225579592281354993905174208543211
+            *10^-2  1881645280185677145875133836599967259180716736519713137535233468724168381421905227274659040332784762
+
+          Low edge  --------------------------------------------------                                                  
+            *10^ 1  1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^ 0  0999998888877777666665555544444333332222211111000000000111112222233333444445555566666777778888899999
+            *10^-1  0864208642086420864208642086420864208642086420864202468024680246802468024680246802468024680246802468
+
+   Entries  =      229576    Mean = -1.2426e-02    Underflow =  2.2500e-01    Low edge  = -1.0000e+01
+   All chan =  1.1473e+03    Rms  =  3.5331e+00    Overflow  =  3.2500e-01    High edge =  1.0000e+01
+
+
+  2014-10-14 10:01       charged multiplicity
+
+        4.80*10^ 1                            5                                                                         
+        4.60*10^ 1                            X                                                                         
+        4.40*10^ 1                            X     5                                                                   
+        4.20*10^ 1                            X     X                                                                   
+        4.00*10^ 1                            X     X                                                                   
+        3.80*10^ 1                            X     XX                                                                  
+        3.60*10^ 1                        5  XX X   XX                                                                  
+        3.40*10^ 1                        X XXX X 55XX 5                                                                
+        3.20*10^ 1                        X XXX X XXXX X                                                                
+        3.00*10^ 1                 5      X5XXXXX XXXX XX5                                                              
+        2.80*10^ 1                 X5 5 5XXXXXXXX XXXXXXXX                                                              
+        2.60*10^ 1                 XX XXXXXXXXXXX5XXXXXXXX                                                              
+        2.40*10^ 1                 XX5XXXXXXXXXXXXXXXXXXXX                                                              
+        2.20*10^ 1                XXXXXXXXXXXXXXXXXXXXXXXX   5                                                          
+        2.00*10^ 1                XXXXXXXXXXXXXXXXXXXXXXXXXX5X                                                          
+        1.80*10^ 1               5XXXXXXXXXXXXXXXXXXXXXXXXXXXX 5                                                        
+        1.60*10^ 1             5 XXXXXXXXXXXXXXXXXXXXXXXXXXXXX X 5                                                      
+        1.40*10^ 1             XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX X5X                                                      
+        1.20*10^ 1             XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX5XXX                                                      
+        1.00*10^ 1             XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                                                      
+        0.80*10^ 1           5 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX5555                                                  
+        0.60*10^ 1           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX55                                                
+        0.40*10^ 1          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX5 5  5                                          
+        0.20*10^ 1       5 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX5X  X 5  5                                     
+
+          Contents                                                                                                      
+            *10^ 1  0000000000011122222222323343323343233222121111000000000000000000000000000000000000000000000000000000
+            *10^ 0  0000010247654729737678594670653338830900911735777755313003010010000000000000000000000000000000000000
+            *10^-1  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^-2  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+          Low edge  -                                                                                                   
+            *10^ 2  0000000000000111111111111222222222222233333333333344444444444445555555555556666666666666777777777777
+            *10^ 1  0012344567889012234566789001234456788901223456678900123445678890122345667890012344567889012234566789
+            *10^ 0  1864208642086420864208642086420864208642086420864208642086420864208642086420864208642086420864208642
+
+   Entries  =        1000    Mean =  2.3008e+02    Underflow =  0.0000e+00    Low edge  = -5.0000e-01
+   All chan =  1.0000e+03    Rms  =  8.1618e+01    Overflow  =  0.0000e+00    High edge =  7.9950e+02

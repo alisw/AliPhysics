@@ -1,0 +1,337 @@
+<html>
+<head>
+<title>Dark Matter Processes</title>
+<link rel="stylesheet" type="text/css" href="pythia.css"/>
+<link rel="shortcut icon" href="pythia32.gif"/>
+</head>
+<body>
+ 
+<h2>Dark Matter Processes</h2> 
+<ol id="toc">
+  <li><a href="#section0">Scalar Mediator</a></li>
+  <li><a href="#section1">Vector Mediator <ei>Z'</ei></a></li>
+  <li><a href="#section2">Drell-Yan production of charged co-annihilation partners </a></li>
+</ol>
+
+ 
+This page contains the production of Dirac fermion Dark Matter via new 
+<i>s</i>-channel mediators. A summary of the physics scenarios and 
+parameters involved can be found in [<a href="Bibliography.html#refDes18" target="page">Des18</a>]. Examples how these 
+processes can be run are found in <code>main75.cc</code> and 
+<code>main76.cc</code>. 
+ 
+<p/> 
+The particles in the scenarios considered here are a mix of established 
+PDG ones (51 - 55) and extensions thereof ( 56 - 59), as follows: 
+<table> 
+<tr><td>51</td><td>Scalar DM (currently unused);</td></tr> 
+<tr><td>52</td><td>Fermionic DM (<i>chi_1</i>);</td></tr> 
+<tr><td>53</td><td>Vector DM (currently unused);</td></tr> 
+<tr><td>54</td><td>Scalar (or pseudoscalar) mediator (<i>S</i>);</td></tr> 
+<tr><td>55</td><td>Vector (or axial vector) mediator (<i>Z'</i>); </td></tr> 
+<tr><td>56</td><td>Charged scalar partner (<i>l^~</i>);</td></tr> 
+<tr><td>57</td><td>Singly charged partner (<i>chi^+</i>);</td></tr> 
+<tr><td>58</td><td>Neutral partner (<i>chi_2</i>);</td></tr> 
+<tr><td>59</td><td>Doubly charged partner (<i>chi^++</i>).</td></tr> 
+</table> 
+ 
+<a name="section0"></a> 
+<h3>Scalar Mediator</h3> 
+ 
+<a name="anchor1"></a>
+<p/><code>flag&nbsp; </code><strong> DM:gg2S2XX &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr; S &rarr; X Xbar</i>. 
+Code 6011. S is assumed to be on-shell. 
+   
+ 
+<a name="anchor2"></a>
+<p/><code>flag&nbsp; </code><strong> DM:gg2S2XXj &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>g g &rarr;S &rarr; X Xbar j</i>. 
+Code 6012. S is assumed to be on-shell. (Not yet available.) 
+   
+ 
+<p/> 
+Fermion couplings to scalar S are assumed to be proportional to mass 
+of the fermion and couplings are the factor multiplying SM Higgs 
+coupling (i.e. sin(mixing) in case of portal models). 
+ 
+<a name="anchor3"></a>
+<p/><code>parm&nbsp; </code><strong> Sdm:vf &nbsp;</strong> 
+ (<code>default = <strong>0.1</strong></code>)<br/>
+Scalar coupling of SM fermions. 
+   
+<a name="anchor4"></a>
+ <p/><code>parm&nbsp; </code><strong> Sdm:af &nbsp;</strong> 
+ (<code>default = <strong>0</strong></code>)<br/>
+Pseudo-scalar coupling of SM fermions. 
+   
+<a name="anchor5"></a>
+<p/><code>parm&nbsp; </code><strong> Sdm:vX &nbsp;</strong> 
+ (<code>default = <strong>1.0</strong></code>)<br/>
+Scalar coupling of DM fermion. 
+   
+<a name="anchor6"></a>
+<p/><code>parm&nbsp; </code><strong> Sdm:aX &nbsp;</strong> 
+ (<code>default = <strong>0</strong></code>)<br/>
+Pseudo-scalar coupling of DM fermion. 
+   
+ 
+<a name="section1"></a> 
+<h3>Vector Mediator <i>Z'</i></h3> 
+ 
+The Vector mediator model assumes a simplified U(1) model with 
+couplings to fermionic Dark Matter.  Both vector and axial couplings 
+are possible.  Interference with <i>gamma/Z</i> is currently not 
+implemented, therefore this should mainly be used when <i>Z' &rarr; X 
+Xbar</i>.  However, a quick check of dijet or dilepton cross sections 
+can be made by setting the mode <code>Zp:decayMode</code>. 
+ 
+<a name="anchor7"></a>
+<p/><code>mode&nbsp; </code><strong> Zp:decayMode &nbsp;</strong> 
+ (<code>default = <strong>0</strong></code>; <code>minimum = 0</code>; <code>maximum = 3</code>)<br/>
+Switch to change decay of the <i>Z'</i>. 
+<br/><code>option </code><strong> 0</strong> : <i>X Xbar</i> 
+   
+<br/><code>option </code><strong> 1</strong> : <i>q qbar</i> (dijets) 
+   
+<br/><code>option </code><strong> 2</strong> : <i>l lbar</i> (charged dileptons) 
+   
+<br/><code>option </code><strong> 3</strong> : <i>nu nubar + X Xbar</i> (invisible) 
+   
+   
+ 
+<a name="anchor8"></a>
+<p/><code>flag&nbsp; </code><strong> DM:ffbar2Zp2XX &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr;Z'^0 &rarr; X Xbar</i>. 
+Code 6001. <i>Z'</i> is assumed to be on-shell. 
+   
+ 
+<a name="anchor9"></a>
+<p/><code>flag&nbsp; </code><strong> DM:ffbar2ZpH &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr;Z'^0 H </i>. 
+Code 6004. <i>Z'</i> is assumed to be on-shell. The coupling of the 
+<i>Z'</i> to the SM Higgs is given by the parameter <code>Zp:coupH</code>. 
+Interference with gamma/Z currently not implemented therefore this is 
+only suitable when <i>Z' &rarr; X Xbar</i>.  This can be ensured 
+using 
+<br/><code>55:onMode = off</code> 
+<br/><code>55:onIfAny = 52</code> 
+   
+ 
+<a name="anchor10"></a>
+<p/><code>flag&nbsp; </code><strong> DM:ffbar2Zp2XXj &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>f fbar &rarr;Z'^0 j &rarr; X Xbar j</i>. 
+Code 6002. <i>Z'</i> is assumed to be on-shell. (Not yet available.) 
+   
+ 
+<a name="anchor11"></a>
+<p/><code>flag&nbsp; </code><strong> DM:qg2Zp2XXj &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q g &rarr;Z'^0 j &rarr; X Xbar j</i>. 
+Code 6003. <i>Z'</i> is assumed to be on-shell. (Not yet available.) 
+   
+ 
+<p/> 
+The vector and axial couplings of fermionic DM to the <i>Z'^0</i> 
+can be set freely. The couplings of quarks and leptons can either 
+be chosen freely for a new <i>U(1)</i> or be given by kinetic 
+mixing with the SM <i>U(1)_Y</i>. The SM fermion couplings are 
+assumed to be universal, i.e. generation-independent. The choice of 
+fixed axial and vector couplings implies a resonance width that 
+increases linearly with the <i>Z'</i> mass. Also some overall 
+coupling strengths can be chosen freely. 
+ 
+<a name="anchor12"></a>
+<p/><code>parm&nbsp; </code><strong> Zp:vX &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+Vector coupling of DM fermion. 
+   
+<a name="anchor13"></a>
+<p/><code>parm&nbsp; </code><strong> Zp:aX &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+Axial coupling of DM fermion. 
+   
+ 
+<a name="anchor14"></a>
+<p/><code>flag&nbsp; </code><strong> Zp:kineticMixing &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Flag for the two main options to set the couplings of the <i>Z'</i> 
+to SM quarks and leptons. In the default off option the overall 
+coupling strength of the new <i>U(1)</i> gauge group is given by 
+<code>Zp:gZp</code> and the separate fermion couplings by 
+<code>Zp:vu</code> through <code>Zp:av</code>. In the alternative, 
+with kinetic mixing on, the coupling to the DM is still given by 
+<code>Zp:gZp</code>, but the mixing parameter <code>Zp:epsilon</code> 
+now specifies how the separate fermion couplings are related to their 
+<i>U(1)_Y</i> values. 
+   
+ 
+<a name="anchor15"></a>
+<p/><code>parm&nbsp; </code><strong> Zp:gZp &nbsp;</strong> 
+ (<code>default = <strong>0.1</strong></code>)<br/>
+Gauge coupling of a new <i>U(1)</i>. This parameter also sets the 
+coupling of the DM to the <i>Z'</i>, whether kinetic mixing is on 
+or not. 
+   
+ 
+<a name="anchor16"></a>
+<p/><code>parm&nbsp; </code><strong> Zp:vu &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+Vector coupling of up-type quarks. 
+   
+<a name="anchor17"></a>
+ <p/><code>parm&nbsp; </code><strong> Zp:au &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+Axial coupling of up-type quarks. 
+   
+ 
+<a name="anchor18"></a>
+<p/><code>parm&nbsp; </code><strong> Zp:vd &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+Vector coupling of down-type quarks. 
+   
+<a name="anchor19"></a>
+ <p/><code>parm&nbsp; </code><strong> Zp:ad &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+Axial coupling of down-type quarks. 
+   
+ 
+<a name="anchor20"></a>
+<p/><code>parm&nbsp; </code><strong> Zp:vl &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+Vector coupling of charged leptons. 
+   
+<a name="anchor21"></a>
+<p/><code>parm&nbsp; </code><strong> Zp:al &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+Axial coupling of charged leptons. 
+   
+ 
+<a name="anchor22"></a>
+<p/><code>parm&nbsp; </code><strong> Zp:vv &nbsp;</strong> 
+ (<code>default = <strong>1.</strong></code>)<br/>
+Vector coupling of neutrinos. 
+   
+<a name="anchor23"></a>
+<p/><code>parm&nbsp; </code><strong> Zp:av &nbsp;</strong> 
+ (<code>default = <strong>0.</strong></code>)<br/>
+Axial coupling of neutrinos. 
+   
+ 
+<a name="anchor24"></a>
+<p/><code>parm&nbsp; </code><strong> Zp:epsilon &nbsp;</strong> 
+ (<code>default = <strong>0.1</strong></code>)<br/>
+Kinetic mixing parameter between the dark <i>U(1)</i> and the SM 
+hypercharge <i>U(1)</i>. In the implemented case the <i>Z'^0</i> 
+mass is larger than the SM <i>Z^0</i> one. The fermionic current 
+for <i>Z'^0</i> is described in  [<a href="Bibliography.html#refCli184" target="page">Cli184</a>]. 
+   
+ 
+<a name="anchor25"></a>
+<p/><code>parm&nbsp; </code><strong> Zp:coupH &nbsp;</strong> 
+ (<code>default = <strong>0.1</strong></code>)<br/>
+Coupling to the SM higgs when kinetic mixing is off. When on the 
+coupling is instead set by <code>Zp:epsilon</code>. 
+   
+ 
+<a name="section2"></a> 
+<h3>Drell-Yan production of charged co-annihilation partners </h3> 
+ 
+We implement two models of co-annihilating Dark Matter where the 
+co-annihilation partner carries EW charge and therefore can be 
+produced via Drell-Yan production.  The underlying model and 
+production process can be selected by choosing the parameter 
+<code>DM:DYtype</code>. 
+ 
+<p/> The first model consists of co-annihilation with a scalar with 
+leptonic quantum numbers and which couples to a right-handed SM lepton 
+and a Dirac fermion Dark Matter via Yukawa couplings.  It is possible 
+to choose lepton flavour violating couplings. 
+ 
+<p/> The next model is a generalisation of the mixed gaugino sector 
+of Supersymmetry parametrised by one SM singlet and one SU(2) N-plet 
+which mix to form Dark matter.  N = 2, 3 and 5 are supported by the 
+code.  The main motivation for this choice is to provide a fully 
+flexible implementation to calculate production of long-lived 
+particles at the LHC.  The resultant spectrum consists of one neutral 
+partner, one singly charged partner, and one doubly charged partner 
+(in the case of the 5-plet).  The only free parameters are masses of 
+the singlet and N-plet and the mixing suppression scale. This 
+determines both production and decay of the particles and can cover a 
+range of signatures including displaced leptons and vertices, 
+long-lived, kinked or disappearing tracks. 
+ 
+<a name="anchor26"></a>
+<p/><code>flag&nbsp; </code><strong> DM:qqbar2DY &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Scattering <i>q qbar &rarr; X_i Xbar_i </i>. 
+Code 6020. 
+   
+ 
+<a name="anchor27"></a>
+<p/><code>mode&nbsp; </code><strong> DM:DYtype &nbsp;</strong> 
+ (<code>default = <strong>1</strong></code>; <code>minimum = 1</code>; <code>maximum = 4</code>)<br/>
+Select the co-annihilation partner to produce via Drell-Yan production. 
+<br/><code>option </code><strong> 1</strong> :  Scalar lepton production.  Coupling to electrons, 
+muons and taus can be fixed by <code>DM:yuk1</code>, <code>DM:yuk2</code>, 
+and <code>DM:yuk3</code> respectively.    
+<br/><code>option </code><strong> 2</strong> :  Production of charged partners (i.e. "charginos").   
+<br/><code>option </code><strong> 3</strong> :  Production of doubly charged partners.   
+<br/><code>option </code><strong> 4</strong> :  Production of neutral and singly-charged partners.   
+<!-- Further options to be added 
+<option value="5"> Production of singly and doubly-charged partners </option> 
+--> 
+   
+ 
+<p/> 
+The Yukawa couplings can be set using 
+<a name="anchor28"></a>
+<p/><code>parm&nbsp; </code><strong> DM:yuk1 &nbsp;</strong> <br/>
+Electron-DM Yukawa. 
+   
+<a name="anchor29"></a>
+<p/><code>parm&nbsp; </code><strong> DM:yuk2 &nbsp;</strong> <br/>
+Muon-DM Yukawa. 
+   
+<a name="anchor30"></a>
+<p/><code>parm&nbsp; </code><strong> DM:yuk3 &nbsp;</strong> <br/>
+Tau-DM Yukawa. 
+   
+ 
+<p/> 
+The parameters for the singlet-N-plet model can be set via the following: 
+ 
+<a name="anchor31"></a>
+<p/><code>mode&nbsp; </code><strong> DM:Nplet &nbsp;</strong> 
+ (<code>default = <strong>2</strong></code>; <code>minimum = 1</code>; <code>maximum = 3</code>)<br/>
+<br/><code>option </code><strong> 1</strong> :  Doublet    
+<br/><code>option </code><strong> 2</strong> :  Triplet    
+<br/><code>option </code><strong> 3</strong> :  Quintuplet    
+   
+ 
+<a name="anchor32"></a>
+<p/><code>parm&nbsp; </code><strong> DM:M1 &nbsp;</strong> <br/>
+Mass of the DM singlet state. 
+   
+ 
+<a name="anchor33"></a>
+<p/><code>parm&nbsp; </code><strong> DM:M2 &nbsp;</strong> <br/>
+Mass of the DM N-plet state. 
+   
+ 
+<a name="anchor34"></a>
+<p/><code>parm&nbsp; </code><strong> DM:Lambda &nbsp;</strong> <br/>
+The suppression scale of the mixing. The Wilson co-efficient is absorbed 
+into the suppression scale as there is no independent measurement to 
+disentangle it from the scale. 
+   
+ 
+</body>
+</html>
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

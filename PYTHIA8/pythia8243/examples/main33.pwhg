@@ -1,0 +1,26 @@
+! Example configuration for the HVQ POWHEGBOX matrix element. Modified
+! from the official HVQ example command file, powheg.input.
+ih1   1          ! hadron 1
+ih2   1          ! hadron 2
+lhans1  10800    ! pdf set for hadron 1 (LHA numbering)
+lhans2  10800    ! pdf set for hadron 2 (LHA numbering)
+ebeam1 3500      ! energy of beam 1
+ebeam2 3500      ! energy of beam 2
+qmass  4.75      ! mass of heavy quark in GeV
+facscfact 1      ! factorization scale factor: mufact=muref*facscfact
+renscfact 1      ! renormalization scale factor: muren=muref*renscfact
+use-old-grid 1   ! if 1 use old grid if file pwggrids.dat is presen
+use-old-ubound 1 ! if 1 use norm of upper bounding stored in pwgubound.dat
+ncall1 10000     ! number of calls for initializing the integration grid
+itmx1 5          ! number of iterations for initializing the integration grid
+ncall2 100000    ! number of calls for integral and finding upper bound
+itmx2 5          ! number of iterations for integral and finding upper bound
+foldcsi 2        ! number of folds on x integration
+foldy 5          ! number of folds on y integration
+foldphi 1        ! number of folds on phi integration
+nubound 500000   ! number of bbarra calls to setup norm of upper bounding
+iymax 1          ! <= 10, normalization of upper bounding function in iunorm X
+                 ! iunorm square in y, log(m2qq)
+ixmax 1          ! <= 10, normalization of upper bounding function in iunorm X
+                 ! iunorm square in y, log(m2qq)
+xupbound 2       ! increase upper bound for radiation generation

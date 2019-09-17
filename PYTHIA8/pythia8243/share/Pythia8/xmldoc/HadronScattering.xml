@@ -1,0 +1,371 @@
+<chapter name="Hadron Scattering"> 
+ 
+<h2>Hadron Scattering</h2> 
+ 
+This page describes a few simple hadron (re)scattering models. 
+They are intended to take into account 
+that the overlap of multiple strings at low transverse dimensions 
+is likely to lead to some collective effects, not unlike those 
+observed in heavy-ion collisions, even if not quite as pronounced. 
+Specifically, it is assumed that the hadrons produced can scatter 
+against each other on the way out, before the fragmenting system 
+has had time to expand enough that the hadrons get free. Thereby 
+heavier particles are shifted to higher transverse momenta, at the 
+expense of the lighter ones. 
+ 
+<p/> 
+The main switch on/off switch for rescattering is 
+<code>HadronLevel:HadronScatter</code>, which by the default is off, 
+since all models are rather simplistic and have to be used 
+with some caution. Currently there are three different options available: 
+ 
+<modepick name="HadronScatter:mode" default="0" 
+min="0" max="2"> 
+The first two options are variations of the same model, whereas 
+option 2 respresents a different model. 
+<option value="0"> The new model, based on separation in rapidity 
+as described in <ref>Fis16</ref>. 
+Further options are found <a href="#HadScatNew1">here</a>. 
+</option> 
+<option value="1"> The new model, based on separation in rapidity 
+and azimuthal angle as described in <ref>Fis16</ref>. Further options 
+are found  <a href="#HadScatNew2">here</a>. 
+</option> 
+<option value="2"> The old model. Further options are found 
+<a href="#HadScatOld">here</a>. 
+<note>Warning:</note> Option 2 is still at an experimental level, 
+and should not be used unless you know what you are doing. 
+</option> 
+</modepick> 
+ 
+<h3>The New Model for Hadron Scattering</h3> 
+ 
+Within the new model, there are two options available for how hadron 
+pairs are found: 
+ 
+<a name="HadScatNew1"></a> 
+<h4>Rapidity based</h4> 
+This corresponds to <code>HadronScatter:mode = 0</code>. 
+<p/> 
+Probe all hadron pairs with an invariant mass <ei> m<sub>inv</sub> &lt; 
+(m<sup>2</sup><sub>1</sub>+p<sup>2</sup><sub>Max</sub>)<sup>1/2</sup> + 
+(m<sup>2</sup><sub>2</sub>+p<sup>2</sup><sub>Max</sub>)<sup>1/2</sup></ei> 
+with the parameter <ei>p<sub>Max</sub></ei> 
+<parm name="HadronScatter:pMax" default="0.5" min="0.1" max="1000000.0"> 
+</parm> 
+<br/> 
+If a hadron pair passes this cut, the scattering probability for hadrons of 
+different strings is <ei>P<sub>DS</sub>(&#x394y) = 
+P<sup>max</sup><sub>DS</sub>(1 - &#x394y/&#x394y<sup>max</sup>)</ei> 
+with rapidity difference <ei>&#x394y</ei> of the hadron pair and the 
+parameters <ei>&#x394y<sup>max</sup></ei> 
+<parm name="HadronScatter:yDiffMax" default="1.0" min="0.1" max="10.0"> 
+</parm> 
+<br/> 
+and <ei>P<sup>max</sup><sub>DS</sub></ei>, see 
+<a href="#HadScatNewCom">below</a>. If the hadrons are produced 
+within the same string the probability is <ei>P<sub>DS</sub>(&#x394y) 
+P<sup>max</sup><sub>SS</sub></ei> if the hadrons are further apart from each 
+other as <code>HadronScatter:neighbourFar</code>, <ei>0</ei> if they are 
+closer together as <code>HadronScatter:neighbourNear</code>, and linear 
+between the maximum <code>HadronScatter:maxProbSS</code> and minimum 
+probability <code>HadronScatter:minProbSS</code> inbetween. 
+ 
+<a name="HadScatNew2"></a> 
+<h4>Rapidity and Azimuth based</h4> 
+This corresponds to <code>HadronScatter:mode = 1</code>. 
+<p/> 
+All hadron pairs are considered. The scattering probability for hadrons 
+of different strings is <ei>P<sub>DS</sub>(&#x394y,&#x394&#x3C6) = 
+P<sup>max</sup><sub>DS</sub>(1 - ((&#x394y)<sup>2</sup> 
++(&#x394&#x3C6)<sup>2</sup>)<sup>1/2</sup>/R<sup>max</sup>)</ei> 
+with rapidity difference <ei>&#x394y</ei> and difference in azimuth 
+<ei>&#x394&#x3C6</ei> of the hadron pair and the 
+parameters <ei>R<sup>max</sup></ei> 
+<parm name="HadronScatter:Rmax" default="1.0" min="0.1" max="10.0"> 
+</parm> 
+<br/> 
+and <ei>P<sup>max</sup><sub>DS</sub></ei>, see 
+<a href="#HadScatNewCom">below</a>. 
+The probability for hadron pairs from the same string is similar 
+to the one before. 
+ 
+<a name="HadScatNewCom"></a> 
+<h4>Common Parameters</h4> 
+ 
+The following paramters are used for both the above cases: 
+<flag name="HadronScatter:scatterSameString" default="on"> 
+  If switched on, strings within the same string are allowed to 
+  scatter off each other. Otherwise only hadron pairs that are 
+  not produced on the same string are taken into account. 
+</flag> 
+ 
+<flag name="HadronScatter:scatterMultipleTimes" default="on"> 
+  If switched off, each hadron is only allowed to scatter at most once. 
+  By the way that possible scattering pairs are considered in order of 
+  increasing rapidity separation, this introduces a bias towards pairs 
+  with small <ei>y</ei> separation. 
+</flag> 
+ 
+<parm name="HadronScatter:maxProbDS" default="0.5" min="0.0" max="1.0"> 
+  The maximum probability <ei>P<sup>max</sup><sub>DS</sub></ei> for the 
+  scattering of two hadrons that are not part of the same string. 
+</parm> 
+ 
+<mode name="HadronScatter:neighbourNear" default="2" min="1" max="10"> 
+  If scattering of hadrons within the same string is allowed this 
+  parameter gives the closest neighbour that is allowed. The value 1 
+  corresponds to the direct neighbour. The probability associated 
+  with this potential scattering partner is <code>minProbSS</code>. 
+</mode> 
+ 
+<mode name="HadronScatter:neighbourFar" default="4" min="2" max="15"> 
+  If scattering of hadrons within the same string is allowed this 
+  parameter gives the neighbour starting from which the maximum 
+  probability <code>maxProbSS</code> is applied. 
+</mode> 
+ 
+<parm name="HadronScatter:minProbSS" default="0.5" min="0.0" max="1.0"> 
+  The minimum probability <ei>P<sup>min</sup><sub>SS</sub></ei> for the 
+  scattering of two hadrons within the same string. (Relative to that for 
+  different strings, i.e. for the total probability the baseline 
+  <code>maxProbDS</code> factor also enters.) 
+</parm> 
+ 
+<parm name="HadronScatter:maxProbSS" default="1.0" min="0.0" max="1.0"> 
+  The maximum probability <ei>P<sup>max</sup><sub>SS</sub></ei> for the 
+  scattering of two hadrons within the same string. (Relative to that for 
+  different strings, i.e. for the total probability the baseline 
+  <code>maxProbDS</code> factor also enters.) 
+</parm> 
+ 
+<a name="HadScatOld"></a> 
+<h3>The Old Model for Hadron Scattering</h3> 
+ 
+<note>Warning:</note> This is still at an experimental level, 
+and should not be used unless you know what you are doing. 
+ 
+<flag name="HadronScatter:afterDecay" default="off"> 
+Perform hadron scattering before or after first round of decays, 
+involving very short-lived particles like the <ei>rho</ei>. 
+The default is to perform scattering directly after the 
+string fragmentation, before any decays. 
+</flag> 
+ 
+<flag name="HadronScatter:allowDecayProd" default="off"> 
+Allow two hadrons with same parent hadron to scatter. 
+</flag> 
+ 
+<flag name="HadronScatter:scatterRepeat" default="off"> 
+Allow hadrons which have already scattered to scatter again. 
+Even if switched on, the same pair can not scatter off each 
+other twice. 
+</flag> 
+ 
+<h4>Hadron selection</h4> 
+ 
+<modepick name="HadronScatter:hadronSelect" default="0" 
+min="0" max="0"> 
+Probability that a hadron is soft enough to scatter. 
+(A high-<ei>pT</ei> hadron presumably being part of a jet, 
+and thus produced away from the high-particle-density region 
+at small transverse dimensions.) 
+<option value="0"> 
+<ei>P = N exp(-pT^2 / 2 / sigma^2) / 
+  ( (1 - k) exp(-pT^2 / 2 / sigma^2) + k pT0^p / (pT0^2 + pT^2)^(p/2), </ei> 
+with <ei>sigma = 2 StringPT:sigma</ei> and <ei>pT0</ei> the same as that 
+used in <ei>MultipartonInteractions</ei>. 
+</option> 
+</modepick> 
+ 
+<parm name="HadronScatter:N" default="1.0" min="0.01" max="1.0"> 
+<ei>N</ei> parameter as above. 
+</parm> 
+<parm name="HadronScatter:k" default="1.0" min="0.01" max="1.0"> 
+<ei>k</ei> parameter as above. 
+</parm> 
+<parm name="HadronScatter:p" default="6" min="2" max="30"> 
+<ei>p</ei> parameter as above. 
+</parm> 
+ 
+<h4>Scattering probability</h4> 
+ 
+<modepick name="HadronScatter:scatterProb" default="0" 
+min="0" max="2"> 
+Probability for a pair of hadrons to scatter. 
+<option value="0">All hadrons scatter with probability 
+<ei>j max(0, 1 - dR^2 / rMax^2)</ei>. Angular distribution 
+is picked flat in <ei>cos(theta).</ei></option> 
+<option value="1">As option 0, above, but only <ei>pi-pi</ei>, 
+<ei>pi-K</ei> and <ei>pi-p</ei> scatterings are considered. 
+</option> 
+<option value="2">Only <ei>pi-pi</ei>, <ei>pi-K</ei> and 
+<ei>pi-p</ei> scatterings are considered, with probability 
+given by <ei>(1 - exp(-j sigEl)) max(0, 1 - dR^2 / rMax^2)</ei>. 
+The elastic cross sections and angular distributions are taken 
+from the partial-wave distributions. 
+</option> 
+</modepick> 
+ 
+<parm name="HadronScatter:j" default="0.5" min="0.0" max="10.0"> 
+<ei>j</ei> parameter as above. 
+</parm> 
+<parm name="HadronScatter:rMax" default="1.0" min="0.1" max="2.0"> 
+<ei>rMax</ei> parameter as above. 
+</parm> 
+ 
+<flag name="HadronScatter:tile" default="off"> 
+Use tiling in <ei>(eta, phi)</ei> to reduce number of pairwise tests. 
+</flag> 
+ 
+ 
+<h3>Hadron Production Vertices</h3> 
+ 
+It is not trivial to define where in space-time that the primary 
+hadrons are produced by the string fragmentation machinery. 
+The basic strategy is well-defined in a 1+1-dimensional picture, 
+as represented by a single straight string stretched between massless 
+<ei>q</ei> and <ei>qbar</ei> endpoints <ref>And83</ref>. Even so there 
+is no unique definition of the production vertex of the hadron 
+straddling two adjacent breakup vertices, and the transverse width 
+of the string adds a further smearing. Some of that ambiguity is 
+reflected in the options below. The major step in complexity comes 
+with the introduction of more convoluted string topologies, however. 
+Here the momentum-space description contains a number of ambiguities, 
+notably for those hadrons that straddle two or more different string 
+regions, that were only overcome by a set of reasonable simplifications 
+<ref>Sjo84</ref>. The space-time picture introduced here inherits 
+all these problems, and thus many of the same prescriptions, but also 
+require a few further simplifications and assumptions. 
+ 
+<p/> 
+Below the main switches and parameters of this picture are described. 
+Note, however, that that the machinery is still under development and 
+should be used with caution. 
+ 
+<p/> 
+When on, the machinery assigns space-time production vertices to all 
+primary hadrons, i.e. those that are produced directly from the string 
+breakups. These vertices can be read out by the <code>event[i].vProd()</code> 
+method. Note that the length unit is mm, and mm/s for time. To study 
+the hadronization process it is natural to cnvert to fm. The conversion 
+constants <code>FM2MM</code> <ei>= 10^12</ei> and <code>MM2FM</code> 
+<ei>= 10^-12</ei> are defined inside the <code>Pythia8</code> namespace, 
+available in user programs that include <code>Pythia8/Pythia.h</code>. 
+ 
+<p/> 
+Secondary vertices are set in decays, but by default only for scales 
+of the order of mm or above. That is, decays on the fm scale, like for 
+<ei>rho</ei> mesons, then are not considered. When the machinery in this 
+section is switched on, also such displacements are considered, see 
+further <code>HadronVertex:rapidDecays</code> below. Do note that the factor 
+<ei>10^12</ei> separation between fm and mm scales means that the two do 
+not mix well, i.e. any contribution of the latter kind would leave 
+little trace of the former when stored in double-precision real numbers. 
+For this reason it is also not meaningful to combine studies of hadron 
+production vertices with displaced <ei>pp</ei> collision vertices from 
+the profile of the incoming bunches. 
+ 
+<flag name="Fragmentation:setVertices" default="off"> 
+Normally primary hadron production vertices are not set, but if 
+on they are. In the latter case the further switches and parameters 
+below provide more detailed choices. 
+</flag> 
+ 
+<modepick name="HadronVertex:mode" default="0" min="-1" max="1"> 
+The definition of hadron production points is not unique, and here 
+three alternatives are considered: one early, one late and one in the 
+middle. Further expressions below are written for a hadron <ei>i</ei> 
+produced between two string vertices <ei>i</ei> and <ei>i+1</ei>. 
+<option value="0">A hadron production point is defined as the middle 
+point between the two breakup vertices, 
+<ei>v<sup>h</sup><sub>i</sub> = (v<sub>i</sub> + v<sub>i+1</sub>)/2</ei>. 
+</option> 
+<option value="-1">An "early" hadron production, counted backwards to the 
+point where a fictitious string oscillation could have begun that would 
+have reached the two string breakup vertices above. Given the hadronic 
+four-momentum <ei>p<sup>h</sup></ei> and the string tension <ei>kappa</ei>, 
+this vertex would be 
+<ei>v<sup>h</sup><sub>i</sub> = (v<sub>i</sub> + v<sub>i+1</sub>)/2 
+- p<sup>h</sup><sub>i</sub> / (2 kappa)</ei>. With this prescription is 
+is possible to obtain a negative squared proper time, since the 
+<ei>p<sup>h</sup></ei> contains a transverse-momentum smearing that 
+does not quite match up with longitudinal-momentum string picture. 
+In such cases the negative term is scaled down to give a vanishing 
+proper time. 
+</option> 
+<option value="1">A "late" hadron production, defined as the point 
+where the two partons that form the hadron cross for the first time. 
+The hadron momentum contribution then shifts sign relative to the previous 
+option, 
+<ei>v<sup>h</sup><sub>i</sub> = (v<sub>i</sub> + v<sub>i+1</sub>)/2 
++ p<sup>h</sup><sub>i</sub> / (2 kappa)</ei>, 
+and there is no problem with negative squared proper times. 
+</option> 
+</modepick> 
+ 
+<parm name="HadronVertex:kappa" default="1." min="0.5" max="10."> 
+The string tension <ei>kappa</ei> in units of GeV/fm, i.e. how much 
+energy is stored in a string per unit length. 
+</parm> 
+ 
+<flag name="HadronVertex:smearOn" default="on"> 
+When on, the space--time location of breakp points is smear in transverse 
+space accordingly to the value of xySmear given. 
+</flag> 
+ 
+<parm name="HadronVertex:xySmear" default="0.7" min="0." max="2."> 
+Transverse smearing of the hadron production vertices in units of fm. 
+This is initially assigned as a Gaussian smearing of the string breakup 
+vertices in the plane perpendicular to the string direction. 
+The <ei>xySmear</ei> parameter is picked such that a breakup vertex 
+should have a smearing <ei>&lt;x^2 + y^2&gt; = xySmear^2</ei> for a 
+simple string along the <ei>z</ei> direction. The default value has 
+been picked roughly like <ei>sqrt(2/3)</ei> of the proton radius, to 
+represent two out of three spatial directions. For a hadron this is 
+then averaged, as described above in <ei>v<sup>h</sup><sub>i</sub> = 
+(v<sub>i</sub> + v<sub>i+1</sub>)/2 </ei> and its variants, 
+giving a width reduction of 1/sqrt(2). 
+</parm> 
+ 
+<flag name="HadronVertex:constantTau" default="on"> 
+The transverse smearing might change either the time coordinate or 
+the invariant time of the breakup points with respect to the origin. 
+Normally, the <ei>tau</ei> is kept constant and the time coordinate is 
+recalculated to compensate the effect of the smearing. If off, the 
+time coordinate is kept constant and the invariant time is modified 
+by the smearing. 
+</flag> 
+ 
+<flag name = "HadronVertex:rapidDecays" default = "on"> 
+The decay products of particles with short lifetimes, such as rho, should be 
+displaced from the production point of the mother particle. When on, the 
+corresponding displacement is included in the space--time location of the 
+daughter production points. More specifically, the width stored for these 
+particles are inverted to give the respective lifetimes. (Even more 
+specifically, the width must be above <code>NARROWMASS</code> = 
+<ei>10^-6 GeV</ei>.) Particles that by default already have a nonvanishing 
+lifetime (in the database or set by the user) are always given a displaced 
+vertex based on that value, so for them this flag makes no difference. 
+See below for unstable particles that have neither a know width nor a 
+known lifetime. 
+</flag> 
+ 
+<parm name="HadronVertex:intermediateTau0" default="1e-9" min="1e-12" 
+max="1e-3"> 
+Average lifetime <ei>c * tau_0</ei>, expressed in mm, assigned to particle 
+species which are unstable, but have neither been assigned a nonvanishing 
+lifetime nor a non-negligible (above <code>NARROWMASS</code>) width. 
+For such cases an intermediate scale is chosen, such that the decays happen 
+well separated from the primary vertex, and yet not as far away as to give 
+rise to an experimentally discernible secondary vertex. The default 
+<ei>10^-9 mm = 1000 fm</ei> meets this requirement, and is additionally 
+a reasonable value for the particles that mainly decay electromagnetically. 
+The value is also used for a few rare particles that probably have a 
+non-negligible width, but are so poorly known that no width is listed 
+in the Review of Particle Physics. 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

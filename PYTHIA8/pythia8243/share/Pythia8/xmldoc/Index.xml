@@ -1,0 +1,165 @@
+<chapter name="Index"> 
+ 
+<img src="pythia99.gif" alt="Pythia logo" hspace="10"/> 
+ 
+<h2>PYTHIA 8 Index</h2> 
+<script>function link(href) {top.frames['page'].location.href = href}</script> 
+<script src="Underscore.js"></script> 
+<script src="Jquery.js" ></script> 
+<script src="Search.js"></script> 
+<form> 
+  <input id="search-input" type="search" placeholder="Search" 
+         style="color:#000000"/> 
+  <ul id="search-result" style="list-style-type:none;padding:0"></ul> 
+</form> 
+ 
+<h4>Program Overview</h4> 
+ 
+<aidx href="Frontpage">Frontpage</aidx><br/> 
+<aidx href="ProgramFlow">Program Flow</aidx><br/> 
+<aidx href="SettingsScheme">Settings Scheme</aidx><br/> 
+<aidx href="ParticleDataScheme">Particle Data Scheme</aidx><br/> 
+<aidx href="ProgramFiles">Program Files</aidx><br/> 
+<aidx href="ProgramClasses">Program Classes</aidx><br/> 
+<aidx href="ProgramMethods">Program Methods</aidx><br/> 
+<aidx href="SampleMainPrograms">Sample Main Programs</aidx><br/> 
+ 
+<h4>Setup Run Tasks</h4> 
+ 
+<INDEXPHP> 
+<aidx href="SaveSettings"><b>Save Settings</b></aidx><br/> 
+<aidx href="MainProgramSettings">Main-Program Settings</aidx><br/> 
+<aidx href="BeamParameters">Beam Parameters</aidx><br/> 
+<aidx href="RandomNumberSeed">Random-Number Seed</aidx><br/> 
+<aidx href="PDFSelection">PDF Selection</aidx><br/> 
+<aidx href="MasterSwitches">Master Switches</aidx><br/> 
+<aidx href="ProcessSelection">Process Selection</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="QCDProcesses">QCD</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="ElectroweakProcesses">Electroweak</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="OniaProcesses">Onia</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="TopProcesses">Top</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="FourthGenerationProcesses">Fourth Generation</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="HiggsProcesses">Higgs</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="SUSYProcesses">SUSY</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="NewGaugeBosonProcesses">New Gauge Bosons</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="LeftRightSymmetryProcesses">Left-Right Symmetry</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="LeptoquarkProcesses">Leptoquark</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="CompositenessProcesses">Compositeness</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="HiddenValleyProcesses">Hidden Valleys</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="ExtraDimensionalProcesses">Extra Dimensions</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="DarkMatterProcesses">Dark Matter</aidx><br/> 
+<aidx href="ASecondHardProcess">A Second Hard Process</aidx><br/> 
+<aidx href="PhaseSpaceCuts">Phase Space Cuts</aidx><br/> 
+<aidx href="CouplingsAndScales">Couplings and Scales</aidx><br/> 
+<aidx href="StandardModelParameters">Standard-Model Parameters</aidx><br/> 
+<aidx href="TotalCrossSections">Total Cross Sections</aidx><br/> 
+<aidx href="ResonanceDecays">Resonance Decays</aidx><br/> 
+<aidx href="SimpleShowers">Simple Showers</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="TimelikeShowers">Timelike Showers</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="SpacelikeShowers">Spacelike Showers</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="WeakShowers">Weak Showers</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="Variations">Automated Variations</aidx><br/> 
+<aidx href="MultipartonInteractions">Multiparton Interactions</aidx><br/> 
+<aidx href="BeamRemnants">Beam Remnants</aidx><br/> 
+<aidx href="ColourReconnection">Colour Reconnection</aidx><br/> 
+<aidx href="Diffraction">Diffraction</aidx><br/> 
+<aidx href="Fragmentation">Fragmentation</aidx><br/> 
+<aidx href="RopeHadronization">Rope Hadronization</aidx><br/> 
+<aidx href="VertexInformation">Vertex Information</aidx><br/> 
+<aidx href="FlavourSelection">Flavour Selection</aidx><br/> 
+<aidx href="ParticleDecays">Particle Decays</aidx><br/> 
+<aidx href="RHadrons">R-hadrons</aidx><br/> 
+<aidx href="BoseEinsteinEffects">Bose-Einstein Effects</aidx><br/> 
+<aidx href="DeuteronProduction">Deuteron Production</aidx><br/> 
+<aidx href="Photoproduction">Photoproduction</aidx><br/> 
+<aidx href="HeavyIons">Heavy Ion Collisions</aidx><br/> 
+<aidx href="HadronScattering">Hadron Scattering</aidx><br/> 
+<aidx href="ParticleData">Particle Data</aidx><br/> 
+<aidx href="ErrorChecks">Error Checks</aidx><br/> 
+<aidx href="Tunes">Tunes</aidx><br/> 
+</INDEXPHP> 
+ 
+<h4>Study Output</h4> 
+ 
+<INDEXPHP> 
+<aidx href="FourVectors">Four-Vectors</aidx><br/> 
+<aidx href="ParticleProperties">Particle Properties</aidx><br/> 
+<aidx href="EventRecord">Event Record</aidx><br/> 
+<aidx href="EventInformation">Event Information</aidx><br/> 
+<aidx href="EventStatistics">Event Statistics</aidx><br/> 
+<aidx href="EventAnalysis">Event Analysis</aidx><br/> 
+<aidx href="Histograms">Histograms</aidx><br/> 
+<aidx href="AdvancedUsage">Advanced Usage</aidx><br/> 
+</INDEXPHP> 
+ 
+<h4>Link to Other Programs</h4> 
+ 
+<INDEXPHP> 
+<aidx href="LesHouchesAccord">Les Houches Accord</aidx><br/> 
+<aidx href="SUSYLesHouchesAccord">SUSY Les Houches Accord</aidx><br/> 
+<aidx href="HepMCInterface">HepMC Interface</aidx><br/> 
+<aidx href="ProMCFiles">ProMC Files</aidx><br/> 
+<aidx href="SemiInternalProcesses">Semi-Internal Processes</aidx><br/> 
+<aidx href="SemiInternalResonances">Semi-Internal Resonances</aidx><br/> 
+<aidx href="MadGraph5Processes">MadGraph5 Processes</aidx><br/> 
+<aidx href="HelacOniaProcesses">HelacOnia Processes</aidx><br/> 
+<aidx href="AlpgenEventInterface">Alpgen Event Interface</aidx><br/> 
+<aidx href="MatchingAndMerging">Matching and Merging</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="POWHEGMerging">POWHEG Merging</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="aMCatNLOMatching">aMC@NLO Matching</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="CKKWLMerging">CKKW-L Merging</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="JetMatching">Jet Matching</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="UMEPSMerging">UMEPS Merging</aidx><br/> 
+&nbsp;&nbsp;--&nbsp;&nbsp; 
+<aidx href="NLOMerging">NLO Merging</aidx><br/> 
+<aidx href="UserHooks">User Hooks</aidx><br/> 
+<aidx href="HadronLevelStandalone">Hadron-Level Standalone</aidx><br/> 
+<aidx href="ExternalDecays">External Decays</aidx><br/> 
+<aidx href="BeamShape">Beam Shape</aidx><br/> 
+<aidx href="PartonDistributions">Parton Distributions</aidx><br/> 
+<aidx href="JetFinders">Jet Finders</aidx><br/> 
+<aidx href="RandomNumbers">Random Numbers</aidx><br/> 
+<aidx href="ImplementNewShowers">Implement New Showers</aidx><br/> 
+<aidx href="RIVETusage">RIVET usage</aidx><br/> 
+<aidx href="ROOTusage">ROOT usage</aidx><br/> 
+<aidx href="PythonInterface">A Python Interface</aidx><br/> 
+</INDEXPHP> 
+ 
+<h4>Reference Materiel</h4> 
+ 
+<aidx href="UpdateHistory">Update History</aidx><br/> 
+<aidx href="Bibliography">Bibliography</aidx><br/> 
+<aidx href="Glossary">Glossary</aidx><br/> 
+<aidx href="Version">Version</aidx> 
+ 
+<h4>Separate documents</h4> 
+ 
+<a href="../pdfdoc/pythia8200.pdf" target="page">Introduction</a><br/> 
+<a href="../pdfdoc/worksheet8200.pdf" target="page">Worksheet</a> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

@@ -1,0 +1,116 @@
+<chapter name="HelacOnia Processes"> 
+ 
+<h2>HelacOnia Processes</h2> 
+ 
+HelacOnia <ref>Sha15</ref> is an external package which provides 
+automated calculations for heavy quarkonia production using NRQCD, 
+similar in style to <aloc href="MadGraph5Processes">MadGraph5</aloc> 
+and the extension MadOnia, which is only available for MadGraph4. This 
+can be useful when additional quarkonia processes other than the 
+internal processes provided in <aloc href="OniaProcesses">Onia</aloc> 
+are needed, including matrix elements which are not spin-averaged, as 
+well as the ability to produce <ei>n</ei>-leg matrix elements beyond 
+the leading tree-level diagrams. The HelacOnia code can be downloaded 
+from 
+<br><a href="http://helac-phegas.web.cern.ch/helac-phegas/helac-onia.html" 
+target="page">http://helac-phegas.web.cern.ch/helac-phegas/helac-onia.html</a>, 
+</br>where only version 2 and above is compatible with PYTHIA. 
+ 
+<p/> 
+Within HelacOnia, events can automatically be passed to PYTHIA for 
+additional processing, e.g. showering, MPI, and 
+hadronization. However, in many cases it may be simpler to produce 
+HelacOnia events directly in PYTHIA. The <code>LHAupHelaconia</code> 
+class provided in <code>Pythia8Plugins/LHAHelaconia</code> is designed 
+to provide such utility. Here we will describe how this can be used to 
+wrap the HelacOnia generator as a PYTHIA Les Houches interface. 
+ 
+<p/> 
+Of course, HelacOnia can also output files of parton-level events 
+according to the <aloc href="LesHouchesAccord">LHEF</aloc> standard, 
+that can be read in and processed further by PYTHIA 8. This is the 
+most commonly used approach, and requires no further description here. 
+ 
+<h3>HelacOnia executable inside PYTHIA</h3> 
+ 
+The <code>Pythia::setLHAupPtr(LHAup* lhaUpPtr)</code> method allows 
+a Pythia generator to accept a pointer to an object derived from the 
+<code><aloc href="LesHouchesAccord">LHAup</aloc></code> base class. 
+Such an object will be initialized from within Pythia, and be called 
+repeatedly to generate the next parton-level event, using the LHA 
+specification as a standard to transfer the relevant information back 
+to Pythia. Properly constructed, the operation of an <code>LHAup</code> 
+object thus is almost completely hidden from the user, and generates 
+events almost like an ordinary internal Pythia process. 
+ 
+<p/> 
+The <code>LHAupHelaconia</code> is precisely such a class, derived from 
+<code>LHAup</code>, that contains the code needed to wrap a 
+HelacOnia executable. Thereby the generation of HelacOnia 
+processes from within Pythia becomes straightforward. An explicit 
+example is provided in <code>main35.cc</code>. We describe some of the 
+key elements used there and in the general case. 
+ 
+<method name="LHAupHelaconia::LHAupHelaconia(Pythia* pythia, string 
+dir = &quot;helaconiarun&quot;, string exe = &quot;ho_cluster&quot;)"> 
+creates an instance of the <code>LHAupHelaconia</code> class. 
+<argument name="pythia"> pointer to the <code>Pythia</code> instance, 
+such that some of its facilities can be used inside the interface. 
+</argument> 
+<argument name="dir" default="helaconiarun"> the name of the run 
+directory, into which HelacOnia puts its (intermediate) results. 
+</argument> 
+<argument name="exe" default="ho_cluster"> the name of the HelacOnia 
+executable that <code>LHAupHelaconia</code> is meant to wrap. In addition 
+it may be necessary to prepend the full pathname of the executable: 
+<code>"(something)/HELAC-Onia-2.0.1/cluster/bin/ho_cluster"</code>. 
+</argument> 
+</method> 
+ 
+<method name="bool LHAupHelaconia::readString(string line)"> 
+allows the user to send commands to HelacOnia. 
+<argument name="line"> the command to be sent to HelacOnia. For 
+example, the following will produce <ei>J/psi</ei> events events from 13 TeV 
+proton proton collisions: <br/><code>readString("generate u u~ > 
+cc~(3S11) g");</code> <br/> A special case is the generation of 
+colour-octet states. In PYTHIA these are evolved to colour-singlet 
+states through the emission of a soft gluon with the mass splitting 
+set by <code>Onia:massSplit</code>. To ensure the colour-octet states 
+in HelacOnia are produced with the correct masses needed for this 
+splitting, the specific colour-octet state for the process must be 
+set. For example: 
+<br/><code>readString("generate u u~ > cc~(3S18) g");</code> 
+<br/>requires that the colour-singlet state into which the 
+colour-octet state should decay be set. This could be set via: 
+<br/><code>readString("set state = 443");</code> 
+<br/>for the case where a final state <ei>J/psi</ei> is 
+requested. Note that this is not a command passed to HelacOnia, but 
+rather a command which PYTHIA uses to set the heavy quark mass in 
+HelacOnia and then translate the HelacOnia output to the correct 
+colour-singlet state. 
+</argument> 
+</method> 
+ 
+<method name="void LHAupHelaconia::setEvents(int events)"> 
+the number of events to generate per HelacOnia run. Normally does not 
+need to be set, but defaults to 10000. 
+</method> 
+ 
+<method name="void LHAupHelaconia::setSeed(int seed, int runs = 30081)"> 
+the random seed (sequence), normally not needed to be set explicitly. 
+If the random seed is negative (default of -1), then the HelacOnia 
+seed is taken as the Pythia parameter <code>"Random:seed"</code>, which 
+must be greater than 0. If the maximum number of allowed runs is exceeded 
+(default of 30081) an error is thrown. The seed for a HelacOnia run is set as: 
+<br/> (random seed - 1) * (maximum runs) + (number of runs) + 1. 
+<br/>HelacOnia can only handle random seeds up to 30081 * 30081. So, with 
+this strategy, one can generate Pythia jobs with seeds from 1 to 30081, 
+with each job running HelacOnia less than 30081 times, and ensure a fully 
+statistically independent sample. If more than 30081 jobs are needed, then 
+the maximum allowed runs can be lowered accordingly, and if need be, 
+setEvents can be used to increase the number of events generated per run. 
+</method> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

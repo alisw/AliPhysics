@@ -1,0 +1,32 @@
+<chapter name="Random-Number Seed"> 
+ 
+<h2>Random-Number Seed</h2> 
+ 
+The seed of the random number generator can be set as follows: 
+ 
+<flag name="Random:setSeed" default="off"> 
+Indicates whether a user-set seed should be used every time the 
+<code>Pythia::init</code> routine is called. If off, the random number 
+generator is initialized with its default seed at the beginning 
+of the run, and never again. If on, each new <code>Pythia::init</code> 
+call (should several be made in the same run) results in the random 
+number being re-initialized, thereby possibly starting over with the 
+same sequence, if you do not watch out. 
+</flag> 
+ 
+<modeopen name="Random:seed" default="-1" max="900000000"> 
+The seed to be used, if <code>setSeed</code> is on.<br/> 
+A negative value gives the default seed,<br/> 
+a value 0 gives a random seed based on the time, and<br/> 
+a value between 1 and 900,000,000 a unique different random number 
+sequence. 
+</modeopen> 
+ 
+<p/> 
+For more on random numbers see <aloc href="RandomNumbers">here</aloc>. 
+This includes methods to save and restore the state of the generator, 
+and some preprogrammed methods to generate non-uniform random numbers. 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

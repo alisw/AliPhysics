@@ -1,0 +1,412 @@
+<chapter name="The Event Record"> 
+ 
+<h2>The Event Record</h2> 
+ 
+A <code>Pythia</code> instance contains two members of the 
+<code>Event</code> class. The one called <code>process</code> provides 
+a brief summary of the main steps of the hard process, while the 
+one called <code>event</code> contains the full history. The 
+user would normally interact mainly with the second one, so 
+we will exemplify primarily with that one. 
+ 
+<p/> 
+The <code>Event</code> class to first approximation is a vector of 
+<code>Particle</code>s, so that it can expand to fit the current 
+event size. The index operator is overloaded, so that e.g. 
+<code>event[i]</code> corresponds to the <ei>i</ei>'th particle 
+of the object <code>event</code>. Thus <code>event[i].id()</code> 
+returns the identity of the <ei>i</ei>'th particle, and so on. 
+Therefore the methods of the 
+<code><aloc href="ParticleProperties">Particle</aloc></code> class 
+are at least as essential as those of the <code>Event</code> class 
+itself. 
+ 
+<p/> 
+As used inside PYTHIA, some conventions are imposed on the structure 
+of the event record. Entry 0 of the <code>vector&lt;Particle&gt;</code> 
+is used to represent the event as a whole, with its total four-momentum 
+and invariant mass, but does not form part of the event history. 
+Lines 1 and 2 contains the two incoming beams, and only from here on 
+history tracing works as could be expected. That way unassigned mother 
+and daughter indices can be put 0 without ambiguity. Depending on the 
+task at hand, a loop may therefore start at index 1 rather than 0 
+without any loss. Specifically, for translation to other event record 
+formats such as HepMC <ref>Dob01</ref>, where the first index is 1, the 
+Pythia entry 0 definitely ought to be skipped in order to minimize the 
+danger of indexing errors. 
+ 
+<p/> 
+In the following we will list the methods available. 
+Only a few of them have a function to fill in normal user code. 
+ 
+<h3>Basic output methods</h3> 
+ 
+Some methods are available to read out information on the 
+current event record: 
+ 
+<method name="Particle& Event::operator[](int i)"> 
+</method> 
+<methodmore name="const Particle& Event::operator[](int i)"> 
+returns a (<code>const</code>) reference to the <ei>i</ei>'th particle 
+in the event record, which can be used to get (or set) all the 
+<aloc href="ParticleProperties">properties</aloc> of this particle. 
+</methodmore> 
+ 
+<method name="Particle& Event::front()"> 
+</method> 
+<methodmore name="Particle& Event::at(int i)"> 
+</methodmore> 
+<methodmore name="Particle& Event::back()"> 
+</methodmore> 
+returns a reference to the zeroth, <ei>i</ei>'th or last particle 
+in the event record, as an alternative to the methods above. 
+ 
+<method name="int Event::size()"> 
+The event size, i.e. the size of the <code>vector&lt;Particle&gt;</code>. 
+Thus valid particles, to be accessed by the above indexing operator, 
+are stored in the range <ei>0 &lt;= i &lt; size()</ei>. See comment 
+above about the (ir)relevance of entry 0. 
+</method> 
+ 
+<method name="void Event::list(bool showScaleAndVertex = false, 
+bool showMothersAndDaughters = false, int precision = 3)"> 
+Provide a listing of the whole event, i.e. of the 
+<code>vector&lt;Particle&gt;</code>. The basic identity 
+code, status, mother, daughter, colour, four-momentum and mass data 
+are always given, but the methods can also be called with a few 
+optional arguments for further information: 
+<argument name="showScaleAndVertex" default="off"> optionally give a 
+second line for each particle, with the production scale (in GeV), 
+the particle polarization (dimensionless), the production vertex 
+(in mm or mm/c) and the invariant lifetime (also in mm/c). 
+</argument> 
+<argument name="showMothersAndDaughters" default="off"> 
+gives a list of all daughters and mothers of a particle, as defined by 
+the <code>motherList(i)</code> and <code>daughterList(i)</code> methods 
+described below. It is mainly intended for debug purposes. 
+</argument> 
+<argument name="precision" default="3"> the number of digits to the right 
+of the decimal point shown for momenta, energies andf masses. Can be set 
+above 3, but reducing it below 3 will have no effect. This option is 
+intended for expert users, e.g. for debugging purposes, and so no effort 
+has been made to stretch header and footer to match. 
+</argument> 
+</method> 
+ 
+<h3>Further output methods</h3> 
+ 
+Many event properties are accessible via the <code>Info</code> class, 
+<aloc href="EventInformation">see here</aloc>. Since they are used 
+directly in the event generation, a few are stored directly in the 
+<code>Event</code> class, however. 
+ 
+<method name="void Event::scale( double scaleIn)"> 
+</method> 
+<methodmore name="double Event::scale()"> 
+set or get the scale (in GeV) of the hardest process in the event. 
+Matches the function of the <code>scale</code> variable in the 
+<aloc href="LesHouchesAccord">Les Houches Accord</aloc>. 
+</methodmore> 
+ 
+<method name="void Event::scaleSecond( double scaleSecondIn)"> 
+</method> 
+<methodmore name="double Event::scaleSecond()"> 
+set or get the scale (in GeV) of a second hard process in the event, 
+in those cases where such a one 
+<aloc href="SecondHardProcess">has been requested</aloc>. 
+</methodmore> 
+ 
+<p/> 
+One data member in an <code>Event</code> object is used to keep track 
+of the largest <code>col()</code> or <code>acol()</code> colour tag set 
+so far, so that new ones do not clash. 
+ 
+<modeopen name="Event:startColTag" default="100" min="0" max="1000"> 
+This sets the initial colour tag value used, so that the first one 
+assigned is <code>startColTag + 1</code>, etc. The Les Houches accord 
+<ref>Boo01</ref> suggests this number to be 500, but 100 works equally 
+well. 
+</modeopen> 
+ 
+<method name="void Event::initColTag(int colTag = 0)"> 
+forces the current colour tag value to be the larger of the input 
+<code>colTag</code> and the above <code>Event:startColTag</code> 
+values. 
+</method> 
+ 
+<method name="int Event::lastColTag()"> 
+returns the current maximum colour tag. 
+</method> 
+ 
+<method name="int Event::nextColTag()"> 
+increases the current maximum colour tag by one and returns this 
+new value. This method is used whenever a new colour tag is needed. 
+</method> 
+ 
+<h3>Constructors and modifications of the event record</h3> 
+ 
+Although you would not normally need to create your own 
+<code>Event</code> instance, there may be times where that 
+could be convenient. The typical example would be if you want to 
+create a new event record that is the sum of a few different ones, 
+e.g. if you want to simulate pileup events. There may also be cases 
+where you want to add one or a few particles to an existing event 
+record. 
+ 
+<method name="Event::Event(int capacity = 100)"> 
+creates an empty event record, but with a reserved size 
+<ei>capacity</ei> for the <code>Particle</code> vector. 
+</method> 
+ 
+<method name="Event& Event::operator=(const Event& oldEvent)"> 
+copies the input event record. 
+</method> 
+ 
+<method name="Event& Event::operator+=(const Event& addEvent)"> 
+appends an event to an existing one. For the appended particles 
+mother, daughter and colour tags are shifted to make a consistent 
+record. The zeroth particle of the appended event is not copied, 
+but the zeroth particle of the combined event is updated to the 
+full energy-momentum content. 
+</method> 
+ 
+<method name="void Event::init(string headerIn = &quot;&quot;, 
+ParticleData* particleDataPtrIn = 0, int startColTagIn = 100)"> 
+initializes colour, the pointer to the particle database, and the 
+header specification used for the event listing. We remind that a 
+<code>Pythia</code> object contains two event records 
+<code>process</code> and <code>event</code>. Thus one may e.g. 
+call either  <code>pythia.process.list()</code> or 
+<code>pythia.event.list()</code>. To distinguish those two rapidly 
+at visual inspection, the <code>"Pythia Event Listing"</code> header 
+is printed out differently, in one case adding 
+<code>"(hard process)"</code> and in the other 
+<code>"(complete event)"</code>. When <code>+=</code> is used to 
+append an event, the modified event is printed with 
+<code>"(combination of several events)"</code> as a reminder. 
+</method> 
+ 
+<method name="void Event::clear()"> 
+empties event record. Specifically the <code>Particle</code> vector 
+size is reset to zero. 
+</method> 
+ 
+<method name="void Event::free()"> 
+empties event record, like <code>clear()</code> above, but also frees 
+up the memory of the <code>Particle</code> vector. 
+</method> 
+ 
+<method name="void Event::reset()"> 
+empties the event record, as <code>clear()</code> above, but then 
+fills the zero entry of the <code>Particle</code> vector with the 
+pseudoparticle used to represent the event as a whole. At this point 
+the pseudoparticle is not assigned any momentum or mass. 
+</method> 
+ 
+<method name="void Event::popBack(int n = 1)"> 
+removes the last <ei>n</ei> particle entries; must be a positive 
+number. History (and other) information of remaning entries is 
+untouched, and so may be internally inconsistent. 
+</method> 
+ 
+<method name="void Event::remove(int iFirst, int iLast, 
+bool shiftHistory = true)"> 
+removes particles in the range between indices <code>iFirst</code> 
+and <code>iLast</code>, including the endpoints. By default all mother 
+and daughter indices above the removed range are shifted down by the 
+number of removed entries, while indices in the removed range are put 
+zero. Optionally these shifts can be omitted. Other information remains 
+unchanged, which may lead to inconsistencies. If the decay products of 
+a particle are removed, e.g., the mother particle status should be set 
+positive, cf. <code>Particle::undoDecay()</code>. 
+</method> 
+ 
+<method name="int Event::append(Particle entryIn)"> 
+appends a particle to the bottom of the event record and 
+returns the index of this position. 
+</method> 
+ 
+<method name="int Event::append(int id, int status, int mother1, 
+int mother2, int daughter1, int daughter2, int col, int acol, 
+double px, double py, double pz,  double e, double m = 0., 
+double scale = 0., double pol = 9.)"> 
+appends a particle to the bottom of the event record and 
+returns the index of this position; 
+<aloc href="ParticleProperties">see here</aloc> for the meaning 
+of the various particle properties. 
+</method> 
+ 
+<method name="int Event::append(int id, int status, int mother1, 
+int mother2, int daughter1, int daughter2, int col, int acol, 
+Vec4 p, double m = 0., double scale = 0., double pol = 9.)"> 
+appends a particle to the bottom of the event record and 
+returns the index of this position, as above but with four-momentum 
+as a <code>Vec4</code>. 
+</method> 
+ 
+<method name="int Event::append(int id, int status, int col, int acol, 
+double px, double py, double pz, double e, double m = 0., 
+double scale = 0., double pol = 9.)"> 
+</method> 
+<methodmore name="int Event::append(int id, int status, int col, 
+int acol, Vec4 p, double m = 0., double scale = 0., double pol = 9.)"> 
+appends a particle to the bottom of the event record and 
+returns the index of this position, as above but with vanishing 
+(i.e. zero) mother and daughter indices. 
+</methodmore> 
+ 
+<method name="int Event::setEvtPtr(int iSet = -1)"> 
+send in the <code>this</code> pointer of the current <code>Event</code> 
+itself to the particle <code>iSet</code>, by default the most recently 
+appended particle. Also generates a pointer to the 
+<code>ParticleDataEntry</code> object of the identity code of the particle. 
+</method> 
+ 
+<method name="int Event::copy(int iCopy, int newStatus = 0)"> 
+copies the existing particle in entry <code>iCopy</code> to the 
+bottom of the event record and returns the index of this position. 
+By default, i.e. with <code>newStatus = 0</code>, everything is 
+copied precisely as it is, which means that history information 
+has to be modified further by hand to make sense. With a positive 
+<code>newStatus</code>, the new copy is set up to be the daughter of 
+the old, with status code <code>newStatus</code>, while the status 
+code of <code>iCopy</code> is negated. With a negative 
+<code>newStatus</code>, the new copy is instead set up to be the 
+mother of <code>iCopy</code>. An attempt to copy an out-of-range 
+entry will return -1. 
+</method> 
+ 
+<method name="void Event::restorePtrs()"> 
+each particle in the event record has a pointer to the event itself 
+and another to the particle species it belongs to. The latter pointer 
+is automatically set/changed whenever the particle identity is 
+set/changed by one of the normal methods. Of course the pointer values 
+are specific to the memory locations of the current run, and so it has 
+no sense to save them if events are written to file. Should you use some 
+persistency scheme that bypasses the normal methods when the event is 
+read back in, you can use <code>restorePtrs()</code> afterwards to set 
+these pointers appropriately. 
+</method> 
+ 
+<method name="int Event::nFinal(bool chargedOnly = false)"> 
+return the number of final-state particles in the current event record, 
+optionally counting charged particles only. 
+</method> 
+ 
+<method name="double Event::dyAbs(int i1, int i2)"> 
+</method> 
+<methodmore name="double Event::detaAbs(int i1, int i2)"> 
+</methodmore> 
+<methodmore name="double Event::dphiAbs(int i1, int i2)"> 
+</methodmore> 
+<methodmore name="double Event::RRapPhi(int i1, int i2)"> 
+</methodmore> 
+<methodmore name="double Event::REtaPhi(int i1, int i2)"> 
+return the separation between two particles in the event record, 
+in true rapidity, in pseudorapidity, in phi angle, and in the <ei>R</ei> 
+combination of true or pseudorapidity with phi, when required with 
+absolute sign so as to avoid negative numbers. 
+</methodmore> 
+ 
+<p/> 
+A few methods exist to rotate and boost events. These derive from the 
+<aloc href="FourVectors">Vec4</aloc> methods, and affect both the 
+momentum and the vertex (position) components of all particles. 
+ 
+<method name="void Event::rot(double theta, double phi)"> 
+rotate all particles in the event by this polar and azimuthal angle 
+(expressed in radians). 
+</method> 
+ 
+<method name="void Event::bst(double betaX, double betaY, double betaZ)"> 
+</method> 
+<methodmore name="void Event::bst(double betaX, double betaY, 
+double betaZ, double gamma)"> 
+</methodmore> 
+<methodmore name="void Event::bst(const Vec4& vec)"> 
+boost all particles in the event by this three-vector. 
+Optionally you may provide the <ei>gamma</ei> value as a fourth argument, 
+which may help avoid roundoff errors for big boosts. You may alternatively 
+supply a <code>Vec4</code> four-vector, in which case the boost vector 
+becomes <ei>beta = p/E</ei>. 
+</methodmore> 
+ 
+<method name="void Event::rotbst(const RotBstMatrix& M, 
+bool boostVertices = true)"> 
+rotate and boost by the combined action encoded in the 
+<code><aloc href="FourVectors">RotBstMatrix</aloc> M</code>. 
+If the optional second argument is false only the four-momenta are 
+boosted, and not the production vertices. 
+</method> 
+ 
+<h3>The Junction Class</h3> 
+ 
+The event record also contains a vector of junctions, which often 
+is empty or else contains only a very few per event. Methods are 
+available to add further junctions or query the current junction list. 
+This is only for the expert user, however, and is not discussed 
+further here, but only the main points. 
+ 
+<p/> 
+A junction stores the properties associated with a baryon number that 
+is fully resolved, i.e. where three different colour indices are 
+involved. There are two main applications, 
+<ol> 
+<li>baryon beams, where at least two valence quarks are kicked out, 
+and so the motion of the baryon number is nontrivial;</li> 
+<li>baryon-number violating processes, e.g. in SUSY with broken 
+<ei>R</ei>-parity.</li> 
+</ol> 
+Information on junctions is set, partly in the process generation, 
+partly in the beam remnants machinery, and used by the fragmentation 
+routines, but the normal user does not have to know the details. 
+ 
+<p/> 
+For each junction, information is stored on the kind of junction, and 
+on the three (anti)colour indices that are involved in the junction. 
+The possibilities foreseen are: 
+<ul> 
+<li><code>kind = 1</code> : incoming colourless particle to three 
+outgoing colours (e.g. baryon beam remnant or 
+<ei>neutralino &rarr; q q q</ei>);</li> 
+<li><code>kind = 2</code> : incoming colourless particle to three 
+outgoing anticolours;</li> 
+<li><code>kind = 3</code> : one incoming anticolour (stored first) 
+and two outgoing  colours (e.g. antisquark decaying to two quarks, or 
+  gluino decay to three quarks);</li> 
+<li><code>kind = 4</code> : one incoming colour (stored first) and two 
+outgoing anticolours (e.g. squark decaying to two antiquarks, or 
+  gluino decaying to three antiquarks);</li> 
+<li><code>kind = 5</code> : two incoming anticolours (stored first) 
+and one outgoing colour (e.g. resonant squark production through RPV);</li> 
+<li><code>kind = 6</code> : two incoming colours (stored first) 
+and one outgoing anticolour (e.g. resonant antisquark production 
+  through RPV); 
+</li> 
+</ul> 
+The odd (even) <code>kind</code> codes corresponds to a +1 (-1) change in 
+baryon number across the junction. 
+ 
+<p/> 
+The kind and colour information in the list of junctions can be set 
+or read with methods of the <code>Event</code> class, but are not of 
+common interest and so not described here. 
+ 
+<p/> 
+A listing of current junctions can be obtained with the 
+<code>listJunctions()</code> method. 
+ 
+<h3>Subsystems</h3> 
+ 
+Separate from the event record as such, but closely tied to it is the 
+<code><aloc href="AdvancedUsage">PartonSystems</aloc></code> class, 
+which mainly stores the parton indices of incoming and outgoing partons, 
+classified by collision subsystem. Such information is needed to 
+interleave multiparton interactions, initial-state showers and final-state 
+showers, and append beam remnants. It could also be used in other places. 
+It is intended to be accessed only by experts, such as implementors of 
+<aloc href="ImplementNewShowers">new showering models</aloc>. 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

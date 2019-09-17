@@ -1,0 +1,150 @@
+<chapter name="R-hadrons"> 
+ 
+<h2>R-hadrons</h2> 
+ 
+When a coloured SUSY particle is longer-lived than typical 
+hadronization scales, i.e. around c*tau &gt; 1 fm, or equivalently 
+width Gamma &lt; 0.2 GeV, it will have time to hadronize into a colour 
+singlet hadronic state, a R-hadron. Currently a set of such 
+R-hadrons have been implemented for the case of a long-lived 
+gluino, stop or sbottom. Needless to say, the normal case would be 
+that only one of them will be long-lived enough to form R-hadrons. 
+ 
+<p/> 
+For simplicity all gluino-mesons are assumed to have light-flavour 
+spin 1, since those are the lightest and favoured by spin-state 
+counting. Further, all gluino-baryons are bookkept as having 
+light-flavour spin 3/2, and flavours are listed in descending order. 
+This is more for convenience of notation, however, since the normal 
+baryon octet e.g. has no uuu = "p++" state. When a diquark is 
+extracted, a mixture of spin 0 and spin 1 is allowed. Names and codes 
+are essentially in agreement with the PDG conventions, e.g. 
+<br/>1000993 <code>R0(~g g)</code> (or gluinoball) 
+<br/>1009213 <code>R+(~g u dbar)</code> (or gluino-rho+) 
+<br/>1092214 <code>R+(~g uud)</code> (or gluino-Delta+) 
+<br/>For internal bookkeeping of momenta, the code 1009002, 
+<code>Rtemp(~g q)</code>, is used to denote the intermediate 
+state formed when only one of the two string pieces attached to 
+the gluino has broken. 
+ 
+<p/> 
+For the stop- and sbottom-hadrons the spin counting is simpler, 
+since it is entirely given by the constituent quark or diquark spin. 
+Again names and codes follow PDG conventions, e.g. 
+<br/>1000612 <code>R+(~t dbar)</code> 
+<br/>1006211 <code>R+(~t ud0)</code> 
+ 
+<p/> 
+The spin and electromagnetic charge of the new particle plays only 
+a minor role in the hadronization process, that can be neglected 
+to first approximation. Therefore it is possible to use the same 
+R-hadrons framework instead for other BSM scenarios with long-lived 
+coloured particles, e.g. with massive extra-dimensions copies 
+of gluons and quarks, or with leptoquarks. This can be regulated by 
+the switches below. Note that the codes and names of the R-hadrons 
+is not changed when the heavy particle involved is switched, for 
+reasons of administrative simplicity. R-hadron mass spectra and 
+other relevant particle data is automatically updated to reflect 
+the change, however. 
+ 
+<flag name="RHadrons:allow" default="off"> 
+Allows the gluino, stop and sbottom to hadronize if their respective 
+widths are below the limit <code>RHadrons:maxWidth</code>. 
+</flag> 
+ 
+<parm name="RHadrons:maxWidth" default="0.2" min="0.0" max="1.0"> 
+The maximum width of the gluino for which it is possible to form 
+R-hadrons, provided that <code>RHadrons:allow</code> is on. 
+</parm> 
+ 
+<mode name="RHadrons:idGluino" default="1000021"> 
+The gluino identity code. For other scenarios than SUSY this code 
+could be changed to represent another long-lived uncharged colour 
+octet particle, that then would be treated in the same spirit. 
+Could be set to 0 to forbid any gluino R-hadron formation even when 
+the above two criteria, <code>RHadrons:allow</code> 
+and <code>RHadrons:maxWidth</code>, are met. 
+</mode> 
+ 
+<mode name="RHadrons:idStop" default="1000006"> 
+The lightest stop identity code. For other scenarios than SUSY this 
+code could be changed to represent another long-lived charge 2/3 
+colour triplet particle, that then would be treated in the same 
+spirit. As above it could be set to 0 to forbid any stop R-hadron 
+formation. 
+</mode> 
+ 
+<mode name="RHadrons:idSbottom" default="1000005"> 
+The lightest sbottom identity code. For other scenarios than SUSY this 
+code could be changed to represent another long-lived charge -1/3 
+colour triplet particle, that then would be treated in the same 
+spirit. As above it could be set to 0 to forbid any sbottom R-hadron 
+formation. 
+</mode> 
+ 
+<flag name="RHadrons:allowDecay" default="on"> 
+Allows the R-hadrons to decay or not. If the gluino/stop/sbottom is 
+stable or too long-lived to decay inside the detector this switch 
+has no real function, since then no decays will be performed anyway. 
+If the sparticle is so short-lived that it decays before reaching 
+the beam pipe then having the decay on is the logical choice. 
+So the interesting region is when the decays happens after the 
+R-hadron has passed through part of the detector, and changed its 
+momentum and quite possibly its flavour content before it is to 
+decay. Then normal decays should be switched off, and the R-hadron 
+tracked through matter by a program like GEANT 
+<ref>Kra04,Mac07</ref>. After that, the new R-hadron info can be 
+overwritten into the event record and the 
+<code>Pythia::forceRHadronDecay()</code> method can be called 
+to force this modified R-hadron to decay. 
+</flag> 
+ 
+<flag name="RHadrons:setMasses" default="on"> 
+Use simple mass formulae to construct all available R-hadron masses 
+based on the currently initialized gluino/squark masses and the 
+constituent masses of the other partons in the hadron. If you switch 
+this off, it is your responsibility to set each of the R-hadron masses 
+on your own, and set them in an internally consistent way. If you 
+mess up on this you may generate accordingly crazy results. 
+Specifically, it is to be assumed that none of the R-hadrons has a 
+mass below its constituent sparticle, i.e. that the light degrees 
+of freedom and the additional confinement gluon field gives a net 
+positive contribution to the R-hadron mass. 
+</flag> 
+ 
+<parm name="RHadrons:probGluinoball" default="0.1" min="0.0" max="1.0"> 
+The fraction of produced gluino R-hadrons that are contain a "valence" 
+gluon, with the rest containing a meson or baryon quark flavour content. 
+</parm> 
+ 
+<parm name="RHadrons:mOffsetCloud" default="0.2" min="0.0"> 
+Extra mass (in GeV) added to each of the one or two extra constituent 
+masses in an R-hadron, to calculate the mass of a R-hadron. The same 
+offset is also used when the R-hadron momentum and mass is split 
+between the squark or gluino and the one or two light (di)quarks, 
+one for a squark and two for a gluino. Thus once or twice this amount 
+represents a part of the nominal squark or gluino mass that will not 
+decay weakly, since it is taken to correspond to the cloud of gluons 
+that surround the squark or gluino. 
+</parm> 
+ 
+<parm name="RHadrons:mCollapse" default="1.0" min="0.0"> 
+A colour singlet system with an invariant mass less than this amount, 
+above the R-hadron mass with the given flavour content, is assumed to 
+collapse to this single R-hadron, whereas a full fragmentation handling 
+is applied above this mass. 
+</parm> 
+ 
+<parm name="RHadrons:diquarkSpin1" default="0.5" min="0.0" max="1.0"> 
+Probability that a diquark extracted from the flavour code of a gluino 
+R-hadron should be assigned spin 1, with the rest being spin 0. Does 
+not apply for two identical quarks, where spin 1 is only possibility. 
+Note that gluino R-hadron codes for simplicity are assigned as if spin 
+is 1 always, and so give no guidance. For stop and sbottom the diquark 
+spin is preserved in the particle code, so there is no corresponding 
+issue. 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

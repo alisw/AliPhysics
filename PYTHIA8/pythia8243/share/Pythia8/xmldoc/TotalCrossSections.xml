@@ -1,0 +1,742 @@
+<chapter name="Total Cross Sections"> 
+ 
+<h2>Total Cross Sections</h2> 
+ 
+The <code>SigmaTotal</code> class returns the total, elastic, diffractive 
+and nondiffractive cross sections in hadronic collisions. By implication 
+it also has to provide differential elastic and diffractive cross sections, 
+since many models start out from the differential expressions and then 
+integrate to obtain more inclusive rates. In principle it would have been 
+possible to decouple the overall normalization from the differential shape, 
+however. 
+ 
+<p/> 
+The current page describes the options available for integrated and 
+differential cross sections alike. The number of options is especially 
+large for diffraction, reflecting the lack of a well-understood theory. 
+Conversely, the wide spectrum of options should allow for detailed 
+comparisons that eventually will improve our understanding. The 
+<aloc href="Diffraction">Diffraction</aloc> page contains those further 
+parameters needed to describe the hadronization of a diffractive system, 
+or at least those that set diffraction apart from the nondiffractive 
+topologies. There are borderline cases, that could have been described 
+in either place, such as the ones related to the pomeron-proton cross 
+section, which mainly are relevant for the description of MPIs in 
+diffractive systems, and therefore have been put on the Diffraction page. 
+That page also contains the "hard diffraction" framework, i.e. the 
+modelling of diffractive events that contain a hard process. 
+ 
+<p/> 
+Several different parametrization options are available for <ei>p p</ei> 
+and  <ei>pbar p</ei> collisions, of special interest for hadron colliders, 
+while the selection for other processes is considerably more limited. 
+As a simple generalization, a neutron is assumed to have the same hadronic 
+cross section as a proton. 
+ 
+<p/> 
+Historically most of the parametrizations used are from 
+<ref>Sch94, Sch97</ref> which borrows some of the total cross 
+sections from <ref>Don92</ref>. A few parameters allow some possibility 
+to vary the basic setup. The allowed combinations of incoming particles 
+are <ei>p + p</ei>, <ei>pbar + p</ei>, <ei>pi+ + p</ei>, <ei>pi- + p</ei>, 
+<ei>pi0/rho0 + p</ei>, <ei>phi + p</ei>, <ei>J/psi + p</ei>, 
+<ei>rho + rho</ei>, <ei>rho + phi</ei>, <ei>rho + J/psi</ei>, 
+<ei>phi + phi</ei>, <ei>phi + J/psi</ei>, <ei>J/psi + J/psi</ei>, 
+<ei>Pomeron + p</ei>, <ei>gamma + gamma</ei> and <ei>gamma + p</ei>. 
+The strong emphasis on vector mesons is related to the description 
+of <ei>gamma + p</ei> and <ei>gamma + gamma</ei> interactions in a 
+Vector Dominance Model framework (which is not explicitly used in the 
+current implementation of photoproduction, but is retained for potential 
+future applications). 
+ 
+<p/> 
+The other options available for total, elastic and diffractive cross 
+sections are: 
+<ul> 
+<li>A do-it-yourself selection of the main parameters.</li> 
+<li>The MBR (Minimum Bias Rockefeller) model <ref>Cie12</ref>, which 
+is mainly intended for diffractive physics, but also parametrizes the 
+total and elastic cross sections.</li> 
+<li>The ABMST model <ref>App16</ref>, which is based on a quite 
+sophisticated Pomeron-inspired framework, and addresses total, elastic and 
+single diffractive cross sections. The tuning to single diffractive 
+data has mainly been performed at lower energies, so we also include 
+variants that (hopefully) improves agreement with LHC data, and 
+also introduce simple extensions to double and central diffraction.</li> 
+<li>The RPP 2016 parametrization <ref>Pat16</ref>, which is also 
+Pomeron-inspired. It does not address diffractive cross sections.</li> 
+</ul> 
+ 
+<p/> 
+The elastic cross section is differential in the squared momentum 
+transfer <ei>t</ei>. The single diffractive additionally is differential 
+in the mass of the diffractive system, or in <ei>xi = x_Pom</ei>, where 
+<ei>M^2_diff = xi * s</ei>. For double diffraction the two masses can 
+accordingly be related to <ei>xi_1</ei> and <ei>xi_2</ei> values. 
+For central diffraction <ei>M^2_diff = xi_1 * xi_2 * s</ei>, and 
+additionally the cross section is differential in <ei>t_1</ei> and 
+<ei>t_2</ei>. 
+ 
+<h3>Master switches</h3> 
+ 
+The total and elastic cross sections are intimately connected via the 
+optical theorem. Therefore the two should be calculated within a 
+common setup. The diffractive cross sections are not as easily 
+related, and can therefore be chosen separately, hence the two switches 
+below. This allows different combinations to be tried out. 
+ 
+<modepick name="SigmaTotal:mode" default="1" min="0" max="4"> 
+Choice of parametrization of the total and elastic cross sections. 
+<option value="0">Make your own choices (the "own model"), set as 
+fixed values. 
+</option> 
+<option value="1">The DL model for total cross sections, extended to 
+more processes and to elastic cross sections according to SaS 
+("SaS/DL"). 
+</option> 
+<option value="2">The MBR model for <ei>p p</ei> and <ei>p pbar</ei>, 
+else as option 1. 
+</option> 
+<option value="3">The ABMST parametrizations for <ei>p p</ei> and 
+<ei>p pbar</ei>, else as option 1. 
+</option> 
+<option value="4">The RPP2016 parametrizations for <ei>p p</ei> and 
+<ei>p pbar</ei>, else as option 1. 
+</option> 
+</modepick> 
+ 
+<modepick name="SigmaDiffractive:mode" default="1" min="0" max="3"> 
+Choice of parametrization of diffractive cross sections: single, 
+double and central ditto. Note that there is no option 4. 
+<option value="0">Make your own choices, set as fixed values. 
+</option> 
+<option value="1">The SaS parametrizations, available for a larger 
+set of incoming hadron combinations. 
+</option> 
+<option value="2">The MBR model for <ei>p p</ei> and <ei>p pbar</ei>, 
+else as option 1. 
+</option> 
+<option value="3">The ABMST parametrizations for <ei>p p</ei> and 
+<ei>p pbar</ei>, else as option 1. 
+</option> 
+</modepick> 
+ 
+<p/> 
+Note that the total cross section subtracted by the elastic and various 
+diffractive ones gives the inelastic nondiffractive cross section, 
+which therefore is not set separately. However, since the nondiffractive 
+inelastic cross section is what makes up the minimum-bias event class, 
+and plays a major role in the description of multiparton interactions, 
+it is important that a consistent set is used. 
+ 
+<p/> 
+In the following subsections all the parameters available for the 
+various values of the master switches are described. A final subsection 
+covers the possibility to include Coulomb corrections in elastic scattering, 
+and is relevant for all scenarios. 
+ 
+<h3>Set your own cross sections</h3> 
+ 
+The following four parameters can be set for the 
+<code>SigmaTotal:mode = 0</code> option. The default values 
+are in the right ballpark for LHC physics, but precise numbers 
+depend on the energy used. 
+ 
+<parm name="SigmaTotal:sigmaTot" default="100." min="0."> 
+The assumed total cross section in mb. 
+</parm> 
+ 
+<parm name="SigmaTotal:sigmaEl" default="25." min="0."> 
+The assumed elastic cross section in mb. 
+</parm> 
+ 
+<parm name="SigmaElastic:bSlope" default="18." min="0."> 
+The assumed slope <ei>b</ei> of the strong-interaction term 
+<ei>exp(bt)</ei>, in units of GeV^-2. 
+</parm> 
+ 
+<parm name="SigmaElastic:rho" default="0.13" min="-1." max="1."> 
+The assumed ratio of the real to the imaginary parts of the nuclear 
+scattering amplitude. This value is also used in the SaS/DL option. 
+</parm> 
+ 
+<p/> 
+The following four parameters can be set for the 
+<code>SigmaDiffractive:mode = 0</code> option. Again the default 
+values are in the right ballpark for LHC physics, but with a 
+considerable measure of uncertainty. 
+ 
+<parm name="SigmaTotal:sigmaXB" default="8." min="0."> 
+Single Diffractive cross section <ei>A + B &rarr; X + B</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaTotal:sigmaAX" default="8." min="0."> 
+Single Diffractive cross section <ei>A + B &rarr; A + X</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaTotal:sigmaXX" default="4." min="0."> 
+Double Diffractive cross section <ei>A + B &rarr; X_1 + X_2</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaTotal:sigmaAXB" default="1." min="0."> 
+Central Diffractive cross section <ei>A + B &rarr; A + X + B</ei> in mb. 
+</parm> 
+ 
+<p/> 
+The key parameter to set the differential shape of single diffraction 
+is the <code>SigmaDiffractive:PomFlux</code> switch below. Seven different 
+options are included, that provide the differential shape in diffractive 
+mass and <ei>t</ei> of the scattered proton, based on the assumed Pomeron 
+flux parametrizations. Only the SaS option contains a (published) 
+extension to double diffraction, but the other alternatives have been 
+extended in a minimal manner consistent with Pomeron phenomenology. 
+These basic shapes can be further modified by the other settings below. 
+ 
+<modepick name="SigmaDiffractive:PomFlux" default="1" min="1" max="7"> 
+Parametrization of the Pomeron flux <ei>f_Pom/p( x_Pom, t)</ei>. 
+<option value="1"> Schuler and Sj&ouml;strand <ref>Sch94</ref>: based on a 
+critical Pomeron, giving a mass spectrum roughly like <ei>dm^2/m^2</ei>; 
+a mass-dependent exponential <ei>t</ei> slope that reduces the rate 
+of low-mass states. 
+</option> 
+<option value="2"> Bruni and Ingelman <ref>Bru93</ref>: also a critical 
+Pomeron giving close to <ei>dm^2/m^2</ei>,  with a <ei>t</ei> distribution 
+the sum of two exponentials. 
+</option> 
+<option value="3"> a conventional Pomeron description, in the RapGap 
+manual <ref>Jun95</ref> attributed to Berger et al. and Streng 
+<ref>Ber87a</ref>, but there (and here) with values updated to a 
+supercritical Pomeron with <ei>epsilon &gt; 0</ei> (see below), 
+which gives a stronger peaking towards low-mass diffractive states, 
+and with a mass-dependent (the <ei>alpha'</ei> below) exponential 
+<ei>t</ei> slope. 
+</option> 
+<option value="4"> a conventional Pomeron description, attributed to 
+Donnachie and Landshoff <ref>Don84</ref>, again with supercritical Pomeron, 
+with the same two parameters as option 3 above, but this time with a 
+power-law <ei>t</ei> distribution. 
+</option> 
+<option value="5"> the MBR simulation of (anti)proton-proton interactions 
+<ref>Cie12</ref>. The mass distribution follows a renormalized-Regge-theory 
+model, successfully tested using CDF data. 
+</option> 
+<option value="6"> The H1 Fit A parametrisation of the Pomeron flux 
+<ref>H1P06,H1P06a</ref>. The flux factors are motivated by Regge theory, 
+assuming a Regge trajectory as in options 3 and 4. The flux has been 
+normalised to 1 at <ei>x_Pomeron = 0.003</ei> and slope parameter and 
+Pomeron intercept has been fitted to H1 data. 
+</option> 
+<option value="7"> The H1 Fit B parametrisation of the Pomeron flux 
+<ref>H1P06,H1P06a</ref>. 
+</option> 
+</modepick> 
+ 
+<p/> 
+In options 3, 4, 6, and 7 above, the Pomeron Regge trajectory is 
+parametrized as 
+<eq> 
+alpha(t) = 1 + epsilon + alpha' t 
+</eq> 
+The <ei>epsilon</ei> and <ei>alpha'</ei> parameters can be set 
+separately in options 3 and 4, and additionally <ei>alpha'</ei> 
+is set in option 1, while values are fixed in options 6 and 7: 
+ 
+<parm name="SigmaDiffractive:PomFluxEpsilon" default="0.085" min="0.02" 
+max="0.15"> 
+The Pomeron trajectory intercept <ei>epsilon</ei> above for the 3 and 4 
+flux options. For technical reasons <ei>epsilon &gt; 0</ei> is necessary 
+in the current implementation. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:PomFluxAlphaPrime" default="0.25" min="0.1" 
+max="0.4"> 
+The Pomeron trajectory slope <ei>alpha'</ei> above for the 1, 3 and 4 
+flux options. 
+</parm> 
+ 
+<p/> 
+The options above might give vanishing (or even negative) <ei>b</ei> 
+slope values, and also do not enforce the presence of a rapidity gap. 
+Furthermore the lowest allowed central diffractive mass is not well-defined; 
+it would not be meaningful to go all the way down to the <ei>pi pi</ei> 
+kinematical limit, since exclusive states are not modelled. Therefore 
+the following parameters have been introduced to address such issues. 
+ 
+<parm name="SigmaDiffractive:OwnbMinDD" default="1." min="0.5" max="5."> 
+In the options with a simple <ei>exp(b * t)</ei> falloff for the <ei>t</ei> 
+spectrum, ensure that <ei>b</ei> is at least this large. (Recall that the 
+<ei>b</ei> formula typically contains one term for each incoming hadron 
+that does not break up, and for double diffraction such terms are absent. 
+This leaves only the pomeron propagator part, which often vanishes in 
+the limit of vanishing rapidity gap.) 
+</parm> 
+ 
+<flag name="SigmaDiffractive:OwndampenGap" default="off"> 
+Switch on damping of small rapidity gaps in single, double and central 
+diffraction. The reason for this option is that the separation between 
+diffraction and nondiffraction is blurred for events with small gaps. 
+Therefore a damping factor for small gaps is imposed with this option, 
+of the form 
+<eq> 
+  1 / (1 + exp( -p * (y - y_gap))) = 1 / (1 + exp(p * y_gap) * (exp(-y))^p), 
+</eq> 
+where <ei>y</ei> is the rapidity gap(s) in the current event, and 
+<ei>p</ei> and <ei>y_gap</ei> are two parameters. Thus the damping 
+kicks in for <ei>y &lt; y_gap</ei>, and the transition region from small to 
+large damping is of order <ei>1/p</ei> in <ei>y</ei>. The <ei>exp(-y)</ei> 
+values are <ei>xi</ei> for SD, <ei>xi_1 * xi_2 * s / m_p^2</ei> for DD, 
+and <ei>xi_1</ei> and <ei>xi_2</ei> for CD. The two parameters of the 
+damping are described below. 
+<note>Note:</note> if the integrated diffractive cross sections are kept 
+fixed, switching on this option will increase the rate of diffractive 
+events with large rapidity gaps, so do consistent changes. 
+</flag> 
+ 
+<parm name="SigmaDiffractive:Ownygap" default="2." min="0.1"> 
+Assume a damping of small rapidity gaps, as described above, to set in 
+around the value <ei>y_gap</ei> given by this parameter. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:Ownypow" default="5." min="0.5"> 
+Assume a damping of small rapidity gaps, as described above, to set in 
+over a rapidity region of width <ei>1/p</ei>, with <ei>p</ei> given by 
+this parameter. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:OwnmMinCD" default="1." min="0.5"> 
+The smallest allowed central diffractive mass, with a sharp cut at 
+this value. 
+</parm> 
+ 
+<h3>Modify the SaS/DL cross sections</h3> 
+ 
+The default description of total, elastic and diffractive interactions was 
+parameterized and fit in <ref>Sch94, Sch97</ref>. There is no freedom for 
+total and elastic cross sections, except that the <ei>rho</ei> parameter 
+is not modelled but taken from the <code>SigmaElastic:rho</code> 
+parameter above. 
+ 
+<p/> 
+The following three parameters allow for some modification of the mass 
+distribution of the diffractive system, relative to the default setup. 
+The parametrized cross sections explicitly depend on them, so that 
+integrated diffractive cross section are changed acordingly. 
+ 
+<parm name="SigmaDiffractive:mMin" default="0.28" min="0.0"> 
+Lowest mass of a single or double diffractive system is set to be 
+<ei>mHadron + mMin</ei>. 
+</parm> 
+ 
+<parm name  = "SigmaDiffractive:lowMEnhance" default="2.0" min="0.0"> 
+Normalization factor for the contribution of low-mass resonances 
+to the diffractive cross section (<ei>cRes</ei> in eq. (22) of 
+<ref>Sch94</ref>). 
+</parm> 
+ 
+<parm name="SigmaDiffractive:mResMax" default="1.062" min="0.0"> 
+The contribution of low-mass resonances is dampened at around the 
+scale <ei>mHadron + mResMax</ei> (the sum is <ei>Mres</ei> in eq. (22) 
+of <ref>Sch94</ref>). To make sense, we should have 
+<ei>mResMax > mMin</ei>. 
+</parm> 
+ 
+<p/> 
+Central diffraction (CD) was not part of the framework in <ref>Sch94</ref>. 
+It has now been added for <ei>p p</ei> or <ei>pbar p</ei>, but only for 
+multiparticle states, i.e. excluding the low-mass resonance region below 
+roughly 1 GeV, as well as other exclusive states. It uses the same 
+proton-Pomeron vertex as in single diffraction, twice, to describe 
+<ei>x_Pomeron</ei> and <ei>t</ei> spectra. This fixes the energy 
+dependence, which has been integrated and parametrized. The absolute 
+normalization has been left open, however. Furthermore, since CD has not 
+been included in previous tunes to data, a special flag is available to 
+reproduce the old behaviour (with due complications when one does not want 
+to do this). 
+ 
+<parm name="SigmaDiffractive:mMinCD" default="1." min="0.5"> 
+The smallest allowed central diffractive mass, with a sharp cut at 
+this value. 
+</parm> 
+ 
+<parm name="SigmaTotal:sigmaAXB2TeV" default="1.5" min="0."> 
+The CD cross section for <ei>p p</ei> and <ei>pbar p</ei> collisions, 
+normalized to its value at 2 TeV CM energy, expressed in mb. The energy 
+dependence is then parametrized, and behaves roughly like 
+<ei>ln^1.5(s)</ei>. 
+</parm> 
+ 
+<flag name="SigmaTotal:zeroAXB" default="on"> 
+several existing <aloc href="Tunes">tunes</aloc> do not include CD. 
+An inclusion of a nonvanishing CD cross section directly affects 
+the nondiffractive phenomenology, even if not dramatically, and so 
+this flag is used to forcibly set the CD cross section to vanish 
+in such tunes. You can switch CD back on <i>after</i> the selection of 
+a tune, if you so wish, by resetting <code>SigmaTotal:zeroAXB = off</code>. 
+</flag> 
+ 
+<p/> 
+LHC data have suggested that diffractive cross sections rise slower than 
+predicted in the original studies. A likely reason is that unitarization 
+effects may dampen the rise of diffractive cross sections relative to 
+the default parametrizations. The settings here allows one way to 
+introduce a dampening, which is used in some of the existing 
+<aloc href="Tunes">tunes</aloc>. 
+ 
+<flag name="SigmaDiffractive:dampen" default="on"> 
+Allow a user to dampen diffractive cross sections; on/off = true/false. 
+</flag> 
+ 
+<p/> 
+When <code>SigmaDiffractive:dampen = on</code>, the three diffractive 
+cross sections are damped so that they never can exceed the respective 
+values below. Specifically, if the standard parametrization gives 
+the cross section <ei>sigma_old(s)</ei> and a fixed <ei>sigma_max</ei> 
+is set, the actual cross section becomes 
+<eq> 
+sigma_new(s) = sigma_old(s) * sigma_max / (sigma_old(s) + sigma_max). 
+</eq> 
+This reduces to <ei>sigma_old(s)</ei> at low energies and to 
+<ei>sigma_max</ei> at high ones. Note that the asymptotic value 
+is approached quite slowly, however. 
+ 
+<parm name="SigmaDiffractive:maxXB" default="65." min="0."> 
+The above <ei>sigma_max</ei> for <ei>A + B &rarr; X + B</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:maxAX" default="65." min="0."> 
+The above <ei>sigma_max</ei> for <ei>A + B &rarr; A + X</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:maxXX" default="65." min="0."> 
+The above <ei>sigma_max</ei> for <ei>A + B &rarr; X_1 + X_2</ei> in mb. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:maxAXB" default="3." min="0."> 
+The above <ei>sigma_max</ei> for <ei>A + B &rarr; A + X + B</ei> in mb. 
+</parm> 
+ 
+<p/> 
+As above, a reduced diffractive cross section automatically translates 
+into an increased nondiffractive one, such that the total (and elastic) 
+cross section remains fixed. 
+ 
+<parm name="SigmaDiffractive:SaSepsilon" default="0.0" min="-0.2" max="0.2"> 
+The SaS ansatz starts out from a <ei>dM^2/M^2</ei> shape of diffractive 
+spectra, a shape that then is modified by <ei>t</ei>-spectra integration 
+and small-mass enhancement. For exploratory purposes it is possible to 
+modify the base ansatz to be <ei>dM^2/M^(2 * (1 + epsilon))</ei>. In 
+principle the integrated diffractive cross sections ought to be 
+recalculated accordingly, but for simplicity they are not modified. 
+</parm> 
+ 
+<h3>Modify the MBR cross sections</h3> 
+ 
+The MBR differential cross section also comes with a selection of 
+parameters that can be changed from their default values, to modify 
+diffractive event rates and shapes, while the total and elastic cross 
+sections remain unaffected. These parameters are described in the 
+following. 
+ 
+<parm name="SigmaDiffractive:MBRepsilon" default="0.104" min="0.02" 
+max="0.15"/> 
+<parmmore name="SigmaDiffractive:MBRalpha" default="0.25" min="0.1" max="0.4"> 
+the parameters of the Pomeron trajectory. 
+</parmmore> 
+ 
+<parm name="SigmaDiffractive:MBRbeta0" default="6.566" min="0.0" max="10.0"/> 
+<parmmore name="SigmaDiffractive:MBRsigma0" default="2.82" min="0.0" 
+max="5.0"> 
+the Pomeron-proton coupling, and the total Pomeron-proton cross section. 
+</parmmore> 
+ 
+<parm name="SigmaDiffractive:MBRm2Min" default="1.5" min="0.0" max="3.0"> 
+the lowest value of the mass squared of the dissociated system, including 
+central diffraction. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:MBRdyminSDflux" default="2.3" min="0.0" 
+max="5.0"/> 
+<parmmore name="SigmaDiffractive:MBRdyminDDflux" default="2.3" min="0.0" 
+max="5.0"/> 
+<parmmore name="SigmaDiffractive:MBRdyminCDflux" default="2.3" min="0.0" 
+max="5.0"> 
+the minimum width of the rapidity gap used in the calculation of 
+<ei>Ngap(s)</ei> (flux renormalization). 
+</parmmore> 
+ 
+<parm name="SigmaDiffractive:MBRdyminSD" default="2.0" min="0.0" max="5.0"/> 
+<parmmore name="SigmaDiffractive:MBRdyminDD" default="2.0" min="0.0" 
+max="5.0"/> 
+<parmmore name="SigmaDiffractive:MBRdyminCD" default="2.0" min="0.0" 
+max="5.0"> 
+the minimum width of the rapidity gap used in the calculation of cross 
+sections, i.e. the parameter <ei>dy_S</ei>, which suppresses the cross 
+section at low <ei>dy</ei> (non-diffractive region). The cross section 
+is damped smoothly, such that it is suppressed by a factor of a half 
+at around this scale. 
+</parmmore> 
+ 
+<parm name="SigmaDiffractive:MBRdyminSigSD" default="0.5" min="0.001" 
+max="5.0"/> 
+<parmmore name="SigmaDiffractive:MBRdyminSigDD" default="0.5" min="0.001" 
+max="5.0"/> 
+<parmmore name="SigmaDiffractive:MBRdyminSigCD" default="0.5" min="0.001" 
+max="5.0"> 
+the parameter <ei>sigma_S</ei>, used for the cross section suppression at 
+low <ei>dy</ei> (non-diffractive region). The smaller this value, the more 
+narrow the rapidity region over which the suppression sets in. 
+</parmmore> 
+ 
+<h3>Modify the ABMST cross sections</h3> 
+ 
+The ABMST model provides a detailed description of the total, elastic 
+and single diffractive cross sections. The former two components are 
+accepted as is, while we have allowed alternative shapes for single 
+diffraction, notably to enforce a rapidity gap. The ABMST model does 
+not address double and central diffraction, so we have extended it on 
+our own, as described below. 
+ 
+<modepick name="SigmaDiffractive:ABMSTmodeSD" default="1" min="0" max="3"> 
+Setup of single diffraction in the ABMST scenario. 
+<option value="0">Keep the pure ABMST ansatz, which notably vanishes above 
+<ei>|t| = 4 GeV^2</ei>, and has a constant term up to that scale. 
+</option> 
+<option value="1">Use a slightly modified ansatz without an upper 
+<ei>|t|</ei> cut, but instead an exponential fall-off that gives the same 
+integrated diffractive rate and average <ei>|t|</ei> value. In addition 
+the low-mass background term is modified as a combination of a linear and 
+a quadratic term, instead of a qudratic only. 
+</option> 
+<option value="2"> Option 0, with a scaling factor of 
+<ei>k * (s / m_p^2)^q</ei>, 
+where <ei>k</ei> is <code>SigmaDiffractive:multSD</code> and 
+<ei>q</ei> is <code>SigmaDiffractive:powSD</code> 
+</option> 
+<option value="3"> Option 1, with a scaling factor of 
+<ei>k * (s / m_p^2)^q</ei>, 
+where <ei>k</ei> is <code>SigmaDiffractive:multSD</code> and 
+<ei>q</ei> is <code>SigmaDiffractive:powSD</code> 
+</option> 
+<note>Note:</note> also the <code>SigmaDiffractive:ABMSTdampenGap</code> 
+and <code>SigmaDiffractive:ABMSTuseBMin</code> flags below very much affect 
+the behaviour; you have to switch them off and use option 0 above to recover 
+the pure ABMST model. 
+</modepick> 
+ 
+<parm name="SigmaDiffractive:ABMSTmultSD" default="1." min="0.01"> 
+possibility to rescale the double diffractive cross section by a factor 
+<ei>k</ei> as described above. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:ABMSTpowSD" default="0.0" min="0.0" max="0.25"> 
+possibility to rescale the double diffractive cross section by a factor 
+<ei>(s / m_p^2)^q</ei>, as described above, with <ei>q</ei> set here. 
+</parm> 
+ 
+<modepick name="SigmaDiffractive:ABMSTmodeDD" default="1" min="0" max="1"> 
+Setup of double diffraction in the ABMST scenario. Note that ABMST does 
+not provide any answer here, so the single-diffractive framework is 
+extended by a simple factorized ansatz 
+<eq> 
+  dsigma_DD( xi_1, xi_2, t) / (dxi_1 dxi_2 dt) 
+    = dsigma_SD (xi_1, t) / (dxi_1 dt) * dsigma_SD (xi_2, t) / (dxi_2 dt) 
+    / (dsigma_El( t) / dt) . 
+</eq> 
+The above ansatz is marred by the dip in <ei>dsigma_El / dt</ei> 
+by destructive interference, however, so in this extension we only allow 
+for Pomerons in the elastic cross section, which is intended to represent 
+the bulk of the cross section. As such, the equation gives a parameter-free 
+prediction for the double diffractive cross section. For flexibility we 
+introduce a (default) option where the absolute normalization can be 
+modified, while retaining the shape of the ansatz. 
+<option value="0">Describe the double diffractive cross section by the 
+simple factorized ansatz introduced above, within the allowed phase-space 
+limits. Note that the single diffractive cross section is affected by the 
+choice made for <code>SigmaDiffractive:ABMSTmodeSD</code>. 
+</option> 
+<option value="1">The double diffractive 
+cross section can be rescaled by a factor <ei>k * (s / m_p^2)^q</ei>, 
+where <ei>k</ei> is <code>SigmaDiffractive:multDD</code> and 
+<ei>q</ei> is <code>SigmaDiffractive:powDD</code>. 
+</option> 
+<note>Note:</note> also the <code>SigmaDiffractive:ABMSTdampenGap</code> 
+and <code>SigmaDiffractive:ABMSTuseBMin</code> flags below very much affect 
+the behaviour. 
+</modepick> 
+ 
+<parm name="SigmaDiffractive:ABMSTmultDD" default="1." min="0.01"> 
+possibility to rescale the double diffractive cross section by a factor 
+<ei>k</ei> as described above. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:ABMSTpowDD" default="0.1" min="0.0" max="0.25"> 
+possibility to rescale the double diffractive cross section by a factor 
+<ei>(s / m_p^2)^q</ei>, as described above, with <ei>q</ei> set here. 
+</parm> 
+ 
+<modepick name="SigmaDiffractive:ABMSTmodeCD" default="0" min="0" max="1"> 
+Setup of central diffraction in the ABMST scenario. Note that ABMST does 
+not provide any answer here, so the single-diffractive framework is 
+extended by a simple factorized ansatz 
+<eq> 
+  dsigma_CD( xi_1, xi_2, t_1, t_2) / (dxi_1 dxi_2 dt_1 dt2_) 
+    = dsigma_SD (xi_1, t_1) / (dxi_1 dt_1) 
+    * dsigma_SD (xi_2, t_2) / (dxi_2 dt_2) / sigma_total(s) , 
+</eq> 
+and again a variant is introduced below. 
+<option value="0">Describe the central diffractive cross section by the 
+simple factorized ansatz introduced above, within the allowed phase-space 
+limits. Also here, we only allow for Pomerons in the total cross section. 
+Note that the single diffractive cross section is affected by the 
+choice made for <code>SigmaDiffractive:ABMSTmodeSD</code>. 
+</option> 
+<option value="1">In addition to option 0, the central diffractive 
+cross section can be rescaled by a factor <ei>k * (s / m_p^2)^q</ei>, 
+where <ei>k</ei> is <code>SigmaDiffractive:multCD</code> and 
+<ei>q</ei> is <code>SigmaDiffractive:powCD</code>. 
+</option> 
+<note>Note:</note> also the <code>SigmaDiffractive:ABMSTdampenGap</code> 
+and <code>SigmaDiffractive:ABMSTuseBMin</code> flags below very much affect 
+the behaviour. 
+</modepick> 
+ 
+<parm name="SigmaDiffractive:ABMSTmultCD" default="1." min="0.01"> 
+possibility to rescale the central diffractive cross section by a factor 
+<ei>k</ei> as described above. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:ABMSTpowCD" default="0.1" min="0.0" max="0.25"> 
+possibility to rescale the central diffractive cross section by a factor 
+<ei>(s / m_p^2)^q</ei>, as described above, with <ei>q</ei> set here. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:ABMSTmMinCD" default="1." min="0.5"> 
+The smallest allowed central diffractive mass, with a sharp cut at 
+this value. 
+</parm> 
+ 
+<flag name="SigmaDiffractive:ABMSTdampenGap" default="on"> 
+Switch on damping of small rapidity gaps in single, double and central 
+diffraction. The reason for this option, on by default, is that the 
+the ABMST SD ansats contains terms that peak near <ei>xi = 1</ei>. 
+This leads to very large integrated SD cross sections at higher energies, 
+such that the diffractive cross section is larger than the nondiffractive 
+one. It then becomes a challenge e.g. how to implement and interpret PDFs, 
+which by definition are inclusive, but would have to be split consistently 
+between the different contributions. (For the hard-jet subsample it can be 
+done e.g. as in <ref>Ras16</ref>, but it would be more complicated for 
+softer jets in the MPI context.) Furthermore the separation between 
+diffraction and nondiffraction is blurred for events with small gaps. 
+Therefore a damping factor for small gaps is imposed with this option, 
+of the form 
+<eq> 
+  1 / (1 + exp( -p * (y - y_gap))) = 1 / (1 + exp(p * y_gap) * (exp(-y))^p), 
+</eq> 
+where <ei>y</ei> is the rapidity gap(s) in the current event, and 
+<ei>p</ei> and <ei>y_gap</ei> are two parameters. Thus the damping 
+kicks in for <ei>y &lt; y_gap</ei>, and the transition region from small to 
+large damping is of order <ei>1/p</ei> in <ei>y</ei>. The <ei>exp(-y)</ei> 
+values are <ei>xi</ei> for SD, <ei>xi_1 * xi_2 * s / m_p^2</ei> for DD, 
+and <ei>xi_1</ei> and <ei>xi_2</ei> for CD. The two parameters of the 
+damping are described below. 
+</flag> 
+ 
+<parm name="SigmaDiffractive:ABMSTygap" default="2." min="0.1"> 
+Assume a damping of small rapidity gaps in the ABMST model, as described 
+above, to set in around the value <ei>y_gap</ei> given by this parameter. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:ABMSTypow" default="5." min="0.5"> 
+Assume a damping of small rapidity gaps in the ABMST model, as described 
+above, to set in over a rapidity region of width <ei>1/p</ei>, with 
+<ei>p</ei> given by this parameter. 
+</parm> 
+ 
+<flag name="SigmaDiffractive:ABMSTuseBMin" default="on"> 
+The slope <ei>b</ei> of an approximate <ei>exp(b * t)</ei> fall-off 
+is <ei>xi</ei>-dependent in the ABMST model for single diffraction. 
+In particular it can become close to zero for large <ei>xi</ei>, which 
+means that the <ei>t</ei>-integrated cross section becomes very large. 
+While the general trend is reasonable, the behaviour in the 
+<ei>xi &rarr; 1</ei> limit is questionable. Therefore it makes sense to 
+impose some minimal <ei>b</ei> slope. For double diffraction such 
+issues become even more pressing, since the division by the elastic 
+cross section could even lead to a negative <ei>b</ei> slope, which 
+would not be physical. The central diffractive cross section is more 
+well-behaved, but for consistency it is meaningful to ensure a minimal 
+fall-off also here. Therefore, when this flag is on, a minimal fall-off 
+<ei>exp(b_min * t)</ei> is assumed for each of the three components, 
+with the respective <ei>b_min</ei> value stored in the three parameters 
+below. The fall-off is defined relative to the value at <ei>t = 0</ei>, 
+a point that is outside the physical region, but the parametrization 
+of the diffractive cross sections can still be used there meaningfully. 
+Only positive <ei>b_min</ei> values are acted on, so the SD/DD/CD 
+components can be switched off individually even when this flag is on. 
+</flag> 
+ 
+<parm name="SigmaDiffractive:ABMSTbMinSD" default="2."> 
+Assume a minimal fall-off <ei>exp(b_min * t)</ei> in the ABMST model 
+for single diffraction, as described above. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:ABMSTbMinDD" default="2."> 
+Assume a minimal fall-off <ei>exp(b_min * t)</ei> in the extension of 
+the ABMST model to double diffraction, as described above. 
+</parm> 
+ 
+<parm name="SigmaDiffractive:ABMSTbMinCD" default="2."> 
+Assume a minimal fall-off <ei>exp(b_min * (t_1 + t_2))</ei> in the extension 
+of the ABMST model to central diffraction, as described above. 
+</parm> 
+ 
+<h3>Modify the RPP cross sections</h3> 
+ 
+The RPP approach only addresses total and (differential) elastic 
+cross sections, and there are no free parameters that can be changed. 
+ 
+<h3>Coulomb corrections to elastic scattering</h3> 
+ 
+By default there is no Coulomb-term contribution to the elastic 
+(or total) cross section, which of course becomes infinite if this 
+contribution is included in the collision between charged particles, 
+owing to the <ei>1/t^2</ei> singularity of <ei>t</ei>-channel photon 
+exchange. You can switch on Coulomb corrections below, however, including 
+interference with the conventional strong-interaction term. 
+The own, SaS/DL and MBR models share a common machinery to evaluate the 
+interference <ref>Ber87</ref>, while ABMST and RPP use a slighly 
+different expression for the (poorly known) difference in phases 
+between the hadronic and the electromagnetic amplitudes. 
+ 
+<flag name="SigmaElastic:Coulomb" default="off"> 
+Include Coulomb corrections to the elastic and total cross sections. 
+</flag> 
+ 
+<parm name="SigmaElastic:tAbsMin" default="5e-5" min="1e-10" max="1e-3"> 
+since the Coulomb contribution is infinite a lower limit on <ei>|t|</ei> 
+must be set to regularize the divergence, in units of GeV^2. 
+This means that the elastic and total cross sections are reduced by 
+the amount of the ordinary cross section in the cut-out region, 
+but increased by the Coulomb contribution itself and the interference 
+term (of either sign). This variable has no effect if Coulomb corrections 
+are not switched on or not relevant (e.g. for neutral particles), i.e. 
+then <ei>t = 0</ei> sets the limit. 
+</parm> 
+ 
+<parm name="SigmaElastic:lambda" default="0.71" min="0.1" max="2."> 
+the main parameter of the electric form factor 
+<ei>G(t) = lambda^2 / (lambda + |t|)^2</ei>, in units of GeV^2, 
+as used in the own, SaS/DL and MBR models. 
+</parm> 
+ 
+<parm name="SigmaElastic:phaseConst" default="0.577"> 
+The Coulomb term is taken to contain a phase factor 
+<ei>exp(+- i alpha phi(t))</ei>, with + for <ei>p p</ei> and - for 
+<ei>pbar p</ei>, where <ei>phi(t) = - phaseConst - ln(-B t/2)</ei>. 
+This constant is model dependent <ref>Cah82</ref>. This expression 
+is used in the own, SaS/DL and MBR models, where the hadronic cross 
+section is modelled as a simple <ei>exp(B t)</ei>. 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

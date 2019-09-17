@@ -1,0 +1,47 @@
+! File: main121.cmnd
+! This file contains commands to be read in for a Pythia8 run.
+! Lines not beginning with a letter or digit are comments.
+! Names are case-insensitive  -  but spellings-sensitive!
+! The changes here are illustrative, not always physics-motivated.
+
+# Number of events to generate in the main program.
+Main:numberOfEvents = 50000
+Next:numberCount    = 100
+
+# Retrieve a PDF set from LHAPDF6 (shower PDF variations need LHAPDF6)
+PDF:pSet = LHAPDF6:CT10nlo
+
+# Set hard process to tt~ production with leptonic W-decay at LHC7
+Beams:idA = 2212
+Beams:idB = 2212
+Beams:eCM = 7000.0
+Top:gg2ttbar = on
+Top:qqbar2ttbar = on
+24:onMode  = off
+24:onIfAny = 11 13
+
+# Switch on shower uncertainty estimates
+UncertaintyBands:doVariations = on
+
+# Here are some settings to assess PDF uncertainties in the shower.
+UncertaintyBands:List = {
+  scale_pdf_lo isr:pdf:minus=0.5,
+  scale_pdf_hi isr:pdf:plus=2.0
+}
+
+# Here are some settings to assess renormalization scale variations and PDF
+# uncertainties in the shower.
+#UncertaintyBands:List = {
+#  scale_fsr_lo fsr:muRfac=0.5,
+#  scale_fsr_hi fsr:muRfac=2.0,
+#  scale_isr_lo isr:muRfac=0.5,
+#  scale_isr_hi isr:muRfac=2.0,
+#  scale_pdf_lo isr:pdf:minus=0.5,
+#  scale_pdf_hi isr:pdf:plus=2.0
+#}
+
+# Switch off some generation steps.
+# This will make accumulating enough events easier, but
+# omit physics modelling!
+HadronLevel:all = off
+PartonLevel:MPI = off

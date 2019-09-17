@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>Random-Number Seed</title>
+<link rel="stylesheet" type="text/css" href="pythia.css"/>
+<link rel="shortcut icon" href="pythia32.gif"/>
+</head>
+<body>
+ 
+<h2>Random-Number Seed</h2> 
+ 
+The seed of the random number generator can be set as follows: 
+ 
+<a name="anchor1"></a>
+<p/><code>flag&nbsp; </code><strong> Random:setSeed &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Indicates whether a user-set seed should be used every time the 
+<code>Pythia::init</code> routine is called. If off, the random number 
+generator is initialized with its default seed at the beginning 
+of the run, and never again. If on, each new <code>Pythia::init</code> 
+call (should several be made in the same run) results in the random 
+number being re-initialized, thereby possibly starting over with the 
+same sequence, if you do not watch out. 
+   
+ 
+<a name="anchor2"></a>
+<p/><code>mode&nbsp; </code><strong> Random:seed &nbsp;</strong> 
+ (<code>default = <strong>-1</strong></code>; <code>maximum = 900000000</code>)<br/>
+The seed to be used, if <code>setSeed</code> is on.<br/> 
+A negative value gives the default seed,<br/> 
+a value 0 gives a random seed based on the time, and<br/> 
+a value between 1 and 900,000,000 a unique different random number 
+sequence. 
+   
+ 
+<p/> 
+For  on random numbers see <a href="RandomNumbers.html" target="page">here</a>. 
+This includes methods to save and restore the state of the generator, 
+and some preprogrammed methods to generate non-uniform random numbers. 
+ 
+</body>
+</html>
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

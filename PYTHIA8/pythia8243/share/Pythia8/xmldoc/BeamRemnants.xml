@@ -1,0 +1,322 @@
+<chapter name="Beam Remnants"> 
+ 
+<h2>Beam Remnants</h2> 
+ 
+<h3>Introduction</h3> 
+ 
+The <code>BeamParticle</code> class contains information on all partons 
+extracted from a beam (so far). As each consecutive multiparton interaction 
+defines its respective incoming parton to the hard scattering a 
+new slot is added to the list. This information is modified when 
+the backwards evolution of the spacelike shower defines a new 
+initiator parton. It is used, both for the multiparton interactions 
+and the spacelike showers, to define rescaled parton densities based 
+on the <ei>x</ei> and flavours already extracted, and to distinguish 
+between valence, sea and companion quarks. Once the perturbative 
+evolution is finished, further beam remnants are added to obtain a 
+consistent set of flavours. The current physics framework is further 
+described in <ref>Sjo04</ref>. 
+ 
+<p/> 
+The introduction of <aloc href="MultipartonInteractions">rescattering</aloc> 
+in the multiparton interactions framework further complicates the 
+processing of events. Specifically, when combined with showers, 
+the momentum of an individual parton is no longer uniquely associated 
+with one single subcollision. Nevertheless the parton is classified 
+with one system, owing to the technical and administrative complications 
+of more complete classifications. Therefore the addition of primordial 
+<ei>kT</ei> to the subsystem initiator partons does not automatically 
+guarantee overall <ei>pT</ei> conservation. Various tricks are used to 
+minimize the mismatch, with a brute force shift of all parton 
+<ei>pT</ei>'s as a final step. 
+ 
+<p/> 
+Much of the above information is stored in a vector of 
+<code>ResolvedParton</code> objects, which each contains flavour and 
+momentum information, as well as valence/companion information and more. 
+The <code>BeamParticle</code> method <code>list()</code> shows the 
+contents of this vector, mainly for debug purposes. 
+ 
+<p/> 
+The <code>BeamRemnants</code> class takes over for the final step 
+of adding primordial <ei>kT</ei> to the initiators and remnants, 
+assigning the relative longitudinal momentum sharing among the 
+remnants, and constructing the overall kinematics and colour flow. 
+This step couples the two sides of an event, and could therefore 
+not be covered in the <code>BeamParticle</code> class, which only 
+considers one beam at a time. 
+ 
+<p/> 
+The methods of these classes are not intended for general use, 
+and so are not described here. 
+ 
+<p/> 
+In addition to the parameters described on this page, note that the 
+choice of <aloc href="PDFSelection">parton densities</aloc> is made 
+in the <code>Pythia</code> class. Then pointers to the pdf's are handed 
+on to <code>BeamParticle</code> at initialization, for all subsequent 
+usage. 
+ 
+<h3>Primordial <ei>kT</ei></h3> 
+ 
+The primordial <ei>kT</ei> of initiators of hard-scattering subsystems 
+are selected according to Gaussian distributions in <ei>p_x</ei> and 
+<ei>p_y</ei> separately. The widths of these distributions are chosen 
+to be dependent on the hard scale of the central process and on the mass 
+of the whole subsystem defined by the two initiators: 
+<eq> 
+sigma = (sigma_soft * Q_half + sigma_hard * Q) / (Q_half + Q) 
+  * m / (m + m_half * y_damp) 
+</eq> 
+Here <ei>Q</ei> is the hard-process renormalization scale for the 
+hardest process and the <ei>pT</ei> scale for subsequent multiparton 
+interactions, <ei>m</ei> the mass of the system, and 
+<ei>sigma_soft</ei>, <ei>sigma_hard</ei>, <ei>Q_half</ei>, 
+<ei>m_half</ei> and <ei>y_damp</ei> parameters defined below. 
+Furthermore each separately defined beam remnant has a distribution 
+of width <ei>sigma_remn</ei>, independently of kinematical variables. 
+ 
+<flag name="BeamRemnants:primordialKT" default="on"> 
+Allow or not selection of primordial <ei>kT</ei> according to the 
+parameter values below. 
+</flag> 
+ 
+<parm name="BeamRemnants:primordialKTsoft" default="0.9" min="0."> 
+The width <ei>sigma_soft</ei> in the above equation, assigned as a 
+primordial <ei>kT</ei> to initiators in the soft-interaction limit. 
+</parm> 
+ 
+<parm name="BeamRemnants:primordialKThard" default="1.8" min="0."> 
+The width <ei>sigma_hard</ei> in the above equation, assigned as a 
+primordial <ei>kT</ei> to initiators in the hard-interaction limit. 
+</parm> 
+ 
+<parm name="BeamRemnants:halfScaleForKT" default="1.5" min="0."> 
+The scale <ei>Q_half</ei> in the equation above, defining the 
+half-way point between hard and soft interactions. 
+</parm> 
+ 
+<parm name="BeamRemnants:halfMassForKT" default="1." min="0."> 
+The scale <ei>m_half</ei> in the equation above, defining the 
+half-way point between low-mass and high-mass subsystems. 
+(Kinematics construction can easily fail if a system is assigned 
+a primordial <ei>kT</ei> value higher than its mass, so the 
+mass-dampening is intended to reduce some troubles later on.) 
+</parm> 
+ 
+<parm name="BeamRemnants:reducedKTatHighY" default="0.5" min="0." max="1."> 
+For a system of mass <ei>m</ei> and energy <ei>E</ei> the 
+dampening factor <ei>y_damp</ei> above is defined as 
+<ei>y_damp = pow( E/m, r_red)</ei>, where <ei>r_red</ei> is the 
+current parameter. The effect is to reduce the primordial <ei>kT</ei> 
+of low-mass systems extra much if they are at large rapidities (recall 
+that <ei>E/m = cosh(y)</ei> before <ei>kT</ei> is added). The reason 
+for this dampening is purely technical, and for reasonable values 
+should not have dramatic consequences overall. 
+</parm> 
+ 
+<parm name="BeamRemnants:primordialKTremnant" default="0.4" min="0."> 
+The width <ei>sigma_remn</ei>, assigned as a primordial <ei>kT</ei> 
+to beam-remnant partons. 
+</parm> 
+ 
+<p/> 
+A net <ei>kT</ei> imbalance is obtained from the vector sum of the 
+primordial <ei>kT</ei> values of all initiators and all beam remnants. 
+This quantity is compensated by a shift shared equally between 
+all partons, except that the dampening factor <ei>m / (m_half + m)</ei> 
+is again used to suppress the role of small-mass systems. 
+ 
+<p/> 
+Note that the current <ei>sigma</ei> definition implies that 
+<ei>&lt;pT^2&gt; = &lt;p_x^2&gt;+ &lt;p_y^2&gt; = 2 sigma^2</ei>. 
+It thus cannot be compared directly with the <ei>sigma</ei> 
+of nonperturbative hadronization, where each quark-antiquark 
+breakup corresponds to <ei>&lt;pT^2&gt; = sigma^2</ei> and only 
+for hadrons it holds that <ei>&lt;pT^2&gt; = 2 sigma^2</ei>. 
+The comparison is further complicated by the reduction of 
+primordial <ei>kT</ei> values by the overall compensation mechanism. 
+ 
+<flag name="BeamRemnants:rescatterRestoreY" default="off"> 
+Is only relevant when <aloc href="MultipartonInteractions">rescattering</aloc> 
+is switched on in the multiparton interactions scenario. For a normal 
+interaction the rapidity and mass of a system is preserved when 
+primordial <ei>kT</ei> is introduced, by appropriate modification of the 
+incoming parton momenta. Kinematics construction is more complicated for 
+a rescattering, and two options are offered. Differences between these 
+can be used to explore systematic uncertainties in the rescattering 
+framework.<br/> 
+The default behaviour is to keep the incoming rescattered parton as is, 
+but to modify the unrescattered incoming parton so as to preserve the 
+invariant mass of the system. Thereby the rapidity of the rescattering 
+is modified.<br/> 
+The alternative is to retain the rapidity (and mass) of the rescattered 
+system when primordial <ei>kT</ei> is introduced. This is made at the 
+expense of a modified longitudinal momentum of the incoming rescattered 
+parton, so that it does not agree with the momentum it ought to have had 
+by the kinematics of the previous interaction.<br/> 
+For a double rescattering, when both incoming partons have already scattered, 
+there is no obvious way to retain the invariant mass of the system in the 
+first approach, so the second is always used. 
+</flag> 
+ 
+<h3>Colour flow</h3> 
+ 
+The colour in the separate subproccsses are tied together via the assignment 
+of colour flow in the beam remnants. The assignment of colour flow is not 
+known from first principles and therefore it is not an unambiguous procedure. 
+Thus two different models have been implemented in <code>Pythia</code>. These 
+will be referred to as new and old, based on the time of the implementation. 
+ 
+<p/> 
+The old model tries to reconstruct the colour flow in a way that a LO PS would 
+produce the beam remnants. The starting point is the junction structure of the 
+beam particle (if it is a baryon). The gluons are attached to a quark line and 
+quark-antiquark pairs are added as if coming from a gluon splittings. Thus 
+this model captures the qualitative behaviour that is expected from leading 
+colour QCD. The model is described in more detail in <ref>Sjo04</ref>. 
+ 
+<p/> 
+The new model is built on the full SU(3) colour structure of QCD. The 
+starting point is the scattered partons from the MPI. Each of these are 
+initially assumed uncorrelated in colour space, allowing the total outgoing 
+colour configuration to be calculated as an SU(3) product. Since the beam 
+particle is a colour singlet, the beam remnant colour configuration has to be 
+the inverse of the outgoing colour configuration. The minimum amount of gluons 
+are added to the beam remnant in order to obtain this colour configuration. 
+ 
+<p/> 
+The above assumption of uncorrelated MPIs in colour space is a good 
+assumption for a few well separated hard MPIs. However if the number of MPIs 
+become large and ISR is included, such that the energy scale becomes lower 
+(and thus distances becomes larger), the assumption loses its validity. This 
+is due to saturation effects. The modelling of saturation is done in crude 
+manner, as an exponential suppresion of high multiplet states. 
+ 
+<p/> 
+None of the models above can provide a full description of the colour 
+flow in an event, however. Therefore additional colour reconfiguration 
+is needed. This is referred to as colour reconnection. Several different 
+models for colour reconnection are implemented, see 
+<aloc href="ColourReconnection">Colour Reconection</aloc>. 
+ 
+<modepick name="BeamRemnants:remnantMode" default="0" min="0" max="1"> 
+Switch to choose between the two different colour models for the beam remnant. 
+<option value="0"> The old beam remnant model. </option> 
+<option value="1"> The new beam remnant model. </option> 
+</modepick> 
+ 
+<parm name="BeamRemnants:saturation" default="5" min="0.1" max="100000"> 
+Controls the suppresion due to saturation in the new model. The exact formula 
+used is <ei>exp(-M / k)</ei>, where M is the multiplet size and k is this 
+parameter. Thus a small number will result in a large saturation. 
+</parm> 
+ 
+<h3>Further variables</h3> 
+ 
+<modeopen name="BeamRemnants:maxValQuark" default="3" min="0" max="5"> 
+The maximum valence quark kind allowed in acceptable incoming beams, 
+for which multiparton interactions are simulated. Default is that hadrons 
+may contain <ei>u</ei>, <ei>d</ei> and <ei>s</ei> quarks, 
+but not <ei>c</ei> and <ei>b</ei> ones, since sensible 
+kinematics has not really been worked out for the latter. 
+</modeopen> 
+ 
+<modeopen name="BeamRemnants:companionPower" default="4" min="0" max="4"> 
+When a sea quark has been found, a companion antisea quark ought to be 
+nearby in <ei>x</ei>. The shape of this distribution can be derived 
+from the gluon mother distribution convoluted with the 
+<ei>g &rarr; q qbar</ei> splitting kernel. In practice, simple solutions 
+are only feasible if the gluon shape is assumed to be of the form 
+<ei>g(x) ~ (1 - x)^p / x</ei>, where <ei>p</ei> is an integer power, 
+the parameter above. Allowed values correspond to the cases programmed. 
+<br/> 
+Since the whole framework is approximate anyway, this should be good 
+enough. Note that companions typically are found at small <ei>Q^2</ei>, 
+if at all, so the form is supposed to represent <ei>g(x)</ei> at small 
+<ei>Q^2</ei> scales, close to the lower cutoff for multiparton interactions. 
+</modeopen> 
+ 
+<p/> 
+When assigning relative momentum fractions to beam-remnant partons, 
+valence quarks are chosen according to a distribution like 
+<ei>(1 - x)^power / sqrt(x)</ei>. This <ei>power</ei> is given below 
+for quarks in mesons, and separately for <ei>u</ei> and <ei>d</ei> 
+quarks in the proton, based on the approximate shape of low-<ei>Q^2</ei> 
+parton densities. The power for other baryons is derived from the 
+proton ones, by an appropriate mixing. The <ei>x</ei> of a diquark 
+is chosen as the sum of its two constituent <ei>x</ei> values, and can 
+thus be above unity. (A common rescaling of all remnant partons and 
+particles will fix that.) An additional enhancement of the diquark 
+momentum is obtained by its <ei>x</ei> value being rescaled by the 
+<code>valenceDiqEnhance</code> factor. 
+ 
+<parm name="BeamRemnants:valencePowerMeson" default="0.8" min="0."> 
+The abovementioned power for valence quarks in mesons. 
+</parm> 
+ 
+<parm name="BeamRemnants:valencePowerUinP" default="3.5" min="0."> 
+The abovementioned power for valence <ei>u</ei> quarks in protons. 
+</parm> 
+ 
+<parm name="BeamRemnants:valencePowerDinP" default="2.0" min="0."> 
+The abovementioned power for valence <ei>d</ei> quarks in protons. 
+</parm> 
+ 
+<parm name="BeamRemnants:valenceDiqEnhance" default="2.0" min="0.5" 
+max="10."> 
+Enhancement factor for valence diquarks in baryons, relative to the 
+simple sum of the two constituent quarks. 
+</parm> 
+ 
+<parm name="BeamRemnants:gluonPower" default="4.0" min="0."> 
+The abovementioned power for gluons. 
+</parm> 
+ 
+<parm name="BeamRemnants:xGluonCutoff" default="1E-7" min="1E-10" max="1"> 
+The gluon PDF is approximated with <ei>g(x) ~ (1 - x)^p / x</ei>, which 
+integrates to infinity when integrated from 0 to 1. This cut-off is 
+introduced as a minimum to avoid the problems with infinities. 
+</parm> 
+ 
+<flag name="BeamRemnants:allowJunction" default="on"> 
+The <code>off</code> option is intended for debug purposes only, as 
+follows. When more than one valence quark is kicked out of a baryon 
+beam, as part of the multiparton interactions scenario, the subsequent 
+hadronization is described in terms of a junction string topology. 
+This description involves a number of technical complications that 
+may make the program more unstable. As an alternative, by switching 
+this option off, junction configurations are rejected (which gives 
+an error message that the remnant flavour setup failed), and the 
+multiparton interactions and showers are redone until a 
+junction-free topology is found. 
+</flag> 
+ 
+<flag name="BeamRemnants:beamJunction" default="off"> 
+This parameter is only relevant if the new colour reconnection scheme is used. 
+(see  <aloc href="ColourReconnection">colour reconnection</aloc>) 
+This parameter tells whether to form a junction or a di-quark if more 
+than two valence quarks are found in the beam remnants. If off a di-quark is 
+formed and if on a junction will be formed. 
+</flag> 
+ 
+<flag name="BeamRemnants:allowBeamJunction" default="on"> 
+This parameter is only relevant if the new Beam remnant model is used. 
+This parameter tells whether to allow the formation of junction structures 
+in the colour configuration of the scattered partons. 
+</flag> 
+ 
+<modepick name="BeamRemnants:unresolvedHadron" default="0" min="0" max="3"> 
+Switch to to force either or both of the beam remnants to collapse to a 
+single hadron, namely the original incoming one. Must only be used when this 
+is physically meaningful, e.g. when a photon can be viewed as emitted from 
+a proton that does not break up in the process. 
+<option value="0"> Both hadronic beams are resolved. </option> 
+<option value="1"> Beam A is unresolved, beam B resolved. </option> 
+<option value="2"> Beam A is resolved, beam B unresolved. </option> 
+<option value="3"> Both hadronic beams are unresolved. </option> 
+</modepick> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

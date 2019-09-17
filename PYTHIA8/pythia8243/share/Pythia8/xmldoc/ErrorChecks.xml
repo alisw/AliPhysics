@@ -1,0 +1,115 @@
+<chapter name="Error Checks"> 
+ 
+<h2>Error Checks</h2> 
+ 
+There is a few settings related to error checking during program 
+execution. Many other checks are performed as well, but do not 
+have any specific setting related to themselves. 
+ 
+<flag name="Check:abortIfVeto" default="off"> 
+There are a few ways in which an event can be vetoed, the most 
+common being a <aloc href="UserHooks">User Hooks</aloc> test. 
+Normally this will simply mean that the next parton-level 
+configuration is selected inside the <code>Pythia::next()</code> 
+routine, without any need for a user intervention. With this 
+option switched on, however, <code>Pythia::next()</code> will 
+return <code>false</code>. It is then up to the user to decide 
+what to do next. 
+</flag> 
+ 
+<flag name="Check:particleData" default="off"> 
+Check the particle data tables for potential problems during 
+initialization. This includes inconsistent use of charge in particle 
+names, inconsistent setup of mass, mass range, width and lifetime, 
+sum of branching ratios not unity (allowed but discouraged) or charge 
+not conserved in a decay channel. Warnings should be viewed as reasons 
+to check further, but need not indicate a true problem, and also not all 
+problems may be caught. 
+The <code>pythia.particleData.checkTable(level)</code> method, 
+used for these checks, may also be called directly. 
+</flag> 
+ 
+<modepick name="Check:levelParticleData" default="1"> 
+The level of verbosity and checks of particle data, if switched on. 
+<option value="0">minimal amount of checks, e.g. that no channels open. 
+</option> 
+<option value="1">further warning if individual channels closed, 
+except for resonances.</option> 
+<option value="2">also print branching-ratio-averaged threshold mass 
+except for resonances.</option> 
+<option value="11">as 1, but include resonances in detailed checks. 
+</option> 
+<option value="12">as 2, but include resonances in detailed checks. 
+</option> 
+</modepick> 
+ 
+<flag name="Check:event" default="on"> 
+When an event has been successfully generated, check that the 
+final event record in <code>event</code> does not contain any 
+unphysical particles, or nonconserved charge or energy-momentum. 
+If this check fails, then <code>pythia.next()</code> obtains the 
+value <code>false</code>, i.e. the event is counted as aborted. 
+</flag> 
+ 
+<flag name="Check:history" default="on"> 
+When <code>Check:event = on</code> and the event is checked as above, 
+further checks are made that all mother and daughter pointers are 
+consistently set. Specifically that all daughters in the 
+<code>daughterlist</code> (or <code>motherList</code>) have the 
+particle in their respective <code>motherList</code> 
+(or <code>daughterlist</code>). This operation takes a bit more 
+time than the other error tests (of the order of 10% of what it takes 
+to generate the event in the first place), and so could be switched off 
+to save time. 
+</flag> 
+ 
+<flag name="Check:beams" default="on"> 
+Check that Pythia supports the beam setup, i.e. if the beams 
+are the allowed combinations described in 
+<aloc href="BeamParameters">Beam Parameters</aloc>. If turned 
+off, all checks of allowed beam combinations will be skipped, as 
+can e.g. be useful to allow processing of Les Houches 
+event files with exotic beam structure. 
+</flag> 
+ 
+<modeopen name="Check:nErrList" default="0"> 
+The number of erroneous events, in the above check, for which 
+event listing and other detailed information will be printed. 
+After that, only the normal error messages will be issued. 
+Error counters are always updated, and accumulated numbers can be 
+shown with <code>pythia.stat()</code> at the end of the run. 
+</modeopen> 
+ 
+<parm name="Check:epTolErr" default="1e-4"> 
+Maximum allowed summed deviation of <ei>E</ei>, <ei>p_x</ei>, 
+<ei>p_y</ei> and <ei>p_z</ei> between the incoming beams and the 
+final state, as a fraction of the initial energy, above which the 
+event is counted as aborted. 
+(Unfortunately roundoff errors do not scale linearly with the energy, 
+and also have a very long tail. So while most events at lower energies 
+may be correct to better than 1e-10, at LHC it does not have to signal 
+any fundamental bug if also the default tolerance above is violated 
+occasionally.) 
+</parm> 
+ 
+<parm name="Check:epTolWarn" default="1e-6"> 
+A check on the same summed deviation as above, but counted as a 
+warning rather than an error, and not leading to the event being 
+classified as aborted. 
+</parm> 
+ 
+<parm name="Check:mTolErr" default="1e-3"> 
+For each particle the maximum allowed deviation between the mass 
+calculated from energy-momentum and the bookkept mass, as a fraction 
+of the energy. This energy is taken to be at least 1 GeV, in order 
+to avoid harmless problems at very low energies (gluons mainly). 
+</parm> 
+ 
+<parm name="Check:mTolWarn" default="1e-4"> 
+A check on the deviation as above, but counted as a warning rather 
+than an error. 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

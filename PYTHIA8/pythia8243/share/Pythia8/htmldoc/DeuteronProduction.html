@@ -1,0 +1,189 @@
+<html>
+<head>
+<title>Deuteron Production</title>
+<link rel="stylesheet" type="text/css" href="pythia.css"/>
+<link rel="shortcut icon" href="pythia32.gif"/>
+</head>
+<body>
+ 
+<h2>Deuteron Production</h2> 
+<ol id="toc">
+  <li><a href="#section0">Main parameters</a></li>
+  <li><a href="#section1">Technical parameters</a></li>
+</ol>
+
+ 
+After the final state particles of an event are produced, protons and 
+neutrons are selected and combined into pairs which may form 
+deuterons. A generalized version of the model in [<a href="Bibliography.html#refDal15" target="page">Dal15</a>] is 
+implemented here. The cross-sections used to determine if a combination 
+binds into a deuteron are differential in 
+<i>k &equiv; |p<sub>1</sub> - p<sub>2</sub>|</i> where 
+<i>p<sub>i</sub></i> are the momenta of the binding combination in 
+the center-of-mass frame of the combination. Here all notation is used 
+to specify deuteron production, but anti-deuteron production is also 
+provided where the anti-particles for all relevant particles are used. 
+ 
+<p/> 
+To ensure conservation of momentum and energy, the final state for 
+each deuteron production channel is required to have at least two 
+final products, where one product is a deuteron. This is in contrast 
+to the traditional coalescence model of [<a href="Bibliography.html#refScd63" target="page">Scd63</a>] and 
+[<a href="Bibliography.html#refKap80" target="page">Kap80</a>] where typically only a deuteron is produced from a 
+two-body initial state and so momentum and energy are not 
+conserved. Here, a modified coalescence model can be used where the 
+final state can be specified as a deuteron and a photon. 
+ 
+<p/> 
+The default deuteron production setup is taken from [<a href="Bibliography.html#refDal15" target="page">Dal15</a>], 
+where 8 production channels are defined: 
+<ul> 
+<li><i>p+ n0 &rarr; gamma 2H  </i></li> 
+<li><i>p+ n0 &rarr; pi0 2H    </i></li> 
+<li><i>p+ n0 &rarr; pi0 pi0 2H</i></li> 
+<li><i>p+ n0 &rarr; pi+ pi- 2H</i></li> 
+<li><i>p+ p+ &rarr; pi+ 2H    </i></li> 
+<li><i>p+ p+ &rarr; pi+ pi0 2H</i></li> 
+<li><i>n0 n0 &rarr; pi- 2H    </i></li> 
+<li><i>n0 n0 &rarr; pi- pi0 2H</i></li> 
+</ul> 
+These channels, and the models used to calculate their differential 
+cross-sections, can be fully specified by the user as detailed below. The 
+<code>DeuteronProduction</code> class performs the deuteron 
+production, first building all valid two-particle combinations, then 
+determining whether the combinations bind, and finally performing an 
+isotropic decay of the bound state into the specified final state. 
+ 
+<a name="section0"></a> 
+<h3>Main parameters</h3> 
+ 
+Assuming you have set <code>HadronLevel:DeuteronProduction = on</code>, 
+you can regulate the detailed behaviour with the following settings. 
+ 
+<p/> 
+<b>Warning</b>: changed <code>mvec</code> and <code>wvec</code> values 
+must be provided as a comma-separated list enclosed in braces, 
+<code>{...}</code>. 
+ 
+<a name="anchor1"></a>
+<p/><code>parm&nbsp; </code><strong> DeuteronProduction:norm &nbsp;</strong> 
+ (<code>default = <strong>119.6</strong></code>; <code>minimum = 1</code>)<br/>
+An overall unitless multiplicative normalization scale to increase the 
+maximum used when sampling the differential cross-sections. Increasing 
+this scale decreases the cross-section for deuteron production. Using 
+the default model, the maximum differential cross-section is <i>3.2 
+mb</i> with the <i>n0 n0 &rarr; pi- 2H</i> and <i>p+ p+ &rarr; pi+ 
+2H</i> channels. To convert the fit values from table VIII of 
+[<a href="Bibliography.html#refDal15" target="page">Dal15</a>] into this multiplicative normalization factor, take 
+<i>1/(value from table * maximum cross-section)</i>. For example, 
+the ALICE 7 TeV deuteron fit with a <i>1/&sigma;<sub>0</sub></i> of 
+2.63 inverse barn, the multiplicative normalization is 119.6. 
+   
+ 
+<a name="anchor2"></a>
+<p/><code>wvec&nbsp; </code><strong> DeuteronProduction:channels &nbsp;</strong> 
+ (<code>default = <strong>{2212 2112 > 22, 2212 2112 > 111, 2212 2112 > 111 111, 2212 2112 > 211 -211, 2212 2212 > 211, 2212 2212 > 211 111, 2112 2112 > -211, 2112 2112 > -211 111}</strong></code>)<br/>
+List of the deuteron production channels to include of the form 
+<i>initial states &gt; final states </i> where <i>initial 
+states</i> are the PDG particle IDs of the initial state particles to 
+combine (there must be two), and <i>final states</i> are the PIDs of 
+the final state particles, excluding the deuteron. There must be one 
+or more final state particles in addition to the deuteron. The 
+products of each channel are space separated, while the channels are 
+comma separated. 
+   
+ 
+<a name="anchor3"></a>
+<p/><code>mvec&nbsp; </code><strong> DeuteronProduction:models &nbsp;</strong> 
+ (<code>default = <strong>{1, 2, 3, 3, 2, 3, 2, 3}</strong></code>)<br/>
+List of the parameterization mode for each deuteron production channel 
+specified by <code>DeuteronProduction:channels</code>. The parameters 
+for each of the channels is specified with 
+<code>DeuteronProduction:parms</code>. The length of this vector must 
+be the same as <code>DeuteronProduction:channels</code>. 
+<br/><code>option </code><strong> 0</strong> : the coalescence model, <i>p<sub>1</sub> 
+&theta;(p<sub>0</sub> - k)</i>, a step function with two 
+parameters: <i>p<sub>0</sub></i> the cut-off of the step function 
+and <i>p<sub>1</sub></i> the normalization of the step 
+function.   
+<br/><code>option </code><strong> 1</strong> : the differential cross-section model in 
+<i>&kappa;</i> is given by the piece-wise function 
+<i>&sum;<sub>i=1</sub><sup>12</sup> p<sub>i</sub> 
+&kappa;<sup>i-2</sup></i> for <i>&kappa; &lt; p<sub>0</sub></i>, 
+otherwise <i>exp(-p<sub>13</sub> &kappa; - p<sub>14</sub> 
+&kappa;<sup>2</sup>)</i>. A total of 15 parameters are required: the 
+function split followed by 12 polynomial coefficients for the first 
+function, and 2 polynomial coefficients for the second exponential 
+function. The function is fixed below <i>0.1 GeV</i> to its value 
+at this <i>&kappa;</i> where <i>&kappa;</i> is defined as 
+<i>k/GeV</i>.   
+<br/><code>option </code><strong> 2</strong> : the differential cross-section model in 
+<i>&eta;</i> is given by <i>p<sub>0</sub> 
+&eta;<sup>p<sub>1</sub></sup>/((p<sub>2</sub> - exp(p<sub>3</sub> 
+&eta;))<sup>2</sup> + p<sub>4</sub>)</i>. A total of 5 parameters is 
+required. Here, <i>&eta;</i> is the momentum of the non-deuteron 
+final state divided by its mass in the COM. This model is intended for 
+two-body final states containing a deuteron and a pion.   
+<br/><code>option </code><strong> 3</strong> :   the differential cross-section model in 
+<i>&kappa;</i> is given by <i>&sum;<sub>i=0</sub> p<sub>5*i+0</sub> 
+&kappa;<sup>p<sub>5*i+1</sub></sup>/((p<sub>5*i+2</sub> - 
+exp(p<sub>5*i+3</sub> &kappa;))<sup>2</sup> + p<sub>5*i+4</sub>)</i> 
+where the number of parameters can be any multiple of 5 and 
+<i>&kappa;</i> is defined as <i>k/GeV</i>. 
+   
+ 
+<a name="anchor4"></a>
+<p/><code>wvec&nbsp; </code><strong> DeuteronProduction:parms &nbsp;</strong> 
+ (<code>default = <strong>{1.28 2.3034605532591175 -93.663463313902028 2565.3904680353621 -25594.100560137995 143513.10872427333 -503572.89020794741 1149248.0196165806 -1723683.9119787284 1679348.7891145353 -1019888.5470232342 349840.35161061864 -51662.760038375141 -5.1885266705385051 2.9195632726211609, 85 1.34 1.77 0.38 0.096, 2.85519622e+06 1.31114126e+01 2.96145497e+03 5.57220777e+00 1.46051932e+06, 6.46455516e+06 1.05136338e+01 1.97924778e+03 5.36301369e+00 6.04534114e+05 2.54935423e+15 1.65669163e+01 2.32961298e+07 1.11937373e+01 2.86815089e+16, 170 1.34 1.77 0.38 0.096, 5.09870846e+15 1.65581228e+01 2.33337076e+07 1.13304315e+01 2.86815089e+16, 170 1.34 1.77 0.38 0.096, 5.09870846e+15 1.65581228e+01 2.33337076e+07 1.13304315e+01 2.86815089e+16}</strong></code>)<br/>
+The parameters needed for the model of each channel. The parameters 
+for each channel are space separated, while the channels are separated 
+by commas. The length of this vector must be the same as 
+<code>DeuteronProduction:channels</code>. Note, to match the parameters 
+of [<a href="Bibliography.html#refDal15" target="page">Dal15</a>] these parameters give differential cross-sections in 
+<i>&mu;b</i> not <i>mb</i>. 
+   
+ 
+<a name="section1"></a> 
+<h3>Technical parameters</h3> 
+ 
+The maximum cross-section for each deuteron production channel is 
+calculated using an initial grid search followed by the simplex algorithm. 
+Assuming parameters similar to the default parameters above are used, the 
+following technical parameters should not need to be changed. However, if 
+the maximum finding fails for a given configuration, the following can be 
+modified to ensure appropriate determination of the cross-section maximums. 
+ 
+<a name="anchor5"></a>
+<p/><code>parm&nbsp; </code><strong> DeuteronProduction:kMin &nbsp;</strong> 
+ (<code>default = <strong>1e-1</strong></code>)<br/>
+The minimum bracketing value of <i>k</i> (in <i>GeV</i>) when maximum 
+finding. For the default <i>p n &rarr; gamma 2H</i> production model 
+the cross-section diverges at low <i>k</i>, but the probability of 
+producing two nucleons with low <i>k</i> suppresses this divergence. 
+   
+ 
+<a name="anchor6"></a>
+<p/><code>parm&nbsp; </code><strong> DeuteronProduction:kMax &nbsp;</strong> 
+ (<code>default = <strong>5</strong></code>)<br/>
+The maximum bracketing value of <i>k</i> (in <i>GeV</i>) when maximum 
+finding. 
+   
+ 
+<a name="anchor7"></a>
+<p/><code>parm&nbsp; </code><strong> DeuteronProduction:kTol &nbsp;</strong> 
+ (<code>default = <strong>1e-4</strong></code>)<br/>
+The minimum relative tolerance in <i>k</i> required when maximum 
+finding. 
+   
+ 
+<a name="anchor8"></a>
+<p/><code>mode&nbsp; </code><strong> DeuteronProduction:kSteps &nbsp;</strong> 
+ (<code>default = <strong>100</strong></code>)<br/>
+The number of steps to sample in <i>k</i> when calculating the 
+initial grid for maximum finding. 
+   
+ 
+</body>
+</html>
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

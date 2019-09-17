@@ -1,0 +1,50 @@
+! main76.cmnd
+! This file contains commands to be read in for a Pythia8 run.
+! Lines not beginning with a letter or digit are comments.
+!
+! Example file for producing long-lived particles or dark matter companions
+! Models include (1) scalar -> lepton + DM (2) SU(2) n-plets with mixing
+! Small couplings or large suppression scale result in long-lived particles.
+
+! 1) Settings used in the main program.
+Main:numberOfEvents = 1000        ! number of events to generate
+Main:timesAllowErrors = 3          ! how many aborts before run stops
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showChangedParticleData = on  ! list changed particle data
+Next:numberCount = 100             ! print message every n events
+Next:numberShowInfo = 2            ! print event information n times
+Next:numberShowProcess = 2         ! print process record n times
+Next:numberShowEvent = 2           ! print event record n times
+
+! 3) Beam parameter settings. Values below agree with default ones.
+Beams:idA = 2212                   ! first beam, p = 2212, pbar = -2212
+Beams:idB = 2212                   ! second beam, p = 2212, pbar = -2212
+Beams:eCM = 13000.                 ! CM energy of collision
+
+! 4) Masses and couplings
+! Masses
+56:m0 = 500.0    ! Scalar lepton
+52:m0 = 100.0    ! Dark matter
+
+! Couplings
+DM:yuk1 = 1.0e-7  ! Yukawa coupling to electron
+DM:yuk2 = 0.0     ! to muon
+DM:yuk3 = 0.0     ! to tau
+
+DM:Nplet = 3      ! Nplet = 1:doublet; 2: triplet; 3: quintuplet
+DM:M1 = 350.0     ! Mass of Singlet
+DM:M2 = 200.0     ! Mass of Nplet
+DM:Lambda = 1000. ! Suppression scale
+
+! 5) Process selection
+DM:qqbar2DY = on  ! Drell-Yan production of
+DM:DYtype = 1     ! 1: scalar; 2: singly charged partner
+                  ! 3: doubly charged partner; 4: neutral + charged partner
+
+! 6) Settings for the event generation process in the Pythia8 library.
+PartonLevel:MPI = off              ! no multiparton interactions
+PartonLevel:ISR = off              ! no initial-state radiation
+PartonLevel:FSR = off              ! no final-state radiation
+HadronLevel:Hadronize = off        ! no hadronization

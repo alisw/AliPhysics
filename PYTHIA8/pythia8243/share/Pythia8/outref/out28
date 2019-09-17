@@ -1,0 +1,723 @@
+
+ *------------------------------------------------------------------------------------* 
+ |                                                                                    | 
+ |  *------------------------------------------------------------------------------*  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  |   PPP   Y   Y  TTTTT  H   H  III    A      Welcome to the Lund Monte Carlo!  |  | 
+ |  |   P  P   Y Y     T    H   H   I    A A     This is PYTHIA version 8.201      |  | 
+ |  |   PPP     Y      T    HHHHH   I   AAAAA    Last date of change: 14 Oct 2014  |  | 
+ |  |   P       Y      T    H   H   I   A   A                                      |  | 
+ |  |   P       Y      T    H   H  III  A   A    Now is 14 Oct 2014 at 10:06:33    |  | 
+ |  |                                                                              |  | 
+ |  |   Torbjorn Sjostrand;  Department of Astronomy and Theoretical Physics,      |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      e-mail: torbjorn@thep.lu.se                                             |  | 
+ |  |   Jesper Roy Christiansen;  Department of Astronomy and Theoretical Physics, |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      e-mail: Jesper.Roy.Christiansen@thep.lu.se                              |  | 
+ |  |   Nishita Desai;  Institut fuer Theoretische Physik,                         |  | 
+ |  |     Universitaet Heidelberg, Philosophenweg 16, D-69120 Heidelberg, Germany; |  | 
+ |  |      e-mail: Nishita.Desai@cern.ch                                           |  | 
+ |  |   Philip Ilten;  Massachusetts Institute of Technology,                      |  | 
+ |  |      stationed at CERN, CH-1211 Geneva 23, Switzerland;                      |  | 
+ |  |      e-mail: philten@cern.ch                                                 |  | 
+ |  |   Stephen Mrenna;  Computing Division, Simulations Group,                    |  | 
+ |  |      Fermi National Accelerator Laboratory, MS 234, Batavia, IL 60510, USA;  |  | 
+ |  |      e-mail: mrenna@fnal.gov                                                 |  | 
+ |  |   Stefan Prestel;  Theoretical Physics Group,                                |  | 
+ |  |      SLAC National Accelerator Laboratory, Menlo Park, CA 94025, USA;        |  | 
+ |  |      e-mail: prestel@slac.stanford.edu                                       |  | 
+ |  |   Christine O. Rasmussen;  Department of Astronomy and Theoretical Physics,  |  | 
+ |  |      Lund University, Solvegatan 14A, SE-223 62 Lund, Sweden;                |  | 
+ |  |      e-mail: christine.rasmussen@thep.lu.se                                  |  | 
+ |  |   Peter Skands;  School of Physics,                                          |  | 
+ |  |      Monash University, PO Box 27, 3800 Melbourne, Australia;                |  | 
+ |  |      e-mail: peter.skands@monash.edu                                         |  | 
+ |  |                                                                              |  | 
+ |  |   The main program reference is 'An Introduction to PYTHIA 8.2',             |  | 
+ |  |   T. Sjostrand et al, arXiv:1410.3012 [hep-ph]                               |  | 
+ |  |                                                                              |  | 
+ |  |   The main physics reference is the 'PYTHIA 6.4 Physics and Manual',         |  | 
+ |  |   T. Sjostrand, S. Mrenna and P. Skands, JHEP05 (2006) 026 [hep-ph/0603175]. |  | 
+ |  |                                                                              |  | 
+ |  |   An archive of program versions and documentation is found on the web:      |  | 
+ |  |   http://www.thep.lu.se/~torbjorn/Pythia.html                                |  | 
+ |  |                                                                              |  | 
+ |  |   This program is released under the GNU General Public Licence version 2.   |  | 
+ |  |   Please respect the MCnet Guidelines for Event Generator Authors and Users. |  | 
+ |  |                                                                              |  | 
+ |  |   Disclaimer: this program comes without any guarantees.                     |  | 
+ |  |   Beware of errors and use common sense when interpreting results.           |  | 
+ |  |                                                                              |  | 
+ |  |   Copyright (C) 2014 Torbjorn Sjostrand                                      |  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  *------------------------------------------------------------------------------*  | 
+ |                                                                                    | 
+ *------------------------------------------------------------------------------------* 
+
+ *-----------------------  SusyLesHouches SUSY/BSM Interface  ------------------------*
+ | Last Change 31 Jul 2014 - S. Mrenna
+ | Parsing: sps1aNarrowStopGluino.spc
+ *------------------------------------------------------------------------------------*
+ | 
+ |   Spectrum Calculator was:   SOFTSUSY   version: 2.0.5
+ |   Read SLHA spectrum from: sps1aNarrowStopGluino.spc
+ | 
+ |  ~g                  m
+ |     1000021    607.714
+ | 
+ |  ~d                  m     ~dL     ~sL     ~bL     ~dR     ~sR     ~bR
+ |     1000001    568.441   1.000   0.000   0.000   0.000   0.000   0.000  
+ |     1000003    568.441   0.000   1.000   0.000   0.000   0.000   0.000  
+ |     1000005    513.065   0.000   0.000   0.939   0.000   0.000   0.345  
+ |     2000001    545.228   0.000   0.000   0.000   1.000   0.000   0.000  
+ |     2000003    545.228   0.000   0.000   0.000   0.000   1.000   0.000  
+ |     2000005    543.727   0.000   0.000  -0.345   0.000   0.000   0.939  
+ | 
+ |  ~u                  m     ~uL     ~cL     ~tL     ~uR     ~cR     ~tR
+ |     1000002    561.119   1.000   0.000   0.000   0.000   0.000   0.000  
+ |     1000004    561.119   0.000   1.000   0.000   0.000   0.000   0.000  
+ |     1000006    399.668   0.000   0.000   0.554   0.000   0.000   0.833  
+ |     2000002    549.259   0.000   0.000   0.000   1.000   0.000   0.000  
+ |     2000004    549.259   0.000   0.000   0.000   0.000   1.000   0.000  
+ |     2000006    585.786   0.000   0.000   0.833   0.000   0.000  -0.554  
+ | 
+ |  ~e                  m     ~eL    ~muL   ~tauL     ~eR    ~muR   ~tauR
+ |     1000011    202.916   1.000   0.000   0.000   0.000   0.000   0.000  
+ |     1000013    202.916   0.000   1.000   0.000   0.000   0.000   0.000  
+ |     1000015    134.491   0.000   0.000   0.282   0.000   0.000   0.959  
+ |     2000011    144.103   0.000   0.000   0.000   1.000   0.000   0.000  
+ |     2000013    144.103   0.000   0.000   0.000   0.000   1.000   0.000  
+ |     2000015    206.868   0.000   0.000   0.959   0.000   0.000  -0.282  
+ | 
+ |  ~nu                 m   ~nu_e  ~nu_mu ~nu_tau
+ |     1000012    185.258   1.000   0.000   0.000  
+ |     1000014    185.258   0.000   1.000   0.000  
+ |     1000016    184.708   0.000   0.000   1.000  
+ | 
+ |  ~chi0               m      ~B    ~W_3    ~H_1    ~H_2
+ |     1000022     96.688   0.986  -0.053   0.146  -0.053  
+ |     1000023    181.088   0.099   0.945  -0.270   0.156  
+ |     1000025   -363.756  -0.060   0.088   0.696   0.710  
+ |     1000035    381.729  -0.117   0.311   0.649  -0.684  
+ | 
+ |  ~chi+               m   U:   ~W      ~H  |  V:   ~W      ~H
+ |     1000024    181.696     0.917  -0.399  |    0.973  -0.233  
+ |     1000037    379.939     0.399   0.917  |    0.233   0.973  
+ | 
+ |  Higgs               m
+ |          25    110.899
+ |          35    399.960
+ |          36    399.584
+ |          37    407.879
+ |
+ |     alpha       -0.114
+ |
+ |  Hmix 
+ |     mu         357.681 (DRbar running value at Q = 467.034 GeV)
+ |     tan(beta)    9.749 (DRbar running value at Q = 467.034 GeV)
+ |     v          244.895 (DRbar running value at Q = 467.034 GeV)
+ |     mA       1.664e+05 (DRbar running value at Q = 467.034 GeV)
+ | 
+ |  Gauge      
+ |     g'          absent
+ |     g           absent
+ |     g3           1.102 (DRbar running value at Q = 467.034 GeV)
+ | 
+ *------------------------------------------------------------------------------------*
+ PYTHIA Info from SLHAinterface::initSLHA: importing SLHA decay table(s) 
+ PYTHIA Warning in SLHAinterface::initSLHA: adding off shell DECAY mode 25 -> 24 -24
+ PYTHIA Warning in SLHAinterface::initSLHA: adding off shell DECAY mode 25 -> 23 23
+ PYTHIA Warning in CoupSUSY::initSUSY: Block GAUGE not found or incomplete; using sin(thetaW) at mZ  
+
+ *-------  PYTHIA Process Initialization  --------------------------*
+ |                                                                  |
+ | We collide p+ with p+ at a CM energy of 7.000e+03 GeV            |
+ |                                                                  |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | Subprocess                                    Code |   Estimated |
+ |                                                    |    max (mb) |
+ |                                                    |             |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | g g -> gluino gluino                          1201 |   3.124e-09 |
+ |                                                                  |
+ *-------  End PYTHIA Process Initialization -----------------------*
+
+ *-------  PYTHIA Multiparton Interactions Initialization  ---------* 
+ |                                                                  | 
+ |                   sigmaNonDiffractive =   50.91 mb               | 
+ |                                                                  | 
+ |    pT0 =  2.28 gives sigmaInteraction =  244.18 mb: accepted     | 
+ |                                                                  | 
+ *-------  End PYTHIA Multiparton Interactions Initialization  -----* 
+
+ *-------  PYTHIA Flag + Mode + Parm + Word + FVec + MVec + PVec Settings (changes only)  -------------------------* 
+ |                                                                                                                 | 
+ | Name                                          |                      Now |      Default         Min         Max | 
+ |                                               |                          |                                      | 
+ | BeamRemnants:halfScaleForKT                   |                  1.50000 |      1.00000         0.0             | 
+ | BeamRemnants:primordialKThard                 |                  1.80000 |      2.00000         0.0             | 
+ | BeamRemnants:primordialKTsoft                 |                  0.90000 |      0.50000         0.0             | 
+ | Beams:eCM                                     |                 7000.000 |    14000.000    10.00000             | 
+ | Check:nErrList                                |                        2 |            0                         | 
+ | ColourReconnection:range                      |                  1.80000 |     10.00000         0.0    10.00000 | 
+ | Diffraction:largeMassSuppress                 |                  4.00000 |      2.00000         0.0             | 
+ | HiggsA3:coup2d                                |                  9.74862 |      1.00000                         | 
+ | HiggsA3:coup2H1Z                              |               -0.0116039 |      1.00000                         | 
+ | HiggsA3:coup2H2Z                              |                  0.99993 |      1.00000                         | 
+ | HiggsA3:coup2l                                |                  0.10258 |      1.00000                         | 
+ | HiggsA3:coup2u                                |                  0.10258 |      1.00000                         | 
+ | HiggsH1:coup2d                                |                  1.11305 |      1.00000                         | 
+ | HiggsH1:coup2Hchg                             |                  0.58109 |          0.0                         | 
+ | HiggsH1:coup2l                                |                  0.99874 |      1.00000                         | 
+ | HiggsH1:coup2u                                |                  0.99874 |      1.00000                         | 
+ | HiggsH1:coup2W                                |                  0.99993 |      1.00000                         | 
+ | HiggsH1:coup2Z                                |                  0.99993 |      1.00000                         | 
+ | HiggsH2:coup2A3A3                             |                  0.20991 |      1.00000                         | 
+ | HiggsH2:coup2d                                |                  9.73636 |      1.00000                         | 
+ | HiggsH2:coup2H1H1                             |                 -0.64972 |      1.00000                         | 
+ | HiggsH2:coup2Hchg                             |                  0.19206 |          0.0                         | 
+ | HiggsH2:coup2HchgW                            |                  0.99993 |          0.0                         | 
+ | HiggsH2:coup2l                                |                 -0.11418 |      1.00000                         | 
+ | HiggsH2:coup2u                                |                 -0.11418 |      1.00000                         | 
+ | HiggsH2:coup2W                                |               -0.0116039 |      1.00000                         | 
+ | HiggsH2:coup2Z                                |               -0.0116039 |      1.00000                         | 
+ | HiggsHchg:coup2H1W                            |               -0.0116039 |      1.00000                         | 
+ | HiggsHchg:coup2H2W                            |                  0.99993 |          0.0                         | 
+ | HiggsHchg:tanBeta                             |                  9.74862 |      5.00000                         | 
+ | Init:showChangedParticleData                  |                      off |           on                         | 
+ | MultipartonInteractions:alphaSvalue           |                  0.13000 |      0.12700   0.0600000     0.25000 | 
+ | MultipartonInteractions:bProfile              |                        3 |            1           0           4 | 
+ | MultipartonInteractions:ecmPow                |                  0.21500 |      0.24000         0.0     0.50000 | 
+ | MultipartonInteractions:ecmRef                |                 7000.000 |     1800.000     1.00000             | 
+ | MultipartonInteractions:expPow                |                  1.85000 |      1.00000     0.40000    10.00000 | 
+ | MultipartonInteractions:pT0Ref                |                  2.28000 |      2.15000     0.50000    10.00000 | 
+ | Next:numberShowEvent                          |                        0 |            1           0             | 
+ | Next:showScaleAndVertex                       |                       on |          off                         | 
+ | PDF:pSet                                      |                       13 |            2                         | 
+ | RHadrons:allow                                |                       on |          off                         | 
+ | RHadrons:allowDecay                           |                      off |           on                         | 
+ | SigmaDiffractive:dampen                       |                       on |          off                         | 
+ | SigmaDiffractive:maxAX                        |                 65.00000 |     15.00000         0.0             | 
+ | SigmaDiffractive:maxXB                        |                 65.00000 |     15.00000         0.0             | 
+ | SigmaDiffractive:maxXX                        |                 65.00000 |     15.00000         0.0             | 
+ | SigmaProcess:alphaSvalue                      |                  0.13000 |      0.12650   0.0600000     0.25000 | 
+ | SigmaTotal:zeroAXB                            |                       on |          off                         | 
+ | SLHA:file                                     | sps1aNarrowStopGluino.spc |         void                        | 
+ | SpaceShower:alphaSvalue                       |                  0.13650 |      0.13700   0.0600000     0.25000 | 
+ | SpaceShower:ecmRef                            |                 7000.000 |     1800.000     1.00000             | 
+ | SpaceShower:rapidityOrder                     |                       on |          off                         | 
+ | StringFlav:etaSup                             |                  0.60000 |      0.63000         0.0     1.00000 | 
+ | StringFlav:mesonBvector                       |                  2.20000 |      3.00000         0.0     3.00000 | 
+ | StringFlav:mesonCvector                       |                  0.88000 |      1.06000         0.0     3.00000 | 
+ | StringFlav:mesonSvector                       |                  0.55000 |      0.72500         0.0     3.00000 | 
+ | StringFlav:mesonUDvector                      |                  0.50000 |      0.62000         0.0     3.00000 | 
+ | StringFlav:popcornSpair                       |                  0.90000 |      0.50000         0.0     1.00000 | 
+ | StringFlav:probQQ1toQQ0                       |                0.0275000 |    0.0270000         0.0     1.00000 | 
+ | StringFlav:probQQtoQ                          |                0.0810000 |    0.0900000         0.0     1.00000 | 
+ | StringFlav:probSQtoQQ                         |                  0.91500 |      1.00000         0.0     1.00000 | 
+ | StringFlav:probStoUD                          |                  0.21700 |      0.19000         0.0     1.00000 | 
+ | StringPT:sigma                                |                  0.33500 |      0.30400         0.0     1.00000 | 
+ | StringZ:aExtraDiquark                         |                  0.97000 |      0.50000         0.0     2.00000 | 
+ | StringZ:aLund                                 |                  0.68000 |      0.30000         0.0     2.00000 | 
+ | StringZ:bLund                                 |                  0.98000 |      0.80000     0.20000     2.00000 | 
+ | StringZ:rFactB                                |                  0.85500 |      0.67000         0.0     2.00000 | 
+ | StringZ:rFactC                                |                  1.32000 |      1.00000         0.0     2.00000 | 
+ | SUSY:gg2gluinogluino                          |                       on |          off                         | 
+ | TimeShower:alphaSvalue                        |                  0.13650 |      0.13830   0.0600000     0.25000 | 
+ | TimeShower:pTmin                              |                  0.50000 |      0.40000     0.10000     2.00000 | 
+ | TimeShower:pTminChgQ                          |                  0.50000 |      0.40000     0.10000     2.00000 | 
+ |                                                                                                                 | 
+ *-------  End PYTHIA Flag + Mode + Parm + Word + FVec + MVec + PVec Settings  ------------------------------------* 
+
+ --------  PYTHIA Info Listing  ---------------------------------------- 
+ 
+ Beam A: id =   2212, pz =  3.500e+03, e =  3.500e+03, m =  9.383e-01.
+ Beam B: id =   2212, pz = -3.500e+03, e =  3.500e+03, m =  9.383e-01.
+
+ In 1: id =   21, x =  2.595e-01, pdf =  1.167e-01 at Q2 =  4.732e+05.
+ In 2: id =   21, x =  1.751e-01, pdf =  2.845e-01 at same Q2.
+
+ Subprocess g g -> gluino gluino with code 1201 is 2 -> 2.
+ It has sHat =  2.227e+06,    tHat = -3.129e+05,    uHat = -1.176e+06,
+       pTHat =  3.224e+02,   m3Hat =  6.077e+02,   m4Hat =  6.077e+02,
+    thetaHat =  8.398e-01,  phiHat =  6.203e+00.
+     alphaEM =  8.001e-03,  alphaS =  9.990e-02    at Q2 =  4.732e+05.
+
+ Impact parameter b =  6.333e-01 gives enhancement factor =  1.811e+00.
+ Max pT scale for MPI =  7.000e+03, ISR =  7.000e+03, FSR =  7.000e+03.
+ Number of MPI =     5, ISR =    14, FSRproc =    64, FSRreson =     0.
+
+ --------  End PYTHIA Info Listing  ------------------------------------
+
+ --------  PYTHIA Event Listing  (hard process)  -----------------------------------------------------------------------------------
+ 
+    no        id   name            status     mothers   daughters     colours      p_x        p_y        p_z         e          m 
+                                    scale         pol                             xProd      yProd      zProd      tProd       tau
+     0        90   (system)           -11     0     0     0     0     0     0      0.000      0.000      0.000   7000.000   7000.000
+                                    0.000       9.000                          0.000e+00  0.000e+00  0.000e+00  0.000e+00  0.000e+00
+
+     1      2212   (p+)               -12     0     0     3     0     0     0      0.000      0.000   3500.000   3500.000      0.938
+                                    0.000       9.000                          0.000e+00  0.000e+00  0.000e+00  0.000e+00  0.000e+00
+
+     2      2212   (p+)               -12     0     0     4     0     0     0      0.000      0.000  -3500.000   3500.000      0.938
+                                    0.000       9.000                          0.000e+00  0.000e+00  0.000e+00  0.000e+00  0.000e+00
+
+     3        21   (g)                -21     1     0     5     6   102   101      0.000      0.000    908.418    908.418      0.000
+                                  687.925       9.000                          0.000e+00  0.000e+00  0.000e+00  0.000e+00  0.000e+00
+
+     4        21   (g)                -21     2     0     5     6   104   103      0.000      0.000   -612.931    612.931      0.000
+                                  687.925       9.000                          0.000e+00  0.000e+00  0.000e+00  0.000e+00  0.000e+00
+
+     5   1000021   (~g)               -22     3     4     7     8   104   101    321.343    -25.760    442.417    817.908    607.714
+                                  687.925       9.000                          0.000e+00  0.000e+00  0.000e+00  0.000e+00  9.919e-12
+
+     6   1000021   (~g)               -22     3     4     9    10   102   103   -321.343     25.760   -146.930    703.441    607.714
+                                  687.925       9.000                          0.000e+00  0.000e+00  0.000e+00  0.000e+00  3.650e-12
+
+     7  -1000005   (~b_1bar)          -22     5     0    11    12     0   101    218.666    -17.500    281.534    626.813    515.279
+                                  607.714       9.000                          5.245e-12 -4.205e-13  7.221e-12  1.335e-11  1.043e-13
+
+     8         5   b                   23     5     0     0     0   104     0    102.677     -8.260    160.883    191.095      4.800
+                                  607.714       9.000                          5.245e-12 -4.205e-13  7.221e-12  1.335e-11  0.000e+00
+
+     9  -1000006   (~t_1bar)          -22     6     0    13    14     0   103   -210.045    -67.031   -145.374    479.044    399.672
+                                  607.714       9.000                         -1.930e-12  1.547e-13 -8.824e-13  4.225e-12  7.799e-12
+
+    10         6   (t)                -22     6     0    15    16   102     0   -111.298     92.791     -1.556    224.397    171.330
+                                  607.714       9.000                         -1.930e-12  1.547e-13 -8.824e-13  4.225e-12  0.000e+00
+
+    11  -1000006   (~t_1bar)          -22     7     0    17    18     0   101    138.428     49.868    244.409    491.042    399.672
+                                  515.279       9.000                          5.289e-12 -4.240e-13  7.278e-12  1.348e-11  1.773e-12
+
+    12        24   (W+)               -22     7     0    19    20     0     0     80.237    -67.368     37.125    135.771     77.968
+                                  515.279       9.000                          5.289e-12 -4.240e-13  7.278e-12  1.348e-11  0.000e+00
+
+    13  -1000024   (~chi_1-)          -22     9     0    21    22     0     0   -295.813    -36.561    -60.079    354.213    181.700
+                                  399.672       9.000                         -6.029e-12 -1.153e-12 -3.719e-12  1.357e-11  1.227e-11
+
+    14        -5   bbar                23     9     0     0     0     0   103     85.768    -30.470    -85.295    124.831      4.800
+                                  399.672       9.000                         -6.029e-12 -1.153e-12 -3.719e-12  1.357e-11  0.000e+00
+
+    15        24   (W+)               -22    10     0    23    24     0     0   -117.319     14.577     22.774    142.125     75.529
+                                  171.330       9.000                         -1.930e-12  1.547e-13 -8.824e-13  4.225e-12  0.000e+00
+
+    16         5   b                   23    10     0     0     0   102     0      6.021     78.214    -24.330     82.272      4.800
+                                  171.330       9.000                         -1.930e-12  1.547e-13 -8.824e-13  4.225e-12  0.000e+00
+
+    17  -1000024   (~chi_1-)          -22    11     0    25    26     0     0    171.697     48.128    319.637    408.628    181.694
+                                  399.672       9.000                          5.904e-12 -2.027e-13  8.363e-12  1.566e-11  8.391e-12
+
+    18        -5   bbar                23    11     0     0     0     0   101    -33.269      1.740    -75.228     82.414      4.800
+                                  399.672       9.000                          5.904e-12 -2.027e-13  8.363e-12  1.566e-11  0.000e+00
+
+    19        -1   dbar                23    12     0     0     0     0   105     11.173    -58.007     28.350     65.525      0.330
+                                   77.968       9.000                          5.289e-12 -4.240e-13  7.278e-12  1.348e-11  0.000e+00
+
+    20         2   u                   23    12     0     0     0   105     0     69.064     -9.361      8.776     70.247      0.330
+                                   77.968       9.000                          5.289e-12 -4.240e-13  7.278e-12  1.348e-11  0.000e+00
+
+    21   1000015   (~tau_1-)          -22    13     0    27    28     0     0   -219.673    -31.516    -86.470    273.471    134.387
+                                  181.700       9.000                         -2.600e-11 -3.622e-12 -7.776e-12  3.749e-11  2.520e-12
+
+    22       -16   nu_taubar           23    13     0     0     0     0     0    -76.140     -5.046     26.391     80.742      0.000
+                                  181.700       9.000                         -2.600e-11 -3.622e-12 -7.776e-12  3.749e-11  0.000e+00
+
+    23        -3   sbar                23    15     0     0     0     0   106    -37.966     26.089     38.948     60.326      0.500
+                                   75.529       9.000                         -1.930e-12  1.547e-13 -8.824e-13  4.225e-12  0.000e+00
+
+    24         2   u                   23    15     0     0     0   106     0    -79.353    -11.512    -16.173     81.799      0.330
+                                   75.529       9.000                         -1.930e-12  1.547e-13 -8.824e-13  4.225e-12  0.000e+00
+
+    25   1000022   ~chi_10             23    17     0     0     0     0     0     94.936     19.188    146.168    200.237     96.688
+                                  181.694       9.000                          1.383e-11  2.020e-12  2.312e-11  3.453e-11  0.000e+00
+
+    26       -24   (W-)               -22    17     0    29    30     0     0     76.761     28.940    173.468    208.391     81.275
+                                  181.694       9.000                          1.383e-11  2.020e-12  2.312e-11  3.453e-11  0.000e+00
+
+    27   1000022   ~chi_10             23    21     0     0     0     0     0   -224.719    -37.494    -73.422    258.154     96.688
+                                  134.387       9.000                         -3.012e-11 -4.213e-12 -9.397e-12  4.262e-11  0.000e+00
+
+    28        15   tau-                23    21     0     0     0     0     0      5.045      5.978    -13.048     15.317      1.777
+                                  134.387       9.000                         -3.012e-11 -4.213e-12 -9.397e-12  4.262e-11  2.023e-01
+
+    29         3   s                   23    26     0     0     0   107     0     72.833      4.107     67.220     99.198      0.500
+                                   81.275       9.000                          1.383e-11  2.020e-12  2.312e-11  3.453e-11  0.000e+00
+
+    30        -4   cbar                23    26     0     0     0     0   107      3.928     24.832    106.248    109.192      1.500
+                                   81.275       9.000                          1.383e-11  2.020e-12  2.312e-11  3.453e-11  0.000e+00
+
+                                   Charge sum:  0.000           Momentum sum:      0.000     -0.000    295.487   1521.349   1492.378
+
+ --------  End PYTHIA Event Listing  -----------------------------------------------------------------------------------------------
+ PYTHIA Warning in TauDecays::decay: unknown uncorrelated tau production, assuming unpolarized  
+ PYTHIA Warning in TimeShower::findMEcorr: ME weight above PS one  
+ PYTHIA Error in BeamRemnants::setKinematics: kinematics construction failed  
+ PYTHIA Warning in StringFragmentation::fragmentToJunction: bad convergence junction rest frame  
+
+ *-------  PYTHIA Event and Cross Section Statistics  -------------------------------------------------------------*
+ |                                                                                                                 |
+ | Subprocess                                    Code |            Number of events       |      sigma +- delta    |
+ |                                                    |       Tried   Selected   Accepted |     (estimated) (mb)   |
+ |                                                    |                                   |                        |
+ |-----------------------------------------------------------------------------------------------------------------|
+ |                                                    |                                   |                        |
+ | g g -> gluino gluino                          1201 |        2344        200        200 |   2.800e-10  1.130e-11 |
+ |                                                    |                                   |                        |
+ | sum                                                |        2344        200        200 |   2.800e-10  1.130e-11 |
+ |                                                                                                                 |
+ *-------  End PYTHIA Event and Cross Section Statistics ----------------------------------------------------------*
+
+ *-------  PYTHIA Error and Warning Messages Statistics  ----------------------------------------------------------* 
+ |                                                                                                                 | 
+ |  times   message                                                                                                | 
+ |                                                                                                                 | 
+ |      1   Error in BeamRemnants::setKinematics: kinematics construction failed                                   | 
+ |     32   Info from SLHAinterface::initSLHA: importing SLHA decay table(s)                                       | 
+ |      1   Warning in CoupSUSY::initSUSY: Block GAUGE not found or incomplete; using sin(thetaW) at mZ            | 
+ |      2   Warning in SLHAinterface::initSLHA: adding off shell DECAY mode                                        | 
+ |      1   Warning in StringFragmentation::fragmentToJunction: bad convergence junction rest frame                | 
+ |    268   Warning in TauDecays::decay: unknown uncorrelated tau production, assuming unpolarized                 | 
+ |      2   Warning in TimeShower::findMEcorr: ME weight above PS one                                              | 
+ |                                                                                                                 | 
+ *-------  End PYTHIA Error and Warning Messages Statistics  ------------------------------------------------------* 
+
+ Composition of produced R-hadrons 
+    code            name   times 
+-1093214   Rbar0(~g sud)       3
+-1092214   Rbar-(~g uud)       7
+-1092114   Rbar0(~g udd)      10
+-1091114   Rbar+(~g ddd)       3
+-1009323   R-(~g s ubar)      16
+-1009313   R0(~g s dbar)      13
+-1009213   R-(~g d ubar)      56
+ 1000993        R0(~g g)      50
+ 1009113   R0(~g d dbar)      65
+ 1009213   R+(~g u dbar)      65
+ 1009223   R0(~g u ubar)      51
+ 1009313   R0(~g d sbar)      12
+ 1009323   R+(~g u sbar)      11
+ 1009333   R0(~g s sbar)       2
+ 1091114      R-(~g ddd)       4
+ 1092114      R0(~g udd)      12
+ 1092214      R+(~g uud)      12
+ 1092224     R++(~g uuu)       3
+ 1093114      R-(~g sdd)       1
+ 1093214      R0(~g sud)       3
+ 1093224      R+(~g suu)       1
+
+
+  2014-10-14 10:06       charged multiplicity
+
+        1.40*10^ 1                X     X                                                                               
+        1.35*10^ 1                X     X                                                                               
+        1.30*10^ 1                X  X  X                                                                               
+        1.25*10^ 1                X  X  X                                                                               
+        1.20*10^ 1                X  X  X                                                                               
+        1.15*10^ 1                X  X  X                                                                               
+        1.10*10^ 1                X  XX X   X                                                                           
+        1.05*10^ 1                X  XX X   X                                                                           
+        1.00*10^ 1              XXX  XX X X X                                                                           
+        0.95*10^ 1              XXX  XX X X X                                                                           
+        0.90*10^ 1              XXX  XX X X X   X                                                                       
+        0.85*10^ 1              XXX  XX X X X   X                                                                       
+        0.80*10^ 1              XXXXXXX X X X XXX                                                                       
+        0.75*10^ 1              XXXXXXX X X X XXX                                                                       
+        0.70*10^ 1            XXXXXXXXX X XXX XXX                                                                       
+        0.65*10^ 1            XXXXXXXXX X XXX XXX                                                                       
+        0.60*10^ 1            XXXXXXXXX X XXXXXXX                                                                       
+        0.55*10^ 1            XXXXXXXXX X XXXXXXX                                                                       
+        0.50*10^ 1            XXXXXXXXX XXXXXXXXXX   X                                                                  
+        0.45*10^ 1            XXXXXXXXX XXXXXXXXXX   X                                                                  
+        0.40*10^ 1           XXXXXXXXXXXXXXXXXXXXX X X                                                                  
+        0.35*10^ 1           XXXXXXXXXXXXXXXXXXXXX X X                                                                  
+        0.30*10^ 1           XXXXXXXXXXXXXXXXXXXXX X X X                                                                
+        0.25*10^ 1           XXXXXXXXXXXXXXXXXXXXX X X X                                                                
+        0.20*10^ 1        XXXXXXXXXXXXXXXXXXXXXXXX X X X                                                                
+        0.15*10^ 1        XXXXXXXXXXXXXXXXXXXXXXXX X X X                                                                
+        0.10*10^ 1        XXXXXXXXXXXXXXXXXXXXXXXXXX XXX     X                                                          
+        0.05*10^ 1        XXXXXXXXXXXXXXXXXXXXXXXXXX XXX     X                                                          
+
+          Contents                                                                                                      
+            *10^ 1  0000000000001110011010101000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^ 0  0000002224770048831445071688951405130000010000000000000000000000000000000000000000000000000000000000
+            *10^-1  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^-2  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+          Low edge  -                                                                                                   
+            *10^ 2  0000000000000111111111111222222222222233333333333344444444444445555555555556666666666666777777777777
+            *10^ 1  0012344567889012234566789001234456788901223456678900123445678890122345667890012344567889012234566789
+            *10^ 0  1864208642086420864208642086420864208642086420864208642086420864208642086420864208642086420864208642
+
+   Entries  =         200    Mean =  1.6006e+02    Underflow =  0.0000e+00    Low edge  = -5.0000e-01
+   All chan =  2.0000e+02    Rms  =  5.5699e+01    Overflow  =  0.0000e+00    High edge =  7.9950e+02
+
+
+  2014-10-14 10:06       dn/dy charged
+
+        0.92*10^ 3                                                 5695                                                 
+        0.88*10^ 3                                                 XXXX331                                              
+        0.84*10^ 3                                                7XXXXXXX51                                            
+        0.80*10^ 3                                              X4XXXXXXXXXX62                                          
+        0.76*10^ 3                                          1  1XXXXXXXXXXXXXX                                          
+        0.72*10^ 3                                          XX3XXXXXXXXXXXXXXX62                                        
+        0.68*10^ 3                                          XXXXXXXXXXXXXXXXXXXX                                        
+        0.64*10^ 3                                         2XXXXXXXXXXXXXXXXXXXX43                                      
+        0.60*10^ 3                                       87XXXXXXXXXXXXXXXXXXXXXXX 1                                    
+        0.56*10^ 3                                      9XXXXXXXXXXXXXXXXXXXXXXXXX3X5                                   
+        0.52*10^ 3                                   2  XXXXXXXXXXXXXXXXXXXXXXXXXXXXX                                   
+        0.48*10^ 3                                   X27XXXXXXXXXXXXXXXXXXXXXXXXXXXXX89                                 
+        0.44*10^ 3                                 47XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX1                                
+        0.40*10^ 3                                1XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                               
+        0.36*10^ 3                              17XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX6                            
+        0.32*10^ 3                            15XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX31                          
+        0.28*10^ 3                           3XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX5                         
+        0.24*10^ 3                         1XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX1                        
+        0.20*10^ 3                         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX40                      
+        0.16*10^ 3                      49XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX7                     
+        0.12*10^ 3                   239XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX882                  
+        0.08*10^ 3                35XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX94732             
+        0.04*10^ 3         2315688XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX76642  1     
+
+          Contents                                                                                                      
+            *10^ 2  0000000000000000000111122222333444445556776787899988888877766655544443332222111110000000000000000000
+            *10^ 1  0000000010123355789135503589246128465980229207200195541086081136377005649850764119757542221000000000
+            *10^ 0  0101001816851318861766858438582497886067202216815483169438287022826419122594527310540179445811201000
+            *10^-1  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+          Low edge  --------------------------------------------------                                                  
+            *10^ 1  1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^ 0  0999998888877777666665555544444333332222211111000000000111112222233333444445555566666777778888899999
+            *10^-1  0864208642086420864208642086420864208642086420864202468024680246802468024680246802468024680246802468
+
+   Entries  =       31871    Mean = -8.8262e-03    Underflow =  0.0000e+00    Low edge  = -1.0000e+01
+   All chan =  3.1871e+04    Rms  =  2.9365e+00    Overflow  =  0.0000e+00    High edge =  1.0000e+01
+
+
+  2014-10-14 10:06       dn/dy R-hadrons
+
+        4.20*10^ 1                                                    X                                                 
+        4.05*10^ 1                                                    X                                                 
+        3.90*10^ 1                                                    X                                                 
+        3.75*10^ 1                                                    X                                                 
+        3.60*10^ 1                                                    X                                                 
+        3.45*10^ 1                                                  7 X                                                 
+        3.30*10^ 1                                                  X X3                                                
+        3.15*10^ 1                                                  X XX                                                
+        3.00*10^ 1                                                  X XX                                                
+        2.85*10^ 1                                                  X XX                                                
+        2.70*10^ 1                                               3  X XX                                                
+        2.55*10^ 1                                               X  X XX7                                               
+        2.40*10^ 1                                               X  XXXXX                                               
+        2.25*10^ 1                                               X  XXXXX                                               
+        2.10*10^ 1                                               X  XXXXX                                               
+        1.95*10^ 1                                               X 7XXXXX 7                                             
+        1.80*10^ 1                                              3X XXXXXX3X                                             
+        1.65*10^ 1                                              XX7XXXXXXXX                                             
+        1.50*10^ 1                                              XXXXXXXXXXX X X                                         
+        1.35*10^ 1                                              XXXXXXXXXXX7X X                                         
+        1.20*10^ 1                                           333XXXXXXXXXXXXX3X                                         
+        1.05*10^ 1                                          7XXXXXXXXXXXXXXXXXX                                         
+        0.90*10^ 1                                          XXXXXXXXXXXXXXXXXXX                                         
+        0.75*10^ 1                                          XXXXXXXXXXXXXXXXXXX 7                                       
+        0.60*10^ 1                                         XXXXXXXXXXXXXXXXXXXXXX                                       
+        0.45*10^ 1                                       7 XXXXXXXXXXXXXXXXXXXXXX                                       
+        0.30*10^ 1                                       X XXXXXXXXXXXXXXXXXXXXXX 3 X                                   
+        0.15*10^ 1                                      7X XXXXXXXXXXXXXXXXXXXXXX7X7X7                                  
+
+          Contents                                                                                                      
+            *10^ 1  0000000000000000000000000000000000000000111112113243211111100000000000000000000000000000000000000000
+            *10^ 0  0000000000000000000000000000000000001406011176694422579351567121310000000000000000000000000000000000
+            *10^-1  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^-2  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+          Low edge  --------------------------------------------------                                                  
+            *10^ 0  5444444444433333333332222222222111111111100000000000000000001111111111222222222233333333334444444444
+            *10^-1  0987654321098765432109876543210987654321098765432101234567890123456789012345678901234567890123456789
+            *10^-2  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+   Entries  =         400    Mean =  1.2250e-02    Underflow =  0.0000e+00    Low edge  = -5.0000e+00
+   All chan =  4.0000e+02    Rms  =  5.4895e-01    Overflow  =  0.0000e+00    High edge =  5.0000e+00
+
+
+  2014-10-14 10:06       pT R-hadrons
+
+        1.40*10^ 1               X                                                                                      
+        1.35*10^ 1               X                                                                                      
+        1.30*10^ 1               X      X    X                                                                          
+        1.25*10^ 1               X      X    X                                                                          
+        1.20*10^ 1              XX      X    XX X                                                                       
+        1.15*10^ 1              XX      X    XX X                                                                       
+        1.10*10^ 1              XX  X   X  X XXXX                                                                       
+        1.05*10^ 1              XX  X   X  X XXXX                                                                       
+        1.00*10^ 1              XX XX   X XX XXXX     X X  X                                                            
+        0.95*10^ 1              XX XX   X XX XXXX     X X  X                                                            
+        0.90*10^ 1              XX XX   X XXXXXXX     X X XX   X X                                                      
+        0.85*10^ 1              XX XX   X XXXXXXX     X X XX   X X                                                      
+        0.80*10^ 1              XX XX  XX XXXXXXX XX  X X XX  XXXX                                                      
+        0.75*10^ 1              XX XX  XX XXXXXXX XX  X X XX  XXXX                                                      
+        0.70*10^ 1            X XX XXX XX XXXXXXXXXX XX XXXX  XXXX                                                      
+        0.65*10^ 1            X XX XXX XX XXXXXXXXXX XX XXXX  XXXX                                                      
+        0.60*10^ 1          X XXXX XXXXXXXXXXXXXXXXX XX XXXX XXXXX  X       X                                           
+        0.55*10^ 1          X XXXX XXXXXXXXXXXXXXXXX XX XXXX XXXXX  X       X                                           
+        0.50*10^ 1     X X  X XXXX XXXXXXXXXXXXXXXXX XX XXXX XXXXX  X  X    X                                           
+        0.45*10^ 1     X X  X XXXX XXXXXXXXXXXXXXXXX XX XXXX XXXXX  X  X    X                                           
+        0.40*10^ 1     X X  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX X  X  X X           X                               
+        0.35*10^ 1     X X  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX X  X  X X           X                               
+        0.30*10^ 1     X X  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  X XX X           X     X                         
+        0.25*10^ 1     X X  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  X XX X           X     X                         
+        0.20*10^ 1     X X XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX X XXXX X XX      X XX  X                         
+        0.15*10^ 1     X X XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX X XXXX X XX      X XX  X                         
+        0.10*10^ 1  XXXX X XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX XXXXXXXX XXX  XX XXXX  XXX  X     XX   X         
+        0.05*10^ 1  XXXX X XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX XXXXXXXX XXX  XX XXXX  XXX  X     XX   X         
+
+          Contents                                                                                                      
+            *10^ 1  0000000000001101100010110111100000101001000000000000000000000000000000000000000000000000000000000000
+            *10^ 0  1115050264762440176836019321278847040790468989436205134261202210011041220031100100000110001000000000
+            *10^-1  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^-2  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+          Low edge                                                                                                      
+            *10^ 2  0000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999
+            *10^ 1  0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+            *10^ 0  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+   Entries  =         400    Mean =  3.1224e+02    Underflow =  0.0000e+00    Low edge  =  0.0000e+00
+   All chan =  3.9900e+02    Rms  =  1.6748e+02    Overflow  =  1.0000e+00    High edge =  1.0000e+03
+
+
+  2014-10-14 10:06       p_RHadron / p_sparticle
+
+        8.10*10^ 1                                                    X                                                 
+        7.80*10^ 1                                                   7X                                                 
+        7.50*10^ 1                                                   XX                                                 
+        7.20*10^ 1                                                   XX                                                 
+        6.90*10^ 1                                                   XX                                                 
+        6.60*10^ 1                                                   XX                                                 
+        6.30*10^ 1                                                  3XX                                                 
+        6.00*10^ 1                                                  XXX                                                 
+        5.70*10^ 1                                                  XXX                                                 
+        5.40*10^ 1                                                  XXXX                                                
+        5.10*10^ 1                                                  XXXX                                                
+        4.80*10^ 1                                                  XXXX                                                
+        4.50*10^ 1                                                  XXXX                                                
+        4.20*10^ 1                                                  XXXX                                                
+        3.90*10^ 1                                                  XXXX                                                
+        3.60*10^ 1                                                  XXXX                                                
+        3.30*10^ 1                                                  XXXX                                                
+        3.00*10^ 1                                                  XXXX7                                               
+        2.70*10^ 1                                                 7XXXXX                                               
+        2.40*10^ 1                                                 XXXXXX                                               
+        2.10*10^ 1                                                3XXXXXX                                               
+        1.80*10^ 1                                                XXXXXXX                                               
+        1.50*10^ 1                                                XXXXXXX7                                              
+        1.20*10^ 1                                                XXXXXXXX7                                             
+        0.90*10^ 1                                                XXXXXXXXX                                             
+        0.60*10^ 1                                              X XXXXXXXXX3                                            
+        0.30*10^ 1                                   3   3  73X7XXXXXXXXXXXX33333                                       
+
+          Contents                                                                                                      
+            *10^ 1  0000000000000000000000000000000000000000000000126785211000000000000000000000000000000000000000000000
+            *10^ 0  0000000000000000000000000000000001000100213263961714941411111000000000000000000000000000000000000000
+            *10^-1  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^-2  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+          Low edge                                                                                                      
+            *10^ 0  0000000000000000000000000000000000000000000000001111111111111111111111111111111111111111111111111111
+            *10^-1  9999999999999999999999999999999999999999999999990000000000000000000000000000000000000000000000000011
+            *10^-2  0001111122222333334444455555666667777788888999990000011111222223333344444555556666677777888889999900
+
+   Entries  =         400    Mean =  9.9978e-01    Underflow =  0.0000e+00    Low edge  =  9.0000e-01
+   All chan =  4.0000e+02    Rms  =  5.4161e-03    Overflow  =  0.0000e+00    High edge =  1.1000e+00
+
+
+  2014-10-14 10:06       m(Rhadron) - m(sparticle)
+
+        1.25*10^ 2                                 6                                                                    
+        1.20*10^ 2                                 X                                                                    
+        1.15*10^ 2                                 X                                                                    
+        1.10*10^ 2                                 X                                                                    
+        1.05*10^ 2                                 X                                                                    
+        1.00*10^ 2                                 X                                                                    
+        0.95*10^ 2                                 X                                                                    
+        0.90*10^ 2                                 X                                                                    
+        0.85*10^ 2                                 X                                                                    
+        0.80*10^ 2                                 X                                                                    
+        0.75*10^ 2                                 X                                                                    
+        0.70*10^ 2                                 X 6                                                                  
+        0.65*10^ 2                                 X X                                                                  
+        0.60*10^ 2                                 X X                                                                  
+        0.55*10^ 2                                 X X                                                                  
+        0.50*10^ 2                                 X X                                                                  
+        0.45*10^ 2                                 X4X                                                                  
+        0.40*10^ 2                                 XXX    2                                                             
+        0.35*10^ 2                                 XXX    X                                                             
+        0.30*10^ 2                                 XXX 6  X                                                             
+        0.25*10^ 2                                 XXX X  X                                                             
+        0.20*10^ 2                                 XXX6X  X                                                             
+        0.15*10^ 2                                 XXXXX  XX2   8                                                       
+        0.10*10^ 2                                 XXXXX2 XXX 2 X                                                       
+        0.05*10^ 2                           2   22XXXXXXXXXXXX6X42262 42    2      2 22       2       2                
+
+          Contents                                                                                                      
+            *10^ 2  0000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000
+            *10^ 1  0000000000000000000000000000000246120031100010000000000000000000000000000000000000000000000000000000
+            *10^ 0  0000000000000000000000000100011328886565156342113102100001000000101100000001000000010000000000000000
+            *10^-1  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+          Low edge                                                                                                      
+            *10^ 0  0000000000000000000011111111111111111111222222222222222222223333333333333333333344444444444444444444
+            *10^-1  0011223344556677889900112233445566778899001122334455667788990011223344556677889900112233445566778899
+            *10^-2  0505050505050505050505050505050505050505050505050505050505050505050505050505050505050505050505050505
+
+   Entries  =         400    Mean =  1.7769e+00    Underflow =  0.0000e+00    Low edge  =  0.0000e+00
+   All chan =  4.0000e+02    Rms  =  3.0254e-01    Overflow  =  0.0000e+00    High edge =  5.0000e+00
+
+
+  2014-10-14 10:06       R-hadron decay vertex (mm from origin)
+
+        4.05*10^ 2  7                                                                                                   
+        3.90*10^ 2  X                                                                                                   
+        3.75*10^ 2  X                                                                                                   
+        3.60*10^ 2  X                                                                                                   
+        3.45*10^ 2  X                                                                                                   
+        3.30*10^ 2  X                                                                                                   
+        3.15*10^ 2  X                                                                                                   
+        3.00*10^ 2  X                                                                                                   
+        2.85*10^ 2  X                                                                                                   
+        2.70*10^ 2  X                                                                                                   
+        2.55*10^ 2  X                                                                                                   
+        2.40*10^ 2  X                                                                                                   
+        2.25*10^ 2  X                                                                                                   
+        2.10*10^ 2  X                                                                                                   
+        1.95*10^ 2  X                                                                                                   
+        1.80*10^ 2  X                                                                                                   
+        1.65*10^ 2  X                                                                                                   
+        1.50*10^ 2  X                                                                                                   
+        1.35*10^ 2  X                                                                                                   
+        1.20*10^ 2  X                                                                                                   
+        1.05*10^ 2  X                                                                                                   
+        0.90*10^ 2  X                                                                                                   
+        0.75*10^ 2  X                                                                                                   
+        0.60*10^ 2  X                                                                                                   
+        0.45*10^ 2  X                                                                                                   
+        0.30*10^ 2  X                                                                                                   
+        0.15*10^ 2  X                                                                                                   
+
+          Contents                                                                                                      
+            *10^ 2  4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^ 1  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^ 0  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            *10^-1  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+          Low edge                                                                                                      
+            *10^ 2  0000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999
+            *10^ 1  0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+            *10^ 0  0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+   Entries  =         400    Mean =  5.0000e+00    Underflow =  0.0000e+00    Low edge  =  0.0000e+00
+   All chan =  4.0000e+02    Rms  =  0.0000e+00    Overflow  =  0.0000e+00    High edge =  1.0000e+03

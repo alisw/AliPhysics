@@ -1,0 +1,144 @@
+<chapter name="Vertex Information"> 
+ 
+<h2>Vertex Information</h2> 
+ 
+While the setting of secondary production vertices of unstable 
+hadrons and leptons is a standard part of the particle decay 
+rotines, no corresponding standardized handling is in place for 
+the evolution in the partonic or hadronization phases 
+of the event generation. The intention is to provide such methods 
+in due course. 
+ 
+<p/> 
+There are some cases where such information is needed already now, 
+specifically for the 
+<aloc href="RopeHadronization">Rope Hadronization</aloc> 
+framework. Therefore the beginning of a framework is available, 
+that can be used to set vertices for partonic production by MPI, 
+FSR and ISR. This is done in the <code>PartonVertex</code> class. 
+This is a base class, with a default implementation, but the user 
+can replace it with a derived class that does a more sophisticated 
+handling. 
+ 
+<p/> 
+Note that currently the parton-level vertices are expressed in fm, 
+unlike the normal mm scale. This will be fixed as the methods 
+evolve. Also other improvements and extensions are likely to come. 
+So, while people are welcome to write their own derived classes, 
+it is likely that these may need to be modified in later PYTHIA 
+versions. 
+ 
+<h3>Rope Hadronization Parameters</h3> 
+ 
+Currently the base class implements two alternative approaches to 
+picking a partonic vertex, for use inside the rope hadronization 
+framework. There are also some free parameters in the models. 
+ 
+<flag name="PartonVertex:setVertex" default="off"> 
+Master switch to allow the setting of partonic vertices. 
+</flag> 
+ 
+<modepick name="PartonVertex:modeVertex" default="2" min="1" max="2"> 
+Choice between alternative procedures to select vertex. 
+<option value="1">Proton profile is a uniform black disc. 
+</option> 
+<option value="2">Proton profile is a two-dimensional Gaussian. 
+</option> 
+</modepick> 
+ 
+<parm name="PartonVertex:ProtonRadius" default="0.7" min="0." max="10."> 
+The proton radius and shape depends on collision energy. At LHC collision 
+energies, say 14 TeV, the profile corresponds roughly to a Gaussian with 
+a with of around 0.7 fm, according to the DIPSY model <ref>Fle11</ref>. 
+</parm> 
+ 
+<parm name="PartonVertex:EmissionWidth" default="0.1" min="0." max="10."> 
+Vertices of ISR+FSR partons are smeared relative to their mother by a 
+Gaussian distribution with a width of <code>EmissionWidth</code>/<ei>pT</ei>, 
+where <ei>pT</ei> is the transverse momentum of the emission (in GeV). 
+This parameter thus determined the overall strength of the transverse space 
+smearing. 
+</parm> 
+ 
+<parm name="PartonVertex:pTmin" default="0.2" min="0.05" max="1."> 
+The parton transverse smearing is assumed proportional to <ei>1 / pT</ei>, 
+but <ei>pT</ei> is limited to be above this parameter so as to avoid 
+unreasonable values. 
+</parm> 
+ 
+<h3>External models</h3> 
+ 
+A derived class for setting parton vertex information can be provided 
+to PYTHIA with the 
+<br/><code> 
+bool Pythia::setPartonVertexPtr( PartonVertex* partonVertexPtrIn) 
+</code><br/> 
+method. The methods in the derived <code>PartonVertex</code> class 
+can then be used to add vertex information to produced particles, 
+at creation time, in MPI, FSR and ISR. The assigned vertex information 
+will afterwards be accessible as properties of the individual particles. 
+Particles produced in other types of processes than the ones mentioned 
+above will not have vertex information assigned (e.g. hard process, 
+beam remnants etc.), neither will particles produced in the weak shower. 
+ 
+<method name="virtual void init()"> 
+can be used to initialize various parameters of the model or precalculate 
+common numbers. Note that a separate non-virtual method will already 
+have provided pointers to the <code>Info</code>, <code>Settings</code> 
+and <code>Rndm</code> classes, so that these are available in all derived 
+classes. 
+</method> 
+ 
+<method name="virtual void vertexMPI( int iBeg, int nAdd, double bNow, 
+Event& event)"> 
+Method to assign a production vertex to a particle produced in the MPI 
+framework. Should set the vertices <code>vProd</code> of the particles 
+concerned. 
+<argument name="iBeg"> is the index of the first parton of a MPI. 
+</argument> 
+<argument name="nAdd"> is the number of partons involved in the MPI, 
+currently always four: two in and two out. 
+</argument> 
+<argument name="bNow"> is the impact parameter of the event. It is not 
+expressed in physical units (like fm), but rescaled such that the average 
+is unity for MPI events. See the section on 
+<aloc href="MultipartonInteractions">Multiparton Interactions</aloc> for 
+a description of choices for the <ei>b</ei> dependence. 
+</argument> 
+<argument name="event"> reference to the whole event, to read information 
+from and set the relevant <code>vProd</code> values into. 
+</argument> 
+</method> 
+ 
+<method name="virtual Vec4 vertexFSR( int iNow, Event& event)"> 
+Method to assign production vertex to a particle produced in the FSR 
+(<code>TimeShower</code>). Should set the vertex <code>vProd</code> 
+of the particle concerned. 
+<argument name="iNow"> is the index of the parton concerned. In a 
+branching the daughters automatically inherit the vertex of the mother, 
+if it has one, and similarly for the recoiler. This method is called 
+specifically for what is considered the emitted parton of the process, 
+i.e. the gluon in a <ei>q &rarr; q g</ei> branching, and allows the 
+vertex of this parton to be modified. 
+</argument> 
+<argument name="event"> reference to the whole event, to read information 
+from and set the relevant <code>vProd</code> values into. 
+</argument> 
+</method> 
+ 
+<method name="virtual Vec4 vertexISR( int iNow, Event& event)"> 
+Method to assign production vertex to a particle produced in the ISR 
+(<code>SpaceShower</code>). Should set the vertices <code>vProd</code> 
+of the particle concerned. 
+<argument name="iNow"> is the index of the parton concerned. This method 
+is called three times for each ISR branching, for the daughter, the 
+new recoiler and the sister. 
+</argument> 
+<argument name="event"> reference to the whole event, to read information 
+from and set the relevant <code>vProd</code> values into. 
+</argument> 
+</method> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

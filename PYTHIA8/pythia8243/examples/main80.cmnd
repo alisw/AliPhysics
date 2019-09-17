@@ -1,0 +1,39 @@
+! main80.cmnd.
+! This file contains commands to be read in for a Pythia8 run.
+! Lines not beginning with a letter or digit are comments.
+
+// Specify statistics parameters.
+Main:numberOfEvents       = 100  ! number of events generated
+Init:showChangedParticleData = off  ! not useful info here
+Next:numberShowInfo       = 0    ! avoid unnecessary info
+Next:numberShowEvent      = 0    ! avoid lengthy event listings
+
+// Specify merging parameters.
+Merging:doKTMerging       = on   ! switch on kT merging
+Merging:ktType            = 2    ! Durham kT with pseudorapidity
+Merging:TMS               = 30.  ! merging scale, here in kT
+Merging:Process           = pp>e+ve  ! process in MadGraph notation
+Merging:nJetMax           = 2    ! maximal number of additional jets
+
+// Specify full event generation or not.
+PartonLevel:MPI           = off  ! switch on to study full events
+HadronLevel:all           = off  ! as above
+
+// Other options (examples).
+Tune:pp                   = 5   ! = current default
+SpaceShower:rapidityOrder = off ! NOT default for this tune
+
+// Subruns are used to select which LHE file to read when.
+// Subrun info should always go at the end of the input file.
+// Here Main:subrun = iMerge of pythia.readFile(...) in main80.cc.
+Beams:frameType           = 4   ! use LHEF input for incoming beams
+!--------------------------------------------------------------------
+Main:subrun               = 0   ! input for first subrun, W + 0 jets
+Beams:LHEF                = w+_production_lhc_0.lhe
+!--------------------------------------------------------------------
+Main:subrun               = 1   ! input for second subrun, W + 1 jet
+Beams:LHEF                = w+_production_lhc_1.lhe
+!--------------------------------------------------------------------
+Main:subrun               = 2   ! input for third subrun, W + 2 jets
+Beams:LHEF                = w+_production_lhc_2.lhe
+!--------------------------------------------------------------------

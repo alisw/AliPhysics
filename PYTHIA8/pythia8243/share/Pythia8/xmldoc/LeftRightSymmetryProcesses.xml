@@ -1,0 +1,182 @@
+<chapter name="Left-Right-Symmetry Processes"> 
+ 
+<h2>Left-Right-Symmetry Processes</h2> 
+ 
+At current energies, the world is left-handed, i.e. the Standard Model 
+contains an <ei>SU(2)_L</ei> group. Left-right symmetry at some larger 
+scale implies the need for an <ei>SU(2)_R</ei> group. Thus the particle 
+content is expanded by right-handed <ei>Z_R^0</ei> and <ei>W_R^+-</ei> 
+and right-handed neutrinos. The Higgs fields have to be in a triplet 
+representation, leading to doubly-charged Higgs particles, one set for 
+each of the two <ei>SU(2)</ei> groups. Also the number of neutral and 
+singly-charged Higgs states is increased relative to the Standard Model, 
+but a search for the lowest-lying states of this kind is no different 
+from e.g. the freedom already accorded by the MSSM Higgs scenarios. 
+ 
+<p/> 
+PYTHIA implements the scenario of <ref>Hui97</ref>. 
+ 
+<p/> 
+The <ei>W_R^+-</ei> has been implemented as a simple copy of the 
+ordinary <ei>W^+-</ei>, with the exception that it couples to 
+right-handed neutrinos instead of the ordinary left-handed ones. 
+Thus the standard CKM matrix is used in the quark sector, and the 
+same vector and axial coupling strengths, leaving only the mass as 
+free parameter. The <ei>Z_R^0</ei> implementation (without interference 
+with the photon or the ordinary <ei>Z^0</ei>) allows decays both to 
+left- and right-handed neutrinos, as well as other fermions, according 
+to one specific model ansatz. Obviously both the <ei>W_R^+-</ei> 
+and the <ei>Z_R^0</ei> descriptions are  likely to be simplifications, 
+but provide a starting point. 
+ 
+<p/> 
+For the doubly-charged Higgs bosons, the main decay modes implemented are 
+<ei>H_L^++ &rarr; W_L^+ W_L^+, l_i^+ l_j^+ </ei> (<ei>i, j</ei> generation 
+indices) and <ei>H_R^++ &rarr; W_R^+ W_R^+, l_i^+ l_j^+</ei>. 
+ 
+<p/> 
+The right-handed neutrinos can be allowed to decay further. Assuming them 
+to have a mass below that of <ei>W_R^+-</ei>, they decay to three-body 
+states via a virtual <ei>W_R^+-</ei>, <ei>nu_Rl &rarr; l+- f fbar'</ei>, 
+where both lepton charges are allowed owing to the Majorana character 
+of the neutrinos. If there is a significant mass splitting, also 
+sequential decays <ei>nu_Rl &rarr; l+- l'-+  nu'_Rl</ei> are allowed. 
+Currently the decays are isotropic in phase space. If the neutrino 
+masses are close to or above the <ei>W_R^</ei> ones, this description 
+has to be substituted by a sequential decay via a real <ei>W_R^</ei> 
+(not implemented, but actually simpler to do than the one here). 
+ 
+ 
+<h3>Production processes</h3> 
+ 
+A few different production processes have been implemented, which normally 
+would not overlap and therefore could be run together. 
+ 
+<flag name="LeftRightSymmmetry:all" default="off"> 
+Common switch for the group of implemented processes within a 
+left-right-symmetric scenario. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:ffbar2ZR" default="off"> 
+Scatterings <ei>f fbar &rarr; Z_R^0</ei>. 
+Code 3101. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:ffbar2WR" default="off"> 
+Scatterings <ei>f fbar' &rarr; W_R^+</ei>. 
+Code 3102. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:ll2HL" default="off"> 
+Scatterings <ei>l_i l_j &rarr; H_L^--</ei>. 
+Code 3121. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:lgm2HLe" default="off"> 
+Scatterings <ei>l_i gamma &rarr; H_L^-- e^+</ei>. 
+Code 3122. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:lgm2HLmu" default="off"> 
+Scatterings <ei>l_i gamma &rarr; H_L^-- mu^+</ei>. 
+Code 3123. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:lgm2HLtau" default="off"> 
+Scatterings <ei>l_i gamma &rarr; H_L^-- tau^+</ei>. 
+Code 3124. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:ff2HLff" default="off"> 
+Scatterings <ei>f_1 f_2 &rarr; H_L^-- f_3 f_4</ei> via <ei>WW</ei> fusion. 
+Code 3125. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:ffbar2HLHL" default="off"> 
+Scatterings <ei>f fbar &rarr;  H_L^++ H_L^--</ei>. 
+Code 3126. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:ll2HR" default="off"> 
+Scatterings <ei>l_i l_j &rarr; H_R^--</ei>. 
+Code 3141. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:lgm2HRe" default="off"> 
+Scatterings <ei>l_i gamma &rarr; H_R^-- e^+</ei>. 
+Code 3142. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:lgm2HRmu" default="off"> 
+Scatterings <ei>l_i gamma &rarr; H_R^-- mu^+</ei>. 
+Code 3143. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:lgm2HRtau" default="off"> 
+Scatterings <ei>l_i gamma &rarr; H_R^-- tau^+</ei>. 
+Code 3144. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:ff2HRff" default="off"> 
+Scatterings <ei>f_1 f_2 &rarr; H_R^-- f_3 f_4</ei> via <ei>WW</ei> fusion. 
+Code 3145. 
+</flag> 
+ 
+<flag name="LeftRightSymmmetry:ffbar2HRHR" default="off"> 
+Scatterings <ei>f fbar &rarr;  H_R^++ H_R^--</ei>. 
+Code 3146. 
+</flag> 
+ 
+<h3>Parameters</h3> 
+ 
+The basic couplings of the model are 
+ 
+<parm name="LeftRightSymmmetry:gL" default="0.64" min="0.0"> 
+lefthanded coupling <ei>g_L = e / sin(theta)</ei>. 
+</parm> 
+ 
+<parm name="LeftRightSymmmetry:gR" default="0.64" min="0.0"> 
+righthanded coupling <ei>g_R</ei>, assumed the same as <ei>g_L</ei>. 
+</parm> 
+ 
+<parm name="LeftRightSymmmetry:vL" default="5." min="0.0"> 
+vacuum expectation value <ei>v_L</ei> (in GeV) for the left-triplet. 
+</parm> 
+ 
+<p/> 
+The corresponding vacuum expectation value <ei>v_R</ei> is assumed 
+given by <ei>v_R = sqrt(2) M_WR / g_R</ei> and is not stored explicitly. 
+ 
+<p/> 
+The Yukawa couplings of a lepton pair to a <ei>H^--</ei>, assumed the 
+same for <ei>H_L^--</ei> and <ei>H_R^--</ei>, is described by a symmetric 
+3-by-3 matrix. The default matrix is dominated by the diagonal elements 
+and especially by the <ei>tau tau</ei> one. 
+ 
+<parm name="LeftRightSymmmetry:coupHee" default="0.1" min="0.0"> 
+Yukawa coupling for <ei>H^-- &rarr; e- e-</ei>. 
+</parm> 
+ 
+<parm name="LeftRightSymmmetry:coupHmue" default="0.01" min="0.0"> 
+Yukawa coupling for <ei>H^-- &rarr; mu- e-</ei>. 
+</parm> 
+ 
+<parm name="LeftRightSymmmetry:coupHmumu" default="0.1" min="0.0"> 
+Yukawa coupling for <ei>H^-- &rarr; mu- mu-</ei>. 
+</parm> 
+ 
+<parm name="LeftRightSymmmetry:coupHtaue" default="0.01" min="0.0"> 
+Yukawa coupling for <ei>H^-- &rarr; tau- e-</ei>. 
+</parm> 
+ 
+<parm name="LeftRightSymmmetry:coupHtaumu" default="0.01" min="0.0"> 
+Yukawa coupling for <ei>H^-- &rarr; tau- mu-</ei>. 
+</parm> 
+ 
+<parm name="LeftRightSymmmetry:coupHtautau" default="0.3" min="0.0"> 
+Yukawa coupling for <ei>H^-- &rarr; tau- tau-</ei>. 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

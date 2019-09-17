@@ -1,0 +1,529 @@
+<chapter name="Spacelike Showers"> 
+ 
+<h2>Spacelike Showers</h2> 
+ 
+The PYTHIA algorithm for spacelike initial-state showers is 
+based on the article <ref>Sjo05</ref>, where a 
+transverse-momentum-ordered backwards evolution scheme is introduced, 
+with the extension to fully interleaved evolution covered in 
+<ref>Cor10a</ref>. 
+This algorithm is a further development of the virtuality-ordered one 
+presented in <ref>Sjo85</ref>, with matching to first-order matrix 
+element for <ei>Z^0</ei>, <ei>W^+-</ei> and Higgs (in the 
+<ei>m_t &rarr; infinity</ei> limit) production as introduced in 
+<ref>Miu99</ref>. 
+ 
+<p/> 
+The normal user is not expected to call <code>SpaceShower</code> 
+directly, but only have it called from <code>Pythia</code>, 
+via <code>PartonLevel</code>. Nonetheless, some of the parameters below, 
+in particular <code>SpaceShower:alphaSvalue</code>, 
+would be of interest for uncertainty estimates and tuning exercises. 
+Note that 
+PYTHIA also incorporates an 
+<aloc href="Variations">automated framework</aloc> for shower 
+uncertainty variations. 
+ 
+<h3>Main variables</h3> 
+ 
+The maximum <ei>pT</ei> to be allowed in the shower evolution is 
+related to the nature of the hard process itself. It involves a 
+delicate balance between not double-counting and not leaving any 
+gaps in the coverage. The best procedure may depend on information 
+only the user has: how the events were generated and mixed (e.g. with 
+Les Houches Accord external input), and how they are intended to be 
+used. Therefore a few options are available, with a sensible default 
+behaviour. 
+ 
+<modepick name="SpaceShower:pTmaxMatch" default="0" min="0" max="2"> 
+Way in which the maximum shower evolution scale is set to match the 
+scale of the hard process itself. 
+<option value="0"><b>(i)</b> if the final state of the hard process 
+(not counting subsequent resonance decays) contains at least one quark 
+(<ei>u, d, s, c ,b</ei>), gluon or photon then <ei>pT_max</ei> 
+is chosen to be the factorization scale for internal processes 
+and the <code>scale</code> value for Les Houches input; 
+<b>(ii)</b> if not, emissions are allowed to go all the way up to 
+the kinematical limit. 
+The reasoning is that in the former set of processes the ISR 
+emission of yet another quark, gluon or photon could lead to 
+double-counting, while no such danger exists in the latter case. 
+</option> 
+<option value="1">always use the factorization scale for an internal 
+process and the <code>scale</code> value for Les Houches input, 
+i.e. the lower value. This should avoid double-counting, but 
+may leave out some emissions that ought to have been simulated. 
+(Also known as wimpy showers.) 
+</option> 
+<option value="2">always allow emissions up to the kinematical limit. 
+This will simulate all possible event topologies, but may lead to 
+double-counting. 
+(Also known as power showers.) 
+</option> 
+<note>Note 1:</note> Some processes contain matrix-element matching 
+to the first emission; this is the case notably for single 
+<ei>gamma^*/Z^0, W^+-</ei> and <ei>H^0</ei> production. Then default 
+and option 2 give the correct result, while option 1 should never 
+be used. 
+<note>Note 2:</note> as enumerated in the text, these options take effect 
+both for internal and external processes. Whether a particular option 
+makes sense depends on the context. For instance, if events for the same 
+basic process to different orders are to be matched, then option 1 would 
+be a reasonable first guess. Note, however, that a program like the 
+POWHEG BOX uses a <ei>pT</ei> definition for ISR and FSR that does not 
+quite agree with the PYTHIA evolution scale, and thus there will be some 
+amount of mismatch. In more sophisticated descriptions, therefore, 
+option 2 could be combined with <code>UserHooks</code> vetoes on emissions 
+that would lead to double-counting, using more flexible phase space 
+boundaries. Further details are found in the 
+<aloc href="MatchingAndMerging">Matching and Merging</aloc> description, 
+with an example in <code>examples/main31</code>. 
+Option 0, finally, may be most realistic when only Born-level 
+processes are involved, possibly in combination with a nonzero 
+<code>SpaceShower:pTdampMatch</code>. The rules used for avoiding 
+double-counting are not foolproof, however. As an example, for the 
+<ei>t</ei>-channel process <ei>gamma gamma &rarr; e^+ e^-</ei> its <ei>pT</ei> 
+scale is the plausible upper shower limit, with only dampened emissions 
+above it. But the initial state is not checked and, had only incoming 
+quarks and gluons been taken into account, only the <ei>s</ei>-channel 
+process <ei>q qbar &rarr; gamma^*/Z^0 &rarr; e^+ e^-</ei> would have 
+been possible, where indeed the whole phase space should be populated. 
+So this is erroneously used, giving too much emissions. 
+<note>Note 3:</note> These options only apply to the hard interaction. 
+If a "second hard" process is present, the two are analyzed and 
+set separately for the default 0 option, while both are affected 
+the same way for non-default options 1 and 2. 
+Emissions off subsequent multiparton interactions are always constrained 
+to be below the factorization scale of each process itself. 
+</modepick> 
+ 
+<parm name="SpaceShower:pTmaxFudge" default="1.0" min="0.25" max="2.0"> 
+In cases where the above <code>pTmaxMatch</code> rules would imply 
+that <ei>pT_max = pT_factorization</ei>, <code>pTmaxFudge</code> 
+introduces a multiplicative factor <ei>f</ei> such that instead 
+<ei>pT_max = f * pT_factorization</ei>. Only applies to the hardest 
+interaction in an event, and a "second hard" if there is such a one, 
+cf. below. It is strongly suggested that <ei>f = 1</ei>, but variations 
+around this default can be useful to test this assumption. 
+</parm> 
+ 
+<parm name="SpaceShower:pTmaxFudgeMPI" default="1.0" min="0.25" max="2.0"> 
+A multiplicative factor <ei>f</ei> such that 
+<ei>pT_max = f * pT_factorization</ei>, as above, but here for the 
+non-hardest interactions (when multiparton interactions are allowed). 
+</parm> 
+ 
+<modepick name="SpaceShower:pTdampMatch" default="3" min="0" max="4"> 
+These options only take effect when a process is allowed to radiate up 
+to the kinematical limit by the above <code>pTmaxMatch</code> choice, 
+and no matrix-element corrections are available. Then, in many processes, 
+the fall-off in <ei>pT</ei> will be too slow by one factor of <ei>pT^2</ei>. 
+That is, while showers have an approximate <ei>dpT^2/pT^2</ei> shape, often 
+it should become more like <ei>dpT^2/pT^4</ei> at <ei>pT</ei> values above 
+the scale of the hard process. Whether this actually is the case 
+depends on the particular process studied, e.g. if <ei>t</ei>-channel 
+gluon exchange is likely to dominate. If so, the options below could 
+provide a reasonable high-<ei>pT</ei> behaviour without requiring 
+higher-order calculations. 
+<option value="0">emissions go up to the kinematical limit, 
+with no special dampening. 
+</option> 
+<option value="1">emissions go up to the kinematical limit, 
+but dampened by a factor <ei>k^2 Q^2_fac/(pT^2 + k^2 Q^2_fac)</ei>, 
+where <ei>Q_fac</ei> is the factorization scale and <ei>k</ei> is a 
+multiplicative fudge factor stored in <code>pTdampFudge</code> below. 
+</option> 
+<option value="2">emissions go up to the kinematical limit, 
+but dampened by a factor <ei>k^2 Q^2_ren/(pT^2 + k^2 Q^2_ren)</ei>, 
+where <ei>Q_ren</ei> is the renormalization scale and <ei>k</ei> is a 
+multiplicative fudge factor stored in <code>pTdampFudge</code> below. 
+</option> 
+<option value="3">as option 1, but in addition to the standard requirements 
+for dampening it is further necessary to have ar least two top or 
+beyond-the-Standard-Model coloured particles in the final state. 
+Examples include <ei>t tbar</ei> and <ei>squark gluino</ei> production. 
+</option> 
+<option value="4">as option 2, but in addition to the standard requirements 
+for dampening it is further necessary to have ar least two top or 
+beyond-the-Standard-Model coloured particles in the final state. 
+Examples include <ei>t tbar</ei> and <ei>squark gluino</ei> production. 
+</option> 
+<note>Note:</note> These options only apply to the hard interaction. 
+Specifically, a "second hard" interaction would not be affected. 
+Emissions off subsequent multiparton interactions are always constrained 
+to be below the factorization scale of the process itself. 
+</modepick> 
+ 
+<parm name="SpaceShower:pTdampFudge" default="1.0" min="0.25" max="4.0"> 
+In cases 1 and 2 above, where a dampening is imposed at around the 
+factorization or renormalization scale, respectively, this allows the 
+<ei>pT</ei> scale of dampening of radiation by a half to be shifted 
+by this factor relative to the default <ei>Q_fac</ei> or <ei>Q_ren</ei>. 
+This number ought to be in the neighbourhood of unity, but variations 
+away from this value could do better in some processes. 
+</parm> 
+ 
+<p/> 
+The amount of QCD radiation in the shower is determined by 
+<parm name="SpaceShower:alphaSvalue" default="0.1365" min="0.06" max="0.25"> 
+The <ei>alpha_strong</ei> value at scale <code>M_Z^2</code>. 
+</parm> 
+ 
+<p/> 
+The actual value is then regulated by the running to the scale 
+<ei>pT^2</ei>, at which it is evaluated 
+<modepick name="SpaceShower:alphaSorder" default="1" min="0" max="2"> 
+Order at which <ei>alpha_strong</ei> runs, 
+<option value="0">zeroth order, i.e. <ei>alpha_strong</ei> is kept 
+fixed.</option> 
+<option value="1">first order, which is the normal value.</option> 
+<option value="2">second order. Since other parts of the code do 
+not go to second order there is no strong reason to use this option, 
+but there is also nothing wrong with it.</option> 
+</modepick> 
+ 
+<p/> 
+The CMW rescaling of <ei>Lambda_QCD</ei> (see the section on 
+<aloc href="StandardModelParameters">StandardModelParameters</aloc>) 
+can be applied to the <ei>alpha_strong</ei> values used for spacelike showers. 
+Note that tunes using this option need lower values of 
+<ei>alpha_strong(m_Z^2)</ei> than tunes that do not. 
+<flag name="SpaceShower:alphaSuseCMW" default="off"> 
+<option value="off">Do not apply the CMW rescaling. </option> 
+<option value="on">Apply the CMW rescaling, increasing 
+<ei>Lambda_QCD</ei> for spacelike showers by a factor roughly 1.6. 
+</option> 
+</flag> 
+ 
+<p/> 
+QED radiation is regulated by the <ei>alpha_electromagnetic</ei> 
+value at the <ei>pT^2</ei> scale of a branching. 
+ 
+<modepick name="SpaceShower:alphaEMorder" default="1" min="-1" max="1"> 
+The running of <ei>alpha_em</ei>. 
+<option value="1">first-order running, constrained to agree with 
+<code>StandardModel:alphaEMmZ</code> at the <ei>Z^0</ei> mass. 
+</option> 
+<option value="0">zeroth order, i.e. <ei>alpha_em</ei> is kept 
+fixed at its value at vanishing momentum transfer.</option> 
+<option value="-1">zeroth order, i.e. <ei>alpha_em</ei> is kept 
+fixed, but at <code>StandardModel:alphaEMmZ</code>, i.e. its value 
+at the <ei>Z^0</ei> mass. 
+</option> 
+</modepick> 
+ 
+<p/> 
+The natural scale for couplings and PDFs is <ei>pT^2</ei>. To explore 
+uncertainties it is possibly to vary around this value, however, in 
+analogy with what can be done for 
+<aloc href="CouplingsAndScales">hard processes</aloc>. (Note that 
+there is also an <aloc href="Variations">automated framework</aloc> for shower 
+uncertainties.) 
+ 
+<parm name="SpaceShower:renormMultFac" default="1." min="0.1" max="10."> 
+The default <ei>pT^2</ei> renormalization scale is multiplied by 
+this prefactor. For QCD this is equivalent to a change of 
+<ei>Lambda^2</ei> in the opposite direction, i.e. to a change of 
+<ei>alpha_strong(M_Z^2)</ei> (except that flavour thresholds 
+remain at fixed scales). Below, when <ei>pT^2 + pT_0^2</ei> is used 
+as scale, it is this whole expression that is multiplied by the prefactor. 
+</parm> 
+ 
+<parm name="SpaceShower:factorMultFac" default="1." min="0.1" max="10."> 
+The default <ei>pT^2</ei> factorization scale is multiplied by 
+this prefactor. 
+</parm> 
+ 
+<p/> 
+There are two complementary ways of regularizing the small-<ei>pT</ei> 
+divergence, a sharp cutoff and a smooth dampening. These can be 
+combined as desired but it makes sense to coordinate with how the 
+same issue is handled in multiparton interactions. 
+ 
+<flag name="SpaceShower:samePTasMPI" default="off"> 
+Regularize the <ei>pT &rarr; 0</ei> divergence using the same sharp cutoff 
+and smooth dampening parameters as used to describe multiparton interactions. 
+That is, the <code>MultipartonInteractions:pT0Ref</code>, 
+<code>MultipartonInteractions:ecmRef</code>, 
+<code>MultipartonInteractions:ecmPow</code> and 
+<code>MultipartonInteractions:pTmin</code> parameters are used to regularize 
+all ISR QCD radiation, rather than the corresponding parameters below. 
+This is a sensible physics ansatz, based on the assumption that colour 
+screening effects influence both MPI and ISR in the same way. Photon 
+radiation is regularized separately in either case. 
+<note>Note:</note> For photon-photon collisions these parameters are set 
+as in <aloc href="Photoproduction">Photoproduction</aloc>. 
+<note>Warning:</note> if a large <code>pT0</code> is picked for multiparton 
+interactions, such that the integrated interaction cross section is 
+below the nondiffractive inelastic one, this <code>pT0</code> will 
+automatically be scaled down to cope. Information on such a rescaling 
+does NOT propagate to <code>SpaceShower</code>, however. 
+</flag> 
+ 
+<p/> 
+The actual <ei>pT0</ei> parameter used at a given CM energy scale, 
+<ei>ecmNow</ei>, is obtained from a power law or a logarithmic 
+parametrization. The former is default with hadron beams and 
+the latter for photon-photon collisions. 
+ 
+<modepick name="SpaceShower:pT0parametrization" default="0" min="0" max="1"> 
+Choice of <ei>pT0</ei> parametrization. 
+<option value="0"> Power law dependence on <ei>ecmNow</ei>:<br/> 
+<ei> 
+    pT0 = pT0(ecmNow) = pT0Ref * (ecmNow / ecmRef)^ecmPow 
+</ei> 
+</option> 
+<option value="1"> Logarithmic dependence on <ei>ecmNow</ei>: 
+<eq> 
+    pT0 = pT0(ecmNow) = pT0Ref + ecmPow * log (ecmNow / ecmRef) 
+</eq> 
+</option> 
+where <ei>pT0Ref</ei>, <ei>ecmRef</ei> and <ei>ecmPow</ei> are the 
+three parameters below. 
+</modepick> 
+ 
+<parm name="SpaceShower:pT0Ref" default="2.0" 
+min="0.5" max="10.0"> 
+Regularization of the divergence of the QCD emission probability for 
+<ei>pT &rarr; 0</ei> is obtained by a factor <ei>pT^2 / (pT0^2 + pT^2)</ei>, 
+and by using an <ei>alpha_s(pT0^2 + pT^2)</ei>. An energy dependence 
+of the <ei>pT0</ei> choice is introduced by the next two parameters, 
+so that <ei>pT0Ref</ei> is the <ei>pT0</ei> value for the reference 
+cm energy, <ei>pT0Ref = pT0(ecmRef)</ei>. 
+</parm> 
+ 
+<parm name="SpaceShower:ecmRef" default="7000.0" min="1."> 
+The <ei>ecmRef</ei> reference energy scale introduced above. 
+</parm> 
+ 
+<parm name="SpaceShower:ecmPow" default="0.0" min="0." max="0.5"> 
+The <ei>ecmPow</ei> energy rescaling pace introduced above. 
+</parm> 
+ 
+<parm name="SpaceShower:pTmin" default="0.2" 
+min="0.1" max="10.0"> 
+Lower cutoff in <ei>pT</ei>, below which no further ISR branchings 
+are allowed. Normally the <ei>pT0</ei> above would be used to 
+provide the main regularization of the branching rate for 
+<ei>pT &rarr; 0</ei>, in which case <ei>pTmin</ei> is used  mainly for 
+technical reasons. It is possible, however, to set <ei>pT0Ref = 0</ei> 
+and use <ei>pTmin</ei> to provide a step-function regularization, 
+or to combine them in intermediate approaches. Currently <ei>pTmin</ei> 
+is taken to be energy-independent. 
+</parm> 
+ 
+<parm name="SpaceShower:pTminChgQ" default="0.5" min="0.01"> 
+Parton shower cut-off <ei>pT</ei> for photon coupling to a coloured 
+particle. 
+</parm> 
+ 
+<parm name="SpaceShower:pTminChgL" default="0.0005" min="0.0001"> 
+Parton shower cut-off mass for pure QED branchings. 
+Assumed smaller than (or equal to) <ei>pTminChgQ</ei>. 
+</parm> 
+ 
+<flag name="SpaceShower:rapidityOrder" default="on"> 
+Force emissions, after the first,  to be ordered in rapidity, 
+i.e. in terms of decreasing angles in a backwards-evolution sense. 
+Could be used to probe sensitivity to unordered emissions. 
+Only affects QCD emissions, and only the hard subcollision of an event. 
+(For the case "soft QCD" processes the first MPI counts as the hard 
+subcollision.) 
+ 
+</flag> 
+ 
+<flag name="SpaceShower:rapidityOrderMPI" default="on"> 
+Same as the last switch, but this time only emissions in secondary 
+scattering systems from MPIs are forced to be ordered in rapidity. 
+Each MPI is ordered separately from the others. 
+</flag> 
+ 
+<h3>Dipole showers</h3> 
+ 
+By default the recoil of an ISR emission is taken by the whole final 
+state. The option below gives an alternative approach with local recoils, 
+where only one final-state parton takes the recoil of an emission. 
+See <ref>Cab17</ref> for further details on the philosophy and 
+implementation. 
+ 
+<p/> 
+The existing initial-initial global recoil scheme is maintained for 
+an emission off a colour line that stretches through the hard process, 
+so it is the handling of initial-final dipole ends that is changed. 
+Here the single recoiler is picked based on the colour flow of the 
+hard process. Additionally the description unifies the emission of 
+a gluon from the initial-final and final-initial dipole ends, and 
+handles both as part of the ISR framework. Therefore the separation 
+into ISR and FSR is not a meaningful classification, and either both 
+should be simulated or none. 
+ 
+<p/> 
+Note that this option should not be combined with the global option 
+for FSR, <code>TimeShower:globalRecoil</code>. Furthermore some settings 
+are neglected internally to ensure the same behaviour as obtained for 
+<code>TimeShower:allowBeamRecoil = on</code>, 
+<code>TimeShower:dampenBeamRecoil = off</code>, and 
+<code>SpaceShower:phiIntAsym = off</code>. 
+ 
+<p/> 
+The dipole recoil option for the first time allows the simulation 
+of Deeply Inelastic Scattering processes in PYTHIA 8, see the 
+<code>main36.cc</code> example. Note that the simultaneous emission of 
+photons off the lepton leg has not yet been implemented, so you need to 
+set <code>PDF:lepton = off</code> and 
+<code>TimeShower:QEDshowerByL = off</code>. You are further recommended 
+to set <code>SpaceShower:pTmaxMatch = 2</code> to fill the whole phase 
+space with parton showers. This is allowed since the shower and 
+matrix-element behaviours match well over the whole phase space 
+(at least for the first emission). 
+ 
+<flag name="SpaceShower:dipoleRecoil" default="off"> 
+Option to switch on the dipole-recoil scheme as described above. 
+</flag> 
+ 
+<h3>Weak showers</h3> 
+ 
+The emission of weak gauge bosons is an integrated part of the initial- 
+and final-state radiation, see <aloc href="WeakShowers">Weak Showers</aloc>. 
+The following settings are those specifically related to the initial-state 
+weak radiation, while common settings are found in the 
+<aloc href="WeakShowers">Weak Showers</aloc> description. 
+ 
+<flag name="SpaceShower:weakShower" default="off"> 
+Allow a weak shower, yes or no. 
+</flag> 
+ 
+<modeopen name="SpaceShower:weakShowerMode" default="0" min="0" max="2"> 
+Determine which branchings are allowed. 
+<option value="0"> both <ei>W^+-</ei> and <ei>Z^0</ei> branchings. 
+</option> 
+<option value="1"> only <ei>W^+-</ei> branchings. </option> 
+<option value="2"> only <ei>Z^0</ei> branchings. </option> 
+</modeopen> 
+ 
+<parm name ="SpaceShower:pTminWeak" default="1.0" min="0.1" max="2.0"> 
+Parton shower cut-off <ei>pT</ei> for weak branchings. 
+</parm> 
+ 
+<h3>Further variables</h3> 
+ 
+These should normally not be touched. Their only function is for 
+cross-checks. 
+ 
+<p/> 
+There are three flags you can use to switch on or off selected 
+branchings in the shower: 
+ 
+<flag name="SpaceShower:QCDshower" default="on"> 
+Allow a QCD shower; on/off = true/false. 
+</flag> 
+ 
+<flag name="SpaceShower:QEDshowerByQ" default="on"> 
+Allow quarks to radiate photons; on/off = true/false. 
+</flag> 
+ 
+<flag name="SpaceShower:QEDshowerByL" default="on"> 
+Allow leptons to radiate photons; on/off = true/false. 
+</flag> 
+ 
+<p/> 
+There are some further possibilities to modify the shower: 
+ 
+<flag name="SpaceShower:MEcorrections" default="on"> 
+Use of matrix element corrections; on/off = true/false. 
+</flag> 
+ 
+<flag name="SpaceShower:MEafterFirst" default="on"> 
+Use of matrix element corrections also after the first emission, 
+for dipole ends of the same system that did not yet radiate. 
+Only has a meaning if <code>MEcorrections</code> above is 
+switched on. 
+</flag> 
+ 
+<flag name="SpaceShower:phiPolAsym" default="on"> 
+Azimuthal asymmetry induced by gluon polarization; on/off = true/false. 
+</flag> 
+ 
+<flag name="SpaceShower:phiPolAsymHard" default="on"> 
+Extend the above azimuthal asymmetry (if on) also back to gluons produced 
+in the hard process itself, where feasible; on/off = true/false. 
+</flag> 
+ 
+<flag name="SpaceShower:phiIntAsym" default="on"> 
+Azimuthal asymmetry induced by interference; on/off = true/false. 
+</flag> 
+ 
+<parm name="SpaceShower:strengthIntAsym" default="0.7" 
+min="0." max="0.9"> 
+Size of asymmetry induced by interference. Natural value of order 0.5; 
+expression would blow up for a value of 1. 
+</parm> 
+ 
+<modeopen name="SpaceShower:nQuarkIn" default="5" min="0" max="5"> 
+Number of allowed quark flavours in <ei>g &rarr; q qbar</ei> branchings, 
+when kinematically allowed, and thereby also in incoming beams. 
+Changing it to 4 would forbid <ei>g &rarr; b bbar</ei>, etc. 
+</modeopen> 
+ 
+<flag name="SpaceShower:useFixedFacScale" default="off"> 
+Allow the possibility to use a fixed factorization scale, set by 
+the <code>parm</code> below. This option is unphysical and only 
+intended for toy-model and debug studies. 
+</flag> 
+ 
+<parm name="SpaceShower:fixedFacScale" default="100." min="1."> 
+The fixed factorization scale, in GeV, that would be used in the 
+evaluation of parton densities if the <code>flag</code> above is on. 
+</parm> 
+ 
+<h3>Technical notes</h3> 
+ 
+Almost everything is equivalent to the algorithm in 
+<ref>Sjo05,Cor10a</ref>. Minor changes are as follows. 
+<ul> 
+<li> 
+It is now possible to have a second-order running <ei>alpha_s</ei>, 
+in addition to fixed or first-order running. 
+</li> 
+<li> 
+The description of heavy flavour production in the threshold region 
+has been modified, so as to be more forgiving about mismatches 
+between the <ei>c/b</ei>  masses used in Pythia relative to those 
+used in a respective PDF parametrization. The basic idea is that, 
+in the threshold region of a heavy quark <ei>Q</ei>, <ei>Q = c/b</ei>, 
+the effect of subsequent <ei>Q &rarr; Q g</ei> branchings is negligible. 
+If so, then 
+<eq> 
+   f_Q(x, pT2) = integral_mQ2^pT2  dpT'2/pT'2 * alpha_s(pT'2)/2pi 
+      * integral P(z) g(x', pT'2) delta(x - z x') 
+</eq> 
+so use this to select the <ei>pT2</ei> of the <ei>g &rarr; Q Qbar</ei> 
+branching. In the old formalism the same kind of behaviour should 
+be obtained, but by a cancellation of a <ei>1/f_Q</ei> that diverges 
+at the threshold and a Sudakov that vanishes. 
+<br/> 
+The strategy therefore is that, once <ei>pT2 &lt; f * mQ2</ei>, with 
+<ei>f</ei> a parameter of the order of 2, a <ei>pT2</ei> is chosen 
+like <ei>dpT2/pT2</ei> between <ei>mQ2</ei> and <ei>f * mQ2</ei>, a 
+nd a <ei>z</ei> flat in the allowed range. Thereafter acceptance 
+is based on the product of three factors, representing the running 
+of <ei>alpha_strong</ei>, the splitting kernel (including the mass term) 
+and the gluon density weight. At failure, a new <ei>pT2</ei> is chosen 
+in the same  range, i.e. is not required to be lower since no Sudakov 
+is involved. 
+</li> 
+<li> 
+The QED algorithm now allows for hadron beams with non-zero photon 
+content. The backwards-evolution of a photon in a hadron is identical 
+to that of a gluon, with <ei>CF &rarr; eq^2</ei> and <ei>CA &rarr; 0</ei>. 
+Note that this will only work in conjunction with parton distributions 
+that explicitly include photons as part of the hadron structure, such 
+as the NNPDF2.3 QCD+QED sets. The possibility of a fermion 
+backwards-evolving to a photon has not yet been included, nor has 
+photon backwards-evolution in lepton beams. 
+</li> 
+</ul> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

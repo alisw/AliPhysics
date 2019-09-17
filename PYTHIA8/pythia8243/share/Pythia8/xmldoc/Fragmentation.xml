@@ -1,0 +1,507 @@
+<chapter name="Fragmentation"> 
+ 
+<h2>Fragmentation</h2> 
+ 
+Fragmentation in PYTHIA is based on the Lund string model 
+<ref>And83, Sjo84</ref>. Several different aspects are involved in 
+the physics description, which  here therefore is split accordingly. 
+This also, at least partly, reflect the set of classes involved in 
+the fragmentation machinery. 
+ 
+<p/> 
+The variables collected here have a very wide span of usefulness. 
+Some would be central in any hadronization tuning exercise, others 
+should not be touched except by experts. 
+ 
+<p/> 
+The fragmentation flavour-choice machinery is also used in a few 
+other places of the program, notably particle decays, and is thus 
+described on the separate <aloc href="FlavourSelection">Flavour 
+Selection</aloc> page. 
+ 
+<h3>Fragmentation functions</h3> 
+ 
+The <code>StringZ</code> class handles the choice of longitudinal 
+lightcone fraction <ei>z</ei> according to one of two possible 
+shape sets. 
+ 
+<p/> 
+The Lund symmetric fragmentation function <ref>And83</ref> is the 
+only alternative for light quarks. It is of the form 
+<eq> 
+    f(z) = (1/z) * (1-z)^a * exp(-b m_T^2 / z) 
+</eq> 
+with the two main free parameters <ei>a</ei> and <ei>b</ei> to be 
+tuned to data. They are stored in 
+ 
+<parm name="StringZ:aLund" default="0.68" min="0.0" max="2.0"> 
+The <ei>a</ei> parameter of the Lund symmetric fragmentation function. 
+</parm> 
+ 
+<parm name="StringZ:bLund" default="0.98" min="0.2" max="2.0"> 
+The <ei>b</ei> parameter of the Lund symmetric fragmentation function. 
+</parm> 
+ 
+<p/> 
+In the context of fits to experimental data, note that the <ei>a</ei> 
+and <ei>b</ei> parameters typically exhibit a very high degree of 
+correlation. An option for choosing an alternative parameterisation 
+is therefore provided, whereby the user specifies the desired average 
+value of the fragmentation function for primary rho mesons instead of 
+the <ei>b</ei> parameter. The <ei>a</ei> parameter should still be 
+given by <code>StringZ:aLund</code> as usual. The rho has been chosen 
+as reference since its mass is near the average of the primary hadron 
+production, while pions come to dominate only after secondary decays. 
+This option can be enabled via the following flag: 
+ 
+<flag name="StringZ:deriveBLund" default="off"> 
+When set to <code>on</code>, the <ei>b</ei> parameter is treated as a 
+derived quantity; i.e., the value of <code>StringZ:bLund</code> is 
+ignored in favour of the <code>StringZ:avgZLund</code> parameter 
+below. (The <code>StringZ:bLund</code> parameter is then also reset to 
+the derived value so that it can be queried after initialisation, if 
+desired.) 
+</flag> 
+ 
+<parm name="StringZ:avgZLund" default="0.55" min="0.30" max="0.70"> 
+When <code>StringZ:deriveBLund</code> is set to <code>on</code>, 
+this parameter specifies the average of the fragmentation function 
+for primary rho mesons, evaluated at 
+<ei>mT^2 = mRho^2 + 2<code>StringPT:sigma</code>^2</ei>. 
+The appropriate <ei>b</ei>-parameter value is computed automatically 
+during initialisation and the <code>StringZ:bLund</code> parameter is 
+updated accordingly. Note that the derived value is allowed to exceed 
+the nominal limits given for <code>bLund</code> above. This is intended 
+to allow fits to see the functional behaviour even outside the nominal 
+limits. 
+</parm> 
+ 
+<p/> 
+In principle, each flavour can have a different <ei>a</ei>. Then, 
+for going from an old flavour <ei>i</ei> to a new <ei>j</ei> one 
+the shape is 
+<eq> 
+    f(z) = (1/z) * z^{a_i} * ((1-z)/z)^{a_j} * exp(-b * m_T^2 / z) 
+</eq> 
+This is only implemented for s quarks and diquarks relative to normal quarks: 
+ 
+<parm name="StringZ:aExtraSQuark" default="0.0" min="0.0" max="2.0"> 
+allows a larger <ei>a</ei> for s quarks, with total 
+<ei>a = aLund + aExtraSQuark</ei>. 
+</parm> 
+ 
+<parm name="StringZ:aExtraDiquark" default="0.97" min="0.0" max="2.0"> 
+allows a larger <ei>a</ei> for diquarks, with total 
+<ei>a = aLund + aExtraDiquark</ei>. 
+</parm> 
+ 
+<p/> 
+Finally, the Bowler modification <ref>Bow81</ref> introduces an extra 
+factor 
+<eq> 
+    1/z^{r_Q * b * m_Q^2} 
+</eq> 
+for heavy quarks. To keep some flexibility, a multiplicative factor 
+<ei>r_Q</ei> is introduced, which ought to be unity (provided that 
+quark masses were uniquely defined) but can be set in 
+ 
+<parm name="StringZ:rFactC" default="1.32" min="0.0" max="2.0"> 
+<ei>r_c</ei>, i.e. the above parameter for <ei>c</ei> quarks. 
+</parm> 
+ 
+<parm name="StringZ:rFactB" default="0.855" min="0.0" max="2.0"> 
+<ei>r_b</ei>, i.e. the above parameter for <ei>b</ei> quarks. 
+</parm> 
+ 
+<parm name="StringZ:rFactH" default="1.0" min="0.0" max="2.0"> 
+<ei>r_h</ei>, i.e. the above parameter for heavier hypothetical quarks, 
+or in general any new coloured particle long-lived enough to hadronize. 
+</parm> 
+ 
+<p/> 
+Within the string framework, the <ei>b</ei> parameter is universal, 
+i.e. common for all flavours. Nevertheless, for fits to experimental 
+data, better agreement can be obtained if both <ei>a_Q</ei> and 
+<ei>b_Q</ei> can be set freely in a general expression 
+<eq> 
+    f(z) = 1/z^{1 + r_Q * b_Q * m_Q^2} * (1-z)^a_Q * exp(-b_Q m_T^2 / z) 
+</eq> 
+The below switches and values can be used to achieve this. They should 
+be used with caution and constitute clear deviations from the Lund 
+philosophy. 
+ 
+<flag name="StringZ:useNonstandardC" default="off"> 
+use the above nonstandard Lund ansatz for <ei>c</ei> quarks. 
+</flag> 
+ 
+<flag name="StringZ:useNonstandardB" default="off"> 
+use the above nonstandard Lund ansatz for <ei>b</ei> quarks. 
+</flag> 
+ 
+<flag name="StringZ:useNonstandardH" default="off"> 
+use the above nonstandard Lund ansatz for hypothetical heavier quarks. 
+</flag> 
+ 
+<parm name="StringZ:aNonstandardC" default="0.3" min="0.0" max="2.0"> 
+The <ei>a</ei> parameter in the nonstandard Lund ansatz for 
+ <ei>c</ei> quarks. 
+</parm> 
+ 
+<parm name="StringZ:aNonstandardB" default="0.3" min="0.0" max="2.0"> 
+The <ei>a</ei> parameter in the nonstandard Lund ansatz for 
+ <ei>b</ei> quarks. 
+</parm> 
+ 
+<parm name="StringZ:aNonstandardH" default="0.3" min="0.0" max="2.0"> 
+The <ei>a</ei> parameter in the nonstandard Lund ansatz for 
+hypothetical heavier quarks. 
+</parm> 
+ 
+<parm name="StringZ:bNonstandardC" default="0.8" min="0.2" max="2.0"> 
+The <ei>b</ei> parameter in the nonstandard Lund ansatz for 
+<ei>c</ei> quarks. 
+</parm> 
+ 
+<parm name="StringZ:bNonstandardB" default="0.8" min="0.2" max="2.0"> 
+The <ei>b</ei> parameter in the nonstandard Lund ansatz for 
+<ei>b</ei> quarks. 
+</parm> 
+ 
+<parm name="StringZ:bNonstandardH" default="0.8" min="0.2" max="2.0"> 
+The <ei>b</ei> parameter in the nonstandard Lund ansatz for 
+hypothetical heavier quarks. 
+</parm> 
+ 
+<p/> 
+As another nonstandard alternative, it is possible to switch over to the 
+Peterson/SLAC formula <ref>Pet83</ref> 
+<eq> 
+     f(z) = 1 / ( z * (1 - 1/z - epsilon/(1-z))^2 ) 
+</eq> 
+for charm, bottom and heavier (defined as above) by the three flags 
+ 
+<flag name="StringZ:usePetersonC" default="off"> 
+use Peterson for <ei>c</ei> quarks. 
+</flag> 
+ 
+<flag name="StringZ:usePetersonB" default="off"> 
+use Peterson for <ei>b</ei> quarks. 
+</flag> 
+ 
+<flag name="StringZ:usePetersonH" default="off"> 
+use Peterson for hypothetical heavier quarks. 
+</flag> 
+ 
+<p/> 
+When switched on, the corresponding epsilon values are chosen to be 
+ 
+<parm name="StringZ:epsilonC" default="0.05" min="0.01" max="0.25"> 
+<ei>epsilon_c</ei>, i.e. the above parameter for <ei>c</ei> quarks. 
+</parm> 
+ 
+<parm name="StringZ:epsilonB" default="0.005" min="0.001" max="0.025"> 
+<ei>epsilon_b</ei>, i.e. the above parameter for <ei>b</ei> quarks. 
+</parm> 
+ 
+<parm name="StringZ:epsilonH" default="0.005" min="0.0001" max="0.25"> 
+<ei>epsilon_h</ei>, i.e. the above parameter for hypothetical heavier 
+quarks, normalized to the case where <ei>m_h = m_b</ei>. The actually 
+used parameter is then <ei>epsilon = epsilon_h * (m_b^2 / m_h^2)</ei>. 
+This allows a sensible scaling to a particle with an unknown higher 
+mass without the need for a user intervention. 
+</parm> 
+ 
+<h3>Fragmentation <ei>pT</ei></h3> 
+ 
+The <code>StringPT</code> class handles the choice of fragmentation 
+<ei>pT</ei>. At each string breaking the quark and antiquark of the pair 
+are supposed to receive opposite and compensating <ei>pT</ei> kicks. 
+How they are distributed depends on the following flag: 
+ 
+<flag name="StringPT:thermalModel" default="off"> 
+If switched off the quark <ei>pT</ei> is generated according to 
+the traditional Gaussion distribution in <ei>p_x</ei> and <ei>p_y</ei> 
+separately. If switched on, the new "thermal model" <ref>Fis16</ref> 
+is instead used, wherein the quark <ei>pT</ei> is generated such that the 
+resulting hadron receives a <ei>pT</ei> according to an exponential 
+distribution. Also the hadronic composition is affected, see further 
+below. 
+</flag> 
+ 
+<h4>Gaussian Distribution</h4> 
+ 
+For <code>StringPT:thermalModel = off</code> the quarks receive <ei>pT</ei> 
+kicks according to a Gaussian distribution in <ei>p_x</ei> and <ei>p_y</ei> 
+separately. Call <ei>sigma_q</ei> the width of the <ei>p_x</ei> and 
+<ei>p_y</ei> distributions separately, i.e. 
+<eq> 
+    d(Prob) = exp( -(p_x^2 + p_y^2) / 2 sigma_q^2). 
+</eq> 
+Then the total squared width is 
+<eq> 
+    &lt;pT^2> = &lt;p_x^2> +  &lt;p_y^2> = 2 sigma_q^2 = sigma^2. 
+</eq> 
+It is this latter number that is stored in 
+ 
+<parm name="StringPT:sigma" default="0.335" min="0.0" max="1.0"> 
+the width <ei>sigma</ei> in the fragmentation process. 
+</parm> 
+ 
+<p/> 
+Since a normal hadron receives <ei>pT</ei> contributions for two string 
+breakings, it has a <ei>&lt;p_x^2>_had = &lt;p_y^2>_had = sigma^2</ei>, 
+and thus <ei>&lt;pT^2>_had = 2 sigma^2</ei>. 
+ 
+<p/> 
+Some studies on isolated particles at LEP has indicated the need for 
+a slightly enhanced rate in the high-<ei>pT</ei> tail of the above 
+distribution. This would have to be reviewed in the context of a 
+complete retune of parton showers and hadronization, but for the 
+moment we stay with the current recipe, to boost the above <ei>pT</ei> 
+by a factor <ei>enhancedWidth</ei> for a small fraction 
+<ei>enhancedFraction</ei> of the breakups, where 
+ 
+<parm name="StringPT:enhancedFraction" default="0.01" min="0.0" max="1."> 
+<ei>enhancedFraction</ei>,the fraction of string breaks with enhanced 
+width. 
+</parm> 
+ 
+<parm name="StringPT:enhancedWidth" default="2.0" min="1.0" max="10.0"> 
+<ei>enhancedWidth</ei>,the enhancement of the width in this fraction. 
+</parm> 
+ 
+<p/> 
+In the context of some toy studies <ref>Fis16</ref> the following three 
+options have also been introduced, but are not part of any recommended 
+framework. 
+ 
+<parm name="StringPT:widthPreStrange" default="1.0" min="1.0" max="10.0"> 
+Prefactor multiplying the Gaussian width for strange quarks. 
+</parm> 
+ 
+<parm name="StringPT:widthPreDiquark" default="1.0" min="1.0" max="10.0"> 
+Prefactor multiplying the Gaussian width for diquarks. In case of 
+diquarks with one or two strange quarks the prefactor is calculated by 
+multiplying <ei>widthPreDiquark</ei> once or twice respectively with 
+<ei>widthPreStrange</ei>. 
+</parm> 
+ 
+<flag name="StringPT:mT2suppression" default="off"> 
+If switched on the flavour composition is chosen based on the hadronic 
+transverse mass, <ei>mT^2_had</ei>, and not based on the quark masses. 
+This implies a mass suppression factor <ei>exp(-m_had^2 / 2 sigma^2) </ei>. 
+</flag> 
+ 
+<h4>Thermal Distribution</h4> 
+ 
+For <code>StringPT:thermalModel = on</code> the quark <ei>pT</ei> 
+is generated such that the resulting hadron <ei>pT</ei> follows 
+a thermal distribution 
+<eq> 
+    d(Prob) = exp( -pT_had/T) d^2pT_had 
+</eq> 
+with temperature <ei>T</ei>, whose value is given by 
+<parm name="StringPT:temperature" default="0.21" min="0.1" max="0.5"> 
+the temperature <ei>T</ei> in the fragmentation process. 
+</parm> 
+<parm name="StringPT:tempPreFactor" default="1.21" min="1.0" max="1.5"> 
+Temperature prefactor for strange quarks and diquarks. Default is 
+determined to have the same average <ei>pT</ei> in <ei>u/d &rarr; s</ei> 
+and <ei>s &rarr; u/d</ei> transistions. 
+</parm> 
+ 
+<h4>Common setup for enhanced width</h4> 
+ 
+If strings are closely packed, e.g. as a consequence of MPIs, it is 
+likely that they receive an increased string tension, which translates 
+into a broader <ei>pT</ei> spectrum, see further <ref>Fis16</ref>. 
+It also means an enhanced rate (or rather reduced suppression) of 
+heavy-particle production relative to pions. This can be regulated by 
+the flag and parameters below. 
+ 
+<flag name="StringPT:closePacking" default="off"> 
+If switched on then the two following parameters modify either 
+<code>StringPT:sigma</code> or <code>StringPT:temperature</code>, 
+respectively. Normally only one of the options below would be used, 
+but technically both are allowed and then combine multiplicatively. 
+</flag> 
+ 
+<parm name="StringPT:expMPI" default="0.0" min="0.0" max="1.0"> 
+Exponent to the number of MPIs. The width/temparture will get the 
+prefactor <ei>N(MPI)^expMPI</ei>. 
+</parm> 
+ 
+<parm name="StringPT:expNSP" default="0.13" min="0.0" max="1.0"> 
+Exponent for the number of effective nearby string pieces, calculated as 
+<eq> 
+    N(NSP) =1 + (N<sub>string</sub>-1)/(1+p<sup>2</sup><sub>T had</sub>/ 
+    p<sup>2</sup><sub>T 0</sub>) , 
+</eq> 
+where <ei>p<sup>2</sup><sub>T had</sub> </ei> is the transverse 
+momentum of the next produced hadron, estimated based on an educated 
+guess of its momentum, and <ei>p<sup>2</sup><sub>T 0</sub></ei> is the 
+MPI regularization parameter <code>MultipartonInteractions:pT0Ref</code>. 
+The width/temperature will get the prefactor <ei>N(NSP)^expNSP</ei>. 
+</parm> 
+ 
+<h3>Jet joining procedure</h3> 
+ 
+String fragmentation is carried out iteratively from both string ends 
+inwards, which means that the two chains of hadrons have to be joined up 
+somewhere in the middle of the event. This joining is described by 
+parameters that in principle follows from the standard fragmentation 
+parameters, but in a way too complicated to parametrize. The dependence 
+is rather mild, however, so for a sensible range of variation the 
+parameters in this section should not be touched. 
+ 
+<parm name="StringFragmentation:stopMass" default="1.0" min="0.0" max="2.0"> 
+Is used to define a <ei>W_min = m_q1 + m_q2 + stopMass</ei>, 
+where <ei>m_q1</ei> and <ei>m_q2</ei> are the masses of the two 
+current endpoint quarks or diquarks. 
+</parm> 
+ 
+<parm name="StringFragmentation:stopNewFlav" default="2.0" min="0.0" 
+max="2.0"> 
+Add to <ei>W_min</ei> an amount <ei>stopNewFlav * m_q_last</ei>, 
+where <ei>q_last</ei> is the last <ei>q qbar</ei> pair produced 
+between the final two hadrons. 
+</parm> 
+ 
+<parm name="StringFragmentation:stopSmear" default="0.2" min="0.0" max="0.5"> 
+The <ei>W_min</ei> above is then smeared uniformly in the range 
+<ei>W_min_smeared = W_min * [ 1 - stopSmear, 1 + stopSmear ]</ei>. 
+</parm> 
+ 
+<p/> 
+This <ei>W_min_smeared</ei> is then compared with the current remaining 
+<ei>W_transverse</ei> to determine if there is energy left for further 
+particle production. If not, i.e. if 
+<ei>W_transverse &lt; W_min_smeared</ei>, the final two particles are 
+produced from what is currently left, if possible. (If not, the 
+fragmentation process is started over.) 
+ 
+<h3>Colour tracing</h3> 
+ 
+<flag name="StringFragmentation:TraceColours" default="off"> 
+In some cases it is interesting to trace the primary hadrons back 
+to the string pieces from which they were 
+formed. If <code>StringFragmentation:TraceColours</code> is switched 
+<code>on</code>, this is done by setting colour and anticolour 
+indices for the primary hadrons to the indices of the string piece 
+where the corresponding break-ups are assumed to have happened. To 
+avoid the possible confusion of having colour indices on colour 
+singlet particles, this flag is by default <code>off</code>. 
+</flag> 
+ 
+<h3>Simplifying systems</h3> 
+ 
+There are a few situations when it is meaningful to simplify the 
+original task, one way or another. 
+ 
+<parm name="HadronLevel:mStringMin" default="1." min="0.5" max="1.5"> 
+Decides whether a partonic system should be considered as a normal 
+string or a ministring, the latter only producing one or two primary 
+hadrons. The system mass should be above <ei>mStringMin</ei> plus the 
+sum of quark/diquark constituent masses for a normal string description, 
+else the ministring scenario is used. 
+</parm> 
+ 
+<parm name="FragmentationSystems:mJoin" default="0.3" min="0.2" max="1."> 
+When two colour-connected partons are very nearby, with at least 
+one being a gluon, they can be joined into one, to avoid technical 
+problems of very small string regions. The requirement for joining is 
+that the invariant mass of the pair is below <ei>mJoin</ei>, where a 
+gluon only counts with half its momentum, i.e. with its contribution 
+to the string region under consideration. (Note that, for technical 
+reasons, the 0.2 GeV lower limit is de facto hardcoded.) 
+</parm> 
+ 
+<parm name="FragmentationSystems:mJoinJunction" default="1.0" min="0.5" 
+max="2."> 
+When the invariant mass of two of the quarks in a three-quark junction 
+string system becomes too small, the system is simplified to a 
+quark-diquark simple string. The requirement for this simplification 
+is that the diquark mass, minus the two quark masses, falls below 
+<ei>mJoinJunction</ei>. Gluons on the string between the junction and 
+the respective quark, if any, are counted as part of the quark 
+four-momentum. Those on the two combined legs are clustered with the 
+diquark when it is formed. 
+</parm> 
+ 
+<h3>Ministrings</h3> 
+ 
+The <code>MiniStringFragmentation</code> machinery is only used when a 
+string system has so small invariant mass that normal string fragmentation 
+is difficult/impossible. Instead one or two particles are produced, 
+in the former case shuffling energy-momentum relative to another 
+colour singlet system in the event, while preserving the invariant 
+mass of that system. With one exception parameters are the same as 
+defined for normal string fragmentation, to the extent that they are 
+at all applicable in this case. 
+ 
+A discussion of the relevant physics is found in <ref>Nor00</ref>. 
+The current implementation does not completely abide to the scheme 
+presented there, however, but has in part been simplified. (In part 
+for greater clarity, in part since the class is not quite finished yet.) 
+ 
+<modeopen name="MiniStringFragmentation:nTry" default="2" min="1" max="10"> 
+Whenever the machinery is called, first this many attempts are made 
+to pick two hadrons that the system fragments to. If the hadrons are 
+too massive the attempt will fail, but a new subsequent try could 
+involve other flavour and hadrons and thus still succeed. 
+After <ei>nTry</ei> attempts, instead an attempt is made to produce a 
+single hadron from the system. Should also this fail, some further 
+attempts at obtaining two hadrons will be made before eventually 
+giving up. 
+</modeopen> 
+ 
+<h3>Junction treatment</h3> 
+ 
+A junction topology corresponds to an Y arrangement of strings 
+i.e. where three string pieces have to be joined up in a junction. 
+Such topologies can arise if several valence quarks are kicked out 
+from a proton beam, or in baryon-number-violating SUSY decays. 
+Special attention is necessary to handle the region just around 
+the junction, where the baryon number topologically is located. 
+The junction fragmentation scheme is described in <ref>Sjo03</ref>. 
+The parameters in this section should not be touched except by experts. 
+ 
+<parm name="StringFragmentation:eNormJunction" default="2.0" min="0.5" 
+max="10"> 
+Used to find the effective rest frame of the junction, which is 
+complicated when the three string legs may contain additional 
+gluons between the junction and the endpoint. To this end, 
+a pull is defined as a weighed sum of the momenta on each leg, 
+where the weight is <ei>exp(- eSum / eNormJunction)</ei>, with 
+<ei>eSum</ei> the summed energy of all partons closer to the junction 
+than the currently considered one (in the junction rest frame). 
+Should in principle be (close to) <ei>sqrt((1 + a) / b)</ei>, with 
+<ei>a</ei> and <ei>b</ei> the parameters of the Lund symmetric 
+fragmentation function. 
+</parm> 
+ 
+<parm name="StringFragmentation:eBothLeftJunction" default="1.0" min="0.5"> 
+Retry (up to 10 times) when the first two considered strings in to a 
+junction both have a remaining energy (in the junction rest frame) 
+above this number. 
+</parm> 
+ 
+<parm name="StringFragmentation:eMaxLeftJunction" default="10.0" min="0."> 
+Retry (up to 10 times) when the first two considered strings in to a 
+junction has a highest remaining energy (in the junction rest frame) 
+above a random energy evenly distributed between 
+<ei>eBothLeftJunction</ei> and 
+<ei>eBothLeftJunction + eMaxLeftJunction</ei> 
+(drawn anew for each test). 
+</parm> 
+ 
+<parm name="StringFragmentation:eMinLeftJunction" default="0.2" min="0."> 
+Retry (up to 10 times) when the invariant mass-squared of the final leg 
+and the leftover momentum of the first two treated legs falls below 
+<ei>eMinLeftJunction</ei> times the energy of the final leg (in the 
+junction rest frame). 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

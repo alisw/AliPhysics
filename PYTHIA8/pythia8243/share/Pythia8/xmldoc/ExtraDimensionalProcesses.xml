@@ -1,0 +1,625 @@
+<chapter name="Extra-Dimensional Processes"> 
+ 
+<h2>Extra-Dimensional Processes</h2> 
+ 
+Scenarios with extra dimensions (ED) allow a multitude of processes. 
+Currently three different categories of processes are implemented. 
+The first involves the production of excited Kaluza Klein states 
+within so-called Randall-Sundrum (RS) scenarios, the second is 
+related to resonance production in TeV-1 sized extra dimensions 
+and the third relates to phenomena from large extra dimensions (LED). 
+Due to the close relation between the LED model and a so-called 
+unparticle model, similar unparticle processes are also kept in this 
+section. 
+ 
+<h3>Randall-Sundrum Resonances, production processes</h3> 
+ 
+The graviton (G*) and gluon (KKgluon*) resonance states are assigned 
+PDG code 5100039 and 5100021 respectively. The G* processes are 
+described in <ref>Bij01</ref> and the KKgluon* process in <ref>Ask11</ref>. 
+Decays into fermion and boson pairs are handled with the correct 
+angular distributions, while subsequent decays are handled 
+isotropically. 
+ 
+<p/> 
+There are two lowest-order processes that together normally 
+should be sufficient for a simulation of <ei>G^*</ei> production. 
+ 
+<flag name="ExtraDimensionsG*:all" default="off"> 
+Common switch for the group of lowest-order <ei>G^*</ei> production 
+processes, i.e. the two ones below. 
+</flag> 
+ 
+<flag name="ExtraDimensionsG*:gg2G*" default="off"> 
+Scatterings <ei>g g &rarr; G^*</ei>. 
+Code 5001. 
+</flag> 
+ 
+<flag name="ExtraDimensionsG*:ffbar2G*" default="off"> 
+Scatterings <ei>f fbar &rarr; G^*</ei>. 
+Code 5002. 
+</flag> 
+ 
+<p/> 
+In addition there are three first-order processes included. These 
+are of less interest, but can be used for dedicated studies of the 
+high-<ei>pT</ei> tail of <ei>G^*</ei> production. As usual, it would 
+be double counting to include the lowest-order and first-order 
+processes simultaneously. Therefore the latter ones are not included 
+with the <code>ExtraDimensionsG*:all = on</code> option. In this set 
+of processes all decay angles are assumed isotropic. 
+ 
+<flag name="ExtraDimensionsG*:gg2G*g" default="off"> 
+Scatterings <ei>g g &rarr; G^* g</ei>. 
+Code 5003. 
+</flag> 
+ 
+<flag name="ExtraDimensionsG*:qg2G*q" default="off"> 
+Scatterings <ei>q g &rarr; G^* q</ei>. 
+Code 5004. 
+</flag> 
+ 
+<flag name="ExtraDimensionsG*:qqbar2G*g" default="off"> 
+Scatterings <ei>q qbar &rarr; G^* g</ei>. 
+Code 5005. 
+</flag> 
+ 
+<p/> 
+There is also one process for the production of a gluon resonance. 
+ 
+<flag name="ExtraDimensionsG*:qqbar2KKgluon*" default="off"> 
+Scatterings <ei>q qbar &rarr; g^*/KKgluon^*</ei>. 
+Code 5006. 
+</flag> 
+ 
+<h3>Randall-Sundrum Resonances, parameters</h3> 
+ 
+In the above scenario the main free parameters are the masses, which 
+are set as usual. In addition there are the following coupling parameters. 
+The coupling <ei>kappaMG</ei> follows the conventions in <ref>Bij01</ref>, 
+where as the flavour dependent couplings follow the conventions used in 
+<ref>Dav01</ref>. 
+ 
+<flag name="ExtraDimensionsG*:SMinBulk" default="off"> 
+Parameter to choose between the two scenarios: 
+<ei>off</ei>, SM on the TeV brane (common <ei>kappaMG</ei> coupling); 
+<ei>on</ei>, SM in the ED bulk (flavour dependent couplings). 
+This parameter is only relevant for the lowest-order graviton 
+(<ei>G*</ei>) processes, where as the first-order processes 
+corresponds to the <ei>off</ei> scenario. 
+</flag> 
+ 
+<flag name="ExtraDimensionsG*:VLVL" default="on"> 
+Parameter to specify Z/W coupling scenario: 
+<ei>off</ei>, usual Z/W boson couplings; 
+<ei>on</ei>, coupling only to longitudinal Z/W bosons. 
+In both cases the <ei>GZZ</ei> and <ei>GWW</ei> values are used 
+and this parameter is only relevant when <ei>SMinBulk = on</ei>. 
+The formulas for longitudinal bosons should be appropriate up to 
+<ei>O(m_V/E_V)</ei> corrections. 
+</flag> 
+ 
+<parm name="ExtraDimensionsG*:kappaMG" default="0.054" min="0.0"> 
+dimensionless coupling, which enters quadratically in all on-shell 
+partial widths of the <ei>G^*</ei>. Is 
+<ei>kappa m_G* = sqrt(2) x_1 k / Mbar_Pl</ei>, 
+where <ei>x_1 = 3.83</ei> is the first zero of the <ei>J_1</ei> Bessel 
+function and <ei>Mbar_Pl</ei> is the modified Planck mass. 
+In width and cross section calculations, <ei>kappa</ei> is fixed by 
+the on-shell <ei>G^*</ei> mass and <ei>kappaMG</ei>, i.e. 
+<ei>kappaMG</ei> scales with the off-shell <ei>G^*</ei> mass. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:Gll" default="0.0" min="0.0"> 
+Coupling between graviton and leptons. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:Gqq" default="0.0" min="0.0"> 
+Coupling between graviton and light quarks. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:Gbb" default="0.0" min="0.0"> 
+Coupling between graviton and bottom quark. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:Gtt" default="0.001" min="0.0"> 
+Coupling between graviton and top quark. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:Ggg" default="0.000013" min="0.0"> 
+Coupling between graviton and gluon. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:Ggmgm" default="0.000013" min="0.0"> 
+Coupling between graviton and gamma. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:GZZ" default="0.001" min="0.0"> 
+Coupling between graviton and Z boson. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:GWW" default="0.001" min="0.0"> 
+Coupling between graviton and W boson. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:Ghh" default="0.001" min="0.0"> 
+Coupling between graviton and Higgs bosons. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:KKgqR" default="-0.2"> 
+Coupling between KK-gluon and a right-handed light quark. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:KKgqL" default="-0.2"> 
+Coupling between KK-gluon and a left-handed light quark. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:KKgbR" default="-0.2"> 
+Coupling between KK-gluon and a right-handed bottom quark. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:KKgbL" default="1.0"> 
+Coupling between KK-gluon and a left-handed bottom quark. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:KKgtR" default="4.0"> 
+Coupling between KK-gluon and a right-handed top quark. 
+</parm> 
+ 
+<parm name="ExtraDimensionsG*:KKgtL" default="1.0"> 
+Coupling between KK-gluon and a left-handed top quark. 
+</parm> 
+ 
+<modepick name="ExtraDimensionsG*:KKintMode" default="0" min="0" max="2"> 
+Choice of full <ei>g^*/KK-gluon^*</ei> structure or not in relevant 
+processes. 
+<option value="0">full <ei>g^*/KK-gluon^*</ei> structure, with 
+interference included.</option> 
+<option value="1">only pure <ei>gluon_{SM}</ei> contribution.</option> 
+<option value="2">only pure <ei>gluon_{KK}</ei> contribution.</option> 
+</modepick> 
+ 
+<h3>TeV^-1 Sized Extra Dimension, production processes</h3> 
+ 
+This section contains a processes involving the production 
+of electroweak KK gauge bosons, i.e. <ei>gamma_{KK}/Z_{KK}</ei>, 
+in one TeV^-1 sized extra dimension. The process is described 
+in <ref>Bel10</ref> and allows for individual final states to be 
+specified. 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2ddbar" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; d dbar </ei>, 
+Code 5061. 
+</flag> 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2uubar" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; u ubar </ei>, 
+Code 5062. 
+</flag> 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2ssbar" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; s sbar </ei>, 
+Code 5063. 
+</flag> 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2ccbar" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; c cbar </ei>, 
+Code 5064. 
+</flag> 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2bbbar" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; b bbar </ei>, 
+Code 5065. 
+</flag> 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2ttbar" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; t tbar </ei>, 
+Code 5066. 
+</flag> 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2e+e-" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; e+ e- </ei>, 
+Code 5071. 
+</flag> 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2nuenuebar" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; nue nuebar </ei>, 
+Code 5072. 
+</flag> 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2mu+mu-" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; mu+ mu- </ei>, 
+Code 5073. 
+</flag> 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2numunumubar" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; numu numubar </ei>, 
+Code 5074. 
+</flag> 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2tau+tau-" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; tau+ tau- </ei>, 
+Code 5075. 
+</flag> 
+ 
+<flag name="ExtraDimensionsTEV:ffbar2nutaunutaubar" default="off"> 
+Scatterings <ei>f fbar &rarr; (gamma_{KK}/Z_{KK}) &rarr; nutau nutaubar </ei>, 
+Code 5076. 
+</flag> 
+ 
+<h3>TeV^-1 Sized Extra Dimension, parameters</h3> 
+ 
+Irrespective of the parameter options used, the particle produced, 
+<ei>gamma_{KK}/Z_{KK}</ei>, will always be assigned code 5000023. 
+ 
+<modepick name="ExtraDimensionsTEV:gmZmode" default="3" min="0" max="5"> 
+Choice of full <ei>gamma_{KK}/Z_{KK}</ei> structure or not in relevant 
+processes. 
+<option value="0">full <ei>gamma_{SM}/Z_{SM}</ei> structure, with 
+interference included.</option> 
+<option value="1">only pure <ei>gamma_{SM}</ei> contribution.</option> 
+<option value="2">only pure <ei>Z_{SM}</ei> contribution.</option> 
+<option value="3">full <ei>gamma_{KK}/Z_{KK}</ei> structure, with 
+interference included.</option> 
+<option value="4">only pure <ei>gamma_{KK}</ei> contribution, with 
+SM interference included.</option> 
+<option value="5">only pure <ei>Z_{KK}</ei> contribution, with SM 
+interference included.</option> 
+</modepick> 
+ 
+<modeopen name="ExtraDimensionsTEV:nMax" default="10" min="1" max="100"> 
+The number of included KK excitations. 
+</modeopen> 
+ 
+<parm name="ExtraDimensionsTEV:mStar" default="4000.0" min="1000.0"> 
+The KK mass <ei>m^*</ei>, given by the inverse of the single extra 
+dimension radius. 
+</parm> 
+ 
+<h3>Large Extra Dimensions, production processes</h3> 
+ 
+The LED graviton, where the KK-modes normally are summed and do not 
+give rise to phenomena individually, is assigned PDG code 5000039. 
+The graviton emission and virtual graviton exchange processes use 
+the same implementation as the corresponding unparticle processes, 
+which are all described in <ref>Ask10</ref>. It is also possible to 
+generate monojet events from scalar graviton emission as described 
+in <ref>Azu05</ref>, by turning on the option <ei>GravScalar</ei>. 
+ 
+<p/> 
+<ei>Note:</ei> As discussed in <ref>Ask09</ref>, for the graviton or 
+unparticle emission processes the underlying Breit-Wigner mass 
+distribution should be matched to the graviton mass spectrum in order 
+to achieve an optimal MC efficiency. 
+ 
+<p/> 
+The following lowest order graviton emission processes are available. 
+ 
+<flag name="ExtraDimensionsLED:monojet" default="off"> 
+Common switch for the group of lowest-order <ei>G jet</ei> emission 
+processes, i.e. the three ones below. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:gg2Gg" default="off"> 
+Scatterings <ei>g g &rarr; G g</ei>. 
+Code 5021. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:qg2Gq" default="off"> 
+Scatterings <ei>q g &rarr; G q</ei>. 
+Code 5022. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:qqbar2Gg" default="off"> 
+Scatterings <ei>q qbar &rarr; G g</ei>. 
+Code 5023. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:ffbar2GZ" default="off"> 
+Scatterings <ei>f fbar &rarr; G Z</ei>. 
+Code 5024. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:ffbar2Ggamma" default="off"> 
+Scatterings <ei>f fbar &rarr; G gamma</ei>. This process corresponds 
+to the photon limit of the <ei>G Z</ei> process, as described in 
+<ref>Ask09</ref>. 
+Code 5025. 
+</flag> 
+ 
+<p/> 
+The following LED processes with virtual graviton exchange are 
+available. 
+ 
+<flag name="ExtraDimensionsLED:ffbar2gammagamma" default="off"> 
+Scatterings <ei>f fbar &rarr; (LED G*) &rarr; gamma gamma</ei>. If the 
+graviton contribution is zero, the results corresponds to the 
+SM contribution, i.e. equivalent to 
+<code>PromptPhoton:ffbar2gammagamma</code>. 
+Code 5026. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:gg2gammagamma" default="off"> 
+Scatterings <ei>g g &rarr; (LED G*) &rarr; gamma gamma</ei>. 
+Code 5027. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:ffbar2llbar" default="off"> 
+Scatterings <ei>f fbar &rarr; (LED G*) &rarr; l l </ei>, where 
+<ei>l</ei> is a charged lepton. If the graviton contribution 
+is zero, the results corresponds to the SM contribution, i.e. 
+similar to <code>WeakSingleBoson:ffbar2gmZ</code>. Does not 
+include t-channel amplitude relevant for e^+e^- to e^+e^- 
+and no K-factor is used. 
+Code 5028. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:gg2llbar" default="off"> 
+Scatterings <ei>g g &rarr; (LED G*) &rarr; l l</ei>. 
+Code 5029. 
+</flag> 
+ 
+<p/> 
+Dijet production including graviton exchange is also available, using 
+the same effective theory approach as the LED G exchange processes 
+above or including more detailed amplitudes in accordance with 
+<ref>Fra11</ref>. In case of the latter, the value of <ei>LambdaT</ei> 
+is used as the value of the cut-off scale <ei>Lambda</ei>. For this 
+reason the dijet processes only relates to the LED model and no 
+unparticle versions are available. The processes are grouped together 
+like their <ei>HardQCD</ei> equivalents and should therefore converge 
+to the same results in the limit of an insignificant graviton 
+contribution. 
+ 
+<p/> 
+<ei>Warning:</ei> These LED dijets processes are still being validated. 
+ 
+<flag name="ExtraDimensionsLED:dijets" default="off"> 
+Common switch for the group of lowest-order <ei>jet jet</ei> 
+production processes with graviton exchange, i.e. the six ones 
+below. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:gg2DJgg" default="off"> 
+Scatterings <ei>g g &rarr; (LED G*) &rarr; g g</ei>. 
+Code 5030. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:gg2DJqqbar" default="off"> 
+Scatterings <ei>g g &rarr; (LED G*) &rarr; q qbar</ei>. Number of 
+outgoing flavours specified by <ei>nQuarkNew</ei> parameter 
+below. 
+Code 5031. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:qg2DJqg" default="off"> 
+Scatterings <ei>q g &rarr; (LED G*) &rarr; q g</ei> and 
+<ei>qbar g &rarr; (LED G*) &rarr; qbar g</ei>. 
+Code 5032. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:qq2DJqq" default="off"> 
+Scatterings <ei>q q(bar)' &rarr; (LED G*) &rarr; q q(bar)'</ei>. 
+Including <ei>q</ei> and <ei>qbar</ei> of same or different 
+flavours, but the outgoing flavours equals the incoming ones. 
+Code 5033. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:qqbar2DJgg" default="off"> 
+Scatterings <ei>q qbar &rarr; (LED G*) &rarr; g g</ei>. 
+Code 5034. 
+</flag> 
+ 
+<flag name="ExtraDimensionsLED:qqbar2DJqqbarNew" default="off"> 
+Scatterings <ei>q qbar &rarr; (LED G*) &rarr; q' qbar'</ei>. Number of 
+outgoing flavours specified by <ei>nQuarkNew</ei> parameter below. 
+Code 5035. 
+</flag> 
+ 
+<h3>Large Extra Dimensions, parameters</h3> 
+ 
+<flag name="ExtraDimensionsLED:GravScalar" default="off"> 
+Allow the monojet processes to produce scalar graviton emission 
+instead of the default tensor one. The scalar option is according 
+to the processes described in <ref>Azu05</ref> and includes two 
+coupling constants below. 
+</flag> 
+ 
+<modeopen name="ExtraDimensionsLED:n" default="2" min="1"> 
+Number of extra dimensions. 
+</modeopen> 
+ 
+<parm name="ExtraDimensionsLED:MD" default="2000." min="100.0"> 
+Fundamental scale of gravity in <ei>D = 4 + n</ei> dimensions. 
+</parm> 
+ 
+<parm name="ExtraDimensionsLED:LambdaT" default="2000." min="100.0"> 
+Ultraviolet cutoff parameter for the virtual graviton exchange processes. 
+</parm> 
+ 
+<modepick name="ExtraDimensionsLED:NegInt" default="0" min="0" max="1"> 
+Allows to change sign of the interference terms in the graviton exchange 
+processes, common in connection to using the <ei>Hewett</ei> convention 
+<ref>Hew99</ref>. 
+<option value="0">1</option> 
+<option value="1">-1</option> 
+</modepick> 
+ 
+<modepick name="ExtraDimensionsLED:CutOffMode" default="0" min="0" max="3"> 
+Options for when the hard scale of the process (e.g. <ei>sHat</ei>) 
+approaches or exceed the scale of validity of the low energy effective 
+theory (e.g. <ei>M_D</ei>). <ei>Note:</ei> Option 1 only concerns the 
+graviton emission processes and the form factor is currently not available 
+for the scalar graviton processes. 
+<option value="0">Do nothing, i.e. all values of <ei>sHat</ei> contribute. 
+</option> 
+<option value="1">Truncate contributing <ei>sHat</ei> region 
+(<ref>Ask09</ref>).</option> 
+<option value="2">Form factor, using <ei>mu = renormScale2</ei> .</option> 
+<option value="3">Form factor, using <ei>mu = E_jet</ei>.</option> 
+</modepick> 
+ 
+<parm name="ExtraDimensionsLED:t" default="1." min="0.001"> 
+Form factor parameter. 
+</parm> 
+ 
+<parm name="ExtraDimensionsLED:g" default="1.0" min="0.0"> 
+Coupling related to scalar graviton emission. 
+</parm> 
+ 
+<parm name="ExtraDimensionsLED:c" default="1.0" min="0.0"> 
+Coupling related to scalar graviton emission. 
+</parm> 
+ 
+<modeopen name="ExtraDimensionsLED:nQuarkNew" default="3" min="0" max="5"> 
+Number of allowed outgoing new quark flavours in the above 
+<ei>q qbar &rarr; (LED G*) &rarr; q' qbar'</ei> and 
+<ei>g g &rarr; (LED G*) &rarr; q' qbar'</ei> 
+processes. Similar to <ei>HardQCD:nQuarkNew</ei> for the QCD processes. 
+</modeopen> 
+ 
+<modeopen name="ExtraDimensionsLED:opMode" default="0" min="0" max="1"> 
+Options to specify <ei>S</ei> function for LED dijet amplitudes. 
+<option value="0">Use detailed amplitude, as described in <ref>Fra11</ref>. 
+</option> 
+<option value="1">Use conventional <ei>LambdaT</ei> parametrization, 
+like the other LED processes.</option> 
+</modeopen> 
+ 
+<h3>Unparticles, production processes</h3> 
+ 
+As mentioned above, the similar unparticle and graviton processes 
+share the same implementations. The unparticle processes, however, 
+only use the dedicated unparticle parameters below. The unparticle 
+is also assigned the PDG code 5000039 and is therefore called 
+<ei>Graviton</ei> in the event record. The graviton and unparticle 
+emission as well as virtual graviton and unparticle exchange processes 
+are described in <ref>Ask10</ref>. 
+ 
+<p/> 
+<ei>Note:</ei> As discussed in <ref>Ask09</ref>, for the graviton or 
+unparticle emission processes the underlying Breit-Wigner mass 
+distribution should be matched to the graviton mass spectrum in order 
+to achieve an optimal MC efficiency. 
+ 
+<p/> 
+The following unparticle emission processes are available. 
+ 
+<flag name="ExtraDimensionsUnpart:monojet" default="off"> 
+Common switch for the group of lowest-order <ei>U jet</ei> emission 
+processes, i.e. the three ones below. 
+</flag> 
+ 
+<flag name="ExtraDimensionsUnpart:gg2Ug" default="off"> 
+Scatterings <ei>g g &rarr; U g</ei>. 
+Code 5045. 
+</flag> 
+ 
+<flag name="ExtraDimensionsUnpart:qg2Uq" default="off"> 
+Scatterings <ei>q g &rarr; U q</ei>. 
+Code 5046. 
+</flag> 
+ 
+<flag name="ExtraDimensionsUnpart:qqbar2Ug" default="off"> 
+Scatterings <ei>q qbar &rarr; U g</ei>. 
+Code 5047. 
+</flag> 
+ 
+<flag name="ExtraDimensionsUnpart:ffbar2UZ" default="off"> 
+Scatterings <ei>f fbar &rarr; U Z</ei>. 
+Code 5041. 
+</flag> 
+ 
+<flag name="ExtraDimensionsUnpart:ffbar2Ugamma" default="off"> 
+Scatterings <ei>f fbar &rarr; U gamma</ei>. This process corresponds 
+to the photon limit of the <ei>U Z</ei> process, as described in 
+<ref>Ask09</ref>. 
+Code 5042. 
+</flag> 
+ 
+<p/> 
+The following processes with virtual unparticle exchange are available. 
+ 
+<flag name="ExtraDimensionsUnpart:ffbar2gammagamma" default="off"> 
+Scatterings <ei>f fbar &rarr; (U*) &rarr; gamma gamma</ei>. If the unparticle 
+contribution is zero in the spin-2 case, the results corresponds to 
+the SM contribution, i.e. equivalent to 
+<code>PromptPhoton:ffbar2gammagamma</code>. 
+Code 5043. 
+</flag> 
+ 
+<flag name="ExtraDimensionsUnpart:gg2gammagamma" default="off"> 
+Scatterings <ei>g g &rarr; (U*) &rarr; gamma gamma</ei>. 
+Code 5044. 
+</flag> 
+ 
+<flag name="ExtraDimensionsUnpart:ffbar2llbar" default="off"> 
+Scatterings <ei>f fbar &rarr; (U*) &rarr; l lbar </ei>, where 
+<ei>l</ei> is a charged lepton. If the unparticle contribution 
+is zero, the results corresponds to the SM contribution, i.e. 
+similar to <code>WeakSingleBoson:ffbar2gmZ</code>. Does not 
+include t-channel amplitude relevant for e^+e^- to e^+e^- 
+and no K-factor is used. 
+Code 5048. 
+</flag> 
+ 
+<flag name="ExtraDimensionsUnpart:gg2llbar" default="off"> 
+Scatterings <ei>g g &rarr; (U*) &rarr; l lbar</ei>. 
+Code 5049. 
+</flag> 
+ 
+<h3>Unparticles, parameters</h3> 
+ 
+<modeopen name="ExtraDimensionsUnpart:spinU" default="2" min="0" max="2"> 
+Unparticle spin. 
+</modeopen> 
+ 
+<parm name="ExtraDimensionsUnpart:dU" default="1.4" min="1.0"> 
+Scale dimension parameter. 
+</parm> 
+ 
+<parm name="ExtraDimensionsUnpart:LambdaU" default="2000." min="100.0"> 
+Unparticle renormalization scale. 
+</parm> 
+ 
+<parm name="ExtraDimensionsUnpart:lambda" default="1.0" min="0.0"> 
+Unparticle coupling to the SM fields. 
+</parm> 
+ 
+<parm name="ExtraDimensionsUnpart:ratio" default="1.0" min="1.0" max="1.0"> 
+Ratio, <ei>lambda'/lambda</ei>, between the two possible coupling constants 
+of the spin-2 ME. <b>Warning:</b> A <ei>ratio</ei> value different from one 
+give rise to an IR divergence which makes the event generation very slow, so 
+this values is fixed to <ei>ratio = 1</ei> for the moment. 
+</parm> 
+ 
+<modepick name="ExtraDimensionsUnpart:CutOffMode" default="0" min="0" max="1"> 
+Options for when the hard scale of the process (e.g. <ei>sHat</ei>) 
+approaches or exceed the scale of validity of the low energy effective 
+theory (<ei>Lambda_U</ei>). This mode only concerns the unparticle 
+emission processes. 
+<option value="0">Do nothing, i.e. all values of <ei>sHat</ei> 
+contribute.</option> 
+<option value="1">Truncate contributing <ei>sHat</ei> region 
+(<ref>Ask09</ref>).</option> 
+</modepick> 
+ 
+<modepick name="ExtraDimensionsUnpart:gXX" default="0" min="0" max="2"> 
+Chiral unparticle couplings, <ei>gXX = gLL = gRR</ei>. Only relevant 
+for lepton production from spin-1 unparticle exchange. 
+<option value="0">1</option> 
+<option value="1">-1</option> 
+<option value="2">0</option> 
+</modepick> 
+ 
+<modepick name="ExtraDimensionsUnpart:gXY" default="0" min="0" max="2"> 
+Chiral unparticle couplings, <ei>gXY = gLR = gRL</ei>. Only relevant 
+for lepton production from spin-1 unparticle exchange. 
+<option value="0">1</option> 
+<option value="1">-1</option> 
+<option value="2">0</option> 
+</modepick> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

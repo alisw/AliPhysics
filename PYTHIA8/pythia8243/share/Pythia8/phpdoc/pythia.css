@@ -1,0 +1,77 @@
+a:link {color:#bb4444;text-decoration:none;}
+a:visited {color:#bb4444;text-decoration:none;}
+a:active {color:#ff0000; text-decoration:underline;}
+a:hover {color:#ff0000; text-decoration:underline;}
+
+body, td, div, span {
+	font-size:16px;
+	font-family:arial,verdana,geneva,helvetica;
+	color:#000000;
+	line-height:1.25;
+}
+
+h1 {
+	font-size:40px;
+	font-family:verdana,verdana,helvetica;
+	font-weight:normal;
+	color:#000000;
+}
+
+h2 {
+	font-size:24px;
+	font-family:arial,helvetica;
+	font-weight:normal;
+	color:#000000;
+}
+
+h3 {
+	font-size:20px;
+	font-family:verdana,geneva,arial,helvetica;
+	font-weight:normal;
+	color:#000000;
+}
+
+h4 {
+	font-size:18px;
+	font-family:verdana,arial,helvetica;
+	font-weight:normal;
+	color:#000000;
+}
+
+code {
+	color:#0000bb;
+}
+
+pre {
+	color:#0000bb;
+        margin-top:0.25em;
+        margin-bottom:0.25em;
+}
+
+strong {
+	color:#0000bb;
+}
+
+input {
+	font-size:16px;
+	font-family:arial,verdana,geneva,helvetica;
+	color:#bb00ff;
+}
+
+i, dt {
+	color:#006600;
+}
+
+p { 
+        margin-bottom:0.5em;
+}
+
+li { 
+        margin-top:0.5em;
+        margin-bottom:0.5em;
+}
+
+ul, ol { 
+        margin-top:0.5em;
+        margin-bottom:0.5em;
+}

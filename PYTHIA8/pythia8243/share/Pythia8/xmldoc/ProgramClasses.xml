@@ -1,0 +1,217 @@
+<chapter name="Program Classes"> 
+ 
+<h2>Program Classes</h2> 
+ 
+The complete PYTHIA 8 package contains 
+<aloc href="ProgramFiles">a multitude of classes</aloc>. 
+There is no reason to describe all of them, with all of their 
+methods, since most should not be touched by a normal user. 
+Nevertheless some of the crucial ones are described in detail, 
+as a help not only to advanced users but also to developers. 
+We here provide a quick reference (still incomplete) which 
+classes you can find described where on these pages. Normally 
+you have to scroll down to find the details, since the top of 
+the page contains information of more general interest. 
+ 
+<p/> 
+<table cellspacing="5"> 
+ 
+<tr> 
+<td><b>Class</b></td> 
+<td><b>Reference</b></td> 
+<td><b>Comment</b></td> 
+</tr> 
+ 
+<tr> 
+<td><code>BeamShape</code></td> 
+<td><aloc href="BeamShape">Beam Shape</aloc></td> 
+<td>vertex and beam momentum spread</td> 
+</tr> 
+ 
+<tr> 
+<td><code>CellJet</code></td> 
+<td><aloc href="EventAnalysis">Event Analysis</aloc></td> 
+<td>jet cone clustering analysis, intended for hadron collider 
+topologies</td> 
+</tr> 
+ 
+<tr> 
+<td><code>ClusterJet</code></td> 
+<td><aloc href="EventAnalysis">Event Analysis</aloc></td> 
+<td>jet clustering analysis, intended for <ei>e^+e^-</ei> 
+collider topologies</td> 
+</tr> 
+ 
+<tr> 
+<td><code>CoupSM</code></td> 
+<td><aloc href="StandardModelParameters">Standard Model Parameters</aloc></td> 
+<td>couplings and mixing matrices</td> 
+</tr> 
+ 
+<tr> 
+<td><code>CoupSUSY</code></td> 
+<td><aloc href="SUSYLesHouchesAccord">SUSY Les Houches Accord</aloc></td> 
+<td>compute and store SUSY couplings, using input from SusyLesHouches</td> 
+</tr> 
+ 
+<tr> 
+<td><code>DecayChannel</code></td> 
+<td><aloc href="ParticleDataScheme">Particle Data Scheme</aloc></td> 
+<td>the properties of a single decay channel of  particle species</td> 
+</tr> 
+ 
+<tr> 
+<td><code>Event</code></td> 
+<td><aloc href="EventRecord">Event Record</aloc></td> 
+<td>the complete event record</td> 
+</tr> 
+ 
+<tr> 
+<td><code>Hist</code></td> 
+<td><aloc href="Histograms">Histograms</aloc></td> 
+<td>a primitive built-in histogramming package</td> 
+</tr> 
+ 
+<tr> 
+<td><code>Info</code></td> 
+<td><aloc href="EventInformation">Event Information</aloc></td> 
+<td>various one-of-a-kind information on the current event</td> 
+</tr> 
+ 
+<tr> 
+<td><code>LHAup</code></td> 
+<td><aloc href="LesHouchesAccord">Les Houches Accord</aloc></td> 
+<td>base class for Les Houches external hard-event input</td> 
+</tr> 
+ 
+<tr> 
+<td><code>Particle</code></td> 
+<td><aloc href="ParticleProperties">Particle Properties</aloc></td> 
+<td>the properties of a particle in the event record</td> 
+</tr> 
+ 
+<tr> 
+<td><code>ParticleData</code></td> 
+<td><aloc href="ParticleDataScheme">Particle Data Scheme</aloc></td> 
+<td>the database of particle species properties</td> 
+</tr> 
+ 
+<tr> 
+<td><code>ParticleDataEntry</code></td> 
+<td><aloc href="ParticleDataScheme">Particle Data Scheme</aloc></td> 
+<td>the properties of a particle species</td> 
+</tr> 
+ 
+<tr> 
+<td><code>PDF</code></td> 
+<td><aloc href="PartonDistributions">Parton Distributions</aloc></td> 
+<td>base class for all PDFs</td> 
+</tr> 
+ 
+<tr> 
+<td><code>Pythia</code></td> 
+<td><aloc href="ProgramFlow">Program Flow</aloc></td> 
+<td>the top-level class, that drives the generation process</td> 
+</tr> 
+ 
+<tr> 
+<td><code>ResonanceWidths</code></td> 
+<td><aloc href="SemiInternalResonances">Semi-Internal Resonances</aloc></td> 
+<td>base class for all resonance-width treatment</td> 
+</tr> 
+ 
+<tr> 
+<td><code>Rndm</code></td> 
+<td><aloc href="RandomNumbers">RandomNumbers</aloc></td> 
+<td>a primitive built-in histogramming package</td> 
+</tr> 
+ 
+<tr> 
+<td><code>RotBstMatrix</code></td> 
+<td><aloc href="FourVectors">Four-Vectors</aloc></td> 
+<td>rotation and boosts of four-vectors</td> 
+</tr> 
+ 
+<tr> 
+<td><code>Settings</code></td> 
+<td><aloc href="SettingsScheme">Settings Scheme</aloc></td> 
+<td>the database that regulates the behaviour of the program</td> 
+</tr> 
+ 
+<tr> 
+<td><code>SigmaProcess</code></td> 
+<td><aloc href="SemiInternalProcesses">Semi-Internal Processes</aloc></td> 
+<td>base class for all hard-process cross sections</td> 
+</tr> 
+ 
+<tr> 
+<td><code>SlowJet</code></td> 
+<td><aloc href="EventAnalysis">Event Analysis</aloc></td> 
+<td>simple jet clustering using the <ei>kT</ei>, anti-<ei>kT</ei> or 
+Cambridge/Aachen algorithms.</td> 
+</tr> 
+ 
+<tr> 
+<td><code>SpaceShower</code></td> 
+<td><aloc href="ImplementNewShowers">Implement New Showers</aloc></td> 
+<td>spacelike, i..e. initial-state showers</td> 
+</tr> 
+ 
+<tr> 
+<td><code>Sphericity</code></td> 
+<td><aloc href="EventAnalysis">Event Analysis</aloc></td> 
+<td>sphericity analysis of events</td> 
+</tr> 
+ 
+<tr> 
+<td><code>SusyLesHouches</code></td> 
+<td><aloc href="SUSYLesHouchesAccord">SUSY Les Houches Accord</aloc></td> 
+<td>reading in of SLHA information</td> 
+</tr> 
+ 
+<tr> 
+<td><code>Thrust</code></td> 
+<td><aloc href="EventAnalysis">Event Analysis</aloc></td> 
+<td>thrust analysis of events</td> 
+</tr> 
+ 
+<tr> 
+<td><code>TimeShower</code></td> 
+<td><aloc href="ImplementNewShowers">Implement New Showers</aloc></td> 
+<td>timelike, i..e. final-state showers</td> 
+</tr> 
+ 
+<tr> 
+<td><code>UserHooks</code></td> 
+<td><aloc href="UserHooks">User Hooks</aloc></td> 
+<td>get access to some steps of the generation process</td> 
+</tr> 
+ 
+<tr> 
+<td><code>Vec4</code></td> 
+<td><aloc href="FourVectors">Four-Vectors</aloc></td> 
+<td>four-vectors</td> 
+</tr> 
+ 
+<tr> 
+<td><code></code></td> 
+<td><aloc href=""></aloc></td> 
+<td></td> 
+</tr> 
+ 
+<tr> 
+<td><code></code></td> 
+<td><aloc href=""></aloc></td> 
+<td></td> 
+</tr> 
+ 
+</table> 
+ 
+<p/> 
+You can also access an extensive list of the public 
+<aloc href="ProgramMethods">methods</aloc> in these classes, 
+which compensates for the brevity of the current page. 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

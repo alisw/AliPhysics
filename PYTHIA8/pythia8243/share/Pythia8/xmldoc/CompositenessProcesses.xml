@@ -1,0 +1,285 @@
+<chapter name="Compositeness Processes"> 
+ 
+<h2>Compositeness Processes</h2> 
+ 
+Compositeness scenarios may give rise to sharp resonances of excited 
+quarks and leptons. An excited copy of the first generation is 
+implemented, consisting of spin 1/2 particles. The possibility of 
+contact interactions between SM fermions is also implemented in the 
+context of <ei>2 &rarr; 2</ei> quark or fermion-lepton scattering. 
+ 
+<p/> 
+Related to excited fermions, the current implementation contains gauge 
+interaction production by quark-gluon fusion or lepton-photon fusion 
+and contact interaction production by quark-quark or quark-antiquark 
+scattering. For both the <ei>2 &rarr; 1</ei> and <ei>2 &rarr; 2</ei> processes 
+a non-trivial angular dependence is included in the decay, however, 
+only decays into gauge bosons are supported, i.e. not decays through 
+contact interactions. In additions to the compositeness scale and couplings 
+listed below, you are expected to change the excited-fermion masses in 
+accordance with what is desired. See <ref>Bau90</ref> for conventions. 
+ 
+<p/> 
+The contact interactions are implemented according to <ref>Eic83</ref>. 
+The processes include the SM contributions as well as interference. 
+For this reason the processes below converge toward the SM equivalents 
+when the contact interaction contributions are close to zero, e.g. 
+<code>HardQCD:qq2qq</code> and <code>HardQCD:qqbar2qqbarNew</code> in 
+the case of quark scattering. 
+ 
+<p/> 
+It should also be noted that the <ei>gamma*/Z/Z'</ei> production process 
+available with <ei>NewGaugeBoson:ffbar2gmZZprime</ei> is prepared for 
+pair-production of excited quarks and leptons, assuming the same gauge 
+couplings as for the non-excited fermions. What is missing is the 
+actual decay channels in the list of <ei>Z'</ei> decay modes, which 
+have to be added by hand, e.g. by 
+<br/>32:addChannel = 1 1. 100 4000001 -4000001 
+<br/>You can use <ei>Zprime:gmZmode</ei> to decide which gauge boson 
+propagators actually are included in the simulation, and thus e.g. 
+switch off the <ei>Z'</ei> part of the propagator. You may also want to 
+switch off other decay channels and set the minimal mass to be at the 
+threshold for the studied pair production (or suitably below it, 
+if the excited fermions have a non-negligible width). 
+ 
+<h3>Excited fermions, production processes</h3> 
+ 
+A few different production processes have been implemented, which normally 
+would not overlap and therefore could be run together. 
+ 
+<flag name="ExcitedFermion:all" default="off"> 
+Common switch for the group of implemented processes that produce an 
+excited fermion. 
+</flag> 
+ 
+<flag name="ExcitedFermion:dg2dStar" default="off"> 
+Scatterings <ei>d g &rarr; d^*</ei>. 
+Code 4001. 
+</flag> 
+ 
+<flag name="ExcitedFermion:ug2uStar" default="off"> 
+Scatterings <ei>u g &rarr; u^*</ei>. 
+Code 4002. 
+</flag> 
+ 
+<flag name="ExcitedFermion:sg2sStar" default="off"> 
+Scatterings <ei>s g &rarr; s^*</ei>. 
+Code 4003. 
+</flag> 
+ 
+<flag name="ExcitedFermion:cg2cStar" default="off"> 
+Scatterings <ei>c g &rarr; c^*</ei>. 
+Code 4004. 
+</flag> 
+ 
+<flag name="ExcitedFermion:bg2bStar" default="off"> 
+Scatterings <ei>b g &rarr; b^*</ei>. 
+Code 4005. 
+</flag> 
+ 
+<flag name="ExcitedFermion:egm2eStar" default="off"> 
+Scatterings <ei>e gamma &rarr; e^*</ei>. 
+Code 4011. 
+</flag> 
+ 
+<flag name="ExcitedFermion:mugm2muStar" default="off"> 
+Scatterings <ei>mu gamma &rarr; mu^*</ei>. 
+Code 4013. 
+</flag> 
+ 
+<flag name="ExcitedFermion:taugm2tauStar" default="off"> 
+Scatterings <ei>tau gamma &rarr; tau^*</ei>. 
+Code 4015. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qq2dStarq" default="off"> 
+Scatterings <ei>q q(bar) &rarr; d^* q(bar)</ei>. 
+Code 4021. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qq2uStarq" default="off"> 
+Scatterings <ei>q q(bar) &rarr; u^* q(bar)</ei>. 
+Code 4022. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qq2sStarq" default="off"> 
+Scatterings <ei>q q(bar) &rarr; s^* q(bar)</ei>. 
+Code 4023. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qq2cStarq" default="off"> 
+Scatterings <ei>q q(bar) &rarr; c^* q(bar)</ei>. 
+Code 4024. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qq2bStarq" default="off"> 
+Scatterings <ei>q q(bar) &rarr; b^* q(bar)</ei>. 
+Code 4025. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2eStare" default="off"> 
+Scatterings <ei>q qbar &rarr; e^*+- e^-+</ei>. 
+Code 4031. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2nueStarnue" default="off"> 
+Scatterings <ei>q qbar &rarr; nu_e^* nu_ebar</ei>. 
+Code 4032. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2muStarmu" default="off"> 
+Scatterings <ei>q qbar &rarr; mu^*+- mu^-+</ei>. 
+Code 4033. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2numuStarnumu" default="off"> 
+Scatterings <ei>q qbar &rarr; nu_mu^* nu_mubar</ei>. 
+Code 4034. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2tauStartau" default="off"> 
+Scatterings <ei>q qbar &rarr; tau^*+- tau^-+</ei>. 
+Code 4035. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2nutauStarnutau" default="off"> 
+Scatterings <ei>q qbar &rarr; nu_tau^* nu_taubar</ei>. 
+Code 4036. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2eStareStar" default="off"> 
+Scatterings <ei>q qbar &rarr; e^*+- e^*-+</ei>. 
+Code 4051. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2nueStarnueStar" default="off"> 
+Scatterings <ei>q qbar &rarr; nu_e^* nu_e^*bar</ei>. 
+Code 4052. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2muStarmuStar" default="off"> 
+Scatterings <ei>q qbar &rarr; mu^*+- mu^*-+</ei>. 
+Code 4053. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2numuStarnumuStar" default="off"> 
+Scatterings <ei>q qbar &rarr; nu_mu^* nu_mu^*bar</ei>. 
+Code 4054. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2tauStartauStar" default="off"> 
+Scatterings <ei>q qbar &rarr; tau^*+- tau^*-+</ei>. 
+Code 4055. 
+</flag> 
+ 
+<flag name="ExcitedFermion:qqbar2nutauStarnutauStar" default="off"> 
+Scatterings <ei>q qbar &rarr; nu_tau^* nu_tau^*bar</ei>. 
+Code 4056. 
+</flag> 
+ 
+<h3>Excited fermions, parameters</h3> 
+ 
+The basic couplings of the model are 
+ 
+<parm name="ExcitedFermion:Lambda" default="1000." min="100."> 
+Compositeness scale <ei>Lambda</ei> in GeV. 
+</parm> 
+ 
+<parm name="ExcitedFermion:coupF" default="1.0" min="0.0"> 
+Strength <ei>f</ei> of the <ei>SU(2)</ei> coupling. 
+</parm> 
+ 
+<parm name="ExcitedFermion:coupFprime" default="1.0" min="0.0"> 
+Strength <ei>f'</ei> of the <ei>U(1)</ei> coupling. 
+</parm> 
+ 
+<parm name="ExcitedFermion:coupFcol" default="1.0" min="0.0"> 
+Strength <ei>f_c</ei> of the <ei>SU(3)</ei> coupling. 
+</parm> 
+ 
+<parm name="ExcitedFermion:contactDec" default="1.0" min="0.0"> 
+Strength of contact-interaction decay channels, implemented as 
+three-body decays <ei>l^* &rarr; l f fbar</ei> for excited leptons 
+and neutrinos, where unity corresponds to the same normalization 
+as for the production channels. 
+</parm> 
+ 
+<h3>Contact interactions, production processes</h3> 
+ 
+The processes including contact interactions are 
+ 
+<flag name="ContactInteractions:QCqq2qq" default="off"> 
+Scatterings <ei>q q &rarr; q q</ei> including contact interactions. 
+Code 4201. 
+</flag> 
+ 
+<flag name="ContactInteractions:QCqqbar2qqbar" default="off"> 
+Scatterings <ei>q qbar &rarr; q' qbar'</ei> including contact interactions. 
+Code 4202. 
+</flag> 
+ 
+<flag name="ContactInteractions:QCffbar2eebar" default="off"> 
+Scatterings <ei>f fbar &rarr; e- e+</ei> including contact interactions. 
+Code 4203. 
+</flag> 
+ 
+<flag name="ContactInteractions:QCffbar2mumubar" default="off"> 
+Scatterings <ei>f fbar &rarr; mu- mu+</ei> including contact interactions. 
+Code 4204. 
+</flag> 
+ 
+<flag name="ContactInteractions:QCffbar2tautaubar" default="off"> 
+Scatterings <ei>f fbar &rarr; tau- tau+</ei> including contact interactions. 
+Code 4205. 
+</flag> 
+ 
+<h3>Contact interactions, parameters</h3> 
+ 
+<modeopen name="ContactInteractions:nQuarkNew" default="3" min="0" max="5"> 
+Number of allowed outgoing new quark flavours in the above 
+<ei>q qbar &rarr; q' qbar'</ei> process. Similar to <ei>HardQCD:nQuarkNew</ei> 
+for the QCD processes. 
+</modeopen> 
+ 
+<parm name="ContactInteractions:Lambda" default="1000." min="100."> 
+Compositeness scale <ei>Lambda</ei> in GeV. Its overall normalization 
+is largely a matter of convention. The choice made here for the 
+<ei>q qbar &rarr; l- l+</ei> processes is such that the pure contact 
+interaction part of the left-left interactions (i.e. disregarding 
+<ei>gamma^*</ei>, <ei>Z^0</ei> and interference terms) has the form 
+<ei>d(sigmaHat)/d(tHat) = pi * uHat^2 / (3 * sHat^2 * Lambda^4)</ei>. 
+The corresponding part of the <ei>q qbar &rarr; q' qbar'</ei> cross section 
+is a factor 3 larger from colour. 
+</parm> 
+ 
+<modepick name="ContactInteractions:etaLL" default="0" min="-1" max="1"> 
+Helicity parameter. 
+<option value="1"></option> 
+<option value="0"></option> 
+<option value="-1"></option> 
+</modepick> 
+ 
+<modepick name="ContactInteractions:etaRR" default="0" min="-1" max="1"> 
+Helicity parameter. 
+<option value="1"></option> 
+<option value="0"></option> 
+<option value="-1"></option> 
+</modepick> 
+ 
+<modepick name="ContactInteractions:etaLR" default="0" min="-1" max="1"> 
+Helicity parameter. 
+<option value="1"></option> 
+<option value="0"></option> 
+<option value="-1"></option> 
+</modepick> 
+ 
+<modepick name="ContactInteractions:etaRL" default="0" min="-1" max="1"> 
+Helicity parameter.   Implemented only for the <ei>q qbar &rarr; l- l+</ei> process. 
+<option value="1"></option> 
+<option value="0"></option> 
+<option value="-1"></option> 
+</modepick> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

@@ -1,0 +1,337 @@
+<chapter name="Standard-Model Parameters"> 
+ 
+<h2>Standard-Model Parameters</h2> 
+ 
+<h3>The strong coupling</h3> 
+ 
+The <code>AlphaStrong</code> class is used to provide a first- or 
+second-order running <ei>alpha_strong</ei> (or, trivially, a 
+zeroth-order fixed one). Formulae are the standard ones found in 
+<ref>Yao06</ref>. The second-order expression used, eq. (9.5), 
+may be somewhat different in other approaches (with differences 
+formally of higher order), so do not necessarily expect perfect 
+agreement, especially not at small <ei>Q^2</ei> scales. The starting 
+<ei>alpha_strong</ei> value is defined at the <ei>M_Z</ei> mass scale. 
+The <ei>Lambda</ei> values are matched at the <ei>c</ei>, <ei>b</ei> 
+and <ei>t</ei> flavour thresholds, 
+such that <ei>alpha_strong</ei> is continuous. 
+For second-order matching an approximate iterative method is used. 
+ 
+<p/> 
+For backwards compatibility, 
+the following global switch determines whether 5- or 6-flavour running 
+will be used above the <ei>t</ei> threshold: 
+<modepick name="StandardModel:alphaSnfmax" default="6" min="5" max="6"> 
+<option value="5">Use 5-flavour running for all scales above the 
+<ei>b</ei> flavour threshold (old default).</option> 
+<option value="6">Use 6-flavour running above the <ei>t</ei> threshold 
+(new default).</option> 
+</modepick> 
+ 
+<p/> 
+Since we allow <ei>alpha_strong</ei> to vary separately for 
+hard processes, timelike showers, spacelike showers and  multiparton 
+interactions, all other relevant values are set in each of these classes. 
+The default behaviour is everywhere first-order running. 
+ 
+<p/> 
+The <ei>alpha_strong</ei> calculation is initialized by 
+<code>init( value, order, nfmax)</code>, where <code>value</code> 
+is the <ei>alpha_strong</ei> value at <ei>M_Z</ei>, <code>order</code> 
+is the order of the running, 0, 1 or 2, and <code>nfmax</code> 
+is the highest number of flavours to include in the running. Thereafter 
+the value can be calculated by <code>alphaS(scale2)</code>, where 
+<code>scale2</code> is the <ei>Q^2</ei> scale in GeV^2. 
+ 
+<p/> 
+By default the charm, bottom and top threshold-matching mass values 
+are chosen to be 1.5, 4.8 and 171 GeV, respectively. The 
+<code>setThresholds(double mc, double mb, double mt)</code> 
+method can be invoked to select other values. To take effect, this 
+must be done before the <code>AlphaStrong::init()</code> method is called, 
+since this is where the flavour-dependent <ei>Lambda_i</ei> values are 
+calculated and stored. If in doubt, better call it once again. 
+ 
+<p/> 
+For applications inside shower programs, a second-order <code>alpha_s</code> 
+value can be obtained as the product of the two functions 
+<code>alphaS1Ord(scale2)</code> and <code>alphaS2OrdCorr(scale2)</code>, 
+where the first gives a simple first-order running (but with the 
+second-order <ei>Lambda</ei>) and the second the correction factor, 
+below unity, for the second-order terms. This allows a compact handling 
+of evolution equations. 
+ 
+<p/> 
+Resummation arguments <ref>Cat91</ref> show that a set of 
+universal QCD corrections can be absorbed in coherent parton showers by 
+applying the so-called CMW rescaling of the MSbar value of 
+<ei>Lambda_QCD</ei>. This can be accomplished via a fourth (optional) 
+boolean argument to <code>init( value, order, nfmax, useCMW)</code>, 
+with default value <code>useCMW = false</code>. When set to 
+<code>true</code>, the translation amounts to an <ei>N_F</ei>-dependent 
+rescaling of <ei>Lambda_QCD</ei>, relative to its MSbar value, by 
+a factor 1.661 for NF=3, 1.618 for NF=4, 1.569 for NF=5, 
+and 1.513 for NF=6. When using this option, 
+be aware that the original CMW arguments were derived using two-loop running 
+and that the CMW rescaling may need be taken into account in the context of 
+matrix-element matching. Note also that this option has only been made 
+available for timelike and spacelike showers, not for hard processes. 
+ 
+<h3>The electromagnetic coupling</h3> 
+ 
+The <code>AlphaEM</code> class is used to generate a running 
+<ei>alpha_em</ei>. The input <code>StandardModel:alphaEMmZ</code> 
+value at the <ei>M_Z</ei> mass is matched to a low-energy behaviour 
+with running starting at the electron mass threshold. The matching 
+is done by fitting an effective running coefficient in the region 
+between the light-quark threshold and the charm/tau threshold. This 
+procedure is approximate, but good enough for our purposes. 
+ 
+<p/> 
+Since we allow <ei>alpha_em</ei> to vary separately for 
+hard processes, timelike showers, spacelike showers and  multiparton 
+interactions, the choice between using a fixed or a running 
+<ei>alpha_em</ei> can be made in each of these classes. 
+The default behaviour is everywhere first-order running. 
+The actual values assumed at zero momentum transfer and 
+at <ei>M_Z</ei> are only set here, however. 
+ 
+<parm name="StandardModel:alphaEM0" default="0.00729735" 
+min="0.0072973" max="0.0072974"> 
+The <ei>alpha_em</ei> value at vanishing momentum transfer 
+(and also below <ei>m_e</ei>). 
+</parm> 
+ 
+<parm name="StandardModel:alphaEMmZ" default="0.00781751" 
+min="0.00780" max="0.00783"> 
+The <ei>alpha_em</ei> value at the <ei>M_Z</ei> mass scale. 
+Default is taken from <ref>Yao06</ref>. 
+</parm> 
+ 
+<p/> 
+The <ei>alpha_em</ei> calculation is initialized by 
+<code>init(order)</code>, where <code>order</code> is the order of 
+the running, 0 or 1, with -1 a special option to use the fix value 
+provided at <ei>M_Z</ei>.   Thereafter the value can be 
+calculated by <code>alphaEM(scale2)</code>, where 
+<code>scale2</code> is the <ei>Q^2</ei> scale in GeV^2. 
+ 
+<h3>The electroweak couplings</h3> 
+ 
+There are two degrees of freedom that can be set, related to the 
+electroweak mixing angle: 
+ 
+<parm name="StandardModel:sin2thetaW" default="0.2312" 
+min="0.225" max="0.240"> 
+The sine-squared of the weak mixing angle, as used in all <ei>Z^0</ei> 
+and <ei>W^+-</ei> masses and couplings, except for the vector couplings 
+of fermions to the <ei>Z^0</ei>, see below. Default is the MSbar value 
+from <ref>Yao06</ref>. 
+</parm> 
+ 
+<parm name="StandardModel:sin2thetaWbar" default="0.2315" 
+min="0.225" max="0.240"> 
+The sine-squared of the weak mixing angle, as used to derive the vector 
+couplings of fermions to the <ei>Z^0</ei>, in the relation 
+<ei>v_f = a_f - 4 e_f sin^2(theta_W)bar</ei>. Default is the 
+effective-angle value from <ref>Yao06</ref>. 
+</parm> 
+ 
+<p/> 
+The Fermi constant is not much used in the currently coded matrix elements, 
+since it is redundant, but it is available: 
+ 
+<parm name="StandardModel:GF" default="1.16637e-5" 
+min="1.0e-5" max="1.3e-5"> 
+The Fermi coupling constant, in units of GeV<ei>^-2</ei>. 
+</parm> 
+ 
+<h3>The quark weak-mixing matrix</h3> 
+ 
+The absolute values of the Cabibbo-Kobayashi-Maskawa matrix elements are 
+set by the following nine real values taken from <ref>Yao06</ref> - 
+currently the CP-violating phase is not taken into account in this 
+parametrization. It is up to the user to pick a consistent unitary 
+set of new values whenever changes are made. 
+ 
+<parm name="StandardModel:Vud" default="0.97383" min="0.973" max="0.975"> 
+The <ei>V_ud</ei> CKM matrix element. 
+</parm> 
+ 
+<parm name="StandardModel:Vus" default="0.2272" min="0.224" max="0.230"> 
+The <ei>V_us</ei> CKM matrix element. 
+</parm> 
+ 
+<parm name="StandardModel:Vub" default="0.00396" min="0.0037" max="0.0042"> 
+The <ei>V_ub</ei> CKM matrix element. 
+</parm> 
+ 
+<parm name="StandardModel:Vcd" default="0.2271" min="0.224" max="0.230"> 
+The <ei>V_cd</ei> CKM matrix element. 
+</parm> 
+ 
+<parm name="StandardModel:Vcs" default="0.97296" min="0.972" max="0.974"> 
+The <ei>V_cs</ei> CKM matrix element. 
+</parm> 
+ 
+<parm name="StandardModel:Vcb" default="0.04221" min="0.0418" max="0.0426"> 
+The <ei>V_cb</ei> CKM matrix element. 
+</parm> 
+ 
+<parm name="StandardModel:Vtd" default="0.00814" min="0.006" max="0.010"> 
+The <ei>V_td</ei> CKM matrix element. 
+</parm> 
+ 
+<parm name="StandardModel:Vts" default="0.04161" min="0.039" max="0.043"> 
+The <ei>V_ts</ei> CKM matrix element. 
+</parm> 
+ 
+<parm name="StandardModel:Vtb" default="0.9991" min="0.99907" max="0.9992"> 
+The <ei>V_tb</ei> CKM matrix element. 
+</parm> 
+ 
+<h3>The CoupSM class</h3> 
+ 
+The <code><aloc href="ProgramFlow">Pythia</aloc></code> class contains a 
+public instance <code>coupSM</code> of the <code>CoupSM</code> class. 
+This class contains one instance each of the <code>AlphaStrong</code> 
+and <code>AlphaEM</code> classes, and additionally stores the weak couplings 
+and the quark mixing matrix mentioned above. This class is used especially 
+in the calculation of cross sections and resonance widths, but could also 
+be used elsewhere. Specifically, as already mentioned, there are separate 
+<code>AlphaStrong</code> and <code>AlphaEM</code> instances for timelike 
+and spacelike showers and for multiparton interactions, while weak couplings 
+and the quark mixing matrix are only stored here. With the exception of the 
+first two methods below, which are for internal use, the subsequent ones 
+could also be used externally. 
+ 
+<method name="CoupSM::CoupSM()"> 
+the constructor does nothing. Internal. 
+</method> 
+ 
+<method name="void CoupSM::init(Settings& settings, Rndm* rndmPtr)"> 
+this is where the <code>AlphaStrong</code> and <code>AlphaEM</code> 
+instances are initialized, and weak couplings and the quark mixing matrix 
+are read in and set. This is based on the values stored on this page and 
+among the <aloc href="CouplingsAndScales">Couplings and Scales</aloc>. 
+Internal. 
+</method> 
+ 
+<method name="double CoupSM::alphaS(double scale2)"> 
+the <ei>alpha_strong</ei> value at the quadratic scale <code>scale2</code>. 
+</method> 
+ 
+<method name="double CoupSM::alphaS1Ord(double scale2)"> 
+a first-order overestimate of the full second-order <ei>alpha_strong</ei> 
+value at the quadratic scale <code>scale2</code>. 
+</method> 
+ 
+<method name="double CoupSM::alphaS2OrdCorr(double scale2)"> 
+a multiplicative correction factor, below unity, that brings the 
+first-order overestimate above into agreement with the full second-order 
+<ei>alpha_strong</ei> value at the quadratic scale <code>scale2</code>. 
+</method> 
+ 
+<method name="double CoupSM::Lambda3()"> 
+</method> 
+<methodmore name="double CoupSM::Lambda4()"> 
+</methodmore> 
+<methodmore name="double CoupSM::Lambda5()"> 
+the three-, four-, and five-flavour <ei>Lambda</ei> scale. 
+</methodmore> 
+ 
+<method name="double CoupSM::alphaEM(double scale2)"> 
+the <ei>alpha_em</ei> value at the quadratic scale <code>scale2</code>. 
+</method> 
+ 
+<method name="double CoupSM::sin2thetaW()"> 
+</method> 
+<methodmore name="double CoupSM::cos2thetaW()"> 
+the sine-squared and cosine-squared of the weak mixing angle, as used in 
+the gauge-boson sector. 
+</methodmore> 
+ 
+<method name="double CoupSM::sin2thetaWbar()"> 
+the sine-squared of the weak mixing angle, as used to derive the vector 
+couplings of fermions to the <ei>Z^0</ei>. 
+</method> 
+ 
+<method name="double CoupSM::GF()"> 
+the Fermi constant of weak decays, in GeV<ei>^-2</ei>. 
+</method> 
+ 
+<method name="double CoupSM::ef(int idAbs)"> 
+the electrical charge of a fermion, by the absolute sign of the PDF code, 
+i.e. <code>idAbs</code> must be in the range between 1 and 18. 
+</method> 
+ 
+<method name="double CoupSM::vf(int idAbs)"> 
+</method> 
+<methodmore name="double CoupSM::af(int idAbs)"> 
+the vector and axial charges of a fermion, by the absolute sign of the PDF 
+code (<ei>a_f = +-1, v_f = a_f - 4. * sin2thetaWbar * e_f</ei>). 
+</methodmore> 
+ 
+<method name="double CoupSM::t3f(int idAbs)"> 
+</method> 
+<methodmore name="double CoupSM::lf(int idAbs)"> 
+</methodmore> 
+<methodmore name="double CoupSM::rf(int idAbs)"> 
+the weak isospin, left- and righthanded charges of a fermion, by the 
+absolute sign of the PDF code (<ei>t^3_f = a_f/2, l_f = (v_f + a_f)/2, 
+r_f = (v_f - a_f)/2</ei>; you may find other conventions in the literature 
+that differ by a factor of 2). 
+</methodmore> 
+ 
+<method name="double CoupSM::ef2(int idAbs)"> 
+</method> 
+<methodmore name="double CoupSM::vf2(int idAbs)"> 
+</methodmore> 
+<methodmore name="double CoupSM::af2(int idAbs)"> 
+</methodmore> 
+<methodmore name="double CoupSM::efvf(int idAbs)"> 
+</methodmore> 
+<methodmore name="double CoupSM::vf2af2(int idAbs)"> 
+common quadratic combinations of the above couplings: 
+<ei>e_f^2, v_f^2, a_f^2, e_f * v_f, v_f^2 + a_f^2</ei>. 
+</methodmore> 
+ 
+<method name="double CoupSM::VCKMgen(int genU, int genD)"> 
+</method> 
+<methodmore name="double CoupSM::V2CKMgen(int genU, int genD)"> 
+the CKM mixing element,or the square of it, for 
+up-type generation index <code>genU</code> 
+(<ei>1 = u, 2 = c, 3 = t, 4 = t'</ei>) and 
+down-type generation index <code>genD</code> 
+(<ei>1 = d, 2 = s, 3 = b, 4 = b'</ei>). 
+</methodmore> 
+ 
+<method name="double CoupSM::VCKMid(int id1, int id2)"> 
+</method> 
+<methodmore name="double CoupSM::V2CKMid(int id1, int id2)"> 
+the CKM mixing element,or the square of it, for 
+flavours <code>id1</code> and <code>id2</code>, both in the 
+range from <ei>-18</ei> to <ei>+18</ei>. The sign is here not 
+checked (so it can be used both for <ei>u + dbar &rarr; W+</ei> 
+and <ei>u &rarr; d + W+</ei>, say), but impossible flavour combinations 
+evaluate to zero. The neutrino sector is numbered by flavor 
+eigenstates, so there is no mixing in the lepton-neutrino system. 
+</methodmore> 
+ 
+<method name="double CoupSM::V2CKMsum(int id)"> 
+the sum of squared CKM mixing element that a given flavour can couple to, 
+excluding the top quark and fourth generation. Is close to unity 
+for the first two generations. Returns unity for the lepton-neutrino 
+sector. 
+</method> 
+ 
+<method name="int CoupSM::V2CKMpick(int id)"> 
+picks a random CKM partner quark or lepton (with the same sign as 
+<code>id</code>) according to the respective squared elements, again 
+excluding the top quark and fourth generation from the list of 
+possibilities. Unambiguous choice for the lepton-neutrino sector. 
+</method> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

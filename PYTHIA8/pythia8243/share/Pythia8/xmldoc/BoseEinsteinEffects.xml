@@ -1,0 +1,118 @@
+<chapter name="Bose-Einstein Effects"> 
+ 
+<h2>Bose-Einstein Effects</h2> 
+ 
+The <code>BoseEinstein</code> class performs shifts of momenta 
+of identical particles to provide a crude estimate of 
+Bose-Einstein effects. The algorithm is the BE_32 one described in 
+<ref>Lon95</ref>, with a Gaussian parametrization of the enhancement. 
+We emphasize that this approach is not based on any first-principles 
+quantum mechanical description of interference phenomena; such 
+approaches anyway have many problems to contend with. Instead a cruder 
+but more robust approach is adopted, wherein BE effects are introduced 
+after the event has already been generated, with the exception of the 
+decays of long-lived particles. The trick is that momenta of identical 
+particles are shifted relative to each other so as to provide an 
+enhancement of pairs closely separated, which is compensated by a 
+depletion of pairs in an intermediate region of separation. 
+ 
+<p/> 
+More precisely, the intended target form of the BE correlations in 
+BE_32 is 
+<eq> 
+f_2(Q) = (1 + lambda * exp(-Q^2 R^2)) 
+       * (1 + alpha * lambda * exp(-Q^2 R^2/9) * (1 - exp(-Q^2 R^2/4))) 
+</eq> 
+where <ei>Q^2 = (p_1 + p_2)^2 - (m_1 + m_2)^2</ei>. 
+Here the strength <ei>lambda</ei> and effective radius <ei>R</ei> 
+are the two main parameters. The first factor of the 
+equation is implemented by pulling pairs of identical hadrons closer 
+to each other. This is done in such a way that three-momentum is 
+conserved, but at the price of a small but non-negligible negative 
+shift in the energy of the event. The second factor compensates this 
+by pushing particles apart. The negative <ei>alpha</ei> parameter is 
+determined iteratively, separately for each event, so as to restore 
+energy conservation. The effective radius parameter is here <ei>R/3</ei>, 
+i.e. effects extend further out in <ei>Q</ei>. Without the dampening 
+<ei>(1 - exp(-Q^2 R^2/4))</ei> in the second factor the value at the 
+origin would become <ei>f_2(0) = (1 + lambda) * (1 + alpha * lambda)</ei>, 
+with it the desired value <ei>f_2(0) = (1 + lambda)</ei> is restored. 
+The end result can be viewed as a poor man's rendering of a rapidly 
+dampened oscillatory behaviour in <ei>Q</ei>. 
+ 
+<p/> 
+Further details can be found in <ref>Lon95</ref>. For instance, the 
+target is implemented under the assumption that the initial distribution 
+in <ei>Q</ei> can be well approximated by pure phase space at small 
+values, and implicitly generates higher-order effects by the way 
+the algorithm is implemented. The algorithm is applied after the decay 
+of short-lived resonances such as the <ei>rho</ei>, but before the decay 
+of longer-lived particles. 
+ 
+<p/> 
+This algorithm is known to do a reasonable job of describing BE 
+phenomena at LEP. It has not been tested against data for hadron 
+colliders, to the best of our knowledge, so one should exercise some 
+judgment before using it. Therefore by default the master switch 
+<aloc href="MasterSwitches">HadronLevel:BoseEinstein</aloc> is off. 
+Furthermore, the implementation found here is not (yet) as 
+sophisticated as the one used at LEP2, in that no provision is made 
+for particles from separate colour singlet systems, such as 
+<ei>W</ei>'s and <ei>Z</ei>'s, interfering only at a reduced rate. 
+ 
+<p/> 
+<b>Warning:</b> The algorithm will create a new copy of each particle 
+with shifted momentum by BE effects, with status code 99, while the 
+original particle with the original momentum at the same time will be 
+marked as decayed. This means that if you e.g. search for all 
+<ei>pi+-</ei> in an event you will often obtain the same particle twice. 
+One way to protect yourself from unwanted doublecounting is to 
+use only particles with a positive status code, i.e. ones for which 
+<code>event[i].isFinal()</code> is <code>true</code>. 
+ 
+ 
+<h3>Main parameters</h3> 
+ 
+Assuming you have set <code>HadronLevel:BoseEinstein = on</code>, 
+you can regulate the detailed behaviour with the following settings. 
+ 
+<flag name="BoseEinstein:Pion" default="on"> 
+Include effects or not for identical <ei>pi^+</ei>, <ei>pi^-</ei> 
+and <ei>pi^0</ei>. 
+</flag> 
+ 
+<flag name="BoseEinstein:Kaon" default="on"> 
+Include effects or not for identical <ei>K^+</ei>, <ei>K^-</ei>, 
+<ei>K_S^0</ei> and <ei>K_L^0</ei>. 
+</flag> 
+ 
+<flag name="BoseEinstein:Eta" default="on"> 
+Include effects or not for identical <ei>eta</ei> and <ei>eta'</ei>. 
+</flag> 
+ 
+<parm name="BoseEinstein:lambda" default="1." min="0." max="2."> 
+The strength parameter for Bose-Einstein effects. On physical grounds 
+it should not be above unity, but imperfections in the formalism 
+used may require that nevertheless. 
+</parm> 
+ 
+<parm name="BoseEinstein:QRef" default="0.2" min="0.05" max="1."> 
+The size parameter of the region in <ei>Q</ei> space over which 
+Bose-Einstein effects are significant.  Can be thought of as 
+the inverse of an effective distance in normal space, 
+<ei>R = hbar / QRef</ei>, with <ei>R</ei> as used in the above equation. 
+That is, <ei>f_2(Q) = (1 + lambda * exp(-(Q/QRef)^2)) * (...)</ei>. 
+</parm> 
+ 
+<parm name="BoseEinstein:widthSep" default="0.02" min="0.001" max="1."> 
+Particle species with a width above this value (in GeV) are assumed 
+to be so short-lived that they decay before Bose-Einstein effects 
+are considered, while otherwise they do not. In the former case the 
+decay products thus can obtain shifted momenta, in the latter not. 
+The default has been picked such that both <ei>rho</ei> and 
+<ei>K^*</ei> decay products would be modified. 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

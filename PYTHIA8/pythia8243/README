@@ -1,0 +1,318 @@
+----------------------------------------------------------------------
+
+   INSTALLATION - BASIC
+
+1) Once you have unpacked your tarball into a new (sub)directory, the
+   first step is to run the "configure" script. If you accept the
+   default compiler options, and plan to run PYTHIA 8 standalone, you
+   only have to type "./configure". This will create the file
+   Makefile.inc.  Actually, running this script by hand is optional
+   since "make" will run "configure" anyway, but possible errors in
+   the paths will be less clearly visible.
+
+2) Type "gmake" or "make". This will create an archive library.
+   On Linux systems gmake and make are usually equivalent. For others,
+   in case of doubt, use gmake. This applies below as well.
+
+3) The library should now be ready for use. To study some examples,
+   go to the "examples" subdirectory. The README file in that
+   subdirectory contain further instructions how executables can
+   be built and run.
+
+4) At any time, typing "gmake clean" will remove all files related to
+   the library compilation, including the library itself, but it will
+   not reset the configure selections. With "gmake distclean" additionally
+   the configure selection is reset, and many other temporary files are
+   removed. Output files you may have created during your test runs are
+   not affected. (A "gmake clean" is also available in the examples
+   subdirectory, see the README there.)
+
+----------------------------------------------------------------------
+
+   INSTALLATION - ADVANCED OPTIONS
+
+1) If you want to set various compilation options, the following two options
+   are available.
+
+1.1) You can use command-line arguments to the configure script for
+     finer grain control of the installation. A full description of
+     the options is given by running "configure --help". Here additional
+     clarification is provided.
+     --enable-debug : turns on debugging flags and turns off optimization.
+         (This makes program execution much slower. If you later want to
+         switch optimization back on you have to rerun configure without
+         this option, since default is to allow optimization.)
+     --enable-optdebug : turns on debugging flags but allow optimization.
+     --enable-shared : turns on shared-library creation,
+         in addition to the archive libraries always built.
+     --enable-64bit : turns on 64 bits compilation flag
+         (is automatic on many 64-bit installations, but just in case).
+     --lcg=PLATFORM : allows you to specify the platform assumed for
+         compilation, which also affects the assumed location of the
+         libraries below; default is x86_64-slc5-gcc43-opt while other
+         supported values for name include slc4_ia32_gcc34,
+         slc4_amd64_gcc34 and slc3_ia32_gcc323 (deprecated).
+     --prefix=DIR : absolute path to a directory where the "bin",
+         "lib", "include", and "share" directories will be copied, by
+         a "gmake install" command subsequent to the "gmake" one.
+         Note that the files in the current working directory are
+         kept.
+     --prefix-COMPONENT=DIR : finer grain control over where the "bin", "lib",
+         "include", and "share" directories are copied for installation.
+     --arch=ARCH : sets the architecture to be used. The two options
+         are either "Darwin" for OS X, or "Linux" for other *nix
+         platforms. The architecture is used to set automatically the
+         "--cxx-shared", "--cxx-soname", and "--lib-suffix" flags but
+         otherwise has no effect.
+     --cxx=COMPILER : the compiler to be used. Currently PYTHIA 8 has
+         been successfully compiled with GCC and LLVM
+         (i.e. CLANG). Most systems will by default have "g++" aliased
+         or linked to the appropriate compiler for your program.
+     --cxx-common='FLAGS' : the flags that are passed for all
+         compilation statements. This is equivalent to the GNU
+         configuration variable CXXFLAGS, which is not supported here.
+     --cxx-shared='FLAGS' : the flags that are passed when building
+         shared dynamic libraries. These are only used when building
+         "lib/libpythia8.[so,dylib]" and
+         "lib/libpythia8lhapdf[5,6].so".
+     --cxx-soname='FLAGS' : these flags are passed to the linker when
+         setting the shared library names. Normally this should not
+         need to be changed.
+     --lib-suffix=SUF : the shared library suffix to use. This only
+         effects the name of "lib/libpythia8.SUF". Typically for *nix
+         systems this is ".so" and for OS X this is ".dylib".
+
+1.2) All of the options listed above are formatted into
+     "Makefile.inc", which is also copied to
+     "examples/Makefile.inc" whenever "gmake" is run and
+     a change has been made. The "Makefile.inc" file can be simply
+     modified to change any of these options after "configure" is
+     run. Each option corresponds to a variable in this file as
+     follows: "--option-foo-bar" is translated to "OPTION_FOO_BAR".
+
+2) If you have two CPUs or cores on your computer then using the "-j"
+   option on make/gmake may speed up compilation.
+
+3) Necessary data are automatically loaded when you use the default
+   PYTHIA installation directory structure and run the main programs in
+   the examples subdirectory. However, in the general case, you must
+   provide the path to the .xml files, originally stored in the xmldoc
+   directory, where default settings and particle data are found. This
+   can be done in two ways.
+
+3.1) You can set the environment variable PYTHIA8DATA to contain the
+     location of the xmldoc directory. In the csh and tcsh shells this
+     could e.g. be
+       setenv PYTHIA8DATA /home/myname/pythia81xx/share/Pythia8/xmldoc
+     while in other shells it could be
+       export PYTHIA8DATA=/home/myname/pythia81xx/share/Pythia8/xmldoc
+     where xx is the subversion number.
+     Recall that environment variables set locally are only defined in
+     the current instance of the shell. The above lines should go into
+     your .cshrc and .bashrc files, respectively, if you want a more
+     permanent assignment.
+
+3.2) You can provide the path as argument to the Pythia constructor in
+     your main program, e.g.
+       Pythia pythia("/home/myname/pythia81xx/share/Pythia8/xmldoc");
+     where again xx is the subversion number.
+
+   When PYTHIA8DATA is set it takes precedence, else the path in the
+   constructor is used, else one defaults to the ../share/Pythia8/xmldoc
+   directory, which works fine when you run the examples/mainNN programs.
+
+----------------------------------------------------------------------
+
+   INSTALLATION - EXTERNAL PACKAGES
+
+1) PYTHIA 8 is designed to run out-of-the-box without any external
+   package dependencies. However, a variety of interfaces to external
+   packages is available. The building and linking to external
+   interfaces can be controlled via the same two options as the
+   advanced installation options.
+
+1.1) Command-line arguments can be passed to "configure" using the
+     arguments that begin with "--with". When an external package
+     interface is enabled, "configure" takes the following steps.
+     a) It looks for the necessary binaries, headers, and libraries
+        that are needed for the external package. If no paths for the
+        package have been defined it looks along the default paths
+        for the system. If it can not find the necessary files, it
+        disables the external package and issues a warning as to why.
+     b) It looks for any external packages that this package might
+        require, and enables them if needed. It then checks to see if
+        these packages fulfill a). If not, it disables both packages.
+     If any "--with-PACKAGE" option is passed to "configure" it will
+     attempt to enable the package. For example, "--with-lhapdf6" will
+     enable LHAPDF6, while "--with-lhapdf6-lib=/lib/foo" will also
+     enable LHAPDF6. The available "--with" arguments are
+     described by "./configure --help", but further details are given
+     here.
+     --with-PACKAGE=[DIR] : enables a package and if "DIR" is
+         provided, then looks for the package at this root path. For
+         example, if the command "--with-lhapdf6=/foo/bar" is passed,
+         then "configure" will look for the library LHAPDF along the
+         path "/foo/bar/lib" and the LHAPDF headers along the path
+         "/foo/bar/include".
+     --with-PACKAGE-bin=DIR : specifies where to look for the package
+         binaries, and will ignore the root path from
+         "--with-PACKAGE=DIR" and the default system paths. This can
+         be used for non-standard installations of packages, where the
+         "bin", "lib", and "include" directories are scattered across
+         the system. In the example "--with-lhapdf6=/foo
+         --with-lhapdf6-bin=/foo/bar" the "configure" script will look
+         for libraries and headers on the paths "/foo/lib" and
+         "/foo/include", but the binaries on the path "/foo/bar" and
+         not "/foo/bin".
+     --with-PACKAGE-lib=DIR : same as above for bin, but now for
+         libraries.
+     --with-PACKAGE-include=DIR : same as above for bin, but now for
+          headers.
+     --with-PACKAGE-version=VER : is used when the "--lcg=PLATFORM"
+         option is specified, and will cause "configure" to look for
+         version "VER" of the package in the default LCG location.
+
+1.2) All of the options above can also be set in "Makefile.inc" after
+     "configure" has been run. For each package the variable
+     "PACKAGE_USE" sets whether the package is used ("true" is used,
+     while "false" is not). The variables "PACKAGE_BIN",
+     "PACKAGE_INCLUDE", and "PACKAGE_LIB" then specify what paths are
+     used when building, for the binaries, headers, and libraries,
+     respectively.
+
+2) A variety of external packages can be enabled, with details given here.
+   FASTJET3) The industry standard package to build jets,
+       http://fastjet.fr/.  An interface to FastJet is provided in the
+       "include/Pythia8Plugins/FastJet3.h" header and a variety of
+       examples in "examples" link against the FastJet libraries.
+   HEPMC2) An interface to the HepMC event record, version 2:
+       http://lcgapp.cern.ch/project/simu/HepMC/. The interface
+       between PYTHIA 8 and HepMC is provided via the
+       "include/Pythia8Plugins/HepMC2.h" header.
+   HEPMC3) An interface for the upcoming HepMC 3 format. Currently this
+       package does nothing, as the record does not exist yet.
+   LHAPDF5) Provides an interface to the FORTRAN version of LHAPDF,
+       details can be found here:
+       http://lhapdf.hepforge.org/lhapdf5/. Because PDF sets are an
+       integral part of PYTHIA 8, the LHAPDF interface is handled
+       differently than for the other external packages. If LHAPDF5
+       support is enabled, then the shared library
+       "lib/pythia8lhapdf5.so" is built (even for OS X systems because
+       this library is not used for linking). This library is NOT
+       linked with PYTHIA, but rather is dynamically loaded at
+       runtime. Consequently, PYTHIA is no longer linked against
+       LHAPDF, but rather attempts to load it at runtime if an LHAPDF
+       set is requested. Note that the plugin library
+       "pythia8lhapdf5.so" must exist along the current library load
+       path. This can be set by the environment variable
+       "LD_LIBRARY_PATH" or at compile time using the "--Wl,-rpath"
+       linker flag.
+   LHAPDF6) The details for this package are the same as for LHAPDF5,
+       but now for the modern C++ version of LHAPDF,
+       http://lhapdf.hepforge.org/. There are three important things to
+       note here. First, the LHAPDF6 package provides the exact same C
+       interface as the LHAPDF5 package, and so technically supplying
+       LHAPDF6 libraries to the LHAPDF5 package option will work. This
+       is not recommended except for checking that the new C++
+       interface works properly. Second, both LHAPDF5 and LHAPDF6 can
+       be used simultaneously, technically. This behavior has not
+       been tested and is not recommended. Third, if using a version
+       earlier than 6.2, BOOST is required and can be specified using
+       "--with-boost".
+   ROOT) The ROOT HEP package used for data analysis and
+       visualization, http://root.cern.ch. This package is only used
+       for the "examples/main9[1,2].cc" examples.
+   BOOST) Advanced C++ libraries, http://www.boost.org/, which are needed
+       when using the C++ interface for LHAPDF6 with version < 6.2.
+   GZIP) Support for the reading of gzipped LHE files. It relies upon
+       zlib to function. The "--with-gzip=PATH" provides the location
+       for "zlib.h" and "libz.[so,dylib]". Note that when compiling a
+       final PYTHIA executable, the zlib library must also be
+       included, e.g.: "-lz". This is done automatically for the
+       examples in "examples/" when GZIP support is enabled.
+   PYTHON) Provides a Python interface to Pythia. To build this interface,
+       the executable "python" must be available, as well as the
+       Python system header "Python.h". Typically this can be found
+       under "/usr/include/pythonX.Y". Note that the interface
+       includes this header as "#include <Python.h>" so the user will
+       typically need to explicitly set the include path with
+       "--with-python-include=/usr/include/pythonX.Y" or something
+       similar. The interface works both with Python 2 and 3.
+
+----------------------------------------------------------------------
+
+   COMPILING PROGRAMS AGAINST PYTHIA 8
+
+Generally compiling programs against the PYTHIA 8 libraries requires
+that the PYTHIA 8 header and library directories be specified via the
+usual -I and -L compiler flags, and that at least the -lpythia8 option
+be provided to link against the PYTHIA 8 library.
+
+Extra compiler flags will be needed if you are making use of PYTHIA 8's
+external package features. To make this simpler,
+and so that an identical compilation recipe can be used with different
+builds of PYTHIA (e.g. for inclusion in shared Makefiles), a pythia8-config
+script will be installed into PREFIX_BIN/bin by the "make install" build
+target. A typical usage of this script is as follows:
+
+g++ myprog.cc -o myprog `pythia8-config --cppflags --libs`
+
+The --cppflags option to this script makes pythia8-config write out
+the necessary -I flags corresponding to the installed headers, and
+--libs adds the required -L and -l flags.
+
+The pythia8-config script may also be used at runtime to generate the
+data directory environment variable if needed, e.g.:
+
+PYTHIA8DATA=`pythia8-config --xmldoc` ./myprog
+
+----------------------------------------------------------------------
+
+   FOR WINDOWS USERS
+
+PYTHIA 8 is primarily intended to be run in a Unix-based environment,
+such as Linux or Mac OS X. Unfortunately it is not currently supported
+for Windows platforms. If you want to experiment, and do not have the
+knowledge to set everything up from scratch yourself, we are aware of
+three possible approaches to take.
+
+1) Install Linux in a Virtual Machine (VM) on your Windows system,
+and then work within this virtual environment as on any regular
+Linux platform. You could e.g. download the VirtualBox
+    https://www.virtualbox.org/
+and install either Ubuntu or CernVM (Scientific Linux)
+    http://cernvm.cern.ch/
+on it. Make sure your installation includes the g++ compiler.
+
+2) Install the Cygwin package, intended to allow Linux apps to run
+under Windows, see
+    https://www.cygwin.com/
+Be sure to install the Dev tools, which appears in the list of options
+to include, but won't be installed by default. Then put the Pythia
+folder in the Cygwin/home directory, and compile and work with it
+as usual. (The include/Pythia8Plugins/execinfo.h file provides dummy
+versions of methods needed for proper compilation.)
+
+3) The nuget.org website
+    http://www.nuget.org/packages/Pythia8/
+contains pre-built PYTHIA packages ready to be used under Windows
+Visual Studio.
+
+We take no responsibility for either of these solutions.
+Also note that linking with other libraries may involve further
+problems, in particular for the dynamic loading of LHAPDF.
+
+----------------------------------------------------------------------
+
+   LEARN MORE
+
+To learn more about the current program:
+
+A) A brief self-contained introduction is found in the
+   share/Pythia8/pdfdoc/pythia8200.pdf file.
+
+B) Details can be found by opening a web browser on the
+   share/Pythia8/htmldoc/Welcome.html file, and then navigating among
+   the pages in the index there.
+
+----------------------------------------------------------------------

@@ -1,0 +1,1000 @@
+<chapter name="Event Information"> 
+ 
+<h2>Event Information</h2> 
+ 
+The <code>Info</code> class collects various one-of-a-kind information, 
+some relevant for all events and others for the current event. 
+An object <code>info</code> is a public member of the <code>Pythia</code> 
+class, so if you e.g. have declared <code>Pythia pythia</code>, the 
+<code>Info</code> methods can be accessed by 
+<code>pythia.info.method()</code>. Most of this is information that 
+could also be obtained e.g. from the event record, but is here more 
+directly available. It is primarily intended for processes generated 
+internally in PYTHIA, but many of the methods would work also for 
+events fed in via the Les Houches Accord. 
+ 
+<h3>List information</h3> 
+ 
+<method name="void Info::list()"> 
+a listing of most of the information set for the current event. 
+</method> 
+ 
+<h3>The beams</h3> 
+ 
+<method name="int Info::idA()"> 
+</method> 
+<methodmore name="int Info::idB()"> 
+the identities of the two beam particles. 
+</methodmore> 
+ 
+<method name="double Info::pzA()"> 
+</method> 
+<methodmore name="double Info::pzB()"> 
+the longitudinal momenta of the two beam particles. 
+</methodmore> 
+ 
+<method name="double Info::eA()"> 
+</method> 
+<methodmore name="double Info::eB()"> 
+the energies of the two beam particles. 
+</methodmore> 
+ 
+<method name="double Info::mA()"> 
+</method> 
+<methodmore name="double Info::mB()"> 
+the masses of the two beam particles. 
+</methodmore> 
+ 
+<method name="double Info::eCM()"> 
+</method> 
+<methodmore name="double Info::s()"> 
+the CM energy and its square for the two beams. 
+</methodmore> 
+ 
+<h3>Initialization</h3> 
+ 
+<method name="bool Info::tooLowPTmin()"> 
+normally false, but true if the proposed <ei>pTmin</ei> scale was too low 
+in timelike or spacelike showers, or in multiparton interactions. In the 
+former case the <ei>pTmin</ei> is raised to some minimal value, in the 
+latter the initialization fails (it is impossible to obtain a minijet 
+cross section bigger than the nondiffractive one by reducing 
+<ei>pTmin</ei>). 
+</method> 
+ 
+<h3>The event type</h3> 
+ 
+<method name="string Info::name()"> 
+</method> 
+<methodmore name="int Info::code()"> 
+the name and code of the process that occurred. 
+</methodmore> 
+ 
+<method name="int Info::nFinal()"> 
+the number of final-state partons in the hard process. 
+</method> 
+ 
+<method name="bool Info::isResolved()"> 
+are beam particles resolved, i.e. were PDF's used for the process? 
+</method> 
+ 
+<method name="bool Info::isDiffractiveA()"> 
+</method> 
+<methodmore name="bool Info::isDiffractiveB()"> 
+is either beam soft diffractively excited? 
+</methodmore> 
+ 
+<method name="bool Info::isDiffractiveC()"> 
+is there soft central diffraction (a.k.a. double Pomeron exchange)? 
+</method> 
+ 
+<method name="bool Info::isHardDiffractiveA()"> 
+</method> 
+<methodmore name="bool Info::isHardDiffractiveB()"> 
+is either beam hard diffractively excited? 
+</methodmore> 
+ 
+<method name="bool Info::isNonDiffractive()"> 
+is the process the <code>SoftQCD:nonDiffractive</code> one, 
+i.e. corresponding to the full inelastic nondiffractive part of the 
+total cross section. (Note that a hard process, say <ei>Z^0</ei> 
+production, normally is nondiffractive, but this is not what we 
+aim at here, and so the method would return <code>false</code>, 
+unless the <ei>Z^0</ei> had been generated as part of the MPI 
+machinery for the <code>SoftQCD:nonDiffractive</code> component.) 
+</method> 
+ 
+<method name="bool Info::isMinBias()"> 
+the same as above, retained for backwards compatibility, but to 
+be removed in PYTHIA 8.2. 
+</method> 
+ 
+<method name="bool Info::isLHA()"> 
+has the process been generated from external Les Houches Accord 
+information? 
+</method> 
+ 
+<method name="bool Info::atEndOfFile()"> 
+true if a linked Les Houches class refuses to return any further 
+events, presumably because it has reached the end of the file from 
+which events have been read in. 
+</method> 
+ 
+<method name="bool Info::hasSub()"> 
+does the process have a subprocess classification? 
+Currently only true for nondiffractive and Les Houches events, where 
+it allows the hardest collision to be identified. 
+</method> 
+ 
+<method name="string Info::nameSub()"> 
+</method> 
+<methodmore name="int Info::codeSub()"> 
+</methodmore> 
+<methodmore name="int Info::nFinalSub()"> 
+the name, code and number of final-state partons in the subprocess 
+that occurred when <code>hasSub()</code> is true. For a minimum-bias event 
+the <code>code</code> would always be 101, while <code>codeSub()</code> 
+would vary depending on the actual hardest interaction, e.g. 111 for 
+<ei>g g &rarr; g g</ei>. For a Les Houches event the <code>code</code> would 
+always be 9999, while <code>codeSub()</code> would be the external 
+user-defined classification code. The methods below would also provide 
+information for such particular subcollisions. 
+</methodmore> 
+ 
+<h3>Hard process initiators</h3> 
+ 
+The methods in this sections refer to the two initial partons of the 
+hard <ei>2 &rarr; n</ei> process (diffraction excluded; see below). 
+ 
+<method name="int Info::id1()"> 
+</method> 
+<methodmore name="int Info::id2()"> 
+the identities of the two partons coming in to the hard process. 
+</methodmore> 
+ 
+<method name="double Info::x1()"> 
+</method> 
+<methodmore name="double Info::x2()"> 
+<ei>x</ei> fractions of the two partons coming in to the hard process. 
+</methodmore> 
+ 
+<method name="double Info::y()"> 
+</method> 
+<methodmore name="double Info::tau()"> 
+rapidity and scaled mass-squared of the hard-process subsystem, as 
+defined by the above <ei>x</ei> values. 
+</methodmore> 
+ 
+<method name="bool Info::isValence1()"> 
+</method> 
+<methodmore name="bool Info::isValence2()"> 
+<code>true</code> if the two hard incoming partons have been picked 
+to belong to the valence piece of the parton-density distribution, 
+else <code>false</code>. Should be interpreted with caution. 
+Information is not set if you switch off parton-level processing. 
+</methodmore> 
+ 
+<h3>Hard process parton densities and scales</h3> 
+ 
+The methods in this section refer to the partons for which parton 
+densities have been defined, in order to calculate the cross section 
+of the hard process (diffraction excluded; see below). 
+ 
+<p/> 
+These partons would normally agree with the 
+ones above, the initiators of the <ei>2 &rarr; n</ei> process, but it 
+does not have to be so. Currently the one counterexample is POWHEG 
+events <ref>Ali10</ref>. Here the original hard process could be 
+<ei>2 &rarr; (n-1)</ei>. The NLO machinery at times would add an 
+initial-state branching to give a <ei>2 &rarr; n</ei> process with a 
+changed initial state. In that case the values in this section 
+refer to the original <ei>2 &rarr; (n-1)</ei> state and the initiator 
+ones above to the complete<ei>2 &rarr; n</ei> process. The 
+<code>Info::list()</code> printout will contain a warning in such cases. 
+ 
+<p/> 
+For external events in the Les Houches format, the pdf information 
+is obtained from the optional <code>#pdf</code> line. When this 
+information is absent, the parton identities and <ei>x</ei> values agree 
+with the initiator ones above, while the pdf values are unknown and 
+therefore set to vanish. The <ei>alpha_s</ei> and <ei>alpha_em</ei> 
+values are part of the compulsory information. The factorization and 
+renormalization scales are both equated with the one compulsory scale 
+value in the Les Houches standard, except when a <code>#pdf</code> 
+line provides the factorization scale separately. If <ei>alpha_s</ei>, 
+<ei>alpha_em</ei> or the compulsory scale value are negative at input 
+then new values are defined as for internal processes. 
+ 
+<method name="int Info::id1pdf()"> 
+</method> 
+<methodmore name="int Info::id2pdf()"> 
+the identities of the two partons for which parton density values 
+are defined. 
+</methodmore> 
+ 
+<method name="double Info::x1pdf()"> 
+</method> 
+<methodmore name="double Info::x2pdf()"> 
+<ei>x</ei> fractions of the two partons for which parton density values 
+are defined. 
+</methodmore> 
+ 
+<method name="double Info::pdf1()"> 
+</method> 
+<methodmore name="double Info::pdf2()"> 
+parton densities <ei>x*f(x,Q^2)</ei> evaluated for the two incoming 
+partons; could be used e.g. for reweighting purposes in conjunction 
+with the <code>idpdf</code>, <code>xpdf</code> and <code>QFac</code> 
+methods. Events obtained from external programs or files may not 
+contain this information and, if so, 0 is returned. 
+</methodmore> 
+ 
+<method name="double Info::QFac()"> 
+</method> 
+<methodmore name="double Info::Q2Fac()"> 
+the <ei>Q</ei> or <ei>Q^2</ei> factorization scale at which the 
+densities were evaluated. 
+</methodmore> 
+ 
+<method name="double Info::alphaS()"> 
+</method> 
+<methodmore name="double Info::alphaEM()"> 
+the <ei>alpha_strong</ei> and <ei>alpha_electromagnetic</ei> values used 
+for the hard process. 
+</methodmore> 
+ 
+<method name="double Info::QRen()"> 
+</method> 
+<methodmore name="double Info::Q2Ren()"> 
+the <ei>Q</ei> or <ei>Q^2</ei> renormalization scale at which 
+<ei>alpha_strong</ei> and <ei>alpha_electromagnetic</ei> were evaluated. 
+</methodmore> 
+ 
+<method name="double Info::scalup()"> 
+returns the stored <code>SCALUP</code> value for Les Houches events, 
+and else zero. It may agree with both the <code>QFac()</code> and 
+<code>QRen()</code> values, as explained above. However, to repeat, 
+should the input <code>SCALUP</code> scale be negative, separate positive 
+factorization and renormalization scales are calculated and set as for 
+internally generated events. Furthermore, when PDF info is supplied for 
+the Les Houches event, the factorization scale is set by this PDF info 
+(<code>scalePDF</code>), which can disagree with <code>SCALUP</code>. 
+</method> 
+ 
+<h3>Hard process kinematics</h3> 
+ 
+The methods in this section provide info on the kinematics of the hard 
+processes, with special emphasis on <ei>2 &rarr; 2</ei> (diffraction excluded; 
+see below). 
+ 
+<method name="double Info::mHat()"> 
+</method> 
+<methodmore name="double Info::sHat()"> 
+the invariant mass and its square for the hard process. 
+</methodmore> 
+ 
+<method name="double Info::tHat()"> 
+</method> 
+<methodmore name="double Info::uHat()"> 
+the remaining two Mandelstam variables; only defined for <ei>2 &rarr; 2</ei> 
+processes. 
+</methodmore> 
+ 
+<method name="double Info::pTHat()"> 
+</method> 
+<methodmore name="double Info::pT2Hat()"> 
+transverse momentum and its square in the rest frame of a <ei>2 &rarr; 2</ei> 
+processes. 
+</methodmore> 
+ 
+<method name="double Info::m3Hat()"> 
+</method> 
+<methodmore name="double Info::m4Hat()"> 
+the masses of the two outgoing particles in a <ei>2 &rarr; 2</ei> processes. 
+</methodmore> 
+ 
+<method name="double Info::thetaHat()"> 
+</method> 
+<methodmore name="double Info::phiHat()"> 
+the polar and azimuthal scattering angles in the rest frame of 
+a <ei>2 &rarr; 2</ei> process. 
+</methodmore> 
+ 
+<h3>Soft Diffraction</h3> 
+ 
+Information on the primary elastic or 
+<aloc href="Diffraction">diffractive</aloc> process 
+(<ei>A B &rarr; A B, X1 B, A X2, X1 X2, A X B</ei>) can be obtained with 
+the methods in the "Hard process kinematics" section above. The 
+variables here obviously are <ei>s, t, u, ...</ei> rather than 
+<ei>sHat, tHat, uHat, ...</ei>, but the method names remain to avoid 
+unnecessary duplication. Most other methods are irrelevant for a 
+primary elastic/diffractive process. 
+ 
+<p/>Central diffraction <ei>A B &rarr; A X B</ei> is a <ei>2 &rarr; 3</ei> 
+process, and therefore most of the <ei>2 &rarr; 2</ei> variables are 
+no longer relevant. The <code>tHat()</code> and <code>uHat()</code> 
+methods instead return the two <ei>t</ei> values at the <ei>A &rarr; A</ei> 
+and <ei>B &rarr; B</ei> vertices, and <code>pTHat()</code> the average 
+transverse momentum of the three outgoing "particles", while 
+<code>thetaHat()</code> and <code>phiHat()</code> are undefined. 
+ 
+<p/> 
+While the primary interaction does not contain a hard process, 
+the diffractive subsystems can contain them, but need not. 
+Specifically, double diffraction can contain two separate hard 
+subprocesses, which breaks the methods above. Most of them have been 
+expanded with an optional argument to address properties of diffractive 
+subsystems. This argument can take four values: 
+<ul> 
+<li>0 : default argument, used for normal nondiffractive events or 
+the primary elastic/diffractive process (see above); </li> 
+<li>1 : the <ei>X1</ei> system in single diffraction 
+<ei>A B &rarr; X1 B</ei> or double diffraction <ei>A B &rarr; X1 X2</ei>; </li> 
+<li>2 : the <ei>X2</ei> system in single diffraction 
+<ei>A B &rarr; A X2</ei> or double diffraction <ei>A B &rarr; X1 X2</ei>; </li> 
+<li>3 : the <ei>X</ei> system in central diffraction 
+<ei>A B &rarr; A X B</ei>. </li> 
+</ul> 
+The argument is defined for all of the methods in the three sections above, 
+"Hard process initiators", "Hard process parton densities and scales" and 
+"Hard process kinematics", with the exception of the <code>isValence</code> 
+methods. Also the four final methods of "The event type" section, the 
+<code>...Sub()</code> methods, take this argument. But recall that they 
+will only provide meaningful answers, firstly if there is a system of the 
+requested type, and secondly if there is a hard subprocess in this system. 
+A simple check for this is that <code>id1()</code> has to be nonvanishing. 
+The methods below this section do not currently provide information 
+specific to diffractive subsystems, e.g. the MPI information is not 
+bookkept in such cases. 
+ 
+<h3>Hard Diffraction</h3> 
+ 
+Information on the momentum fraction taken from the beam 
+and the momentum transfer in the hard diffractive process. 
+Note that when side A is diffractively exited, then the Pomeron 
+has been taken from side B and vice versa. 
+ 
+<method name="double Info::xPomeronA()"> 
+</method> 
+<methodmore name="double Info::xPomeronB()"> 
+<ei>x</ei> fractions of momenta carried by the Pomeron in the hard 
+diffractive process. 
+</methodmore> 
+<method name="double Info::tPomeronA()"> 
+</method> 
+<methodmore name="double Info::tPomeronB()"> 
+The momentum transfer <ei>t</ei> in the hard diffractive process. 
+</methodmore> 
+ 
+<h3>Photons from lepton beams</h3> 
+ 
+Information about the kinematics of photon-photon collisions from lepton 
+beams. 
+<method name="double Info::eCMsub()"> 
+Collision energy of the <ei>gamma-gamma</ei> sub-system. 
+</method> 
+<method name="double Info::xGammaA()"> 
+</method> 
+<methodmore name="double Info::xGammaB()"> 
+<ei>x</ei> fractions of lepton momenta carried by the photons. 
+</methodmore> 
+<method name="double Info::Q2GammaA()"> 
+</method> 
+<methodmore name="double Info::Q2GammaB()"> 
+Virtualities of the photons emitted by the leptons. 
+</methodmore> 
+<method name="double Info::thetaScatLepA()"> 
+</method> 
+<methodmore name="double Info::thetaScatLepB()"> 
+Scattering angles of the leptons wrt. the beam direction. 
+</methodmore> 
+<method name="int Info::photonMode()"> 
+Type of photon process, see 
+<aloc href="Photoproduction">Photoproduction</aloc> for details. 
+</method> 
+ 
+<h3>Event weight and activity</h3> 
+ 
+<method name="double Info::weight()"> 
+weight assigned to the current event. Is normally 1 and thus 
+uninteresting. However, there are several cases where one may have 
+nontrivial event weights. These weights must the be used e.g. when 
+filling histograms. 
+<br/>(i) In the <code><aloc href="PhaseSpaceCuts"> 
+PhaseSpace:increaseMaximum = off</aloc></code> default strategy, 
+an event with a differential cross-section above the assumed one 
+(in a given phase-space point) is assigned a weight correspondingly 
+above unity. This should happen only very rarely, if at all, and so 
+could normally be disregarded. 
+<br/>(ii) The <aloc href="UserHooks">User Hooks</aloc> class offers 
+the possibility to bias the selection of phase space points, which 
+means that events come with a compensating weight, stored here. 
+<br/>(iii) For Les Houches events some strategies allow negative weights, 
+which then after unweighting lead to events with weight -1. There are 
+also Les Houches strategies where no unweighting is done, so events 
+come with a weight. Specifically, for strategies <ei>+4</ei> and 
+<ei>-4</ei>, the event weight is in units of pb. (Internally in mb, 
+but converted at output.) 
+</method> 
+ 
+<method name="double Info::weightSum()"> 
+Sum of weights accumulated during the run. For unweighted events this 
+agrees with the number of generated events. In order to obtain 
+histograms normalized "per event", at the end of a run, histogram 
+contents should be divided by this weight. (And additionally 
+divided by the bin width.) Normalization to cross section also 
+required multiplication by <code>sigmaGen()</code> below. 
+</method> 
+ 
+<method name="int Info::lhaStrategy()"> 
+normally 0, but if Les Houches events are input then it gives the 
+event weighting strategy, see 
+<aloc href="LesHouchesAccord">Les Houches Accord</aloc>. 
+</method> 
+ 
+<method name="int Info::nISR()"> 
+</method> 
+<methodmore name="int Info::nFSRinProc()"> 
+</methodmore> 
+<methodmore name="int Info::nFSRinRes()"> 
+the number of emissions in the initial-state showering, in the final-state 
+showering excluding resonance decays, and in the final-state showering 
+inside resonance decays, respectively. 
+</methodmore> 
+ 
+<method name="double Info::pTmaxMPI()"> 
+</method> 
+<methodmore name="double Info::pTmaxISR()"> 
+</methodmore> 
+<methodmore name="double Info::pTmaxFSR()"> 
+Maximum <ei>pT</ei> scales set for MPI, ISR and FSR, given the 
+process type and scale choice for the hard interactions. The actual 
+evolution will run down from these scales. 
+</methodmore> 
+ 
+<method name="double Info::pTnow()"> 
+The current <ei>pT</ei> scale in the combined MPI, ISR and FSR evolution. 
+Useful for classification in <aloc href="UserHooks">user hooks</aloc>, 
+but not once the event has been evolved. 
+</method> 
+ 
+<method name="double Info::mergingWeight()"> 
+combined leading-order merging weight assigned to the current event, if 
+tree-level multi-jet merging (i.e. 
+<aloc href="CKKWLMerging"> CKKW-L</aloc> or 
+<aloc href="UMEPSMerging"> UMEPS</aloc> merging) is attempted. 
+If tree-level multi-jet merging is performed, all histograms should be 
+filled with this weight, as discussed in 
+<aloc href="CKKWLMerging"> CKKW-L Merging</aloc> and 
+<aloc href="UMEPSMerging"> UMEPS Merging</aloc>. 
+</method> 
+ 
+<method name="double Info::mergingWeightNLO()"> 
+combined NLO merging weight assigned to the current event, if 
+NLO multi-jet merging (i.e. 
+<aloc href="NLOMerging"> NL<sup>3</sup></aloc> or 
+<aloc href="NLOMerging"> UNLOPS</aloc> merging) is attempted. 
+If NLO multi-jet merging is performed, all histograms should be filled 
+with this weight, as discussed in 
+<aloc href="NLOMerging"> NLO Merging</aloc>. 
+</method> 
+ 
+<h3>Multiparton interactions</h3> 
+ 
+As already noted, these methods do not make sense for diffractive 
+topologies, and should not be used there. Partly this is physics, 
+but mainly it is for technical reasons, e.g. that double diffraction 
+involves two separate systems that would have to be bookkept as such. 
+ 
+<method name="double Info::a0MPI()"> 
+The value of a0 when an x-dependent matter profile is used, 
+<code>MultipartonInteractions:bProfile = 4</code>. 
+</method> 
+ 
+<method name="double Info::bMPI()"> 
+The impact parameter <ei>b</ei> assumed for the current collision when 
+multiparton interactions are simulated. Is not expressed in any physical 
+size (like fm), but only rescaled so that the average should be unity 
+for minimum-bias events (meaning less than that for events with hard 
+processes). 
+</method> 
+ 
+<method name="double Info::enhanceMPI()"> 
+The choice of impact parameter implies an enhancement or depletion of 
+the rate of subsequent interactions, as given by this number. Again 
+the average is normalized to be unity for minimum-bias events (meaning 
+more than that for events with hard processes). 
+</method> 
+ 
+<method name="double Info::enhanceMPIavg()"> 
+The average enhancement factor expected for hard processes, in those 
+cases where it can be calculated already at initialization, i.e. excluding 
+the <ei>x</ei>-dependent <ei>b</ei> profile. The normalization is here 
+chosen to apply to cases with two hard interactions <ei>A</ei> and 
+<ei>B</ei> preselected in the process level, and there multiplies 
+<ei>sigma_A * sigma_B / sigma_{nondiff}</ei> to give the joint cross 
+section. (Additional corrections from joint PDF weights somewhat reduce 
+the final number.) The normalization is slightly different (typically 
+around 5%) from the average of the <code>enhanceMPI()</code> method above, 
+which instead is normalized to average value unity for nondiffractive events. 
+As used internally the two are consistent. 
+</method> 
+ 
+<method name="int Info::nMPI()"> 
+The number of hard interactions in the current event. Is 0 for elastic 
+and diffractive events, and else at least 1, with more possible from 
+multiparton interactions. 
+</method> 
+ 
+<method name="int Info::codeMPI(int i)"> 
+</method> 
+<methodmore name="double Info::pTMPI(int i)"> 
+the process code and transverse momentum of the <code>i</code>'th 
+subprocess, with <code>i</code> in the range from 0 to 
+<code>nMPI() - 1</code>. The values for subprocess 0 is redundant with 
+information already provided above. 
+</methodmore> 
+ 
+<method name="int Info::iAMPI(int i)"> 
+</method> 
+<methodmore name="int Info::iBMPI(int i)"> 
+are normally zero. However, if the <code>i</code>'th subprocess is 
+a rescattering, i.e. either or both incoming partons come from the 
+outgoing state of previous scatterings, they give the position in the 
+event record of the outgoing-state parton that rescatters. 
+<code>iAMPI</code> and <code>iBMPI</code> then denote partons coming from 
+the first or second beam, respectively. 
+</methodmore> 
+ 
+<method name="double Info::eMPI(int i)"> 
+The enhancement or depletion of the rate of the <code>i</code>'th 
+subprocess. Is primarily of interest for the 
+<code>MultipartonInteractions:bProfile = 4</code> option, where the 
+size of the proton depends on the <ei>x</ei> values of the colliding 
+partons. Note that <code>eMPI(0) = enhanceMPI()</code>. 
+</method> 
+ 
+<method name="double Info::bMPIold()"> 
+</method> 
+<methodmore name="double Info::enhanceMPIold()"> 
+</methodmore> 
+<methodmore name="double Info::enhanceMPIoldavg()"> 
+These methods are only relevant for hard diffraction with the requirement 
+of no MPI in the hadron-hadron collision. Then an impact parameter 
+and associated enhancement factor is picked for this collision, but 
+afterwards overwritten when the Pomeron-hadron subcollision is considered. 
+In such cases the old hadron-hadron values can be found here, while 
+<code>bMPI</code>, <code>enhanceMPI</code> and <code>enhanceMPIavg</code> 
+provide the new Pomeron-hadron ones. 
+</methodmore> 
+ 
+<h3>Cross sections</h3> 
+ 
+Here are the currently available methods related to the event sample 
+as a whole, for the default value <code>i = 0</code>, and otherwise for 
+the specific process code provided as argument. This is the number 
+obtained with <code>Info::code()</code>, while the further subdivision 
+given by <code>Info::codeSub()</code> is not bookkept. While continuously 
+updated during the run, it is recommended only to study these properties 
+at the end of the event generation, when the full statistics is available. 
+The individual process results are not available if 
+<aloc href="ASecondHardProcess">a second hard process</aloc> has been 
+chosen, but can be gleaned from the <code>pythia.stat()</code> output. 
+ 
+<method name="vector&lt;int&gt; Info::codesHard()"> 
+returns a vector with all the process codes set up for the current run, 
+i.e. the valid nonzero arguments for the five methods below. 
+</method> 
+ 
+<method name="string Info::nameProc(int i = 0)"> 
+returns the process name for process code <code>i</code>. 
+</method> 
+ 
+<method name="long Info::nTried(int i = 0)"> 
+</method> 
+<methodmore name="long Info::nSelected(int i = 0)"> 
+</methodmore> 
+<methodmore name="long Info::nAccepted(int i = 0)"> 
+the total number of tried phase-space points, selected hard processes 
+and finally accepted events, summed over all allowed processes 
+(<code>i = 0</code>) or for the given process. 
+The first number is only intended for a study of the phase-space selection 
+efficiency. The last two numbers usually only disagree if the user introduces 
+some veto during the event-generation process; then the former is the number 
+of acceptable events found by PYTHIA and the latter the number that also 
+were approved by the user. If you set <aloc href="ASecondHardProcess">a 
+second hard process</aloc> there may also be a mismatch. 
+</methodmore> 
+ 
+<method name="double Info::sigmaGen(int i = 0)"> 
+</method> 
+<methodmore name="double Info::sigmaErr(int i = 0)"> 
+the estimated cross section and its estimated error, 
+summed over all allowed processes (<code>i = 0</code>) or for the given 
+process, in units of mb. The numbers refer to the accepted event sample 
+above, i.e. after any user veto. 
+</methodmore> 
+ 
+<h3>Loop counters</h3> 
+ 
+Mainly for internal/debug purposes, a number of loop counters from 
+various parts of the program are stored in the <code>Info</code> class, 
+so that one can keep track of how the event generation is progressing. 
+This may be especially useful in the context of the 
+<code><aloc href="UserHooks">User Hooks</aloc></code> facility. 
+ 
+<method name="int Info::getCounter(int i)"> 
+the method that gives you access to the value of the various loop 
+counters. 
+<argument name="i"> the counter number you want to access: 
+<argoption value="0 - 9"> counters that refer to the run as a whole, 
+i.e. are set 0 at the beginning of the run and then only can increase. 
+</argoption> 
+<argoption value="0"> the number of successful constructor calls for the 
+<code>Pythia</code> class (can only be 0 or 1). 
+</argoption> 
+<argoption value="1"> the number of times a <code>Pythia::init()</code> 
+call has been begun. 
+</argoption> 
+<argoption value="2"> the number of times a <code>Pythia::init()</code> 
+call has been completed successfully. 
+</argoption> 
+<argoption value="3"> the number of times a <code>Pythia::next()</code> 
+call has been begun. 
+</argoption> 
+<argoption value="4"> the number of times a <code>Pythia::next()</code> 
+call has been completed successfully. 
+</argoption> 
+<argoption value="10 - 19"> counters that refer to each individual event, 
+and are reset and updated in the top-level <code>Pythia::next()</code> 
+method. 
+</argoption> 
+<argoption value="10"> the number of times the selection of a new hard 
+process has been begun. Normally this should only happen once, unless a 
+user veto is set to abort the current process and try a new one. 
+</argoption> 
+<argoption value="11"> the number of times the selection of a new hard 
+process has been completed successfully. 
+</argoption> 
+<argoption value="12"> as 11, but additionally the process should 
+survive any user veto and go on to the parton- and hadron-level stages. 
+</argoption> 
+<argoption value="13"> as 11, but additionally the process should 
+survive the parton- and hadron-level stage and any user cuts. 
+</argoption> 
+<argoption value="14"> the number of times the loop over parton- and 
+hadron-level processing has begun for a hard process. Is reset each 
+time counter 12 above is reached. 
+</argoption> 
+<argoption value="15"> the number of times the above loop has successfully 
+completed the parton-level step. 
+</argoption> 
+<argoption value="16"> the number of times the above loop has successfully 
+completed the checks and user vetoes after the parton-level step. 
+</argoption> 
+<argoption value="17"> the number of times the above loop has successfully 
+completed the hadron-level step. 
+</argoption> 
+<argoption value="18"> the number of times the above loop has successfully 
+completed the checks and user vetoes after the hadron-level step. 
+</argoption> 
+<argoption value="20 - 39"> counters that refer to a local part of the 
+individual event, and are reset at the beginning of this part. 
+</argoption> 
+<argoption value="20"> the current system being processed in 
+<code>PartonLevel::next()</code>. Is almost always 1, but for double 
+diffraction the two diffractive systems are 1 and 2, respectively. 
+</argoption> 
+<argoption value="21"> the number of times the processing of the 
+current system (see above) has begun. 
+</argoption> 
+<argoption value="22"> the number of times a step has begun in the 
+combined MPI/ISR/FSR evolution downwards in <ei>pT</ei> 
+for the current system. 
+</argoption> 
+<argoption value="23"> the number of times MPI has been selected for the 
+downwards step above. 
+</argoption> 
+<argoption value="24"> the number of times ISR has been selected for the 
+downwards step above. 
+</argoption> 
+<argoption value="25"> the number of times FSR has been selected for the 
+downwards step above. 
+</argoption> 
+<argoption value="26">  the number of times MPI has been accepted as the 
+downwards step above, after the vetoes. 
+</argoption> 
+<argoption value="27">  the number of times ISR has been accepted as the 
+downwards step above, after the vetoes. 
+</argoption> 
+<argoption value="28">  the number of times FSR has been accepted as the 
+downwards step above, after the vetoes. 
+</argoption> 
+<argoption value="29"> the number of times a step has begun in the 
+separate (optional) FSR evolution downwards in <ei>pT</ei> 
+for the current system. 
+</argoption> 
+<argoption value="30"> the number of times FSR has been selected for the 
+downwards step above. 
+</argoption> 
+<argoption value="31">  the number of times FSR has been accepted as the 
+downwards step above, after the vetoes. 
+</argoption> 
+<argoption value="40"> keeps track of vetoed emission for shower 
+reweighting. 
+</argoption> 
+<argoption value="41 - 49"> counters that are unused (currently), and 
+that therefore are free to use, with the help of the two methods below. 
+</argoption> 
+</argument> 
+</method> 
+ 
+<method name="void Info::setCounter(int i, int value = 0)"> 
+set the above counters to a given value. Only to be used by you 
+for the unassigned counters 40 - 49. 
+<argument name="i"> the counter number, see above. 
+</argument> 
+<argument name="value" default="0"> set the counter to this number; 
+normally the default value is what you want. 
+</argument> 
+</method> 
+ 
+<method name="void Info::addCounter(int i, int value = 0)"> 
+increase the above counters by a given amount. Only to be used by you 
+for the unassigned counters 40 - 49. 
+<argument name="i"> the counter number, see above. 
+</argument> 
+<argument name="value" default="1"> increase the counter by this amount; 
+normally the default value is what you want. 
+</argument> 
+</method> 
+ 
+<h3>Parton shower history</h3> 
+ 
+The following methods are mainly intended for internal use, 
+e.g. for matrix-element matching. 
+ 
+<method name="void Info::hasHistory(bool hasHistoryIn)"> 
+</method> 
+<methodmore name="bool Info::hasHistory()"> 
+set/get knowledge whether the likely shower history of an event 
+has been traced. 
+</methodmore> 
+ 
+<method name="void Info::zNowISR(bool zNowIn)"> 
+</method> 
+<methodmore name="double Info::zNowISR()"> 
+set/get value of <ei>z</ei> in latest ISR branching. 
+</methodmore> 
+ 
+<method name="void Info::pT2NowISR(bool pT2NowIn)"> 
+</method> 
+<methodmore name="double Info::pT2NowISR()"> 
+set/get value of <ei>pT^2</ei> in latest ISR branching. 
+</methodmore> 
+ 
+<h3>Les Houches Event File 3.0 information</h3> 
+ 
+Les Houches Event files can conform to version 1.0 and version 3.0 
+of the standard (version 2.0 having been extended to 3.0). The LHEF version 
+of an input file can can be accessed by 
+<br/><methodmore name="int Info::LHEFversion()"> 
+</methodmore> 
+ 
+<p/> 
+The <code>Info</code> class also provides a suitable interface to 
+the information stored after reading Les Houches Event files in the 
+updated format <ref>But14</ref>. An example main program using LHEF 3.0 
+information is <code>main38.cc</code>. 
+ 
+<p/> 
+LHEF 3.0 offers new features both in the initialisation and the event sections 
+of the input files. Possible information include extended 
+use of XML tags in the <code>&lt;header&gt;</code> and 
+<code>&lt;init&gt;</code> blocks.  The LHEF 3.0 information is stored 
+in a series <code>struct</code>'s: 
+ 
+<p/> 
+ -- &nbsp; &nbsp; The <code>&lt;initrwgt&gt;</code> tag is a container 
+ tag for weight and weightgroup tags.   This information is stored 
+ internally in <code>LHAinitrwgt</code>. 
+ Currently, there is no dedicated 
+ output for this tag. However, all the information stored in the tag can 
+ be retrieved by using the <code>Info</code> class member pointer 
+ <code>LHAinitrwgt Info::initrwgt</code>. 
+ 
+<p/> 
+ -- &nbsp; &nbsp; Multiple <code>&lt;weightgroup&gt;</code> tags: 
+ Container tag for weight tags. Currently, there is no dedicated 
+ output for this tag. However, all the information stored in the tag can 
+ be retrieved by using the <code>Info</code> class member pointer 
+ <code>vector&lt;LHAweightgroups&gt; * Info::weightgroups</code>. 
+ 
+<p/> 
+ -- &nbsp; &nbsp; Multiple <code>&lt;weight&gt;</code> tags: Tag defining 
+ auxiliary information on an event weight, e.g. the identifier and information 
+ on what the weight represents. All the information stored in the tag can 
+ be retrieved by using the <code>Info</code> class member pointer 
+ <code>vector&lt;LHAweightgroups&gt; * Info::init_weights</code>. This vector 
+ contains all <code>&lt;weight&gt;</code> tags in the 
+ <code>&lt;initrwgt&gt;</code> container and its subcontainer 
+ <code>&lt;weightgroup&gt;</code> tags. The size of the vector can be accessed 
+ through the method 
+<br/><methodmore name="int Info::getInitrwgtSize()"> 
+</methodmore> 
+ 
+<p/> 
+ -- &nbsp; &nbsp; Multiple <code>&lt;generator&gt;</code> tags: Store 
+ information on the generators used in the event generation. All the 
+ information stored in the tag can be retrieved by using the 
+ <code>Info</code> class member pointer 
+ <code>vector&lt;LHAgenerators&gt; * Info::generators</code>. More easy-to-use 
+ output functions are available. The size of this vector can be obtained from 
+<br/><methodmore name="int Info::getGeneratorSize()"> 
+</methodmore> 
+ 
+<p/> 
+The complete header can be obtained with the <code>Info</code> class 
+member <code>string getHeaderBlock()</code>. 
+ 
+<p/> 
+The contents of a <code>&lt;generator&gt;</code> tag can be accessed through 
+the method 
+<br/><methodmore name="string Info::getGeneratorValue(unsigned int n = 0)"> 
+Return the contents of the n'th <code>&lt;generator&gt;</code> tag in 
+the vector of tags. 
+</methodmore> 
+ 
+<p/> 
+Attributes of the <code>&lt;generator&gt;</code> tag (e.g. the generator 
+<code>name</code> and <code>version</code>) can be accessed via 
+<br/><methodmore name="string Info::getGeneratorAttribute(unsigned int n, string key, bool doRemoveWhitespace = false)"> 
+Return the value of the generator attribute named <code>key</code> for 
+the n'th generator in the vector. Setting <code>doRemoveWhitespace</code> to 
+true will return the value, stripped of any whitespace. An empty string is 
+returned if the attribute named <code>key</code> does not exist. 
+</methodmore> 
+ 
+<p/> 
+To obtain information on cross sections, the following two methods can be 
+used 
+<br/><methodmore name="int Info::nProcessesLHEF()"> 
+return the number of processes for which the cross section is stored. 
+</methodmore> 
+<br/><methodmore name="double Info::sigmaLHEF(int iProcess)"> 
+return the cross section of the <code>iProcess</code>'th process. 
+</methodmore> 
+ 
+<p/> 
+Possible information also includes extended use of XML tags in the 
+<code>&lt;event&gt;</code> blocks: 
+ 
+<p/> 
+ -- &nbsp; &nbsp; The <code>&lt;rwgt&gt;</code> tag is a container 
+ tag for wgt tags. Currently, there is no dedicated 
+ output for this tag. It can however be retrieved by using the 
+ <code>Info</code> class member pointer 
+ <code>LHArwgt Info::rwgt</code>. 
+ 
+<p/> 
+ -- &nbsp; &nbsp; Multiple <code>&lt;wgt&gt;</code> tags: Tag defining 
+ the event weight in the detailed version of LHEF 3.0.  All the information 
+ stored in the tag can be retrieved by using the <code>Info</code> class 
+ member pointer <code>vector&lt;LHAwgt&gt; * Info::weights_detailed</code>. 
+ More easy-to-use output functions are available. The size of this vector 
+ can be obtained from 
+<br/><methodmore name="unsigned int Info::getWeightsDetailedSize()"> 
+</methodmore> 
+ 
+<p/> 
+A convenient access point to the information stored in the 
+<code>&lt;wgt&gt;</code> tags is the <code>Info</code> class member 
+<code>vector&lt;double&gt; Info::weights_detailed_vector</code>. The 
+entries of this vector are ordered according to how <code>&lt;wgt&gt;</code> 
+tags appear in the event block. 
+ 
+<p/> 
+The contents of a <code>&lt;wgt&gt;</code> tag can be accessed through the 
+method 
+<br/><methodmore name="double Info::getWeightsDetailedValue(string n)"> 
+Return the value of the n'th <code>&lt;wgt&gt;</code> tag in the 
+event. 
+</methodmore> 
+ 
+<p/> 
+Attributes of the <code>&lt;wgt&gt;</code> tag (e.g. the weight 
+<code>id</code>) can be accessed via 
+<br/><methodmore name="string Info::getWeightsDetailedAttribute(string n, string key, bool doRemoveWhitespace = false)"> 
+Return the value of the wgt attribute named <code>key</code> for 
+the n'th wgt in the vector. Setting <code>doRemoveWhitespace</code> to 
+true will return the value, stripped of any whitespace. An empty string is 
+returned if the attribute named <code>key</code> does not exist. 
+</methodmore> 
+ 
+<p/> 
+ -- &nbsp; &nbsp; The <code>&lt;weights&gt;</code> tag: Tag containing 
+ a vector of <code>double</code> entries for weights in the compressed version 
+ of LHEF 3.0. All the information stored in the tag can be retrieved by using 
+ the <code>Info</code> class member pointer <code> LHAweights * 
+ Info::weights</code> and the vector <code> vector&lt;double&gt; 
+ Info::weights_compressed</code>. More easy-to-use output functions are 
+ available. The size of this vector can be obtained from 
+<br/><methodmore name="unsigned int Info::getWeightsCompressedSize()"> 
+</methodmore> 
+ 
+<p/> 
+The n'th weight can be accessed through the method 
+<br/><methodmore name="double Info::getWeightsCompressedValue(unsigned int n)"> 
+</methodmore> 
+ 
+<p/> 
+Attributes of the <code>&lt;weights&gt;</code> tag (not normally used) can be 
+accessed via 
+<br/><methodmore name="string Info::getWeightsCompressedAttribute(string key, bool doRemoveWhitespace = false)"> 
+Return the value of the <code>&lt;weights&gt;</code> tag's attribute 
+named <code>key</code>. Setting <code>doRemoveWhitespace</code> to 
+true will return the value, stripped of any whitespace. An empty string is 
+returned if the attribute named <code>key</code> does not exist. 
+</methodmore> 
+ 
+<p/> 
+ -- &nbsp; &nbsp; The <code>&lt;scales&gt;</code> tag: Contains information 
+ on different scales used by the matrix element generator. All the information 
+ stored in the tag can be retrieved by using the <code>Info</code> class 
+ member pointer <code> LHAweights * Info::scales</code>. More easy-to-use 
+ output functions are available. The contents of the scales tag can be 
+ obtained from 
+<br/><methodmore name="string Info::getScalesValue()"> 
+</methodmore> 
+ 
+<p/> 
+However, note that the actual scale values are stored as attributes (called 
+e.g. <code>muf</code> or <code>mur</code>). Attributes of the 
+<code>&lt;scales&gt;</code> tag can be accessed via 
+<br/><methodmore name="double Info::getScalesAttribute(string key)"> 
+Return the value of the <code>&lt;scales&gt;</code> tag's attribute 
+named <code>key</code>. Not-a-number will be returned if the attribute 
+named <code>key</code> does not exist. 
+</methodmore> 
+ 
+<p/> 
+Finally, arbitrary attributes of the <code>&lt;event&gt;</code> tag are 
+supported. Attributes of the <code>&lt;event&gt;</code> tag can be accessed by 
+<br/><methodmore name="string Info::getEventAttribute(string key, bool doRemoveWhitespace = false)"> 
+return the value of the event attribute named <code>key</code>. Setting 
+<code>doRemoveWhitespace</code> to true will return the value, stripped of 
+any whitespace. An empty string is returned if the attribute named 
+<code>key</code> does not exist. 
+</methodmore> 
+ 
+<p/> 
+Additional comments appearing in the <code>&lt;event&gt;</code> tag 
+can be obtained with the <code>Info</code> class member 
+<code>string getEventComments()</code>. 
+ 
+<h3>Header information</h3> 
+ 
+A simple string key/value store, mainly intended for accessing 
+information that is stored in the header block of Les Houches Event 
+(LHE) files. In principle, any <code>LHAup</code> derived class can set 
+this header information, which can then be read out later. Although the 
+naming convention is arbitrary, in practice, it is dictated by the 
+XML-like format of LHE files, see <aloc href="LesHouchesAccord"> 
+Les Houches Accord</aloc> for more details. 
+ 
+<method name="string Info::header(string key)"> 
+return the header named <code>key</code> 
+</method> 
+ 
+<method name="vector &lt;string&gt; Info::headerKeys()"> 
+return a vector of all header key names 
+</method> 
+ 
+<method name="void Info::setHeader(string key, string val)"> 
+set the header named <code>key</code> with the contents of <code>val</code> 
+</method> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

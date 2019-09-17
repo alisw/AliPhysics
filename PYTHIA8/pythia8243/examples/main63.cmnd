@@ -1,0 +1,21 @@
+! main63.cmnd.
+! This file contains commands to be read in for a Pythia8 run.
+! Lines not beginning with a letter or digit are comments.
+! Names are case-insensitive  -  but spellings-sensitive!
+! The settings here are illustrative, not always physics-motivated.
+
+# Number of events.
+Main:numberOfEvents = 10000
+
+# Collision energy.
+Beams:ecm           = 13000.
+
+# Hard process.
+HardQCD:qg2qg       = on
+
+# Minimum pT cut.
+PhaseSpace:pTHatMin = 200.
+
+# Switch off MPI and hadronization.
+PartonLevel:MPI = off
+HadronLevel:all = off

@@ -1,0 +1,144 @@
+<html>
+<head>
+<title>Error Checks</title>
+<link rel="stylesheet" type="text/css" href="pythia.css"/>
+<link rel="shortcut icon" href="pythia32.gif"/>
+</head>
+<body>
+ 
+<h2>Error Checks</h2> 
+ 
+There is a few settings related to error checking during program 
+execution. Many other checks are performed as well, but do not 
+have any specific setting related to themselves. 
+ 
+<a name="anchor1"></a>
+<p/><code>flag&nbsp; </code><strong> Check:abortIfVeto &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+There are a few ways in which an event can be vetoed, the most 
+common being a <a href="UserHooks.html" target="page">User Hooks</a> test. 
+Normally this will simply mean that the next parton-level 
+configuration is selected inside the <code>Pythia::next()</code> 
+routine, without any need for a user intervention. With this 
+option switched on, however, <code>Pythia::next()</code> will 
+return <code>false</code>. It is then up to the user to decide 
+what to do next. 
+   
+ 
+<a name="anchor2"></a>
+<p/><code>flag&nbsp; </code><strong> Check:particleData &nbsp;</strong> 
+ (<code>default = <strong>off</strong></code>)<br/>
+Check the particle data tables for potential problems during 
+initialization. This includes inconsistent use of charge in particle 
+names, inconsistent setup of mass, mass range, width and lifetime, 
+sum of branching ratios not unity (allowed but discouraged) or charge 
+not conserved in a decay channel. Warnings should be viewed as reasons 
+to check further, but need not indicate a true problem, and also not all 
+problems may be caught. 
+The <code>pythia.particleData.checkTable(level)</code> method, 
+used for these checks, may also be called directly. 
+   
+ 
+<a name="anchor3"></a>
+<p/><code>mode&nbsp; </code><strong> Check:levelParticleData &nbsp;</strong> 
+ (<code>default = <strong>1</strong></code>)<br/>
+The level of verbosity and checks of particle data, if switched on. 
+<br/><code>option </code><strong> 0</strong> : minimal amount of checks, e.g. that no channels open. 
+   
+<br/><code>option </code><strong> 1</strong> : further warning if individual channels closed, 
+except for resonances.   
+<br/><code>option </code><strong> 2</strong> : also print branching-ratio-averaged threshold mass 
+except for resonances.   
+<br/><code>option </code><strong> 11</strong> : as 1, but include resonances in detailed checks. 
+   
+<br/><code>option </code><strong> 12</strong> : as 2, but include resonances in detailed checks. 
+   
+   
+ 
+<a name="anchor4"></a>
+<p/><code>flag&nbsp; </code><strong> Check:event &nbsp;</strong> 
+ (<code>default = <strong>on</strong></code>)<br/>
+When an event has been successfully generated, check that the 
+final event record in <code>event</code> does not contain any 
+unphysical particles, or nonconserved charge or energy-momentum. 
+If this check fails, then <code>pythia.next()</code> obtains the 
+value <code>false</code>, i.e. the event is counted as aborted. 
+   
+ 
+<a name="anchor5"></a>
+<p/><code>flag&nbsp; </code><strong> Check:history &nbsp;</strong> 
+ (<code>default = <strong>on</strong></code>)<br/>
+When <code>Check:event = on</code> and the event is checked as above, 
+further checks are made that all mother and daughter pointers are 
+consistently set. Specifically that all daughters in the 
+<code>daughterlist</code> (or <code>motherList</code>) have the 
+particle in their respective <code>motherList</code> 
+(or <code>daughterlist</code>). This operation takes a bit  
+time than the other error tests (of the order of 10% of what it takes 
+to generate the event in the first place), and so could be switched off 
+to save time. 
+   
+ 
+<a name="anchor6"></a>
+<p/><code>flag&nbsp; </code><strong> Check:beams &nbsp;</strong> 
+ (<code>default = <strong>on</strong></code>)<br/>
+Check that Pythia supports the beam setup, i.e. if the beams 
+are the allowed combinations described in 
+<a href="BeamParameters.html" target="page">Beam Parameters</a>. If turned 
+off, all checks of allowed beam combinations will be skipped, as 
+can e.g. be useful to allow processing of Les Houches 
+event files with exotic beam structure. 
+   
+ 
+<a name="anchor7"></a>
+<p/><code>mode&nbsp; </code><strong> Check:nErrList &nbsp;</strong> 
+ (<code>default = <strong>0</strong></code>)<br/>
+The number of erroneous events, in the above check, for which 
+event listing and other detailed information will be printed. 
+After that, only the normal error messages will be issued. 
+Error counters are always updated, and accumulated numbers can be 
+shown with <code>pythia.stat()</code> at the end of the run. 
+   
+ 
+<a name="anchor8"></a>
+<p/><code>parm&nbsp; </code><strong> Check:epTolErr &nbsp;</strong> 
+ (<code>default = <strong>1e-4</strong></code>)<br/>
+Maximum allowed summed deviation of <i>E</i>, <i>p_x</i>, 
+<i>p_y</i> and <i>p_z</i> between the incoming beams and the 
+final state, as a fraction of the initial energy, above which the 
+event is counted as aborted. 
+(Unfortunately roundoff errors do not scale linearly with the energy, 
+and also have a very long tail. So while most events at lower energies 
+may be correct to better than 1e-10, at LHC it does not have to signal 
+any fundamental bug if also the default tolerance above is violated 
+occasionally.) 
+   
+ 
+<a name="anchor9"></a>
+<p/><code>parm&nbsp; </code><strong> Check:epTolWarn &nbsp;</strong> 
+ (<code>default = <strong>1e-6</strong></code>)<br/>
+A check on the same summed deviation as above, but counted as a 
+warning rather than an error, and not leading to the event being 
+classified as aborted. 
+   
+ 
+<a name="anchor10"></a>
+<p/><code>parm&nbsp; </code><strong> Check:mTolErr &nbsp;</strong> 
+ (<code>default = <strong>1e-3</strong></code>)<br/>
+For each particle the maximum allowed deviation between the mass 
+calculated from energy-momentum and the bookkept mass, as a fraction 
+of the energy. This energy is taken to be at least 1 GeV, in order 
+to avoid harmless problems at very low energies (gluons mainly). 
+   
+ 
+<a name="anchor11"></a>
+<p/><code>parm&nbsp; </code><strong> Check:mTolWarn &nbsp;</strong> 
+ (<code>default = <strong>1e-4</strong></code>)<br/>
+A check on the deviation as above, but counted as a warning rather 
+than an error. 
+   
+ 
+</body>
+</html>
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

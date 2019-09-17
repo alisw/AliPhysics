@@ -1,0 +1,524 @@
+<chapter name="Four-Vectors"> 
+ 
+<h2>Four-Vectors</h2> 
+ 
+The <code>Vec4</code> class gives a simple implementation of four-vectors. 
+The member function names are based on the assumption that these 
+represent four-momentum vectors. Thus one can get or set 
+<ei>p_x, p_y, p_z</ei> and <ei>e</ei>, but not <ei>x, y, z</ei> 
+or <ei>t</ei>. This is only a matter of naming, however; a 
+<code>Vec4</code> can equally well be used to store a space-time 
+four-vector. 
+ 
+<p/> 
+The <code>Particle</code> object contains a <code>Vec4 p</code> that 
+stores the particle four-momentum, and another <code>Vec4 vProd</code> 
+for the production vertex. For the latter the input/output method 
+names are adapted to the space-time character rather than the normal 
+energy-momentum one. Thus a user would not normally access the 
+<code>Vec4</code> classes directly, but only via the methods of the 
+<code>Particle</code> class, 
+see <aloc href="ParticleProperties">Particle Properties</aloc>. 
+ 
+<p/> 
+Nevertheless you are free to use the PYTHIA four-vectors, e.g. as 
+part of some simple analysis code based directly on the PYTHIA output, 
+say to define the four-vector sum of a set of particles. But note that 
+this class was never set up to allow complete generality, only  to 
+provide the operations that are of use inside PYTHIA. There is no 
+separate class for three-vectors, since such can easily be represented 
+by four-vectors where the fourth component is not used. 
+ 
+<p/> 
+Four-vectors have the expected functionality: they can be created, 
+copied, added, multiplied, rotated, boosted, and manipulated in other 
+ways. Operator overloading is implemented where reasonable. Properties 
+can be read out, not only the components themselves but also for derived 
+quantities such as absolute momentum and direction angles. 
+ 
+<h3>Constructors and basic operators</h3> 
+ 
+A few methods are available to create or copy a four-vector: 
+ 
+<method name="Vec4::Vec4(double x = 0., double y = 0., double z = 0., 
+double t = 0.)"> 
+creates a four-vector, by default with all components set to 0. 
+</method> 
+ 
+<method name="Vec4::Vec4(const Vec4& v)"> 
+creates a four-vector copy of the input four-vector. 
+</method> 
+ 
+<method name="Vec4& Vec4::operator=(const Vec4& v)"> 
+copies the input four-vector. 
+</method> 
+ 
+<method name="Vec4& Vec4::operator=(double value)"> 
+gives a  four-vector with all components set to <ei>value</ei>. 
+</method> 
+ 
+<h3>Member methods for input</h3> 
+ 
+The values stored in a four-vector can be modified in a few different 
+ways: 
+ 
+<method name="void Vec4::reset()"> 
+sets all components to 0. 
+</method> 
+ 
+<method name="void Vec4::p(double pxIn, double pyIn, double pzIn, 
+double eIn)"> 
+sets all components to their input values. 
+</method> 
+ 
+<method name="void Vec4::p(Vec4 pIn)"> 
+sets all components equal to those of the input four-vector. 
+</method> 
+ 
+<method name="void Vec4::px(double pxIn)"> 
+</method> 
+<methodmore name="void Vec4::py(double pyIn)"> 
+</methodmore> 
+<methodmore name="void Vec4::pz(double pzIn)"> 
+</methodmore> 
+<methodmore name="void Vec4::e(double eIn)"> 
+sets the respective component to the input value. 
+</methodmore> 
+ 
+<h3>Member methods for output</h3> 
+ 
+A number of methods provides output of basic or derived quantities: 
+ 
+<method name="double Vec4::px()"> 
+</method> 
+<methodmore name="double Vec4::py()"> 
+</methodmore> 
+<methodmore name="double Vec4::pz()"> 
+</methodmore> 
+<methodmore name="double Vec4::e()"> 
+gets the respective component. 
+</methodmore> 
+ 
+<method name="double& operator[](int i)"> 
+returns component by index, where 1 gives <ei>p_x</ei>, 2 gives <ei>p_y</ei>, 
+3 gives <ei>p_z</ei>, and anything else gives <ei>e</ei>. 
+</method> 
+ 
+<method name="double Vec4::mCalc()"> 
+</method> 
+<methodmore name="double Vec4::m2Calc()"> 
+the (squared) mass, calculated from the four-vectors. 
+If <ei>m^2 &lt; 0</ei> the mass is given with a minus sign, 
+<ei>-sqrt(-m^2)</ei>.  Note the possible loss of precision 
+in the calculation of <ei>E^2 - p^2</ei>; for particles the 
+correct mass is stored separately to avoid such problems. 
+</methodmore> 
+ 
+<method name="double Vec4::pT()"> 
+</method> 
+<methodmore name="double Vec4::pT2()"> 
+the (squared) transverse momentum. 
+</methodmore> 
+ 
+<method name="double Vec4::pAbs()"> 
+</method> 
+<methodmore name="double Vec4::pAbs2()"> 
+the (squared) absolute momentum. 
+</methodmore> 
+ 
+<method name="double Vec4::eT()"> 
+</method> 
+<methodmore name="double Vec4::eT2()"> 
+the (squared) transverse energy, 
+<ei>eT = e * sin(theta) = e * pT / pAbs</ei>. 
+</methodmore> 
+ 
+<method name="double Vec4::theta()"> 
+the polar angle, in the range 0 through 
+<ei>pi</ei>. 
+</method> 
+ 
+<method name="double Vec4::phi()"> 
+the azimuthal angle, in the range <ei>-pi</ei> through <ei>pi</ei>. 
+</method> 
+ 
+<method name="double Vec4::thetaXZ()"> 
+the angle in the <ei>xz</ei> plane, in the range <ei>-pi</ei> through 
+<ei>pi</ei>, with 0 along the <ei>+z</ei> axis. 
+</method> 
+ 
+<method name="double Vec4::pPos()"> 
+</method> 
+<methodmore name="double Vec4::pNeg()"> 
+the combinations <ei>E+-p_z</ei>.</methodmore> 
+ 
+<method name="double Vec4::rap()"> 
+</method> 
+<methodmore name="double Vec4::eta()"> 
+true rapidity <ei>y</ei> and pseudorapidity <ei>eta</ei>. 
+</methodmore> 
+ 
+<h3>Friend methods for output</h3> 
+ 
+There are also some <code>friend</code> methods that take one, two 
+or three four-vectors as argument. Several of them only use the 
+three-vector part of the four-vector. 
+ 
+<method name="friend ostream& operator&lt;&lt;(ostream&, const Vec4& v)"> 
+writes out the values of the four components of a <code>Vec4</code> and, 
+within brackets, a fifth component being the invariant length of the 
+four-vector, as provided by <code>mCalc()</code> above, and it all 
+ended with a newline. 
+</method> 
+ 
+<method name="friend double m(const Vec4& v1, const Vec4& v2)"> 
+</method> 
+<methodmore name="friend double m2(const Vec4& v1, const Vec4& v2)"> 
+the (squared) invariant mass. 
+</methodmore> 
+ 
+<method name="friend double dot3(const Vec4& v1, const Vec4& v2)"> 
+the three-product. 
+</method> 
+ 
+<method name="friend double cross3(const Vec4& v1, const Vec4& v2)"> 
+the cross-product. 
+</method> 
+ 
+<method name="friend double cross4(const Vec4& v1, const Vec4& v2, 
+const Vec4& v3)"> 
+the cross-product of three four-vectors: 
+<ei>v_i = epsilon_{iabc} v1_a v2_b v3_c</ei>. 
+</method> 
+ 
+<method name="friend double theta(const Vec4& v1, const Vec4& v2)"> 
+</method> 
+<methodmore name="friend double costheta(const Vec4& v1, const Vec4& v2)"> 
+the (cosine) of the opening angle between the vectors, 
+in the range 0 through <ei>pi</ei>. 
+</methodmore> 
+ 
+<method name="friend double phi(const Vec4& v1, const Vec4& v2)"> 
+</method> 
+<methodmore name="friend double cosphi(const Vec4& v1, const Vec4& v2)"> 
+the (cosine) of the azimuthal angle between the vectors around the 
+<ei>z</ei> axis, in the range 0 through <ei>pi</ei>. 
+</methodmore> 
+ 
+<method name="friend double phi(const Vec4& v1, const Vec4& v2, 
+const Vec4& v3)"> 
+</method> 
+<methodmore name="friend double cosphi(const Vec4& v1, const Vec4& v2, 
+const Vec4& v3)"> 
+the (cosine) of the azimuthal angle between the first two vectors 
+around the direction of the third, in the range 0 through <ei>pi</ei>. 
+</methodmore> 
+ 
+<method name="friend double RRapPhi(const Vec4& v1, const Vec4& v2)"> 
+</method> 
+<methodmore name="friend double REtaPhi(const Vec4& v1, const Vec4& v2)"> 
+the <ei>R</ei> distance measure, in <ei>(y, phi)</ei> or 
+<ei>(eta, phi)</ei> cylindrical coordinates, i.e. 
+<ei>R^2 = (y_1 - y_2)^2 + (phi_1 - phi_2)^2</ei> and equivalent. 
+</methodmore> 
+ 
+<method name="friend bool pShift( Vec4& p1Move, Vec4& p2Move, 
+double m1New, double m2New)"> 
+transfer four-momentum between the two four-vectors so that they get 
+the masses <code>m1New</code> and <code>m2New</code>, respectively. 
+Note that <code>p1Move</code> and <code>p2Move</code> act both as 
+input and output arguments. The method will return false if the invariant 
+mass of the four-vectors is too small to accommodate the new masses, 
+and then the four-vectors are not changed. 
+</method> 
+ 
+<method name="friend pair&lt;Vec4,Vec4&gt; getTwoPerpendicular(const Vec4& v1, 
+const Vec4& v2)"> 
+create a pair of four-vectors that are perpendicular to both input vectors 
+and to each other, and have the squared norm <ei>-1</ei>. 
+</method> 
+ 
+<h3>Operations with four-vectors</h3> 
+ 
+Of course one should be able to add, subtract and scale four-vectors, 
+and more: 
+ 
+<method name="Vec4 Vec4::operator-()"> 
+return a vector with flipped sign for all components, while leaving 
+the original vector unchanged. 
+</method> 
+ 
+<method name="Vec4& Vec4::operator+=(const Vec4& v)"> 
+add a four-vector to an existing one. 
+</method> 
+ 
+<method name="Vec4& Vec4::operator-=(const Vec4& v)"> 
+subtract a four-vector from an existing one. 
+</method> 
+ 
+<method name="Vec4& Vec4::operator*=(double f)"> 
+multiply all four-vector components by a real number. 
+</method> 
+ 
+<method name="Vec4& Vec4::operator/=(double f)"> 
+divide all four-vector components by a real number. 
+</method> 
+ 
+<method name="friend Vec4 operator+(const Vec4& v1, const Vec4& v2)"> 
+add two four-vectors. 
+</method> 
+ 
+<method name="friend Vec4 operator-(const Vec4& v1, const Vec4& v2)"> 
+subtract two four-vectors. 
+</method> 
+ 
+<method name="friend Vec4 operator*(double f, const Vec4& v)"> 
+</method> 
+<methodmore name="friend Vec4 operator*(const Vec4& v, double f)"> 
+multiply a four-vector by a real number. 
+</methodmore> 
+ 
+<method name="friend Vec4 operator/(const Vec4& v, double f)"> 
+divide a four-vector by a real number. 
+</method> 
+ 
+<method name="friend double operator*(const Vec4& v1, const Vec4 v2)"> 
+four-vector product. 
+</method> 
+ 
+<p/> 
+There are also a few related operations that are normal member methods: 
+ 
+<method name="void Vec4::rescale3(double f)"> 
+multiply the three-vector components by <ei>f</ei>, but keep the 
+fourth component unchanged. 
+</method> 
+ 
+<method name="void Vec4::rescale4(double f)"> 
+multiply all four-vector components by <ei>f</ei>. 
+</method> 
+ 
+<method name="void Vec4::flip3()"> 
+flip the sign of the three-vector components, but keep the 
+fourth component unchanged. 
+</method> 
+ 
+<method name="void Vec4::flip4()"> 
+flip the sign of all four-vector components. 
+</method> 
+ 
+<h3>Rotations and boosts</h3> 
+ 
+A common task is to rotate or boost four-vectors. In case only one 
+four-vector is affected the operation may be performed directly on it. 
+However, in case many particles are affected, the helper class 
+<code>RotBstMatrix</code> can be used to speed up operations. 
+ 
+<method name="void Vec4::rot(double theta, double phi)"> 
+rotate the three-momentum with the polar angle <ei>theta</ei> 
+and the azimuthal angle <ei>phi</ei>. 
+</method> 
+ 
+<method name="void Vec4::rotaxis(double phi, double nx, double ny, 
+double nz)"> 
+rotate the three-momentum with the azimuthal angle <ei>phi</ei> 
+around the direction defined by the <ei>(n_x, n_y, n_z)</ei> 
+three-vector. 
+</method> 
+ 
+<method name="void Vec4::rotaxis(double phi, Vec4& n)"> 
+rotate the three-momentum with the azimuthal angle <ei>phi</ei> 
+around the direction defined by the three-vector part of <ei>n</ei>. 
+</method> 
+ 
+<method name="void Vec4::bst(double betaX, double betaY, double betaZ)"> 
+boost the four-momentum by <ei>beta = (beta_x, beta_y, beta_z)</ei>. 
+</method> 
+ 
+<method name="void Vec4::bst(double betaX, double betaY, double betaZ, 
+double gamma)"> 
+boost the four-momentum by <ei>beta = (beta_x, beta_y, beta_z)</ei>, 
+where the <ei>gamma = 1/sqrt(1 - beta^2)</ei> is also input to allow 
+better precision when <ei>beta</ei> is close to unity. 
+</method> 
+ 
+<method name="void Vec4::bst(const Vec4& p)"> 
+boost the four-momentum by <ei>beta = (p_x/E, p_y/E, p_z/E)</ei>. 
+</method> 
+ 
+<method name="void Vec4::bst(const Vec4& p, double m)"> 
+boost the four-momentum by <ei>beta = (p_x/E, p_y/E, p_z/E)</ei>, 
+where the <ei>gamma = E/m</ei> is also calculated from input to allow 
+better precision when <ei>beta</ei> is close to unity. 
+</method> 
+ 
+<method name="void Vec4::bstback(const Vec4& p)"> 
+boost the four-momentum by <ei>beta = (-p_x/E, -p_y/E, -p_z/E)</ei>. 
+</method> 
+ 
+<method name="void Vec4::bstback(const Vec4& p, double m)"> 
+boost the four-momentum by <ei>beta = (-p_x/E, -p_y/E, -p_z/E)</ei>, 
+where the <ei>gamma = E/m</ei> is also calculated from input to allow 
+better precision when <ei>beta</ei> is close to unity. 
+</method> 
+ 
+<method name="void Vec4::rotbst(const RotBstMatrix& M)"> 
+perform a combined rotation and boost; see below for a description 
+of the <code>RotBstMatrix</code>. 
+</method> 
+ 
+<p/> 
+For a longer sequence of rotations and boosts, and where several 
+<code>Vec4</code> are to be rotated and boosted in the same way, 
+a more efficient approach is to define a <code>RotBstMatrix</code>, 
+which forms a separate auxiliary class. You can build up this 
+4-by-4 matrix by successive calls to the methods of the class, 
+such that the matrix encodes the full sequence of operations. 
+The order in which you do these calls must agree with the imagined 
+order in which the rotations/boosts should be applied to a 
+four-momentum, since in general the operations do not commute. 
+<br/>(Mathematically you would e.g. define <ei>M = M_3 M_2 M_1</ei> 
+in that <ei>M p = M_3( M_2( M_1 p) ) )</ei>. That is, operations 
+on the four-vector <ei>p</ei> are carried out in the order first 
+<ei>M_1</ei>, then <ei>M_2</ei> and finally <ei>M_3</ei>. Thus 
+<ei>M_1, M_2, M_3</ei> is also the order in which you should input 
+rotations and boosts to <ei>M</ei>.) 
+ 
+<method name="RotBstMatrix::RotBstMatrix()"> 
+creates a diagonal unit matrix, i.e. one that leaves a four-vector 
+unchanged. 
+</method> 
+ 
+<method name="RotBstMatrix::RotBstMatrix(const RotBstMatrix& Min)"> 
+creates a copy of the input matrix. 
+</method> 
+ 
+<method 
+name="RotBstMatrix& RotBstMatrix::operator=(const RotBstMatrix4& Min)"> 
+copies the input matrix. 
+</method> 
+ 
+<method name="void RotBstMatrix::rot(double theta = 0., double phi = 0.)"> 
+rotate by this polar and azimuthal angle. 
+</method> 
+ 
+<method name="void RotBstMatrix::rot(const Vec4& p)"> 
+rotate so that a vector originally along the <ei>+z</ei> axis becomes 
+parallel with <ei>p</ei>. More specifically, rotate by <ei>-phi</ei>, 
+<ei>theta</ei> and <ei>phi</ei>, with angles defined by <ei>p</ei>. 
+</method> 
+ 
+<method name="void RotBstMatrix::bst(double betaX = 0., double betaY = 0., 
+double betaZ = 0.)"> 
+boost by this <ei>beta</ei> vector. 
+</method> 
+ 
+<method name="void RotBstMatrix::bst(const Vec4&)"> 
+</method> 
+<methodmore name="void RotBstMatrix::bstback(const Vec4&)"> 
+boost with a <ei>beta = p/E</ei> or <ei>beta = -p/E</ei>, respectively. 
+</methodmore> 
+ 
+<method name="void RotBstMatrix::bst(const Vec4& p1, const Vec4& p2)"> 
+boost so that <ei>p_1</ei> is transformed to <ei>p_2</ei>. It is assumed 
+that the two vectors obey <ei>p_1^2 = p_2^2</ei>. 
+</method> 
+ 
+<method name="void RotBstMatrix::toCMframe(const Vec4& p1, const Vec4& p2)"> 
+boost and rotate to the rest frame of <ei>p_1</ei> and <ei>p_2</ei>, 
+with <ei>p_1</ei> along the <ei>+z</ei> axis. 
+</method> 
+ 
+<method name="void RotBstMatrix::fromCMframe(const Vec4& p1, const Vec4& p2)"> 
+rotate and boost from the rest frame of <ei>p_1</ei> and <ei>p_2</ei>, 
+with <ei>p_1</ei> along the <ei>+z</ei> axis, to the actual frame of 
+<ei>p_1</ei> and <ei>p_2</ei>, i.e. the inverse of the above. 
+</method> 
+ 
+<method name="void RotBstMatrix::rotbst(const RotBstMatrix& Min);"> 
+combine the current matrix with another one. 
+</method> 
+ 
+<method name="RotBstMatrix& RotBstMatrix::operator*(const RotBstMatrix& Min)"> 
+return the combination of this and another matrix (corresponding to first 
+making the transformation <ei>M_{in}</ei> and then this transformation. 
+</method> 
+ 
+<method name="Vec4 RotBstMatrix::operator*(Vec4 p)"> 
+return a rotated and boosted version of <ei>p</ei>. 
+</method> 
+ 
+<method name="void RotBstMatrix::invert()"> 
+invert the matrix, which corresponds to an opposite sequence and sign 
+of rotations and boosts. 
+</method> 
+ 
+<method name="RotBstMatrix RotBstMatrix::inverse()"> 
+return the inverse matrix, which corresponds to an opposite sequence and sign 
+of rotations and boosts, without overwriting the original matrix. 
+</method> 
+ 
+<method name="void RotBstMatrix::reset()"> 
+reset to no rotation/boost; i.e. the default at creation. 
+</method> 
+ 
+<method name="double RotBstMatrix::value(int i, int j)"> 
+return the value of the (i,j) = [i][j] matrix element. 
+</method> 
+ 
+<method name="double RotBstMatrix::deviation()"> 
+crude estimate how much a matrix deviates from the unit matrix: 
+the sum of the absolute values of all non-diagonal matrix elements 
+plus the sum of the absolute deviation of the diagonal matrix 
+elements from unity. 
+</method> 
+ 
+<method name="friend ostream& operator&lt;&lt;(ostream&, 
+const RotBstMatrix& M)"> 
+writes out the values of the sixteen components of a 
+<code>RotBstMatrix</code>, on four consecutive lines and 
+ended with a newline. 
+</method> 
+ 
+<method name="RotBstMatrix toCMframe(const Vec4& p)"> 
+Return a <code>RotBstMatrix</code> corresponding to a boost 
+to the rest frame of <ei>p</ei>. 
+</method> 
+ 
+<method name="RotBstMatrix fromCMframe(const Vec4& p)"> 
+Return a <code>RotBstMatrix</code> corresponding to a boost 
+from the rest frame of <ei>p</ei> . 
+</method> 
+ 
+<method name="RotBstMatrix toCMframe(const Vec4& p1, const Vec4& p2)"> 
+Return a <code>RotBstMatrix</code> corresponding to a boost and 
+rotation to the rest frame of <ei>p_1</ei> and <ei>p_2</ei>, with 
+<ei>p_1</ei> along the <ei>+z</ei> axis. 
+</method> 
+ 
+<method name="RotBstMatrix fromCMframe(const Vec4& p1, const Vec4& p2)"> 
+Return a <code>RotBstMatrix</code> corresponding to a boost and 
+rotation from the rest frame of <ei>p_1</ei> and <ei>p_2</ei>, with 
+<ei>p_1</ei> along the <ei>+z</ei> axis. 
+</method> 
+ 
+<method name="RotBstMatrix toCMframe(const Vec4& ptot, const Vec4& pz, 
+const Vec4& pxz)"> 
+Return a <code>RotBstMatrix</code> corresponding to a boost and 
+rotation to the rest frame of <ei>p_{tot}</ei>, where additionally 
+the <ei>p_z</ei> vector is put along the <ei>+z</ei> axis and the 
+<ei>p_{xz}</ei> on put in the <ei>xz</ei> plane with positive <ei>x</ei>. 
+</method> 
+ 
+<method name="RotBstMatrix fromCMframe(const Vec4& ptot, const Vec4& pz, 
+const Vec4& pxz)"> 
+Return a <code>RotBstMatrix</code> corresponding to a boost and 
+rotation from the rest frame of <ei>p_{tot}</ei>, where additionally 
+the <ei>p_z</ei> vector is along the <ei>+z</ei> axis and the 
+<ei>p_{xz}</ei> is in the <ei>xz</ei> plane with positive <ei>x</ei> 
+when in the rest frame. 
+</method> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

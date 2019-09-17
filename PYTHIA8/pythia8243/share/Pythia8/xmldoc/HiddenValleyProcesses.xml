@@ -1,0 +1,555 @@
+<chapter name="Hidden Valley Processes"> 
+ 
+<h2>Hidden Valley Processes</h2> 
+ 
+This Hidden Valley (HV) scenario has been developed specifically 
+to allow the study of visible consequences of radiation in a 
+hidden sector, by recoil effect. A key aspect is therefore that 
+the normal timelike showering machinery has been expanded with a 
+third kind of radiation, in addition to the QCD and QED ones. 
+These three kinds of radiation are fully interleaved, i.e. 
+evolution occurs in a common <ei>pT</ei>-ordered sequence. 
+The scenario is described in <ref>Car10</ref>. Furthermore 
+hadronization in the hidden sector has been implemented. 
+Three main scenarios for production into and decay out of the 
+hidden sector can be compared, in each case either for an 
+Abelian or a non-Abelian gauge group in the HV. For further details 
+see <ref>Car11</ref>. 
+ 
+<note>Warning</note>: do not use the alternative hadronization 
+scenarios <code>StringPT:thermalModel = on</code> or 
+<code>StringPT:mT2suppression = on</code> in conjunction with 
+Hidden Valley processes, since they have not been constructed to 
+work together. 
+ 
+<h3>Particle content and properties</h3> 
+ 
+For simplicity we assume that the HV contains an unbroken <b>SU(N)</b> 
+gauge symmetry. This is used in the calculation of production cross 
+sections. These could be rescaled by hand for other gauge groups. 
+ 
+<modeopen name="HiddenValley:Ngauge" default="3" min="1"> 
+is <b>U(1)</b> for <code>Ngauge = 1</code>, is <b>SU(N)</b> if 
+<code>Ngauge &gt; 1</code>. Note that pair production cross sections 
+contains a factor of <code>Ngauge</code> for new particles 
+in the fundamental representation of this group. 
+</modeopen> 
+ 
+<p/> 
+A minimal HV particle content has been introduced. Firstly, there is 
+a set of 12 particles that mirrors the Standard Model flavour 
+structure, and is charged under both the SM and the HV symmetry groups. 
+Each new particle couples flavour-diagonally to a corresponding SM 
+state, and has the same SM charge and colour, but in addition is in 
+the fundamental representation of the HV colour, as follows: 
+<br/><code>Dv</code>, identity 4900001, partner to the normal 
+<code>d</code> quark; 
+<br/><code>Uv</code>, identity 4900002, partner to the normal 
+<code>u</code> quark; 
+<br/><code>Sv</code>, identity 4900003, partner to the normal 
+<code>s</code> quark; 
+<br/><code>Cv</code>, identity 4900004, partner to the normal 
+<code>c</code> quark; 
+<br/><code>Bv</code>, identity 4900005, partner to the normal 
+<code>b</code> quark; 
+<br/><code>Tv</code>, identity 4900006, partner to the normal 
+<code>t</code> quark; 
+<br/><code>Ev</code>, identity 4900011, partner to the normal 
+<code>e</code> lepton; 
+<br/><code>nuEv</code>, identity 4900012, partner to the normal 
+<code>nue</code> neutrino; 
+<br/><code>MUv</code>, identity 4900013, partner to the normal 
+<code>mu</code> lepton; 
+<br/><code>nuMUv</code>, identity 4900014, partner to the normal 
+<code>numu</code> neutrino; 
+<br/><code>TAUv</code>, identity 4900015, partner to the normal 
+<code>tau</code> lepton; 
+<br/><code>nuTAUv</code>, identity 4900016, partner to the normal 
+<code>nutau</code> neutrino. 
+<br/>Collectively we will refer to these states as <code>Fv</code>; 
+note, however, that they need not be fermions themselves. 
+ 
+<p/> 
+In addition the model contains the HV gauge particle, either 
+a HV-gluon or a HV-photon, but not both; see <code>Ngauge</code> 
+above: 
+<br/><code>gv</code>, identity 4900021, is the massless 
+gauge boson of the HV <b>SU(N)</b> group; 
+<br/><code>gammav</code>, identity 4900022,  is the massless 
+gauge boson of the HV <b>U(1)</b> group. 
+ 
+<p/> 
+Finally, for the basic HV scenario, there is a new massive particle 
+with only HV charge sitting in the fundamental representation of the 
+HV gauge group: 
+<br/><code>qv</code>, identity 4900101. 
+ 
+<p/>The typical scenario would be for pair production of one of the 
+states presented first above, e.g. <ei>g g &rarr; Dv Dvbar</ei>. 
+Such a <ei>Dv</ei> can radiate gluons and photons like an SM quark, 
+but in addition HV-gluons or HV-photons in a similar fashion. 
+Eventually the <ei>Dv</ei> will decay like <ei>Dv &rarr; d + qv</ei>. 
+The strength of this decay is not set as such, but is implicit in 
+your choice of width for the <ei>Dv</ei> state. Thereafter the 
+<ei>d</ei> and <ei>qv</ei> can radiate further within their 
+respective sectors. The <ei>qv</ei>, <ei>gv</ei> or <ei>gammav</ei> 
+are invisible, so their fate need not be considered further. 
+ 
+<p/> 
+While not part of the standard scenario, as an alternative there is 
+also a kind of <ei>Z'</ei> resonance: 
+<br/><code>Zv</code>, identity 4900023, a boson that can couple 
+both to pairs of Standard Model fermions and to <ei>qv qvbar</ei> 
+pairs. Mass, total width and branching ratios can be set as convenient. 
+<br/>This opens up for alternative processes 
+<ei>l^+l^-, q qbar &rarr; Zv &rarr; qv qvbar</ei>. 
+ 
+<p/> 
+The possibility of a leakage back from the hidden sector will be 
+considered in the Hadronization section below. For the <b>U(1)</b> 
+case the <ei>gammav</ei> acquires a mass and can decay back to a 
+Standard-Model fermion pair, while the <ei>qv</ei> remains invisible. 
+The <b>SU(N)</b> alternative remains unbroken, so confinement holds 
+and the <ei>gv</ei> is massless. A string like 
+<ei>qv - gv - ... - gv - qvbar</ei> can break by the production of 
+new <ei>qv - qvbar</ei> pairs, which will produce <ei>qv-qvbar</ei> 
+mesons. It would be possible to build a rather sophisticated hidden 
+sector by trivial extensions of the HV flavour content. For now, 
+however, the <ei>qv</ei> can be duplicated in up to eight copies 
+with the same properties except for the flavour charge. These are 
+assigned codes 4900101 - 4900108. This gives a total of 64 possible 
+lowest-lying mesons. We also include a duplication of that, into two 
+multiplets, corresponding to the pseudoscalar and vector mesons of 
+QCD. For now, again, these are assumed to have the same mass and 
+other properties. By default, only the flavour-diagonal ones can 
+decay back into the Standard-Model sector, however, while the rest 
+remains in the hidden sector. It is therefore only necessary to 
+distinguish a few states: 
+<br/><code>pivDiag</code>, identity 4900111, a flavour-diagonal 
+HV-meson with spin 0 that can decay back into the Standard-Model sector; 
+<br/><code>rhovDiag</code>, identity 4900113, a flavour-diagonal 
+HV-meson with spin 1 that can decay back into the Standard-Model sector; 
+<br/><code>pivUp</code>, identity 4900211, an off-diagonal 
+HV-meson with spin 0 that is stable and invisible, with an antiparticle 
+<code>pivDn</code> with identity -4900211; the particle is 
+the one where the code of the flavour is larger than that of the 
+antiflavour; 
+<br/><code>rhovUp</code>, identity 4900213, an off-diagonal 
+HV-meson with spin 1 that is stable and invisible, with an antiparticle 
+<code>rhovDn</code> with identity -4900213; again the particle is 
+the one where the code of the flavour is larger than that of the 
+antiflavour; 
+<br/><code>ggv</code>, identity 4900991, is only rarely used, 
+to handle cases where it is kinematically impossible to produce an 
+HV-meson on shell, and it therefore is assumed to de-excite by the 
+emission of invisible <ei>gv-gv </ei> v-glueball bound states. 
+ 
+<p/> 
+By changing ParticleData, it is possible to allow decays even for the 
+off-diagonal Up/Dn mesons. 
+ 
+<p/> 
+Only the spin of the HV-gluon or HV-photon is determined unambiguously 
+to be unity, for the others you can make your choice. 
+ 
+<modepick name="HiddenValley:spinFv" default="1" min="0" max="2"> 
+The spin of the HV partners of the SM fermions, e.g. 
+<ei>Dv</ei>, <ei>Uv</ei>, <ei>Ev</ei> and <ei>nuEv</ei>. 
+<option value="0">spin 0.</option> 
+<option value="1">spin 1/2.</option> 
+<option value="2">spin 1.</option> 
+</modepick> 
+ 
+<modepick name="HiddenValley:spinqv" default="0" min="0" max="1"> 
+The spin of <ei>qv</ei> when the <ei>Fv</ei> (the HV partners of 
+the SM fermions) have spin 1/2. (While, if they have spin 0 or 1, 
+the <ei>qv</ei> spin is fixed at 1/2.) 
+<option value="0">spin 0.</option> 
+<option value="1">spin 1.</option> 
+</modepick> 
+ 
+<parm name="HiddenValley:kappa" default="1."> 
+If the <ei>Fv</ei> have spin 1 then their production 
+cross section depends on the presence of anomalous magnetic dipole 
+moment, i.e. of a <ei>kappa</ei> different from unity. For other spins 
+this parameter is not used. 
+</parm> 
+ 
+<flag name="HiddenValley:doKinMix" default="off"> 
+allow kinematic mixing or not. 
+</flag> 
+ 
+<parm name="HiddenValley:kinMix" default="1."> 
+strength of kinetic mixing. 
+</parm> 
+ 
+<p/> 
+You should set the <ei>Fv</ei> and <ei>qv</ei> masses appropriately, 
+with the latter smaller than the former two to allow decays. 
+When <b>U(1)</b> hadronization is switched on, you need to set the 
+<ei>gammav</ei> mass and decay modes. For <b>SU(N)</b> hadronization 
+the HV-meson masses should be set to match the <ei>qv</ei> ones. 
+The simplest is to assume that <ei>m_qv</ei> defines a constituent 
+mass, so that  <ei>m_HVmeson = 2 m_qv</ei>. The <ei>hvMesonDiag</ei> 
+decay modes also need to be set. 
+ 
+<h3>Production processes</h3> 
+ 
+<flag name="HiddenValley:all" default="off"> 
+Common switch for the group of all hard Hidden Valley processes, 
+as listed separately in the following. 
+</flag> 
+ 
+<flag name="HiddenValley:gg2DvDvbar" default="off"> 
+Pair production <ei>g g &rarr; Dv Dvbar</ei>. 
+Code 4901. 
+</flag> 
+ 
+<flag name="HiddenValley:gg2UvUvbar" default="off"> 
+Pair production <ei>g g &rarr; Uv Uvbar</ei>. 
+Code 4902. 
+</flag> 
+ 
+<flag name="HiddenValley:gg2SvSvbar" default="off"> 
+Pair production <ei>g g &rarr; Sv Svbar</ei>. 
+Code 4903. 
+</flag> 
+ 
+<flag name="HiddenValley:gg2CvCvbar" default="off"> 
+Pair production <ei>g g &rarr; Cv Cvbar</ei>. 
+Code 4904. 
+</flag> 
+ 
+<flag name="HiddenValley:gg2BvBvbar" default="off"> 
+Pair production <ei>g g &rarr; Bv Bvbar</ei>. 
+Code 4905. 
+</flag> 
+ 
+<flag name="HiddenValley:gg2TvTvbar" default="off"> 
+Pair production <ei>g g &rarr; Tv Tvbar</ei>. 
+Code 4906. 
+</flag> 
+ 
+<flag name="HiddenValley:qqbar2DvDvbar" default="off"> 
+Pair production <ei>q qbar &rarr; Dv Dvbar</ei> 
+via intermediate gluon. 
+Code 4911. 
+</flag> 
+ 
+<flag name="HiddenValley:qqbar2UvUvbar" default="off"> 
+Pair production <ei>q qbar &rarr; Uv Uvbar</ei> 
+via intermediate gluon. 
+Code 4912. 
+</flag> 
+ 
+<flag name="HiddenValley:qqbar2SvSvbar" default="off"> 
+Pair production <ei>q qbar &rarr; Sv Svbar</ei> 
+via intermediate gluon. 
+Code 4913. 
+</flag> 
+ 
+<flag name="HiddenValley:qqbar2CvCvbar" default="off"> 
+Pair production <ei>q qbar &rarr; Cv Cvbar</ei> 
+via intermediate gluon. 
+Code 4914. 
+</flag> 
+ 
+<flag name="HiddenValley:qqbar2BvBvbar" default="off"> 
+Pair production <ei>q qbar &rarr; Bv Bvbar</ei> 
+via intermediate gluon. 
+Code 4915. 
+</flag> 
+ 
+<flag name="HiddenValley:qqbar2TvTvbar" default="off"> 
+Pair production <ei>q qbar &rarr; Tv Tvbar</ei> 
+via intermediate gluon. 
+Code 4916. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2DvDvbar" default="off"> 
+Pair production <ei>f fbar &rarr; Dv Dvbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4921. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2UvUvbar" default="off"> 
+Pair production <ei>f fbar &rarr; Uv Uvbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4922. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2SvSvbar" default="off"> 
+Pair production <ei>f fbar &rarr; Sv Svbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4923. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2CvCvbar" default="off"> 
+Pair production <ei>f fbar &rarr; Cv Cvbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4924. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2BvBvbar" default="off"> 
+Pair production <ei>f fbar &rarr; Bv Bvbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4925. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2TvTvbar" default="off"> 
+Pair production <ei>f fbar &rarr; Tv Tvbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4926. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2EvEvbar" default="off"> 
+Pair production <ei>f fbar &rarr; Ev Evbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4931. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2nuEvnuEvbar" default="off"> 
+Pair production <ei>f fbar &rarr; nuEv nuEvbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4932. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2MUvMUvbar" default="off"> 
+Pair production <ei>f fbar &rarr; MUv MUvbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4933. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2nuMUvnuMUvbar" default="off"> 
+Pair production <ei>f fbar &rarr; nuMUv nuMUvbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4934. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2TAUvTAUvbar" default="off"> 
+Pair production <ei>f fbar &rarr; TAUv TAUvbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4935. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2nuTAUvnuTAUvbar" default="off"> 
+Pair production <ei>f fbar &rarr; nuTAUv nuTAUvbar</ei> 
+via intermediate <ei>gamma*/Z^*</ei>. 
+Code 4936. 
+</flag> 
+ 
+<flag name="HiddenValley:ffbar2Zv" default="off"> 
+Production <ei>f fbar &rarr; Zv</ei> where <ei>Zv</ei> is a generic 
+resonance that couples both SM fermion pairs and a <ei>qv qvbar</ei> 
+pair. Not part of the framework of the above processes, but as an 
+alternative. Code 4941. 
+</flag> 
+ 
+<h3>Timelike showers</h3> 
+ 
+One key point of this HV scenario is that radiation off the 
+HV-charged particles is allowed. This is done by the standard 
+final-state showering machinery. (HV particles are not produced 
+in initial-state radiation.) All the (anti)particles <ei>Fv</ei> 
+and <ei>qv</ei> have one (negative) unit of HV charge. That is, 
+radiation closely mimics the one in QCD. Both QCD, QED and HV 
+radiation are interleaved in one common sequence of decreasing 
+emission <ei>pT</ei> scales. Each radiation kind defines a set of 
+dipoles, usually spanned between a radiating parton and its recoil 
+partner, such that the invariant mass of the pair is not changed 
+when a radiation occurs. This need not follow from trivial colour 
+assignments, but is often obvious. For instance,  in a decay 
+<ei>Qv &rarr; q + qv</ei> the QCD dipole is between the <ei>q</ei> and 
+the hole after <ei>Qv</ei>, but <ei>qv</ei> becomes the recoiler 
+should a radiation occur, while the role of <ei>q</ei> and <ei>qv</ei> 
+is reversed for HV radiation. 
+ 
+<p/>This also includes matrix-element corrections for a number 
+of decay processes, with colour, spin and mass effects included 
+<ref>Nor01</ref>. They were calculated within the context of the 
+particle content of the MSSM, however, which does not include spin 1 
+particles with unit colour charge. In such cases spin 0 is assumed 
+instead. By experience, the main effects come from mass and colour 
+flow anyway, so this is not a bad approximation. (Furthermore the 
+MSSM formulae allow for <ei>gamma_5</ei> factors from wave 
+functions or vertices; these are even less important.) 
+ 
+<p/>An emitted <ei>gv</ei> can branch in its turn, 
+<ei>gv &rarr; gv + gv</ei>. This radiation may affect momenta 
+in the visible sector by recoil effect, but this is a minor 
+effect relative to the primary emission of the <ei>gv</ei>. 
+ 
+<p/>While the default model has a fixed Hidden Valley coupling 
+<ei> alpha_HV</ei>, some further work <ref>Scw15</ref> has considered 
+the impact of a running coupling. This is included as an option. 
+ 
+<flag name="HiddenValley:FSR" default="off"> 
+switch on final-state shower of <ei>gv</ei> or <ei>gammav</ei> 
+in a HV production process. 
+</flag> 
+ 
+<modepick name="HiddenValley:alphaOrder" default="0" min="0" max="1"> 
+Order at which <ei>alpha_HV</ei> runs, 
+<option value="0">zeroth order, i.e. <ei>alpha_HV</ei> is kept 
+fixed at the value <ei>alphaFSR</ei>.</option> 
+<option value="1">first order,</option> with the beta function based 
+on <ei>Ngauge</ei> and <ei>Nflav</ei>. 
+</modepick> 
+ 
+<parm name="HiddenValley:alphaFSR" default="0.1" min="0.0"> 
+fixed alpha scale of <ei>gv/gammav</ei> emission; corresponds to 
+<ei>alpha_strong</ei> of QCD or <ei>alpha_em</ei> of QED. For 
+shower branchings such as <ei>Dv &rarr; Dv + gv</ei> the coupling is 
+multiplied by <ei>C_F = (N^2 - 1) / (2 * N)</ei> for an 
+<b>SU(N)</b> group and for <ei>gv &rarr; gv + gv</ei> by <ei>N</ei>. 
+</parm> 
+ 
+<parm name="HiddenValley:Lambda" default="0.4" min="0.1"> 
+the parameter used for the case of a running (first order) <ei>alpha_HV</ei>. 
+</parm> 
+ 
+<parm name="HiddenValley:pTminFSR" default="0.44" min="0.1"> 
+lowest allowed <ei>pT</ei> of emission. Should be greater than 
+or equal to 1.1 times <ei>Lambda</ei>, or it will be reset 
+automatically. 
+</parm> 
+ 
+<h3>Hadronization</h3> 
+ 
+By default the HV particles with no Standard Model couplings 
+are not visible. Their presence can only be deduced by the 
+observation of missing (transverse) momentum in the event as a 
+whole. In the current implementation it is possible to simulate 
+two different scenarios where activity can leak back from the 
+hidden sector. 
+ 
+<p/> 
+The first possibility is relevant for the <b>U(1)</b> scenario. 
+The <b>U(1)</b> group may be broken, so that the <ei>gammav</ei> 
+acquires a mass. Furthermore, the <ei>gammav</ei> may have a 
+small mixing angle with the normal photon, or with some <ei>Z'</ei> 
+state or other mediator, and may thus decay back into Standard 
+Model particles. The <ei>qv</ei> still escapes undetected; 
+recall that there is no confinement in the <b>U(1)</b> option. 
+ 
+<p/> 
+In order to enable this machinery two commands are necessary, 
+<code>4900022:m0 = ...</code> to set the  <ei>gammav</ei> mass 
+to the desired value, and <code>4900022:onMode = on</code> to enable 
+<ei>gammav</ei> decays. The default <ei>gammav</ei> decay 
+table contains all Standard Model fermion-antifermion pairs, 
+except top, with branching ratios in proportion to their coupling 
+to the photon, whenever the production channel is allowed by 
+kinematics. This table could easily be tailored to more specific 
+models and needs. For instance, for a mass below 1 - 2 GeV, it 
+would make sense to construct a table of exclusive hadronic decay 
+channels rather than go the way via a hadronizing quark pair. 
+ 
+<p/> 
+The <ei>gammav</ei> are expected to decay so rapidly that no 
+secondary vertex will be detectable. However, it is possible to 
+set <code>4900022:tau0</code> to a finite lifetime (in mm) that 
+will be used to create separated secondary vertices. 
+ 
+<p/> 
+The second, more interesting, possibility is relevant for the 
+<b>SU(N)</b> scenarios. Here the gauge group remains unbroken, i.e. 
+<ei>gv</ei> is massless, and the partons are confined. Like in 
+QCD, the HV-partons can therefore be arranged in one single 
+HV-colour-ordered chain, with a <ei>qv</ei> in one end, a 
+<ei>qvbar</ei> in the other, and a varying number of 
+<ei>gv</ei> in between. Each event will only contain (at most) 
+one such string, (i) since perturbative branchings 
+<ei>gv &rarr; qv qvbar</ei> have been neglected, as is a reasonable 
+approximation for QCD, and (ii) since HV-colours are assigned in the 
+<ei>N_C &rarr; infinity</ei> limit, just like in the handling of 
+string fragmentation in QCD. The HV-string can then fragment by the 
+nonperturbative creation of <ei>qv qvbar</ei> pairs, leading to 
+the formation of HV-mesons along the string, each with its 
+<ei>qv</ei> from one vertex and its <ei>qvbar</ei> from 
+the neighbouring one. 
+ 
+<p/> 
+Since, so far, we have only assumed there to be one <ei>qv</ei> 
+species, all produced <ei>qv qvbar</ei> HV-mesons are of the 
+same flavour-diagonal species. Such an HV-meson can decay back to 
+the normal sector, typically by whatever mediator particle allowed 
+production in the first place. In this framework the full energy put 
+into the HV sector will leak back to the normal one. To allow more 
+flexibility, an ad hoc possibility of <ei>n_Flav</ei> different 
+<ei>qv</ei> species is introduced. For now they are all assumed 
+to have the same mass and other properties, but distinguished by 
+some flavour-like property. Only the flavour-diagonal ones can decay, 
+meaning that only a fraction (approximately) <ei>1/n_Flav</ei> of the 
+HV-energy leaks back, while the rest remains in the hidden sector. 
+ 
+<p/> 
+This scenario contains more parameters than the first one, for the 
+<b>U(1)</b> group. They can be subdivided into two sets. One is 
+related to particle properties, both for <ei>qv</ei> and for the 
+two different kinds of HV-mesons, here labeled 4900111 and 4900113 
+for the diagonal ones, and +-4900211 and +-4900213 for the 
+off-diagonal ones. It makes sense to set the HV-meson masses to be 
+twice the <ei>qv</ei> one, as in a simple constituent mass context. 
+Furthermore the <ei>hvMesonDiag</ei> decay modes need to be set up. 
+Like with the 
+<ei>gammav</ei> in the <b>U(1)</b> option, the default decay table 
+is based on the branching ratios of an off-shell photon. 
+ 
+<p/> 
+The second set are fragmentation parameters that extend or replace 
+the ones used in normal string fragmentation. Some of them are not 
+encoded in the same way as normally, however, but rather scale as 
+the <ei>qv</ei> mass is changed, so as to keep a sensible default 
+behaviour. This does not mean that deviations from this set should 
+not be explored, or that other scaling rules could be preferred 
+within alternative scenarios. These parameters are as follows. 
+ 
+<flag name="HiddenValley:fragment" default="off"> 
+switch on string fragmentation of the HV partonic system. 
+Only relevant for <b>SU(N)</b> scenarios. 
+</flag> 
+ 
+<modeopen name="HiddenValley:nFlav" default="1" min="1" max="8"> 
+number of different flavours assumed to exist in the hadronization 
+description, leading to approximately <ei>1/n_Flav</ei> of the 
+produced HV-mesons being flavour-diagonal and capable to decay back 
+to Standard Model particles. 
+</modeopen> 
+ 
+<parm name="HiddenValley:probVector" default="0.75" min="0." max="1."> 
+fraction of HV-mesons that are assigned spin 1 (vector), with the 
+remainder spin 0 (pseudoscalar). Assuming the <ei>qv</ei> have 
+spin <ei>1/2</ei> and the mass splitting is small, spin counting 
+predicts that <ei>3/4</ei> of the mesons should have spin 1. 
+</parm> 
+ 
+<parm name="HiddenValley:aLund" default="0.3" min="0.0" max="2.0"> 
+The <ei>a</ei> parameter of the Lund symmetric fragmentation function. 
+See the normal <aloc href="Fragmentation">fragmentation 
+function</aloc> description for the shape of this function.</parm> 
+ 
+<parm name="HiddenValley:bmqv2" default="0.8" min="0.2" max="2.0"> 
+The <ei>b</ei> parameter of the Lund symmetric fragmentation function, 
+multiplied by the square of the <ei>qv</ei> mass. This scaling ensures 
+that the fragmentation function keeps the same shape when the 
+<ei>qv</ei> mass is changed (neglecting transverse momenta). 
+</parm> 
+ 
+<parm name="HiddenValley:rFactqv" default="1.0" min="0.0" max="2.0"> 
+<ei>r_qv</ei>, i.e. the Bowler correction factor to the Lund symmetric 
+fragmentation function, which could be made weaker or stronger than 
+its natural value. 
+</parm> 
+ 
+<parm name="HiddenValley:sigmamqv" default="0.5" min="0.0"> 
+the width <ei>sigma</ei> of transverse momenta in the HV fragmentation 
+process, normalized to the <ei>qv</ei> mass. This ensures that 
+<ei>sigma</ei> scales proportionately to <ei>m_qv</ei>. 
+See the normal <aloc href="Fragmentation">fragmentation 
+<ei>pT</ei></aloc> description for conventions for factors of 2. 
+</parm> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 

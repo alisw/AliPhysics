@@ -1,0 +1,432 @@
+<chapter name="Flavour Selection"> 
+ 
+<h2>Flavour Selection</h2> 
+ 
+The <code>StringFlav</code> class handles the choice of a new flavour 
+in the fragmentation process, and the production of a new hadron 
+from a set of input flavours. It is mainly used by the string 
+fragmentation machinery (including ministrings), but also e.g. 
+in some particle decays and for some beam-remnant cases. The basic 
+concepts are in agreement with <ref>And83</ref>. An alternative 
+"thermal model" is described further below. 
+ 
+<br/><br/><hr/> 
+<h3>Flavour Selection for Gaussian <ei>pT</ei> Distribution</h3> 
+ 
+The relative production rates of different particle species is 
+influenced by the parameters below. Some have only an impact on 
+one specific quantity, but most directly or indirectly have 
+consequences for many observables. Therefore the values to use have 
+to be viewed in the context of a complete <aloc href="Tunes">tune</aloc>. 
+ 
+<h4>New flavours</h4> 
+ 
+The main parameters of the selection of a new flavour are 
+ 
+<parm name="StringFlav:probStoUD" default="0.217" min="0.0" max="1.0"> 
+the suppression of <ei>s</ei> quark production relative to ordinary 
+<ei>u</ei> or <ei>d</ei> one. 
+</parm> 
+ 
+<parm name="StringFlav:probQQtoQ" default="0.081" min="0.0" max="1.0"> 
+the suppression of diquark production relative to quark production, 
+i.e. of baryon relative to meson production. 
+</parm> 
+ 
+<parm name="StringFlav:probSQtoQQ" default="0.915" min="0.0" max="1.0"> 
+the suppression of strange diquark production relative to light 
+diquark production, over and above the one already given by 
+<code>probStoU</code>. 
+</parm> 
+ 
+<parm name="StringFlav:probQQ1toQQ0" default="0.0275" min="0.0" max="1.0"> 
+the suppression of spin 1 diquark production relative to spin 0 one, 
+apart from the factor of 3 enhancement of spin 1 from counting the 
+number of states. 
+</parm> 
+ 
+<pvec name="StringFlav:probQQ1toQQ0join" default="0.5,0.7,0.9,1.0" 
+min="0.0" max="1.0"> 
+when two already produced quarks are to be combined to a diquark, 
+e.g. in the junction framework, these numbers give the suppression 
+of spin 1 diquark production relative to spin 0 one, apart from the 
+factor of 3 enhancement of spin 1 from counting the number of states. 
+The four components give the suppression when the heaviest quark is 
+<ei>u/d</ei>, <ei>s</ei>, <ei>c</ei> or <ei>b</ei>, respectively. 
+These parameters are seldom used and currently not constrained by any 
+data, so very much a guesswork. Character-string input of this vector 
+should be as a comma-separated list, without any blanks. 
+</pvec> 
+ 
+<h4>Standard-meson production</h4> 
+ 
+The bulk of the particle production corresponds to the lowest-lying 
+pseudoscalar and vector multiplets. Their production rates are 
+determined by the parameters in this section. 
+ 
+<p/> 
+For a given set of flavours, produced according to the probabilities 
+outlined above, the ratio of vector-to-pseudocalar meson production 
+is described by the parameters below. 
+The maximum allowed rate for each case has been set according to 
+spin-counting rules, but we expect the real rates to be lower, 
+especially for lighter mesons, owing to the vector-pseudoscalar 
+mass splitting. 
+ 
+<parm name="StringFlav:mesonUDvector" default="0.50" min="0." max="3."> 
+the relative production ratio vector/pseudoscalar for light 
+(<ei>u</ei>, <ei>d</ei>) mesons. 
+</parm> 
+<parm name="StringFlav:mesonSvector" default="0.55" min="0." max="3."> 
+the relative production ratio vector/pseudoscalar for strange mesons. 
+</parm> 
+<parm name="StringFlav:mesonCvector" default="0.88" min="0." max="3."> 
+the relative production ratio vector/pseudoscalar for charm mesons. 
+</parm> 
+<parm name="StringFlav:mesonBvector" default="2.20" min="0." max="3."> 
+the relative production ratio vector/pseudoscalar for bottom mesons. 
+</parm> 
+ 
+<p/> 
+Inside each light-quark meson nonet, an octet-singlet mixing angle 
+describes the mixing of the two flavour-diagonal isoscalar = 0 states. 
+(For terminology and details see <ref>Yao06</ref>, chapter 14 on the 
+quark model.) 
+This angle is needed to specify the probability for such a <ei>q qbar</ei> 
+state to project onto a specific meson. More transparent formulae are 
+obtained by introducing the angle <ei>alpha = theta + 54.7</ei> degrees: 
+<eq> 
+   f  = (uubar + ddbar)/sqrt(2) * sin(alpha) + ssbar * cos(alpha)<br/> 
+   f' = (uubar + ddbar)/sqrt(2) * cos(alpha) - ssbar * sin(alpha) 
+</eq> 
+ 
+<parm name="StringFlav:thetaPS" default="-15." min="-90." max="90."> 
+gives the mixing angle <ei>theta_PS</ei> in the pseudoscalar meson sector 
+(which is rather poorly determined), expressed in degrees. 
+Here <ei>f</ei> is associated with <ei>eta'</ei> and <ei>f'</ei> with 
+<ei>eta</ei>. (This standard but counterintuitive choice is fixed up 
+in the code by replacing <ei>alpha &rarr; 90^0 - alpha</ei> so that 
+<ei>eta &harr; eta'</ei>; relative signs do not matter since we are 
+interested in probabilities only.) 
+</parm> 
+ 
+<parm name="StringFlav:thetaV" default="36." min="-90." max="90."> 
+gives the mixing angle <ei>theta_V</ei> in the vector meson sector 
+(which is somewhat better determined), expressed in degrees. 
+Here <ei>f</ei> is associated with <ei>omega</ei> and <ei>f'</ei> 
+with <ei>phi</ei>. 
+</parm> 
+ 
+<p/> 
+Further, the simple model overestimates the production of <ei>eta</ei> 
+and, in particular, <ei>eta'</ei> mesons, which can be rectified by 
+ 
+<parm name="StringFlav:etaSup" default="0.60" min="0." max="1."> 
+the additional suppression of <ei>eta</ei> production, multiplying the 
+normal production probability. Thus 0 means no <ei>eta</ei> at all 
+are produced, while 1 means full rate. 
+</parm> 
+ 
+<parm name="StringFlav:etaPrimeSup" default="0.12" min="0." max="1."> 
+the additional suppression of <ei>eta'</ei> production, multiplying the 
+normal production probability. Thus 0 means no <ei>eta'</ei> at all 
+are produced, while 1 means full rate. 
+</parm> 
+ 
+<h4>Excited-meson production</h4> 
+ 
+Several excited mesons, ie. with radial or orbital excitations, have been 
+observed at non-negligible production rates. Extrapolated to all states 
+a fair fraction of all particle production might proceed through such 
+states. There are big uncertainties, however, since these excited 
+mesons in many cases are extremely poorly known. This also means that 
+the modeling of their production and decay is very primitive, and 
+even that the inclusion of the production of such states may lead to a 
+degraded agreement with data. Currently the default is that all such 
+production is switched off. 
+ 
+<p/> 
+Parameters are provided to switch them on. By demand, this machinery 
+has been made more flexible than in the past. Therefore one parameter is 
+provided for each combination of heaviest flavour 
+(<ei>u/d</ei>, <ei>s</ei>, <ei>c</ei> or <ei>b</ei>) and 
+multiplet produced. In each case the production rate is normalized to 
+that of the lowest-lying pseudoscalar of the same flavour content, as for 
+the vector-meson rates introduced above. The multiplets available are the 
+four obtained for one unit of orbital angular momentum, in the 
+nonrelativistic classification. Using <ei>J</ei> to denote the sum of 
+quark spin <ei>S</ei> and orbital angular momentum <ei>L</ei>, i.e. what 
+would normally be called the spin of the meson, one has: 
+<ul> 
+<li>a pseudovector multiplet with <ei>L=1, S=0, J=1</ei>;</li> 
+<li>a scalar multiplet with <ei>L=1, S=1, J=0</ei>;</li> 
+<li>a pseudovector multiplet with <ei>L=1, S=1, J=1</ei>;</li> 
+<li>a tensor multiplet with <ei>L=1, S=1, J=2</ei>.</li> 
+</ul> 
+ 
+The maximum allowed rate for each case has been set according to 
+spin-counting rules, but we expect the real rates to be significantly 
+lower, owing to mass suppression. 
+ 
+<parm name="StringFlav:mesonUDL1S0J1" default="0.0" min="0." max="3."> 
+the relative pseudovector production ratio 
+<ei>(L=1,S=0,J=1)</ei>/pseudoscalar 
+for light (<ei>u</ei>, <ei>d</ei>) mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonUDL1S1J0" default="0.0" min="0." max="1."> 
+the relative scalar production ratio 
+<ei>(L=1,S=1,J=0)</ei>/pseudoscalar 
+for light (<ei>u</ei>, <ei>d</ei>) mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonUDL1S1J1" default="0.0" min="0." max="3."> 
+the relative pseudovector production ratio 
+<ei>(L=1,S=1,J=1)</ei>/pseudoscalar 
+for light (<ei>u</ei>, <ei>d</ei>) mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonUDL1S1J2" default="0.0" min="0." max="5."> 
+the relative tensor production ratio 
+<ei>(L=1,S=1,J=2)</ei>/pseudoscalar 
+for light (<ei>u</ei>, <ei>d</ei>) mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonSL1S0J1" default="0.0" min="0." max="3."> 
+the relative pseudovector production ratio 
+<ei>(L=1,S=0,J=1)</ei>/pseudoscalar 
+for strange mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonSL1S1J0" default="0.0" min="0." max="1."> 
+the relative scalar production ratio 
+<ei>(L=1,S=1,J=0)</ei>/pseudoscalar 
+for strange mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonSL1S1J1" default="0.0" min="0." max="3."> 
+the relative pseudovector production ratio 
+<ei>(L=1,S=1,J=1)</ei>/pseudoscalar 
+for strange mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonSL1S1J2" default="0.0" min="0." max="5."> 
+the relative tensor production ratio 
+<ei>(L=1,S=1,J=2)</ei>/pseudoscalar 
+for strange mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonCL1S0J1" default="0.0" min="0." max="3."> 
+the relative pseudovector production ratio 
+<ei>(L=1,S=0,J=1)</ei>/pseudoscalar 
+for charm mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonCL1S1J0" default="0.0" min="0." max="1."> 
+the relative scalar production ratio 
+<ei>(L=1,S=1,J=0)</ei>/pseudoscalar 
+for charm mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonCL1S1J1" default="0.0" min="0." max="3."> 
+the relative pseudovector production ratio 
+<ei>(L=1,S=1,J=1)</ei>/pseudoscalar 
+for charm mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonCL1S1J2" default="0.0" min="0." max="5."> 
+the relative tensor production ratio 
+<ei>(L=1,S=1,J=2)</ei>/pseudoscalar 
+for charm mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonBL1S0J1" default="0.0" min="0." max="3."> 
+the relative pseudovector production ratio 
+<ei>(L=1,S=0,J=1)</ei>/pseudoscalar 
+for bottom mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonBL1S1J0" default="0.0" min="0." max="1."> 
+the relative scalar production ratio 
+<ei>(L=1,S=1,J=0)</ei>/pseudoscalar 
+for bottom mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonBL1S1J1" default="0.0" min="0." max="3."> 
+the relative pseudovector production ratio 
+<ei>(L=1,S=1,J=1)</ei>/pseudoscalar 
+for bottom mesons. 
+</parm> 
+ 
+<parm name="StringFlav:mesonBL1S1J2" default="0.0" min="0." max="5."> 
+the relative tensor production ratio 
+<ei>(L=1,S=1,J=2)</ei>/pseudoscalar 
+for bottom mesons. 
+</parm> 
+ 
+<p/> 
+In addition, an octet-singlet mixing angle is needed for each multiplet, 
+as for the pseudoscalar and vector multiplets above. Only for the 
+tensor multiplet does any determination exist; for the other multiplets 
+default has been chose so that <ei>ssbar</ei> does not mix with the light 
+quarks, and so that the <ei>ssbar</ei> state is the heavier of the two. 
+ 
+<parm name="StringFlav:thetaL1S0J1" default="35.3" min="-90." max="90."> 
+gives the mixing angle <ei>theta</ei> in the <ei>(L=1,S=0,J=1)</ei> 
+pseudovector meson sector, expressed in degrees. 
+</parm> 
+ 
+<parm name="StringFlav:thetaL1S1J0" default="35.3" min="-90." max="90."> 
+gives the mixing angle <ei>theta</ei> in the <ei>(L=1,S=1,J=0)</ei> 
+scalar meson sector, expressed in degrees. 
+</parm> 
+ 
+<parm name="StringFlav:thetaL1S1J1" default="35.3" min="-90." max="90."> 
+gives the mixing angle <ei>theta</ei> in the <ei>(L=1,S=1,J=1)</ei> 
+pseudovector meson sector, expressed in degrees. 
+</parm> 
+ 
+<parm name="StringFlav:thetaL1S1J2" default="28.0" min="-90." max="90."> 
+gives the mixing angle <ei>theta</ei> in the <ei>(L=1,S=1,J=2)</ei> 
+tensor meson sector, expressed in degrees. 
+</parm> 
+ 
+<h4>Baryon production</h4> 
+ 
+The relative rate of baryon production is mainly given by the quark 
+and diquark production parameters above, plus SU(6) Clebsch-Gordans. 
+The one modifiable parameter related to these coefficients is 
+ 
+<parm name="StringFlav:decupletSup" default="1.0" min="0.0" max="1.0"> 
+the suppression, relative to default SU(6) factors, of decuplet 
+baryon production. Default corresponds to no suppression, while 0 
+corresponds to no decuplet production at all. 
+</parm> 
+ 
+<p/> 
+In addition, if popcorn production is allowed, wherein a set of mesons 
+(<ei>M</ei>) may be produced in between the baryon (<ei>B</ei>) and 
+the antibaryon (<ei>Bbar</ei>), a set of further parameters is introduced. 
+Currently only the simplest scenario is implemented, wherein at most 
+one intermediate meson may be produced. 
+ 
+<parm name="StringFlav:popcornRate" default="0.5" min="0." max="2.0"> 
+gives the relative rates of <ei>B Bbar</ei> and <ei>B M Bbar</ei> 
+production, roughly as 
+<eq> 
+Prob(B M Bbar) / (Prob(B Bbar) + Prob(B M Bbar)) = 
+popcornRate / (0.5 + popcornRate) 
+</eq> 
+(the complete expression depends on all the quark and diquark production 
+parameters and is therefore not so useful). 
+</parm> 
+ 
+<parm name="StringFlav:popcornSpair" default="0.9" min="0." max="1.0"> 
+extra suppression for having an <ei>s sbar</ei> pair shared between 
+the <ei>B</ei> and <ei>Bbar</ei> in a <ei>B M Bbar</ei> configuration. 
+</parm> 
+ 
+<parm name="StringFlav:popcornSmeson" default="0.5" min="0." max="1.0"> 
+extra suppression for having a strange meson <ei>M</ei> in a 
+<ei>B M Bbar</ei> configuration. 
+</parm> 
+ 
+<p/> 
+Finally, there are some indications that leading-baryon production 
+may be further suppressed. A proper description should probably be 
+based on a suppression of early production times <ref>Ede97</ref>, 
+but we here only implement a simpler version where production near 
+the end of a string, as defined by rank, is suppressed. The more 
+detailed studies suggest that leading <ei>c</ei> and <ei>b</ei> baryon 
+production will be less suppressed, so we leave it open to set 
+light- and heavy-baryon suppression separately. 
+ 
+<flag name="StringFlav:suppressLeadingB" default="off"> 
+Suppress leading-baryon production. 
+<option value="off">No suppression.</option> 
+<option value="on">Suppress the production of a diquark in the string 
+breaking closest to a quark end of a string, by either of the factors 
+below. This suppresses the production of first-rank baryons by the same 
+amount. Indirectly also the second-rank and, if popcorn production is 
+switched on, third-rank (anti)baryon production is affected. </option> 
+</flag> 
+ 
+<parm name="StringFlav:lightLeadingBSup" default="0.5" min="0." max="1.0"> 
+extra suppression of leading-baryon production for a light-quark 
+jet, i.e. <ei>d</ei>, <ei>u</ei> or <ei>s</ei>, when 
+<code>suppressLeadingB = on</code>. Thus 0 means no leading-baryon 
+production at all, while 1 means full rate. 
+</parm> 
+ 
+<parm name="StringFlav:heavyLeadingBSup" default="0.9" min="0." max="1.0"> 
+extra suppression of leading-baryon production for a heavy-quark 
+jet, i.e. <ei>c</ei> or <ei>b</ei>, when 
+<code>suppressLeadingB = on</code>. Thus 0 means no leading-baryon 
+production at all, while 1 means full rate. 
+</parm> 
+ 
+<br/><br/><hr/> 
+<h3>Flavour Selection for Thermal <ei>pT</ei> Distribution</h3> 
+ 
+If the hadronic <ei>pT</ei> is generated according to the non-default 
+thermal distribution, i.e. if <code>StringPT:thermalModel = on</code>, 
+the choice of a new flavour in the fragmentation process, and the 
+production of a new hadron from a set of input flavours, depends mainly on 
+the hadron mass <ref>Fis16</ref>. For a given <ei>pT</ei> value the new 
+flavour is chosen according to 
+<eq> 
+  exp( -mT_had/T) = exp( - sqrt( pT_had^2 + mT_had^2 )/T). 
+</eq> 
+Here <ei>T</ei> is primarily given by <code>StringPT:temperature</code>, 
+but can be further modified in the context of closely packed strings, 
+<code>StringPT:closePacking = on</code>. 
+Additional factors are included from theory arguments, for instance 
+the ratio of vector-to-pseudocalar meson production is set according 
+to spin-counting rules. 
+Note that the octet-singlet mixing angles in the light-quark meson 
+nonets are taken from the parameters above. 
+Currently popcorn production has not been implemented, i.e. a baryon 
+and an antibaryon are nearest neighbours in the flavour fragmentation 
+chain, and share the flavours of one diquark. 
+In addition the following two factors are introduced to provide an 
+improved description of the flavour composition, although not as good 
+as obtained in the default Gaussian scenario, with its bigger selection 
+of free parameters. 
+ 
+<p/> 
+<parm name="StringFlav:BtoMratio" default="0.357" min="0.1" max="10.0"> 
+Ratio of the relative rate of baryon to meson production, i.e. every 
+baryon Clebsch-Gordan coefficient gets multiplied by this factor. 
+</parm> 
+ 
+<p/> 
+<parm name="StringFlav:StrangeSuppression" default="0.5" min="0.01" max="1.0"> 
+Extra suppression factor for strange quarks. Note that in case of more 
+than one strange quark in the hadron the factor gets squared or tripled 
+respectively. 
+</parm> 
+ 
+<p/> 
+The following parameters are used to determine which hadrons to choose 
+from. By default only the pseudoscalar and vector meson nonet (L=0) 
+and baryons with u/d/s quarks are included. For an already-existing 
+heavier flavour, say c or b, this corresponds to picking only u/d/s 
+for the new quark(s). 
+<note>Note:</note> The computer time for selecting the flavour of new 
+hadrons goes linearly with the number of hadrons included. Therefore 
+we recommend sticking to the default options as heavier hadrons are 
+produced less likely anyway. 
+ 
+<mode name="StringFlav:nQuark" default="3" min="3" max="5"> 
+Selects the newly produced quark flavours that may be included in hadrons. 
+The default corresponds to only include u/d/s quarks. 
+</mode> 
+ 
+<flag name="StringFlav:mesonNonetL1" default="off"> 
+Switch on to include the pseudovector, scalar, pseudovector, and tensor 
+nonet (L=1). 
+</flag> 
+ 
+</chapter> 
+ 
+<!-- Copyright (C) 2019 Torbjorn Sjostrand --> 
