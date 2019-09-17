@@ -133,14 +133,10 @@ void AliAnalysisTaskUpcRho0::LocalInit()
 		std::cout<<"Using efficiency file: "<<fEfficiencyFileName<<std::endl;
 		if (fEfficiencyFileName.Contains("alien")) fSPDfile = TFile::Open(fEfficiencyFileName.Data());  // private efficiency file
 		else fSPDfile = AliDataFile::OpenOADB(fEfficiencyFileName.Data()); // open OADB effciency file
-		fSPDfile->Print();
-		fSPDfile->Map();
-		hSPDeff = (TH2D*) fSPDfile->Get("hEff");
-		hSPDeff->SetDirectory(0);
-		TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
-		hBCmod4_2D->SetDirectory(0);
-		hBCmod4 = hBCmod4_2D->ProjectionY();
-		fSPDfile->Close();
+		if (!fSPDfile) {
+			std::cout<<"Efficiency file cannot be open..."<<std::endl;
+			return;
+		}
 	}
 }
 
@@ -234,6 +230,17 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	// eta-phi
 	EtaPhiP = new TH2F("EtaPhiP","EtaPhiP",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiP);
 	EtaPhiN = new TH2F("EtaPhiN","EtaPhiN",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiN);
+
+	if (isUsingEffi){
+		fSPDfile->Print();
+		fSPDfile->Map();
+		hSPDeff = (TH2D*) (fSPDfile->Get("hEff")->Clone());
+		hSPDeff->SetDirectory(0);
+		TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
+		hBCmod4 = (TH1D*)(hBCmod4_2D->ProjectionY()->Clone());
+		hBCmod4->SetDirectory(0);
+		fSPDfile->Close();
+	}
 
 	PostData(1, fRhoTree);
 	PostData(2, fListHist);
