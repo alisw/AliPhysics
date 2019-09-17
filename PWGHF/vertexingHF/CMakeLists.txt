@@ -17,21 +17,26 @@
 set(MODULE PWGHFvertexingHF)
 add_definitions(-D_MODULE_="${MODULE}")
 add_subdirectory (TMVA)
+add_subdirectory (vHFBDT)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
 
+include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT)
+
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-		    ${AliPhysics_SOURCE_DIR}/OADB
-		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/ML
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
-		    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
+                    ${TREELITE_ROOT}/include
   )
 
 # Sources - alphabetical order
@@ -74,8 +79,8 @@ set(SRCS
   AliAnalysisTaskSECleanupVertexingHF.cxx
   AliAnalysisTaskSECompareHF.cxx
   AliAnalysisTaskSEDplus.cxx
-  AliAnalysisTaskSEDs.cxx
   AliAnalysisTaskSELambdac.cxx
+  AliAnalysisTaskSED0BDT.cxx
   AliAnalysisTaskSED0Mass.cxx
   AliAnalysisTaskSED0MassTMVA.cxx
   AliAnalysisTaskSELambdacTMVA.cxx
@@ -153,7 +158,16 @@ set(SRCS
   AliAnalysisTaskSEHFSystPID.cxx
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
   AliAnalysisTaskSEXicTopKpi.cxx
+  AliRDHFCutsXictopKpi.cxx
    )
+
+# Sources for ROOT6 only - alphabetical order
+if(ROOT_VERSION_MAJOR EQUAL 6)
+  set(SRCS
+      ${SRCS}
+      AliAnalysisTaskSEDs.cxx
+  )
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -169,7 +183,11 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface TMVA)
+set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT)
+# Dependencies for ROOT6 only
+if(ROOT_VERSION_MAJOR EQUAL 6)
+  set(LIBDEPS ${LIBDEPS} ML)
+endif()
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

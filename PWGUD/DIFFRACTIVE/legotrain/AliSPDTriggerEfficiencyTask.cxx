@@ -165,7 +165,6 @@ void AliSPDTriggerEfficiencyTask::UserExec(Option_t *){
   if (fVtxX<-0.5 || fVtxX>0.5 || fVtxY<-0.5 || fVtxY>1.0 || fVtxContributors<2) 
   { PostData(1,fListOfHistos); return; }
   
-  
   fTracks->Clear();
   for (Int_t ipart=0;ipart<fInputEvent->GetNumberOfTracks();ipart++){
     AliESDtrack* track = (AliESDtrack*) fInputEvent->GetTrack(ipart);
@@ -178,35 +177,22 @@ void AliSPDTriggerEfficiencyTask::UserExec(Option_t *){
     UInt_t filterMap = 0;
     filterMap |= isBit0 << 0;
     filterMap |= isBit5 << 5;
-    Float_t pt     = track->Pt();
-    Float_t eta    = track->Eta();
-    Float_t phi0   = track->Phi();
-    Short_t charge = track->Charge();
-    Int_t   label  = track->GetLabel();
-    ULong_t status = track->GetStatus();
-    Int_t crossedRows = track->GetTPCCrossedRows();
-    Int_t indexITSModule0 = track->GetITSModuleIndex(0);
-    Int_t indexITSModule1 = track->GetITSModuleIndex(1);
-    Int_t indexITSModule6 = track->GetITSModuleIndex(6);
-    Int_t indexITSModule7 = track->GetITSModuleIndex(7);
-    float* fitsMap          = (float *) &itsMap;
-    float* fstatus          = (float *) &status;
-    float* ffilterMap       = (float *) &filterMap;
-    float* fcrossedRows     = (float *) &crossedRows;
-    float* findexITSModule0 = (float *) &indexITSModule0;
-    float* findexITSModule1 = (float *) &indexITSModule1;
-    float* findexITSModule6 = (float *) &indexITSModule6;
-    float* findexITSModule7 = (float *) &indexITSModule7;
-    
-    AliUpcParticle* part = new ((*fTracks)[fTracks->GetEntriesFast()]) AliUpcParticle(pt,eta,phi0,charge,label,8);
-    part->SetAt(*(fitsMap)         ,0);
-    part->SetAt(*(fstatus)         ,1);
-    part->SetAt(*(ffilterMap)      ,2);
-    part->SetAt(*(fcrossedRows)    ,3);
-    part->SetAt(*(findexITSModule0),4);
-    part->SetAt(*(findexITSModule1),5);
-    part->SetAt(*(findexITSModule6),6);
-    part->SetAt(*(findexITSModule7),7);
+    Double_t p[3];
+    track->GetPxPyPz(p);
+    AliUpcParticle* part = new ((*fTracks)[fTracks->GetEntriesFast()]) AliUpcParticle(10,3);
+    part->SetI(0,track->Charge());
+    part->SetI(1,track->GetLabel());
+    part->SetI(2,track->GetITSClusterMap());
+    part->SetI(3,track->GetStatus());
+    part->SetI(4,filterMap);
+    part->SetI(5,track->GetTPCCrossedRows());
+    part->SetI(6,track->GetITSModuleIndex(0));
+    part->SetI(7,track->GetITSModuleIndex(1));
+    part->SetI(8,track->GetITSModuleIndex(6));
+    part->SetI(9,track->GetITSModuleIndex(7));
+    part->SetF(0,p[0]);
+    part->SetF(1,p[1]);
+    part->SetF(2,p[2]);
   }
 
   fTree->Fill();

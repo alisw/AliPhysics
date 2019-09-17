@@ -346,6 +346,7 @@ class AliReducedVarManager : public TObject {
     kSPDFiredChips = kCorrectedMultiplicity + kNMultiplicityEstimators * ( 1 + kNCorrections * kNReferenceMultiplicities * kNSmearingMethods), // SPD fired chips in first and second layer
     kITSnClusters=kSPDFiredChips+2,        // number of ITS clusters in each layer
     kSPDnSingleClusters=kITSnClusters+6,   // number of clusters in SPD layer 1 not mached to tracklets from layer 2
+    kSDDandSSDclusters,                    // number of clusters in the SDD and SSD layers
     kEventMixingId,     // Id of the event mixing category 
     // VZERO event plane related variables
     kVZEROCurrentChannel,         // current VZERO channel
@@ -656,6 +657,8 @@ class AliReducedVarManager : public TObject {
     kTriggerRapAbs,   // absolute rapidity of J/psi candidate
     kAssociatedPt,          // pt of associated track
     kAssociatedPtBoosted,   // pt of associated track, after boost to trigger rest frame
+    kAssociatedPtOverTriggerGammaT, // pt of associated track / transverse gamma of J/psi candidate
+    kTriggerGammaT,                 // transverse gamma of J/psi candidate
     kAssociatedEta,         // eta of associated track
     kAssociatedEtaBoosted,
     kAssociatedPhi,         // phi of associated track

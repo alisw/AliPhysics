@@ -67,6 +67,7 @@ public:
 #endif
   bool IsSelectEmcalTriggers(EMCAL_STRINGVIEW triggerstring) const;
   std::string MatchTrigger(EMCAL_STRINGVIEW striggerstring, EMCAL_STRINGVIEW triggerselectionstring, bool useMuonCalo = false) const;
+  std::string GetNameTriggerCluster(TriggerCluster_t clust) const;
 
   ClassDef(AliAnalysisEmcalTriggerSelectionHelperImpl, 1);
 };

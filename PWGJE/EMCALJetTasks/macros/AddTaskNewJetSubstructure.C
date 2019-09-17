@@ -68,14 +68,14 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
   //Printf("tracksUS() = %s", ntracksUS);
   AliParticleContainer *trackContTrue = task->AddMCParticleContainer(ntracksTrue);
   //Printf("ntracksTrue() = %s, trackContTrue=%p ", ntracksTrue, trackContTrue);
-  
+   if (jetShapeType==AliAnalysisTaskNewJetSubstructure::kDetEmbPartPythia) trackContTrue->SetIsEmbedding(true);
   AliParticleContainer *trackContPartLevel=0;
   
   if ((jetShapeSub==AliAnalysisTaskNewJetSubstructure::kConstSub) && ((jetShapeType==AliAnalysisTaskNewJetSubstructure::kMCTrue) || (jetShapeType==AliAnalysisTaskNewJetSubstructure::kPythiaDef))){
     trackContPartLevel = task->AddParticleContainer(ntracksPartLevel);
   }
   else trackContPartLevel = task->AddMCParticleContainer(ntracksPartLevel);
-  
+    if (jetShapeType==AliAnalysisTaskNewJetSubstructure::kDetEmbPartPythia) trackContPartLevel->SetIsEmbedding(true);
    //Printf("ntracksPartLevel() = %s, trackContPartLevel=%p ", ntracksPartLevel, trackContPartLevel);
   
 
@@ -122,6 +122,7 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
 
     jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
     if(jetContTrue) {
+      
       jetContTrue->SetRhoName(nrhoBase);
       jetContTrue->ConnectParticleContainer(trackContTrue);
       jetContTrue->SetPercAreaCut(acut); 
@@ -140,6 +141,7 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
  
      jetContPart = task->AddJetContainer(njetsPartLevel,strType,R);
       if(jetContPart) {
+
         jetContPart->SetRhoName(nrhoBase);
         jetContPart->ConnectParticleContainer(trackContPartLevel);
         jetContPart->SetPercAreaCut(acut);

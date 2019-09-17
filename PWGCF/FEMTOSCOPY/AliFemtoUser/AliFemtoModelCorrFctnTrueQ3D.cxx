@@ -44,12 +44,59 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix
 }
 
 
-AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
-                                                           UInt_t nbins,
-                                                           Double_t qmin,
-                                                           Double_t qmax,
-                                                           Bool_t enable_extra_hists,
-                                                           Bool_t enable_extra_denominators):
+AliFemtoModelCorrFctnTrueQ3D
+  ::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
+                                 UInt_t nbins,
+                                 Double_t qmin,
+                                 Double_t qmax,
+                                 Bool_t enable_extra_hists,
+                                 Bool_t enable_extra_denominators):
+  AliFemtoModelCorrFctnTrueQ3D(prefix,
+                               nbins / 2 + 1, nbins, nbins,
+                               qmax, qmax, qmax,
+                               enable_extra_hists,
+                               enable_extra_denominators)
+{
+}
+
+AliFemtoModelCorrFctnTrueQ3D
+  ::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
+                                 UInt_t nbo,
+                                 UInt_t nbs,
+                                 UInt_t nbl,
+                                 Double_t qoutmax,
+                                 Double_t qsidemax,
+                                 Double_t qlongmax,
+                                 Bool_t enable_extra_hists,
+                                 Bool_t enable_extra_denominators):
+  AliFemtoModelCorrFctnTrueQ3D(prefix,
+                               nbo,
+                               nbs,
+                               nbl,
+                               0.0,
+                               qoutmax,
+                               -qsidemax,
+                               qsidemax,
+                               -qlongmax,
+                               qlongmax,
+                               enable_extra_hists,
+                               enable_extra_denominators)
+{
+}
+
+AliFemtoModelCorrFctnTrueQ3D
+  ::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix,
+                                 UInt_t nbo,
+                                 UInt_t nbs,
+                                 UInt_t nbl,
+                                 Double_t qoutmin,
+                                 Double_t qoutmax,
+                                 Double_t qsidemin,
+                                 Double_t qsidemax,
+                                 Double_t qlongmin,
+                                 Double_t qlongmax,
+                                 Bool_t enable_extra_hists,
+                                 Bool_t enable_extra_denominators):
   AliFemtoCorrFctn()
   , fManager(nullptr)
   , fNumeratorGenerated(nullptr)
@@ -66,9 +113,9 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix
     {
       return new TH3F(prefix + name,
                       title + "; q_{out} (GeV); q_{side} (GeV); q_{long} (Gev)",
-                      nbins / 2 + 1, 0.0, qmax,
-                      nbins, qmin, qmax,
-                      nbins, qmin, qmax);
+                      nbo, 0.0, qoutmax,
+                      nbs, qsidemin, qsidemax,
+                      nbl, qlongmin, qlongmax);
     };
 
   fNumeratorGenerated = new_th3("NumGen", "Numerator (MC-Generated Momentum)");
@@ -105,9 +152,15 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_
 
 AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const Parameters &params):
   AliFemtoModelCorrFctnTrueQ3D(params.prefix.Data(),
-                               params.bin_count,
-                               params.qmin,
-                               params.qmax,
+                               params.bin_count_out,
+                               params.bin_count_side,
+                               params.bin_count_long,
+                               params.qomin,
+                               params.qomax,
+                               params.qsmin,
+                               params.qsmax,
+                               params.qlmin,
+                               params.qlmax,
                                params.enable_extra_hists,
                                params.enable_extra_denoms)
 {
@@ -193,11 +246,12 @@ AliFemtoModelCorrFctnTrueQ3D::operator=(const AliFemtoModelCorrFctnTrueQ3D &rhs)
 {
   AliFemtoCorrFctn::operator=(rhs);
 
+  fManager = rhs.fManager;
+
   *fNumeratorGenerated = *rhs.fNumeratorGenerated;
   *fNumeratorReconstructed = *rhs.fNumeratorReconstructed;
   *fDenominatorGenerated = *rhs.fDenominatorGenerated;
   *fDenominatorReconstructed = *rhs.fDenominatorReconstructed;
-
 
   auto copy_if_present = [] (const TH3F* src, TH3F *&dest)
     {
@@ -207,7 +261,7 @@ AliFemtoModelCorrFctnTrueQ3D::operator=(const AliFemtoModelCorrFctnTrueQ3D &rhs)
       else if (src) {
         dest = new TH3F(*src);
       }
-      else {
+      else if (dest) {
         delete dest;
         dest = nullptr;
       }
@@ -274,37 +328,28 @@ AliFemtoModelCorrFctnTrueQ3D::AddOutputObjectsTo(TCollection &list)
 /// Return q{Out-Side-Long} tuple, calculated from momentum vectors p1 & p2
 static
 std::tuple<Double_t, Double_t, Double_t>
-Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
+Qlcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
 {
   const AliFemtoLorentzVector p = p1 + p2,
                               d = p1 - p2;
 
   #define FAST_DIVIDE(num, den) __builtin_expect(den == 0.0, false) ? 0.0 : num / den
 
-  Double_t k1 = p.Perp(),
-           k2 = d.x()*p.x() + d.y()*p.y();
+  const Double_t
+    pt = p.Perp(),
+    beta = p.z()/p.t(),
+    gamma = 1.0 / TMath::Sqrt(1.0-beta*beta),
 
-  // relative momentum out component in lab frame
-  Double_t qout = FAST_DIVIDE(k2, k1);
-
-  // relative momentum side component in lab frame
-  Double_t qside = FAST_DIVIDE(2.0 * (p2.x()*p1.y() - p1.x()*p2.y()), k1);
-
-  // relative momentum component in lab frame
-  Double_t beta = p.z()/p.t(),
-          gamma = 1.0 / TMath::Sqrt((1.0-beta)*(1.0+beta));
-
-  Double_t qlong = gamma * (d.z() - beta*d.t());
+    qout = FAST_DIVIDE(d.x()*p.x() + d.y()*p.y(), pt),
+    qside = FAST_DIVIDE(2.0 * (p2.x()*p1.y() - p1.x()*p2.y()), pt),
+    qlong = gamma * (d.z() - beta*d.t());
 
   #undef FAST_DIVIDE
 
   // "flip" into positive qout region
-  Double_t factor = std::copysign(1.0, qout);
-  qout *= factor;
-  qside *= factor;
-  qlong *= factor;
+  const Double_t f = std::copysign(1.0, qout);
 
-  return std::make_tuple(qout, qside, qlong);
+  return std::make_tuple(f * qout, f * qside, f * qlong);
 }
 
 
@@ -319,7 +364,7 @@ fill_hists(TH3 *dest,
            double weight)
 {
   Double_t q_out, q_side, q_long;
-  std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
+  std::tie(q_out, q_side, q_long) = Qlcms(p1, p2);
 
   TH3 *hist = dest ? dest : dest_unweighted;
 
@@ -409,12 +454,17 @@ AliFemtoModelCorrFctnTrueQ3D::AddMixedPair(AliFemtoPair *pair)
   const AliFemtoParticle *p1 = pair->Track1(),
                          *p2 = pair->Track2();
 
+  // skip weight calculation if we are not storing it
+  const double weight = fDenominatorGenWeighted != nullptr
+                      ? fManager->GetWeight(pair)
+                      : 0.0;
+
   AddPair(*p1, *p2,
           fDenominatorGenWeighted,
           fDenominatorRecWeighted,
           fDenominatorGenerated,
           fDenominatorReconstructed,
-          fManager->GetWeight(pair));
+          weight);
 }
 
 

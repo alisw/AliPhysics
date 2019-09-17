@@ -174,7 +174,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fBin_h .Set("NH","NH","NH:%d", AliJBin::kSingle).SetBin(kNH);
 	fBin_k .Set("K","K","K:%d", AliJBin::kSingle).SetBin(nKL);
 
-	fBin_hh .Set("NHH","NHH","NHH:%d", AliJBin::kSingle).SetBin(kNH);
+	fBin_hh .Set("NHH","NHH","NHH:%d", AliJBin::kSingle).SetBin(kcNH);
 	fBin_kk .Set("KK","KK","KK:%d", AliJBin::kSingle).SetBin(nKL);
 
 	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(NCentBin);
@@ -185,7 +185,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	// set AliJTH1D here //
 	fh_cent
-		<< TH1D("h_cent","h_cent", 400, 0, 100)
+		<< TH1D("h_cent","h_cent", 200, 0, 100)
 		<< "END" ;
 
 	fh_ImpactParameter
@@ -241,17 +241,17 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< "END" ;
 
 	fh_vn
-		<< TH1D("hvn","hvn", 1024, -1.5, 1.5)
+		<< TH1D("hvn","hvn", 1024, -0.1, 0.1)
 		<< fBin_h << fBin_k
 		<< fHistCentBin
 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent]
 	fh_vna
-		<< TH1D("hvna","hvna", 1024, -1.5, 1.5)
+		<< TH1D("hvna","hvna", 1024, -0.1, 0.1)
 		<< fBin_h << fBin_k
 		<< fHistCentBin
 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent]
 	fh_vn_vn
-		<< TH1D("hvn_vn", "hvn_vn", 1024, -1.5, 1.5)
+		<< TH1D("hvn_vn", "hvn_vn", 1024, -0.1, 0.1)
 		<< fBin_h << fBin_k
 		<< fBin_hh << fBin_kk
 		<< fHistCentBin
@@ -284,7 +284,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fHistCentBin
 		<< "END";*/
 	fh_correlator
-		<< TH1D("h_corr", "h_corr", 1024, -1.5, 1.5)
+		<< TH1D("h_corr", "h_corr", 1024, -3.0, 3.0)
 		<< fCorrBin
 		<< fHistCentBin
 		<< "END" ;
@@ -336,7 +336,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 //________________________________________________________________________
 AliJFFlucAnalysis::~AliJFFlucAnalysis() {
-	delete fInputList;
 	delete fHMG;
 	delete fEfficiency;
 }
@@ -380,7 +379,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 	enum{kSubA, kSubB, kNSub};
 	enum{kMin, kMax};
-	enum{kReal, kImg, kNPhase};
 	Double_t Eta_config[kNSub][2];
 	Eta_config[kSubA][kMin] = fEta_min;  // 0.4 min for SubA
 	Eta_config[kSubA][kMax] = fEta_max;  // 0.8 max for SubA
@@ -412,7 +410,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 	TComplex corr[kNH][nKL];
 	TComplex ncorr[kNH][nKL];
-	TComplex ncorr2[kNH][nKL][kNH][nKL];
+	TComplex ncorr2[kNH][nKL][kcNH][nKL];
 
 	const TComplex (*pQq)[kNH][nKL] = QvectorQCeta10;
 
@@ -471,7 +469,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			for(int ik=4; ik<nKL; ik++)
 				ncorr[ih][ik] = corr[ih][ik]; //for 8,...-particle correlations, ignore the autocorrelation / weight dependency for now
 
-			for(int ihh=2; ihh<kNH; ihh++){
+			for(int ihh=2; ihh<kcNH; ihh++){
 				ncorr2[ih][1][ihh][1] = FourGap22(pQq,i,ih,ihh,ih,ihh);
 				ncorr2[ih][1][ihh][2] = SixGap33(pQq,i,ih,ihh,ihh,ih,ihh,ihh);
 				ncorr2[ih][2][ihh][1] = SixGap33(pQq,i,ih,ih,ihh,ih,ih,ihh);
@@ -486,7 +484,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 				vn2[ih][ik] = corr[ih][ik].Re()/ref_2Np[ik-1];
 				fh_vn[ih][ik][fCBin]->Fill(vn2[ih][ik],ebe_2Np_weight[ik-1]);
 				fh_vna[ih][ik][fCBin]->Fill(ncorr[ih][ik].Re()/ref_2Np[ik-1],ebe_2Np_weight[ik-1]);
-				for(int ihh=2; ihh<kNH; ihh++){
+				for(int ihh=2; ihh<kcNH; ihh++){
 					for(int ikk=1; ikk<nKL; ikk++){
 						vn2_vn2[ih][ik][ihh][ikk] = ncorr2[ih][ik][ihh][ikk]/ref_2Np[ik+ikk-1];//(ncorr[ih][ik]*ncorr[ihh][ikk]).Re()/ref_2Np[ik+ikk-1];
 						fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill(vn2_vn2[ih][ik][ihh][ikk],ebe_2Np_weight[ik+ikk-1]); // Fill hvn_vn
@@ -584,7 +582,8 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	}
 
 	for(int ih=2; ih < kNH; ih++){
-		for(int ihh=2; ihh<ih; ihh++){
+		//for(int ihh=2; ihh<ih; ihh++){ //all SC
+		for(int ihh=2, mm = (ih < kcNH?ih:kcNH); ihh<mm; ihh++){ //limited
 			TComplex scfour = Four( ih, ihh, -ih, -ihh ) / Four(0,0,0,0).Re();
 			
 			fh_SC_with_QC_4corr[ih][ihh][fCBin]->Fill( scfour.Re(), event_weight_four );

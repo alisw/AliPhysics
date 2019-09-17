@@ -58,7 +58,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fLowGain(kFALSE),
   fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),     fDoUseMergedBC(kFALSE),
   fUseRunCorrectionFactors(kFALSE),       
-  fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),
+  fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),                  fUse1Dmap(kFALSE),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
   fRejectExoticCluster(kFALSE),           fRejectExoticCells(kFALSE), 
   fExoticCellFraction(0),                 fExoticCellDiffTime(0),                 fExoticCellMinAmplitude(0),
@@ -116,7 +116,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fDoUseMergedBC(reco.fDoUseMergedBC),
   fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   
   fRemoveBadChannels(reco.fRemoveBadChannels),               fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
-  fEMCALBadChannelMap(NULL),
+  fEMCALBadChannelMap(NULL),                                 fUse1Dmap(reco.fUse1Dmap),
   fNCellsFromEMCALBorder(reco.fNCellsFromEMCALBorder),       fNoEMCALBorderAtEta0(reco.fNoEMCALBorderAtEta0),
   fRejectExoticCluster(reco.fRejectExoticCluster),           fRejectExoticCells(reco.fRejectExoticCells), 
   fExoticCellFraction(reco.fExoticCellFraction),             fExoticCellDiffTime(reco.fExoticCellDiffTime),               
@@ -210,6 +210,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   
   fRemoveBadChannels         = reco.fRemoveBadChannels;
   fRecalDistToBadChannels    = reco.fRecalDistToBadChannels;
+  fUse1Dmap                  = reco.fUse1Dmap;
   
   fNCellsFromEMCALBorder     = reco.fNCellsFromEMCALBorder;
   fNoEMCALBorderAtEta0       = reco.fNoEMCALBorderAtEta0;
@@ -430,7 +431,12 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   // Do not include bad channels found in analysis,
   if ( IsBadChannelsRemovalSwitchedOn() )
   {
-    Bool_t bad = GetEMCALChannelStatus(imod, ieta, iphi,status);
+    Bool_t bad = kFALSE;
+
+    if(fUse1Dmap)
+      bad = GetEMCALChannelStatus1D(absID,status);
+    else
+      bad = GetEMCALChannelStatus(imod, ieta, iphi,status);
     
     if ( status > 0 )
       AliDebug(1,Form("Channel absId %d, status %d, set as bad %d",absID, status, bad));
@@ -576,10 +582,19 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
     geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);      
     
     Int_t status = 0;
-    if (GetEMCALChannelStatus(imod, icol, irow, status)) 
-    {
-      AliDebug(2,Form("Cluster with bad channel: SM %d, col %d, row %d, status %d\n",imod, icol, irow, status));
-      return kTRUE;
+
+    if(fUse1Dmap){
+      if (GetEMCALChannelStatus1D(cellList[iCell], status)) 
+      {
+        AliDebug(2,Form("Cluster with bad channel: ID %d, status %d\n",cellList[iCell], status));
+        return kTRUE;
+      }
+    }else{
+      if (GetEMCALChannelStatus(imod, icol, irow, status)) 
+      {
+        AliDebug(2,Form("Cluster with bad channel: SM %d, col %d, row %d, status %d\n",imod, icol, irow, status));
+        return kTRUE;
+      }
     }
   }// cell cluster loop
 
@@ -1363,11 +1378,20 @@ void AliEMCALRecoUtils::SetEMCALBadChannelStatusSelection(Bool_t all, Bool_t dea
 //____________________________________________________________________
 Bool_t AliEMCALRecoUtils::GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Int_t & status) const 
 { 
-  if(fEMCALBadChannelMap) 
-    status = (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
-  else 
-    status = 0; // Channel is ok by default
-  
+  if(!fUse1Dmap){
+    if(fEMCALBadChannelMap) 
+      status = (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
+    else 
+      status = 0; // Channel is ok by default
+  }else{
+    AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+    Int_t CellID = geom->GetAbsCellIdFromCellIndexes(iSM, iCol, iRow);
+    if(fEMCALBadChannelMap) 
+      status = (Int_t) ((TH1C*)fEMCALBadChannelMap->At(0))->GetBinContent(CellID); 
+    else 
+      status = 0; // Channel is ok by default
+  }
+
   if ( status == AliCaloCalibPedestal::kAlive ) 
   {
     return kFALSE; // Good channel
@@ -1395,6 +1419,55 @@ Bool_t AliEMCALRecoUtils::GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iR
   AliWarning(Form("Careful, bad channel selection not properly done: ism %d, icol %d, irow %d, status %d,\n"
                   " fBadAll %d, fBadHot %d, fBadWarm %d, fBadDead %d",
                   iSM, iCol, iRow, status,
+                  fBadStatusSelection[0], fBadStatusSelection[1],
+                  fBadStatusSelection[2], fBadStatusSelection[3]));
+  
+  return kFALSE; // if everything fails, accept it.
+}
+
+///
+/// \return declare channel as bad (true) or not good (false)
+/// By default if status is not kAlive, all are declared bad,
+/// but optionnaly 
+///
+/// \param iCell: cell ID
+/// \param status: channel status
+///
+//____________________________________________________________________
+Bool_t AliEMCALRecoUtils::GetEMCALChannelStatus1D(Int_t iCell, Int_t & status) const 
+{ 
+  if(fEMCALBadChannelMap) 
+    status = (Int_t) ((TH1C*)fEMCALBadChannelMap->At(0))->GetBinContent(iCell); 
+  else 
+    status = 0; // Channel is ok by default
+  
+  if ( status == AliCaloCalibPedestal::kAlive ) 
+  {
+    return kFALSE; // Good channel
+  }
+  else
+  {
+    if      ( fBadStatusSelection[0]  == kTRUE ) 
+    {
+      return kTRUE; // consider bad hot, dead and warm
+    }
+    else
+    {
+      if      ( fBadStatusSelection[AliCaloCalibPedestal::kDead]    == kTRUE  && 
+                status == AliCaloCalibPedestal::kDead    ) 
+        return kTRUE; // consider bad dead
+      else if ( fBadStatusSelection[AliCaloCalibPedestal::kHot]     == kTRUE  && 
+                status == AliCaloCalibPedestal::kHot     ) 
+        return kTRUE; // consider bad hot
+      else if ( fBadStatusSelection[AliCaloCalibPedestal::kWarning] == kTRUE  && 
+                status == AliCaloCalibPedestal::kWarning ) 
+        return kTRUE; // consider bad warm 
+    }
+  }
+  
+  AliWarning(Form("Careful, bad channel selection not properly done: icell %d, status %d,\n"
+                  " fBadAll %d, fBadHot %d, fBadWarm %d, fBadDead %d",
+                  iCell, status,
                   fBadStatusSelection[0], fBadStatusSelection[1],
                   fBadStatusSelection[2], fBadStatusSelection[3]));
   
@@ -1699,6 +1772,30 @@ void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()
   
   for (int i = 0; i < 22; i++) 
     fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_Mod%d",i),Form("EMCALBadChannelMap_Mod%d",i), 48, 0, 48, 24, 0, 24));
+  
+  fEMCALBadChannelMap->SetOwner(kTRUE);
+  fEMCALBadChannelMap->Compress();
+  
+  // In order to avoid rewriting the same histograms
+  TH1::AddDirectory(oldStatus);    
+}
+
+///
+/// Init EMCAL bad channels 1 dimensional map container
+///
+//____________________________________________________
+void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap1D()
+{
+  AliDebug(2,"AliEMCALRecoUtils::InitEMCALBadChannelStatusMap1D()");
+
+  fUse1Dmap = kTRUE;
+  // In order to avoid rewriting the same histograms
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  
+  fEMCALBadChannelMap = new TObjArray(1);
+  
+  fEMCALBadChannelMap->Add(new TH1C("EMCALBadChannelMap","EMCALBadChannelMap", 48*24*22,0.,48*24*22));
   
   fEMCALBadChannelMap->SetOwner(kTRUE);
   fEMCALBadChannelMap->Compress();
@@ -2245,8 +2342,14 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
   Int_t absIdMax  = -1, iSupMod =-1, icolM = -1, irowM = -1;
   Bool_t shared = kFALSE;
   GetMaxEnergyCell(geom, cells, cluster, absIdMax,  iSupMod, icolM, irowM, shared);
-  TH2D* hMap  = (TH2D*)fEMCALBadChannelMap->At(iSupMod);
+  TH2D* hMap  = 0x0;
+  TH1C* hMap1D = 0x0;
 
+  if(!fUse1Dmap) 
+    hMap  = (TH2D*)fEMCALBadChannelMap->At(iSupMod);
+  else
+    hMap1D  = (TH1C*)fEMCALBadChannelMap->At(0);
+    
   Int_t dRrow, dRcol;  
   Float_t  minDist = 10000.;
   Float_t  dist    = 0.;
@@ -2257,7 +2360,14 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
     for (Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++)
     {
       // Check if tower is bad.
-      if (hMap->GetBinContent(icol,irow)==0) continue;
+      Int_t status=0;
+      if (fUse1Dmap)
+        status = hMap1D->GetBinContent(geom->GetAbsCellIdFromCellIndexes(iSupMod, icol, irow));
+      else
+        status = hMap->GetBinContent(icol,irow);
+
+      if(status==0) continue;
+      
       //printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels() - \n \t Bad channel in SM %d, col %d, row %d, \n \t Cluster max in col %d, row %d\n",
       //       iSupMod,icol, irow, icolM,irowM);
       
@@ -2276,12 +2386,18 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
   if (shared) 
   {
     TH2D* hMap2 = 0;
+    TH1C* hMap1D2 = 0;
     Int_t iSupMod2 = -1;
     
     // The only possible combinations are (0,1), (2,3) ... (8,9)
     if (iSupMod%2) iSupMod2 = iSupMod-1;
     else           iSupMod2 = iSupMod+1;
-    hMap2  = (TH2D*)fEMCALBadChannelMap->At(iSupMod2);
+
+    if(!fUse1Dmap) 
+      hMap2  = (TH2D*)fEMCALBadChannelMap->At(iSupMod2);
+    else
+      hMap1D2  = (TH1C*)fEMCALBadChannelMap->At(0);
+      
     
     // Loop on tower status map of second super module
     for (Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++)
@@ -2289,7 +2405,13 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
       for (Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++)
       {
         // Check if tower is bad.
-        if (hMap2->GetBinContent(icol,irow)==0)  continue;
+        Int_t status=0;
+        if (fUse1Dmap)
+          status = hMap1D2->GetBinContent(geom->GetAbsCellIdFromCellIndexes(iSupMod2, icol, irow));
+        else
+          status = hMap2->GetBinContent(icol,irow);
+
+        if(status==0) continue;
         
         //printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels(shared) - \n \t Bad channel in SM %d, col %d, row %d \n \t Cluster max in SM %d, col %d, row %d\n",
         //     iSupMod2,icol, irow,iSupMod,icolM,irowM);
@@ -3755,11 +3877,18 @@ void AliEMCALRecoUtils::SetEMCALChannelStatusMap(const TObjArray *map) {
     // Must claim ownership since the new objects are owend by this instance
     fEMCALBadChannelMap->SetOwner(true);
   }
-  for(int i = 0; i < map->GetEntries(); i++){
-    TH2I *hist = dynamic_cast<TH2I *>(map->At(i));
-    if(!hist) continue;
-    this->SetEMCALChannelStatusMap(i, hist);
+
+  if(!fUse1Dmap){
+    for(int i = 0; i < map->GetEntries(); i++){
+      TH2I *hist = dynamic_cast<TH2I *>(map->At(i));
+      if(!hist) continue;
+      this->SetEMCALChannelStatusMap(i, hist);
+    }
+  }else{
+    TH1C *hist = dynamic_cast<TH1C *>(map->At(0));
+    this->SetEMCALChannelStatusMap1D(hist);
   }
+
 }
 
 void AliEMCALRecoUtils::SetEMCALChannelStatusMap(Int_t iSM , const TH2I* h) {
@@ -3772,6 +3901,39 @@ void AliEMCALRecoUtils::SetEMCALChannelStatusMap(Int_t iSM , const TH2I* h) {
   TH2I *clone = new TH2I(*h);
   clone->SetDirectory(NULL);
   fEMCALBadChannelMap->AddAt(clone,iSM); 
+}
+
+void AliEMCALRecoUtils::SetEMCALChannelStatusMap1D(const TH1C* h) {
+  fUse1Dmap = kTRUE;
+  if(!fEMCALBadChannelMap){
+    fEMCALBadChannelMap = new TObjArray(1);
+    fEMCALBadChannelMap->SetOwner(true);
+  }
+  if(fEMCALBadChannelMap->At(0)) fEMCALBadChannelMap->RemoveAt(0);
+  TH1C *clone = new TH1C(*h);
+  clone->SetDirectory(NULL);
+  fEMCALBadChannelMap->AddAt(clone,0); 
+}
+
+TH2I* AliEMCALRecoUtils::GetEMCALChannelStatusMap(Int_t iSM) const{
+
+  if(!fUse1Dmap){
+    return (TH2I*)fEMCALBadChannelMap->At(iSM) ;
+  }else{
+    const  Double_t lowerLimit[]={0,1152,2304,3456,4608,5760,6912,8064,9216,10368,11520,11904,12288,13056,13824,14592,15360,16128,16896,17280};
+    const  Double_t upperLimit[]={1151 ,2303 ,3455 ,4607 ,5759 ,6911 ,8063 ,9215 ,10367,11519,11903,12287,13055,13823,14591,15359,16127,16895,17279,17663};
+
+    TH2I* hist = new TH2I(Form("EMCALBadChannelMap_Mod%d",iSM),Form("EMCALBadChannelMap_Mod%d",iSM), 48, 0, 48, 24, 0, 24);
+    AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+    Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+
+    for(Int_t iCell=lowerLimit[iSM]; iCell<upperLimit[iSM]; iCell++){
+      geom->GetCellIndex(iCell,imod,iTower,iIphi,iIeta); 
+      geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
+      hist->SetBinContent(iphi,ieta, (Int_t)((TH1C*)fEMCALBadChannelMap->At(0))->GetBinContent(iCell));
+    }
+    return hist;
+  }
 }
 
 void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(const TObjArray *map) { 

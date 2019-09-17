@@ -49,7 +49,7 @@ Double_t tuneMeanOnData=1.868; // if -1. use PDG value
 Bool_t tryDirectFit=kTRUE;
 Double_t fitSBrangelow[maxPtBins]={1.74,1.74,1.74,1.72,1.72,1.72,1.72,1.72};
 Double_t fitSBrangeup[maxPtBins]={2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.04};
-Int_t nDegreeBackPol[maxPtBins]={4,4,4,2,2,2,2,2};             // degree of polynomial function describing the background
+Int_t nDegreeBackPolSB[maxPtBins]={4,4,4,2,2,2,2,2};             // degree of polynomial function describing the background
 
 Int_t optForNorm=1;
 Double_t rangeForNorm=0.05;
@@ -60,6 +60,7 @@ Int_t smoothLS=0;
 
 TString fitoption="E";
 Int_t typeb=2;
+Int_t nDegreeBackPol[maxPtBins]={2,2,2,2,2,2,2,2};             // degree of polynomial function describing the background
 // reflection option
 Bool_t correctForRefl=kTRUE;
 TString reflopt="2gaus";
@@ -86,12 +87,15 @@ TH1F* FitMCInvMassSpectra(TList* lMC, TString var);
 Bool_t ReadConfig(TString configName);
 void PrintConfig();
 
-AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, Double_t minFit, Double_t maxFit){
+AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, Double_t minFit, Double_t maxFit, Bool_t isDirect=kFALSE){
   TH1F* histof=(TH1F*)histo->Clone(Form("%s_Fl",histo->GetName()));
 
 
   AliHFInvMassFitter* fitter=new AliHFInvMassFitter(histof,minFit,maxFit,backcase,0);
-  if(backcase==6)fitter->SetPolDegreeForBackgroundFit(nDegreeBackPol[iPtBin]);
+  if(backcase==6){
+    fitter->SetPolDegreeForBackgroundFit(nDegreeBackPol[iPtBin]);
+    if(isDirect) fitter->SetPolDegreeForBackgroundFit(nDegreeBackPolSB[iPtBin]);
+  }
   fitter->SetUseChi2Fit();
   fitter->SetFitOption(fitoption.Data());
   fitter->SetInitialGaussianMean(massD);
@@ -904,7 +908,7 @@ void ProjectCombinHFAndFit(){
     if(tryDirectFit){
       TH1D *hMassDirectFit=(TH1D*)hMassPtBin->Clone(Form("hMassDirectFit_bin%d",iPtBin));
       hMassDirectFit=AliVertexingHFUtils::RebinHisto(hMassDirectFit,rebin[iPtBin]);
-      fitterSB[iPtBin]=ConfigureFitter(hMassDirectFit,iPtBin,6,fitSBrangelow[iPtBin],fitSBrangeup[iPtBin]);
+      fitterSB[iPtBin]=ConfigureFitter(hMassDirectFit,iPtBin,6,fitSBrangelow[iPtBin],fitSBrangeup[iPtBin],kTRUE);
       out4=fitterSB[iPtBin]->MassFitter(0);//DirectFit(hMassDirectFit,iPtBin,hRawYieldSB);
 
       Double_t background,ebkg;
@@ -1629,7 +1633,7 @@ void WriteFitInfo(AliHFInvMassFitter *fitter, TH1D* histo){
   tss->SetFillStyle(0);
   tss->AddText(Form("S = %.0f #pm %.0f",sig,esig));
   tss->AddText(Form("B(3#sigma) = %.3g",back));
-  tss->AddText(Form("S/B (3#sigma) = %.4f",sig/back));
+  tss->AddText(Form("S/B (3#sigma) = %.4g",sig/back));
   if(correctForRefl) tss->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fitter->GetReflOverSig(),fitter->GetReflOverSigUncertainty()));
   tss->AddText(Form("Significance(3#sigma) = %.2f",sig/TMath::Sqrt(back+sig)));
   tss->SetTextColor(1);
@@ -1964,8 +1968,8 @@ Bool_t ReadConfig(TString configName){
       for(int j=0; j<nPtBins; j++){
 	if(j<nPtBins-1) readok=fscanf(confFil,"%d,",&n);
 	else readok=fscanf(confFil,"%d",&n);
-	nDegreeBackPol[j]=n;
-	if(nDegreeBackPol[j]<=0 || nDegreeBackPol[j]>10){
+	nDegreeBackPolSB[j]=n;
+	if(nDegreeBackPolSB[j]<=0 || nDegreeBackPolSB[j]>10){
 	  printf("ERROR in array of polynomial degree values\n");
 	  return kFALSE;
 	}
@@ -1979,6 +1983,19 @@ Bool_t ReadConfig(TString configName){
     else if(strstr(line,"BackgroundFunction")){
       readok=fscanf(confFil,"%d",&n);
       typeb=n;
+    }
+    else if(strstr(line,"PolDegreeFit")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	if(j<nPtBins-1) readok=fscanf(confFil,"%d,",&n);
+	else readok=fscanf(confFil,"%d",&n);
+	nDegreeBackPol[j]=n;
+	if(nDegreeBackPol[j]<=0 || nDegreeBackPol[j]>10){
+	  printf("ERROR in array of polynomial degree values\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil," ] ");
     }
     else if(strstr(line,"CorrectForReflections")){
       readok=fscanf(confFil,"%d",&n);

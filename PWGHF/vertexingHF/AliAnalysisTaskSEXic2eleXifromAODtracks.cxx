@@ -354,7 +354,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistodPhiSdEtaSElectronBachelorR125WSMix(0),
   fDoEventMixing(0),
   fMixWithoutConversionFlag(kFALSE),
- fNumberOfEventsForMixing(5),
+  fNumberOfEventsForMixing(5),
   fNzVtxBins(0), 
   fNCentBins(0),
   fNRPBins(0), 
@@ -368,8 +368,13 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   m_ReservoirVarsE(),
   m_ReservoirVarsL1(),
   m_ReservoirVarsL2(),
-  fWeightFit(0x0)
-
+  fWeightFit(0x0),
+  fAccWeight(0x0),
+  fAccWeightPositron(0x0),
+  fHistoElectronTotal(0),
+  fHistoElectronTotalMCWeight(0),
+  fHistoPositronTotal(0),
+  fHistoPositronTotalMCWeight(0)
 {
   //
   // Default Constructor. 
@@ -676,8 +681,13 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   m_ReservoirVarsE(),
   m_ReservoirVarsL1(),
   m_ReservoirVarsL2(),
-  fWeightFit(0x0)
-
+  fWeightFit(0x0),
+  fAccWeight(0x0),          
+  fAccWeightPositron(0x0),
+  fHistoElectronTotal(0),
+  fHistoElectronTotalMCWeight(0),
+  fHistoPositronTotal(0),   
+  fHistoPositronTotalMCWeight(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -2772,6 +2782,39 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillElectronROOTObjects(AliAODTrac
 	fHistoBachPt->Fill(trk->Pt());
 	fHistoElectronQovPtvsPhi->Fill(trk->Phi(),(Double_t)trk->Charge()/trk->Pt());
 
+	//================== store the information pt, eta, phi for electron and positron
+
+	 if(trk->Charge() < 0){
+			  double cont_ele[3];
+			  cont_ele[0]=trk->Pt();
+			  cont_ele[1]=trk->Eta();
+			  cont_ele[2]=trk->Phi();
+			  fHistoElectronTotal -> Fill(cont_ele);
+		  }                                                                                         
+		  else{
+			  double cont_posi[3];
+			  cont_posi[0]=trk->Pt();
+			  cont_posi[1]=trk->Eta();                                                               
+			  cont_posi[2]=trk->Phi();
+			  fHistoPositronTotal -> Fill(cont_posi);
+		  }
+		
+		 if(trk ->Charge()<0){
+			  double cont_ele[3];
+			  cont_ele[0]=trk->Pt();
+			  cont_ele[1]=trk->Eta();
+			  cont_ele[2]=trk->Phi();
+			  fHistoElectronTotalMCWeight -> Fill(cont_ele,fAccWeight -> Eval(trk->Pt()));
+		  }  
+		  else{
+			  double cont_posi[3];
+			  cont_posi[0]=trk->Pt();
+			  cont_posi[1]=trk->Eta();
+			  cont_posi[2]=trk->Phi();
+			  fHistoPositronTotalMCWeight -> Fill(cont_posi,fAccWeightPositron -> Eval(trk->Pt()));
+		  }
+
+
   Double_t d0z0[2],covd0z0[3];
   trk->PropagateToDCA(fVtx1,fBzkG,kVeryBig,d0z0,covd0z0);
   fHistod0Bach->Fill(d0z0[0]);
@@ -3624,8 +3667,27 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
 {
   //
   // Define analyis histograms
-  //
-	
+  
+  // ..............................................
+	int bins_eletotal[3]={100,50,50};
+    double xmin_eletotal[3]={0.,-1,0.};
+    double xmax_eletotal[3]={5,1,2*M_PI};
+    fHistoElectronTotal = new THnSparseF("fHistoElectronTotal","",3,bins_eletotal,xmin_eletotal,xmax_eletotal);                                                                              
+    fOutputAll->Add(fHistoElectronTotal);
+    fHistoElectronTotalMCWeight = new THnSparseF("fHistoElectronTotalMCWeight","",3,bins_eletotal,xmin_eletotal,xmax_eletotal);
+    fOutputAll->Add(fHistoElectronTotalMCWeight);
+          
+       
+    int bins_positotal[3]={100,50,50};
+    double xmin_positron[3]={0.,-1,0.};
+    double xmax_positron[3]={5,1,2*M_PI};
+    fHistoPositronTotal = new THnSparseF("fHistoPositronTotal","",3,bins_positotal,xmin_positron,xmax_positron);
+    fOutputAll->Add(fHistoPositronTotal);
+       
+    fHistoPositronTotalMCWeight = new THnSparseF("fHistoPositronTotalMCWeight","",3,bins_positotal,xmin_positron,xmax_positron);
+    fOutputAll->Add(fHistoPositronTotalMCWeight);
+
+
   //------------------------------------------------
   // Basic histogram
   //------------------------------------------------

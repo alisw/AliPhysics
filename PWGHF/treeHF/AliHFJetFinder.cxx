@@ -36,7 +36,10 @@ AliHFJetFinder::AliHFJetFinder():
   fSoftDropBeta(0.0),
   fMinTrackPt(0.15),
   fMaxTrackPt(100.0),
+  fMinTrackE(0.0),
+  fMaxTrackE(1000.0),
   fMaxTrackEta(0.9),
+  fMaxTrackPhi(10.0),
   fMinParticlePt(0.0),
   fMaxParticlePt(1000.0),
   fMaxParticleEta(0.9),
@@ -65,7 +68,10 @@ AliHFJetFinder::AliHFJetFinder(char *name):
   fSoftDropBeta(0.0),
   fMinTrackPt(0.15),
   fMaxTrackPt(100.0),
+  fMinTrackE(0.0),
+  fMaxTrackE(1000.0),
   fMaxTrackEta(0.9),
+  fMaxTrackPhi(0.9),
   fMinParticlePt(0.0),
   fMaxParticlePt(1000.0),
   fMaxParticleEta(0.9),
@@ -105,12 +111,12 @@ void AliHFJetFinder::SetFJWrapper()
 
 //________________________________________________________________
 //returns jet clustered with heavy flavour candidate
-AliHFJet AliHFJetFinder::GetHFJet(TClonesArray *array, AliAODRecoDecayHF *cand){ 
+AliHFJet AliHFJetFinder::GetHFJet(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass){ 
 
   SetFJWrapper();
   AliHFJet hfjet;
   if (!cand) return hfjet;
-  FindJets(array,cand);
+  FindJets(array,cand, invmass);
   Int_t jet_index=Find_Candidate_Jet();
   if (jet_index==-1) return hfjet;
  
@@ -149,13 +155,13 @@ AliHFJet AliHFJetFinder::GetHFMCJet(TClonesArray *array, AliAODMCParticle *mcpar
 
 //________________________________________________________________
 //returns vector of jets, including the jet with the heavy flavour candidate
-std::vector<AliHFJet> AliHFJetFinder::GetHFJets(TClonesArray *array, AliAODRecoDecayHF *cand) {
+std::vector<AliHFJet> AliHFJetFinder::GetHFJets(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass) {
   
   SetFJWrapper();
   std::vector<AliHFJet> hfjet_vec;
   hfjet_vec.clear();
   if (!cand) return hfjet_vec;
-  FindJets(array, cand);
+  FindJets(array, cand ,invmass);
   Int_t jet_index=Find_Candidate_Jet();
   if (jet_index==-1) return hfjet_vec;
 
@@ -260,7 +266,7 @@ std::vector<AliHFJet> AliHFJetFinder::GetMCJets(TClonesArray *array) {
 
 //________________________________________________________________
 //Do jet finding, including replacing the daughters of the heavy flavour candidate with the candidiate itself, if needed
-void AliHFJetFinder::FindJets(TClonesArray *array, AliAODRecoDecayHF *cand) {
+void AliHFJetFinder::FindJets(TClonesArray *array, AliAODRecoDecayHF *cand, Double_t invmass) {
   //Performs jet finding. Jets are stored in the fFastJetWrapper object
 
   std::vector<Int_t> daughter_vec;
@@ -274,7 +280,9 @@ void AliHFJetFinder::FindJets(TClonesArray *array, AliAODRecoDecayHF *cand) {
       if (!daughter) continue;
       daughter_vec.push_back(daughter->GetID());
     }
-    fFastJetWrapper->AddInputVector(cand->Px(), cand->Py(), cand->Pz(), cand->E(cand->PdgCode()),0); 
+    AliTLorentzVector cand_lvec(0,0,0,0);
+    cand_lvec.SetPtEtaPhiM(cand->Pt(), cand->Eta(), cand->Phi(), invmass);
+    fFastJetWrapper->AddInputVector(cand_lvec.Px(), cand_lvec.Py(), cand_lvec.Pz(), cand_lvec.E(),0); 
   }
 
     
@@ -291,7 +299,8 @@ void AliHFJetFinder::FindJets(TClonesArray *array, AliAODRecoDecayHF *cand) {
       }
       if(isdaughter) continue;
     }
-    fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(),i+100); 
+    
+    fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(),i+100);
   }
   fFastJetWrapper->Run();
   //delete track;
@@ -435,9 +444,30 @@ void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vec
 //Apply quality check on tracks
 Bool_t AliHFJetFinder::CheckTrack(AliAODTrack *track) { 
   if(!track) return false;
-  if(track->Pt() > fMaxTrackPt) return false;
-  if(track->Pt() < fMinTrackPt) return false;
-  if(TMath::Abs(track->Eta()) > fMaxTrackEta) return false;
+
+  AliTLorentzVector track_lvec(0,0,0,0);
+  track_lvec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.139); //set to mass of Pion
+ 
+  if(track_lvec.Pt() > fMaxTrackPt) return false;
+  if(track_lvec.Pt() < fMinTrackPt) return false;
+  if(track_lvec.E() > fMaxTrackE) return false;
+  if(track_lvec.E() < fMinTrackE) return false; 
+  if(TMath::Abs(track_lvec.Eta()) > fMaxTrackEta) return false;
+  if(TMath::Abs(track_lvec.Phi_0_2pi()) > fMaxTrackPhi) return false;
+
+  if(track->Charge()==0) return false;
+  if (!CheckFilterBits(track)) return false;
+  
+  return true;
+}
+
+//________________________________________________________________
+//Apply filter bit selection on tracks
+Bool_t AliHFJetFinder::CheckFilterBits(AliAODTrack *track) {
+
+  if(track->TestBits(BIT(4))/TMath::Power(2,4)!=1 ) return false;
+  if(!track->IsHybridGlobalConstrainedGlobal()) return false;
+
   return true;
 }
 

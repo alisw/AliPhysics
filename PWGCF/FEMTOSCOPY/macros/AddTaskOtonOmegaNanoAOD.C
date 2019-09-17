@@ -7,11 +7,14 @@
 //#include "AliFemtoDreamCascadeCuts.h"
 //#include "AliFemtoDreamCollConfig.h"
 
-
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGCF/FEMTOSCOPY/macros/ConfigOtonOmega.C>
+#endif
 
 AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
-                                        bool GetConfigFromAlien = true,
-                                        TString cFileName = "ConfigOtonOmegaNanoAOD.C"
+                                        bool GetConfigFromAlien = false,
+                                        TString cFileName = "ConfigOtonOmega.C"
 ) {
 
   //set fullBlastQA and suffix (cut variation)
@@ -143,8 +146,8 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
     AntiTrackCuts->SetMinimalBooking(true);
     CascadeCuts->SetMinimalBooking(true);
     AntiCascadeCuts->SetMinimalBooking(true);
-    OmegaCuts->SetMinimalBooking(true);
-    AntiOmegaCuts->SetMinimalBooking(true);
+    CascadeOmegaCuts->SetMinimalBooking(true);
+    AntiCascadeOmegaCuts->SetMinimalBooking(true);
   }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto","Femto");
@@ -153,8 +156,8 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
-  PDGParticles.push_back(3312);
-  PDGParticles.push_back(3312);
+  PDGParticles.push_back(3334);
+  PDGParticles.push_back(3334);
   PDGParticles.push_back(3334);
   PDGParticles.push_back(3334);
 
@@ -285,7 +288,7 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
   if (suffix != "0") {
     config->SetMinimalBookingME(true);
   }
-  AliAnalysisTaskOtonOmegaNanoAOD* task = new AliAnalysisTaskOtonOmegaNanoAOD("OtonOmegaNanoAOD");
+  AliAnalysisTaskOtonOmegaNanoAOD* task = new AliAnalysisTaskOtonOmegaNanoAOD("OtonOmegaNanoAOD",true);
   if (suffix != "0" && suffix != "999") {
     task->SetRunTaskLightWeight(true);
   }
@@ -334,10 +337,6 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
   mgr->ConnectOutput(task, 3, coutputAntiTrkCuts);
-
-
-
-
 
   AliAnalysisDataContainer *coutputCascadeCuts;
   TString CascadeCutsName = Form("%sCascadeCuts%s", addon.Data(), suffix.Data());
@@ -408,6 +407,20 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
   mgr->ConnectOutput(task, 9, coutputResultsQA);
+
+
+  //omega tree:
+  AliAnalysisDataContainer *coutputTreeOmega;
+  TString TreeOmegaName = Form("%sTreeOmega",addon.Data());
+  coutputTreeOmega = mgr->CreateContainer(
+    //@suppress("Invalid arguments") it works ffs
+    TreeOmegaName.Data(),
+    TTree::Class(),
+    AliAnalysisManager::kOutputContainer,
+    Form("%s:%s", file.Data(), TreeOmegaName.Data()));
+  mgr->ConnectOutput(task, 10, coutputTreeOmega);
+
+
 
   return task;
 }

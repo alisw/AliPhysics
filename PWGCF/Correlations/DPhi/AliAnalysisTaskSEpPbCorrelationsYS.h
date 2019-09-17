@@ -57,6 +57,7 @@ public:
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
   virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
+  virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
 
@@ -136,10 +137,10 @@ private:
   TString fcollisiontype;
   Bool_t fDataType;
   Bool_t frun2;
+  Bool_t fQA;
   Bool_t fFMDcut;
   Int_t fFMDcutmode;
-  Bool_t fQA;
- 
+  Bool_t fmakehole;
   Bool_t fOnfly;
   TString fAnaMode;
   TString fasso;
@@ -232,7 +233,7 @@ private:
   // Track cuts
   Double_t fMaxnSigmaTPCTOF;
 
-  // Global Histograms
+  // Globaal Histograms
   TH1F *fHistzvertex;
   TH1F *fHistCentrality;
   TH1F *fHistCentrality_beforecut;
@@ -247,6 +248,8 @@ private:
   AliTHn* fhistmcprim;
   TH2D*fhmcprimvzeta;
 
+  TH1F*frefetac;
+  TH1F*frefetaa;
   TH1F*frefvz;
   TH2D*fhcorr[10];
 
@@ -270,6 +273,10 @@ private:
   TH1F* fHist_FMDCMultRun;
 
   TH2D*  fhistfmdphiacc;
+  TH2F* fhFMDmultchannel;
+  TH2D* fhFMDmult_runbyrun_cside[31];
+  TH2D* fhFMDmult_runbyrun_aside[65];
+  
   AliTHn* fhistfmd;
   THnSparseF* fhistits;
   AliTHn* fhSecFMD;

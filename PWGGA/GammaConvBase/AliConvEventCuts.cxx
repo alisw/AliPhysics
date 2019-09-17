@@ -39,6 +39,7 @@
 #include "AliESDEvent.h"
 #include "AliCentrality.h"
 #include "AliMultSelection.h"
+#include "AliOADBContainer.h"
 #include "TList.h"
 #include "TFile.h"
 #include "AliLog.h"
@@ -81,6 +82,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fHeaderList(NULL),
   fDoLightOutput(kFALSE),
   fEventQuality(-1),
+  fGeomEMCAL(NULL),
   fIsHeavyIon(0),
   fDetectorCentrality(-1),
   fModCentralityClass(0),
@@ -174,12 +176,15 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fTriggersEMCAL(0),
   fTriggersEMCALSelected(-1),
   fEMCALTrigInitialized(kFALSE),
+  fHistoTriggThresh(NULL),
+  fRunNumberTriggerOADB(-1),
   fSecProdBoundary(1.0),
   fMaxPtJetMC(0),
   fMinFacPtHard(-1),
   fMaxFacPtHard(2.5),
   fMaxFacPtHardSingleParticle(1.5),
   fMimicTrigger(kFALSE),
+  fPathTriggerMimicSpecialInput(""),
   fRejectTriggerOverlap(kFALSE),
   fDoMultiplicityWeighting(kFALSE),
   fPathReweightingMult(""),
@@ -206,6 +211,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fHeaderList(ref.fHeaderList),
   fDoLightOutput(ref.fDoLightOutput),
   fEventQuality(ref.fEventQuality),
+  fGeomEMCAL(ref.fGeomEMCAL),
   fIsHeavyIon(ref.fIsHeavyIon),
   fDetectorCentrality(ref.fDetectorCentrality),
   fModCentralityClass(ref.fModCentralityClass),
@@ -299,12 +305,15 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fTriggersEMCAL(ref.fTriggersEMCAL),
   fTriggersEMCALSelected(ref.fTriggersEMCALSelected),
   fEMCALTrigInitialized(kFALSE),
+  fHistoTriggThresh(ref.fHistoTriggThresh),
+  fRunNumberTriggerOADB(ref.fRunNumberTriggerOADB),
   fSecProdBoundary(ref.fSecProdBoundary),
   fMaxPtJetMC(ref.fMaxPtJetMC),
   fMinFacPtHard(ref.fMinFacPtHard),
   fMaxFacPtHard(ref.fMaxFacPtHard),
   fMaxFacPtHardSingleParticle(ref.fMaxFacPtHardSingleParticle),
   fMimicTrigger(ref.fMimicTrigger),
+  fPathTriggerMimicSpecialInput(ref.fPathTriggerMimicSpecialInput),
   fRejectTriggerOverlap(ref.fRejectTriggerOverlap),
   fDoMultiplicityWeighting(ref.fDoMultiplicityWeighting),
   fPathReweightingMult(ref.fPathReweightingMult),
@@ -412,10 +421,10 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     }
   }
 
-  if(fIsHeavyIon > 0){
-    hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",420,0,105);
+  // if(fIsHeavyIon > 0){ // commented as mult. dep. analyses in pp started
+    hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",210,0,105);
     fHistograms->Add(hCentrality);
-  }
+  // }
 
   //hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
   //fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
@@ -1366,7 +1375,7 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
 //     break;
   case 3:
     fSpecialTrigger=3; //specific centrality trigger selection
-    //fOfflineTriggerMask=AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+    fOfflineTriggerMask=AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
     fTriggerSelectedManually = kTRUE;
     fSpecialTriggerName="AliVEvent::kCentral/kSemiCentral/kINT7";
     break;
@@ -1870,28 +1879,28 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
-    case 10: // 8DG1 - CINT8 DG1
+    case 10: //a) 8DG1 - CINT8 DG1
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DG1";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
-    case 11: // 7DG2 - CINT7 DG2
+    case 11: //b) 7DG2 - CINT7 DG2
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="7DG2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
-    case 12: // 8DG2 - CINT8 DG2
+    case 12: //c) 8DG2 - CINT8 DG2
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8DG2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
       break;
-    case 13: // Gamma Low EMC and DMC
+    case 13: //d) Gamma Low EMC and DMC
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=2;
       fSpecialSubTriggerName="7EG1";
@@ -1899,7 +1908,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG1);
       break;
-    case 14: // Gamma Low EMC and DMC
+    case 14: //e) Gamma Low EMC and DMC
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=2;
       fSpecialSubTriggerName="7EG2";
@@ -2522,8 +2531,21 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC18P1Pyt8NomB :
     case kLHC18P1Pyt8LowB :
     // pPb 5 TeV
+    case kLHC13bc :
+    case kLHC13de :
+    case kLHC13f :
     case kLHC16qt :
     // pPb 5 TeV MC
+    case kLHC13b2_efix :
+    case kLHC13e7 :
+    case kLHC14b2 :
+    case kLHC18j5 :
+    case kLHC13b4_fix :
+    case kLHC13b4_plus :
+    case kLHC19a4 :
+    case kLHC16c3a :
+    case kLHC16c3b :
+    case kLHC16c3c :
     case kLHC17f2a :
     case kLHC17f2b :
     case kLHC18f3 :
@@ -2586,6 +2608,10 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC18l8a :
     case kLHC18l8b :
     case kLHC18l8c :
+    case kLHC19h2a :
+    case kLHC19h2b :
+    case kLHC19h2c :
+    case kLHC19h3 :
       return kTRUE;
       break;
     default :
@@ -3945,214 +3971,11 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   // abort if mimicing not enabled
 
   if (!fMimicTrigger) return kTRUE;
+  if(!(fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 10)) return kTRUE;   // not the correct trigger for mimcking
 
-  Int_t runRangesEMCalL0 [52]   = { 144871, 145288, 146375, 146382,  // LHC11a
-                                    146502, 148522,         // LHC11a
-                                    150209, 153056, 153911, 153915, // LHC11b,c,d
-                                    158135, 158136, 158178, 158182, 160683,
-                                    160764, 161139, 161256, 161379, 161457,
-                                    161525, 161556, 161558, 161609, 161630,
-                                    161724, // LHC11d,e
-                                    173731, 177144, 177147, 177653, 177724, 178327, // LHC12x
-                                    195180,                     // LHC13b-f
-                                    197469, 197692,             // LHC13g
-                                    235195,                     // LHC15a-h
-                                    244285,                     // LHC15i-LHC15m (235196-244284)
-                                    244629,                     // LHC15n (244340-244628)
-                                    245141, 246995,             // LHC15o (244824-246994)
-                                    255539,                     // LHC16i-k  (255515-258574)
-                                    258883,                     // LHC16l (258883-260187)
-                                    260216,                     // LHC16m-p (260216-p)
-                                    265015, 265309,             // LHC16q (265015-265525)
-                                    265589, 265785,             // LHC16r (265589-266318)
-                                    266405,                     // LHC16s (266405-267131)
-                                    267161,                     // LHC16t (267161-267166)
-                                    270531,                     // LHC17c-o (270531-281961)
-                                    282008,                     // LHC17pq (282008-282441)
-                                    282504                      // 2018
-                                  };
-
-  Double_t thresholdEMCalL0[51] = { 2.11, 3.43, 1.71, 2.05,   // LHC11a 7 TeV
-                                    3.43,           // LHC11a  2.76TeV
-                                    1.94, 3.39, 4.01, 5.25, 5.5,     // LHC11b, LHC11c, LHC11d
-                                    2.05, 5.50, 2.05, 5.50, 2.05, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71,
-                                    2.01, 1.75, 1.52, 2.01, 1.52, 1.85,
-                                    3.2,
-                                    /*2.01*/1.8,                // LHC13g
-                                    2000,                       // LS1
-                                    1.8,                        // LHC15a-h
-                                    5.0,                        // LHC15i-m
-                                    5.0,                        // LHC15n
-                                    1.0, 1.0,                   // LHC15o
-                                    2.2,                        // LHC16i-k  (255515-258574)
-                                    2.2,                        // LHC16l (258883-260187)
-                                    2.5,                        // LHC16m-p (260216-p)
-                                    2.5, 2.5,                   // LHC16q (265015-265525)
-                                    2.5, 2.5,                   // LHC16r (265589-266318)
-                                    3.5,                        // LHC16s (266405-267131)
-                                    2.5,                        // LHC16t (267161-267166)
-                                    2.5,                        // LHC17c-o (270531-281961)
-                                    2.5                         // LHC17pq (282008-282441)
-                                    // 2.5                         // 2018
-                                  };
-
-  Double_t spreadEMCalL0[51]    = { 0., 0., 0, 0,               // LHC11a 7TeV
-                                    /*0.7*/0.65,                // LHC11a 2.76TeV
-                                    0., 0., 0., 0., 0.,         // LHC11b, LHC11c, LHC11d
-                                    0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                                    0., 0., 0., 0., 0.2, 0.2,/*0.,0.,*/
-                                    0.1,                        // LHC13b-f
-                                    /*0.1*/0.12,                // LHC13g
-                                    0.,                          // LS1
-                                    0.1,                        // LHC15a-h
-                                    0.1,                        // LHC15i-m
-                                    0.1,                        // LHC15n
-                                    0.1, 0.1,                   // LHC15o
-                                    0.2,                        // LHC16i-k  (255515-258574)
-                                    0.2,                        // LHC16l (258883-260187)
-                                    0.1,                        // LHC16m-p (260216-p)
-                                    0.1, 0.1,                   // LHC16q (265015-265525)
-                                    0.1, 0.1,                   // LHC16r (265589-266318)
-                                    0.1,                        // LHC16s (266405-267131)
-                                    0.1,                        // LHC16t (267161-267166)
-                                    0.1,                        // LHC17c-o (270531-281961)
-                                    0.1                         // LHC17pq (282008-282441)
-                                    // 0.1                         // 2018
-                                  };
-
-  Int_t runRangesEMCalL1[22]     = {  179796,                     // LHC12c-i (EGA)
-                                      195180,                     // LHC13b-f
-                                      197469, 197692,             // LHC13g
-                                      235195,                     // LHC15a-h
-                                      244285,                     // LHC15i-LHC15m (235196-244284)
-                                      244629,                     // LHC15n (244340-244628)
-                                      245141, 246995,             // LHC15o (244824-246994)
-                                      255539,                     // LHC16i-k  (255515-258574)
-                                      258883,                     // LHC16l (258883-260187)
-                                      260216,                     // LHC16m-p (260216-p)
-                                      265015, 265309,             // LHC16q (265015-265525)
-                                      265589, 265785,             // LHC16r (265589-266318)
-                                      266405,                     // LHC16s (266405-267131)
-                                      267161,                     // LHC16t (267161-267166)
-                                      270531,                     // LHC17c-o (270531-281961)
-                                      282008,                     // LHC17pq (282008-282441)
-                                      282504, 295232              // LHC17r + 2018
-                                    };
-
-  Double_t thresholdEMCalL1[21] = { 9.5/*8.398*/,               // LHC12c-i (EGA)
-                                    11.5, /*6.*/                // LHC13b-f
-                                    5.5,                        // LHC13g
-                                    2000.0,                     // LS1
-                                    2000.0,                     // LHC15a-h
-                                    5.0,                        // LHC15i-m
-                                    5.0,                        // LHC15n
-                                    2000.0, 10.0,               // LHC15o
-                                    8.5,                        // LHC16i-k  (255515-258574)
-                                    5.5,                        // LHC16l (258883-260187)
-                                    8.5,                        // LHC16m-p (260216-)
-                                    8.8, 10.8,                  // LHC16q (265015-265525)
-                                    10.8, 7.8,                  // LHC16r (265589-266318)
-                                    7.8,                        // LHC16s (266405-267131)
-                                    7.8,                        // LHC16t (267161-267166)
-                                    8.5,                        // LHC17c-o (270531-281961)
-                                    8.8,                        // LHC17pq (282008-282441)
-                                    8.5                         // LHC17r + 2018
-                                  };
-  Double_t spreadEMCalL1[21]    = { 1.0/*0.*/,
-                                    0.5,
-                                    /*0.4*/ 0.6,
-                                    0.0,                        // LS1
-                                    0.0,                        // LHC15a-h
-                                    1.0,                        // LHC15i-m
-                                    1.0,                        // LHC15n
-                                    0.0, 1.0,                   // LHC15o
-                                    0.7,                        // LHC16i-k  (255515-258574)
-                                    0.8,                        // LHC16l (258883-260187)
-                                    0.7,                        // LHC16m-p (260216-)
-                                    1.0, 1.2,                   // LHC16q (265015-265525)
-                                    1.2, 0.8,                   // LHC16r (265589-266318)
-                                    0.9,                        // LHC16s (266405-267131)
-                                    0.9,                        // LHC16t (267161-267166)
-                                    0.7,                        // LHC17c-o (270531-281961)
-                                    1.0,                        // LHC17pq (282008-282441)
-                                    0.7                         // LHC17r + 2018
-                                  };
-
-  Int_t runRangesEMCalL1G2[21]  = { 195180,                     // LHC13b-f
-                                    197469, 197692,             // LHC13g
-                                    235195,                     // LHC15a-h
-                                    244285,                     // LHC15i-LHC15m (235196-244284)
-                                    244629,                     // LHC15n (244340-244628)
-                                    245141, 246995,             // LHC15o (244824-246994)
-                                    255539,                     // LHC16i-k  (255515-258574)
-                                    258883,                     // LHC16l (258883-260187)
-                                    260216,                     // LHC16m-p (260216-)
-                                    265015, 265309,             // LHC16q (265015-265525)
-                                    265589, 265785,             // LHC16r (265589-266318)
-                                    266405,                     // LHC16s (266405-267131)
-                                    267161,                     // LHC16t (267161-267166)
-                                    270531,                     // LHC17c-o (270531-281961)
-                                    282008,                     // LHC17pq (282008-282441)
-                                    282504, 295232              // LHC17r + 2018
-                                  };
-
-  Double_t thresholdEMCalL1G2[20] = { 7.2,                        // LHC13b-f
-                                      /*3.9*/3.75,                // LHC13g
-                                      2000.0,                     // LS1
-                                      1.8,                        // LHC15a-h
-                                      5.0,                        // LHC15i-m
-                                      5.0,                        // LHC15n
-                                      2000.0, 2000.0,             // LHC15o
-                                      3.75,                       // LHC16i-k  (255515-258574)
-                                      3.8,                        // LHC16l (258883-260187)
-                                      3.75,                       // LHC16m-p (260216-)
-                                      3.9, 6.3,                   // LHC16q (265015-265525)
-                                      6.3, 5.3,                   // LHC16r (265589-266318)
-                                      5.3,                        // LHC16s (266405-267131)
-                                      5.3,                        // LHC16t (267161-267166)
-                                      3.75,                       // LHC17c-o (270531-281961)
-                                      3.9,                        // LHC17pq (282008-282441)
-                                      3.75                        // LHC17r + 2018
-                                    };
-  Double_t spreadEMCalL1G2[20]    = { 0.3,                        // LHC13bf
-                                      /*0.2*/0.25,                // LHC13g
-                                      0.,                         // LS1
-                                      0.1,                        // LHC15a-h
-                                      0.1,                        // LHC15i-m
-                                      0.1,                        // LHC15n
-                                      0.1, 1.0,                   // LHC15o
-                                      0.3,                        // LHC16i-k  (255515-258574)
-                                      0.3,                        // LHC16l (258883-260187)
-                                      0.3,                        // LHC16m-p (260216-)
-                                      0.3, 0.4,                   // LHC16q (265015-265525)
-                                      0.4, 0.3,                   // LHC16r (265589-266318)
-                                      0.3,                        // LHC16s (266405-267131)
-                                      0.3,                        // LHC16t (267161-267166)
-                                      0.3,                        // LHC17c-o (270531-281961)
-                                      0.3,                        // LHC17pq (282008-282441)
-                                      0.3                         // LHC17r + 2018
-                                    };
-
-  Int_t runnumber = event->GetRunNumber();
-
-  if (fSpecialTrigger == 5 ){
-    if (runnumber < runRangesEMCalL0[0]) return kTRUE;
-    Int_t binRun = 0;
-    while (!(runnumber >= runRangesEMCalL0[binRun] && runnumber < runRangesEMCalL0[binRun+1] ) && binRun < 51 ){
-      // cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << ":\t"<< thresholdEMCalL0[binRun] << "\t" << spreadEMCalL0[binRun] << endl;
-      binRun++;
-    }
-    if (binRun==51) return kFALSE;
-    // cout << runnumber << "\t"<< binRun << "\t"<< thresholdEMCalL0[binRun] << "\t" << spreadEMCalL0[binRun] << endl;
-    Double_t threshold = thresholdEMCalL0[binRun];
-
-    if (isMC && spreadEMCalL0[binRun] != 0.){
-      threshold = fRandom.Gaus(thresholdEMCalL0[binRun], spreadEMCalL0[binRun]);
-    }
-
-    // cout << "modified" << "\t"<< threshold << endl;
-    Int_t nclus = 0;
+    //Get the clusters
     TClonesArray * arrClustersMimic = NULL;
+    Int_t nclus = 0;
     if(!fCorrTaskSetting.CompareTo("")){
       nclus = event->GetNumberOfCaloClusters();
     } else {
@@ -4161,200 +3984,121 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         AliFatal(Form("%sClustersBranch was not found in AliConvEventCuts! Check the correction framework settings!",fCorrTaskSetting.Data()));
       nclus = arrClustersMimic->GetEntries();
     }
-
+    // return if no Clusters in the event
     if(nclus == 0)  return kFALSE;
 
-    // Loop over EMCal clusters
-    Bool_t eventIsAccepted = kFALSE;
-    for(Int_t i = 0; i < nclus; i++){
-      if (eventIsAccepted) continue;
-      AliVCluster* clus = NULL;
-      if(event->IsA()==AliESDEvent::Class()){
-        if(arrClustersMimic)
-          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i));
-        else
-          clus = event->GetCaloCluster(i);
-      } else if(event->IsA()==AliAODEvent::Class()){
-        if(arrClustersMimic)
-          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i));
-        else
-          clus = event->GetCaloCluster(i);
+    // Loading trigger thresholds from OADB
+    // Only load histo if is not loaded already or if the runnumber has changed!
+    Int_t runnumber = event->GetRunNumber();
+    if(!fHistoTriggThresh || fRunNumberTriggerOADB != runnumber){
+      fRunNumberTriggerOADB = runnumber;
+      std::unique_ptr<AliOADBContainer> contfileTriggThresh(new AliOADBContainer(""));
+
+      if(!fPathTriggerMimicSpecialInput.CompareTo("")){ // load from standard OADB on EOS
+        TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"read");
+        if (!fileTriggThresh || fileTriggThresh->IsZombie())
+        {
+          AliFatal("OADB/PWGGA/EMCalTriggerMimicOADB.root was not found");
+        }
+        if (fileTriggThresh) delete fileTriggThresh;
+        contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"AliEMCalTriggerMimic");
+        if(!contfileTriggThresh){
+          AliFatal("AliOADBContainer could not be loaded from PWGGA/EMCalTriggerMimicOADB.root");
+        } else{
+          contfileTriggThresh->SetOwner(kTRUE);
+        }
+      } else { // load from special OADB file from AliEn
+        TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB(((char*)Form("PWGGA/%s",fPathTriggerMimicSpecialInput.Data()))).data(),"read");
+        if (!fileTriggThresh || fileTriggThresh->IsZombie())
+        {
+          AliFatal(Form("%s was not found",fPathTriggerMimicSpecialInput.Data()));
+        }
+        if (fileTriggThresh) delete fileTriggThresh;
+        contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB(((char*)Form("PWGGA/%s",fPathTriggerMimicSpecialInput.Data()))).data(),"AliEMCalTriggerMimic");
+        if(!contfileTriggThresh){
+          AliFatal(Form("AliOADBContainer could not be loaded from %s",fPathTriggerMimicSpecialInput.Data()));
+        } else{
+          contfileTriggThresh->SetOwner(kTRUE);
+        }
       }
 
-      if (!clus){
-        if(arrClustersMimic) delete clus;
-        continue;
+      TObjArray *arrayTriggThresh=(TObjArray*)contfileTriggThresh->GetObject(runnumber);
+      if (!arrayTriggThresh)
+      {
+        AliFatal(Form("No Trigger threshold found for run number: %d", runnumber));
       }
-      if (!clus->IsEMCAL()) {
-        if(arrClustersMimic) delete clus;
-        continue;
+
+      // EMCal L0 trigger
+      if(fSpecialTrigger == 5 ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL0");
+      // EMCal L1 G2 trigger
+      else if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EGA")==0 || fSpecialSubTriggerName.CompareTo("8EGA")==0 || fSpecialSubTriggerName.CompareTo("7EG1")==0 ||fSpecialSubTriggerName.CompareTo("8EG1")==0 ) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G1");
+      // EMCal L1 G1 trigger
+      else if((fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G2");
+      // return true if mimicking for fSpecialTrigger is not defined
+      else return kTRUE;
+
+      if(!fHistoTriggThresh){
+        AliFatal(Form("No histogram for trigger threshold found for run number: %d", runnumber));
       }
-      if (clus->GetM02()<0.1) {
-        if(arrClustersMimic) delete clus;
-        continue;
-      }
-      if (clus->GetNCells()<2) {
-        if(arrClustersMimic) delete clus;
-        continue;
-      }
-      if (clus->E() > threshold ){
-        // cout << "found L0" << endl;
-        eventIsAccepted = kTRUE;
-      }
-      if(arrClustersMimic)
-        delete clus;
     }
-    return eventIsAccepted;
 
-  } else if (fSpecialTrigger == 6 ) {
-
-    return kTRUE;
-  } else if (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) {
-    if (fSpecialSubTriggerName.CompareTo("7EGA")==0 || fSpecialSubTriggerName.CompareTo("8EGA")==0 || fSpecialSubTriggerName.CompareTo("7EG1")==0 ||fSpecialSubTriggerName.CompareTo("8EG1")==0 ){
-      if (runnumber < runRangesEMCalL1[0]) return kTRUE;
-      Int_t binRun = 0;
-      while (!(runnumber >= runRangesEMCalL1[binRun] && runnumber < runRangesEMCalL1[binRun+1] ) && binRun < 20 ){
-        // cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL1[binRun] << "\t" << runRangesEMCalL1[binRun+1] << ":\t"<< thresholdEMCalL1[binRun]<<"\t"<< spreadEMCalL1[binRun]<< endl;
-        binRun++;
-      }
-      if (binRun==20) return kFALSE;
-      Double_t threshold = thresholdEMCalL1[binRun];
-
-      if (isMC && spreadEMCalL1[binRun] != 0.){
-        threshold = fRandom.Gaus(thresholdEMCalL1[binRun], spreadEMCalL1[binRun]);
-      }
-
-      // cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
-
-      TClonesArray * arrClustersMimic = NULL;
-      Int_t nclus = 0;
-      if(!fCorrTaskSetting.CompareTo("")){
-        nclus = event->GetNumberOfCaloClusters();
-      } else {
-        arrClustersMimic = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
-        if(!arrClustersMimic)
-          AliFatal(Form("%sClustersBranch was not found in AliConvEventCuts! Check the correction framework settings!",fCorrTaskSetting.Data()));
-        nclus = arrClustersMimic->GetEntries();
-      }
-
-      if(nclus == 0)  return kFALSE;
-
-      // Loop over EMCal clusters
-      Bool_t eventIsAccepted = kFALSE;
-      for(Int_t i = 0; i < nclus; i++){
-        if (eventIsAccepted) continue;
-        AliVCluster* clus = NULL;
-        std::unique_ptr<AliVCluster> tmpcluster;  // takes care about deleting clusters constructed with new
-        if(event->IsA()==AliESDEvent::Class()){
-          if(arrClustersMimic){
-            tmpcluster = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i)));
-            clus = tmpcluster.get();
-          } else
-            clus = event->GetCaloCluster(i);
-        } else if(event->IsA()==AliAODEvent::Class()){
-          if(arrClustersMimic) {
-            tmpcluster = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i)));
-            clus = tmpcluster.get();
-          }
-          else
-            clus = event->GetCaloCluster(i);
-        }
-        if (!clus) {
-          continue;
-        }
-        if (!clus->IsEMCAL()) {
-          continue;
-        }
-        if (clus->GetM02()<0.1) {
-          continue;
-        }
-        if (clus->GetNCells()<2) {
-          continue;
-        }
-        if (clus->E() > threshold ){
-          // cout << "found L1G1\t" << clus->E() << endl;
-          eventIsAccepted = kTRUE;
-        }
-      }
-      return eventIsAccepted;
-    } else if ( fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0 ){
-      if (runnumber < runRangesEMCalL1G2[0]) return kTRUE;
-      Int_t binRun = 0;
-      while (!(runnumber >= runRangesEMCalL1G2[binRun] && runnumber < runRangesEMCalL1G2[binRun+1] ) && binRun < 19 ){
-        // cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL1G2[binRun] << "\t" << runRangesEMCalL1G2[binRun+1] << ":\t"<< thresholdEMCalL1G2[binRun]<<"\t"<< spreadEMCalL1G2[binRun]<< endl;
-        binRun++;
-      }
-      // cout << runnumber << "\t"<< binRun << "\t L2 \t"<< thresholdEMCalL1G2[binRun]<<"\t"<< spreadEMCalL1G2[binRun]<< endl;
-      if (binRun==19) return kFALSE;
-      Double_t threshold = thresholdEMCalL1G2[binRun];
-      if (isMC && spreadEMCalL1G2[binRun] != 0.){
-        threshold = fRandom.Gaus(thresholdEMCalL1G2[binRun], spreadEMCalL1G2[binRun]);
-      }
-      // cout << "\t L2 mod\t"<< threshold << endl;
-
-      Int_t nclus = 0;
-      TClonesArray * arrClustersMimic = NULL;
-      if(!fCorrTaskSetting.CompareTo("")){
-        nclus = event->GetNumberOfCaloClusters();
-      } else {
-        arrClustersMimic = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
-        if(!arrClustersMimic)
-          AliFatal(Form("%sClustersBranch was not found in AliConvEventCuts! Check the correction framework settings!",fCorrTaskSetting.Data()));
-        nclus = arrClustersMimic->GetEntries();
-      }
-
-      if(nclus == 0)  return kFALSE;
-
-      // Loop over EMCal clusters
-      Bool_t eventIsAccepted = kFALSE;
-      for(Int_t i = 0; i < nclus; i++){
-        if (eventIsAccepted) continue;
-        AliVCluster* clus = NULL;
-        std::unique_ptr<AliVCluster> tmpcluster; // takes care about deleting clusters constructed with new
-        if(event->IsA()==AliESDEvent::Class()){
-          if(arrClustersMimic){
-            tmpcluster = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i)));
-            clus = tmpcluster.get();
-          }
-          else
-            clus = event->GetCaloCluster(i);
-        } else if(event->IsA()==AliAODEvent::Class()){
-          if(arrClustersMimic) {
-            tmpcluster = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i)));
-            clus = tmpcluster.get();
-          }
-          else
-            clus = event->GetCaloCluster(i);
-        }
-        if (!clus) {
-          continue;
-        }
-        if (!clus->IsEMCAL()) {
-          continue;
-        }
-        if (clus->GetM02()<0.1) {
-          continue;
-        }
-        if (clus->GetNCells()<2) {
-          continue;
-        }
-        if (clus->E() > threshold ){
-          // cout << "found L1G2" << endl;
-          eventIsAccepted = kTRUE;
-        }
-      }
-      return eventIsAccepted;
-    }
-    return kTRUE;
-  } else if (fSpecialTrigger == 9 ) {
-    return kTRUE;
-  } else {
-    return kTRUE;
+  // Get individual threshold for every Supermodule (if no Supermodulewise was defined threshold is the same for all SMs)
+  Float_t fTriggThresh[20] = {0};
+  fRandom.SetSeed(0);
+  for(int iSM = 0; iSM < fHistoTriggThresh->GetNbinsX(); iSM++){
+    fTriggThresh[iSM] = fRandom.Gaus(fHistoTriggThresh->GetBinContent(iSM + 1)*0.01, fHistoTriggThresh->GetBinError(iSM + 1)*0.01);
   }
 
-  return kTRUE;
-}
+  if(!fGeomEMCAL) fGeomEMCAL = AliEMCALGeometry::GetInstance();
+  if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
 
+  // Loop over EMCal clusters
+  for(Int_t i = 0; i < nclus; i++){
+    AliVCluster* clus = NULL;
+    std::unique_ptr<AliVCluster> tmpcluster;  // takes care about deleting clusters constructed with new
+    if(event->IsA()==AliESDEvent::Class()){
+      if(arrClustersMimic){
+        tmpcluster = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i)));
+        clus = tmpcluster.get();
+      } else
+        clus = event->GetCaloCluster(i);
+    } else if(event->IsA()==AliAODEvent::Class()){
+      if(arrClustersMimic) {
+        tmpcluster = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i)));
+        clus = tmpcluster.get();
+      }
+      else
+        clus = event->GetCaloCluster(i);
+    }
+    if (!clus) {
+      continue;
+    }
+    if (!clus->IsEMCAL()) {
+      continue;
+    }
+    if (clus->GetM02()<0.1) {
+      continue;
+    }
+    if (clus->GetNCells()<2) {
+      continue;
+    }
+    Int_t iSuperModule = 0;
+    // Get the supermodule from cluster position
+    if(fHistoTriggThresh->GetNbinsX() > 1){
+      Float_t clusPos[3]={0,0,0};
+      clus->GetPosition(clusPos);
+      TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
+      fGeomEMCAL->SuperModuleNumberFromEtaPhi(clusterVector.Eta(),clusterVector.Phi(),iSuperModule);
+      if(iSuperModule >= fHistoTriggThresh->GetNbinsX() ){
+        AliFatal("Supermodule nr. does not match with input histogramm");
+      }
+    }
+    if (clus->E() > fTriggThresh[iSuperModule]){
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
 
 //________________________________________________________________________
 Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
@@ -4403,14 +4147,6 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
     if ( (fSpecialTrigger == 11)  && fTriggerSelectedManually &&  fSpecialSubTriggerName.CompareTo("CCUP25-B-SPD1-CENTNOTRD") == 0 ) {
       if (firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
     }
-
-    // select manually PbPb kINT7 | kCentral | kSemiCentral
-    if ( fIsHeavyIon == 1 && fSpecialTrigger == 3  && fTriggerSelectedManually) {
-      if (firedTrigClass.Contains("CENT")){
-        if ( firedTrigClass.Contains("CV0H7") || firedTrigClass.Contains("CMID7") ) isSelected = 1;
-      }
-    }
-
 
     if (fOfflineTriggerMask){
       isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
@@ -4803,6 +4539,15 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
         }
       }
     }
+
+    //******************************************************//
+    // uncomment the following lines for trigger debugging
+    //   if (!fPreSelCut){
+    //     if (isSelected) cout << fSpecialTrigger << "\t"<<  fSpecialTriggerName.Data() <<  "\t"<<  fSpecialSubTrigger << "\t" << fSpecialSubTriggerName.Data()  << endl;
+    //   } else {
+    //      cout << "Preselection: " << firedTrigClass.Data() << endl;
+    //   }
+    //******************************************************//
   }
   fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
 
@@ -4861,6 +4606,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
   }
 
   if(hTriggerClassSelected && isSelected){
+
     if (mimickedTrigger){
       if (!fIsSDDFired) hTriggerClassSelected->Fill(33);
       if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassSelected->Fill(0);
@@ -6682,6 +6428,18 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC18l8c") == 0 ){
     fPeriodEnum = kLHC18l8c;
     fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC19h2a") == 0 ){
+    fPeriodEnum = kLHC19h2a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC19h2b") == 0 ){
+    fPeriodEnum = kLHC19h2b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC19h2c") == 0 ){
+    fPeriodEnum = kLHC19h2c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC19h3") == 0 ){
+    fPeriodEnum = kLHC19h3;
+    fEnergyEnum = kPbPb5TeV;
 
   // LHC16x anchored MCs
   // 13TeV LHC16* anchors full field Pythia 8 MB
@@ -6905,9 +6663,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
 
   //pp 13 TeV anchored to LHC18
   } else if ( periodName.CompareTo("LHC18P1Pyt8NomB") == 0 ||
-              periodName.CompareTo("LHC18g4") ==0 || periodName.CompareTo("LHC18g5") ==0  || periodName.CompareTo("LHC18g6") == 0 || 
-	      periodName.CompareTo("LHC18h2") ==0 || periodName.CompareTo("LHC18h4") ==0  || 
-	      periodName.CompareTo("LHC18j1") ==0 || periodName.CompareTo("LHC18j4") == 0 || 
+              periodName.CompareTo("LHC18g4") ==0 || periodName.CompareTo("LHC18g5") ==0  || periodName.CompareTo("LHC18g6") == 0 ||
+	      periodName.CompareTo("LHC18h2") ==0 || periodName.CompareTo("LHC18h4") ==0  ||
+	      periodName.CompareTo("LHC18j1") ==0 || periodName.CompareTo("LHC18j4") == 0 ||
 	      periodName.CompareTo("LHC18k1") ==0 || periodName.CompareTo("LHC18k2") == 0 || periodName.CompareTo("LHC18k3") == 0
   ){
     fPeriodEnum = kLHC18P1Pyt8NomB;

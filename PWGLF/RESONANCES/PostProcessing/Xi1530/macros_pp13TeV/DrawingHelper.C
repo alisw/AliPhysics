@@ -72,7 +72,98 @@ vector<double> GetBinErrorFrations(TH1* hinput) {
 }
 TH1* GetSpectrafromName(TString inputfilename) {
     TFile* inputfile = new TFile(inputfilename.Data());
-    TH1* base = (TH1*)inputfile->Get("hXiSpectrum");
-
+    auto base = (TH1*)inputfile->Get("hXiSpectrum");
     return base;
+}
+vector<double> GetdNdetawithError(double multi_start, double multi_end){
+    // Return dN/deta with give Multiplicity bin.
+    // it works with only dedicated multiplicit bins(see below)
+    // return {value, err}
+
+    vector<double> returnarray;
+
+    //--dNdeta histogram
+    // Ref: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/
+    //      ReferenceMult#Multiplicity_dependent_pp_at_AN2
+    // LHC16k data.
+    // Error was asym error, so choosed bigger error for sym error.
+    
+    vector<double> dNchdeta_multibin = 
+    {0,     1,     5,    10,    15,    20,    30,   40,   50,   70, 100};
+    vector<double> dNchdeta = 
+    {0, 26.02, 20.02, 16.17, 13.77, 12.04, 10.02, 7.95, 6.32, 4.50, 2.55};
+    vector<double> dNchdeta_e = 
+    {0,  0.35,  0.27,  0.22,  0.19,  0.17,  0.14, 0.11, 0.09, 0.07, 0.04};
+    
+
+    // 2nd Reference (LHC15 study)
+    // Ref: https://aliceinfo.cern.ch/Notes/node/510
+    /*
+    vector<double> dNchdeta_multibin = 
+    {0,     1,     5,    10,    15,    20,    30,   40,   50,   70, 100};
+    vector<double> dNchdeta = 
+    {0, 26.18, 20.16, 16.40, 14.00, 12.28, 10.31, 8.24, 6.62, 4.77, 2.76};
+    vector<double> dNchdeta_e = 
+    {0,  0.55,  0.41,  0.31,  0.29,  0.25,  0.21, 0.17, 0.13, 0.09, 0.05};
+    */
+
+    // input must be in the multiplicity range
+    if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_start) == end(dNchdeta_multibin))
+        return {99,99};
+    if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_end) == end(dNchdeta_multibin))
+        return {99,99};
+
+    // special cases
+    if((multi_start == 0) && (multi_end == 0.01)){
+        returnarray = {35.37, 0.92};
+    }
+    else if((multi_start == 0.01) && (multi_end == 0.1)){
+        returnarray = {30.89, 0.57};
+    }
+    else if((multi_start == 0) && (multi_end == 5)){
+        returnarray = {21.20, 0.28};
+    }
+    else if((multi_start == 0) && (multi_end == 0)){
+        returnarray = {5.31, 0.18}; // INEL // https://doi.org/10.1016/j.physletb.2015.12.030
+    }
+    else if((multi_start == 0) && (multi_end == 100)){
+        returnarray = {6.94, 0.10}; // INEL>0
+    }
+    else if((multi_start == 0.1) && (multi_end == 0.5)){
+        returnarray = {26.96, 0.37};
+    }
+    else if((multi_start == 0.5) && (multi_end == 1)){
+        returnarray = {24.23, 0.36};
+    }
+    // Common case
+    else{
+        // Value
+        vector<double>::iterator itr_left = find(dNchdeta_multibin.begin(),
+                                dNchdeta_multibin.end(),
+                                multi_start);
+        vector<double>::iterator itr_right = find(dNchdeta_multibin.begin(),
+                                dNchdeta_multibin.end(),
+                                multi_end);
+        int left = distance(dNchdeta_multibin.begin(), itr_left);
+        int right = distance(dNchdeta_multibin.begin(), itr_right);
+
+        int gap = right - left;
+
+        double result = 0.;
+        for(int i = 1; i < gap+1; i++)
+            result += dNchdeta[i+left]*(dNchdeta_multibin[i+left] - dNchdeta_multibin[i+left-1]);
+            
+        result /= (multi_end - multi_start);
+        returnarray.push_back(result);
+
+        // Error
+        double error = 0.;
+        for(int i = 1; i < gap+1; i++)
+            error += pow( dNchdeta_e[i+left], 2); 
+            
+        error = sqrt(error);
+        returnarray.push_back(error);
+    }
+
+    return returnarray;
 }

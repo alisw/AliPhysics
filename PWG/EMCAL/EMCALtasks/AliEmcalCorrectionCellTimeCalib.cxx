@@ -158,10 +158,10 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
   { //if fBasePath specified in the ->SetBasePath()
     AliInfo(Form("Loading time calibration OADB from given path %s",fBasePath.Data()));
     
-    timeCalibFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTimeCalib.root",fBasePath.Data()),"read"));
+    timeCalibFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTimeCalib%s.root",fBasePath.Data(), fDoMergedBCs ? "MergedBCs" : "" ),"read"));
     if (!timeCalibFile || timeCalibFile->IsZombie())
     {
-      AliFatal(Form("EMCALTimeCalib.root was not found in the path provided: %s",fBasePath.Data()));
+      AliFatal(Form("EMCALTimeCalib%s.root was not found in the path provided: %s", fDoMergedBCs ? "MergedBCs" : "" ,fBasePath.Data()));
       return 0;
     }
     
@@ -171,10 +171,10 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    timeCalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeCalib.root").data(),"read"));
+    timeCalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALTimeCalib%s.root", fDoMergedBCs ? "MergedBCs" : "")).data(),"read"));
     if (!timeCalibFile || timeCalibFile->IsZombie())
     {
-      AliFatal("OADB/EMCAL/EMCALTimeCalib.root was not found");
+      AliFatal(Form("OADB/EMCAL/EMCALTimeCalib%s.root was not found", fDoMergedBCs ? "MergedBCs" : ""));
       return 0;
     }
     

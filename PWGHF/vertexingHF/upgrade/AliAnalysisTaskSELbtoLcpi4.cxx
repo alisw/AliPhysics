@@ -84,6 +84,7 @@ ClassImp(AliAnalysisTaskSELbtoLcpi4);
   //
   for(Int_t icut=0; icut<2; icut++) fCutD0Daughter[icut]=0.;
   for(Int_t icut=0; icut<7; icut++) fCutsPerPt[icut]=0.;
+  fNRotations=13.;
 
 }
 
@@ -122,6 +123,7 @@ AliAnalysisTaskSELbtoLcpi4::AliAnalysisTaskSELbtoLcpi4(const char *name,
   //SetPtBinLimit(fRDCutsAnalysisLc->GetNPtBins()+1,fRDCutsAnalysisLc->GetPtBinLimits());
     for(Int_t icut=0; icut<2; icut++) fCutD0Daughter[icut]=0.;
     for(Int_t icut=0; icut<7; icut++) fCutsPerPt[icut]=0.;
+    fNRotations=13.;
   //
   // Constructor to be used to create the task.
   // The the URIs specify the resolution files to be used. 
@@ -499,9 +501,9 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
     }
     lbcandProng->UnsetOwnPrimaryVtx();
    
-    Int_t nRot=13.;
-    if(lbcandProng->Pt()>10.)nRot=20.;
-    TObjArray *tob=GetArrayCandRotated(ev,lbcandProng,arrayMC,nRot);
+    //Int_t nRot=13.;
+    //if(lbcandProng->Pt()>10.)nRot=20.;
+    TObjArray *tob=GetArrayCandRotated(ev,lbcandProng,arrayMC,fNRotations);
 
     Int_t candidates = tob->GetEntriesFast();
     UInt_t pdgLb[2]={0,0};
@@ -986,7 +988,8 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
   if(TMath::Abs(massCandLb - massTrueLB)>1.) return;
   Int_t iPtBinlb = -1;
   Double_t ptCandlb = part->Pt();
-  if(ptCandlb<2.) return; // dont save anything with pt<2
+  //if(ptCandlb<2.) return; // dont save anything with pt<2 //old configuration
+  if(ptCandlb>0. && ptCandlb<2.) iPtBinlb=0;
   if(ptCandlb>=2. && ptCandlb<4.) iPtBinlb=1;
   if(ptCandlb>=4. && ptCandlb<7.) iPtBinlb=2;
   if(ptCandlb>=7. && ptCandlb<10.) iPtBinlb=3;
@@ -1272,7 +1275,7 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsSelectedLbMY(TObject* obj,Int_t selectionLev
   Float_t lbVar[14];
   Float_t lbVarbg[14];
   Double_t ptCandlb = dd->Pt();
-  if(ptCandlb<2.) iPtBinlb=0;
+  if(ptCandlb>0. && ptCandlb<2.) iPtBinlb=0;
   if(ptCandlb>=2. && ptCandlb<4.) iPtBinlb=1;
   if(ptCandlb>=4. && ptCandlb<7.) iPtBinlb=2;
   if(ptCandlb>=7. && ptCandlb<10.) iPtBinlb=3;
@@ -1692,7 +1695,8 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
   Float_t lbVar[14];
   Float_t lbVarbg[14];
   Double_t ptCandlb = part->Pt();
-  if(ptCandlb<2.) return; // dont save anything with pt<2
+  // if(ptCandlb<2.) return; // dont save anything with pt<2
+  if(ptCandlb>0. && ptCandlb<2.) iPtBinlb=0;
   if(ptCandlb>=2. && ptCandlb<4.) iPtBinlb=1;
   if(ptCandlb>=4. && ptCandlb<7.) iPtBinlb=2;
   if(ptCandlb>=7. && ptCandlb<10.) iPtBinlb=3;

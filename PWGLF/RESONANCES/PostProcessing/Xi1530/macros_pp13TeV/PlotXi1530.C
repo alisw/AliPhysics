@@ -184,8 +184,11 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
         Sigfit->GetXaxis()->SetRangeUser(DrawRange[0], DrawRange[1]);
         fitresult->SetLineWidth(1);
         fitresult->SetLineColor(628);
+        fitresult->SetNpx(500);
         fitbkg->SetLineWidth(1);
+        fitbkg->SetRange(1.484,1.6);
         fitbkg->SetLineColor(819);
+        fitbkg->SetNpx(500);
         Sigfit->Draw("PZ");
         fitbkg->Draw("same");
         fitresult->Draw("same");
@@ -492,6 +495,31 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
                  Form("#bf{T: %.2f #pm %.2f}", func->GetParameter(2),
                       func->GetParError(2)));
     SaveCanvas(clogy, "hSpectra_Fit", Form("%s/", savepath.Data()), savetype);
+
+    // 7TeV Results
+    // Old data
+    // from HEPDATA https://www.hepdata.net/record/ins1300380
+    vector<double> CorrectedYeild_7TeV = {1e-10,   0.00138,  0.00109, 0.00078,
+                                          0.00046, 0.000226, 6.6e-05, 2.34e-05,
+                                          8.1e-06, 1e-10,    1e-10};
+    vector<double> CorrectedYeild_syserr_7TeV = {
+        1e-10,    0.00017,  6.0e-05,  5.0e-05, 2.2e-05, 1.15e-05,
+        3.73e-06, 1.96e-06, 4.54e-07, 1e-10,   1e-10};
+    vector<double> CorrectedYeild_staterr_7TeV = {
+        1e-10,   4.0e-05, 3.0e-05, 2.0e-05, 1.5e-05, 3.38e-06,
+        2.08e-6, 8.11e-7, 9.09e-7, 1e-10,   1e-10};
+
+    auto hSpectra_7TeV_syserr = MakeHistfromArray(
+        "7TeV Spectra with systematic error", CorrectedYeild_7TeV,
+        ptbin, CorrectedYeild_syserr_7TeV);
+    auto hSpectra_7TeV_staterr = MakeHistfromArray(
+        "7TeV Spectra with statistical error", CorrectedYeild_7TeV, ptbin,
+        CorrectedYeild_staterr_7TeV);
+
+    hSpectra_7TeV_syserr->SetLineColor(kRed);
+    hSpectra_7TeV_syserr->Draw("same");
+
+    SaveCanvas(clogy, "hSpectra_Fit_7TeV", Form("%s/", savepath.Data()), savetype);
 
     cout << "===========================" << endl;
     cout << "\\begin{table}[]" << endl;

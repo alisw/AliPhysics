@@ -1,6 +1,7 @@
 # General task configuration
 mc_mode: false
 calculate_only_efficiency: false #ignore background, saves space in MC
+keep_all_candidates: true #ignores the requirement of having both D meson and electron in the same event
 
 d_meson_species: 'D0'
 
@@ -24,7 +25,7 @@ main_electron:
         pt_range: [0.5,10.0]
         eta_range: [-0.8,0.8] 
         filter_bit: kTrkGlobalNoDCA #as defined in AliAODTrack
-        min_TPC_cls: 100
+        min_TPC_cls: 70
         min_TPC_cls_dedx: 80
         min_ITS_hits: 2
         pixel_req: kAny #check possibilities in AliAnalysisTaskDHFeCorr::ITSPixel_t
@@ -62,7 +63,7 @@ output:
         n_bins_TPC_cls: 40
         n_bins_n_sigma: 100
     d_meson_qa:
-        pt_bins: [0.,1.,1.5,2.,3.,4.,5.,6.,8.,10.,12.,16.,20.,24.,32.,50.,100.]
+        pt_bins: [0.,1.,1.5,2.,3.,4.,5.,6.,7.,8.,10.,12.,16.,20.,24.,32.,50.,100.]
         inv_mass_range: [1.4,2.2]
         n_bins_inv_mass: 100
         n_eta_bins: 16 # bins have the same size

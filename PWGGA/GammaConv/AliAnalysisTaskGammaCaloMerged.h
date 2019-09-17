@@ -111,6 +111,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     void SetMaxNeutralPionOverlapsMC(Int_t nOverlaps){fMaxAllowedPi0OverlapsMC = nOverlaps;}
 
     Bool_t NumberOfMCEventNeutralPionOverlapInEMCal(AliMCEvent *mcEvent);
+    void ProcessNeutralOverlapsMC(AliMCEvent *mcEvent);
+    void PrintCaloMCLabelsAndInfoAOD(AliVEvent* event, AliAODConversionPhoton *TrueClusterCandidate, AliVCluster* cluster);
 
   protected:
     AliV0ReaderV1*          fV0Reader;                                          // basic photon Selection Task
@@ -191,12 +193,18 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     // MC validated cluster histos
     TH2F**                  fHistoTrueClusEFracFirstLabel;                      //!
     TH2F**                  fHistoTrueClusEFracLeadingPi0;                      //!
+    TH2F**                  fHistoTrueClusNeutralContamination;                      //!
+    TH2F**                  fHistoTrueClusPhotonContamination;                      //!
+    TH2F**                  fHistoTrueClusElectronContamination;                      //!
+    TH2F**                  fHistoTrueClusOtherContamination;                      //!
     TH2F**                  fHistoTrueClusMergedPtvsM02;                        //!
     TH2F**                  fHistoTrueClusPi0PtvsM02;                           //!
     TH2F**                  fHistoTrueClusMultiplePi0PtvsM02;                   //!
     TH2F**                  fHistoTrueClusPi0DalitzPtvsM02;                     //!
     TH2F**                  fHistoTrueClusPrimPi0PtvsM02;                       //!
     TH2F**                  fHistoTrueClusPrimPi0PtMCPt;                        //!
+    TH2F**                  fHistoTruePureMergedClusPrimPi0PtvsM02;             //!
+    TH2F**                  fHistoTruePartConvClusPrimPi0PtvsM02;               //!
     TH2F**                  fHistoTrueClusPrimPi0PureMergedPtMCPt;              //!
     TH2F**                  fHistoTrueClusPrimPi0PartConvMergedPtMCPt;          //!
     TH2F**                  fHistoTrueClusPrimPi01GammaMergedPtMCPt;            //!
@@ -249,6 +257,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusPi0EM02;                              //! array of histos with validated pi0, E, m02
     TH2F**                  fHistoTrueClusEtaEM02;                              //! array of histos with validated eta, E, m02
 
+    TH2F**                  fHistoTruePrimaryPi0MCPtResolPt;          //! array of histos with validated weighted primary pi0, MCpt, resol pt
     TH2F**                  fHistoTruePrimaryPi0PureMergedMCPtResolPt;          //! array of histos with validated weighted primary pi0, MCpt, resol pt
     TH2F**                  fHistoTruePrimaryPi0MergedPartConvMCPtResolPt;      //! array of histos with validated weighted primary pi0, MCpt, resol pt
     TH2F**                  fHistoTruePrimaryPi01GammaMCPtResolPt;              //! array of histos with validated weighted primary pi0, MCpt, resol pt
@@ -303,12 +312,13 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     Bool_t                  fDoDetailedM02;                                     // detailed M02 distribution
     Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
     Int_t                   fMaxAllowedPi0OverlapsMC;                           // Event rejection based on pi0 overlaps in MC
+    TH2F**                  fHistoPi0EvsGammaOverlapE;                          //! array of histos with SPD tracklets vs SPD clusters for background rejection
 
   private:
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 34);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 35);
 };
 
 #endif

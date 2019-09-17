@@ -37,7 +37,8 @@ AliJCDijetTask::AliJCDijetTask() :
     fjetCone(0),
     fktJetCone(0),
     fktScheme(0),
-    fusePionMassInktjets(0),
+    fantiktScheme(0),
+    fusePionMass(0),
     fuseDeltaPhiBGSubtr(0),
     fIsMC(kTRUE),
     fparticleEtaCut(0),
@@ -45,6 +46,7 @@ AliJCDijetTask::AliJCDijetTask() :
     fsubleadingJetCut(0),
     fconstituentCut(0),
     fdeltaPhiCut(0),
+    fmatchingR(0),
     fhistos(NULL),
     fhistosDetMC(NULL),
     fana(NULL),
@@ -66,7 +68,8 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fjetCone(0),
     fktJetCone(0),
     fktScheme(0),
-    fusePionMassInktjets(0),
+    fantiktScheme(0),
+    fusePionMass(0),
     fuseDeltaPhiBGSubtr(0),
     fIsMC(kTRUE),
     fparticleEtaCut(0),
@@ -74,6 +77,7 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fsubleadingJetCut(0),
     fconstituentCut(0),
     fdeltaPhiCut(0),
+    fmatchingR(0),
     fhistos(NULL),
     fhistosDetMC(NULL),
     fana(NULL),
@@ -98,7 +102,8 @@ AliJCDijetTask::AliJCDijetTask(const AliJCDijetTask& ap) :
     fjetCone(ap.fjetCone),
     fktJetCone(ap.fktJetCone),
     fktScheme(ap.fktScheme),
-    fusePionMassInktjets(ap.fusePionMassInktjets),
+    fantiktScheme(ap.fantiktScheme),
+    fusePionMass(ap.fusePionMass),
     fuseDeltaPhiBGSubtr(ap.fuseDeltaPhiBGSubtr),
     fIsMC(ap.fIsMC),
     fparticleEtaCut(ap.fparticleEtaCut),
@@ -106,6 +111,7 @@ AliJCDijetTask::AliJCDijetTask(const AliJCDijetTask& ap) :
     fsubleadingJetCut(ap.fsubleadingJetCut),
     fconstituentCut(ap.fconstituentCut),
     fdeltaPhiCut(ap.fdeltaPhiCut),
+    fmatchingR(ap.fmatchingR),
     fhistos(ap.fhistos),
     fhistosDetMC(ap.fhistosDetMC),
     fana(ap.fana),
@@ -177,6 +183,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
 
 
     TString sktScheme;
+    TString santiktScheme;
     switch (fktScheme) {
         case 0:  sktScheme = "E_scheme";
                  break;
@@ -195,6 +202,24 @@ void AliJCDijetTask::UserCreateOutputObjects()
         default: sktScheme = "Unknown, check macro arguments!";
                  break;
     }
+    switch (fantiktScheme) {
+        case 0:  santiktScheme = "E_scheme";
+                 break;
+        case 1:  santiktScheme = "pt_scheme";
+                 break;
+        case 2:  santiktScheme = "pt2_scheme";
+                 break;
+        case 3:  santiktScheme = "Et_scheme";
+                 break;
+        case 4:  santiktScheme = "Et2_scheme";
+                 break;
+        case 5:  santiktScheme = "BIpt_scheme";
+                 break;
+        case 6:  santiktScheme = "BIpt2_scheme";
+                 break;
+        default: santiktScheme = "Unknown, check macro arguments!";
+                 break;
+    }
 
     cout << endl;
     cout << "===========SETTINGS===========" << endl;
@@ -205,24 +230,22 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Jet cone size:              " << fjetCone << endl;
     cout << "kt-jet cone size:           " << fktJetCone << endl;
     cout << "Using kt-jet scheme:        " << sktScheme.Data() << endl;
-    cout << "Using pion mass in kt-jets: " << fusePionMassInktjets << endl;
+    cout << "Using antikt-jet scheme:    " << santiktScheme.Data() << endl;
+    cout << "Using pion mass:            " << fusePionMass << endl;
     cout << "Using DeltaPhi in BG subtr: " << fuseDeltaPhiBGSubtr << endl;
     cout << "Particle eta cut:           " << fparticleEtaCut << endl;
     cout << "Particle pt cut:            " << fparticlePtCut << endl;
     cout << "Dijet leading jet cut:      " << fleadingJetCut << endl;
     cout << "Dijet subleading jet cut:   " << fsubleadingJetCut << endl;
     cout << "Jet leading const. cut:     " << fconstituentCut << endl;
-    cout << "Dijet DeltaPhi cut :        pi/" << fdeltaPhiCut << endl;
+    cout << "Dijet DeltaPhi cut:         pi/" << fdeltaPhiCut << endl;
+    cout << "Matching R for MC:          " << fmatchingR << endl;
     cout << endl;
 
-    if(fusePionMassInktjets && fktScheme!=0) {
-        cout << "Warning: Using pion mass for kt-jets but not using E_scheme!" << endl;
+    if(fusePionMass && (fktScheme!=0 || fantiktScheme!=0)) {
+        cout << "Warning: Using pion mass for jets but not using E_scheme!" << endl;
         cout << endl;
     }
-
-    // Save information about the settings used.
-    InitHistos(fhistos);
-    if(fIsMC) InitHistos(fhistosDetMC);
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
     fana->SetSettings(fDebug,
@@ -231,12 +254,14 @@ void AliJCDijetTask::UserCreateOutputObjects()
                       fjetCone,
                       fktJetCone,
                       fktScheme,
-                      fusePionMassInktjets,
+                      fantiktScheme,
+                      fusePionMass,
                       fuseDeltaPhiBGSubtr,
                       fconstituentCut,
                       fleadingJetCut,
                       fsubleadingJetCut,
-                      fdeltaPhiCut);
+                      fdeltaPhiCut,
+                      fmatchingR);
 
     if(fIsMC) {
         fanaMC->SetSettings(fDebug,
@@ -245,13 +270,21 @@ void AliJCDijetTask::UserCreateOutputObjects()
                             fjetCone,
                             fktJetCone,
                             fktScheme,
-                            fusePionMassInktjets,
+                            fantiktScheme,
+                            fusePionMass,
                             fuseDeltaPhiBGSubtr,
                             fconstituentCut,
                             fleadingJetCut,
                             fsubleadingJetCut,
-                            fdeltaPhiCut);
+                            fdeltaPhiCut,
+                            fmatchingR);
     }
+
+    // Save information about the settings used.
+    // Done after SetSettings
+    fana->InitHistos(fhistos, fIsMC, fcentralityBins.size());
+    if(fIsMC) fanaMC->InitHistos(fhistosDetMC, fIsMC, fcentralityBins.size());
+
 #endif
 
     // Load Custom Configuration and parameters
@@ -277,7 +310,8 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
     TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
-    fana->CalculateJetsDijets(fInputList, fhistos, fCBin);
+    fana->CalculateJets(fInputList, fhistos, fCBin);
+    fana->FillJetsDijets(fhistos, fCBin);
 #endif
 
     if(fIsMC) {
@@ -292,11 +326,12 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         TClonesArray *fInputListDetMC = (TClonesArray*)fJCatalystDetMCTask->GetInputList();
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
-        fanaMC->CalculateJetsDijets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
-#endif
-
+        fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
+        fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC);
 
         // Here response matrix calculation.
+        fana->CalculateResponse(fanaMC,fhistosDetMC);
+#endif
     }
 
 
@@ -317,57 +352,3 @@ void AliJCDijetTask::Terminate(Option_t *)
     cout<<"AliJCDijetTask Analysis DONE !!"<<endl; 
 }
 
-void AliJCDijetTask::InitHistos(AliJCDijetHistos *histos) {
-    histos->fh_info->Fill("Count", 1.0);
-    histos->fh_info->Fill("MC", IsMC());
-    for(unsigned i=0; i< fcentralityBins.size(); i++) histos->fh_info->Fill(Form("Cent bin border %02d",i), fcentralityBins.at(i));
-    histos->fh_info->Fill("Jet cone", fjetCone);
-    histos->fh_info->Fill("kt-jet cone", fktJetCone);
-    histos->fh_info->Fill("Scheme", fktScheme);
-    histos->fh_info->Fill("Use pion mass", fusePionMassInktjets);
-    histos->fh_info->Fill("Use DeltaPhi BG Subtr", fuseDeltaPhiBGSubtr);
-    histos->fh_info->Fill("Particle eta cut", fparticleEtaCut);
-    histos->fh_info->Fill("Particle pt cut", fparticlePtCut);
-    histos->fh_info->Fill("Leading jet cut", fleadingJetCut);
-    histos->fh_info->Fill("Subleading jet cut", fsubleadingJetCut);
-    histos->fh_info->Fill("Const. cut", fconstituentCut);
-    histos->fh_info->Fill("Delta phi cut pi/",fdeltaPhiCut);
-
-    // Initialize fh_events so that the bin order is correct
-    for (unsigned iBin=0; iBin < fcentralityBins.size()-1; iBin++) {
-        histos->fh_events[iBin]->Fill("events",0.0);
-        histos->fh_events[iBin]->Fill("particles",0.0);
-        histos->fh_events[iBin]->Fill("acc. particles",0.0);
-        histos->fh_events[iBin]->Fill("no rho calc. events",0.0);
-        histos->fh_events[iBin]->Fill("rho calc. events",0.0);
-        histos->fh_events[iBin]->Fill("jets",0.0);
-        histos->fh_events[iBin]->Fill("acc. jets",0.0);
-        histos->fh_events[iBin]->Fill("const. cut jets",0.0);
-        histos->fh_events[iBin]->Fill("bg. subtr. jets",0.0);
-        histos->fh_events[iBin]->Fill("bg. subtr. const. cut jets",0.0);
-        histos->fh_events[iBin]->Fill("kt-jets",0.0);
-        histos->fh_events[iBin]->Fill("acc. kt-jets",0.0);
-        histos->fh_events[iBin]->Fill("leading jet drop",0.0);
-        histos->fh_events[iBin]->Fill("subleading jet drop",0.0);
-        histos->fh_events[iBin]->Fill("raw dijets",0.0);
-        histos->fh_events[iBin]->Fill("raw dijets leading cut",0.0);
-        histos->fh_events[iBin]->Fill("raw acc. dijets",0.0);
-        histos->fh_events[iBin]->Fill("raw deltaphi cut dijets",0.0);
-        histos->fh_events[iBin]->Fill("bg. subtr. dijets",0.0);
-        histos->fh_events[iBin]->Fill("bg. subtr. dijets leading cut",0.0);
-        histos->fh_events[iBin]->Fill("bg. subtr. acc. dijets",0.0);
-        histos->fh_events[iBin]->Fill("bg. subtr. deltaphi cut dijets",0.0);
-        histos->fh_events[iBin]->Fill("bg. subtr. const. cut dijets",0.0);
-        histos->fh_events[iBin]->Fill("bg. subtr. const. cut dijets leading cut",0.0);
-        histos->fh_events[iBin]->Fill("bg. subtr. const. cut acc. dijets",0.0);
-        histos->fh_events[iBin]->Fill("bg. subtr. const. cut deltaphi cut dijets",0.0);
-        histos->fh_events[iBin]->Fill("const. cut dijets",0.0);
-        histos->fh_events[iBin]->Fill("const. cut dijets leading cut",0.0);
-        histos->fh_events[iBin]->Fill("const. cut acc. dijets",0.0);
-        histos->fh_events[iBin]->Fill("const. cut deltaphi cut dijets",0.0);
-        histos->fh_events[iBin]->Fill("kt dijets",0.0);
-        histos->fh_events[iBin]->Fill("kt dijets leading cut",0.0);
-        histos->fh_events[iBin]->Fill("kt acc. dijets",0.0);
-        histos->fh_events[iBin]->Fill("kt deltaphi cut dijets",0.0);
-    }
-}

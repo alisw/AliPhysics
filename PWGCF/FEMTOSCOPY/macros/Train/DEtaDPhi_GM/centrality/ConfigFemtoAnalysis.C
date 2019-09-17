@@ -155,7 +155,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
 	int multbins[numOfMultBins+1] = {2, 20, 50, 150, 0, 1000};
 
-	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 0, 0, 0, 0, /* lambdas */ 1, 1, 1,/* Xis */ 0, 0, 0, 0};
+	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 1, 1, 1, 1, /* lambdas */ 1, 1, 1,/* Xis */ 0, 0, 0, 0};
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL","PXim","aPXim" ,"PXip","aPXip"};
 
 
@@ -188,7 +188,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetMinPlpContribSPD(minPlpContribSPD);
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetReadV0(kTRUE);
-	Reader->SetReadCascade(kTRUE);
+	Reader->SetReadCascade(kFALSE);
 	Reader->SetUseOutOfBunchPlpSelection(kFALSE);
 	Reader->SetUseMVPlpSelection(ifIsPileUp);
 	Reader->SetTrackPileUpRemoval(ifIsPileUp);
@@ -232,8 +232,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoCutMonitorXi             *cutPass2Xi[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorXi             *cutFail2Xi[numOfMultBins*numOfChTypes];
 	//	 AliFemtoShareQualityTPCEntranceSepPairCut			*sqpcetaphitpcsame[numOfMultBins*numOfChTypes];
-	AliFemtoPairCutAntiGamma	*sqpcetaphitpc[numOfMultBins*numOfChTypes];
-	//AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
+	// AliFemtoPairCutAntiGamma	*sqpcetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	//AliFemtoShareQualityPairCut			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0PairCut               *sqp1cetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0TrackPairCut          *sqp2cetaphitpc[numOfMultBins*numOfChTypes];
@@ -652,9 +652,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);
 					sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
                  sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-                 sqpcetaphitpc[aniter]->SetMinimumRadius(1.6);
+								 sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
                  sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
                  sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
+								 sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
 					// sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 					//sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
 					// sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);	// two track cuts on splitting and merging  //1- wylaczany 0 -wlaczany

@@ -91,6 +91,11 @@
 
 #pragma link C++ class AliAnalysisTaskEbyeNetChargeFluctuations+;
 #pragma link C++ class AliAnalysisTaskEbyeNetChargeMCPbPbESD+;
+#pragma link C++ class AliAnalysisTaskEbyeChargeFlucPbPb+;
+#pragma link C++ class AliAnalysisTaskEbyeChargeFlucpPb+;
+#pragma link C++ class AliAnalysisTaskEbyeChargeFlucpp+;
+#pragma link C++ class AliAnalysisTaskEbyeChargeFlucPbPbQA+;
+#pragma link C++ class AliAnalysisTaskEbyeChargeFlucLHC10h+;
 #pragma link C++ class AliEbyEPhiDistNew+;
 
 

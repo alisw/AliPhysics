@@ -86,6 +86,7 @@ fCaloClusters_tender(0),
 fMCparticle(0),
 fMCArray(0),
 fMultSelection(0),
+fIsAnapp(kFALSE),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fcentMim(0),
@@ -133,6 +134,11 @@ fDDown(0),
 fBcent(0),
 fBMin(0),
 fBMax(0),
+fD0(0),
+fDPlus(0),
+fDs(0),
+fLc(0),
+fB(0),
 fWeightB(0),
 fWeightD(0),
 fOutputList(0),
@@ -199,7 +205,9 @@ fEMCTrkMatch_Eta(0),
 fInclsElecPt(0),
 fHadPt_AftEID(0),
 fHadEovp_AftEID(0),
+fHadEovpNL_AftEID(0),
 fEop_AftEID(0),
+fEopNL_AftEID(0),
 fNElecInEvt(0),
 fULSElecPt(0),
 fLSElecPt(0),
@@ -297,7 +305,7 @@ fSprsTemplatesWeightVar2(0)
 {
     // Constructor
     
-    fvalueElectron = new Double_t[6];
+    fvalueElectron = new Double_t[7];
     // Define input and output slots here
     // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
@@ -321,6 +329,7 @@ fCaloClusters_tender(0),
 fMCparticle(0),
 fMCArray(0),
 fMultSelection(0),
+fIsAnapp(kFALSE),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fcentMim(0),
@@ -368,6 +377,11 @@ fDDown(0),
 fBcent(0),
 fBMin(0),
 fBMax(0),
+fD0(0),
+fDPlus(0),
+fDs(0),
+fLc(0),
+fB(0),
 fWeightB(0),
 fWeightD(0),
 fOutputList(0),
@@ -434,7 +448,9 @@ fEMCTrkMatch_Eta(0),
 fInclsElecPt(0),
 fHadPt_AftEID(0),
 fHadEovp_AftEID(0),
+fHadEovpNL_AftEID(0),
 fEop_AftEID(0),
+fEopNL_AftEID(0),
 fNElecInEvt(0),
 fULSElecPt(0),
 fLSElecPt(0),
@@ -532,7 +548,7 @@ fSprsTemplatesWeightVar2(0)
 {
     //Default constructor
     
-    fvalueElectron = new Double_t[6];
+    fvalueElectron = new Double_t[7];
     // Define input and output slots here
     // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
@@ -563,6 +579,11 @@ AliAnalysisTaskHFEBESpectraEMC::~AliAnalysisTaskHFEBESpectraEMC()
     if(fBcent) {delete fBcent; fBcent=0;}
     if(fBMin)  {delete fBMin; fBMin=0;}
     if(fBMax)  {delete fBMax; fBMax=0;}
+    if(fD0)    {delete fD0; fD0=0;}
+    if(fDPlus) {delete fDPlus; fDPlus=0;}
+    if(fDs)    {delete fDs; fDs=0;}
+    if(fLc)    {delete fLc; fLc=0;}
+    if(fB)    {delete fB; fB=0;}
 }
 //________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
@@ -574,8 +595,19 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     Double_t pi = TMath::Pi();
     fPi0Weight = new TF1("fPi0Weight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
     fEtaWeight = new TF1("fEtaWeight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
-    fPi0Weight->SetParameters(3.72558e+02,-4.25395e-02,2.18681e-03,1.59658e+00,5.60917e+00);
-    fEtaWeight->SetParameters(3.34121e+02,-7.09185e-02,2.04493e-03,1.59842e+00,5.43861e+00);
+    
+     if(fIsAnapp){
+         fPi0Weight->SetParameters(3.72558e+02,-4.25395e-02,2.18681e-03,1.59658e+00,5.60917e+00);
+         fEtaWeight->SetParameters(3.34121e+02,-7.09185e-02,2.04493e-03,1.59842e+00,5.43861e+00);
+     }
+    
+    if(!fIsAnapp){
+        if(fcentMax == 50){
+            //fit obtained for pt : 2 to 30
+            fPi0Weight->SetParameters(7.77976e+02,-1.61829e-01,2.17987e-03,1.39048e+00,4.57477e+00);
+            fEtaWeight->SetParameters(3.23001e+02,-5.86318e-02,-2.14621e-04,1.90352e+00,5.26774e+00);
+        }
+    }
     
     ///////////////////////////
     //Histos for MC templates//
@@ -789,8 +821,14 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     fHadEovp_AftEID = new TH2F("fHadEovp_AftEID", "E/p distribution for hadrons -10<nsig<-3.5, SS cuts;p_{T} (GeV/c);E/p", 60,0,30,100, 0.0, 2.0);
     fOutputList->Add(fHadEovp_AftEID);
     
+    fHadEovpNL_AftEID = new TH2F("fHadEovpNL_AftEID", "E/p distribution for hadrons -10<nsig<-3.5, NonLinearE, SS cuts;p_{T} (GeV/c);E/p", 60,0,30,100, 0.0, 2.0);
+    fOutputList->Add(fHadEovpNL_AftEID);
+    
     fEop_AftEID = new TH2F("fEop_AftEID", "E/p distribution after nsig, SS cuts;p_{T} (GeV/c);E/p", 60,0,30,100, 0.0, 2.0);
     fOutputList->Add(fEop_AftEID);
+    
+    fEopNL_AftEID = new TH2F("fEopNL_AftEID", "E/p distribution after nsig, SS cuts, NonLinearE;p_{T} (GeV/c);E/p", 60,0,30,100, 0.0, 2.0);
+    fOutputList->Add(fEopNL_AftEID);
     
     fNElecInEvt = new TH1F("fNElecInEvt","No of electrons in the event; N^{ele};counts",20,-0.5,19.5);
     fOutputList->Add(fNElecInEvt);
@@ -820,10 +858,10 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     fOutputList->Add(fLSElecDCA);
     
     if(fFlagSparse){
-        Int_t bins[6]=      {280, 160, 40, 200, 200, 20}; //pT;nSigma;eop;m20;m02;iSM
-        Double_t xmin[6]={2,  -8,   0,   0,   0, 0};
-        Double_t xmax[6]={30,   8,   2,   2,   2, 20};
-        fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;m02;iSM;",6,bins,xmin,xmax);
+        Int_t bins[7]=      {280, 160, 40, 200, 200, 20, 40}; //pT;nSigma;eop;m20;m02;iSM;eopNL
+        Double_t xmin[7]={2,  -8,   0,   0,   0, 0, 0};
+        Double_t xmax[7]={30,   8,   2,   2,   2, 20, 2};
+        fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;m02;iSM;eop_NL;",7,bins,xmin,xmax);
         fOutputList->Add(fSparseElectron);
     }
     
@@ -1516,17 +1554,20 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
                 fClsEtaPhiAftMatchEMCout->Fill(emceta,emcphi);
             
             //EMCAL EID info
-            Double_t eop = -1.0;
+            Double_t eop = -1.0, eop_NL = -1.0;
             Double_t m02 = -99999,m20 = -99999,sqm02m20=-99999.0;
-            if(track->P()>0)eop = clustMatchE/track->P();
+            if(track->P()>0){
+                eop = clustMatchE/track->P();
+                eop_NL = clustMatch->GetNonLinCorrEnergy()/track->P();
+            }
             m02 =clustMatch->GetM02();
             m20 =clustMatch->GetM20();
             
             if(track->Pt()>3.0){
-                fHistdEdxEop->Fill(eop,dEdx);
-                fHistNsigEop->Fill(eop,fTPCnSigma);
-                fM20EovP->Fill(eop,clustMatch->GetM20());
-                fM02EovP->Fill(eop,clustMatch->GetM02());
+                fHistdEdxEop->Fill(eop_NL,dEdx);
+                fHistNsigEop->Fill(eop_NL,fTPCnSigma);
+                fM20EovP->Fill(eop_NL,clustMatch->GetM20());
+                fM02EovP->Fill(eop_NL,clustMatch->GetM02());
             }
             fM20->Fill(track->Pt(),clustMatch->GetM20());
             fM02->Fill(track->Pt(),clustMatch->GetM02());
@@ -1538,6 +1579,7 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             fvalueElectron[3] = m20;
             fvalueElectron[4] = m02;
             fvalueElectron[5] = iSM;
+            fvalueElectron[6] = eop_NL;
             
             if(fFlagSparse && track->Pt()>2.0){
                 fSparseElectron->Fill(fvalueElectron);
@@ -1606,11 +1648,15 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::PassEIDCuts(AliVTrack *track, AliVCluster
     //apply electron identification cuts
     
     Bool_t hadTrk = kFALSE;
-    Double_t eop = -1.0;
+    Double_t eop = -1.0, eop_NL = -1.0;
     Double_t m02 = -999,m20 = -999;
     Double_t clustE = clust->E();
+    Double_t clustE_NL = clust->GetNonLinCorrEnergy();
     Double_t TrkPt = track->Pt();
-    if(track->P()>0)eop = clustE/track->P();
+    if(track->P()>0){
+        eop = clustE/track->P();
+        eop_NL = clustE_NL/track->P();
+    }
     m02 =clust->GetM02();
     m20 =clust->GetM20();
     
@@ -1621,14 +1667,17 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::PassEIDCuts(AliVTrack *track, AliVCluster
             if((m02 > fM02Min && m02 < fM02Max1) && (m20 > fM20Min && m20 < fM20Max))
                 {
                     fHadEovp_AftEID->Fill(TrkPt,eop);
-                    if(eop > fEovPMin && eop < fEovPMax) hadTrk=kTRUE;
+                    fHadEovpNL_AftEID->Fill(TrkPt,eop_NL);
+
+                    if(eop_NL > fEovPMin && eop_NL < fEovPMax) hadTrk=kTRUE;
                 }
         }
         if(TrkPt >= 8.0){
             if((m02 > fM02Min && m02 < fM02Max2) && (m20 > fM20Min && m20 < fM20Max))
             {
                 fHadEovp_AftEID->Fill(TrkPt,eop);
-                if(eop > fEovPMin && eop < fEovPMax) hadTrk=kTRUE;
+                fHadEovpNL_AftEID->Fill(TrkPt,eop_NL);
+                if(eop_NL > fEovPMin && eop_NL < fEovPMax) hadTrk=kTRUE;
             }
         }
     }
@@ -1644,8 +1693,9 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::PassEIDCuts(AliVTrack *track, AliVCluster
     if(m20 < fM20Min || m20 > fM20Max) return kFALSE;
     
     fEop_AftEID->Fill(TrkPt,eop);
+    fEopNL_AftEID->Fill(TrkPt,eop_NL);
     
-    if(eop < fEovPMin || eop > fEovPMax) return kFALSE;
+    if(eop_NL < fEovPMin || eop_NL > fEovPMax) return kFALSE;
     
     return kTRUE;
 }
@@ -1806,8 +1856,8 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
         
         if(clust && clust->IsEMCAL())
         {
-            Double_t clustE = clust->E();
-            if(clustE < 0.3) continue;
+            Double_t clustE_NL = clust->GetNonLinCorrEnergy();
+            if(clustE_NL < 0.3) continue;
             
             /////////////////////////////////
             //Select EMCAL or DCAL clusters//
@@ -1829,18 +1879,18 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
-            fHistClustE->Fill(clustE);
-            fHistNonLinClustE->Fill(clust->GetNonLinCorrEnergy());
+            fHistClustE->Fill(clust->E());
+            fHistNonLinClustE->Fill(clustE_NL);
             
-           // if(centrality>-1)fHistClustEcent->Fill(centrality,clustE);
+           // if(centrality>-1)fHistClustEcent->Fill(centrality,clustE_NL);
             fEMCClsEtaPhi->Fill(emceta,emcphi);
-            fHistoNCells->Fill(clustE,clust->GetNCells());
+            fHistoNCells->Fill(clustE_NL,clust->GetNCells());
             Double_t EperCell = -999.9;
-            if(clust->GetNCells()>0)EperCell = clustE/clust->GetNCells();
-            fHistoEperCell->Fill(clustE,EperCell);
+            if(clust->GetNCells()>0)EperCell = clustE_NL/clust->GetNCells();
+            fHistoEperCell->Fill(clustE_NL,EperCell);
             
             Float_t tof = clust->GetTOF()*1e+9; // ns
-            fHistoTimeEMC->Fill(clustE,tof);
+            fHistoTimeEMC->Fill(clustE_NL,tof);
             
             NclustAll++;
         }
@@ -2358,15 +2408,15 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEIDRecoEffi(AliVTrack *track, AliVCluste
     
     Bool_t PassSSCut = kFALSE;
     
-    Double_t eop = -1.0;
+    Double_t eop_NL = -1.0;
     Double_t m02 = -999,m20 = -999;
-    Double_t clustE = clust->E();
+    Double_t clustE_NL = clust->GetNonLinCorrEnergy();
     Double_t TrkPt = track->Pt();
-    if(track->P()>0)eop = clustE/track->P();
+    if(track->P()>0)eop_NL = clustE_NL/track->P();
     m02 =clust->GetM02();
     m20 =clust->GetM20();
     
-    if(eop > fEovPMin && eop < fEovPMax){
+    if(eop_NL > fEovPMin && eop_NL < fEovPMax){
         if(IsMCEle) fInclElePhysPriEovP->Fill(TrkPt);
         if(IsMCHFEle) fHFEPhysPriEovP->Fill(TrkPt);
         if(IsMCBEle) fBEPhysPriEovP->Fill(TrkPt);
@@ -2378,7 +2428,7 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEIDRecoEffi(AliVTrack *track, AliVCluste
             if(IsMCBEle) fBEPhysPriTPCnsig->Fill(TrkPt);
             if(IsMCDEle) fDEPhysPriTPCnsig->Fill(TrkPt);
             
-            if(eop > fEovPMin && eop < fEovPMax){
+            if(eop_NL > fEovPMin && eop_NL < fEovPMax){
                 if(IsMCEle) fInclElePhysPriEovPBfrSS->Fill(TrkPt);
                 if(IsMCHFEle) fHFEPhysPriEovPBfrSS->Fill(TrkPt);
                 if(IsMCBEle) fBEPhysPriEovPBfrSS->Fill(TrkPt);
@@ -2522,7 +2572,8 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Doubl
             if(MomPDG>500 && MomPDG<600) {
                 fBMesonElecDCA->Fill(TrkPt,TrkDCA);
                 fpidSort = 1; //Mom is B
-                GetBWeight(MCPartMom, fWeightB, fWeightBMin, fWeightBMax);
+                if(fIsAnapp) GetBWeight(MCPartMom, fWeightB, fWeightBMin, fWeightBMax);
+                if(!fIsAnapp) GetBWeightPbPb(MCPartMom, fWeightB);
             }
             if(MomPDG>5000 && MomPDG<6000){
                 fBBaryonElecDCA->Fill(TrkPt,TrkDCA);
@@ -2542,7 +2593,8 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Doubl
                     if(GMomPDG>500 && GMomPDG<600){
                         fBMesonElecDCA->Fill(TrkPt,TrkDCA);
                         fpidSort = 1; //Mom is B
-                        GetBWeight(MCPartMom, fWeightB, fWeightBMin, fWeightBMax);
+                        if(fIsAnapp) GetBWeight(MCPartGMom, fWeightB, fWeightBMin, fWeightBMax);
+                        if(!fIsAnapp) GetBWeightPbPb(MCPartGMom, fWeightB);
                     }
                     if(GMomPDG>5000 && GMomPDG<6000){
                         fBBaryonElecDCA->Fill(TrkPt,TrkDCA);
@@ -2562,7 +2614,8 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Doubl
                             if(GGMomPDG>500 && GGMomPDG<600){
                                 fBMesonElecDCA->Fill(TrkPt,TrkDCA);
                                 fpidSort = 1; //Mom is B
-                                GetBWeight(MCPartMom, fWeightB, fWeightBMin, fWeightBMax);
+                                if(fIsAnapp) GetBWeight(MCPartGGMom, fWeightB, fWeightBMin, fWeightBMax);
+                                if(!fIsAnapp) GetBWeightPbPb(MCPartGGMom, fWeightB);
                             }
                             if(GGMomPDG>5000 && GGMomPDG<6000){
                                 fBBaryonElecDCA->Fill(TrkPt,TrkDCA);
@@ -2581,11 +2634,16 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Doubl
             if(MomPDG>400 && MomPDG<500) {
                 fDMesonElecDCA->Fill(TrkPt,TrkDCA);
                 fpidSort = 2; //Mom is D
-                GetDWeight(MCPartMom, fWeightD, fWeightDUp, fWeightDDown);
+                if(fIsAnapp) GetDWeight(MCPartMom, fWeightD, fWeightDUp, fWeightDDown);
+                if(!fIsAnapp) GetDWeightPbPb(MCPartMom, MomPDG, fWeightD);
             }
             if(MomPDG>4000 && MomPDG<5000) {
                 fDBaryonElecDCA->Fill(TrkPt,TrkDCA);
                 fpidSort = 9; //Mom is c Baryon
+                if(!fIsAnapp)
+                {
+                    if(MomPDG == 4122) GetDWeightPbPb(MCPartMom, MomPDG, fWeightD); //For Lc
+                }
             }
             if(MomPDG == 411) fpidSort = 11; //Mom is D+
             if(MomPDG == 421) fpidSort = 12; //Mom is D0
@@ -2606,13 +2664,17 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Doubl
         
         if(IsBEle) {
             fSprsTemplatesWeight->Fill(fvalue, fWeightB);
-            fSprsTemplatesWeightVar1->Fill(fvalue, fWeightBMin);
-            fSprsTemplatesWeightVar2->Fill(fvalue, fWeightBMax);
+            if(fIsAnapp){
+                fSprsTemplatesWeightVar1->Fill(fvalue, fWeightBMin);
+                fSprsTemplatesWeightVar2->Fill(fvalue, fWeightBMax);
+            }
         }
         if(IsDEle) {
             fSprsTemplatesWeight->Fill(fvalue, fWeightD);
-            fSprsTemplatesWeightVar1->Fill(fvalue, fWeightDUp);
-            fSprsTemplatesWeightVar2->Fill(fvalue, fWeightDDown);
+            if(fIsAnapp){
+                fSprsTemplatesWeightVar1->Fill(fvalue, fWeightDUp);
+                fSprsTemplatesWeightVar2->Fill(fvalue, fWeightDDown);
+            }
         }
     }
     return kTRUE;
@@ -2630,6 +2692,19 @@ void AliAnalysisTaskHFEBESpectraEMC::SetBmesonWeightHist(TH1 *B1, TH1 *B2, TH1 *
     fBcent = (TH1F*)B1->Clone();
     fBMin = (TH1F*)B2->Clone();
     fBMax = (TH1F*)B3->Clone();
+}
+//________________________________________________________________________
+void AliAnalysisTaskHFEBESpectraEMC::SetDmesonWeightHistPbPb(TH1 *D0, TH1 *DPlus, TH1 *Ds, TH1 *Lc)
+{
+    fD0 = (TH1F *)D0->Clone();
+    fDPlus = (TH1F *)DPlus->Clone();
+    fDs = (TH1F *)Ds->Clone();
+    fLc = (TH1F *)Lc->Clone();
+}
+//________________________________________________________________________
+void AliAnalysisTaskHFEBESpectraEMC::SetBmesonWeightHistPbPb(TH1 *B)
+{
+    fB = (TH1D *)B->Clone();
 }
 /*
 //________________________________________________________________________
@@ -2661,6 +2736,73 @@ void AliAnalysisTaskHFEBESpectraEMC::InputWeightCorrectionMaps()
     f3->Close();
 }
  */
+//________________________________________________________________________
+void AliAnalysisTaskHFEBESpectraEMC::GetDWeightPbPb(AliAODMCParticle *Part, Int_t PDG, Double_t &DCentWeight)
+{
+    //D meson weight
+
+    Int_t bin = -999;
+    Int_t binLast = -999;
+    
+    if(!fD0){
+        DCentWeight = 1.0;
+        return;
+    }
+    
+    bin = fD0->FindBin(Part->Pt());
+    binLast = fD0->FindBin(35.9);
+    
+    if(fD0->IsBinUnderflow(bin)){
+        if(PDG == 421) DCentWeight = fD0->GetBinContent(1);
+        if(PDG == 411) DCentWeight = fDPlus->GetBinContent(1);
+        if(PDG == 431) DCentWeight = fDs->GetBinContent(1);
+        if(PDG == 4122) DCentWeight = fLc->GetBinContent(1);
+        return;
+    }
+    if(Part->Pt() > 35.9){
+        if(PDG == 421) DCentWeight = fD0->GetBinContent(binLast);
+        if(PDG == 411) DCentWeight = fDPlus->GetBinContent(binLast);
+        if(PDG == 431) DCentWeight = fDs->GetBinContent(binLast);
+        if(PDG == 4122) DCentWeight = fLc->GetBinContent(binLast);
+        return;
+    }
+    
+    if(PDG == 421) DCentWeight = fD0->GetBinContent(bin);
+    if(PDG == 411) DCentWeight = fDPlus->GetBinContent(bin);
+    if(PDG == 431) DCentWeight = fDs->GetBinContent(bin);
+    if(PDG == 4122) DCentWeight = fLc->GetBinContent(bin);
+    
+    return;
+}
+//________________________________________________________________________
+void AliAnalysisTaskHFEBESpectraEMC::GetBWeightPbPb(AliAODMCParticle *Part, Double_t &BCentWeight)
+{
+    //B meson weight
+    
+    Int_t bin = -999;
+    Int_t binLast = -999;
+    
+    if(!fB){
+        BCentWeight = 1.0;
+        return;
+    }
+
+    bin = fB->FindBin(Part->Pt());
+    binLast = fB->FindBin(49.9);
+
+    if(fB->IsBinUnderflow(bin)){
+        BCentWeight = fB->GetBinContent(1);
+        return;
+    }
+    if(Part->Pt() > 35.9){
+        BCentWeight = fB->GetBinContent(binLast);
+        return;
+    }
+    
+    BCentWeight = fB->GetBinContent(bin);
+    
+    return;
+}
 //________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::GetBWeight(AliAODMCParticle *Part, Double_t &BCentWeight, Double_t &BMinWeight, Double_t &BMaxWeight)
 {

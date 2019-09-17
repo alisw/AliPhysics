@@ -17,7 +17,21 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
  Float_t     masslow       = 1.2,   //inv mass range lower boundary
  Float_t     massup        = 3.2,   //inv mass range upper boundary
  Int_t       nbins         = 2000,  //inv mass: N bins
- Bool_t      enableMonitor = kTRUE) //enable single track QA
+ Bool_t      enableMonitor = kTRUE, //enable single track QA
+ Float_t     pi_Ls_PIDCut=4.,        //nsigma V0 daughters 
+ Float_t     LsDCA = 0.3,             //V0 vtx to PV
+ Float_t     LsCosPoinAn = 0.98,      // cos of Pointing Angle
+ Float_t     LsDaughDCA=0.8,          // dca V0 daughters
+ Float_t     massTol = 0.006,         // mass tolerance 6 MeV
+ Float_t     massTolVeto = 0.0043,    // mass tol veto
+ Bool_t      Switch = kFALSE,         // switch
+ Float_t     pLife = 25,              // life
+ Float_t     v0rapidity= 0.5,         // V0 rapidity
+ Float_t     radiuslow=5.,            // radius low 
+ Bool_t      doCustomDCAcuts=kTRUE,  //custom dca cuts for V0 daughters
+ Double_t    dcaProton=0.1,           // proton dca
+ Double_t    dcaPion=0.1)             //pion dca
+
 {  
 
   //-------------------------------------------
@@ -81,7 +95,8 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
 
   //trigger 
-  task->UseESDTriggerMask(triggerMask); //ESD
+  if (!isMC) task->UseESDTriggerMask(triggerMask); //ESD
+  if(isMC) task->UseESDTriggerMask(AliVEvent::kAnyINT);
 //  task->SelectCollisionCandidates(triggerMask); //AOD
   
   //-----------------------------------------------------------------------------------------------
@@ -103,36 +118,14 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   //-----------------------------------------------------------------------------------------------
   // -- EVENT SELECTION ---------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
-   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
-   if ((collSys==AliPIDResponse::kPP) && (!isMC)) cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup
-   cutVertex->SetCheckZResolutionSPD(); ::Info("AddTaskSstar", Form("CheckZResolutionSPD:              ON"));
-   cutVertex->SetCheckDispersionSPD(); ::Info("AddTaskSstar", Form("CheckDispersionSPD:               ON"));
-   cutVertex->SetCheckZDifferenceSPDTrack(); ::Info("AddTaskSstar", Form("CheckZDifferenceSPDTrack:         ON"));
-  
-  //set check for pileup in 2013
-  AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", kFALSE, rejectPileUp);
-  cutEventUtils->SetCheckIncompleteDAQ(kTRUE);
-  cutEventUtils->SetCheckSPDClusterVsTrackletBG();
-  cutEventUtils->SetRemovePileUpMultBins();
- // cutEventUtils->SetCheckAcceptedMultSelection();  //kills a lot!!!!
-  ::Info("AddTaskSstar", Form("CheckIncompleteDAQ:                  ON"));
-  ::Info("AddTaskSstar", Form("SetCheckSPDClusterVsTrackletBG:      ON"));
-  
-  // if (useMVPileUpSelection) {
-  //   cutEventUtils->SetUseMVPlpSelection(useMVPileUpSelection);
-  //   cutEventUtils->SetMinPlpContribMV(MinPlpContribMV);
-  //   cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
-  //   ::Info("AddTaskSstar", Form("Multiple-vtx Pile-up rejection:      ON \nSettings: MinPlpContribMV = %i, MinPlpContribSPD = %i", MinPlpContribMV, MinPlpContribSPD));
-  // } else {
-  //   cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
-  //   ::Info("AddTaskSstar", Form("SPD Pile-up rejection:                      ON \nSettings: MinPlpContribSPD = %i", MinPlpContribSPD));
-  // }
-  // ::Info("AddTaskSstar", Form("Pile-up rejection mode:                %s", (rejectPileUp?"ON":"OFF")));   
-  
   AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
-  eventCuts->AddCut(cutEventUtils);
-  eventCuts->AddCut(cutVertex);
-  eventCuts->SetCutScheme(Form("%s&%s", cutEventUtils->GetName(), cutVertex->GetName()));
+
+  AliRsnEventCuts * rsnEventCuts = new AliRsnEventCuts("rsnEventCuts");
+  rsnEventCuts->ForceSetupPbPb2018();
+  rsnEventCuts->SetUseMultSelectionEvtSel();
+  eventCuts->AddCut(rsnEventCuts);
+  eventCuts->SetCutScheme(Form("%s", rsnEventCuts->GetName()));
+
   task->SetEventCuts(eventCuts);
    
   //connect task
@@ -206,10 +199,11 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   //-----------------------------------------------------------------------------------------------
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigPM.C");
-// gROOT->LoadMacro("ConfigSigPM.C");
+ gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigPM.C");
+//  gROOT->LoadMacro("ConfigSigPM.C");
  if (!ConfigSigPM(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, nsigma, 
-enableMonitor) ) return 0x0;
+enableMonitor, pi_Ls_PIDCut, LsDCA, LsCosPoinAn, LsDaughDCA, massTol, massTolVeto, Switch, pLife, v0rapidity, radiuslow, doCustomDCAcuts, dcaProton, dcaPion)) 
+return 0x0;
   
   //-----------------------------------------------------------------------------------------------
   // -- CONTAINERS --------------------------------------------------------------------------------

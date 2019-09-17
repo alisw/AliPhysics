@@ -18,6 +18,7 @@
 #pragma link C++ class AliRsnValueEvent+;
 
 #pragma link C++ class AliRsnCutEventUtils+;
+#pragma link C++ class AliRsnEventCuts+;
 #pragma link C++ class AliRsnCutPrimaryVertex+;
 #pragma link C++ class AliRsnCutTrue+;
 #pragma link C++ class AliRsnCutTrackQuality+;
@@ -75,8 +76,13 @@
 #pragma link C++ class AliRsnMiniResonanceFinder+;
 #pragma link C++ class AliRsnTrainManager+;
 #pragma link C++ class AliRsnMiniTaskPhiVn+;
+#pragma link C++ class AliRsnCutPIDkink+;
 // Xi1530
 #pragma link C++ class AliAnalysisTaskXi1530+;
+// NanoCheck
+#pragma link C++ class AliAnalysisTaskNanoCheck+;
+// Sigma1385
+#pragma link C++ class AliAnalysisTaskSigma1385PM+ ;
 //f0980
 #pragma link C++ class AliAnalysisTaskInclusivef0f2+;
 

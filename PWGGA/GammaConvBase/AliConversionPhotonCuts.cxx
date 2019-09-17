@@ -203,6 +203,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fKappaMinCut(-1),
   fKappaMaxCut(1000),
   fDoElecDeDxPostCalibration(kFALSE),
+  fIsRecalibDepTPCCl(kTRUE),
   fHistoEtaDistV0s(NULL),
   fHistoEtaDistV0sAfterdEdxCuts(NULL),
   fHistodEdxCuts(NULL),
@@ -373,6 +374,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fKappaMinCut(ref.fKappaMinCut),
   fKappaMaxCut(ref.fKappaMaxCut),
   fDoElecDeDxPostCalibration(ref.fDoElecDeDxPostCalibration),
+  fIsRecalibDepTPCCl(ref.fIsRecalibDepTPCCl),
   fHistoEtaDistV0s(NULL),
   fHistoEtaDistV0sAfterdEdxCuts(NULL),
   fHistodEdxCuts(NULL),
@@ -738,8 +740,13 @@ Bool_t AliConversionPhotonCuts::LoadElecDeDxPostCalibration(Int_t runNumber) {
     }
 
     for(Int_t i=0;i<fnRBins;i++){
-      fHistoEleMapRecalib[i]  = (TH2S*)fileRecalib->Get(Form("Ele_Cl%d_recalib",i));
-      fHistoPosMapRecalib[i]  = (TH2S*)fileRecalib->Get(Form("Pos_Cl%d_recalib",i));
+      if (fIsRecalibDepTPCCl){
+        fHistoEleMapRecalib[i]  = (TH2S*)fileRecalib->Get(Form("Ele_Cl%d_recalib",i));
+        fHistoPosMapRecalib[i]  = (TH2S*)fileRecalib->Get(Form("Pos_Cl%d_recalib",i));
+      } else {
+        fHistoEleMapRecalib[i]  = (TH2S*)fileRecalib->Get(Form("Ele_R%d_recalib",i));
+        fHistoPosMapRecalib[i]  = (TH2S*)fileRecalib->Get(Form("Pos_R%d_recalib",i));
+      }
     }
     if (fHistoEleMapRecalib[0] == NULL || fHistoEleMapRecalib[1] == NULL ||
         fHistoEleMapRecalib[2] == NULL || fHistoEleMapRecalib[3] == NULL ){
@@ -780,8 +787,13 @@ Bool_t AliConversionPhotonCuts::LoadElecDeDxPostCalibration(Int_t runNumber) {
     }
 
     for(Int_t i=0;i<fnRBins;i++){
-      fHistoEleMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Ele_Cl%d_recalib",i));
-      fHistoPosMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Pos_Cl%d_recalib",i));
+      if (fIsRecalibDepTPCCl){
+        fHistoEleMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Ele_Cl%d_recalib",i));
+        fHistoPosMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Pos_Cl%d_recalib",i));
+      } else {
+        fHistoEleMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Ele_R%d_recalib",i));
+        fHistoPosMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Pos_R%d_recalib",i));
+      }
     }
     if (fHistoEleMapRecalib[0] == NULL || fHistoEleMapRecalib[1] == NULL ||
         fHistoEleMapRecalib[2] == NULL || fHistoEleMapRecalib[3] == NULL  ){
@@ -799,7 +811,7 @@ Bool_t AliConversionPhotonCuts::LoadElecDeDxPostCalibration(Int_t runNumber) {
 }
 
 //_________________________________________________________________________
-Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge, Double_t nsig, Double_t P, Double_t Eta, Double_t TPCCl){
+Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge, Double_t nsig, Double_t P, Double_t Eta, Double_t TPCCl, Double_t R){
 
   Double_t Charge  = charge;
   Double_t CornSig = nsig;
@@ -808,51 +820,59 @@ Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge
   //X axis 12 Y axis 18  ... common for all R slice
   Int_t BinP    = 4;   //  default value
   Int_t BinEta  = 9;  //  default value
-  Int_t BinCl   = -1;
+  Int_t BinCorr   = -1;
   Double_t arrayTPCCl[5]    = {0, 60, 100, 150, 180};
+  Double_t arrayR[5]        = {0, 33.5, 72, 145, 180};
 
   for (Int_t i = 0; i<4; i++){
-    if (TPCCl > arrayTPCCl[i] && TPCCl <= arrayTPCCl[i+1]){
-      BinCl = i;
+    if (fIsRecalibDepTPCCl) {
+      if (TPCCl > arrayTPCCl[i] && TPCCl <= arrayTPCCl[i+1]){
+        BinCorr = i;
+      }
+    } else {
+      if (R > arrayR[i] && R <= arrayR[i+1]){
+        BinCorr = i;
+      }
     }
   }
-  if (BinCl == -1 || BinCl >  3){
-    cout<< " no valid TPC cluster number ..., not recalibrating"<< endl;
+  if (BinCorr == -1 || BinCorr >  3){
+    if (fIsRecalibDepTPCCl) cout<< " no valid TPC cluster number ..., not recalibrating"<< endl;
+    else cout<< " no valid R bin number ..., not recalibrating"<< endl;
     return CornSig;// do nothing if correction map is not avaible
   }
 
   if(Charge<0){
-    if (fHistoEleMapRecalib[BinCl] == NULL ){
+    if (fHistoEleMapRecalib[BinCorr] == NULL ){
       cout<< " histograms are null..., going out"<< endl;
       return CornSig;// do nothing if correction map is not avaible
     }
 
-    BinP    = fHistoEleMapRecalib[BinCl]->GetXaxis()->FindBin(P);
-    BinEta  = fHistoEleMapRecalib[BinCl]->GetYaxis()->FindBin(Eta);
+    BinP    = fHistoEleMapRecalib[BinCorr]->GetXaxis()->FindBin(P);
+    BinEta  = fHistoEleMapRecalib[BinCorr]->GetYaxis()->FindBin(Eta);
 
     if(P>0. && P<10.){
-      mean  = (Double_t)fHistoEleMapRecalib[BinCl]->GetBinContent(BinP,BinEta)/1000;
-      width = (Double_t)fHistoEleMapRecalib[BinCl]->GetBinError(BinP,BinEta)/1000;
+      mean  = (Double_t)fHistoEleMapRecalib[BinCorr]->GetBinContent(BinP,BinEta)/1000;
+      width = (Double_t)fHistoEleMapRecalib[BinCorr]->GetBinError(BinP,BinEta)/1000;
     }else if(P>=10.){// use bin edge value
-      mean  = (Double_t)fHistoEleMapRecalib[BinCl]->GetBinContent(fHistoEleMapRecalib[BinCl]->GetNbinsX(),BinEta)/1000;
-      width = (Double_t)fHistoEleMapRecalib[BinCl]->GetBinError(fHistoEleMapRecalib[BinCl]->GetNbinsX(),BinEta)/1000;
+      mean  = (Double_t)fHistoEleMapRecalib[BinCorr]->GetBinContent(fHistoEleMapRecalib[BinCorr]->GetNbinsX(),BinEta)/1000;
+      width = (Double_t)fHistoEleMapRecalib[BinCorr]->GetBinError(fHistoEleMapRecalib[BinCorr]->GetNbinsX(),BinEta)/1000;
     }
 
   }else{
-    if (fHistoPosMapRecalib[BinCl] == NULL ){
+    if (fHistoPosMapRecalib[BinCorr] == NULL ){
       cout<< " histograms are null..., going out"<< endl;
       return CornSig;// do nothing if correction map is not avaible
     }
 
-    BinP    = fHistoPosMapRecalib[BinCl]->GetXaxis()->FindBin(P);
-    BinEta  = fHistoPosMapRecalib[BinCl]->GetYaxis()->FindBin(Eta);
+    BinP    = fHistoPosMapRecalib[BinCorr]->GetXaxis()->FindBin(P);
+    BinEta  = fHistoPosMapRecalib[BinCorr]->GetYaxis()->FindBin(Eta);
 
     if(P>0. && P<10.){
-      mean  = (Double_t)fHistoPosMapRecalib[BinCl]->GetBinContent(BinP,BinEta)/1000;
-      width = (Double_t)fHistoPosMapRecalib[BinCl]->GetBinError(BinP,BinEta)/1000;
+      mean  = (Double_t)fHistoPosMapRecalib[BinCorr]->GetBinContent(BinP,BinEta)/1000;
+      width = (Double_t)fHistoPosMapRecalib[BinCorr]->GetBinError(BinP,BinEta)/1000;
     }else if(P>=10.){// use bin edge value
-      mean  = (Double_t)fHistoPosMapRecalib[BinCl]->GetBinContent(fHistoPosMapRecalib[BinCl]->GetNbinsX(),BinEta)/1000;
-      width = (Double_t)fHistoPosMapRecalib[BinCl]->GetBinError(fHistoPosMapRecalib[BinCl]->GetNbinsX(),BinEta)/1000;
+      mean  = (Double_t)fHistoPosMapRecalib[BinCorr]->GetBinContent(fHistoPosMapRecalib[BinCorr]->GetNbinsX(),BinEta)/1000;
+      width = (Double_t)fHistoPosMapRecalib[BinCorr]->GetBinError(fHistoPosMapRecalib[BinCorr]->GetNbinsX(),BinEta)/1000;
     }
   }
   if (width!=0.){
@@ -1681,8 +1701,8 @@ Float_t AliConversionPhotonCuts::GetKappaTPC(AliConversionPhotonBase *gamma, Ali
     P[1]        =posTrack->P();
     Eta[0]      =negTrack->Eta();
     Eta[1]      =posTrack->Eta();
-    KappaMinus = GetCorrectedElectronTPCResponse(negTrack->Charge(),CentrnSig[0],P[0],Eta[0],negTrack->GetTPCNcls());
-    KappaPlus =  GetCorrectedElectronTPCResponse(posTrack->Charge(),CentrnSig[1],P[1],Eta[1],posTrack->GetTPCNcls());
+    KappaMinus = GetCorrectedElectronTPCResponse(negTrack->Charge(),CentrnSig[0],P[0],Eta[0],negTrack->GetTPCNcls(),gamma->GetConversionRadius());
+    KappaPlus =  GetCorrectedElectronTPCResponse(posTrack->Charge(),CentrnSig[1],P[1],Eta[1],posTrack->GetTPCNcls(),gamma->GetConversionRadius());
   }else{
     KappaMinus = fPIDResponse->NumberOfSigmasTPC(negTrack, AliPID::kElectron);
     KappaPlus =  fPIDResponse->NumberOfSigmasTPC(posTrack, AliPID::kElectron);
@@ -1751,7 +1771,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
   if(fDoElecDeDxPostCalibration){
     P = fCurrentTrack->P();
     Eta = fCurrentTrack->Eta();
-    electronNSigmaTPCCor = GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,fCurrentTrack->GetTPCNcls());
+    electronNSigmaTPCCor = GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,fCurrentTrack->GetTPCNcls(),photon->GetConversionRadius());
   }
 
   Int_t cutIndex=0;

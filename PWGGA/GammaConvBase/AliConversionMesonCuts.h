@@ -154,6 +154,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t SetMesonKind(Int_t mesonKind);
     Bool_t SetSelectionWindowCut(Int_t selectionCut);
     Bool_t SetSelectionWindowMergedCut(Int_t selectionCut);
+    Bool_t SetSelectionWindowCutPtDep(Int_t selectionCut);
     Bool_t SetAlphaMesonCut(Int_t alphaMesonCut);
     Bool_t SetAlphaMesonMergedCut(Int_t alphaMesonCut);
     Bool_t SetRapidityMesonCut(Int_t RapidityMesonCut);
@@ -171,6 +172,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t SetMaxOpanMesonCut(Int_t maxOpanMesonCut);
     void   SetEnableOpeningAngleCut (Bool_t isOn) {fEnableMinOpeningAngleCut = isOn;}
     void   SetIsMergedClusterCut(Int_t merged)                { fIsMergedClusterCut = merged; return;}
+    void   SetUsePtDepSelectionWindow(Bool_t ptdep)                { fUsePtDepSelectionWindow = ptdep; return;}
+    Bool_t GetUsePtDepSelectionWindow(Bool_t ptdep)                { return fUsePtDepSelectionWindow;}
     Int_t  GetIsMergedClusterCut()                            { return fIsMergedClusterCut;}
     Double_t GetRapidityCutValue()                            { return fRapidityCutMeson; }
 
@@ -211,6 +214,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetSidebandMixingLeftHigh() const {return fSidebandMixingLeftHigh;}
     Double_t GetSidebandMixingRightLow() const {return fSidebandMixingRightLow;}
     Double_t GetSidebandMixingRightHigh() const {return fSidebandMixingRightHigh;}
+    Int_t    GetBackgroundMode() const {return fBackgroundMode;}
 
   protected:
     TRandom3    fRandom;                        ///<
@@ -239,6 +243,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t    fMinPt;                         ///< min pT cut
     Double_t    fSelectionLow;                  ///< lower meson inv mass window for further selection
     Double_t    fSelectionHigh;                 ///< higher meson inv mass window for further selection
+    Double_t    fSelectionNSigmaLow;            ///< N of sigma for ptdep selection window cut min
+    Double_t    fSelectionNSigmaHigh;           ///< N of sigma for ptdep selection window cut max
     Double_t    fAlphaMinCutMeson;              ///< min value for meson alpha cut
     Double_t    fAlphaCutMeson;                 ///< max value for meson alpha cut
     Double_t    fRapidityCutMeson;              ///< max value for meson rapidity
@@ -263,12 +269,14 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fMode;                          ///< running mode of ConversionMesonCuts to select different sets of cut parameters for different running modes
     Int_t       fMesonKind;                     ///<
     Int_t       fIsMergedClusterCut;            ///< flag for merged cluster and di cluster analysis
+    Int_t       fUsePtDepSelectionWindow;       ///< flag for usage of pT dependent selection window cut
     Int_t       fSelectionWindowCut;            ///< selection window for merged ana in mass
     Int_t       fNDegreeRotationPMForBG;        ///<
     Int_t       fNumberOfBGEvents;              ///<
     Int_t       fElectronLabelArraySize;        ///<
     Int_t*      fElectronLabelArray;            //[fElectronLabelArraySize] Array with elec/pos v0 label
     Int_t       fBackgroundHandler;             ///<
+    Int_t       fMassParamFunction;             ///< flag to set the functions that should be used to paramterize NDM mass and width
 
     Bool_t      fDoLightOutput;                 ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t      fDoMinPtCut;                    ///< do min pT cut
@@ -297,16 +305,17 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDCARMesonPrimVtxCutOn;         ///< cut flag for the maximum distance in R between the production point of the Meson & the primary vertex
     Bool_t      fMinOpanPtDepCut;               ///<
     Bool_t      fMaxOpanPtDepCut;               ///<
-    Bool_t      fBackgroundUseSideband;         ///<
-    Bool_t      fBackgroundUseSidebandBothSides;///<
-    Bool_t      fBackgroundUseLikeSign;         ///<
+    Bool_t      fBackgroundUseSideband;         ///< enable sideband mixing on one side of NDM
+    Bool_t      fBackgroundUseSidebandBothSides;///< enable sideband mixing on both sides NDM
+    Bool_t      fBackgroundUseLikeSign;         ///< enable likesign mixing
+    Int_t       fBackgroundMode;                ///< default is 4: all pions from different event
     Bool_t      fDoJetAnalysis;                 ///< switch to run a jet analysis
     Bool_t      fDoJetQA;                       ///< switch to run a jet QA analysis
 
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,32)
+    ClassDef(AliConversionMesonCuts,35)
     /// \endcond
 };
 

@@ -256,12 +256,10 @@ void AliForwardFlowUtil::FillFromTrackrefsFMD(TH2D*& fwd)
       // Ignore things that do not make a signal in the FMD
       AliTrackReference* tr = this->IsHitFMD(p);
       if (tr && p->Charge() != 0){
-        Double_t *etaPhi = new Double_t[2];
-        this->GetTrackRefEtaPhi(tr, etaPhi);
 
-        Double_t phi_tr = etaPhi[1];
-        Double_t eta_tr = etaPhi[0];
-        fwd->Fill(eta_tr,phi_tr,1);
+        Double_t phi_tr = this->GetTrackRefPhi(tr);
+        Double_t eta_tr = this->GetTrackRefEta(tr);
+        if ((phi_tr > 0) & (eta_tr > -10)) fwd->Fill(eta_tr,phi_tr,1);
       }
     }
   }
@@ -308,13 +306,12 @@ AliForwardFlowUtil::ProcessTrackITS(AliMCParticle* particle,TH2D*& cen)
         if (!fStored){
           fStored = ref;
 
-          Double_t *etaPhi_spd = new Double_t[2];
-          this->GetTrackRefEtaPhi(ref, etaPhi_spd);
+          Double_t phi_tr = this->GetTrackRefPhi(ref);
+          Double_t eta_tr = this->GetTrackRefEta(ref);
 
-          Double_t phi_tr_spd = etaPhi_spd[1]; //Wrap02pi
-          Double_t eta_tr_spd = etaPhi_spd[0];
+          
+          if ((phi_tr > 0) & (eta_tr > -10)) cen->Fill(eta_tr,phi_tr,1);
 
-          cen->Fill(eta_tr_spd,phi_tr_spd,1);
           // if (dodNdeta) dNdeta->Fill(eta_tr_spd,1);
         }
       }
@@ -325,7 +322,22 @@ AliForwardFlowUtil::ProcessTrackITS(AliMCParticle* particle,TH2D*& cen)
 
 
 
-void AliForwardFlowUtil::GetTrackRefEtaPhi(AliTrackReference* ref, Double_t* etaPhi) {
+Double_t AliForwardFlowUtil::GetTrackRefPhi(AliTrackReference* ref) {
+
+  const AliVVertex* vertex = fMCevent->GetPrimaryVertex();
+  // Calculate the vector pointing from the vertex to the track reference on the detector
+  Double_t x      = ref->X() - vertex->GetX();
+  Double_t y      = ref->Y() - vertex->GetY();
+  Double_t phiR   = TMath::ATan2(y,x);
+  if (phiR < 0) {
+    phiR += 2*TMath::Pi();
+  }
+
+  return phiR;
+}
+
+
+Double_t AliForwardFlowUtil::GetTrackRefEta(AliTrackReference* ref) {
 
   const AliVVertex* vertex = fMCevent->GetPrimaryVertex();
   // Calculate the vector pointing from the vertex to the track reference on the detector
@@ -334,21 +346,13 @@ void AliForwardFlowUtil::GetTrackRefEtaPhi(AliTrackReference* ref, Double_t* eta
   Double_t z      = ref->Z() - vertex->GetZ();
   Double_t rr     = TMath::Sqrt(x * x + y * y);
   Double_t thetaR = TMath::ATan2(rr, z);
-  Double_t phiR   = TMath::ATan2(y,x);
   // Correct angles
   if (thetaR < 0) {
     thetaR += 2*TMath::Pi();
   }
-  if (phiR < 0) {
-    phiR += 2*TMath::Pi();
-  }
-  etaPhi[0] = -TMath::Log(TMath::Tan(thetaR / 2));
-  etaPhi[1] = phiR;
-  // cout << x << " " << y << " " << z << endl << endl;
-  // cout << etaPhi[0] - p->Eta() << " " << etaPhi[1] - p->Phi() << " "
-  //      << this->GetDaughters(p).size() << " "
-  //      << p->PdgCode() << " "
-  //      << endl;
+  Double_t eta = -TMath::Log(TMath::Tan(thetaR / 2));
+
+  return eta;
 }
 
 
@@ -479,13 +483,10 @@ void
 AliForwardFlowUtil::StoreParticle(AliMCParticle*       particle,
 				     AliTrackReference*   ref,TH2D*& fwd)
 {
-  Double_t *etaPhi = new Double_t[2];
-  this->GetTrackRefEtaPhi(particle, etaPhi);
+  Double_t phi_tr = this->GetTrackRefPhi(particle); //Wrap02pi
+  Double_t eta_tr = this->GetTrackRefEta(particle);
 
-  Double_t phi_tr = etaPhi[1]; //Wrap02pi
-  Double_t eta_tr = etaPhi[0];
-
-  fwd->Fill(eta_tr,phi_tr,1);
+  if ((phi_tr > 0) & (eta_tr > -10)) fwd->Fill(eta_tr,phi_tr,1);
   return;
 }
 
@@ -531,7 +532,7 @@ void AliForwardFlowUtil::FillFromPrimariesAODTPC(TH2D*& cen) const
 
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.7) {
-      if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
+      if (p->Pt()>=this->minpt){// && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
       }
     }
@@ -571,7 +572,7 @@ void AliForwardFlowUtil::FillFromPrimariesAODITS(TH2D*& cen) const
   }
 }
 
-void AliForwardFlowUtil::GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi) {
+Double_t AliForwardFlowUtil::GetTrackRefPhi(AliMCParticle* p) {
   AliTrackReference* ref = 0x0;
   for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
     ref = p->GetTrackReference(iTrRef);
@@ -584,8 +585,35 @@ void AliForwardFlowUtil::GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi) {
     }
   }
   if (!ref) {
-    etaPhi = 0x0;
-    return;
+    return -1;
+  }
+  const AliVVertex* vertex = fMCevent->GetPrimaryVertex();
+  // Calculate the vector pointing from the vertex to the track reference on the detector
+  Double_t x      = ref->X() - vertex->GetX();
+  Double_t y      = ref->Y() - vertex->GetY();
+  Double_t phiR   = TMath::ATan2(y,x);
+  // Correct angles
+  if (phiR < 0) {
+    phiR += 2*TMath::Pi();
+  }
+  return phiR;
+}
+
+
+Double_t AliForwardFlowUtil::GetTrackRefEta(AliMCParticle* p) {
+  AliTrackReference* ref = 0x0;
+  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
+    ref = p->GetTrackReference(iTrRef);
+    // Check hit on FMD
+    if (ref && AliTrackReference::kFMD == ref->DetectorId()) {
+      break;
+    }
+    else {
+      ref = 0x0;
+    }
+  }
+  if (!ref) {
+    return -10; // dummy value
   }
   const AliVVertex* vertex = fMCevent->GetPrimaryVertex();
   // Calculate the vector pointing from the vertex to the track reference on the detector
@@ -594,16 +622,13 @@ void AliForwardFlowUtil::GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi) {
   Double_t z      = ref->Z() - vertex->GetZ();
   Double_t rr     = TMath::Sqrt(x * x + y * y);
   Double_t thetaR = TMath::ATan2(rr, z);
-  Double_t phiR   = TMath::ATan2(y,x);
   // Correct angles
   if (thetaR < 0) {
     thetaR += 2*TMath::Pi();
   }
-  if (phiR < 0) {
-    phiR += 2*TMath::Pi();
-  }
-  etaPhi[0] = -TMath::Log(TMath::Tan(thetaR / 2));
-  etaPhi[1] = phiR;
+
+  Double_t eta = -TMath::Log(TMath::Tan(thetaR / 2));
+  return eta;
 }
 
 void AliForwardFlowUtil::FillFromPrimariesTPC(TH2D*& cen) const
@@ -695,7 +720,7 @@ void AliForwardFlowUtil::FillFromPrimariesAODFMD(TH2D*& fwd) const
     if (p->Charge() == 0) continue;
 
     if (p->Eta() < 5 /*fwd->GetXaxis()-GetXmax()*/ && p->Eta() > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
-      if (TMath::Abs(p->Eta()) >= 1.1){
+      if (TMath::Abs(p->Eta()) >= 1.7){
         fwd->Fill(p->Eta(),p->Phi(),1);
         // if (dodNdeta) dNdeta->Fill(p->Eta(),1);
       }

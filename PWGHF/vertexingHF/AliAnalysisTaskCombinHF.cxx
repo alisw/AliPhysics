@@ -40,6 +40,9 @@
 #include "AliAODTrack.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliVertexingHFUtils.h"
+#include "AliGenEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliAnalysisTaskCombinHF.h"
 
 /// \cond CLASSIMP
@@ -56,6 +59,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistEventMultCentEvSel(0x0),
   fHistEventMultZv(0x0),
   fHistEventMultZvEvSel(0x0),
+  fHistXsecVsPtHard(0x0),
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
   fHistCheckOrigin(0x0),
@@ -75,6 +79,12 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fPtVsYVsMultGenAccFeeddw(0x0),
   fPtVsYVsMultGenAccEvSelFeeddw(0x0),
   fPtVsYVsMultRecoFeeddw(0x0),
+  fPtVsYVsPtBGenFeeddw(0x0),
+  fPtVsYVsPtBGenLargeAccFeeddw(0x0),
+  fPtVsYVsPtBGenLimAccFeeddw(0x0),
+  fPtVsYVsPtBGenAccFeeddw(0x0),
+  fPtVsYVsPtBGenAccEvSelFeeddw(0x0),
+  fPtVsYVsPtBRecoFeeddw(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
   fMassVsPtVsYLSpp(0x0),
@@ -139,6 +149,9 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fGoUpToQuark(kTRUE),
   fFullAnalysis(0),
   fSignalOnlyMC(kFALSE),
+  fSelectPtHardRange(kFALSE),
+  fMinPtHard(0.),
+  fMaxPtHard(999999.),
   fPIDstrategy(knSigma),
   fmaxPforIDPion(0.8),
   fmaxPforIDKaon(2.),
@@ -161,6 +174,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fEventInfo(new TObjString("")),
   fVtxZ(0),
   fMultiplicity(0),
+  fNumOfMultBins(200),
   fMinMultiplicity(-0.5),
   fMaxMultiplicity(199.5),
   fKaonTracks(0x0),
@@ -179,6 +193,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistEventMultCentEvSel(0x0),
   fHistEventMultZv(0x0),
   fHistEventMultZvEvSel(0x0),
+  fHistXsecVsPtHard(0x0),
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
   fHistCheckOrigin(0x0),
@@ -198,6 +213,12 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fPtVsYVsMultGenAccFeeddw(0x0),
   fPtVsYVsMultGenAccEvSelFeeddw(0x0),
   fPtVsYVsMultRecoFeeddw(0x0),
+  fPtVsYVsPtBGenFeeddw(0x0),
+  fPtVsYVsPtBGenLargeAccFeeddw(0x0),
+  fPtVsYVsPtBGenLimAccFeeddw(0x0),
+  fPtVsYVsPtBGenAccFeeddw(0x0),
+  fPtVsYVsPtBGenAccEvSelFeeddw(0x0),
+  fPtVsYVsPtBRecoFeeddw(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
   fMassVsPtVsYLSpp(0x0),
@@ -262,6 +283,9 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fGoUpToQuark(kTRUE),
   fFullAnalysis(0),
   fSignalOnlyMC(kFALSE),
+  fSelectPtHardRange(kFALSE),
+  fMinPtHard(0.),
+  fMaxPtHard(999999.),
   fPIDstrategy(knSigma),
   fmaxPforIDPion(0.8),
   fmaxPforIDKaon(2.),
@@ -284,6 +308,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fEventInfo(new TObjString("")),
   fVtxZ(0),
   fMultiplicity(0),
+  fNumOfMultBins(200),
   fMinMultiplicity(-0.5),
   fMaxMultiplicity(199.5),
   fKaonTracks(0x0),
@@ -307,6 +332,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fHistEventMultCentEvSel;
     delete fHistEventMultZv;
     delete fHistEventMultZvEvSel;
+    delete fHistXsecVsPtHard;
     delete fHistTrackStatus;
     delete fHistTrackEtaMultZv;
     delete fHistCheckOrigin;
@@ -326,6 +352,12 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fPtVsYVsMultGenAccFeeddw;
     delete fPtVsYVsMultGenAccEvSelFeeddw;
     delete fPtVsYVsMultRecoFeeddw;
+    delete fPtVsYVsPtBGenFeeddw;
+    delete fPtVsYVsPtBGenLargeAccFeeddw;
+    delete fPtVsYVsPtBGenLimAccFeeddw;
+    delete fPtVsYVsPtBGenAccFeeddw;
+    delete fPtVsYVsPtBGenAccEvSelFeeddw;
+    delete fPtVsYVsPtBRecoFeeddw;
     delete fMassVsPtVsY;
     delete fMassVsPtVsYLSpp;
     delete fMassVsPtVsYLSmm;
@@ -429,18 +461,21 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
 
-  fHistEventMultCent = new TH2F("hEventMultCent"," ; Centrality (V0M) ; N_{tracklets} (|#eta|<1)",100,0.,100.,200,fMinMultiplicity,fMaxMultiplicity);
+  fHistEventMultCent = new TH2F("hEventMultCent"," ; Centrality (V0M) ; N_{tracklets} (|#eta|<1)",100,0.,100.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistEventMultCent);
 
-  fHistEventMultCentEvSel = new TH2F("hEventMultCentEvSel"," ; Centrality (V0M) ; N_{tracklets} (|#eta|<1)",100,0.,100.,200,fMinMultiplicity,fMaxMultiplicity);
+  fHistEventMultCentEvSel = new TH2F("hEventMultCentEvSel"," ; Centrality (V0M) ; N_{tracklets} (|#eta|<1)",100,0.,100.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistEventMultCentEvSel);
 
-  fHistEventMultZv = new TH2F("hEventMultZv"," ; z_{vertex} (cm) ; N_{tracklets} (|#eta|<1)",30,-15.,15.,200,fMinMultiplicity,fMaxMultiplicity);
+  fHistEventMultZv = new TH2F("hEventMultZv"," ; z_{vertex} (cm) ; N_{tracklets} (|#eta|<1)",30,-15.,15.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistEventMultZv);
 
-  fHistEventMultZvEvSel = new TH2F("hEventMultZvEvSel"," ; z_{vertex} (cm) ; N_{tracklets} (|#eta|<1)",30,-15.,15.,200,fMinMultiplicity,fMaxMultiplicity);
+  fHistEventMultZvEvSel = new TH2F("hEventMultZvEvSel"," ; z_{vertex} (cm) ; N_{tracklets} (|#eta|<1)",30,-15.,15.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistEventMultZvEvSel);
 
+  fHistXsecVsPtHard = new TH1F("hXsecVsPtHard", " ; pthard (GeV/c) ; Xsec", 200,0.,100.);
+  fOutput->Add(fHistXsecVsPtHard);
+  
   fHistTrackStatus  = new TH1F("hTrackStatus", "",8,-0.5,7.5);
   fHistTrackStatus->GetXaxis()->SetBinLabel(1,"Not OK");
   fHistTrackStatus->GetXaxis()->SetBinLabel(2,"Track OK");
@@ -454,7 +489,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistTrackStatus->SetMinimum(0);
   fOutput->Add(fHistTrackStatus);
   
-  fHistTrackEtaMultZv = new TH3F("hTrackEtaMultZv","",40,-1.,1.,30,-15.,15.,200,fMinMultiplicity,fMaxMultiplicity);
+  fHistTrackEtaMultZv = new TH3F("hTrackEtaMultZv","",40,-1.,1.,30,-15.,15.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistTrackEtaMultZv);
 
   Int_t nPtBins = (Int_t)(fMaxPt/fPtBinWidth+0.001);
@@ -481,43 +516,60 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     fHistCheckDecChanAcc->SetMinimum(0);
     fOutput->Add(fHistCheckDecChanAcc);
     
-    fPtVsYVsMultGenPrompt = new TH3F("hPtVsYVsMultGenPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenPrompt = new TH3F("hPtVsYVsMultGenPrompt","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultGenPrompt);
     
-    fPtVsYVsMultGenLargeAccPrompt = new TH3F("hPtVsYVsMultGenLargeAccPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenLargeAccPrompt = new TH3F("hPtVsYVsMultGenLargeAccPrompt","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultGenLargeAccPrompt);
     
-    fPtVsYVsMultGenLimAccPrompt = new TH3F("hPtVsYVsMultGenLimAccPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenLimAccPrompt = new TH3F("hPtVsYVsMultGenLimAccPrompt","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultGenLimAccPrompt);
     
-    fPtVsYVsMultGenAccPrompt = new TH3F("hPtVsYVsMultGenAccPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenAccPrompt = new TH3F("hPtVsYVsMultGenAccPrompt","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultGenAccPrompt);
     
-    fPtVsYVsMultGenAccEvSelPrompt = new TH3F("hPtVsYVsMultGenAccEvSelPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenAccEvSelPrompt = new TH3F("hPtVsYVsMultGenAccEvSelPrompt","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultGenAccEvSelPrompt);
  
-    fPtVsYVsMultRecoPrompt = new TH3F("hPtVsYVsMultRecoPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultRecoPrompt = new TH3F("hPtVsYVsMultRecoPrompt","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultRecoPrompt);
 
-    fPtVsYVsMultGenFeeddw = new TH3F("hPtVsYVsMultGenFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenFeeddw = new TH3F("hPtVsYVsMultGenFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultGenFeeddw);
     
-    fPtVsYVsMultGenLargeAccFeeddw = new TH3F("hPtVsYVsMultGenLargeAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenLargeAccFeeddw = new TH3F("hPtVsYVsMultGenLargeAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultGenLargeAccFeeddw);
     
-    fPtVsYVsMultGenLimAccFeeddw = new TH3F("hPtVsYVsMultGenLimAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenLimAccFeeddw = new TH3F("hPtVsYVsMultGenLimAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultGenLimAccFeeddw);
     
-    fPtVsYVsMultGenAccFeeddw = new TH3F("hPtVsYVsMultGenAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenAccFeeddw = new TH3F("hPtVsYVsMultGenAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultGenAccFeeddw);
     
-    fPtVsYVsMultGenAccEvSelFeeddw = new TH3F("hPtVsYVsMultGenAccEvSelFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenAccEvSelFeeddw = new TH3F("hPtVsYVsMultGenAccEvSelFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultGenAccEvSelFeeddw);
  
-    fPtVsYVsMultRecoFeeddw = new TH3F("hPtVsYVsMultRecoFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultRecoFeeddw = new TH3F("hPtVsYVsMultRecoFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
     fOutput->Add(fPtVsYVsMultRecoFeeddw);
  
-  }
+    fPtVsYVsPtBGenFeeddw = new TH3F("hPtVsYVsPtBGenFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBGenFeeddw);
+    
+    fPtVsYVsPtBGenLargeAccFeeddw = new TH3F("hPtVsYVsPtBGenLargeAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBGenLargeAccFeeddw);
+    
+    fPtVsYVsPtBGenLimAccFeeddw = new TH3F("hPtVsYVsPtBGenLimAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBGenLimAccFeeddw);
+    
+    fPtVsYVsPtBGenAccFeeddw = new TH3F("hPtVsYVsPtBGenAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBGenAccFeeddw);
+    
+    fPtVsYVsPtBGenAccEvSelFeeddw = new TH3F("hPtVsYVsPtBGenAccEvSelFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBGenAccEvSelFeeddw);
+ 
+    fPtVsYVsPtBRecoFeeddw = new TH3F("hPtVsYVsPtBRecoFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
+    fOutput->Add(fPtVsYVsPtBRecoFeeddw);
+ }
   
   
   Int_t nMassBins=static_cast<Int_t>(fMaxMass*1000.-fMinMass*1000.);
@@ -777,6 +829,24 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     if(!mcHeader) {
       printf("AliAnalysisTaskCombinHF::UserExec: MC header branch not found!\n");
       return;
+    }
+    // selection on pt hard bins in Pb-Pb
+    if(fSelectPtHardRange){
+      TList *lh=mcHeader->GetCocktailHeaders();
+      if(lh){
+	Int_t nh=lh->GetEntries();
+	for(Int_t i=0;i<nh;i++){
+	  AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+	  TString genname=gh->GetName();
+	  if(genname.Contains("ythia") || genname.Contains("YTHIA")){
+	    AliGenPythiaEventHeader* pyth=(AliGenPythiaEventHeader*)lh->At(i);
+	    Double_t ptha=pyth->GetPtHard();
+	    Double_t xsec=pyth->GetXsection();
+	    if(ptha<fMinPtHard || ptha>fMaxPtHard) return;
+	    fHistXsecVsPtHard->SetBinContent(fHistXsecVsPtHard->GetXaxis()->FindBin(ptha),xsec);
+	  }
+	}
+      }
     }
     Double_t zMCVertex = mcHeader->GetVtxZ();
     if (TMath::Abs(zMCVertex) < fAnalysisCuts->GetMaxVtxZ()){ // only cut on zVertex applied to count the signal
@@ -1092,6 +1162,8 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
       if(isGoodDecay){
         Double_t ptgen=part->Pt();
         Double_t ygen=part->Y();
+	Double_t ptbmoth=0.;
+	if(orig==5) ptbmoth=AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,part);
 	if(fAnalysisCuts->IsInFiducialAcceptance(ptgen,ygen)){
 	  fHistCheckOrigin->Fill(orig,isInj);
 	  if(orig==4){
@@ -1101,18 +1173,28 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
 	    if(isEvSel && isInAcc) fPtVsYVsMultGenAccEvSelPrompt->Fill(ptgen,ygen,fMultiplicity);
 	  }else if(orig==5){
 	    fPtVsYVsMultGenFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	    fPtVsYVsPtBGenFeeddw->Fill(ptgen,ygen,ptbmoth);
 	    if(TMath::Abs(ygen)<0.5){
 	      fPtVsYVsMultGenLimAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
-	      Double_t ptbmoth=AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,part);
+	      fPtVsYVsPtBGenLimAccFeeddw->Fill(ptgen,ygen,ptbmoth);
 	      fBMohterPtGen->Fill(ptbmoth);
 	    }
-	    if(isInAcc) fPtVsYVsMultGenAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
-	    if(isEvSel && isInAcc) fPtVsYVsMultGenAccEvSelFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	    if(isInAcc){
+	      fPtVsYVsMultGenAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	      fPtVsYVsPtBGenAccFeeddw->Fill(ptgen,ygen,ptbmoth);
+	    }
+	    if(isEvSel && isInAcc){
+	      fPtVsYVsMultGenAccEvSelFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	      fPtVsYVsMultGenAccEvSelFeeddw->Fill(ptgen,ygen,ptbmoth);
+	    }
 	  }
 	}
         if(TMath::Abs(ygen)<0.9){
 	  if(orig==4) fPtVsYVsMultGenLargeAccPrompt->Fill(ptgen,ygen,fMultiplicity);
-	  else if(orig==5) fPtVsYVsMultGenLargeAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	  else if(orig==5){
+	    fPtVsYVsMultGenLargeAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	    fPtVsYVsPtBGenLargeAccFeeddw->Fill(ptgen,ygen,ptbmoth);
+	  }
 	}
       }
     }
@@ -1162,7 +1244,11 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 		  fHistCheckOriginRecoD->Fill(orig,isInj);
 		  if(labD<200000) fHistCheckOriginRecoVsGen->Fill(fOrigContainer[labD],orig);
 		  if(orig==4) fPtVsYVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
-		  else if(orig==5) fPtVsYVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+		  else if(orig==5){
+		    Double_t ptbmoth=AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,dmes);
+		    fPtVsYVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+		    fPtVsYVsPtBRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),ptbmoth);
+		  }
 		}
 	      }else{
 		fMassVsPtVsYRefl->Fill(mass,pt,rapid);

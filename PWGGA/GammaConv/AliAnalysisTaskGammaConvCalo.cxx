@@ -1346,14 +1346,14 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       else arrClusPtBinning[i]                = maxClusterPt;
     }
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kPbPb5TeV  ){
-    nBinsPt                   = 90;
+    nBinsPt                   = 110;
     minPt                     = 0;
-    maxPt                     = 20;
+    maxPt                     = 40;
     for(Int_t i=0; i<nBinsPt+1;i++){
       if (i < 1) arrPtBinning[i]              = 0.3*i;
       else if(i<58) arrPtBinning[i]           = 0.3+0.1*(i-1);
       else if(i<82) arrPtBinning[i]           = 6.+0.25*(i-58);
-      else if(i<90) arrPtBinning[i]           = 12.+1.0*(i-82);
+      else if(i<110) arrPtBinning[i]          = 12.+1.0*(i-82);
       else arrPtBinning[i]                    = maxPt;
     }
     nBinsQAPt                 = 92;
@@ -2514,7 +2514,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
           fHistoTrueSecondaryConvGammaFromXFromK0sMCPtESDPt[iCut]->Sumw2();
           fHistoTrueSecondaryConvGammaFromXFromK0lMCPtESDPt[iCut]->Sumw2();
           fHistoTrueSecondaryConvGammaFromXFromLambdaMCPtESDPt[iCut]->Sumw2();
-        }	
+        }
       }
 
       if (fIsMC > 1){

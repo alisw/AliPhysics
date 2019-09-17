@@ -33,9 +33,15 @@
 class AliTRDdigitsManager;
 //class AliESDv0KineCuts;
 class AliESDEvent;
+class AliESDfriendTrack;
+class AliExternalTrackParam;
+class AliTRDtrackV1;
+class AliTRDgeometry;
 
 #include "AliESDv0KineCuts.h"
 #include "AliAnalysisTaskSE.h"
+
+#include <vector>
 
 class AliTRDdigitsTask : public AliAnalysisTaskSE {
 public:
@@ -58,6 +64,13 @@ public:
   void SetV0KineCuts(AliESDv0KineCuts *c) { fV0cuts = c; }
   AliESDv0KineCuts* GetV0KineCuts() {return fV0cuts;}
 
+  typedef enum {
+    kPidUndef = 0,
+    kPidError = 1,
+    kPidV0Electron = 2,
+    kPidV0Pion = 3,
+    kPidV0Proton = 4
+  } EPID_t;
 
 protected:
 
@@ -70,8 +83,16 @@ protected:
   // Interface for analysis functionality
   virtual void AnalyseEvent();
 
-  AliESDEvent *fESD;          //! ESD event object
+  AliESDEvent *fESDevent;     //! ESD event object
   TList       *fOutputList;   //! Output list
+
+  //--------------------------------------------------------------------
+  // Some histograms of general interest, along with functions to create
+  // them
+
+  void CreateV0Plots();
+  TH2F*       fhArmenteros;                 //! 2D V0 QA Hist
+
 
   //--------------------------------------------------------------------
   // TRD digits I/O
@@ -80,15 +101,11 @@ protected:
 
   AliTRDdigitsManager* fDigMan;     //! digits manager
 
-
   //--------------------------------------------------------------------
   // e,pi reference sample generation - to be moved to AliTRDdigitsTask
   AliESDv0KineCuts *fV0cuts; //  V0 cuts
-  Int_t     *fV0tags;        //! tags for identified particles from V0 decays
-  TObjArray *fV0electrons;   //! identified electrons from photon conv
-  TObjArray *fV0pions;       //! identified pions from K0,Lambda decays
-  //TObjArray *fV0protons;         //! identified protons from Lambda decays
 
+  std::vector<EPID_t> fPidTags;  // tags for identified particles
   void FillV0PIDlist();
 
 
@@ -103,6 +120,8 @@ protected:
   Int_t FindDigits(const AliExternalTrackParam* param,
 		   Float_t bfield, Int_t layer,
 		   Int_t* det, Int_t* row, Int_t* col);
+
+
 
 private:
 

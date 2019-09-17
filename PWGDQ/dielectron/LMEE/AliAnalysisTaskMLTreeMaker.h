@@ -182,6 +182,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Double_t TPCep;
   Double_t TPCepA;
   Double_t TPCepC;
+  Double_t NTPCclsEv;
   
   TList* fQnList;
   AliAnalysisManager *man;

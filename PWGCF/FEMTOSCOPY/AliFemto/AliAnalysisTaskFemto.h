@@ -29,6 +29,7 @@
 
 #include "TH1.h"
 #include "TString.h"
+#include "TMacro.h"
 
 #include "AliESDInputHandler.h"
 #include "AliAODHandler.h"
@@ -70,12 +71,12 @@ public:
 
   /// Full Constructor - Set the name of the task, configuration macro filename
   /// and paramters, and optional verbosity flag.
-  AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose=kFALSE);
+  AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose=kFALSE, Bool_t aGridConfig=kFALSE, TString aUserName = "", TString aConfigUserName ="ConfigFemtoAnalysis");
 
   /// Construct with task name, configuration filename, and verbosity flag.
   ///
   /// The paramters are set to the empty string.
-  AliAnalysisTaskFemto(TString name, TString aConfigMacro="ConfigFemtoAnalysis.C", Bool_t aVerbose=kFALSE);
+  AliAnalysisTaskFemto(TString name, TString aConfigMacro="ConfigFemtoAnalysis.C", Bool_t aVerbose=kFALSE, Bool_t aGridConfig=kFALSE, TString aUserName = "", TString aConfigUserName ="ConfigFemtoAnalysis");
 
   /// Copy Constructor - should not be used
   AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask);
@@ -111,6 +112,8 @@ public:
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
+  void Set1DCorrectionsXiMinus(TH1D *h1);
+  void Set1DCorrectionsXiPlus(TH1D *h1);
 
   void Set4DCorrectionsPions(THnSparse *h1);
   void Set4DCorrectionsKaons(THnSparse *h1);
@@ -121,6 +124,9 @@ public:
   void Set4DCorrectionsAll(THnSparse *h1);
   void Set4DCorrectionsLambdas(THnSparse *h1);
   void Set4DCorrectionsLambdasMinus(THnSparse *h1);
+  void LoadMacro(TMacro *macro);
+  void SaveConfigTMacro(Bool_t save);
+  void SetGRIDUserName(TString aUserName);
 
 protected:
   AliESDEvent          *fESD;          //!<! ESD object
@@ -149,6 +155,8 @@ protected:
   TH1D                 *f1DcorrectionsAll; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsLambdas; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsLambdasMinus; //file with corrections, pT dependant
+  TH1D                 *f1DcorrectionsXiMinus; //file with corrections, pT dependant
+  TH1D                 *f1DcorrectionsXiPlus; //file with corrections, pT dependant
 
   THnSparse            *f4DcorrectionsPions; //file with corrections, pT dependant
   THnSparse            *f4DcorrectionsKaons; //file with corrections, pT dependant
@@ -159,6 +167,13 @@ protected:
   THnSparse            *f4DcorrectionsAll; //file with corrections, pT dependant
   THnSparse            *f4DcorrectionsLambdas; //file with corrections, pT dependant
   THnSparse            *f4DcorrectionsLambdasMinus; //file with corrections, pT dependant
+
+  Bool_t fGridConfig; //use config stored on the grid
+  TMacro *fConfigTMacro; //macro of the config file
+  Bool_t fSaveConfigTMacro; //flag to save config TMacro in output list
+  TString fUserName; //GRID user name
+  TString fconfigFunName; //name of the config fucntion (like "ConfigFemtoAnalysis")
+
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskFemto, 3);
@@ -192,6 +207,8 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto():
   f1DcorrectionsAll(NULL),
   f1DcorrectionsLambdas(NULL),
   f1DcorrectionsLambdasMinus(NULL),
+  f1DcorrectionsXiMinus(NULL),
+  f1DcorrectionsXiPlus(NULL),
   f4DcorrectionsPions(NULL),
   f4DcorrectionsKaons(NULL),
   f4DcorrectionsProtons(NULL),
@@ -200,7 +217,12 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto():
   f4DcorrectionsProtonsMinus(NULL),
   f4DcorrectionsAll(NULL),
   f4DcorrectionsLambdas(NULL),
-  f4DcorrectionsLambdasMinus(NULL)
+  f4DcorrectionsLambdasMinus(NULL),
+  fGridConfig(false),
+  fConfigTMacro(NULL),
+  fSaveConfigTMacro(false),
+  fUserName(),
+  fconfigFunName()
 {
   /* no-op */
 }

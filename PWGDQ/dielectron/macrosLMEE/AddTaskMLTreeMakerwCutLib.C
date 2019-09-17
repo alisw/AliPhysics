@@ -8,7 +8,8 @@ AliAnalysisTask *AddTaskMLTreeMakerwCutLib(
                                                     Bool_t useAODFilterCuts=kFALSE,
                                                     Bool_t isMC,
                                                     TString TMVAweight,
-                                                    Int_t wagonnr=0
+                                                    Int_t wagonnr=0,
+                                                    Bool_t usePileRej=kTRUE
                                                     )
 {
 
@@ -63,7 +64,7 @@ task->SelectCollisionCandidates(AliVEvent::kINT7);
 task->SetCentralityPercentileRange(centmin,centmax);
 task->SetupTrackCuts(cutlib->GetTrackCuts(trackCut,PIDCut,0,useAODFilterCuts,TMVAweight));
 task->SetUseTMVA(kTRUE);
-task->SetupEventCuts(cutlib->GetEventCuts(0, 0,kTRUE));
+task->SetupEventCuts(cutlib->GetEventCuts(0, 0,usePileRej));
 //task->SetupEventCuts(cutlib->GetEventCuts(centmin, centmax));   //not working when this task is the only task run (e.g. in train test), use centrality selectrion in TreeMaker instead - same result
 
 mgr->AddTask(task);

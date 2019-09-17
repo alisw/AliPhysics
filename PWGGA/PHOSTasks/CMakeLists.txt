@@ -104,6 +104,7 @@ set(SRCS
     PHOS_LHC16_pp/AliPP13SelectionWeights.cxx
     PHOS_LHC16_pp/AliPP13SpectrumSelection.cxx
     PHOS_LHC16_pp/AliPP13SpectrumSelectionMC.cxx
+    PHOS_LHC16_pp/AliPP13SpectrumSelectionSimple.cxx
     PHOS_LHC16_pp/AliPP13TagAndProbeSelection.cxx
     PHOS_LHC16_pp/AliPP13TriggerEfficiency.cxx
     PHOS_LHC16_pp/AliPP13TriggerProperties.cxx

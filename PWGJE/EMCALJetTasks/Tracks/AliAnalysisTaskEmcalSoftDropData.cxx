@@ -35,6 +35,7 @@
 #include <TArray.h>
 #include <TCustomBinning.h>
 #include <THistManager.h>
+#include <TLinearBinning.h>
 
 #include "AliAnalysisTaskEmcalSoftDropData.h"
 #include "AliAnalysisManager.h"
@@ -100,8 +101,11 @@ AliAnalysisTaskEmcalSoftDropData::~AliAnalysisTaskEmcalSoftDropData() {
 void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
+  double R = GetJetContainer("datajets")->GetJetRadius();
   if(!fPtBinning) fPtBinning = GetDefaultPtBinning(); 
-  std::unique_ptr<TBinning> zgBinning(GetZgBinning());
+  std::unique_ptr<TBinning> zgBinning(GetZgBinning()),
+                            rgBinning(GetRgBinning(R)),
+                            nsdBinning(new TLinearBinning(21, -0.5, 20.5));
   TArrayD edgesPt;
   fPtBinning->CreateBinEdges(edgesPt);
   fJetPtMin = edgesPt[0];
@@ -110,8 +114,12 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   fHistos = new THistManager("histosSoftdrop");
   fHistos->CreateTH1("hEventCounter", "EventCounter", 1, 0.5, 1.5);
   fHistos->CreateTH2("hZgVsPt", "zg vs pt", *zgBinning, *fPtBinning);
+  fHistos->CreateTH2("hRgVsPt", "rg vs pt", *rgBinning,  *fPtBinning);
+  fHistos->CreateTH2("hNsdVsPt", "nsd vs pt", *nsdBinning, *fPtBinning);
   if(fUseDownscaleWeight){
-    fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt", *zgBinning, *fPtBinning);
+    fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt (weighted)", *zgBinning, *fPtBinning);
+    fHistos->CreateTH2("hRgVsPtWeighted", "rg vs pt (weighted)", *rgBinning,  *fPtBinning);
+    fHistos->CreateTH2("hNsdVsPtWeighted", "nsd vs pt (weighted)", *nsdBinning, *fPtBinning);
     fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0.5, 1.5);
   }
 
@@ -159,7 +167,13 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     auto zgparams = MakeSoftdrop(*jet, jets->GetJetRadius(), tracks, clusters);
     AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << zgparams[0] << std::endl;
     fHistos->FillTH2("hZgVsPt", zgparams[0], jet->Pt());
-    if(fUseDownscaleWeight) fHistos->FillTH2("hZgVsPtWeighted",  zgparams[0], jet->Pt(), weight);
+    fHistos->FillTH2("hRgVsPt", zgparams[2], jet->Pt());
+    fHistos->FillTH2("hNsdVsPt", zgparams[5], jet->Pt());
+    if(fUseDownscaleWeight) {
+      fHistos->FillTH2("hZgVsPtWeighted", zgparams[0], jet->Pt(), weight);
+      fHistos->FillTH2("hRgVsPtWeighted", zgparams[2], jet->Pt(), weight);
+      fHistos->FillTH2("hNsdVsPtWeighted", zgparams[5], jet->Pt(), weight);
+    } 
   }
   return true;
 }
@@ -208,6 +222,13 @@ TBinning *AliAnalysisTaskEmcalSoftDropData::GetZgBinning() const {
   binning->SetMinimum(0.);
   binning->AddStep(fZcut, fZcut);
   binning->AddStep(0.5, 0.05);
+  return binning;
+}
+
+TBinning *AliAnalysisTaskEmcalSoftDropData::GetRgBinning(double R) const {
+  auto binning = new TCustomBinning;
+  binning->SetMinimum(0.);
+  binning->AddStep(R, 0.05);
   return binning;
 }
 

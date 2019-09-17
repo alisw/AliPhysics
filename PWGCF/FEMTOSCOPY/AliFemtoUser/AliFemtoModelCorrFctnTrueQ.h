@@ -18,6 +18,7 @@ class AliFemtoModelCorrFctnTrueQ: public AliFemtoModelCorrFctn {
 
 public:
   AliFemtoModelCorrFctnTrueQ();
+  AliFemtoModelCorrFctnTrueQ(const char *title, Int_t aNbins, Double_t aQinvHi);
   AliFemtoModelCorrFctnTrueQ(const char *title, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi);
   AliFemtoModelCorrFctnTrueQ(const AliFemtoModelCorrFctnTrueQ& aCorrFctn);
   virtual ~AliFemtoModelCorrFctnTrueQ();

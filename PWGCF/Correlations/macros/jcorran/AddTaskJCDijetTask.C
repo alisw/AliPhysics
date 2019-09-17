@@ -7,18 +7,20 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
                                     double jetCone            = 0.4,
                                     double ktjetCone          = 0.4,
                                     int ktScheme              = 1,
-                                    Bool_t usePionMassInkt    = false,
+                                    int antiktScheme          = 1,
+                                    Bool_t usePionMass        = false,
                                     Bool_t useDeltaPhiBGSubtr = true,
                                     double particleEtaCut     = 0.8,
                                     double particlePtCut      = 0.15,
                                     double leadingJetCut      = 20.0,
                                     double subleadingJetCut   = 20.0,
                                     double constituentCut     = 5.0,
-                                    double deltaPhiCut        = 2.0){
+                                    double deltaPhiCut        = 2.0,
+                                    double matchingR          = 0.2){
     // Load Custom Configuration and parameters
     // override values with parameters
 
-    // kt-jet recombination schemes can be set with ktScheme argument:
+    // jet recombination schemes can be set with ktScheme argument:
     // E_scheme     = 0
     // pt_scheme    = 1
     // pt2_scheme   = 2
@@ -59,6 +61,10 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
         ::Error("AddTaskJCDijetTask", "Invalid ktScheme set. Please choose a setting from 0 till 6. Terminating.");
         return NULL;
     }
+    if (antiktScheme < 0 || antiktScheme > 6) {
+        ::Error("AddTaskJCDijetTask", "Invalid antiktScheme set. Please choose a setting from 0 till 6. Terminating.");
+        return NULL;
+    }
     cout << "MC: " << isMC << endl;
 
     //==== Set up the dijet task ====
@@ -68,9 +74,9 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
     dijetTask->SetJCatalystTaskNameDetMC(sJCatalystDetMC.Data());
     dijetTask->SetCentralityBins(vecCentBins);
     dijetTask->SetJetConeSize(jetCone, ktjetCone);
-    dijetTask->SetBGSubtrSettings(ktScheme, usePionMassInkt, useDeltaPhiBGSubtr);
+    dijetTask->SetBGSubtrSettings(ktScheme, antiktScheme, usePionMass, useDeltaPhiBGSubtr);
     dijetTask->SetIsMC(isMC);
-    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut);
+    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut, matchingR);
     cout << dijetTask->GetName() << endl;
 
 

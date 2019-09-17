@@ -69,6 +69,7 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade() :
   fESDEvent(NULL),
   fMCEvent(NULL),
 //fMCStack(NULL),
+  fTrackCutsV0(NULL),
   fTrackCuts2010(NULL),
   fTrackCuts2011(NULL),
   fTrackCutsTPCRefit(NULL),
@@ -119,6 +120,9 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade() :
   fTrackCuts2011Sys->SetMinNCrossedRowsTPC(60);
   fTrackCuts2011Sys->SetMaxChi2PerClusterTPC(5);
   fTrackCuts2011Sys->SetMaxDCAToVertexZ(3);
+  fTrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0", "AliESDtrackCutsV0");
+  fTrackCutsV0 = AliESDtrackCuts::GetStandardV0DaughterCuts();
+  fTrackCutsV0->SetEtaRange(-0.8,0.8);
 
 }
 
@@ -143,6 +147,7 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade(Bool_t isMC) :
   fESDEvent(NULL),
   fMCEvent(NULL),
   //fMCStack(NULL),
+  fTrackCutsV0(NULL),
   fTrackCuts2010(NULL),
   fTrackCuts2011(NULL),
   fTrackCutsTPCRefit(NULL),
@@ -193,6 +198,9 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade(Bool_t isMC) :
   fTrackCuts2011Sys->SetMinNCrossedRowsTPC(60);
   fTrackCuts2011Sys->SetMaxChi2PerClusterTPC(5);
   fTrackCuts2011Sys->SetMaxDCAToVertexZ(3);
+  fTrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0", "AliESDtrackCutsV0");
+  fTrackCutsV0 = AliESDtrackCuts::GetStandardV0DaughterCuts();
+  fTrackCutsV0->SetEtaRange(-0.8,0.8);
 
   fMCFlag = isMC;
   DefineOutput(1, TTree::Class());
@@ -218,7 +226,7 @@ AliAnalysisTaskTPCTOFCascade::~AliAnalysisTaskTPCTOFCascade()
   /*
    * default destructor
    */
-
+  if (fTrackCutsV0) delete fTrackCutsV0;
   if (fTrackCuts2010) delete fTrackCuts2010;
   if (fTrackCuts2011) delete fTrackCuts2011;
   if (fTrackCutsTPCRefit) delete fTrackCutsTPCRefit;
@@ -460,6 +468,8 @@ Int_t AliAnalysisTaskTPCTOFCascade::GetTrackCutsFlag(AliESDtrack *LocalTrack) {
   if(fTrackCuts2011->AcceptTrack(LocalTrack)) ReturnFlag+=2;
   if(fTrackCutsTPCRefit->AcceptTrack(LocalTrack)) ReturnFlag+=4;
   if(fTrackCuts2011Sys->AcceptTrack(LocalTrack)) ReturnFlag+=8;
+  if(fTrackCutsV0->AcceptTrack(LocalTrack)) ReturnFlag+=16;
+
   return ReturnFlag;
 };
 //_______________________________________________________
@@ -839,7 +849,7 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
        if(std::isnan(PRap))
 	 continue;
 	
-       // if (TMath::Abs(particle->Y()) > fRapidityCut) continue;
+       if (TMath::Abs(particle->Y()) > fRapidityCut) continue;
        //if (particle->Pt() < 0.15) continue; //Maybe remove to properly correct for feeddown?
       //Get mother PDG code. In principle, can be optimized by only doing if for OWSace, as the rest of the particles are physical primaries
       Int_t indexMother = particle->GetFirstMother();

@@ -144,7 +144,9 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void DoEventMixingWithPools(Int_t index);
   void FillBackground(std::vector<TLorentzVector * > mixTypeE,std::vector<TVector * > mixTypeEVars, std::vector<TLorentzVector * > mixTypeL, std::vector<TVector * > mixTypeLVars, Int_t chargexi);
   Int_t GetPoolIndex(Double_t zvert, Double_t mult, Double_t rp);
-void SetFunction(TF1* weightfit){fWeightFit=weightfit;}
+  void SetFunction(TF1* weightfit){fWeightFit=weightfit;}
+  void SetFunctionElectron(TF1 * AccWeight){fAccWeight= AccWeight;}
+  void SetFunctionPositron(TF1* AccWeightPositron){fAccWeightPositron = AccWeightPositron;}           
 
  private:
 
@@ -463,7 +465,13 @@ void SetFunction(TF1* weightfit){fWeightFit=weightfit;}
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
 
   TF1 * fWeightFit; // implement the fit  function of weight (pass to the task)
+  TF1 * fAccWeight;//
+  TF1 * fAccWeightPositron;//
 
+  THnSparse *fHistoElectronTotal; // pt, eta, phi distribution for electron
+  THnSparse *fHistoElectronTotalMCWeight; // weight for positron
+  THnSparse *fHistoPositronTotal; // pt, eta, phi distribution for positron 
+  THnSparse *fHistoPositronTotalMCWeight; // weight for positron
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -487,7 +495,7 @@ void SetFunction(TF1* weightfit){fWeightFit=weightfit;}
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,36); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,38); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

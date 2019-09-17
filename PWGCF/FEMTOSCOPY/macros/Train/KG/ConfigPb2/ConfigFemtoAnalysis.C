@@ -145,7 +145,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	printf("*** Connect to AliEn ***\n");
 	TGrid::Connect("alien://");
 
-	int runmults[numOfMultBins] = {1};
+	int runmults[numOfMultBins] = {1,1,1,1,1};
 	int multbins[numOfMultBins+1] = {0, 100, 200, 400, 600, 800};
 	
 	int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0}; // 1 - wlacza czastki do analizy

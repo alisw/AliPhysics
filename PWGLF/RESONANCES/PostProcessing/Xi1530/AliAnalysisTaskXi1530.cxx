@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/07/30
+//  Last Modified Date: 2019/09/16
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -68,6 +68,7 @@
 const Double_t pi = TMath::Pi();
 const Double_t pionmass = AliPID::ParticleMass(AliPID::kPion);
 const Double_t Ximass = 1.32171;
+const Double_t massXi1530 = 1.532;
 enum {
     kData = 1,
     kLS,
@@ -167,7 +168,6 @@ AliAnalysisTaskXi1530& AliAnalysisTaskXi1530::operator=(
 //___________________________________________________________________
 AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530() {
     delete fTrackCuts;
-    delete fTrackCuts2;
     delete fPIDResponse;
 }
 //________________________________________________________________________
@@ -175,23 +175,9 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     // TrackCuts for Xi1530--------------------------------------------------
     // Primary pion cut(Xi1530pion)
     fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
-    fTrackCuts->SetPtRange(0.15, 1e20);
-    fTrackCuts->SetEtaRange(-fXi1530PionEtaCut, fXi1530PionEtaCut);
-    fTrackCuts->SetMaxDCAToVertexZ(fXi1530PionZVertexCut_loose);
-    // secondary particle cut(Xi daugthers)
-    fTrackCuts2 = new AliESDtrackCuts();
-    // fTrackCuts2 -> GetStandardITSTPCTrackCuts2011(kFALSE,kTRUE); // not
-    // primary
-    fTrackCuts2->SetAcceptKinkDaughters(kFALSE);
-    fTrackCuts2->SetMinNClustersTPC(50);
-    fTrackCuts2->SetRequireTPCRefit(kTRUE);
-    fTrackCuts2->SetMaxChi2PerClusterTPC(4);
-    // fTrackCuts2 -> SetEtaRange(-0.8,0.8);
-    fTrackCuts2->SetPtRange(0.15, 1e20);
-
-    // secondary particle cut(Xi daugthers) for systematic study
-    fTrackCuts3 = new AliESDtrackCuts();
-    fTrackCuts3->GetStandardITSTPCTrackCuts2011(kFALSE);  // not primary
+    //fTrackCuts->SetPtRange(0.15, 1e20);
+    //fTrackCuts->SetEtaRange(-fXi1530PionEtaCut, fXi1530PionEtaCut);
+    //fTrackCuts->SetMaxDCAToVertexZ(fXi1530PionZVertexCut_loose);
 
     // ----------------------------------------------------------------------
 
@@ -216,7 +202,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
 
     binCent = AxisVar("Cent", centaxisbin);  // for kINT7 study
     auto binPt = AxisFix("Pt", 200, 0, 20);
-    auto binMass = AxisFix("Mass", 2000, 1.0, 3.0);
+    auto binMass = AxisFix("Mass", 1800, 1.2, 3.0);
     binZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10});
     auto binType_V0M =
         AxisStr("Type", {"isSelected", "isSelectedPS", "isSelectedMult"});
@@ -254,7 +240,10 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
                     {binType_V0M, binCent, AxisFix("V0MSig", 25000, 0, 25000),
                      AxisFix("SPDNtrk", 4000, 0, 4000)},
                     "s");
-
+    if (fExoticFinder2)
+        CreateTHnSparse("hInvMass_hf", "InvMass", 4,
+                        {binType, binCent, binPt, binMass},
+                        "s");
     auto binTrklet =
         AxisVar("nTrklet", {0, 5, 10, 15, 20, 25, 30, 35, 40, 100});
 
@@ -281,10 +270,12 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
             fHistos->CreateTH1("hMult_QA", "", 100, 0, 0.1, "s");
             fHistos->CreateTH1("hMult_QA_onlyMult", "", 100, 0, 0.1, "s");
             fHistos->CreateTH1("hMult_SkippedDataQA", "", 100, 0, 0.1, "s");
+            fHistos->CreateTH1("hMult_ProcessedDataQA", "", 100, 0, 0.1, "s");
         } else {
             fHistos->CreateTH1("hMult_QA", "", 1000, 0, 100, "s");
             fHistos->CreateTH1("hMult_QA_onlyMult", "", 1000, 0, 100, "s");
             fHistos->CreateTH1("hMult_SkippedDataQA", "", 100, 0, 100, "s");
+            fHistos->CreateTH1("hMult_ProcessedDataQA", "", 100, 0, 100, "s");
         }
         fHistos->CreateTH2("hPhiEta", "", 180, 0, 2 * pi, 40, -2, 2);
         // T P C   P I D
@@ -443,10 +434,19 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         }
     }
     // Invmass Check
-    fHistos->CreateTH1("hTotalInvMass_data", "", 2000, 0.5, 2.5, "s");
-    fHistos->CreateTH1("hTotalInvMass_LS", "", 2000, 0.5, 2.5, "s");
-    fHistos->CreateTH1("hTotalInvMass_Mix", "", 2000, 0.5, 2.5, "s");
-
+    fHistos->CreateTH1("hTotalInvMass_data", "", 1300, 1.2, 2.5, "s");
+    fHistos->CreateTH1("hTotalInvMass_LS", "", 1300, 1.2, 2.5, "s");
+    fHistos->CreateTH1("hTotalInvMass_Mix", "", 1300, 1.2, 2.5, "s");
+    if (fExoticFinder2){
+        fHistos->CreateTH1("hTotalInvMass_HFpp", "", 2000, 1.5, 3.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFnp", "", 2000, 1.5, 3.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFpn", "", 2000, 1.5, 3.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFnn", "", 2000, 1.5, 3.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFppMix", "", 2000, 1.5, 3.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFnpMix", "", 2000, 1.5, 3.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFpnMix", "", 2000, 1.5, 3.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_HFnnMix", "", 2000, 1.5, 3.5, "s");
+    }
     fEMpool.resize(binCent.GetNbins() + 1,
                    std::vector<eventpool>(binZ.GetNbins() + 1));
     PostData(1, fHistos->GetListOfHistograms());
@@ -487,11 +487,9 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     // Vertex Check
     const AliVVertex* pVtx = fEvt->GetPrimaryVertex();
     // const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTracks() ;
-    const AliVVertex* spdVtx = fEvt->GetPrimaryVertexSPD();
-    PVx = pVtx->GetX();
-    PVy = pVtx->GetY();
-    PVz = pVtx->GetZ();
-    fZ = spdVtx->GetZ();
+    lPosPV[0] = pVtx->GetX();
+    lPosPV[1] = pVtx->GetY();
+    lPosPV[2] = pVtx->GetZ();
 
     // Initialize
     bool IsMultSelcted{false}, IsSelectedTrig{false}, IsEvtSelected{false};
@@ -663,8 +661,10 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     }
 
     // Event Mixing pool -----------------------------------------------------
-    zbin = binZ.FindBin(fZ) - 1;           // Event mixing z-bin
+    zbin = binZ.FindBin(lPosPV[2]) - 1;           // Event mixing z-bin
     centbin = binCent.FindBin(fCent) - 1;  // Event mixing cent bin
+    if (isINEL)
+        centbin = 0;                       // for INEL case
     // -----------------------------------------------------------------------
 
     // Check tracks and casade, Fill histo************************************
@@ -728,62 +728,63 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
         etl = &(ep->back());
     }
 
-    fTrackCuts->SetMaxDCAToVertexZ(fXi1530PionZVertexCut_loose);
-
     Float_t b[2];
     Float_t bCov[3];
     Double_t pionZ = -999;
+    Double_t pionPt, fEta, fTPCNSigPion;
 
     for (UInt_t it = 0; it < ntracks; it++) {
-        if (fEvt->IsA() == AliESDEvent::Class()) {
-            track = (AliESDtrack*)fEvt->GetTrack(it);
-            if (!track){
-                AliInfo("no track");
-                continue;
-            }
+        track = (AliVTrack*)fEvt->GetTrack(it);
+        if (!track){
+            AliInfo("no track");
+            continue;
+        }
+        if(IsNano)
+            ((AliNanoAODTrack*)track)->GetImpactParameters(b[0], b[1]);
+        else
+            track->GetImpactParameters(b, bCov);
+
+        // Track cuts
+        if (fEvt->IsA() == AliESDEvent::Class()) { // ESD Case
             if (!fTrackCuts->AcceptTrack((AliESDtrack*)track)) {
                 AliInfo("can't pass the track cut");
                 continue;
             }
-            ((AliESDtrack*)track)->GetImpactParameters(b, bCov);
-        }  // ESD Case
-        else {
-            track = (AliAODTrack*)fEvt->GetTrack(it);
-            if (!track) {
-                AliInfo("no track");
-                continue;
-            }
-            if (!((AliAODTrack*)track)->TestFilterBit(fFilterBit)){
+        }  
+        else { // AOD Case
+            // Nano track will not be checked
+            if (!IsNano && !((AliAODTrack*)track)->TestFilterBit(fFilterBit)){
                 AliInfo("Track can't pass the filter bit!");
                 continue;
             }
-            ((AliAODTrack*)track)->GetImpactParameters(b, bCov);
-            Double_t pionPt = track->Pt();
-            pionZ = b[1];
+        }  
 
-            if (abs(track->Eta()) > fXi1530PionEtaCut) {
-                AliInfo(Form("Eta cut failed: track eta: %f, cut: %f",
-                             track->Eta(), fXi1530PionEtaCut));
-                continue;
-            }
-            if (pionZ > fXi1530PionZVertexCut_loose) {
-                AliInfo(Form("zVertex cut failed: track DCAz: %f, cut: %f",
-                             pionZ, fXi1530PionZVertexCut_loose));
-                continue;
-            }
-            if (pionPt < 0.15) {
-                AliInfo(Form("pT cut failed: track pT: %f, cut: 0.15", pionPt));
-                continue;
-            }
-        }  // AOD Case
-        Double_t fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
+        pionPt = track->Pt();
+        pionZ = b[1];
+        fEta = TMath::Abs(track->Eta());
+        fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
 
-        if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_loose) {
+        if (fEta > fXi1530PionEtaCut) {
+            AliInfo(Form("Eta cut failed: track eta: %f, cut: %f",
+                            track->Eta(), fXi1530PionEtaCut));
+            continue;
+        }
+        if (pionZ > fXi1530PionZVertexCut_loose) {
+            AliInfo(Form("zVertex cut failed: track DCAz: %f, cut: %f",
+                            pionZ, fXi1530PionZVertexCut_loose));
+            continue;
+        }
+        if (pionPt < 0.15) {
+            AliInfo(Form("pT cut failed: track pT: %f, cut: 0.15", pionPt));
+            continue;
+        }
+        if (TMath::Abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_loose) {
             AliInfo(Form("TPC nSigma cut failed: track TPC PID: %f, cut: %f",
                          fTPCNSigPion, fTPCNsigXi1530PionCut_loose));
             continue;
         }
-        // if (fabs(track->M() - pionmass) > 0.007) continue;
+        
+        // if (TMath::Abs(track->M() - pionmass) > 0.007) continue;
         if (fQA) {
             fHistos->FillTH2("hPhiEta", track->Phi(), track->Eta());
             fHistos->FillTH2("hTPCPIDXi1530Pion", track->GetTPCmomentum(),
@@ -838,6 +839,16 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
     Double_t LambdaX, LambdaY, LambdaZ;
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
     Double_t fDCADist_LambdaProton_PV, fDCADist_LambdaPion_PV;
+    Double_t fDCADist_Lambda_PV, fDCADist_Xi_PV, fDCADist_BachelorPion_PV;
+    Double_t fDCADist_Lambda, fDCADist_Xi;
+    Double_t cX, cY, cZ;
+    Double_t fLambdaCPA, fXiCPA;
+    Double_t fMass_Xi;
+    Double_t lPosXi[3];
+    Double_t lMomXi[3];
+    Double_t Xi_momsum, Xi_eta, Xi_phi;
+    Float_t b[2];
+    Float_t bCov[3];
 
     Bool_t StandardXi = kTRUE;
     if (fEvt->IsA() == AliESDEvent::Class()) {  // ESD case
@@ -866,25 +877,11 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             }
 
             AliESDtrack* pTrackXi =
-                ((AliESDEvent*)fEvt)
-                    ->GetTrack(TMath::Abs(Xicandidate->GetPindex()));
+                (AliESDtrack*)fEvt->GetTrack(TMath::Abs(Xicandidate->GetPindex()));
             AliESDtrack* nTrackXi =
-                ((AliESDEvent*)fEvt)
-                    ->GetTrack(TMath::Abs(Xicandidate->GetNindex()));
+                (AliESDtrack*)fEvt->GetTrack(TMath::Abs(Xicandidate->GetNindex()));
             AliESDtrack* bTrackXi =
-                ((AliESDEvent*)fEvt)
-                    ->GetTrack(TMath::Abs(Xicandidate->GetBindex()));
-
-            // Standard track QA cuts
-            // Let it be disabled for the consistency with AOD analysis
-            /*
-            if (!fTrackCuts2->AcceptTrack(pTrackXi))
-                continue;
-            if (!fTrackCuts2->AcceptTrack(nTrackXi))
-                continue;
-            if (!fTrackCuts2->AcceptTrack(bTrackXi))
-                continue;
-            */
+                (AliESDtrack*)fEvt->GetTrack(TMath::Abs(Xicandidate->GetBindex()));
 
             // PID cuts for Xi daughters
             if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
@@ -921,17 +918,17 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                 fHistos->FillTH1("hTPCPIDsignalBachelorPion",
                                  fTPCNSigBachelorPion);
             }
-            if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_loose){
+            if (TMath::Abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_loose){
                 AliInfo(Form("proton PID cut failed -  value: %f, cut: %f",
                              fTPCNSigProton, fTPCNsigLambdaProtonCut_loose));
                 StandardXi = kFALSE;  // PID for proton
             }
-            if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_loose) {
+            if (TMath::Abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_loose) {
                 AliInfo(Form("pion PID cut failed -  value: %f, cut: %f",
                              fTPCNSigLambdaPion, fTPCNsigLambdaPionCut_loose));
                 StandardXi = kFALSE;  // PID for 1st pion
             }
-            if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut_loose) {
+            if (TMath::Abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut_loose) {
                 AliInfo(Form("bPion PID cut failed -  value: %f, cut: %f",
                              fTPCNSigBachelorPion,
                              fTPCNsigBachelorPionCut_loose));
@@ -940,8 +937,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
             // DCA cut
             // DCA between Dautgher particles
-            Double_t fDCADist_Lambda = fabs(Xicandidate->GetDcaV0Daughters());
-            Double_t fDCADist_Xi = fabs(Xicandidate->GetDcaXiDaughters());
+            fDCADist_Lambda = TMath::Abs(Xicandidate->GetDcaV0Daughters());
+            fDCADist_Xi = TMath::Abs(Xicandidate->GetDcaXiDaughters());
             if (fQA) {
                 fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters",
                                  fDCADist_Lambda);
@@ -962,21 +959,23 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             }
 
             // DCA to PV
-            Double_t fDCADist_Lambda_PV =
-                fabs(Xicandidate->GetD(PVx, PVy, PVz));
-            Double_t fDCADist_Xi_PV =
-                fabs(Xicandidate->GetDcascade(PVx, PVy, PVz));
+            fDCADist_Lambda_PV =
+                TMath::Abs(Xicandidate->GetD(lPosPV[0], lPosPV[1], lPosPV[2]));
+            fDCADist_Xi_PV =
+                TMath::Abs(Xicandidate->GetDcascade(lPosPV[0], lPosPV[1], lPosPV[2]));
             if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
-                fDCADist_LambdaProton_PV =
-                    fabs(pTrackXi->GetD(PVx, PVy, bField));
-                fDCADist_LambdaPion_PV = fabs(nTrackXi->GetD(PVx, PVy, bField));
+                pTrackXi->GetImpactParameters(b, bCov);
+                fDCADist_LambdaProton_PV = b[0];
+                nTrackXi->GetImpactParameters(b, bCov);
+                fDCADist_LambdaPion_PV = b[0];
             } else {
-                fDCADist_LambdaProton_PV =
-                    fabs(nTrackXi->GetD(PVx, PVy, bField));
-                fDCADist_LambdaPion_PV = fabs(pTrackXi->GetD(PVx, PVy, bField));
+                nTrackXi->GetImpactParameters(b, bCov);
+                fDCADist_LambdaProton_PV = b[0];
+                pTrackXi->GetImpactParameters(b, bCov);
+                fDCADist_LambdaPion_PV = b[0];
             }
-            Double_t fDCADist_BachelorPion_PV =
-                fabs(bTrackXi->GetD(PVx, PVy, bField));
+            bTrackXi->GetImpactParameters(b, bCov);
+            fDCADist_BachelorPion_PV = b[0];
             if (fQA) {
                 fHistos->FillTH1("hDCADist_lambda_to_PV", fDCADist_Lambda_PV);
                 fHistos->FillTH1("hDCADist_Xi_to_PV", fDCADist_Xi_PV);
@@ -995,12 +994,15 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             }
 
             // CPA cut
-            Double_t cX, cY, cZ;
             Xicandidate->GetXYZcascade(cX, cY, cZ);
-            Double_t fLambdaCPA =
-                Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
-            Double_t fXiCPA =
-                Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
+            if (!fCPAstudy)
+                fLambdaCPA =
+                    Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
+            else
+                fLambdaCPA =
+                    Xicandidate->GetV0CosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
+            fXiCPA =
+                Xicandidate->GetCascadeCosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
             if (fQA) {
                 fHistos->FillTH1("hCosPA_lambda", fLambdaCPA);
                 fHistos->FillTH1("hCosPA_Xi", fXiCPA);
@@ -1018,16 +1020,16 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             }
 
             // Mass window cut
-            Double_t fMass_Xi = Xicandidate->GetEffMassXi();
+            fMass_Xi = Xicandidate->GetEffMassXi();
             if (fQA)
                 fHistos->FillTH1("hMass_Xi", fMass_Xi);
             /*
             // Disable for Xi study
-            if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)
+            if (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)
                 StandardXi = kFALSE;
             */
             // Eta cut
-            if (abs(Xicandidate->Eta()) > fXiEtaCut) {
+            if (TMath::Abs(Xicandidate->Eta()) > fXiEtaCut) {
                 AliInfo(Form("Eta cut failed -  value: %f, cut: %f",
                              Xicandidate->Eta(), fXiEtaCut));
                 StandardXi = kFALSE;
@@ -1104,31 +1106,6 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                 (AliAODTrack*)(Xicandidate_aod->GetDecayVertexXi()->GetDaughter(
                     0));
 
-            // Standard track QA cuts
-            // check quality cuts
-            /*
-            UInt_t filtermapP = 9999;
-            UInt_t filtermapN = 9999;
-            UInt_t filtermapB = 9999;
-            filtermapP = pTrackXi->GetFilterMap();
-            filtermapN = nTrackXi->GetFilterMap();
-            filtermapB = bTrackXi->GetFilterMap();
-            */
-            /*
-            if ((pTrackXi->Pt() < 0.15) || (nTrackXi->Pt() < 0.15) ||
-                (bTrackXi->Pt() < 0.15))
-                continue;
-            */
-            // Disabled in AOD check - need to check further!
-            /*
-            if (!(pTrackXi->TestFilterBit(fFilterBit_Xi)))
-                continue;
-            if (!(nTrackXi->TestFilterBit(fFilterBit_Xi)))
-                continue;
-            if (!(bTrackXi->TestFilterBit(fFilterBit_Xi)))
-                continue;
-            */
-
             // PID cuts for Xi daughters
             if (Xicandidate_aod->ChargeXi() == -1) {  // Xi- has +proton, -pion
                 fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
@@ -1164,17 +1141,17 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                 fHistos->FillTH1("hTPCPIDsignalBachelorPion",
                                  fTPCNSigBachelorPion);
             }
-            if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_loose) {
+            if (TMath::Abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_loose) {
                 AliInfo(Form("proton PID cut failed -  value: %f, cut: %f",
                              fTPCNSigProton, fTPCNsigLambdaProtonCut_loose));
                 StandardXi = kFALSE;  // PID for proton
             }
-            if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_loose) {
+            if (TMath::Abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_loose) {
                 AliInfo(Form("pion PID cut failed -  value: %f, cut: %f",
                              fTPCNSigLambdaPion, fTPCNsigLambdaPionCut_loose));
                 StandardXi = kFALSE;  // PID for 1st pion
             }
-            if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut_loose) {
+            if (TMath::Abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut_loose) {
                 AliInfo(Form("bPion PID cut failed -  value: %f, cut: %f",
                              fTPCNSigBachelorPion,
                              fTPCNsigBachelorPionCut_loose));
@@ -1183,8 +1160,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
             // DCA cut
             // DCA between Dautgher particles
-            Double_t fDCADist_Lambda = fabs(Xicandidate_aod->DcaV0Daughters());
-            Double_t fDCADist_Xi = fabs(Xicandidate_aod->DcaXiDaughters());
+            fDCADist_Lambda = TMath::Abs(Xicandidate_aod->DcaV0Daughters());
+            fDCADist_Xi = TMath::Abs(Xicandidate_aod->DcaXiDaughters());
             if (fQA) {
                 fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters",
                                  fDCADist_Lambda);
@@ -1205,23 +1182,23 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             }
 
             // DCA to PV
-            Double_t fDCADist_Lambda_PV =
-                fabs(Xicandidate_aod->DcaV0ToPrimVertex());
-            Double_t fDCADist_Xi_PV =
-                fabs(Xicandidate_aod->DcaXiToPrimVertex(PVx, PVy, PVz));
+            fDCADist_Lambda_PV =
+                TMath::Abs(Xicandidate_aod->DcaV0ToPrimVertex());
+            fDCADist_Xi_PV =
+                TMath::Abs(Xicandidate_aod->DcaXiToPrimVertex(lPosPV[0], lPosPV[1], lPosPV[2]));
             if (Xicandidate_aod->ChargeXi() == -1) {  // Xi- has +proton, -pion
                 fDCADist_LambdaProton_PV =
-                    fabs(Xicandidate_aod->DcaPosToPrimVertex());
+                    TMath::Abs(Xicandidate_aod->DcaPosToPrimVertex());
                 fDCADist_LambdaPion_PV =
-                    fabs(Xicandidate_aod->DcaNegToPrimVertex());
+                    TMath::Abs(Xicandidate_aod->DcaNegToPrimVertex());
             } else {
                 fDCADist_LambdaProton_PV =
-                    fabs(Xicandidate_aod->DcaNegToPrimVertex());
+                    TMath::Abs(Xicandidate_aod->DcaNegToPrimVertex());
                 fDCADist_LambdaPion_PV =
-                    fabs(Xicandidate_aod->DcaPosToPrimVertex());
+                    TMath::Abs(Xicandidate_aod->DcaPosToPrimVertex());
             }
             Double_t fDCADist_BachelorPion_PV =
-                fabs(Xicandidate_aod->DcaBachToPrimVertex());
+                TMath::Abs(Xicandidate_aod->DcaBachToPrimVertex());
             if (fQA) {
                 fHistos->FillTH1("hDCADist_lambda_to_PV", fDCADist_Lambda_PV);
                 fHistos->FillTH1("hDCADist_Xi_to_PV", fDCADist_Xi_PV);
@@ -1240,14 +1217,15 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             }
 
             // CPA cut
-            Double_t lPosXi[3];
             lPosXi[0] = Xicandidate_aod->DecayVertexXiX();
             lPosXi[1] = Xicandidate_aod->DecayVertexXiY();
             lPosXi[2] = Xicandidate_aod->DecayVertexXiZ();
-
-            Double_t fLambdaCPA = Xicandidate_aod->CosPointingAngle(lPosXi);
-            Double_t fXiCPA =
-                Xicandidate_aod->CosPointingAngleXi(PVx, PVy, PVz);
+            if (!fCPAstudy)
+                fLambdaCPA = Xicandidate_aod->CosPointingAngle(lPosXi);
+            else
+                fLambdaCPA = Xicandidate_aod->CosPointingAngle(lPosPV);
+            fXiCPA =
+                Xicandidate_aod->CosPointingAngleXi(lPosPV[0], lPosPV[1], lPosPV[2]);
             if (fQA) {
                 fHistos->FillTH1("hCosPA_lambda", fLambdaCPA);
                 fHistos->FillTH1("hCosPA_Xi", fXiCPA);
@@ -1265,31 +1243,30 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             }
 
             // Mass window cut
-            Double_t fMass_Xi = Xicandidate_aod->MassXi();
+            fMass_Xi = Xicandidate_aod->MassXi();
             if (fQA)
                 fHistos->FillTH1("hMass_Xi", fMass_Xi);
             /*
             // Disable for Xi study
-            if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)
+            if (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)
                 StandardXi = kFALSE;
             */
 
             // Eta cut
             // Eta: 0.5*TMath::Log((P()+Pz())/(P()-Pz()+1.e-13))
             // Phi: TMath::Pi()+TMath::ATan2(-Py(),-Px())
-            Double_t lMomXi[3];
             lMomXi[0] = Xicandidate_aod->MomXiX();
             lMomXi[1] = Xicandidate_aod->MomXiY();
             lMomXi[2] = Xicandidate_aod->MomXiZ();
-            Double_t Xi_momsum =
+            Xi_momsum =
                 TMath::Sqrt(lMomXi[0] * lMomXi[0] + lMomXi[1] * lMomXi[1] +
                             lMomXi[2] * lMomXi[2]);
-            Double_t Xi_eta =
+            Xi_eta =
                 0.5 * TMath::Log((Xi_momsum + lMomXi[2]) /
                                  (Xi_momsum - lMomXi[2] + 1.e-13));
-            Double_t Xi_phi =
+            Xi_phi =
                 TMath::Pi() + TMath::ATan2(-lMomXi[1], -lMomXi[0]);
-            if (abs(Xi_eta) > fXiEtaCut) {
+            if (TMath::Abs(Xi_eta) > fXiEtaCut) {
                 AliInfo(Form("Eta cut failed -  value: %f, cut: %f", Xi_eta,
                              fXiEtaCut));
                 StandardXi = kFALSE;
@@ -1339,11 +1316,13 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
 void AliAnalysisTaskXi1530::FillTracks() {
     AliVTrack* track1;           // charged track, pion
+    AliVTrack* track2;           // charged track, pion
     AliESDcascade* Xicandidate;  // Cascade
     tracklist trackpool;
 
-    TLorentzVector temp1, temp2;
+    TLorentzVector temp1, temp2, temp3;
     TLorentzVector vecsum;  // Xi1530 candidate
+    TLorentzVector vecsum2;  // for
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
 
     // for DCA value
@@ -1412,20 +1391,20 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // Xi1530Pion PID
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
-                    (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut)) {
+                    (TMath::Abs(fTPCNSigPion) > fTPCNsigXi1530PionCut)) {
                     AliInfo(Form("pion PID! %f %s", fTPCNSigPion,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
 
                 if ((SysCheck.at(sys) == "TPCNsigmaXi1530PionTight") &&
-                    (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_tight))
+                    (TMath::Abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_tight))
                     continue;
                 // Xi PID
                 if (SysCheck.at(sys) != "TPCNsigmaXiLoose") {
-                    if ((abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut) ||
-                        (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) ||
-                        (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)) {
+                    if ((TMath::Abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut) ||
+                        (TMath::Abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) ||
+                        (TMath::Abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)) {
                         AliInfo(Form("Xi PID! %f %f %f %s", fTPCNSigProton,
                                      fTPCNSigLambdaPion, fTPCNSigBachelorPion,
                                      (const char*)SysCheck.at(sys)));
@@ -1433,16 +1412,16 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     }
                 }
                 if (SysCheck.at(sys) == "TPCNsigmaXiTight") {
-                    if ((abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_tight) ||
-                        (abs(fTPCNSigLambdaPion) >
+                    if ((TMath::Abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_tight) ||
+                        (TMath::Abs(fTPCNSigLambdaPion) >
                          fTPCNsigLambdaPionCut_tight) ||
-                        (abs(fTPCNSigBachelorPion) >
+                        (TMath::Abs(fTPCNSigBachelorPion) >
                          fTPCNsigBachelorPionCut_tight))
                         continue;
                 }
 
                 // Xi1530Pion DCA zVetex Check
-                ((AliESDtrack*)track1)->GetImpactParameters(b, bCov);
+                track1->GetImpactParameters(b, bCov);
                 pionZ = b[1];
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
                     (pionZ > fXi1530PionZVertexCut)) {
@@ -1455,8 +1434,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
 
                 // DCA between daughters Check
-                Double_t fDCADist_Lambda = fabs(Xicandidate->GetDcaV0Daughters());
-                Double_t fDCADist_Xi = fabs(Xicandidate->GetDcaXiDaughters());
+                Double_t fDCADist_Lambda = TMath::Abs(Xicandidate->GetDcaV0Daughters());
+                Double_t fDCADist_Xi = TMath::Abs(Xicandidate->GetDcaXiDaughters());
                 if ((SysCheck.at(sys) != "DCADistLambdaDaughtersLoose") &&
                     (fDCADist_Lambda > fDCADist_LambdaDaughtersCut)) {
                     AliInfo(Form("DCADistLambdaDaughters! %f %s",
@@ -1481,9 +1460,9 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // DCA Lambda to PV Check
                 Double_t fDCADist_Lambda_PV =
-                    fabs(Xicandidate->GetD(PVx, PVy, PVz));
+                    TMath::Abs(Xicandidate->GetD(lPosPV[0], lPosPV[1], lPosPV[2]));
                 Double_t fDCADist_Xi_PV =
-                    fabs(Xicandidate->GetDcascade(PVx, PVy, PVz));
+                    TMath::Abs(Xicandidate->GetDcascade(lPosPV[0], lPosPV[1], lPosPV[2]));
                 if ((SysCheck.at(sys) != "DCADistLambdaPVLoose") &&
                     (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)) {
                     AliInfo(Form("DCADistLambdaPV! %f %s", fDCADist_Lambda_PV,
@@ -1498,10 +1477,15 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 // CPA Check
                 Double_t cX, cY, cZ;
                 Xicandidate->GetXYZcascade(cX, cY, cZ);
-                Double_t fLambdaCPA =
-                    Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
+                Double_t fLambdaCPA;
+                if (!fCPAstudy)
+                    fLambdaCPA =
+                        Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
+                else
+                    fLambdaCPA =
+                        Xicandidate->GetV0CosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
                 Double_t fXiCPA =
-                    Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
+                    Xicandidate->GetCascadeCosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
 
                 if ((SysCheck.at(sys) != "V0CosineOfPointingAngleLoose") &&
                     (fLambdaCPA < fV0CosineOfPointingAngleCut)) {
@@ -1524,31 +1508,19 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->GetEffMassXi();
-                if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose) {
+                if (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut_loose) {
                     continue;
                 }
                 if ((SysCheck.at(sys) != "XiMassWindowLoose") &&
-                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)) {
+                    (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut)) {
                     AliInfo(Form("XiMassWindow! %f %s", fMass_Xi,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
                 if ((SysCheck.at(sys) == "XiMassWindowTight") &&
-                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_tight))
+                    (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut_tight))
                     continue;
 
-                // XiTrack Cut Systematic check
-                // ---------------------------------------------
-                /*
-                if (SysCheck.at(sys) == "XiTrackCut") {
-                    if (!fTrackCuts3->AcceptTrack(pTrackXi))
-                        continue;
-                    if (!fTrackCuts3->AcceptTrack(nTrackXi))
-                        continue;
-                    if (!fTrackCuts3->AcceptTrack(bTrackXi))
-                        continue;
-                }
-                */
                 temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
                               pionmass);
 
@@ -1562,7 +1534,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 if (fExoticFinder) {
                     Double_t angle = temp1.Angle(temp2.Vect());
                     fHistos->FillTH1("hExoOpenAngle", angle);
-                    if (abs(angle) < 0.0785398)  // 4.5 degree
+                    if (TMath::Abs(angle) < 0.0785398)  // 4.5 degree
                         continue;
                 }
 
@@ -1591,36 +1563,36 @@ void AliAnalysisTaskXi1530::FillTracks() {
                             // For cut study
                             fHistos->FillTH1(
                                 "hDCADist_Lambda_BTW_Daughters_TrueMC",
-                                fabs(Xicandidate->GetDcaV0Daughters()));
+                                TMath::Abs(Xicandidate->GetDcaV0Daughters()));
                             fHistos->FillTH1(
                                 "hDCADist_Xi_BTW_Daughters_TrueMC",
-                                fabs(Xicandidate->GetDcaXiDaughters()));
+                                TMath::Abs(Xicandidate->GetDcaXiDaughters()));
                             if (Xicandidate->Charge() ==
                                 -1) {  // Xi- has +proton, -pion
+                                pTrackXi->GetImpactParameters(b, bCov);
                                 fHistos->FillTH1(
-                                    "hDCADist_LambdaProton_to_PV_TrueMC",
-                                    fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                    "hDCADist_LambdaProton_to_PV_TrueMC", b[0]);
+                                nTrackXi->GetImpactParameters(b, bCov);
                                 fHistos->FillTH1(
-                                    "hDCADist_LambdaPion_to_PV_TrueMC",
-                                    fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                                    "hDCADist_LambdaPion_to_PV_TrueMC", b[0]);
                             } else {
+                                nTrackXi->GetImpactParameters(b, bCov);
                                 fHistos->FillTH1(
-                                    "hDCADist_LambdaProton_to_PV_TrueMC",
-                                    fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                                    "hDCADist_LambdaProton_to_PV_TrueMC", b[0]);
+                                pTrackXi->GetImpactParameters(b, bCov);
                                 fHistos->FillTH1(
-                                    "hDCADist_LambdaPion_to_PV_TrueMC",
-                                    fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                    "hDCADist_LambdaPion_to_PV_TrueMC", b[0]);
                             }
+                            bTrackXi->GetImpactParameters(b, bCov);
                             fHistos->FillTH1(
-                                "hDCADist_BachelorPion_to_PV_TrueMC",
-                                fabs(bTrackXi->GetD(PVx, PVy, bField)));
+                                "hDCADist_BachelorPion_to_PV_TrueMC", b[0]);
 
                             fHistos->FillTH1(
                                 "hDCADist_lambda_to_PV_TrueMC",
-                                fabs(Xicandidate->GetD(PVx, PVy, PVz)));
+                                TMath::Abs(Xicandidate->GetD(lPosPV[0], lPosPV[1], lPosPV[2])));
                             fHistos->FillTH1(
                                 "hDCADist_Xi_to_PV_TrueMC",
-                                fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
+                                TMath::Abs(Xicandidate->GetDcascade(lPosPV[0], lPosPV[1], lPosPV[2])));
 
                             fHistos->FillTH2("hPhiEta_Xi_TrueMC",
                                              Xicandidate->Phi(),
@@ -1642,6 +1614,63 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     if ((int)sign == (int)kLS)
                         fHistos->FillTH1("hTotalInvMass_LS", vecsum.M());
                 }
+                if (fExoticFinder2) {
+                    for (UInt_t k = 0; k < ntracks; k++) {
+                        if (j == k)  // same pion
+                            continue;
+                        track2 =
+                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                        if (track1->GetID() == track2->GetID())
+                            continue;
+                        temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
+                                      pionmass);
+
+                        vecsum2 =
+                            vecsum + temp3;  // vecsum = Xi1530, temp3=pion
+                        // Y cut
+                        if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
+                            (vecsum2.Rapidity() < fXi1530RapidityCut_low))
+                            continue;
+                        
+                        // Mass window
+                        double mXi1530 = vecsum.M();
+                        if (TMath::Abs(mXi1530 - massXi1530) > 0.05)
+                            continue;
+
+                        int sign2 = kData;
+                        if (track2->Charge() > 0){
+                            if (track1->Charge() > 0)
+                                sign2 = kData;
+                            else
+                                sign2 = kLS;
+                        }
+                        else {
+                            if (track1->Charge() > 0)
+                                sign2 = kMixing;
+                            else
+                                sign2 = kMCReco;
+                        }
+                        FillTHnSparse("hInvMass_hf",
+                                      {(double)sign2, (double)fCent,
+                                       vecsum2.Pt(), vecsum2.M()});
+                        if (track2->Charge() > 0) {
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFpp",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnp",
+                                                 vecsum2.M());
+                        }
+                        else {
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFpn",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnn",
+                                                 vecsum2.M());
+                        }
+                    }
+                }
 
                 // Fill the QA Histos
                 if (fQA) {
@@ -1657,12 +1686,12 @@ void AliAnalysisTaskXi1530::FillTracks() {
                             fHistos->FillTH2("hTPCPIDLambdaPion_cut",
                                              nTrackXi->GetTPCmomentum(),
                                              nTrackXi->GetTPCsignal());
+                            pTrackXi->GetImpactParameters(b, bCov);
                             fHistos->FillTH1(
-                                "hDCADist_LambdaProton_to_PV_cut",
-                                fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                "hDCADist_LambdaProton_to_PV_cut", b[0]);
+                            nTrackXi->GetImpactParameters(b, bCov);
                             fHistos->FillTH1(
-                                "hDCADist_LambdaPion_to_PV_cut",
-                                fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                                "hDCADist_LambdaPion_to_PV_cut", b[0]);
                         } else {  // Xi+ has -proton, +pion
                             fHistos->FillTH2("hTPCPIDLambdaProton_cut",
                                              nTrackXi->GetTPCmomentum(),
@@ -1670,12 +1699,12 @@ void AliAnalysisTaskXi1530::FillTracks() {
                             fHistos->FillTH2("hTPCPIDLambdaPion_cut",
                                              pTrackXi->GetTPCmomentum(),
                                              pTrackXi->GetTPCsignal());
+                            nTrackXi->GetImpactParameters(b, bCov);
                             fHistos->FillTH1(
-                                "hDCADist_LambdaProton_to_PV_cut",
-                                fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                                "hDCADist_LambdaProton_to_PV_cut", b[0]);
+                            pTrackXi->GetImpactParameters(b, bCov);
                             fHistos->FillTH1(
-                                "hDCADist_LambdaPion_to_PV_cut",
-                                fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                "hDCADist_LambdaPion_to_PV_cut", b[0]);
                         }
                         fHistos->FillTH2("hTPCPIDBachelorPion_cut",
                                          bTrackXi->GetTPCmomentum(),
@@ -1699,10 +1728,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
                                          fDCADist_Lambda_PV);
                         fHistos->FillTH1(
                             "hDCADist_Xi_to_PV_cut",
-                            fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
+                            TMath::Abs(Xicandidate->GetDcascade(lPosPV[0], lPosPV[1], lPosPV[2])));
+                        bTrackXi->GetImpactParameters(b, bCov);
                         fHistos->FillTH1(
-                            "hDCADist_BachelorPion_to_PV_cut",
-                            fabs(bTrackXi->GetD(PVx, PVy, bField)));
+                            "hDCADist_BachelorPion_to_PV_cut", b[0]);
                         fHistos->FillTH1("hDCADist_Xi1530pion_to_PV_cut",
                                          pionZ);
                         // CPA QA
@@ -1802,8 +1831,12 @@ void AliAnalysisTaskXi1530::FillTracks() {
     if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
         Int_t epsize = ep.size();
-        if (epsize < fnMix)
+        if (epsize < fnMix) {
+            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
             return;
+        }
+        fHistos->FillTH1("hMult_ProcessedDataQA", (double)fCent);
+
         Int_t nForSkipSameEvent = 0;
         for (auto pool : ep) {
             if (nForSkipSameEvent == (epsize - 1))
@@ -1850,7 +1883,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // Other default cuts
                 Double_t fTPCNSigPion = GetTPCnSigma(track1, AliPID::kPion);
-                if ((abs(fTPCNSigPion) > fTPCNsigXi1530PionCut))
+                if ((TMath::Abs(fTPCNSigPion) > fTPCNsigXi1530PionCut))
                     continue;
                 // Xi PID
                 if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
@@ -1862,11 +1895,11 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 }
                 fTPCNSigBachelorPion = GetTPCnSigma(
                     bTrackXi, AliPID::kPion);  // bachelor is always pion
-                if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut)
+                if (TMath::Abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut)
                     continue;
-                if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut)
+                if (TMath::Abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut)
                     continue;
-                if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
+                if (TMath::Abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
                     continue;
 
                 // Xi1530Pion DCA zVetex Check
@@ -1877,8 +1910,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // DCA between daughters Check
                 Double_t fDCADist_Lambda =
-                    fabs(Xicandidate->GetDcaV0Daughters());
-                Double_t fDCADist_Xi = fabs(Xicandidate->GetDcaXiDaughters());
+                    TMath::Abs(Xicandidate->GetDcaV0Daughters());
+                Double_t fDCADist_Xi = TMath::Abs(Xicandidate->GetDcaXiDaughters());
                 if (fDCADist_Lambda > fDCADist_LambdaDaughtersCut)
                     continue;
                 if (fDCADist_Xi > fDCADist_XiDaughtersCut)
@@ -1886,17 +1919,22 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // DCA Lambda to PV Check
                 Double_t fDCADist_Lambda_PV =
-                    fabs(Xicandidate->GetD(PVx, PVy, PVz));
+                    TMath::Abs(Xicandidate->GetD(lPosPV[0], lPosPV[1], lPosPV[2]));
                 if (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)
                     continue;
 
                 // CPA Check
                 Double_t cX, cY, cZ;
                 Xicandidate->GetXYZcascade(cX, cY, cZ);
-                Double_t fLambdaCPA =
-                    Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
+                Double_t fLambdaCPA;
+                if (!fCPAstudy)
+                    fLambdaCPA =
+                        Xicandidate->GetV0CosineOfPointingAngle(cX, cY, cZ);
+                else
+                    fLambdaCPA =
+                        Xicandidate->GetV0CosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
                 Double_t fXiCPA =
-                    Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
+                    Xicandidate->GetCascadeCosineOfPointingAngle(lPosPV[0], lPosPV[1], lPosPV[2]);
 
                 if (fLambdaCPA < fV0CosineOfPointingAngleCut)
                     continue;
@@ -1904,28 +1942,82 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->GetEffMassXi();
-                if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)
+                if (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut)
                     continue;
 
                 FillTHnSparse("hInvMass",
                               {(double)kDefaultOption, (double)kMixing,
                                (double)fCent, vecsum.Pt(), vecsum.M()});
                 fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
+                if (fExoticFinder2) {
+                    for (UInt_t k = 0; k < ntracks; k++) {
+                        if (jt == k)  // same pion
+                            continue;
+                        track2 =
+                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                        if (track1->GetID() == track2->GetID())
+                            continue;
+                        temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
+                                      pionmass);
+                        vecsum2 =
+                            vecsum + temp3;  // vecsum = Xi1530, temp3=pion
+                        // Y cut
+                        if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
+                            (vecsum2.Rapidity() < fXi1530RapidityCut_low))
+                            continue;
+                        
+                        // Mass window
+                        double mXi1530 = vecsum.M();
+                        if (TMath::Abs(mXi1530 - massXi1530) > 0.05)
+                            continue;
+
+                        int sign2 = kMCTrue;
+                        if (track2->Charge() > 0){
+                            if (track1->Charge() > 0)
+                                sign2 = kMCTrue;
+                            else
+                                sign2 = kMCTruePS;
+                        }
+                        else {
+                            if (track1->Charge() > 0)
+                                sign2 = kINEL10;
+                            else
+                                sign2 = kINELg010;
+                        }
+                        FillTHnSparse("hInvMass_hf",
+                                      {(double)sign2, (double)fCent,
+                                       vecsum2.Pt(), vecsum2.M()});
+                        if (track2->Charge() > 0) {
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFppMix",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnpMix",
+                                                 vecsum2.M());
+                        }
+                        else{
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFpnMix",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnnMix",
+                                                 vecsum2.M());
+                        }
+                    }
+                }
             }
         }
     }       // mix loop
-    else {  // Count how many signals we lost due to the event cut
-        if (fsetmixing)
-            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
-    }
 }
 void AliAnalysisTaskXi1530::FillTracksAOD() {
     AliVTrack* track1;         // charged track, pion
+    AliVTrack* track2;         // charged track, pion
     AliAODcascade* Xicandidate;  // Cascade
     tracklist trackpool;
 
-    TLorentzVector temp1, temp2;
+    TLorentzVector temp1, temp2, temp3;
     TLorentzVector vecsum;  // Xi1530 candidate
+    TLorentzVector vecsum2; // for 
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
 
     // for DCA value
@@ -1988,20 +2080,20 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 // Xi1530Pion PID
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
-                    (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut)){
+                    (TMath::Abs(fTPCNSigPion) > fTPCNsigXi1530PionCut)){
                     AliInfo(Form("pion PID! %f %s", fTPCNSigPion,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
 
                 if ((SysCheck.at(sys) == "TPCNsigmaXi1530PionTight") &&
-                    (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_tight))
+                    (TMath::Abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_tight))
                     continue;
                 // Xi PID
                 if (SysCheck.at(sys) != "TPCNsigmaXiLoose") {
-                    if ((abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut) ||
-                        (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) ||
-                        (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut) ){
+                    if ((TMath::Abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut) ||
+                        (TMath::Abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) ||
+                        (TMath::Abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut) ){
                         AliInfo(Form("Xi PID! %f %f %f %s", fTPCNSigProton,
                                      fTPCNSigLambdaPion, fTPCNSigBachelorPion,
                                      (const char*)SysCheck.at(sys)));
@@ -2009,11 +2101,11 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     }
                 }
                 if (SysCheck.at(sys) == "TPCNsigmaXiTight") {
-                    if ((abs(fTPCNSigProton) > 
+                    if ((TMath::Abs(fTPCNSigProton) > 
                          fTPCNsigLambdaProtonCut_tight) ||
-                        (abs(fTPCNSigLambdaPion) >
+                        (TMath::Abs(fTPCNSigLambdaPion) >
                          fTPCNsigLambdaPionCut_tight) ||
-                        (abs(fTPCNSigBachelorPion) >
+                        (TMath::Abs(fTPCNSigBachelorPion) >
                          fTPCNsigBachelorPionCut_tight))
                             continue;
                 }
@@ -2032,8 +2124,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     continue;
 
                 // DCA between daughters Check
-                Double_t fDCADist_Lambda = fabs(Xicandidate->DcaV0Daughters());
-                Double_t fDCADist_Xi = fabs(Xicandidate->DcaXiDaughters());
+                Double_t fDCADist_Lambda = TMath::Abs(Xicandidate->DcaV0Daughters());
+                Double_t fDCADist_Xi = TMath::Abs(Xicandidate->DcaXiDaughters());
                 if ((SysCheck.at(sys) != "DCADistLambdaDaughtersLoose") &&
                     (fDCADist_Lambda > fDCADist_LambdaDaughtersCut)){
                     AliInfo(Form("DCADistLambdaDaughters! %f %s",
@@ -2058,9 +2150,9 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 // DCA Lambda to PV Check
                 Double_t fDCADist_Lambda_PV =
-                    fabs(Xicandidate->DcaV0ToPrimVertex());
+                    TMath::Abs(Xicandidate->DcaV0ToPrimVertex());
                 Double_t fDCADist_Xi_PV =
-                    fabs(Xicandidate->DcaXiToPrimVertex(PVx, PVy, PVz));
+                    TMath::Abs(Xicandidate->DcaXiToPrimVertex(lPosPV[0], lPosPV[1], lPosPV[2]));
                 if ((SysCheck.at(sys) != "DCADistLambdaPVLoose") &&
                     (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)){
                     AliInfo(Form("DCADistLambdaPV! %f %s", fDCADist_Lambda_PV,
@@ -2077,10 +2169,13 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 lPosXi[0] = Xicandidate->DecayVertexXiX();
                 lPosXi[1] = Xicandidate->DecayVertexXiY();
                 lPosXi[2] = Xicandidate->DecayVertexXiZ();
-
-                Double_t fLambdaCPA = Xicandidate->CosPointingAngle(lPosXi);
+                Double_t fLambdaCPA;
+                if (!fCPAstudy)
+                    fLambdaCPA = Xicandidate->CosPointingAngle(lPosXi);
+                else
+                    fLambdaCPA = Xicandidate->CosPointingAngle(lPosPV);
                 Double_t fXiCPA =
-                    Xicandidate->CosPointingAngleXi(PVx, PVy, PVz);
+                    Xicandidate->CosPointingAngleXi(lPosPV[0], lPosPV[1], lPosPV[2]);
 
                 if ((SysCheck.at(sys) != "V0CosineOfPointingAngleLoose") &&
                     (fLambdaCPA < fV0CosineOfPointingAngleCut)){
@@ -2103,31 +2198,19 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->MassXi();
-                if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose) {
+                if (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut_loose) {
                     continue;
                 }
                 if ((SysCheck.at(sys) != "XiMassWindowLoose") &&
-                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)){
+                    (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut)){
                     AliInfo(Form("XiMassWindow! %f %s", fMass_Xi,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                     }
                 if ((SysCheck.at(sys) == "XiMassWindowTight") &&
-                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_tight))
+                    (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut_tight))
                     continue;
 
-                // XiTrack Cut Systematic check
-                // ---------------------------------------------
-                /*
-                if (SysCheck.at(sys) == "XiTrackCut") {
-                    if (!fTrackCuts3->AcceptTrack(pTrackXi))
-                        continue;
-                    if (!fTrackCuts3->AcceptTrack(nTrackXi))
-                        continue;
-                    if (!fTrackCuts3->AcceptTrack(bTrackXi))
-                        continue;
-                }
-                */
                 temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
                               pionmass);
 
@@ -2141,7 +2224,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 if (fExoticFinder) {
                     Double_t angle = temp1.Angle(temp2.Vect());
                     fHistos->FillTH1("hExoOpenAngle", angle);
-                    if (abs(angle) < 0.0785398)  // 4.5 degree
+                    if (TMath::Abs(angle) < 0.0785398)  // 4.5 degree
                         continue;
                 }
 
@@ -2181,33 +2264,33 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                             // For cut study
                             fHistos->FillTH1(
                                 "hDCADist_Lambda_BTW_Daughters_TrueMC",
-                                fabs(fDCADist_Lambda));
+                                TMath::Abs(fDCADist_Lambda));
                             fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_TrueMC",
-                                             fabs(fDCADist_Xi));
+                                             TMath::Abs(fDCADist_Xi));
                             if (Xicandidate->Charge() ==
                                 -1) {  // Xi- has +proton, -pion
                                 fHistos->FillTH1(
                                     "hDCADist_LambdaProton_to_PV_TrueMC",
-                                    fabs(Xicandidate->DcaPosToPrimVertex()));
+                                    TMath::Abs(Xicandidate->DcaPosToPrimVertex()));
                                 fHistos->FillTH1(
                                     "hDCADist_LambdaPion_to_PV_TrueMC",
-                                    fabs(Xicandidate->DcaNegToPrimVertex()));
+                                    TMath::Abs(Xicandidate->DcaNegToPrimVertex()));
                             } else {
                                 fHistos->FillTH1(
                                     "hDCADist_LambdaProton_to_PV_TrueMC",
-                                    fabs(Xicandidate->DcaNegToPrimVertex()));
+                                    TMath::Abs(Xicandidate->DcaNegToPrimVertex()));
                                 fHistos->FillTH1(
                                     "hDCADist_LambdaPion_to_PV_TrueMC",
-                                    fabs(Xicandidate->DcaPosToPrimVertex()));
+                                    TMath::Abs(Xicandidate->DcaPosToPrimVertex()));
                             }
                             fHistos->FillTH1(
                                 "hDCADist_BachelorPion_to_PV_TrueMC",
-                                fabs(Xicandidate->DcaBachToPrimVertex()));
+                                TMath::Abs(Xicandidate->DcaBachToPrimVertex()));
 
                             fHistos->FillTH1("hDCADist_lambda_to_PV_TrueMC",
-                                             fabs(fDCADist_Lambda_PV));
+                                             TMath::Abs(fDCADist_Lambda_PV));
                             fHistos->FillTH1("hDCADist_Xi_to_PV_TrueMC",
-                                             fabs(fDCADist_Xi_PV));
+                                             TMath::Abs(fDCADist_Xi_PV));
 
                             fHistos->FillTH2("hPhiEta_Xi_TrueMC", Xi_phi,
                                              Xi_eta);
@@ -2230,6 +2313,62 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     if ((int)sign == (int)kLS)
                         fHistos->FillTH1("hTotalInvMass_LS", vecsum.M());
                 }
+                if(fExoticFinder2){
+                    for (UInt_t k = 0; k < ntracks; k++) {
+                        if( j == k ) // same pion
+                            continue;
+                        track2 =
+                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                        if(track1->GetID() == track2->GetID())
+                            continue;
+                        temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
+                                      pionmass);
+
+                        vecsum2 = vecsum + temp3;  // vecsum = Xi1530, temp3=pion
+                        // Y cut
+                        if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
+                            (vecsum2.Rapidity() < fXi1530RapidityCut_low))
+                            continue;
+
+                        // Mass window
+                        double mXi1530 = vecsum.M();
+                        if (TMath::Abs(mXi1530 - massXi1530) > 0.05)
+                            continue;
+
+                        int sign2 = kData;
+                        if (track2->Charge() > 0) {
+                            if (track1->Charge() > 0)
+                                sign2 = kData;
+                            else
+                                sign2 = kLS;
+                        }
+                        else {
+                            if (track1->Charge() > 0)
+                                sign2 = kMixing;
+                            else
+                                sign2 = kMCReco;
+                        }
+                        FillTHnSparse("hInvMass_hf",
+                                      {(double)sign2, (double)fCent,
+                                       vecsum2.Pt(), vecsum2.M()});
+                        if (track2->Charge() > 0) {
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFpp",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnp",
+                                                 vecsum2.M());
+                        }
+                        else {
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFpn",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnn",
+                                                 vecsum2.M());
+                        }
+                    }
+                }
 
                 // Fill the QA Histos
                 if (fQA) {
@@ -2247,10 +2386,10 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                                              nTrackXi->GetTPCsignal());
                             fHistos->FillTH1(
                                 "hDCADist_LambdaProton_to_PV_cut",
-                                fabs(Xicandidate->DcaPosToPrimVertex()));
+                                TMath::Abs(Xicandidate->DcaPosToPrimVertex()));
                             fHistos->FillTH1(
                                 "hDCADist_LambdaPion_to_PV_cut",
-                                fabs(Xicandidate->DcaNegToPrimVertex()));
+                                TMath::Abs(Xicandidate->DcaNegToPrimVertex()));
                         } else {  // Xi+ has -proton, +pion
                             fHistos->FillTH2("hTPCPIDLambdaProton_cut",
                                              nTrackXi->GetTPCmomentum(),
@@ -2260,10 +2399,10 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                                              pTrackXi->GetTPCsignal());
                             fHistos->FillTH1(
                                 "hDCADist_LambdaProton_to_PV_cut",
-                                fabs(Xicandidate->DcaNegToPrimVertex()));
+                                TMath::Abs(Xicandidate->DcaNegToPrimVertex()));
                             fHistos->FillTH1(
                                 "hDCADist_LambdaPion_to_PV_cut",
-                                fabs(Xicandidate->DcaPosToPrimVertex()));
+                                TMath::Abs(Xicandidate->DcaPosToPrimVertex()));
                         }
                         fHistos->FillTH2("hTPCPIDBachelorPion_cut",
                                          bTrackXi->GetTPCmomentum(),
@@ -2286,10 +2425,10 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                         fHistos->FillTH1("hDCADist_lambda_to_PV_cut",
                                          fDCADist_Lambda_PV);
                         fHistos->FillTH1("hDCADist_Xi_to_PV_cut",
-                                         fabs(fDCADist_Xi_PV));
+                                         TMath::Abs(fDCADist_Xi_PV));
                         fHistos->FillTH1(
                             "hDCADist_BachelorPion_to_PV_cut",
-                            fabs(Xicandidate->DcaBachToPrimVertex()));
+                            TMath::Abs(Xicandidate->DcaBachToPrimVertex()));
                         fHistos->FillTH1("hDCADist_Xi1530pion_to_PV_cut",
                                          pionZ);
                         // CPA QA
@@ -2384,8 +2523,12 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
         Int_t epsize = ep.size();
-        if (epsize < fnMix)
+        if (epsize < fnMix){
+            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
             return;
+        }
+        fHistos->FillTH1("hMult_ProcessedDataQA", (double)fCent);
+
         Int_t nForSkipSameEvent = 0;
         for (auto pool : ep) {
             if (nForSkipSameEvent == (epsize - 1))
@@ -2399,52 +2542,38 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 ((AliAODEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
             if (!Xicandidate)
                 continue;
-            temp1.SetXYZM(Xicandidate->MomXiX(), Xicandidate->MomXiY(),
-                          Xicandidate->MomXiZ(), Xicandidate->MassXi());
 
             AliAODTrack* pTrackXi = (AliAODTrack*)(Xicandidate->GetDaughter(0));
             AliAODTrack* nTrackXi = (AliAODTrack*)(Xicandidate->GetDaughter(1));
             AliAODTrack* bTrackXi =
                 (AliAODTrack*)(Xicandidate->GetDecayVertexXi()->GetDaughter(0));
 
-            
+            if (Xicandidate->ChargeXi() == -1) {  // Xi- has +proton, -pion
+                fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
+            } else {  // Xi+ has -proton, +pion
+                fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
+            }
+            fTPCNSigBachelorPion = GetTPCnSigma(
+                bTrackXi, AliPID::kPion);  // bachelor is always pion
+
+            temp1.SetXYZM(Xicandidate->MomXiX(), Xicandidate->MomXiY(),
+                          Xicandidate->MomXiZ(), Xicandidate->MassXi());
             for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
                 track1 = (AliVTrack*)trackpool.at(jt);
                 if (track1->GetID() == pTrackXi->GetID() ||
                     track1->GetID() == nTrackXi->GetID() ||
                     track1->GetID() == bTrackXi->GetID())
                     continue;
-                temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
-                              pionmass);
-                vecsum = temp1 + temp2;  // two pion vector sum
 
-                if ((Xicandidate->ChargeXi() == -1 && track1->Charge() == -1) ||
-                    (Xicandidate->ChargeXi() == +1 && track1->Charge() == +1))
-                    continue;  // check only unlike-sign
-
-                if ((vecsum.Rapidity() > fXi1530RapidityCut_high) ||
-                    (vecsum.Rapidity() < fXi1530RapidityCut_low))
-                    continue;  // rapidity cut
-
-                // Other default cuts
+                // PID Cut
                 Double_t fTPCNSigPion = GetTPCnSigma(track1, AliPID::kPion);
-                if ((abs(fTPCNSigPion) > fTPCNsigXi1530PionCut))
+                if (TMath::Abs(fTPCNSigPion) > fTPCNsigXi1530PionCut)
                     continue;
-                // Xi PID
-                if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
-                    fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
-                } else {  // Xi+ has -proton, +pion
-                    fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
-                }
-                fTPCNSigBachelorPion = GetTPCnSigma(
-                    bTrackXi, AliPID::kPion);  // bachelor is always pion
-                if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut)
-                    continue;
-                if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut)
-                    continue;
-                if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
+                if ((TMath::Abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut) ||
+                    (TMath::Abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) ||
+                    (TMath::Abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut))
                     continue;
 
                 // Xi1530Pion DCA zVetex Check
@@ -2454,16 +2583,17 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     continue;
 
                 // DCA between daughters Check
-                Double_t fDCADist_Lambda = fabs(Xicandidate->DcaV0Daughters());
-                Double_t fDCADist_Xi = fabs(Xicandidate->DcaXiDaughters());
+                Double_t fDCADist_Lambda = TMath::Abs(Xicandidate->DcaV0Daughters());
+                Double_t fDCADist_Xi = TMath::Abs(Xicandidate->DcaXiDaughters());
                 if (fDCADist_Lambda > fDCADist_LambdaDaughtersCut)
                     continue;
                 if (fDCADist_Xi > fDCADist_XiDaughtersCut)
                     continue;
-
                 // DCA Lambda to PV Check
                 Double_t fDCADist_Lambda_PV =
-                    fabs(Xicandidate->DcaV0ToPrimVertex());
+                    TMath::Abs(Xicandidate->DcaV0ToPrimVertex());
+                Double_t fDCADist_Xi_PV = TMath::Abs(Xicandidate->DcaXiToPrimVertex(
+                    lPosPV[0], lPosPV[1], lPosPV[2]));
                 if (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)
                     continue;
 
@@ -2472,31 +2602,103 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 lPosXi[0] = Xicandidate->DecayVertexXiX();
                 lPosXi[1] = Xicandidate->DecayVertexXiY();
                 lPosXi[2] = Xicandidate->DecayVertexXiZ();
-
-                Double_t fLambdaCPA = Xicandidate->CosPointingAngle(lPosXi);
-                Double_t fXiCPA =
-                    Xicandidate->CosPointingAngleXi(PVx, PVy, PVz);
+                Double_t fLambdaCPA;
+                if (!fCPAstudy)
+                    fLambdaCPA = Xicandidate->CosPointingAngle(lPosXi);
+                else
+                    fLambdaCPA = Xicandidate->CosPointingAngle(lPosPV);
+                Double_t fXiCPA = Xicandidate->CosPointingAngleXi(
+                    lPosPV[0], lPosPV[1], lPosPV[2]);
 
                 if (fLambdaCPA < fV0CosineOfPointingAngleCut)
                     continue;
                 if (fXiCPA < fCascadeCosineOfPointingAngleCut)
                     continue;
+
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->MassXi();
-                if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)
+                if (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut)
                     continue;
+
+                temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
+                              pionmass);
+                vecsum = temp1 + temp2;  // temp1 = cascade, temp2=pion
+                // Y cut
+                if ((vecsum.Rapidity() > fXi1530RapidityCut_high) ||
+                    (vecsum.Rapidity() < fXi1530RapidityCut_low))
+                    continue;
+                // Opening Angle - Not using in normal mode
+                if (fExoticFinder) {
+                    Double_t angle = temp1.Angle(temp2.Vect());
+                    if (TMath::Abs(angle) < 0.0785398)  // 4.5 degree
+                        continue;
+                }
+                // Only use unlike-sign
+                if ((Xicandidate->ChargeXi() == -1 && track1->Charge() == -1) ||
+                    (Xicandidate->ChargeXi() == +1 && track1->Charge() == +1))
+                    continue; 
 
                 FillTHnSparse("hInvMass",
                               {(double)kDefaultOption, (double)kMixing,
                                (double)fCent, vecsum.Pt(), vecsum.M()});
                 fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
+                if (fExoticFinder2) {
+                    for (UInt_t k = 0; k < ntracks; k++) {
+                        if (i == k)  // same pion
+                            continue;
+                        track2 =
+                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                        if (track1->GetID() == track2->GetID())
+                            continue;
+                        temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
+                                      pionmass);
+                        vecsum2 =
+                            vecsum + temp3;  // vecsum = Xi1530, temp3=pion
+                        // Y cut
+                        if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
+                            (vecsum2.Rapidity() < fXi1530RapidityCut_low))
+                            continue;
+                        
+                        // Mass window
+                        double mXi1530 = vecsum.M();
+                        if (TMath::Abs(mXi1530 - massXi1530) > 0.05)
+                            continue;
+
+                        int sign2 = kMCTrue;
+                        if (track2->Charge() > 0) {
+                            if (track1->Charge() > 0)
+                                sign2 = kMCTrue;
+                            else
+                                sign2 = kMCTruePS;
+                        } else {
+                            if (track1->Charge() > 0)
+                                sign2 = kINEL10;
+                            else
+                                sign2 = kINELg010;
+                        }
+                        FillTHnSparse("hInvMass_hf",
+                                      {(double)sign2, (double)fCent,
+                                       vecsum2.Pt(), vecsum2.M()});
+                        if (track2->Charge() > 0) {
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFppMix",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnpMix",
+                                                 vecsum2.M());
+                        } else {
+                            if (track1->Charge() > 0)
+                                fHistos->FillTH1("hTotalInvMass_HFpnMix",
+                                                 vecsum2.M());
+                            else
+                                fHistos->FillTH1("hTotalInvMass_HFnnMix",
+                                                 vecsum2.M());
+                        }
+                    }
+                }
             }
         }
     }       // mix loop
-    else {  // Count how many signals we lost due to the event cut
-        if (fsetmixing)
-            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
-    }
 }
 void AliAnalysisTaskXi1530::Terminate(Option_t*) {}
 
@@ -2513,7 +2715,7 @@ void AliAnalysisTaskXi1530::FillMCinput(AliMCEvent* fMCEvent, Int_t check) {
             Error("UserExec", "Could not receive MC track %d", it);
             continue;
         }
-        if (abs(mcInputTrack->GetPdgCode()) != kXiStarCode)
+        if (TMath::Abs(mcInputTrack->GetPdgCode()) != kXiStarCode)
             continue;
         if (IsPrimaryMC && !mcInputTrack->IsPrimary())
             continue;
@@ -2558,7 +2760,7 @@ void AliAnalysisTaskXi1530::FillMCinputAOD(AliMCEvent* fMCEvent, Int_t check) {
             Error("UserExec", "Could not receive MC track %d", it);
             continue;
         }
-        if (abs(mcInputTrack->PdgCode()) != kXiStarCode)
+        if (TMath::Abs(mcInputTrack->PdgCode()) != kXiStarCode)
             continue;
         if (IsPrimaryMC && !mcInputTrack->IsPrimary())
             continue;
@@ -2603,7 +2805,7 @@ void AliAnalysisTaskXi1530::FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check) {
             Error("UserExec", "Could not receive MC track %d", it);
             continue;
         }
-        if (!(abs(mcInputTrack->GetPdgCode()) == kXiCode))
+        if (!(TMath::Abs(mcInputTrack->GetPdgCode()) == kXiCode))
             continue;
 
         if (check == 1)
@@ -2638,7 +2840,7 @@ void AliAnalysisTaskXi1530::FillMCinputdXiAOD(AliMCEvent* fMCEvent,
             Error("UserExec", "Could not receive MC track %d", it);
             continue;
         }
-        if (!(abs(mcInputTrack->PdgCode()) == kXiCode))
+        if (!(TMath::Abs(mcInputTrack->PdgCode()) == kXiCode))
             continue;
 
         if (check == 1)
@@ -2762,7 +2964,7 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion) {
         ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(Xi->GetBindex()));
 
     TParticle* MCXiD2esd =
-        (TParticle*)fMCEvent->GetTrack(abs(bTrackXi->GetLabel()))->Particle();
+        (TParticle*)fMCEvent->GetTrack(TMath::Abs(bTrackXi->GetLabel()))->Particle();
     TParticle* MCLamD1esd;
     TParticle* MCLamD2esd;
     TParticle* MCLamesd;
@@ -2770,43 +2972,43 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion) {
     TParticle* MCXiStaresd;
     TParticle* MCXiStarD2esd;
 
-    if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
-        MCLamD1esd = (TParticle*)fMCEvent->GetTrack(abs(pTrackXi->GetLabel()))
+    if (TMath::Abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
+        MCLamD1esd = (TParticle*)fMCEvent->GetTrack(TMath::Abs(pTrackXi->GetLabel()))
                          ->Particle();
-        MCLamD2esd = (TParticle*)fMCEvent->GetTrack(abs(nTrackXi->GetLabel()))
+        MCLamD2esd = (TParticle*)fMCEvent->GetTrack(TMath::Abs(nTrackXi->GetLabel()))
                          ->Particle();
         if (MCLamD1esd->GetMother(0) ==
             MCLamD2esd->GetMother(0)) {  // Same mother(lambda)
-            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
-                 abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
-                (abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
-                 abs(MCLamD2esd->GetPdgCode()) ==
+            if ((TMath::Abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
+                 TMath::Abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
+                (TMath::Abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
+                 TMath::Abs(MCLamD2esd->GetPdgCode()) ==
                      kProtonCode)) {  // Lamda daugthers check #1
                 MCLamesd = (TParticle*)fMCEvent
-                               ->GetTrack(abs(MCLamD1esd->GetMother(0)))
+                               ->GetTrack(TMath::Abs(MCLamD1esd->GetMother(0)))
                                ->Particle();
-                if (abs(MCLamesd->GetPdgCode()) ==
+                if (TMath::Abs(MCLamesd->GetPdgCode()) ==
                     kLambdaCode) {  // Lambda check
                     if (MCLamesd->GetMother(0) ==
                         MCXiD2esd->GetMother(
                             0)) {  // Lambda+pion(D2esd) mother check
                         MCXiesd = (TParticle*)fMCEvent
-                                      ->GetTrack(abs(MCLamesd->GetMother(0)))
+                                      ->GetTrack(TMath::Abs(MCLamesd->GetMother(0)))
                                       ->Particle();
-                        if (abs(MCXiesd->GetPdgCode()) ==
+                        if (TMath::Abs(MCXiesd->GetPdgCode()) ==
                             kXiCode) {  // Xi Check
                             MCXiStarD2esd =
                                 (TParticle*)fMCEvent
-                                    ->GetTrack(abs(pion->GetLabel()))
+                                    ->GetTrack(TMath::Abs(pion->GetLabel()))
                                     ->Particle();
                             if (MCXiesd->GetMother(0) ==
                                 MCXiStarD2esd->GetMother(
                                     0)) {  // Xi+pion mother check
                                 MCXiStaresd =
                                     (TParticle*)fMCEvent
-                                        ->GetTrack(abs(MCXiesd->GetMother(0)))
+                                        ->GetTrack(TMath::Abs(MCXiesd->GetMother(0)))
                                         ->Particle();
-                                if (abs(MCXiStaresd->GetPdgCode()) ==
+                                if (TMath::Abs(MCXiStaresd->GetPdgCode()) ==
                                     kXiStarCode) {  // Xi1530 check
                                     if (IsPrimaryMC) {
                                         if (MCXiStaresd->IsPrimary()) {
@@ -2841,7 +3043,7 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530AOD(AliAODcascade* Xi,
         (AliAODTrack*)(Xi->GetDecayVertexXi()->GetDaughter(0));
 
     AliAODMCParticle* MCXiD2esd =
-        (AliAODMCParticle*)fMCArray->At(abs(bTrackXi->GetLabel()));
+        (AliAODMCParticle*)fMCArray->At(TMath::Abs(bTrackXi->GetLabel()));
     AliAODMCParticle* MCLamD1esd;
     AliAODMCParticle* MCLamD2esd;
     AliAODMCParticle* MCLamesd;
@@ -2849,35 +3051,35 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530AOD(AliAODcascade* Xi,
     AliAODMCParticle* MCXiStaresd;
     AliAODMCParticle* MCXiStarD2esd;
 
-    if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
-        MCLamD1esd = (AliAODMCParticle*)fMCArray->At(abs(pTrackXi->GetLabel()));
-        MCLamD2esd = (AliAODMCParticle*)fMCArray->At(abs(nTrackXi->GetLabel()));
+    if (TMath::Abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
+        MCLamD1esd = (AliAODMCParticle*)fMCArray->At(TMath::Abs(pTrackXi->GetLabel()));
+        MCLamD2esd = (AliAODMCParticle*)fMCArray->At(TMath::Abs(nTrackXi->GetLabel()));
         if (MCLamD1esd->GetMother() ==
             MCLamD2esd->GetMother()) {  // Same mother(lambda)
-            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
-                 abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
-                (abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
-                 abs(MCLamD2esd->GetPdgCode()) ==
+            if ((TMath::Abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
+                 TMath::Abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
+                (TMath::Abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
+                 TMath::Abs(MCLamD2esd->GetPdgCode()) ==
                      kProtonCode)) {  // Lamda daugthers check #1
                 MCLamesd = (AliAODMCParticle*)fMCArray->At(
-                    abs(MCLamD1esd->GetMother()));
-                if (abs(MCLamesd->GetPdgCode()) ==
+                    TMath::Abs(MCLamD1esd->GetMother()));
+                if (TMath::Abs(MCLamesd->GetPdgCode()) ==
                     kLambdaCode) {  // Lambda check
                     if (MCLamesd->GetMother() ==
                         MCXiD2esd
                             ->GetMother()) {  // Lambda+pion(D2esd) mother check
                         MCXiesd = (AliAODMCParticle*)fMCArray->At(
-                            abs(MCLamesd->GetMother()));
-                        if (abs(MCXiesd->GetPdgCode()) ==
+                            TMath::Abs(MCLamesd->GetMother()));
+                        if (TMath::Abs(MCXiesd->GetPdgCode()) ==
                             kXiCode) {  // Xi Check
                             MCXiStarD2esd = (AliAODMCParticle*)fMCArray->At(
-                                abs(pion->GetLabel()));
+                                TMath::Abs(pion->GetLabel()));
                             if (MCXiesd->GetMother() ==
                                 MCXiStarD2esd
                                     ->GetMother()) {  // Xi+pion mother check
                                 MCXiStaresd = (AliAODMCParticle*)fMCArray->At(
-                                    abs(MCXiesd->GetMother()));
-                                if (abs(MCXiStaresd->GetPdgCode()) ==
+                                    TMath::Abs(MCXiesd->GetMother()));
+                                if (TMath::Abs(MCXiStaresd->GetPdgCode()) ==
                                     kXiStarCode) {  // Xi1530 check
                                     if (IsPrimaryMC) {
                                         if (MCXiStaresd->IsPrimary()) {
@@ -2914,40 +3116,40 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi(UInt_t xiIndex) {
             ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(xiESD->GetBindex()));
 
         TParticle* MCXiD2esd =
-            (TParticle*)fMCEvent->GetTrack(abs(bTrackXi->GetLabel()))
+            (TParticle*)fMCEvent->GetTrack(TMath::Abs(bTrackXi->GetLabel()))
                 ->Particle();
         TParticle* MCLamD1esd;
         TParticle* MCLamD2esd;
         TParticle* MCLamesd;
         TParticle* MCXiesd;
 
-        if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
+        if (TMath::Abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
             MCLamD1esd =
-                (TParticle*)fMCEvent->GetTrack(abs(pTrackXi->GetLabel()))
+                (TParticle*)fMCEvent->GetTrack(TMath::Abs(pTrackXi->GetLabel()))
                     ->Particle();
             MCLamD2esd =
-                (TParticle*)fMCEvent->GetTrack(abs(nTrackXi->GetLabel()))
+                (TParticle*)fMCEvent->GetTrack(TMath::Abs(nTrackXi->GetLabel()))
                     ->Particle();
             if (MCLamD1esd->GetMother(0) ==
                 MCLamD2esd->GetMother(0)) {  // Same mother(lambda)
-                if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
-                     abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
-                    (abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
-                     abs(MCLamD2esd->GetPdgCode()) ==
+                if ((TMath::Abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
+                     TMath::Abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
+                    (TMath::Abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
+                     TMath::Abs(MCLamD2esd->GetPdgCode()) ==
                          kProtonCode)) {  // Lamda daugthers check #1
                     MCLamesd = (TParticle*)fMCEvent
-                                   ->GetTrack(abs(MCLamD1esd->GetMother(0)))
+                                   ->GetTrack(TMath::Abs(MCLamD1esd->GetMother(0)))
                                    ->Particle();
-                    if (abs(MCLamesd->GetPdgCode()) ==
+                    if (TMath::Abs(MCLamesd->GetPdgCode()) ==
                         kLambdaCode) {  // Lambda check
                         if (MCLamesd->GetMother(0) ==
                             MCXiD2esd->GetMother(
                                 0)) {  // Lambda+pion(D2esd) mother check
                             MCXiesd =
                                 (TParticle*)fMCEvent
-                                    ->GetTrack(abs(MCLamesd->GetMother(0)))
+                                    ->GetTrack(TMath::Abs(MCLamesd->GetMother(0)))
                                     ->Particle();
-                            if (abs(MCXiesd->GetPdgCode()) ==
+                            if (TMath::Abs(MCXiesd->GetPdgCode()) ==
                                 kXiCode) {  // Xi Check
                                 TrueXi = kTRUE;
                             }
@@ -2966,34 +3168,34 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi(UInt_t xiIndex) {
             (AliAODTrack*)(xiAOD->GetDecayVertexXi()->GetDaughter(0));
 
         AliAODMCParticle* MCXiD2esd =
-            (AliAODMCParticle*)fMCArray->At(abs(bTrackXi->GetLabel()));
+            (AliAODMCParticle*)fMCArray->At(TMath::Abs(bTrackXi->GetLabel()));
         AliAODMCParticle* MCLamD1esd;
         AliAODMCParticle* MCLamD2esd;
         AliAODMCParticle* MCLamesd;
         AliAODMCParticle* MCXiesd;
 
-        if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
+        if (TMath::Abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
             MCLamD1esd =
-                (AliAODMCParticle*)fMCArray->At(abs(pTrackXi->GetLabel()));
+                (AliAODMCParticle*)fMCArray->At(TMath::Abs(pTrackXi->GetLabel()));
             MCLamD2esd =
-                (AliAODMCParticle*)fMCArray->At(abs(nTrackXi->GetLabel()));
+                (AliAODMCParticle*)fMCArray->At(TMath::Abs(nTrackXi->GetLabel()));
             if (MCLamD1esd->GetMother() ==
                 MCLamD2esd->GetMother()) {  // Same mother(lambda)
-                if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
-                     abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
-                    (abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
-                     abs(MCLamD2esd->GetPdgCode()) ==
+                if ((TMath::Abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
+                     TMath::Abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
+                    (TMath::Abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
+                     TMath::Abs(MCLamD2esd->GetPdgCode()) ==
                          kProtonCode)) {  // Lamda daugthers check #1
                     MCLamesd = (AliAODMCParticle*)fMCArray->At(
-                        abs(MCLamD1esd->GetMother()));
-                    if (abs(MCLamesd->GetPdgCode()) ==
+                        TMath::Abs(MCLamD1esd->GetMother()));
+                    if (TMath::Abs(MCLamesd->GetPdgCode()) ==
                         kLambdaCode) {  // Lambda check
                         if (MCLamesd->GetMother() ==
                             MCXiD2esd->GetMother()) {  // Lambda+pion(D2esd)
                                                        // mother check
                             MCXiesd = (AliAODMCParticle*)fMCArray->At(
-                                abs(MCLamesd->GetMother()));
-                            if (abs(MCXiesd->GetPdgCode()) ==
+                                TMath::Abs(MCLamesd->GetMother()));
+                            if (TMath::Abs(MCXiesd->GetPdgCode()) ==
                                 kXiCode) {  // Xi Check
                                 TrueXi = kTRUE;
                             }

@@ -35,6 +35,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/vertexingHF
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
                              )
                              
 # Sources in alphabetical order
@@ -153,6 +156,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalEG1Correlation.cxx
     Tracks/AliAnalysisTaskEmcalTriggerBackground.cxx
     Tracks/AliAnalysisTaskEmcalJetIterativeDeclustering.cxx
+    Tracks/AliAnalysisTaskEmcalFastorMultiplicity.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
@@ -176,7 +180,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
     UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
-    UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
     UserTasks/AliAnalysisTaskEmcalJetCorrection.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
@@ -267,14 +270,18 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
         UserTasks/AliAnalysisTaskEA.cxx
+        UserTasks/AliAnalysisEmcalJetHelperEA.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
 	    UserTasks/AliAnalysisTaskRecoilJetYield.cxx
 	    UserTasks/AliAnalysisTaskRecursiveSoftDrop.cxx
         UserTasks/AliAnalysisTaskJetSubstructure.cxx
         UserTasks/AliAnalysisTaskSoftDrop.cxx
         UserTasks/AliAnalysisTaskSoftDropResponse.cxx
+        UserTasks/AliAnalysisTaskSDKL.cxx
+        UserTasks/AliAnalysisTaskSDKLResponse.cxx
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
 	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
+        UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
@@ -308,7 +315,7 @@ else()
     set(ROOT_DEPENDENCIES)
 endif()
 
-set(ALIROOT_DEPENDENCIES ANALYSIS CORRFW PHOSbase PWGEMCALbase PWGEMCALtrigger PWGJETFW PWGCaloTrackCorrBase PWGDevNanoAOD)
+set(ALIROOT_DEPENDENCIES ANALYSIS CORRFW PHOSbase PWGEMCALbase PWGEMCALtrigger PWGJETFW PWGCaloTrackCorrBase PWGDevNanoAOD PWGPPevcharQn PWGPPevcharQnInterface)
 if(FASTJET_FOUND)
     set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
 endif(FASTJET_FOUND)

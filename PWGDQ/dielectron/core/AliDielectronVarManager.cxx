@@ -671,6 +671,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"CentralityZNA",          "centrality_{ZNA}",                                  "(%)"},
   {"CentralitySPD",          "centrality_{SPD}",                                  "(%)"},
   {"CentralityNew",             "centrality_{V0M}",                               "(%)"},
+  {"CentralityV0Mcali",          "centrality_{V0M}",                              "(%)"},
   {"CentralityCL0",              "centrality_{CL0}",                              "(%)"},
   {"CentralityCL1",              "centrality_{CL1}",                              "(%)"},
   {"CentralitySPDClusters",      "centrality_{SPDclusters}",                      "(%)"},

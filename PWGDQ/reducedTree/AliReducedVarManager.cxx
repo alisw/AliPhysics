@@ -364,6 +364,10 @@ void AliReducedVarManager::SetVariableDependencies() {
     fgUsedVars[kNTPCclusters] = kTRUE;
     fgUsedVars[kNTPCclustersFromPileup] = kTRUE;
   }
+  if(fgUsedVars[kNTracksTPCoutFromPileup]) {
+    fgUsedVars[kNTracksTPCoutBeforeClean] = kTRUE;
+    fgUsedVars[kVZEROTotalMultFromChannels] = kTRUE;
+  }
 }
 
 //__________________________________________________________________
@@ -768,7 +772,11 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   for(Int_t i=0;i<2;++i) values[kSPDFiredChips+i] = event->SPDFiredChips(i+1);
   for(Int_t i=0;i<6;++i) values[kITSnClusters+i] = event->ITSClusters(i+1);
   values[kSPDnSingleClusters] = event->SPDnSingleClusters();
-
+  if(fgUsedVars[kSDDandSSDclusters]) {
+     values[kSDDandSSDclusters] = 0.0;
+     for(Int_t i=2;i<6;++i) values[kSDDandSSDclusters] += event->ITSClusters(i+1);  
+  }
+  
   //VZERO detector information
   fgUsedVars[kNTracksTPCoutVsVZEROTotalMult] = kTRUE;
   if(values[kVZEROTotalMult]>1.0e-5)
@@ -796,10 +804,8 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     }
   }
   
-  fgUsedVars[kNTracksTPCoutFromPileup] = kTRUE;
-  if(values[kVZEROTotalMultFromChannels]>0.0)
-     values[kNTracksTPCoutFromPileup] = 0.0;
-  else fgUsedVars[kNTracksTPCoutFromPileup] = kFALSE;
+  if(values[kVZEROTotalMultFromChannels]>0.0) 
+     values[kNTracksTPCoutFromPileup] = values[kNTracksTPCoutBeforeClean] - (-3.2+TMath::Sqrt(3.2*3.2+4.0*1.6e-5*values[kVZEROTotalMultFromChannels]))/(2.0*1.6e-5);
   
   Float_t tpcClustersExpectationWOpileup = 0.001;
   if(fgUsedVars[kNTPCclustersFromPileup] && values[kVZEROTotalMultFromChannels]>0.0) {
@@ -2435,15 +2441,32 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kAssociatedEta]) values[kAssociatedEta] = assoc->Eta();
   if(fgUsedVars[kAssociatedPhi]) values[kAssociatedPhi] = assoc->Phi();
 
+  // associated pT / transverse trigger gamma
+  if (trig->IsA()==PAIR::Class() &&
+      (fgUsedVars[kAssociatedPtOverTriggerGammaT] || fgUsedVars[kTriggerGammaT])) {
+
+    // NOTE:  only interested in transverse beta (gamma) -> eta is set to zero for beta vector calculation
+    //        gives same result as 'manual' calculation, i.e.:  betaT  = pT / (m^2 + pT^2)
+    //                                                          gammaT = 1 / sqrt(1-betaT^2) = sqrt(1 + pT^2/m^2)
+    TLorentzVector trigVec;
+    trigVec.SetPtEtaPhiM(trig->Pt(), 0.0, trig->Phi(), 3.096916); //NOTE: J/psi mass from PDG
+    TVector3 betaVec = trigVec.BoostVector();
+
+    Float_t betaT   = betaVec.Mag();
+    Float_t gammaT  = 1./TMath::Sqrt(1-betaT*betaT);
+
+    if (fgUsedVars[kTriggerGammaT])                 values[kTriggerGammaT]                  = gammaT;
+    if (fgUsedVars[kAssociatedPtOverTriggerGammaT]) values[kAssociatedPtOverTriggerGammaT]  = assoc->Pt()/gammaT;
+  }
+
   // values after boost of hadrons to pair rest frame
-  // NOTE: Are the boosted quantities reasonable?
   if (trig->IsA()==PAIR::Class() &&
       (fgUsedVars[kDeltaPhiBoosted] || fgUsedVars[kDeltaPhiSymBoosted] || fgUsedVars[kDeltaThetaBoosted] || fgUsedVars[kDeltaEtaBoosted] ||
        fgUsedVars[kDeltaEtaAbsBoosted] || fgUsedVars[kAssociatedPtBoosted] || fgUsedVars[kAssociatedEtaBoosted] || fgUsedVars[kAssociatedPhiBoosted])) {
 
     // get boost vector
     TLorentzVector trigVec;
-    trigVec.SetPtEtaPhiM(trig->Pt(), trig->Eta(), trig->Phi(), ((PAIR*)trig)->Mass());
+    trigVec.SetPtEtaPhiM(trig->Pt(), trig->Eta(), trig->Phi(), 3.096916); //NOTE: J/psi mass from PDG
     TVector3 boostVec = trigVec.BoostVector();
 
     // fill TLorentzVector for associated track
@@ -2868,6 +2891,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableUnits[kITSnClusters+il] = "";
   }
   fgVariableNames[kSPDnSingleClusters]  = "SPD single clusters";    fgVariableUnits[kSPDnSingleClusters]  = "";  
+  fgVariableNames[kSDDandSSDclusters] = "SDD+SSD clusters";         fgVariableUnits[kSDDandSSDclusters] = "";
   fgVariableNames[kEventMixingId]       = "Event mixing id";        fgVariableUnits[kEventMixingId]       = "";  
   fgVariableNames[kVZEROCurrentChannel] = "VZERO channel";          fgVariableUnits[kVZEROCurrentChannel] = "";
   fgVariableNames[kVZEROCurrentChannelMult] = "VZERO channel multiplicity";   fgVariableUnits[kVZEROCurrentChannelMult] = "";
@@ -3325,7 +3349,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTriggerRap]            = "#it{y} trigger particle";    fgVariableUnits[kTriggerRap]            = "";
   fgVariableNames[kTriggerRapAbs]         = "|#it{y}| trigger particle";  fgVariableUnits[kTriggerRapAbs]         = "";
   fgVariableNames[kAssociatedPt]          = "p_{T} associated particle";  fgVariableUnits[kAssociatedPt]          = "GeV/c";
-  fgVariableNames[kAssociatedPtBoosted]   = "p_{T} associated particle";  fgVariableUnits[kAssociatedPtBoosted]   = "GeV/c";
+  fgVariableNames[kAssociatedPtBoosted]   = "p_{T} associated particle (boosted)"; fgVariableUnits[kAssociatedPtBoosted] = "GeV/c";
+  fgVariableNames[kAssociatedPtOverTriggerGammaT] = "p_{T} associated particle / #gamma_{T} trigger particle"; fgVariableUnits[kAssociatedPtOverTriggerGammaT] = "GeV/c";
+  fgVariableNames[kTriggerGammaT]         = "#gamma_{T} trigger particle"; fgVariableUnits[kTriggerGammaT]        = "";
   fgVariableNames[kAssociatedEta]         = "#eta associated particle";   fgVariableUnits[kAssociatedEta]         = "";
   fgVariableNames[kAssociatedEtaBoosted]  = "#eta associated particle";   fgVariableUnits[kAssociatedEtaBoosted]  = "";
   fgVariableNames[kAssociatedPhi]         = "#varphi associated particle";fgVariableUnits[kAssociatedPhi]         = "rad.";

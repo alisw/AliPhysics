@@ -411,7 +411,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
-  void                        SetRecycleUnusedEmbeddedEventsMode(Bool_t b)          { fRecycleUnusedEmbeddedEventsMode = b                ; }
+  /**
+   * @brief Enables internal event selection in embedding by recycling unused events.
+   * @param[in] b Enables recycled unused embedded events.
+   * @deprecated: This is now handled automatically by the embedding helper, so the option is redundant.
+   */
+  void                        SetRecycleUnusedEmbeddedEventsMode(Bool_t b)          { AliWarning("Enabling recycling of unused embedded events is deprecated. It is now automatically controlled in the embedding helper. You can remove this call."); }
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
 
   /**
@@ -1185,7 +1190,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMinEventPlane;              ///< minimum event plane value
   Double_t                    fMaxEventPlane;              ///< maximum event plane value
   TString                     fCentEst;                    ///< name of V0 centrality estimator
-  Bool_t                      fRecycleUnusedEmbeddedEventsMode; ///< Allows the recycling of embedded events which fail internal event selection. See the embedding helper.
   Bool_t                      fIsEmbedded;                 ///< trigger, embedded signal
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
   Bool_t                      fIsHerwig;                   ///< trigger, if it is a HERWIG production
@@ -1268,7 +1272,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 19) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 20) // EMCAL base analysis task
   /// \endcond
 };
 

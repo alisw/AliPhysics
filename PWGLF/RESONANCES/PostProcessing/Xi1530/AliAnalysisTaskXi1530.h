@@ -50,7 +50,6 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     void SetOption(char* option) { fOption = option; }
     void SetFilterBit(UInt_t filterbit) { fFilterBit = filterbit; }
-    void SetFilterBit_Xi(UInt_t filterbit) { fFilterBit_Xi = filterbit; }
     void SetMixing(Bool_t setmixing) { fsetmixing = setmixing; }
     void SetIsAA(Bool_t isaa) { IsAA = isaa; }
     void SetIsMC(Bool_t ismc) { IsMC = ismc; }
@@ -58,6 +57,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void SetHighMult(Bool_t highmult) { IsHighMult = highmult; }
     void SetIsPrimaryMC(Bool_t isprimarymc) { IsPrimaryMC = isprimarymc; }
     void SetNoQA(Bool_t noQA) { fQA = noQA; }
+    void SetXiCPAstudy(Bool_t input) { fCPAstudy = input; }
+    void SetINEL(Bool_t input) { isINEL = input; }
     // Set Functions for the cut study & Systematic study
     void SetTPCNsigXi1530PionCut(Int_t fSysOption, Double_t nXi1530PionCut) {
         if (fSysOption == 0)
@@ -198,6 +199,9 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         fXiMassWindowCut = 0.015;
         fTPCNsigXi1530PionCut = 1.5;
     }
+    void SetExoticFinder2(Bool_t exotic) {
+        fExoticFinder2 = exotic;
+    }
     void SetUseSimpleEventCut(Bool_t fInput) { fSimplieEventCut = fInput; };
 
     Bool_t GoodTracksSelection();
@@ -248,15 +252,11 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     TString fOption;
 
     AliESDtrackCuts* fTrackCuts = nullptr;   //!
-    AliESDtrackCuts* fTrackCuts2 = nullptr;  //!
-    AliESDtrackCuts* fTrackCuts3 = nullptr;  //!
     AliVEvent* fEvt = nullptr;               //!
     UInt_t fFilterBit = 32;
-    UInt_t fFilterBit_Xi = 128;  // not using for the moment.
 
     Double_t fCent = -1;
     Double_t ftrackmult = -1;
-    Double_t fZ = -30;
     std::vector<UInt_t> goodtrackindices;    //!
     std::vector<UInt_t> goodcascadeindices;  //!
 
@@ -335,18 +335,19 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t IsPrimaryMC = kTRUE;
     Bool_t fQA = kTRUE;
     Bool_t fExoticFinder = kFALSE;
+    Bool_t fExoticFinder2 = kFALSE;
     Bool_t fSimplieEventCut = kFALSE;
     Bool_t IsNano = kFALSE;
+    Bool_t fCPAstudy = kFALSE;
+    Bool_t isINEL = kFALSE;
     TString MultiplicityEstimator = "V0M";
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
     AliMCEvent* fMCEvent = nullptr;    //!
 
-    Double_t PVx = 999;
-    Double_t PVy = 999;
-    Double_t PVz = 999;
+    Double_t lPosPV[3];
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 26);
+    ClassDef(AliAnalysisTaskXi1530, 30);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -375,6 +376,10 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 24: Add IsNano boolean variable
     // 25: Remove Fill event mix function
     // 26: try to update the version only.
+    // 27: add Xi CPA study option // Change PV variable type
+    // 28: Add INEL variable
+    // 29: Add Special finder
+    // 30: Remove unused variables and reformatting
 };
 
 #endif

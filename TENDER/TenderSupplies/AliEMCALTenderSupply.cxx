@@ -65,6 +65,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
   ,fCalibrateTimeL1Phase(kFALSE)
   ,fDoNonLinearity(kFALSE)
   ,fBadCellRemove(kFALSE)
+  ,fLoad1DBadChMap(kFALSE)
   ,fRejectExoticCells(kFALSE)
   ,fRejectExoticClusters(kFALSE)
   ,fClusterBadChannelCheck(kFALSE)
@@ -140,6 +141,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
   ,fCalibrateTimeL1Phase(kFALSE)
   ,fDoNonLinearity(kFALSE)
   ,fBadCellRemove(kFALSE)
+  ,fLoad1DBadChMap(kFALSE)
   ,fRejectExoticCells(kFALSE)
   ,fRejectExoticClusters(kFALSE)
   ,fClusterBadChannelCheck(kFALSE)
@@ -1010,7 +1012,7 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
   
   // init default maps first
   if (!fEMCALRecoUtils->GetEMCALBadChannelStatusMapArray())
-    fEMCALRecoUtils->InitEMCALBadChannelStatusMap() ;
+    fEMCALRecoUtils->InitEMCALBadChannelStatusMap1D() ;
   
   Int_t runBC = event->GetRunNumber();
   
@@ -1019,16 +1021,16 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
   { //if fBasePath specified in the ->SetBasePath()
     if (fDebugLevel>0) AliInfo(Form("Loading Bad Channels OADB from given path %s",fBasePath.Data()));
     
-    TFile *fbad=new TFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read");
+    TFile *fbad=new TFile(Form("%s/EMCALBadChannels%s.root",fBasePath.Data(), fLoad1DBadChMap ? "_1D" : ""),"read");
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal(Form("EMCALBadChannels.root was not found in the path provided: %s",fBasePath.Data()));
+      AliFatal(Form("EMCALBadChannels%s.root was not found in the path provided: %s", fLoad1DBadChMap ? "_1D" : "", fBasePath.Data()));
       return 0;
     }  
     
     if (fbad) delete fbad;
     
-    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");
+    contBC->InitFromFile(Form("%s/EMCALBadChannels%s.root",fBasePath.Data(), fLoad1DBadChMap ? "_1D" : ""),"AliEMCALBadChannels");
   }
   else if (fCustomBC!="")
   { //if fCustomBC specified in the ->SetCustomBC()
@@ -1049,16 +1051,16 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
   { // Else choose the one in the $ALICE_PHYSICS directory
     if (fDebugLevel>0) AliInfo("Loading Bad Channels OADB from /OADB/EMCAL");
     
-    TFile *fbad=new TFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"read");
+    TFile *fbad=new TFile(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALBadChannels%s.root", fLoad1DBadChMap ? "_1D" : "")).data(),"read");
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal("OADB/EMCAL/EMCALBadChannels.root was not found");
+      AliFatal(Form("OADB/EMCAL/EMCALBadChannels%s.root was not found", fLoad1DBadChMap ? "_1D" : ""));
       return 0;
     }
       
     if (fbad) delete fbad;
     
-    contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"AliEMCALBadChannels");
+    contBC->InitFromFile(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALBadChannels%s.root", fLoad1DBadChMap ? "_1D" : "")).data(),"AliEMCALBadChannels");
   }
   
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
@@ -1068,24 +1070,37 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
     delete contBC;
     return 2;
   }
-
-  Int_t sms = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
-  for (Int_t i=0; i<sms; ++i)
-  {
-    TH2I *h = fEMCALRecoUtils->GetEMCALChannelStatusMap(i);
+  if(fLoad1DBadChMap){
+    TH1C *h = fEMCALRecoUtils->GetEMCALChannelStatusMap1D();
     if (h)
       delete h;
-    h=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+    h=(TH1C*)arrayBC->FindObject("EMCALBadChannelMap");
 
     if (!h)
     {
-      AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
-      continue;
+      AliError("Can not get EMCALBadChannelMap");
     }
     h->SetDirectory(0);
-    fEMCALRecoUtils->SetEMCALChannelStatusMap(i,h);
+    fEMCALRecoUtils->SetEMCALChannelStatusMap1D(h);
+  }else{
+    Int_t sms = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
+    for (Int_t i=0; i<sms; ++i)
+    {
+      TH2I *h = fEMCALRecoUtils->GetEMCALChannelStatusMap(i);
+      if (h)
+        delete h;
+      h=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+
+      if (!h)
+      {
+        AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
+        continue;
+      }
+      h->SetDirectory(0);
+      fEMCALRecoUtils->SetEMCALChannelStatusMap(i,h);
+    }
   }
-  
+
   delete contBC;
   
   return 1;

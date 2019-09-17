@@ -6,11 +6,13 @@
  */
 #include "AliAnalysisTaskOtonOmegaNanoAOD.h"
 #include "AliNanoAODTrack.h"
+#include "TRandom3.h"
 
 ClassImp(AliAnalysisTaskOtonOmegaNanoAOD)
 AliAnalysisTaskOtonOmegaNanoAOD::AliAnalysisTaskOtonOmegaNanoAOD()
     : AliAnalysisTaskSE(),
       fisLightWeight(false),
+      fOmegaTreeFlag(false),
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
@@ -34,12 +36,14 @@ AliAnalysisTaskOtonOmegaNanoAOD::AliAnalysisTaskOtonOmegaNanoAOD()
       fResults(nullptr),
       fResultsQA(nullptr),
       fTrackBufferSize(2000),
+      fOmegaTree(0),
       fGTI(nullptr) {
 }
 
-AliAnalysisTaskOtonOmegaNanoAOD::AliAnalysisTaskOtonOmegaNanoAOD(const char* name)
+AliAnalysisTaskOtonOmegaNanoAOD::AliAnalysisTaskOtonOmegaNanoAOD(const char* name, bool OmegaTreeFlag)
     : AliAnalysisTaskSE(name),
       fisLightWeight(false),
+      fOmegaTreeFlag(false),
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
@@ -63,6 +67,7 @@ AliAnalysisTaskOtonOmegaNanoAOD::AliAnalysisTaskOtonOmegaNanoAOD(const char* nam
       fResults(nullptr),
       fResultsQA(nullptr),
       fTrackBufferSize(2000),
+      fOmegaTree(0),
       fGTI(nullptr) {
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
@@ -73,6 +78,7 @@ AliAnalysisTaskOtonOmegaNanoAOD::AliAnalysisTaskOtonOmegaNanoAOD(const char* nam
   DefineOutput(7, TList::Class());  //Output for the AntiOmega Cuts
   DefineOutput(8, TList::Class());  //Output for the Results
   DefineOutput(9, TList::Class());  //Output for the Results QA
+  DefineOutput(10, TTree::Class());  // OmegaTree
 }
 
 AliAnalysisTaskOtonOmegaNanoAOD::~AliAnalysisTaskOtonOmegaNanoAOD() {
@@ -111,6 +117,9 @@ AliAnalysisTaskOtonOmegaNanoAOD::~AliAnalysisTaskOtonOmegaNanoAOD() {
   }
   if (fPartColl) {
     delete fPartColl;
+  }
+  if (fOmegaTree) {
+    delete fOmegaTree;//not sure about this
   }
 }
 
@@ -243,6 +252,58 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserCreateOutputObjects() {
     fResults->SetOwner();
     fResults->SetName("Results");
   }
+
+  //book tree:
+  ////////////
+  fOmegaTree = new TTree("oTTree","a simple TTree");
+  fOmegaTree->SetDirectory(0); // This is to force a memory-resident Tree, and avoid errors. // ????? is this necessary? does it create memory problems?
+  fOmegaTree->Branch("RunNumber",&fTRunNumber,"fTRunNumber/I");
+  fOmegaTree->Branch("Vz",&fTVz,"fTVz/F");
+  fOmegaTree->Branch("Mult",&fTMult,"fTMult/I");
+  //protons:
+  fOmegaTree->Branch("nProton",&fTnProton,"fTnProton/I");
+  fOmegaTree->Branch("ProtonPx",&fTProtonPx,"fTProtonPx[fTnProton]/F");
+  fOmegaTree->Branch("ProtonPy",&fTProtonPy,"fTProtonPy[fTnProton]/F");
+  fOmegaTree->Branch("ProtonPz",&fTProtonPz,"fTProtonPz[fTnProton]/F");
+  fOmegaTree->Branch("ProtonEta",&fTProtonEta,"fTProtonEta[fTnProton]/F");
+  fOmegaTree->Branch("ProtonCharge",&fTProtonCharge,"fTProtonCharge[fTnProton]/S");
+  fOmegaTree->Branch("ProtonTPCsigma",&fTProtonTPCsigma,"fTProtonTPCsigma[fTnProton]/F");
+  fOmegaTree->Branch("ProtonTOFsigma",&fTProtonTOFsigma,"fTProtonTOFsigma[fTnProton]/F");
+  fOmegaTree->Branch("ProtonNcl",&fTProtonNcl,"fTProtonNcl[fTnProton]/I");
+  fOmegaTree->Branch("ProtonCrF",&fTProtonCrF,"fTProtonCrF[fTnProton]/F");
+  fOmegaTree->Branch("ProtonFilterBit",&fTProtonFilterBit,"fTProtonFilterBit[fTnProton]/i");
+  fOmegaTree->Branch("ProtonPhi",&fTProtonPhi,"fTProtonPhi[fTnProton]/F");
+  fOmegaTree->Branch("ProtonID",&fTProtonID,"fTProtonID[fTnProton]/I");
+ //omegas:
+ fOmegaTree->Branch("nCascade",&fTnCascade,"fTnCascade/I");
+ fOmegaTree->Branch("CascadeCharge",&fTCascadeCharge,"fTCascadeCharge[fTnCascade]/S");
+ fOmegaTree->Branch("CascadeDCA",&fTCascadeDCA,"fTCascadeDCA[fTnCascade]/F");
+ fOmegaTree->Branch("CascadeDaughtersDCA",&fTCascadeDaughtersDCA,"fTCascadeDaughtersDCA[fTnCascade]/F");
+ fOmegaTree->Branch("CascadeXiMass",&fTCascadeXiMass,"fTCascadeXiMass[fTnCascade]/F");
+ fOmegaTree->Branch("CascadeOmegaMass",&fTCascadeOmegaMass,"fTCascadeOmegaMass[fTnCascade]/F");
+ fOmegaTree->Branch("CascadeVr",&fTCascadeVr,"fTCascadeVr[fTnCascade]/F");
+ fOmegaTree->Branch("CascadePA",&fTCascadePA,"fTCascadePA[fTnCascade]/F");
+ fOmegaTree->Branch("LambdaDCA",&fTLambdaDCA,"fTLambdaDCA[fTnCascade]/F");
+ fOmegaTree->Branch("LambdaDaughtersDCA",&fTLambdaDaughtersDCA,"fTLambdaDaughtersDCA[fTnCascade]/F");
+ fOmegaTree->Branch("LambdaMass",&fTLambdaMass,"fTLambdaMass[fTnCascade]/F");
+ fOmegaTree->Branch("LambdaVr",&fTLambdaVr,"fTLambdaVr[fTnCascade]/F");
+ fOmegaTree->Branch("LambdaPA",&fTLambdaPA,"fTLambdaPA[fTnCascade]/F");
+ fOmegaTree->Branch("TrackPx",&fTTrackPx,"fTTrackPx[fTnCascade][3]/F");
+ fOmegaTree->Branch("TrackPy",&fTTrackPy,"fTTrackPy[fTnCascade][3]/F");
+ fOmegaTree->Branch("TrackPz",&fTTrackPz,"fTTrackPz[fTnCascade][3]/F");
+ fOmegaTree->Branch("TrackEta",&fTTrackEta,"fTTrackEta[fTnCascade][3]/F");
+ fOmegaTree->Branch("TrackCharge",&fTTrackCharge,"fTTrackCharge[fTnCascade][3]/S");
+ fOmegaTree->Branch("TrackDCA",&fTTrackDCA,"fTTrackDCA[fTnCascade][3]/F");
+ fOmegaTree->Branch("TrackTPCsigma",&fTTrackTPCsigma,"fTTrackTPCsigma[fTnCascade][3]/F");
+ fOmegaTree->Branch("TrackTOFsigma",&fTTrackTOFsigma,"fTTrackTOFsigma[fTnCascade][3]/F");
+ fOmegaTree->Branch("TrackNcl",&fTTrackNcl,"fTTrackNcl[fTnCascade][3]/I");
+ fOmegaTree->Branch("TrackCrF",&fTTrackCrF,"fTTrackCrF[fTnCascade][3]/F");
+ fOmegaTree->Branch("TrackITStime",&fTTrackITStime,"fTTrackITStime[fTnCascade][3]/O");
+ fOmegaTree->Branch("TrackTOFtime",&fTTrackTOFtime,"fTTrackTOFtime[fTnCascade][3]/O");
+ //fOmegaTree->Branch("TrackFilterBit",&fTTrackFilterBit,"fTTrackFilterBit[fTnCascade][3]/O");
+ fOmegaTree->Branch("TrackPhi",&fTTrackPhi,"fTTrackPhi[fTnCascade][3]/F");
+ fOmegaTree->Branch("TrackID",&fTTrackID,"fTTrackID[fTnCascade][3]/I");
+
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
@@ -252,6 +313,7 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserCreateOutputObjects() {
   PostData(7, fAntiOmegaList);
   PostData(8, fResults);
   PostData(9, fResultsQA);
+  PostData(10, fOmegaTree);
 }
 
 void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
@@ -265,7 +327,49 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
     return;
   }
 
-  // PROTON SELECTION 
+  fTRunNumber = fInputEvent->GetRunNumber();
+  Double_t PrimVtx[3];
+  fInputEvent->GetPrimaryVertex()->GetXYZ(PrimVtx);
+  fTVz = PrimVtx[1];
+  fTMult = fEvent->GetMultiplicity();
+
+//init tree
+  for(int ii=0;ii<MAXPROTONS;ii++){
+   fTProtonP[ii]=-100000.;
+   fTProtonPt[ii]=-100000.;
+   fTProtonmT[ii]=-100000.;
+   fTProtonEta[ii]=-100000.;
+   fTProtonPx[ii]=-100000.;
+   fTProtonPy[ii]=-100000.;
+   fTProtonPz[ii]=-100000.;
+   fTProtonVPx[ii]=-100000.;
+   fTProtonVPy[ii]=-100000.;
+   fTProtonVPz[ii]=-100000.;
+   fTProtonTPCmom[ii]=-100000.;
+   fTProtonCharge[ii]=-10;
+   fTProtonDCA[ii]=-100000.;
+   fTProtonTPCsigma[ii]=-100000.;
+   fTProtonTOFsigma[ii]=-100000.;
+   fTProtonNcl[ii]=-100000;
+   fTProtonCrF[ii]=-100000.;
+   fTProtonShared[ii]=-100000;
+   fTProtonTPCchi2[ii]=-100000.;
+   fTProtonITStime[ii]=kFALSE;
+   fTProtonTOFtime[ii]=kFALSE;
+   fTProtonTPConly[ii]=kFALSE;
+   fTProtonITScomplementary[ii]=kFALSE;
+   fTProtonITSpure[ii]=kFALSE;
+   fTProtonGLOBAL[ii]=kFALSE;
+   fTProtonFilterBit[ii]=0;
+   fTProtonPhi[ii]=-100000.;
+   fTProtonID[ii]=-100000;
+  }
+  fTnProton=0;
+
+  //Define the random:
+  TRandom3* frndm = new TRandom3();
+
+  // PROTON SELECTION  (proton loop)
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
@@ -280,46 +384,131 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
   const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
+    Bool_t IsProton = kFALSE;
+    Bool_t IsAntiProton = kFALSE;
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
     fTrack->SetTrack(track, fInputEvent, multiplicity);
     if (fProton->isSelected(fTrack)) {
       Protons.push_back(*fTrack);
+      IsProton = kTRUE;
     }
     if (fAntiProton->isSelected(fTrack)) {
       AntiProtons.push_back(*fTrack);
+      IsAntiProton = kTRUE;
     }
+
+    if(IsProton||IsAntiProton) FillProton(fTrack);
   }
 
-  //Xi (bkg) and omegas
+  //init tree
+  for(int ii=0;ii<MAXCASCADES;ii++){
+   fTCascadePx[ii]=-100000.;
+   fTCascadePy[ii]=-100000.;
+   fTCascadePz[ii]=-100000.;
+   fTCascadeP[ii]=-100000.;
+   fTCascadePt[ii]=-100000.;
+   fTCascademT[ii]=-100000.;
+   fTCascadeCharge[ii]=-10;
+   fTCascadeDCA[ii]=-100000.;
+   fTCascadeDaughtersDCA[ii]=-100000.;
+   fTCascadeXiMass[ii]=-100000.;
+   fTCascadeOmegaMass[ii]=-100000.;
+   fTCascadeVr[ii]=-100000.;
+   fTCascadeVx[ii]=-100000.;
+   fTCascadeVy[ii]=-100000.;
+   fTCascadeVz[ii]=-100000.;
+   fTCascadePA[ii]=-100000.;
+   fTLambdaPt[ii]=-100000.;
+   fTLambdaPx[ii]=-100000.;
+   fTLambdaPy[ii]=-100000.;
+   fTLambdaPz[ii]=-100000.;
+   fTLambdaDCA[ii]=-100000.;
+   fTLambdaDaughtersDCA[ii]=-100000.;
+   fTLambdaMass[ii]=-100000.;
+   fTLambdaK0Mass[ii]=-100000.;
+   fTLambdaVr[ii]=-100000.;
+   fTLambdaVx[ii]=-100000.;
+   fTLambdaVy[ii]=-100000.;
+   fTLambdaVz[ii]=-100000.;
+   fTLambdaPA[ii]=-100000.;
+   for(int jj=0;jj<3;jj++){
+    fTTrackP[ii][jj]=-100000.;
+    fTTrackPx[ii][jj]=-100000.;
+    fTTrackPy[ii][jj]=-100000.;
+    fTTrackPz[ii][jj]=-100000.;
+    fTTrackTPCmom[ii][jj]=-100000.;
+    fTTrackEta[ii][jj]=-100000.;
+    fTTrackCharge[ii][jj]=-10;
+    fTTrackDCA[ii][jj]=-100000.;
+    fTTrackTPCsigma[ii][jj]=-100000.;
+    fTTrackTOFsigma[ii][jj]=-100000.;
+    fTTrackNcl[ii][jj]=-100000;
+    fTTrackCrF[ii][jj]=-100000.;
+    fTTrackShared[ii][jj]=-100000;
+    fTTrackTPCchi2[ii][jj]=-100000.;
+    fTTrackITStime[ii][jj]=kFALSE;
+    fTTrackTOFtime[ii][jj]=kFALSE;
+    fTTrackTPConly[ii][jj]=kFALSE;
+    fTTrackITScomplementary[ii][jj]=kFALSE;
+    fTTrackITSpure[ii][jj]=kFALSE;
+    fTTrackGLOBAL[ii][jj]=kFALSE;
+    fTTrackFilterBit[ii][jj]=0;
+    fTTrackPhi[ii][jj]=-100000.;
+    fTTrackID[ii][jj]=-100000;
+   }
+  }
+  fTnCascade=0;
+
+  //Xi (bkg) and omegas (cascade loop)
   std::vector<AliFemtoDreamBasePart> Xis;
   std::vector<AliFemtoDreamBasePart> AntiXis;
   std::vector<AliFemtoDreamBasePart> Omegas;
   std::vector<AliFemtoDreamBasePart> AntiOmegas;
   AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
   for (int iCasc = 0;iCasc< static_cast<TClonesArray *>(aodEvt->GetCascades())->GetEntriesFast();++iCasc) {
+    Bool_t IsOmegaBkg = kFALSE;
+    Bool_t IsAntiOmegaBkg = kFALSE;
+    Bool_t IsOmega = kFALSE;
+    Bool_t IsAntiOmega = kFALSE;
 
     AliAODcascade* casc = aodEvt->GetCascade(iCasc);
     fCascade->SetCascade(fInputEvent, casc);
 
     if (fXi->isSelected(fCascade)) {
       Xis.push_back(*fCascade);
+      IsOmegaBkg = kTRUE;
     }
     if (fAntiXi->isSelected(fCascade)) {
       AntiXis.push_back(*fCascade);
+      IsAntiOmegaBkg = kTRUE;
     }
 
     if (fOmega->isSelected(fCascade)) {
       Omegas.push_back(*fCascade);
+      IsOmega = kTRUE;
     }
     if (fAntiOmega->isSelected(fCascade)) {
       AntiOmegas.push_back(*fCascade);
+      IsAntiOmega = kTRUE;
     }
 
+    if(IsOmegaBkg||IsAntiOmegaBkg||IsOmega||IsAntiOmega) FillCascade(fCascade);
 
   }
 
 
+  //fill Tree
+  //if(fTnProton>0&&fTnCascade>0) fOmegaTree->Fill(); //Fill when at least 1 proton AND 1 cascade
+  ////if(fTnProton>0||fTnCascade>0) fOmegaTree->Fill(); //Fill when at least 1 proton OR 1 cascade
 
+  // -> Now fill also 3% of events with protons
+  //if there is a proton, intialize the random and seed it with the proton px:
+  if(fTnProton>0){
+   frndm->SetSeed(fTProtonPx[0]);
+   if( fTnCascade>0 || frndm->Rndm()<.03 ) fOmegaTree->Fill();
+  }
+
+ 
   //pair cleaner
   fPairCleaner->ResetArray();
 
@@ -352,6 +541,7 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
   PostData(7, fAntiOmegaList);
   PostData(8, fResults);
   PostData(9, fResultsQA);
+  PostData(9, fOmegaTree);
 }
 
 //____________________________________________________________________________________________________
@@ -391,4 +581,92 @@ void AliAnalysisTaskOtonOmegaNanoAOD::StoreGlobalTrackReference(AliVTrack *track
     }
   }
   (fGTI[trackID]) = track;
-	}
+}
+
+
+
+//________________________________________________________________________________
+Bool_t AliAnalysisTaskOtonOmegaNanoAOD::FillCascade(AliFemtoDreamCascade *TheCasc) {
+ Bool_t Filled = kFALSE;
+
+ fTCascadeCharge[fTnCascade] = TheCasc->GetCharge().at(0);
+ fTCascadeDCA[fTnCascade] = TheCasc->GetDCAXiPrimVtx();
+ fTCascadeDaughtersDCA[fTnCascade] = TheCasc->GetXiDCADaug();
+ fTCascadeXiMass[fTnCascade] = TheCasc->GetXiMass();
+ fTCascadeOmegaMass[fTnCascade] = TheCasc->GetOmegaMass();
+ fTCascadeVr[fTnCascade] = TheCasc->GetXiTransverseRadius();
+ fTCascadePA[fTnCascade] = TheCasc->GetCPA();
+
+ fTLambdaDCA[fTnCascade] = TheCasc->Getv0DCAPrimVtx();
+ fTLambdaDaughtersDCA[fTnCascade] = TheCasc->Getv0DCADaug();
+ fTLambdaMass[fTnCascade] = TheCasc->Getv0Mass();
+ fTLambdaVr[fTnCascade] = TheCasc->Getv0TransverseRadius();
+ fTLambdaPA[fTnCascade] = TheCasc->Getv0CPA();
+
+ AliFemtoDreamTrack* TheTrack = TheCasc->GetPosDaug();
+ for(int jj=0;jj<3;jj++){
+  if(jj==0){ //select the proton
+   if(fTCascadeCharge[fTnCascade]==-1) {TheTrack = TheCasc->GetPosDaug();fTTrackDCA[fTnCascade][jj]= TheCasc->Getv0PosToPrimVtx();}
+   if(fTCascadeCharge[fTnCascade]==1) {TheTrack = TheCasc->GetNegDaug();fTTrackDCA[fTnCascade][jj]= TheCasc->Getv0NegToPrimVtx();}
+   fTTrackTPCsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTPC((int) (AliPID::kProton)));
+   fTTrackTOFsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTOF((int) (AliPID::kProton)));
+  }else if(jj==1) { //select the pion
+   if(fTCascadeCharge[fTnCascade]==-1) {TheTrack = TheCasc->GetNegDaug();fTTrackDCA[fTnCascade][jj]= TheCasc->Getv0NegToPrimVtx();}
+   if(fTCascadeCharge[fTnCascade]==1) {TheTrack = TheCasc->GetPosDaug();fTTrackDCA[fTnCascade][jj]= TheCasc->Getv0PosToPrimVtx();}
+   fTTrackTPCsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTPC((int) (AliPID::kPion)));
+   fTTrackTOFsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTOF((int) (AliPID::kPion)));
+  }else if(jj==2) { //select the bachelor
+   TheTrack = TheCasc->GetBach();
+   fTTrackDCA[fTnCascade][jj]= TheCasc->BachDCAPrimVtx();
+   fTTrackTPCsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTPC((int) (AliPID::kKaon)));
+   fTTrackTOFsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTOF((int) (AliPID::kKaon)));
+  }
+
+  TVector3 mom;
+  mom = TheTrack->GetMomentum();
+  fTTrackPx[fTnCascade][jj] = mom.X();
+  fTTrackPy[fTnCascade][jj] = mom.Y();
+  fTTrackPz[fTnCascade][jj] = mom.Z();
+  fTTrackEta[fTnCascade][jj] = TheTrack->GetEta().at(0);
+  fTTrackCharge[fTnCascade][jj] = TheTrack->GetCharge().at(0);
+  fTTrackNcl[fTnCascade][jj] = TheTrack->GetNClsTPC();
+  fTTrackCrF[fTnCascade][jj] = TheTrack->GetRatioCr();
+  fTTrackITStime[fTnCascade][jj] = TheTrack->GetHasITSHit();
+  fTTrackTOFtime[fTnCascade][jj] = TheTrack->GetTOFTimingReuqirement();
+  fTTrackFilterBit[fTnCascade][jj] = TheTrack->GetFilterMap();
+  fTTrackPhi[fTnCascade][jj] = (TheTrack->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
+  fTTrackID[fTnCascade][jj] = TheTrack->GetIDTracks().at(0);
+ }
+
+ fTnCascade++;
+ Filled = kTRUE;
+ return Filled;
+} 
+
+
+//________________________________________________________________________________
+Bool_t AliAnalysisTaskOtonOmegaNanoAOD::FillProton(AliFemtoDreamTrack *TheTrack) {
+ Bool_t Filled = kFALSE;
+
+ TVector3 mom;
+ mom = TheTrack->GetMomentum();
+ fTProtonPx[fTnProton] = mom.X();
+ fTProtonPy[fTnProton] = mom.Y();
+ fTProtonPz[fTnProton] = mom.Z();
+ fTProtonEta[fTnProton] = TheTrack->GetEta().at(0);
+ fTProtonCharge[fTnProton] = TheTrack->GetCharge().at(0);
+ fTProtonTPCsigma[fTnProton] = (TheTrack->GetnSigmaTPC((int) (AliPID::kProton)));
+ fTProtonTOFsigma[fTnProton] = (TheTrack->GetnSigmaTOF((int) (AliPID::kProton)));
+ fTProtonNcl[fTnProton] = TheTrack->GetNClsTPC();
+ fTProtonCrF[fTnProton] = TheTrack->GetRatioCr();
+ fTProtonFilterBit[fTnProton] = TheTrack->GetFilterMap();
+ fTProtonPhi[fTnProton] = (TheTrack->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
+ fTProtonID[fTnProton] = TheTrack->GetIDTracks().at(0);
+
+ fTnProton++;
+
+ Filled = kTRUE;
+ return Filled;
+} 
+
+

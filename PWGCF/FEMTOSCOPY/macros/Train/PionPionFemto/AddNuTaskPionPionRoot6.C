@@ -20,7 +20,7 @@
 ///
 struct MacroCfg : public TNamed {
 
-  TString macro = "%%/ConfigNuFemtoAnalysisR6.C",
+  TString macro = "%%/ConfigNuFemtoAnalysisR6.C+",
           auto_directory = "$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto",
           output_filename,
           output_container = "PWG2FEMTO",
@@ -130,7 +130,7 @@ AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
   // Dealing with subwagons
   if (!subwagon_suffix.IsWhitespace()) {
     Int_t index = subwagon_suffix.Atoi();
-    TObjArray *values = cfg.subwagon_array.Tokenize(",");
+    TObjArray *values = cfg.subwagon_array.Tokenize("~");
     TIter next_value(values);
     if (values->GetEntries() < index) {
       std::cerr << "Could not use subwagon-index " << index << " in subwagon_array of only " << values->GetEntries() << " entries\n";

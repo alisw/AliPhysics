@@ -16,7 +16,7 @@ AliForwardSettings::AliForwardSettings() :
   fnoSamples(10),
   fNRefEtaBins(1),
   fNDiffEtaBins(50),
-  fCentBins(60),
+  fCentBins(10),
   nuacentral(),
   nuaforward(),
   seccorr_fwd(),
@@ -28,7 +28,7 @@ AliForwardSettings::AliForwardSettings() :
   mc(kFALSE),
   esd(kFALSE),
   tracktype(kHybrid),
-  nua_mode(kNormal),
+  nua_mode(kInterpolate),
   ref_mode(kTPCref),
   useTPC{kTRUE},
   useSPD(kFALSE),
@@ -47,6 +47,7 @@ AliForwardSettings::AliForwardSettings() :
   sec_corr(kFALSE),
   a5(kFALSE),
   fileName(""),
-  fMaxConsequtiveStrips(2)
+  fMaxConsequtiveStrips(0),
+  standard_only(kFALSE)
 {
 }

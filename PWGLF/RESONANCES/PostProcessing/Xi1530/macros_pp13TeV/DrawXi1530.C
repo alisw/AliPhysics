@@ -369,36 +369,25 @@ const float inf = 1e20;
 const float zero = 1e-20;
 
 // Input files
-//char const* datafile = "LHC15fi_16deghijklop_17cefgijklmor_SYS_light_fixed";
-//char const* datafile = "LHC15fi_16deghijklop_17cefgijklmor_18bdefghikmnop_20190513";
-//char const* datafile = "LHC18bghimn_old"; //LHC18bm part.
-//char const* datafile = "LHC15_old"; //LHC15
-//char const* datafile = "LHC15fi_1281"; //LHC15 0406
-//char const* datafile = "LHC15fi_1282"; //LHC15 0406
-//char const* datafile = "LHC15fi_1200"; //LHC15 all (different condition)
-//char const* datafile = "LHC15fi_novertexer"; //LHC15 no vertexer
-//char const* datafile = "LHC16deghijklop_novertexer"; //LHC16 no vertexer
-//char const* datafile = "LHC17_novertexer"; //LHC16 no vertexer
-//char const* datafile = "LHC18bghiknop_novertexer"; //LHC18 no vertexer
-char const* datafile = "LHC15fi_LHC16deghijklop_LHC17cefgijklmor_LHC18bghiknop_novertexer"; //LHC18 no vertexer
-//char const* datafile = "LHC16q"; //LHC16q pPb
-//char const* datafile = "LHC16_old"; //LHC16 all
-//char const* datafile = "LHC17_old"; //LHC17 all
-//char const* datafile = "LHC15fi_modi"; //LHC15 0515 modified(off)
-//char const* datafile = "LHC15fi_test"; //0513 with option off
-//char const* datafile = "LHC15fi_newtagnooption"; //new with option on
-//char const* rsnmcfile = "LHC18c6b4_1133"; //LHC16 with LHC15 fitted option.
-//char const* rsnmcfile = "LHC18c6b4_test2"; //LHC16
-//char const* rsnmcfile = "LHC18c6b4_novertexer"; 
-//char const* rsnmcfile = "LHC18c6b_part2"; 
-char const* rsnmcfile = "LHC18c6b_part2"; 
-//char const* rsnmcfile = "LHC15g3c3_novertexer"; 
-//char const* rsnmcfile = "LHC17f2a_cent_fix";  // pPb
+//char const* datafile = "LHC15678_1288_1289"; //LHC16 no vertexer
+char const* datafile = "AOD439_441_HM_17"; //LHC16 no vertexer
+//char const* datafile = "LHC16q_pass1_CENT_wSDD";  //pPb
 
-//char const* rsnmcfile = "LHC18c6b4_1139"; 
+//char const* rsnmcfile = "LHC17f2b_cent"; // pPb
+
+
+char const* rsnmcfile = "LHC18c6b4_298"; //LHC16 pass2
+char const* rsnmcfile2 = "LHC18c6b_part1_298"; //LHC16
+char const* rsnmcfile3 = "LHC18c6b_part2_298"; // LHC16
+char const* rsnmcfile4 = "LHC18c6a_part1_298"; // LHC17
+char const* rsnmcfile5 = "LHC18c6a_part2_298"; // LHC17
+char const* rsnmcfile6 = "LHC18c6a_part3_298"; // LHC17
+char const* rsnmcfile7 = "LHC18c6c_298"; // LHC15
+
+char const* genmcfile = "LHC161718_GenMC_AOD308309310"; 
 //char const* genmcfile = "LHC16_GenMC_FINAL";
-char const* genmcfile = "LHC15g3c3_novertexer";
-//char const* genmcfile = "LHC17f2a_cent_fix";  // pPb
+//char const* genmcfile = "LHC15g3a3_novertexer";
+//char const* genmcfile = "LHC17f2b_cent";  // pPb
 
 TString inputDirectory = "Xi1530MB";
 
@@ -440,9 +429,11 @@ Int_t normright = 1;
 Double1D NormalizeRange_R = {1.6, 1.8}; // Norminal
 
 // Axis Range
-Double1D DrawRange = {1.448, 1.8};
-Double1D FitRange = {1.484, 1.76};
-Double1D IntegralRange = {1.516, 1.548};
+Double1D DrawRange = {1.448, 1.75};
+Double1D FitRange = {1.484, 1.675}; // +-rstep
+double lstep = 0.001;
+double rstep = 0.012;
+Double1D IntegralRange = {1.516, 1.548}; // +-
 Double1D IntegralRangeMC = {1.4, 1.7};
 
 // Rebin
@@ -526,53 +517,49 @@ void DrawXi1530(const int sys = 1,
     }
     // Fit variation check
     if (Options.Contains("FitVarLm")){
-        FitRange[0] = FitRange[0]-0.001*rebin*OptionNumber;
+        FitRange[0] = FitRange[0]-lstep*rebin*OptionNumber;
     }
     if (Options.Contains("FitVarLp")){
-        FitRange[0] = FitRange[0]+0.001*rebin*OptionNumber;
+        FitRange[0] = FitRange[0]+rstep*OptionNumber;
     }
     if (Options.Contains("FitVarRm")){
-        FitRange[1] = FitRange[1]-0.001*rebin*OptionNumber;
+        FitRange[1] = FitRange[1]-lstep*rebin*OptionNumber;
     }
     if (Options.Contains("FitVarRp")){
-        FitRange[1] = FitRange[1]+0.001*rebin*OptionNumber;
+        FitRange[1] = FitRange[1]+rstep*OptionNumber;
     }
     if (Options.Contains("FitVarBothm")){
-        FitRange[0] = FitRange[0]-0.001*rebin*OptionNumber;
-        FitRange[1] = FitRange[1]+0.001*rebin*OptionNumber;
+        FitRange[0] = FitRange[0]-lstep*rebin*OptionNumber;
+        FitRange[1] = FitRange[1]+rstep*OptionNumber;
     }
     if (Options.Contains("FitVarBothp")){
-        FitRange[0] = FitRange[0]+0.001*rebin*OptionNumber;
-        FitRange[1] = FitRange[1]-0.001*rebin*OptionNumber;
+        FitRange[0] = FitRange[0]+lstep*rebin*OptionNumber;
+        FitRange[1] = FitRange[1]-rstep*OptionNumber;
     }
     // Norm change
     if (Options.Contains("NormVarm")){
-        NormalizeRange_L[0] = NormalizeRange_L[0]-0.001*rebin*OptionNumber;
-        NormalizeRange_L[1] = NormalizeRange_L[1]-0.001*rebin*OptionNumber;
-        NormalizeRange_R[0] = NormalizeRange_R[0]-0.001*rebin*OptionNumber;
-        NormalizeRange_R[1] = NormalizeRange_R[1]-0.001*rebin*OptionNumber;
+        NormalizeRange_L[0] = NormalizeRange_L[0]-lstep*rebin*OptionNumber;
+        NormalizeRange_L[1] = NormalizeRange_L[1]-lstep*rebin*OptionNumber;
+        NormalizeRange_R[0] = NormalizeRange_R[0]-rstep*OptionNumber;
+        NormalizeRange_R[1] = NormalizeRange_R[1]-rstep*OptionNumber;
     }
     if (Options.Contains("NormVarp")){
-        NormalizeRange_L[0] = NormalizeRange_L[0]+0.001*rebin*OptionNumber;
-        NormalizeRange_L[1] = NormalizeRange_L[1]+0.001*rebin*OptionNumber;
-        NormalizeRange_R[0] = NormalizeRange_R[0]+0.001*rebin*OptionNumber;
-        NormalizeRange_R[1] = NormalizeRange_R[1]+0.001*rebin*OptionNumber;
+        NormalizeRange_L[0] = NormalizeRange_L[0]+lstep*rebin*OptionNumber;
+        NormalizeRange_L[1] = NormalizeRange_L[1]+lstep*rebin*OptionNumber;
+        NormalizeRange_R[0] = NormalizeRange_R[0]+rstep*OptionNumber;
+        NormalizeRange_R[1] = NormalizeRange_R[1]+rstep*OptionNumber;
     }
     if (Options.Contains("NormVarLp")){
-        NormalizeRange_L[1] = NormalizeRange_L[1]+0.001*rebin*OptionNumber;
+        NormalizeRange_L[1] = NormalizeRange_L[1]+lstep*rebin*OptionNumber;
     }
     if (Options.Contains("NormVarLm")){
-        NormalizeRange_L[0] = NormalizeRange_L[0]-0.001*rebin*OptionNumber;
+        NormalizeRange_L[0] = NormalizeRange_L[0]-lstep*rebin*OptionNumber;
     }
     if (Options.Contains("NormVarRp")){
-        normleft = 0;
-        normright = 1;
-        NormalizeRange_R[1] = NormalizeRange_R[1]+0.001*rebin*OptionNumber;
+        NormalizeRange_R[1] = NormalizeRange_R[1]+rstep*OptionNumber;
     }
     if (Options.Contains("NormVarRm")){
-        normleft = 0;
-        normright = 1;
-        NormalizeRange_R[0] = NormalizeRange_R[0]-0.001*rebin*OptionNumber;
+        NormalizeRange_R[0] = NormalizeRange_R[0]-rstep*OptionNumber;
     }
     //Bin count varation
     if (Options.Contains("BinCountLm")){
@@ -605,24 +592,24 @@ void DrawXi1530(const int sys = 1,
         FitRange[1] = 1.6;
     }
     if (Options.Contains("BkgFitLm")){
-        FitRange[0] = FitRange[0]-0.001*rebin*OptionNumber;
+        FitRange[0] = FitRange[0]-lstep*rebin*OptionNumber;
     }
     if (Options.Contains("BkgFitLp")){
-        FitRange[0] = FitRange[0]+0.001*rebin*OptionNumber;
+        FitRange[0] = FitRange[0]+lstep*rebin*OptionNumber;
     }
     if (Options.Contains("BkgFitRm")){
-        FitRange[1] = FitRange[1]-0.001*rebin*OptionNumber;
+        FitRange[1] = FitRange[1]-rstep*OptionNumber;
     }
     if (Options.Contains("BkgFitRp")){
-        FitRange[1] = FitRange[1]+0.001*rebin*OptionNumber;
+        FitRange[1] = FitRange[1]+rstep*OptionNumber;
     }
     if (Options.Contains("BkgFitBothm")){
-        FitRange[0] = FitRange[0]-0.001*rebin*OptionNumber;
-        FitRange[1] = FitRange[1]+0.001*rebin*OptionNumber;
+        FitRange[0] = FitRange[0]-lstep*rebin*OptionNumber;
+        FitRange[1] = FitRange[1]+rstep*OptionNumber;
     }
     if (Options.Contains("BkgFitBothp")){
-        FitRange[0] = FitRange[0]+0.001*rebin*OptionNumber;
-        FitRange[1] = FitRange[1]-0.001*rebin*OptionNumber;
+        FitRange[0] = FitRange[0]+lstep*rebin*OptionNumber;
+        FitRange[1] = FitRange[1]-rstep*OptionNumber;
     }
 
     if (Options.Contains("MCcheck")){
@@ -701,13 +688,13 @@ void DrawXi1530(const int sys = 1,
     auto hInvMass_MC_General_MB =
         BSTHnSparseHelper::Load("hInvMass", clist_MC_General);
 
-
     // pT binning
     hInvMass.SetBin("Pt", ptbin);
     hInvMass_MC.SetBin("Pt", ptbin);
     hInvMass_MC_General.SetBin("Pt", ptbin);
     hInvMass_MC_MB.SetBin("Pt", ptbin);
     hInvMass_MC_General_MB.SetBin("Pt", ptbin);
+ 
 
     // Multiplicity percentile binning
     hInvMass.SetBin("Cent", centbin);
@@ -715,6 +702,61 @@ void DrawXi1530(const int sys = 1,
     hInvMass_MC_MB.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
     hInvMass_MC_General.SetBin("Cent", centbin);  // for Trigger Efficiency
     hInvMass_MC_General_MB.SetBin("Cent", fullcentbin_Effi);  // for MC reconstruction Efficiency, we use full bin
+    
+    //further RsnMC
+    
+    auto clist_MC2 = LoadXi1530ResultList(
+        rsnmcfile2, "Xi1530MB");  // From Resonance Injected MC
+    auto clist_MC3 = LoadXi1530ResultList(
+        rsnmcfile3, "Xi1530MB");  // From Resonance Injected MC
+    auto clist_MC4 = LoadXi1530ResultList(
+        rsnmcfile4, "Xi1530MB");  // From Resonance Injected MC
+    auto clist_MC5 = LoadXi1530ResultList(
+        rsnmcfile5, "Xi1530MB");  // From Resonance Injected MC
+    auto clist_MC6 = LoadXi1530ResultList(
+        rsnmcfile6, "Xi1530MB");  // From Resonance Injected MC
+    auto clist_MC7 = LoadXi1530ResultList(
+        rsnmcfile7, "Xi1530MB");  // From Resonance Injected MC
+    auto hInvMass_MC2 = BSTHnSparseHelper::Load("hInvMass", clist_MC2);
+    auto hInvMass_MC3 = BSTHnSparseHelper::Load("hInvMass", clist_MC3);
+    auto hInvMass_MC4 = BSTHnSparseHelper::Load("hInvMass", clist_MC4);
+    auto hInvMass_MC5 = BSTHnSparseHelper::Load("hInvMass", clist_MC5);
+    auto hInvMass_MC6 = BSTHnSparseHelper::Load("hInvMass", clist_MC6);
+    auto hInvMass_MC7 = BSTHnSparseHelper::Load("hInvMass", clist_MC7);
+    auto hInvMass_MC_MB2 = BSTHnSparseHelper::Load("hInvMass", clist_MC2);
+    auto hInvMass_MC_MB3 = BSTHnSparseHelper::Load("hInvMass", clist_MC3);
+    auto hInvMass_MC_MB4 = BSTHnSparseHelper::Load("hInvMass", clist_MC4);
+    auto hInvMass_MC_MB5 = BSTHnSparseHelper::Load("hInvMass", clist_MC5);
+    auto hInvMass_MC_MB6 = BSTHnSparseHelper::Load("hInvMass", clist_MC6);
+    auto hInvMass_MC_MB7 = BSTHnSparseHelper::Load("hInvMass", clist_MC7);
+
+    hInvMass_MC2.SetBin("Pt", ptbin);
+    hInvMass_MC3.SetBin("Pt", ptbin);
+    hInvMass_MC4.SetBin("Pt", ptbin);
+    hInvMass_MC5.SetBin("Pt", ptbin);
+    hInvMass_MC6.SetBin("Pt", ptbin);
+    hInvMass_MC7.SetBin("Pt", ptbin);
+    hInvMass_MC_MB2.SetBin("Pt", ptbin);
+    hInvMass_MC_MB3.SetBin("Pt", ptbin);
+    hInvMass_MC_MB4.SetBin("Pt", ptbin);
+    hInvMass_MC_MB5.SetBin("Pt", ptbin);
+    hInvMass_MC_MB6.SetBin("Pt", ptbin);
+    hInvMass_MC_MB7.SetBin("Pt", ptbin);
+
+    hInvMass_MC2.SetBin("Cent", centbin);         
+    hInvMass_MC3.SetBin("Cent", centbin);         
+    hInvMass_MC4.SetBin("Cent", centbin);         
+    hInvMass_MC5.SetBin("Cent", centbin);         
+    hInvMass_MC6.SetBin("Cent", centbin);  
+    hInvMass_MC7.SetBin("Cent", centbin);   
+    hInvMass_MC_MB2.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
+    hInvMass_MC_MB3.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
+    hInvMass_MC_MB4.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
+    hInvMass_MC_MB5.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
+    hInvMass_MC_MB6.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
+    hInvMass_MC_MB7.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
+    
+    
 
     cout << "DATA AXES " << endl;
     hInvMass.PrintAxis("all");
@@ -732,15 +774,10 @@ void DrawXi1530(const int sys = 1,
     // Basic QA Plots
     // ------------------------------------------------------------------------------------------
     TH1D* hNumberofEvent = (TH1D*)clist->FindObject(
-        "hEventNumbers");  // N of Event through event cuts
+        "fNormalisationHist");  // N of Event through event cuts
     TH1D* hMultQA = (TH1D*)clist->FindObject(
         "hMult_QA");  // Multiplicty distribution after all event cuts
-    TH1D* hMultQA_onlyMult = (TH1D*)clist->FindObject(
-        "hMult_QA_onlyMult");  // Multiplicty distribution after only
-    // MultiSelection + Trigger selection
 
-    hNumberofEvent->GetXaxis()->SetTitle("Event cuts");
-    hNumberofEvent->GetYaxis()->SetTitle("# of Event");
     hNumberofEvent->Write("hNumberofEvent");
 
     double eventfraction = 0.;
@@ -763,9 +800,6 @@ void DrawXi1530(const int sys = 1,
     hMultQA->Write("hMultQA");
     // Trigger Efficiency
     // --------------------------------------------------------------------------------------
-    TH1D* hNumberofEvent_Genenral = (TH1D*)clist_MC_General->FindObject(
-        "hEventNumbers");  // N of Event through event cuts
-    double nEventin_elastic = hNumberofEvent_Genenral->GetBinContent(1); // I think.. it is wrong.
     auto hInvMass_MC_General_Trig =
         BSTHnSparseHelper::Load("htriggered_CINT7", clist_MC_General);
     auto htrue_cent =
@@ -799,6 +833,8 @@ void DrawXi1530(const int sys = 1,
     // -----------------------------------------------------------------------------------------
     vertexeffi = sumvtx/sumreco;
     vertexeffi_e = sqrt(vertexeffi*(1-vertexeffi)/sumreco);
+    //vertexeffi = 1;
+    //vertexeffi_e = 1e-10;
     //vertexeffi_e = sqrt(pow(sqrt(sumvtx)/sumreco,2)+pow(sqrt(sumreco)*sumvtx/pow(sumreco,2),2));
     
     TH1D* hvertexeffi =
@@ -820,7 +856,7 @@ void DrawXi1530(const int sys = 1,
         int n = j - 1;
         // SigBkg
         // ---------------------------------------------------------------------------------------------
-        if(n < 2){
+        if(n < 1){
             normleft = 1;
             normright = 0;
 
@@ -890,22 +926,39 @@ void DrawXi1530(const int sys = 1,
         // My reconstruction in All event cut
         auto hReco = hInvMass_MC_MB.GetTH1("recon", 4, {sys, 4, 1, j, -1});
 
-        Double_t Input_number_Gen = 0.;
-        Double_t True_Input_number_Gen = 0.;
+        
+        //Further Rsn MC
+        
+        hInput->Add(hInvMass_MC_MB2.GetTH1("input", 4, {1, 6, 1, j, -1}));
+        hInput->Add(hInvMass_MC_MB3.GetTH1("input", 4, {1, 6, 1, j, -1}));
+        hInput->Add(hInvMass_MC_MB4.GetTH1("input", 4, {1, 6, 1, j, -1}));
+        hInput->Add(hInvMass_MC_MB5.GetTH1("input", 4, {1, 6, 1, j, -1}));
+        hInput->Add(hInvMass_MC_MB6.GetTH1("input", 4, {1, 6, 1, j, -1}));
+        hInput->Add(hInvMass_MC_MB7.GetTH1("input", 4, {1, 6, 1, j, -1}));
+        hReco->Add(hInvMass_MC_MB2.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
+        hReco->Add(hInvMass_MC_MB3.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
+        hReco->Add(hInvMass_MC_MB4.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
+        hReco->Add(hInvMass_MC_MB5.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
+        hReco->Add(hInvMass_MC_MB6.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
+        hReco->Add(hInvMass_MC_MB7.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
+        
+        
+        Double_t Input_number_Gen = hInput_Gen->Integral(
+            hInput_Gen->GetXaxis()->FindBin(IntegralRangeMC[0]),
+            hInput_Gen->GetXaxis()->FindBin(IntegralRangeMC[1]));
 
-        Double_t Input_number = 0.;
-        Double_t Reco_number = 0.;
-        for (int k = 0; k < (int)hInput->GetNbinsX(); k++) {
-            auto check = hInput->GetBinCenter(k);
-            if ((check >= IntegralRangeMC[0]) &&
-                (check <= IntegralRangeMC[1])) {
-                True_Input_number_Gen += hTrueInput_Gen->GetBinContent(k);
-                Input_number_Gen += hInput_Gen->GetBinContent(k);
+        Double_t True_Input_number_Gen = hTrueInput_Gen->Integral(
+            hTrueInput_Gen->GetXaxis()->FindBin(IntegralRangeMC[0]),
+            hTrueInput_Gen->GetXaxis()->FindBin(IntegralRangeMC[1]));;
 
-                Input_number += hInput->GetBinContent(k);
-                Reco_number += hReco->GetBinContent(k);
-            }
-        }
+        Double_t Input_number = hInput->Integral(
+            hInput->GetXaxis()->FindBin(IntegralRangeMC[0]),
+            hInput->GetXaxis()->FindBin(IntegralRangeMC[1]));
+
+        Double_t Reco_number = hReco->Integral(
+            hReco->GetXaxis()->FindBin(IntegralRangeMC[0]),
+            hReco->GetXaxis()->FindBin(IntegralRangeMC[1]));
+    
         /*
         // old way
         Double_t Eff_e = sqrt(
@@ -920,14 +973,18 @@ void DrawXi1530(const int sys = 1,
             << ", new rec_err: " << Eff_e << endl;
         Double_t ecutratio = True_Input_number_Gen / Input_number_Gen;
         Double_t ecuteffi = Input_number_Gen / True_Input_number_Gen; // same, but efficiency form for the error.
-        Double_t ecuteffi_e = sqrt(ecuteffi*(1-ecuteffi)/True_Input_number_Gen); // proper error propagation
+        Double_t ecuteffi_e = sqrt(ecuteffi*(abs(1-ecuteffi))/True_Input_number_Gen); // proper error propagation
         Double_t ecutratio_e = ecutratio * (ecuteffi_e/ecuteffi); // use the percentage of error here.
 
         cout << "True input: " << True_Input_number_Gen << ", after event cuts: " << Input_number_Gen << endl;
+        cout << "SL: " << ecuteffi << ", error: " << ecuteffi_e << ", fraction: " << ecuteffi_e/ecuteffi << endl;
         cout << "old error: " << sqrt(pow(sqrt(True_Input_number_Gen)/Input_number_Gen,2)+pow(sqrt(Input_number_Gen)*True_Input_number_Gen/pow(Input_number_Gen,2),2))
              << ", new error: " << ecutratio_e << endl;
         //Double_t ecutratio_e = sqrt(pow(sqrt(True_Input_number_Gen)/Input_number_Gen,2)+pow(sqrt(Input_number_Gen)*True_Input_number_Gen/pow(Input_number_Gen,2),2));
-        
+        if(fHM){
+            ecutratio = 1.0;
+            ecutratio_e = zero;
+        }
         EventCutRatio.push_back(ecutratio);
         EventCutRatio_e.push_back(ecutratio_e);
         Efficiency.push_back(RecEff);
@@ -1055,14 +1112,27 @@ void DrawXi1530(const int sys = 1,
 
         TVirtualFitter::SetMaxIterations(1000000);
         // final fit
-        TFitResultPtr fitresult_ptr  = Sigfit->Fit(fp, "RIS");
+        TFitResultPtr fitresult_ptr;
+        int fitcounter = 0;
+        while(1){
+          fitresult_ptr= Sigfit->Fit(fp, "RIS", "", FitRange[0], FitRange[1]);
+          
+          // fit result
+          if(n == 0) break; // 0-0.8 skip
+          if(n == 10) break; // 8.8-15 skip
+
+          if(fitresult_ptr) // only converge result
+            break;
+          fitcounter++;
+          if(fitcounter > 10) break;
+        }
         fb_after = new TF1(Form("%s_back", name), formula.Data(), 0, 99);
         
         for (k = 0; k < vp; k++) {
             fb_after->SetParameter(k, fp->GetParameter(k));
         }
         fb_after->Draw();
-        fb_after->SetRange(FitRange[0], FitRange[1]);
+        fb_after->SetRange(IntegralRange[0], IntegralRange[1]);
         fb_after->SetLineColor(3);
         fb_after->SetLineStyle(2);
         fp->Draw("same");
@@ -1088,6 +1158,8 @@ void DrawXi1530(const int sys = 1,
         Double_t integral_e_fullfit = fp->IntegralError(IntegralRange[0], IntegralRange[1],fp->GetParameters(),fitresult_ptr->GetCovarianceMatrix().GetMatrixArray(), 1.e-6);
         Double_t integral_e_ratio = abs(integral_e_fullfit/integral_result_fullfit);
 
+        cout << "full integral: " << 1000*integral_result_fullfit << ", bkg integral: " << bkgintegral << ", sig integral: " << 1000*integral_result_fullfit - bkgintegral << ", e: " << 1000*integral_e_ratio << endl;
+
         fitmean.push_back(fp->GetParameter(vp + 1));
         fitmean_err.push_back(fp->GetParError(vp + 1));
         fitsigma.push_back(fp->GetParameter(vp + 2));
@@ -1097,42 +1169,60 @@ void DrawXi1530(const int sys = 1,
         
         double frawyield = 0.;
         double frawyield_e = 0.;
-        if (bincount) {  // Bin count method
-            frawyield =
-                Sigfit->Integral(Sigfit->GetXaxis()->FindBin(IntegralRange[0]),
-                                 Sigfit->GetXaxis()->FindBin(IntegralRange[1] -
-                                                             0.001 * rebin));
-            
-            for (int bin = Sigfit->GetXaxis()->FindBin(IntegralRange[0]);
-                 bin <=
-                 Sigfit->GetXaxis()->FindBin(IntegralRange[1]+0.001*rebin);
-                 bin++) {
-                frawyield_e += pow(Sigfit->GetBinError(bin), 2);
-            }
-            frawyield += -bkgintegral;
+        double frawyield_bincount = 0.;
+        double frawyield_bincount_e = 0.;
+        double frawyield_bincount_e_ratio = 0.;
+        // Bin count method
+        frawyield_bincount =
+            Sigfit->Integral(Sigfit->GetXaxis()->FindBin(IntegralRange[0]),
+                             Sigfit->GetXaxis()->FindBin(IntegralRange[1] -
+                                                         0.001 * rebin));
+        for (int bin = Sigfit->GetXaxis()->FindBin(IntegralRange[0]);
+             bin <=
+             Sigfit->GetXaxis()->FindBin(IntegralRange[1]+0.001*rebin);
+             bin++) {
+            frawyield_bincount_e += pow(Sigfit->GetBinError(bin), 2);
+        }
 
-            // lost yield correction (additive)
-            double lefttail =
-                1000 * fonly->Integral(IntegralRangeMC[0], IntegralRange[0]) /
-                rebin;
-            double righttail =
-                1000 * fonly->Integral(IntegralRange[1], IntegralRangeMC[1]) /
-                rebin;
-            frawyield = frawyield + lefttail + righttail;
-            frawyield_e = frawyield_e 
-                + pow((lefttail + righttail)*(fonly->GetParError(0)/fonly->GetParameter(0)),2);
-            RawYield_err.push_back(sqrt(frawyield_e));
-        } else {  // Integral from fit function
-            frawyield = 1000 *
-                        fonly->Integral(IntegralRangeMC[0], IntegralRangeMC[1],1e-6) /
-                        rebin;
-            frawyield_e = frawyield*integral_e_ratio;
-            //frawyield_e = frawyield*(fonly->GetParError(0)/fonly->GetParameter(0)); // old method 
-            cout << "yield: " << frawyield << ", old error: " << frawyield*(fonly->GetParError(0)/fonly->GetParameter(0))
-                 << ", new error: " << frawyield_e << endl;
+        frawyield_bincount_e_ratio = abs(sqrt(frawyield_bincount_e)/frawyield_bincount);
+        cout << "Bincount error ratio: " << frawyield_bincount_e_ratio <<  endl;
+
+        // lost yield correction (additive)
+        double lefttail =
+            1000 * fonly->Integral(IntegralRangeMC[0], IntegralRange[0]) /
+            rebin;
+        double righttail =
+            1000 * fonly->Integral(IntegralRange[1], IntegralRangeMC[1]) /
+            rebin;
+        
+        frawyield_bincount = frawyield_bincount + lefttail + righttail - bkgintegral;
+        frawyield_bincount_e = frawyield_bincount_e 
+            + pow((lefttail + righttail)*(fonly->GetParError(0)/fonly->GetParameter(0)),2);
+    
+        // Integral from fit function
+        frawyield = 1000 * // 1GeV/c2 = 1000 MeV/c2
+                    fonly->Integral(IntegralRangeMC[0], IntegralRangeMC[1],1e-6) /
+                    rebin;
+        
+        //frawyield_e = frawyield*(fonly->GetParError(0)/fonly->GetParameter(0)); // old method 
+        //frawyield_e = frawyield*integral_e_ratio; // New method
+        frawyield_e = frawyield_bincount_e_ratio*frawyield; // bincount error method
+            
+        if (bincount){
+            RawYield.push_back(frawyield_bincount);
+            RawYield_err.push_back(sqrt(frawyield_bincount_e));  
+        } 
+        else {
+            RawYield.push_back(frawyield);
             RawYield_err.push_back(frawyield_e);
         }
-        RawYield.push_back(frawyield);
+        
+        // Old error: Fit parameter error ratio from normalisation factor of voigt fit [0].
+        // New error: Error ratio of full fit(voigt+bkg)
+        // Bincount error: error sum of each inv.mass bin ratio to bincount yield
+        cout << "Fit status: " << fitresult_ptr << ", yield: " << RawYield[n] << ", old error: " << frawyield*(fonly->GetParError(0)/fonly->GetParameter(0))
+                 << ", new error: " << frawyield*integral_e_ratio << ", bincount error: " << RawYield_err[n] << endl;
+        
     }
     //-----------------------------------------------------------------------------------------------------
     // MC Efficiency
@@ -1191,7 +1281,9 @@ void DrawXi1530(const int sys = 1,
         eventMultiratio = (multi_end - multi_start) / 100;
     else
         eventMultiratio = (multi_end - multi_start) / 0.1;
-    nOfEventMultibin = hNumberofEvent->GetBinContent(9) * eventMultiratio;
+    //nOfEventMultibin = hNumberofEvent->GetBinContent(5) * eventMultiratio;
+    nOfEventMultibin = hMultQA->Integral(hMultQA->GetXaxis()->FindBin(multi_start),
+                              hMultQA->GetXaxis()->FindBin(multi_end));
     for (int ipTbin = 1; ipTbin < (int)ptbin.size() - 2; ipTbin++) {
         // for debuging
         cout << "RawYield[" << ipTbin << "]: " << RawYield[ipTbin]
@@ -1200,7 +1292,7 @@ void DrawXi1530(const int sys = 1,
              << ", EventCutRatio[" << ipTbin << "]: " << EventCutRatio[ipTbin]
              << ", centbin: " << centbin[0]
              << " - " << centbin[1]
-             << ", # of Events: " << hNumberofEvent->GetBinContent(9)
+             << ", # of Events: " << hNumberofEvent->GetBinContent(5)
              << ", # of Events in mutlbin: " << nOfEventMultibin
              << "(" << eventMultiratio*100
              << "%) , pt_points_e[" << ipTbin << "]: " << pt_points_e[ipTbin] 
@@ -1211,7 +1303,9 @@ void DrawXi1530(const int sys = 1,
         value = RawYield[ipTbin];
         base = Efficiency[ipTbin] * pt_points_e[ipTbin] * 1 * // Rapidity(0.5 + 0.5)
                nOfEventMultibin;
+        if(fpPb) base *= 0.5; // rapidity
         value /= base;
+
         if(!fAA) value *= triggereffi * vertexeffi;
         value *= EventCutRatio[ipTbin]; // <- Corrected and normalised Xi(1530) + c.c.
 
@@ -1539,7 +1633,7 @@ vector<double> GetNormalisationFactor(double multi_start, double multi_end){
 TFile* LoadXi1530Results(TString name, TString runnum) {
     if (!runnum.IsNull())
         runnum = "_" + runnum;
-    //auto fname = "/alice/home/blim/postprocessing/AnalysisResults_" + name + runnum + ".root";
+    //auto fname = "/alice/home/blim/postprocessing/data/AnalysisResults_" + name + runnum + ".root";
     auto fname = "AnalysisResults_" + name + runnum + ".root";
     return LoadRoot(fname);
 }

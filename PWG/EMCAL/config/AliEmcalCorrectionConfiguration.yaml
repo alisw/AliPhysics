@@ -1,6 +1,6 @@
 configurationName: "Default configuration"          # Optional - Simply for user convenience
 pass: ""                                            # Attempts to automatically retrieve the pass if not specified. Usually of the form "pass#".
-recycleUnusedEmbeddedEventsMode: false              # True if embedded events should be recycled by using the internal event selection of the embedding helper.
+recycleUnusedEmbeddedEventsMode: false              # DEPRECATED! This is handled directly by the embedding helper. True if embedded events should be recycled by using the internal event selection of the embedding helper.
 # Look at the documentation for a full explanation of the input objects!
 inputObjects:                                       # Define all of the input objects for the corrections
     cells:                                          # Configure cells
@@ -66,6 +66,7 @@ CellEnergy:                                         # Cell Energy correction com
 CellBadChannel:                                     # Bad channel removal at the cell level component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    load1DBadChMap: false                           # Flag to load 1D bad channel map
     customBadChannelFilePath: ""                    # Full path to a custom bad channel OADB object
     acceptDead: false                               # Declare dead channels as good
     acceptHot: false                                # Declare hot channels as good
@@ -157,6 +158,7 @@ CellCombineCollections:                             # Utility task to combine tw
 Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    load1DBadChMap: false                           # Flag to load 1D bad channel map
     clusterizer: kClusterizerv3                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
     unfold: false                                   # Activate cluster unfolding
     unfoldRejectBelowThreshold: false               #  split (false-default) or reject (true) cell energy below threshold after UF

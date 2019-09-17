@@ -109,6 +109,7 @@ using std::endl;
 //________________________________________________________________________
 AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 : AliAnalysisTaskSE(name)
+,fRunNumber(0)
 ,fUseTender(kFALSE)
 ,fWhichPeriod(2016)
 ,fUseKFforPhotonicPartner(kFALSE)
@@ -118,26 +119,37 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fMinNTr(0)
 ,fMaxElectronEta(0.8)
 ,fMinElectronEta(-0.8)
-,fMaxHadronEta(0.9)
-,fMinHadronEta(-0.9)
+,fMaxHadronEta(0.8)
+,fMinHadronEta(-0.8)
+,fVarEleOpt(0)
+,fElectronkAny(kFALSE)
 ,fTPCnCut(100)
 ,fTPCndEdxCut(80)
 ,fITSnCut(3)
 ,fITSSharedClusterCut(999)
+,fEleDCAr(1)
+,fEleDCAz(2)
 ,fUseTRD(0)
-,fUseITSsa(0)
-,fSigmaITScut(2.)
+,fUseITSsa(1)
+,fSigmaITScut(20)
 ,fSigmaTOFcut(2.)
-,fSigmaTPCcut(-1.)
-,fPhotElecPtCut(0.125)
+,fSigmaTPCcutLow(-1.)
+,fSigmaTPCcutHigh(3)
+,fVarPhotOpt(0)
+,fPhotElecPtCut(0.0)
 ,fPhotElecSigmaTPCcut(3)
 ,fPhotElecTPCnCut(80)
 ,fPhotElecITSrefitCut(kTRUE)
 ,fPhotCorrCase(2)
 ,fAssNonEleTPCcut(-4)
+,fVarHadOpt(0)
 ,fHTPCnCut(100)
 ,fHITSrefitCut(kTRUE)
 ,fHTPCrefitCut(kTRUE)
+,fHadDCAr(0.25)
+,fHadDCAz(1.)
+,fHadkAny(kTRUE)
+,fHadTOFmatch(kFALSE)
 ,fOpeningAngleCut(1000.)
 ,fInvmassCut(0.14)
 ,fChi2Cut(3.5)
@@ -296,9 +308,12 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fElectronTrackDCA(0)
 ,fElectronTrackITSCuts(0)
 ,fPhotTrackITSCuts(0)
+,fHadronTrackCuts(0)
 ,fHadronTrackTPCNcls(0)
 ,fHadronTrackRefit(0)
 ,fHadronTrackDCA(0)
+,fHadronTrackDCA_woITSAny(0)
+,fHadronTrackDCA_wITSAny(0)
 ,fHistITSnSig(0)
 ,fHistTOFnSig(0)
 ,fHistTPCnSig(0)
@@ -375,7 +390,10 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fCorrectEtatoData()
 ,fHadRecEff()
 ,fEleRecEff()
-,fSPDnTrAvg()
+,fSPDConfig(0)
+,fSPDConfigHist()
+,fSPDConfigProfiles()
+,fSPDnTrAvg(0)
 ,fNonTagCorr()
 ,fAssPtHad_Nbins(0)
 ,fAssPtHad_Xmin()
@@ -474,12 +492,14 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fCheckMCEtavsRecEtaHad(0)
 ,fCheckMCPhivsRecPhiHad(0)
 ,fMCHadPtEtaPhiVtx(0)
+,fRecHadMCSecondaryCont(0)
 ,fRecHadMCPtEtaPhiVtx(0)
 ,fRecHadPtEtaPhiVtx(0)
 ,fRecHadPtEtaPhiVtxWRecEff(0)
 ,fCheckMCPtvsRecPtEle(0)
 ,fRecHFE(0)
 ,fMCElecPtEtaPhiVtx(0)
+,fRecElecMCSecondaryCont(0)
 ,fRecElecPtEtaPhiVtx(0)
 ,fRecElecPtEtaPhiVtxWRecEff(0)
 ,fRecElecMCPtEtaPhiVtx(0)
@@ -540,6 +560,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 //________________________________________________________________________
 AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisElecHadCorrel")
+,fRunNumber(0)
 ,fUseTender(kFALSE)
 ,fWhichPeriod(2016)
 ,fUseKFforPhotonicPartner(kFALSE)
@@ -549,26 +570,37 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fMinNTr(0)
 ,fMaxElectronEta(0.8)
 ,fMinElectronEta(-0.8)
-,fMaxHadronEta(0.9)
-,fMinHadronEta(-0.9)
+,fMaxHadronEta(0.8)
+,fMinHadronEta(-0.8)
+,fVarEleOpt(0)
+,fElectronkAny(kFALSE)
 ,fTPCnCut(100)
 ,fTPCndEdxCut(80)
 ,fITSnCut(3)
 ,fITSSharedClusterCut(999)
+,fEleDCAr(1)
+,fEleDCAz(2)
 ,fUseTRD(0)
-,fUseITSsa(0)
-,fSigmaITScut(2.)
+,fUseITSsa(1)
+,fSigmaITScut(20)
 ,fSigmaTOFcut(2.)
-,fSigmaTPCcut(-1.)
-,fPhotElecPtCut(0.125)
+,fSigmaTPCcutLow(-1.)
+,fSigmaTPCcutHigh(3)
+,fVarPhotOpt(0)
+,fPhotElecPtCut(0.0)
 ,fPhotElecSigmaTPCcut(3)
 ,fPhotElecTPCnCut(80)
 ,fPhotElecITSrefitCut(kTRUE)
 ,fPhotCorrCase(2)
 ,fAssNonEleTPCcut(-4)
+,fVarHadOpt(0)
 ,fHTPCnCut(100)
 ,fHITSrefitCut(kTRUE)
 ,fHTPCrefitCut(kTRUE)
+,fHadDCAr(0.25)
+,fHadDCAz(1.)
+,fHadkAny(kTRUE)
+,fHadTOFmatch(kFALSE)
 ,fOpeningAngleCut(1000.)
 ,fInvmassCut(0.14)
 ,fChi2Cut(3.5)
@@ -727,9 +759,12 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fElectronTrackDCA(0)
 ,fElectronTrackITSCuts(0)
 ,fPhotTrackITSCuts(0)
+,fHadronTrackCuts(0)
 ,fHadronTrackTPCNcls(0)
 ,fHadronTrackRefit(0)
 ,fHadronTrackDCA(0)
+,fHadronTrackDCA_woITSAny(0)
+,fHadronTrackDCA_wITSAny(0)
 ,fHistITSnSig(0)
 ,fHistTOFnSig(0)
 ,fHistTPCnSig(0)
@@ -806,7 +841,10 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fCorrectEtatoData()
 ,fHadRecEff()
 ,fEleRecEff()
-,fSPDnTrAvg()
+,fSPDConfig(0)
+,fSPDConfigHist()
+,fSPDConfigProfiles()
+,fSPDnTrAvg(0)
 ,fNonTagCorr()
 ,fAssPtHad_Nbins(0)
 ,fAssPtHad_Xmin()
@@ -905,12 +943,14 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fCheckMCEtavsRecEtaHad(0)
 ,fCheckMCPhivsRecPhiHad(0)
 ,fMCHadPtEtaPhiVtx(0)
+,fRecHadMCSecondaryCont(0)
 ,fRecHadMCPtEtaPhiVtx(0)
 ,fRecHadPtEtaPhiVtx(0)
 ,fRecHadPtEtaPhiVtxWRecEff(0)
 ,fCheckMCPtvsRecPtEle(0)
 ,fRecHFE(0)
 ,fMCElecPtEtaPhiVtx(0)
+,fRecElecMCSecondaryCont(0)
 ,fRecElecPtEtaPhiVtx(0)
 ,fRecElecPtEtaPhiVtxWRecEff(0)
 ,fRecElecMCPtEtaPhiVtx(0)
@@ -1044,26 +1084,28 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   }
 
   Int_t LPinAccBeforeEventCuts=0, LPBeforeEventCuts=0;
-  TObjArray* MCTrueRedTracks=new TObjArray;
-  MCTrueRedTracks->SetOwner(kTRUE);
   Int_t EventHasElectroninPtBin[fAssPtElec_Nbins];
 
   // MC Truth correlations and find HFEs (for EventBias)
   for (Int_t i=0; i<fAssPtElec_Nbins; i++) EventHasElectroninPtBin[i]=0;
-  if (fIsMC && fMCTrueCorrelation) MCTruthCorrelation(MCTrueRedTracks, kFALSE, 0, 0, 0,  LPinAccBeforeEventCuts, LPBeforeEventCuts, 1.) ; // EventWeight are 1 
-   if (fIsMC && fMCTrueCorrelation && MCTrueRedTracks->GetEntriesFast()>0) {
-    for (Int_t i=0; i<MCTrueRedTracks->GetEntriesFast(); i++) {
-      AliBasicParticleHaHFE *RedTrack = (AliBasicParticleHaHFE*) MCTrueRedTracks->At(i);
-      AliAODMCParticle* MCTrack = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(RedTrack->GetLabel()));
-      if (abs(MCTrack->GetPdgCode())!=11) continue;
-      Double_t pt = MCTrack->Pt();
-      Double_t eta = MCTrack->Eta();
-      if (eta<fMinElectronEta || eta>fMaxElectronEta) continue;
-      for (Int_t j=0; j<fAssPtElec_Nbins; j++) {
-	if (pt>fAssPtElec_Xmin[j] && pt<fAssPtElec_Xmax[j])  EventHasElectroninPtBin[j]=1;
+  if (fIsMC) {
+    TObjArray* MCTrueRedTracks=new TObjArray;
+    MCTrueRedTracks->SetOwner(kTRUE);
+    if (fMCTrueCorrelation) MCTruthCorrelation(MCTrueRedTracks, kFALSE, 0, 0, 0,  LPinAccBeforeEventCuts, LPBeforeEventCuts, 1.) ; // EventWeight are 1 
+    if (fMCTrueCorrelation && MCTrueRedTracks->GetEntriesFast()>0) {
+      for (Int_t i=0; i<MCTrueRedTracks->GetEntriesFast(); i++) {
+	AliBasicParticleHaHFE *RedTrack = (AliBasicParticleHaHFE*) MCTrueRedTracks->At(i);
+	AliAODMCParticle* MCTrack = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(RedTrack->GetLabel()));
+	if (abs(MCTrack->GetPdgCode())!=11) continue;
+	Double_t pt = MCTrack->Pt();
+	Double_t eta = MCTrack->Eta();
+	if (eta<fMinElectronEta || eta>fMaxElectronEta) continue;
+	for (Int_t j=0; j<fAssPtElec_Nbins; j++) {
+	  if (pt>fAssPtElec_Xmin[j] && pt<fAssPtElec_Xmax[j])  EventHasElectroninPtBin[j]=1;
+	}
       }
+      delete MCTrueRedTracks;
     }
-    delete MCTrueRedTracks;
   }
 
    // get MCNCharged particle and observabls for TagEffCrossCheck
@@ -1073,14 +1115,14 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
    Int_t MCnHadrons[4]={0, 0, 0, 0};
    TObjArray* MCHadrons;
    if (fIsMC) {
-     MCHadrons = new TObjArray(1000, 0);
+     if (fOneTimeCheck)MCHadrons = new TObjArray(1000, 0);
      for (Int_t i=0; i<fMC->GetNumberOfTracks(); i++) {
        AliAODMCParticle *mcPart  = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(i));
        if (mcPart->Charge()==0) continue;
        if (!mcPart->IsPhysicalPrimary()) continue;
        if (TMath::Abs(mcPart->Eta())<1.) {
  	 nTrMCAcc++;
-	 MCHadrons->Add(mcPart);
+	 if (fOneTimeCheck) MCHadrons->Add(mcPart);
 	 SumMCHadronsPt[0]+=mcPart->Pt();
 	 MCnHadrons[0]++;
 	 Double_t ptHadron = mcPart->Pt();
@@ -1144,12 +1186,66 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     RefMaxSPD=11.33;
     RefMeanSPD=11.11;
   }
-  //fSPDnTrackAvg - only temporary, adjust per run, period  mc 
-  Double_t nTrAccCorrMin=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMinSPD); 
-  Double_t nTrAccCorrMax=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMaxSPD); 
-  Double_t nTrAccCorrMean=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMeanSPD);
+  //fSPDnTrackAvg - only temporary, adjust per run, period  mc
 
 
+
+  fRunNumber = fVevent->GetRunNumber();
+  Int_t SPDConfigBin=-1;
+  // implement FindFixBin (Root6) for backward compatibility to Root5 (instead of FindBin were bin is added)
+  cout << "fSPDConfigHist " << &fSPDConfigHist << endl;
+  TObjString *obj = (TObjString*)  fSPDConfigHist.GetXaxis()->GetLabels()->FindObject(Form("%i", fRunNumber));
+  if (obj) SPDConfigBin= (Int_t)obj->GetUniqueID();
+  else return;  // exit event if unknow SPD configuration
+  if (fSPDConfig!=(Int_t) fSPDConfigHist.GetBinContent(SPDConfigBin)) {
+    // for (Int_t i=1; i<fSPDConfigHist.GetXaxis()->GetNbins(); i++) cout << i << "\t" << fSPDConfigHist.GetXaxis()->GetBinLabel(i) << endl;
+    cout<< SPDConfigBin << endl;
+    fSPDConfig = fSPDConfigHist.GetBinContent(SPDConfigBin);
+    cout << fSPDConfig << endl;
+    Int_t SPDConfigProfBin;
+    TObjString *obj = (TObjString*)  fSPDConfigProfiles.GetXaxis()->GetLabels()->FindObject(Form("%i", fSPDConfig));
+    if (obj) SPDConfigProfBin= (Int_t)obj->GetUniqueID();
+    else  SPDConfigProfBin=1;// select first bin if configuration does not exist
+    cout << "fSPDCOnfigProfiles " << &fSPDConfigProfiles << endl;
+    cout << SPDConfigProfBin << endl;
+    fSPDConfigProfiles.GetXaxis()->SetRange(SPDConfigProfBin, SPDConfigProfBin);
+    TH2F* Configuration = 0;
+    Configuration = (TH2F*)fSPDConfigProfiles.Project3D("zy");
+    Configuration->SetName(Form("ConfigHist2D_%s", GetName()));
+    fSPDConfigProfiles.GetXaxis()->SetRange(0, 0);
+    cout << "Configuration " << Configuration << endl;
+    cout<< "GetTaskName" << GetName() << endl;
+    if (fSPDnTrAvg!=0) {
+      cout << "Delete " << fSPDnTrAvg << endl;
+      delete fSPDnTrAvg;
+      fSPDnTrAvg=0;
+    }
+    if (Configuration!=0) {
+      fSPDnTrAvg = (TProfile*) Configuration->ProfileX(Form("Prof_%i_%s", fSPDConfig, GetName()), 2, 1000); // neglecting 0 bin
+      delete Configuration;
+    }
+    else{
+      cout << "ProfileHist not created" << endl;
+      return;
+    }
+    Configuration=0;
+    cout <<  fRunNumber << "\t" << fSPDConfig << "\t" << fSPDnTrAvg << endl;
+    //   for (Int_t i=1; i<fSPDnTrAvg->GetXaxis()->GetNbins(); i++) cout << fSPDnTrAvg->GetBinContent(i) << endl;
+  }
+  Double_t nTrAccCorrMin, nTrAccCorrMax, nTrAccCorrMean;
+  if (fSPDnTrAvg!=0) {
+     nTrAccCorrMin=AliVertexingHFUtils::GetCorrectedNtracklets(fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMinSPD); 
+     nTrAccCorrMax=AliVertexingHFUtils::GetCorrectedNtracklets(fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMaxSPD); 
+     nTrAccCorrMean=AliVertexingHFUtils::GetCorrectedNtracklets(fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMeanSPD);
+  }
+  else {
+    nTrAccCorrMin= nTrAcc*1.;
+    nTrAccCorrMax=nTrAcc*1.;
+    nTrAccCorrMean=nTrAcc*1.;
+  }
+
+
+  
   // Multiplicity estimates
    // Old get Multitplicity
   Double_t fMultV0Per, fMultSPDPer, fMultV0Tot, fMultSPD;
@@ -1170,28 +1266,66 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   Float_t multV0C=AODV0->GetMTotV0C();
   fMultV0Tot=multV0A+multV0C;
   Float_t minV0=TMath::Min(multV0A, multV0C);
-  Double_t TriggerWeight = GetTriggerWeight(minV0, nTrAcc);
-  Double_t VtxWeight = GetVtxWeight(1.*nTrAcc);
+  Double_t TriggerWeight = GetTriggerWeight(fRunNumber, minV0, 1.*nTrAcc);
+  Double_t VtxWeight = GetVtxWeight(fRunNumber, 1.*nTrAcc);
   Double_t EventWeight = TriggerWeight*VtxWeight;
+
+
+  if (kTRUE) { // remove runs with different SPD configuration (active staves) and too low statistic to correct for
+    // for Mult estimate
+    if (fRunNumber==254983 || fRunNumber==254984) return; //SPDConfig 33440011
+    if (fRunNumber==257960) return; //SPDConfig 22441122
+    if (fRunNumber==263331 || fRunNumber==263332) return; //SPDConfig 22442211
+    if (fRunNumber==275149) return; //SPDConfig 4445511;
+    if (fRunNumber==277194 || fRunNumber==282607) return; //SPDConfig 22551122
+    if (fRunNumber==280405) return; //SPDConfig 22661111
+    if (fRunNumber==281920) return; //SPDConfig 22551121
+
+    // because of HFE efficiency (SPD same for 16d to 17f(wo17c), 17ghlmor, 17ijk
+    if (fRunNumber==254983 || fRunNumber==254984) return; //16h  more (in)active modules in inner/outer layer (already removed by Mult cut)
+    if (fRunNumber==257138 || fRunNumber==257960) return; // 16k inner/outer layer
+    if (fRunNumber>=259747 && fRunNumber<=259860) return; // 16l inner layer
+    if (fRunNumber==263331 || fRunNumber==263332) return; // 16o outer layer (see above)
+    if (fRunNumber>=270581 && fRunNumber<=270667) return; // complete period 17c
+    if (fRunNumber==271774) return; // 17g outer layer
+    if (fRunNumber==272690 || (fRunNumber>=272747 && fRunNumber<=273100)); // cuts away most of 17h or separate efficiency?
+    if (fRunNumber==275149) return; // 17k (see above)
+    if (fRunNumber==277194) return; // 17l (see above)
+    if (fRunNumber==281920) return; // 17o (see above)
+    if (fRunNumber==282607) return; // 17r
+
+    // because of V0 modified voltage
+    if (fRunNumber==274594) return; // 17j
+    
+  }
+
+  cout << "fNoEvents " << fNoEvents << endl;
   
-  if (fIsMC) fDiffractiveType->Fill(0., 1.*fMCheader->GetEventType(), nTrMCAcc);
+  fNoEvents->Fill(0);
+
+  if (fIsMC && fOneTimeCheck) fDiffractiveType->Fill(0., 1.*fMCheader->GetEventType(), nTrMCAcc);
   Bool_t IsTrueInelastic=kTRUE;
   if (fIsMC) {
     IsTrueInelastic=fEventCuts.IsTrueINELgtZero(fVevent); // MC True INEL>0
     fHFENoEvents->Fill(nTrMCAcc, 0 );
     fMCNoEvents->Fill(nTrMCAcc, 0);
+    Double_t mcVtx[3];
+    fMCheader->GetVertex(mcVtx);
     if (IsTrueInelastic) {
+      fNoEvents->Fill(1);
       fHFENoEvents->Fill(nTrMCAcc, 1);
       fMCNoEvents->Fill(nTrMCAcc, 1);
-      fDiffractiveType->Fill(1., 1.*fMCheader->GetEventType(), minV0);      
-      fV0ACTrueInel->Fill(multV0A, multV0C);
-      fV0TrueMinInel->Fill(minV0);
-      fV0TrueMinInelNTr->Fill(minV0, nTrAcc);
+      if (fOneTimeCheck) {
+	fDiffractiveType->Fill(1., 1.*fMCheader->GetEventType(), minV0);      
+	fV0ACTrueInel->Fill(multV0A, multV0C);
+      }
+      fV0TrueMinInel->Fill(minV0, mcVtx[2]);
+      fV0TrueMinInelNTr->Fill(minV0, nTrAcc, mcVtx[2]);
       fnTrAccGenTrueInel->Fill(nTrAcc, nTrMCAcc);
     }
     if (IsTrueInelastic && EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 2);    
   } 
-  fNoEvents->Fill(0);
+
 
   fEventCuts.SetManualMode();
   fEventCuts.fRequireTrackVertex = false; // not in default pp cuts
@@ -1203,7 +1337,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   fEventCuts.fMaxResolutionSPDvertex = 0.25f;
   fEventCuts.fTriggerMask = AliVEvent::kINT7;
   fEventCuts.fRejectDAQincomplete = true;
-  fEventCuts.fRequiredSolenoidPolarity = 0;
+  fEventCuts.fRequiredSolenoidPolarity = 0; // chose polarity (0 cut off)
 
   fEventCuts.fUseMultiplicityDependentPileUpCuts= true;
   //fEventCuts.fSPDpileupMinContributors = 3;
@@ -1234,27 +1368,31 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
       }
       
       if (fIsMC) {
-	fDiffractiveType->Fill(2., 1.*fMCheader->GetEventType(), minV0);
-	if (nTrAcc>0.5)  fDiffractiveType->Fill(4., 1.*fMCheader->GetEventType(), minV0); // with rec INEL>0
-	fMCNoEvents->Fill(nTrMCAcc,2, TriggerWeight);
-	if (IsTrueInelastic) {
+	if (fOneTimeCheck) {
+	  fDiffractiveType->Fill(2., 1.*fMCheader->GetEventType(), minV0);
+	  if (nTrAcc>0.5)  fDiffractiveType->Fill(4., 1.*fMCheader->GetEventType(), minV0); // with rec INEL>0
+	  if (IsTrueInelastic) {
 	  fDiffractiveType->Fill(3., 1.*fMCheader->GetEventType(), minV0);
 	  fDiffractiveType->Fill(5., 1.*fMCheader->GetEventType(), minV0, TriggerWeight);
+	  fV0ACTriggered->Fill(multV0A, multV0C);
+	  }
+	}
+	fMCNoEvents->Fill(nTrMCAcc,2, TriggerWeight);
+	if (IsTrueInelastic) {
 	  if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 3, TriggerWeight);
 	  fMCNoEvents->Fill(nTrMCAcc, 3, TriggerWeight);
-	  fV0ACTriggered->Fill(multV0A, multV0C);
-	  fV0MinTriggered->Fill(minV0);
-	  fV0MinTriggeredNTr->Fill(minV0, nTrAcc);
+	  Double_t mcVtx[3];
+	  fMCheader->GetVertex(mcVtx);
+	  fV0MinTriggered->Fill(minV0, mcVtx[2]);
+	  fV0MinTriggeredNTr->Fill(minV0, nTrAcc, mcVtx[2]);
 	}
       }
       else {
-	fV0ACTriggered->Fill(multV0A, multV0C);
-	fV0MinTriggered->Fill(minV0);
-	fV0MinTriggeredNTr->Fill(minV0, nTrAcc);
+	if (fOneTimeCheck) fV0ACTriggered->Fill(multV0A, multV0C);
+	fV0MinTriggered->Fill(minV0, pVtx->GetZ());
+	fV0MinTriggeredNTr->Fill(minV0, nTrAcc, pVtx->GetZ());
       }
-      fNoEvents->Fill(3, TriggerWeight);
-
-   
+      fNoEvents->Fill(3, TriggerWeight);  
     }
   }
   
@@ -1273,8 +1411,8 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     //  fnTrAccGenTrueInelTrig->Fill(nTrAcc, nTrMCAcc);
   }
 
-  if (fEventCuts.CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex) &&nTr>0.5) { // + VertexExistence, VertexQuality
-    if (fIsMC && nTrAcc>0) {// && IsTrueInelastic) {
+  if (fEventCuts.CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex) && nTr>0.5) { // + VertexExistence, VertexQuality
+    if (fIsMC) {// && IsTrueInelastic) {
       if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 5, TriggerWeight);
       fMCNoEvents->Fill(nTrMCAcc, 5, TriggerWeight);
     }
@@ -1282,7 +1420,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     for(Int_t iTr=0; iTr<nTr; iTr++){
       Double_t theta=SPDtracklets->GetTheta(iTr);
       Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
-      fVtxEtaNTr->Fill(pVtx->GetZ(), eta);
+      if (fOneTimeCheck) fVtxEtaNTr->Fill(pVtx->GetZ(), eta);
     }
     //    fnTrAccGenTrueInelVtxQA->Fill(nTrAcc, nTrMCAcc);
   }
@@ -1445,7 +1583,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   // Cross check variables for event bias
   Double_t ThrustVar[2]={-1., -1.};
   Double_t SpherVar=-1.;
-  if (fIsMC) {
+  if (fIsMC && fOneTimeCheck) {
     SpherVar = Sphericity(MCHadrons, 1, 0.5);
     MCHadrons->Clear();
     delete MCHadrons;
@@ -1470,7 +1608,10 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
   PhotULSLSElectronAcceptance(pVtx, mult,  nMotherKink, listofmotherkink, EventWeight);
   LPtrack=FindLPAndHFE(RedTracksHFE, pVtx, nMotherKink,listofmotherkink, mult, EvContainsTaggedPhot, EvContainsNonTaggedPhot, EventWeight);
-  if (fLParticle) if (LPtrack->Pt()>=1000) return;
+  if (fLParticle) {
+    //    cout << "LPTrackPt " << LPtrack->Pt() << endl;
+    if (LPtrack->Pt()>=1000) return;
+  }
 
   // Control hists for TagEff
   if (fIsMC) {
@@ -1515,10 +1656,10 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
    
       if (!RedTrack->IsPhotonic()) continue;
       if (RedTrack->TruePartner()) {
-	fPt2Tagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt(), EventWeight);
+	if (fLParticle) fPt2Tagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt(), EventWeight);
 	//	fMCThrustTagged->Fill(RedTrack->Pt(), ThrustVar[0], Case);
 	fMCSpherTagged->Fill(RedTrack->Pt(), SpherVar, Case, EventWeight);
-	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case, EventWeight);
+	if (fLParticle) if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case, EventWeight);
 	//	fMultCorrTagged->Fill(RedTrack->Pt(), nTrAccCorrMax, Case);
 	fNHadTagged->Fill(RedTrack->Pt(), MCnHadrons[0], Case, EventWeight);
 	//	fNHadTaggedA->Fill(RedTrack->Pt(), MCnHadrons[1], Case);
@@ -1532,33 +1673,34 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
 	//	fMothMCThrustTagged->Fill(MotherPt, ThrustVar[0]);
 	fMothMCSpherTagged->Fill(MotherPt, SpherVar, EventWeight);
-	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPTagged->Fill(MotherPt, LPtrack->Pt(), EventWeight);
+	if (fLParticle) if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPTagged->Fill(MotherPt, LPtrack->Pt(), EventWeight);
 	//	fMothMultCorrTagged->Fill(MotherPt, nTrAccCorrMax);
 	fMothNHadTagged->Fill(MotherPt, MCnHadrons[0], EventWeight);
 	fMothMeanPtTagged->Fill(MotherPt, AverageMCPt[0],EventWeight);
-	if (LPtrack->Pt()>2) {
-	  //  fMCThrustTaggedH->Fill(RedTrack->Pt(), ThrustVar[0]);
-	  fMCSpherTaggedH->Fill(RedTrack->Pt(), SpherVar, EventWeight);
-	  if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPTaggedH->Fill(RedTrack->Pt(), LPtrack->Pt(), EventWeight);
-	  //	  fMultCorrTaggedH->Fill(RedTrack->Pt(), nTrAccCorrMax);
-	  fNHadTaggedH->Fill(RedTrack->Pt(), MCnHadrons[0], EventWeight);
-	  fMeanPtTaggedH->Fill(RedTrack->Pt(), AverageMCPt[0], EventWeight);
-	  //  fMothMCThrustTaggedH->Fill(MotherPt, ThrustVar[0]);
-	  fMothMCSpherTaggedH->Fill(MotherPt, SpherVar, EventWeight);
-	  if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPTaggedH->Fill(MotherPt, LPtrack->Pt(), EventWeight);
-	  // fMothMultCorrTaggedH->Fill(MotherPt, nTrAccCorrMax);
-	  fMothNHadTaggedH->Fill(MotherPt, MCnHadrons[0], EventWeight);
-	  fMothMeanPtTaggedH->Fill(MotherPt, AverageMCPt[0], EventWeight);
-	
+	if (fLParticle) {
+	  if (LPtrack->Pt()>2) {
+	    //  fMCThrustTaggedH->Fill(RedTrack->Pt(), ThrustVar[0]);
+	    fMCSpherTaggedH->Fill(RedTrack->Pt(), SpherVar, EventWeight);
+	    if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPTaggedH->Fill(RedTrack->Pt(), LPtrack->Pt(), EventWeight);
+	    //	  fMultCorrTaggedH->Fill(RedTrack->Pt(), nTrAccCorrMax);
+	    fNHadTaggedH->Fill(RedTrack->Pt(), MCnHadrons[0], EventWeight);
+	    fMeanPtTaggedH->Fill(RedTrack->Pt(), AverageMCPt[0], EventWeight);
+	    //  fMothMCThrustTaggedH->Fill(MotherPt, ThrustVar[0]);
+	    fMothMCSpherTaggedH->Fill(MotherPt, SpherVar, EventWeight);
+	    if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPTaggedH->Fill(MotherPt, LPtrack->Pt(), EventWeight);
+	    // fMothMultCorrTaggedH->Fill(MotherPt, nTrAccCorrMax);
+	    fMothNHadTaggedH->Fill(MotherPt, MCnHadrons[0], EventWeight);
+	    fMothMeanPtTaggedH->Fill(MotherPt, AverageMCPt[0], EventWeight);
+	  }
 	}
       }
       else {
-
-	fPt2NTagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt(), EventWeight);
+	
+	if (fLParticle) fPt2NTagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt(), EventWeight);
 	
 	//	fMCThrustNTagged->Fill(RedTrack->Pt(), ThrustVar[0], Case);
 	fMCSpherNTagged->Fill(RedTrack->Pt(), SpherVar, Case, EventWeight);
-	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPNTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case, EventWeight);
+	if (fLParticle)	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPNTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case, EventWeight);
 	//	fMultCorrNTagged->Fill(RedTrack->Pt(), nTrAccCorrMax, Case);
 	fNHadNTagged->Fill(RedTrack->Pt(), MCnHadrons[0], Case, EventWeight);
 	//	fNHadNTaggedA->Fill(RedTrack->Pt(), MCnHadrons[1], Case);
@@ -1572,23 +1714,25 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
 	//	fMothMCThrustNTagged->Fill(MotherPt, ThrustVar[0]);
 	fMothMCSpherNTagged->Fill(MotherPt, SpherVar, EventWeight);
-	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) 	fMothRecLPNTagged->Fill(MotherPt, LPtrack->Pt(), EventWeight);
+	if (fLParticle)	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) 	fMothRecLPNTagged->Fill(MotherPt, LPtrack->Pt(), EventWeight);
 	//	fMothMultCorrNTagged->Fill(MotherPt, nTrAccCorrMax);
 	fMothNHadNTagged->Fill(MotherPt, MCnHadrons[0], EventWeight);
 	fMothMeanPtNTagged->Fill(MotherPt, AverageMCPt[0], EventWeight);
-	if (LPtrack->Pt()>2) {
-	  //  fMCThrustNTaggedH->Fill(RedTrack->Pt(), ThrustVar[0]);
-	  fMCSpherNTaggedH->Fill(RedTrack->Pt(), SpherVar, EventWeight);
-	  if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPNTaggedH->Fill(RedTrack->Pt(), LPtrack->Pt(), EventWeight);
-	  //  fMultCorrNTaggedH->Fill(RedTrack->Pt(), nTrAccCorrMax);
-	  fNHadNTaggedH->Fill(RedTrack->Pt(), MCnHadrons[0], EventWeight);
-	  fMeanPtNTaggedH->Fill(RedTrack->Pt(), AverageMCPt[0], EventWeight);
-	  //  fMothMCThrustNTaggedH->Fill(MotherPt, ThrustVar[0]);
-	  fMothMCSpherNTaggedH->Fill(MotherPt, SpherVar, EventWeight);
-	  if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPNTaggedH->Fill(MotherPt, LPtrack->Pt(),EventWeight);
-	  //  fMothMultCorrNTaggedH->Fill(MotherPt, nTrAccCorrMax);
-	  fMothNHadNTaggedH->Fill(MotherPt, MCnHadrons[0], EventWeight);
-	  fMothMeanPtNTaggedH->Fill(MotherPt, AverageMCPt[0], EventWeight);
+	if (fLParticle) {
+	  if (LPtrack->Pt()>2) {
+	    //  fMCThrustNTaggedH->Fill(RedTrack->Pt(), ThrustVar[0]);
+	    fMCSpherNTaggedH->Fill(RedTrack->Pt(), SpherVar, EventWeight);
+	    if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPNTaggedH->Fill(RedTrack->Pt(), LPtrack->Pt(), EventWeight);
+	    //  fMultCorrNTaggedH->Fill(RedTrack->Pt(), nTrAccCorrMax);
+	    fNHadNTaggedH->Fill(RedTrack->Pt(), MCnHadrons[0], EventWeight);
+	    fMeanPtNTaggedH->Fill(RedTrack->Pt(), AverageMCPt[0], EventWeight);
+	    //  fMothMCThrustNTaggedH->Fill(MotherPt, ThrustVar[0]);
+	    fMothMCSpherNTaggedH->Fill(MotherPt, SpherVar, EventWeight);
+	    if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fMothRecLPNTaggedH->Fill(MotherPt, LPtrack->Pt(),EventWeight);
+	    //  fMothMultCorrNTaggedH->Fill(MotherPt, nTrAccCorrMax);
+	    fMothNHadNTaggedH->Fill(MotherPt, MCnHadrons[0], EventWeight);
+	    fMothMeanPtNTaggedH->Fill(MotherPt, AverageMCPt[0], EventWeight);
+	  }
 	}
       }
     }
@@ -1604,7 +1748,8 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
   // MC Truth correlation after event Cuts
   Int_t LPinAccAfterEventCuts=-999, LPAfterEventCuts=-999;
-  AliAODTrack * LPtrackAOD = dynamic_cast<AliAODTrack*>(LPtrack);
+  AliAODTrack * LPtrackAOD=0;
+  if (fLParticle) LPtrackAOD = dynamic_cast<AliAODTrack*>(LPtrack);
   Int_t LPtrackLabel=0;
   if (LPtrackAOD) LPtrackLabel=abs(LPtrackAOD->GetLabel());
   if (fIsMC && fMCTrueCorrelation) {  
@@ -1711,7 +1856,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   fOutputListQA->SetOwner(); 
 
 
-  fesdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
+  if(fIsAOD) fesdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
 
   // V0 Kine cuts 
   fV0cuts = new AliAODv0KineCuts();
@@ -1741,42 +1886,48 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     }
   }
 
-  fNoEventsNTr = new TH2F("fNoEventsNtr","ControlHist for 0Bin; EventSelection; Ntr > 0 ?", 6, -0.5, 5.5, 2, -0.5, 1.5);
-  fOutputListMain->Add(fNoEventsNTr);
+  
+  fNoEventsNTr = new TH2F("fNoEventsNtr","ControlHist for 0Bin; EventSelection; NCh > 0 ?", 6, -0.5, 5.5, 2, -0.5, 1.5);
   TString BinLabelsEventsNTr[6]={"Trigger", "Trigger (wTI)", "+Ntr", "+Ntr (wTI)", "+NtrAcc", "+NtrAcc (wTI)"}; //
   for (Int_t i=1; i<=6; i++) {
     fNoEventsNTr->GetXaxis()->SetBinLabel(i, BinLabelsEventsNTr[i-1]);
   }
+  fOutputListMain->Add(fNoEventsNTr);
+
+  if (fOneTimeCheck) {
+    fV0ACTriggered = new TH2F("fV0ACTriggered", "V0 kINT7 + trueInel; V0A; V0C", 200, 0, 40, 200, 0, 40);
+    fOutputListMain->Add(fV0ACTriggered);
+  }
+  
+  fV0MinTriggered = new TH2F("fV0MinTriggered", "V0min kINT7 + trueInel; Min(V0A, V0C); zVtx", 100, 0, 20, 40, -20, 20);
+  fOutputListMain->Add(fV0MinTriggered);
+
+  fV0MinTriggeredNTr = new TH3F("fV0MinTriggeredNTr", "V0min kINT7 + trueInel; Min(V0A, V0C); nTrAcc SPD; zVtx", 100, 0, 20, 25, -0.5,24.5, 4, -20, 20);
+  fOutputListMain->Add(fV0MinTriggeredNTr);
   
 
   if (fIsMC) {
-    TString BinLabelsDiff[6]={"AllEv", "TrueInel>0", "Triggered", "Triggered+TrueInel>0", "Triggered+RecInel>0", "Trig+TrueInel+Weight"};
-    fDiffractiveType = new TH3F("fDiffType", "fDiffType; EventSelection; MCEventType; minV0", 6, -0.5, 5.5, 7, 99.5, 106.5, 50, 0, 20);
-    fOutputListMain->Add(fDiffractiveType);
-    for (Int_t i=1; i<=6; i++) fDiffractiveType->GetXaxis()->SetBinLabel(i, BinLabelsDiff[i-1]);
+  
+    if (fOneTimeCheck) {
+        TString BinLabelsDiff[6]={"AllEv", "TrueInel>0", "Triggered", "Triggered+TrueInel>0", "Triggered+RecInel>0", "Trig+TrueInel+Weight"};
+	fDiffractiveType = new TH3F("fDiffType", "fDiffType; EventSelection; MCEventType; minV0", 6, -0.5, 5.5, 7, 99.5, 106.5, 50, 0, 20);
+	fOutputListMain->Add(fDiffractiveType);
+	for (Int_t i=1; i<=6; i++) fDiffractiveType->GetXaxis()->SetBinLabel(i, BinLabelsDiff[i-1]);
  
-    fV0ACTrueInel = new TH2F("fV0ACTrueInel", "V0 true inelastic; V0A; V0C", 200, 0, 40, 200, 0, 40);
-    fOutputListMain->Add(fV0ACTrueInel);
-
-    fV0TrueMinInel = new TH1F("fV0TrueMinInel", "V0min for true inelastic; Min(V0A, V0C)", 100, 0, 20);
+	fV0ACTrueInel = new TH2F("fV0ACTrueInel", "V0 true inelastic; V0A; V0C", 200, 0, 40, 200, 0, 40);
+	fOutputListMain->Add(fV0ACTrueInel);
+    }
+    
+    fV0TrueMinInel = new TH2F("fV0TrueMinInel", "V0min for true inelastic; Min(V0A, V0C); zVtx", 100, 0, 20, 40, -20, 20);
     fOutputListMain->Add(fV0TrueMinInel);
 
-    fV0TrueMinInelNTr = new TH2F("fV0TrueMinInelNTr", "V0min for true inelastic; Min(V0A, V0C); nTrAcc SPD", 100, 0, 20, 25, -0.5, 24.5);
+    fV0TrueMinInelNTr = new TH3F("fV0TrueMinInelNTr", "V0min for true inelastic; Min(V0A, V0C); nTrAcc SPD; zVtx", 100, 0, 20, 25, -0.5, 24.5, 4, -20, 20);
     fOutputListMain->Add(fV0TrueMinInelNTr);
   }
     
-  fV0ACTriggered = new TH2F("fV0ACTriggered", "V0 kINT7 + trueInel; V0A; V0C", 200, 0, 40, 200, 0, 40);
-  fOutputListMain->Add(fV0ACTriggered);
-
-  fV0MinTriggered = new TH1F("fV0MinTriggered", "V0min kINT7 + trueInel; Min(V0A, V0C)", 100, 0, 20);
-  fOutputListMain->Add(fV0MinTriggered);
-
-  fV0MinTriggeredNTr = new TH2F("fV0MinTriggeredNTr", "V0min kINT7 + trueInel; Min(V0A, V0C); nTrAcc SPD", 100, 0, 20, 25, -0.5,24.5);
-  fOutputListMain->Add(fV0MinTriggeredNTr);
+ 
   
   
-  fVtxEtaNTr = new TH2F("fVtxEtaTr", "#of SPDtracklets for zVtx, eta; zTrackVtx; eta", 96, -12, 12, 88, -2.2, 2.2);
-  fOutputListMain->Add(fVtxEtaNTr);
 
   fVtxBeforeNTrAcc = new TH2F("fVtxBeforeNTrAcc", "VtxBeforeNTrAcc; nTrAcc; zVtx (MC)", 50, -0.5, 49.5, 40, -10, 10);
   fOutputListMain->Add(fVtxBeforeNTrAcc);
@@ -1784,48 +1935,75 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   fVtxAfterNTrAcc = new TH2F("fVtxAfterNTrAcc", "VtxAfterNTrAcc; nTrAcc; zVtx", 50, -0.5, 49.5, 40, -10, 10);
   fOutputListMain->Add(fVtxAfterNTrAcc);
 
+  if (fOneTimeCheck) {
+    fVtxEtaNTr = new TH2F("fVtxEtaTr", "#of SPDtracklets for zVtx, eta; zTrackVtx; eta", 96, -12, 12, 88, -2.2, 2.2);
+    fOutputListMain->Add(fVtxEtaNTr);
+    
+    fEtaVtxZ = new TH2F("fEtaVtxZ", "Eta vs VtxZ after hadron track cuts; #eta; zVtx", 90, -0.9, 0.9, 100, -10, 10);
+    fOutputListMain->Add(fEtaVtxZ);
+  }
+  /*
   fVtxRecBeforeNTr= new TH1F("fVtxRecBeforeNTr", "VtxRecBefore (ntr eta unrestricted); ntr SPD", 50, -0.5, 49.5);
   fOutputListMain->Add(fVtxRecBeforeNTr);
   
   fVtxRecAfterNTr = new TH2F("fVtxRecAfterNTr", "VtxRecAfter (ntr eta unrestricted); ntr SPD;  zVtxSPD", 50, -0.5, 49.5, 40, -10, 10);
   fOutputListMain->Add(fVtxRecAfterNTr);
-
+  */
   
-  fTrkpt = new TH2F("fTrkpt","track pt (0),after EleTrack (1), after ElePID(2); pt ",200,0,20,3,-0.5,2.5);
-  fOutputListMain->Add(fTrkpt);
+ 
 
-  fEtaVtxZ = new TH2F("fEtaVtxZ", "Eta vs VtxZ after hadron track cuts; #eta; zVtx", 90, -0.9, 0.9, 100, -10, 10);
-  fOutputListMain->Add(fEtaVtxZ);
 
   PdgTable =  new TDatabasePDG();
   PdgTable->ReadPDGTable();
   const THashList* PDGParticleList = PdgTable->ParticleList();
   // cout << "PDGSize " << PDGParticleList->GetEntries() << endl;
   Int_t PDGSize = PDGParticleList->GetEntries()+20;
-
+  cout << "PDG Size" << PDGSize << endl;
   TIter next(PDGParticleList);
   TParticlePDG *p;
   Int_t Bin=0;
   std::vector<TString> PDGLabel;
   PDGLabel.push_back("Empty");
-  while ((p = (TParticlePDG *)next())) {
-    Bin++;
-    PDGMap[p->PdgCode()] = Bin;
-    PDGLabel.push_back(Form("%i",p->PdgCode()));
-    //  cout << p->PdgCode() << "\t" << Bin << "\t" << PDGLabel[Bin] << endl;
-  }
-  //  cout << PDGMap.find(-4)->second << endl;
- 
 
+  if (!fOneTimeCheck) { // reduced memory consumption by only filling relevant bins
+    std::set<Int_t> SelectBins {11,22,25,111,113,221,223,310,335};
+    Bin++;
+    PDGLabel.push_back(Form("<"));
+    while ((p = (TParticlePDG *)next())) {
+      if (SelectBins.find(p->PdgCode())!=SelectBins.end()){
+	Bin++;
+	PDGMap[p->PdgCode()] = Bin;
+	PDGLabel.push_back(Form("%i",p->PdgCode()));
+	Bin++;
+	PDGLabel.push_back(Form(">%i",p->PdgCode()));
+      }
+      else{
+	PDGMap[p->PdgCode()] = Bin;
+      }
+      // cout << p->PdgCode() << "\t" << Bin << "\t" << PDGLabel[Bin] << endl;
+    }
+    PDGSize=Bin+1;
+  }
+  else {
+    while ((p = (TParticlePDG *)next())) {
+      Bin++;
+      PDGMap[p->PdgCode()] = Bin;
+      PDGLabel.push_back(Form("%i",p->PdgCode()));
+      //  cout << p->PdgCode() << "\t" << Bin << "\t" << PDGLabel[Bin] << endl;
+    }
+  }
+   
+
+  // Int_t PDGLabelShort={11,13,15, 22, 111, 113, 130,  211, 213, 221, 223, 310, 311, 313, 323,  321, 331, 333, 
 
     
 
   // General  Binning 		    
   // fAssPtHad_Nbins = 15;
-  const Int_t TmpHad_Nbins = 15;
+  const Int_t TmpHad_Nbins = 12;
   fAssPtHad_Nbins = TmpHad_Nbins;
-  Float_t TmpArrayLow[15]= {0,  0.5, 0.5, 0.5, 1., 1., 1., 2,  2, 5, 5,  5, 10, 10, 15};
-  Float_t TmpArrayUp[15]={ 999, 2.0, 5.0, 999, 2., 5.,999, 5,999,10,15,999, 15,999,999};
+  Float_t TmpArrayLow[12]= {0.25, 0.25,  0.5, 0.5, 1., 1., 2,  5, 5, 10, 10, 15};
+  Float_t TmpArrayUp[12]=  {1.0 ,  2.0,  2.0, 5.0, 2., 5., 5, 10,15, 15, 30, 30};
   fAssPtHad_Xmin.Set(TmpHad_Nbins, TmpArrayLow);
   fAssPtHad_Xmax.Set(TmpHad_Nbins, TmpArrayUp);
   
@@ -1847,13 +2025,15 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   Double_t  XminHadron=0.0;
   Double_t  XmaxHadron=100;
   const Int_t   NBinsHadRed=8;
-  Double_t  XBinsHadRed[]={0.25,  0.5, 1., 2., 5., 10, 15, 50, 100}; 
+  Double_t  XBinsHadRed[]={0.25,  0.5, 1., 2., 5., 10, 15, 30, 50}; 
 
   const  Int_t     NMultBins=4;
-  Double_t    XMultBins[]={-0.5,24.5,44.5,64.5,200};
+  Double_t    XMultBins[]={-0.5,24.5,44.5,64.5,500};
  
   const Int_t NVertexBins = 8;
-  Double_t XVertexBins[]={-10,-4.32,-2.32,-0.82,0.52,1.87,3.36,5.31, 10};  // Quantile
+  Double_t XVertexBins[]={-10,-7,-4,-2,0,2,4,7,10};  // Quantile
+  
+  // Double_t XVertexBins[]={-10,-4.32,-2.32,-0.82,0.52,1.87,3.36,5.31, 10};  // Quantile
 
 
   Int_t    NBinsPhi=64;
@@ -1890,9 +2070,14 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fSPDnTrGen = new TH2F("fSPDnTrGen", "fSPDnTrGen; zSPDVtx; MC_ChargedParticles (eta<1)", 220, -11, 11, 300, -0.5, 299.5);
     fOutputListQA->Add(fSPDnTrGen);
 
+    
     fDiffSPDMCVtx = new TH2F("fDiffSPDMCVtx", "fDiffSPDMCVtx; NContributors; zSPDVtx-zMCVtx", 200, -0.5, 199.5, 300, -3., 3.);
     fOutputListQA->Add(fDiffSPDMCVtx);
-
+     
+    fCheckMCVertex = new TH2F("fCheckMCVertex", "TruthVsRec/track Vertex; MC Vtx; Rec Vtx", 200, -10, 10, 200, -10, 10);
+    fOutputListQA->Add(fCheckMCVertex);
+  
+    
     fnTrAccMaxGen = new THnSparseF("fnTrAccMaxGen", "fnTrAccMaxGen; zSPDVtx; MC_ChargedParticles (eta<1);SPDnTR*PoisCorr(max) (eta<1);", 3, nBinsSPD, xminSPD, xmaxSPD);
     fOutputListQA->Add(fnTrAccMaxGen);
 
@@ -1919,10 +2104,10 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
 
     fPt2Tagged = new TH3F("fPt2Tagged", "Pt2Tagged; RecPtE; MCPt2; RecLP", 20, 0.5,3,60, 0.,3., 20,0.,10.);
-    fOutputListMain->Add(fPt2Tagged);
+    fOutputListQA->Add(fPt2Tagged);
 
     fPt2NTagged = new TH3F("fPt2NTagged", "Pt2NTagged; RecPtE; MCPt2; RecLP", 20, 0.5,3,60, 0.,3., 20,0.,10.);
-    fOutputListMain->Add(fPt2NTagged);
+    fOutputListQA->Add(fPt2NTagged);
 
     // fMCThrustTagged = new TH3F("fMCThrustTagged", "Thrust of Tagged; ptElectron; Thrust", 44, 0.5, 6., 100, 0., 1., 8, -0.5, 7.5);
     //fOutputListQA->Add(fMCThrustTagged);
@@ -2136,9 +2321,12 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
   // Track Cuts
   const char*  ElecTrackCutsLabels[15]= {"All", "FilterBit", "PtCut", "EtaCut", "TPCNcls", "TPCNclsdEdx", "TPCrefit", "TPCfrac", "KinkCut", "ITSNcls", "ITSrefit", "SPDAny", "SPDBoth", "DCACut", "ITSSCluster"};
-  fElectronTrackCuts = new TH2F("fElectronTrackCuts", "fElectronTrackCuts", 20, 0, 10, 15, 0,15);
+
+ fElectronTrackCuts = new TH2F("fElectronTrackCuts", "fElectronTrackCuts", 20, 0, 10, 15, 0,15);
   for (Int_t i=0; i<15; i++) fElectronTrackCuts->GetYaxis()->SetBinLabel(i+1, ElecTrackCutsLabels[i]);
   fOutputListQA->Add(fElectronTrackCuts);
+
+
 
   
   fElectronTrackTPCChi2 = new TH2F("fElectronTrackTPCChi2", "fElectronTrackTPCChi2", 20, 0, 10,50, 0, 10);
@@ -2191,6 +2379,11 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   */
  
 
+  const char*  HadTrackCutsLabels[11]= {"All", "FilterBit", "PtCut", "EtaCut",  "KinkCut", "TPCNcls",  "TPCrefit", "ITSrefit", "DCACut", "SPDAny", "TOFmatch"};
+  fHadronTrackCuts = new TH2F("fHadronTrackCuts", "fHadronTrackCuts", 20, 0, 10, 11, 0,11);
+  for (Int_t i=0; i<11; i++) fHadronTrackCuts->GetYaxis()->SetBinLabel(i+1, HadTrackCutsLabels[i]);
+  fOutputListQA->Add(fHadronTrackCuts);
+
   fHadronTrackTPCNcls = new TH2F("fHadronTrackTPCNcls", "fHadronTrackTPCNcls", 20, 0, 10,170, 0, 170);
   fOutputListQA->Add(fHadronTrackTPCNcls);
 
@@ -2199,6 +2392,14 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
   fHadronTrackDCA = new TH3F("fHadronTrackDCA", "fHadronTrackDCA: pt, r, z", 20, 0, 10,  60, -3.0, 3.0, 60, -3.0, 3.0);
   fOutputListQA->Add(fHadronTrackDCA);
+
+  
+  fHadronTrackDCA_woITSAny = new TH3F("fHadronTrackDCA_woITSAny", "fHadronTrackDCA_woITSAny: pt, r, z", 20, 0, 10,  60, -3.0, 3.0, 60, -3.0, 3.0);
+  fOutputListQA->Add(fHadronTrackDCA_woITSAny);
+
+  fHadronTrackDCA_wITSAny = new TH3F("fHadronTrackDCA_wITSAny", "fHadronTrackDCA_wITSAny: pt, r, z", 20, 0, 10,  60, -3.0, 3.0, 60, -3.0, 3.0);
+  fOutputListQA->Add(fHadronTrackDCA_wITSAny);
+
 
   fHistITSnSig = new TH2F("fHistITSnSig","fHistITSnSig",50,0.3,5,200,-10,10);
   BinLogX(fHistITSnSig->GetXaxis());
@@ -2246,51 +2447,58 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
   if (fHadCont) {
 
-    // HadContSparse
-    Int_t    binHC[4] =  {NBinsElectron  ,NBinsPhi/8      ,NBinsEta/2    ,200}; //p, Phi, Eta, TPC
-    Double_t xminHC[4] = {XminElectron   ,0             ,-0.9  ,-10};
-    Double_t xmaxHC[4] = {XmaxElectron   ,TMath::TwoPi(), 0.9  ,10};
-    
-    fHadContPvsPt = new TH2F("fHadContPvsPt", "PvsPt; P;Pt", 100, 0, 10, 100, 0, 10);
-    fOutputListMain->Add(fHadContPvsPt);  
-    
-    fHadContPPhiEtaTPC = new THnSparseF("fHadContPPhiEtaTPC", "HadCont; P; Phi; Eta; TPC;", 4, binHC, xminHC, xmaxHC);
-    fOutputListMain->Add(fHadContPPhiEtaTPC);
-    
-    Int_t    binHC2[4] =  {NBinsElectron  ,10   , 20 ,100}; //p, ITS, TOF, TPC
-    Double_t xminHC2[4] = {XminElectron   ,-5  ,-10 ,-10};
-    Double_t xmaxHC2[4] = {XmaxElectron   ,5   , 10 ,10};  
+    Int_t    binHC2[4] =  {NBinsElectron  ,10   , 10 ,100}; //p, ITS, TOF, TPC
+    Double_t xminHC2[4] = {XminElectron   ,-5  ,-5 ,-10};
+    Double_t xmaxHC2[4] = {XmaxElectron   ,5   , 5 ,10};  
     fHadContamination = new THnSparseF("fHadContamination", "HadCont; P; ITS; TOF; TPC;", 4, binHC2, xminHC2, xmaxHC2);
     fOutputListMain->Add(fHadContamination);
 
-    //    fHadContaminationPt = new THnSparseF("fHadContaminationPt", "HadCont: Pt, ITS, TOF, TPC", 4, binHC2, xminHC2, xmaxHC2);
-    //  fOutputListMain->Add(fHadContaminationPt);
     
-    fHadContTPCEtaPhiPt = new TH3F("fHadContTPCEtaPhiPt", "MCHadContTPC; Eta; Phi; Pt", 36, -0.9, 0.9, 32, 0, TMath::TwoPi(), NBinsElectron, XminElectron, XmaxElectron);
-    fOutputListMain->Add(fHadContTPCEtaPhiPt);
-  
+    if (fOneTimeCheck) {
+      fHadContPvsPt = new TH2F("fHadContPvsPt", "PvsPt; P;Pt", 100, 0, 10, 100, 0, 10);
+      fOutputListMain->Add(fHadContPvsPt);  
+    
+      Int_t    binHC[4] =  {NBinsElectron  ,NBinsPhi/8      ,NBinsEta/2    ,200}; //p, Phi, Eta, TPC
+      Double_t xminHC[4] = {XminElectron   ,0             ,-0.9  ,-10};
+      Double_t xmaxHC[4] = {XmaxElectron   ,TMath::TwoPi(), 0.9  ,10};
+      fHadContPPhiEtaTPC = new THnSparseF("fHadContPPhiEtaTPC", "HadCont; P; Phi; Eta; TPC;", 4, binHC, xminHC, xmaxHC);
+      fOutputListMain->Add(fHadContPPhiEtaTPC); // select electrons with had cont
+
+      fHadContTPCEtaPhiPt = new TH3F("fHadContTPCEtaPhiPt", "MCHadContTPC; Eta; Phi; Pt", 36, -0.9, 0.9, 32, 0, TMath::TwoPi(), NBinsElectron, XminElectron, XmaxElectron);
+      fOutputListMain->Add(fHadContTPCEtaPhiPt); // select hadrons by intend
+    }
+ 
+   
     if (fIsMC) {
-      fHadContEtaPhiPt = new TH3F("fHadContEtaPhiPt", "MCHadCont; Eta; Phi; Pt", 36, -0.9, 0.9, 32, 0, TMath::TwoPi(), NBinsElectron, XminElectron, XmaxElectron);
+      if(fOneTimeCheck) fHadContEtaPhiPt = new TH3F("fHadContEtaPhiPt", "MCHadCont; Eta; Phi; Pt", 36, -0.9, 0.9, 32, 0, TMath::TwoPi(), NBinsElectron, XminElectron, XmaxElectron);
       fOutputListMain->Add(fHadContEtaPhiPt);   
       
-      Int_t    binHMC[4] = {NBinsElectron  , 7,  20, 100}; // p PDG ITS, TPC
-      Double_t xminHMC[4] = {XminElectron   , 0, -10, -10};
-      Double_t xmaxHMC[4] = {XmaxElectron   , 7,  10,  10};
-      fHadContMC = new THnSparseF("fHadContMC", "HadContMC; P; PDG; ITS; TPC;Bla", 4, binHMC, xminHMC, xmaxHMC);
-      fOutputListMain->Add(fHadContMC);
-      // fHadContMCPt = new THnSparseF("fHadContMCPt", "HadCont: Pt, PDG, ITS, TPC", 4, binHMC, xminHMC, xmaxHMC);
-      // fOutputListMain->Add(fHadContMCPt);
-    }    
+      Int_t    binHMC[4] = {NBinsElectron  , 7,  10, 100}; // p PDG ITS, TPC
+      Double_t xminHMC[4] = {XminElectron   , 0, -5, -10};
+      Double_t xmaxHMC[4] = {XmaxElectron   , 7,  5,  10};
+      fHadContMC = new THnSparseF("fHadContMC", "HadContMC; P; PDG; ITS; TPC;", 4, binHMC, xminHMC, xmaxHMC);
+      fOutputListMain->Add(fHadContMC); // had cont after tof cut
+    }
   }
 
+
+
+  fTrkpt = new TH2F("fTrkpt","track pt (0),after EleTrack (1), after ElePID(2); pt ",200,0,20,3,-0.5,2.5);
+  fOutputListMain->Add(fTrkpt);
+  
   fInclElecPtEta = new TH2F("fInclElePtEta", "fInclElePtEta; #it{p}_{T}; #eta",NBinsElectron,XminElectron, XmaxElectron, NBinsEta, -0.9, 0.9 );
   fOutputListMain->Add(fInclElecPtEta);
 
   fInclElecPtEtaWRecEff = new TH2F("fInclElePtEtaWRecEff", "fInclElePtEtaWRecEff; #it{p}_{T}; #eta",NBinsElectron,XminElectron, XmaxElectron,  NBinsEta, -0.9, 0.9 );
   fOutputListMain->Add(fInclElecPtEtaWRecEff);
 
-  // fInclElecP = new TH1F("fInclEleP", "fInclEleP",NBinsElectronRed, XBinsElectronRed);
-  // fOutputListMain->Add(fInclElecP);
+  if (fOneTimeCheck) {
+    fInclElecPhi = new TH2F("fInclElePhi", "fInclElePhi",NBinsElectron, XminElectron, XmaxElectron,NBinsPhi,0,TMath::TwoPi());
+    fOutputListMain->Add(fInclElecPhi);
+    
+    fInclElecPhiEta = new TH2F("fInclElePhiEta", "fInclElePhiEta", NBinsEta,XminEta,XmaxEta, NBinsPhi,0,TMath::TwoPi());
+    fOutputListMain->Add(fInclElecPhiEta);
+  }
 
   fULSElecPt = new TH1F("fULSElePt", "fULSElePt; #it{p}_{T}",NBinsElectron,XminElectron, XmaxElectron);
   fOutputListMain->Add(fULSElecPt);
@@ -2304,7 +2512,14 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   fLSElecPtWRecEff = new TH1F("fLSElePtWRecEff", "fLSElePtWRecEff; #it{p}_{T}",NBinsElectron,XminElectron, XmaxElectron);
   fOutputListMain->Add(fLSElecPtWRecEff);
     
+  if (fOneTimeCheck) {
+    fULSElecPhi= new TH2F("fULSElePhi", "fULSElePhi", NBinsElectron, XminElectron, XmaxElectron ,NBinsPhi,0,TMath::TwoPi());
+    fOutputListMain->Add(fULSElecPhi);
     
+    fLSElecPhi= new TH2F("fLSElePhi", "fLSElePhi",NBinsElectron, XminElectron, XmaxElectron,NBinsPhi,0,TMath::TwoPi());
+    fOutputListMain->Add(fLSElecPhi);
+  }
+
   fInvmassULS = new TH2F("fInvmassULS", "fInvmassULS; m_{ee}; pt", 500,0,0.5,NBinsElectronRed, XBinsElectronRed);
   fOutputListMain->Add(fInvmassULS);
     
@@ -2312,18 +2527,20 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   fOutputListMain->Add(fInvmassLS);
 
 
-  fPhotMixULS = new TH1F("fPhotMixULS", "fPhotMixULS; #it{p}_{T}", NBinsElectron,XminElectron, XmaxElectron);
-  fOutputListMain->Add(fPhotMixULS);
-
-  fPhotMixLS = new TH2F("fPhotMixLS", "fPhotMixcLS; #it{p}_{T}; Charge", NBinsElectron,XminElectron, XmaxElectron, 3, -1.5, 1.5);
-  fOutputListMain->Add(fPhotMixLS);
-
-
-
-
   fPhotPt1Pt2Only = new TH2F("fPhotPt1Pt2Only", "fPhotPt1Pt2 for tagged; Pt1Rec; Pt2Rec", 48, 0., 6., 48, 0., 6.);
   fOutputListMain->Add(fPhotPt1Pt2Only);
+    
+  if (fOneTimeCheck) {
+    fPhotMixULS = new TH1F("fPhotMixULS", "fPhotMixULS; #it{p}_{T}", NBinsElectron,XminElectron, XmaxElectron);
+    fOutputListMain->Add(fPhotMixULS);
+    
+    fPhotMixLS = new TH2F("fPhotMixLS", "fPhotMixcLS; #it{p}_{T}; Charge", NBinsElectron,XminElectron, XmaxElectron, 3, -1.5, 1.5);
+    fOutputListMain->Add(fPhotMixLS);
+    
+ 
+  }
 
+  
   if (fIsMC) {
 
     //    fRecMCInvMass = new TH3F("fRecMCInvMass", "fRecMCInvMass; MCPt; rec. inv. mass; MC inv. mass", 6, 0., 3., 14, 0, 0.14, 18, 0, 0.18);
@@ -2385,17 +2602,19 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     */
   }
 
-  fOpeningAngleULS = new TH2F("fOpeningAngleULS","fOpeningAngleULS;angle;pt",100,0,1,NBinsElectron,XminElectron,XmaxElectron);
-  fOutputListMain->Add(fOpeningAngleULS);
-
-  fOpeningAngleLS = new TH2F("fOpeningAngleLS","fOpeningAngleLS;angle;pt",100,0,1,NBinsElectron,XminElectron,XmaxElectron);
-  fOutputListMain->Add(fOpeningAngleLS);
+  if (fOneTimeCheck){
+    fOpeningAngleULS = new TH2F("fOpeningAngleULS","fOpeningAngleULS;angle;pt",100,0,1,NBinsElectron,XminElectron,XmaxElectron);
+    fOutputListMain->Add(fOpeningAngleULS);
     
+    fOpeningAngleLS = new TH2F("fOpeningAngleLS","fOpeningAngleLS;angle;pt",100,0,1,NBinsElectron,XminElectron,XmaxElectron);
+    fOutputListMain->Add(fOpeningAngleLS);
+  }
+  
   fCheckLSULS = new TH2F("fCheckLSULS", "LSULS; #LS; #ULS",5,0,5,5,0,5);
   fOutputListMain->Add(fCheckLSULS);
    
-  fTagEtaPt1Pt2 = new TH3F("fTagEtaPt1Pt2", "Tagged; Eta; Pt1; Pt2", 36, -0.9, 0.9, NBinsElectron/2, XminElectron, XmaxElectron, 30, 0, 1.5);
-  fOutputList->Add(fTagEtaPt1Pt2);
+  //  fTagEtaPt1Pt2 = new TH3F("fTagEtaPt1Pt2", "Tagged; Eta; Pt1; Pt2", 36, -0.9, 0.9, NBinsElectron/2, XminElectron, XmaxElectron, 30, 0, 1.5);
+  // fOutputList->Add(fTagEtaPt1Pt2);
 
   /*
   fTagEtaPhiPt = new TH3F("fTagEtaPhiPt", "Tagged: Eta, Phi, Pt", 72, -0.9, 0.9, 64, 0, TMath::TwoPi(), NBinsElectron, XminElectron, XmaxElectron);
@@ -2413,8 +2632,8 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
   if (fIsMC && fTagEff) {
 
-    fNonTagEtaPt1Pt2 = new TH3F("fNonTagEtaPt1Pt2", "NonTagged; Eta; Pt1; Pt2", 36, -0.9, 0.9, NBinsElectron/2, XminElectron, XmaxElectron, 30, 0, 1.5);
-    fOutputList->Add(fNonTagEtaPt1Pt2);
+    // fNonTagEtaPt1Pt2 = new TH3F("fNonTagEtaPt1Pt2", "NonTagged; Eta; Pt1; Pt2", 36, -0.9, 0.9, NBinsElectron/2, XminElectron, XmaxElectron, 30, 0, 1.5);
+    // fOutputList->Add(fNonTagEtaPt1Pt2);
     /*
     fNonTagEtaPhiPt = new TH3F("fNonTagEtaPhiPt", "Tagged: Eta, Phi, Pt", 72, -0.9, 0.9, 64, 0, TMath::TwoPi(), NBinsElectron, XminElectron, XmaxElectron);
     fOutputList->Add(fNonTagEtaPhiPt);
@@ -2441,7 +2660,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     Double_t xminMothPt[4]={XminElectron, 0, 0.5, 0.5};
     Double_t xmaxMothPt[4]={XmaxElectron, 25, PDGSize+0.5, PDGSize+0.5};
     
-    fTagMotherPt = new THnSparseF("fTagMotherPt", "Incl; ptElectron; ptMother; PDGMother; PDGGrandmother",4, binMothPt, xminMothPt, xmaxMothPt);
+    fTagMotherPt = new THnSparseF("fTagMotherPt", "Incl; ptElectron; ptMother; PDGMother; PDGGrandmother;",4, binMothPt, xminMothPt, xmaxMothPt);
     SetPDGAxis(fTagMotherPt->GetAxis(2), PDGLabel);
     SetPDGAxis(fTagMotherPt->GetAxis(3), PDGLabel);
     fOutputListMain->Add(fTagMotherPt);
@@ -2452,14 +2671,15 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     */
     // PtElectron, ElectronOrHadron, ElectronMother (Gamma, Pion, Eta, Other), ElectronGrandMother( Eta-Gamma, Pion-Gamma, Other), HFGGMother).
     Int_t    binTagEff[5] =  {NBinsElectron   ,2 ,PDGSize, PDGSize, 2}; //p, pdg, pdgmother
+    
     Double_t xminTagEff[5] = {XminElectron    ,-0.5   , 0.5,0.5, -0.5};
     Double_t xmaxTagEff[5] = {XmaxElectron    ,1.5, PDGSize+0.5,PDGSize+0.5, 1.5};  
 
-    fTagEffIncl = new THnSparseF("fTagEffIncl", "Incl tag.eff.; Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xmaxTagEff);
-    //    SetPDGAxis(fTagEffIncl->GetAxis(1), PDGLabel);
+    fTagEffIncl = new THnSparseF("fTagEffIncl", "Incl tag.eff.; Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF;", 5, binTagEff, xminTagEff, xmaxTagEff);
+    // SetPDGAxis(fTagEffIncl->GetAxis(1), PDGLabel);
     SetPDGAxis(fTagEffIncl->GetAxis(2), PDGLabel);
     SetPDGAxis(fTagEffIncl->GetAxis(3), PDGLabel);
-    // SetPDGAxis(fTagEffIncl->GetAxis(4), PDGLabel);
+    // SetPDGAxis(fTagEffIncl->GetAxis(4), PDGLabel);cd
     fOutputListMain->Add(fTagEffIncl);
     
     /*
@@ -2471,90 +2691,57 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fOutputListMain->Add(fTagEffLS);
     */
 
-    fTagEffULS = new THnSparseF("fTagEffULS", "ULS-LS tag.eff.;  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xmaxTagEff);
+    fTagEffULS = new THnSparseF("fTagEffULS", "ULS-LS tag.eff.;  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF;", 5, binTagEff, xminTagEff, xmaxTagEff);
     //    SetPDGAxis(fTagEffULS->GetAxis(1), PDGLabel);
     SetPDGAxis(fTagEffULS->GetAxis(2), PDGLabel);
     SetPDGAxis(fTagEffULS->GetAxis(3), PDGLabel);
     //    SetPDGAxis(fTagEffULS->GetAxis(4), PDGLabel);
     fOutputListMain->Add(fTagEffULS);
 
-    fTagTruePairs = new THnSparseF("fTagTruePairs", "ULS true pairs tag.eff.;  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xmaxTagEff);
+    fTagTruePairs = new THnSparseF("fTagTruePairs", "ULS true pairs tag.eff.;  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF;", 5, binTagEff, xminTagEff, xmaxTagEff);
     //    SetPDGAxis(fTagTruePairs->GetAxis(1), PDGLabel);
     SetPDGAxis(fTagTruePairs->GetAxis(2), PDGLabel);
     SetPDGAxis(fTagTruePairs->GetAxis(3), PDGLabel);
     //    SetPDGAxis(fTagTruePairs->GetAxis(4), PDGLabel);
     fOutputListMain->Add(fTagTruePairs);
 
-    fTagEffInclWoWeight = new THnSparseF("fTagEffInclWoWeight", "Incl tag.eff. woW;  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xmaxTagEff);
-    //    SetPDGAxis(fTagEffInclWoWeight->GetAxis(1), PDGLabel);
-    SetPDGAxis(fTagEffInclWoWeight->GetAxis(2), PDGLabel);
-    SetPDGAxis(fTagEffInclWoWeight->GetAxis(3), PDGLabel);
-    //    SetPDGAxis(fTagEffInclWoWeight->GetAxis(4), PDGLabel);
-    fOutputListMain->Add(fTagEffInclWoWeight);
+    if (fOneTimeCheck) {
+      fTagEffInclWoWeight = new THnSparseF("fTagEffInclWoWeight", "Incl tag.eff. woW;  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xmaxTagEff);
+      //    SetPDGAxis(fTagEffInclWoWeight->GetAxis(1), PDGLabel);
+      SetPDGAxis(fTagEffInclWoWeight->GetAxis(2), PDGLabel);
+      SetPDGAxis(fTagEffInclWoWeight->GetAxis(3), PDGLabel);
+      //    SetPDGAxis(fTagEffInclWoWeight->GetAxis(4), PDGLabel);
+      fOutputListMain->Add(fTagEffInclWoWeight);
   
-    /*
-    fTagEffLSWoWeight = new THnSparseF("fTagEffLSWoWeight", "LS tag.eff. woW;  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xsfmaxTagEff);
-    //    SetPDGAxis(fTagEffLSWoWeight->GetAxis(1), PDGLabel);
-    SetPDGAxis(fTagEffLSWoWeight->GetAxis(2), PDGLabel);
-    SetPDGAxis(fTagEffLSWoWeight->GetAxis(3), PDGLabel);
-    //    SetPDGAxis(fTagEffLSWoWeight->GetAxis(4), PDGLabel);
-    fOutputListMain->Add(fTagEffLSWoWeight);
-    */
+      /*
+	fTagEffLSWoWeight = new THnSparseF("fTagEffLSWoWeight", "LS tag.eff. woW;  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xsfmaxTagEff);
+	//    SetPDGAxis(fTagEffLSWoWeight->GetAxis(1), PDGLabel);
+	SetPDGAxis(fTagEffLSWoWeight->GetAxis(2), PDGLabel);
+	SetPDGAxis(fTagEffLSWoWeight->GetAxis(3), PDGLabel);
+	//    SetPDGAxis(fTagEffLSWoWeight->GetAxis(4), PDGLabel);
+	fOutputListMain->Add(fTagEffLSWoWeight);
+      */
 
 
-    fTagEffULSWoWeight = new THnSparseF("fTagEffULSWoWeight", "ULS-LS tag.eff. woW;  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xmaxTagEff);
-    //    SetPDGAxis(fTagEffULSWoWeight->GetAxis(1), PDGLabel);
-    SetPDGAxis(fTagEffULSWoWeight->GetAxis(2), PDGLabel);
-    SetPDGAxis(fTagEffULSWoWeight->GetAxis(3), PDGLabel);
-    //    SetPDGAxis(fTagEffULSWoWeight->GetAxis(4), PDGLabel);
-    fOutputListMain->Add(fTagEffULSWoWeight);
+      fTagEffULSWoWeight = new THnSparseF("fTagEffULSWoWeight", "ULS-LS tag.eff. woW;  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xmaxTagEff);
+      //    SetPDGAxis(fTagEffULSWoWeight->GetAxis(1), PDGLabel);
+      SetPDGAxis(fTagEffULSWoWeight->GetAxis(2), PDGLabel);
+      SetPDGAxis(fTagEffULSWoWeight->GetAxis(3), PDGLabel);
+      //    SetPDGAxis(fTagEffULSWoWeight->GetAxis(4), PDGLabel);
+      fOutputListMain->Add(fTagEffULSWoWeight);
 
 
-    fTagTruePairsWoWeight = new THnSparseF("fTagTruePairsWoWeight", "ULS true pairs tag.eff. woW:  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xmaxTagEff);
-    //    SetPDGAxis(fTagTruePairsWoWeight->GetAxis(1), PDGLabel);
-    SetPDGAxis(fTagTruePairsWoWeight->GetAxis(2), PDGLabel);
-    SetPDGAxis(fTagTruePairsWoWeight->GetAxis(3), PDGLabel);
-    //    SetPDGAxis(fTagTruePairsWoWeight->GetAxis(4), PDGLabel);
-    fOutputListMain->Add(fTagTruePairsWoWeight);
-
+      fTagTruePairsWoWeight = new THnSparseF("fTagTruePairsWoWeight", "ULS true pairs tag.eff. woW:  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xmaxTagEff);
+      //    SetPDGAxis(fTagTruePairsWoWeight->GetAxis(1), PDGLabel);
+      SetPDGAxis(fTagTruePairsWoWeight->GetAxis(2), PDGLabel);
+      SetPDGAxis(fTagTruePairsWoWeight->GetAxis(3), PDGLabel);
+      //    SetPDGAxis(fTagTruePairsWoWeight->GetAxis(4), PDGLabel);
+      fOutputListMain->Add(fTagTruePairsWoWeight);
+    }
   }
   
-  // HFE-HFE Correlation
 
-  fElecTrigger = new TH1F("fEleTrigger","fEleTrigger", NBinsElectron, XminElectron, XmaxElectron);
-  fOutputListMain->Add(fElecTrigger);
-    
-  fInclElecPhi = new TH2F("fInclElePhi", "fInclElePhi",NBinsElectron, XminElectron, XmaxElectron,NBinsPhi,0,TMath::TwoPi());
-  fOutputListMain->Add(fInclElecPhi);
   
-  fInclElecEta = new TH2F("fInclEleEta", "fInclEleEta",NBinsElectron, XminElectron, XmaxElectron,NBinsEta,XminEta,XmaxEta);
-  fOutputListMain->Add(fInclElecEta);
-
-  fInclElecPhiEta = new TH2F("fInclElePhiEta", "fInclElePhiEta", NBinsEta,XminEta,XmaxEta, NBinsPhi,0,TMath::TwoPi());
-  fOutputListMain->Add(fInclElecPhiEta);
-  
-  fULSElecPhi= new TH2F("fULSElePhi", "fULSElePhi", NBinsElectron, XminElectron, XmaxElectron ,NBinsPhi,0,TMath::TwoPi());
-  fOutputListMain->Add(fULSElecPhi);
-  
-  fLSElecPhi= new TH2F("fLSElePhi", "fLSElePhi",NBinsElectron, XminElectron, XmaxElectron,NBinsPhi,0,TMath::TwoPi());
-  fOutputListMain->Add(fLSElecPhi);
-  
-  /*
-  fElecDphi = new TH2F("fEleDphi", "fEleDphi",NBinsElectron, XminElectron, XmaxElectron,NBinsDPhi,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fOutputListMain->Add(fElecDphi);
-  
-  fULSElecDphi = new TH2F("fULSEleDphi", "fULSEleDphi",NBinsElectron, XminElectron, XmaxElectron,NBinsDPhi,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fOutputListMain->Add(fULSElecDphi);
-  
-  fLSElecDphi = new TH2F("fLSEleDphi", "fLSEleDphi",NBinsElectron, XminElectron, XmaxElectron,NBinsDPhi,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fOutputListMain->Add(fLSElecDphi);
-  
-  fULSElecDphiDiffMethod = new TH2F("fULSEleDphiDiffMethod", "fULSEleDphiDiffMethod",NBinsElectron, XminElectron, XmaxElectron,NBinsDPhi,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fOutputListMain->Add(fULSElecDphiDiffMethod);
-  
-  fLSElecDphiDiffMethod = new TH2F("fLSEleDphiDiffMethod", "fLSEleDphiDiffMethod",NBinsElectron, XminElectron, XmaxElectron,NBinsDPhi,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fOutputListMain->Add(fLSElecDphiDiffMethod);
-  */
 
   Int_t     bin[5] = {NBinsHadRed   ,NBinsElectron, NBinsDPhi, NBinsDEta, NVertexBins}; //ptH, ptE, Dphi, Deta
   Double_t  xmin[5] = {XminHadron   ,XminElectron ,-TMath::Pi()/2    ,DEtaMin, -10};
@@ -2562,105 +2749,105 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
   if (fCorrHadron) {
 
-    fNoPartnerNoT = new TH1F("fNoPartnerNoT", "fNoParnterNoT", bin[1], xmin[1], xmax[1]);
+    fNoPartnerNoT = new TH1F("fNoPartnerNoT", "fNoParnterNoT; pt", bin[1], xmin[1], xmax[1]);
     fOutputListHadron->Add(fNoPartnerNoT);
 
     Int_t TriggerBin[4]={5, 30, 30, fAssPtHad_Nbins};
     Double_t TrigMinBin[4]={0.5, 0., 0., -0.5};
     Double_t TrigMaxBin[4]={3., 1.5, 1.5, fAssPtHad_Nbins-0.5};
     fNoPartnerNoTPt2 = new THnSparseF("fNoPartnerNoTPt2", "fNoParnterNoTPt2; Pt1; Pt2Rec; Pt2MCm; AssHadBin;", 4, TriggerBin, TrigMinBin, TrigMaxBin);
+    SetTriggerAxis(fNoPartnerNoTPt2->GetAxis(3));
     fOutputListHadron->Add(fNoPartnerNoTPt2);
   
-    fTPartnerNoT = new TH1F("fTPartnerNoT", "fTPartnerNoT", bin[1], xmin[1], xmax[1]);
+    fTPartnerNoT = new TH1F("fTPartnerNoT", "fTPartnerNoT; pt", bin[1], xmin[1], xmax[1]);
     fOutputListHadron->Add(fTPartnerNoT);
 
     fTPartnerNoTPt2 =new THnSparseF("fTPartnerNoTPt2", "fNoParnterNoTPt2; Pt1; Pt2Rec; Pt2MCm; AssHadBin;", 4, TriggerBin, TrigMinBin, TrigMaxBin);
+    SetTriggerAxis(fTPartnerNoTPt2->GetAxis(3));
     fOutputListHadron->Add(fTPartnerNoTPt2);
 
     fElecHadTrigger = new TH3F("fElecHadTrigger", "fElecHadTrigger; ptE; AssPtHad; EtaE", bin[1], xmin[1], xmax[1], fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5, 90, 0, 0.9);
-    fOutputListHadron->Add(fElecHadTrigger);						      
-
-    // fElecHadTriggerLS = new TH2F("fElecHadTriggerLS", "fElecHadTriggerLS", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
-    // fOutputListHadron->Add(fElecHadTriggerLS);						      
-
+    SetTriggerAxis(fElecHadTrigger->GetYaxis());
+    fOutputListHadron->Add(fElecHadTrigger);
+    
     fElecHadTriggerULS = new TH2F("fElecHadTriggerULS", "fElecHadTriggerULS-LS; ptE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
+    SetTriggerAxis(fElecHadTriggerULS->GetYaxis());
     fOutputListHadron->Add(fElecHadTriggerULS);		
 
-    //    fElecHadTriggerLSNoP = new TH2F("fElecHadTriggerLSNoP", "fElecHadTriggerLSNoP", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
-    //    fOutputListHadron->Add(fElecHadTriggerLSNoP);						      
-
     fElecHadTriggerULSNoP = new TH2F("fElecHadTriggerULSNoP", "fElecHadTriggerULSNoP ULS-LS; ptE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
+    SetTriggerAxis(fElecHadTriggerULSNoP->GetYaxis());
     fOutputListHadron->Add(fElecHadTriggerULSNoP);						      
-
-    //    fElecHadTriggerLSNoPCorr = new TH2F("fElecHadTriggerLSNoPCorr", "fElecHadTriggerLSNoPCorr", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
-    //    fOutputListHadron->Add(fElecHadTriggerLSNoPCorr);						      
-
     fElecHadTriggerULSNoPCorr = new TH2F("fElecHadTriggerULSNoPCorr", "fElecHadTriggerULSNoPCorr ULS-LS; ptE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
+    SetTriggerAxis(fElecHadTriggerULSNoPCorr->GetYaxis());
     fOutputListHadron->Add(fElecHadTriggerULSNoPCorr);				      		      
 
     fElecHadTriggerULSNoPCorrTrue = new TH2F("fElecHadTriggerULSNoPCorrTrue", "fElecHadTriggerULSNoPCorrTrue ULS-LS; ptE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
+    SetTriggerAxis(fElecHadTriggerULSNoPCorrTrue->GetYaxis());
     fOutputListHadron->Add(fElecHadTriggerULSNoPCorrTrue);	
 
     fHadContTrigger = new TH2F("fHadContTrigger", "fHadContTrigger; PtE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
+    SetTriggerAxis(fHadContTrigger->GetYaxis());
     fOutputListHadron->Add(fHadContTrigger);						      
 
     fNonElecHadTrigger = new TH2F("fNonElecHadTrigger", "fNonElecHadTrigger; PtE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
+    SetTriggerAxis(fNonElecHadTrigger->GetYaxis());
     fOutputListHadron->Add(fNonElecHadTrigger);						      
 
     fMCElecHaTruePartnerTrigger = new TH2F("fMCElecHaTruePartnerTrigger", "fMCElecHaTruePartnerTrigger; PtE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
+    SetTriggerAxis(fMCElecHaTruePartnerTrigger->GetYaxis());
     fOutputListHadron->Add(fMCElecHaTruePartnerTrigger);        
 
     fMCElecHaTruePartnerTriggerWW = new TH2F("fMCElecHaTruePartnerTriggerWW", "fMCElecHaTruePartnerTriggerWW; PtE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
+    SetTriggerAxis(fMCElecHaTruePartnerTriggerWW->GetYaxis());
     fOutputListHadron->Add(fMCElecHaTruePartnerTriggerWW);      	
 
     fMCElecHaNoPartnerTrigger = new TH2F("fMCElecHaNoPartnerTrigger", "fMCElecHaNoPartnerTrigger; PtE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
+    SetTriggerAxis(fMCElecHaNoPartnerTrigger->GetYaxis());
     fOutputListHadron->Add(fMCElecHaNoPartnerTrigger);
 
     fMCElecHaNoPartnerTriggerWW = new TH2F("fMCElecHaNoPartnerTriggerWW", "fMCElecHaNoPartnerTriggerWW; PtE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
+    SetTriggerAxis(fMCElecHaNoPartnerTriggerWW->GetYaxis());
     fOutputListHadron->Add(fMCElecHaNoPartnerTriggerWW);
 
     fHadElecTrigger = new TH2F("fHadElecTrigger", "fHadElecTrigger; PtH; AssPtE", bin[0], xmin[0], xmax[0],  fAssPtElec_Nbins, -0.5, fAssPtElec_Nbins-0.5);
     fHadElecTrigger->GetXaxis()->Set(NBinsHadRed, XBinsHadRed);
+    SetTriggerAxis(fHadElecTrigger->GetYaxis());
     fOutputListHadron->Add(fHadElecTrigger);						      
 
     fHadNonElecTrigger = new TH2F("fHadNonElecTrigger", "fHadNonElecTrigger; PtH; AssPtE", bin[0], xmin[0], xmax[0],  fAssPtElec_Nbins, -0.5, fAssPtElec_Nbins-0.5);
     fHadNonElecTrigger->GetXaxis()->Set(NBinsHadRed, XBinsHadRed);
+    SetTriggerAxis(fHadNonElecTrigger->GetYaxis());
     fOutputListHadron->Add(fHadNonElecTrigger);	
 
-    fInclElecHa = new THnSparseF("fEleHaIncl", "Sparse for Ele-Had : PtH; PtE; Dphi; Deta;", 5, bin, xmin, xmax);
+    fInclElecHa = new THnSparseF("fEleHaIncl", "Sparse for Ele-Had : PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
     fInclElecHa->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     fInclElecHa->GetAxis(4)->Set(NVertexBins, XVertexBins);
     fOutputListHadron->Add(fInclElecHa);
 
-    //    fLSElecHa = new THnSparseF("fEleHaLS", "Sparse for LSEle-Had : PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
-    // fLSElecHa->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
-    // fLSElecHa->GetAxis(4)->Set(NVertexBins, XVertexBins);
-    //fOutputListHadron->Add(fLSElecHa);
-
-    fULSElecHa = new THnSparseF("fEleHaULS", "Sparse for ULS-LS Ele-Had; PtH; PtE; Dphi; Deta;", 5, bin, xmin, xmax);
+    fULSElecHa = new THnSparseF("fEleHaULS", "Sparse for ULS-LS Ele-Had; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
     fULSElecHa->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     fULSElecHa->GetAxis(4)->Set(NVertexBins, XVertexBins);
     fOutputListHadron->Add(fULSElecHa);
  
     if (fIsMC) {
       
-      fSignalElecHa = new THnSparseF("fSignalEleHa", "Sparse for ULSEle-Had : PtH, PtE, Dphi, Deta", 5, bin, xmin, xmax);
+      fSignalElecHa = new THnSparseF("fSignalEleHa", "Sparse for ULSEle-Had; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
       fSignalElecHa->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fSignalElecHa->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListHadron->Add(fSignalElecHa);
      
       /*
-      fBackgroundElecHa = new THnSparseF("fBackgroundEleHa", "Sparse for ULSEle-Had : PtH, PtE, Dphi, Deta", 5, bin, xmin, xmax);
+      fBackgroundElecHa = new THnSparseF("fBackgroundEleHa", "Sparse for ULSEle-Had; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
       fBackgroundElecHa->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fBackgroundElecHa->GetAxis(4)->Set(NVertexBins, XVertexBins);
       //      fOutputListHadron->Add(fBackgroundElecHa);
       */ 
-      fULSElecHaTrue = new THnSparseF("fEleHaULSTrue", "Sparse for ULS-LS True Ele-Had; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+      fULSElecHaTrue = new THnSparseF("fEleHaULSTrue", "Sparse for ULS-LS True Ele-Had; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
       fULSElecHaTrue->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fULSElecHaTrue->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListHadron->Add(fULSElecHaTrue);
  
-      fMCElecHaHadron = new THnSparseF("fMCEleHaHadron", "Sparse for Ele-Had; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+      fMCElecHaHadron = new THnSparseF("fMCEleHaHadron", "Sparse for Ele-Had; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
       fMCElecHaHadron->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fMCElecHaHadron->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListHadron->Add(fMCElecHaHadron);
@@ -2668,61 +2855,61 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     }
 
    
-    fElecHaULSNoPartner = new THnSparseF("fEleHaULSNoPartner", "Sparse for ULS-LS Ele-Had with no Partner; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+    fElecHaULSNoPartner = new THnSparseF("fEleHaULSNoPartner", "Sparse for ULS-LS Ele-Had with no Partner; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
     fElecHaULSNoPartner->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     fElecHaULSNoPartner->GetAxis(4)->Set(NVertexBins, XVertexBins);
     fOutputListHadron->Add(fElecHaULSNoPartner);
 
-    fElecHaULSNoPartnerCorr = new THnSparseF("fEleHaULSNoPartnerCorr", "Sparse for ULS-LS Ele-Had with no Partner; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+    fElecHaULSNoPartnerCorr = new THnSparseF("fEleHaULSNoPartnerCorr", "Sparse for ULS-LS Ele-Had with no Partner; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
     fElecHaULSNoPartnerCorr->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     fElecHaULSNoPartnerCorr->GetAxis(4)->Set(NVertexBins, XVertexBins);
     fOutputListHadron->Add(fElecHaULSNoPartnerCorr);
 
-    fElecHaULSNoPartnerCorrTrue = new THnSparseF("fEleHaULSNoPartnerCorrTrue", "Sparse for ULSEle-Had with no Partner; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+    fElecHaULSNoPartnerCorrTrue = new THnSparseF("fEleHaULSNoPartnerCorrTrue", "Sparse for ULSEle-Had with no Partner; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
     fElecHaULSNoPartnerCorrTrue->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     fElecHaULSNoPartnerCorrTrue->GetAxis(4)->Set(NVertexBins, XVertexBins);
     fOutputListHadron->Add(fElecHaULSNoPartnerCorrTrue);
     
 
     if (fIsMC) {
-      fMCElecHaTruePartner = new THnSparseF("fMCElecHaTruePartner", "Sparse for MC true photonics with no Partner; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+      fMCElecHaTruePartner = new THnSparseF("fMCElecHaTruePartner", "Sparse for MC true photonics with no Partner; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
       fMCElecHaTruePartner->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fMCElecHaTruePartner->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListHadron->Add(fMCElecHaTruePartner);
     
-      fMCElecHaNoPartner = new THnSparseF("fMCElecHaNoPartner", "Sparse for MC true photonics with no Partner: PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+      fMCElecHaNoPartner = new THnSparseF("fMCElecHaNoPartner", "Sparse for MC true photonics with no Partner: PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
       fMCElecHaNoPartner->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fMCElecHaNoPartner->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListHadron->Add(fMCElecHaNoPartner);	
     }
 
-    fElecHaHa = new THnSparseF("fEleHaHa", "Sparse for Hadron Contamination; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+    fElecHaHa = new THnSparseF("fEleHaHa", "Sparse for Hadron Contamination; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
     fElecHaHa->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     fElecHaHa->GetAxis(4)->Set(NVertexBins, XVertexBins);
     fOutputListHadron->Add(fElecHaHa);
 
-    fElecHaMixedEvent = new THnSparseF("fEleHaMixedEv", "Sparse for Ele-Had MixEvent; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+    fElecHaMixedEvent = new THnSparseF("fEleHaMixedEv", "Sparse for Ele-Had MixEvent; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
     fElecHaMixedEvent->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     fElecHaMixedEvent->GetAxis(4)->Set(NVertexBins, XVertexBins);
     fOutputListHadron->Add(fElecHaMixedEvent);
   
-    //    fLSElecHaMixedEvent = new THnSparseF("fEleHaLSMixedEv", "Sparse for LSEle-Had MixEvent; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+    //    fLSElecHaMixedEvent = new THnSparseF("fEleHaLSMixedEv", "Sparse for LSEle-Had MixEvent; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
     //fLSElecHaMixedEvent->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     //fLSElecHaMixedEvent->GetAxis(4)->Set(NVertexBins, XVertexBins);
     //fOutputListHadron->Add(fLSElecHaMixedEvent);
   
-    fULSElecHaMixedEvent = new THnSparseF("fEleHaULSMixedEv", "Sparse for ULS-LS Ele-Had MixEvent; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+    fULSElecHaMixedEvent = new THnSparseF("fEleHaULSMixedEv", "Sparse for ULS-LS Ele-Had MixEvent; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
     fULSElecHaMixedEvent->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     fULSElecHaMixedEvent->GetAxis(4)->Set(NVertexBins, XVertexBins);
     fOutputListHadron->Add(fULSElecHaMixedEvent);
 
     if (fIsMC) {
-      fTagHaMixedEvent = new THnSparseF("fTagHaMixedEv", "Sparse for Tag Ele-Had MixEvent; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+      fTagHaMixedEvent = new THnSparseF("fTagHaMixedEv", "Sparse for Tag Ele-Had MixEvent; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
       fTagHaMixedEvent->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fTagHaMixedEvent->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListHadron->Add(fTagHaMixedEvent);
       
-      fNonTagHaMixedEvent = new THnSparseF("fNonTagHaMixedEv", "Sparse for NonTag Ele-Had MixEvent; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
+      fNonTagHaMixedEvent = new THnSparseF("fNonTagHaMixedEv", "Sparse for NonTag Ele-Had MixEvent; PtH; PtE; Dphi; Deta; zVtx;", 5, bin, xmin, xmax);
       fNonTagHaMixedEvent->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fNonTagHaMixedEvent->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListHadron->Add(fNonTagHaMixedEvent);
@@ -2731,6 +2918,23 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   // LP HFE   
 
   if (fCorrLParticle) {
+
+
+    
+    if (fIsMC) {
+      Int_t LPBins[4]={NBinsHadRed,NBinsHadRed, PDGSize, PDGSize};
+      Double_t LPBinsXmin[4]={XminHadron,XminHadron, 0.5, 0.5};
+      Double_t LPBinsXmax[4]={XmaxHadron,XmaxHadron, PDGSize+0.5, PDGSize+0.5};
+      fMCLeadingParticle = new THnSparseF("fMCLeadingParticle", "fMCLeadingParticle; pt; mcPt; pdg; pdgmother", 4, LPBins, LPBinsXmin, LPBinsXmax);
+      fMCLeadingParticle->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
+      fMCLeadingParticle->GetAxis(1)->Set(NBinsHadRed, XBinsHadRed);
+      SetPDGAxis(fMCLeadingParticle->GetAxis(2), PDGLabel);
+      SetPDGAxis(fMCLeadingParticle->GetAxis(3), PDGLabel);
+      fOutputListLP->Add(fMCLeadingParticle);
+      
+      fCompareLPRecCheck = new TH3F("fCompareLPRecCheck", "fMCLPRecCheck; #Delta pt; #Delta phi; #Delta eta", 50, -1, 4, 36, -TMath::Pi()/2, (3.*TMath::Pi())/2, 40, -4, 4);
+      fOutputListLP->Add(fCompareLPRecCheck);
+    }
 
     fElecLPTrigger = new TH3F("fElecLPTrigger", "fElecLPTrigger", bin[1], xmin[1], xmax[1], fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5, 90, 0, 0.9);
     fOutputListLP->Add(fElecLPTrigger);	
@@ -2867,10 +3071,6 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   }
 
 
-  if (fIsMC) {
-    fCheckMCVertex = new TH2F("fCheckMCVertex", "TruthVsRec Vertex", 200, -10, 10, 200, -10, 10);
-    fOutputListQA->Add(fCheckMCVertex);
-  }
 
 
 
@@ -2885,93 +3085,101 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   Double_t EffEXmax[4]={100, 0.9, TMath::TwoPi(), 10};
     
   if (!fOneTimeCheck) { // maybe reduce axis further
+    EffHBins[1]=9; // hadrons for pt, eta, zVtx
     EffHBins[2]=1; // hadrons for pt, eta, zVtx
     EffEBins[1]=1; // electrons only pt, zVtx
     EffEBins[2]=1;
   }
 
-  fRecHFE = new TH1F("fRecHFE", "fRecHFE; #it{p}_{T}", NBinsElectronRed, XminElectron, XmaxElectron);
-  fOutputListMain->Add(fRecHFE);
-
-  fRecHFEEtaWRecEff = new TH2F("fRecHFEEtaWRecEff", "fRecHFEEtaWRecEff; Pt; Eta", NBinsElectron , XminElectron, XmaxElectron, 250, -2.5, 2.5); 
-  fOutputList->Add(fRecHFEEtaWRecEff);
-
-
+ 
   // each time count corrected hadrons and electrons (check for right efficiency)
-  fRecHadPtEtaPhiVtxWRecEff=new THnSparseF("fRecHadPtEtaPhiVtxWRecEff", "Rec hadrons wRecEff; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx", 4, EffHBins, EffHXmin, EffHXmax);
+  fRecHadPtEtaPhiVtxWRecEff=new THnSparseF("fRecHadPtEtaPhiVtxWRecEff", "Rec hadrons wRecEff; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx;", 4, EffHBins, EffHXmin, EffHXmax);
   fRecHadPtEtaPhiVtxWRecEff->GetAxis(3)->Set(NVertexBins, XVertexBins);
   fRecHadPtEtaPhiVtxWRecEff->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
   fOutputListMain->Add(fRecHadPtEtaPhiVtxWRecEff);   
 
-  fRecElecPtEtaPhiVtxWRecEff=new THnSparseF("fRecElePtEtaPhiWRecEff", "Rec electrons w. rec.Eff; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx", 4, EffEBins, EffEXmin, EffEXmax);
-  fRecElecPtEtaPhiVtxWRecEff->GetAxis(3)->Set(NVertexBins, XVertexBins);
-  fRecElecPtEtaPhiVtxWRecEff->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
-  fOutputListMain->Add(fRecElecPtEtaPhiVtxWRecEff);
+ 
 
   if (fIsMC) {
+
+    //fRecHFE = new TH1F("fRecHFE", "fRecHFE; #it{p}_{T}", NBinsElectronRed, XminElectron, XmaxElectron);
+    // fOutputListMain->Add(fRecHFE);
+     
+    //fRecHFEEtaWRecEff = new TH2F("fRecHFEEtaWRecEff", "fRecHFEEtaWRecEff; Pt; Eta", NBinsElectron , XminElectron, XmaxElectron, 250, -2.5, 2.5); 
+    //fOutputList->Add(fRecHFEEtaWRecEff);
+
     // accordingly check truth generated hadrons and electrons
-    fMCHadPtEtaPhiVtx=new THnSparseF("fMCHadPtEtaPhiVtx", "MC truth gen. hadrons; MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx", 4, EffHBins, EffHXmin, EffHXmax);
+    fMCHadPtEtaPhiVtx=new THnSparseF("fMCHadPtEtaPhiVtx", "MC truth gen. hadrons; MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx;", 4, EffHBins, EffHXmin, EffHXmax);
     fMCHadPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
     fMCHadPtEtaPhiVtx->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     fOutputListMain->Add(fMCHadPtEtaPhiVtx);
+
+    fRecElecPtEtaPhiVtxWRecEff=new THnSparseF("fRecElePtEtaPhiWRecEff", "Rec electrons w. rec.Eff; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx;", 4, EffEBins, EffEXmin, EffEXmax);
+    fRecElecPtEtaPhiVtxWRecEff->GetAxis(3)->Set(NVertexBins, XVertexBins);
+    fRecElecPtEtaPhiVtxWRecEff->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
+    fOutputListMain->Add(fRecElecPtEtaPhiVtxWRecEff);
     
-    fMCElecPtEtaPhiVtx=new THnSparseF("fMCElePtEtaPhiVtx", "MC truth gen. electrons;  MC #it{p}_{T}; MC #eta; MC #varphi; MC zVt", 4, EffEBins, EffEXmin, EffEXmax);
+    fMCElecPtEtaPhiVtx=new THnSparseF("fMCElePtEtaPhiVtx", "MC truth gen. electrons;  MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx;", 4, EffEBins, EffEXmin, EffEXmax);
     fMCElecPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
     fMCElecPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
     fOutputListMain->Add(fMCElecPtEtaPhiVtx);
-  }
-  if (fRecEff) { // for rec eff count rec. hadrons and electrons wo. receff correction
-    fRecHadPtEtaPhiVtx=new THnSparseF("fRecHadPtEtaPhiVtx", "Rec hadrons; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx", 4, EffHBins, EffHXmin, EffHXmax);
-    fRecHadPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
-    fRecHadPtEtaPhiVtx->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
-    fOutputListMain->Add(fRecHadPtEtaPhiVtx);
-  
-    fRecElecPtEtaPhiVtx=new THnSparseF("fRecElePtEtaPhi", "Rec electrons; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx", 4, EffEBins, EffEXmin, EffEXmax);
-    fRecElecPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
-    fRecElecPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
-    fOutputListMain->Add(fRecElecPtEtaPhiVtx);
-
-    if (fIsMC & fOneTimeCheck) { // check mc pt .. for rec. hadrons and electrons wo receff correction
-
-      fRecHadMCSecondaryCont = new TH2F("fRecHadMCSecondaryCont", "Cont. from secondaries; #it{p}_{T}; Prim or Sec", NBinsHadRed, XBinsHadRed, 2, -0.5, 1.5);
-      fRecHadMCSecondaryCont->GetYaxis()->SetBinLabel(1, "Secondary");
-      fRecHadMCSecondaryCont->GetYaxis()->SetBinLabel(2, "Primary");
-      fOutputListMain->Add(fRecHadMCSecondaryCont);
+   
+    if (fRecEff) { // for rec eff count rec. hadrons and electrons wo. receff correction
+      fRecHadPtEtaPhiVtx=new THnSparseF("fRecHadPtEtaPhiVtx", "Rec hadrons; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx;", 4, EffHBins, EffHXmin, EffHXmax);
+      fRecHadPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
+      fRecHadPtEtaPhiVtx->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
+      fOutputListMain->Add(fRecHadPtEtaPhiVtx);
       
-      fRecHadMCPtEtaPhiVtx=new THnSparseF("fRecHadMCPtEtaPhiVtx", "MC rec hadrons w. MC ; MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx", 4, EffHBins, EffHXmin, EffHXmax);
-      fRecHadMCPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
-      fRecHadMCPtEtaPhiVtx->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
-      fOutputListMain->Add(fRecHadMCPtEtaPhiVtx);    
+      fRecElecPtEtaPhiVtx=new THnSparseF("fRecElePtEtaPhi", "Rec electrons; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx;", 4, EffEBins, EffEXmin, EffEXmax);
+      fRecElecPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
+      fRecElecPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
+      fOutputListMain->Add(fRecElecPtEtaPhiVtx);
 
+      if (fOneTimeCheck) { // check mc pt .. for rec. hadrons and electrons wo receff correction      
+	fRecHadMCPtEtaPhiVtx=new THnSparseF("fRecHadMCPtEtaPhiVtx", "MC rec hadrons w. MC ; MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx;", 4, EffHBins, EffHXmin, EffHXmax);
+	fRecHadMCPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
+	fRecHadMCPtEtaPhiVtx->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
+	fOutputListMain->Add(fRecHadMCPtEtaPhiVtx);    
+	
+	fRecElecMCPtEtaPhiVtx=new THnSparseF("fRecEleMCPtEtaPhi", "MC rec electrons w. MC; MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx;", 4, EffEBins, EffEXmin, EffEXmax);
+	fRecElecMCPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
+	fRecElecMCPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
+	fOutputListMain->Add(fRecElecMCPtEtaPhiVtx);
 
-      fRecElecMCPtEtaPhiVtx=new THnSparseF("fRecEleMCPtEtaPhi", "MC rec electrons w. MC; MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx", 4, EffEBins, EffEXmin, EffEXmax);
-      fRecElecMCPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
-      fRecElecMCPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
-      fOutputListMain->Add(fRecElecMCPtEtaPhiVtx);
-
-      fCheckMCPtvsRecPtHad = new TH2F("fCheckMCPtvsRecPtHad", "MCvsRec Pt; MC pt; Rec pt", NBinsHadron, XminHadron, XmaxHadron, NBinsHadron, XminHadron, XmaxHadron); 
-      fOutputListMain->Add(fCheckMCPtvsRecPtHad);
+	fCheckMCPtvsRecPtHad = new TH2F("fCheckMCPtvsRecPtHad", "MCvsRec Pt; MC pt; Rec pt", NBinsHadron, XminHadron, XmaxHadron, NBinsHadron, XminHadron, XmaxHadron); 
+	fOutputListMain->Add(fCheckMCPtvsRecPtHad);
+	
+	fCheckMCEtavsRecEtaHad = new TH2F("fCheckMCEtavsRecEtaHad", "MC vs. Rec; rec. #eta; MC #eta", 36, -0.9, 0.9, 36, -0.9, 0.9);
+	fOutputListMain->Add(fCheckMCEtavsRecEtaHad);
+	
+	fCheckMCPhivsRecPhiHad = new TH2F("fCheckMCPhivsRecPhiHad", "MC vs. Rec; rec. #eta; MC #eta", NBinsPhi/2, 0, TMath::TwoPi(), NBinsPhi/2, 0, TMath::TwoPi());
+	fOutputListMain->Add(fCheckMCPhivsRecPhiHad);
+	
+	fCheckMCPtvsRecPtEle = new TH2F("fCheckMCPtvsRecPtEle", "MCvsRec Pt", NBinsElectron, XminElectron, XmaxElectron, NBinsElectron, XminElectron, XmaxElectron); //200, 0, 20, 200, 0, 20);
+	fOutputListMain->Add(fCheckMCPtvsRecPtEle);
+	
+	fMCElecPDG=new TH1F("fMCElePDG", "MC truth mother of heavy electrons", 10000, -0.5, 9999.5);
+	fOutputListMain->Add(fMCElecPDG);
+	
+	// fMCElecPtEtaPhiStrictVtx=new THnSparseF("fMCElePtEtaPhiStrictVtx", "MC truth electrons  pt, eta, phi, vtx", 4, EffEBins, EffEXmin, EffEXmax);
+	// fMCElecPtEtaPhiStrictVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
+	// fMCElecPtEtaPhiStrictVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
+	// fOutputListMain->Add(fMCElecPtEtaPhiStrictVtx);
       
-      fCheckMCEtavsRecEtaHad = new TH2F("fCheckMCEtavsRecEtaHad", "MC vs. Rec; rec. #eta; MC #eta", 36, -0.9, 0.9, 36, -0.9, 0.9);
-      fOutputListMain->Add(fCheckMCEtavsRecEtaHad);
-      
-      fCheckMCPhivsRecPhiHad = new TH2F("fCheckMCPhivsRecPhiHad", "MC vs. Rec; rec. #eta; MC #eta", NBinsPhi/2, 0, TMath::TwoPi(), NBinsPhi/2, 0, TMath::TwoPi());
-      fOutputListMain->Add(fCheckMCPhivsRecPhiHad);
-      
-      
-      fCheckMCPtvsRecPtEle = new TH2F("fCheckMCPtvsRecPtEle", "MCvsRec Pt", NBinsElectron, XminElectron, XmaxElectron, NBinsElectron, XminElectron, XmaxElectron); //200, 0, 20, 200, 0, 20);
-      fOutputListMain->Add(fCheckMCPtvsRecPtEle);
-
-      fMCElecPDG=new TH1F("fMCElePDG", "MC truth mother of heavy electrons", 10000, -0.5, 9999.5);
-      fOutputListMain->Add(fMCElecPDG);
-    
-      // fMCElecPtEtaPhiStrictVtx=new THnSparseF("fMCElePtEtaPhiStrictVtx", "MC truth electrons  pt, eta, phi, vtx", 4, EffEBins, EffEXmin, EffEXmax);
-      // fMCElecPtEtaPhiStrictVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
-      // fMCElecPtEtaPhiStrictVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
-      // fOutputListMain->Add(fMCElecPtEtaPhiStrictVtx);
-      
+      }
     }
-  }   
+    fRecHadMCSecondaryCont = new TH2F("fRecHadMCSecondaryCont", "Cont. from secondaries; #it{p}_{T}; Prim or Sec", NBinsHadRed, XBinsHadRed, 2, -0.5, 1.5);
+    fRecHadMCSecondaryCont->GetYaxis()->SetBinLabel(1, "Secondary");
+    fRecHadMCSecondaryCont->GetYaxis()->SetBinLabel(2, "Primary");
+    fOutputListMain->Add(fRecHadMCSecondaryCont);
+
+    fRecElecMCSecondaryCont = new TH2F("fRecElecMCSecondaryCont", "Cont. from secondaries; #it{p}_{T}; Prim or Sec", NBinsElectronRed, XBinsElectronRed, 2, -0.5, 1.5);
+    fRecElecMCSecondaryCont->GetYaxis()->SetBinLabel(1, "Secondary");
+    fRecElecMCSecondaryCont->GetYaxis()->SetBinLabel(2, "Primary");
+    fOutputListMain->Add(fRecElecMCSecondaryCont);
+  
+    
+  }
 
 
   Int_t Pi0EtaBins[5] ={100, 4, 40, PDGSize,5}; // pt,eta,y, 
@@ -2998,24 +3206,9 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     BinLogX(fMCPiPlusProdV2->GetAxis(0));
     SetPDGAxis(fMCPiPlusProdV2->GetAxis(3), PDGLabel);
     fOutputListMain->Add(fMCPiPlusProdV2);
-    
-   
   }
 
-  if (fIsMC) {
-    Int_t LPBins[4]={NBinsHadRed,NBinsHadRed, PDGSize, PDGSize};
-    Double_t LPBinsXmin[4]={XminHadron,XminHadron, 0.5, 0.5};
-    Double_t LPBinsXmax[4]={XmaxHadron,XmaxHadron, PDGSize+0.5, PDGSize+0.5};
-    fMCLeadingParticle = new THnSparseF("fMCLeadingParticle", "fMCLeadingParticle; pt; mcPt; pdg; pdgmother", 4, LPBins, LPBinsXmin, LPBinsXmax);
-    fMCLeadingParticle->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
-    fMCLeadingParticle->GetAxis(1)->Set(NBinsHadRed, XBinsHadRed);
-    SetPDGAxis(fMCLeadingParticle->GetAxis(2), PDGLabel);
-    SetPDGAxis(fMCLeadingParticle->GetAxis(3), PDGLabel);
-    fOutputListLP->Add(fMCLeadingParticle);
-  }
 
-  fCompareLPRecCheck = new TH3F("fCompareLPRecCheck", "fMCLPRecCheck; #Delta pt; #Delta phi; #Delta eta", 50, -1, 4, 36, -TMath::Pi()/2, (3.*TMath::Pi())/2, 40, -4, 4);
-  fOutputListLP->Add(fCompareLPRecCheck);
 
 
   if (fMCTrueCorrelation) {
@@ -3042,8 +3235,8 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fOutputList->Add(fCompareLP);
 
    
-    fRecHadronEtaWRecEff = new TH2F("fRecHadronEtaWRecEff", "fRecHadronEtaWRecEff; Pt; Eta", NBinsHadron , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
-    fOutputList->Add(fRecHadronEtaWRecEff);
+    // fRecHadronEtaWRecEff = new TH2F("fRecHadronEtaWRecEff", "fRecHadronEtaWRecEff; Pt; Eta", NBinsHadron , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
+    //fOutputList->Add(fRecHadronEtaWRecEff);
 
     fRecLPEta = new TH2F("fRecLPEta", "fRecLPEta; Pt; Eta", NBinsHadRed , XminHadron, XmaxHadron, 250, -2.5, 2.5); 
     fRecLPEta->GetXaxis()->Set(NBinsHadRed, XBinsHadRed);
@@ -3291,16 +3484,16 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 
     // track cuts
     Bool_t passHadTrackCut=kFALSE;
-    passHadTrackCut = ChargedHadronTrackCuts(pVtx, Vtrack, nMother, listMother, EventWeight);
+    passHadTrackCut = ChargedHadronTrackCuts(pVtx, Vtrack, nMother, listMother, EventWeight, kTRUE); // last argument = fillHist
    
     Bool_t passHadPIDCut=kFALSE;
     passHadPIDCut = ChargedHadronPIDCuts(Vtrack,EventWeight); // currently empty
     
     if (passHadTrackCut && passHadPIDCut) { // calculate Hadron reconstruction efficiency
-      recEffH = GetHadronRecEff(pt, phi, eta, pVtx->GetZ());
+      recEffH = GetHadronRecEff(fVevent->GetRunNumber(), pt, phi, eta, pVtx->GetZ());
       if (recEffH>0) {
 	NHadrons+=(1./recEffH);
-	if (fRecEff) fRecHadronEtaWRecEff->Fill(pt, eta, EventWeight/recEffH);
+	//	if (fRecEff) fRecHadronEtaWRecEff->Fill(pt, eta, EventWeight/recEffH);
       }
     }
 
@@ -3325,7 +3518,7 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
       }
 
 
-      fEtaVtxZ->Fill(eta, pVtx->GetZ(), EventWeight);
+      if (fOneTimeCheck) fEtaVtxZ->Fill(eta, pVtx->GetZ(), EventWeight);
      
       // fill rec hadron histograms for RecEff 
       Double_t fillSparse[4]={-999,-999,-999,-999};
@@ -3334,16 +3527,14 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
       fillSparse[2]=phi;
       fillSparse[3]=pVtx->GetZ();
       if (recEffH>0) fRecHadPtEtaPhiVtxWRecEff->Fill(fillSparse, EventWeight/recEffH);
-      if (fRecEff && fIsMC)  fRecHadPtEtaPhiVtx->Fill(fillSparse, EventWeight);
-      
-      if (fRecEff && fOneTimeCheck) {
-	if (fIsAOD && fIsMC) {
-	  Int_t MClabel=AODtrack->GetLabel();
-	  AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMC->GetTrack(abs(MClabel));
 
-	  fRecHadMCSecondaryCont->Fill(pt, MCParticle->IsPhysicalPrimary(), EventWeight);
+      if (fRecEff && fIsMC && fIsAOD) {
+	fRecHadPtEtaPhiVtx->Fill(fillSparse, EventWeight);
+	Int_t MClabel=AODtrack->GetLabel();
+       	AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMC->GetTrack(abs(MClabel));
+	fRecHadMCSecondaryCont->Fill(pt, MCParticle->IsPhysicalPrimary(), EventWeight);
 
-	  
+	if (fOneTimeCheck) {  
 	  Double_t mcVtx[3];
 	  fMCheader->GetVertex(mcVtx);
 	  fillSparse[0]=MCParticle->Pt();
@@ -3363,13 +3554,13 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 
     // Select HFE candidates
     Bool_t passHFETrackCut=kFALSE;
-    passHFETrackCut= InclElecTrackCuts(pVtx,Vtrack,nMother,listMother, EventWeight);
+    passHFETrackCut= InclElecTrackCuts(pVtx,Vtrack,nMother,listMother, EventWeight, kTRUE); // last argument = fill hists
     if (passHFETrackCut)  fTrkpt->Fill(pt,1, EventWeight); // after track cuts
  
     Bool_t passHFEPIDCut=kFALSE;
-    if (passHFETrackCut) passHFEPIDCut= InclElecPIDCuts(Vtrack, kTRUE, EventWeight);
+    if (passHFETrackCut) passHFEPIDCut= InclElecPIDCuts(Vtrack,  EventWeight, kTRUE); // second argument = fill hists
     if (passHFETrackCut && passHFEPIDCut) {
-      recEffE = GetElectronRecEff(pt, phi, eta, pVtx->GetZ());
+      recEffE = GetElectronRecEff(fVevent->GetRunNumber(), pt, phi, eta, pVtx->GetZ());
       fTrkpt->Fill(pt,2, EventWeight);
     }
     
@@ -3389,7 +3580,7 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 	if (isPhotonic) {
 	  if (trueULSPartner) {
 	    NPhotElectronsTagged+=(1./recEffE);
-	    fTagEtaPt1Pt2->Fill(Vtrack->Eta(), Vtrack->Pt(), RecPartnerPt, EventWeight); // EvW not req but consistent
+	    // fTagEtaPt1Pt2->Fill(Vtrack->Eta(), Vtrack->Pt(), RecPartnerPt, EventWeight); // EvW not req but consistent
 	    // fTagEtaPhiPt->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt());
 	    // fTagEtaZvtxPt->Fill(Vtrack->Eta(), pVtx->GetZ(), Vtrack->Pt());
 	    // fTagEtaPhiPtwW->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt(), 1./recEffE);
@@ -3398,7 +3589,7 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 	  }
 	  else  {
 	    NPhotElectronsUntagged+=(1./recEffE);
-	    fNonTagEtaPt1Pt2->Fill(Vtrack->Eta(), Vtrack->Pt(), RecPartnerPt, EventWeight); // EvW not req but consistent
+	    // fNonTagEtaPt1Pt2->Fill(Vtrack->Eta(), Vtrack->Pt(), RecPartnerPt, EventWeight); // EvW not req but consistent
 	    // fNonTagEtaPhiPt->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt());
 	    // fNonTagEtaZvtxPt->Fill(Vtrack->Eta(), pVtx->GetZ(), Vtrack->Pt());
 	    // fNonTagEtaPhiPtwW->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt(), 1./recEffE);
@@ -3424,10 +3615,12 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
       fInclElecPtEta->Fill(pt, eta, EventWeight);
       fInclElecPtEtaWRecEff->Fill(pt, eta, EventWeight/recEffE);
       //      fInclElecP->Fill(p);
-      fInclElecPhi->Fill(pt,phi, EventWeight); 
-      fInclElecEta->Fill(pt,eta, EventWeight); 
-      fInclElecPhiEta->Fill(eta, phi, EventWeight);
-
+      if (fOneTimeCheck) {
+	fInclElecPhi->Fill(pt,phi, EventWeight); 
+	fInclElecEta->Fill(pt,eta, EventWeight); 
+	fInclElecPhiEta->Fill(eta, phi, EventWeight);
+      }
+      
       // count reconstructed heavy electrons for recEff
       if (fIsMC & fIsAOD) {
 	Int_t MClabel=AODtrack->GetLabel();
@@ -3448,11 +3641,12 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 	    fillSparse[3]=pVtx->GetZ();
 	    fRecElecPtEtaPhiVtxWRecEff->Fill(fillSparse, EventWeight/recEffE); // for checks if right efficiency has been used
 	    
-	    fRecHFE->Fill(pt, EventWeight);
-	    fRecHFEEtaWRecEff->Fill(pt, eta, EventWeight/recEffE);
+	    //fRecHFE->Fill(pt, EventWeight);
+	    // fRecHFEEtaWRecEff->Fill(pt, eta, EventWeight/recEffE);
 	    if (fRecEff) {
 	      // Fill Reconstructed Histogram
-	      fRecElecPtEtaPhiVtx->Fill(fillSparse);                 
+	      fRecElecPtEtaPhiVtx->Fill(fillSparse, EventWeight);
+	      fRecElecMCSecondaryCont->Fill(pt, MCParticle->IsPhysicalPrimary(), EventWeight);
 	      fillSparse[0]=MCParticle->Pt();
 	      fillSparse[1]=MCParticle->Eta();
 	      fillSparse[2]=MCParticle->Phi();
@@ -3468,7 +3662,7 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 	if (PDGCode != 11) {
 	  NHadCont+=(1./recEffE);
 	  isHadron=kTRUE;
-	  if (fHadCont) fHadContEtaPhiPt->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt(), EventWeight);
+	  if (fHadCont && fOneTimeCheck) fHadContEtaPhiPt->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt(), EventWeight);
 	}
       }
         
@@ -3480,7 +3674,7 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
     passNonElecPIDCut=AssoHadronPIDCuts(Vtrack, EventWeight);
     if (passHFETrackCut && passNonElecPIDCut && recEffE>0) {
       NNonElectrons+=(1./recEffE);
-      fHadContTPCEtaPhiPt->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt(),EventWeight);
+      if (fOneTimeCheck) fHadContTPCEtaPhiPt->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt(),EventWeight);
     }
   }
 
@@ -3525,14 +3719,16 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
     fillSparse[0]=LPAODtrack->Pt();
     fillSparse[1]=PDGMap.find(PDGCode)->second;
     fillSparse[2]=PDGMap.find(PDGCodeMother)->second;
-    fMCLeadingParticle->Fill(fillSparse, EventWeight);
+    if (fCorrLParticle)  {
+      fMCLeadingParticle->Fill(fillSparse, EventWeight);
 
-    if (LPRecChecktrack) {
-      AliAODTrack *LPRecCheckTrack = dynamic_cast<AliAODTrack*>(LPRecChecktrack);   
-      Double_t LPDeltaPhi = GetDeltaPhi(LPAODtrack->Phi(), LPRecCheckTrack->Phi());
-      Double_t LPDeltaEta = GetDeltaEta(LPAODtrack->Eta(), LPRecCheckTrack->Eta());
-      Double_t LPDeltaPt  = LPAODtrack->Pt()  -LPRecCheckTrack->Pt();
-      fCompareLPRecCheck->Fill(LPDeltaPt, LPDeltaPhi, LPDeltaEta, EventWeight); // EvW not req but consistent
+	if (LPRecChecktrack) {
+	  AliAODTrack *LPRecCheckTrack = dynamic_cast<AliAODTrack*>(LPRecChecktrack);   
+	  Double_t LPDeltaPhi = GetDeltaPhi(LPAODtrack->Phi(), LPRecCheckTrack->Phi());
+	  Double_t LPDeltaEta = GetDeltaEta(LPAODtrack->Eta(), LPRecCheckTrack->Eta());
+	  Double_t LPDeltaPt  = LPAODtrack->Pt()  -LPRecCheckTrack->Pt();
+	  fCompareLPRecCheck->Fill(LPDeltaPt, LPDeltaPhi, LPDeltaEta, EventWeight); // EvW not req but consistent
+	}
     }
 
 
@@ -3557,6 +3753,19 @@ void AliAnalysisTaskHaHFECorrel::FindPhotonicPartner(Int_t iTracks, AliVTrack* V
   Int_t ntracks = -999;
   if(!fUseTender) ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender)  ntracks = fTracks_tender->GetEntries();
+
+
+
+  // tagged particle
+  Double_t pt=-9.,phi=-9.,eta =-9.,recEff=-9.;
+  Int_t charge = 0;      
+  pt = Vtrack->Pt();
+  phi = Vtrack->Phi();
+  eta = Vtrack->Eta();
+  charge = Vtrack->Charge();
+  recEff = GetElectronRecEff(fVevent->GetRunNumber(), pt,phi,eta,pVtx->GetZ());
+  if (recEff<0) return;
+        
     
   // Loop over all tracks to find photonic partner
   for(Int_t jTracks = 0; jTracks < ntracks; jTracks++){
@@ -3575,16 +3784,7 @@ void AliAnalysisTaskHaHFECorrel::FindPhotonicPartner(Int_t iTracks, AliVTrack* V
     AliAODTrack *AODtrackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);   
     if(!AODtrackAsso) continue;
   
-    // tagged particle
-    Double_t pt=-9.,phi=-9.,eta =-9.,recEff=-9.;
-    Int_t charge = 0;      
-    pt = Vtrack->Pt();
-    phi = Vtrack->Phi();
-    eta = Vtrack->Eta();
-    charge = Vtrack->Charge();
-    recEff = GetElectronRecEff(pt,phi,eta,pVtx->GetZ());
-    if (recEff<0) continue;
-        
+  
     // associated particle variables
     Double_t phiAsso=-9.;
     Int_t chargeAsso = 0;
@@ -3595,10 +3795,10 @@ void AliAnalysisTaskHaHFECorrel::FindPhotonicPartner(Int_t iTracks, AliVTrack* V
 
     // Cuts for associated electrons for HFE-HFE correlations
     Bool_t passAssoTrackCutIncl = kFALSE;
-    passAssoTrackCutIncl = InclElecTrackCuts(pVtx,VtrackAsso,nMother,listMother, EventWeight);
+    //  passAssoTrackCutIncl = InclElecTrackCuts(pVtx,VtrackAsso,nMother,listMother, EventWeight);
 
     Bool_t passAssoPIDCutIncl = kFALSE;
-    passAssoPIDCutIncl = InclElecPIDCuts(VtrackAsso, kFALSE, EventWeight);
+    //passAssoPIDCutIncl = InclElecPIDCuts(VtrackAsso, kFALSE, EventWeight);
 
     if (passAssoTrackCutIncl && passAssoPIDCutIncl) {
       dphi = GetDeltaPhi(phi,phiAsso); // electron-electron dphi
@@ -3676,11 +3876,11 @@ void AliAnalysisTaskHaHFECorrel::FindPhotonicPartner(Int_t iTracks, AliVTrack* V
     }
 
     if(fFlagLS){
-      fOpeningAngleLS->Fill(openingAngle,pt, EventWeight);
+      if (fOneTimeCheck) fOpeningAngleLS->Fill(openingAngle,pt, EventWeight);
       fInvmassLS->Fill(mass,pt, EventWeight);
     }
     if(fFlagULS){
-      fOpeningAngleULS->Fill(openingAngle,pt, EventWeight);
+      if (fOneTimeCheck)  fOpeningAngleULS->Fill(openingAngle,pt, EventWeight);
       fInvmassULS->Fill(mass,pt, EventWeight);
     }
 
@@ -3725,7 +3925,7 @@ void AliAnalysisTaskHaHFECorrel::FindPhotonicPartner(Int_t iTracks, AliVTrack* V
 
 
 
-      fULSElecPhi->Fill(pt,phi, EventWeight);
+      if (fOneTimeCheck) fULSElecPhi->Fill(pt,phi, EventWeight);
       fULSElecPt->Fill(pt, EventWeight);
       fULSElecPtWRecEff->Fill(pt, EventWeight/recEff);
       dphi = GetDeltaPhi(phi,phiAsso); // electron-electron dphi
@@ -3738,7 +3938,7 @@ void AliAnalysisTaskHaHFECorrel::FindPhotonicPartner(Int_t iTracks, AliVTrack* V
     }
         
     if(mass<fInvmassCut && fFlagLS){
-      fLSElecPhi->Fill(pt,phi, EventWeight);
+      if (fOneTimeCheck) fLSElecPhi->Fill(pt,phi, EventWeight);
       fLSElecPt->Fill(pt, EventWeight);
       //  cout << recEff << endl;
       fLSElecPtWRecEff->Fill(pt, EventWeight/recEff);
@@ -3792,8 +3992,9 @@ void AliAnalysisTaskHaHFECorrel::CheckPhotonicPartner(AliVTrack* Vtrack, Bool_t 
     // cout << "InvMass " << mass << "\tEnergy " << energy << "\tEt " << transenergy << "\tmom " << mom << "\t transmom " << transmom << endl;
     ptPartner=mcPart->Pt();
     motherPartner=mcPart->GetMother();
-    foundPartner=kTRUE; 
+    foundPartner=kTRUE;
   }
+  
   if (!foundPartner) {  return; }
   if (Tagged && TMath::Abs(ptPartner-MCPartnerPt)>0.001) {
     cout << "Error in Partner pt" << endl;
@@ -4014,7 +4215,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
     phiH = track->Phi();
     etaH = track->Eta();
     idH = track->GetID();
-    recEffH = GetHadronRecEff(ptH,phiH,etaH,pVtx->GetZ());
+    recEffH = GetHadronRecEff(fVevent->GetRunNumber(), ptH,phiH,etaH,pVtx->GetZ());
     if (recEffH<0) continue;
  
     // Correlate hadrons with Hadron (kTRUE, kFALSE);
@@ -4036,7 +4237,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
       ls = RedTrack->LS();
       uls = RedTrack->ULS();
       // cout << "ls " <<  ls << "\t" << uls << endl;
-      recEffE = GetElectronRecEff(pt,phi,eta,pVtx->GetZ());
+      recEffE = GetElectronRecEff(fVevent->GetRunNumber(), pt,phi,eta,pVtx->GetZ());
       if (recEffE<0) continue;
 
       Double_t dphi = -99, deta=-99;
@@ -4180,7 +4381,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
   // Fill Trigger Histograms
   for (Int_t l=0; l<RedTracksHFE->GetEntriesFast(); l++) {
     AliBasicParticleHaHFE *RedTrack = (AliBasicParticleHaHFE*) RedTracksHFE->At(l);
-    Double_t recEff = GetElectronRecEff(RedTrack->Pt(), RedTrack->Phi(), RedTrack->Eta(), pVtx->GetZ());
+    Double_t recEff = GetElectronRecEff(fVevent->GetRunNumber(), RedTrack->Pt(), RedTrack->Phi(), RedTrack->Eta(), pVtx->GetZ());
     if (recEff<0) continue;
     for (Int_t AssPtBin=0; AssPtBin<fAssPtHad_Nbins; AssPtBin++) {
       if (ElectronIsTrigger[l][AssPtBin]) {
@@ -4214,12 +4415,12 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
 
   for (Int_t l=0; l<RedTracksHFE->GetEntriesFast(); l++) {
     AliBasicParticleHaHFE *RedTrack = (AliBasicParticleHaHFE*) RedTracksHFE->At(l);
-    Double_t recEff = GetElectronRecEff(RedTrack->Pt(), RedTrack->Phi(), RedTrack->Eta(), pVtx->GetZ());
+    Double_t recEff = GetElectronRecEff(fVevent->GetRunNumber(), RedTrack->Pt(), RedTrack->Phi(), RedTrack->Eta(), pVtx->GetZ());
     if (recEff<0) continue;
     //  for (Int_t AssPtBin=0; AssPtBin<fAssPtHad_Nbins; AssPtBin++) {
     Bool_t NoPNoT = kTRUE;
     Bool_t TPNoT = kTRUE;
-    if (RedTrack->IsPhotonic()) {
+    if (RedTrack->IsPhotonic()) { // missleading notation - only trigger particles are stored
       for (Int_t AssPtBin=0; AssPtBin<fAssPtHad_Nbins; AssPtBin++) {
 	Double_t fillSparse[4]={RedTrack->Pt(), RedTrack->TruePartnerRecPt(), RedTrack->TruePartnerMCPt(), 1.0*AssPtBin};
 	if (PhotElecWPartnerTrigger[l][AssPtBin])  fTPartnerNoTPt2->Fill(fillSparse, EventWeight*MotherWeight[l]);
@@ -4227,7 +4428,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
 
 	if (PhotElecWPartnerTrigger[l][AssPtBin] && TPNoT) TPNoT=kFALSE;
 	if (PhotElecWoPartnerTrigger[l][AssPtBin] && NoPNoT) NoPNoT = kFALSE;
-	}
+      }
       if (RedTrack->TruePartner() && TPNoT) {
 	fTPartnerNoT->Fill(RedTrack->Pt(), EventWeight/recEff); //cout << "TruePartnerNoTrigger" << endl;
       }
@@ -4316,7 +4517,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadronMixedEvent(Float_t mult, const A
     phiH = track->Phi();
     etaH = track->Eta();
     idH = track->GetID();
-    recEffH = GetHadronRecEff(ptH, phiH, etaH, pVtx->GetZ());
+    recEffH = GetHadronRecEff(fVevent->GetRunNumber(), ptH, phiH, etaH, pVtx->GetZ());
     if (recEffH<0) continue;
  
     if (fPool->GetCurrentNEvents() >= 3){// start mixing when 3 events are in the buffer
@@ -4338,7 +4539,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadronMixedEvent(Float_t mult, const A
 	  etaMix=mixtrk->Eta();
 	  ls=mixtrk->LS();
 	  uls=mixtrk->ULS();
-	  recEff=GetElectronRecEff(ptMix,phiMix,etaMix,pVtx->GetZ()); // assumption same vtx as original event (same Vtx binning)
+	  recEff=GetElectronRecEff(fVevent->GetRunNumber(), ptMix,phiMix,etaMix,pVtx->GetZ()); // assumption same vtx as original event (same Vtx binning)
 	  if (recEff<0) continue;
 	  
 	  Double_t dphi=-99, deta=-99;
@@ -4384,7 +4585,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateWithHadrons(AliVTrack* Vtrack, const A
   phiH = Vtrack->Phi();
   etaH = Vtrack->Eta();
   idH = Vtrack->GetID();
-  recEffH = GetHadronRecEff(ptH,phiH,etaH, pVtx->GetZ());
+  recEffH = GetHadronRecEff(fVevent->GetRunNumber(), ptH,phiH,etaH, pVtx->GetZ());
   if (recEffH<0) return;
 
   Int_t ntracks = -999;
@@ -4425,7 +4626,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateWithHadrons(AliVTrack* Vtrack, const A
     ptAsso = VtrackAssoHad->Pt();
     phiAsso = VtrackAssoHad->Phi();
     etaAsso = VtrackAssoHad->Eta();
-    recEffAsso = GetElectronRecEff(ptAsso, phiAsso, etaAsso, pVtx->GetZ());
+    recEffAsso = GetElectronRecEff(fVevent->GetRunNumber(), ptAsso, phiAsso, etaAsso, pVtx->GetZ());
     if (recEffAsso<0) continue;
 
     CountFakeElectrons++;
@@ -4523,7 +4724,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateLP(AliVTrack* LPtrack,  const AliVVert
   phiH = LPtrack->Phi();
   etaH = LPtrack->Eta();
   idH = LPtrack->GetID();
-  recEffH = GetHadronRecEff(ptH, phiH, etaH, pVtx->GetZ());
+  recEffH = GetHadronRecEff(fVevent->GetRunNumber(), ptH, phiH, etaH, pVtx->GetZ());
   if (recEffH<0) return;
 
   CorrelateWithHadrons(LPtrack, pVtx, nMother, listMother, kFALSE, kTRUE, NonElectronIsTrigger, NonElectronIsTriggerPt, NonElectronIsTriggerWeight, RedTracksHFE->GetEntriesFast(), EventWeight); // correlate LPHadron (kFALSE, kTRUE);
@@ -4541,7 +4742,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateLP(AliVTrack* LPtrack,  const AliVVert
     eta = RedTrack->Eta();
     ls = RedTrack->LS();
     uls = RedTrack->ULS();
-    recEffE = GetElectronRecEff(pt,phi,eta,pVtx->GetZ());
+    recEffE = GetElectronRecEff(fVevent->GetRunNumber(), pt,phi,eta,pVtx->GetZ());
     if (recEffE<0) continue;
 
     Double_t dphi = -99, deta = -99;
@@ -4621,7 +4822,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateLP(AliVTrack* LPtrack,  const AliVVert
   // Fill Trigger Histograms
   for (Int_t l=0; l<RedTracksHFE->GetEntriesFast(); l++) {
     AliBasicParticleHaHFE *RedTrack = (AliBasicParticleHaHFE*) RedTracksHFE->At(l);
-    Double_t recEffE = GetElectronRecEff(RedTrack->Pt(), RedTrack->Phi(), RedTrack->Eta(), pVtx->GetZ());
+    Double_t recEffE = GetElectronRecEff(fVevent->GetRunNumber(), RedTrack->Pt(), RedTrack->Phi(), RedTrack->Eta(), pVtx->GetZ());
     if (recEffE<0) continue;
     for (Int_t AssPtBin=0; AssPtBin<fAssPtHad_Nbins; AssPtBin++) {
       if (ElectronIsTrigger[l][AssPtBin]) {
@@ -4681,7 +4882,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateLPMixedEvent(AliVTrack* LPtrack, Float
   ptH = LPtrack->Pt();
   phiH = LPtrack->Phi();
   etaH = LPtrack->Eta();
-  recEffH = GetHadronRecEff(ptH, phiH, etaH, zVtx);
+  recEffH = GetHadronRecEff(fVevent->GetRunNumber(), ptH, phiH, etaH, zVtx);
   if (recEffH<0) return;
 
   AliEventPool* fPool;
@@ -4714,7 +4915,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateLPMixedEvent(AliVTrack* LPtrack, Float
 	etaMix=mixtrk->Eta();
 	ls=mixtrk->LS();
 	uls=mixtrk->ULS();
-	recEffE = GetElectronRecEff(ptMix, phiMix, etaMix, zVtx);
+	recEffE = GetElectronRecEff(fVevent->GetRunNumber(), ptMix, phiMix, etaMix, zVtx);
 	if (recEffE<0) continue;
 
 	Double_t dphi=-99, deta=-99;
@@ -4749,7 +4950,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateLPMixedEvent(AliVTrack* LPtrack, Float
 
 
 //_________________________________________
-Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliVTrack *Vtrack,Int_t nMother, Int_t listMother[], Double_t EventWeight)
+Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliVTrack *Vtrack,Int_t nMother, Int_t listMother[], Double_t EventWeight, Bool_t fillHists )
 {
   AliAODTrack *AODtrack = dynamic_cast<AliAODTrack*>(Vtrack);   
   AliESDtrack *ESDtrack = dynamic_cast<AliESDtrack*>(Vtrack);   
@@ -4772,7 +4973,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliV
   */
 
   // First Acceptance Cuts and Filter bit
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 0., EventWeight);
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 0., EventWeight);
 
   if (fIsAOD) { 
     if(!AODtrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return kFALSE;
@@ -4783,14 +4984,14 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliV
 
   
 
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 1., EventWeight);
+  if (fillHists)  fElectronTrackCuts->Fill(Vtrack->Pt(), 1., EventWeight);
 
   if(Vtrack->Pt()<0.25) return kFALSE;
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 2., EventWeight);
+   if (fillHists)  fElectronTrackCuts->Fill(Vtrack->Pt(), 2., EventWeight);
 
   if(Vtrack->Eta()<fMinElectronEta) return kFALSE;
   if(Vtrack->Eta()>fMaxElectronEta) return kFALSE;
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 3., EventWeight);
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 3., EventWeight);
 
 
   // Store QA informations
@@ -4824,16 +5025,17 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliV
   Float_t ITSRedChi2 = Vtrack->GetITSchi2()/(ITSNcls*1);
 
 
-  if (fIsAOD) fElectronTrackTPCChi2->Fill(Vtrack->Pt(), AODtrack->GetTPCchi2perCluster(), EventWeight);
-  fElectronTrackTPCCrossedRows->Fill(Vtrack->Pt(), Vtrack->GetTPCCrossedRows(), EventWeight);
-  fElectronTrackTPCNcls->Fill(Vtrack->Pt(), Vtrack->GetTPCNcls(), EventWeight);
-  fElectronTrackTPCNclsdEdx->Fill(Vtrack->Pt(), Vtrack->GetTPCsignalN(), EventWeight);
-  fElectronTrackITSNcls->Fill(Vtrack->Pt(),ITSNcls, EventWeight);
-  fElectronTrackITSChi2->Fill(Vtrack->Pt(), ITSRedChi2, EventWeight);
-  fElectronTrackITSLayer->Fill(Vtrack->Pt(),ITSPointOnLayer0, ITSPointOnLayer1, EventWeight);
-  fElectronTrackRefit->Fill(Vtrack->Pt(), Vtrack->IsOn(AliAODTrack::kTPCrefit), Vtrack->IsOn(AliAODTrack::kITSrefit), EventWeight);
-  fElectronTrackDCA->Fill(Vtrack->Pt(), DCAr, DCAz, EventWeight);
-
+  if (fillHists){
+    if (fIsAOD) fElectronTrackTPCChi2->Fill(Vtrack->Pt(), AODtrack->GetTPCchi2perCluster(), EventWeight);
+    fElectronTrackTPCCrossedRows->Fill(Vtrack->Pt(), Vtrack->GetTPCCrossedRows(), EventWeight);
+    fElectronTrackTPCNcls->Fill(Vtrack->Pt(), Vtrack->GetTPCNcls(), EventWeight);
+    fElectronTrackTPCNclsdEdx->Fill(Vtrack->Pt(), Vtrack->GetTPCsignalN(), EventWeight);
+    fElectronTrackITSNcls->Fill(Vtrack->Pt(),ITSNcls, EventWeight);
+    fElectronTrackITSChi2->Fill(Vtrack->Pt(), ITSRedChi2, EventWeight);
+    fElectronTrackITSLayer->Fill(Vtrack->Pt(),ITSPointOnLayer0, ITSPointOnLayer1, EventWeight);
+    fElectronTrackRefit->Fill(Vtrack->Pt(), Vtrack->IsOn(AliAODTrack::kTPCrefit), Vtrack->IsOn(AliAODTrack::kITSrefit), EventWeight);
+    fElectronTrackDCA->Fill(Vtrack->Pt(), DCAr, DCAz, EventWeight);
+  }
 
   //MC study of shared cluster cut
 
@@ -4865,14 +5067,14 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliV
 
 
   if(Vtrack->GetTPCNcls() < fTPCnCut) return kFALSE;
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 4, EventWeight);
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 4, EventWeight);
   if(Vtrack->GetTPCsignalN() < fTPCndEdxCut) return kFALSE ;
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 5, EventWeight);
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 5, EventWeight);
 						
   if (!Vtrack->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 6, EventWeight);
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 6, EventWeight);
   //if(ietrack->GetTPCFoundFraction() < 0.6) return kFALSE;   
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 7, EventWeight);
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 7, EventWeight);
 
   if (fIsAOD) {
     Bool_t kinkmotherpass = kTRUE;
@@ -4889,23 +5091,23 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliV
     if(!Htrack) return kFALSE;
     if(Htrack->GetKinkIndex(0) != 0) return kFALSE;
   }
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 8, EventWeight);
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 8, EventWeight);
 
-   if(ITSNcls < fITSnCut) return kFALSE;
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 9, EventWeight);
+  if(ITSNcls < fITSnCut) return kFALSE;
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 9, EventWeight);
 
   if (!Vtrack->IsOn(AliAODTrack::kITSrefit)) return kFALSE ;   
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 10, EventWeight);
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 10, EventWeight);
 
   if(!(ITSPointOnLayer0 || ITSPointOnLayer1)) return kFALSE; // now kAny
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 11, EventWeight);
+  if (fillHists)fElectronTrackCuts->Fill(Vtrack->Pt(), 11, EventWeight);
 
-  if(!(ITSPointOnLayer0 && ITSPointOnLayer1)) return kFALSE; // now kBoth
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 12, EventWeight);
+  if(!(ITSPointOnLayer0 && ITSPointOnLayer1) && !fElectronkAny) return kFALSE; // now kBoth
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 12, EventWeight);
   
 
-  if(TMath::Abs(DCAr) > 1 || TMath::Abs(DCAz) > 2) return kFALSE;
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 13, EventWeight); 
+  if(TMath::Abs(DCAr) > fEleDCAr || TMath::Abs(DCAz) > fEleDCAz) return kFALSE;
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 13, EventWeight); 
 
 
   if (fITSSharedClusterCut>0.9) {
@@ -4916,7 +5118,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliV
     if (ITSFracSharedNCls>fITSSharedClusterCut) return kFALSE;
   }
   // cout << "Cut " << fITSSharedClusterCut << "\t" << ITSNclsShared << endl;
-  fElectronTrackCuts->Fill(Vtrack->Pt(), 14, EventWeight); 
+  if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 14, EventWeight); 
  
 
 
@@ -4938,7 +5140,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliV
  }
 
  //________________________________________________
-Bool_t AliAnalysisTaskHaHFECorrel::InclElecPIDCuts(AliVTrack* Vtrack, Bool_t IsPrimary, Double_t EventWeight) {
+Bool_t AliAnalysisTaskHaHFECorrel::InclElecPIDCuts(AliVTrack* Vtrack,Double_t EventWeight,  Bool_t fillHists ) {
 
   AliAODTrack *AODtrack = dynamic_cast<AliAODTrack*>(Vtrack); 
   if (fIsAOD && !AODtrack) return kFALSE;
@@ -4956,12 +5158,12 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecPIDCuts(AliVTrack* Vtrack, Bool_t IsP
 
   // if (TMath::Abs(fITSnSigma)>10) cout << "ITSNSigma" << fITSnSigma << endl;
   
-  if (fITSnSigma>2) PassITSCut=kFALSE; //(fITSnSigma < (-1.*fSigmaITScut) ) || (fITSnSigma > fSigmaITScut)) PassITSCut=kFALSE;
+  if (fITSnSigma>fSigmaITScut) PassITSCut=kFALSE; //(fITSnSigma < (-1.*fSigmaITScut) ) || (fITSnSigma > fSigmaITScut)) PassITSCut=kFALSE;
   if ((fTOFnSigma < (-1.*fSigmaTOFcut) ) || (fTOFnSigma > fSigmaTOFcut)) PassTOFCut=kFALSE;
-  if ((fTPCnSigma<fSigmaTPCcut)  || (fTPCnSigma>3)) PassTPCCut=kFALSE; 
+  if ((fTPCnSigma<fSigmaTPCcutLow)  || (fTPCnSigma>fSigmaTPCcutHigh)) PassTPCCut=kFALSE; 
 
 
-  if (IsPrimary) { //Fill PID histograms only in first round
+  if (fillHists) { //Fill PID histograms only in first round
     fHistITSnSig->Fill(Vtrack->P(),fITSnSigma, EventWeight);
     fHistTOFnSig->Fill(Vtrack->P(),fTOFnSigma, EventWeight);
     fHistTPCnSig->Fill(Vtrack->P(),fTPCnSigma, EventWeight);
@@ -4971,7 +5173,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecPIDCuts(AliVTrack* Vtrack, Bool_t IsP
     if (PassITSCut && PassTOFCut) fHistTPCnSigITSTOFcut->Fill(Vtrack->P(),fTPCnSigma, EventWeight);
     if (PassTOFCut && PassTPCCut) fHistITSnSigTOFTPCcut->Fill(Vtrack->P(),fITSnSigma, EventWeight);
 
-    if (PassTOFCut && fHadCont) fHadContPvsPt->Fill(Vtrack->P(), Vtrack->Pt(), EventWeight);
+    if (PassTOFCut && fHadCont && fOneTimeCheck) fHadContPvsPt->Fill(Vtrack->P(), Vtrack->Pt(), EventWeight);
 
     Double_t fillSparse[4];   
     fillSparse[0]=Vtrack->P();
@@ -4979,7 +5181,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecPIDCuts(AliVTrack* Vtrack, Bool_t IsP
     fillSparse[2]=Vtrack->Eta();
     fillSparse[3]=fTPCnSigma;
 
-    if (PassTOFCut && fHadCont) fHadContPPhiEtaTPC->Fill(fillSparse, EventWeight);
+    if (PassTOFCut && fHadCont && fOneTimeCheck) fHadContPPhiEtaTPC->Fill(fillSparse, EventWeight);
 
     fillSparse[1]=fITSnSigma;
     fillSparse[2]=fTOFnSigma;
@@ -5008,7 +5210,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecPIDCuts(AliVTrack* Vtrack, Bool_t IsP
     }
    }
  
-  PassITSCut = kTRUE; // currently no ITS cut applied (pp)
+  if (fSigmaITScut>5) PassITSCut = kTRUE; // currently no ITS cut applied (pp)
   if (!PassITSCut || !PassTOFCut || !PassTPCCut) return kFALSE;
   return kTRUE;
 }
@@ -5054,7 +5256,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::PhotElecTrackCuts(const AliVVertex *pVtx,AliV
      // if (!AODtrack->IsOn(AliAODTrack::kITSrefit) && FBITSsa) cout << "No REFIT" << endl;
 
     if(TMath::Abs(Vtrack->Eta())>0.9) return kFALSE;
-    //if(Vtrack->Pt() < fPhotElecPtCut) return kFALSE;
+    if(Vtrack->Pt() < fPhotElecPtCut) return kFALSE;
     // if (fPhotElecITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kITSrefit)) return kFALSE;
     // if (fPhotElecITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kTPCrefit)) return kFALSE;
 
@@ -5098,8 +5300,10 @@ Bool_t AliAnalysisTaskHaHFECorrel::PhotElecTrackCuts(const AliVVertex *pVtx,AliV
 
  //_________________________________________
 
-Bool_t AliAnalysisTaskHaHFECorrel::ChargedHadronTrackCuts(const AliVVertex *pVtx,AliVTrack *Vtrack,Int_t nMother, Int_t listMother[], Double_t EventWeight)
+Bool_t AliAnalysisTaskHaHFECorrel::ChargedHadronTrackCuts(const AliVVertex *pVtx,AliVTrack *Vtrack,Int_t nMother, Int_t listMother[], Double_t EventWeight, Bool_t fillHists)
  {
+
+   if (fillHists) fHadronTrackCuts->Fill(Vtrack->Pt(), 0., EventWeight);
    AliAODTrack *AODtrack=0;
    AliESDtrack *ESDtrack=0;
    if (fIsAOD) {
@@ -5112,10 +5316,20 @@ Bool_t AliAnalysisTaskHaHFECorrel::ChargedHadronTrackCuts(const AliVVertex *pVtx
      if(!ESDtrack) return kFALSE;
      if(!ESDkTrkGlobalNoDCA(Vtrack)) return kFALSE;
    }
+   if (fillHists) fHadronTrackCuts->Fill(Vtrack->Pt(), 1, EventWeight);
 
    if(Vtrack->Pt()<0.25) return kFALSE;
+   if (fillHists)  fHadronTrackCuts->Fill(Vtrack->Pt(), 2, EventWeight);
+    
    if(Vtrack->Eta()>fMaxHadronEta) return kFALSE;
    if(Vtrack->Eta()<fMinHadronEta) return kFALSE;
+   if (fillHists) fHadronTrackCuts->Fill(Vtrack->Pt(), 3, EventWeight);
+
+   Bool_t ITSPointOnLayer0=kFALSE;
+   Bool_t ITSPointOnLayer1=kFALSE;
+   ITSPointOnLayer0=Vtrack->HasPointOnITSLayer(0);
+   ITSPointOnLayer1=Vtrack->HasPointOnITSLayer(1);
+  
 
     // quality track cuts for charged hadrons
 
@@ -5139,23 +5353,39 @@ Bool_t AliAnalysisTaskHaHFECorrel::ChargedHadronTrackCuts(const AliVVertex *pVtx
      if(ESDtrack->GetKinkIndex(0) != 0) return kFALSE;
      ESDtrack->GetImpactParameters(DCAr, DCAz);
    }
+   if (fillHists) fHadronTrackCuts->Fill(Vtrack->Pt(), 4, EventWeight);
    //   cout << DCAr << "\t" << DCAz << endl;
 
-   fHadronTrackTPCNcls->Fill(Vtrack->Pt(), Vtrack->GetTPCNcls(), EventWeight);
-   fHadronTrackRefit->Fill(Vtrack->Pt(), Vtrack->IsOn(AliAODTrack::kTPCrefit), Vtrack->IsOn(AliAODTrack::kITSrefit), EventWeight);
-   fHadronTrackDCA->Fill(Vtrack->Pt(), DCAr, DCAz, EventWeight);
+   if (fillHists) fHadronTrackTPCNcls->Fill(Vtrack->Pt(), Vtrack->GetTPCNcls(), EventWeight);
+   if (fillHists) fHadronTrackRefit->Fill(Vtrack->Pt(), Vtrack->IsOn(AliAODTrack::kTPCrefit), Vtrack->IsOn(AliAODTrack::kITSrefit), EventWeight);
+   if (fillHists) fHadronTrackDCA->Fill(Vtrack->Pt(), DCAr, DCAz, EventWeight);
 
 
-   if(fHITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kITSrefit)) return kFALSE;
-   if(fHTPCrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kTPCrefit)) return kFALSE;
-   
    if(Vtrack->GetTPCNcls() < fHTPCnCut) return kFALSE;
+   if (fillHists) fHadronTrackCuts->Fill(Vtrack->Pt(), 5, EventWeight);
    
-   if(TMath::Abs(DCAr) > 0.25 || TMath::Abs(DCAz) > 1) {
+   if(fHTPCrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kTPCrefit)) return kFALSE;
+   if (fillHists) fHadronTrackCuts->Fill(Vtrack->Pt(), 6, EventWeight);
+   
+   if(fHITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kITSrefit)) return kFALSE;
+   if (fillHists) fHadronTrackCuts->Fill(Vtrack->Pt(), 7, EventWeight);
+   
+   if(TMath::Abs(DCAr) > fHadDCAr || TMath::Abs(DCAz) > fHadDCAz) {
      //   cout << "Hadron fails DCA cut " << Vtrack->Pt() << endl;
      return kFALSE;
-   }  
+   }
+   if (fillHists) fHadronTrackCuts->Fill(Vtrack->Pt(), 8, EventWeight);
 
+   if (fillHists) fHadronTrackDCA_woITSAny->Fill(Vtrack->Pt(), DCAr, DCAz, EventWeight);
+   
+   if (fHadkAny && !(ITSPointOnLayer0 || ITSPointOnLayer1)) return kFALSE; // now kAny
+   if (fillHists) fHadronTrackCuts->Fill(Vtrack->Pt(), 9, EventWeight);
+
+   if (fillHists) fHadronTrackDCA_wITSAny->Fill(Vtrack->Pt(), DCAr, DCAz, EventWeight);
+
+   if (fHadTOFmatch & !(Vtrack->GetTOFBunchCrossing()==0)) return kFALSE;
+   if (fillHists) fHadronTrackCuts->Fill(Vtrack->Pt(), 10, EventWeight);
+   
    return kTRUE;   
 }
 
@@ -5393,11 +5623,13 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
     if (ULSPartner>0)  fTagEffULS->Fill(fillSparse, ULSPartner*PtMotherWeight*EventWeight);
     if (trueULSPartner) fTagTruePairs->Fill(fillSparse, PtMotherWeight*EventWeight);
 
-    fTagEffInclWoWeight->Fill(fillSparse, EventWeight);
-    if (LSPartner>0)  fTagEffULSWoWeight->Fill(fillSparse, -LSPartner*EventWeight);
-    if (ULSPartner>0)  fTagEffULSWoWeight->Fill(fillSparse, ULSPartner*EventWeight);
-    if (trueULSPartner) fTagTruePairsWoWeight->Fill(fillSparse, EventWeight);
-
+    if (fOneTimeCheck) {
+      fTagEffInclWoWeight->Fill(fillSparse, EventWeight);
+      if (LSPartner>0)  fTagEffULSWoWeight->Fill(fillSparse, -LSPartner*EventWeight);
+      if (ULSPartner>0)  fTagEffULSWoWeight->Fill(fillSparse, ULSPartner*EventWeight);
+      if (trueULSPartner) fTagTruePairsWoWeight->Fill(fillSparse, EventWeight);
+    }
+    
     // extra sparse to control pt mother, pt electron, ratio of primary to secondary
     if (PDGCode==11) {
       if (PDGCodeMother==22) {
@@ -5485,7 +5717,7 @@ void AliAnalysisTaskHaHFECorrel::BinLogX(TAxis *axis)
 
 void AliAnalysisTaskHaHFECorrel::SetPDGAxis(TAxis *axis, std::vector<TString> PDGLabel)
 {
-  for (UInt_t i=1; i<axis->GetNbins(); i++) {
+  for (Int_t i=1; i<axis->GetNbins(); i++) {
     if (i<PDGLabel.size()) {
       axis->SetBinLabel(i,PDGLabel[i].Data());
       // cout << PDGLabel[i] << endl;
@@ -5493,6 +5725,14 @@ void AliAnalysisTaskHaHFECorrel::SetPDGAxis(TAxis *axis, std::vector<TString> PD
     else axis->SetBinLabel(i, "-");
   }
   //  cout << "Axis Label" << axis->GetBinLabel(22) << endl;
+}
+
+void AliAnalysisTaskHaHFECorrel::SetTriggerAxis(TAxis *axis)
+{
+  for (Int_t i=1; i<=axis->GetNbins(); i++) {
+    TString AxisLabel = Form("%4.2f_%4.2f", fAssPtHad_Xmin[i-1], fAssPtHad_Xmax[i-1]); 
+    axis->SetBinLabel(i, AxisLabel.Data());
+   }
 }
 
 Bool_t AliAnalysisTaskHaHFECorrel::HaveSameMother(Int_t Label1, Int_t Label2) const
@@ -5517,29 +5757,38 @@ Bool_t AliAnalysisTaskHaHFECorrel::IsPhotonicElectron(Int_t Label1) const
 {
   Int_t PDGCodeMother=-999, PDGCodeGrandMother=-999, PDGCodeGGMother=-999;
   AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMC->GetTrack(abs(Label1));
-  if (abs(MCParticle->GetPdgCode())!=11) return kFALSE; // false if no electron
+  if (abs(MCParticle->GetPdgCode())!=11) return kFALSE; // false if no electron  
   if (MCParticle->GetMother()>=0) {
      AliAODMCParticle* MCParticleMother = (AliAODMCParticle*) fMC->GetTrack(MCParticle->GetMother());
      PDGCodeMother = abs(MCParticleMother->GetPdgCode());
-     if (PDGCodeMother == 111 || PDGCodeMother == 221) {
-       AliAODMCParticle* MCParticleGrandMother=(AliAODMCParticle*) fMC->GetTrack(MCParticleMother->GetMother());
-       PDGCodeGrandMother=abs(MCParticleGrandMother->GetPdgCode());
-       if (PDGCodeGrandMother<399) return kTRUE; // ignore HF feed-down return kTRUE; // true if mother is eta or pion
-     }
-     else if (PDGCodeMother == 22 && MCParticleMother->GetMother()>=0) {
-       AliAODMCParticle* MCParticleGrandMother=(AliAODMCParticle*) fMC->GetTrack(MCParticleMother->GetMother());
-       PDGCodeGrandMother=abs(MCParticleGrandMother->GetPdgCode());
-       if (PDGCodeGrandMother == 111 || PDGCodeGrandMother == 221) {
-	 AliAODMCParticle* MCParticleGGMother=(AliAODMCParticle*) fMC->GetTrack(MCParticleMother->GetMother());
-	 PDGCodeGGMother=abs(MCParticleGGMother->GetPdgCode());
-	 if (PDGCodeGGMother<399) return kTRUE; // ignore HF feed-down 
+     if (PDGCodeMother == 111 || PDGCodeMother == 221) { // if mother is pion or eta
+       if (MCParticleMother->GetMother()>=0) { // check grandmother<399
+	 AliAODMCParticle* MCParticleGrandMother=(AliAODMCParticle*) fMC->GetTrack(MCParticleMother->GetMother());
+	 PDGCodeGrandMother=abs(MCParticleGrandMother->GetPdgCode());
+	 if (PDGCodeGrandMother<399) return kTRUE; // ignore HF feed-down return kTRUE; // true if mother is eta or pion
 	 else return kFALSE;
+       }
+       else return kTRUE;
+     }
+     else if (PDGCodeMother == 22 && MCParticleMother->GetMother()>=0) { // if mother is gamma
+       AliAODMCParticle* MCParticleGrandMother=(AliAODMCParticle*) fMC->GetTrack(MCParticleMother->GetMother());
+       PDGCodeGrandMother=abs(MCParticleGrandMother->GetPdgCode());
+       if (PDGCodeGrandMother == 111 || PDGCodeGrandMother == 221) { // if grandmother is pion or eta
+	 if (MCParticleGrandMother->GetMother()>=0) {// check if ggmother is<400
+	   AliAODMCParticle* MCParticleGGMother=(AliAODMCParticle*) fMC->GetTrack(MCParticleGrandMother->GetMother());
+	   PDGCodeGGMother=abs(MCParticleGGMother->GetPdgCode());
+	   if (PDGCodeGGMother<399) return kTRUE; // ignore HF feed-down
+	   else return kFALSE;
+	 }
+	 else return kTRUE;
        }
        else return kFALSE;
      }
      else return kFALSE;
   }
   else return kFALSE;
+
+  return kFALSE;
 }
 
 
@@ -5731,7 +5980,7 @@ void AliAnalysisTaskHaHFECorrel::TRDQA(Int_t RunNumber, const AliVVertex *pVtx, 
     passHFETrackCut= InclElecTrackCuts(pVtx,Vtrack,nMother,listMother, EventWeight);
 
     Bool_t passHFEPIDCut=kFALSE;
-    if (passHFETrackCut) passHFEPIDCut= InclElecPIDCuts(Vtrack, kFALSE, EventWeight);
+    if (passHFETrackCut) passHFEPIDCut= InclElecPIDCuts(Vtrack, EventWeight, kFALSE);  // do not fill hists
 
     Double_t fillSparse[7];
     fillSparse[0]=Vtrack->Pt();
@@ -5904,34 +6153,37 @@ Double_t AliAnalysisTaskHaHFECorrel::GetPionWeight(Double_t pt) {
 }
 
 
-Double_t AliAnalysisTaskHaHFECorrel::GetHadronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx) {
+Double_t AliAnalysisTaskHaHFECorrel::GetHadronRecEff(Int_t run, Double_t pt, Double_t phi, Double_t eta, Double_t zVtx) {
   if (pt<0.25) return -1.;
   
-  Int_t Bin = fHadRecEff.FindBin(pt,eta,zVtx);
+  Int_t Bin = fHadRecEff.FindBin(1.*run,zVtx, pt);
   if (fHadRecEff.IsBinUnderflow(Bin) || fHadRecEff.IsBinOverflow(Bin) ) {
     return -1.;
   }
   Double_t RecEff = fHadRecEff.GetBinContent(Bin);
+
+  //  cout << "HR " << run << ", " << pt <<  ", " << RecEff << endl;
+
   if (RecEff>0.05) return RecEff;
   else {
     return -1.;
   }
 }
 
-Double_t AliAnalysisTaskHaHFECorrel::GetElectronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx) {
+Double_t AliAnalysisTaskHaHFECorrel::GetElectronRecEff(Int_t run, Double_t pt, Double_t phi, Double_t eta, Double_t zVtx) {
 
   //  return 1.;
 
-  // Apply electron rec eff offline!
-
+  
   if (pt<0.5) return -1;
-  Int_t Bin = fEleRecEff.FindBin(zVtx, pt);
+  Int_t Bin = fEleRecEff.FindBin(1.*run,zVtx, pt);
   //  cout << "EleBin " << Bin << endl;
   if (fEleRecEff.IsBinUnderflow(Bin) || fEleRecEff.IsBinOverflow(Bin)) {
     // cout <<  "ElecRecEff: " << pt << "\t" << eta << "\t" << zVtx << endl;
     return -1.;
   }
   Double_t RecEff= fEleRecEff.GetBinContent(Bin);
+  //  cout << "ER " << run << ", " << pt <<  ", " << RecEff << endl;
   if (RecEff>0.05) return RecEff;
   else {
     //cout <<  "ElecRecEff: " << pt << "\t" << eta << "\t" << zVtx << endl;
@@ -5939,15 +6191,16 @@ Double_t AliAnalysisTaskHaHFECorrel::GetElectronRecEff(Double_t pt, Double_t phi
   }
 }
 
-Double_t AliAnalysisTaskHaHFECorrel::GetTriggerWeight(Double_t minV0, Double_t nTrAcc) {
+Double_t AliAnalysisTaskHaHFECorrel::GetTriggerWeight(Int_t run, Double_t minV0, Double_t nTrAcc) {
 
   if (!fUseEventWeights) return 1.;
   if (minV0>10) return 1.;
   
-  Int_t BinX = fTriggerWeight.GetXaxis()->FindBin(minV0);
-  Int_t BinY = fTriggerWeight.GetYaxis()->FindBin(nTrAcc);
-  if (BinY>=fTriggerWeight.GetYaxis()->GetNbins()) BinY=fTriggerWeight.GetYaxis()->GetLast();
-  Double_t TriggerWeight = fTriggerWeight.GetBinContent(BinX, BinY);
+  Int_t BinX= fVtxWeight.GetXaxis()->FindBin(run);
+  Int_t BinY= fVtxWeight.GetYaxis()->FindBin(minV0);
+  Int_t BinZ= fVtxWeight.GetZaxis()->FindBin(nTrAcc);   
+  if (BinZ>=fTriggerWeight.GetYaxis()->GetNbins()) BinZ=fTriggerWeight.GetZaxis()->GetLast();
+  Double_t TriggerWeight = fTriggerWeight.GetBinContent(BinX, BinY, BinZ);
   //  if (TriggerWeight<0.01) {
   //   cout << minV0 << "\t" << nTrAcc << "\t" << TriggerWeight << endl;
   //cout << BinX << "\t" << BinY << endl;
@@ -5955,11 +6208,12 @@ Double_t AliAnalysisTaskHaHFECorrel::GetTriggerWeight(Double_t minV0, Double_t n
   return 1./TriggerWeight;
 }
 
-Double_t AliAnalysisTaskHaHFECorrel::GetVtxWeight(Double_t nTrAcc) {
+Double_t AliAnalysisTaskHaHFECorrel::GetVtxWeight(Int_t run, Double_t nTrAcc) {
   if (!fUseEventWeights) return 1.;
-  Int_t Bin= fVtxWeight.FindBin(nTrAcc);
-  if (fVtxWeight.IsBinOverflow(Bin)) Bin = fVtxWeight.GetXaxis()->GetLast();
-  Double_t VtxWeight = fVtxWeight.GetBinContent(Bin);
+  Int_t BinX= fVtxWeight.GetXaxis()->FindBin(run);
+  Int_t BinY= fVtxWeight.GetYaxis()->FindBin(nTrAcc);
+  if (BinY>=fVtxWeight.GetYaxis()->GetNbins()) BinY = fVtxWeight.GetXaxis()->GetLast();
+  Double_t VtxWeight = fVtxWeight.GetBinContent(BinX, BinY);
   if (VtxWeight<0.001) return 1.;
   return 1./VtxWeight;
 }
@@ -6092,7 +6346,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::PassEventBias( const AliVVertex *pVtx, Int_t 
 
 Bool_t AliAnalysisTaskHaHFECorrel::ESDkTrkGlobalNoDCA(AliVTrack* Vtrack) {
   AliESDtrack *ESDtrack = dynamic_cast<AliESDtrack*>(Vtrack);   
-  if (!fIsAOD && !ESDtrack) return kFALSE;
+  if (!fIsAOD && !ESDtrack && !fesdTrackCuts) return kFALSE;
   fesdTrackCuts->SetMaxDCAToVertexXY(2.4);
   fesdTrackCuts->SetMaxDCAToVertexZ(3.2);
   fesdTrackCuts->SetDCAToVertex2D(kTRUE);
@@ -6492,11 +6746,11 @@ Double_t AliAnalysisTaskHaHFECorrel::Sphericity(const TObjArray* tracks, Double_
 void AliAnalysisTaskHaHFECorrel::PhotULSLSElectronAcceptance(const AliVVertex *pVtx, Float_t mult,  Int_t nMother, Int_t listMother[], Double_t EventWeight) {
   
   AliEventPool* fPool;
-  fPool = fPoolMgr->GetEventPool(mult, pVtx->GetZ(), 0.); // Get the buffer associated with the current centrality and z-vtx
+  fPool = fPoolMgr->GetEventPool(mult, pVtx->GetZ(), 1.0); // Get the buffer associated with the current centrality and z-vtx
   //  fPool->SetDebug(kTRUE);
   if (!fPool)
   {
-    AliFatal(Form("No pool found for centrality = %f, zVtx = %f, maxPt = %f", mult, pVtx->GetZ(), 0.));
+    AliFatal(Form("No pool found for centrality = %f, zVtx = %f, maxPt = %f", mult, pVtx->GetZ(), 1.));
     return;
   }
 
@@ -6606,15 +6860,181 @@ void AliAnalysisTaskHaHFECorrel::PhotULSLSElectronAcceptance(const AliVVertex *p
 	  }
       
 	  if(mass<fInvmassCut && fFlagULS) {
-	    fPhotMixULS->Fill(ptMix); // EventWeight are not import, events are mixed within the same mult class
+	    if (fOneTimeCheck) fPhotMixULS->Fill(ptMix); // EventWeight are not import, events are mixed within the same mult class
 	  }
         
 	  if(mass<fInvmassCut && fFlagLS){
-	    fPhotMixLS->Fill(ptMix, chargeMix); // EventWeight are not important
+	    if (fOneTimeCheck) fPhotMixLS->Fill(ptMix, chargeMix); // EventWeight are not important
 	  }
   
 	}//track loop
       } // mixtracks
     }// mix events
   }	  
+}
+
+
+void AliAnalysisTaskHaHFECorrel::SetEleVarOpt(Int_t VarOpt) {
+  fVarEleOpt=VarOpt;
+  switch (fVarEleOpt) {
+  case 0:
+    return;
+    break;
+  case 1:
+    fMinElectronEta=-0.7; // defaul 0.8
+    fMaxElectronEta=0.7;
+    break;
+  case 2:
+    fElectronkAny=kTRUE;
+    break;
+  case 3:
+    fITSnCut=4; // default 3
+    break;
+  case 4:
+    fITSnCut=5;
+    break;
+  case 5:
+    fEleDCAr=0.75; // default 1. and 2.
+    fEleDCAz=1.5;
+    break;
+  case 6:
+    fEleDCAr=1.25;
+    fEleDCAz=2.5;
+    break;
+  case 7:
+    fTPCnCut=90; // default 100
+    break;
+  case 8:
+    fTPCnCut=110;
+    break;
+  case 9:
+    fTPCndEdxCut=70;
+    break;
+  case 10:
+    fTPCndEdxCut=90;
+    break;
+  case 11:
+    fSigmaTPCcutLow=0; // default -1;
+    break;
+  case 12:
+    fSigmaTPCcutHigh=2;
+    break;
+  case 13:
+    fSigmaTOFcut=2;
+    break;
+  case 14:
+    fSigmaITScut=2;
+    break;
+  case 15:
+    fSigmaTPCcutLow=-1.5; // default -1;
+    break;
+  case 16:
+    fSigmaTOFcut=2.5;
+    break;
+  case 17:
+    fMinElectronEta=-0.6; // default 0.8
+    fMaxElectronEta=0.6;
+    break;
+  case 18:
+    fMinElectronEta=0; // default 0.8
+    fMaxElectronEta=0.8;
+    break;
+  case 19:
+    fMinElectronEta=-0.8; // default 0.8
+    fMaxElectronEta=0;
+    break;
+  }
+
+
+}
+
+
+
+void AliAnalysisTaskHaHFECorrel::SetHadVarOpt(Int_t VarOpt) {
+  fVarHadOpt=VarOpt;
+  switch (fVarHadOpt) {
+  case 0:
+    return;
+    break;
+  case 1:
+    fMinHadronEta=-0.7;
+    fMaxHadronEta=0.7;
+    break;
+  case 2:
+    fMinHadronEta=-0.6;
+    fMaxHadronEta=0.6;
+    break;
+  case 3:
+    fHTPCnCut=80;
+    break;
+  case 4:
+    fHTPCnCut=120;
+    break;
+  case 5:
+    fHadDCAr=0.5;
+    fHadDCAz=1.5;
+    break;
+  case 6:
+    fHadDCAr=0.75;
+    fHadDCAz=2;
+    break;
+  case 7:
+    fHadDCAr=0.5;
+    break;
+  case 8:
+    fHadkAny=kFALSE;
+    break;
+  case 9:
+    fHadTOFmatch=kTRUE;
+    break;
+  }
+      
+}
+
+void AliAnalysisTaskHaHFECorrel::SetPhotVarOpt(Int_t VarOpt) {
+  fVarPhotOpt=VarOpt;
+  switch (fVarPhotOpt) {
+  case 0:
+    return;
+    break;
+  case 1:
+    fUseITSsa = kFALSE;
+    break;
+  case 2:
+    fPhotElecTPCnCut = 60;
+    break;
+  case 3:
+    fPhotElecTPCnCut = 100;
+    break;
+  case 4:
+    fPhotElecSigmaTPCcut = 2;
+    break;
+  case 5:
+    fInvmassCut=0.08;
+    break;
+  case 6:
+    fInvmassCut=0.10;
+    break;
+  case 7:
+    fInvmassCut=0.12;
+    break;
+  case 8:
+    fInvmassCut=0.16;
+    break;
+  case 9:
+    fPhotElecPtCut=0.1;
+    break;
+  case 10:
+    fPhotElecPtCut=0.2;
+    break;
+  case 11:
+    fPhotElecPtCut=0.3;
+    break;
+  case 12:
+    fPhotCorrCase = 3;
+    break;
+  case 13:
+    fPhotCorrCase = 4;
+    break;
+  }
 }

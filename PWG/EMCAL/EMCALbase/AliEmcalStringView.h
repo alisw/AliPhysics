@@ -28,7 +28,7 @@
 #define ALIEMCALSTRINGVIEW_H
 #include "RConfig.h"
 
-#if ROOT_VERSION_CODE > ROOT_VERSION(6,10,0) 
+#if ROOT_VERSION_CODE > ROOT_VERSION(6,10,99)
 #include "RStringView.h"
 #define EMCAL_STRINGVIEW const std::string_view
 #else 

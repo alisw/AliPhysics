@@ -466,15 +466,17 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
   TArrayD secondCorrection(jMax);
   TArrayI secondLabel(jMax);
   TArrayI secondMotherLabel(jMax);
+  TArrayI secondTrigOrAssoc(jMax);
 
-  for (Int_t i=0; i<jMax; i++){
+  for (Int_t i=0; i<jMax; i++){  
+    secondTrigOrAssoc[i] = (Int_t)((AliBFBasicParticle*) particlesSecond->At(i))->GetTrigOrAssoc();
     secondEta[i] = ((AliVParticle*) particlesSecond->At(i))->Eta();
     secondPhi[i] = ((AliVParticle*) particlesSecond->At(i))->Phi();
     secondPt[i]  = ((AliVParticle*) particlesSecond->At(i))->Pt();
     secondCharge[i]  = (Short_t)((AliVParticle*) particlesSecond->At(i))->Charge();
     secondCorrection[i]  = (Double_t)((AliBFBasicParticle*) particlesSecond->At(i))->Correction();   //==========================correction
     if (fSameLabelMCCut) secondLabel[i]  = (Int_t)((AliBFBasicParticle*) particlesSecond->At(i))->GetLabel(); 
-    if (fResonancesLabelCut) secondMotherLabel[i] = (Int_t)((AliBFBasicParticle*) particlesSecond->At(i))->GetMotherLabel(); 
+    if (fResonancesLabelCut) secondMotherLabel[i] = (Int_t)((AliBFBasicParticle*) particlesSecond->At(i))->GetMotherLabel();
   }
   
   //TLorenzVector implementation for resonances
@@ -506,8 +508,14 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     Float_t firstCorrection  = firstParticle->Correction();//==========================correction
     Int_t firstLabel = 0;
     Int_t firstMotherLabel = 0;
+    Int_t firstTrigOrAssoc = 0;
     if (fSameLabelMCCut) firstLabel = firstParticle->GetLabel();
     if (fResonancesLabelCut) firstMotherLabel = firstParticle->GetMotherLabel();
+    
+    firstTrigOrAssoc = firstParticle->GetTrigOrAssoc();
+    if (firstTrigOrAssoc == 1)
+    continue;
+
     // Event plane (determine psi bin)
     Double_t gPsiMinusPhi    =   0.;
     Double_t gPsiMinusPhiBin = -10.;
@@ -548,6 +556,9 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     for(Int_t j = 0; j < jMax; j++) {   
 
       if(!particlesMixed && j == i) continue; // no auto correlations (only for non mixing)
+
+      if (secondTrigOrAssoc[j] == 0)
+      continue;
 
       // pT,Assoc < pT,Trig (if momentum ordering is switched ON)
       if(fMomentumOrdering){
@@ -765,9 +776,9 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       }
 
       if( charge1 > 0 && charge2 < 0)  fHistPN->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]); //==========================correction
-      else if( charge1 < 0 && charge2 > 0)  fHistNP->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]);//==========================correction 
-      else if( charge1 > 0 && charge2 > 0)  fHistPP->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]);//==========================correction 
-      else if( charge1 < 0 && charge2 < 0)  fHistNN->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]);//==========================correction 
+      else if( charge1 < 0 && charge2 > 0)  fHistNP->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]);//==========================correction
+      else if( charge1 > 0 && charge2 > 0)  fHistPP->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]);//==========================correction
+      else if( charge1 < 0 && charge2 < 0)  fHistNN->Fill(trackVariablesPair,0,firstCorrection*secondCorrection[j]);//==========================correction
       else {
 	//AliWarning(Form("Wrong charge combination: charge1 = %d and charge2 = %d",charge,charge2));
 	continue;

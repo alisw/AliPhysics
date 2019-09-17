@@ -55,9 +55,6 @@ class AliCalorimeterUtils;
 #include "AliAnaWeights.h"
 #include "AliMCAnalysisUtils.h"
 
-// Jets
-class AliAODJetEventBackground;
-
 class AliCaloTrackReader : public TObject {
 
 public: 
@@ -765,7 +762,8 @@ public:
   virtual TString GetInputNonStandardJetBranchName()          { return fInputNonStandardJetBranchName   ; }
   
   virtual void FillInputBackgroundJets() ;
-  virtual AliAODJetEventBackground* GetBackgroundJets() const { return fBackgroundJets                 ; }
+  //  virtual AliAODJetEventBackground* GetBackgroundJets() const { return fBackgroundJets                 ; }
+  virtual TClonesArray* GetBackgroundJets() const { return fBackgroundJets                 ; }
   virtual void SetInputBackgroundJetBranchName(TString name) { fInputBackgroundJetBranchName   = name ; }
   virtual TString GetInputBackgroundJetBranchName()          { return fInputBackgroundJetBranchName   ; }
 
@@ -981,7 +979,8 @@ public:
   TClonesArray *   fNonStandardJets;               //!<! Temporal array with jets.
   TString          fInputNonStandardJetBranchName; ///<  Name of non standard jet branch.
   Bool_t           fFillInputBackgroundJetBranch;  ///<  Flag to use data from background jets.
-  AliAODJetEventBackground * fBackgroundJets;      //!<! Background jets.
+  //  AliAODJetEventBackground * fBackgroundJets;      //!<! Background jets.
+  TClonesArray * fBackgroundJets;      //!<! Background jets.
   TString          fInputBackgroundJetBranchName;  ///<  Name of background jet branch.
 
   TArrayI          fAcceptEventsWithBit;           ///<  Accept events if trigger bit is on.
@@ -1024,7 +1023,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,82) ;
+  ClassDef(AliCaloTrackReader,83) ;
   /// \endcond
 
 } ;
