@@ -460,7 +460,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
 
   // sanity checks
   assert(params.event_mult == default_event.multiplicity);
-  assert(params.pion_1_pt == default_pion.pt);
+  assert(params.pion_1_pt.first == default_pion.pt.first && params.pion_1_pt.second == default_pion.pt.second);
   assert(params.pair_TPCOnly == default_pair.TPCOnly);
   // assert(params.pair_TPCExitSepMin == default_pair_TPCExitSepMin);
   assert(params.pair_delta_eta_min == default_pair.min_delta_eta);
