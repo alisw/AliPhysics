@@ -235,6 +235,47 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     
 }
 
+TString AliAnalysisTaskHFEBeautyMCTemplatesRun2::GetPeriodNameByLPM(TString lTag)  // This is copied from the mult selection task
+{
+    //==================================
+    // Setup initial Info
+    Bool_t lLocated = kFALSE;
+    TString lProductionName = "";
+    
+    //==================================
+    // Get alirootVersion object title
+    AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!handler) return lProductionName; //failed!
+    TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+    if (!prodInfoData) return lProductionName; //failed!
+    TString lAlirootVersion(prodInfoData->GetTitle());
+    
+    //==================================
+    // Get Production name
+    TObjArray* lArrStr = lAlirootVersion.Tokenize(";");
+    if(lArrStr->GetEntriesFast()) {
+        TIter iString(lArrStr);
+        TObjString* os=0;
+        Int_t j=0;
+        while ((os=(TObjString*)iString())) {
+            if( os->GetString().Contains(lTag.Data()) ){
+                lLocated = kTRUE;
+                lProductionName = os->GetString().Data();
+                //Remove Label
+                lProductionName.ReplaceAll(lTag.Data(),"");
+                //Remove any remaining whitespace (just in case)
+                lProductionName.ReplaceAll("=","");
+                lProductionName.ReplaceAll(" ","");
+            }
+            j++;
+        }
+    }
+    //Memory cleanup
+    delete lArrStr;
+    //Return production name
+    return lProductionName;
+}
+
 Int_t AliAnalysisTaskHFEBeautyMCTemplatesRun2::FindSource(AliMCParticle * mcple, AliMCEvent* fMCEvent, Double_t &motherPt, Double_t &GroundStateMotherPt)
 {
   motherPt = 0.;
@@ -545,6 +586,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
   Int_t Source, SourceNew;
   Double_t CorrGaussWidth=0.;
   Int_t sourceTemp = 0;
+  TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
   
   if(analyzeEvent)
   {
@@ -565,7 +607,11 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         SourceNew = FindSource(mcple, fMCEvent, MotherPt, GSMotherPt); // This also fills the motherPt
         fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,dcaxyD,dcaErr);
         dcaErr =  dcaxyD / dcaErr; // because dcaerr is actually the dca significance
-        CorrGaussWidth = TMath::Sqrt((1. + 0.085)*(1. + 0.085)-1.);
+        //if(lProductionName.Contains("LHC16i"))
+        CorrGaussWidth = TMath::Sqrt((1. + 0.085)*(1. + 0.085)-1.); // For now also use as default
+        if(lProductionName.Contains("LHC18l8") || lProductionName.Contains("LHC19f3"))
+          CorrGaussWidth = TMath::Sqrt((1.09375 + 0.0125*pt)*(1.09375 + 0.0125*pt)-1.);
+        
         IP = dcaxyD*track->Charge()*fieldConfiguration+fRd->Gaus(0., CorrGaussWidth*dcaErr); // 0.458 corresponds to a 10% width change
         if(Source == 0)
         {
@@ -695,6 +741,9 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,dcaxyD,dcaErr);  // DCA only calculated for electrons otherwise
         dcaErr =  dcaxyD / dcaErr; // because dcaerr is actually the dca significance
         CorrGaussWidth = TMath::Sqrt((1. + 0.085)*(1. + 0.085)-1.);
+        if(lProductionName.Contains("LHC18l8") || lProductionName.Contains("LHC19f3"))
+          CorrGaussWidth = TMath::Sqrt((1.09375 + 0.0125*pt)*(1.09375 + 0.0125*pt)-1.);
+        
         IP = dcaxyD*track->Charge()*fieldConfiguration+fRd->Gaus(0., CorrGaussWidth*dcaErr); // 0.458 corresponds to a 10% width change
         IPUncorr = dcaxyD*track->Charge()*fieldConfiguration;
         fDCAHadrons->Fill(pt, dcaxyD*track->Charge()*fieldConfiguration); // dcaxyD*track->Charge()*fieldConfiguration , for now leav factors out to check on center changes etc.
