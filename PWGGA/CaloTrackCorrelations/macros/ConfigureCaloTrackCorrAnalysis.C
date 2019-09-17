@@ -877,7 +877,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
      leading == 4)   ana->SwitchOnCheckNeutralClustersForLeading();
   
   // Do at generation level detector cuts and effects
-  ana->SwitchOffPrimariesInConeSelection();
+  ana->SwitchOnPrimariesInConeSelection();
   ana->SwitchOffPrimariesPi0DecayStudy() ;
   
   ana->SwitchOffSSHistoFill();
