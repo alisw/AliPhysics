@@ -358,7 +358,7 @@ Bool_t ConfigPhiPP13TeV_PID(
     Double_t mMass;
     Int_t mPDG0, mPDG1, mPDG2;
 
-    if (isMC) {
+    if (0 && isMC) {
         for (Int_t i = 0; i < 14; i++) {
             if (!i) {
                 mName.Form("pi0_ee");
@@ -556,7 +556,7 @@ Bool_t ConfigPhiPP13TeV_PID(
             }
 
             AliRsnMiniOutput* out = task->CreateOutput(
-                Form("%s_true", mName.Data()), "HIST", "TRUE");
+                Form("%s_mother", mName.Data()), "HIST", "MOTHER");
             if (mPDG1 == 3122)
                 out->SetCutID(0, -1);
             else
