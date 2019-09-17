@@ -265,7 +265,9 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                            fHistoMCNegPionsFromNeutralMesonPt;                 //!<! array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
     TH1F**                            fHistoMCNegPionsFromNeutralMesonEta;                //!<! array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
     TH1F**                            fHistoMCNegPionsFromNeutralMesonPhi;                //!<! array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
-    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt;                           //!<! array of histos of produced etas via pi+pi-pi0 in the specified y range
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt;                           //!<! array of histos of produced NNM via pi+pi-pi0 in the specified y range
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMEta;                          //!<! array of histos of produced HNM via pi+pi-pi0 in the specified y range
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMPhi;                          //!<! array of histos of produced HNM via pi+pi-pi0 in the specified y range
     /** array of histos of produced etas via pi+pi-pi0 in the specified y range, with decay products in respective y, eta ranges */
     TH1F**                            fHistoMCHNMPiPlPiMiNDMInAccPt;                      //!<!
     // MC truth properties for heavy meson (and decay products)
@@ -405,7 +407,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 11);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 12);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
