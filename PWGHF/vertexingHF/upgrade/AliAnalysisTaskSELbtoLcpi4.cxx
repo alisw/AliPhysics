@@ -77,7 +77,10 @@ ClassImp(AliAnalysisTaskSELbtoLcpi4);
   fFillNtupleBackgroundRotated(kFALSE),
   fFillNtupleBackgroundNonRotated(kFALSE),
   fCutsond0Lcdaughters(kFALSE),
-  fIsPromptLc(kFALSE)
+  fIsPromptLc(kFALSE),
+  fApplyFixesITS3AnalysisBit(kFALSE),
+  fApplyFixesITS3AnalysiskAll(kFALSE),
+  fApplyFixesITS3AnalysisHijing(kFALSE)
 {
   //
   // Default constructor.
@@ -118,7 +121,10 @@ AliAnalysisTaskSELbtoLcpi4::AliAnalysisTaskSELbtoLcpi4(const char *name,
   fFillNtupleBackgroundRotated(kFALSE),
   fFillNtupleBackgroundNonRotated(kFALSE),
   fCutsond0Lcdaughters(kFALSE),
-  fIsPromptLc(kFALSE)
+  fIsPromptLc(kFALSE),
+  fApplyFixesITS3AnalysisBit(kFALSE),
+  fApplyFixesITS3AnalysiskAll(kFALSE),
+  fApplyFixesITS3AnalysisHijing(kFALSE)
 {
   //SetPtBinLimit(fRDCutsAnalysisLc->GetNPtBins()+1,fRDCutsAnalysisLc->GetPtBinLimits());
     for(Int_t icut=0; icut<2; icut++) fCutD0Daughter[icut]=0.;
@@ -268,26 +274,38 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
   for (Int_t icand = 0; icand < n3Prong; icand++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(icand);
 
+    if(fApplyFixesITS3AnalysisBit){
+      if(!(d->HasSelectionBit(AliRDHFCuts::kLcCuts))) continue;
+    }
+    
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()){
       d->SetOwnPrimaryVtx(fvtx1);
       unsetvtx=kTRUE;
     }
-    Int_t selection=fRDCutsAnalysisLc->IsSelected(d,AliRDHFCuts::kCandidate,aod);//is selected for LambdaC
+    Int_t selection;
+    if(fApplyFixesITS3AnalysiskAll)selection=fRDCutsAnalysisLc->IsSelected(d,AliRDHFCuts::kAll,aod);//is selected for LambdaC
+    else                           selection=fRDCutsAnalysisLc->IsSelected(d,AliRDHFCuts::kCandidate,aod);//is selected for LambdaC
     if(selection==0){
       if(unsetvtx) d->UnsetOwnPrimaryVtx();
       continue;
     }
       
-   //lc preliminary large pt cuts:
-   if(d->Pt()>fCutsPerPt[1] || d->Pt()<fCutsPerPt[2]) continue;
+    //lc preliminary large pt cuts:
+    if(d->Pt()>fCutsPerPt[1] || d->Pt()<fCutsPerPt[2]){
+      if(unsetvtx) d->UnsetOwnPrimaryVtx();
+      continue;
+    }
       
     //Additional Cut on Lc 
     // d0p and d0pi of Lc
     //large pt cuts on the d0's of the Lc daughters //keep them out for the moment
    if (fCutsond0Lcdaughters)
    {   
-      if(TMath::Abs(d->Getd0Prong(0))<fCutD0Daughter[0] || (TMath::Abs(d->Getd0Prong(2))<fCutD0Daughter[1])) continue;
+      if(TMath::Abs(d->Getd0Prong(0))<fCutD0Daughter[0] || (TMath::Abs(d->Getd0Prong(2))<fCutD0Daughter[1])){
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
    }
      // if(TMath::Abs(d->Getd0Prong(0))<0.002 || (TMath::Abs(d->Getd0Prong(2))<0.002))continue;
     //Dist12 and Dist23 and DecayLength on Lc are hardcoded at 0.5
@@ -339,11 +357,13 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       continue;
     }
   
-    //basic PID pion 
-    Double_t nsigmatofPi= fPIDResponse->NumberOfSigmasTOF(HPiAODtrk,AliPID::kPion); 
-    if(nsigmatofPi>-990. && (nsigmatofPi<-3 || nsigmatofPi>3)){HPiAODtrk=0;continue;}
-    Double_t nsigmatpcPi= fPIDResponse->NumberOfSigmasTPC(HPiAODtrk,AliPID::kPion);
-    if(nsigmatpcPi>-990. && (nsigmatpcPi<-3 || nsigmatpcPi>3)){HPiAODtrk=0;continue;}
+    //basic PID pion
+    if(fRDCutsAnalysisLc->GetIsUsePID()){
+      Double_t nsigmatofPi= fPIDResponse->NumberOfSigmasTOF(HPiAODtrk,AliPID::kPion);
+      if(nsigmatofPi>-990. && (nsigmatofPi<-3 || nsigmatofPi>3)){HPiAODtrk=0;continue;}
+      Double_t nsigmatpcPi= fPIDResponse->NumberOfSigmasTPC(HPiAODtrk,AliPID::kPion);
+      if(nsigmatpcPi>-990. && (nsigmatpcPi<-3 || nsigmatpcPi>3)){HPiAODtrk=0;continue;}
+    }
     //______________________________________________________________________________________
     // Track cuts
     //cout << "Applying Track Cuts" << endl;
@@ -366,6 +386,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       //keep this since we know we have bg above this number
     if(dAtDCALc>0.05){
       HPiAODtrk=0;
+      delete chargedHPi;
       continue;
     }
       
@@ -480,7 +501,15 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
 
     Bool_t isHijing = CheckGenerator(HPiAODtrk,d,mcHeader,arrayMC);
     // JJJ - check whether bkg from hijing
-    if(lb==0 && !isHijing) continue;
+    if(lb==0 && !isHijing){
+      HPiAODtrk=0;
+      delete chargedHPi;
+      recoArray->Clear();
+      delete recoArray;
+      if(vtxAODNew){delete vtxAODNew;vtxAODNew=NULL;}
+      delete lbcandProng;
+      continue;
+    }
     Double_t pionPt=lbcandProng->PtProng(0);
     Double_t pionP=lbcandProng->PProng(0);
     Double_t LcPt=lbcandProng->PtProng(1);
@@ -501,11 +530,6 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
     }
     lbcandProng->UnsetOwnPrimaryVtx();
    
-    //Int_t nRot=13.;
-    //if(lbcandProng->Pt()>10.)nRot=20.;
-    TObjArray *tob=GetArrayCandRotated(ev,lbcandProng,arrayMC,fNRotations);
-
-    Int_t candidates = tob->GetEntriesFast();
     UInt_t pdgLb[2]={0,0};
     pdgLb[1] = 4122;
     pdgLb[0] = 211;
@@ -515,58 +539,64 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
     pdgLb2[0] = 211;
     Double_t    massLb = lbcandProng->InvMass(2,pdgLb);
     if(TMath::Abs(massLb - massTrueLB)<1.) ((TH1F*)fOutput->FindObject("fMassLbbkg"))->Fill(massLb);
-    for(Int_t ic = 0; ic < candidates; ic++) {
-      AliAODRecoDecayHF2Prong *lb2 =(AliAODRecoDecayHF2Prong*)tob->At(ic);
-      if(!lb2){
-        delete lb2;
-        continue;
-      }
-      lb2->SetOwnPrimaryVtx(fvtx1);
+    
+    //Add possibility to skip this heavy operation for checks
+    if(fNRotations>0){
+      //Int_t nRot=13.;
+      //if(lbcandProng->Pt()>10.)nRot=20.;
+      TObjArray *tob=GetArrayCandRotated(ev,lbcandProng,arrayMC,fNRotations);
 
-      Double_t pionPt2=lb2->PtProng(0);
-      Double_t pionP2=lb2->PProng(0);
-      Double_t LcPt2=lb2->PtProng(1);
+      Int_t candidates = tob->GetEntriesFast();
 
-      ((TH1F*)fOutput->FindObject("fpionPt2"))->Fill(pionPt2);
-      ((TH1F*)fOutput->FindObject("fLcPt2"))->Fill(LcPt2);
-      ((TH1F*)fOutput->FindObject("fpionP2"))->Fill(pionP2);
-      //   if(lb2->PtProng(1)<0.3){
-      //cout << " *** Track Rejected *** " << endl;
-      //   lb2->UnsetOwnPrimaryVtx();
-      //   delete lb2;
-      //   continue;
-      // }
-      Double_t    massLb2 = lb2->InvMass(2,pdgLb2);
-      if(TMath::Abs(massLb2 - massTrueLB)<1.)((TH1F*)fOutput->FindObject("fMassLb2bkg"))->Fill(massLb2);
-      Int_t selectionlbR=IsSelectedLbMY(lb2,AliRDHFCuts::kCandidate,lb,1,isHijing);//analysis cut Lb --> to be improved
-      if(selectionlbR==0){
+      for(Int_t ic = 0; ic < candidates; ic++) {
+        AliAODRecoDecayHF2Prong *lb2 =(AliAODRecoDecayHF2Prong*)tob->At(ic);
+        if(!lb2){
+          delete lb2;
+          continue;
+        }
+        lb2->SetOwnPrimaryVtx(fvtx1);
+
+        Double_t pionPt2=lb2->PtProng(0);
+        Double_t pionP2=lb2->PProng(0);
+        Double_t LcPt2=lb2->PtProng(1);
+
+        ((TH1F*)fOutput->FindObject("fpionPt2"))->Fill(pionPt2);
+        ((TH1F*)fOutput->FindObject("fLcPt2"))->Fill(LcPt2);
+        ((TH1F*)fOutput->FindObject("fpionP2"))->Fill(pionP2);
+        //   if(lb2->PtProng(1)<0.3){
+        //cout << " *** Track Rejected *** " << endl;
+        //   lb2->UnsetOwnPrimaryVtx();
+        //   delete lb2;
+        //   continue;
+        // }
+        Double_t    massLb2 = lb2->InvMass(2,pdgLb2);
+        if(TMath::Abs(massLb2 - massTrueLB)<1.)((TH1F*)fOutput->FindObject("fMassLb2bkg"))->Fill(massLb2);
+        Int_t selectionlbR=IsSelectedLbMY(lb2,AliRDHFCuts::kCandidate,lb,1,isHijing);//analysis cut Lb --> to be improved
+        if(selectionlbR==0){
+          lb2->UnsetOwnPrimaryVtx();
+          delete lb2;
+          continue;
+        }
+
+
+        Int_t dgLabels[3];
+        for(Int_t i=0; i<3; i++) {
+          AliAODTrack *trk = (AliAODTrack*)d->GetDaughter(i);
+           dgLabels[i] = trk->GetLabel();
+        }
+        Int_t LabelPion= HPiAODtrk->GetLabel();
+        // if(CountLc(d,HPiAODtrk,arrayMC,labPi2,labLb))countLc++;
+        FillLbHists(lb2,lb,mcHeader,arrayMC,HPiAODtrk,d, lc, ev, fIsPromptLc);
+
+        //cout << "__________________________________________*Done*__________________________________________" << endl;
         lb2->UnsetOwnPrimaryVtx();
         delete lb2;
-        continue;
-      }
-
-
-      Int_t dgLabels[3];
-      for(Int_t i=0; i<3; i++) {
-        AliAODTrack *trk = (AliAODTrack*)d->GetDaughter(i);
-        dgLabels[i] = trk->GetLabel();
-      }
-      Int_t LabelPion= HPiAODtrk->GetLabel();
-      // if(CountLc(d,HPiAODtrk,arrayMC,labPi2,labLb))countLc++;
-      FillLbHists(lb2,lb,mcHeader,arrayMC,HPiAODtrk,d, lc, ev, fIsPromptLc);
-
-//      cout << "__________________________________________*Done*__________________________________________" << endl;
-      lb2->UnsetOwnPrimaryVtx();
-      delete lb2;
-    }//loop on candidates lb2
+      }//loop on candidates lb2
     
-    if(lbcandProng){
-      lbcandProng->UnsetOwnPrimaryVtx();
+      if(lbcandProng){
+        lbcandProng->UnsetOwnPrimaryVtx();
+      }
     }
-    //    if(lb2) {
-    //     lb2->UnsetOwnPrimaryVtx();
-    //    delete lb2;
-    //     }
     
     HPiAODtrk=0;
     delete chargedHPi;
@@ -574,7 +604,6 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
     delete recoArray;
     if(vtxAODNew){delete vtxAODNew;vtxAODNew=NULL;}
     if(lbcandProng)delete lbcandProng;
-    //    if(lb2)delete lb2;  
   }//loop on pion tracks
   // if(countLc>0) fCountLc->Fill(countLc); 
   delete LcCand;
@@ -1779,7 +1808,9 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsTrackInjected(AliAODTrack *part,AliAODMCHead
 
   AliVertexingHFUtils* ggg=new  AliVertexingHFUtils();
 
-  Int_t lab=part->GetLabel();
+  Int_t lab;
+  if(fApplyFixesITS3AnalysisHijing)lab=TMath::Abs(part->GetLabel());
+  else                             lab=part->GetLabel();
   if(lab<0) {delete ggg;return 1;} //
   TString nameGen=ggg->GetGenerator(lab,header);
   TString empty="";
@@ -1816,7 +1847,9 @@ Bool_t AliAnalysisTaskSELbtoLcpi4::IsCandidateInjected(AliAODRecoDecayHF *part, 
   Int_t nprongs=part->GetNProngs();
   for(Int_t i=0;i<nprongs;i++){
     AliAODTrack *daugh=(AliAODTrack*)part->GetDaughter(i);
-    Int_t lab=daugh->GetLabel();
+    Int_t lab;
+    if(fApplyFixesITS3AnalysisHijing)lab=TMath::Abs(daugh->GetLabel());
+    else                             lab=daugh->GetLabel();
     if(lab<0) return 0;
     if(IsTrackInjected(daugh,header,arrayMC)) return kTRUE;
   }
