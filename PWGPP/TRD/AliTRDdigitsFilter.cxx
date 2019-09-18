@@ -181,11 +181,22 @@ void AliTRDdigitsFilter::UserCreateOutputObjects()
 
   // THnSparse for accepted tracks
   const Int_t ntc = 2<<fTrackCriteria.size();
-  Int_t nbins[]   = { ntc,    30,   10,  10 };
+  Int_t nbins[]   = { ntc,    64,   10,  10 };
   Double_t xmin[] = { 0.0,   0.0, -1.0, 0.0 };
-  Double_t xmax[] = { float(ntc),  60.0,  1.0, 2*TMath::Pi() };
+  Double_t xmax[] = { float(ntc),  64.0,  1.0, 2*TMath::Pi() };
+
+  Double_t pTedges[] = {
+    1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
+    2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9,
+    3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8,
+    5.0, 5.2, 5.4, 5.6, 5.8, 6.0, 6.2, 6.4, 6.6, 6.8,
+    7.0, 7.5, 8.0, 8.5, 9.0, 9.5,
+    10., 11., 12., 13., 14., 15., 16., 17., 18., 19.,
+    20., 25., 30., 35., 40., 45., 50., 55., 60.
+  };
 
   fhAcc = new THnSparseF("fhAcc", "accepted tracks", 4, nbins, xmin, xmax);
+  fhAcc->SetBinEdges(1,pTedges);
 
   //fhAcc->GetAxis(0)->SetBinLabel(1,"foo");
   fhAcc->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
@@ -309,7 +320,7 @@ void AliTRDdigitsFilter::Process(AliESDEvent *const esdEvent)
   //-------------------------------------------------------------------
 
   AliMultSelection *multSelection =
-    static_cast<AliMultSelection*>(esdEvent->FindListObject("MultSelection"));
+  static_cast<AliMultSelection*>(esdEvent->FindListObject("MultSelection"));
 
   if(multSelection) {
 
@@ -356,29 +367,29 @@ void AliTRDdigitsFilter::Process(AliESDEvent *const esdEvent)
 
     for (Int_t i = 0; i<nTrackCrit; i++) {
 
-        // check track criteria
-        if ( fTrackCriteria[i].fPid != fPidTags[iTrack] ) continue;
-        if ( fTrackCriteria[i].fMinPt > track->Pt()) continue;
-        if ( fTrackCriteria[i].fMaxPt < track->Pt()) continue;
+      // check track criteria
+      if ( fTrackCriteria[i].fPid != fPidTags[iTrack] ) continue;
+      if ( fTrackCriteria[i].fMinPt > track->Pt()) continue;
+      if ( fTrackCriteria[i].fMaxPt < track->Pt()) continue;
 
-        // accept given fraction of tracks
-        if ( gRandom->Uniform() > fTrackCriteria[i].fFraction ) continue;
+      // accept given fraction of tracks
+      if ( gRandom->Uniform() > fTrackCriteria[i].fFraction ) continue;
 
-        keepEvent |= 1<<(nEventCrit + i);
-        keepTrack |= 1<<i;
-        keepNTracks++;
-     }
+      keepEvent |= 1<<(nEventCrit + i);
+      keepTrack |= 1<<i;
+      keepNTracks++;
+    }
 
-     if (keepTrack) {
-       Double_t data[4];
-       data[0] = keepTrack;
-       data[1] = track->Pt();
-       data[2] = track->Eta();
-       data[3] = track->Phi();
+    if (keepTrack) {
+      Double_t data[4];
+      data[0] = keepTrack;
+      data[1] = track->Pt();
+      data[2] = track->Eta();
+      data[3] = track->Phi();
 
-       fhAcc->Fill(data);
-       fhPtAcc->Fill(track->Pt());
-     }
+      fhAcc->Fill(data);
+      fhPtAcc->Fill(track->Pt());
+    }
 
   }
 
