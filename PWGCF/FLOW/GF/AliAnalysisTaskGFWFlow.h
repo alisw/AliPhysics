@@ -52,7 +52,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
-  void SetTriggerType(AliVEvent::EOfflineTriggerTypes) { fTriggerType = fTriggerType; };
+  void SetTriggerType(AliVEvent::EOfflineTriggerTypes newval) { fTriggerType = newval; };
  protected:
   AliEventCuts fEventCuts, fEventCutsForPU;
  private:
