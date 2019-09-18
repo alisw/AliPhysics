@@ -39,6 +39,7 @@ ClassImp(AliAnalysisTaskGFWFlow);
 AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   AliAnalysisTaskSE(),
   debugpar(0),
+  fTriggerType(AliVEvent::kINT7),
   fProduceWeights(kTRUE),
   fSelections(0),
   fWeightList(0),
@@ -66,6 +67,7 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
 AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights, Bool_t IsMC, Bool_t AddQA):
   AliAnalysisTaskSE(name),
   debugpar(0),
+  fTriggerType(AliVEvent::kINT7),
   fProduceWeights(ProduceWeights),
   fSelections(0),
   fWeightList(0),
@@ -458,7 +460,7 @@ void AliAnalysisTaskGFWFlow::SetPtBins(Int_t nBins, Double_t *bins, Double_t RFp
 Bool_t AliAnalysisTaskGFWFlow::AcceptEvent() {
   if(!fEventCuts.AcceptEvent(fInputEvent)) return 0;
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(!(fSelMask&AliVEvent::kINT7)) return 0;
+  if(!(fSelMask&fTriggerType)) return 0;
   return kTRUE;
 };
 
