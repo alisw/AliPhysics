@@ -8,6 +8,8 @@
 #include "TAxis.h"
 #include "TStopwatch.h"
 #include "AliGFW.h"
+#include "AliVEvent.h"
+
 
 class TList;
 class TH1D;
@@ -50,11 +52,13 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
+  void SetTriggerType(AliVEvent::EOfflineTriggerTypes) { fTriggerType = fTriggerType; };
  protected:
   AliEventCuts fEventCuts, fEventCutsForPU;
  private:
   AliAnalysisTaskGFWFlow(const AliAnalysisTaskGFWFlow&);
   AliAnalysisTaskGFWFlow& operator=(const AliAnalysisTaskGFWFlow&);
+  AliVEvent::EOfflineTriggerTypes fTriggerType; //! No need to store
   Bool_t fProduceWeights;
   AliGFWCuts **fSelections; //! Selection array; not store
   TList *fWeightList; //! Stored via PostData
