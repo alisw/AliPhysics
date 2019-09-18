@@ -77,7 +77,6 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
 
         if ((fSettings.nua_mode & fSettings.kInterpolate) && useFMD) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
 
-
         if (!useFMD && !fSettings.use_primaries_cen) {
           Int_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
           Int_t nuaphi = fSettings.nuacentral->GetYaxis()->FindBin(phi);
@@ -100,10 +99,12 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
 
         if ((fSettings.ref_mode & fSettings.kFMDref)){ //doRefFlow && 
           if (!fSettings.use_primaries_fwd && n>=2 && n<=4) {
-            Int_t seceta = fSettings.seccorr_fwd->GetXaxis()->FindBin(eta);
+            Int_t seceta = fSettings.seccorr_fwd->GetZaxis()->FindBin(eta);
             Int_t secvtz = fSettings.seccorr_fwd->GetYaxis()->FindBin(zvertex);
+            Int_t seccent = fSettings.seccorr_cent->GetZaxis()->FindBin(cent);
             Int_t secn = n-1;//fSettings.seccorr_fwd->GetZaxis()->FindBin(n-2);
-            weight = weight*fSettings.seccorr_fwd->GetBinContent(seceta,secvtz,secn);
+            weight = weight*fSettings.seccorr_fwd->GetBinContent(secn,secvtz,seceta);
+            weight = weight*fSettings.seccorr_cent->GetBinContent(secn,seceta,seccent);
           }
         }
       }
@@ -136,6 +137,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
           if (fSettings.etagap && TMath::Abs(eta)>3.0) continue;
           if (fSettings.ref_mode & fSettings.kFMDref) {
             if (TMath::Abs(eta) < 2.0) continue;
+            if (TMath::Abs(eta) > fSettings.fmdcut) continue;
           }
           Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
@@ -179,6 +181,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
 
       Int_t refEtaBinA = fQvector->GetAxis(3)->FindBin(eta);
       Int_t refEtaBinB = refEtaBinA;
+
       Int_t etaBinB = etaBin;
 
       if ((fSettings.etagap)) {
@@ -352,6 +355,11 @@ TComplex AliForwardGenericFramework::q(Int_t n, Int_t p, Int_t etabin)
   return TComplex(fqvector->GetBinContent(reindex),sign*fqvector->GetBinContent(imindex));;
 }
 
+
+
+
+
+
 TComplex AliForwardGenericFramework::Two(Int_t n1, Int_t n2, Int_t eta1, Int_t eta2)
 {
   TComplex formula = 0;
@@ -363,6 +371,7 @@ TComplex AliForwardGenericFramework::Two(Int_t n1, Int_t n2, Int_t eta1, Int_t e
   }
   return formula;
 }
+
 
 
 

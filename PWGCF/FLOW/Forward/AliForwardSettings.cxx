@@ -20,7 +20,7 @@ AliForwardSettings::AliForwardSettings() :
   nuacentral(),
   nuaforward(),
   seccorr_fwd(),
-  seccorr_cen(),
+  seccorr_cent(),
   doNUA(false),
   gap(0.0),
   minpt(0.2),
@@ -48,6 +48,7 @@ AliForwardSettings::AliForwardSettings() :
   a5(kFALSE),
   fileName(""),
   fMaxConsequtiveStrips(0),
-  standard_only(kFALSE)
+  standard_only(kTRUE),
+  fmdcut(0.)
 {
 }

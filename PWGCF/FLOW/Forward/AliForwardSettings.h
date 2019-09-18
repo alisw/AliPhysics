@@ -48,7 +48,7 @@ class AliForwardSettings : public TObject {
   TH3F* nuacentral;
   TH3F* nuaforward;
   TH3F* seccorr_fwd;
-  TH3F* seccorr_cen;
+  TH3F* seccorr_cent;
 
   bool doNUA;
 
@@ -80,7 +80,7 @@ class AliForwardSettings : public TObject {
   TString fileName;
   Int_t fMaxConsequtiveStrips;
   Bool_t standard_only;
-
+  Double_t fmdcut;
   // return true if good event
 
   // flags used for method of cumulant
