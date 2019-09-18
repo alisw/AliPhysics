@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/09/16
+//  Last Modified Date: 2019/09/18
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1615,6 +1615,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                         fHistos->FillTH1("hTotalInvMass_LS", vecsum.M());
                 }
                 if (fExoticFinder2) {
+                    if (SysCheck.at(sys) != "DefaultOption")
+                        continue;
                     for (UInt_t k = 0; k < ntracks; k++) {
                         if (j == k)  // same pion
                             continue;
@@ -2314,6 +2316,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                         fHistos->FillTH1("hTotalInvMass_LS", vecsum.M());
                 }
                 if(fExoticFinder2){
+                    if (SysCheck.at(sys) != "DefaultOption")
+                        continue;
                     for (UInt_t k = 0; k < ntracks; k++) {
                         if( j == k ) // same pion
                             continue;
