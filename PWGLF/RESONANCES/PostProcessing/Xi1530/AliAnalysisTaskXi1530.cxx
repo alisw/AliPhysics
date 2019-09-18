@@ -1615,61 +1615,61 @@ void AliAnalysisTaskXi1530::FillTracks() {
                         fHistos->FillTH1("hTotalInvMass_LS", vecsum.M());
                 }
                 if (fExoticFinder2) {
-                    if (SysCheck.at(sys) != "DefaultOption")
-                        continue;
-                    for (UInt_t k = 0; k < ntracks; k++) {
-                        if (j == k)  // same pion
-                            continue;
-                        track2 =
-                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
-                        if (track1->GetID() == track2->GetID())
-                            continue;
-                        temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
-                                      pionmass);
+                    if (SysCheck.at(sys) == "DefaultOption"){
+                        for (UInt_t k = 0; k < ntracks; k++) {
+                            if (j == k)  // same pion
+                                continue;
+                            track2 =
+                                (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                            if (track1->GetID() == track2->GetID())
+                                continue;
+                            temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
+                                        pionmass);
 
-                        vecsum2 =
-                            vecsum + temp3;  // vecsum = Xi1530, temp3=pion
-                        // Y cut
-                        if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
-                            (vecsum2.Rapidity() < fXi1530RapidityCut_low))
-                            continue;
-                        
-                        // Mass window
-                        double mXi1530 = vecsum.M();
-                        if (TMath::Abs(mXi1530 - massXi1530) > 0.05)
-                            continue;
+                            vecsum2 =
+                                vecsum + temp3;  // vecsum = Xi1530, temp3=pion
+                            // Y cut
+                            if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
+                                (vecsum2.Rapidity() < fXi1530RapidityCut_low))
+                                continue;
+                            
+                            // Mass window
+                            double mXi1530 = vecsum.M();
+                            if (TMath::Abs(mXi1530 - massXi1530) > 0.05)
+                                continue;
 
-                        int sign2 = kData;
-                        if (track2->Charge() > 0){
-                            if (track1->Charge() > 0)
-                                sign2 = kData;
-                            else
-                                sign2 = kLS;
-                        }
-                        else {
-                            if (track1->Charge() > 0)
-                                sign2 = kMixing;
-                            else
-                                sign2 = kMCReco;
-                        }
-                        FillTHnSparse("hInvMass_hf",
-                                      {(double)sign2, (double)fCent,
-                                       vecsum2.Pt(), vecsum2.M()});
-                        if (track2->Charge() > 0) {
-                            if (track1->Charge() > 0)
-                                fHistos->FillTH1("hTotalInvMass_HFpp",
-                                                 vecsum2.M());
-                            else
-                                fHistos->FillTH1("hTotalInvMass_HFnp",
-                                                 vecsum2.M());
-                        }
-                        else {
-                            if (track1->Charge() > 0)
-                                fHistos->FillTH1("hTotalInvMass_HFpn",
-                                                 vecsum2.M());
-                            else
-                                fHistos->FillTH1("hTotalInvMass_HFnn",
-                                                 vecsum2.M());
+                            int sign2 = kData;
+                            if (track2->Charge() > 0){
+                                if (track1->Charge() > 0)
+                                    sign2 = kData;
+                                else
+                                    sign2 = kLS;
+                            }
+                            else {
+                                if (track1->Charge() > 0)
+                                    sign2 = kMixing;
+                                else
+                                    sign2 = kMCReco;
+                            }
+                            FillTHnSparse("hInvMass_hf",
+                                        {(double)sign2, (double)fCent,
+                                        vecsum2.Pt(), vecsum2.M()});
+                            if (track2->Charge() > 0) {
+                                if (track1->Charge() > 0)
+                                    fHistos->FillTH1("hTotalInvMass_HFpp",
+                                                    vecsum2.M());
+                                else
+                                    fHistos->FillTH1("hTotalInvMass_HFnp",
+                                                    vecsum2.M());
+                            }
+                            else {
+                                if (track1->Charge() > 0)
+                                    fHistos->FillTH1("hTotalInvMass_HFpn",
+                                                    vecsum2.M());
+                                else
+                                    fHistos->FillTH1("hTotalInvMass_HFnn",
+                                                    vecsum2.M());
+                            }
                         }
                     }
                 }
@@ -2316,60 +2316,60 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                         fHistos->FillTH1("hTotalInvMass_LS", vecsum.M());
                 }
                 if(fExoticFinder2){
-                    if (SysCheck.at(sys) != "DefaultOption")
-                        continue;
-                    for (UInt_t k = 0; k < ntracks; k++) {
-                        if( j == k ) // same pion
-                            continue;
-                        track2 =
-                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
-                        if(track1->GetID() == track2->GetID())
-                            continue;
-                        temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
-                                      pionmass);
+                    if (SysCheck.at(sys) == "DefaultOption"){
+                        for (UInt_t k = 0; k < ntracks; k++) {
+                            if( j == k ) // same pion
+                                continue;
+                            track2 =
+                                (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                            if(track1->GetID() == track2->GetID())
+                                continue;
+                            temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
+                                        pionmass);
 
-                        vecsum2 = vecsum + temp3;  // vecsum = Xi1530, temp3=pion
-                        // Y cut
-                        if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
-                            (vecsum2.Rapidity() < fXi1530RapidityCut_low))
-                            continue;
+                            vecsum2 = vecsum + temp3;  // vecsum = Xi1530, temp3=pion
+                            // Y cut
+                            if ((vecsum2.Rapidity() > fXi1530RapidityCut_high) ||
+                                (vecsum2.Rapidity() < fXi1530RapidityCut_low))
+                                continue;
 
-                        // Mass window
-                        double mXi1530 = vecsum.M();
-                        if (TMath::Abs(mXi1530 - massXi1530) > 0.05)
-                            continue;
+                            // Mass window
+                            double mXi1530 = vecsum.M();
+                            if (TMath::Abs(mXi1530 - massXi1530) > 0.05)
+                                continue;
 
-                        int sign2 = kData;
-                        if (track2->Charge() > 0) {
-                            if (track1->Charge() > 0)
-                                sign2 = kData;
-                            else
-                                sign2 = kLS;
-                        }
-                        else {
-                            if (track1->Charge() > 0)
-                                sign2 = kMixing;
-                            else
-                                sign2 = kMCReco;
-                        }
-                        FillTHnSparse("hInvMass_hf",
-                                      {(double)sign2, (double)fCent,
-                                       vecsum2.Pt(), vecsum2.M()});
-                        if (track2->Charge() > 0) {
-                            if (track1->Charge() > 0)
-                                fHistos->FillTH1("hTotalInvMass_HFpp",
-                                                 vecsum2.M());
-                            else
-                                fHistos->FillTH1("hTotalInvMass_HFnp",
-                                                 vecsum2.M());
-                        }
-                        else {
-                            if (track1->Charge() > 0)
-                                fHistos->FillTH1("hTotalInvMass_HFpn",
-                                                 vecsum2.M());
-                            else
-                                fHistos->FillTH1("hTotalInvMass_HFnn",
-                                                 vecsum2.M());
+                            int sign2 = kData;
+                            if (track2->Charge() > 0) {
+                                if (track1->Charge() > 0)
+                                    sign2 = kData;
+                                else
+                                    sign2 = kLS;
+                            }
+                            else {
+                                if (track1->Charge() > 0)
+                                    sign2 = kMixing;
+                                else
+                                    sign2 = kMCReco;
+                            }
+                            FillTHnSparse("hInvMass_hf",
+                                        {(double)sign2, (double)fCent,
+                                        vecsum2.Pt(), vecsum2.M()});
+                            if (track2->Charge() > 0) {
+                                if (track1->Charge() > 0)
+                                    fHistos->FillTH1("hTotalInvMass_HFpp",
+                                                    vecsum2.M());
+                                else
+                                    fHistos->FillTH1("hTotalInvMass_HFnp",
+                                                    vecsum2.M());
+                            }
+                            else {
+                                if (track1->Charge() > 0)
+                                    fHistos->FillTH1("hTotalInvMass_HFpn",
+                                                    vecsum2.M());
+                                else
+                                    fHistos->FillTH1("hTotalInvMass_HFnn",
+                                                    vecsum2.M());
+                            }
                         }
                     }
                 }
