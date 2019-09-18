@@ -57,6 +57,11 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   
   //set parameters
    void SetCutsond0Lcdaughters(Bool_t val = kTRUE) {fCutsond0Lcdaughters = val; return;}
+  
+   void SetApplyFixesITS3AnalysisBit(Bool_t val = kTRUE){fApplyFixesITS3AnalysisBit = val;}
+   void SetApplyFixesITS3AnalysiskAll(Bool_t val = kTRUE){fApplyFixesITS3AnalysiskAll = val;}
+   void SetApplyFixesITS3AnalysisHijing(Bool_t val = kTRUE){fApplyFixesITS3AnalysisHijing = val;}
+
    void ApplyD0CutLcdaughters(Double_t d0cutd1, Double_t d0cutd2){fCutD0Daughter[0]=d0cutd1; fCutD0Daughter[1]=d0cutd2;}
    void SetPtConfiguration(Double_t ptbin, Double_t ptlcupper, Double_t ptlclower, Double_t ptpionupper, Double_t ptpionlower, Double_t ptlbupper, Double_t ptlblower){fCutsPerPt[0]=ptbin;fCutsPerPt[1]=ptlcupper;fCutsPerPt[2]=ptlclower;fCutsPerPt[3]=ptpionupper;fCutsPerPt[4]=ptpionlower;fCutsPerPt[5]=ptlbupper;fCutsPerPt[6]=ptlblower;}
    void SetNRotations(Double_t nrotations){fNRotations=nrotations;}
@@ -121,7 +126,13 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   Double_t fCutsPerPt[7];
   Double_t fNRotations;
   Bool_t fIsPromptLc;
-  ClassDef(AliAnalysisTaskSELbtoLcpi4,4);
+
+  //temporary to compare with old ITS2 analysis
+  Bool_t fApplyFixesITS3AnalysisBit;
+  Bool_t fApplyFixesITS3AnalysiskAll;
+  Bool_t fApplyFixesITS3AnalysisHijing;
+
+  ClassDef(AliAnalysisTaskSELbtoLcpi4,5);
 };
 
 #endif
