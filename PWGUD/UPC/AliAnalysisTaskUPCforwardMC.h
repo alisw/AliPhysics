@@ -1008,15 +1008,21 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * This histogram shows CosTheta and Phi
                                  * distribution with my variable binning.
                                  * RECON level.
+                                 *
+                                 * NB: both HELICITY and COLLINS-SOPER
                                  */
         TH2F*                   fCosThetaAndPhiHelicityFrameMyBinningH;   //!
+        TH2F*                   fCosThetaAndPhiCsFrameMyBinningH;         //!
 
                                 /**
                                  * This histogram shows CosTheta and Phi
                                  * distribution with my variable binning.
                                  * GENERATED level.
+                                 *
+                                 * NB: both HELICITY and COLLINS-SOPER
                                  */
         TH2F*                   fMCCosThetaAndPhiHelicityFrameMyBinningH;   //!
+        TH2F*                   fMCCosThetaAndPhiCsFrameMyBinningH;         //!
 
         /* - 1D analysis.
          * - My variable binning.
@@ -1246,7 +1252,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 32);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 33);
 };
 
 #endif
