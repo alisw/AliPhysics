@@ -460,8 +460,13 @@ void AliHFSystErr::Init(Int_t decay){
 
     case 5: // Lc->pKpi
       if (fCollisionType==0) {
-        if (fIsBDTAnalysis) InitLctopKpi2010ppBDT();
-        else                InitLctopKpi2010pp();
+        if (fRunNumber == 17 || fRunNumber == 2017){
+          InitLctopKpi2017pp();
+        }
+        else {
+          if (fIsBDTAnalysis) InitLctopKpi2010ppBDT();
+          else                InitLctopKpi2010pp();
+        }
       }
       else if (fCollisionType==2) {
         if(fRunNumber==13 || fRunNumber==2013) {
@@ -475,7 +480,12 @@ void AliHFSystErr::Init(Int_t decay){
       else AliFatal("Not yet implemented");
       break;
     case 6: // Lc->pK0S
-      if (fCollisionType==0) InitLctopK0S2010pp();
+      if (fCollisionType==0) {
+        if (fRunNumber == 17 || fRunNumber == 2017){
+          InitLctopK0S2017pp5TeV();
+        }
+        else InitLctopK0S2010pp();
+      }
       else if (fCollisionType==1) {
         if (fIsBDTAnalysis) {
           if (fCentralityClass=="010") InitLctopK0S2018PbPb010BDT();
