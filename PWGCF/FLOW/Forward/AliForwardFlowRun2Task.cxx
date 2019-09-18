@@ -254,7 +254,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,false,true);  
 
   UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
-  fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);   
+  fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);
 
   fCalculator.reset();
 
@@ -265,8 +265,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
 
   PostData(1, fStorage);
-
-
   return;
 }
 
