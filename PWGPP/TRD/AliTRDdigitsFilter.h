@@ -64,7 +64,7 @@ public:
   virtual void   UserCreateOutputObjects();
   //virtual Bool_t UserNotify();
   virtual void   UserExec(Option_t *);
-  virtual void   Process(AliESDEvent *const esdEvent=0);
+  virtual void   Process();
   //virtual void   Terminate(const Option_t*);
 
   //AliESDv0KineCuts* GetV0cuts() {return fV0cuts;}
