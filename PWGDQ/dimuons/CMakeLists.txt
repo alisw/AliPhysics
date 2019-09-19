@@ -21,8 +21,8 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/dimuons)
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
-                   )
+include_directories(${ROOT_INCLUDE_DIRS})
+
 
 # Sources in alphabetical order
 set(SRCS
