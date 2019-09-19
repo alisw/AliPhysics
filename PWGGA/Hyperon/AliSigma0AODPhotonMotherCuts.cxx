@@ -551,6 +551,9 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma() {
       }
 
       // TODO Implement MC handling
+      if(fIsMC) {
+        sigma.SetMCPDGCode(fPDG);
+      }
       // int label = -10;
       // int pdgLambdaMother = 0;
       // int pdgPhotonMother = 0;
