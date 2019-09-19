@@ -579,6 +579,10 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     antiSigmaCuts->SetLightweight(true);
   }
 
+  // RUN A TEST TO SEE WHETHER THIS MAKES A DIFFERENCE!
+  sigmaCuts->SetDeltaPhiEtaMax(0.0001);
+  antiSigmaCuts->SetDeltaPhiEtaMax(0.0001);
+
   // vary the sidebands
   if (suffix == "1") {
     sigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighLow);
