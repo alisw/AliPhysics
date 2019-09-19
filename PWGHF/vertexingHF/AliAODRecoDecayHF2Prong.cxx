@@ -187,10 +187,13 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB2Prong(Int_t pdgabs,Int_t pdgabs2prong,
     // Check if this candidate is matched to a MC signal
     // If no, return -1
     // If yes, return label (>=0) of the AliAODMCParticle
+    // If yes, but rejected by momentum conservation check, return -1*label (to allow checks at task level)
     // 
-    // NB: This function is only for non-resonant decays
+    // NB: This function is only for non-resonant decays (for both 2 prongs)
     // NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
 
+    Int_t signlabMother = 1;
+  
     // Check number of daughters. Candidate is AliAODRecoDecayHF2Prong, so only continue when 2 daughters
     Int_t ndg = GetNDaughters();
     if (!ndg) { AliError("HF2Prong: No daughters available"); return -1;}
@@ -210,6 +213,7 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB2Prong(Int_t pdgabs,Int_t pdgabs2prong,
         //Daughter prong (independent on their decay time) will also be far from PV, so call this function again.
         Int_t pdgempty[2]={0,0};
         dgLabels[1] = daug2prong->MatchToMCB2Prong(pdgabs2prong, 0, pdgDg2prong, pdgempty, mcArray);
+        if (dgLabels[1] < -1) signlabMother = -1;
     }
     if (dgLabels[0] == -1) return -1;
     if (dgLabels[1] == -1) return -1;
@@ -286,14 +290,15 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB2Prong(Int_t pdgabs,Int_t pdgabs2prong,
     Double_t pxMother = mother->Px();
     Double_t pyMother = mother->Py();
     Double_t pzMother = mother->Pz();
-    // within 0.5% (Temp fix: 0.00001 -> 0.005)
-    if ((TMath::Abs(pxMother - pxSumDgs) / (TMath::Abs(pxMother) + 1.e-13)) > 0.005 &&
-        (TMath::Abs(pyMother - pySumDgs) / (TMath::Abs(pyMother) + 1.e-13)) > 0.005 &&
-        (TMath::Abs(pzMother - pzSumDgs) / (TMath::Abs(pzMother) + 1.e-13)) > 0.005)
+    // within 2% (fix for ITSUpgrade MC's: 0.00001 -> 0.02)
+    if ((TMath::Abs(pxMother - pxSumDgs) / (TMath::Abs(pxMother) + 1.e-13)) > 0.02 &&
+        (TMath::Abs(pyMother - pySumDgs) / (TMath::Abs(pyMother) + 1.e-13)) > 0.02 &&
+        (TMath::Abs(pzMother - pzSumDgs) / (TMath::Abs(pzMother) + 1.e-13)) > 0.02)
     {
-        AliWarning(Form("Mom. cons. not within 0.5%% perc for decay pdgabs = %d daughters = %d",pdgabs,(Int_t)mother->GetNDaughters()));
-        return -1;
+        AliWarning(Form("Mom. cons. not within 2.0%% perc for decay pdgabs = %d daughters = %d. Returning negative label!",pdgabs,(Int_t)mother->GetNDaughters()));
+        signlabMother = -1;
     }
+    labMother = signlabMother * labMother;
     return labMother;
 }
 //-----------------------------------------------------------------------------
@@ -303,9 +308,13 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs, Int_t pdgabs3prong
   // Check if this candidate is matched to a MC signal
   // If no, return -1
   // If yes, return label (>=0) of the AliAODMCParticle
+  // If yes, but rejected by momentum conservation check, return -1*label (to allow checks at task level)
   //
+  // NB: This function is only for non-resonant decays of the 2prong (3prong can decay resonant)
   // NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
   //
+  
+  Int_t signlabMother = 1;
   
   // Check number of daughters. Candidate is AliAODRecoDecayHF2Prong, so only continue when 2 daughters
   Int_t ndg = GetNDaughters();
@@ -321,8 +330,8 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs, Int_t pdgabs3prong
   
   AliAODRecoDecayHF3Prong* daug3prong = (AliAODRecoDecayHF3Prong*)GetDaughter(0);
   if(!daug3prong) return -1;
-  //Temp fix for not conserving momentum in ITS upgrade productions
-  //Similar as daug3prong->MatchToMC(pdgabs3prong,mcArray,3,pdgDg3prong) but w/o mom conservation check
+  //Similar as daug3prong->MatchToMC(pdgabs3prong,mcArray,3,pdgDg3prong)
+  //but w/o mom conservation check (fix for ITSUpgrade MC's)
   Int_t ndg3pr = daug3prong->GetNDaughters();
   if (!ndg3pr) { AliWarning("HF3Prong: No daughters available"); return -1;}
   if (ndg3pr != 3) { AliWarning(Form("HF3Prong: %d daughters instead of 3",ndg3pr)); return -1;}
@@ -397,12 +406,12 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs, Int_t pdgabs3prong
   Double_t pxMother3pr = mother3pr->Px();
   Double_t pyMother3pr = mother3pr->Py();
   Double_t pzMother3pr = mother3pr->Pz();
-  // within 0.5% (Temp fix: 0.00001 -> 0.005)
-  if((TMath::Abs(pxMother3pr-pxSumDgs3pr)/(TMath::Abs(pxMother3pr)+1.e-13)) > 0.005 &&
-     (TMath::Abs(pyMother3pr-pySumDgs3pr)/(TMath::Abs(pyMother3pr)+1.e-13)) > 0.005 &&
-     (TMath::Abs(pzMother3pr-pzSumDgs3pr)/(TMath::Abs(pzMother3pr)+1.e-13)) > 0.005) {
-    AliWarning(Form("Mom. cons. not within 0.5%% perc for decay pdgabs = %d daughters = %d",pdgabs3prong,(Int_t)mother3pr->GetNDaughters()));
-    return -1;
+  // within 2% (fix for ITSUpgrade MC's: 0.00001 -> 0.02)
+  if((TMath::Abs(pxMother3pr-pxSumDgs3pr)/(TMath::Abs(pxMother3pr)+1.e-13)) > 0.02 &&
+     (TMath::Abs(pyMother3pr-pySumDgs3pr)/(TMath::Abs(pyMother3pr)+1.e-13)) > 0.02 &&
+     (TMath::Abs(pzMother3pr-pzSumDgs3pr)/(TMath::Abs(pzMother3pr)+1.e-13)) > 0.02) {
+    AliWarning(Form("Mom. cons. not within 2.0%% perc for decay pdgabs = %d daughters = %d. Returning negative label!",pdgabs3prong,(Int_t)mother3pr->GetNDaughters()));
+    signlabMother = -1;
   }
   dgLabels[0] = labMother3pr;
   
@@ -447,9 +456,7 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs, Int_t pdgabs3prong
         pySumDgs += part->Py();
         pzSumDgs += part->Pz();
         break;
-      } else if(pdgMother>pdgabs || pdgMother<10) {
-        break;
-      }
+      } else break;
     }
     if (labMom[i] == -1) return -1; // mother PDG not ok for this daughter
   } // end loop on daughters
@@ -475,13 +482,14 @@ Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs, Int_t pdgabs3prong
   Double_t pxMother = mother->Px();
   Double_t pyMother = mother->Py();
   Double_t pzMother = mother->Pz();
-  // within 0.5% (Temp fix: 0.00001 -> 0.005)
-  if((TMath::Abs(pxMother-pxSumDgs)/(TMath::Abs(pxMother)+1.e-13)) > 0.005 &&
-     (TMath::Abs(pyMother-pySumDgs)/(TMath::Abs(pyMother)+1.e-13)) > 0.005 &&
-     (TMath::Abs(pzMother-pzSumDgs)/(TMath::Abs(pzMother)+1.e-13)) > 0.005) {
-    AliWarning(Form("Mom. cons. not within 0.5%% perc for decay pdgabs = %d daughters = %d",pdgabs,(Int_t)mother->GetNDaughters()));
-    return -1;
+  // within 2% (fix for ITSUpgrade MC's: 0.00001 -> 0.02)
+  if((TMath::Abs(pxMother-pxSumDgs)/(TMath::Abs(pxMother)+1.e-13)) > 0.02 &&
+     (TMath::Abs(pyMother-pySumDgs)/(TMath::Abs(pyMother)+1.e-13)) > 0.02 &&
+     (TMath::Abs(pzMother-pzSumDgs)/(TMath::Abs(pzMother)+1.e-13)) > 0.02) {
+    AliWarning(Form("Mom. cons. not within 2.0%% perc for decay pdgabs = %d daughters = %d. Returning negative label!",pdgabs,(Int_t)mother->GetNDaughters()));
+    signlabMother = -1;
   }
+  labMother = signlabMother * labMother;
   
   return labMother;
 }

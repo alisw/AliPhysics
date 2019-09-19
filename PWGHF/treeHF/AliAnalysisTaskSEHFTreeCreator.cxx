@@ -2617,6 +2617,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBplus(TClonesArray *array2prong, Ali
         
         //To significantly speed up the task when only signal was requested
         if(fWriteOnlySignal){
+          //To check: Might be affected by mom. consv. issue in ITSUpgrade MC's
           if(dfromB->MatchToMC(421,arrMC,2,pdgDgD0toKpi) < 0) continue;
         }
         
@@ -2758,9 +2759,13 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBplus(TClonesArray *array2prong, Ali
                     if (fReadMC){
                       //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
                       //Effect is per mille level, but big enough to be rejected by MatchToMC() function.
-                      //Momentum conservation check turned off in MatchToMCB2Prong (to fix to loosening cut from 0.001% to 0.5%)
+                      //Fix implemented, loosening cut from 0.001% to 2.0%. If > 2.0%, negative label is returned.
                       labBplus = trackBplus.MatchToMCB2Prong(521,421,pdgDgBplustoD0piInt,pdgDgD0topiK,arrMC);
                       
+                      //Use feed-down bit to flag these candidates for offline study.
+                      //Can be good for analysis or coming from an "incomplete simulated" decay
+                      if(labBplus < -1){ isFD=kTRUE; labBplus=TMath::Abs(labBplus); }
+
                       if(labBplus >= 0) {
                         partBplus = (AliAODMCParticle*)arrMC->At(labBplus);
                         ptGenBplus = partBplus->Pt();
@@ -3002,8 +3007,12 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
                     if (fReadMC){
                       //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
                       //Effect is per mille level, but big enough to be rejected by MatchToMC() function.
-                      //Temporary fix implemented, loosening cut from 0.001% to 0.5%
+                      //Fix implemented, loosening cut from 0.001% to 2.0%. If > 2.0%, negative label is returned.
                       labBs = trackBs.MatchToMCB3Prong(531,431,pdgDgBstoDspi,pdgDstoKKpi,arrMC);
+
+                      //Use feed-down bit to flag these candidates for offline study.
+                      //Can be good for analysis or coming from an "incomplete simulated" decay
+                      if(labBs < -1){ isFD=kTRUE; labBs=TMath::Abs(labBs); }
 
                       if(labBs >= 0) {
                         partBs = (AliAODMCParticle*)arrMC->At(labBs);
@@ -3241,9 +3250,13 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                     if (fReadMC){
                       //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
                       //Effect is per mille level, but big enough to be rejected by MatchToMC() function.
-                      //Temporary fix implemented, loosening cut from 0.001% to 0.5%
+                      //Fix implemented, loosening cut from 0.001% to 2.0%. If > 2.0%, negative label is returned.
                       labLb = trackLb.MatchToMCB3Prong(5122,4122,pdgDgLbtoLcpi,pdgLctopKpi,arrMC);
                       
+                      //Use feed-down bit to flag these candidates for offline study.
+                      //Can be good for analysis or coming from an "incomplete simulated" decay
+                      if(labLb < -1){ isFD=kTRUE; labLb=TMath::Abs(labLb); }
+
                       if(labLb >= 0) {
                         partLb = (AliAODMCParticle*)arrMC->At(labLb);
                         ptGenLb = partLb->Pt();
@@ -3354,6 +3367,13 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
       }
       else if(absPDG == 521 && fWriteVariableTreeBplus) {
         deca = AliVertexingHFUtils::CheckBplusDecay(arrayMC,mcPart,labDau);
+        
+        //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+        //Fix implemented, loosening cut from 0.001 to 0.1. If >0.1, (-1*deca - 1) is returned.
+        //Use feed-down bit to flag these candidates for offline study.
+        //Can be good for analysis or coming from an "incomplete simulated" decay
+        if(deca == -2){ isFeeddown=kTRUE; deca=1; }
+
         if(deca!=1 || labDau[0]==-1 || labDau[1]<0) continue;
         isDaugInAcc = CheckDaugAcc(arrayMC,3,labDau,kTRUE);
         fTreeHandlerGenBplus->SetDauInAcceptance(isDaugInAcc);
@@ -3365,6 +3385,13 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
       else if(absPDG == 531 && fWriteVariableTreeBs) {
         deca = AliVertexingHFUtils::CheckBsDecay(arrayMC,mcPart,labDau4pr);
         //Only accept Bs-> pi Ds(->phipi->KKpi) decays
+
+        //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+        //Fix implemented, loosening cut from 0.001 to 0.1. If >0.1, (-1*deca - 1) is returned.
+        //Use feed-down bit to flag these candidates for offline study.
+        //Can be good for analysis or coming from an "incomplete simulated" decay
+        if(deca == -2){ isFeeddown=kTRUE; deca=1; }
+        
         if(deca!=1 || labDau4pr[0]==-1 || labDau4pr[1]<0) continue;
         isDaugInAcc = CheckDaugAcc(arrayMC,4,labDau4pr,kTRUE);
         fTreeHandlerGenBs->SetDauInAcceptance(isDaugInAcc);
@@ -3406,6 +3433,13 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
         }
       } else if(absPDG == 5122 && fWriteVariableTreeLb) {
         deca = AliVertexingHFUtils::CheckLbDecay(arrayMC,mcPart,labDau4pr);
+        
+        //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+        //Fix implemented, loosening cut from 0.001 to 0.1. If >0.1, (-1*deca - 1) is returned.
+        //Use feed-down bit to flag these candidates for offline study.
+        //Can be good for analysis or coming from an "incomplete simulated" decay
+        if(deca < -1){ isFeeddown=kTRUE; deca=-1*deca-1; }
+        
         if(deca<1 || labDau4pr[0]==-1 || labDau4pr[1]<0) continue;
         isDaugInAcc = CheckDaugAcc(arrayMC,4,labDau4pr,kTRUE);
         fTreeHandlerGenLb->SetDauInAcceptance(isDaugInAcc);
