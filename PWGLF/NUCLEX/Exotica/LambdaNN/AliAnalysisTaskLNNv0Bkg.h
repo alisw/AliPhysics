@@ -47,7 +47,8 @@ class AliAnalysisTaskLNNv0Bkg : public AliAnalysisTaskSE {
   void SetBkgType(UInt_t type=1) {fBkgType=type;} // default is track rotation
   Double_t fMaxPtPion;
   Double_t fMinPtTriton; 
-
+  void SetMC(){fMC=kTRUE;}
+  Bool_t fMC;
  private:
  
   Double_t Chi2perNDF(AliESDtrack *tr); 
