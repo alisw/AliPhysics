@@ -222,32 +222,12 @@ void AliTRDdigitsFilter::UserCreateOutputObjects()
   fOutputList->Add(fhCent);
   fOutputList->Add(fhCentAcc);
 
+  CreateTriggerHistos();
+
   PostData(1,fOutputList);
 
 
 }
-
-// //_____________________________________________________________________________
-// Bool_t AliTRDdigitsFilter::UserNotify()
-// {
-//   delete fDigitsInputFile;
-//   delete fDigitsOutputFile;
-//
-//   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-//
-//   TString ofname = esdH->GetTree()->GetCurrentFile()->GetName();
-//   TString ifname = ofname;
-//
-//   ifname.ReplaceAll("AliESDs.root", "TRD.Digits.root");
-//   ofname.ReplaceAll("AliESDs.root", "TRD.FltDigits.root");
-//
-//   fDigitsInputFile  = new TFile(ifname);
-//   fDigitsOutputFile = new TFile(ofname,"RECREATE");
-//
-//   fEventNoInFile = 0;
-//
-//   return kTRUE;
-// }
 
 //_____________________________________________________________________________
 void AliTRDdigitsFilter::UserExec(Option_t *)
@@ -269,14 +249,16 @@ void AliTRDdigitsFilter::UserExec(Option_t *)
 
   if (!esdH) {
     printf("ERROR: Could not get ESDInputHandler \n");
+    fESDevent = NULL;
+  } else {
+    fESDevent = (AliESDEvent *) esdH->GetEvent();
   }
-  else fESDevent = (AliESDEvent *) esdH->GetEvent();
 
   // allocate space for the PID tags
   fPidTags.resize(fESDevent->GetNumberOfTracks());
 
   FillV0PIDlist();
-  Process(fESDevent);
+  Process();
 
   PostData(1,fOutputList);
 
@@ -285,23 +267,24 @@ void AliTRDdigitsFilter::UserExec(Option_t *)
 
 
 //________________________________________________________________________
-void AliTRDdigitsFilter::Process(AliESDEvent *const esdEvent)
+void AliTRDdigitsFilter::Process()
 {
   //
   //called for each event
   //
 
   fhEventCuts->Fill("event_in",1);
+  FillTriggerHisto(fhTrgAll);
 
-  if (!esdEvent) {
-    Printf("ERROR: esdEvent not available");
+  if (!fESDevent) {
+    Printf("ERROR: fESDevent not available");
     return;
   }
 
   fhEventCuts->Fill("event_esd",1);
 
   // check for a valid event vertex
-  const AliESDVertex* fESDEventvertex = esdEvent->GetPrimaryVertexTracks();
+  const AliESDVertex* fESDEventvertex = fESDevent->GetPrimaryVertexTracks();
   if (!fESDEventvertex) return;
 
   Int_t ncontr = fESDEventvertex->GetNContributors();
@@ -320,7 +303,7 @@ void AliTRDdigitsFilter::Process(AliESDEvent *const esdEvent)
   //-------------------------------------------------------------------
 
   AliMultSelection *multSelection =
-  static_cast<AliMultSelection*>(esdEvent->FindListObject("MultSelection"));
+  static_cast<AliMultSelection*>(fESDevent->FindListObject("MultSelection"));
 
   if(multSelection) {
 
@@ -356,7 +339,7 @@ void AliTRDdigitsFilter::Process(AliESDEvent *const esdEvent)
     if (fPidTags[iTrack] == kPidUndef) continue;
     if (fPidTags[iTrack] == kPidError) continue;
 
-    AliESDtrack* track = esdEvent->GetTrack(iTrack);
+    AliESDtrack* track = fESDevent->GetTrack(iTrack);
 
     fhPtTag->Fill(track->Pt());
 
@@ -396,6 +379,7 @@ void AliTRDdigitsFilter::Process(AliESDEvent *const esdEvent)
   if (keepEvent) {
 
     fhEventCuts->Fill("event_acc",1);
+    FillTriggerHisto(fhTrgAcc);
 
     for (Int_t i = 0; i<nEventCrit; i++) {
       if (keepEvent & ( 1 << i ) ) {

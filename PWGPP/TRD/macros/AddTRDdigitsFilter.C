@@ -54,7 +54,7 @@ AliAnalysisTask  *AddTRDdigitsFilter(TString cfg)
                                 2.5, 99999999., 1.0);
 
     filterTask->AcceptTracks("v0prot", AliTRDdigitsFilter::kPidV0Proton,
-                                2.0, 99999999., 1.0);
+                                2.3, 99999999., 1.0);
 
     filterTask->AcceptEvents("cent", 0.0, 2.0, 1.0e-2);
   }

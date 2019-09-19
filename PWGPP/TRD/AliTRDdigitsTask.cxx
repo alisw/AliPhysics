@@ -150,6 +150,75 @@ void AliTRDdigitsTask::CreateV0Plots()
 
 }
 
+//________________________________________________________________________
+void AliTRDdigitsTask::CreateTriggerHistos()
+{
+
+  fhTrgAll = new TH1F( "fhTrgAll", "Trigger classes of ALL events", 128,0.,128.);
+
+  fhTrgAcc = (TH1F*) fhTrgAll->Clone("fhTrgAcc");
+  fhTrgAcc->SetTitle("Trigger classes of ACCEPTED events");
+
+  // add everything to the list
+  if (fOutputList) {
+    fOutputList->Add(fhTrgAll);
+    fOutputList->Add(fhTrgAcc);
+  }
+
+}
+
+//________________________________________________________________________
+void AliTRDdigitsTask::FillTriggerHisto(TH1* hist)
+{
+
+  if (hist == NULL) return;
+
+  // variables for TString::Tokenize
+  Int_t from=0;
+  TString tok;
+
+  TString activetrg = fESDevent->GetESDRun()->GetActiveTriggerClasses();
+  TString firedtrg = fESDevent->GetFiredTriggerClasses();
+
+  // if (hist == fhTrgAll) {
+  //
+  //   AliInfo("Available trigger classes:");
+  //   while (activetrg.Tokenize(tok, from, "  ")) {
+  //     AliInfoF("    %s", tok.Data());
+  //   }
+  //
+  //   AliInfoF("Fired trigger classes: %s", firedtrg.Data());
+  //   from=0;
+  //   while (firedtrg.Tokenize(tok, from, "  ")) {
+  //     AliInfoF("    %s", tok.Data());
+  //   }
+  //
+  // }
+
+  if ( strlen(hist->GetXaxis()->GetBinLabel(1)) == 0 ) {
+
+    AliInfoF("Setting bin labels for %s", hist->GetName());
+    from = 1;
+    for (int i=1; i <= hist->GetXaxis()->GetNbins(); i++) {
+
+      if ( ! activetrg.Tokenize(tok, from, "  ") ) break;
+
+      //AliInfoF("   %3d -> %s", i, tok.Data());
+      hist->GetXaxis()->SetBinLabel(i,tok.Data());
+    }
+
+  }
+
+  from = 0;
+  while ( firedtrg.Tokenize(tok, from, " ") ) {
+    if ( tok==" " || tok=="" ) continue;
+    hist->Fill(tok.Data(), 1.0);
+    //AliInfoF("   %s", tok.Data());
+  }
+
+}
+
+
 
 
 
@@ -191,11 +260,13 @@ void AliTRDdigitsTask::UserExec(Option_t *)
 
   // -----------------------------------------------------------------
   // prepare event data structures
-  AliESDEvent* fESDevent = dynamic_cast<AliESDEvent*>(InputEvent());
+  fESDevent = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESDevent) {
     printf("ERROR: fESDevent not available\n");
     return;
   }
+
+  AnalyseEvent();
 }
 
 //________________________________________________________________________
