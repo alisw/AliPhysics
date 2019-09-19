@@ -271,6 +271,9 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   fPhi.push_back(daughter.GetPosDaughter().GetPhi());
   fPhi.push_back(daughter.GetNegDaughter().GetPhi());
 
+  fCharge.push_back(1);
+  fCharge.push_back(-1);
+
   fMCPhi.push_back(daughter.GetPosDaughter().GetPhiMC());
   fMCPhi.push_back(daughter.GetNegDaughter().GetPhiMC());
 
