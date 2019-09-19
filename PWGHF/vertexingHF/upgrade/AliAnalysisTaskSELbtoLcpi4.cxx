@@ -192,10 +192,8 @@ AliAnalysisTaskSELbtoLcpi4::~AliAnalysisTaskSELbtoLcpi4() {
     delete fvtx1; 
     fvtx1 = 0x0;
   }
-  if(fNtupleLambdabUPG){
-    delete fNtupleLambdabUPG;
-    fNtupleLambdabUPG=0;
-  }
+ 
+ delete fNtupleLambdabUPG;
 
 }
 //-----------------------------------------------------
