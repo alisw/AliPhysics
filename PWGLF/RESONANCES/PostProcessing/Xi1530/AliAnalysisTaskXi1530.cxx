@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/09/18
+//  Last Modified Date: 2019/09/19
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -235,11 +235,12 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     CreateTHnSparse("hInvMass", "InvMass", 5,
                     {binSystematics, binType, binCent, binPt, binMass},
                     "s");  // Normal inv mass distribution of Xi1530
-    CreateTHnSparse("hMult", "Multiplicity", 1, {binCent}, "s");
-    CreateTHnSparse("hV0MSignal", "V0MSignal", 4,
-                    {binType_V0M, binCent, AxisFix("V0MSig", 25000, 0, 25000),
-                     AxisFix("SPDNtrk", 4000, 0, 4000)},
-                    "s");
+    if (IsQAEvent)
+        CreateTHnSparse(
+            "EventQA/hV0MSignal", "V0MSignal", 4,
+            {binType_V0M, binCent, AxisFix("V0MSig", 2500, 0, 25000),
+             AxisFix("SPDNtrk", 4000, 0, 4000)},
+            "s");
     if (fExoticFinder2)
         CreateTHnSparse("hInvMass_hf", "InvMass", 4,
                         {binType, binCent, binPt, binMass},
@@ -266,68 +267,72 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     // QA Histograms--------------------------------------------------
     //
     if (fQA) {
-        if (IsHighMult) {
-            fHistos->CreateTH1("hMult_QA", "", 100, 0, 0.1, "s");
-            fHistos->CreateTH1("hMult_QA_onlyMult", "", 100, 0, 0.1, "s");
-            fHistos->CreateTH1("hMult_SkippedDataQA", "", 100, 0, 0.1, "s");
-            fHistos->CreateTH1("hMult_ProcessedDataQA", "", 100, 0, 0.1, "s");
-        } else {
-            fHistos->CreateTH1("hMult_QA", "", 1000, 0, 100, "s");
-            fHistos->CreateTH1("hMult_QA_onlyMult", "", 1000, 0, 100, "s");
-            fHistos->CreateTH1("hMult_SkippedDataQA", "", 100, 0, 100, "s");
-            fHistos->CreateTH1("hMult_ProcessedDataQA", "", 100, 0, 100, "s");
+        if (IsQAEvent) {
+            if (IsHighMult) {
+                fHistos->CreateTH1("EventQA/hMult_QA", "", 100, 0, 0.1, "s");
+                fHistos->CreateTH1("EventQA/hMult_QA_onlyMult", "", 100, 0, 0.1, "s");
+                fHistos->CreateTH1("EventQA/hMult_SkippedDataQA", "", 100, 0, 0.1, "s");
+                fHistos->CreateTH1("EventQA/hMult_ProcessedDataQA", "", 100, 0, 0.1, "s");
+            } else {
+                fHistos->CreateTH1("EventQA/hMult_QA", "", 1000, 0, 100, "s");
+                fHistos->CreateTH1("EventQA/hMult_QA_onlyMult", "", 1000, 0, 100, "s");
+                fHistos->CreateTH1("EventQA/hMult_SkippedDataQA", "", 100, 0, 100, "s");
+                fHistos->CreateTH1("EventQA/hMult_ProcessedDataQA", "", 100, 0, 100, "s");
+            }
         }
         fHistos->CreateTH2("hPhiEta", "", 180, 0, 2 * pi, 40, -2, 2);
-        // T P C   P I D
-        //// before
-        // dEdX
-        fHistos->CreateTH2("hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
-        fHistos->CreateTH2("hTPCPIDLambdaPion", "", 200, 0, 20, 2000, 0, 200);
-        fHistos->CreateTH2("hTPCPIDBachelorPion", "", 200, 0, 20, 2000, 0, 200);
-        fHistos->CreateTH2("hTPCPIDXi1530Pion", "", 200, 0, 20, 2000, 0, 200);
-        // Signal
-        fHistos->CreateTH1("hTPCPIDsignalLambdaProton", "", 100, -5, 5, "s");
-        fHistos->CreateTH1("hTPCPIDsignalLambdaPion", "", 100, -5, 5, "s");
-        fHistos->CreateTH1("hTPCPIDsignalBachelorPion", "", 100, -5, 5, "s");
-        fHistos->CreateTH1("hTPCPIDsignalXi1530Pion", "", 100, -5, 5, "s");
-        //
-        //// after
-        // dEdX
-        fHistos->CreateTH2("hTPCPIDLambdaProton_cut", "", 200, 0, 20, 2000, 0,
-                           200);
-        fHistos->CreateTH2("hTPCPIDLambdaPion_cut", "", 200, 0, 20, 2000, 0,
-                           200);
-        fHistos->CreateTH2("hTPCPIDBachelorPion_cut", "", 200, 0, 20, 2000, 0,
-                           200);
-        fHistos->CreateTH2("hTPCPIDXi1530Pion_cut", "", 200, 0, 20, 2000, 0,
-                           200);
-        // Signal
-        fHistos->CreateTH1("hTPCPIDsignalLambdaProton_cut", "", 100, -5, 5,
-                           "s");
-        fHistos->CreateTH1("hTPCPIDsignalLambdaPion_cut", "", 100, -5, 5, "s");
-        fHistos->CreateTH1("hTPCPIDsignalBachelorPion_cut", "", 100, -5, 5,
-                           "s");
-        fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_cut", "", 100, -5, 5, "s");
+        if (IsQAPID) {
+            // T P C   P I D
+            //// before
+            // dEdX
+            fHistos->CreateTH2("hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
+            fHistos->CreateTH2("hTPCPIDLambdaPion", "", 200, 0, 20, 2000, 0, 200);
+            fHistos->CreateTH2("hTPCPIDBachelorPion", "", 200, 0, 20, 2000, 0, 200);
+            fHistos->CreateTH2("hTPCPIDXi1530Pion", "", 200, 0, 20, 2000, 0, 200);
+            // Signal
+            fHistos->CreateTH1("hTPCPIDsignalLambdaProton", "", 100, -5, 5, "s");
+            fHistos->CreateTH1("hTPCPIDsignalLambdaPion", "", 100, -5, 5, "s");
+            fHistos->CreateTH1("hTPCPIDsignalBachelorPion", "", 100, -5, 5, "s");
+            fHistos->CreateTH1("hTPCPIDsignalXi1530Pion", "", 100, -5, 5, "s");
+            //
+            //// after
+            // dEdX
+            fHistos->CreateTH2("hTPCPIDLambdaProton_cut", "", 200, 0, 20, 2000, 0,
+                            200);
+            fHistos->CreateTH2("hTPCPIDLambdaPion_cut", "", 200, 0, 20, 2000, 0,
+                            200);
+            fHistos->CreateTH2("hTPCPIDBachelorPion_cut", "", 200, 0, 20, 2000, 0,
+                            200);
+            fHistos->CreateTH2("hTPCPIDXi1530Pion_cut", "", 200, 0, 20, 2000, 0,
+                            200);
+            // Signal
+            fHistos->CreateTH1("hTPCPIDsignalLambdaProton_cut", "", 100, -5, 5,
+                            "s");
+            fHistos->CreateTH1("hTPCPIDsignalLambdaPion_cut", "", 100, -5, 5, "s");
+            fHistos->CreateTH1("hTPCPIDsignalBachelorPion_cut", "", 100, -5, 5,
+                            "s");
+            fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_cut", "", 100, -5, 5, "s");
+            //// Systemtatics
+            //
+            fHistos->CreateTH1("hTPCPIDsignalLambdaProton_loose", "", 100, -5,
+                               5, "s");
+            fHistos->CreateTH1("hTPCPIDsignalLambdaPion_loose", "", 100, -5, 5,
+                               "s");
+            fHistos->CreateTH1("hTPCPIDsignalBachelorPion_loose", "", 100, -5,
+                               5, "s");
+            fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_loose", "", 100, -5, 5,
+                               "s");
 
-        //// Systemtatics
-        //
-        fHistos->CreateTH1("hTPCPIDsignalLambdaProton_loose", "", 100, -5, 5,
-                           "s");
-        fHistos->CreateTH1("hTPCPIDsignalLambdaPion_loose", "", 100, -5, 5,
-                           "s");
-        fHistos->CreateTH1("hTPCPIDsignalBachelorPion_loose", "", 100, -5, 5,
-                           "s");
-        fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_loose", "", 100, -5, 5,
-                           "s");
-
-        fHistos->CreateTH1("hTPCPIDsignalLambdaProton_tight", "", 100, -5, 5,
-                           "s");
-        fHistos->CreateTH1("hTPCPIDsignalLambdaPion_tight", "", 100, -5, 5,
-                           "s");
-        fHistos->CreateTH1("hTPCPIDsignalBachelorPion_tight", "", 100, -5, 5,
-                           "s");
-        fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_tight", "", 100, -5, 5,
-                           "s");
+            fHistos->CreateTH1("hTPCPIDsignalLambdaProton_tight", "", 100, -5,
+                               5, "s");
+            fHistos->CreateTH1("hTPCPIDsignalLambdaPion_tight", "", 100, -5, 5,
+                               "s");
+            fHistos->CreateTH1("hTPCPIDsignalBachelorPion_tight", "", 100, -5,
+                               5, "s");
+            fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_tight", "", 100, -5, 5,
+                               "s");
+        }
+        
 
         // D C A
         // between daughters
@@ -433,19 +438,21 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
             fHistos->CreateTH1("hMC_reconstructed_Y", "", 400, -2, 2, "s");
         }
     }
-    // Invmass Check
-    fHistos->CreateTH1("hTotalInvMass_data", "", 1300, 1.2, 2.5, "s");
-    fHistos->CreateTH1("hTotalInvMass_LS", "", 1300, 1.2, 2.5, "s");
-    fHistos->CreateTH1("hTotalInvMass_Mix", "", 1300, 1.2, 2.5, "s");
-    if (fExoticFinder2){
-        fHistos->CreateTH1("hTotalInvMass_HFpp", "", 2000, 1.5, 3.5, "s");
-        fHistos->CreateTH1("hTotalInvMass_HFnp", "", 2000, 1.5, 3.5, "s");
-        fHistos->CreateTH1("hTotalInvMass_HFpn", "", 2000, 1.5, 3.5, "s");
-        fHistos->CreateTH1("hTotalInvMass_HFnn", "", 2000, 1.5, 3.5, "s");
-        fHistos->CreateTH1("hTotalInvMass_HFppMix", "", 2000, 1.5, 3.5, "s");
-        fHistos->CreateTH1("hTotalInvMass_HFnpMix", "", 2000, 1.5, 3.5, "s");
-        fHistos->CreateTH1("hTotalInvMass_HFpnMix", "", 2000, 1.5, 3.5, "s");
-        fHistos->CreateTH1("hTotalInvMass_HFnnMix", "", 2000, 1.5, 3.5, "s");
+    if (IsQAInvMass) {
+        // Invmass Check
+        fHistos->CreateTH1("hTotalInvMass_data", "", 1300, 1.2, 2.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_LS", "", 1300, 1.2, 2.5, "s");
+        fHistos->CreateTH1("hTotalInvMass_Mix", "", 1300, 1.2, 2.5, "s");
+        if (fExoticFinder2){
+            fHistos->CreateTH1("hTotalInvMass_HFpp", "", 2000, 1.5, 3.5, "s");
+            fHistos->CreateTH1("hTotalInvMass_HFnp", "", 2000, 1.5, 3.5, "s");
+            fHistos->CreateTH1("hTotalInvMass_HFpn", "", 2000, 1.5, 3.5, "s");
+            fHistos->CreateTH1("hTotalInvMass_HFnn", "", 2000, 1.5, 3.5, "s");
+            fHistos->CreateTH1("hTotalInvMass_HFppMix", "", 2000, 1.5, 3.5, "s");
+            fHistos->CreateTH1("hTotalInvMass_HFnpMix", "", 2000, 1.5, 3.5, "s");
+            fHistos->CreateTH1("hTotalInvMass_HFpnMix", "", 2000, 1.5, 3.5, "s");
+            fHistos->CreateTH1("hTotalInvMass_HFnnMix", "", 2000, 1.5, 3.5, "s");
+        }
     }
     fEMpool.resize(binCent.GetNbins() + 1,
                    std::vector<eventpool>(binZ.GetNbins() + 1));
@@ -554,8 +561,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
 
         IsINEL0Rec = IsPS && IsGoodVertex && IsVtxInZCut && IsINELg0;
 
-        if (IsSelectedTrig && IsMultSelcted && fQA)
-            fHistos->FillTH1("hMult_QA_onlyMult", (double)fCent);
+        if (IsSelectedTrig && IsMultSelcted && fQA && IsQAEvent)
+            fHistos->FillTH1("EventQA/hMult_QA_onlyMult", (double)fCent);
 
         //  Missing Vetex and Trriger Efficiency
         //  ---------------------------------
@@ -644,18 +651,20 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         intensity = nanoHeader->GetVar(v0mValueIndex);
         ftrackmult = nanoHeader->GetVar(trkValueIndex);
 
-        fHistos->FillTH1("hMult_QA_onlyMult", (double)fCent);
+        if (IsQAEvent)
+            fHistos->FillTH1("EventQA/hMult_QA_onlyMult", (double)fCent);
 
         IsSelectedTrig = true;
         IsMultSelcted = true;
         IsEvtSelected = true;
     }
 
-    if (IsSelectedTrig) {
-        FillTHnSparse("hV0MSignal", {kIsSelected, (double)fCent,
-                                     (double)intensity, (double)ftrackmult});
+    if (IsSelectedTrig && IsQAEvent) {
+        FillTHnSparse("EventQA/hV0MSignal",
+                      {kIsSelected, (double)fCent, (double)intensity,
+                       (double)ftrackmult});
         if (IsMultSelcted)
-            FillTHnSparse("hV0MSignal",
+            FillTHnSparse("EventQA/hV0MSignal",
                           {kIsMulti, (double)fCent, (double)intensity,
                            (double)ftrackmult});
     }
@@ -670,13 +679,13 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     // Check tracks and casade, Fill histo************************************
     if (IsEvtSelected) {  // In AliEventCuts
         // Draw Multiplicity QA plot in only selected event.
-        if (fQA) {
-            FillTHnSparse("hMult", {(double)fCent});
-            fHistos->FillTH1("hMult_QA", (double)fCent);
+        if (fQA && IsQAEvent) {
+            fHistos->FillTH1("EventQA/hMult_QA", (double)fCent);
 
             // V0M signal QA
-            FillTHnSparse("hV0MSignal", {kPS, (double)fCent, (double)intensity,
-                                         (double)ftrackmult});
+            FillTHnSparse(
+                "EventQA/hV0MSignal",
+                {kPS, (double)fCent, (double)intensity, (double)ftrackmult});
         }
         if (IsMC) {  // After All Event cut!
             if (fEvt->IsA() == AliESDEvent::Class()) {
@@ -787,9 +796,11 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
         // if (TMath::Abs(track->M() - pionmass) > 0.007) continue;
         if (fQA) {
             fHistos->FillTH2("hPhiEta", track->Phi(), track->Eta());
-            fHistos->FillTH2("hTPCPIDXi1530Pion", track->GetTPCmomentum(),
+            if(IsQAPID){ 
+                fHistos->FillTH2("hTPCPIDXi1530Pion", track->GetTPCmomentum(),
                              track->GetTPCsignal());
-            fHistos->FillTH1("hTPCPIDsignalXi1530Pion", fTPCNSigPion);
+                fHistos->FillTH1("hTPCPIDsignalXi1530Pion", fTPCNSigPion);
+            }
             fHistos->FillTH1("hDCADist_Xi1530pion_to_PV", pionZ);
         }  // After default cut
 
@@ -887,7 +898,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
                 fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
-                if (fQA) {
+                if (fQA && IsQAPID) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      pTrackXi->GetTPCmomentum(),
                                      pTrackXi->GetTPCsignal());
@@ -898,7 +909,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             } else {  // Xi+ has -proton, +pion
                 fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
-                if (fQA) {
+                if (fQA && IsQAPID) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      nTrackXi->GetTPCmomentum(),
                                      nTrackXi->GetTPCsignal());
@@ -909,7 +920,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             }
             fTPCNSigBachelorPion = GetTPCnSigma(
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
-            if (fQA) {
+            if (fQA && IsQAPID) {
                 fHistos->FillTH2("hTPCPIDBachelorPion",
                                  bTrackXi->GetTPCmomentum(),
                                  bTrackXi->GetTPCsignal());
@@ -1110,7 +1121,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             if (Xicandidate_aod->ChargeXi() == -1) {  // Xi- has +proton, -pion
                 fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
-                if (fQA) {
+                if (fQA && IsQAPID) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      pTrackXi->GetTPCmomentum(),
                                      pTrackXi->GetTPCsignal());
@@ -1121,7 +1132,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             } else {  // Xi+ has -proton, +pion
                 fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
-                if (fQA) {
+                if (fQA && IsQAPID) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      nTrackXi->GetTPCmomentum(),
                                      nTrackXi->GetTPCsignal());
@@ -1132,7 +1143,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             }
             fTPCNSigBachelorPion = GetTPCnSigma(
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
-            if (fQA) {
+            if (fQA && IsQAPID) {
                 fHistos->FillTH2("hTPCPIDBachelorPion",
                                  bTrackXi->GetTPCmomentum(),
                                  bTrackXi->GetTPCsignal());
@@ -1608,7 +1619,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 FillTHnSparse("hInvMass",
                               {(double)sys, (double)sign, (double)fCent,
                                vecsum.Pt(), vecsum.M()});
-                if (sys == 0) {
+                if (IsQAInvMass && sys == 0) {
                     if ((int)sign == (int)kData)
                         fHistos->FillTH1("hTotalInvMass_data", vecsum.M());
                     if ((int)sign == (int)kLS)
@@ -1654,21 +1665,22 @@ void AliAnalysisTaskXi1530::FillTracks() {
                             FillTHnSparse("hInvMass_hf",
                                         {(double)sign2, (double)fCent,
                                         vecsum2.Pt(), vecsum2.M()});
-                            if (track2->Charge() > 0) {
-                                if (track1->Charge() > 0)
-                                    fHistos->FillTH1("hTotalInvMass_HFpp",
-                                                    vecsum2.M());
-                                else
-                                    fHistos->FillTH1("hTotalInvMass_HFnp",
-                                                    vecsum2.M());
-                            }
-                            else {
-                                if (track1->Charge() > 0)
-                                    fHistos->FillTH1("hTotalInvMass_HFpn",
-                                                    vecsum2.M());
-                                else
-                                    fHistos->FillTH1("hTotalInvMass_HFnn",
-                                                    vecsum2.M());
+                            if (IsQAInvMass) {
+                                if (track2->Charge() > 0) {
+                                    if (track1->Charge() > 0)
+                                        fHistos->FillTH1("hTotalInvMass_HFpp",
+                                                         vecsum2.M());
+                                    else
+                                        fHistos->FillTH1("hTotalInvMass_HFnp",
+                                                         vecsum2.M());
+                                } else {
+                                    if (track1->Charge() > 0)
+                                        fHistos->FillTH1("hTotalInvMass_HFpn",
+                                                         vecsum2.M());
+                                    else
+                                        fHistos->FillTH1("hTotalInvMass_HFnn",
+                                                         vecsum2.M());
+                                }
                             }
                         }
                     }
@@ -1677,17 +1689,20 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 // Fill the QA Histos
                 if (fQA) {
                     if (SysCheck.at(sys) == "DefaultOption") {
-                        fHistos->FillTH2("hTPCPIDXi1530Pion_cut",
-                                         track1->GetTPCmomentum(),
-                                         track1->GetTPCsignal());
+                        if (IsQAPID)
+                            fHistos->FillTH2("hTPCPIDXi1530Pion_cut",
+                                             track1->GetTPCmomentum(),
+                                             track1->GetTPCsignal());
                         if (Xicandidate->Charge() ==
                             -1) {  // Xi- has +proton, -pion
-                            fHistos->FillTH2("hTPCPIDLambdaProton_cut",
-                                             pTrackXi->GetTPCmomentum(),
-                                             pTrackXi->GetTPCsignal());
-                            fHistos->FillTH2("hTPCPIDLambdaPion_cut",
-                                             nTrackXi->GetTPCmomentum(),
-                                             nTrackXi->GetTPCsignal());
+                            if (IsQAPID) {
+                                fHistos->FillTH2("hTPCPIDLambdaProton_cut",
+                                                 pTrackXi->GetTPCmomentum(),
+                                                 pTrackXi->GetTPCsignal());
+                                fHistos->FillTH2("hTPCPIDLambdaPion_cut",
+                                                 nTrackXi->GetTPCmomentum(),
+                                                 nTrackXi->GetTPCsignal());
+                            }
                             pTrackXi->GetImpactParameters(b, bCov);
                             fHistos->FillTH1(
                                 "hDCADist_LambdaProton_to_PV_cut", b[0]);
@@ -1695,12 +1710,14 @@ void AliAnalysisTaskXi1530::FillTracks() {
                             fHistos->FillTH1(
                                 "hDCADist_LambdaPion_to_PV_cut", b[0]);
                         } else {  // Xi+ has -proton, +pion
-                            fHistos->FillTH2("hTPCPIDLambdaProton_cut",
-                                             nTrackXi->GetTPCmomentum(),
-                                             nTrackXi->GetTPCsignal());
-                            fHistos->FillTH2("hTPCPIDLambdaPion_cut",
-                                             pTrackXi->GetTPCmomentum(),
-                                             pTrackXi->GetTPCsignal());
+                            if (IsQAPID) {
+                                fHistos->FillTH2("hTPCPIDLambdaProton_cut",
+                                                 nTrackXi->GetTPCmomentum(),
+                                                 nTrackXi->GetTPCsignal());
+                                fHistos->FillTH2("hTPCPIDLambdaPion_cut",
+                                                 pTrackXi->GetTPCmomentum(),
+                                                 pTrackXi->GetTPCsignal());
+                            }
                             nTrackXi->GetImpactParameters(b, bCov);
                             fHistos->FillTH1(
                                 "hDCADist_LambdaProton_to_PV_cut", b[0]);
@@ -1708,19 +1725,21 @@ void AliAnalysisTaskXi1530::FillTracks() {
                             fHistos->FillTH1(
                                 "hDCADist_LambdaPion_to_PV_cut", b[0]);
                         }
-                        fHistos->FillTH2("hTPCPIDBachelorPion_cut",
-                                         bTrackXi->GetTPCmomentum(),
-                                         bTrackXi->GetTPCsignal());
+                        if (IsQAPID) {
+                            fHistos->FillTH2("hTPCPIDBachelorPion_cut",
+                                             bTrackXi->GetTPCmomentum(),
+                                             bTrackXi->GetTPCsignal());
 
-                        // TPC PID Signal
-                        fHistos->FillTH1("hTPCPIDsignalLambdaProton_cut",
-                                         fTPCNSigProton);
-                        fHistos->FillTH1("hTPCPIDsignalLambdaPion_cut",
-                                         fTPCNSigLambdaPion);
-                        fHistos->FillTH1("hTPCPIDsignalBachelorPion_cut",
-                                         fTPCNSigBachelorPion);
-                        fHistos->FillTH1("hTPCPIDsignalXi1530Pion_cut",
-                                         fTPCNSigPion);
+                            // TPC PID Signal
+                            fHistos->FillTH1("hTPCPIDsignalLambdaProton_cut",
+                                             fTPCNSigProton);
+                            fHistos->FillTH1("hTPCPIDsignalLambdaPion_cut",
+                                             fTPCNSigLambdaPion);
+                            fHistos->FillTH1("hTPCPIDsignalBachelorPion_cut",
+                                             fTPCNSigBachelorPion);
+                            fHistos->FillTH1("hTPCPIDsignalXi1530Pion_cut",
+                                             fTPCNSigPion);
+                        }
                         // DCA QA
                         fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters_cut",
                                          fDCADist_Lambda);
@@ -1756,27 +1775,29 @@ void AliAnalysisTaskXi1530::FillTracks() {
                         fHistos->FillTH2("hXi_Rxy_cut", cX, cY);
                     }
                     // PID
-                    if (SysCheck.at(sys) == "TPCNsigmaXi1530PionLoose")
-                        fHistos->FillTH1("hTPCPIDsignalXi1530Pion_loose",
-                                         fTPCNSigPion);
-                    if (SysCheck.at(sys) == "TPCNsigmaXi1530PionTight")
-                        fHistos->FillTH1("hTPCPIDsignalXi1530Pion_tight",
-                                         fTPCNSigPion);
-                    if (SysCheck.at(sys) == "TPCNsigmaXiLoose") {
-                        fHistos->FillTH1("hTPCPIDsignalLambdaProton_loose",
-                                         fTPCNSigProton);
-                        fHistos->FillTH1("hTPCPIDsignalLambdaPion_loose",
-                                         fTPCNSigLambdaPion);
-                        fHistos->FillTH1("hTPCPIDsignalBachelorPion_loose",
-                                         fTPCNSigBachelorPion);
-                    }
-                    if (SysCheck.at(sys) == "TPCNsigmaXiTight") {
-                        fHistos->FillTH1("hTPCPIDsignalLambdaProton_tight",
-                                         fTPCNSigProton);
-                        fHistos->FillTH1("hTPCPIDsignalLambdaPion_tight",
-                                         fTPCNSigLambdaPion);
-                        fHistos->FillTH1("hTPCPIDsignalBachelorPion_tight",
-                                         fTPCNSigBachelorPion);
+                    if (IsQAPID) {
+                        if (SysCheck.at(sys) == "TPCNsigmaXi1530PionLoose")
+                            fHistos->FillTH1("hTPCPIDsignalXi1530Pion_loose",
+                                            fTPCNSigPion);
+                        if (SysCheck.at(sys) == "TPCNsigmaXi1530PionTight")
+                            fHistos->FillTH1("hTPCPIDsignalXi1530Pion_tight",
+                                            fTPCNSigPion);
+                        if (SysCheck.at(sys) == "TPCNsigmaXiLoose") {
+                            fHistos->FillTH1("hTPCPIDsignalLambdaProton_loose",
+                                            fTPCNSigProton);
+                            fHistos->FillTH1("hTPCPIDsignalLambdaPion_loose",
+                                            fTPCNSigLambdaPion);
+                            fHistos->FillTH1("hTPCPIDsignalBachelorPion_loose",
+                                            fTPCNSigBachelorPion);
+                        }
+                        if (SysCheck.at(sys) == "TPCNsigmaXiTight") {
+                            fHistos->FillTH1("hTPCPIDsignalLambdaProton_tight",
+                                            fTPCNSigProton);
+                            fHistos->FillTH1("hTPCPIDsignalLambdaPion_tight",
+                                            fTPCNSigLambdaPion);
+                            fHistos->FillTH1("hTPCPIDsignalBachelorPion_tight",
+                                            fTPCNSigBachelorPion);
+                        }
                     }
                     // Xi1530Pion DCA zVetex Check
                     if (SysCheck.at(sys) == "Xi1530PionZVertexLoose")
@@ -1833,11 +1854,13 @@ void AliAnalysisTaskXi1530::FillTracks() {
     if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
         Int_t epsize = ep.size();
-        if (epsize < fnMix) {
-            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
-            return;
+        if (IsQAEvent) {
+            if (epsize < fnMix) {
+                fHistos->FillTH1("EventQA/hMult_SkippedDataQA", (double)fCent);
+                return;
+            }
+            fHistos->FillTH1("EventQA/hMult_ProcessedDataQA", (double)fCent);
         }
-        fHistos->FillTH1("hMult_ProcessedDataQA", (double)fCent);
 
         Int_t nForSkipSameEvent = 0;
         for (auto pool : ep) {
@@ -1950,7 +1973,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 FillTHnSparse("hInvMass",
                               {(double)kDefaultOption, (double)kMixing,
                                (double)fCent, vecsum.Pt(), vecsum.M()});
-                fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
+                if (IsQAInvMass)
+                    fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
                 if (fExoticFinder2) {
                     for (UInt_t k = 0; k < ntracks; k++) {
                         if (jt == k)  // same pion
@@ -1989,21 +2013,22 @@ void AliAnalysisTaskXi1530::FillTracks() {
                         FillTHnSparse("hInvMass_hf",
                                       {(double)sign2, (double)fCent,
                                        vecsum2.Pt(), vecsum2.M()});
-                        if (track2->Charge() > 0) {
-                            if (track1->Charge() > 0)
-                                fHistos->FillTH1("hTotalInvMass_HFppMix",
-                                                 vecsum2.M());
-                            else
-                                fHistos->FillTH1("hTotalInvMass_HFnpMix",
-                                                 vecsum2.M());
-                        }
-                        else{
-                            if (track1->Charge() > 0)
-                                fHistos->FillTH1("hTotalInvMass_HFpnMix",
-                                                 vecsum2.M());
-                            else
-                                fHistos->FillTH1("hTotalInvMass_HFnnMix",
-                                                 vecsum2.M());
+                        if (IsQAInvMass) {
+                            if (track2->Charge() > 0) {
+                                if (track1->Charge() > 0)
+                                    fHistos->FillTH1("hTotalInvMass_HFppMix",
+                                                     vecsum2.M());
+                                else
+                                    fHistos->FillTH1("hTotalInvMass_HFnpMix",
+                                                     vecsum2.M());
+                            } else {
+                                if (track1->Charge() > 0)
+                                    fHistos->FillTH1("hTotalInvMass_HFpnMix",
+                                                     vecsum2.M());
+                                else
+                                    fHistos->FillTH1("hTotalInvMass_HFnnMix",
+                                                     vecsum2.M());
+                            }
                         }
                     }
                 }
@@ -2309,7 +2334,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 FillTHnSparse("hInvMass",
                               {(double)sys, (double)sign, (double)fCent,
                                vecsum.Pt(), vecsum.M()});
-                if (sys == 0) {
+                if (IsQAInvMass && sys == 0) {
                     if ((int)sign == (int)kData)
                         fHistos->FillTH1("hTotalInvMass_data", vecsum.M());
                     if ((int)sign == (int)kLS)
@@ -2354,21 +2379,22 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                             FillTHnSparse("hInvMass_hf",
                                         {(double)sign2, (double)fCent,
                                         vecsum2.Pt(), vecsum2.M()});
-                            if (track2->Charge() > 0) {
-                                if (track1->Charge() > 0)
-                                    fHistos->FillTH1("hTotalInvMass_HFpp",
-                                                    vecsum2.M());
-                                else
-                                    fHistos->FillTH1("hTotalInvMass_HFnp",
-                                                    vecsum2.M());
-                            }
-                            else {
-                                if (track1->Charge() > 0)
-                                    fHistos->FillTH1("hTotalInvMass_HFpn",
-                                                    vecsum2.M());
-                                else
-                                    fHistos->FillTH1("hTotalInvMass_HFnn",
-                                                    vecsum2.M());
+                            if (IsQAInvMass) {
+                                if (track2->Charge() > 0) {
+                                    if (track1->Charge() > 0)
+                                        fHistos->FillTH1("hTotalInvMass_HFpp",
+                                                         vecsum2.M());
+                                    else
+                                        fHistos->FillTH1("hTotalInvMass_HFnp",
+                                                         vecsum2.M());
+                                } else {
+                                    if (track1->Charge() > 0)
+                                        fHistos->FillTH1("hTotalInvMass_HFpn",
+                                                         vecsum2.M());
+                                    else
+                                        fHistos->FillTH1("hTotalInvMass_HFnn",
+                                                         vecsum2.M());
+                                }
                             }
                         }
                     }
@@ -2377,17 +2403,20 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 // Fill the QA Histos
                 if (fQA) {
                     if (SysCheck.at(sys) == "DefaultOption") {
-                        fHistos->FillTH2("hTPCPIDXi1530Pion_cut",
-                                         track1->GetTPCmomentum(),
-                                         track1->GetTPCsignal());
+                        if (IsQAPID)
+                            fHistos->FillTH2("hTPCPIDXi1530Pion_cut",
+                                             track1->GetTPCmomentum(),
+                                             track1->GetTPCsignal());
                         if (Xicandidate->Charge() ==
                             -1) {  // Xi- has +proton, -pion
-                            fHistos->FillTH2("hTPCPIDLambdaProton_cut",
-                                             pTrackXi->GetTPCmomentum(),
-                                             pTrackXi->GetTPCsignal());
-                            fHistos->FillTH2("hTPCPIDLambdaPion_cut",
-                                             nTrackXi->GetTPCmomentum(),
-                                             nTrackXi->GetTPCsignal());
+                            if (IsQAPID) {
+                                fHistos->FillTH2("hTPCPIDLambdaProton_cut",
+                                                 pTrackXi->GetTPCmomentum(),
+                                                 pTrackXi->GetTPCsignal());
+                                fHistos->FillTH2("hTPCPIDLambdaPion_cut",
+                                                 nTrackXi->GetTPCmomentum(),
+                                                 nTrackXi->GetTPCsignal());
+                            }
                             fHistos->FillTH1(
                                 "hDCADist_LambdaProton_to_PV_cut",
                                 TMath::Abs(Xicandidate->DcaPosToPrimVertex()));
@@ -2395,12 +2424,14 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                                 "hDCADist_LambdaPion_to_PV_cut",
                                 TMath::Abs(Xicandidate->DcaNegToPrimVertex()));
                         } else {  // Xi+ has -proton, +pion
-                            fHistos->FillTH2("hTPCPIDLambdaProton_cut",
-                                             nTrackXi->GetTPCmomentum(),
-                                             nTrackXi->GetTPCsignal());
-                            fHistos->FillTH2("hTPCPIDLambdaPion_cut",
-                                             pTrackXi->GetTPCmomentum(),
-                                             pTrackXi->GetTPCsignal());
+                            if (IsQAPID) {
+                                fHistos->FillTH2("hTPCPIDLambdaProton_cut",
+                                                 nTrackXi->GetTPCmomentum(),
+                                                 nTrackXi->GetTPCsignal());
+                                fHistos->FillTH2("hTPCPIDLambdaPion_cut",
+                                                 pTrackXi->GetTPCmomentum(),
+                                                 pTrackXi->GetTPCsignal());
+                            }
                             fHistos->FillTH1(
                                 "hDCADist_LambdaProton_to_PV_cut",
                                 TMath::Abs(Xicandidate->DcaNegToPrimVertex()));
@@ -2408,19 +2439,21 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                                 "hDCADist_LambdaPion_to_PV_cut",
                                 TMath::Abs(Xicandidate->DcaPosToPrimVertex()));
                         }
-                        fHistos->FillTH2("hTPCPIDBachelorPion_cut",
-                                         bTrackXi->GetTPCmomentum(),
-                                         bTrackXi->GetTPCsignal());
+                        if (IsQAPID) {
+                            fHistos->FillTH2("hTPCPIDBachelorPion_cut",
+                                             bTrackXi->GetTPCmomentum(),
+                                             bTrackXi->GetTPCsignal());
 
-                        // TPC PID Signal
-                        fHistos->FillTH1("hTPCPIDsignalLambdaProton_cut",
-                                         fTPCNSigProton);
-                        fHistos->FillTH1("hTPCPIDsignalLambdaPion_cut",
-                                         fTPCNSigLambdaPion);
-                        fHistos->FillTH1("hTPCPIDsignalBachelorPion_cut",
-                                         fTPCNSigBachelorPion);
-                        fHistos->FillTH1("hTPCPIDsignalXi1530Pion_cut",
-                                         fTPCNSigPion);
+                            // TPC PID Signal
+                            fHistos->FillTH1("hTPCPIDsignalLambdaProton_cut",
+                                             fTPCNSigProton);
+                            fHistos->FillTH1("hTPCPIDsignalLambdaPion_cut",
+                                             fTPCNSigLambdaPion);
+                            fHistos->FillTH1("hTPCPIDsignalBachelorPion_cut",
+                                             fTPCNSigBachelorPion);
+                            fHistos->FillTH1("hTPCPIDsignalXi1530Pion_cut",
+                                             fTPCNSigPion);
+                        }
                         // DCA QA
                         fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters_cut",
                                          fDCADist_Lambda);
@@ -2450,27 +2483,29 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                         fHistos->FillTH2("hXi_Rxy_cut", lPosXi[0], lPosXi[1]);
                     }
                     // PID
-                    if (SysCheck.at(sys) == "TPCNsigmaXi1530PionLoose")
-                        fHistos->FillTH1("hTPCPIDsignalXi1530Pion_loose",
-                                         fTPCNSigPion);
-                    if (SysCheck.at(sys) == "TPCNsigmaXi1530PionTight")
-                        fHistos->FillTH1("hTPCPIDsignalXi1530Pion_tight",
-                                         fTPCNSigPion);
-                    if (SysCheck.at(sys) == "TPCNsigmaXiLoose") {
-                        fHistos->FillTH1("hTPCPIDsignalLambdaProton_loose",
-                                         fTPCNSigProton);
-                        fHistos->FillTH1("hTPCPIDsignalLambdaPion_loose",
-                                         fTPCNSigLambdaPion);
-                        fHistos->FillTH1("hTPCPIDsignalBachelorPion_loose",
-                                         fTPCNSigBachelorPion);
-                    }
-                    if (SysCheck.at(sys) == "TPCNsigmaXiTight") {
-                        fHistos->FillTH1("hTPCPIDsignalLambdaProton_tight",
-                                         fTPCNSigProton);
-                        fHistos->FillTH1("hTPCPIDsignalLambdaPion_tight",
-                                         fTPCNSigLambdaPion);
-                        fHistos->FillTH1("hTPCPIDsignalBachelorPion_tight",
-                                         fTPCNSigBachelorPion);
+                    if (IsQAPID) {
+                        if (SysCheck.at(sys) == "TPCNsigmaXi1530PionLoose")
+                            fHistos->FillTH1("hTPCPIDsignalXi1530Pion_loose",
+                                            fTPCNSigPion);
+                        if (SysCheck.at(sys) == "TPCNsigmaXi1530PionTight")
+                            fHistos->FillTH1("hTPCPIDsignalXi1530Pion_tight",
+                                            fTPCNSigPion);
+                        if (SysCheck.at(sys) == "TPCNsigmaXiLoose") {
+                            fHistos->FillTH1("hTPCPIDsignalLambdaProton_loose",
+                                            fTPCNSigProton);
+                            fHistos->FillTH1("hTPCPIDsignalLambdaPion_loose",
+                                            fTPCNSigLambdaPion);
+                            fHistos->FillTH1("hTPCPIDsignalBachelorPion_loose",
+                                            fTPCNSigBachelorPion);
+                        }
+                        if (SysCheck.at(sys) == "TPCNsigmaXiTight") {
+                            fHistos->FillTH1("hTPCPIDsignalLambdaProton_tight",
+                                            fTPCNSigProton);
+                            fHistos->FillTH1("hTPCPIDsignalLambdaPion_tight",
+                                            fTPCNSigLambdaPion);
+                            fHistos->FillTH1("hTPCPIDsignalBachelorPion_tight",
+                                            fTPCNSigBachelorPion);
+                        }
                     }
                     // Xi1530Pion DCA zVetex Check
                     if (SysCheck.at(sys) == "Xi1530PionZVertexLoose")
@@ -2527,11 +2562,13 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     if ((centbin >= 0) && (zbin >= 0) && fsetmixing) {
         eventpool& ep = fEMpool[centbin][zbin];
         Int_t epsize = ep.size();
-        if (epsize < fnMix){
-            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
-            return;
+        if (IsQAEvent) {
+            if (epsize < fnMix){
+                fHistos->FillTH1("EventQA/hMult_SkippedDataQA", (double)fCent);
+                return;
+            }
+            fHistos->FillTH1("EventQA/hMult_ProcessedDataQA", (double)fCent);
         }
-        fHistos->FillTH1("hMult_ProcessedDataQA", (double)fCent);
 
         Int_t nForSkipSameEvent = 0;
         for (auto pool : ep) {
@@ -2645,7 +2682,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 FillTHnSparse("hInvMass",
                               {(double)kDefaultOption, (double)kMixing,
                                (double)fCent, vecsum.Pt(), vecsum.M()});
-                fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
+                if (IsQAInvMass)
+                    fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
                 if (fExoticFinder2) {
                     for (UInt_t k = 0; k < ntracks; k++) {
                         if (i == k)  // same pion
@@ -2683,20 +2721,22 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                         FillTHnSparse("hInvMass_hf",
                                       {(double)sign2, (double)fCent,
                                        vecsum2.Pt(), vecsum2.M()});
-                        if (track2->Charge() > 0) {
-                            if (track1->Charge() > 0)
-                                fHistos->FillTH1("hTotalInvMass_HFppMix",
-                                                 vecsum2.M());
-                            else
-                                fHistos->FillTH1("hTotalInvMass_HFnpMix",
-                                                 vecsum2.M());
-                        } else {
-                            if (track1->Charge() > 0)
-                                fHistos->FillTH1("hTotalInvMass_HFpnMix",
-                                                 vecsum2.M());
-                            else
-                                fHistos->FillTH1("hTotalInvMass_HFnnMix",
-                                                 vecsum2.M());
+                        if (IsQAInvMass) {
+                            if (track2->Charge() > 0) {
+                                if (track1->Charge() > 0)
+                                    fHistos->FillTH1("hTotalInvMass_HFppMix",
+                                                     vecsum2.M());
+                                else
+                                    fHistos->FillTH1("hTotalInvMass_HFnpMix",
+                                                     vecsum2.M());
+                            } else {
+                                if (track1->Charge() > 0)
+                                    fHistos->FillTH1("hTotalInvMass_HFpnMix",
+                                                     vecsum2.M());
+                                else
+                                    fHistos->FillTH1("hTotalInvMass_HFnnMix",
+                                                     vecsum2.M());
+                            }
                         }
                     }
                 }
