@@ -1,4 +1,4 @@
-AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",Int_t ndebug=0,const char*  postname="", Int_t applyFixesITS3Analysis=-1)
+AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",Int_t ndebug=0,Int_t applyFixesITS3Analysis=-1,const char*  postname="")
  {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -57,29 +57,29 @@ AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",I
   mgr->AddTask(task);
 
   
-  char* outputFileName=(char*)AliAnalysisManager::GetCommonFileName();
+  TString outputFileName=(char*)AliAnalysisManager::GetCommonFileName();
   TString container1;
   TString container2;
-  TString filename;
+  TString directory;
+  directory=Form(":Lbtask%s",(char*)postname);
+  outputFileName+=directory;
   container1.Form("HistosUPG%s", (char*)postname);
   container2.Form("ntupleUPGLb%s",(char*)postname);
-  filename.Form("ntupleUPGLb%s%s",(char*)postname,".root");
   
 
   AliAnalysisDataContainer *coutput1
      =mgr->CreateContainer(container1,
                            TList::Class(),
                            AliAnalysisManager::kOutputContainer,
-                           Form("%s:%s", outputFileName, "ITSImproverUpg"));
+                           outputFileName.Data());
 
 
   AliAnalysisDataContainer *coutput2
      =mgr->CreateContainer(container2,
                            TNtuple::Class(),
                            AliAnalysisManager::kOutputContainer,
-                           filename);
+                           outputFileName.Data());
  
-  coutput2->SetSpecialOutput();
 
 
   mgr->ConnectInput (task,0,mgr->GetCommonInputContainer());

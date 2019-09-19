@@ -157,8 +157,6 @@ AliAnalysisTaskSELbtoLcpi4::~AliAnalysisTaskSELbtoLcpi4() {
   if (fPIDResponse) {
     delete  fPIDResponse;
   }
-
-
   if (fOutput) {
     delete fOutput;
     fOutput = 0;
@@ -194,7 +192,8 @@ AliAnalysisTaskSELbtoLcpi4::~AliAnalysisTaskSELbtoLcpi4() {
     delete fvtx1; 
     fvtx1 = 0x0;
   }
-
+ 
+ delete fNtupleLambdabUPG;
 
 }
 //-----------------------------------------------------
