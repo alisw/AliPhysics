@@ -857,11 +857,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     minPt                     = 0;
     maxPt                     = 50;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 0.10*i;
-      else if(i<29) arrPtBinning[i]           = 0.10+0.1*(i-1);
-      else if(i<99) arrPtBinning[i]           = 3.+0.1*(i-29);
-      else if(i<139) arrPtBinning[i]          = 10.+0.25*(i-99);
-      else if(i<169) arrPtBinning[i]          = 20.+1.0*(i-139);
+      if (i < 100) arrPtBinning[i]            = 0.10*i;
+      else if(i<140) arrPtBinning[i]          = 10.+0.25*(i-100);
+      else if(i<170) arrPtBinning[i]          = 20.+1.00*(i-140);
       else arrPtBinning[i]                    = maxPt;
     }
     nBinsQAPt                 = 170;

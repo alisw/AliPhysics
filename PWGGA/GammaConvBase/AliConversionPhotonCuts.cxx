@@ -732,7 +732,7 @@ Bool_t AliConversionPhotonCuts::LoadElecDeDxPostCalibration(Int_t runNumber) {
   { //if fFileNameElecDeDxPostCalibration specified in the AddTask via SetElecDeDxPostCalibrationCustomFile()
     AliInfo(Form("Loading dEdx recalibration maps from given path %s",fFileNameElecDeDxPostCalibration.Data()));
 
-    TFile *fileRecalib=new TFile(Form("%s",fFileNameElecDeDxPostCalibration.Data()),"read");
+    TFile *fileRecalib= TFile::Open(Form("%s",fFileNameElecDeDxPostCalibration.Data()),"read");
     if (!fileRecalib || fileRecalib->IsZombie())
     {
       AliWarning(Form("Input file was not found in the path provided: %s",fFileNameElecDeDxPostCalibration.Data()));
@@ -768,7 +768,7 @@ Bool_t AliConversionPhotonCuts::LoadElecDeDxPostCalibration(Int_t runNumber) {
   { // Else choose the one in the $ALICE_PHYSICS directory (or EOS)
     AliInfo("LoadingdEdx recalibration maps from OADB/PWGGA/TPCdEdxRecalibOADB.root");
 
-    TFile *fileRecalib=new TFile(AliDataFile::GetFileNameOADB("PWGGA/TPCdEdxRecalibOADB.root").data(),"read");
+    TFile *fileRecalib = TFile::Open(AliDataFile::GetFileNameOADB("PWGGA/TPCdEdxRecalibOADB.root").data(),"read");
     if (!fileRecalib || fileRecalib->IsZombie())
     {
       AliWarning("OADB/PWGGA/TPCdEdxRecalibOADB.root was not found");
