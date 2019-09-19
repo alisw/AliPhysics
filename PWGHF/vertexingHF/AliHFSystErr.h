@@ -371,7 +371,7 @@ class AliHFSystErr : public TNamed
 
   void InitD0toKpi2018PbPb010();
   void InitD0toKpi2018PbPb3050();
-
+  void InitD0toKpi2018PbPb010LowPtAn();
 
   TH1F* ReflectHisto(TH1F *hin) const;
 
