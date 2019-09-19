@@ -1022,7 +1022,7 @@ void  AliMC::AddParticles()
   cdbratio[0] = 50.;
   cdmode[0][0] = 1000010020; // deuteron
   cdmode[0][1] = -321; // negative kaon
-  cdmode[0][1] = 211; // positive pion
+  cdmode[0][2] = 211; // positive pion
 
   cdbratio[1] = 50.;
   cdmode[1][0] = 1000010020; // deuteron
@@ -1043,7 +1043,7 @@ void  AliMC::AddParticles()
   acdbratio[0] = 50.;
   acdmode[0][0] = -1000010020; // deuteron
   acdmode[0][1] = 321; // negative kaon
-  acdmode[0][1] = -211; // positive pion
+  acdmode[0][2] = -211; // positive pion
 
   acdbratio[1] = 50.;
   acdmode[1][0] = -1000010020; // deuteron
