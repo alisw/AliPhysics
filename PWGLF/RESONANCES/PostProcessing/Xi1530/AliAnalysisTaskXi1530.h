@@ -56,7 +56,11 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void SetnMix(Int_t nMix) { fnMix = nMix; }
     void SetHighMult(Bool_t highmult) { IsHighMult = highmult; }
     void SetIsPrimaryMC(Bool_t isprimarymc) { IsPrimaryMC = isprimarymc; }
-    void SetNoQA(Bool_t noQA) { fQA = noQA; }
+    void SetQA(Bool_t QAinput) { fQA = QAinput; }
+    void SetQAEvent(Bool_t QAinput) { IsQAEvent = QAinput; }
+    void SetQAPID(Bool_t QAinput) { IsQAPID = QAinput; }
+    void SetQAInvMass(Bool_t QAinput) { IsQAInvMass = QAinput; }
+
     void SetXiCPAstudy(Bool_t input) { fCPAstudy = input; }
     void SetINEL(Bool_t input) { isINEL = input; }
     // Set Functions for the cut study & Systematic study
@@ -333,6 +337,9 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t IsINEL0True = kFALSE;
     Bool_t IsHighMult = kFALSE;
     Bool_t IsPrimaryMC = kTRUE;
+    Bool_t IsQAEvent = kTRUE;
+    Bool_t IsQAPID = kTRUE;
+    Bool_t IsQAInvMass = kTRUE;
     Bool_t fQA = kTRUE;
     Bool_t fExoticFinder = kFALSE;
     Bool_t fExoticFinder2 = kFALSE;
@@ -347,7 +354,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     Double_t lPosPV[3];
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 30);
+    ClassDef(AliAnalysisTaskXi1530, 31);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -380,6 +387,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 28: Add INEL variable
     // 29: Add Special finder
     // 30: Remove unused variables and reformatting
+    // 31: Add option to remove PIDqa plots
 };
 
 #endif
