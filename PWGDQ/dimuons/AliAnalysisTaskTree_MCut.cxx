@@ -75,13 +75,14 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut() :
   fCountCMLL7(0x0),
   fCountCMSL7(0x0),
   fCountCMSH7(0x0),
-  fMuonTrackCuts(0x0), 
   fNMuons(0x0),
   fNTracklets(0x0),
   fNContributors(0x0),
   fNDimu(0x0),
   fIsPhysSelected(0x0),
-  fAODEvent(0x0)
+  fAODEvent(0x0),
+//  fTrigClass(0x0),
+  finpmask(0)
 {
   //
   //Default ctor
@@ -139,13 +140,14 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut(const char *name) :
   fCountCMLL7(0x0),
   fCountCMSL7(0x0),
   fCountCMSH7(0x0),  
-  fMuonTrackCuts(0x0), 
   fNMuons(0x0),
   fNTracklets(0x0),
   fNContributors(0x0),
   fNDimu(0x0),
   fIsPhysSelected(0x0),
-  fAODEvent(0x0)
+  fAODEvent(0x0),
+//  fTrigClass(0x0),
+  finpmask(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -219,13 +221,16 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut(const AliAnalysisTaskTree_MCu
   fCountCMLL7(c.fCountCMLL7),
   fCountCMSL7(c.fCountCMSL7),
   fCountCMSH7(c.fCountCMSH7),  
-  fMuonTrackCuts(c.fMuonTrackCuts), 
   fNMuons(c.fNMuons),
   fNTracklets(c.fNTracklets),
   fNContributors(c.fNContributors),
   fNDimu(c.fNDimu),
   fIsPhysSelected(c.fIsPhysSelected),
-  fAODEvent(c.fAODEvent)
+  fAODEvent(c.fAODEvent),
+//  fTrigClass(c.fTrigClass),
+  finpmask(c.finpmask),
+  fMuonTrackCuts(c.fMuonTrackCuts) 
+
  {
   //
   // Copy Constructor									
