@@ -30,7 +30,6 @@ class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
   void SetBeamEnergy(Double_t en) {fBeamEnergy=en;}
   void SetAnalysisType(const char* type) {fkAnalysisType=type;}
   void SetPeriod(TString period) {fPeriod=period;}
-  AliMuonTrackCuts* fMuonTrackCuts;
     
  private:
   AliAnalysisTaskTree_MCut(const AliAnalysisTaskTree_MCut&);
@@ -38,6 +37,9 @@ class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
      
  //protected:
      
+  TTree         *fOutputTree	;      //! tree output
+  Double_t      fNevt		;      // event counter
+
   Double_t fBeamEnergy;   // Energy of the beam (required for the CS angle)    
   const char* fkAnalysisType; //ESD or AOD based analysis
   TString fPeriod; //period
@@ -49,16 +51,16 @@ class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
   Int_t fCountCMSL7; //counter
   Int_t fCountCMSH7; //counter
   
-  Double_t      fNevt		;      // event counter
-  
-  TTree         *fOutputTree	;      //! tree output
-  
-  char   	fTrigClass[800];	// fired trigger classes
-  UInt_t        finpmask;               // trigger input mask
-
   Int_t		fNMuons;		// muon tracks in the event
   Int_t		fNTracklets;		// spd tracklets
   Int_t		fNContributors;		// n contributors
+  Int_t		fNDimu;			// dimuons in the event
+  Bool_t        fIsPhysSelected;   //check on phys selection 
+  AliAODEvent*  fAODEvent;      //! AOD event 
+  char   	fTrigClass[800];	// fired trigger classes
+  UInt_t        finpmask;               // trigger input mask
+  
+  AliMuonTrackCuts* fMuonTrackCuts;
   Double_t	fVertex[3];		// x,y,z vertex
   Double_t	fPt[200];		 // single mu pT
   Double_t	fE[200];			// single mu E
@@ -74,9 +76,7 @@ class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
   Int_t	        fCharge[200];		// single mu charge
   Double_t	fRAtAbsEnd[200];		// single mu distance from beam center at end abs
   Int_t	        fpDCA[200];             //pDCA
-
-  Int_t		fNDimu;			// dimuons in the event
-  Int_t		fDimuMu[100][2];	// reference to single mus
+  
   Double_t	fDimuPt[100];			    // dimuon pT
   Double_t	fDimuPx[100]; 		    // dimuon px
   Double_t	fDimuPy[100]; 		    // dimuon py
@@ -86,14 +86,13 @@ class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
   Int_t	        fDimuCharge[100];		// dimuon charge
   Int_t	        fDimuMatch[100];		// dimuon match
 
-  Double_t fDimuCostHE[100]; // cost Helicty frame
-  Double_t fDimuPhiHE[100]; // phi Helicty fame
-  Double_t fDimuCostCS[100]; // cost Collins-Soper
-  Double_t fDimuPhiCS[100]; // phi Collins-Soper
+  Double_t      fDimuCostHE[100]; // cost Helicty frame
+  Double_t      fDimuPhiHE[100]; // phi Helicty fame
+  Double_t      fDimuCostCS[100]; // cost Collins-Soper
+  Double_t      fDimuPhiCS[100]; // phi Collins-Soper
+  Int_t		fDimuMu[100][2];	// reference to single mus
   
-  Bool_t        fIsPhysSelected;   //check on phys selection 
   
-  AliAODEvent* fAODEvent;      //! AOD event  //tolgo !
 //  TList *fOutput;  //!< List of histograms for data
   
  ClassDef(AliAnalysisTaskTree_MCut,1);
