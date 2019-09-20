@@ -251,6 +251,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D     *fhClusterEtaIncl[kTG];                      //!  eta inclusive
 
    THnSparse *fhTrackPtEtaPhiV0norm[kTG];               //!  pt, eta, phi, V0M for inclusive tracks 
+   THnSparse *fhJetPtAreaV0norm[kTG];                   //!  pt, area V0M for inclusive jets 
+   THnSparse *fhJetPtAreaV0norm_PartLevel;              //!  pt, area V0M for inclusive jets 
  
    TH1D     *fhRho[kTG];                                 //! minimum bias rho inclusive
    TH1D     *fhRhoTTH[kTG][fkTTbins];                    //! in events MB with hadron TT
@@ -462,7 +464,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 18); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 19); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }
