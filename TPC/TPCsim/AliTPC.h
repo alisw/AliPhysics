@@ -14,10 +14,11 @@ class TTree;
 #include <Htypes.h>
 #include <TMatrixFfwd.h>
 #include <TVector.h>
+#include "AliTPCParamSR.h"
+#include <TRandom.h>
 
 class AliTPCDigitsArray;
 class AliTPCLoader;
-class AliTPCParam;
 class AliTPCTrackHitsV2; // M.I.
 class AliRawReader;
 class TTreeSRedirector;
@@ -97,7 +98,10 @@ public:
    // LHC clock phase switch 0 - no phase, 1 - random, 2 - from the OCDB
    void SetLHCclockPhase(Int_t sw){fLHCclockPhaseSw = sw;}
 // static functions
-   static AliTPCParam* LoadTPCParam(TFile *file); 
+   static AliTPCParam* LoadTPCParam(TFile *file);
+   static Bool_t GetDistortDiffuse() { return fgDistortDiffuse; }
+   static void   SetDistortDiffuse(Bool_t v) { fgDistortDiffuse = v; }
+   
 protected:
    Int_t          fDefaults; // defaults switch
   Int_t          fSens;             // ISENS
@@ -128,6 +132,8 @@ protected:
                 Float_t **pList);
   void MakeSector(Int_t isec,Int_t nrows,TTree *TH,Stat_t ntracks,TObjArray **row);
   void TransportElectron(Float_t *xyz, Int_t *index);
+  void TransportElectronToWire(Float_t *xyz, Int_t *index);
+  void ApplyDiffusion(Float_t *xyz);
   Int_t fCurrentIndex[4];// index[0] indicates coordinate system, 
                          // index[1] sector number, 
                          // index[2] pad row number  
@@ -140,6 +146,7 @@ protected:
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
   Int_t fLHCclockPhaseSw; //! lhc clock phase switch
   Int_t fIsGEM;        // flag isGEM readout
+  static Bool_t fgDistortDiffuse; // apply distortions then diffisions or vice versa
   ClassDef(AliTPC,15)  // Time Projection Chamber class
 };
 
@@ -154,7 +161,26 @@ inline Float_t AliTPC::GetNoise()
   //gRandom->Gaus(0, fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac());
 }
 
+inline void AliTPC::TransportElectronToWire(Float_t *xyz, Int_t *index) {
+  // move electron to nearest wire. Electron must be in the sector frame 
+  if (fTPCParam->GetMWPCReadout()==kTRUE){
+    Float_t dx = fTPCParam->Transform2to2NearestWire(xyz,index);
+    xyz[1]+=dx*(fTPCParam->GetOmegaTau());
+  }
+}
 
+inline void AliTPC::ApplyDiffusion(Float_t *xyz)
+{
+  // apply diffusion to electron. It must be in the sector frame and Z should correspond to drift length
+  Float_t driftl=xyz[2];
+  if (driftl<0.01) driftl=0.01;
+  driftl=TMath::Sqrt(driftl);
+  Float_t sigT = driftl*(fTPCParam->GetDiffT());
+  Float_t sigL = driftl*(fTPCParam->GetDiffL());
+  xyz[0]=gRandom->Gaus(xyz[0],sigT);
+  xyz[1]=gRandom->Gaus(xyz[1],sigT);
+  xyz[2]=gRandom->Gaus(xyz[2],sigL);
+}
 
 
 //_____________________________________________________________________________
