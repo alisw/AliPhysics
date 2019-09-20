@@ -757,7 +757,11 @@ void AliAnalysisTaskGenUeSpherocity::ParticleSel(Bool_t fIsPseudoRec, const vect
 
 		fHistEta->Fill(mcPart->Eta());
 
-		y = mcPart->Y(); 
+                if (!(TMath::Abs(mcPart->Energy()-mcPart->Pz())>0.)) continue;
+                Double_t myY = (mcPart->Energy()+mcPart->Pz())/(mcPart->Energy()-mcPart->Pz());
+                if( myY <= 0 ) continue;
+                y = 0.5*TMath::Log(myY);
+		//y = mcPart->Y(); 
 		ipt = mcPart->Pt();
 
 
