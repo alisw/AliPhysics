@@ -1417,9 +1417,19 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  *
                                  * NOTE: the first is in the helicity frame,
                                  *       the second with Collins-Soper.
+                                 *
+                                 *
+                                 * NB: 0N0N implies the use of the neutron
+                                 *     emission class to suppress the
+                                 *     feed-down contribution and the
+                                 *     incoherent component too!!
                                  */
-        TH1F***                 fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH;  //!
-        TH1F***                 fInvariantMassDistributionForSignalExtractionCsFrameMyBinningH;        //!
+        TH1F***                 fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH;      //!
+        TH1F***                 fInvariantMassDistributionForSignalExtractionCsFrameMyBinningH;            //!
+
+        TH1F***                 fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinning0N0NH;  //!
+        TH1F***                 fInvariantMassDistributionForSignalExtractionCsFrameMyBinning0N0NH;        //!
+
 
                                 /**
                                  * This histogram shows the invariant mass
@@ -1493,13 +1503,27 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  *
                                  * NB: He => helicity frame
                                  * NB: Cs => CS       frame
+                                 *
+                                 * NB: 0N0N implies the use of the neutron
+                                 *     emission class to suppress the
+                                 *     feed-down contribution and the
+                                 *     incoherent component too!!
                                  */
-        TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[25];       //!
-        TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[25];  //!
-        TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[25];  //!
-        TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBinsH[25];       //!
-        TH1F*                   fInvariantMassDistributionOnlyCosThetaCsFrameTwentyfiveBinsH[25];  //!
-        TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBinsH[25];  //!
+        TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[25];           //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[25];      //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[25];      //!
+
+        TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBinsH[25];           //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaCsFrameTwentyfiveBinsH[25];      //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBinsH[25];      //!
+
+        TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBins0N0NH[25];       //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBins0N0NH[25];  //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBins0N0NH[25];  //!
+
+        TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBins0N0NH[25];       //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaCsFrameTwentyfiveBins0N0NH[25];  //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBins0N0NH[25];  //!
 
         //_______________________________
         // CUTS
@@ -1561,7 +1585,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 42);
+        ClassDef(AliAnalysisTaskUPCforward, 43);
 };
 
 #endif
