@@ -145,6 +145,7 @@ fInitializedLocal(0),
 fHistEvtSelection(0x0),
 fhVertexZall(0x0),
 fhVertexZ(0x0),
+fhJetPtAreaV0norm_PartLevel(0x0),
 fhRhoMBpart(0x0),
 fhV0MAssymVsV0Mnorm_PartLevel(0x0),
 fhV0AvsV0C(0x0),
@@ -205,6 +206,7 @@ fRandom(0)
       fhClusterEtaIncl[itg] = 0x0;
 
       fhTrackPtEtaPhiV0norm[itg] = 0x0;
+      fhJetPtAreaV0norm[itg] = 0x0;
 
       fhRho[itg] = 0x0;
     
@@ -435,6 +437,7 @@ fInitializedLocal(0),
 fHistEvtSelection(0x0),
 fhVertexZall(0x0),
 fhVertexZ(0x0),
+fhJetPtAreaV0norm_PartLevel(0x0),
 fhRhoMBpart(0x0),
 fhV0MAssymVsV0Mnorm_PartLevel(0x0),
 fhV0AvsV0C(0x0),
@@ -492,6 +495,7 @@ fRandom(0)
       fhJetEtaIncl[itg]=0x0;
 
       fhTrackPtEtaPhiV0norm[itg] = 0x0;
+      fhJetPtAreaV0norm[itg] = 0x0;
 
       fhClusterPhiIncl[itg] = 0x0;
       fhClusterEtaIncl[itg] = 0x0;
@@ -1149,6 +1153,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    Int_t idx;
    TString name;
    Double_t tmparr[4]; 
+   Double_t tmparr3[3]; 
    //_________________________________________________________________
    // EVENT SELECTION
    fHistEvtSelection->Fill(0.5); //Count input event
@@ -2022,14 +2027,22 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       // trackIterator is a std::map of AliTLorentzVector and AliVTrack
       jet = jetIterator.second;  // Get the pointer to jet object
       if(!jet)  continue; 
+
    
       jetPtCorrDet = jet->Pt() - rho*jet->Area();
+
+      tmparr3[0] = jetPtCorrDet;
+      tmparr3[1] = jet->Area();
+      tmparr3[2] = fMultV0Mnorm;
 
       for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
          if(!trigflag[itg]) continue; //check which trigger fired
  
          fhJetPhiIncl[itg]->Fill(jetPtCorrDet, jet->Phi());
          fhJetEtaIncl[itg]->Fill(jetPtCorrDet, jet->Eta());
+
+
+         fhJetPtAreaV0norm[itg]->Fill(tmparr3);
       }
 
       for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){ //search for TTJ candidates
@@ -2331,6 +2344,13 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             fhJetPtPartLevelCorr->Fill(jetPtCorrPart);
             fhJetPtPartLevelZero->Fill(jetPartMC->Pt());
 
+
+            tmparr3[0] = jetPtCorrPart;
+            tmparr3[1] = jetPartMC->Area();
+            tmparr3[2] = fMultV0Mnorm_PartLevel;
+
+            fhJetPtAreaV0norm_PartLevel->Fill(tmparr3); 
+
             for(Int_t itt=0; itt<fnHadronTTBins; itt++){ //event contains a particle level trigger
                if(fHadronTT[itt]>0){
                   idx = fIndexTTH[itt];
@@ -2563,6 +2583,28 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fOutput->Add((THnSparse*) fhTrackPtEtaPhiV0norm[itg]); 
    }
 
+
+   const Int_t kjdim = 3;
+   Int_t   jbins[ktdim]  = {110,  50, 10};
+   Double_t jxmin[ktdim] = {-10.,  0,  0.};  
+   Double_t jxmax[ktdim] = {100.,  2, 10.};  
+
+   for(Int_t itg=kMB; itg<=kHM; itg++){
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue; 
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kGA) continue; 
+
+      name = Form("fhJetPtAreaV0norm_%s",trig[itg].Data());
+
+      fhJetPtAreaV0norm[itg] = new  THnSparseF(name.Data(),"Jet V0Mnorm pt eta phi", kjdim, jbins, jxmin, jxmax);
+      fOutput->Add((THnSparse*) fhJetPtAreaV0norm[itg]); 
+   }
+   
+   if(fMode == AliAnalysisTaskEA::kMC){
+      name = "fhJetPtAreaV0norm_PartLevel";
+
+      fhJetPtAreaV0norm_PartLevel = new  THnSparseF(name.Data(),"Part LevelJet V0Mnorm pt eta phi", kjdim, jbins, jxmin, jxmax);
+      fOutput->Add((THnSparse*) fhJetPtAreaV0norm_PartLevel); 
+   } 
 
    //RHO 
    for(Int_t itg=kMB; itg<=kGA; itg++){
