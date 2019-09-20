@@ -97,7 +97,7 @@ class AliHFTreeHandler : public TObject
 
 
     void FillTree() { //to be called for each candidate!
-      if(fFillOnlySignal && !(fCandType&kSignal)) { //if fill only signal and not signal candidate, do not store 
+      if(fFillOnlySignal && !(fCandType&kSignal) && !(fCandType&kRefl)) { //if fill only signal and not signal/reflection candidate, do not store
         fCandType=0;
       }
       else {      
