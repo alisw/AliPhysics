@@ -36,6 +36,8 @@ class AliGenEventHeader;
 class AliDielectronVarCuts;
 class AliDielectronTrackCuts;
 class AliDielectronPairLegCuts;
+class AliJetContainer;
+
 class AliAnalysisTaskJpsiJet;
 
 using namespace std;

@@ -38,6 +38,7 @@
 #include "AliAnalysisCuts.h"
 #include "AliDielectron.h"
 #include "AliDielectronVarManager.h"
+#include "AliJetContainer.h"
 #include "AliEmcalJetTask.h"
 
 #include "AliAnalysisTaskSE.h"
@@ -46,6 +47,7 @@ class AliAnalysisCuts;
 class AliDielectron;
 class AliDielectronVarManager;
 class AliEmcalJet;
+class AliJetContainer;
 
 class AliAnalysisTaskJpsiJet : public AliAnalysisTaskSE
 {
