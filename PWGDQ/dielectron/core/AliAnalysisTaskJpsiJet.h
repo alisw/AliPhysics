@@ -113,6 +113,8 @@ public:
     const Bool_t bFillGhosts = kFALSE);
   void InitJetFinders();
   Bool_t RunJetFinder(const char* jetTag);
+  void EnableJetFinder(Bool_t enableJetFinder = kTRUE){fIsJetFinder = enableJetFinder;}
+  Bool_t CheckJetFinder(){return fIsJetFinder;}
 
   // MC correction
 public:
@@ -188,6 +190,7 @@ private:
   Bool_t             fIsPileup;
   Bool_t             fIsTriggerQA; // Add QA histograms by trigger classes
   Bool_t             fIsCellQA; // Add QA histograms by Cell ID
+  Bool_t             fIsJetFinder; // ONLY 1 task should enable the jet finder in LEGO train
   Bool_t             fIsMC;  // Input MC production
   TClonesArray      *fMCParticles; // AOD event object in MC
   AliAODMCHeader    *fMCHeader;    // AOD event object in MC

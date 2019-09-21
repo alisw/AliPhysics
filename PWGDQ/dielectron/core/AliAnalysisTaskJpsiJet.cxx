@@ -60,6 +60,7 @@ AliAnalysisTaskJpsiJet::AliAnalysisTaskJpsiJet():
   fIsPileup(kFALSE),
   fIsTriggerQA(kFALSE),
   fIsCellQA(kFALSE),
+  fIsJetFinder(kTRUE),
   fIsMC(kFALSE),
   fMCParticles(NULL),
   fMCHeader(NULL),
@@ -91,6 +92,7 @@ AliAnalysisTaskJpsiJet::AliAnalysisTaskJpsiJet(const char* taskName):
   fIsPileup(kFALSE),
   fIsTriggerQA(kFALSE),
   fIsCellQA(kFALSE),
+  fIsJetFinder(kTRUE),
   fIsMC(kFALSE),
   fMCParticles(NULL),
   fMCHeader(NULL),
@@ -542,9 +544,7 @@ void AliAnalysisTaskJpsiJet::InitJetFinders(){
 }
 
 Bool_t AliAnalysisTaskJpsiJet::RunJetFinder(const char* jetTag){
-  // HOTFIX : To be more elegant
-  //  a flag for ALL task in data, which should be always added.
-  if(!fIsTriggerQA && !fIsMC) return kTRUE;
+  if(!fIsJetFinder) return kTRUE;
   AliEmcalJetTask* jetFinder = NULL;
   TIter next(fJetTasks);
   while((jetFinder=(AliEmcalJetTask*)next())){
