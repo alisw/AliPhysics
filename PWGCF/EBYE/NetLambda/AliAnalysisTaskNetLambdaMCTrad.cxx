@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Sep20 DCA 0.2
+// Updated Sep 20
 
 
 #include "AliAnalysisManager.h"
@@ -174,7 +174,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         
         //-------------------------------------------------------------------GEN-----------------------------------------------------------------------------------------------
         
-        f2fHistGenCentVsPtLambda = new TH2F( "f2fHistGenCentVsPtLambda", "Centrality Vs #Lambda Gen Pt DCA at 0.2",CentbinNum, CentBins,fNptBins, LambdaPtBins);
+        f2fHistGenCentVsPtLambda = new TH2F( "f2fHistGenCentVsPtLambda", "Centrality Vs #Lambda Gen Pt (new cut)",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistGenCentVsPtLambda);
         
         f2fHistGenCentVsPtAntiLambda = new TH2F( "f2fHistGenCentVsPtAntiLambda", "Centrality Vs #bar{#Lambda} Gen Pt",CentbinNum, CentBins,fNptBins, LambdaPtBins);
@@ -459,7 +459,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         
         Float_t invMassLambda = -999, invMassAntiLambda = -999;
         Float_t V0pt = -999, eta = -999, pmom = -999;
-        Float_t ppt = -999,  peta = -999, posprnsg = -999, pospion =-999, v0Radius =-999, v0DecayLength =-999, proLT =-999, proLTbar =-999, lRapLambda=-999;
+        Float_t ppt = -999,  peta = -999, posprnsg = -999, pospion =-999, v0Radius =-999, v0DecayLength =-999, v0dlength = -999,proLT =-999, proLTbar =-999, lRapLambda=-999;
         Float_t npt = -999,  neta = -999, negprnsg = -999, negpion =-999;
         Bool_t  ontheflystat = kFALSE;
         Float_t dcaPosToVertex = -999, dcaNegToVertex = -999, dcaDaughters = -999, dcaV0ToVertex = -999, cosPointingAngle = -999;
@@ -480,6 +480,9 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         v0DecayLength = TMath::Sqrt(TMath::Power(vertx[0] - vVtx[0],2) +
                                     TMath::Power(vertx[1] - vVtx[1],2) +
                                     TMath::Power(vertx[2] - vVtx[2],2 ));
+        v0dlength= TMath::Sqrt(TMath::Power(vertx[0] - vVtx[0],2) +
+                               TMath::Power(vertx[1] - vVtx[1],2) +
+                               TMath::Power(vertx[2] - vVtx[2],2 ));
         
         lRapLambda  = esdv0->RapLambda();
         V0pt = esdv0->Pt();
@@ -567,6 +570,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         if(TMath::Abs(neta) > 0.8) continue;
         if(dcaDaughters > 0.8) continue;
         if(v0Radius < 5.0) continue;
+        if(v0dlength < 5.0) continue;
+        if(dcaV0ToVertex > 0.5) continue;
         
         Float_t PAngle = 0.0;
         Float_t lVarV0CosPALambda= 0.0;
@@ -659,7 +664,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 if(TMath::Abs(eta) < 0.5)
                 {
                     //L
-                    if(dcaV0ToVertex < 0.2 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1) //default
+                    if(dcaNegToVertex > 2.5 && dcaPosToVertex >  1.0) //default
                     {
                         f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassLambda,mcpt);
                         if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -691,7 +696,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     }
                     
                     //L-BAR
-                    if(dcaV0ToVertex < 0.2 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25) //default
+                    if( dcaNegToVertex > 1.0 && dcaPosToVertex >  2.5) //default
                     {
                         f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassAntiLambda,mcpt);
                         if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
