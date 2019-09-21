@@ -213,6 +213,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreePsi2s ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
   fTreePsi2s ->Branch("fTriggers", &fTriggers, "fTriggers[10]/O");
   fTreePsi2s ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
   fTreePsi2s ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");
@@ -497,7 +498,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   TBits fFOCrossedChips(1200); 
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   TBits fFOFiredChips = mult->GetFastOrFiredChips();
-     
+  
+  fInEtaRec = kTRUE;   
   if(nGoodTracksTPC+fNGoodTracksITS == 4 && nGoodTracksTPC > 1 && nGoodTracksSPD > 1){
   	fFOCrossedChips.ResetAllBits(kFALSE);
     	MeanPt = GetMedian(TrackPtALL);
@@ -514,6 +516,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	  }
 	
 	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexALL[iTrack]));
+	if(TMath::Abs(trk->Eta())>cutEta) fInEtaRec = kFALSE;
 	
 	if(trk->Pt() > 1.0) nHighPt++;
       		if(trk->Pt() > MeanPt){   
