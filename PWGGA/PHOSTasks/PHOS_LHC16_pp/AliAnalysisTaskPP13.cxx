@@ -134,9 +134,8 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 	clusArray.SetOwner(kTRUE);
 	for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++)
 	{
-		AliAODCaloCluster * clus = new AliAODCaloCluster(
-			*dynamic_cast<AliAODCaloCluster *> (event->GetCaloCluster(i))
-		);
+		AliVCluster * clus = event->GetCaloCluster(i);
+
 		// AliAODCaloCluster * c = dynamic_cast<AliAODCaloCluster *> (event->GetCaloCluster(i));
 		if (!clus)
 		{
@@ -153,7 +152,9 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 		// Use only with triggerUtils
 		// clus->SetTrigger(triggerUtils->IsFiredTrigger(c));
 		// nTriggered += clus->IsTrigger();
-		clusArray.Add(clus);
+		clusArray.Add(
+			new AliAODCaloCluster(*dynamic_cast<AliAODCaloCluster *>(clus))
+		);
 	}
 	// delete triggerUtils;
 
