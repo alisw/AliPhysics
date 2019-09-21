@@ -153,7 +153,7 @@ void AliAnalysisTaskJpsiJet::UserCreateOutputObjects(){
   if(!fIsTriggerQA)
     InitHistogramsForClusterQA("Cluster");
   else{
-    InitHistogramsForClusterQA("Cluster_INT7");
+    InitHistogramsForClusterQA("Cluster_MB");
     InitHistogramsForClusterQA("Cluster_EG1");
     InitHistogramsForClusterQA("Cluster_EG2");
     InitHistogramsForClusterQA("Cluster_DG1");
@@ -240,15 +240,17 @@ void AliAnalysisTaskJpsiJet::UserExec(Option_t*){
     FillHistogramsForClusterQA("Cluster");
   else{
     if(offlineTrigger & AliVEvent::kINT7)
-      FillHistogramsForClusterQA("Cluster_INT7");
-    if(fFiredTriggerTag.Contains("EG1"))
-      FillHistogramsForClusterQA("Cluster_EG1");
-    if(fFiredTriggerTag.Contains("EG2"))
-      FillHistogramsForClusterQA("Cluster_EG2");
-    if(fFiredTriggerTag.Contains("DG1"))
-      FillHistogramsForClusterQA("Cluster_DG1");
-    if(fFiredTriggerTag.Contains("DG2"))
-      FillHistogramsForClusterQA("Cluster_DG2");
+      FillHistogramsForClusterQA("Cluster_MB");
+    if(offlineTrigger & AliVEvent::kEMCEGA){
+      if(fFiredTriggerTag.Contains("EG1"))
+        FillHistogramsForClusterQA("Cluster_EG1");
+      if(fFiredTriggerTag.Contains("EG2"))
+        FillHistogramsForClusterQA("Cluster_EG2");
+      if(fFiredTriggerTag.Contains("DG1"))
+        FillHistogramsForClusterQA("Cluster_DG1");
+      if(fFiredTriggerTag.Contains("DG2"))
+        FillHistogramsForClusterQA("Cluster_DG2");
+    }
   }
 
   // Reset data members
