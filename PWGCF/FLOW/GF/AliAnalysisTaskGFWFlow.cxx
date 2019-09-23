@@ -87,7 +87,7 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fTotTrackFlags(8),
   fRunNo(-1),
   fCurrSystFlag(0),
-  fAddQA(kFALSE),
+  fAddQA(AddQA),
   fQAList(0)
 {
   if(!fProduceWeights) DefineInput(1,TList::Class());
