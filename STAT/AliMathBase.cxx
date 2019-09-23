@@ -72,7 +72,7 @@ void AliMathBase::EvaluateUni(const Int_t nvectors, const Double_t *data, Double
 
   Int_t hh=hSub;
   if (nvectors<2) {
-    ::Error( "AliMathBase::EvaluateUni",Form("nvectors = %d, should be > 1",nvectors));
+    ::Error( "AliMathBase::EvaluateUni", "%s", Form("nvectors = %d, should be > 1",nvectors));
     return;
   }
   if (hh==nvectors){
