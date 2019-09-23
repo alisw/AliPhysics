@@ -260,6 +260,7 @@ void ComputeEfficiencyFromCombinHF(){
   outup->ls();
   TH1D* hEffPr=(TH1D*)outup->Get("hEffPromptVsPtNoWeight");
   TH1D* hEffFd=(TH1D*)outup->Get("hEffFeeddwVsPtNoWeight");
+  if(ptBWeight!=kNoPtBWei) hEffFd=(TH1D*)outup->Get("hEffFeeddwVsPtPtBWeight");
   hEffFd->SetLineColor(kGray+1);
   hEffFd->SetMarkerColor(kGray+1);
   hEffFd->SetMarkerStyle(24);
@@ -363,7 +364,7 @@ void ComputeEfficiencyFromCombinHF(){
   hRatioEff->GetYaxis()->SetTitle("Ratio efficiency feeddown/prompt");
   hRatioEff->GetYaxis()->SetTitleOffset(1.3);
   hRatioEff->DrawCopy();
-
+  cpf->SaveAs(Form("figures/EfficVsPt_PromptFd_%s.eps",suffix.Data()));
 
   outup->cd();  
   hEffD->Write();

@@ -1659,7 +1659,7 @@ TH1F* FitMCInvMassSpectra(TList* lMC, TString var){
   }
 
   TCanvas* cmc1=new TCanvas("InvMassMC","InvMassMC",1200,800);
-  cmc1->Divide(4,2);
+  DivideCanvas(cmc1,nPtBins);
 
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
