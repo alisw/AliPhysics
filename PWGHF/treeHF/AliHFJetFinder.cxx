@@ -465,8 +465,8 @@ Bool_t AliHFJetFinder::CheckTrack(AliAODTrack *track) {
 //Apply filter bit selection on tracks
 Bool_t AliHFJetFinder::CheckFilterBits(AliAODTrack *track) {
 
-  if(track->TestBits(BIT(4))/TMath::Power(2,4)!=1 ) return false;
-  if(!track->IsHybridGlobalConstrainedGlobal()) return false;
+  if (!TestBit(BIT(4)) && !TestBit(BIT(9))) return false;
+  // if(!track->IsHybridGlobalConstrainedGlobal()) return false;
 
   return true;
 }
