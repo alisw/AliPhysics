@@ -47,7 +47,15 @@ fSSDinner(kFALSE),
 fSSDouter(kFALSE),
 fACORDE(kFALSE),
 fACORDE4ITS(kFALSE),
-fBottomScintillator(kFALSE)
+fBottomScintillator(kFALSE),
+fITS2(kFALSE),
+fILlayer0(kFALSE),
+fILlayer1(kFALSE),
+fILlayer2(kFALSE),
+fMLlayer3(kFALSE),
+fMLlayer4(kFALSE),
+fOLlayer5(kFALSE),
+fOLlayer6(kFALSE)
 {
   //
   // Default constructor
@@ -60,14 +68,14 @@ void AliGenCosmicsParam::Generate()
   //
   // Generate one muon
   //
-  
+
   //
   Float_t origin[3];
   Float_t p[3];
   Int_t nt;
   Double_t ptot=0,pt=0,angleWRTVertical=0;
   Bool_t okMom=kFALSE,okAngle=kFALSE;
-  //
+  //Acceptance cuts for ITS1
   Float_t rtrigger=1000.0,ztrigger=600.0;
   if(fTPC)      { rtrigger=250.0; ztrigger=250.0; }
   if(fITS)      { rtrigger=50.0; ztrigger=50.0; }
@@ -77,6 +85,16 @@ void AliGenCosmicsParam::Generate()
   if(fSDDouter) { rtrigger=23.0; ztrigger=29.0; }
   if(fSSDinner) { rtrigger=37.0; ztrigger=42.0; }
   if(fSSDouter) { rtrigger=42.0; ztrigger=48.0; }
+
+  //Acceptance cuts for ITS2
+  if(fITS2)     { rtrigger=40.0; ztrigger=148.0; }
+  if(fILlayer0) { rtrigger=2.7; ztrigger=27.1; }
+  if(fILlayer1) { rtrigger=3.5; ztrigger=27.1; }
+  if(fILlayer2) { rtrigger=4.3; ztrigger=27.1; }
+  if(fMLlayer3) { rtrigger=19.8; ztrigger=84.3; }
+  if(fMLlayer4) { rtrigger=24.8; ztrigger=84.3; }
+  if(fOLlayer5) { rtrigger=34.6; ztrigger=147.5; }
+  if(fOLlayer6) { rtrigger=39.5; ztrigger=147.5; }
 
 
   // mu+ or mu-
@@ -100,7 +118,7 @@ void AliGenCosmicsParam::Generate()
       ptot = (Double_t)dNdpACORDE->GetRandom();
       delete dNdpACORDE;
       dNdpACORDE = 0;
-    } else if(fParamDataTPC) { // extracted from cosmics in TPC (Summer 08) 
+    } else if(fParamDataTPC) { // extracted from cosmics in TPC (Summer 08)
       // sample total momentum only once (to speed up)
       TF1 *dNdpTPC = new TF1("dNdpTPC","x/(1.+(x/3.)*(x/3.))^1.",fPMin,fPMax);
       ptot = (Double_t)dNdpTPC->GetRandom();
@@ -114,14 +132,14 @@ void AliGenCosmicsParam::Generate()
       origin[0]  = (fYOrigin*TMath::Tan(fMaxAngleWRTVertical)+rtrigger)*(-1.+2.*gRandom->Rndm());
       origin[1]  = fYOrigin;
       origin[2]  = (fYOrigin*TMath::Tan(fMaxAngleWRTVertical)+ztrigger)*(-1.+2.*gRandom->Rndm());
-      
+
       // momentum
       while(1) {
 	okMom=kFALSE; okAngle=kFALSE;
-	
+
 	if(fParamMI) { // parametrization by M.Ivanov of LEP cosmics data
 	  Float_t	pref  = 1. + gRandom->Exp(30.);
-	  p[1] = -pref; 
+	  p[1] = -pref;
 	  p[0] = gRandom->Gaus(0.0,0.2)*pref;
 	  p[2] = gRandom->Gaus(0.0,0.2)*pref;
 	  if(gRandom->Rndm()>0.9) {
@@ -141,14 +159,14 @@ void AliGenCosmicsParam::Generate()
 	    if(TMath::Abs(phi+0.5*TMath::Pi())<fMaxAngleWRTVertical) break;
 	  }
 	  pt = ptot*TMath::Sin(theta);
-	  p[0] = pt*TMath::Cos(phi); 
-	  p[1] = pt*TMath::Sin(phi); 
+	  p[0] = pt*TMath::Cos(phi);
+	  p[1] = pt*TMath::Sin(phi);
 	  p[2] = ptot*TMath::Cos(theta);
 	} else {
 	  AliFatal("Parametrization not set: use SetParamDataTPC, SetParamMI, or SetParamACORDE");
 	}
-	
-	
+
+
 	// check kinematic cuts
 	if(TestBit(kMomentumRange)) {
 	  if(ptot>fPMin && ptot<fPMax) okMom=kTRUE;
@@ -158,7 +176,7 @@ void AliGenCosmicsParam::Generate()
 
 	angleWRTVertical=TMath::ACos(TMath::Abs(p[1])/ptot); // acos(|py|/ptot)
 	if(angleWRTVertical<fMaxAngleWRTVertical) okAngle=kTRUE;
-	
+
 	if(okAngle&&okMom) break;
       }
 
@@ -180,7 +198,7 @@ void AliGenCosmicsParam::Generate()
 
     Float_t polarization[3]= {0,0,0};
     PushTrack(fTrackIt,-1,ipart,p,origin,polarization,0,kPPrimary,nt);
-    npart++; 
+    npart++;
     //printf("TRIALS %d\n",trials);
   }
 
@@ -189,19 +207,19 @@ void AliGenCosmicsParam::Generate()
 //-----------------------------------------------------------------------------
 void AliGenCosmicsParam::Init()
 {
-  // 
+  //
   // Initialisation, check consistency of selected ranges
   //
-  if(TestBit(kPtRange)) 
+  if(TestBit(kPtRange))
     AliFatal("You cannot set the pt range for this generator! Only momentum range");
   Double_t pmin=8.; // fParamACORDE
   if(fParamDataTPC) pmin=0.5;
-  if(fPMin<pmin) { 
-    fPMin=pmin; 
-    if(TestBit(kMomentumRange)) 
-      AliWarning(Form("Minimum momentum cannot be < %f GeV/c",pmin)); 
+  if(fPMin<pmin) {
+    fPMin=pmin;
+    if(TestBit(kMomentumRange))
+      AliWarning(Form("Minimum momentum cannot be < %f GeV/c",pmin));
   }
-  if(fMaxAngleWRTVertical<0.) 
+  if(fMaxAngleWRTVertical<0.)
     AliFatal("You must use SetMaxAngleWRTVertical() instead of SetThetaRange(), SetPhiRange()");
 
   printf("************ AliGenCosmicsParam ****************\n");
@@ -229,7 +247,7 @@ Bool_t AliGenCosmicsParam::IntersectCylinder(Float_t r,Float_t z,Int_t pdg,
   Float_t d0z0[2],covd0z0[3];
   track.GetImpactParameters(d0z0,covd0z0);
 
-  // check rphi 
+  // check rphi
   if(TMath::Abs(d0z0[0])>r) return kFALSE;
   // check z
   if(TMath::Abs(d0z0[1])>z) return kFALSE;
@@ -270,7 +288,7 @@ Bool_t AliGenCosmicsParam::IntersectACORDE(Int_t pdg,
   Double_t xyz[3]={planepoint[0],planepoint[1],planepoint[2]};
   //printf("XYZ = %f %f  %f\n",xyz[0],xyz[1],xyz[2]);
 
-  // check global x 
+  // check global x
   if(TMath::Abs(xyz[0]) > xACORDE) return kFALSE;
   // check global z
   if(TMath::Abs(xyz[2]) > zACORDE) return kFALSE;
@@ -299,7 +317,7 @@ Bool_t AliGenCosmicsParam::IntersectBottomScintillator(Int_t pdg,
   Double_t xyz[3]={planepoint[0],planepoint[1],planepoint[2]};
   //printf("XYZ = %f %f  %f\n",xyz[0],xyz[1],xyz[2]);
 
-  // check global x 
+  // check global x
   if(TMath::Abs(xyz[0]) > xSc) return kFALSE;
   // check global z
   if(TMath::Abs(xyz[2]) > zSc) return kFALSE;
