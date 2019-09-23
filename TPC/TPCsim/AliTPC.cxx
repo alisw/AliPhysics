@@ -45,7 +45,6 @@
 #include <TObjectTable.h>
 #include <TParticle.h>
 #include <TROOT.h>
-#include <TRandom.h>
 #include <TStopwatch.h>
 #include <TString.h>
 #include <TSystem.h>     
@@ -94,7 +93,12 @@
 // for fast TMatrix operator()
 #include "AliFastContainerAccess.h"
 
-ClassImp(AliTPC) 
+
+ClassImp(AliTPC)
+
+Bool_t AliTPC::fgDistortDiffuse = kTRUE; // apply 1st diffusion then distortion
+
+
 //_____________________________________________________________________________
   AliTPC::AliTPC():AliDetector(),
 		   fDefaults(0),
@@ -1548,7 +1552,7 @@ void AliTPC::Hits2Digits()
   fLoader->LoadHits("read");
   fLoader->LoadDigits("recreate");
   AliRunLoader* runLoader = fLoader->GetRunLoader(); 
-
+  AliInfoF("Mode: apply distortions then diffussion: %s",fgDistortDiffuse ? "TRUE" : "FALSE");
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
     //PH    runLoader->GetEvent(iEvent);
     Hits2Digits(iEvent);
@@ -2306,7 +2310,8 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   previousTrack = -1; // nothing to store so far!
 
   double maxDrift = fTPCParam->GetZLength(isec);
-
+  bool isASide = isec<18 || (isec>35&&isec<54);
+  
   for(Int_t track=0;track<ntracks;track++){
     Bool_t isInSector=kTRUE;
     ResetHits();
@@ -2390,9 +2395,11 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 
       double yLab = xyzHit[1]; // for eventual P-gradient accounting
       if (tpcrecoparam->GetUseCorrectionMap()) {
-        double xyzD[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
-        transform->ApplyDistortionMap(isec,xyzD);
-        for (int idim=3;idim--;) xyzHit[idim] = xyzD[idim];
+	if (fgDistortDiffuse) { // do we 1st distort then diffuse ?
+	  double xyzD[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
+	  transform->ApplyDistortionMap(isec,xyzD, true);
+	  for (int idim=3;idim--;) xyzHit[idim] = xyzD[idim];
+	}
       }
       else {
         // ExB effect - distort hig if specifiend in the RecoParam
@@ -2423,13 +2430,14 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       // reason it is ON in our RecoParams tailored for MC.
       // For consistency, use the same condition here, although with the CorrectionMaps the alignment will
       // be switched OFF
-      Bool_t sideC = ((isec/18)&0x1);
-      if ( tpcrecoparam->GetUseSectorAlignment() ) fTPCParam->Transform1to2(xyzHit,indexHit);
-      else {
-        fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates
-        // account for A/C sides max drift L deficit to nominal 250 cm
-        xyzHit[2] -=  sideC ? 0.302 : 0.275; // C : A
-      }
+
+      // deprecate sector alignment
+      //      if ( tpcrecoparam->GetUseSectorAlignment() ) fTPCParam->Transform1to2(xyzHit,indexHit);
+      //      else {
+      fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates and convert Z to drift length
+      // account for A/C sides max drift L deficit to nominal 250 cm
+      xyzHit[2] -=  isASide ? 0.275 : 0.302; // A : C
+      //      }
       //
       //-----------------------------------------------
       //  Loop over electrons
@@ -2442,7 +2450,19 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
         // start from primary electron in vicinity of the readout, simulate diffusion
         for (int idim=3;idim--;) {xyz[idim] = xyzHit[idim]; index[idim] = indexHit[idim];}
         //
-        TransportElectron(xyz,index);
+	if (fgDistortDiffuse) {
+	  TransportElectron(xyz,index); // distortions were already applied or not needed
+	}
+	else if (tpcrecoparam->GetUseCorrectionMap()) {
+	  // first apply diffusion then distortion then MWPC discretization
+	  ApplyDiffusion(xyz); // we are already in the sector frame and Z is the drifrt distance rather than coordinate
+	  double xyzD[3] = {xyz[0],xyz[1], isASide ? maxDrift - xyz[2] : xyz[2] - maxDrift};
+	  transform->ApplyDistortionMap(isec,xyzD, false);
+	  xyz[0] = xyzD[0];
+	  xyz[1] = xyzD[1];
+	  xyz[2] = isASide ? maxDrift - xyzD[2] : maxDrift + xyzD[2];
+	  TransportElectronToWire(xyz,index);
+	}
         Int_t rowNumber;
         double driftEl = xyz[2];  // GetPadRow converts Z to timebin in a way incmpatible with real calib, save drift distance
         Int_t padrow = fTPCParam->GetPadRow(xyz,index);
@@ -2514,7 +2534,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
         else { // use Transform for time-aware Z -> Tbin conversion
           // go back from L drift to Z
           double z = maxDrift - driftEl;
-          if (sideC) z = -z;
+          if (!isASide) z = -z;
           xyz[2] = transform->Z2TimeBin(z,isec, yLab);
         }
         // Electron track time (for pileup simulation)
@@ -2649,26 +2669,11 @@ void AliTPC::TransportElectron(Float_t *xyz, Int_t *index)
 
   // RS Ideal transformation to sector frame is already done in MakeSector
   if (index[0]==1) fTPCParam->Transform1to2(xyz,index);  // mis-alignment applied in this step
-  
-  //add diffusion
-  Float_t driftl=xyz[2];
-  if(driftl<0.01) driftl=0.01;
-  driftl=TMath::Sqrt(driftl);
-  Float_t sigT = driftl*(fTPCParam->GetDiffT());
-  Float_t sigL = driftl*(fTPCParam->GetDiffL());
-  xyz[0]=gRandom->Gaus(xyz[0],sigT);
-  xyz[1]=gRandom->Gaus(xyz[1],sigT);
-  xyz[2]=gRandom->Gaus(xyz[2],sigL);
+  ApplyDiffusion(xyz);
 
-  // ExB
-  
-  if (fTPCParam->GetMWPCReadout()==kTRUE){
-    Float_t dx = fTPCParam->Transform2to2NearestWire(xyz,index);
-    xyz[1]+=dx*(fTPCParam->GetOmegaTau());
-  }
-  //add nonisochronity (not implemented yet) 
- 
-  
+  TransportElectronToWire(xyz,index);
+
+  //add nonisochronity (not implemented yet)   
 }
   
 ClassImp(AliTPChit)

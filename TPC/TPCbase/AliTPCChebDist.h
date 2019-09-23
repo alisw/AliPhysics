@@ -43,6 +43,8 @@ class AliTPCChebDist : public AliTPCChebCorr
   Float_t  GetScaleDnDeta2pp13TeV() const  {return fScaleDnDeta2pp13TeV;}
   void     SetScaleDnDeta2pp13TeV(float v) {fScaleDnDeta2pp13TeV = v;}
   //
+  static void SetExtraCVDistortions(float amp=0.7, float scaleY=0.3333333, float scaleZ=0.6);
+
  protected:
   //
   Float_t  fXMin;                                       // min X
@@ -54,6 +56,12 @@ class AliTPCChebDist : public AliTPCChebCorr
   static Float_t fgRMinTPC;                             // def. min radius
   static Float_t fgRMaxTPC;                             // def. max radius
   static Int_t   fgNSlices;                             // def. number of slices in X
+
+  // extra distotion on the IROC edges fgExtraCVDistAmp*exp(-|y-ymax|*fgExtraCVDistScale)
+  static Float_t fgExtraCVDistScaleI;
+  static Float_t fgExtraCVDistRange;                           // 5/fgExtraCVDistScale : range to edge to activate distortions
+  static Float_t fgExtraCVDistAmp;                             // amplitude
+  static Float_t fgExtraCVZRangeI2;                            // inverse Z range squared
  private:
   mutable Bool_t  fCacheValid;                                  //! flag cache validity
   mutable Float_t fCacheDistLow[4];                             //! cache value

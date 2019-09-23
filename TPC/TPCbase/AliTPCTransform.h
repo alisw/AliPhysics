@@ -64,7 +64,7 @@ public:
   // new correction maps
   Bool_t  UpdateTimeDependentCache();
   void    ApplyCorrectionMap(int roc, int row, double xyzSect[3]);
-  void    ApplyDistortionMap(int roc, double xyzLab[3]);
+  void    ApplyDistortionMap(int roc, double xyz[3], Bool_t lab = true);
   void    EvalCorrectionMap(int roc, int row, const double xyz[3], float *res, Bool_t ref=kFALSE);
   Float_t EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut, Bool_t ref=kFALSE);
   Float_t GetCorrMapComponent(int roc, int row, const double xyz[3], int dimOut);

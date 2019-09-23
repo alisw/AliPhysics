@@ -26,6 +26,11 @@ Float_t AliTPCChebDist::fgRMinTPC = 83.65; //RS Make sure these are correct radi
 Float_t AliTPCChebDist::fgRMaxTPC = 247.7;
 Int_t   AliTPCChebDist::fgNSlices = AliTPCChebCorr::kNRows*2+2; // check
 
+Float_t AliTPCChebDist::fgExtraCVDistAmp = 0;//0.7;
+Float_t AliTPCChebDist::fgExtraCVDistScaleI = 1./(1./3.);
+Float_t AliTPCChebDist::fgExtraCVDistRange = 5./AliTPCChebDist::fgExtraCVDistScaleI;
+Float_t AliTPCChebDist::fgExtraCVZRangeI2 = 1./(0.6*0.6);
+
 //____________________________________________________________________
 AliTPCChebDist::AliTPCChebDist()
   : AliTPCChebCorr()
@@ -100,7 +105,20 @@ void AliTPCChebDist::Eval(int sector, float x, float y2x, float z, float *distor
     fCacheSector = sector;
     fCacheIXLow = ixLow;
   }
-  //
+  // optional extra distortion on the IROC edges due to the cover voltage tuning
+  if (sector < 36 && fgExtraCVDistAmp>0) {
+    const float maxY2X = 1.76326981e-01; // tg(10deg)
+    const float deadZone = 1.45; // nominal dead zone
+    bool posY = y2x>0;
+    float yD = y2x*(x+distortion[0]) + distortion[1];
+    float dist2Edge = x*maxY2X - deadZone - (posY ? yD : -yD); // distance to edge after regular distortion
+    if (dist2Edge>0 && dist2Edge < fgExtraCVDistRange) {
+      float extraY = TMath::Exp(-dist2Edge*fgExtraCVDistScaleI)*fgExtraCVDistAmp;
+      float extraZ = extraY*extraY*fgExtraCVZRangeI2; // approximation of sqrt(extraY^2+ZRange^2) - ZRange extra path
+      distortion[1] += posY ? extraY : -extraY;
+      distortion[2] += posY ? -extraZ : extraZ;
+    }
+  }
 }
 
 //____________________________________________________________________
@@ -110,4 +128,26 @@ void AliTPCChebDist::Init()
   fCacheValid = kFALSE;
   //  if (fScaleDnDeta2pp13TeV==0) fScaleDnDeta2pp13TeV = AliLumiTools::GetScaleDnDeta2pp13TeV(GetRun()); // for old objects
   AliTPCChebCorr::Init();
+
+  if (fgExtraCVDistAmp!=0) {
+    AliInfoClassF("Extra CV distortion will be applied as DY=%.3f*exp(-dfy/[%.3f]) with dfy = distance from sector edge.",
+		  fgExtraCVDistAmp, 1./fgExtraCVDistScaleI);
+    AliInfoClassF("Extra CV distotion DZ will be estimated as sqrt(DY^2+%.2f^2)-%.2f",
+		  2./fgExtraCVZRangeI2, 2./fgExtraCVZRangeI2);
+  }
+}
+
+//____________________________________________________________________
+void AliTPCChebDist::SetExtraCVDistortions(float amp, float scaleY, float rangeZ)
+{
+  if (scaleY<1e-2) {
+    AliFatalClassF("Invalide setting %f for Y dist. range scale, use value > 1e-2 cm",scaleY);
+  }
+  if (rangeZ<1e-2) {
+    AliFatalClassF("Invalide setting %f for Z dist. range scale, use value > 1e-2 cm",rangeZ);
+  }
+  fgExtraCVDistAmp = amp;
+  fgExtraCVDistScaleI = 1./scaleY;
+  fgExtraCVDistRange = 5./scaleY;
+  fgExtraCVZRangeI2 = 1./(2*rangeZ);
 }
