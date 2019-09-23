@@ -261,8 +261,10 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   centralDist->Reset();
   
   if (!(fSettings.ref_mode & fSettings.kFMDref) || (fSettings.mc && fSettings.esd)) refDist->Reset();
-  if ((fSettings.mc && fSettings.use_primaries_fwd) || (fSettings.mc && fSettings.esd)) forwardDist->Reset();
-
+  if ((fSettings.mc && fSettings.use_primaries_fwd) || (fSettings.mc && fSettings.esd)) {
+    forwardDist->Reset();
+    refDist->Reset();
+  }
 
   PostData(1, fStorage);
   return;
