@@ -488,12 +488,12 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
     }
     if (doPostCalibration){
       if (isMC == 0){
-        if(fileNamedEdxPostCalib.CompareTo("") != 0){
-          analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
-          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
+	if(analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNamedEdxPostCalib)){
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
+	  cout << "Setting TPC dEdx post calibration file: " << fileNamedEdxPostCalib.Data() << endl;
         }
+	doPostCalibration=kFALSE;
         analysisCuts[i]->SetDoElecDeDxPostCalibration(doPostCalibration);
-        cout << "Enabled TPC dEdx recalibration." << endl;
       } else{
         cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
         doPostCalibration=kFALSE;
