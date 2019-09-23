@@ -118,6 +118,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistonSigmaTPCKaon(0x0),
   fHistonSigmaTPCKaonGoodTOF(0x0),
   fHistonSigmaTOFKaon(0x0),
+  fHistoPtKPtPiPtD(0x0),
+  fHistoPtKPtPiPtDSig(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
@@ -252,6 +254,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistonSigmaTPCKaon(0x0),
   fHistonSigmaTPCKaonGoodTOF(0x0),
   fHistonSigmaTOFKaon(0x0),
+  fHistoPtKPtPiPtD(0x0),
+  fHistoPtKPtPiPtDSig(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
@@ -389,6 +393,8 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fHistonSigmaTPCKaon;
     delete fHistonSigmaTPCKaonGoodTOF;
     delete fHistonSigmaTOFKaon;
+    delete fHistoPtKPtPiPtD;
+    delete fHistoPtKPtPiPtDSig;
   }
 
   delete fOutput;
@@ -667,6 +673,11 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->Add(fHistonSigmaTPCKaon);
   fOutput->Add(fHistonSigmaTPCKaonGoodTOF);
   fOutput->Add(fHistonSigmaTOFKaon);
+
+  fHistoPtKPtPiPtD = new TH3F("hPtKPtPiPtD"," ; p_{T}(D) ; p_{T}(K) ; p_{T}(#pi)",32,0.,16.,60,0.,15.,60,0.,15.);
+  fHistoPtKPtPiPtDSig = new TH3F("hPtKPtPiPtDSig"," ; p_{T}(D) ; p_{T}(K) ; p_{T}(#pi)",32,0.,16.,60,0.,15.,60,0.,15.);
+  fOutput->Add(fHistoPtKPtPiPtD);
+  fOutput->Add(fHistoPtKPtPiPtDSig);
   
   //Counter for Normalization
   fCounter = new AliNormalizationCounter("NormalizationCounter");
@@ -1218,6 +1229,8 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
       accept=kTRUE;
       Double_t costhst=0;
       Double_t absCosThSt=0;
+      Double_t ptK=0;
+      Double_t ptPi=0;
       if(TMath::Abs(pdgD)==421 && (fApplyCutCosThetaStar || fFillHistosVsCosThetaStar)){
 	costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
 	absCosThSt=TMath::Abs(costhst);
@@ -1226,6 +1239,11 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
       if(accept){
 	fMassVsPtVsY->Fill(mass,pt,rapid);
 	if(fFillHistosVsCosThetaStar) fMassVsPtVsCosthSt->Fill(mass,pt,absCosThSt);
+	if(pdgD==421){
+	  ptK=TMath::Sqrt(px[0]*px[0]+py[0]*py[0]);
+	  ptPi=TMath::Sqrt(px[1]*px[1]+py[1]*py[1]);
+	  if(TMath::Abs(mass-1.865)<0.025) fHistoPtKPtPiPtD->Fill(pt,ptK,ptPi);
+	}
 	if(fReadMC){
 	  Int_t signPdg[3]={0,0,0};
 	  for(Int_t iii=0; iii<nProngs; iii++) signPdg[iii]=pdgdau[iii];
@@ -1234,9 +1252,10 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 	    AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(dgLabels[0])));
 	    if(part){
 	      Int_t pdgCode = TMath::Abs( part->GetPdgCode() );
-	      if(pdgCode==321){
+	      if(pdgCode==321){ // if the first daughter is a Kaon, this is signal with correct mass assignment
 		fMassVsPtVsYSig->Fill(mass,pt,rapid);
 		if(fFillHistosVsCosThetaStar) fMassVsPtVsCosthStSig->Fill(mass,pt,absCosThSt);
+		if(pdgD==421) fHistoPtKPtPiPtDSig->Fill(pt,ptK,ptPi);
 		AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
 		if(dmes){
 		  Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,dmes,fGoUpToQuark);
@@ -1250,7 +1269,7 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 		    fPtVsYVsPtBRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),ptbmoth);
 		  }
 		}
-	      }else{
+	      }else{ // if the first daughter is not a kaon, it is a reflection
 		fMassVsPtVsYRefl->Fill(mass,pt,rapid);
 		if(fFillHistosVsCosThetaStar) fMassVsPtVsCosthStRefl->Fill(mass,pt,absCosThSt);
 	      }
