@@ -30,6 +30,7 @@ Float_t AliTPCChebDist::fgExtraCVDistAmp = 0;//0.7;
 Float_t AliTPCChebDist::fgExtraCVDistScaleI = 1./(1./3.);
 Float_t AliTPCChebDist::fgExtraCVDistRange = 5./AliTPCChebDist::fgExtraCVDistScaleI;
 Float_t AliTPCChebDist::fgExtraCVZRangeI2 = 1./(0.6*0.6);
+Bool_t  AliTPCChebDist::fgExtraCVDistAddIncrementally = kTRUE;
 
 //____________________________________________________________________
 AliTPCChebDist::AliTPCChebDist()
@@ -110,7 +111,7 @@ void AliTPCChebDist::Eval(int sector, float x, float y2x, float z, float *distor
     const float maxY2X = 1.76326981e-01; // tg(10deg)
     const float deadZone = 1.45; // nominal dead zone
     bool posY = y2x>0;
-    float yD = y2x*(x+distortion[0]) + distortion[1];
+    float yD = fgExtraCVDistAddIncrementally ? y2x*(x+distortion[0]) + distortion[1] : y2x*x;
     float dist2Edge = x*maxY2X - deadZone - (posY ? yD : -yD); // distance to edge after regular distortion
     if (dist2Edge>0 && dist2Edge < fgExtraCVDistRange) {
       float extraY = TMath::Exp(-dist2Edge*fgExtraCVDistScaleI)*fgExtraCVDistAmp;
@@ -132,13 +133,14 @@ void AliTPCChebDist::Init()
   if (fgExtraCVDistAmp!=0) {
     AliInfoClassF("Extra CV distortion will be applied as DY=%.3f*exp(-dfy/[%.3f]) with dfy = distance from sector edge.",
 		  fgExtraCVDistAmp, 1./fgExtraCVDistScaleI);
-    AliInfoClassF("Extra CV distotion DZ will be estimated as sqrt(DY^2+%.2f^2)-%.2f",
+    AliInfoClassF("Extra CV distortion DZ will be estimated as sqrt(DY^2+%.2f^2)-%.2f",
 		  2./fgExtraCVZRangeI2, 2./fgExtraCVZRangeI2);
+    AliInfoClassF("Extra CV distortions will be applied incrementally : %s", fgExtraCVDistAddIncrementally ? "ON" : "OFF");
   }
 }
 
 //____________________________________________________________________
-void AliTPCChebDist::SetExtraCVDistortions(float amp, float scaleY, float rangeZ)
+void AliTPCChebDist::SetExtraCVDistortions(float amp, float scaleY, float rangeZ, Bool_t incr)
 {
   if (scaleY<1e-2) {
     AliFatalClassF("Invalide setting %f for Y dist. range scale, use value > 1e-2 cm",scaleY);
@@ -150,4 +152,5 @@ void AliTPCChebDist::SetExtraCVDistortions(float amp, float scaleY, float rangeZ
   fgExtraCVDistScaleI = 1./scaleY;
   fgExtraCVDistRange = 5./scaleY;
   fgExtraCVZRangeI2 = 1./(2*rangeZ);
+  fgExtraCVDistAddIncrementally = incr;
 }
