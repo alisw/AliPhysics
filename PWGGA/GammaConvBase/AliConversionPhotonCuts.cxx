@@ -546,7 +546,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistograms->Add(fProfileContainingMaterialBudgetWeights);
   }
 
-  if (fElecDeDxPostCalibrationInitialized){
+  if (fDoElecDeDxPostCalibration || fElecDeDxPostCalibrationInitialized){
     for (Int_t i = 0; i < fnRBins; i++) {
       if( fHistoEleMapRecalib[i] ){
         fHistograms->Add(fHistoEleMapRecalib[i]);
@@ -735,13 +735,18 @@ Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filena
   }
 
   for(Int_t i=0;i<fnRBins;i++){
+   if (fIsRecalibDepTPCCl){
+    fHistoEleMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Ele_Cl%d_recalib",i));
+    fHistoPosMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Pos_Cl%d_recalib",i));
+   }else{
     fHistoEleMapRecalib[i]  = (TH2S*)file->Get(Form("Ele_R%d_recalib",i));
     fHistoPosMapRecalib[i]  = (TH2S*)file->Get(Form("Pos_R%d_recalib",i));
+   } 
   }
 
   if (fHistoEleMapRecalib[0] == NULL || fHistoEleMapRecalib[1] == NULL ||
       fHistoEleMapRecalib[2] == NULL || fHistoEleMapRecalib[3] == NULL  ){
-    AliWarning("Histograms for dedx post calibration not found in %s despite being requested!");
+    AliFatal("Histograms for dedx post calibration not found in %s despite being requested!");
     return kFALSE;// code must break if histograms are not found!
   }
   for(Int_t i=0;i<fnRBins;i++){
@@ -757,7 +762,7 @@ Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filena
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::LoadElecDeDxPostCalibration(Int_t runNumber) {
 
-  if(runNumber==fRecalibCurrentRun)
+  if(runNumber==fRecalibCurrentRun || fElecDeDxPostCalibrationInitialized)
     return kTRUE;
   else
     fRecalibCurrentRun=runNumber;
