@@ -43,7 +43,7 @@ class AliTPCChebDist : public AliTPCChebCorr
   Float_t  GetScaleDnDeta2pp13TeV() const  {return fScaleDnDeta2pp13TeV;}
   void     SetScaleDnDeta2pp13TeV(float v) {fScaleDnDeta2pp13TeV = v;}
   //
-  static void SetExtraCVDistortions(float amp=0.7, float scaleY=0.3333333, float scaleZ=0.6);
+  static void SetExtraCVDistortions(float amp=0.7, float scaleY=0.3333333, float scaleZ=0.6, Bool_t incr = kTRUE);
 
  protected:
   //
@@ -62,6 +62,7 @@ class AliTPCChebDist : public AliTPCChebCorr
   static Float_t fgExtraCVDistRange;                           // 5/fgExtraCVDistScale : range to edge to activate distortions
   static Float_t fgExtraCVDistAmp;                             // amplitude
   static Float_t fgExtraCVZRangeI2;                            // inverse Z range squared
+  static Bool_t  fgExtraCVDistAddIncrementally;                // if true, apply extra distortions after applyin regular ones
  private:
   mutable Bool_t  fCacheValid;                                  //! flag cache validity
   mutable Float_t fCacheDistLow[4];                             //! cache value
