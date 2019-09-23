@@ -62,7 +62,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, TVector *tinfo, TVector *vinfo, Int_t charge);
   void FillElectronROOTObjects(AliAODTrack *trk, AliAODEvent *event, TClonesArray *mcArray);
   void FillCascROOTObjects(AliAODcascade *casc, AliAODEvent *event, TClonesArray *mcArray);
-  void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
+  void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype,TClonesArray *mcArray);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
   void FillMCCascROOTObjects(AliAODMCParticle *mccpart, TClonesArray *mcArray);
   void FillMCGenPairROOTObjects(AliAODMCParticle *mcparte, AliAODMCParticle* mcpartv, TClonesArray *mcArray);
@@ -472,6 +472,14 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse *fHistoElectronTotalMCWeight; // weight for positron
   THnSparse *fHistoPositronTotal; // pt, eta, phi distribution for positron 
   THnSparse *fHistoPositronTotalMCWeight; // weight for positron
+
+
+  THnSparse *fHistoXicNonPromptMCGen; //
+  THnSparse *fHistoXicNonPromptMCS; //
+  THnSparse *fHistoXicPromptMCGen;//
+  THnSparse *fHistoXicPromptMCS;//
+  THnSparse *fHistoXicInclusiveMCGen;//
+
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
