@@ -736,8 +736,8 @@ Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filena
 
   for(Int_t i=0;i<fnRBins;i++){
    if (fIsRecalibDepTPCCl){
-    fHistoEleMapRecalib[i]  = (TH2S*)file->FindObject(Form("Ele_Cl%d_recalib",i));
-    fHistoPosMapRecalib[i]  = (TH2S*)file->FindObject(Form("Pos_Cl%d_recalib",i));
+    fHistoEleMapRecalib[i]  = (TH2S*)file->Get(Form("Ele_Cl%d_recalib",i));
+    fHistoPosMapRecalib[i]  = (TH2S*)file->Get(Form("Pos_Cl%d_recalib",i));
    }else{
     fHistoEleMapRecalib[i]  = (TH2S*)file->Get(Form("Ele_R%d_recalib",i));
     fHistoPosMapRecalib[i]  = (TH2S*)file->Get(Form("Pos_R%d_recalib",i));
