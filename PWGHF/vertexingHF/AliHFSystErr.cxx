@@ -9871,8 +9871,8 @@ void AliHFSystErr::InitD0toKpi2018PbPb010LowPtAn(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",32,0,16);
-  fTrackingEff->SetBinContent(1,0); // to be filled
-  fTrackingEff->SetBinContent(2,0); // to be filled
+  fTrackingEff->SetBinContent(1,0.080); // 0-0.5
+  fTrackingEff->SetBinContent(2,0.090); // 0.5-1
   for(Int_t i=3;i<=6;i++) fTrackingEff->SetBinContent(i,0.10); //1-3
   for(Int_t i=7;i<=10;i++) fTrackingEff->SetBinContent(i,0.11); //3-5
   for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.10); //5-6
