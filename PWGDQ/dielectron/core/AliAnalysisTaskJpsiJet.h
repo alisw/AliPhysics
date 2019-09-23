@@ -78,7 +78,11 @@ private:
   void FillHistogramsForEventQA(const char* histClass);
   void FillHistogramsForClusterQA(const char* histClass);
   void FillHistogramsForJetQA(const char* jetTag);
-
+  void FillTH2(const char* histName, const char* labelX, Double_t value, Double_t weight = 1.0);
+  void InitHistogramsForRunwiseQA(const char* histClass);
+  void FillHistogramsForRunwiseQA(const char* histClass);
+  void FillHistogramsForRunwiseElectronQA(const char* histClass, AliAODTrack* ele);
+  
   // Dielectron framework
 private:
   void InitDielectron();
@@ -147,6 +151,8 @@ public:
   Bool_t   GetRejectPileup(){return fRejectPileup;}
   void     SetEventFilter(AliAnalysisCuts *eventCuts){fEventFilter = eventCuts;}
   void     PrintEventFilter(){;}
+  void     SetEMCalEnergyThreshold(Double_t eth){fEMCalEth = eth;}
+  Double_t GetEMCalThreshold(){return fEMCalEth;}
 
 /**
  *  Data members 
@@ -192,6 +198,7 @@ private:
   Bool_t             fIsCellQA; // Add QA histograms by Cell ID
   Bool_t             fIsJetFinder; // ONLY 1 task should enable the jet finder in LEGO train
   Bool_t             fIsMC;  // Input MC production
+  Double_t           fEMCalEth; // EMCal gamma trigger energy threshold
   TClonesArray      *fMCParticles; // AOD event object in MC
   AliAODMCHeader    *fMCHeader;    // AOD event object in MC
   TString            fMCGenType;   // Generator type - Prompt/Jpsi2ee, Bdecay/B2Jpsi2ee
@@ -207,8 +214,13 @@ private:
   THistManager      *fHistos;
   THistManager      *fHistosMC;
 
+// Runwise QA
 private:
-  ClassDef(AliAnalysisTaskJpsiJet, 5);
+  TString            fRunNo;
+  Double_t          *fVars;
+
+private:
+  ClassDef(AliAnalysisTaskJpsiJet, 6);
 };
 
 #endif /* ALIANALYSISTASK_JPSIJET_H */

@@ -62,6 +62,7 @@ AliAnalysisTaskJpsiJet::AliAnalysisTaskJpsiJet():
   fIsCellQA(kFALSE),
   fIsJetFinder(kTRUE),
   fIsMC(kFALSE),
+  fEMCalEth(5.0),
   fMCParticles(NULL),
   fMCHeader(NULL),
   fMCGenType(""),
@@ -71,7 +72,9 @@ AliAnalysisTaskJpsiJet::AliAnalysisTaskJpsiJet():
   fJpsiMC(NULL),
   fTaggedJetMC(NULL),
   fHistos(NULL),
-  fHistosMC(NULL)
+  fHistosMC(NULL),
+  fRunNo(""),
+  fVars(NULL)
 {
   // Constructor
 }
@@ -94,6 +97,7 @@ AliAnalysisTaskJpsiJet::AliAnalysisTaskJpsiJet(const char* taskName):
   fIsCellQA(kFALSE),
   fIsJetFinder(kTRUE),
   fIsMC(kFALSE),
+  fEMCalEth(5.0),
   fMCParticles(NULL),
   fMCHeader(NULL),
   fMCGenType(""),
@@ -103,7 +107,9 @@ AliAnalysisTaskJpsiJet::AliAnalysisTaskJpsiJet(const char* taskName):
   fJpsiMC(NULL),
   fTaggedJetMC(NULL),
   fHistos(NULL),
-  fHistosMC(NULL)
+  fHistosMC(NULL),
+  fRunNo(""),
+  fVars(NULL)
 {
   // IO
   DefineInput(0, TChain::Class());
@@ -152,6 +158,11 @@ void AliAnalysisTaskJpsiJet::UserCreateOutputObjects(){
   InitHistogramsForEventQA("Event_beforeCuts");
   InitHistogramsForEventQA("Event_afterCuts");
 
+  fVars = new Double_t[AliDielectronVarManager::kNMaxValues];
+  for(int i = 0; i < AliDielectronVarManager::kNMaxValues; i++)
+    fVars[i] = 0.0;
+  InitHistogramsForRunwiseQA("Runwise");
+
   if(!fIsTriggerQA)
     InitHistogramsForClusterQA("Cluster");
   else{
@@ -191,9 +202,9 @@ void AliAnalysisTaskJpsiJet::UserCreateOutputObjects(){
 void AliAnalysisTaskJpsiJet::UserExec(Option_t*){
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   fFiredTriggerTag = "";
-
+  fRunNo = Form("%d", fAOD->GetRunNumber());
   fHistos->FillTH1("EventStats", kAllInAOD);
-
+  fHistos->FillTH2("Runwise/NEvent", fRunNo.Data(), "ALL");
   FillHistogramsForEventQA("Event_ALL");
 
   //
@@ -224,17 +235,18 @@ void AliAnalysisTaskJpsiJet::UserExec(Option_t*){
   if(!isFired) return;
 
   fHistos->FillTH1("EventStats", kPhysSelected);
-
+  fHistos->FillTH2("Runwise/NEvent", fRunNo.Data(), "PS");
   FillHistogramsForEventQA("Event_beforeCuts");
 
   // Event cuts
   if(fEventFilter && !fEventFilter->IsSelected(fAOD)) return;
   fHistos->FillTH1("EventStats", kFiltered);
+  fHistos->FillTH2("Runwise/NEvent", fRunNo.Data(), "After cuts");
   // Pileup
   fIsPileup = fAOD->IsPileupFromSPDInMultBins();
   if(fRejectPileup && fIsPileup) return;
   fHistos->FillTH1("EventStats", kAfterPileUp);
-
+  fHistos->FillTH2("Runwise/NEvent", fRunNo.Data(), "Analysis");
   FillHistogramsForEventQA("Event_afterCuts");
   
   // QA
@@ -266,6 +278,33 @@ void AliAnalysisTaskJpsiJet::UserExec(Option_t*){
 
   // Process MC truth
   if(fIsMC && fHistosMC) RunParticleLevelAnalysis();
+
+  // Fill event level variables
+  AliDielectronVarManager::Fill(fAOD, fVars);
+  FillTH2("Runwise/NPVtxZ", fRunNo.Data(), fVars[AliDielectronVarManager::kZvPrim]);
+  FillTH2("Runwise/NVContrib", fRunNo.Data(), fVars[AliDielectronVarManager::kNVtxContrib]);
+  FillTH2("Runwise/NSPDtracklets", fRunNo.Data(), fVars[AliDielectronVarManager::kNaccTrcklts10Corr]);
+  FillTH2("Runwise/NTracksAll", fRunNo.Data(), fVars[AliDielectronVarManager::kNTrk]);
+  FillTH2("Runwise/NElectrons", fRunNo.Data(), fVars[AliDielectronVarManager::kTracks]);
+  FillTH2("Runwise/NPairs", fRunNo.Data(), fPairs->GetEntries());
+  // Fill jet level variables
+  auto jets = static_cast<AliJetContainer*>(fJets->At(0));
+  FillTH2("Runwise/NJets", fRunNo.Data(), jets->GetNAcceptedJets());
+  auto jetFinder = static_cast<AliEmcalJetTask*>(fJetTasks->At(0));
+  auto trkCont = jetFinder->GetTrackContainer();
+  FillTH2("Runwise/Jet_NTracks", fRunNo.Data(), trkCont->GetNAcceptedTracks());
+
+  // Fill electron level variables
+  auto trkArr = fDielectron->GetTrackArray(0);
+  for(int iTrk = 0; iTrk < trkArr->GetEntries(); iTrk++){
+    auto trk = (AliAODTrack*)(trkArr->At(iTrk));
+    FillHistogramsForRunwiseElectronQA("Runwise", trk);
+  }
+  trkArr = fDielectron->GetTrackArray(1);
+  for(int iTrk = 0; iTrk < trkArr->GetEntries(); iTrk++){
+    auto trk = (AliAODTrack*)(trkArr->At(iTrk));
+    FillHistogramsForRunwiseElectronQA("Runwise", trk);
+  }
 }
 
 Bool_t AliAnalysisTaskJpsiJet::RunDetectoreLevelAnalysis(){
@@ -280,12 +319,16 @@ Bool_t AliAnalysisTaskJpsiJet::RunDetectoreLevelAnalysis(){
 
   // Build tracks with dielectron pair
   Int_t nCandidates = fDielectron->GetPairArray(1)->GetEntriesFast();
-  if(nCandidates == 1)
-    fHistos->FillTH1("EventStats", kWithSinglePair);
-  else if(nCandidates > 1)
-    fHistos->FillTH1("EventStats", kWithMultiPair);
-  else
-    return kFALSE;
+  if(nCandidates > 0){
+    fHistos->FillTH2("Runwise/NEvent", fRunNo.Data(), "N_{pair}>0");
+    if(nCandidates == 1){
+      fHistos->FillTH1("EventStats", kWithSinglePair);
+      fHistos->FillTH2("Runwise/NEvent", fRunNo.Data(), "N_{pair}=1");
+    }else if(nCandidates > 1){
+      fHistos->FillTH1("EventStats", kWithMultiPair);
+      fHistos->FillTH2("Runwise/NEvent", fRunNo.Data(), "N_{pair}>1");
+    }
+  }else{return kFALSE;}
   // Pairs and daughters
   fPairs->Clear("C");
   fDaughters->Clear("C");
@@ -327,10 +370,166 @@ Bool_t AliAnalysisTaskJpsiJet::RunDetectoreLevelAnalysis(){
   if(RunJetFinder("JpsiJet"))
     FillHistogramsForJetQA("JpsiJet");
 
-  if(FillHistogramsForTaggedJet("PairInJet"))
+  if(FillHistogramsForTaggedJet("PairInJet")){
     fHistos->FillTH1("EventStats",kWithPairInJet);
+    fHistos->FillTH2("Runwise/NEvent", fRunNo.Data(), "JetTagged");
+  }
   
   return kTRUE;
+}
+
+void AliAnalysisTaskJpsiJet::InitHistogramsForRunwiseQA(const char* histClass){
+  fHistos->CreateTH2(
+    Form("%s/NEvent", histClass),
+    "Runwise QA - Event Number",
+    201, -0.5, 200.5,
+    int(kEventStatusN)+1, -0.5, int(kEventStatusN)+0.5);
+  fHistos->CreateTH2(
+    Form("%s/NPVtxZ", histClass),
+    "Runwise QA - Primary vertex Z",
+    201, -0.5, 200.5,
+    4001, -0.5, 4000.5);
+  fHistos->CreateTH2(
+    Form("%s/NVContrib", histClass),
+    "Runwise QA - Number of Vertex contributors",
+    201, -0.5, 200.5,
+    1001, -0.5, 1000.5);
+  fHistos->CreateTH2(
+    Form("%s/NSPDtracklets", histClass),
+    "Runwise QA - Number of accepted SPD tracklets in |eta|<1.0",
+    201, -0.5, 200.5,
+    501, -0.5, 500.5);
+  fHistos->CreateTH2(
+    Form("%s/NTracksAll", histClass),
+    "Runwise QA - Number of all tracks",
+    201, -0.5, 200.5,
+    4001, -0.5, 4000.5);
+  fHistos->CreateTH2(
+    Form("%s/NElectrons", histClass),
+    "Runwise QA - Number of selected tracks/electron",
+    201, -0.5, 200.5,
+    51, -0.5, 50.5);
+  fHistos->CreateTH2(
+    Form("%s/NPairs", histClass),
+    "Runwise QA - Number of selected tracks/electron",
+    201, -0.5, 200.5,
+    21, -0.5, 20.5);
+
+  // Jet level
+  fHistos->CreateTH2(
+    Form("%s/NJets", histClass),
+    "Runwise Jet QA - Number of charged jets (R=0.4, |#eta|<0.5)",
+    201, -0.5, 200.5,
+    101, -0.5, 100.5);
+  fHistos->CreateTH2(
+    Form("%s/Jet_NTracks", histClass),
+    "Runwise Jet QA - Number of accepted tracks (Hybrid)",
+    201, -0.5, 200.5,
+    1001, -0.5, 1000.5);
+
+  // Cluster level
+  fHistos->CreateTH2(
+    Form("%s/EMCal_NClusters", histClass),
+    "Runwise EMCal QA - Number of clusters",
+    201, -0.5, 200.5,
+    1001, -0.5, 1000.5);
+  fHistos->CreateTH2(
+    Form("%s/EMCal_NClsMatched", histClass),
+    "Runwise EMCal QA - Number of clusters (track matched)",
+    201, -0.5, 200.5,
+    1001, -0.5, 1000.5);
+  fHistos->CreateTH2(
+    Form("%s/EMCal_E", histClass),
+    "Runwise EMCal QA - Cluster energy (All)",
+    201, -0.5, 200.5,
+    200, 0., 100.);
+  fHistos->CreateTH2(
+    Form("%s/EMCal_Etrk", histClass),
+    "Runwise EMCal QA - Cluster energy (track matched)",
+    201, -0.5, 200.5,
+    200, 0., 100.);
+
+  // Electron level
+  fHistos->CreateTH2(
+    Form("%s/Ele_Pt", histClass),
+    "Runwise Electron QA - p_{T}",
+    201, -0.5, 200.5,
+    200, 0., 100.);
+  fHistos->CreateTH2(
+    Form("%s/Ele_Eta", histClass),
+    "Runwise Electron QA - #eta",
+    201, -0.5, 200.5,
+    100, -1., 1.);
+  fHistos->CreateTH2(
+    Form("%s/Ele_Phi", histClass),
+    "Runwise Electron QA - #phi",
+    201, -0.5, 200.5,
+    160, -1., 7.);
+  fHistos->CreateTH2(
+    Form("%s/Ele_DCAxy", histClass),
+    "Runwise Electron QA - DCA_{xy}",
+    201, -0.5, 200.5,
+    100, -5., 5.);
+  fHistos->CreateTH2(
+    Form("%s/Ele_DCAz", histClass),
+    "Runwise Electron QA - DCA_{z}",
+    201, -0.5, 200.5,
+    100, -5., 5.);
+  fHistos->CreateTH2(
+    Form("%s/Ele_TPCNcls", histClass),
+    "Runwise Electron QA - Number of TPC clusters",
+    201, -0.5, 200.5,
+    161, -0.5, 160.5);
+  fHistos->CreateTH2(
+    Form("%s/Ele_TPCChi2", histClass),
+    "Runwise Electron QA - TPC #chi^{2}/N_{cluster}",
+    201, -0.5, 200.5,
+    100, 0., 10.);
+  fHistos->CreateTH2(
+    Form("%s/Ele_TPCNsigmaEle", histClass),
+    "Runwise Electron QA - PID n_{#sigma e}^{TPC}",
+    201, -0.5, 200.5,
+    100, -5., 5.);
+  fHistos->CreateTH2(
+    Form("%s/Ele_EMCalE", histClass),
+    "Runwise Electron QA - Cluster energy",
+    201, -0.5, 200.5,
+    200, 0., 100.);
+  fHistos->CreateTH2(
+    Form("%s/Ele_EMCalEP", histClass),
+    "Runwise Electron QA - EMCal E/p",
+    201, -0.5, 200.5,
+    100, 0., 2.);
+  fHistos->CreateTH2(
+    Form("%s/Ele_EMCalNsigmaEle", histClass),
+    "Runwise Electron QA - PID n_{#sigma e}^{EMC}",
+    201, -0.5, 200.5,
+    100, -5., 5.);
+}
+
+void AliAnalysisTaskJpsiJet::FillTH2(const char* histName, const char* labelX, Double_t value, Double_t weight){
+  TH2* h2 = (TH2*)(fHistos->FindObject(histName));
+  if(!h2){
+    AliFatal(Form("Fail to find %s in Hitogram Manager", histName));
+    return;
+  }
+  h2->Fill(labelX, value, weight);
+}
+
+void AliAnalysisTaskJpsiJet::FillHistogramsForRunwiseElectronQA(const char* histClass, AliAODTrack* ele){
+  Double_t trkValues[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::Fill(ele, trkValues);
+  FillTH2(Form("%s/Ele_Pt", histClass), fRunNo.Data(), trkValues[AliDielectronVarManager::kPt]);
+  FillTH2(Form("%s/Ele_Eta", histClass), fRunNo.Data(), trkValues[AliDielectronVarManager::kEta]);
+  FillTH2(Form("%s/Ele_Phi", histClass), fRunNo.Data(), trkValues[AliDielectronVarManager::kPhi]);
+  FillTH2(Form("%s/Ele_DCAxy", histClass), fRunNo.Data(), trkValues[AliDielectronVarManager::kImpactParXY]);
+  FillTH2(Form("%s/Ele_DCAz", histClass), fRunNo.Data(), trkValues[AliDielectronVarManager::kImpactParZ]);
+  FillTH2(Form("%s/Ele_TPCNcls", histClass), fRunNo.Data(), trkValues[AliDielectronVarManager::kNclsTPC]);
+  FillTH2(Form("%s/Ele_TPCChi2", histClass), fRunNo.Data(), trkValues[AliDielectronVarManager::kTPCchi2Cl]);
+  FillTH2(Form("%s/Ele_TPCNsigmaEle", histClass), fRunNo.Data(), trkValues[AliDielectronVarManager::kTPCnSigmaEle]);
+  FillTH2(Form("%s/Ele_EMCalE", histClass), fRunNo.Data(), trkValues[AliDielectronVarManager::kEMCALE]);
+  FillTH2(Form("%s/Ele_EMCalEP", histClass), fRunNo.Data(), trkValues[AliDielectronVarManager::kEMCALEoverP]);
+  FillTH2(Form("%s/Ele_EMCalNsigmaEle", histClass), fRunNo.Data(), trkValues[AliDielectronVarManager::kEMCALnSigmaEle]);
 }
 
 // Create event QA histograms in output list
@@ -398,6 +597,8 @@ void AliAnalysisTaskJpsiJet::InitHistogramsForClusterQA(const char* histClass){
 }
 
 void AliAnalysisTaskJpsiJet::FillHistogramsForClusterQA(const char* histClass){
+  Int_t nClsMatched = 0;
+  FillTH2("Runwise/EMCal_NClusters", fRunNo.Data(), fAOD->GetNumberOfCaloClusters());
   // Loop EMCal clusters
   for(int iCls = 0; iCls < fAOD->GetNumberOfCaloClusters(); iCls++){
     auto cls = (AliAODCaloCluster*)(fAOD->GetCaloCluster(iCls));
@@ -428,7 +629,15 @@ void AliAnalysisTaskJpsiJet::FillHistogramsForClusterQA(const char* histClass){
         fHistos->FillTH1(Form("%s/CellTime", histClass), cellID, cellT * 1e6);
       }
     }// End - Loop cells
+
+    // Runwise QA
+    FillTH2("Runwise/EMCal_E", fRunNo.Data(), energy);
+    if(nTracks > 0){
+      FillTH2("Runwise/EMCal_Etrk", fRunNo.Data(), energy);
+      nClsMatched ++;
+    }
   }// End - Loop clusters
+  FillTH2("Runwise/EMCal_NClsMatched", fRunNo.Data(), nClsMatched);
 }
 
 
@@ -679,7 +888,8 @@ void AliAnalysisTaskJpsiJet::InitDielectron(){
  *  Pair cuts
 **/
   // EMCal gamma/electron energy threshold
-  Double_t EMCal_E_Threshold = 5.0; // GeV, ADC setting
+    // TODO: now the inteface ONLY used for ALL and MC
+  Double_t EMCal_E_Threshold = fEMCalEth; // GeV, ADC setting
   if(fSelectedTriggerClasses == "EG1" || fSelectedTriggerClasses == "DG1")
     EMCal_E_Threshold = 10.0;
   if(fSelectedTriggerClasses == "EG2" || fSelectedTriggerClasses == "DG2")
@@ -792,7 +1002,7 @@ void AliAnalysisTaskJpsiJet::InitHistogramsForDielectron(const char* histMgrName
                         100, -10., 10., 800, 20., 200., AliDielectronVarManager::kTPCnSigmaEle, AliDielectronVarManager::kTPCsignal, kTRUE);
   // Track - EMCal
   histos->UserHistogram("Track", "EMCalE", "EmcalE;Cluster Energy [GeV];#Clusters",
-                        200, 0., 40., AliDielectronVarManager::kEMCALE, kTRUE);
+                        200, 0., 100., AliDielectronVarManager::kEMCALE, kTRUE);
   histos->UserHistogram("Track", "EMCalE_P", "Cluster energy vs. pT; EMCal_E;pT;#tracks",
                         800, 0., 40, 200, 0., 40.,  AliDielectronVarManager::kPIn, AliDielectronVarManager::kEMCALE, kTRUE);
   histos->UserHistogram("Track", "EMCalE_Pt", "Cluster energy vs. pT; EMCal_E;pT;#tracks",
@@ -1130,7 +1340,7 @@ Bool_t AliAnalysisTaskJpsiJet::ApplyEmcalCut(AliVParticle* par, Bool_t isMCTruth
   if(eta < 0.22 || eta > 0.7) isDCal = kFALSE;
   if(phi < 4.377 || phi > 5.707) isDCal = kFALSE;
   // Energy threshold
-  Bool_t isTriggered = (E > 5.0);
+  Bool_t isTriggered = (E > fEMCalEth);
   
   return (isTriggered && (isEMCal || isDCal));
 }
