@@ -212,6 +212,10 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistJetEtaCorr0(0),
   fHistJetEtaCorr1(0),
   fHistJetEtaCorr2(0),
+  fHistDp_POWHEG(0),
+  fHistDz_POWHEG(0),
+  fHistDs_POWHEG(0),
+  fHistLc_POWHEG(0),
   fPi0Weight(0),
   fEtaWeight(0),
   fpythia_b(0),
@@ -404,6 +408,10 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistJetEtaCorr0(0),
   fHistJetEtaCorr1(0),
   fHistJetEtaCorr2(0),
+  fHistDp_POWHEG(0),
+  fHistDz_POWHEG(0),
+  fHistDs_POWHEG(0),
+  fHistLc_POWHEG(0),
   fPi0Weight(0),
   fEtaWeight(0),
   fpythia_b(0),
@@ -853,21 +861,27 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fOutput->Add(HFjetParticle);
 
   HFjetDCA_c = new TH2D("HFjetDCA_c","DCA of c->e",100,0,100,1000,-0.5,0.5); 
+  HFjetDCA_c->Sumw2();
   fOutput->Add(HFjetDCA_c);
 
   HFjetDCA_b = new TH2D("HFjetDCA_b","DCA of b->e",100,0,100,1000,-0.5,0.5); 
+  HFjetDCA_b->Sumw2();
   fOutput->Add(HFjetDCA_b);
 
   HFjetDCA_Dp = new TH2D("HFjetDCA_Dp","DCA of Dp->e",100,0,100,1000,-0.5,0.5); 
+  HFjetDCA_Dp->Sumw2();
   fOutput->Add(HFjetDCA_Dp);
 
   HFjetDCA_Dz = new TH2D("HFjetDCA_Dz","DCA of Dz->e",100,0,100,1000,-0.5,0.5); 
+  HFjetDCA_Dz->Sumw2();
   fOutput->Add(HFjetDCA_Dz);
 
   HFjetDCA_Ds = new TH2D("HFjetDCA_Ds","DCA of Ds->e",100,0,100,1000,-0.5,0.5); 
+  HFjetDCA_Ds->Sumw2();
   fOutput->Add(HFjetDCA_Ds);
 
   HFjetDCA_Lc = new TH2D("HFjetDCA_Lc","DCA of Lc->e",100,0,100,1000,-0.5,0.5); 
+  HFjetDCA_Lc->Sumw2();
   fOutput->Add(HFjetDCA_Lc);
 
   // QA
@@ -929,6 +943,18 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistJetEtaCorr2 = new THnSparseD("fHistJetEtaCorr2","particle level;p_{T}^{part};#eta_jet;y_HFE;",4,nBinpT,mim_eta,max_eta);
   fHistJetEtaCorr2->Sumw2();
   fOutput->Add(fHistJetEtaCorr2);
+
+  fHistDp_POWHEG = new TH1D("fHistDp_POWHEG","Dp in POWHEG",100,0,100);
+  fOutput->Add(fHistDp_POWHEG);
+
+  fHistDz_POWHEG = new TH1D("fHistDz_POWHEG","Dz in POWHEG",100,0,100);
+  fOutput->Add(fHistDz_POWHEG);
+
+  fHistDs_POWHEG = new TH1D("fHistDs_POWHEG","Ds in POWHEG",100,0,100);
+  fOutput->Add(fHistDs_POWHEG);
+
+  fHistLc_POWHEG = new TH1D("fHistLc_POWHEG","Lc in POWHEG",100,0,100);
+  fOutput->Add(fHistLc_POWHEG);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
@@ -2341,6 +2367,14 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet(Double_t &pthard)
         //if(pdg==221 && iMC>NembMCeta && TMath::Abs(etaMC)<0.6)fHistMCorgEta->Fill(fMCparticle->Pt());
         if(pdg==111 && iMC>NembMCpi0 && iMC<NembMCeta && TMath::Abs(etaMC)<fEleEtaCut)fHistMCorgPi0->Fill(fMCparticle->Pt());
         if(pdg==221 && iMC>NembMCeta && TMath::Abs(etaMC)<fEleEtaCut)fHistMCorgEta->Fill(fMCparticle->Pt());
+ 
+        if(TMath::Abs(etaMC)<fEleEtaCut)
+          {
+           if(TMath::Abs(pdg)==411)fHistDp_POWHEG->Fill(fMCparticle->Pt());
+           if(TMath::Abs(pdg)==421)fHistDz_POWHEG->Fill(fMCparticle->Pt());
+           if(TMath::Abs(pdg)==431)fHistDs_POWHEG->Fill(fMCparticle->Pt());
+           if(TMath::Abs(pdg)==4122)fHistLc_POWHEG->Fill(fMCparticle->Pt());
+          }
 
         //if(fabs(pdg)==11 && pdgMom!=0 && TMath::Abs(etaMC)<0.6)
 
