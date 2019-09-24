@@ -427,7 +427,8 @@ void ProjectCombinHFAndFit(){
   if(smoothLS!=0) suffix.Append(Form("_smoothLS%d",smoothLS));
   if(costhstcut<1.) suffix.Append(Form("_CosthSt%d",TMath::Nint(costhstcut*100)));
   if(configFileName.Contains("coarse")) suffix.Append("_CoarsePt");
-     
+  if(useEMwithLS) suffix.Append("_EMwithLS");
+  
   if(tuneMeanOnData<0){
     if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
     else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -820,7 +821,7 @@ void ProjectCombinHFAndFit(){
     hRatioME->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
     c0->cd(5);
     hRatioMEAll->Draw();
-    hRatioMEAll->GetYaxis()->SetTitle("EvMix (++,--)/All");
+    hRatioMEAll->GetYaxis()->SetTitle("EvMix (+-,++,--)/All");
     hRatioMEAll->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
     c0->cd(6);
     hRatioMEpp->Draw();
@@ -1586,26 +1587,34 @@ void ProjectCombinHFAndFit(){
 void WriteFitFunctionsToFile(AliHFInvMassFitter *fitter, TString meth, Int_t iPtBin){
   TString nameh;
   TF1* fTot=fitter->GetMassFunc();
-  nameh.Form("FitFuncTot_%s_PtBin%d",meth.Data(),iPtBin);
-  fTot->SetRange(1.6,2.2);
-  fTot->SetNpx(500);
-  fTot->Write(nameh.Data());
+  if(fTot){
+    nameh.Form("FitFuncTot_%s_PtBin%d",meth.Data(),iPtBin);
+    fTot->SetRange(1.6,2.2);
+    fTot->SetNpx(500);
+    fTot->Write(nameh.Data());
+  }
   TF1* fSig=fitter->GetSignalFunc();
   nameh.Form("FitFuncSig_%s_PtBin%d",meth.Data(),iPtBin);
-  fSig->SetRange(1.6,2.2);
-  fSig->SetNpx(500);
-  fSig->Write(nameh.Data());
+  if(fSig){
+    fSig->SetRange(1.6,2.2);
+    fSig->SetNpx(500);
+    fSig->Write(nameh.Data());
+  }
   TF1* fBkg=fitter->GetBackgroundRecalcFunc();
   nameh.Form("FitFuncBkg_%s_PtBin%d",meth.Data(),iPtBin);
-  fBkg->SetRange(1.6,2.2);
-  fBkg->SetNpx(500);
-  fBkg->Write(nameh.Data());  
+  if(fBkg){
+    fBkg->SetRange(1.6,2.2);
+    fBkg->SetNpx(500);
+    fBkg->Write(nameh.Data());
+  }
   if(meson=="Dzero"){
     TF1* fBkgR=fitter->GetBkgPlusReflFunc();
     nameh.Form("FitFuncBkgRefl_%s_PtBin%d",meth.Data(),iPtBin);
-    fBkgR->SetRange(1.6,2.2);
-    fBkgR->SetNpx(500);
-    fBkgR->Write(nameh.Data());  
+    if(fBkgR){
+      fBkgR->SetRange(1.6,2.2);
+      fBkgR->SetNpx(500);
+      fBkgR->Write(nameh.Data());  
+    }
   }
   return;
 }
