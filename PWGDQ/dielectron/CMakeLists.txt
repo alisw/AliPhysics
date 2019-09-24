@@ -46,7 +46,10 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGHF/hfe/
 		    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/
 		    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/macros
-
+                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                    )
 
 # Sources in alphabetical order
@@ -90,6 +93,7 @@ set(SRCS
       core/AliAnalysisTaskElectronEfficiencyV2.cxx
       core/AliAnalysisTask_JPsi_EMCal.cxx
       core/AliAnalysisTaskEtaReconstruction.cxx
+      core/AliAnalysisTaskJpsiJet.cxx
       JPSI/AliDielectronSignalBase.cxx
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx
@@ -111,9 +115,20 @@ set(SRCS
       LMEE/AliAnalysisTaskJpsi.cxx
       LMEE/AlimakeJPsiTree.cxx
   )
+# fastjet for Jpsi in jets analysis
+if(FASTJET_FOUND)
+  include_directories(${AliPhysics_SOURCE_DIR}/JETAN/JETAN)
+  include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+  link_directories(${FASTJET_LIBS_DIR})
+  add_definitions(${FASTJET_DEFINITIONS})
+  list(APPEND HDRS FJ_includes.h)
+endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+if(FASTJET_FOUND)
+  list(APPEND HDRS ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/FJ_includes.h)
+endif(FASTJET_FOUND)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -123,7 +138,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Generate the ROOT map
 # Dependecies
 set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO TMVA Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase )
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase PWGJETFW)
 set(ALIPHYSICS_DEPENCIES PWGPPevcharQnInterface)
 set(LIBDEPS ${ALIPHYSICS_DEPENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
