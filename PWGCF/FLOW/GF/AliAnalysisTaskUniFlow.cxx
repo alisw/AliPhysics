@@ -1058,8 +1058,8 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   fVector[kCharged]->clear();
   FilterCharged();
 
-  // checking if there is at least 5 particles: needed to "properly" calculate correlations
-  if(fVector[kRefs]->size() < 5) { return; }
+  // checking if there is at least 9 particles: needed to "properly" calculate correlations
+  if(fVector[kRefs]->size() < 9) { return; }
 
   // estimate centrality & assign indexes (centrality/percentile, sampling, ...)
   if(fCentEstimator == kRFP) {
@@ -2820,7 +2820,6 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
 
         // here-after only POIs survive (Refs are dealt with already)
         if(!task->fbDoPOIs) { continue; }
-        if(iNumHarm > 4) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
         if(!fProcessSpec[iSpec]) { continue; }
 
         // NB: skip flow if Kaons are used only for Phi (flow not needed) not as full PID
@@ -2872,7 +2871,7 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
                 Int_t contIndexStart = indexStart;
 
                 // filling POIs (P,S) flow vectors
-                Int_t iFilledHere = FillPOIsVectors(dGap ,PartSpecies(iSpec), contIndexStart, iNumInPtBin, dPtLow, dPtHigh, dMassLow, dMassHigh);
+                Int_t iFilledHere = FillPOIsVectors(task, dGap ,PartSpecies(iSpec), contIndexStart, iNumInPtBin, dPtLow, dPtHigh, dMassLow, dMassHigh);
                 CalculateCorrelations(task, PartSpecies(iSpec),dPt,dMass);
 
                 // updating counters with numbers from this step
@@ -3015,7 +3014,7 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
     case 6: {
       if(!bHasGap) { // no gap
         if(bDiff) {
-          AliWarning("Differential 6-particle correlations not implemented!");
+          AliWarning("Differential 6-particle correlations with no gap not implemented!");
           return;
         }
         else {
@@ -3024,8 +3023,16 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
         }
       }
       else { // has gap
-        AliWarning("6-particle correlations with eta gap not implemented!");
-        return;
+        if(bDiff) {
+          cDenom = SixDiffGapPos(0,0,0,0,0,0);
+          cDenomNeg = SixDiffGapNeg(0,0,0,0,0,0);
+          cNom = SixDiffGapPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+          cNomNeg = SixDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+        }
+        else {
+          cDenom = SixGap(0,0,0,0,0,0);
+          cNom = SixGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+        }
       }
       break;
     }
@@ -3051,7 +3058,7 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
     case 8: {
       if(!bHasGap) { // no gap
         if(bDiff) {
-          AliWarning("Differential 8-particle correlations not implemented!");
+          AliWarning("Differential 8-particle correlations with no gap not implemented!");
           return;
         }
         else {
@@ -3060,8 +3067,16 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
         }
       }
       else { // has gap
-        AliWarning("8-particle correlations with eta gap not implemented!");
-        return;
+        if(bDiff) {
+          cDenom = EightDiffGapPos(0,0,0,0,0,0,0,0);
+          cDenomNeg = EightDiffGapNeg(0,0,0,0,0,0,0,0);
+          cNom = EightDiffGapPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+          cNomNeg = EightDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+        }
+        else {
+          cDenom = EightGap(0,0,0,0,0,0,0,0);
+          cNom = EightGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+        }
       }
       break;
     }
@@ -3259,7 +3274,7 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
   return;
 }
 // ============================================================================
-Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const Double_t dEtaGap, const PartSpecies species, Int_t& indStart, Int_t& tracksInBin, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh)
+Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, const Double_t dEtaGap, const PartSpecies species, Int_t& indStart, Int_t& tracksInBin, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh)
 {
   // Filling p,q and s flow vectors with POIs (given by species) for differential flow calculation
   // *************************************************************
@@ -3271,13 +3286,16 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const Double_t dEtaGap, const Part
   Bool_t bHasMass = HasMass(species);
   if(bHasMass && dMassLow == 0.0 && dMassHigh == 0.0) { AliError("Particle mass low && high limits not specified!"); return 0; }
 
+  Int_t maxHarm = task->fMaxHarm;
+  Int_t maxWeightPower = task->fMaxWeightPower;
+
   // clearing output (global) flow vectors
-  ResetFlowVector(fFlowVecPpos);
-  ResetFlowVector(fFlowVecSpos);
+  ResetFlowVector(fFlowVecPpos, maxHarm, maxWeightPower);
+  ResetFlowVector(fFlowVecSpos, maxHarm, maxWeightPower);
 
   if(bHasGap) {
-    ResetFlowVector(fFlowVecPneg);
-    ResetFlowVector(fFlowVecSneg);
+    ResetFlowVector(fFlowVecPneg, maxHarm, maxWeightPower);
+    ResetFlowVector(fFlowVecSneg, maxHarm, maxWeightPower);
   }
 
   Int_t iTracksFilled = 0; // counter of filled tracks
@@ -3324,8 +3342,8 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const Double_t dEtaGap, const Part
 
     if(!bHasGap) // no eta gap
     {
-      for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
-        for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
+      for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+        for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
         {
           Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
           Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
@@ -3346,8 +3364,8 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const Double_t dEtaGap, const Part
     {
       if(dEta > dEtaLimit) // particle in positive eta acceptance
       {
-        for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
-          for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
           {
             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
@@ -3364,8 +3382,8 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const Double_t dEtaGap, const Part
        }
        if(dEta < -dEtaLimit) // particle in negative eta acceptance
        {
-         for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
-           for(Int_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
+         for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+           for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
            {
              Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
              Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
@@ -3618,10 +3636,48 @@ TComplex AliAnalysisTaskUniFlow::TwoDiffGapNeg(const Int_t n1, const Int_t n2) c
   return formula;
 }
 // ============================================================================
+TComplex AliAnalysisTaskUniFlow::TwoPos(const Int_t n1, const Int_t n2) const
+{
+  TComplex formula = QGapPos(n1,1)*QGapPos(n2,1) - QGapPos(n1+n2,2);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::TwoNeg(const Int_t n1, const Int_t n2) const
+{
+  TComplex formula = QGapNeg(n1,1)*QGapNeg(n2,1) - QGapNeg(n1+n2,2);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::TwoDiffPos(const Int_t n1, const Int_t n2) const
+{
+  TComplex formula = PGapPos(n1,1)*QGapPos(n2,1) - SGapPos(n1+n2,2);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::TwoDiffNeg(const Int_t n1, const Int_t n2) const
+{
+  TComplex formula = PGapNeg(n1,1)*QGapNeg(n2,1) - SGapNeg(n1+n2,2);
+  return formula;
+}
+// ============================================================================
 TComplex AliAnalysisTaskUniFlow::Three(const Int_t n1, const Int_t n2, const Int_t n3) const
 {
   TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)-Q(n1+n2,2)*Q(n3,1)-Q(n2,1)*Q(n1+n3,2)
  		                 - Q(n1,1)*Q(n2+n3,2)+2.*Q(n1+n2+n3,3);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::ThreePos(const Int_t n1, const Int_t n2, const Int_t n3) const
+{
+  TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)-QGapPos(n1+n2,2)*QGapPos(n3,1)-QGapPos(n2,1)*QGapPos(n1+n3,2)
+ 		                 - QGapPos(n1,1)*QGapPos(n2+n3,2)+2.*QGapPos(n1+n2+n3,3);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::ThreeNeg(const Int_t n1, const Int_t n2, const Int_t n3) const
+{
+  TComplex formula = QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)-QGapNeg(n1+n2,2)*QGapNeg(n3,1)-QGapNeg(n2,1)*QGapNeg(n1+n3,2)
+ 		                 - QGapNeg(n1,1)*QGapNeg(n2+n3,2)+2.*QGapNeg(n1+n2+n3,3);
   return formula;
 }
 // ============================================================================
@@ -3632,6 +3688,26 @@ TComplex AliAnalysisTaskUniFlow::Four(const Int_t n1, const Int_t n2, const Int_
                     + Q(n2+n3,2)*Q(n1+n4,2)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)+Q(n1+n3,2)*Q(n2+n4,2)
                     + 2.0*Q(n3,1)*Q(n1+n2+n4,3)-Q(n1,1)*Q(n2,1)*Q(n3+n4,2)+Q(n1+n2,2)*Q(n3+n4,2)
                     + 2.0*Q(n2,1)*Q(n1+n3+n4,3)+2.0*Q(n1,1)*Q(n2+n3+n4,3)-6.0*Q(n1+n2+n3+n4,4);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::FourPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+{
+  TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)-QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4,1)-QGapPos(n2,1)*QGapPos(n1+n3,2)*QGapPos(n4,1)
+                    - QGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4,1)+2.0*QGapPos(n1+n2+n3,3)*QGapPos(n4,1)-QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n1+n4,2)
+                    + QGapPos(n2+n3,2)*QGapPos(n1+n4,2)-QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n2+n4,2)+QGapPos(n1+n3,2)*QGapPos(n2+n4,2)
+                    + 2.0*QGapPos(n3,1)*QGapPos(n1+n2+n4,3)-QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3+n4,2)+QGapPos(n1+n2,2)*QGapPos(n3+n4,2)
+                    + 2.0*QGapPos(n2,1)*QGapPos(n1+n3+n4,3)+2.0*QGapPos(n1,1)*QGapPos(n2+n3+n4,3)-6.0*QGapPos(n1+n2+n3+n4,4);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::FourNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+{
+  TComplex formula = QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)-QGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)-QGapNeg(n2,1)*QGapNeg(n1+n3,2)*QGapNeg(n4,1)
+                    - QGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4,1)+2.0*QGapNeg(n1+n2+n3,3)*QGapNeg(n4,1)-QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n1+n4,2)
+                    + QGapNeg(n2+n3,2)*QGapNeg(n1+n4,2)-QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n2+n4,2)+QGapNeg(n1+n3,2)*QGapNeg(n2+n4,2)
+                    + 2.0*QGapNeg(n3,1)*QGapNeg(n1+n2+n4,3)-QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3+n4,2)+QGapNeg(n1+n2,2)*QGapNeg(n3+n4,2)
+                    + 2.0*QGapNeg(n2,1)*QGapNeg(n1+n3+n4,3)+2.0*QGapNeg(n1,1)*QGapNeg(n2+n3+n4,3)-6.0*QGapNeg(n1+n2+n3+n4,4);
   return formula;
 }
 // ============================================================================
@@ -3982,6 +4058,20 @@ TComplex AliAnalysisTaskUniFlow::FourGap(const Int_t n1, const Int_t n2, const I
 {
   TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)-QGapPos(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)
                     -QGapPos(n1,1)*QGapPos(n2,1)*QGapNeg(n3+n4,2)+QGapPos(n1+n2,2)*QGapNeg(n3+n4,2);
+  //same as
+  //TComplex formula = TwoPos(n1,n2)*TwoNeg(n3,n4);
+	return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::SixGap(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
+{
+  TComplex formula = ThreePos(n1,n2,n3)*ThreeNeg(n4,n5,n6);
+	return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::EightGap(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
+{
+  TComplex formula = FourPos(n1,n2,n3,n4)*FourNeg(n5,n6,n7,n8);
 	return formula;
 }
 // ============================================================================
@@ -4011,6 +4101,20 @@ TComplex AliAnalysisTaskUniFlow::ThreeDiffGapNeg(const Int_t n1, const Int_t n2,
   return formula;
 }
 // ============================================================================
+TComplex AliAnalysisTaskUniFlow::ThreeDiffPos(const Int_t n1, const Int_t n2, const Int_t n3) const
+{
+  TComplex formula = PGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)-SGapPos(n1+n2,2)*QGapPos(n3,1)-SGapPos(n1+n3,2)*QGapPos(n2,1)
+ 		                 - PGapPos(n1,1)*QGapPos(n2+n3,2)+2.0*SGapPos(n1+n2+n3,3);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::ThreeDiffNeg(const Int_t n1, const Int_t n2, const Int_t n3) const
+{
+  TComplex formula = PGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)-SGapNeg(n1+n2,2)*QGapNeg(n3,1)-SGapNeg(n1+n3,2)*QGapNeg(n2,1)
+ 		                 - PGapNeg(n1,1)*QGapNeg(n2+n3,2)+2.0*SGapNeg(n1+n2+n3,3);
+  return formula;
+}
+// ============================================================================
 TComplex AliAnalysisTaskUniFlow::FourDiff(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
 {
   TComplex formula = P(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)-S(n1+n2,2)*Q(n3,1)*Q(n4,1)-Q(n2,1)*S(n1+n3,2)*Q(n4,1)
@@ -4021,12 +4125,34 @@ TComplex AliAnalysisTaskUniFlow::FourDiff(const Int_t n1, const Int_t n2, const 
   return formula;
 }
 // ============================================================================
+TComplex AliAnalysisTaskUniFlow::FourDiffPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+{
+  TComplex formula = PGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)-SGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4,1)-QGapPos(n2,1)*SGapPos(n1+n3,2)*QGapPos(n4,1)
+                    - PGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4,1)+2.0*SGapPos(n1+n2+n3,3)*QGapPos(n4,1)-QGapPos(n2,1)*QGapPos(n3,1)*SGapPos(n1+n4,2)
+                    + QGapPos(n2+n3,2)*SGapPos(n1+n4,2)-PGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n2+n4,2)+SGapPos(n1+n3,2)*QGapPos(n2+n4,2)
+                    + 2.0*QGapPos(n3,1)*SGapPos(n1+n2+n4,3)-PGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3+n4,2)+SGapPos(n1+n2,2)*QGapPos(n3+n4,2)
+                    + 2.0*QGapPos(n2,1)*SGapPos(n1+n3+n4,3)+2.0*PGapPos(n1,1)*QGapPos(n2+n3+n4,3)-6.0*SGapPos(n1+n2+n3+n4,4);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::FourDiffNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+{
+  TComplex formula = PGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)-SGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)-QGapNeg(n2,1)*SGapNeg(n1+n3,2)*QGapNeg(n4,1)
+                    - PGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4,1)+2.0*SGapNeg(n1+n2+n3,3)*QGapNeg(n4,1)-QGapNeg(n2,1)*QGapNeg(n3,1)*SGapNeg(n1+n4,2)
+                    + QGapNeg(n2+n3,2)*SGapNeg(n1+n4,2)-PGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n2+n4,2)+SGapNeg(n1+n3,2)*QGapNeg(n2+n4,2)
+                    + 2.0*QGapNeg(n3,1)*SGapNeg(n1+n2+n4,3)-PGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3+n4,2)+SGapNeg(n1+n2,2)*QGapNeg(n3+n4,2)
+                    + 2.0*QGapNeg(n2,1)*SGapNeg(n1+n3+n4,3)+2.0*PGapNeg(n1,1)*QGapNeg(n2+n3+n4,3)-6.0*SGapNeg(n1+n2+n3+n4,4);
+  return formula;
+}
+// ============================================================================
 TComplex AliAnalysisTaskUniFlow::FourDiffGapPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
 {
   TComplex formula = PGapPos(n1,1)*QGapPos(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)
                       - SGapPos(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)
                       - PGapPos(n1,1)*QGapPos(n2,1)*QGapNeg(n3+n4,2)
                       + SGapPos(n1+n2,2)*QGapNeg(n3+n4,2);
+  //same as
+  //TComplex formula = TwoDiffPos(n1,n2)*TwoNeg(n3,n4);
   return formula;
 }
 // ============================================================================
@@ -4036,6 +4162,32 @@ TComplex AliAnalysisTaskUniFlow::FourDiffGapNeg(const Int_t n1, const Int_t n2, 
                       - SGapNeg(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4,1)
                       - PGapNeg(n1,1)*QGapNeg(n2,1)*QGapPos(n3+n4,2)
                       + SGapNeg(n1+n2,2)*QGapPos(n3+n4,2);
+  // same as
+  // TComplex formula = TwoDiffNeg(n1,n2)*TwoPos(n3,n4);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::SixDiffGapPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
+{
+  TComplex formula = ThreeDiffPos(n1,n2,n3)*ThreeNeg(n4,n5,n6);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::SixDiffGapNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
+{
+  TComplex formula = ThreeDiffNeg(n1,n2,n3)*ThreePos(n4,n5,n6);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::EightDiffGapPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
+{
+  TComplex formula = FourDiffPos(n1,n2,n3,n4)*FourNeg(n5,n6,n7,n8);
+  return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::EightDiffGapNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
+{
+  TComplex formula = FourDiffNeg(n1,n2,n3,n4)*FourPos(n5,n6,n7,n8);
   return formula;
 }
 // ============================================================================
@@ -4111,8 +4263,8 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
       AliUniFlowCorrTask* task = fVecCorrTask.at(iTask);
       if(!task) { fInit = kFALSE; AliError(Form("AliUniFlowCorrTask %d does not exists\n",iTask)); return; }
 
-      if(fFlowNumHarmonicsMax < task->fMaxHarm) { printf("MAX WEIGHT POWER ERROR \n"); return; }
-      if(fFlowNumWeightPowersMax < task->fMaxWeightPower) { printf("MAX HARM ERROR. Task %s   max harm %d \n", task->fsName.Data(), task->fMaxHarm); return; }
+      if(fFlowNumHarmonicsMax < task->fMaxHarm) { fInit = kFALSE; AliError(Form("Max Harm error in task %d\n",iTask)); return; }
+      if(fFlowNumWeightPowersMax < task->fMaxWeightPower) { fInit = kFALSE; AliError(Form("Max Weight Power error in task %d\n",iTask));return; }
 
       Bool_t bHasGap = task->HasGap();
       const char* corName = task->fsName.Data();
