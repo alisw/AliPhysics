@@ -453,8 +453,7 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
 
   //dump only matched jets
   if (isDumpEventToTree) {
-    FillRespTree(jets_pl_matched, fTreeDL);
-    FillTree(jets_dl_matched, fTreeDL);
+    FillRespTree(jets_pl_matched, jets_dl_matched, fTreeDL);
     PostData(2, fTreeDL);
   }
 
@@ -513,8 +512,7 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
 
   //and now dump only matched jets
   if (isDumpEventToTree) {
-    FillRespTree(jets_pl_matched, fTreeDLUEBS);
-    FillTree(jets_backsub_filtered_matched, fTreeDLUEBS);
+    FillRespTree(jets_pl_matched, jets_backsub_filtered_matched, fTreeDLUEBS);
     PostData(3, fTreeDLUEBS);
   }
 
@@ -789,17 +787,35 @@ Float_t AliAnalysisTaskSDKLResponse::CalcEnergyShare(mjet const & mjet1, mjet co
 
 }
 
-void AliAnalysisTaskSDKLResponse::FillRespTree(std::vector<AliEmcalJet*> const & jets, TNtuple* tree) {
+void AliAnalysisTaskSDKLResponse::FillRespTree(std::vector<AliEmcalJet*> const & probe_jets, std::vector<fastjet::PseudoJet> const & resp_jets, TNtuple* tree) {
 
-  for ( auto jet : jets ) {
+  int njets = probe_jets.size();
 
-    if ( jet->Pt() < 30. ) continue;
-    UShort_t ntracks = jet->GetNumberOfTracks();
-    tree->Fill(jet->Pt(), jet->Eta(), jet->Phi(), ntracks);
+  for (int i = 0; i < njets; i++) {
+
+    //probe
+    auto pjet = probe_jets[i];
+    if ( pjet->Pt() < 30. ) continue; //cut only on the probe jet
+
+    UShort_t ntracks = pjet->GetNumberOfTracks();
+    tree->Fill(pjet->Pt(), pjet->Eta(), pjet->Phi(), ntracks);
     for (int j = 0; j < ntracks; j++) {
-      auto jtrack = jet->Track(j);
+      auto jtrack = pjet->Track(j);
       if (jtrack->Pt() > 1.e-5) {
         tree->Fill(jtrack->Pt(), jtrack->Eta(), jtrack->Phi(), -108);
+      }
+    }
+
+    //response
+    auto rjet = resp_jets[i];
+    int nconst = 0;
+    for (auto c : rjet.constituents() ) {
+      if ( c.pt() > 1.e-5 ) nconst++;
+    }
+    tree->Fill(rjet.pt(), rjet.eta(), rjet.phi(), nconst);
+    for ( auto c : rjet.constituents() ) {
+      if ( c.pt() > 1.e-5 ) {
+        tree->Fill(c.pt(), c.eta(), c.phi(), -7);
       }
     }
 
