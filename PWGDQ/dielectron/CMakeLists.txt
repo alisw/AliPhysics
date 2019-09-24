@@ -93,8 +93,6 @@ set(SRCS
       core/AliAnalysisTaskElectronEfficiencyV2.cxx
       core/AliAnalysisTask_JPsi_EMCal.cxx
       core/AliAnalysisTaskEtaReconstruction.cxx
-      core/AliAnalysisTaskJpsiJet.cxx
-      core/AliAnalysisTaskJpsiJetFilter.cxx
       JPSI/AliDielectronSignalBase.cxx
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx
@@ -118,28 +116,27 @@ set(SRCS
   )
 # fastjet for Jpsi in jets analysis
 if(FASTJET_FOUND)
-  include_directories(${AliPhysics_SOURCE_DIR}/JETAN/JETAN)
   include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
   link_directories(${FASTJET_LIBS_DIR})
   add_definitions(${FASTJET_DEFINITIONS})
-  list(APPEND HDRS FJ_includes.h)
+  set(SRCS ${SRCS}
+      core/AliAnalysisTaskJpsiJet.cxx
+      core/AliAnalysisTaskJpsiJetFilter.cxx
+      )
 endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-if(FASTJET_FOUND)
-  list(APPEND HDRS ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/FJ_includes.h)
-endif(FASTJET_FOUND)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 # Generate the ROOT map
 # Dependecies
 set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO TMVA Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase PWGJETFW)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase PWGJEEMCALJetTasks PWGJETFW)
 set(ALIPHYSICS_DEPENCIES PWGPPevcharQnInterface)
 set(LIBDEPS ${ALIPHYSICS_DEPENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
