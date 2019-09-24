@@ -1,4 +1,4 @@
-AliAnalysisTaskTree_MCut *AddTaskTree_Grid_MCut(Int_t RunNumber){
+AliAnalysisTaskTree_MCut *AddTaskTree_Grid_MCut(){
 
 //****************************************************************************************
 // Add task class to fill a tree with dimuon infos
