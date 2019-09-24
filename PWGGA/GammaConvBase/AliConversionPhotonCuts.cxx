@@ -1061,13 +1061,16 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMCAODESD(AliDalitzAODESDMC* part
         if( particle->EtaG() < (fEtaCutMin) && particle->EtaG() > (-fEtaCutMin) )
             return kFALSE;
         }
-        if(particle->GetMotherG() >-1 && mcEvent->Particle(particle->GetMotherG())->GetPdgCodeG() == 22){
+        std::unique_ptr<AliDalitzAODESDMC> Templeak;
+        Templeak = std::unique_ptr<AliDalitzAODESDMC>(mcEvent->Particle(particle->GetMotherG()));
+
+        if(particle->GetMotherG() >-1 && Templeak->GetPdgCodeG() == 22){
             return kFALSE; // no photon as mothers!
         }
         if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
         // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
-        std::unique_ptr<AliDalitzAODESDMC> ePos ;
-        std::unique_ptr<AliDalitzAODESDMC> eNeg;
+        std::unique_ptr<AliDalitzAODESDMC> ePos=0x0;
+        std::unique_ptr<AliDalitzAODESDMC> eNeg=0x0;
         if(particle->GetNDaughtersG() >= 2){
         //      cout<<particle->GetNDaughtersG()<<endl;
             for(Int_t daughterIndex=particle->GetFirstDaughterG();daughterIndex<=particle->GetLastDaughterG();daughterIndex++){
@@ -1118,6 +1121,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMCAODESD(AliDalitzAODESDMC* part
         return kTRUE;
     //if(AcceptanceCut(particle,ePos,eNeg))return kTRUE;
     }
+
     return kFALSE;
 }
 ///________________________________________________________________________
