@@ -269,9 +269,14 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
                 continue;
         }  // ESD Case
         else {
-            if (!IsNano && !((AliAODTrack*)track)->TestFilterBit(32))
-                continue;
-        }  // AOD Case
+            if (!IsNano) {
+                if (!((AliAODTrack*)track)->TestFilterBit(32))
+                    continue;
+            } else {
+                if (!(static_cast<AliNanoAODTrack*>(track)->TestFilterBit(32)))
+                    continue;
+            }
+        }
 
         pionZ = b[1];
         fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
@@ -716,7 +721,7 @@ double AliAnalysisTaskNanoCheck::GetTPCnSigma(AliVTrack* track,
 void AliAnalysisTaskNanoCheck::GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]) {
     AliNanoAODTrack* nanoT = dynamic_cast<AliNanoAODTrack*>(track);
     if (nanoT)
-        nanoT->AliNanoAODTrack::GetImpactParameters(p[0], p[1]);
+        nanoT->GetImpactParameters(p[0], p[1]);
     else
         track->GetImpactParameters(p, cov);
 }
