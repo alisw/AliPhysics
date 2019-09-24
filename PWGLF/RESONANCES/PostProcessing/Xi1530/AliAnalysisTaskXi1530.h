@@ -262,6 +262,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t fCent = -1;
     Double_t ftrackmult = -1;
     std::vector<UInt_t> goodtrackindices;    //!
+    std::vector<UInt_t> goodtrackfullindices;    //!
     std::vector<UInt_t> goodcascadeindices;  //!
 
     AliPIDResponse* fPIDResponse = nullptr;  //!
@@ -354,7 +355,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     Double_t lPosPV[3];
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 31);
+    ClassDef(AliAnalysisTaskXi1530, 32);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -388,6 +389,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 29: Add Special finder
     // 30: Remove unused variables and reformatting
     // 31: Add option to remove PIDqa plots
+    // 32: Add goodtrackfullindices for further trackloop
 };
 
 #endif
