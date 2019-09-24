@@ -39,6 +39,8 @@
 #include "AliDielectron.h"
 #include "AliDielectronVarManager.h"
 #include "AliJetContainer.h"
+#include "AliFJWrapper.h"
+class AliFJWrapper;
 #include "AliEmcalJetTask.h"
 
 #include "AliAnalysisTaskSE.h"
