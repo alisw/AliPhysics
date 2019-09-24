@@ -72,14 +72,13 @@ using namespace std;
 
 const Char_t * estimators[3]={"Mid05","Mid08","V0M"};
 const Int_t NchPercBin=7;
-// the values should be updated
-const Double_t nchBin_gen0[NchPercBin+1]={-0.5, 1.5,  3.5,  5.5,  7.5,  10.5, 16.5, 299.5};
-const Double_t nchBin_gen1[NchPercBin+1]={-0.5, 2.5,  6.5,  8.5,  12.5, 17.5, 26.5, 299.5};
-const Double_t nchBin_gen2[NchPercBin+1]={-0.5, 10.5, 17.5, 24.5, 33.5, 47.5, 68.5, 299.5};
-
-const Double_t nchBin_rec0[NchPercBin+1]={-0.5, 1.5,  2.5,  4.5,  5.5,  8.5,  11.5, 299.5};
-const Double_t nchBin_rec1[NchPercBin+1]={-0.5, 2.5,  4.5,  6.5,  9.5,  13.5, 19.5, 299.5};
-const Double_t nchBin_rec2[NchPercBin+1]={-0.5, 12.5, 20.5, 26.5, 35.5, 47.5, 64.5, 299.5};
+const Int_t nTSBins=100;
+Double_t nchBin_gen0[NchPercBin+1]={0x0};
+Double_t nchBin_gen1[NchPercBin+1]={0x0};
+Double_t nchBin_gen2[NchPercBin+1]={0x0};
+Double_t nchBin_rec0[NchPercBin+1]={0x0};
+Double_t nchBin_rec1[NchPercBin+1]={0x0};
+Double_t nchBin_rec2[NchPercBin+1]={0x0};
 
 TF1* ch_Eff; // efficiency for pions
 TF1* k_neg_Eff;
@@ -92,7 +91,7 @@ TF1* k0s_Eff;
 TF1* la_Eff;
 TF1* labar_Eff;
 
-
+const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
 const Char_t * pidNames[11] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero" };
 Bool_t isPrimary[11] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE };
 const Int_t nPtBins = 66;
@@ -139,6 +138,10 @@ ClassImp( AliAnalysisTaskGenUeSpherocity )
 		fMcEvent(0x0),
 		fMcHandler(0x0),
 		fStack(0),
+		fGenerator("Pythia8"),
+		fIndexLeadingGen(-1),
+                fIndexLeadingRec(-1),
+		fMinPtLeading(5.0),
 		fSizeStep(0.1),
 		fspherocity_gen_ptWeighted(-1),
 		fspherocity_gen(-1),
@@ -154,8 +157,31 @@ ClassImp( AliAnalysisTaskGenUeSpherocity )
 		fHistEvt(0x0),
 		fHistEta(0x0),
 		fHistPart(0x0),
+		fDphiNS(0x0),
+                fDphiAS(0x0),
+		fDphiTS(0x0),
+		fMultTS(0x0),
+		fDphiNSRec(0x0),
+		fDphiASRec(0x0),
+		fDphiTSRec(0x0),
+                fMultTSRec(0x0),
 		fListOfObjects(0)
 {
+
+	for(Int_t i_pid=0; i_pid<11; ++i_pid){
+
+		fHistPtVsNchNS[i_pid]=0;
+		fHistPtVsNchAS[i_pid]=0;
+		fHistPtVsNchTS[i_pid]=0;
+
+		fHistPtVsNchNSRec[i_pid]=0;
+		fHistPtVsNchASRec[i_pid]=0;
+		fHistPtVsNchTSRec[i_pid]=0;
+
+	}
+
+
+
 	for(Int_t i_pid=0; i_pid<11; ++i_pid){
 
 		fHistPt[i_pid]=0;
@@ -207,6 +233,10 @@ AliAnalysisTaskGenUeSpherocity::AliAnalysisTaskGenUeSpherocity(const char *name)
 	fMcEvent(0x0),
 	fMcHandler(0x0),
 	fStack(0),
+	fGenerator("Pythia8"),
+	fIndexLeadingGen(-1),
+	fIndexLeadingRec(-1),
+	fMinPtLeading(5.0),
 	fSizeStep(0.1),
 	fspherocity_gen_ptWeighted(-1),
 	fspherocity_gen(-1),
@@ -222,8 +252,29 @@ AliAnalysisTaskGenUeSpherocity::AliAnalysisTaskGenUeSpherocity(const char *name)
 	fHistEvt(0x0),
 	fHistEta(0x0),
 	fHistPart(0x0),
+	fDphiNS(0x0),
+	fDphiAS(0x0),
+	fDphiTS(0x0),
+	fMultTS(0x0),
+	fDphiNSRec(0x0),
+	fDphiASRec(0x0),
+	fDphiTSRec(0x0),
+	fMultTSRec(0x0),
 	fListOfObjects(0)
 {
+
+	for(Int_t i_pid=0; i_pid<11; ++i_pid){
+
+		fHistPtVsNchNS[i_pid]=0;
+		fHistPtVsNchAS[i_pid]=0;
+		fHistPtVsNchTS[i_pid]=0;
+
+		fHistPtVsNchNSRec[i_pid]=0;
+		fHistPtVsNchASRec[i_pid]=0;
+		fHistPtVsNchTSRec[i_pid]=0;
+
+	}
+
 	for(Int_t i_pid=0; i_pid<11; ++i_pid){
 
 		fHistPt[i_pid]=0;
@@ -349,6 +400,74 @@ void AliAnalysisTaskGenUeSpherocity::UserCreateOutputObjects(){
 
 	InitHisto<TH1F>("fHistY", "Y Distr.", 200, -1., 1., "#it{y}", "N_{part}");
 	InitHisto<TH1F>("fHistYRec", "Y Distr. rec", 200, -1., 1., "#it{y}", "N_{part}");
+
+	fDphiNS = 0;
+	fDphiNS = new TH1D("hDphiNS","",2*64,-2*TMath::Pi(),2*TMath::Pi());
+	fListOfObjects->Add(fDphiNS);
+
+	fDphiAS = 0;
+	fDphiAS = new TH1D("hDphiAS","",2*64,-2*TMath::Pi(),2*TMath::Pi());
+	fListOfObjects->Add(fDphiAS);
+
+	fDphiTS = 0;
+	fDphiTS = new TH1D("hDphiTS","",2*64,-2*TMath::Pi(),2*TMath::Pi());
+	fListOfObjects->Add(fDphiTS);
+
+	fMultTS = 0;
+	fMultTS = new TH1D("fMultTS","",100,-0.5,99.5);
+	fListOfObjects->Add(fMultTS);
+
+	fDphiNSRec = 0;
+	fDphiNSRec = new TH1D("hDphiNSRec","",2*64,-2*TMath::Pi(),2*TMath::Pi());
+	fListOfObjects->Add(fDphiNSRec);
+
+	fDphiASRec = 0;
+	fDphiASRec = new TH1D("hDphiASRec","",2*64,-2*TMath::Pi(),2*TMath::Pi());
+	fListOfObjects->Add(fDphiASRec);
+
+	fDphiTSRec = 0;
+	fDphiTSRec = new TH1D("hDphiTSRec","",2*64,-2*TMath::Pi(),2*TMath::Pi());
+	fListOfObjects->Add(fDphiTSRec);
+
+	fMultTSRec = 0;
+	fMultTSRec = new TH1D("fMultTSRec","",100,-0.5,99.5);
+	fListOfObjects->Add(fMultTSRec);
+
+	Double_t TSBins[nTSBins+1]={0x0};
+	for(Int_t i=0;i<nTSBins;++i){
+		TSBins[i]=i*1.0-0.5;
+	}
+	TSBins[nTSBins]=99.5;
+
+	for(Int_t i_pid=0; i_pid<11; ++i_pid){
+
+		fHistPtVsNchNS[i_pid]=0;
+		fHistPtVsNchNS[i_pid]=new TH2D(Form("fHistPtVsNchNS_%s",pidNames[i_pid]), "Generated #it{p}_{T} distribution NS",nTSBins, TSBins, nPtBins,PtBins);
+		fListOfObjects->Add(fHistPtVsNchNS[i_pid]);
+
+		fHistPtVsNchAS[i_pid]=0;
+		fHistPtVsNchAS[i_pid]=new TH2D(Form("fHistPtVsNchAS_%s",pidNames[i_pid]), "Generated #it{p}_{T} distribution AS",nTSBins, TSBins, nPtBins,PtBins);
+		fListOfObjects->Add(fHistPtVsNchAS[i_pid]);
+
+		fHistPtVsNchTS[i_pid]=0;
+		fHistPtVsNchTS[i_pid]=new TH2D(Form("fHistPtVsNchTS_%s",pidNames[i_pid]), "Generated #it{p}_{T} distribution TS",nTSBins, TSBins, nPtBins,PtBins);
+		fListOfObjects->Add(fHistPtVsNchTS[i_pid]);
+
+		fHistPtVsNchNSRec[i_pid]=0;
+		fHistPtVsNchNSRec[i_pid]=new TH2D(Form("fHistPtVsNchNSRec_%s",pidNames[i_pid]), "Rec #it{p}_{T} distribution NS",nTSBins, TSBins, nPtBins,PtBins);
+		fListOfObjects->Add(fHistPtVsNchNSRec[i_pid]);
+
+		fHistPtVsNchASRec[i_pid]=0;
+		fHistPtVsNchASRec[i_pid]=new TH2D(Form("fHistPtVsNchASRec_%s",pidNames[i_pid]), "Rec #it{p}_{T} distribution AS",nTSBins, TSBins, nPtBins,PtBins);
+		fListOfObjects->Add(fHistPtVsNchASRec[i_pid]);
+
+		fHistPtVsNchTSRec[i_pid]=0;
+		fHistPtVsNchTSRec[i_pid]=new TH2D(Form("fHistPtVsNchTSRec_%s",pidNames[i_pid]), "Rec #it{p}_{T} distribution TS",nTSBins, TSBins, nPtBins,PtBins);
+		fListOfObjects->Add(fHistPtVsNchTSRec[i_pid]);
+
+	}
+
+
 
 	for(Int_t i_pid=0; i_pid<11; ++i_pid){
 
@@ -525,8 +644,55 @@ void AliAnalysisTaskGenUeSpherocity::Init(){
 	//
 	fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
 
-	// efficiency for positive and negative pions, same for all charged particles
+	if(fGenerator == "Pythia6"){
+		Double_t nchBin_gen0tmp[NchPercBin+1]={-0.5, 1.5, 3.5, 5.5, 7.5, 10.5, 15.5, 299.5};
+		Double_t nchBin_gen1tmp[NchPercBin+1]={-0.5, 3.5, 6.5, 9.5, 13.5, 17.5, 25.5, 299.5};
+		Double_t nchBin_gen2tmp[NchPercBin+1]={-0.5, 10.5, 18.5, 24.5, 31.5, 42.5, 57.5, 299.5};
+		Double_t nchBin_rec0tmp[NchPercBin+1]={-0.5, 1.5, 2.5, 4.5, 5.5, 8.5, 11.5, 299.5};
+		Double_t nchBin_rec1tmp[NchPercBin+1]={-0.5, 2.5, 4.5, 6.5, 9.5, 13.5, 18.5, 299.5};
+		Double_t nchBin_rec2tmp[NchPercBin+1]={-0.5, 11.5, 19.5, 25.5, 32.5, 43.5, 57.5, 299.5};
+		for(Int_t i=0;i<NchPercBin+1;++i){
+			nchBin_gen0[i]=nchBin_gen0tmp[i];
+			nchBin_gen1[i]=nchBin_gen1tmp[i];
+			nchBin_gen2[i]=nchBin_gen2tmp[i];
 
+			nchBin_rec0[i]=nchBin_rec0tmp[i];
+			nchBin_rec1[i]=nchBin_rec1tmp[i];
+			nchBin_rec2[i]=nchBin_rec2tmp[i];
+		}
+	}
+	else if(fGenerator == "Epos"){
+		Double_t nchBin_gen0tmp[NchPercBin+1]={-0.5, 1.5, 4.5, 5.5, 7.5, 10.5, 16.5, 299.5};
+		Double_t nchBin_gen1tmp[NchPercBin+1]={-0.5, 3.5, 6.5, 9.5, 12.5, 17.5, 25.5, 299.5};
+		Double_t nchBin_gen2tmp[NchPercBin+1]={-0.5, 12.5, 21.5, 27.5, 36.5, 49.5, 68.5, 299.5};
+		Double_t nchBin_rec0tmp[NchPercBin+1]={-0.5, 1.5, 2.5, 3.5, 5.5, 7.5, 11.5, 299.5};
+		Double_t nchBin_rec1tmp[NchPercBin+1]={-0.5, 2.5, 4.5, 6.5, 9.5, 12.5, 18.5, 299.5};
+		Double_t nchBin_rec2tmp[NchPercBin+1]={-0.5, 13.5, 21.5, 28.5, 37.5, 50.5, 69.5, 299.5};
+		for(Int_t i=0;i<NchPercBin+1;++i){
+			nchBin_gen0[i]=nchBin_gen0tmp[i];
+			nchBin_gen1[i]=nchBin_gen1tmp[i];
+			nchBin_gen2[i]=nchBin_gen2tmp[i];
+			nchBin_rec0[i]=nchBin_rec0tmp[i];
+			nchBin_rec1[i]=nchBin_rec1tmp[i];
+			nchBin_rec2[i]=nchBin_rec2tmp[i];
+		}
+	}
+	else{
+		Double_t nchBin_gen0tmp[NchPercBin+1]={-0.5, 2.5, 4.5, 6.5, 8.5, 12.5, 17.5, 299.5};
+		Double_t nchBin_gen1tmp[NchPercBin+1]={-0.5, 4.5, 7.5, 10.5, 14.5, 19.5, 28.5, 299.5};
+		Double_t nchBin_gen2tmp[NchPercBin+1]={-0.5, 13.5, 21.5, 29.5, 38.5, 52.5, 71.5, 299.5};
+		Double_t nchBin_rec0tmp[NchPercBin+1]={-0.5, 1.5, 3.5, 4.5, 6.5, 8.5, 12.5, 299.5};
+		Double_t nchBin_rec1tmp[NchPercBin+1]={-0.5, 2.5, 5.5, 7.5, 10.5, 14.5, 20.5, 299.5};
+		Double_t nchBin_rec2tmp[NchPercBin+1]={-0.5, 13.5, 22.5, 29.5, 39.5, 52.5, 72.5, 299.5};
+		for(Int_t i=0;i<NchPercBin+1;++i){
+			nchBin_gen0[i]=nchBin_gen0tmp[i];
+			nchBin_gen1[i]=nchBin_gen1tmp[i];
+			nchBin_gen2[i]=nchBin_gen2tmp[i];
+			nchBin_rec0[i]=nchBin_rec0tmp[i];
+			nchBin_rec1[i]=nchBin_rec1tmp[i];
+			nchBin_rec2[i]=nchBin_rec2tmp[i];
+		}
+	}
 }
 
 //______________________________________________________________________________
@@ -571,6 +737,28 @@ void AliAnalysisTaskGenUeSpherocity::UserExec(Option_t *){
 	vector<Float_t> pt_so_rec;
 	vector<Float_t> eta_so_rec;
 	vector<Float_t> phi_so_rec;
+
+	// RT analysis
+	fIndexLeadingGen = -1;
+	fIndexLeadingGen = GetIndexLeading(kFALSE);
+	TParticle* mcPartLeadingGen         = 0x0;
+	if(fIndexLeadingGen>=0){
+		mcPartLeadingGen                    = (TParticle *)fMcEvent->Particle(fIndexLeadingGen);
+		if(mcPartLeadingGen->Pt()>=fMinPtLeading){
+			MakeRTAnalysis(kFALSE);
+		}
+	}
+
+	fIndexLeadingRec = -1;
+	fIndexLeadingRec = GetIndexLeading(kTRUE);
+	TParticle* mcPartLeadingRec         = 0x0;
+	if(fIndexLeadingRec>=0){
+		mcPartLeadingRec                    = (TParticle *)fMcEvent->Particle(fIndexLeadingRec);
+		if(mcPartLeadingRec->Pt()>=fMinPtLeading){
+			MakeRTAnalysis(kTRUE);
+		}
+	}
+
 
 	Int_t fNso_rec = -1;
 	fNso_rec = GetMultipliciy( kTRUE, mult_estimators_rec, pt_so_rec, eta_so_rec, phi_so_rec );
@@ -644,6 +832,48 @@ Bool_t AliAnalysisTaskGenUeSpherocity::IsMCEventSelected(TObject* obj){
 }
 
 //_____________________________________________________________________________
+Int_t AliAnalysisTaskGenUeSpherocity::GetIndexLeading(Bool_t fIsPseudoRec){
+
+	Double_t ptleading = 0;
+	Int_t index_leading = -1;
+	Bool_t isPhysPrim = kFALSE;
+	Double_t qPart = 0;
+	Double_t etaPart = -10;
+	Int_t pidCodeMC = 0;
+	Int_t pPDG = -10;
+
+	// ### particle loop
+	for (Int_t ipart = 0; ipart < fMcEvent->GetNumberOfTracks(); ++ipart) {
+
+		TParticle* mcPart         = 0x0;
+		mcPart                    = (TParticle *)fMcEvent->Particle(ipart);
+		if (!mcPart) continue;
+		//selection of primary charged particles
+		if(!(mcPart->GetPDG())) continue;
+		qPart = mcPart->GetPDG()->Charge()/3.;
+		if(TMath::Abs(qPart)<0.001) continue;
+		isPhysPrim = fMcEvent->IsPhysicalPrimary(ipart);
+		if(!isPhysPrim)
+			continue;
+
+		pPDG = TMath::Abs(mcPart->GetPdgCode());
+		pidCodeMC = GetPidCode(pPDG);
+
+		etaPart = mcPart -> Eta();
+		if(fIsPseudoRec)
+			if(!IsGoodTrack(pidCodeMC,mcPart->GetPdgCode(),mcPart->Pt())) continue;
+		if(TMath::Abs(etaPart) > 0.8)continue;
+		if(mcPart -> Pt()<1.0)continue;
+		if(mcPart -> Pt()>ptleading){
+			ptleading = mcPart->Pt();
+			index_leading = ipart;
+		}
+
+
+	} // particle loop
+	cout<<"\n";
+	return index_leading;
+}
 
 Int_t AliAnalysisTaskGenUeSpherocity::GetMultipliciy(Bool_t fIsPseudoRec, vector<Int_t> &multArray, vector<Float_t> &ptArray,  vector<Float_t> &etaArray, vector<Float_t> &phiArray){
 
@@ -664,6 +894,9 @@ Int_t AliAnalysisTaskGenUeSpherocity::GetMultipliciy(Bool_t fIsPseudoRec, vector
 	Double_t etaPart = -10;
 
 
+	Int_t pidCodeMC = 0;
+	Int_t pPDG = -10;
+
 	// ### particle loop
 	for (Int_t ipart = 0; ipart < fMcEvent->GetNumberOfTracks(); ++ipart) {
 
@@ -678,11 +911,14 @@ Int_t AliAnalysisTaskGenUeSpherocity::GetMultipliciy(Bool_t fIsPseudoRec, vector
 		if(!isPhysPrim)
 			continue;
 
+		pPDG = TMath::Abs(mcPart->GetPdgCode());
+		pidCodeMC = GetPidCode(pPDG);
+
 		etaPart = mcPart -> Eta();
 		if( (2.8 < etaPart && etaPart < 5.1) || (-3.7 < etaPart && etaPart <-1.7) ) mult_VZEROM++;
 
 		if(fIsPseudoRec)
-			if(!IsGoodTrack(-1,-1,mcPart->Pt())) continue;
+			if(!IsGoodTrack(pidCodeMC,mcPart->GetPdgCode(),mcPart->Pt())) continue;
 
 		if( TMath::Abs(etaPart) < 0.5 ) mult_Eta5++;
 		if( TMath::Abs(etaPart) < 0.8 ){ 
@@ -699,7 +935,7 @@ Int_t AliAnalysisTaskGenUeSpherocity::GetMultipliciy(Bool_t fIsPseudoRec, vector
 		}
 		if( TMath::Abs(etaPart) < 1 )
 			if(mcPart -> Pt()>0)
-				mult_Eta1++;// for INEL>0
+				mult_Eta1++;// for INEL>0n
 
 	} // particle loop
 
@@ -712,6 +948,176 @@ Int_t AliAnalysisTaskGenUeSpherocity::GetMultipliciy(Bool_t fIsPseudoRec, vector
 }
 
 //______________________________________________________________________________
+void AliAnalysisTaskGenUeSpherocity::MakeRTAnalysis(Bool_t fIsPseudoRec){
+
+	// Properties leading particle
+	TParticle* mcPartTmp         = 0x0;
+	if(fIsPseudoRec)
+		mcPartTmp                    = (TParticle *)fMcEvent->Particle(fIndexLeadingRec);
+	else
+		mcPartTmp                    = (TParticle *)fMcEvent->Particle(fIndexLeadingGen);
+
+	Double_t phiL = mcPartTmp->Phi();
+	// Multiplicity transverse side
+	Int_t multTS = 0;
+
+	// Get multiplicity in transverse side
+	Int_t pidCodeMC = 0;
+	Double_t ipt = 0.;
+	Double_t etaPart = -10.0;
+	Double_t phiPart = -10.0;
+	Bool_t isPhysPrim = kFALSE;
+	Double_t qPart = 0;
+	Int_t pPDG = -10;
+	// ### particle loop
+	for (Int_t ipart = 0; ipart < fMcEvent->GetNumberOfTracks(); ++ipart) {
+
+		if(fIsPseudoRec){
+			if(ipart == fIndexLeadingRec)continue;
+		}
+		else{ 
+			if(ipart == fIndexLeadingGen)continue;
+		}
+
+		TParticle* mcPart         = 0x0;
+		mcPart                    = (TParticle *)fMcEvent->Particle(ipart);
+		if (!mcPart) continue;
+		//selection of primary charged particles
+		if(!(mcPart->GetPDG())) continue;
+		qPart = mcPart->GetPDG()->Charge()/3.;
+		if(TMath::Abs(qPart)<0.001) continue;
+		isPhysPrim = fMcEvent->IsPhysicalPrimary(ipart);
+		if(!isPhysPrim)
+			continue;
+		pPDG = TMath::Abs(mcPart->GetPdgCode());
+		pidCodeMC = GetPidCode(pPDG);
+		etaPart = mcPart -> Eta();
+		if(TMath::Abs(etaPart)>0.8)continue;
+		ipt = mcPart->Pt();
+		if(fIsPseudoRec)
+			if(!IsGoodTrack(pidCodeMC,mcPart->GetPdgCode(),ipt)) continue;
+		if(ipt<0.15)continue;
+		phiPart = mcPart -> Phi();
+		Double_t DPhi = DeltaPhi(phiL,phiPart);
+
+		if(fIsPseudoRec){
+			if(TMath::Abs(DPhi)<pi/3.0){
+				fDphiNSRec->Fill(DPhi);
+			}
+			// away side
+			else if(TMath::Abs(DPhi-pi)<pi/3.0){
+				fDphiASRec->Fill(DPhi);
+			}
+			// transverse side
+			else{
+				multTS++;
+				fDphiTSRec->Fill(DPhi);
+			}
+		}
+		else{
+			if(TMath::Abs(DPhi)<pi/3.0){
+				fDphiNS->Fill(DPhi);
+			}
+			// away side
+			else if(TMath::Abs(DPhi-pi)<pi/3.0){
+				fDphiAS->Fill(DPhi);
+			}
+			// transverse side
+			else{
+				multTS++;
+				fDphiTS->Fill(DPhi);
+			}
+		}
+
+
+	}
+
+	if(fIsPseudoRec)
+		fMultTSRec->Fill(multTS);
+	else
+		fMultTS->Fill(multTS);
+
+
+	// selecting topological regions
+	pidCodeMC = 0;
+	ipt = 0.;
+	etaPart = -10.0;
+	phiPart = -10.0;
+	isPhysPrim = kFALSE;
+	qPart = 0;
+	pPDG = -10;
+
+	// ### particle loop
+	for (Int_t ipart = 0; ipart < fMcEvent->GetNumberOfTracks(); ++ipart) {
+
+		if(fIsPseudoRec){
+			if(ipart == fIndexLeadingRec)continue;
+		}
+		else{
+			if(ipart == fIndexLeadingGen)continue;
+		}
+
+
+		TParticle* mcPart         = 0x0;
+		mcPart                    = (TParticle *)fMcEvent->Particle(ipart);
+		if (!mcPart) continue;
+
+		if(!mcPart->GetPDG())continue;
+		isPhysPrim = fMcEvent->IsPhysicalPrimary(ipart);
+		qPart = mcPart->GetPDG()->Charge()/3.;
+		// only primary charged particles
+		pPDG = TMath::Abs(mcPart->GetPdgCode());
+		pidCodeMC = GetPidCode(pPDG);
+		Bool_t isSelectedPart = kTRUE;
+		for(Int_t i=0; i<11; ++i) 
+			if( pidCodeMC == i ) 
+				isSelectedPart = kFALSE;
+		if ( isSelectedPart ) continue;
+		ipt = mcPart->Pt();
+		if(ipt<0.15)continue;
+		phiPart = mcPart -> Phi();
+		Double_t DPhi = DeltaPhi(phiL,phiPart);
+		if(TMath::Abs(mcPart->Eta()) >= 0.8)continue;
+
+		for(Int_t i=0; i<11; ++i)
+		{
+			if( pidCodeMC == i )
+			{
+				if( isPrimary[i] == kTRUE && isPhysPrim == kFALSE ) 
+					continue;
+
+				if(fIsPseudoRec){
+					if(!IsGoodTrack(pidCodeMC,mcPart->GetPdgCode(),ipt)) continue;
+					if(TMath::Abs(DPhi)<pi/3.0){// near side
+						fHistPtVsNchNSRec[i]->Fill(1.0*multTS,ipt);
+					}
+					else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+						fHistPtVsNchASRec[i]->Fill(1.0*multTS,ipt);
+					}
+					else{// transverse side
+						fHistPtVsNchTSRec[i]->Fill(1.0*multTS,ipt);
+					}
+
+
+				}else{
+
+					if(TMath::Abs(DPhi)<pi/3.0){// near side
+						fHistPtVsNchNS[i]->Fill(1.0*multTS,ipt);
+					}       
+					else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+						fHistPtVsNchAS[i]->Fill(1.0*multTS,ipt);
+					}       
+					else{// transverse side
+						fHistPtVsNchTS[i]->Fill(1.0*multTS,ipt);
+					}       
+				}
+
+			}
+		}
+
+	} // particle loop
+
+}
 
 void AliAnalysisTaskGenUeSpherocity::ParticleSel(Bool_t fIsPseudoRec, const vector<Int_t> &mult){
 
@@ -757,10 +1163,10 @@ void AliAnalysisTaskGenUeSpherocity::ParticleSel(Bool_t fIsPseudoRec, const vect
 
 		fHistEta->Fill(mcPart->Eta());
 
-                if (!(TMath::Abs(mcPart->Energy()-mcPart->Pz())>0.)) continue;
-                Double_t myY = (mcPart->Energy()+mcPart->Pz())/(mcPart->Energy()-mcPart->Pz());
-                if( myY <= 0 ) continue;
-                y = 0.5*TMath::Log(myY);
+		if (!(TMath::Abs(mcPart->Energy()-mcPart->Pz())>0.)) continue;
+		Double_t myY = (mcPart->Energy()+mcPart->Pz())/(mcPart->Energy()-mcPart->Pz());
+		if( myY <= 0 ) continue;
+		y = 0.5*TMath::Log(myY);
 		//y = mcPart->Y(); 
 		ipt = mcPart->Pt();
 
@@ -1065,4 +1471,19 @@ Int_t AliAnalysisTaskGenUeSpherocity::GetMultBin(Bool_t fIsPseudoRec,Int_t mult_
 
 	return -1;
 }
+Double_t AliAnalysisTaskGenUeSpherocity::DeltaPhi(Double_t phia, Double_t phib,
+		Double_t rangeMin, Double_t rangeMax)
+{
+	Double_t dphi = -999;
+	Double_t pi = TMath::Pi();
 
+	if (phia < 0)         phia += 2*pi;
+	else if (phia > 2*pi) phia -= 2*pi;
+	if (phib < 0)         phib += 2*pi;
+	else if (phib > 2*pi) phib -= 2*pi;
+	dphi = phib - phia;
+	if (dphi < rangeMin)      dphi += 2*pi;
+	else if (dphi > rangeMax) dphi -= 2*pi;
+
+	return dphi;
+}
