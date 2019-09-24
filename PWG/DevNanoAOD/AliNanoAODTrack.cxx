@@ -68,9 +68,8 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   AllocateInternalStorage(AliNanoAODTrackMapping::GetInstance()->GetSize(), AliNanoAODTrackMapping::GetInstance()->GetSizeInt());
   
   // Get DCA correctly (covers both kases with and without kIsDCA bit set)
-  Float_t dcaXY = 0;
-  Float_t dcaZ = 0;
-  aodTrack->GetImpactParameters(dcaXY, dcaZ);
+  float dca[2]{0.f,0.f},cov[3]{0.f,0.f,0.f};
+  aodTrack->GetImpactParameters(dca, cov);
   
   // fill content
   if (AliNanoAODTrackMapping::GetInstance()->GetPt() != -1)               SetVar(AliNanoAODTrackMapping::GetInstance()->GetPt()               , aodTrack->Pt()                      );
@@ -82,11 +81,11 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   if (AliNanoAODTrackMapping::GetInstance()->GetPosZ() != -1)             SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosZ()             , position[2]                         );
   if (AliNanoAODTrackMapping::GetInstance()->GetPosDCAx() != -1)          SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAx()          , aodTrack->XAtDCA()                  );
   if (AliNanoAODTrackMapping::GetInstance()->GetPosDCAy() != -1)          SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAy()          , aodTrack->YAtDCA()                  );
-  if (AliNanoAODTrackMapping::GetInstance()->GetPosDCAz() != -1)          SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAz()          , dcaZ                                );
+  if (AliNanoAODTrackMapping::GetInstance()->GetPosDCAz() != -1)          SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAz()          , dca[1]                              );
   if (AliNanoAODTrackMapping::GetInstance()->GetPDCAX() != -1)            SetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAX()            , aodTrack->PxAtDCA()                 );
   if (AliNanoAODTrackMapping::GetInstance()->GetPDCAY() != -1)            SetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAY()            , aodTrack->PyAtDCA()                 );
   if (AliNanoAODTrackMapping::GetInstance()->GetPDCAZ() != -1)            SetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAZ()            , aodTrack->PzAtDCA()                 );
-  if (AliNanoAODTrackMapping::GetInstance()->GetDCA() != -1)              SetVar(AliNanoAODTrackMapping::GetInstance()->GetDCA()              , dcaXY                               );
+  if (AliNanoAODTrackMapping::GetInstance()->GetDCA() != -1)              SetVar(AliNanoAODTrackMapping::GetInstance()->GetDCA()              , dca[0]                              );
   if (AliNanoAODTrackMapping::GetInstance()->GetRAtAbsorberEnd() != -1)   SetVar(AliNanoAODTrackMapping::GetInstance()->GetRAtAbsorberEnd()   , aodTrack->GetRAtAbsorberEnd()       );
   if (AliNanoAODTrackMapping::GetInstance()->GetTPCncls() != -1)          SetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTPCncls()       , aodTrack->GetTPCNcls()              );
   if (AliNanoAODTrackMapping::GetInstance()->GetID() != -1)               SetVar(AliNanoAODTrackMapping::GetInstance()->GetID()               , aodTrack->GetID()                   );
