@@ -94,6 +94,7 @@ set(SRCS
       core/AliAnalysisTask_JPsi_EMCal.cxx
       core/AliAnalysisTaskEtaReconstruction.cxx
       core/AliAnalysisTaskJpsiJet.cxx
+      core/AliAnalysisTaskJpsiJetFilter.cxx
       JPSI/AliDielectronSignalBase.cxx
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx
