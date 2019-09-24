@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/09/19
+//  Last Modified Date: 2019/09/24
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -727,6 +727,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
     //
     const UInt_t ntracks = fEvt->GetNumberOfTracks();
     goodtrackindices.clear();
+    goodtrackfullindices.clear();
     AliVTrack* track;
     tracklist* etl;
     eventpool* ep;
@@ -766,7 +767,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
                 AliInfo("Track can't pass the filter bit!");
                 continue;
             }
-        }  
+        }
 
         pionPt = track->Pt();
         pionZ = b[1];
@@ -778,11 +779,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
                             track->Eta(), fXi1530PionEtaCut));
             continue;
         }
-        if (pionZ > fXi1530PionZVertexCut_loose) {
-            AliInfo(Form("zVertex cut failed: track DCAz: %f, cut: %f",
-                            pionZ, fXi1530PionZVertexCut_loose));
-            continue;
-        }
         if (pionPt < 0.15) {
             AliInfo(Form("pT cut failed: track pT: %f, cut: 0.15", pionPt));
             continue;
@@ -790,6 +786,14 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
         if (TMath::Abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_loose) {
             AliInfo(Form("TPC nSigma cut failed: track TPC PID: %f, cut: %f",
                          fTPCNSigPion, fTPCNsigXi1530PionCut_loose));
+            continue;
+        }
+
+        goodtrackfullindices.push_back(it); // General pion track
+        
+        if (pionZ > fXi1530PionZVertexCut_loose) {
+            AliInfo(Form("zVertex cut failed: track DCAz: %f, cut: %f",
+                            pionZ, fXi1530PionZVertexCut_loose));
             continue;
         }
         
@@ -1343,6 +1347,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
+    const UInt_t ntracks_full = goodtrackfullindices.size();
 
     for (UInt_t sys = 0; sys < (UInt_t)binSystematics.GetNbins(); sys++) {
         // Systematic study loop.
@@ -1627,11 +1632,11 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 }
                 if (fExoticFinder2) {
                     if (SysCheck.at(sys) == "DefaultOption"){
-                        for (UInt_t k = 0; k < ntracks; k++) {
-                            if (j == k)  // same pion
-                                continue;
+                        for (UInt_t k = 0; k < ntracks_full; k++) {
                             track2 =
-                                (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                                (AliVTrack*)fEvt->GetTrack(goodtrackfullindices[k]);
+                            if (!track2)
+                                continue;
                             if (track1->GetID() == track2->GetID())
                                 continue;
                             temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
@@ -1976,11 +1981,9 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 if (IsQAInvMass)
                     fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
                 if (fExoticFinder2) {
-                    for (UInt_t k = 0; k < ntracks; k++) {
-                        if (jt == k)  // same pion
-                            continue;
+                    for (UInt_t k = 0; k < ntracks_full; k++) {
                         track2 =
-                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                            (AliVTrack*)fEvt->GetTrack(goodtrackfullindices[k]);
                         if (track1->GetID() == track2->GetID())
                             continue;
                         temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
@@ -2054,6 +2057,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
+    const UInt_t ntracks_full = goodtrackfullindices.size();
 
     for (UInt_t sys = 0; sys < (UInt_t)binSystematics.GetNbins(); sys++) {
         // Systematic study loop.
@@ -2342,11 +2346,9 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 }
                 if(fExoticFinder2){
                     if (SysCheck.at(sys) == "DefaultOption"){
-                        for (UInt_t k = 0; k < ntracks; k++) {
-                            if( j == k ) // same pion
-                                continue;
+                        for (UInt_t k = 0; k < ntracks_full; k++) {
                             track2 =
-                                (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                                (AliVTrack*)fEvt->GetTrack(goodtrackfullindices[k]);
                             if(track1->GetID() == track2->GetID())
                                 continue;
                             temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
@@ -2685,11 +2687,9 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 if (IsQAInvMass)
                     fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
                 if (fExoticFinder2) {
-                    for (UInt_t k = 0; k < ntracks; k++) {
-                        if (i == k)  // same pion
-                            continue;
+                    for (UInt_t k = 0; k < ntracks_full; k++) {
                         track2 =
-                            (AliVTrack*)fEvt->GetTrack(goodtrackindices[k]);
+                            (AliVTrack*)fEvt->GetTrack(goodtrackfullindices[k]);
                         if (track1->GetID() == track2->GetID())
                             continue;
                         temp3.SetXYZM(track2->Px(), track2->Py(), track2->Pz(),
