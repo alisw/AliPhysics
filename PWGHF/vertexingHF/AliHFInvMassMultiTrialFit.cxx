@@ -48,6 +48,8 @@ AliHFInvMassMultiTrialFit::AliHFInvMassMultiTrialFit() :
   fSigmaMCVariationUp(0.1),
   fSigmaMCVariationDw(0.1),
   fMassD(1.86484),
+  fUpperMassToFix(1.868),
+  fLowerMassToFix(1.862),
   fSuffix(""),
   fFitOption(0),
   fUseExpoBkg(kTRUE),
@@ -69,6 +71,10 @@ AliHFInvMassMultiTrialFit::AliHFInvMassMultiTrialFit() :
   fUseFixedMeanFreeS(kTRUE),
   fUseFixSigFreeMean(kTRUE),
   fUseFixSigFixMean(kTRUE),
+  fUseFixSigFixMeanUp(kTRUE),
+  fUseFixSigFixMeanDown(kTRUE),
+  fUseFreeSigFixMeanUp(kTRUE),
+  fUseFreeSigFixMeanDown(kTRUE),
   fUseSecondPeak(kFALSE),
   fMassSecondPeak(1.86958),
   fSigmaSecondPeak(0.01),
@@ -185,7 +191,7 @@ Bool_t AliHFInvMassMultiTrialFit::CreateHistos(){
 
   TString funcBkg[kNBkgFuncCases]={"Expo","Lin","Pol2","Pol3","Pol4","Pol5","PowLaw","PowLawExpo"};
   TString funcSig[kNSigFuncCases]={"","2Gaus","2GausSigmaRatio"};
-  TString gausSig[kNFitConfCases]={"FixedS","FixedSp20","FixedSm20","FreeS","FixedMeanFixedS","FixedMeanFreeS"};
+  TString gausSig[kNFitConfCases]={"FixedSig","FixedSigUp","FixedSigDw","FreeSig","FixedMeanFixedSig","FixedMeanUpFixedSig","FixedMeanDwFixedSig","FixedMeanFreeSig","FixedMeanUpFreeSig","FixedMeanDwFreeSig"};
 
   Int_t totTrials=fNumOfRebinSteps*fNumOfFirstBinSteps*fNumOfLowLimFitSteps*fNumOfUpLimFitSteps;
 
@@ -309,6 +315,10 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 		if (igs==kFreeSigFreeMean  && !fUseFreeS) continue;
 		if (igs==kFixSigFreeMean  && !fUseFixSigFreeMean) continue;
 		if (igs==kFixSigFixMean   && !fUseFixSigFixMean) continue;
+		if (igs==kFixSigFixMeanUp && !fUseFixSigFixMeanUp) continue;
+		if (igs==kFixSigFixMeanDown && !fUseFixSigFixMeanDown) continue;
+		if (igs==kFreeSigFixMeanUp && !fUseFreeSigFixMeanUp) continue;
+		if (igs==kFreeSigFixMeanDown && !fUseFreeSigFixMeanDown) continue;
 		Int_t theCase=igs*kNBkgFuncCases*kNSigFuncCases+types*kNBkgFuncCases+typeb;
 		Int_t globBin=itrial+theCase*totTrials;
 		for(Int_t j=0; j<16; j++) xnt[j]=0.;
@@ -384,6 +394,24 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 		  fitter->SetFixGaussianMean(fMassD);
 		  xnt[6]=0;
 		  xnt[7]=1;
+		}else if(igs==kFixSigFixMeanUp){
+		  fitter->SetFixGaussianSigma(fSigmaGausMC);
+		  fitter->SetFixGaussianMean(fUpperMassToFix);
+		  xnt[6]=1;
+		  xnt[7]=2;
+		}else if(igs==kFixSigFixMeanDown){
+		  fitter->SetFixGaussianSigma(fSigmaGausMC);
+		  fitter->SetFixGaussianMean(fLowerMassToFix);
+		  xnt[6]=1;
+		  xnt[7]=3;
+		}else if(igs==kFreeSigFixMeanUp){
+		  fitter->SetFixGaussianMean(fUpperMassToFix);
+		  xnt[6]=0;
+		  xnt[7]=2;
+		}else if(igs==kFreeSigFixMeanDown){
+		  fitter->SetFixGaussianMean(fLowerMassToFix);
+		  xnt[6]=0;
+		  xnt[7]=3;
 		}
 		Bool_t out=kFALSE;
 		Double_t chisq=-1.;
