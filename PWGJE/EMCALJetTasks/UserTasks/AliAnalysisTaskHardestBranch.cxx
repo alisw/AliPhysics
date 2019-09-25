@@ -575,10 +575,10 @@ void AliAnalysisTaskHardestBranch::IterativeParents(AliEmcalJet *fJet, AliJetCon
      
       
 
-    fShapesVar[1] = ktvec[indmax];
-    fShapesVar[2] = tformvec[indmax];
-    fShapesVar[3] = zvec[indmax];
-    fShapesVar[4] = thetavec[indmax];
+    fShapesVar[1] = ktvec[indmax-1];
+    fShapesVar[2] = tformvec[indmax-1];
+    fShapesVar[3] = zvec[indmax-1];
+    fShapesVar[4] = thetavec[indmax-1];
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
@@ -659,10 +659,10 @@ void AliAnalysisTaskHardestBranch::IterativeParentsMCAverage(AliEmcalJet *fJet, 
      indmax=std::distance(ktvec.begin(), result);
 
 
-    average1 = ktvec[indmax];
-    average2 = tformvec[indmax];
-    average3 = zvec[indmax];
-    average4 = thetavec[indmax];
+    average1 = ktvec[indmax-1];
+    average2 = tformvec[indmax-1];
+    average3 = zvec[indmax-1];
+    average4 = thetavec[indmax-1];
 
 
   } catch (fastjet::Error) {
