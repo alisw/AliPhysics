@@ -509,6 +509,77 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
     cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
 
+  // Nonlin testing configs (TB only)
+  } else if (trainConfig == 2030) { // NL 01 -> 100 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411790105f032230000","0h63103100000010");
+  } else if (trainConfig == 2031) { // NL 01 -> 100 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411790105f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411790105f032230000","0h63103100000010");
+  } else if (trainConfig == 2032) { // NL 02 -> 50 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411790205f032230000","0h63103100000010");
+  } else if (trainConfig == 2033) { // NL 02 -> 50 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411790205f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411790205f032230000","0h63103100000010");
+  } else if (trainConfig == 2034) { // NL 03 -> 150 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411790305f032230000","0h63103100000010");
+  } else if (trainConfig == 2035) { // NL 03 -> 150 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411790305f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411790305f032230000","0h63103100000010");
+  } else if (trainConfig == 2036) { // NL 04 -> 300 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411790405f032230000","0h63103100000010");
+  } else if (trainConfig == 2037) { // NL 04 -> 300 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411790405f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411790405f032230000","0h63103100000010");
+
+  // Nonlin testing configs (TB + finetuning)
+  } else if (trainConfig == 2040) { // NL 01 -> 100 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+  } else if (trainConfig == 2041) { // NL 01 -> 100 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+  } else if (trainConfig == 2042) { // NL 02 -> 50 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793205f032230000","0h63103100000010");
+  } else if (trainConfig == 2043) { // NL 02 -> 50 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411793205f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793205f032230000","0h63103100000010");
+  } else if (trainConfig == 2044) { // NL 03 -> 150 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793305f032230000","0h63103100000010");
+  } else if (trainConfig == 2045) { // NL 03 -> 150 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411793305f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793305f032230000","0h63103100000010");
+  } else if (trainConfig == 2046) { // NL 04 -> 300 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793405f032230000","0h63103100000010");
+  } else if (trainConfig == 2047) { // NL 04 -> 300 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411793405f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793405f032230000","0h63103100000010");
+
+  // Nonlin testing configs (TB + finetuning)
+  } else if (trainConfig == 2050) { // NL 01 -> 100 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796105f032230000","0h63103100000010");
+  } else if (trainConfig == 2051) { // NL 01 -> 100 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796105f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796105f032230000","0h63103100000010");
+  } else if (trainConfig == 2052) { // NL 02 -> 50 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796205f032230000","0h63103100000010");
+  } else if (trainConfig == 2053) { // NL 02 -> 50 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796205f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796205f032230000","0h63103100000010");
+  } else if (trainConfig == 2054) { // NL 03 -> 150 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796305f032230000","0h63103100000010");
+  } else if (trainConfig == 2055) { // NL 03 -> 150 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796305f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796305f032230000","0h63103100000010");
+  } else if (trainConfig == 2056) { // NL 04 -> 300 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796405f032230000","0h63103100000010");
+  } else if (trainConfig == 2057) { // NL 04 -> 300 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796405f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796405f032230000","0h63103100000010");
+  } else if (trainConfig == 2056) { // NL 04 -> 300 MeV aggregation
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796905f032230000","0h63103100000010");
+  } else if (trainConfig == 2057) { // NL 04 -> 300 MeV aggregation
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796905f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796905f032230000","0h63103100000010");
+
   } else if (trainConfig == 2730) { // PCM variations
     cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
     cuts.AddCutPCMCalo("80010023","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); // no SPD pileup cut
