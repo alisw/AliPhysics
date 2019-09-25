@@ -2161,8 +2161,8 @@ std::string AliAnalysisTaskSEDs::GetFile(const std::string path)
 double AliAnalysisTaskSEDs::CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF)
 {
   if(nsigmaTPC > -998. && nsigmaTOF > -998.) return TMath::Sqrt((nsigmaTPC*nsigmaTPC+nsigmaTOF*nsigmaTOF)/2);
-  else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return nsigmaTPC;
-  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return nsigmaTOF;
+  else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return TMath::Abs(nsigmaTPC);
+  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return TMath::Abs(nsigmaTOF);
   else return -999.;
 }
 
