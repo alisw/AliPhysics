@@ -2097,7 +2097,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 fSprsTemplatesWeight->Fill(tempValue,dWeight);
                                 //fDTemplateWeightNew->Fill(track->Pt(), DCA, dWeight);
                                 
-                                dWeight = fDPlusWeightVar1->GetBinContent(fDWeightVar1->FindBin(momPt));
+                                dWeight = fDPlusWeightVar1->GetBinContent(fDPlusWeightVar1->FindBin(momPt));
                                 //fDTemplateWeightVar1->Fill(track->Pt(), DCA, dWeight);
                                 fSprsTemplatesWeightVar1->Fill(tempValue,dWeight);
                                 
@@ -2117,7 +2117,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 fSprsTemplatesWeight->Fill(tempValue,dWeight);
                                 //fDTemplateWeightNew->Fill(track->Pt(), DCA, dWeight);
                                 
-                                dWeight = fDsWeightVar1->GetBinContent(fDWeightVar1->FindBin(momPt));
+                                dWeight = fDsWeightVar1->GetBinContent(fDsWeightVar1->FindBin(momPt));
                                 //fDTemplateWeightVar1->Fill(track->Pt(), DCA, dWeight);
                                 fSprsTemplatesWeightVar1->Fill(tempValue,dWeight);
                                 
