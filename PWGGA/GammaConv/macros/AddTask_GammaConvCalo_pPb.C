@@ -574,9 +574,9 @@ void AddTask_GammaConvCalo_pPb(
   } else if (trainConfig == 2057) { // NL 04 -> 300 MeV aggregation
     cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796405f032230000","0h63103100000010");
     cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796405f032230000","0h63103100000010");
-  } else if (trainConfig == 2056) { // NL 04 -> 300 MeV aggregation
+  } else if (trainConfig == 2058) { // NL 04 -> 300 MeV aggregation
     cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796905f032230000","0h63103100000010");
-  } else if (trainConfig == 2057) { // NL 04 -> 300 MeV aggregation
+  } else if (trainConfig == 2059) { // NL 04 -> 300 MeV aggregation
     cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796905f032230000","0h63103100000010");
     cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796905f032230000","0h63103100000010");
 
