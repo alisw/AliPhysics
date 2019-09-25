@@ -468,17 +468,20 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TF1 * fAccWeight;//
   TF1 * fAccWeightPositron;//
 
-  THnSparse *fHistoElectronTotal; // pt, eta, phi distribution for electron
-  THnSparse *fHistoElectronTotalMCWeight; // weight for positron
-  THnSparse *fHistoPositronTotal; // pt, eta, phi distribution for positron 
-  THnSparse *fHistoPositronTotalMCWeight; // weight for positron
+  THnSparse *fHistoElectronTotal; //!<! pt, eta, phi distribution for electron
+  THnSparse *fHistoElectronTotalMCWeight; //!<! weight for positron
+  THnSparse *fHistoPositronTotal; //!<! pt, eta, phi distribution for positron 
+  THnSparse *fHistoPositronTotalMCWeight; //!<! weight for positron
 
 
-  THnSparse *fHistoXicNonPromptMCGen; //
-  THnSparse *fHistoXicNonPromptMCS; //
-  THnSparse *fHistoXicPromptMCGen;//
-  THnSparse *fHistoXicPromptMCS;//
-  THnSparse *fHistoXicInclusiveMCGen;//
+  THnSparse *fHistoXicNonPromptMCGen; //!<!
+  THnSparse *fHistoXicNonPromptMCS; //!<!
+  THnSparse *fHistoXicPromptMCGen;//!<!
+  THnSparse *fHistoXicPromptMCS;//!<!
+  THnSparse *fHistoXicInclusiveMCGen;//!<!
+
+  THnSparse *fHistoXicMCGenWeight;//!<!
+  THnSparse *fHistoXicMCSWeight;//!<!
 
 
   //Mixing
@@ -503,7 +506,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,38); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,39); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

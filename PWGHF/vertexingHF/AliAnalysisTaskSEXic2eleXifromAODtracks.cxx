@@ -379,7 +379,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoXicNonPromptMCS(0),
   fHistoXicPromptMCGen(0),
   fHistoXicPromptMCS(0),
- fHistoXicInclusiveMCGen(0)
+  fHistoXicInclusiveMCGen(0),
+  fHistoXicMCGenWeight(0),
+  fHistoXicMCSWeight(0)
 
 
 
@@ -700,7 +702,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoXicNonPromptMCS(0),
   fHistoXicPromptMCGen(0),
   fHistoXicPromptMCS(0),
- fHistoXicInclusiveMCGen(0)
+  fHistoXicInclusiveMCGen(0),
+  fHistoXicMCGenWeight(0),
+  fHistoXicMCSWeight(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -1940,6 +1944,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 							cont_xic[2] = fCentrality;
 						
 							fHistoXicMCS->Fill(cont_xic); // inclusive
+							fHistoXicMCSWeight -> Fill(cont_xic,fWeightFit->Eval(mcxic->Pt()));
+							
 							if(trk->Charge()>0) fHistoXicMCS1->Fill(cont_xic);
 							else fHistoXicMCS2->Fill(cont_xic);
 							
@@ -3449,6 +3455,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle
 
 	if(decaytype==0){
 		fHistoXicMCGen->Fill(contmc);
+		fHistoXicMCGenWeight -> Fill(contmc,fWeightFit->Eval(mcpart->Pt()));
+
 		if(mcpart->GetPdgCode()>0) fHistoXicMCGen1->Fill(contmc);//4132 is particle
 		if(mcpart->GetPdgCode()<0) fHistoXicMCGen2->Fill(contmc);//-4132 is anti-particle
 		fHistoXicElectronMCGen->Fill(contmcele);
@@ -4034,6 +4042,13 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoXicMCS1);
   fHistoXicMCS2 = new THnSparseF("fHistoXicMCS2","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
   fOutputAll->Add(fHistoXicMCS2);
+  //=========== reweight for the efficiency ========
+
+  fHistoXicMCGenWeight = new THnSparseF("fHistoXicMCGenWeight","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+  fOutputAll->Add(fHistoXicMCGenWeight);
+  fHistoXicMCSWeight = new THnSparseF("fHistoXicMCSWeight","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+  fOutputAll->Add(fHistoXicMCSWeight);
+
 
   Int_t bins_xibmcgen[3]=	{100 ,20	,10};
   Double_t xmin_xibmcgen[3]={0.,-1.0	,0.0};
