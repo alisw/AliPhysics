@@ -150,6 +150,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fPhiNumBinsMass{60},
   fV0sNumBinsMass{60},
   fNumSamples{1},
+  fEtaCheckRFP{kFALSE},
   fFlowFillWeights{kTRUE},
   fFlowFillAfterWeights{kTRUE},
   fFlowUseWeights{kFALSE},
@@ -402,6 +403,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fPhiNumBinsMass{60},
   fV0sNumBinsMass{60},
   fNumSamples{1},
+  fEtaCheckRFP{kFALSE},
   fFlowFillWeights{kTRUE},
   fFlowFillAfterWeights{kTRUE},
   fFlowUseWeights{bUseWeights},
@@ -713,6 +715,7 @@ void AliAnalysisTaskUniFlow::ListParameters() const
   printf("      fDumpTObjectTable: (Bool_t) %s\n",    fDumpTObjectTable ? "kTRUE" : "kFALSE");
   printf("      fSampling: (Bool_t) %s\n",    fSampling ? "kTRUE" : "kFALSE");
   printf("      fFillQA: (Bool_t) %s\n",    fFillQA ? "kTRUE" : "kFALSE");
+  printf("      fEtaCheckRFP: (Bool_t) %s\n",    fEtaCheckRFP ? "kTRUE" : "kFALSE");
   for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) { printf("      fProcessSpec[k%s]: (Bool_t) %s\n",   GetSpeciesName(PartSpecies(iSpec)), fProcessSpec[iSpec] ? "kTRUE" : "kFALSE"); }
   printf("   -------- Flow related ----------------------------------------\n");
   printf("      fFlowRFPsPtMin: (Double_t) %g (GeV/c)\n",    fFlowRFPsPtMin);
@@ -2903,7 +2906,13 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
 
   Bool_t bHasGap = task->HasGap();
   Int_t iNumHarm = task->fiNumHarm;
-  Bool_t bDiff = kTRUE; if(species == kRefs) { bDiff = kFALSE; }
+  Bool_t bDiff = kTRUE;
+  Bool_t etaCheck = kFALSE;
+  if(species == kRefs) {
+    bDiff = kFALSE;
+    if(fEtaCheckRFP) etaCheck = kTRUE;
+  }
+
 
   // results of correlations
   TComplex cNom = TComplex(0.0,0.0,kFALSE);
@@ -2933,8 +2942,17 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
           cNomNeg = TwoDiffGapNeg(task->fiHarm[0],task->fiHarm[1]);
         }
         else {
-          cDenom = TwoGap(0,0);
-          cNom = TwoGap(task->fiHarm[0],task->fiHarm[1]); }
+          if(!etaCheck) {
+            cDenom = TwoGap(0,0);
+            cNom = TwoGap(task->fiHarm[0],task->fiHarm[1]);
+          }
+          else {
+            cDenom = TwoPos(0,0);
+            cDenomNeg = TwoNeg(0,0);
+            cNom = TwoPos(task->fiHarm[0],task->fiHarm[1]);
+            cNomNeg = TwoNeg(task->fiHarm[0],task->fiHarm[1]);
+            }
+          }
         }
         break;
       }
@@ -2986,8 +3004,16 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
           cNomNeg = FourDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
         }
         else {
-          cDenom = FourGap(0,0,0,0);
-          cNom = FourGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+          if(!etaCheck) {
+            cDenom = FourGap(0,0,0,0);
+            cNom = FourGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+          }
+          else {
+            cDenom = FourPos(0,0,0,0);
+            cDenomNeg = FourNeg(0,0,0,0);
+            cNom = FourPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+            cNomNeg = FourNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+          }
         }
       }
       break;
@@ -3030,8 +3056,16 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
           cNomNeg = SixDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
         }
         else {
-          cDenom = SixGap(0,0,0,0,0,0);
-          cNom = SixGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+          if(!etaCheck) {
+            cDenom = SixGap(0,0,0,0,0,0);
+            cNom = SixGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+          }
+          else {
+            cDenom = SixPos(0,0,0,0,0,0);
+            cDenomNeg = SixNeg(0,0,0,0,0,0);
+            cNom = SixPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+            cNomNeg = SixNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+          }
         }
       }
       break;
@@ -3074,8 +3108,16 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
           cNomNeg = EightDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
         }
         else {
-          cDenom = EightGap(0,0,0,0,0,0,0,0);
-          cNom = EightGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+          if(!etaCheck) {
+            cDenom = EightGap(0,0,0,0,0,0,0,0);
+            cNom = EightGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+          }
+          else {
+            cDenom = EightPos(0,0,0,0,0,0,0,0);
+            cDenomNeg = EightNeg(0,0,0,0,0,0,0,0);
+            cNom = EightPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+            cNomNeg = EightNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+          }
         }
       }
       break;
@@ -3116,6 +3158,12 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
         TProfile* prof = (TProfile*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d",task->fsName.Data(),fIndexSampling));
         if(!prof) { AliError(Form("Profile '%s_Pos_sample%d' not found!", task->fsName.Data(),fIndexSampling)); return; }
         prof->Fill(fIndexCentrality, dValue, dDenom);
+      }
+      if(bFillNeg)
+      {
+        TProfile* profNeg = (TProfile*) fListFlow[species]->FindObject(Form("%s_Neg_sample%d",task->fsName.Data(),fIndexSampling));
+        if(!profNeg) { AliError(Form("Profile '%s_Neg_sample%d' not found!", task->fsName.Data(),fIndexSampling)); return; }
+        profNeg->Fill(fIndexCentrality, dValueNeg, dDenomNeg);
       }
       break;
     }
@@ -3742,6 +3790,68 @@ TComplex AliAnalysisTaskUniFlow::Five(const Int_t n1, const Int_t n2, const Int_
     return formula;
 }
 // ============================================================================
+TComplex AliAnalysisTaskUniFlow::FivePos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5) const
+{
+    TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5,1)-QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5,1)
+    - QGapPos(n2,1)*QGapPos(n1+n3,2)*QGapPos(n4,1)*QGapPos(n5,1)-QGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4,1)*QGapPos(n5,1)
+    + 2.*QGapPos(n1+n2+n3,3)*QGapPos(n4,1)*QGapPos(n5,1)-QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n1+n4,2)*QGapPos(n5,1)
+    + QGapPos(n2+n3,2)*QGapPos(n1+n4,2)*QGapPos(n5,1)-QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n2+n4,2)*QGapPos(n5,1)
+    + QGapPos(n1+n3,2)*QGapPos(n2+n4,2)*QGapPos(n5,1)+2.*QGapPos(n3,1)*QGapPos(n1+n2+n4,3)*QGapPos(n5,1)
+    - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3+n4,2)*QGapPos(n5,1)+QGapPos(n1+n2,2)*QGapPos(n3+n4,2)*QGapPos(n5,1)
+    + 2.*QGapPos(n2,1)*QGapPos(n1+n3+n4,3)*QGapPos(n5,1)+2.*QGapPos(n1,1)*QGapPos(n2+n3+n4,3)*QGapPos(n5,1)
+    - 6.*QGapPos(n1+n2+n3+n4,4)*QGapPos(n5,1)-QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n1+n5,2)
+    + QGapPos(n2+n3,2)*QGapPos(n4,1)*QGapPos(n1+n5,2)+QGapPos(n3,1)*QGapPos(n2+n4,2)*QGapPos(n1+n5,2)
+    + QGapPos(n2,1)*QGapPos(n3+n4,2)*QGapPos(n1+n5,2)-2.*QGapPos(n2+n3+n4,3)*QGapPos(n1+n5,2)
+    - QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n2+n5,2)+QGapPos(n1+n3,2)*QGapPos(n4,1)*QGapPos(n2+n5,2)
+    + QGapPos(n3,1)*QGapPos(n1+n4,2)*QGapPos(n2+n5,2)+QGapPos(n1,1)*QGapPos(n3+n4,2)*QGapPos(n2+n5,2)
+    - 2.*QGapPos(n1+n3+n4,3)*QGapPos(n2+n5,2)+2.*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n1+n2+n5,3)
+    - 2.*QGapPos(n3+n4,2)*QGapPos(n1+n2+n5,3)-QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n4,1)*QGapPos(n3+n5,2)
+    + QGapPos(n1+n2,2)*QGapPos(n4,1)*QGapPos(n3+n5,2)+QGapPos(n2,1)*QGapPos(n1+n4,2)*QGapPos(n3+n5,2)
+    + QGapPos(n1,1)*QGapPos(n2+n4,2)*QGapPos(n3+n5,2)-2.*QGapPos(n1+n2+n4,3)*QGapPos(n3+n5,2)
+    + 2.*QGapPos(n2,1)*QGapPos(n4,1)*QGapPos(n1+n3+n5,3)-2.*QGapPos(n2+n4,2)*QGapPos(n1+n3+n5,3)
+    + 2.*QGapPos(n1,1)*QGapPos(n4,1)*QGapPos(n2+n3+n5,3)-2.*QGapPos(n1+n4,2)*QGapPos(n2+n3+n5,3)
+    - 6.*QGapPos(n4,1)*QGapPos(n1+n2+n3+n5,4)-QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4+n5,2)
+    + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4+n5,2)+QGapPos(n2,1)*QGapPos(n1+n3,2)*QGapPos(n4+n5,2)
+    + QGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4+n5,2)-2.*QGapPos(n1+n2+n3,3)*QGapPos(n4+n5,2)
+    + 2.*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n1+n4+n5,3)-2.*QGapPos(n2+n3,2)*QGapPos(n1+n4+n5,3)
+    + 2.*QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n2+n4+n5,3)-2.*QGapPos(n1+n3,2)*QGapPos(n2+n4+n5,3)
+    - 6.*QGapPos(n3,1)*QGapPos(n1+n2+n4+n5,4)+2.*QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3+n4+n5,3)
+    - 2.*QGapPos(n1+n2,2)*QGapPos(n3+n4+n5,3)-6.*QGapPos(n2,1)*QGapPos(n1+n3+n4+n5,4)
+    - 6.*QGapPos(n1,1)*QGapPos(n2+n3+n4+n5,4)+24.*QGapPos(n1+n2+n3+n4+n5,5);
+    return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::FiveNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5) const
+{
+    TComplex formula = QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)-QGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)
+    - QGapNeg(n2,1)*QGapNeg(n1+n3,2)*QGapNeg(n4,1)*QGapNeg(n5,1)-QGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4,1)*QGapNeg(n5,1)
+    + 2.*QGapNeg(n1+n2+n3,3)*QGapNeg(n4,1)*QGapNeg(n5,1)-QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n1+n4,2)*QGapNeg(n5,1)
+    + QGapNeg(n2+n3,2)*QGapNeg(n1+n4,2)*QGapNeg(n5,1)-QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n2+n4,2)*QGapNeg(n5,1)
+    + QGapNeg(n1+n3,2)*QGapNeg(n2+n4,2)*QGapNeg(n5,1)+2.*QGapNeg(n3,1)*QGapNeg(n1+n2+n4,3)*QGapNeg(n5,1)
+    - QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3+n4,2)*QGapNeg(n5,1)+QGapNeg(n1+n2,2)*QGapNeg(n3+n4,2)*QGapNeg(n5,1)
+    + 2.*QGapNeg(n2,1)*QGapNeg(n1+n3+n4,3)*QGapNeg(n5,1)+2.*QGapNeg(n1,1)*QGapNeg(n2+n3+n4,3)*QGapNeg(n5,1)
+    - 6.*QGapNeg(n1+n2+n3+n4,4)*QGapNeg(n5,1)-QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n1+n5,2)
+    + QGapNeg(n2+n3,2)*QGapNeg(n4,1)*QGapNeg(n1+n5,2)+QGapNeg(n3,1)*QGapNeg(n2+n4,2)*QGapNeg(n1+n5,2)
+    + QGapNeg(n2,1)*QGapNeg(n3+n4,2)*QGapNeg(n1+n5,2)-2.*QGapNeg(n2+n3+n4,3)*QGapNeg(n1+n5,2)
+    - QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n2+n5,2)+QGapNeg(n1+n3,2)*QGapNeg(n4,1)*QGapNeg(n2+n5,2)
+    + QGapNeg(n3,1)*QGapNeg(n1+n4,2)*QGapNeg(n2+n5,2)+QGapNeg(n1,1)*QGapNeg(n3+n4,2)*QGapNeg(n2+n5,2)
+    - 2.*QGapNeg(n1+n3+n4,3)*QGapNeg(n2+n5,2)+2.*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n1+n2+n5,3)
+    - 2.*QGapNeg(n3+n4,2)*QGapNeg(n1+n2+n5,3)-QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n4,1)*QGapNeg(n3+n5,2)
+    + QGapNeg(n1+n2,2)*QGapNeg(n4,1)*QGapNeg(n3+n5,2)+QGapNeg(n2,1)*QGapNeg(n1+n4,2)*QGapNeg(n3+n5,2)
+    + QGapNeg(n1,1)*QGapNeg(n2+n4,2)*QGapNeg(n3+n5,2)-2.*QGapNeg(n1+n2+n4,3)*QGapNeg(n3+n5,2)
+    + 2.*QGapNeg(n2,1)*QGapNeg(n4,1)*QGapNeg(n1+n3+n5,3)-2.*QGapNeg(n2+n4,2)*QGapNeg(n1+n3+n5,3)
+    + 2.*QGapNeg(n1,1)*QGapNeg(n4,1)*QGapNeg(n2+n3+n5,3)-2.*QGapNeg(n1+n4,2)*QGapNeg(n2+n3+n5,3)
+    - 6.*QGapNeg(n4,1)*QGapNeg(n1+n2+n3+n5,4)-QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4+n5,2)
+    + QGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4+n5,2)+QGapNeg(n2,1)*QGapNeg(n1+n3,2)*QGapNeg(n4+n5,2)
+    + QGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4+n5,2)-2.*QGapNeg(n1+n2+n3,3)*QGapNeg(n4+n5,2)
+    + 2.*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n1+n4+n5,3)-2.*QGapNeg(n2+n3,2)*QGapNeg(n1+n4+n5,3)
+    + 2.*QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n2+n4+n5,3)-2.*QGapNeg(n1+n3,2)*QGapNeg(n2+n4+n5,3)
+    - 6.*QGapNeg(n3,1)*QGapNeg(n1+n2+n4+n5,4)+2.*QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3+n4+n5,3)
+    - 2.*QGapNeg(n1+n2,2)*QGapNeg(n3+n4+n5,3)-6.*QGapNeg(n2,1)*QGapNeg(n1+n3+n4+n5,4)
+    - 6.*QGapNeg(n1,1)*QGapNeg(n2+n3+n4+n5,4)+24.*QGapNeg(n1+n2+n3+n4+n5,5);
+    return formula;
+}
+// ============================================================================
 TComplex AliAnalysisTaskUniFlow::Six(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
 {
   TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n6,1)
@@ -3849,6 +3959,220 @@ TComplex AliAnalysisTaskUniFlow::Six(const Int_t n1, const Int_t n2, const Int_t
     return formula;
 }
 // ============================================================================
+TComplex AliAnalysisTaskUniFlow::SixPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
+{
+  TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n6,1)-QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n6,1)
+    - QGapPos(n2,1)*QGapPos(n1+n3,2)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n6,1)-QGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n6,1)
+    + 2.*QGapPos(n1+n2+n3,3)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n6,1)-QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n1+n4,2)*QGapPos(n5,1)*QGapPos(n6,1)
+    + QGapPos(n2+n3,2)*QGapPos(n1+n4,2)*QGapPos(n5,1)*QGapPos(n6,1)-QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n2+n4,2)*QGapPos(n5,1)*QGapPos(n6,1)
+    + QGapPos(n1+n3,2)*QGapPos(n2+n4,2)*QGapPos(n5,1)*QGapPos(n6,1)+2.*QGapPos(n3,1)*QGapPos(n1+n2+n4,3)*QGapPos(n5,1)*QGapPos(n6,1)
+    - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3+n4,2)*QGapPos(n5,1)*QGapPos(n6,1)+QGapPos(n1+n2,2)*QGapPos(n3+n4,2)*QGapPos(n5,1)*QGapPos(n6,1)
+    + 2.*QGapPos(n2,1)*QGapPos(n1+n3+n4,3)*QGapPos(n5,1)*QGapPos(n6,1)+2.*QGapPos(n1,1)*QGapPos(n2+n3+n4,3)*QGapPos(n5,1)*QGapPos(n6,1)
+    - 6.*QGapPos(n1+n2+n3+n4,4)*QGapPos(n5,1)*QGapPos(n6,1)-QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n1+n5,2)*QGapPos(n6,1)
+    + QGapPos(n2+n3,2)*QGapPos(n4,1)*QGapPos(n1+n5,2)*QGapPos(n6,1)+QGapPos(n3,1)*QGapPos(n2+n4,2)*QGapPos(n1+n5,2)*QGapPos(n6,1)
+    + QGapPos(n2,1)*QGapPos(n3+n4,2)*QGapPos(n1+n5,2)*QGapPos(n6,1)-2.*QGapPos(n2+n3+n4,3)*QGapPos(n1+n5,2)*QGapPos(n6,1)
+    - QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n2+n5,2)*QGapPos(n6,1)+QGapPos(n1+n3,2)*QGapPos(n4,1)*QGapPos(n2+n5,2)*QGapPos(n6,1)
+    + QGapPos(n3,1)*QGapPos(n1+n4,2)*QGapPos(n2+n5,2)*QGapPos(n6,1)+QGapPos(n1,1)*QGapPos(n3+n4,2)*QGapPos(n2+n5,2)*QGapPos(n6,1)
+    - 2.*QGapPos(n1+n3+n4,3)*QGapPos(n2+n5,2)*QGapPos(n6,1)+2.*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n1+n2+n5,3)*QGapPos(n6,1)
+    - 2.*QGapPos(n3+n4,2)*QGapPos(n1+n2+n5,3)*QGapPos(n6,1)-QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n4,1)*QGapPos(n3+n5,2)*QGapPos(n6,1)
+    + QGapPos(n1+n2,2)*QGapPos(n4,1)*QGapPos(n3+n5,2)*QGapPos(n6,1)+QGapPos(n2,1)*QGapPos(n1+n4,2)*QGapPos(n3+n5,2)*QGapPos(n6,1)
+    + QGapPos(n1,1)*QGapPos(n2+n4,2)*QGapPos(n3+n5,2)*QGapPos(n6,1)-2.*QGapPos(n1+n2+n4,3)*QGapPos(n3+n5,2)*QGapPos(n6,1)
+    + 2.*QGapPos(n2,1)*QGapPos(n4,1)*QGapPos(n1+n3+n5,3)*QGapPos(n6,1)-2.*QGapPos(n2+n4,2)*QGapPos(n1+n3+n5,3)*QGapPos(n6,1)
+    + 2.*QGapPos(n1,1)*QGapPos(n4,1)*QGapPos(n2+n3+n5,3)*QGapPos(n6,1)-2.*QGapPos(n1+n4,2)*QGapPos(n2+n3+n5,3)*QGapPos(n6,1)
+    - 6.*QGapPos(n4,1)*QGapPos(n1+n2+n3+n5,4)*QGapPos(n6,1)-QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4+n5,2)*QGapPos(n6,1)
+    + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4+n5,2)*QGapPos(n6,1)+QGapPos(n2,1)*QGapPos(n1+n3,2)*QGapPos(n4+n5,2)*QGapPos(n6,1)
+    + QGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4+n5,2)*QGapPos(n6,1)-2.*QGapPos(n1+n2+n3,3)*QGapPos(n4+n5,2)*QGapPos(n6,1)
+    + 2.*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n1+n4+n5,3)*QGapPos(n6,1)-2.*QGapPos(n2+n3,2)*QGapPos(n1+n4+n5,3)*QGapPos(n6,1)
+    + 2.*QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n2+n4+n5,3)*QGapPos(n6,1)-2.*QGapPos(n1+n3,2)*QGapPos(n2+n4+n5,3)*QGapPos(n6,1)
+    - 6.*QGapPos(n3,1)*QGapPos(n1+n2+n4+n5,4)*QGapPos(n6,1)+2.*QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3+n4+n5,3)*QGapPos(n6,1)
+    - 2.*QGapPos(n1+n2,2)*QGapPos(n3+n4+n5,3)*QGapPos(n6,1)-6.*QGapPos(n2,1)*QGapPos(n1+n3+n4+n5,4)*QGapPos(n6,1)
+    - 6.*QGapPos(n1,1)*QGapPos(n2+n3+n4+n5,4)*QGapPos(n6,1)+24.*QGapPos(n1+n2+n3+n4+n5,5)*QGapPos(n6,1)
+    - QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n1+n6,2)+QGapPos(n2+n3,2)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n1+n6,2)
+    + QGapPos(n3,1)*QGapPos(n2+n4,2)*QGapPos(n5,1)*QGapPos(n1+n6,2)+QGapPos(n2,1)*QGapPos(n3+n4,2)*QGapPos(n5,1)*QGapPos(n1+n6,2)
+    - 2.*QGapPos(n2+n3+n4,3)*QGapPos(n5,1)*QGapPos(n1+n6,2)+QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n2+n5,2)*QGapPos(n1+n6,2)
+    - QGapPos(n3+n4,2)*QGapPos(n2+n5,2)*QGapPos(n1+n6,2)+QGapPos(n2,1)*QGapPos(n4,1)*QGapPos(n3+n5,2)*QGapPos(n1+n6,2)
+    - QGapPos(n2+n4,2)*QGapPos(n3+n5,2)*QGapPos(n1+n6,2)-2.*QGapPos(n4,1)*QGapPos(n2+n3+n5,3)*QGapPos(n1+n6,2)
+    + QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4+n5,2)*QGapPos(n1+n6,2)-QGapPos(n2+n3,2)*QGapPos(n4+n5,2)*QGapPos(n1+n6,2)
+    - 2.*QGapPos(n3,1)*QGapPos(n2+n4+n5,3)*QGapPos(n1+n6,2)-2.*QGapPos(n2,1)*QGapPos(n3+n4+n5,3)*QGapPos(n1+n6,2)
+    + 6.*QGapPos(n2+n3+n4+n5,4)*QGapPos(n1+n6,2)-QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n2+n6,2)
+    + QGapPos(n1+n3,2)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n2+n6,2)+QGapPos(n3,1)*QGapPos(n1+n4,2)*QGapPos(n5,1)*QGapPos(n2+n6,2)
+    + QGapPos(n1,1)*QGapPos(n3+n4,2)*QGapPos(n5,1)*QGapPos(n2+n6,2)-2.*QGapPos(n1+n3+n4,3)*QGapPos(n5,1)*QGapPos(n2+n6,2)
+    + QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n1+n5,2)*QGapPos(n2+n6,2)-QGapPos(n3+n4,2)*QGapPos(n1+n5,2)*QGapPos(n2+n6,2)
+    + QGapPos(n1,1)*QGapPos(n4,1)*QGapPos(n3+n5,2)*QGapPos(n2+n6,2)-QGapPos(n1+n4,2)*QGapPos(n3+n5,2)*QGapPos(n2+n6,2)
+    - 2.*QGapPos(n4,1)*QGapPos(n1+n3+n5,3)*QGapPos(n2+n6,2)+QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n4+n5,2)*QGapPos(n2+n6,2)
+    - QGapPos(n1+n3,2)*QGapPos(n4+n5,2)*QGapPos(n2+n6,2)-2.*QGapPos(n3,1)*QGapPos(n1+n4+n5,3)*QGapPos(n2+n6,2)
+    - 2.*QGapPos(n1,1)*QGapPos(n3+n4+n5,3)*QGapPos(n2+n6,2)+6.*QGapPos(n1+n3+n4+n5,4)*QGapPos(n2+n6,2)
+    + 2.*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n1+n2+n6,3)-2.*QGapPos(n3+n4,2)*QGapPos(n5,1)*QGapPos(n1+n2+n6,3)
+    - 2.*QGapPos(n4,1)*QGapPos(n3+n5,2)*QGapPos(n1+n2+n6,3)-2.*QGapPos(n3,1)*QGapPos(n4+n5,2)*QGapPos(n1+n2+n6,3)
+    + 4.*QGapPos(n3+n4+n5,3)*QGapPos(n1+n2+n6,3)-QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n3+n6,2)
+    + QGapPos(n1+n2,2)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n3+n6,2)+QGapPos(n2,1)*QGapPos(n1+n4,2)*QGapPos(n5,1)*QGapPos(n3+n6,2)
+    + QGapPos(n1,1)*QGapPos(n2+n4,2)*QGapPos(n5,1)*QGapPos(n3+n6,2)-2.*QGapPos(n1+n2+n4,3)*QGapPos(n5,1)*QGapPos(n3+n6,2)
+    + QGapPos(n2,1)*QGapPos(n4,1)*QGapPos(n1+n5,2)*QGapPos(n3+n6,2)-QGapPos(n2+n4,2)*QGapPos(n1+n5,2)*QGapPos(n3+n6,2)
+    + QGapPos(n1,1)*QGapPos(n4,1)*QGapPos(n2+n5,2)*QGapPos(n3+n6,2)-QGapPos(n1+n4,2)*QGapPos(n2+n5,2)*QGapPos(n3+n6,2)
+    - 2.*QGapPos(n4,1)*QGapPos(n1+n2+n5,3)*QGapPos(n3+n6,2)+QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n4+n5,2)*QGapPos(n3+n6,2)
+    - QGapPos(n1+n2,2)*QGapPos(n4+n5,2)*QGapPos(n3+n6,2)-2.*QGapPos(n2,1)*QGapPos(n1+n4+n5,3)*QGapPos(n3+n6,2)
+    - 2.*QGapPos(n1,1)*QGapPos(n2+n4+n5,3)*QGapPos(n3+n6,2)+6.*QGapPos(n1+n2+n4+n5,4)*QGapPos(n3+n6,2)
+    + 2.*QGapPos(n2,1)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n1+n3+n6,3)-2.*QGapPos(n2+n4,2)*QGapPos(n5,1)*QGapPos(n1+n3+n6,3)
+    - 2.*QGapPos(n4,1)*QGapPos(n2+n5,2)*QGapPos(n1+n3+n6,3)-2.*QGapPos(n2,1)*QGapPos(n4+n5,2)*QGapPos(n1+n3+n6,3)
+    + 4.*QGapPos(n2+n4+n5,3)*QGapPos(n1+n3+n6,3)+2.*QGapPos(n1,1)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n2+n3+n6,3)
+    - 2.*QGapPos(n1+n4,2)*QGapPos(n5,1)*QGapPos(n2+n3+n6,3)-2.*QGapPos(n4,1)*QGapPos(n1+n5,2)*QGapPos(n2+n3+n6,3)
+    - 2.*QGapPos(n1,1)*QGapPos(n4+n5,2)*QGapPos(n2+n3+n6,3)+4.*QGapPos(n1+n4+n5,3)*QGapPos(n2+n3+n6,3)
+    - 6.*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n1+n2+n3+n6,4)+6.*QGapPos(n4+n5,2)*QGapPos(n1+n2+n3+n6,4)
+    - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n5,1)*QGapPos(n4+n6,2)+QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n5,1)*QGapPos(n4+n6,2)
+    + QGapPos(n2,1)*QGapPos(n1+n3,2)*QGapPos(n5,1)*QGapPos(n4+n6,2)+QGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n5,1)*QGapPos(n4+n6,2)
+    - 2.*QGapPos(n1+n2+n3,3)*QGapPos(n5,1)*QGapPos(n4+n6,2)+QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n1+n5,2)*QGapPos(n4+n6,2)
+    - QGapPos(n2+n3,2)*QGapPos(n1+n5,2)*QGapPos(n4+n6,2)+QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n2+n5,2)*QGapPos(n4+n6,2)
+    - QGapPos(n1+n3,2)*QGapPos(n2+n5,2)*QGapPos(n4+n6,2)-2.*QGapPos(n3,1)*QGapPos(n1+n2+n5,3)*QGapPos(n4+n6,2)
+    + QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3+n5,2)*QGapPos(n4+n6,2)-QGapPos(n1+n2,2)*QGapPos(n3+n5,2)*QGapPos(n4+n6,2)
+    - 2.*QGapPos(n2,1)*QGapPos(n1+n3+n5,3)*QGapPos(n4+n6,2)-2.*QGapPos(n1,1)*QGapPos(n2+n3+n5,3)*QGapPos(n4+n6,2)
+    + 6.*QGapPos(n1+n2+n3+n5,4)*QGapPos(n4+n6,2)+2.*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n5,1)*QGapPos(n1+n4+n6,3)
+    - 2.*QGapPos(n2+n3,2)*QGapPos(n5,1)*QGapPos(n1+n4+n6,3)-2.*QGapPos(n3,1)*QGapPos(n2+n5,2)*QGapPos(n1+n4+n6,3)
+    - 2.*QGapPos(n2,1)*QGapPos(n3+n5,2)*QGapPos(n1+n4+n6,3)+4.*QGapPos(n2+n3+n5,3)*QGapPos(n1+n4+n6,3)
+    + 2.*QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n5,1)*QGapPos(n2+n4+n6,3)-2.*QGapPos(n1+n3,2)*QGapPos(n5,1)*QGapPos(n2+n4+n6,3)
+    - 2.*QGapPos(n3,1)*QGapPos(n1+n5,2)*QGapPos(n2+n4+n6,3)-2.*QGapPos(n1,1)*QGapPos(n3+n5,2)*QGapPos(n2+n4+n6,3)
+    + 4.*QGapPos(n1+n3+n5,3)*QGapPos(n2+n4+n6,3)-6.*QGapPos(n3,1)*QGapPos(n5,1)*QGapPos(n1+n2+n4+n6,4)
+    + 6.*QGapPos(n3+n5,2)*QGapPos(n1+n2+n4+n6,4)+2.*QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n5,1)*QGapPos(n3+n4+n6,3)
+    - 2.*QGapPos(n1+n2,2)*QGapPos(n5,1)*QGapPos(n3+n4+n6,3)-2.*QGapPos(n2,1)*QGapPos(n1+n5,2)*QGapPos(n3+n4+n6,3)
+    - 2.*QGapPos(n1,1)*QGapPos(n2+n5,2)*QGapPos(n3+n4+n6,3)+4.*QGapPos(n1+n2+n5,3)*QGapPos(n3+n4+n6,3)
+    - 6.*QGapPos(n2,1)*QGapPos(n5,1)*QGapPos(n1+n3+n4+n6,4)+6.*QGapPos(n2+n5,2)*QGapPos(n1+n3+n4+n6,4)
+    - 6.*QGapPos(n1,1)*QGapPos(n5,1)*QGapPos(n2+n3+n4+n6,4)+6.*QGapPos(n1+n5,2)*QGapPos(n2+n3+n4+n6,4)
+    + 24.*QGapPos(n5,1)*QGapPos(n1+n2+n3+n4+n6,5)-QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5+n6,2)
+    + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5+n6,2)+QGapPos(n2,1)*QGapPos(n1+n3,2)*QGapPos(n4,1)*QGapPos(n5+n6,2)
+    + QGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4,1)*QGapPos(n5+n6,2)-2.*QGapPos(n1+n2+n3,3)*QGapPos(n4,1)*QGapPos(n5+n6,2)
+    + QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n1+n4,2)*QGapPos(n5+n6,2)-QGapPos(n2+n3,2)*QGapPos(n1+n4,2)*QGapPos(n5+n6,2)
+    + QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n2+n4,2)*QGapPos(n5+n6,2)-QGapPos(n1+n3,2)*QGapPos(n2+n4,2)*QGapPos(n5+n6,2)
+    - 2.*QGapPos(n3,1)*QGapPos(n1+n2+n4,3)*QGapPos(n5+n6,2)+QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3+n4,2)*QGapPos(n5+n6,2)
+    - QGapPos(n1+n2,2)*QGapPos(n3+n4,2)*QGapPos(n5+n6,2)-2.*QGapPos(n2,1)*QGapPos(n1+n3+n4,3)*QGapPos(n5+n6,2)
+    - 2.*QGapPos(n1,1)*QGapPos(n2+n3+n4,3)*QGapPos(n5+n6,2)+6.*QGapPos(n1+n2+n3+n4,4)*QGapPos(n5+n6,2)
+    + 2.*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n1+n5+n6,3)-2.*QGapPos(n2+n3,2)*QGapPos(n4,1)*QGapPos(n1+n5+n6,3)
+    - 2.*QGapPos(n3,1)*QGapPos(n2+n4,2)*QGapPos(n1+n5+n6,3)-2.*QGapPos(n2,1)*QGapPos(n3+n4,2)*QGapPos(n1+n5+n6,3)
+    + 4.*QGapPos(n2+n3+n4,3)*QGapPos(n1+n5+n6,3)+2.*QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n2+n5+n6,3)
+    - 2.*QGapPos(n1+n3,2)*QGapPos(n4,1)*QGapPos(n2+n5+n6,3)-2.*QGapPos(n3,1)*QGapPos(n1+n4,2)*QGapPos(n2+n5+n6,3)
+    - 2.*QGapPos(n1,1)*QGapPos(n3+n4,2)*QGapPos(n2+n5+n6,3)+4.*QGapPos(n1+n3+n4,3)*QGapPos(n2+n5+n6,3)
+    - 6.*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n1+n2+n5+n6,4)+6.*QGapPos(n3+n4,2)*QGapPos(n1+n2+n5+n6,4)
+    + 2.*QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n4,1)*QGapPos(n3+n5+n6,3)-2.*QGapPos(n1+n2,2)*QGapPos(n4,1)*QGapPos(n3+n5+n6,3)
+    - 2.*QGapPos(n2,1)*QGapPos(n1+n4,2)*QGapPos(n3+n5+n6,3)-2.*QGapPos(n1,1)*QGapPos(n2+n4,2)*QGapPos(n3+n5+n6,3)
+    + 4.*QGapPos(n1+n2+n4,3)*QGapPos(n3+n5+n6,3)-6.*QGapPos(n2,1)*QGapPos(n4,1)*QGapPos(n1+n3+n5+n6,4)
+    + 6.*QGapPos(n2+n4,2)*QGapPos(n1+n3+n5+n6,4)-6.*QGapPos(n1,1)*QGapPos(n4,1)*QGapPos(n2+n3+n5+n6,4)
+    + 6.*QGapPos(n1+n4,2)*QGapPos(n2+n3+n5+n6,4)+24.*QGapPos(n4,1)*QGapPos(n1+n2+n3+n5+n6,5)
+    + 2.*QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4+n5+n6,3)-2.*QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4+n5+n6,3)
+    - 2.*QGapPos(n2,1)*QGapPos(n1+n3,2)*QGapPos(n4+n5+n6,3)-2.*QGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4+n5+n6,3)
+    + 4.*QGapPos(n1+n2+n3,3)*QGapPos(n4+n5+n6,3)-6.*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n1+n4+n5+n6,4)
+    + 6.*QGapPos(n2+n3,2)*QGapPos(n1+n4+n5+n6,4)-6.*QGapPos(n1,1)*QGapPos(n3,1)*QGapPos(n2+n4+n5+n6,4)
+    + 6.*QGapPos(n1+n3,2)*QGapPos(n2+n4+n5+n6,4)+24.*QGapPos(n3,1)*QGapPos(n1+n2+n4+n5+n6,5)
+    - 6.*QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3+n4+n5+n6,4)+6.*QGapPos(n1+n2,2)*QGapPos(n3+n4+n5+n6,4)
+    + 24.*QGapPos(n2,1)*QGapPos(n1+n3+n4+n5+n6,5)+24.*QGapPos(n1,1)*QGapPos(n2+n3+n4+n5+n6,5)
+    - 120.*QGapPos(n1+n2+n3+n4+n5+n6,6);
+    return formula;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::SixNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
+{
+  TComplex formula = QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1)-QGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1)
+    - QGapNeg(n2,1)*QGapNeg(n1+n3,2)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1)-QGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1)
+    + 2.*QGapNeg(n1+n2+n3,3)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1)-QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n1+n4,2)*QGapNeg(n5,1)*QGapNeg(n6,1)
+    + QGapNeg(n2+n3,2)*QGapNeg(n1+n4,2)*QGapNeg(n5,1)*QGapNeg(n6,1)-QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n2+n4,2)*QGapNeg(n5,1)*QGapNeg(n6,1)
+    + QGapNeg(n1+n3,2)*QGapNeg(n2+n4,2)*QGapNeg(n5,1)*QGapNeg(n6,1)+2.*QGapNeg(n3,1)*QGapNeg(n1+n2+n4,3)*QGapNeg(n5,1)*QGapNeg(n6,1)
+    - QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3+n4,2)*QGapNeg(n5,1)*QGapNeg(n6,1)+QGapNeg(n1+n2,2)*QGapNeg(n3+n4,2)*QGapNeg(n5,1)*QGapNeg(n6,1)
+    + 2.*QGapNeg(n2,1)*QGapNeg(n1+n3+n4,3)*QGapNeg(n5,1)*QGapNeg(n6,1)+2.*QGapNeg(n1,1)*QGapNeg(n2+n3+n4,3)*QGapNeg(n5,1)*QGapNeg(n6,1)
+    - 6.*QGapNeg(n1+n2+n3+n4,4)*QGapNeg(n5,1)*QGapNeg(n6,1)-QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n1+n5,2)*QGapNeg(n6,1)
+    + QGapNeg(n2+n3,2)*QGapNeg(n4,1)*QGapNeg(n1+n5,2)*QGapNeg(n6,1)+QGapNeg(n3,1)*QGapNeg(n2+n4,2)*QGapNeg(n1+n5,2)*QGapNeg(n6,1)
+    + QGapNeg(n2,1)*QGapNeg(n3+n4,2)*QGapNeg(n1+n5,2)*QGapNeg(n6,1)-2.*QGapNeg(n2+n3+n4,3)*QGapNeg(n1+n5,2)*QGapNeg(n6,1)
+    - QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n2+n5,2)*QGapNeg(n6,1)+QGapNeg(n1+n3,2)*QGapNeg(n4,1)*QGapNeg(n2+n5,2)*QGapNeg(n6,1)
+    + QGapNeg(n3,1)*QGapNeg(n1+n4,2)*QGapNeg(n2+n5,2)*QGapNeg(n6,1)+QGapNeg(n1,1)*QGapNeg(n3+n4,2)*QGapNeg(n2+n5,2)*QGapNeg(n6,1)
+    - 2.*QGapNeg(n1+n3+n4,3)*QGapNeg(n2+n5,2)*QGapNeg(n6,1)+2.*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n1+n2+n5,3)*QGapNeg(n6,1)
+    - 2.*QGapNeg(n3+n4,2)*QGapNeg(n1+n2+n5,3)*QGapNeg(n6,1)-QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n4,1)*QGapNeg(n3+n5,2)*QGapNeg(n6,1)
+    + QGapNeg(n1+n2,2)*QGapNeg(n4,1)*QGapNeg(n3+n5,2)*QGapNeg(n6,1)+QGapNeg(n2,1)*QGapNeg(n1+n4,2)*QGapNeg(n3+n5,2)*QGapNeg(n6,1)
+    + QGapNeg(n1,1)*QGapNeg(n2+n4,2)*QGapNeg(n3+n5,2)*QGapNeg(n6,1)-2.*QGapNeg(n1+n2+n4,3)*QGapNeg(n3+n5,2)*QGapNeg(n6,1)
+    + 2.*QGapNeg(n2,1)*QGapNeg(n4,1)*QGapNeg(n1+n3+n5,3)*QGapNeg(n6,1)-2.*QGapNeg(n2+n4,2)*QGapNeg(n1+n3+n5,3)*QGapNeg(n6,1)
+    + 2.*QGapNeg(n1,1)*QGapNeg(n4,1)*QGapNeg(n2+n3+n5,3)*QGapNeg(n6,1)-2.*QGapNeg(n1+n4,2)*QGapNeg(n2+n3+n5,3)*QGapNeg(n6,1)
+    - 6.*QGapNeg(n4,1)*QGapNeg(n1+n2+n3+n5,4)*QGapNeg(n6,1)-QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1)
+    + QGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1)+QGapNeg(n2,1)*QGapNeg(n1+n3,2)*QGapNeg(n4+n5,2)*QGapNeg(n6,1)
+    + QGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4+n5,2)*QGapNeg(n6,1)-2.*QGapNeg(n1+n2+n3,3)*QGapNeg(n4+n5,2)*QGapNeg(n6,1)
+    + 2.*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n1+n4+n5,3)*QGapNeg(n6,1)-2.*QGapNeg(n2+n3,2)*QGapNeg(n1+n4+n5,3)*QGapNeg(n6,1)
+    + 2.*QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n2+n4+n5,3)*QGapNeg(n6,1)-2.*QGapNeg(n1+n3,2)*QGapNeg(n2+n4+n5,3)*QGapNeg(n6,1)
+    - 6.*QGapNeg(n3,1)*QGapNeg(n1+n2+n4+n5,4)*QGapNeg(n6,1)+2.*QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3+n4+n5,3)*QGapNeg(n6,1)
+    - 2.*QGapNeg(n1+n2,2)*QGapNeg(n3+n4+n5,3)*QGapNeg(n6,1)-6.*QGapNeg(n2,1)*QGapNeg(n1+n3+n4+n5,4)*QGapNeg(n6,1)
+    - 6.*QGapNeg(n1,1)*QGapNeg(n2+n3+n4+n5,4)*QGapNeg(n6,1)+24.*QGapNeg(n1+n2+n3+n4+n5,5)*QGapNeg(n6,1)
+    - QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n1+n6,2)+QGapNeg(n2+n3,2)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n1+n6,2)
+    + QGapNeg(n3,1)*QGapNeg(n2+n4,2)*QGapNeg(n5,1)*QGapNeg(n1+n6,2)+QGapNeg(n2,1)*QGapNeg(n3+n4,2)*QGapNeg(n5,1)*QGapNeg(n1+n6,2)
+    - 2.*QGapNeg(n2+n3+n4,3)*QGapNeg(n5,1)*QGapNeg(n1+n6,2)+QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n2+n5,2)*QGapNeg(n1+n6,2)
+    - QGapNeg(n3+n4,2)*QGapNeg(n2+n5,2)*QGapNeg(n1+n6,2)+QGapNeg(n2,1)*QGapNeg(n4,1)*QGapNeg(n3+n5,2)*QGapNeg(n1+n6,2)
+    - QGapNeg(n2+n4,2)*QGapNeg(n3+n5,2)*QGapNeg(n1+n6,2)-2.*QGapNeg(n4,1)*QGapNeg(n2+n3+n5,3)*QGapNeg(n1+n6,2)
+    + QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n1+n6,2)-QGapNeg(n2+n3,2)*QGapNeg(n4+n5,2)*QGapNeg(n1+n6,2)
+    - 2.*QGapNeg(n3,1)*QGapNeg(n2+n4+n5,3)*QGapNeg(n1+n6,2)-2.*QGapNeg(n2,1)*QGapNeg(n3+n4+n5,3)*QGapNeg(n1+n6,2)
+    + 6.*QGapNeg(n2+n3+n4+n5,4)*QGapNeg(n1+n6,2)-QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n2+n6,2)
+    + QGapNeg(n1+n3,2)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n2+n6,2)+QGapNeg(n3,1)*QGapNeg(n1+n4,2)*QGapNeg(n5,1)*QGapNeg(n2+n6,2)
+    + QGapNeg(n1,1)*QGapNeg(n3+n4,2)*QGapNeg(n5,1)*QGapNeg(n2+n6,2)-2.*QGapNeg(n1+n3+n4,3)*QGapNeg(n5,1)*QGapNeg(n2+n6,2)
+    + QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n1+n5,2)*QGapNeg(n2+n6,2)-QGapNeg(n3+n4,2)*QGapNeg(n1+n5,2)*QGapNeg(n2+n6,2)
+    + QGapNeg(n1,1)*QGapNeg(n4,1)*QGapNeg(n3+n5,2)*QGapNeg(n2+n6,2)-QGapNeg(n1+n4,2)*QGapNeg(n3+n5,2)*QGapNeg(n2+n6,2)
+    - 2.*QGapNeg(n4,1)*QGapNeg(n1+n3+n5,3)*QGapNeg(n2+n6,2)+QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n2+n6,2)
+    - QGapNeg(n1+n3,2)*QGapNeg(n4+n5,2)*QGapNeg(n2+n6,2)-2.*QGapNeg(n3,1)*QGapNeg(n1+n4+n5,3)*QGapNeg(n2+n6,2)
+    - 2.*QGapNeg(n1,1)*QGapNeg(n3+n4+n5,3)*QGapNeg(n2+n6,2)+6.*QGapNeg(n1+n3+n4+n5,4)*QGapNeg(n2+n6,2)
+    + 2.*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n1+n2+n6,3)-2.*QGapNeg(n3+n4,2)*QGapNeg(n5,1)*QGapNeg(n1+n2+n6,3)
+    - 2.*QGapNeg(n4,1)*QGapNeg(n3+n5,2)*QGapNeg(n1+n2+n6,3)-2.*QGapNeg(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n1+n2+n6,3)
+    + 4.*QGapNeg(n3+n4+n5,3)*QGapNeg(n1+n2+n6,3)-QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n3+n6,2)
+    + QGapNeg(n1+n2,2)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n3+n6,2)+QGapNeg(n2,1)*QGapNeg(n1+n4,2)*QGapNeg(n5,1)*QGapNeg(n3+n6,2)
+    + QGapNeg(n1,1)*QGapNeg(n2+n4,2)*QGapNeg(n5,1)*QGapNeg(n3+n6,2)-2.*QGapNeg(n1+n2+n4,3)*QGapNeg(n5,1)*QGapNeg(n3+n6,2)
+    + QGapNeg(n2,1)*QGapNeg(n4,1)*QGapNeg(n1+n5,2)*QGapNeg(n3+n6,2)-QGapNeg(n2+n4,2)*QGapNeg(n1+n5,2)*QGapNeg(n3+n6,2)
+    + QGapNeg(n1,1)*QGapNeg(n4,1)*QGapNeg(n2+n5,2)*QGapNeg(n3+n6,2)-QGapNeg(n1+n4,2)*QGapNeg(n2+n5,2)*QGapNeg(n3+n6,2)
+    - 2.*QGapNeg(n4,1)*QGapNeg(n1+n2+n5,3)*QGapNeg(n3+n6,2)+QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n4+n5,2)*QGapNeg(n3+n6,2)
+    - QGapNeg(n1+n2,2)*QGapNeg(n4+n5,2)*QGapNeg(n3+n6,2)-2.*QGapNeg(n2,1)*QGapNeg(n1+n4+n5,3)*QGapNeg(n3+n6,2)
+    - 2.*QGapNeg(n1,1)*QGapNeg(n2+n4+n5,3)*QGapNeg(n3+n6,2)+6.*QGapNeg(n1+n2+n4+n5,4)*QGapNeg(n3+n6,2)
+    + 2.*QGapNeg(n2,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n1+n3+n6,3)-2.*QGapNeg(n2+n4,2)*QGapNeg(n5,1)*QGapNeg(n1+n3+n6,3)
+    - 2.*QGapNeg(n4,1)*QGapNeg(n2+n5,2)*QGapNeg(n1+n3+n6,3)-2.*QGapNeg(n2,1)*QGapNeg(n4+n5,2)*QGapNeg(n1+n3+n6,3)
+    + 4.*QGapNeg(n2+n4+n5,3)*QGapNeg(n1+n3+n6,3)+2.*QGapNeg(n1,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n2+n3+n6,3)
+    - 2.*QGapNeg(n1+n4,2)*QGapNeg(n5,1)*QGapNeg(n2+n3+n6,3)-2.*QGapNeg(n4,1)*QGapNeg(n1+n5,2)*QGapNeg(n2+n3+n6,3)
+    - 2.*QGapNeg(n1,1)*QGapNeg(n4+n5,2)*QGapNeg(n2+n3+n6,3)+4.*QGapNeg(n1+n4+n5,3)*QGapNeg(n2+n3+n6,3)
+    - 6.*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n1+n2+n3+n6,4)+6.*QGapNeg(n4+n5,2)*QGapNeg(n1+n2+n3+n6,4)
+    - QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n5,1)*QGapNeg(n4+n6,2)+QGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n5,1)*QGapNeg(n4+n6,2)
+    + QGapNeg(n2,1)*QGapNeg(n1+n3,2)*QGapNeg(n5,1)*QGapNeg(n4+n6,2)+QGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n5,1)*QGapNeg(n4+n6,2)
+    - 2.*QGapNeg(n1+n2+n3,3)*QGapNeg(n5,1)*QGapNeg(n4+n6,2)+QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n1+n5,2)*QGapNeg(n4+n6,2)
+    - QGapNeg(n2+n3,2)*QGapNeg(n1+n5,2)*QGapNeg(n4+n6,2)+QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n2+n5,2)*QGapNeg(n4+n6,2)
+    - QGapNeg(n1+n3,2)*QGapNeg(n2+n5,2)*QGapNeg(n4+n6,2)-2.*QGapNeg(n3,1)*QGapNeg(n1+n2+n5,3)*QGapNeg(n4+n6,2)
+    + QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3+n5,2)*QGapNeg(n4+n6,2)-QGapNeg(n1+n2,2)*QGapNeg(n3+n5,2)*QGapNeg(n4+n6,2)
+    - 2.*QGapNeg(n2,1)*QGapNeg(n1+n3+n5,3)*QGapNeg(n4+n6,2)-2.*QGapNeg(n1,1)*QGapNeg(n2+n3+n5,3)*QGapNeg(n4+n6,2)
+    + 6.*QGapNeg(n1+n2+n3+n5,4)*QGapNeg(n4+n6,2)+2.*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n5,1)*QGapNeg(n1+n4+n6,3)
+    - 2.*QGapNeg(n2+n3,2)*QGapNeg(n5,1)*QGapNeg(n1+n4+n6,3)-2.*QGapNeg(n3,1)*QGapNeg(n2+n5,2)*QGapNeg(n1+n4+n6,3)
+    - 2.*QGapNeg(n2,1)*QGapNeg(n3+n5,2)*QGapNeg(n1+n4+n6,3)+4.*QGapNeg(n2+n3+n5,3)*QGapNeg(n1+n4+n6,3)
+    + 2.*QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n5,1)*QGapNeg(n2+n4+n6,3)-2.*QGapNeg(n1+n3,2)*QGapNeg(n5,1)*QGapNeg(n2+n4+n6,3)
+    - 2.*QGapNeg(n3,1)*QGapNeg(n1+n5,2)*QGapNeg(n2+n4+n6,3)-2.*QGapNeg(n1,1)*QGapNeg(n3+n5,2)*QGapNeg(n2+n4+n6,3)
+    + 4.*QGapNeg(n1+n3+n5,3)*QGapNeg(n2+n4+n6,3)-6.*QGapNeg(n3,1)*QGapNeg(n5,1)*QGapNeg(n1+n2+n4+n6,4)
+    + 6.*QGapNeg(n3+n5,2)*QGapNeg(n1+n2+n4+n6,4)+2.*QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n5,1)*QGapNeg(n3+n4+n6,3)
+    - 2.*QGapNeg(n1+n2,2)*QGapNeg(n5,1)*QGapNeg(n3+n4+n6,3)-2.*QGapNeg(n2,1)*QGapNeg(n1+n5,2)*QGapNeg(n3+n4+n6,3)
+    - 2.*QGapNeg(n1,1)*QGapNeg(n2+n5,2)*QGapNeg(n3+n4+n6,3)+4.*QGapNeg(n1+n2+n5,3)*QGapNeg(n3+n4+n6,3)
+    - 6.*QGapNeg(n2,1)*QGapNeg(n5,1)*QGapNeg(n1+n3+n4+n6,4)+6.*QGapNeg(n2+n5,2)*QGapNeg(n1+n3+n4+n6,4)
+    - 6.*QGapNeg(n1,1)*QGapNeg(n5,1)*QGapNeg(n2+n3+n4+n6,4)+6.*QGapNeg(n1+n5,2)*QGapNeg(n2+n3+n4+n6,4)
+    + 24.*QGapNeg(n5,1)*QGapNeg(n1+n2+n3+n4+n6,5)-QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5+n6,2)
+    + QGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5+n6,2)+QGapNeg(n2,1)*QGapNeg(n1+n3,2)*QGapNeg(n4,1)*QGapNeg(n5+n6,2)
+    + QGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4,1)*QGapNeg(n5+n6,2)-2.*QGapNeg(n1+n2+n3,3)*QGapNeg(n4,1)*QGapNeg(n5+n6,2)
+    + QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n1+n4,2)*QGapNeg(n5+n6,2)-QGapNeg(n2+n3,2)*QGapNeg(n1+n4,2)*QGapNeg(n5+n6,2)
+    + QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n2+n4,2)*QGapNeg(n5+n6,2)-QGapNeg(n1+n3,2)*QGapNeg(n2+n4,2)*QGapNeg(n5+n6,2)
+    - 2.*QGapNeg(n3,1)*QGapNeg(n1+n2+n4,3)*QGapNeg(n5+n6,2)+QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3+n4,2)*QGapNeg(n5+n6,2)
+    - QGapNeg(n1+n2,2)*QGapNeg(n3+n4,2)*QGapNeg(n5+n6,2)-2.*QGapNeg(n2,1)*QGapNeg(n1+n3+n4,3)*QGapNeg(n5+n6,2)
+    - 2.*QGapNeg(n1,1)*QGapNeg(n2+n3+n4,3)*QGapNeg(n5+n6,2)+6.*QGapNeg(n1+n2+n3+n4,4)*QGapNeg(n5+n6,2)
+    + 2.*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n1+n5+n6,3)-2.*QGapNeg(n2+n3,2)*QGapNeg(n4,1)*QGapNeg(n1+n5+n6,3)
+    - 2.*QGapNeg(n3,1)*QGapNeg(n2+n4,2)*QGapNeg(n1+n5+n6,3)-2.*QGapNeg(n2,1)*QGapNeg(n3+n4,2)*QGapNeg(n1+n5+n6,3)
+    + 4.*QGapNeg(n2+n3+n4,3)*QGapNeg(n1+n5+n6,3)+2.*QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n2+n5+n6,3)
+    - 2.*QGapNeg(n1+n3,2)*QGapNeg(n4,1)*QGapNeg(n2+n5+n6,3)-2.*QGapNeg(n3,1)*QGapNeg(n1+n4,2)*QGapNeg(n2+n5+n6,3)
+    - 2.*QGapNeg(n1,1)*QGapNeg(n3+n4,2)*QGapNeg(n2+n5+n6,3)+4.*QGapNeg(n1+n3+n4,3)*QGapNeg(n2+n5+n6,3)
+    - 6.*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n1+n2+n5+n6,4)+6.*QGapNeg(n3+n4,2)*QGapNeg(n1+n2+n5+n6,4)
+    + 2.*QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n4,1)*QGapNeg(n3+n5+n6,3)-2.*QGapNeg(n1+n2,2)*QGapNeg(n4,1)*QGapNeg(n3+n5+n6,3)
+    - 2.*QGapNeg(n2,1)*QGapNeg(n1+n4,2)*QGapNeg(n3+n5+n6,3)-2.*QGapNeg(n1,1)*QGapNeg(n2+n4,2)*QGapNeg(n3+n5+n6,3)
+    + 4.*QGapNeg(n1+n2+n4,3)*QGapNeg(n3+n5+n6,3)-6.*QGapNeg(n2,1)*QGapNeg(n4,1)*QGapNeg(n1+n3+n5+n6,4)
+    + 6.*QGapNeg(n2+n4,2)*QGapNeg(n1+n3+n5+n6,4)-6.*QGapNeg(n1,1)*QGapNeg(n4,1)*QGapNeg(n2+n3+n5+n6,4)
+    + 6.*QGapNeg(n1+n4,2)*QGapNeg(n2+n3+n5+n6,4)+24.*QGapNeg(n4,1)*QGapNeg(n1+n2+n3+n5+n6,5)
+    + 2.*QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4+n5+n6,3)-2.*QGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4+n5+n6,3)
+    - 2.*QGapNeg(n2,1)*QGapNeg(n1+n3,2)*QGapNeg(n4+n5+n6,3)-2.*QGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4+n5+n6,3)
+    + 4.*QGapNeg(n1+n2+n3,3)*QGapNeg(n4+n5+n6,3)-6.*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n1+n4+n5+n6,4)
+    + 6.*QGapNeg(n2+n3,2)*QGapNeg(n1+n4+n5+n6,4)-6.*QGapNeg(n1,1)*QGapNeg(n3,1)*QGapNeg(n2+n4+n5+n6,4)
+    + 6.*QGapNeg(n1+n3,2)*QGapNeg(n2+n4+n5+n6,4)+24.*QGapNeg(n3,1)*QGapNeg(n1+n2+n4+n5+n6,5)
+    - 6.*QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3+n4+n5+n6,4)+6.*QGapNeg(n1+n2,2)*QGapNeg(n3+n4+n5+n6,4)
+    + 24.*QGapNeg(n2,1)*QGapNeg(n1+n3+n4+n5+n6,5)+24.*QGapNeg(n1,1)*QGapNeg(n2+n3+n4+n5+n6,5)
+    - 120.*QGapNeg(n1+n2+n3+n4+n5+n6,6);
+    return formula;
+}
+// ============================================================================
 TComplex AliAnalysisTaskUniFlow::Seven(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7) const
 {
   TComplex Correlation = {0, 0};
@@ -3933,6 +4257,196 @@ TComplex AliAnalysisTaskUniFlow::Seven(const Int_t n1, const Int_t n2, const Int
 
         else if(k == 0){
             Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n1+n2+n3+n4+n5+n6+n7, 7-k);
+        }// k==0
+
+        else{
+            printf("Invalid range of k in Seven()\n");;
+            return {0,0};
+        }
+
+    }// loop over k
+    return Correlation;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::SevenPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7) const
+{
+  TComplex Correlation = {0, 0};
+    Int_t Narray[] = {n1, n2, n3, n4, n5, n6};
+
+    for(Int_t k=7; k-- >0; )
+    {// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
+
+        Int_t array[6] = {0,1,2,3,4,5};
+        Int_t iPerm = 0;
+        Int_t count = 0;
+
+        // k==6: there is just one combination, we can add it manually
+        if(k==6){
+            Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
+            SixPos(n1, n2, n3, n4, n5, n6)*QGapPos(n7, 7-k);
+        }// k==6
+
+        else if(k==5){
+            do{
+                iPerm += 1;
+                if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4]){
+                    count += 1;
+                    Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
+                    FivePos(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])],
+                         Narray[Int_t(array[3])], Narray[Int_t(array[4])])*
+                    QGapPos(Narray[int(array[5])]+n7, 7-k);
+                }
+            }while(std::next_permutation(array, array+6));
+        }// k==5
+
+        else if(k==4){
+            do{
+                iPerm += 1;
+                if(iPerm%2 == 1){
+                    if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3]){
+                        Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
+                        FourPos(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])],
+                             Narray[Int_t(array[3])])*
+                        QGapPos(Narray[Int_t(array[4])]+Narray[Int_t(array[5])]+n7, 7-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+6));
+        }// k==4
+
+        else if(k==3){
+            do{
+                iPerm += 1;
+                if(iPerm%6 == 1){
+                    if(array[0] < array[1] && array[1] < array[2]){
+                        Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
+                        ThreePos(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])])*
+                        QGapPos(Narray[Int_t(array[3])]+Narray[Int_t(array[4])]+Narray[Int_t(array[5])]+n7, 7-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+6));
+        }// k==3
+
+        else if(k==2){
+            do{
+                iPerm += 1;
+                if(iPerm%24 == 1){
+                    if(array[0] < array[1]){
+                        Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
+                        TwoPos(Narray[Int_t(array[0])], Narray[Int_t(array[1])])*
+                        QGapPos(Narray[Int_t(array[2])]+Narray[Int_t(array[3])]+Narray[Int_t(array[4])]
+                          +Narray[Int_t(array[5])]+n7, 7-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+6));
+        }// k==2
+
+        else if(k == 1){
+            Correlation = Correlation
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapPos(n1, 1)*QGapPos(n2+n3+n4+n5+n6+n7, 7-k)
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapPos(n2, 1)*QGapPos(n1+n3+n4+n5+n6+n7, 7-k)
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapPos(n3, 1)*QGapPos(n1+n2+n4+n5+n6+n7, 7-k)
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapPos(n4, 1)*QGapPos(n1+n2+n3+n5+n6+n7, 7-k)
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapPos(n5, 1)*QGapPos(n1+n2+n3+n4+n6+n7, 7-k)
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapPos(n6, 1)*QGapPos(n1+n2+n3+n4+n5+n7, 7-k);
+        }// k==1
+
+        else if(k == 0){
+            Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapPos(n1+n2+n3+n4+n5+n6+n7, 7-k);
+        }// k==0
+
+        else{
+            printf("Invalid range of k in Seven()\n");;
+            return {0,0};
+        }
+
+    }// loop over k
+    return Correlation;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::SevenNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7) const
+{
+  TComplex Correlation = {0, 0};
+    Int_t Narray[] = {n1, n2, n3, n4, n5, n6};
+
+    for(Int_t k=7; k-- >0; )
+    {// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
+
+        Int_t array[6] = {0,1,2,3,4,5};
+        Int_t iPerm = 0;
+        Int_t count = 0;
+
+        // k==6: there is just one combination, we can add it manually
+        if(k==6){
+            Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
+            SixNeg(n1, n2, n3, n4, n5, n6)*QGapNeg(n7, 7-k);
+        }// k==6
+
+        else if(k==5){
+            do{
+                iPerm += 1;
+                if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4]){
+                    count += 1;
+                    Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
+                    FiveNeg(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])],
+                         Narray[Int_t(array[3])], Narray[Int_t(array[4])])*
+                    QGapNeg(Narray[int(array[5])]+n7, 7-k);
+                }
+            }while(std::next_permutation(array, array+6));
+        }// k==5
+
+        else if(k==4){
+            do{
+                iPerm += 1;
+                if(iPerm%2 == 1){
+                    if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3]){
+                        Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
+                        FourNeg(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])],
+                             Narray[Int_t(array[3])])*
+                        QGapNeg(Narray[Int_t(array[4])]+Narray[Int_t(array[5])]+n7, 7-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+6));
+        }// k==4
+
+        else if(k==3){
+            do{
+                iPerm += 1;
+                if(iPerm%6 == 1){
+                    if(array[0] < array[1] && array[1] < array[2]){
+                        Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
+                        ThreeNeg(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])])*
+                        QGapNeg(Narray[Int_t(array[3])]+Narray[Int_t(array[4])]+Narray[Int_t(array[5])]+n7, 7-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+6));
+        }// k==3
+
+        else if(k==2){
+            do{
+                iPerm += 1;
+                if(iPerm%24 == 1){
+                    if(array[0] < array[1]){
+                        Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
+                        TwoNeg(Narray[Int_t(array[0])], Narray[Int_t(array[1])])*
+                        QGapNeg(Narray[Int_t(array[2])]+Narray[Int_t(array[3])]+Narray[Int_t(array[4])]
+                          +Narray[Int_t(array[5])]+n7, 7-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+6));
+        }// k==2
+
+        else if(k == 1){
+            Correlation = Correlation
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapNeg(n1, 1)*QGapNeg(n2+n3+n4+n5+n6+n7, 7-k)
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapNeg(n2, 1)*QGapNeg(n1+n3+n4+n5+n6+n7, 7-k)
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapNeg(n3, 1)*QGapNeg(n1+n2+n4+n5+n6+n7, 7-k)
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapNeg(n4, 1)*QGapNeg(n1+n2+n3+n5+n6+n7, 7-k)
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapNeg(n5, 1)*QGapNeg(n1+n2+n3+n4+n6+n7, 7-k)
+            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapNeg(n6, 1)*QGapNeg(n1+n2+n3+n4+n5+n7, 7-k);
+        }// k==1
+
+        else if(k == 0){
+            Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*QGapNeg(n1+n2+n3+n4+n5+n6+n7, 7-k);
         }// k==0
 
         else{
@@ -4042,6 +4556,226 @@ TComplex AliAnalysisTaskUniFlow::Eight(const Int_t n1, const Int_t n2, const Int
 
         else if(k == 0){
             Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n1+n2+n3+n4+n5+n6+n7+n8, 8-k);
+        }// k==0
+
+        else{
+            printf("Invalid range of k in Eight() \n");
+            return {0,0};
+        }
+
+    }// loop over k
+
+    return Correlation;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::EightPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
+{
+  TComplex Correlation = {0, 0};
+    Int_t Narray[] = {n1, n2, n3, n4, n5, n6, n7};
+
+    for(Int_t k=8; k-->0; )
+    {// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
+
+        Int_t array[7] = {0,1,2,3,4,5,6};
+        Int_t iPerm = 0;
+        Int_t count = 0;
+
+        // k==7: there is just one combination, we can add it manually
+        if(k==7){
+            Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+            SevenPos(n1, n2, n3, n4, n5, n6, n7)*QGapPos(n8, 8-k);
+        }// k==7
+
+        else if(k==6){
+            do{
+                iPerm += 1;
+                if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4] && array[4] < array[5]){
+                    count += 1;
+                    Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+                    SixPos(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])],
+                        Narray[Int_t(array[3])], Narray[Int_t(array[4])], Narray[Int_t(array[5])])*
+                    QGapPos(Narray[Int_t(array[6])]+n8, 8-k);
+                }
+            }while(std::next_permutation(array, array+7));
+        }// k==6
+
+        else if(k==5){
+            do{
+                iPerm += 1;
+                if(iPerm%2 == 1){
+                    if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4]){
+                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+                        FivePos(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])],
+                             Narray[Int_t(array[3])], Narray[Int_t(array[4])])*
+                        QGapPos(Narray[Int_t(array[5])]+Narray[Int_t(array[6])]+n8, 8-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+7));
+        }// k==5
+
+        else if(k==4){
+            do{
+                iPerm += 1;
+                if(iPerm%6 == 1){
+                    if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3]){
+                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+                        FourPos(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])], Narray[Int_t(array[3])])*
+                        QGapPos(Narray[Int_t(array[4])]+Narray[Int_t(array[5])]+Narray[Int_t(array[6])]+n8, 8-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+7));
+        }// k==4
+
+        else if(k==3){
+            do{
+                iPerm += 1;
+                if(iPerm%24 == 1){
+                    if(array[0] < array[1] && array[1] < array[2]){
+                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+                        ThreePos(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])])*
+                        QGapPos(Narray[Int_t(array[3])]+Narray[Int_t(array[4])]+Narray[Int_t(array[5])]+Narray[Int_t(array[6])]+n8, 8-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+7));
+        }// k==3
+
+        else if(k==2){
+            do{
+                iPerm += 1;
+                if(iPerm%120 == 1){
+                    if(array[0] < array[1]){
+                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+                        TwoPos(Narray[Int_t(array[0])], Narray[Int_t(array[1])])*
+                        QGapPos(Narray[Int_t(array[2])]+Narray[Int_t(array[3])]+Narray[Int_t(array[4])]
+                          +Narray[Int_t(array[5])]+Narray[Int_t(array[6])]+n8, 8-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+7));
+        }// k==2
+
+        else if(k == 1){
+            Correlation = Correlation
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapPos(n1, 1)*QGapPos(n2+n3+n4+n5+n6+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapPos(n2, 1)*QGapPos(n1+n3+n4+n5+n6+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapPos(n3, 1)*QGapPos(n1+n2+n4+n5+n6+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapPos(n4, 1)*QGapPos(n1+n2+n3+n5+n6+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapPos(n5, 1)*QGapPos(n1+n2+n3+n4+n6+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapPos(n6, 1)*QGapPos(n1+n2+n3+n4+n5+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapPos(n7, 1)*QGapPos(n1+n2+n3+n4+n5+n6+n8, 8-k);
+        }// k==1
+
+        else if(k == 0){
+            Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapPos(n1+n2+n3+n4+n5+n6+n7+n8, 8-k);
+        }// k==0
+
+        else{
+            printf("Invalid range of k in Eight() \n");
+            return {0,0};
+        }
+
+    }// loop over k
+
+    return Correlation;
+}
+// ============================================================================
+TComplex AliAnalysisTaskUniFlow::EightNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
+{
+  TComplex Correlation = {0, 0};
+    Int_t Narray[] = {n1, n2, n3, n4, n5, n6, n7};
+
+    for(Int_t k=8; k-->0; )
+    {// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
+
+        Int_t array[7] = {0,1,2,3,4,5,6};
+        Int_t iPerm = 0;
+        Int_t count = 0;
+
+        // k==7: there is just one combination, we can add it manually
+        if(k==7){
+            Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+            SevenNeg(n1, n2, n3, n4, n5, n6, n7)*QGapNeg(n8, 8-k);
+        }// k==7
+
+        else if(k==6){
+            do{
+                iPerm += 1;
+                if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4] && array[4] < array[5]){
+                    count += 1;
+                    Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+                    SixNeg(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])],
+                        Narray[Int_t(array[3])], Narray[Int_t(array[4])], Narray[Int_t(array[5])])*
+                    QGapNeg(Narray[Int_t(array[6])]+n8, 8-k);
+                }
+            }while(std::next_permutation(array, array+7));
+        }// k==6
+
+        else if(k==5){
+            do{
+                iPerm += 1;
+                if(iPerm%2 == 1){
+                    if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4]){
+                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+                        FiveNeg(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])],
+                             Narray[Int_t(array[3])], Narray[Int_t(array[4])])*
+                        QGapNeg(Narray[Int_t(array[5])]+Narray[Int_t(array[6])]+n8, 8-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+7));
+        }// k==5
+
+        else if(k==4){
+            do{
+                iPerm += 1;
+                if(iPerm%6 == 1){
+                    if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3]){
+                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+                        FourNeg(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])], Narray[Int_t(array[3])])*
+                        QGapNeg(Narray[Int_t(array[4])]+Narray[Int_t(array[5])]+Narray[Int_t(array[6])]+n8, 8-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+7));
+        }// k==4
+
+        else if(k==3){
+            do{
+                iPerm += 1;
+                if(iPerm%24 == 1){
+                    if(array[0] < array[1] && array[1] < array[2]){
+                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+                        ThreeNeg(Narray[Int_t(array[0])], Narray[Int_t(array[1])], Narray[Int_t(array[2])])*
+                        QGapNeg(Narray[Int_t(array[3])]+Narray[Int_t(array[4])]+Narray[Int_t(array[5])]+Narray[Int_t(array[6])]+n8, 8-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+7));
+        }// k==3
+
+        else if(k==2){
+            do{
+                iPerm += 1;
+                if(iPerm%120 == 1){
+                    if(array[0] < array[1]){
+                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
+                        TwoNeg(Narray[Int_t(array[0])], Narray[Int_t(array[1])])*
+                        QGapNeg(Narray[Int_t(array[2])]+Narray[Int_t(array[3])]+Narray[Int_t(array[4])]
+                          +Narray[Int_t(array[5])]+Narray[Int_t(array[6])]+n8, 8-k);
+                    }
+                }
+            }while(std::next_permutation(array, array+7));
+        }// k==2
+
+        else if(k == 1){
+            Correlation = Correlation
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapNeg(n1, 1)*QGapNeg(n2+n3+n4+n5+n6+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapNeg(n2, 1)*QGapNeg(n1+n3+n4+n5+n6+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapNeg(n3, 1)*QGapNeg(n1+n2+n4+n5+n6+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapNeg(n4, 1)*QGapNeg(n1+n2+n3+n5+n6+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapNeg(n5, 1)*QGapNeg(n1+n2+n3+n4+n6+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapNeg(n6, 1)*QGapNeg(n1+n2+n3+n4+n5+n7+n8, 8-k)
+            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapNeg(n7, 1)*QGapNeg(n1+n2+n3+n4+n5+n6+n8, 8-k);
+        }// k==1
+
+        else if(k == 0){
+            Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*QGapNeg(n1+n2+n3+n4+n5+n6+n7+n8, 8-k);
         }// k==0
 
         else{
@@ -4295,6 +5029,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
             case kRefs :
             {
               profile = new TProfile(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s; %s",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
+              if(fEtaCheckRFP) profileNeg = new TProfile(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s; %s",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
               break;
             }
 
@@ -4364,7 +5099,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
           profile->Sumw2();
           fListFlow[iSpec]->Add(profile);
 
-          if(bHasGap && iSpec != kRefs)
+          if(bHasGap && (iSpec != kRefs || fEtaCheckRFP))
           { // Refs does not distinquish Pos/Neg
             if(!profileNeg) { fInit = kFALSE; AliError("Profile (Neg) NOT created!"); task->Print(); return; }
 

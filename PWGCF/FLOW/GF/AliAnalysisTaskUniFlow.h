@@ -59,8 +59,9 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
       void                    SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
-      void					  SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
+      void					          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
       void                    SetSampling(Bool_t sample = kTRUE, Int_t iNum = 10) { fSampling = sample; fNumSamples = iNum; }
+      void                    SetEtaCheckRFP(Bool_t check = kFALSE) { fEtaCheckRFP = check; }
       void                    SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
       void                    SetProcessPID(Bool_t use = kTRUE) { fProcessSpec[kPion] = use; fProcessSpec[kKaon] = use; fProcessSpec[kProton] = use; }
       void                    SetProcessV0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; fProcessSpec[kLambda] = use; }
@@ -245,11 +246,19 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TComplex                FourNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (just from the negative eta)
       TComplex                Four3sub(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (with 3 sub-events)
       TComplex                Five(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5) const; // Five particle reference correlation calculations (no eta gap)
+      TComplex                FivePos(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5) const; // Five particle reference correlation calculations (just from the positive eta)
+      TComplex                FiveNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5) const; // Five particle reference correlation calculations (just from the negative eta)
       TComplex                Six(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (no eta gap)
+      TComplex                SixPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (just from the positive eta)
+      TComplex                SixNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (just from the negative eta)
       TComplex                SixGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (with eta gap)
       TComplex                Seven(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7) const; // Seven particle reference correlation calculations (no eta gap)
+      TComplex                SevenPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7) const; // Seven particle reference correlation calculations (just from the positive eta)
+      TComplex                SevenNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7) const; // Seven particle reference correlation calculations (just from the negative eta)
       TComplex                Eight(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (no eta gap)
       TComplex                EightGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (with eta gap)
+      TComplex                EightPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (just from the positive eta)
+      TComplex                EightNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (just from the negative eta)
 
       TComplex                TwoDiff(Int_t n1, Int_t n2) const; // Two particle diff. correlation calculations (no eta gap)
       TComplex                TwoDiffGapPos(Int_t n1, Int_t n2) const; // Two particle diff. correlation calculations (with eta gap)
@@ -317,6 +326,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Int_t                   fPhiNumBinsMass; // number of InvMass bins for phi distribution
       Int_t                   fV0sNumBinsMass; // number of InvMass bins for V0s distribution
       Int_t                   fNumSamples; // [1] overall number of samples (from random sampling) used
+      Bool_t                  fEtaCheckRFP; // [kFALSE] flag for doing analysis of FMPs for positive and negative eta separately
       Bool_t                  fFlowFillWeights; //[kFALSE] flag for filling weights
       Bool_t                  fFlowFillAfterWeights; //[kTRUE] flag for filling weights after NUA (only if fUseWeights is on)
       Bool_t                  fFlowUseWeights; //[kFALSE] flag for using the previously filled weights
@@ -547,7 +557,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 10);
+      ClassDef(AliAnalysisTaskUniFlow, 11);
 };
 
 #endif
