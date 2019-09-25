@@ -987,6 +987,32 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008e123","411790405f032230000","01631031000000d0"); // EG2
     cuts.AddCutCalo("8008d123","411790405f032230000","01631031000000d0"); // EG1
 
+  } else if (trainConfig == 2050){ // TB NL tests 100 MeV aggregation
+    cuts.AddCutCalo("80010123","411796105f032230000","01631031000000d0"); // INT7
+  } else if (trainConfig == 2051){ // TB NL tests 100 MeV aggregation
+    cuts.AddCutCalo("8008e123","411796105f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411796105f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2052){ // TB NL tests 50 MeV aggregation
+    cuts.AddCutCalo("80010123","411796205f032230000","01631031000000d0"); // INT7
+  } else if (trainConfig == 2053){ // TB NL tests 50 MeV aggregation
+    cuts.AddCutCalo("8008e123","411796205f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411796205f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2054){ // TB NL tests 150 MeV aggregation
+    cuts.AddCutCalo("80010123","411796305f032230000","01631031000000d0"); // INT7
+  } else if (trainConfig == 2055){ // TB NL tests 150 MeV aggregation
+    cuts.AddCutCalo("8008e123","411796305f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411796305f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2056){ // TB NL tests 300 MeV aggregation
+    cuts.AddCutCalo("80010123","411796405f032230000","01631031000000d0"); // INT7
+  } else if (trainConfig == 2057){ // TB NL tests 300 MeV aggregation
+    cuts.AddCutCalo("8008e123","411796405f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411796405f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2058){ // TB NL tests 300 MeV aggregation
+    cuts.AddCutCalo("80010123","411796905f032230000","01631031000000d0"); // INT7
+  } else if (trainConfig == 2059){ // TB NL tests 300 MeV aggregation
+    cuts.AddCutCalo("8008e123","411796905f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411796905f032230000","01631031000000d0"); // EG1
+
   // systematics for pPb8TeV PRL
   } else if (trainConfig == 2200) { // CALO variations
     cuts.AddCutCalo("80010123","411793105f032230000","01631031000000d0"); // std
