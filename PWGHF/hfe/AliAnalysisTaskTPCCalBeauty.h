@@ -215,6 +215,8 @@ private:
     TH1F                *fDWeightNew; //!
     TH1F                *fDWeightVar1; //!
     TH1F                *fDWeightVar2; //!
+    TH1F                *fDPlusWeightVar1; //!
+    TH1F                *fDsWeightVar1; //!
     TH1F                *fLcWeightVar1; //!
     TH1F                *fLcWeightVar2; //!
     TH1F                *fBWeight; //!
@@ -257,6 +259,8 @@ private:
     TH1F                *fLambdaCPt; //!
     TH1F                *fD0MesonPtWeight;  //!
     TH1F                *fLambdaCPtWeight; //!
+    TH1F                *fDPlusMesonPtWeight; //!
+    TH1F                *fDsMesonPtWeight; //!
     TH1F                *fEtaCPt; //!
     TH1F                *fCBaryonPt; //!
     

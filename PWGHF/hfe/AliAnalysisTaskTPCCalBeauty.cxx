@@ -144,6 +144,8 @@ fDWeight(0),
 fDWeightNew(0),
 fDWeightVar1(0),
 fDWeightVar2(0),
+fDPlusWeightVar1(0),
+fDsWeightVar1(0),
 fLcWeightVar1(0),
 fLcWeightVar2(0),
 fBWeight(0),
@@ -176,6 +178,8 @@ fAllDMesonPt(0),
 fLambdaCPt(0),
 fD0MesonPtWeight(0),
 fLambdaCPtWeight(0),
+fDPlusMesonPtWeight(0),
+fDsMesonPtWeight(0),
 fEtaCPt(0),
 fCBaryonPt(0),
 fBMesonPt(0),
@@ -369,6 +373,8 @@ fDWeight(0),
 fDWeightNew(0),
 fDWeightVar1(0),
 fDWeightVar2(0),
+fDPlusWeightVar1(0),
+fDsWeightVar1(0),
 fLcWeightVar1(0),
 fLcWeightVar2(0),
 fBWeight(0),
@@ -401,6 +407,8 @@ fAllDMesonPt(0),
 fLambdaCPt(0),
 fD0MesonPtWeight(0),
 fLambdaCPtWeight(0),
+fDPlusMesonPtWeight(0),
+fDsMesonPtWeight(0),
 fEtaCPt(0),
 fCBaryonPt(0),
 fBMesonPt(0),
@@ -784,6 +792,10 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fDWeightNew = new TH1F("fDWeightNew","D^{0}_data/AllD_MCNew;p_{T} (GeV/c);Weight;",nbins,xbins);
     fDWeightVar1 = new TH1F("fDWeightVar1","D^{0}_data/AllD_MC;p_{T} (GeV/c);Weight Var1;",nbins,xbins);
     fDWeightVar2 = new TH1F("fDWeightVar2","D^{0}_data/AllD_MC;p_{T} (GeV/c);Weight Var2;",nbins,xbins);
+    
+    fDPlusWeightVar1 = new TH1F("fDPlusWeightVar1","(D^{+}/D^{0})_data*(D^{0}_data/D^{+}_{MC});p_{T} (GeV/c);Weight Var1;",nbins,xbins);
+    fDsWeightVar1 = new TH1F("fDsWeightVar1","(D^{s}/D^{0})_data*(D^{0}_data/D^{s}_{MC});p_{T} (GeV/c);Weight Var1;",nbins,xbins);
+    
     fLcWeightVar1 = new TH1F("fLcWeightVar1","Lc weight, Lc/D0 from model;p_{T} (GeV/c);Weight Var1;",nbins,xbins);
     fLcWeightVar2 = new TH1F("fLcWeightVar2","Lc weight, Lc/D0 from data;p_{T} (GeV/c);Weight Var2;",nbins,xbins);
     //Double_t ratio[13] = {2.03552,1.0201,0.45925,0.211574,0.11987,0.0898116,0.0631282,0.0546798,0.0477205,0.0410021,0.0307936,0.0398483,0.0175335};
@@ -807,6 +819,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
             fDWeightVar2->SetBinContent(idata,ratioVar2[idata-1]);
             fLcWeightVar1->SetBinContent(idata,wLcVar1[idata-1]);
             fLcWeightVar2->SetBinContent(idata,wLcVar2[idata-1]);
+            fDPlusWeightVar1->SetBinContent(idata,ratioVar1[idata-1]);
+            fDsWeightVar1->SetBinContent(idata,ratioVar1[idata-1]);
         }
     }else if (fCentralityMin==30 && fCentralityMax==50 && fApplyCentrality) {
         Double_t ratio[13] = {0.079428,0.0402934,0.0258836,0.0165168,0.0117076,0.00807683,0.00545914,0.00413535,0.00218055,0.00147282,0.000578039,0.000286482,0.000286482};
@@ -817,6 +831,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         Double_t ratioVar2[13] = {0.0518263,0.0282098,0.0179171,0.0110893,0.00771121,0.00524334,0.00355211,0.00270111,0.00145645,0.0010101,0.000421592,0.000235367,0.0001422545};
         Double_t wLcVar1[13] = {2.02089,0.889089,0.490217,0.266978,0.158602,0.0931538,0.0536931,0.0323656,0.0131682,0.00593832,0.00123755,0.000273619,0.};
         Double_t wLcVar2[13] = {0.621365,0.207712,0.0824139,0.0377918,0.0179345,0.0140968,0.00861207,0.00516433,0.00249769,0.0017025,0.000517206,6.8216e-05,0.};
+        Double_t wDPlusVar1[13] = {0.125876,0.0642961,0.0414463,0.026278,0.01833,0.0124752,0.00830149,0.00628302,0.00333208,0.00227467,0.000910711,0.000469747,0.000028783};
+        Double_t wDsVar1[13] = {0.317507,0.147254,0.0890879,0.0533869,0.0365636,0.0245759,0.0163403,0.0121869,0.00646731,0.00444424,0.00180416,0.000929189,0.000054218};
         /*Double_t ratio[13] = {0.566977,0.233989,0.0909109,0.0346338,0.0155742,0.00734675,0.00362088,0.00189595,0.000670163,0.000284606,5.13181e-05,8.84883e-06,8.84883e-06};
         Double_t err[13] = {0.0804276,0.0123637,0.00326455,0.0013947,0.000671652,0.000375317,0.000216074,9.65006e-05,4.67481e-05,2.13019e-05,5.85888e-06,1.75491e-06,0};
         Double_t ratioNew[13] = {0.566977,0.233989,0.0909109,0.0346338,0.0155742,0.00734675,0.00362088,0.00189595,0.000670163,0.000284606,5.13181e-05,8.84883e-06,8.84883e-06};
@@ -830,6 +846,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
             fDWeightVar2->SetBinContent(idata,ratioVar2[idata-1]);
             fLcWeightVar1->SetBinContent(idata,wLcVar1[idata-1]);
             fLcWeightVar2->SetBinContent(idata,wLcVar2[idata-1]);
+            fDPlusWeightVar1->SetBinContent(idata,wDPlusVar1[idata-1]);
+            fDsWeightVar1->SetBinContent(idata,wDsVar1[idata-1]);
         }
     }else{
         Double_t ratio[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
@@ -839,6 +857,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         Double_t ratioVar2[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
         Double_t wLcVar1[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
         Double_t wLcVar2[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+        Double_t wDPlusVar1[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+        Double_t wDsVar1[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
         
         for (int idata=1; idata<14; idata++) {
             fDWeight->SetBinContent(idata,ratio[idata-1]);
@@ -848,6 +868,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
             fDWeightVar2->SetBinContent(idata,ratioVar2[idata-1]);
             fLcWeightVar1->SetBinContent(idata,wLcVar1[idata-1]);
             fLcWeightVar2->SetBinContent(idata,wLcVar2[idata-1]);
+            fDPlusWeightVar1->SetBinContent(idata,wDPlusVar1[idata-1]);
+            fDsWeightVar1->SetBinContent(idata,wDsVar1[idata-1]);
         }
     }
     
@@ -858,6 +880,8 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fOutputList->Add(fDWeightVar2);
     fOutputList->Add(fLcWeightVar1);
     fOutputList->Add(fLcWeightVar2);
+    fOutputList->Add(fDPlusWeightVar1);
+    fOutputList->Add(fDsWeightVar1);
     
     
     //B Meson pt weighting
@@ -1002,6 +1026,14 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fLambdaCPtWeight = new TH1F("fLambdaCPtWeight","Lc Spectrum w/weight; p_{T}(GeV/c); counts;",100,0,50.);
         fLambdaCPtWeight->Sumw2();
         fOutputList->Add(fLambdaCPtWeight);
+        
+        fDPlusMesonPtWeight = new TH1F("fDPlusMesonPtWeight","D+ Spectrum w/D+ weight; p_{T}(GeV/c); counts;",100,0,50.);
+        fDPlusMesonPtWeight->Sumw2();
+        fOutputList->Add(fDPlusMesonPtWeight);
+        
+        fDsMesonPtWeight = new TH1F("fDsMesonPtWeight","Ds Spectrum w/Ds weight; p_{T}(GeV/c); counts;",100,0,50.);
+        fDsMesonPtWeight->Sumw2();
+        fOutputList->Add(fDsMesonPtWeight);
         
         fEtaCPt = new TH1F("fEtaCPt","Eta_c Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
         fEtaCPt->Sumw2();
@@ -1682,8 +1714,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     fD0MesonPtWeight->Fill(AODMCtrack->Pt(),fDWeightNew->GetBinContent(fDWeightNew->FindBin(AODMCtrack->Pt())));
                 }
                 if(TrackPDG==421 && fromDStar==kTRUE) fD0MesonFromDStarPt->Fill(AODMCtrack->Pt());
-                if(TrackPDG==411) fDPlusMesonPt->Fill(AODMCtrack->Pt());
-                if(TrackPDG==431) fDsMesonPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==411) {
+                    fDPlusMesonPt->Fill(AODMCtrack->Pt());
+                    fDPlusMesonPtWeight->Fill(AODMCtrack->Pt(),fDPlusWeightVar1->GetBinContent(fDPlusWeightVar1->FindBin(AODMCtrack->Pt())));
+                }
+                if(TrackPDG==431) {
+                    fDsMesonPt->Fill(AODMCtrack->Pt());
+                    fDsMesonPtWeight->Fill(AODMCtrack->Pt(),fDsWeightVar1->GetBinContent(fDsWeightVar1->FindBin(AODMCtrack->Pt())));
+                }
                 if(TrackPDG==413) fDStarMesonPt->Fill(AODMCtrack->Pt());
                 // cout<<"Total Number of Particles = "<<fNtotMCpart<<endl;
             }
@@ -2027,7 +2065,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         fSprsTemplatesNoWeight->Fill(tempValue);
                     
                         //Took out Lambda_c (fpidSort==17) to the weighting
-                        if (fpidSort==2||fpidSort==11||fpidSort==12||fpidSort==14||fpidSort==15||fpidSort==16) { //if from D meson
+                        if (fpidSort==2||fpidSort==12||fpidSort==14||fpidSort==16) { //if from D meson
                             //cout<<"TESTING3"<<endl;
                             if (momPt>1 && momPt<50.) { //in proper pt range
                                 //cout<<"TESTING4"<<endl;
@@ -2040,6 +2078,46 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 //fDTemplateWeightNew->Fill(track->Pt(), DCA, dWeight);
                                 
                                 dWeight = fDWeightVar1->GetBinContent(fDWeightVar1->FindBin(momPt));
+                                //fDTemplateWeightVar1->Fill(track->Pt(), DCA, dWeight);
+                                fSprsTemplatesWeightVar1->Fill(tempValue,dWeight);
+                                
+                                dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(momPt));
+                                //fDTemplateWeightVar2->Fill(track->Pt(), DCA, dWeight);
+                                fSprsTemplatesWeightVar2->Fill(tempValue,dWeight);
+                            }
+                        }else if (fpidSort==11) { //if from D+ meson
+                            //cout<<"TESTING3"<<endl;
+                            if (momPt>1 && momPt<50.) { //in proper pt range
+                                //cout<<"TESTING4"<<endl;
+                                dWeight = fDWeight->GetBinContent(fDWeight->FindBin(momPt));
+                                //fDTemplateWeight->Fill(track->Pt(), DCA, dWeight);
+                                //fDTemplateNoWeight->Fill(track->Pt(), DCA);
+                                
+                                dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(momPt));
+                                fSprsTemplatesWeight->Fill(tempValue,dWeight);
+                                //fDTemplateWeightNew->Fill(track->Pt(), DCA, dWeight);
+                                
+                                dWeight = fDPlusWeightVar1->GetBinContent(fDPlusWeightVar1->FindBin(momPt));
+                                //fDTemplateWeightVar1->Fill(track->Pt(), DCA, dWeight);
+                                fSprsTemplatesWeightVar1->Fill(tempValue,dWeight);
+                                
+                                dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(momPt));
+                                //fDTemplateWeightVar2->Fill(track->Pt(), DCA, dWeight);
+                                fSprsTemplatesWeightVar2->Fill(tempValue,dWeight);
+                            }
+                        }else if (fpidSort==15) { //if from Ds meson
+                            //cout<<"TESTING3"<<endl;
+                            if (momPt>1 && momPt<50.) { //in proper pt range
+                                //cout<<"TESTING4"<<endl;
+                                dWeight = fDWeight->GetBinContent(fDWeight->FindBin(momPt));
+                                //fDTemplateWeight->Fill(track->Pt(), DCA, dWeight);
+                                //fDTemplateNoWeight->Fill(track->Pt(), DCA);
+                                
+                                dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(momPt));
+                                fSprsTemplatesWeight->Fill(tempValue,dWeight);
+                                //fDTemplateWeightNew->Fill(track->Pt(), DCA, dWeight);
+                                
+                                dWeight = fDsWeightVar1->GetBinContent(fDsWeightVar1->FindBin(momPt));
                                 //fDTemplateWeightVar1->Fill(track->Pt(), DCA, dWeight);
                                 fSprsTemplatesWeightVar1->Fill(tempValue,dWeight);
                                 
