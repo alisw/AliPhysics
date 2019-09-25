@@ -215,19 +215,21 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00083113","1111111047032230000","32c51070a","0103603700000000","0153503000000000"); // EG1
   } else if( trainConfig == 113)  { // AOD and ESD Comparison
     cuts.AddCutHeavyMesonCalo("00010113","1111111047032230000","32c510008","0103603700000000","0153503000000000"); // INT7
+   
     // EMCal LHC11 pp 7TeV
-  } else if( trainConfig == 115){ // EMCal LHC11 std (no background)
-    cuts.AddCutHeavyMesonCalo("00010113","111111105f032230000","32c51070a","0103603100000000","0453503000000000"); // INT7 (LHC11 acc)
-    cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103603100000000","0453503000000000"); // EMC7 (LHC11 acc)
-    cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103683100000000","0453503000000000"); // EMC7 min Pt cut 5 GeV
+  } else if( trainConfig == 115){ // EMCal LHC11 std with background use with pt dep mass cut
+    cuts.AddCutHeavyMesonCalo("00010113","111111105f032230000","32c51070a","0103603c00000000","0153503000000000"); // INT7 (LHC11 acc) 3 sigma
+    cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103603c00000000","0153503000000000"); // EMC7 (LHC11 acc)
+    cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103683c00000000","0153503000000000"); // EMC7 min Pt cut 5 GeV
   } else if( trainConfig == 116){ // EMCal LHC11 with LHC10 acceptance cut
-    cuts.AddCutHeavyMesonCalo("00010113","1111a1105f032230000","32c51070a","0103603100000000","0453503000000000"); // INT7 (LHC10 acc)
-    cuts.AddCutHeavyMesonCalo("00052113","1111a1105f032230000","32c51070a","0103603100000000","0453503000000000"); // EMC7 (LHC10 acc)
-  // Test for EMCal (13 TeV) without background calculation
+    cuts.AddCutHeavyMesonCalo("00010113","1111a1105f032230000","32c51070a","0103603c00000000","0153503000000000"); // INT7 (LHC10 acc)
+    cuts.AddCutHeavyMesonCalo("00052113","1111a1105f032230000","32c51070a","0103603c00000000","0153503000000000"); // EMC7 (LHC10 acc)
+  // inv mass cut variation
   } else if( trainConfig == 117)  { 
-    cuts.AddCutHeavyMesonCalo("00010113","111111104f032230000","32c51070a","0103603700000000","0453503000000000"); // INT7
-    cuts.AddCutHeavyMesonCalo("00085113","111111104f032230000","32c51070a","0103603700000000","0453503000000000"); // EG2
-    cuts.AddCutHeavyMesonCalo("00083113","111111104f032230000","32c51070a","0103603700000000","0453503000000000"); // EG1
+    cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103603600000000","0153503000000000"); // EMC7 (LHC11 acc)
+    cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103603b00000000","0153503000000000"); // EMC7 (LHC11 acc)
+    cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103603d00000000","0153503000000000"); // EMC7 (LHC11 acc)
+
     // ---------------------------------
     // systematic studies 7 TeV (EMCal)
     // ---------------------------------
@@ -538,10 +540,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","411791106f032220000","32c51070a","0103603600000000","0a53503000000000"); // likesign
     cuts.AddCutHeavyMesonCalo("00010113","411791106f032220000","32c51070a","0103603600000000","0d53503000000000"); // sideband mixing
   } else if(trainConfig == 453)  { // track matching
-    cuts.AddCutHeavyMesonCalo("00010113","4117911061032220000","32c51070a","0103603600000000","0a53503000000000"); 
-    cuts.AddCutHeavyMesonCalo("00010113","4117911063032220000","32c51070a","0103603600000000","0a53503000000000"); 
-    cuts.AddCutHeavyMesonCalo("00010113","4117911065032220000","32c51070a","0103603600000000","0a53503000000000"); 
-    cuts.AddCutHeavyMesonCalo("00010113","4117911066032220000","32c51070a","0103603600000000","0a53503000000000");
+    cuts.AddCutHeavyMesonCalo("00010113","4117911061032220000","32c51070a","0103603600000000","0153503000000000"); 
+    cuts.AddCutHeavyMesonCalo("00010113","4117911063032220000","32c51070a","0103603600000000","0153503000000000"); 
+    cuts.AddCutHeavyMesonCalo("00010113","4117911065032220000","32c51070a","0103603600000000","0153503000000000"); 
+    cuts.AddCutHeavyMesonCalo("00010113","4117911066032220000","32c51070a","0103603600000000","0153503000000000");
 
     // Variations on 13 TeV for 7 TeV systematics
     // PHOS (without nonlin)
