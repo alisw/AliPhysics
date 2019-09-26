@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Sep 20
+// Updated Sep 25
 
 
 #include "AliAnalysisManager.h"
@@ -174,7 +174,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         
         //-------------------------------------------------------------------GEN-----------------------------------------------------------------------------------------------
         
-        f2fHistGenCentVsPtLambda = new TH2F( "f2fHistGenCentVsPtLambda", "Centrality Vs #Lambda Gen Pt (new cut)",CentbinNum, CentBins,fNptBins, LambdaPtBins);
+        f2fHistGenCentVsPtLambda = new TH2F( "f2fHistGenCentVsPtLambda", "Centrality Vs #Lambda Gen Pt (set 1: remove dl + dca 0.25)",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistGenCentVsPtLambda);
         
         f2fHistGenCentVsPtAntiLambda = new TH2F( "f2fHistGenCentVsPtAntiLambda", "Centrality Vs #bar{#Lambda} Gen Pt",CentbinNum, CentBins,fNptBins, LambdaPtBins);
@@ -570,8 +570,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         if(TMath::Abs(neta) > 0.8) continue;
         if(dcaDaughters > 0.8) continue;
         if(v0Radius < 5.0) continue;
-        if(v0dlength < 5.0) continue;
-        if(dcaV0ToVertex > 0.5) continue;
+//         if(v0dlength < 5.0) continue;
+        if(dcaV0ToVertex > 0.25) continue;
         
         Float_t PAngle = 0.0;
         Float_t lVarV0CosPALambda= 0.0;
