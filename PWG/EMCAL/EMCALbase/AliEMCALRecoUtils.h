@@ -171,18 +171,30 @@ public:
   void     SwitchOffRecalibration()                      { fRecalibration = kFALSE ; }
   void     SwitchOnRecalibration()                       { fRecalibration = kTRUE  ; 
                                                            if(!fEMCALRecalibrationFactors)InitEMCALRecalibrationFactors() ; }
+  void     SetUse1DRecalibration(Bool_t use)             { fUse1Drecalib = use; }
   void     InitEMCALRecalibrationFactors() ;
+  void     InitEMCALRecalibrationFactors1D() ;
   TObjArray* GetEMCALRecalibrationFactorsArray()   const { return fEMCALRecalibrationFactors ; }
-  TH2F *   GetEMCALChannelRecalibrationFactors(Int_t iSM)     const { return (TH2F*)fEMCALRecalibrationFactors->At(iSM) ; }	
+  TH2F *   GetEMCALChannelRecalibrationFactors(Int_t iSM)     const;	
+  TH1S *   GetEMCALChannelRecalibrationFactors1D()            const { return (TH1S*)fEMCALRecalibrationFactors->At(0) ; }	
   void     SetEMCALChannelRecalibrationFactors(const TObjArray *map);
   void     SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH2F* h);
+  void     SetEMCALChannelRecalibrationFactors1D(const TH1S* h);
   Float_t  GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
     if(fEMCALRecalibrationFactors) 
       return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
+    else return 1 ; }
+  Float_t  GetEMCALChannelRecalibrationFactor1D(UInt_t iCell ) const { 
+    if(fEMCALRecalibrationFactors) 
+      return (Float_t) ((TH1S*)fEMCALRecalibrationFactors->At(0))->GetBinContent(iCell)/1000; 
     else return 1 ; } 
   void     SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
     if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors() ;
     ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
+
+  void     SetEMCALChannelRecalibrationFactor1D(UInt_t icell, Double_t c = 1) { 
+    if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors1D() ;
+    ((TH1S*)fEMCALRecalibrationFactors->At(0))->SetBinContent(icell,c) ; }
   
   // Recalibrate channels energy with run dependent corrections
   Bool_t   IsRunDepRecalibrationOn()               const { return fUseRunCorrectionFactors ; }
@@ -266,6 +278,7 @@ public:
   void     SwitchOffBadChannelsRemoval()                 { fRemoveBadChannels = kFALSE     ; }
   void     SwitchOnBadChannelsRemoval ()                 { fRemoveBadChannels = kTRUE ; 
                                                            if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ; }
+  void     SetUse1DBadChannelMap(Bool_t use)             { fUse1Dmap = use;}
   Bool_t   IsDistanceToBadChannelRecalculated()    const { return fRecalDistToBadChannels   ; }
   void     SwitchOffDistToBadChannelRecalculation()      { fRecalDistToBadChannels = kFALSE ; }
   void     SwitchOnDistToBadChannelRecalculation()       { fRecalDistToBadChannels = kTRUE  ; 
@@ -491,6 +504,7 @@ private:
   // Energy Recalibration 
   Bool_t     fCellsRecalibrated;         ///< Internal bool to check if cells (time/energy) where recalibrated and not recalibrate them when recalculating different things
   Bool_t     fRecalibration;             ///< Switch on or off the recalibration
+  Bool_t     fUse1Drecalib;              ///< Flag to use one dimensional recalibration histogram
   TObjArray* fEMCALRecalibrationFactors; ///< Array of histograms with map of recalibration factors, EMCAL
     
   // Time Recalibration 

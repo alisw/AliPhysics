@@ -60,7 +60,7 @@ fEMCALGeo(0x0),                   fPHOSGeo(0x0),
 fEMCALGeoMatrixSet(kFALSE),       fPHOSGeoMatrixSet(kFALSE), 
 fLoadEMCALMatrices(kFALSE),       fLoadPHOSMatrices(kFALSE),
 fRemoveBadChannels(kFALSE),       fLoad1DBadChMap(kFALSE),
-fPHOSBadChannelMap(0x0), 
+fLoad1DRecalibFactors(kFALSE),    fPHOSBadChannelMap(0x0), 
 fNCellsFromPHOSBorder(0),
 fNMaskCellColumns(0),             fMaskCellColumns(0x0),
 fRecalibration(kFALSE),           fRunDependentCorrection(kFALSE),
@@ -192,9 +192,9 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       AliOADBContainer *contRF=new AliOADBContainer("");
       
       if(fOADBFilePathEMCAL!="")
-        contRF->InitFromFile(Form("%s/EMCALRecalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALRecalib");
+        contRF->InitFromFile(Form("%s/EMCALRecalib%s.root",fOADBFilePathEMCAL.Data(), fLoad1DRecalibFactors ? "_1D" : ""),"AliEMCALRecalib");
       else
-        contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"AliEMCALRecalib");
+        contRF->InitFromFile(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALRecalib%s.root", fLoad1DRecalibFactors ? "_1D" : "")).data(),"AliEMCALRecalib");
         
       TObjArray *recal=(TObjArray*)contRF->GetObject(fRunNumber);
       
@@ -209,6 +209,24 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
           if(recalib)
           {
             AliInfo("Recalibrate EMCAL");
+
+
+          if(fLoad1DRecalibFactors){
+            TH1S *hbm = GetEMCALChannelRecalibrationFactors1D();
+              
+            if (hbm)
+              delete hbm;
+              
+            hbm=(TH1S*)recalib->FindObject("EMCALRecalFactors");
+            
+            if (!hbm) 
+            {
+              AliError("Can not get EMCALRecalFactors");
+            }
+              
+            hbm->SetDirectory(0);
+            SetEMCALChannelRecalibrationFactors1D(hbm);
+          }else{
             for (Int_t i=0; i < nSM; ++i)
             {
               TH2F *h = GetEMCALChannelRecalibrationFactors(i);
@@ -228,6 +246,8 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
               
               SetEMCALChannelRecalibrationFactors(i,h);
             } // SM loop
+          }
+
           } else AliInfo("Do NOT recalibrate EMCAL, no params object array"); // array ok
         } else AliInfo("Do NOT recalibrate EMCAL, no params for pass"); // array pass ok
       } else AliInfo("Do NOT recalibrate EMCAL, no params for run");  // run number array ok
