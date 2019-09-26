@@ -775,6 +775,14 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   //     FillMCAcceptanceHistos(mcArray, mcHeader);
   //   }
   
+  // 
+  //  We need to call the IsEventSelected function
+  //  using the cutobject used for the PID selections
+  //  ---> it sets the Bayes PID correctly!
+  //    (dirty solution, we'll clean it)
+  //
+  fCutsXic->IsEventSelected(aod);
+
   if(!fCuts->IsEventSelected(aod)) {
     if(fCuts->GetWhyRejection()==1) // rejected for pileup
       fNentries->Fill(13);
