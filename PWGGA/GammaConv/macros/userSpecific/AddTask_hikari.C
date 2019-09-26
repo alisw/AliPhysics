@@ -486,6 +486,9 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       }
       else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
+
+    analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
+
     if (doPostCalibration){
       if (isMC == 0){
 	if(analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNamedEdxPostCalib)){
@@ -502,7 +505,6 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       }
     }
 
-    analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(enableLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
