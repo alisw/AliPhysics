@@ -746,7 +746,7 @@ Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filena
 
   if (fHistoEleMapRecalib[0] == NULL || fHistoEleMapRecalib[1] == NULL ||
       fHistoEleMapRecalib[2] == NULL || fHistoEleMapRecalib[3] == NULL  ){
-    AliFatal("Histograms for dedx post calibration not found in %s despite being requested!");
+    AliWarning("Histograms for dedx post calibration not found in %s despite being requested!");
     return kFALSE;// code must break if histograms are not found!
   }
   for(Int_t i=0;i<fnRBins;i++){
