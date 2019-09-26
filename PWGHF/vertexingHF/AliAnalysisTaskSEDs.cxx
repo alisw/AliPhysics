@@ -1337,7 +1337,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               Double_t features[13] = {cospxy, dlen, normdlxy, sigvert, deltaMassKK, cosPiKPhiNoabs, normIP,
                                        sigCombPi[0], sigCombPi[1], sigCombPi[2], sigCombK[0], sigCombK[1], sigCombK[2]};
               modelPred = fModels[iModel].Predict(features, fNumVars);
-              if(fEnablePIDMLHistos)
+              if(fEnablePIDMLHistos && (!fReadMC || indexMCKKpi == GetSignalHistoIndex(iPtBin)))
               {
                 for (Int_t iProng=0; iProng<3; iProng++)
                 {
@@ -1394,7 +1394,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               Double_t features[13] = {cospxy, dlen, normdlxy, sigvert, deltaMassKK, cosPiKPhiNoabs, normIP,
                                        sigCombPi[0], sigCombPi[1], sigCombPi[2], sigCombK[0], sigCombK[1], sigCombK[2]};
               modelPred = fModels[iModel].Predict(features, fNumVars);
-              if(fEnablePIDMLHistos)
+              if(fEnablePIDMLHistos && (!fReadMC || indexMCpiKK == GetSignalHistoIndex(iPtBin)))
               {
                 for (Int_t iProng=0; iProng<3; iProng++)
                 {
