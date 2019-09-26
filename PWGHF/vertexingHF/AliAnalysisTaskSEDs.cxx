@@ -118,6 +118,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   fModelOutputCuts(),
   fPtBinsModel(),
   fModels(),
+  fEnablePIDMLHistos(kFALSE),
   fFillBkgSparse(kFALSE),
   fKeepOnlyBkgFromHIJING(kFALSE)
 {
@@ -237,6 +238,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   fModelOutputCuts(),
   fPtBinsModel(),
   fModels(),
+  fEnablePIDMLHistos(kFALSE),
   fFillBkgSparse(kFALSE),
   fKeepOnlyBkgFromHIJING(kFALSE)
 {
@@ -294,6 +296,14 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   {
     fnSparseMCDplus[iHist] = nullptr;
     fImpParSparseMC[iHist] = nullptr;
+  }
+
+  for (Int_t iProng=0; iProng<3; iProng++)
+  {
+    for (Int_t iVar=0; iVar<6; iVar++)
+    {
+      fHistNsigmaPIDVsML[iProng][iVar] = nullptr;
+    }
   }
 
   Int_t nptbins = fAnalysisCuts->GetNPtBins();
@@ -426,6 +436,17 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     {
       for (Int_t iHist = 0; iHist < 4; iHist++)
           delete fnSparseMCDplus[iHist];
+    }
+
+    if(fApplyML && fEnablePIDMLHistos)
+    {
+      for (Int_t iProng=0; iProng<3; iProng++)
+      {
+        for (Int_t iVar=0; iVar<6; iVar++)
+        {
+          delete fHistNsigmaPIDVsML[iProng][iVar];
+        }
+      }
     }
   }
   if (fHistoPtWeight)
@@ -735,6 +756,32 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fCounter = new AliNormalizationCounter("NormalizationCounter");
   fCounter->Init();
 
+  //Loading of ML models
+  if(fApplyML) {
+    for(auto it = fModelPaths.begin(); it != fModelPaths.end(); it++) {
+      std::string model_path = GetFile(*it);
+      AliExternalBDT model = AliExternalBDT();
+      if(!model.LoadXGBoostModel(model_path))
+        AliFatal("Problem in loading model");
+      fModels.push_back(model);
+    }
+
+    if(fEnablePIDMLHistos)
+    {
+      TString PIDvarnames[6] = {"NsigmaTPCPi", "NsigmaTPCK", "NsigmaTOFPi", "NsigmaTOFK", "NsigmaCombPi", "NsigmaCombK"};
+      Double_t PIDmin[6] = {-20., -20., -20., -20., 0., 0.};
+      Double_t PIDmax[6] = {20., 20., 20., 20., 40., 40.};
+      for (Int_t iProng=0; iProng<3; iProng++)
+      {
+        for (Int_t iVar=0; iVar<6; iVar++)
+        {
+          fHistNsigmaPIDVsML[iProng][iVar] = new TH3F(Form("fHist%sProng%d",PIDvarnames[iVar].Data(),iProng), Form("%sProng%d;#it{p}_{T} (GeV/#it{c});ML response;%s",PIDvarnames[iVar].Data(),iProng,PIDvarnames[iVar].Data()), Int_t(fPtLimits[fNPtBins]), 0., fPtLimits[fNPtBins], 300, 0.85, 1., 200., PIDmin[iVar], PIDmax[iVar]);
+          fOutput->Add(fHistNsigmaPIDVsML[iProng][iVar]);
+        }
+      }
+    }
+  }
+
   PostData(1, fOutput);
   PostData(3, fCounter);
 
@@ -749,17 +796,6 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     OpenFile(4); // 4 is the slot number of the ntuple
 
     fNtupleDs = new TNtuple("fNtupleDs", "Ds", "Pt:InvMass:d0:origin");
-  }
-
-  //Loading of ML models
-  if(fApplyML) {
-    for(auto it = fModelPaths.begin(); it != fModelPaths.end(); it++) {
-      std::string model_path = GetFile(*it);
-      AliExternalBDT model = AliExternalBDT();
-      if(!model.LoadXGBoostModel(model_path))
-        AliFatal("Problem in loading model");
-      fModels.push_back(model);
-    }
   }
 
   return;
@@ -1239,6 +1275,10 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           Double_t normIPprong[nProng]; //to store IP of k,k,pi
           Double_t absimpparxy = TMath::Abs(d->ImpParXY());
           //variables for ML application
+          Double_t nsigTPCPi[nProng] = {-999., -999., -999.};
+          Double_t nsigTPCK[nProng] = {-999., -999., -999.};
+          Double_t nsigTOFPi[nProng] = {-999., -999., -999.};
+          Double_t nsigTOFK[nProng] = {-999., -999., -999.};
           Double_t sigCombK[nProng] = {-999., -999., -999.};
           Double_t sigCombPi[nProng] = {-999., -999., -999.};
           AliAODPidHF *Pid_HF = nullptr;
@@ -1273,17 +1313,13 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             //get PID info for ML application
             if(fApplyML)
             {
-              Double_t sigTPC_K = -999.;
-              Double_t sigTPC_Pi = -999.;
-              Double_t sigTOF_K = -999.;
-              Double_t sigTOF_Pi = -999.;
               AliAODTrack *track=(AliAODTrack*)d->GetDaughter(ip);
-              Pid_HF->GetnSigmaTPC(track,3,sigTPC_K);
-              Pid_HF->GetnSigmaTPC(track,2,sigTPC_Pi);
-              Pid_HF->GetnSigmaTOF(track,3,sigTOF_K);
-              Pid_HF->GetnSigmaTOF(track,2,sigTOF_Pi);
-              sigCombK[ip] = CombineNsigmaDiffDet(sigTPC_K, sigTOF_K);
-              sigCombPi[ip] = CombineNsigmaDiffDet(sigTPC_Pi, sigTOF_Pi);
+              Pid_HF->GetnSigmaTPC(track,3,nsigTPCK[ip]);
+              Pid_HF->GetnSigmaTPC(track,2,nsigTPCPi[ip]);
+              Pid_HF->GetnSigmaTOF(track,3,nsigTOFK[ip]);
+              Pid_HF->GetnSigmaTOF(track,2,nsigTOFPi[ip]);
+              sigCombK[ip] = CombineNsigmaDiffDet(nsigTPCK[ip], nsigTOFK[ip]);
+              sigCombPi[ip] = CombineNsigmaDiffDet(nsigTPCPi[ip], nsigTOFPi[ip]);
             }
           }
 
@@ -1301,6 +1337,18 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               Double_t features[13] = {cospxy, dlen, normdlxy, sigvert, deltaMassKK, cosPiKPhiNoabs, normIP,
                                        sigCombPi[0], sigCombPi[1], sigCombPi[2], sigCombK[0], sigCombK[1], sigCombK[2]};
               modelPred = fModels[iModel].Predict(features, fNumVars);
+              if(fEnablePIDMLHistos)
+              {
+                for (Int_t iProng=0; iProng<3; iProng++)
+                {
+                  fHistNsigmaPIDVsML[iProng][0]->Fill(ptCand, modelPred, nsigTPCPi[iProng]);
+                  fHistNsigmaPIDVsML[iProng][1]->Fill(ptCand, modelPred, nsigTPCK[iProng]);
+                  fHistNsigmaPIDVsML[iProng][2]->Fill(ptCand, modelPred, nsigTOFPi[iProng]);
+                  fHistNsigmaPIDVsML[iProng][3]->Fill(ptCand, modelPred, nsigTOFK[iProng]);
+                  fHistNsigmaPIDVsML[iProng][4]->Fill(ptCand, modelPred, sigCombPi[iProng]);
+                  fHistNsigmaPIDVsML[iProng][5]->Fill(ptCand, modelPred, sigCombK[iProng]);
+                }
+              }
             }
 
             Double_t var4nSparse[knVarForSparse] = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000,
@@ -1346,6 +1394,18 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               Double_t features[13] = {cospxy, dlen, normdlxy, sigvert, deltaMassKK, cosPiKPhiNoabs, normIP,
                                        sigCombPi[0], sigCombPi[1], sigCombPi[2], sigCombK[0], sigCombK[1], sigCombK[2]};
               modelPred = fModels[iModel].Predict(features, fNumVars);
+              if(fEnablePIDMLHistos)
+              {
+                for (Int_t iProng=0; iProng<3; iProng++)
+                {
+                  fHistNsigmaPIDVsML[iProng][0]->Fill(ptCand, modelPred, nsigTPCPi[iProng]);
+                  fHistNsigmaPIDVsML[iProng][1]->Fill(ptCand, modelPred, nsigTPCK[iProng]);
+                  fHistNsigmaPIDVsML[iProng][2]->Fill(ptCand, modelPred, nsigTOFPi[iProng]);
+                  fHistNsigmaPIDVsML[iProng][3]->Fill(ptCand, modelPred, nsigTOFK[iProng]);
+                  fHistNsigmaPIDVsML[iProng][4]->Fill(ptCand, modelPred, sigCombPi[iProng]);
+                  fHistNsigmaPIDVsML[iProng][5]->Fill(ptCand, modelPred, sigCombK[iProng]);
+                }
+              }
             }
 
             Double_t var4nSparse[knVarForSparse] = {invMass_piKK, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000,

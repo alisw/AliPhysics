@@ -85,6 +85,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   /// methods for ML application
   void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
+  void EnablePIDMLHistos(Bool_t enable=kTRUE) {fEnablePIDMLHistos=enable;}
 
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -218,12 +219,14 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   std::vector<double> fModelOutputCuts;   /// vector of thresholds on model output
   std::vector<double> fPtBinsModel;       /// vector of pt bin lims
   std::vector<AliExternalBDT> fModels;    //!<! vector of ML models (BDTs for now)
+  TH3F* fHistNsigmaPIDVsML[3][6];         //!<! histograms with PID Nsigma variables vs ML output
+  Bool_t fEnablePIDMLHistos;              /// flag to enable control histograms for PID with ML
 
   Bool_t fFillBkgSparse;                  /// flag to fill bkg sparse
   Bool_t fKeepOnlyBkgFromHIJING;          /// flag to keep the background from HIJING only
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,32);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,33);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
