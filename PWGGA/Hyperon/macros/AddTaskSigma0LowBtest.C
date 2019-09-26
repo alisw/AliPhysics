@@ -1,13 +1,3 @@
-#include <vector>
-#include "AliAnalysisTaskSE.h"
-#include "AliAnalysisManager.h"
-#include "AliFemtoDreamEventCuts.h"
-#include "AliFemtoDreamTrackCuts.h"
-#include "AliSigma0V0Cuts.h"
-#include "AliSigma0PhotonCuts.h"
-#include "AliSigma0PhotonMotherCuts.h"
-#include "AliAnalysisTaskSigma0Run2.h"
-
 AliAnalysisTaskSE *AddTaskSigma0LowBtest(bool isMC = false, TString trigger =
                                              "kINT7",
                                          const char *cutVariation = "0") {
