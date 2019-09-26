@@ -504,10 +504,26 @@ void AddTask_GammaConvCalo_pPb(
 
   //************************************************ PCM - EDC analysis 8 TeV pPb *********************************************
   // 8 TeV pPb variations with new PCM cut
-  } else if (trainConfig == 2020) { // PCM variations
+  } else if (trainConfig == 2020) { // standard
     cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
     cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
     cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); //New standard cut for 8TeV analysis for RpA
+  } else if (trainConfig == 2021) { // standard copy of 2020 for timing cut studies on clusterizer
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+  } else if (trainConfig == 2022) { // standard copy of 2020 for timing cut studies on clusterizer
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+  } else if (trainConfig == 2023) { // standard copy of 2020 for timing cut studies on clusterizer
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+  } else if (trainConfig == 2024) { // standard copy of 2020 for timing cut studies on clusterizer
+    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
+    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010");
 
   // Nonlin testing configs (TB only)
   } else if (trainConfig == 2030) { // NL 01 -> 100 MeV aggregation

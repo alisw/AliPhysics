@@ -1915,6 +1915,16 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411790406f032230000","01631031000000d0"); // EG2  test beam NL
     cuts.AddCutCalo("0008d113","411790406f032230000","01631031000000d0"); // EG1  test beam NL
 
+  } else if (trainConfig == 2110){ // clusterizer timing cut studies (5TeV pp std cut)
+    cuts.AddCutCalo("00010113","411793106f032230000","01631031000000d0"); // INT7 test beam NL
+  } else if (trainConfig == 2111){ // clusterizer timing cut studies (5TeV pp std cut)
+    cuts.AddCutCalo("00010113","411793106f032230000","01631031000000d0"); // INT7 test beam NL
+  } else if (trainConfig == 2112){ // clusterizer timing cut studies (5TeV pp std cut)
+    cuts.AddCutCalo("00010113","411793106f032230000","01631031000000d0"); // INT7 test beam NL
+  } else if (trainConfig == 2113){ // clusterizer timing cut studies (5TeV pp std cut)
+    cuts.AddCutCalo("00010113","411793106f032230000","01631031000000d0"); // INT7 test beam NL
+  } else if (trainConfig == 2114){ // clusterizer timing cut studies (5TeV pp std cut)
+    cuts.AddCutCalo("00010113","411793106f032230000","01631031000000d0"); // INT7 test beam NL
 
   } else if (trainConfig == 2150){ // EMCAL clusters pp 8 TeV 100MeV aggregation
     cuts.AddCutCalo("00010113","111110106f032230000","01631031000000d0"); // std
