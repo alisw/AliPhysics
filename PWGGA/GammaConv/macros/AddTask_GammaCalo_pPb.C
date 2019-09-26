@@ -966,6 +966,48 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008e123","4117900050032230000","01631031000000d0"); // EG2
     cuts.AddCutCalo("8008d123","4117900050032230000","01631031000000d0"); // EG1
 
+  } else if (trainConfig == 2040){ // copy of 2020 for clusterizer cell timing studies
+    cuts.AddCutCalo("80010123","411793105f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411793105f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411793105f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2041){ // copy of 2020 for clusterizer cell timing studies
+    cuts.AddCutCalo("80010123","411793105f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411793105f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411793105f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2042){ // copy of 2020 for clusterizer cell timing studies
+    cuts.AddCutCalo("80010123","411793105f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411793105f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411793105f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2043){ // copy of 2020 for clusterizer cell timing studies
+    cuts.AddCutCalo("80010123","411793105f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411793105f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411793105f032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2044){ // copy of 2020 for clusterizer cell timing studies
+    cuts.AddCutCalo("80010123","411793105f032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","411793105f032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","411793105f032230000","01631031000000d0"); // EG1
+
+  } else if (trainConfig == 2045){ // copy of 2030 for clusterizer cell timing studies NO TRACK MATCHING
+    cuts.AddCutCalo("80010123","4117931050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117931050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117931050032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2046){ // copy of 2030 for clusterizer cell timing studies NO TRACK MATCHING
+    cuts.AddCutCalo("80010123","4117931050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117931050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117931050032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2047){ // copy of 2030 for clusterizer cell timing studies NO TRACK MATCHING
+    cuts.AddCutCalo("80010123","4117931050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117931050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117931050032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2048){ // copy of 2030 for clusterizer cell timing studies NO TRACK MATCHING
+    cuts.AddCutCalo("80010123","4117931050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117931050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117931050032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2049){ // copy of 2030 for clusterizer cell timing studies NO TRACK MATCHING
+    cuts.AddCutCalo("80010123","4117931050032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4117931050032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d123","4117931050032230000","01631031000000d0"); // EG1
+
   } else if (trainConfig == 2050){ // TB NL tests 100 MeV aggregation
     cuts.AddCutCalo("80010123","411790105f032230000","01631031000000d0"); // INT7
   } else if (trainConfig == 2051){ // TB NL tests 100 MeV aggregation
