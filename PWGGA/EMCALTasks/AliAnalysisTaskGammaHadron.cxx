@@ -161,6 +161,9 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 		}
 	}*/
 
+  // Make sure Cluster Acceptance array is zeroed at start of task
+  for (int i = 0; i < kCLUS_BUF_SIZE; i++) fClusterAcceptanceStatus[i] = 0;
+
 	fRtoD=180.0/TMath::Pi();
 
 	fFiducialCuts    = new AliFiducialCut();
@@ -1707,7 +1710,7 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 
   if ((fMinCent != -999) && (fMaxCent != -999)) {
     if (fCent<fMinCent || fCent>fMaxCent) {
-      if (fGeneralHistograms) fHistEventRejection->Fill("Cent",1);
+//      if (fGeneralHistograms) fHistEventRejection->Fill("Cent",1); // Disabling cent bin
       return kFALSE;
     }
   }
@@ -1792,6 +1795,11 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 
   // Getting corrected event plane, saving information
   LoadQnCorrectedEventPlane();
+
+
+  //  Initialize array of acceptance status FIXME
+  AliClusterContainer *clusters = GetClusterContainer(0);
+	if (!clusters) return 0;
 
 	// 1. First get an event pool corresponding in mult (cent) and
 	//    zvertex to the current event. Once initialized, the pool
@@ -2143,6 +2151,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			}
 		}
 
+    // Also building Pi0Cand array, if fPlotQA == 1
 		for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 		{
 			cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
@@ -3132,9 +3141,19 @@ void AliAnalysisTaskGammaHadron::FillMCPi0Hists(Int_t fMultiplicity) {
 //________________________________________________________________________
 Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster)
 {
+  int iClusterID = caloCluster->GetID();
+  // This assumes each cluster has a unique ID
+  // Check if already checked:
+  if(fClusterAcceptanceStatus[iClusterID] != 0) {
+    if (fClusterAcceptanceStatus[iClusterID] == -1) return 0;
+    else return 1;
+  }
+
 	TLorentzVector caloClusterVec;
 	clusters->GetMomentum(caloClusterVec,caloCluster);
 	//!!!! eventually transform to AliTLorentzvector
+
+  fClusterAcceptanceStatus[iClusterID] = -1; // This assumes the cluster will be rejected. changed at end
 
 	//..Accepts clusters if certain conditions are fulfilled
 	Bool_t Accepted=1; //..By default accepted
@@ -3210,18 +3229,19 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 			if(!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kEMCAL) &&
 			!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kDCAL)) return 0;
 	}
-	 //-----------------------------
-	 //..Fiducial volume cut II. Cuts on the distance to the EMCal border last+first row and last+first collumn
-	 //fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(1); //ELI this could be momentum dependent and also different for merged clusters!!!
-	 if(!fFiducialCellCut->CheckCellFiducialRegion(fGeom,caloCluster,fCaloCells))
-	 {
-		 return 0;
-	 }
-	 //-----------------------------
-	 //..Exotic cells
+  //-----------------------------
+  //..Fiducial volume cut II. Cuts on the distance to the EMCal border last+first row and last+first collumn
+  //fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(1); //ELI this could be momentum dependent and also different for merged clusters!!!
+  if(!fFiducialCellCut->CheckCellFiducialRegion(fGeom,caloCluster,fCaloCells))
+  {
+   return 0;
+  }
+  //-----------------------------
+  //..Exotic cells
 
 
-	 return Accepted;
+  fClusterAcceptanceStatus[iClusterID] = 1; // This marks the cluster as accepted
+  return Accepted;
 }
 //
 // Accept cluster pair cut for Pi0 analysis. More cuts besides in ApplyClusterCuts and ApplyKinematicCuts
@@ -3547,6 +3567,7 @@ Int_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluster
 		fMatchDeltaEtaTrackPt->Fill(trackPt,fEtaDiff);
 		//
 		// For input -1 or 0, use the parametrized track matching cuts given in https://alice-notes.web.cern.ch/node/813
+    // FIXME make these (changeable) parameters
 		if (etaCut <= 0) etaCut = 0.010 + TMath::Power((trackPt + 4.07), -2.5);
 		if (phiCut <= 0) phiCut = 0.015 + TMath::Power((trackPt + 3.65), -2.);
 
