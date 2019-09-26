@@ -1037,8 +1037,8 @@ void AliMCEvent::AssignGeneratorIndex() {
 	  if (dmin == -1) continue;
 	  AssignGeneratorIndex(i, dmin, dmax);
 	}
+	nsumpart -= npart;
       }
-      nsumpart -= npart;
     }
   }
 }
