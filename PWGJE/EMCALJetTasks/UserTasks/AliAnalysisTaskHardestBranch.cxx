@@ -128,23 +128,24 @@ void AliAnalysisTaskHardestBranch::UserCreateOutputObjects() {
   }
 
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 18;
+  const Int_t nVar = 13;
   const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeSubstructure = new TTree(nameoutput, nameoutput);
   TString *fShapesVarNames = new TString[nVar];
 
   fShapesVarNames[0] = "ptJet";
   fShapesVarNames[1] = "ktg";
-  fShapesVarNames[2] = "ng";
+  fShapesVarNames[2] = "tfg";
   fShapesVarNames[3] = "zg";
   fShapesVarNames[4] = "rg";
-  fShapesVarNames[5] = "ptJetMatch";
-  fShapesVarNames[6] = "ktgMatch";
-  fShapesVarNames[7] = "ngMatch";
-  fShapesVarNames[8] = "zgMatch";
-  fShapesVarNames[9] = "rgMatch";
-  fShapesVarNames[10] = "LeadingTrackPt";
-  fShapesVarNames[11] = "LeadingTrackPtMatch";
+  fShapesVarNames[5] = "ng";
+  fShapesVarNames[6] = "ptJetMatch";
+  fShapesVarNames[7] = "ktgMatch";
+  fShapesVarNames[8] = "tfgMatch";
+  fShapesVarNames[9] = "zgMatch";
+  fShapesVarNames[10] = "rgMatch";
+  fShapesVarNames[11] = "ngMatch";
+  fShapesVarNames[12] = "LeadingTrackPtMatch";
  
 
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
@@ -362,8 +363,8 @@ Bool_t AliAnalysisTaskHardestBranch::FillHistograms() {
       Float_t ptMatch = 0.;
       Float_t leadTrackMatch = 0.;
       Double_t ktgMatch = 0;
-      ;
-      Double_t nsdMatch = 0;
+      Double_t tfgMatch =0;
+      Double_t ngMatch = 0;
       Double_t zgMatch = 0;
       Double_t rgMatch = 0;
       Float_t ptDet = 0.;
@@ -373,6 +374,7 @@ Bool_t AliAnalysisTaskHardestBranch::FillHistograms() {
       Double_t aver2 = 0;
       Double_t aver3 = 0;
       Double_t aver4 = 0;
+      Double_t aver5 = 0;
       Int_t kMatched = 0;
       if (fJetShapeType == kPythiaDef) {
         kMatched = 1;
@@ -381,11 +383,12 @@ Bool_t AliAnalysisTaskHardestBranch::FillHistograms() {
 
         ptMatch = jet3->Pt();
         leadTrackMatch = jet3->MaxTrackPt();
-        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4);
+        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, aver5);
         ktgMatch = aver1;
-        nsdMatch = aver2;
+        tfgMatch = aver2;
         zgMatch = aver3;
         rgMatch = aver4;
+	ngMatch = aver5;
       }
 
       if (fJetShapeType == kDetEmbPartPythia) {
@@ -395,12 +398,12 @@ Bool_t AliAnalysisTaskHardestBranch::FillHistograms() {
           kMatched = 2;
         ptMatch = jet3->Pt();
         leadTrackMatch = jet3->MaxTrackPt();
-        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4);
+        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, aver5);
         ktgMatch = aver1;
-        nsdMatch = aver2;
+        tfgMatch = aver2;
         zgMatch = aver3;
         rgMatch = aver4;
-        
+        ngMatch = aver5;
       }
 
       if (fJetShapeType == kMCTrue || fJetShapeType == kData ||
@@ -409,17 +412,19 @@ Bool_t AliAnalysisTaskHardestBranch::FillHistograms() {
         ptMatch = 0.;
         leadTrackMatch = 0.;
         ktgMatch = 0.;
-        nsdMatch = 0.;
+        tfgMatch = 0.;
         zgMatch = 0;
         rgMatch = 0;
+        ngMatch = 0;
       }
 
-      fShapesVar[5] = ptMatch;
-      fShapesVar[6] = ktgMatch;
-      fShapesVar[7] = nsdMatch;
-      fShapesVar[8] = zgMatch;
-      fShapesVar[9] = rgMatch;
-      fShapesVar[11] = leadTrackMatch;
+      fShapesVar[6] = ptMatch;
+      fShapesVar[7] = ktgMatch;
+      fShapesVar[8] = tfgMatch;
+      fShapesVar[9] = zgMatch;
+      fShapesVar[10] = rgMatch;
+      fShapesVar[11] = ngMatch;
+      fShapesVar[12] = leadTrackMatch;
       
 
       fTreeSubstructure->Fill();
@@ -545,11 +550,12 @@ void AliAnalysisTaskHardestBranch::IterativeParents(AliEmcalJet *fJet, AliJetCon
     jj = fOutputJets[0];
 
     double nall = 0;
-   
+    double nsd = 0;
     std::vector<Double_t>  zvec;
     std::vector<Double_t>  ktvec;
     std::vector<Double_t> thetavec;
     std::vector<Double_t> tformvec;
+     std::vector<Double_t> nvec;
     int indmax;
     while (jj.has_parents(j1, j2)) {
       nall = nall + 1;
@@ -563,7 +569,8 @@ void AliAnalysisTaskHardestBranch::IterativeParents(AliEmcalJet *fJet, AliJetCon
      
       double form = 2 * 0.197 * j2.e() / (xkt * xkt);
       double z = j2.perp() / (j2.perp() + j1.perp());
-
+      if(z>0.1) nsd=nsd+1;
+      nvec.push_back(nsd);
       zvec.push_back(z);
       ktvec.push_back(xkt);
       thetavec.push_back(delta_R);
@@ -579,6 +586,7 @@ void AliAnalysisTaskHardestBranch::IterativeParents(AliEmcalJet *fJet, AliJetCon
     fShapesVar[2] = tformvec[indmax-1];
     fShapesVar[3] = zvec[indmax-1];
     fShapesVar[4] = thetavec[indmax-1];
+    fShapesVar[5] = nvec[indmax-1];
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
@@ -589,7 +597,7 @@ void AliAnalysisTaskHardestBranch::IterativeParents(AliEmcalJet *fJet, AliJetCon
 
 }
 //_________________________________________________________________________
-void AliAnalysisTaskHardestBranch::IterativeParentsMCAverage(AliEmcalJet *fJet, Int_t km, Double_t &average1, Double_t &average2, Double_t &average3, Double_t &average4) {
+void AliAnalysisTaskHardestBranch::IterativeParentsMCAverage(AliEmcalJet *fJet, Int_t km, Double_t &average1, Double_t &average2, Double_t &average3, Double_t &average4, Double_t &average5) {
   AliJetContainer *jetCont = GetJetContainer(km);
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
@@ -625,12 +633,13 @@ void AliAnalysisTaskHardestBranch::IterativeParentsMCAverage(AliEmcalJet *fJet, 
     jj = fOutputJets[0];
     int flagSubjet = 0;
     double nall = 0;
-   
+    double nsd = 0;
      
     std::vector<Double_t>  zvec;
     std::vector<Double_t> ktvec;
     std::vector<Double_t> thetavec;
     std::vector<Double_t>  tformvec;
+    std::vector<Double_t> nvec;
     int indmax;
 
     
@@ -646,11 +655,13 @@ void AliAnalysisTaskHardestBranch::IterativeParentsMCAverage(AliEmcalJet *fJet, 
       double form = 2 * 0.197 * j2.e() / (xkt * xkt);
       double rad = j2.e();
       double z = j2.perp() / (j2.perp() + j1.perp());
-
+      if(z>0.1) nsd=nsd+1;
+       
       zvec.push_back(z);
       ktvec.push_back(xkt);
       thetavec.push_back(delta_R);
       tformvec.push_back(form);
+      nvec.push_back(nsd);
       jj = j1;
     }
 
@@ -663,7 +674,7 @@ void AliAnalysisTaskHardestBranch::IterativeParentsMCAverage(AliEmcalJet *fJet, 
     average2 = tformvec[indmax-1];
     average3 = zvec[indmax-1];
     average4 = thetavec[indmax-1];
-
+    average5 = nvec[indmax-1];
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
