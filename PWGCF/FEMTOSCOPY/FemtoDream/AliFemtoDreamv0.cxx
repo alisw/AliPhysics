@@ -85,7 +85,7 @@ void AliFemtoDreamv0::Setv0(AliVEvent *evt, AliAODv0* v0,
     this->SetMotherInfo(static_cast<AliAODEvent*>(evt), v0);
     this->SetEvtNumber(evt->GetRunNumber());
     if (fIsMC) {
-//      this->SetMCMotherInfo(evt, v0);
+      this->SetMCMotherInfo(evt, v0);
     }
     this->SetDaughter(v0, evt);
   } else {
@@ -583,6 +583,20 @@ void AliFemtoDreamv0::SetMCMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
   if (!mcarray) {
     AliFatal("No MC Array found");
   }
+  SetMCMotherInfo(mcarray, v0);
+}
+
+
+void AliFemtoDreamv0::SetMCMotherInfo(AliVEvent *evt, AliAODv0 *v0) {
+  TClonesArray *mcarray = dynamic_cast<TClonesArray *>(evt->FindListObject(
+      "mcparticles"));
+  if (!mcarray) {
+    AliFatal("No MC Array found");
+  }
+  SetMCMotherInfo(mcarray, v0);
+}
+
+void AliFemtoDreamv0::SetMCMotherInfo(TClonesArray *mcarray, AliAODv0 *v0) {
   int PDGDaug[2];
   PDGDaug[0] = TMath::Abs(fpDaug->GetPDGCode());
   PDGDaug[1] = TMath::Abs(fnDaug->GetPDGCode());
