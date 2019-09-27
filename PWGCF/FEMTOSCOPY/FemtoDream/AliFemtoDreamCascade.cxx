@@ -324,9 +324,9 @@ void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
   fDCAv0Xi = TMath::Sqrt(
       TMath::Power((decayPosV0[0] - decayPosXi[0]), 2)
           + TMath::Power((decayPosV0[1] - decayPosXi[1]), 2));
-//  if (fIsMC) {
-//    SetMCMotherInfo(evt, casc);
-//  }
+  if (fIsMC) {
+    SetMCMotherInfo(evt, casc);
+  }
 }
 
 void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
@@ -556,6 +556,8 @@ void AliFemtoDreamCascade::Reset() {
   }
 }
 
+
+
 void AliFemtoDreamCascade::SetMCMotherInfo(AliAODEvent *evt,
                                            AliAODcascade *casc) {
   TClonesArray *mcarray = dynamic_cast<TClonesArray*>(evt->FindListObject(
@@ -563,6 +565,21 @@ void AliFemtoDreamCascade::SetMCMotherInfo(AliAODEvent *evt,
   if (!mcarray) {
     AliFatal("No MC Array found");
   }
+  SetMCMotherInfo(mcarray, casc);
+}
+
+void AliFemtoDreamCascade::SetMCMotherInfo(AliVEvent *evt,
+                                           AliAODcascade *casc) {
+  TClonesArray *mcarray = dynamic_cast<TClonesArray *>(evt->FindListObject(
+      "mcparticles"));
+  if (!mcarray) {
+    AliFatal("No MC Array found");
+  }
+  SetMCMotherInfo(mcarray, casc);
+}
+
+void AliFemtoDreamCascade::SetMCMotherInfo(TClonesArray *mcarray,
+                                           AliAODcascade *casc) {
   if (fBach->IsSet() && fPosDaug->IsSet() && fNegDaug->IsSet()) {
     //look if the bachelor is from a weak decay and find the label of the
     //mother
