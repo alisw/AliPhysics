@@ -841,6 +841,9 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 266){  // EMCAL clusters 7 TeV LHC11 TB NL TM on, +-30ns
     cuts.AddCutCalo("00010113","111113406f032230000","01631031000000d0"); // VOAND
     cuts.AddCutCalo("00052113","111113406f032230000","01631031000000d0"); // EMC7
+  } else if (trainConfig == 267){  // EMCAL clusters 7 TeV LHC11 for Omega QA
+    cuts.AddCutCalo("00010113","111111105f032230000","01631031000000d0"); // VOAND
+    cuts.AddCutCalo("00052113","111111105f032230000","01631031000000d0"); // EMC7
   //multiple std dirGAMMA cuts for different studies
   } else if (trainConfig == 281){ // EMCAL clusters pp 7 TeV
     cuts.AddCutCalo("00000113","11111110b70322l0000","01631031000000d0"); // std
