@@ -66,6 +66,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
   ,fDoNonLinearity(kFALSE)
   ,fBadCellRemove(kFALSE)
   ,fLoad1DBadChMap(kFALSE)
+  ,fLoad1DRecalibFactors(kFALSE)
   ,fRejectExoticCells(kFALSE)
   ,fRejectExoticClusters(kFALSE)
   ,fClusterBadChannelCheck(kFALSE)
@@ -142,6 +143,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
   ,fDoNonLinearity(kFALSE)
   ,fBadCellRemove(kFALSE)
   ,fLoad1DBadChMap(kFALSE)
+  ,fLoad1DRecalibFactors(kFALSE)
   ,fRejectExoticCells(kFALSE)
   ,fRejectExoticClusters(kFALSE)
   ,fClusterBadChannelCheck(kFALSE)
@@ -1130,31 +1132,31 @@ Int_t AliEMCALTenderSupply::InitRecalib()
   { //if fBasePath specified in the ->SetBasePath()
     if (fDebugLevel>0)  AliInfo(Form("Loading Recalib OADB from given path %s",fBasePath.Data()));
     
-    TFile *fRecalib= new TFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"read");
+    TFile *fRecalib= new TFile(Form("%s/EMCALRecalib%s.root",fBasePath.Data(), fLoad1DRecalibFactors ? "_1D" : ""),"read");
     if (!fRecalib || fRecalib->IsZombie())
     {
-      AliFatal(Form("EMCALRecalib.root not found in %s",fBasePath.Data()));
+      AliFatal(Form("EMCALRecalib%s.root not found in %s", fLoad1DRecalibFactors ? "_1D" : "" ,fBasePath.Data()));
       return 0;
     }
     
     if (fRecalib) delete fRecalib;
     
-    contRF->InitFromFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"AliEMCALRecalib");
+    contRF->InitFromFile(Form("%s/EMCALRecalib%s.root",fBasePath.Data(), fLoad1DRecalibFactors ? "_1D" : ""),"AliEMCALRecalib");
   }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
     if (fDebugLevel>0)  AliInfo("Loading Recalib OADB from OADB/EMCAL");
     
-    TFile *fRecalib= new TFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"read");
+    TFile *fRecalib= new TFile(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALRecalib%s.root", fLoad1DRecalibFactors ? "_1D" : "")).data(),"read");
     if (!fRecalib || fRecalib->IsZombie())
     {
-      AliFatal("OADB/EMCAL/EMCALRecalib.root was not found");
+      AliFatal(Form("OADB/EMCAL/EMCALRecalib%s.root was not found", fLoad1DRecalibFactors ? "_1D" : ""));
       return 0;
     }
     
     if (fRecalib) delete fRecalib;
       
-    contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"AliEMCALRecalib");
+    contRF->InitFromFile(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALRecalib%s.root", fLoad1DRecalibFactors ? "_1D" : "")).data(),"AliEMCALRecalib");
   }
 
   TObjArray *recal=(TObjArray*)contRF->GetObject(runRC);
@@ -1183,20 +1185,36 @@ Int_t AliEMCALTenderSupply::InitRecalib()
 
   if (fDebugLevel>0) recalib->Print();
 
-  Int_t sms = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
-  for (Int_t i=0; i<sms; ++i) 
-  {
-    TH2F *h = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactors(i);
+
+
+  if(fLoad1DRecalibFactors){
+    TH1S *h = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactors1D();
     if (h)
       delete h;
-    h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
-    if (!h) 
+    h=(TH1S*)recalib->FindObject("EMCALRecalFactors");
+
+    if (!h)
     {
-      AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
-      continue;
+      AliError("Can not get EMCALRecalFactors");
     }
     h->SetDirectory(0);
-    fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
+    fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors1D(h);
+  }else{
+    Int_t sms = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
+    for (Int_t i=0; i<sms; ++i) 
+    {
+      TH2F *h = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactors(i);
+      if (h)
+        delete h;
+      h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+      if (!h) 
+      {
+        AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
+        continue;
+      }
+      h->SetDirectory(0);
+      fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
+    }
   }
   
   delete contRF;

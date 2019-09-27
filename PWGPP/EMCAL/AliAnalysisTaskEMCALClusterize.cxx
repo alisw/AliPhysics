@@ -101,6 +101,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fTCardCorrMaxInducedLowE(0), fTCardCorrMaxInduced(100)
 , fPrintOnce(0)
 , fDoMergedBCs(0x0)
+, fLoad1DRecalibFactors(0)
 
 {
   for(Int_t i = 0; i < 22;    i++)  
@@ -167,6 +168,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fTCardCorrMaxInducedLowE(0), fTCardCorrMaxInduced(100)
 , fPrintOnce(0)
 , fDoMergedBCs(0x0)
+, fLoad1DRecalibFactors(0)
 {
   for(Int_t i = 0; i < 22;    i++)  
   {
@@ -345,9 +347,9 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     AliOADBContainer *contRF=new AliOADBContainer("");
     
     if(fOADBFilePath!="")
-      contRF->InitFromFile(Form("%s/EMCALRecalib.root",fOADBFilePath.Data()),"AliEMCALRecalib");
+      contRF->InitFromFile(Form("%s/EMCALRecalib%s.root",fOADBFilePath.Data(), fLoad1DRecalibFactors ? "_1D" : ""),"AliEMCALRecalib");
     else
-      contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"AliEMCALRecalib");
+      contRF->InitFromFile(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALRecalib%s.root", fLoad1DRecalibFactors ? "_1D" : "")).data(),"AliEMCALRecalib");
 
     TObjArray *recal=(TObjArray*)contRF->GetObject(fRun); 
     
@@ -362,25 +364,40 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
         if(recalib)
         {
           AliInfo("Recalibrate EMCAL");
-          for (Int_t i=0; i<nSM; ++i) 
-          {
-            TH2F *h = fRecoUtils->GetEMCALChannelRecalibrationFactors(i);
-            
+
+          if(fLoad1DRecalibFactors){
+            TH1S *h = fRecoUtils->GetEMCALChannelRecalibrationFactors1D();
             if (h)
               delete h;
-            
-            h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
-            
-            if (!h) 
+            h=(TH1S*)recalib->FindObject("EMCALRecalFactors");
+              
+            if (!h)
             {
-              AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
-              continue;
+              AliError("Can not get EMCALRecalFactors");
             }
-            
             h->SetDirectory(0);
-            
-            fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
-          } // SM loop
+            fRecoUtils->SetEMCALChannelRecalibrationFactors1D(h);
+          }else{
+            for (Int_t i=0; i<nSM; ++i) 
+            {
+              TH2F *h = fRecoUtils->GetEMCALChannelRecalibrationFactors(i);
+              
+              if (h)
+                delete h;
+              
+              h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+              
+              if (!h) 
+              {
+                AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
+                continue;
+              }
+              
+              h->SetDirectory(0);
+              
+              fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
+            } // SM loop
+          }
         } else AliInfo("Do NOT recalibrate EMCAL, no params object array"); // array ok
       } else AliInfo("Do NOT recalibrate EMCAL, no params for pass"); // array pass ok
     } else AliInfo("Do NOT recalibrate EMCAL, no params for run");  // run number array ok

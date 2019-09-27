@@ -61,6 +61,7 @@ CellEnergy:                                         # Cell Energy correction com
     createHistos: false                             # Whether the task should create output histograms
     enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
+    load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellBadChannel:                                     # Bad channel removal at the cell level component
