@@ -388,7 +388,7 @@ void AliAnalysisTaskJpsiJet::InitHistogramsForRunwiseQA(const char* histClass){
     Form("%s/NPVtxZ", histClass),
     "Runwise QA - Primary vertex Z",
     201, -0.5, 200.5,
-    4001, -0.5, 4000.5);
+    300, -15., 15.);
   fHistos->CreateTH2(
     Form("%s/NVContrib", histClass),
     "Runwise QA - Number of Vertex contributors",
@@ -469,12 +469,12 @@ void AliAnalysisTaskJpsiJet::InitHistogramsForRunwiseQA(const char* histClass){
     Form("%s/Ele_DCAxy", histClass),
     "Runwise Electron QA - DCA_{xy}",
     201, -0.5, 200.5,
-    100, -5., 5.);
+    1000, -5., 5.);
   fHistos->CreateTH2(
     Form("%s/Ele_DCAz", histClass),
     "Runwise Electron QA - DCA_{z}",
     201, -0.5, 200.5,
-    100, -5., 5.);
+    1000, -5., 5.);
   fHistos->CreateTH2(
     Form("%s/Ele_TPCNcls", histClass),
     "Runwise Electron QA - Number of TPC clusters",
@@ -974,7 +974,11 @@ void AliAnalysisTaskJpsiJet::InitHistogramsForDielectron(const char* histMgrName
   histos->UserHistogram("Track", "Eta_Phi", "Eta Phi Map; Eta; Phi;#tracks",
                         100, -1, 1, 144, 0, TMath::TwoPi(), AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi, kTRUE);
   histos->UserHistogram("Track", "dXY", "dXY;dXY [cm];#tracks", 1000, -50, 50, AliDielectronVarManager::kImpactParXY, kTRUE);
+  histos->UserHistogram("Track", "dXY_Pt", "DCA_{xy} vs p_{T}; p_{T} (GeV/c); DCA_{xy} (cm);#tracks;",
+                        200, 0, 100., 1000, -5., 5., AliDielectronVarManager::kPt, AliDielectronVarManager::kImpactParXY, kTRUE);
   histos->UserHistogram("Track", "dZ", "dZ;dZ [cm];#tracks", 1000, -50., 50., AliDielectronVarManager::kImpactParZ, kTRUE);
+  histos->UserHistogram("Track", "dZ_Pt", "DCA_{z} vs p_{T}; p_{T} (GeV/c); DCA_{z} (cm);#tracks;",
+                        200, 0, 100., 1000, -5., 5., AliDielectronVarManager::kPt, AliDielectronVarManager::kImpactParZ, kTRUE);
   // Tracking quality
   histos->UserHistogram("Track", "ITS_FirstCls", "ITS First Cluster;Layer No. of ITS 1st cluster;#Entries", 6, 0.5, 6.5, AliDielectronVarManager::kITSLayerFirstCls, kTRUE);
   histos->UserHistogram("Track", "TPCnCls", "Number of Clusters TPC;TPC number clusteres;#tracks", 161, -0.5, 160.5, AliDielectronVarManager::kNclsTPC, kTRUE);
@@ -1003,14 +1007,14 @@ void AliAnalysisTaskJpsiJet::InitHistogramsForDielectron(const char* histMgrName
   // Track - EMCal
   histos->UserHistogram("Track", "EMCalE", "EmcalE;Cluster Energy [GeV];#Clusters",
                         200, 0., 100., AliDielectronVarManager::kEMCALE, kTRUE);
-  histos->UserHistogram("Track", "EMCalE_P", "Cluster energy vs. pT; EMCal_E;pT;#tracks",
+  histos->UserHistogram("Track", "EMCalE_P", "Cluster energy vs. p_{IN}; EMCal_E (GeV);p_{IN} (GeV/c);#tracks",
                         800, 0., 40, 200, 0., 40.,  AliDielectronVarManager::kPIn, AliDielectronVarManager::kEMCALE, kTRUE);
   histos->UserHistogram("Track", "EMCalE_Pt", "Cluster energy vs. pT; EMCal_E;pT;#tracks",
                         800, 0., 40, 200, 0., 40.,  AliDielectronVarManager::kPt, AliDielectronVarManager::kEMCALE, kTRUE);
   //Ecluster versus Phi to separate EMCal and DCal
-  histos->UserHistogram("Track", "EMCalE_Phi", "Cluster energy vs. #phi; EMCal_E;Phi;#tracks",
+  histos->UserHistogram("Track", "EMCalE_Phi", "Cluster energy vs. #phi; EMCal_E (GeV);Phi;#tracks",
                         200, 0., TMath::TwoPi(), 200, 0., 40., AliDielectronVarManager::kPhi, AliDielectronVarManager::kEMCALE, kTRUE);
-  histos->UserHistogram("Track", "EMCalE_Eta", "Cluster energy vs. #eta; EMCal_E;Eta;#tracks",
+  histos->UserHistogram("Track", "EMCalE_Eta", "Cluster energy vs. #eta; EMCal_E (GeV);Eta;#tracks",
                         200, -1.0, 1.0, 200, 0., 40., AliDielectronVarManager::kEta, AliDielectronVarManager::kEMCALE, kTRUE);
   // PID - EMCal
   // E/p ratio
@@ -1025,7 +1029,7 @@ void AliAnalysisTaskJpsiJet::InitHistogramsForDielectron(const char* histMgrName
   histos->UserHistogram("Track", "EoverP_Eta", "E/p ratio vs #eta;Eta;E/p;#tracks",
                         200, -1.0, 1.0, 200, 0., 2., AliDielectronVarManager::kEta, AliDielectronVarManager::kEMCALEoverP, kTRUE);
   // EMCal nSigma electron
-  histos->UserHistogram("Track", "EMCALnSigmaE_P", "n#sigma_{e} vs Pt;Pt (GeV/c);n#sigma_{e};#tracks",
+  histos->UserHistogram("Track", "EMCALnSigmaE_P", "n#sigma_{e} vs P_{IN};P_{IN} (GeV/c);n#sigma_{e};#tracks",
                         200, 0., 40., 200, -12, 12, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEMCALnSigmaEle, kTRUE);
   histos->UserHistogram("Track", "EMCALnSigmaE_Phi", "n#sigma_{e} vs #phi;Phi;n#sigma_{e};#tracks",
                         200, 0., TMath::TwoPi(), 200, -12, 12, AliDielectronVarManager::kPhi, AliDielectronVarManager::kEMCALnSigmaEle, kTRUE);
@@ -1060,7 +1064,7 @@ void AliAnalysisTaskJpsiJet::InitHistogramsForDielectron(const char* histMgrName
   histos->UserHistogram("Pair", "PseudoProperTime", "Pseudoproper decay length; pseudoproper-decay-length[cm];#pairs / 40#mum",
                         600, -0.3, 0.3, AliDielectronVarManager::kPseudoProperTime);
   histos->UserHistogram("Pair", "InvMass_Pt", "Inv. Mass vs Pt;Pt (GeV/c); Inv. Mass (GeV/c^{2})",
-                        200, 0., 40., 100, 1.0, 5.0, AliDielectronVarManager::kPt, AliDielectronVarManager::kM);
+                        200, 0., 100., 100, 1.0, 5.0, AliDielectronVarManager::kPt, AliDielectronVarManager::kM);
   histos->UserHistogram("Pair", "OpeningAngle_Pt", "Opening angle vs p_{T} ;p_{T} (GeV/c); angle",
                         200, 0., 40., 200, 0, TMath::Pi(), AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
   //InvMass versus Proper time
@@ -1311,14 +1315,14 @@ void AliAnalysisTaskJpsiJet::InitHistogramsForJpsiMC(const char* histClass){
   "p_{T}^{jet} vs clustering area;p_{T,jet}^{gen} (GeV/c);A_{jet};",
       200, 0., 100., 100, 0., 2.);
   // Detector response with tagged jet
-    // z_det, z_gen, pT-det, pT-gen
-  Int_t nBinsDetZ[4]   = {11,   11,  100,  100};
-  Double_t xminDetZ[4] = { 0.,  0.,   0.,   0.};
-  Double_t xmaxDetZ[4] = {1.1, 1.1, 100., 100.};
+    // z_det, z_gen, pT-det, pT-gen, dz, dPtJet, dPtJpsi
+  Int_t nBinsDetZ[7]   = {11,   11,  100,  100, 200, 200, 200};
+  Double_t xminDetZ[7] = { 0.,  0.,   0.,   0., -1., -1., -1.};
+  Double_t xmaxDetZ[7] = {1.1, 1.1, 100., 100.,  1.,   1.,  1.};
   fHistosMC->CreateTHnSparse(
       Form("%s/Jet_DetResponse", histClass),
-      "Detector response matrix - Fragmentation Function with J/#psi tagged jet p_{T};z_{det};z_{gen};p_{T,jet}^{det} (GeV/c);p_{T,jet}^{gen} (GeV/c);",
-      4, nBinsDetZ, xminDetZ, xmaxDetZ);
+      "Detector response matrix - Fragmentation Function with J/#psi tagged jet p_{T};z_{det};z_{gen};p_{T,jet}^{det} (GeV/c);p_{T,jet}^{gen} (GeV/c);#delta z;#delta p_{T,jet};#delta p_{T,J/#psi};",
+      7, nBinsDetZ, xminDetZ, xmaxDetZ);
 }
 
 Bool_t AliAnalysisTaskJpsiJet::ApplyEmcalCut(AliVParticle* par, Bool_t isMCTruth = kTRUE){
@@ -1656,13 +1660,16 @@ Bool_t AliAnalysisTaskJpsiJet::FillHistogramsForTaggedJetMC(AliAODMCParticle* jp
 
   // Detector response
   if(!fTaggedJet) return kTRUE;
-  Double_t x[4] = {0.};
+  Double_t x[7] = {0.};
   // z-det
   x[0] = fJpsiPair->Pt() / fTaggedJet->Pt();
   if(fTaggedJet->GetNumberOfTracks() == 1) x[0] = 1.0;
   x[1] = z;  // z-gen
   x[2] = fTaggedJet->Pt(); // jet pT-det
   x[3] = fTaggedJetMC->Pt(); // jet pT-gen
+  x[4] = (x[0] - x[1]) / x[1]; // dz
+  x[5] = (x[2] - x[3]) / x[3]; // dPtJet
+  x[6] = (fJpsiPair->Pt() - fJpsiMC->Pt()) / fJpsiMC->Pt();
   fHistosMC->FillTHnSparse(Form("%s/Jet_DetResponse", fMCGenType.Data()), x, 1.0);
 
   return kTRUE;

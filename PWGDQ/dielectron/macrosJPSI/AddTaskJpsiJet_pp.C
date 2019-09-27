@@ -11,12 +11,16 @@ const char* TRIGGER_TAG[kNTrigIndex] = {
 
 AliAnalysisTaskJpsiJet* AddTaskJpsiJet_pp(
     int trigIndex = int(kALL),
-    Bool_t enableJetFinder = kTRUE){
+    Bool_t enableJetFinder = kTRUE,
+    TString period = "16k/pass1",
+    const char* suffix = ""){
   // Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 
   // Analysis Task
-  AliAnalysisTaskJpsiJet *task = new AliAnalysisTaskJpsiJet(Form("JpsiJet_PP13TeV_%s", TRIGGER_TAG[trigIndex]));
+  TString tag = suffix;// support subwagon
+  if(tag == "") tag = TRIGGER_TAG[trigIndex];
+  AliAnalysisTaskJpsiJet *task = new AliAnalysisTaskJpsiJet(Form("JpsiJet_PP13TeV_%s", tag.Data()));
   // Trigger
   switch(trigIndex){
     case kALL:
@@ -46,13 +50,28 @@ AliAnalysisTaskJpsiJet* AddTaskJpsiJet_pp(
 
   task->SetRejectPileup(kTRUE);
 
+  // ITS Improver - by F. Fionda
+  if(trigIndex == kMC && !period.Contains("16i")){
+    // Period check - 16k_pass1 -> LHC16k/pass1
+    period = "LHC" + period.ReplaceAll("_","/");
+    //add improver task before the tree maker 
+    TGrid::Connect("alien://"); // if not connected input files are not loaded by the improver task
+    gSystem->Load("libPWGHFvertexingHF.so"); // load the needed library
+    AliAnalysisTaskSEImproveITS *itsImpr =
+      reinterpret_cast<AliAnalysisTaskSEImproveITS*>(
+      gInterpreter->ExecuteMacro(
+      Form("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskImproveITS.C(kFALSE, \"%s\",\"central\")", period.Data())));
+    itsImpr->SetMimicData(kTRUE);
+    itsImpr->SetAOD(kTRUE);
+  }
+  
   if(task) mgr->AddTask(task);
 
   // Output container
   TString containerName = mgr->GetCommonFileName();
 	containerName += ":JpsiJetAnalysis";
 
-  AliAnalysisDataContainer* cHistos = mgr->CreateContainer(Form("QAhistos_%s", TRIGGER_TAG[trigIndex]), TList::Class(), AliAnalysisManager::kOutputContainer, containerName.Data());
+  AliAnalysisDataContainer* cHistos = mgr->CreateContainer(Form("QAhistos_%s", tag.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, containerName.Data());
 
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1, cHistos);
