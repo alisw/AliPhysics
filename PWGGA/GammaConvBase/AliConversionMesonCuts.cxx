@@ -1862,6 +1862,26 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fMinPt = 5.0;
     fDoMinPtCut = kTRUE;
     break;
+  case 9: // for triggered omega
+    fMinPt = 3.0;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 10: // for triggered omega
+    fMinPt = 4.0;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 11: // for triggered omega
+    fMinPt = 6.0;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 12: // for triggered omega
+    fMinPt = 8.0;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 13: // for triggered omega
+    fMinPt = 10.0;
+    fDoMinPtCut = kTRUE;
+    break;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
