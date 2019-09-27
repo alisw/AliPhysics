@@ -1,3 +1,7 @@
+#include "AliDielectronEventCuts.h"
+
+#include "AliAnalysisTaskJpsiJet.h"
+
 // Trigger Index : 0/ALL, 1/INT7, 2/EG1, 3/EG2, 4/DG1, 5/DG2, 6/MC
 enum TriggerIndex{
   kALL, kINT7, kEG1, kEG2, kDG1, kDG2, kMC, kNTrigIndex
@@ -11,7 +15,8 @@ const char* TRIGGER_TAG[kNTrigIndex] = {
 
 AliAnalysisTaskJpsiJet* AddTaskJpsiJet_pp(
     int trigIndex = int(kALL),
-    Bool_t enableJetFinder = kTRUE){
+    Bool_t enableJetFinder = kTRUE,
+    TString period = "16k/pass1"){
   // Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -46,6 +51,21 @@ AliAnalysisTaskJpsiJet* AddTaskJpsiJet_pp(
 
   task->SetRejectPileup(kTRUE);
 
+  // ITS Improver - by F. Fionda
+  if(trigIndex == kMC && !period.Contains("16i")){
+    // Period check - 16k_pass1 -> LHC16k/pass1
+    period = "LHC" + period.ReplaceAll("_","/");
+    //add improver task before the tree maker 
+    TGrid::Connect("alien://"); // if not connected input files are not loaded by the improver task
+    gSystem->Load("libPWGHFvertexingHF.so"); // load the needed library
+    AliAnalysisTaskSEImproveITS *itsImpr =
+      reinterpret_cast<AliAnalysisTaskSEImproveITS*>(
+      gInterpreter->ExecuteMacro(
+      Form("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskImproveITS.C(kFALSE, \"%s\",\"central\")", period.Data())));
+    itsImpr->SetMimicData(kTRUE);
+    itsImpr->SetAOD(kTRUE);
+  }
+  
   if(task) mgr->AddTask(task);
 
   // Output container
