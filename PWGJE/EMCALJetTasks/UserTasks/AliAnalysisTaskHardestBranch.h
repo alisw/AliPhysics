@@ -78,7 +78,7 @@ protected:
   void IterativeParentsAreaBased(AliEmcalJet *fJet, AliJetContainer *fJetCont);
   void IterativeParentsMCAverage(AliEmcalJet *fJet, Int_t km, Double_t &aver1,
                                  Double_t &aver2, Double_t &aver3,
-                                 Double_t &aver4);
+                                 Double_t &aver4, Double_t &aver5);
   void CheckSubjetResolution(AliEmcalJet *fJet, AliJetContainer *fJetCont,
                              AliEmcalJet *fJetM, AliJetContainer *fJetContM);
   Bool_t CheckClosePartner(Int_t index, AliEmcalJet *fJet, AliVParticle *fTrack,
@@ -89,7 +89,7 @@ protected:
   JetShapeType fJetShapeType; // jet type to be used
   JetShapeSub fJetShapeSub;   // jet subtraction to be used
   JetSelectionType fJetSelection; // Jet selection: inclusive/recoil jet
-  Float_t fShapesVar[18];         // jet shapes used for the tagging
+  Float_t fShapesVar[12];         // jet shapes used for the tagging
   Float_t fPtThreshold;
   Float_t fRMatching;
 
