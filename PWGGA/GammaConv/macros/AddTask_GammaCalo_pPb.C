@@ -571,6 +571,14 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("800ap113","2446600070012200000","0163103100000010"); // PHI7 CALOFAST
     cuts.AddCutCalo("80062113","244660007a012200000","0163103100000010"); // PHI7
 
+  } else if (trainConfig == 700){ // PHOS clusters standard cuts, triggers, no nonlin with TM
+    cuts.AddCutCalo("80010113","24466000ha012200000","0163103100000010"); // INT7
+  } else if (trainConfig == 701){ // PHOS clusters standard cuts, triggers, no nonlin with TM
+    cuts.AddCutCalo("80062113","24466000ha012200000","0163103100000010"); // PHI7
+  } else if (trainConfig == 702){ // PHOS clusters standard cuts, triggers, no nonlin without TM
+    cuts.AddCutCalo("80010113","24466000h0012200000","0163103100000010"); // INT7
+  } else if (trainConfig == 703){ // PHOS clusters standard cuts, triggers, no nonlin without TM
+    cuts.AddCutCalo("80062113","24466000h0012200000","0163103100000010"); // PHI7
   // ===============================================================================================
   // Run 1 data EMC triggers only
   // ===============================================================================================

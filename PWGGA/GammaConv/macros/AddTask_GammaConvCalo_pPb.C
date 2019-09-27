@@ -804,6 +804,11 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411793107f032230000","0h63103100000010"); // 30ns
 
 
+  // pPb 8 TeV PHOS
+  } else if (trainConfig == 3000){ // PHOS  INT7
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466000ha012200000","0h63103100000010"); // 0-100% without NL
+  } else if (trainConfig == 3001){ // PHOS  PHI7
+    cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","24466000ha012200000","0h63103100000010"); // 0-100% without NL
 
 
   } else {
