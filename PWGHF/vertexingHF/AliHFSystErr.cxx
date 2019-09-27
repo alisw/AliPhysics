@@ -9870,17 +9870,19 @@ void AliHFSystErr::InitD0toKpi2018PbPb010LowPtAn(){
   for(Int_t i=1;i<=32;i++) fBR->SetBinContent(i,0.0129);
 
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",32,0,16);
-  fTrackingEff->SetBinContent(1,0.080); // 0-0.5
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",32,0,16); // from ToyMC
+  fTrackingEff->SetBinContent(1,0.090); // 0-0.5
   fTrackingEff->SetBinContent(2,0.090); // 0.5-1
-  for(Int_t i=3;i<=6;i++) fTrackingEff->SetBinContent(i,0.10); //1-3
-  for(Int_t i=7;i<=10;i++) fTrackingEff->SetBinContent(i,0.11); //3-5
-  for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.10); //5-6
-  for(Int_t i=13;i<=14;i++) fTrackingEff->SetBinContent(i,0.095); //6-7
-  for(Int_t i=15;i<=16;i++) fTrackingEff->SetBinContent(i,0.090); //7-8
-  for(Int_t i=17;i<=20;i++) fTrackingEff->SetBinContent(i,0.085); //8-10
-  for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,0.080); //10-12
-  for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,0.075); //12-16
+  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.095); //1-2
+  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.10); //2-3
+  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.105); //3-4
+  for(Int_t i=9;i<=10;i++) fTrackingEff->SetBinContent(i,0.10); //4-5
+  for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.095); //5-6
+  for(Int_t i=13;i<=14;i++) fTrackingEff->SetBinContent(i,0.090); //6-7
+  for(Int_t i=15;i<=16;i++) fTrackingEff->SetBinContent(i,0.085); //7-8
+  for(Int_t i=17;i<=20;i++) fTrackingEff->SetBinContent(i,0.080); //8-10
+  for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,0.075); //10-12
+  for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,0.070); //12-16
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",32,0,16);
