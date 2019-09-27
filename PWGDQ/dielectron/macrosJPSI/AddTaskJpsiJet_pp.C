@@ -16,12 +16,15 @@ const char* TRIGGER_TAG[kNTrigIndex] = {
 AliAnalysisTaskJpsiJet* AddTaskJpsiJet_pp(
     int trigIndex = int(kALL),
     Bool_t enableJetFinder = kTRUE,
-    TString period = "16k/pass1"){
+    TString period = "16k/pass1",
+    const char* suffix = ""){
   // Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 
   // Analysis Task
-  AliAnalysisTaskJpsiJet *task = new AliAnalysisTaskJpsiJet(Form("JpsiJet_PP13TeV_%s", TRIGGER_TAG[trigIndex]));
+  TString tag = suffix;// support subwagon
+  if(tag == "") tag = TRIGGER_TAG[trigIndex];
+  AliAnalysisTaskJpsiJet *task = new AliAnalysisTaskJpsiJet(Form("JpsiJet_PP13TeV_%s", tag.Data()));
   // Trigger
   switch(trigIndex){
     case kALL:
@@ -72,7 +75,7 @@ AliAnalysisTaskJpsiJet* AddTaskJpsiJet_pp(
   TString containerName = mgr->GetCommonFileName();
 	containerName += ":JpsiJetAnalysis";
 
-  AliAnalysisDataContainer* cHistos = mgr->CreateContainer(Form("QAhistos_%s", TRIGGER_TAG[trigIndex]), TList::Class(), AliAnalysisManager::kOutputContainer, containerName.Data());
+  AliAnalysisDataContainer* cHistos = mgr->CreateContainer(Form("QAhistos_%s", tag.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, containerName.Data());
 
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1, cHistos);
