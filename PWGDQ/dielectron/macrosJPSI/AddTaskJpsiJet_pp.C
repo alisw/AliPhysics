@@ -1,7 +1,3 @@
-#include "AliDielectronEventCuts.h"
-
-#include "AliAnalysisTaskJpsiJet.h"
-
 // Trigger Index : 0/ALL, 1/INT7, 2/EG1, 3/EG2, 4/DG1, 5/DG2, 6/MC
 enum TriggerIndex{
   kALL, kINT7, kEG1, kEG2, kDG1, kDG2, kMC, kNTrigIndex
