@@ -577,16 +577,26 @@ void AliAnalysisTaskHardestBranch::IterativeParents(AliEmcalJet *fJet, AliJetCon
       tformvec.push_back(form);
             jj = j1;
     }
+    if(nall>0){
+
      auto result = std::max_element(ktvec.begin(), ktvec.end());
      indmax=std::distance(ktvec.begin(), result);
-     
+   
       
+    
+    fShapesVar[1] = ktvec[indmax];
+    fShapesVar[2] = tformvec[indmax];
+    fShapesVar[3] = zvec[indmax];
+    fShapesVar[4] = thetavec[indmax];
+    fShapesVar[5] = nvec[indmax];}
 
-    fShapesVar[1] = ktvec[indmax-1];
-    fShapesVar[2] = tformvec[indmax-1];
-    fShapesVar[3] = zvec[indmax-1];
-    fShapesVar[4] = thetavec[indmax-1];
-    fShapesVar[5] = nvec[indmax-1];
+     if(nall==0){
+       
+      fShapesVar[1] = -1;
+      fShapesVar[2] = -1;;
+      fShapesVar[3] = -1;;
+      fShapesVar[4] = -1;;
+      fShapesVar[5] = -1;}
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
@@ -665,16 +675,25 @@ void AliAnalysisTaskHardestBranch::IterativeParentsMCAverage(AliEmcalJet *fJet, 
       jj = j1;
     }
 
-    
+    if(nall>0){    
      auto result = std::max_element(ktvec.begin(), ktvec.end());
      indmax=std::distance(ktvec.begin(), result);
 
 
-    average1 = ktvec[indmax-1];
-    average2 = tformvec[indmax-1];
-    average3 = zvec[indmax-1];
-    average4 = thetavec[indmax-1];
-    average5 = nvec[indmax-1];
+    average1 = ktvec[indmax];
+    average2 = tformvec[indmax];
+    average3 = zvec[indmax];
+    average4 = thetavec[indmax];
+    average5 = nvec[indmax];}
+
+    if(nall==0){
+       average1 = -1;
+    average2 = -1;
+    average3 = -1;
+    average4 = -1;
+    average5 = -1;}
+
+    
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
