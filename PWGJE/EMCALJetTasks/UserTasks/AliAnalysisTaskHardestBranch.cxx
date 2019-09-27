@@ -135,13 +135,13 @@ void AliAnalysisTaskHardestBranch::UserCreateOutputObjects() {
 
   fShapesVarNames[0] = "ptJet";
   fShapesVarNames[1] = "ktg";
-  fShapesVarNames[2] = "tg";
+  fShapesVarNames[2] = "tfg";
   fShapesVarNames[3] = "zg";
   fShapesVarNames[4] = "rg";
   fShapesVarNames[5] = "ng";
   fShapesVarNames[6] = "ptJetMatch";
   fShapesVarNames[7] = "ktgMatch";
-  fShapesVarNames[8] = "tgMatch";
+  fShapesVarNames[8] = "tfgMatch";
   fShapesVarNames[9] = "zgMatch";
   fShapesVarNames[10] = "rgMatch";
   fShapesVarNames[11] = "ngMatch";
