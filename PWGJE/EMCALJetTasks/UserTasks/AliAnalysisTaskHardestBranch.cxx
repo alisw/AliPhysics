@@ -566,9 +566,9 @@ void AliAnalysisTaskHardestBranch::IterativeParents(AliEmcalJet *fJet, AliJetCon
       double delta_R = j1.delta_R(j2);
       double xkt = j2.perp() * sin(delta_R);
    
-     
-      double form = 2 * 0.197 * j2.e() / (xkt * xkt);
       double z = j2.perp() / (j2.perp() + j1.perp());
+      double form = 2 * 0.197 * j2.e() / ((1.-z)*xkt * xkt);
+      
       if(z>0.1) nsd=nsd+1;
       nvec.push_back(nsd);
       zvec.push_back(z);
@@ -661,10 +661,10 @@ void AliAnalysisTaskHardestBranch::IterativeParentsMCAverage(AliEmcalJet *fJet, 
       double delta_R = j1.delta_R(j2);
       double xkt = j2.perp() * sin(delta_R);
    
-    
-      double form = 2 * 0.197 * j2.e() / (xkt * xkt);
+       double z = j2.perp() / (j2.perp() + j1.perp());
+       double form = 2 * 0.197 * j2.e() / ((1.-z)*xkt * xkt);
       double rad = j2.e();
-      double z = j2.perp() / (j2.perp() + j1.perp());
+     
       if(z>0.1) nsd=nsd+1;
        
       zvec.push_back(z);
