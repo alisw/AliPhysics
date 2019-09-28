@@ -222,8 +222,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103603c00000000","0153503000000000"); // EMC7 (LHC11 acc)
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103683c00000000","0153503000000000"); // EMC7 min Pt cut 5 GeV
   } else if( trainConfig == 116){ // EMCal LHC11 with LHC10 acceptance cut
-    cuts.AddCutHeavyMesonCalo("00010113","1111a1105f032230000","32c51070a","0103603c00000000","0153503000000000"); // INT7 (LHC10 acc)
-    cuts.AddCutHeavyMesonCalo("00052113","1111a1105f032230000","32c51070a","0103603c00000000","0153503000000000"); // EMC7 (LHC10 acc)
+    cuts.AddCutHeavyMesonCalo("00010113","1111a11047032230000","32c51070a","0103603c00000000","0153503000000000"); // INT7 (LHC10 acc)
+    cuts.AddCutHeavyMesonCalo("00052113","1111a11047032230000","32c51070a","0103603c00000000","0153503000000000"); // EMC7 (LHC10 acc)
   // inv mass cut variation
   } else if( trainConfig == 117)  { 
     cuts.AddCutHeavyMesonCalo("00052113","111111105f032230000","32c51070a","0103603600000000","0153503000000000"); // EMC7 (LHC11 acc)
