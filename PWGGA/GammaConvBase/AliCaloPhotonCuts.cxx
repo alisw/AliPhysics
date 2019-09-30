@@ -6270,10 +6270,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if(fClusterType==1 || fClusterType==4){
         if(isMC){
           energy *= FunctionNL_OfficialTB_100MeV_MC(energy);
-          energy /= FunctionNL_kSDM(energy, 0.972695, -3.37305, -0.202613) ;
-          if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
-            energy /= 1.01702;
-          }
+          // energy /= FunctionNL_kSDM(energy, 0.972695, -3.37305, -0.202613) ;
+          // if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
+          //   energy /= 1.01702;
+          // }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
         }
@@ -6285,10 +6285,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if(fClusterType==1 || fClusterType==4){
         if(isMC){
           energy *= FunctionNL_OfficialTB_100MeV_MC(energy);
-          energy /= FunctionNL_kSDM(energy, 0.983116, -3.66061, -0.119073) ;
-          if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
-            energy /= 1.0175;
-          }
+          // energy /= FunctionNL_kSDM(energy, 0.983116, -3.66061, -0.119073) ;
+          // if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
+          //   energy /= 1.0175;
+          // }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
         }
@@ -6300,10 +6300,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if(fClusterType==1 || fClusterType==4){
         if(isMC){
           energy *= FunctionNL_OfficialTB_100MeV_MC(energy);
-          energy /= (FunctionNL_DExp(energy, 1.0246042651, 0.6505466585, -3.8786840593, 1.0609702616, 0.1971682118, -2.8581050225));
-          if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
-            energy /= 1.0175;
-          }
+          // energy /= (FunctionNL_DExp(energy, 1.0246042651, 0.6505466585, -3.8786840593, 1.0609702616, 0.1971682118, -2.8581050225));
+          // if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
+          //   energy /= 1.0175;
+          // }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
         }
@@ -6315,10 +6315,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if(fClusterType==1 || fClusterType==4){
         if(isMC){
           energy *= FunctionNL_OfficialTB_100MeV_MC(energy);
-          energy /= (FunctionNL_DPOW(energy, 1.0433754550, -0.0429771943, -0.4999999999, 1.1947967487, -0.1995689867, -0.0998279631));
-          if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
-            energy /= 1.0175;
-          }
+          // energy /= (FunctionNL_DPOW(energy, 1.0433754550, -0.0429771943, -0.4999999999, 1.1947967487, -0.1995689867, -0.0998279631));
+          // if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c || fCurrentMC==k17g8a) {
+          //   energy /= 1.0175;
+          // }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
         }
@@ -6680,7 +6680,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if(isMC){
         energy *= FunctionNL_OfficialTB_100MeV_MC(energy);
       } else {
-        energy /= FunctionNL_OfficialTB_100MeV_Data_Error(energy);
+        energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
       }
       break;
     // EDC based nonlinearity kSDM
@@ -6689,7 +6689,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if(isMC){
         energy *= FunctionNL_OfficialTB_50MeV_MC(energy);
       } else {
-        energy /= FunctionNL_OfficialTB_50MeV_Data_Error(energy);
+        energy /= FunctionNL_OfficialTB_50MeV_Data(energy);
       }
       break;
     // PCM-EDC based nonlinearity DExp or DPow
@@ -6698,7 +6698,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if(isMC){
         energy *= FunctionNL_OfficialTB_150MeV_MC(energy);
       } else {
-        energy /= FunctionNL_OfficialTB_150MeV_Data_Error(energy);
+        energy /= FunctionNL_OfficialTB_150MeV_Data(energy);
       }
       break;
     // EDC based nonlinearity DExp or DPow
@@ -6707,7 +6707,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if(isMC){
         energy *= FunctionNL_OfficialTB_300MeV_MC(energy);
       } else {
-        energy /= FunctionNL_OfficialTB_300MeV_Data_Error(energy);
+        energy /= FunctionNL_OfficialTB_300MeV_Data(energy);
       }
       break;
     case 65: //50MeV TB update
@@ -6740,14 +6740,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy *= FunctionNL_kPi0MCMod(energy, 0.898861, 1.109502, 0.083507, 1.910893, 0.285469, 469.340995, 3605.837798);
           energy /= FunctionNL_DPOW(energy, 0.9969964995, -0.0023796998, -6.1181405682, 0.9926523280, 0.0080737917, -3.6584464200);
         }
-      }
-      break;
-    case 69: //50MeV TB + EMC Corr update
-      // apply testbeam nonlinearity (same as case 1) but with resolution uncertainy
-      if(isMC){
-        energy /= FunctionNL_OfficialTB_100MeV_MC_Error(energy);
-      } else {
-        energy /= FunctionNL_OfficialTB_100MeV_Data_Error(energy);
       }
       break;
 
@@ -7129,58 +7121,37 @@ Float_t AliCaloPhotonCuts::FunctionNL_ExpExp(Float_t e, Float_t p0, Float_t p1, 
 // testbeam parametrizations by Martin and Nico for different aggregation thresholds (still work in progress)
 // Data params
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_50MeV_Data(Float_t e){
-  Double_t funcParams[5] = {0.965782, 0.017567, 0.0907133, 119.679, 79.7096};
-  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
+  Double_t funcParams[5] = {0.960211, 0.0142135, 0.0786752, 130.306, 65.9035};
+  return ( 1.0585 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
 }
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data(Float_t e){
-  Double_t funcParams[5] = {0.942647, 0.0203213, 0.0857291, 121.284, 75.378};
-  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
+  Double_t funcParams[5] = {0.941138, 0.0172153, 0.0783153, 130.869, 64.9742};
+  return ( 1.0505 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
 }
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_150MeV_Data(Float_t e){
-  Double_t funcParams[5] = {0.921852, 0.018581, 0.0719137, 133.968, 59.0397};
-  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
+  Double_t funcParams[5] = {0.921363, 0.0200311, 0.0776928, 132.598, 62.9008};
+  return ( 1.0505 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
 }
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_300MeV_Data(Float_t e){
-  Double_t funcParams[5] = {0.897711, 0.0162085, 0.0564139, 148.2, 41.0511};
-  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
-}
-Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_MC_Error(Float_t e){
-  Double_t funcParams[5] = {4.37267, 0.0636557, 3.11756, -613.126, 3913.14};
-  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
-}
-// Data params with resolution uncertainty
-Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_50MeV_Data_Error(Float_t e){
-  Double_t funcParams[5] = {0.960211, 0.0142135, 0.0786752, 130.306, 65.9035};
-  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
-}
-Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data_Error(Float_t e){
-  Double_t funcParams[5] = {0.941138, 0.0172153, 0.0783153, 130.869, 64.9742};
-  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
-}
-Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_150MeV_Data_Error(Float_t e){
-  Double_t funcParams[5] = {0.921363, 0.0200311, 0.0776928, 132.598, 62.9008};
-  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
-}
-Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_300MeV_Data_Error(Float_t e){
   Double_t funcParams[5] = {0.88448, 0.0240087, 0.0712406, 136.93, 55.1195};
-  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
+  return ( 1.0505 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
 }
 // MC params
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_50MeV_MC(Float_t e){
-  Double_t funcParams[7] = {0.966846, 1.03622, 0.0505242, 3.97654, 0.101447, 245.895, 1024.95};
-  return ( funcParams[0] / ( funcParams[1] * ( 1. / ( 1. + funcParams[2] * exp( -e / funcParams[3] ) ) * 1. / ( 1. + funcParams[4] * exp( ( e - funcParams[5] ) / funcParams[6] ) ) ) ) );
+  Double_t funcParams[5] = {4.24777, 0.0383424, 3.00719, -536.41, 4329.67};
+  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
 }
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_MC(Float_t e){
-  Double_t funcParams[7] = {1.00857, 0.995961, 0.0642383, 5.25045, 0.0319278, 317.904, 123.764};
-  return ( funcParams[0] / ( funcParams[1] * ( 1. / ( 1. + funcParams[2] * exp( -e / funcParams[3] ) ) * 1. / ( 1. + funcParams[4] * exp( ( e - funcParams[5] ) / funcParams[6] ) ) ) ) );
+  Double_t funcParams[5] = {4.37267, 0.0636557, 3.11756, -613.126, 3913.14};
+  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
 }
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_150MeV_MC(Float_t e){
-  Double_t funcParams[7] = {1.01078, 0.993756, 0.0725542, 6.54058, 0.0191297, 290.146, 120.73};
-  return ( funcParams[0] / ( funcParams[1] * ( 1. / ( 1. + funcParams[2] * exp( -e / funcParams[3] ) ) * 1. / ( 1. + funcParams[4] * exp( ( e - funcParams[5] ) / funcParams[6] ) ) ) ) );
+  Double_t funcParams[5] = {4.68642, 0.0844255, 3.49109, -572.864, 3786.48};
+  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
 }
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_300MeV_MC(Float_t e){
-  Double_t funcParams[7] = {1.01433, 0.990018, 0.0724139, 11.7378, 0.0106321, 300.997, 139.509};
-  return ( funcParams[0] / ( funcParams[1] * ( 1. / ( 1. + funcParams[2] * exp( -e / funcParams[3] ) ) * 1. / ( 1. + funcParams[4] * exp( ( e - funcParams[5] ) / funcParams[6] ) ) ) ) );
+  Double_t funcParams[5] = {3.13707, 0.0675494, 2.16932, -483.678, 3730.81};
+  return ( 1.00 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
 }
 
 // other testbeam parametrization
