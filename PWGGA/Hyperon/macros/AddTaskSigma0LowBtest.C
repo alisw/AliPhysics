@@ -98,7 +98,7 @@ AliAnalysisTaskSE *AddTaskSigma0LowBtest(bool isMC = false, TString trigger =
   antiv0Cuts->SetPosPID(AliPID::kPion, 211);
   antiv0Cuts->SetNegPID(AliPID::kProton, -2212);
 
-  if (suffix != "0") {
+  if (suffix != "0" || suffix != "1") {
     v0Cuts->SetLightweight(true);
     antiv0Cuts->SetLightweight(true);
   }
@@ -115,7 +115,7 @@ AliAnalysisTaskSE *AddTaskSigma0LowBtest(bool isMC = false, TString trigger =
   sigmaCuts->SetPDG(3212, 3122, 22);
   sigmaCuts->SetLambdaCuts(v0Cuts);
   sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
-  if (suffix != "0" && suffix != "999") {
+  if (suffix != "0" && suffix != "1" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
   }
 
@@ -125,7 +125,7 @@ AliAnalysisTaskSE *AddTaskSigma0LowBtest(bool isMC = false, TString trigger =
   antiSigmaCuts->SetPDG(-3212, -3122, 22);
   antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
-  if (suffix != "0" && suffix != "999") {
+  if (suffix != "0" && suffix != "1" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
   }
 
@@ -171,7 +171,7 @@ AliAnalysisTaskSE *AddTaskSigma0LowBtest(bool isMC = false, TString trigger =
   task->SetSigmaCuts(sigmaCuts);
   task->SetAntiSigmaCuts(antiSigmaCuts);
 
-  if (suffix != "0" && suffix != "999") {
+  if (suffix != "0" && suffix != "1" && suffix != "999") {
     task->SetLightweight(true);
   }
 
