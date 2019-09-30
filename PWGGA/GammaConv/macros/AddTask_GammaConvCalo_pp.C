@@ -780,7 +780,7 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 200){ // EMCAL clusters pp 7 TeV, pT dep matching
     cuts.AddCutPCMCalo("00000113","00200009327000008250400000","11111110b7032230000","0163103100000010"); // std
   } else if ( trainConfig == 201){ // EMCAL clusters pp 7 TeV, pT dep matching
-    cuts.AddCutPCMCalo("00000113","00200009327000008250400000","11111110b7032230000","0163103100000010"); // std
+    cuts.AddCutPCMCalo("00000113","00200009327000008250400000","11111310b7032230000","0163103100000010"); // std TB NL
   } else if ( trainConfig == 202){ //EMCAL minEnergy variation
     cuts.AddCutPCMCalo("00000113","00200009327000008250400000","11111110b7022230000","0163103100000010"); //0.6 GeV/c
     cuts.AddCutPCMCalo("00000113","00200009327000008250400000","11111110b7032230000","0163103100000010"); //0.7 GeV/c default
