@@ -1973,7 +1973,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
     
       // check whether it is Lambda candidates
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.23 && xyp > 0.9 && isPosProtonForTPC && isNegPionForTPC && (massLambda > 1.07) && (massLambda < 1.15)){
+      if(ctL && lCPA > fLambdaCPA && xyn > 0.23 && xyp > 0.1 && isPosProtonForTPC && isNegPionForTPC && (massLambda > 1.07) && (massLambda < 1.15)){
         selectedLambda->Add(v0);
         Double_t spLambda[4] = {massLambda, lPt, lCent, lPVz};
         if(fEffCorr){
@@ -2014,7 +2014,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
 
     // check whether it is AntiLambda candidates   
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.9 && xyp > 0.23 && isPosPionForTPC && isNegProtonForTPC && (massAntiLambda > 1.07) && (massAntiLambda < 1.15)){
+      if(ctL && lCPA > fLambdaCPA && xyn > 0.1 && xyp > 0.23 && isPosPionForTPC && isNegProtonForTPC && (massAntiLambda > 1.07) && (massAntiLambda < 1.15)){
         selectedAntiLambda->Add(v0);
         Double_t spAntiLambda[4] = {massAntiLambda, lPt, lCent, lPVz};
         if(fEffCorr){
