@@ -464,6 +464,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   const float PhotonArmenterosUp = 0.1;
 
   AliSigma0PhotonCuts *photon = AliSigma0PhotonCuts::PhotonCuts();
+  photon->SetIsMC(isMC);
   if (suffix != "0") {
     photon->SetLightweight(true);
   }
