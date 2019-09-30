@@ -462,14 +462,15 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
   AddTracksToEvent(fTracksCont1, event_full);
   AddTracksToEvent(fTracksCont2, event_full);
 
+  //get backgr-subtracted jets
   Double_t rho;
   Double_t rho_sparse;
-  std::vector<fastjet::PseudoJet> event_backsub = GetBackSubEvent(event_full, rho, rho_sparse, fbcoption);
+  InitializeSubtractor(event_full, rho, rho_sparse, fbcoption);
   fhRho->Fill(rho);
   fhRhoSparse->Fill(rho_sparse);
 
-  fastjet::ClusterSequenceArea clust_seq_backsub(event_backsub, jet_def, area_def);
-  std::vector<fastjet::PseudoJet> jets_backsub = sorted_by_pt( sel_jets(clust_seq_backsub.inclusive_jets()) );
+  fastjet::ClusterSequenceArea* cs_backsub(nullptr); //CS must be in the scope
+  std::vector<fastjet::PseudoJet> jets_backsub = GetBackSubJets(event_full, cs_backsub);
 
   std::vector<fastjet::PseudoJet> jets_backsub_filtered;
   for (auto jet : jets_backsub) {
@@ -517,6 +518,9 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
   }
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+
+  if (cs_backsub)   delete cs_backsub;
+  if (fCSubtractor) delete fCSubtractor;
 
   return kTRUE;
 }
