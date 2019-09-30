@@ -54,7 +54,7 @@ ClassImp(AliAnalysisTaskNewJetSubstructure)
       fRMatching(0.2), fCentSelectOn(kTRUE), fCentMin(0), fCentMax(10),
       fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE),
       fDoFillMCLund(kFALSE), fCheckResolution(kFALSE), fSubjetCutoff(0.1),
-      fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE),
+      fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
       fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
       fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
       fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
@@ -79,7 +79,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
       fCentSelectOn(kTRUE), fCentMin(0), fCentMax(10),
       fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE),
       fDoFillMCLund(kFALSE), fCheckResolution(kFALSE), fSubjetCutoff(0.1),
-      fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE),
+      fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
       fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
       fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
       fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
@@ -406,6 +406,9 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 
       fShapesVar[0] = ptSubtracted;
       fShapesVar[10] = jet1->MaxTrackPt();
+
+      if(fCutDoubleCounts==kTRUE && fJetShapeType==kDetEmbPartPythia) if(jet1->MaxTrackPt()>jet3->MaxTrackPt()) continue;
+      
       IterativeParents(jet1, jetCont);
 
       Float_t ptMatch = 0.;
