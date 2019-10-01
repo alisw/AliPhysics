@@ -181,7 +181,9 @@ fMeanV0M(1.),
 fMeanV0M_PartLevel(1.),
 fFillSigTT(1),
 fPhiCut(TMath::Pi()-0.6),
-fRandom(0)
+fRandom(0),
+fJetR(0.4),
+fJetAcut(0.)                            
 {
    //default constructor
    for(Int_t ir=0; ir< kRho; ir++){
@@ -207,7 +209,11 @@ fRandom(0)
       fhClusterEtaIncl[itg] = 0x0;
 
       fhTrackPtEtaPhiV0norm[itg] = 0x0;
-  
+      fhJetPtEtaPhiV0norm[itg] = 0x0;
+      for(Int_t i=0; i<fkTTbins; i++){
+         fhJetPtEtaPhiV0normTTH[itg][i] = 0x0;
+      } 
+ 
       for(Int_t ir=0; ir<kRho; ir++){
          fhJetPtAreaV0norm[itg][ir] = 0x0;
          fhRho[itg][ir] = 0x0;
@@ -517,7 +523,9 @@ fMeanV0M(1.),
 fMeanV0M_PartLevel(1.),
 fFillSigTT(1),
 fPhiCut(TMath::Pi()-0.6),
-fRandom(0)
+fRandom(0),
+fJetR(0.4),
+fJetAcut(0.)                            
 {
    //Constructor
    for(Int_t ir=0; ir<kRho; ir++){
@@ -540,6 +548,10 @@ fRandom(0)
       fhJetEtaIncl[itg]=0x0;
 
       fhTrackPtEtaPhiV0norm[itg] = 0x0;
+      fhJetPtEtaPhiV0norm[itg] = 0x0;
+      for(Int_t i=0; i<fkTTbins; i++){
+         fhJetPtEtaPhiV0normTTH[itg][i] = 0x0;
+      } 
 
       fhClusterPhiIncl[itg] = 0x0;
       fhClusterEtaIncl[itg] = 0x0;
@@ -966,6 +978,8 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
    task->SetKTMCPartJetContainerName(ktjetarraynamePartMC);
    task->SetKTMCDetJetContainerName(ktjetarraynameDetMC);
 
+   task->SetJetRadius(jetRadius); 
+   task->SetJetAcut(acut);
 
    task->SetUseNewCentralityEstimation(kTRUE);  //CENTRALITY
 
@@ -2023,6 +2037,14 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                         tmparr[2] = jetPtCorrDet;
                         tmparr[3] = TMath::Abs(dphi);
                         fhRecoilJetTTH_V0Mnorm1[itg][itt][ir]->Fill(tmparr); 
+
+                        if(ir==0){
+                           tmparr[0] = jet->Pt();
+                           tmparr[1] = jet->Eta();
+                           tmparr[2] = jet->Phi();
+                           tmparr[3] = fMultV0Mnorm;
+                           fhJetPtEtaPhiV0normTTH[itg][itt]->Fill(tmparr); 
+                        }
                      } 
                     
                      if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > fPhiCut){     //select recoil jet
@@ -2032,21 +2054,84 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                            fhRecoilJetPtTTH_V0Mnorm1[itg][itt][ir]->Fill(fMultV0Mnorm, jetPtCorrDet);
                     
                            if(itt==0){ //reference with shifted rho
-                              if(ir==krhocms){
-                                 if(itg==kMB){
-                                    shift1 = -0.0103762;  // pT shift of 6,7 w.r.t. 20 30             
-                                    shift2 = -0.0036348;  // pT shift of 6,7 w.r.t. 12 20           
-                                 }else{
-                                    shift1 = 0.0217975;  // pT shift of 6,7 w.r.t. 20 30             
-                                    shift2 = 0.0124912;  // pT shift of 6,7 w.r.t. 12 20           
+                              if(TMath::Abs( fJetAcut) < 1e-4){  //no area cut                            
+
+                                 if(TMath::Abs(fJetR -0.4) < 1e-3){ //R=0.4 jets 
+
+                                    if(itg==kMB){
+                                       if(ir==krhokt){
+                                          shift1 =  0.000896396;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = -0.00603773;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }else{
+                                          shift1 = -0.00500762;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = -0.0120839;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }
+                                    }else{
+                                       if(ir==krhokt){
+                                          shift1 = 0.0179261;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = 0.0322556;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }else{
+                                          shift1 = 0.0117027;  // pT shift of 6,7 w.r.t. 12 20            
+                                          shift2 = 0.0207614;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }
+                                    }
+                                 }else{  //R=0.2 jets
+                                    if(itg==kMB){
+                                       if(ir==krhokt){
+                                          shift1 = -0.0123206;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = -0.0217714;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }else{
+                                          shift1 = -0.0170195;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = -0.0292258;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }
+                                    }else{
+                                       if(ir==krhokt){
+                                          shift1 = 0.00595735;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = 0.010721;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }else{
+                                          shift1 = 0.00394271;  // pT shift of 6,7 w.r.t. 12 20            
+                                          shift2 = 0.00688605;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }
+                                    }
                                  }
-                              }else{
-                                 if(itg==kMB){
-                                    shift1 = 0.;  // pT shift of 6,7 w.r.t. 20 30             
-                                    shift2 = 0.;  // pT shift of 6,7 w.r.t. 12 20           
-                                 }else{
-                                    shift1 = 0.;  // pT shift of 6,7 w.r.t. 20 30             
-                                    shift2 = 0.;  // pT shift of 6,7 w.r.t. 12 20           
+                              }else{ //jet area cut
+                                 if(TMath::Abs(fJetR -0.4) < 1e-3){ //R=0.4 jets 
+
+                                    if(itg==kMB){
+                                       if(ir==krhokt){
+                                          shift1 = -0.0021434;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = 0.000527553;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }else{
+                                          shift1 = -0.00283202;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = -0.00473093;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }
+                                    }else{
+                                       if(ir==krhokt){
+                                          shift1 = 0.0223449;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = 0.0386102;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }else{
+                                          shift1 = 0.0136156;  // pT shift of 6,7 w.r.t. 12 20            
+                                          shift2 = 0.0222889;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }
+                                    }
+                                 }else{  //R=0.2 jets
+                                    if(itg==kMB){
+                                       if(ir==krhokt){
+                                          shift1 = -0.00873796;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = -0.0166677;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }else{
+                                          shift1 = -0.0146481;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = -0.0272;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }
+                                    }else{
+                                       if(ir==krhokt){
+                                          shift1 = 0.00578544;  // pT shift of 6,7 w.r.t. 12 20             
+                                          shift2 = 0.0110027;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }else{
+                                          shift1 = 0.00355317;  // pT shift of 6,7 w.r.t. 12 20            
+                                          shift2 = 0.0070802;  // pT shift of 6,7 w.r.t. 20 30           
+                                       }
+                                    }
                                  }
                               }
                               jetPtCorrDetShift1 = jetPtCorrDet - shift1;
@@ -2202,12 +2287,18 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          jet = jetIterator.second;  // Get the pointer to jet object
          if(!jet)  continue; 
   
+         tmparr[0] = jet->Pt();
+         tmparr[1] = jet->Eta();
+         tmparr[2] = jet->Phi();
+         tmparr[3] = fMultV0Mnorm;
+
          for(Int_t ir=0; ir<kRho; ir++){ 
             jetPtCorrDet = jet->Pt() - rho[ir]*jet->Area();
             
             tmparr3[0] = jetPtCorrDet;
             tmparr3[1] = jet->Area();
             tmparr3[2] = fMultV0Mnorm;
+
             
             for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
                if(!trigflag[itg]) continue; //check which trigger fired
@@ -2215,6 +2306,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                if(ir==0){ 
                   fhJetPhiIncl[itg]->Fill(jetPtCorrDet, jet->Phi());
                   fhJetEtaIncl[itg]->Fill(jetPtCorrDet, jet->Eta());
+                  fhJetPtEtaPhiV0norm[itg]->Fill(tmparr);
                }
             
                fhJetPtAreaV0norm[itg][ir]->Fill(tmparr3);
@@ -2802,6 +2894,36 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fhTrackPtEtaPhiV0norm[itg] = new  THnSparseF(name.Data(),"Tracks pt eta phi V0nom", ktdim, tbins, txmin, txmax);
       fOutput->Add((THnSparse*) fhTrackPtEtaPhiV0norm[itg]); 
    } 
+
+   //jets
+   const Int_t kjetdim = 4;
+   Int_t   jetbins[kjetdim] = {100,   40, 140, 10};
+   Double_t jetxmin[kjetdim] = { 0., -0.9,  0,  0.};  
+   Double_t jetxmax[kjetdim] = {100.,  0.9, 2*TMath::Pi(), 10.};  
+
+
+   for(Int_t itg=kMB; itg<=kHM; itg++){
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue; 
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kGA) continue; 
+
+      name = Form("fhJetPtEtaPhiV0norm_%s",trig[itg].Data());
+
+      fhJetPtEtaPhiV0norm[itg] = new  THnSparseF(name.Data(),"Jet pt eta phi V0nom", kjetdim, jetbins, jetxmin, jetxmax);
+      fOutput->Add((THnSparse*) fhJetPtEtaPhiV0norm[itg]); 
+   } 
+
+   for(Int_t itg=kMB; itg<=kHM; itg++){
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue; 
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kGA) continue; 
+
+      for(Int_t itt=0; itt<fnHadronTTBins;itt++){ //HADRON TT
+         name = Form("fhJetPtEtaPhiV0norm_%s_TTH%d_%d",trig[itg].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+
+         fhJetPtEtaPhiV0normTTH[itg][itt] = new  THnSparseF(name.Data(),"Jet pt eta phi V0nom", kjetdim, jetbins, jetxmin, jetxmax);
+         fOutput->Add((THnSparse*) fhJetPtEtaPhiV0normTTH[itg][itt]); 
+      }
+   } 
+
 
 
    const Int_t kjdim = 3;

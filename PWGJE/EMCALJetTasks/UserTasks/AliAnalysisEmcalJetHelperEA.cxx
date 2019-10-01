@@ -28,7 +28,7 @@ using namespace PWGJE::EMCALJetTasks;
 using namespace std;
 
 // Run by run mean V0 multiplicities detector level and  particle level in pp 13 TeV 
-// Author Filip Krizek   (9.8. 2019)
+// Author Filip Krizek   (1.10. 2019)
 
 /// \cond CLASSIMP
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA);
@@ -39,12 +39,12 @@ ClassImp(PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA);
 AliAnalysisEmcalJetHelperEA::AliAnalysisEmcalJetHelperEA():
    TObject(),
    fnRun(0),
-   fMeanV0A_PartLevel(12.709),
-   fMeanV0C_PartLevel(12.6056),
-   fMeanV0M_PartLevel(25.3146),
-   fMeanV0A_DetLevel(40.2976),
-   fMeanV0C_DetLevel(56.3623),
-   fMeanV0M_DetLevel(96.6599)
+   fMeanV0A_PartLevel(13.6185),
+   fMeanV0C_PartLevel(13.4742),
+   fMeanV0M_PartLevel(27.0927),
+   fMeanV0A_DetLevel(41.7158),
+   fMeanV0C_DetLevel(58.3741),
+   fMeanV0M_DetLevel(100.09)
 {
    //default constructor
 
