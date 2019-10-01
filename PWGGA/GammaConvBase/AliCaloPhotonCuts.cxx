@@ -4407,6 +4407,26 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(1.61742e+00,1.69595e+00,1.07106e-01,4.83419e-01,1.42459e-01,1.97986e+02,1.82539e+02);
     break;
+  case 22: //m PHOS timing cut, 13TeV MB 30ns, applying timing cut efficiency in MC
+    if (!fUseTimeDiff) fUseTimeDiff=1;
+    fMinTimeDiff=-30e-9;
+    fMaxTimeDiff=30e-9;//30ns
+    fUseTimingEfficiencyMCSimCluster = 1;
+    fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
+    fFuncTimingEfficiencyMCSimCluster->SetParameters(1.01021e+00,1.00143e+00,1.36545e+01,1.49372e-01,-1.09826e-01,5.56485e+02,1.25420e+01);
+    fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "[0]*(x-[1])");
+    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(-3.89726e-02, 6.00000e+00);
+    break;
+  case 23: //n PHOS timing cut, 13TeV Trigger 30ns, applying timing cut efficiency in MC
+    if (!fUseTimeDiff) fUseTimeDiff=1;
+    fMinTimeDiff=-30e-9;
+    fMaxTimeDiff=30e-9;//30ns
+    fUseTimingEfficiencyMCSimCluster = 1;
+    fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
+    fFuncTimingEfficiencyMCSimCluster->SetParameters(1.01021e+00,1.00143e+00,1.36545e+01,1.49372e-01,-1.09826e-01,5.56485e+02,1.25420e+01);
+    fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
+    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(6.00000e+00, 3.50809e-01, 6.96152e-01, 1.54686e+01, 2.55793e-03);
+    break;
   default:
     AliError(Form("Timing Cut not defined %d",timing));
     return kFALSE;
