@@ -29,14 +29,14 @@ AliFemtoCorrFctnDEtaDPhiStar
   , fMagneticField(0)
 {
   fDPhiDEtaNumerator = new TH2F("Num" + p.suffix,
-                                Form("#Delta#eta & #Delta#phi* Numerator - (Raidus = %g);"
+                                Form("#Delta#eta & #Delta#phi* Numerator - (Radius = %g);"
                                      "#Delta#eta;"
                                      "#Delta#phi*;", fRadius),
                                 p.nbins_eta, -p.eta_max, p.eta_max,
                                 p.nbins_phi, -p.phi_max, p.phi_max);
 
   fDPhiDEtaDenominator = new TH2F("Den" + p.suffix,
-                                Form("#Delta#eta & #Delta#phi* Denominator - (Raidus = %g);"
+                                Form("#Delta#eta & #Delta#phi* Denominator - (Radius = %g);"
                                      "#Delta#eta;"
                                      "#Delta#phi*;", fRadius),
                                 p.nbins_eta, -p.eta_max, p.eta_max,
