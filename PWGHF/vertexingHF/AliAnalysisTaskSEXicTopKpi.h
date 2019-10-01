@@ -157,7 +157,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   // calculate weight to treat reco true Lc as Xic (mfaggin)
   
-  void SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Int_t itrack1=-1,Int_t itrack2=-1,Int_t itrackThird=-1);
+  void SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselpKpi=0x0,Bool_t *arrayPIDselpiKpi=0x0,Int_t itrack1=-1,Int_t itrack2=-1,Int_t itrackThird=-1);
   void FillArrayVariableSparse(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Double_t *point,Int_t massHypothesis);  
   Double_t Weight_fromLc_toXic(AliAODMCParticle* p, AliAODMCParticle* prong);
   void PrepareTracks(AliAODEvent *aod,TClonesArray *mcArray=0x0);
