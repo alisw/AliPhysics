@@ -230,7 +230,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fKeepOnlyBkgFromHIJING;          /// flag to keep the background from HIJING only
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,35);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,34);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
