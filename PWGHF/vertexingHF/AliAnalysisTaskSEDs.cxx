@@ -119,6 +119,9 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   fPtBinsModel(),
   fModels(),
   fEnablePIDMLHistos(kFALSE),
+  fNMLBins(300),
+  fMLOutputMin(0.85),
+  fMLOutputMax(1.0),
   fFillBkgSparse(kFALSE),
   fKeepOnlyBkgFromHIJING(kFALSE)
 {
@@ -239,6 +242,9 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   fPtBinsModel(),
   fModels(),
   fEnablePIDMLHistos(kFALSE),
+  fNMLBins(300),
+  fMLOutputMin(0.85),
+  fMLOutputMax(1.0),
   fFillBkgSparse(kFALSE),
   fKeepOnlyBkgFromHIJING(kFALSE)
 {
@@ -1949,11 +1955,8 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   Double_t maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
 
   Int_t nSparseAxes = knVarForSparse;
-  Int_t nMLBins = 300;
-  if(!fApplyML) {
-    nMLBins = 1;
+  if(!fApplyML)
     nSparseAxes--;
-  }
 
   Int_t nPtBins = (Int_t)fPtLimits[fNPtBins];
   if(fUseFinPtBinsForSparse)
@@ -1967,9 +1970,9 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
 
   if (fSystem == kpp)
   {
-    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nMLBins};
-    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., 0.85};
-    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 1.};
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., fMLOutputMin};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax};
     std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
     std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
     std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
@@ -1979,18 +1982,18 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     nInvMassBins = (Int_t)(0.45 / fMassBinSize + 0.5);
     minMass = massDs - 0.5 * nInvMassBins * fMassBinSize;
     maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
-    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, nMLBins};
-    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., 0.85};
-    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 1.};
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, fNMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., fMLOutputMin};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax};
     std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
     std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
     std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
   }
   else if (fSystem == kUpgr)
   {
-    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, nMLBins};
-    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., 0.85};
-    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., 1.};
+    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins};
+    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., fMLOutputMin};
+    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax};
     std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
     std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
     std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);

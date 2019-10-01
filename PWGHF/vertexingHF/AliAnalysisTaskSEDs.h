@@ -86,6 +86,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
   void EnablePIDMLHistos(Bool_t enable=kTRUE) {fEnablePIDMLHistos=enable;}
+  void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
 
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -221,12 +222,15 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   std::vector<AliExternalBDT> fModels;    //!<! vector of ML models (BDTs for now)
   TH3F* fHistNsigmaPIDVsML[3][6];         //!<! histograms with PID Nsigma variables vs ML output
   Bool_t fEnablePIDMLHistos;              /// flag to enable control histograms for PID with ML
+  Int_t fNMLBins;                         /// number of bins for ML output axis in THnSparse
+  Double_t fMLOutputMin;                  /// min for ML output axis in THnSparse
+  Double_t fMLOutputMax;                  /// max for ML output axis in THnSparse
 
   Bool_t fFillBkgSparse;                  /// flag to fill bkg sparse
   Bool_t fKeepOnlyBkgFromHIJING;          /// flag to keep the background from HIJING only
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,33);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,35);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
