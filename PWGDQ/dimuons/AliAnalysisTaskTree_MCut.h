@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskSE.h"
-#include "TTreeStream.h"//why?
+#include "TTreeStream.h"
 
 class TObjArray;
 class AliVParticle;
@@ -62,40 +62,40 @@ class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
   
   AliMuonTrackCuts* fMuonTrackCuts;
   Double_t	fVertex[3];		// x,y,z vertex
-  Double_t	fPt[200];		 // single mu pT
-  Double_t	fE[200];			// single mu E
-  Double_t	fPx[200];		// single mu px
-  Double_t	fPy[200];		// single mu py
-  Double_t	fPz[200];		// single mu pz
-  Double_t	fY[200];		// single mu y
-  Double_t	fEta[200];		// single mu eta
-  Int_t		fMatchTrig[200];		// single mu match trigger
-  Double_t	fTrackChi2[200];		// single mu chi2 track
-  Double_t	fMatchTrigChi2[200];	// single mu chi2 of match trigger
-  Double_t	fDCA[200];		// single mu DCA
-  Int_t	        fCharge[200];		// single mu charge
-  Double_t	fRAtAbsEnd[200];		// single mu distance from beam center at end abs
-  Int_t	        fpDCA[200];             //pDCA
+  Double_t	fPt[1500];		 // single mu pT
+  Double_t	fE[1500];			// single mu E
+  Double_t	fPx[1500];		// single mu px
+  Double_t	fPy[1500];		// single mu py
+  Double_t	fPz[1500];		// single mu pz
+  Double_t	fY[1500];		// single mu y
+  Double_t	fEta[1500];		// single mu eta
+  Int_t		fMatchTrig[1500];		// single mu match trigger
+  Double_t	fTrackChi2[1500];		// single mu chi2 track
+  Double_t	fMatchTrigChi2[1500];	// single mu chi2 of match trigger
+  Double_t	fDCA[1500];		// single mu DCA
+  Int_t	        fCharge[1500];		// single mu charge
+  Double_t	fRAtAbsEnd[1500];		// single mu distance from beam center at end abs
+  Int_t	        fpDCA[1500];             //pDCA
   
-  Double_t	fDimuPt[100];			    // dimuon pT
-  Double_t	fDimuPx[100]; 		    // dimuon px
-  Double_t	fDimuPy[100]; 		    // dimuon py
-  Double_t	fDimuPz[100]; 		    // dimuon pz
-  Double_t	fDimuY[100];			// dimuon y
-  Double_t	fDimuMass[100];		// dimuon invariant mass
-  Int_t	        fDimuCharge[100];		// dimuon charge
-  Int_t	        fDimuMatch[100];		// dimuon match
+  Double_t	fDimuPt[400];			    // dimuon pT
+  Double_t	fDimuPx[400]; 		    // dimuon px
+  Double_t	fDimuPy[400]; 		    // dimuon py
+  Double_t	fDimuPz[400]; 		    // dimuon pz
+  Double_t	fDimuY[400];			// dimuon y
+  Double_t	fDimuMass[400];		// dimuon invariant mass
+  Int_t	        fDimuCharge[400];		// dimuon charge
+  Int_t	        fDimuMatch[400];		// dimuon match
 
-  Double_t      fDimuCostHE[100]; // cost Helicty frame
-  Double_t      fDimuPhiHE[100]; // phi Helicty fame
-  Double_t      fDimuCostCS[100]; // cost Collins-Soper
-  Double_t      fDimuPhiCS[100]; // phi Collins-Soper
-  Int_t		fDimuMu[100][2];	// reference to single mus
+  Double_t      fDimuCostHE[400]; // cost Helicty frame
+  Double_t      fDimuPhiHE[400]; // phi Helicty fame
+  Double_t      fDimuCostCS[400]; // cost Collins-Soper
+  Double_t      fDimuPhiCS[400]; // phi Collins-Soper
+  Int_t		fDimuMu[400][2];	// reference to single mus
   
   
 //  TList *fOutput;  //!< List of histograms for data
   
- ClassDef(AliAnalysisTaskTree_MCut,1);
+ ClassDef(AliAnalysisTaskTree_MCut,2);
 };
 
 #endif

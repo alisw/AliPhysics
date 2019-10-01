@@ -12,7 +12,7 @@ AliAnalysisTaskTree_MCut *AddTaskTree_Grid_MCut(){
    }   
    
    TString outputFileName = AliAnalysisManager::GetCommonFileName();	 
-   outputFileName += ":Tree.root";
+   outputFileName += ":Tree";
 
    Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
   

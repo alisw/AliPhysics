@@ -92,7 +92,7 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut() :
   fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
 
   fVertex[0]=999.; fVertex[1]=999.; fVertex[2]=999.;
-  for(Int_t i=0; i<200;i++){
+  for(Int_t i=0; i<1500;i++){
     fPt[i]=999.;
     fE[i]=999.;
     fPx[i]=999; 
@@ -108,7 +108,7 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut() :
     fRAtAbsEnd[i]=999;
     fpDCA[i] = 999;   
   }
-  for(Int_t i=0; i<100;i++){  
+  for(Int_t i=0; i<400;i++){  
     fDimuPt[i]=999.; 
     fDimuPx[i]=999.; 
     fDimuPy[i]=999.; 
@@ -159,7 +159,7 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut(const char *name) :
   fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
 
   fVertex[0]=999.; fVertex[1]=999.; fVertex[2]=999.;
-  for(Int_t i=0; i<200;i++){
+  for(Int_t i=0; i<1500;i++){
     fPt[i]=999.;
     fE[i]=999.;
     fPx[i]=999; 
@@ -175,7 +175,7 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut(const char *name) :
     fRAtAbsEnd[i]=999;
     fpDCA[i] = 999;   
   }
-  for(Int_t i=0; i<100;i++){  
+  for(Int_t i=0; i<400;i++){  
     fDimuPt[i]=999.; 
     fDimuPx[i]=999.; 
     fDimuPy[i]=999.; 
@@ -312,7 +312,7 @@ void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
   fNContributors=-1;
   fNDimu=0;
   fVertex[0]=999.; fVertex[1]=999.; fVertex[2]=999.;
-  for(Int_t i=0; i<200;i++){
+  for(Int_t i=0; i<1500;i++){
     fPt[i]=999.;
     fE[i]=999.;
     fPx[i]=999; 
@@ -328,7 +328,7 @@ void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
     fRAtAbsEnd[i]=999;
     fpDCA[i] = 999.;  
   }
-  for(Int_t i=0; i<100;i++){  
+  for(Int_t i=0; i<400;i++){  
     fDimuPt[i]=999.; 
     fDimuPx[i]=999.; 
     fDimuPy[i]=999.; 
@@ -383,9 +383,9 @@ void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
    Int_t ntracks = fAODEvent->GetNumberOfTracks(); 
    if(ntracks!=0) {
 
-   Int_t LabelOld1[200];
-   Int_t LabelOld2[200];   
-   Bool_t GoodMuon[200]={kFALSE};
+   Int_t LabelOld1[1500];
+   Int_t LabelOld2[1500];   
+   Bool_t GoodMuon[1500]={kFALSE};
 	      
    for (Int_t i=0;i<ntracks;i++){
 	
