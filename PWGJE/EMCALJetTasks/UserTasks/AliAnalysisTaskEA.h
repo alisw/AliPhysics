@@ -135,8 +135,13 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
   void        SetPhiCut(Double_t pcut){ fPhiCut = TMath::Pi()-pcut; }
 
-
   void        SetMinFractionShared(Double_t fr){ fMinFractionShared = fr;} 
+
+  void        SetJetRadius(Double_t jr) { fJetR = jr;}                               
+
+  void        SetJetAcut(Double_t ac){ fJetAcut = ac;} 
+
+
 
   Bool_t      PassedGATrigger();
   Bool_t      PassedMinBiasTrigger();
@@ -253,6 +258,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D     *fhClusterEtaIncl[kTG];                      //!  eta inclusive
 
    THnSparse *fhTrackPtEtaPhiV0norm[kTG];               //!  pt, eta, phi, V0M for inclusive tracks 
+   THnSparse *fhJetPtEtaPhiV0norm[kTG];                  //!  pt, eta, phi, V0M for inclusive tracks 
+   THnSparse *fhJetPtEtaPhiV0normTTH[kTG][fkTTbins];    //!  pt, eta, phi, V0M for inclusive tracks 
    THnSparse *fhJetPtAreaV0norm[kTG][kRho];             //!  pt, area V0M for inclusive jets 
    THnSparse *fhJetPtAreaV0norm_PartLevel[kRho];        //!  pt, area V0M for inclusive jets 
  
@@ -336,8 +343,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    THnSparse *fhRecoilJetTTH_V0Mnorm1_PartLevel[fkTTbins][kRho]; //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
 
 
-   TH2D* fhRecoilJetPtTTHref_V0Mnorm1_rhoShift1[kTG][kRho];   //! reference pT spectrum of recoil jets TT67 vs V0M/mean with rho shifted for TT20,30
-   TH2D* fhRecoilJetPtTTHref_V0Mnorm1_rhoShift2[kTG][kRho];   //! reference pT spectrum of recoil jets TT67 vs V0M/mean with rho shifted for TT12,20
+   TH2D* fhRecoilJetPtTTHref_V0Mnorm1_rhoShift1[kTG][kRho];   //! reference pT spectrum of recoil jets TT67 vs V0M/mean with rho shifted for TT12,20
+   TH2D* fhRecoilJetPtTTHref_V0Mnorm1_rhoShift2[kTG][kRho];   //! reference pT spectrum of recoil jets TT67 vs V0M/mean with rho shifted for TT20,30
    
    //recoil jet yields with EMCAL cluster TT
 //   TH2D* fhRecoilJetPtTTC_CentV0M[kTG][fkTTbins];         //! pT spectrum of recoil jets associated to semi-inclusive emcal TT versus V0M    centrality 
@@ -466,10 +473,13 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    Double_t frhoveckt[999];                        //! auxiliary array to store pT/A of kT jets for kt
    Double_t frhovecms[999];                        //! auxiliary array to store pT/A of kT jets for cms
 
+   Double_t fJetR;                                 // jet radius
+   Double_t fJetAcut;                              // jet area cut
+
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 20); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 21); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }
