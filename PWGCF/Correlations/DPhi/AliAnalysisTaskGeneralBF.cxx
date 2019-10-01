@@ -2127,6 +2127,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         }
         
         if( !t -> IsPhysicalPrimary() ) continue;
+        if( t -> IsSecondaryFromWeakDecay() )  continue;
+        if( t -> IsSecondaryFromMaterial() )  continue;
         
         q      = t -> Charge();
         
@@ -2216,10 +2218,16 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               if( pdgCodeOfMother == 311 || pdgCodeOfMother == -311 // K0
                  || pdgCodeOfMother == 310 // K_Short
                  || pdgCodeOfMother == 130 // K_Long
+                 || pdgCodeOfMother == 313 // K_Star_0
+                 || pdgCodeOfMother == 323 // K_Star_+
                  || pdgCodeOfMother == 333 // phi
                  || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
                  || pdgCodeOfMother == 111 // pi0
                  || pdgCodeOfMother == 22 // photon
+                 || pdgCodeOfMother == 2224 // Delta_++
+                 || pdgCodeOfMother == 2214 // Delta_+
+                 || pdgCodeOfMother == 2114 // Delta_0
+                 || pdgCodeOfMother == 1114 // Delta_-
                  ) continue;
             }
           }
@@ -2328,6 +2336,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         }
         
         if( !t -> IsPhysicalPrimary() ) continue;
+        if( t -> IsSecondaryFromWeakDecay() )  continue;
+        if( t -> IsSecondaryFromMaterial() )  continue;
         
         q      = t -> Charge();
         
@@ -2417,10 +2427,16 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               if( pdgCodeOfMother == 311 || pdgCodeOfMother == -311 // K0
                  || pdgCodeOfMother == 310 // K_Short
                  || pdgCodeOfMother == 130 // K_Long
+                 || pdgCodeOfMother == 313 // K_Star_0
+                 || pdgCodeOfMother == 323 // K_Star_+
                  || pdgCodeOfMother == 333 // phi
                  || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
                  || pdgCodeOfMother == 111 // pi0
                  || pdgCodeOfMother == 22 // photon
+                 || pdgCodeOfMother == 2224 // Delta_++
+                 || pdgCodeOfMother == 2214 // Delta_+
+                 || pdgCodeOfMother == 2114 // Delta_0
+                 || pdgCodeOfMother == 1114 // Delta_-
                  ) continue;
             }
           }
