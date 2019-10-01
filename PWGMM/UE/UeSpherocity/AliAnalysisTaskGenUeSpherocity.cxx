@@ -90,6 +90,7 @@ TF1* phi_Eff;
 TF1* k0s_Eff;
 TF1* la_Eff;
 TF1* labar_Eff;
+TF1* k0star_Eff;
 
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
 const Char_t * pidNames[11] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero" };
@@ -381,6 +382,9 @@ void AliAnalysisTaskGenUeSpherocity::UserCreateOutputObjects(){
 	labar_Eff = new TF1("labar_Eff","([0]*x^[1]*exp(-x) - [2]*x +[3])*(x>[4])",0,20);
 	labar_Eff->SetParameters(-5.42213e-01,2.16541e-02,1.32033e-02,3.79549e-01,0.35);
 
+	k0star_Eff = 0;
+	k0star_Eff = new TF1("k0star_Eff","(([0]+[1]*x+[2]*x*x+[3]*x*x*x)*(x>0.4&&x<3.0))+(([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x)*(x>3.0&&x<15.0))",0,20);
+	k0star_Eff->SetParameters(-0.06334,0.3354,-0.03492,-0.003904,0.2856,0.1316,-0.02146,0.001467,-3.563e-05);
 
 	// ### Analysis output
 	fListOfObjects = new TList();
@@ -1363,6 +1367,8 @@ Bool_t AliAnalysisTaskGenUeSpherocity::IsGoodTrack(Int_t pid, Int_t pdgcode, Dou
 		efficiency = xi_Eff->Eval(pt);
 	else if(pid==7)
 		efficiency = phi_Eff->Eval(pt);
+	else if(pid==8)
+		efficiency = k0star_Eff->Eval(pt);
 	else
 		efficiency = ch_Eff->Eval(pt);
 
