@@ -482,6 +482,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TRandom3  fRandom;                                  // random for effi generation
     Int_t     fUseTimingEfficiencyMCSimCluster;         // flag for switching on TimingEfficiencyMCSimCluster
     TF1*      fFuncTimingEfficiencyMCSimCluster;        // TF1 for TimingEfficiencyMCSimCluster
+    TF1*      fFuncTimingEfficiencyMCSimClusterHighPt;  // TF1 for fFuncTimingEfficiencyMCSimClusterHighPt
     Float_t   fMinTMDistSigma;                          // number of sigma's for TM using PHOS
     Bool_t    fUseEOverPVetoTM;                         // flag for switching on E/P veto (forbidding tracks to match clusters if clusterE/trackP > someValue
     Double_t  fEOverPMax;                               // maximum value for E/P of a track to be considered for TM
@@ -642,7 +643,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,96)
+    ClassDef(AliCaloPhotonCuts,97)
 };
 
 #endif
