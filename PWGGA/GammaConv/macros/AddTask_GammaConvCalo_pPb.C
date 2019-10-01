@@ -817,7 +817,27 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466000ha012200000","0h63103100000010"); // 0-100% without NL
   } else if (trainConfig == 3001){ // PHOS  PHI7
     cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","24466000ha012200000","0h63103100000010"); // 0-100% without NL
-
+  // PHOS new default with timing effi
+  } else if (trainConfig == 3010){
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466000ha012200000","0h63103100000010"); // No NL
+  } else if (trainConfig == 3011){
+    cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","24466000ha012200000","0h63103100000010"); // No NL
+  } else if (trainConfig == 3012){
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466510ha012200000","0h63103100000010"); // 51 NL
+  } else if (trainConfig == 3013){
+    cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","24466510ha012200000","0h63103100000010"); // 51 NL
+  } else if (trainConfig == 3014){
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466520ha012200000","0h63103100000010"); // 52 NL
+  } else if (trainConfig == 3015){
+    cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","24466520ha012200000","0h63103100000010"); // 52 NL
+  } else if (trainConfig == 3016){
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466530ha012200000","0h63103100000010"); // 53 NL
+  } else if (trainConfig == 3017){
+    cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","24466530ha012200000","0h63103100000010"); // 53 NL
+  } else if (trainConfig == 3018){
+    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466540ha012200000","0h63103100000010"); // 54 NL
+  } else if (trainConfig == 3019){
+    cuts.AddCutPCMCalo("80062113","00200009f9730000dge0400000","24466540ha012200000","0h63103100000010"); // 54 NL
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
