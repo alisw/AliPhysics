@@ -191,6 +191,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   HFjetParticle(0),
   HFjetDCA_c(0),
   HFjetDCA_b(0),
+  HFjetDCA_b_FONLL(0),
   HFjetDCA_Dp(0),
   HFjetDCA_Dz(0),
   HFjetDCA_Ds(0),
@@ -229,6 +230,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fpowheg_c(0),
   fFONLL_D(0),
   fFONLL_Lc(0),
+  fFONLL_B(0),
   generator(0),
   fJetsCont(0),
   fJetsContPart(0),
@@ -394,6 +396,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   HFjetParticle(0),
   HFjetDCA_c(0),
   HFjetDCA_b(0),
+  HFjetDCA_b_FONLL(0),
   HFjetDCA_Dp(0),
   HFjetDCA_Dz(0),
   HFjetDCA_Ds(0),
@@ -432,6 +435,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fpowheg_c(0),
   fFONLL_D(0),
   fFONLL_Lc(0),
+  fFONLL_B(0),
   generator(0),
   fJetsCont(0),
   fJetsContPart(0),
@@ -882,6 +886,10 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   HFjetDCA_b->Sumw2();
   fOutput->Add(HFjetDCA_b);
 
+  HFjetDCA_b_FONLL = new TH2D("HFjetDCA_b_FONLL","DCA of b->e",100,0,100,1000,-0.5,0.5); 
+  HFjetDCA_b_FONLL->Sumw2();
+  fOutput->Add(HFjetDCA_b_FONLL);
+
   HFjetDCA_Dp = new TH2D("HFjetDCA_Dp","DCA of Dp->e",100,0,100,1000,-0.5,0.5); 
   HFjetDCA_Dp->Sumw2();
   fOutput->Add(HFjetDCA_Dp);
@@ -1019,7 +1027,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fFONLL_Lc = new TF1("fFONLL_Lc","pol2",0,100);
   fFONLL_Lc->SetParameters(9.95128,-1.50879,0.0746217);
  
-
+  fFONLL_B = new TF1("fFONLL_B","[0]/exp([1]*x)+[2]*x+[3]*pow(x,2)+[4]*pow(x,3)+[5]",1,100);
+  fFONLL_B->SetParameters(6.55962,0.60012,0.0278981,-0.000214927,3.2476e-07,0.755431);
+  
   //
    generator = new TRandom();
 
@@ -1538,6 +1548,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
            }
   
         Double_t wc_fonll = 1.0;
+        Double_t wb_fonll = 1.0;
 
         Double_t iso = 999.9;
 
@@ -1800,6 +1811,10 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             {
              wc_fonll = 2.0;
             } 
+        }
+      if(TMath::Abs(pidM)==511 || TMath::Abs(pidM)==513 || TMath::Abs(pidM)==521 || TMath::Abs(pidM)==523 || TMath::Abs(pidM)==531)
+        {
+         wb_fonll = fFONLL_B->Eval(pTmom);
         } 
 
       }
@@ -2000,6 +2015,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                                if(TMath::Abs(pidM)==4122)HFjetDCA_Lc_FONLL->Fill(corrPt,epTarray[3],wc_fonll);
                               } 
                            if(ibe)HFjetDCA_b->Fill(corrPt,epTarray[3],wb);
+                           if(ibe)HFjetDCA_b_FONLL->Fill(corrPt,epTarray[3],wb_fonll);
                           }
 
                        for (unsigned j = 0; j< jet->GetNumberOfTracks(); j++) 
