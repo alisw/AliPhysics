@@ -527,10 +527,10 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   Double_t lowEdges[8]={0,2.15,0.,0,0.8,0,-1,-0.5};
   Double_t upEdges[8]={16,2.65,0.0500,8,1.,5,9,10.5};
   if(!fFillTree)  fhSparseAnalysis=new THnSparseF("fhSparseAnalysis","fhSparseAnalysis;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;seleFlag;PIDcase",8,nbinsSparse,lowEdges,upEdges);
-  Int_t nbinsSparseSigma[10]={16,200,10,12,10,10,10,1,22,20};
-  Double_t lowEdgesSigma[10]={0,0.130,0.,0,0.8,0,-1,-0.5,2.262,-1};
-  Double_t upEdgesSigma[10]={16,0.330,0.0500,6.,1.,5,9,0.5,2.306,1};
-  if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;seleFlag;PIDcase;LcMass;CosThetaStarSoftPion",10,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
+  Int_t nbinsSparseSigma[11]={16,200,10,12,10,10,1,11,22,20,16};
+  Double_t lowEdgesSigma[11]={0,0.130,0.,0,0.8,0,-0.5,-0.5,2.266,-1,0};
+  Double_t upEdgesSigma[11]={16,0.330,0.0500,6.,1.,5,0.5,10.5,2.306,1,16};
+  if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;softPiITSrefit;PIDcase;LcMass;CosThetaStarSoftPion;ptsigmac",10,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
   
 
 
@@ -1010,7 +1010,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	 fDist12AllFilter->Fill(d->GetDist12toPrim()*10000.);
 	 fDist23AllFilter->Fill(d->GetDist23toPrim()*10000.);
 	 fCosPointDistrAllFilter->Fill(d->CosPointingAngle());
-       }              
+       }
        if(!fSigmaCfromLcOnTheFly){
 	 Int_t resp_onlyPID = 3;       	
 	 Int_t isPIDused = fCutsXic->GetIsUsePID();
@@ -1021,7 +1021,19 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	   resp_onlyPID = fCutsXic->IsSelected(d,AliRDHFCuts::kPID,(AliAODEvent*)aod);
 	 }
 	 fCutsXic->SetUsePID(isPIDused); 
-	 if(iSelCuts && iSelPID)SigmaCloop(d,aod,iSelPID&iSelCuts,d->InvMassLcpKpi(),d->InvMassLcpiKp(),0x0,resp_onlyPID);
+	 if(!fExplore_PIDstdCuts && massHypothesis>0)SigmaCloop(d,aod,massHypothesis,d->InvMassLcpKpi(),d->InvMassLcpiKp(),0x0,resp_onlyPID);
+	 massHypothesis=resp_onlyCuts & iSelPID;
+	 if(fExplore_PIDstdCuts && massHypothesis>0){	   
+	   Bool_t arrayPIDpkpi[11],arrayPIDpikp[11];	   
+	   arrayPIDpkpi[0]=((massHypothesis&resp_onlyPID)==1 || (massHypothesis&resp_onlyPID)==3 ) ? kTRUE : kFALSE;
+	   arrayPIDpikp[0]=( (massHypothesis&resp_onlyPID)==2 || (massHypothesis&resp_onlyPID)==3 ) ? kTRUE : kFALSE;
+	   for(UInt_t i=1; i<=10; i++){  // loop on PID cut combinations to be tested
+	     arrayPIDpkpi[i]=kFALSE;
+	     arrayPIDpikp[i]=kFALSE;	       
+	     fCutsXic->ExplorePID(fPidResponse,d,i,arrayPIDpkpi[i],arrayPIDpikp[i]);
+	   }
+	   SigmaCloop(d,aod,massHypothesis,d->InvMassLcpKpi(),d->InvMassLcpiKp(),0x0,resp_onlyPID,arrayPIDpkpi,arrayPIDpikp);	   
+	 } 
        }
        if(recPrimVtx)fCutsXic->CleanOwnPrimaryVtx(d,aod,origownvtx);
        if(unsetvtx)d->UnsetOwnPrimaryVtx();
@@ -1068,10 +1080,19 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       AliAODTrack *track2=(AliAODTrack*)aod->GetTrack(ftrackArraySel->At(itrack2));    
       if(!track2)continue;
       //     if(track2->Charge()>0 && !fLikeSign) continue;      
-      //HERE SHOULD CHECK 2nd track and PAIR DISPLACEMENT and PAIR PID?      
+      //HERE SHOULD CHECK 2nd track and PAIR DISPLACEMENT       
       Short_t charge=track1->Charge();
       charge+=track2->Charge();
-      
+      if(charge==0){
+	if(ftrackSelStatusKaon->At(itrack1)<=0 && ftrackSelStatusKaon->At(itrack2)<=0)continue; // tracks have opposite sign -> one must be compatible with being a kaon
+	if( (ftrackSelStatusProton->At(itrack1)<=0 && ftrackSelStatusProton->At(itrack2)<=0) && (ftrackSelStatusPion->At(itrack1)<=0 && ftrackSelStatusPion->At(itrack2)<=0)) continue; // there should be at least one p or one pi (-> reject KK pairs)
+      }
+      else if(TMath::Abs(charge)==2){
+	if(ftrackSelStatusProton->At(itrack1)<=0 && ftrackSelStatusProton->At(itrack2)<=0)continue;// equal-sign pair -> there must be at least one proton
+	if(ftrackSelStatusPion->At(itrack1)<=0 && ftrackSelStatusPion->At(itrack2)<=0)continue;// equal-sign pair -> there must be at least one pion
+      }
+      else continue;// should never met this else condition since charge is checked in SelectTrack and pretended to be |charge|=1
+
       // THIRD LOOP
       for(Int_t itrackThird=itrack2+1;itrackThird<fnSel;itrackThird++){// Third loop
 	if(itrackThird==itrack1 || itrackThird==itrack2)continue;// should never happen, line can be removed
@@ -1308,7 +1329,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  isSeleCuts=fCutsXic->IsSelected(io3Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)aod);
 	  if((massHypothesis&isSeleCuts)>0){
 	    if(fDebug>=0){
-	      Printf("IsSeleCuts: %d with masshypo %d; %f , %f",isSeleCuts,io3Prong->InvMassLcpKpi(),io3Prong->InvMassLcpiKp(),massHypothesis);
+	      Printf("IsSeleCuts: %d with masshypo %d; %f , %f",isSeleCuts,massHypothesis,io3Prong->InvMassLcpKpi(),io3Prong->InvMassLcpiKp());
 	      Printf("pid: 1st track: %d, %d, %d",ftrackSelStatusPion->At(itrack1),ftrackSelStatusKaon->At(itrack1),ftrackSelStatusProton->At(itrack1));
 	      Printf("pid: 2nd track: %d, %d, %d",ftrackSelStatusPion->At(itrack2),ftrackSelStatusKaon->At(itrack2),ftrackSelStatusProton->At(itrack2));
 	      Printf("pid: 3rd track: %d, %d, %d",ftrackSelStatusPion->At(itrackThird),ftrackSelStatusKaon->At(itrackThird),ftrackSelStatusProton->At(itrackThird));
@@ -1454,6 +1475,18 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 
 	Double_t point[8]={candPt,0,io3Prong->DecayLengthXY(),io3Prong->NormalizedDecayLengthXY(),io3Prong->CosPointingAngle(),maxIP,(Double_t)flagSel,0};  
 	Double_t mass1=0,mass2=0;
+	Bool_t arrayPIDpkpi[11],arrayPIDpikp[11];
+	if(massHypothesis>0 && fExplore_PIDstdCuts){
+	  arrayPIDpkpi[0]=((massHypothesis&resp_onlyPID)==1 || (massHypothesis&resp_onlyPID)==3 ) ? kTRUE : kFALSE;
+	  arrayPIDpikp[0]=( (massHypothesis&resp_onlyPID)==2 || (massHypothesis&resp_onlyPID)==3 ) ? kTRUE : kFALSE;
+	    for(UInt_t i=1; i<=10; i++){  // loop on PID cut combinations to be tested
+	      arrayPIDpkpi[i]=kFALSE;
+	      arrayPIDpikp[i]=kFALSE;
+	      point[7] = i;
+	      fCutsXic->ExplorePID(fPidResponse,io3Prong,point[7],arrayPIDpkpi[i],arrayPIDpikp[i]);	 
+	    }
+	}
+
 	if(massHypothesis==1 || massHypothesis ==3) {
 	  mass1=io3Prong->InvMassLcpKpi();
 	  fhistInvMassCheck->Fill(mass1,isTrueLambdaCorXic);
@@ -1462,18 +1495,13 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  // this two filling fill the sparse with PID in cut object always
 	  if(fhSparseAnalysis && !fExplore_PIDstdCuts)  fhSparseAnalysis->Fill(point);
 	  if(fExplore_PIDstdCuts){
-	    if(fhSparseAnalysis && ( (massHypothesis&resp_onlyPID)==1 || (massHypothesis&resp_onlyPID)==3 ) )  fhSparseAnalysis->Fill(point);
-	    Bool_t case_pKpi_ok, case_piKp_ok;
-	    for(UInt_t i=1; i<=10; i++){  // loop on PID cut combinations to be tested
-	      point[7] = i;
-	      case_pKpi_ok = kFALSE;
-	      case_piKp_ok = kFALSE;
-	      fCutsXic->ExplorePID(fPidResponse,io3Prong,point[7],case_pKpi_ok,case_piKp_ok);
-	      //printf("case_pKpi_ok %d, case_piKp_ok %d\n",case_pKpi_ok,case_piKp_ok);
-	      if(fhSparseAnalysis && case_pKpi_ok)  fhSparseAnalysis->Fill(point);
-	    }
+	    if(fhSparseAnalysis){
+	      for(UInt_t i=0; i<=10; i++){  // loop on PID cut combinations to be tested
+		point[7] = i;
+		if(arrayPIDpkpi[i])fhSparseAnalysis->Fill(point);
+	      }
+	    }	    	   
 	  }
-	  //else  {if(fhSparseAnalysis)  fhSparseAnalysis->Fill(point);}
 	}
 	if(massHypothesis==2 || massHypothesis ==3){
 	  mass2=io3Prong->InvMassLcpiKp();
@@ -1483,23 +1511,19 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  // this two filling fill the sparse with PID in cut object always
 	  if(fhSparseAnalysis && !fExplore_PIDstdCuts)  fhSparseAnalysis->Fill(point);
 	  if(fExplore_PIDstdCuts){
-	    if(fhSparseAnalysis && ( (massHypothesis&resp_onlyPID)==2 || (massHypothesis&resp_onlyPID)==3 ) )  fhSparseAnalysis->Fill(point);
-	    Bool_t case_pKpi_ok, case_piKp_ok;
-	    for(UInt_t i=1; i<=10; i++){  // loop on PID cut combinations to be tested
-	      point[7] = i;
-	      case_pKpi_ok = kFALSE;
-	      case_piKp_ok = kFALSE;
-	      fCutsXic->ExplorePID(fPidResponse,io3Prong,point[7],case_pKpi_ok,case_piKp_ok);
-	      //printf("case_pKpi_ok %d, case_piKp_ok %d\n",case_pKpi_ok,case_piKp_ok);
-	      if(fhSparseAnalysis && case_piKp_ok)  fhSparseAnalysis->Fill(point);
-	    }
+	    if(fhSparseAnalysis){
+	      for(UInt_t i=0; i<=10; i++){  // loop on PID cut combinations to be tested
+		point[7] = i;
+		if(arrayPIDpikp[i])fhSparseAnalysis->Fill(point);
+	      }
+	    }	  
 	  }
-	  //else  {if(fhSparseAnalysis)  fhSparseAnalysis->Fill(point);}
 	}
 	
 	fhistMonitoring->Fill(10);
 	if((fAnalysisType==0 || fAnalysisType ==3)&&fSigmaCfromLcOnTheFly){
-	  SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,itrack1,itrack2,itrackThird);
+	  if(fExplore_PIDstdCuts)SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,arrayPIDpkpi,arrayPIDpikp,itrack1,itrack2,itrackThird);
+	  else SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,0x0,0x0,itrack1,itrack2,itrackThird);
 	}
 	
 	
@@ -1540,23 +1564,23 @@ void AliAnalysisTaskSEXicTopKpi::FillArrayVariableSparse(AliAODRecoDecayHF3Prong
   normIP[2]=diffIP[2]/errdiffIP[2];
   if(TMath::Abs(  normIP[2])>maxIP)maxIP=TMath::Abs(  normIP[2]);
   point[5]=maxIP;
-  point[6]=FlagCandidateWithVariousCuts(io3Prong,aod,massHypothesis);
+  point[6]=FlagCandidateWithVariousCuts(io3Prong,aod,massHypothesis);// not needed for SigmaC! (replaced by ITSrefit for soft pion)
   point[7]=-1;
 }
 
 //________________________________________________________
-void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Int_t itrack1,Int_t itrack2,Int_t itrackThird){
+void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselPkPi,Bool_t *arrayPIDselPikP,Int_t itrack1,Int_t itrack2,Int_t itrackThird){
   if(TMath::Abs(mass1-2.28646)>fLcMassWindowForSigmaC && TMath::Abs(mass2-2.28646)>fLcMassWindowForSigmaC)return; //Lc mass window selection  
   if(fDebug > 1){
     Printf("Good Lc candidate , will loop over %d pions",fnSelSoftPi);
   }
-  Double_t pointSigma[10];
-  Bool_t fillArrayVariable=kFALSE;
+  Double_t pointSigma[11];
+  Bool_t arrayVariableIsFilled=kFALSE;
   if(pointS){    
     for(Int_t k=0;k<8;k++){
       pointSigma[k]=pointS[k];
     }
-    fillArrayVariable=kTRUE;
+    arrayVariableIsFilled=kTRUE;
   }
 
   // Loop over soft pions
@@ -1601,19 +1625,29 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
       if(deltaM<fSigmaCDeltaMassWindow){// good candidate
         if(fDebug > 1){
 	  Printf("Ok SigmaC mass Window");
-	}
+	}	
 	// Fill array with Lc related variables if not done already
-	if(!fillArrayVariable){
-	  FillArrayVariableSparse(io3Prong,aod,pointSigma,massHypothesis);
-	}
-	
+	if(!arrayVariableIsFilled){
+	  FillArrayVariableSparse(io3Prong,aod,pointSigma,massHypothesis & resp_onlyPID);// note that the last parameter here is irrelevant
+	  arrayVariableIsFilled=kTRUE;	 
+	}	
+	pointSigma[6]=-1;// n.b. overwrites seleFlag (not exploited even for Lc), defined below by ITSrefit for soft pion --> this makes irrelevant which pid status is passed in the FillArrayVariableSparse above
+	pointSigma[7]=0;
 	// now calculated remaining pair variables and fill sparse
-	if(tracksoft->TestFilterBit(AliAODTrack::kITSrefit))pointSigma[7]=0;
+	if(tracksoft->TestFilterBit(AliAODTrack::kITSrefit))pointSigma[6]=0;
 	cosThetaStarSoftPi=CosThetaStar(psigma,psoft,TDatabasePDG::Instance()->GetParticle(4222)->Mass(),TDatabasePDG::Instance()->GetParticle(211)->Mass());
 	pointSigma[9]=cosThetaStarSoftPi;
 	pointSigma[1]=deltaM;	       
-	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts)  fhSparseAnalysisSigma->Fill(pointSigma);
-	if(fhSparseAnalysisSigma && fExplore_PIDstdCuts && ( (massHypothesis&resp_onlyPID)==1 || (massHypothesis&resp_onlyPID)==3 ) )  fhSparseAnalysisSigma->Fill(pointSigma);
+	pointSigma[10]=lsum.Pt();
+	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==1 || resp_onlyPID==3) )  fhSparseAnalysisSigma->Fill(pointSigma);
+	if(fhSparseAnalysisSigma && fExplore_PIDstdCuts){
+	  for(Int_t k=0;k<=10;k++){
+	    pointSigma[7]=k;
+	    if(arrayPIDselPkPi[k]){
+	      fhSparseAnalysisSigma->Fill(pointSigma);
+	    }
+	  }
+	}
       }
     }
     if((massHypothesis==2 || massHypothesis ==3)&&TMath::Abs(mass2-2.28646)<fLcMassWindowForSigmaC){// here we should be more restrictive and check also resp_only_pid, given that later is done before filling the histogram
@@ -1631,26 +1665,31 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	  Printf("Ok SigmaC mass Window");
 	}
 	// Fill array with Lc related variables if not done already
-	if(!fillArrayVariable){
-	  FillArrayVariableSparse(io3Prong,aod,pointSigma,massHypothesis);
+	if(!arrayVariableIsFilled){
+	  FillArrayVariableSparse(io3Prong,aod,pointSigma,massHypothesis& resp_onlyPID);
 	}
+	pointSigma[6]=-1;// n.b. overwrites seleFlag (not exploited even for Lc), defined below by ITSrefit for soft pion --> this makes irrelevant which pid status is passed in the FillArrayVariableSparse above
+	pointSigma[7]=0;
 	
 	// now calculated remaining pair variables and fill sparse	
-	if(tracksoft->TestFilterBit(AliAODTrack::kITSrefit))pointSigma[7]=0;
+	if(tracksoft->TestFilterBit(AliAODTrack::kITSrefit))pointSigma[6]=0;
 	cosThetaStarSoftPi=CosThetaStar(psigma,psoft,TDatabasePDG::Instance()->GetParticle(4222)->Mass(),TDatabasePDG::Instance()->GetParticle(211)->Mass());
 	pointSigma[9]=cosThetaStarSoftPi;
-	pointSigma[1]=deltaM;	       
-	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts)  fhSparseAnalysisSigma->Fill(pointSigma);
-	if(fhSparseAnalysisSigma && fExplore_PIDstdCuts && ( (massHypothesis&resp_onlyPID)==2 || (massHypothesis&resp_onlyPID)==3 ) )  fhSparseAnalysisSigma->Fill(pointSigma);
+	pointSigma[1]=deltaM;
+	//	pointSigma[10]=lsum.Pt(); // not needed
+	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==2 || resp_onlyPID==3))  fhSparseAnalysisSigma->Fill(pointSigma);
+	if(fhSparseAnalysisSigma && fExplore_PIDstdCuts){
+	  for(Int_t k=0;k<=10;k++){
+	    pointSigma[7]=k;
+	    if(arrayPIDselPikP[k]){
+	      fhSparseAnalysisSigma->Fill(pointSigma);
+	    }
+	  }
+	}
       }
     }	      
-  }
-  
-  
+  }  
 }
- 
-
-
 
 
 //____________________________________________________________________________
