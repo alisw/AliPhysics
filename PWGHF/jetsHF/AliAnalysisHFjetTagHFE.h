@@ -202,6 +202,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   THnSparse                   *HFjetParticle;
   TH2D                        *HFjetDCA_c;
   TH2D                        *HFjetDCA_b;
+  TH2D                        *HFjetDCA_b_FONLL;
   TH2D                        *HFjetDCA_Dp;
   TH2D                        *HFjetDCA_Dz;
   TH2D                        *HFjetDCA_Ds;
@@ -240,6 +241,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TF1                         *fpowheg_c;
   TF1                         *fFONLL_D;
   TF1                         *fFONLL_Lc;
+  TF1                         *fFONLL_B;
   TRandom                     *generator;
 
   AliJetContainer            *fJetsCont;                   //!Jets
