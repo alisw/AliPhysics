@@ -258,10 +258,12 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D     *fhClusterEtaIncl[kTG];                      //!  eta inclusive
 
    THnSparse *fhTrackPtEtaPhiV0norm[kTG];               //!  pt, eta, phi, V0M for inclusive tracks 
-   THnSparse *fhJetPtEtaPhiV0norm[kTG];                  //!  pt, eta, phi, V0M for inclusive tracks 
-   THnSparse *fhJetPtEtaPhiV0normTTH[kTG][fkTTbins];    //!  pt, eta, phi, V0M for inclusive tracks 
+   THnSparse *fhJetPtEtaPhiV0norm[kTG];                  //!  pt, eta, phi, V0M for inclusive jets 
+   THnSparse *fhJetPtEtaPhiV0normTTH[kTG][fkTTbins];    //!  pt, eta, phi, V0M for recoil jets 
    THnSparse *fhJetPtAreaV0norm[kTG][kRho];             //!  pt, area V0M for inclusive jets 
    THnSparse *fhJetPtAreaV0norm_PartLevel[kRho];        //!  pt, area V0M for inclusive jets 
+   THnSparse *fhJetPtAreaV0normTTH[kTG][fkTTbins][kRho];       //!  pt, area V0M for recoil jets 
+   THnSparse *fhJetPtAreaV0normTTH_PartLevel[fkTTbins][kRho];  //!  pt, area V0M for recoil jets particle level 
  
    TH1D     *fhRho[kTG][kRho];                          //! minimum bias rho inclusive
    TH1D     *fhRhoTTH[kTG][fkTTbins][kRho];             //! in events MB with hadron TT
@@ -296,8 +298,11 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D* fhV0MAssymVsV0MnormTTH_PartLevel[fkTTbins];  //! V0AC asymmetry versus V0Mnorm  in TTH events
 
 
-   TH2D* fhV0AvsV0C;                                   //! V0A vs V0C in MB 
-//   TH2D* fhV0MvsV0Mnorm;                               //! V0M vs V0Mnorm in MB 
+   TH3D* fhV0A_V0C_V0Mnorm[kTG];                     //! V0A vs V0C in MB  versus V0Mnorm 
+   TH3D* fhV0A_V0C_V0MnormPartLevel;                 //! V0A vs V0C in MB  versus V0Mnorm all particle level 
+   TH3D* fhV0A_V0APartLevel_V0Mnorm;                 //! V0A vs particle level V0A in MB  versus V0Mnorm 
+   TH3D* fhV0C_V0CPartLevel_V0Mnorm;                 //! V0C vs particle level V0C in MB  versus V0Mnorm 
+//   TH2D* fhV0MvsV0Mnorm;                             //! V0M vs V0Mnorm in MB 
    TH2D* fhV0AvsSPD;                                   //! V0A vs SPD in MB 
    TH2D* fhV0CvsSPD;                                   //! V0C vs SPD in MB 
    TH2D* fhV0AvsV0CTTH[fkTTbins];                      //! V0A vs V0C biased with hadron TT
@@ -479,7 +484,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 21); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 22); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

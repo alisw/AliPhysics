@@ -146,7 +146,9 @@ fHistEvtSelection(0x0),
 fhVertexZall(0x0),
 fhVertexZ(0x0),
 fhV0MAssymVsV0Mnorm_PartLevel(0x0),
-fhV0AvsV0C(0x0),
+fhV0A_V0C_V0MnormPartLevel(0x0),
+fhV0A_V0APartLevel_V0Mnorm(0x0),
+fhV0C_V0CPartLevel_V0Mnorm(0x0),
 //fhV0MvsV0Mnorm(0x0),
 fhV0AvsSPD(0x0),
 fhV0CvsSPD(0x0),
@@ -193,9 +195,19 @@ fJetAcut(0.)
       fhJetPtResolutionVsPtPartLevel[ir] = 0x0;
       fhJetPtPartLevelCorr[ir] = 0x0;
       fhFractionOfSecInJet[ir] = 0x0;
+
+      for(Int_t i=0; i<fkTTbins; i++){
+         fhJetPtAreaV0normTTH_PartLevel[i][ir] = 0x0;
+
+         for(Int_t itg=kMB; itg<=kGA; itg++){
+            fhJetPtAreaV0normTTH[itg][i][ir] = 0x0;
+         }
+      }
    }
 
-   for(Int_t itg=kMB; itg<=kGA; itg++){ 
+   for(Int_t itg=kMB; itg<=kGA; itg++){
+      fhV0A_V0C_V0Mnorm[itg]=0x0;
+ 
       fhTrackPhiIncl[itg]=0x0;
       fhTrackEtaIncl[itg]=0x0;
 
@@ -488,7 +500,9 @@ fHistEvtSelection(0x0),
 fhVertexZall(0x0),
 fhVertexZ(0x0),
 fhV0MAssymVsV0Mnorm_PartLevel(0x0),
-fhV0AvsV0C(0x0),
+fhV0A_V0C_V0MnormPartLevel(0x0),
+fhV0A_V0APartLevel_V0Mnorm(0x0),
+fhV0C_V0CPartLevel_V0Mnorm(0x0),
 //fhV0MvsV0Mnorm(0x0),
 fhV0AvsSPD(0x0),
 fhV0CvsSPD(0x0),
@@ -535,9 +549,19 @@ fJetAcut(0.)
       fhJetPtResolutionVsPtPartLevel[ir] = 0x0;
       fhJetPtPartLevelCorr[ir] = 0x0;
       fhFractionOfSecInJet[ir] = 0x0;
+
+      for(Int_t i=0; i<fkTTbins; i++){
+         fhJetPtAreaV0normTTH_PartLevel[i][ir] = 0x0;
+
+         for(Int_t itg=kMB; itg<=kGA; itg++){
+            fhJetPtAreaV0normTTH[itg][i][ir] = 0x0;
+         }
+      }
    }
 
-   for(Int_t itg=kMB; itg<=kGA; itg++){ 
+   for(Int_t itg=kMB; itg<=kGA; itg++){
+      fhV0A_V0C_V0Mnorm[itg]=0x0;
+ 
       fhTrackPhiIncl[itg]=0x0;
       fhTrackEtaIncl[itg]=0x0;
 
@@ -1600,6 +1624,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
     
          fhTrackMult[itg]->Fill(fMultV0Mnorm, trackMult); 
          fhMeanTrackPt[itg]->Fill(fMultV0Mnorm, sumTrackPt);
+
+         fhV0A_V0C_V0Mnorm[itg]->Fill(fMultV0A, fMultV0C, fMultV0Mnorm);
       }
    
       if(fIsMinBiasTrig){ // run for all MC events   and for real data with min bias trigger
@@ -1614,7 +1640,6 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fhV0MRunByRunMB->Fill(name.Data(), fMultV0M, 1.0);
          fhV0MnormRunByRunMB->Fill(name.Data(), fMultV0Mnorm, 1.0);
    
-         fhV0AvsV0C->Fill(fMultV0C, fMultV0A);
          fhV0AvsSPD->Fill(fNTracklets, fMultV0A);
          fhV0CvsSPD->Fill(fNTracklets, fMultV0C);
       }
@@ -2052,6 +2077,11 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                            if(!trigflag[itg]) continue; //check which trigger fired
                            //fhRecoilJetPtTTH_CentV0M[itg][itt]->Fill(fCentralityV0M, jetPtCorrDet);
                            fhRecoilJetPtTTH_V0Mnorm1[itg][itt][ir]->Fill(fMultV0Mnorm, jetPtCorrDet);
+
+                           tmparr3[0] = jetPtCorrDet;
+                           tmparr3[1] = jet->Area();
+                           tmparr3[2] = fMultV0Mnorm;
+                           fhJetPtAreaV0normTTH[itg][itt][ir]->Fill(tmparr3);
                     
                            if(itt==0){ //reference with shifted rho
                               if(TMath::Abs( fJetAcut) < 1e-4){  //no area cut                            
@@ -2423,6 +2453,11 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          if(isMBpartlevel){
             fHistEvtSelection->Fill(6.5); //Count Accepted input event 
 
+            fhV0A_V0C_V0MnormPartLevel->Fill(fMultV0A_PartLevel, fMultV0C_PartLevel, fMultV0Mnorm_PartLevel);  
+            fhV0A_V0APartLevel_V0Mnorm->Fill(fMultV0A, fMultV0A_PartLevel, fMultV0Mnorm);    
+            fhV0C_V0CPartLevel_V0Mnorm->Fill(fMultV0C, fMultV0C_PartLevel, fMultV0Mnorm);    
+  
+
             //pT spectrum of particle level physical primary mc particles
             for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
                mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
@@ -2547,6 +2582,11 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                               //recoil jet hadron trigger
                            
                               fhRecoilJetPtTTH_V0Mnorm1_PartLevel[itt][ir]->Fill(fMultV0Mnorm_PartLevel, jetPtCorrDet);
+
+                              tmparr3[0] = jetPtCorrDet;
+                              tmparr3[1] = jet->Area();
+                              tmparr3[2] = fMultV0Mnorm_PartLevel;
+                              fhJetPtAreaV0normTTH_PartLevel[itt][ir]->Fill(tmparr3);
                            }
                         }
                      } 
@@ -2941,6 +2981,14 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          fhJetPtAreaV0norm[itg][ir] = new  THnSparseF(name.Data(),"Jet V0Mnorm pt eta phi", kjdim, jbins, jxmin, jxmax);
          fOutput->Add((THnSparse*) fhJetPtAreaV0norm[itg][ir]); 
       } 
+
+      for(Int_t itt=0; itt<fnHadronTTBins;itt++){ //HADRON TT
+         for(Int_t ir=0; ir<kRho; ir++){
+            name = Form("fhJetPtAreaV0norm_%s_TTH%d_%d_Rho%s", trig[itg].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt], rhotype[ir].Data());
+            fhJetPtAreaV0normTTH[itg][itt][ir] = new  THnSparseF(name.Data(),"Jet V0Mnorm pt eta phi", kjdim, jbins, jxmin, jxmax);
+            fOutput->Add((THnSparse*) fhJetPtAreaV0normTTH[itg][itt][ir]);
+         }
+      }
    }
    
    if(fMode == AliAnalysisTaskEA::kMC){
@@ -2949,6 +2997,14 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          
          fhJetPtAreaV0norm_PartLevel[ir] = new  THnSparseF(name.Data(),"Part LevelJet V0Mnorm pt eta phi", kjdim, jbins, jxmin, jxmax);
          fOutput->Add((THnSparse*) fhJetPtAreaV0norm_PartLevel[ir]);
+      }
+
+      for(Int_t itt=0; itt<fnHadronTTBins;itt++){ //HADRON TT
+         for(Int_t ir=0; ir<kRho; ir++){
+            name = Form("fhJetPtAreaV0norm_MB_TTH%d_%d_Rho%s_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt], rhotype[ir].Data());
+            fhJetPtAreaV0normTTH_PartLevel[itt][ir] = new  THnSparseF(name.Data(),"Part LevelJet V0Mnorm pt eta phi", kjdim, jbins, jxmin, jxmax);
+            fOutput->Add((THnSparse*) fhJetPtAreaV0normTTH_PartLevel[itt][ir]);
+         }
       } 
    } 
 
@@ -3268,10 +3324,29 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    } 
 
 
+   for(Int_t itg=kMB; itg<=kGA; itg++){
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue;
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kGA) continue;
+ 
+      name = Form("fhV0A_V0C_V0Mnorm_%s", trig[itg].Data());
+      fhV0A_V0C_V0Mnorm[itg] = new TH3D(name.Data(),name.Data(),100,0,1000, 100,0,1000, 10, 0, 10);
+      fOutput->Add((TH3D*) fhV0A_V0C_V0Mnorm[itg]);
+   } 
 
-   name = Form("fhV0AvsV0C_MB");
-   fhV0AvsV0C = new TH2D(name.Data(),name.Data(),100,0,1000, 100,0,1000);
-   fOutput->Add((TH2D*) fhV0AvsV0C); 
+   if(fMode == AliAnalysisTaskEA::kMC){ 
+      name = Form("fhV0A_V0C_V0MnormPartLevel_MB");
+      fhV0A_V0C_V0MnormPartLevel = new TH3D(name.Data(),name.Data(),100,0,200, 100,0,200, 10, 0, 10);
+      fOutput->Add((TH3D*) fhV0A_V0C_V0MnormPartLevel);
+
+      name = Form("fhV0A_V0APartLevel_V0Mnorm_MB");
+      fhV0A_V0APartLevel_V0Mnorm = new TH3D(name.Data(),name.Data(),100,0,1000, 100,0,200, 10, 0, 10);
+      fOutput->Add((TH3D*) fhV0A_V0APartLevel_V0Mnorm);
+   
+      name = Form("fhV0C_V0CPartLevel_V0Mnorm_MB");
+      fhV0C_V0CPartLevel_V0Mnorm = (TH3D*)  fhV0A_V0APartLevel_V0Mnorm->Clone(name.Data());
+      fOutput->Add((TH3D*) fhV0C_V0CPartLevel_V0Mnorm);
+   }
+
 
    //name = Form("fhV0MvsV0Mnorm_MB");
    //fhV0MvsV0Mnorm = new TH2D(name.Data(),name.Data(),100,0,40, 100,0,1200);
@@ -3289,19 +3364,19 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
  
    for(Int_t itt=0; itt<fnHadronTTBins; itt++){
       name = Form("fhV0AvsV0C_MB_TTH%d_%d", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
-      fhV0AvsV0CTTH[itt] = (TH2D*)  fhV0AvsV0C->Clone(name.Data());
+      fhV0AvsV0CTTH[itt] = new TH2D(name.Data(), name.Data(),100,0,1000,100,0,1000);
       fhV0AvsV0CTTH[itt]->SetTitle(name.Data());
       fOutput->Add((TH2D*) fhV0AvsV0CTTH[itt]); 
    } 
    for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
       name = Form("fhV0AvsV0C_MB_TTJ%d_%d", fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
-      fhV0AvsV0CTTJ[ijj] =  (TH2D*)  fhV0AvsV0C->Clone(name.Data());
+      fhV0AvsV0CTTJ[ijj] =  (TH2D*)  fhV0AvsV0CTTH[0]->Clone(name.Data());
       fhV0AvsV0CTTJ[ijj]->SetTitle(name.Data()); 
       fOutput->Add((TH2D*) fhV0AvsV0CTTJ[ijj]); 
    }
    for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
       name = Form("fhV0AvsV0C_MB_TTC%d_%d", fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
-      fhV0AvsV0CTTCinMB[ijj] = (TH2D*)  fhV0AvsV0C->Clone(name.Data());
+      fhV0AvsV0CTTCinMB[ijj] = (TH2D*)  fhV0AvsV0CTTH[0]->Clone(name.Data());
       fhV0AvsV0CTTCinMB[ijj]->SetTitle(name.Data()); 
       fOutput->Add((TH2D*) fhV0AvsV0CTTCinMB[ijj]); 
    }
@@ -3310,7 +3385,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    if(fMode != AliAnalysisTaskEA::kMC){ 
       for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
          name = Form("fhV0AvsV0C_GA_TTC%d_%d", fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
-         fhV0AvsV0CTTCinGA[ijj] = (TH2D*)  fhV0AvsV0C->Clone(name.Data());
+         fhV0AvsV0CTTCinGA[ijj] = (TH2D*)  fhV0AvsV0CTTH[0]->Clone(name.Data());
          fhV0AvsV0CTTCinGA[ijj]->SetTitle(name.Data()); 
          fOutput->Add((TH2D*) fhV0AvsV0CTTCinGA[ijj]); 
       } 
