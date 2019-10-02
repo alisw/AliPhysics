@@ -165,7 +165,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fDoPrimaryTrackMatching(kFALSE),
   fDoInvMassShowerShapeTree(kFALSE),
   fAllowOverlapHeaders(kTRUE),
-  fEnableClusterCutsForTrigger(kFALSE)
+  fEnableClusterCutsForTrigger(kFALSE),
+  fTrackMatcherRunningMode(0)
 {
 
 }
@@ -275,7 +276,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fDoPrimaryTrackMatching(kFALSE),
   fDoInvMassShowerShapeTree(kFALSE),
   fAllowOverlapHeaders(kTRUE),
-  fEnableClusterCutsForTrigger(kFALSE)
+  fEnableClusterCutsForTrigger(kFALSE),
+  fTrackMatcherRunningMode(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -898,14 +900,20 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     if (fV0Reader->GetV0FindingEfficiencyHistograms())
       fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
 
-  for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+  for(Int_t iMatcherTask = 0; iMatcherTask < 5; iMatcherTask++){
+    AliCaloTrackMatcher* temp = 0x0;
+    if(!fCorrTaskSetting.CompareTo("")){
+      temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
+    } else {
+      temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i_%s",iMatcherTask,fTrackMatcherRunningMode,fCorrTaskSetting.Data())));
+    }
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
-
-//********************************************************************************************************//
-//*****************************  NOT NEEDED FOR CALIBRATION???    ****************************************//
-//********************************************************************************************************//
+  
+    
+    //********************************************************************************************************//
+    //*****************************  NOT NEEDED FOR CALIBRATION???    ****************************************//
+    //********************************************************************************************************//
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;
     if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutHistograms()){

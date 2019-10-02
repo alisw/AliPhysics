@@ -55,7 +55,7 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pPb(
   Double_t  smearPar                      = 0.,       // conv photon smearing params
   Double_t  smearParConst                 = 0.,       // conv photon smearing params
   Bool_t    doPrimaryTrackMatching        = kTRUE,    // enable basic track matching for all primary tracks to cluster
-  Int_t     isRun2                        = kTRUE,    // enables different number of SM
+  Int_t     isRun2                        = 1,        // enables different number of SM
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
 ) {
@@ -194,9 +194,7 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pPb(
   if (trainConfig == 1){ // EMCAL + DCal clusters pPb run1
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113100f032230000","0163103100000010"); // no timing cut, no NL INT7
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113105f032230000","0163103100000010"); // -50ns, 50ns timing cut, no NL INT7
-
-  } else if (trainConfig == 11){ // EMCAL + DCal clusters pPb run 2
-    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113105f032230000","0163103100000010"); // INT7
+  } else if (trainConfig == 2){ // EMCAL + DCal clusters pPb run 2
     cuts.AddCutPCMCalo("80052113","00200009f9730000dge0400000","111113105f032230000","0163103100000010"); // EMC7
     cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111113105f032230000","0163103100000010"); // EG2+DG2
     cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111113105f032230000","0163103100000010"); // EG1+DG1
