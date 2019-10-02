@@ -229,7 +229,8 @@ class AliBalancePsi : public TObject {
 
   void UseMomentumOrdering(Bool_t momentumOrdering = kTRUE) {fMomentumOrdering = momentumOrdering;}
   void UseResonancesCut() {fResonancesCut = kTRUE;}
-  void UsePhiResonanceCut() {fResonancePhiCut = kTRUE;}
+  void UsePhiResonanceCut(Double_t setNSigmaRejectionMin = 3, Double_t setNSigmaRejectionMax = 3){
+    fResonancePhiCut = kTRUE; fNSigmaRejectionMin = setNSigmaRejectionMin; fNSigmaRejectionMax = setNSigmaRejectionMax;}
   void UseHBTCut(Double_t setHBTCutValue = 0.02) {
     fHBTCut = kTRUE; fHBTCutValue = setHBTCutValue;}
   void UseSameLabelMCCut() {fSameLabelMCCut = kTRUE;}
@@ -294,6 +295,8 @@ class AliBalancePsi : public TObject {
   Bool_t fResonancesLabelCut;//apply cut on the label of the mother to exclude particles coming from the decay of the same mother
   Bool_t fConversionCut;//conversion cut
   Double_t fInvMassCutConversion;//invariant mass for conversion cut
+  Double_t fNSigmaRejectionMin;//nsigma min for phi resonance invariant mass cut
+  Double_t fNSigmaRejectionMax;//nsigma max for phi resonance invariant mass cut
   Bool_t fQCut;//cut on momentum difference to suppress femtoscopic effect correlations
   Double_t fDeltaPtMin;//delta pt cut: minimum value
   Bool_t fVertexBinning;//use vertex z binning in AliTHn
