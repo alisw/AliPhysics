@@ -43,6 +43,28 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliMultiInputEventHandler.h"
 #include "TAliceCollection.h"
+// This is to make sure we create the correct TGridCollection
+// when we are not connected to the grid and gGrid is not there
+#if defined __has_include
+#    if __has_include("TJAlienCollection.h")
+#       include "TJAlienCollection.h"
+TGridCollection *createGridCollection(char const*basedir) {
+  return gGrid ? gGrid->OpenCollection(basedir) : (TGridCollection*)gROOT->ProcessLine(Form("TJAlienCollection::Open(\"%s\");", basedir));
+}
+#       define ConcreteAlienCollection TJAlienCollection
+#    elif __has_include("TAlienCollection.h")
+#       include "TAlienCollection.h"
+TGridCollection *createGridCollection(char const*basedir) {
+  return gGrid ? gGrid->OpenCollection(basedir) : (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\");", basedir));
+}
+#    endif
+#else
+#include "TJAlienCollection.h"
+TGridCollection *createGridCollection(char const*basedir) {
+  return gGrid ? gGrid->OpenCollection(basedir) : (TGridCollection*)gROOT->ProcessLine(Form("TJAlienCollection::Open(\"%s\");", basedir));
+}
+#endif
+
 #include "TAliceJobStatus.h"
 
 using std::ofstream;
@@ -2816,7 +2838,7 @@ Bool_t AliAnalysisAlien::MergeInfo(const char *output, const char *collection)
 // Merges a collection of output files using concatenation.
    TString scoll(collection);
    if (!scoll.Contains(".xml")) return kFALSE;
-   TGridCollection *coll = gGrid->OpenCollection(collection);
+   TGridCollection *coll = createGridCollection(collection);
    if (!coll) {
       ::Error("MergeInfo", "Input XML %s collection empty.", collection);
       return kFALSE;
@@ -2876,7 +2898,7 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
    if (sbasedir.Contains(".xml")) {
       // Merge files pointed by the xml - ignore nmaxmerge and set ichunk to 0
       nmaxmerge = 9999999;
-      TGridCollection *coll = gGrid->OpenCollection(basedir);
+      TGridCollection *coll = createGridCollection(basedir);
       if (!coll) {
          ::Error("MergeOutput", "Input XML collection empty.");
          return kFALSE;
