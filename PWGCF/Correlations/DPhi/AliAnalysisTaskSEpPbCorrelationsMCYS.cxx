@@ -2087,7 +2087,7 @@ if(fAnaMode=="TPCTPC"){
 
 		  fhistmcprimfinal->Fill(conmcprim,0);
 		  Double_t mcTrackEta1=mcTrackEta;
-		  if(mcTrackPt<0.2 || mcTrackPt>3.0) continue;
+		  //		  if(mcTrackPt<0.2 || mcTrackPt>3.0) continue;
 		  if(fAnaMode=="TPCTPC") {
 			if(mcTrackEta<-0.8 || mcTrackEta>0.8) continue;
 			selectedTracksMC1->Add(new AliAssociatedTrackYS(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));         
@@ -2112,8 +2112,12 @@ if(fAnaMode=="TPCTPC"){
   
   if(!fprim){
     FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
- FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
- DumpTObjTable("End of fill  Correlation");
+    FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
+    DumpTObjTable("End of fill  Correlation");
+    //FillCorrelationTracks(lCentrality,selectedTracksMC1,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
+    //FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
+ 
+
   }else{
     FillCorrelationTracks(lCentrality,selectedTracksMC1,selectedTracksMC2,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
     FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksMC2,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
