@@ -160,6 +160,7 @@ public:
   void SetMaxDeltaTheta(float maxDeltaTheta) { fMaxDeltaTheta = maxDeltaTheta; }
   void SetMaxDeltaPhi(float maxDeltaPhi) { fMaxDeltaPhi = maxDeltaPhi; }
   void SetMinTrackletCosP(float minTrackletCosP) { fMinTrackletCosP = minTrackletCosP; }
+  void EnableLikeSign(bool enableIt = true) { fEnableLikeSign = enableIt; fV0Vertexer.fLikeSign = enableIt; }
 
   AliEventCuts fEventCuts; /// Event cuts class
   bool fFillGenericV0s;
@@ -202,6 +203,8 @@ private:
   float fMaxDeltaPhi;
   float fMaxDeltaTheta;
   float fMinTrackletCosP;
+
+  bool  fEnableLikeSign;
 
   TTree *fFileNameTree;        //!
   TObjString fCurrentFileName; //!

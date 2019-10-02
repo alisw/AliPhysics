@@ -1,4 +1,4 @@
-AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",Int_t ndebug=0,const char*  postname="")
+AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",Int_t ndebug=0,Int_t applyFixesITS3Analysis=-1,const char*  postname="")
  {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -36,32 +36,50 @@ AliAnalysisTaskSELbtoLcpi4 *AddTaskLbUPG(TString finname="LcdaughtersCut.root",I
      
   task->SetCutsond0Lcdaughters(kFALSE);
   task->SetPtConfiguration(0.,30.,2.,14.,0.,999.,4.);
+
+  //temporary to check effect of fixes separately
+  if(applyFixesITS3Analysis == 0){
+    task->SetApplyFixesITS3AnalysisBit(kTRUE);
+    task->SetApplyFixesITS3AnalysiskAll(kTRUE);
+    task->SetApplyFixesITS3AnalysisHijing(kTRUE);
+  } else if(applyFixesITS3Analysis == 1){
+    task->SetApplyFixesITS3AnalysisBit(kTRUE);
+  } else if(applyFixesITS3Analysis == 2){
+    task->SetApplyFixesITS3AnalysiskAll(kTRUE);
+  } else if(applyFixesITS3Analysis == 3){
+    task->SetApplyFixesITS3AnalysisHijing(kTRUE);
+  } else {
+    task->SetApplyFixesITS3AnalysisBit(kFALSE);
+    task->SetApplyFixesITS3AnalysiskAll(kFALSE);
+    task->SetApplyFixesITS3AnalysisHijing(kFALSE);
+  }
+ 
   mgr->AddTask(task);
 
   
-  char* outputFileName=(char*)AliAnalysisManager::GetCommonFileName();
+  TString outputFileName=(char*)AliAnalysisManager::GetCommonFileName();
   TString container1;
   TString container2;
-  TString filename;
+  TString directory;
+  directory=Form(":Lbtask%s",(char*)postname);
+  outputFileName+=directory;
   container1.Form("HistosUPG%s", (char*)postname);
   container2.Form("ntupleUPGLb%s",(char*)postname);
-  filename.Form("ntupleUPGLb%s%s",(char*)postname,".root");
   
 
   AliAnalysisDataContainer *coutput1
      =mgr->CreateContainer(container1,
                            TList::Class(),
                            AliAnalysisManager::kOutputContainer,
-                           Form("%s:%s", outputFileName, "ITSImproverUpg"));
+                           outputFileName.Data());
 
 
   AliAnalysisDataContainer *coutput2
      =mgr->CreateContainer(container2,
                            TNtuple::Class(),
                            AliAnalysisManager::kOutputContainer,
-                           filename);
+                           outputFileName.Data());
  
-  coutput2->SetSpecialOutput();
 
 
   mgr->ConnectInput (task,0,mgr->GetCommonInputContainer());

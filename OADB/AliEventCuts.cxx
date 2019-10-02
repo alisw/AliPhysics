@@ -470,10 +470,14 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     return;
   }
 
-  /// Run 2 Pb-Pb
-  if ( (fCurrentRun >= 244917 && fCurrentRun <= 246994) ||
-       (fCurrentRun >= 295369 && fCurrentRun <= 297624)) {
+  /// Run 2 Pb-Pb: LHC15o
+  if (fCurrentRun >= 244917 && fCurrentRun <= 246994) {
     SetupRun2PbPb();
+    return;
+  }
+
+  if (fCurrentRun >= 295369 && fCurrentRun <= 297624) {
+    SetupPbPb2018();
     return;
   }
 
@@ -734,7 +738,7 @@ void AliEventCuts::SetupPbPb2018() {
     fMaxCentrality = 90.f;
   }
 
-  fUseEstimatorsCorrelationCut = fCentralityFramework != 0;
+  fUseEstimatorsCorrelationCut = false;
   fEstimatorsCorrelationCoef[0] = -0.669108;
   fEstimatorsCorrelationCoef[1] = 1.04489;
   fEstimatorsSigmaPars[0] = 0.933321;

@@ -140,7 +140,7 @@ void AliFemtoDreamTrack::SetTrack(AliVTrack *track, AliVEvent *event,
     this->SetIDTracks(dynamic_cast<AliNanoAODTrack *>(fVGlobalTrack)->GetID());
     this->SetEvtNumber(event->GetRunNumber());
     if (fIsMC) {
-      this->SetMCInformation();
+      this->SetMCInformation(event);
     }
   } else {
     this->fIsSet = false;
@@ -571,9 +571,6 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
   this->fdcaXY = fAODTrack->DCA();
   this->fdcaZ = fAODTrack->ZAtDCA();
   this->fChi2 = fAODTrack->Chi2perNDF();
-  double dcaVals[2] = { -99., -99. };
-  double pos[3] = { 0., 0., 0. };
-  double covar[3] = { 0., 0., 0. };
   fAODGlobalTrack->GetImpactParameters(fdcaXYProp,fdcaZProp);
 //  AliAODTrack copy(*fAODGlobalTrack);
 //  fAODGlobalTrack->GetPosition(pos);
@@ -744,10 +741,22 @@ void AliFemtoDreamTrack::SetMCInformation() {
   if (!mcarray) {
     AliError("SPTrack: MC Array not found");
   }
-  if (fAODGlobalTrack->GetLabel() > 0) {
-    AliAODMCParticle * mcPart = (AliAODMCParticle*) mcarray->At(
-        fAODGlobalTrack->GetLabel());
-    this->SetID(fAODGlobalTrack->GetLabel());
+  SetMCInformation(mcarray, fAODGlobalTrack->GetLabel());
+}
+
+void AliFemtoDreamTrack::SetMCInformation(AliVEvent *event) {
+  TClonesArray *mcarray = dynamic_cast<TClonesArray *>(event->FindListObject(
+      "mcparticles"));
+  if (!mcarray) {
+    AliError("SPTrack: MC Array not found");
+  }
+  SetMCInformation(mcarray, fVGlobalTrack->GetLabel());
+}
+
+void AliFemtoDreamTrack::SetMCInformation(TClonesArray* mcarray, int label) {
+  if (label > 0) {
+    AliAODMCParticle * mcPart = (AliAODMCParticle*) mcarray->At(label);
+    this->SetID(label);
     if (!(mcPart)) {
       this->fIsSet = false;
     } else {

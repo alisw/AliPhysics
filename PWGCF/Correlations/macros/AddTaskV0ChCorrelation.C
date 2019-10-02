@@ -69,7 +69,7 @@ if (!mgr->GetInputEventHandler()) {
 
   task->SetCosPointingAngleMin(0.975);
   task->SetLambdaCPA(0.993);
-  task->Set2DFiducialMin(4);
+  task->Set2DFiducialMin(5);
   task->SetV0DaughterTrackTPCCluster(70.);
   task->SetNCrossedRowsTPCfindable(0.8);
   task->SetPtArmV0AlphaV0(0.2);

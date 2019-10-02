@@ -15,8 +15,8 @@ AliAnalysisTaskPP13 * AddSimpleAnalysisTaskPP(
 
 	AliPP13SelectionWeights & data_weights = AliPP13SelectionWeights::Init(AliPP13SelectionWeights::kData);
 
-	selections->Add(new AliPP13SpectrumSelectionSimple("Phys", "Physics Selection", cuts_pi0, &data_weights));
-	selections->Add(new AliPP13SpectrumSelectionSimple("Eta", "Physics Selection for eta meson", cuts_eta, &data_weights));
+	selections->Add(new AliPP13SpectrumSelectionSimple("SimplePhys", "Physics Selection", cuts_pi0, &data_weights));
+	selections->Add(new AliPP13SpectrumSelectionSimple("SimpleEta", "Physics Selection for eta meson", cuts_eta, &data_weights));
 
 	delete &data_weights;
 

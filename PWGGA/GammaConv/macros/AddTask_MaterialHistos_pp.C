@@ -197,6 +197,17 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCutPCMMaterial("00010103", "00000009a27300008250a04120");
     cuts.AddCutPCMMaterial("00010103", "0c000009a27300008250a04120");
     cuts.AddCutPCMMaterial("00010103", "0d000009a27300008250a04120");
+  } else if (trainConfig == 26) {   // new Cuts on Psi pair, chi2
+    cuts.AddCutPCMMaterial("00010103", "0d00000929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0d00000926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0d00000926630000dkd0404000");
+ } else if (trainConfig == 76) {   // +50 To be used with MBW
+    cuts.AddCutPCMMaterial("00010103", "0d00000929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0d00000926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0d00000926630000dkd0404000");
+
+
+
 
    // Offline V0Finder is used
 
@@ -264,6 +275,15 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCutPCMMaterial("00010103", "10000009a27300008250a04120");
     cuts.AddCutPCMMaterial("00010103", "1c000009a27300008250a04120");
     cuts.AddCutPCMMaterial("00010103", "1d000009a27300008250a04120");
+
+ } else if (trainConfig == 126) {   // new Cuts on Psi pair, chi2
+    cuts.AddCutPCMMaterial("00010103", "1d00000929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1d00000926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1d00000926630000dkd0404000");
+ } else if (trainConfig == 176) {   // +50 To be used with MBW
+    cuts.AddCutPCMMaterial("00010103", "1d00000929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1d00000926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1d00000926630000dkd0404000");
     
   } else  if(trainConfig == 111){
     cuts.AddCutPCMMaterial("00000003", "10000070000000000500004000");

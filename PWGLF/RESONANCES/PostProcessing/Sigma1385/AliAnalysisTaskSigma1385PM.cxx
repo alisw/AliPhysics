@@ -16,7 +16,8 @@
 /* AliAnalysisTaskSigma1385PM
  *
  *  Test code for the reconstructing Sigma(1385)^{+-}
- *  Output will be saved to nTuple -> can be used for TMVA input
+ *  Output could be saved to nTuple by using SetFillnTuple(kTRUE) 
+ *    -> can be used for TMVA input
  *
  *  Author: Bong-Hwi Lim
  *
@@ -85,7 +86,7 @@ enum {
 
 class AliAnalysisTaskSigma1385PM;
 
-ClassImp(AliAnalysisTaskSigma1385PM)  // classimp: necessary for root
+ClassImp(AliAnalysisTaskSigma1385PM)
 
     AliAnalysisTaskSigma1385PM::AliAnalysisTaskSigma1385PM()
     : AliAnalysisTaskSE(), fEvt(0), fNtupleSigma1385(0) {}
@@ -93,17 +94,9 @@ ClassImp(AliAnalysisTaskSigma1385PM)  // classimp: necessary for root
 AliAnalysisTaskSigma1385PM::AliAnalysisTaskSigma1385PM(const char* name,
                                                            Bool_t MCcase)
     : AliAnalysisTaskSE(name), fEvt(0), IsMC(MCcase), fNtupleSigma1385(0) {
-    // constructor
-    DefineInput(
-        0, TChain::Class());  // define the input of the analysis: in this case
-                              // we take a 'chain' of events this chain is
-                              // created by the analysis manager, so no need to
-                              // worry about it, it does its work automatically
-    DefineOutput(1, TList::Class());  // define the ouptut of the analysis: in
-                                      // this case it's a list of histograms
-    DefineOutput(
-        2, TNtupleD::Class());  // you can add more output objects by calling
-                                // DefineOutput(2, classname::Class())
+    DefineInput(0, TChain::Class());
+    DefineOutput(1, TList::Class());
+    DefineOutput(2, TNtupleD::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisTaskSigma1385PM::~AliAnalysisTaskSigma1385PM() {}
@@ -302,10 +295,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
             continue;
         fHistos->FillTH1("hNofTracks", 0.5);
 
-        if(IsNano)
-            ((AliNanoAODTrack*)track)->GetImpactParameters(b[0], b[1]);
-        else
-            track->GetImpactParameters(b, bCov);
+        GetImpactParam(track, b, bCov);
 
         // ---------- Track selection begin ----------
         if (fEvt->IsA() == AliESDEvent::Class()) {
@@ -1249,4 +1239,13 @@ void AliAnalysisTaskSigma1385PM::FillTrackToEventPool() {
             delete it;
         ep->pop_front();
     }
+}
+void AliAnalysisTaskSigma1385PM::GetImpactParam(AliVTrack* track,
+                                                Float_t p[2],
+                                                Float_t cov[3]) {
+    AliNanoAODTrack* nanoT = dynamic_cast<AliNanoAODTrack*>(track);
+    if (nanoT)
+        nanoT->AliNanoAODTrack::GetImpactParameters(p[0], p[1]);
+    else
+        track->GetImpactParameters(p, cov);
 }

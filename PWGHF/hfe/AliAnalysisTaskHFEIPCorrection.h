@@ -20,6 +20,7 @@ class AliHFEcollection;
 class TArrayD;
 class AliAODVertex;
 class TRandom3;
+class TSpline3;
 
 
 
@@ -133,12 +134,14 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH3D * fDCAWErrKaons;
   TH3D * fDCAKaonsFineBins;
 
+
   
   //AliHFEcuts * hfetrackCuts;           // Track cuts
   AliAODv0KineCuts * fAODV0Cuts;
   TRandom3 * fRd;
+  TSpline3 * fSplineCorr;
   
-  ClassDef(AliAnalysisTaskHFEIPCorrection, 1);
+  ClassDef(AliAnalysisTaskHFEIPCorrection, 2);
 };
 
 #endif

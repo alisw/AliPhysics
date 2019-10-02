@@ -24,6 +24,7 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	virtual ~AliAnalysisTaskUpcRho0();
 
 	virtual void Init();
+	virtual void LocalInit();
 	virtual void UserCreateOutputObjects();
 	virtual void UserExec(Option_t *option);
 	virtual void Terminate(Option_t *){};

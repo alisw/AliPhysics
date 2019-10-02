@@ -14,6 +14,7 @@ AliAnalysisTaskPPvsRT_TPCTOF* AddTaskPPvsRT_TPCTOF(
 		const double TrkLCut = 5.0,
 		const char* Period  = "l",
 		const double MeanCh = 7.266,
+		const bool isLower  = kTRUE,
 	        const int ncl = 70, 
 		const char* flag_container = "tpc_tof"		
 		)   
@@ -34,6 +35,13 @@ AliAnalysisTaskPPvsRT_TPCTOF* AddTaskPPvsRT_TPCTOF(
 
 	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
 	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+	if(isLower){
+	esdTrackCutsGolden->SetMinNCrossedRowsTPC(60);
+	esdTrackCutsGolden->SetMaxDCAToVertexZ(1);
+		}else{
+	esdTrackCutsGolden->SetMinNCrossedRowsTPC(80);
+	esdTrackCutsGolden->SetMaxChi2PerClusterTPC(5);
+	esdTrackCutsGolden->SetMaxDCAToVertexZ(3);}
 	trackFilterGolden->AddCuts(esdTrackCutsGolden);
 
 	AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");

@@ -161,7 +161,10 @@ void AliHFSystErr::Init(Int_t decay){
           else AliFatal("Not yet implemented");
         }
         else if (fRunNumber == 18){
-          if (fCentralityClass=="010") InitD0toKpi2018PbPb010();
+          if (fCentralityClass=="010"){
+	    if(fIsLowPtAnalysis) InitD0toKpi2018PbPb010LowPtAn();
+	    else InitD0toKpi2018PbPb010();
+	  }
           else if (fCentralityClass=="3050") InitD0toKpi2018PbPb3050();
           else AliFatal("Not yet implemented");
         }
@@ -460,8 +463,13 @@ void AliHFSystErr::Init(Int_t decay){
 
     case 5: // Lc->pKpi
       if (fCollisionType==0) {
-        if (fIsBDTAnalysis) InitLctopKpi2010ppBDT();
-        else                InitLctopKpi2010pp();
+        if (fRunNumber == 17 || fRunNumber == 2017){
+          InitLctopKpi2017pp();
+        }
+        else {
+          if (fIsBDTAnalysis) InitLctopKpi2010ppBDT();
+          else                InitLctopKpi2010pp();
+        }
       }
       else if (fCollisionType==2) {
         if(fRunNumber==13 || fRunNumber==2013) {
@@ -475,7 +483,12 @@ void AliHFSystErr::Init(Int_t decay){
       else AliFatal("Not yet implemented");
       break;
     case 6: // Lc->pK0S
-      if (fCollisionType==0) InitLctopK0S2010pp();
+      if (fCollisionType==0) {
+        if (fRunNumber == 17 || fRunNumber == 2017){
+          InitLctopK0S2017pp5TeV();
+        }
+        else InitLctopK0S2010pp();
+      }
       else if (fCollisionType==1) {
         if (fIsBDTAnalysis) {
           if (fCentralityClass=="010") InitLctopK0S2018PbPb010BDT();
@@ -9838,6 +9851,65 @@ void AliHFSystErr::InitDstartoD0pi2015PbPb6080() {
   return;
 }
 
+//------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2018PbPb010LowPtAn(){
+  //
+  // D0->Kpi syst errors for analysis w/o vertexing. Responsible: F. Prino
+  //   2018 Pb-Pb sample at 5 TeV, centrality 0-10%
+  //
+
+  AliInfo(" Settings for D0 --> K pi, 0-10% Pb-Pb collisions at 5 TeV, analysis without topological cuts - 0.5 GeV bins");
+  SetNameTitle("AliHFSystErr","SystErrD0toKpi2018PbPb010LowPtAn");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",32,0,16);
+  for(Int_t i=1;i<=32;i++) fNorm->SetBinContent(i,0.); 
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",32,0,16);
+  for(Int_t i=1;i<=32;i++) fBR->SetBinContent(i,0.0129);
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",32,0,16); // from ToyMC
+  fTrackingEff->SetBinContent(1,0.090); // 0-0.5
+  fTrackingEff->SetBinContent(2,0.090); // 0.5-1
+  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.095); //1-2
+  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.10); //2-3
+  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.105); //3-4
+  for(Int_t i=9;i<=10;i++) fTrackingEff->SetBinContent(i,0.10); //4-5
+  for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.095); //5-6
+  for(Int_t i=13;i<=14;i++) fTrackingEff->SetBinContent(i,0.090); //6-7
+  for(Int_t i=15;i<=16;i++) fTrackingEff->SetBinContent(i,0.085); //7-8
+  for(Int_t i=17;i<=20;i++) fTrackingEff->SetBinContent(i,0.080); //8-10
+  for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,0.075); //10-12
+  for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,0.070); //12-16
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",32,0,16);
+  for(Int_t i=1;i<=32;i++) fRawYield->SetBinContent(i,0.2);
+  fRawYield->SetBinContent(1,0.09); // 0-0.5
+  fRawYield->SetBinContent(2,0.06); // 0.5-1
+  for(Int_t i=3;i<=24;i++) fRawYield->SetBinContent(i,0.04);
+  fRawYield->SetBinContent(4,0.05); //5<pt<6
+
+  // Cuts efficiency 
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",32,0,16);
+  for(Int_t i=1;i<=32;i++) fCutsEff->SetBinContent(i,0.025); //2.5% on geometrical length cut
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",32,0,16);
+  for(Int_t i=1;i<=32;i++) fPIDEff->SetBinContent(i,0.);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",32,0,16);
+  for(Int_t i=1;i<=32;i++) fMCPtShape->SetBinContent(i,0);
+
+  // particle-antiparticle
+  //  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",24,0,24);
+  //  for(Int_t i=1;i<=24;i++) fPartAntipart->SetBinContent(i,0.);
+
+  return;
+}
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitD0toKpi2018PbPb010() {
   //

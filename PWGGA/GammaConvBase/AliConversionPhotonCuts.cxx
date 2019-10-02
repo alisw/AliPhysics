@@ -237,6 +237,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fMaterialBudgetWeightsInitialized(kFALSE),
   fProfileContainingMaterialBudgetWeights(NULL),
   fFileNameElecDeDxPostCalibration(""),
+  fElecDeDxPostCalibrationInitialized(kFALSE),
   fRecalibCurrentRun(-1),
   fnRBins(4),
   fHistoEleMapRecalib(NULL),
@@ -408,6 +409,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fMaterialBudgetWeightsInitialized(ref.fMaterialBudgetWeightsInitialized),
   fProfileContainingMaterialBudgetWeights(ref.fProfileContainingMaterialBudgetWeights),
   fFileNameElecDeDxPostCalibration(ref.fFileNameElecDeDxPostCalibration),
+  fElecDeDxPostCalibrationInitialized(ref.fElecDeDxPostCalibrationInitialized),
   fRecalibCurrentRun(ref.fRecalibCurrentRun),
   fnRBins(ref.fnRBins),
   fHistoEleMapRecalib(ref.fHistoEleMapRecalib),
@@ -544,7 +546,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistograms->Add(fProfileContainingMaterialBudgetWeights);
   }
 
-  if (fDoElecDeDxPostCalibration){
+  if (fDoElecDeDxPostCalibration || fElecDeDxPostCalibrationInitialized){
     for (Int_t i = 0; i < fnRBins; i++) {
       if( fHistoEleMapRecalib[i] ){
         fHistograms->Add(fHistoEleMapRecalib[i]);
@@ -721,93 +723,93 @@ Bool_t AliConversionPhotonCuts::InitPIDResponse(){
   return kFALSE;
 }
 ///________________________________________________________________________
+Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filename) {
+  AliInfo("Entering loading of correction map for post calibration");
+
+  TFile *file = TFile::Open(filename.Data());
+  if(!file){
+    AliError(Form("file for electron dEdx post calibration %s not found",filename.Data()));
+    return kFALSE;
+  }else{
+    AliInfo(Form("found %s ",filename.Data()));
+  }
+
+  for(Int_t i=0;i<fnRBins;i++){
+   if (fIsRecalibDepTPCCl){
+    fHistoEleMapRecalib[i]  = (TH2S*)file->Get(Form("Ele_Cl%d_recalib",i));
+    fHistoPosMapRecalib[i]  = (TH2S*)file->Get(Form("Pos_Cl%d_recalib",i));
+   }else{
+    fHistoEleMapRecalib[i]  = (TH2S*)file->Get(Form("Ele_R%d_recalib",i));
+    fHistoPosMapRecalib[i]  = (TH2S*)file->Get(Form("Pos_R%d_recalib",i));
+   } 
+  }
+
+  if (fHistoEleMapRecalib[0] == NULL || fHistoEleMapRecalib[1] == NULL ||
+      fHistoEleMapRecalib[2] == NULL || fHistoEleMapRecalib[3] == NULL  ){
+    AliFatal("Histograms for dedx post calibration not found in %s despite being requested!");
+    return kFALSE;// code must break if histograms are not found!
+  }
+  for(Int_t i=0;i<fnRBins;i++){
+    fHistoEleMapRecalib[i]  ->SetDirectory(0);
+    fHistoPosMapRecalib[i]  ->SetDirectory(0);
+  }
+
+  file->Close();
+  delete file;
+  fElecDeDxPostCalibrationInitialized=kTRUE;
+  return kTRUE;
+}
+///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::LoadElecDeDxPostCalibration(Int_t runNumber) {
 
-  if(runNumber==fRecalibCurrentRun)
+  if(runNumber==fRecalibCurrentRun || fElecDeDxPostCalibrationInitialized)
     return kTRUE;
   else
     fRecalibCurrentRun=runNumber;
 
-  if (fFileNameElecDeDxPostCalibration!="")
-  { //if fFileNameElecDeDxPostCalibration specified in the AddTask via SetElecDeDxPostCalibrationCustomFile()
-    AliInfo(Form("Loading dEdx recalibration maps from given path %s",fFileNameElecDeDxPostCalibration.Data()));
+  // Else choose the one in the $ALICE_PHYSICS directory (or EOS)
+  AliInfo("LoadingdEdx recalibration maps from OADB/PWGGA/TPCdEdxRecalibOADB.root");
 
-    TFile *fileRecalib=new TFile(Form("%s",fFileNameElecDeDxPostCalibration.Data()),"read");
-    if (!fileRecalib || fileRecalib->IsZombie())
-    {
-      AliWarning(Form("Input file was not found in the path provided: %s",fFileNameElecDeDxPostCalibration.Data()));
-      return kFALSE;
-    }
-
-    for(Int_t i=0;i<fnRBins;i++){
-      if (fIsRecalibDepTPCCl){
-        fHistoEleMapRecalib[i]  = (TH2S*)fileRecalib->Get(Form("Ele_Cl%d_recalib",i));
-        fHistoPosMapRecalib[i]  = (TH2S*)fileRecalib->Get(Form("Pos_Cl%d_recalib",i));
-      } else {
-        fHistoEleMapRecalib[i]  = (TH2S*)fileRecalib->Get(Form("Ele_R%d_recalib",i));
-        fHistoPosMapRecalib[i]  = (TH2S*)fileRecalib->Get(Form("Pos_R%d_recalib",i));
-      }
-    }
-    if (fHistoEleMapRecalib[0] == NULL || fHistoEleMapRecalib[1] == NULL ||
-        fHistoEleMapRecalib[2] == NULL || fHistoEleMapRecalib[3] == NULL ){
-      AliWarning(Form("Histograms for dedx post calibration not found in %s despite being requested!",fFileNameElecDeDxPostCalibration.Data()));
-      return kFALSE;// code must break if histograms are not found!
-    }
-    for(Int_t i=0;i<fnRBins;i++){
-      fHistoEleMapRecalib[i]  ->SetDirectory(0);
-      fHistoPosMapRecalib[i]  ->SetDirectory(0);
-    }
-    if (fileRecalib){
-      fileRecalib->Close();
-      delete fileRecalib;
-    }
-    AliInfo(Form("dEdx recalibration maps successfully loaded from %s",fFileNameElecDeDxPostCalibration.Data()));
-    return kTRUE;
-  }
-  else
-  { // Else choose the one in the $ALICE_PHYSICS directory (or EOS)
-    AliInfo("LoadingdEdx recalibration maps from OADB/PWGGA/TPCdEdxRecalibOADB.root");
-
-    TFile *fileRecalib=new TFile(AliDataFile::GetFileNameOADB("PWGGA/TPCdEdxRecalibOADB.root").data(),"read");
-    if (!fileRecalib || fileRecalib->IsZombie())
+  TFile *fileRecalib = TFile::Open(AliDataFile::GetFileNameOADB("PWGGA/TPCdEdxRecalibOADB.root").data(),"read");
+  if (!fileRecalib || fileRecalib->IsZombie())
     {
       AliWarning("OADB/PWGGA/TPCdEdxRecalibOADB.root was not found");
       return kFALSE;
     }
-    if (fileRecalib) delete fileRecalib;
-      AliOADBContainer *contRecalibTPC = new AliOADBContainer("");
-      contRecalibTPC->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/TPCdEdxRecalibOADB.root").data(),"AliTPCdEdxRecalib");
+  if (fileRecalib) delete fileRecalib;
+  AliOADBContainer *contRecalibTPC = new AliOADBContainer("");
+  contRecalibTPC->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/TPCdEdxRecalibOADB.root").data(),"AliTPCdEdxRecalib");
 
-    TObjArray *arrayTPCRecalib=(TObjArray*)contRecalibTPC->GetObject(runNumber);
-    if (!arrayTPCRecalib)
+  TObjArray *arrayTPCRecalib=(TObjArray*)contRecalibTPC->GetObject(runNumber);
+  if (!arrayTPCRecalib)
     {
       AliWarning(Form("No TPC dEdx recalibration found for run number: %d", runNumber));
       delete contRecalibTPC;
       return kFALSE;
     }
 
-    for(Int_t i=0;i<fnRBins;i++){
-      if (fIsRecalibDepTPCCl){
-        fHistoEleMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Ele_Cl%d_recalib",i));
-        fHistoPosMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Pos_Cl%d_recalib",i));
-      } else {
-        fHistoEleMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Ele_R%d_recalib",i));
-        fHistoPosMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Pos_R%d_recalib",i));
-      }
+  for(Int_t i=0;i<fnRBins;i++){
+    if (fIsRecalibDepTPCCl){
+      fHistoEleMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Ele_Cl%d_recalib",i));
+      fHistoPosMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Pos_Cl%d_recalib",i));
+    } else {
+      fHistoEleMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Ele_R%d_recalib",i));
+      fHistoPosMapRecalib[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Pos_R%d_recalib",i));
     }
-    if (fHistoEleMapRecalib[0] == NULL || fHistoEleMapRecalib[1] == NULL ||
-        fHistoEleMapRecalib[2] == NULL || fHistoEleMapRecalib[3] == NULL  ){
-      AliWarning("Histograms for dedx post calibration not found in %s despite being requested!");
-      return kFALSE;// code must break if histograms are not found!
-    }
-    for(Int_t i=0;i<fnRBins;i++){
-      fHistoEleMapRecalib[i]  ->SetDirectory(0);
-      fHistoPosMapRecalib[i]  ->SetDirectory(0);
-    }
-    delete contRecalibTPC;
-    AliInfo(Form("dEdx recalibration maps successfully loaded from OADB/PWGGA/TPCdEdxRecalibOADB.root for run %d",runNumber));
-    return kTRUE;
   }
+  if (fHistoEleMapRecalib[0] == NULL || fHistoEleMapRecalib[1] == NULL ||
+      fHistoEleMapRecalib[2] == NULL || fHistoEleMapRecalib[3] == NULL  ){
+    AliWarning("Histograms for dedx post calibration not found in %s despite being requested!");
+    return kFALSE;// code must break if histograms are not found!
+  }
+  for(Int_t i=0;i<fnRBins;i++){
+    fHistoEleMapRecalib[i]  ->SetDirectory(0);
+    fHistoPosMapRecalib[i]  ->SetDirectory(0);
+  }
+  delete contRecalibTPC;
+  AliInfo(Form("dEdx recalibration maps successfully loaded from OADB/PWGGA/TPCdEdxRecalibOADB.root for run %d",runNumber));
+  return kTRUE;
+
 }
 
 //_________________________________________________________________________
@@ -1061,13 +1063,16 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMCAODESD(AliDalitzAODESDMC* part
         if( particle->EtaG() < (fEtaCutMin) && particle->EtaG() > (-fEtaCutMin) )
             return kFALSE;
         }
-        if(particle->GetMotherG() >-1 && mcEvent->Particle(particle->GetMotherG())->GetPdgCodeG() == 22){
+        std::unique_ptr<AliDalitzAODESDMC> Templeak;
+        Templeak = std::unique_ptr<AliDalitzAODESDMC>(mcEvent->Particle(particle->GetMotherG()));
+
+        if(particle->GetMotherG() >-1 && Templeak->GetPdgCodeG() == 22){
             return kFALSE; // no photon as mothers!
         }
         if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
         // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
-        std::unique_ptr<AliDalitzAODESDMC> ePos ;
-        std::unique_ptr<AliDalitzAODESDMC> eNeg;
+        std::unique_ptr<AliDalitzAODESDMC> ePos=0x0;
+        std::unique_ptr<AliDalitzAODESDMC> eNeg=0x0;
         if(particle->GetNDaughtersG() >= 2){
         //      cout<<particle->GetNDaughtersG()<<endl;
             for(Int_t daughterIndex=particle->GetFirstDaughterG();daughterIndex<=particle->GetLastDaughterG();daughterIndex++){
@@ -1118,6 +1123,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMCAODESD(AliDalitzAODESDMC* part
         return kTRUE;
     //if(AcceptanceCut(particle,ePos,eNeg))return kTRUE;
     }
+
     return kFALSE;
 }
 ///________________________________________________________________________
@@ -3739,9 +3745,13 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
     fChi2CutConversion = 50.;
     fChi2CutConversionExpFunc = -0.075;
     break;
-  case 19: //i for exp cut (fDo2DPsiPairChi2 = 2) low B
+  case 19: //j for exp cut (fDo2DPsiPairChi2 = 2) low B
     fChi2CutConversion = 50.;
     fChi2CutConversionExpFunc = -0.085;
+    break;
+  case 20: //k for exp cut (fDo2DPsiPairChi2 = 2)
+    fChi2CutConversion = 20.;
+    fChi2CutConversionExpFunc = -0.055;
     break;
   default:
     AliError(Form("Warning: Chi2GammaCut not defined %d",chi2GammaCut));

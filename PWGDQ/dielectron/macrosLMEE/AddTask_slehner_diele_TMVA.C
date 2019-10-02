@@ -6,7 +6,8 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
                                               TString TMVAweight,
                                               Bool_t fromAlien,
                                               TString date="ddmmyy",
-                                              Int_t wagonnr=0
+                                              Int_t wagonnr=0,
+                                              Bool_t usePileUpRej=kTRUE
         ){
   
   TString directoryBaseName = "slehnerLMEETMVA";
@@ -57,7 +58,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
   LMEECutLib* cutlib = new LMEECutLib();
   Bool_t isRun2 = kTRUE;
   
-  task->SetEventFilter(cutlib->GetEventCuts(centMin, centMax)); // All cut sets have same event cuts
+  task->SetEventFilter(cutlib->GetEventCuts(centMin, centMax,usePileUpRej)); // All cut sets have same event cuts
 
   mgr->AddTask(task);
   

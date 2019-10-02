@@ -59,6 +59,9 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   Int_t MotherPDG(AliMCParticle * mcple, AliMCEvent* fMCEvent);
   Int_t CharmSource(AliMCParticle * mcple, AliMCEvent* fMCEvent);
   Int_t BeautySource(AliMCParticle * mcple, AliMCEvent* fMCEvent);
+
+  TString GetPeriodNameByLPM(TString lTag);
+  
   TH1D * fCentrality;
   //TH2D * fSourceGenerator;
   // A lot of different histograms for cross checks and systematics so I only need to run the train once

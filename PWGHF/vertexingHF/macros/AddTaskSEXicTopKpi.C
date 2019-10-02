@@ -42,6 +42,10 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
     inname="cinputmassD0_1";
 
     inname += finDirname.Data();
+    inname += suffix.Data();
+    out1name += suffix.Data();
+    out2name += suffix.Data();
+    out3name += suffix.Data();
 
    //setting my cut values
 

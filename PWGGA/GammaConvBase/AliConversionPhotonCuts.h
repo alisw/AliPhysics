@@ -260,7 +260,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t GetUseBDTPhotonCuts(){return fUseBDTPhotonCuts;}
     Int_t GetDoElecDeDxPostCalibration() {return fDoElecDeDxPostCalibration;}
     void  SetElecDeDxPostCalibrationCustomFile(TString filename){fFileNameElecDeDxPostCalibration = filename; return;};
-    Bool_t  LoadElecDeDxPostCalibration(Int_t runNumber);
+    Bool_t InitializeElecDeDxPostCalibration(TString filename);
+    Bool_t LoadElecDeDxPostCalibration(Int_t runNumber);
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl, Double_t R);
     void ForceTPCRecalibrationAsFunctionOfConvR(){fIsRecalibDepTPCCl = kFALSE;}
 
@@ -407,6 +408,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
     TProfile*         fProfileContainingMaterialBudgetWeights;
     TString           fFileNameElecDeDxPostCalibration;     ///< name of recalibration file (if no special non-OADB is required)
+    Bool_t            fElecDeDxPostCalibrationInitialized;  ///< flag to check that initialization worked
     Int_t             fRecalibCurrentRun;                   ///< runnumber for correct loading of recalib from OADB
     Int_t             fnRBins;                              //
     TH2S**            fHistoEleMapRecalib;  //[fnRBins]
@@ -424,7 +426,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,28)
+    ClassDef(AliConversionPhotonCuts,29)
     /// \endcond
 };
 

@@ -254,19 +254,19 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,false,true);  
 
   UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
-  fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);   
+  fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);
 
   fCalculator.reset();
 
   centralDist->Reset();
   
   if (!(fSettings.ref_mode & fSettings.kFMDref) || (fSettings.mc && fSettings.esd)) refDist->Reset();
-  if ((fSettings.mc && fSettings.use_primaries_fwd) || (fSettings.mc && fSettings.esd)) forwardDist->Reset();
-
+  if ((fSettings.mc && fSettings.use_primaries_fwd) || (fSettings.mc && fSettings.esd)) {
+    forwardDist->Reset();
+    refDist->Reset();
+  }
 
   PostData(1, fStorage);
-
-
   return;
 }
 

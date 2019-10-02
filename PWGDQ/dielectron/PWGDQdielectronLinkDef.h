@@ -68,4 +68,6 @@
 #pragma link C++ class AliAnalysisTaskBeauty+;
 #pragma link C++ class AliAnalysisTaskJpsi+;
 #pragma link C++ class AlimakeJPsiTree+;
+#pragma link C++ class AliAnalysisTaskJpsiJet+;
+#pragma link C++ class AliAnalysisTaskJpsiJetFilter+;
 #endif

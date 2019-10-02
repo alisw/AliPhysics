@@ -126,6 +126,20 @@ void AliAnalysisTaskUpcRho0::Init()
 	}
 }
 
+void AliAnalysisTaskUpcRho0::LocalInit()
+{
+	// load SPD effi
+	if (isUsingEffi) {
+		std::cout<<"Using efficiency file: "<<fEfficiencyFileName<<std::endl;
+		if (fEfficiencyFileName.Contains("alien")) fSPDfile = TFile::Open(fEfficiencyFileName.Data());  // private efficiency file
+		else fSPDfile = AliDataFile::OpenOADB(fEfficiencyFileName.Data()); // open OADB effciency file
+		if (!fSPDfile) {
+			std::cout<<"Efficiency file cannot be open..."<<std::endl;
+			return;
+		}
+	}
+}
+
 void AliAnalysisTaskUpcRho0::UserCreateOutputObjects() 
 {
   	//PID response
@@ -217,18 +231,14 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	EtaPhiP = new TH2F("EtaPhiP","EtaPhiP",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiP);
 	EtaPhiN = new TH2F("EtaPhiN","EtaPhiN",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiN);
 
-	// load SPD effi
-	if (isUsingEffi) {
-		std::cout<<"Using efficiency file: "<<fEfficiencyFileName<<std::endl;
-		if (fEfficiencyFileName.Contains("alien")) fSPDfile = TFile::Open(fEfficiencyFileName.Data());  // private efficiency file
-		else fSPDfile = AliDataFile::OpenOADB(fEfficiencyFileName.Data()); // open OADB effciency file
+	if (isUsingEffi){
 		fSPDfile->Print();
 		fSPDfile->Map();
-		hSPDeff = (TH2D*) fSPDfile->Get("hEff");
+		hSPDeff = (TH2D*) (fSPDfile->Get("hEff")->Clone());
 		hSPDeff->SetDirectory(0);
 		TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
-		hBCmod4_2D->SetDirectory(0);
-		hBCmod4 = hBCmod4_2D->ProjectionY();
+		hBCmod4 = (TH1D*)(hBCmod4_2D->ProjectionY()->Clone());
+		hBCmod4->SetDirectory(0);
 		fSPDfile->Close();
 	}
 

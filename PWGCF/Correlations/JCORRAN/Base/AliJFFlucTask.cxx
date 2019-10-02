@@ -51,6 +51,7 @@ AliJFFlucTask::AliJFFlucTask():
 	fFilterBit(0),
 	fEffMode(0),
 	fEffFilterBit(0),
+	fNumTPCClusters(70),
 	fEta_min(-0.8),
 	fEta_max(0.8),
 	fQC_eta_min(-0.8),
@@ -77,6 +78,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fFilterBit(0),
 	fEffMode(0),
 	fEffFilterBit(0),
+	fNumTPCClusters(70),
 	fEta_min(-0.8),
 	fEta_max(0.8),
 	fQC_eta_min(-0.8),
@@ -291,9 +293,9 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 		TClonesArray *mcArray = (TClonesArray*) aod->FindListObject(AliAODMCParticle::StdBranchName());
 		if(!mcArray){ Printf("Error not a proper MC event"); };  // check mc array
 
-		Int_t nt = mcArray->GetEntriesFast();
-		Int_t ntrack = 0;
-		for( int it=0; it < nt ; it++){
+		UInt_t nt = mcArray->GetEntriesFast();
+		UInt_t ntrack = 0;
+		for( UInt_t it=0; it < nt ; it++){
 			AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(it);
 			if(!track) {
 				Error("ReadEventAODMC","Could not read particle %d",it);
@@ -358,14 +360,16 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 			}
 		}
 	}else{
-		Int_t nt = aod->GetNumberOfTracks();
-		Int_t ntrack =0;
-		for( int it=0; it<nt ; it++){
+		UInt_t nt = aod->GetNumberOfTracks();
+		UInt_t ntrack =0;
+		for( UInt_t it=0; it<nt ; it++){
 			AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
 			if(!track){
 				Error("ReadEventAOD", "Could not read particle %d", (int) it);
 				continue;
 			}
+			if(track->GetTPCNcls() < fNumTPCClusters)
+				continue;
 			if(track->TestFilterBit( fFilterBit )){ //
 				if( fPt_min > 0){
 					double Pt = track->Pt();
@@ -601,9 +605,9 @@ void AliJFFlucTask::SetEffConfig( UInt_t effMode, UInt_t FilterBit)
 //______________________________________________________________________________
 void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, float fCent)
 {
-	Int_t nt = mcEvent->GetNumberOfPrimaries();
-	Int_t ntrack = 0;
-	for (Int_t it = 0; it < nt; it++) {
+	UInt_t nt = mcEvent->GetNumberOfPrimaries();
+	UInt_t ntrack = 0;
+	for (UInt_t it = 0; it < nt; it++) {
 		AliMCParticle* track = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(it));
 		if(mcEvent->IsPhysicalPrimary(it)) {
 			double Pt = track->Pt();

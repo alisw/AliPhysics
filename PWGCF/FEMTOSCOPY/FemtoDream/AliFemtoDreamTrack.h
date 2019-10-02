@@ -162,6 +162,8 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   void SetAODPIDInformation();
   void SetESDPIDInformation();
   void SetMCInformation();
+  void SetMCInformation(AliVEvent* event);
+  void SetMCInformation(TClonesArray* array, int trackID);
   void SetMCInformation(AliMCEvent *mcEvent);
   AliPIDResponse *fPIDResponse;
   AliPIDResponse::EDetPidStatus fstatusITS;

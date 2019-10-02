@@ -93,6 +93,10 @@ protected:
   void CreateV0Plots();
   TH2F*       fhArmenteros;                 //! 2D V0 QA Hist
 
+  void CreateTriggerHistos();
+  void FillTriggerHisto(TH1*);
+  TH1F* fhTrgAll;  //! trigger classes of all events
+  TH1F* fhTrgAcc;  //! trigger classes of accepted events
 
   //--------------------------------------------------------------------
   // TRD digits I/O

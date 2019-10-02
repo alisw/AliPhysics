@@ -228,6 +228,8 @@ class AliCalorimeterUtils : public TObject {
   void          SwitchOffRecalibration()                   { fRecalibration = kFALSE;
                   fEMCALRecoUtils->SwitchOffRecalibration()                                                           ; }
 	
+  void          Load1DRecalibration()                      { fLoad1DRecalibFactors=kTRUE; }
+
   void          InitPHOSRecalibrationFactors () ;
 	
   Float_t       GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
@@ -246,9 +248,11 @@ class AliCalorimeterUtils : public TObject {
                   ((TH2F*)fPHOSRecalibrationFactors->At(imod))->SetBinContent(iCol,iRow,c)                            ; }
     
   void          SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) { fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(iSM,h)      ; }
+  void          SetEMCALChannelRecalibrationFactors1D(TH1S* h) { fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors1D(h)      ; }
   void          SetPHOSChannelRecalibrationFactors(Int_t imod , TH2F* h) { fPHOSRecalibrationFactors ->AddAt(h,imod)                        ; }
 	
   TH2F *        GetEMCALChannelRecalibrationFactors(Int_t iSM)     const { return fEMCALRecoUtils->GetEMCALChannelRecalibrationFactors(iSM) ; }
+  TH1S *        GetEMCALChannelRecalibrationFactors1D()     const { return fEMCALRecoUtils->GetEMCALChannelRecalibrationFactors1D() ; }
   TH2F *        GetPHOSChannelRecalibrationFactors(Int_t imod)     const { return (TH2F*)fPHOSRecalibrationFactors->At(imod)                ; }
 	
   void          SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(map)        ; }
@@ -427,6 +431,8 @@ class AliCalorimeterUtils : public TObject {
   Bool_t             fRemoveBadChannels;        ///<  Check the channel status provided and remove clusters with bad channels.
 
   Bool_t             fLoad1DBadChMap;           ///<  Flag to load 1D bad channel map.
+
+  Bool_t             fLoad1DRecalibFactors;     ///<  Flag to load 1D energy recalibration histogram
 
   TObjArray        * fPHOSBadChannelMap;        ///<  Array of histograms with map of bad channels, PHOS.
 

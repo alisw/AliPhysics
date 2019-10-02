@@ -889,7 +889,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
 
     case 1:
       label = "Jet p_{T}";
-      nbins = 22;
+      nbins = 24;
       xmin = -40.;
       xmax = 200.;
       break;
