@@ -1,15 +1,15 @@
 
-AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString name = "name",
+AliAnalysisTaskNewEtaReconstruction* AddTask_feisenhut_NewEtaReconstruction(TString name = "name",
                                                                 Bool_t isAOD,
                                                                 Bool_t getFromAlien = kFALSE,
-                                                                TString configFile="Config_feisenhut_EtaReconstruction.C",
+                                                                TString configFile="Config_feisenhut_NewEtaReconstruction.C",
                                                                 Bool_t DoCentralityCorrection = kFALSE,
                                                                 Bool_t cutlibPreloaded = kFALSE,
                                                                 Int_t wagonnr = 0,
                                                                 Int_t centrality = 4) {
 
 
-bool debug = true;
+bool debug = false;
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
                                                                                 if (debug) std::cout << __LINE__ << "DEBUG_AddTask: COUT LINE" << std::endl;
@@ -54,10 +54,10 @@ bool debug = true;
   }
 
 
-  // ###AliAnalysisTaskEtaReconstruction##############################
+  // ###AliAnalysisTaskNewEtaReconstruction##############################
   // #########################################################
   // Creating an instance of the task
-  AliAnalysisTaskEtaReconstruction* task = new AliAnalysisTaskEtaReconstruction(Form("%s%d",name.Data(), wagonnr));
+  AliAnalysisTaskNewEtaReconstruction* task = new AliAnalysisTaskNewEtaReconstruction(Form("%s%d",name.Data(), wagonnr));
 
   // #########################################################
   // #########################################################

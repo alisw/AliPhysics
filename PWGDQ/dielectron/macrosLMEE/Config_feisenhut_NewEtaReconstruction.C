@@ -174,7 +174,7 @@ void GetCentrality(const int centrality, double& CentMin, double& CentMax){
   return;
 }
 
-void DoAdditionalWork(AliAnalysisTaskEtaReconstruction* task){
+void DoAdditionalWork(AliAnalysisTaskNewEtaReconstruction* task){
   std::cout << task << std::endl;
 
   std::cout << "starting DoAdditionalWork()\n";
@@ -195,8 +195,8 @@ void DoAdditionalWork(AliAnalysisTaskEtaReconstruction* task){
     TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
     TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
 
-    task->SetCentroidCorrFunction(AliAnalysisTaskEtaReconstruction::kTPC, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
-    task->SetWidthCorrFunction   (AliAnalysisTaskEtaReconstruction::kTPC, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    task->SetCentroidCorrFunction(AliAnalysisTaskNewEtaReconstruction::kTPC, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    task->SetWidthCorrFunction   (AliAnalysisTaskNewEtaReconstruction::kTPC, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
   }
   if (SetITSCorrection == true){
     std::cout << "Loading ITS correction" << std::endl;
@@ -215,8 +215,8 @@ void DoAdditionalWork(AliAnalysisTaskEtaReconstruction* task){
     TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
     TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
 
-    task->SetCentroidCorrFunction(AliAnalysisTaskEtaReconstruction::kITS, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
-    task->SetWidthCorrFunction   (AliAnalysisTaskEtaReconstruction::kITS, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    task->SetCentroidCorrFunction(AliAnalysisTaskNewEtaReconstruction::kITS, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    task->SetWidthCorrFunction   (AliAnalysisTaskNewEtaReconstruction::kITS, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
   }
   if (SetTOFCorrection == true){
     std::cout << "Loading TOF correction" << std::endl;
@@ -235,8 +235,8 @@ void DoAdditionalWork(AliAnalysisTaskEtaReconstruction* task){
     TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
     TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
 
-    task->SetCentroidCorrFunction(AliAnalysisTaskEtaReconstruction::kTOF, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
-    task->SetWidthCorrFunction   (AliAnalysisTaskEtaReconstruction::kTOF, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    task->SetCentroidCorrFunction(AliAnalysisTaskNewEtaReconstruction::kTOF, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    task->SetWidthCorrFunction   (AliAnalysisTaskNewEtaReconstruction::kTOF, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
   }
 }
 
@@ -547,7 +547,7 @@ AliAnalysisCuts* SetupEventCuts(Bool_t isAOD)
 
 // // #########################################################
 // // #########################################################
-// std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
+// std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskNewEtaReconstruction* task){
 //   AliDielectronSignalMC partFinalState("partFinalState","partFinalState");
 //   partFinalState.SetLegPDGs(0,1);//dummy second leg (never MCtrue)\n"
 //   // partFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -610,7 +610,7 @@ AliAnalysisCuts* SetupEventCuts(Bool_t isAOD)
 //
 // // #########################################################
 // // #########################################################
-// void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
+// void AddPairMCSignal(AliAnalysisTaskNewEtaReconstruction* task){
 //
 //     AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
 //     pair_sameMother.SetLegPDGs(11,-11);
@@ -708,7 +708,7 @@ AliAnalysisCuts* SetupEventCuts(Bool_t isAOD)
 
 // #########################################################
 // #########################################################
-std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
+std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskNewEtaReconstruction* task){
   /*AliDielectronSignalMC partFinalState("partFinalState","partFinalState");
   partFinalState.SetLegPDGs(0,1);//dummy second leg (never MCtrue)\n"
   partFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -870,7 +870,7 @@ std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
 // #########################################################
 // #########################################################
-void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
+void AddPairMCSignal(AliAnalysisTaskNewEtaReconstruction* task){
 
     AliDielectronSignalMC pair_sameMother_photon_finalstate("pair_sameMother_photon_finalstate","pair_sameMother_photon_finalstate");
     pair_sameMother_photon_finalstate.SetLegPDGs(11,-11);
@@ -992,7 +992,7 @@ void AddPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     // task->AddPairMCSignal(pair_sameMother_BeautyMesonsWithSameMother);
 }
 
-void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
+void AddFourPairMCSignal(AliAnalysisTaskNewEtaReconstruction* task){
   //#########################################
   //########### Unlike Signe Signals ########
   //#########################################

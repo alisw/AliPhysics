@@ -1,5 +1,5 @@
-# ifndef AliAnalysisTaskEtaReconstruction_H
-# define AliAnalysisTaskEtaReconstruction_H
+# ifndef AliAnalysisTaskNewEtaReconstruction_H
+# define AliAnalysisTaskNewEtaReconstruction_H
 
 //###########################################################
 //#                                                         #
@@ -32,14 +32,14 @@ class TList;
 class TObjArray;
 
 
-class AliAnalysisTaskEtaReconstruction : public AliAnalysisTaskSE {
+class AliAnalysisTaskNewEtaReconstruction : public AliAnalysisTaskSE {
 public:
   // two class constructors
-  AliAnalysisTaskEtaReconstruction() ;
+  AliAnalysisTaskNewEtaReconstruction() ;
 
-  AliAnalysisTaskEtaReconstruction(const char* name);
+  AliAnalysisTaskNewEtaReconstruction(const char* name);
   // class destructor
-   virtual ~AliAnalysisTaskEtaReconstruction();
+   virtual ~AliAnalysisTaskNewEtaReconstruction();
    // called once at beginning or runtime
    virtual void UserCreateOutputObjects();
    // called for each event
@@ -207,6 +207,7 @@ private:
 
   double GetWeight(Particle part1, Particle part2, double motherpt);
 
+
   AliAnalysisCuts*  fEventFilter; // event filter
 
   TFile* fResoFile;
@@ -372,10 +373,10 @@ private:
   Bool_t run1analysis;
 
 
-  AliAnalysisTaskEtaReconstruction(const AliAnalysisTaskEtaReconstruction&); // not implemented
-  AliAnalysisTaskEtaReconstruction& operator=(const AliAnalysisTaskEtaReconstruction&); // not implemented
+  AliAnalysisTaskNewEtaReconstruction(const AliAnalysisTaskNewEtaReconstruction&); // not implemented
+  AliAnalysisTaskNewEtaReconstruction& operator=(const AliAnalysisTaskNewEtaReconstruction&); // not implemented
 
-  ClassDef(AliAnalysisTaskEtaReconstruction, 1);
+  ClassDef(AliAnalysisTaskNewEtaReconstruction, 1);
 };
 
 
