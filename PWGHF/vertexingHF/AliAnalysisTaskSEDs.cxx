@@ -781,7 +781,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       {
         for (Int_t iVar=0; iVar<6; iVar++)
         {
-          fHistNsigmaPIDVsML[iProng][iVar] = new TH3F(Form("fHist%sProng%d",PIDvarnames[iVar].Data(),iProng), Form("%sProng%d;#it{p}_{T} (GeV/#it{c});ML response;%s",PIDvarnames[iVar].Data(),iProng,PIDvarnames[iVar].Data()), Int_t(fPtLimits[fNPtBins]), 0., fPtLimits[fNPtBins], 300, 0.85, 1., 200., PIDmin[iVar], PIDmax[iVar]);
+          fHistNsigmaPIDVsML[iProng][iVar] = new TH3F(Form("fHist%sProng%d",PIDvarnames[iVar].Data(),iProng), Form("%sProng%d;#it{p}_{T} (GeV/#it{c});ML response;%s",PIDvarnames[iVar].Data(),iProng,PIDvarnames[iVar].Data()), Int_t(fPtLimits[fNPtBins]), 0., fPtLimits[fNPtBins], fNMLBins, fMLOutputMin, fMLOutputMax, 200., PIDmin[iVar], PIDmax[iVar]);
           fOutput->Add(fHistNsigmaPIDVsML[iProng][iVar]);
         }
       }
