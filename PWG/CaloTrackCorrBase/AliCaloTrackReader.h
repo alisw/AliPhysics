@@ -767,6 +767,13 @@ public:
   virtual void SetInputBackgroundJetBranchName(TString name) { fInputBackgroundJetBranchName   = name ; }
   virtual TString GetInputBackgroundJetBranchName()          { return fInputBackgroundJetBranchName   ; }
 
+  //------------------
+  // PAR runs
+  //------------------
+  Bool_t IsParRun()                                     const { return fParRun   ; }     
+  void SwitchOnParRun()                                       { fParRun = kTRUE  ; }
+  void SwitchOffParRun()                                      { fParRun = kFALSE ; }
+  
  protected:
   
   Int_t	           fEventNumber;                   ///<  Event number.
@@ -989,7 +996,11 @@ public:
   Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; ///< Reject events EG2 also triggered by EG1 or EJ2 also triggered by EJ1.
   
   TLorentzVector   fMomentum;                      //!<! Temporal TLorentzVector container, avoid declaration of TLorentzVectors per event.
-    
+
+  //handle runs affected by PAR
+  Bool_t           fParRun;                        ///<  Flag set true when run affected by PAR
+  Short_t          fCurrentParIndex;               //!<! temporal PAR number based on event global to get L1 phase correction in PAR runs
+  
   // cut control histograms
   
   TList *          fOutputContainer;               //!<! Output container with cut control histograms.
@@ -1023,7 +1034,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,83) ;
+  ClassDef(AliCaloTrackReader,84) ;
   /// \endcond
 
 } ;

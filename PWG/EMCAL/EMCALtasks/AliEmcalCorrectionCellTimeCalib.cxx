@@ -332,7 +332,7 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
   arrayBCpass->Print();
   
   
-  TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM();
+  TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM(0);
   if (h) delete h;
   
   h = (TH1C*)arrayBCpass->FindObject(Form("h%d",runBC));
@@ -341,7 +341,34 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
     AliFatal(Form("There is no calibration histogram h%d for this run",runBC));
   }
   h->SetDirectory(0);
-  fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
+  fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h,0);
+
+  //Now special case for PAR runs
+  fRecoUtils->SwitchOffParRun();
+  //access tree from OADB file
+  TTree *tGID = (TTree*)arrayBCpass->FindObject(Form("h%d_GID",runBC));
+  if(tGID){//check whether present = PAR run
+    fRecoUtils->SwitchOnParRun();
+    //access tree branch with PARs
+    ULong64_t parGlobalBCs;
+    tGID->SetBranchAddress("GID",&parGlobalBCs);
+    //set number of PARs in run
+    Short_t nPars = (Short_t) tGID->GetEntries();
+    fRecoUtils->SetNPars((Short_t)nPars);
+    //set global ID for each PAR
+    for (Short_t iParNumber = 0; iParNumber < nPars; ++iParNumber) {
+      tGID->GetEntry(iParNumber);
+      fRecoUtils->SetGlobalIDPar(parGlobalBCs,iParNumber);
+    }//loop over entries  
+
+    //access GlobalID hiostograms for each PAR
+    for(Short_t iParNumber=1; iParNumber< fRecoUtils->GetNPars()+1;iParNumber++){
+      TH1C *hPar = (TH1C*)arrayBCpass->FindObject( Form("h%d_%llu",runBC,fRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+      if (!hPar) AliError( Form("Could not load h%d_%llu",runBC,fRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+      hPar->SetDirectory(0);
+      fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(hPar,iParNumber);
+    }//loop over PARs
+  }//end if tGID present  
   
   return 1;
 }

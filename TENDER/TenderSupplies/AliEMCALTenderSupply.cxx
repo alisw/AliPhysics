@@ -1672,16 +1672,41 @@ Int_t AliEMCALTenderSupply::InitTimeCalibrationL1Phase()
   if (fDebugLevel>0) arrayBCpass->Print();
 
 
-  TH1C *h = fEMCALRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM();
+  TH1C *h = fEMCALRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM(0);
   if (h) delete h;
-    
   h = (TH1C*)arrayBCpass->FindObject(Form("h%d",runBC));
-    
   if (!h) {
     AliFatal(Form("There is no calibration histogram h%d for this run",runBC));
   }
   h->SetDirectory(0);
-  fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
+  fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h,0);
+
+  //Now special case for PAR runs
+  fEMCALRecoUtils->SwitchOffParRun();
+  //access tree from OADB file
+  TTree *tGID = (TTree*)arrayBCpass->FindObject(Form("h%d_GID",runBC));
+  if(tGID){//check whether present = PAR run
+    fEMCALRecoUtils->SwitchOnParRun();
+    //access tree branch with PARs
+    ULong64_t parGlobalBCs;
+    tGID->SetBranchAddress("GID",&parGlobalBCs);
+    //set number of PARs in run
+    Short_t nPars = (Short_t) tGID->GetEntries();
+    fEMCALRecoUtils->SetNPars((Short_t)nPars);
+    //set global ID for each PAR
+    for (Short_t iParNumber = 0; iParNumber < nPars; ++iParNumber) {
+      tGID->GetEntry(iParNumber);
+      fEMCALRecoUtils->SetGlobalIDPar(parGlobalBCs,iParNumber);
+    }//loop over entries
+
+    //access GlobalID hiostograms for each PAR
+    for(Short_t iParNumber=1; iParNumber<fEMCALRecoUtils->GetNPars()+1;iParNumber++){
+      TH1C *hPar = (TH1C*)arrayBCpass->FindObject( Form("h%d_%llu",runBC,fEMCALRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+      if (!hPar) AliError( Form("Could not load h%d_%llu",runBC,fEMCALRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+      hPar->SetDirectory(0);
+      fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(hPar,iParNumber);
+    }//loop over PARs
+  }//end if tGID present
   
   delete contBC;
   
@@ -1702,6 +1727,19 @@ void AliEMCALTenderSupply::UpdateCells()
   AliVCaloCells *cells = event->GetEMCALCells();
   Int_t bunchCrossNo = event->GetBunchCrossNumber();
 
+  //In case of PAR run check global event ID
+  Short_t currentParIndex = 0;
+  if(fEMCALRecoUtils->IsParRun()){
+    ULong64_t globalEventID = (ULong64_t)bunchCrossNo + (ULong64_t)event->GetOrbitNumber() * (ULong64_t)3564 + (ULong64_t)event->GetPeriodNumber() * (ULong64_t)59793994260;
+    for(Short_t ipar=0;ipar<fEMCALRecoUtils->GetNPars();ipar++){
+      if(globalEventID >= fEMCALRecoUtils->GetGlobalIDPar(ipar)) {
+	currentParIndex++;
+      }
+    }
+  }
+  fEMCALRecoUtils->SetCurrentParNumber(currentParIndex);
+  //end of PAR run settings
+  
   fEMCALRecoUtils->RecalibrateCells(cells, bunchCrossNo); 
   
   // remove exotic cells - loop through cells and zero the exotic ones
