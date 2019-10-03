@@ -195,7 +195,12 @@ void AliMixingHandler::FillEvent(TList* leg1List, TList* leg2List, Float_t* valu
   // characteristics (centrality, vtxz, ep)
   //
   if(!fIsInitialized) Init();
-  if(leg1List->GetEntries()==0 && leg2List->GetEntries()==0) return;
+  if (!leg1List && !leg2List) return;
+  Int_t         entries1 = 0;
+  if (leg1List) entries1 = leg1List->GetEntries();
+  Int_t         entries2 = 0;
+  if (leg2List) entries2 = leg2List->GetEntries();
+  if(!entries1 && !entries2) return;
   
   // randomly accept/reject this event in case fDownscaleEvents is used
   if(fDownscaleEvents>1.0 && (gRandom->Rndm()>(1.0/fDownscaleEvents))) 
@@ -218,10 +223,14 @@ void AliMixingHandler::FillEvent(TList* leg1List, TList* leg2List, Float_t* valu
   TList *list1 = new(leg1Pool[leg1Pool.GetEntries()]) TList();
   TList *list2 = new(leg2Pool[leg2Pool.GetEntries()]) TList();
   list1->SetOwner(kTRUE); list2->SetOwner(kTRUE);
-  for(Int_t it=0; it<leg1List->GetEntries(); ++it)
-     list1->Add(leg1List->At(it)->Clone());
-  for(Int_t it=0; it<leg2List->GetEntries(); ++it)
+  if (leg1List) {
+    for(Int_t it=0; it<entries1; ++it)
+      list1->Add(leg1List->At(it)->Clone());
+  }
+  if (leg2List) {
+    for(Int_t it=0; it<entries2; ++it)
      list2->Add(leg2List->At(it)->Clone());
+  }
     
   // increment the size of the pools in this category
   ULong_t mixingMask = IncrementPoolSizes(leg1List,leg2List,category);
@@ -326,17 +335,21 @@ ULong_t AliMixingHandler::IncrementPoolSizes(TList* list1, TList* list2, Int_t e
   ULong_t cutsMask=0;
   
   // Check which cuts are fulfilled by the tracks in these lists
-  TIter trackIter1(list1);
-  for(Int_t i=0; i<list1->GetEntries();++i) {
-    track=(AliReducedBaseTrack*)trackIter1();
-    for(UShort_t icut=0;icut<fNParallelCuts;++icut)
-      if(track->TestFlag(icut)) cutsMask |= (ULong_t(1)<<icut);
+  if (list1) {
+    TIter trackIter1(list1);
+    for(Int_t i=0; i<list1->GetEntries();++i) {
+      track=(AliReducedBaseTrack*)trackIter1();
+      for(UShort_t icut=0;icut<fNParallelCuts;++icut)
+        if(track->TestFlag(icut)) cutsMask |= (ULong_t(1)<<icut);
+    }
   }
-  TIter trackIter2(list2);
-  for(Int_t i=0; i<list2->GetEntries();++i) {
-    track=(AliReducedBaseTrack*)trackIter2();
-    for(UShort_t icut=0;icut<fNParallelCuts;++icut)
-      if(track->TestFlag(icut)) cutsMask |= (ULong_t(1)<<icut);
+  if (list2) {
+    TIter trackIter2(list2);
+    for(Int_t i=0; i<list2->GetEntries();++i) {
+      track=(AliReducedBaseTrack*)trackIter2();
+      for(UShort_t icut=0;icut<fNParallelCuts;++icut)
+        if(track->TestFlag(icut)) cutsMask |= (ULong_t(1)<<icut);
+    }
   }
     
   // increment the pools for those cuts which got at least one track
@@ -417,7 +430,7 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
     
     TIter iterEv2Leg1Pool(leg1Pool);
     TIter iterEv2Leg2Pool(leg2Pool);
-    for(Int_t iev2=0; iev2<entries; ++iev2) {                         // second event loop 
+    for(Int_t iev2=0; iev2<entries; ++iev2) {                         // second event loop
       TList* ev2Leg1List = (TList*)iterEv2Leg1Pool();
       TList* ev2Leg2List = (TList*)iterEv2Leg2Pool();
       if(iev1==iev2) continue;
