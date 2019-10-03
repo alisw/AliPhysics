@@ -596,7 +596,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
       {
         if ( DebugLevel()>0 ) arrayBCpass->Print();
         
-        TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM();
+        TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM(0);
         if (h) delete h;
         
         h = (TH1C*)arrayBCpass->FindObject(Form("h%d",fRun));
@@ -608,7 +608,34 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
         }
         
         h->SetDirectory(0);
-        fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
+        fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h,0);
+
+	//Now special case for PAR runs
+	fRecoUtils->SwitchOffParRun();
+	//access tree from OADB file
+	TTree *tGID = (TTree*)arrayBCpass->FindObject(Form("h%d_GID",fRun));
+	if(tGID){//check whether present = PAR run
+	  fRecoUtils->SwitchOnParRun();
+	  //access tree branch with PARs
+	  ULong64_t parGlobalBCs;
+	  tGID->SetBranchAddress("GID",&parGlobalBCs);
+	  //set number of PARs in run
+	  Short_t nPars = (Short_t) tGID->GetEntries();
+	  fRecoUtils->SetNPars((Short_t)nPars);
+	  //set global ID for each PAR
+	  for (Short_t iParNumber = 0; iParNumber < nPars; ++iParNumber) {
+	    tGID->GetEntry(iParNumber);
+	    fRecoUtils->SetGlobalIDPar(parGlobalBCs,iParNumber);
+	  }//loop over entries  
+	  
+	  //access GlobalID hiostograms for each PAR
+	  for(Short_t iParNumber=1; iParNumber< fRecoUtils->GetNPars()+1;iParNumber++){
+	    TH1C *hPar = (TH1C*)arrayBCpass->FindObject( Form("h%d_%llu",fRun,fRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+	    if (!hPar) AliError( Form("Could not load h%d_%llu",fRun,fRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+	    hPar->SetDirectory(0);
+	    fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(hPar,iParNumber);
+	  }//loop over PARs
+	}//end if tGID present  
       }
     }
 
@@ -766,6 +793,18 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
     AliError("Event not available");
     return ;
   }
+
+  //check global id for event in case of PAR in the run
+  Short_t currentParIndex = 0;
+  if(fRecoUtils->IsParRun()) {
+    ULong64_t globalEventID = (ULong64_t)fEvent->GetBunchCrossNumber() + (ULong64_t)fEvent->GetOrbitNumber() * (ULong64_t)3564 + (ULong64_t)fEvent->GetPeriodNumber() * (ULong64_t)59793994260;
+    for(Short_t ipar=0;ipar< fRecoUtils->GetNPars();ipar++){
+      if(globalEventID >= fRecoUtils->GetGlobalIDPar(ipar)) {
+	currentParIndex++;
+      }
+    }
+  }
+  fRecoUtils->SetCurrentParNumber(currentParIndex);
   
   //Recover the pointer to CaloCells container
   if ( fInputCaloCellsName.Length() == 0 ) 
@@ -2693,7 +2732,10 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   }
   
   InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
-  
+
+  //access OADB, before first event because of PAR runs
+  if(fAccessOADB) AccessOADB(); // only once
+
   // Get the event, do some checks and settings
   CheckAndGetEvent() ;
   
@@ -2706,7 +2748,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   // Init pointers, geometry, clusterizer, ocdb, aodb
   
   if(fAccessOCDB) AccessOCDB();
-  if(fAccessOADB) AccessOADB(); // only once
+  //if(fAccessOADB) AccessOADB(); // only once
   
   InitClusterization();
   
