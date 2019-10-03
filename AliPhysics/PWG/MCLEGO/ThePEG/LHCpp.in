@@ -1,0 +1,57 @@
+cd /DIPSY
+
+read Tune31.in
+
+## Now we set up an event generator.
+cp EventHandler LHCEventHandler
+set stdProton:R0 0.0
+set stdAntiProton:R0 0.0
+set Proton:R0 0.0
+set AntiProton:R0 0.0
+set LHCEventHandler:WFL stdProton
+set LHCEventHandler:WFR stdProton
+set LHCEventHandler:ConsistencyLevel 0
+set LHCEventHandler:XSecFn:CheckOffShell false
+set LHCEventHandler:CascadeHandler NULL
+set LHCEventHandler:HadronizationHandler NULL
+set LHCEventHandler:DecayHandler NULL
+create ThePEG::FixedCMSLuminosity LHCLumi
+set LHCEventHandler:LuminosityFunction LHCLumi
+cp Generator LHCGenerator
+set LHCGenerator:EventHandler LHCEventHandler
+set LHCEventHandler:BGen:Width 5
+set LHCEventHandler:EffectivePartonMode Colours
+
+set LHCGenerator:EventHandler:DecayHandler /Defaults/Handlers/StandardDecayHandler
+set LHCGenerator:EventHandler:HadronizationHandler Frag8
+
+set Frag8:StringZ_aLund 0.42
+set Frag8:StringZ_bLund 0.40
+set Frag8:StringPT_sigma 0.32
+set Frag8:StringFlav_probQQtoQ 0.084
+set Frag8:StringFlav_probStoUD 0.22
+set Frag8:Collapser /Ariadne5/Defaults/Collapser
+
+set LHCEventHandler:WFL Proton
+set LHCEventHandler:WFR Proton
+set LHCEventHandler:EventFiller:SoftRemove NoValence
+set /DIPSY/LHCEventHandler:BaryonSize 0.0
+set FSSwinger:SetRmax -2.7
+erase AriadneCascade:Emitters[0]
+set LHCEventHandler:CoherenceRange 3.9
+insert AriadneCascade:Emitters[0] FSSwinger
+set LHCGenerator:EventHandler:CascadeHandler NULL
+set LHCGenerator:EventHandler:CascadeHandler AriadneCascade
+
+set LHCGenerator:EventHandler:FudgeME true
+
+set LHCEventHandler:EffectivePartonMode Colours
+set LHCEventHandler:CoherenceRange 2.5
+set LHCGenerator:EventHandler:PreSamples 0
+set LHCGenerator:EventHandler:YFrametest 0.5
+set LHCGenerator:DumpPeriod 0
+set stdFiller:PTCut 1
+
+
+
+

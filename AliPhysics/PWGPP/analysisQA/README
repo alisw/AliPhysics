@@ -1,0 +1,188 @@
+--------------------------------------------
+Analysis QA 
+Authur: Satyajit Jena <sjena@cern.ch>
+Date: 23 Nov 2013
+Last Update: Mon Mar 31 15:47:10 CEST 2014
+Last Update: 27/06/2014 - LF
+--------------------------------------------
+Please produce "antag" file manually - working on a script to produce it.
+--- explainatoin 
+AA  -> PP/AA
+Data -> DATA/MC
+LHC11h_AOD145_ALL -> dataset name
+AOD145  -> which AOD i.e AODWithESD or AOD or ESD
+06-08-2015 -> Date
+v5-06-19-01-30 -> Analysis tag used in train
+NA  -> Comparision no comparions 
+LHC11h_AOD145_ALL -> Dataset Name
+229_20150603-1547 -> Train ID
+full  -> test(test) int(10%) full(100%) 
+---------------------------------
+README - This readme file
+
+%+++++++++++++++++++++++++++++++++++++++++++
+process.sh:
+
+Script to run each post-processing macro on 
+respective outputs 
+
+Simple script to execute macros and produce output
+
+  Requirement: the macro paths need to be defined
+  ex:  CODE=$ALICE_ROOT/PWGPP/analysisQA
+
+  Arguments for each macro should be change by
+  collecting proper information from respective
+  wagon owner.
+
+  sh process.sh <output.root> <aod-number>
+  ex: sh process.sh output.root 145 eps
+
+
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processCFv2vsPt.C
+ 
+Processing of Flow QA task in Analysis QA train
+
+
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processDrawAnaCaloTrackQA.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processDrawUDQA.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processHFEQAtask.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processJETrackQA.C
+
+Processes the results of the JE_PWG4HighPtTrackQA wagon. Should be run with the following arguments:
+TString strFileIn   = "AnalysisResults.root" : the path to the input file.
+TString strFileIn2  = ""                     : the path to a second input file (the train output file), that will be used to compare the graphs with. In the plots this data will be labelled 'previous production. An empty string will give the bare plots without comparisons.
+TString suffix      = "eps"                  : the suffix that determines the output format. For example: eps, pdf, png, etc.
+Int_t cent          = 10                     : the centrality class of the results. Options: 0 (0-10%), 1 (10-30%), 2 (30-50%), 3 (50-80%) and 10 (0-80%). Usually they are published with class 10.
+Int_t trig          = 1                      : linked to the trigger. Default depends on data period: lhc11h: 1, containing lhc12 or lhc13: 5, or else: 6. On doubt one can always referr to the table at the bottom of this paragraph in after checking the AnalysisResults.root file with a browser.
+Bool_t bESD         = kFALSE                 : an obsolete variable. Might be removed in the future.
+Int_t run           = 0                      : enables to add a run number to the plots. Not neccessary for general QA, and can be suppresed by giving the number 0.
+const char *outfile ="JETrackQA_output.root" : the path to the place to store the plots as root file. This is in addition to the image files made with in the 'suffix' format.
+List of triggers:
+  if(trig==1) strTrigger = "kCentral";
+  if(trig==2) strTrigger = "kSemiCentral";
+  if(trig==3) strTrigger = "kMBkCentralkSemiCentral";
+  if(trig==4) strTrigger = "kEMCEJE";
+  if(trig==5) strTrigger = "kINT7";
+  if(trig==6) strTrigger = "kMB";
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processJETriggerQA.C
+
+This is an old version of the macro. Use V2 if possible. Only use this for old results.
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processJETriggerQA_V2.C
+
+Processes the results of the JE_TriggerQAFullR020 wagon, and if present, can also be used for the results of the JE_TriggerQAFullR020_EMCEGA and JE_TriggerQAFullR020_EMCEJE wagon. Should be run with the following arguments:
+TString strFileIn    = "AnalysisResults.root"      : the path to the input file.
+TString strFileIn2   = ""                          : the path to a second input file (the train output file), that will be used to compare the graphs with. In the plots this data will be labelled 'previous production. An empty string will give the bare plots without comparisons.
+TString suftype      ="eps"                        : the suffix that deternmines the output format. For example: eps, pdf, png, etc.
+Float_t jetR         = 0.2                         : the jetR. Default train value is 0.2, but can otherwise be found by opening the AnalysisResults.root file with the browser.
+Float_t minTrkPT     = 0.15                        : the lower Track momentum cut-off. Default train value is 0.15, but can otherwise be found by opening the AnalysisResults.root file with the browser.
+Float_t minClusterET = 0.3                         : the lower Cluster energy cut-off. Default train value is 0.3, but can otherwise be found by opening the AnalysisResults.root file with the browser.
+nt_t run             = 0                           : enables to add a run number to the plots. Not neccessary for general QA, and can be suppresed by giving the number 0.
+TString trigsuffix   = ""                          : leave empty to open the results of the JE_TriggerQAFullR020 wagon, but or use "EJE" or "EGA" to use the triggered results otherwise.
+const char* outfile  = "JETriggerQA_outfile.root"  : the path to the place to store the plots as root file. This is in addition to the image files made with in the 'suffix' format.
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processJpsi2eeQAplots.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processMakeQA2pc.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processMultistrangeQA.C
+
+Processes the results of the wagons based on AddTaskQAMultistrange.C.
+A copy is present in the folder: /PWGLF/QATasks/post/PostProcessQAMultistrange.C .
+Creates a "summary pdf" file with several pages. 
+Arguments:
+Int_t   icasType        = 0,                             // 0) Xi-   1) Xi+  2) Omega-  3) Omega+
+Int_t   collidingsystem = 0,                             // 0) PbPb  1) pp   2) pPb
+Bool_t  isMC            = kFALSE,                        // kTRUE-->MC and kFALSE-->Exp.
+Char_t *fileDir         = ".",                           // Input file directory
+Char_t *filein          = "AnalysisResults.root"         // Input file name
+Further details in the macro.
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processResonance.C
+
+Processes the results of the wagons based on AddTaskQAPhi.C.
+A copy is present in the folder: /PWGLF/QATasks/post/PostProcessQAPhi.C .
+Creates a "summary pdf" file with several pages.
+Arguments:
+char* system          = "pp276",                                 // string giving the collision system ("pp276","pp7", or "PbPb276")
+char* name_fin        = "AnalysisResults.root",                  // name of input file
+char* name_fout       = "QAphi",                                 // base name of output files (without suffix)
+char* name_list       = "RsnHistMini_Phi_PhiNsigma_KTPCnsig30",  // name of the list in fin that contains histograms (may be different)
+char* name_hist_base  = "RsnMini_phi.PhiNsigma_KTPCnsig30"       // base name of the THnSparse histograms (may be different)
+Further details in the macro.
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processV0.C
+
+Processes the results of the wagons based on AddTaskQAV0.C or AddTaskQAV0AOD.C.
+A copy is present in the folder: /PWGLF/QATasks/post/PostProcessQAV0.C .
+Creates a "summary pdf" file with several pages. 
+Arguments:
+Bool_t lAttemptInvMassFit = kTRUE           // if kTRUE attempt rough signal extraction 
+The Macro run on the file: ./AnalysisResults.root .
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processHighPtDeDx.C
+
+Processes the results of the wagons based on AddTaskQAHighPtDeDx.C.
+A copy is present in the folder: /PWGLF/QATasks/post/PostProcessQAHighPtDeDx.C .
+How to run (use AliRoot because of AliXRDPROOFtoolkit):
+
+gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/Base")
+gSystem->AddIncludePath("-I$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/macros")
+gSystem->AddIncludePath("-I$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/grid")
+gSystem->AddIncludePath("-I$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/lib")
+gROOT->SetMacroPath(".:$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/macros:$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/grid:$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/lib/")
+.L my_functions.C+
+.L my_tools.C+
+.L PostProcessQAHighPtDeDx.C+
+
+PlotQA("FileRoot/AnalysisResults.root")
+
+MakeFitsExternalData("FileRoot/AnalysisResults.root", "HistosForBB")
+MakeFitsV0s("FileRoot/AnalysisResults.root", "HistosForBB/PrimaryElectrons.root", "HistosForBB",0)
+MakeFitsV0s("FileRoot/AnalysisResults.root", "HistosForBB/PrimaryElectrons.root", "HistosForBB",1)
+MakeFitsV0s("FileRoot/AnalysisResults.root", "HistosForBB/PrimaryElectrons.root", "HistosForBB",2)
+MakeFitsV0s("FileRoot/AnalysisResults.root", "HistosForBB/PrimaryElectrons.root", "HistosForBB",3)
+PlotParametrizations("HistosForBB")
+
+FitDeDxVsP("FileRoot/AnalysisResults.root", 3.0, 10.0, 0, 6, 13, kTRUE,  0,  2, 0,1, 0, "HistosForBB/hres_0_5_02.root",27);
+FitDeDxVsP("FileRoot/AnalysisResults.root", 3.0, 10.0, 0, 6, 13, kTRUE,  2,  4, 0,1, 0, "HistosForBB/hres_0_5_24.root",27);
+FitDeDxVsP("FileRoot/AnalysisResults.root", 3.0, 10.0, 0, 6, 13, kTRUE,  4,  6, 0,1, 0, "HistosForBB/hres_0_5_46.root",27);
+FitDeDxVsP("FileRoot/AnalysisResults.root", 3.0, 10.0, 0, 6, 13, kTRUE,  6,  8, 0,1, 0, "HistosForBB/hres_0_5_68.root",27);
+MakeNSigmaPlot("FileRoot/AnalysisResults.root","fitparameters/MB/02_dataPbPb.root",2,50, 0,  "02_dataPbPb.root");
+MakeNSigmaPlot("FileRoot/AnalysisResults.root","fitparameters/MB/24_dataPbPb.root",2,50, 1,  "24_dataPbPb.root");
+MakeNSigmaPlot("FileRoot/AnalysisResults.root","fitparameters/MB/46_dataPbPb.root",2,50, 2,  "46_dataPbPb.root");
+MakeNSigmaPlot("FileRoot/AnalysisResults.root","fitparameters/MB/68_dataPbPb.root",2,50, 3,  "68_dataPbPb.root");
+PlotNSigma("nsigma_results")
+
+ExtractUncPartFractvsP("FileRoot/AnalysisResults.root", 2, 50,0,0, "results/eta02","fractions");
+ExtractUncPartFractvsP("FileRoot/AnalysisResults.root", 2, 50,0,1, "results/eta24","fractions");
+ExtractUncPartFractvsP("FileRoot/AnalysisResults.root", 2, 50,0,2, "results/eta46","fractions");
+ExtractUncPartFractvsP("FileRoot/AnalysisResults.root", 2, 50,0,3, "results/eta68","fractions");
+
+Further details in the macro.
+
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processProduceFastQA.C
+
+%+++++++++++++++++++++++++++++++++++++++++++

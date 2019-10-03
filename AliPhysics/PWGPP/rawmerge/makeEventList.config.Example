@@ -1,0 +1,21 @@
+# 
+#  Config file for the makeEventList.sh
+#  Define some variable for the cases: local and GRID
+#
+
+# trigger settings: LHC10h  LHC11h --> ptMinHighPt="14.0", ptMinV0s="6.0",  LHC12h --> ptMinHighPt="8.0", ptMinV0s="4.0"
+ptMinHighPt="8.0";
+ptMinV0s="4.0";
+export commonPrefix=/alice/data
+
+
+# other settings
+export rawDataPrefix=alien://      # either -->  alien://  or /hera/alice/alien/raw 
+export nEventsPerFile=500          # depending on the event size; for pp --> 500, PbPb --> 
+localRunning=0                     # if 0 run on the farm
+
+
+
+
+
+

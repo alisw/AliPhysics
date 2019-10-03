@@ -1,0 +1,65 @@
+configurationName: "PWGGA configuration"
+pass: ""
+inputObjects:
+    cells:
+        defaultCells:
+            branchName: "usedefault"
+    clusterContainers:
+        defaultClusterContainer:
+            branchName: "usedefault"
+        ClusterContainerS500A100:
+            branchName: "S500A100ClustersBranch"
+    trackContainers:
+        defaultTrackContainer:
+            branchName: "usedefault"
+
+CellEnergy:
+    createHistos: false
+CellEnergy_defaultSetting:
+    enabled: false
+
+CellBadChannel:
+    createHistos: true
+CellBadChannel_defaultSetting:
+    enabled: true
+
+CellTimeCalib:
+    createHistos: false
+CellTimeCalib_defaultSetting:
+    enabled: false
+
+Clusterizer:
+    createHistos: true
+    clusterizer: kClusterizerv2
+    cellTimeMin: -1000e-9
+    cellTimeMax: +1000e-9
+    clusterTimeLength: 1e6
+    recalDistToBadChannels: true
+    remapMcAod: false
+    diffEAggregation: 0.0
+    cellsNames:
+        - defaultCells
+Clusterizer_defaultSetting:
+    enabled: true
+    cellE: 0.1
+    seedE: 0.5
+    clusterContainersNames:
+        - defaultClusterContainer
+Clusterizer_S500A100:
+    enabled: true
+    cellE: 0.1
+    seedE: 0.5
+    clusterContainersNames:
+        - ClusterContainerS500A100
+
+ClusterNonLinearity:
+    createHistos: true
+    nonLinFunct: kNoCorrection
+ClusterNonLinearity_defaultSetting:
+    enabled: true
+    clusterContainersNames:
+        - defaultClusterContainer
+ClusterNonLinearity_S500A100:
+    enabled: true
+    clusterContainersNames:
+        - ClusterContainerS500A100

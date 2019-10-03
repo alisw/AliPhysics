@@ -1,0 +1,443 @@
+  *******************************************
+  *                                         *
+  *        W E L C O M E  to  R O O T       *
+  *                                         *
+  *   Version   5.34/30     23 April 2015   *
+  *                                         *
+  *  You are welcome to visit our Web site  *
+  *          http://root.cern.ch            *
+  *                                         *
+  *******************************************
+
+ROOT 5.34/30 (heads/v5-34-00-patches@v5-34-28-57-gec27989, Mar 24 2017, 11:58:00 on linuxx8664gcc)
+
+CINT/ROOT C/C++ Interpreter version 5.18.00, July 2, 2010
+Type ? for help. Commands must be C++ statements.
+Enclose multiple statements between { }.
+mkdir: impossibile creare la directory "PrelPlots_SQM2016": File già esistente
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=26.600000 Y2=0.650000
+ OBJ: TH2D	hDraw12	 : 1 at: 0x2f29850
+ OBJ: TH1D	FinalTrendNSSigmaPP	 : 1 at: 0x2f29d60
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPP	 : 1 at: 0x2f2a330
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPPv2	 : 1 at: 0x2f2abd0
+ OBJ: TH1D	FinalTrendNSSigmaPerugia0	 : 1 at: 0x2f2b4a0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPerugia0	 : 1 at: 0x2f2ba80
+ OBJ: TH1D	FinalTrendNSSigmaPerugia2010	 : 1 at: 0x2f2c320
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPerugia2010	 : 1 at: 0x2f2c900
+ OBJ: TH1D	FinalTrendNSSigmaPerugia2011	 : 1 at: 0x2f2d1c0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPerugia2011	 : 1 at: 0x2f2d7a0
+ OBJ: TH1D	FinalTrendNSSigmaPYTHIA8	 : 1 at: 0x2f2e060
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPYTHIA8	 : 1 at: 0x2f2e640
+ OBJ: TH1D	FinalTrendNSSigmaPOWHEG	 : 1 at: 0x2f2eee0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPOWHEG	 : 1 at: 0x2f2f4c0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPPv2	 : 1 at: 0x2f2abd0
+ OBJ: TH1D	FinalTrendNSSigmaPP	 : 1 at: 0x2f29d60
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPP	 : 1 at: 0x2f2a330
+ OBJ: TH1D	FinalTrendNSSigmaPP	 : 1 at: 0x2f2fe20
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=26.600000 Y2=3.300000
+ OBJ: TH2D	hDraw0	 : 1 at: 0x2e26610
+ OBJ: TH1D	FinalTrendNSYieldPP	 : 1 at: 0x2eab200
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPP	 : 1 at: 0x2eb0060
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPPv2	 : 1 at: 0x2edbcf0
+ OBJ: TH1D	FinalTrendNSYieldPerugia0	 : 1 at: 0x2edc5c0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPerugia0	 : 1 at: 0x2edcba0
+ OBJ: TH1D	FinalTrendNSYieldPerugia2010	 : 1 at: 0x2edd440
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPerugia2010	 : 1 at: 0x2edda20
+ OBJ: TH1D	FinalTrendNSYieldPerugia2011	 : 1 at: 0x2ede2e0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPerugia2011	 : 1 at: 0x2ede8c0
+ OBJ: TH1D	FinalTrendNSYieldPYTHIA8	 : 1 at: 0x2edf180
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPYTHIA8	 : 1 at: 0x2edf760
+ OBJ: TH1D	FinalTrendNSYieldPOWHEG	 : 1 at: 0x2ee0000
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPOWHEG	 : 1 at: 0x2ee05e0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPPv2	 : 1 at: 0x2edbcf0
+ OBJ: TH1D	FinalTrendNSYieldPP	 : 1 at: 0x2eab200
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPP	 : 1 at: 0x2eb0060
+ OBJ: TH1D	FinalTrendNSYieldPP	 : 1 at: 0x2ee0f40
+Info in <TCanvas::SaveAs>: ROOT file PrelPlots_SQM2016/ComparePPbtoMCFitResults.root has been created
+Info in <TCanvas::Print>: eps file PrelPlots_SQM2016/ComparePPbtoMCFitResults.eps has been created
+Info in <TCanvas::Print>: pdf file PrelPlots_SQM2016/ComparePPbtoMCFitResults.pdf has been created
+Info in <TCanvas::Print>: png file PrelPlots_SQM2016/ComparePPbtoMCFitResults.png has been created
+ Text  X=0.550000 Y=0.815182 Text=ALICE Preliminary
+ Text  X=0.254464 Y=0.819182 Text=Near side
+ Text  X=0.456071 Y=0.727273 Text=#it{p}_{T}^{assoc} > 0.3 GeV/#it{c}
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=26.600000 Y2=1.350000
+ OBJ: TH2D	hDraw5	 : 1 at: 0x328ee80
+ OBJ: TH1D	FinalTrendNSYieldPP	 : 1 at: 0x32b7750
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPP	 : 1 at: 0x32b7d20
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPPv2	 : 1 at: 0x32b85c0
+ OBJ: TH1D	FinalTrendNSYieldPerugia0	 : 1 at: 0x32b8e90
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPerugia0	 : 1 at: 0x32b9470
+ OBJ: TH1D	FinalTrendNSYieldPerugia2010	 : 1 at: 0x32b9d10
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPerugia2010	 : 1 at: 0x32ba2f0
+ OBJ: TH1D	FinalTrendNSYieldPerugia2011	 : 1 at: 0x32babb0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPerugia2011	 : 1 at: 0x32bb190
+ OBJ: TH1D	FinalTrendNSYieldPYTHIA8	 : 1 at: 0x32bba50
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPYTHIA8	 : 1 at: 0x32bc030
+ OBJ: TH1D	FinalTrendNSYieldPOWHEG	 : 1 at: 0x32bc8d0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPOWHEG	 : 1 at: 0x32bceb0
+ OBJ: TLegend	LegendDataAndMCPPandpPb_5  	X1= 0.137145 Y1=0.669835 X2=27.428964 Y2=0.981386
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPPv2	 : 1 at: 0x32b85c0
+ OBJ: TH1D	FinalTrendNSYieldPP	 : 1 at: 0x32b7750
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPP	 : 1 at: 0x32b7d20
+ OBJ: TH1D	FinalTrendNSYieldPP	 : 1 at: 0x32bdc80
+ Text  X=0.130189 Y=0.818182 Text=-0.96 < #it{y}^{D}_{cms} < 0.04, |#Delta#eta| < 1
+ Text  X=0.481132 Y=0.727273 Text=#it{p}_{T}^{assoc} > 3 GeV/#it{c}
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=26.600000 Y2=0.650000
+ OBJ: TH2D	hDraw15	 : 1 at: 0x32be9e0
+ OBJ: TH1D	FinalTrendNSSigmaPP	 : 1 at: 0x32e72e0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPP	 : 1 at: 0x32e78b0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPPv2	 : 1 at: 0x32e8150
+ OBJ: TH1D	FinalTrendNSSigmaPerugia0	 : 1 at: 0x32e8a20
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPerugia0	 : 1 at: 0x32e9000
+ OBJ: TH1D	FinalTrendNSSigmaPerugia2010	 : 1 at: 0x32e98a0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPerugia2010	 : 1 at: 0x32e9e80
+ OBJ: TH1D	FinalTrendNSSigmaPerugia2011	 : 1 at: 0x32ea740
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPerugia2011	 : 1 at: 0x32ead20
+ OBJ: TH1D	FinalTrendNSSigmaPYTHIA8	 : 1 at: 0x32eb5e0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPYTHIA8	 : 1 at: 0x32ebbc0
+ OBJ: TH1D	FinalTrendNSSigmaPOWHEG	 : 1 at: 0x32ec460
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPOWHEG	 : 1 at: 0x32eca40
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPPv2	 : 1 at: 0x32e8150
+ OBJ: TH1D	FinalTrendNSSigmaPP	 : 1 at: 0x32e72e0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSSigmaPP	 : 1 at: 0x32e78b0
+ OBJ: TH1D	FinalTrendNSSigmaPP	 : 1 at: 0x32ed3a0
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=26.600000 Y2=1.350000
+ OBJ: TH2D	hDraw3	 : 1 at: 0x2a73240
+ OBJ: TH1D	FinalTrendNSYieldPP	 : 1 at: 0x30b8aa0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPP	 : 1 at: 0x3005420
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPPv2	 : 1 at: 0x2a73680
+ OBJ: TH1D	FinalTrendNSYieldPerugia0	 : 1 at: 0x30d78b0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPerugia0	 : 1 at: 0x30d7e20
+ OBJ: TH1D	FinalTrendNSYieldPerugia2010	 : 1 at: 0x2a73e70
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPerugia2010	 : 1 at: 0x2a74430
+ OBJ: TH1D	FinalTrendNSYieldPerugia2011	 : 1 at: 0x2a74cf0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPerugia2011	 : 1 at: 0x30b3910
+ OBJ: TH1D	FinalTrendNSYieldPYTHIA8	 : 1 at: 0x30c4950
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPYTHIA8	 : 1 at: 0x30c4f10
+ OBJ: TH1D	FinalTrendNSYieldPOWHEG	 : 1 at: 0x30c57b0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPOWHEG	 : 1 at: 0x30c5d70
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPPv2	 : 1 at: 0x2a73680
+ OBJ: TH1D	FinalTrendNSYieldPP	 : 1 at: 0x30b8aa0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPP	 : 1 at: 0x3005420
+ OBJ: TH1D	FinalTrendNSYieldPP	 : 1 at: 0x30c66d0
+Info in <TCanvas::SaveAs>: ROOT file PrelPlots_SQM2016/ComparePPbtoMCFitResults_2.root has been created
+Info in <TCanvas::Print>: eps file PrelPlots_SQM2016/ComparePPbtoMCFitResults_2.eps has been created
+Info in <TCanvas::Print>: pdf file PrelPlots_SQM2016/ComparePPbtoMCFitResults_2.pdf has been created
+Info in <TCanvas::Print>: png file PrelPlots_SQM2016/ComparePPbtoMCFitResults_2.png has been created
+ Text  X=0.550000 Y=0.815182 Text=ALICE Preliminary
+ Text  X=0.254464 Y=0.819182 Text=Near side
+ Text  X=0.616071 Y=0.727273 Text=1 < #it{p}_{T}^{assoc} < 2 GeV/#it{c}
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=26.600000 Y2=1.300000
+ OBJ: TH2D	hDraw42	 : 1 at: 0x31cd670
+ OBJ: TH1D	FinalTrendASSigmaPP	 p_{T}(D) GeV/c : 1 at: 0x31cdb80
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPP	 : 1 at: 0x31ce170
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPPv2	 : 1 at: 0x31cea10
+ OBJ: TH1D	FinalTrendASSigmaPerugia0	 p_{T}(D) GeV/c : 1 at: 0x31cf2e0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPerugia0	 : 1 at: 0x31cf8c0
+ OBJ: TH1D	FinalTrendASSigmaPerugia2010	 p_{T}(D) GeV/c : 1 at: 0x31d0160
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPerugia2010	 : 1 at: 0x31d0740
+ OBJ: TH1D	FinalTrendASSigmaPerugia2011	 p_{T}(D) GeV/c : 1 at: 0x31d1000
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPerugia2011	 : 1 at: 0x31d15e0
+ OBJ: TH1D	FinalTrendASSigmaPYTHIA8	 p_{T}(D) GeV/c : 1 at: 0x31d1ea0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPYTHIA8	 : 1 at: 0x31d2480
+ OBJ: TH1D	FinalTrendASSigmaPOWHEG	 p_{T}(D) GeV/c : 1 at: 0x31d2d20
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPOWHEG	 : 1 at: 0x31d3300
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPPv2	 : 1 at: 0x31cea10
+ OBJ: TH1D	FinalTrendASSigmaPP	 p_{T}(D) GeV/c : 1 at: 0x31cdb80
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPP	 : 1 at: 0x31ce170
+ OBJ: TH1D	FinalTrendASSigmaPP	 p_{T}(D) GeV/c : 1 at: 0x31d3c60
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=26.600000 Y2=4.300000
+ OBJ: TH2D	hDraw30	 : 1 at: 0x30b3f30
+ OBJ: TH1D	FinalTrendASYieldPP	 p_{T}(D) GeV/c : 1 at: 0x30b7010
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPP	 : 1 at: 0x30c4180
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPPv2	 : 1 at: 0x30b7bd0
+ OBJ: TH1D	FinalTrendASYieldPerugia0	 p_{T}(D) GeV/c : 1 at: 0x30c0dc0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPerugia0	 : 1 at: 0x30c1380
+ OBJ: TH1D	FinalTrendASYieldPerugia2010	 p_{T}(D) GeV/c : 1 at: 0x30f62b0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPerugia2010	 : 1 at: 0x30f6820
+ OBJ: TH1D	FinalTrendASYieldPerugia2011	 p_{T}(D) GeV/c : 1 at: 0x30f70e0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPerugia2011	 : 1 at: 0x3062730
+ OBJ: TH1D	FinalTrendASYieldPYTHIA8	 p_{T}(D) GeV/c : 1 at: 0x30b4e70
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPYTHIA8	 : 1 at: 0x30b9d90
+ OBJ: TH1D	FinalTrendASYieldPOWHEG	 p_{T}(D) GeV/c : 1 at: 0x30e4770
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPOWHEG	 : 1 at: 0x30e4d30
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPPv2	 : 1 at: 0x30b7bd0
+ OBJ: TH1D	FinalTrendASYieldPP	 p_{T}(D) GeV/c : 1 at: 0x30b7010
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPP	 : 1 at: 0x30c4180
+ OBJ: TH1D	FinalTrendASYieldPP	 p_{T}(D) GeV/c : 1 at: 0x30e5690
+Info in <TCanvas::SaveAs>: ROOT file PrelPlots_SQM2016/ComparePPbtoMCFitResultsAS.root has been created
+Info in <TCanvas::Print>: eps file PrelPlots_SQM2016/ComparePPbtoMCFitResultsAS.eps has been created
+Info in <TCanvas::Print>: pdf file PrelPlots_SQM2016/ComparePPbtoMCFitResultsAS.pdf has been created
+Info in <TCanvas::Print>: png file PrelPlots_SQM2016/ComparePPbtoMCFitResultsAS.png has been created
+ Text  X=0.550000 Y=0.815182 Text=ALICE Preliminary
+ Text  X=0.254464 Y=0.819182 Text=Away side
+ Text  X=0.616071 Y=0.727273 Text=#it{p}_{T}^{assoc} > 0.3 GeV/#it{c}
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=26.600000 Y2=1.300000
+ OBJ: TH2D	hDraw45	 : 1 at: 0x33cdcc0
+ OBJ: TH1D	FinalTrendASSigmaPP	 p_{T}(D) GeV/c : 1 at: 0x33f65c0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPP	 : 1 at: 0x33f6bb0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPPv2	 : 1 at: 0x33f7450
+ OBJ: TH1D	FinalTrendASSigmaPerugia0	 p_{T}(D) GeV/c : 1 at: 0x33f7d20
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPerugia0	 : 1 at: 0x33f8300
+ OBJ: TH1D	FinalTrendASSigmaPerugia2010	 p_{T}(D) GeV/c : 1 at: 0x33f8ba0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPerugia2010	 : 1 at: 0x33f9180
+ OBJ: TH1D	FinalTrendASSigmaPerugia2011	 p_{T}(D) GeV/c : 1 at: 0x33f9a40
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPerugia2011	 : 1 at: 0x33fa020
+ OBJ: TH1D	FinalTrendASSigmaPYTHIA8	 p_{T}(D) GeV/c : 1 at: 0x33fa8e0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPYTHIA8	 : 1 at: 0x33faec0
+ OBJ: TH1D	FinalTrendASSigmaPOWHEG	 p_{T}(D) GeV/c : 1 at: 0x33fb760
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPOWHEG	 : 1 at: 0x33fbd40
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPPv2	 : 1 at: 0x33f7450
+ OBJ: TH1D	FinalTrendASSigmaPP	 p_{T}(D) GeV/c : 1 at: 0x33f65c0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASSigmaPP	 : 1 at: 0x33f6bb0
+ OBJ: TH1D	FinalTrendASSigmaPP	 p_{T}(D) GeV/c : 1 at: 0x33fc6a0
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=26.600000 Y2=2.000000
+ OBJ: TH2D	hDraw33	 : 1 at: 0x30c3810
+ OBJ: TH1D	FinalTrendASYieldPP	 p_{T}(D) GeV/c : 1 at: 0x30bae50
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPP	 : 1 at: 0x2ffdfd0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPPv2	 : 1 at: 0x30e2520
+ OBJ: TH1D	FinalTrendASYieldPerugia0	 p_{T}(D) GeV/c : 1 at: 0x32f69b0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPerugia0	 : 1 at: 0x32f6f30
+ OBJ: TH1D	FinalTrendASYieldPerugia2010	 p_{T}(D) GeV/c : 1 at: 0x32f77d0
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPerugia2010	 : 1 at: 0x30c3c10
+ OBJ: TH1D	FinalTrendASYieldPerugia2011	 p_{T}(D) GeV/c : 1 at: 0x30b6340
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPerugia2011	 : 1 at: 0x30b6900
+ OBJ: TH1D	FinalTrendASYieldPYTHIA8	 p_{T}(D) GeV/c : 1 at: 0x32f5540
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPYTHIA8	 : 1 at: 0x32f5ab0
+ OBJ: TH1D	FinalTrendASYieldPOWHEG	 p_{T}(D) GeV/c : 1 at: 0x32f6350
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPOWHEG	 : 1 at: 0x30bf400
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPPv2	 : 1 at: 0x30e2520
+ OBJ: TH1D	FinalTrendASYieldPP	 p_{T}(D) GeV/c : 1 at: 0x30bae50
+ OBJ: TGraphAsymmErrors	fFullSystematicsASYieldPP	 : 1 at: 0x2ffdfd0
+ OBJ: TH1D	FinalTrendASYieldPP	 p_{T}(D) GeV/c : 1 at: 0x30dd3e0
+Info in <TCanvas::SaveAs>: ROOT file PrelPlots_SQM2016/ComparePPbtoMCFitResultsAS_2.root has been created
+Info in <TCanvas::Print>: eps file PrelPlots_SQM2016/ComparePPbtoMCFitResultsAS_2.eps has been created
+Info in <TCanvas::Print>: pdf file PrelPlots_SQM2016/ComparePPbtoMCFitResultsAS_2.pdf has been created
+Info in <TCanvas::Print>: png file PrelPlots_SQM2016/ComparePPbtoMCFitResultsAS_2.png has been created
+ Text  X=0.550000 Y=0.815182 Text=ALICE Preliminary
+ Text  X=0.254464 Y=0.819182 Text=Away side
+ Text  X=0.616071 Y=0.727273 Text=1 < #it{p}_{T}^{assoc} < 2 GeV/#it{c}
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=-0.600000 X2=3.441593 Y2=5.200000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_3to5_0.3to99.0	 : 1 at: 0x3443d80
+ OBJ: TGraphAsymmErrors	grbaselineUncFull_pPb_3to5_0.3to99.0	 : 1 at: 0x30bfc10
+ OBJ: TGraphAsymmErrors	grbaselineUncFull_pp_3to5_0.3to99.0	 : 1 at: 0x30da6a0
+ TLine  X1=0.000000 Y1=0.000000 X2=3.441593 Y2=0.000000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_3to5_0.3to99.0	 : 1 at: 0x30e1790
+ OBJ: TGraphAsymmErrors	grSub_pPb_3to5_0.3to99.0	 : 1 at: 0x32eee20
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_3to5_0.3to99.0	 : 1 at: 0x32ef8f0
+ Text  X=0.533898 Y=0.270000 Text={}^{#plus4%}_{#minus4%} scale uncertainty (p-Pb)
+ OBJ: TGraphAsymmErrors	grSub_pp_3to5_0.3to99.0	 : 1 at: 0x32f0070
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pp_3to5_0.3to99.0	 : 1 at: 0x3441f90
+Info in <TCanvas::SaveAs>: ROOT file PrelPlots_SQM2016/plotComparison_WeightedAverage_pp_pPb_UniqueCanvas_Style1.root has been created
+Info in <TCanvas::Print>: eps file PrelPlots_SQM2016/plotComparison_WeightedAverage_pp_pPb_UniqueCanvas_Style1.eps has been created
+Info in <TCanvas::Print>: pdf file PrelPlots_SQM2016/plotComparison_WeightedAverage_pp_pPb_UniqueCanvas_Style1.pdf has been created
+Info in <TCanvas::Print>: png file PrelPlots_SQM2016/plotComparison_WeightedAverage_pp_pPb_UniqueCanvas_Style1.png has been created
+ Text  X=0.533898 Y=0.360000 Text={}^{#plus13%}_{#minus10%} scale uncertainty (pp)
+ OBJ: TLegend	LegendDataPPandpPb_1  	X1= 0.093862 Y1=2.959091 X2=2.346540 Y2=4.244318
+ OBJ: TLegend	LegendDataPPandpPb_1  	X1= 0.093862 Y1=2.959091 X2=2.346540 Y2=4.244318
+ OBJ: TPaveText	pvKineInfoDptAssocPt_1  	X1= 0.093862 Y1=2.365909 X2=2.698522 Y2=2.860227
+ OBJ: TPaveText	pvKineInfoDeltaEta_1  	X1= 0.672675 Y1=1.911136 X2=2.749363 Y2=2.207727
+ OBJ: TPaveText	paveALICE_1  	X1= 2.518620 Y1=4.442045 X2=4.341100 Y2=4.837500
+ OBJ: TPaveText	paveAverage_1  	X1= 0.125540 Y1=4.442045 X2=3.519811 Y2=4.837500
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=17.640000 Y2=3.300000
+ OBJ: TH2D	hDraw0	 : 1 at: 0x34924d0
+ OBJ: TH1D	FinalTrendNSYieldPP	 : 1 at: 0x3490590
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPP	 : 1 at: 0x30da870
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPPb	 : 1 at: 0x31d8910
+ OBJ: TGraphAsymmErrors	fv2SystematicsNSYieldPPb	 : 1 at: 0x348fd60
+ OBJ: TGraphAsymmErrors	Graph	Graph : 1 at: 0x30bf210
+ OBJ: TGraphAsymmErrors	Graph	Graph : 1 at: 0x32ee050
+ Text  X=0.750000 Y=0.818182 Text=ALICE
+ Text  X=0.254464 Y=0.818182 Text=Near side
+ Text  X=0.616071 Y=0.727273 Text=#it{p}_{T}^{assoc} > 0.3 GeV/#it{c}
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=17.640000 Y2=3.300000
+ OBJ: TH2D	hDraw1	 : 1 at: 0x348a7a0
+ OBJ: TH1D	FinalTrendNSYieldPP	 : 1 at: 0x348aba0
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPP	 : 1 at: 0x348b110
+ OBJ: TGraphAsymmErrors	fFullSystematicsNSYieldPPb	 : 1 at: 0x348b960
+ OBJ: TGraphAsymmErrors	fv2SystematicsNSYieldPPb	 : 1 at: 0x348c220
+ OBJ: TGraphAsymmErrors	Graph	Graph : 1 at: 0x345ea00
+ OBJ: TGraphAsymmErrors	Graph	Graph : 1 at: 0x345f220
+Info in <TCanvas::SaveAs>: ROOT file PrelPlots_SQM2016/ComparePPtoPPbFitResults.root has been created
+Info in <TCanvas::Print>: eps file PrelPlots_SQM2016/ComparePPtoPPbFitResults.eps has been created
+Info in <TCanvas::Print>: pdf file PrelPlots_SQM2016/ComparePPtoPPbFitResults.pdf has been created
+Info in <TCanvas::Print>: png file PrelPlots_SQM2016/ComparePPtoPPbFitResults.png has been created
+ OBJ: TLegend	LegendDataAndMCPPandpPb_1  	X1= 0.300682 Y1=1.789688 X2=10.824545 Y2=2.376096
+ OBJ: TLegend	LegendDataAndMCPPandpPb_1  	X1= 0.300682 Y1=1.789688 X2=10.824545 Y2=2.376096
+ Text  X=0.542553 Y=0.727273 Text=0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=-0.700000 X2=3.291593 Y2=5.000000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_5to8_0.3to99.0	 : 1 at: 0x344fca0
+ OBJ: TGraphAsymmErrors	grbaselineUncFull_pPb_5to8_0.3to99.0	 : 1 at: 0x3450330
+ TLine  X1=0.000000 Y1=0.000000 X2=3.291593 Y2=0.000000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_5to8_0.3to99.0	 : 1 at: 0x3450c20
+ OBJ: TGraphAsymmErrors	grSub_pPb_5to8_0.3to99.0	 : 1 at: 0x3451310
+ Text  X=0.250000 Y=0.312000 Text={}^{#plus4%}_{#minus4%} scale uncertainty
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia0_5to8_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x3451f40
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2010_5to8_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x3452650
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2011_5to8_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x3452d40
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_PYTHIA8_5to8_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x3453430
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_POWHEG_5to8_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x3453b10
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_5to8_0.3to99.0	 : 1 at: 0x3450c20
+ OBJ: TGraphAsymmErrors	grSub_pPb_5to8_0.3to99.0	 : 1 at: 0x3451310
+ OBJ: TPaveText	pvKineInf0_2  	X1= 0.089847 Y1=4.060795 X2=2.244268 Y2=4.546591
+ OBJ: TPaveText	pvKineInf0_2  	X1= 0.089847 Y1=4.060795 X2=2.244268 Y2=4.546591
+ OBJ: TLegend	LegendMC_2  	X1= 0.059847 Y1=2.279545 X2=2.214344 Y2=4.157955
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=-0.700000 X2=3.291593 Y2=5.000000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_8to16_0.3to99.0	 : 1 at: 0x34d5600
+ OBJ: TGraphAsymmErrors	grbaselineUncFull_pPb_8to16_0.3to99.0	 : 1 at: 0x34d5c90
+ TLine  X1=0.000000 Y1=0.000000 X2=3.291593 Y2=0.000000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_8to16_0.3to99.0	 : 1 at: 0x34d6580
+ OBJ: TGraphAsymmErrors	grSub_pPb_8to16_0.3to99.0	 : 1 at: 0x34d6c70
+ Text  X=0.250000 Y=0.312000 Text={}^{#plus4%}_{#minus4%} scale uncertainty
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia0_8to16_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x34d78a0
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2010_8to16_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x34d7fb0
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2011_8to16_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x34d86a0
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_PYTHIA8_8to16_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x34d8d90
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_POWHEG_8to16_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x34d9470
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_8to16_0.3to99.0	 : 1 at: 0x34d6580
+ OBJ: TGraphAsymmErrors	grSub_pPb_8to16_0.3to99.0	 : 1 at: 0x34d6c70
+ OBJ: TPaveText	pvKineInf0_3  	X1= 0.089847 Y1=4.060795 X2=2.244268 Y2=4.546591
+ OBJ: TPaveText	pvKineInf0_3  	X1= 0.089847 Y1=4.060795 X2=2.244268 Y2=4.546591
+ OBJ: TLegend	LegendMC_3  	X1= 0.059847 Y1=2.765341 X2=2.214344 Y2=3.672159
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=-0.700000 X2=3.291593 Y2=5.000000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_3to5_0.3to99.0	 : 1 at: 0x345de80
+ OBJ: TGraphAsymmErrors	grbaselineUncFull_pPb_3to5_0.3to99.0	 : 1 at: 0x3436e40
+ TLine  X1=0.000000 Y1=0.000000 X2=3.291593 Y2=0.000000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_3to5_0.3to99.0	 : 1 at: 0x345bb30
+ OBJ: TGraphAsymmErrors	grSub_pPb_3to5_0.3to99.0	 : 1 at: 0x345c120
+ Text  X=0.437500 Y=0.312000 Text={}^{#plus4%}_{#minus4%} scale uncertainty
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia0_3to5_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x3491140
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2010_3to5_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x34917d0
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2011_3to5_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x3491ec0
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_PYTHIA8_3to5_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x3458460
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_POWHEG_3to5_0.3to99.0	hCorrDeltaPhiReflected : 1 at: 0x3458af0
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_3to5_0.3to99.0	 : 1 at: 0x345bb30
+ OBJ: TGraphAsymmErrors	grSub_pPb_3to5_0.3to99.0	 : 1 at: 0x345c120
+Info in <TCanvas::SaveAs>: ROOT file PrelPlots_SQM2016/CorrelationppMC4x6_1New.root has been created
+Info in <TCanvas::Print>: eps file PrelPlots_SQM2016/CorrelationppMC4x6_1New.eps has been created
+Info in <TCanvas::Print>: pdf file PrelPlots_SQM2016/CorrelationppMC4x6_1New.pdf has been created
+Info in <TCanvas::Print>: png file PrelPlots_SQM2016/CorrelationppMC4x6_1New.png has been created
+ OBJ: TLegend	LegendBaselineUncPPandpPb_1  	X1= 0.131664 Y1=1.826136 X2=1.137096 Y2=2.344318
+ OBJ: TPaveText	paveALICE_1  	X1= 2.349000 Y1=3.089205 X2=4.338918 Y2=4.740909
+ OBJ: TPaveText	pvKineInf0_1  	X1= 0.319847 Y1=4.060795 X2=2.244268 Y2=4.546591
+ OBJ: TPaveText	paveAverage_1  	X1= 0.074809 Y1=3.089205 X2=2.543503 Y2=4.740909
+ OBJ: TPaveText	pvKineInf0_1  	X1= 0.299236 Y1=3.128068 X2=2.842739 Y2=3.380682
+ OBJ: TPaveText	pvKineInf0_1  	X1= 0.319847 Y1=4.060795 X2=2.244268 Y2=4.546591
+ OBJ: TLegend	LegendDataPP_1  	X1= -0.059847 Y1=2.409091 X2=1.376484 Y2=2.992045
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=-0.390000 X2=3.291593 Y2=1.500000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_5to8_1.0to2.0	 : 1 at: 0x34af3e0
+ OBJ: TGraphAsymmErrors	grbaselineUncFull_pPb_5to8_1.0to2.0	 : 1 at: 0x34afa70
+ TLine  X1=0.000000 Y1=0.000000 X2=3.291593 Y2=0.000000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_5to8_1.0to2.0	 : 1 at: 0x34b0360
+ OBJ: TGraphAsymmErrors	grSub_pPb_5to8_1.0to2.0	 : 1 at: 0x34b0a50
+ Text  X=0.250000 Y=0.312000 Text={}^{#plus4%}_{#minus4%} scale uncertainty
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia0_5to8_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x34b1680
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2010_5to8_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x34b1d90
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2011_5to8_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x34b2470
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_PYTHIA8_5to8_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x34b2b50
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_POWHEG_5to8_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x34b3230
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_5to8_1.0to2.0	 : 1 at: 0x34b0360
+ OBJ: TGraphAsymmErrors	grSub_pPb_5to8_1.0to2.0	 : 1 at: 0x34b0a50
+ OBJ: TPaveText	pvKineInf0_14  	X1= 0.089847 Y1=1.188580 X2=2.244268 Y2=1.349659
+ OBJ: TPaveText	pvKineInf0_14  	X1= 0.089847 Y1=1.188580 X2=2.244268 Y2=1.349659
+ OBJ: TLegend	LegendMC_14  	X1= 0.059847 Y1=0.597955 X2=2.214344 Y2=1.220795
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=-0.390000 X2=3.291593 Y2=1.500000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_8to16_1.0to2.0	 : 1 at: 0x34bdf30
+ OBJ: TGraphAsymmErrors	grbaselineUncFull_pPb_8to16_1.0to2.0	 : 1 at: 0x34be5c0
+ TLine  X1=0.000000 Y1=0.000000 X2=3.291593 Y2=0.000000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_8to16_1.0to2.0	 : 1 at: 0x34beeb0
+ OBJ: TGraphAsymmErrors	grSub_pPb_8to16_1.0to2.0	 : 1 at: 0x34bf5a0
+ Text  X=0.250000 Y=0.312000 Text={}^{#plus4%}_{#minus4%} scale uncertainty
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia0_8to16_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x34c01d0
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2010_8to16_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x34c08e0
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2011_8to16_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x34c0fd0
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_PYTHIA8_8to16_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x34c16c0
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_POWHEG_8to16_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x34c1da0
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_8to16_1.0to2.0	 : 1 at: 0x34beeb0
+ OBJ: TGraphAsymmErrors	grSub_pPb_8to16_1.0to2.0	 : 1 at: 0x34bf5a0
+ OBJ: TPaveText	pvKineInf0_15  	X1= 0.089847 Y1=1.188580 X2=2.244268 Y2=1.349659
+ OBJ: TPaveText	pvKineInf0_15  	X1= 0.089847 Y1=1.188580 X2=2.244268 Y2=1.349659
+ OBJ: TLegend	LegendMC_15  	X1= 0.059847 Y1=0.759034 X2=2.214344 Y2=1.059716
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=-0.390000 X2=3.291593 Y2=1.500000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_3to5_1.0to2.0	 : 1 at: 0x34f3b70
+ OBJ: TGraphAsymmErrors	grbaselineUncFull_pPb_3to5_1.0to2.0	 : 1 at: 0x34569d0
+ TLine  X1=0.000000 Y1=0.000000 X2=3.291593 Y2=0.000000
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_3to5_1.0to2.0	 : 1 at: 0x34982d0
+ OBJ: TGraphAsymmErrors	grSub_pPb_3to5_1.0to2.0	 : 1 at: 0x34988f0
+ Text  X=0.437500 Y=0.312000 Text={}^{#plus4%}_{#minus4%} scale uncertainty
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia0_3to5_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x3501c20
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2010_3to5_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x349ee70
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_Perugia2011_3to5_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x349f4a0
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_PYTHIA8_3to5_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x35027d0
+ OBJ: TH1D	hCorrDeltaPhiReflected_subtr_pedestal_POWHEG_3to5_1.0to2.0	hCorrDeltaPhiReflected : 1 at: 0x3502eb0
+ OBJ: TH1D	fhDaverage_subtr_pedestal_pPb_3to5_1.0to2.0	 : 1 at: 0x34982d0
+ OBJ: TGraphAsymmErrors	grSub_pPb_3to5_1.0to2.0	 : 1 at: 0x34988f0
+Info in <TCanvas::SaveAs>: ROOT file PrelPlots_SQM2016/CorrelationppMC4x6_2New.root has been created
+Info in <TCanvas::Print>: eps file PrelPlots_SQM2016/CorrelationppMC4x6_2New.eps has been created
+Info in <TCanvas::Print>: pdf file PrelPlots_SQM2016/CorrelationppMC4x6_2New.pdf has been created
+Info in <TCanvas::Print>: png file PrelPlots_SQM2016/CorrelationppMC4x6_2New.png has been created
+ OBJ: TPaveText	pvKineInf0_13  	X1= 0.329847 Y1=1.188580 X2=2.244268 Y2=1.349659
+ OBJ: TLegend	LegendBaselineUncPPandpPb_13  	X1= 0.131664 Y1=0.447614 X2=1.137096 Y2=0.619432
+ OBJ: TPaveText	paveALICE_13  	X1= 2.349000 Y1=0.866420 X2=4.338918 Y2=1.414091
+ OBJ: TPaveText	pvKineInf0_13  	X1= 0.329847 Y1=1.188580 X2=2.244268 Y2=1.349659
+ OBJ: TPaveText	paveAverage_13  	X1= 0.074809 Y1=0.866420 X2=2.543503 Y2=1.414091
+ OBJ: TPaveText	pvKineInf0_13  	X1= 0.299236 Y1=0.879307 X2=2.842739 Y2=0.963068
+ OBJ: TLegend	LegendDataPP_13  	X1= -0.059847 Y1=0.640909 X2=1.376484 Y2=0.834205
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=3.141593 Y2=6.000000
+ OBJ: TH1D	fHist	 : 1 at: 0x351d1f0
+ OBJ: TF1	fPed	[0] : 1 at: 0x368eb90
+ OBJ: TF1	fGausASper	[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2])) : 1 at: 0x368f150
+ OBJ: TF1	fGausNSper	[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2])) : 1 at: 0x38036e0
+ Text  X=0.150000 Y=0.850000 Text=
+ OBJ: TPaveText	TPave  	X1= 1.369412 Y1=3.469880 X2=2.738824 Y2=5.060241
+ OBJ: TPaveText	pave_1  	X1= -0.080554 Y1=3.469880 X2=1.127751 Y2=4.915663
+ OBJ: TGraphAsymmErrors	grapherror1	 : 1 at: 0x3803b70
+ OBJ: TLegend	TPave  	X1= 1.006921 Y1=2.240964 X2=2.738824 Y2=3.831325
+ Text  X=0.215000 Y=0.870000 Text=Average D^{0}, D^{+}, D^{*+}
+ OBJ: TLegend	TPave  	X1= 0.120830 Y1=4.879518 X2=1.329135 Y2=5.277108
+ OBJ: TLegend	TPave  	X1= 0.120830 Y1=4.879518 X2=1.329135 Y2=5.277108
+ Text  X=0.790000 Y=0.870000 Text=ALICE
+ Text  X=0.215000 Y=0.750000 Text=-0.96 < #it{y}^{D}_{cms} < 0.04, |#Delta#eta| < 1
+ Text  X=0.215000 Y=0.690000 Text=5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}
+ Text  X=0.350000 Y=0.210000 Text={}^{#plus4%}_{#minus4%} scale uncertainty
+ OBJ: TH1D	fHist	 : 1 at: 0x3af82b0
+ OBJ: TF1	fGausASper	[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2])) : 1 at: 0x368f150
+ OBJ: TF1	fGausNSper	[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-2.*TMath::Pi()-[1])*(x-2.*TMath::Pi()-[1])/2./([2]*[2]))+[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x+2.*TMath::Pi()-[1])*(x+2.*TMath::Pi()-[1])/2./([2]*[2])) : 1 at: 0x38036e0
+ OBJ: TF1	fPed	[0] : 1 at: 0x368eb90
+ OBJ: TF1	TwoGausPeriodicity	[0]+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-[2])*(x-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-[5])*(x-[5])/2./([6]*[6]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x-2.*TMath::Pi()-[2])*(x-2.*TMath::Pi()-[2])/2./([3]*[3]))+[1]/TMath::Sqrt(2.*TMath::Pi())/[3]*TMath::Exp(-(x+2.*TMath::Pi()-[2])*(x+2.*TMath::Pi()-[2])/2./([3]*[3]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x+2.*TMath::Pi()-[5])*(x+2.*TMath::Pi()-[5])/2./([6]*[6]))+[4]/TMath::Sqrt(2.*TMath::Pi())/[6]*TMath::Exp(-(x-2.*TMath::Pi()-[5])*(x-2.*TMath::Pi()-[5])/2./([6]*[6])) : 1 at: 0x34a5f30
+Info in <TCanvas::SaveAs>: ROOT file PrelPlots_SQM2016/cFitOutput_NiceStyle_pPb_WeightedAverage_1.0_99.0.root has been created
+Info in <TCanvas::Print>: eps file PrelPlots_SQM2016/cFitOutput_NiceStyle_pPb_WeightedAverage_1.0_99.0.eps has been created
+Info in <TCanvas::Print>: pdf file PrelPlots_SQM2016/cFitOutput_NiceStyle_pPb_WeightedAverage_1.0_99.0.pdf has been created
+Info in <TCanvas::Print>: png file PrelPlots_SQM2016/cFitOutput_NiceStyle_pPb_WeightedAverage_1.0_99.0.png has been created
+OBJ: TList	TList	Doubly linked list : 0
+ TFrame  X1= 0.000000 Y1=0.000000 X2=3.141593 Y2=5.000000
+ OBJ: TH1D	fhDaverage	 : 1 at: 0x3b96370
+ OBJ: TGraphAsymmErrors		 : 1 at: 0x34f73f0
+Info in <TCanvas::SaveAs>: ROOT file PrelPlots_SQM2016/CanvaAndVariedHistoWeightedAverageDzeroDstarDplus_pPb_Pt5to8assocPt1.0_99.0.root has been created
+Info in <TCanvas::Print>: eps file PrelPlots_SQM2016/CanvaAndVariedHistoWeightedAverageDzeroDstarDplus_pPb_Pt5to8assocPt1.0_99.0.eps has been created
+Info in <TCanvas::Print>: pdf file PrelPlots_SQM2016/CanvaAndVariedHistoWeightedAverageDzeroDstarDplus_pPb_Pt5to8assocPt1.0_99.0.pdf has been created
+Info in <TCanvas::Print>: png file PrelPlots_SQM2016/CanvaAndVariedHistoWeightedAverageDzeroDstarDplus_pPb_Pt5to8assocPt1.0_99.0.png has been created
+ Text  X=0.180000 Y=0.800000 Text=#bf{p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV, L_{int} = 50 #mub^{-1}}
+ Text  X=0.600000 Y=0.830000 Text=#bf{5.0<#it{p}_{T}^{D}<8.0 GeV/#it{c}}
+ Text  X=0.600000 Y=0.780000 Text=#bf{#it{p}_{T}^{assoc}>1.0 GeV/#it{c}}
+ Text  X=0.600000 Y=0.730000 Text=#bf{|#Delta#eta|<1.0}
+ Text  X=0.180000 Y=0.680000 Text=#bf{{}^{+4%}_{-4%} scale uncertainty}

@@ -1,0 +1,71 @@
+# this is a simple template
+# it defines few functions: one for each input file type (per run):
+# (QAresults.root, QAresults_outer.root, event_stat.root, Filter_trees.root)
+# and a function to process the output of those on a per-period level,
+# ideally for each run a trending.root file is created - it is then automatically merged
+# and offered as input to the per-period trending function, see below.
+# 
+# available variables (can be used in all functions):
+#  $qaFile              e.g. /path/QA_merge_archive.zip#QAresults.root
+#  $qaFileOuter         e.g. /path/QA_merge_archive.zip#QAresults_outer.root
+#  $highPtTree          e.g. /path/Filter_trees.root
+#  $eventStatFile       e.g. /path/event_stat.root
+#  $eventStatFileOuter  e.g. /path/event_stat_outer.root
+#
+#  $dataType            e.g. data or sim
+#  $year                e.g. 2011
+#  $period              e.g. LHC13g
+#  $runNumber           e.g. 169123
+#  $pass                e.g. cpass1,pass1,passMC
+#  $ocdbStorage         e.g. "raw://", "local://./OCDB"
+
+runLevelQA()
+{
+  #full path of QAresults.root is provided:
+  qaFile=$1
+
+  #aliroot....
+
+  #should produce a file trending.root
+  #if not, a default one will be provided
+}
+
+periodLevelQA()
+{
+  #per-run trending is merged by the framework,
+  #path of the merged trending.root is provided:
+  trendingFile=$1 
+
+  #merged trending file in fact present in current dir
+  #runs in the production dir: ...../LHCXXx/passX/
+  #the running dir contains all the run sub directories
+  #named like 000123123 with the outputs of runLevelQA
+
+  #aliroot...
+}
+
+#########################################################
+#########EXPERTS ONLY####################################
+runLevelHighPtTreeQA()
+{
+  #input is the high pt tree file (if available)
+  highPtTree=$1
+}
+
+runLevelEventStatQA()
+{
+  #input is the event_stat file (if available)
+  eventStatFile=$1
+}
+
+runLevelQAouter()
+{
+  #input is the QAresults_outer.root (if available)
+  qaFileOuter=$1
+}
+
+runLevelEventStatQAouter()
+{
+  #input is the event_stat_outer.root file (if available)
+  eventStatFileOuter=$1
+}

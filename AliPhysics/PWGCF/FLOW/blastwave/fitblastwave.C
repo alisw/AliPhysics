@@ -1,0 +1,1984 @@
+/* 
+Example macro which shows how to use the AliBlastwaveFit code.
+Prepared by F. Noferini (fnoferin@cern.ch)
+
+It assume you have pi, K, proton spectra and v2 and it perform a global
+blastwave fit in the selected pt range for the requested species.
+
+Centrality is taken as an argument, while all the other options are set
+in common variables.
+
+Here: stat and syst errors considered.
+*/
+
+Bool_t kPiPlusSpectra=kTRUE; // request fit to pion spectra
+Bool_t kKaPlusSpectra=kTRUE; // request fit to kaon spectra
+Bool_t kPrPlusSpectra=kTRUE; // request fit to proton spectra
+Bool_t kPiV2=kTRUE;          // request fit to pion v2
+Bool_t kKaV2=kTRUE;          // request fit to kaon v2
+Bool_t kPrV2=kTRUE;          // request fit to antiproton v2
+
+Bool_t kCont = kFALSE;       // request the contour at the end (it needs time)
+
+TH1D *hpiplus;
+TH1D *hkaplus;
+TH1D *hprplus;
+
+TGraphAsymmErrors *gpiv2;
+TGraphAsymmErrors *gkav2;
+TGraphAsymmErrors *gprv2;
+
+// particle masses
+Float_t mPi = 1.39570000000000000e-01;
+Float_t mKa = 4.93676999999999977e-01;
+Float_t mPr = 9.38271999999999995e-01;
+
+// centralities
+Int_t cmin[] = {0,5,10,20,30,40,50,60,70,80};
+Int_t cmax[] = {5,10,20,30,40,50,60,70,80,100};
+
+// pt range for the fit
+Float_t ptMinPi = 0.5;
+Float_t ptMaxPi = 1.0;
+Float_t ptMinKa = 0.2;
+Float_t ptMaxKa = 1.2; // 1.5 in spectra group
+Float_t ptMinPr = 0.3;
+Float_t ptMaxPr = 1.7; // 3.0 in spectra group
+
+Bool_t kLoaded = kFALSE;
+
+TGraphErrors *getPtNqMass(Float_t ptnq,Int_t nq,Float_t mass,Int_t ncentr,TGraphAsymmErrors **g,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<ncentr;i++){   
+    Float_t pt = ptnq * nq;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mass);
+    Int_t j=0;
+    while(g[i]->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = g[i]->GetX()[j-1];
+    Float_t xmax = g[i]->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*g[i]->GetY()[j-1] + fr2*g[i]->GetY()[j];
+    eval[i] = fr1*g[i]->GetEYlow()[j-1] + fr2*g[i]->GetEYlow()[j];
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) mass=%f n1=%f v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],mass,nq,ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *gres = new TGraphErrors(ncentr,centr,val,ecentr,eval);
+  return gres;
+}
+
+TGraphErrors *getPtNqMass(Float_t ptnq,Int_t nq,Float_t mass,Int_t ncentr,TGraphErrors **g,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<ncentr;i++){   
+    Float_t pt = ptnq * nq;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mass);
+    Int_t j=0;
+    while(g[i]->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = g[i]->GetX()[j-1];
+    Float_t xmax = g[i]->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*g[i]->GetY()[j-1] + fr2*g[i]->GetY()[j];
+    eval[i] = fr1*g[i]->GetEY()[j-1] + fr2*g[i]->GetEY()[j];
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) mass=%f n1=%f v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],mass,nq,ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *gres = new TGraphErrors(ncentr,centr,val,ecentr,eval);
+  return gres;
+}
+
+
+TGraphErrors *getPtNqPi(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_pion_%02i_%02i.txt",cmin[i],cmax[i]);
+    gpiv2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 2;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mPi);
+    Int_t j=0;
+    while(gpiv2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gpiv2->GetX()[j-1];
+    Float_t xmax = gpiv2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gpiv2->GetY()[j-1] + fr2*gpiv2->GetY()[j];
+    eval[i] = fr1*gpiv2->GetEYlow()[j-1] + fr2*gpiv2->GetEYlow()[j];
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) pion v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+TGraphErrors *getPtNqKa(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_kaon_%02i_%02i.txt",cmin[i],cmax[i]);
+    gkav2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 2;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mKa);
+    Int_t j=0;
+    while(gkav2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gkav2->GetX()[j-1];
+    Float_t xmax = gkav2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gkav2->GetY()[j-1] + fr2*gkav2->GetY()[j];
+    eval[i] = fr1*gkav2->GetEYlow()[j-1] + fr2*gkav2->GetEYlow()[j];
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) kaon v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+TGraphErrors *getPtNqPr(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_antipr_%02i_%02i.txt",cmin[i],cmax[i]);
+    gprv2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 3;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mPr);
+    Int_t j=0;
+    while(gprv2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gprv2->GetX()[j-1];
+    Float_t xmax = gprv2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gprv2->GetY()[j-1] + fr2*gprv2->GetY()[j];
+    eval[i] = fr1*gprv2->GetEYlow()[j-1] + fr2*gprv2->GetEYlow()[j];
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) antiproton v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+TGraphErrors *getPtNqMassV2Nq(Float_t ptnq,Int_t nq,Float_t mass,Int_t ncentr,TGraphAsymmErrors **g,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<ncentr;i++){   
+    Float_t pt = ptnq * nq;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mass);
+    Int_t j=0;
+    while(g[i]->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = g[i]->GetX()[j-1];
+    Float_t xmax = g[i]->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*g[i]->GetY()[j-1] + fr2*g[i]->GetY()[j];
+    eval[i] = fr1*g[i]->GetEYlow()[j-1] + fr2*g[i]->GetEYlow()[j];
+
+    val[i] /= nq;
+    eval[i] /= nq;
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) mass=%f n1=%f v2/nq at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],mass,nq,ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *gres = new TGraphErrors(ncentr,centr,val,ecentr,eval);
+  return gres;
+}
+
+TGraphErrors *getPtNqMassV2Nq(Float_t ptnq,Int_t nq,Float_t mass,Int_t ncentr,TGraphErrors **g,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<ncentr;i++){   
+    Float_t pt = ptnq * nq;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mass);
+    Int_t j=0;
+    while(g[i]->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = g[i]->GetX()[j-1];
+    Float_t xmax = g[i]->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*g[i]->GetY()[j-1] + fr2*g[i]->GetY()[j];
+    eval[i] = fr1*g[i]->GetEY()[j-1] + fr2*g[i]->GetEY()[j];
+
+    val[i] /= nq;
+    eval[i] /= nq;
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) mass=%f n1=%f v2/nq at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],mass,nq,ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *gres = new TGraphErrors(ncentr,centr,val,ecentr,eval);
+  return gres;
+}
+
+
+TGraphErrors *getPtNqPiV2Nq(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_pion_%02i_%02i.txt",cmin[i],cmax[i]);
+    gpiv2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 2;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mPi);
+    Int_t j=0;
+    while(gpiv2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gpiv2->GetX()[j-1];
+    Float_t xmax = gpiv2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gpiv2->GetY()[j-1]/2 + fr2*gpiv2->GetY()[j]/2;
+    eval[i] = fr1*gpiv2->GetEYlow()[j-1]/2 + fr2*gpiv2->GetEYlow()[j]/2;
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) pion v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+TGraphErrors *getPtNqKaV2Nq(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_kaon_%02i_%02i.txt",cmin[i],cmax[i]);
+    gkav2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 2;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mKa);
+
+    Int_t j=0;
+    while(gkav2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gkav2->GetX()[j-1];
+    Float_t xmax = gkav2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gkav2->GetY()[j-1]/2 + fr2*gkav2->GetY()[j]/2;
+    eval[i] = fr1*gkav2->GetEYlow()[j-1]/2 + fr2*gkav2->GetEYlow()[j]/2;
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) kaon v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+TGraphErrors *getPtNqPrV2Nq(Float_t ptnq,Bool_t mtflag=kFALSE){
+  char name[200];
+
+  Float_t centr[10],ecentr[10],val[10],eval[10];
+
+  for(Int_t i=0;i<9;i++){
+    sprintf(name,"v2/v2SP_antipr_%02i_%02i.txt",cmin[i],cmax[i]);
+    gprv2 = GetGraphWithStat(name);
+    Float_t pt = ptnq * 3;
+    if(mtflag) pt = TMath::Sqrt(pt*pt +2*pt*mPr);
+    Int_t j=0;
+    while(gprv2->GetX()[j] < pt) j++;
+    if(j==0) j = 1;
+    Float_t xmin = gprv2->GetX()[j-1];
+    Float_t xmax = gprv2->GetX()[j];
+    Float_t fr1 = (pt - xmin)/(xmax-xmin);
+    Float_t fr2 = (xmax - pt)/(xmax-xmin);
+
+    val[i] = fr1*gprv2->GetY()[j-1]/3 + fr2*gprv2->GetY()[j]/3;
+    eval[i] = fr1*gprv2->GetEYlow()[j-1]/3 + fr2*gprv2->GetEYlow()[j]/3;
+
+    centr[i] = (cmin[i]+cmax[i])/2;
+    ecentr[i] = 0;
+
+    printf("%i-%i) antiproton v2 at pt/nq=%f -> %f +/- %f\n",cmin[i],cmax[i],ptnq,val[i],eval[i]);
+  }
+
+  TGraphErrors *g = new TGraphErrors(9,centr,val,ecentr,eval);
+  return g;
+}
+
+drawBWfit(Int_t ic=2,Float_t Tfo=0.1,Float_t s2=0.057,Float_t meanRho=0.8,Float_t rho_2=0.025,Float_t gamma=1.1,Float_t ptmin=0,Float_t ptmax=10){
+  if(! kLoaded) LoadLib();
+  char name[200];
+  TFile *f = new TFile("SPECTRA_COMB_20120809_default.root");
+  if(f){
+    sprintf(name,"cent%i_pion_plus",ic);
+    hpiplus = (TH1D *) f->Get(name);
+    
+    if(! hpiplus) kPiPlusSpectra = kFALSE; 
+    
+    sprintf(name,"cent%i_kaon_plus",ic);
+    hkaplus = (TH1D *) f->Get(name);
+    
+    if(! hkaplus) kKaPlusSpectra = kFALSE; 
+    
+    sprintf(name,"cent%i_proton_plus",ic);
+    hprplus = (TH1D *) f->Get(name);
+ 
+    if(! hprplus) kPrPlusSpectra = kFALSE; 
+  }
+
+  TCanvas *csp = new TCanvas("cspectra","cspectra");
+  csp->cd()->SetLogy();
+  const char *optdraw = "P";
+  if(hpiplus){ hpiplus->Draw(optdraw); optdraw="P,SAME";}
+  if(hkaplus){ hkaplus->Draw(optdraw); optdraw="P,SAME";}
+  if(hprplus){ hprplus->Draw(optdraw); optdraw="P,SAME";}
+  
+  if(hpiplus){
+    hpiplus->GetXaxis()->SetRange(1,40);
+    hpiplus->SetMarkerStyle(20);
+    hpiplus->SetMarkerColor(4);
+    hpiplus->SetLineColor(4);
+  }
+  if(hkaplus){
+    hkaplus->SetMarkerStyle(21);
+    hkaplus->SetMarkerColor(1);
+    hkaplus->SetLineColor(1);
+  }
+  if(hprplus){
+    hprplus->SetMarkerStyle(22);
+    hprplus->SetMarkerColor(2);
+    hprplus->SetLineColor(2);
+  }
+
+  // Get v2
+  sprintf(name,"v2/v2SP_pion_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gpiv2 = GetGraphWithStat(name);
+  if(! gpiv2) kPiV2 = kFALSE;
+  sprintf(name,"v2/v2SP_kaon_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gkav2 = GetGraphWithStat(name);
+  if(! gkav2) kKaV2 = kFALSE;
+  sprintf(name,"v2/v2SP_antipr_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gprv2 = GetGraphWithStat(name);
+  if(! gprv2) kPrV2 = kFALSE;
+
+  TCanvas *cv2 = new TCanvas("cv2","cv2");
+  optdraw = "AP";
+  if(gpiv2){ gpiv2->Draw(optdraw); optdraw="P";}
+  if(gkav2){ gkav2->Draw(optdraw); optdraw="P";}
+  if(gprv2){ gprv2->Draw(optdraw); optdraw="P";}
+
+  if(gpiv2){
+    gpiv2->GetXaxis()->SetRange(1,40);
+    gpiv2->SetMarkerStyle(20);
+    gpiv2->SetMarkerColor(4);
+    gpiv2->SetLineColor(4);
+    gpiv2->SetMaximum(0.2);
+    gpiv2->SetMinimum(0.);
+  }
+  if(gkav2){
+    gkav2->SetMarkerStyle(21);
+    gkav2->SetMarkerColor(1);
+    gkav2->SetLineColor(1);
+    gkav2->SetMaximum(0.2);
+    gkav2->SetMinimum(0.);
+  }
+  if(gprv2){
+    gprv2->SetMarkerStyle(22);
+    gprv2->SetMarkerColor(2);
+    gprv2->SetLineColor(2);
+    gprv2->SetMaximum(0.2);
+    gprv2->SetMinimum(0.);
+  }
+
+  // initialize fitter
+  AliBlastwaveFit2D *bw[3];
+  bw[0] = new AliBlastwaveFit2D("pions",mPi);
+  bw[0]->SetMinPt(ptMinPi);
+  bw[0]->SetMaxPt(ptMaxPi);
+
+  bw[1] = new AliBlastwaveFit2D("kaons",mKa);
+  bw[1]->SetMinPt(ptMinKa);
+  bw[1]->SetMaxPt(ptMaxKa);
+
+  bw[2] = new AliBlastwaveFit2D("protons",mPr);
+  bw[2]->SetMinPt(ptMinPr);
+  bw[2]->SetMaxPt(ptMaxPr);
+
+  AliBlastwaveFit2D *bwExt[3];
+  bwExt[0] = new AliBlastwaveFit2D("pions",mPi);
+  bwExt[0]->SetMinPt(ptMinPi);
+  bwExt[0]->SetMaxPt(ptMaxPi);
+
+  bwExt[1] = new AliBlastwaveFit2D("kaons",mKa);
+  bwExt[1]->SetMinPt(ptMinKa);
+  bwExt[1]->SetMaxPt(ptMaxKa);
+
+  bwExt[2] = new AliBlastwaveFit2D("protons",mPr);
+  bwExt[2]->SetMinPt(ptMinPr);
+  bwExt[2]->SetMaxPt(ptMaxPr);
+
+
+  if(kPiPlusSpectra) bw[0]->SetSpectrumObj(hpiplus);
+  if(kPiV2) bw[0]->SetV2Obj(gpiv2);
+  if(kKaPlusSpectra) bw[1]->SetSpectrumObj(hkaplus);
+  if(kKaV2) bw[1]->SetV2Obj(gkav2);
+  if(kPrPlusSpectra) bw[2]->SetSpectrumObj(hprplus);
+  if(kPrV2) bw[2]->SetV2Obj(gprv2);
+
+  if(kPiPlusSpectra) bwExt[0]->SetSpectrumObj(hpiplus);
+  if(kPiV2) bwExt[0]->SetV2Obj(gpiv2);
+  if(kKaPlusSpectra) bwExt[1]->SetSpectrumObj(hkaplus);
+  if(kKaV2) bwExt[1]->SetV2Obj(gkav2);
+  if(kPrPlusSpectra) bwExt[2]->SetSpectrumObj(hprplus);
+  if(kPrV2) bwExt[2]->SetV2Obj(gprv2);
+
+  for(Int_t i=0;i < 3;i++){
+    bw[i]->SetParameter(0,Tfo);
+    bw[i]->SetParameter(1,s2);
+    bw[i]->SetParameter(2,meanRho);
+    bw[i]->SetParameter(3,rho_2);
+    bw[i]->SetParameter(4,gamma);
+
+    bwExt[i]->SetParameter(0,Tfo);
+    bwExt[i]->SetParameter(1,s2);
+    bwExt[i]->SetParameter(2,meanRho);
+    bwExt[i]->SetParameter(3,rho_2);
+    bwExt[i]->SetParameter(4,gamma);
+  }
+  csp->cd();
+  if(hpiplus){
+    bw[0]->SetNormalization();
+    bw[0]->GetSpectraFit()->SetRange(ptMinPi,ptMaxPi);
+    bw[0]->GetSpectraFit()->Draw("SAME");
+    bw[0]->GetSpectraFit()->SetLineColor(4);
+
+    bwExt[0]->SetNormalization();
+    bwExt[0]->GetSpectraFit()->SetRange(0,3);
+    bwExt[0]->GetSpectraFit()->Draw("SAME");
+    bwExt[0]->GetSpectraFit()->SetLineColor(4);
+    bwExt[0]->GetSpectraFit()->SetLineStyle(2);
+  }
+  if(hkaplus){
+    bw[1]->SetNormalization();
+    bw[1]->GetSpectraFit()->SetRange(ptMinKa,ptMaxKa);
+    bw[1]->GetSpectraFit()->Draw("SAME");
+    bw[1]->GetSpectraFit()->SetLineColor(1);
+
+    bwExt[1]->SetNormalization();
+    bwExt[1]->GetSpectraFit()->SetRange(0,3);
+    bwExt[1]->GetSpectraFit()->Draw("SAME");
+    bwExt[1]->GetSpectraFit()->SetLineColor(1);
+    bwExt[1]->GetSpectraFit()->SetLineStyle(2);
+  }
+  if(hprplus){
+    bw[2]->SetNormalization();
+    bw[2]->GetSpectraFit()->SetRange(ptMinPr,ptMaxPr);
+    bw[2]->GetSpectraFit()->Draw("SAME");
+    bw[2]->GetSpectraFit()->SetLineColor(2);
+
+    bwExt[2]->SetNormalization();
+    bwExt[2]->GetSpectraFit()->SetRange(0,3);
+    bwExt[2]->GetSpectraFit()->Draw("SAME");
+    bwExt[2]->GetSpectraFit()->SetLineColor(2);
+    bwExt[2]->GetSpectraFit()->SetLineStyle(2);
+  }
+  cv2->cd();
+  if(gpiv2){
+    if(! hpiplus) bw[0]->SetNormalization();
+    bw[0]->GetV2Fit()->SetRange(ptMinPi,ptMaxPi);
+    bw[0]->GetV2Fit()->Draw("SAME");
+    bw[0]->GetV2Fit()->SetLineColor(4);
+
+    if(! hpiplus) bwExt[0]->SetNormalization();
+    bwExt[0]->GetV2Fit()->SetRange(0,3);
+    bwExt[0]->GetV2Fit()->Draw("SAME");
+    bwExt[0]->GetV2Fit()->SetLineColor(4);
+    bwExt[0]->GetV2Fit()->SetLineStyle(2);
+  }
+  if(gkav2){
+    if(! hkaplus) bw[1]->SetNormalization();
+    bw[1]->GetV2Fit()->SetRange(ptMinKa,ptMaxKa);
+    bw[1]->GetV2Fit()->Draw("SAME");
+    bw[1]->GetV2Fit()->SetLineColor(1);
+
+    if(! hkaplus) bwExt[1]->SetNormalization();
+    bwExt[1]->GetV2Fit()->SetRange(0,3);
+    bwExt[1]->GetV2Fit()->Draw("SAME");
+    bwExt[1]->GetV2Fit()->SetLineColor(1);
+    bwExt[1]->GetV2Fit()->SetLineStyle(2);
+  }
+  if(gprv2){
+    if(! hprplus) bw[0]->SetNormalization();
+    bw[2]->GetV2Fit()->SetRange(ptMinPr,ptMaxPr);
+    bw[2]->GetV2Fit()->Draw("SAME");
+    bw[2]->GetV2Fit()->SetLineColor(2);
+
+    if(! hprplus) bwExt[0]->SetNormalization();
+    bwExt[2]->GetV2Fit()->SetRange(0,3);
+    bwExt[2]->GetV2Fit()->Draw("SAME");
+    bwExt[2]->GetV2Fit()->SetLineColor(2);
+    bwExt[2]->GetV2Fit()->SetLineStyle(2);
+  }
+
+  Float_t numPi=0;
+  Float_t denPi=0;
+  Float_t numKa=0;
+  Float_t denKa=0;
+  Float_t numPr=0;
+  Float_t denPr=0;
+
+  for(Int_t i=0;i < 100;i++){
+    Float_t x = 0.1*(i+0.5);
+
+    if(x < ptmin || x > ptmax) continue;
+
+    if(hpiplus && gpiv2){
+      numPi += bwExt[0]->GetV2Fit()->Eval(x) * bwExt[0]->GetSpectraFit()->Eval(x);
+      denPi += bwExt[0]->GetSpectraFit()->Eval(x);
+    }
+    if(hkaplus && gkav2){
+      numKa += bwExt[1]->GetV2Fit()->Eval(x) * bwExt[1]->GetSpectraFit()->Eval(x);
+      denKa += bwExt[1]->GetSpectraFit()->Eval(x);
+    }
+    if(hprplus && gprv2){
+      numPr += bwExt[2]->GetV2Fit()->Eval(x) * bwExt[2]->GetSpectraFit()->Eval(x);
+      denPr += bwExt[2]->GetSpectraFit()->Eval(x);
+    }
+  }
+
+  if(denPi) printf("v2 integrated Pi = %f\n",numPi/denPi);
+  if(denKa) printf("v2 integrated Ka = %f\n",numKa/denKa);
+  if(denPr) printf("v2 integrated Pr = %f\n",numPr/denPr);
+}
+
+fitblastwave(Int_t ic=2){
+
+  if(! kLoaded) LoadLib();
+
+  char name[200];
+
+  // Get Spectra
+  TFile *f = new TFile("spectracomb.root");
+  if(f){
+    sprintf(name,"cent%i_pion_plus",ic);
+    hpiplus = (TH1D *) f->Get(name);
+    
+    if(! hpiplus) kPiPlusSpectra = kFALSE; 
+    
+    sprintf(name,"cent%i_kaon_plus",ic);
+    hkaplus = (TH1D *) f->Get(name);
+    
+    if(! hkaplus) kKaPlusSpectra = kFALSE; 
+    
+    sprintf(name,"cent%i_proton_plus",ic);
+    hprplus = (TH1D *) f->Get(name);
+ 
+    if(! hprplus) kPrPlusSpectra = kFALSE; 
+  }
+
+  TCanvas *csp = new TCanvas("cspectra","cspectra");
+  csp->Divide(3,1);
+  csp->cd(1)->SetLogy();
+  if(hpiplus) hpiplus->Draw();
+  csp->cd(2)->SetLogy();
+  if(hkaplus) hkaplus->Draw();
+  csp->cd(3)->SetLogy();
+  if(hprplus) hprplus->Draw();
+
+  // Get v2
+  sprintf(name,"v2/v2SP_pion_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gpiv2 = GetGraph(name);
+  if(! gpiv2) kPiV2 = kFALSE;
+  sprintf(name,"v2/v2SP_kaon_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gkav2 = GetGraph(name);
+  if(! gkav2) kKaV2 = kFALSE;
+  sprintf(name,"v2/v2SP_antipr_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gprv2 = GetGraph(name);
+  if(! gprv2) kPrV2 = kFALSE;
+
+  TCanvas *cv2 = new TCanvas("cv2","cv2");
+  cv2->Divide(3,1);
+  cv2->cd(1);
+  if(gpiv2) gpiv2->Draw("AP");
+  cv2->cd(2);
+  if(gkav2) gkav2->Draw("AP");
+  cv2->cd(3);
+  if(gprv2) gprv2->Draw("AP");
+
+  // initialize fitter
+  AliBlastwaveFit2D *bwPi = new AliBlastwaveFit2D("pions",mPi);
+  bwPi->SetMinPt(ptMinPi);
+  bwPi->SetMaxPt(ptMaxPi);
+
+  AliBlastwaveFit2D *bwKa = new AliBlastwaveFit2D("kaons",mKa);
+  bwKa->SetMinPt(ptMinKa);
+  bwKa->SetMaxPt(ptMaxKa);
+
+  AliBlastwaveFit2D *bwPr = new AliBlastwaveFit2D("protons",mPr);
+  bwPr->SetMinPt(ptMinPr);
+  bwPr->SetMaxPt(ptMaxPr);
+
+  if(kPiPlusSpectra) bwPi->SetSpectrumObj(hpiplus);
+  if(kPiV2) bwPi->SetV2Obj(gpiv2);
+  if(kKaPlusSpectra) bwKa->SetSpectrumObj(hkaplus);
+  if(kKaV2) bwKa->SetV2Obj(gkav2);
+  if(kPrPlusSpectra) bwPr->SetSpectrumObj(hprplus);
+  if(kPrV2) bwPr->SetV2Obj(gprv2);
+
+  AliBlastwaveFitter *fitter = new AliBlastwaveFitter("fitterBW");
+  fitter->AddFitFunction(bwPi);
+  fitter->AddFitFunction(bwKa);
+  fitter->AddFitFunction(bwPr);
+
+  // go to fit
+  fitter->PrepareToFit(); // initialize the fitter object
+  fitter->Fit();          // perform the fit (it will take some time)
+
+  // Draw fit
+  if(hpiplus){
+    csp->cd(1);
+    bwPi->GetSpectraFit()->Draw("SAME");
+  }
+  if(hkaplus){
+    csp->cd(2);
+    bwKa->GetSpectraFit()->Draw("SAME");
+  }
+  if(hprplus){
+    csp->cd(3);
+    bwPr->GetSpectraFit()->Draw("SAME");
+  }
+
+  if(gpiv2){
+    cv2->cd(1);
+    bwPi->GetV2Fit()->Draw("SAME");
+  }
+  if(gkav2){
+    cv2->cd(2);
+    bwKa->GetV2Fit()->Draw("SAME");
+  }
+  if(gprv2){
+    cv2->cd(3);
+    bwPr->GetV2Fit()->Draw("SAME");
+  }
+
+  // Print some outputs
+  printf("Chi2 = %f\n",fitter->GetChi2());
+  printf("N.D.G.F. = %f\n",fitter->GetNDGF());
+  printf("<beta> = %f\n",bwPi->GetMeanBeta());
+
+  // Do the contour if requested
+  if(kCont){
+    TCanvas *cCont = new TCanvas("cContour","cContour");
+    cCont->Divide(3,1);
+    cCont->cd(1);
+    TGraph *gCont1 = fitter->DoContour(50,2,0,1); // rho and T
+    gCont1->Draw("AP");
+    cCont->cd(2);
+    TGraph *gCont2 = fitter->DoContourBetaT(50,2,0,1); // beta and T
+    gCont2->Draw("AP");
+    cCont->cd(3);
+    TGraph *gCont3 = fitter->DoContour(50,1,3,1); // s2 and rho2
+    gCont3->Draw("AP");
+  }
+}
+
+LoadLib(){
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libTree");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libPWGCFflowBW");
+  kLoaded = kTRUE;
+
+  Int_t check = gROOT->LoadMacro("v2All.C");
+  
+  printf("INSTRUCTIONS:\n");
+  printf("official results in txt format in v2 paper svn repo (in case of problem ask to Carlos Perez)\n");
+  printf("notice that v2s for pi, K and p are read in txt format assuming that the values are in ./v2/ dir\n");
+  printf("pi, K and p spectra are read from root file for blastwave fit\n");
+  printf("other species v2s are loaded from v2All.C macro\n");
+  printf("v2All.C available in https://twiki.cern.ch/twiki/bin/viewauth/ALICE/FlowPAGQM2012talkIdentified\n\n");
+  if(check){
+    printf("press enter to continue\n");
+    getchar();
+  }
+}
+
+
+TGraphAsymmErrors *GetGraph(const char *filename){
+  char name[200];
+
+  sprintf(name,"cat %s|grep -v BinCenter >/tmp/tempov2",filename);
+
+  system(name);
+
+  Float_t x,y,statLow,statHigh,systLow,systHigh;
+
+  Int_t np=0;
+  Double_t pt[100],pterr[100],v2[100],v2errLow[100],v2errHigh[100];
+
+  FILE *f = fopen("/tmp/tempov2","r");
+  while(fscanf(f,"%f %f %f %f %f %f",&x,&y,&statHigh,&statLow,&systHigh,&systLow) == 6){
+    pt[np] = x;
+    pterr[np] = 0;
+    v2[np] = y;
+    v2errLow[np] = TMath::Sqrt(/*statLow*statLow +*/ systLow*systLow);
+    v2errHigh[np] = TMath::Sqrt(/*statHigh*statHigh +*/ systHigh*systHigh);
+    if(x > 0.2 && x < 6.0) np++;
+  }
+  fclose(f);
+
+  TGraphAsymmErrors *g = new TGraphAsymmErrors(np,pt,v2,pterr,pterr,v2errLow,v2errHigh);
+
+  return g;
+}
+
+TGraphAsymmErrors *GetGraphWithStat(const char *filename){
+  char name[200];
+
+  sprintf(name,"cat %s|grep -v BinCenter >/tmp/tempov2",filename);
+
+  system(name);
+
+  Float_t x,y,statLow,statHigh,systLow,systHigh;
+
+  Int_t np=0;
+  Double_t pt[100],pterr[100],v2[100],v2errLow[100],v2errHigh[100];
+
+  FILE *f = fopen("/tmp/tempov2","r");
+  while(fscanf(f,"%f %f %f %f %f %f",&x,&y,&statHigh,&statLow,&systHigh,&systLow) == 6){
+    pt[np] = x;
+    pterr[np] = 0;
+    v2[np] = y;
+    v2errLow[np] = TMath::Sqrt(statLow*statLow + systLow*systLow);
+    v2errHigh[np] = TMath::Sqrt(statHigh*statHigh + systHigh*systHigh);
+    if(x > 0.2 && x < 6.0) np++;
+  }
+  fclose(f);
+
+  TGraphAsymmErrors *g = new TGraphAsymmErrors(np,pt,v2,pterr,pterr,v2errLow,v2errHigh);
+
+  return g;
+}
+
+
+Float_t ComputePiV2int(Int_t ic=2,Float_t xmin=0,Float_t xmax=20){
+
+  Float_t v2Av = 0.02;
+  
+  if(ic==1) v2Av = 0.035;
+  else if(ic==2) v2Av = 0.048464;
+  else if(ic==3) v2Av = 0.06;
+  else if(ic==4) v2Av = 0.07;
+  else if(ic==5) v2Av = 0.07;
+  else if(ic==6) v2Av = 0.07;
+  else if(ic==7) v2Av = 0.06;
+  else if(ic==8) v2Av = 0.05;
+
+  if(! kLoaded) LoadLib();
+
+  char name[200];
+
+  TGraphAsymmErrors *gHP;
+
+  if(ic == 0) gHP = v2PionAlex0005();
+  else if(ic == 1) gHP = v2PionAlex0510();
+  else if(ic == 2) gHP = v2PionAlex1020();
+  else if(ic == 3) gHP = v2PionAlex2030();
+  else if(ic == 4) gHP = v2PionAlex3040();
+  else if(ic == 5) gHP = v2PionAlex4050();
+  else if(ic == 6) gHP = v2PionAlex5060();
+  else if(ic == 7) gHP = v2PionAlex6070();
+  else if(ic == 8) gHP = v2PionAlex7080();
+
+  // Get Spectra
+  TFile *f = new TFile("spectracomb.root");
+  if(f){
+    sprintf(name,"cent%i_pion_plus",ic);
+    hpiplus = (TH1D *) f->Get(name);
+    
+    if(! hpiplus) return 0.0; 
+  }
+
+
+  TCanvas *csp = new TCanvas("cpiSpectra","cpiSpectra");
+  hpiplus->Draw();
+
+  // Get v2
+  sprintf(name,"v2/v2SP_pion_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gpiv2 = GetGraph(name);
+  if(! gpiv2) return 0.0;
+  
+
+  TCanvas *cv2 = new TCanvas("cpiV2","cpiV2");
+  gpiv2->Draw("AP");
+  
+  // initialize fitter
+  AliBlastwaveFit2D *bwPi = new AliBlastwaveFit2D("pionsSp",mPi);
+  bwPi->SetMinPt(0.1);
+  bwPi->SetMaxPt(1.5);
+
+  AliBlastwaveFit2D *bwPi2 = new AliBlastwaveFit2D("pionsV2",mPi);
+  bwPi2->SetMinPt(0.2);
+  bwPi2->SetMaxPt(1.0);
+
+  AliBlastwaveFitSpectra *bwPi3 = new AliBlastwaveFitSpectra("pionsSpHP",mPi); // use only spectra function to avoid overwriting of other fit (parameters are static memebers)
+  bwPi3->SetMinPt(1.5);
+  bwPi3->SetMaxPt(3.0);
+
+  bwPi->SetSpectrumObj(hpiplus);
+
+  bwPi2->SetV2Obj(gpiv2);
+
+  bwPi3->SetSpectrumObj(hpiplus);
+
+  AliBlastwaveFitter *fitter = new AliBlastwaveFitter("fitterPion");
+  fitter->AddFitFunction(bwPi);
+  fitter->AddFitFunction(bwPi2);
+
+  AliBlastwaveFitter *fitter2 = new AliBlastwaveFitter("fitterPion2");
+  fitter2->AddFitFunction(bwPi3);
+
+  TF1 *fitSP, *fitV2, *fitSP2;
+
+  // go to fit
+  if(xmin < 0.2){
+    fitter->PrepareToFit(); // initialize the fitter object
+    fitter->Fit();          // perform the fit (it will take some time)
+ 
+  // Print some outputs
+    printf("Chi2 = %f\n",fitter->GetChi2());
+    printf("N.D.G.F. = %f\n",fitter->GetNDGF());
+    printf("<beta> = %f\n",bwPi->GetMeanBeta());
+  
+  //  fitter2->PrepareToFit(); // initialize the fitter object
+  //   fitter2->Fit();          // perform the fit (it will take some time)
+    fitSP = bwPi->GetSpectraFit();
+    fitV2 = bwPi2->GetV2Fit();
+    fitSP2 = NULL;//bwPi3->GetSpectraFit();
+
+//   printf("2)Chi2 = %f\n",fitter2->GetChi2());
+//   printf("2)N.D.G.F. = %f\n",fitter2->GetNDGF());
+//   printf("2)<beta> = %f\n",bwPi3->GetMeanBeta());
+
+  // Draw fit
+    csp->cd();
+    fitSP->Draw("SAME");
+    //   fitSP2->Draw("SAME");
+    cv2->cd();
+    fitV2->Draw("SAME");
+  }
+//   fitSP->SetRange(0.0001,1.3);
+//   fitSP2->SetRange(1.5,6);
+//   fitV2->SetRange(0.0001,1);
+  
+  Float_t num = 0;
+  Float_t den = 0;
+  Float_t errSp = 0;
+
+  Float_t num1 = 0;
+  Float_t den1 = 0;
+
+  Float_t num2 = 0;
+  Float_t den2 = 0;
+
+  Float_t num3 = 0;
+  Float_t den3 = 0;
+
+  Float_t num4 = 0;
+  Float_t den4 = 0;
+
+  Float_t num5 = 0;
+  Float_t den5 = 0;
+
+  Float_t num6 = 0;
+  Float_t den6 = 0;
+
+  Float_t xpt[500];
+  Float_t ypt[500];
+  Float_t ypt1[500];
+  Float_t ypt2[500];
+  Int_t npt=0;
+
+  for(Int_t i=0;i<10;i++){ // form 0 to 0.2
+    Float_t x1 = i*0.02;
+    Float_t x2 = (i+1)*0.02;
+    Float_t xm = (x1+x2)*0.5;
+    
+    if(xm > xmin){
+      Float_t yield = fitSP->Integral(x1,x2);
+      Float_t v2 = fitV2->Eval(xm);
+    
+      xpt[npt] = xm;
+      ypt[npt] = fitSP->Eval(xm);
+      ypt1[npt] = ypt[npt]*(1 + 0.0202/0.2 + 0.03 * 0.2);
+      ypt2[npt] = ypt[npt]*(1 - 0.0202/0.2 - 0.03 * 0.2);
+      npt++;
+
+      den += yield;
+      num += yield * v2;
+
+      errSp +=  (0.0202/0.2 + 0.03 * 0.2) * yield * TMath::Abs(v2 - v2Av);
+      
+      den1 += yield*(1 + 0.0202/0.2 + 0.03 * 0.2);
+      num1 += yield*(1 + 0.0202/0.2 + 0.03 * 0.2) * v2 * (1 - 0.05);
+      
+      den2 += yield*(1 - 0.0202/0.2 - 0.03 * 0.2);
+      num2 += yield*(1 - 0.0202/0.2 - 0.03 * 0.2) * v2 * (1 + 0.05);
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - 0.05);
+      
+      den4 += yield;
+      num4 += yield* v2 * (1 + 0.05);
+
+      den5 += yield*(1 + 0.0202/0.2 + 0.03 * 0.2);
+      num5 += yield*(1 + 0.0202/0.2 + 0.03 * 0.2) * v2;
+      
+      den6 += yield*(1 - 0.0202/0.2 - 0.03 * 0.2);
+      num6 += yield*(1 - 0.0202/0.2 - 0.03 * 0.2) * v2;
+    }
+  }
+  
+  for(Int_t i=0; i < gpiv2->GetN();i++){
+    Float_t x = gpiv2->GetX()[i];
+
+    Float_t frSyst = 1 - 2*hpiplus->Integral(1,hpiplus->FindBin(x))/hpiplus->Integral();
+
+    if(x > TMath::Max(0.2,xmin) && x < TMath::Min(xmax,6.0)){
+      Float_t binwidth = 0.05;
+      if(x < 3) binwidth = 0.05;
+      else if(x < 4) binwidth = 0.1;
+      else binwidth = 0.2;
+
+      Float_t yield = hpiplus->Interpolate(x) * 2 * binwidth;
+      Float_t yielderr = hpiplus->GetBinError(hpiplus->FindBin(x)) / hpiplus->GetBinContent(hpiplus->FindBin(x));
+      Float_t v2 = gpiv2->GetY()[i];
+      Float_t v2err1 = gpiv2->GetEYlow()[i];
+      Float_t v2err2 = gpiv2->GetEYhigh()[i];
+
+      xpt[npt] = x;
+      ypt[npt] = hpiplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
+
+      den += yield;
+      num += yield * v2;
+
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
+
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
+
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
+
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
+
+      printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
+    }
+  }
+
+  gpiv2 = gHP;
+  for(Int_t i=0; i < gpiv2->GetN();i++){
+    Float_t x = gpiv2->GetX()[i];
+
+    Float_t frSyst = 1 - 2*hpiplus->Integral(1,hpiplus->FindBin(x))/hpiplus->Integral();
+
+    if(x > TMath::Max(6.0,xmin) && x < xmax){
+      Float_t binwidth = 0.05;
+      if(x < 8) binwidth = 0.5;
+      else if(x < 13) binwidth = 1;
+      else binwidth = 2;
+
+      Float_t yield = hpiplus->Interpolate(x) * 2 * binwidth;
+      Float_t yielderr = hpiplus->GetBinError(hpiplus->FindBin(x)) / hpiplus->GetBinContent(hpiplus->FindBin(x));
+      Float_t v2 = gpiv2->GetY()[i];
+      Float_t v2err1 = gpiv2->GetEYlow()[i];
+      Float_t v2err2 = gpiv2->GetEYhigh()[i];
+
+      xpt[npt] = x;
+      ypt[npt] = hpiplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
+
+      den += yield;
+      num += yield * v2;
+
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
+      
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
+
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
+
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
+
+      printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
+    }
+  }
+
+  printf("Integrated flow for pions (0 < p_T < 20 GeV/c) = %f\n",num/den);
+  printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
+  printf("Syst. High = %f\n",(num2/den2 - num/den));
+  printf("Syst. Low = %f\n",(num/den - num1/den1));
+  Float_t systV2 = (num4/den4 - num3/den3)/2;
+  printf("Syst. Only v2 = %f\n",systV2);
+  Float_t systSp = (num6/den6 - num5/den5)/2;
+  printf("Syst. Only spectra = %f\n",systSp);
+  printf("Syst. Only spectra (2nd estimate) = %f\n",errSp/den);
+  printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
+  printf("Yield = %f\n",den);
+
+  new TCanvas("cSpectraComp","cSpectraComp");
+  TGraph *gpiSp = new TGraph(npt,xpt,ypt);
+  TGraph *gpiSp1 = new TGraph(npt,xpt,ypt1);
+  TGraph *gpiSp2 = new TGraph(npt,xpt,ypt2);
+
+  gpiSp->SetMarkerStyle(20);
+  gpiSp1->SetMarkerStyle(20);
+  gpiSp2->SetMarkerStyle(20);
+  gpiSp1->SetMarkerColor(2);
+  gpiSp2->SetMarkerColor(4);
+  gpiSp1->SetLineColor(2);
+  gpiSp2->SetLineColor(4);
+  gpiSp->Draw("AP");
+  gpiSp1->Draw("P");
+  gpiSp2->Draw("P");
+  hpiplus->Draw("SAME");
+
+}
+
+Float_t ComputeKaV2int(Int_t ic=2,Float_t xmin=0,Float_t xmax=20){
+  Float_t v2Av = 0.025;
+  
+  if(ic==1) v2Av = 0.045;
+  else if(ic==2) v2Av = 0.06;
+  else if(ic==3) v2Av = 0.083;
+  else if(ic==4) v2Av = 0.095;
+  else if(ic==5) v2Av = 0.095;
+  else if(ic==6) v2Av = 0.095;
+  else if(ic==7) v2Av = 0.09;
+  else if(ic==8) v2Av = 0.075;
+
+  if(! kLoaded) LoadLib();
+
+  char name[200];
+
+  TGraphAsymmErrors *gHP; // just to loop on bin (but not used)
+
+  if(ic == 0) gHP = v2AntiprotonAlex0005();
+  else if(ic == 1) gHP = v2AntiprotonAlex0510();
+  else if(ic == 2) gHP = v2AntiprotonAlex1020();
+  else if(ic == 3) gHP = v2AntiprotonAlex2030();
+  else if(ic == 4) gHP = v2AntiprotonAlex3040();
+  else if(ic == 5) gHP = v2AntiprotonAlex4050();
+  else if(ic == 6) gHP = v2AntiprotonAlex5060();
+  else if(ic == 7) gHP = v2AntiprotonAlex6070();
+  else if(ic == 8) gHP = v2AntiprotonAlex7080();
+
+  // Get Spectra
+  TFile *f = new TFile("spectracomb.root");
+  if(f){
+    sprintf(name,"cent%i_kaon_plus",ic);
+    hkaplus = (TH1D *) f->Get(name);
+    
+    if(! hkaplus) return 0.0; 
+  }
+
+
+  TCanvas *csp = new TCanvas("ckaSpectra","ckaSpectra");
+  hkaplus->Draw();
+
+  // Get v2
+  sprintf(name,"v2/v2SP_kaon_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gkav2 = GetGraph(name);
+  if(! gkav2) return 0.0;
+  
+
+  TCanvas *cv2 = new TCanvas("ckaV2","ckaV2");
+  gkav2->Draw("AP");
+  
+  // initialize fitter
+  AliBlastwaveFit2D *bwKa = new AliBlastwaveFit2D("kaonsSp",mKa);
+  bwKa->SetMinPt(0.2);
+  bwKa->SetMaxPt(0.8);
+
+  AliBlastwaveFit2D *bwKa2 = new AliBlastwaveFit2D("kaonsV2",mKa);
+  bwKa2->SetMinPt(0.25);
+  bwKa2->SetMaxPt(1.0);
+
+
+  AliBlastwaveFitSpectra *bwKa3 = new AliBlastwaveFitSpectra("kaonsSpHP",mKa); // use only spectra function to avoid overwriting of other fit (parameters are static memebers)
+  bwKa3->SetMinPt(1.5);
+  bwKa3->SetMaxPt(3.0);
+
+  bwKa->SetSpectrumObj(hkaplus);
+
+  bwKa2->SetV2Obj(gkav2);
+
+  bwKa3->SetSpectrumObj(hkaplus);
+
+  AliBlastwaveFitter *fitter = new AliBlastwaveFitter("fitterKaon");
+  fitter->AddFitFunction(bwKa);
+  fitter->AddFitFunction(bwKa2);
+
+  AliBlastwaveFitter *fitter2 = new AliBlastwaveFitter("fitterKaon2");
+  fitter2->AddFitFunction(bwKa3);
+
+  TF1 *fitSP, *fitV2, *fitSP2;
+  // go to fit
+  if(xmin < 0.25){
+    fitter->PrepareToFit(); // initialize the fitter object
+    fitter->Fit();          // perform the fit (it will take some time)
+    
+  // Print some outputs
+    printf("Chi2 = %f\n",fitter->GetChi2());
+    printf("N.D.G.F. = %f\n",fitter->GetNDGF());
+    printf("<beta> = %f\n",bwKa->GetMeanBeta());
+
+//   fitter2->PrepareToFit(); // initialize the fitter object
+//   fitter2->Fit();          // perform the fit (it will take some time)
+
+    TF1 *fitSP = bwKa->GetSpectraFit();
+    TF1 *fitV2 = bwKa2->GetV2Fit();
+    TF1 *fitSP2 = bwKa3->GetSpectraFit();
+
+    printf("2)Chi2 = %f\n",fitter2->GetChi2());
+    printf("2)N.D.G.F. = %f\n",fitter2->GetNDGF());
+    printf("2)<beta> = %f\n",bwKa3->GetMeanBeta());
+    
+    // Draw fit
+    csp->cd();
+    fitSP->Draw("SAME");
+    fitSP2->Draw("SAME");
+    cv2->cd();
+    fitV2->Draw("SAME");
+    
+    fitSP->SetRange(0.0001,1.3);
+    fitSP2->SetRange(1.5,6);
+    fitV2->SetRange(0.0001,1);
+  }
+
+  Float_t num = 0;
+  Float_t den = 0;
+  Float_t errSp = 0;
+
+  Float_t num1 = 0;
+  Float_t den1 = 0;
+
+  Float_t num2 = 0;
+  Float_t den2 = 0;
+
+  Float_t num3 = 0;
+  Float_t den3 = 0;
+
+  Float_t num4 = 0;
+  Float_t den4 = 0;
+
+  Float_t num5 = 0;
+  Float_t den5 = 0;
+
+  Float_t num6 = 0;
+  Float_t den6 = 0;
+
+  Float_t xpt[500];
+  Float_t ypt[500];
+  Float_t ypt1[500];
+  Float_t ypt2[500];
+  Int_t npt=0;
+
+  Float_t errHP=0;
+
+  for(Int_t i=0;i<10;i++){ // form 0 to 0.2
+    Float_t x1 = i*0.025;
+    Float_t x2 = (i+1)*0.025;
+    Float_t xm = (x1+x2)*0.5;
+
+    if(xm > xmin){
+      Float_t yield = hkaplus->Interpolate(xm) * 0.025;//fitSP->Integral(x1,x2);
+      Float_t v2 = fitV2->Eval(xm);
+
+      xpt[npt] = xm;
+      ypt[npt] = fitSP->Eval(xm);
+      ypt1[npt] = ypt[npt]*(1 + 0.0215/0.25 + 0.05 * 0.25);
+      ypt2[npt] = ypt[npt]*(1 - 0.0215/0.25 - 0.05 * 0.25);
+      npt++;
+
+      den += yield;
+      num += yield * v2;
+      
+      errSp +=  (0.0215/0.25 + 0.05 * 0.25) * yield * TMath::Abs(v2 - v2Av);
+      
+      den1 += yield*(1 + 0.0215/0.25 + 0.05 * 0.25);
+      num1 += yield*(1 + 0.0215/0.25 + 0.05 * 0.25) * v2 * (1 - 0.1);
+      
+      den2 += yield*(1 - 0.0215/0.25 - 0.05 * 0.25);
+      num2 += yield*(1 - 0.0215/0.25 - 0.05 * 0.25) * v2 * (1 + 0.1);    
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - 0.1);
+      
+      den4 += yield;
+      num4 += yield* v2 * (1 + 0.1);    
+
+      den5 += yield*(1 + 0.0215/0.25 + 0.05 * 0.25);
+      num5 += yield*(1 + 0.0215/0.25 + 0.05 * 0.25) * v2;
+      
+      den6 += yield*(1 - 0.0215/0.25 - 0.05 * 0.25);
+      num6 += yield*(1 - 0.0215/0.25 - 0.05 * 0.25) * v2;    
+    }
+  }
+
+  for(Int_t i=0; i < gkav2->GetN();i++){
+    Float_t x = gkav2->GetX()[i];
+    Float_t frSyst = 1 - 2*hkaplus->Integral(1,hkaplus->FindBin(x))/hkaplus->Integral();
+  
+    if(x > TMath::Max(0.25,xmin) && x < TMath::Min(xmax,6.0)){
+      Float_t binwidth = 0.05;
+      if(x < 3) binwidth = 0.05;
+      else if(x < 4) binwidth = 0.1;
+      else binwidth = 0.2;
+
+      Float_t yield = hkaplus->Interpolate(x) * 2 * binwidth;
+      Float_t yielderr = hkaplus->GetBinError(hkaplus->FindBin(x)) / hkaplus->GetBinContent(hkaplus->FindBin(x));
+      Float_t v2 = gkav2->GetY()[i];
+      Float_t v2err1 = gkav2->GetEYlow()[i];
+      Float_t v2err2 = gkav2->GetEYhigh()[i];
+
+      xpt[npt] = x;
+      ypt[npt] = hkaplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
+
+      errHP = v2;
+
+      den += yield;
+      num += yield * v2;
+
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
+
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
+
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
+
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
+
+      printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
+    }
+  }
+
+  gkav2 = gHP;
+  for(Int_t i=0; i < gkav2->GetN();i++){
+    Float_t x = gkav2->GetX()[i];
+
+    Float_t frSyst = 1 - 2*hkaplus->Integral(1,hkaplus->FindBin(x))/hkaplus->Integral();
+
+    if(x > TMath::Max(6.0,xmin) && x < xmax){
+      Float_t binwidth = 0.05;
+      if(x < 8) binwidth = 0.5;
+      else if(x < 13) binwidth = 1;
+      else binwidth = 2;
+
+      Float_t yield = hkaplus->Interpolate(x) * 2 * binwidth;
+      Float_t yielderr = hkaplus->GetBinError(hkaplus->FindBin(x)) / hkaplus->GetBinContent(hkaplus->FindBin(x));
+      Float_t v2 = errHP/2;//gkav2->GetY()[i];
+      Float_t v2err1 = 0;//gkav2->GetEYlow()[i];
+      Float_t v2err2 = errHP;//gkav2->GetEYhigh()[i];
+
+      xpt[npt] = x;
+      ypt[npt] = hkaplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
+
+      den += yield;
+      num += yield * 0.0;
+
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
+
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
+
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
+
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
+
+      printf("pt<%f) v2int = %f\n",x+binwidth,num/den);
+    }
+  }
+
+  printf("Integrated flow for kaons (0 < p_T < 20 GeV/c) = %f\n",num/den);
+  printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
+  printf("Syst. High = %f\n",(num2/den2 - num/den));
+  printf("Syst. Low = %f\n",(num/den - num1/den1));
+  Float_t systV2 = (num4/den4 - num3/den3)/2;
+  printf("Syst. Only v2 = %f\n",systV2);
+  Float_t systSp = (num6/den6 - num5/den5)/2;
+  printf("Syst. Only spectra = %f\n",systSp);
+  printf("Syst. Only spectra (2nd estimate) = %f\n",errSp/den);
+  printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
+  printf("Yield = %f\n",den);
+
+  new TCanvas("cSpectraComp","cSpectraComp");
+  TGraph *gkaSp = new TGraph(npt,xpt,ypt);
+  TGraph *gkaSp1 = new TGraph(npt,xpt,ypt1);
+  TGraph *gkaSp2 = new TGraph(npt,xpt,ypt2);
+
+  gkaSp->SetMarkerStyle(20);
+  gkaSp1->SetMarkerStyle(20);
+  gkaSp2->SetMarkerStyle(20);
+  gkaSp1->SetMarkerColor(2);
+  gkaSp2->SetMarkerColor(4);
+  gkaSp1->SetLineColor(2);
+  gkaSp2->SetLineColor(4);
+  gkaSp->Draw("AP");
+  gkaSp1->Draw("P");
+  gkaSp2->Draw("P");
+  hkaplus->Draw("SAME");
+}
+
+Float_t ComputePrV2int(Int_t ic=2,Float_t xmin=0,Float_t xmax=20){
+  Float_t v2Av = 0.025;
+  
+  if(ic==1) v2Av = 0.045;
+  else if(ic==2) v2Av = 0.07;
+  else if(ic==3) v2Av = 0.09;
+  else if(ic==4) v2Av = 0.1;
+  else if(ic==5) v2Av = 0.11;
+  else if(ic==6) v2Av = 0.11;
+  else if(ic==7) v2Av = 0.1;
+  else if(ic==8) v2Av = 0.09;
+
+  if(! kLoaded) LoadLib();
+
+  char name[200];
+
+  TGraphAsymmErrors *gHP;
+
+  if(ic == 0) gHP = v2AntiprotonAlex0005();
+  else if(ic == 1) gHP = v2AntiprotonAlex0510();
+  else if(ic == 2) gHP = v2AntiprotonAlex1020();
+  else if(ic == 3) gHP = v2AntiprotonAlex2030();
+  else if(ic == 4) gHP = v2AntiprotonAlex3040();
+  else if(ic == 5) gHP = v2AntiprotonAlex4050();
+  else if(ic == 6) gHP = v2AntiprotonAlex5060();
+  else if(ic == 7) gHP = v2AntiprotonAlex6070();
+  else if(ic == 8) gHP = v2AntiprotonAlex7080();
+  // Get Spectra
+  TFile *f = new TFile("spectracomb.root");
+  if(f){
+    sprintf(name,"cent%i_proton_plus",ic);
+    hprplus = (TH1D *) f->Get(name);
+    
+    if(! hprplus) return 0.0; 
+  }
+
+
+  TCanvas *csp = new TCanvas("cprSpectra","cprSpectra");
+  hprplus->Draw();
+
+  // Get v2
+  sprintf(name,"v2/v2SP_antipr_%02i_%02i.txt",cmin[ic],cmax[ic]);
+  gprv2 = GetGraph(name);
+  if(! gprv2) return 0.0;
+  
+
+  TCanvas *cv2 = new TCanvas("cprV2","cprV2");
+  gprv2->Draw("AP");
+  
+  // initialize fitter
+  AliBlastwaveFit2D *bwPr = new AliBlastwaveFit2D("antiprotonsSp",mPr);
+  bwPr->SetMinPt(0.3);
+  bwPr->SetMaxPt(1.2);
+
+  AliBlastwaveFit2D *bwPr2 = new AliBlastwaveFit2D("antiprotonsV2",mPr);
+  bwPr2->SetMinPt(0.3);
+  bwPr2->SetMaxPt(2.0);
+
+  AliBlastwaveFitSpectra *bwPr3 = new AliBlastwaveFitSpectra("antiprotonsSpHP",mPr); // use only spectra function to avoid overwriting of other fit (parameters are static memebers)
+  bwPr3->SetMinPt(2.5);
+  bwPr3->SetMaxPt(4.5);
+
+  bwPr->SetSpectrumObj(hprplus);
+
+  bwPr2->SetV2Obj(gprv2);
+
+  bwPr3->SetSpectrumObj(hprplus);
+
+  AliBlastwaveFitter *fitter = new AliBlastwaveFitter("fitterProton");
+  fitter->AddFitFunction(bwPr);
+  fitter->AddFitFunction(bwPr2);
+
+  AliBlastwaveFitter *fitter2 = new AliBlastwaveFitter("fitterProton2");
+  fitter2->AddFitFunction(bwPr3);
+
+  TF1 *fitSP, *fitV2,*fitSP2;
+
+  // go to fit
+  if(xmin < 0.3){
+    fitter->PrepareToFit(); // initialize the fitter object
+    fitter->Fit();          // perform the fit (it will take some time)
+    
+    // Print some outputs
+    printf("Chi2 = %f\n",fitter->GetChi2());
+    printf("N.D.G.F. = %f\n",fitter->GetNDGF());
+    printf("<beta> = %f\n",bwPr->GetMeanBeta());
+    
+    //   fitter2->PrepareToFit(); // initialize the fitter object
+    //   fitter2->Fit();          // perform the fit (it will take some time)
+    
+    fitSP = bwPr->GetSpectraFit();
+    fitV2 = bwPr2->GetV2Fit();
+    fitSP2 = bwPr3->GetSpectraFit();
+
+    printf("2)Chi2 = %f\n",fitter2->GetChi2());
+    printf("2)N.D.G.F. = %f\n",fitter2->GetNDGF());
+    printf("2)<beta> = %f\n",bwPr3->GetMeanBeta());
+
+    // Draw fit
+    csp->cd();
+    fitSP->Draw("SAME");
+    fitSP2->Draw("SAME");
+    cv2->cd();
+    fitV2->Draw("SAME");
+    
+    fitSP->SetRange(0.0001,1.2);
+    fitSP2->SetRange(2.5,6);
+    fitV2->SetRange(0.0001,2);
+  }
+
+  Float_t num = 0;
+  Float_t den = 0;
+  Float_t errSp = 0;
+
+  Float_t num1 = 0;
+  Float_t den1 = 0;
+
+  Float_t num2 = 0;
+  Float_t den2 = 0;
+
+  Float_t num3 = 0;
+  Float_t den3 = 0;
+
+  Float_t num4 = 0;
+  Float_t den4 = 0;
+
+  Float_t num5 = 0;
+  Float_t den5 = 0;
+
+  Float_t num6 = 0;
+  Float_t den6 = 0;
+
+  Float_t xpt[500];
+  Float_t ypt[500];
+  Float_t ypt1[500];
+  Float_t ypt2[500];
+  Int_t npt=0;
+
+  for(Int_t i=0;i<10;i++){ // form 0 to 0.2
+    Float_t x1 = i*0.03;
+    Float_t x2 = (i+1)*0.03;
+    Float_t xm = (x1+x2)*0.5;
+
+    if(xm > xmin){
+      Float_t yield = fitSP->Integral(x1,x2);
+      Float_t v2 = fitV2->Eval(xm);
+
+      xpt[npt] = xm;
+      ypt[npt] = fitSP->Eval(xm);
+      ypt1[npt] = ypt[npt]*(1 + 0.064/0.3 + 0.0083 * 0.3 * 0.3);
+      ypt2[npt] = ypt[npt]*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3);
+      npt++;
+
+      den += yield;
+      num += yield * v2;
+      
+      errSp +=  (0.064/0.3 + 0.0083 * 0.3 * 0.3) * yield * TMath::Abs(v2 - v2Av);
+
+
+      den1 += yield*(1 + 0.064/0.3 + 0.0083 * 0.3 * 0.3);
+      num1 += yield*(1 + 0.064/0.3 + 0.0083 * 0.3 * 0.3) * v2 * (1 - 0.2);
+      
+      den2 += yield*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3);
+      num2 += yield*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3) * v2 * (1 + 0.2);
+
+      den3 += yield;
+      num3 += yield * v2 * (1 - 0.2);
+      
+      den4 += yield;
+      num4 += yield * v2 * (1 + 0.2);
+
+      den5 += yield*(1 + 0.064/0.3 + 0.0083 * 0.3 * 0.3);
+      num5 += yield*(1 + 0.064/0.3 + 0.0083 * 0.3 * 0.3) * v2;
+      
+      den6 += yield*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3);
+      num6 += yield*(1 - 0.064/0.3 - 0.0083 * 0.3 * 0.3) * v2;
+
+      printf("pt<%f) v2int = %f (DeltaV2 = %f, yield = %f) (err=%f)\n",x2,num/den,(num2/den2 - num1/den1),den,errSp/den);
+
+    }
+  }
+
+  printf("yieldMinExtrapolatedLowPt = %f -- yieldMaxExtrapolatedLowPt = %f\n",den1,den2);
+
+  for(Int_t i=0; i < gprv2->GetN();i++){
+    Float_t x = gprv2->GetX()[i];
+    Float_t frSyst = 1 - 2*hprplus->Integral(1,hprplus->FindBin(x))/hprplus->Integral();
+
+    if(x > TMath::Max(0.3,xmin) && x < TMath::Min(xmax,6.0)){
+      Float_t binwidth = 0.05;
+      if(x < 3) binwidth = 0.05;
+      else if(x < 4) binwidth = 0.1;
+      else binwidth = 0.2;
+
+      Float_t yield = hprplus->Interpolate(x) * 2 * binwidth;
+      Float_t yielderr = hprplus->GetBinError(hprplus->FindBin(x)) / hprplus->GetBinContent(hprplus->FindBin(x));
+      Float_t v2 = gprv2->GetY()[i];
+      Float_t v2err1 = gprv2->GetEYlow()[i];
+      Float_t v2err2 = gprv2->GetEYhigh()[i];
+
+      xpt[npt] = x;
+      ypt[npt] = hprplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
+
+      den += yield;
+      num += yield * v2;
+
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
+
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
+
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
+
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
+
+      printf("pt<%f) v2int = %f (DeltaV2 = %f, yield = %f) (err=%f)\n",x+binwidth,num/den,(num2/den2 - num1/den1),den,errSp/den);
+    }
+  }
+
+  gprv2 = gHP;
+  for(Int_t i=0; i < gprv2->GetN();i++){
+    Float_t x = gprv2->GetX()[i];
+
+    Float_t frSyst = 1 - 2*hprplus->Integral(1,hprplus->FindBin(x))/hprplus->Integral();
+
+    if(x > TMath::Max(6.0,xmin) && x < xmax){
+      Float_t binwidth = 0.05;
+      if(x < 8) binwidth = 0.5;
+      else if(x < 13) binwidth = 1;
+      else binwidth = 2;
+
+      Float_t yield = hprplus->Interpolate(x) * 2 * binwidth;
+      Float_t yielderr = hprplus->GetBinError(hprplus->FindBin(x)) / hprplus->GetBinContent(hprplus->FindBin(x));
+      Float_t v2 = gprv2->GetY()[i];
+      Float_t v2err1 = gprv2->GetEYlow()[i];
+      Float_t v2err2 = gprv2->GetEYhigh()[i];
+
+      xpt[npt] = x;
+      ypt[npt] = hprplus->Interpolate(x);
+      ypt1[npt] = ypt[npt]*(1 + frSyst*yielderr);
+      ypt2[npt] = ypt[npt]*(1 - frSyst*yielderr);
+      npt++;
+
+      den += yield;
+      num += yield * v2;
+
+      errSp +=  yielderr * yield * TMath::Abs(v2 - v2Av);
+
+      den1 += yield*(1 + frSyst*yielderr);
+      num1 += yield*(1 + frSyst*yielderr) * v2 * (1 - v2err1/v2);
+
+      den2 += yield*(1 - frSyst*yielderr);
+      num2 += yield*(1 - frSyst*yielderr) * v2 * (1 + v2err2/v2);
+
+      den3 += yield;
+      num3 += yield* v2 * (1 - v2err1/v2);
+
+      den4 += yield;
+      num4 += yield* v2 * (1 + v2err2/v2);
+
+      den5 += yield*(1 + frSyst*yielderr);
+      num5 += yield*(1 + frSyst*yielderr) * v2;
+
+      den6 += yield*(1 - frSyst*yielderr);
+      num6 += yield*(1 - frSyst*yielderr) * v2;
+
+      printf("pt<%f) v2int = %f (%f)\n",x+binwidth,num/den,errSp/den);
+    }
+  }
+
+  printf("Integrated flow for antiprotons (0 < p_T < 20 GeV/c) = %f\n",num/den);
+  printf("Syst. = %f\n",(num2/den2 - num1/den1)/2);
+  printf("Syst. High = %f\n",(num2/den2 - num/den));
+  printf("Syst. Low = %f\n",(num/den - num1/den1));
+  Float_t systV2 = (num4/den4 - num3/den3)/2;
+  printf("Syst. Only v2 = %f\n",systV2);
+  Float_t systSp = (num6/den6 - num5/den5)/2;
+  printf("Syst. Only spectra = %f\n",systSp);
+  printf("Syst. Only spectra (2nd estimate) = %f\n",errSp/den);
+  printf("Syst. Combined = %f\n",TMath::Sqrt(systV2*systV2 + systSp*systSp));
+  printf("Yield = %f\n",den);
+
+  new TCanvas("cSpectraComp","cSpectraComp");
+  TGraph *gprSp = new TGraph(npt,xpt,ypt);
+  TGraph *gprSp1 = new TGraph(npt,xpt,ypt1);
+  TGraph *gprSp2 = new TGraph(npt,xpt,ypt2);
+
+  gprSp->SetMarkerStyle(20);
+  gprSp1->SetMarkerStyle(20);
+  gprSp2->SetMarkerStyle(20);
+  gprSp1->SetMarkerColor(2);
+  gprSp2->SetMarkerColor(4);
+  gprSp1->SetLineColor(2);
+  gprSp2->SetLineColor(4);
+  gprSp->Draw("AP");
+  gprSp1->Draw("P");
+  gprSp2->Draw("P");
+  hprplus->Draw("SAME");
+}
+
+drawAllMtNq(Float_t pt=0.5){
+  if(! kLoaded) LoadLib();
+  char title[200];
+
+  TLegend *leg = new TLegend(pt,0.15,0.8,0.5);
+  leg->SetFillStyle(0);
+
+  TGraphErrors *ge = getPtNqPiV2Nq(pt,1);
+  ge->Draw("AP");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(4);
+  ge->SetLineColor(4);
+
+  ge->SetMinimum(0);
+  ge->SetMaximum(0.1);
+
+  sprintf(title,"v_{2}/n_{q} for KE_{T}/n_{q} = %4.2f GeV/#it{c};centrality (%);v_{2}/n_{q}",pt);
+  ge->SetTitle(title);
+
+  leg->AddEntry(ge,"#pi","lp");
+
+  ge = getPtNqKaV2Nq(pt,1);
+  ge->Draw("P");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(1);
+  ge->SetLineColor(1);
+  leg->AddEntry(ge,"K","lp");
+ 
+  ge = getPtNqPrV2Nq(pt,1);
+  ge->Draw("P");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(2);
+  ge->SetLineColor(2);
+  leg->AddEntry(ge,"#bar{p}","lp");
+
+
+  TGraphErrors *g[9];
+  TGraphAsymmErrors *ga[9];
+  g[0]=Lv2_05_SPVZE();
+  g[1]=Lv2_510_SPVZE();
+  g[2]=Lv2_1020_SPVZE();
+  g[3]=Lv2_2030_SPVZE();
+  g[4]=Lv2_3040_SPVZE();
+  ge = getPtNqMassV2Nq(pt,3,1.115,5,g,1);
+  ge->Draw("P");
+  ge->SetLineColor(8);
+  ge->SetMarkerColor(8);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Lambda","lp");
+
+  g[0]=Kv2_05_SPVZE();
+  g[1]=Kv2_510_SPVZE();
+  g[2]=Kv2_1020_SPVZE();
+  g[3]=Kv2_2030_SPVZE();
+  g[4]=Kv2_3040_SPVZE();
+  ge = getPtNqMassV2Nq(pt,2,0.493,5,g,1);
+  ge->Draw("P");
+  ge->SetLineColor(6);
+  ge->SetMarkerColor(6);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"K^{0}_{s}","lp");
+
+  ga[0] = v2Xi0510();
+  ga[1] = v2Xi0510();
+  ga[2] = v2Xi1020();
+  ga[3] = v2Xi2030();
+  ga[4] = v2Xi3040();
+  ga[5] = v2Xi4050();
+  ga[6] = v2Xi5060();
+
+  ge = getPtNqMassV2Nq(pt,3,1.321,7,ga,1);
+  ge->Draw("P");
+  ge->SetLineColor(33);
+  ge->SetMarkerColor(33);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Xi","lp");
+  ge->RemovePoint(0);
+
+  ga[0] = v2Omega0510();
+  ga[1] = v2Omega0510();
+  ga[2] = v2Omega1020();
+  ga[3] = v2Omega2030();
+  ga[4] = v2Omega3040();
+  ga[5] = v2Omega4050();
+  ga[6] = v2Omega5060();
+
+  ge = getPtNqMassV2Nq(pt,3,1.672,7,ga,1);
+  ge->Draw("P");
+  ge->SetLineColor(11);
+  ge->SetMarkerColor(11);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Omega","lp");
+  ge->RemovePoint(0);
+
+  ga[0] = v2SPPhi1020();
+  ga[1] = v2SPPhi1020();
+  ga[2] = v2SPPhi1020();
+  ga[3] = v2SPPhi2030();
+  ga[4] = v2SPPhi3040();
+  ga[5] = v2SPPhi4050();
+  ga[6] = v2SPPhi5060();
+
+  ge = getPtNqMassV2Nq(pt,2,1.0194,7,ga,1);
+  ge->Draw("P");
+  ge->SetLineColor(13);
+  ge->SetMarkerColor(13);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#phi","lp");
+  leg->Draw("SAME");
+  ge->RemovePoint(1);
+  ge->RemovePoint(0);
+
+}
+
+drawAllPtNq(Float_t pt=0.5){
+  if(! kLoaded) LoadLib();
+  char title[200];
+
+  TLegend *leg = new TLegend(pt,0.15,0.8,0.5);
+  leg->SetFillStyle(0);
+
+  TGraphErrors *ge = getPtNqPiV2Nq(pt,0);
+  ge->Draw("AP");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(4);
+  ge->SetLineColor(4);
+
+  ge->SetMinimum(0);
+  ge->SetMaximum(0.1);
+
+  sprintf(title,"v_{2}/n_{q} for p_{T}/n_{q} = %4.2f GeV/#it{c};centrality (%);v_{2}/n_{q}",pt);
+  ge->SetTitle(title);
+
+  leg->AddEntry(ge,"#pi","lp");
+
+  ge = getPtNqKaV2Nq(pt,0);
+  ge->Draw("P");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(1);
+  ge->SetLineColor(1);
+  leg->AddEntry(ge,"K","lp");
+ 
+  ge = getPtNqPrV2Nq(pt,0);
+  ge->Draw("P");
+  ge->SetMarkerStyle(20);
+  ge->SetMarkerColor(2);
+  ge->SetLineColor(2);
+  leg->AddEntry(ge,"#bar{p}","lp");
+
+
+  TGraphErrors *g[9];
+  TGraphAsymmErrors *ga[9];
+  g[0]=Lv2_05_SPVZE();
+  g[1]=Lv2_510_SPVZE();
+  g[2]=Lv2_1020_SPVZE();
+  g[3]=Lv2_2030_SPVZE();
+  g[4]=Lv2_3040_SPVZE();
+  ge = getPtNqMassV2Nq(pt,3,1.115,5,g,0);
+  ge->Draw("P");
+  ge->SetLineColor(8);
+  ge->SetMarkerColor(8);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Lambda","lp");
+
+  g[0]=Kv2_05_SPVZE();
+  g[1]=Kv2_510_SPVZE();
+  g[2]=Kv2_1020_SPVZE();
+  g[3]=Kv2_2030_SPVZE();
+  g[4]=Kv2_3040_SPVZE();
+  ge = getPtNqMassV2Nq(pt,2,0.493,5,g,0);
+  ge->Draw("P");
+  ge->SetLineColor(6);
+  ge->SetMarkerColor(6);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"K^{0}_{s}","lp");
+
+  ga[0] = v2Xi0510();
+  ga[1] = v2Xi0510();
+  ga[2] = v2Xi1020();
+  ga[3] = v2Xi2030();
+  ga[4] = v2Xi3040();
+  ga[5] = v2Xi4050();
+  ga[6] = v2Xi5060();
+
+  ge = getPtNqMassV2Nq(pt,3,1.321,7,ga,0);
+  ge->Draw("P");
+  ge->SetLineColor(33);
+  ge->SetMarkerColor(33);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Xi","lp");
+  ge->RemovePoint(0);
+
+  ga[0] = v2Omega0510();
+  ga[1] = v2Omega0510();
+  ga[2] = v2Omega1020();
+  ga[3] = v2Omega2030();
+  ga[4] = v2Omega3040();
+  ga[5] = v2Omega4050();
+  ga[6] = v2Omega5060();
+
+  ge = getPtNqMassV2Nq(pt,3,1.672,7,ga,0);
+  ge->Draw("P");
+  ge->SetLineColor(11);
+  ge->SetMarkerColor(11);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#Omega","lp");
+  ge->RemovePoint(0);
+
+  ga[0] = v2SPPhi1020();
+  ga[1] = v2SPPhi1020();
+  ga[2] = v2SPPhi1020();
+  ga[3] = v2SPPhi2030();
+  ga[4] = v2SPPhi3040();
+  ga[5] = v2SPPhi4050();
+  ga[6] = v2SPPhi5060();
+
+  ge = getPtNqMassV2Nq(pt,2,1.0194,7,ga,0);
+  ge->Draw("P");
+  ge->SetLineColor(13);
+  ge->SetMarkerColor(13);
+  ge->SetMarkerStyle(20);
+  leg->AddEntry(ge,"#phi","lp");
+  leg->Draw("SAME");
+
+  ge->RemovePoint(1);
+  ge->RemovePoint(0);
+
+}
+

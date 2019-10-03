@@ -1,0 +1,109 @@
+pushd /DIPSY
+
+set stdProton:R 0.1
+set stdProton:R0 2.9
+set stdProton:RapidityWidth 0.1
+set stdProton:AngleWidth 0.1
+set stdProton:Connected Connected
+set Proton:R 0.1
+set Proton:R0 2.9
+set Proton:RapidityWidth 0.1
+set Proton:AngleWidth 0.1
+set Proton:Connected Connected
+#set stdProton:Connected Disconnected
+set stdAntiProton:R 0.1
+set stdAntiProton:R0 2.9
+set stdAntiProton:RapidityWidth 0.1
+set stdAntiProton:AngleWidth 0.1
+set stdAntiProton:Connected Connected
+set AntiProton:R 0.1
+set AntiProton:R0 2.9
+set AntiProton:RapidityWidth 0.1
+set AntiProton:AngleWidth 0.1
+set AntiProton:Connected Connected
+#set stdAntiProton:Connected Disconnected
+set Neutron:R 0.1
+set Neutron:R0 2.9
+set Neutron:RapidityWidth 0.1
+set Neutron:AngleWidth 0.1
+set Neutron:Connected Connected
+
+set stdEmitter:RScale 1.0
+set stdEmitter:PTScale 1.0
+set stdEmitter:PSInflation 1.0
+set stdEmitter:PMinusOrdering 0.8
+set stdEmitter:BothOrderedEvo True
+set stdEmitter:BothOrderedInt True
+set stdEmitter:BothOrderedFS True
+set stdEmitter:RangeMode Min
+#set stdEmitter:RangeMode Mother
+#set stdEmitter:MinusOrderingMode EffectiveParton
+set stdEmitter:MinusOrderingMode EffectivePT
+
+# set stdFiller:RecoilScheme FrameFan
+set stdFiller:RecoilScheme PreservePlus
+# set stdFiller:DipoleAbsorber largePTAbsorber
+# set stdFiller:Mode Consistent
+set stdFiller:Mode SingleSweep
+# set stdFiller:Mode NonRecursive
+# set stdFiller:Mode Fast
+set stdFiller:EffectiveWeights PlusWeighted
+#set stdFiller:EffectiveWeights PlusEvenWeighted
+#set stdFiller:EffectiveWeights PlusSingleWeighted
+set stdFiller:SingleMother 0
+set stdFiller:FSSwingTime 0.0
+#set stdFiller:ValenceChargeNormalisation None
+set stdFiller:ValenceChargeNormalisation Swing
+set stdXSec:Interaction 0
+
+#set stdXSec:IntOrdering Default
+#set stdXSec:IntOrdering AsEvo
+set stdXSec:IntOrdering VeryOpen
+
+#set stdXSec:RecoilReduction Off
+set stdXSec:RecoilReduction RapidityOrdered
+
+mset . DIPSY::DipoleEventHandler LambdaQCD 0.23
+mset . DIPSY::DipoleEventHandler RMax 2.9
+mset . DIPSY::DipoleEventHandler CoherenceRange 2.9
+mset . DIPSY::DipoleEventHandler NF 3
+mset . DIPSY::DipoleEventHandler YFrametest 0.5
+mset . DIPSY::DipoleEventHandler NColours 9
+mset . DIPSY::DipoleEventHandler ShowHistory 0
+#mset . DIPSY::DipoleEventHandler EffectivePartonMode Colours
+mset . DIPSY::DipoleEventHandler EffectivePartonMode Relatives
+set Frag8:StringZ_aLund 0.23
+set Frag8:StringZ_bLund 0.34
+set Frag8:StringPT_sigma 0.405
+set FSOrdering:Generous -1
+#set FSOrdering:Generous Restrictive
+#set FSOrdering:OnlyOriginal false
+
+#read ../../TheP8I/src/OverlapStringFragmenter.in
+#mset . DIPSY::DipoleEventHandler HadronizationHandler /TheP8I/Handlers/StringFrag/Overlap6StringFragmenter
+#mset . DIPSY::DipoleEventHandler HadronizationHandler /TheP8I/Handlers/StringFrag/Overlap2StringFragmenter
+#mset . DIPSY::DipoleEventHandler HadronizationHandler /TheP8I/Handlers/StringFrag/Overlap1StringFragmenter
+#set Frag8:StringPT_sigma 0.5
+#set Frag8:StringZ_aLund 0.21
+#set Frag8:StringZ_bLund 0.352
+#set Frag8:StringPT_sigma 0.453
+
+mset . DIPSY::DipoleEventHandler DecayHandler:MaxLifeTime 10
+
+set virtualPhoton:QuarkMasses[1] 0.06
+set virtualPhoton:QuarkMasses[2] 0.06
+set virtualPhoton:QuarkMasses[3] 0.06
+set virtualPhoton:QuarkMasses[4] 1.4
+
+set virtualPhoton:ShrinkR 4.3
+set virtualPhoton:VMDLightA 9
+set virtualPhoton:VMDLightR 3
+set virtualPhoton:VMDLightW 0.2
+set virtualPhoton:VMDCharmA 9
+set virtualPhoton:VMDCharmR 3
+set virtualPhoton:VMDCharmW 0.2
+
+#set virtualPhoton:ShrinkR 0.0
+#set virtualPhoton:VMDLightA 0.0
+
+popd

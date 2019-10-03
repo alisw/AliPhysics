@@ -1,0 +1,19 @@
+-------------------
+- Files Included: -
+-------------------
+
+JCGAnalysis.C - spectra measurement, based off MainAnalysis.C
+   dependencies:
+   GenerateTPCTOFPIDCorrFact.C (must be manually run independently beforehand)
+AODQAChecks.C - AOD quality assurace code
+   dependencies:
+   CheckEfficiencies.C
+   CheckIntegratedRawYield.C
+   CheckMatchingEFficiency.C
+   CheckNSigmaStability.C
+   FindOutliers.C
+   PlotAndSave.C
+CompareMagnetPolarities.C - short macro to compare pion spectra from different runs to
+			    look for any dependency on the magnet polarity
+NumberOfEventsMCvsDATA.C - short macro to plot the ratio of the number of events in MC
+			   and the number of events in DATA as a function of the run #

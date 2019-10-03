@@ -1,0 +1,86 @@
+# 
+# To submit this JDL:
+#
+#   alien_submit alien:@data@/JDL \
+#      <run number> <N_jobs> <N_events> <tag> <generator> [<more>]
+#
+# where 
+#
+#   $1: <run number>   is the run number 
+#   $2: <N_jobs>       is the number of sub-jobs 
+#   $3: <N_events>     is the number of events per sub-job
+#   $4: <tag>          is a single-word tag 
+#   $5: <more>         is more arguments for simrun.sh 
+#   ...
+#    
+# The output is written to alien:@out@/test/<tag>
+#
+Executable="@bin@/run.sh";
+
+Jobtag={
+	"comment:$4 ($1) $5 MC"
+};
+
+# 	 "VO_ALICE@AliRoot::@aliroot@",
+#	 "VO_ALICE@GEANT3::@geant@",
+#	 "VO_ALICE@ROOT::@root@",
+#	 "VO_ALICE@boost::v1_43_0",
+#	 "VO_ALICE@cgal::v3.6",
+#	 "VO_ALICE@fastjet::v2.4.2",
+#	 "VO_ALICE@jemalloc::v3.0.0"
+
+Packages = {
+	 "VO_ALICE@APISCONFIG::V1.1x",
+	 "VO_ALICE@AliPhysics::@aliphysics@"
+	 };
+
+
+TTL="72000";
+Price="10";
+
+Requirements=member(other.GridPartitions,"PDC08_2");
+
+Validationcommand="/alice/validation/validation.sh";
+
+InputFile={
+	"LF:@data@/BaseConfig.C",
+	"LF:@data@/Check.C",
+	"LF:@data@/Config.C",
+	"LF:@data@/DetConfig.C",
+	"LF:@data@/EGConfig.C",
+	"LF:@data@/OCDBConfig.C",
+	"LF:@data@/Reconstruct.C",
+	"LF:@data@/Simulate.C",
+	"LF:@data@/simrun.sh",
+	"LF:@data@/Tag.C",
+	"LF:@data@/QA.C",
+	"LF:@data@/QAConfig.C",
+	"LF:@data@/AOD.C",
+	"LF:@data@/AODConfig.C",
+	"LF:@data@/GRP.C"$6
+};
+
+Output = {
+       "log_archive:*.log@disk=1",
+       "QA_archive.zip:QAresults*.root,event_stat*.root,trending*.root,*.stat.qa*@disk=2",
+	"root_archive.zip:galice.root,Kinematics.root,TrackRefs.root,Trigger.root,AliESD*.root,Run*.root,*.RecPoints.root,check.root@disk=2",
+	"aod_archive.zip:pyxsec*.root,AODQA.root,AliAOD*.root,FilterEvents_Trees*.root,*.stat.aod@disk=3",
+	"EventStat_temp*.root@disk=2"
+};
+
+OutputDir="@out@/$4/$1/#alien_counter_03i#";
+
+JDLVariables={
+	"Packages", 
+	"OutputDir"
+};
+
+
+splitarguments="--run $1 --event $3 --number #alien_counter# $5";
+split="production:1-$2";
+
+Workdirectorysize={"10000MB"};
+
+# Local Variables:
+#  mode: conf-javaprop
+# End:

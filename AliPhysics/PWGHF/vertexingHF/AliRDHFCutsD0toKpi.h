@@ -1,0 +1,157 @@
+#ifndef ALIRDHFCUTSD0TOKPI_H
+#define ALIRDHFCUTSD0TOKPI_H
+/* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */ 
+
+//***********************************************************
+/// \class Class AliRDHFCutsD0toKpi
+/// \brief class for cuts on AOD reconstructed D0->Kpi
+/// \author Author: A.Dainese, andrea.dainese@pd.infn.it
+//***********************************************************
+
+#include "AliRDHFCuts.h"
+#include "TObjArray.h"
+
+class AliAODEvent;
+class AliAODRecoDecayHF;
+class AliAODRecoDecayHF2Prong;
+
+class AliRDHFCutsD0toKpi : public AliRDHFCuts 
+{
+ public:
+
+
+  AliRDHFCutsD0toKpi(const char* name="CutsD0toKpi");
+  
+  virtual ~AliRDHFCutsD0toKpi();
+
+  AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi& source);
+  AliRDHFCutsD0toKpi& operator=(const AliRDHFCutsD0toKpi& source); 
+
+  using AliRDHFCuts::GetCutVarsForOpt;
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters){
+    return GetCutVarsForOpt(d,vars,nvars,pdgdaughters,0x0);
+  }
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod);
+
+  using AliRDHFCuts::IsSelected;
+  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) 
+                         {return IsSelected(obj,selectionLevel,0);}
+  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod);
+  virtual Int_t PreSelect(TObjArray aodtracks);
+  virtual Int_t IsSelectedCombPID(AliAODRecoDecayHF* d); 
+  Int_t IsSelectedCombPID(TObjArray aodTracks); 
+  virtual void CalculateBayesianWeights(AliAODRecoDecayHF* d);
+  void CalculateBayesianWeights(TObjArray aodTracks);
+
+  Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
+  Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
+  Int_t CombineSelectionLevels(Int_t selectionvalTrack,Int_t selectionvalCand,Int_t selectionvalPID)const;
+  virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
+  virtual void SetStandardCutsPP2010();
+  virtual void SetStandardCutsPP2010vsMult();
+  virtual void SetStandardCutsPP2011_276TeV();
+  virtual void SetStandardCutsPbPb2010();
+  virtual void SetStandardCutsPbPb2011();
+  void SetStandardCutsPbPb2010Peripherals();
+  virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
+  Int_t IsSelectedPID(Double_t pt, TObjArray aodTracks);
+  Int_t IsSelectedPIDdefault(AliAODRecoDecayHF *rd);
+  Int_t IsSelectedPIDdefault(Double_t pt, TObjArray aodTracks);
+  Int_t IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const;
+  void SetUseSpecialCuts(Bool_t useSpecialCuts) {fUseSpecialCuts=useSpecialCuts;}
+  void Setd0MeasMinusExpCut(UInt_t nPtBins, Float_t *cutval);
+  void SetFlatd0MeasMinusExpCut(Float_t value);
+  void SetImpParDCut(UInt_t nPtBins, Float_t *cutval);
+  void SetFlatImpParDCut(Float_t value);
+  void SetMaximumPtSpecialCuts(Double_t pt) { fPtMaxSpecialCuts=pt; }
+  void SetMaximumPforPID(Double_t p){fmaxPtrackForPID=p;}
+  Double_t GetMaximumPforPID(){return fmaxPtrackForPID;}
+  Double_t GetMaximumPtSpecialCuts() const { return fPtMaxSpecialCuts; }
+  void SetLowPt(Bool_t lowpt,Double_t ptlow=2.) {fLowPt=lowpt;fPtLowPID=ptlow;}
+  Bool_t GetUseSpecialCuts() const {return fUseSpecialCuts;}
+  void SetUseDefaultPID(Bool_t defPID){fDefaultPID=defPID;}
+  Bool_t GetIsUsedDefPID(){return fDefaultPID;}
+  Double_t GetPtForPIDtight()const {return fPtLowPID;}
+  void SetUseKF(Bool_t useKF);
+  Bool_t GetIsUsedKF() const {return fUseKF;}
+  void SetWeightsPositive(Double_t* weights){
+     for (Int_t i = 0; i<AliPID::kSPECIES; i++) {
+         fWeightsPositive[i] = weights[i];
+     }
+}
+  Double_t *GetWeightsPositive() const {return fWeightsPositive;}
+  void SetWeightsNegative(Double_t* weights){
+     for (Int_t i = 0; i<AliPID::kSPECIES; i++) {
+         fWeightsNegative[i] = weights[i];
+     }
+     }
+  Double_t *GetWeightsNegative() const {return fWeightsNegative;}
+  void SetBayesianStrategy(Int_t strat) {fBayesianStrategy=strat;}
+  Int_t GetBayesianStrategy() const {return fBayesianStrategy;}
+  
+  enum EBayesianStrategy {
+     kBayesMomentum,
+     kBayesWeight,
+     kBayesWeightNoFilter,
+     kBayesSimple
+  };
+
+  
+  enum EBayesianCondition {
+     kMaxProb,
+     kAbovePrior,
+     kThreshold
+  };
+  
+  void SetBayesianCondition(Int_t cond) {fBayesianCondition=cond;}
+  Int_t GetBayesianCondition() const {return fBayesianCondition;}
+  void SetCombPID(Bool_t CombPID){fCombPID=CombPID;}
+  Bool_t GetCombPID() const {return fCombPID;}
+  void SetBayesProbThreshold(Double_t thresh){fProbThreshold=thresh;}
+  Double_t GetBayesProbThreshold() const {return fProbThreshold;}
+  
+  const Float_t *Getd0MeasMinusExpCut() const {return fMaxd0MeasMinusExp;} 
+  const Float_t *GetImpParDCut() const {return fMaxImpParD;} 
+
+  virtual void PrintAll()const;  
+
+ protected:
+  
+  Int_t IsSelectedKF(AliAODRecoDecayHF2Prong* d,AliAODEvent* aod) const;
+
+  Bool_t fUseSpecialCuts;  /// flag to switch on/off special cuts
+  Bool_t fLowPt;           /// flag to switch on/off different pid for low pt D0
+  Bool_t fDefaultPID;      /// flag to switch on/off the default pid
+  
+  Bool_t fUseKF;           /// flag to switch on/off D0 selection via KF 
+  Double_t fPtLowPID;      /// transverse momentum below which the strong PID is applied
+//new cuts
+  UInt_t fUseImpParDCut; /// switch for cut on D0 ImpParXY; =0 --> not used, >0 value represents array size (it has to coincide with fnPtBins)
+  Float_t *fMaxImpParD;        //[fnPtBins] cut values on D0 ImpParXY
+  UInt_t fUsed0MeasMinusExpCut; /// switch for cut on d0meas-d0exp; =0 --> not used, >0 value represents array size (it has to coincide with fnPtBins)
+  Float_t *fMaxd0MeasMinusExp;//[fnPtBins] cut values on d0meas-d0exp;
+  Double_t fPtMaxSpecialCuts; /// transverse momentum below which the special cuts are applied
+  
+                              ///  if set to zero, used for all pt
+  Double_t  fmaxPtrackForPID; /// max momentum for applying PID
+
+  Bool_t fCombPID;		/// switch for Bayesian
+  Int_t fnSpecies;   /// number of species (used only for array declaration)
+  Double_t* fWeightsPositive; //[fnSpecies] Bayesian weights for positive track
+  Double_t* fWeightsNegative; //[fnSpecies] Bayesian weights for negative track
+
+  Double_t fProbThreshold; //Probability threshold for kaon to be accepted in Bayesian method (only applied if fBayesianCondition==kThreshold)
+  
+  Int_t fBayesianStrategy;    /// Switch for which Bayesian PID strategy to use
+  Int_t fBayesianCondition;   /// Switch for conition applied to kaons
+
+  /// \cond CLASSIMP    
+  ClassDef(AliRDHFCutsD0toKpi,12);  /// class for cuts on AOD reconstructed D0->Kpi
+  /// \endcond
+};
+
+#endif
+

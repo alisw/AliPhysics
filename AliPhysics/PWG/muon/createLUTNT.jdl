@@ -1,0 +1,45 @@
+# this is the startup process for root
+Executable="rootlutnt.sh";
+Jobtag={"comment:create lut ntuples from esd tracks"};
+
+# we split per storage element
+Split="se";
+
+# we want each job to read XXX input files
+SplitMaxInputFileNumber="1000";
+
+Validationcommand ="/alice/cern.ch/user/b/bogdan/prod2007/configs_pp/validation_blind.sh";
+
+# we need ROOT and the API service configuration package
+Packages={"VO_ALICE@APISCONFIG::V2.4","VO_ALICE@ROOT::v5-16-00"};
+
+TTL = "10000";
+
+#ROOT will read this collection file to know, which files to analyze
+InputDataList="wn.xml";
+
+#ROOT requires the collection file in the xml-single format
+InputDataListFormat="merge:/alice/cern.ch/user/b/bogdan/prod2007/XMLColl/$1/collection.xml";
+
+# this is our collection file containing the files to be analyzed
+InputDataCollection="LF:/alice/cern.ch/user/b/bogdan/prod2007/XMLColl/$1/collection.xml,nodownload";
+
+InputFile= {"LF:/alice/cern.ch/user/b/bogdan/prod2007/configs_pp/runCreateLUTNT.C",
+            "LF:/alice/cern.ch/user/b/bogdan/prod2007/configs_pp/analysisTaskLUTNT.C",
+            "LF:/alice/cern.ch/user/b/bogdan/prod2007/configs_pp/AliAnalysisTaskLUT.cxx",
+            "LF:/alice/cern.ch/user/b/bogdan/prod2007/configs_pp/AliAnalysisTaskLUT.h",
+            "LF:/alice/cern.ch/user/b/bogdan/prod2007/par/ANALYSIS.par",
+            "LF:/alice/cern.ch/user/b/bogdan/prod2007/par/STEERBase.par",
+            "LF:/alice/cern.ch/user/b/bogdan/prod2007/par/AOD.par",
+            "LF:/alice/cern.ch/user/b/bogdan/prod2007/par/ESD.par"};
+
+OutputFile= {"Ntuple.LUT.root@Alice::CERN::se,noarchive"};
+
+# Output archive	    
+OutputArchive={"log_archive:stdout,stderr@Alice::CERN::se"};
+
+# Output directory
+OutputDir="/alice/cern.ch/user/b/bogdan/prod2007/LUTNT/$1";
+
+# email
+#Email="vulpescu@clermont.in2p3.fr";

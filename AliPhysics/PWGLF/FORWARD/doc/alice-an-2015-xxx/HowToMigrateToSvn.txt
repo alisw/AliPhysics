@@ -1,0 +1,57 @@
+How to Migrate a Git Sub-directory to SVN
+=========================================
+
+This outlines how to migrate a given sub-directory of a Git repository
+to a SVN repository.  This is based instructions found [here][git2svn]
+
+Here, we will use the Git sub-directory
+
+> `https://git.cern.ch/reps/AliPhysics:PWGLF/FORWARD/doc/alice-an-2015-xxx`
+
+which should be moved to
+
+> `https://svn.cern.ch/reps/alipap/notes/id384`
+
+* First we need to create our SVN repository and default
+  sub-directories
+
+    > `svn mkdir --parents https://svn.cern.ch/reps/alipap/notes/id384/{trunk,branches,tags}`
+
+* Clone this repository to a local Git repository
+
+    > `git svn clone  https://svn.cern.ch/reps/alipap/notes/id384/ --stdlayout`
+
+* Go into the newly create directory
+
+    > `cd id384`
+
+* Add the remote Git repository to this local clone
+
+    > `git remote add origin https://git.cern.ch/reps/AliPhysics`
+
+* Fetch the remote Git repository content (note, this step takes a
+  while!).
+
+    > `git fetch origin`
+
+* Create a local branch for the remote master
+
+    > `git checkout -b old_master origin/master`
+
+* Re-write the local Git repository to be rooted at the target
+  directory
+
+    > `git filter-branch --subdirectory-filter PWGLF/FORWARD/doc/alice-an-2015-xxx`
+
+* We are now on the branch (of the local Git repository) `old_master`,
+  so we re-base to the `master` branch, which is the SVN branch (note,
+  this step takes a while!). 
+
+    > `git rebase --onto master --root`
+
+* Finally, we push all our git commits to SVN
+
+    > `git svn dcommit`
+    
+
+[git2svn]: http://sandrotosi.blogspot.dk/2010/02/migrate-git-repo-to-svn-one.html

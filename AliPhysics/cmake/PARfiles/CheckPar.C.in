@@ -1,0 +1,23 @@
+// Automatically generated CheckPar@PARMODULE@.C for @PARMODULE@
+
+void CheckPar@PARMODULE@() {
+
+  gEnv->SetValue("ProofLite.Sandbox", "@PARTESTDIR@");
+
+  if ( TProof::Open("workers=1") == NULL ) {
+    gSystem->Exit(1);
+  }
+
+  if ( gProof->UploadPackage("@PARFILE@") != 0 ) {
+    gSystem->Exit(2);
+  }
+
+  if ( gProof->EnablePackage("@PARMODULE@") != 0 ) {
+    gSystem->Exit(3);
+  }
+
+  gSystem->ListLibraries();
+
+  // All OK
+  gSystem->Exit(0);
+}

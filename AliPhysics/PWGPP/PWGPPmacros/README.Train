@@ -1,0 +1,52 @@
+Macros and scripts to run PWGPP train in $ALICE_PHYSICS/PWGPP/PWGPPmacros
+
+runPWGPPTrain.C  - Steerring macro
+                - Load configuration for all tasks from file  ConfigTask.txt 
+                - macro does not configure tasks - default arguments has to be provided
+                - run Analysis
+
+ConfigTask.txt  - 
+Add<PWGPP>*.C    - Macros to configure user tasks
+                - All macros should have default parameters - otherwise they are ignored
+                - Task can get run number information, trigger information during analysis from ESDs
+                - To add:
+                - name and e-mail of responsible to be in task
+                - Syntax e.g :   Responsible: marian.ivanov@cer.ch 
+
+
+
+User can commit to $ALICE_PHYSICS/PWGPP/PWGPPmacros/ConfigTask.txt once fullfill previous criteria.
+Not all of the macros will be used for production.
+Only certified macros will be coppied to the production directory.
+
+Test are performed per macro Add*.C with given input esd.list.
+The esd.list used should be announced to users before tagging.
+ 
+Decision criteria: 
+1.  No crash
+2.  Reasonable CPU per event
+3.  reasonable increase of VM  per event
+
+The test result should be browsable. Web interface prefered.
+
+
+Scripts:
+getCertificate.sh    - User script to test task 
+                     - Input: 
+                         1. Input name of macro 
+                         2. esd list
+                     - Output:
+                         1. out.log
+                         2. summary.log
+
+makeSummary.sh       - Make summary information
+
+getCertificateBatch.sh - Pseudo code for train administrator - to be run bach farm
+getCertificateBuild.sh - similar code to be run on nightly build system
+                       //     
+                       - 1. Submit jobs for all user macros Add*.C
+                       - 2. Wait
+                       - 4. Make summary log files
+                       - Not implemented part
+                       - 3. Copy certified Add*.C to certified directory	
+                       - 5. Write e-amil  

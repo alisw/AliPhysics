@@ -1,0 +1,76 @@
+!Single vector boson production parameters
+idvecbos  VAR_POWHEG_IDVECBOS   ! PDG code for vector boson to be produced ( W+:24 W-:-24 )
+vdecaymode 2      !(1:electronic decay, 2: muonic decay, 3: tauonic decay)
+
+numevts 12345    ! number of events to be generated
+ih1   VAR_POWHEG_PROJECTILE           ! hadron 1 (1 for protons, -1 for antiprotons)
+ih2   VAR_POWHEG_TARGET           ! hadron 2 (1 for protons, -1 for antiprotons)
+ndns1 131         ! pdf set for hadron 1 (mlm numbering)
+ndns2 131         ! pdf set for hadron 2 (mlm numbering)
+ebeam1 VAR_PROJECTILE_ENERGY    ! energy of beam 1
+ebeam2 VAR_TARGET_ENERGY    ! energy of beam 2
+! To be set only if using LHA pdfs
+lhans1  VAR_LHAPDF_SET     ! pdf set for hadron 1 (LHA numbering)
+lhans2  VAR_LHAPDF_SET     ! pdf set for hadron 2 (LHA numbering)
+! To be set only if using different pdf sets for the two incoming hadrons
+! QCDLambda5  0.25 ! for not equal pdf sets
+
+! To be set for nPDF
+nPDFset VAR_POWHEG_NPDF_SET        ! (0:EKS98, 1:EPS08, 2:EPS09LO, 3:EPS09NLO)
+nPDFerrSet VAR_POWHEG_NPDF_ERR     ! (1:central, 2:+1, 3:-1..., 30:+15, 31:-15)
+AA1 VAR_PROJECTILE_A          ! (Atomic number of hadron 1)
+AA2 VAR_TARGET_A          ! (Atomic number of hadron 2)
+
+! Parameters to allow or not the use of stored data
+use-old-grid    1 ! if 1 use old grid if file pwggrids.dat is present (<> 1 regenerate)
+use-old-ubound  1 ! if 1 use norm of upper bounding function stored in pwgubound.dat, if present; <> 1 regenerate
+
+ncall1 120000   ! number of calls for initializing the integration grid
+itmx1    5     ! number of iterations for initializing the integration grid
+ncall2 250000   ! number of calls for computing the integral and finding upper bound
+itmx2    5     ! number of iterations for computing the integral and finding upper bound
+foldcsi   1    ! number of folds on csi integration
+foldy     1    ! number of folds on  y  integration
+foldphi   1    ! number of folds on phi integration
+nubound 20000  ! number of bbarra calls to setup norm of upper bounding function
+icsimax  1     ! <= 100, number of csi subdivision when computing the upper bounds
+iymax    1     ! <= 100, number of y subdivision when computing the upper bounds
+xupbound 2d0   ! increase upper bound for radiation generation
+
+! OPTIONAL PARAMETERS
+
+#renscfact  1d0   ! (default 1d0) ren scale factor: muren  = muref * renscfact
+#facscfact  1d0   ! (default 1d0) fac scale factor: mufact = muref * facscfact
+#bornonly   1      ! (default 0) if 1 do Born only
+#smartsig   0      ! (default 1) remember equal amplitudes (0 do not remember)
+#ptsqmin    0.8    ! (default 0.8 GeV) minimum pt for generation of radiation
+#charmthr   1.5    ! (default 1.5 GeV) charm treshold for gluon splitting
+#bottomthr  5.0    ! (default 5.0 GeV) bottom treshold for gluon splitting
+testplots  1      ! (default 0, do not) do NLO and PWHG distributions
+#charmthrpdf  1.5  ! (default 1.5 GeV) pdf charm treshold
+#bottomthrpdf 5.0  ! (default 5.0 GeV) pdf bottom treshold
+
+iseed    12345    ! initialize random number sequence
+#rand1     -1      ! initialize random number sequence
+#rand2     -1      ! initialize random number sequence
+
+# Uncomment the following group for paralle runs
+#manyseeds 1 ! (default 0) allow for the generation of different statistically independent samples (see Docs/Manyseeds.pdf)
+#parallelstage 1       ! which stage of parallel run 1..4
+#xgriditeration 1      ! which grid iteration when in parallelstage 1
+# End group for parallel run
+
+# runningscale 0    ! default is 1, true, central scale equal to W virtuality, 0 equal to M_W
+
+# Option for alternative splitting R-> R_s + R_f
+# These were study to see the effect on the unphysical negative value of the a0
+# angular correlation coefficients
+# new_damp 1        ! R_s = max(0,min(1, R_app/R)), where R_app is the soft collinear approximation to R, R_app = R_soft + R_coll - R_soft_coll
+# hnew_damp 0.5     ! if this flag appears together with new_damp 1, then R_app -> R_app * h^2 * m^2 / ( h^2 * m^2 + pt2 ), where
+! h is the value of hnew_damp, m is the mass of the vector boson, and pt2 is the square of its transverse momentum
+# hdamp 1.0         ! if this flag appears, R_s -> R_s *  h^2 * m^2 / ( h^2 * m^2 + pt2 ), where h is the value of hdamp.
+! The following combination seem to yield a0 consistent with non-negative values:
+! new_damp 1 (alone); new_damp 1 + hdamp 0.5; new_damp 1 + hnew_damp 1 ; new_damp 1 + hnew_damp 0.5
+! Looking at the Bornzerodamp.f routine should clarify all doubts on these options.
+! You can experiment with other values. Remember: too small  hnew_damp and/or hdamp factors can cause troubles,
+! check that you get a nice sudakov shape of the vector boson pt.

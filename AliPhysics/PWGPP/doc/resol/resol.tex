@@ -1,0 +1,109 @@
+\documentclass{elsart}
+\usepackage{epsfig,amsmath}
+\begin{document}
+
+
+
+
+\subsection{Tracking performance}
+
+
+The tracking performance depend on various variables:
+The most important are following:
+\begin{itemize}
+\item The track topology - detector contributing to measurement.
+      The different topologies has different error parameterization, and the scale of error
+      can be  significantly different. E.g DCA resolution for tracks refitted with the 
+      ITS and TPC are by 2 orders of magnitude better than for TPC tracks only.
+      
+\item Multiple scaterring and energy loss are scaling with particle momenta and mean material budget.
+      Typical -  behaviour smooth $p_{t}$ and $\theta$ scaling.
+\end{itemize} 
+
+The multiple scattering in material:
+\begin{equation}
+\sigma^2_\alpha=\frac{k. xOverX0}{\beta^2.p^2}
+\end{equation}
+
+The energy loss correction error:
+\begin{equation}
+\sigma^2_E= k. (\frac{k_{bb}}{\beta^2} + k)^2
+\end{equation}
+The energy loss correction is particularly important for low momenta tracks.
+
+
+The track paramterization - 5 parameters:
+\begin{itemize}
+\item P0 - local y
+\item P1 - local z
+\item P2 - sinus   of local inclination angle $\phi$ in y direction
+\item P3 - tangent of inclination angle $\theta$ in z direction
+\item P4 - curvature  - 1/$p_t$
+\end{itemize}
+
+The error scaling:
+\begin{equation}
+\begin{split}
+C=1/p_t \\
+\sigma^2_{yy} \approx   \sigma^2_{yy0}+ k_p.C^2 \\
+\sigma^2_{zz} \approx   \sigma^2_{zz0}+ k_p.C^2 \\
+\sigma^2_{\phi\phi}     \approx  \sigma^2_{\phi\phi0}+ k_a.C^2 \\
+\sigma^2_{\theta\theta} \approx  \sigma^2_{\theta\theta0}+ k_a.C^2 \\
+\sigma^2_{cc} \approx  \sigma^2_{cc0}+ k_c.C^4\\
+\end{split}
+\end{equation}
+
+
+
+\subsection{Resolution histograming and parameterization}
+
+The resolution of the track parameters depends strongly on the momenta, 
+respectivaly curvature. 
+There is roughly linear scaling roughly linear scaling in position and 
+angle, and parabolic scaling  for momentum resolution. The pread of the resolutions
+because of the wide range of particle momenta is of the order of magnitude.
+($p_t$ $<0.1,\inf>$, C $<0,10>$).
+
+In order to save the space for histograms, the resolution can be appropriatetly 
+scaled. Following scaling function are used:
+
+\begin{equation}
+\begin{split}
+C=1/p_t \\
+sf_{pp} =   \sqrt{s_{pp}+C}   \\
+sf_{aa} =   \sqrt{s_{aa}+C}   \\
+sf_{cc} =   \sqrt{s_{cc}+C^2} \\ 
+\end{split}
+\end{equation}
+Choosing appropriate scaling coeficient s, the scaled resolution as function of the
+particle curvature is roughly constant.  
+
+
+
+
+
+\begin{thebibliography}{9}   % Use for  1-9  references
+
+\bibitem{alice-ref}
+ALICE tech. proposal CERN/LHCC 95-71.
+
+\bibitem{aliroot-ref}
+ALICE PPR v.1 CERN/LHCC 2003-049.
+
+\bibitem{tpc-ref}
+ALICE TPC TDR CERN/LHCC 2000-001.
+
+\bibitem{its-ref} 
+ALICE ITS TDR CERN/LHCC 99-12.
+
+\bibitem{trd-ref} 
+ALICE TRD TDR CERN/LHCC 2001-021.
+
+\bibitem{tof-ref}
+ALICE TOF TDR CERN/LHCC 2002-016.
+
+
+\end{thebibliography}
+
+
+\end{document}

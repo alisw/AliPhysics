@@ -1,0 +1,370 @@
+/************************************************************************* 
+* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. * 
+*                                                                        * 
+* Author: The ALICE Off-line Project.                                    * 
+* Contributors are mentioned in the code where appropriate.              * 
+*                                                                        * 
+* Permission to use, copy, modify and distribute this software and its   * 
+* documentation strictly for non-commercial purposes is hereby granted   * 
+* without fee, provided that the above copyright notice appears in all   * 
+* copies and that both the copyright notice and this permission notice   * 
+* appear in the supporting documentation. The authors make no claims     * 
+* about the suitability of this software for any purpose. It is          * 
+* provided "as is" without express or implied warranty.                  * 
+**************************************************************************/
+
+// -----------------------------------------------------------------------
+//  Event Cut class for the DiHadronPID analysis.
+// -----------------------------------------------------------------------
+//  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
+
+#include "AliAODEventCutsDiHadronPID.h"
+
+#include <iostream>
+using namespace std;
+
+#include "TList.h"
+#include "TMath.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TNamed.h"
+#include "TIterator.h"
+#include "AliAODHeader.h"
+#include "AliAODVertex.h"
+#include "AliCentrality.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+
+ClassImp(AliAODEventCutsDiHadronPID);
+
+// -----------------------------------------------------------------------
+AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID():
+	TNamed(),
+	fIsPbPb(kTRUE),
+	fIsMC(kFALSE),
+	fTrigger(AliVEvent::kMB),
+	fMinCentrality(5.),
+	fMaxCentrality(0.),
+	fCentralityEstimator("V0M"),
+	fMaxVertexZ(10.),
+	fMinRefMult(0),
+	fTestTrigger(kFALSE),
+	fTestCentrality(kFALSE),
+	fTestContributorsOrSPDVertex(kFALSE),
+	fTestVertexZ(kFALSE),
+	fTestMinRefMult(kFALSE),
+	fSelectedEventQAHistos(0x0),
+	fAllEventQAHistos(0x0),
+	fHistTrigger(0x0),
+	fHistRefMultiplicity(0x0),
+	fHistCentrality(0x0),
+	fHistCentralityQuality(0x0),
+	fHistVertexZ(0x0),
+	fDebug(0)
+
+{
+
+	// 
+	// Default Constructor
+	//
+
+	cout<<"AliAODEventCutsDiHadronPID Default Constructor Called."<<endl;
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+}
+
+// -----------------------------------------------------------------------
+AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID(const char* name):
+	TNamed(name,"AOD Event Cuts"),
+	fIsPbPb(kTRUE),
+	fIsMC(kFALSE),	
+	fTrigger(AliVEvent::kMB),
+	fMinCentrality(5.),
+	fMaxCentrality(0.),
+	fCentralityEstimator("V0M"),
+	fMaxVertexZ(10.),
+	fMinRefMult(0),	
+	fTestTrigger(kFALSE),
+	fTestCentrality(kFALSE),
+	fTestContributorsOrSPDVertex(kFALSE),
+	fTestVertexZ(kFALSE),
+	fTestMinRefMult(kFALSE),	
+	fSelectedEventQAHistos(0x0),
+	fAllEventQAHistos(0x0),
+	fHistTrigger(0x0),
+	fHistRefMultiplicity(0x0),
+	fHistCentrality(0x0),
+	fHistCentralityQuality(0x0),
+	fHistVertexZ(0x0),
+	fDebug(0)
+	
+{
+
+	//
+	// Named Constructor
+	//
+
+	cout<<"AliAODEventCutsDiHadronPID Named Constructor Called."<<endl;
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+}
+
+// -----------------------------------------------------------------------
+AliAODEventCutsDiHadronPID::~AliAODEventCutsDiHadronPID() {
+
+	//
+	// Destructor
+	//
+
+	cout<<"AliAODEventCutsDiHadronPID Destructor Called."<<endl;
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (fSelectedEventQAHistos) delete fSelectedEventQAHistos;
+	fSelectedEventQAHistos = 0x0;
+	if (fAllEventQAHistos) delete fAllEventQAHistos;
+	fAllEventQAHistos = 0x0;
+
+}
+
+// -----------------------------------------------------------------------
+Long64_t AliAODEventCutsDiHadronPID::Merge(TCollection* list) {
+
+	//
+	// Merger. 
+	// 
+
+	cout<<"AliAODEventCutsDiHadronPID Merger Called."<<endl;
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (!list) return 0;
+	if (list->IsEmpty()) return 1;
+
+	if (!fSelectedEventQAHistos||!fAllEventQAHistos) {
+		cout<<"AliAODEventCutsDiHadronPID::Merge() - Warning, current object's histograms are missing... Generating."<<endl;
+		CreateHistos();
+	}
+
+	TIterator* iter = list->MakeIterator();
+	TObject* obj;
+
+	// List of collections
+	TList collection_fSelectedEventQAHistos;
+	TList collection_fAllEventQAHistos;
+
+	Int_t count = 0;
+
+  	while ((obj = iter->Next())) {
+    	AliAODEventCutsDiHadronPID* entry = dynamic_cast<AliAODEventCutsDiHadronPID*> (obj);
+    	if (entry == 0) continue;
+
+    	// Check if the object to be merged really has the same name! (FIXME!)
+
+    	// Getting the lists from obj.
+    	TList* list_fSelectedEventQAHistos = entry->GetListOfSelectedEventQAHistos();
+    	TList* list_fAllEventQAHistos = entry->GetListOfAllEventQAHistos();
+
+    	// Adding the retrieved lists to the collection.
+    	if (list_fSelectedEventQAHistos) collection_fSelectedEventQAHistos.Add(list_fSelectedEventQAHistos);
+    	if (list_fAllEventQAHistos) collection_fAllEventQAHistos.Add(list_fAllEventQAHistos);
+
+    	count++;
+    }
+
+    // Merging. Note that we require the original list to exist.
+    //  * Assume that if the collection happens to be empty, then nothing will happen.
+    //  * All other variables are taken from the original object.
+    if (fSelectedEventQAHistos) fSelectedEventQAHistos->Merge(&collection_fSelectedEventQAHistos);
+    if (fAllEventQAHistos) fAllEventQAHistos->Merge(&collection_fAllEventQAHistos);
+
+    delete iter;
+
+	return count+1;
+
+}
+
+// -----------------------------------------------------------------------
+void AliAODEventCutsDiHadronPID::CreateHistos() {
+
+	cout<<"AliAODEventCutsDiHadronPID - Creating histograms"<<endl;
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	// Create list of Event related QA histograms (selected events).
+	fSelectedEventQAHistos = new TList();
+	fSelectedEventQAHistos->SetName("SelectedEventQAHistos");
+	fSelectedEventQAHistos->SetOwner(kTRUE);
+
+	// The same, but for all events.
+	fAllEventQAHistos = new TList();
+	fAllEventQAHistos->SetName("AllEventQAHistos");
+	fAllEventQAHistos->SetOwner(kTRUE);
+
+	// Creating arrays of pointers to the QA histos.
+	fHistTrigger = new TH1F*[2];
+	fHistRefMultiplicity = new TH1F*[2];
+	fHistCentrality = new TH1F*[2];
+	fHistCentralityQuality = new TH1F*[2];
+	fHistVertexZ = new TH1F*[2];
+
+	const char* HistType[2] = {"Selected","All"};
+
+	for (Int_t iHistType = 0; iHistType < 2; iHistType++) {
+
+		// Trigger Histogram.
+		fHistTrigger[iHistType] = new TH1F(Form("fHistTrigger%s",HistType[iHistType]),"Trigger;;Count",5,-0.5,4.5);
+		fHistTrigger[iHistType]->GetXaxis()->SetBinLabel(1,"kMB");
+		fHistTrigger[iHistType]->GetXaxis()->SetBinLabel(2,"kCentral");		// Trigger only defined for period LHC11h.
+		fHistTrigger[iHistType]->GetXaxis()->SetBinLabel(3,"kSemiCentral");	// Trigger only defined for period LHC11h.
+		fHistTrigger[iHistType]->GetXaxis()->SetBinLabel(4,"kINT7");
+		fHistTrigger[iHistType]->GetXaxis()->SetBinLabel(5,"Other");
+		if (iHistType == 0) fSelectedEventQAHistos->Add(fHistTrigger[iHistType]);
+		else fAllEventQAHistos->Add(fHistTrigger[iHistType]);
+
+		// Ref Multiplicity Histogram.
+		if (fIsPbPb) {
+			fHistRefMultiplicity[iHistType] = new TH1F(Form("fHistRefMultiplicity%s",HistType[iHistType]),"Reference Multiplicity;N_{tracks};Count",100,0.,10000.);
+		} else {
+			fHistRefMultiplicity[iHistType] = new TH1F(Form("fHistRefMultiplicity%s",HistType[iHistType]),"Reference Multiplicity;N_{tracks};Count",100,0.,100.);
+		}
+		if (iHistType == 0) fSelectedEventQAHistos->Add(fHistRefMultiplicity[iHistType]);
+		else fAllEventQAHistos->Add(fHistRefMultiplicity[iHistType]);
+
+		// Centrality Histogram.
+		fHistCentrality[iHistType] = new TH1F(Form("fHistCentrality%s",HistType[iHistType]),"Centrality;Centrality;Count",20,0,100);
+		if (iHistType == 0) fSelectedEventQAHistos->Add(fHistCentrality[iHistType]);
+		else fAllEventQAHistos->Add(fHistCentrality[iHistType]);
+
+		// Centrality Quality.
+		fHistCentralityQuality[iHistType] = new TH1F(Form("fHistCentralityQuality%s",HistType[iHistType]),"Centrality Quality;Quality;Count",2,-0.5,1.5);
+		fHistCentralityQuality[iHistType]->GetXaxis()->SetBinLabel(1,"0");
+		fHistCentralityQuality[iHistType]->GetXaxis()->SetBinLabel(2,"Other");
+		if (iHistType == 0) fSelectedEventQAHistos->Add(fHistCentralityQuality[iHistType]);
+		else fAllEventQAHistos->Add(fHistCentralityQuality[iHistType]);
+
+		// VertexZ Histogram.
+		fHistVertexZ[iHistType] = new TH1F(Form("fHistVertexZ%s",HistType[iHistType]),"VertexZ;z (cm);Count",60,-15.,15.);
+		if (iHistType == 0) fSelectedEventQAHistos->Add(fHistVertexZ[iHistType]);
+		else fAllEventQAHistos->Add(fHistVertexZ[iHistType]);
+
+	}
+
+}
+
+// -----------------------------------------------------------------------
+Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
+	
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	
+	if (!event) return kFALSE;
+	
+	if (!fAllEventQAHistos||!fSelectedEventQAHistos) {cout<<"AliAODEventCutsDiHadronPID - Histograms were not created, you should have called CreateHistos()..."<<endl;}
+	
+	// Input the event handler.
+	AliInputEventHandler* InputHandler = (AliInputEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+	if (!InputHandler) return kFALSE;
+	
+	Bool_t select = kTRUE;
+	
+	// Test Trigger.
+	UInt_t trigger = InputHandler->IsEventSelected();	
+	Int_t triggerclass = -1;		// 0 = kMB, 1 = kCentral, 2 = kSemiCentral, 3 = Other.	
+    if (fTestTrigger) {
+
+    	// Find Trigger class.
+    	if (trigger & AliVEvent::kMB) {triggerclass = 0;}
+    	else if (trigger & AliVEvent::kCentral) {triggerclass = 1;}
+    	else if (trigger & AliVEvent::kSemiCentral) {triggerclass = 2;}
+    	else if (trigger & AliVEvent::kINT7) {triggerclass = 3;}    	
+    	else {triggerclass = 4;}
+
+		if (!(trigger & fTrigger)) {select = kFALSE;}	// Event not selected if not matched with the any of the desired triggers.
+	}	
+	
+	AliCentrality* CurrentCentrality = 0x0;
+	Int_t CurrentCentralityQuality = -999;
+	Float_t percentile = -999.;
+	
+	if (fIsPbPb) {
+
+		// Get the centrality object.
+	    CurrentCentrality = event->GetCentrality();
+	    //cout<<"Centrality object: "<<CurrentCentrality<<endl;
+	    if (!CurrentCentrality) {select = kFALSE; return select;}
+
+	    // Check the quality of the centrality estimation.
+	    // If 0 then quality is OK, c.f. TOF/PbPb276/macros/TOFmatchEff.C
+	    CurrentCentralityQuality = CurrentCentrality->GetQuality();
+	    //cout<<"Centrality: "<<CurrentCentrality->GetCentralityPercentile(fCentralityEstimator.Data())<<" Quality: "<<CurrentCentrality->GetQuality()<<endl;
+	    if (CurrentCentralityQuality) select = kFALSE;
+
+		// Test Centrality.
+	    percentile = CurrentCentrality->GetCentralityPercentile(fCentralityEstimator.Data());
+		if (fTestCentrality) {
+	    	if ((percentile < fMaxCentrality)||(percentile > fMinCentrality)) select = kFALSE;
+		}
+
+	}
+	
+	// Get the primary vertex.
+	AliAODVertex* CurrentPrimaryVertex = event->GetPrimaryVertex();
+    if (!CurrentPrimaryVertex) {select = kFALSE; return select;}
+
+	// Get the Vertex_z value (improved by Peter Christiansen).
+	Double_t vtxz = -999.;
+	if (fIsPbPb) {vtxz = CurrentPrimaryVertex->GetZ();}
+	else if (CurrentPrimaryVertex->GetNContributors() > 0) {
+		vtxz = CurrentPrimaryVertex->GetZ();	
+	}
+
+	// Test Vertex Z.
+	if (fTestVertexZ) {
+    	if (TMath::Abs(vtxz) > fMaxVertexZ) select = kFALSE; 
+	}
+
+	// Test number of contributors.
+	if (fTestContributorsOrSPDVertex) {
+		Int_t nContributors = CurrentPrimaryVertex->GetNContributors();
+		if (nContributors < 1) {
+			if (CurrentPrimaryVertex->GetType() != AliAODVertex::kMainSPD ) {select = kFALSE;}
+		}  
+	}
+	
+	// Get the event header.
+	AliAODHeader* CurrentHeader = dynamic_cast<AliAODHeader*>(event->GetHeader());
+	if(!CurrentHeader) AliFatal("Not a standard AOD");
+	
+	// Test minimum reference multiplicity.
+	Int_t CurrentRefMultiplicity = CurrentHeader->GetRefMultiplicity();
+	if (fTestMinRefMult) {
+		if (CurrentRefMultiplicity < fMinRefMult) select = kFALSE;
+	}
+	
+	// Fill the histograms for selected events.
+	if (select) {
+		fHistTrigger[0]->Fill(triggerclass);
+		fHistRefMultiplicity[0]->Fill(CurrentHeader->GetRefMultiplicity());
+		if (fIsPbPb) fHistCentrality[0]->Fill(percentile);
+		if (fIsPbPb) fHistCentralityQuality[0]->Fill(CurrentCentralityQuality);
+		fHistVertexZ[0]->Fill(vtxz);
+	}
+	
+	// Fill the histograms for all events.
+	fHistTrigger[1]->Fill(triggerclass);
+	fHistRefMultiplicity[1]->Fill(CurrentHeader->GetRefMultiplicity());
+	if (fIsPbPb) fHistCentrality[1]->Fill(percentile);
+	if (fIsPbPb) fHistCentralityQuality[1]->Fill(CurrentCentralityQuality);
+	fHistVertexZ[1]->Fill(vtxz);
+	
+	//cout<<"Event Selected: "<<select<<endl;
+	return select;
+
+}
+
+// -----------------------------------------------------------------------
+void AliAODEventCutsDiHadronPID::PrintCuts() {
+
+	// NOT IMPLEMENTED.
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	return;
+
+}

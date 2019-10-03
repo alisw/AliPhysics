@@ -1,0 +1,50 @@
+Executable="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_20160607/procVDTime.sh";
+
+Packages = {
+"VO_ALICE@jemalloc::v3.6.0",
+"VO_ALICE@AliPhysics::v5-08-12-01-1"
+};
+
+Jobtag={
+    "comment:definition of time bins + vdrift for TPC SP distortion maps"
+};
+
+LegoResubmitZombies="1";
+
+TTL="86000";
+Price="20";
+
+Validationcommand="/alice/validation/validation.sh";
+
+JDLVariables={
+    "Packages", 
+    "OutputDir",
+    "targetOCDBDir",
+    "useTOFBC",
+    "filesToCheck"
+};
+
+Arguments="$1 $2";
+
+Workdirectorysize={"6000MB"}; 
+
+InputFile={
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_20160607/trees_$2.xml",
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_20160607/validation.rc"
+};
+
+OutputDir="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_20160607/$2";
+
+Output={
+    "log_archive.zip:*.log,*.list@disk=2",
+    "root_archive.zip:*.root@disk=2"
+};
+
+OutputErrorE={"log_archive.zip:*.log,*.list@disk=2",
+              "root_archive.zip:*.root@disk=2"};
+
+targetOCDBDir="alien://folder=/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_20160607";
+
+useTOFBC="true";
+
+filesToCheck="timeBins.log alitpcdrescalib.root";

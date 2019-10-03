@@ -1,0 +1,272 @@
+#!/bin/bash
+
+# Script to setup and run fast MC simulations locally or on the Grid
+#
+# Author: Jochen Klein <Jochen.Klein@cern.ch>
+#
+# for EPOS LHC: Christoph Rauchegger <christoph.rauchegger@cern.ch>
+#
+# for EPOS v3.111: Igor Lakomov <Igor.Lakomov@cern.ch>
+
+HELP="
+Prepare Monte-Carlo simulation for local or grid execution.
+Supported generators and tunes:
+ - ThePEG (DIPSY)
+ - HepMC input files (kHepMC) - default
+ - EPOS LHC via crmc (EPOSLHC)
+ - EPOSv3111 (EPOS3111)
+"
+
+# default settings
+NJOBS=10
+NEV=100
+LOCAL_PREPARE=no
+LOCAL_RUN=no
+GRID_PREPARE=no
+GRID_COPY=no
+ALIEN_USERNAME=`alien_whoami | tr -d '[[:space:]]'`
+JDLFILE=simdndeta.jdl
+DIRNAME=$(date +%y%m%d_%H%M)
+TUNE="DIPSY"
+OptnsEpos3="pp"
+HEPMCFILE=gen.hepmc
+MAXEPOSEVENTS=100
+EPOSNFREEZE=10
+ENERGY="7000"
+
+# options with short explanation (opt/par: without/with parameter)
+# keep order: help, setvar, additional output
+opt_h() {
+    help "print help"
+    setvar SHOWHELP
+}
+
+opt_l() {
+    help "prepare locally"
+    setvar LOCAL_PREPARE
+}
+
+opt_L() {
+    help "run locally"
+    setvar LOCAL_RUN
+    # implies
+    LOCAL_PREPARE=yes
+}
+
+opt_g() {
+    help "prepare for grid run"
+    setvar GRID_PREPARE
+}
+
+opt_G() {
+    help "copy to grid"
+    setvar GRID_COPY
+    # implies
+    GRID_PREPARE=yes
+}
+
+par_t() {
+    help "set tune and generator"
+    setvar TUNE
+}
+
+par_n() {
+    help "set number of jobs"
+    setvar NJOBS
+}
+
+par_N() {
+    help "set total number of events"
+    setvar NEV
+}
+
+par_u() {
+    help "set alien user"
+    setvar ALIEN_USERNAME
+}
+
+par_f() {
+    help "set HepMC file name and absolute path"
+    setvar HEPMCFILE
+}
+
+par_E() {
+    help "set energy"
+    setvar ENERGY
+}
+
+par_x() {
+    help "set max number of events/file for EPOS3111"
+    setvar MAXEPOSEVENTS
+}
+
+par_z() {
+    help "set nfreeze for EPOS3111"
+    setvar EPOSNFREEZE
+}
+
+par_y() {
+    help "set name of [name].optns file for EPOS3111"
+    setvar OptnsEpos3
+}
+
+# actual start
+SHOWHELP=no
+ERROR=0
+SCRIPTDIR=$(dirname $0)
+CURRENTDIR=$(pwd)
+
+. ${SCRIPTDIR}/parse_opts.sh
+parse_args $*
+
+# check for consistent options
+
+# if necessary show help and exit
+if [[ ${SHOWHELP} != "no" ]]; then
+    show_help
+    exit ${ERROR}
+fi
+
+# setup variables
+ALIENDIR="/alice/cern.ch/user/${ALIEN_USERNAME:0:1}/${ALIEN_USERNAME}/HMTF/sim/${DIRNAME}"
+LOCALDIR="output/${DIRNAME}"
+LIBSOPTIONS="0"
+THRESHOLD="10,20"
+SCALING="1,1"
+RUNSCRIPT="run_sim.sh"
+
+if [[ "${LOCAL_PREPARE}" = "yes" || "${GRID_PREPARE}" = "yes" ]]; then
+    . ${SCRIPTDIR}/prepare_runscript.sh $RUNSCRIPT
+
+    if [ ${TUNE} = "DIPSY" ]; then
+	# prepare DIPSY config
+	sed s#DIPSYpp.hepmc#${HEPMCFILE}# ${SCRIPTDIR}/DIPSYpp_HepMC.in > thepeg.in
+	FILESTOCOPY="${FILESTOCOPY} thepeg.in"
+
+	# use DIPSY-specific downscaling factors to flatten multiplicity
+	# THRESHOLD="50,100,150,200,250,300,350,400,450,500,550,600,650"
+	# SCALING="264,2147,1377,1220,1025,753,468,250,119,44,16,5,1"
+
+	# pipe DIPSY events through FIFO and read from AliRoot
+	addtorun "mkfifo ${HEPMCFILE}; ls -lthr"
+	addtorun "setupThePEG -r \${THEPEG_ROOT}/lib/ThePEG/ThePEGDefaults.rpo -I \${THEPEG_ROOT}/share/Ariadne thepeg.in"
+	addtorun "runThePEG DIPSYpp.run -N 2147483647 --tics &"
+	addtorun "root -b -q ./LoadLibs.C\(${LIBSOPTIONS}\) rungen.C+'(kHepMC,${ENERGY},${NEV},\"${THRESHOLD}\",\"${SCALING}\",\"${HEPMCFILE}\")'  > gen.log 2>&1"
+	addtorun "kill \$!"
+	addtorun "rm ${HEPMCFILE}; ls -lthr"
+    elif [ ${TUNE} = "EPOSLHC" ]; then
+	cp ${SCRIPTDIR}/crmc_template.param crmc.param
+	FILESTOCOPY="${FILESTOCOPY} crmc.param"
+
+	# use EPOS LHC-specific downscaling factors to flatten multiplicity
+#	THRESHOLD="50,100,150,200,250,300,350,400,450,500,550,600,650,700,750"
+#	SCALING="2153,1612,1574,904,696,528,402,288,189,107,56,25,9,3,1"
+
+	addtorun 'sed -i -e s#__CRMC_BASEDIR__#"$CRMC_BASEDIR"# crmc.param'
+	addtorun "mkfifo ${HEPMCFILE}; ls -lthr"
+	addtorun "$CRMC_BASEDIR/bin/crmc -o hepmc -p$((ENERGY/2)) -P-$((ENERGY/2)) -n${NEV} -m0 -f ${HEPMCFILE} &"
+	addtorun "root -b -q ./LoadLibs.C\(${LIBSOPTIONS}\) rungen.C+'(kHepMC,${ENERGY},${NEV},\"${THRESHOLD}\",\"${SCALING}\",\"${HEPMCFILE}\")' > gen.log 2>&1"
+	addtorun "kill \$!"
+	addtorun "rm ${HEPMCFILE}; ls -lthr"
+    elif [ ${TUNE} = "EPOS3111" ]; then
+	# use EPOS3111-specific downscaling factors to flatten multiplicity
+#	THRESHOLD="50,100,150,200,250,300,350,400,450,500,550,600,650,700,750"
+#	SCALING="1,1,1,1,1,1,1,1,1,1,1,1,1,1,1"
+        FLAGFILE1="flag1"
+        FLAGFILE2="flag2"
+        EPOSFILE1="epos1.root"
+        EPOSFILE2="epos2.root"
+        FINISHFILE="finishepos"
+	LIBSOPTIONS="-3111"
+	FILESTOCOPY="${FILESTOCOPY} ${OptnsEpos3}.optns"
+        addtorun "sed -i 's/\(istmax\)\(\s\+[0-9]\+\)/\1 10/g' ${OptnsEpos3}.optns"
+        addtorun "sed -i 's/\(ecms\)\(\s\+[0-9]\+\)/\1 $ENERGY/g' ${OptnsEpos3}.optns"
+	addtorun "sed -i 's/\(nfull\)\(\s\+[0-9]\+\)/\1 $(( $MAXEPOSEVENTS / $EPOSNFREEZE ))/g' ${OptnsEpos3}.optns"
+	addtorun "sed -i 's/\(nfreeze\)\(\s\+[0-9]\+\)/\1 $EPOSNFREEZE/g' ${OptnsEpos3}.optns"
+        addtorun "("
+        addtorun "("
+	addtorun " while [ ! -f $FINISHFILE ]; do"
+        addtorun "  if [ -f $FLAGFILE1 ] && [ -f $FLAGFILE2 ]; then"
+        addtorun "    sleep 1s"
+        addtorun "  else"
+        addtorun "    epos $OptnsEpos3 > epos.log"
+        addtorun "    if [ ! -f $FLAGFILE1 ]; then"
+	addtorun "      touch ${FLAGFILE1}; chmod 777 ${FLAGFILE1};"
+	addtorun "      mv z-${OptnsEpos3}.root $EPOSFILE1;"
+        addtorun "    else"
+	addtorun "      touch ${FLAGFILE2}; chmod 777 ${FLAGFILE2};"
+	addtorun "      mv z-${OptnsEpos3}.root $EPOSFILE2;"
+        addtorun "    fi"
+        addtorun "  fi"
+        addtorun " done"
+        addtorun ") &"
+        addtorun "("
+        addtorun "    if [ ! -f $EPOSFILE1 ]; then"
+	addtorun "root -b -q ./LoadLibs.C\(${LIBSOPTIONS}\) rungen.C+'(kEpos3111,${ENERGY},${NEV},\"${THRESHOLD}\",\"${SCALING}\",\"${EPOSFILE1}\",$MAXEPOSEVENTS)' > gen.log 2>&1"
+        addtorun "    fi"
+        addtorun ")"
+        addtorun ") &"
+        addtorun "export fPID=\$!; let \"fPID += 1\"; fPID=\$fPID; echo main process PID \$fPID"
+        addtorun "wait"
+        addtorun "rm $FINISHFILE $FLAGFILE1 $FLAGFILE2 $EPOSFILE1 $EPOSFILE2 z-${OptnsEpos3}.root *.d *.so ${HEPMCFILE}"
+        addtorun "kill -9 \$fPID; pkill epos; rm z-${OptnsEpos3}.*; ls -ltrh"
+    else
+	# default is to just call rungen.C and pass on the options
+	addtorun "root -b -q ./LoadLibs.C\(${LIBSOPTIONS}\) rungen.C+'(${TUNE},${ENERGY},${NEV},\"${THRESHOLD}\",\"${SCALING}\",\"${HEPMCFILE}\")' > gen.log 2>&1"
+    fi
+fi
+
+# prepare files for grid if enabled
+if [ ${GRID_PREPARE} = "yes" ]; then
+
+    if [ ${TUNE} = "EPOS3111" ]; then
+       cp ${SCRIPTDIR}/templateEPOS3111.jdl ${JDLFILE}
+    else
+       cp ${SCRIPTDIR}/template.jdl ${JDLFILE}
+    fi
+
+    sed -i -e s#__MYARGS__## ${JDLFILE}
+    sed -i -e s#__TARGETDIR__#${ALIENDIR}# ${JDLFILE}
+    sed -i -e s#__NJOBS__#${NJOBS}# ${JDLFILE}
+    sed -i -e s#__RUNSCRIPT__#${RUNSCRIPT}# ${JDLFILE}
+    sed -i -e s#__USER__#"${ALIEN_USERNAME}"# ${JDLFILE}
+
+    if [ ${GRID_COPY} = "yes" ]; then
+	# create directory and upload files
+	alien_mkdir -p ${ALIENDIR/alien:/}
+        echo "copying LoadLibs.C to alien:${ALIENDIR}"
+	alien_cp ${SCRIPTDIR}/LoadLibs.C alien:${ALIENDIR}
+        echo "copying rungen.C to alien:${ALIENDIR}"
+	alien_cp ${SCRIPTDIR}/rungen.C alien:${ALIENDIR}
+        echo "copying validation.sh to alien:${ALIENDIR}"
+	alien_cp ${SCRIPTDIR}/validation.sh alien:${ALIENDIR}
+	for FILE in ${FILESTOCOPY}; do
+            echo "copying ${FILE} to alien:${ALIENDIR}"
+	    alien_cp ${CURRENTDIR}/${FILE} alien:${ALIENDIR}
+	done
+
+	# upload JDL
+        echo "copying ${JDLFILE} to alien:${ALIENDIR}"
+	alien_cp ${JDLFILE} alien:${ALIENDIR}
+
+	echo "The JDL file has been prepared, to be submitted by e.g.:"
+	echo "local> alien_submit ${JDLFILE}"
+	echo "alien> submit ${ALIENDIR}/${JDLFILE}"
+    fi
+fi
+
+# prepare for local running
+if [[ ${LOCAL_PREPARE} != "no" ]]; then
+    mkdir -p ${LOCALDIR}
+
+    cp ${SCRIPTDIR}/LoadLibs.C ${LOCALDIR}
+    cp ${SCRIPTDIR}/rungen.C ${LOCALDIR}
+    cp ${SCRIPTDIR}/runTask.C ${LOCALDIR}
+    for FILE in ${FILESTOCOPY}; do
+	cp ${CURRENTDIR}/${FILE} ${LOCALDIR}
+    done
+
+    if [[ ${LOCAL_RUN} = "yes" ]]; then
+	cd ${LOCALDIR} && ./${RUNSCRIPT}
+    fi
+fi

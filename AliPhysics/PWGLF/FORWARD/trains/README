@@ -1,0 +1,77 @@
+	A Simplified Way of Defining Analysis Trains
+	============================================
+
+Introduction:
+-------------
+
+    The code in this directory presents a simplified way of defining
+    an analysis train.  The idea is that the user defines a class that
+    derives from TrainSetup:
+    
+        #include "TrainSetup.C"
+        
+        class MyTrain : public TrainSetup
+        {
+        public:
+          MyTrain(const char* name="myTest") : TrainSetup(name) 
+          { 
+          }
+          void CreateTasks(AliAnalysisManager* mgr)
+          {
+            LoadLibrary("MyAnalysis");
+            
+ 	    CoupleCar("AddTaskMyAnalysis.C");
+          }
+          const char* ClassName() const { return "MyTrain"; }
+        };
+        
+    which then can be executed using either the program "runTrain":
+    
+        runTrain --class=MyTrain --name=myTrain --url=URL [OPTIONS]
+    
+    or the script "RunTrain.C": 
+    
+        > aliroot
+        Root> .L $ALICE_ROOT/PWGLF/FORWARD/trains/RunTrain.C
+        Root> RunTrain("myTrain", "MyTrain", URL, OPTIONS)
+    
+    The execution environment and input is specified in the URL
+    string, while general parameters for the job (including the
+    task(s)) can be specified in OPTIONS.
+    
+Code Organization:
+-------------------
+
+
+    TrainSetup		      - Base class
+    Helper		      - Base class for URL
+        LocalHelper	      - Local analysis URLs
+    	ProofHelper	      - Proof URLs
+    	    LiteHelper	      - Proof-lite URLs
+    	    AAFHelper	      - AAF URLs (no AliEn)
+        PluginHelper	      - Base class for URLs
+     	    AAFPluginHelper   - AAF URLs (w/AliEn)
+    	    GridHelper        - Grid URLs
+    Option  		      - Option handling
+    AvailableSoftware	      - Find SW on AAF/Grid
+    ChainBuilder	      - Build local/lite chain
+    OutputUtilities	      - Special output
+    ParUtilities	      - PAR utilities
+    RunTrain		      - Script to run train
+    MyAnalysis		      - Example task
+    MyTrain		      - Example train
+    QATrain		      - Full QA train example
+    CreateFileCollection      - Utility
+    trainMain		      - The runTrain utility
+    
+Local Variables:
+  mode: text
+End:
+
+LocalWords:  TrainSetup RunTrain MyTrain myTrain PWGLF aliroot url QA
+LocalWords:  runTrain AddTaskMyAnalysis AliAnalysisManager gROOT AAF
+LocalWords:  CreateTasks LoadLibrary MyAnalysis const ClassName AliEn
+LocalWords:  LocalHelper ProofHelper LiteHelper AAFHelper GridHelper
+LocalWords:  PluginHelper AAFPluginHelper AvailableSoftware QATrain
+LocalWords:  ChainBuilder OutputUtilities ParUtilities trainMain
+LocalWords:  CreateFileCollection

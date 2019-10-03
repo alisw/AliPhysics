@@ -1,0 +1,44 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{vmargin}
+\usepackage{listings}
+
+\renewcommand{\rmdefault}{cmss}
+\newcommand{\inlinecode}[2]{\mbox{{\bf #1(}#2{\bf)}}}
+\newcommand{\classb}[1]{\mbox{{\bf #1}}}
+\newcommand{\classi}[1]{\mbox{{\em #1}}}
+
+\setpapersize{A4}
+\setmarginsrb{10mm}{10mm}{10mm}{10mm}{0mm}{10mm}{0mm}{10mm}
+
+\title{ALICE resonance analysis package - Reference Guide}
+\author{A. Pulvirenti}
+\date{\tt alberto.pulvirenti@ct.infn.it}
+
+\begin{document}
+\lstset{language=C++}
+\lstset{basicstyle=\tiny}
+
+\maketitle
+
+\section{Introduction}
+
+This document contains a reference guide for all classes in the package, which complements what is explained
+in the online reference class guide which is automatically available from AliRoot code pages.
+
+\section{AliRsnDaughter}
+
+This object is used to have a unique access point to all informations coming from candidate daughters of a resonance.
+Such a candidate can be of any object type which can be related to a single particle: track, V0, cascade.
+In fact, \classb{AliRsnDaughter} contains the enumeration \classb{ERefType} which tells what kind of object is linked to it.
+This class does not contain any real processing function, because it just provides a pointer to an \classi{AliVParticle} object
+and eventually to its related MC particle, but it does not execute any specific computation.
+
+Unique exception is the \inlinecode{SetMass}{Double_t} method, which is used to assign a mass hypothesis to it.
+This is needed since the 4-momentum of the related particle is stored into a \classi{TLorentzVector} datamember, and it
+is filled by this function, which adopts the vector momentum from the referenced \classi{AliVParticle} and uses that mass
+to compute the fourth component of this 4-momentum. 
+The user is not allowed to set directly the vector momentum, since it must always be coherent with that of the referenced object.
+
+
+\end{document}

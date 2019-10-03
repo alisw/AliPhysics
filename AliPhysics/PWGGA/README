@@ -1,0 +1,37 @@
+Analysis code: Gamma and Pi0
+----------------------------
+
+All discussion about the code and its problems should happen on the
+alice-pwg-ga mailing list. Please avoid private discussions as much 
+as possible in order to keep everybody in the loop.
+
+Provided libraries:
+-------------------
+libPWGGACaloTrackCorrelations.so
+libPWGGAEMCALTasks.so
+libPWGGAGammaConv.so
+libPWGGAHyperon.so
+libPWGGAPHOSTasks.so
+libPWGGACaloTasks.so
+
+Dependencies and responsible person (with commit rights)
+--------------------------------------------------------
+
+CaloTrackCorrelations (former PartCorrDep) depends on PWG/CaloTrackCorrBase (former PartCorrBase)
+Responsible: G. Conesa, C. Silvestre
+
+EMCALTasks: holds code re the EMCAL
+Responsible: G. Conesa, M. Cosentino 
+
+GammaConv: holds code re Conversions depends on CORRFW
+Responsible: S. Lindal, D. Lohner
+
+Hyperon: holds code re Sigma0->Lambda+gamma where gamma detected in PCM or in PHOS
+Responsible: Y. Kharlov (analysis developer A.Borissov)
+
+PHOSTasks: holds code re the PHOS
+Responsible: D. Peressounko, Y. Kharlov
+
+CaloTasks: hold code re the calirometers
+Responsible: G. Conesa, Y. Kharlov
+Remarks: Could be made dependent on the other PWGGA libraries as needed

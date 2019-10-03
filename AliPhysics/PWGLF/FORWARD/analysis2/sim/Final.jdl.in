@@ -1,0 +1,67 @@
+# 
+# To submit this JDL:
+#
+#   alien_submit alien:@data@/Merge.jdl \
+#      <run number> <N_jobs> <N_events> <tag> <what>
+#
+# where 
+#
+#   <run number>   is the run number 
+#   <stage>        is the stage number
+#   <tag>          is a single-word tag 
+#   <what>         what to merge (QA or AOD)
+#
+# The output is written to alien:$HOME/test/<tag>
+# 
+# Before this is done, one must make the appropriate XML file. For stage=1
+#
+#   alien_find -x <what>Stage_1.xml \
+#      @out@/<tag>/<run> \
+#      */QA_archive.zip > <what>Stage_1.xml
+#
+# For stage > 1
+#
+#   alien_find -x <what>_Stage_<stage>.xml \
+#      @out@/<tag>/<run>/<what>Stage_<stage-1> \
+#      */QA_archive.zip > <what>_Stage_<stage>.xml
+#
+# and then the XML file should be copied to alien
+#
+#  alien_cp file:<what>_Stage_<stage>.xml alien:@out@/<tag>/<run>/<what>_Stage_<stage>.xml 
+#
+
+Jobtag={
+	"comment:$3 ($1) MC for FMD stage $4 final merge"
+};
+Packages = {
+	"VO_ALICE@AliRoot::@aliroot@",
+	"VO_ALICE@ROOT::@root@",
+	"VO_ALICE@APISCONFIG::V1.1x"
+};
+Executable = "@bin@/merge.sh";
+Arguments = "$4 $1 $4_Stage_$2.xml $2";
+InputFile = {
+	"LF:@data@/$4.C",
+	"LF:@data@/$4Config.C",
+	"LF:@data@/BaseConfig.C",
+	"LF:@data@/DetConfig.C",
+	"LF:@data@/GRP.C",
+	"LF:@out@/$3/$1/$4_Stage_$2.xml"
+};
+OutputDir = "@out@/$3/$1";
+OutputArchive = {
+   "$4_merge_log_archive.zip:std*,*.log,fileinfo*.log@disk=1",
+   "$4_merge_archive.zip:Ali$4*.root,$4*.root,trending.root,EventStat_temp.root,pyxsec_hists.root,*.stat*@disk=2"
+};
+TTL = "36000";
+Price = "1";
+Validationcommand = "/alice/cern.ch/user/a/aliprod/QA/validation_merge.sh";
+Workdirectorysize = {"5000MB"};
+JDLVariables = {
+   "Packages",
+   "OutputDir"
+};
+Workdirectorysize = {"10000MB"};
+# Local Variables:
+#  mode: conf-javaprop
+# End:

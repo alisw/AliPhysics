@@ -1,0 +1,100 @@
+TriggerMask             256 # 62 masking on see bottom 0011:1110   -1 no check
+Helicity                0 # +1 same, -1 opposite, and 0 no helicity check
+EfficiencyMode          1 # 0:NoEff 1:Period 2:RunbyRun 3:Auto
+
+#events=========
+#CentBinBorders         0 10 20 40 60 90
+CentBinBorders          0 100 
+CentMultCutHigh         0.63,  99, 2.1   # hyperbola high cent x mult cut
+CentMultCutLow          0.71,  75, 1.0   # hyperbola  low cent x mult cut
+
+zVertBins               -10 10 
+#maxAbsZVert             8  #(used to be 10)
+#maxMixDZ		1.0 #	cm, allowed maximum ZVert distance for mix (5 for QM)/ neg -> no test
+
+#mixing=========
+maxDCent                5   #   check the mix if cent bin too wide
+maxMixDMult	          	100 #   assoc mult so far. Later ITS tracklets
+EventPoolDepth          500 #   one pool for cent
+
+#====================
+#==== binning =======
+#====================
+CorrelationType         1 # 0=all x all  1=trig LP  2=trigg Pair
+sumTriggerAndAssoc      0 # 0 trigger LP  1 trigger+assoc
+
+#--- ours ---
+TriggPtBorders          3 4 5 6 8 10 12 15 18 25
+AssocPtBorders          0.3 1 2 3 4 5 6 8 10 15
+KlongBorders            1 2 3 4 6 8 12
+xEBorders		            0.0 0.2 0.4 0.6  1.0
+
+
+#--- JFG --- 
+#TriggPtBorders                2 3 4     8       15
+#AssocPtBorders          0.5 1 2 3 4   6 8
+#KlongBorders                1 2
+
+#--- UE paper ---
+#TriggPtBorders          0.5 1.5 2 4 6 10
+#AssocPtBorders          0.5 1 10
+#KlongBorders                1 2
+
+PairInvariantMassBins   20 30
+UpperPairPtCut          1.5 15
+EtaRange                0.8
+EtaGapThresholds        0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6
+PhiGapThresholds        0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6
+RGapThresholds          0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 2.3
+EtaGapSignalBin         2  #signal histos to R<0.6
+EtaBoost                -0.465 0
+
+DPhiUERegion            0.325 0.475
+
+#======= Isolation tracks =============
+IsolationR              0.4 #isolation radius for higher twist
+CutOnBkgActivity        0.10 #cut on activity around leading particle   sum of assoc pt / LP pt
+LowerPtCut              1.0 #for isolation
+
+#======= ALICE JYFL Track selection =============
+HadronSelectionCut      5 # enum { kJTPCOnly, kJRaa, kJGlobalTightDCA, kJGlobalDCA, kJGlobalSDD , kJHybrid, kJHybridAOD86, kJHybridStep1, kJNTrackCuts };
+
+TriggerFiducialEtaCut 0.4 #
+
+#======= From Jiri's EMCAL analysis but still in AliJCORRAN.cxx, around line 300 
+eventBC -1 # select only events in BC modulo 4; -1 to disable
+
+Jet:PtBins              0 10 15 20 30 60 80 100 140 180 240 500
+Jet:PtPairBins          0 10 15 20 30 60 80 100 140 180 240 500
+InvMBin                 0 10 15 20 30 60 80 100 140 180 240 500
+Jet:PtMinCut            0
+# JetJtTask
+JetTriggPtBorders       5 10 20 30 40 60 80 100 150 500 1000
+JetAssocPtBorders       0.15 0.30 1 2 3 4 5 6 8 10 15 100
+JetConstPtLowLimits     3.0 5.0 8.0
+JetLeadPtBorders	0 3.0 5.0 10.0 25.0 50.0 100.0
+JetMultBorders		0 4 8 12 16 20 100
+DeltaRBorders		0.0 0.2 0.4 0.6
+JetEtaCut               0.25
+
+#======= Jussi's jT analysis =======
+EnableKlongBins 0 # 0 = Do not fill klong bins. 1 = Fill klong bins
+EnablePtaBins   0 # 0 = Do not fill pTa bins. 1 = Fill pTa bins
+NRandomizationTrials 20 # Number of pairs generated from found background pair
+LeadingParticleSystematics 0 # 0 = regular run, 1 = do systematic error estimate for missed leading particles
+TrackMergeSystematics 0 # 0 = regular run, 1 = do systematic error estimate for track merging effect
+TrackMergeCut 0.02 # If track merging is taken into account, remove tracks if deltaEta and deltaPhi* are smaller than this value
+AnalyseMCTruth 0  # 0 = Regular analysis, 1 = Use MC truth particles in the analysis
+
+#======= Level of used quality control histograms =======
+QualityControlLevel     0 # 0 = no additional quality control histograms, 1 = quality control for acceptance correction, 2 = lots of 2D quality control histograms added
+
+#======= Acceptance correction =======
+HitsPerBinAcceptance   500 # Number of hits per bin required for acceptance correction histograms
+UseZVertexBins 0 # 0 = integrate over z-vertex bins, 1 = Do acceptance correction in z-vertex bins
+AcceptanceTestMode 0 # 0 = always use this in analysis, 1 = test mode, mixed event distribution not properly corrected in 3D near side to see the effect of correction
+OnlyMixedEventInSafeRadius 0 # 0 = use always 3D near side calculation to correct mixed event, 1 = use directly mixed event in the radius R < Pi/2, because in this area mixed event gives directly the correct correction. Outside this radius, correct mixed event using calculatio
+EnableDeltaEtaDeltaPhiHistograms 1 # Set 1 to fill 2D deltaEta deltaPhi histograms and 0 not to fill them. Must be 1 if the result file will be used as an input for acceptance correction
+
+#======= Separate PYTHIA8 study =======
+DoResonancePythia 0 # 0 = Regular PYTHIA8 run. 1 = Generate two gluon initial state in PYTHIA8

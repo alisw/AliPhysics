@@ -1,0 +1,297 @@
+configurationName: "Default configuration"          # Optional - Simply for user convenience
+pass: ""                                            # Attempts to automatically retrieve the pass if not specified. Usually of the form "pass#".
+recycleUnusedEmbeddedEventsMode: false              # DEPRECATED! This is handled directly by the embedding helper. True if embedded events should be recycled by using the internal event selection of the embedding helper.
+# Look at the documentation for a full explanation of the input objects!
+inputObjects:                                       # Define all of the input objects for the corrections
+    cells:                                          # Configure cells
+        defaultCells:                               # Name of a cell input
+            branchName: "usedefault"                # Sets the branch name. "usedefault" is supported
+    clusterContainers:                              # Configure clusters
+        # The user can select the name of each container
+        # The names don't need to correspond to any particular scheme
+        # Each cluster input corresponds to a cluster container
+        defaultClusterContainer:                    # Name of a cluster input
+            branchName: "usedefault"                # Set the branch name. "usedefault" is supported
+            # This cluster input takes all default cuts!
+        defaultClusterContainer_1:                  # Name of another cluster input which inherits from defaultClusterContainer
+            # The branch name is inherited from defaultClusterContainer!
+            minE: 0.0                               # Cluster min E. Formerly clusterEMin
+            minPt: 0.0                              # Cluster min pt. Formerly clusterPtMin
+        defaultClusterContainer_2:                  # Name of another cluster input which inherits from defaultClusterContainer
+            # The branch name is inherited from defaultClusterContainer!
+            minE: 0.0                               # Cluster min E.
+            minPt: 0.0                              # Cluster min pt.
+            clusNonLinCorrEnergyCut: 0.15           # Cluster non-linearity min E. Formerly "minPt" in the non-linearity AddTask()
+        defaultClusterContainer_3:                  # Name of another cluster input which inherits from defaultClusterContainer
+            # The branch name is inherited from defaultClusterContainer!
+            minE: 0.0                               # Cluster min E.
+            minPt: 0.0                              # Cluster min pt.
+            defaultClusterEnergy: kHadCorr          # Default energy type
+    trackContainers:                                # Configure tracks
+        # The user can select the name of each container
+        # The names don't need to correspond to any particular scheme
+        # Each track input corresponds to a cluster container
+        defaultTrackContainer:                      # Name of a track input
+            branchName: "usedefault"                # Set the branch name. "usedefault" is supported.
+            # This track input takes all default cuts!
+        defaultTrackContainer_1:                    # Name of another track input which inherits from defaultTrackContainer
+            # The branch name is inherited from defaultTrackContainer!
+            # (Note that we only use this daughter container in the default settings below -- the parent and daughter are in fact
+            #  configured exactly the same here, by default; it is only done for illustration).
+            minPt: 0.15                             # Track min pt.
+            trackFilterType: kHybridTracks          # Set the track filter type. Check the documentation for possible values
+            #aodFilterBits: [16, 1]                 # Can also set AOD filter bits. Check the docuemntation for more information
+            #aodFilterBits:                         # Either format is acceptable
+            #    - 16
+            #    - 1
+sharedParameters:
+    # You can define here any parameters that you would like to share between tasks. Note that you cannot directly
+    # override a shared parameter in your config! Instead, you'll need to explicitly set the parameter value, as well
+    # as whichever parameters it is supposed to override, in your user config. See the documentation for  more
+    # information.
+    enableFracEMCRecalc: false                      # Enables the recalculation of the MC labels including the fractional energy on cell level
+    removeNMCGenerators: 0                          # set number of accepted MC generators input (only for enableFracEMCRecalc=1)
+    enableMCGenRemovTrack: true                     # apply the MC generators rejection also for track matching
+    removeMCGen1: ""                                # name of generator input to be accepted
+    removeMCGen2: ""                                # name of generator input to be accepted
+# This defines the settings for the "AliEmcalCorrectionCellEnergy" correction.
+# Note how the "AliEmcalCorrection" part of the name is not required when defining the settings
+CellEnergy:                                         # Cell Energy correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
+    customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
+    load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+CellBadChannel:                                     # Bad channel removal at the cell level component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    load1DBadChMap: false                           # Flag to load 1D bad channel map
+    customBadChannelFilePath: ""                    # Full path to a custom bad channel OADB object
+    acceptDead: false                               # Declare dead channels as good
+    acceptHot: false                                # Declare hot channels as good
+    acceptWarm: false                               # Declare warm channels as good  
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+CellTimeCalib:                                      # Cell Time Calibration component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    doMergedBCs: false                              # Whether the task should create output histograms
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+CellEmulateCrosstalk:                               # Component to emulate crosstalk
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    printConfiguration: true                        # Print the configuration after initialization
+    conservEnergy: true                             # Activate cluster energy conservation
+    randomizeTCardInducedEnergy: true               # Randomize the energy fraction induced by the TCard
+    inducedTCardMinimumCellEnergy: 0.01             # Minimum cell energy induced by the TCard
+    inducedTCardMaximum: 100                        # Maximum energy induced by the TCard
+    inducedTCardMinimum: 0.05                       # Minimum energy induced by the TCard + cell energy, IMPORTANT use the same value as the clusterization cell E threshold or not too far from it
+    inducedTCardMaximumELeak: 0                     # Maximum energy that is going to be leaked independently of what is set with inducedTCardMinimum
+    # Note on using the following section:
+    # Each setting can be enabled or disabled. If disabled, the settings will _not_ be applied
+    # The values are formatted as a map, with the keys as either "all", correspoding to all SMs
+    # or the super module number. The format of the value is specified in the comment after the field.
+    #
+    # NOTE: If you specify "all", it will take precedence over any individual SM values, which will be ignored.
+    inducedEnergyLossConstant:                      # Constant energy lost by max energy cell in one of T-Card cells
+        enabled: false                              # Enable setting these values
+        values: {"all" : [0.02, 0.02, 0.02, 0]}     # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, 2nd row upper/lower cells]
+    inducedEnergyLossFraction:                      # Fraction of energy lost by max energy cell in one of T-Card cells
+        enabled: true                               # Enable setting these values
+       #values: {"all" : [0.02, 0.02, 0.02, 0]}     # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, 2nd row upper/lower cells]
+        values: {0 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 1 : [1.20e-02, 1.20e-02, 1.20e-02, 0], 
+                 2 : [1.15e-02, 1.15e-02, 1.15e-02, 0], 
+                 3 : [1.20e-02, 1.20e-02, 1.20e-02, 0], 
+                 4 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 5 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 6 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 7 : [1.20e-02, 1.20e-02, 1.20e-02, 0], 
+                 8 : [0.80e-02, 0.80e-02, 0.80e-02, 0],  
+                 9 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 10: [1.20e-02, 1.20e-02, 1.20e-02, 0], 
+                 11: [1.20e-02, 1.20e-02, 1.20e-02, 0], 
+                 12: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 13: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 14: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 15: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 16: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 17: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 18: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 19: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 20: [0.80e-02, 0.80e-02, 0.80e-02, 0],
+                 21: [0.80e-02, 0.80e-02, 0.80e-02, 0]} 
+    inducedEnergyLossFractionP1:                    # Slope parameter of fraction of energy lost by max energy cell in one of T-Card cells
+        enabled: true                               # Enable setting these values
+        values: {"all" : [-1.1e-03, -1.1e-03, -1.1e-03, 0]}  # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, 2nd row upper/lower cells]
+    inducedEnergyLossFractionWidth:                 # Fraction of energy lost by max energy cell in one of T-Card cells, width of random gaussian
+        enabled: true                               # Enable setting these values
+        values: {"all" : [5.0e-03,5.0e-03,5.0e-03, 0]}        # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, ??]
+    inducedEnergyLossMinimumFraction:               # Minimum induced energy fraction when linear dependency is set
+        enabled: true                               # Enable setting these values
+        values: {0 : [3.5e-3], 1 : [5.0e-3], 2 : [4.5e-3], 3 : [6.0e-3], 4 : [3.5e-3], 5 : [3.5e-3], 6 : [3.5e-3], 7 : [6.0e-3], 8 : [3.5e-3], 9 : [3.5e-3], 
+                 10: [5.0e-3], 11: [5.0e-3], 12: [3.5e-3], 13: [3.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [3.5e-3], 17: [3.5e-3], 18: [3.5e-3], 19: [3.5e-3], 
+                 20: [3.5e-3], 21: [3.5e-3]} 
+       #values: {"all" : [0.008]}                   # Values are [minimum fraction]
+    inducedEnergyLossMaximumFraction:               # Maximum induced energy fraction when linear dependency is set
+        enabled: true                               # Enable setting these values
+        values: {"all" : [0.018]}                   # Values are [maximum fraction]
+    inducedEnergyLossProbability:                   # Fraction of times max cell energy correlates with cross cells
+        enabled: true                               # Enable setting these values
+        values: {"all" : [1.0]} 
+       #values: {0 : [0.30], 1 : [0.60], 2 : [0.50], 3 : [1.00], 4 : [0.35], 5 : [0.25], 6 : [0.35], 7 : [1.00], 8 : [0.25], 9 : [0.25], 
+       #         10: [0.35], 11: [0.35], 12: [0.35], 13: [0.35], 14: [0.35], 15: [0.35], 16: [0.35], 17: [0.35], 18: [0.35], 19: [0.35]}  # Values are [probability per event from 0 to 1]
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+CellCombineCollections:                             # Utility task to combine two cells collections into a single collection.
+                                                    # It is useful for embedding, but little else.
+                                                    # The combined needs to be done here to enable different cell corrections for the different cell collections (for example, MC may need different corrections than data.)
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    externalCellsBranchName: "usedefault"           # Name of the cells branch in the embedded (external) event.
+    combinedCellsBranchName: "emcalCellsCombined"   # Name of the cells branch to be created for the combined cells in the input event.
+    verifyCombinedCells: false                      # True will have the task confirm that the input cells have been successfully combined together. NOTE: Don't enable this for normal usage - it will reduce performance for little benefit.
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction. NOTE: _DO NOT_ include the embedded cells input object here! Include only the cells from the input event.
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+Clusterizer:                                        # Clusterizer component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    load1DBadChMap: false                           # Flag to load 1D bad channel map
+    clusterizer: kClusterizerv3                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
+    unfold: false                                   # Activate cluster unfolding
+    unfoldRejectBelowThreshold: false               #  split (false-default) or reject (true) cell energy below threshold after UF
+    unfoldMinCellE: 0.015                           #  apply an energy cut on the cells after unfolding
+    unfoldMinCellEFrac: 0.0001                      #  apply a fraction of energy cut on cells after unfolding
+    cellE: 0.05                                     # Minimum cell energy (GeV)
+    seedE: 0.1                                      # Seed energy threshold (GeV)
+    cellTimeMin: -1                                 # Min cell time (s)
+    cellTimeMax: +1                                 # Max cell time (s)
+    clusterTimeLength: 1                            # Maximum time difference between the digits inside EMC cluster (s)
+    w0: 4.5                                         # Weighting factor for determing the cluster position
+    recalDistToBadChannels: true                    # True will recalculate the distance to bad channels
+    recalShowerShape: false                         # True will recalculate the shower shape
+    remapMcAod: false                               # Switch for the remaping for the MC labels in AOD productions
+    enableFracEMCRecalc: "sharedParameters:enableFracEMCRecalc"
+    removeNMCGenerators: "sharedParameters:removeNMCGenerators"
+    enableMCGenRemovTrack: "sharedParameters:enableMCGenRemovTrack"
+    removeMCGen1: "sharedParameters:removeMCGen1"
+    removeMCGen2: "sharedParameters:removeMCGen2"
+    setCellMCLabelFromCluster: 0                    # Enables setting the cell MC label from the cluster. There are different modes depending on the value
+    diffEAggregation: 0.03                          # difference E in aggregation of cells (i.e. stop aggregation if E_{new} > E_{prev} + diffEAggregation)
+    useTestPatternForInput: false                   # Use test pattern for input instead of cells. Intended for testing and debugging.
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer                   # This object is defined above in the cluster section of the input objects
+ClusterExotics:                                     # Cluster exotics identification component (actual removal is handled by the cluster container)
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    fExoticMinCellAmplitude: 4.                     # Min energy of leading cell in order for exotic cut to be attempted
+    fMaxFcross: 0.97                                # Max value of Fcross = 1-Ecross/ecell allowed for clusters to pass exotic cut
+    fCellCrossMaxTimeDiff: 1e6                      # Max time difference allowed between leading cell and cross cells (in ns)
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
+ClusterNonLinearity:                                # Cluster non-linearity correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    nonLinFunct: kBeamTestCorrectedv3               # Sets the non-linearity function. Possible options are defined in the header of the cluster non-linearity correction component
+    setForceClusterE: false                         # Only for backwards compatibility, force cluster->E() to be set to the cluster non-linearity corrected energy. Off by default. For the standard methods, see: http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerClusterEnergyCorrections
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
+ClusterNonLinearityMCAfterburner:                   # MC Cluster additional non-linearity afterburner correction component - To be applied after the standard non-linearity correction
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    afterburnerVersion: kNoCorrection               # Sets the version of the correction to be used. kPCM_EMCal=Standard, kEMCal_EMCal, kPCM_EMCalFunctionRatio, kEMCal_EMCalFunctionRatio=systematic variations 
+    setMCPeriod: ""                                 # Set here the MC production name. Only specific productions have corrections
+    setForceClusterE: false                         # Only for backwards compatibility, force cluster->E() to be set to the cluster non-linearity corrected energy. Off by default. For the standard methods, see: http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerClusterEnergyCorrections
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
+ClusterTrackMatcher:                                # Cluster-track matcher component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    maxDist: 0.1                                    # Max distance between a matched cluster and track
+    useDCA: true                                    # Use DCA as starting point for track propagation, rather than primary vertex
+    useOuterParamInESDs: false                      # Use TPC outer parameters instead of inner for track propagation, ESDs only, it does nothing on AODs
+    usePIDmass: true                                # Use PID-based mass hypothesis for track propagation, rather than pion mass hypothesis
+    enableFracEMCRecalc: "sharedParameters:enableFracEMCRecalc"
+    removeNMCGenerators: "sharedParameters:removeNMCGenerators"
+    enableMCGenRemovTrack: "sharedParameters:enableMCGenRemovTrack"
+    removeMCGen1: "sharedParameters:removeMCGen1"
+    removeMCGen2: "sharedParameters:removeMCGen2"
+    updateClusters: true                            # Update the matching information in the cluster
+    updateTracks: true                              # Update the matching information in the track
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_2                 # This object is defined above in the cluster section of the input objects
+    trackContainersNames:                           # Names of the track input objects which should be attached to the correection
+        - defaultTrackContainer_1                   # This object is defined above in the track section of the input objects
+ClusterHadronicCorrection:                          # Cluster hadronic correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    phiMatch: 0.030                                 # Phi match value
+    etaMatch: 0.015                                 # Eta match value
+    doMomDepMatching: false                         # This enables a momentum dependent eta/phi window for track matching 
+    hadCorr: 2.                                     # Sets the fraction f of track p to subtract from matched cluster. To subtract all tracks within the eta-phi cut set hadCorr = 1+f. To subtract only one track set 0<hadCorr<1 where hadCorr=f.
+    Eexcl: 0                                        # Cell energy that cannot be subtracted
+    doTrackClus: true                               # Loop over tracks first
+    plotOversubtractionHistograms: false            # Compute and plot oversubtracted energy from embedded/signal matches (embedding only)
+    doNotOversubtract: false                        # Do not oversubtract energy from cluster (embedding only)
+    useM02SubtractionScheme: false                  # Flag to enable hadronic correction scheme using cluster M02 value. Must also use hadCorr>1 in order for this option to be enabled.
+    useConstantSubtraction: false                   # Flag to perform constant rather than fractional subtraction in the case M02>0.4 with a matched track (only applicable if using M02 scheme). If false, uses the fraction f=hadCorr-1.
+    constantSubtractionValue: 0.                    # Value to be used for constant subtraction, in GeV (only applicable if using constant subtraction in M02 scheme).
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_2                 # This object is defined above in the cluster section of the input objects
+    trackContainersNames:                           # Names of the track input objects which should be attached to the correection
+        - defaultTrackContainer_1                   # This object is defined above in the track section of the input objects
+CellEnergyVariation:                                # Cell energy shift correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    minCellE: 0.                                    # Min cell E to perform scaling on
+    maxCellE: 150.                                  # Max cell E to perform scaling on
+    energyScaleFactorConstant: 1.                   # Constant factor to scale cell energy by
+    energyScaleFunctionPath: ""                     # Path to file containing TF1 to scale cell energy by, as a function of cell E
+    energyScaleFunctionName: ""                     # Name of TF1 describing factor to scale cell energy by, as a function of cell E
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+ClusterEnergyVariation:                             # Cluster energy shift correction component (for systematics studies)
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    energyScaleShift: 0.                            # Fraction of cluster energy to shift (positive means upward shift)
+    smearingWidth: 0.                               # Width of Gaussian used to smear cluster energy
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_3                 # This object is defined above in the cluster section of the input objects
+PHOSCorrections:                                    # PHOS recalibration component (wraps PHOS Tender Supply)
+    enabled: false                                  # Whether to enable the task
+    isMC: false                                     # Whether is MC
+    options: ""                                     # Options for MC decalibration
+    isEmbedded: false                               # Whether to correct clusters from main event or embedded event (if applicable)
+# Determines the order of execution for the correction components. Only experts needs to be any changes here!
+# Just because it is listed here does not mean it will be executed! That is determined by the "enabled" property
+# of each correction component
+executionOrder:
+    - CellEmulateCrosstalk
+    - CellEnergy
+    - CellEnergyVariation
+    - CellBadChannel
+    - CellTimeCalib
+    - CellCombineCollections
+    - Clusterizer
+    - ClusterExotics
+    - ClusterNonLinearity
+    - ClusterNonLinearityMCAfterburner
+    - ClusterTrackMatcher
+    - ClusterHadronicCorrection
+    - ClusterEnergyVariation
+    - PHOSCorrections

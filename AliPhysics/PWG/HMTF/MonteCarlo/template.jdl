@@ -1,0 +1,51 @@
+User="__USER__";
+
+Jobtag={
+  "comment: fast MC simulation, test production"
+};
+
+Executable="__TARGETDIR__/__RUNSCRIPT__";
+Arguments="__MYARGS__";
+
+split="production:1-__NJOBS__";
+SplitArguments = "a #alien_counter# b";
+# Packages to be used
+Packages = {
+   "VO_ALICE@ThePEG::v20150318-1",
+   "VO_ALICE@GSL::1.16-1",
+   "VO_ALICE@HepMC::v2.06.09",
+   "VO_ALICE@Rivet::2.2.1-1",
+   "VO_ALICE@fastjet::v3.1.3_1.017-1",
+   "VO_ALICE@lhapdf::v5.9.1",
+   "VO_ALICE@pythia::v8186",
+   "VO_ALICE@AliPhysics::vAN-20150726",
+   "VO_ALICE@AliRoot::v5-06-34",   
+   "VO_ALICE@GEANT3::v2-0-1",
+   "VO_ALICE@ROOT::v5-34-30-1",
+   "VO_ALICE@APISCONFIG::V1.1x"
+};
+
+# Time to live
+TTL="36000";
+
+InputFile= {"LF:__TARGETDIR__/rungen.C",
+            "LF:__TARGETDIR__/LoadLibs.C",
+            "LF:__TARGETDIR__/thepeg.in"
+};
+
+Output = {
+        "log_archive.zip:gen*.log,*.C,*.hepmc,stdout,stderr@disk=1",
+        "root_archive.zip:Kinematics*.root,galice.root,@disk=2"
+};
+
+# Output directory
+OutputDir="__TARGETDIR__/#alien_counter_05i#";
+
+# validation command
+Validationcommand ="__TARGETDIR__/validation.sh";
+
+# Resubmit failed jobs until DONE rate reaches this percentage
+MasterResubmitThreshold = "90%";
+
+# email
+Email="jochen.klein@cern.ch";

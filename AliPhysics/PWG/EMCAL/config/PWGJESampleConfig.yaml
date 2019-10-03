@@ -1,0 +1,28 @@
+configurationName: "PWGJE Sample Configuration"
+pass: ""
+CellEnergy:
+    enabled: true
+CellBadChannel:
+    enabled: true
+CellTimeCalib:
+    enabled: true
+Clusterizer:
+    enabled: true
+    # Note: These are the same values as in the defualt configuration, but these often need to be set and
+    #       included here as a reminder.
+    clusterizer: kClusterizerv3
+    cellTimeMin: -1
+    cellTimeMax: +1
+    clusterTimeLength: 1
+ClusterExotics:
+    enabled: true
+    createHistos: true
+ClusterNonLinearity:
+    enabled: true
+    createHistos: true
+ClusterTrackMatcher:
+    enabled: true
+    createHistos: true
+ClusterHadronicCorrection:
+    enabled: true
+    createHistos: true

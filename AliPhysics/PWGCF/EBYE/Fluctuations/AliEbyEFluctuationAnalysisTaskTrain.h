@@ -1,0 +1,92 @@
+#ifndef AliEbyEFluctuationAnalysisTaskTrain_cxx
+#define AliEbyEFluctuationAnalysisTaskTrain_cxx
+
+// Event by event charge fluctuation analysis
+// Authors: Satyajit Jena and Panos Cristakoglou
+
+class TH1F;
+class TH2F;
+class TString;
+class AliESDEvent;
+//class AliESDtrackCuts;
+
+#include "AliAnalysisTaskSE.h"
+
+//const Int_t nCentralityBins = 20;
+
+class AliEbyEFluctuationAnalysisTaskTrain : public AliAnalysisTaskSE {
+ public:
+  AliEbyEFluctuationAnalysisTaskTrain() : AliAnalysisTaskSE(), fESD(0), fOutputList(0), fHistEventStats(0), fHistCentrality(0), fHistNMult(0), fHistNPlusNMinus(0), fHistNMultMC(0), fHistNPlusNMinusMC(0), fAnalysisType(0), fAnalysisMode(0), fCentralityEstimator("V0M"), fCentralityPercentileMin(0.0), fCentralityPercentileMax(5.0), fVxMax(3.0),fVyMax(3.0), fVzMax(10.), fMinNumberOfTPCClusters(80), fMaxChi2PerTPCCluster(4.0), fMaxDCAxy(3.0), fMaxDCAz(3.0) {}
+  AliEbyEFluctuationAnalysisTaskTrain(const char *name);
+  virtual ~AliEbyEFluctuationAnalysisTaskTrain() {}
+  
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
+  virtual void   Terminate(Option_t *);
+  
+  //void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
+  //fESDtrackCuts = trackCuts;}
+  void SetVertexDiamond(Double_t vx, Double_t vy, Double_t vz) {
+    fVxMax = vx;
+    fVyMax = vy;
+    fVzMax = vz;
+  }
+ 
+  //Centrality
+  void SetCentralityEstimator(const char* centralityEstimator) {
+    fCentralityEstimator = centralityEstimator;}
+  //void SetCentralityBins20() {fCentralityBins20 = kTRUE;}
+  void SetCentralityPercentileRange(Float_t min, Float_t max) { 
+    fCentralityPercentileMin=min;
+    fCentralityPercentileMax=max;
+  }
+
+  void SetAnalysisType(const char* analysisType) {
+    fAnalysisType = analysisType;}
+  void SetAnalysisMode(const char* analysisMode) {
+    fAnalysisMode = analysisMode;}
+
+  //Track cuts
+  void SetMinNumberOfTPCClusters(Double_t min) {
+    fMinNumberOfTPCClusters = min;}
+  void SetMaxChi2PerTPCCluster(Double_t max) {
+    fMaxChi2PerTPCCluster = max;}
+  void SetMaxDCAxy(Double_t max) {
+    fMaxDCAxy = max;}
+  void SetMaxDCAz(Double_t max) {
+    fMaxDCAz = max;}
+
+ private:
+  AliESDEvent *fESD;    //! ESD object
+  TList       *fOutputList; //! Output list
+  TH1F        *fHistEventStats; //!event stats
+  TH1F        *fHistCentrality; //!centrality
+  TH1F        *fHistNMult; //! nmult
+  TH2F        *fHistNPlusNMinus;//!nplus vs nminus correlation
+  TH1F        *fHistNMultMC; //!nmult MC
+  TH2F        *fHistNPlusNMinusMC;//!nplus vs nminus correlation
+
+  //AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
+
+  TString fAnalysisType;//"MC", "ESD", "AOD"
+  TString fAnalysisMode;//"TPC", "Global"
+
+  TString fCentralityEstimator;//"V0M","TRK","TKL","ZDC","FMD"
+  //Bool_t fCentralityBins20;//centrality bins of 5% width
+  Float_t fCentralityPercentileMin, fCentralityPercentileMax; //min-max centrality percentile
+
+  Double_t fVxMax;//vxmax
+  Double_t fVyMax;//vymax
+  Double_t fVzMax;//vzmax
+
+  Double_t fMinNumberOfTPCClusters; //
+  Double_t fMaxChi2PerTPCCluster; //
+  Double_t fMaxDCAxy, fMaxDCAz;//
+
+  AliEbyEFluctuationAnalysisTaskTrain(const AliEbyEFluctuationAnalysisTaskTrain&); // not implemented
+  AliEbyEFluctuationAnalysisTaskTrain& operator=(const AliEbyEFluctuationAnalysisTaskTrain&); // not implemented
+  
+  ClassDef(AliEbyEFluctuationAnalysisTaskTrain, 1); // example of analysis
+};
+
+#endif

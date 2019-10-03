@@ -1,0 +1,57 @@
+# this is the startup process for root
+Executable="run.sh";
+
+Jobtag={"comment:Grid analysis test"};
+
+# we split per storage element
+Split="se";
+
+# we want each job to read 10 input files
+SplitMaxInputFileNumber="50";
+
+# this job has to run in the ANALYSIS partition
+#Requirements=( member(other.GridPartitions,"Analysis") );
+#Requirements = other.SPLIT == 1 && ( other.TTL > 20000 ) && ( other.Price <= 1 ); 
+#Requirements = ( member(other.GridPartitions,"Analysis") );
+
+# we need ROOT and the API service configuration package
+Packages={"APISCONFIG::V2.4","VO_ALICE@ROOT::v5-22-00", "VO_ALICE@AliRoot::v4-16-Rev-05"};
+TTL = "30000";
+Price = 1;
+
+
+#ROOT will read this collection file to know, which files to analyze
+InputDataList="esd.xml";
+
+InputDataListFormat="xml-single";
+
+
+#ROOT requires the collection file in the xml-single format
+#InputDataListFormat="merge:/alice/cern.ch/user/a/amarin/global.xml";
+
+# this is our collection file containing the files to be analyzed
+InputDataCollection="LF:/alice/cern.ch/user/a/amarin/MinBiasProd/xml/$1.xml,nodownload";
+
+
+InputFile= {"LF:/alice/cern.ch/user/a/abercuci/MinBiasProd/run.C",
+ "LF:/alice/cern.ch/user/a/abercuci/MinBiasProd/run.h"};
+
+
+# Output archive	    
+OutputArchive={"log_archive.zip:stdout@Alice::GSI::SE","root_archive.zip:*.root@Alice::GSI::SE"};
+
+# Output directory
+OutputDir="/alice/cern.ch/user/a/abercuci/MinBiasProd/$1/#alien_counter#";
+
+# Output files
+OutputFile={"TRD.TaskDetChecker.root", "TRD.TaskResolution.root", "TRD.TaskTrackingEff.root", "TRD.TaskTrackingEffMC.root", "TRD.TaskPID.root"};
+
+# Merge the output
+Merge={"TRD.TaskDetChecker.root:/alice/cern.ch/user/a/abercuci/test/merge.jdl:TRD.TaskDetCheckerMerged.root"};
+MergeOutputDir={"/alice/cern.ch/user/a/abercuci/test/output"};
+
+# Validation
+Validationcommand ="/alice/cern.ch/user/a/abercuci/bin/validate.sh";
+
+# email
+Email="A.Bercuci@gsi.de";

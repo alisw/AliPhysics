@@ -1,0 +1,3 @@
+This Analysis task and macros are used to study the trigger efficiency of V0AND (aka INT7) in the INEL>0, using a more open trigger (INT11 in the example).
+
+have a look at runGridEsd.C to get started.

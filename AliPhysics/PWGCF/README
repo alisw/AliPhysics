@@ -1,0 +1,27 @@
+Analysis code: Correlations, Fluctuations and Bulk
+--------------------------------------------------
+
+Libraries:
+--------------------------------------------------
+libPWGCFCorrelationsBase.so
+libPWGCFCorrelationsDPhi.so
+libPWGCFebye.so
+libPWGCFfemtoscopy.so
+libPWGCFfemtoscopyUser.so
+libPWGCFFEMTOSCOPYAOD.so (candidate for later removal)
+--------------------------------------------------
+
+
+Sub Folders
+--------------------------------------------------
+Correlations (Andrew Adare)
+depends on PWGTools
+
+FLOW (Ilya Selyuzhenkov)
+depends on PWGflowBase, PWGflowTasks, and PWGGlauber
+
+EBYE (Panos Christakoglou)
+
+FEMTOSCOPY (Adam Kisiel)
+
+--------------------------------------------------

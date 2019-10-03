@@ -1,0 +1,4 @@
+xT-analysis uses some JCORRAN classes from PWG-CF. Please include
+library PWGCFCorrelationsJCORRAN to MLTrainDefinition.cfg
+
+Various JCORRAN classes: src/PWGCF/Correlations/JCORRAN/

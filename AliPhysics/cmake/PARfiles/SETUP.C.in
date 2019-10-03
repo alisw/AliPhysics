@@ -1,0 +1,44 @@
+// Automatically generated SETUP.C for @PARMODULE@
+
+Int_t SETUP() {
+  TString buf;
+  const char *wd = gSystem->WorkingDirectory();
+
+  // Set include path for CINT (PARfile is unpacked as a subfolder of current workdir)
+  // TODO: prepend path instead of appending (not currently supported by ROOT!)
+  buf.Form(".include %s", wd);
+  gROOT->ProcessLine(buf.Data());
+
+  // Prepend include path for compiled code
+  buf.Form("-I%s %s", wd, gSystem->GetIncludePath());
+  gSystem->SetIncludePath(buf.Data());
+
+  // Prepend library path
+  buf.Form("%s:%s", wd, gSystem->GetDynamicPath());
+  gSystem->SetDynamicPath(buf.Data());
+
+  // Add our rootmap
+  // TODO: disabled because it triggers actual library loading wherever it finds nested classes!
+  // (this is a ROOT bug)
+  // buf.Form("%s/lib@PARMODULE@.rootmap", wd);
+  // gInterpreter->UnloadLibraryMap("lib@PARMODULE@");
+  // gInterpreter->LoadLibraryMap(buf.Data());
+
+  // Append this PARfile's name to the list of currently enabled ones in an environment variable.
+  // The variable will be used by other PARfiles in order to correctly set some paths during the
+  // PARfile build process
+  const char *parEnvVarName = "ALICE_PARFILES_ENABLED";
+  TString parEnvVar = gSystem->Getenv(parEnvVarName);
+  if (!parEnvVar.IsNull()) {
+    parEnvVar.Append(" ");
+  }
+  parEnvVar.Append("@PARMODULE@");
+  gSystem->Setenv(parEnvVarName, parEnvVar.Data());
+
+  // Here we load the library, but beware: if using multiple PARfiles for overriding multiple
+  // AliRoot libraries, they must be loaded in the correct order. With the autoloading, it might
+  // happen that the *wrong* library gets loaded as a dependency
+  gSystem->Load("lib@PARMODULE@");
+
+  return 0;
+}

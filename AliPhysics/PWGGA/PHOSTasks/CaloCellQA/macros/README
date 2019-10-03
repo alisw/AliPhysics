@@ -1,0 +1,15 @@
+1. Prepare list of QA files:
+     find  /alice/data/2012/LHC12d/ /cpass1/QAresults_barrel.root > list_lhc12d.txt
+
+2. Add alien:// at the beginning of each line in the list.
+
+3. Extract PHOS QA from files:
+     .L ExtractPHOSCellQA.C++
+     ExtractPHOSCellQA("list_lhc12d.txt")
+
+4. Merge PHOS QA files.
+
+5. Run getCellsRunsQAPHOS.C macro:  aliroot -l getCellsRunsQAPHOS.C .
+
+   Attention!! Input file is LHC11e_cpass1_CellQA_PHI7.root by default, 
+   	       change "infile" line in the getCellsRunsQAPHOS.C!

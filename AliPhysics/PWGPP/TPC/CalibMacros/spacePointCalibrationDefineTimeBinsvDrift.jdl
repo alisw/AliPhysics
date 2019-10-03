@@ -1,0 +1,43 @@
+Executable="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/defineTimeBinsvDrift.sh";
+
+Packages = {
+"VO_ALICE@jemalloc::v3.6.0",
+"VO_ALICE@AliPhysics::v5-08-05-01-1"
+};
+
+Jobtag={
+    "comment:definition of time bins + vdrift for TPC SP distortion maps"
+};
+
+LegoResubmitZombies="1";
+
+TTL="86000";
+Price="20";
+
+Validationcommand="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/validationDefineTimeBins.sh";
+
+JDLVariables={
+    "Packages", 
+    "OutputDir",
+    "targetOCDBDir"
+};
+
+Arguments="$1 $2";
+
+Workdirectorysize={"6000MB"}; 
+
+InputFile={
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/trees_$2.xml"
+};
+
+OutputDir="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/$2";
+
+Output={
+    "log_archive.zip:*.log,*.list@disk=1",
+    "root_archive.zip:*.root@disk=1"
+};
+
+OutputErrorE={"log_archive.zip:*.log,*.list@disk=1","root_archive.zip:*.root@disk=1"};
+
+targetOCDBDir="alien://folder=/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421"
+

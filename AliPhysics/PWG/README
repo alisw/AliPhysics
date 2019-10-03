@@ -1,0 +1,3 @@
+Analysis code: General purpose and common classes
+
+PWGBase: lightweight base classes which have no dependencies apart from the usual analysis libraries

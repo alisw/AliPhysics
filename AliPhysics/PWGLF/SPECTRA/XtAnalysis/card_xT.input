@@ -1,0 +1,30 @@
+TrackFilterBit          5
+   # 0 = standard TPC only
+   # 1 = ITS standalone, 
+   # 2 = pixel OR neccessary for the electrons
+   # 3 = PID for the electrons
+   # 4 = standard cuts with loose DCA
+   # 5 = standard cuts with tight DCA
+   # 6 = like 5, but require first SDD clusted instead of SPD
+   # 7 = TPC only constraint to SPD vertex
+   # 
+
+Sqrts                   7000.
+MinimumIsolatedPt	2.0   # smallest pT particle that can be isolated
+IsolationMethod         0.0   # 0 = relative, 1 = absolute
+IsolationThreshold      0.5
+IsolationFraction       0.1
+IsolationRadius         0.4
+
+DataType		0     # 0 = pp, 1 = pPb, 2 = PbPb
+
+#events=========
+CentBinBorders         0 100 			# pp -collisions
+#CentBinBorders          0 10 20 40 60 90	# heavy ion
+
+
+#zVertBins               -10 -8 -6 -4 -2 0 2 4 6 8 10
+zVertBins               -10 10
+
+EtaRange                0.8
+

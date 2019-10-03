@@ -1,0 +1,184 @@
+############################################################################
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+############################################################################
+
+############################################################################
+#AliRoot build and install documentation                                   #
+############################################################################
+
+AliRoot, ALICE Off-line framework for simulation, reconstruction and analysis,
+can be build and installed using CMake build system [http://www.cmake.org].
+
+CMake is a cross-platform, open-source build system. One of the most important
+features of CMake is the capability to build a project outside the source tree.
+This enables the posibility to build different configurations from the same
+source tree.
+
+In order to build and install AliRoot 3 folders need to be defined.
+ 1. Source tree - The folder which contains AliRoot sources / AliRoot Git clone
+ 2. Build folder - The folder used for the actual build. This folder will contain
+ all intermediary files and generated build files
+ 3. Installation folder - The folder when AliRoot libraries and binaries will be installed.
+
+Minimum version of CMake for AliRoot is 2.8.11, but we recommend to stay up to date with
+the latest stable version.
+
+Important Note: All these 3 folders have to be in different locations.
+Important Note: Developers information below
+
+
+############################################################################
+#Recommended workflow - Build and install                                  #
+############################################################################
+
+For an easier AliRoot build and installation we recommend the following first time 
+AliRoot workflow. This workflow can be adapted to suit users purpose.
+
+1. Create a work directory
+    $ mkdir $MY_WORK_DIR
+    $ cd $MY_WORK_DIR
+
+2. Clone AliRoot repository inside your work directory.
+   If this is just a simple build and there is no need to change and submit code,
+   please use Git public interface
+    $ git clone http://git.cern.ch/pub/AliRoot AliRoot
+
+   For development purpose please use the private interface, https or kerberos
+    $ git clone https://git.cern.ch/reps/AliRoot AliRoot
+
+3. Create the build folder. The worklow is creating a "build" folder but any name can be used.
+    $ mkdir build
+
+4. Create the install folder. The workflow is creating an "install" folder but any name can be used.
+    $ mkdir install
+
+We now have the complete configuration to start building AliRoot. 
+Note that the build does not require any environment variables. The only exception is DATE environment needed 
+for the generation of DAs (full documentation HERE -> link to daq documentation)
+
+5. In order to configure and start the build we have to go inside the build folder
+    $ cd build
+    
+    The full build is controlled by CMake configure variables, no environment variables are needed. 
+    CMake variables are passed to the build system through -D configure paramenter. Example:
+    $ cmake -DCONFIGURE_PARAM1=ON -DCONFIGURE_PARAM2=/usr/some/location
+    
+    The full list of AliRoot configuration parameters
+    - CMAKE_INSTALL_PREFIX - mandatory standard CMake paramenter. It points to AliRoot installation directory.
+    - ROOTSYS - mandatory Root installation directory.
+    - ALIEN - AliEn2 root installation directory. This configuration parameter is mandatory if Root was build with 
+              AliEn2 support
+    - FASTJET - FastJet installation point
+    - ZEROMQ - ZeroMQ custom installation point. Not needed if ZeroMQ is installed on the system.
+    - DIMDIR - DIM installation directory
+    - ODIR - Platform for DIM, usually "linux"
+    - SHUTTLE - default value OFF. To enable Shuttle build it needs to be set to ON
+    - DATE_CONFIG - full location for date-config
+    - AMORE_CONFIG - full location for amore-config
+    - DA - default value OFF. To enable the build of DAs set it to ON
+    - daqDA - location of daqDA libraries
+    - MDCRPM - enable alimdc rpm creation
+    - DARPM - enable DA rpm creation 
+    
+    A base cmake configuration would contain the following configuration parameters:
+    $ cmake 
+            -DCMAKE_INSTALL_PREFIX=$MY_WORK_DIR/install
+            -DROOTSYS=$MY_ROOT_INSTALLATION_DIR
+            -DALIEN=$MY_ALIEN_INSTALLATION_DIR
+            $MY_WORK_DIR/AliRoot (or ../AliRoot)
+    
+    If all configuration parameters point correctly to the different installations than the configure step will be
+    successul and we can move to the next step, the actual build. Before building please check that all information
+    reported by the configuration step is correct or what you are expecting to be.
+    
+    If we need to change any configuration paramenter, for example the Root installation point set by ROOTSYS it
+    is mandatory to delete the $MY_WORK_DIR/build/CMakeCache.txt file and rerun the full "cmake" command
+    
+    CMake offers general configuration options that can be set using CMAKE_BUILD_TYPE.
+    Possible values are empty, Debug, Release, RelWithDebInfo and MinSizeRel. This variable is only supported for
+    make based generators. If this variable is supported, then CMake will also provide initial values for the variables
+    with the name CMAKE_C_FLAGS_[DEBUG|RELEASE|RELWITHDEBINFO|MINSIZEREL]. For example, if CMAKE_BUILD_TYPE is Debug,
+    then CMAKE_C_FLAGS_DEBUG will be added to the CMAKE_C_FLAGS.
+    
+    CMAKE_BUILD_TYPE for AliRoot Grid packages is RelWithDebInfo.
+    
+5. Build AliRoot
+    After the configuration is done the build can be started. Inside the build directory we type
+    $ make
+    If the configuration permits parallel build than we can run
+    $ make -jNR_OF_PROCESSORS
+    
+    For verbose output
+    $ export VERBOSE=1 # verbose mode enabled for futures make commands
+    $ make -j16
+    or
+    $ make -j16 VERBOSE=1 # verbose mode enabled only for this make command
+    
+    Running "make" inside the root of the build directory will trigger the build of the full AliRoot.
+    Building per folder is possible. Just switch to the folder in question and run "make". This will
+    trigger the build of the current folder plus all its dependencies.
+    
+    Example:
+    $ cd PWGJE/EMCALJetTasks
+    $ make -j16
+    
+6. Install AliRoot
+    If the build finished successfuly than AliRoot can be properly installed inside "install" folder
+    Inside the build folder run:
+    $ make -jNR_OF_PROCESSORS install
+    
+    AliRoot installation follows "standard" installation directory structure.
+        - $MY_WORK_DIR/install/lib - libraries folder
+        - $MY_WORK_DIR/install/bin - binaries/executables folder
+        - $MY_WORK_DIR/install/include - header folder
+    
+    AliRoot specific folders are used for 
+        - $MY_WORK_DIR/install/da - DAs installation folder
+        - $MY_WORK_DIR/install/PWG** - different files related to PWG
+        
+
+############################################################################
+#Recommended workflow - Running AliRoot                                    #
+############################################################################
+
+Although the build and install procedure does not require any environment
+variables, the actuall running of AliRoot needs to be aware of the different
+locations of used libraries.
+
+For properly running AliRoot we need to set at least 2 environment variables
+
+1. PATH
+    Adding Root and AliRoot to PATH
+    $ export PATH=$MY_ROOT_INSTALLATION_DIR/bin:$MY_WORK_DIR/install/bin:$PATH
+    
+2. LD_LIBRARY_PATH
+    Adding Root, AliRoot and AliEn to PATH. If FASTJET or ZEROMQ enabled than
+    we need to add them too.
+    $ export LD_LIBRARY_PATH=$MY_ALIEN_INSTALLATION_DIR/lib:$MY_ALIEN_INSTALLATION_DIR/api/lib:$LD_LIBRARY_PATH
+    $ export LD_LIBRARY_PATH=$MY_ROOT_INSTALLATION_DIR/lib:$LD_LIBRARY_PATH
+    $ export LD_LIBRARY_PATH=$MY_WORK_DIR/install/lib:$LD_LIBRARY_PATH
+    
+
+############################################################################
+#Recommended workflow - Developers                                         #
+############################################################################
+Dear developers,
+
+AliRoot build and install system follows standard CMake procedures.
+Please keep a clean, separate distinction between source tree, build and install
+directories.
+
+For any change related to the CMake files please follow the instructions inside the
+CMakeLists.txt files. Targets are accessible through standard CMake functions.
+
+Try to organize your work in separate folders.
+
+Do not forget to install all the folders/files that are needed at run time, remeber, source
+tree and install directory are different locations.
+
+For any question do not hesitate to contact us:  aliroot-git-admins@cern.ch
+
+Have a nice AliRoot development!

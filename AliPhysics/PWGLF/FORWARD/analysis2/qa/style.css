@@ -1,0 +1,154 @@
+
+/*
+ * Cascading style sheet for QA pages 
+ */
+body { 
+    font-family: sans }
+span.lnk {
+    color: blue;
+}
+span.lnk:hover { 
+    text-decoration:underline;
+}    
+
+a:link { 
+    text-decoration:none;
+    color: blue; 
+    font-weight: bold; }
+a:visited { 
+    text-decoration:none;
+    color: blue; 
+    font-weight: bold;  }
+a:hover { 
+    text-decoration: none; 
+    color: magenta; 
+    font-weight: bold; }
+img { 
+    width: 100%; }
+#imap {  
+    width: 70%;
+    position: absolute }
+#imap span { 
+    display: block;
+    position: absolute; 
+    z-index: 20;
+    font-size: 0pt;
+    width: 5%;
+    height: 2%;
+   }
+#imap span:hover { 
+    background: lightblue;
+    border: thin solid gray;
+    font-size: small;
+}
+h1 { 
+    border: thin solid gray; 
+    background-color: lightblue;
+    width: 100%;
+}
+div.change { 
+    border: thin solid gray; 
+    font-size: smaller; 
+    font-style: italic;
+    background-color: lightblue;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+}
+div.jobid { 
+    font-size: small; 
+    background-color: lightcyan;
+    border: solid thin lightgray;
+    position: fixed;
+    z-index: 3;
+    opacity: .8;
+    top: 1em; 
+    right: 100px; 
+    font-size: small; 
+    width: 80px; }	   
+div.back { 
+    font-size: smal; 
+    background-color: lightcyan;
+    border: solid thin lightgray;
+    position: fixed;
+    z-index: 3;
+    opacity: .8;
+    top: 1em; 
+    right: 10px; 
+    font-size: small; 
+    width: 80px; }
+div.runs { 
+    position: fixed; 
+    background-color: lightcyan;
+    border: solid thin lightgray;
+    z-index: 2;
+    opacity: .8;
+    top: 3em; 
+    right: 1em; 
+    font-size: small; 
+    width: 200px; }
+td { 
+    padding-right: 1em; 
+    padding-left: 1em; }
+tr:nth-child(odd)    { 
+    background-color:lightcyan; }
+tr:nth-child(even)    { 
+    background-color:white; }
+table:first-child { 
+    border-top: thin solid lightgray; }
+
+table:last-child { 
+    border-bottom: thin solid lightgray; }
+
+td:link { 
+    text-decoration:none;
+    color: blue; }
+td:visited { 
+    text-decoration:none;
+    color: blue;  }
+td:hover { 
+    text-decoration: none; 
+    color: magenta;  }
+
+#frame { 
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 5%;
+    bottom: 5%;
+    visibility: hidden;
+}
+#iframe { 
+    width:100%;
+    height:100%;
+    border: thin solid gray;
+    background-color:white;
+}
+#dframe { 
+    width:100%;
+    height:100%;
+    background-color: white;red
+}
+#close { 
+    position:relative;
+    top:-.01ex;
+    float: right;
+    right: 0;
+    font-weight: bold;
+    cursor: move;
+    color: blue;
+    border:thin solid gray;
+}
+
+#maxRange {
+    height: 12px;
+    padding: 0;
+}
+.sqrtContent {
+    border-top: 1px solid black;
+   font-size: small;
+}
+
+/*
+ * EOF
+ */

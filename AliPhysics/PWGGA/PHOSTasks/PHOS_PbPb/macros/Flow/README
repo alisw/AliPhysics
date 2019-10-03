@@ -1,0 +1,25 @@
+GetNU.C - plot event plane angle non-uniformness: <cos2Psi> <sin2Psi> and <cos2Psi><sin2psi>-<sin2Psi><cos2Phi>.
+
+Method1.C - macros to calculate pi0 v2 with dNdPhi method. Photon PID - change variable PID inside. Also there is possibility to swich on/off considiration of pi0 efficiency difference between in plane and out of plane (Note: included only for Both2core PID!).
+
+Method2.C - macros to calculate pi0 v2 with inv. mass method. Otherwise the same as Method1.C (options etc).
+
+Methods.h - common procedures for both methods (calculation of inv mass historgams and resolutions per centrality classes)
+
+Photon.C - macros to calculate inclusive photon v2.
+
+MethodsP.h - Methods.h corresponding to Photon.C
+
+RP.C - plot reaction plane resolution
+
+plotV2_comV0.C - macros to plot figures for pi0 v2. Need first data from execution of Method1 or Method2. Also check options available and PID.
+
+PCMPi0v2_new.root - pi0 v2 from PCM.
+
+v2ALl.C - official charged particles flow
+
+v2CMS.C - pi0 v2 from CMS
+
+v2PHENIX.C - pi0 v2 from PHENIX
+
+WHDGlhcPi0v2 - pi0 v2 model predictions from WHDG model at LHC energy

@@ -1,0 +1,113 @@
+
+                 HOW TO RUN RAW DATA FILTERING --> Full filtering of a period on the GRID
+
+#########################################################################################################################################
+
+--> JIRA:    https://alice.its.cern.ch/jira/browse/PWGPP-7
+             https://alice.its.cern.ch/jira/browse/PWGPP-126
+--> WIKI:    https://twiki.cern.ch/twiki/bin/view/ALICE/TPC_Offline_Benchmark
+--> git :    $NOTES/JIRA/PWGPP-7 
+             $NOTES/JIRA/PWGPP-126
+--> aliroot: $ALICE_PHYSICS/PWGPP/rawmerge
+
+Basic idea:
+1) AliAnalysisTaskFilteredTree.[h,cxx] --> Using the ESDs for a given period provides TTrees with the filtered event information
+2) makeEventList.[C,sh,config]         --> Using the ttree output creates the event list
+3) rawmerge.[C,jdl,sh]                 --> Merges the raw events in the provided list
+4) benchmark.sh                        --> Reconstructs the merged filtered raw events and produces new ESDs
+
+##########################################################################################################
+                                       EXAMPLE FOR LHC15c PERIOD                                                                                             
+##########################################################################################################
+
+0) LEGO TRAIN: (JEREMY) Ask for the filtering of a period (analysis task AliAnalysisTaskFilteredTree.[h,cxx])
+
+1) PREPARE WORKING DIR: preferably following git directory convention
+
+   workdir=/hera/alice/marsland/alice-tpc-notes/JIRA/PWGPP-126/filtering/2015/LHC15c
+   codeDir=/hera/alice/marsland/alice-tpc-notes/JIRA/PWGPP-126/filtering/2015/LHC15c/code
+   cp $ALICE_PHYSICS/PWGPP/rawmerge/{*.C,*.sh,*.jdl,*README*,*.config} $codeDir
+   cd $workdir 
+  
+2) FIND FILTERED TREES ON ALIEN:
+    
+   alien_find  /alice/data/2015/LHC15c  Filt*root | grep PWGPP | grep -v Stage | grep -v '/00[0-9][0-9]/' > FilteredTrees_Alien_LHC15c.list
+     
+3) COPY FILTERED TREES:
+   
+   E.g:
+   $ALICE_PHYSICS/../src/PWGPP/QA/scripts/alienSync.sh 
+      alienFindCommand="alien_find  /alice/data/2013/LHC13c   *250*Filt*root | grep  -v '/0[0-9][0-9][0-9]/' | grep -v Stage" 
+      localPathPrefix="/hera/alice/local/filtered/LHC13c" 
+    
+   E.g:
+   $ALICE_PHYSICS/../src/PWGPP/QA/scripts/alienSync.sh 
+     alienFindCommand="alien_find  /alice/data/2015/LHC15c  Filt*root | grep PWGPP | grep -v Stage | grep -v '/00[0-9][0-9]/'" 
+     localPathPrefix="/hera/alice/local/filtered" copyTimeout=10000
+
+   ## output will be like --> /hera/alice/local/filtered/alice/data/2015/LHC15c/$run/...
+   
+4) MAKE FILTERED TREE LIST ON HERA: 
+
+   cd $workdir
+   find /hera/alice/local/filtered/alice/data/2015/LHC15c/ -iname *.root > FilteredTrees_Hera_LHC15c.list
+   
+5) MODIFY CONFIG: $codeDir/makeEventList.config
+            
+6) RUN FILTERED RAW EVENT LIST MAKING: $codeDir/makeEventList.sh
+   
+   source $workdir/code/makeEventList.sh
+   makeEventListPeriod $workdir/FilteredTrees_Hera_LHC15c.list
+   
+   **) see the lists in $workdir/<$run>/lists
+    
+7) COPY LISTS TO ALIEN:
+
+   source $workdir/code/makeEventList.sh
+   copyListsToAlien 2015 LHC15c 
+  
+8) STAGING: Ask Latchezar and also run "stage.C" 
+
+9) MERGE RAW DATA ON ALIEN:
+
+   source $codeDir/makeEventList.sh
+   createSubmitJDLlist 2015 LHC15c
+
+   **) creates a file containing submit commands for jdl submit 
+       E.g.: 
+            alien_submit /alice/cern.ch/user/p/pwg_pp/rawmerge/v20150512/rawmerge.jdl  193094  LHC12i 2012 > submit193094.log &
+
+10) COPY FINAL FILTERED RAW CHUNKS TO GSI:
+
+   source $workdir/code/makeEventList.sh
+   copyRawChunksToHera 2015 LHC15c
+   
+   E.g:
+   $ALICE_PHYSICS/../src/PWGPP/QA/scripts/alienSync.sh alienFindCommand="alien_find /alice/cern.ch/user/p/pwg_pp/triggeredRaw/alice/data/2015/LHC15c root" localPathPrefix=/hera/alice/alien/triggeredRaw/ copyTimeout=10000
+     
+11) RUN BENCHMARK:
+
+   cd $workdir; mkdir benchmark; cd benchmark
+   
+   **)follow README_benchmark
+   
+12) Final QA CHECKS:
+
+  ls $workdir/benchmark/test_Date05_15_15_Gitv5-06-17-3-g0f3c98a/2015/LHC15c/000*/cpass0/*_highPt/AliESDs.root > esd_highpt.list
+  ls $workdir/benchmark/test_Date05_15_15_Gitv5-06-17-3-g0f3c98a/2015/LHC15c/000*/cpass0/*_V0s/AliESDs.root > esd_V0s.list
+  ls $workdir/benchmark/test_Date05_15_15_Gitv5-06-17-3-g0f3c98a/2015/LHC15c/000*/cpass0/*_Cosmic/AliESDs.root > esd_Cosmic.list
+
+  
+  TChain * chainHighPt = AliXRDPROOFtoolkit::MakeChain("esd_highpt.list","esdTree",0,-1);
+  chainHighPt->Draw("abs(1/Tracks[].fP[4])>>his(100,1,20)","Tracks[].fTPCncls>120&&abs(Tracks[].fzTPC)<3&&abs(Tracks[].fdTPC)<3&&abs(Tracks[].fzTPC)!=0&&Tracks[].fITSncls>3","",5000)
+
+  TChain * chainV0 = AliXRDPROOFtoolkit::MakeChain("esd_V0s.list","esdTree",0,-1)
+  chainV0->Draw("V0s[].Pt()>>his(100,2,10)","abs(V0s[].GetEffMass(2,2)-0.498)<0.01","",10000);
+  chainV0->Draw("V0s[].Pt()>>his(100,1,10)","abs(V0s[].GetEffMass(2,4)-1.116)<0.01","",10000);
+  chainV0->Draw("V0s[].Pt()>>his(100,1,10)","abs(V0s[].GetEffMass(4,2)-1.116)<0.01","",10000);
+
+  TChain * chainCosmic = AliXRDPROOFtoolkit::MakeChain("esd_Cosmic.list","esdTree",0,1000);
+  chainCosmic->Draw("Tracks[].fAlpha","abs(Tracks[].fP[4])<0.3","",10000);
+
+
+   

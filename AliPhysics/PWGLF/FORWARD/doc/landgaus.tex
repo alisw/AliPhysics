@@ -1,0 +1,135 @@
+\documentclass[11pt]{article}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amstext}
+\begin{document}
+
+
+The Landau function $L$ is a function of $x$ with the parameters
+$\Delta_p$ and $\xi$.  It can be written as 
+\begin{align}
+  \phi(u) &= \frac1\pi\int_0^\infty dt\,\sin(\pi t) e^{-t\log{t}-ut}
+  \label{eq:phi}\\
+  L(x;\Delta_p,\xi) &= \frac1\xi
+  \phi\left(\frac{x-\Delta_p}{\xi}\right)\label{eq:land} 
+\end{align}
+%% 
+A Landau convolved with a Gaussian is given by 
+\begin{align}
+  L_{G}(x;\Delta_p,\xi,\sigma) &= \int_{-\infty}^{+\infty}
+  ds\, L(s;\Delta_p,\xi) \frac{1}{\sqrt{2\pi}\sigma}
+  e^{-\frac{(x-s)^2}{2\sigma^2}}\nonumber\\
+  &=
+  \frac{1}{\sqrt{2\pi}\sigma\pi\xi}\int_{-\infty}^{+\infty}ds\,\int_0^\infty
+  dt\,\sin(\pi t)e^{-t\log{t}-\frac{s-\Delta_p}{\xi}t}
+  e^{-\frac{(x-s)^2}{2\sigma^2}}\nonumber\\
+  &= \frac{1}{\sqrt{2\pi}\sigma\pi\xi}\int_0^\infty
+  dt\,\sin(\pi t) e^{-t\log{t}+\frac{\Delta_p}{\xi}t}\int_{-\infty}^{+\infty}
+  ds\,e^{-\frac{(x-s)^2}{2\sigma^2}}e^{-\frac{st}{\xi}}\label{eq:lg}
+\end{align}
+%%
+Carrying out the inner integral of \eqref{eq:lg}, 
+%%
+\begin{align}
+  \int_{-\infty}^{+\infty}
+  ds\,e^{-\frac{(x-s)^2}{2\sigma^2}}e^{-\frac{st}{\xi}} &=
+  \int_{-\infty}^{+\infty}
+  ds\,e^{\frac{-s^2-x^2+2xs}{2\sigma^s}-\frac{st}{\xi}}\nonumber\\
+  &= \int_{-\infty}^{+\infty}
+  ds\,e^{-\frac{s^2}{2\sigma^2}+\left(\frac{2x}{2\sigma^2}-\frac{t}{\xi}\right)s-\frac{x^2}{2\sigma^2}}\nonumber\\
+  &= \int_{-\infty}^{+\infty}
+  ds\,e^{-\frac{1}{2\sigma^2}\left[s^2+\left(\frac{2\sigma^2t}{\xi}-2x\right)s\right]-\frac{x^2}{2\sigma^2}}\nonumber\\
+  \intertext{Completing the square} 
+  %%
+  &= \int_{-\infty}^{+\infty}
+  ds\,e^{-\frac{1}{2\sigma^2}\left[s^2+2\left(\frac{\sigma^2t}{\xi}-x\right)s
+      +\left(\frac{\sigma^2t}{\xi}-x\right)^2
+      -\left(\frac{\sigma^2t}{\xi}-x\right)^2\right]-\frac{x^2}{2\sigma^2}}\nonumber\\
+  &= \int_{-\infty}^{+\infty}
+  ds\,e^{-\frac{1}{2\sigma^2}\left[s + \left(\frac{\sigma^2t}{\xi}-x\right)\right]^2
+    +\frac{1}{2\sigma^2}\left(\frac{\sigma^2t}{\xi}-x\right)^2
+    -\frac{x^2}{2\sigma^2}}\nonumber\\
+  \intertext{Recognizing this as a Gaussian integral, we get}
+  %% Maxima:
+  %% integrate(%e^(-1/(2*sigma^2)*(s+sigma^2*t/xi-x)^2 + 
+  %%               1/(2*sigma^2)*(sigma^2*t/xi-x)^2-x^2/(2*sigma^2)),s,-inf,inf);
+  &= \sqrt{2\pi}\sigma
+   e^{-\frac{1}{2\xi^2}\left(2tx\xi-\sigma^2t^2\right)}\nonumber\\
+   &= \sqrt{2\pi}\sigma e^{\frac{t}{2\xi}\left(\frac{\sigma^2t}{\xi}-2x\right)}
+  \label{eq:inner}
+\end{align}
+%%
+Substituting \eqref{eq:inner} back into \eqref{eq:lg} yields 
+%%
+\begin{align}
+  L_{G}(x;\Delta_p,\xi,\sigma) &= \frac{1}{\sqrt{2\pi}\sigma\pi\xi}
+   \int_0^{\infty}dt\,e^{-t\log{t} + \frac{\Delta_p t}{\xi}}\sin{\pi t}
+   \sqrt{2\pi}\sigma e^{\frac{t}{2\xi}\left(\frac{\sigma^2t}{\xi}-2x\right)}\nonumber\\
+   &= \frac{1}{\pi\xi}\int_o^{\infty}dt\,e^{-t\log{t} + \frac{\Delta_pt}{\xi}+
+     \frac{t}{2\xi}\left(\frac{\sigma^2t}{\xi}-2x\right)}\sin{\pi
+     t}\nonumber\\
+   &= \frac{1}{\pi\xi}\int_o^{\infty}dt\,e^{-t\log{t} - \frac{(x
+       -\Delta_p)t}{\xi} + \frac12\left(\frac{\sigma}{\xi}t\right)^2}\sin{\pi
+       t}\quad.
+\end{align}
+%%
+Defining $v=\frac{\sigma}{\xi}$, and 
+%%
+\begin{align}
+  \Phi(u;v) &= \frac{1}{\pi}\int_0^{\infty}dt\,e^{-t\log{t} - ut +
+    \frac12v^2t^2}\sin{\pi t}\label{eq:Phi}\quad,
+\end{align}
+we can write \eqref{eq:lg} as 
+\begin{align}
+  L_{G}(x;\Delta_p,\xi,\sigma) &=
+  \frac1\xi\Phi\left(\frac{x-\Delta_p}{\xi},\frac\sigma\xi\right)\label{eq:lg2}
+\end{align}
+The normalization follows from the fact that
+$u=\frac{x-\Delta_p}{\xi}$ and $\frac{dv}{du}=f(u)$ so that 
+\begin{align*}
+  du &= \frac{dx}{\xi}\quad\text{and}\\
+  \frac{dv}{dx/\xi} &= f\left(\frac{x-\Delta_p}{\xi}\right)\\
+  \intertext{so that}
+  \frac{dv}{dx} &= \frac1\xi f\left(\frac{x-\Delta_p}{\xi}\right)
+\end{align*}
+
+%% 
+%% Maxima input:
+%%  diff(integrate(1/%pi*%e^(-t * log(t)-u*t+1/2*v^2*t^2)*sin(%pi *
+%%  t), t, 0, inf),u);
+%% v is non-zero
+%% u is positive 
+Differentiating \eqref{eq:Phi} with respect to $u$ gives 
+\begin{align}
+  \frac{d\Phi}{du} &= 
+  \frac{1}{\pi}
+  \int_0^{\infty}dt\,e^{-t\log{t}-tu+\frac12t^2v^2}t\sin{\pi t}
+\end{align}
+
+Now turning to the maximum of \eqref{eq:phi} which is known to be at
+$u=u_p\neq0$ we get that the most probable value $x=x_p$ of
+\eqref{eq:land} is given by
+\begin{align}
+  \frac{x_p-\Delta_p}{\xi} &= u_p\nonumber\\
+  \intertext{so that}
+  x_p &= u_p\xi + \Delta_p\quad\text{and}\nonumber\\
+  \Delta_p &= x_p - \xi u_p
+\end{align}
+
+The maximum of \eqref{eq:Phi} must be a function solely of $v$, and we
+have the most probable value $x=x'_p$ of \eqref{eq:lg2}
+\begin{align}
+  f(v) &= \frac{x'_p-\Delta_p}{\xi} \nonumber\\
+  &= \frac{x'_p - x_p + \xi u_p}{\xi} \nonumber\\
+  f(v) - u_p &=  \frac{x'_p - x_p}{\xi}\nonumber\\
+  x_p'-x_p &= \xi\left(f(v)-u_p\right)\nonumber\\
+  x_p' &= \xi\left(f(v)-u_p\right)+x_p
+  \intertext{and it follows that}
+  x_p' &= \xi g(v)
+\end{align}
+
+
+
+\end{document}
+
+%  LocalWords:  convolved

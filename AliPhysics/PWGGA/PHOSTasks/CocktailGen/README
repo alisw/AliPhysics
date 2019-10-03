@@ -1,0 +1,7 @@
+Cocktail generator for pi0, eta, omega, eta' production with real pt spectrum
+
+Each meson has to be generated in a separate run. 
+Meson PDG code and colliding system are set via environment variables
+      CONFIG_MESON_PDG and CONFIG_BEAMS
+
+Authors: D.Peressounko, B.Polushchuk, Y.Kharlov. 09-Jun-2012

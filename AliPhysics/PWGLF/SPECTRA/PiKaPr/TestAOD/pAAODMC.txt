@@ -1,0 +1,14 @@
+# MC flag
+MC 1
+# AOD flag
+AOD 1
+# GridDataDir
+GridDataDir /alice/sim/2012/LHC12g1_fix/
+# DataPattern
+DataPattern *AOD
+# GridWorkingDir
+GridWorkingDir pAmc
+# root
+root v5-34-02-1
+#aliroot 
+aliroot v5-04-27-AN
