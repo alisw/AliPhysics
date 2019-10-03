@@ -206,7 +206,7 @@ void AliAnalysisPseudoRapidityDensity::UserCreateOutputObjects()
 	fHistos = new THistManager("dndeta");
 
 	//auto binType = AxisStr("Type",{"PN","PP","NN","Mixing"});
-	Double1D varcentbin = {0,0.001,0.01,0.1,0.5,1,5,10,15,20,30,40,50,70,100};
+	Double1D varcentbin = {0,0.001,0.01,0.05,0.1,0.5,1,5,10,15,20,30,40,50,70,100};
 	Double1D varcentbinHeavy = {0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
 	//for (auto i=1; i<=100; i++) varcentbin.push_back(i);
 	auto binCent = AxisVar("Cent", IsAA ? varcentbinHeavy : varcentbin);
