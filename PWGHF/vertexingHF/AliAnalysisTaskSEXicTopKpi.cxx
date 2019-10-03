@@ -146,7 +146,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fCompute_dist12_dist23(kFALSE)
   ,fExplore_PIDstdCuts(kFALSE),
   fLcMassWindowForSigmaC(0.030),
-  fSigmaCDeltaMassWindow(0.300),
+  fSigmaCDeltaMassWindow(0.230),
   fSigmaCfromLcOnTheFly(kTRUE),
   fCheckOnlyTrackEfficiency(kFALSE)
 {
@@ -221,7 +221,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fCompute_dist12_dist23(kFALSE),
   fExplore_PIDstdCuts(kFALSE),
   fLcMassWindowForSigmaC(0.030),
-  fSigmaCDeltaMassWindow(0.300),
+  fSigmaCDeltaMassWindow(0.230),
   fSigmaCfromLcOnTheFly(kTRUE),
   fCheckOnlyTrackEfficiency(kFALSE)
 {
@@ -527,7 +527,7 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   Double_t lowEdges[8]={0,2.15,0.,0,0.8,0,-1,-0.5};
   Double_t upEdges[8]={16,2.65,0.0500,8,1.,5,9,10.5};
   if(!fFillTree)  fhSparseAnalysis=new THnSparseF("fhSparseAnalysis","fhSparseAnalysis;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;seleFlag;PIDcase",8,nbinsSparse,lowEdges,upEdges);
-  Int_t nbinsSparseSigma[11]={16,200,10,12,10,10,1,11,22,20,16};
+  Int_t nbinsSparseSigma[11]={16,400,10,12,10,10,1,11,22,20,16};
   Double_t lowEdgesSigma[11]={0,0.130,0.,0,0.8,0,-0.5,-0.5,2.266,-1,0};
   Double_t upEdgesSigma[11]={16,0.330,0.0500,6.,1.,5,0.5,10.5,2.306,1,16};
   if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;softPiITSrefit;PIDcase;LcMass;CosThetaStarSoftPion;ptsigmac",10,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
