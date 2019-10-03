@@ -421,42 +421,59 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
         if(!trecalpass) 
         {
           AliInfo(Form("L1 phase time recal: No params for run %d and pass %s, try default", fRunNumber, passM.Data())); 
-          
           trecal->Delete();
-          
           trecal=(TObjArray*)contTRF->GetObject(0);
-          
           if(trecal)          
             trecalpass=(TObjArray*)trecal->FindObject("pass1");
-          
           AliInfo("Time L1 phase Recalibrate EMCAL");
         }
         
         if(trecalpass)
         {
-          TH1C *h =GetEMCALL1PhaseInTimeRecalibrationForAllSM();
-          
+          TH1C *h =GetEMCALL1PhaseInTimeRecalibrationForAllSM(0);
           if (h) delete h;
-          
           h = (TH1C*)trecalpass->FindObject(Form("h%d",fRunNumber));
-          
           if (!h) AliError(Form("Could not load h%d",fRunNumber));
-          
           h->SetDirectory(0);
-          
-          SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
+          SetEMCALL1PhaseInTimeRecalibrationForAllSM(h,0);
+	  fEMCALRecoUtils->SwitchOffParRun();
+	  //Now special case for PAR runs
+	  //access tree from OADB file
+	  TTree *tGID = (TTree*)trecalpass->FindObject(Form("h%d_GID",fRunNumber));
+	  if(tGID){//check whether present = PAR run
+	    fEMCALRecoUtils->SwitchOnParRun();
+	    //access tree branch with PARs
+	    ULong64_t ParGlobalBCs;
+	    tGID->SetBranchAddress("GID",&ParGlobalBCs);
+	    //set number of PARs in run
+	    Short_t nPars = (Short_t) tGID->GetEntries();
+	    fEMCALRecoUtils->SetNPars((Short_t)nPars);
+	    //set global ID for each PAR
+	    for (Short_t iParNumber = 0; iParNumber < nPars; ++iParNumber) {
+	      tGID->GetEntry(iParNumber);
+	      fEMCALRecoUtils->SetGlobalIDPar(ParGlobalBCs,iParNumber);
+	    }//loop over entries
+
+	    //access GlobalID hiostograms for each PAR
+	    for(Short_t iParNumber=1; iParNumber<fEMCALRecoUtils->GetNPars()+1;iParNumber++){
+	      TH1C *hPar = (TH1C*)trecalpass->FindObject( Form("h%d_%llu",fRunNumber,fEMCALRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+	      if (!hPar) AliError( Form("Could not load h%d_%llu",fRunNumber,fEMCALRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+	      hPar->SetDirectory(0);
+	      SetEMCALL1PhaseInTimeRecalibrationForAllSM(hPar,iParNumber);
+	    }//loop over PARs
+	  }//end if tGID present
         }
         else 
         {       
           AliError("Do not calibrate L1 phase time");
           fEMCALRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
-        }
+        }//end of if(trecalpass)
       }
       else 
       {       
         AliError("Do not calibrate L1 phase time");
         fEMCALRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
-      }
+      }//end of if(trecal)
       
       delete contTRF;
     }//End of Time L1 phase racalibration 
@@ -2173,11 +2190,11 @@ void AliCalorimeterUtils::RecalibrateCellTime(Double_t & time, Int_t calo, Int_t
 //____________________________________________________________________________________________________
 /// Recalculate time L1 phase shift if time recalibration available for EMCAL.
 //____________________________________________________________________________________________________
-void AliCalorimeterUtils::RecalibrateCellTimeL1Phase(Double_t & time, Int_t calo, Int_t iSM, Int_t bunchCrossNumber) const
+void AliCalorimeterUtils::RecalibrateCellTimeL1Phase(Double_t & time, Int_t calo, Int_t iSM, Int_t bunchCrossNumber, Short_t parNumber) const
 {  
   if ( calo == AliFiducialCut::kEMCAL && GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn() ) 
   {
-    GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(iSM, bunchCrossNumber, time);
+    GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(iSM, bunchCrossNumber, time, parNumber);
   }
 }
 
