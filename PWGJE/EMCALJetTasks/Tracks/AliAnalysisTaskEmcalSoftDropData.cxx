@@ -319,7 +319,7 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
   std::stringstream taskname;
   taskname << "SoftdropDataMaker_R" << std::setw(2) << std::setfill('0') << int(jetradius*10) << trigger;  
   AliAnalysisTaskEmcalSoftDropData *datamaker = new AliAnalysisTaskEmcalSoftDropData(taskname.str().data());
-  datamaker->SelectCollisionCandidates(AliVEvent::kINT7);
+  datamaker->SelectCollisionCandidates(AliVEvent::kAny);
   mgr->AddTask(datamaker);
 
   AliTrackContainer *tracks(nullptr);
