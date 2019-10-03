@@ -650,9 +650,9 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 
  }
  void AliAnalysisTaskSEpPbCorrelationsYS::DefinedQAHistos() {
-   
-      if(fCentType=="Manual") ncentmax=200;
-      else ncentmax=100;
+   Int_t ncentmax;
+   if(fCentType=="Manual") ncentmax=200;
+   else ncentmax=100;
       
    mixedDist=new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, ncentmax, 200, 0, fPoolMinNTracks*1.5 );
    mixedDist2=new TH2F("mixedDist2", ";centrality;events;events", 101, 0,ncentmax, 100, -0.5, 99.5) ;
