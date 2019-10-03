@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <vector>
 #include <TChain.h>
 #include <TTree.h>
 #include <TFile.h>
@@ -1896,7 +1897,8 @@ const  Double_t upperLimit[]={
     if(iPAR != info.numPARs){
       hPARRun[iPAR] =new TH1C(Form("h%d_%llu", runNumber, info.PARGlobalBCs[iPAR]), Form("h%d_%llu", runNumber, info.PARGlobalBCs[iPAR]),19,0,19);
     }else{
-      hPARRun[iPAR] =new TH1C(Form("h%dp%d", runNumber,iPAR), Form("h%d", runNumber),19,0,19);
+      //hPARRun[iPAR] =new TH1C(Form("h%dp%d", runNumber,iPAR), Form("h%d", runNumber),19,0,19);
+      hPARRun[iPAR] =new TH1C(Form("h%d", runNumber), Form("h%d", runNumber),19,0,19);
     }
     for(Int_t i=0;i<20;i++){
       minimumValue=10000;
@@ -2006,6 +2008,17 @@ const  Double_t upperLimit[]={
       hPARRun[iPAR]->Write();
       delete hPARRun[iPAR];
     }
+    // create tree for PAR global IDs
+    ULong64_t ParGlobalBCs;
+    TTree *treePAR=new TTree(Form("t%d_GID",runNumber),"Tree with Global ID");
+    treePAR->Branch("GID",&ParGlobalBCs,"GID/l");
+
+    for(Int_t iPAR = 0; iPAR < info.numPARs; iPAR++){
+      ParGlobalBCs=(ULong64_t)(info.PARGlobalBCs[iPAR]);
+      //printf("infoPAR %llu in tree %llu",info.PARGlobalBCs[iPAR],ParGlobalBCs);
+      treePAR->Fill();
+    }
+    treePAR->Write();
   }else{
     hRun->Write();
     delete hRun;
