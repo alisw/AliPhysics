@@ -56,7 +56,9 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
   fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fLowGain(kFALSE),
-  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),     fDoUseMergedBC(kFALSE),
+  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),
+  fIsParRun(kFALSE),                      fCurrentParNumber(0),                   fNPars(0),                              fGlobalEventID(NULL),
+  fDoUseMergedBC(kFALSE),
   fUseRunCorrectionFactors(kFALSE),       
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),                  fUse1Dmap(kFALSE),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
@@ -114,6 +116,10 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fLowGain(reco.fLowGain),
   fUseL1PhaseInTimeRecalibration(reco.fUseL1PhaseInTimeRecalibration), 
   fEMCALL1PhaseInTimeRecalibration(reco.fEMCALL1PhaseInTimeRecalibration),
+  fIsParRun(reco.fIsParRun),
+  fCurrentParNumber(reco.fCurrentParNumber),
+  fNPars(reco.fNPars),
+  fGlobalEventID(reco.fGlobalEventID),
   fDoUseMergedBC(reco.fDoUseMergedBC),
   fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   
   fRemoveBadChannels(reco.fRemoveBadChannels),               fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
@@ -206,6 +212,11 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fUseL1PhaseInTimeRecalibration   = reco.fUseL1PhaseInTimeRecalibration;
   fEMCALL1PhaseInTimeRecalibration = reco.fEMCALL1PhaseInTimeRecalibration;
 
+  fIsParRun                  = reco.fIsParRun;
+  fCurrentParNumber          = reco.fCurrentParNumber;
+  fNPars                     = reco.fNPars;
+  fGlobalEventID             = reco.fGlobalEventID;
+  
   fDoUseMergedBC             = reco.fDoUseMergedBC;
   
   fUseRunCorrectionFactors   = reco.fUseRunCorrectionFactors;
@@ -388,6 +399,10 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
   delete fResidualPhi         ; 
   delete fPIDUtils            ;
 
+  if (fGlobalEventID){
+    delete fGlobalEventID;
+  }
+  
   InitTrackCuts();
 }
 
@@ -462,7 +477,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   RecalibrateCellTime(absID,bc,time,isLowGain);
   
   //Recalibrate time with L1 phase 
-  RecalibrateCellTimeL1Phase(imod, bc, time);
+  RecalibrateCellTimeL1Phase(imod, bc, time, fCurrentParNumber);
 
   return kTRUE;
 }
@@ -1858,7 +1873,7 @@ void AliEMCALRecoUtils::InitEMCALL1PhaseInTimeRecalibration()
   fEMCALL1PhaseInTimeRecalibration->Add(new TH1C("h0","EMCALL1phaseForSM", 22, 0, 22));
   
   for (Int_t i = 0; i < 22; i++) //loop over SMs, default value = 0
-    SetEMCALL1PhaseInTimeRecalibrationForSM(i,0);
+    SetEMCALL1PhaseInTimeRecalibrationForSM(i,0,0);
   
   fEMCALL1PhaseInTimeRecalibration->SetOwner(kTRUE);
   fEMCALL1PhaseInTimeRecalibration->Compress();
@@ -1951,7 +1966,7 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   
   // Recalibrate time with L1 phase 
   if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn())
-    RecalibrateCellTimeL1Phase(imod, bc, time);
+    RecalibrateCellTimeL1Phase(imod, bc, time, fCurrentParNumber);
   
   cluster->SetTOF(time);
   
@@ -2030,16 +2045,17 @@ void AliEMCALRecoUtils::RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & ce
 /// \param iSM: supermodule number
 /// \param bc: bunch crossing number returned by esdevent->GetBunchCrossNumber()
 /// \param celltime: cell time to be returned calibrated
+/// \param par: Int_t, in case of PAR load another set of L1 shifts, 0-no or before PAR, 1-after 1st PAR etc
 ///
 //_______________________________________________________________________________________________________
-void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t & celltime) const
+void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t & celltime, Short_t par) const
 {
   if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn() && bc >= 0) 
   {
     bc=bc%4;
 
     Float_t offsetPerSM=0.;
-    Int_t l1PhaseShift = GetEMCALL1PhaseInTimeRecalibrationForSM(iSM);
+    Int_t l1PhaseShift = GetEMCALL1PhaseInTimeRecalibrationForSM(iSM,par);
     Int_t l1Phase=l1PhaseShift & 3; //bit operation
 
     if(bc >= l1Phase)
@@ -4083,19 +4099,19 @@ void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TObjArr
   for(int i = 0; i < map->GetEntries(); i++) {
     TH1C *hist = dynamic_cast<TH1C *>(map->At(i));
     if(!hist) continue;
-    SetEMCALL1PhaseInTimeRecalibrationForAllSM(hist);    
+    SetEMCALL1PhaseInTimeRecalibrationForAllSM(hist,i);    
   }
 }
 
-void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TH1C* h) { 
+void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TH1C* h, Short_t parNumber) { 
   if(!fEMCALL1PhaseInTimeRecalibration){
     fEMCALL1PhaseInTimeRecalibration = new TObjArray(1);
     fEMCALL1PhaseInTimeRecalibration->SetOwner(true);
   }
-  if(fEMCALL1PhaseInTimeRecalibration->GetEntries()<1) fEMCALL1PhaseInTimeRecalibration->Expand(1); 
+  if(fEMCALL1PhaseInTimeRecalibration->GetEntries()<parNumber+1) fEMCALL1PhaseInTimeRecalibration->Expand(parNumber+1); 
   TH1C *clone = new TH1C(*h);
   clone->SetDirectory(NULL);
-  fEMCALL1PhaseInTimeRecalibration->AddAt(clone,0); 
+  fEMCALL1PhaseInTimeRecalibration->AddAt(clone,parNumber); 
 }
 
 ///
