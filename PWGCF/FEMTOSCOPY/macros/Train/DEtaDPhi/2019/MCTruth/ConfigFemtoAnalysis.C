@@ -3,6 +3,7 @@
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
 #include "AliFemtoEventReaderAODChain.h"
+#include "AliFemtoEventReaderAODKinematicsChain.h"
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoESDTrackCut.h"
@@ -154,7 +155,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 
-	AliFemtoEventReaderKinematicsChain* Reader=new AliFemtoEventReaderKinematicsChain();
+	AliFemtoEventReaderAODKinematicsChain* Reader=new AliFemtoEventReaderAODKinematicsChain();
 
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
