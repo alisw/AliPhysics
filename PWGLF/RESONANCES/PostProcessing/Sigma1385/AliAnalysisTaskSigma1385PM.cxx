@@ -293,7 +293,6 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
         track = (AliVTrack*)fEvt->GetTrack(it);
         if (!track)
             continue;
-        fHistos->FillTH1("hNofTracks", 0.5);
 
         GetImpactParam(track, b, bCov);
 
