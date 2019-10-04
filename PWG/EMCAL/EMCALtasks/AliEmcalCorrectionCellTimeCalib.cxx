@@ -30,6 +30,7 @@ AliEmcalCorrectionCellTimeCalib::AliEmcalCorrectionCellTimeCalib() :
   ,fCalibrateTime(kFALSE)
   ,fCalibrateTimeL1Phase(kFALSE)
   ,fDoMergedBCs(kFALSE)
+  ,fDoCalibrateLowGain(kFALSE)
   ,fUseAutomaticTimeCalib(1)
 {
 }
@@ -61,6 +62,13 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
 
   if (fDoMergedBCs)
     fRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
+
+  GetProperty("doCalibrateLowGain", fDoCalibrateLowGain);    
+
+  if (fDoCalibrateLowGain)
+    fRecoUtils->SwitchOnLG();
+  else
+    fRecoUtils->SwitchOffLG();
 
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
@@ -235,6 +243,30 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     
       h->SetDirectory(0);
       fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
+
+      if(fDoCalibrateLowGain){
+        TH1F *hLG = (TH1F*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(i+4);
+        if (hLG)
+          delete hLG;
+      
+        hLG = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvLGBC%d",i));
+      
+        if (!hLG)
+        {
+          AliError(Form("Can not get hAllTimeAvLGBC%d",i));
+          continue;
+        }
+      
+        // Shift parameters for bc0 and bc1 in this pass
+        if ( pass=="spc_calo" && (i==0 || i==1) ) 
+        {
+          for(Int_t icell = 0; icell < hLG->GetNbinsX(); icell++) 
+            hLG->SetBinContent(icell,hLG->GetBinContent(icell)-100);
+        }
+      
+        hLG->SetDirectory(0);
+        fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i+4,hLG);
+      }
     }
   }else{
   
@@ -249,6 +281,20 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     
     h->SetDirectory(0);
     fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(0,h);//HG cells
+
+    if(fDoCalibrateLowGain){
+      TH1S *hLG = (TH1S*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(1);//LG cells
+      if (hLG)
+        delete hLG;
+    
+      hLG = (TH1S*)arrayBCpass->FindObject("hAllTimeAvLG");
+    
+      if (!hLG)
+        AliError("Can not get hAllTimeAvLG");
+      
+      hLG->SetDirectory(0);
+      fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(1,hLG);//LG cells
+    }
   }
   
   return 1;
