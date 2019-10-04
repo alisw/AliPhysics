@@ -210,18 +210,18 @@ void AliEmcalCorrectionComponent::UpdateCells()
   
   if (fRecoUtils){
     //In case of PAR run check global event ID
-    Short_t currentParIndex = 0;
     if(fRecoUtils->IsParRun()){
+      Short_t currentParIndex = 0;
       ULong64_t globalEventID = (ULong64_t)bunchCrossNo + (ULong64_t)fEventManager.InputEvent()->GetOrbitNumber() * (ULong64_t)3564 + (ULong64_t)fEventManager.InputEvent()->GetPeriodNumber() * (ULong64_t)59793994260;
       for(Short_t ipar=0;ipar<fRecoUtils->GetNPars();ipar++){
 	if(globalEventID >= fRecoUtils->GetGlobalIDPar(ipar)) {
 	  currentParIndex++;
 	}
       }
+      fRecoUtils->SetCurrentParNumber(currentParIndex);      
     }
-    fRecoUtils->SetCurrentParNumber(currentParIndex);
     //end of PAR run settings
-    
+
     fRecoUtils->RecalibrateCells(fCaloCells, bunchCrossNo);
   }
   fCaloCells->Sort();
