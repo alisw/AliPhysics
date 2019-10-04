@@ -22,6 +22,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetCleanTracks(Bool_t b)            {fDoCleanTracks=b;}
     void                  SetClusMinE(Double_t v)             {fClusMinE=v;}
     void                  SetTrackMinPt(Double_t v)           {fTrackMinPt=v;}
+    void                  SetTrackMaxPt(Double_t v)           {fTrackMaxPt=v;}
     void                  SetDoBothMinTrackAndClus(Bool_t b)  {fDoBothMinTrackAndClus=b;}
     void                  SetCopyCascades(Bool_t b)           {fDoCopyCascades=b;}
     void                  SetCopyCells(Bool_t b)              {fDoCopyCells=b;}
@@ -62,6 +63,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     Bool_t                PythiaInfoFromFile(const char *currFile, Float_t &xsec, Float_t &trials, Int_t &pthard);
     Double_t              fClusMinE;              //  minimum cluster energy to accept event
     Double_t              fTrackMinPt;            //  minimum track pt to accept event
+    Double_t              fTrackMaxPt;            //  maximum track pt to accept event
     Bool_t                fDoBothMinTrackAndClus; // switch to enable simultaneous filtering for minimum track and cluster cuts
     Bool_t                fCutMC;                 //  if true cut MC particles with |Y|>fYCutMC
     Double_t              fYCutMC;                //  cut for MC particles (default = 0.7)
@@ -111,6 +113,6 @@ class AliAodSkimTask: public AliAnalysisTaskSE
 
     AliAodSkimTask(const AliAodSkimTask&);             // not implemented
     AliAodSkimTask& operator=(const AliAodSkimTask&);  // not implemented
-    ClassDef(AliAodSkimTask, 6); // AliAodSkimTask
+    ClassDef(AliAodSkimTask, 7); // AliAodSkimTask
 };
 #endif
