@@ -439,7 +439,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
             // Rapidity cut
             fHistos->FillTH1("QA/hYlambda", v0ESD->RapLambda());
             if (TMath::Abs(v0ESD->RapLambda()) > fMaxLambdaRapidity)
-                return kFALSE;
+                AcceptedV0 = kFALSE;
 
             // Radius cut
             v0ESD->GetXYZ(v0Position[0], v0Position[1], v0Position[2]);
@@ -575,7 +575,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
             // Rapidity cut
             fHistos->FillTH1("QA/hYlambda", v0AOD->RapLambda());
             if (TMath::Abs(v0AOD->RapLambda()) > fMaxLambdaRapidity)
-                return kFALSE;
+                AcceptedV0 = kFALSE;
 
             // Radius cut
             radius = v0AOD->RadiusV0();
