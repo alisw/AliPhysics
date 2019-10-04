@@ -394,7 +394,7 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
             // DCA between Dautgher particles
             DCADistLambda = TMath::Abs(v0ESD->GetDcaV0Daughters());
             fHistos->FillTH1("QA/hDCA_lambdaDaughters", DCADistLambda);
-            if (DCADistLambda > DCADistLambdaDaughtersCut)
+            if (DCADistLambda > fDCADistLambdaDaughtersCut)
                 AcceptedV0 = kFALSE;
 
             // DCA to PV
@@ -540,7 +540,7 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
             // DCA cut
             DCADistLambda = TMath::Abs(v0AOD->DcaV0Daughters());
             fHistos->FillTH1("QA/hDCA_lambdaDaughters", DCADistLambda);
-            if (DCADistLambda > DCADistLambdaDaughtersCut)
+            if (DCADistLambda > fDCADistLambdaDaughtersCut)
                 AcceptedV0 = kFALSE;  // DCA proton-pion
 
             // DCA to PV
