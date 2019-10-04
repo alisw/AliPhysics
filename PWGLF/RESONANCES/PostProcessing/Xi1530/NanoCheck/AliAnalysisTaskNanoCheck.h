@@ -91,12 +91,21 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     Double_t fTPCNsigLambdaPionCut = 3.0;
     Double_t fDCADistLambdaDaughtersCut = 0.5;    // 0.5
     Double_t fDCArDistLambdaPVCut = 0.3;          // 0.3
-    Double_t fV0CosineOfPointingAngleCut = 0.99;  // 0.99
+    Double_t fV0CosineOfPointingAngleCut = 0.97;  // 0.97
     Double_t fMaxLambdaRapidity = 0.5;
     Double_t fLambdaLowRadius = 0.5;
     Double_t fLambdaHighRadius = 200.0;
     Double_t fLambdaLifetime = 30.0;
     Double_t fV0MassWindowCut = 0.01;
+
+    // Xi cuts
+    Double_t fTPCNsigBachelorPionCut = 3.0;
+    Double_t fXiEtaCut = 0.8;
+    Double_t fDCADist_LambdaDaughtersCut = 1.4;
+    Double_t fDCADist_XiDaughtersCut = 1.6;
+    Double_t fDCADist_Lambda_PVCut = 0.07;
+    Double_t fCascadeCosineOfPointingAngleCut = 0.97;
+    Double_t fXiMassWindowCut = 0.007;
 
     // Recon cut
     Double_t fNanoCheckerYCutHigh = 0.5;
@@ -105,12 +114,14 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
 
     std::vector<UInt_t> goodtrackindices;  //!
     std::vector<std::vector<UInt_t>> goodv0indices;  //!
+    std::vector<std::vector<UInt_t>> goodcascadeindices;  //!
 
-    ClassDef(AliAnalysisTaskNanoCheck, 4);
+    ClassDef(AliAnalysisTaskNanoCheck, 5);
     // Add rapidity/radius/Lifetime/Y cut of lambda
     // Add GetImpactParam function
     // Add setter for checking track/v0/cascade
     // Add isAOD variable to prevent computing same check.
+    // Add cacade checker
 };
 
 #endif
