@@ -15,6 +15,7 @@
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TBits.h>
+#include <TVectorF.h>
 #include "AliVHeader.h"
 #include "AliTriggerScalersESD.h"
 #include "AliTriggerScalersRecordESD.h"
@@ -93,6 +94,11 @@ public:
   Char_t GetTPCNoiseFilterCounter(UInt_t index) {return fTPCNoiseFilterCounter[index%3];};
   void SetTPCNoiseFilterCounter(UInt_t index,UChar_t value) {fTPCNoiseFilterCounter[index%3]=value;};
 
+  const TVectorF* GetTPCPileUpInfo() const {return fTPCPileUpInfo;}
+  const TVectorF* GetITSPileUpInfo() const {return fITSPileUpInfo;}
+  void SetTPCPileUpInfo(const TVectorF* src);
+  void SetITSPileUpInfo(const TVectorF* src);
+  
 private:
   void   SetIRInteractionMap() const;
 
@@ -124,8 +130,10 @@ private:
   mutable TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId within -90 +90 BXs
   UChar_t fTPCNoiseFilterCounter[3];  // filter counter [0]=sector, [1]-timebin/sector, [2]-padrowsector 
 
-
-  ClassDef(AliESDHeader,14)
+  TVectorF* fTPCPileUpInfo;           ///< custom info about TPC pileup used by TPC PID
+  TVectorF* fITSPileUpInfo;           ///< custom info about TPC pileup used by TPC PID
+ 
+  ClassDef(AliESDHeader,15)
 };
 
 #endif

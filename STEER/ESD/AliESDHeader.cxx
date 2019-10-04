@@ -52,7 +52,9 @@ AliESDHeader::AliESDHeader() :
   fCTPConfig(NULL),
   fIRBufferArray(),
   fIRInt2InteractionsMap(0),
-  fIRInt1InteractionsMap(0)
+  fIRInt1InteractionsMap(0),
+  fTPCPileUpInfo(0),
+  fITSPileUpInfo(0)
 {
   // default constructor
 
@@ -69,6 +71,8 @@ AliESDHeader::~AliESDHeader()
   for(Int_t i=0;i<kNMaxIR;i++)if(fIRArray[i])delete fIRArray[i];
   delete fCTPConfig;
   //  fIRBufferArray.Delete();
+  delete fTPCPileUpInfo;
+  delete fITSPileUpInfo;
 }
 
 
@@ -94,7 +98,9 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fCTPConfig(header.fCTPConfig),
   fIRBufferArray(),
   fIRInt2InteractionsMap(header.fIRInt2InteractionsMap),
-  fIRInt1InteractionsMap(header.fIRInt1InteractionsMap)
+  fIRInt1InteractionsMap(header.fIRInt1InteractionsMap),
+  fTPCPileUpInfo(new TVectorF(*header.fTPCPileUpInfo)),
+  fITSPileUpInfo(new TVectorF(*header.fITSPileUpInfo))
 {
   // copy constructor
   for(Int_t i = 0; i<kNMaxIR ; i++) {
@@ -159,6 +165,12 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
       if (ir) fIRBufferArray.Add(new AliTriggerIR(*ir));
     }
     for (Int_t itype=0; itype<3; itype++) fTPCNoiseFilterCounter[itype]=header.fTPCNoiseFilterCounter[itype];
+    
+    delete fTPCPileUpInfo;
+    fTPCPileUpInfo = header.fTPCPileUpInfo ? new TVectorF(*header.fTPCPileUpInfo) : 0;
+    delete fITSPileUpInfo;
+    fITSPileUpInfo = header.fITSPileUpInfo ? new TVectorF(*header.fITSPileUpInfo) : 0;
+    
   }
   return *this;
 }
@@ -650,4 +662,34 @@ Int_t  AliESDHeader::GetIRInt2LastInteractionMap() const
 
   Int_t last = lastPositive > TMath::Abs(lastNegative) ? lastPositive : TMath::Abs(lastNegative);
   return last;
+}
+
+void AliESDHeader::SetTPCPileUpInfo(const TVectorF* src)
+{
+  if (src) {
+    if (!fTPCPileUpInfo || !AreCompatible(*fTPCPileUpInfo, *src)) {
+      delete fTPCPileUpInfo;
+      fTPCPileUpInfo = new TVectorF(*src);
+    }
+    else *fTPCPileUpInfo = *src;
+  }
+  else {
+    delete fTPCPileUpInfo;
+    fTPCPileUpInfo = 0;
+  }
+}
+
+void AliESDHeader::SetITSPileUpInfo(const TVectorF* src)
+{
+  if (src) {
+    if (!fITSPileUpInfo || !AreCompatible(*fITSPileUpInfo, *src)) {
+      delete fITSPileUpInfo;
+      fITSPileUpInfo = new TVectorF(*src);
+    }
+    else *fITSPileUpInfo = *src;
+  }
+  else {
+    delete fITSPileUpInfo;
+    fITSPileUpInfo = 0;
+  }
 }

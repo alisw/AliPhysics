@@ -291,6 +291,8 @@ AliAODHeader::~AliAODHeader()
   delete fCentralityP;
   delete fEventplaneP;
   RemoveQTheta();
+  delete fTPCPileUpInfo;
+  delete fITSPileUpInfo;
 }
 
 //______________________________________________________________________________
