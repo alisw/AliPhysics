@@ -11,7 +11,6 @@
 #include "TChain.h"
 #include "TList.h"
 #include "TString.h"
-#include <TString.h>
 #include <iostream>
 
 #include "AliMCSpectraWeightsAnalysisTask.h"
