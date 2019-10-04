@@ -73,6 +73,7 @@ set(SRCS
     AliAnalysisTaskK0toPi0Pi0.cxx
     AliAnalysisTaskPi0v2.cxx
     AliAnalysisTaskTrackQA.cxx	
+    AliAnalysisTRDEfficiency.cxx
     AliIdentifiedPrimaryCuts.cxx
     AliIdentifiedPrimarySelector.cxx
     AliAnalysisTaskResolution.cxx

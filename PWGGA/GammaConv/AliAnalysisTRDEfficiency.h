@@ -2,19 +2,19 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliAnalysisTaskMyTask_H
-#define AliAnalysisTaskMyTask_H
+#ifndef AliAnalysisTRDEfficiency_H
+#define AliAnalysisTRDEfficiency_H
 
 #include "AliAnalysisTaskSE.h"
 //#include "AliKFConversionPhoton.h"
 #include "THnSparse.h"
 
-class AliAnalysisTaskMyTask : public AliAnalysisTaskSE  
+class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE  
 {
     public:
-                                AliAnalysisTaskMyTask();
-                                AliAnalysisTaskMyTask(const char *name);
-        virtual                 ~AliAnalysisTaskMyTask();
+                                AliAnalysisTRDEfficiency();
+                                AliAnalysisTRDEfficiency(const char *name);
+        virtual                 ~AliAnalysisTRDEfficiency();
 
         virtual void            UserCreateOutputObjects();
         virtual Bool_t          GetAODConversionGammas(AliAODEvent* fAOD);
@@ -107,10 +107,10 @@ class AliAnalysisTaskMyTask : public AliAnalysisTaskSE
         TList*                  lsttrckvnthqu;
         //AliConversionPhotonCuts fConversionCuts;
         
-        AliAnalysisTaskMyTask(const AliAnalysisTaskMyTask&); // not implemented
-        AliAnalysisTaskMyTask& operator=(const AliAnalysisTaskMyTask&); // not implemented
+        AliAnalysisTRDEfficiency(const AliAnalysisTRDEfficiency&); // not implemented
+        AliAnalysisTRDEfficiency& operator=(const AliAnalysisTRDEfficiency&); // not implemented
 
-        ClassDef(AliAnalysisTaskMyTask, 1);
+        ClassDef(AliAnalysisTRDEfficiency, 1);
 };
 
 #endif

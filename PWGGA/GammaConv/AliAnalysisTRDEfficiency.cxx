@@ -19,25 +19,15 @@
  * as an example, one histogram is filled
  */
 #include "TSystem.h"
-
 #include "TFile.h"
-
 #include "TChain.h"
-
 #include "TTree.h"
-
 #include "TH1F.h"
-
 #include "TCanvas.h"
-
 #include "TBranch.h"
-
 #include "TEventList.h"
-
 #include "TObject.h"
-
 #include "TNamed.h"
-
 #include "TChain.h"
 #include "TH1F.h"
 #include "TList.h"
@@ -47,17 +37,12 @@
 #include "AliAODInputHandler.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
-#include "AliAnalysisTaskMyTask.h"
+#include "AliAnalysisTRDEfficiency.h"
 
 #include <iostream>
-
-
 #include <fstream>
-
 #include <iomanip>
-
 #include <typeinfo>
-
 #include "TApplication.h"
 
 #include "AliAODv0.h"
@@ -112,7 +97,7 @@
 //#include "AliV0ReaderV1.h"
 //#include "THnSparseD.h"
 
-class AliAnalysisTaskMyTask;    // your analysis class
+class AliAnalysisTRDEfficiency;    // your analysis class
 //class AliConversionPhotonBase;
 class AliConversionPhotonCuts;
 //class AliConversionSelection;
@@ -120,9 +105,9 @@ class AliConversionPhotonCuts;
 
 using namespace std;            // std namespace: so you can do things like 'cout'
 
-ClassImp(AliAnalysisTaskMyTask) // classimp: necessary for root
+ClassImp(AliAnalysisTRDEfficiency) // classimp: necessary for root
 
-AliAnalysisTaskMyTask::AliAnalysisTaskMyTask() : AliAnalysisTaskSE(), 
+AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(), 
     fAOD(0), 
     fOutputList(0),
     file(0),
@@ -195,7 +180,7 @@ AliAnalysisTaskMyTask::AliAnalysisTaskMyTask() : AliAnalysisTaskSE(),
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
-AliAnalysisTaskMyTask::AliAnalysisTaskMyTask(const char* name) : AliAnalysisTaskSE(name),
+AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalysisTaskSE(name),
     fAOD(0), 
     fOutputList(0), 
     file(0),
@@ -265,7 +250,7 @@ AliAnalysisTaskMyTask::AliAnalysisTaskMyTask(const char* name) : AliAnalysisTask
                                         // make changes to your AddTask macro!
 }
 //_____________________________________________________________________________
-AliAnalysisTaskMyTask::~AliAnalysisTaskMyTask()
+AliAnalysisTRDEfficiency::~AliAnalysisTRDEfficiency()
 {
     // destructor
     if (fConversionGammas){
@@ -276,7 +261,7 @@ AliAnalysisTaskMyTask::~AliAnalysisTaskMyTask()
     }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskMyTask::UserCreateOutputObjects()
+void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
 {
     // create output objects
     //
@@ -527,13 +512,13 @@ void AliAnalysisTaskMyTask::UserCreateOutputObjects()
     //cout << "finish user stuff" << endl;
 }
 
-//void AliAnalysisTaskMyTask::SetGammaConversionFile(TString *name)
+//void AliAnalysisTRDEfficiency::SetGammaConversionFile(TString *name)
 //{
 //    return;
 //}
 /*
  //_______________________________________________________________________
- TFile* AliAnalysisTaskMyTask::OpenDigitsFile(TString inputfile,
+ TFile* AliAnalysisTRDEfficiency::OpenDigitsFile(TString inputfile,
                                              TString digfile,
                                              TString opt)
  {
@@ -565,7 +550,7 @@ void AliAnalysisTaskMyTask::UserCreateOutputObjects()
 
 //_______________________________________________________________________________
 
-Bool_t AliAnalysisTaskMyTask::GetAODConversionGammas(AliAODEvent* fAODEvent){
+Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
             // yeeted from the https://github.com/alisw/AliPhysics/blob/master/PWGGA/GammaConvBase/AliV0ReaderV1.cxx
 
 
@@ -862,14 +847,14 @@ Bool_t AliAnalysisTaskMyTask::GetAODConversionGammas(AliAODEvent* fAODEvent){
 }
 
 
-//Bool_t AliAnalysisTaskMyTask::GetSimilarVertex();
+//Bool_t AliAnalysisTRDEfficiency::GetSimilarVertex();
 //{
 //    return kTRUE;
 //}
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskMyTask::UserExec(Option_t *)
+void AliAnalysisTRDEfficiency::UserExec(Option_t *)
 {
     //cout << "so the debugging begins" << endl;
     
@@ -1036,7 +1021,7 @@ void AliAnalysisTaskMyTask::UserExec(Option_t *)
 
 
 //________________________________________________________________________________
-void AliAnalysisTaskMyTask::Photons(AliAODEvent* fAOD)
+void AliAnalysisTRDEfficiency::Photons(AliAODEvent* fAOD)
 {
     Int_t count = 0;
     Int_t ecount= 0;
@@ -1098,7 +1083,7 @@ void AliAnalysisTaskMyTask::Photons(AliAODEvent* fAOD)
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskMyTask::Terminate(Option_t *)
+void AliAnalysisTRDEfficiency::Terminate(Option_t *)
 {
     // terminate
     // called at the END of the analysis (when all events are processed)
