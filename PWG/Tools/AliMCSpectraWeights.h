@@ -13,10 +13,10 @@ class AliMCEvent;
 class TH3F;
 class TH1D;
 class TF1;
-//#include <array>
-//#include <memory>
-//#include <string>
-//#include <vector>
+#include <array>
+#include <memory>
+#include <string>
+#include <vector>
 #if defined (__CLING__)
     #include <array>
     #include <memory>
@@ -130,16 +130,16 @@ public:
     AliMCSpectraWeights(
                         std::string collisionSystem, std::string stName,
                         AliMCSpectraWeights::SysFlag flag); /*!< constructor to be used.*/
-    ~AliMCSpectraWeights();       /*!< default destructor */
-    AliMCSpectraWeights(const AliMCSpectraWeights& other) =
-default; /*!< copy constructor */
-    AliMCSpectraWeights(AliMCSpectraWeights&& other) =
-default; /*!<  move constructor */
-    AliMCSpectraWeights& operator=(const AliMCSpectraWeights& other) =
-default; /*!<  copy assignment */
-    AliMCSpectraWeights&
-    operator=(AliMCSpectraWeights&& other) = default; /*!<  move assignment */
-    
+//    ~AliMCSpectraWeights();       /*!< default destructor */
+//    AliMCSpectraWeights(const AliMCSpectraWeights& other) =
+//default; /*!< copy constructor */
+//    AliMCSpectraWeights(AliMCSpectraWeights&& other) =
+//default; /*!<  move constructor */
+//    AliMCSpectraWeights& operator=(const AliMCSpectraWeights& other) =
+//default; /*!<  copy assignment */
+//    AliMCSpectraWeights&
+//    operator=(AliMCSpectraWeights&& other) = default; /*!<  move assignment */
+//
     void
     Init(); /*!< Function to start initalizing after all setters are made. */
     float GetMCSpectraWeight(
