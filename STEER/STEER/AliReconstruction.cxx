@@ -157,6 +157,7 @@
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
 #include "AliESDtrack.h"
+#include "AliESDUtils.h"
 #include "AliEventInfo.h"
 #include "AliGRPObject.h"
 #include "AliGRPRecoParam.h"
@@ -228,6 +229,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunV0Finder(kTRUE),
   fRunCascadeFinder(kTRUE),
   fRunMultFinder(kTRUE),
+  fRunCustomPileupFinders(kTRUE),
   fStopOnError(kTRUE),
   fStopOnMissingTriggerFile(kTRUE),
   fWriteAlignmentData(kFALSE),
@@ -379,6 +381,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunV0Finder(rec.fRunV0Finder),
   fRunCascadeFinder(rec.fRunCascadeFinder),
   fRunMultFinder(rec.fRunMultFinder),
+  fRunCustomPileupFinders(rec.fRunCustomPileupFinders),
   fStopOnError(rec.fStopOnError),
   fStopOnMissingTriggerFile(rec.fStopOnMissingTriggerFile),
   fWriteAlignmentData(rec.fWriteAlignmentData),
@@ -548,6 +551,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fRunV0Finder           = rec.fRunV0Finder;
   fRunCascadeFinder      = rec.fRunCascadeFinder;
   fRunMultFinder         = rec.fRunMultFinder;
+  fRunCustomPileupFinders = rec.fRunCustomPileupFinders;
   fStopOnError           = rec.fStopOnError;
   fStopOnMissingTriggerFile = rec.fStopOnMissingTriggerFile;
   fWriteAlignmentData    = rec.fWriteAlignmentData;
@@ -2557,6 +2561,12 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
        if (fStopOnError) {CleanUp(); return kFALSE;}
     }
 
+    if (fRunCustomPileupFinders) {
+      if (RunCustomPileUpFinders(fesd)) {
+	if (fStopOnError) {CleanUp(); return kFALSE;}
+      }
+    }
+    
     AliSysInfo::AddStamp(Form("FillVaria_%d",iEvent), 0,0,iEvent); 
 
     // write ESD
@@ -5218,4 +5228,17 @@ void AliReconstruction::SetPIDforTrackingOptimisedForNuclei(Int_t val)
   // set/unset pid for tracking as in Run1
   AliInfoF("Impose PID for tracking optimised for nuclei, dE/dx threshold between 3He and pi: %i",val);
   AliESDpid::SetOnly3HeOrPi(val);
+}
+
+//___________________________________________________
+Bool_t AliReconstruction::RunCustomPileUpFinders(AliESDEvent*& esd)
+{
+  // put into the ESD header custom pile-up info
+  static TVectorF vtiTPC(10), vtiITS(8);
+  AliESDUtils::GetTPCPileupVertexInfo(esd, vtiTPC);
+  AliESDUtils::GetITSPileupVertexInfo(esd, vtiITS);
+  AliESDHeader* esdheader = esd->GetHeader();
+  esdheader->SetTPCPileUpInfo(&vtiTPC);
+  esdheader->SetITSPileUpInfo(&vtiITS);
+  return kTRUE;
 }
