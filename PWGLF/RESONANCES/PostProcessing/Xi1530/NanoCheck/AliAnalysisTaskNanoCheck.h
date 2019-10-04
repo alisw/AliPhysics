@@ -64,6 +64,7 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     AliAODVertex* vertex = nullptr;   //!
     Bool_t IsMC = kFALSE;
     Bool_t IsNano = kFALSE;
+    Bool_t IsAOD = kFALSE;
     Bool_t checkTracks = kTRUE;
     Bool_t checkV0s = kTRUE;
     Bool_t checkCascades = kTRUE;
@@ -105,10 +106,11 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     std::vector<UInt_t> goodtrackindices;  //!
     std::vector<std::vector<UInt_t>> goodv0indices;  //!
 
-    ClassDef(AliAnalysisTaskNanoCheck, 3);
+    ClassDef(AliAnalysisTaskNanoCheck, 4);
     // Add rapidity/radius/Lifetime/Y cut of lambda
     // Add GetImpactParam function
     // Add setter for checking track/v0/cascade
+    // Add isAOD variable to prevent computing same check.
 };
 
 #endif
