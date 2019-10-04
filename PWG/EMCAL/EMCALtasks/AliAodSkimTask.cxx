@@ -22,7 +22,7 @@ using namespace std;
 ClassImp(AliAodSkimTask)
 
 AliAodSkimTask::AliAodSkimTask(const char* name) :
-  AliAnalysisTaskSE(name), fClusMinE(-1), fTrackMinPt(-1), fDoBothMinTrackAndClus(0), fCutMC(1), fYCutMC(0.7), fCutMinPt(0), fCutFilterBit(-1), fGammaBr(""),
+  AliAnalysisTaskSE(name), fClusMinE(-1), fTrackMinPt(-1), fTrackMaxPt(-1), fDoBothMinTrackAndClus(0), fCutMC(1), fYCutMC(0.7), fCutMinPt(0), fCutFilterBit(-1), fGammaBr(""),
   fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoRemoveTracks(0), fDoCleanTracks(0),
   fDoRemCovMat(0), fDoRemPid(0), fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0),  fDoCopyTrdTracks(0),
   fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), fDoCopyMC(1), fDoCopyMCHeader(1), fDoVertWoRefs(0), fDoVertMain(0), fDoCleanTracklets(0),
@@ -157,7 +157,7 @@ void AliAodSkimTask::UserExec(Option_t *)
 
   // Accept event only if an track with a minimum pT of fTrackMinPt has been found in the event
   Bool_t storePt = kFALSE;
-  if (fTrackMinPt > 0 ){
+  if (fTrackMinPt > 0 && fTrackMaxPt < 0){
     TClonesArray *tracks = fAOD->GetTracks();
     for (Int_t i=0;i<tracks->GetEntries();++i) {
       AliAODTrack *t = static_cast<AliAODTrack*>(tracks->At(i));
@@ -171,6 +171,23 @@ void AliAodSkimTask::UserExec(Option_t *)
     storePt = kTRUE;
   }
 
+  // Accept event only if an track within a pT interval (fTrackMinPt, fTrackMaxPt) has been found in the event
+  Bool_t storeTT = kFALSE;
+  if (fTrackMinPt > 0 && fTrackMaxPt > 0){
+    TClonesArray *tracks = fAOD->GetTracks();
+    for (Int_t i=0;i<tracks->GetEntries();++i) {
+      AliAODTrack *t = static_cast<AliAODTrack*>(tracks->At(i));
+      Double_t pt = t->Pt();
+      fHtrack->Fill(pt);
+      if (fTrackMaxPt > pt &&  pt > fTrackMinPt) {
+        storeTT = kTRUE;
+      }
+    }
+  } else {
+    storeTT = kTRUE;
+  }
+
+
   Bool_t store = kFALSE;
   if (fDoBothMinTrackAndClus && fClusMinE>0 && fTrackMinPt > 0){
     // request that both conditions are full-filled for propagating the event
@@ -180,8 +197,10 @@ void AliAodSkimTask::UserExec(Option_t *)
     store     = (storeE || storePt);
   } else if ( fClusMinE>0 ){
     store     = storeE;
-  } else if ( fTrackMinPt>0 ){
+  } else if ( fTrackMinPt>0 && fTrackMaxPt<0){
     store     = storePt;
+  } else if ( fTrackMinPt>0 && fTrackMaxPt>0){
+    store     = storeTT;
   } else {
     store     = kTRUE;
   }
