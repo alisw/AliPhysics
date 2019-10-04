@@ -1081,6 +1081,8 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
 
   fhEventCounter->Fill("#RPFs OK",1);
 
+  fhMeanMultRFP->Fill(fVector[kRefs]->size());
+
   // here events are selected
   fhEventCounter->Fill("Selected",1);
 
@@ -5240,6 +5242,9 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     fhEventCounter = new TH1D("fhEventCounter","Event Counter",iEventCounterBins,0,iEventCounterBins);
     for(Int_t i(0); i < iEventCounterBins; ++i) { fhEventCounter->GetXaxis()->SetBinLabel(i+1, sEventCounterLabel[i].Data() ); }
     fQAEvents->Add(fhEventCounter);
+    //omni-present RFP multiplicity after all cuts
+    fhMeanMultRFP = new TH1D("fhMeanMultRFP","RFPs: Multiplicity; multiplicity", 4500,0,9000);
+    fQAEvents->Add(fhMeanMultRFP);
   }
 
   {
