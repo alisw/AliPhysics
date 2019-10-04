@@ -13,9 +13,11 @@
 #include "TH3F.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
-#include <algorithm>
-#include <memory>
 
+#if defined (__CLING__)
+    #include <algorithm>
+    #include <memory>
+#endif
 /**
  * @brief default constructor
  */

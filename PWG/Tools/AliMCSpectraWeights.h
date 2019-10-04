@@ -13,10 +13,16 @@ class AliMCEvent;
 class TH3F;
 class TH1D;
 class TF1;
-#include <array>
-#include <memory>
-#include <string>
-#include <vector>
+//#include <array>
+//#include <memory>
+//#include <string>
+//#include <vector>
+#if defined (__CLING__)
+    #include <array>
+    #include <memory>
+    #include <string>
+    #include <vector>
+#endif
 
 /**
  * @class AliMCSpectraWeights AliMCSpectraWeights.h "AliMCSpectraWeights.h"
