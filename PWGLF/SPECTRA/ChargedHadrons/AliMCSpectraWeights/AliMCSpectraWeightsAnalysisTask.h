@@ -8,6 +8,7 @@
 #define ALIMCSPECTRAWEIGHTSANALYSISTASK_H
 #include "AliAnalysisTaskSE.h"
 #include "THn.h"
+#include "TH3F.h"
 class TArrayD;
 class TString;
 class AliMCSpectraWeights;
@@ -72,7 +73,7 @@ class AliMCSpectraWeightsAnalysisTask : public AliAnalysisTaskSE {
 
     //------ Gettter --------
     UInt_t GetTriggerMask()  { return fTriggerMask; }
-    THnF* GetHistMCPartCorr() const {return fHistMCPartCorr;}
+    TH3F* GetHistMCPartCorr() const {return fHistMCPartCorr;}
     THnF* GetHistMCGenPrimTrack() const {return fHistMCGenPrimTrack;}
     // Binning
     TArrayD* GetBinsPt() {return fBinsPt;}
@@ -94,11 +95,11 @@ class AliMCSpectraWeightsAnalysisTask : public AliAnalysisTaskSE {
 
     //Particle composition
     AliMCSpectraWeights *fMCSpectraWeights;//->
-    THnF                 *fHistMCPartCorr;//!
+    TH3F                 *fHistMCPartCorr;//!
     THnF                 *fHistMCGenPrimTrack;//!
-    THnF                 *fHistMCFractions;//!
-    THnF                 *fHistDataFractions;//!
-    THnF                 *fHistMCWeights;//!
+    TH3F                 *fHistMCFractions;//!
+    TH3F                 *fHistDataFractions;//!
+    TH3F                 *fHistMCWeights;//!
 
     //binning
     TArrayD     	*fBinsMultCent;		///< Array of bins in multiplicity or centrality
