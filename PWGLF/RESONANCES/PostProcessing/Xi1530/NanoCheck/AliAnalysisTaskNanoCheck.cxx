@@ -780,17 +780,17 @@ Bool_t AliAnalysisTaskNanoCheck::GoodCascadeSelection(){
             DCADist_Xi_PV = TMath::Abs(
                 Xicandidate->GetDcascade(lPosPV[0], lPosPV[1], lPosPV[2]));
             if (isXiMinus) {  // Xi- has +proton, -pion
-                pTrackXi->GetImpactParameters(b, bCov);
+                GetImpactParam(pTrackXi, b, bCov);
                 DCADist_LambdaProton_PV = b[0];
-                nTrackXi->GetImpactParameters(b, bCov);
+                GetImpactParam(nTrackXi, b, bCov);
                 DCADist_LambdaPion_PV = b[0];
             } else {
-                nTrackXi->GetImpactParameters(b, bCov);
+                GetImpactParam(nTrackXi, b, bCov);
                 DCADist_LambdaProton_PV = b[0];
-                pTrackXi->GetImpactParameters(b, bCov);
+                GetImpactParam(pTrackXi, b, bCov);
                 DCADist_LambdaPion_PV = b[0];
             }
-            bTrackXi->GetImpactParameters(b, bCov);
+            GetImpactParam(bTrackXi, b, bCov);
             DCADist_BachelorPion_PV = b[0];
             fHistos->FillTH1("QA_Xi/hDCADist_lambda_to_PV",
                                 DCADist_Lambda_PV);
@@ -936,17 +936,17 @@ Bool_t AliAnalysisTaskNanoCheck::GoodCascadeSelection(){
             DCADist_Xi_PV = TMath::Abs(Xicandidate_aod->DcaXiToPrimVertex(
                 lPosPV[0], lPosPV[1], lPosPV[2]));
             if (isXiMinus) {  // Xi- has +proton, -pion
-                pTrackXi->GetImpactParameters(b, bCov);
+                GetImpactParam(pTrackXi, b, bCov);
                 DCADist_LambdaProton_PV = b[0];
-                nTrackXi->GetImpactParameters(b, bCov);
+                GetImpactParam(nTrackXi, b, bCov);
                 DCADist_LambdaPion_PV = b[0];
             } else {
-                nTrackXi->GetImpactParameters(b, bCov);
+                GetImpactParam(nTrackXi, b, bCov);
                 DCADist_LambdaProton_PV = b[0];
-                pTrackXi->GetImpactParameters(b, bCov);
+                GetImpactParam(pTrackXi, b, bCov);
                 DCADist_LambdaPion_PV = b[0];
             }
-            bTrackXi->GetImpactParameters(b, bCov);
+            GetImpactParam(bTrackXi, b, bCov);
             DCADist_BachelorPion_PV = b[0];
             /*
             // typical AOD method
