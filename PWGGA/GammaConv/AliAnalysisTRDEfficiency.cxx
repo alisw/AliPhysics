@@ -673,6 +673,9 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                     Double_t dpt   = 0;
                     Double_t dpid  = 0;
                 
+                    trdpt   = TMath::Abs(trdpt);        
+                    dpt     = TMath::Abs(dpt);
+                    
                     // grab the other daughter track
                     AliAODTrack *other = (AliAODTrack*)v0->GetDaughter(!j); 
                     if (other){
