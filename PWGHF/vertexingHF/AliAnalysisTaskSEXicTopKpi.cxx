@@ -529,10 +529,10 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   //if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;seleFlag;LcMass;CosThetaStarSoftPion",9,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
   
   // adding PID cases study
-  Int_t nbinsSparse[8]={16,125,10,16,20,10,10,11};
-  Double_t lowEdges[8]={0,2.15,0.,0,0.8,0,-1,-0.5};
-  Double_t upEdges[8]={16,2.65,0.0500,8,1.,5,9,10.5};
-  if(!fFillTree)  fhSparseAnalysis=new THnSparseF("fhSparseAnalysis","fhSparseAnalysis;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;seleFlag;PIDcase",8,nbinsSparse,lowEdges,upEdges);
+  Int_t nbinsSparse[8]={16,125,10,16,20,10,19,11};
+  Double_t lowEdges[8]={0,2.15,0.,0,0.8,0,-0.5,-0.5};
+  Double_t upEdges[8]={16,2.65,0.0500,8,1.,5,18.5,10.5};
+  if(!fFillTree)  fhSparseAnalysis=new THnSparseF("fhSparseAnalysis","fhSparseAnalysis;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase",8,nbinsSparse,lowEdges,upEdges);
   
   Int_t nbinsSparseSigma[11]={16,400,10,12,10,10,1,11,22,20,16};
   Double_t lowEdgesSigma[11]={0,0.130,0.,0,0.8,0,-0.5,-0.5,2.266,-1,0};
@@ -1532,7 +1532,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	normIP[2]=diffIP[2]/errdiffIP[2];
 	if(TMath::Abs(  normIP[2])>maxIP)maxIP=TMath::Abs(  normIP[2]);
 
-	Double_t point[8]={candPt,0,io3Prong->DecayLengthXY(),io3Prong->NormalizedDecayLengthXY(),io3Prong->CosPointingAngle(),maxIP,(Double_t)flagSel,0};  
+  Int_t converted_isTrueLcXic = ConvertXicMCinfo(isTrueLambdaCorXic);
+	Double_t point[8]={candPt,0,io3Prong->DecayLengthXY(),io3Prong->NormalizedDecayLengthXY(),io3Prong->CosPointingAngle(),maxIP,(Double_t)converted_isTrueLcXic,0};  
 	Double_t mass1=0,mass2=0;
 	Bool_t arrayPIDpkpi[11],arrayPIDpikp[11];
 	if(massHypothesis>0 && fExplore_PIDstdCuts){
@@ -1552,12 +1553,18 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  point[1]=mass1;
 	  point[7]=0;
 	  // this two filling fill the sparse with PID in cut object always
-	  if(fhSparseAnalysis && !fExplore_PIDstdCuts)  fhSparseAnalysis->Fill(point);
+	  if(fhSparseAnalysis && !fExplore_PIDstdCuts){
+      if(fReadMC && (converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17))  fhSparseAnalysis->Fill(point);
+      if(!fReadMC)  fhSparseAnalysis->Fill(point);
+    }
 	  if(fExplore_PIDstdCuts){
 	    if(fhSparseAnalysis){
 	      for(UInt_t i=0; i<=10; i++){  // loop on PID cut combinations to be tested
-		point[7] = i;
-		if(arrayPIDpkpi[i])fhSparseAnalysis->Fill(point);
+		      point[7] = i;
+		      if(arrayPIDpkpi[i]){
+            if(fReadMC && (converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17))  fhSparseAnalysis->Fill(point);
+            if(!fReadMC)  fhSparseAnalysis->Fill(point);
+          }
 	      }
 	    }	    	   
 	  }
@@ -1568,12 +1575,18 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  point[1]=mass2;
 	  point[7]=0;
 	  // this two filling fill the sparse with PID in cut object always
-	  if(fhSparseAnalysis && !fExplore_PIDstdCuts)  fhSparseAnalysis->Fill(point);
+	  if(fhSparseAnalysis && !fExplore_PIDstdCuts){
+      if(fReadMC && (converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18))  fhSparseAnalysis->Fill(point);
+      if(!fReadMC)  fhSparseAnalysis->Fill(point);
+    }
 	  if(fExplore_PIDstdCuts){
 	    if(fhSparseAnalysis){
 	      for(UInt_t i=0; i<=10; i++){  // loop on PID cut combinations to be tested
-		point[7] = i;
-		if(arrayPIDpikp[i])fhSparseAnalysis->Fill(point);
+	        point[7] = i;
+		      if(arrayPIDpikp[i]){
+            if(fReadMC && (converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18))  fhSparseAnalysis->Fill(point);
+            if(!fReadMC)  fhSparseAnalysis->Fill(point);
+          }
 	      }
 	    }	  
 	  }
@@ -1725,7 +1738,8 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	  arrayVariableIsFilled=kTRUE;	 
 	}	
 	pointSigma[6]=-1;// n.b. overwrites seleFlag (not exploited even for Lc), defined below by ITSrefit for soft pion --> this makes irrelevant which pid status is passed in the FillArrayVariableSparse above
-	pointSigma[7]=0;
+                   // (mfaggin) now it overwrites the MC info on Lc/Xic
+  pointSigma[7]=0;
 	// now calculated remaining pair variables and fill sparse
 	if(tracksoft->TestFilterBit(AliAODTrack::kITSrefit))pointSigma[6]=0;
 	cosThetaStarSoftPi=CosThetaStar(psigma,psoft,TDatabasePDG::Instance()->GetParticle(4222)->Mass(),TDatabasePDG::Instance()->GetParticle(211)->Mass());
@@ -2460,6 +2474,96 @@ void AliAnalysisTaskSEXicTopKpi::PrintCandidateVariables(AliAODRecoDecayHF3Prong
   printf("decay length: %f, sumd02 %f, CosPointAngle %f, sigmaVtx %f \n",d->DecayLength(),(d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2)),d->CosPointingAngle(),d->GetSigmaVert(aod));
   printf("dca 0: %f, dca 1: %f, dca 2: %f \n",d->GetDCA(0),d->GetDCA(1),d->GetDCA(2));
   return;
+}
+
+//______________________________________
+Int_t AliAnalysisTaskSEXicTopKpi::ConvertXicMCinfo(Int_t infoMC){
+  Int_t returnValue = 0.;
+  
+  switch (infoMC)
+  {
+  ////////////////////////////////////////////////////////
+  //  Lc case (task version October 7th, 2019)          //
+  ////////////////////////////////////////////////////////
+  //    - 1:   matched Lc                     ---> 1
+  //    - 10:  matched Lc, pKpi               ---> 2
+  //    - 20:  matched Lc, piKp               ---> 3
+  //    - 4:   matched Lc from c (prompt)     ---> 4
+  //    - 5:   matched Lc from b (non-prompt) ---> 5
+  //    - 40:  matched prompt Lc, pKpi        ---> 6
+  //    - 80:  matched prompt Lc, piKpi       ---> 7
+  //    - 50:  matched non-prompt Lc, pKpi    ---> 8
+  //    - 100: matched non-prompt Lc, piKp    ---> 9
+  case 1:
+    returnValue = 1;
+    break;
+  case 10:
+    returnValue = 2;
+    break;
+  case 20:
+    returnValue = 3;
+    break;
+  case 4:
+    returnValue = 4;
+    break;
+  case 5:
+    returnValue = 5;
+    break;
+  case 40:
+    returnValue = 6;
+    break;
+  case 80:
+    returnValue = 7;
+    break;
+  case 50:
+    returnValue = 8;
+    break;
+  case 100:
+    returnValue = 9;
+    break;
+
+  ////////////////////////////////////////////////////////
+  //  Xic case (task version October 7th, 2019)         //
+  ////////////////////////////////////////////////////////
+  //    - 3:   matched Xic                     ---> 10
+  //    - 30:  matched Xic, pKpi               ---> 11
+  //    - 60:  matched Xic, piKp               ---> 12
+  //    - 12:  matched Xic from c (prompt)     ---> 13
+  //    - 15:  matched Xic from b (non-prompt) ---> 14
+  //    - 120: matched prompt Xic, pKpi        ---> 15
+  //    - 240: matched prompt Xic, piKpi       ---> 16
+  //    - 150: matched non-prompt Xic, pKpi    ---> 17
+  //    - 300: matched non-prompt Xic, piKp    ---> 18
+  case 3:
+    returnValue = 10;
+    break;
+  case 30:
+    returnValue = 11;
+    break;
+  case 60:
+    returnValue = 12;
+    break;
+  case 12:
+    returnValue = 13;
+    break;
+  case 15:
+    returnValue = 14;
+    break;
+  case 120:
+    returnValue = 15;
+    break;
+  case 240:
+    returnValue = 16;
+    break;
+  case 150:
+    returnValue = 17;
+    break;
+  case 300:
+    returnValue = 18;
+    break;
+  }
+
+  return returnValue;
 }
 
 
