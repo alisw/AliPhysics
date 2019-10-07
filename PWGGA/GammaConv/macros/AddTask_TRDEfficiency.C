@@ -33,7 +33,7 @@ AliAnalysisTRDEfficiency* AddTask_TRDEfficiency(
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        return ;
+        return 0x0;
     }
 
     // ================== GetInputEventHandler =============================
