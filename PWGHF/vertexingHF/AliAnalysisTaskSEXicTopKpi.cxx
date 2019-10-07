@@ -1636,15 +1636,26 @@ void AliAnalysisTaskSEXicTopKpi::FillArrayVariableSparse(AliAODRecoDecayHF3Prong
 //________________________________________________________
 void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselPkPi,Bool_t *arrayPIDselPikP,Int_t itrack1,Int_t itrack2,Int_t itrackThird,AliAODMCParticle *pSigmaC){
   Int_t labelSoftPi=-1;
+  Int_t ispKpiMC=3;
   if(pSigmaC){
     if(pSigmaC->GetNDaughters()!=2)return;
     for(Int_t k=pSigmaC->GetDaughterLabel(0);k<pSigmaC->GetDaughterLabel(1);k++){
       if(k>=0){
-	AliAODMCParticle *mcpartMumdau=(AliAODMCParticle*)fmcArray->At(k);
-	if(TMath::Abs(mcpartMumdau->GetPdgCode()==211)){
+	AliAODMCParticle *mcpartScdau=(AliAODMCParticle*)fmcArray->At(k);
+	if(TMath::Abs(mcpartScdau->GetPdgCode()==211)){
 	  labelSoftPi=k;
 	}
+	if(mcpartScdau->GetPdgCode()==4122){
+	  ispKpiMC=1;
+	}
+	if(mcpartScdau->GetPdgCode()==-4122){
+	  ispKpiMC=2;
+	}
       }
+    }
+    if(ispKpiMC==3){
+      Printf("AliAnalysisTaskSEXicTopKpi: something wrong in Sc MC identification");    
+      return;
     }
   }	    
 
@@ -1721,12 +1732,14 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	pointSigma[9]=cosThetaStarSoftPi;
 	pointSigma[1]=deltaM;	       
 	pointSigma[10]=lsum.Pt();
-	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==1 || resp_onlyPID==3) )  fhSparseAnalysisSigma->Fill(pointSigma);
+	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==1 || resp_onlyPID==3) )  {
+	  if((!pSigmaC) || (pSigmaC && ispKpiMC==1)) fhSparseAnalysisSigma->Fill(pointSigma);
+	}
 	if(fhSparseAnalysisSigma && fExplore_PIDstdCuts){
 	  for(Int_t k=0;k<=10;k++){
 	    pointSigma[7]=k;
 	    if(arrayPIDselPkPi[k]){
-	      fhSparseAnalysisSigma->Fill(pointSigma);
+	       if((!pSigmaC) || (pSigmaC && ispKpiMC==1)) fhSparseAnalysisSigma->Fill(pointSigma);	    
 	    }
 	  }
 	}
@@ -1759,12 +1772,16 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	pointSigma[9]=cosThetaStarSoftPi;
 	pointSigma[1]=deltaM;
 	//	pointSigma[10]=lsum.Pt(); // not needed
-	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==2 || resp_onlyPID==3))  fhSparseAnalysisSigma->Fill(pointSigma);
+	if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==2 || resp_onlyPID==3)) {
+	  if((!pSigmaC) || (pSigmaC && ispKpiMC==2)) fhSparseAnalysisSigma->Fill(pointSigma);	    
+	}
 	if(fhSparseAnalysisSigma && fExplore_PIDstdCuts){
 	  for(Int_t k=0;k<=10;k++){
 	    pointSigma[7]=k;
 	    if(arrayPIDselPikP[k]){
-	      fhSparseAnalysisSigma->Fill(pointSigma);
+	      if((!pSigmaC) || (pSigmaC && ispKpiMC==2)) {
+		fhSparseAnalysisSigma->Fill(pointSigma);	    
+	      }	      
 	    }
 	  }
 	}
