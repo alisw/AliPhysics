@@ -272,6 +272,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
         UserTasks/AliAnalysisTaskEA.cxx
         UserTasks/AliAnalysisEmcalJetHelperEA.cxx
+        UserTasks/AliAnalysisTaskPythiaBranchEA.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
 	    UserTasks/AliAnalysisTaskRecoilJetYield.cxx
 	    UserTasks/AliAnalysisTaskRecursiveSoftDrop.cxx
