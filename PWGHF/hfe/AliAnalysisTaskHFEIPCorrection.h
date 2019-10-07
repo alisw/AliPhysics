@@ -75,7 +75,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH2D * TPCnSigma;
 
   TH2D * EPCent;
-  TH2D * EPCentCorrected;
+  TH2D * EPCentUncorrected;
   TH2D * EPCentV0A;
   TH2D * EPCentV0C;
 
