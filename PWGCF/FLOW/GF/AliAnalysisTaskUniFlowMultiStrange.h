@@ -215,7 +215,6 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void  SetTrackEta(Double_t value){fTrackEta = value;}
       void  SetTrackPtMin(Double_t value){fTrackPtMin = value;}
       void  SetTPCNcls(Double_t ncls = 70){fTPCNcls = ncls;}
-      void  SetCascadesNumBinsMass(Int_t value){fCascadesNumBinsMass=value;}
       void  SetIsGetq2(){IsGetq2 =kTRUE;}
 
       AliEventCuts            fEventCuts; //!
@@ -226,7 +225,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       static const Int_t      fFlowNumWeightPowersMax = 5; // maximum weight power length of flow vector array
       static const Int_t      fV0sNumBinsMass = 60; // number of InvMass bins for V0s distribution
       static const Int_t      fPhiNumBinsMass = 60; // number of InvMass bins for phi distribution
-      Int_t      fCascadesNumBinsMass = 120;
+      static const Int_t      fCascadesNumBinsMass = 120;
 
       static const Int_t      fiNumIndexQA = 6; // QA indexes: 0: raw // 1: after AliEventCut //2: after New cut(Correlation SPD clusters – SPD tracklets and Correlation V0 online – V0 offline )  //3: after TPC cluster and V0 multiplicityCorrelation(GA) // 4:as 3(tight) 5:after TPC cluster and V0 multiplicity Correlation(HF)
 
