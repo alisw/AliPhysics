@@ -66,8 +66,8 @@
 //        - 4-particle cumulants has to be setup by invoking AliAnalysisTaskUniFlowMultiStrange::SetFlowDoFourCorrelations(kTRUE)
 //
 // =================================================================================================
-#ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
-#define ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
+#ifndef ALIANALYSISTASKUNIFLOWMS_CXX
+#define ALIANALYSISTASKUNIFLOWMS_CXX
 
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
@@ -122,6 +122,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fPVz(),
   fPIDResponse(),
   fPIDCombined(),
+  fUsePIDCorrection(0),
   fFlowWeightsFile(),
   q2File(),
   q2List(),
@@ -132,7 +133,8 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fhQyV0A_pfx(),
   fhQxV0C_pfx(),
   fhQyV0C_pfx(),
-
+  fPidHF(),
+  Is2018Data(kFALSE),
   histlowq2(),
   histhighq2(),
   fhEventq2TPC(),
@@ -468,6 +470,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   q2Eta(0.2),
   fPIDResponse(),
   fPIDCombined(),
+  fUsePIDCorrection(0),
   fFlowWeightsFile(),
   q2File(),
   q2List(),
@@ -478,6 +481,8 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fhQyV0A_pfx(),
   fhQxV0C_pfx(),
   fhQyV0C_pfx(),
+  fPidHF(),
+  Is2018Data(kFALSE),
   histlowq2(),
   histhighq2(),
   fhEventq2TPC(),
@@ -723,7 +728,6 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fhQAEventsMult128vsCentr(),
   fhQAEventsfMultTPCvsTOF(),
   fhQAEventsfMultTPCvsESD(),
-   
 
   fCenCL0vsV0M(),
   fCenCL1vsV0M(),
@@ -1036,10 +1040,9 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::InitializeTask()
   fPIDCombined->SetDefaultTPCPriors();
   fPIDCombined->SetSelectedSpecies(fPIDNumSpecies);
   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF); // setting TPC + TOF mask
-   fPidHF=new AliAODPidHF();
-   fPidHF->SetPidResponse(fPIDResponse);
 
-
+  fPidHF=new AliAODPidHF();
+  fPidHF->SetPidResponse(fPIDResponse);
   // checking consistency of PartSpecies with AliPID::EParticleType
   if((Int_t) kPion != (Int_t) AliPID::kPion || (Int_t) kKaon != (Int_t) AliPID::kKaon || (Int_t) kProton != (Int_t) AliPID::kProton)
   {
@@ -1222,13 +1225,6 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   fPIDResponse = inputHandler->GetPIDResponse();
   if(!fPIDResponse) { AliFatal("AliPIDResponse not attached!"); return; }
 
-  if(fIndexCentrality > 0 && fIndexCentrality< 10){
-     fPidHF->EnableNsigmaTPCDataCorr(fEventAOD->GetRunNumber(),AliAODPidHF::kPbPb010);
-     }
-  if(fIndexCentrality > 30 && fIndexCentrality< 50){
-     fPidHF->EnableNsigmaTPCDataCorr(fEventAOD->GetRunNumber(),AliAODPidHF::kPbPb3050);
-     }
-
 
   // loading array with MC particles
   if(fMC)
@@ -1347,11 +1343,10 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
   TF1*fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
   fV0CutPU->SetParameters(parV0);
-  if (multV0On < fV0CutPU->Eval(multV0Tot)){return;}
+   if(Is2018Data){if (multV0On < fV0CutPU->Eval(multV0Tot)){return;}}
   
   TF1*fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
-  if (Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls)){return;}
-
+   if(Is2018Data){if (Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls)){return;}}
 
   if(fFillQA) {FillEventsQA(2); }
 
@@ -1364,17 +1359,27 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   
   Float_t mV0TPCclsCut=-2000.+(0.013*tpcClsTot)+(1.25e-9*tpcClsTot*tpcClsTot);
   if (multV0Tot>mV0TPCclsCut){ if(fFillQA) {FillEventsQA(5);}}
- 
-  
-
-  if (nclsDif > 100000){return;}
-
- histcent->Fill(fIndexCentrality);
+  if(Is2018Data){ 
+    if (nclsDif >200000){return;}
+   }
+  histcent->Fill(fIndexCentrality);
   fIndexCentrality = GetCentralityIndex();
   if(fIndexCentrality < 0) { return; }
   if(fCentMin > 0 && fIndexCentrality < fCentMin) { return; }
   if(fCentMax > 0 && fIndexCentrality > fCentMax) { return; }
-  fhEventCounter->Fill("Cent/Mult OK",1);
+ 
+  if(fIndexCentrality > 0 && fIndexCentrality< 10){
+     fPidHF->EnableNsigmaTPCDataCorr(fEventAOD->GetRunNumber(),AliAODPidHF::kPbPb010);
+     }
+
+  if(fIndexCentrality > 30 && fIndexCentrality< 50){
+     fPidHF->EnableNsigmaTPCDataCorr(fEventAOD->GetRunNumber(),AliAODPidHF::kPbPb3050);
+     }
+ 
+  if(fIndexCentrality < 30) { return; }
+  if(fIndexCentrality > 50) { return; } 
+
+   fhEventCounter->Fill("Cent/Mult OK",1);
 
   // here events are selected
     fhEventCounter->Fill("Selected",1);
@@ -1479,16 +1484,19 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsEventSelected()
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
   UInt_t fSelectMask = inputHandler->IsEventSelected();
   
-  //cout<<(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kINT7))<<endl;
-  if(!(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kINT7))) {  
-   return kFALSE; }
+   if(!Is2018Data){if(!(fSelectMask & fTrigger)) { return kFALSE;}}
+  if(Is2018Data){if(!(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kINT7))) {
+  return kFALSE; }}
 
   // events passing physics && trigger selection
   fhEventCounter->Fill("Physics selection OK",1);
 
   // events passing AliEventCuts selection
+  if(Is2018Data){
   fEventCuts.SetManualMode(1);
   fEventCuts.SetupPbPb2018();
+  }
+
   if(!fEventCuts.AcceptEvent(fEventAOD)) { return kFALSE; }
   fhEventCounter->Fill("EventCuts OK",1);
   // Additional pile-up rejection cuts for LHC15o dataset
@@ -4829,7 +4837,7 @@ void  AliAnalysisTaskUniFlowMultiStrange::IsCascadexi( const AliAODcascade* xi, 
     Bool_t isNegProtonForTPC = kFALSE;
     Bool_t isPosProtonForTPC = kFALSE;
 
-  
+
     Double_t NumBKaon=fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kKaon);
     Double_t NumBPion=fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kPion);
     Double_t NumNPion=fPIDResponse->NumberOfSigmasTPC(nTrkXi, AliPID::kPion);
@@ -4837,7 +4845,7 @@ void  AliAnalysisTaskUniFlowMultiStrange::IsCascadexi( const AliAODcascade* xi, 
     Double_t NumPPion=fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kPion);
     Double_t NumPProton=fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kProton);
 
-    if (fUsePIDCorrection ){
+   if (fUsePIDCorrection ){
     fPidHF->GetnSigmaTPC(bTrkXi,3,NumBKaon);
     fPidHF->GetnSigmaTPC(bTrkXi,2,NumBPion);
     fPidHF->GetnSigmaTPC(nTrkXi,2,NumNPion);
@@ -4845,8 +4853,7 @@ void  AliAnalysisTaskUniFlowMultiStrange::IsCascadexi( const AliAODcascade* xi, 
     fPidHF->GetnSigmaTPC(pTrkXi,2,NumPPion);
     fPidHF->GetnSigmaTPC(pTrkXi,4,NumPProton);
     }
-
-   if(TMath::Abs(NumBKaon)<fXiPIDsigma)
+     if(TMath::Abs(NumBKaon)<fXiPIDsigma)
        {isBachelorKaonForTPC = kTRUE;}
 
     if(TMath::Abs(NumBPion)<fXiPIDsigma)
@@ -4860,28 +4867,9 @@ void  AliAnalysisTaskUniFlowMultiStrange::IsCascadexi( const AliAODcascade* xi, 
     if(TMath::Abs(NumPPion)< fXiPIDsigma)
        {isPosPionForTPC = kTRUE;}
     if(TMath::Abs(NumPProton)<fXiPIDsigma)
-       {isPosProtonForTPC = kTRUE;}
+       {isPosProtonForTPC = kTRUE;} 
 
-
-
-/*  if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kKaon))<fXiPIDsigma)
-       isBachelorKaonForTPC = kTRUE;
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bTrkXi, AliPID::kPion))<fXiPIDsigma)
-       isBachelorPionForTPC = kTRUE;
-
-     //Negative V0 daughter
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrkXi, AliPID::kPion))<fXiPIDsigma)
-       isNegPionForTPC = kTRUE;
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrkXi, AliPID::kProton))<fXiPIDsigma)
-       isNegProtonForTPC = kTRUE;
-
-     //Positive V0 daughter
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kPion))< fXiPIDsigma)
-       isPosPionForTPC = kTRUE;
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrkXi, AliPID::kProton))<fXiPIDsigma)
-       isPosProtonForTPC = kTRUE;
-*/
-      strangePar=4000;
+     strangePar=4000;
 
     if(xi->ChargeXi() < 0){
         if(isPosProtonForTPC && isNegPionForTPC && isBachelorPionForTPC){

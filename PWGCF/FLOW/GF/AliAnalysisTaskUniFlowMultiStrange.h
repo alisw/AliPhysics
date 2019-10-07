@@ -4,8 +4,8 @@
 
 //#ifndef ALIANALYSISTASKUNIFLOW_H
 //#define ALIANALYSISTASKUNIFLOW_H
-#ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
-#define ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
+#ifndef ALIANALYSISTASKUNIFLOWMS_H
+#define ALIANALYSISTASKUNIFLOWMS_H
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -79,6 +79,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       virtual void            Terminate(Option_t* option); // called after all events are processed
       // analysis setters
       void                    SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
+      void                    Set2018Data(Bool_t use = kTRUE){Is2018Data = use;}
       void                    SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
       void					          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
@@ -210,31 +211,22 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void  SetCascadesRejectKinks(Bool_t reject) { fCutCascadesrejectKinks = reject; }
       void  SetXiPIDSigma(Double_t value){fXiPIDsigma = value;}
 
-
-
-
-
       void  SetRPTrackFromTPC(Bool_t value){fRPFromTPC = value;}
       void  SetTrackEta(Double_t value){fTrackEta = value;}
       void  SetTrackPtMin(Double_t value){fTrackPtMin = value;}
       void  SetTPCNcls(Double_t ncls = 70){fTPCNcls = ncls;}
-
- 
-
+      void  SetCascadesNumBinsMass(Int_t value){fCascadesNumBinsMass=value;}
       void  SetIsGetq2(){IsGetq2 =kTRUE;}
 
-
-
-
       AliEventCuts            fEventCuts; //!
-
+      AliAODPidHF*            fPidHF;//! PID correction from HF Group
     private:
       static const Int_t      fPIDNumSpecies = 5; // Number of considered species for PID
       static const Int_t      fFlowNumHarmonicsMax = 7; // maximum harmonics length of flow vector array
       static const Int_t      fFlowNumWeightPowersMax = 5; // maximum weight power length of flow vector array
       static const Int_t      fV0sNumBinsMass = 60; // number of InvMass bins for V0s distribution
       static const Int_t      fPhiNumBinsMass = 60; // number of InvMass bins for phi distribution
-      static const Int_t      fCascadesNumBinsMass = 40;
+      Int_t      fCascadesNumBinsMass = 120;
 
       static const Int_t      fiNumIndexQA = 6; // QA indexes: 0: raw // 1: after AliEventCut //2: after New cut(Correlation SPD clusters – SPD tracklets and Correlation V0 online – V0 offline )  //3: after TPC cluster and V0 multiplicityCorrelation(GA) // 4:as 3(tight) 5:after TPC cluster and V0 multiplicity Correlation(HF)
 
@@ -301,7 +293,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
       void VZEROCalbration();
 //-----------------------------------------------------------------------------------------
-
+      Bool_t                  Is2018Data;//
       Double_t q2Eta;
       Bool_t                  IsGetq2;
       Double_t                Getq2(Double_t dEta);
@@ -375,11 +367,8 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       const Double_t          fPDGMassK0s; // [DPGMass] DPG mass of K0s
       const Double_t          fPDGMassLambda; // [DPGMass] DPG mass of (Anti)Lambda
 
-      
-     
       AliAODEvent*            fEventAOD; //! AOD event countainer
       Double_t                fPVz; // PV z-coordinate used for weights
-      AliAODPidHF*            fPidHF;//! PID correction from HF Group
       AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
       AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
       TFile*                  fFlowWeightsFile; //! source file containing weights
