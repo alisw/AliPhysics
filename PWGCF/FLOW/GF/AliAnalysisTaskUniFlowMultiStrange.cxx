@@ -66,8 +66,8 @@
 //        - 4-particle cumulants has to be setup by invoking AliAnalysisTaskUniFlowMultiStrange::SetFlowDoFourCorrelations(kTRUE)
 //
 // =================================================================================================
-#ifndef ALIANALYSISTASKUNIFLOWMS_CXX
-#define ALIANALYSISTASKUNIFLOWMS_CXX
+#ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
+#define ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
 
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
