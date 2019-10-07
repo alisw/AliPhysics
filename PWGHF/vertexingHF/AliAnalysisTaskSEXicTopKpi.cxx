@@ -2478,7 +2478,7 @@ void AliAnalysisTaskSEXicTopKpi::PrintCandidateVariables(AliAODRecoDecayHF3Prong
 
 //______________________________________
 Int_t AliAnalysisTaskSEXicTopKpi::ConvertXicMCinfo(Int_t infoMC){
-  Int_t returnValue = -999.;
+  Int_t returnValue = 0.;
   
   switch (infoMC)
   {
