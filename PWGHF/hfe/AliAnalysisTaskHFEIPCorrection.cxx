@@ -48,7 +48,7 @@ ClassImp(AliAnalysisTaskHFEIPCorrection)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fRd(0), fSplineCorr(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fRd(0), fSplineCorr(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentUncorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
 
   // default Constructor
@@ -78,7 +78,7 @@ AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fRd(0), fSplineCorr(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fRd(0), fSplineCorr(0), fIPData(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentUncorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fEPLowHighCent(0), fEPLowVZEROCent(0), fEPHighVZEROCent(0), fEPLowHighCent2(0), fEPLowVZEROCent2(0), fEPHighVZEROCent2(0), fAODV0Cuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // HFE cuts
     /*hfetrackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
@@ -127,7 +127,7 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     EPCent = new TH2D(Form("EPCent"),Form("EPCent"), 20, 0., TMath::Pi(), 10, 0., 100.);
     EPCentV0A = new TH2D(Form("EPCentV0A"),Form("EPCentV0A"), 20, 0., TMath::Pi(), 10, 0., 100.);
     EPCentV0C = new TH2D(Form("EPCentV0C"),Form("EPCentV0C"), 20, 0., TMath::Pi(), 10, 0., 100.);
-    EPCentCorrected = new TH2D(Form("EPCentCorrected"),Form("EPCentCorrected"), 20, 0., TMath::Pi(), 10, 0., 100.);
+    EPCentUncorrected = new TH2D(Form("EPCentUncorrected"),Form("EPCentUncorrected"), 20, 0., TMath::Pi(), 10, 0., 100.);
     
     DeltaPhi = new TH1D(Form("DeltaPhi"),Form("DeltaPhi"), 40, 0., TMath::Pi());
     fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
@@ -207,7 +207,7 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     fOutputContainer->Add(EPCent);
     fOutputContainer->Add(EPCentV0A);
     fOutputContainer->Add(EPCentV0C);
-    fOutputContainer->Add(EPCentCorrected);
+    fOutputContainer->Add(EPCentUncorrected);
     fOutputContainer->Add(DeltaPhi);
     fOutputContainer->Add(fpTIP2040IP);
     fOutputContainer->Add(fpTIP2040OOP);
@@ -822,6 +822,7 @@ if(!MultSelection){
     if(V0APlanePhi > TMath::Pi()) V0APlanePhi = V0APlanePhi - TMath::Pi();
     V0CPlanePhi = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,9,2,qVx,qVy));
     if(V0CPlanePhi > TMath::Pi()) V0CPlanePhi = V0CPlanePhi - TMath::Pi();
+    EPCentUncorrected->Fill(V0PlanePhi, centrality);
     double rndm = fRd->Rndm();
     if(centrality>=20.0 && centrality<=50.0)
     {
@@ -856,7 +857,7 @@ if(!MultSelection){
       EPCent->Fill(V0PlanePhi, centrality);
       EPCentV0A->Fill(V0APlanePhi, centrality);
       EPCentV0C->Fill(V0CPlanePhi, centrality);
-      //EPCentCorrected->Fill(epCorr, centrality);
+      
         
     if(centrality>=20.0 && centrality<=40.0)
     {
