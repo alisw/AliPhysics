@@ -270,6 +270,6 @@ void YieldsPlot() {
   ratio_gr_stat->Draw("apz");
   ratio_gr_syst->Draw("samep2");
   cMio->SaveAs(Form("%smiodoverp.C",kBaseOutputDir.data()));
-  cMio->Write("cicciopasticcio");
+  cMio->Write("myCanvas");
   //cMio->GetListOfPrimitives()->ls();
 }
